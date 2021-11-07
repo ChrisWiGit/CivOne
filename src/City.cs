@@ -92,6 +92,7 @@ namespace CivOne
 
         public bool IsBuildingWonder => CurrentProduction is IWonder;
 
+		/// Number of shields required to maintain units
 		internal int ShieldCosts
 		{
 			get
@@ -113,6 +114,7 @@ namespace CivOne
 
 		internal int ShieldIncome => ShieldTotal - ShieldCosts;
 
+        /// How much food required for citizens and settlers		
 		internal int FoodCosts
 		{
 			get
@@ -135,6 +137,11 @@ namespace CivOne
 		internal int FoodRequired => (int)(Size + 1) * 10;
 		internal int FoodTotal => ResourceTiles.Sum(t => FoodValue(t));
 
+		/// <summary>
+		/// Food produced by a tile, taking government and improvements into account
+		/// </summary>
+		/// <param name="tile"></param>
+		/// <returns>count of food units</returns>
 		internal int FoodValue(ITile tile)
 		{
 			int output = tile.Food;
@@ -156,6 +163,11 @@ namespace CivOne
 			return output;
 		}
 
+		/// <summary>
+		/// Shields produced by a tile, taking government and improvements into account
+		/// </summary>
+		/// <param name="tile"></param>
+		/// <returns>count of shields</returns>
 		internal int ShieldValue(ITile tile)
 		{
 			int output = tile.Shield;
@@ -169,6 +181,9 @@ namespace CivOne
 			return output;
 		}
 
+		/// <summary>
+		/// Total number of shields produced by city, taking buildings into account
+		/// </summary>
 		internal int ShieldTotal
 		{
 			get
@@ -180,6 +195,12 @@ namespace CivOne
 			}
 		}
 
+		/// <summary>
+		/// Trade units produced by a tile, taking government, improvements
+		/// and wonders into account.
+		/// </summary>
+		/// <param name="tile"></param>
+		/// <returns></returns>
 		internal int TradeValue(ITile tile)
 		{
 			int output = tile.Trade;
@@ -218,6 +239,10 @@ namespace CivOne
 		private short TradeLuxuries => (short)Math.Round(((double)(TradeTotal - TradeTaxes) / (10 - Player.TaxesRate)) * Player.LuxuriesRate, MidpointRounding.AwayFromZero);
 		private short TradeTaxes => (short)Math.Round(((double)TradeTotal / 10) * Player.TaxesRate, MidpointRounding.AwayFromZero);
 
+		/// <summary>
+		/// Amount of corruption, taking government, buildings, and distance
+		/// to capital into account.
+		/// </summary>
 		internal int Corruption
 		{
 			get
@@ -248,6 +273,10 @@ namespace CivOne
 			}
 		}
 
+		/// <summary>
+		/// Luxury count for the city, taking trade, buildings and entertainers
+		/// into account.
+		/// </summary>
 		internal short Luxuries
 		{
 			get
@@ -260,6 +289,10 @@ namespace CivOne
 			}
 		}
 
+		/// <summary>
+		/// Amount of taxes collected, taking trade, buildings, and taxmen
+		/// into account.
+		/// </summary>
 		internal short Taxes
 		{
 			get
@@ -272,6 +305,10 @@ namespace CivOne
 			}
 		}
 
+		/// <summary>
+		/// Amount of science generated, taking trade, buildings, and scientists
+		/// into account.
+		/// </summary>
 		internal short Science
 		{
 			get
@@ -288,6 +325,10 @@ namespace CivOne
 
 		internal short TotalMaintenance => (short)_buildings.Sum(b => b.Maintenance);
 
+		/// <summary>
+		/// Return city status for savefile.
+		/// TODO not being used???
+		/// </summary>
 		internal byte Status
 		{
 			get
@@ -337,6 +378,12 @@ namespace CivOne
 			UpdateSpecialists();
 		}
 
+		/// <summary>
+		/// Export internal info about a city's resource tiles to the format
+		/// required by the savefile.
+		/// TODO move to savefile module
+		/// </summary>
+		/// <returns></returns>
 		internal byte[] GetResourceTiles()
 		{
 			byte[] output = new byte[3];
@@ -381,6 +428,12 @@ namespace CivOne
 			return output;
 		}
 
+		/// <summary>
+		/// Convert the savefile data format about the city's resource tiles
+		/// to internal format.
+		/// TODO move to savefile module
+		/// </summary>
+		/// <param name="gameData"></param>
 		internal void SetResourceTiles(byte[] gameData)
 		{
 			if (gameData.Length != 6)
@@ -448,6 +501,10 @@ namespace CivOne
 
 		public Player Player => Game.Instance.GetPlayer(Owner);
 
+		/// <summary>
+		/// Return the list of possible city production [units, buildings,
+		/// or wonders] taking location and advancements into account.
+		/// </summary>
 		public IEnumerable<IProduction> AvailableProduction
 		{
 			get
@@ -483,6 +540,9 @@ namespace CivOne
 			CurrentProduction = production;
 		}
 
+		/// <summary>
+		/// How much it will cost to complete the current production.
+		/// </summary>
 		internal short BuyPrice
 		{
 			get
@@ -502,6 +562,10 @@ namespace CivOne
 			}
 		}
 
+		/// <summary>
+		/// Complete the current production by purchasing it.
+		/// </summary>
+		/// <returns>false if purchase not possible</returns>
 		public bool Buy()
 		{
 			if (Game.CurrentPlayer.Gold < BuyPrice) return false;
@@ -726,6 +790,9 @@ namespace CivOne
 			_specialists[index] = (Citizen)((((int)_specialists[index] - 5) % 3) + 6);
 		}
 
+		/// <summary>
+		/// The explored city area tiles.
+		/// </summary>
 		public IEnumerable<ITile> CityTiles
 		{
 			get
@@ -740,6 +807,10 @@ namespace CivOne
 			}
 		}
 
+		/// <summary>
+		/// The tiles which make up the city "area", with unexplored
+		/// tiles removed. 
+		/// </summary>
 		public ITile[,] CityRadius
 		{
 			get
@@ -762,10 +833,17 @@ namespace CivOne
 
 		public ITile Tile => Map[X, Y];
 
+		/// <summary>
+		/// Was a building sold in this turn?
+		/// </summary>
 		public bool BuildingSold { get; private set; }
 
 		public void AddBuilding(IBuilding building) => _buildings.Add(building);
 
+		/// <summary>
+		/// Sell a city building.
+		/// </summary>
+		/// <param name="building"></param>
 		public void SellBuilding(IBuilding building)
 		{
 			RemoveBuilding(building);
