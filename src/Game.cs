@@ -483,8 +483,17 @@ namespace CivOne
 			}
 		}
 
+		// The currently active unit has been requested to wait. Move the "candidate unit"
+		// index forward.
 		public void UnitWait() => _activeUnit++;
 		
+		/// <summary>
+		/// Determine which unit should be the "active" unit. The "_activeUnit" index may
+		/// not currently point to a unit belonging to the current player or to a unit
+		/// that is not busy. Desires to advance _activeUnit to the NEXT possible unit.
+		/// 
+		/// Returns: null if the current players units are all busy
+		/// </summary>
 		public IUnit ActiveUnit
 		{
 			get
@@ -504,9 +513,9 @@ namespace CivOne
 				if (GameTask.Any())
 					return _units[_activeUnit];
 				
-				IUnit nextUnit = _units.Find(u => u.Owner == _currentPlayer && !u.Busy);
-				// Check if any units are still available for this player
-				if (nextUnit == null)
+				IUnit anyActive = _units.Find(u => u.Owner == _currentPlayer && !u.Busy);
+				// Check if any units are still available for this player; used to start "end of turn" for the human
+				if (anyActive == null)
 				{
 					if (CurrentPlayer == HumanPlayer && !EndOfTurn && !GameTask.Any() && (Common.TopScreen is GamePlay))
 					{
@@ -515,7 +524,16 @@ namespace CivOne
 					return null;
 				}
 
-				_activeUnit = _units.IndexOf(nextUnit);
+				// Loop through units to find the NEXT inactive unit belonging to the current player.
+				// Since we've successfully passed the "does this player have ANY active units" test,
+				// we should find an inactive unit.
+				while (_units[_activeUnit].Owner != _currentPlayer || 
+					   _units[_activeUnit].Busy)
+                {
+					_activeUnit++;
+					if (_activeUnit >= _units.Count)
+						_activeUnit = 0;
+                }
 
 				return _units[_activeUnit];
 			}

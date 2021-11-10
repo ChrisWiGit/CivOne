@@ -45,11 +45,15 @@ namespace CivOne.Units
 				PartMoves = 0;
 			}
 		}
+
+		/// <summary>
+		/// A unit is busy if it has no moves left OR is sentry/fortify/has-orders.
+		/// </summary>
 		public virtual bool Busy
 		{
 			get
 			{
-				return MovesLeft <= 0 || PartMoves <= 0 && (Sentry || Fortify || _order != Order.None);
+				return MovesLeft <= 0 && PartMoves <= 0 || (Sentry || Fortify || _order != Order.None);
 			}
 			set
 			{
