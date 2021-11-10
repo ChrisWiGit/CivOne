@@ -147,6 +147,8 @@ namespace CivOne.Screens.CityManagerPanels
 			string name = (_city.CurrentProduction as ICivilopedia).Name;
 			short playerGold = Game.CurrentPlayer.Gold;
 			short buyPrice = _city.BuyPrice;
+			if (buyPrice <= 0)
+				return true;
 			if (playerGold < buyPrice)
 			{
 				Common.AddScreen(new MessageBox("Cost to complete", $"{name}: ${buyPrice}", $"Treasury: ${playerGold}"));
