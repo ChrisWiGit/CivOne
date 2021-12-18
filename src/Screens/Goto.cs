@@ -40,7 +40,8 @@ namespace CivOne.Screens
 			return true;
 		}
 
-		ITile fromCanvas(int x, int y) {
+		ITile fromCanvas(int x, int y)
+		{
 			int offsetX = 80;
 			if (Settings.RightSideBar) offsetX = 0;
 			int offsetY = 8;
@@ -55,7 +56,8 @@ namespace CivOne.Screens
 
 			return Map[_x + xx, _y + yy];
 		}
-		ITile fromMinimap(int x, int y) {
+		ITile fromMinimap(int x, int y)
+		{
 			int offsetX = 1;
 			if (Settings.RightSideBar) offsetX = 241;
 			int offsetY = 9;
@@ -82,15 +84,17 @@ namespace CivOne.Screens
 				while (X >= Map.WIDTH) X -= Map.WIDTH;
 			}
 
-			tile = fromMinimap(args.X, args.Y);
-			if (tile != null)
+			else
 			{
-				X = tile.X;
-				Y = tile.Y;
-				while (X < 0) X += Map.WIDTH;
-				while (X >= Map.WIDTH) X -= Map.WIDTH;
+				tile = fromMinimap(args.X, args.Y);
+				if (tile != null)
+				{
+					X = tile.X;
+					Y = tile.Y;
+					while (X < 0) X += Map.WIDTH;
+					while (X >= Map.WIDTH) X -= Map.WIDTH;
+				}
 			}
-
 			Destroy();
 			return true;
 		}

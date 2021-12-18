@@ -25,25 +25,25 @@ using System.Linq;
 
 public class AStar
 {
-	protected sPosition _GoalPosition;
-	protected IUnit _unit;
-	protected static Map Map => Map.Instance;
-	public struct sPosition { public int iX; public int iY; };
-    protected static Node[,] _nodes = new Node [  Map.WIDTH,  Map.HEIGHT ];  
+    protected sPosition _GoalPosition;
+    protected IUnit _unit;
+    protected static Map Map => Map.Instance;
+    public struct sPosition { public int iX; public int iY; };
+    protected static Node[,] _nodes = new Node[Map.WIDTH,Map.HEIGHT];
     public class Node
-	{
-		public sPosition Position;
-		public sPosition PreviousPosition;
-		public float F, G, H;
+    {
+        public sPosition Position;
+        public sPosition PreviousPosition;
+        public float F, G, H;
         public bool IsClosed;
         public int Steps;                  // number of steps from StartPosition
-	}
+    }
 
-	protected int m_nodesCacheIndex;
-	protected List<Node> m_nodesCache = new List<Node>();
-	protected List<Node> m_openHeap = new List<Node>();
-	protected List<Node> m_neighbors = new List<Node>();
-	protected ICollection<AStar.sPosition> path = new Collection<AStar.sPosition>();
+    protected int m_nodesCacheIndex;
+    protected List<Node> m_nodesCache = new List<Node>();
+    protected List<Node> m_openHeap = new List<Node>();
+    protected List<Node> m_neighbors = new List<Node>();
+    protected ICollection<AStar.sPosition> path = new Collection<AStar.sPosition>();
 
     // User must override Neighbors, Cost and Heuristic functions to define search domain.  Well.... I did replaced them
     // It is optional to override StorageClear, StorageGet and StorageAdd functions. 
@@ -58,7 +58,7 @@ public class AStar
     /// Optional override when using domain-optimized storage.
     /// </summary>
     protected virtual void StorageClear()
-	{
+    {
         Array.Clear(_nodes, 0, _nodes.Length);
     }
 
@@ -80,7 +80,7 @@ public class AStar
 
     /*  ******************************************************************************************************** */
 
-        // Return node at pos 0 in open heap
+    // Return node at pos 0 in open heap
     private Node HeapDequeue()
     {
         Node result = m_openHeap[0];
@@ -186,18 +186,18 @@ public class AStar
     /// <param name="p">Point to retrieve data at</param>
     /// <returns>Data stored for point p or null if nothing stored</returns>
 
-    protected Node StorageGet( sPosition position )
+    protected Node StorageGet(sPosition position)
     {
         return _nodes[position.iX, position.iY];
     }
 
-/*    protected virtual object StorageGet(sPosition position)
-{
-    object data;
-    m_defaultStorage.TryGetValue(position, out data);
-    return data;
-}
-*/
+    /*    protected virtual object StorageGet(sPosition position)
+    {
+        object data;
+        m_defaultStorage.TryGetValue(position, out data);
+        return data;
+    }
+    */
 
     /*  ******************************************************************************************************** */
     /// <summary>
@@ -208,7 +208,7 @@ public class AStar
     /// <param name="p">Point to add data at</param>
     /// <param name="data">Data to add</param>
     protected virtual void StorageAdd(sPosition position, object data)
-	{
+    {
         _nodes[position.iX, position.iY] = (Node)data;
 
         //		m_defaultStorage.Add(position, data);
@@ -228,115 +228,115 @@ public class AStar
     /// <param name="maxPositionsToCheck">Maximum number of positions to check</param>
     /// <returns>True when path to goal was found, false if partial path only</returns>
     protected bool FindPath(ICollection<sPosition> path, int maxPositionsToCheck = int.MaxValue)
-	{
-		// Check arguments
-		if (path == null)
-		{
-			throw new ArgumentNullException(nameof(path));
-		}
+    {
+        // Check arguments
+        if (path == null)
+        {
+            throw new ArgumentNullException(nameof(path));
+        }
 
-		// Reset cache and storage
-		path.Clear();
-		m_nodesCacheIndex = 0;
-		m_openHeap.Clear();
-		StorageClear();
+        // Reset cache and storage
+        path.Clear();
+        m_nodesCacheIndex = 0;
+        m_openHeap.Clear();
+        StorageClear();
 
-		// Put start node
-		sPosition StartPosition;
-		StartPosition.iX = _unit.X;
-		StartPosition.iY = _unit.Y;
-		Node startNode = NewNode(StartPosition, StartPosition, 0, 0);   // Start node point to itself
-		StorageAdd(StartPosition, startNode);
-		HeapEnqueue(startNode);
+        // Put start node
+        sPosition StartPosition;
+        StartPosition.iX = _unit.X;
+        StartPosition.iY = _unit.Y;
+        Node startNode = NewNode(StartPosition, StartPosition, 0, 0);   // Start node point to itself
+        StorageAdd(StartPosition, startNode);
+        HeapEnqueue(startNode);
 
-		// Astar loop
-		Node bestNode = null;
-		int checkedPositions = 0;
-		while (true)
-		{
-			// Get next node from heap
-			Node currentNode = m_openHeap.Count > 0 ? HeapDequeue() : null;
+        // Astar loop
+        Node bestNode = null;
+        int checkedPositions = 0;
+        while (true)
+        {
+            // Get next node from heap
+            Node currentNode = m_openHeap.Count > 0 ? HeapDequeue() : null;
 
-			// Check end conditions
-			if (currentNode == null || checkedPositions >= maxPositionsToCheck)
-			{
-				// No more nodes or limit reached, path not found, return path to best node if possible
-				if (bestNode != null)
-				{
-					BuildPathFromEndNode(path, startNode, bestNode);
-				}
-				return false;
-			}
+            // Check end conditions
+            if (currentNode == null || checkedPositions >= maxPositionsToCheck)
+            {
+                // No more nodes or limit reached, path not found, return path to best node if possible
+                if (bestNode != null)
+                {
+                    BuildPathFromEndNode(path, startNode, bestNode);
+                }
+                return false;
+            }
 
-			else if (Heuristic(currentNode.Position) <= 0)
-			{
-				// Node is goal, return path
-				BuildPathFromEndNode(path, startNode, currentNode);
-				return true;
-			}
+            else if (Heuristic(currentNode.Position) <= 0)
+            {
+                // Node is goal, return path
+                BuildPathFromEndNode(path, startNode, currentNode);
+                return true;
+            }
 
-			// Remember node with best heuristic; ignore start node
-			if (currentNode != startNode && (bestNode == null || currentNode.H < bestNode.H))
-			{
-				bestNode = currentNode;
-			}
+            // Remember node with best heuristic; ignore start node
+            if (currentNode != startNode && (bestNode == null || currentNode.H < bestNode.H))
+            {
+                bestNode = currentNode;
+            }
 
-			// Move current node from open to closed in the storage
-			currentNode.IsClosed = true;
-			++checkedPositions;
+            // Move current node from open to closed in the storage
+            currentNode.IsClosed = true;
+            ++checkedPositions;
 
-			// Try all neighbors
-			m_neighbors.Clear();
-			Neighbors(currentNode, m_neighbors);
-			for (int i = 0; i < m_neighbors.Count; ++i)
-			{
-				// Get a neighbour
-				Node NeighborNode = m_neighbors[i];
+            // Try all neighbors
+            m_neighbors.Clear();
+            Neighbors(currentNode, m_neighbors);
+            for (int i = 0; i < m_neighbors.Count; ++i)
+            {
+                // Get a neighbour
+                Node NeighborNode = m_neighbors[i];
 
-				// Check if this node is already in list(Closed)
-				Node NodeInList = (Node)StorageGet(NeighborNode.Position);
+                // Check if this node is already in list(Closed)
+                Node NodeInList = (Node)StorageGet(NeighborNode.Position);
 
                 // If position was already analyzed, ignore step
                 if (NodeInList != null && NodeInList.IsClosed == true)      // if alredy in "closed" list
                 {
                     continue;
-				}
+                }
 
-				float cost = Cost( currentNode.Position, NeighborNode.Position, currentNode.Steps );
+                float cost = Cost(currentNode.Position, NeighborNode.Position, currentNode.Steps);
 
                 // If position is not passable, ignore step 
-                if( cost == float.PositiveInfinity)
-				{
-					continue;
-				}
+                if(cost == float.PositiveInfinity)
+                {
+                    continue;
+                }
 
-				// Calculate A* values
-				float g = currentNode.G + cost;
-				float h = Heuristic(currentNode.Position);
-				// Update or create new node at position
-				if (NodeInList != null)
-				{
-					// Update existing node if better
-					if (g < NodeInList.G)
-					{
-						NodeInList.G = g;
-						NodeInList.F = g + NodeInList.H;
-						NodeInList.PreviousPosition = currentNode.Position;
-						NodeInList.Steps = currentNode.Steps + 1;
-						HeapUpdate(NodeInList);
-					}
-				}
-				else
-				{
-					// Create new open node if not yet exists
-					Node node = NewNode(NeighborNode.Position, currentNode.Position, g, h);
-					node.Steps = currentNode.Steps + 1;
-					StorageAdd(node.Position, node);
-					HeapEnqueue(node);
-				}
-			}
-		}
-	}
+                // Calculate A* values
+                float g = currentNode.G + cost;
+                float h = Heuristic(currentNode.Position);
+                // Update or create new node at position
+                if (NodeInList != null)
+                {
+                    // Update existing node if better
+                    if (g < NodeInList.G)
+                    {
+                        NodeInList.G = g;
+                        NodeInList.F = g + NodeInList.H;
+                        NodeInList.PreviousPosition = currentNode.Position;
+                        NodeInList.Steps = currentNode.Steps + 1;
+                        HeapUpdate(NodeInList);
+                    }
+                }
+                else
+                {
+                    // Create new open node if not yet exists
+                    Node node = NewNode(NeighborNode.Position, currentNode.Position, g, h);
+                    node.Steps = currentNode.Steps + 1;
+                    StorageAdd(node.Position, node);
+                    HeapEnqueue(node);
+                }
+            }
+        }
+    }
 
     /*  ******************************************************************************************************** */
     /// <summary>
@@ -347,86 +347,89 @@ public class AStar
 
     protected static uint ii = 0;
     protected void Neighbors(Node CurrNode, List<Node> neighbors)
-	{
-		int[,] aiRelPos = new int[,] { { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, -1 }, { 0, 1 }, { 1, -1 }, { 1, 0 }, { 1, 1 } };
+    {
+        int[,] aiRelPos = new int[,] { { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, -1 }, { 0, 1 }, { 1, -1 }, { 1, 0 }, { 1, 1 } };
 
- //       ii = ++ii;          // just to make som variation in sea and air routing
-        for ( uint i = 0; i < 8; i++)
-		{
-			sPosition CurPosition = CurrNode.Position;
-			sPosition NewPosition;
-            uint j = ( i + ii ) % 8;
-            NewPosition.iX = CurPosition.iX + aiRelPos[ j, 0 ];
-			NewPosition.iX = ( NewPosition.iX + Map.WIDTH ) % Map.WIDTH;
-            NewPosition.iY = CurPosition.iY + aiRelPos[ j, 1 ];
-            if( NewPosition.iY < 0 || NewPosition.iY >= Map.HEIGHT ) continue; 
+        for (uint i = 0; i < 8; i++)
+        {
+            sPosition CurPosition = CurrNode.Position;
+            sPosition NewPosition;
+            uint j = (i + ii) % 8;
+            NewPosition.iX = CurPosition.iX + aiRelPos[j, 0];
+            NewPosition.iX = (NewPosition.iX + Map.WIDTH) % Map.WIDTH;
+            NewPosition.iY = CurPosition.iY + aiRelPos[j, 1];
+            if(NewPosition.iY < 0 || NewPosition.iY >= Map.HEIGHT) continue;
             Node NewNode = new Node();
-			NewNode.Position = NewPosition;
-			NewNode.IsClosed = false;
-			NewNode.PreviousPosition = CurPosition;
-			neighbors.Add(NewNode);
-		}
-	}
+            NewNode.Position = NewPosition;
+            NewNode.IsClosed = false;
+            NewNode.PreviousPosition = CurPosition;
+            neighbors.Add(NewNode);
+        }
+    }
 
-	/*  ******************************************************************************************************** */
-	protected float GetMoveCost( int x, int y )
-	{
+    /*  ******************************************************************************************************** */
+    protected float GetMoveCost(int x, int y)
+    {
 
-		float fCost = 3;        // plain etc...
+        float fCost = 3;        // plain etc...
 
-		if ( x < 0 || x >= Map.WIDTH ) return float.PositiveInfinity;
-		if ( y < 0 || y >= Map.HEIGHT ) return float.PositiveInfinity;
+        if (x < 0 || x >= Map.WIDTH) return float.PositiveInfinity;
+        if (y < 0 || y >= Map.HEIGHT) return float.PositiveInfinity;
 
-		bool road = Map[ x, y ].Road;
-		bool railRoad = Map[ x, y ].RailRoad;
-		if ( road || railRoad ) return 1f;
+        bool road = Map[x, y].Road;
+        bool railRoad = Map[x, y].RailRoad;
+        if (railRoad) return 0.1f; // (maybe the cost chould be 0 )
+        if (road) return 1f;
 
-		switch ( Map[ x, y ].Type )
-		{
-			case Terrain.Forest: fCost = 6; break;
-			case Terrain.Swamp: fCost = 6; break;
-			case Terrain.Jungle: fCost = 6; break;
-			case Terrain.Hills: fCost = 6; break;
-			case Terrain.Mountains: fCost = 9; break;
-			case Terrain.Arctic: fCost = 6; break;
-			case Terrain.Ocean: fCost = float.PositiveInfinity; break;
-		}
-		return fCost;
-	}
+        switch (Map[x, y].Type)
+        {
+            case Terrain.Forest: fCost = 6; break;
+            case Terrain.Swamp: fCost = 6; break;
+            case Terrain.Jungle: fCost = 6; break;
+            case Terrain.Hills: fCost = 6; break;
+            case Terrain.Mountains: fCost = 9; break;
+            case Terrain.Arctic: fCost = 6; break;
+            case Terrain.Ocean: fCost = float.PositiveInfinity; break;
+        }
+        return fCost;
+    }
 
-	/*  ******************************************************************************************************** */
-	/// <summary>
-	/// Return cost of making a step from Positition to NextPosition (which are neighbors).
-	/// Cost equal to float.PositiveInfinity indicates that passage from Positition to NextPosition is impossible.
-	/// 
-	protected static Game Game => Game.Instance;
+    /*  ******************************************************************************************************** */
+    /// <summary>
+    /// Return cost of making a step from Positition to NextPosition (which are neighbors).
+    /// Cost equal to float.PositiveInfinity indicates that passage from Positition to NextPosition is impossible.
+    /// 
+    protected static Game Game => Game.Instance;
 
-	protected float Cost(sPosition Positition, sPosition NextPosition, int iDistance )
-	{
+    protected float Cost(sPosition Positition, sPosition NextPosition, int iDistance)
+    {
         float _cost = 1f;
 
         ITile _tile = Map[NextPosition.iX, NextPosition.iY];
 
-        // Try Avoide nmys for the first steps by doing a detour
-        if( iDistance <= 9 && ( _unit.Class == UnitClass.Land || _unit.Class == UnitClass.Water))
-		{
-			if ( ChecknNighbours( NextPosition ) ) _cost = 5.0f;		// increase cost if close to nmy Land/sea unit
-		}
+        // Try Avoide nmys by doing a detour if close to goal
+        if (iDistance <= 9 && (_unit.Class == UnitClass.Land || _unit.Class == UnitClass.Water))
+        {
+            if (CheckNmeNighbors(NextPosition)) _cost = 5.0f;// increase cost if close to nmy Land/sea unit
+        }
 
         if (_unit.Class == UnitClass.Land)
         {
             float fNextCost = GetMoveCost(NextPosition.iX, NextPosition.iY);
             float fCost = GetMoveCost(Positition.iX, Positition.iY);
-            if (fNextCost == 1f && fCost == 1f) return _cost;      // if going along a road/railroad 
-            else if (fNextCost == 1f) return 3f * _cost;               // if moving from terrain to road/railroad   (  dont know if this is correct  )
-            else return fNextCost * _cost;
+
+            // well.... this cost handeling could be a bit smarter...............:)
+            if (fNextCost == 1f && fCost == 1f) return fCost;      // if going along a road 
+            if (fNextCost == 0.1f && fCost == 0.1f) return fCost;      // if going along a railroad ( maybe the cost chould be 0 )
+                                                                       //            if (fNextCost == 0.0f && fCost == 0.0f) return fCost;      
+            else return Math.Max(Math.Max(fNextCost, fCost), _cost);               // if moving from terrain to road/railroad   (  dont know if this is correct  )
         }
 
         else if (_unit.Class == UnitClass.Water)
         {
             bool IsMyCity = _tile.City != null && _tile.City.Owner == _unit.Owner;
 
-            if (_tile.Type != Terrain.Ocean && !IsMyCity ) return float.PositiveInfinity;
+            if (_tile.Type != Terrain.Ocean && !IsMyCity) return float.PositiveInfinity;
 
             if (_unit.Type == UnitType.Trireme)
             {
@@ -440,7 +443,7 @@ public class AStar
                 int iDistanceToLand = DistanceToLand(NextPosition.iX, NextPosition.iY, iMoves);
 
                 // Code to make sure Trireme dont go too far from land and still able to cross gaps
-                // and that the  Trireme is at land at end of turn
+                // and that the Trireme is at land at end of turn
                 if (iMoves >= 4 && iDistanceToLand > 3) return float.PositiveInfinity;
                 if (iMoves == 3 && iDistanceToLand > 2) return float.PositiveInfinity;
                 if (_MovesLeft == iDistance && iDistanceToLand > 1) return float.PositiveInfinity;
@@ -449,87 +452,89 @@ public class AStar
                 return 1.0f;
 
             }
-            else if (_tile.City != null) return _cost * 2;      // avoid citys
+            else if (_tile.City != null) return _cost * 2;      // avoid cities, you might lose remaning steps
 
             return _cost;
         }
-        else if( _unit.Type == UnitType.Fighter || _unit.Type == UnitType.Bomber )
+        else if(_unit.Type == UnitType.Fighter || _unit.Type == UnitType.Bomber)
         {
             if (_tile.Units != null && _tile.Units.Any(u => u.Owner != _unit.Owner))
                 return float.PositiveInfinity;    // don't attack
 
-            if (Math.Abs(Positition.iX - NextPosition.iX) + Math.Abs(Positition.iY - NextPosition.iY) == 1 )
+            if (Math.Abs(Positition.iX - NextPosition.iX) + Math.Abs(Positition.iY - NextPosition.iY) == 1)
                 _cost += 1;              // Just to make a "nice" path
 
-            if( _tile.City != null )
-                _cost += 3;              // avoide citys
+            if(_tile.City != null)
+                _cost += 3;              // avoide citys, unless needed for fuel
         }
         return _cost;      // nuke only
     }
-    
-    /*  ******************************************************************************************************** */
-
-    protected int DistanceToLand( int iX, int iY, int iMoves )
-	{
-		for ( int iYY = -1; iYY <= 1; iYY++ )
-			for ( int iXX = -1; iXX <= 1; iXX++ )
-			{
-				int iXXX = ( iXX + iX + Map.WIDTH ) % Map.WIDTH;
-				if ( Map[ iXXX, iY + iYY ].Type != Terrain.Ocean )
-					return 1;
-			}
-
-		for(int iYY = -2; iYY <= 2; iYY++)
-			for(int iXX = -2; iXX <= 2; iXX++)
-			{
-				int iXXX = ( iXX + iX + Map.WIDTH ) % Map.WIDTH;
-				if (Map[ iXXX, iY + iYY ].Type != Terrain.Ocean )
-					return 2;
-			}
-		if ( iMoves == 4 )          // dont bother if "standard" Trireme
-		{
-			for ( int iYY = -3; iYY <= 3; iYY++ )
-				for ( int iXX = -3; iXX <= 3; iXX++ )
-				{
-					int iXXX = ( iXX + iX + Map.WIDTH ) % Map.WIDTH;
-					if ( Map[ iXXX, iY + iYY ].Type != Terrain.Ocean )
-						return 3;
-				}
-		}
-		return 10;
-	}
-
-	/*  ******************************************************************************************************** */
-	/// Return an estimate of cost of moving from Positition to goal.
-	/// Return 0 when Positition is goal.
-	/// This is an estimate of sum of all costs along the path between Positition and the goal.
-	protected float Heuristic( sPosition Positition )
-	{
-		float fGoalF = 3.0f;
-
-        return Distance( Positition, _GoalPosition ) * fGoalF;
-	}
 
     /*  ******************************************************************************************************** */
-    private int Distance( sPosition P1, sPosition P2 )
+
+    protected int DistanceToLand(int iX, int iY, int iMoves)
     {
-        return Common.Distance( P1.iX, P1.iY, P2.iX, P2.iY );
+        for (int iYY = -1; iYY <= 1; iYY++)
+            for (int iXX = -1; iXX <= 1; iXX++)
+            {
+                int iXXX = (iXX + iX + Map.WIDTH) % Map.WIDTH;
+                if (Map[iXXX, iY + iYY].Type != Terrain.Ocean)
+                    return 1;
+            }
+
+        for(int iYY = -2; iYY <= 2; iYY++)
+            for(int iXX = -2; iXX <= 2; iXX++)
+            {
+                int iXXX = (iXX + iX + Map.WIDTH) % Map.WIDTH;
+                if (Map[iXXX, iY + iYY].Type != Terrain.Ocean)
+                    return 2;
+            }
+        if (iMoves == 4)          // dont bother if "standard" Trireme
+        {
+            for (int iYY = -3; iYY <= 3; iYY++)
+                for (int iXX = -3; iXX <= 3; iXX++)
+                {
+                    int iXXX = (iXX + iX + Map.WIDTH) % Map.WIDTH;
+                    if (Map[iXXX, iY + iYY].Type != Terrain.Ocean)
+                        return 3;
+                }
+        }
+        return 10;
     }
 
     /*  ******************************************************************************************************** */
-    private int Distance( City C, sPosition P2 )
+    /// Return an estimate of cost of moving from Positition to goal.
+    /// Return 0 when Positition is goal.
+    /// This is an estimate of sum of all costs along the path between Positition and the goal.
+    protected float Heuristic(sPosition Positition)
     {
-        return Common.Distance( C.X, C.Y, P2.iX, P2.iY );
+        // maybe we should't use the same value for land unit and air/sea units
+        //        float fGoalF = 3.0f;
+        float fGoalF = 1.0f;                   
+
+        return Distance(Positition, _GoalPosition) * fGoalF;
     }
 
     /*  ******************************************************************************************************** */
-    private int Distance( IUnit U, sPosition P2 )
+    private int Distance(sPosition P1, sPosition P2)
     {
-        return Common.Distance( U.X, U.Y, P2.iX, P2.iY );
+        return Common.Distance(P1.iX, P1.iY, P2.iX, P2.iY);
     }
 
     /*  ******************************************************************************************************** */
-    private sPosition Position( IUnit U )
+    private int Distance(City C, sPosition P2)
+    {
+        return Common.Distance(C.X, C.Y, P2.iX, P2.iY);
+    }
+
+    /*  ******************************************************************************************************** */
+    private int Distance(IUnit U, sPosition P2)
+    {
+        return Common.Distance(U.X, U.Y, P2.iX, P2.iY);
+    }
+
+    /*  ******************************************************************************************************** */
+    private sPosition Position(IUnit U)
     {
         sPosition position;
         position.iX = U.X;
@@ -538,7 +543,7 @@ public class AStar
     }
 
     /*  ******************************************************************************************************** */
-    private sPosition Position( City C )
+    private sPosition Position(City C)
     {
         sPosition position;
         position.iX = C.X;
@@ -547,26 +552,26 @@ public class AStar
     }
 
     /*  ******************************************************************************************************** */
-    private bool ChecknNighbours( sPosition position )
-	{
-		int iX, iY;
-		byte _owner = _unit.Owner;
+    private bool CheckNmeNighbors(sPosition position)
+    {
+        int iX, iY;
+        byte _owner = _unit.Owner;
 
-		iX = position.iX;
-		iY = position.iY;
+        iX = position.iX;
+        iY = position.iY;
 
-		for ( int iYY = -1; iYY <= 1; iYY++ )
-			for ( int iXX = -1; iXX <= 1; iXX++ )
-			{
-				int iXXX = ( iXX + iX + Map.WIDTH ) % Map.WIDTH;
+        for (int iYY = -1; iYY <= 1; iYY++)
+            for (int iXX = -1; iXX <= 1; iXX++)
+            {
+                int iXXX = (iXX + iX + Map.WIDTH) % Map.WIDTH;
 
-				ITile Nighbour = Map[ iXXX, iYY + iY ];
-				if ( Nighbour == null ) continue;           // Ever happens ??
-				if ( Nighbour.Units.Any( u => u.Owner != _owner ))
-					return true;		// enemy close
-			}
-		return false;
-	}
+                ITile Nighbour = Map[iXXX, iYY + iY];
+                if (Nighbour == null) continue;           // Ever happens ??
+                if (Nighbour.Units.Any(u => u.Owner != _owner))
+                    return true;        // enemy close
+            }
+        return false;
+    }
 
     /*  ******************************************************************************************************** */
 
@@ -587,16 +592,16 @@ public class AStar
         _GoalPosition = GoalPosition;
         sPosition _position;
 
-        if( _unit.Type == UnitType.Fighter || _unit.Type == UnitType.Bomber )
+        if(_unit.Type == UnitType.Fighter || _unit.Type == UnitType.Bomber)
         {
             // this is to ease movement of figthers and bombers by checking for refuling stations enroute to targets
 
             IUnit _RefuelCarrier = null;
             City _RefuelCity = null;
-            int _fuelLeft = ( (BaseUnitAir)_unit ).FuelLeft;
+            int _fuelLeft = ((BaseUnitAir)_unit).FuelLeft;
             _position.iX = _unit.X;
             _position.iY = _unit.Y;
-            int _DistanceToGoal = Distance( _GoalPosition, _position );
+            int _DistanceToGoal = Distance(_GoalPosition, _position);
 
             // Fuel left at goal
             int _fuelLeftAtGoal = _fuelLeft - _DistanceToGoal;
@@ -604,68 +609,70 @@ public class AStar
             int _CarrierDistance = 1000;              // "inpossible" distance
             int _CityDistance = 1000;              // "inpossible" distance
 
-            // Check for carriers
-            IUnit[] _OwnCarriers = Game.GetUnits().Where( u => u.Owner == unit.Owner && u.Type == UnitType.Carrier ).ToArray();
-            if( _OwnCarriers.Length > 0 )
+            // Check for carriers   todo: check if carrier is full
+            IUnit[] _OwnCarriers = Game.GetUnits().Where(u => u.Owner == unit.Owner && u.Type == UnitType.Carrier).ToArray();
+            if(_OwnCarriers.Length > 0)
             {
-                IUnit _nearestCarrierToGoal = _OwnCarriers.OrderBy( c => Distance( c, GoalPosition ) ).First();
-                _CarrierDistance = Distance( _nearestCarrierToGoal, GoalPosition );
+                IUnit _nearestCarrierToGoal = _OwnCarriers.OrderBy(c => Distance(c, GoalPosition)).First();
+                _CarrierDistance = Distance(_nearestCarrierToGoal, GoalPosition);
             }
 
-            _OwnCities = Game.GetCities().Where( c => _unit.Owner == c.Owner && c.Size > 0 ).ToArray();
+            _OwnCities = Game.GetCities().Where(c => _unit.Owner == c.Owner && c.Size > 0).ToArray();
             // Just in case
-            if( _OwnCities.GetLength( 0 ) == 0 )
+            if (_OwnCities.GetLength(0) == 0)
                 return NoPath;
 
             // Get a fuel station close to goal
-            City _NearestCityToGoal = _OwnCities.OrderBy( c => Distance( c, GoalPosition )).First();
-            int _NearestFuelAtGoal = Math.Min( Distance( _NearestCityToGoal, _GoalPosition ), _CarrierDistance );
+            City _NearestCityToGoal = _OwnCities.OrderBy(c => Distance(c, GoalPosition)).First();
+            int _NearestFuelAtGoal = Math.Min(Distance(_NearestCityToGoal, _GoalPosition), _CarrierDistance);
 
             // Enought fuel at goal ?
-            if( _fuelLeftAtGoal < _NearestFuelAtGoal )
+            if (_fuelLeftAtGoal < _NearestFuelAtGoal)
             {
                 // NO ! Refueling is needed enroute.  Find the city/carrier within fuel range nearest goal
                 // Check city for refuling
-                City[] _RefuelCitys = _OwnCities.Where( c => Distance( c, _position ) <= _fuelLeft ).ToArray();
-                if( _RefuelCitys.Length > 0 )
+                City[] _RefuelCitys = _OwnCities.Where(c => Distance(c, _position) <= _fuelLeft).ToArray();
+                if(_RefuelCitys.Length > 0)
                 {
-                    _RefuelCity = _RefuelCitys.OrderBy( c => Distance( c, _GoalPosition ) ).First();
-                    _CityDistance = Distance( _RefuelCity, _GoalPosition );
+                    _RefuelCity = _RefuelCitys.OrderBy(c => Distance(c, _GoalPosition)).First();
+                    _CityDistance = Distance(_RefuelCity, _GoalPosition);
                 }
 
                 // Check carrier for refuling
-                if( _CarrierDistance < 100 ) {      // If we have a carrier
-                    _CarrierDistance = 100; 
-                    IUnit[] _RefuelCarriers = _OwnCarriers.Where( c => Distance( c, _position ) <= _fuelLeft ).ToArray();
-                    if( _RefuelCarriers.Length > 0 )
+                if(_CarrierDistance < 100)
+                {      // If we have a carrier
+                    _CarrierDistance = 100;
+                    IUnit[] _RefuelCarriers = _OwnCarriers.Where(c => Distance(c, _position) <= _fuelLeft).ToArray();
+                    if(_RefuelCarriers.Length > 0)
                     {
-                        _RefuelCarrier = _RefuelCarriers.OrderBy( c => Distance( c, _GoalPosition ) ).First();
-                        _CarrierDistance = Distance( _RefuelCarrier, _GoalPosition );
+                        _RefuelCarrier = _RefuelCarriers.OrderBy(c => Distance(c, _GoalPosition)).First();
+                        _CarrierDistance = Distance(_RefuelCarrier, _GoalPosition);
                     }
-                 }
-                if( _CityDistance < _CarrierDistance )
+                }
+                if (_CityDistance < _CarrierDistance)
                 {
                     // Reroute for refuling to city
-                    _GoalPosition = Position( _RefuelCity );
+                    _GoalPosition = Position(_RefuelCity);
                 }
                 else
                 {
                     // Reroute for refuling to carrier
-                    if( _RefuelCarrier == null )
+                    if (_RefuelCarrier == null)
                         return NoPath;          // something very wrong
-                    _GoalPosition = Position( _RefuelCarrier );
+                    _GoalPosition = Position(_RefuelCarrier);
                 }
             }
         }
-        if( !FindPath(path, 3000))       // Find path using AStar algorithm
+        if(!FindPath(path, 3000))       // Find path using AStar algorithm
         {
             return NoPath;          // unable to find path
         }
-		iCount = path.Count;
-        if( iCount == 0 )
+        iCount = path.Count;
+        if (iCount == 0)
             return NoPath;
-		path.CopyTo(Positions, 0);
-		return Positions[iCount - 1];       // Get next "goto" position
-	}
+        path.CopyTo(Positions, 0);
+        return Positions[iCount - 1];       // Get next "goto" position
+    }
 
 }
+
