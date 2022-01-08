@@ -20,13 +20,15 @@ namespace CivOne.Units
 		{
 			if (previousTile.Units.Any(u => u.Class == UnitClass.Air))
 			{
+				// Make 8 air units follow the carrier
 				IUnit[] moveUnits = previousTile.Units.Where(u => u.Class == UnitClass.Air).ToArray();
 				moveUnits = moveUnits.Take(8).ToArray();
 				foreach (IUnit unit in moveUnits)
 				{
 					unit.X = X;
 					unit.Y = Y;
-					unit.Sentry = false;
+					// Unsentry    why ?
+//					unit.Sentry = false;
 				}
 			}
 
