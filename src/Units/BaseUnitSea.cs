@@ -39,7 +39,7 @@ namespace CivOne.Units
 
 		protected override void MovementStart(ITile previousTile)
 		{
-            // TODO fire-eggs this causes any carried units to lose movement (e.g. wake up unit 1;move ship;cannot move unit 1)
+			// TODO fire-eggs this causes any carried units to lose movement (e.g. wake up unit 1;move ship;cannot move unit 1)
 			foreach (IUnit unit in MoveUnits(previousTile))
 			{
 				unit.Sentry = true;
@@ -56,7 +56,7 @@ namespace CivOne.Units
 			}
 
 			base.MovementDone(previousTile);
-			
+
 			if (Map[X, Y].City != null)
 			{
 				// End turn when entering city
@@ -72,12 +72,15 @@ namespace CivOne.Units
 
 		public bool Unload()
 		{
+			IUnit[] units;
+
 			if (!(this is IBoardable))
 				return false;
-			IUnit[] units = Map[X, Y].Units.Where(u => u.Class == UnitClass.Land).Take((this as IBoardable).Cargo).ToArray();
+
+			units = Map[X, Y].Units.Where(u => u.Class != UnitClass.Water).Take((this as IBoardable).Cargo).ToArray();
 			if (units.Length == 0)
 				return false;
-			
+
 			foreach (IUnit unit in units)
 			{
 				unit.Sentry = false;
@@ -87,7 +90,7 @@ namespace CivOne.Units
 		}
 
 		private MenuItem<int> MenuUnload() => MenuItem<int>.Create("Unload").SetShortcut("u").OnSelect((s, a) => Unload());
-		
+
 		public override IEnumerable<MenuItem<int>> MenuItems
 		{
 			get
@@ -108,7 +111,7 @@ namespace CivOne.Units
 				yield return MenuDisbandUnit();
 			}
 		}
-		
+
 		protected override bool ValidMoveTarget(ITile tile)
 		{
 			// Check whether the tile exists, is an ocean tile or contains a city.
@@ -122,12 +125,12 @@ namespace CivOne.Units
 			Player player = Game.GetPlayer(Owner);
 			if (player.HasWonder<MagellansExpedition>() || (!Game.WonderObsolete<Lighthouse>() && player.HasWonder<Lighthouse>())) MovesLeft++;
 		}
-		
+
 		protected BaseUnitSea(byte price = 1, byte attack = 1, byte defense = 1, byte move = 1, int range = 1) : base(price, attack, defense, move)
 		{
 			Class = UnitClass.Water;
 			_range = range;
-            Role = UnitRole.SeaAttack;
-        }
+			Role = UnitRole.SeaAttack;
+		}
 	}
 }
