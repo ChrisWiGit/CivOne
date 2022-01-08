@@ -16,6 +16,8 @@ using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.UserInterface;
 
+
+
 namespace CivOne.Units
 {
 	internal abstract class BaseUnitAir : BaseUnit
@@ -23,14 +25,46 @@ namespace CivOne.Units
 		public int TotalFuel { get; protected set; }
 		public int FuelLeft { get; set; }
 
-		private void HandleFuel()
+
+	// Check for room on flight deck
+	private bool CarrierIsLandable()
+	{
+		IUnit[] CUnits;
+		IUnit[] AUnits;
+		CUnits = Map [X, Y].Units.Where(u => u.Name == "Carrier" ).ToArray();
+		if (CUnits.Length == 0)
+			return false;
+		else
 		{
-			if (Map[X, Y].City != null || Map[X, Y].Units.Any(u => u is Carrier))
+			// Check load on flight deck
+			AUnits = Map[X, Y].Units.Where(u => u.Class == UnitClass.Air).ToArray();
+			if( AUnits.Length > CUnits.Length * 8 )
+				return false;
+		}
+		return true;
+	}
+
+
+	private void HandleFuel()
+		{
+			if ( Map[X, Y].Units.Any(u => u.Name == "Carrier" ))
+			{
+				if (CarrierIsLandable())
+				{
+					MovesLeft = 0;
+					FuelLeft = TotalFuel;		// Refuel
+					return;
+				}
+			}
+
+			if (Map[X, Y].City != null )
 			{
 				MovesLeft = 0;
-				FuelLeft = TotalFuel;
+				FuelLeft = TotalFuel;			// Refuel
 				return;
 			}
+
+
 			if (MovesLeft > 0 || FuelLeft > 0) return;
 			
 			// Air unit is out of fuel
@@ -83,7 +117,9 @@ namespace CivOne.Units
 			return (tile != null);
 		}
 
-		protected BaseUnitAir(byte price = 1, byte attack = 1, byte defense = 1, byte move = 1) : base(price, attack, defense, move)
+
+
+	protected BaseUnitAir(byte price = 1, byte attack = 1, byte defense = 1, byte move = 1) : base(price, attack, defense, move)
 		{
 			Class = UnitClass.Air;
 			TotalFuel = move;
