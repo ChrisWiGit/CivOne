@@ -10,14 +10,14 @@
 -->
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net5.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<AssemblyName>CivOne.SDL</AssemblyName>
 		<RootNamespace>CivOne</RootNamespace>
 		<OutputType>Exe</OutputType>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<LangVersion>8.0</LangVersion>
-		<RuntimeIdentifiers>win-x86;win-x64;osx-x64;linux-x64</RuntimeIdentifiers>
+		<LangVersion>13.0</LangVersion>
+		<!--<RuntimeIdentifiers>win-x86;win-x64;osx-x64;linux-x64</RuntimeIdentifiers>-->
 	</PropertyGroup>
 	<PropertyGroup Condition="$(Configuration.StartsWith('Debug'))">
 		<DebugSymbols>true</DebugSymbols>
@@ -39,7 +39,7 @@
 		<OutputPath>bin/Release</OutputPath>
 	</PropertyGroup>
 	<PropertyGroup Condition="$(Configuration.Contains('Embedded'))">
-		<TargetFramework>net5.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<OutputType>Library</OutputType>
 		<DefineConstants>$(DefineConstants);EMBEDDED</DefineConstants>
 	</PropertyGroup>

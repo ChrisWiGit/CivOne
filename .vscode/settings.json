@@ -2,7 +2,7 @@
 // Please do not change them!
 {
 	// Controls if the editor should automatically close brackets after opening them.
-	"editor.autoClosingBrackets": false,
+	"editor.autoClosingBrackets": "never",
 	// Controls if the editor will insert spaces for tabs. If set to auto, the value will be guessed based on the opened file.
 	"editor.insertSpaces": false,
 	// Controls whether the editor should render whitespace characters
@@ -12,5 +12,9 @@
 	// The default character set encoding to use when reading and writing files.
 	"files.encoding": "utf8",
 	// The default end of line character.
-	"files.eol": "\n"
+	"files.eol": "\n",
+	// Controls whether the editor should automatically close quotes after opening them.
+	"editor.autoClosingQuotes": "never",
+	// Controls whether the editor should automatically surround selections when typing quotes or brackets.
+	"editor.autoSurround": "never"
 }
