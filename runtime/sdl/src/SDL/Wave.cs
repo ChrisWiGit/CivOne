@@ -42,7 +42,11 @@ namespace CivOne
 					return;
 				}
 
-				SDL_QueueAudio(1, _buffer, _length);
+				if (SDL_QueueAudio(1, _buffer, _length) < 0)
+				{
+					Log("Could not queue audio");
+					return;
+				}
 				SDL_PauseAudio(0);
 			}
 
@@ -50,7 +54,10 @@ namespace CivOne
 			{
 				Filename = filename;
 
-				SDL_LoadWAV_RW(Filename, 1, ref _waveSpec, out _buffer, out _length);
+				if (SDL_LoadWAV_RW(Filename, 1, ref _waveSpec, out _buffer, out _length) == IntPtr.Zero)
+				{
+					throw new FileNotFoundException("Sound file not found", filename);
+				}
 			}
 
 			public void Dispose()
