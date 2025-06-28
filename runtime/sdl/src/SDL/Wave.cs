@@ -36,6 +36,13 @@ namespace CivOne
 
 				Log($"Sound start: {Path.GetFileName(Filename)}");
 
+
+				if (SDL_LoadWAV_RW(Filename, 1, ref _waveSpec, out _buffer, out _length) == IntPtr.Zero)
+				{
+					Log($"Could not load sound: {Path.GetFileName(Filename)}");
+					return;
+				}
+
 				if (SDL_OpenAudio(ref _waveSpec, out _) < 0)
 				{
 					Log("Could not open audio");
@@ -53,11 +60,6 @@ namespace CivOne
 			public Wave(string filename)
 			{
 				Filename = filename;
-
-				if (SDL_LoadWAV_RW(Filename, 1, ref _waveSpec, out _buffer, out _length) == IntPtr.Zero)
-				{
-					throw new FileNotFoundException("Sound file not found", filename);
-				}
 			}
 
 			public void Dispose()
