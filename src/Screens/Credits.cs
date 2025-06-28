@@ -358,7 +358,8 @@ namespace CivOne.Screens
 			
 			Palette = _pictures[2].Palette;
 
-			PlaySound("opening");
+			// In this stage using Game.PlaySound() is not possible, as the Game instance is not yet created.
+			Runtime.PlaySound("opening");
 
 			if (!Runtime.Settings.ShowCredits) SkipIntro();
 		}
