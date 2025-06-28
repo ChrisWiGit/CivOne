@@ -15,13 +15,13 @@ namespace CivOne
 {
 	internal static partial class SDL
 	{
-		#if MACOS
+#if MACOS
 		private const string DLL_SDL = "/Library/Frameworks/SDL2.framework/Versions/Current/SDL2";
-		#elif LINUX
+#elif LINUX
 		private const string DLL_SDL = "libSDL2-2.0.so.0";
-		#else
+#else
 		private const string DLL_SDL = "SDL2";
-		#endif
+#endif
 
 		private static byte[] ToBytes(this string input) => Encoding.UTF8.GetBytes($"{input}{'\0'}");
 
@@ -87,7 +87,7 @@ namespace CivOne
 		private static extern int SDL_SetHint(byte[] name, byte[] value);
 
 		private static bool SDL_SetHint(string name, string value) => SDL_SetHint(name.ToBytes(), value.ToBytes()) == 1;
-		
+
 		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern IntPtr SDL_CreateTexture(IntPtr renderer, uint format, SDL_TextureAccess access, int width, int height);
 
@@ -117,15 +117,44 @@ namespace CivOne
 
 		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern IntPtr SDL_LoadWAV_RW(IntPtr source, int freeSource, ref SDL_AudioSpec specs, out IntPtr buffer, out uint length);
-		
+
 		private static IntPtr SDL_LoadWAV_RW(string filename, int freeSource, ref SDL_AudioSpec specs, out IntPtr buffer, out uint length) => SDL_LoadWAV_RW(SDL_RWFromFile(filename.ToBytes(), "rb".ToBytes()), freeSource, ref specs, out buffer, out length);
+
+		// const char* SDL_GetError(void);
+		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
+		private static extern IntPtr SDL_GetError();
+
+		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+		private static extern IntPtr SDL_GetErrorMsg(
+			StringBuilder errstr,
+			int maxlen
+		);
+
+
+		public static string GetSdlErrorMessage()
+		{
+			const int bufferSize = 1024;
+			StringBuilder buffer = new StringBuilder(bufferSize);
+			SDL_GetErrorMsg(buffer, bufferSize);
+			return buffer.ToString();
+		}
+
 
 		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		public static extern void SDL_FreeWAV(IntPtr buffer);
 
 		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern uint SDL_GetQueuedAudioSize(uint device);
-		
+
+		[DllImport("SDL2.dll", CallingConvention = CallingConvention.Cdecl)]
+		private static extern uint SDL_OpenAudioDevice(
+			[MarshalAs(UnmanagedType.LPStr)] string device,
+			int iscapture,
+			ref SDL_AudioSpec desired,
+			out SDL_AudioSpec obtained,
+			int allowed_changes
+		);
+
 		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern int SDL_OpenAudio(ref SDL_AudioSpec desired, out SDL_AudioSpec obtained);
 
@@ -137,5 +166,8 @@ namespace CivOne
 
 		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void SDL_CloseAudio();
+
+		[DllImport("SDL2.dll", CallingConvention = CallingConvention.Cdecl)]
+		private static extern void SDL_PauseAudioDevice(uint dev, int pause_on);
 	}
 }

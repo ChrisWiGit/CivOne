@@ -180,7 +180,11 @@ namespace CivOne
 			{
 				_title = title;
 
-				SDL_Init(SDL_INIT.VIDEO | SDL_INIT.AUDIO);
+				if (SDL_Init(SDL_INIT.VIDEO | SDL_INIT.AUDIO) < 0)
+				{
+					Log("Could not initialize SDL");
+					return;
+				}
 
 				SDL_WINDOW flags = SDL_WINDOW.RESIZABLE;
 

@@ -36,25 +36,26 @@ namespace CivOne
 
 				Log($"Sound start: {Path.GetFileName(Filename)}");
 
-
 				if (SDL_LoadWAV_RW(Filename, 1, ref _waveSpec, out _buffer, out _length) == IntPtr.Zero)
 				{
-					Log($"Could not load sound: {Path.GetFileName(Filename)}");
+					Log($"Could not load sound: {Path.GetFileName(Filename)}: {GetSdlErrorMessage()}");
 					return;
 				}
 
-				if (SDL_OpenAudio(ref _waveSpec, out _) < 0)
+				var deviceId = SDL_OpenAudioDevice(null, 0, ref _waveSpec, out _, 0);
+				if (deviceId == 0 && SDL_GetError() != 0)
 				{
-					Log("Could not open audio");
+					Log($"Could not open audio device {GetSdlErrorMessage()} error: {SDL_GetError()}");
 					return;
 				}
 
-				if (SDL_QueueAudio(1, _buffer, _length) < 0)
+				if (SDL_QueueAudio(deviceId, _buffer, _length) < 0)
 				{
 					Log("Could not queue audio");
 					return;
 				}
-				SDL_PauseAudio(0);
+
+				SDL_PauseAudioDevice(deviceId, 0);
 			}
 
 			public Wave(string filename)

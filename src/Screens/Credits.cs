@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.IO;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
@@ -359,7 +360,7 @@ namespace CivOne.Screens
 			Palette = _pictures[2].Palette;
 
 			// In this stage using Game.PlaySound() is not possible, as the Game instance is not yet created.
-			Runtime.PlaySound("opening");
+			Runtime.PlaySound(Extensions.GetSoundFile("OPENING"));
 
 			if (!Runtime.Settings.ShowCredits) SkipIntro();
 		}
