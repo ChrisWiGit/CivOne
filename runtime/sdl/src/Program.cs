@@ -22,6 +22,7 @@ Try 'civone-sdl --help' for more information.
 		{
 			RuntimeSettings settings = new RuntimeSettings();
 			settings["software-render"] = false;
+			settings["no-sound"] = false;
 			settings["profile-name"] = "default";
 			for (int i = 0; i < args.Length; i++)
 			{

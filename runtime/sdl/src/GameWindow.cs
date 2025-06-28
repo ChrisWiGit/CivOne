@@ -179,8 +179,8 @@ namespace CivOne
 
 			if (!_runtime.Settings.Get<bool>("no-sound"))
 			{
-				runtime.PlaySound += (string filename) => PlaySound(filename);
-				runtime.StopSound += () => StopSound();
+				runtime.PlaySound += PlaySound;
+				runtime.StopSound += StopSound;
 			}
 		}
 	}
