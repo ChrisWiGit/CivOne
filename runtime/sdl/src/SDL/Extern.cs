@@ -168,6 +168,9 @@ namespace CivOne
 		private static extern void SDL_CloseAudio();
 
 		[DllImport("SDL2.dll", CallingConvention = CallingConvention.Cdecl)]
+		private static extern void SDL_CloseAudioDevice(uint dev);
+
+		[DllImport("SDL2.dll", CallingConvention = CallingConvention.Cdecl)]
 		private static extern void SDL_PauseAudioDevice(uint dev, int pause_on);
 	}
 }

@@ -17,7 +17,7 @@ namespace CivOne
 
 			private void HandleSound()
 			{
-				if (_currentSound == null || SDL_GetQueuedAudioSize(1) > 0) return;
+				if (_currentSound == null || _currentSound.IsPlaying()) return;
 
 				StopSound();
 			}
@@ -32,8 +32,12 @@ namespace CivOne
 
 			protected void StopSound()
 			{
-				_currentSound.Dispose();
+				// it is a best practice to make a copy of the current sound
+				// before disposing it, as HandleSound() may be called in another thread
+				// in the future.
+				Wave sound = _currentSound;
 				_currentSound = null;
+				sound.Dispose();
 			}
 		}
 	}

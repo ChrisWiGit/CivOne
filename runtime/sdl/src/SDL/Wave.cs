@@ -17,11 +17,13 @@ namespace CivOne
 	{
 		internal unsafe class Wave : IDisposable
 		{
+			private uint deviceId = UInt32.MaxValue;
+
 			private SDL_AudioSpec _waveSpec;
 			private uint _length;
-			private IntPtr _buffer;
+			private IntPtr _buffer = IntPtr.Zero;
 
-			private void Log(string message) => OnLog(message);
+			private void Log(string message) => OnLog?.Invoke(message);
 
 			public event Action<string> OnLog;
 
@@ -30,21 +32,27 @@ namespace CivOne
 
 			public void Play()
 			{
-				if (Playing) return;
+				if (Playing)
+				{
+					throw new InvalidOperationException("This Wave class was already used to play a sound, and cannot be reused.");
+				}
 
 				Playing = true;
 
 				Log($"Sound start: {Path.GetFileName(Filename)}");
 
-				if (SDL_LoadWAV_RW(Filename, 1, ref _waveSpec, out _buffer, out _length) == IntPtr.Zero)
+				const int FREE_SOURCE = 1;
+				if (SDL_LoadWAV_RW(Filename, FREE_SOURCE, ref _waveSpec, out _buffer, out _length) == IntPtr.Zero)
 				{
+					_buffer = IntPtr.Zero;
 					Log($"Could not load sound: {Path.GetFileName(Filename)}: {GetSdlErrorMessage()}");
 					return;
 				}
 
-				var deviceId = SDL_OpenAudioDevice(null, 0, ref _waveSpec, out _, 0);
+				deviceId = SDL_OpenAudioDevice(null, 0, ref _waveSpec, out _, 0);
 				if (deviceId == 0 && SDL_GetError() != 0)
 				{
+					deviceId = UInt32.MaxValue;
 					Log($"Could not open audio device {GetSdlErrorMessage()} error: {SDL_GetError()}");
 					return;
 				}
@@ -63,13 +71,25 @@ namespace CivOne
 				Filename = filename;
 			}
 
+			public Boolean IsPlaying()
+			{
+				return deviceId != UInt32.MaxValue && SDL_GetQueuedAudioSize(deviceId) > 0;
+			}
+
 			public void Dispose()
 			{
 				Log($"Sound stop: {Path.GetFileName(Filename)}");
 
-				SDL_PauseAudio(1);
-				SDL_CloseAudio();
-				SDL_FreeWAV(_buffer);
+				if (deviceId != UInt32.MaxValue)
+				{
+					SDL_PauseAudioDevice(deviceId, 1);
+					SDL_CloseAudioDevice(deviceId);
+				}
+
+				if (_buffer != IntPtr.Zero)
+				{
+					SDL_FreeWAV(_buffer);
+				}
 			}
 		}
 	}
