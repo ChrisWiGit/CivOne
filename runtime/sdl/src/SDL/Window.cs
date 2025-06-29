@@ -90,6 +90,12 @@ namespace CivOne
 					if (SDL_PollEvent(out SDL_Event sdlEvent) == 1)
 					{
 						HandleEvent(sdlEvent);
+
+						if (!_running)
+						{
+							// fast exit, if the window was closed
+							break;
+						}
 					}
 
 					OnUpdate?.Invoke(this, EventArgs.Empty);

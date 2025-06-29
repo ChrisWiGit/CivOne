@@ -34,7 +34,6 @@ namespace CivOne
 			private void Close()
 			{
 				if (OnClose != null) OnClose(this, EventArgs.Empty);
-				Dispose();
 				_running = false;
 			}
 
