@@ -32,25 +32,33 @@ namespace CivOne.Screens
 		private void LoadSaveFile(object sender, MenuItemEventArgs<int> args)
 		{
 			int item = args.Value;
-			
-            SaveGameFile file = SaveGameFile.GetSaveGames(_driveLetter).ToArray()[item];
 
-            SaveGame.SelectedGame = (item > 3 ? 3 : item);
-			
+			LoadSaveFileByItem(_driveLetter, item);
+		}
+
+		private void LoadSaveFileByItem(char driveLetter, int item)
+		{
+			SaveGameFile file = SaveGameFile.GetSaveGames(driveLetter).ToArray()[item];
+			SaveGame.SelectedGame = (item > 3 ? 3 : item);
 			Log("Load game: {0}", file.Name);
-			
 			Destroy();
-			
 			Game.LoadGame(file.SveFile, file.MapFile);
 			Common.AddScreen(new GamePlay());
 		}
+
+		public static void LoadSaveFile(char driveLetter, int slotId)
+		{
+			var loadGame = new LoadGame();
+			loadGame.LoadSaveFileByItem(driveLetter, slotId);
+		}
+
 		
 		private void LoadEmptyFile(object sender, MenuItemEventArgs<int> args)
 		{
 			Log("Empty save file, cancel");
 			Cancel = true;
 			_update = true;
-            BackToCredits();
+			BackToCredits();
 		}
 
 		private MenuItemEventHandler<int> LoadFileHandler(SaveGameFile file)

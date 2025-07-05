@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Text.RegularExpressions;
 using CivOne.Enums;
 
 namespace CivOne
@@ -67,6 +68,30 @@ Try 'civone-sdl --help' for more information.
 						
 						settings["profile-name"] = args[++i];
 						Console.WriteLine($@"Using profile ""{settings["profile-name"]}""");
+						break;
+					case "load-slot":
+						// --load-slot [a-z1..10] (default no options defaults to null)
+						// optional argument is a drive letter (a-z) and a slot number (1-10)
+						if (args.GetUpperBound(0) == i)
+						{
+							settings.LoadSaveGameSlot = RuntimeSettings.UseLoadingScreen;
+							break;
+						}
+						
+						// use regex to parse the drive letter and slot number
+						string slot = args[++i];
+						Regex regex = new Regex(@"^([a-z])([0-9]|1[0-5])$", RegexOptions.IgnoreCase);
+						Match match = regex.Match(slot);
+						if (!match.Success)
+						{
+							Console.WriteLine("Invalid load slot format. Use: --load-slot [a-z1..10] to specify a drive letter and slot number for the game file.");
+							return;
+						}						
+
+						char driveLetter = char.ToUpper(match.Groups[1].Value[0]);
+						int slotId = int.Parse(match.Groups[2].Value);
+
+						settings.LoadSaveGameSlot = new Tuple<char, int>(driveLetter, slotId);
 						break;
 					case "skip-credits": settings.ShowCredits = false; continue;
 					case "skip-intro": settings.ShowIntro = false; continue;

@@ -43,6 +43,8 @@ namespace CivOne.Screens
 		private bool _introSkipped;
 		private int _introLine = -1;
 		
+		private bool _loadSavedGame = false; 
+
 		private IScreen _overlay = null; // TODO fire-eggs: with fix for issue #34, this logic may no longer be required
 
 		private IScreen _nextScreen;
@@ -73,6 +75,13 @@ namespace CivOne.Screens
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
+			if (_loadSavedGame)
+			{
+				LoadSavedGame();
+				_done = true;
+				return true;
+			}
+				
 			if (_nextScreen != null)
 			{
 				if (!HandleScreenFadeOut(Speed.Slow))
@@ -254,6 +263,22 @@ namespace CivOne.Screens
             Destroy();
             Common.AddScreen(new LoadGame());
 		}
+
+		private void LoadSavedGame()
+		{
+			
+			var slot = Runtime.Settings.LoadSaveGameSlot;
+			if (slot.Equals(RuntimeSettings.UseLoadingScreen))
+			{
+				LoadSavedGame(this, null);
+				return;
+			}
+
+			Log("Main Menu: Load a Saved Game with drive letter {0} and item {1}", slot.Item1, slot.Item2);
+
+			Destroy();
+			LoadGame.LoadSaveFile(slot.Item1, slot.Item2);
+		}
 		
 		private void Earth(object sender, EventArgs args)
 		{
@@ -323,7 +348,7 @@ namespace CivOne.Screens
 				menu.Y = Height - 55;
 			}
 		}
-		
+
 		public Credits()
 		{
 			Runtime.WindowTitle = $"{Settings.WindowTitle} (press SHIFT+F1 to enter Setup)";
@@ -339,10 +364,10 @@ namespace CivOne.Screens
 			_pictures[2] = Resources["LOGO"];
 			_noiseMap = new byte[320, 200];
 			for (int x = 0; x < 320; x++)
-			for (int y = 0; y < 200; y++)
-			{
-				_noiseMap[x, y] = (byte)Common.Random.Next(1, _noiseCounter);
-			}
+				for (int y = 0; y < 200; y++)
+				{
+					_noiseMap[x, y] = (byte)Common.Random.Next(1, _noiseCounter);
+				}
 			switch (Settings.GraphicsMode)
 			{
 				case GraphicsMode.Graphics256:
@@ -354,9 +379,9 @@ namespace CivOne.Screens
 			}
 			DefaultTextSettings.Alignment = TextAlign.Center;
 			DefaultTextSettings.FontId = 4;
-			
+
 			_menuColours = new byte[] { 8, 15, 7 };
-			
+
 			Palette = _pictures[2].Palette;
 
 			if (Settings.Sound != GameOption.Off)
@@ -366,6 +391,7 @@ namespace CivOne.Screens
 			}
 
 			if (!Runtime.Settings.ShowCredits) SkipIntro();
+			if (Runtime.Settings.LoadSaveGameSlot != null) _loadSavedGame = true; 
 		}
 	}
 }

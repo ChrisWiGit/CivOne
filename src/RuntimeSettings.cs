@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Collections.Generic;
 
 namespace CivOne
@@ -21,8 +22,11 @@ namespace CivOne
 		public bool Setup { get; set; }
 		public bool DataCheck { get; set; }
 
+		public Tuple<char, int> LoadSaveGameSlot { get; set; } = null;
+		public static Tuple<char, int> UseLoadingScreen => new Tuple<char, int>('0', -1);
+
         // fire-eggs 20190711 allow specifying the initial RNG seed for game repeatability/debugging
-        public short InitialSeed { get; set; }
+		public short InitialSeed { get; set; }
 
 		public bool Free
 		{
