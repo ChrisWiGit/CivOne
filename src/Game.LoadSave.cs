@@ -32,6 +32,9 @@ namespace CivOne
 					return;
 				}
 
+				// Always use the save game's seed
+				Common.SetRandomSeed(adapter.RandomSeed);
+
 				Map.Instance.LoadMap(mapFile, adapter.RandomSeed);
 				_instance = new Game(adapter);
 				Log($"Game instance loaded (difficulty: {_instance._difficulty}, competition: {_instance._competition}");

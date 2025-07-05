@@ -26,7 +26,7 @@ namespace CivOne
 		public static Tuple<char, int> UseLoadingScreen => new Tuple<char, int>('0', -1);
 
         // fire-eggs 20190711 allow specifying the initial RNG seed for game repeatability/debugging
-		public short InitialSeed { get; set; }
+		public ushort InitialSeed { get; set; }
 
 		public bool Free
 		{

@@ -212,11 +212,12 @@ namespace CivOne
 		{
 			Runtime = runtime;
 
-            // fire-eggs 20170711 init the RNG if user specified
+			// fire-eggs 20170711 init the RNG if user specified
+			// Be aware: Game.LoadSave will override this with the seed from the save game
             if (runtime.Settings.InitialSeed != 0)
-                Common.SetRandomSeed(runtime.Settings.InitialSeed);
-            else
-                Common.SetRandomSeed(-1);
+				Common.SetRandomSeed(runtime.Settings.InitialSeed);
+			else
+				Common.SetRandomSeed(ushort.MaxValue);
 
 
             runtime.Initialize += OnInitialize;

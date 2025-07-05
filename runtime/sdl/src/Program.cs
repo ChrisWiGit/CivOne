@@ -97,7 +97,7 @@ Try 'civone-sdl --help' for more information.
 					case "skip-intro": settings.ShowIntro = false; continue;
 					case "software-render": settings["software-render"] = true; continue;
                     case "seed":
-                        settings.InitialSeed = short.Parse(args[++i]);
+                        settings.InitialSeed = ushort.Parse(args[++i]);
                         break;
 					default: Console.WriteLine(ErrorText); return;
 				}
