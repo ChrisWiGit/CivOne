@@ -108,7 +108,7 @@ namespace CivOne.Screens
 					return true;
 				case Key.NumPad2:
 				case Key.Down:
-					if (_activeItem <= (Items.Count - 1))
+					if (_activeItem < (Items.Count - 1))
 					{
 						_activeItem++;
 						_update = true;
