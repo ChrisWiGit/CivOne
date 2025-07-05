@@ -43,6 +43,7 @@ namespace CivOne.Screens
 		private bool _introSkipped;
 		private int _introLine = -1;
 		
+		// Auto-Load a saved game at startup? (--load-slot)
 		private bool _loadSavedGame = false; 
 
 		private IScreen _overlay = null; // TODO fire-eggs: with fix for issue #34, this logic may no longer be required
@@ -77,6 +78,7 @@ namespace CivOne.Screens
 		{
 			if (_loadSavedGame)
 			{
+				_loadSavedGame = false;
 				LoadSavedGame();
 				_done = true;
 				return true;
@@ -391,7 +393,10 @@ namespace CivOne.Screens
 			}
 
 			if (!Runtime.Settings.ShowCredits) SkipIntro();
-			if (Runtime.Settings.LoadSaveGameSlot != null) _loadSavedGame = true; 
+			if (Runtime.Settings.LoadSaveGameSlot != null)
+			{
+				_loadSavedGame = true;
+			}
 		}
 	}
 }

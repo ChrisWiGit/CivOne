@@ -88,7 +88,7 @@ namespace CivOne
 		
 		internal static void DestroyScreen(IScreen screen)
 		{
-			screen.Dispose();
+			screen?.Dispose();
 			_screens.Remove(screen);
 		}
 		

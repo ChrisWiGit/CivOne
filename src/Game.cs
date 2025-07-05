@@ -32,9 +32,9 @@ namespace CivOne
 		private readonly List<IUnit> _units;
 		private readonly Dictionary<byte, byte> _advanceOrigin = new Dictionary<byte, byte>();
 		private readonly List<ReplayData> _replayData = new List<ReplayData>();
-		
+
 		internal readonly string[] CityNames = Common.AllCityNames.ToArray();
-		
+
 		public int _currentPlayer = 0; // public for unit testing
 		private int _activeUnit;
 
@@ -68,7 +68,7 @@ namespace CivOne
 		public int Difficulty => _difficulty;
 
 		public bool HasUpdate => false;
-		
+
 		private ushort _gameTurn;
 		internal ushort GameTurn
 		{
@@ -87,11 +87,11 @@ namespace CivOne
 				}
 			}
 		}
-		
+
 		internal string GameYear => Common.YearString(GameTurn);
-		
+
 		internal Player HumanPlayer { get; set; }
-		
+
 		internal Player CurrentPlayer => _players[_currentPlayer];
 
 		internal ReplayData[] GetReplayData() => _replayData.ToArray();
@@ -115,7 +115,7 @@ namespace CivOne
 
 			GameTask.Insert(Message.Advisor(Advisor.Defense, false, destroyed.Name, "civilization", "destroyed", $"by {destroyedBy.NamePlural}!"));
 		}
-		
+
 		internal byte PlayerNumber(Player player)
 		{
 			byte i = 0;
@@ -153,7 +153,7 @@ namespace CivOne
 					GameTask.Enqueue(Show.AutoSave);
 				}
 
-				IEnumerable<City> disasterCities = _cities.OrderBy(o => Common.Random.Next(0,1000)).Take(2).AsEnumerable();
+				IEnumerable<City> disasterCities = _cities.OrderBy(o => Common.Random.Next(0, 1000)).Take(2).AsEnumerable();
 				foreach (City city in disasterCities)
 					city.Disaster();
 
@@ -163,7 +163,7 @@ namespace CivOne
 					// https://github.com/cdonges/CivOne/commit/e54fe9377030de625c51b674c0ecf29a335e0556
 					// TODO land spawning and sea spawning as separate timing / acts
 					if (Common.Random.Next(100) > 50)
-                    {
+					{
 						ITile tile = Barbarian.LandSpawnPosition;
 						if (tile != null)
 						{
@@ -172,7 +172,7 @@ namespace CivOne
 						}
 					}
 					else
-                    {
+					{
 						ITile tile = Barbarian.SeaSpawnPosition;
 						if (tile != null)
 						{
@@ -202,48 +202,49 @@ namespace CivOne
 				GameTask.Enqueue(Turn.New(city));
 			}
 			GameTask.Enqueue(Turn.New(CurrentPlayer));
-
-			if (CurrentPlayer != HumanPlayer) return;
-			
 			if (Game.InstantAdvice && (Common.TurnToYear(Game.GameTurn) == -3600 || Common.TurnToYear(Game.GameTurn) == -2800))
 				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFile.Instance.GetGameText("HELP/HELP1")));
 			else if (Game.InstantAdvice && (Common.TurnToYear(Game.GameTurn) == -3200 || Common.TurnToYear(Game.GameTurn) == -2400))
 				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFile.Instance.GetGameText("HELP/HELP2")));
 		}
-		
+
+		// store last active player unit to check if a previous player move happened or a game was loaded.
+		IUnit LastActivePlayerUnit = null;
+
 		public void Update()
 		{
 			IUnit unit = ActiveUnit;
 			if (CurrentPlayer == HumanPlayer)
 			{
+				LastActivePlayerUnit = unit != null ? unit : LastActivePlayerUnit;
+
 				if (unit != null && !unit.Goto.IsEmpty)
 				{
-
 					ITile[] tiles = (unit as BaseUnit).MoveTargets.OrderBy(x => x.DistanceTo(unit.Goto)).ThenBy(x => x.Movement).ToArray();
 
-                    if( Settings.Instance.PathFinding )
-                    {
-                        /*  Use AStar  */
-                        AStar.sPosition Destination, Pos;
-                        Destination.iX = unit.Goto.X;
-                        Destination.iY = unit.Goto.Y;
-                        Pos.iX = unit.X;
-                        Pos.iY = unit.Y;
+					if (Settings.Instance.PathFinding)
+					{
+						/*  Use AStar  */
+						AStar.sPosition Destination, Pos;
+						Destination.iX = unit.Goto.X;
+						Destination.iY = unit.Goto.Y;
+						Pos.iX = unit.X;
+						Pos.iY = unit.Y;
 
-                        if( Destination.iX == Pos.iX && Destination.iY == Pos.iY )
-                        {
-                            unit.Goto = Point.Empty;   // eh... never mind
-                            return;
-                        }
-                        AStar AStar = new AStar();
-                        AStar.sPosition NextPosition = AStar.FindPath( Destination, unit );
-                        if (NextPosition.iX < 0)
+						if (Destination.iX == Pos.iX && Destination.iY == Pos.iY)
+						{
+							unit.Goto = Point.Empty;   // eh... never mind
+							return;
+						}
+						AStar AStar = new AStar();
+						AStar.sPosition NextPosition = AStar.FindPath(Destination, unit);
+						if (NextPosition.iX < 0)
 						{         // if no path found
 							unit.Goto = Point.Empty;
 							return;
 						}
 						unit.MoveTo(NextPosition.iX - Pos.iX, NextPosition.iY - Pos.iY);
-                        return;
+						return;
 
 					}
 					else
@@ -270,6 +271,17 @@ namespace CivOne
 					unit.MoveTo(tiles[0].X - unit.X, tiles[0].Y - unit.Y);
 					return;
 				}
+
+				if (!EndOfTurn && ActiveUnit == null && LastActivePlayerUnit != null)
+				{
+					// checking LastActivePlayerUnit allows loading a game without automatically ending the turn
+					// i.e. the year does not change right after loading a game
+					if (LetPlayerContinueMovingAfterEndOfTurn())
+					{
+						return;
+					}
+				}
+
 				return;
 			}
 			if (unit != null && (unit.MovesLeft > 0 || unit.PartMoves > 0))
@@ -277,7 +289,28 @@ namespace CivOne
 				GameTask.Enqueue(Turn.Move(unit));
 				return;
 			}
+
+
+
 			GameTask.Enqueue(Turn.End());
+		}
+
+		internal bool LetPlayerContinueMovingAfterEndOfTurn()
+		{
+			// Goto-Units are not allowed to continue moving after the end of turn. Tested with original Civ1.
+			bool playerHasUnitsToMove = _units
+						.Where(u => u.Owner == _currentPlayer)
+						.Where(u => !u.Sentry && !u.Fortify && !u.FortifyActive && u.Goto.IsEmpty)
+						.Any(u => u.MovesLeft == 0 && u.PartMoves == 0);
+			bool notAlreadyEndingTurn = !GameTask.Is<Tasks.Turn>();
+
+			if (playerHasUnitsToMove && notAlreadyEndingTurn)
+			{
+				GameTask.Enqueue(Turn.End());
+
+				return true;
+			}
+			return false;
 		}
 
 		internal int CityNameId(Player player)
@@ -296,9 +329,9 @@ namespace CivOne
 			if (player.CityNamesSkipped >= available.Length)
 				return 0;
 
-            var nameId = available[player.CityNamesSkipped];
-            Log($"AI: {player.LeaderName} of the {player.TribeNamePlural} decides to found {CityNames[nameId]}.");
-            return nameId;
+			var nameId = available[player.CityNamesSkipped];
+			Log($"AI: {player.LeaderName} of the {player.TribeNamePlural} decides to found {CityNames[nameId]}.");
+			return nameId;
 		}
 
 		internal City AddCity(Player player, int nameId, int x, int y)
@@ -340,18 +373,18 @@ namespace CivOne
 			city.Y = 255;
 			city.Owner = 0;
 		}
-		
+
 		internal City GetCity(int x, int y)
 		{
 			while (x < 0) x += Map.WIDTH;
-			while (x >= Map.WIDTH) x-= Map.WIDTH;
+			while (x >= Map.WIDTH) x -= Map.WIDTH;
 			if (y < 0) return null;
 			if (y >= Map.HEIGHT) return null;
 			return _cities.Where(c => c.X == x && c.Y == y && c.Size > 0).FirstOrDefault();
 		}
-		
+
 		private static IUnit CreateUnit(UnitType type, int x, int y)
-        {
+		{
 			IUnit unit = CreateUnit(type);
 			unit.X = x;
 			unit.Y = y;
@@ -364,7 +397,7 @@ namespace CivOne
 			IUnit unit;
 			switch (type)
 			{
-				case UnitType.Settlers: unit = new Settlers(); break; 
+				case UnitType.Settlers: unit = new Settlers(); break;
 				case UnitType.Militia: unit = new Militia(); break;
 				case UnitType.Phalanx: unit = new Phalanx(); break;
 				case UnitType.Legion: unit = new Legion(); break;
@@ -417,13 +450,13 @@ namespace CivOne
 			_instance._units.Add(unit);
 			return unit;
 		}
-		
+
 		internal IUnit[] GetUnits(int x, int y)
 		{
 			while (x < 0) x += Map.WIDTH;
-			while (x >= Map.WIDTH) x-= Map.WIDTH;
+			while (x >= Map.WIDTH) x -= Map.WIDTH;
 			if (y < 0) return null;
-			if (y >= Map.HEIGHT) return null; 
+			if (y >= Map.HEIGHT) return null;
 			return _units.Where(u => u.X == x && u.Y == y).OrderBy(u => (u == ActiveUnit) ? 0 : (u.Fortify || u.FortifyActive ? 1 : 2)).ToArray();
 		}
 
@@ -432,14 +465,14 @@ namespace CivOne
 		internal void UpdateResources(ITile tile, bool ownerCities = true)
 		{
 			for (int relY = -3; relY <= 3; relY++)
-			for (int relX = -3; relX <= 3; relX++)
-			{
-				if (tile[relX, relY] == null) continue;
-				City city = tile[relX, relY].City;
-				if (city == null) continue;
-				if (!ownerCities && CurrentPlayer == city.Owner) continue;
-				city.UpdateResources();
-			}
+				for (int relX = -3; relX <= 3; relX++)
+				{
+					if (tile[relX, relY] == null) continue;
+					City city = tile[relX, relY].City;
+					if (city == null) continue;
+					if (!ownerCities && CurrentPlayer == city.Owner) continue;
+					city.UpdateResources();
+				}
 		}
 
 		public City[] GetCities() => _cities.ToArray();
@@ -453,7 +486,7 @@ namespace CivOne
 		public bool WonderObsolete<T>() where T : IWonder, new() => WonderObsolete(new T());
 
 		public bool WonderObsolete(IWonder wonder) => (wonder.ObsoleteTech != null && _players.Any(x => x.HasAdvance(wonder.ObsoleteTech)));
-		
+
 		public void DisbandUnit(IUnit unit)
 		{
 			IUnit activeUnit = ActiveUnit;
@@ -469,7 +502,7 @@ namespace CivOne
 					subUnit.X = 255;
 					subUnit.Y = 255;
 					_units.Remove(subUnit);
-				} 
+				}
 			}
 			unit.X = 255;
 			unit.Y = 255;
@@ -486,7 +519,7 @@ namespace CivOne
 		// The currently active unit has been requested to wait. Move the "candidate unit"
 		// index forward.
 		public void UnitWait() => _activeUnit++;
-		
+
 		/// <summary>
 		/// Determine which unit should be the "active" unit. The "_activeUnit" index may
 		/// not currently point to a unit belonging to the current player or to a unit
@@ -500,11 +533,11 @@ namespace CivOne
 			{
 				if (_units.Count(u => u.Owner == _currentPlayer && !u.Busy) == 0)
 					return null;
-				
+
 				// If the unit counter is too high, return to 0
 				if (_activeUnit >= _units.Count)
 					_activeUnit = 0;
-					
+
 				// Does the current unit still have moves left?
 				if (_units[_activeUnit].Owner == _currentPlayer && !_units[_activeUnit].Busy)
 					return _units[_activeUnit];
@@ -512,7 +545,7 @@ namespace CivOne
 				// Task busy, don't change the active unit
 				if (GameTask.Any())
 					return _units[_activeUnit];
-				
+
 				IUnit anyActive = _units.Find(u => u.Owner == _currentPlayer && !u.Busy);
 				// Check if any units are still available for this player; used to start "end of turn" for the human
 				if (anyActive == null)
@@ -527,13 +560,13 @@ namespace CivOne
 				// Loop through units to find the NEXT inactive unit belonging to the current player.
 				// Since we've successfully passed the "does this player have ANY active units" test,
 				// we should find an inactive unit.
-				while (_units[_activeUnit].Owner != _currentPlayer || 
-					   _units[_activeUnit].Busy)
-                {
+				while (_units[_activeUnit].Owner != _currentPlayer ||
+					_units[_activeUnit].Busy)
+				{
 					_activeUnit++;
 					if (_activeUnit >= _units.Count)
 						_activeUnit = 0;
-                }
+				}
 
 				return _units[_activeUnit];
 			}
@@ -550,7 +583,7 @@ namespace CivOne
 		public IUnit MovingUnit => _units.FirstOrDefault(u => u.Moving);
 
 		public static bool Started => (_instance != null);
-		
+
 		private static Game _instance;
 		public static Game Instance
 		{
@@ -564,12 +597,12 @@ namespace CivOne
 			}
 		}
 
-        /// <summary>
-        /// Fire-eggs 20190704: for unit testing, reset
-        /// </summary>
-        internal static void Wipe()
-        {
-            _instance = null;
-        }
+		/// <summary>
+		/// Fire-eggs 20190704: for unit testing, reset
+		/// </summary>
+		internal static void Wipe()
+		{
+			_instance = null;
+		}
 	}
 }

@@ -15,13 +15,14 @@ using CivOne.Screens.Debug;
 using CivOne.Graphics.Sprites;
 using CivOne.Tasks;
 using CivOne.UserInterface;
+using System.Collections.Generic;
 
 namespace CivOne.Screens
 {
 	internal class DebugOptions : BaseScreen
 	{
 		private bool _update = true;
-		
+
 		private void MenuCancel(object sender, EventArgs args)
 		{
 			Destroy();
@@ -99,11 +100,17 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
-        private void MenuAddBuilding(object sender, EventArgs args)
-        {
-            GameTask.Enqueue(Show.Screen<AddBuilding>());
-            Destroy();
-        }
+		private void MenuAddBuilding(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen<AddBuilding>());
+			Destroy();
+		}
+
+		private void LoadGame(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen<LoadGame>());
+			Destroy();
+		}
 
 		protected override bool HasUpdate(uint gameTick)
 		{
@@ -111,14 +118,18 @@ namespace CivOne.Screens
 			{
 				_update = false;
 
-                // TODO fire-eggs picture height should be derived from number of menu entries!
-				Picture menuGfx = new Picture(131, 121)
+				const int itemHeight = 8 + 1;
+				const int menuWidth = 131;
+				int menuHeight = itemHeight * _menuEntries.Count;
+
+				// TODO fire-eggs picture height should be derived from number of menu entries!
+				Picture menuGfx = new Picture(menuWidth, menuHeight)
 					.Tile(Pattern.PanelGrey)
 					.DrawRectangle3D()
 					.DrawText("Debug Options:", 0, 15, 4, 4)
 					.As<Picture>();
 
-				IBitmap menuBackground = menuGfx[2, 11, 136, 88].ColourReplace((7, 11), (22, 3));
+				IBitmap menuBackground = menuGfx[2, 11, menuWidth, menuHeight].ColourReplace((7, 11), (22, 3));
 
 				this.AddLayer(menuGfx, 25, 17);
 
@@ -131,37 +142,53 @@ namespace CivOne.Screens
 					TextColour = 5,
 					DisabledColour = 3,
 					FontId = 0,
-					Indent = 8
+					Indent = 8,
+					RowHeight = 8
 				};
 				menu.MissClick += MenuCancel;
 				menu.Cancel += MenuCancel;
 
-				menu.Items.Add("Set Game Year").OnSelect(MenuSetGameYear);
-				menu.Items.Add("Set Player Gold").OnSelect(MenuSetPlayerGold);
-				menu.Items.Add("Set Player Science").OnSelect(MenuSetPlayerScience);
-				menu.Items.Add("Set Player Advances").OnSelect(MenuSetPlayerAdvances);
-				menu.Items.Add("Set City Size").OnSelect(MenuSetCitySize);
-				menu.Items.Add("Cause City Disaster").OnSelect(MenuCityDisaster);
-                menu.Items.Add("Add building to city").OnSelect(MenuAddBuilding);
-				menu.Items.Add("Change Human Player").OnSelect(MenuChangeHumanPlayer);
-				menu.Items.Add("Spawn Unit").OnSelect(MenuSpawnUnit);
-				menu.Items.Add("Meet With King").OnSelect(MenuMeetWithKing);
-				menu.Items.Add("Toggle Reveal World").OnSelect(MenuRevealWorld);
-				menu.Items.Add("Build Palace").OnSelect(MenuBuildPalace);
-				menu.Items.Add("Show PowerGraph").OnSelect(MenuShowPowerGraph);
+				foreach (var entry in _menuEntries)
+				{
+					menu.Items.Add(entry.Text).OnSelect(entry.Handler);
+				}
 
-				this.FillRectangle(24, 16, 105, menu.RowHeight * (menu.Items.Count + 1), 5);
+
 
 				AddMenu(menu);
 			}
 			return true;
 		}
 
+
+		private record MenuEntry(string Text, Events.MenuItemEventHandler<int> Handler);
+
+		private readonly List<MenuEntry> _menuEntries;
+
+
 		public DebugOptions() : base(MouseCursor.Pointer)
 		{
 			Palette = Common.DefaultPalette;
 			this.AddLayer(Common.Screens.Last(), 0, 0)
 				.FillRectangle(24, 16, 133, 113, 5);
+
+			_menuEntries = new List<MenuEntry>
+			{
+				new("Load a Game", LoadGame),
+				new("Set Game Year", MenuSetGameYear),
+				new("Set Player Gold", MenuSetPlayerGold),
+				new("Set Player Science", MenuSetPlayerScience),
+				new("Set Player Advances", MenuSetPlayerAdvances),
+				new("Set City Size", MenuSetCitySize),
+				new("Cause City Disaster", MenuCityDisaster),
+				new("Add building to city", MenuAddBuilding),
+				new("Change Human Player", MenuChangeHumanPlayer),
+				new("Spawn Unit", MenuSpawnUnit),
+				new("Meet With King", MenuMeetWithKing),
+				new("Toggle Reveal World", MenuRevealWorld),
+				new("Build Palace", MenuBuildPalace),
+				new("Show PowerGraph", MenuShowPowerGraph)
+			};
 		}
 	}
 }

@@ -42,7 +42,11 @@ namespace CivOne.Screens
 			SaveGame.SelectedGame = (item > 3 ? 3 : item);
 			Log("Load game: {0}", file.Name);
 			Destroy();
+			
 			Game.LoadGame(file.SveFile, file.MapFile);
+
+			// Allows in-game loading of a game (destroy old gameplay)
+			Common.DestroyScreen(Common.Screens.FirstOrDefault(s => s is GamePlay, null));
 			Common.AddScreen(new GamePlay());
 		}
 
@@ -104,6 +108,13 @@ namespace CivOne.Screens
 
         private void BackToCredits()
         {
+			if (Common.HasScreenType<GamePlay>())
+			{
+				// Loading a game while in game already,
+				// triggers this, so we need to return early.
+				Destroy();
+				return;
+			}
             // fire-eggs fix for issue #34: when cancel out of this, go back to 
             // credits screen, _always_ skipping the intro, and not animating 
             // the logo.

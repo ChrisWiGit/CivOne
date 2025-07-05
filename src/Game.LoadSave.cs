@@ -22,11 +22,7 @@ namespace CivOne
     {
 		public static void LoadGame(string sveFile, string mapFile)
 		{
-			if (_instance != null)
-			{
-				Log("ERROR: Game instance already exists");
-				return;
-			}
+			// Allow loading a game in-game.
 
 			using (IGameData adapter = SaveDataAdapter.Load(File.ReadAllBytes(sveFile)))
 			{
