@@ -194,7 +194,7 @@ namespace CivOne
 				Y = (byte)unit.Y,
 				TypeId = (byte)unit.Type,
 				RemainingMoves = (byte)((unit.MovesLeft * 3) + unit.PartMoves),
-				SpecialMoves = 0,
+				SpecialMoves = unit.FuelOrProgress,
 				GotoX = gotoX,
 				GotoY = gotoY,
 				Visibility = 0xFF,

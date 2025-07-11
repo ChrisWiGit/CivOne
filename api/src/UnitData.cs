@@ -17,6 +17,7 @@ namespace CivOne
         public byte Y;
 		public byte TypeId;
 		public byte RemainingMoves;
+		/// Remaining fuel (flight unit), Task progress (settlers). Others, always 0.
         public byte SpecialMoves;
 		public byte GotoX; 
         public byte GotoY;

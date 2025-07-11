@@ -13,17 +13,19 @@ using CivOne.IO;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.UserInterface;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace CivOne.Units
 {
-    internal class Settlers : BaseUnitLand
+	internal class Settlers : BaseUnitLand
 	{
 		internal void SetStatus(bool[] bits)
 		{
 			// TODO initialize MovesSkip value
 			// TODO need to set MovesSkip from savefile format [see TODO in GetStatus]
+			// CW: using FuelOrProgress/WorkProgress for this now instead of MovesSkip
 			if (bits[1] && !bits[6] && !bits[7])
 			{
 				order = Order.Road;
@@ -40,40 +42,84 @@ namespace CivOne.Units
 			{
 				order = Order.Fortress;
 			}
-            if (bits[1] && !bits[6] && bits[7])
+			if (bits[1] && !bits[6] && bits[7])
 			{
 				order = Order.ClearPollution;
 			}
-        }
+		}
 
+		/// <summary>
+		/// This method mimics the original CIV1 settlers behavior of building roads and railroads.
+		/// 1. Cannot build road/railroad on railroad and in city.
+		/// 2. Can build roads/railroads on ocean (always) if on ship.
+		///    Would be nice in a future to implement a bridge on ocean that can be used by land units. 
+		/// 3. Multiple settlers won't build road/railroad twice as fast (because each settler has its own progress).
+		///    !! We should start using Dependency Injection for using Services (e.g. RoadService) to handle this and
+		///    switch its implementation if another behavior is required. !!
+		///    In this way we can implement a different behavior for settlers in the future (e.g. handling this "bug")
+		/// 4. Cancel building a road and start again will not reset progress (fast road building bug).
+		///    A settler will even take its progress away to another tile and use it there.
+		/// 5. WorkProgress is stored in FuelOrProgress property to be saved in a save file.
+		/// </summary>
+		/// <returns></returns>
 		public bool BuildRoad()
 		{
-			ITile tile = Map[X, Y];
-			if (tile.RailRoad)
+			if (Tile.RailRoad)
 			{
-                // TODO attempt to double-build road?
-				// There is already a RailRoad here, don't build another one
+				order = Order.None;
 				return false;
 			}
-			if (!tile.IsOcean && !tile.Road && tile.City == null)
-			{
-				// TODO in classic CIV, allowed to build road on Ocean!
 
-				if ((tile is River) && !Game.CurrentPlayer.HasAdvance<BridgeBuilding>())
-					return false;
+			if (Tile.City != null)
+			{
+				return false;
+			}
+
+			if (Game.CurrentPlayer.HasAdvance<RailRoad>() && Tile.Road)
+			{
 				order = Order.Road;
-				SkipTurn(tile.RoadCost);
+				WorkOnRoads();
+				SkipTurn(Tile.RailRoadCost);
 				return true;
 			}
-			if (Game.CurrentPlayer.HasAdvance<RailRoad>() && !tile.IsOcean && tile.Road && !tile.RailRoad && tile.City == null)
-			{
-				// TODO in classic CIV, allowed to build railroad on Ocean!
 
-				order = Order.Road;
-				SkipTurn(tile.RailRoadCost);
-				return true;
+			if (Tile.Road)
+			{
+				// end any other settler to stop building road if another settler has already built a road here
+				order = Order.None;
+				// we don't reset FuelOrProgress here, because it is used to track progress
+				return false;
 			}
-			return false;
+
+			if ((Tile is River) && !Game.CurrentPlayer.HasAdvance<BridgeBuilding>())
+			{
+				return false;
+			}
+
+			order = Order.Road;
+			WorkOnRoads();
+			SkipTurn(Tile.RoadCost);
+
+			return true;
+		}
+
+
+		void WorkOnRoads()
+		{
+			if (!Location.Road && (WorkProgress < Location.RoadCost) ||
+				Location.Road && (WorkProgress < Location.RailRoadCost))
+			{
+				WorkProgress++;
+				return;
+			}
+
+			if (Location.Road)
+			{
+				Location.RailRoad = true;
+			}
+			Location.Road = true;
+			order = Order.None;
+			WorkProgress = 0;
 		}
 
 		public bool BuildIrrigation()
@@ -84,7 +130,7 @@ namespace CivOne.Units
 				return false;
 			}
 
-            // Changing terrain type
+			// Changing terrain type
 			if (tile.IrrigationChangesTerrain())
 			{
 				order = Order.Irrigate;
@@ -92,29 +138,29 @@ namespace CivOne.Units
 				return true;
 			}
 
-            if (!tile.TerrainAllowsIrrigation())
-            {
-                if (Human == Owner)
-                    GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText("ERROR/NOIRR")));
-                return false;
-            }
+			if (!tile.TerrainAllowsIrrigation())
+			{
+				if (Human == Owner)
+					GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText("ERROR/NOIRR")));
+				return false;
+			}
 
-            if (tile.AllowIrrigation() || tile.Type == Terrain.River)
-            {
+			if (tile.AllowIrrigation() || tile.Type == Terrain.River)
+			{
 				order = Order.Irrigate;
 				SkipTurn(tile.IrrigationCost);
-                return true;
-            }
+				return true;
+			}
 
-            if (Human == Owner)
-                GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText("ERROR/NOIRR")));
-            return false;
+			if (Human == Owner)
+				GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText("ERROR/NOIRR")));
+			return false;
 		}
 
 		public bool BuildMines()
 		{
 			ITile tile = Map[X, Y];
-			if (!tile.IsOcean && !(tile.Mine) && ((tile is Desert) || (tile is Hills) || (tile is Mountains) || (tile is Jungle) || (tile is Grassland) || (tile is Plains) || (tile is Swamp)))
+			if (!(tile.Mine) && ((tile is Desert) || (tile is Hills) || (tile is Mountains) || (tile is Jungle) || (tile is Grassland) || (tile is Plains) || (tile is Swamp)))
 			{
 				order = Order.Mines;
 				SkipTurn(tile.MiningCost);
@@ -127,7 +173,7 @@ namespace CivOne.Units
 		{
 			if (!Game.CurrentPlayer.HasAdvance<Construction>())
 				return false;
-			
+
 			ITile tile = Map[X, Y];
 			if (!tile.IsOcean && !(tile.Fortress) && tile.City == null)
 			{
@@ -138,33 +184,20 @@ namespace CivOne.Units
 			return false;
 		}
 
+		public void CancelOrder()
+		{
+			order = Order.None;
+			// do not reset FuelOrProgress (bug in classic CIV1)
+		}
+
+
 		public override void NewTurn()
 		{
 			base.NewTurn();
-			if (MovesSkip > 0)
-			{
-				return;
-			}
 
 			if (order == Order.Road)
 			{
-				if (Map[X, Y].Road)
-				{
-					if (Human.HasAdvance<RailRoad>()) // TODO is this 'Human' or 'Owner'?
-					{
-						Map[X, Y].RailRoad = true;
-					}
-					// TODO why is this done for railroad but not road/irrigate/mine/etc?
-					foreach (Settlers settlers in Map[X, Y].Units.Where(u => (u is Settlers) && (u as Settlers).order == Order.Road).Select(u => (u as Settlers)))
-					{
-						settlers.order = Order.None;
-					}
-				}
-				else
-				{
-					Map[X, Y].Road = true;
-				}
-				order = Order.None;
+				BuildRoad();
 			}
 			else if (order == Order.Irrigate)
 			{
@@ -204,7 +237,7 @@ namespace CivOne.Units
 				Map[X, Y].Fortress = true;
 				order = Order.None;
 			}
-        }
+		}
 
 		private MenuItem<int> MenuFoundCity() => MenuItem<int>
 			.Create((Map[X, Y].City == null) ? "Found New City" : "Add to City")
@@ -300,7 +333,8 @@ namespace CivOne.Units
 			RequiredTech = null;
 			ObsoleteTech = null;
 			SetIcon('D', 1, 1);
-            Role = UnitRole.Settler;
-        }
+			Role = UnitRole.Settler;
+			FuelOrProgress = 0;
+		}
 	}
 }

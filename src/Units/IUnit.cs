@@ -65,6 +65,21 @@ namespace CivOne.Units
 		/// Unit in Fortify state
 		/// </summary>
 		bool Fortify { get; set; }
+
+		/// <summary>
+		/// Fuel (Flight) or Build-Progress (Settlers) for Unit.
+		/// Use instead of Fuel and Progress properties (contains the same value).
+		/// </summary>
+		byte FuelOrProgress { get; set; }
+		/// <summary>
+		/// Fuel for Unit (Flight)
+		/// </summary>
+		byte Fuel { get; set; }
+
+		/// <summary>
+		/// Build-Progress for Unit (Settlers)
+		/// </summary>
+		byte WorkProgress { get; set; }
 		/// <summary>
 		/// Unit is Moving now
 		/// </summary>

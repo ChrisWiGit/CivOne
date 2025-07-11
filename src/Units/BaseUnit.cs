@@ -768,6 +768,11 @@ namespace CivOne.Units
 
 		public ITile Tile => Map[_x, _y];
 
+		/// <summary>
+		/// Identical to Tile, but used to start with better naming.
+		/// </summary>
+		public ITile Location => Map[_x, _y];
+
 		private byte _owner;
 		public byte Owner
 		{
@@ -925,6 +930,10 @@ namespace CivOne.Units
 		}
 		public IEnumerable<UnitModification> Modifications => _modifications.ContainsKey(Type) ? _modifications[Type].ToArray() : new UnitModification[0];
 
+		public byte FuelOrProgress { get; set; }
+		public byte Fuel { get => FuelOrProgress; set => FuelOrProgress = value; }
+		public byte WorkProgress { get => FuelOrProgress; set => FuelOrProgress = value; }
+
 		protected BaseUnit(byte price = 1, byte attack = 1, byte defense = 1, byte move = 1)
 		{
 			Price = price;
@@ -939,6 +948,7 @@ namespace CivOne.Units
 			Status = 0;
 			MovesSkip = 0;
 			RequiredWonder = null;
+			FuelOrProgress = 0;
 		}
 	}
 }
