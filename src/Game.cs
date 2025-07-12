@@ -295,13 +295,19 @@ namespace CivOne
 			GameTask.Enqueue(Turn.End());
 		}
 
+		/// <summary>
+		/// Checks if a player can continue moving after the end of turn.
+		/// In Civ1, you can disable "End of Turn" in the options menu, which allows you to continue moving 
+		/// without hitting Return all the time.
+		/// </summary>
+		/// <returns></returns>
 		internal bool LetPlayerContinueMovingAfterEndOfTurn()
 		{
 			// Goto-Units are not allowed to continue moving after the end of turn. Tested with original Civ1.
 			bool playerHasUnitsToMove = _units
 						.Where(u => u.Owner == _currentPlayer)
-						.Where(u => !u.Sentry && !u.Fortify && !u.FortifyActive && u.Goto.IsEmpty)
-						.Any(u => u.MovesLeft == 0 && u.PartMoves == 0);
+						.Where(u => !u.HasAction)
+						.Any(u => !u.HasMovesLeft);
 			bool notAlreadyEndingTurn = !GameTask.Is<Tasks.Turn>();
 
 			if (playerHasUnitsToMove && notAlreadyEndingTurn)
@@ -572,11 +578,45 @@ namespace CivOne
 			}
 			internal set
 			{
-				if (value == null || (value.Busy && !value.Sentry && !value.Fortify))
+				IUnit toActivateUnit = value;
+
+				if (toActivateUnit == null)
+				{
 					return;
-				value.Sentry = false;
-				value.Fortify = false;
-				_activeUnit = _units.IndexOf(value);
+				}
+				// Behavior in Civ1 if a unit is clicked by the player and set as active:
+				// - If the unit is doing Sentry or Fortify, it will be cancelled
+				// - If the unit is doing Sentry or Fortify and has no moves left, it will not be set as active but it will next round.
+				// - If the unit has no moves left, it will not be set as active
+				// - If the unit is has an action (e.g. building a road, fortify, sentry, goto), it will not be set as active
+
+				bool isSettlers = toActivateUnit is Settlers;
+				bool isAlreadyMoved = toActivateUnit.MovesLeft == 0 && toActivateUnit.PartMoves == 0;
+				bool isSentryOrFortify = toActivateUnit.Sentry || toActivateUnit.Fortify || toActivateUnit.FortifyActive;
+
+				if (isSettlers)
+				{
+					// Cancel order if settler is set active
+					var settler = toActivateUnit as Settlers;
+					settler.CancelOrder();
+				}
+
+				if (isSentryOrFortify && isAlreadyMoved)
+				{
+					toActivateUnit.Sentry = false;
+					toActivateUnit.Fortify = false;
+
+					return;
+				}
+				if (isAlreadyMoved || toActivateUnit.HasAction)
+				{
+					return;
+				}
+
+				toActivateUnit.Fortify = false;
+				toActivateUnit.Sentry = false;
+
+				_activeUnit = _units.IndexOf(toActivateUnit);
 			}
 		}
 

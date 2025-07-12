@@ -50,6 +50,16 @@ namespace CivOne.Units
 		/// </summary>
 		bool Busy { get; set; }
 		/// <summary>
+		/// Unit has some action to do
+		/// (e.g. building a road, fortify, sentry, and also goto action)
+		/// </summary>
+		bool HasAction { get; }
+		/// <summary>
+		/// Unit has some moves left to do
+		/// MovesLeft or PartMoves are not zero.
+		/// </summary>
+		bool HasMovesLeft { get; }
+		/// <summary>
 		/// Unit has Veteran grade
 		/// </summary>
 		bool Veteran { get; set; }

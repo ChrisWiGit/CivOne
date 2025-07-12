@@ -53,7 +53,7 @@ namespace CivOne.Units
 		{
 			get
 			{
-				return MovesLeft <= 0 && PartMoves <= 0 || (Sentry || Fortify || _order != Order.None);
+				return (MovesLeft <= 0 && PartMoves <= 0) || Sentry || Fortify || _order != Order.None;
 			}
 			set
 			{
@@ -63,6 +63,22 @@ namespace CivOne.Units
 				MovesSkip = 0;
 			}
 		}
+
+		public virtual bool HasAction
+		{
+			get
+			{
+				return order != Order.None || Sentry || Fortify || FortifyActive || !Goto.IsEmpty;
+			}
+		}
+		public virtual bool HasMovesLeft
+		{
+			get
+			{
+				return MovesLeft > 0 || PartMoves > 0;
+			}
+		}
+
 		public bool Veteran { get; set; }
 		public bool FortifyActive { get; private set; }
 		private bool _fortify = false;
