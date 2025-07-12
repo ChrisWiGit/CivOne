@@ -22,6 +22,9 @@ namespace CivOne.Tiles
 		public override byte IrrigationCost => 0;
 		public override sbyte MiningShieldBonus => -1;
 		public override byte MiningCost => 0;
+
+		// Same like Swamp
+		public override byte FortressCost => 6;
 		
 		public Tundra(int x, int y, bool special) : base(x, y, special)
 		{

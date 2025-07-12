@@ -66,7 +66,7 @@ namespace CivOne.Units
 		{
 			if (Tile.RailRoad)
 			{
-				order = Order.None;
+				ResetOrder();
 				return false;
 			}
 
@@ -78,7 +78,7 @@ namespace CivOne.Units
 			if (Game.CurrentPlayer.HasAdvance<RailRoad>() && Tile.Road)
 			{
 				order = Order.Road;
-				WorkOnRoads();
+				UpdateRoadState();
 				SkipTurn(Tile.RailRoadCost);
 				return true;
 			}
@@ -86,7 +86,7 @@ namespace CivOne.Units
 			if (Tile.Road)
 			{
 				// end any other settler to stop building road if another settler has already built a road here
-				order = Order.None;
+				ResetOrder();
 				// we don't reset FuelOrProgress here, because it is used to track progress
 				return false;
 			}
@@ -97,14 +97,14 @@ namespace CivOne.Units
 			}
 
 			order = Order.Road;
-			WorkOnRoads();
+			UpdateRoadState();
 			SkipTurn(Tile.RoadCost);
 
 			return true;
 		}
 
 
-		void WorkOnRoads()
+		void UpdateRoadState()
 		{
 			if (!Location.Road && (WorkProgress < Location.RoadCost) ||
 				Location.Road && (WorkProgress < Location.RailRoadCost))
@@ -118,22 +118,26 @@ namespace CivOne.Units
 				Location.RailRoad = true;
 			}
 			Location.Road = true;
-			order = Order.None;
-			WorkProgress = 0;
+			ResetOrder();
+			ResetWorkProgress();
 		}
 
 		public bool BuildIrrigation()
 		{
 			ITile tile = Map[X, Y];
-			if (tile.Irrigation || tile.IsOcean) // already irrigated or illogical: ignore
+			if (tile.Irrigation || tile.IsOcean)
 			{
 				return false;
 			}
 
-			// Changing terrain type
 			if (tile.IrrigationChangesTerrain())
 			{
 				order = Order.Irrigate;
+				// By Calling UpdateIrrigationState we will also increase WorkProgress so it feels like if 
+				// necessary turns are always Cost-1 because current turn is also counted.
+				// In this way we simulate the original CIV1 behavior.
+				// It also applies to the other methods like BuildMines and BuildFortress.
+				UpdateIrrigationState();
 				SkipTurn(tile.IrrigationCost);
 				return true;
 			}
@@ -148,6 +152,7 @@ namespace CivOne.Units
 			if (tile.AllowIrrigation() || tile.Type == Terrain.River)
 			{
 				order = Order.Irrigate;
+				UpdateIrrigationState();
 				SkipTurn(tile.IrrigationCost);
 				return true;
 			}
@@ -160,12 +165,16 @@ namespace CivOne.Units
 		public bool BuildMines()
 		{
 			ITile tile = Map[X, Y];
-			if (!(tile.Mine) && ((tile is Desert) || (tile is Hills) || (tile is Mountains) || (tile is Jungle) || (tile is Grassland) || (tile is Plains) || (tile is Swamp)))
+			if (tile.Mine ||
+				tile is not (Desert or Hills or Mountains or Jungle or Grassland or Plains or Swamp))
 			{
-				order = Order.Mines;
-				SkipTurn(tile.MiningCost);
 				return true;
 			}
+
+			order = Order.Mines;
+			UpdateMinesState();
+			SkipTurn(tile.MiningCost);
+			
 			return false;
 		}
 
@@ -175,21 +184,98 @@ namespace CivOne.Units
 				return false;
 
 			ITile tile = Map[X, Y];
-			if (!tile.IsOcean && !(tile.Fortress) && tile.City == null)
+
+			if (tile.Fortress || tile.City != null)
 			{
-				order = Order.Fortress;
-				SkipTurn(5); // TODO IUnit.FortressCost?
 				return true;
 			}
+
+			// CW: Fortress can be built on ocean in CIV1
+			order = Order.Fortress;
+			UpdateFortressState();
+			SkipTurn(tile.FortressCost);
+
 			return false;
 		}
 
-		public void CancelOrder()
+		private bool UpdateFortressState()
+		{
+			if (WorkProgress < Location.FortressCost)
+			{
+				WorkProgress++;
+				return false;
+			}
+
+			Map[X, Y].Fortress = true;
+			ResetOrder();
+			ResetWorkProgress();
+
+			return true;
+		}
+
+		private bool UpdateMinesState()
+		{
+			if (WorkProgress < Location.MiningCost)
+			{
+				WorkProgress++;
+				return false;
+			}
+
+			if ((Map[X, Y] is Jungle) || (Map[X, Y] is Grassland) || (Map[X, Y] is Plains) || (Map[X, Y] is Swamp))
+			{
+				Map[X, Y].Irrigation = false;
+				Map[X, Y].Mine = false;
+				Map.ChangeTileType(X, Y, Terrain.Forest);
+			}
+			else
+			{
+				Map[X, Y].Irrigation = false;
+				Map[X, Y].Mine = true;
+			}
+			ResetOrder();
+			ResetWorkProgress();
+
+			return true;
+		}
+
+		private bool UpdateIrrigationState()
+		{
+			if (WorkProgress < Location.IrrigationCost)
+			{
+				WorkProgress++;
+				return false;
+			}
+
+			Map[X, Y].Irrigation = false;
+			Map[X, Y].Mine = false;
+			if (Map[X, Y] is Forest)
+			{
+				Map.ChangeTileType(X, Y, Terrain.Plains);
+			}
+			else if ((Map[X, Y] is Jungle) || (Map[X, Y] is Swamp))
+			{
+				Map.ChangeTileType(X, Y, Terrain.Grassland1);
+			}
+			else
+			{
+				Map[X, Y].Irrigation = true;
+			}
+			ResetOrder();
+			ResetWorkProgress();
+
+			return true;
+		}
+		
+		public void ResetOrder()
 		{
 			order = Order.None;
 			// do not reset FuelOrProgress (bug in classic CIV1)
 		}
 
+		public void ResetWorkProgress()
+		{
+			WorkProgress = 0;
+		}
 
 		public override void NewTurn()
 		{
@@ -201,41 +287,15 @@ namespace CivOne.Units
 			}
 			else if (order == Order.Irrigate)
 			{
-				Map[X, Y].Irrigation = false;
-				Map[X, Y].Mine = false;
-				if (Map[X, Y] is Forest)
-				{
-					Map.ChangeTileType(X, Y, Terrain.Plains);
-				}
-				else if ((Map[X, Y] is Jungle) || (Map[X, Y] is Swamp))
-				{
-					Map.ChangeTileType(X, Y, Terrain.Grassland1);
-				}
-				else
-				{
-					Map[X, Y].Irrigation = true;
-				}
-				order = Order.None;
+				UpdateIrrigationState();
 			}
 			else if (order == Order.Mines)
 			{
-				if ((Map[X, Y] is Jungle) || (Map[X, Y] is Grassland) || (Map[X, Y] is Plains) || (Map[X, Y] is Swamp))
-				{
-					Map[X, Y].Irrigation = false;
-					Map[X, Y].Mine = false;
-					Map.ChangeTileType(X, Y, Terrain.Forest);
-				}
-				else
-				{
-					Map[X, Y].Irrigation = false;
-					Map[X, Y].Mine = true;
-				}
-				order = Order.None;
+				UpdateMinesState();
 			}
 			else if (order == Order.Fortress)
 			{
-				Map[X, Y].Fortress = true;
-				order = Order.None;
+				UpdateFortressState();
 			}
 		}
 

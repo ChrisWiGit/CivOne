@@ -22,6 +22,7 @@ namespace CivOne.Tiles
 		public override byte IrrigationCost => 3;
 		public override sbyte MiningShieldBonus => 2;
 		public override byte MiningCost => 15;
+		public override byte FortressCost => 5;
 		
 		public Plains(int x, int y, bool special) : base(x, y, special)
 		{

@@ -598,7 +598,7 @@ namespace CivOne
 				{
 					// Cancel order if settler is set active
 					var settler = toActivateUnit as Settlers;
-					settler.CancelOrder();
+					settler.ResetOrder();
 				}
 
 				if (isSentryOrFortify && isAlreadyMoved)

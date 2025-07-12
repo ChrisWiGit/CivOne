@@ -22,6 +22,7 @@ namespace CivOne.Tiles
 		public override byte IrrigationCost => 3;
 		public override sbyte MiningShieldBonus => 2;
 		public override byte MiningCost => 10;
+		public override byte FortressCost => 5;
 		
 		private Terrain CalculateTileType()
 		{

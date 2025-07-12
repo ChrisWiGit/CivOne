@@ -189,6 +189,8 @@ namespace CivOne.Tiles
 		public virtual bool Irrigation { get; set; }
 		public virtual bool Mine { get; set; }
 		public virtual bool Fortress { get; set; }
+		public virtual byte FortressCost { get; set; }
+		
 		private bool _hut;
 		public virtual bool Hut
 		{
@@ -216,6 +218,7 @@ namespace CivOne.Tiles
 		public City City => Game?.GetCity(X, Y);
         public bool HasCity => City != null;
 		public IUnit[] Units => Game?.GetUnits(X, Y);
+
 
 		public ITile this[int relativeX, int relativeY] => Map[X + relativeX, Y + relativeY];
 		public ITile[,] this[int relativeX, int relativeY, int width, int height] => Map[X + relativeX, Y + relativeY, width, height];

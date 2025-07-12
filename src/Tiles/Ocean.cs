@@ -23,6 +23,9 @@ namespace CivOne.Tiles
 		public override sbyte MiningShieldBonus => -1;
 		public override byte MiningCost => 0;
 		public override bool IsOcean => true;
+
+		// Civ1 allows Fortress on Ocean
+		public override byte FortressCost => 6;
 		
 		public Ocean(int x, int y, bool special) : base(x, y, special)
 		{

@@ -24,6 +24,7 @@ namespace CivOne.Tiles
 		public override byte MiningCost => 8;
 		public override byte RoadCost => 4;
 		public override byte RailRoadCost => 4;
+		public override byte FortressCost => 6;
 
 		public Hills(int x, int y, bool special) : base(x, y, special)
 		{
