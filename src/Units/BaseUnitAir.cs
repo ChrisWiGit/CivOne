@@ -26,47 +26,47 @@ namespace CivOne.Units
 		public int FuelLeft { get; set; }
 
 
-	// Check for room on flight deck
-	private bool CarrierIsLandable()
-	{
-		IUnit[] CUnits;
-		IUnit[] AUnits;
-		CUnits = Map [X, Y].Units.Where(u => u.Name == "Carrier" ).ToArray();
-		if (CUnits.Length == 0)
-			return false;
-		else
+		// Check for room on flight deck
+		private bool CarrierIsLandable()
 		{
-			// Check load on flight deck
-			AUnits = Map[X, Y].Units.Where(u => u.Class == UnitClass.Air).ToArray();
-			if( AUnits.Length > CUnits.Length * 8 )
+			IUnit[] CUnits;
+			IUnit[] AUnits;
+			CUnits = Map[X, Y].Units.Where(u => u.Name == "Carrier").ToArray();
+			if (CUnits.Length == 0)
 				return false;
+			else
+			{
+				// Check load on flight deck
+				AUnits = Map[X, Y].Units.Where(u => u.Class == UnitClass.Air).ToArray();
+				if (AUnits.Length > CUnits.Length * 8)
+					return false;
+			}
+			return true;
 		}
-		return true;
-	}
 
 
-	private void HandleFuel()
+		private void HandleFuel()
 		{
-			if ( Map[X, Y].Units.Any(u => u.Name == "Carrier" ))
+			if (Map[X, Y].Units.Any(u => u.Name == "Carrier"))
 			{
 				if (CarrierIsLandable())
 				{
 					MovesLeft = 0;
-					FuelLeft = TotalFuel;		// Refuel
+					FuelLeft = TotalFuel;       // Refuel
 					return;
 				}
 			}
 
-			if (Map[X, Y].City != null )
+			if (Map[X, Y].City != null)
 			{
 				MovesLeft = 0;
-				FuelLeft = TotalFuel;			// Refuel
+				FuelLeft = TotalFuel;           // Refuel
 				return;
 			}
 
 
 			if (MovesLeft > 0 || FuelLeft > 0) return;
-			
+
 			// Air unit is out of fuel
 			Game.DisbandUnit(this);
 			GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText("ERROR/FUEL")));
@@ -75,7 +75,7 @@ namespace CivOne.Units
 		protected override void MovementDone(ITile previousTile)
 		{
 			base.MovementDone(previousTile);
-			
+
 			FuelLeft--;
 			HandleFuel();
 		}
@@ -88,7 +88,7 @@ namespace CivOne.Units
 			FuelLeft -= (FuelLeft % Move);
 			HandleFuel();
 		}
-		
+
 		public override IEnumerable<MenuItem<int>> MenuItems
 		{
 			get
@@ -119,7 +119,7 @@ namespace CivOne.Units
 
 
 
-	protected BaseUnitAir(byte price = 1, byte attack = 1, byte defense = 1, byte move = 1) : base(price, attack, defense, move)
+		protected BaseUnitAir(byte price = 1, byte attack = 1, byte defense = 1, byte move = 1) : base(price, attack, defense, move)
 		{
 			Class = UnitClass.Air;
 			TotalFuel = move;

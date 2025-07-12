@@ -28,7 +28,7 @@ namespace CivOne.Units
 					unit.X = X;
 					unit.Y = Y;
 					// Unsentry    why ?
-//					unit.Sentry = false;
+					// unit.Sentry = false;
 				}
 			}
 

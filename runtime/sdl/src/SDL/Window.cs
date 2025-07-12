@@ -17,14 +17,14 @@ using System.Runtime.InteropServices;
 
 namespace CivOne
 {
-    internal static partial class SDL
+	internal static partial class SDL
 	{
 		internal abstract partial class Window : IDisposable
 		{
 			private readonly IntPtr _handle, _renderer;
 
-			private bool _running = true; 
-            private bool _redraw;
+			private bool _running = true;
+			private bool _redraw;
 
 			private void Log(string message) => OnLog?.Invoke(message);
 
@@ -54,7 +54,7 @@ namespace CivOne
 				Marshal.FreeHGlobal(ptr);
 				return output;
 			}
-			
+
 			private void HandleEvent(SDL_Event sdlEvent)
 			{
 				switch (sdlEvent.SDL_EventType)
@@ -84,7 +84,7 @@ namespace CivOne
 			public void Run()
 			{
 				OnLoad?.Invoke(this, EventArgs.Empty);
-				
+
 				while (_running)
 				{
 					if (SDL_PollEvent(out SDL_Event sdlEvent) == 1)
@@ -119,7 +119,7 @@ namespace CivOne
 			{
 				SDL_Delay(time);
 			}
-			
+
 			protected int Width
 			{
 				get
@@ -160,18 +160,18 @@ namespace CivOne
 
 					int i = 0;
 					for (int yy = 0; yy < width; yy++)
-					for (int xx = 0; xx < width; xx++)
-					{
-						Colour colour = value.Palette[value.Bitmap[xx, yy]];
-						bytes[i++] = colour.A;
-						bytes[i++] = colour.R;
-						bytes[i++] = colour.G;
-						bytes[i++] = colour.B;
-					}
+						for (int xx = 0; xx < width; xx++)
+						{
+							Colour colour = value.Palette[value.Bitmap[xx, yy]];
+							bytes[i++] = colour.A;
+							bytes[i++] = colour.R;
+							bytes[i++] = colour.G;
+							bytes[i++] = colour.B;
+						}
 
 					IntPtr pixels = Marshal.AllocHGlobal(bytes.Length);
 					Marshal.Copy(bytes, 0, pixels, bytes.Length);
-					
+
 					IntPtr surface = SDL_CreateRGBSurfaceFrom(pixels, width, height, 32, width * 4, 0x0000ff00, 0x00ff0000, 0xff000000, 0x000000ff);
 
 					SDL_SetWindowIcon(_handle, surface);
@@ -182,7 +182,7 @@ namespace CivOne
 				}
 			}
 
-            protected Window(string title, int width, int height, bool fullscreen, bool softwareRender = false)
+			protected Window(string title, int width, int height, bool fullscreen, bool softwareRender = false)
 			{
 				_title = title;
 
@@ -194,9 +194,9 @@ namespace CivOne
 
 				SDL_WINDOW flags = SDL_WINDOW.RESIZABLE;
 
-                // ReSharper disable once AssignmentInConditionalExpression
-                if (_fullscreen = fullscreen) 
-                    flags |= SDL_WINDOW.FULLSCREEN_DESKTOP;
+				// ReSharper disable once AssignmentInConditionalExpression
+				if (_fullscreen = fullscreen)
+					flags |= SDL_WINDOW.FULLSCREEN_DESKTOP;
 
 				_handle = SDL_CreateWindow(title, 100, 100, width, height, flags);
 				_renderer = softwareRender ? IntPtr.Zero : SDL_CreateRenderer(_handle, -1, SDL_RENDERER_FLAGS.SDL_RENDERER_ACCELERATED);
