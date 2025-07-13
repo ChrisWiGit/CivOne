@@ -29,110 +29,148 @@ namespace CivOne.Units
 			}
 
 			Tile.Visit(Owner);
+			VisitHut();
 
+			if ((previousTile.Road || previousTile.RailRoad) && (Tile.Road || Tile.RailRoad))
+			{
+				TravelOnRoad(previousTile);
+
+				return;
+			}
+
+			if (Tile.Type == Terrain.Ocean)
+			{
+				TravelOnOcean(previousTile);
+
+				return;
+			}
+
+			MoveOnYourOwn();
+		}
+
+		private void VisitHut()
+		{
 			if (Tile.Hut)
 			{
 				Tile.Hut = false;
 				TribalHut();
 			}
+		}
 
-			if ((previousTile.Road || previousTile.RailRoad) && (Tile.Road || Tile.RailRoad))
+		private void TravelOnOcean(ITile previousTile)
+		{
+			bool unloadFromShip = !previousTile.IsOcean;
+
+			if (unloadFromShip)
 			{
-				if ((Tile.RailRoad || Tile.City != null) && previousTile.RailRoad)
-				{
-					// No moves lost
-				}
-				else if (PartMoves > 0)
-				{
-					PartMoves--;
-				}
-				else
-				{
-					if (MovesLeft > 0)
-						MovesLeft--;
-					PartMoves = 2;
-				}
+				SkipTurn();
 			}
-			else if (Tile.Type == Terrain.Ocean)
+
+			Sentry = true;
+			foreach (IUnit unit in Tile.Units.Where(u => u is IBoardable))
 			{
-				if (!previousTile.IsOcean)
-				{
-					SkipTurn();
-				}
-				Sentry = true;
-				foreach (IUnit unit in Tile.Units.Where(u => u is IBoardable))
-				{
-					unit.Sentry = false;
-				}
+				unit.Sentry = false;
+			}
+		}
+
+		private void MoveOnYourOwn()
+		{
+			Debug.Assert(Class == UnitClass.Land);
+
+			PartMoves = 0; // fire-eggs 20190806 we've moved off-road: all partial moves always lost
+			if (MovesLeft > 0)
+			{
+				return;
+			}
+		
+			byte moveCosts = Tile.Movement;		
+		
+			if (MovesLeft < moveCosts)
+				moveCosts = MovesLeft;
+			MovesLeft -= moveCosts;
+		}
+
+		private void TravelOnRoad(ITile previousTile)
+		{
+			bool continuousTravelingOnRailRoad = (Tile.RailRoad || Tile.City != null) && previousTile.RailRoad;
+
+			if (continuousTravelingOnRailRoad)
+			{
+				// No moves lost
+				return;
+			}
+
+			if (PartMoves > 0)
+			{
+				PartMoves--;
 			}
 			else
 			{
 				if (MovesLeft > 0)
-				{
-					//byte moveCosts = 1;
-					//if (Class == UnitClass.Land) // TODO fire-eggs isn't this always true?
-					//	moveCosts = Map[X, Y].Movement;
-                    byte moveCosts = Tile.Movement;
-                    Debug.Assert(Class == UnitClass.Land);
-					if (MovesLeft < moveCosts)
-						moveCosts = MovesLeft;
-					MovesLeft -= moveCosts;
-                }
-                PartMoves = 0; // fire-eggs 20190806 we've moved off-road: all partial moves always lost
+					MovesLeft--;
+				PartMoves = 2;
 			}
 		}
 
-		private void TribalHutMessage(EventHandler method, bool runFirst, params string[] message)
+		private void TribalHutMessage(EventHandler eventHandler, bool runFirst, params string[] message)
 		{
-            // fire-eggs 20190801 perform the side-effect FIRST so the barbarian units appear BEFORE the message
-            if (runFirst)
-                method(this, null);
+			// fire-eggs 20190801 perform the side-effect FIRST so the barbarian units appear BEFORE the message
+			if (runFirst)
+			{
+				eventHandler(this, null);
+			}
 
 			if (Player.IsHuman)
 			{
 				Message msgBox = Message.General(message);
-                if (!runFirst)
-				    msgBox.Done += method;
+				if (!runFirst)
+					msgBox.Done += eventHandler;
 				GameTask.Insert(msgBox);
 				return;
 			}
-            if (!runFirst)
-			    method(this, null);
+			if (!runFirst)
+			{
+				eventHandler(this, null);
+			}
 		}
 
 		private int NearestCity
 		{
 			get
 			{
-				int output = 0;
-				if (Game.Instance.GetCities().Any())
-					output = Game.Instance.GetCities().Select(c => Common.DistanceToTile(_x, _y, c.X, c.Y)).Min();
-				return output;
+				if (Game.Instance.GetCities().Length == 0)
+				{
+					return 0;
+				}
+				return Game.Instance.GetCities().Select(c => Common.DistanceToTile(_x, _y, c.X, c.Y)).Min();
 			}
 		}
 
-        private void TribalHut(HutResult result = HutResult.Random)
-        {
-			switch(result)
+		private void TribalHut(HutResult result = HutResult.Random)
+		{
+			switch (result)
 			{
 				case HutResult.MetalDeposits:
-                    TribalHutMessage((s, e) => { Player.Gold += 50; }, false, 
-                        "You have discovered", "valuable metal deposits", "worth 50$");
+					TribalHutMessage((s, e) => { Player.Gold += 50; }, false,
+						"You have discovered", "valuable metal deposits", "worth 50$");
 					return;
 				case HutResult.FriendlyTribe:
-					TribalHutMessage((s, e) => {
-						Game.Instance.CreateUnit(Common.Random.Next(0, 100) < 50 ? 
-                                                UnitType.Cavalry : UnitType.Legion, 
-                                                X, Y, Owner, true);
+					TribalHutMessage((s, e) =>
+					{
+						Game.Instance.CreateUnit(Common.Random.Next(0, 100) < 50 ?
+												UnitType.Cavalry : UnitType.Legion,
+												X, Y, Owner, true);
 					}, false, "You have discovered", "a friendly tribe of", "skilled mercenaries.");
 					return;
 				case HutResult.AdvancedTribe:
-					TribalHutMessage((s, e) => {
+					TribalHutMessage((s, e) =>
+					{
 						GameTask.Enqueue(Orders.NewCity(Player, _x, _y));
 					}, false, "You have discovered", "an advanced tribe.");
 					return;
 				case HutResult.AncientScrolls:
-					TribalHutMessage((s, e) => {
+					TribalHutMessage((s, e) =>
+					{
 						// This seems curious but this is how it actually probably happens in the original game
 						IAdvance[] available = Game.Instance.CurrentPlayer.AvailableResearch.ToArray();
 						int advanceId = Common.Random.Next(0, 72);
@@ -145,7 +183,8 @@ namespace CivOne.Units
 					}, false, "You have discovered", "scrolls of ancient wisdom.");
 					return;
 				case HutResult.Barbarians:
-					TribalHutMessage((s, e) => {
+					TribalHutMessage((s, e) =>
+					{
 						//TODO: Find out how the barbarians should be created
 						// This implementation is an approximation
 						int count = 0;
@@ -161,7 +200,7 @@ namespace CivOne.Units
 							}
 							if (count > 0) break;
 						}
-                    }, true, "You have unleashed", "a horde of barbarians!");
+					}, true, "You have unleashed", "a horde of barbarians!");
 					return;
 			}
 
@@ -205,7 +244,7 @@ namespace CivOne.Units
 					break;
 			}
 		}
-		
+
 		public override IEnumerable<MenuItem<int>> MenuItems
 		{
 			get
@@ -236,7 +275,7 @@ namespace CivOne.Units
 			// If the tile is not an ocean tile, movement is allowed
 			if (tile.Type != Terrain.Ocean)
 				return true;
-			
+
 			// This query checks if there's a boardable cargo vessel with free slots on the tile.
 			return (tile.Units.Any(x => x.Owner == Owner) && tile.Units.Any(u => (u is IBoardable)) && tile.Units.Where(u => u is IBoardable).Sum(u => (u as IBoardable).Cargo) > tile.Units.Count(u => u.Class == UnitClass.Land));
 		}
@@ -244,7 +283,7 @@ namespace CivOne.Units
 		protected BaseUnitLand(byte price = 1, byte attack = 1, byte defense = 1, byte move = 1) : base(price, attack, defense, move)
 		{
 			Class = UnitClass.Land;
-            Role = UnitRole.LandAttack;
-        }
+			Role = UnitRole.LandAttack;
+		}
 	}
 }
