@@ -78,7 +78,7 @@ namespace CivOne.Units
 			Debug.Assert(Class == UnitClass.Land);
 
 			PartMoves = 0; // fire-eggs 20190806 we've moved off-road: all partial moves always lost
-			if (MovesLeft > 0)
+			if (MovesLeft == 0)
 			{
 				return;
 			}
