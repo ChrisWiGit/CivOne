@@ -1,5 +1,11 @@
 # Changes
 
+* Major Update in Unit Movement
+  * Refactoring for better understanding of movement logic.
+  * Separation of movement logic for land, air, and sea units (using OOP)
+    * Caravans movement logic moved to Caravan.cs
+  * Fixing Fuel value for air units, because its value was not being used with/in savegame files and therefore not restored.
+  * Logic of air units fixed (disbanding now works correctly for bomber (2rounds), fighter, and nuclear).
 * Settlers build roads/railroads like in the original CIV1.
   * WorkProgress is stored in save file
   * WorkProgress is stored for each settler separately

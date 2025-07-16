@@ -22,8 +22,14 @@ namespace CivOne.Units
 {
 	internal abstract class BaseUnitAir : BaseUnit
 	{
-		public int TotalFuel { get; protected set; }
-		public int FuelLeft { get; set; }
+		public byte TotalFuel { get; protected set; }
+
+		// Store it in FuelOrProgress so that it can be saved and loaded from save files
+		public byte FuelLeft
+		{
+			get => FuelOrProgress;
+			set => FuelOrProgress = value;
+		}
 
 
 		// Check for room on flight deck
@@ -83,9 +89,6 @@ namespace CivOne.Units
 		public override void SkipTurn()
 		{
 			MovesLeft = 0;
-			if (FuelLeft == Move)
-				FuelLeft -= Move;
-			FuelLeft -= (FuelLeft % Move);
 			HandleFuel();
 		}
 
@@ -114,16 +117,16 @@ namespace CivOne.Units
 
 		protected override bool ValidMoveTarget(ITile tile)
 		{
-			return (tile != null);
+			return tile != null;
 		}
 
 
 
-		protected BaseUnitAir(byte price = 1, byte attack = 1, byte defense = 1, byte move = 1) : base(price, attack, defense, move)
+		protected BaseUnitAir(byte price = 1, byte attack = 1, byte defense = 1, byte movesCount = 1) : base(price, attack, defense, movesCount)
 		{
 			Class = UnitClass.Air;
-			TotalFuel = move;
-			FuelLeft = move;
+			TotalFuel = movesCount;
+			FuelLeft = movesCount;
 		}
 	}
 }

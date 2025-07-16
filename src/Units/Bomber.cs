@@ -18,7 +18,22 @@ namespace CivOne.Units
 		{
 			Explore(2);
 		}
-		
+
+		public override void SkipTurn()
+		{
+			MovesLeft = 0;
+
+			if (FuelLeft > 8)
+			{
+				// second turn allowed.
+				FuelLeft = 8;
+				return;
+			}
+			FuelLeft = 0;
+
+			base.SkipTurn();
+		}
+
 		public Bomber() : base(12, 12, 1, 8)
 		{
 			Type = UnitType.Bomber;

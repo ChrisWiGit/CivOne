@@ -10,9 +10,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using CivOne.Advances;
 using CivOne.Enums;
+using CivOne.IO;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.UserInterface;
@@ -266,6 +268,107 @@ namespace CivOne.Units
 				yield return MenuDisbandUnit();
 			}
 		}
+
+		public override bool MoveTo(int relX, int relY)
+		{
+			// no base.MoveTo. We handle everything on our own.
+			Debug.Assert(Class == UnitClass.Land);
+
+			if (Movement != null) return false;
+
+			ITile moveTarget = Map[X, Y][relX, relY];
+			if (moveTarget == null) return false;
+
+
+			// if (Class == UnitClass.Land && !(this is Diplomat || this is Caravan))
+			if (this is not (Diplomat or Caravan))
+			{
+				if (!CanMoveTo(relX, relY))
+				{
+					if (Human == Owner)
+					{
+						Goto = Point.Empty;             // Cancel any goto mode ( maybe for AI too ?? )
+						GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText($"ERROR/ZOC")));
+					}
+					return false;
+				}
+			}
+
+			bool? attacked = ConfrontCity(moveTarget, relX, relY);
+			if (attacked.HasValue)
+			{
+				return attacked.Value;
+			}
+
+			// if (!MoveTargets.Any(t => t.X == moveTarget.X && t.Y == moveTarget.Y))
+			if (!MoveTargets.Any(t => t.SameLocationAs(moveTarget)))
+			{
+				// Target tile is invalid
+				// TODO: For some tiles, display a message detailing why the move is illegal
+				return false;
+			}
+
+			// Checking Enemy Confrontation after MoveTargets check,
+			// a land unit cannot attack an enemy city on ocean tile
+			if (HasEnemyOnTarget(moveTarget))
+			{
+				return ConfrontEnemy(moveTarget, relX, relY);
+			}
+
+			// TODO: This implementation was done by observation, may need a revision
+			if ((moveTarget.Road || moveTarget.RailRoad) && (Tile.Road || Tile.RailRoad))
+			{
+				// Handle movement in MovementDone
+			}
+			else if (MovesLeft == 0 && !moveTarget.Road && moveTarget.Movement > 1)
+			{
+				if (!TryLeavingRoad(moveTarget, relX, relY))
+				{
+					return false;
+				}
+			}
+
+			MovementTo(relX, relY);
+			return true;
+		}
+
+		protected virtual bool TryLeavingRoad(ITile moveTarget, int relX, int relY)
+		{
+			bool success;
+			if (PartMoves >= 2)
+			{
+				// 2/3 moves left? 50% chance of success
+				success = Common.Random.Next(0, 2) == 0;
+			}
+			else
+			{
+				// 1/3 moves left? 33% chance of success
+				success = Common.Random.Next(0, 3) == 0;
+			}
+
+			if (success)
+			{
+				return true;
+			}
+
+			PartMoves = 0;
+			return false;
+		}
+
+
+		protected override bool ConfrontEnemy(ITile moveTarget, int relX, int relY)
+		{
+			if (Tile.IsOcean)
+			{
+				if (Human == Owner)
+					GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText($"ERROR/AMPHIB")));
+				return false;
+			}
+
+			return base.ConfrontEnemy(moveTarget, relX, relY);
+		}
+
+
 
 		protected override bool ValidMoveTarget(ITile tile)
 		{

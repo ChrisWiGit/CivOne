@@ -519,86 +519,89 @@ namespace CivOne.Units
 
 		public virtual bool MoveTo(int relX, int relY)
 		{
-            // TODO fire-eggs: isn't this all land unit logic? refactor MoveTo into BaseUnitLand?
-
 			if (Movement != null) return false;
 
 			ITile moveTarget = Map[X, Y][relX, relY];
 			if (moveTarget == null) return false;
-			if (moveTarget.Units.Any(u => u.Owner != Owner))
-			{
-                Goto = Point.Empty;             // Cancel any goto mode
 
-				if (Class == UnitClass.Land && Tile.IsOcean) // can't attack enemy unit on land when on a ship
-				{
-					if (Human == Owner)
-                        GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText($"ERROR/AMPHIB")));
-					return false;
-				}
-
-                // Issue #84 : failure to prompt on low-strength attack
-                if (Human == Owner && MovesLeft == 0 && PartMoves > 0)
-                {
-                    GameTask.Enqueue(Show.WeakAttack(this, relX, relY));
-                    return true;
-                }
-
-				return Confront(relX, relY);
-			}
-			if (Class == UnitClass.Land && !(this is Diplomat || this is Caravan))
-            {
-                if (!CanMoveTo(relX, relY))
-                {
-                    if( Human == Owner )
-                    {
-                       Goto = Point.Empty;             // Cancel any goto mode ( maybe for AI too ?? )
-                       GameTask.Enqueue( Message.Error( "-- Civilization Note --", TextFile.Instance.GetGameText( $"ERROR/ZOC" ) ) );
-                    }
-					return false;
-				}
-			}
-
-            // fire-eggs Caravan needs to be able to move into owner city
-			if (moveTarget.City != null && (moveTarget.City.Owner != Owner || this is Caravan))
-			{
-				return Confront(relX, relY);
-			}
-
-			if (!MoveTargets.Any(t => t.X == moveTarget.X && t.Y == moveTarget.Y))
+			// if (!MoveTargets.Any(t => t.X == moveTarget.X && t.Y == moveTarget.Y))
+			if (!MoveTargets.Any(t => t.SameLocationAs(moveTarget)))
 			{
 				// Target tile is invalid
 				// TODO: For some tiles, display a message detailing why the move is illegal
 				return false;
 			}
 
-			// TODO: This implementation was done by observation, may need a revision
-			if ((moveTarget.Road || moveTarget.RailRoad) && (Tile.Road || Tile.RailRoad))
+			bool? attacked = ConfrontCity(moveTarget, relX, relY);
+			if (attacked.HasValue)
 			{
-				// Handle movement in MovementDone
+				return attacked.Value;
 			}
-			else if (MovesLeft == 0 && !moveTarget.Road && moveTarget.Movement > 1)
-			{
-				bool success;
-				if (PartMoves >= 2)
-				{
-					// 2/3 moves left? 50% chance of success
-					success = (Common.Random.Next(0, 2) == 0);
-				}
-				else
-				{
-					// 1/3 moves left? 33% chance of success
-					success = (Common.Random.Next(0, 3) == 0);
-				}
 
-				if (!success)
-				{
-					PartMoves = 0;
-					return false;
-				}
+			if (HasEnemyOnTarget(moveTarget))
+			{
+				return ConfrontEnemy(moveTarget, relX, relY);
+			}
+
+			// if (!MoveTargets.Any(t => t.X == moveTarget.X && t.Y == moveTarget.Y))
+			if (!MoveTargets.Any(t => t.SameLocationAs(moveTarget)))
+			{
+				// Target tile is invalid
+				// TODO: For some tiles, display a message detailing why the move is illegal
+				return false;
 			}
 
 			MovementTo(relX, relY);
 			return true;
+		}
+
+		protected virtual bool? ConfrontCity(ITile moveTarget, int relX, int relY)
+		{
+			// fire-eggs Caravan needs to be able to move into owner city
+			bool hasTargetCity = moveTarget.City != null;
+			bool belongsTargetCityOwner = moveTarget.City?.Owner == Owner;
+
+			// if (moveTarget.City != null && (moveTarget.City.Owner != Owner || this is Caravan))
+			if (hasTargetCity && !belongsTargetCityOwner)
+			{
+				return Confront(relX, relY);
+			}
+
+			return null;
+		}
+
+		protected bool HasEnemyOnTarget(ITile moveTarget)
+		{
+			return moveTarget.Units.Any(u => u.Owner != Owner);
+		}
+
+
+		protected virtual bool ConfrontEnemy(ITile moveTarget, int relX, int relY)
+		{
+			Goto = Point.Empty;             // Cancel any goto mode
+
+			if (!CanAttackEnemy(moveTarget))
+			{
+				// Units cannot attack air units.
+				// Exception in Fighter.CanAttackEnemy().
+				return false;
+			}
+
+			// Issue #84 : failure to prompt on low-strength attack
+			if (Human == Owner && MovesLeft == 0 && PartMoves > 0)
+			{
+				GameTask.Enqueue(Show.WeakAttack(this, relX, relY));
+				return true;
+			}
+
+			return Confront(relX, relY);
+		}
+
+		protected virtual bool CanAttackEnemy(ITile moveTarget)
+		{
+			// Cannot attack not air units. Only if on a Carrier.
+			return moveTarget.Units.Any(u => u.Class != UnitClass.Air) ||
+				moveTarget.Units.Any(u => u is not BaseUnitAir);
 		}
 
 		private void MoveEnd(object sender, EventArgs args)

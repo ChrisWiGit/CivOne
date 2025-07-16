@@ -60,5 +60,10 @@ namespace CivOne.Tiles
 
         IUnit[] Units { get; }
 		ITile this[int relativeX, int relativeY] { get; }
+		
+		bool SameLocationAs(ITile other)
+		{
+			return this.X == other.X && this.Y == other.Y;
+		}
 	}
 }

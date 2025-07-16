@@ -9,6 +9,7 @@
 
 using CivOne.Advances;
 using CivOne.Enums;
+using CivOne.Tiles;
 
 namespace CivOne.Units
 {
@@ -17,6 +18,19 @@ namespace CivOne.Units
 		public override void Explore()
 		{
 			Explore(2);
+		}
+		
+		protected override bool CanAttackEnemy(ITile moveTarget)
+		{
+			// Only Fighter can attack air units and all other units.
+			return true;
+		}
+
+		public override void SkipTurn()
+		{
+			FuelLeft = 0;
+
+			base.SkipTurn();
 		}
 
 		public Fighter() : base(6, 4, 2, 10)

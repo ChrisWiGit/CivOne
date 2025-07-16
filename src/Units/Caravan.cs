@@ -74,33 +74,53 @@ namespace CivOne.Units
 		{
 			ITile moveTarget = Map[X, Y][relX, relY];
 			City city = moveTarget.City;
+			
+			bool hasTargetCity = city != null;
+			bool isCityOwner = hasTargetCity && city.Owner == Owner;
 
             // fire-eggs Caravan can build wonder even in home city
-            if (city != null && city.Owner == Owner && Game.Human == Owner)
-            {
-                // TODO fire-eggs this seems like bad design: how to determine whether to show a menu, without activating the menu?
-                if (city.IsBuildingWonder || CaravanChoice.AllowEstablishTradeRoute(this,city))
-                    GameTask.Enqueue(Show.CaravanChoice(this, city));
-                else
-                {
-                    MovementTo(relX,relY);
-                }
-                return true;
-            }
+			if (isCityOwner && Human == Owner)
+			{
+				// TODO fire-eggs this seems like bad design: how to determine whether to show a menu, without activating the menu?
+				if (city.IsBuildingWonder || CaravanChoice.AllowEstablishTradeRoute(this, city))
+				{
+					GameTask.Enqueue(Show.CaravanChoice(this, city));
+				}
+				else
+				{
+					MovementTo(relX, relY);
+				}
+				return true;
+			}
 
-            if (city == null || city == Home || (city.Owner == Owner && Home != null && moveTarget.DistanceTo(Home) < 10))
+            if (!hasTargetCity || city == Home ||
+				(isCityOwner && Home != null && moveTarget.DistanceTo(Home) < 10))
 			{
 				MovementTo(relX, relY);
 				return true;
 			}
 
-			if (city.Owner != Owner)
+			if (!isCityOwner)
 			{
 				EstablishTradeRoute(moveTarget.City);
 				return true;
 			}
 
 			return true;
+		}
+		
+		protected override bool? ConfrontCity(ITile moveTarget, int relX, int relY)
+		{
+			// fire-eggs Caravan needs to be able to move into owner city
+			bool hasTargetCity = moveTarget.City != null;
+
+			// if (moveTarget.City != null && (moveTarget.City.Owner != Owner || this is Caravan))
+			if (hasTargetCity)
+			{
+				return Confront(relX, relY);
+			}
+
+			return null;
 		}
 
 		public Caravan() : base(5, 0, 1, 1)

@@ -19,6 +19,13 @@ namespace CivOne.Units
 		{
 			Explore(2);
 		}
+
+		public override void SkipTurn()
+		{
+			FuelLeft = 0;
+
+			base.SkipTurn();
+		}
 		
 		public Nuclear() : base(16, 99, 0, 16)
 		{
