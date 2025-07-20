@@ -193,7 +193,10 @@ namespace CivOne
 
 				//CW: not sure why this happens to AI cities, 
 				// but a city tile may have a hut which reappears after a city is destroyed (funny).
-				city.Tile.Hut = false;
+				if (city.Tile != null)
+				{
+					city.Tile.Hut = false;
+				}
 
 				foreach (byte fortifiedUnit in cityData.FortifiedUnits)
                 {
