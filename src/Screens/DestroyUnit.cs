@@ -122,7 +122,14 @@ namespace CivOne.Screens
 				foreach (IUnit unit in units)
 					Game.DisbandUnit(unit);
 				Common.GamePlay.RefreshMap();
-				Common.GamePlay.Update(gameTick);
+				// CW: Okay, this is wild.
+				// If a city/unit is attacked and destroyed, its icon is displayed right after the destruction animation.
+				// When a city defended itself successfully it looks like as if the unit is within the city.
+				// I think this is a race condition, when drawing the unit icon another time right after the destruction animation.
+				// It helped to increase the gameTick by 1, so that inner workings work differently.
+				// It may break again in the future.
+				uint doNotDrawUnitAfterDestruction = gameTick + 1;
+				Common.GamePlay.Update(doNotDrawUnitAfterDestruction);
 				Destroy();
 			}
 
