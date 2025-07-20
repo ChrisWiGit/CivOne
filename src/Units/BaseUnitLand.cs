@@ -280,20 +280,6 @@ namespace CivOne.Units
 			if (moveTarget == null) return false;
 
 
-			// if (Class == UnitClass.Land && !(this is Diplomat || this is Caravan))
-			if (this is not (Diplomat or Caravan))
-			{
-				if (!CanMoveTo(relX, relY))
-				{
-					if (Human == Owner)
-					{
-						Goto = Point.Empty;             // Cancel any goto mode ( maybe for AI too ?? )
-						GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText($"ERROR/ZOC")));
-					}
-					return false;
-				}
-			}
-
 			bool? attacked = ConfrontCity(moveTarget, relX, relY);
 			if (attacked.HasValue)
 			{
@@ -313,6 +299,20 @@ namespace CivOne.Units
 			if (HasEnemyOnTarget(moveTarget))
 			{
 				return ConfrontEnemy(moveTarget, relX, relY);
+			}
+
+			// if (Class == UnitClass.Land && !(this is Diplomat || this is Caravan))
+			if (this is not (Diplomat or Caravan))
+			{
+				if (!CanMoveTo(relX, relY))
+				{
+					if (Human == Owner)
+					{
+						Goto = Point.Empty;             // Cancel any goto mode ( maybe for AI too ?? )
+						GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText($"ERROR/ZOC")));
+					}
+					return false;
+				}
 			}
 
 			// TODO: This implementation was done by observation, may need a revision
