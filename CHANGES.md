@@ -1,5 +1,6 @@
 # Changes
 
+* Prevent a destroyed unit to be shown for a short time in the place of the attacked unit or city.
 * Fix: Destroying an AI city does not show the hut on the tile anymore.
 * Major Update in Unit Movement
   * Refactoring for better understanding of movement logic.
