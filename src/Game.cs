@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
 using CivOne.Advances;
@@ -24,7 +25,7 @@ using CivOne.Wonders;
 
 namespace CivOne
 {
-	public partial class Game : BaseInstance
+	public partial class Game : BaseInstance, IGame, ILogger
 	{
 		private readonly int _difficulty, _competition;
 		private readonly Player[] _players;
@@ -70,7 +71,7 @@ namespace CivOne
 		public bool HasUpdate => false;
 
 		private ushort _gameTurn;
-		internal ushort GameTurn
+		public ushort GameTurn
 		{
 			get
 			{
@@ -128,7 +129,7 @@ namespace CivOne
 			return 0;
 		}
 
-		internal Player GetPlayer(byte number)
+		public Player GetPlayer(byte number)
 		{
 			if (_players.Length < number)
 				return null;
@@ -483,6 +484,8 @@ namespace CivOne
 
 		public City[] GetCities() => _cities.ToArray();
 
+		public ReadOnlyCollection<City> Cities { get { return _cities.AsReadOnly(); } }
+
 		public IWonder[] BuiltWonders => _cities.SelectMany(c => c.Wonders).ToArray();
 
 		public bool WonderBuilt<T>() where T : IWonder => BuiltWonders.Any(w => w is T);
@@ -624,6 +627,19 @@ namespace CivOne
 
 		public static bool Started => (_instance != null);
 
+
+		/**
+		 * Logging method.
+		 * Use this method with ILogger for Dependency Injection.
+		 *
+		 * @param text The text to log.
+		 * @param parameters Optional parameters to format the text with.
+		 */		
+		public new void Log(string text, params object[] parameters)
+		{
+			BaseInstance.Log(text, parameters);
+		}
+
 		private static Game _instance;
 		public static Game Instance
 		{
@@ -631,7 +647,7 @@ namespace CivOne
 			{
 				if (_instance == null)
 				{
-					Log("ERROR: Game instance does not exist");
+					BaseInstance.Log("ERROR: Game instance does not exist");
 				}
 				return _instance;
 			}

@@ -144,5 +144,7 @@ namespace CivOne.Units
 		/// Perform pillaging activity
 		/// </summary>
 		void Pillage();
+
+		int NearestCity { get; }
 	}
 }

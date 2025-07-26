@@ -159,7 +159,7 @@ namespace CivOne
 		{
 			if (_instance != null)
 			{
-				Log("ERROR: Game instance already exists");
+				BaseInstance.Log("ERROR: Game instance already exists");
 				return;
 			}
 			_instance = new Game(difficulty, competition, tribe, leaderName, tribeName, tribeNamePlural);

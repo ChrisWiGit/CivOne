@@ -12,11 +12,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using CivOne.Advances;
 using CivOne.Enums;
 using CivOne.IO;
 using CivOne.Tasks;
 using CivOne.Tiles;
+using CivOne.Units.TribalHuts;
 using CivOne.UserInterface;
 
 namespace CivOne.Units
@@ -52,11 +52,21 @@ namespace CivOne.Units
 
 		private void VisitHut()
 		{
-			if (Tile.Hut)
+			if (!Tile.Hut)
 			{
-				Tile.Hut = false;
-				TribalHut();
+				return;
 			}
+
+			Tile.Hut = false;
+
+			TribalHutsVisitorProvider.provide(
+				Player,
+				Map,
+				currentUnit: this,
+				Game.Instance,	
+				Game.Instance,	
+				Common.Random
+			).ExecuteRandomTribalHutEvent();
 		}
 
 		private void TravelOnOcean(ITile previousTile)
@@ -112,140 +122,7 @@ namespace CivOne.Units
 					MovesLeft--;
 				PartMoves = 2;
 			}
-		}
-
-		private void TribalHutMessage(EventHandler eventHandler, bool runFirst, params string[] message)
-		{
-			// fire-eggs 20190801 perform the side-effect FIRST so the barbarian units appear BEFORE the message
-			if (runFirst)
-			{
-				eventHandler(this, null);
-			}
-
-			if (Player.IsHuman)
-			{
-				Message msgBox = Message.General(message);
-				if (!runFirst)
-					msgBox.Done += eventHandler;
-				GameTask.Insert(msgBox);
-				return;
-			}
-			if (!runFirst)
-			{
-				eventHandler(this, null);
-			}
-		}
-
-		private int NearestCity
-		{
-			get
-			{
-				if (Game.Instance.GetCities().Length == 0)
-				{
-					return 0;
-				}
-				return Game.Instance.GetCities().Select(c => Common.DistanceToTile(_x, _y, c.X, c.Y)).Min();
-			}
-		}
-
-		private void TribalHut(HutResult result = HutResult.Random)
-		{
-			switch (result)
-			{
-				case HutResult.MetalDeposits:
-					TribalHutMessage((s, e) => { Player.Gold += 50; }, false,
-						"You have discovered", "valuable metal deposits", "worth 50$");
-					return;
-				case HutResult.FriendlyTribe:
-					TribalHutMessage((s, e) =>
-					{
-						Game.Instance.CreateUnit(Common.Random.Next(0, 100) < 50 ?
-												UnitType.Cavalry : UnitType.Legion,
-												X, Y, Owner, true);
-					}, false, "You have discovered", "a friendly tribe of", "skilled mercenaries.");
-					return;
-				case HutResult.AdvancedTribe:
-					TribalHutMessage((s, e) =>
-					{
-						GameTask.Enqueue(Orders.NewCity(Player, _x, _y));
-					}, false, "You have discovered", "an advanced tribe.");
-					return;
-				case HutResult.AncientScrolls:
-					TribalHutMessage((s, e) =>
-					{
-						// This seems curious but this is how it actually probably happens in the original game
-						IAdvance[] available = Game.Instance.CurrentPlayer.AvailableResearch.ToArray();
-						int advanceId = Common.Random.Next(0, 72);
-						for (int i = 0; i < 1000; i++)
-						{
-							if (!available.Any(a => a.Id == (advanceId + i) % 72)) continue;
-							GameTask.Enqueue(new GetAdvance(Game.Instance.CurrentPlayer, available.First(a => a.Id == (advanceId + i) % 72)));
-							break;
-						}
-					}, false, "You have discovered", "scrolls of ancient wisdom.");
-					return;
-				case HutResult.Barbarians:
-					TribalHutMessage((s, e) =>
-					{
-						//TODO: Find out how the barbarians should be created
-						// This implementation is an approximation
-						int count = 0;
-						for (int i = 0; i < 1000; i++)
-						{
-							foreach (ITile tile in Map[X, Y].GetBorderTiles())
-							{
-								if (tile.City != null || tile.Units.Length > 0) continue;
-								if (Common.Random.Next(0, 10) < 6) continue;
-								if (tile.IsOcean) continue;
-								Game.Instance.CreateUnit(Common.Random.Next(0, 100) < 50 ? UnitType.Cavalry : UnitType.Legion, tile.X, tile.Y, 0, true);
-								count++;
-							}
-							if (count > 0) break;
-						}
-					}, true, "You have unleashed", "a horde of barbarians!");
-					return;
-			}
-
-			// Tribal hut outcome, as described here: http://forums.civfanatics.com/showthread.php?t=510312
-			switch (Common.Random.Next(0, 4))
-			{
-				case 0:
-					if (NearestCity > 3)
-					{
-						if (Map[_x, _y].LandValue > 12)
-						{
-							TribalHut(HutResult.AdvancedTribe);
-							break;
-						}
-						TribalHut(HutResult.MetalDeposits);
-						break;
-					}
-					TribalHut(HutResult.FriendlyTribe);
-					break;
-				case 1:
-					if (Game.Instance.GameTurn == 0 || Common.TurnToYear(Game.Instance.GameTurn) >= 1000)
-					{
-						TribalHut(HutResult.MetalDeposits);
-						break;
-					}
-					TribalHut(HutResult.AncientScrolls);
-					break;
-				case 2:
-					TribalHut(HutResult.MetalDeposits);
-					break;
-				case 3:
-					if (NearestCity < 4 || !Game.Instance.GetCities().Any(c => Player == c.Owner))
-					{
-						TribalHut(HutResult.FriendlyTribe);
-						break;
-					}
-					TribalHut(HutResult.Barbarians);
-					break;
-				default:
-					TribalHut(HutResult.FriendlyTribe);
-					break;
-			}
-		}
+		}		
 
 		public override IEnumerable<MenuItem<int>> MenuItems
 		{

@@ -953,6 +953,18 @@ namespace CivOne.Units
 		public byte Fuel { get => FuelOrProgress; set => FuelOrProgress = value; }
 		public byte WorkProgress { get => FuelOrProgress; set => FuelOrProgress = value; }
 
+		public int NearestCity
+		{
+			get
+			{
+				if (Game.Instance.GetCities().Length == 0)
+				{
+					return 0;
+				}
+				return Game.Instance.GetCities().Select(c => Common.DistanceToTile(_x, _y, c.X, c.Y)).Min();
+			}
+		}
+
 		protected BaseUnit(byte price = 1, byte attack = 1, byte defense = 1, byte move = 1)
 		{
 			Price = price;

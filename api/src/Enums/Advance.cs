@@ -7,6 +7,8 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System.Linq;
+
 namespace CivOne.Enums
 {
 	public enum Advance
@@ -78,6 +80,11 @@ namespace CivOne.Enums
 		Robotics,
 		Conscription,
 		LaborUnion,
-		FusionPower
+		FusionPower,
+	}
+
+	public static class AdvanceExtensions
+	{
+		public static readonly Advance[] AllAdvances = System.Enum.GetValues<Advance>().Where(a => a != Advance.None).ToArray();
 	}
 }

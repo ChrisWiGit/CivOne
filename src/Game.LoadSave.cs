@@ -28,7 +28,7 @@ namespace CivOne
 			{
 				if (!adapter.ValidData)
 				{
-					Log("SaveDataAdapter failed to load game");
+					BaseInstance.Log("SaveDataAdapter failed to load game");
 					return;
 				}
 
@@ -37,7 +37,7 @@ namespace CivOne
 
 				Map.Instance.LoadMap(mapFile, adapter.RandomSeed);
 				_instance = new Game(adapter);
-				Log($"Game instance loaded (difficulty: {_instance._difficulty}, competition: {_instance._competition}");
+				BaseInstance.Log($"Game instance loaded (difficulty: {_instance._difficulty}, competition: {_instance._competition}");
 			}
 		}
 
