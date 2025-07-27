@@ -6,6 +6,7 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Make Barbarians Diplomat abandon itself if it gets lost.
 * Major Refactor tribal hut event handling and introduce interfaces for better separation of concerns and dependency injection.
 Moved from BaseUnitLand to its own domain/namespace TribalHuts. 
 Cleaned and fixed strange code behavior.

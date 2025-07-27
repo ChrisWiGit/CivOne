@@ -12,6 +12,7 @@ using CivOne.Enums;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
+using System;
 using System.Drawing;
 using System.Linq;
 
@@ -135,6 +136,14 @@ namespace CivOne
 
 			if (unit is Diplomat)
 			{
+				if (unit.WorkProgress <= 0) 
+				{
+					// See Diplomat.cs constructor for how this works.
+					Game.DisbandUnit(unit);
+					return;
+				}
+				unit.WorkProgress = (byte)(unit.WorkProgress > 0 ? unit.WorkProgress - 1 : 0);
+
 				ITile[] friendlyTiles = unit.Tile.GetBorderTiles().Where(x => !x.IsOcean && x.Units.Any() && x.Units.First().Owner == 0).ToArray(); //Game.GetUnits().Where(x => x.Owner == 0 && x.Class == UnitClass.Land && x.Tile.DistanceTo(unit.Tile) == 1).FirstOrDefault();
 				if (friendlyTiles.Length > 0)
 				{
@@ -142,6 +151,9 @@ namespace CivOne
 					int relX = moveTo.X - unit.X;
 					int relY = moveTo.Y - unit.Y;
 					unit.MoveTo(relX, relY);
+
+					// CW: DRY - duplicate code in Diplomat constructor.
+					unit.WorkProgress = (byte)(10 + Common.Random.Next(0, 20)); 
 					return;
 				}
 
