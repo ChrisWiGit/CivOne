@@ -154,9 +154,9 @@ namespace CivOne
 
 						if (tiles[0].Units.Any(x => x.Owner != unit.Owner))
 						{
-							if (unit.Role == UnitRole.Civilian || unit.Role == UnitRole.Settler)
+							if (unit.Role == UnitRole.Civilian || unit.Role == UnitRole.Settler || unit is Carrier)
 							{
-								// do not attack with civilian or settler units
+								// do not attack with civilian or settler units or carrier
 								unit.Goto = Point.Empty;
 								continue;
 							}
