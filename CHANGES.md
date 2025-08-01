@@ -32,9 +32,9 @@ I did not browse all issues on github at first, so I did not recognize that some
 * AI does no more attack with a carrier
 * Make Barbarians Diplomat abandon itself if it gets lost.
 * Major Refactor tribal hut event handling and introduce interfaces for better separation of concerns and dependency injection.
-Moved from BaseUnitLand to its own domain/namespace TribalHuts.
-Cleaned and fixed strange code behavior.
-* Prevent a destroyed unit to be shown for a short time in the place of the attacked unit or city.
+  * Moved from BaseUnitLand to its own domain/namespace TribalHuts.
+  * Cleaned and fixed strange code behavior.
+* Prevent a destroyed unit to be shown for a short time in the place of the attacked unit or city (#105)
 * Fix: Destroying an AI city does not show the hut on the tile anymore.
 * Major Update in Unit Movement
   * Refactoring for better understanding of movement logic.

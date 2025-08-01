@@ -1,9 +1,13 @@
 <!-- Please use a single sentence each line. -->
-# CivO# (Civ One Sharp)
+# CivOne# (Civ One Sharp)
 
 A civilization game clone written in C#.
 
 TODO: - Add more details about the game, and its original version.
+
+## Changes
+
+See [CHANGES.md](CHANGES.md) for a detailed list of changes and updates.
 
 ## Programm parameters
 
