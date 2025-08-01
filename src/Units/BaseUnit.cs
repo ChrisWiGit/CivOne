@@ -107,15 +107,24 @@ namespace CivOne.Units
 			get
 			{
 				return _sentry;
-		 	}
+			}
 			set
 			{
 				if (_sentry == value) return;
-                _sentry = value;
+				_sentry = value;
 				if (!_sentry || !Game.Started) return;
 				SkipTurn();
-				MovementDone(Map[X, Y]);
 			}
+		}
+		protected void SentryWithoutSkipTurn()
+		{
+			if (Sentry) return;
+			_sentry = true;
+		}
+
+		public virtual void SentryOnShip()
+		{
+			SentryWithoutSkipTurn();
 		}
 
 		public bool Moving => (Movement != null);
