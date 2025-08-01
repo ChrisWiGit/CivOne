@@ -35,6 +35,7 @@ namespace CivOne
 		private bool _customMapSize = false;
 		private bool _pathFinding = false;
 		private bool _riverFastMovement = false;
+		private bool _canalCity = false;
         private bool _autoSettlers;
 		private CursorType _cursorType = CursorType.Default;
 		private DestroyAnimation _destroyAnimation = DestroyAnimation.Sprites;
@@ -220,6 +221,17 @@ namespace CivOne
 			{
 				_riverFastMovement = value;
 				SetSetting("RiverFastMovement", _riverFastMovement ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal bool CanalCity
+		{
+			get => _canalCity;
+			set
+			{
+				_canalCity = value;
+				SetSetting("CanalCity", _canalCity ? "1" : "0");
 				Common.ReloadSettings = true;
 			}
 		}

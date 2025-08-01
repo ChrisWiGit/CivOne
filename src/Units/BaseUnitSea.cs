@@ -23,7 +23,7 @@ namespace CivOne.Units
 		/**
 		 * Enable or disable the ability to cross a canal city without losing all movement points.
 		 */
-		private Boolean AllowCanalCity => false;
+		private Boolean AllowCanalCity => Settings.Instance.CanalCity;
 
 		private readonly int _range;
 
