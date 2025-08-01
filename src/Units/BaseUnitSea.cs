@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CivOne.Enums;
@@ -19,13 +20,18 @@ namespace CivOne.Units
 {
 	internal abstract class BaseUnitSea : BaseUnit
 	{
+		/**
+		 * Enable or disable the ability to cross a canal city without losing all movement points.
+		 */
+		private Boolean AllowCanalCity => false;
+
 		private readonly int _range;
 
 		public int Range => _range;
 
-		private IEnumerable<IUnit> MoveUnits(ITile previousTile)
+		protected virtual IEnumerable<IUnit> MoveUnits(ITile previousTile)
 		{
-			if (!(this is IBoardable) || !previousTile.Units.Any(u => u.Class == UnitClass.Land)) yield break;
+			if (this is not IBoardable || !previousTile.Units.Any(u => u.Class == UnitClass.Land)) yield break;
 
 			IUnit[] moveUnits = previousTile.Units.Where(u => u.Class == UnitClass.Land).ToArray();
 			if (previousTile.City != null)
@@ -39,10 +45,9 @@ namespace CivOne.Units
 
 		protected override void MovementStart(ITile previousTile)
 		{
-			// TODO fire-eggs this causes any carried units to lose movement (e.g. wake up unit 1;move ship;cannot move unit 1)
 			foreach (IUnit unit in MoveUnits(previousTile))
 			{
-				unit.Sentry = true;
+				unit.SentryOnShip();
 				unit.Fortify = false;
 			}
 		}
@@ -57,7 +62,7 @@ namespace CivOne.Units
 
 			base.MovementDone(previousTile);
 
-			if (Map[X, Y].City != null)
+			if (Map[X, Y].City != null && !AllowCanalCity)
 			{
 				// End turn when entering city
 				MovesLeft = 0;
@@ -70,14 +75,15 @@ namespace CivOne.Units
 			Explore(_range, sea: true);
 		}
 
+		//TODO: CW: this method should not be here but in a derived class with Interface e.g. ITransporter
 		public bool Unload()
 		{
 			IUnit[] units;
 
-			if (!(this is IBoardable))
+			if (this is not IBoardable)
 				return false;
 
-			units = Map[X, Y].Units.Where(u => u.Class != UnitClass.Water).Take((this as IBoardable).Cargo).ToArray();
+			units = [.. Map[X, Y].Units.Where(u => u.Class is UnitClass.Air or UnitClass.Land).Take((this as IBoardable).Cargo)];
 			if (units.Length == 0)
 				return false;
 
@@ -85,8 +91,15 @@ namespace CivOne.Units
 			{
 				unit.Sentry = false;
 			}
-			SkipTurn();
+
+			ActivateNextUnitToUnboard();
 			return true;
+		}
+
+		private void ActivateNextUnitToUnboard()
+		{
+			Game.ActiveUnit = this;
+			Game.UnitWait();
 		}
 
 		private MenuItem<int> MenuUnload() => MenuItem<int>.Create("Unload").SetShortcut("u").OnSelect((s, a) => Unload());
@@ -103,10 +116,12 @@ namespace CivOne.Units
 				{
 					yield return MenuHomeCity();
 				}
-				else if (Map[X, Y].Units.Any(u => u.Class == UnitClass.Land))
+
+				if (Role == UnitRole.Transport && Map[X, Y].Units.Any(u => u.Class is UnitClass.Land or UnitClass.Air))
 				{
 					yield return MenuUnload();
 				}
+				
 				yield return null;
 				yield return MenuDisbandUnit();
 			}
@@ -115,7 +130,7 @@ namespace CivOne.Units
 		protected override bool ValidMoveTarget(ITile tile)
 		{
 			// Check whether the tile exists, is an ocean tile or contains a city.
-			return (tile != null && (tile.Type == Terrain.Ocean || tile.City != null));
+			return tile != null && (tile.Type == Terrain.Ocean || tile.City != null);
 		}
 
 		public override void NewTurn()

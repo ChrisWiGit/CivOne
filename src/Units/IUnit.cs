@@ -145,6 +145,8 @@ namespace CivOne.Units
 		/// </summary>
 		void Pillage();
 
+		void SentryOnShip();
+
 		int NearestCity { get; }
 	}
 }

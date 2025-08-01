@@ -21,6 +21,11 @@ namespace CivOne.Units
 				return 4;
 			}
 		}
+		
+		public bool AllowedToBoard(IUnit unit)
+		{
+			return unit.Class == UnitClass.Land && unit.Owner == Owner;
+		}
 
 		public Frigate() : base(4, 2, 2, 3)
 		{
@@ -29,7 +34,7 @@ namespace CivOne.Units
 			RequiredTech = new Magnetism();
 			ObsoleteTech = null;
 			SetIcon('B', 1, 0);
-            Role = UnitRole.Transport;
-        }
+			Role = UnitRole.Transport;
+		}
     }
 }

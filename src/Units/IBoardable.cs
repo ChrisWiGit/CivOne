@@ -12,5 +12,7 @@ namespace CivOne.Units
 	public interface IBoardable
 	{
 		int Cargo { get; }
+
+		bool AllowedToBoard(IUnit unit);
 	}
 }

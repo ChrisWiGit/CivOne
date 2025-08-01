@@ -16,7 +16,7 @@ using CivOne.Tiles;
 
 namespace CivOne.Units
 {
-	internal class Trireme : BaseUnitSea, IBoardable
+	internal class Trireme : AbstractTransport
 	{
 		protected override void MovementDone(ITile previousTile)
 		{
@@ -34,7 +34,7 @@ namespace CivOne.Units
 			GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText("ERROR/TRIREME")));
 		}
 
-		public int Cargo
+		public override int Cargo
 		{
 			get
 			{

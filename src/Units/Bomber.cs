@@ -23,6 +23,12 @@ namespace CivOne.Units
 		{
 			MovesLeft = 0;
 
+			if (CanLandOnCarrier())
+			{
+				FuelLeft = TotalFuel;
+				return;
+			}
+
 			if (FuelLeft > 8)
 			{
 				// second turn allowed.

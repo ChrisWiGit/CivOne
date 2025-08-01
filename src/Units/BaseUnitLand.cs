@@ -47,7 +47,7 @@ namespace CivOne.Units
 
 			if (Tile.Type == Terrain.Ocean)
 			{
-				TravelOnOcean(previousTile);
+				BoardShip(previousTile);
 
 				return;
 			}
@@ -68,13 +68,13 @@ namespace CivOne.Units
 				Player,
 				Map,
 				currentUnit: this,
-				Game.Instance,	
-				Game.Instance,	
+				Game.Instance,
+				Game.Instance,
 				Common.Random
 			).ExecuteRandomTribalHutEvent();
 		}
 
-		private void TravelOnOcean(ITile previousTile)
+		private void BoardShip(ITile previousTile)
 		{
 			bool unloadFromShip = !previousTile.IsOcean;
 
@@ -263,8 +263,11 @@ namespace CivOne.Units
 			if (tile.Type != Terrain.Ocean)
 				return true;
 
-			// This query checks if there's a boardable cargo vessel with free slots on the tile.
-			return (tile.Units.Any(x => x.Owner == Owner) && tile.Units.Any(u => (u is IBoardable)) && tile.Units.Where(u => u is IBoardable).Sum(u => (u as IBoardable).Cargo) > tile.Units.Count(u => u.Class == UnitClass.Land));
+			bool isOwner = tile.Units.Any(u => u.Owner == Owner);
+			bool allowedToBoard = tile.Units.Where(u => u is IBoardable).Any(u => (u as IBoardable).AllowedToBoard(this));
+			bool hasFreeSlots = tile.Units.Where(u => u is IBoardable).Sum(u => (u as IBoardable).Cargo) > tile.Units.Count(u => u.Class == UnitClass.Land);
+
+			return isOwner && allowedToBoard && hasFreeSlots;
 		}
 
 		protected BaseUnitLand(byte price = 1, byte attack = 1, byte defense = 1, byte move = 1) : base(price, attack, defense, move)

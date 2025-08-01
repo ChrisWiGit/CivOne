@@ -127,7 +127,7 @@ namespace CivOne.Units
 			SentryWithoutSkipTurn();
 		}
 
-		public bool Moving => (Movement != null);
+		public bool Moving => Movement != null;
 		public MoveUnit Movement { get; protected set; }
 
 		private int AttackStrength(IUnit defendUnit)

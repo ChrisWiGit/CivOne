@@ -33,45 +33,33 @@ namespace CivOne.Units
 
 
 		// Check for room on flight deck
-		private bool CarrierIsLandable()
+		protected bool CanLandOnCarrier()
 		{
-			IUnit[] CUnits;
-			IUnit[] AUnits;
-			CUnits = Map[X, Y].Units.Where(u => u.Name == "Carrier").ToArray();
-			if (CUnits.Length == 0)
-				return false;
-			else
-			{
-				// Check load on flight deck
-				AUnits = Map[X, Y].Units.Where(u => u.Class == UnitClass.Air).ToArray();
-				if (AUnits.Length > CUnits.Length * 8)
-					return false;
-			}
-			return true;
+			return (Tile.Units.FirstOrDefault(u => u is Carrier) as IBoardable)?.AllowedToBoard(this) ?? false;
 		}
 
 
-		private void HandleFuel()
+		private void HandleFuel(byte movesLeft = 0)
 		{
-			if (Map[X, Y].Units.Any(u => u.Name == "Carrier"))
+			if (Map[X, Y].Units.Any(u => u is Carrier))
 			{
-				if (CarrierIsLandable())
+				if (CanLandOnCarrier())
 				{
-					MovesLeft = 0;
-					FuelLeft = TotalFuel;       // Refuel
+					MovesLeft = movesLeft;
+					FuelLeft = TotalFuel;
 					return;
 				}
 			}
 
 			if (Map[X, Y].City != null)
 			{
-				MovesLeft = 0;
-				FuelLeft = TotalFuel;           // Refuel
+				MovesLeft = movesLeft;
+				FuelLeft = TotalFuel;
 				return;
 			}
 
-
-			if (MovesLeft > 0 || FuelLeft > 0) return;
+			// TODO: CW: We should disallow setting sentry (or just remove it here?) -> This would be a convenience setting for the player.
+			if (!Sentry && (movesLeft > 0 || FuelLeft > 0)) return;
 
 			// Air unit is out of fuel
 			Game.DisbandUnit(this);
@@ -80,6 +68,12 @@ namespace CivOne.Units
 
 		protected override void MovementDone(ITile previousTile)
 		{
+			if (Tile.Hut)
+			{
+				// Destroy hut without any action
+				Tile.Hut = false;
+			}
+
 			base.MovementDone(previousTile);
 
 			FuelLeft--;
@@ -90,6 +84,20 @@ namespace CivOne.Units
 		{
 			MovesLeft = 0;
 			HandleFuel();
+		}
+
+		public override void SentryOnShip()
+		{
+			byte movesLeft = MovesLeft;
+			// air units must land
+			SentryWithoutSkipTurn();
+			HandleFuel(movesLeft);
+		}
+
+		public override void NewTurn()
+		{
+			base.NewTurn();
+			HandleFuel(TotalFuel);
 		}
 
 		public override IEnumerable<MenuItem<int>> MenuItems

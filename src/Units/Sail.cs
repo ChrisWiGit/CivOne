@@ -12,9 +12,9 @@ using CivOne.Enums;
 
 namespace CivOne.Units
 {
-	internal class Sail : BaseUnitSea, IBoardable
+	internal class Sail : AbstractTransport
 	{
-		public int Cargo
+		public override int Cargo
 		{
 			get
 			{
