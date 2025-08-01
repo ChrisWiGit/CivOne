@@ -210,7 +210,7 @@ namespace CivOne.Screens.GamePlayPanels
 		{
 			if (movingUnit is IBoardable && tile.Units.Any(u => u.Class is UnitClass.Land or UnitClass.Air && (tile.City == null || (tile.City != null && u.Sentry))))
 			{
-				this.AddLayer(unitPicture, dx + movement.X - 1, dy + movement.Y - 10);
+				this.AddLayer(unitPicture, dx + movement.X - 1, dy + movement.Y - 1);
 			}
 		}
 
