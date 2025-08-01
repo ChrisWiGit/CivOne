@@ -117,10 +117,18 @@ namespace CivOne.Screens
 				case Key.NumPad8:
 				case Key.Up:
 					ActiveItem--;
+					if (ActiveItem == 0) 
+					{
+						ActiveItem = Items.Count - 1;
+					}
 					return true;
 				case Key.NumPad2:
 				case Key.Down:
 					ActiveItem++;
+					if (ActiveItem >= Items.Count - 1) 
+					{
+						ActiveItem = 0;
+					}
 					return true;
 				case Key.Enter:
 					if (!Items[_activeItem].Enabled) return false;
@@ -143,31 +151,46 @@ namespace CivOne.Screens
 				return true;
 			}
 
-            // fire-eggs typing first character in menu should select it
-            for (int i=0; i < Items.Count; i++)
-            {
-                if (char.ToLower(args.KeyChar) != char.ToLower(Items[i].Text[0]))
-                    continue;
-                ActiveItem = i;
-                break;
-            }
+			SelectNextMenuItemByChar(args.KeyChar);
 
 			return false;
 		}
+		
+		private void SelectNextMenuItemByChar(char inputChar)
+		{
+			if (Items == null || Items.Count == 0)
+			{
+				return;
+			}
+
+			char key = char.ToLower(inputChar);
+
+			var matchingIndices = Enumerable.Range(0, Items.Count)
+				.Select(i => (Index: (ActiveItem + 1 + i) % Items.Count, Text: Items[(ActiveItem + 1 + i) % Items.Count].Text))
+				.Where(t => !string.IsNullOrEmpty(t.Text) && char.ToLower(t.Text[0]) == key)
+				.Select(t => t.Index)
+				.ToList();
+
+			if (matchingIndices.Any())
+			{
+				ActiveItem = matchingIndices.First();
+			}
+		}
+
 		
 		private int MouseOverItem(ScreenEventArgs args)
 		{
 			int fontHeight = Resources.GetFontHeight(FontId);
 			if (RowHeight != 0) fontHeight = RowHeight;
 			int yy = Y;
-			
+
 			if (Title != null) yy += fontHeight;
 			for (int i = 0; i < Items.Count; i++)
 			{
 				if (new Rectangle(X, yy, MenuWidth, fontHeight).Contains(args.Location)) return i;
 				yy += fontHeight;
 			}
-			
+
 			return -1;
 		}
 		
