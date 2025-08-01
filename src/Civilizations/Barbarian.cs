@@ -20,6 +20,8 @@ namespace CivOne.Civilizations
 {
 	internal class Barbarian : BaseCivilization<Atilla>
 	{
+		internal static readonly byte Owner = 0;
+
 		internal static bool IsSeaSpawnTurn => Game.Started && (Game.GameTurn % 8 == 0) && (Game.GameTurn > 150 || Game.GameTurn >= (5 - Game.Difficulty) * 32) && !Game.Players.Any(x => x.HasAdvance<Combustion>());
 
 		// TODO land spawn rate
