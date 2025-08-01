@@ -404,31 +404,14 @@ namespace CivOne.Units
 						PlaySound("they_die");
 					}
 
-                    // fire-eggs 20190702 capture barbarian leader, get ransom
+					// fire-eggs 20190702 capture barbarian leader, get ransom
 					IUnit[] attackedUnits = moveTarget.Units;
-                    if (attackedUnits.Length > 0 && attackedUnits.All(x=>x is Diplomat) &&
-                        attackedUnits[0] is Diplomat &&
-                        ((BaseUnit) attackedUnits[0]).Player.Civilization is Barbarian)
-                    {
-                        Player.Gold += 100;
-                        if (Human == Player)
-                        {
-                            Common.AddScreen(new MessageBox("Barbarian leader captured!", "100$ ransom paid."));
-                        }
-                    }
 
-                    IUnit unit = attackedUnits.FirstOrDefault();
-					if (unit != null)
-                    {
-                        var task = Show.DestroyUnit(unit, true);
+					CaptureBarbarianLeader(attackedUnits);
 
-                        // fire-eggs 20190729 when destroying last city, check for civ destruction ASAP
-                        if (unit.Owner != 0)
-                            task.Done += (s1, a1) => { Game.GetPlayer(unit.Owner).IsDestroyed(); };
+					IUnit unit = attackedUnits.FirstOrDefault();
 
-                        GameTask.Insert(task);
-                        //GameTask.Insert(Show.DestroyUnit(unit, true));
-					}
+					DestroyAttackedUnit(unit);
 
 					if (MovesLeft == 0)
 					{
@@ -450,7 +433,7 @@ namespace CivOne.Units
 					{
 						if (!Map[X, Y][relX, relY].City.HasBuilding<CityWalls>())
 						{
-                            Map[X, Y][relX, relY].City.Size--;
+							Map[X, Y][relX, relY].City.Size--;
 						}
 					}
 				};
@@ -477,6 +460,45 @@ namespace CivOne.Units
 			}
 			GameTask.Insert(Movement);
 			return false;
+		}
+
+		private static void DestroyAttackedUnit(IUnit unit)
+		{
+			if (unit != null)
+			{
+				var task = Show.DestroyUnit(unit, true);
+
+				// fire-eggs 20190729 when destroying last city, check for civ destruction ASAP
+				if (unit.Owner != 0)
+					task.Done += (s1, a1) => { Game.GetPlayer(unit.Owner).IsDestroyed(); };
+
+				GameTask.Insert(task);
+			}
+		}
+
+		private void CaptureBarbarianLeader(IUnit[] attackedUnits)
+		{
+			bool isAirUnit = this.Class == UnitClass.Air;
+			if (isAirUnit)
+			{
+				// CW: air units cannot capture barbarian leader
+				return;
+			}
+
+			// CW: only a single barbarian diplomat can be captured and receive ransom
+				bool isBarbarianLeader = attackedUnits.Length == 1 && attackedUnits.First().Owner == Barbarian.Owner && attackedUnits.First() is Diplomat;
+
+			if (!isBarbarianLeader)
+			{
+				return;
+			}
+
+			Player.Gold += 100;
+
+			if (Human == Player)
+			{
+				Common.AddScreen(new MessageBox("Barbarian leader captured!", "100$ ransom paid."));
+			}
 		}
 
 		private IList<IAdvance> GetAdvancesToSteal(Player victim)
@@ -514,7 +536,7 @@ namespace CivOne.Units
 
             // Cannot move from a square adjacent to enemy unit to a square adjacent to enemy unit
             // but _can_ move to square occupied by own units or to any undefended city square
-            return (destOK || !thisBlocked || !destBlocked);
+            return destOK || !thisBlocked || !destBlocked;
         }
 
 		public virtual bool MoveTo(int relX, int relY)
