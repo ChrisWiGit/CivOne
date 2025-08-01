@@ -100,6 +100,12 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		private void ShowSettings(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screens(typeof(Setup)));
+			Destroy();
+		}
+
 		private void MenuAddBuilding(object sender, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<AddBuilding>());
@@ -133,7 +139,7 @@ namespace CivOne.Screens
 
 				this.AddLayer(menuGfx, 25, 17);
 
-				Menu menu = new Menu(Palette, menuBackground)
+				Menu menu = new(Palette, menuBackground)
 				{
 					X = 27,
 					Y = 28,
@@ -144,6 +150,7 @@ namespace CivOne.Screens
 					FontId = 0,
 					Indent = 8,
 					RowHeight = 8
+					
 				};
 				menu.MissClick += MenuCancel;
 				menu.Cancel += MenuCancel;
@@ -169,11 +176,9 @@ namespace CivOne.Screens
 		public DebugOptions() : base(MouseCursor.Pointer)
 		{
 			Palette = Common.DefaultPalette;
-			this.AddLayer(Common.Screens.Last(), 0, 0)
-				.FillRectangle(24, 16, 133, 113, 5);
 
-			_menuEntries = new List<MenuEntry>
-			{
+			_menuEntries =
+			[
 				new("Load a Game", LoadGame),
 				new("Set Game Year", MenuSetGameYear),
 				new("Set Player Gold", MenuSetPlayerGold),
@@ -187,8 +192,15 @@ namespace CivOne.Screens
 				new("Meet With King", MenuMeetWithKing),
 				new("Toggle Reveal World", MenuRevealWorld),
 				new("Build Palace", MenuBuildPalace),
-				new("Show PowerGraph", MenuShowPowerGraph)
-			};
+				new("Settings", ShowSettings)
+			];
+
+			const int itemHeight = 8 + 1;
+			const int menuWidth = 133;
+				int menuHeight = itemHeight * _menuEntries.Count;
+			
+			this.AddLayer(Common.Screens.Last(), 0, 0)
+				.FillRectangle(24, 16, menuWidth, menuHeight + 2, 5);
 		}
 	}
 }
