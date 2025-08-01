@@ -116,18 +116,24 @@ namespace CivOne.Screens
 			{
 				case Key.NumPad8:
 				case Key.Up:
-					ActiveItem--;
-					if (ActiveItem == 0) 
+					if (ActiveItem == 0)
 					{
 						ActiveItem = Items.Count - 1;
+					}
+					else
+					{
+						ActiveItem--;
 					}
 					return true;
 				case Key.NumPad2:
 				case Key.Down:
-					ActiveItem++;
-					if (ActiveItem >= Items.Count - 1) 
+					if (ActiveItem == Items.Count - 1)
 					{
 						ActiveItem = 0;
+					}
+					else
+					{
+						ActiveItem++;
 					}
 					return true;
 				case Key.Enter:
