@@ -171,10 +171,9 @@ namespace CivOne.Screens.GamePlayPanels
 						.AddLayer(Map[movingUnit.X - 1, movingUnit.Y - 1, 3, 3].ToBitmap(player: renderPlayer), dx - 16, dy - 16, dispose: true);
 					Bytemap unitPicture = movingUnit.ToBitmap();
 					this.AddLayer(unitPicture, dx + movement.X, dy + movement.Y);
-					if (movingUnit is IBoardable && tile.Units.Any(u => u.Class == UnitClass.Land && (tile.City == null || (tile.City != null && u.Sentry))))
-					{
-						this.AddLayer(unitPicture, dx + movement.X - 1, dy + movement.Y - 1);
-					}
+
+					DrawFullCargoUnitWhileMoving(movingUnit, tile, dx, dy, movement, unitPicture);
+
 					return true;
 				}
 			}
@@ -205,6 +204,14 @@ namespace CivOne.Screens.GamePlayPanels
 			
 			_update = false;
 			return true;
+		}
+
+		private void DrawFullCargoUnitWhileMoving(IUnit movingUnit, ITile tile, int dx, int dy, MoveUnit movement, Bytemap unitPicture)
+		{
+			if (movingUnit is IBoardable && tile.Units.Any(u => u.Class is UnitClass.Land or UnitClass.Air && (tile.City == null || (tile.City != null && u.Sentry))))
+			{
+				this.AddLayer(unitPicture, dx + movement.X - 1, dy + movement.Y - 10);
+			}
 		}
 
 		internal void ForceRefresh()
