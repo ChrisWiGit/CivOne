@@ -185,6 +185,7 @@ namespace CivOne.Screens
 			MenuItem.Create($"Custom map sizes (experimental): {Settings.CustomMapSize.YesNo()}").OnSelect(GotoMenu(CustomMapSizeMenu)),
 			MenuItem.Create($"Use smart PathFinding for \"goto\": {Settings.PathFinding.YesNo()}").OnSelect(GotoMenu(PathFindingMenu)),
             MenuItem.Create($"Use auto-settlers-cheat: {Settings.AutoSettlers.YesNo()}").OnSelect(GotoMenu(AutoSettlersMenu)),
+            MenuItem.Create($"Use fast river movement: {Settings.RiverFastMovement.YesNo()}").OnSelect(GotoMenu(FastRiverMovementMenu)),
 			MenuItem.Create("Back").OnSelect(GotoMenu(MainMenu, 1))
 		);
 
@@ -249,6 +250,12 @@ namespace CivOne.Screens
             MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.AutoSettlers = true).SetActive(() => Settings.AutoSettlers),
             MenuItem.Create("Back")
         );
+
+		private void FastRiverMovementMenu() => CreateMenu("Movements on river like roads", GotoMenu(PatchesMenu, 9),
+			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.RiverFastMovement = false).SetActive(() => !Settings.RiverFastMovement),
+			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.RiverFastMovement = true).SetActive(() => Settings.RiverFastMovement),
+			MenuItem.Create("Back")
+		);
 
         private void PluginsMenu(int activeItem = 0) => CreateMenu("Plugins", activeItem,
 			new MenuItem<int>[0]

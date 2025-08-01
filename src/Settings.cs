@@ -34,6 +34,7 @@ namespace CivOne
 		private bool _arrowHelper = false;
 		private bool _customMapSize = false;
 		private bool _pathFinding = false;
+		private bool _riverFastMovement = false;
         private bool _autoSettlers;
 		private CursorType _cursorType = CursorType.Default;
 		private DestroyAnimation _destroyAnimation = DestroyAnimation.Sprites;
@@ -208,6 +209,17 @@ namespace CivOne
 			{
 				_pathFinding = value;
 				SetSetting("PathFindingAlgorithm", _pathFinding ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal bool RiverFastMovement
+		{
+			get => _riverFastMovement;
+			set
+			{
+				_riverFastMovement = value;
+				SetSetting("RiverFastMovement", _riverFastMovement ? "1" : "0");
 				Common.ReloadSettings = true;
 			}
 		}
@@ -443,6 +455,7 @@ namespace CivOne
 			GetSetting("CustomMapSize", ref _customMapSize);
 			GetSetting("PathFindingAlgorithm", ref _pathFinding);
             GetSetting("AutoSettlers", ref _autoSettlers);
+            GetSetting("RiverFastMovement", ref _riverFastMovement);
 			GetSetting<CursorType>("CursorType", ref _cursorType);
 			GetSetting<DestroyAnimation>("DestroyAnimation", ref _destroyAnimation);
 			GetSetting<GameOption>("GameInstantAdvice", ref _instantAdvice);

@@ -23,6 +23,9 @@ namespace CivOne.Units
 {
 	internal abstract class BaseUnitLand : BaseUnit
 	{
+		private bool FastRiverMovement => Settings.Instance.RiverFastMovement;
+		private byte FastRiverMovementCount => FastRiverMovement ? (byte)3 : (byte)1;
+
 		protected override void MovementDone(ITile previousTile)
 		{
 			if (previousTile.IsOcean || Tile.IsOcean)
@@ -33,7 +36,9 @@ namespace CivOne.Units
 			Tile.Visit(Owner);
 			VisitHut();
 
-			if ((previousTile.Road || previousTile.RailRoad) && (Tile.Road || Tile.RailRoad))
+			if (
+				(previousTile.Road || previousTile.RailRoad) && (Tile.Road || Tile.RailRoad) ||
+				(FastRiverMovement && previousTile is River && Tile is River))
 			{
 				TravelOnRoad(previousTile);
 
@@ -94,9 +99,9 @@ namespace CivOne.Units
 			{
 				return;
 			}
-		
-			byte moveCosts = Tile.Movement;		
-		
+
+			byte moveCosts = Tile.Movement;
+
 			if (MovesLeft < moveCosts)
 				moveCosts = MovesLeft;
 			MovesLeft -= moveCosts;
@@ -120,9 +125,9 @@ namespace CivOne.Units
 			{
 				if (MovesLeft > 0)
 					MovesLeft--;
-				PartMoves = 2;
+				PartMoves = (byte)(Tile is River ? FastRiverMovementCount : 1);
 			}
-		}		
+		}
 
 		public override IEnumerable<MenuItem<int>> MenuItems
 		{
@@ -193,7 +198,9 @@ namespace CivOne.Units
 			}
 
 			// TODO: This implementation was done by observation, may need a revision
-			if ((moveTarget.Road || moveTarget.RailRoad) && (Tile.Road || Tile.RailRoad))
+			if (
+				(moveTarget.Road || moveTarget.RailRoad) && (Tile.Road || Tile.RailRoad) ||
+				(FastRiverMovement && moveTarget is River && Tile is River))
 			{
 				// Handle movement in MovementDone
 			}
