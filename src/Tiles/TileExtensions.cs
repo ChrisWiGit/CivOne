@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -292,22 +293,78 @@ namespace CivOne.Tiles
 
 		public static IBitmap UnitsToPicture(this ITile tile)
 		{
-			if (tile == null || tile.Units.Length == 0 || (tile.Units.Length == 1 && tile.Units[0] == Game.MovingUnit)) return null;
-			
-			IUnit[] units = tile.Units.OrderBy(x => (tile.IsOcean && x.Class == UnitClass.Water) ? 1 : 0).Where(x => x != Game.MovingUnit).ToArray();
-			if (units.Length == 0) return null;
+			if (tile?.Units.Length == 0)
+			{
+				return null;
+			}
 
-			bool stack = (units.Length > 1);
-			IUnit unit = units.First();
-			if (tile.IsOcean) unit = units.FirstOrDefault(x => x.Class == UnitClass.Water) ?? units.FirstOrDefault(x => !(x.Class == UnitClass.Land && x.Sentry));
-			if (Game.Started && Game.ActiveUnit != null && !Game.ActiveUnit.Moving && Game.ActiveUnit.X == tile.X && Game.ActiveUnit.Y == tile.Y) unit = Game.ActiveUnit;
-			if (unit == null) return null;
+			// CW: Not sure why this is needed.
+			// bool dontDrawSingleMovingUnit = tile.Units.Length == 1 && tile.Units.First() == Game.MovingUnit;
+			// if (dontDrawSingleMovingUnit)
+			// {
+			// 	return null;
+			// }
+
+			IUnit[] units = [.. tile.Units.OrderBy(WaterUnitsFirst(tile)).Where(OrMovingUnitFirst())];
+
+			if (units.Length == 0)
+			{
+				return null;
+			}
+
+			IUnit firstUnitToDraw = units.First();
+
 			
+
+			bool isActiveUnitOnCurrentTile =
+					Game.ActiveUnit != null &&
+					!Game.ActiveUnit.Moving &&
+					Game.ActiveUnit.X == tile.X &&
+					Game.ActiveUnit.Y == tile.Y;
+
+			if (isActiveUnitOnCurrentTile)
+			{
+				firstUnitToDraw = Game.ActiveUnit;
+			}
+			else if (tile.IsOcean)
+			{
+				IUnit firstWaterUnit = units.FirstOrDefault(x => x.Class == UnitClass.Water);
+				firstUnitToDraw = firstWaterUnit ?? units.FirstOrDefault(findFirstAvailableUnit => !findFirstAvailableUnit.Sentry);
+			}
+
+			if (firstUnitToDraw == null)
+			{
+				return null;
+			}
+
 			IBitmap output = new Picture(16, 16, Palette);
-			Bytemap unitPicture = unit.ToBitmap();
-			if (tile.City == null) output.AddLayer(unitPicture);
-			if (stack || tile.City != null) output.AddLayer(unitPicture, -1, -1);
+			Bytemap unitPicture = firstUnitToDraw.ToBitmap();
+
+			bool hasCity = tile.City != null;
+
+			if (!hasCity)
+			{
+				output.AddLayer(unitPicture);
+			}
+
+			bool isUnitStack = units.Length > 1;
+
+			if (isUnitStack || hasCity)
+			{
+				output.AddLayer(unitPicture, -1, -1);
+			}
+
 			return output;
+		}
+
+		static System.Func<IUnit, int> WaterUnitsFirst(ITile tile)
+		{
+			return unit => (tile.IsOcean && unit.Class == UnitClass.Water) ? 1 : 0;
+		}
+
+		static System.Func<IUnit, bool> OrMovingUnitFirst()
+		{
+			return unit => unit != Game.MovingUnit;
 		}
 	}
 }
