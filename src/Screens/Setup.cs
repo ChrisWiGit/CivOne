@@ -79,7 +79,7 @@ namespace CivOne.Screens
 				FontId = MenuFont,
 				IndentTitle = 2
 			}
-			.Items(items)
+			.Items([.. items.Where(item => item != null)])
 			.Always(always)
 			.Center(this)
 			.SetActiveItem(activeItem)
@@ -125,8 +125,8 @@ namespace CivOne.Screens
 			MenuItem.Create("Patches").OnSelect(GotoMenu(PatchesMenu)),
 			MenuItem.Create("Plugins").OnSelect(GotoMenu(PluginsMenu)),
 			MenuItem.Create("Game Options").OnSelect(GotoMenu(GameOptionsMenu)),
-			MenuItem.Create("Launch Game").OnSelect(CloseScreen()),
-			MenuItem.Create("Quit").OnSelect(CloseScreen(Runtime.Quit))
+			MenuItem.Create(Game.Started ? "Return to game" : "Launch Game").OnSelect(CloseScreen()),
+			Game.Started ? null : MenuItem.Create("Quit").OnSelect(CloseScreen(Runtime.Quit))
 		);
 
 		private void SettingsMenu(int activeItem = 0) => CreateMenu("Settings", activeItem,
@@ -176,7 +176,8 @@ namespace CivOne.Screens
 		private void PatchesMenu(int activeItem = 0) => CreateMenu("Patches", activeItem,
 			MenuItem.Create($"Reveal world: {Settings.RevealWorld.YesNo()}").OnSelect(GotoMenu(RevealWorldMenu)),
 			MenuItem.Create($"Side bar location: {(Settings.RightSideBar ? "right" : "left")}").OnSelect(GotoMenu(SideBarMenu)),
-			MenuItem.Create($"Debug menu: {Settings.DebugMenu.YesNo()}").OnSelect(GotoMenu(DebugMenuMenu)),
+			Game.Started ? null : MenuItem.Create($"Debug menu: {Settings.DebugMenu.YesNo()}").OnSelect(GotoMenu(DebugMenuMenu)),
+			Game.Started ? null : MenuItem.Create($"Debug menu: {Settings.DebugMenu.YesNo()}").OnSelect(GotoMenu(DebugMenuMenu)),
 			MenuItem.Create($"Cursor type: {Settings.CursorType.ToText()}").OnSelect(GotoMenu(CursorTypeMenu)),
 			MenuItem.Create($"Destroy animation: {Settings.DestroyAnimation.ToText()}").OnSelect(GotoMenu(DestroyAnimationMenu)),
 			MenuItem.Create($"Enable Deity difficulty: {Settings.DeityEnabled.YesNo()}").OnSelect(GotoMenu(DeityEnabledMenu)),
