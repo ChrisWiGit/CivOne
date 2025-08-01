@@ -165,28 +165,30 @@ namespace CivOne.Screens
 			MenuItem.Create("2x (default)").OnSelect((s, a) => Settings.Scale = 2).SetActive(() => Settings.Scale == 2),
 			MenuItem.Create("3x").OnSelect((s, a) => Settings.Scale = 3).SetActive(() => Settings.Scale == 3),
 			MenuItem.Create("4x").OnSelect((s, a) => Settings.Scale = 4).SetActive(() => Settings.Scale == 4),
+			MenuItem.Create("5x").OnSelect((s, a) => Settings.Scale = 5).SetActive(() => Settings.Scale == 5),
+			MenuItem.Create("6x").OnSelect((s, a) => Settings.Scale = 6).SetActive(() => Settings.Scale == 6),
+			MenuItem.Create("7x").OnSelect((s, a) => Settings.Scale = 7).SetActive(() => Settings.Scale == 7),
+			MenuItem.Create("8x").OnSelect((s, a) => Settings.Scale = 8).SetActive(() => Settings.Scale == 8),
 			MenuItem.Create("Back")
 		);
 
 		private void SoundMenu() => CreateMenu("In-game sound", GotoMenu(SettingsMenu, 5),
-			MenuItem.Create("Browse for files...").OnSelect(BrowseForSoundFiles).SetEnabled(!FileSystem.SoundFilesExist()),
+			MenuItem.Create("Browse for files...").OnSelect(BrowseForSoundFiles).SetEnabled(!FileSystem.SoundFilesExist()).SetEnabled(!Game.Started),
 			MenuItem.Create("Back")
 		);
 
 		private void PatchesMenu(int activeItem = 0) => CreateMenu("Patches", activeItem,
 			MenuItem.Create($"Reveal world: {Settings.RevealWorld.YesNo()}").OnSelect(GotoMenu(RevealWorldMenu)),
-			MenuItem.Create($"Side bar location: {(Settings.RightSideBar ? "right" : "left")}").OnSelect(GotoMenu(SideBarMenu)),
-			Game.Started ? null : MenuItem.Create($"Debug menu: {Settings.DebugMenu.YesNo()}").OnSelect(GotoMenu(DebugMenuMenu)),
-			Game.Started ? null : MenuItem.Create($"Debug menu: {Settings.DebugMenu.YesNo()}").OnSelect(GotoMenu(DebugMenuMenu)),
+			MenuItem.Create($"Side bar location: {(Settings.RightSideBar ? "right" : "left")}{(Game.Started ? " (restart required)":"")}").OnSelect(GotoMenu(SideBarMenu)),
+			MenuItem.Create($"Debug menu: {Settings.DebugMenu.YesNo()}").OnSelect(GotoMenu(DebugMenuMenu)).SetEnabled(!Game.Started),
 			MenuItem.Create($"Cursor type: {Settings.CursorType.ToText()}").OnSelect(GotoMenu(CursorTypeMenu)),
 			MenuItem.Create($"Destroy animation: {Settings.DestroyAnimation.ToText()}").OnSelect(GotoMenu(DestroyAnimationMenu)),
 			MenuItem.Create($"Enable Deity difficulty: {Settings.DeityEnabled.YesNo()}").OnSelect(GotoMenu(DeityEnabledMenu)),
 			MenuItem.Create($"Enable (no keypad) arrow helper: {Settings.ArrowHelper.YesNo()}").OnSelect(GotoMenu(ArrowHelperMenu)),
 			MenuItem.Create($"Custom map sizes (experimental): {Settings.CustomMapSize.YesNo()}").OnSelect(GotoMenu(CustomMapSizeMenu)),
-			MenuItem.Create($"Use smart PathFinding for \"goto\": {Settings.PathFinding.YesNo()}").OnSelect(GotoMenu(PathFindingMenu)),
-            MenuItem.Create($"Use auto-settlers-cheat: {Settings.AutoSettlers.YesNo()}").OnSelect(GotoMenu(AutoSettlersMenu)),
-            MenuItem.Create($"Use fast river movement: {Settings.RiverFastMovement.YesNo()}").OnSelect(GotoMenu(FastRiverMovementMenu)),
-            MenuItem.Create($"No movement penalty for sea units in city: {Settings.CanalCity.YesNo()}").OnSelect(GotoMenu(CanalCity)),
+			MenuItem.Create("Game behavior menu").OnSelect(GotoMenu(BehaviorMenu)),
+
+			
 			MenuItem.Create("Back").OnSelect(GotoMenu(MainMenu, 1))
 		);
 
@@ -203,7 +205,7 @@ namespace CivOne.Screens
 		);
 
 		private void DebugMenuMenu() => CreateMenu("Show debug menu", GotoMenu(PatchesMenu, 2),
-			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.DebugMenu = false).SetActive(() => !Settings.DebugMenu),
+			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.DebugMenu = false || Game.Started).SetActive(() => !Settings.DebugMenu || Game.Started),
 			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.DebugMenu = true).SetActive(() => Settings.DebugMenu),
 			MenuItem.Create("Back")
 		);
@@ -252,16 +254,26 @@ namespace CivOne.Screens
             MenuItem.Create("Back")
         );
 
-		private void FastRiverMovementMenu() => CreateMenu("Movements on river like roads", GotoMenu(PatchesMenu, 9),
+		private void FastRiverMovementMenu() => CreateMenu("Movements on river like roads", GotoMenu(PatchesMenu, 10),
 			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.RiverFastMovement = false).SetActive(() => !Settings.RiverFastMovement),
 			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.RiverFastMovement = true).SetActive(() => Settings.RiverFastMovement),
 			MenuItem.Create("Back")
 		);
 
-		private void CanalCity() => CreateMenu("Movements on river like roads", GotoMenu(PatchesMenu, 9),
+		private void CanalCity() => CreateMenu("Movements on river like roads", GotoMenu(PatchesMenu, 11),
 			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.CanalCity = false).SetActive(() => !Settings.CanalCity),
 			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.CanalCity = true).SetActive(() => Settings.CanalCity),
 			MenuItem.Create("Back")
+		);
+		
+		private void BehaviorMenu(int activeItem = 0) => CreateMenu("Game behavior menu", activeItem,
+			[
+					MenuItem.Create($"Use smart PathFinding for \"goto\": {Settings.PathFinding.YesNo()}").OnSelect(GotoMenu(PathFindingMenu)),
+					MenuItem.Create($"Use auto-settlers-cheat: {Settings.AutoSettlers.YesNo()}").OnSelect(GotoMenu(AutoSettlersMenu)),
+					MenuItem.Create($"Use fast river movement: {Settings.RiverFastMovement.YesNo()}").OnSelect(GotoMenu(FastRiverMovementMenu)),
+					MenuItem.Create($"No movement penalty for sea units in city: {Settings.CanalCity.YesNo()}").OnSelect(GotoMenu(CanalCity)),
+					MenuItem.Create("Back").OnSelect(GotoMenu(PatchesMenu, 8))
+			]
 		);
 
         private void PluginsMenu(int activeItem = 0) => CreateMenu("Plugins", activeItem,
@@ -269,9 +281,9 @@ namespace CivOne.Screens
 				.Concat(
 					Reflect.Plugins().Any() ?
 						Reflect.Plugins().Select(x => MenuItem.Create(x.ToString()).SetEnabled(!x.Deleted).OnSelect(GotoMenu(PluginMenu(x.Id, x)))) :
-						new [] { MenuItem.Create("No plugins installed").Disable() }
+						new[] { MenuItem.Create("No plugins installed").Disable() }
 				)
-				.Concat(new []
+				.Concat(new[]
 				{
 					MenuItem.Create(null).Disable(),
 					MenuItem.Create("Add plugins").OnSelect(BrowseForPlugins),

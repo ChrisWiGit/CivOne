@@ -218,6 +218,11 @@ namespace CivOne
 				Native.Init(_handle);
 			}
 
+			protected void SetWindowSize(int width, int height)
+			{				
+				SDL_SetWindowSize(_handle, width, height);
+			}
+
 			public void Dispose()
 			{
 				SDL_DestroyRenderer(_renderer);

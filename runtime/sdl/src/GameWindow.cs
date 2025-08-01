@@ -28,6 +28,8 @@ namespace CivOne
 		private bool _hasUpdate = true;
 		private bool _settingsFullscreen = Settings.FullScreen;
 
+		private int _settingsScale = Settings.Scale;
+
 		private void Load(object sender, EventArgs args)
 		{
 			Runtime.CanvasSize = SetCanvasSize();
@@ -44,6 +46,12 @@ namespace CivOne
 			{
 				_settingsFullscreen = Settings.FullScreen;
 				Fullscreen = _settingsFullscreen;
+			}
+
+			if (_settingsScale != Settings.Scale)
+			{
+				ResetWindowScale();
+				_settingsScale = Settings.Scale;
 			}
 			
 			Runtime.CanvasSize = SetCanvasSize();

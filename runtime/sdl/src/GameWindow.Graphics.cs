@@ -110,6 +110,11 @@ namespace CivOne
 		private static int InitialHeight => InitialCanvasHeight * Settings.Scale;
 
 		private Size ClientRectangle => new Size(Width, Height);
+
+		private void ResetWindowScale()
+		{
+			SetWindowSize(InitialWidth, InitialHeight);
+		}
 		
 		private int ScaleX
 		{
@@ -118,7 +123,7 @@ namespace CivOne
 				int cw = CanvasWidth, ch = CanvasHeight;
 				if (cw == 0) cw = DefaultCanvasSize.Width;
 				if (ch == 0) ch = DefaultCanvasSize.Height;
-				
+
 				switch (Settings.AspectRatio)
 				{
 					case AspectRatio.Fixed:

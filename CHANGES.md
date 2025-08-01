@@ -6,9 +6,33 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Extended window scale factors up to 8 (previously 4)
+* Added sub menu "Game behavior menu" to patches menu with settings for the game
+  * Canal City crossing (no movement points lost)
+  * Fast movement on rivers
+  * Other existing items from parent menu
+    * Use smart path finding
+    * Use auto settlers
+* Settings for Canal City
+  * Added a setting to allow crossing a canal city without losing all movement points.
+  * The default is false, so the original behavior is kept.
+* Major refactor of transport logic
+  * Use OOP with polymorphism to handle transport logic for land, air, and sea units.
+  * A sea unit determines if and which type of unit can be transported.
+  * Makes code more readable and maintainable.
+* Added fast movement on rivers for unit
+  * Can be enabled in the settings (patches)
+* Added the settings (formerly only available at the start of the game) to the debug menu.
+  * Be aware that not all settings are available within the game or may even crash the game.
+* Enhanced debug menu
+  * First character of menu items selects the menu item or the next item with the same first character.
+  * Up/Down keys on first and last menu item select the last or first item (cycle through the menu).
+* Only a single barbarian leader brings ransom.
+* Carrier planes are now correctly hidden when carrier is moved (like any other sea unit).
+* AI does no more attack with a carrier
 * Make Barbarians Diplomat abandon itself if it gets lost.
 * Major Refactor tribal hut event handling and introduce interfaces for better separation of concerns and dependency injection.
-Moved from BaseUnitLand to its own domain/namespace TribalHuts. 
+Moved from BaseUnitLand to its own domain/namespace TribalHuts.
 Cleaned and fixed strange code behavior.
 * Prevent a destroyed unit to be shown for a short time in the place of the attacked unit or city.
 * Fix: Destroying an AI city does not show the hut on the tile anymore.

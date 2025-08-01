@@ -92,7 +92,7 @@ namespace CivOne
 			get => _scale;
 			set
 			{
-				if (value < 1 || value > 4) return;
+				if (value < 1 || value > 8) return;
 				_scale = value;
 				SetSetting("Scale", _scale.ToString());
 				Common.ReloadSettings = true;
@@ -452,7 +452,7 @@ namespace CivOne
 			GetSetting<GraphicsMode>("GraphicsMode", ref _graphicsMode);
 			GetSetting("FullScreen", ref _fullScreen);
 			GetSetting("SideBar", ref _rightSideBar);
-			GetSetting("Scale", ref _scale, 1, 4);
+			GetSetting("Scale", ref _scale, 1, 8);
 			GetSetting<AspectRatio>("AspectRatio", ref _aspectRatio);
 			GetSetting("Sound", ref _sound);
 			if (!GetSetting("ExpandWidth", ref _scale, 320, 512) || !GetSetting("ExpandHeight", ref _scale, 200, 384))
