@@ -99,6 +99,11 @@ namespace CivOne.Graphics
 				byte charWidth = bytes[offset - 9 - charCount + i];
 				if (charWidth > (_charByteLength * 8))
 				{
+					/*
+					The _ character in FONTS.CV has a length of 9 bytes or 72 bits, 
+					but the width can be 8 bytes or 64 bits.
+					This is a mistake in the original game and will be fixed here.
+					*/
 					Log($"Warning: Character width larger than bytes per character. (ID: {(int)character}, Width: {charWidth})");
 					charWidth = (byte)(_charByteLength * 8);
 				}
