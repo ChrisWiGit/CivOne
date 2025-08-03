@@ -292,7 +292,9 @@ namespace CivOne.Graphics.ImageFormats
 			// generate an exception if the file is not found
 			if (RuntimeHandler.Runtime.Settings.Free || !File.Exists(filename))
 			{
-				if (!File.Exists(filename)) Log($"File not found: {filename.ToUpper()}.PIC");
+				if (!File.Exists(filename))  {
+					Log($"File not found: {filename.ToUpper()}.PIC");
+				}
 				HasPalette16 = true;
 				HasPalette256 = true;
 				_palette256 = Common.GetPalette256;
@@ -311,7 +313,7 @@ namespace CivOne.Graphics.ImageFormats
 			using (FileStream fs = new FileStream(filename, FileMode.Open))
 			{
 				_bytes = new byte[fs.Length];
-				fs.Read(_bytes, 0, _bytes.Length);
+				fs.ReadExactly(_bytes, 0, _bytes.Length);
 			}
 			
 			int index = 0;

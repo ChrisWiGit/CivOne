@@ -45,10 +45,10 @@ namespace CivOne.Graphics
 			using (FileStream fs = new FileStream(filename, FileMode.Open))
 			{
 				file = new byte[fs.Length];
-				fs.Read(file, 0, file.Length);
+				fs.ReadExactly(file, 0, file.Length);
 			}
 			
-			List<ushort> fontOffsets = new List<ushort>();
+			List<ushort> fontOffsets = [];
 			int index = 0;
 			uint fontCount = BitConverter.ToUInt16(file, index);
 			index += 2;

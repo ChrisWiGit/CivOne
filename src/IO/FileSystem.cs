@@ -31,22 +31,22 @@ namespace CivOne.IO
 
 		public static bool DataFilesExist(params string[] files)
 		{
-			Log("Checking data files...");
+			Log("Checking data files in {0}...", Settings.Instance.DataDirectory);
 			if (files.Length == 0) files = DATA_FILES;
 			foreach (string filename in files)
 			{
 				if (Directory.GetFiles(Settings.Instance.DataDirectory, filename).Length > 0) continue;
 				
-				Log("- File not found: {0}", filename);
+				Log("Target resource file does not exist: {0}", filename);
 				return false;
 			}
-			Log("- Done, all files exist");
+			Log("Done, all files exist");
 			return true;
 		}
 		
 		public static bool CopyDataFiles(string folder)
 		{
-			Log("Copying data files...");
+			Log("Copying data files to {0}...", Settings.Instance.DataDirectory);
 			foreach (string filename in DATA_FILES)
 			{
 				string[] files;
