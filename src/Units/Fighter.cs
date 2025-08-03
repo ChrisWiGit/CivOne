@@ -15,11 +15,13 @@ namespace CivOne.Units
 {
 	internal class Fighter : BaseUnitAir
 	{
+		private static readonly byte MAX_MOVES = 10;
+
 		public override void Explore()
 		{
 			Explore(2);
 		}
-		
+
 		protected override bool CanAttackEnemy(ITile moveTarget)
 		{
 			// Only Fighter can attack air units and all other units.
@@ -33,14 +35,20 @@ namespace CivOne.Units
 			base.SkipTurn();
 		}
 
-		public Fighter() : base(6, 4, 2, 10)
+		public override void NewTurn()
+		{
+			base.NewTurn();
+			TryToLandOnCarrier(MAX_MOVES);
+		}
+
+		public Fighter() : base(6, 4, 2, MAX_MOVES)
 		{
 			Type = UnitType.Fighter;
 			Name = "Fighter";
 			RequiredTech = new Flight();
 			ObsoleteTech = null;
 			SetIcon('A', 1, 1);
-            Role = UnitRole.AirAttack;
-        }
+			Role = UnitRole.AirAttack;
+		}
 	}
 }

@@ -14,6 +14,7 @@ namespace CivOne.Units
 {
 	internal class Bomber : BaseUnitAir
 	{
+		private static readonly byte MAX_MOVES = 8;
 		public override void Explore()
 		{
 			Explore(2);
@@ -29,10 +30,10 @@ namespace CivOne.Units
 				return;
 			}
 
-			if (FuelLeft > 8)
+			if (FuelLeft > MAX_MOVES)
 			{
 				// second turn allowed.
-				FuelLeft = 8;
+				FuelLeft = MAX_MOVES;
 				return;
 			}
 			FuelLeft = 0;
@@ -40,7 +41,13 @@ namespace CivOne.Units
 			base.SkipTurn();
 		}
 
-		public Bomber() : base(12, 12, 1, 8)
+		public override void NewTurn()
+		{
+			base.NewTurn();
+			TryToLandOnCarrier(MAX_MOVES);
+		}
+
+		public Bomber() : base(12, 12, 1, MAX_MOVES)
 		{
 			Type = UnitType.Bomber;
 			Name = "Bomber";
@@ -50,6 +57,7 @@ namespace CivOne.Units
 
 			TotalFuel *= 2;
 			FuelLeft = TotalFuel;
+			MovesLeft = MAX_MOVES;
 		}
 	}
 }

@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CivOne.Enums;
@@ -32,36 +33,68 @@ namespace CivOne.Units
 		}
 
 
-		// Check for room on flight deck
 		protected bool CanLandOnCarrier()
 		{
 			return (Tile.Units.FirstOrDefault(u => u is Carrier) as IBoardable)?.AllowedToBoard(this) ?? false;
 		}
 
 
-		private void HandleFuel(byte movesLeft = 0)
+		protected bool TryToLandOnCarrier(byte movesLeft = 0)
 		{
-			if (Map[X, Y].Units.Any(u => u is Carrier))
+			if (!AbleToLandOnCarrier(0))
 			{
-				if (CanLandOnCarrier())
-				{
-					MovesLeft = movesLeft;
-					FuelLeft = TotalFuel;
-					return;
-				}
+				HandleFuel();
+				return false;
 			}
+			MovesLeft = movesLeft;
+			FuelLeft = TotalFuel;
 
-			if (Map[X, Y].City != null)
+			return true;
+		}
+		protected void HandleFuel(byte movesLeft = 0)
+		{
+			if (AbleToLandOnCarrier(movesLeft))
 			{
-				MovesLeft = movesLeft;
-				FuelLeft = TotalFuel;
 				return;
 			}
+			if (TryRefuelAtCity(movesLeft)) return;
 
 			// TODO: CW: We should disallow setting sentry (or just remove it here?) -> This would be a convenience setting for the player.
 			if (!Sentry && (movesLeft > 0 || FuelLeft > 0)) return;
 
-			// Air unit is out of fuel
+			HandleOutOfFuel();
+		}
+
+		private bool AbleToLandOnCarrier(byte movesLeft)
+		{
+			if (!Map[X, Y].Units.Any(u => u is Carrier))
+			{
+				return false;
+			}
+			if (!CanLandOnCarrier())
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		private bool TryRefuelAtCity(byte movesLeft)
+		{
+			if (Map[X, Y].City == null)
+			{
+				return false;
+			}
+
+			MovesLeft = movesLeft;
+			FuelLeft = TotalFuel;
+
+			return true;
+		}
+
+		private void HandleOutOfFuel()
+		{
+			// TODO: CW: We should disallow setting sentry (or just remove it here?) -> This would be a convenience setting for the player.
 			Game.DisbandUnit(this);
 			GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText("ERROR/FUEL")));
 		}
@@ -97,7 +130,7 @@ namespace CivOne.Units
 		public override void NewTurn()
 		{
 			base.NewTurn();
-			HandleFuel(TotalFuel);
+			TryToLandOnCarrier();
 		}
 
 		public override IEnumerable<MenuItem<int>> MenuItems

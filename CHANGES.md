@@ -6,6 +6,7 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Air units retain movement points on carrier (won't land).
 * Settler city animation turned off if animation setting is off.
 * Extended window scale factors up to 8 (previously 4)
 * Added sub menu "Game behavior menu" to patches menu with settings for the game
