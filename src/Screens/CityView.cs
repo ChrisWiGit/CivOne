@@ -33,7 +33,7 @@ namespace CivOne.Screens
 		private readonly City _city;
 		private readonly IProduction _production;
 		private readonly Picture _background;
-		private readonly bool _founded;
+		private readonly bool _showFoundedScreen;
 		private readonly bool _firstView;
 		private readonly bool _captured;
 		private readonly bool _disorder;
@@ -120,7 +120,7 @@ namespace CivOne.Screens
 				return false;
 			}
 
-			if (_founded && (_skip || _x > 120))
+			if (_showFoundedScreen && (_skip || _x > 120))
 			{
 				_fadeStep -= FADE_STEP;
 				if (_fadeStep <= 0.0f)
@@ -130,7 +130,7 @@ namespace CivOne.Screens
 				}
 				FadeColours();
 			}
-			if (_founded && (gameTick % 3 == 0))
+			if (_showFoundedScreen && (gameTick % 3 == 0))
 			{
 				this.AddLayer(_background)
 					.DrawText($"{_city.Name} founded: {Game.GameYear}.", 5, 5, 161, 3, TextAlign.Center);
@@ -735,28 +735,38 @@ namespace CivOne.Screens
 		{
 			return new CityView(city, weLovePresidentDay: true);
 		}
+		
+		public static CityView FoundCityWithAnimation(City city)
+		{
+			return new CityView(city, showFoundedScreen: true);
+		}
 
-		public CityView(City city, string [] message = null, bool founded = false, bool firstView = false, IProduction production = null, bool captured = false, bool disorder = false, bool weLovePresidentDay = false)
+		public static CityView FoundCity(City city)
+		{
+			return new CityView(city);
+		}
+
+		public CityView(City city, string[] message = null, bool showFoundedScreen = false, bool firstView = false, IProduction production = null, bool captured = false, bool disorder = false, bool weLovePresidentDay = false)
 		{
 			_dialogText = TextSettings.ShadowText(15, 5);
 			_dialogText.FontId = 5;
-			
+
 			_city = city;
 			_production = production;
 			_background = new Picture(Resources["HILL"]);
-			_founded = founded;
+			_showFoundedScreen = showFoundedScreen;
 			_firstView = firstView;
-			
+
 			Palette = _background.Palette;
 			_overlay = new Picture(_background);
-			
-			if (founded) return;
+
+			if (showFoundedScreen) return;
 
 			DrawBuildings();
 			this.AddLayer(_background);
-			
-            // ReSharper disable once AssignmentInConditionalExpression
-            if (_captured = captured)
+
+			// ReSharper disable once AssignmentInConditionalExpression
+			if (_captured = captured)
 			{
 				Picture invaders;
 				int xx = 0, yy = 2, ww = 78, hh = 60;
@@ -787,12 +797,12 @@ namespace CivOne.Screens
 				}
 				_x = 0;
 
-                if (message != null)
-				    drawMessage(message);
-            }
+				if (message != null)
+					drawMessage(message);
+			}
 
-            // ReSharper disable once AssignmentInConditionalExpression
-            if (_disorder = disorder)
+			// ReSharper disable once AssignmentInConditionalExpression
+			if (_disorder = disorder)
 			{
 				Picture revolters;
 				int xx = 1, yy = 1, ww, hh;
@@ -808,7 +818,7 @@ namespace CivOne.Screens
 					hh = 65;
 					revolters = Resources["RIOT2"];
 				}
- 				_invadersOrRevolters = new Picture[10];
+				_invadersOrRevolters = new Picture[10];
 				for (int ii = 0; ii < 10; ii++)
 				{
 					int frameX = (ii % 4);
@@ -816,19 +826,19 @@ namespace CivOne.Screens
 					_invadersOrRevolters[ii] = revolters[xx + (frameX * (ww + 1)), yy + (frameY * (hh + 1)), ww, hh];
 				}
 				_x = 0;
- 				string[] lines = { "Civil disorder in", $"{city.Name}! Mayor", "flees in panic." };
-                drawMessage(lines);
+				string[] lines = { "Civil disorder in", $"{city.Name}! Mayor", "flees in panic." };
+				drawMessage(lines);
 			}
 
-            // ReSharper disable once AssignmentInConditionalExpression
-            if (_weLovePresidentDay = weLovePresidentDay)
+			// ReSharper disable once AssignmentInConditionalExpression
+			if (_weLovePresidentDay = weLovePresidentDay)
 			{
 				int xx = 1, yy = 1, ww = 78, hh = 65;
 
-                var resourceName = (Game.CurrentPlayer.HasAdvance<Conscription>()) ? "LOVE2" : "LOVE1";
+				var resourceName = (Game.CurrentPlayer.HasAdvance<Conscription>()) ? "LOVE2" : "LOVE1";
 				Picture marchers = Resources[resourceName];
 
- 				_invadersOrRevolters = new Picture[10];
+				_invadersOrRevolters = new Picture[10];
 				for (int ii = 0; ii < 10; ii++)
 				{
 					int frameX = (ii % 4);
@@ -845,20 +855,20 @@ namespace CivOne.Screens
 				if (Game.CurrentPlayer.Government is Despotism)
 					leaderTitle = "Emperor";
 
- 				string[] lines =  { "'We Love the " + leaderTitle + "'", "day celebrated in", $"{city.Name}!" };
-                drawMessage(lines);
+				string[] lines = { "'We Love the " + leaderTitle + "'", "day celebrated in", $"{city.Name}!" };
+				drawMessage(lines);
 			}
 
-            if (production != null)
+			if (production != null)
 			{
 				_noiseMap = new byte[320, 200];
 				for (int x = 0; x < 320; x++)
-				for (int y = 0; y < 200; y++)
-				{
-					_noiseMap[x, y] = (byte)Common.Random.Next(1, NOISE_COUNT);
-				}
+					for (int y = 0; y < 200; y++)
+					{
+						_noiseMap[x, y] = (byte)Common.Random.Next(1, NOISE_COUNT);
+					}
 
-				string[] lines =  { $"{_city.Name} builds", $"{(production as ICivilopedia).Name}." };
+				string[] lines = { $"{_city.Name} builds", $"{(production as ICivilopedia).Name}." };
 				int width = lines.Max(l => Resources.GetTextSize(5, l).Width) + 12;
 				Picture dialog = new Picture(width, 39)
 					.Tile(Pattern.PanelGrey, 1, 1)
@@ -876,12 +886,12 @@ namespace CivOne.Screens
 			}
 
 			if (captured) return;
-			
+
 			this.DrawText(_city.Name, 5, 5, 161, 3, TextAlign.Center)
 				.DrawText(_city.Name, 5, 15, 160, 2, TextAlign.Center)
 				.DrawText(Game.GameYear, 5, 5, 161, 16, TextAlign.Center)
 				.DrawText(Game.GameYear, 5, 15, 160, 15, TextAlign.Center);
-			
+
 			if (firstView)
 			{
 				_fadeStep = 0.0f;
@@ -903,20 +913,20 @@ namespace CivOne.Screens
 				this.AddLayer(Resources["POP"][sx, sy, sw, sh], dx, dy);
 			}
 
-            void drawMessage(string[] lines)
-            {
-                int width = lines.Max(l => Resources.GetTextSize(5, l).Width) + 12;
-                Picture dialog = new Picture(width, 54)
-                    .Tile(Pattern.PanelGrey, 1, 1)
-                    .DrawRectangle()
-                    .DrawRectangle3D(1, 1, width - 2, 52)
-                    .DrawText(lines[0], 5, 6, _dialogText)
-                    .DrawText(lines[1], 5, 21, _dialogText)
-                    .DrawText(lines[2], 5, 36, _dialogText)
-                    .As<Picture>();
+			void drawMessage(string[] lines)
+			{
+				int width = lines.Max(l => Resources.GetTextSize(5, l).Width) + 12;
+				Picture dialog = new Picture(width, 54)
+					.Tile(Pattern.PanelGrey, 1, 1)
+					.DrawRectangle()
+					.DrawRectangle3D(1, 1, width - 2, 52)
+					.DrawText(lines[0], 5, 6, _dialogText)
+					.DrawText(lines[1], 5, 21, _dialogText)
+					.DrawText(lines[2], 5, 36, _dialogText)
+					.As<Picture>();
 
-                _background.AddLayer(dialog, 80, 8);
-            }
-        }
+				_background.AddLayer(dialog, 80, 8);
+			}
+		}
 	}
 }

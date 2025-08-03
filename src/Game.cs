@@ -343,8 +343,11 @@ namespace CivOne
 
 		internal City AddCity(Player player, int nameId, int x, int y)
 		{
-			if (_cities.Any(c => c.X == x && c.Y == y))
+			bool hasCity = _cities.Any(c => c.X == x && c.Y == y);
+			if (hasCity)
+			{
 				return null;
+			}
 
 			City city = new City(PlayerNumber(player))
 			{
@@ -498,9 +501,13 @@ namespace CivOne
 
 		public void DisbandUnit(IUnit unit)
 		{
+			if (unit == null)
+			{
+				return;
+			}
+
 			IUnit activeUnit = ActiveUnit;
 
-			if (unit == null) return;
 			if (!_units.Contains(unit)) return;
 			if (unit.Tile is Ocean && unit is IBoardable)
 			{

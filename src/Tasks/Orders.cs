@@ -31,10 +31,7 @@ namespace CivOne.Tasks
 
 		private void CityManagerClosed(object sender, EventArgs args)
 		{
-			if (_unit != null)
-			{
-				Game.DisbandUnit(_unit);
-			}
+			Game.DisbandUnit(_unit);
 			EndTask();
 		}
 
@@ -72,34 +69,37 @@ namespace CivOne.Tasks
 		private void CreateCity(int nameId)
 		{
 			_city = Game.AddCity(_player, nameId, _x, _y);
-			if (_city != null)
-			{
-				if (_player.IsHuman)
-				{
-                    // TODO fire-eggs not showing may lose side-effects
-                    //if (!Game.Animations)
-                    {
-                        CityView cityView = new CityView(_city, founded: true);
-                        cityView.Closed += CityFounded;
-                        cityView.Skipped += CityViewed;
-                        Common.AddScreen(cityView);
-                        return;
-                    }
 
-                    {
-                        CityManager cityManager = new CityManager(_city);
-                        cityManager.Closed += CityManagerClosed;
-                        Common.AddScreen(cityManager);
-                        return;
-                    }
-                }
-				if (_unit != null)
-				{
-					Game.DisbandUnit(_unit);
-				}
+			if (_city == null)
+			{
+				// should not happen because an existing city will just be joined and
+				// this code will not be reached
+				Game.UpdateResources(_city.Tile);
+				EndTask();
+
+				Runtime.Log($"Error: Code should not be reached when founding a city at ({_x}, {_y}) for player {_player.Civilization.Name} with nameId {nameId}");
+				return;
 			}
-			Game.UpdateResources(_city.Tile);
-			EndTask();
+
+			if (!_player.IsHuman)
+			{
+				Game.DisbandUnit(_unit);
+				// later in code: human player settlers will be handled in CityManagerClosed
+				// so a unit is still shown in city view (original Civ1 behavior)
+
+				return;
+			}
+
+			if (!Game.Animations)
+			{
+				CityViewed(this, EventArgs.Empty);
+				return;
+			}
+
+			CityView cityScreen = CityView.FoundCityWithAnimation(_city);
+			cityScreen.Closed += CityFounded;
+			cityScreen.Skipped += CityViewed;
+			Common.AddScreen(cityScreen);
 		}
 
 		private void CreateCity(Player player, int x, int y)
