@@ -106,7 +106,7 @@ namespace CivOne
 			ICivilization destroyedBy = Game.CurrentPlayer.Civilization;
 			if (destroyedBy == destroyed) destroyedBy = Game.GetPlayer(0).Civilization;
 
-			_replayData.Add(new ReplayData.CivilizationDestroyed(_gameTurn, destroyed.Id, destroyedBy.Id));
+			_replayData.Add(new ReplayData.CivilizationDestroyed(_gameTurn, destroyed.PreferredPlayerNumber, destroyedBy.PreferredPlayerNumber));
 
 			if (player.IsHuman)
 			{

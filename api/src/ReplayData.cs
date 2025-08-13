@@ -8,6 +8,8 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace CivOne
 {
@@ -45,8 +47,11 @@ namespace CivOne
 		{
 			public readonly int DestroyedId, DestroyedById;
 
-			public CivilizationDestroyed(int turn, int destroyedId, int destroyedById) : base(turn)
+			public CivilizationDestroyed(int turn, byte destroyedId, byte destroyedById) : base(turn)
 			{
+				Debug.Assert(destroyedId >= 0 && destroyedById <= 7, "Invalid civilization ID in replay data.");
+				Debug.Assert(destroyedById >= 0 && destroyedById <= 7, "Invalid civilization ID in replay data.");
+
 				DestroyedId = destroyedId;
 				DestroyedById = destroyedById;
 			}

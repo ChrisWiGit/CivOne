@@ -6,6 +6,7 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Civilization replay destruction handling to use PreferredPlayerNumber to keep civilization id between 0 and 7, otherwise crashes original game and JCivEdit.
 * Air units retain movement points on carrier (won't land).
 * Settler city animation turned off if animation setting is off.
 * Extended window scale factors up to 8 (previously 4)
