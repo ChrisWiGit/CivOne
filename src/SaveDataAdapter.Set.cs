@@ -212,16 +212,15 @@ namespace CivOne
 				{
 					case ReplayData.CivilizationDestroyed civDestroyed:
 						entryId = 0xD0;
-                        // fire-eggs confirmed via Microprose: civ ids are in 0-7 range.
-                        // TODO fire-eggs how is civilization re-incarnation handled? (_is_ it?)
-						data = new[] { (byte)(civDestroyed.DestroyedId ^ 8), 
-                                       (byte)(civDestroyed.DestroyedById ^ 8) };
+						// CW: 0-7 range handled in CivilizationDestroyed constructor.
+						data = [(byte)civDestroyed.DestroyedId,
+								(byte)civDestroyed.DestroyedById ];
 						break;
 					default:
 						continue;
 				}
 
-                output.Add((byte)(entryId | (byte)(value.Turn & 0x0F00) >> 8));
+                output.Add((byte)(entryId | ((byte)(value.Turn & 0x0F00)) >> 8));
 				output.Add((byte)(value.Turn & 0xFF));
 				output.AddRange(data);
 			}
