@@ -87,6 +87,9 @@ namespace CivOne.Tasks
 				// later in code: human player settlers will be handled in CityManagerClosed
 				// so a unit is still shown in city view (original Civ1 behavior)
 
+				Game.UpdateResources(_city.Tile);
+				EndTask();
+				
 				return;
 			}
 
