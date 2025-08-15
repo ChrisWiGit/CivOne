@@ -16,15 +16,15 @@ namespace CivOne.Enums
 		Babylonians = 2,
 		Germans = 3,
 		Egyptians = 4,
-		Americans = 5 * 8, // CW: With original Civ SaveGame and CivOne Conquest Screen, Americans and Chines are swapped otherwise.
+		Americans = 12, // CW: With original Civ SaveGame and CivOne Conquest Screen, Americans and Chines are swapped otherwise.
 		Greeks = 6,
 		Indians = 7,
-		Russians = 1 * 8, // 8 mod 7 = 1 as Romans is 1
-		Zulus = 2 * 8, // 9 mod 7 = 2 as Babylonians is 2
-		French = 3 * 8, // 10 mod 7 = 3 as Germans is 3
-		Aztecs = 4 * 8, // 11 mod 7 = 4 as Egyptians is 4
+		Russians = 8, //Romans is 8 - 7 = 1
+		Zulus = 9, // Babylonians is 9 - 7 = 2
+		French = 10, // Germans is 10 - 7 = 3
+		Aztecs = 11, // Egyptians is 11 - 7 = 4
 		Chinese = 5, // swapped with Americans
-		English = 6 * 8, // 13 mod 7 = 6 as Greeks is 6
-		Mongols = 7 * 8, // 14 mod 7 = 0 as Barbarians is 0
+		English = 13, // Greeks is 13 - 7 = 6
+		Mongols = 14, // Indians is 14 - 7 = 7
 	}
 }

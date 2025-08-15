@@ -94,6 +94,31 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		private void InstantConquest(object sender, EventArgs args)
+		{
+			Game.Players.ToList().ForEach(p =>
+			{
+				if (p.IsHuman || p.Civilization.Id == 0) return;
+
+				Game.GetUnits().Where(u => u.Player == p).ToList().ForEach(u =>
+				{
+					Game.DisbandUnit(u);
+				});
+				Game.Cities.Where(c => c.Player == p).ToList().ForEach(c =>
+				{
+					Game.DestroyCity(c);
+				});
+				p.HandleExtinction(true);
+				// Console.WriteLine($"Instantly conquered {p.Civilization.Name} ({p.Civilization.Id})");
+			});
+
+			GameTask conquest;
+			GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has conquered", "the entire planet!"));
+			GameTask.Enqueue(conquest = Show.Screen<Conquest>());
+			conquest.Done += (s, a) => Runtime.Quit();
+			Destroy();
+		}
+
 		private void MenuShowPowerGraph(object sender, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<PowerGraph>());
@@ -150,7 +175,7 @@ namespace CivOne.Screens
 					FontId = 0,
 					Indent = 8,
 					RowHeight = 8
-					
+
 				};
 				menu.MissClick += MenuCancel;
 				menu.Cancel += MenuCancel;
@@ -192,13 +217,14 @@ namespace CivOne.Screens
 				new("Meet With King", MenuMeetWithKing),
 				new("Toggle Reveal World", MenuRevealWorld),
 				new("Build Palace", MenuBuildPalace),
+				new("Instant Conquest", InstantConquest),
 				new("Settings", ShowSettings)
 			];
 
 			const int itemHeight = 8 + 1;
 			const int menuWidth = 133;
-				int menuHeight = itemHeight * _menuEntries.Count;
-			
+			int menuHeight = itemHeight * _menuEntries.Count;
+
 			this.AddLayer(Common.Screens.Last(), 0, 0)
 				.FillRectangle(24, 16, menuWidth, menuHeight + 2, 5);
 		}

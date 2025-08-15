@@ -310,7 +310,6 @@ namespace CivOne
 			if (invokeDestroyedEvent)
 			{
 				Destroyed?.Invoke(this, EventArgs.Empty);
-				return true;
 			}
 
 			return true;

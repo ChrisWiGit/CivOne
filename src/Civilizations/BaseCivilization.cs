@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Leaders;
@@ -120,39 +121,41 @@ namespace CivOne.Civilizations
 		/// GetBuddyCivilizationSupplier(Common.Random.InitialSeed)(2) returns Babylonians
 		/// GetBuddyCivilizationSupplier(Common.Random.InitialSeed)(2) returns Zulus
 		/// or the other way around, depending on the InitialSeed.
-		public static BuddyCivilization GetBuddyCivilizationSupplier(short InitialSeed)
+		public static BuddyCivilization GetBuddyCivilizationSupplier(short InitialSeed, int competitorsCount, byte preferredPlayerNumber)
 		{
-			Dictionary<int, int> _firstChoiceIndex = [];
+			// CW: We cannot get the random situation from the original game.
+			// This only works because Game.NewGame.cs sets the InitialSeed at the beginning of the creation of the civs.
 			Random startRandom = new(InitialSeed);
+			Dictionary<int, int> buddyCivIndexMap = GetStartCivMapping(competitorsCount, preferredPlayerNumber, startRandom);
 
 			return preferredPlayerNumber =>
 			{
-				var civBuds = Common.Civilizations.OrderByDescending(c => c.Id)
-					.Where(c => c.PreferredPlayerNumber == preferredPlayerNumber).ToArray();
+				ICivilization[] civBuds = Common.Civilizations.Where(civ => civ.PreferredPlayerNumber == preferredPlayerNumber).ToArray();
 
-				if (civBuds.Length == 0)
-				{
-					throw new System.Exception($"No civilization found for preferred player number {preferredPlayerNumber}.");
-				}
+				Debug.Assert(civBuds.Length > 0, $"No buddy civilization found for player number {preferredPlayerNumber}!");
 
-				if (_firstChoiceIndex.TryGetValue(preferredPlayerNumber, out var firstIndex))
-				{
-					if (civBuds.Length < 2)
-					{
-						return civBuds[firstIndex];
-					}
+				var result = civBuds[buddyCivIndexMap[preferredPlayerNumber]];
 
-					return civBuds[1 - firstIndex];
-				}
+				buddyCivIndexMap[preferredPlayerNumber] = buddyCivIndexMap[preferredPlayerNumber] == 0 ? 1 : 0;
 
-				int r = startRandom.Next(civBuds.Length);
-
-				// Console.WriteLine($"Civilization {civBuds[r].Name} ({civBuds[r].Id}) is chosen as buddy for player number {preferredPlayerNumber} (index {r}).");
-
-				_firstChoiceIndex[preferredPlayerNumber] = r;
-
-				return civBuds[r];
+				return result;
 			};
+		}
+
+		private static Dictionary<int, int> GetStartCivMapping(int competitorsCount, byte preferredPlayerNumber, Random startRandom)
+		{
+			Dictionary<int, int> civBuddyIndex = [];
+			List<int> range = [.. Enumerable.Range(0, competitorsCount + 1).Where(x => x != preferredPlayerNumber)];
+
+			foreach (int i in range)
+			{
+				ICivilization[] civs = Common.Civilizations.Where(civ => civ.PreferredPlayerNumber == i).ToArray();
+
+				int r = startRandom.Next(civs.Length);
+				civBuddyIndex[i] = r;
+			}
+
+			return civBuddyIndex;
 		}
 	}
 }

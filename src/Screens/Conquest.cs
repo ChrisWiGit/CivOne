@@ -157,7 +157,9 @@ namespace CivOne.Screens
 					_noiseMap[x, y] = (byte)Common.Random.Next(1, NOISE_COUNT);
 				}
 
-			BaseCivilization.BuddyCivilization getBuddyCiv = BaseCivilization.GetBuddyCivilizationSupplier(Common.Random.InitialSeed);
+			BaseCivilization.BuddyCivilization getBuddyCiv =
+				BaseCivilization.GetBuddyCivilizationSupplier(
+					Common.Random.InitialSeed, Game.Competition, Game.HumanPlayer.Civilization.PreferredPlayerNumber);
 
 			_enemies = Game.GetReplayData<ReplayData.CivilizationDestroyed>()
 				.Where(x => x.DestroyedById == Game.HumanPlayer.Civilization.Id)

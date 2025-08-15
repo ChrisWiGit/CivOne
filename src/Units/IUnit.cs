@@ -148,5 +148,7 @@ namespace CivOne.Units
 		void SentryOnShip();
 
 		int NearestCity { get; }
+
+		Player Player { get; }
 	}
 }

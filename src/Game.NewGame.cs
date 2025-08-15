@@ -170,7 +170,7 @@ namespace CivOne
 			}
 		}
 
-		private Game(int difficulty, int competition, ICivilization tribe, string leaderName, string tribeName, string tribeNamePlural)
+		private Game(int difficulty, int competition, ICivilization tribe, string leaderName, string playerTribeName, string playerTribeNamePlural)
 		{
 			_difficulty = difficulty;
 			_competition = competition;
@@ -187,6 +187,8 @@ namespace CivOne
 
 			_cities = new List<City>();
 			_units = new List<IUnit>();
+
+			Player.Game = this;
 			_players = new Player[competition + 1];
 
 			Random startRandom = new(Common.Random.InitialSeed);
@@ -195,7 +197,7 @@ namespace CivOne
 			{
 				if (i == tribe.PreferredPlayerNumber)
 				{
-					_players[i] = new Player(tribe, leaderName, tribeName, tribeNamePlural);
+					_players[i] = new Player(tribe, leaderName, playerTribeName, playerTribeNamePlural);
 					_players[i].Destroyed += PlayerDestroyed;
 					HumanPlayer = _players[i];
 					HumanPlayer.TaxesRate = Settings.TaxRate; // fire-eggs 20190725
@@ -207,17 +209,14 @@ namespace CivOne
 					Log("- Player {0} is {1} of the {2} (human)", i, _players[i].LeaderName, _players[i].TribeNamePlural);
 					continue;
 				}
-				
 				ICivilization[] civs = Common.Civilizations.Where(civ => civ.PreferredPlayerNumber == i).ToArray();
 				int r = startRandom.Next(civs.Length);
-				// int r = Common.Random.Next(civs.Length);
-
-				Console.WriteLine($"Player {i} is {civs[r].Name} ({civs[r].Id}) = r {r}");
-
 				_players[i] = new Player(civs[r]);
-                if (i != 0) // fire-eggs 20190730 never show "barbarian civilization destroyed"
-				    _players[i].Destroyed += PlayerDestroyed;
-				
+				if (i != 0)
+				{
+					 // fire-eggs 20190730 never show "barbarian civilization destroyed"
+					_players[i].Destroyed += PlayerDestroyed;
+				}
 				Log("- Player {0} is {1} of the {2}", i, _players[i].LeaderName, _players[i].TribeNamePlural);
 			}
 			
