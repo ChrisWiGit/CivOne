@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CivOne.Enums;
@@ -103,6 +104,55 @@ namespace CivOne.Civilizations
 		protected BaseCivilization(Civilization civilization)
 		{
 			Civilization = civilization;
+		}
+
+		public delegate ICivilization BuddyCivilization(int preferredPlayerNumber);
+
+		/// <summary>
+		/// Returns a function that can be used to get a buddy civilization for a given player
+		/// number. 
+		/// As in Civilization.cs, civilizations are grouped by their preferred player id (1-7, 0 are barbarians, and one of seven is the human itself).
+		/// Some (most) of civilizations have a buddy civilization (e.g. Babylonians and Zulus = 2)
+		/// This method returns a delegate that returns a buddy civilization for a given player number (1-7).
+		/// If you start a game with a specific seed, the buddy civilizations will be chosen randomly, but consistently for that seed.
+		/// So you apply the InitialSeed to this method to get the same buddy civilizations every time.
+		/// E.g.
+		/// GetBuddyCivilizationSupplier(Common.Random.InitialSeed)(2) returns Babylonians
+		/// GetBuddyCivilizationSupplier(Common.Random.InitialSeed)(2) returns Zulus
+		/// or the other way around, depending on the InitialSeed.
+		public static BuddyCivilization GetBuddyCivilizationSupplier(short InitialSeed)
+		{
+			Dictionary<int, int> _firstChoiceIndex = [];
+			Random startRandom = new(InitialSeed);
+
+			return preferredPlayerNumber =>
+			{
+				var civBuds = Common.Civilizations.OrderByDescending(c => c.Id)
+					.Where(c => c.PreferredPlayerNumber == preferredPlayerNumber).ToArray();
+
+				if (civBuds.Length == 0)
+				{
+					throw new System.Exception($"No civilization found for preferred player number {preferredPlayerNumber}.");
+				}
+
+				if (_firstChoiceIndex.TryGetValue(preferredPlayerNumber, out var firstIndex))
+				{
+					if (civBuds.Length < 2)
+					{
+						return civBuds[firstIndex];
+					}
+
+					return civBuds[1 - firstIndex];
+				}
+
+				int r = startRandom.Next(civBuds.Length);
+
+				// Console.WriteLine($"Civilization {civBuds[r].Name} ({civBuds[r].Id}) is chosen as buddy for player number {preferredPlayerNumber} (index {r}).");
+
+				_firstChoiceIndex[preferredPlayerNumber] = r;
+
+				return civBuds[r];
+			};
 		}
 	}
 }

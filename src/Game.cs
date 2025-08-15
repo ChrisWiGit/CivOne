@@ -41,6 +41,8 @@ namespace CivOne
 
 		private ushort _anthologyTurn = 0;
 
+		public int Competition => _competition;
+
 		public bool Animations { get; set; }
 		public bool Sound { get; set; }
 		public bool CivilopediaText { get; set; }
@@ -142,7 +144,7 @@ namespace CivOne
 		{
 			foreach (Player player in _players.Where(x => !(x.Civilization is Barbarian)))
 			{
-				player.IsDestroyed();
+				player.HandleExtinction();
 			}
 
 			if (++_currentPlayer >= _players.Length)
@@ -184,7 +186,7 @@ namespace CivOne
 				}
 			}
 
-			if (!_players.Any(x => Game.PlayerNumber(x) != 0 && x != Human && !x.IsDestroyed()))
+			if (!_players.Any(x => Game.PlayerNumber(x) != 0 && x != Human && !x.HandleExtinction()))
 			{
 				PlaySound("wintune");
 
@@ -524,7 +526,7 @@ namespace CivOne
 			unit.Y = 255;
 			_units.Remove(unit);
 
-			GetPlayer(unit.Owner).IsDestroyed();
+			GetPlayer(unit.Owner).HandleExtinction();
 
 			if (_units.Contains(activeUnit))
 			{

@@ -15,6 +15,7 @@ using CivOne.Buildings;
 using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.Governments;
+using CivOne.Graphics.Sprites;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -26,6 +27,8 @@ namespace CivOne
 {
 	public class Player : BaseInstance, ITurn
 	{
+		// Dependency injection, but static for all the static members.
+		public static Game Game = null;
 		private readonly ICivilization _civilization;
 		private readonly string _tribeName, _tribeNamePlural;
 
@@ -104,9 +107,9 @@ namespace CivOne
 			GameTask.Enqueue(Message.Newspaper(null, $"The {Game.Instance.HumanPlayer.TribeNamePlural} are", "revolting! Citizens", "demand new govt."));
 		}
 
-		public bool IsHuman => (Game.Instance.HumanPlayer == this);
+		public bool IsHuman => (Game.HumanPlayer == this);
 
-		public City[] Cities => Game.Instance.GetCities().Where(c => this == c.Owner && c.Size > 0).ToArray();
+		public City[] Cities => Game.GetCities().Where(c => this == c.Owner && c.Size > 0).ToArray();
 
 		public int Population => Cities.Sum(c => c.Population);
 		
@@ -280,24 +283,46 @@ namespace CivOne
 		}
 
 		public bool _destroyed = false; // fire-eggs: hack fix for Issue #68: need to be able set destroyed state on game load
-		public bool IsDestroyed()
+
+
+		public bool HandleExtinction(bool invokeDestroyedEvent = true)
 		{
 			if (this == 0) return false;
 			if (_destroyed) return true;
-			if (Cities.Length == 0 && !Game.GetUnits().Any(x => this == x.Owner && (x is Settlers && x.Home == null)))
+
+			if (Cities.Length != 0 ||
+				Game.GetUnits().Any(unit => this == unit.Owner && unit is Settlers && unit.Home == null))
 			{
-				while (true)
-				{
-					IUnit unit = Game.GetUnits().FirstOrDefault(x => this == x.Owner);
-					if (unit == null) break;
-					Game.DisbandUnit(unit);
-				}
-				_destroyed = true;
+				return false;
+			}
+
+
+			IUnit unit;
+			do
+			{
+				unit = Game.GetUnits().FirstOrDefault(x => this == x.Owner);
+				Game.DisbandUnit(unit);
+			}
+			while (unit != null);
+
+			_destroyed = true;
+
+			if (invokeDestroyedEvent)
+			{
 				Destroyed?.Invoke(this, EventArgs.Empty);
 				return true;
 			}
-			return false;
+
+			return true;
 		}
+
+		/// <summary>
+		/// Returns whether the player is destroyed or not.
+		/// It does not invoke the Destroyed event and thus does not show a message.
+		/// To do so, use HandleExtinction() instead.
+		/// </summary>
+		public bool IsDestroyed { get => HandleExtinction(false); }
+				
 
 		public void Explore(int x, int y, int range = 1, bool sea = false)
 		{

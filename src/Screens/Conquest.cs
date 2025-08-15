@@ -7,6 +7,8 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using CivOne.Civilizations;
@@ -39,7 +41,7 @@ namespace CivOne.Screens
 		private int _timer = 0;
 
 		private Picture _background, _overlay;
-		
+
 
 		private void SetPalette()
 		{
@@ -52,17 +54,25 @@ namespace CivOne.Screens
 
 		private Point GetPoint(int number)
 		{
-			switch(number)
+			return number switch
 			{
-				case 0: return new Point(8, 49);
-				case 1: return new Point(284, 49);
-				case 2: return new Point(54, 49);
-				case 3: return new Point(238, 49);
-				case 4: return new Point(100, 49);
-				case 5: return new Point(192, 49);
-				case 6: return new Point(146, 49);
-			}
-			return new Point(8, 49);
+				0 => new Point(8, 49),
+				1 => new Point(284, 49),
+				2 => new Point(54, 49),
+				3 => new Point(238, 49),
+				4 => new Point(100, 49),
+				5 => new Point(192, 49),
+				6 => new Point(146, 49),
+				// high up pictures of leaders
+				7 => new Point(8, 8),
+				8 => new Point(284, 8),
+				9 => new Point(54, 8),
+				10 => new Point(238, 8),
+				11 => new Point(100, 8),
+				12 => new Point(192, 8),
+				13 => new Point(146, 8),
+				_ => new Point(8, 49),
+			};
 		}
 
 		protected override bool HasUpdate(uint gameTick)
@@ -121,7 +131,7 @@ namespace CivOne.Screens
 			_update = false;
 			return true;
 		}
-		
+
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
 			if (_step < 1)
@@ -131,28 +141,38 @@ namespace CivOne.Screens
 			}
 			return true;
 		}
-		
+
 		public Conquest()
 		{
 			_background = Resources["SLAM1"];
-			
+
 			Palette = _background.Palette;
-			
+
 			this.AddLayer(_background);
-			
+
 			_noiseMap = new byte[320, 200];
 			for (int x = 0; x < 320; x++)
-			for (int y = 0; y < 200; y++)
-			{
-				_noiseMap[x, y] = (byte)Common.Random.Next(1, NOISE_COUNT);
-			}
-
-			_enemies = Game.GetReplayData<ReplayData.CivilizationDestroyed>().Where(x => x.DestroyedById == Game.HumanPlayer.Civilization.Id).Select(x =>
-				new Enemy
+				for (int y = 0; y < 200; y++)
 				{
-					DestroyYear = Common.YearString((ushort)x.Turn),
-					Leader = Common.Civilizations.First(c => c.Id == x.DestroyedId).Leader,
-					Civilization = Common.Civilizations.First(c => c.Id == x.DestroyedId)
+					_noiseMap[x, y] = (byte)Common.Random.Next(1, NOISE_COUNT);
+				}
+
+			BaseCivilization.BuddyCivilization getBuddyCiv = BaseCivilization.GetBuddyCivilizationSupplier(Common.Random.InitialSeed);
+
+			_enemies = Game.GetReplayData<ReplayData.CivilizationDestroyed>()
+				.Where(x => x.DestroyedById == Game.HumanPlayer.Civilization.Id)
+				.Select(x =>
+				{
+					ICivilization civ = getBuddyCiv(x.DestroyedId);
+
+					// Console.WriteLine($"Civilization {civ.Name} ({civ.Id}) destroyed by {Game.HumanPlayer.Civilization.Name} ({Game.HumanPlayer.Civilization.Id}/{civ.PreferredPlayerNumber}) in year {Common.YearString((ushort)x.Turn)}");
+
+					return new Enemy
+					{
+						DestroyYear = Common.YearString((ushort)x.Turn),
+						Leader = civ.Leader,
+						Civilization = civ,
+					};
 				}
 			).ToArray();
 

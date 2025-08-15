@@ -115,6 +115,9 @@ namespace CivOne
 		{
 			_difficulty = gameData.Difficulty;
 			_competition = (gameData.OpponentCount + 1);
+
+			// CW: Dependency Injection. Otherwise this would be handled after this constructor (too late to call HandleExtinction).
+			Player.Game = this;
 			_players = new Player[_competition + 1];
 			_cities = new List<City>();
 			_units = new List<IUnit>();
@@ -248,16 +251,6 @@ namespace CivOne
 
 			_replayData.AddRange(gameData.ReplayData);
 
-            // fire-eggs fix issue #68: don't repeat any 'civilization destroyed' messages on game load
-            foreach (ReplayData replayData in _replayData)
-            {
-                if (replayData is ReplayData.CivilizationDestroyed foo)
-                {
-                    // TODO fire-eggs: wrong when playing with fewer than 7?
-                    int dex = foo.DestroyedId - (foo.DestroyedId > 7 ? 7 : 0);
-                    _players[dex]._destroyed = true;
-                }
-            }
 
 			// Game Settings
 			InstantAdvice = (Settings.InstantAdvice == GameOption.On);
@@ -286,6 +279,9 @@ namespace CivOne
 				_activeUnit = i;
 				if (_units[i].MovesLeft > 0) break;
 			}
+
+			// CW: Calculate civilization extinction here to avoid showing the "civ destruction" message.
+			_players.ToList().ForEach(player => player.HandleExtinction(false));
 		}
 	}
 }

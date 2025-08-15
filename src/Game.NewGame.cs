@@ -188,6 +188,9 @@ namespace CivOne
 			_cities = new List<City>();
 			_units = new List<IUnit>();
 			_players = new Player[competition + 1];
+
+			Random startRandom = new(Common.Random.InitialSeed);
+
 			for (int i = 0; i <= competition; i++)
 			{
 				if (i == tribe.PreferredPlayerNumber)
@@ -195,7 +198,7 @@ namespace CivOne
 					_players[i] = new Player(tribe, leaderName, tribeName, tribeNamePlural);
 					_players[i].Destroyed += PlayerDestroyed;
 					HumanPlayer = _players[i];
-                    HumanPlayer.TaxesRate = Settings.TaxRate; // fire-eggs 20190725
+					HumanPlayer.TaxesRate = Settings.TaxRate; // fire-eggs 20190725
 					if (difficulty == 0)
 					{
 						// Chieftain starts with 50 Gold
@@ -206,8 +209,11 @@ namespace CivOne
 				}
 				
 				ICivilization[] civs = Common.Civilizations.Where(civ => civ.PreferredPlayerNumber == i).ToArray();
-				int r = Common.Random.Next(civs.Length);
-				
+				int r = startRandom.Next(civs.Length);
+				// int r = Common.Random.Next(civs.Length);
+
+				Console.WriteLine($"Player {i} is {civs[r].Name} ({civs[r].Id}) = r {r}");
+
 				_players[i] = new Player(civs[r]);
                 if (i != 0) // fire-eggs 20190730 never show "barbarian civilization destroyed"
 				    _players[i].Destroyed += PlayerDestroyed;

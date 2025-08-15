@@ -1294,7 +1294,7 @@ namespace CivOne
 						{
 							this.Owner = admired.Owner;
 
-							previousOwner.IsDestroyed();
+							previousOwner.HandleExtinction();
 
 							if (Human == admired.Owner)
 							{

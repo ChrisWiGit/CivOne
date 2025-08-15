@@ -66,7 +66,7 @@ namespace CivOne.Screens.Reports
 			OnMouseDown += MouseDown;
 
 			int yy = 30;
-			foreach (Player player in Game.Players.Where(p => p != 0 && !p.IsDestroyed()))
+			foreach (Player player in Game.Players.Where(p => p != 0 && !p.IsDestroyed))
 			{
 				this.FillRectangle(4, yy, 313, 1, 9);
 

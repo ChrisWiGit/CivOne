@@ -318,7 +318,7 @@ namespace CivOne.Units
 							capturedCity.Size--;
 						}
 
-						previousOwner.IsDestroyed();
+						previousOwner.HandleExtinction();
 					};
 
 					IList<IAdvance> advancesToSteal = GetAdvancesToSteal(capturedCity.Player);
@@ -479,7 +479,7 @@ namespace CivOne.Units
 
 				// fire-eggs 20190729 when destroying last city, check for civ destruction ASAP
 				if (unit.Owner != 0)
-					task.Done += (s1, a1) => { Game.GetPlayer(unit.Owner).IsDestroyed(); };
+					task.Done += (s1, a1) => { Game.GetPlayer(unit.Owner).HandleExtinction(); };
 
 				GameTask.Insert(task);
 			}

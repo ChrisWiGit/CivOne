@@ -77,7 +77,7 @@ namespace CivOne.Screens.Dialogs
 				newPlayer.Gold -= (short)_inciteCost;
                 newPlayer.Gold += (short) plundered;
 
-				previousOwner.IsDestroyed();
+				previousOwner.HandleExtinction();
 
                 // TODO fire-eggs not sure if human-city being incited should be here [except incite of rebelling human city?]
 				if (Human == _cityToIncite.Owner || Human == newOwner)
