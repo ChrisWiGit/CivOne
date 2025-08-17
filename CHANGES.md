@@ -6,6 +6,8 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Conquest screen now shows "The entire world hails" and waits for user input before closing the screen/game.
+* F12 shows debug menu if enabled (remember using first character of each item to cycle faster through the menu).
 * Added Remarks file to document the game behavior and author's thinking.
 * Feature: Added respawn of civilizations if it gets destroyed until 0 AD.
   * Its buddy civilization will be spawned (see Civilization.cs).
