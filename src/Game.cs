@@ -116,6 +116,21 @@ namespace CivOne
 				return;
 			}
 
+			if (Common.TurnToYear(Game.GameTurn) < 0 &&
+				player.AllowedToRespawn(GetReplayData<ReplayData.CivilizationDestroyed>()))
+			{
+				Player newPlayer = player.Respawn();
+				var index = newPlayer.Civilization.PreferredPlayerNumber;
+
+				_players[index] = newPlayer;
+				_players[index].Destroyed += PlayerDestroyed;
+
+				AddStartingUnits(index);
+				// CW: Not sure, but are these new civs given technology or better units?
+				// Could be a feature to advance such a civilization.
+				// In higher dificulties, does the civ get more units and techs?
+			}
+
 			GameTask.Insert(Message.Advisor(Advisor.Defense, false, destroyed.Name, "civilization", "destroyed", $"by {destroyedBy.NamePlural}!"));
 		}
 
@@ -643,7 +658,7 @@ namespace CivOne
 		 *
 		 * @param text The text to log.
 		 * @param parameters Optional parameters to format the text with.
-		 */		
+		 */
 		public new void Log(string text, params object[] parameters)
 		{
 			BaseInstance.Log(text, parameters);

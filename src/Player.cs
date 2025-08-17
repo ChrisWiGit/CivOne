@@ -25,7 +25,7 @@ using Gov = CivOne.Governments;
 
 namespace CivOne
 {
-	public class Player : BaseInstance, ITurn
+	public partial class Player : BaseInstance, ITurn
 	{
 		// Dependency injection, but static for all the static members.
 		public static Game Game = null;
