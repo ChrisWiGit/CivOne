@@ -1,0 +1,15 @@
+version=1
+language=EN
+game	game_turn	ushort	2			0
+game	player_civ	ushort	2			2
+game	player_civ_flag	flagshort	2			4
+game	random_seed	ushort	2			6
+game	year	short	2			8
+game	difficulty	ushort	2			10
+game	active_civs	flagshort	2			12
+game	current_research_ID	ushort	2			14
+game	civ#/leader	string	14	8		16
+game	civ#/name	string	12	8		128
+game	civ#/nationality	string	11	8		224
+game	civ#/cash	short	2	8		312
+game	civ#/research	short	2	8		328
