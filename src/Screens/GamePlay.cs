@@ -256,6 +256,12 @@ namespace CivOne.Screens
 				case Key.F10:
 					Common.AddScreen(new WorldMap());
 					return true;
+				case Key.F12:
+					if (Settings.DebugMenu)
+					{
+						GameTask.Enqueue(Show.Screen<DebugOptions>());
+					}
+					return true;
 				case Key.Plus:
 					GameTask.Enqueue(Show.TaxRate);
 					return true;

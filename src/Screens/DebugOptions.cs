@@ -113,7 +113,7 @@ namespace CivOne.Screens
 			});
 
 			GameTask conquest;
-			GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has conquered", "the entire planet!"));
+			GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has cheated", "the entire planet!"));
 			GameTask.Enqueue(conquest = Show.Screen<Conquest>());
 			conquest.Done += (s, a) => Runtime.Quit();
 			Destroy();
@@ -157,7 +157,7 @@ namespace CivOne.Screens
 				Picture menuGfx = new Picture(menuWidth, menuHeight)
 					.Tile(Pattern.PanelGrey)
 					.DrawRectangle3D()
-					.DrawText("Debug Options:", 0, 15, 4, 4)
+					.DrawText("Debug Options (F12):", 0, 15, 4, 4)
 					.As<Picture>();
 
 				IBitmap menuBackground = menuGfx[2, 11, menuWidth, menuHeight].ColourReplace((7, 11), (22, 3));
