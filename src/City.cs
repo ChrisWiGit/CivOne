@@ -15,6 +15,7 @@ using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Governments;
+using CivOne.Screens.Reports;
 using CivOne.src;
 using CivOne.Tasks;
 using CivOne.Tiles;
@@ -27,6 +28,8 @@ namespace CivOne
 {
 	public class City : BaseInstance, ITurn
 	{
+		// Dependency Injection
+		public static Game Game;
 		internal int NameId { get; set; }
 		internal byte X;
 		internal byte Y;
@@ -34,7 +37,7 @@ namespace CivOne
 		internal byte Owner
 		{
 			get => _owner;
-            set
+			set
 			{
 				_owner = value;
 				ResetResourceTiles();
@@ -45,7 +48,7 @@ namespace CivOne
 		internal byte Size
 		{
 			get => _size;
-            set
+			set
 			{
 				if (X == 255 || Y == 255) return;
 
@@ -64,7 +67,28 @@ namespace CivOne
 		internal int Shields { get; set; }
 		internal int Food { get; set; }
 		internal IProduction CurrentProduction { get; private set; }
+
 		private List<ITile> _resourceTiles = new List<ITile>();
+		private List<Citizen> _specialists = new List<Citizen>();
+
+		internal List<ITile> SetupResourceTiles
+		{
+			get => _resourceTiles;
+			set
+			{
+				_resourceTiles = value;
+			}
+		}
+
+		internal List<Citizen> SetupSpecialists
+		{
+			get => _specialists;
+			set
+			{
+				_specialists = value;
+			}
+		}
+
 		private List<IBuilding> _buildings = new List<IBuilding>();
 		private List<IWonder> _wonders = new List<IWonder>();
 
@@ -329,21 +353,34 @@ namespace CivOne
 
 		internal short TotalMaintenance => (short)_buildings.Sum(b => b.Maintenance);
 
+		internal byte _status = 0;
 		/// <summary>
-		/// Return city status for savefile.
-		/// TODO not being used???
+		/// Internal Status. Use SetStatusFlag() and ClearStatusFlag() to modify.
 		/// </summary>
-		internal byte Status
+		internal byte InternalStatus
 		{
 			get
 			{
 				if (Size == 0) return 0;
 
-				byte output = 0;
-				if (Map[X, Y].GetBorderTiles().Any(t => t.IsOcean)) output |= (0x01 << 1); // Coastal city
-				if (BuildingSold) output |= (0x01 << 7); // Building sold this turn
-				return output;
+				// CW: Only because some save games of civone didn't have this status written to file.
+				SetupCoastalFlag(); 
+
+				return _status;
 			}
+
+			set => _status = value;
+		}
+
+		internal bool IsCoastal => BitFlagExtensions.HasFlag(InternalStatus, CityStatus.COASTAL);
+
+		internal void SetStatusFlag(CityStatus status)
+		{
+			_status = BitFlagExtensions.SetFlag(_status, status);
+		}
+		internal void ClearStatusFlag(CityStatus status)
+		{
+			_status = BitFlagExtensions.ClearFlag(_status, status);
 		}
 
 		internal IEnumerable<ITile> ResourceTiles => CityTiles.Where(t => (t.X == X && t.Y == Y) || _resourceTiles.Contains(t));
@@ -364,22 +401,6 @@ namespace CivOne
 		{
 			while (_specialists.Count < (_size - ResourceTiles.Count())) _specialists.Add(Citizen.Entertainer);
 			while (_specialists.Count > 0 && _specialists.Count > (_size - ResourceTiles.Count() - 1)) _specialists.RemoveAt(_specialists.Count - 1);
-		}
-
-		private void SetResourceTiles()
-		{
-			if (!Game.Started) return;
-			while (_resourceTiles.Count > Size)
-				_resourceTiles.RemoveAt(_resourceTiles.Count - 1);
-			if (_resourceTiles.Count == Size) return;
-			if (_resourceTiles.Count < Size)
-			{
-				IEnumerable<ITile> tiles = CityTiles.Where(t => !OccupiedTile(t) && !ResourceTiles.Contains(t)).OrderByDescending(t => FoodValue(t)).ThenByDescending(t => ShieldValue(t)).ThenByDescending(t => TradeValue(t));
-				if (tiles.Count() > 0)
-					_resourceTiles.Add(tiles.First());
-			}
-
-			UpdateSpecialists();
 		}
 
 		/// <summary>
@@ -432,45 +453,31 @@ namespace CivOne
 			return output;
 		}
 
-		/// <summary>
-		/// Convert the savefile data format about the city's resource tiles
-		/// to internal format.
-		/// TODO move to savefile module
-		/// </summary>
-		/// <param name="gameData"></param>
-		internal void SetResourceTiles(byte[] gameData)
+		private void SetResourceTiles()
 		{
-			if (gameData.Length != 6)
+			if (!Game.Started) return;
+
+			while (_resourceTiles.Count > Size)
+				_resourceTiles.RemoveAt(_resourceTiles.Count - 1);
+			if (_resourceTiles.Count == Size) return;
+			if (_resourceTiles.Count < Size)
 			{
-				Log($"Invalid Resource game data for {Name}");
-				return;
+				IEnumerable<ITile> tiles = CityTiles.Where(t => !OccupiedTile(t) && !ResourceTiles.Contains(t)).OrderByDescending(t => FoodValue(t)).ThenByDescending(t => ShieldValue(t)).ThenByDescending(t => TradeValue(t));
+				if (tiles.Count() > 0)
+					_resourceTiles.Add(tiles.First());
 			}
 
-			_resourceTiles.Clear();
-			if (((gameData[0] >> 0) & 1) > 0) _resourceTiles.Add(Tile[0, -1]);
-			if (((gameData[0] >> 1) & 1) > 0) _resourceTiles.Add(Tile[1, 0]);
-			if (((gameData[0] >> 2) & 1) > 0) _resourceTiles.Add(Tile[0, 1]);
-			if (((gameData[0] >> 3) & 1) > 0) _resourceTiles.Add(Tile[-1, 0]);
-			if (((gameData[0] >> 4) & 1) > 0) _resourceTiles.Add(Tile[1, -1]);
-			if (((gameData[0] >> 5) & 1) > 0) _resourceTiles.Add(Tile[1, 1]);
-			if (((gameData[0] >> 6) & 1) > 0) _resourceTiles.Add(Tile[-1, 1]);
-			if (((gameData[0] >> 7) & 1) > 0) _resourceTiles.Add(Tile[-1, -1]);
+			UpdateSpecialists();
 
-			if (((gameData[1] >> 0) & 1) > 0) _resourceTiles.Add(Tile[0, -2]);
-			if (((gameData[1] >> 1) & 1) > 0) _resourceTiles.Add(Tile[2, 0]);
-			if (((gameData[1] >> 2) & 1) > 0) _resourceTiles.Add(Tile[0, 2]);
-			if (((gameData[1] >> 3) & 1) > 0) _resourceTiles.Add(Tile[-2, 0]);
-			if (((gameData[1] >> 4) & 1) > 0) _resourceTiles.Add(Tile[-1, -2]);
-			if (((gameData[1] >> 5) & 1) > 0) _resourceTiles.Add(Tile[1, -2]);
-			if (((gameData[1] >> 6) & 1) > 0) _resourceTiles.Add(Tile[2, -1]);
-			if (((gameData[1] >> 7) & 1) > 0) _resourceTiles.Add(Tile[2, 1]);
+			SetupCoastalFlag();
+		}
 
-			if (((gameData[2] >> 0) & 1) > 0) _resourceTiles.Add(Tile[1, 2]);
-			if (((gameData[2] >> 1) & 1) > 0) _resourceTiles.Add(Tile[-1, 2]);
-			if (((gameData[2] >> 2) & 1) > 0) _resourceTiles.Add(Tile[-2, 1]);
-			if (((gameData[2] >> 3) & 1) > 0) _resourceTiles.Add(Tile[-2, -1]);
-
-			//TODO: Correctly load specialists
+		private void SetupCoastalFlag()
+		{
+			if (Map[X, Y].GetBorderTiles().Any(t => t.IsOcean))
+			{
+				SetStatusFlag(CityStatus.COASTAL);
+			}
 		}
 
 		public void ResetResourceTiles()
@@ -592,7 +599,7 @@ namespace CivOne
 			}
 		}
 
-        public struct CitizenTypes
+		public struct CitizenTypes
         {
             public int happy;
             public int content;
@@ -713,7 +720,6 @@ namespace CivOne
         }
 
 
-		private readonly List<Citizen> _specialists = new List<Citizen>();
 		internal IEnumerable<Citizen> Citizens
 		{
 			get
@@ -840,7 +846,9 @@ namespace CivOne
 		/// <summary>
 		/// Was a building sold in this turn?
 		/// </summary>
-		public bool BuildingSold { get; private set; }
+		public bool BuildingSold {
+			get => BitFlagExtensions.HasFlag(InternalStatus, CityStatus.IMPROVEMENT_SOLD);
+			set => SetStatusFlag(CityStatus.IMPROVEMENT_SOLD); }
 
 		public void AddBuilding(IBuilding building) => _buildings.Add(building);
 
@@ -1056,7 +1064,8 @@ namespace CivOne
 						_buildings.Add(CurrentProduction as IBuilding);
 
 						Message message = Message.Newspaper(this, $"{this.Name} builds", $"{(CurrentProduction as ICivilopedia).Name}.");
-						message.Done += (s, a) => {
+						message.Done += (s, a) =>
+						{
 							GameTask advisorMessage = Message.Advisor(Advisor.Foreign, true, $"{Player.TribeName} capital", $"moved to {Name}.");
 							advisorMessage.Done += (s1, a1) => GameTask.Insert(Show.CityManager(this));
 							GameTask.Enqueue(advisorMessage);
@@ -1329,6 +1338,19 @@ namespace CivOne
 			if (!Game.Started) return;
 			CurrentProduction = Reflect.GetUnits().Where(u => Player.ProductionAvailable(u)).OrderBy(u => Common.HasAttribute<Default>(u) ? -1 : (int)u.Type).First();
 			SetResourceTiles();
+		}
+
+
+		public enum CityStatus
+		{
+			RIOT = 0,
+			COASTAL = 1,
+			RAPTURE_1 = 2,
+			HYDRO_AVAILABLE = 3,
+			AUTO_BUILD = 4,
+			TECH_STOLEN = 5,
+			RAPTURE_2 = 6,
+			IMPROVEMENT_SOLD = 7
 		}
 	}
 }

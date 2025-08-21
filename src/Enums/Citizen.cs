@@ -9,7 +9,7 @@
 
 namespace CivOne.Enums
 {
-	internal enum Citizen
+	public enum Citizen
 	{
 		HappyMale = 0,
 		HappyFemale = 1,

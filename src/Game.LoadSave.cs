@@ -20,6 +20,7 @@ namespace CivOne
 {
 	public partial class Game
     {
+		internal readonly CityLoadGame _cityLoadGame = new CityLoadGame();
 		public static void LoadGame(string sveFile, string mapFile)
 		{
 			// Allow loading a game in-game.
@@ -164,6 +165,8 @@ namespace CivOne
 		
 			_anthologyTurn = gameData.NextAnthologyTurn;
 
+			// City.Game = this; // Dependency Injection (for GetSpecialistsFromGameData)
+
 			Dictionary<byte, City> cityList = new Dictionary<byte, City>();
 			foreach (CityData cityData in gameData.Cities)
 			{
@@ -174,11 +177,21 @@ namespace CivOne
 					NameId = cityData.NameId,
 					Size = cityData.ActualSize,
 					Food = cityData.Food,
-					Shields = cityData.Shields
+					Shields = cityData.Shields,
+					// InternalStatus = cityData.Status,
 				};
 				city.SetProduction(cityData.CurrentProduction);
-				city.SetResourceTiles(cityData.ResourceTiles);
-				
+
+				// CW:
+				// Converting should be more of an extra class (Adapter pattern)
+				// private CityAdapter cityAdapter = new CityAdapter(); //on top of class definition - later defined through DI
+				// then...
+				// city = cityAdapter.createCity(gameData);
+				// but this required CityAdapter has a DI reference to Game. 
+				// Today DI would be: CityAdapter.Game = this; // HACK
+				// city.SetupResourceTiles = _cityLoadGame.GetResourceTilesFromGameData(city, cityData.ResourceTiles);
+				// city.SetupSpecialists = _cityLoadGame.GetSpecialistsFromGameData(cityData.ResourceTiles);
+
 				// Set city buildings
 				foreach (byte buildingId in cityData.Buildings)
 				{

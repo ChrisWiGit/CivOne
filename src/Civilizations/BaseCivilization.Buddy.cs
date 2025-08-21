@@ -37,6 +37,9 @@ namespace CivOne.Civilizations
 			// CW: We cannot get the random situation from the original game.
 			// This only works because Game.NewGame.cs sets the InitialSeed at the beginning of the creation of the civs.
 			Random startRandom = new(InitialSeed);
+
+			// TODO: Alternative:
+			// Rückwärts ReplayData ausführen und dafür die aktuellen Player-IDs verwenden (1-14)
 			Dictionary<int, int> buddyCivIndexMap = GetStartCivMapping(competitorsCount, preferredPlayerNumber, startRandom);
 
 			return preferredPlayerNumber =>
