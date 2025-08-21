@@ -9,3 +9,40 @@ Although there are 14 different civilizations available in the game, they are or
 To alter or expand this behavior, it would be necessary to move away from the original game’s logic and storage format. Implementing a custom save format and new logic would allow for more flexibility in the number and combination of civilizations.
 
 A particular challenge arises with the game's replay feature. The replay system only records the player numbers (0-7), not the civilization IDs (0-14). As a result, changing the civilization system would also require a redesign of the replay functionality to properly track and display the correct civilizations.
+
+## Fortified Units in Cities
+
+The original SaveGame stores up to two units per city separately in 2 bytes (`SaveData.City.FortifiedUnits`).
+These units must be removed from the list of units, otherwise they will be counted twice in the city.
+
+### Why did Sid do it this way?
+
+I suspect this was done to increase the maximum total number of units for a civilization.
+Normally, a civilization can only have 128 units, and if all cities have 2 stationed units, that would already be 256 units, so you wouldn't have any units left for attacking or exploring.
+Therefore, up to 2 units per city are stored separately.
+However, only the values UnitId, Fortified, and Veteran are stored.
+
+### Or
+
+**The structure is not used.**
+At least in the original game with a low total number of units, FortifiedUnits was not used.
+Maybe later in the game, when the total number of units increases, it is used, but I have not seen it yet.
+
+Currently, we always use them!
+
+### Further
+
+The Fortified status is saved, but why?
+If, as we assume, only the fortified units in the city are stored (`FilterUnits()`), then the Fortified status for the units in the city is irrelevant, since they cannot be moved anyway.
+
+### "Architecture"
+
+Currently, in CivOne, the handling of units in cities is done in the following places:
+
+* `Game.LoadSave.cs::Save()` - This is where the SaveGame is loaded and the cities are initialized.
+  * Units are saved, but without considering the FortifiedUnits.
+* `SaveData.City.FortifiedUnits` - Stores up to 2 units per city in 2 bytes.
+* `SaveDataAdapter.Get.cs::GetCities()` - This is where the unit bytes are taken from the SaveGame.
+* `SaveDataAdapter.Set.cs::SetCities()` - This is where the unit bytes are written to the SaveGame.
+* `Extensions.cs::GetCityData()` - This is where the number of units in a city is determined.
+* `Extensions.cs::GetUnitData()` and `FilterUnits()` - This is where the number of units in a city is determined and filtered, by only counting the units that are not fortified in a city and do not have this city as their home.
