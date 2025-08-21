@@ -126,12 +126,14 @@ namespace CivOne
 					Y = city.Y,
 					Status = city.Status,
 					ActualSize = city.ActualSize,
+					VisibleSize = city.VisibleSize,
 					CurrentProduction = city.CurrentProduction,
 					Owner = city.Owner,
 					Food = city.Food,
 					Shields = city.Shields,
 					ResourceTiles = GetBytes<SaveData.City>(city, nameof(SaveData.City.ResourceTiles), 6),
-					FortifiedUnits = GetBytes<SaveData.City>(city, nameof(SaveData.City.FortifiedUnits), 2).Where(x => x != 0xFF).ToArray()
+					FortifiedUnits = GetBytes<SaveData.City>(city, nameof(SaveData.City.FortifiedUnits), 2).Where(x => x != 0xFF).ToArray(),
+					TradingCities = GetBytes<SaveData.City>(city, nameof(SaveData.City.TradingCities), 3).Where(x => x != 0xFF).ToArray()
 				});
 			}
 			return output.ToArray();

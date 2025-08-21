@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using CivOne.IO;
@@ -121,16 +122,35 @@ namespace CivOne
 
 		private unsafe void SetTotalCitySize(ushort[] values) => SetArray(nameof(SaveData.TotalCitySize), values);
 
+		byte[] CopyArrayMax(byte[] source, int maxSourceLength, int maxDestLength, byte fillValue = 0)
+		{
+			byte[] dest = new byte[maxDestLength];
+			Array.Fill(dest, fillValue);
+
+			if (source == null || source.Length == 0)
+			{
+				return dest;
+			}
+
+			int length = Math.Min(source.Length, maxSourceLength);
+			Array.Copy(source, dest, length);
+
+			return dest;
+		}
+
 		private unsafe void SetCities(CityData[] values)
 		{
+			byte INVALID = 0xFF;
 			SaveData.City[] cities = GetArray<SaveData.City>(nameof(SaveData.Cities), 128);
-			
-			for (int i = 0; i < new[] { values.Length, 128 }.Min(); i++)
+
+			Debug.Assert(values.Length <= 128, $"CityData array length {values.Length} exceeds 128");
+
+			for (int i = 0; i < Math.Min(values.Length, 128); i++)
 			{
 				CityData data = values[i];
 
-				byte[] fortifiedUnits = { 0xFF, 0xFF };
-				if (data.FortifiedUnits != null) Array.Copy(data.FortifiedUnits, fortifiedUnits, new[] { data.FortifiedUnits.Length, 2 }.Min());
+				byte[] fortifiedUnits = CopyArrayMax(data.FortifiedUnits, 2, 2, INVALID);
+				byte[] tradingCities = CopyArrayMax(data.TradingCities, 3, 3, INVALID);
 
 				SetArray(ref cities[i], nameof(SaveData.City.Buildings), new byte[4].ToBitIds(0, 4, data.Buildings));
 				cities[i].X = data.X;
@@ -139,13 +159,13 @@ namespace CivOne
 				cities[i].ActualSize = data.ActualSize;
 				cities[i].VisibleSize = data.ActualSize; // TODO: Implement Visible Size
 				cities[i].CurrentProduction = data.CurrentProduction;
-				cities[i].BaseTrade = 0; // TODO: Implement trade
+				cities[i].BaseTrade = data.BaseTrade;
 				cities[i].Owner = data.Owner;
 				cities[i].Food = data.Food;
 				cities[i].Shields = data.Shields;
 				SetArray(ref cities[i], nameof(SaveData.City.ResourceTiles), data.ResourceTiles);
 				cities[i].NameId = data.NameId;
-				SetArray(ref cities[i], nameof(SaveData.City.TradingCities), 0xFF, 0xFF, 0xFF);
+				SetArray(ref cities[i], nameof(SaveData.City.TradingCities), tradingCities);
 				SetArray(ref cities[i], nameof(SaveData.City.FortifiedUnits), fortifiedUnits);
 			}
 			SetArray(nameof(SaveData.Cities), cities);

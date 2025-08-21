@@ -16,11 +16,31 @@ namespace CivOne
 		public byte Status;
 		public byte[] Buildings;
 		public byte X, Y;
+
+		/// <summary>
+		/// The reals size of the city as not always visible to the player.
+		/// </summary>
 		public byte ActualSize;
+
+		/// <summary>
+		/// The size of the city as seen by the player.
+		/// </summary>
+		public byte VisibleSize;
 		public byte CurrentProduction;
+
+		public byte BaseTrade;
 		public byte Owner;
 		public ushort Food, Shields;
 		public byte[] ResourceTiles;
+
+		/// <summary>
+		/// Up to 2 fortified units in this city.
+		/// </summary>
 		public byte[] FortifiedUnits;
+
+		/// <summary>
+		/// Up to 3 trading cities.
+		/// </summary>
+		public byte[] TradingCities;
 	}
 }

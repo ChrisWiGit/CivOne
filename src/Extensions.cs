@@ -206,21 +206,20 @@ namespace CivOne
 
 		private static IEnumerable<IUnit> FilterUnits(this List<IUnit> unitList)
 		{
-			foreach(City city in Game.Instance.GetCities())
-			{
-				IUnit[] units = unitList.Where(u => u.X == city.X && u.Y == city.Y && u.Home == city).Take(2).ToArray();
-				foreach (IUnit unit in units)
-				{
-					unitList.Remove(unit);
-				}
-			}
+			unitList.RemoveAll(unit =>
+				unit.Home != null &&
+				unit.Fortify &&
+				Game.Instance.GetCities().Any(city =>
+					unit.X == city.X && unit.Y == city.Y && unit.Home == city
+				)
+			);
 			return unitList;
 		}
 
 		// TODO move to a save/load specific file?
 		public static IEnumerable<UnitData> GetUnitData(this IEnumerable<IUnit> unitList)
 		{
-            // TODO fire-eggs don't do this - only applicable in specific situation which no-one understands!
+			// CW: See REMARKS.md. Currently we do this always. This is not the same as in the original game.
 			// Remove two fortified units in home city (this data is stored in city data)
 			IEnumerable<IUnit> filteredUnits = unitList.ToList().FilterUnits();
 
