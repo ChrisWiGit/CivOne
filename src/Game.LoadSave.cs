@@ -20,7 +20,9 @@ namespace CivOne
 {
 	public partial class Game
     {
-		internal readonly CityLoadGame _cityLoadGame = new CityLoadGame();
+		// Dependency Injection
+		// Todo: Replace with DI framework
+		internal readonly CityLoadGame _cityLoadGame = new();
 		public static void LoadGame(string sveFile, string mapFile)
 		{
 			// Allow loading a game in-game.
@@ -119,6 +121,8 @@ namespace CivOne
 
 			// CW: Dependency Injection. Otherwise this would be handled after this constructor (too late to call HandleExtinction).
 			Player.Game = this;
+			City.Game = this;
+
 			_players = new Player[_competition + 1];
 			_cities = new List<City>();
 			_units = new List<IUnit>();
@@ -177,8 +181,7 @@ namespace CivOne
 					NameId = cityData.NameId,
 					Size = cityData.ActualSize,
 					Food = cityData.Food,
-					Shields = cityData.Shields,
-					// InternalStatus = cityData.Status,
+					Shields = cityData.Shields
 				};
 				city.SetProduction(cityData.CurrentProduction);
 
@@ -189,8 +192,9 @@ namespace CivOne
 				// city = cityAdapter.createCity(gameData);
 				// but this required CityAdapter has a DI reference to Game. 
 				// Today DI would be: CityAdapter.Game = this; // HACK
-				// city.SetupResourceTiles = _cityLoadGame.GetResourceTilesFromGameData(city, cityData.ResourceTiles);
-				// city.SetupSpecialists = _cityLoadGame.GetSpecialistsFromGameData(cityData.ResourceTiles);
+				city.SetupStatus(cityData.Status);
+				city.SetupResourceTiles = _cityLoadGame.GetResourceTilesFromGameData(city, cityData.ResourceTiles);
+				city.SetupSpecialists = _cityLoadGame.GetSpecialistsFromGameData(cityData.ResourceTiles);
 
 				// Set city buildings
 				foreach (byte buildingId in cityData.Buildings)

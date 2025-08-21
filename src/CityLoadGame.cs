@@ -89,18 +89,3 @@ namespace CivOne
 		};
 	}
 }
-
-
-// for(int var_loop2=1;var_loop2<=8;var_loop2++) {
-// 	TerrainType nt = gs.getTerrain(x+CivUtils.relCitySquareX3[var_loop2], y+CivUtils.relCitySquareY3[var_loop2]);
-
-// 	if(nt.equals(TerrainType.OCEAN)) {
-// 		// TODO: Check if neighbour is mega-ocean OR belongs to player
-// 		//newCity.setValue("status_flagbit1", (boolean)true); // coastal city
-// 		newCity.set(CityStatus.COASTAL, true);
-// 	}
-// 	if(nt.equals(TerrainType.RIVER) || nt.equals(TerrainType.MOUNTAINS)) {
-// 		//newCity.setValue("status_flagbit3", (boolean)true); // can build hydro-plant
-// 		newCity.set(CityStatus.HYDRO_AVAILABLE, true);
-// 	}
-// }

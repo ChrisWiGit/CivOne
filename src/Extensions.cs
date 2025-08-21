@@ -93,8 +93,7 @@ namespace CivOne
 			return new CityData {
 				Id = city.GetId(),
 				NameId = (byte)city.NameId,
-				// Status = city.InternalStatus,
-				Status = 0,
+				Status = city.Status,
 				Buildings = city.Buildings.Select(b => b.Id).ToArray(),
 				X = city.X,
 				Y = city.Y,

@@ -7,6 +7,7 @@ namespace CivOne
 	/// <remarks>
 	/// This utility allows you to treat any enum values as bit positions (0 = first bit, 1 = second bit, etc.)
 	/// and store multiple states inside a numeric flag type (e.g. <c>ushort</c>, <c>int</c>, <c>uint</c>, <c>long</c>).
+	/// Please use Dependency Injection (DI) to inject this class where needed. 
 	/// 
 	/// Example:
 	/// <code>
@@ -17,24 +18,22 @@ namespace CivOne
 	///     AUTO_BUILD = 4
 	/// }
 	///
+	/// // Instantiate the BitFlagExtensions class
+	/// var bitFlags = new BitFlagExtensions();
 	/// ushort flags = 0;
 	///
-	/// // Set bits
-	/// flags = BitFlagExtensions.SetFlag(flags, CityStatus.RIOT);
-	/// flags = BitFlagExtensions.SetFlag(flags, CityStatus.AUTO_BUILD);
+	/// flags = bitFlags.SetFlag(flags, CityStatus.RIOT);
+	/// flags = bitFlags.SetFlag(flags, CityStatus.AUTO_BUILD);
 	///
-	/// // Check bits
-	/// bool riot = BitFlagExtensions.HasFlag(flags, CityStatus.RIOT);       // true
-	/// bool coastal = BitFlagExtensions.HasFlag(flags, CityStatus.COASTAL); // false
+	/// bool riot = bitFlags.HasFlag(flags, CityStatus.RIOT);       // true
+	/// bool coastal = bitFlags.HasFlag(flags, CityStatus.COASTAL); // false
 	///
-	/// // Clear bit
-	/// flags = BitFlagExtensions.ClearFlag(flags, CityStatus.RIOT);
+	/// flags = bitFlags.ClearFlag(flags, CityStatus.RIOT);
 	///
-	/// // Toggle bit
-	/// flags = BitFlagExtensions.ToggleFlag(flags, CityStatus.AUTO_BUILD);
+	/// flags = bitFlags.ToggleFlag(flags, CityStatus.AUTO_BUILD);
 	/// </code>
 	/// </remarks>
-	public static class BitFlagExtensions
+	public class BitFlagExtensions
 	{
 		/// <summary>
 		/// Checks whether a specific enum bit is set inside the given flag value.
@@ -44,7 +43,7 @@ namespace CivOne
 		/// <param name="flags">The current flag storage value.</param>
 		/// <param name="value">The enum value representing the bit position to check.</param>
 		/// <returns><c>true</c> if the bit is set; otherwise <c>false</c>.</returns>
-		public static bool HasFlag<TFlags, TEnum>(TFlags flags, TEnum value)
+		public bool HasFlag<TFlags, TEnum>(TFlags flags, TEnum value)
 			where TFlags : struct, IConvertible
 			where TEnum : struct, Enum
 		{
@@ -61,7 +60,7 @@ namespace CivOne
 		/// <param name="flags">The current flag storage value.</param>
 		/// <param name="value">The enum value representing the bit position to set.</param>
 		/// <returns>The updated flag storage value with the bit set.</returns>
-		public static TFlags SetFlag<TFlags, TEnum>(TFlags flags, TEnum value)
+		public TFlags SetFlag<TFlags, TEnum>(TFlags flags, TEnum value)
 			where TFlags : struct, IConvertible
 			where TEnum : struct, Enum
 		{
@@ -79,7 +78,7 @@ namespace CivOne
 		/// <param name="flags">The current flag storage value.</param>
 		/// <param name="value">The enum value representing the bit position to clear.</param>
 		/// <returns>The updated flag storage value with the bit cleared.</returns>
-		public static TFlags ClearFlag<TFlags, TEnum>(TFlags flags, TEnum value)
+		public TFlags ClearFlag<TFlags, TEnum>(TFlags flags, TEnum value)
 			where TFlags : struct, IConvertible
 			where TEnum : struct, Enum
 		{
@@ -97,7 +96,7 @@ namespace CivOne
 		/// <param name="flags">The current flag storage value.</param>
 		/// <param name="value">The enum value representing the bit position to toggle.</param>
 		/// <returns>The updated flag storage value with the bit toggled.</returns>
-		public static TFlags ToggleFlag<TFlags, TEnum>(TFlags flags, TEnum value)
+		public TFlags ToggleFlag<TFlags, TEnum>(TFlags flags, TEnum value)
 			where TFlags : struct, IConvertible
 			where TEnum : struct, Enum
 		{

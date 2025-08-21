@@ -15,6 +15,7 @@ using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Governments;
+using CivOne.Screens;
 using CivOne.Screens.Reports;
 using CivOne.src;
 using CivOne.Tasks;
@@ -30,6 +31,11 @@ namespace CivOne
 	{
 		// Dependency Injection
 		public static Game Game;
+
+		// Dependency Injection
+		// TODO: Replace by DI container instantiation
+		internal BitFlagExtensions bitFlagExtensions = new();
+
 		internal int NameId { get; set; }
 		internal byte X;
 		internal byte Y;
@@ -354,33 +360,73 @@ namespace CivOne
 		internal short TotalMaintenance => (short)_buildings.Sum(b => b.Maintenance);
 
 		internal byte _status = 0;
+
 		/// <summary>
-		/// Internal Status. Use SetStatusFlag() and ClearStatusFlag() to modify.
+		/// Only used for saving/loading, not for gameplay
+		/// Use IsRiot, IsCoastal, HydroAvailable, AutoBuild, TechStolen, CelebrationOrRapture, BuildingSold instead.
 		/// </summary>
-		internal byte InternalStatus
+		public byte Status
 		{
-			get
-			{
-				if (Size == 0) return 0;
-
-				// CW: Only because some save games of civone didn't have this status written to file.
-				SetupCoastalFlag(); 
-
-				return _status;
-			}
-
-			set => _status = value;
+			get => _status;
 		}
 
-		internal bool IsCoastal => BitFlagExtensions.HasFlag(InternalStatus, CityStatus.COASTAL);
+		public void SetupStatus(byte status)
+		{
+			_status = status;
 
-		internal void SetStatusFlag(CityStatus status)
-		{
-			_status = BitFlagExtensions.SetFlag(_status, status);
+			// recalculate these specific flags, because older versions may not have set them
+			SetupCoastalFlag();
+			SetupHydroFlag();
 		}
-		internal void ClearStatusFlag(CityStatus status)
+
+		public bool IsRiot
 		{
-			_status = BitFlagExtensions.ClearFlag(_status, status);
+			get => bitFlagExtensions.HasFlag(_status, CityStatus.RIOT);
+			set => SetStatusFlag(CityStatus.RIOT, value);
+		}
+
+		public bool IsCoastal => bitFlagExtensions.HasFlag(_status, CityStatus.COASTAL);
+
+		public bool CelebrationCancelled
+		{
+			get => bitFlagExtensions.HasFlag(_status, CityStatus.CELEBRATION_CANCELLED);
+			set => SetStatusFlag(CityStatus.CELEBRATION_CANCELLED, value);
+		}
+
+		public bool HydroAvailable	{
+			get => bitFlagExtensions.HasFlag(_status, CityStatus.HYDRO_AVAILABLE);
+		}
+
+		public bool AutoBuild
+		{
+			get => bitFlagExtensions.HasFlag(_status, CityStatus.AUTO_BUILD);
+			set => SetStatusFlag(CityStatus.AUTO_BUILD, value);
+		}
+
+		public bool TechStolen
+		{
+			get => bitFlagExtensions.HasFlag(_status, CityStatus.TECH_STOLEN);
+			set => SetStatusFlag(CityStatus.TECH_STOLEN, value);
+		}
+
+		public bool CelebrationOrRapture
+		{
+			get => bitFlagExtensions.HasFlag(_status, CityStatus.CELEBRATION_RAPTURE);
+			set => SetStatusFlag(CityStatus.CELEBRATION_RAPTURE, value);
+		}
+		
+		/// <summary>
+		/// Was a building sold in this turn?
+		/// </summary>
+		public bool BuildingSold
+		{
+			get => bitFlagExtensions.HasFlag(_status, CityStatus.IMPROVEMENT_SOLD);
+			set => SetStatusFlag(CityStatus.IMPROVEMENT_SOLD, value);
+		}
+
+		internal void SetStatusFlag(CityStatus status, bool value)
+		{
+			_status = value ? bitFlagExtensions.SetFlag(_status, status) : bitFlagExtensions.ClearFlag(_status, status);
 		}
 
 		internal IEnumerable<ITile> ResourceTiles => CityTiles.Where(t => (t.X == X && t.Y == Y) || _resourceTiles.Contains(t));
@@ -411,7 +457,7 @@ namespace CivOne
 		/// <returns></returns>
 		internal byte[] GetResourceTiles()
 		{
-			byte[] output = new byte[3];
+			byte[] output = new byte[6];
 			foreach (ITile tile in _resourceTiles)
 			{
 				int x = tile.X - X;
@@ -450,7 +496,34 @@ namespace CivOne
 						continue;
 				}
 			}
+
+			SetSpecialists(output);
 			return output;
+		}
+
+		internal void SetSpecialists(byte[] output)
+		{
+			if (_specialists.Count == 0) return;
+
+			int specialistBits = 0;
+			for (int i = 0; i < _specialists.Count && i < 8; i++)
+			{
+				switch (_specialists[i])
+				{
+					case Citizen.Taxman:
+						specialistBits |= 1 << (2 * i);
+						break;
+					case Citizen.Scientist:
+						specialistBits |= 2 << (2 * i);
+						break;
+					case Citizen.Entertainer:
+						specialistBits |= 3 << (2 * i);
+						break;
+				}
+			}
+
+			output[4] = (byte)(specialistBits & 0xFF);
+			output[5] = (byte)((specialistBits >> 8) & 0xFF);
 		}
 
 		private void SetResourceTiles()
@@ -474,10 +547,16 @@ namespace CivOne
 
 		private void SetupCoastalFlag()
 		{
-			if (Map[X, Y].GetBorderTiles().Any(t => t.IsOcean))
-			{
-				SetStatusFlag(CityStatus.COASTAL);
-			}
+			bool isCoastal = Map[X, Y].GetBorderTiles().Any(t => t.IsOcean);
+
+			SetStatusFlag(CityStatus.COASTAL, isCoastal);
+		}
+
+		private void SetupHydroFlag()
+		{
+			bool isHydroAvailable = Map[X, Y].GetBorderTiles().Any(t => t is Mountains or River);
+
+			SetStatusFlag(CityStatus.HYDRO_AVAILABLE, isHydroAvailable);
 		}
 
 		public void ResetResourceTiles()
@@ -843,12 +922,7 @@ namespace CivOne
 
 		public ITile Tile => Map[X, Y];
 
-		/// <summary>
-		/// Was a building sold in this turn?
-		/// </summary>
-		public bool BuildingSold {
-			get => BitFlagExtensions.HasFlag(InternalStatus, CityStatus.IMPROVEMENT_SOLD);
-			set => SetStatusFlag(CityStatus.IMPROVEMENT_SOLD); }
+
 
 		public void AddBuilding(IBuilding building) => _buildings.Add(building);
 
@@ -1345,11 +1419,11 @@ namespace CivOne
 		{
 			RIOT = 0,
 			COASTAL = 1,
-			RAPTURE_1 = 2,
+			CELEBRATION_CANCELLED = 2,
 			HYDRO_AVAILABLE = 3,
 			AUTO_BUILD = 4,
 			TECH_STOLEN = 5,
-			RAPTURE_2 = 6,
+			CELEBRATION_RAPTURE = 6,
 			IMPROVEMENT_SOLD = 7
 		}
 	}
