@@ -157,7 +157,7 @@ namespace CivOne
 				cities[i].Y = data.Y;
 				cities[i].Status = data.Status;
 				cities[i].ActualSize = data.ActualSize;
-				cities[i].VisibleSize = data.ActualSize; // TODO: Implement Visible Size
+				cities[i].VisibleSize = data.ActualSize;
 				cities[i].CurrentProduction = data.CurrentProduction;
 				cities[i].BaseTrade = data.BaseTrade;
 				cities[i].Owner = data.Owner;

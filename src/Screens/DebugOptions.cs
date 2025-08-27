@@ -153,7 +153,6 @@ namespace CivOne.Screens
 				const int menuWidth = 131;
 				int menuHeight = itemHeight * _menuEntries.Count;
 
-				// TODO fire-eggs picture height should be derived from number of menu entries!
 				Picture menuGfx = new Picture(menuWidth, menuHeight)
 					.Tile(Pattern.PanelGrey)
 					.DrawRectangle3D()

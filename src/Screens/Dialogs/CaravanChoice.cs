@@ -41,8 +41,6 @@ namespace CivOne.Screens.Dialogs
 			Cancel();
 		}
 
-		//private bool AllowEstablishTradeRoute => (_unit.Home == null) || (_unit.Home.Tile.DistanceTo(_city) >= 10);
-
         public static bool AllowEstablishTradeRoute(Caravan _unit, City _city)
         {
             return (_unit.Home == null) || (_unit.Home.Tile.DistanceTo(_city) >= 10);

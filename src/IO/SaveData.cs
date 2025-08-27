@@ -102,7 +102,7 @@ namespace CivOne.IO
 		public fixed ushort LeaderGraphics[8];				// 1912:1927
 		public fixed ushort ContinentDefense[8 * 16];		// 1928:2183
 		public fixed ushort ContinentAttack[8 * 16];		// 2184:2439
-		public fixed ushort ContintentCities[8 * 16];		// 2440:2695
+		public fixed ushort ContinentCities[8 * 16];		// 2440:2695
 		public fixed ushort ContinentSizes[16];				// 2696:2727
 		private fixed byte _padding1[96];					// 2828:2823 (unknown data)
 		public fixed ushort OceanSizes[16];					// 2824:2855
@@ -130,7 +130,7 @@ namespace CivOne.IO
 		public ushort PollutionEffect;						// 35488:35489
 		public ushort GlobalWarming;						// 35490:35491
 		public ushort GameOptions;							// 35492:35493
-		public fixed byte LandPathfinding[260];				// 35494:35753
+		public fixed byte LandPathFinding[260];				// 35494:35753
 		public ushort MaxAdvances;							// 35754:35755
 		public ushort PlayerFutureTech;						// 35756:35757
 		public ushort DebugSwitches;						// 35758:35759
