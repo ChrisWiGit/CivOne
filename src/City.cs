@@ -29,8 +29,8 @@ namespace CivOne
 {
 	public class City : BaseInstance, ITurn
 	{
-		// Dependency Injection
-		public static Game Game;
+		protected Game _game = null;
+		public Game GameDI { get => _game ?? Game; set => _game = value; }
 
 		// Dependency Injection
 		// TODO: Replace by DI container instantiation
@@ -49,7 +49,7 @@ namespace CivOne
 				ResetResourceTiles();
 			}
 		}
-		internal string Name => Game.CityNames[NameId];
+		internal string Name => GameDI.CityNames[NameId];
 		private byte _size;
 		internal byte Size
 		{
@@ -63,7 +63,7 @@ namespace CivOne
 				{
 					Map[X, Y].Road = false;
 					Map[X, Y].Irrigation = false;
-					if (Game.Started) Game.DestroyCity(this);
+					if (Game.Started) GameDI.DestroyCity(this);
 					return;
 				}
 				if (Food > FoodRequired) Food = FoodRequired;
@@ -127,7 +127,7 @@ namespace CivOne
 		{
 			get
 			{
-				IGovernment government = Game.GetPlayer(_owner).Government;
+				IGovernment government = GameDI.GetPlayer(_owner).Government;
 				if (government is Anarchy || government is Despotism)
 				{
 					int costs = 0;
@@ -150,7 +150,7 @@ namespace CivOne
 			get
 			{
 				int costs = (_size * 2);
-				IGovernment government = Game.GetPlayer(_owner).Government;
+				IGovernment government = GameDI.GetPlayer(_owner).Government;
 				if (government is Anarchy || government is Despotism)
 				{
 					costs += Units.Count(u => (u is Settlers));
@@ -260,7 +260,7 @@ namespace CivOne
 					if (Player.RepublicDemocratic) output += 2;
 					break;
 			}
-			if (output > 0 && HasWonder<Colossus>() && !Game.WonderObsolete<Colossus>()) output += 1;
+			if (output > 0 && HasWonder<Colossus>() && !GameDI.WonderObsolete<Colossus>()) output += 1;
 			return output;
 		}
 
@@ -281,7 +281,7 @@ namespace CivOne
 		{
 			get
 			{
-				IGovernment government = Game.GetPlayer(_owner).Government;
+				IGovernment government = GameDI.GetPlayer(_owner).Government;
 				if (government.CorruptionMultiplier == 0) return 0;
 
 				int distance;
@@ -293,7 +293,7 @@ namespace CivOne
 					default:
 						if (HasBuilding<Palace>())
 							return 0;
-						City capital = Game.GetPlayer(Owner).GetCapital();
+						City capital = GameDI.GetPlayer(Owner).GetCapital();
 						distance = capital == null ? 32 : Common.DistanceToTile(X, Y, capital.X, capital.Y);
 						break;
 				}
@@ -350,7 +350,7 @@ namespace CivOne
 				short science = TradeScience;
 				if (HasBuilding<Library>()) science += (short)Math.Floor((double)science * 0.5);
 				if (HasBuilding<UniversityBuilding>()) science += (short)Math.Floor((double)science * 0.5);
-				if (!Game.WonderObsolete<CopernicusObservatory>() && HasWonder<CopernicusObservatory>()) science += (short)Math.Floor((double)science * 1.0);
+				if (!GameDI.WonderObsolete<CopernicusObservatory>() && HasWonder<CopernicusObservatory>()) science += (short)Math.Floor((double)science * 1.0);
 				if (Player.HasWonder<SETIProgram>()) science += (short)Math.Floor((double)science * 0.5);
 				science += (short)(_specialists.Count(c => c == Citizen.Scientist) * 2);
 				return science;
@@ -440,7 +440,11 @@ namespace CivOne
 
 		internal bool InvalidTile(ITile tile)
 		{
-			return (Game.GetCities().Where(c => c != this).Any(c => c.ResourceTiles.Any(t => t.X == tile.X && t.Y == tile.Y)) || tile.Units.Any(u => u.Owner != Owner));
+			return GameDI
+				.GetCities()
+				.Where(c => c != this)
+				.Any(c => c.ResourceTiles.Any(t => t.X == tile.X && t.Y == tile.Y)) || tile.Units
+				.Any(u => u.Owner != Owner);
 		}
 
 		private void UpdateSpecialists()
@@ -589,7 +593,7 @@ namespace CivOne
 			UpdateSpecialists();
 		}
 
-		public Player Player => Game.Instance.GetPlayer(Owner);
+		public Player Player => GameDI.GetPlayer(Owner);
 
 		/// <summary>
 		/// Return the list of possible city production [units, buildings,
@@ -602,7 +606,7 @@ namespace CivOne
 				foreach (IUnit unit in Reflect.GetUnits().Where(u => Player.ProductionAvailable(u)))
 				{
 					if (unit.Class == UnitClass.Water && !Map[X, Y].GetBorderTiles().Any(t => t.IsOcean)) continue;
-					if (unit is Nuclear && !Game.WonderBuilt<ManhattanProject>()) continue;
+					if (unit is Nuclear && !GameDI.WonderBuilt<ManhattanProject>()) continue;
 					yield return unit;
 				}
 				foreach (IBuilding building in Reflect.GetBuildings().Where(b => Player.ProductionAvailable(b) && !_buildings.Any(x => x.Id == b.Id)))
@@ -658,9 +662,9 @@ namespace CivOne
 		/// <returns>false if purchase not possible</returns>
 		public bool Buy()
 		{
-			if (Game.CurrentPlayer.Gold < BuyPrice) return false;
+			if (GameDI.CurrentPlayer.Gold < BuyPrice) return false;
 
-			Game.CurrentPlayer.Gold -= BuyPrice;
+			GameDI.CurrentPlayer.Gold -= BuyPrice;
 			Shields = (int)CurrentProduction.Price * 10;
 			return true;
 		}
@@ -727,7 +731,7 @@ namespace CivOne
 
                 int specialists = start.elvis + start.einstein + start.taxman;
                 int available = Size - specialists;
-                int initialContent = 6 - Game.Difficulty;
+                int initialContent = 6 - GameDI.Difficulty;
 
                 // Stage 1: basic content/unhappy
                 start.content = Math.Max(0, Math.Min(available, initialContent - specialists));
@@ -781,7 +785,7 @@ namespace CivOne
                 {
                     int templeEffect = 1;
                     if (Player.HasAdvance<Mysticism>()) templeEffect <<= 1;
-                    if (Player.HasWonder<Oracle>() && !Game.WonderObsolete<Oracle>()) templeEffect <<= 1;
+                    if (Player.HasWonder<Oracle>() && !GameDI.WonderObsolete<Oracle>()) templeEffect <<= 1;
                     unhappyDelta += templeEffect;
                 }
                 if (HasBuilding<Colosseum>()) unhappyDelta += 3;
@@ -809,11 +813,11 @@ namespace CivOne
 
                 // TODO fire-eggs verify luxury makes happy first, then clears unhappy
 				int happyCount = (int)Math.Floor((double)Luxuries / 2);
-				if (Player.HasWonder<HangingGardens>() && !Game.WonderObsolete<HangingGardens>()) happyCount++;
+				if (Player.HasWonder<HangingGardens>() && !GameDI.WonderObsolete<HangingGardens>()) happyCount++;
 				if (Player.HasWonder<CureForCancer>()) happyCount++;
 
-				int unhappyCount = Size - (6 - Game.Difficulty) - happyCount;
-				if (HasWonder<ShakespearesTheatre>() && !Game.WonderObsolete<ShakespearesTheatre>())
+				int unhappyCount = Size - (6 - GameDI.Difficulty) - happyCount;
+				if (HasWonder<ShakespearesTheatre>() && !GameDI.WonderObsolete<ShakespearesTheatre>())
 				{
 					unhappyCount = 0;
 				}
@@ -823,7 +827,7 @@ namespace CivOne
 					{
 						int templeEffect = 1;
 						if (Player.HasAdvance<Mysticism>()) templeEffect <<= 1;
-						if (Player.HasWonder<Oracle>() && !Game.WonderObsolete<Oracle>()) templeEffect <<= 1;
+						if (Player.HasWonder<Oracle>() && !GameDI.WonderObsolete<Oracle>()) templeEffect <<= 1;
 						unhappyCount -= templeEffect;
 					}
 					if (Tile != null && Map.ContentCities(Tile.ContinentId).Any(x => x.Size > 0 && x.Owner == Owner && x.HasWonder<JSBachsCathedral>()))
@@ -837,7 +841,7 @@ namespace CivOne
                 // 20190612 fire-eggs Martial law : reduce unhappy count for every attack-capable unit in city [max 3]
                 if (Player.AnarchyDespotism || Player.MonarchyCommunist)
                 {
-                    var attackUnitsInCity = Game.Instance.GetUnits()
+                    var attackUnitsInCity = GameDI.GetUnits()
                         .Where(u => u.X == this.X && u.Y == this.Y && u.Attack > 0)
                         .Count();
                     attackUnitsInCity = Math.Min(attackUnitsInCity, 3);
@@ -904,7 +908,7 @@ namespace CivOne
 		{
 			get
 			{
-				Player player = Game.Instance.GetPlayer(Owner);
+				Player player = GameDI.GetPlayer(Owner);
 				ITile[,] tiles = Map[X - 2, Y - 2, 5, 5];
 				for (int xx = 0; xx < 5; xx++)
 				for (int yy = 0; yy < 5; yy++)
@@ -918,7 +922,7 @@ namespace CivOne
 			}
 		}
 
-		public IUnit[] Units => Game.Instance.GetUnits().Where(u => u.Home == this).ToArray();
+		public IUnit[] Units => GameDI.GetUnits().Where(u => u.Home == this).ToArray();
 
 		public ITile Tile => Map[X, Y];
 
@@ -933,7 +937,7 @@ namespace CivOne
 		public void SellBuilding(IBuilding building)
 		{
 			RemoveBuilding(building);
-			Game.CurrentPlayer.Gold += building.SellPrice;
+			GameDI.CurrentPlayer.Gold += building.SellPrice;
 			BuildingSold = true;
 		}
 
@@ -945,15 +949,15 @@ namespace CivOne
 			_wonders.Add(wonder);
 			if (Game.Started)
 			{
-				if (wonder is Colossus && !Game.WonderObsolete<Colossus>())
+				if (wonder is Colossus && !GameDI.WonderObsolete<Colossus>())
 				{
 					ResetResourceTiles();
 				}
-				if ((wonder is Lighthouse && !Game.WonderObsolete<Lighthouse>()) ||
-					(wonder is MagellansExpedition && !Game.WonderObsolete<MagellansExpedition>()))
+				if ((wonder is Lighthouse && !GameDI.WonderObsolete<Lighthouse>()) ||
+					(wonder is MagellansExpedition && !GameDI.WonderObsolete<MagellansExpedition>()))
 				{
 					// Apply Lighthouse/Magellan's Expedition wonder effects in the first turn
-					foreach (IUnit unit in Game.GetUnits().Where(x => x.Owner == Owner && x.Class ==  UnitClass.Water && x.MovesLeft == x.Move))
+					foreach (IUnit unit in GameDI.GetUnits().Where(x => x.Owner == Owner && x.Class ==  UnitClass.Water && x.MovesLeft == x.Move))
 					{
 						unit.MovesLeft++;
 					}
@@ -987,7 +991,7 @@ namespace CivOne
 				else
 				{
                     // TODO fire-eggs not showing loses side-effects
-					if (Player.IsHuman) // && !Game.Animations)
+					if (Player.IsHuman) // && !GameDI.Animations)
 					{
 						Show disorderCity = Show.DisorderCity(this);
  						GameTask.Insert(disorderCity);
@@ -1070,13 +1074,13 @@ namespace CivOne
 				{
 					Message message = Message.DisbandUnit(this, unit);
 					message.Done += (s, a) => {
-						Game.DisbandUnit(unit);
+						GameDI.DisbandUnit(unit);
 					};
 					GameTask.Enqueue(message);
 				}
 				else
 				{
-					Game.DisbandUnit(unit);
+					GameDI.DisbandUnit(unit);
 				}
 			}
 			else if (ShieldIncome > 0)
@@ -1086,14 +1090,14 @@ namespace CivOne
 
 			if (Shields >= (int)CurrentProduction.Price * 10)
 			{
-				if (CurrentProduction is Settlers && Size == 1 && Game.Difficulty == 0)
+				if (CurrentProduction is Settlers && Size == 1 && GameDI.Difficulty == 0)
 				{
 					// On Chieftain level, it's not possible to create a Settlers in a city of size 1
 				}
 				else if (CurrentProduction is IUnit)
 				{
 					Shields = 0;
-					IUnit unit = Game.Instance.CreateUnit((CurrentProduction as IUnit).Type, X, Y, Owner);
+					IUnit unit = GameDI.CreateUnit((CurrentProduction as IUnit).Type, X, Y, Owner);
 					unit.SetHome();
 					unit.Veteran = (_buildings.Any(b => (b is Barracks)));
 					if (CurrentProduction is Settlers)
@@ -1126,7 +1130,7 @@ namespace CivOne
 					}
 					else if (CurrentProduction is Palace)
 					{
-						foreach (City city in Game.Instance.GetCities().Where(c => c.Owner == Owner))
+						foreach (City city in GameDI.GetCities().Where(c => c.Owner == Owner))
 						{
 							// Remove palace from all cites.
 							city.RemoveBuilding<Palace>();
@@ -1152,7 +1156,7 @@ namespace CivOne
 						GameTask.Enqueue(new ImprovementBuilt(this, (CurrentProduction as IBuilding)));
 					}
 				}
-				if (CurrentProduction is IWonder && !Game.Instance.BuiltWonders.Any(w => w.Id == (CurrentProduction as IWonder).Id))
+				if (CurrentProduction is IWonder && !GameDI.BuiltWonders.Any(w => w.Id == (CurrentProduction as IWonder).Id))
 				{
 					Shields = 0;
 					AddWonder(CurrentProduction as IWonder);
@@ -1345,7 +1349,7 @@ namespace CivOne
 					City admired = null;
 					int mostAppeal = 0;
 
-					foreach (City city in Game.GetCities())
+					foreach (City city in GameDI.GetCities())
 					{
 						if (city == this)
 							break;
@@ -1371,7 +1375,7 @@ namespace CivOne
 						message.Add($"Residents of {Name} admire the prosperity of {admired.Name}");
 						message.Add($"{admired.Name} capture {Name}");
 
-						Player previousOwner = Game.GetPlayer(this.Owner);
+						Player previousOwner = GameDI.GetPlayer(this.Owner);
 
                         // TODO fire-eggs captured gold
                         // TODO fire-eggs captured advance?

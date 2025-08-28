@@ -27,8 +27,8 @@ namespace CivOne
 {
 	public partial class Player : BaseInstance, ITurn
 	{
-		// Dependency injection, but static for all the static members.
-		public static Game Game = null;
+		protected Game _game = null;
+		public Game GameDI { get => _game ?? Game; set => _game = value; }
 		private readonly ICivilization _civilization;
 		private readonly string _tribeName, _tribeNamePlural;
 
@@ -101,15 +101,15 @@ namespace CivOne
 
 		public void Revolt()
 		{
-			_anarchy = (short)((HasWonder<Pyramids>() && !Game.WonderObsolete<Pyramids>()) ? 0 : 4 - (Game.GameTurn % 4) - 1);
+			_anarchy = (short)((HasWonder<Pyramids>() && !GameDI.WonderObsolete<Pyramids>()) ? 0 : 4 - (GameDI.GameTurn % 4) - 1);
 			Government = new Anarchy();
 			if (!IsHuman) return;
-			GameTask.Enqueue(Message.Newspaper(null, $"The {Game.Instance.HumanPlayer.TribeNamePlural} are", "revolting! Citizens", "demand new govt."));
+			GameTask.Enqueue(Message.Newspaper(null, $"The {GameDI.HumanPlayer.TribeNamePlural} are", "revolting! Citizens", "demand new govt."));
 		}
 
-		public bool IsHuman => (Game.HumanPlayer == this);
+		public bool IsHuman => (GameDI.HumanPlayer == this);
 
-		public City[] Cities => Game.GetCities().Where(c => this == c.Owner && c.Size > 0).ToArray();
+		public City[] Cities => GameDI.GetCities().Where(c => this == c.Owner && c.Size > 0).ToArray();
 
 		public int Population => Cities.Sum(c => c.Population);
 		
@@ -136,7 +136,7 @@ namespace CivOne
 		{
 			get
 			{
-				short cost = (short)((Game.Instance.Difficulty + 3) * 2 * (_advances.Count() + 1) * (Common.TurnToYear(Game.Instance.GameTurn) > 0 ? 2 : 1));
+				short cost = (short)((GameDI.Difficulty + 3) * 2 * (_advances.Count() + 1) * (Common.TurnToYear(GameDI.GameTurn) > 0 ? 2 : 1));
 				if (cost < 12)
 					return 12;
 				return cost;
@@ -147,11 +147,11 @@ namespace CivOne
 
 		public void AddAdvance(IAdvance advance, bool setOrigin = true)
 		{
-			if (Game.Started && Game.CurrentPlayer.CurrentResearch?.Id == advance.Id)
-				GameTask.Enqueue(new TechSelect(Game.CurrentPlayer));
+			if (Game.Started && GameDI.CurrentPlayer.CurrentResearch?.Id == advance.Id)
+				GameTask.Enqueue(new TechSelect(GameDI.CurrentPlayer));
 			_advances.Add(advance.Id);
 			if (!setOrigin) return;
-			Game.Instance.SetAdvanceOrigin(advance, this);
+			GameDI.SetAdvanceOrigin(advance, this);
 		}
 
 		public void DeleteAdvance(IAdvance advance) => _advances.RemoveAll(x => x == advance.Id);
@@ -172,13 +172,13 @@ namespace CivOne
 
 		public bool HasAdvance(IAdvance advance) => (advance == null || Advances.Any(a => a.Id == advance.Id));
 
-		public Player[] Embassies => _embassies.Select(e => Game.Players.FirstOrDefault(p => e == Game.PlayerNumber(p))).Where(p => p != null).ToArray();
+		public Player[] Embassies => _embassies.Select(e => GameDI.Players.FirstOrDefault(p => e == GameDI.PlayerNumber(p))).Where(p => p != null).ToArray();
 
-		public bool HasEmbassy(Player player) => _embassies.Any(e => e == Game.PlayerNumber(player));
+		public bool HasEmbassy(Player player) => _embassies.Any(e => e == GameDI.PlayerNumber(player));
 
 		public void EstablishEmbassy(Player player)
 		{
-			byte playerNumber = Game.PlayerNumber(player);
+			byte playerNumber = GameDI.PlayerNumber(player);
 			if (_embassies.Contains(playerNumber)) return;
 			_embassies.Add(playerNumber);
 		}
@@ -205,7 +205,7 @@ namespace CivOne
 		{
 			get
 			{
-				bool allGovernments = !Game.WonderObsolete<Pyramids>() && HasWonder<Pyramids>();
+				bool allGovernments = !GameDI.WonderObsolete<Pyramids>() && HasWonder<Pyramids>();
 				foreach (IGovernment government in Reflect.GetGovernments().Where(g => g.Id > 0))
 				{
 					if (!allGovernments && !HasAdvance(government.RequiredTech)) continue;
@@ -221,7 +221,7 @@ namespace CivOne
 				return false;
 			
 			// Require Manhattan Project to be built for Nuclear unit
-			if ((unit is Nuclear) && !Game.Instance.WonderBuilt<ManhattanProject>())
+			if ((unit is Nuclear) && !GameDI.WonderBuilt<ManhattanProject>())
 				return false;
 			
 			// Determine if the unit requires a tech
@@ -238,7 +238,7 @@ namespace CivOne
 		private bool BuildingAvailable(IBuilding building)
 		{
 			// Only allow spaceship to be built if Apollo Program exists
-			if ((building is ISpaceShip) && !Game.Instance.WonderBuilt<ApolloProgram>())
+			if ((building is ISpaceShip) && !GameDI.WonderBuilt<ApolloProgram>())
 				return false;
 
 			// Determine if the building requires a tech
@@ -255,7 +255,7 @@ namespace CivOne
 		private bool WonderAvailable(IWonder wonder)
 		{
 			// Determine if the wonder has already been built
-			if (Game.Instance.BuiltWonders.Any(w => w.Id == wonder.Id))
+			if (GameDI.BuiltWonders.Any(w => w.Id == wonder.Id))
 				return false;
 
 			// Determine if the building requires a tech
@@ -291,7 +291,7 @@ namespace CivOne
 			if (_destroyed) return true;
 
 			if (Cities.Length != 0 ||
-				Game.GetUnits().Any(unit => this == unit.Owner && unit is Settlers && unit.Home == null))
+				GameDI.GetUnits().Any(unit => this == unit.Owner && unit is Settlers && unit.Home == null))
 			{
 				return false;
 			}
@@ -300,8 +300,8 @@ namespace CivOne
 			IUnit unit;
 			do
 			{
-				unit = Game.GetUnits().FirstOrDefault(x => this == x.Owner);
-				Game.DisbandUnit(unit);
+				unit = GameDI.GetUnits().FirstOrDefault(x => this == x.Owner);
+				GameDI.DisbandUnit(unit);
 			}
 			while (unit != null);
 
@@ -362,14 +362,14 @@ namespace CivOne
 
 		public void NewTurn()
 		{
-			if (!Game.GetCities().Any(x => this == x.Owner) && !Game.Instance.GetUnits().Any(x => this == x.Owner))
+			if (!GameDI.GetCities().Any(x => this == x.Owner) && !GameDI.GetUnits().Any(x => this == x.Owner))
 			{
 				GameTask.Enqueue(Turn.GameOver(this));
 			}
 
 			if (_anarchy == 0 && Government is Anarchy)
 			{
-				if (Human == Game.CurrentPlayer)
+				if (Human == GameDI.CurrentPlayer)
 				{
 					GameTask.Enqueue(Show.ChooseGovernment);
 				}
@@ -384,19 +384,19 @@ namespace CivOne
 		public override bool Equals (object obj)
 		{
 			if (obj is byte)
-				return Game.PlayerNumber(this) == (byte)obj;
+				return GameDI.PlayerNumber(this) == (byte)obj;
 			if (obj is Player)
-				return Game.PlayerNumber(this) == Game.PlayerNumber(obj as Player);
+				return GameDI.PlayerNumber(this) == GameDI.PlayerNumber(obj as Player);
 			return false;
 		}
 		
-		public override int GetHashCode() => Game.PlayerNumber(this);
+		public override int GetHashCode() => GameDI.PlayerNumber(this);
 
-		public static explicit operator Player(byte playerNumber) => Game.GetPlayer(playerNumber);
-		public static explicit operator byte(Player player) => Game.PlayerNumber(player);
+		// public static explicit operator Player(byte playerNumber) => GameDI.GetPlayer(playerNumber);
+		public static explicit operator byte(Player player) => player.GameDI.PlayerNumber(player);
 		
-		public static bool operator ==(Player p1, byte p2) => Game.PlayerNumber(p1) == p2;
-		public static bool operator !=(Player p1, byte p2) => Game.PlayerNumber(p1) != p2;
+		public static bool operator ==(Player p1, byte p2) => p1.GameDI.PlayerNumber(p1) == p2;
+		public static bool operator !=(Player p1, byte p2) => p1.GameDI.PlayerNumber(p1) != p2;
 		
 		public Player(ICivilization civilization, string customLeaderName = null, string customTribeName = null, string customTribeNamePlural = null)
 		{

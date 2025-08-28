@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using CivOne.Advances;
@@ -27,14 +28,14 @@ namespace CivOne
 {
 	public partial class Game : BaseInstance, IGame, ILogger
 	{
-		private readonly int _difficulty, _competition;
-		private readonly Player[] _players;
-		private readonly List<City> _cities;
-		private readonly List<IUnit> _units;
-		private readonly Dictionary<byte, byte> _advanceOrigin = new Dictionary<byte, byte>();
-		private readonly List<ReplayData> _replayData = new List<ReplayData>();
+		private int _difficulty, _competition;
+		private Player[] _players;
+		private List<City> _cities;
+		private List<IUnit> _units;
+		private Dictionary<byte, byte> _advanceOrigin = new Dictionary<byte, byte>();
+		private List<ReplayData> _replayData = new List<ReplayData>();
 
-		internal readonly string[] CityNames = Common.AllCityNames.ToArray();
+		internal string[] CityNames = Common.AllCityNames.ToArray();
 
 		public int _currentPlayer = 0; // public for unit testing
 		private int _activeUnit;

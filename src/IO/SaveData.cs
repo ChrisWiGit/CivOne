@@ -15,10 +15,10 @@ namespace CivOne.IO
 	// - http://forums.civfanatics.com/showthread.php?p=12422448
 	// - http://forums.civfanatics.com/showthread.php?t=493581
 	[StructLayout(LayoutKind.Sequential)]
-	internal unsafe struct SaveData
+	public unsafe struct SaveData
 	{
 		[StructLayout(LayoutKind.Sequential)]
-		internal struct City
+		public struct City
 		{
 			public fixed byte Buildings[4];					// 0:3
 			public byte X, Y;								// 4:5
