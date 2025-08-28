@@ -189,7 +189,6 @@ namespace CivOne
 			_cities = new List<City>();
 			_units = new List<IUnit>();
 
-			Player.Game = this;
 			_players = new Player[competition + 1];
 
 			Random startRandom = new(Common.Random.InitialSeed);
