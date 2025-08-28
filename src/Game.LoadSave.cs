@@ -39,7 +39,9 @@ namespace CivOne
 				Common.SetRandomSeed(adapter.RandomSeed);
 
 				Map.Instance.LoadMap(mapFile, adapter.RandomSeed);
-				_instance = new Game(adapter);
+				// CW: Main replacement for old code:
+				// _instance = new Game(adapter);
+				_instance = new GameBuilder(adapter).SetupAll().Build();
 				BaseInstance.Log($"Game instance loaded (difficulty: {_instance._difficulty}, competition: {_instance._competition}");
 			}
 		}
@@ -114,17 +116,25 @@ namespace CivOne
 			}
 		}
 
+		private Game()
+		{
+			_units = [];
+			_cities = [];
+			_players = [];
+			_replayData = [];
+		}
+
 		private Game(IGameData gameData)
 		{
+			// Start:SetupMeta
 			_difficulty = gameData.Difficulty;
 			_competition = (gameData.OpponentCount + 1);
 
-			// CW: Dependency Injection. Otherwise this would be handled after this constructor (too late to call HandleExtinction).
-			Player.Game = this;
-			City.Game = this;
-
+			// SetupPlayers()
 			_players = new Player[_competition + 1];
+			// SetupCities()
 			_cities = new List<City>();
+			// SetupUnits()
 			_units = new List<IUnit>();
 
 			ushort[] advanceFirst = gameData.AdvanceFirstDiscovery;
@@ -134,8 +144,11 @@ namespace CivOne
 				ICivilization[] civs = Common.Civilizations.Where(c => c.PreferredPlayerNumber == i).ToArray();
 				ICivilization civ = civs[gameData.CivilizationIdentity[i] % civs.Length];
 				Player player = (_players[i] = new Player(civ, gameData.LeaderNames[i], gameData.CitizenNames[i], gameData.CivilizationNames[i]));
-                if (i != 0) // don't need for barbarians (?)
-				    player.Destroyed += PlayerDestroyed;
+				if (i != 0) // don't need for barbarians (?)
+					player.Destroyed += PlayerDestroyed;
+
+				player.GameDI = this;
+
 				player.Gold = gameData.PlayerGold[i];
 				player.Science = gameData.ResearchProgress[i];
 				player.Government = Reflect.GetGovernments().FirstOrDefault(x => x.Id == gameData.Government[i]);
@@ -143,15 +156,15 @@ namespace CivOne
 				player.TaxesRate = gameData.TaxRate[i];
 				player.LuxuriesRate = 10 - gameData.ScienceRate[i] - player.TaxesRate;
 				player.StartX = (short)gameData.StartingPositionX[i];
-				
+
 				// Set map visibility
 				for (int xx = 0; xx < 80; xx++)
-				for (int yy = 0; yy < 50; yy++)
-				{
-					if (!visibility[i][xx, yy]) continue;
-					if (i == 0 && Map[xx, yy].Hut) Map[xx, yy].Hut = false;
-					player.Explore(xx, yy, 0);
-				}
+					for (int yy = 0; yy < 50; yy++)
+					{
+						if (!visibility[i][xx, yy]) continue;
+						if (i == 0 && Map[xx, yy].Hut) Map[xx, yy].Hut = false;
+						player.Explore(xx, yy, 0);
+					}
 
 				byte[] advanceIds = gameData.DiscoveredAdvanceIDs[i];
 				Common.Advances.Where(x => advanceIds.Any(id => x.Id == id)).ToList().ForEach(x =>
@@ -162,15 +175,21 @@ namespace CivOne
 				});
 			}
 
+			//SetupMeta()
 			GameTurn = gameData.GameTurn;
+			//SetupMeta()
 			CityNames = gameData.CityNames;
+
+			// Start: SetupPlayer()
 			HumanPlayer = _players[gameData.HumanPlayer];
 			HumanPlayer.CurrentResearch = Common.Advances.FirstOrDefault(a => a.Id == gameData.CurrentResearch);
-		
+			// End: SetupPlayer()
+
+			//SetupMeta()
 			_anthologyTurn = gameData.NextAnthologyTurn;
 
 			// City.Game = this; // Dependency Injection (for GetSpecialistsFromGameData)
-
+			// Start: SetupCities()
 			Dictionary<byte, City> cityList = new Dictionary<byte, City>();
 			foreach (CityData cityData in gameData.Cities)
 			{
@@ -185,6 +204,8 @@ namespace CivOne
 				};
 				city.SetProduction(cityData.CurrentProduction);
 
+
+				city.GameDI = this;
 				// CW:
 				// Converting should be more of an extra class (Adapter pattern)
 				// private CityAdapter cityAdapter = new CityAdapter(); //on top of class definition - later defined through DI
@@ -208,7 +229,7 @@ namespace CivOne
 					if (gameData.Wonders[wonder.Id] != cityData.Id) continue;
 					city.AddWonder(wonder);
 				}
-				
+
 				_cities.Add(city);
 
 				//CW: not sure why this happens to AI cities, 
@@ -219,22 +240,22 @@ namespace CivOne
 				}
 
 				foreach (byte fortifiedUnit in cityData.FortifiedUnits)
-                {
-                    // fire-eggs 20190622 corrected restore of "fortified" units
-                    // Unit id is actually in lower 6 bits
-                    // see https://forums.civfanatics.com/threads/sve-file-format.493581/page-4
-                    int unitId = fortifiedUnit & 0x3F;
-                    bool fortified = (fortifiedUnit & 0x40) != 0;
-                    bool veteran = (fortifiedUnit & 0x80) != 0;
+				{
+					// fire-eggs 20190622 corrected restore of "fortified" units
+					// Unit id is actually in lower 6 bits
+					// see https://forums.civfanatics.com/threads/sve-file-format.493581/page-4
+					int unitId = fortifiedUnit & 0x3F;
+					bool fortified = (fortifiedUnit & 0x40) != 0;
+					bool veteran = (fortifiedUnit & 0x80) != 0;
 
-                    IUnit unit = CreateUnit((UnitType)unitId, city.X, city.Y);
-                    if (unit == null)
-                    {
-                        Log("Unknown fortified unit found: {0}", fortifiedUnit);
-                        continue;
-                    }
+					IUnit unit = CreateUnit((UnitType)unitId, city.X, city.Y);
+					if (unit == null)
+					{
+						Log("Unknown fortified unit found: {0}", fortifiedUnit);
+						continue;
+					}
 
-                    unit.Status = (byte)(fortified ? 8 : 0 + (veteran ? 32 : 0));
+					unit.Status = (byte)(fortified ? 8 : 0 + (veteran ? 32 : 0));
 
 					unit.Owner = city.Owner;
 					unit.SetHome(city);
@@ -243,8 +264,10 @@ namespace CivOne
 
 				cityList.Add(cityData.Id, city);
 			}
+			// End: SetupCities()
 
-            // TODO fire-eggs: wrong when playing with fewer than 7?
+			// Start:SetupUnits()
+			// TODO fire-eggs: wrong when playing with fewer than 7?
 			UnitData[][] unitData = gameData.Units;
 			for (byte p = 0; p < 8; p++)
 			{
@@ -265,11 +288,13 @@ namespace CivOne
 					_units.Add(unit);
 				}
 			}
+			// End:SetupUnits()
 
 			_replayData.AddRange(gameData.ReplayData);
 
 
 			// Game Settings
+			// Start:SetupOptions()
 			InstantAdvice = (Settings.InstantAdvice == GameOption.On);
 			AutoSave = (Settings.AutoSave != GameOption.Off);
 			EndOfTurn = (Settings.EndOfTurn == GameOption.On);
@@ -288,7 +313,9 @@ namespace CivOne
 			if (Settings.EnemyMoves == GameOption.Default) EnemyMoves = options[5];
 			if (Settings.CivilopediaText == GameOption.Default) CivilopediaText = options[6];
 			if (Settings.Palace == GameOption.Default) Palace = options[7];
+			// End:SetupOptions()
 
+			// Start:SetupPlayer()
 			_currentPlayer = gameData.HumanPlayer;
 			for (int i = 0; i < _units.Count(); i++)
 			{
@@ -296,6 +323,7 @@ namespace CivOne
 				_activeUnit = i;
 				if (_units[i].MovesLeft > 0) break;
 			}
+			// End:SetupPlayer()
 
 			// CW: Calculate civilization extinction here to avoid showing the "civ destruction" message.
 			_players.ToList().ForEach(player => player.HandleExtinction(false));
