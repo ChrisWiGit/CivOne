@@ -148,8 +148,11 @@ namespace CivOne
 
 		public Player GetPlayer(byte number)
 		{
-			if (_players.Length < number)
+			if (_players.Length <= number)
+			{
+				Debug.Assert(false, $"GetPlayer: Player {number} does not exist. Maximum is {_players.Length - 1}");
 				return null;
+			}
 			return _players[number];
 		}
 
