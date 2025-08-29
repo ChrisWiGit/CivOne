@@ -2,7 +2,11 @@ using System.IO;
 
 namespace CivOne.Persistence.Impl
 {
-	public class FileGameLoaderImpl(IGameLoaderProvider provider, IGameFactory factory) : IFileGameLoader
+	public class FileGameLoaderImpl(
+		IGameLoaderProvider provider,
+		IGameFactory factory, 
+		 TODO Common.SetRandomSeed
+		) : IFileGameLoader
 	{
 
 		public IGame Load<TLoader>(string filePath) where TLoader : IGameLoader
@@ -11,6 +15,8 @@ namespace CivOne.Persistence.Impl
 
 			IGameLoader loader = provider.GetLoader<TLoader>();
 			IGameData data = loader.Load(fs);
+
+
 
 			return factory.Create(data);
 		}

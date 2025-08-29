@@ -78,7 +78,7 @@ namespace CivOne.IO
 		public ushort CurrentResearch;						// 14:15
 		public fixed byte LeaderNames[8 * 14];				// 16:127
 		public fixed byte CivilizationNames[8 * 12];		// 128:223
-		public fixed byte CitizensName[8 * 11];				// 224:311
+		public fixed byte CitizenNames[8 * 11];				// 224:311
 		public fixed short PlayerGold[8];					// 312:327
 		public fixed short ResearchProgress[8];				// 328:343
 		public fixed ushort UnitsActive[8 * 28];			// 344:791

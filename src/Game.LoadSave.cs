@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Enums;
+using CivOne.Persistence;
 using CivOne.Units;
 using CivOne.Wonders;
 
@@ -23,10 +24,35 @@ namespace CivOne
 		// Dependency Injection
 		// Todo: Replace with DI framework
 		internal readonly CityLoadGame _cityLoadGame = new();
+		public static void LoadGame2(string sveFile, string mapFile)
+		{
+			// Allow loading a game in-game.
+
+			using (IGameData adapter = SaveDataAdapter.Load(File.ReadAllBytes(sveFile)))
+			{
+				if (!adapter.ValidData)
+				{
+					BaseInstance.Log("SaveDataAdapter failed to load game");
+					return;
+				}
+
+				// Always use the save game's seed
+				Common.SetRandomSeed(adapter.RandomSeed);
+
+				Map.Instance.LoadMap(mapFile, adapter.RandomSeed);
+				// CW: Main replacement for old code:
+				// _instance = new Game(adapter);
+				_instance = new GameBuilder(adapter).SetupAll().Build();
+				BaseInstance.Log($"Game instance loaded (difficulty: {_instance._difficulty}, competition: {_instance._competition}");
+			}
+		}
+
 		public static void LoadGame(string sveFile, string mapFile)
 		{
 			// Allow loading a game in-game.
 
+			IGame game = new GameLoaderService().LoadWithOriginal(sveFile);
+			
 			using (IGameData adapter = SaveDataAdapter.Load(File.ReadAllBytes(sveFile)))
 			{
 				if (!adapter.ValidData)
@@ -56,7 +82,7 @@ namespace CivOne
 				gameData.Difficulty = (ushort)_difficulty;
 				gameData.ActiveCivilizations = _players.Select(x => (x.Civilization is Barbarian) || (x.Cities.Any(c => c.Size > 0) || GetUnits().Any(u => x == u.Owner))).ToArray();
 
-                gameData.CivilizationIdentity = _players.Select(x => (byte)(x.Civilization.Id > 7 ? 1 : 0)).ToArray();
+				gameData.CivilizationIdentity = _players.Select(x => (byte)(x.Civilization.Id > 7 ? 1 : 0)).ToArray();
 
 				gameData.CurrentResearch = HumanPlayer.CurrentResearch?.Id ?? 0;
 				byte[][] discoveredAdvanceIDs = new byte[_players.Length][];
@@ -77,21 +103,21 @@ namespace CivOne
 				gameData.Units = _players.Select(p => _units.Where(u => p == u.Owner).GetUnitData().ToArray()).ToArray();
 				ushort[] wonders = Enumerable.Repeat(ushort.MaxValue, 22).ToArray();
 				for (byte i = 0; i < _cities.Count(); i++)
-				foreach (IWonder wonder in _cities[i].Wonders)
-				{
-					wonders[wonder.Id] = i;
-				}
+					foreach (IWonder wonder in _cities[i].Wonders)
+					{
+						wonders[wonder.Id] = i;
+					}
 				gameData.Wonders = wonders;
 				bool[][,] visibility = new bool[_players.Length][,];
 				for (int p = 0; p < visibility.Length; p++)
 				{
 					visibility[p] = new bool[80, 50];
 					for (int xx = 0; xx < 80; xx++)
-					for (int yy = 0; yy < 50; yy++)
-					{
-						if (!_players[p].Visible(xx, yy)) continue;
-						visibility[p][xx, yy] = true;
-					}
+						for (int yy = 0; yy < 50; yy++)
+						{
+							if (!_players[p].Visible(xx, yy)) continue;
+							visibility[p][xx, yy] = true;
+						}
 				}
 				gameData.TileVisibility = visibility;
 				ushort[] firstDiscovery = new ushort[72];

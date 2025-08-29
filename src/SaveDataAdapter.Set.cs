@@ -87,7 +87,7 @@ namespace CivOne
 
 		private unsafe void SetCivilizationNames(string[] values) => SetArray(nameof(SaveData.CivilizationNames), 12, values);
 
-		private unsafe void SetCitizenNames(string[] values) => SetArray(nameof(SaveData.CitizensName), 11, values);
+		private unsafe void SetCitizenNames(string[] values) => SetArray(nameof(SaveData.CitizenNames), 11, values);
 
 		private unsafe void SetCityNames(string[] values) => SetArray(nameof(SaveData.CityNames), 13, values);
 

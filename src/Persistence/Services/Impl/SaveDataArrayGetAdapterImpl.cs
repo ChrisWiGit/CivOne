@@ -6,9 +6,9 @@ namespace CivOne.Services
 	public class SaveDataArrayGetAdapter : ISaveDataArrayGetAdapter
 	{
 		private readonly SaveData _saveData;
-		private readonly IArrayGetService<SaveData> _array = new ArrayGetServiceImpl<SaveData>();
+		private readonly IArrayGetService _array = new ArrayGetServiceImpl();
 
-		public SaveDataArrayGetAdapter(SaveData saveData, IArrayGetService<SaveData> array)
+		public SaveDataArrayGetAdapter(SaveData saveData, IArrayGetService array)
 		{
 			_saveData = saveData;
 			_array = array ?? _array;
@@ -32,7 +32,7 @@ namespace CivOne.Services
 
 		public R[] GetArray<R>(string fieldName, int length) where R : struct
 		{
-			return _array.GetArray<R>(_saveData, fieldName, length);
+			return _array.GetArray<SaveData, R>(_saveData, fieldName, length);
 		}
 	}
 }

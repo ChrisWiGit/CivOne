@@ -1,11 +1,12 @@
 namespace CivOne.Services
 {
-	public interface IArrayGetService<T> where T : struct
+	public interface IArrayGetService
 	{
-		string[] GetArray(T structure, string fieldName, int itemLength, int itemCount);
-		void GetByteArray(T structure, string fieldName, ref byte[] bytes);
-		byte[] GetBytes(T structure, string fieldName, int length);
+		string[] GetArray<T>(T structure, string fieldName, int itemLength, int itemCount) where T : struct;
+		void GetByteArray<T>(T structure, string fieldName, ref byte[] bytes) where T : struct;
+		byte[] GetBytes<T>(T structure, string fieldName, int length) where T : struct;
 
-		public R[] GetArray<R>(T structure, string fieldName, int length) where R : struct;
+		public R[] GetArray<T, R>(T structure, string fieldName, int length)
+			where T : struct where R : struct;
 	}
 }

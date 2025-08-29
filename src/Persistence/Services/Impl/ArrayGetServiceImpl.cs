@@ -3,9 +3,9 @@ using System.Runtime.InteropServices;
 
 namespace CivOne.Services.Impl
 {
-	public class ArrayGetServiceImpl<T> : IArrayGetService<T> where T : struct
+	public class ArrayGetServiceImpl : IArrayGetService
 	{
-		public void GetByteArray(T structure, string fieldName, ref byte[] bytes)
+		public void GetByteArray<T>(T structure, string fieldName, ref byte[] bytes) where T : struct
 		{
 			IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
 			Marshal.StructureToPtr(structure, ptr, false);
@@ -14,14 +14,14 @@ namespace CivOne.Services.Impl
 			Marshal.FreeHGlobal(ptr);
 		}
 
-		public byte[] GetBytes(T structure, string fieldName, int length)
+		public byte[] GetBytes<T>(T structure, string fieldName, int length) where T : struct
 		{
 			byte[] output = new byte[length];
 			GetByteArray(structure, fieldName, ref output);
 			return output;
 		}
 
-		public string[] GetArray(T structure, string fieldName, int itemLength, int itemCount)
+		public string[] GetArray<T>(T structure, string fieldName, int itemLength, int itemCount) where T : struct
 		{
 			byte[] bytes = GetBytes(structure, fieldName, itemLength * itemCount);
 			string[] output = new string[itemCount];
@@ -30,7 +30,7 @@ namespace CivOne.Services.Impl
 			return output;
 		}
 
-		public R[] GetArray<R>(T structure, string fieldName, int length) where R : struct
+		public R[] GetArray<T, R>(T structure, string fieldName, int length) where T : struct where R : struct
 		{
 			R[] output = new R[length];
 			int itemSize = Marshal.SizeOf<R>();

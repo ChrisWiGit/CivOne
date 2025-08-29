@@ -90,7 +90,7 @@ namespace CivOne
 
 		private unsafe string[] GetCivilizationNames() => GetArray(nameof(SaveData.CivilizationNames), 12, 8);
 
-		private unsafe string[] GetCitizenNames() => GetArray(nameof(SaveData.CitizensName), 11, 8);
+		private unsafe string[] GetCitizenNames() => GetArray(nameof(SaveData.CitizenNames), 11, 8);
 
 		private unsafe string[] GetCityNames() => GetArray(nameof(SaveData.CityNames), 13, 256);
 
