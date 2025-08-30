@@ -29,6 +29,8 @@ namespace CivOne.Persistence.Original.Impl
 			// SaveAdapter.Get.cs: Load()
 			saveData = _streamToSaveDataService.StreamToSaveData<SaveData>(stream);
 
+				// Map.Instance.LoadMap(mapFile, game.RandomSeed);
+
 			return new GameDataQueryAdapter(saveData, _gameTime);
 		}
 	}

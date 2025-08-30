@@ -196,7 +196,7 @@ namespace CivOne
 			Log("Map: Ready");
 		}
 		
-		public void LoadMap()
+		public void LoadEarthMapInThread()
 		{
 			if (Ready || _tiles != null)
 			{

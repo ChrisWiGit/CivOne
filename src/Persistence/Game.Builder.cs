@@ -271,6 +271,12 @@ namespace CivOne
 				applySetting(_game, setting() == GameOption.On);
 			}
 
+			public GameBuilder SetupRandomSeed()
+			{
+				_game.RandomSeed = _data.RandomSeed;
+				return this;
+			}
+
 			public GameBuilder SetupAll()
 			{
 				return SetupMeta()
@@ -278,8 +284,8 @@ namespace CivOne
 					.SetupCities()
 					.SetupUnits()
 					.SetupCurrentPlayer()
-					.SetupOptions();
-
+					.SetupOptions()
+					.SetupRandomSeed();
 			}
 
 			public Game Build()

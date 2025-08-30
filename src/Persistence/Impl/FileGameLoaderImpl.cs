@@ -4,8 +4,7 @@ namespace CivOne.Persistence.Impl
 {
 	public class FileGameLoaderImpl(
 		IGameLoaderProvider provider,
-		IGameFactory factory, 
-		 TODO Common.SetRandomSeed
+		IGameFactory factory
 		) : IFileGameLoader
 	{
 
@@ -15,8 +14,6 @@ namespace CivOne.Persistence.Impl
 
 			IGameLoader loader = provider.GetLoader<TLoader>();
 			IGameData data = loader.Load(fs);
-
-
 
 			return factory.Create(data);
 		}

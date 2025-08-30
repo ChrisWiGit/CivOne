@@ -688,5 +688,11 @@ namespace CivOne
 		{
 			_instance = null;
 		}
+
+		public ushort RandomSeed
+		{
+			get => (ushort)Common.Random.InitialSeed;
+			set => Common.SetRandomSeed(value);
+		}
 	}
 }

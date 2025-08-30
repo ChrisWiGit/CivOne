@@ -14,9 +14,11 @@ namespace CivOne.Persistence.Original.Impl
 		protected SaveData saveData;
 		protected IOriginalGameTime gameTime;
 
-		protected ILogger logger => Game.Instance;
+		protected ILogger logger => LoggerProvider.GetLogger();
 
-		public GameDataQueryAdapter(SaveData saveData, IOriginalGameTime gameTime)
+		public GameDataQueryAdapter(
+			SaveData saveData,
+			IOriginalGameTime gameTime)
 		{
 			Debug.Assert(gameTime != null, "gameTime is null");
 

@@ -11,5 +11,7 @@ namespace CivOne
 		ushort GameTurn { get; }
 
 		Player GetPlayer(byte playerId);
+
+		ushort RandomSeed { get; set; }	
 	}
 }

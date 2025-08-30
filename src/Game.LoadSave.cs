@@ -24,7 +24,7 @@ namespace CivOne
 		// Dependency Injection
 		// Todo: Replace with DI framework
 		internal readonly CityLoadGame _cityLoadGame = new();
-		public static void LoadGame2(string sveFile, string mapFile)
+		public static void LoadGame3(string sveFile, string mapFile)
 		{
 			// Allow loading a game in-game.
 
@@ -41,34 +41,25 @@ namespace CivOne
 
 				Map.Instance.LoadMap(mapFile, adapter.RandomSeed);
 				// CW: Main replacement for old code:
-				// _instance = new Game(adapter);
-				_instance = new GameBuilder(adapter).SetupAll().Build();
+				_instance = new Game(adapter);
 				BaseInstance.Log($"Game instance loaded (difficulty: {_instance._difficulty}, competition: {_instance._competition}");
 			}
 		}
 
 		public static void LoadGame(string sveFile, string mapFile)
 		{
-			// Allow loading a game in-game.
-
-			IGame game = new GameLoaderService().LoadWithOriginal(sveFile);
-			
-			using (IGameData adapter = SaveDataAdapter.Load(File.ReadAllBytes(sveFile)))
+			try
 			{
-				if (!adapter.ValidData)
-				{
-					BaseInstance.Log("SaveDataAdapter failed to load game");
-					return;
-				}
+				Map.Instance.LoadMap(mapFile, 100);
 
-				// Always use the save game's seed
-				Common.SetRandomSeed(adapter.RandomSeed);
+				IGame game = new GameLoaderService().LoadWithOriginal(sveFile);
 
-				Map.Instance.LoadMap(mapFile, adapter.RandomSeed);
-				// CW: Main replacement for old code:
-				// _instance = new Game(adapter);
-				_instance = new GameBuilder(adapter).SetupAll().Build();
+				_instance = (Game)game;
 				BaseInstance.Log($"Game instance loaded (difficulty: {_instance._difficulty}, competition: {_instance._competition}");
+			}
+			catch (InvalidDataException e)
+			{
+				BaseInstance.Log("GameLoaderService failed to load game: " + e.Message);
 			}
 		}
 

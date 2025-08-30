@@ -44,10 +44,11 @@ namespace CivOne.Services.Impl
 				return output;
 			}
 
-			if (!typeof(T).IsArray)
+			if (!output.GetType().IsArray)
 			{
 				throw new ArgumentException("Type T must be a primitive or an array type.");
 			}
+			
 			
 			IntPtr ptr = Marshal.AllocHGlobal(itemSize);
 			try
