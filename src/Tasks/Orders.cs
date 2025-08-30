@@ -61,8 +61,13 @@ namespace CivOne.Tasks
 
 		private void CityNameCancel(object sender, EventArgs args)
 		{
-			Human.CityNamesSkipped++;
-			_unit.MovesLeft--;
+			// _unit is only set, if a settler is founding a city
+			// This code is also called, when a city is founded by an hut.
+			if (_unit != null)
+			{
+				Human.CityNamesSkipped++;
+				_unit.MovesLeft--;
+			}
 			EndTask();
 		}
 
