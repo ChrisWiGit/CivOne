@@ -51,8 +51,9 @@ namespace CivOne
 			try
 			{
 				Map.Instance.LoadMap(mapFile, 100);
+				IMapLoader = MapLoaderService.LoadWithOriginal(mapFile); 
 
-				IGame game = new GameLoaderService().LoadWithOriginal(sveFile);
+				IGame game = new GameLoaderService().LoadWithOriginal(sveFile, map);
 
 				_instance = (Game)game;
 				BaseInstance.Log($"Game instance loaded (difficulty: {_instance._difficulty}, competition: {_instance._competition}");

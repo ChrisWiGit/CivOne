@@ -2,17 +2,17 @@ using System.IO;
 
 namespace CivOne.Persistence.Impl
 {
-	public class FileGameLoaderImpl(
+	public class FileGameLoaderImpl<T>(
 		IGameLoaderProvider provider,
 		IGameFactory factory
-		) : IFileGameLoader
+		) : IFileGameLoader where T : IGameLoader
 	{
 
-		public IGame Load<TLoader>(string filePath) where TLoader : IGameLoader
+		public IGame Load(string filePath)
 		{
 			using FileStream fs = new(filePath, FileMode.Open, FileAccess.Read);
 
-			IGameLoader loader = provider.GetLoader<TLoader>();
+			IGameLoader loader = provider.GetLoader<T>();
 			IGameData data = loader.Load(fs);
 
 			return factory.Create(data);

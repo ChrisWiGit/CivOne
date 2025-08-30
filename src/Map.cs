@@ -12,11 +12,12 @@ using System.Collections.Generic;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Graphics;
+using CivOne.Persistence;
 using CivOne.Tiles;
 
 namespace CivOne
 {
-	public partial class Map
+	public partial class Map : IMap
 	{
 		private static Resources Resources = Resources.Instance;
 		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
@@ -161,7 +162,7 @@ namespace CivOne
 			}
 		}
 		
-		private Map()
+		internal Map()
 		{
 			_terrainMasterWord = Common.Random.Next(16);
 			Ready = false;

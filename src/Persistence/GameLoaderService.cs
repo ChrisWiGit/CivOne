@@ -11,9 +11,11 @@ namespace CivOne.Persistence
 
 		public IGame LoadWithOriginal(string filePath)
 		{
-			fileGameLoader ??= new FileGameLoaderImpl(gameLoaderProvider, gameFactory);
+			fileGameLoader ??= 
+				new FileGameLoaderImpl<OriginalGameLoaderImpl>
+					(gameLoaderProvider, gameFactory);
 
-			return fileGameLoader.Load<OriginalGameLoaderImpl>(filePath);
+			return fileGameLoader.Load(filePath);
 		}
 	}
 }
