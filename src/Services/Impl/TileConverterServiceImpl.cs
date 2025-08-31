@@ -14,9 +14,9 @@ namespace CivOne.Services
 
 		public bool HasExtraResourceOnTile(int x, int y)
 		{
-			bool isAntarctica = (y < 2) || (y > (height - 3));
+			bool isNorthSouthPole = (y < 2) || (y > (height - 3));
 
-			if (isAntarctica)
+			if (isNorthSouthPole)
 			{
 				return false;
 			}

@@ -28,8 +28,8 @@ namespace CivOne.Services
 
 		private bool TileHasHut(int x, int y)
 		{
-			bool isAntarctica = (y < 2) || (y > (Map.HEIGHT - 3));
-			if (isAntarctica)
+			bool isNorhtSouthPole = (y < 2) || (y > (Map.HEIGHT - 3));
+			if (isNorhtSouthPole)
 			{
 				return false;
 			}
