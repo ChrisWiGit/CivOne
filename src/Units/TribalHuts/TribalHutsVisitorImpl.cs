@@ -9,7 +9,7 @@ namespace CivOne.Units.TribalHuts
 		private readonly IUnit currentUnit;
 		private readonly IGame gameInstance;
 		private readonly Player player;
-		private readonly ILogger logger;
+		private readonly ILoggerService logger;
 		private readonly Random random;
 
 		private readonly Action[] events;
@@ -19,7 +19,7 @@ namespace CivOne.Units.TribalHuts
 			Map map,
 			IUnit currentUnit,
 			IGame gameInstance,
-			ILogger logger,
+			ILoggerService logger,
 			Random random)
 
 		{

@@ -26,7 +26,7 @@ using CivOne.Wonders;
 
 namespace CivOne
 {
-	public partial class Game : BaseInstance, IGame, ILogger
+	public partial class Game : BaseInstance, IGame, ILoggerService
 	{
 		private int _difficulty, _competition;
 		private Player[] _players;

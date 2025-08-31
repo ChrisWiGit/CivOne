@@ -1,6 +1,6 @@
 namespace CivOne.Services
 {
-	public interface IGameTime<Year, Turn>
+	public interface IGameTimeService<Year, Turn>
 		where Year : struct
 		where Turn : struct
 	{
@@ -9,6 +9,6 @@ namespace CivOne.Services
 		string YearString(Turn turn, bool zeroAd = false);
 	}
 
-	public interface IOriginalGameTime : IGameTime<int, ushort> { }
+	public interface IOriginalGameTime : IGameTimeService<int, ushort> { }
 }
 

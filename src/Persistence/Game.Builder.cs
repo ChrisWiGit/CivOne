@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Enums;
+using CivOne.Persistence;
 using CivOne.Units;
 using CivOne.Wonders;
 
@@ -19,12 +20,12 @@ namespace CivOne
 
 			internal readonly CityLoadGame _cityLoadGame = new();
 
-			protected ILogger Logger => _game;
+			protected ILoggerService Logger => _game;
 
-			public GameBuilder(IGameData data)
+			public GameBuilder(IGameData data, IMap map)
 			{
 				_data = data;
-				_game = new Game();
+				_game = new Game(map);
 			}
 
 			protected byte BARBARIAN_PLAYER = 1;

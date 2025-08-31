@@ -13,6 +13,7 @@ using System.Linq;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Persistence;
+using CivOne.Services;
 using CivOne.Tiles;
 
 namespace CivOne
@@ -26,7 +27,22 @@ namespace CivOne
 		public static int WIDTH => _width;
 		public static int HEIGHT => _height;
 		
+		protected IHutGeneratorService HutGeneratorService => MapServiceProvider.GetHutProvider(Randomness);
+
+		protected ITileConverterService TileConverterService => MapServiceProvider.GetTileConverterService(Randomness);
+
+		
 		private int _terrainMasterWord;
+
+		public int Randomness
+		{
+			get => _terrainMasterWord;
+			set
+			{
+				if (value < 0 || value > 15) throw new ArgumentOutOfRangeException("Randomness must be between 0 and 15");
+				_terrainMasterWord = (int)value;
+			}
+		}
 		private int _landMass, _temperature, _climate, _age;
 		private ITile[,] _tiles;
 		
@@ -67,7 +83,7 @@ namespace CivOne
 
 		public void ChangeTileType(int x, int y, Terrain type)
 		{
-			bool special = TileIsSpecial(x, y);
+			bool special = TileConverterService.HasExtraResourceOnTile(x, y);
 			bool road = _tiles[x, y].Road;
 			bool railRoad = _tiles[x, y].RailRoad;
 			switch(type)
@@ -89,15 +105,7 @@ namespace CivOne
 			_tiles[x, y].Road = road;
 			_tiles[x, y].RailRoad = railRoad;
 		}
-		
-		private int ModGrid(int x, int y) => (x % 4) * 4 + (y % 4);
-		
-		private bool TileIsSpecial(int x, int y)
-		{
-			if (y < 2 || y > (HEIGHT - 3)) return false;
-			return ModGrid(x, y) == ((x / 4) * 13 + (y / 4) * 11 + _terrainMasterWord) % 16;
-		}
-		
+	
 		public IEnumerable<ITile> ContinentTiles(int continentId) => AllTiles().Where(t => t.ContinentId == continentId);
 		
 		public IEnumerable<City> ContentCities(int continentId) => ContinentTiles(continentId).Where(x => x.City != null).Select(x => x.City).ToArray();
@@ -161,12 +169,23 @@ namespace CivOne
 				return _instance;
 			}
 		}
-		
-		internal Map()
+
+		internal static void SetInstance(IMap map)
 		{
-			_terrainMasterWord = Common.Random.Next(16);
-			Ready = false;
-			
+			_instance = (Map)map;
+			Log("Map instance set");
+		}
+		
+		internal Map() : this(Common.Random.Next(16), null)
+		{
+		}
+
+		internal Map(int randomTerrainMasterWord, ITile[,] predefinedTiles)
+		{
+			_tiles = predefinedTiles;
+			_terrainMasterWord = randomTerrainMasterWord;
+			Ready = _tiles != null;
+
 			Log("Map instance created");
 		}
 

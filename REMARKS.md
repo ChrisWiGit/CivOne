@@ -46,3 +46,50 @@ Currently, in CivOne, the handling of units in cities is done in the following p
 * `SaveDataAdapter.Set.cs::SetCities()` - This is where the unit bytes are written to the SaveGame.
 * `Extensions.cs::GetCityData()` - This is where the number of units in a city is determined.
 * `Extensions.cs::GetUnitData()` and `FilterUnits()` - This is where the number of units in a city is determined and filtered, by only counting the units that are not fortified in a city and do not have this city as their home.
+
+## Game Loading Refactoring
+
+The game loading process has been refactored to improve maintainability and flexibility. The key changes include:
+
+Now the services are used to load the map and game data.
+A service provides a specific functionality and can be replaced with another implementation if needed.
+
+The GameLoaderService is responsible for loading the game data from a save file.
+It returns an IGame interface, which is implemented by the Game class.
+By using IFileGameLoader, IStreamGameLoader, IGameData, IStreamToSaveDataService and IMapLoader interfaces, the GameLoaderService can work with different file formats and data sources.
+
+## General remarks about services and providers
+
+### Services
+
+Services provide specific functionalities and can be replaced with different implementations if needed.
+Every service must have an interface that defines its functionality.
+It is named IMyServiceNameService.
+Its implementation is named MyServiceNameServiceImpl.
+
+All Services for CivOne reside in the Services namespace: CivOne.Services and CivOne.Services.Impl.
+The files resides in the Services folder.
+The files can be further organized in subfolders if needed.
+
+### Providers
+
+Providers are used to provide services.
+They are used to get a service implementation.
+They are usually static classes with static methods.
+
+They are named MyServiceProvider.
+The files resides in the Services folder.
+
+A single provider class can provide multiple services if they are related.
+This supports the principle of interface segregation (SOLID).
+
+### Usage
+
+Services are received via the provider within a class that needs the service.
+The provider can use settings or other criteria to decide which implementation to provide.
+
+The service is usually stored in a protected property for use within the class.
+
+``csharp
+protected IMyServiceNameService MyService => MyServiceProvider.GetMyService();
+``

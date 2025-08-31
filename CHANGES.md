@@ -6,6 +6,10 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Refactoring: Major refactor of Game, Map and other classes to change how game loading works by using SOLID.
+  * Allows other file formats to be used in the future.
+  * Using Dependency Injection pattern to make code exchangeable with other implementations (IMapLoader, IGameTimeService, IHutGeneratorService, ITileConverterService, ILoggerService, ITileConverterService)
+  * Separation of concerns: Map loading, Game loading, Map tiles generation, Hut generation.
 * Fix: NPE. CityNameCancel logic to handle city founding by huts correctly.
 * Feature: City specialists (tax, science, and entertainer) and City status (e.g. riot, coastal, hydro, auto build, tech stolen, celebration or rapture, building sold) are now saved and restored from save files.
 * Feature?: Up to 2 fortified units in a city are now stored in City.FortifiedUnits data structure and do not count to unit max count for the civilization.

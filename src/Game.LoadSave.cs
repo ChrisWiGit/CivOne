@@ -24,10 +24,10 @@ namespace CivOne
 		// Dependency Injection
 		// Todo: Replace with DI framework
 		internal readonly CityLoadGame _cityLoadGame = new();
+
+		// TODO: CW Old Code. Remove if new LoadGame() works fine.
 		public static void LoadGame3(string sveFile, string mapFile)
 		{
-			// Allow loading a game in-game.
-
 			using (IGameData adapter = SaveDataAdapter.Load(File.ReadAllBytes(sveFile)))
 			{
 				if (!adapter.ValidData)
@@ -50,10 +50,7 @@ namespace CivOne
 		{
 			try
 			{
-				Map.Instance.LoadMap(mapFile, 100);
-				IMapLoader = MapLoaderService.LoadWithOriginal(mapFile); 
-
-				IGame game = new GameLoaderService().LoadWithOriginal(sveFile, map);
+				IGame game = new GameLoaderService().LoadWithOriginal(sveFile, mapFile);
 
 				_instance = (Game)game;
 				BaseInstance.Log($"Game instance loaded (difficulty: {_instance._difficulty}, competition: {_instance._competition}");
@@ -134,8 +131,11 @@ namespace CivOne
 			}
 		}
 
-		private Game()
+		private Game(IMap map)
 		{
+			// TODO: CW: This is temporarily until DI is implemented properly and we don't need a static Map instance anymore.
+			Map.SetInstance(map);
+
 			_units = [];
 			_cities = [];
 			_players = [];

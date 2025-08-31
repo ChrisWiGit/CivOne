@@ -14,7 +14,7 @@ namespace CivOne.Persistence.Original.Impl
 		protected SaveData saveData;
 		protected IOriginalGameTime gameTime;
 
-		protected ILogger logger => LoggerProvider.GetLogger();
+		protected static ILoggerService Logger => LoggerProvider.GetLogger();
 
 		public GameDataQueryAdapter(
 			SaveData saveData,
@@ -331,7 +331,7 @@ namespace CivOne.Persistence.Original.Impl
 			// Debug output: display complete bytes in hex format with 8 per line
 			for (int i = 0; i < replayLength; i += 8)
 			{
-				logger.Log(string.Join(" ", bytes.Skip(i).Take(8).Select(b => b.ToString("X2"))));
+				Logger.Log(string.Join(" ", bytes.Skip(i).Take(8).Select(b => b.ToString("X2"))));
 			}
 
 			List<ReplayData> output = new List<ReplayData>();
@@ -358,14 +358,14 @@ namespace CivOne.Persistence.Original.Impl
 							// City Destroyed: CityDestroyed(turn, cityId, cityNameId, x, y)
 							// Note: When destroyed, cityOwnerId=0xFF, so we use 0 as cityId
 							output.Add(new ReplayData.CityDestroyed(turn, 0, cityNameId, cityX, cityY));
-							logger.Log($"City destroyed: City {cityNameId} at ({cityX},{cityY}) turn {turn}");
+							Logger.Log($"City destroyed: City {cityNameId} at ({cityX},{cityY}) turn {turn}");
 						}
 						else
 						{
 							// City Built: CityBuilt(turn, ownerId, cityId, cityNameId, x, y) 
 							// Note: We use cityNameId as cityId for consistency
 							output.Add(new ReplayData.CityBuilt(turn, cityOwnerId, cityNameId, cityNameId, cityX, cityY));
-							logger.Log($"City built: Owner {cityOwnerId}, City {cityNameId} at ({cityX},{cityY}) turn {turn}");
+							Logger.Log($"City built: Owner {cityOwnerId}, City {cityNameId} at ({cityX},{cityY}) turn {turn}");
 						}
 						i += 5;
 						continue;
@@ -375,7 +375,7 @@ namespace CivOne.Persistence.Original.Impl
 						byte warData = bytes[i + 2];
 						byte warDeclarer = (byte)((warData >> 4) & 0xF);
 						byte warTarget = (byte)(warData & 0xF);
-						logger.Log($"War declared: Civ {warDeclarer} vs Civ {warTarget} at turn {turn}");
+						Logger.Log($"War declared: Civ {warDeclarer} vs Civ {warTarget} at turn {turn}");
 						i += 2;
 						continue;
 
@@ -384,7 +384,7 @@ namespace CivOne.Persistence.Original.Impl
 						byte peaceData = bytes[i + 2];
 						byte peaceMaker = (byte)((peaceData >> 4) & 0xF);
 						byte peaceWith = (byte)(peaceData & 0xF);
-						logger.Log($"Peace made: Civ {peaceMaker} with Civ {peaceWith} at turn {turn}");
+						Logger.Log($"Peace made: Civ {peaceMaker} with Civ {peaceWith} at turn {turn}");
 						i += 2;
 						continue;
 
@@ -392,7 +392,7 @@ namespace CivOne.Persistence.Original.Impl
 							  // Format: EntryHeader(2) + CivId(1) + AdvanceId(1)
 						byte advanceCiv = bytes[i + 2];
 						byte advanceId = bytes[i + 3];
-						logger.Log($"Advance discovered: Civ {advanceCiv}, Advance {advanceId} at turn {turn}");
+						Logger.Log($"Advance discovered: Civ {advanceCiv}, Advance {advanceId} at turn {turn}");
 						i += 3;
 						continue;
 
@@ -400,7 +400,7 @@ namespace CivOne.Persistence.Original.Impl
 							  // Format: EntryHeader(2) + CivId(1) + UnitTypeId(1)
 						byte unitCiv = bytes[i + 2];
 						byte unitType = bytes[i + 3];
-						logger.Log($"Unit first built: Civ {unitCiv}, Unit {unitType} at turn {turn}");
+						Logger.Log($"Unit first built: Civ {unitCiv}, Unit {unitType} at turn {turn}");
 						i += 3;
 						continue;
 
@@ -408,7 +408,7 @@ namespace CivOne.Persistence.Original.Impl
 							  // Format: EntryHeader(2) + CivId(1) + GovernmentTypeId(1)
 						byte govCiv = bytes[i + 2];
 						byte govType = bytes[i + 3];
-						logger.Log($"Government change: Civ {govCiv}, Government {govType} at turn {turn}");
+						Logger.Log($"Government change: Civ {govCiv}, Government {govType} at turn {turn}");
 						i += 3;
 						continue;
 
@@ -418,7 +418,7 @@ namespace CivOne.Persistence.Original.Impl
 						byte captureCity = bytes[i + 3];
 						byte captureX = bytes[i + 4];
 						byte captureY = bytes[i + 5];
-						logger.Log($"City captured: Civ {captureCiv}, City {captureCity} at ({captureX},{captureY}) turn {turn}");
+						Logger.Log($"City captured: Civ {captureCiv}, City {captureCity} at ({captureX},{captureY}) turn {turn}");
 						i += 5;
 						continue;
 
@@ -426,7 +426,7 @@ namespace CivOne.Persistence.Original.Impl
 							  // Format: EntryHeader(2) + CivId(1) + WonderTypeId(1)
 						byte wonderCiv = bytes[i + 2];
 						byte wonderType = bytes[i + 3];
-						logger.Log($"Wonder built: Civ {wonderCiv}, Wonder {wonderType} at turn {turn}");
+						Logger.Log($"Wonder built: Civ {wonderCiv}, Wonder {wonderType} at turn {turn}");
 						i += 3;
 						continue;
 
@@ -434,27 +434,27 @@ namespace CivOne.Persistence.Original.Impl
 							  // Format: EntryHeader(2) + CityCount(1) + PopulationHigh(1) + PopulationLow(1)
 						byte cityCount = bytes[i + 2];
 						int population = (((bytes[i + 3] << 8) & 0xFF00) + bytes[i + 4]) * 10000;
-						logger.Log($"Replay summary: Cities {cityCount}, Population {population} at turn {turn}");
+						Logger.Log($"Replay summary: Cities {cityCount}, Population {population} at turn {turn}");
 						i += 4;
 						continue;
 
 					case 0xC: // Civilization Rankings
 							  // Format: EntryHeader(2) + PackedRankings(3) - 4 bits per civ ranking
-						logger.Log($"Civilization rankings at turn {turn}");
+						Logger.Log($"Civilization rankings at turn {turn}");
 						for (int rank = 0; rank < 8; rank++)
 						{
 							int byteIndex = rank / 2 + 2;
 							int shift = (rank % 2 == 0) ? 4 : 0;
 							int civId = (bytes[i + byteIndex] >> shift) & 0xF;
-							logger.Log($"  Rank {rank}: Civ {civId}");
+							Logger.Log($"  Rank {rank}: Civ {civId}");
 						}
 						i += 5;
 						continue;
 
 					case 0xD: // Civilization Destroyed
 							  // Format: EntryHeader(2) + DestroyedCivId(1) + DestroyerCivId(1)
-						logger.Log($"i = {i}, byte[i]={bytes[i]}, byte[i+1]={bytes[i + 1]}, byte[i+2]={bytes[i + 2]}, byte[i+3]={bytes[i + 3]}");
-						logger.Log($"Civilization destroyed: {bytes[i + 2]} by {bytes[i + 3]} at turn {turn}");
+						Logger.Log($"i = {i}, byte[i]={bytes[i]}, byte[i+1]={bytes[i + 1]}, byte[i+2]={bytes[i + 2]}, byte[i+3]={bytes[i + 3]}");
+						Logger.Log($"Civilization destroyed: {bytes[i + 2]} by {bytes[i + 3]} at turn {turn}");
 
 						output.Add(new ReplayData.CivilizationDestroyed(turn, bytes[i + 2], bytes[i + 3]));
 						i += 3;
@@ -462,7 +462,7 @@ namespace CivOne.Persistence.Original.Impl
 
 					default:
 						// Unknown entry type - stop parsing to avoid corruption
-						logger.Log($"Unknown replay entry type: 0x{entryCode:X} at position {i}");
+						Logger.Log($"Unknown replay entry type: 0x{entryCode:X} at position {i}");
 						break;
 				}
 			}

@@ -2,7 +2,7 @@ using System.IO;
 
 namespace CivOne.Persistence
 {
-	public interface IMapLoader
+	public interface IStreamMapLoader
 	{
 		IMap Load(Stream stream);
 	}

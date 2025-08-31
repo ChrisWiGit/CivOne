@@ -286,15 +286,16 @@ namespace CivOne.Graphics.ImageFormats
 		internal static void ClearCache() => _cache.Clear();
 		
 		public PicFile(string filename)
+			: this(new FileStream(GetFilename(filename), FileMode.Open, FileAccess.Read, FileShare.Read))
 		{
-			filename = GetFilename(filename);
+			Log($"Loaded {filename}");
+		}
 
-			// generate an exception if the file is not found
-			if (RuntimeHandler.Runtime.Settings.Free || !File.Exists(filename))
+		public PicFile(Stream stream)
+		{
+			// generate an exception if the file is not found or stream is invalid
+			if (RuntimeHandler.Runtime.Settings.Free || stream == null || !stream.CanRead)
 			{
-				if (!File.Exists(filename))  {
-					Log($"File not found: {filename.ToUpper()}.PIC");
-				}
 				HasPalette16 = true;
 				HasPalette256 = true;
 				_palette256 = Common.GetPalette256;
@@ -310,12 +311,12 @@ namespace CivOne.Graphics.ImageFormats
 			}
 
 			// read all bytes into a byte array
-			using (FileStream fs = new FileStream(filename, FileMode.Open))
+			using (stream)
 			{
-				_bytes = new byte[fs.Length];
-				fs.ReadExactly(_bytes, 0, _bytes.Length);
+				_bytes = new byte[stream.Length];
+				stream.ReadExactly(_bytes, 0, _bytes.Length);
 			}
-			
+
 			int index = 0;
 			while (index < (_bytes.Length - 1))
 			{
@@ -341,8 +342,6 @@ namespace CivOne.Graphics.ImageFormats
 						break;
 				}
 			}
-
-			Log($"Loaded {filename}");
 		}
 	}
 }

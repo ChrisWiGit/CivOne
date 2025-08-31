@@ -21,7 +21,7 @@ namespace CivOne.Units.TribalHuts
 			Map map,
 			IUnit currentUnit,
 			IGame gameInstance,
-			ILogger logger,
+			ILoggerService logger,
 			Random random)
 		{
 			Debug.Assert(player != null && map != null && currentUnit != null

@@ -27,7 +27,7 @@ namespace CivOne
 			for (int y = 0; y < HEIGHT; y++)
 			{
 				ITile tile;
-				bool special = TileIsSpecial(x, y);
+				bool special = TileConverterService.HasExtraResourceOnTile(x, y);
 				switch (bitmap[x, y])
 				{
 					case 2: tile = new Forest(x, y, special); break;
@@ -57,7 +57,7 @@ namespace CivOne
 				_tiles = new ITile[WIDTH, HEIGHT];
 				
 				LoadMap(bitmap);
-				PlaceHuts();
+				HutGeneratorService.PlaceHuts(_tiles);
 				CalculateLandValue();
 				
 				// Load improvement layer
@@ -189,7 +189,7 @@ namespace CivOne
 			}
 			
 			CreatePoles();
-			PlaceHuts();
+			HutGeneratorService.PlaceHuts(_tiles);
 			CalculateLandValue();
 			
 			Ready = true;

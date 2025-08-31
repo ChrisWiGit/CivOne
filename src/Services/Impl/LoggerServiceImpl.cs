@@ -4,7 +4,7 @@ using CivOne.Units;
 
 namespace CivOne
 {
-	public class LoggerImpl(IRuntime runtime) : ILogger
+	public class LoggerServiceImpl(IRuntime runtime) : ILoggerService
 	{
 		public void Log(string text, params object[] parameters)
 		{

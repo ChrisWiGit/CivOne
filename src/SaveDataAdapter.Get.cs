@@ -15,6 +15,7 @@ using CivOne.IO;
 
 namespace CivOne
 {
+	// TODO: CW: Implemented by Persistence.GameDataQueryAdapter
 	internal partial class SaveDataAdapter
 	{
 		private void GetByteArray<T>(T structure, string fieldName, ref byte[] bytes) where T : struct
@@ -76,6 +77,7 @@ namespace CivOne
 			}
 			return output;
 		}
+		// End: CW: Implemented by IArrayGetService and ISaveDataArrayGetAdapter
 
 		private unsafe byte[][] GetDiscoveredAdvanceIDs()
 		{

@@ -11,6 +11,8 @@ namespace CivOne.Persistence
 		ITile[,] this[int x, int y, int width, int height] { get; }
 		bool FixedStartPositions { get; }
 
+		int Randomness { get; set; }
+
 		IEnumerable<ITile> ContinentTiles(int continentId);
 		IEnumerable<City> ContentCities(int continentId);
 		IEnumerable<ITile> AllTiles();

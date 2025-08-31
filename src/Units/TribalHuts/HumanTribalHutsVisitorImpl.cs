@@ -7,7 +7,7 @@ namespace CivOne.Units.TribalHuts
 		Map map,
 		IUnit currentUnit,
 		IGame gameInstance,
-		ILogger logger,
+		ILoggerService logger,
 		Random random) : TribalHutsVisitorImpl(player, map, currentUnit, gameInstance, logger, random)
 	{
 		protected override void Execute(ITribalHutEventHandler tribalHutEvent)

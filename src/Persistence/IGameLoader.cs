@@ -2,7 +2,7 @@ using System.IO;
 
 namespace CivOne.Persistence
 {
-	public interface IGameLoader
+	public interface IStreamGameLoader
 	{
 		IGameData Load(Stream stream);
 	}

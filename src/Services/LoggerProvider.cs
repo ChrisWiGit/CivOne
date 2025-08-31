@@ -2,9 +2,9 @@ namespace CivOne.Services
 {
 	public static class LoggerProvider
 	{
-		public static ILogger GetLogger()
+		public static ILoggerService GetLogger()
 		{
-			return new LoggerImpl(RuntimeHandler.Runtime);
+			return new LoggerServiceImpl(RuntimeHandler.Runtime);
 		}
 	}
 }

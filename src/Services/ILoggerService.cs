@@ -4,7 +4,7 @@ using CivOne.Units;
 
 namespace CivOne
 {
-	public interface ILogger
+	public interface ILoggerService
 	{
 		void Log(string text, params object[] parameters);
 	}

@@ -197,26 +197,59 @@ namespace CivOne.Graphics
 		{
 			get
 			{
-				string key = filename.ToUpper();
-				if (_cache.ContainsKey(key))
+				string key = filename.ToUpperInvariant();
+				if (!_cache.TryGetValue(key, out Picture picture))
 				{
-					return new Picture(_cache[key].Bitmap, _cache[key].Palette);
+					picture = LoadPictureFromFile(filename);
+					_cache.Add(key, picture);
 				}
-				
-				Picture output = null;
-				PicFile picFile = new PicFile(filename);
-				if ((Settings.GraphicsMode == GraphicsMode.Graphics256 && picFile.GetPicture256 != null) || picFile.GetPicture16 == null)
-				{
-					output = new Picture(picFile.GetPicture256, picFile.GetPalette256);
-				}
-				else
-				{
-					output = new Picture(picFile.GetPicture16, picFile.GetPalette16);
-				}
-				
-				if (!_cache.ContainsKey(key)) _cache.Add(key, output);
-				return new Picture(_cache[key].Bitmap, _cache[key].Palette);
+				return new Picture(picture.Bitmap, picture.Palette);
 			}
+		}
+
+		/// <summary>
+		/// Resets the cached picture for the specified filename.
+		/// This will remove the existing cached picture and load a new one from the specified stream.
+		/// Mainly used for loading maps and discarding the cached version.
+		/// Otherwise this may load an old cached version of the map instead of the new one.
+		/// </summary>
+		/// <param name="filename">A filename used as identifier for the cached picture.</param>
+		/// <param name="stream">The stream to load the picture from.</param>
+		/// <returns>The <see cref="Picture"/>.</returns>
+		public Picture Reset(string filename, Stream stream)
+		{
+			string key = filename.ToUpper();
+			if (_cache.TryGetValue(key, out _))
+			{
+				_cache.Remove(key);
+			}
+			Picture picture = LoadPictureFromStream(stream);
+			_cache.Add(key, picture);
+			return new Picture(picture.Bitmap, picture.Palette);
+		}
+
+		public static Picture LoadPictureFromStream(Stream stream)
+		{
+			PicFile picFile = new(stream);
+
+			if ((Settings.GraphicsMode == GraphicsMode.Graphics256 && picFile.GetPicture256 != null) || picFile.GetPicture16 == null)
+			{
+				return new Picture(picFile.GetPicture256, picFile.GetPalette256);
+			}
+
+			return new Picture(picFile.GetPicture16, picFile.GetPalette16);
+		}
+
+		public static Picture LoadPictureFromFile(string filename)
+		{
+			PicFile picFile = new(filename);
+
+			if ((Settings.GraphicsMode == GraphicsMode.Graphics256 && picFile.GetPicture256 != null) || picFile.GetPicture16 == null)
+			{
+				return new Picture(picFile.GetPicture256, picFile.GetPalette256);
+			}
+
+			return new Picture(picFile.GetPicture16, picFile.GetPalette16);
 		}
 
 		private static Dictionary<int, Picture> _palacePart = new Dictionary<int, Picture>();

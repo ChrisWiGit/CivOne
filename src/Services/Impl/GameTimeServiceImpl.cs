@@ -2,7 +2,7 @@ using System;
 
 namespace CivOne.Services.Impl
 {
-	public class GameTimeImpl : IOriginalGameTime
+	public class GameTimeServiceImpl : IOriginalGameTime
 	{
 		public ushort YearToTurn(int year)
 		{

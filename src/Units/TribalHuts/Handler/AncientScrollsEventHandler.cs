@@ -11,12 +11,12 @@ namespace CivOne.Units.TribalHuts
 		private readonly int x;
 		private readonly int y;
 
-		private readonly ILogger logger;
+		private readonly ILoggerService logger;
 
 
 		private readonly Player player;
 
-		public AncientScrollsEventHandler(int x, int y, Player player, ILogger logger)
+		public AncientScrollsEventHandler(int x, int y, Player player, ILoggerService logger)
 		{
 			this.logger = logger;
 			this.player = player;

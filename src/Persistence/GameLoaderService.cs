@@ -1,21 +1,21 @@
 using CivOne.Persistence.Impl;
 using CivOne.Persistence.Original.Impl;
+using CivOne.Services;
 
 namespace CivOne.Persistence
 {
 	public class GameLoaderService
 	{
-		private IFileGameLoader fileGameLoader;
-		private IGameLoaderProvider gameLoaderProvider = new GameLoaderProvider();
-		private IGameFactory gameFactory = new GameFactoryImpl();
+		protected static ILoggerService Logger => LoggerProvider.GetLogger();
 
-		public IGame LoadWithOriginal(string filePath)
+		public IGame LoadWithOriginal(string filePath, string mapFilePath)
 		{
-			fileGameLoader ??= 
-				new FileGameLoaderImpl<OriginalGameLoaderImpl>
-					(gameLoaderProvider, gameFactory);
+			IMapLoader mapLoader = new OriginalFileMapLoaderImpl(mapFilePath);
+
+			var fileGameLoader = new OriginalFileGameLoaderImpl(mapLoader);
 
 			return fileGameLoader.Load(filePath);
 		}
+	
 	}
 }
