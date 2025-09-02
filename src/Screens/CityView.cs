@@ -28,6 +28,8 @@ namespace CivOne.Screens
 		private const float FADE_STEP = 0.1f;
 		private const int NOISE_COUNT = 40;
 
+		private const int MIN_HOUSES = 2;
+
 		private readonly TextSettings _dialogText;
 
 		private readonly City _city;
@@ -305,11 +307,11 @@ namespace CivOne.Screens
 		{
 			get
 			{
-                // fire-eggs 20190711 do NOT set the global RNG! Using a consistant RNG for
-                // the city view is great (we get a consistant city), but modifying the 
-                // global RNG means a less random game!
-                Random localRandom = new Random(GetRandomSeedFromName(_city.Name));
+				// fire-eggs 20190711 do NOT set the global RNG! Using a consistant RNG for
+				// the city view is great (we get a consistant city), but modifying the 
+				// global RNG means a less random game!
 				//Common.SetRandomSeedFromName(_city.Name);
+				Random localRandom = new(GetRandomSeedFromName(_city.Name));
 				_houseType = localRandom.Next(2);
 
 				CityViewMap[,] cityMap = new CityViewMap[18,11];
@@ -322,6 +324,8 @@ namespace CivOne.Screens
 						cityMap[xx, yy] = CityViewMap.Occupied;
 				}
 				
+				int houseCount = 0;
+
 				// This is experimental code, not the same as the original game
 				int ww = 4 + _city.Size;
 				int hh = 4 + (_city.Size - 1);
@@ -332,42 +336,25 @@ namespace CivOne.Screens
 				int by = (hh / 2);
 				for (int ii = 0; ii < _city.Size; ii++)
 				{
-					for (int t = 0; t < 16; t++)
-					{
-						int relX = localRandom.Next(-1, 2);
-						int relY = localRandom.Next(-1, 2);
-						if (relX == 0 && relY == 0) continue;
-						bx += relX;
-						by += relY;
-						while (bx < ((18 - ww) / 2)) bx++;
-						while (bx >= ww + ((18 - ww) / 2)) bx--;
-						while (by < 0) by++;
-						while (by >= hh) by--;
-						int type = localRandom.Next(8);
-						if (cityMap[bx, by] != CityViewMap.Empty) continue;
-						if (type < 6)
-							cityMap[bx, by] = CityViewMap.House;
-						else
-							cityMap[bx, by] = CityViewMap.Tree;
-					}
+					houseCount += PlaceHouses(localRandom, cityMap, ww, hh, ref bx, ref by);
 					for (int i = 0; i < 1000; i++)
 					{
 						bx = localRandom.Next(ww) + ((18 - ww) / 2);
 						by = localRandom.Next(hh);
 						if (cityMap[bx, by] != CityViewMap.Empty) continue;
 						for (int ix = -1; ix < 2; ix++)
-						for (int iy = -1; iy < 2; iy++)
-						{
-							if (Math.Abs(ix) == Math.Abs(iy)) continue;
-							if (bx + ix < ((18 - ww) / 2)) continue;
-							if (bx + ix >= ww + ((18 - ww) / 2)) continue;
-							if (by + iy < 0) continue;
-							if (by + iy >= hh) continue;
-							if (cityMap[bx + ix, by + iy] != CityViewMap.Empty) { i = 1000; break; }
-						}
+							for (int iy = -1; iy < 2; iy++)
+							{
+								if (Math.Abs(ix) == Math.Abs(iy)) continue;
+								if (bx + ix < ((18 - ww) / 2)) continue;
+								if (bx + ix >= ww + ((18 - ww) / 2)) continue;
+								if (by + iy < 0) continue;
+								if (by + iy >= hh) continue;
+								if (cityMap[bx + ix, by + iy] != CityViewMap.Empty) { i = 1000; break; }
+							}
 					}
 				}
-				
+
 				for (int yy = 0; yy < 11; yy++)
 				for (int xx = 0; xx < 18; xx++)
 				{
@@ -376,13 +363,32 @@ namespace CivOne.Screens
 						if ((xx == 0 || (cityMap[xx - 1, yy] != CityViewMap.House && cityMap[xx - 1, yy] != CityViewMap.Tree)) &&
 							(xx == 17 || (cityMap[xx + 1, yy] != CityViewMap.House && cityMap[xx + 1, yy] != CityViewMap.Tree)) &&
 							(yy == 0 || (cityMap[xx, yy - 1] != CityViewMap.House && cityMap[xx, yy - 1] != CityViewMap.Tree)) &&
-							(yy == 10 || (cityMap[xx, yy + 1] != CityViewMap.House && cityMap[xx, yy + 1] != CityViewMap.Tree))) cityMap[xx, yy] = CityViewMap.Empty;
+							(yy == 10 || (cityMap[xx, yy + 1] != CityViewMap.House && cityMap[xx, yy + 1] != CityViewMap.Tree)))
+						{
+							if (cityMap[xx, yy] == CityViewMap.House)
+							{
+								houseCount--;
+							}
+
+							bool isHouse = cityMap[xx, yy] == CityViewMap.House;
+							if (!isHouse || (isHouse && houseCount >= MIN_HOUSES))
+							{
+								// FIX: some houses may be placed on xx:0,10;yy:0,17 (above) by PlaceHouses by sheer luck.
+								// and may be erased until no houses are left, so we test for it.
+								cityMap[xx, yy] = CityViewMap.Empty;
+							}
+						}
 					}
 					if (cityMap[xx, yy] != CityViewMap.Road) continue;
+
 					if ((xx == 0 || (int)cityMap[xx - 1, yy] > 1) ||
-						(xx == 17 || (int)cityMap[xx + 1, yy] > 1) ||
-						(yy == 0 || (int)cityMap[xx, yy - 1] > 1) ||
-						(yy == 10 || (int)cityMap[xx, yy + 1] > 1)) continue;
+							(xx == 17 || (int)cityMap[xx + 1, yy] > 1) ||
+							(yy == 0 || (int)cityMap[xx, yy - 1] > 1) ||
+							(yy == 10 || (int)cityMap[xx, yy + 1] > 1))
+					{
+						continue;
+					}
+
 					cityMap[xx, yy] = CityViewMap.Empty;
 				}
 				
@@ -459,6 +465,73 @@ namespace CivOne.Screens
 
 				return cityMap;
 			}
+		}
+
+		private static int PlaceHouses(Random localRandom, CityViewMap[,] cityMap, int ww, int hh, ref int bx, ref int by)
+		{
+			const int MaxRepeats = 4;
+			const int MaxTries = 16;
+			const int HouseChance = 6;
+			const int MinRel = -1;
+			const int MaxRel = 2;
+			const int HouseTypes = 8;
+			const int PlacementWidth = 18;
+
+			int placed = 0;
+
+			// Fix: no houses shown, so
+			// repeat up to MaxRepeats times or until MIN_HOUSES houses are placed
+			for (int repeat = 1; repeat <= MaxRepeats && placed < MIN_HOUSES; repeat++)
+			{
+				for (int t = 0; t < MaxTries; t++)
+				{
+					int relX = localRandom.Next(MinRel, MaxRel);
+					int relY = localRandom.Next(MinRel, MaxRel);
+
+					if (relX == 0 && relY == 0)
+					{
+						continue;
+					}
+
+					bx += relX;
+					by += relY;
+
+					while (bx < ((PlacementWidth - ww) / 2))
+					{
+						bx++;
+					}
+					while (bx >= ww + ((PlacementWidth - ww) / 2))
+					{
+						bx--;
+					}
+					while (by < 0)
+					{
+						by++;
+					}
+					while (by >= hh)
+					{
+						by--;
+					}
+
+					int type = localRandom.Next(HouseTypes);
+
+					if (cityMap[bx, by] != CityViewMap.Empty)
+					{
+						continue;
+					}
+
+					if (type < HouseChance)
+					{
+						cityMap[bx, by] = CityViewMap.House;
+						placed++;
+					}
+					else
+					{
+						cityMap[bx, by] = CityViewMap.Tree;
+					}
+				}
+			}
+			return placed;
 		}
 
 		private void DrawBuildings()

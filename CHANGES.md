@@ -6,6 +6,8 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: City view may show 0 houses.
+  * Improved house placement algorithm to add at least 2 houses in city view instead of 0. (Issue original repo: #32, #61 of forked repo)
 * Feature: City specialists (tax, science, and entertainer) and City status (e.g. riot, coastal, hydro, auto build, tech stolen, celebration or rapture, building sold) are now saved and restored from save files.
 * Feature?: Up to 2 fortified units in a city are now stored in City.FortifiedUnits data structure and do not count to unit max count for the civilization.
   * See [Remarks](REMARKS.md#fortified-units-in-cities) for more details.
