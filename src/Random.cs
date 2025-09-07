@@ -252,6 +252,23 @@ namespace CivOne
 			_outputs.Add((int)_ax);
 			return _ax + min;
 		}
+
+		/// <summary>
+		/// Determines if a random event occurs based on a percentage chance.
+		/// </summary>
+		/// <param name="percent">The percentage chance (0-100) for the event to occur.</param>
+		/// <returns>True if the random event occurs, false otherwise.</returns>
+		/// This method generates a random number between 0 and 99 (inclusive) and compares it
+		/// against the provided percentage. For example, a 30% chance means the method returns
+		/// <c>true</c> approximately 30% of the time when called repeatedly.
+		/// </remarks>
+		public bool Hit(int percent)
+		{
+			if (percent <= 0) return false;
+			if (percent >= 100) return true;
+
+			return Next(0, 100) < percent;
+		}
 		
 		public Random(int seed = -1)
 		{
