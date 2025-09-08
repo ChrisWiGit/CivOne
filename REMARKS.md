@@ -46,3 +46,27 @@ Currently, in CivOne, the handling of units in cities is done in the following p
 * `SaveDataAdapter.Set.cs::SetCities()` - This is where the unit bytes are written to the SaveGame.
 * `Extensions.cs::GetCityData()` - This is where the number of units in a city is determined.
 * `Extensions.cs::GetUnitData()` and `FilterUnits()` - This is where the number of units in a city is determined and filtered, by only counting the units that are not fortified in a city and do not have this city as their home.
+
+
+### City View
+
+Following todo's are to be implemented in the city view:
+
+* Auto Build not implemented
+* Hotkey a selects the first unit in the city.
+  * Left, Right, Up, Down keys cycle through the units in the city.
+  * Space/Enter selects the unit and removes sentry or fortified status.
+  * Units cannot be sentried or fortified in the city view.
+  * ESC closes unit selection.
+* Hotkey s selects city buildings
+  * Up, Down keys cycle through the buildings in the city.
+  * Space/Enter selects the building to be sold.
+  * ESC closes building selection and city view.
+* Hotkey p selects city tile view
+  * Up, Down, Left, Right keys cycle through the city tiles.
+  * Space/Enter selects the tile to be removed or worked.
+  * ESC closes tile selection.
+* Hotkey 1-9 cycles through the specialists in the city.
+  * Hotkey changes the specialist entertainer to be changed to tax and science and back to entertainer.
+  * What about > 9?
+* Hotkey shift+a sets production to auto build.
