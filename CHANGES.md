@@ -6,6 +6,12 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: While showing the intro screen (credits) the first letter of each menu entry can be used as a hotkey to select the menu item. Like in the original game. Issue #1.
+  * s for Start a New Game
+  * l for Load a Saved Game
+  * e for EARTH
+  * c for Customize World
+  * v for View Hall of Fame (not implemented)
 * Fix: When a unit with more than one standard moving points (cavalerie, armor etc.) but has less current moving points, and the terrain target is a tile with more than one moving point (mountain, hills, etc.), there is a 10% chance that moving fails. (#180 Terrain difficulty not preventing units from moving). Implemented through observation.
 * Fix: City view may show 0 houses.
   * Improved house placement algorithm to add at least 2 houses in city view instead of 0. (Issue original repo: #32, #61 of forked repo)

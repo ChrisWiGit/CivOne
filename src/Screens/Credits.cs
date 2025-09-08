@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CivOne.Enums;
@@ -49,6 +50,9 @@ namespace CivOne.Screens
 		private IScreen _overlay = null; // TODO fire-eggs: with fix for issue #34, this logic may no longer be required
 
 		private IScreen _nextScreen;
+
+		private Dictionary<char, Action<object, EventArgs>> _shortKeyMapping;
+		private Action<object, EventArgs> _shortCutAction;
 		
 		private void HandleIntroText()
 		{
@@ -200,6 +204,7 @@ namespace CivOne.Screens
 			_pictures[0].Clear(5);
 			_pictures[1].Clear(5);
 			_introSkipped = true;
+			
 			return true;
 		}
 
@@ -210,6 +215,19 @@ namespace CivOne.Screens
             _logoSwipe = 350;
             _noiseCounter = 0;
         }
+
+		// liefert eine Liste (später übersetzt) der menu items zurück
+		private string[] GetMenuItems()
+		{
+			return
+			[
+				"Start a New Game",
+				"Load a Saved Game",
+				"EARTH",
+				"Customize World",
+				"View Hall of Fame"
+			];
+		}
 
 		private void CreateMenu()
 		{
@@ -227,13 +245,18 @@ namespace CivOne.Screens
 				DisabledColour = 8,
 				FontId = 0
 			};
-			menu.Items.Add("Start a New Game").OnSelect(StartNewGame);
-			menu.Items.Add("Load a Saved Game").OnSelect(LoadSavedGame);
-			menu.Items.Add("EARTH").OnSelect(Earth);
-			menu.Items.Add("Customize World").OnSelect(CustomizeWorld);
-			menu.Items.Add("View Hall of Fame").Disable();
-			
+
+			var items = GetMenuItems();
+			menu.Items.Add(items[0]).OnSelect(StartNewGame);
+			menu.Items.Add(items[1]).OnSelect(LoadSavedGame);
+			menu.Items.Add(items[2]).OnSelect(Earth);
+			menu.Items.Add(items[3]).OnSelect(CustomizeWorld);
+			menu.Items.Add(items[4]).Disable();
+
 			AddMenu(menu);
+
+			_shortCutAction?.Invoke(this, EventArgs.Empty);
+			_shortCutAction = null;
 		}
 
 		private void StartIntro()
@@ -295,7 +318,7 @@ namespace CivOne.Screens
 			Destroy();
 			Common.AddScreen(new CustomizeWorld());
 		}
-		
+
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
 			if (_allowEnterSetup && args.Shift && args.Key == Key.F1)
@@ -307,6 +330,14 @@ namespace CivOne.Screens
 
 			if (_done && _overlay != null)
 				return _overlay.KeyDown(args);
+
+
+			if (_shortKeyMapping.TryGetValue(char.ToUpper(args.KeyChar), out var action))
+			{
+				_shortCutAction = action;
+				// invoke in CreateMenu to show title first and then execute action
+			}
+			
 			return SkipIntro();
 		}
 		
@@ -397,6 +428,16 @@ namespace CivOne.Screens
 			{
 				_loadSavedGame = true;
 			}
+
+			var menuItems = GetMenuItems();
+			_shortKeyMapping = new Dictionary<char, Action<object, EventArgs>>
+			{
+				{ menuItems[0].ToUpper()[0], StartNewGame },
+				{ menuItems[1].ToUpper()[0], LoadSavedGame },
+				{ menuItems[2].ToUpper()[0], Earth },
+				{ menuItems[3].ToUpper()[0], CustomizeWorld },
+				{ menuItems[4].ToUpper()[0], (_,_) => { } } 
+			};
 		}
 	}
 }
