@@ -6,7 +6,7 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
-* Feature: While showing the intro screen (credits) the first letter of each menu entry can be used as a hotkey to select the menu item. Like in the original game. Issue #1.
+* Feature: While showing the intro screen (credits) the first letter of each menu entry can be used as a hotkey to immediately execute the corresponding menu item. Like in the original game. Issue #1.
   * s for Start a New Game
   * l for Load a Saved Game
   * e for EARTH
