@@ -6,10 +6,12 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: When a unit with more than one standard moving points (cavalerie, armor etc.) but has less current moving points, and the terrain target is a tile with more than one moving point (mountain, hills, etc.), there is a 10% chance that moving fails. (#180 Terrain difficulty not preventing units from moving). Implemented through observation.
 * Fix: City view may show 0 houses.
   * Improved house placement algorithm to add at least 2 houses in city view instead of 0. (Issue original repo: #32, #61 of forked repo)
 * Feature: City specialists (tax, science, and entertainer) and City status (e.g. riot, coastal, hydro, auto build, tech stolen, celebration or rapture, building sold) are now saved and restored from save files.
-* Feature?: Up to 2 fortified units in a city are now stored in City.FortifiedUnits data structure and do not count to unit max count for the civilization.
+* Feature?: Up to 2 fortified units in a city are now stored in City.
+* FortifiedUnits data structure and do not count to unit max count for the civilization.
   * See [Remarks](REMARKS.md#fortified-units-in-cities) for more details.
   * Though this may not be the exact behavior of the original game. Must be tested.
 * Fix: Units in a city that are not fortified are now correctly restored from save files (previously these were lost).
