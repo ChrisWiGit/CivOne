@@ -6,6 +6,11 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Added hotkeys to CityManager
+  * 1-9 to cycle specialists tax, science
+  * hotkey 'a' to select units in city. Use arrow keys to cycle through units. Use space/enter to select unit and remove fortified/sentry status. ESC/'a' to close unit selection.
+  * Mouse click on unit icon to remove fortified/sentry status.
+* Fix: specialists can only be changed if city is greater than 4 size
 * Feature: While showing the intro screen (credits) the first letter of each menu entry can be used as a hotkey to immediately execute the corresponding menu item. Like in the original game. Issue #1.
   * s for Start a New Game
   * l for Load a Saved Game

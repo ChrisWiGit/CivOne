@@ -875,9 +875,12 @@ namespace CivOne
 		}
 		internal void ChangeSpecialist(int index)
 		{
+			if (index >= _specialists.Count) return;
+
 			while (_specialists.Count < (index + 1)) _specialists.Add(Citizen.Entertainer);
 			_specialists[index] = (Citizen)((((int)_specialists[index] - 5) % 3) + 6);
 		}
+
 
 		/// <summary>
 		/// The explored city area tiles.

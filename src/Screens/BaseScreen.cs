@@ -50,7 +50,7 @@ namespace CivOne.Screens
 
 		public virtual MouseCursor Cursor => _cursor;
 
-		public bool Update(uint gameTick)
+		public virtual bool Update(uint gameTick)
 		{
 			if (CanExpand && SizeChanged)
 			{

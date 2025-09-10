@@ -18,7 +18,7 @@ using System.Drawing;
 namespace CivOne.Screens
 {
     [Expand]
-	internal class CityManager : BaseScreen
+	internal class CityManager : BaseScreen, ICityManager
 	{
 		private readonly City _city;
 		private readonly CityHeader _cityHeader;
@@ -41,6 +41,8 @@ namespace CivOne.Screens
 		private int ExtraRight => (int)Math.Floor((float)ExtraWidth / 2);
 
 		private List<IScreen> _subScreens = new List<IScreen>();
+
+		private IScreen _activeScreen = null;
 
 		private void CloseScreen()
 		{
@@ -96,6 +98,13 @@ namespace CivOne.Screens
 		
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
+			if (_activeScreen != null)
+			{
+				if (_activeScreen.KeyDown(args)) return true;
+				_update = true;
+				return true;
+			}
+
 			foreach (IScreen screen in _subScreens)
 			{
 				if (!screen.KeyDown(args)) continue;
@@ -107,6 +116,13 @@ namespace CivOne.Screens
 		
 		public override bool MouseDown(ScreenEventArgs args)
 		{
+			if (_activeScreen != null)
+			{
+				if (_activeScreen.MouseDown(args)) return true;
+				_update = true;
+				return true;
+			}
+
 			_mouseDown = true;
 			
 			if (!_viewCity)
@@ -214,7 +230,7 @@ namespace CivOne.Screens
 			_subScreens.Add(_cityMap = new CityMap(_city));
 			_subScreens.Add(_cityBuildings = new CityBuildings(_city));
 			_subScreens.Add(_cityFoodStorage = new CityFoodStorage(_city));
-			_subScreens.Add(_cityInfo = new CityInfo(_city));
+			_subScreens.Add(_cityInfo = new CityInfo(_city, this));
 			_subScreens.Add(_cityProduction = new CityProduction(_city, viewCity));
 
 			_cityBuildings.BuildingUpdate += BuildingUpdate;
@@ -229,6 +245,16 @@ namespace CivOne.Screens
 			_subScreens.ForEach(x => x.Dispose());
 			_subScreens.Clear();
 			base.Dispose();
+		}
+
+		public void SetActiveScreen(IScreen screen)
+		{
+			_activeScreen = screen;
+		}
+
+		public void CloseActiveScreen()
+		{
+			_activeScreen = null;
 		}
 	}
 }
