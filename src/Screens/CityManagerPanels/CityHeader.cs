@@ -14,6 +14,7 @@ using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.IO;
+using CivOne.Tasks;
 
 namespace CivOne.Screens.CityManagerPanels
 {
@@ -24,6 +25,8 @@ namespace CivOne.Screens.CityManagerPanels
 		private bool _update = true;
 		
 		public event EventHandler HeaderUpdate;
+
+		protected int MinCitizenSize => 5;
 
 		protected override bool HasUpdate(uint gameTick)
 		{
@@ -56,36 +59,75 @@ namespace CivOne.Screens.CityManagerPanels
 
 		public override bool MouseDown(ScreenEventArgs args)
 		{
-			if (args.Y > 6 && args.Y < 20)
+			if (args.Y <= 6 || args.Y >= 20)
 			{
-				Citizen[] citizens = _city.Citizens.ToArray();
-				int xx = 0;
-				int group = -1;
-				int index = -1;
-				for (int i = 0; i < _city.Size; i++)
-				{
-					xx += 8;
-					if ((int)citizens[i] >= 6) index++;
-					if (group != (group = Common.CitizenGroup(citizens[i])) && group > 0 && i > 0)
-					{
-						xx += 2;
-						if (group == 3) xx += 4;
-					}
-					if (args.X < xx || args.X > (xx + 7) || index < 0) continue;
-
-					_city.ChangeSpecialist(index);
-					Update();
-					return true;
-				}
 				return false;
+			}
+
+			if (_city.Size < MinCitizenSize)
+			{
+				CitySizeToSmall(this, null);
+				return true;
+			}
+			
+
+			Citizen[] citizens = _city.Citizens.ToArray();
+			int xx = 0;
+			int group = -1;
+			int index = -1;
+			for (int i = 0; i < _city.Size; i++)
+			{
+				xx += 8;
+				if ((int)citizens[i] >= 6) index++;
+				if (group != (group = Common.CitizenGroup(citizens[i])) && group > 0 && i > 0)
+				{
+					xx += 2;
+					if (group == 3) xx += 4;
+				}
+				if (args.X < xx || args.X > (xx + 7) || index < 0) continue;
+
+				_city.ChangeSpecialist(index);
+				Update();
+				return true;
+			}
+
+			return false;
+		}
+		
+		public override bool KeyDown(KeyboardEventArgs args)
+		{
+			if (args.KeyChar == 0) return false;
+
+			if (_city.Size < MinCitizenSize)
+			{
+				CitySizeToSmall(this, null);
+				return true;
+			}
+
+			if (args.KeyChar >= '1' && args.KeyChar <= '9')
+			{
+				int index = args.KeyChar - '1';
+				_city.ChangeSpecialist(index);
+				Update();
+				return true;
 			}
 			return false;
 		}
 
+
+		private void CitySizeToSmall(object sender, EventArgs args)
+		{
+			// CW: dialog position is not as in original game, but easier to implement and results in same effect
+			GameTask.Enqueue(Message.General(
+				"A city must have at least five",
+				"population units to support",
+				"taxmen or scientists."));
+		}
+
 		public void Update()
 		{
-            HeaderUpdate?.Invoke(this, null);
-            _update = true;
+			HeaderUpdate?.Invoke(this, null);
+			_update = true;
 		}
 
 		public void Close()
