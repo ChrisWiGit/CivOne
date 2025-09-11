@@ -6,6 +6,8 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Add help context with alt+h to city production menu items.
+  * Fixes NPE if alt+h is pressed in production menu.
 * Feature: While showing the intro screen (credits) the first letter of each menu entry can be used as a hotkey to immediately execute the corresponding menu item. Like in the original game. Issue #1.
   * s for Start a New Game
   * l for Load a Saved Game

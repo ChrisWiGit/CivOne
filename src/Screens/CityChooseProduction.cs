@@ -147,7 +147,8 @@ namespace CivOne.Screens
 						{
 							menu.Items.Add(item, i++)
 								.OnSelect(ProductionChoice)
-								.OnContext(ProductionContext);
+								.OnContext(ProductionContext)
+								.OnHelp(ProductionContext);
 						}
 						menu.MenuWidth += 10;
 						menu.MissClick += MenuCancel;
