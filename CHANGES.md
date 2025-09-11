@@ -6,6 +6,13 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Added hotkey 's' to sell buildings in city view.  
+  * Press 's' to start building selection.
+  * Use Up/Down arrow keys to cycle through buildings.
+  * Press Space/Enter to sell the selected building.
+  * Press 's' or ESC to close building selection.
+  * If a building was already sold this turn, a message dialog is shown and no building can be sold again this turn. This is not exactly like in the original game, but more user friendly.
+  The original game just exits the city view without any message.
 * Feature: Added hotkey 'f' and 's' to set fortified or sentry status for units in city view.  
 * Feature: Added hotkeys to CityManager
   * 1-9 to cycle specialists tax, science

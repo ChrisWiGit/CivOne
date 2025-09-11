@@ -17,6 +17,8 @@ using CivOne.Screens.Dialogs;
 using CivOne.Graphics.Sprites;
 using CivOne.Wonders;
 using CivOne.IO;
+using CivOne.Enums;
+using CivOne.Tasks;
 
 namespace CivOne.Screens.CityManagerPanels
 {
@@ -24,12 +26,14 @@ namespace CivOne.Screens.CityManagerPanels
 	{
 		private readonly City _city;
 		private IProduction[] _improvements;
-		
+
 		private bool _update = true;
-		
+
 		public event EventHandler BuildingUpdate;
 
 		private int _page = 0;
+
+		private int _selectedBuilding = -1;
 
 		private void DrawWonder(IWonder wonder, int offset)
 		{
@@ -39,7 +43,7 @@ namespace CivOne.Screens.CityManagerPanels
 				this.AddLayer(wonder.SmallIcon.Crop(0, Math.Abs(yy), wonder.SmallIcon.Width(), wonder.SmallIcon.Height() + yy), xx, 0);
 			else
 				this.AddLayer(wonder.SmallIcon, xx, yy);
-			
+
 			string name = wonder.Name;
 			while (Resources.GetTextSize(1, name).Width > 62)
 			{
@@ -76,33 +80,39 @@ namespace CivOne.Screens.CityManagerPanels
 					yield return building;
 			}
 		}
-		
+
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_update)
+			if (!_update)
 			{
-				this.Tile(Pattern.PanelBlue);
+				return true;
+			}
+			this.Tile(Pattern.PanelBlue);
 
-				for (int i = (_page * 14); i < _improvements.Length && i < ((_page + 1) * 14); i++)
+			for (int i = _page * 14; i < _improvements.Length && i < ((_page + 1) * 14); i++)
+			{
+				if (_improvements[i] is IWonder)
 				{
-					if (_improvements[i] is IWonder)
-					{
-						DrawWonder((_improvements[i] as IWonder), i % 14);
-						continue;
-					}
-					DrawBuilding((_improvements[i] as IBuilding), i % 14);
+					DrawWonder(_improvements[i] as IWonder, i % 14);
 					continue;
 				}
 
-				if (_improvements.Length > 14)
+				if (_selectedBuilding != i || (_selectedBuilding == i && (gameTick % 4) < 2))
 				{
-					DrawButton("More", 9, 1, 76, 87, 29);
+					DrawBuilding(_improvements[i] as IBuilding, i % 14);
 				}
-
-				this.DrawRectangle(colour: 1);
-				
-				_update = false;
+				continue;
 			}
+
+			if (_improvements.Length > 14)
+			{
+				DrawButton("More", 9, 1, 76, 87, 29);
+			}
+
+			this.DrawRectangle(colour: 1);
+
+			_update = _selectedBuilding != -1;
+
 			return true;
 		}
 
@@ -111,9 +121,13 @@ namespace CivOne.Screens.CityManagerPanels
 			_city.SellBuilding((sender as ConfirmSell).Building);
 			_page = 0;
 			_improvements = GetImprovements.ToArray();
+
+			_cityManager.CloseActiveScreen();
+			_selectedBuilding = -1;
+
 			_update = true;
-			if (BuildingUpdate != null)
-				BuildingUpdate(this, null);
+
+			BuildingUpdate?.Invoke(this, null);
 		}
 
 		public override bool MouseDown(ScreenEventArgs args)
@@ -125,9 +139,8 @@ namespace CivOne.Screens.CityManagerPanels
 				{
 					if (args.Y >= yy && args.Y < yy + 8 && _improvements[i] is IBuilding)
 					{
-						ConfirmSell confirmSell = new ConfirmSell(_improvements[i] as IBuilding);
-						confirmSell.Sell += SellBuilding;
-						Common.AddScreen(confirmSell);
+						ShowSellConfirmation(i);
+
 						return true;
 					}
 					yy += 6;
@@ -144,16 +157,109 @@ namespace CivOne.Screens.CityManagerPanels
 			return false;
 		}
 
+		protected static void ShowBuildAlreadySoldDialog()
+		{
+			// CW: Not like in original game but made more user friendly.
+			GameTask.Enqueue(Message.General(
+				"You have to wait until next turn",
+				"to sell another building."));
+		}
+		
+		protected int FirstBuildingIndex => Array.FindIndex(_improvements, x => x is IBuilding);
+		protected int BuildingsCount => _improvements.Count(x => x is IBuilding);
+
+		public override bool KeyDown(KeyboardEventArgs args)
+		{
+			if (args.KeyChar == 'S')
+			{
+				if (_improvements.Length == 0) return true;
+
+				_update = true;
+
+				if (_selectedBuilding != -1)
+				{
+					_cityManager.CloseActiveScreen();
+					_selectedBuilding = -1;
+					_update = true;
+					return true;
+				}
+
+				if (_city.BuildingSold)
+				{
+					ShowBuildAlreadySoldDialog();
+
+					return true;
+				}
+
+				_cityManager.SetActiveScreen(this);
+				_selectedBuilding = FirstBuildingIndex;
+				_update = true;
+				return true;
+			}
+
+			if (_selectedBuilding == -1) return false;
+
+			switch (args.Key)
+			{
+				case Key.Up:
+					_selectedBuilding--;
+					if (_selectedBuilding < FirstBuildingIndex)
+					{
+						_selectedBuilding = FirstBuildingIndex + BuildingsCount - 1;
+					}
+					_update = true;
+					return true;
+				case Key.Down:
+					_selectedBuilding++;
+					if (_selectedBuilding >= FirstBuildingIndex + BuildingsCount)
+					{
+						_selectedBuilding = FirstBuildingIndex;
+					}
+					_update = true;
+					return true;
+				case Key.Escape:
+					_cityManager.CloseActiveScreen();
+					_selectedBuilding = -1;
+					_update = true;
+					return true;
+				case Key.Enter:
+				case Key.Space:
+					if (_improvements[_selectedBuilding] is IBuilding)
+					{
+						ShowSellConfirmation(_selectedBuilding);
+					}
+					return true;
+			}
+
+
+			return base.KeyDown(args);
+		}
+
+		protected void ShowSellConfirmation(int buildingIndex)
+		{
+			if (_improvements[buildingIndex] is not IBuilding)
+			{
+				return;
+			}
+
+			ConfirmSell confirmSell = new(_improvements[buildingIndex] as IBuilding);
+			confirmSell.Sell += SellBuilding;
+			Common.AddScreen(confirmSell);
+		}
+
 		public void Resize(int width)
 		{
 			Bitmap = new Bytemap(width, 97);
 			_update = true;
 		}
 
-		public CityBuildings(City city) : base(108, 97)
+		public CityBuildings(City city, ICityManager cityManager) : base(108, 97)
 		{
 			_city = city;
+			_cityManager = cityManager;
 			_improvements = GetImprovements.ToArray();
 		}
+		
+		private readonly ICityManager _cityManager;
 	}
 }

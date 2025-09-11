@@ -228,7 +228,7 @@ namespace CivOne.Screens
 			_subScreens.Add(_cityResources = new CityResources(_city));
 			_subScreens.Add(_cityUnits = new CityUnits(_city));
 			_subScreens.Add(_cityMap = new CityMap(_city));
-			_subScreens.Add(_cityBuildings = new CityBuildings(_city));
+			_subScreens.Add(_cityBuildings = new CityBuildings(_city, this));
 			_subScreens.Add(_cityFoodStorage = new CityFoodStorage(_city));
 			_subScreens.Add(_cityInfo = new CityInfo(_city, this));
 			_subScreens.Add(_cityProduction = new CityProduction(_city, viewCity));
