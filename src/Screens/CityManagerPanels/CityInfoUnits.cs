@@ -183,6 +183,8 @@ namespace CivOne.Screens.CityManagerPanels
 				return true;
 			}
 
+			if (_selectedUnit == -1) return false;
+
 			// up,down, left, right
 			switch (args.Key)
 			{
