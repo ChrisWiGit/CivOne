@@ -6,6 +6,7 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Added hotkey 'f' and 's' to set fortified or sentry status for units in city view.  
 * Feature: Added hotkeys to CityManager
   * 1-9 to cycle specialists tax, science
   * hotkey 'a' to select units in city. Use arrow keys to cycle through units. Use space/enter to select unit and remove fortified/sentry status. ESC/'a' to close unit selection.

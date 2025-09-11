@@ -106,6 +106,16 @@ namespace CivOne.Screens.CityManagerPanels
 			_update = true;
 		}
 
+		private void SetUnitStatus(int index, bool sentry, bool fortify)
+		{
+			if (index < 0) return;
+
+			Units[index].Sentry = sentry;
+			Units[index].Fortify = fortify;
+
+			_update = true;
+		}
+
 		int _selectedUnit = -1;
 
 		private void SelectUp()
@@ -182,10 +192,23 @@ namespace CivOne.Screens.CityManagerPanels
 				case Key.Right: SelectRight(); return true;
 			}
 
+			if (args.KeyChar == 'F') 
+			{
+				SetUnitStatus(_selectedUnit, false, fortify: true);
+
+				return true;
+			}
+			
+			if (args.KeyChar == 'S')
+			{
+				SetUnitStatus(_selectedUnit, sentry: true, false);
+
+				return true;
+			}
+
 			// enter, space
 			if (args.Key == Key.Enter || args.Key == Key.Space)
 			{
-				_update = true;
 				ActivateUnit(_selectedUnit);
 
 				return true;
