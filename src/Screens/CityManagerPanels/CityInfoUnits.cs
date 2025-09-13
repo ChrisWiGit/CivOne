@@ -69,6 +69,17 @@ namespace CivOne.Screens.CityManagerPanels
 				this.DrawText(homeCity, 1, 5, position.X, position.Y + 16);
 			}
 
+			const int FONT_HEIGHT = 6;
+			Point tradeCityPosition = new(3, Bitmap.Height - (_city.TradingCities.Length * FONT_HEIGHT) - 1);
+			for (int i = 0; i < _city.TradingCities.Length; i++)
+			{
+				City city = _city.TradingCities[i];
+
+				// TODO: CW: Calculate real trading value
+				int trading = 0;
+				this.DrawText($"{city.Name}:+{trading}}}", 1, 10, tradeCityPosition.X, tradeCityPosition.Y + (i * FONT_HEIGHT));
+			}
+
 			_update = _selectedUnit != -1;
 
 			return true;

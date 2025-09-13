@@ -47,18 +47,17 @@ Currently, in CivOne, the handling of units in cities is done in the following p
 * `Extensions.cs::GetCityData()` - This is where the number of units in a city is determined.
 * `Extensions.cs::GetUnitData()` and `FilterUnits()` - This is where the number of units in a city is determined and filtered, by only counting the units that are not fortified in a city and do not have this city as their home.
 
-
 ### City View
 
 Following todo's are to be implemented in the city view:
 
 * Auto Build not implemented
-* Hotkey a selects the first unit in the city.
+* [x] Hotkey a selects the first unit in the city.
   * Left, Right, Up, Down keys cycle through the units in the city.
   * Space/Enter selects the unit and removes sentry or fortified status.
   * Units cannot be sentried or fortified in the city view.
   * ESC closes unit selection.
-* Hotkey s selects city buildings
+* [x] Hotkey s selects city buildings
   * Up, Down keys cycle through the buildings in the city.
   * Space/Enter selects the building to be sold.
   * ESC closes building selection and city view.
@@ -66,7 +65,79 @@ Following todo's are to be implemented in the city view:
   * Up, Down, Left, Right keys cycle through the city tiles.
   * Space/Enter selects the tile to be removed or worked.
   * ESC closes tile selection.
-* Hotkey 1-9 cycles through the specialists in the city.
+* [x] Hotkey 1-9 cycles through the specialists in the city.
   * Hotkey changes the specialist entertainer to be changed to tax and science and back to entertainer.
   * What about > 9?
 * Hotkey shift+a sets production to auto build.
+* On CityView Info Tile (see manual page 75)
+  * Bottom row contains tiles of pollution indicators
+  * Traderoutes to city with trade values
+    * City name: 3 (up/down arrow symbol)
+* [ ] Building View
+  * More than 14 buildings shows More Button
+
+## Trading Cities
+
+See here [Caravan (Civ1)](https://civilization.fandom.com/wiki/Caravan_(Civ1))
+
+ChatGpt revised:
+
+### Caravan Actions (short version for code)
+
+* **Wonder help:**
+
+  * If caravan enters a domestic city building a wonder → add **+50 shields**. Caravan is consumed.
+
+* **Trade route creation:**
+
+  * **Foreign city:** always create a trade route.
+  * **Domestic city ≥10 squares away:** player chooses to create route or move on.
+
+* **Initial windfall (cash + research):**
+
+```text
+base = (distance + 10) * (trade1 + trade2) / 24
+```
+
+* Halve (`*0.5`) if:
+  * cities on same continent
+  * OR same civilization
+* Reduce to 2/3 (`*2/3`) if:
+
+  * player has railroads
+  * OR player has flight
+* If all 4 conditions true → windfall = base \* 1/9.
+
+### Permanent trade bonus (home city trade arrows)
+
+```text
+bonus = (trade1 + trade2 + 4) / 8
+```
+
+* Halve (`*0.5`) if same civilization.
+* Distance and other factors do **not** matter.
+
+### Limits & rules
+
+* City keeps only **3 most profitable** routes; others give only initial windfall.
+* Trade is **one-way**; target city must send its own caravan for reverse route.
+* Each caravan counts toward **127-unit limit**.
+* Caravan disappears after building a wonder or creating a trade route.
+
+### Trading Routes todos
+
+* In [City View](./src/Screens/CityManagerPanels/CityInfoUnits.cs) shall show trading cities with trade values.
+
+## DrawText Symbols
+
+| Symbol | Meaning         |
+|--------|-----------------|
+| #      | Stick Figure    |
+| $      | Coin            |
+| ^      | Check Mark      |
+| {      | Wheat Stalk     |
+| }      | Trade Arrows    |
+| \      | Diamond         |
+| \|     | Shield          |
+| ~      | Light Bulb      |
+| _      | Sun             |

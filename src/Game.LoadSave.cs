@@ -242,6 +242,9 @@ namespace CivOne
 				}
 
 				cityList.Add(cityData.Id, city);
+
+				const byte NO_CITY = 0xFF;
+				city.SetTradingCitiesIndexes([.. cityData.TradingCities.Select(index => (int)index).Where(index => index != NO_CITY)]);
 			}
 
             // TODO fire-eggs: wrong when playing with fewer than 7?

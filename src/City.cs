@@ -1409,6 +1409,42 @@ namespace CivOne
 			}
 		}
 
+		private int[] tradingCities;
+		internal void SetTradingCitiesIndexes(int[] tradingCities)
+		{
+			// only keep the last 3 trading cities
+			this.tradingCities = [.. tradingCities.Skip(Math.Max(0, tradingCities.Length - 3))];
+		}
+
+		public City[] TradingCities {
+			get
+			{
+				return [.. tradingCities.Select(index => Game.Instance.Cities[index])];
+			}
+		}
+
+		int IndexOfCity(City city)
+		{
+			for (int i = 0; i < Game.Instance.Cities.Count; i++)
+			{
+				if (Game.Instance.Cities[i] == city) return i;
+			}
+			return -1;
+		}
+
+		public void AddTradingCity(City city)
+		{
+			if (city == null || city == this || TradingCities.Contains(city))
+			{
+				return;
+			}
+
+			List<City> cities = [.. TradingCities];
+			cities.Add(city);
+			SetTradingCitiesIndexes([.. cities.Select(c => IndexOfCity(c)).Where(i => i >= 0)]);
+		}
+
+
 		internal City(byte owner)
 		{
 			Owner = owner;

@@ -6,6 +6,12 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Added Trading cities
+  * Up to 3 Trading cities can be established per city.
+  * Trading cities are stored and loaded from save files.
+  * Cities are shown in City View (City Info Units panel).
+  * Still missing calculation of trade value and adding gold and research to the civilization.
+  * See [Trading Cities](REMARKS.md#trading-cities) for more details.
 * Feature: Added hotkey 's' to sell buildings in city view.  
   * Press 's' to start building selection.
   * Use Up/Down arrow keys to cycle through buildings.

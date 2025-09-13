@@ -61,7 +61,9 @@ namespace CivOne.Screens.Dialogs
 			};
 
 			menu.Items.Add("Keep moving").OnSelect(KeepMoving);
-			menu.Items.Add("Establish trade route").OnSelect(EstablishTradeRoute).SetEnabled(AllowEstablishTradeRoute(_unit,_city));
+			menu.Items.Add("Establish trade route")
+				.SetEnabled(AllowEstablishTradeRoute(_unit,_city))
+				.OnSelect(EstablishTradeRoute);
 
 			if (_city.IsBuildingWonder)
 			{
