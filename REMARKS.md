@@ -141,3 +141,24 @@ bonus = (trade1 + trade2 + 4) / 8
 | \|     | Shield          |
 | ~      | Light Bulb      |
 | _      | Sun             |
+
+## Colors
+
+| Code | Color Name      | Description         |
+|------|----------------|---------------------|
+| 1    | Blue           | Standard blue       |
+| 2    | Green          | Standard green      |
+| 3    | Light Green    | Lime                |
+| 4    | Red            | Standard red        |
+| 5    | Black          | Standard black      |
+| 6    | Brown          | Standard brown      |
+| 7    | Light Brown    | Light brown         |
+| 8    | Dark Brown     | Dark brown          |
+| 9    | None           | No color            |
+| 10   | Light Green    | Light green         |
+| 11   | Light Blue     | Light blue          |
+| 12   | Light Red      | Light red           |
+| 13   | Pink           | Pink                |
+| 14   | Light Yellow   | Light yellow        |
+| 15   | White          | White               |
+| 16   | White          | White               |

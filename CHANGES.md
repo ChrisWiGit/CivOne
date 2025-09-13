@@ -6,6 +6,13 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Added hotkey 'p' to select tiles in city view map.
+  * Press 'p' to start tile selection.
+  * Use Up/Down/Left/Right arrow keys to move the selection cursor.
+  * Press Space/Enter to add or remove the resource.
+  * Press 'p' or ESC to close tile selection.
+  * Only visible tiles can be selected.
+  * Selection wraps around the map.
 * Feature: Added Trading cities
   * Up to 3 Trading cities can be established per city.
   * Trading cities are stored and loaded from save files.
