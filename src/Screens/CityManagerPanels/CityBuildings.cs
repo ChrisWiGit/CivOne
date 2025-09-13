@@ -108,7 +108,7 @@ namespace CivOne.Screens.CityManagerPanels
 
 			if (_improvements.Length > MAX_BUILDINGS)
 			{
-				DrawButton("More", 9, 1, 76, 87, 29);
+				DrawButton("More", 9, 1, Bitmap.Width-31, 87, 29);
 			}
 
 			this.DrawRectangle(colour: 1);
