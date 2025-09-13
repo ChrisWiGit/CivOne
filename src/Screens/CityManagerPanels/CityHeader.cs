@@ -98,14 +98,14 @@ namespace CivOne.Screens.CityManagerPanels
 		{
 			if (args.KeyChar == 0) return false;
 
-			if (_city.Size < MinCitizenSize)
-			{
-				CitySizeToSmall(this, null);
-				return true;
-			}
-
 			if (args.KeyChar >= '1' && args.KeyChar <= '9')
 			{
+				if (_city.Size < MinCitizenSize)
+				{
+					CitySizeToSmall(this, null);
+					return true;
+				}
+
 				int index = args.KeyChar - '1';
 				_city.ChangeSpecialist(index);
 				Update();
