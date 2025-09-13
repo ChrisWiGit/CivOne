@@ -35,6 +35,8 @@ namespace CivOne.Screens.CityManagerPanels
 
 		private int _selectedBuilding = -1;
 
+		private readonly int MAX_BUILDINGS = 14;
+
 		private void DrawWonder(IWonder wonder, int offset)
 		{
 			int xx = (offset % 2 == 0) ? 21 : 1;
@@ -89,22 +91,22 @@ namespace CivOne.Screens.CityManagerPanels
 			}
 			this.Tile(Pattern.PanelBlue);
 
-			for (int i = _page * 14; i < _improvements.Length && i < ((_page + 1) * 14); i++)
+			for (int i = _page * MAX_BUILDINGS; i < _improvements.Length && i < ((_page + 1) * MAX_BUILDINGS); i++)
 			{
 				if (_improvements[i] is IWonder)
 				{
-					DrawWonder(_improvements[i] as IWonder, i % 14);
+					DrawWonder(_improvements[i] as IWonder, i % MAX_BUILDINGS);
 					continue;
 				}
 
 				if (_selectedBuilding != i || (_selectedBuilding == i && (gameTick % 4) < 2))
 				{
-					DrawBuilding(_improvements[i] as IBuilding, i % 14);
+					DrawBuilding(_improvements[i] as IBuilding, i % MAX_BUILDINGS);
 				}
 				continue;
 			}
 
-			if (_improvements.Length > 14)
+			if (_improvements.Length > MAX_BUILDINGS)
 			{
 				DrawButton("More", 9, 1, 76, 87, 29);
 			}
@@ -135,7 +137,7 @@ namespace CivOne.Screens.CityManagerPanels
 			if (!_city.BuildingSold && args.X > Width - 11 && args.X < Width - 3)
 			{
 				int yy = 2;
-				for (int i = (_page * 14); i < _improvements.Length && i < ((_page + 1) * 14); i++)
+				for (int i = _page * MAX_BUILDINGS; i < _improvements.Length && i < ((_page + 1) * MAX_BUILDINGS); i++)
 				{
 					if (args.Y >= yy && args.Y < yy + 8 && _improvements[i] is IBuilding)
 					{
@@ -150,7 +152,7 @@ namespace CivOne.Screens.CityManagerPanels
 			if (args.X > 75 && args.X < 105 && args.Y > 86 && args.Y < 96)
 			{
 				_page++;
-				if ((_page * 14) > _improvements.Length) _page = 0;
+				if ((_page * MAX_BUILDINGS) > _improvements.Length) _page = 0;
 				_update = true;
 				return true;
 			}
@@ -192,7 +194,7 @@ namespace CivOne.Screens.CityManagerPanels
 				}
 
 				_cityManager.SetActiveScreen(this);
-				_selectedBuilding = FirstBuildingIndex;
+				_selectedBuilding = FirstBuildingIndex + (_page * MAX_BUILDINGS);
 				_update = true;
 				return true;
 			}
@@ -207,6 +209,8 @@ namespace CivOne.Screens.CityManagerPanels
 					{
 						_selectedBuilding = FirstBuildingIndex + BuildingsCount - 1;
 					}
+					_page = _selectedBuilding / MAX_BUILDINGS;
+					
 					_update = true;
 					return true;
 				case Key.Down:
@@ -215,6 +219,9 @@ namespace CivOne.Screens.CityManagerPanels
 					{
 						_selectedBuilding = FirstBuildingIndex;
 					}
+
+					_page = _selectedBuilding / MAX_BUILDINGS;
+					
 					_update = true;
 					return true;
 				case Key.Escape:
