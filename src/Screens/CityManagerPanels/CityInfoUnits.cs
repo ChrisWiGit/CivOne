@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -54,11 +55,12 @@ namespace CivOne.Screens.CityManagerPanels
 				if (_selectedUnit == i && (gameTick % 4) < 2)
 				{
 					this.AddLayer(Units[i].ToBitmap(), position.X, position.Y);
-				} else if (_selectedUnit != i)
+				}
+				else if (_selectedUnit != i)
 				{
 					this.AddLayer(Units[i].ToBitmap(), position.X, position.Y);
 				}
-					
+
 				string homeCity = "NON.";
 				if (Units[i].Home != null)
 				{
@@ -69,20 +71,28 @@ namespace CivOne.Screens.CityManagerPanels
 				this.DrawText(homeCity, 1, 5, position.X, position.Y + 16);
 			}
 
-			const int FONT_HEIGHT = 6;
-			Point tradeCityPosition = new(3, Bitmap.Height - (_city.TradingCities.Length * FONT_HEIGHT) - 1);
-			for (int i = 0; i < _city.TradingCities.Length; i++)
-			{
-				City city = _city.TradingCities[i];
-
-				// TODO: CW: Calculate real trading value
-				int trading = 0;
-				this.DrawText($"{city.Name}:+{trading}}}", 1, 10, tradeCityPosition.X, tradeCityPosition.Y + (i * FONT_HEIGHT));
-			}
+			DrawTradingCities();
 
 			_update = _selectedUnit != -1;
 
 			return true;
+		}
+
+		private void DrawTradingCities()
+		{
+			const int FONT_HEIGHT = 6;
+			var tradingCities = _city.TradingCitiesValue;
+
+			Point tradeCityPosition = new(3, Bitmap.Height - (tradingCities.Count * FONT_HEIGHT) - 1);
+
+			int pos = 0;
+			foreach (var kv in tradingCities)
+			{
+				City city = kv.Key;
+				int trading = kv.Value;
+				this.DrawText($"{city.Name}:+{trading}}}", 1, 10, tradeCityPosition.X, tradeCityPosition.Y + (pos * FONT_HEIGHT));
+				pos++;
+			}
 		}
 
 		public override bool MouseDown(ScreenEventArgs args)

@@ -6,6 +6,12 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Added trading value calculations and display for trading cities in CityInfoUnits
+  * Trading cities are shown in City View (City Info Units panel).
+  * Trade value is calculated based on the original game formula.
+  * Trade value is shown in the city info units panel.
+  * See [Trading Cities](REMARKS.md#trading-cities) for more details.
+  * !! Still missing that these trading values are added to the total trade of the city. !!
 * Feature: Added hotkey 'p' to select tiles in city view map.
   * Press 'p' to start tile selection.
   * Use Up/Down/Left/Right arrow keys to move the selection cursor.
@@ -17,7 +23,6 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Up to 3 Trading cities can be established per city.
   * Trading cities are stored and loaded from save files.
   * Cities are shown in City View (City Info Units panel).
-  * Still missing calculation of trade value and adding gold and research to the civilization.
   * See [Trading Cities](REMARKS.md#trading-cities) for more details.
 * Feature: Added hotkey 's' to sell buildings in city view.  
   * Press 's' to start building selection.

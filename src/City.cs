@@ -273,6 +273,43 @@ namespace CivOne
 		internal short TradeLuxuries => (short)Math.Round((double)(TradeTotal - TradeTaxes) / (10 - Player.TaxesRate) * Player.LuxuriesRate, MidpointRounding.AwayFromZero);
 		internal short TradeTaxes => (short)Math.Round((double)TradeTotal / 10 * Player.TaxesRate, MidpointRounding.AwayFromZero);
 
+
+		public bool CityOnSameContinent(City city)
+		{
+			if (city == null) return false;
+			return Tile.ContinentId == city.Tile.ContinentId;
+		}
+
+		private int CalculateTradeValue(City city)
+		{
+			// CW: Source Civilization Or Rome on 640k A Day by Johnny L. Wilson et al. page 230
+			int sameContinentPenalty = CityOnSameContinent(city) ? 2 : 1;
+			int trading = (int)Math.Round((city.TradeTotal + this.TradeTotal + 4) / 8.0 / sameContinentPenalty);
+			return trading;
+		}
+
+		/// <summary>
+		/// List of cities this city is trading with and the trade value from each.
+		/// </summary>
+		public Dictionary<City, int> TradingCitiesValue
+		{
+			get
+			{
+				Dictionary<City, int> tradingCitiesValue = [];
+				foreach (City city in TradingCities)
+				{
+					int trading = CalculateTradeValue(city);
+					tradingCitiesValue[city] = trading;
+				}
+				return tradingCitiesValue;
+			}
+		}
+
+		/// <summary>
+		/// Sum of trade values from all (up to 3) trading cities.
+		/// </summary>
+		public int TradingCitiesSumValue => TradingCities.Sum(CalculateTradeValue);
+
 		/// <summary>
 		/// Amount of corruption, taking government, buildings, and distance
 		/// to capital into account.
