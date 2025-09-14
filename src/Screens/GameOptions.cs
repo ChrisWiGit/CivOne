@@ -16,10 +16,11 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens
 {
+	[ScreenResizeable]
 	internal class GameOptions : BaseScreen
 	{
-		private bool _update = true;
-		
+		private Menu _menu;
+
 		private void MenuCancel(object sender, EventArgs args)
 		{
 			Destroy();
@@ -76,52 +77,69 @@ namespace CivOne.Screens
 		private void Update()
 		{
 			CloseMenus();
-			_update = true;
+			_menu = null;
+			Refresh();
 		}
 
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_update)
+			if (!RefreshNeeded())
 			{
-				_update = false;
-
-				Picture menuGfx = new Picture(103, 79)
-					.Tile(Pattern.PanelGrey)
-					.DrawRectangle3D()
-					.DrawText("Options:", 0, 15, 4, 4)
-					.As<Picture>();
-
-				IBitmap menuBackground = menuGfx[2, 11, 100, 64]
-					.ColourReplace((7, 11), (22, 3));
-
-				this.AddLayer(menuGfx, 25, 17);
-
-				Menu menu = new Menu(Palette, menuBackground)
-				{
-					X = 27,
-					Y = 28,
-					MenuWidth = 99,
-					ActiveColour = 11,
-					TextColour = 5,
-					DisabledColour = 3,
-					FontId = 0,
-					Indent = 2
-				};
-				menu.MissClick += MenuCancel;
-				menu.Cancel += MenuCancel;
-
-				menu.Items.Add($"{(Game.InstantAdvice ? '^' : ' ')}Instant Advice").OnSelect(MenuInstantAdvice);
-				menu.Items.Add($"{(Game.AutoSave ? '^' : ' ')}AutoSave").SetEnabled(Common.AllowSaveGame).OnSelect(MenuAutoSave);
-				menu.Items.Add($"{(Game.EndOfTurn ? '^' : ' ')}End of Turn").OnSelect(MenuEndOfTurn);
-				menu.Items.Add($"{(Game.Animations ? '^' : ' ')}Animations").OnSelect(MenuAnimations);
-				menu.Items.Add($"{(Game.Sound ? '^' : ' ')}Sound").OnSelect(MenuSound);
-				menu.Items.Add($"{(Game.EnemyMoves ? '^' : ' ')}Enemy Moves").OnSelect(MenuEnemyMoves);
-				menu.Items.Add($"{(Game.CivilopediaText ? '^' : ' ')}Civilopedia Text").OnSelect(MenuCivilopediaText);
-				menu.Items.Add($"{(Game.Palace ? '^' : ' ')}Palace").OnSelect(MenuPalace);
-
-				AddMenu(menu);
+				return false;
 			}
+
+			int menuBoxWidth = 103;
+			int menuBoxHeight = 79;
+
+			Picture menuGfx = new Picture(103, 79)
+				.Tile(Pattern.PanelGrey)
+				.DrawRectangle3D()
+				.DrawText("Options:", 0, 15, 4, 4)
+				.As<Picture>();
+
+			IBitmap menuBackground = menuGfx[2, 11, menuBoxWidth, menuBoxHeight]
+				.ColourReplace((7, 11), (22, 3));
+
+			this.FillRectangle(24, 16, menuBoxWidth + 2, menuBoxHeight + 2, colour: 5); // produces black border, +2 because of round errors when resizing
+			this.AddLayer(menuGfx, 25, 17);
+
+			CreateMenu(menuBackground);
+
 			return true;
+		}
+
+		private void CreateMenu(IBitmap menuBackground)
+		{
+			if (_menu != null)
+			{
+				// The menu does not have to be recreated if it already exists
+				// Otherwise Selection is lost when resizing the screen
+				return;
+			}
+			_menu = new Menu(Palette, menuBackground)
+			{
+				X = 27,
+				Y = 28,
+				MenuWidth = 99,
+				ActiveColour = 11,
+				TextColour = 5,
+				DisabledColour = 3,
+				FontId = 0,
+				Indent = 2
+			};
+			_menu.MissClick += MenuCancel;
+			_menu.Cancel += MenuCancel;
+
+			_menu.Items.Add($"{(Game.InstantAdvice ? '^' : ' ')}Instant Advice").OnSelect(MenuInstantAdvice);
+			_menu.Items.Add($"{(Game.AutoSave ? '^' : ' ')}AutoSave").SetEnabled(Common.AllowSaveGame).OnSelect(MenuAutoSave);
+			_menu.Items.Add($"{(Game.EndOfTurn ? '^' : ' ')}End of Turn").OnSelect(MenuEndOfTurn);
+			_menu.Items.Add($"{(Game.Animations ? '^' : ' ')}Animations").OnSelect(MenuAnimations);
+			_menu.Items.Add($"{(Game.Sound ? '^' : ' ')}Sound").OnSelect(MenuSound);
+			_menu.Items.Add($"{(Game.EnemyMoves ? '^' : ' ')}Enemy Moves").OnSelect(MenuEnemyMoves);
+			_menu.Items.Add($"{(Game.CivilopediaText ? '^' : ' ')}Civilopedia Text").OnSelect(MenuCivilopediaText);
+			_menu.Items.Add($"{(Game.Palace ? '^' : ' ')}Palace").OnSelect(MenuPalace);
+
+			AddMenu(_menu);
 		}
 
 		public GameOptions() : base(MouseCursor.Pointer)

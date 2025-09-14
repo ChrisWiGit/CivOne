@@ -16,14 +16,13 @@ using CivOne.Graphics.Sprites;
 
 namespace CivOne.Screens.Dialogs
 {
+	[ScreenResizeable]
 	internal abstract class BaseDialog : BaseScreen
 	{
 		private readonly int _left, _top;
 
-		private bool _update = true;
-		
 		protected Picture DialogBox { get; private set; }
-		
+
 		protected Picture[] TextLines { get; private set; }
 
 		protected int TextWidth
@@ -41,7 +40,7 @@ namespace CivOne.Screens.Dialogs
 				return TextLines.Sum(x => x.Height);
 			}
 		}
-		
+
 		protected IBitmap Selection(int left, int top, int width, int height)
 		{
 			return DialogBox[left, top, width, height].ColourReplace((7, 11), (22, 3));
@@ -52,16 +51,19 @@ namespace CivOne.Screens.Dialogs
 			Destroy();
 		}
 
+		/// <summary>
+		/// Override this function to add menus and/or expand the dialog
+		/// </summary>
 		protected virtual void FirstUpdate()
 		{
-			// Override this function to add menus and/or expand the dialog
-		} 
+		}
 
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_update)
+			if (RefreshNeeded())
 			{
-				_update = false;
+				this.Clear();
+
 				this.AddLayer(DialogBox, _left, _top);
 
 				FirstUpdate();
@@ -70,13 +72,13 @@ namespace CivOne.Screens.Dialogs
 			}
 			return false;
 		}
-		
+
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
 			Cancel();
 			return true;
 		}
-		
+
 		public override bool MouseDown(ScreenEventArgs args)
 		{
 			Cancel();
@@ -92,7 +94,7 @@ namespace CivOne.Screens.Dialogs
 			top -= 1;
 			width += 2;
 			height += 2;
-			
+
 			DialogBox = new Picture(width, height)
 				.Tile(Pattern.PanelGrey, 1, 1)
 				.DrawRectangle3D(1, 1, width - 2, height - 2)
@@ -110,7 +112,7 @@ namespace CivOne.Screens.Dialogs
 
 			Initialize(left, top, TextWidth + marginWidth, TextHeight + marginHeight);
 		}
-		
+
 		public BaseDialog(int left, int top, int width, int height) : base(MouseCursor.Pointer)
 		{
 			_left = left;

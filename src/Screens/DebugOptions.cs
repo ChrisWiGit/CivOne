@@ -19,9 +19,10 @@ using System.Collections.Generic;
 
 namespace CivOne.Screens
 {
+	[ScreenResizeable]
 	internal class DebugOptions : BaseScreen
 	{
-		private bool _update = true;
+		private Menu _menu;
 
 		private void MenuCancel(object sender, EventArgs args)
 		{
@@ -145,52 +146,63 @@ namespace CivOne.Screens
 
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_update)
+			if (!RefreshNeeded())
 			{
-				_update = false;
-
-				const int itemHeight = 8 + 1;
-				const int menuWidth = 131;
-				int menuHeight = itemHeight * _menuEntries.Count;
-
-				Picture menuGfx = new Picture(menuWidth, menuHeight)
-					.Tile(Pattern.PanelGrey)
-					.DrawRectangle3D()
-					.DrawText("Debug Options (F12):", 0, 15, 4, 4)
-					.As<Picture>();
-
-				IBitmap menuBackground = menuGfx[2, 11, menuWidth, menuHeight].ColourReplace((7, 11), (22, 3));
-
-				this.AddLayer(menuGfx, 25, 17);
-
-				Menu menu = new(Palette, menuBackground)
-				{
-					X = 27,
-					Y = 28,
-					MenuWidth = 127,
-					ActiveColour = 11,
-					TextColour = 5,
-					DisabledColour = 3,
-					FontId = 0,
-					Indent = 8,
-					RowHeight = 8
-
-				};
-				menu.MissClick += MenuCancel;
-				menu.Cancel += MenuCancel;
-
-				foreach (var entry in _menuEntries)
-				{
-					menu.Items.Add(entry.Text).OnSelect(entry.Handler);
-				}
-
-
-
-				AddMenu(menu);
+				return false;
 			}
+
+			this.Clear();
+
+			int textFontId = 0;
+
+			const int menuBoxWidth = 131;
+			int itemHeight = Resources.GetFontHeight(textFontId);
+			int menuHeight = (itemHeight + 1) * _menuEntries.Count;
+
+			using Picture menuGfx = new(menuBoxWidth, menuHeight);
+			menuGfx
+				.Tile(Pattern.PanelGrey)
+				.DrawRectangle3D()
+				.DrawText("Debug Options (F12):", textFontId, 15, 4, 4);
+
+			using Picture menuBackground = menuGfx[2, 11, menuBoxWidth, menuHeight];
+			menuBackground.ColourReplace((7, 11), (22, 3));
+
+			this.FillRectangle(24, 16, menuBoxWidth + 2, menuHeight + 2, colour: 5); // produces black border, +2 because of round errors when resizing
+			this.AddLayer(menuGfx, 25, 17);
+			CreateMenu(textFontId, menuBoxWidth, itemHeight, menuBackground);
 			return true;
 		}
 
+		private void CreateMenu(int textFontId, int menuBoxWidth, int itemHeight, Picture menuBackground)
+		{
+			if (_menu != null)
+			{
+				return;
+			}
+			_menu = new(Palette, menuBackground)
+			{
+				X = 27,
+				Y = 28,
+				MenuWidth = menuBoxWidth - 4,
+				ActiveColour = 11, // Light blue
+				TextColour = 5, // Black
+				DisabledColour = 3, // Light grey
+				FontId = textFontId,
+				Indent = 8, // Left margin
+				RowHeight = itemHeight
+
+			};
+			_menu.MissClick += MenuCancel;
+			_menu.Cancel += MenuCancel;
+
+			foreach (var entry in _menuEntries)
+			{
+				_menu.Items.Add(entry.Text).OnSelect(entry.Handler);
+			}
+
+			AddMenu(_menu);
+		}
 
 		private record MenuEntry(string Text, Events.MenuItemEventHandler<int> Handler);
 
