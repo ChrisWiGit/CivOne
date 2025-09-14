@@ -22,7 +22,7 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens
 {
-	[Expand]
+	[ScreenResizeable]
 	internal class NewGame : BaseScreen
 	{
 		private ICivilization[] _tribesAvailable;

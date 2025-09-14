@@ -22,7 +22,7 @@ using static CivOne.Enums.GraphicsMode;
 
 namespace CivOne.Screens
 {
-	[Break, Expand]
+	[Break, ScreenResizeable]
 	internal class Setup : BaseScreen
 	{
 		private const int MenuFont = 6;

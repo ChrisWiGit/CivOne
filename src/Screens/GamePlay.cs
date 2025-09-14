@@ -21,7 +21,7 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens
 {
-	[Expand]
+	[ScreenResizeable]
 	internal class GamePlay : BaseScreen
 	{
 		private readonly MenuBar _menuBar;

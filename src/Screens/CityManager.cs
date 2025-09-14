@@ -17,7 +17,7 @@ using System.Drawing;
 
 namespace CivOne.Screens
 {
-    [Expand]
+    [ScreenResizeable]
 	internal class CityManager : BaseScreen, ICityManager
 	{
 		private readonly City _city;
