@@ -134,7 +134,14 @@ namespace CivOne.Screens.CityManagerPanels
 
 		public override bool MouseDown(ScreenEventArgs args)
 		{
-			if (!_city.BuildingSold && args.X > Width - 11 && args.X < Width - 3)
+			if (_city.BuildingSold)
+			{
+				ShowBuildAlreadySoldDialog();
+				return true;
+			}
+
+			// if (args.X > Width - 11 && args.X < Width - 3)
+			if (args.X > Width - Bitmap.Width - 31 && args.X < Width - 3)
 			{
 				int yy = 2;
 				for (int i = _page * MAX_BUILDINGS; i < _improvements.Length && i < ((_page + 1) * MAX_BUILDINGS); i++)
