@@ -18,10 +18,12 @@ namespace CivOne.Screens
 	public abstract partial class BaseScreen : BaseInstance, IScreen
 	{
 		private readonly MouseCursor _cursor;
+
+		protected bool _doRefresh = true;
 		
 		private int CanvasWidth => RuntimeHandler.Instance.CanvasWidth;
 		private int CanvasHeight => RuntimeHandler.Instance.CanvasHeight;
-		private bool CanExpand => Common.HasAttribute<Expand>(this);
+		private bool CanExpand => Common.HasAttribute<ScreenResizeable>(this);
 		private bool SizeChanged => (this.Width() != CanvasWidth || this.Height() != CanvasHeight);
 
 		protected event ResizeEventHandler OnResize;
@@ -42,9 +44,22 @@ namespace CivOne.Screens
 
 		protected abstract bool HasUpdate(uint gameTick);
 
-		private void Resize(int width, int height)
+		public void Refresh() => _doRefresh = true;
+
+		public bool RefreshNeeded()
+		{
+			if (!_doRefresh)
+			{
+				return false;
+			}
+			_doRefresh = false;
+			return true;
+		}
+
+		protected virtual void Resize(int width, int height)
 		{
 			Bitmap = new Bytemap(width, height);
+			Refresh();
 			OnResize?.Invoke(this, new ResizeEventArgs(width, height));
 		}
 

@@ -11,7 +11,21 @@ using System;
 
 namespace CivOne.Screens
 {
-	public class Expand : Attribute
+	/// <summary>
+	/// Indicates that a class that extends BaseScreen receives resize events and can be resized.
+	/// 
+	/// To do so, the class must override the Resize method.
+	/// Example:
+	/// <code>
+	/// protected override void Resize(int width, int height)
+	/// {
+	///     // Your resize code here
+	///    _update = true; // If you have an update flag, set it here
+	///     base.Resize(width, height);
+	/// }
+	/// </code>
+	/// </summary>
+	public class ScreenResizeable : Attribute
 	{
 	}
 }
