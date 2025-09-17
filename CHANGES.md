@@ -10,8 +10,8 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Trading cities are shown in City View (City Info Units panel).
   * Trade value is calculated based on the original game formula.
   * Trade value is shown in the city info units panel.
+  * Trade value is added to the total gold of the player.
   * See [Trading Cities](REMARKS.md#trading-cities) for more details.
-  * !! Still missing that these trading values are added to the total trade of the city. !!
 * Feature: Added hotkey 'p' to select tiles in city view map.
   * Press 'p' to start tile selection.
   * Use Up/Down/Left/Right arrow keys to move the selection cursor.

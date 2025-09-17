@@ -368,11 +368,13 @@ namespace CivOne
 		{
 			get
 			{
-				short taxes = TradeTaxes;
-				if (HasBuilding<MarketPlace>()) taxes += (short)Math.Floor((double)taxes * 0.5);
-				if (HasBuilding<Bank>()) taxes += (short)Math.Floor((double)taxes * 0.5);
-				taxes += (short)(_specialists.Count(c => c == Citizen.Taxman) * 2);
-				return taxes;
+				// CW: For future changes, we use int max out at short.MaxValue
+				int taxes = TradeTaxes;
+				if (HasBuilding<MarketPlace>()) taxes += (int)Math.Floor((double)taxes * 0.5);
+				if (HasBuilding<Bank>()) taxes += (int)Math.Floor((double)taxes * 0.5);
+				taxes += _specialists.Count(c => c == Citizen.Taxman) * 2;
+
+				return (short)Math.Min(short.MaxValue, taxes);
 			}
 		}
 
@@ -584,6 +586,8 @@ namespace CivOne
 
 		private void SetupCoastalFlag()
 		{
+			if (!Game.Started) return;
+
 			bool isCoastal = Map[X, Y].GetBorderTiles().Any(t => t.IsOcean);
 
 			SetStatusFlag(CityStatus.COASTAL, isCoastal);
@@ -591,6 +595,8 @@ namespace CivOne
 
 		private void SetupHydroFlag()
 		{
+			if (!Game.Started) return;
+
 			bool isHydroAvailable = Map[X, Y].GetBorderTiles().Any(t => t is Mountains or River);
 
 			SetStatusFlag(CityStatus.HYDRO_AVAILABLE, isHydroAvailable);
@@ -1202,8 +1208,10 @@ namespace CivOne
 
 			// TODO: Handle luxuries
 			Player.Gold +=  IsInDisorder ? (short)0 : Taxes;
+			Player.Gold += IsInDisorder ? (short)0 : (short)TradingCitiesSumValue;
 			Player.Gold -= TotalMaintenance;
 			Player.Science += Science;
+			
 			BuildingSold = false;
 			GameTask.Enqueue(new ProcessScience(Player));
 
@@ -1456,6 +1464,10 @@ namespace CivOne
 		public City[] TradingCities {
 			get
 			{
+				if (tradingCities == null)
+				{
+					return Array.Empty<City>();
+				}
 				return [.. tradingCities.Select(index => Game.Instance.Cities[index])];
 			}
 		}
