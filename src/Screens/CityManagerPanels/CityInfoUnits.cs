@@ -89,8 +89,14 @@ namespace CivOne.Screens.CityManagerPanels
 			foreach (var kv in tradingCities)
 			{
 				City city = kv.Key;
+				
 				int trading = kv.Value;
-				this.DrawText($"{city.Name}:+{trading}}}", 1, 10, tradeCityPosition.X, tradeCityPosition.Y + (pos * FONT_HEIGHT));
+				string text = $"{city.Name}:+{trading} ";
+				int y = tradeCityPosition.Y + (pos * FONT_HEIGHT);
+				
+				this.DrawText(text, 1, 10, tradeCityPosition.X, y);
+				this.AddLayer(Icons.Taxes, Resources.GetTextSize(1, text).Width-1, y-2);
+
 				pos++;
 			}
 		}

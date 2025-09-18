@@ -11,6 +11,8 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Trade value is calculated based on the original game formula.
   * Trade value is shown in the city info units panel.
   * Trade value is added to the total gold of the player.
+  * Trade value has Gold icon behind the value instead of trade arrows.
+    * Trade arrows is incorrect in original game but the small font (id=1) does not have a gold icon.
   * See [Trading Cities](REMARKS.md#trading-cities) for more details.
 * Feature: Added hotkey 'p' to select tiles in city view map.
   * Press 'p' to start tile selection.

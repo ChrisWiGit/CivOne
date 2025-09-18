@@ -310,6 +310,7 @@ namespace CivOne
 		/// </summary>
 		public int TradingCitiesSumValue => TradingCities.Sum(CalculateTradeValue);
 
+		public int TotalIncome => Taxes + TradingCitiesSumValue;
 		/// <summary>
 		/// Amount of corruption, taking government, buildings, and distance
 		/// to capital into account.
