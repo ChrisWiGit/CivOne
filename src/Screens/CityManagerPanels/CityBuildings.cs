@@ -26,11 +26,12 @@ namespace CivOne.Screens.CityManagerPanels
 {
 	internal class CityBuildings : BaseScreen
 	{
-		IInteractiveRectangle _buildingsArea;
+		IInteractiveButton _moreButton;
+
+		List<Tuple<IInteractiveButton, IBuilding>> _buildingButtons = new();
+
 		private readonly City _city;
 		private IProduction[] _improvements;
-
-		private bool _update = true;
 
 		public event EventHandler BuildingUpdate;
 
@@ -57,7 +58,7 @@ namespace CivOne.Screens.CityManagerPanels
 			this.DrawText(name, 1, 15, 42, 3 + (6 * offset));
 		}
 
-		private void DrawBuilding(IBuilding building, int offset)
+		private void DrawBuilding(IBuilding building, int offset, int currentPage)
 		{
 			int xx = (offset % 2 == 0) ? 21 : 1;
 			int yy = -1 + (6 * offset);
@@ -73,6 +74,10 @@ namespace CivOne.Screens.CityManagerPanels
 			}
 			this.DrawText(name, 1, 15, 42, 3 + (6 * offset))
 				.AddLayer(Icons.SellButton, Width - 10, 2 + (6 * offset));
+
+
+			_buildingButtons.Add(new(InteractiveButtonImpl.Build(this, this,
+				new Rectangle(0, 2 + (6 * offset), Width, Resources.GetFontHeight(1) + 1)), building));
 		}
 
 		private IEnumerable<IProduction> GetImprovements
@@ -88,11 +93,16 @@ namespace CivOne.Screens.CityManagerPanels
 
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (!_update)
+			if (!RefreshNeeded())
 			{
 				return true;
 			}
+			
 			this.Tile(Pattern.PanelBlue);
+
+			_buildingButtons = new();
+
+			int currentPage = _page;
 
 			for (int i = _page * MAX_BUILDINGS; i < _improvements.Length && i < ((_page + 1) * MAX_BUILDINGS); i++)
 			{
@@ -104,19 +114,29 @@ namespace CivOne.Screens.CityManagerPanels
 
 				if (_selectedBuilding != i || (_selectedBuilding == i && (gameTick % 4) < 2))
 				{
-					DrawBuilding(_improvements[i] as IBuilding, i % MAX_BUILDINGS);
+					DrawBuilding(_improvements[i] as IBuilding, i % MAX_BUILDINGS, currentPage);
 				}
 				continue;
 			}
 
 			if (_improvements.Length > MAX_BUILDINGS)
 			{
-				DrawButton("More", 9, 1, Bitmap.Width-31, 87, 29);
+				int buttonHeight = Resources.GetFontHeight(1) + 3;
+				const int buttonWidth = 28;
+				_moreButton = InteractiveButtonImpl.Build(this, this,
+					new Rectangle(
+							Width - buttonWidth - 1,
+							Height - buttonHeight - 1,
+							buttonWidth, buttonHeight));
+				_moreButton.DrawButton("More", 1, 9, 1);
 			}
 
 			this.DrawRectangle(colour: 1);
 
-			_update = _selectedBuilding != -1;
+			if (_selectedBuilding != -1)
+			{
+				Refresh();
+			}
 
 			return true;
 		}
@@ -130,7 +150,7 @@ namespace CivOne.Screens.CityManagerPanels
 			_cityManager.CloseActiveScreen();
 			_selectedBuilding = -1;
 
-			_update = true;
+			Refresh();
 
 			BuildingUpdate?.Invoke(this, null);
 		}
@@ -143,47 +163,37 @@ namespace CivOne.Screens.CityManagerPanels
 				return true;
 			}
 
-			Rectangle buildingsArea = new(0, 0, Width, Height - 11);
+			Rectangle buildingsArea = new(0, 0, Width, Height);
 
-			this.DrawRectangle(buildingsArea, 10);
-			// if (args.X > Width - 11 && args.X < Width - 3)
-			// if (args.X > Width - Bitmap.Width - 31 && args.X < Width - 3)
-			if (buildingsArea.Contains(args.Location))
+			if (!buildingsArea.Contains(args.Location))
 			{
-				int yy = 2;
-				for (int i = _page * MAX_BUILDINGS; i < _improvements.Length && i < ((_page + 1) * MAX_BUILDINGS); i++)
-				{
-					Rectangle buildingArea = new(0, yy-1, Width, yy + 6);
-					this.DrawRectangle(buildingArea, (byte)(1 + i % 16));
-					// if (args.Y >= yy && args.Y < yy + 8 && _improvements[i] is IBuilding)
-					if (buildingArea.Contains(args.Location) && _improvements[i] is IBuilding)
-					{
-						ShowSellConfirmation(i);
-
-						return true;
-					}
-					yy += 6;
-				}
+				return false;
 			}
 
-			// if (args.X > 75 && args.X < 105 && args.Y > 86 && args.Y < 96)
-			int buttonWidth = 30;
-			int buttonHeight = Resources.GetFontHeight(1) + 4;
-			Rectangle buttonArea = new(
-				Width - buttonWidth,
-				Height - buttonHeight,
-				buttonWidth, buttonHeight);
-			IInteractiveRectangle area = 
-				InteractiveRectangleImpl.Build(this, buttonArea, -1, 0);
-			area.DrawRectangle(10);
+			if (_buildingButtons == null && _moreButton == null)
+			{
+				return false;
+			}
 
-			if (area.Contains(args.Location))
+			var hit = _buildingButtons.FirstOrDefault(x => x.Item1.Contains(args.Location));
+			if (hit != null)
+			{
+				ShowSellConfirmation(hit.Item2);
+			}
+
+			if (_moreButton.Contains(args.Location))
 			{
 				_page++;
-				if ((_page * MAX_BUILDINGS) > _improvements.Length) _page = 0;
-				_update = true;
+				if ((_page * MAX_BUILDINGS) > _improvements.Length)
+				{
+					_page = 0;
+				}
+				Refresh();
+
 				return true;
 			}
+
+			// always return true to prevent closing city manager (usability enhancement)
 			return true;
 		}
 
@@ -204,13 +214,13 @@ namespace CivOne.Screens.CityManagerPanels
 			{
 				if (_improvements.Length == 0) return true;
 
-				_update = true;
+				Refresh();
 
 				if (_selectedBuilding != -1)
 				{
 					_cityManager.CloseActiveScreen();
 					_selectedBuilding = -1;
-					_update = true;
+
 					return true;
 				}
 
@@ -223,7 +233,7 @@ namespace CivOne.Screens.CityManagerPanels
 
 				_cityManager.SetActiveScreen(this);
 				_selectedBuilding = FirstBuildingIndex + (_page * MAX_BUILDINGS);
-				_update = true;
+
 				return true;
 			}
 
@@ -238,8 +248,8 @@ namespace CivOne.Screens.CityManagerPanels
 						_selectedBuilding = FirstBuildingIndex + BuildingsCount - 1;
 					}
 					_page = _selectedBuilding / MAX_BUILDINGS;
-					
-					_update = true;
+
+					Refresh();
 					return true;
 				case Key.Down:
 					_selectedBuilding++;
@@ -249,19 +259,21 @@ namespace CivOne.Screens.CityManagerPanels
 					}
 
 					_page = _selectedBuilding / MAX_BUILDINGS;
-					
-					_update = true;
+
+					Refresh();
 					return true;
 				case Key.Escape:
 					_cityManager.CloseActiveScreen();
 					_selectedBuilding = -1;
-					_update = true;
+
+					Refresh();
 					return true;
 				case Key.Enter:
 				case Key.Space:
 					if (_improvements[_selectedBuilding] is IBuilding)
 					{
 						ShowSellConfirmation(_selectedBuilding);
+						Refresh();
 					}
 					return true;
 			}
@@ -277,7 +289,17 @@ namespace CivOne.Screens.CityManagerPanels
 				return;
 			}
 
-			ConfirmSell confirmSell = new(_improvements[buildingIndex] as IBuilding);
+			ShowSellConfirmation(_improvements[buildingIndex] as IBuilding);
+		}
+
+		protected void ShowSellConfirmation(IBuilding building)
+		{
+			if (building == null)
+			{
+				return;
+			}
+
+			ConfirmSell confirmSell = new(building);
 			confirmSell.Sell += SellBuilding;
 			Common.AddScreen(confirmSell);
 		}
@@ -285,7 +307,7 @@ namespace CivOne.Screens.CityManagerPanels
 		public void Resize(int width)
 		{
 			Bitmap = new Bytemap(width, 97);
-			_update = true;
+			Refresh();
 		}
 
 		public CityBuildings(City city, ICityManager cityManager) : base(108, 97)

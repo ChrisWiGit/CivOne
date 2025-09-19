@@ -6,6 +6,8 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Refactor selling city buildings with mouse to allow for extend view mode (in settings) for arbitrary screen sizes.
+  * Using IInteractiveButton to handle button drawing and mouse clicks
 * Feature: Added trading value calculations and display for trading cities in CityInfoUnits
   * Trading cities are shown in City View (City Info Units panel).
   * Trade value is calculated based on the original game formula.
