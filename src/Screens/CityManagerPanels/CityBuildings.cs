@@ -19,11 +19,14 @@ using CivOne.Wonders;
 using CivOne.IO;
 using CivOne.Enums;
 using CivOne.Tasks;
+using System.Drawing;
+using CivOne.Screens.Services;
 
 namespace CivOne.Screens.CityManagerPanels
 {
 	internal class CityBuildings : BaseScreen
 	{
+		IInteractiveRectangle _buildingsArea;
 		private readonly City _city;
 		private IProduction[] _improvements;
 
@@ -140,13 +143,20 @@ namespace CivOne.Screens.CityManagerPanels
 				return true;
 			}
 
+			Rectangle buildingsArea = new(0, 0, Width, Height - 11);
+
+			this.DrawRectangle(buildingsArea, 10);
 			// if (args.X > Width - 11 && args.X < Width - 3)
-			if (args.X > Width - Bitmap.Width - 31 && args.X < Width - 3)
+			// if (args.X > Width - Bitmap.Width - 31 && args.X < Width - 3)
+			if (buildingsArea.Contains(args.Location))
 			{
 				int yy = 2;
 				for (int i = _page * MAX_BUILDINGS; i < _improvements.Length && i < ((_page + 1) * MAX_BUILDINGS); i++)
 				{
-					if (args.Y >= yy && args.Y < yy + 8 && _improvements[i] is IBuilding)
+					Rectangle buildingArea = new(0, yy-1, Width, yy + 6);
+					this.DrawRectangle(buildingArea, (byte)(1 + i % 16));
+					// if (args.Y >= yy && args.Y < yy + 8 && _improvements[i] is IBuilding)
+					if (buildingArea.Contains(args.Location) && _improvements[i] is IBuilding)
 					{
 						ShowSellConfirmation(i);
 
@@ -156,14 +166,25 @@ namespace CivOne.Screens.CityManagerPanels
 				}
 			}
 
-			if (args.X > 75 && args.X < 105 && args.Y > 86 && args.Y < 96)
+			// if (args.X > 75 && args.X < 105 && args.Y > 86 && args.Y < 96)
+			int buttonWidth = 30;
+			int buttonHeight = Resources.GetFontHeight(1) + 4;
+			Rectangle buttonArea = new(
+				Width - buttonWidth,
+				Height - buttonHeight,
+				buttonWidth, buttonHeight);
+			IInteractiveRectangle area = 
+				InteractiveRectangleImpl.Build(this, buttonArea, -1, 0);
+			area.DrawRectangle(10);
+
+			if (area.Contains(args.Location))
 			{
 				_page++;
 				if ((_page * MAX_BUILDINGS) > _improvements.Length) _page = 0;
 				_update = true;
 				return true;
 			}
-			return false;
+			return true;
 		}
 
 		protected static void ShowBuildAlreadySoldDialog()
