@@ -26,7 +26,7 @@ namespace CivOne.Screens.CityManagerPanels
 {
 	internal class CityBuildings : BaseScreen
 	{
-		IInteractiveButton _moreButton;
+		IInteractiveButton _moreButton = InteractiveButtonImpl.Empty;
 
 		List<Tuple<IInteractiveButton, IBuilding>> _buildingButtons = new();
 
@@ -170,7 +170,7 @@ namespace CivOne.Screens.CityManagerPanels
 				return false;
 			}
 
-			if (_buildingButtons == null && _moreButton == null)
+			if (_buildingButtons == null)
 			{
 				return false;
 			}
