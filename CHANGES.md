@@ -6,6 +6,10 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Citizens in city view are drawn tightly packed in big cities (size > 20) to show up to 99 citizens.
+  * Specialists are shown and can be interacted with (click to change specialist status)
+  * Routine for calculating citizen positions refactored to allow use in other places later (e.g.
+  attitude survey screen and top five cities screen)
 * Feature: Added hotkey '1' to '9' and '0' to cycle specialists tax, science from 1 to 10
   * If modifier key Shift is pressed: 11 to 20
   * Ctrl is pressed: 21 to 30
