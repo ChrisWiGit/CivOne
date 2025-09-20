@@ -6,6 +6,15 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Added hotkey '1' to '9' and '0' to cycle specialists tax, science from 1 to 10
+  * If modifier key Shift is pressed: 11 to 20
+  * Ctrl is pressed: 21 to 30
+  * Alt is pressed: 31 to 40
+  * Ctrl + Shift is pressed: 41 to 50
+  * Alt + Shift is pressed: 51 to 60
+  * Alt + Ctrl is pressed: 61 to 70
+  * Alt + Ctrl + Shift is pressed: 71 to 80
+  * Control + Shift + 0 does not work because KeyDown is not called.
 * Refactor selling city buildings with mouse to allow for extend view mode (in settings) for arbitrary screen sizes.
   * Using IInteractiveButton to handle button drawing and mouse clicks
 * Feature: Added trading value calculations and display for trading cities in CityInfoUnits

@@ -93,25 +93,61 @@ namespace CivOne.Screens.CityManagerPanels
 
 			return false;
 		}
-		
+
+		protected int GetSpecialistIndex(KeyboardEventArgs args)
+		{
+			int offset = 0;
+			switch (args.Modifier)
+			{
+				case KeyModifier.Shift:
+					offset += 10;
+					break;
+				case KeyModifier.Control:
+					offset += 20;
+					break;
+				case KeyModifier.Alt:
+					offset += 30;
+					break;
+				case KeyModifier.Control | KeyModifier.Shift:
+					offset += 40;
+					// CW: Control + Shift + 0 does not work because KeyDown is not called.
+					break;
+				case KeyModifier.Alt | KeyModifier.Shift:
+					offset += 50;
+					break;
+				case KeyModifier.Alt | KeyModifier.Control:
+					offset += 60;
+					break;
+				case KeyModifier.Alt | KeyModifier.Control | KeyModifier.Shift:
+					offset += 70;
+					break;
+			}
+
+			if (args.KeyChar >= '0' && args.KeyChar <= '9')
+			{
+				return offset + (args.KeyChar == '0' ? 9 : args.KeyChar - '1');
+			}
+
+			return -1;
+		}
+
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
-			if (args.KeyChar == 0) return false;
-
-			if (args.KeyChar >= '1' && args.KeyChar <= '9')
+			int index = GetSpecialistIndex(args);
+			if (index == -1)
 			{
-				if (_city.Size < MinCitizenSize)
-				{
-					CitySizeToSmall(this, null);
-					return true;
-				}
+				return false;
+			}
 
-				int index = args.KeyChar - '1';
-				_city.ChangeSpecialist(index);
-				Update();
+			if (_city.Size < MinCitizenSize)
+			{
+				CitySizeToSmall(this, null);
 				return true;
 			}
-			return false;
+
+			_city.ChangeSpecialist(index);
+			Update();
+			return true;
 		}
 
 

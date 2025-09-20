@@ -187,12 +187,21 @@ namespace CivOne
 
 		internal static int CitizenGroup(Citizen citizen)
 		{
-			int output = (int)citizen;
-			output -= (output % 2);
-			output /= 2;
-			if (output > 3) output = 3;
-			return output;
+			return citizen switch
+			{
+				Citizen.HappyMale => 0,
+				Citizen.HappyFemale => 0,
+				Citizen.ContentMale => 1,
+				Citizen.ContentFemale => 1,
+				Citizen.UnhappyMale => 2,
+				Citizen.UnhappyFemale => 2,
+				Citizen.Taxman => 3,
+				Citizen.Scientist => 3,
+				Citizen.Entertainer => 3,
+				_ => 3
+			};
 		}
+
 		
 		public static bool InCityRange(int x1, int y1, int x2, int y2) => new Rectangle(x2 - 2, y2 - 2, 5, 5).IntersectsWith(new Rectangle(x1, y1, 1, 1));
 		
