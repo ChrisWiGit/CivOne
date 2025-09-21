@@ -72,30 +72,60 @@ namespace CivOne.Screens.CityManagerPanels
 			}
 
 			DrawTradingCities();
+			DrawPollution();
 
 			_update = _selectedUnit != -1;
 
 			return true;
 		}
+		
+		private void DrawPollution()
+		{
+			int smokeStacks = _city.SmokeStacks;
+			if (smokeStacks <= 0) return;
+
+			Point smokeStackPosition = new( 1, TradingCitiesStartPosition().Y - Icons.SmokeStack.Height() - 3);
+
+			int offset = Icons.SmokeStack.Width() + 1;
+			while (offset > 1 && smokeStacks * offset > Width - Icons.SmokeStack.Width())
+			{
+				offset -= 1;
+			}
+
+			for (int i = 0; i < smokeStacks; i++)
+			{
+				this.AddLayer(Icons.SmokeStack, smokeStackPosition.X, smokeStackPosition.Y);
+				smokeStackPosition.X += offset;
+			}
+		}
+
+		private Point TradingCitiesStartPosition()
+		{
+			int FONT_HEIGHT = Resources.GetFontHeight(1);
+			var tradingCities = _city.TradingCitiesValue;
+
+			return new Point(3, Bitmap.Height - (tradingCities.Count * FONT_HEIGHT) - 1);
+		}
+
 
 		private void DrawTradingCities()
 		{
-			const int FONT_HEIGHT = 6;
+			int FONT_HEIGHT = Resources.GetFontHeight(1);
 			var tradingCities = _city.TradingCitiesValue;
 
-			Point tradeCityPosition = new(3, Bitmap.Height - (tradingCities.Count * FONT_HEIGHT) - 1);
+			Point tradeCityPosition = TradingCitiesStartPosition();
 
 			int pos = 0;
 			foreach (var kv in tradingCities)
 			{
 				City city = kv.Key;
-				
+
 				int trading = kv.Value;
 				string text = $"{city.Name}:+{trading} ";
 				int y = tradeCityPosition.Y + (pos * FONT_HEIGHT);
-				
+
 				this.DrawText(text, 1, 10, tradeCityPosition.X, y);
-				this.AddLayer(Icons.Taxes, Resources.GetTextSize(1, text).Width-1, y-2);
+				this.AddLayer(Icons.Taxes, Resources.GetTextSize(1, text).Width - 1, y - 2);
 
 				pos++;
 			}
@@ -248,6 +278,11 @@ namespace CivOne.Screens.CityManagerPanels
 			_selectedUnit = -1;
 
 			return false;
+		}
+
+		public void Update()
+		{
+			_update = true;
 		}
 
 		internal void Resize(int width)

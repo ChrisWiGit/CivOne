@@ -340,9 +340,10 @@ namespace CivOne.Screens.CityManagerPanels
 		
 		private readonly CityInfoUnits _cityInfoUnits;
 
-        public void Update()
+		public void Update()
 		{
 			_update = true;
+			_cityInfoUnits.Update();
 		}
     }
 }

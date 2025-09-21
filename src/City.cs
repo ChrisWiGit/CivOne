@@ -190,6 +190,7 @@ namespace CivOne
 					break;
 			}
 			if (tile.RailRoad) output = (int)Math.Floor((double)output * 1.5);
+			if (tile.Pollution) output = (int)Math.Ceiling((double)output * 0.5);
 			return output;
 		}
 
@@ -208,6 +209,7 @@ namespace CivOne
 					break;
 			}
 			if (tile.RailRoad) output = (int)Math.Floor((double)output * 1.5);
+			if (tile.Pollution) output = (int)Math.Ceiling((double)output * 0.5);
 			return output;
 		}
 
@@ -261,6 +263,7 @@ namespace CivOne
 					break;
 			}
 			if (output > 0 && HasWonder<Colossus>() && !Game.WonderObsolete<Colossus>()) output += 1;
+			if (tile.Pollution) output = (int)Math.Ceiling((double)output * 0.5);
 			return output;
 		}
 
@@ -398,6 +401,36 @@ namespace CivOne
 		}
 
 		internal short TotalMaintenance => (short)_buildings.Sum(b => b.Maintenance);
+
+		internal int CalculateSmokeStacks()
+		{
+			// CW: Source Civilization Or Rome on 640k A Day by Johnny L. Wilson et al. page 231
+			int industrialPollution = ShieldTotal;
+			if (HasBuilding<RecyclingCenter>()) industrialPollution /= 3;
+			else if (HasBuilding<HydroPlant>()) industrialPollution /= 2;
+			else if (HasBuilding<NuclearPlant>()) industrialPollution /= 2;
+
+			int pollutionMultiplier = 100;
+			if (HasBuilding<MassTransit>()) pollutionMultiplier = 0;
+			else if (Player.HasAdvance<Plastics>()) pollutionMultiplier = 100;
+			else if (Player.HasAdvance<MassProduction>()) pollutionMultiplier = 75;
+			else if (Player.HasAdvance<Automobile>()) pollutionMultiplier = 50;
+			else if (Player.HasAdvance<Industrialization>()) pollutionMultiplier = 25;
+
+			int populationPollution = (int)Math.Round((double)(Size * pollutionMultiplier) / 100);
+			int smokeStacks = industrialPollution + populationPollution;
+			int toleranceSmokeStacks = smokeStacks - 20;
+
+			return Math.Max(0, toleranceSmokeStacks);
+		}
+
+		public int SmokeStacks => CalculateSmokeStacks();
+
+		internal bool GeneratePollution()
+		{
+			// every smoke stack generates 1% chance of a return true
+			return Common.Random.Hit(SmokeStacks);
+		}
 
 		internal byte _status = 0;
 
@@ -1015,9 +1048,26 @@ namespace CivOne
 				RelocateResourceTile(tile);
 			}
 		}
+		
+		internal void ExecutePollution()
+		{
+			if (!GeneratePollution())
+			{
+				return;
+			}
+			List<ITile> cityTiles = [.. CityTiles.Where(t => !t.Pollution && !t.HasCity)];
+
+			int tileToPollute = Common.Random.Next(cityTiles.Count);
+
+			cityTiles[tileToPollute].Pollution = true;
+			
+			GameTask.Enqueue(Message.Newspaper(this, "Pollution in", $"{this.Name}!", "Health problems feared."));
+		}	
 
 		public void NewTurn()
 		{
+			ExecutePollution();
+
 			UpdateResources();
 
 			if (IsInDisorder)
@@ -1026,27 +1076,27 @@ namespace CivOne
 				{
 					// todo: meltdown
 				}
- 				if (WasInDisorder)
+				if (WasInDisorder)
 				{
 					if (Player.IsHuman)
 						GameTask.Insert(Message.Advisor(Advisor.Domestic, true, "Civil Disorder in", $"{Name}! Mayor", "flees in panic."));
 				}
 				else
 				{
-                    // TODO fire-eggs not showing loses side-effects
+					// TODO fire-eggs not showing loses side-effects
 					if (Player.IsHuman) // && !Game.Animations)
 					{
 						Show disorderCity = Show.DisorderCity(this);
- 						GameTask.Insert(disorderCity);
+						GameTask.Insert(disorderCity);
 					}
 
 					Log($"City {Name} belonging to {Player.TribeName} has gone into disorder");
 				}
- 				if (WasInDisorder && Player.Government is Governments.Democracy)
+				if (WasInDisorder && Player.Government is Governments.Democracy)
 				{
 					// todo: Force revolution
 				}
- 				WasInDisorder = true;
+				WasInDisorder = true;
 			}
 			else
 			{
@@ -1054,11 +1104,11 @@ namespace CivOne
 				{
 					if (Player.IsHuman)
 						GameTask.Insert(Message.Advisor(Advisor.Domestic, true, "Order restored", $" in {Name}."));
- 					Log($"City {Name} belonging to {Player.TribeName} is no longer in disorder");
+					Log($"City {Name} belonging to {Player.TribeName} is no longer in disorder");
 				}
- 				WasInDisorder = false;
+				WasInDisorder = false;
 			}
- 			if (UnhappyCitizens == 0 && HappyCitizens >= ContentCitizens && Size >= 3)
+			if (UnhappyCitizens == 0 && HappyCitizens >= ContentCitizens && Size >= 3)
 			{
 				// we love the president day
 				if (Player.Government is Governments.Democracy || Player.Government is Republic)
@@ -1070,12 +1120,12 @@ namespace CivOne
 				}
 				else
 				{
-                    // we love the king day
-                    if (Human == Owner && Settings.Animations != GameOption.Off)
-                        GameTask.Insert(Show.WeLovePresidentDayCity(this));
-                }
-            }
- 			Food += IsInDisorder ? 0 : FoodIncome;
+					// we love the king day
+					if (Human == Owner && Settings.Animations != GameOption.Off)
+						GameTask.Insert(Show.WeLovePresidentDayCity(this));
+				}
+			}
+			Food += IsInDisorder ? 0 : FoodIncome;
 
 			if (Food < 0)
 			{
@@ -1091,7 +1141,7 @@ namespace CivOne
 			{
 				Food -= FoodRequired;
 
-				if (Size == 10 && _buildings.All(b => b.Id != (int) Building.Aqueduct))
+				if (Size == 10 && _buildings.All(b => b.Id != (int)Building.Aqueduct))
 				{
 					GameTask.Enqueue(Message.Advisor(Advisor.Domestic, false, $"{Name} requires an AQUEDUCT", "for further growth."));
 				}
@@ -1116,7 +1166,8 @@ namespace CivOne
 				if (Human == Owner)
 				{
 					Message message = Message.DisbandUnit(this, unit);
-					message.Done += (s, a) => {
+					message.Done += (s, a) =>
+					{
 						Game.DisbandUnit(unit);
 					};
 					GameTask.Enqueue(message);
@@ -1128,7 +1179,7 @@ namespace CivOne
 			}
 			else if (ShieldIncome > 0)
 			{
-				Shields +=  IsInDisorder ? 0 : ShieldIncome;
+				Shields += IsInDisorder ? 0 : ShieldIncome;
 			}
 
 			if (Shields >= (int)CurrentProduction.Price * 10)
@@ -1165,7 +1216,8 @@ namespace CivOne
 					if (CurrentProduction is ISpaceShip)
 					{
 						Message message = Message.Newspaper(this, $"{this.Name} builds", $"{(CurrentProduction as ICivilopedia).Name}.");
-						message.Done += (s, a) => {
+						message.Done += (s, a) =>
+						{
 							// TODO: Add space ship component
 							GameTask.Insert(Show.CityManager(this));
 						};
@@ -1208,11 +1260,11 @@ namespace CivOne
 			}
 
 			// TODO: Handle luxuries
-			Player.Gold +=  IsInDisorder ? (short)0 : Taxes;
+			Player.Gold += IsInDisorder ? (short)0 : Taxes;
 			Player.Gold += IsInDisorder ? (short)0 : (short)TradingCitiesSumValue;
 			Player.Gold -= TotalMaintenance;
 			Player.Science += Science;
-			
+
 			BuildingSold = false;
 			GameTask.Enqueue(new ProcessScience(Player));
 

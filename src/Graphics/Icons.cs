@@ -73,6 +73,26 @@ namespace CivOne.Graphics
 				return _shield;
 			}
 		}
+
+		private static IBitmap _smokeStack;
+		public static IBitmap SmokeStack
+		{
+			get
+			{
+				if (_smokeStack == null)
+				{
+					if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists("SP257"))
+					{
+						_smokeStack = new Picture(Free.Instance.Shield, Common.GetPalette256);
+					}
+					else
+					{
+						_smokeStack = Resources["SP257"][50, 32, 62-50, 46-32].ColourReplace(3, 0);
+					}
+				}
+				return _smokeStack;
+			}
+		}
 		
 		private static IBitmap _shieldLoss;
 		public static IBitmap ShieldLoss

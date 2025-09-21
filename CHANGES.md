@@ -6,6 +6,9 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Implement pollution mechanics and visual representation in city management
+  * [ ] - TODO: Save pollution of tiles in savegame files
+  * [ ] - TODO: Load pollution icon from picture files in MapTiles.cs
 * Fix: Removed duplicate update check in DrawLayer to allow using false as return value in HasUpdate in city screens and still be able to draw the contents.
 * Feature: Citizens in Attitude Survey screen and Top Five Cities screen are drawn tightly packed in big cities (size > 20) to show up to 99 citizens.
   * TopCities screen can be resized in width
