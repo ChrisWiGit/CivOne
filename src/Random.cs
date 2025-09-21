@@ -235,6 +235,11 @@ namespace CivOne
 			return GetStatus((int)_counter - 1);
 		}
 		
+		/// <summary>
+		/// Returns a non-negative random integer that is less than the specified maximum.
+		/// </summary>
+		/// <param name="max">The exclusive upper bound of the random number to be generated. Must be greater than zero.</param>
+		/// <returns>A 32-bit signed integer greater than or equal to zero and less than <paramref name="max"/>.</returns>
 		public int Next(int max)
 		{
 			_inputs.Add(max);
