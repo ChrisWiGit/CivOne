@@ -274,17 +274,17 @@ namespace CivOne
 		internal short TradeTaxes => (short)Math.Round((double)TradeTotal / 10 * Player.TaxesRate, MidpointRounding.AwayFromZero);
 
 
-		public bool CityOnSameContinent(City city)
+		public bool CityOfSameCiv(City city)
 		{
 			if (city == null) return false;
-			return Tile.ContinentId == city.Tile.ContinentId;
+			return city.Player == this.Player;
 		}
 
 		private int CalculateTradeValue(City city)
 		{
 			// CW: Source Civilization Or Rome on 640k A Day by Johnny L. Wilson et al. page 230
-			int sameContinentPenalty = CityOnSameContinent(city) ? 2 : 1;
-			int trading = (int)Math.Round((city.TradeTotal + this.TradeTotal + 4) / 8.0 / sameContinentPenalty);
+			int sameCivPenalty = CityOfSameCiv(city) ? 2 : 1;
+			int trading = (int)Math.Round((city.TradeTotal + this.TradeTotal + 4) / 8.0 / sameCivPenalty);
 			return trading;
 		}
 
