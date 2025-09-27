@@ -15,7 +15,7 @@ using CivOne.Graphics;
 
 namespace CivOne.Screens
 {
-	[Expand]
+	[ScreenResizeable]
 	internal class Input : BaseScreen
 	{
 		public event EventHandler Accept;

@@ -32,7 +32,7 @@ namespace CivOne.Screens.Reports
 
 		private void DrawCityTrade()
 		{
-			int totalIncome = _cities.Where(c => !c.IsInDisorder).Sum(c => c.Taxes);
+			int totalIncome = _cities.Where(c => !c.IsInDisorder).Sum(c => c.TotalIncome);
 			int totalScience = _cities.Where(c => !c.IsInDisorder).Sum(c => c.Science);
 
 			this.DrawText("City Trade", 0, 15, 8, 32);
@@ -43,7 +43,7 @@ namespace CivOne.Screens.Reports
 				City city = _cities[i];
 
 				var Luxuries = city.IsInDisorder ? 0 : city.Luxuries;
-				var Taxes = city.IsInDisorder ?  0 : city.Taxes;
+				var Taxes = city.IsInDisorder ? 0 : city.TotalIncome;
 				var Science = city.IsInDisorder ? 0 : city.Science;
 
 				this.DrawText(city.Name, 0, 5, 16, yy + 1)

@@ -13,6 +13,9 @@ using System.IO;
 using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Enums;
+using CivOne.Services;
+using CivOne.Services.GlobalWarming;
+using CivOne.Services.GlobalWarming.Impl;
 using CivOne.Units;
 using CivOne.Wonders;
 
@@ -242,6 +245,9 @@ namespace CivOne
 				}
 
 				cityList.Add(cityData.Id, city);
+
+				const byte NO_CITY = 0xFF;
+				city.SetTradingCitiesIndexes([.. cityData.TradingCities.Select(index => (int)index).Where(index => index != NO_CITY)]);
 			}
 
             // TODO fire-eggs: wrong when playing with fewer than 7?
@@ -268,6 +274,15 @@ namespace CivOne
 
 			_replayData.AddRange(gameData.ReplayData);
 
+			globalWarmingService = GlobalWarmingServiceFactory.CreateGlobalWarmingService(gameData, _cities.AsReadOnly(), Map.AllTiles());
+			globalWarmingScourgeService = GlobalWarmingServiceFactory.CreateGlobalWarmingScourgeService(
+				globalWarmingService,
+				Map.Tiles,
+				(tile, newTerrainType) => Map.ChangeTileType(tile.X, tile.Y, newTerrainType),
+				DisbandUnit,
+				Map.WIDTH,
+				Map.HEIGHT
+			);
 
 			// Game Settings
 			InstantAdvice = (Settings.InstantAdvice == GameOption.On);

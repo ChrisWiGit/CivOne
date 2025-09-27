@@ -32,10 +32,42 @@ namespace CivOne.Graphics
 
 		public static T As<T>(this IBitmap bitmap) where T : class, IBitmap => (bitmap as T);
 
+		/// <summary>
+		/// Clears the entire bitmap to the specified colour.
+		/// If no colour is specified, clears with transparent (0).
+		/// 
+		/// A handy usage is to clear the current screen off all previous drawings:
+		/// <code>
+		///    this.Clear();
+		/// </code>
+		/// </summary>
+		/// <param name="bitmap">The bitmap to clear</param>
+		/// <param name="colour"></param>
+		/// <returns></returns>
 		public static IBitmap Clear(this IBitmap bitmap, byte colour = 0) => FillRectangle(bitmap, 0, 0, bitmap.Bitmap.Width, bitmap.Bitmap.Height, colour);
 
+		/// <summary>
+		/// Fills a rectangle on the bitmap with the specified colour.
+		/// If you want to fill the entire bitmap, consider using <see cref="Clear(IBitmap, byte)"/> instead.
+		/// </summary>
+		/// <param name="bitmap">The bitmap to fill</param>
+		/// <param name="rectangle">The rectangle to fill</param>
+		/// <param name="colour">The colour to fill the rectangle</param>
+		/// <returns></returns>
 		public static IBitmap FillRectangle(this IBitmap bitmap, Rectangle rectangle, byte colour) => FillRectangle(bitmap, rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height, colour);
 		public static IBitmap FillRectangle(this IBitmap bitmap, Point point, Size size, byte colour) => FillRectangle(bitmap, point.X, point.Y, size.Width, size.Height, colour);
+
+		/// <summary>
+		/// Fills a rectangle on the bitmap with the specified colour.
+		/// If you want to fill the entire bitmap, consider using <see cref="Clear(IBitmap, byte)"/> instead.
+		/// </summary>
+		/// <param name="bitmap">The bitmap to fill</param>
+		/// <param name="left">The left position of the rectangle</param>
+		/// <param name="top">The top position of the rectangle</param>
+		/// <param name="width">The width of the rectangle</param>
+		/// <param name="height">The height of the rectangle</param>
+		/// <param name="colour">The colour to fill the rectangle</param>
+		/// <returns></returns>
 		public static IBitmap FillRectangle(this IBitmap bitmap, int left, int top, int width, int height, byte colour)
 		{
 			bitmap.Bitmap.FillRectangle(left, top, width, height, colour);

@@ -12,12 +12,16 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
+using System.Reflection.Metadata;
 using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.IO;
+using CivOne.Leaders;
 using CivOne.Screens;
+using CivOne.Services;
+using CivOne.Services.GlobalWarming;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -155,9 +159,23 @@ namespace CivOne
 
 		internal IEnumerable<Player> Players => _players;
 
-		public void EndTurn()
+
+		internal IGlobalWarmingService globalWarmingService;
+
+		public IGlobalWarmingService GlobalWarmingService => globalWarmingService;
+		internal IGlobalWarmingScourgeService globalWarmingScourgeService;
+
+		/// <summary>
+		/// End the current player's turn and advance to the next player.
+		/// There are multiple references to this method in various places.
+		/// This method is called several times (2 current round + 1 on next round) 
+		/// and thus events may be triggered multiple times,
+		/// so an "origin" parameter is added to identify the origin of the call.
+		/// </summary> 
+		/// <param name="origin">The origin of the turn end request.</param>
+		public void EndTurn(int origin)
 		{
-			foreach (Player player in _players.Where(x => !(x.Civilization is Barbarian)))
+			foreach (Player player in _players.Where(x => x.Civilization is not Barbarian))
 			{
 				player.HandleExtinction();
 			}
@@ -211,6 +229,11 @@ namespace CivOne
 				conquest.Done += (s, a) => Runtime.Quit();
 			}
 
+			if (origin == 0)
+			{
+				HandleGlobalWarming();
+			}
+
 			foreach (IUnit unit in _units.Where(u => u.Owner == _currentPlayer))
 			{
 				GameTask.Enqueue(Turn.New(unit));
@@ -224,6 +247,18 @@ namespace CivOne
 				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFile.Instance.GetGameText("HELP/HELP1")));
 			else if (Game.InstantAdvice && (Common.TurnToYear(Game.GameTurn) == -3200 || Common.TurnToYear(Game.GameTurn) == -2400))
 				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFile.Instance.GetGameText("HELP/HELP2")));
+		}
+
+		protected void HandleGlobalWarming()
+		{
+			if (!globalWarmingService.IsGlobalWarmingOnNewTurn())
+			{
+				return;
+			}
+			
+			globalWarmingScourgeService.UnleashScourgeOfPollution();
+
+			GameTask.Enqueue(Message.Newspaper(null, "Global temperature", "rises! Icecaps melt.", "Severe Drought."));
 		}
 
 		// store last active player unit to check if a previous player move happened or a game was loaded.

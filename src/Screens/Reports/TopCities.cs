@@ -15,16 +15,19 @@ using CivOne.Wonders;
 
 namespace CivOne.Screens.Reports
 {
-	[Modal]
+	[Modal, ScreenResizeable]
 	internal class TopCities : BaseScreen
 	{
-		private bool _update = true;
-
 		private readonly City[] _cities;
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (!_update) return false;
+			if (!RefreshNeeded())
+			{
+				return false;
+			}
+
+			DrawBackground();
 
 			for (int i = 0; i < _cities.Length; i++)
 			{
@@ -42,20 +45,15 @@ namespace CivOne.Screens.Reports
 
 				this.FillRectangle(xx, yy, ww, hh, colour)
 					.FillRectangle(xx + 1, yy + 1, ww - 2, hh - 2, 3);
-				
+
 				int dx = 42;
-				int group = -1;
-				Citizen[] citizens = city.Citizens.ToArray();
-				for (int j = 0; j < city.Size; j++)
+
+				ICityCitizenLayoutService layoutService = ICityCitizenLayoutService.Create(city);
+				foreach (var info in layoutService.EnumerateCitizens())
 				{
-					dx += 8;
-					if (group != (group = Common.CitizenGroup(citizens[j])) && group > 0 && i > 0)
-					{
-						dx += 2;
-						if (group == 3) dx += 4;
-					}
-					this.AddLayer(Icons.Citizen(citizens[j]), dx, yy + 10);
+					this.AddLayer(Icons.Citizen(info.Citizen), dx + info.X, yy + 10);
 				}
+				dx += layoutService.Width();
 
 				dx += 16;
 				foreach (IWonder wonder in city.Wonders)
@@ -67,7 +65,6 @@ namespace CivOne.Screens.Reports
 				this.DrawText($"{i + 1}. {city.Name} ({owner.Civilization.Name})", 0, 15, 160, yy + 3, TextAlign.Center);
 			}
 
-			_update = false;
 			return true;
 		}
 		
@@ -81,6 +78,12 @@ namespace CivOne.Screens.Reports
 		{
 			Destroy();
 			return true;
+		}
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			Refresh();
 		}
 		
 		public TopCities()
@@ -97,7 +100,12 @@ namespace CivOne.Screens.Reports
 							.ThenBy(c => c.Citizens.Count(x => x == Citizen.UnhappyMale || x == Citizen.UnhappyFemale))
 							.Take(5)
 							.ToArray();
-			
+
+			Refresh();
+		}
+
+		private void DrawBackground()
+		{
 			this.Clear(3)
 				.DrawText("The Top Five Cities in the World", 0, 5, 80, 13)
 				.DrawText("The Top Five Cities in the World", 0, 15, 80, 12);

@@ -73,6 +73,26 @@ namespace CivOne.Graphics
 				return _shield;
 			}
 		}
+
+		private static IBitmap _smokeStack;
+		public static IBitmap SmokeStack
+		{
+			get
+			{
+				if (_smokeStack == null)
+				{
+					if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists("SP257"))
+					{
+						_smokeStack = new Picture(Free.Instance.Shield, Common.GetPalette256);
+					}
+					else
+					{
+						_smokeStack = Resources["SP257"][50, 32, 62-50, 46-32].ColourReplace(3, 0);
+					}
+				}
+				return _smokeStack;
+			}
+		}
 		
 		private static IBitmap _shieldLoss;
 		public static IBitmap ShieldLoss
@@ -359,6 +379,19 @@ namespace CivOne.Graphics
 				_lamp[stage] = Resources["SP257"][128 + (8 * stage), 48, 8, 8];
 			}
 			return _lamp[stage];
+		}
+
+		private static IBitmap[] _sun = new Picture[4];
+		public static IBitmap Sun(int stage)
+		{
+			if (stage < 0 || stage > 3)
+				return null;
+			
+			if (_sun[stage] == null)
+			{
+				_sun[stage] = Resources["SP257"][130 + (8 * stage), 58, 6, 6];
+			}
+			return _sun[stage];
 		}
 
 		private static IBitmap[,] _governmentPortrait = new Picture[7, 4];

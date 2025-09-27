@@ -36,17 +36,10 @@ namespace CivOne.Screens.Reports
 
 		private void DrawCitizens(City city, int x, int y)
 		{
-			int group = -1;
-			Citizen[] citizens = city.Citizens.ToArray();
-			for (int j = 0; j < city.Size; j++)
+			ICityCitizenLayoutService layoutService = ICityCitizenLayoutService.Create(city);
+			foreach (var info in layoutService.EnumerateCitizens())
 			{
-				x += 8;
-				if (group != (group = Common.CitizenGroup(citizens[j])) && group > 0 && j > 0)
-				{
-					x += 2;
-					if (group == 3) x += 4;
-				}
-				this.AddLayer(Icons.Citizen(citizens[j]), x, y - 4);
+				this.AddLayer(Icons.Citizen(info.Citizen), info.X + x, y - 4);
 			}
 		}
 

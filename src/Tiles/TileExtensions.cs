@@ -38,6 +38,7 @@ namespace CivOne.Tiles
         private static bool DrawIrrigation(this ITile tile) => tile.Irrigation && tile.City == null;
         private static bool DrawMine(this ITile tile) => tile.Mine;
         private static bool DrawFortress(this ITile tile) => tile.Fortress && tile.City == null;
+        private static bool DrawPollution(this ITile tile) => tile.Pollution && tile.City == null;
         private static bool DrawHut(this ITile tile) => tile.Hut;
 
 		//public static int DistanceTo(this ITile tile, int x, int y) => Common.DistanceToTile(tile.X, tile.Y, x, y);
@@ -226,6 +227,7 @@ namespace CivOne.Tiles
                 output.AddLayer(MapTile.Irrigation);
 			output.AddLayer(MapTile.TileLayer(tile));
 
+
             // fire-eggs mine drawing goes under coal
             var special = MapTile.TileSpecial(tile);
             if (special != MapTile.Coal)
@@ -253,9 +255,14 @@ namespace CivOne.Tiles
             // fire-eggs mine drawing goes under coal
             if (special == MapTile.Coal)
                 output.AddLayer(MapTile.Coal);
+				
+			if (tile.DrawPollution())
+			{
+				output.AddLayer(MapTile.Pollution);
+			}
 
-			if (tile.DrawFortress()) 
-                output.AddLayer(MapTile.Fortress);
+			if (tile.DrawFortress())
+				output.AddLayer(MapTile.Fortress);
 			if (tile.DrawHut()) 
                 output.AddLayer(MapTile.Hut);
 

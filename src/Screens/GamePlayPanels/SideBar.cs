@@ -18,6 +18,8 @@ using CivOne.Graphics.Sprites;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
+using CivOne.Services;
+using CivOne.Services.GlobalWarming;
 
 namespace CivOne.Screens.GamePlayPanels
 {
@@ -108,13 +110,25 @@ namespace CivOne.Screens.GamePlayPanels
 			}
 			_demographics.DrawText(Game.GameYear, 0, 5, 2, 23, TextAlign.Left);
 
+
 			int width = Resources.GetTextSize(0, Game.GameYear).Width;
 			int stage = (int)Math.Floor(((double)Human.Science / Human.ScienceCost) * 4);
 			_demographics.AddLayer(Icons.Lamp(stage), 4 + width, 22);
 
+			DrawPollutionSun(width);
+
 			_demographics.DrawText($"{Human.Gold}$ {Human.LuxuriesRate}.{Human.TaxesRate}.{Human.ScienceRate}", 0, 5, 2, 31, TextAlign.Left);
 		}
-		
+
+		private void DrawPollutionSun(int width)
+		{
+			if (_globalWarmingService.WarmingIndicator == WarmingIndicator.None)
+			{
+				return;
+			}
+			_demographics.AddLayer(Icons.Sun((int)_globalWarmingService.WarmingIndicator - 1), 4 + 10 + width, 24);
+		}
+
 		private void DrawGameInfo(uint gameTick = 0)
 		{
 			IUnit unit = Game.ActiveUnit;
@@ -248,16 +262,20 @@ namespace CivOne.Screens.GamePlayPanels
 			_update = true;
 		}
 
-		public SideBar(Palette palette) : base(80, 192)
+		private readonly IGlobalWarmingService _globalWarmingService;
+
+		public SideBar(Palette palette, IGlobalWarmingService globalWarmingService) : base(80, 192)
 		{
+			_globalWarmingService = globalWarmingService;
+
 			_miniMap = new Picture(80, 50, palette);
 			_demographics = new Picture(80, 39, palette);
 			_gameInfo = new Picture(80, 103, palette);
-			
+
 			DrawMiniMap();
 			DrawDemographics();
 			DrawGameInfo();
-			
+
 			Palette = palette.Copy();
 			this.AddLayer(_miniMap, 0, 0)
 				.AddLayer(_demographics, 0, 50)

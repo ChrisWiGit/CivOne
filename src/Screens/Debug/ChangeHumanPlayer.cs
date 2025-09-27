@@ -34,7 +34,7 @@ namespace CivOne.Screens.Debug
 			if (_selectedPlayer != Game.HumanPlayer)
 			{
 				Game.HumanPlayer = _selectedPlayer;
-				Game.EndTurn();
+				Game.EndTurn(3);
 			}
 
 			if (Accept != null)

@@ -23,7 +23,7 @@ using static CivOne.Enums.Direction;
 
 namespace CivOne.Screens
 {
-	[Expand]
+	[ScreenResizeable]
 	internal class Nuke : BaseScreen
 	{
 		private const int FRAME_COUNT = 28;

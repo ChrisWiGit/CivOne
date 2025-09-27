@@ -36,6 +36,7 @@ namespace CivOne
 		private bool _pathFinding = false;
 		private bool _riverFastMovement = false;
 		private bool _canalCity = false;
+		private GlobalWarmingFeatureFlag _globalWarmingFeatureFlags = GlobalWarmingFeatureFlag.None;
         private bool _autoSettlers;
 		private CursorType _cursorType = CursorType.Default;
 		private DestroyAnimation _destroyAnimation = DestroyAnimation.Sprites;
@@ -236,16 +237,51 @@ namespace CivOne
 			}
 		}
 
+		[Flags]
+		public enum GlobalWarmingFeatureFlag
+		{
+			None = 0,
+			SeaLevelRise = 1
+		}
+		
+
+		internal GlobalWarmingFeatureFlag GlobalWarmingFeatureFlags
+		{
+			get => _globalWarmingFeatureFlags;
+			set
+			{
+				_globalWarmingFeatureFlags = value;
+				SetSetting("GlobalWarmingFeatureFlags", ((int)value).ToString());
+				Common.ReloadSettings = true;
+			}
+		}
+
+		public bool IsGlobalWarmingFlagSet(GlobalWarmingFeatureFlag flag)
+		{
+			return _globalWarmingFeatureFlags.HasFlag(flag);
+		}
+
+		public void SetGlobalWarmingFlag(GlobalWarmingFeatureFlag flag, bool enabled)
+		{
+			if (enabled)
+				_globalWarmingFeatureFlags |= flag;
+			else
+				_globalWarmingFeatureFlags &= ~flag;
+
+			SetSetting("GlobalWarmingFeatureFlags", ((int)_globalWarmingFeatureFlags).ToString());
+			Common.ReloadSettings = true;
+		}
+
         internal bool AutoSettlers
-        {
-            get => _autoSettlers;
-            set
-            {
-                _autoSettlers = value;
-                SetSetting("AutoSettlers", _autoSettlers ? "1" : "0");
-                Common.ReloadSettings = true;
-            }
-        }
+		{
+			get => _autoSettlers;
+			set
+			{
+				_autoSettlers = value;
+				SetSetting("AutoSettlers", _autoSettlers ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
 
         public CursorType CursorType
 		{
@@ -443,10 +479,10 @@ namespace CivOne
 		private static Settings _instance;
 		public static Settings Instance => _instance ?? (_instance = new Settings());
 
-        private Settings()
+		private Settings()
 		{
 			CreateDirectories();
-			
+
 			// Read settings
 			GetSetting("WindowTitle", ref _windowTitle);
 			GetSetting<GraphicsMode>("GraphicsMode", ref _graphicsMode);
@@ -466,8 +502,8 @@ namespace CivOne
 			GetSetting("ArrowHelper", ref _arrowHelper);
 			GetSetting("CustomMapSize", ref _customMapSize);
 			GetSetting("PathFindingAlgorithm", ref _pathFinding);
-            GetSetting("AutoSettlers", ref _autoSettlers);
-            GetSetting("RiverFastMovement", ref _riverFastMovement);
+			GetSetting("AutoSettlers", ref _autoSettlers);
+			GetSetting("RiverFastMovement", ref _riverFastMovement);
 			GetSetting<CursorType>("CursorType", ref _cursorType);
 			GetSetting<DestroyAnimation>("DestroyAnimation", ref _destroyAnimation);
 			GetSetting<GameOption>("GameInstantAdvice", ref _instantAdvice);
@@ -478,7 +514,15 @@ namespace CivOne
 			GetSetting<GameOption>("GameEnemyMoves", ref _enemyMoves);
 			GetSetting<GameOption>("GameCivilopediaText", ref _civilopediaText);
 			GetSetting<GameOption>("GamePalace", ref _palace);
-            GetSetting("TaxRate", ref _taxRate, 0, 10);
-        }
+			GetSetting("TaxRate", ref _taxRate, 0, 10);
+
+			string gwFlags = "";
+			GetSetting("GlobalWarmingFeatureFlags", ref gwFlags);
+
+			if (!Enum.TryParse(gwFlags, out _globalWarmingFeatureFlags))
+			{
+				_globalWarmingFeatureFlags = GlobalWarmingFeatureFlag.None;
+			}
+		}
 	}
 }

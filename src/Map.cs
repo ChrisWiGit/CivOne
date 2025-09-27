@@ -28,7 +28,9 @@ namespace CivOne
 		private int _terrainMasterWord;
 		private int _landMass, _temperature, _climate, _age;
 		private ITile[,] _tiles;
-		
+
+		public ITile[,] Tiles { get { return _tiles; } }
+
 		public bool Ready { get; private set; }
 		public bool FixedStartPositions { get; private set; }
 

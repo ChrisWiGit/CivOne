@@ -14,7 +14,7 @@ using CivOne.IO;
 
 namespace CivOne.Screens
 {
-	[Expand]
+	[ScreenResizeable]
 	internal class Intro : BaseScreen
 	{
 		private const float FADE_STEP = 0.0625F;

@@ -34,7 +34,7 @@ namespace CivOne.UserInterface
 		internal void Help()
 		{
 			if (Selected == null) return;
-			GetHelp(this, _args);
+			GetHelp?.Invoke(this, _args);
 		}
 
 		internal void Context()

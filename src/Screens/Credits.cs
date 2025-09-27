@@ -20,7 +20,7 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens
 {
-	[Expand]
+	[ScreenResizeable]
 	internal class Credits : BaseScreen
 	{
 		private const int NOISE_COUNT = 40;
