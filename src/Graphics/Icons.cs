@@ -381,6 +381,19 @@ namespace CivOne.Graphics
 			return _lamp[stage];
 		}
 
+		private static IBitmap[] _sun = new Picture[4];
+		public static IBitmap Sun(int stage)
+		{
+			if (stage < 0 || stage > 3)
+				return null;
+			
+			if (_sun[stage] == null)
+			{
+				_sun[stage] = Resources["SP257"][130 + (8 * stage), 58, 6, 6];
+			}
+			return _sun[stage];
+		}
+
 		private static IBitmap[,] _governmentPortrait = new Picture[7, 4];
 		public static IBitmap GovernmentPortrait(IGovernment government, Advisor advisor, bool modern)
 		{

@@ -6,9 +6,30 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Implement global warming mechanics
+  * The global warming level is indicated by a lamp icon in the sidebar.
+    * none, dark red, light red, yellow, white stages for none, 1, 2-3, 4-5, 6+ polluted squares
+    * More than 8 polluted squares causes global warming event.
+    * After every global warming event, the polluted tiles are cleared and a warming counter is increased.
+    * Next global warming event happens at 8 + (warming counter * 2) polluted squares.
+  * Implementation of calculating pollution is done in GlobalWarmingCountServiceImpl.cs
+  * Changing tiles is done in GlobalWarmingScourgeServiceImpl.cs
+  * Changes can be easily done by inheritance and overriding methods.
+  * Debug menu option to trigger global warming event immediately.
+  * Patches menu option to enable/disable extended pollution mechanisms
+    * Rises sea level and converts land tiles to water tiles in 10% of cases on affected tiles.
+    * Tiles that are affected by global warming:
+      * All river tiles
+      * Jungle tiles
+      * Swamp tiles
+      * Tundra tiles
+      * Arctic tiles
+      * Tiles on top and bottom 3 rows of map (pole ice caps)
+    * Removes units on affected tiles
+    * Removes improvements on affected tiles
+    * Removes pole ice caps (Arctic and Tundra tiles on top and bottom 3 rows of map) in 20% of cases.
+  * [ ] TODO: store and load from save files.
 * Feature: Implement pollution mechanics and visual representation in city management
-  * [ ] - TODO: Save pollution of tiles in savegame files
-  * [ ] - TODO: Load pollution icon from picture files in MapTiles.cs
 * Fix: Removed duplicate update check in DrawLayer to allow using false as return value in HasUpdate in city screens and still be able to draw the contents.
 * Feature: Citizens in Attitude Survey screen and Top Five Cities screen are drawn tightly packed in big cities (size > 20) to show up to 99 citizens.
   * TopCities screen can be resized in width

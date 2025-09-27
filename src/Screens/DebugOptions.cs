@@ -120,6 +120,23 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		private void PolluteTiles(bool pollution)
+		{
+			Map.AllTiles().ToList().ForEach(t => t.Pollution = pollution);
+		}
+		private void InstantGlobalWarming(object sender, EventArgs args)
+		{
+			PolluteTiles(true);
+			if (Game.GlobalWarmingService.IsGlobalWarmingOnNewTurn())
+			{
+				Game.globalWarmingScourgeService.UnleashScourgeOfPollution();
+			}
+			PolluteTiles(false);
+			Common.GamePlay.RefreshMap();
+			GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has caused", "instant global warming!"));
+			Destroy();
+		}
+
 		private void MenuShowPowerGraph(object sender, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<PowerGraph>());
@@ -229,6 +246,7 @@ namespace CivOne.Screens
 				new("Toggle Reveal World", MenuRevealWorld),
 				new("Build Palace", MenuBuildPalace),
 				new("Instant Conquest", InstantConquest),
+				new("Instant Global Warming", InstantGlobalWarming),
 				new("Settings", ShowSettings)
 			];
 

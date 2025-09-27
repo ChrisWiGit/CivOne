@@ -26,19 +26,19 @@ namespace CivOne.Screens
 	internal class Setup : BaseScreen
 	{
 		private const int MenuFont = 6;
-		
+
 		private bool _update = true;
-		
+
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (!_update) return false;
 			_update = false;
-			
+
 			if (!HasMenu)
 			{
 				MainMenu();
 			}
-			
+
 			return false;
 		}
 
@@ -87,7 +87,7 @@ namespace CivOne.Screens
 		private void CreateMenu(string title, MenuItemEventHandler<int> always, params MenuItem<int>[] items) => CreateMenu(title, -1, always, items);
 		private void CreateMenu(string title, int activeItem, params MenuItem<int>[] items) => CreateMenu(title, activeItem, null, items);
 		private void CreateMenu(string title, params MenuItem<int>[] items) => CreateMenu(title, -1, null, items);
-		
+
 		private MenuItemEventHandler<int> GotoMenu(Action<int> action, int selectedItem = 0) => (s, a) =>
 		{
 			CloseMenus();
@@ -119,7 +119,7 @@ namespace CivOne.Screens
 			RuntimeHandler.Runtime.WindowTitle = Settings.WindowTitle;
 			SettingsMenu(0);
 		}
-		
+
 		private void MainMenu(int activeItem = 0) => CreateMenu("CivOne Setup", activeItem,
 			MenuItem.Create("Settings").OnSelect(GotoMenu(SettingsMenu)),
 			MenuItem.Create("Patches").OnSelect(GotoMenu(PatchesMenu)),
@@ -179,7 +179,7 @@ namespace CivOne.Screens
 
 		private void PatchesMenu(int activeItem = 0) => CreateMenu("Patches", activeItem,
 			MenuItem.Create($"Reveal world: {Settings.RevealWorld.YesNo()}").OnSelect(GotoMenu(RevealWorldMenu)),
-			MenuItem.Create($"Side bar location: {(Settings.RightSideBar ? "right" : "left")}{(Game.Started ? " (restart required)":"")}").OnSelect(GotoMenu(SideBarMenu)),
+			MenuItem.Create($"Side bar location: {(Settings.RightSideBar ? "right" : "left")}{(Game.Started ? " (restart required)" : "")}").OnSelect(GotoMenu(SideBarMenu)),
 			MenuItem.Create($"Debug menu: {Settings.DebugMenu.YesNo()}").OnSelect(GotoMenu(DebugMenuMenu)).SetEnabled(!Game.Started),
 			MenuItem.Create($"Cursor type: {Settings.CursorType.ToText()}").OnSelect(GotoMenu(CursorTypeMenu)),
 			MenuItem.Create($"Destroy animation: {Settings.DestroyAnimation.ToText()}").OnSelect(GotoMenu(DestroyAnimationMenu)),
@@ -188,7 +188,7 @@ namespace CivOne.Screens
 			MenuItem.Create($"Custom map sizes (experimental): {Settings.CustomMapSize.YesNo()}").OnSelect(GotoMenu(CustomMapSizeMenu)),
 			MenuItem.Create("Game behavior menu").OnSelect(GotoMenu(BehaviorMenu)),
 
-			
+
 			MenuItem.Create("Back").OnSelect(GotoMenu(MainMenu, 1))
 		);
 
@@ -242,41 +242,56 @@ namespace CivOne.Screens
 		);
 
 
-		private void PathFindingMenu() => CreateMenu("Use smart PathFinding for \"goto\"", GotoMenu(PatchesMenu, 8),
+		private void PathFindingMenu() => CreateMenu("Use smart PathFinding for \"goto\"", GotoMenu(BehaviorMenu, 0),
 		MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.PathFinding = false).SetActive(() => !Settings.PathFinding),
 			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.PathFinding = true).SetActive(() => Settings.PathFinding),
 			MenuItem.Create("Back")
 		);
 
-        private void AutoSettlersMenu() => CreateMenu("Use auto settlers cheat", GotoMenu(PatchesMenu, 9),
-            MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.AutoSettlers = false).SetActive(() => !Settings.AutoSettlers),
-            MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.AutoSettlers = true).SetActive(() => Settings.AutoSettlers),
-            MenuItem.Create("Back")
-        );
+		private void AutoSettlersMenu() => CreateMenu("Use auto settlers cheat", GotoMenu(BehaviorMenu, 1),
+			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.AutoSettlers = false).SetActive(() => !Settings.AutoSettlers),
+			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.AutoSettlers = true).SetActive(() => Settings.AutoSettlers),
+			MenuItem.Create("Back")
+		);
 
-		private void FastRiverMovementMenu() => CreateMenu("Movements on river like roads", GotoMenu(PatchesMenu, 10),
+		private void FastRiverMovementMenu() => CreateMenu("Movements on river like roads", GotoMenu(BehaviorMenu, 2),
 			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.RiverFastMovement = false).SetActive(() => !Settings.RiverFastMovement),
 			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.RiverFastMovement = true).SetActive(() => Settings.RiverFastMovement),
 			MenuItem.Create("Back")
 		);
 
-		private void CanalCity() => CreateMenu("Movements on river like roads", GotoMenu(PatchesMenu, 11),
+		private void CanalCity() => CreateMenu("No movement penalty for sea units in city", GotoMenu(BehaviorMenu, 3),
 			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.CanalCity = false).SetActive(() => !Settings.CanalCity),
 			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.CanalCity = true).SetActive(() => Settings.CanalCity),
 			MenuItem.Create("Back")
 		);
-		
+
+		private void SeaLevelRise() => CreateMenu("Tiles replace with ocean", GotoMenu(ExtendedGlobalWarmingMenu, 0),
+			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) =>  Settings.SetGlobalWarmingFlag(Settings.GlobalWarmingFeatureFlag.SeaLevelRise, false)
+				).SetActive(() => !Settings.IsGlobalWarmingFlagSet(Settings.GlobalWarmingFeatureFlag.SeaLevelRise)),
+			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.SetGlobalWarmingFlag(Settings.GlobalWarmingFeatureFlag.SeaLevelRise, true)
+				).SetActive(() => Settings.IsGlobalWarmingFlagSet(Settings.GlobalWarmingFeatureFlag.SeaLevelRise)),
+			MenuItem.Create("Back")
+		);
+
+		private void ExtendedGlobalWarmingMenu(int activeItem = 0) => CreateMenu("Extended global warming (needs savegame load)", activeItem,
+			MenuItem.Create($"Sea level rise: {Settings.IsGlobalWarmingFlagSet(Settings.GlobalWarmingFeatureFlag.SeaLevelRise).YesNo()}")
+				.OnSelect(GotoMenu(SeaLevelRise)),
+			MenuItem.Create("Back").OnSelect(GotoMenu(BehaviorMenu, 4))
+		);
+
 		private void BehaviorMenu(int activeItem = 0) => CreateMenu("Game behavior menu", activeItem,
 			[
 					MenuItem.Create($"Use smart PathFinding for \"goto\": {Settings.PathFinding.YesNo()}").OnSelect(GotoMenu(PathFindingMenu)),
 					MenuItem.Create($"Use auto-settlers-cheat: {Settings.AutoSettlers.YesNo()}").OnSelect(GotoMenu(AutoSettlersMenu)),
 					MenuItem.Create($"Use fast river movement: {Settings.RiverFastMovement.YesNo()}").OnSelect(GotoMenu(FastRiverMovementMenu)),
 					MenuItem.Create($"No movement penalty for sea units in city: {Settings.CanalCity.YesNo()}").OnSelect(GotoMenu(CanalCity)),
+					MenuItem.Create($"Extended global warming").OnSelect(GotoMenu(ExtendedGlobalWarmingMenu)),
 					MenuItem.Create("Back").OnSelect(GotoMenu(PatchesMenu, 8))
 			]
 		);
 
-        private void PluginsMenu(int activeItem = 0) => CreateMenu("Plugins", activeItem,
+		private void PluginsMenu(int activeItem = 0) => CreateMenu("Plugins", activeItem,
 			new MenuItem<int>[0]
 				.Concat(
 					Reflect.Plugins().Any() ?
@@ -309,7 +324,7 @@ namespace CivOne.Screens
 			MenuItem.Create(false.YesNo()).OnSelect(GotoMenu(PluginsMenu, item)),
 			MenuItem.Create(true.YesNo()).OnSelect((s, a) => plugin.Delete()).OnSelect(GotoMenu(PluginsMenu, item))
 		);
-		
+
 		private void GameOptionsMenu(int activeItem = 0) => CreateMenu("Game Options", activeItem,
 			MenuItem.Create($"Instant Advice: {Settings.InstantAdvice.ToText()}").OnSelect(GotoMenu(GameOptionMenu(0, "Instant Advice", () => Settings.InstantAdvice, (GameOption option) => Settings.InstantAdvice = option))),
 			MenuItem.Create($"AutoSave: {Settings.AutoSave.ToText()}").OnSelect(GotoMenu(GameOptionMenu(1, "AutoSave", () => Settings.AutoSave, (GameOption option) => Settings.AutoSave = option))),
@@ -319,7 +334,7 @@ namespace CivOne.Screens
 			MenuItem.Create($"Enemy Moves: {Settings.EnemyMoves.ToText()}").OnSelect(GotoMenu(GameOptionMenu(5, "Enemy Moves", () => Settings.EnemyMoves, (GameOption option) => Settings.EnemyMoves = option))),
 			MenuItem.Create($"Civilopedia Text: {Settings.CivilopediaText.ToText()}").OnSelect(GotoMenu(GameOptionMenu(6, "Civilopedia Text", () => Settings.CivilopediaText, (GameOption option) => Settings.CivilopediaText = option))),
 			MenuItem.Create($"Palace: {Settings.Palace.ToText()}").OnSelect(GotoMenu(GameOptionMenu(7, "Palace", () => Settings.Palace, (GameOption option) => Settings.Palace = option))),
-            MenuItem.Create($"Tax Rate: {Settings.TaxRate * 10}%").OnSelect(GotoMenu(TaxRateMenu)),
+			MenuItem.Create($"Tax Rate: {Settings.TaxRate * 10}%").OnSelect(GotoMenu(TaxRateMenu)),
 			MenuItem.Create("Back").OnSelect(GotoMenu(MainMenu, 3))
 		);
 
@@ -330,20 +345,20 @@ namespace CivOne.Screens
 			MenuItem.Create("Back")
 		);
 
-        private void TaxRateMenu() => CreateMenu("Window Scale", GotoMenu(GameOptionsMenu, 8),
-            MenuItem.Create(" 0% Tax, 100% Science").OnSelect((s,a)=> Settings.TaxRate = 0).SetActive(() => Settings.TaxRate == 0),
-            MenuItem.Create("10% Tax,  90% Science").OnSelect((s,a)=> Settings.TaxRate = 1).SetActive(() => Settings.TaxRate == 1),
-            MenuItem.Create("20% Tax,  80% Science").OnSelect((s,a)=> Settings.TaxRate = 2).SetActive(() => Settings.TaxRate == 2),
-            MenuItem.Create("30% Tax,  70% Science").OnSelect((s,a)=> Settings.TaxRate = 3).SetActive(() => Settings.TaxRate == 3),
-            MenuItem.Create("40% Tax,  60% Science").OnSelect((s,a)=> Settings.TaxRate = 4).SetActive(() => Settings.TaxRate == 4),
-            MenuItem.Create("50% Tax,  50% Science").OnSelect((s,a)=> Settings.TaxRate = 5).SetActive(() => Settings.TaxRate == 5),
-            MenuItem.Create("60% Tax,  40% Science").OnSelect((s,a)=> Settings.TaxRate = 6).SetActive(() => Settings.TaxRate == 6),
-            MenuItem.Create("70% Tax,  30% Science").OnSelect((s,a)=> Settings.TaxRate = 7).SetActive(() => Settings.TaxRate == 7),
-            MenuItem.Create("80% Tax,  20% Science").OnSelect((s,a)=> Settings.TaxRate = 8).SetActive(() => Settings.TaxRate == 8),
-            MenuItem.Create("90% Tax,  10% Science").OnSelect((s,a)=> Settings.TaxRate = 9).SetActive(() => Settings.TaxRate == 9),
-            MenuItem.Create("100% Tax,  0% Science").OnSelect((s,a)=> Settings.TaxRate = 10).SetActive(() => Settings.TaxRate == 10),
-            MenuItem.Create("Back")
-        );
+		private void TaxRateMenu() => CreateMenu("Window Scale", GotoMenu(GameOptionsMenu, 8),
+			MenuItem.Create(" 0% Tax, 100% Science").OnSelect((s, a) => Settings.TaxRate = 0).SetActive(() => Settings.TaxRate == 0),
+			MenuItem.Create("10% Tax,  90% Science").OnSelect((s, a) => Settings.TaxRate = 1).SetActive(() => Settings.TaxRate == 1),
+			MenuItem.Create("20% Tax,  80% Science").OnSelect((s, a) => Settings.TaxRate = 2).SetActive(() => Settings.TaxRate == 2),
+			MenuItem.Create("30% Tax,  70% Science").OnSelect((s, a) => Settings.TaxRate = 3).SetActive(() => Settings.TaxRate == 3),
+			MenuItem.Create("40% Tax,  60% Science").OnSelect((s, a) => Settings.TaxRate = 4).SetActive(() => Settings.TaxRate == 4),
+			MenuItem.Create("50% Tax,  50% Science").OnSelect((s, a) => Settings.TaxRate = 5).SetActive(() => Settings.TaxRate == 5),
+			MenuItem.Create("60% Tax,  40% Science").OnSelect((s, a) => Settings.TaxRate = 6).SetActive(() => Settings.TaxRate == 6),
+			MenuItem.Create("70% Tax,  30% Science").OnSelect((s, a) => Settings.TaxRate = 7).SetActive(() => Settings.TaxRate == 7),
+			MenuItem.Create("80% Tax,  20% Science").OnSelect((s, a) => Settings.TaxRate = 8).SetActive(() => Settings.TaxRate == 8),
+			MenuItem.Create("90% Tax,  10% Science").OnSelect((s, a) => Settings.TaxRate = 9).SetActive(() => Settings.TaxRate == 9),
+			MenuItem.Create("100% Tax,  0% Science").OnSelect((s, a) => Settings.TaxRate = 10).SetActive(() => Settings.TaxRate == 10),
+			MenuItem.Create("Back")
+		);
 
 		private void Resize(object sender, ResizeEventArgs args)
 		{
@@ -356,11 +371,11 @@ namespace CivOne.Screens
 
 			_update = true;
 		}
-		
+
 		public Setup() : base(MouseCursor.Pointer)
 		{
 			OnResize += Resize;
-			
+
 			Palette = Common.GetPalette256;
 			this.Clear(3);
 		}
