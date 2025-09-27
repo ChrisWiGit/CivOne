@@ -378,6 +378,8 @@ namespace CivOne
 				if (HasBuilding<Bank>()) taxes += (int)Math.Floor((double)taxes * 0.5);
 				taxes += _specialists.Count(c => c == Citizen.Taxman) * 2;
 
+				taxes = (int)Math.Round((double)taxes * Player.TaxesRate / 10);
+
 				return (short)Math.Min(short.MaxValue, taxes);
 			}
 		}
@@ -390,13 +392,16 @@ namespace CivOne
 		{
 			get
 			{
-				short science = TradeScience;
+				int science = TradeScience;
 				if (HasBuilding<Library>()) science += (short)Math.Floor((double)science * 0.5);
 				if (HasBuilding<UniversityBuilding>()) science += (short)Math.Floor((double)science * 0.5);
 				if (!Game.WonderObsolete<CopernicusObservatory>() && HasWonder<CopernicusObservatory>()) science += (short)Math.Floor((double)science * 1.0);
 				if (Player.HasWonder<SETIProgram>()) science += (short)Math.Floor((double)science * 0.5);
-				science += (short)(_specialists.Count(c => c == Citizen.Scientist) * 2);
-				return science;
+				science += _specialists.Count(c => c == Citizen.Scientist) * 2;
+
+				science = (int)Math.Round((double)science * Player.ScienceRate / 10);
+
+				return (short)Math.Min(science, short.MaxValue);
 			}
 		}
 
