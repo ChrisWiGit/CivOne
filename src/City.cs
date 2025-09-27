@@ -190,6 +190,7 @@ namespace CivOne
 					break;
 			}
 			if (tile.RailRoad) output = (int)Math.Floor((double)output * 1.5);
+			if (tile.Pollution) output = (int)Math.Ceiling((double)output * 0.5);
 			return output;
 		}
 
@@ -208,6 +209,7 @@ namespace CivOne
 					break;
 			}
 			if (tile.RailRoad) output = (int)Math.Floor((double)output * 1.5);
+			if (tile.Pollution) output = (int)Math.Ceiling((double)output * 0.5);
 			return output;
 		}
 
@@ -261,6 +263,7 @@ namespace CivOne
 					break;
 			}
 			if (output > 0 && HasWonder<Colossus>() && !GameDI.WonderObsolete<Colossus>()) output += 1;
+			if (tile.Pollution) output = (int)Math.Ceiling((double)output * 0.5);
 			return output;
 		}
 
@@ -273,6 +276,44 @@ namespace CivOne
 		internal short TradeLuxuries => (short)Math.Round((double)(TradeTotal - TradeTaxes) / (10 - Player.TaxesRate) * Player.LuxuriesRate, MidpointRounding.AwayFromZero);
 		internal short TradeTaxes => (short)Math.Round((double)TradeTotal / 10 * Player.TaxesRate, MidpointRounding.AwayFromZero);
 
+
+		public bool CityOfSameCiv(City city)
+		{
+			if (city == null) return false;
+			return city.Player == this.Player;
+		}
+
+		private int CalculateTradeValue(City city)
+		{
+			// CW: Source Civilization Or Rome on 640k A Day by Johnny L. Wilson et al. page 230
+			int sameCivPenalty = CityOfSameCiv(city) ? 2 : 1;
+			int trading = (int)Math.Round((city.TradeTotal + this.TradeTotal + 4) / 8.0 / sameCivPenalty);
+			return trading;
+		}
+
+		/// <summary>
+		/// List of cities this city is trading with and the trade value from each.
+		/// </summary>
+		public Dictionary<City, int> TradingCitiesValue
+		{
+			get
+			{
+				Dictionary<City, int> tradingCitiesValue = [];
+				foreach (City city in TradingCities)
+				{
+					int trading = CalculateTradeValue(city);
+					tradingCitiesValue[city] = trading;
+				}
+				return tradingCitiesValue;
+			}
+		}
+
+		/// <summary>
+		/// Sum of trade values from all (up to 3) trading cities.
+		/// </summary>
+		public int TradingCitiesSumValue => TradingCities.Sum(CalculateTradeValue);
+
+		public int TotalIncome => Taxes + TradingCitiesSumValue;
 		/// <summary>
 		/// Amount of corruption, taking government, buildings, and distance
 		/// to capital into account.
@@ -331,11 +372,15 @@ namespace CivOne
 		{
 			get
 			{
-				short taxes = TradeTaxes;
-				if (HasBuilding<MarketPlace>()) taxes += (short)Math.Floor((double)taxes * 0.5);
-				if (HasBuilding<Bank>()) taxes += (short)Math.Floor((double)taxes * 0.5);
-				taxes += (short)(_specialists.Count(c => c == Citizen.Taxman) * 2);
-				return taxes;
+				// CW: For future changes, we use int max out at short.MaxValue
+				int taxes = TradeTaxes;
+				if (HasBuilding<MarketPlace>()) taxes += (int)Math.Floor((double)taxes * 0.5);
+				if (HasBuilding<Bank>()) taxes += (int)Math.Floor((double)taxes * 0.5);
+				taxes += _specialists.Count(c => c == Citizen.Taxman) * 2;
+
+				taxes = (int)Math.Round((double)taxes * Player.TaxesRate / 10);
+
+				return (short)Math.Min(short.MaxValue, taxes);
 			}
 		}
 
@@ -347,17 +392,62 @@ namespace CivOne
 		{
 			get
 			{
-				short science = TradeScience;
+				int science = TradeScience;
 				if (HasBuilding<Library>()) science += (short)Math.Floor((double)science * 0.5);
 				if (HasBuilding<UniversityBuilding>()) science += (short)Math.Floor((double)science * 0.5);
 				if (!GameDI.WonderObsolete<CopernicusObservatory>() && HasWonder<CopernicusObservatory>()) science += (short)Math.Floor((double)science * 1.0);
 				if (Player.HasWonder<SETIProgram>()) science += (short)Math.Floor((double)science * 0.5);
-				science += (short)(_specialists.Count(c => c == Citizen.Scientist) * 2);
-				return science;
+				science += _specialists.Count(c => c == Citizen.Scientist) * 2;
+
+				science = (int)Math.Round((double)science * Player.ScienceRate / 10);
+
+				return (short)Math.Min(science, short.MaxValue);
 			}
 		}
 
 		internal short TotalMaintenance => (short)_buildings.Sum(b => b.Maintenance);
+
+		internal int CalculateSmokeStacks()
+		{
+			// CW: Source Civilization Or Rome on 640k A Day by Johnny L. Wilson et al. page 231
+			int industrialPollution = ShieldTotal;
+			if (HasBuilding<RecyclingCenter>()) industrialPollution /= 3;
+			else if (HasBuilding<HydroPlant>()) industrialPollution /= 2;
+			else if (HasBuilding<NuclearPlant>()) industrialPollution /= 2;
+
+			int pollutionMultiplier = 100;
+			if (HasBuilding<MassTransit>()) pollutionMultiplier = 0;
+			else if (Player.HasAdvance<Plastics>()) pollutionMultiplier = 100;
+			else if (Player.HasAdvance<MassProduction>()) pollutionMultiplier = 75;
+			else if (Player.HasAdvance<Automobile>()) pollutionMultiplier = 50;
+			else if (Player.HasAdvance<Industrialization>()) pollutionMultiplier = 25;
+
+			int populationPollution = (int)Math.Round((double)(Size * pollutionMultiplier) / 100);
+			int smokeStacks = industrialPollution + populationPollution;
+			int toleranceSmokeStacks = smokeStacks - 20;
+
+			return Math.Max(0, toleranceSmokeStacks);
+		}
+
+		public int SmokeStacks => CalculateSmokeStacks();
+
+		internal bool GeneratePollution()
+		{
+			// CW: Source: https://forums.civfanatics.com/threads/pollution-bug-nailed.535608/
+			// IF ( 2 * CityPollution > Random(256 - CityOwnerTechCount * difficultyLevel / 2) ) THEN AddPollution
+			if (SmokeStacks == 0) 
+			{
+				// CW: Bugfix: Prevent the formula to be used on cities that do not generate pollution.
+				return false;
+			}
+
+			int maxRandom = 256 - (Player.Advances.Length * (1 + Game.Difficulty) / 2);
+			if (maxRandom < 1) maxRandom = 2; // Prevents bug -> still 50% chance of pollution with 256 advances
+
+			int rnd = Common.Random.Next(maxRandom);
+
+			return (2 * SmokeStacks) > rnd;
+		}
 
 		internal byte _status = 0;
 
@@ -551,6 +641,8 @@ namespace CivOne
 
 		private void SetupCoastalFlag()
 		{
+			if (!Game.Started) return;
+
 			bool isCoastal = Map[X, Y].GetBorderTiles().Any(t => t.IsOcean);
 
 			SetStatusFlag(CityStatus.COASTAL, isCoastal);
@@ -558,6 +650,8 @@ namespace CivOne
 
 		private void SetupHydroFlag()
 		{
+			if (!Game.Started) return;
+
 			bool isHydroAvailable = Map[X, Y].GetBorderTiles().Any(t => t is Mountains or River);
 
 			SetStatusFlag(CityStatus.HYDRO_AVAILABLE, isHydroAvailable);
@@ -666,6 +760,17 @@ namespace CivOne
 
 			GameDI.CurrentPlayer.Gold -= BuyPrice;
 			Shields = (int)CurrentProduction.Price * 10;
+			return true;
+		}
+
+		public bool UpdateAutoBuild()
+		{
+			if (!AutoBuild)
+			{
+				return false;
+			}
+			AI.Instance(Player).CityProduction(this);
+
 			return true;
 		}
 
@@ -879,9 +984,12 @@ namespace CivOne
 		}
 		internal void ChangeSpecialist(int index)
 		{
+			if (index >= _specialists.Count) return;
+
 			while (_specialists.Count < (index + 1)) _specialists.Add(Citizen.Entertainer);
 			_specialists[index] = (Citizen)((((int)_specialists[index] - 5) % 3) + 6);
 		}
+
 
 		/// <summary>
 		/// The explored city area tiles.
@@ -972,9 +1080,36 @@ namespace CivOne
 				RelocateResourceTile(tile);
 			}
 		}
+		
+		internal void ExecutePollution()
+		{
+			if (!GeneratePollution())
+			{
+				return;
+			}
+
+			List<ITile> possiblePollutionTiles = [.. CityTiles.Where(t => !t.Pollution && !t.HasCity && t is not Ocean)];
+			if (possiblePollutionTiles.Count == 0)
+			{
+				return;
+			}
+
+			int tileToPollute = Common.Random.Next(possiblePollutionTiles.Count);
+
+			possiblePollutionTiles[tileToPollute].Pollution = true;
+
+			if (Human != Owner)
+			{
+				return;
+			}
+
+			GameTask.Enqueue(Message.Newspaper(this, "Pollution in", $"{this.Name}!", "Health problems feared."));
+		}
 
 		public void NewTurn()
 		{
+			ExecutePollution();
+
 			UpdateResources();
 
 			if (IsInDisorder)
@@ -983,27 +1118,27 @@ namespace CivOne
 				{
 					// todo: meltdown
 				}
- 				if (WasInDisorder)
+				if (WasInDisorder)
 				{
 					if (Player.IsHuman)
 						GameTask.Insert(Message.Advisor(Advisor.Domestic, true, "Civil Disorder in", $"{Name}! Mayor", "flees in panic."));
 				}
 				else
 				{
-                    // TODO fire-eggs not showing loses side-effects
-					if (Player.IsHuman) // && !GameDI.Animations)
+					// TODO fire-eggs not showing loses side-effects
+					if (Player.IsHuman) // && !Game.Animations)
 					{
 						Show disorderCity = Show.DisorderCity(this);
- 						GameTask.Insert(disorderCity);
+						GameTask.Insert(disorderCity);
 					}
 
 					Log($"City {Name} belonging to {Player.TribeName} has gone into disorder");
 				}
- 				if (WasInDisorder && Player.Government is Governments.Democracy)
+				if (WasInDisorder && Player.Government is Governments.Democracy)
 				{
 					// todo: Force revolution
 				}
- 				WasInDisorder = true;
+				WasInDisorder = true;
 			}
 			else
 			{
@@ -1011,11 +1146,11 @@ namespace CivOne
 				{
 					if (Player.IsHuman)
 						GameTask.Insert(Message.Advisor(Advisor.Domestic, true, "Order restored", $" in {Name}."));
- 					Log($"City {Name} belonging to {Player.TribeName} is no longer in disorder");
+					Log($"City {Name} belonging to {Player.TribeName} is no longer in disorder");
 				}
- 				WasInDisorder = false;
+				WasInDisorder = false;
 			}
- 			if (UnhappyCitizens == 0 && HappyCitizens >= ContentCitizens && Size >= 3)
+			if (UnhappyCitizens == 0 && HappyCitizens >= ContentCitizens && Size >= 3)
 			{
 				// we love the president day
 				if (Player.Government is Governments.Democracy || Player.Government is Republic)
@@ -1027,12 +1162,12 @@ namespace CivOne
 				}
 				else
 				{
-                    // we love the king day
-                    if (Human == Owner && Settings.Animations != GameOption.Off)
-                        GameTask.Insert(Show.WeLovePresidentDayCity(this));
-                }
-            }
- 			Food += IsInDisorder ? 0 : FoodIncome;
+					// we love the king day
+					if (Human == Owner && Settings.Animations != GameOption.Off)
+						GameTask.Insert(Show.WeLovePresidentDayCity(this));
+				}
+			}
+			Food += IsInDisorder ? 0 : FoodIncome;
 
 			if (Food < 0)
 			{
@@ -1048,7 +1183,7 @@ namespace CivOne
 			{
 				Food -= FoodRequired;
 
-				if (Size == 10 && _buildings.All(b => b.Id != (int) Building.Aqueduct))
+				if (Size == 10 && _buildings.All(b => b.Id != (int)Building.Aqueduct))
 				{
 					GameTask.Enqueue(Message.Advisor(Advisor.Domestic, false, $"{Name} requires an AQUEDUCT", "for further growth."));
 				}
@@ -1073,8 +1208,9 @@ namespace CivOne
 				if (Human == Owner)
 				{
 					Message message = Message.DisbandUnit(this, unit);
-					message.Done += (s, a) => {
-						GameDI.DisbandUnit(unit);
+					message.Done += (s, a) =>
+					{
+						Game.DisbandUnit(unit);
 					};
 					GameTask.Enqueue(message);
 				}
@@ -1085,7 +1221,7 @@ namespace CivOne
 			}
 			else if (ShieldIncome > 0)
 			{
-				Shields +=  IsInDisorder ? 0 : ShieldIncome;
+				Shields += IsInDisorder ? 0 : ShieldIncome;
 			}
 
 			if (Shields >= (int)CurrentProduction.Price * 10)
@@ -1122,7 +1258,8 @@ namespace CivOne
 					if (CurrentProduction is ISpaceShip)
 					{
 						Message message = Message.Newspaper(this, $"{this.Name} builds", $"{(CurrentProduction as ICivilopedia).Name}.");
-						message.Done += (s, a) => {
+						message.Done += (s, a) =>
+						{
 							// TODO: Add space ship component
 							GameTask.Insert(Show.CityManager(this));
 						};
@@ -1165,15 +1302,22 @@ namespace CivOne
 			}
 
 			// TODO: Handle luxuries
-			Player.Gold +=  IsInDisorder ? (short)0 : Taxes;
+			Player.Gold += IsInDisorder ? (short)0 : Taxes;
+			Player.Gold += IsInDisorder ? (short)0 : (short)TradingCitiesSumValue;
 			Player.Gold -= TotalMaintenance;
 			Player.Science += Science;
+
 			BuildingSold = false;
 			GameTask.Enqueue(new ProcessScience(Player));
 
-			if (Player.IsHuman) return;
-
-			Player.AI.CityProduction(this);
+			if (Player.IsHuman)
+			{
+				UpdateAutoBuild();
+			}
+			else
+			{
+				Player.AI.CityProduction(this);
+			}
 		}
 
 		public void Disaster()
@@ -1409,6 +1553,46 @@ namespace CivOne
 				GameTask.Enqueue(Message.Advisor(Advisor.Domestic, false, message.ToArray()));
 			}
 		}
+
+		private int[] tradingCities;
+		internal void SetTradingCitiesIndexes(int[] tradingCities)
+		{
+			// only keep the last 3 trading cities
+			this.tradingCities = [.. tradingCities.Skip(Math.Max(0, tradingCities.Length - 3))];
+		}
+
+		public City[] TradingCities {
+			get
+			{
+				if (tradingCities == null)
+				{
+					return Array.Empty<City>();
+				}
+				return [.. tradingCities.Select(index => Game.Instance.Cities[index])];
+			}
+		}
+
+		int IndexOfCity(City city)
+		{
+			for (int i = 0; i < Game.Instance.Cities.Count; i++)
+			{
+				if (Game.Instance.Cities[i] == city) return i;
+			}
+			return -1;
+		}
+
+		public void AddTradingCity(City city)
+		{
+			if (city == null || city == this || TradingCities.Contains(city))
+			{
+				return;
+			}
+
+			List<City> cities = [.. TradingCities];
+			cities.Add(city);
+			SetTradingCitiesIndexes([.. cities.Select(c => IndexOfCity(c)).Where(i => i >= 0)]);
+		}
+
 
 		internal City(byte owner)
 		{

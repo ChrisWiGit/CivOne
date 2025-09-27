@@ -123,6 +123,8 @@ namespace CivOne.Tiles
 				return (byte)score;
 			}
 		}
+
+		public bool Pollution { get; set; }
 		public abstract byte Movement { get; }
 		public abstract byte Defense { get; }
 		public abstract sbyte Food { get; }
@@ -133,6 +135,7 @@ namespace CivOne.Tiles
 		public abstract byte IrrigationCost { get; }
 		public abstract sbyte MiningShieldBonus { get; }
 		public abstract byte MiningCost { get; }
+		
 		
 		public byte Borders
 		{

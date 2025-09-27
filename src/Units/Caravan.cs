@@ -55,11 +55,19 @@ namespace CivOne.Units
 			int revenue = TradeGoldBonus(city);
 			if (revenue <= 0) revenue = 1; // revenue should at least be 1, I think (needs to be checked)
 
-			GameTask.Insert(Message.General(
-				$"{ware} caravan from {homeName}",
-				$"arrives in {city.Name}",
-				"Trade route established",
-				$"Revenue: ${revenue}."));
+			// CW: At first we just add this city to be shown.
+			// There are a lot more rules about trade routes
+			// In this way we can check if save and load of routes works
+			Home?.AddTradingCity(city);
+
+			if (Human == Owner)
+			{
+				GameTask.Insert(Message.General(
+					$"{ware} caravan from {homeName}",
+					$"arrives in {city.Name}",
+					"Trade route established",
+					$"Revenue: ${revenue}."));
+			}
 			Game.GetPlayer(Owner).Gold += (short)revenue;
 			Game.DisbandUnit(this);
 		}

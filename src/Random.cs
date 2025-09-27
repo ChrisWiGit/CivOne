@@ -235,6 +235,11 @@ namespace CivOne
 			return GetStatus((int)_counter - 1);
 		}
 		
+		/// <summary>
+		/// Returns a non-negative random integer that is less than the specified maximum.
+		/// </summary>
+		/// <param name="max">The exclusive upper bound of the random number to be generated. Must be greater than zero.</param>
+		/// <returns>A 32-bit signed integer greater than or equal to zero and less than <paramref name="max"/>.</returns>
 		public int Next(int max)
 		{
 			_inputs.Add(max);
@@ -251,6 +256,23 @@ namespace CivOne
 			_counter++;
 			_outputs.Add((int)_ax);
 			return _ax + min;
+		}
+
+		/// <summary>
+		/// Determines if a random event occurs based on a percentage chance.
+		/// </summary>
+		/// <param name="percent">The percentage chance (0-100) for the event to occur.</param>
+		/// <returns>True if the random event occurs, false otherwise.</returns>
+		/// This method generates a random number between 0 and 99 (inclusive) and compares it
+		/// against the provided percentage. For example, a 30% chance means the method returns
+		/// <c>true</c> approximately 30% of the time when called repeatedly.
+		/// </remarks>
+		public bool Hit(int percent)
+		{
+			if (percent <= 0) return false;
+			if (percent >= 100) return true;
+
+			return Next(0, 100) < percent;
 		}
 		
 		public Random(int seed = -1)

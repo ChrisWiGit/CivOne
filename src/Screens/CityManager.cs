@@ -17,8 +17,8 @@ using System.Drawing;
 
 namespace CivOne.Screens
 {
-    [Expand]
-	internal class CityManager : BaseScreen
+    [ScreenResizeable]
+	internal class CityManager : BaseScreen, ICityManager
 	{
 		private readonly City _city;
 		private readonly CityHeader _cityHeader;
@@ -33,7 +33,6 @@ namespace CivOne.Screens
 		private readonly bool _viewCity;
 		
 		private bool _update = true;
-		private bool _redraw = false;
 		private bool _mouseDown = false;
 
 		private int ExtraWidth => (Width - 320);
@@ -42,16 +41,17 @@ namespace CivOne.Screens
 
 		private List<IScreen> _subScreens = new List<IScreen>();
 
+		private IScreen _activeScreen = null;
+
 		private void CloseScreen()
 		{
 			_cityHeader.Close();
 			Destroy();
 		}
 		
-		private void DrawLayer(IScreen layer, uint gameTick, int x, int y)
+		private void DrawLayer(IScreen layer, int x, int y)
 		{
 			if (layer == null) return;
-			if (!layer.Update(gameTick) && !_redraw) return;
 			this.AddLayer(layer, x, y);
 		}
 		
@@ -68,14 +68,14 @@ namespace CivOne.Screens
 
 			if (_update)
 			{
-				DrawLayer(_cityHeader, gameTick, 2, 1);
-				DrawLayer(_cityResources, gameTick, 2, 23);
-				DrawLayer(_cityUnits, gameTick, 2, 67);
-				DrawLayer(_cityMap, gameTick, 127 + ExtraLeft, 23);
-				DrawLayer(_cityBuildings, gameTick, 211 + ExtraLeft, 1);
-				DrawLayer(_cityFoodStorage, gameTick, 2, 106);
-				DrawLayer(_cityInfo, gameTick, 95 + ExtraLeft, 106);
-				DrawLayer(_cityProduction, gameTick, 230 + ExtraLeft, 99);
+				DrawLayer(_cityHeader, 2, 1);
+				DrawLayer(_cityResources, 2, 23);
+				DrawLayer(_cityUnits, 2, 67);
+				DrawLayer(_cityMap, 127 + ExtraLeft, 23);
+				DrawLayer(_cityBuildings, 211 + ExtraLeft, 1);
+				DrawLayer(_cityFoodStorage, 2, 106);
+				DrawLayer(_cityInfo, 95 + ExtraLeft, 106);
+				DrawLayer(_cityProduction, 230 + ExtraLeft, 99);
 
 				DrawButton("Rename", 9, 1, 231 + ExtraLeft, (Height - 10), 42);
 				DrawButton("Exit", 12, 4, (Width - 36), (Height - 10), 33);
@@ -96,6 +96,13 @@ namespace CivOne.Screens
 		
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
+			if (_activeScreen != null)
+			{
+				if (_activeScreen.KeyDown(args)) return true;
+				_update = true;
+				return true;
+			}
+
 			foreach (IScreen screen in _subScreens)
 			{
 				if (!screen.KeyDown(args)) continue;
@@ -107,6 +114,13 @@ namespace CivOne.Screens
 		
 		public override bool MouseDown(ScreenEventArgs args)
 		{
+			if (_activeScreen != null)
+			{
+				if (_activeScreen.MouseDown(args)) return true;
+				_update = true;
+				return true;
+			}
+
 			_mouseDown = true;
 			
 			if (!_viewCity)
@@ -211,10 +225,10 @@ namespace CivOne.Screens
 			_subScreens.Add(_cityHeader = new CityHeader(_city));
 			_subScreens.Add(_cityResources = new CityResources(_city));
 			_subScreens.Add(_cityUnits = new CityUnits(_city));
-			_subScreens.Add(_cityMap = new CityMap(_city));
-			_subScreens.Add(_cityBuildings = new CityBuildings(_city));
+			_subScreens.Add(_cityMap = new CityMap(_city, this));
+			_subScreens.Add(_cityBuildings = new CityBuildings(_city, this));
 			_subScreens.Add(_cityFoodStorage = new CityFoodStorage(_city));
-			_subScreens.Add(_cityInfo = new CityInfo(_city));
+			_subScreens.Add(_cityInfo = new CityInfo(_city, this));
 			_subScreens.Add(_cityProduction = new CityProduction(_city, viewCity));
 
 			_cityBuildings.BuildingUpdate += BuildingUpdate;
@@ -229,6 +243,16 @@ namespace CivOne.Screens
 			_subScreens.ForEach(x => x.Dispose());
 			_subScreens.Clear();
 			base.Dispose();
+		}
+
+		public void SetActiveScreen(IScreen screen)
+		{
+			_activeScreen = screen;
+		}
+
+		public void CloseActiveScreen()
+		{
+			_activeScreen = null;
 		}
 	}
 }

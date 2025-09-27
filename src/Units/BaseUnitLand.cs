@@ -197,16 +197,14 @@ namespace CivOne.Units
 				}
 			}
 
-			// TODO: This implementation was done by observation, may need a revision
-			if (
-				(moveTarget.Road || moveTarget.RailRoad) && (Tile.Road || Tile.RailRoad) ||
-				(FastRiverMovement && moveTarget is River && Tile is River))
+			if (!IsFastRoadTraveling(relX, relY, moveTarget))
 			{
-				// Handle movement in MovementDone
-			}
-			else if (MovesLeft == 0 && !moveTarget.Road && moveTarget.Movement > 1)
-			{
-				if (!TryLeavingRoad(moveTarget, relX, relY))
+				if (!TryLeavingRoad(relX, relY, moveTarget))
+				{
+					return false;
+				}
+
+				if (HasHitObstacle(relX, relY, moveTarget))
 				{
 					return false;
 				}
@@ -216,7 +214,56 @@ namespace CivOne.Units
 			return true;
 		}
 
-		protected virtual bool TryLeavingRoad(ITile moveTarget, int relX, int relY)
+		// auf road oder river, wie in newmethod
+		private bool IsFastRoadTraveling(int relX, int relY, ITile moveTarget)
+		{
+			bool isOnRoad = (moveTarget.Road || moveTarget.RailRoad) && (Tile.Road || Tile.RailRoad);
+			bool isOnRiver = FastRiverMovement && moveTarget is River && Tile is River;
+
+			return isOnRoad || isOnRiver;
+		}
+
+		private bool TryLeavingRoad(int relX, int relY, ITile moveTarget)
+		{
+			bool exitRoad = !moveTarget.Road && moveTarget.Movement > 1;
+
+			if (MovesLeft > 0 || !exitRoad)
+			{
+				return true;
+			}
+
+			if (!AllowedToLeaveRoad(moveTarget, relX, relY))
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+
+		private bool HasHitObstacle(int relX, int relY, ITile moveTarget)
+		{
+			bool isHumanMove = Human == Owner;
+			bool isMultiMoveUnit = Move > 1; // CW: only by observation
+			bool hasNotEnoughMoves = MovesLeft < moveTarget.Movement;
+
+			if (!isHumanMove || !isMultiMoveUnit || !hasNotEnoughMoves)
+			{
+				return false;
+			}
+			
+			// 10% chance of failure if not enough moves left to enter the tile
+			var failure = Common.Random.Hit(10);
+			if (failure)
+			{
+				SkipTurn();
+				return true;
+			}
+
+			return false;
+		}
+
+		protected virtual bool AllowedToLeaveRoad(ITile moveTarget, int relX, int relY)
 		{
 			bool success;
 			if (PartMoves >= 2)

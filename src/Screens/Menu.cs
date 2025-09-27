@@ -17,7 +17,7 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens
 {
-	[Expand]
+	[ScreenResizeable]
 	public class Menu<T> : BaseScreen, IMenu
 	{
 		private readonly Picture _background;

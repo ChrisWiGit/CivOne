@@ -9,17 +9,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
+using CivOne.IO;
 using CivOne.Units;
 using CivOne.UserInterface;
 using CivOne.Wonders;
 
 namespace CivOne.Screens
 {
+	[ScreenResizeable]
 	internal class CityChooseProduction : BaseScreen
 	{
 		private readonly City _city;
@@ -31,7 +34,9 @@ namespace CivOne.Screens
 		private bool _update = true;
 		private int _menuHeight;
 		private int _page = 0;
-		
+
+		private Menu _menu;
+
 		private void MenuCancel(object sender, EventArgs args)
 		{
 			CloseMenus();
@@ -68,7 +73,12 @@ namespace CivOne.Screens
 		{
 			if (_update)
 			{
-				this.FillRectangle(0, 0, 320, 200, 0);
+				_update = false;
+
+				this.Clear();
+
+				// CW: Refactoring idea would be to remove all calculations from here into a separate method called only once
+				//    and store the results to be used here for drawing.
 
 				List<string> menuItems = new List<string>();
 				string menuHeaderText = $"What shall we build in {_city.Name}?";
@@ -118,53 +128,68 @@ namespace CivOne.Screens
 				int width = itemWidth + 14;
 				int height = _menuHeight + 10 + Resources.GetFontHeight(_fontId);
 
-				using (Picture menuGfx = new Picture(width, height))
-				{
-					menuGfx.Tile(Pattern.PanelGrey)
-						.DrawRectangle3D()
-						.DrawText(menuHeaderText, _fontId, 15, 4, 4)
-						.DrawText($"(Help available)", 1, 10, width, height - Resources.GetFontHeight(1), TextAlign.Right);
+				using Picture menuGfx = new(width, height);
 
-					this.FillRectangle(80, 8, width + 2, height + 2, 5)
-						.AddLayer(menuGfx, 81, 9);
-					
-					using (Picture background = menuGfx[2, 3 + Resources.GetFontHeight(_fontId), itemWidth, Resources.GetFontHeight(_fontId) * menuItems.Count + 4])
-					{
-						background.ColourReplace((7, 11), (22, 3));
+				menuGfx.Tile(Pattern.PanelGrey)
+					.DrawRectangle3D()
+					.DrawText(menuHeaderText, _fontId, 15, 4, 4)
+					.DrawText($"(Help available)", 1, 10, width, height - Resources.GetFontHeight(1), TextAlign.Right);
 
-						Menu menu = new Menu(Palette, background)
-						{
-							X = 83,
-							Y = 12 + Resources.GetFontHeight(_fontId),
-							MenuWidth = itemWidth,
-							ActiveColour = 11,
-							TextColour = 5,
-							FontId = _fontId
-						};
+				this.FillRectangle(80, 8, width + 2, height + 2, 5); // produces black border, +2 because of round errors when resizing
+				this.AddLayer(menuGfx, 81, 9);
 
-						int i = 0;
-						foreach (string item in menuItems)
-						{
-							menu.Items.Add(item, i++)
-								.OnSelect(ProductionChoice)
-								.OnContext(ProductionContext);
-						}
-						menu.MenuWidth += 10;
-						menu.MissClick += MenuCancel;
-						menu.Cancel += MenuCancel;
+				using Picture background = menuGfx[2, 3 + Resources.GetFontHeight(_fontId), itemWidth, Resources.GetFontHeight(_fontId) * menuItems.Count + 4];
+				background.ColourReplace((7, 11), (22, 3));
 
-						AddMenu(menu);
-					}
-				}
-				_update = false;
+				AddMenu(menuItems, itemWidth, background);
 			}
 			return true;
+		}
+
+		private void AddMenu(List<string> menuItems, int itemWidth, Picture background)
+		{
+			if (_menu != null)
+			{
+				// The menu does not have to be recreated if it already exists
+				// Otherwise Selection is lost when resizing the screen
+				return;
+			}
+			_menu = new Menu(Palette, background)
+			{
+				X = 83,
+				Y = 12 + Resources.GetFontHeight(_fontId),
+				MenuWidth = itemWidth,
+				ActiveColour = 11,
+				TextColour = 5,
+				FontId = _fontId
+			};
+
+			int i = 0;
+			foreach (string item in menuItems)
+			{
+				_menu.Items.Add(item, i++)
+					.OnSelect(ProductionChoice)
+					.OnContext(ProductionContext)
+					.OnHelp(ProductionContext);
+			}
+			_menu.MenuWidth += 10;
+			_menu.MissClick += MenuCancel;
+			_menu.Cancel += MenuCancel;
+
+			AddMenu(_menu);
+		}
+
+		protected override void Resize(int width, int height)
+		{
+			_update = true;
+			_menu.Refresh();
+			base.Resize(width, height);
 		}
 
 		public CityChooseProduction(City city) : base(MouseCursor.Pointer)
 		{
 			_city = city;
-			
+
 			Palette = Common.DefaultPalette;
 
 			_availableProduction = _city.AvailableProduction.ToArray();

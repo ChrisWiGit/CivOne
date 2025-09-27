@@ -12,13 +12,14 @@ using System.Linq;
 using CivOne.Advances;
 using CivOne.Civilizations;
 using CivOne.Enums;
+using CivOne.Services.GlobalWarming;
 using CivOne.Tiles;
 using CivOne.Units;
 
 namespace CivOne
 {
 	public partial class Game
-    {
+	{
 		private void AddStartingUnits(byte player)
 		{
 			// Translated from this post by darkpanda, might contain errors:
@@ -39,7 +40,7 @@ namespace CivOne
 				else
 				{
 					ITile tile = Map[x, y];
-					
+
 					if (tile.IsOcean) continue; // Is it an ocean tile?
 					if (tile.Hut) continue; // Is there a hut on this tile?
 					if (_units.Any(u => u.X == x || u.Y == y)) continue; // Is there already a unit on this tile?
@@ -47,14 +48,14 @@ namespace CivOne
 					if (_cities.Any(c => Common.DistanceToTile(x, y, c.X, c.Y) < (10 - (loopCounter / 64)))) continue; // Distance to other cities
 					if (_units.Any(u => (u is Settlers) && Common.DistanceToTile(x, y, u.X, u.Y) < (10 - (loopCounter / 64)))) continue; // Distance to other settlers
 					if (Map.ContinentTiles(tile.ContinentId).Count(t => Map.TileIsType(t, Terrain.Plains, Terrain.Grassland1, Terrain.Grassland2, Terrain.River)) < (32 - (GameTurn / 16))) continue; // Check buildable tiles on continent
-					
+
 					// CW: Civs are only spawned until 0 AD. So what is the point of this?
 					// After 0 AD, don't spawn a Civilization on a continent that already contains cities.
 					if (Common.TurnToYear(GameTurn) >= 0 && Map.ContinentTiles(tile.ContinentId).Any(t => t.City != null)) continue;
-					
+
 					Log(loopCounter.ToString());
 				}
-				
+
 				// Starting position found, add Settlers
 				IUnit unit = CreateUnit(UnitType.Settlers, x, y);
 				unit.Owner = player;
@@ -69,7 +70,7 @@ namespace CivOne
 		{
 			// Translated drom this post by Gowron:
 			// http://forums.civfanatics.com/showthread.php?t=494994
-			
+
 			// All Handicap values start from 0.
 			byte handicap = 0;
 			IUnit startUnit = _units.Where(u => u.Owner == player).FirstOrDefault();
@@ -78,7 +79,7 @@ namespace CivOne
 
 			ITile[] continent = Map.ContinentTiles(Map[x, y].ContinentId).ToArray();
 			IUnit[] unitsOnContinent = _units.Where(u => continent.Any(c => (c.X == u.X && c.Y == u.Y))).ToArray();
-			
+
 			if (unitsOnContinent.Count() == 0)
 			{
 				// Add +4 if the civ does not share its land mass with any other civs.
@@ -155,7 +156,7 @@ namespace CivOne
 				bonus--;
 			}
 		}
-		
+
 		public static void CreateGame(int difficulty, int competition, ICivilization tribe, string leaderName = null, string tribeName = null, string tribeNamePlural = null)
 		{
 			if (_instance != null)
@@ -164,11 +165,24 @@ namespace CivOne
 				return;
 			}
 			_instance = new Game(difficulty, competition, tribe, leaderName, tribeName, tribeNamePlural);
-			
+
 			foreach (IUnit unit in _instance._units)
 			{
 				unit.Explore();
 			}
+		}
+
+		private void InitGlobalWarmingServices()
+		{
+			globalWarmingService = GlobalWarmingServiceFactory.CreateGlobalWarmingService(_cities.AsReadOnly(), Map.AllTiles());
+			globalWarmingScourgeService = GlobalWarmingServiceFactory.CreateGlobalWarmingScourgeService(
+				globalWarmingService,
+				Map.Tiles,
+				(tile, newTerrainType) => Map.ChangeTileType(tile.X, tile.Y, newTerrainType),
+				DisbandUnit,
+				Map.WIDTH,
+				Map.HEIGHT
+			);
 		}
 
 		private Game(int difficulty, int competition, ICivilization tribe, string leaderName, string playerTribeName, string playerTribeNamePlural)
@@ -214,12 +228,12 @@ namespace CivOne
 				_players[i] = new Player(civs[r]);
 				if (i != 0)
 				{
-					 // fire-eggs 20190730 never show "barbarian civilization destroyed"
+					// fire-eggs 20190730 never show "barbarian civilization destroyed"
 					_players[i].Destroyed += PlayerDestroyed;
 				}
 				Log("- Player {0} is {1} of the {2}", i, _players[i].LeaderName, _players[i].TribeNamePlural);
 			}
-			
+
 			Log("Adding starting units...");
 			for (byte i = 1; i <= competition; i++)
 			{
@@ -242,6 +256,8 @@ namespace CivOne
 
 			// Number of turns to next anthology needs to be checked
 			_anthologyTurn = (ushort)Common.Random.Next(1, 128);
+
+			InitGlobalWarmingServices();
 		}
 	}
 }

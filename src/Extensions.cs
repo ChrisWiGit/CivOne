@@ -90,7 +90,8 @@ namespace CivOne
             // TODO fire-eggs fails to take 'fortifyING' into account?
             IUnit[] units = city.Tile?.Units.Where(x => x.Home == city && x.Fortify).Take(2).ToArray();
 			
-			return new CityData {
+			return new CityData
+			{
 				Id = city.GetId(),
 				NameId = (byte)city.NameId,
 				Status = city.Status,
@@ -103,8 +104,9 @@ namespace CivOne
 				Food = (ushort)city.Food,
 				Shields = (ushort)city.Shields,
 				ResourceTiles = city.GetResourceTiles(),
-                // fire-eggs 20190622 make sure to save fortify/veteran status as per Microprose
-				FortifiedUnits = units?.Select(x => (byte)((int)x.Type | 0x40 | (x.Veteran ? 0x80 : 0))).ToArray()
+				// fire-eggs 20190622 make sure to save fortify/veteran status as per Microprose
+				FortifiedUnits = units?.Select(x => (byte)((int)x.Type | 0x40 | (x.Veteran ? 0x80 : 0))).ToArray(),
+				TradingCities = [.. city.TradingCities.Select(c => c.GetId())]
 			};
 		}
 

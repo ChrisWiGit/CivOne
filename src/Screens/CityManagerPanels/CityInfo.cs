@@ -215,7 +215,7 @@ namespace CivOne.Screens.CityManagerPanels
 				switch (_choice)
 				{
 					case CityInfoChoice.Info:
-						this.AddLayer(InfoFrame, 0, 9);
+						this.AddLayer(_cityInfoUnits.Bitmap, 0, 9);
 						break;
 					case CityInfoChoice.Happy:
 						this.AddLayer(HappyFrame, 0, 9);
@@ -227,7 +227,15 @@ namespace CivOne.Screens.CityManagerPanels
 
 				_update = false;
 			}
+			if (IsUnitsInfoActive && _cityInfoUnits.Update(gameTick)) _update = true;
+
 			return true;
+		}
+
+		public override bool Update(uint gameTick)
+		{
+			return base.Update(gameTick) ||
+				(IsUnitsInfoActive && _cityInfoUnits.Update(gameTick));
 		}
 
 		private bool GotoInfo()
@@ -261,6 +269,8 @@ namespace CivOne.Screens.CityManagerPanels
 		
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
+			if (IsUnitsInfoActive && _cityInfoUnits.KeyDown(args)) return true;
+
 			switch (args.KeyChar)
 			{
 				case 'I':
@@ -294,6 +304,8 @@ namespace CivOne.Screens.CityManagerPanels
 		
 		public override bool MouseDown(ScreenEventArgs args)
 		{
+			if (IsUnitsInfoActive && _cityInfoUnits.MouseDown(args)) return true;
+
 			if (args.Y < 10)
 			{
 				if (args.X < 34) return GotoInfo();
@@ -314,15 +326,24 @@ namespace CivOne.Screens.CityManagerPanels
 			return true;
 		}
 
-		public CityInfo(City city) : base(133, 92)
+		protected bool IsUnitsInfoActive => _choice == CityInfoChoice.Info;
+
+		public CityInfo(City city, ICityManager cityManager) : base(133, 92)
 		{
 			_city = city;
-			_units = Game.GetUnits().Where(u => u.X == city.X && u.Y == city.Y).ToArray();
-		}
+			_units = [.. Game.GetUnits().Where(u => u.X == city.X && u.Y == city.Y)];
 
-        public void Update()
-        {
-            _update = true;
-        }
+			_cityInfoUnits = new CityInfoUnits(city, cityManager, _units);
+			
+			GotoInfo();
+		}
+		
+		private readonly CityInfoUnits _cityInfoUnits;
+
+		public void Update()
+		{
+			_update = true;
+			_cityInfoUnits.Update();
+		}
     }
 }

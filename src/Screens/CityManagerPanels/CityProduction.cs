@@ -26,20 +26,18 @@ namespace CivOne.Screens.CityManagerPanels
 		private readonly City _city;
 		private readonly bool _viewCity;
 		
-		private bool _update = true;
-
 		private int _shieldPrice, _totalShields, _shieldsPerLine;
 		private double _shieldWidth;
 
 		private void ForceUpdate(object sender, EventArgs args)
 		{
-			_update = true;
+			Refresh();
 		}
 
 		private void AcceptBuy(object sender, EventArgs args)
 		{
 			_city.Buy();
-			_update = true;
+			Refresh();
 		}
 
 		private void DrawShields()
@@ -70,7 +68,7 @@ namespace CivOne.Screens.CityManagerPanels
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_update || ProductionInvalid)
+			if (RefreshNeeded() || ProductionInvalid)
 			{
 				_shieldsPerLine = 10;
 				_shieldPrice = (int)_city.CurrentProduction.Price * 10;
@@ -100,10 +98,10 @@ namespace CivOne.Screens.CityManagerPanels
 					this.FillRectangle(0, 19 + height, width, 80 - height, 5);
 				}
 				bool blink = ProductionInvalid && (gameTick % 4 > 1);
-				if (!(Common.TopScreen is CityManager)) blink = ProductionInvalid;
+				if (Common.TopScreen is not CityManager) blink = ProductionInvalid;
 				if (!_viewCity)
 				{
-					DrawButton("Change", (byte)(blink ? 14 : 9), 1, 1, 7, 33);
+					DrawButton(_city.AutoBuild ? "AUTO." : "Change", (byte)(blink ? 14 : 9), 1, 1, 7, 33);
 					DrawButton("Buy", 9, 1, 64, 7, 18);
 				}
 
@@ -111,7 +109,7 @@ namespace CivOne.Screens.CityManagerPanels
 
 				if (_city.CurrentProduction is IUnit)
 				{
-					IUnit unit = (_city.CurrentProduction as IUnit);
+					IUnit unit = _city.CurrentProduction as IUnit;
 					this.AddLayer(unit.ToBitmap(_city.Owner), 33, 0);
 				}
 				else
@@ -124,18 +122,21 @@ namespace CivOne.Screens.CityManagerPanels
 					this.DrawText(name, 1, 15, 44, 1, TextAlign.Center);
 				}
 				
-				_update = false;
+				Refresh();
 			}
 			return true;
 		}
 
 		public void Update()
 		{
-			_update = true;
+			Refresh();
 		}
 
 		private bool Change()
 		{
+			_city.AutoBuild = false;
+			Refresh();
+
 			CityChooseProduction cityProductionMenu = new CityChooseProduction(_city);
 			cityProductionMenu.Closed += ForceUpdate;
 			Common.AddScreen(cityProductionMenu);
@@ -160,17 +161,27 @@ namespace CivOne.Screens.CityManagerPanels
 			Common.AddScreen(confirmBuy);
 			return true;
 		}
+
+		private bool AIControl()
+		{
+			if (!Game.CurrentPlayer.IsHuman) return false;
+
+			_city.AutoBuild = !_city.AutoBuild;
+			_city.UpdateAutoBuild();
+			
+			Refresh();
+			return true;
+		}
 		
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
-			switch (args.KeyChar)
+			return args.KeyChar switch
 			{
-				case 'C':
-					return Change();
-				case 'B':
-					return Buy();
-			}
-			return false;
+				'A' => args.Modifier == KeyModifier.Shift && AIControl(),
+				'B' => args.Modifier == KeyModifier.None && Buy(),
+				'C' => args.Modifier == KeyModifier.None && Change(),
+				_ => false,
+			};
 		}
 
 		public override bool MouseDown(ScreenEventArgs args)

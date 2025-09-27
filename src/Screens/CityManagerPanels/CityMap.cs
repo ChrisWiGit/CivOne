@@ -8,7 +8,9 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Drawing;
 using System.Linq;
+using System.Net;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -20,10 +22,13 @@ namespace CivOne.Screens.CityManagerPanels
 	internal class CityMap : BaseScreen
 	{
 		private readonly City _city;
-		
+
 		private bool _update = true;
-		
+
 		public event EventHandler MapUpdate;
+
+		private Point? _selectedTile = null;
+		private int MAX_TILES = 5;
 
 		private void DrawResources(ITile tile, int x, int y)
 		{
@@ -49,42 +54,48 @@ namespace CivOne.Screens.CityManagerPanels
 				IBitmap icon;
 				if (i >= food + shield) icon = Icons.Trade;
 				else if (i >= food) icon = Icons.Shield;
-				else icon = Icons.Food; 
+				else icon = Icons.Food;
 
 				int xx = (x + ((i % iconsPerLine) * iconWidth));
 				int yy = (y + (((i - (i % iconsPerLine)) / iconsPerLine) * 8));
+
 				this.AddLayer(icon, xx, yy);
 			}
 		}
-		
+
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (_update)
 			{
 				this.Tile(Pattern.PanelBlue)
 					.DrawRectangle(colour: 1);
-				
+
 				ITile[,] tiles = _city.CityRadius;
 				this.AddLayer(tiles.ToBitmap(TileSettings.CityManager, Settings.RevealWorld ? null : Game.GetPlayer(_city.Owner)), 1, 1, dispose: true);
 
-				for (int xx = 0; xx < 5; xx++)
-				for (int yy = 0; yy < 5; yy++)
-				{
-					ITile tile = tiles[xx, yy];
-					if (tile == null) continue;
-
-					if (_city.OccupiedTile(tile))
+				for (int xx = 0; xx < MAX_TILES; xx++)
+					for (int yy = 0; yy < MAX_TILES; yy++)
 					{
-						this.FillRectangle((xx * 16) + 1, (yy * 16) + 1, 16, 1, 12)
-							.FillRectangle((xx * 16) + 1, (yy * 16) + 2, 1, 14, 12)
-							.FillRectangle((xx * 16) + 1, (yy * 16) + 16, 16, 1, 12)
-							.FillRectangle((xx * 16) + 16, (yy * 16) + 2, 1, 14, 12);
+						ITile tile = tiles[xx, yy];
+						if (tile == null) continue;
+
+						if (_city.OccupiedTile(tile))
+						{
+							this.FillRectangle((xx * 16) + 1, (yy * 16) + 1, 16, 1, 12)
+								.FillRectangle((xx * 16) + 1, (yy * 16) + 2, 1, 14, 12)
+								.FillRectangle((xx * 16) + 1, (yy * 16) + 16, 16, 1, 12)
+								.FillRectangle((xx * 16) + 16, (yy * 16) + 2, 1, 14, 12);
+						}
+
+						if (_city.ResourceTiles.Contains(tile))
+							DrawResources(tile, (xx * 16) + 1, (yy * 16) + 1);
+
+						if (_selectedTile.Equals(new Point(xx, yy)))
+						{
+							this.DrawRectangle((xx * 16) + 1, (yy * 16) + 1, 16, 16, 15);
+						}
 					}
 
-					if (_city.ResourceTiles.Contains(tile))
-						DrawResources(tile, (xx * 16) + 1, (yy * 16) + 1);
-				}
-				
 				_update = false;
 			}
 			return true;
@@ -94,7 +105,7 @@ namespace CivOne.Screens.CityManagerPanels
 		{
 			_update = true;
 		}
-		
+
 		public override bool MouseDown(ScreenEventArgs args)
 		{
 			if (args.X < 1 || args.X > 81 || args.Y < 1 || args.Y > 81) return false;
@@ -105,13 +116,98 @@ namespace CivOne.Screens.CityManagerPanels
 
 			_city.SetResourceTile(_city.CityRadius[tileX, tileY]);
 			_update = true;
-            MapUpdate?.Invoke(this, null);
-            return true;
+			MapUpdate?.Invoke(this, null);
+			return true;
 		}
 
-		public CityMap(City city) : base(82, 82)
+		// 'P' activates and stops tile selection mode
+		public override bool KeyDown(KeyboardEventArgs args)
+		{
+			if (args.KeyChar == 'P')
+			{
+				if (_selectedTile != null)
+				{
+					_selectedTile = null;
+					_cityManager.CloseActiveScreen();
+					_update = true;
+					return true;
+				}
+
+				_cityManager.SetActiveScreen(this);
+				_selectedTile = new Point(2, 2);
+				_update = true;
+
+				return true;
+			}
+
+			if (_selectedTile == null)
+			{
+				return false;
+			}
+
+			if (args.Key == Key.Escape)
+			{
+				_selectedTile = null;
+				_cityManager.CloseActiveScreen();
+				_update = true;
+				return true;
+			}
+
+			switch (args.Key)
+			{
+				case Key.Enter:
+				case Key.Space:
+					_city.SetResourceTile(_city.CityRadius[_selectedTile.Value.X, _selectedTile.Value.Y]);
+					MapUpdate?.Invoke(this, null);
+					_update = true;
+					return true;
+				case Key.Up:
+					MoveTile(0, -1);
+					return true;
+				case Key.Down:
+					MoveTile(0, 1);
+					return true;
+				case Key.Left:
+					MoveTile(-1, 0);
+					return true;
+				case Key.Right:
+					MoveTile(1, 0);
+					return true;
+			}
+
+			return false;
+		}
+
+		protected void MoveTile(int x, int y)
+		{
+			ITile[,] tiles = _city.CityRadius;
+			do
+			{
+				_selectedTile = MovePoint(_selectedTile.Value, x, y);
+			} while (tiles[_selectedTile.Value.X, _selectedTile.Value.Y] == null);
+			_update = true;
+		}
+
+		protected Point MovePoint(Point p, int x, int y)
+		{
+			int newX = p.X + x;
+			int newY = p.Y + y;
+
+			if (newX < 0) newX = MAX_TILES - 1;
+			if (newX >= MAX_TILES) newX = 0;
+			if (newY < 0) newY = MAX_TILES - 1;
+			if (newY >= MAX_TILES) newY = 0;
+
+			return new Point(newX, newY);
+		}
+
+
+		public CityMap(City city, ICityManager cityManager) : base(82, 82)
 		{
 			_city = city;
+			_cityManager = cityManager;
 		}
+		
+		private ICityManager _cityManager;
 	}
 }

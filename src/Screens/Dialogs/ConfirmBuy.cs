@@ -18,14 +18,20 @@ namespace CivOne.Screens.Dialogs
 
 		private void MenuYes(object sender, EventArgs args)
 		{
-			if (Buy != null)
-				Buy(this, args);
+			Buy?.Invoke(this, args);
 			Cancel();
 		}
 
 		protected override void FirstUpdate()
 		{
-			Menu menu = new Menu(Palette, Selection(3, 28, TextWidth + 5, 20))
+			DrawMenu();
+
+			base.FirstUpdate();
+		}
+
+		private void DrawMenu()
+		{
+			Menu menu = new(Palette, Selection(3, 28, TextWidth + 5, 20))
 			{
 				X = 103,
 				Y = 108,
@@ -35,7 +41,7 @@ namespace CivOne.Screens.Dialogs
 				FontId = 0
 			};
 			int i = 0;
-			foreach (string choice in new [] { "Yes", "No" })
+			foreach (string choice in new[] { "Yes", "No" })
 			{
 				menu.Items.Add(choice, i++);
 			}

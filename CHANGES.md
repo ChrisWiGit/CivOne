@@ -11,8 +11,99 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Using Dependency Injection pattern to make code exchangeable with other implementations (IMapLoader, IGameTimeService, IHutGeneratorService, ITileConverterService, ILoggerService, ITileConverterService)
   * Separation of concerns: Map loading, Game loading, Map tiles generation, Hut generation.
 * Fix: NPE. CityNameCancel logic to handle city founding by huts correctly.
+* Fix: Avoid negative frame index in CityView animations for invaders/revolters and "We love the president" day.
+* Tax and Science calculations are incoorporated with player rates.
+* Feature: Implement global warming mechanics
+  * The global warming level is indicated by a lamp icon in the sidebar.
+    * none, dark red, light red, yellow, white stages for none, 1, 2-3, 4-5, 6+ polluted squares
+    * More than 8 polluted squares causes global warming event.
+    * After every global warming event, the polluted tiles are cleared and a warming counter is increased.
+    * Next global warming event happens at 8 + (warming counter * 2) polluted squares.
+  * Implementation of calculating pollution is done in GlobalWarmingCountServiceImpl.cs
+  * Changing tiles is done in GlobalWarmingScourgeServiceImpl.cs
+  * Changes can be easily done by inheritance and overriding methods.
+  * Debug menu option to trigger global warming event immediately.
+  * Patches menu option to enable/disable extended pollution mechanisms
+    * Rises sea level and converts land tiles to water tiles in 10% of cases on affected tiles.
+    * Tiles that are affected by global warming:
+      * All river tiles
+      * Jungle tiles
+      * Swamp tiles
+      * Tundra tiles
+      * Arctic tiles
+      * Tiles on top and bottom 3 rows of map (pole ice caps)
+    * Removes units on affected tiles
+    * Removes improvements on affected tiles
+    * Removes pole ice caps (Arctic and Tundra tiles on top and bottom 3 rows of map) in 20% of cases.
+  * [ ] TODO: store and load from save files.
+* Feature: Implement pollution mechanics and visual representation in city management
+* Fix: Removed duplicate update check in DrawLayer to allow using false as return value in HasUpdate in city screens and still be able to draw the contents.
+* Feature: Citizens in Attitude Survey screen and Top Five Cities screen are drawn tightly packed in big cities (size > 20) to show up to 99 citizens.
+  * TopCities screen can be resized in width
+* Feature: Citizens in city view are drawn tightly packed in big cities (size > 20) to show up to 99 citizens.
+  * Specialists are shown and can be interacted with (click to change specialist status)
+  * Routine for calculating citizen positions refactored to allow use in other places later (e.g.
+  attitude survey screen and top five cities screen)
+* Feature: Added hotkey '1' to '9' and '0' to cycle specialists tax, science from 1 to 10
+  * If modifier key Shift is pressed: 11 to 20
+  * Ctrl is pressed: 21 to 30
+  * Alt is pressed: 31 to 40
+  * Ctrl + Shift is pressed: 41 to 50
+  * Alt + Shift is pressed: 51 to 60
+  * Alt + Ctrl is pressed: 61 to 70
+  * Alt + Ctrl + Shift is pressed: 71 to 80
+  * Control + Shift + 0 does not work because KeyDown is not called.
+* Refactor selling city buildings with mouse to allow for extend view mode (in settings) for arbitrary screen sizes.
+  * Using IInteractiveButton to handle button drawing and mouse clicks
+* Feature: Added trading value calculations and display for trading cities in CityInfoUnits
+  * Trading cities are shown in City View (City Info Units panel).
+  * Trade value is calculated based on the original game formula.
+  * Trade value is shown in the city info units panel.
+  * Trade value is added to the total gold of the player.
+  * Trade value has Gold icon behind the value instead of trade arrows.
+    * Trade arrows is incorrect in original game but the small font (id=1) does not have a gold icon.
+  * See [Trading Cities](REMARKS.md#trading-cities) for more details.
+* Feature: Added hotkey 'p' to select tiles in city view map.
+  * Press 'p' to start tile selection.
+  * Use Up/Down/Left/Right arrow keys to move the selection cursor.
+  * Press Space/Enter to add or remove the resource.
+  * Press 'p' or ESC to close tile selection.
+  * Only visible tiles can be selected.
+  * Selection wraps around the map.
+* Feature: Added Trading cities
+  * Up to 3 Trading cities can be established per city.
+  * Trading cities are stored and loaded from save files.
+  * Cities are shown in City View (City Info Units panel).
+  * See [Trading Cities](REMARKS.md#trading-cities) for more details.
+* Feature: Added hotkey 's' to sell buildings in city view.  
+  * Press 's' to start building selection.
+  * Use Up/Down arrow keys to cycle through buildings.
+  * Press Space/Enter to sell the selected building.
+  * Press 's' or ESC to close building selection.
+  * If a building was already sold this turn, a message dialog is shown and no building can be sold again this turn. This is not exactly like in the original game, but more user friendly.
+  * If more than 14 buildings are available, up/down will switch pages.
+  The original game just exits the city view without any message.
+* Feature: Added hotkey 'f' and 's' to set fortified or sentry status for units in city view.  
+* Feature: Added hotkeys to CityManager
+  * 1-9 to cycle specialists tax, science
+  * hotkey 'a' to select units in city. Use arrow keys to cycle through units. Use space/enter to select unit and remove fortified/sentry status. ESC/'a' to close unit selection.
+  * Mouse click on unit icon to remove fortified/sentry status.
+  * Hotkey Shift+'a' to select auto build item.
+* Fix: specialists can only be changed if city is greater than 4 size
+* Fix: Add help context with alt+h to city production menu items.
+  * Fixes NPE if alt+h is pressed in production menu.
+* Feature: While showing the intro screen (credits) the first letter of each menu entry can be used as a hotkey to immediately execute the corresponding menu item. Like in the original game. Issue #1.
+  * s for Start a New Game
+  * l for Load a Saved Game
+  * e for EARTH
+  * c for Customize World
+  * v for View Hall of Fame (not implemented)
+* Fix: When a unit with more than one standard moving points (cavalerie, armor etc.) but has less current moving points, and the terrain target is a tile with more than one moving point (mountain, hills, etc.), there is a 10% chance that moving fails. (#180 Terrain difficulty not preventing units from moving). Implemented through observation.
+* Fix: City view may show 0 houses.
+  * Improved house placement algorithm to add at least 2 houses in city view instead of 0. (Issue original repo: #32, #61 of forked repo)
 * Feature: City specialists (tax, science, and entertainer) and City status (e.g. riot, coastal, hydro, auto build, tech stolen, celebration or rapture, building sold) are now saved and restored from save files.
-* Feature?: Up to 2 fortified units in a city are now stored in City.FortifiedUnits data structure and do not count to unit max count for the civilization.
+* FortifiedUnits data structure and do not count to unit max count for the civilization.
+  * Feature: Up to 2 fortified units in a city are now stored in save game in separate slot.
   * See [Remarks](REMARKS.md#fortified-units-in-cities) for more details.
   * Though this may not be the exact behavior of the original game. Must be tested.
 * Fix: Units in a city that are not fortified are now correctly restored from save files (previously these were lost).

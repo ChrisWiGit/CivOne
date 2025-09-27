@@ -14,6 +14,9 @@ using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.Persistence;
+using CivOne.Services;
+using CivOne.Services.GlobalWarming;
+using CivOne.Services.GlobalWarming.Impl;
 using CivOne.Units;
 using CivOne.Wonders;
 
@@ -281,6 +284,9 @@ namespace CivOne
 				}
 
 				cityList.Add(cityData.Id, city);
+
+				const byte NO_CITY = 0xFF;
+				city.SetTradingCitiesIndexes([.. cityData.TradingCities.Select(index => (int)index).Where(index => index != NO_CITY)]);
 			}
 			// End: SetupCities()
 
@@ -310,6 +316,15 @@ namespace CivOne
 
 			_replayData.AddRange(gameData.ReplayData);
 
+			globalWarmingService = GlobalWarmingServiceFactory.CreateGlobalWarmingService(gameData, _cities.AsReadOnly(), Map.AllTiles());
+			globalWarmingScourgeService = GlobalWarmingServiceFactory.CreateGlobalWarmingScourgeService(
+				globalWarmingService,
+				Map.Tiles,
+				(tile, newTerrainType) => Map.ChangeTileType(tile.X, tile.Y, newTerrainType),
+				DisbandUnit,
+				Map.WIDTH,
+				Map.HEIGHT
+			);
 
 			// Game Settings
 			// Start:SetupOptions()

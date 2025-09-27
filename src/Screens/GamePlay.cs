@@ -21,7 +21,7 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens
 {
-	[Expand]
+	[ScreenResizeable]
 	internal class GamePlay : BaseScreen
 	{
 		private readonly MenuBar _menuBar;
@@ -390,7 +390,7 @@ namespace CivOne.Screens
 			_rightSideBar = Settings.RightSideBar;
 
 			_menuBar = new MenuBar(Palette);
-			_sideBar = new SideBar(Palette);
+			_sideBar = new SideBar(Palette, Game.GlobalWarmingService);
 			_gameMap = new GameMap();
 
 			CenterMapOnActiveHumanPlayerAsset();
