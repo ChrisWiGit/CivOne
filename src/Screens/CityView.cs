@@ -100,14 +100,16 @@ namespace CivOne.Screens
 				return true;
 			}
 			
- 			if (_weLovePresidentDay)
+			if (_weLovePresidentDay)
 			{
 				this.AddLayer(_background);
 				int frame = ((_x + 600) % 30) / 3;
 				if (frame < 0)
 				{
 					Log($"Warning: We love the president day frame is negative: {frame} for x={_x} and player={_city.Owner}");
-					frame = 0;
+					//CW: Reset to first frame and set _x to right side of screen as in construction of class.
+					frame = 0; // =(240 + 600) % 30 / 3;
+					_x = 240;
 				}
 				for (int i = 0; i <= 7; i++)
 					{
