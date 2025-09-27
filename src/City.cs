@@ -428,8 +428,20 @@ namespace CivOne
 
 		internal bool GeneratePollution()
 		{
-			// every smoke stack generates 1% chance of a return true
-			return Common.Random.Hit(SmokeStacks);
+			// CW: Source: https://forums.civfanatics.com/threads/pollution-bug-nailed.535608/
+			// IF ( 2 * CityPollution > Random(256 - CityOwnerTechCount * difficultyLevel / 2) ) THEN AddPollution
+			if (SmokeStacks == 0) 
+			{
+				// CW: Bugfix: Prevent the formula to be used on cities that do not generate pollution.
+				return false;
+			}
+
+			int maxRandom = 256 - (Player.Advances.Length * (1 + Game.Difficulty) / 2);
+			if (maxRandom < 1) maxRandom = 2; // Prevents bug -> still 50% chance of pollution with 256 advances
+
+			int rnd = Common.Random.Next(maxRandom);
+
+			return (2 * SmokeStacks) > rnd;
 		}
 
 		internal byte _status = 0;
@@ -1055,14 +1067,24 @@ namespace CivOne
 			{
 				return;
 			}
-			List<ITile> cityTiles = [.. CityTiles.Where(t => !t.Pollution && !t.HasCity)];
 
-			int tileToPollute = Common.Random.Next(cityTiles.Count);
+			List<ITile> possiblePollutionTiles = [.. CityTiles.Where(t => !t.Pollution && !t.HasCity && t is not Ocean)];
+			if (possiblePollutionTiles.Count == 0)
+			{
+				return;
+			}
 
-			cityTiles[tileToPollute].Pollution = true;
-			
+			int tileToPollute = Common.Random.Next(possiblePollutionTiles.Count);
+
+			possiblePollutionTiles[tileToPollute].Pollution = true;
+
+			if (Human != Owner)
+			{
+				return;
+			}
+
 			GameTask.Enqueue(Message.Newspaper(this, "Pollution in", $"{this.Name}!", "Health problems feared."));
-		}	
+		}
 
 		public void NewTurn()
 		{
