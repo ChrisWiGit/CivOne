@@ -18,14 +18,18 @@ using CivOne.Tiles;
 
 namespace CivOne
 {
-	public partial class Map : IMap
+	public partial class Map : IMap, IMapCommand
 	{
 		private static Resources Resources = Resources.Instance;
 		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
 
 		private static int _width = 80, _height = 50;
 		public static int WIDTH => _width;
+		public int Width => _width;
+
 		public static int HEIGHT => _height;
+
+		public int Height => _height;
 		
 		protected IHutGeneratorService HutGeneratorService => MapServiceProvider.GetHutProvider(Randomness);
 

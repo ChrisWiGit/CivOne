@@ -15,7 +15,8 @@ namespace CivOne.Persistence.Impl
 
 			var map = mapLoader.Load(gameData.RandomSeed);
 
-			return new Game.GameBuilder(gameData, map)
+			return new Game.GameBuilder(gameData, map, map)
+				.WithNewGame(new Game(map))
 				.SetupAll()
 				.Build();
 		}

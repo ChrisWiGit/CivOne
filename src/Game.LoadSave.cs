@@ -134,7 +134,7 @@ namespace CivOne
 			}
 		}
 
-		private Game(IMap map)
+		public Game(IMap map)
 		{
 			// TODO: CW: This is temporarily until DI is implemented properly and we don't need a static Map instance anymore.
 			Map.SetInstance(map);

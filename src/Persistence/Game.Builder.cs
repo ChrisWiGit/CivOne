@@ -6,6 +6,7 @@ using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.Persistence;
+using CivOne.Services.GlobalWarming;
 using CivOne.Units;
 using CivOne.Wonders;
 
@@ -16,16 +17,26 @@ namespace CivOne
 		public class GameBuilder
 		{
 			private readonly IGameData _data;
-			private readonly Game _game;
+			private Game _game;
+
+			private readonly IMapQuery _mapQuery;
+			private readonly IMapCommand _mapCommand;
 
 			internal readonly CityLoadGame _cityLoadGame = new();
 
 			protected ILoggerService Logger => _game;
 
-			public GameBuilder(IGameData data, IMap map)
+			public GameBuilder(IGameData data, IMapQuery mapQuery, IMapCommand mapCommand)
 			{
 				_data = data;
-				_game = new Game(map);
+				_mapCommand = mapCommand;
+				_mapQuery = mapQuery;
+			}
+
+			public GameBuilder WithNewGame(Game newGame)
+			{
+				_game = newGame ?? throw new ArgumentNullException(nameof(newGame));
+				return this;
 			}
 
 			protected byte BARBARIAN_PLAYER = 1;
@@ -43,6 +54,23 @@ namespace CivOne
 				_game._anthologyTurn = _data.NextAnthologyTurn;
 
 				_game._replayData.AddRange(_data.ReplayData);
+
+				return this;
+			}
+
+			public GameBuilder SetupGlobalWarming()
+			{
+				_game.globalWarmingService = GlobalWarmingServiceFactory.CreateGlobalWarmingService(
+						_data, _game.Cities.AsReadOnly(), _mapQuery.AllTiles());
+
+				_game.globalWarmingScourgeService = GlobalWarmingServiceFactory.CreateGlobalWarmingScourgeService(
+					_game.globalWarmingService,
+					_mapQuery.Tiles,
+					(tile, newTerrainType) => _mapCommand.ChangeTileType(tile.X, tile.Y, newTerrainType),
+					_game.DisbandUnit,
+					_mapQuery.Width,
+					_mapQuery.Height
+				);
 
 				return this;
 			}
@@ -285,6 +313,7 @@ namespace CivOne
 					.SetupCities()
 					.SetupUnits()
 					.SetupCurrentPlayer()
+					.SetupGlobalWarming()
 					.SetupOptions()
 					.SetupRandomSeed();
 			}
