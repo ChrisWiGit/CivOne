@@ -85,6 +85,11 @@ namespace CivOne.Screens
 			{
 				this.AddLayer(_background);
 				int frame = (_x % 30) / 3;
+				if (frame < 0)
+				{
+					Log($"Warning: Invaders/Revolters frame is negative: {frame} for x={_x} and player={_city.Owner}");
+					frame = 0;
+				}
 				for (int i = 7; i >= 0; i--)
 				{
 					int xx = (_x - 65) - (48 * i);
@@ -99,12 +104,17 @@ namespace CivOne.Screens
 			{
 				this.AddLayer(_background);
 				int frame = ((_x + 600) % 30) / 3;
-				for (int i = 0; i <= 7; i++)
+				if (frame < 0)
 				{
-					int xx = (_x + 65) + (48 * i);
-					//if (xx <= 0) continue;
-					this.AddLayer(_invadersOrRevolters[frame], xx, _y);
+					Log($"Warning: We love the president day frame is negative: {frame} for x={_x} and player={_city.Owner}");
+					frame = 0;
 				}
+				for (int i = 0; i <= 7; i++)
+					{
+						int xx = (_x + 65) + (48 * i);
+						//if (xx <= 0) continue;
+						this.AddLayer(_invadersOrRevolters[frame], xx, _y);
+					}
 				_x--;
 
 				return true;
