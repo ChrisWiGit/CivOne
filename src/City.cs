@@ -754,6 +754,17 @@ namespace CivOne
 			return true;
 		}
 
+		public bool UpdateAutoBuild()
+		{
+			if (!AutoBuild)
+			{
+				return false;
+			}
+			AI.Instance(Player).CityProduction(this);
+
+			return true;
+		}
+
 		public int Population
 		{
 			get
@@ -1290,9 +1301,14 @@ namespace CivOne
 			BuildingSold = false;
 			GameTask.Enqueue(new ProcessScience(Player));
 
-			if (Player.IsHuman) return;
-
-			Player.AI.CityProduction(this);
+			if (Player.IsHuman)
+			{
+				UpdateAutoBuild();
+			}
+			else
+			{
+				Player.AI.CityProduction(this);
+			}
 		}
 
 		public void Disaster()
