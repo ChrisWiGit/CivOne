@@ -6,6 +6,8 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Avoid negative frame index in CityView animations for invaders/revolters and "We love the president" day.
+* Tax and Science calculations are incoorporated with player rates.
 * Feature: Implement global warming mechanics
   * The global warming level is indicated by a lamp icon in the sidebar.
     * none, dark red, light red, yellow, white stages for none, 1, 2-3, 4-5, 6+ polluted squares
@@ -81,6 +83,7 @@ I did not browse all issues on github at first, so I did not recognize that some
   * 1-9 to cycle specialists tax, science
   * hotkey 'a' to select units in city. Use arrow keys to cycle through units. Use space/enter to select unit and remove fortified/sentry status. ESC/'a' to close unit selection.
   * Mouse click on unit icon to remove fortified/sentry status.
+  * Hotkey Shift+'a' to select auto build item.
 * Fix: specialists can only be changed if city is greater than 4 size
 * Fix: Add help context with alt+h to city production menu items.
   * Fixes NPE if alt+h is pressed in production menu.
@@ -94,8 +97,8 @@ I did not browse all issues on github at first, so I did not recognize that some
 * Fix: City view may show 0 houses.
   * Improved house placement algorithm to add at least 2 houses in city view instead of 0. (Issue original repo: #32, #61 of forked repo)
 * Feature: City specialists (tax, science, and entertainer) and City status (e.g. riot, coastal, hydro, auto build, tech stolen, celebration or rapture, building sold) are now saved and restored from save files.
-* Feature?: Up to 2 fortified units in a city are now stored in City.
 * FortifiedUnits data structure and do not count to unit max count for the civilization.
+  * Feature: Up to 2 fortified units in a city are now stored in save game in separate slot.
   * See [Remarks](REMARKS.md#fortified-units-in-cities) for more details.
   * Though this may not be the exact behavior of the original game. Must be tested.
 * Fix: Units in a city that are not fortified are now correctly restored from save files (previously these were lost).
