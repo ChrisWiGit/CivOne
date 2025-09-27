@@ -222,10 +222,15 @@ namespace CivOne.Screens.CityManagerPanels
 
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
+			if (args.Modifier != KeyModifier.None)
+			{
+				return false;
+			}
+
 			if (args.KeyChar == 'A')
 			{
 				if (Units.Count == 0) return true;
-				
+
 				_update = true;
 
 				if (_selectedUnit != -1)
