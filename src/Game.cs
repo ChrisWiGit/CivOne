@@ -164,6 +164,16 @@ namespace CivOne
 
 		public IGlobalWarmingService GlobalWarmingService => globalWarmingService;
 		internal IGlobalWarmingScourgeService globalWarmingScourgeService;
+
+		/// <summary>
+		/// End the current player's turn and advance to the next player.
+		/// There are multiple references to this method in various places.
+		/// This method is called several times (2 current round + 1 on next round) 
+		/// and thus events may be triggered multiple times,
+		/// so an "origin" parameter is added to identify the origin of the call.
+		/// </summary> 
+		/// <param name="origin">The origin of the turn end request.</param>
+		public void EndTurn(int origin)
 		{
 			foreach (Player player in _players.Where(x => x.Civilization is not Barbarian))
 			{
@@ -217,6 +227,11 @@ namespace CivOne
 				GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has conquered", "the entire planet!"));
 				GameTask.Enqueue(conquest = Show.Screen<Conquest>());
 				conquest.Done += (s, a) => Runtime.Quit();
+			}
+
+			if (origin == 0)
+			{
+				HandleGlobalWarming();
 			}
 
 			foreach (IUnit unit in _units.Where(u => u.Owner == _currentPlayer))

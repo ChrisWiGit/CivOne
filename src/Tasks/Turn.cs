@@ -34,7 +34,7 @@ namespace CivOne.Tasks
 			}
 			if (_endTurn && _step-- <= 0)
 			{
-				Game.EndTurn();
+				Game.EndTurn(0);
 				EndTask();
 			}
 			return true;
@@ -57,7 +57,7 @@ namespace CivOne.Tasks
 					_step = TURN_TIME;
 					return;
 				}
-				Game.EndTurn();
+				Game.EndTurn(1);
 				EndTask();
 				return;
 			}
