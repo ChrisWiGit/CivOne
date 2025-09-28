@@ -282,6 +282,19 @@ namespace CivOne
 			return true;
 		}
 
+		public int Pollution
+		{
+			get
+			{
+				int pollution = 0;
+				foreach (City city in Cities)
+				{
+					pollution += city.SmokeStacks;
+				}
+				return pollution;
+			}
+		}
+
 		public bool _destroyed = false; // fire-eggs: hack fix for Issue #68: need to be able set destroyed state on game load
 
 

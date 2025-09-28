@@ -149,7 +149,7 @@ bonus = (trade1 + trade2 + 4) / 8
 | 1    | Blue           | Standard blue       |
 | 2    | Green          | Standard green      |
 | 3    | Light Grey     | Grey for disabled items |
-| 4    | Red            | Standard red        |
+| 4    | Dark Red       | Dark red            |
 | 5    | Black          | Standard black      |
 | 6    | Brown          | Standard brown      |
 | 7    | Light Brown    | Light brown         |
