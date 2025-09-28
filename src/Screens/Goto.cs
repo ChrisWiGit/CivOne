@@ -15,6 +15,7 @@ using CivOne.Tiles;
 
 namespace CivOne.Screens
 {
+	[ScreenResizeable]
 	internal class Goto : BaseScreen
 	{
 		private readonly int _x, _y;
