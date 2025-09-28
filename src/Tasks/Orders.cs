@@ -215,6 +215,17 @@ namespace CivOne.Tasks
 			(_unit as Settlers).BuildRoad();
 			EndTask();
 		}
+		private void ClearPollution()
+		{
+			if (_unit is not Settlers)
+			{
+				Error("SETTLERS");
+				EndTask();
+				return;
+			}
+			(_unit as Settlers).ClearPollution();
+			EndTask();
+		}
 
 		private void UnitWait()
 		{
@@ -243,6 +254,9 @@ namespace CivOne.Tasks
 					break;
 				case Order.Wait:
 					UnitWait();
+					break;
+				case Order.ClearPollution:
+					ClearPollution();
 					break;
 				default:
 					EndTask();
@@ -303,6 +317,15 @@ namespace CivOne.Tasks
 			{
 				_unit = unit,
 				_order = Order.Road
+			};
+		}
+
+		public static Orders ClearPollution(IUnit unit)
+		{
+			return new Orders()
+			{
+				_unit = unit,
+				_order = Order.ClearPollution
 			};
 		}
 

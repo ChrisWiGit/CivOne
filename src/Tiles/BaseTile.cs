@@ -135,15 +135,16 @@ namespace CivOne.Tiles
 		public abstract byte IrrigationCost { get; }
 		public abstract sbyte MiningShieldBonus { get; }
 		public abstract byte MiningCost { get; }
+		public byte PollutionCost => 4;
 		
-		
+
 		public byte Borders
 		{
 			get
 			{
 				Terrain type = Type;
 				if (type == Terrain.Grassland2) type = Terrain.Grassland1;
-				
+
 				byte output = 0;
 				switch (type)
 				{
@@ -221,7 +222,6 @@ namespace CivOne.Tiles
 		public City City => Game?.GetCity(X, Y);
         public bool HasCity => City != null;
 		public IUnit[] Units => Game?.GetUnits(X, Y);
-
 
 		public ITile this[int relativeX, int relativeY] => Map[X + relativeX, Y + relativeY];
 		public ITile[,] this[int relativeX, int relativeY, int width, int height] => Map[X + relativeX, Y + relativeY, width, height];

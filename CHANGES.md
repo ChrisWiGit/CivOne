@@ -6,6 +6,9 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Implement pollution clearing functionality for Settlers (4 Rounds to clear)
+  * Hotkey 'p' to clear pollution on the tile where the settler is located.
+  * Fix: prevent 'p' to be used for pillage if Shift is NOT pressed.
 * Fix: Avoid negative frame index in CityView animations for invaders/revolters and "We love the president" day.
 * Tax and Science calculations are incoorporated with player rates.
 * Feature: Implement global warming mechanics

@@ -103,6 +103,17 @@ namespace CivOne.Units
 			return true;
 		}
 
+		public void ClearPollution()
+		{
+			if (!Map[X, Y].Pollution)
+			{
+				return;
+			}
+			order = Order.ClearPollution;
+			UpdateClearPollutionState();
+			SkipTurn(Map[X, Y].PollutionCost);
+		}
+
 
 		void UpdateRoadState()
 		{
@@ -265,7 +276,22 @@ namespace CivOne.Units
 
 			return true;
 		}
-		
+
+		private bool UpdateClearPollutionState()
+		{
+			if (WorkProgress < Location.PollutionCost)
+			{
+				WorkProgress++;
+				return false;
+			}
+
+			Map[X, Y].Pollution = false;
+			ResetOrder();
+			ResetWorkProgress();
+
+			return true;
+		}
+
 		public void ResetOrder()
 		{
 			order = Order.None;
@@ -296,6 +322,9 @@ namespace CivOne.Units
 			else if (order == Order.Fortress)
 			{
 				UpdateFortressState();
+			} else if (order == Order.ClearPollution)
+			{
+				UpdateClearPollutionState();
 			}
 		}
 
@@ -329,6 +358,12 @@ namespace CivOne.Units
 			.SetEnabled(Game.CurrentPlayer.HasAdvance<Construction>())
 			.OnSelect((s, a) => GameTask.Enqueue(Orders.BuildFortress(this)));
 
+		private MenuItem<int> MenuClearPollution() => MenuItem<int>
+			.Create("Clear Pollution")
+			.SetShortcut("p")
+			.SetEnabled(Map[X, Y].Pollution)
+			.OnSelect((s, a) => GameTask.Enqueue(Orders.ClearPollution(this)));
+
 		public override IEnumerable<MenuItem<int>> MenuItems
 		{
 			get
@@ -356,6 +391,11 @@ namespace CivOne.Units
 				if (!tile.IsOcean && !tile.Fortress)
 				{
 					yield return MenuBuildFortress();
+				}
+
+				if (tile.Pollution)
+				{
+					yield return MenuClearPollution();
 				}
 				//
 				yield return MenuWait();

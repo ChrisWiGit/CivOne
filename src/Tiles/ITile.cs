@@ -49,6 +49,7 @@ namespace CivOne.Tiles
 		byte RailRoadCost { get; }
 		bool Irrigation { get; set; }
 		bool Pollution { get; set; }
+		byte PollutionCost { get; }
 		bool Fortress { get; set; }
 		byte FortressCost { get; set; }
 		bool Mine { get; set; }

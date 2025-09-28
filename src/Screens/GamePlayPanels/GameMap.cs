@@ -412,7 +412,13 @@ namespace CivOne.Screens.GamePlayPanels
 					GameTask.Enqueue(Orders.BuildMines(Game.ActiveUnit));
 					break;
 				case 'P':
-					Game.ActiveUnit.Pillage();
+					if (args.Modifier == KeyModifier.Shift)
+					{
+						Game.ActiveUnit.Pillage();
+					} else if (args.Modifier == KeyModifier.None)
+					{
+						GameTask.Enqueue(Orders.ClearPollution(Game.ActiveUnit));
+					}
 					break;
 				case 'R':
 					GameTask.Enqueue(Orders.BuildRoad(Game.ActiveUnit));
