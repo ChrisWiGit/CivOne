@@ -123,6 +123,8 @@ namespace CivOne
 				else
 				{
 					Runtime.Cursor = null;
+					// CW: prevents cursor invisible if Settings.CursorType changed to Native. (e.g. when goto screen is active)
+					Cursor.ClearCache();
 				}
 			}
 		}

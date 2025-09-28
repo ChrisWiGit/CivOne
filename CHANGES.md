@@ -6,6 +6,7 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Goto with mouse does not show mouse cursor if native cursor instead of built-in is used.
 * Feature: Add pollution tracking to Player and update Demographics display
 * Feature: Implement pollution clearing functionality for Settlers (4 Rounds to clear)
   * Hotkey 'p' to clear pollution on the tile where the settler is located.
