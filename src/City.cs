@@ -392,16 +392,34 @@ namespace CivOne
 		{
 			get
 			{
-				int science = TradeScience;
-				if (HasBuilding<Library>()) science += (short)Math.Floor((double)science * 0.5);
-				if (HasBuilding<UniversityBuilding>()) science += (short)Math.Floor((double)science * 0.5);
-				if (!Game.WonderObsolete<CopernicusObservatory>() && HasWonder<CopernicusObservatory>()) science += (short)Math.Floor((double)science * 1.0);
-				if (Player.HasWonder<SETIProgram>()) science += (short)Math.Floor((double)science * 0.5);
+				double science = TradeScience;
+
+				// CW: https://civilization.fandom.com/wiki/Isaac_Newton%27s_College_(Civ1)
+				bool hasNewton = !Game.WonderObsolete<IsaacNewtonsCollege>() && Player.HasWonder<IsaacNewtonsCollege>() && !Player.HasWonder<SETIProgram>();
+				double libUniFactor = hasNewton ? 1.66 : 1.5;
+
+				if (HasBuilding<Library>())
+				{
+					science *= libUniFactor;
+				}
+				if (HasBuilding<UniversityBuilding>())
+				{
+					science *= libUniFactor;
+				}
+
+				if (Player.HasWonder<SETIProgram>())
+				{
+					science *= 1.5;
+				}
 				science += _specialists.Count(c => c == Citizen.Scientist) * 2;
 
-				science = (int)Math.Round((double)science * Player.ScienceRate / 10);
+				if (!Game.WonderObsolete<CopernicusObservatory>() && HasWonder<CopernicusObservatory>())
+				{
+					science *= 2.0;
+				}
 
-				return (short)Math.Min(science, short.MaxValue);
+				science *= Player.ScienceRate / 10;
+				return (short)Math.Min((int)Math.Round(science), short.MaxValue);
 			}
 		}
 

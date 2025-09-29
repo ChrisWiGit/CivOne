@@ -6,6 +6,9 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: City science calculation is now correct according to original game behavior.
+  * Libraries and Universities receive a 66% bonus to science each if Isaac Newton's College is built, not obsolete and SETI Program is not built otherwise 50% bonus each.
+  * Copernicus Observatory doubles the total science output of the city if it is not obsolete.
 * Fix: Goto with mouse does not show mouse cursor if native cursor instead of built-in is used.
 * Feature: Add pollution tracking to Player and update Demographics display
 * Feature: Implement pollution clearing functionality for Settlers (4 Rounds to clear)
