@@ -830,104 +830,113 @@ namespace CivOne
             }
         }
 
+		internal int ContinentId => Map[X, Y].ContinentId;
+
         // Microprose: initial state -> add entertainers -> 'after luxury' state
-        // City size 4, King:
-        //   3c1u -> 2c1u1ent -> 1h1c1u1ent
-        //   3c1u -> 1c1u2ent -> 1h1c2ent
-        //   3c1u -> 1u3ent   -> 1h3ent
-        // City size 5, King:
-        //   3c2u -> 2c2u1ent -> 1h1c2u1ent
-        //   3c2u -> 1c2u2ent -> 1h1c1u2ent
-        //   3c2u -> 2u3ent   -> 1h1c3ent
-        //   3c2u -> 1u4ent   -> 1h4ent
-        // City size 6, King:
-        //   3c3u -> 2c3u1ent -> 1h1c3u1ent
-        //   3c3u -> 1c3u2ent -> 1h1c2u2ent
-        //   3c3u -> 3u3ent   -> 1h1c1u3ent
-        //   3c3u -> 2u4ent   -> 2h4ent
+		// City size 4, King:
+		//   3c1u -> 2c1u1ent -> 1h1c1u1ent
+		//   3c1u -> 1c1u2ent -> 1h1c2ent
+		//   3c1u -> 1u3ent   -> 1h3ent
+		// City size 5, King:
+		//   3c2u -> 2c2u1ent -> 1h1c2u1ent
+		//   3c2u -> 1c2u2ent -> 1h1c1u2ent
+		//   3c2u -> 2u3ent   -> 1h1c3ent
+		//   3c2u -> 1u4ent   -> 1h4ent
+		// City size 6, King:
+		//   3c3u -> 2c3u1ent -> 1h1c3u1ent
+		//   3c3u -> 1c3u2ent -> 1h1c2u2ent
+		//   3c3u -> 3u3ent   -> 1h1c1u3ent
+		//   3c3u -> 2u4ent   -> 2h4ent
 
-        internal IEnumerable<CitizenTypes> Residents
-        {
-            get
-            {
-                // TODO fire-eggs: add side-effect of recalc specialties a la Citizens
-                CitizenTypes start = new CitizenTypes();
-                start.elvis = Entertainers;
-                start.einstein = Scientists;
-                start.taxman = Taxmen;
+		internal IEnumerable<CitizenTypes> Residents
+		{
+			get
+			{
+				// TODO fire-eggs: add side-effect of recalc specialties a la Citizens
+				CitizenTypes start = new CitizenTypes();
+				start.elvis = Entertainers;
+				start.einstein = Scientists;
+				start.taxman = Taxmen;
 
-                int specialists = start.elvis + start.einstein + start.taxman;
-                int available = Size - specialists;
-                int initialContent = 6 - Game.Difficulty;
+				int specialists = start.elvis + start.einstein + start.taxman;
+				int available = Size - specialists;
+				int initialContent = 6 - Game.Difficulty;
 
-                // Stage 1: basic content/unhappy
-                start.content = Math.Max(0, Math.Min(available, initialContent - specialists));
-                start.unhappy = available - start.content;
+				// Stage 1: basic content/unhappy
+				start.content = Math.Max(0, Math.Min(available, initialContent - specialists));
+				start.unhappy = available - start.content;
 
-                Debug.Assert(start.Sum() == Size);
-                Debug.Assert(start.Valid());
-                yield return start;
+				Debug.Assert(start.Sum() == Size);
+				Debug.Assert(start.Valid());
+				yield return start;
 
-                if (available < 1)
-                    yield return start;
-                else
-                {
-                    // Stage 2: impact of luxuries: content->happy; unhappy->content and then content->happy
-                    int happyUpgrades = (int)Math.Floor((double)Luxuries / 2);
-                    int cont = start.content;
-                    int unha = start.unhappy;
-                    int happ = start.happy;
-                    for (int h = 0; h < happyUpgrades; h++)
-                    {
-                        if (cont > 0)
-                        {
-                            happ++;
-                            cont--;
-                            continue;
-                        }
-                        if (unha > 0)
-                        {
-                            cont++;
-                            unha--;
-                        }
-                    }
+				if (available < 1)
+					yield return start;
+				else
+				{
+					// Stage 2: impact of luxuries: content->happy; unhappy->content and then content->happy
+					int happyUpgrades = (int)Math.Floor((double)Luxuries / 2);
+					int cont = start.content;
+					int unha = start.unhappy;
+					int happ = start.happy;
+					for (int h = 0; h < happyUpgrades; h++)
+					{
+						if (cont > 0)
+						{
+							happ++;
+							cont--;
+							continue;
+						}
+						if (unha > 0)
+						{
+							cont++;
+							unha--;
+						}
+					}
 
-                    start.happy = happ;
-                    start.content = cont;
-                    start.unhappy = unha;
+					start.happy = happ;
+					start.content = cont;
+					start.unhappy = unha;
 
-                    Debug.Assert(start.Sum() == Size);
-                    Debug.Assert(start.Valid());
+					Debug.Assert(start.Sum() == Size);
+					Debug.Assert(start.Valid());
 
-                    // TODO fire-eggs impact of luxury setting?
-                    yield return start;
-                }
+					// TODO fire-eggs impact of luxury setting?
+					yield return start;
+				}
 
-                // Stage 3: impact of buildings
-                if (!(HasBuilding<Temple>() || HasBuilding<Colosseum>() || HasBuilding<Cathedral>()))
-                    yield return start;
+				// Stage 3: impact of buildings
+				if (!(HasBuilding<Temple>() || HasBuilding<Colosseum>() || HasBuilding<Cathedral>()))
+					yield return start;
 
-                int unhappyDelta = 0;
-                if (HasBuilding<Temple>())
-                {
-                    int templeEffect = 1;
-                    if (Player.HasAdvance<Mysticism>()) templeEffect <<= 1;
-                    if (Player.HasWonder<Oracle>() && !Game.WonderObsolete<Oracle>()) templeEffect <<= 1;
-                    unhappyDelta += templeEffect;
-                }
-                if (HasBuilding<Colosseum>()) unhappyDelta += 3;
-                if (HasBuilding<Cathedral>()) unhappyDelta += 4;
+				int unhappyDelta = 0;
+				if (HasBuilding<Temple>())
+				{
+					int templeEffect = 1;
+					if (Player.HasAdvance<Mysticism>()) templeEffect <<= 1;
+					if (Player.HasWonder<Oracle>() && !Game.WonderObsolete<Oracle>()) templeEffect <<= 1;
+					unhappyDelta += templeEffect;
+				}
 
-                unhappyDelta = Math.Min(start.unhappy, unhappyDelta);
-                start.content += unhappyDelta;
-                start.unhappy -= unhappyDelta;
+				// CW: Michelangelo's Chapel gives +6 happiness if on same continent as city with wonder, else +4
+				// https://civilization.fandom.com/wiki/Michelangelo%27s_Chapel_(Civ1)
+				bool hasChapel = !Game.WonderObsolete<MichelangelosChapel>()
+						&& Game.GetPlayer(_owner).Cities.Any(c => c.HasWonder<MichelangelosChapel>() && c.ContinentId == ContinentId);
+				int chapelBonus = hasChapel ? 6 : 4;
 
-                Debug.Assert(start.Sum() == Size);
-                Debug.Assert(start.Valid());
+				if (HasBuilding<Cathedral>()) unhappyDelta += chapelBonus;
+				if (HasBuilding<Colosseum>()) unhappyDelta += 3;
 
-                yield return start;
-            }
-        }
+				unhappyDelta = Math.Min(start.unhappy, unhappyDelta);
+				start.content += unhappyDelta;
+				start.unhappy -= unhappyDelta;
+
+				Debug.Assert(start.Sum() == Size);
+				Debug.Assert(start.Valid());
+
+				yield return start;
+			}
+		}
 
 
 		internal IEnumerable<Citizen> Citizens
