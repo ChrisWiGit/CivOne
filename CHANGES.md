@@ -6,6 +6,8 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Allow Palace to be build again after it was sold.
+  * 
 * Fix: City science calculation is now correct according to original game behavior.
   * Libraries and Universities receive a 66% bonus to science each if Isaac Newton's College is built, not obsolete and SETI Program is not built otherwise 50% bonus each.
   * Copernicus Observatory doubles the total science output of the city if it is not obsolete.

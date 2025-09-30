@@ -717,11 +717,19 @@ namespace CivOne
 					if (unit is Nuclear && !Game.WonderBuilt<ManhattanProject>()) continue;
 					yield return unit;
 				}
-				foreach (IBuilding building in Reflect.GetBuildings().Where(b => Player.ProductionAvailable(b) && !_buildings.Any(x => x.Id == b.Id)))
+
+
+				if (!HasBuilding<Palace>())
 				{
-					if (HasBuilding<Palace>() && building is Courthouse) continue;
-					yield return building;
+					// CW: Show always Palace as available production if not yet built. It moves capital city to this city.
+					yield return new Palace();
 				}
+									
+				foreach (IBuilding building in Reflect.GetBuildings().Where(b => Player.ProductionAvailable(b) && !_buildings.Any(x => x.Id == b.Id)))
+					{
+						if (HasBuilding<Palace>() && building is Courthouse) continue;
+						yield return building;
+					}
 				foreach (IWonder wonder in Reflect.GetWonders().Where(b => Player.ProductionAvailable(b)))
 				{
 					yield return wonder;
