@@ -918,13 +918,7 @@ namespace CivOne
 					unhappyDelta += templeEffect;
 				}
 
-				// CW: Michelangelo's Chapel gives +6 happiness if on same continent as city with wonder, else +4
-				// https://civilization.fandom.com/wiki/Michelangelo%27s_Chapel_(Civ1)
-				bool hasChapel = !Game.WonderObsolete<MichelangelosChapel>()
-						&& Game.GetPlayer(_owner).Cities.Any(c => c.HasWonder<MichelangelosChapel>() && c.ContinentId == ContinentId);
-				int chapelBonus = hasChapel ? 6 : 4;
-
-				if (HasBuilding<Cathedral>()) unhappyDelta += chapelBonus;
+				unhappyDelta += CathedralDelta();
 				if (HasBuilding<Colosseum>()) unhappyDelta += 3;
 
 				unhappyDelta = Math.Min(start.unhappy, unhappyDelta);
@@ -937,6 +931,23 @@ namespace CivOne
 				yield return start;
 			}
 		}
+		
+		internal int CathedralDelta()
+		{
+			if (!HasBuilding<Cathedral>()) return 0;
+
+			int unhappyDelta = 0;
+
+			// CW: Michelangelo's Chapel gives +6 happiness if on same continent as city with wonder, else +4
+			// https://civilization.fandom.com/wiki/Michelangelo%27s_Chapel_(Civ1)
+			bool hasChapel = !Game.WonderObsolete<MichelangelosChapel>()
+					&& Game.GetPlayer(_owner).Cities.Any(c => c.HasWonder<MichelangelosChapel>() && c.ContinentId == ContinentId);
+			int chapelBonus = hasChapel ? 6 : 4;
+
+			unhappyDelta += chapelBonus;
+
+			return unhappyDelta;
+		}
 
 
 		internal IEnumerable<Citizen> Citizens
@@ -947,7 +958,7 @@ namespace CivOne
 				while (_specialists.Count < Size - (ResourceTiles.Count() - 1)) _specialists.Add(Citizen.Entertainer);
 				while (_specialists.Count > Size - (ResourceTiles.Count() - 1)) _specialists.Remove(_specialists.Last());
 
-                // TODO fire-eggs verify luxury makes happy first, then clears unhappy
+				// TODO fire-eggs verify luxury makes happy first, then clears unhappy
 				int happyCount = (int)Math.Floor((double)Luxuries / 2);
 				if (Player.HasWonder<HangingGardens>() && !Game.WonderObsolete<HangingGardens>()) happyCount++;
 				if (Player.HasWonder<CureForCancer>()) happyCount++;
@@ -971,22 +982,22 @@ namespace CivOne
 						unhappyCount -= 2;
 					}
 					if (HasBuilding<Colosseum>()) unhappyCount -= 3;
-					if (HasBuilding<Cathedral>()) unhappyCount -= 4;
+					unhappyCount -= CathedralDelta();
 				}
 
-                // 20190612 fire-eggs Martial law : reduce unhappy count for every attack-capable unit in city [max 3]
-                if (Player.AnarchyDespotism || Player.MonarchyCommunist)
-                {
-                    var attackUnitsInCity = Game.Instance.GetUnits()
-                        .Where(u => u.X == this.X && u.Y == this.Y && u.Attack > 0)
-                        .Count();
-                    attackUnitsInCity = Math.Min(attackUnitsInCity, 3);
-                    unhappyCount -= attackUnitsInCity;
+				// 20190612 fire-eggs Martial law : reduce unhappy count for every attack-capable unit in city [max 3]
+				if (Player.AnarchyDespotism || Player.MonarchyCommunist)
+				{
+					var attackUnitsInCity = Game.Instance.GetUnits()
+						.Where(u => u.X == this.X && u.Y == this.Y && u.Attack > 0)
+						.Count();
+					attackUnitsInCity = Math.Min(attackUnitsInCity, 3);
+					unhappyCount -= attackUnitsInCity;
 
-                    // TODO fire-eggs: absent units make people unhappy (republic, democracy)
-                }
+					// TODO fire-eggs: absent units make people unhappy (republic, democracy)
+				}
 
-                int content = 0;
+				int content = 0;
 				int unhappy = 0;
 				int working = (ResourceTiles.Count() - 1);
 				int specialist = 0;
