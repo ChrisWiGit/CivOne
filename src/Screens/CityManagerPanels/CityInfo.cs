@@ -23,6 +23,8 @@ namespace CivOne.Screens.CityManagerPanels
 		private readonly City _city;
 		private readonly IUnit[] _units;
 
+		private readonly ICityCitizenLayoutService _citizenLayoutService;
+
 		private CityInfoChoice _choice = CityInfoChoice.Info;
 		private bool _update = true;
 
@@ -52,19 +54,22 @@ namespace CivOne.Screens.CityManagerPanels
 
         private void DrawHappyRow(Picture output, int yy, int happy, int content, int unhappy, int ent, int sci, int tax)
         {
-            int dex = 0;
+			int leftStartPackedForBigCities = _citizenLayoutService.IsBigCity ? _citizenLayoutService.CitizenOffset : 8;
+			int startX = 7;
+
+            int deltaX = 0;
             for (int x = 0; x < happy; x++)
-                output.AddLayer(Icons.Citizen((x % 2 == 0) ? Citizen.HappyMale : Citizen.HappyFemale), 7 + (8 * dex++), yy);
+                output.AddLayer(Icons.Citizen((x % 2 == 0) ? Citizen.HappyMale : Citizen.HappyFemale), startX + (leftStartPackedForBigCities * deltaX++), yy);
             for (int x = 0; x < content; x++)
-                output.AddLayer(Icons.Citizen((x % 2 == 0) ? Citizen.ContentMale : Citizen.ContentFemale), 7 + (8 * dex++), yy);
+                output.AddLayer(Icons.Citizen((x % 2 == 0) ? Citizen.ContentMale : Citizen.ContentFemale), startX + (leftStartPackedForBigCities * deltaX++), yy);
             for (int x = 0; x < unhappy; x++)
-                output.AddLayer(Icons.Citizen((x % 2 == 0) ? Citizen.UnhappyMale : Citizen.UnhappyFemale), 7 + (8 * dex++), yy);
+                output.AddLayer(Icons.Citizen((x % 2 == 0) ? Citizen.UnhappyMale : Citizen.UnhappyFemale), startX + (leftStartPackedForBigCities * deltaX++), yy);
             for (int x = 0; x < ent; x++)
-                output.AddLayer(Icons.Citizen(Citizen.Entertainer), 7 + (8 * dex++), yy);
+                output.AddLayer(Icons.Citizen(Citizen.Entertainer), startX + (leftStartPackedForBigCities * deltaX++), yy);
             for (int x = 0; x < sci; x++)
-                output.AddLayer(Icons.Citizen(Citizen.Scientist), 7 + (8 * dex++), yy);
+                output.AddLayer(Icons.Citizen(Citizen.Scientist), startX + (leftStartPackedForBigCities * deltaX++), yy);
             for (int x = 0; x < tax; x++)
-                output.AddLayer(Icons.Citizen(Citizen.Taxman), 7 + (8 * dex++), yy);
+                output.AddLayer(Icons.Citizen(Citizen.Taxman), startX + (leftStartPackedForBigCities * deltaX++), yy);
 
         }
 
@@ -77,69 +82,105 @@ namespace CivOne.Screens.CityManagerPanels
 		{
 			get
 			{
-				Picture output = new Picture(144, 83)
-					.FillRectangle(5, 15, 122, 1, 1)
-					.FillRectangle(5, 31, 122, 1, 1)
-					.As<Picture>();
+				const int Width = 144;
+				const int Height = 83;	
+
+				Picture background = new Picture(Width, Height).As<Picture>();
+				Picture citizens = new Picture(Width - 17, Height).As<Picture>();
 
                 using (var residents = _city.Residents.GetEnumerator())
                 {
-                    // initial state
-                    residents.MoveNext();
+					// CW: align icons to the middle of the row (not original Civ1 behaviour)
+					const int heightOffset = 2;
+
+                    //Stage 1: initial state
+					residents.MoveNext();
                     var group = residents.Current;
                     int yy = 1;
-                    DrawHappyRow(output, yy, group);
+                    DrawHappyRow(citizens, yy, group);
 
-                    // luxury [row drawn only if there is a change]
+                    // Stage 2: luxury [row drawn only if there is a change]
                     yy += 16;
+					background.FillRectangle(5, yy - heightOffset, 122, 1, 1);
+
                     residents.MoveNext();
                     group = residents.Current;
-                    if (group.happy != 0)
-                    {
-                        DrawHappyRow(output, yy, group);
-                        output.AddLayer(Icons.Luxuries, output.Width - 25, 19);
-                        yy += 16;
+					if (group.happy != 0)
+					{
+						DrawHappyRow(citizens, yy, group);
+
+						background.AddLayer(Icons.Luxuries, background.Width - 25, 19);
+						yy += 16;
+						background.FillRectangle(5, yy - heightOffset, 122, 1, 1);
                     }
 
-                    // buildings [row drawn only if there is a change]
-                    // TODO fire-eggs should this be drawn if there are buildings but no change?
+                    // Stage 3: buildings
+					if (residents.MoveNext())
+					{
+						var group2 = residents.Current;
+						if (group2.Buildings.Count > 0)
+						{
+							DrawHappyRow(citizens, yy, group2);
+
+							int deltaX = 0;
+							foreach (var building in group.Buildings)
+							{
+								background.AddLayer(building.SmallIcon,
+									left: background.Width - building.SmallIcon.Width() - 15 - (building.SmallIcon.Width() + 1) * deltaX++,
+									top: yy + heightOffset);
+							}
+
+							yy += 16;
+							group = group2;
+							background.FillRectangle(5, yy - heightOffset, 122, 1, 1);
+						}
+					}
+
+                    // Stage 4: martial law [row always drawn]
                     if (residents.MoveNext())
                     {
                         var group2 = residents.Current;
-                        if (!group2.Equals(group))
-                        {
-                            DrawHappyRow(output, yy, group2);
-                            IBuilding temple = _city.Buildings.FirstOrDefault(b => b is Temple);
-                            if (temple != null)
-                                output.AddLayer(temple.SmallIcon, output.Width - temple.SmallIcon.Width() - 15, yy);
-                            // TODO fire-eggs colosseum, cathedral
-                            yy += 16;
-                            group = group2;
+						if (!group2.Equals(group))
+						{
+							DrawHappyRow(citizens, yy, group2);
+
+							int deltaX = 0;
+							foreach (var unit in group.Units)
+							{
+								background.AddLayer(unit.Icon,
+									left: background.Width - unit.Icon.Width() - 15 - (unit.Icon.Width() + 1) * deltaX++,
+									top: yy + heightOffset);
+							}
+
+							yy += 16;
+							group = group2;
+							background.FillRectangle(5, yy - heightOffset, 122, 1, 1);
                         }
                     }
 
-                    // martial law [row always drawn]
+                    // Stage 5: wonders [row only drawn if change]
                     if (residents.MoveNext())
                     {
                         var group2 = residents.Current;
-                        if (!group2.Equals(group))
-                        {
-                            DrawHappyRow(output, yy, group2);
-                            yy += 16;
-                            group = group2;
-                        }
-                    }
+						if (!group2.Equals(group))
+						{
+							DrawHappyRow(citizens, yy, group2);
 
-                    // wonders [row only drawn if change]
-                    if (residents.MoveNext())
-                    {
-                        var group2 = residents.Current;
-                        if (!group2.Equals(group))
-                        {
-                            DrawHappyRow(output, yy, group2);
-                        }
+							int deltaX = 0;
+							foreach (var wonder in group.Wonders)
+							{
+								background.AddLayer(wonder.SmallIcon,
+									left: background.Width - wonder.SmallIcon.Width() - 15 - (wonder.SmallIcon.Width() + 1) * deltaX++,
+									top: yy + heightOffset);
+							}
+						}
                     }
                 }
+				Picture output = new Picture(Width, Height).As<Picture>();
+				
+
+				output.AddLayer(citizens, 0, 0);
+				output.AddLayer(background, 0, 0);
 
                 return output;
 			}
@@ -334,8 +375,10 @@ namespace CivOne.Screens.CityManagerPanels
 			_units = [.. Game.GetUnits().Where(u => u.X == city.X && u.Y == city.Y)];
 
 			_cityInfoUnits = new CityInfoUnits(city, cityManager, _units);
-			
+
 			GotoInfo();
+			
+			_citizenLayoutService = ICityCitizenLayoutService.Create(city);
 		}
 		
 		private readonly CityInfoUnits _cityInfoUnits;

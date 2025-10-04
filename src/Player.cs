@@ -268,6 +268,8 @@ namespace CivOne
 			
 			return false;
 		}
+
+		public bool HasWonderEffect<T>() where T : IWonder, new() => HasWonder<T>() && !Game.WonderObsolete<T>();
 		
 		public bool HasWonder<T>() where T : IWonder => Cities.Any(c => c.HasWonder<T>());
 

@@ -4,7 +4,12 @@
 
 I found many TODOs in the code, so I decided to write them down to get an overview of what still needs to be done.
 
+
+
 ## TODOs
+
+* redshirts in city
+  * https://forums.civfanatics.com/threads/red-unhappy-people.251311/
 
 ### SaveDataAdapter.Set.cs
 

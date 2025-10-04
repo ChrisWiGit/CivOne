@@ -819,10 +819,16 @@ namespace CivOne
             public int einstein;
             public int taxman;
 
+			public List<IBuilding> Buildings;
+			public List<IWonder> Wonders;
+
+			public List<IUnit> Units;
+
+	
             public int Sum()
-            {
-                return happy + content + unhappy + redshirt + elvis + einstein + taxman;
-            }
+			{
+				return happy + content + unhappy + redshirt + elvis + einstein + taxman;
+			}
 
             public bool Valid()
             {
@@ -853,14 +859,19 @@ namespace CivOne
 			get
 			{
 				// TODO fire-eggs: add side-effect of recalc specialties a la Citizens
-				CitizenTypes start = new CitizenTypes();
-				start.elvis = Entertainers;
-				start.einstein = Scientists;
-				start.taxman = Taxmen;
+				CitizenTypes start = new()
+				{
+					elvis = Entertainers,
+					einstein = Scientists,
+					taxman = Taxmen,
+					Wonders = [],
+					Buildings = [],
+					Units = []
+				};
 
 				int specialists = start.elvis + start.einstein + start.taxman;
 				int available = Size - specialists;
-				int initialContent = 6 - Game.Difficulty;
+				int initialContent = Game.MaxDifficulty - Game.Difficulty;
 
 				// Stage 1: basic content/unhappy
 				start.content = Math.Max(0, Math.Min(available, initialContent - specialists));
@@ -905,25 +916,102 @@ namespace CivOne
 					yield return start;
 				}
 
-				// Stage 3: impact of buildings
-				if (!(HasBuilding<Temple>() || HasBuilding<Colosseum>() || HasBuilding<Cathedral>()))
-					yield return start;
-
+				// Stage 3: Building effects
 				int unhappyDelta = 0;
 				if (HasBuilding<Temple>())
 				{
 					int templeEffect = 1;
 					if (Player.HasAdvance<Mysticism>()) templeEffect <<= 1;
-					if (Player.HasWonder<Oracle>() && !Game.WonderObsolete<Oracle>()) templeEffect <<= 1;
+					if (Player.HasWonderEffect<Oracle>()) templeEffect <<= 1;
 					unhappyDelta += templeEffect;
+					start.Buildings.Add(new Temple());
 				}
 
-				unhappyDelta += CathedralDelta();
-				if (HasBuilding<Colosseum>()) unhappyDelta += 3;
+				int delta = CathedralDelta(); ;
+				unhappyDelta += delta;
+				if (delta > 0)
+				{
+					start.Buildings.Add(new Cathedral());
+				}
+				if (HasBuilding<Colosseum>())
+				{
+					unhappyDelta += 3;
+					start.Buildings.Add(new Colosseum());
+				}
+			
+				// Stage 3: Building effects
+				unhappyDelta = Math.Min(start.unhappy, unhappyDelta);
+				start.content += unhappyDelta;
+				start.unhappy -= unhappyDelta;
+				yield return start;
+
+				unhappyDelta = 0;
+
+				// 						In the original Sid Meier's Civilization, martial law is a 
+				// mechanism of quelling citizens' discontent available under Anarchy, 
+				// Despotism, Monarchy or Communism. Martial law allows the ruler to turn unhappy citizens content by stationing up to 3 military units inside the city. Each unit makes 1 citizen content, but no more than 3 in total (additional units will have no effect on the population's mood).
+
+				// Units eligible to impose martial law are any units with
+				// an attack of 1 or more including ships and air units.
+
+				// Note that in the first MS-DOS version of Civilization (version 474.01/475.01) the 
+				//limit of 3 units is not present, and any number of unhappy citizens can be quelled by enough military units.
+
+				// Stage 4: martial law
+				if (Player.AnarchyDespotism || Player.MonarchyCommunist)
+				{
+					var attackUnitsInCity = Game.Instance.GetUnits()
+						.Where(u => u.X == this.X && u.Y == this.Y && u.Attack > 0);
+						
+					start.Units = [.. attackUnitsInCity];
+
+					// CW: not as in original Civ, limit to max 3 units
+					const int MAX_MARTIAL_LAW_UNITS = 3;
+
+					unhappyDelta += Math.Max(MAX_MARTIAL_LAW_UNITS, attackUnitsInCity.Count());
+				}
+
+				// Every unit outside its home city causes 2 unhappiness. (exceptions: settlers, diplomats, caravans, transports).
+				// Every unit outside their home city causes 1 unhappiness. (exceptions: settlers, transports, diplomats, caravans)
+				// if (Player.RepublicDemocratic)
+				{
+					var attackUnitsNotInCity = Game.Instance.GetUnits()
+						.Where(u => u.Owner == Owner && u.Attack > 0 && (u.X != this.X || u.Y != this.Y));
+
+					start.Units = [.. attackUnitsNotInCity];
+
+					int unhappy = Player.Government is Republic ? 1 : 2;
+
+					start.unhappy += attackUnitsNotInCity.Count() * unhappy;
+					start.content -= start.content - attackUnitsNotInCity.Count() * unhappy;
+				}
+				yield return start;
+
+				//Stage 5: wonder effects
+
+				if (HasWonder<ShakespearesTheatre>() && !Game.WonderObsolete<ShakespearesTheatre>())
+				{
+					// All unhappy become content, but only in this city.
+					unhappyDelta = start.unhappy;
+					start.Wonders.Add(new ShakespearesTheatre());
+				}
+				int happy = 0;
+				if (Player.HasWonderEffect<HangingGardens>())
+				{
+					happy += 1;
+					start.Wonders.Add(new HangingGardens());
+				}
+				if (Player.HasWonderEffect<CureForCancer>())
+				{
+					happy += 1;
+					start.Wonders.Add(new CureForCancer());
+				}
 
 				unhappyDelta = Math.Min(start.unhappy, unhappyDelta);
 				start.content += unhappyDelta;
 				start.unhappy -= unhappyDelta;
+				start.happy += Math.Min(happy, start.content);
+				start.content -= Math.Min(happy, start.content);
 
 				Debug.Assert(start.Sum() == Size);
 				Debug.Assert(start.Valid());
@@ -960,12 +1048,13 @@ namespace CivOne
 
 				// TODO fire-eggs verify luxury makes happy first, then clears unhappy
 				int happyCount = (int)Math.Floor((double)Luxuries / 2);
-				if (Player.HasWonder<HangingGardens>() && !Game.WonderObsolete<HangingGardens>()) happyCount++;
-				if (Player.HasWonder<CureForCancer>()) happyCount++;
+				if (Player.HasWonderEffect<HangingGardens>()) happyCount++;
+				if (Player.HasWonderEffect<CureForCancer>()) happyCount++;
 
-				int unhappyCount = Size - (6 - Game.Difficulty) - happyCount;
+				int unhappyCount = Size - (Game.MaxDifficulty - Game.Difficulty) - happyCount;
 				if (HasWonder<ShakespearesTheatre>() && !Game.WonderObsolete<ShakespearesTheatre>())
 				{
+					// All unhappy become content, but only in this city.
 					unhappyCount = 0;
 				}
 				else
@@ -974,7 +1063,7 @@ namespace CivOne
 					{
 						int templeEffect = 1;
 						if (Player.HasAdvance<Mysticism>()) templeEffect <<= 1;
-						if (Player.HasWonder<Oracle>() && !Game.WonderObsolete<Oracle>()) templeEffect <<= 1;
+						if (Player.HasWonderEffect<Oracle>()) templeEffect <<= 1;
 						unhappyCount -= templeEffect;
 					}
 					if (Tile != null && Map.ContentCities(Tile.ContinentId).Any(x => x.Size > 0 && x.Owner == Owner && x.HasWonder<JSBachsCathedral>()))

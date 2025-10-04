@@ -72,7 +72,8 @@ namespace CivOne
 			return false;
 		}
 
-		public int Difficulty => _difficulty;
+		public int Difficulty => Math.Clamp(_difficulty, 0, MaxDifficulty);
+		public int MaxDifficulty => 6;
 
 		public bool HasUpdate => false;
 
