@@ -808,33 +808,7 @@ namespace CivOne
 				return output;
 			}
 		}
-
-		public struct CitizenTypes
-        {
-            public int happy;
-            public int content;
-            public int unhappy;
-            public int redshirt;
-            public int elvis;
-            public int einstein;
-            public int taxman;
-
-			public List<IBuilding> Buildings;
-			public List<IWonder> Wonders;
-
-			public List<IUnit> Units;
-
 	
-            public int Sum()
-			{
-				return happy + content + unhappy + redshirt + elvis + einstein + taxman;
-			}
-
-            public bool Valid()
-            {
-                return happy >= 0 && content >= 0 && unhappy >= 0;
-            }
-        }
 
 		internal int ContinentId => Map[X, Y].ContinentId;
 
@@ -866,7 +840,7 @@ namespace CivOne
 					taxman = Taxmen,
 					Wonders = [],
 					Buildings = [],
-					Units = []
+					MarshallLawUnits = []
 				};
 
 				int specialists = start.elvis + start.einstein + start.taxman;
@@ -958,32 +932,32 @@ namespace CivOne
 				//limit of 3 units is not present, and any number of unhappy citizens can be quelled by enough military units.
 
 				// Stage 4: martial law
-				if (Player.AnarchyDespotism || Player.MonarchyCommunist)
-				{
-					var attackUnitsInCity = Game.Instance.GetUnits()
-						.Where(u => u.X == this.X && u.Y == this.Y && u.Attack > 0);
+				// if (Player.AnarchyDespotism || Player.MonarchyCommunist)
+				// {
+				// 	var attackUnitsInCity = Game.Instance.GetUnits()
+				// 		.Where(u => u.X == this.X && u.Y == this.Y && u.Attack > 0);
 						
-					start.Units = [.. attackUnitsInCity];
+				// 	start.Units = [.. attackUnitsInCity];
 
-					// CW: not as in original Civ, limit to max 3 units
-					const int MAX_MARTIAL_LAW_UNITS = 3;
+				// 	// CW: not as in original Civ, limit to max 3 units
+				// 	const int MAX_MARTIAL_LAW_UNITS = 3;
 
-					unhappyDelta += Math.Max(MAX_MARTIAL_LAW_UNITS, attackUnitsInCity.Count());
-				}
+				// 	unhappyDelta += Math.Max(MAX_MARTIAL_LAW_UNITS, attackUnitsInCity.Count());
+				// }
 
 				// Every unit outside its home city causes 2 unhappiness. (exceptions: settlers, diplomats, caravans, transports).
 				// Every unit outside their home city causes 1 unhappiness. (exceptions: settlers, transports, diplomats, caravans)
 				// if (Player.RepublicDemocratic)
 				{
 					var attackUnitsNotInCity = Game.Instance.GetUnits()
-						.Where(u => u.Owner == Owner && u.Attack > 0 && (u.X != this.X || u.Y != this.Y));
+						.Where(u => u.Home == this && u.Attack > 0 && (u.X != this.X || u.Y != this.Y));
 
-					start.Units = [.. attackUnitsNotInCity];
+					start.MarshallLawUnits = [.. attackUnitsNotInCity];
 
 					int unhappy = Player.Government is Republic ? 1 : 2;
 
-					start.unhappy += attackUnitsNotInCity.Count() * unhappy;
-					start.content -= start.content - attackUnitsNotInCity.Count() * unhappy;
+					start.unhappy += Math.Min(Size, attackUnitsNotInCity.Count() * unhappy);
+					start.content = Math.Max(0, start.content - attackUnitsNotInCity.Count() * unhappy);
 				}
 				yield return start;
 

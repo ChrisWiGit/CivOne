@@ -73,7 +73,7 @@ namespace CivOne.Screens.CityManagerPanels
 
         }
 
-        private void DrawHappyRow(Picture output, int yy, City.CitizenTypes group)
+        private void DrawHappyRow(Picture output, int yy, CitizenTypes group)
         {
             DrawHappyRow(output, yy, group.happy,group.content,group.unhappy, group.elvis, group.einstein, group.taxman);
         }
@@ -145,11 +145,12 @@ namespace CivOne.Screens.CityManagerPanels
 							DrawHappyRow(citizens, yy, group2);
 
 							int deltaX = 0;
-							foreach (var unit in group.Units)
+							foreach (var unit in group2.MarshallLawUnits.Take(5))
 							{
-								background.AddLayer(unit.Icon,
-									left: background.Width - unit.Icon.Width() - 15 - (unit.Icon.Width() + 1) * deltaX++,
-									top: yy + heightOffset);
+								const int width = 16;
+								background.AddLayer(unit.ToBitmap(false),
+									left: background.Width - 2 * width - 5 * deltaX++,
+									top: yy - heightOffset);
 							}
 
 							yy += 16;
