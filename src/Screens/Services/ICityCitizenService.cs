@@ -5,7 +5,7 @@ using CivOne.Enums;
 using CivOne.Units;
 using CivOne.Wonders;
 
-namespace CivOne.Screens
+namespace CivOne.Screens.Services
 {
 	public struct CitizenTypes
 	{

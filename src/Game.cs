@@ -523,7 +523,7 @@ namespace CivOne
 			return _units.Where(u => u.X == x && u.Y == y).OrderBy(u => (u == ActiveUnit) ? 0 : (u.Fortify || u.FortifyActive ? 1 : 2)).ToArray();
 		}
 
-		internal IUnit[] GetUnits() => _units.ToArray();
+		public IUnit[] GetUnits() => _units.ToArray();
 
 		internal void UpdateResources(ITile tile, bool ownerCities = true)
 		{
