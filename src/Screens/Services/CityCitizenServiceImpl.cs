@@ -33,7 +33,8 @@ namespace CivOne.Screens.Services
 
 			// Stage 1: basic content/unhappy
 			ct = StageBasic(ct, initialContent, initialUnhappyCount);
-			
+
+			(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
 			
 			DebugService.Assert(ct.Sum() == _city.Size);
 			DebugService.Assert(ct.Valid());
@@ -119,8 +120,22 @@ namespace CivOne.Screens.Services
 			int specialists = ct.elvis + ct.einstein + ct.taxman;
 			int available = _city.Size - specialists;
 
-			int initialUnhappyCount = Math.Clamp(available - _game.MaxDifficulty + difficulty - 1, 0, available);
-			int initialContent = Math.Max(0, available - initialUnhappyCount);
+			// https://civfanatics.com/civ1/difficulty/
+			// diff 0 = 6 content, all else unhappy
+			// diff 1 = 5 content, all else unhappy
+			// diff 2 = 4 content, all else unhappy
+			// diff 3 = 3 content, all else unhappy
+			// diff 4 = 2 content, all else unhappy
+			// diff 5 = 1 content, all else unhappy
+			int contentLimit = 6 - difficulty;
+			int initialContent = available;
+
+			if (_city.Size > contentLimit)
+			{
+				initialContent = contentLimit;
+			}
+			int initialUnhappyCount = Math.Max(0, available - initialContent);
+
 
 			return (specialists, available, initialUnhappyCount, initialContent);
 		}
