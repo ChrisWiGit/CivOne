@@ -14,6 +14,7 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
+using CivOne.Screens.Services;
 using CivOne.Units;
 
 namespace CivOne.Screens.CityManagerPanels

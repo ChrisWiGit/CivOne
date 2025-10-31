@@ -16,7 +16,7 @@ using CivOne.Tiles;
 
 namespace CivOne
 {
-	public partial class Map
+	public partial class Map : IMap
 	{
 		private static Resources Resources = Resources.Instance;
 		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
@@ -101,7 +101,7 @@ namespace CivOne
 		
 		public IEnumerable<ITile> ContinentTiles(int continentId) => AllTiles().Where(t => t.ContinentId == continentId);
 		
-		public IEnumerable<City> ContentCities(int continentId) => ContinentTiles(continentId).Where(x => x.City != null).Select(x => x.City).ToArray();
+		public IEnumerable<City> ContinentCities(int continentId) => ContinentTiles(continentId).Where(x => x.City != null).Select(x => x.City).ToArray();
 		
 		public ITile this[int x, int y]
 		{

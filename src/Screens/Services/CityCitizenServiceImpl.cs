@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using CivOne.Advances;
 using CivOne.Buildings;
@@ -11,47 +12,33 @@ using DebugService = System.Diagnostics.Debug;
 
 namespace CivOne.Screens.Services
 {
-	public class CityCitizenServiceImpl(City city, IGame game, List<Citizen> specialists, Map map) : ICityCitizenService
+	public class CityCitizenServiceImpl(
+		ICityBasic city,
+		ICityBuildings cityBuildings,
+		IGame game, List<Citizen> specialists, IMap map) : ICityCitizenService
 	{
-		private readonly City _city = city;
-		private readonly IGame _game = game;
-		private readonly List<Citizen> _specialists = specialists;
-		private readonly Map _map = map;
+		protected readonly ICityBasic _city = city;
+		protected readonly ICityBuildings _cityBuildings = cityBuildings;
+		protected readonly IGame _game = game;
+		protected readonly List<Citizen> _specialists = specialists;
+		protected readonly IMap _map = map;
+
 
 		public IEnumerable<CitizenTypes> EnumerateCitizens()
 		{
 			DebugService.Assert(_specialists.Count <= _city.Size);
+			CitizenTypes ct = CreateCitizenTypes();
 
-			CitizenTypes ct = new()
-			{
-				happy = 0,
-				content = 0,
-				unhappy = 0,
-				redshirt = 0,
-				elvis = _city.Entertainers,
-				einstein = _city.Scientists,
-				taxman = _city.Taxmen,
-				Citizens = new Citizen[_city.Size],
-				Buildings = [],
-				Wonders = [],
-				MarshallLawUnits = []
-			};
-
-			int specialists = ct.elvis + ct.einstein + ct.taxman;
-			int available = _city.Size - specialists;
-			int initialContent = _game.MaxDifficulty - _game.Difficulty;
+			(int specialists, int available, int initialUnhappyCount, int initialContent) = CalculateCityStats(ct, _game);
 
 			// Stage 1: basic content/unhappy
-			ct = StageBasic(ct, specialists, available, initialContent);
-
-			// Stage 1: initial state
+			ct = StageBasic(ct, initialContent, initialUnhappyCount);
+			
+			
+			DebugService.Assert(ct.Sum() == _city.Size);
+			DebugService.Assert(ct.Valid());
+			
 			yield return ct;
-
-			// if (available < 1)
-			// {
-			// 	yield return ct;
-			// 	yield break;
-			// }
 
 			// Stage 2: impact of luxuries: content->happy; unhappy->content and then content->happy
 			int happyUpgrades = (int)Math.Floor((double)_city.Luxuries / 2);
@@ -74,16 +61,152 @@ namespace CivOne.Screens.Services
 
 			// Stage 4: martial law
 			ApplyMartialLaw(ct);
-			ApplyDemocracyEffects(ct);
+			ApplyDemocracyEffects(ct, available);
 			(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
 
 			DebugService.Assert(ct.Sum() == _city.Size);
 			DebugService.Assert(ct.Valid());
 			yield return ct;
 
+			//Stage 5: wonder effects
+			ApplyWonderEffects(ct);
+			(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
+
+			DebugService.Assert(ct.Sum() == _city.Size);
+			DebugService.Assert(ct.Valid());
+			yield return ct;
 		}
 
-		protected void ApplyDemocracyEffects(CitizenTypes ct)
+		public CitizenTypes GetCitizenTypes()
+		{
+			DebugService.Assert(_specialists.Count <= _city.Size);
+			CitizenTypes ct = CreateCitizenTypes();
+
+			(int specialists, int available, int initialUnhappyCount, int initialContent) = CalculateCityStats(ct, _game);
+
+			// Stage 1: basic content/unhappy
+			ct = StageBasic(ct, initialContent, initialUnhappyCount);
+
+			ApplyEmperorEffects(ct);
+
+			// Stage 2: impact of luxuries: content->happy; unhappy->content and then content->happy
+			int happyUpgrades = (int)Math.Floor((double)_city.Luxuries / 2);
+			UpgradeAllCitizens(ct.Citizens, happyUpgrades);
+
+			// Stage 3: Building effects
+			ApplyBuildingEffects(ct);
+
+			// Stage 4: martial law
+			ApplyMartialLaw(ct);
+			ApplyDemocracyEffects(ct, available);
+
+			//Stage 5: wonder effects
+			ApplyWonderEffects(ct);
+			(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
+
+			DebugService.Assert(ct.Sum() == _city.Size);
+			DebugService.Assert(ct.Valid());
+			
+			return ct;
+		}
+
+		protected (int specialists, int available, int initialUnhappyCount, int initialContent)
+			CalculateCityStats(CitizenTypes ct, IGame _game)
+		{
+			// max difficulty = 4|5, easiest = 0
+			// int difficulty = 4; //Debug
+			int difficulty = _game.Difficulty;
+			int specialists = ct.elvis + ct.einstein + ct.taxman;
+			int available = _city.Size - specialists;
+
+			int initialUnhappyCount = Math.Clamp(available - _game.MaxDifficulty + difficulty - 1, 0, available);
+			int initialContent = Math.Max(0, available - initialUnhappyCount);
+
+			return (specialists, available, initialUnhappyCount, initialContent);
+		}
+
+		// This seems to be a little trick Sid plays on really big civilizations.
+		// At emperor level, you can build 12 cities with no ill effects. But then, the born-contents start to disappear. When you have 24 cities, 
+		// each city will only have one born-content. By the time you have built 36 cities, there are no born-content citizens anywhere. About now the cure for cancer starts looking real good.
+		// When you go beyond 36 cities, you start adding those red-shirted citizens.
+		// Each 12 cities you build adds another red shirt in every city.
+		// The good news about these guys is they respond well to luxuries. Two diamonds makes one go from red (very unhappy) to light blue (happy). The bad news is it's twice as hard to make them content. A cathedral only makes makes two of them content.
+		protected void ApplyEmperorEffects(CitizenTypes ct)
+		{
+			if (_game.Difficulty < 4)
+			{
+				return;
+			}
+
+			int totalCities = _game.GetPlayer(_city.Owner).Cities.Count();
+
+			if (totalCities <= 12)
+			{
+				return;
+			}
+
+			// >= 24 cities = 1 born-content
+			// >= 36 cities = 0 born-content
+
+			int downgradeCount = _city.Size; // case >= 36
+
+			if (totalCities <= 24)
+			{
+				downgradeCount = 1;
+			}
+			DowngradeCitizens(ct.Citizens, downgradeCount);
+
+			WearRedShirt(ct.Citizens, NumberOfRedShirts(totalCities));
+		}
+		protected int NumberOfRedShirts(int totalCities)
+		{
+			if (totalCities <= 36)
+			{
+				return 0;
+			}
+			return 1 + (totalCities - 36) / 12;
+			// 1+ (37-36) /12 = 1 + 1/12 = 1
+			// 1+ (48-36) /12 = 1 + 12/12 = 2
+			// 1+ (61-36) /12 = 1 + 25/12 = 3
+		}
+
+		protected CitizenTypes CreateCitizenTypes()
+		{
+			return new()
+			{
+				happy = 0,
+				content = 0,
+				unhappy = 0,
+				redshirt = 0,
+				elvis = _city.Entertainers,
+				einstein = _city.Scientists,
+				taxman = _city.Taxmen,
+				Citizens = new Citizen[_city.Size],
+				Buildings = [],
+				Wonders = [],
+				MarshallLawUnits = []
+			};
+		}
+
+		protected void ApplyWonderEffects(CitizenTypes ct)
+		{
+			int happy = 0;
+			if (_city.Player.HasWonderEffect<HangingGardens>() && !_game.WonderObsolete<HangingGardens>())
+			{
+				happy += 1;
+				ct.Wonders.Add(new HangingGardens());
+			}
+			if (_city.Player.HasWonderEffect<CureForCancer>() && !_game.WonderObsolete<CureForCancer>())
+			{
+				happy += 1;
+				ct.Wonders.Add(new CureForCancer());
+			}
+
+			int happyToContent = Math.Min(happy, ct.content);
+			ContentToHappy(ct.Citizens, happyToContent);
+		}
+
+		protected void ApplyDemocracyEffects(CitizenTypes ct, int available)
 		{
 			if (!_city.Player.RepublicDemocratic)
 			{
@@ -91,32 +214,15 @@ namespace CivOne.Screens.Services
 			}
 
 			var attackUnitsNotInCity = _game.GetUnits()
-				.Where(u => u.Home == _city && u.Attack > 0 && (u.X != _city.X || u.Y != _city.Y));
+				.Where(u => u.Home == _city && u.Attack > 0 && (new Point(u.X, u.Y) != _city.Location));
 
 			ct.MarshallLawUnits.AddRange(attackUnitsNotInCity);
 
 			int unhappyPerUnit = _city.Player.Government is Governments.Republic ? 1 : 2;
 
-			int totalUnhappiness = Math.Min(_city.Size, attackUnitsNotInCity.Count() * unhappyPerUnit);
-			int unhappyToContent = Math.Min(ct.content, totalUnhappiness);
-			int contentToUnhappy = totalUnhappiness - unhappyToContent;
+			int totalUnhappiness = Math.Min(available, attackUnitsNotInCity.Count() * unhappyPerUnit);
 
-das  hier muss rückwärts gemacht werden, ohne spezialiste, weil sonst die unhappy in der mitte, statt hinten und vor
-den specialisten landen
-			ForEachCitizen(ct.Citizens, (c, i) =>
-			{
-				if (unhappyToContent > 0 && IsUnhappy(c))
-				{
-					unhappyToContent--;
-					return CitizenByIndex(i, Citizen.ContentMale);
-				}
-				if (contentToUnhappy > 0 && IsContent(c))
-				{
-					contentToUnhappy--;
-					return DegradeCitizen(c);
-				}
-				return c;
-			});
+			DowngradeCitizens(ct.Citizens, totalUnhappiness);
 		}
 
 		protected void ApplyMartialLaw(CitizenTypes ct)
@@ -135,30 +241,15 @@ den specialisten landen
 			int martialLawUnits = Math.Min(MAX_MARTIAL_LAW_UNITS, attackUnitsInCity.Count());
 			int unhappyToContent = Math.Min(martialLawUnits, ct.unhappy);
 
-			ForEachCitizen(ct.Citizens, (c, i) =>
-			{
-				if (unhappyToContent <= 0)
-				{
-					return c;
-				}
-				if (IsUnhappy(c))
-				{
-					unhappyToContent--;
-					return CitizenByIndex(i, Citizen.ContentMale);
-				}
-				return c;
-			});
+			UnhappyToContent(ct.Citizens, unhappyToContent);
 		}
 
-		private void ApplyBuildingEffects(CitizenTypes ct)
+		protected void ApplyBuildingEffects(CitizenTypes ct)
 		{
-			if (_city.HasWonder<ShakespearesTheatre>() && !_game.WonderObsolete<ShakespearesTheatre>())
+			if (_cityBuildings.HasWonder<ShakespearesTheatre>() && !_game.WonderObsolete<ShakespearesTheatre>())
 			{
 				// All unhappy become content, but only in this city.
-				ForEachCitizen(ct.Citizens, (c, i) =>
-				{
-					return IsUnhappy(c) ? CitizenByIndex(i, Citizen.ContentMale) : c;
-				});
+				UnhappyToContent(ct.Citizens, ct.unhappy);
 
 				ct.Wonders.Add(new ShakespearesTheatre());
 
@@ -168,7 +259,7 @@ den specialisten landen
 
 			int unhappyToContent = 0;
 
-			if (_city.HasBuilding<Temple>())
+			if (_cityBuildings.HasBuilding<Temple>())
 			{
 				unhappyToContent++;
 				if (_city.Player.HasAdvance<Mysticism>()) unhappyToContent <<= 1;
@@ -190,7 +281,7 @@ den specialisten landen
 				// ct.Wonders.Add(new JSBachsCathedral());
 			}
 
-			if (_city.HasBuilding<Colosseum>())
+			if (_cityBuildings.HasBuilding<Colosseum>())
 			{
 				unhappyToContent += 3;
 				ct.Buildings.Add(new Colosseum());
@@ -202,31 +293,20 @@ den specialisten landen
 			{
 				return;
 			}
-			ForEachCitizen(ct.Citizens, (c, i) =>
-			{
-				if (unhappyToContent <= 0)
-				{
-					return c;
-				}
-				if (IsUnhappy(c))
-				{
-					unhappyToContent--;
-					return CitizenByIndex(i, Citizen.ContentMale);
-				}
-				return c;
-			});
+
+			UnhappyToContent(ct.Citizens, unhappyToContent);
 		}
 
 		internal int CathedralDelta()
 		{
-			if (!_city.HasBuilding<Cathedral>()) return 0;
+			if (!_cityBuildings.HasBuilding<Cathedral>()) return 0;
 
 			int unhappyDelta = 0;
 
 			// CW: Michelangelo's Chapel gives +6 happiness if on same continent as city with wonder, else +4
 			// https://civilization.fandom.com/wiki/Michelangelo%27s_Chapel_(Civ1)
 			bool hasChapel = !_game.WonderObsolete<MichelangelosChapel>()
-					&& _game.GetPlayer(_city.Owner).Cities.Any(c => c.HasWonder<MichelangelosChapel>() 
+					&& _game.GetPlayer(_city.Owner).Cities.Any(c => c.HasWonder<MichelangelosChapel>()
 					&& c.ContinentId == _city.ContinentId);
 			int chapelBonus = hasChapel ? 6 : 4;
 
@@ -235,29 +315,17 @@ den specialisten landen
 			return unhappyDelta;
 		}
 
-		private bool HasBachsCathedral()
+		protected bool HasBachsCathedral()
 		{
 			return _city.Tile != null
-						&& _map.ContentCities(_city.Tile.ContinentId)
+						&& _map.ContinentCities(_city.Tile.ContinentId)
 							.Any(x => x.Size > 0 && x.Owner == _city.Owner && x.HasWonder<JSBachsCathedral>());
 		}
 
-		// einfaches forEach für citizens ohne specialists, der Parameter enthält eine Referenz auf 
-		// den wert des Arrays, damit er verändert werden kann
-		protected void ForEachCitizen(Citizen[] citizens, Func<Citizen, int, Citizen> action)
+		protected CitizenTypes StageBasic(CitizenTypes ct, int initialContent, int initialUnhappy)
 		{
-			for (int i = 0; i < citizens.Length - _specialists.Count; i++)
-			{
-				citizens[i] = action(citizens[i], i);
-			}
-		}
-
-		// CW: not as in original Civ, limit to max 3 units
-
-		private CitizenTypes StageBasic(CitizenTypes ct, int specialists, int available, int initialContent)
-		{
-			ct.content = Math.Max(0, Math.Min(available, initialContent - specialists));
-			ct.unhappy = available - ct.content;
+			ct.content = initialContent;
+			ct.unhappy = initialUnhappy;
 
 			DebugService.Assert(ct.Sum() == _city.Size);
 			DebugService.Assert(ct.Valid());
@@ -295,6 +363,13 @@ den specialisten landen
 					// unhappy -> content or content -> happy
 					target[i] = upgraded;
 					happyUpgrades--;
+
+					// still unhappy because of redshirt?
+					if (IsUnhappy(target[i]))
+					{
+						target[i] = UpgradeCitizen(target[i]);
+						happyUpgrades--;
+					}
 				}
 				if (target[i] is Citizen.ContentMale or Citizen.ContentFemale)
 				{
@@ -333,15 +408,76 @@ den specialisten landen
 				length: specialists.Count);
 		}
 
-		protected void CitizenToContent(Citizen[] target, int index)
+		protected void ContentToHappy(Citizen[] target, int count)
 		{
-			if (IsSpecialist(target, index)) return;
-			target[index] = CitizenByIndex(index, Citizen.ContentMale);
+			if (count <= 0) return;
+
+			var total = target.Length - _specialists.Count;
+
+			for (int i = 0; i < total && count > 0; i++)
+			{
+				if (!IsContent(target[i])) continue;
+
+				target[i] = CitizenByIndex(i, Citizen.HappyMale);
+				count--;
+			}
 		}
 
-		protected bool IsSpecialist(Citizen[] target, int index)
+		protected void UnhappyToContent(Citizen[] target, int count)
 		{
-			return index >= (target.Length - _specialists.Count);
+			if (count <= 0) return;
+
+			var total = target.Length - _specialists.Count;
+
+			for (int i = 0; i < total && count > 0; i++)
+			{
+				if (!IsUnhappy(target[i])) continue;
+
+				if (IsRedShirt(target[i]))
+				{
+					// redshirt takes two steps to become content
+					// redshirt -> unhappy -> content
+					count--; // first step
+
+					if (count <= 0)
+					{
+						break;
+					}
+				}
+
+				target[i] = CitizenByIndex(i, Citizen.ContentMale);
+				count--; // second step
+			}
+		}
+
+		protected void DowngradeCitizens(Citizen[] target, int count)
+		{
+			if (count <= 0) return;
+
+			var total = target.Length - _specialists.Count;
+
+			for (int i = 0; i < total && count > 0; i++)
+			{
+				var downgraded = DowngradeCitizen(target[i]);
+				if (downgraded != target[i])
+				{
+					// happy -> content or content -> unhappy
+					target[i] = downgraded;
+					count--;
+				}
+			}
+		}
+
+		protected void WearRedShirt(Citizen[] target, int count)
+		{
+			if (count <= 0) return;
+
+			var total = target.Length - _specialists.Count;
+
+			for (int i = 0; i < total && count > 0; i++)
+			{
+				target[i] = CitizenByIndex(i, Citizen.RedShirtMale);
+			}
 		}
 
 		protected bool IsContent(Citizen c)
@@ -351,7 +487,12 @@ den specialisten landen
 
 		protected bool IsUnhappy(Citizen c)
 		{
-			return c is Citizen.UnhappyMale or Citizen.UnhappyFemale;
+			return c is Citizen.UnhappyMale or Citizen.UnhappyFemale or Citizen.RedShirtMale or Citizen.RedShirtFemale;
+		}
+
+		protected bool IsRedShirt(Citizen c)
+		{
+			return c is Citizen.RedShirtMale or Citizen.RedShirtFemale;
 		}
 
 
@@ -373,8 +514,7 @@ den specialisten landen
 			};
 		}
 
-		// degrade citizen, macht aus einem happy einen content, aus content einen unhappy, redshirt aktuell ignoriert
-		protected Citizen DegradeCitizen(Citizen c)
+		protected Citizen DowngradeCitizen(Citizen c)
 		{
 			return c switch
 			{
@@ -390,6 +530,8 @@ den specialisten landen
 		{
 			return c switch
 			{
+				Citizen.RedShirtMale => Citizen.UnhappyFemale,  // CW: Not sure how to upgrade RedShirts, so leave them be
+				Citizen.RedShirtFemale => Citizen.UnhappyMale, // they may need 2 upgrades to become content?
 				Citizen.UnhappyMale => Citizen.ContentMale,
 				Citizen.UnhappyFemale => Citizen.ContentFemale,
 				Citizen.ContentMale => Citizen.HappyMale,

@@ -10,6 +10,7 @@
 using System.Linq;
 using CivOne.Graphics;
 using CivOne.Enums;
+using CivOne.Screens.Services;
 
 namespace CivOne.Screens.Reports
 {
@@ -39,7 +40,7 @@ namespace CivOne.Screens.Reports
 				output.AddLayer(Icons.Citizen(Citizen.Taxman), 7 + (8 * dex++), yy);
 		}
 
-		private void DrawHappyRow(Picture output, int yy, City.CitizenTypes group)
+		private void DrawHappyRow(Picture output, int yy, CitizenTypes group)
 		{
 			DrawHappyRow(output, yy, group.happy, group.content, group.unhappy, group.elvis, group.einstein, group.taxman);
 		}

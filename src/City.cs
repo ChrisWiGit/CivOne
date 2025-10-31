@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using CivOne.Advances;
 using CivOne.Buildings;
@@ -28,7 +29,7 @@ using UniversityBuilding = CivOne.Buildings.University;
 
 namespace CivOne
 {
-	public class City : BaseInstance, ITurn
+	public class City : BaseInstance, ITurn, ICityBasic, ICityBuildings
 	{
 		// Dependency Injection
 		public static Game Game;
@@ -40,8 +41,11 @@ namespace CivOne
 		internal int NameId { get; set; }
 		internal byte X;
 		internal byte Y;
+
+		public Point Location => new(X, Y);
+
 		private byte _owner;
-		internal byte Owner
+		public byte Owner
 		{
 			get => _owner;
 			set
@@ -52,7 +56,7 @@ namespace CivOne
 		}
 		internal string Name => Game.CityNames[NameId];
 		private byte _size;
-		internal byte Size
+		public byte Size
 		{
 			get => _size;
 			set
@@ -353,7 +357,7 @@ namespace CivOne
 		/// Luxury count for the city, taking trade, buildings and entertainers
 		/// into account.
 		/// </summary>
-		internal short Luxuries
+		public short Luxuries
 		{
 			get
 			{
@@ -811,7 +815,7 @@ namespace CivOne
 		}
 	
 
-		internal int ContinentId => Map[X, Y].ContinentId;
+		public int ContinentId => Map[X, Y].ContinentId;
 
         // Microprose: initial state -> add entertainers -> 'after luxury' state
 		// City size 4, King:
@@ -829,7 +833,7 @@ namespace CivOne
 		//   3c3u -> 3u3ent   -> 1h1c1u3ent
 		//   3c3u -> 2u4ent   -> 2h4ent
 
-		internal IEnumerable<CitizenTypes> Residents
+		internal IEnumerable<CitizenTypes> Residents2
 		{
 			get
 			{
@@ -994,7 +998,16 @@ namespace CivOne
 				yield return start;
 			}
 		}
-		
+
+		internal IEnumerable<CitizenTypes> Residents
+		{
+			get
+			{
+				var service = ICityCitizenService.Create(this, Game.Instance, this._specialists, Map.Instance);
+				return service.EnumerateCitizens();
+			}
+		}
+
 		internal int CathedralDelta()
 		{
 			if (!HasBuilding<Cathedral>()) return 0;
@@ -1041,7 +1054,7 @@ namespace CivOne
 						if (Player.HasWonderEffect<Oracle>()) templeEffect <<= 1;
 						unhappyCount -= templeEffect;
 					}
-					if (Tile != null && Map.ContentCities(Tile.ContinentId).Any(x => x.Size > 0 && x.Owner == Owner && x.HasWonder<JSBachsCathedral>()))
+					if (Tile != null && Map.ContinentCities(Tile.ContinentId).Any(x => x.Size > 0 && x.Owner == Owner && x.HasWonder<JSBachsCathedral>()))
 					{
 						unhappyCount -= 2;
 					}

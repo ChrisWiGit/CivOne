@@ -73,7 +73,18 @@ namespace CivOne
 		}
 
 		public int Difficulty => Math.Clamp(_difficulty, 0, MaxDifficulty);
-		public int MaxDifficulty => 6;
+		
+		/*
+		 * Chieftain = 0 (easiest)
+		 * Warlord = 1
+		 * Prince = 2
+		 * King = 3
+		 * Emperor = 4 (hardest in original Civ1)
+		 * Deity = 5 (hardest)
+		 */
+		public int MaxDifficulty {
+			get { return Settings.Instance.DeityEnabled ? 5 : 4; }
+		}
 
 		public bool HasUpdate => false;
 
