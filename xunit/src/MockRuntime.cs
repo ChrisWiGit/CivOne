@@ -71,17 +71,17 @@ namespace CivOne.UnitTests
         public string WindowTitle { get; set; }
         public void PlaySound(string file)
         {
-            throw new NotImplementedException();
+            // ignore
         }
 
         public void StopSound()
         {
-            throw new NotImplementedException();
+            // ignore
         }
 
         public void Quit()
         {
-            throw new NotImplementedException();
+            // ignore
         }
 
         public void Dispose()
@@ -93,6 +93,7 @@ namespace CivOne.UnitTests
             Settings = settings;
             // TODO fire-eggs this needs to be false if you want to use Earth! and must have a pointer to the Civ data files!
             settings.Free = false;
+            RuntimeHandler.Wipe(); // Ensure any previous runtime is cleared out otherwise exceptions occur
             RuntimeHandler.Register(this);
         }
     }

@@ -45,6 +45,8 @@ namespace CivOne.UnitTests
             // Start with Chinese, 7 players, at King level
             Game.CreateGame(3, 7, Common.Civilizations.First(x => x.Name=="Chinese"));
             playa = Game.Instance.HumanPlayer;
+
+            City.Game = Game.Instance; // CW: Dependency Injection for now. Ensure static Game reference is set
         }
 
         public void Dispose()
