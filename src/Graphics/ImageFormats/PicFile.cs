@@ -310,7 +310,7 @@ namespace CivOne.Graphics.ImageFormats
 			}
 
 			// read all bytes into a byte array
-			using (FileStream fs = new FileStream(filename, FileMode.Open))
+			using (FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
 			{
 				_bytes = new byte[fs.Length];
 				fs.ReadExactly(_bytes, 0, _bytes.Length);
