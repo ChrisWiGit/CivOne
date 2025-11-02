@@ -308,7 +308,7 @@ namespace CivOne.Screens
 		private void Earth(object sender, EventArgs args)
 		{
 			Log("Main Menu: EARTH");
-			Map.LoadMap();
+			Map.LoadEarthMapInThread();
 			StartIntro();
 		}
 		
