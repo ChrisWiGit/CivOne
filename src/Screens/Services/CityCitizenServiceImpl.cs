@@ -29,21 +29,22 @@ namespace CivOne.Screens.Services
 			DebugService.Assert(_specialists.Count <= _city.Size);
 			CitizenTypes ct = CreateCitizenTypes();
 
-			(int specialists, int available, int initialUnhappyCount, int initialContent) = CalculateCityStats(ct, _game);
+			(int initialUnhappyCount, int initialContent) = CalculateCityStats(ct, _game);
 
 			// Stage 1: basic content/unhappy
 			ct = StageBasic(ct, initialContent, initialUnhappyCount);
 
 			(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
-			
+
 			DebugService.Assert(ct.Sum() == _city.Size);
 			DebugService.Assert(ct.Valid());
-			
+
 			yield return ct;
 
 			// Stage 2: impact of luxuries: content->happy; unhappy->content and then content->happy
+			// entertainers produce these luxury effects, but also marketplace, bank and luxury trade settings.
 			int happyUpgrades = (int)Math.Floor((double)_city.Luxuries / 2);
-			UpgradeAllCitizens(ct.Citizens, happyUpgrades);
+			UpgradeCitizens(ct.Citizens, happyUpgrades);
 
 			(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
 
@@ -62,7 +63,7 @@ namespace CivOne.Screens.Services
 
 			// Stage 4: martial law
 			ApplyMartialLaw(ct);
-			ApplyDemocracyEffects(ct, available);
+			ApplyDemocracyEffects(ct, initialContent);
 			(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
 
 			DebugService.Assert(ct.Sum() == _city.Size);
@@ -83,7 +84,7 @@ namespace CivOne.Screens.Services
 			DebugService.Assert(_specialists.Count <= _city.Size);
 			CitizenTypes ct = CreateCitizenTypes();
 
-			(int specialists, int available, int initialUnhappyCount, int initialContent) = CalculateCityStats(ct, _game);
+			(int initialUnhappyCount, int initialContent) = CalculateCityStats(ct, _game);
 
 			// Stage 1: basic content/unhappy
 			ct = StageBasic(ct, initialContent, initialUnhappyCount);
@@ -92,14 +93,15 @@ namespace CivOne.Screens.Services
 
 			// Stage 2: impact of luxuries: content->happy; unhappy->content and then content->happy
 			int happyUpgrades = (int)Math.Floor((double)_city.Luxuries / 2);
-			UpgradeAllCitizens(ct.Citizens, happyUpgrades);
+			UpgradeCitizens(ct.Citizens, happyUpgrades);
+			
 
 			// Stage 3: Building effects
 			ApplyBuildingEffects(ct);
 
 			// Stage 4: martial law
 			ApplyMartialLaw(ct);
-			ApplyDemocracyEffects(ct, available);
+			ApplyDemocracyEffects(ct, initialContent);
 
 			//Stage 5: wonder effects
 			ApplyWonderEffects(ct);
@@ -107,18 +109,18 @@ namespace CivOne.Screens.Services
 
 			DebugService.Assert(ct.Sum() == _city.Size);
 			DebugService.Assert(ct.Valid());
-			
+
 			return ct;
 		}
 
-		protected (int specialists, int available, int initialUnhappyCount, int initialContent)
+		protected (int initialUnhappyCount, int initialContent)
 			CalculateCityStats(CitizenTypes ct, IGame _game)
 		{
 			// max difficulty = 4|5, easiest = 0
-			// int difficulty = 4; //Debug
+			// int difficulty = 4; //Debug only
 			int difficulty = _game.Difficulty;
 			int specialists = ct.elvis + ct.einstein + ct.taxman;
-			int available = _city.Size - specialists;
+			int workersAvailable = _city.Size - specialists;
 
 			// https://civfanatics.com/civ1/difficulty/
 			// diff 0 = 6 content, all else unhappy
@@ -127,25 +129,32 @@ namespace CivOne.Screens.Services
 			// diff 3 = 3 content, all else unhappy
 			// diff 4 = 2 content, all else unhappy
 			// diff 5 = 1 content, all else unhappy
-			int contentLimit = 6 - difficulty;
-			int initialContent = available;
+			int contentLimit = 6 - difficulty - specialists;
 
-			if (_city.Size > contentLimit)
-			{
-				initialContent = contentLimit;
-			}
-			int initialUnhappyCount = Math.Max(0, available - initialContent);
+			// size 4, 0 ent → specialists=0, available=4 → contentLimit=3 → 3c + 1u
+			// size 4, 1 ent → specialists=1, available=3 → 2c + 1u + 1ent
+			// size 4, 2 ent → specialists=2, available=2 → 1c + 1u + 2ent
+			// size 4, 3 ent → specialists=3, available=1 → 0c + 1u + 3ent
+			// Anzahl der zufriedenen Bürger (content), aber niemals größer als die verfügbare Anzahl
+			int initialContent = Math.Min(workersAvailable, contentLimit);
 
+			int initialUnhappyCount = Math.Max(0, workersAvailable - initialContent);
 
-			return (specialists, available, initialUnhappyCount, initialContent);
+			return (initialUnhappyCount, initialContent);
 		}
 
-		// This seems to be a little trick Sid plays on really big civilizations.
-		// At emperor level, you can build 12 cities with no ill effects. But then, the born-contents start to disappear. When you have 24 cities, 
-		// each city will only have one born-content. By the time you have built 36 cities, there are no born-content citizens anywhere. About now the cure for cancer starts looking real good.
-		// When you go beyond 36 cities, you start adding those red-shirted citizens.
-		// Each 12 cities you build adds another red shirt in every city.
-		// The good news about these guys is they respond well to luxuries. Two diamonds makes one go from red (very unhappy) to light blue (happy). The bad news is it's twice as hard to make them content. A cathedral only makes makes two of them content.
+		// This looks like a small trick Sid uses for very large civilizations.
+		// At emperor level, you can have 12 cities without problems.
+		// After that, natural happiness starts to go away.
+		// When you reach 24 cities, each city only has one naturally happy citizen.
+		// At 36 cities, there are no naturally happy citizens left.
+		// At this point, the Cure for Cancer wonder becomes very useful.
+		// When you build more than 36 cities, unhappy (red-shirt) citizens start to appear.
+		// Every 12 new cities add one more red-shirt citizen to each city.
+		// The good part is they react well to luxury items.
+		// Two luxury items can change one from red (very unhappy) to light blue (happy).
+		// The bad part is that it’s twice as hard to make them content.
+		// A cathedral only makes two of them content.
 		protected void ApplyEmperorEffects(CitizenTypes ct)
 		{
 			if (_game.Difficulty < 4)
@@ -221,7 +230,7 @@ namespace CivOne.Screens.Services
 			ContentToHappy(ct.Citizens, happyToContent);
 		}
 
-		protected void ApplyDemocracyEffects(CitizenTypes ct, int available)
+		protected void ApplyDemocracyEffects(CitizenTypes ct, int initialContent)
 		{
 			if (!_city.Player.RepublicDemocratic)
 			{
@@ -235,7 +244,7 @@ namespace CivOne.Screens.Services
 
 			int unhappyPerUnit = _city.Player.Government is Governments.Republic ? 1 : 2;
 
-			int totalUnhappiness = Math.Min(available, attackUnitsNotInCity.Count() * unhappyPerUnit);
+			int totalUnhappiness = Math.Min(initialContent, attackUnitsNotInCity.Count() * unhappyPerUnit);
 
 			DowngradeCitizens(ct.Citizens, totalUnhappiness);
 		}
@@ -364,34 +373,46 @@ namespace CivOne.Screens.Services
 			return (happy, content, unhappy);
 		}
 
-		protected void UpgradeAllCitizens(Citizen[] target, int happyUpgrades)
+		protected void UpgradeCitizens(Citizen[] target, int happyUpgrades)
 		{
 			if (happyUpgrades <= 0) return;
 
 			var count = target.Length - _specialists.Count;
 
+			// Steps for each citizen, until happyUpgrades run out:
+			// 1. unhappy to content if possible then content to happy
+			// 2. go to next citizen and repeat 1.
 			for (int i = 0; i < count && happyUpgrades > 0; i++)
 			{
-				var upgraded = UpgradeCitizen(target[i]);
-				if (upgraded != target[i])
-				{
-					// unhappy -> content or content -> happy
-					target[i] = upgraded;
-					happyUpgrades--;
+				// unhappy -> content OR content -> happy
+				target[i] = UpgradeCitizen(target[i]);
+				happyUpgrades--;
 
-					// still unhappy because of redshirt?
-					if (IsUnhappy(target[i]))
-					{
-						target[i] = UpgradeCitizen(target[i]);
-						happyUpgrades--;
-					}
-				}
-				if (target[i] is Citizen.ContentMale or Citizen.ContentFemale)
+				if (IsHappy(target[i]))
 				{
-					// content -> happy
+					continue;
+				}
+				if (happyUpgrades <= 0)
+				{
+					// CW: Currently, a redshirt is made to unhappy only, not content.
+					break;
+				}
+
+				// still unhappy because of redshirt?
+				if (IsUnhappy(target[i]))
+				{
 					target[i] = UpgradeCitizen(target[i]);
 					happyUpgrades--;
 				}
+
+				if (happyUpgrades <= 0)
+				{
+					break;
+				}
+
+				// content -> happy
+				target[i] = UpgradeCitizen(target[i]);
+				happyUpgrades--;
 			}
 		}
 
@@ -456,6 +477,7 @@ namespace CivOne.Screens.Services
 
 					if (count <= 0)
 					{
+						// CW: currently, we skip upgrading redshirt if not enough count left
 						break;
 					}
 				}
@@ -498,6 +520,11 @@ namespace CivOne.Screens.Services
 		protected bool IsContent(Citizen c)
 		{
 			return c is Citizen.ContentMale or Citizen.ContentFemale;
+		}
+		
+		protected bool IsHappy(Citizen c)
+		{
+			return c is Citizen.HappyMale or Citizen.HappyFemale;
 		}
 
 		protected bool IsUnhappy(Citizen c)
@@ -554,308 +581,5 @@ namespace CivOne.Screens.Services
 				_ => c
 			};
 		}
-
-		// namespace CivOne.Enums
-		// {
-		// 	public enum Citizen
-		// 	{
-		// 		HappyMale = 0,
-		// 		HappyFemale = 1,
-		// 		ContentMale = 2,
-		// 		ContentFemale = 3,
-		// 		UnhappyMale = 4,
-		// 		UnhappyFemale = 5,
-		// 		Taxman = 6,
-		// 		Scientist = 7,
-		// 		Entertainer = 8,
-		// 		RedShirtMale = 9,
-		// 		RedShirtFemale = 10
-		// 	}
-		// }
-
 	}
 }
-
-// Beide Methoden in eine Klasse oben zusammenführen. Die machen leicht was anderes, aber das kann man zusammenfassen.
-// // Microprose: initial state -> add entertainers -> 'after luxury' state
-// // City size 4, King:
-// //   3c1u -> 2c1u1ent -> 1h1c1u1ent
-// //   3c1u -> 1c1u2ent -> 1h1c2ent
-// //   3c1u -> 1u3ent   -> 1h3ent
-// // City size 5, King:
-// //   3c2u -> 2c2u1ent -> 1h1c2u1ent
-// //   3c2u -> 1c2u2ent -> 1h1c1u2ent
-// //   3c2u -> 2u3ent   -> 1h1c3ent
-// //   3c2u -> 1u4ent   -> 1h4ent
-// // City size 6, King:
-// //   3c3u -> 2c3u1ent -> 1h1c3u1ent
-// //   3c3u -> 1c3u2ent -> 1h1c2u2ent
-// //   3c3u -> 3u3ent   -> 1h1c1u3ent
-// //   3c3u -> 2u4ent   -> 2h4ent
-
-// internal IEnumerable<CitizenTypes> Residents
-// {
-// 	get
-// 	{
-// 		// TODO fire-eggs: add side-effect of recalc specialties a la Citizens
-// 		CitizenTypes start = new()
-// 		{
-// 			elvis = Entertainers,
-// 			einstein = Scientists,
-// 			taxman = Taxmen,
-// 			Wonders = [],
-// 			Buildings = [],
-// 			MarshallLawUnits = []
-// 		};
-
-// 		int specialists = start.elvis + start.einstein + start.taxman;
-// 		int available = Size - specialists;
-// 		int initialContent = Game.MaxDifficulty - Game.Difficulty;
-
-// 		// Stage 1: basic content/unhappy
-// 		start.content = Math.Max(0, Math.Min(available, initialContent - specialists));
-// 		start.unhappy = available - start.content;
-
-// 		Debug.Assert(start.Sum() == Size);
-// 		Debug.Assert(start.Valid());
-// 		yield return start;
-
-// 		if (available < 1)
-// 			yield return start;
-// 		else
-// 		{
-// 			// Stage 2: impact of luxuries: content->happy; unhappy->content and then content->happy
-// 			int happyUpgrades = (int)Math.Floor((double)Luxuries / 2);
-// 			int cont = start.content;
-// 			int unha = start.unhappy;
-// 			int happ = start.happy;
-// 			for (int h = 0; h < happyUpgrades; h++)
-// 			{
-// 				if (cont > 0)
-// 				{
-// 					happ++;
-// 					cont--;
-// 					continue;
-// 				}
-// 				if (unha > 0)
-// 				{
-// 					cont++;
-// 					unha--;
-// 				}
-// 			}
-
-// 			start.happy = happ;
-// 			start.content = cont;
-// 			start.unhappy = unha;
-
-// 			Debug.Assert(start.Sum() == Size);
-// 			Debug.Assert(start.Valid());
-
-// 			// TODO fire-eggs impact of luxury setting?
-// 			yield return start;
-// 		}
-
-// 		// Stage 3: Building effects
-// 		int unhappyDelta = 0;
-// 		if (HasBuilding<Temple>())
-// 		{
-// 			int templeEffect = 1;
-// 			if (Player.HasAdvance<Mysticism>()) templeEffect <<= 1;
-// 			if (Player.HasWonderEffect<Oracle>()) templeEffect <<= 1;
-// 			unhappyDelta += templeEffect;
-// 			start.Buildings.Add(new Temple());
-// 		}
-
-// 		int delta = CathedralDelta(); ;
-// 		unhappyDelta += delta;
-// 		if (delta > 0)
-// 		{
-// 			start.Buildings.Add(new Cathedral());
-// 		}
-// 		if (HasBuilding<Colosseum>())
-// 		{
-// 			unhappyDelta += 3;
-// 			start.Buildings.Add(new Colosseum());
-// 		}
-
-// 		// Stage 3: Building effects
-// 		unhappyDelta = Math.Min(start.unhappy, unhappyDelta);
-// 		start.content += unhappyDelta;
-// 		start.unhappy -= unhappyDelta;
-// 		yield return start;
-
-// 		unhappyDelta = 0;
-
-// 		// 						In the original Sid Meier's Civilization, martial law is a 
-// 		// mechanism of quelling citizens' discontent available under Anarchy, 
-// 		// Despotism, Monarchy or Communism. Martial law allows the ruler to turn unhappy citizens content by stationing up to 3 military units inside the city. Each unit makes 1 citizen content, but no more than 3 in total (additional units will have no effect on the population's mood).
-
-// 		// Units eligible to impose martial law are any units with
-// 		// an attack of 1 or more including ships and air units.
-
-// 		// Note that in the first MS-DOS version of Civilization (version 474.01/475.01) the 
-// 		//limit of 3 units is not present, and any number of unhappy citizens can be quelled by enough military units.
-
-// 		// Stage 4: martial law
-// 		// if (Player.AnarchyDespotism || Player.MonarchyCommunist)
-// 		// {
-// 		// 	var attackUnitsInCity = Game.Instance.GetUnits()
-// 		// 		.Where(u => u.X == this.X && u.Y == this.Y && u.Attack > 0);
-
-// 		// 	start.Units = [.. attackUnitsInCity];
-
-// 		// 	// CW: not as in original Civ, limit to max 3 units
-// 		// 	const int MAX_MARTIAL_LAW_UNITS = 3;
-
-// 		// 	unhappyDelta += Math.Max(MAX_MARTIAL_LAW_UNITS, attackUnitsInCity.Count());
-// 		// }
-
-// 		// Every unit outside its home city causes 2 unhappiness. (exceptions: settlers, diplomats, caravans, transports).
-// 		// Every unit outside their home city causes 1 unhappiness. (exceptions: settlers, transports, diplomats, caravans)
-// 		// if (Player.RepublicDemocratic)
-// 		{
-// 			var attackUnitsNotInCity = Game.Instance.GetUnits()
-// 				.Where(u => u.Home == this && u.Attack > 0 && (u.X != this.X || u.Y != this.Y));
-
-// 			start.MarshallLawUnits = [.. attackUnitsNotInCity];
-
-// 			int unhappy = Player.Government is Republic ? 1 : 2;
-
-// 			start.unhappy += Math.Min(Size, attackUnitsNotInCity.Count() * unhappy);
-// 			start.content = Math.Max(0, start.content - attackUnitsNotInCity.Count() * unhappy);
-// 		}
-// 		yield return start;
-
-// 		//Stage 5: wonder effects
-
-// 		if (HasWonder<ShakespearesTheatre>() && !Game.WonderObsolete<ShakespearesTheatre>())
-// 		{
-// 			// All unhappy become content, but only in this city.
-// 			unhappyDelta = start.unhappy;
-// 			start.Wonders.Add(new ShakespearesTheatre());
-// 		}
-// 		int happy = 0;
-// 		if (Player.HasWonderEffect<HangingGardens>())
-// 		{
-// 			happy += 1;
-// 			start.Wonders.Add(new HangingGardens());
-// 		}
-// 		if (Player.HasWonderEffect<CureForCancer>())
-// 		{
-// 			happy += 1;
-// 			start.Wonders.Add(new CureForCancer());
-// 		}
-
-// 		unhappyDelta = Math.Min(start.unhappy, unhappyDelta);
-// 		start.content += unhappyDelta;
-// 		start.unhappy -= unhappyDelta;
-// 		start.happy += Math.Min(happy, start.content);
-// 		start.content -= Math.Min(happy, start.content);
-
-// 		Debug.Assert(start.Sum() == Size);
-// 		Debug.Assert(start.Valid());
-
-// 		yield return start;
-// 	}
-// }
-
-// internal int CathedralDelta()
-// {
-// 	if (!HasBuilding<Cathedral>()) return 0;
-
-// 	int unhappyDelta = 0;
-
-// 	// CW: Michelangelo's Chapel gives +6 happiness if on same continent as city with wonder, else +4
-// 	// https://civilization.fandom.com/wiki/Michelangelo%27s_Chapel_(Civ1)
-// 	bool hasChapel = !Game.WonderObsolete<MichelangelosChapel>()
-// 			&& Game.GetPlayer(_owner).Cities.Any(c => c.HasWonder<MichelangelosChapel>() && c.ContinentId == ContinentId);
-// 	int chapelBonus = hasChapel ? 6 : 4;
-
-// 	unhappyDelta += chapelBonus;
-
-// 	return unhappyDelta;
-// }
-
-
-// internal IEnumerable<Citizen> Citizens
-// {
-// 	get
-// 	{
-// 		// Update specialist count
-// 		while (_specialists.Count < Size - (ResourceTiles.Count() - 1)) _specialists.Add(Citizen.Entertainer);
-// 		while (_specialists.Count > Size - (ResourceTiles.Count() - 1)) _specialists.Remove(_specialists.Last());
-
-// 		// TODO fire-eggs verify luxury makes happy first, then clears unhappy
-// 		int happyCount = (int)Math.Floor((double)Luxuries / 2);
-// 		if (Player.HasWonderEffect<HangingGardens>()) happyCount++;
-// 		if (Player.HasWonderEffect<CureForCancer>()) happyCount++;
-
-// 		int unhappyCount = Size - (Game.MaxDifficulty - Game.Difficulty) - happyCount;
-// 		if (HasWonder<ShakespearesTheatre>() && !Game.WonderObsolete<ShakespearesTheatre>())
-// 		{
-// 			// All unhappy become content, but only in this city.
-// 			unhappyCount = 0;
-// 		}
-// 		else
-// 		{
-// 			if (HasBuilding<Temple>())
-// 			{
-// 				int templeEffect = 1;
-// 				if (Player.HasAdvance<Mysticism>()) templeEffect <<= 1;
-// 				if (Player.HasWonderEffect<Oracle>()) templeEffect <<= 1;
-// 				unhappyCount -= templeEffect;
-// 			}
-// 			if (Tile != null && Map.ContentCities(Tile.ContinentId).Any(x => x.Size > 0 && x.Owner == Owner && x.HasWonder<JSBachsCathedral>()))
-// 			{
-// 				unhappyCount -= 2;
-// 			}
-// 			if (HasBuilding<Colosseum>()) unhappyCount -= 3;
-// 			unhappyCount -= CathedralDelta();
-// 		}
-
-// 		// 20190612 fire-eggs Martial law : reduce unhappy count for every attack-capable unit in city [max 3]
-// 		if (Player.AnarchyDespotism || Player.MonarchyCommunist)
-// 		{
-// 			var attackUnitsInCity = Game.Instance.GetUnits()
-// 				.Where(u => u.X == this.X && u.Y == this.Y && u.Attack > 0)
-// 				.Count();
-// 			attackUnitsInCity = Math.Min(attackUnitsInCity, 3);
-// 			unhappyCount -= attackUnitsInCity;
-
-// 			// TODO fire-eggs: absent units make people unhappy (republic, democracy)
-// 		}
-
-// 		int content = 0;
-// 		int unhappy = 0;
-// 		int working = (ResourceTiles.Count() - 1);
-// 		int specialist = 0;
-
-// 		for (int i = 0; i < Size; i++)
-// 		{
-// 			if (i < working)
-// 			{
-// 				if (happyCount-- > 0)
-// 				{
-// 					yield return (i % 2 == 0) ? Citizen.HappyMale : Citizen.HappyFemale;
-// 					continue;
-// 				}
-// 				if ((unhappyCount - (working - i)) >= 0)
-// 				{
-// 					unhappyCount--;
-// 					yield return ((unhappy++) % 2 == 0) ? Citizen.UnhappyMale : Citizen.UnhappyFemale;
-// 					continue;
-// 				}
-// 				yield return ((content++) % 2 == 0) ? Citizen.ContentMale : Citizen.ContentFemale;
-// 				continue;
-// 			}
-// 			yield return _specialists[specialist++];
-// 		}
-// 	}
-// }
-// internal void ChangeSpecialist(int index)
-// {
-// 	if (index >= _specialists.Count) return;
-
-// 	while (_specialists.Count < (index + 1)) _specialists.Add(Citizen.Entertainer);
-// 	_specialists[index] = (Citizen)((((int)_specialists[index] - 5) % 3) + 6);
-// }
