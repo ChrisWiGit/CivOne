@@ -323,7 +323,7 @@ namespace CivOne.UnitTests
         /// First tricky one. City size 6 at King level: starts with 3 content, 3 unhappy.
         /// Switch 3 people to entertainers: now 3 unhappy, 3 entertainers. Entertainers
         /// make content people happy, then unhappy people content, but sequentially.
-        /// Specifically: a) 1 unhappy-> 1 content; b) the 1 content-> 1 happy; c) 1 happy
+        /// Specifically: a) 1 unhappy-> 1 content; b) the 1 content-> 1 happy; c) 1 unhappy
         /// to 1 content. Final: 1 happy, 1 content, 1 unhappy, 3 entertainers.
         ///
         /// The "parallel" approach would be to make all 3 unhappy people content, but
