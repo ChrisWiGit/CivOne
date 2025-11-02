@@ -163,7 +163,7 @@ namespace CivOne
 			}
 		}
 		
-		private Map()
+		internal Map()
 		{
 			_terrainMasterWord = Common.Random.Next(16);
 			Ready = false;
@@ -174,9 +174,9 @@ namespace CivOne
         /// <summary>
         /// Fire-eggs 20190704: for unit testing, reset
         /// </summary>
-        internal static void Wipe()
+        internal static void Reset(Map newInstance = null)
         {
-            _instance = null;
+            _instance = newInstance;
         }
 	}
 }

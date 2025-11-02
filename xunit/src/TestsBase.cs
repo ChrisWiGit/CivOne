@@ -36,12 +36,8 @@ namespace CivOne.src
             runtime = new MockRuntime(rs);
 
             // Load Earth map
-            var foo = Map.Instance;
-            foo.LoadMap();
-            do
-            {
-                Thread.Sleep(5);
-            } while (!foo.Ready);
+            Map.Reset(new MapGenerationWithoutThread());
+            Map.Instance.LoadEarthMapInThread();
 
             // Start with Babylonians at King level
             Game.CreateGame(3, 2, Common.Civilizations.First(x => x.Name=="Babylonian"));
@@ -53,7 +49,7 @@ namespace CivOne.src
         public void Dispose()
         {
             // Tear everything down
-            Map.Wipe();
+            Map.Reset();
             Game.Wipe();
             runtime?.Dispose();
             RuntimeHandler.Wipe();

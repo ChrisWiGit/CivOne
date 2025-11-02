@@ -179,7 +179,7 @@ namespace CivOne
 			}
 		}
 		
-		private void LoadMapThread()
+		protected void RunEarthMapThread()
 		{
 			Log("Map: Loading MAP.PIC");
 			
@@ -195,22 +195,27 @@ namespace CivOne
 			Ready = true;
 			Log("Map: Ready");
 		}
-		
-		public void LoadMap()
+
+		public void LoadEarthMapInThread()
 		{
 			if (Ready || _tiles != null)
 			{
 				Log("ERROR: Map is already load{0}/generat{0}", (Ready ? "ed" : "ing"));
 				return;
 			}
-			
+
 			_landMass = -1;
 			_temperature = -1;
 			_climate = -1;
 			_age = -1;
 			FixedStartPositions = true;
-			
-			Task.Run(() => LoadMapThread());
+
+			TaskRunEarthMapGeneration();
+		}
+		
+		protected virtual void TaskRunEarthMapGeneration()
+		{
+			Task.Run(RunEarthMapThread);
 		}
 	}
 }

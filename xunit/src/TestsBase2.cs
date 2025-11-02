@@ -12,6 +12,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using CivOne.src;
 
 namespace CivOne.UnitTests
 {
@@ -35,12 +36,8 @@ namespace CivOne.UnitTests
             runtime = new MockRuntime(rs);
 
             // Load Earth map
-            var foo = Map.Instance;
-            foo.LoadMap();
-            do
-            {
-                Thread.Sleep(5);
-            } while (!foo.Ready);
+            Map.Reset(new MapGenerationWithoutThread());
+            Map.Instance.LoadEarthMapInThread();
 
             // Start with Chinese, 7 players, at King level
             Game.CreateGame(3, 7, Common.Civilizations.First(x => x.Name=="Chinese"));
@@ -52,7 +49,7 @@ namespace CivOne.UnitTests
         public void Dispose()
         {
             // Tear everything down
-            Map.Wipe();
+            Map.Reset();
             Game.Wipe();
             runtime?.Dispose();
             RuntimeHandler.Wipe();
