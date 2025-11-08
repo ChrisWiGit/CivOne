@@ -193,13 +193,144 @@ namespace CivOne.UnitTests
             Assert.Equal(Citizen.HappyFemale, target[4]);
         }
 
-        [Fact]
-        public void UnhappyToContentTests()
-		{
-			mockedSpecialists.Clear();
-            var target = new Citizen[6];
-		}
+        [Theory]
+        [InlineData(1, 3)]
+        [InlineData(2, 4)]
+        [InlineData(3, 4)]
+        [InlineData(4, 5)]
+        [InlineData(5, 5)]
+        [InlineData(6, 6)]
+        [InlineData(7, 6)]
+        [InlineData(8, 6)]
+        [InlineData(9, 6)]
+        [InlineData(10, 6)]
+        [InlineData(11, 6)]
+        public void UnhappyToContentTests(
+            int conversionCount, int expectedContentCount)
+        {
+            mockedSpecialists.Clear();
+            var target = new Citizen[8];
+            target[0] = Citizen.UnhappyMale; // count necessary: 1, content: 2
+            target[1] = Citizen.UnhappyFemale; // count necessary: 2, content: 4
+            target[2] = Citizen.RedShirtMale; // count necessary: 4, content: 5
+            target[3] = Citizen.RedShirtFemale; // count necessary: 6, content: 6
+            target[4] = Citizen.ContentMale; // not changed
+            target[5] = Citizen.ContentFemale; // not changed
+            target[6] = Citizen.HappyMale; // not changed
+            target[7] = Citizen.HappyFemale; // not changed
 
+            int actualContentCount = target.Count(c => c == Citizen.ContentMale || c == Citizen.ContentFemale);
+            testee.UnhappyToContent(target, conversionCount);
+
+            int newContentCount = target.Count(c => c == Citizen.ContentMale || c == Citizen.ContentFemale);
+
+            Assert.Equal(expectedContentCount, newContentCount);
+        }
+
+        [Theory]
+        [InlineData(0, 2)]
+        [InlineData(1, 3)]
+        [InlineData(2, 4)]
+        [InlineData(3, 4)]
+        [InlineData(4, 4)]
+        [InlineData(5, 4)]
+        [InlineData(6, 4)]
+        [InlineData(7, 4)]
+        [InlineData(8, 4)]
+        public void ContentToHappyTests(
+            int conversionCount, int expectedHappyCount)
+        {
+            mockedSpecialists.Clear();
+            var target = new Citizen[8];
+            target[0] = Citizen.ContentMale; // count: 1, happy: 1
+            target[1] = Citizen.ContentFemale; // count: 2, happy: 2
+            target[2] = Citizen.UnhappyMale; // count: 3, happy: 3
+            target[3] = Citizen.UnhappyFemale; // count: 4, happy: 4
+            target[4] = Citizen.HappyMale; // not changed
+            target[5] = Citizen.HappyFemale; // not changed
+            target[6] = Citizen.RedShirtFemale; // not changed
+            target[7] = Citizen.RedShirtMale; // not changed
+
+            int actualHappyCount = target.Count(c => c == Citizen.HappyMale || c == Citizen.HappyFemale);
+            testee.ContentToHappy(target, conversionCount);
+
+            int newHappyCount = target.Count(c => c == Citizen.HappyMale || c == Citizen.HappyFemale);
+
+            Assert.Equal(expectedHappyCount, newHappyCount);
+        }
+
+        [Fact]
+        public void InitSpecialistsTest()
+        {
+            var specialists = new List<Citizen>
+            {
+                Citizen.HappyMale,
+                Citizen.HappyFemale
+            };
+            var target = new Citizen[8];
+            testee.InitSpecialists(specialists, target);
+
+            Assert.Equal(Citizen.HappyMale, target[6]);
+            Assert.Equal(Citizen.HappyFemale, target[7]);
+        }
+
+        [Theory]
+        [InlineData(0, 0)]
+        [InlineData(1, 1)]
+        [InlineData(2, 1)]
+        [InlineData(3, 1)]
+        public void InitCitizensTests(
+            int contentCount, int unhappyCount)
+        {
+            mockedSpecialists.Clear();
+
+            var target = new Citizen[6];
+            testee.InitCitizens(target, contentCount, unhappyCount);
+
+            int actualUnhappyCount = target.Count(c => c == Citizen.UnhappyMale | c == Citizen.UnhappyFemale);
+            Assert.Equal(unhappyCount, actualUnhappyCount);
+
+            int actualContentCount = target.Count(c => c == Citizen.ContentMale | c == Citizen.ContentFemale);
+            Assert.Equal(contentCount, actualContentCount);
+        }
+
+        [Theory]
+        [InlineData(0, 2, 2)] // no upgrades
+        [InlineData(1, 2, 2)] // not enough for redshirt
+        [InlineData(2, 3, 2)] // 1st. redshirt to content
+        [InlineData(3, 2, 3)] // 1st. content to happy
+        [InlineData(6, 2, 4)] // 2nd. redshirt to content to happy
+        [InlineData(8, 2, 5)] // 1st.unhappy to happy
+        [InlineData(10, 2, 6)] // 2nd.unhappy to happy
+        [InlineData(12, 0, 8)] // 2x content to happy
+        [InlineData(14, 0, 8)] // no more upgrades
+        public void UpgradeCitizensTests(
+            int upgradeCount,
+            int expectedContentCount,
+            int expectedHappyCount)
+        {
+            mockedSpecialists.Clear();
+
+            mockedSpecialists.Clear();
+            var target = new Citizen[8];
+
+            target[0] = Citizen.RedShirtMale;
+            target[1] = Citizen.RedShirtFemale; 
+            target[2] = Citizen.UnhappyMale; 
+            target[3] = Citizen.UnhappyFemale; 
+            target[4] = Citizen.ContentMale;
+            target[5] = Citizen.ContentFemale;
+            target[6] = Citizen.HappyMale;
+            target[7] = Citizen.HappyFemale;
+
+            testee.UpgradeCitizens(target, upgradeCount);
+
+            int actualContentCount = target.Count(c => c == Citizen.ContentMale | c == Citizen.ContentFemale);
+            Assert.Equal(expectedContentCount, actualContentCount);
+
+            int actualHappyCount = target.Count(c => c == Citizen.HappyMale | c == Citizen.HappyFemale);
+            Assert.Equal(expectedHappyCount, actualHappyCount);
+        }
 
         public class MockedICityBuildings : ICityBuildings
         {
@@ -228,42 +359,6 @@ namespace CivOne.UnitTests
 
             public bool HasWonder<T>() where T : IWonder => _hasWonder.Next();
         }
-
-        // 		protected internal void UnhappyToContent(Citizen[] target, int count)
-        // {
-        // 	if (count <= 0) return;
-
-        // 	var total = target.Length - _specialists.Count;
-
-        // 	for (int i = 0; i < total && count > 0; i++)
-        // 	{
-        // 		if (!IsUnhappy(target[i])) continue;
-
-        // 		if (IsRedShirt(target[i]))
-        // 		{
-        // 			// redshirt takes two steps to become content
-        // 			// redshirt -> unhappy -> content
-        // 			count--; // first step
-
-        // 			if (count <= 0)
-        // 			{
-        // 				// CW: currently, we skip upgrading redshirt if not enough count left
-        // 				break;
-        // 			}
-        // 		}
-
-        // 		target[i] = CitizenByIndex(i, Citizen.ContentMale);
-        // 		count--; // second step
-        // 	}
-        // }
-
-        // 	var total = target.Length - _specialists.Count;
-
-        // 	for (int i = 0; i < total && count > 0; i++)
-        // 	{
-        // 		target[i] = CitizenByIndex(i, Citizen.RedShirtMale);
-        // 	}
-        // }
 
         // /// <summary>
         // /// City size 2, with 1 entertainer: results are 1 happy, 1 entertainer
