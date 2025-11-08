@@ -40,14 +40,27 @@ namespace CivOne.src
             Map.Instance.LoadEarthMapInThread();
 
             // Start with Babylonians at King level
-            Game.CreateGame(3, 2, Common.Civilizations.First(x => x.Name=="Babylonian"));
+            Game.CreateGame(3, 2, Common.Civilizations.First(x => x.Name == "Babylonian"));
             playa = Game.Instance.HumanPlayer;
 
             City.Game = Game.Instance; // CW: Dependency Injection for now. Ensure static Game reference is set
+
+            BeforeEach();
         }
 
-        public void Dispose()
+        public virtual void BeforeEach()
         {
+            // Override in derived classes to set up before each test
+        }
+        
+        public virtual void AfterEach()
+        {
+            // Override in derived classes to tear down after each test
+        }
+
+        public virtual void Dispose()
+        {
+            AfterEach();
             // Tear everything down
             Map.Reset();
             Game.Wipe();

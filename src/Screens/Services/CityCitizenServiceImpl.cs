@@ -15,7 +15,9 @@ namespace CivOne.Screens.Services
 	public class CityCitizenServiceImpl(
 		ICityBasic city,
 		ICityBuildings cityBuildings,
-		IGame game, List<Citizen> specialists, IMap map) : ICityCitizenService
+		IGame game,
+		List<Citizen> specialists,
+		IMap map) : ICityCitizenService
 	{
 		protected readonly ICityBasic _city = city;
 		protected readonly ICityBuildings _cityBuildings = cityBuildings;
@@ -113,7 +115,7 @@ namespace CivOne.Screens.Services
 			return ct;
 		}
 
-		protected (int initialUnhappyCount, int initialContent)
+		protected internal (int initialUnhappyCount, int initialContent)
 			CalculateCityStats(CitizenTypes ct, IGame _game)
 		{
 			// max difficulty = 4|5, easiest = 0
@@ -155,7 +157,7 @@ namespace CivOne.Screens.Services
 		// Two luxury items can change one from red (very unhappy) to light blue (happy).
 		// The bad part is that it’s twice as hard to make them content.
 		// A cathedral only makes two of them content.
-		protected void ApplyEmperorEffects(CitizenTypes ct)
+		protected internal void ApplyEmperorEffects(CitizenTypes ct)
 		{
 			if (_game.Difficulty < 4)
 			{
@@ -182,7 +184,7 @@ namespace CivOne.Screens.Services
 
 			WearRedShirt(ct.Citizens, NumberOfRedShirts(totalCities));
 		}
-		protected int NumberOfRedShirts(int totalCities)
+		protected internal int NumberOfRedShirts(int totalCities)
 		{
 			if (totalCities <= 36)
 			{
@@ -194,7 +196,7 @@ namespace CivOne.Screens.Services
 			// 1+ (61-36) /12 = 1 + 25/12 = 3
 		}
 
-		protected CitizenTypes CreateCitizenTypes()
+		protected internal CitizenTypes CreateCitizenTypes()
 		{
 			return new()
 			{
@@ -212,7 +214,7 @@ namespace CivOne.Screens.Services
 			};
 		}
 
-		protected void ApplyWonderEffects(CitizenTypes ct)
+		protected internal void ApplyWonderEffects(CitizenTypes ct)
 		{
 			int happy = 0;
 			if (_city.Player.HasWonderEffect<HangingGardens>() && !_game.WonderObsolete<HangingGardens>())
@@ -230,7 +232,7 @@ namespace CivOne.Screens.Services
 			ContentToHappy(ct.Citizens, happyToContent);
 		}
 
-		protected void ApplyDemocracyEffects(CitizenTypes ct, int initialContent)
+		protected internal void ApplyDemocracyEffects(CitizenTypes ct, int initialContent)
 		{
 			if (!_city.Player.RepublicDemocratic)
 			{
@@ -249,7 +251,7 @@ namespace CivOne.Screens.Services
 			DowngradeCitizens(ct.Citizens, totalUnhappiness);
 		}
 
-		protected void ApplyMartialLaw(CitizenTypes ct)
+		protected internal void ApplyMartialLaw(CitizenTypes ct)
 		{
 			if (!_city.Player.AnarchyDespotism && !_city.Player.MonarchyCommunist)
 			{
@@ -268,7 +270,7 @@ namespace CivOne.Screens.Services
 			UnhappyToContent(ct.Citizens, unhappyToContent);
 		}
 
-		protected void ApplyBuildingEffects(CitizenTypes ct)
+		protected internal void ApplyBuildingEffects(CitizenTypes ct)
 		{
 			if (_cityBuildings.HasWonder<ShakespearesTheatre>() && !_game.WonderObsolete<ShakespearesTheatre>())
 			{
@@ -339,14 +341,14 @@ namespace CivOne.Screens.Services
 			return unhappyDelta;
 		}
 
-		protected bool HasBachsCathedral()
+		protected internal bool HasBachsCathedral()
 		{
 			return _city.Tile != null
 						&& _map.ContinentCities(_city.Tile.ContinentId)
 							.Any(x => x.Size > 0 && x.Owner == _city.Owner && x.HasWonder<JSBachsCathedral>());
 		}
 
-		protected CitizenTypes StageBasic(CitizenTypes ct, int initialContent, int initialUnhappy)
+		protected internal CitizenTypes StageBasic(CitizenTypes ct, int initialContent, int initialUnhappy)
 		{
 			ct.content = initialContent;
 			ct.unhappy = initialUnhappy;
@@ -365,7 +367,7 @@ namespace CivOne.Screens.Services
 		}
 
 		// count citizen types
-		protected (int happy, int content, int unhappy) CountCitizenTypes(Citizen[] citizens)
+		protected internal (int happy, int content, int unhappy) CountCitizenTypes(Citizen[] citizens)
 		{
 			int happy = citizens.Count(c => c is Citizen.HappyMale or Citizen.HappyFemale);
 			int content = citizens.Count(c => c is Citizen.ContentMale or Citizen.ContentFemale);
@@ -373,7 +375,7 @@ namespace CivOne.Screens.Services
 			return (happy, content, unhappy);
 		}
 
-		protected void UpgradeCitizens(Citizen[] target, int happyUpgrades)
+		protected internal void UpgradeCitizens(Citizen[] target, int happyUpgrades)
 		{
 			if (happyUpgrades <= 0) return;
 
@@ -416,7 +418,7 @@ namespace CivOne.Screens.Services
 			}
 		}
 
-		protected void InitCitizens(Citizen[] target, int content, int unhappy)
+		protected internal void InitCitizens(Citizen[] target, int content, int unhappy)
 		{
 			for (int i = 0; i < target.Length - _specialists.Count; i++)
 			{
@@ -433,7 +435,7 @@ namespace CivOne.Screens.Services
 			}
 		}
 
-		protected void InitSpecialists(List<Citizen> specialists, Citizen[] target)
+		protected internal void InitSpecialists(List<Citizen> specialists, Citizen[] target)
 		{
 			// Copy specialists to end of array
 			Array.Copy(
@@ -444,7 +446,7 @@ namespace CivOne.Screens.Services
 				length: specialists.Count);
 		}
 
-		protected void ContentToHappy(Citizen[] target, int count)
+		protected internal void ContentToHappy(Citizen[] target, int count)
 		{
 			if (count <= 0) return;
 
@@ -459,7 +461,7 @@ namespace CivOne.Screens.Services
 			}
 		}
 
-		protected void UnhappyToContent(Citizen[] target, int count)
+		protected internal void UnhappyToContent(Citizen[] target, int count)
 		{
 			if (count <= 0) return;
 
@@ -487,7 +489,7 @@ namespace CivOne.Screens.Services
 			}
 		}
 
-		protected void DowngradeCitizens(Citizen[] target, int count)
+		protected internal void DowngradeCitizens(Citizen[] target, int count)
 		{
 			if (count <= 0) return;
 
@@ -505,7 +507,7 @@ namespace CivOne.Screens.Services
 			}
 		}
 
-		protected void WearRedShirt(Citizen[] target, int count)
+		protected internal void WearRedShirt(Citizen[] target, int count)
 		{
 			if (count <= 0) return;
 
@@ -517,22 +519,22 @@ namespace CivOne.Screens.Services
 			}
 		}
 
-		protected bool IsContent(Citizen c)
+		protected internal bool IsContent(Citizen c)
 		{
 			return c is Citizen.ContentMale or Citizen.ContentFemale;
 		}
 		
-		protected bool IsHappy(Citizen c)
+		protected internal bool IsHappy(Citizen c)
 		{
 			return c is Citizen.HappyMale or Citizen.HappyFemale;
 		}
 
-		protected bool IsUnhappy(Citizen c)
+		protected internal bool IsUnhappy(Citizen c)
 		{
 			return c is Citizen.UnhappyMale or Citizen.UnhappyFemale or Citizen.RedShirtMale or Citizen.RedShirtFemale;
 		}
 
-		protected bool IsRedShirt(Citizen c)
+		protected internal bool IsRedShirt(Citizen c)
 		{
 			return c is Citizen.RedShirtMale or Citizen.RedShirtFemale;
 		}
@@ -540,7 +542,7 @@ namespace CivOne.Screens.Services
 
 
 		// liefert Citizen male, female je nachdem welcher Index
-		protected Citizen CitizenByIndex(int index, Citizen type)
+		protected internal Citizen CitizenByIndex(int index, Citizen type)
 		{
 			bool isMale = (index % 2) == 0;
 			return type switch
@@ -556,7 +558,7 @@ namespace CivOne.Screens.Services
 			};
 		}
 
-		protected Citizen DowngradeCitizen(Citizen c)
+		protected internal Citizen DowngradeCitizen(Citizen c)
 		{
 			return c switch
 			{
@@ -568,7 +570,7 @@ namespace CivOne.Screens.Services
 			};
 		}
 
-		protected Citizen UpgradeCitizen(Citizen c)
+		protected internal Citizen UpgradeCitizen(Citizen c)
 		{
 			return c switch
 			{
