@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using CivOne.Wonders;
 using System.Drawing;
 using CivOne.Tiles;
+using CivOne.Units;
+using System;
 
 namespace CivOne.UnitTests
 {
@@ -40,6 +42,8 @@ namespace CivOne.UnitTests
         CityCitizenServiceImpl testee;
         City city;
         List<Citizen> mockedSpecialists;
+
+        MockedIGame mockedIGame;
         MockedICityBuildings mockedCityBuildings;
         MockedICityBasic mockedCityBasic;
         public override void BeforeEach()
@@ -50,15 +54,22 @@ namespace CivOne.UnitTests
             mockedSpecialists = [];
 
             mockedCityBuildings = new MockedICityBuildings();
-            mockedCityBasic = new MockedICityBasic() {
+            mockedCityBasic = new MockedICityBasic()
+            {
                 Size = 1
             };
-            
+
+            mockedIGame = new MockedIGame()
+            {
+                Difficulty = 4,
+                MaxDifficulty = 5,
+                GameTurn = 1
+            };
 
             testee = new CityCitizenServiceImpl(
                 mockedCityBasic,
                 mockedCityBuildings,
-                Game.Instance,
+                mockedIGame,//Game.Instance,
                 mockedSpecialists,
                 Map.Instance
             );
@@ -562,28 +573,44 @@ namespace CivOne.UnitTests
             // }
         }
 
-        [Fact]
-        public void NumberOfRedShirtsTests()
+        [Theory]
+        [InlineData(35, 0)]
+        [InlineData(36, 0)]
+        [InlineData(37, 1)]
+        [InlineData(48, 2)]
+        [InlineData(61, 3)]
+        [InlineData(62, 3)]
+        public void NumberOfRedShirtsTests(int totalCities, int expectedRedShirts)
         {
-            Assert.Fail("Not implemented");
-            //   		protected internal int NumberOfRedShirts(int totalCities)
-            // {
-            // 	if (totalCities <= 36)
-            // 	{
-            // 		return 0;
-            // 	}
-            // 	return 1 + (totalCities - 36) / 12;
-            // 	// 1+ (37-36) /12 = 1 + 1/12 = 1
-            // 	// 1+ (48-36) /12 = 1 + 12/12 = 2
-            // 	// 1+ (61-36) /12 = 1 + 25/12 = 3
-            // }
+            int result = testee.NumberOfRedShirts(totalCities);
+            Assert.Equal(expectedRedShirts, result);
         }
 
         [Fact]
-        public void ApplyEmperorEffectsTests()
+        public void ApplyEmperorEffectsTests(
+            int gameDifficulty,
+            int totalCities,
+            int citySize,
+            int expectedDowngrades
+        )
         {
-            Assert.Fail("Not implemented");
-            //    		protected internal void ApplyEmperorEffects(CitizenTypes ct)
+            mockedIGame.OnGetPlayer = (playerId) =>
+            {
+                return new MockPlayer(totalCities);
+            };
+            mockedIGame.Difficulty = gameDifficulty;
+            mockedCityBasic.Size = (byte)citySize;
+
+            CitizenTypes ct = new CitizenTypes
+            {
+                Citizens = new Citizen[citySize]
+            };
+            testee.InitCitizens(ct.Citizens, citySize, 0);
+            testee.ApplyEmperorEffects(ct);
+
+            Assert.Fail("TODO: Not implemented");
+            //    		protected internal void
+            //  ApplyEmperorEffects(CitizenTypes ct)
             // {
             // 	if (_game.Difficulty < 4)
             // 	{
@@ -610,6 +637,13 @@ namespace CivOne.UnitTests
 
             // 	WearRedShirt(ct.Citizens, NumberOfRedShirts(totalCities));
             // }
+        }
+        partial class MockPlayer(int citiesCount) : Player()
+        {
+            private readonly int citiesCount = citiesCount;
+
+			public new City[] Cities => new City[citiesCount];
+
         }
 
         [Theory]
@@ -691,64 +725,91 @@ namespace CivOne.UnitTests
         public void EnumerateCitizensTests()
         {
             Assert.Fail("Not implemented");
-        //   public IEnumerable<CitizenTypes> EnumerateCitizens()
-		// {
-		// 	DebugService.Assert(_specialists.Count <= _city.Size);
-		// 	CitizenTypes ct = CreateCitizenTypes();
+            //   public IEnumerable<CitizenTypes> EnumerateCitizens()
+            // {
+            // 	DebugService.Assert(_specialists.Count <= _city.Size);
+            // 	CitizenTypes ct = CreateCitizenTypes();
 
-		// 	(int initialUnhappyCount, int initialContent) = CalculateCityStats(ct, _game);
+            // 	(int initialUnhappyCount, int initialContent) = CalculateCityStats(ct, _game);
 
-		// 	// Stage 1: basic content/unhappy
-		// 	ct = StageBasic(ct, initialContent, initialUnhappyCount);
+            // 	// Stage 1: basic content/unhappy
+            // 	ct = StageBasic(ct, initialContent, initialUnhappyCount);
 
-		// 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
+            // 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
 
-		// 	DebugService.Assert(ct.Sum() == _city.Size);
-		// 	DebugService.Assert(ct.Valid());
+            // 	DebugService.Assert(ct.Sum() == _city.Size);
+            // 	DebugService.Assert(ct.Valid());
 
-		// 	yield return ct;
+            // 	yield return ct;
 
-		// 	// Stage 2: impact of luxuries: content->happy; unhappy->content and then content->happy
-		// 	// entertainers produce these luxury effects, but also marketplace, bank and luxury trade settings.
-		// 	int happyUpgrades = (int)Math.Floor((double)_city.Luxuries / 2);
-		// 	UpgradeCitizens(ct.Citizens, happyUpgrades);
+            // 	// Stage 2: impact of luxuries: content->happy; unhappy->content and then content->happy
+            // 	// entertainers produce these luxury effects, but also marketplace, bank and luxury trade settings.
+            // 	int happyUpgrades = (int)Math.Floor((double)_city.Luxuries / 2);
+            // 	UpgradeCitizens(ct.Citizens, happyUpgrades);
 
-		// 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
+            // 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
 
-		// 	DebugService.Assert(ct.Sum() == _city.Size);
-		// 	DebugService.Assert(ct.Valid());
+            // 	DebugService.Assert(ct.Sum() == _city.Size);
+            // 	DebugService.Assert(ct.Valid());
 
-		// 	yield return ct;
+            // 	yield return ct;
 
-		// 	// Stage 3: Building effects
-		// 	ApplyBuildingEffects(ct);
-		// 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
+            // 	// Stage 3: Building effects
+            // 	ApplyBuildingEffects(ct);
+            // 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
 
-		// 	DebugService.Assert(ct.Sum() == _city.Size);
-		// 	DebugService.Assert(ct.Valid());
-		// 	yield return ct;
+            // 	DebugService.Assert(ct.Sum() == _city.Size);
+            // 	DebugService.Assert(ct.Valid());
+            // 	yield return ct;
 
-		// 	// Stage 4: martial law
-		// 	ApplyMartialLaw(ct);
-		// 	ApplyDemocracyEffects(ct, initialContent);
-		// 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
+            // 	// Stage 4: martial law
+            // 	ApplyMartialLaw(ct);
+            // 	ApplyDemocracyEffects(ct, initialContent);
+            // 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
 
-		// 	DebugService.Assert(ct.Sum() == _city.Size);
-		// 	DebugService.Assert(ct.Valid());
-		// 	yield return ct;
+            // 	DebugService.Assert(ct.Sum() == _city.Size);
+            // 	DebugService.Assert(ct.Valid());
+            // 	yield return ct;
 
-		// 	//Stage 5: wonder effects
-		// 	ApplyWonderEffects(ct);
-		// 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
+            // 	//Stage 5: wonder effects
+            // 	ApplyWonderEffects(ct);
+            // 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
 
-		// 	DebugService.Assert(ct.Sum() == _city.Size);
-		// 	DebugService.Assert(ct.Valid());
-		// 	yield return ct;
-		// }
+            // 	DebugService.Assert(ct.Sum() == _city.Size);
+            // 	DebugService.Assert(ct.Valid());
+            // 	yield return ct;
+            // }
         }
-        
-        
-        public class MockedICityBasic : ICityBasic 
+
+        public class MockedIGame : IGameCitizenDependency
+        {
+            public ushort GameTurn { get; set; }
+            public int Difficulty { get; set; }
+            public int MaxDifficulty { get; set; }
+
+            public Func<byte, Player> OnGetPlayer { get; set; }
+            public Func<IUnit[]> OnGetUnits { get; set; }
+            public Func<Type, bool> OnWonderObsoleteByType { get; set; }
+            public Func<IWonder, bool> OnWonderObsolete { get; set; }
+
+            public Player GetPlayer(byte playerId)
+                => OnGetPlayer?.Invoke(playerId)
+                    ?? throw new NotImplementedException("GetPlayer not implemented by delegate.");
+
+            public IUnit[] GetUnits()
+                => OnGetUnits?.Invoke()
+                    ?? throw new NotImplementedException("GetUnits not implemented by delegate.");
+
+            public bool WonderObsolete<T>() where T : IWonder, new()
+                => OnWonderObsoleteByType?.Invoke(typeof(T))
+                    ?? throw new NotImplementedException("WonderObsolete<T> not implemented by delegate.");
+
+            public bool WonderObsolete(IWonder wonder)
+                => OnWonderObsolete?.Invoke(wonder)
+                    ?? throw new NotImplementedException("WonderObsolete(IWonder) not implemented by delegate.");
+        }
+
+        public class MockedICityBasic : ICityBasic
         {
             public Point Location => new Point(0, 0);
             public byte Size { get; set; } = 5;
@@ -758,16 +819,18 @@ namespace CivOne.UnitTests
 
             public ITile Tile => _tile;
             private ITile _tile = null;
-            public ITile MockTile { 
-                get => _tile; 
-                set => _tile = value; 
+            public ITile MockTile
+            {
+                get => _tile;
+                set => _tile = value;
             }
             public int ContinentId => 0;
             public Player Player => null;
             private Player _player = null;
-            public Player MockPlayer { 
-                get => _player; 
-                set => _player = value; 
+            public Player MockPlayer
+            {
+                get => _player;
+                set => _player = value;
             }
             public int Entertainers { get; set; } = 0;
             public int Scientists { get; set; } = 0;

@@ -12,16 +12,22 @@ using DebugService = System.Diagnostics.Debug;
 
 namespace CivOne.Screens.Services
 {
+	public interface IGameCitizenDependency :
+		IGameUnitsQuery,
+		IGameWonderQuery, IGamePlayerQuery,
+		IGameTurnQuery, IGameSettings
+	{
+	}
 	public class CityCitizenServiceImpl(
 		ICityBasic city,
 		ICityBuildings cityBuildings,
-		IGame game,
+		IGameCitizenDependency game,
 		List<Citizen> specialists,
 		IMap map) : ICityCitizenService
 	{
 		protected readonly ICityBasic _city = city;
 		protected readonly ICityBuildings _cityBuildings = cityBuildings;
-		protected readonly IGame _game = game;
+		protected readonly IGameCitizenDependency _game = game;
 		protected readonly List<Citizen> _specialists = specialists;
 		protected readonly IMap _map = map;
 
@@ -31,7 +37,8 @@ namespace CivOne.Screens.Services
 			DebugService.Assert(_specialists.Count <= _city.Size);
 			CitizenTypes ct = CreateCitizenTypes();
 
-			(int initialUnhappyCount, int initialContent) = CalculateCityStats(ct, _game);
+			(int initialUnhappyCount, int initialContent) =
+				CalculateCityStats(ct);
 
 			// Stage 1: basic content/unhappy
 			ct = StageBasic(ct, initialContent, initialUnhappyCount);
@@ -86,7 +93,7 @@ namespace CivOne.Screens.Services
 			DebugService.Assert(_specialists.Count <= _city.Size);
 			CitizenTypes ct = CreateCitizenTypes();
 
-			(int initialUnhappyCount, int initialContent) = CalculateCityStats(ct, _game);
+			(int initialUnhappyCount, int initialContent) = CalculateCityStats(ct);
 
 			// Stage 1: basic content/unhappy
 			ct = StageBasic(ct, initialContent, initialUnhappyCount);
@@ -116,7 +123,7 @@ namespace CivOne.Screens.Services
 		}
 
 		protected internal (int initialUnhappyCount, int initialContent)
-			CalculateCityStats(CitizenTypes ct, IGame _game)
+			CalculateCityStats(CitizenTypes ct)
 		{
 			// max difficulty = 4|5, easiest = 0
 			// int difficulty = 4; //Debug only
