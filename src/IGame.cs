@@ -5,21 +5,40 @@ using CivOne.Wonders;
 
 namespace CivOne
 {
-	public interface IGame
+	public interface IGame :
+		IGameUnitsCommand, IGameUnitsQuery,
+		IGameWonderQuery, IGamePlayerQuery,
+		IGameTurnQuery, IGameSettings
 	{
-		IUnit CreateUnit(UnitType type, int x, int y, byte owner, bool endTurn = false);
+	}
 
+	public interface IGameTurnQuery
+	{
 		ushort GameTurn { get; }
-
-		Player GetPlayer(byte playerId);
-
-		IUnit[] GetUnits();
-
+	}
+	public interface IGameSettings
+	{
 		int Difficulty { get; }
 		int MaxDifficulty { get; }
+	}
 
+	public interface IGameUnitsCommand
+	{
+		IUnit CreateUnit(UnitType type, int x, int y, byte owner, bool endTurn = false);
+	}
+	public interface IGameUnitsQuery
+	{
+		IUnit[] GetUnits();
+	}
+
+	public interface IGamePlayerQuery
+	{
+		Player GetPlayer(byte playerId);
+	}
+
+	public interface IGameWonderQuery
+	{
 		bool WonderObsolete<T>() where T : IWonder, new();
 		bool WonderObsolete(IWonder wonder);
-
 	}
 }

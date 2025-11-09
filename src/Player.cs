@@ -412,7 +412,7 @@ namespace CivOne
 		
 		public static bool operator ==(Player p1, byte p2) => Game.PlayerNumber(p1) == p2;
 		public static bool operator !=(Player p1, byte p2) => Game.PlayerNumber(p1) != p2;
-		
+
 		public Player(ICivilization civilization, string customLeaderName = null, string customTribeName = null, string customTribeNamePlural = null)
 		{
 			_civilization = civilization;
@@ -420,13 +420,17 @@ namespace CivOne
 			_tribeName = customTribeName ?? _civilization.Name;
 			_tribeNamePlural = customTribeNamePlural ?? _civilization.NamePlural;
 			Government = new Despotism();
-			
+
 			for (int xx = 0; xx < Map.WIDTH; xx++)
-			for (int yy = 0; yy < Map.HEIGHT; yy++)
-			{
-				_explored[xx, yy] = false;
-				_visible[xx, yy] = false;
-			}
+				for (int yy = 0; yy < Map.HEIGHT; yy++)
+				{
+					_explored[xx, yy] = false;
+					_visible[xx, yy] = false;
+				}
+		}
+		internal Player()
+		{
+			// for MockPlayer
 		}
 	}
 }

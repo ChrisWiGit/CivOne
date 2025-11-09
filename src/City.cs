@@ -1003,7 +1003,8 @@ namespace CivOne
 		{
 			get
 			{
-				var service = ICityCitizenService.Create(this, Game.Instance, this._specialists, Map.Instance);
+				var service = ICityCitizenService.Create(this,
+					Game.Instance, this._specialists, Map.Instance);
 				return service.EnumerateCitizens();
 			}
 		}
