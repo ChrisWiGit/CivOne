@@ -366,7 +366,6 @@ namespace CivOne.Screens.Services
 			return ct;
 		}
 
-		// count citizen types
 		protected internal (int happy, int content, int unhappy) CountCitizenTypes(Citizen[] citizens)
 		{
 			int happy = citizens.Count(c => c is Citizen.HappyMale or Citizen.HappyFemale);

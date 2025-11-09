@@ -17,6 +17,8 @@ using CivOne.Screens.Services;
 using CivOne.Enums;
 using System.Collections.Generic;
 using CivOne.Wonders;
+using System.Drawing;
+using CivOne.Tiles;
 
 namespace CivOne.UnitTests
 {
@@ -38,16 +40,23 @@ namespace CivOne.UnitTests
         CityCitizenServiceImpl testee;
         City city;
         List<Citizen> mockedSpecialists;
-        MockedICityBuildings mockedCityBuildings = new();
+        MockedICityBuildings mockedCityBuildings;
+        MockedICityBasic mockedCityBasic;
         public override void BeforeEach()
         {
-            var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            city = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            // var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
+            // city = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
 
             mockedSpecialists = [];
 
+            mockedCityBuildings = new MockedICityBuildings();
+            mockedCityBasic = new MockedICityBasic() {
+                Size = 1
+            };
+            
+
             testee = new CityCitizenServiceImpl(
-                city,
+                mockedCityBasic,
                 mockedCityBuildings,
                 Game.Instance,
                 mockedSpecialists,
@@ -292,6 +301,17 @@ namespace CivOne.UnitTests
 
             int actualContentCount = target.Count(c => c == Citizen.ContentMale | c == Citizen.ContentFemale);
             Assert.Equal(contentCount, actualContentCount);
+
+            // content citizens are at start of array
+            for (int i = 0; i < contentCount; i++)
+            {
+                Assert.True(target[i] == Citizen.ContentMale || target[i] == Citizen.ContentFemale);
+            }
+            // unhappy citizens follow content citizens
+            for (int i = contentCount; i < contentCount + unhappyCount; i++)
+            {
+                Assert.True(target[i] == Citizen.UnhappyMale || target[i] == Citizen.UnhappyFemale);
+            }
         }
 
         [Theory]
@@ -300,8 +320,8 @@ namespace CivOne.UnitTests
         [InlineData(2, 3, 2)] // 1st. redshirt to content
         [InlineData(3, 2, 3)] // 1st. content to happy
         [InlineData(6, 2, 4)] // 2nd. redshirt to content to happy
-        [InlineData(8, 2, 5)] // 1st.unhappy to happy
-        [InlineData(10, 2, 6)] // 2nd.unhappy to happy
+        [InlineData(8, 2, 5)] // 1st.unhappy to happy (takes 2 upgrades)
+        [InlineData(10, 2, 6)] // 2nd.unhappy to happy (takes 2 upgrades)
         [InlineData(12, 0, 8)] // 2x content to happy
         [InlineData(14, 0, 8)] // no more upgrades
         public void UpgradeCitizensTests(
@@ -310,14 +330,12 @@ namespace CivOne.UnitTests
             int expectedHappyCount)
         {
             mockedSpecialists.Clear();
-
-            mockedSpecialists.Clear();
             var target = new Citizen[8];
 
             target[0] = Citizen.RedShirtMale;
-            target[1] = Citizen.RedShirtFemale; 
-            target[2] = Citizen.UnhappyMale; 
-            target[3] = Citizen.UnhappyFemale; 
+            target[1] = Citizen.RedShirtFemale;
+            target[2] = Citizen.UnhappyMale;
+            target[3] = Citizen.UnhappyFemale;
             target[4] = Citizen.ContentMale;
             target[5] = Citizen.ContentFemale;
             target[6] = Citizen.HappyMale;
@@ -331,6 +349,431 @@ namespace CivOne.UnitTests
             int actualHappyCount = target.Count(c => c == Citizen.HappyMale | c == Citizen.HappyFemale);
             Assert.Equal(expectedHappyCount, actualHappyCount);
         }
+
+        [Fact]
+        public void CountCitizenTypesTests()
+        {
+            var target = new Citizen[9];
+            target[0] = Citizen.HappyMale;
+            target[1] = Citizen.HappyFemale;
+            target[2] = Citizen.ContentMale;
+            target[3] = Citizen.ContentFemale;
+            target[4] = Citizen.UnhappyMale;
+            target[5] = Citizen.UnhappyFemale;
+            target[6] = Citizen.Taxman;
+            target[7] = Citizen.Scientist;
+            target[8] = Citizen.Entertainer;
+
+            var (happy, content, unhappy) = testee.CountCitizenTypes(target);
+
+            Assert.Equal(2, happy);
+            Assert.Equal(2, content);
+            Assert.Equal(2, unhappy);
+        }
+
+        [Theory]
+        [InlineData(2, 2)]
+        [InlineData(3, 2)]
+        [InlineData(4, 1)]
+        [InlineData(5, 1)]
+        [InlineData(6, 0)]
+        public void StageBasicTests(
+            int initialContent,
+            int initialUnhappy)
+        {
+            mockedCityBasic.Size = (byte)(initialContent + initialUnhappy);
+
+            var ct = new CitizenTypes
+            {
+                Citizens = new Citizen[mockedCityBasic.Size]
+            };
+            ct = testee.StageBasic(ct, initialContent, initialUnhappy);
+
+            Assert.Equal(initialContent, ct.content);
+            Assert.Equal(initialUnhappy, ct.unhappy);
+
+            var (happy, content, unhappy) = testee.CountCitizenTypes(ct.Citizens);
+
+            Assert.Equal(ct.happy, happy);
+            Assert.Equal(ct.content, content);
+            Assert.Equal(ct.unhappy, unhappy);
+        }
+
+        [Fact]
+        public void HasBachsCathedralTests()
+        {
+            Assert.Fail("Not implemented");
+            //     		protected internal bool HasBachsCathedral()
+            // {
+            // 	return _city.Tile != null
+            // 				&& _map.ContinentCities(_city.Tile.ContinentId)
+            // 					.Any(x => x.Size > 0 && x.Owner == _city.Owner && x.HasWonder<JSBachsCathedral>());
+            // }
+        }
+
+        [Fact]
+        public void CathedralDeltaTest()
+        {
+            Assert.Fail("Not implemented");
+            // internal int CathedralDelta()
+            // {
+            // 	if (!_cityBuildings.HasBuilding<Cathedral>()) return 0;
+
+            // 	int unhappyDelta = 0;
+
+            // 	// CW: Michelangelo's Chapel gives +6 happiness if on same continent as city with wonder, else +4
+            // 	// https://civilization.fandom.com/wiki/Michelangelo%27s_Chapel_(Civ1)
+            // 	bool hasChapel = !_game.WonderObsolete<MichelangelosChapel>()
+            // 			&& _game.GetPlayer(_city.Owner).Cities.Any(c => c.HasWonder<MichelangelosChapel>()
+            // 			&& c.ContinentId == _city.ContinentId);
+            // 	int chapelBonus = hasChapel ? 6 : 4;
+
+            // 	unhappyDelta += chapelBonus;
+
+            // 	return unhappyDelta;
+            // }
+        }
+
+        [Fact]
+        public void ApplyBuildingEffectsTests()
+        {
+            Assert.Fail("Not implemented");
+            // protected internal void ApplyBuildingEffects(CitizenTypes ct)
+            // {
+            // 	if (_cityBuildings.HasWonder<ShakespearesTheatre>() && !_game.WonderObsolete<ShakespearesTheatre>())
+            // 	{
+            // 		// All unhappy become content, but only in this city.
+            // 		UnhappyToContent(ct.Citizens, ct.unhappy);
+
+            // 		ct.Wonders.Add(new ShakespearesTheatre());
+
+            // 		// Continuing would not make sense, as all unhappy are already content
+            // 		return;
+            // 	}
+
+            // 	int unhappyToContent = 0;
+
+            // 	if (_cityBuildings.HasBuilding<Temple>())
+            // 	{
+            // 		unhappyToContent++;
+            // 		if (_city.Player.HasAdvance<Mysticism>()) unhappyToContent <<= 1;
+            // 		if (_city.Player.HasWonderEffect<Oracle>())
+            // 		{
+            // 			unhappyToContent <<= 1;
+            // 			// CW: showing this wonder while processing it in this stage
+            // 			// would be confusing for the player to see
+            // 			// ct.Wonders.Add(new Oracle()); 
+            // 		}
+
+            // 		ct.Buildings.Add(new Temple());
+            // 	}
+
+            // 	if (HasBachsCathedral())
+            // 	{
+            // 		unhappyToContent += 2;
+            // 		// CW: Same as above, don't show wonder here
+            // 		// ct.Wonders.Add(new JSBachsCathedral());
+            // 	}
+
+            // 	if (_cityBuildings.HasBuilding<Colosseum>())
+            // 	{
+            // 		unhappyToContent += 3;
+            // 		ct.Buildings.Add(new Colosseum());
+            // 	}
+
+            // 	unhappyToContent += CathedralDelta();
+
+            // 	if (unhappyToContent <= 0)
+            // 	{
+            // 		return;
+            // 	}
+
+            // 	UnhappyToContent(ct.Citizens, unhappyToContent);
+            // }
+        }
+
+        [Fact]
+        public void ApplyMartialLawTests()
+        {
+            Assert.Fail("Not implemented");
+            // 			protected internal void ApplyMartialLaw(CitizenTypes ct)
+            // {
+            // 	if (!_city.Player.AnarchyDespotism && !_city.Player.MonarchyCommunist)
+            // 	{
+            // 		return;
+            // 	}
+
+            // 	var attackUnitsInCity = _city.Tile.Units.Where(u => u.Attack > 0);
+
+            // 	ct.MarshallLawUnits.AddRange(attackUnitsInCity);
+
+            // 	const int MAX_MARTIAL_LAW_UNITS = 3;
+
+            // 	int martialLawUnits = Math.Min(MAX_MARTIAL_LAW_UNITS, attackUnitsInCity.Count());
+            // 	int unhappyToContent = Math.Min(martialLawUnits, ct.unhappy);
+
+            // 	UnhappyToContent(ct.Citizens, unhappyToContent);
+            // }
+        }
+
+        [Fact]
+        public void ApplyDemocracyEffectsTests()
+        {
+            Assert.Fail("Not implemented");
+            // 		protected internal void ApplyWonderEffects(CitizenTypes ct)
+            // {
+            // 	int happy = 0;
+            // 	if (_city.Player.HasWonderEffect<HangingGardens>() && !_game.WonderObsolete<HangingGardens>())
+            // 	{
+            // 		happy += 1;
+            // 		ct.Wonders.Add(new HangingGardens());
+            // 	}
+            // 	if (_city.Player.HasWonderEffect<CureForCancer>() && !_game.WonderObsolete<CureForCancer>())
+            // 	{
+            // 		happy += 1;
+            // 		ct.Wonders.Add(new CureForCancer());
+            // 	}
+
+            // 	int happyToContent = Math.Min(happy, ct.content);
+            // 	ContentToHappy(ct.Citizens, happyToContent);
+            // }
+        }
+
+        [Fact]
+        public void CreateCitizenTypesTests()
+        {
+            Assert.Fail("Not implemented");
+            // 		protected internal CitizenTypes CreateCitizenTypes()
+            // {
+            // 	return new()
+            // 	{
+            // 		happy = 0,
+            // 		content = 0,
+            // 		unhappy = 0,
+            // 		redshirt = 0,
+            // 		elvis = _city.Entertainers,
+            // 		einstein = _city.Scientists,
+            // 		taxman = _city.Taxmen,
+            // 		Citizens = new Citizen[_city.Size],
+            // 		Buildings = [],
+            // 		Wonders = [],
+            // 		MarshallLawUnits = []
+            // 	};
+            // }
+        }
+
+        [Fact]
+        public void NumberOfRedShirtsTests()
+        {
+            Assert.Fail("Not implemented");
+            //   		protected internal int NumberOfRedShirts(int totalCities)
+            // {
+            // 	if (totalCities <= 36)
+            // 	{
+            // 		return 0;
+            // 	}
+            // 	return 1 + (totalCities - 36) / 12;
+            // 	// 1+ (37-36) /12 = 1 + 1/12 = 1
+            // 	// 1+ (48-36) /12 = 1 + 12/12 = 2
+            // 	// 1+ (61-36) /12 = 1 + 25/12 = 3
+            // }
+        }
+
+        [Fact]
+        public void ApplyEmperorEffectsTests()
+        {
+            Assert.Fail("Not implemented");
+            //    		protected internal void ApplyEmperorEffects(CitizenTypes ct)
+            // {
+            // 	if (_game.Difficulty < 4)
+            // 	{
+            // 		return;
+            // 	}
+
+            // 	int totalCities = _game.GetPlayer(_city.Owner).Cities.Count();
+
+            // 	if (totalCities <= 12)
+            // 	{
+            // 		return;
+            // 	}
+
+            // 	// >= 24 cities = 1 born-content
+            // 	// >= 36 cities = 0 born-content
+
+            // 	int downgradeCount = _city.Size; // case >= 36
+
+            // 	if (totalCities <= 24)
+            // 	{
+            // 		downgradeCount = 1;
+            // 	}
+            // 	DowngradeCitizens(ct.Citizens, downgradeCount);
+
+            // 	WearRedShirt(ct.Citizens, NumberOfRedShirts(totalCities));
+            // }
+        }
+
+        [Theory]
+        [InlineData(2, 2)]
+        public void CalculateCityStatsTests(int initialUnhappyCount, int initialContent)
+        {
+            Assert.Fail("Not implemented");
+            // protected internal (int initialUnhappyCount, int initialContent)
+            // 	CalculateCityStats(CitizenTypes ct, IGame _game)
+            // {
+            // 	// max difficulty = 4|5, easiest = 0
+            // 	// int difficulty = 4; //Debug only
+            // 	int difficulty = _game.Difficulty;
+            // 	int specialists = ct.elvis + ct.einstein + ct.taxman;
+            // 	int workersAvailable = _city.Size - specialists;
+
+            // 	// https://civfanatics.com/civ1/difficulty/
+            // 	// diff 0 = 6 content, all else unhappy
+            // 	// diff 1 = 5 content, all else unhappy
+            // 	// diff 2 = 4 content, all else unhappy
+            // 	// diff 3 = 3 content, all else unhappy
+            // 	// diff 4 = 2 content, all else unhappy
+            // 	// diff 5 = 1 content, all else unhappy
+            // 	int contentLimit = 6 - difficulty - specialists;
+
+            // 	// size 4, 0 ent → specialists=0, available=4 → contentLimit=3 → 3c + 1u
+            // 	// size 4, 1 ent → specialists=1, available=3 → 2c + 1u + 1ent
+            // 	// size 4, 2 ent → specialists=2, available=2 → 1c + 1u + 2ent
+            // 	// size 4, 3 ent → specialists=3, available=1 → 0c + 1u + 3ent
+            // 	// Anzahl der zufriedenen Bürger (content), aber niemals größer als die verfügbare Anzahl
+            // 	int initialContent = Math.Min(workersAvailable, contentLimit);
+
+            // 	int initialUnhappyCount = Math.Max(0, workersAvailable - initialContent);
+
+            // 	return (initialUnhappyCount, initialContent);
+            // }
+        }
+
+        [Fact]
+        public void GetCitizenTypesTests()
+        {
+            Assert.Fail("Not implemented");
+            //   public CitizenTypes GetCitizenTypes()
+            // {
+            // 	DebugService.Assert(_specialists.Count <= _city.Size);
+            // 	CitizenTypes ct = CreateCitizenTypes();
+
+            // 	(int initialUnhappyCount, int initialContent) = CalculateCityStats(ct, _game);
+
+            // 	// Stage 1: basic content/unhappy
+            // 	ct = StageBasic(ct, initialContent, initialUnhappyCount);
+
+            // 	ApplyEmperorEffects(ct);
+
+            // 	// Stage 2: impact of luxuries: content->happy; unhappy->content and then content->happy
+            // 	int happyUpgrades = (int)Math.Floor((double)_city.Luxuries / 2);
+            // 	UpgradeCitizens(ct.Citizens, happyUpgrades);
+
+
+            // 	// Stage 3: Building effects
+            // 	ApplyBuildingEffects(ct);
+
+            // 	// Stage 4: martial law
+            // 	ApplyMartialLaw(ct);
+            // 	ApplyDemocracyEffects(ct, initialContent);
+
+            // 	//Stage 5: wonder effects
+            // 	ApplyWonderEffects(ct);
+            // 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
+
+            // 	DebugService.Assert(ct.Sum() == _city.Size);
+            // 	DebugService.Assert(ct.Valid());
+
+            // 	return ct;
+            // }
+        }
+
+        [Fact]
+        public void EnumerateCitizensTests()
+        {
+            Assert.Fail("Not implemented");
+        //   public IEnumerable<CitizenTypes> EnumerateCitizens()
+		// {
+		// 	DebugService.Assert(_specialists.Count <= _city.Size);
+		// 	CitizenTypes ct = CreateCitizenTypes();
+
+		// 	(int initialUnhappyCount, int initialContent) = CalculateCityStats(ct, _game);
+
+		// 	// Stage 1: basic content/unhappy
+		// 	ct = StageBasic(ct, initialContent, initialUnhappyCount);
+
+		// 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
+
+		// 	DebugService.Assert(ct.Sum() == _city.Size);
+		// 	DebugService.Assert(ct.Valid());
+
+		// 	yield return ct;
+
+		// 	// Stage 2: impact of luxuries: content->happy; unhappy->content and then content->happy
+		// 	// entertainers produce these luxury effects, but also marketplace, bank and luxury trade settings.
+		// 	int happyUpgrades = (int)Math.Floor((double)_city.Luxuries / 2);
+		// 	UpgradeCitizens(ct.Citizens, happyUpgrades);
+
+		// 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
+
+		// 	DebugService.Assert(ct.Sum() == _city.Size);
+		// 	DebugService.Assert(ct.Valid());
+
+		// 	yield return ct;
+
+		// 	// Stage 3: Building effects
+		// 	ApplyBuildingEffects(ct);
+		// 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
+
+		// 	DebugService.Assert(ct.Sum() == _city.Size);
+		// 	DebugService.Assert(ct.Valid());
+		// 	yield return ct;
+
+		// 	// Stage 4: martial law
+		// 	ApplyMartialLaw(ct);
+		// 	ApplyDemocracyEffects(ct, initialContent);
+		// 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
+
+		// 	DebugService.Assert(ct.Sum() == _city.Size);
+		// 	DebugService.Assert(ct.Valid());
+		// 	yield return ct;
+
+		// 	//Stage 5: wonder effects
+		// 	ApplyWonderEffects(ct);
+		// 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
+
+		// 	DebugService.Assert(ct.Sum() == _city.Size);
+		// 	DebugService.Assert(ct.Valid());
+		// 	yield return ct;
+		// }
+        }
+        
+        
+        public class MockedICityBasic : ICityBasic 
+        {
+            public Point Location => new Point(0, 0);
+            public byte Size { get; set; } = 5;
+            public short Luxuries { get; set; } = 0;
+            public byte Owner => 0;
+
+
+            public ITile Tile => _tile;
+            private ITile _tile = null;
+            public ITile MockTile { 
+                get => _tile; 
+                set => _tile = value; 
+            }
+            public int ContinentId => 0;
+            public Player Player => null;
+            private Player _player = null;
+            public Player MockPlayer { 
+                get => _player; 
+                set => _player = value; 
+            }
+            public int Entertainers { get; set; } = 0;
+            public int Scientists { get; set; } = 0;
+            public int Taxmen { get; set; } = 0;
+        }
+
 
         public class MockedICityBuildings : ICityBuildings
         {
@@ -359,160 +802,5 @@ namespace CivOne.UnitTests
 
             public bool HasWonder<T>() where T : IWonder => _hasWonder.Next();
         }
-
-        // /// <summary>
-        // /// City size 2, with 1 entertainer: results are 1 happy, 1 entertainer
-        // /// </summary>
-        // [Fact]
-        // public void CityHappy2With1Entertainer()
-        // {
-        //     var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-        //     City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
-        //     acity.Size = 2;
-
-        //     MakeOneEntertainer(acity);
-
-        //     using (var foo = acity.Residents.GetEnumerator())
-        //     {
-        //         foo.MoveNext();
-        //         var citizenTypes = foo.Current;
-        //         Assert.Equal(1, citizenTypes.content);
-        //         Assert.Equal(1, citizenTypes.elvis);
-
-        //         foo.MoveNext();
-        //         citizenTypes = foo.Current;
-        //         Assert.Equal(1, citizenTypes.happy);
-        //         Assert.Equal(1, citizenTypes.elvis);
-
-        //     }
-        // }
-
-        // /// <summary>
-        // /// First tricky one. City size 6 at King level: starts with 3 content, 3 unhappy.
-        // /// Switch 3 people to entertainers: now 3 unhappy, 3 entertainers. Entertainers
-        // /// make content people happy, then unhappy people content, but sequentially.
-        // /// Specifically: a) 1 unhappy-> 1 content; b) the 1 content-> 1 happy; c) 1 unhappy
-        // /// to 1 content. Final: 1 happy, 1 content, 1 unhappy, 3 entertainers.
-        // ///
-        // /// The "parallel" approach would be to make all 3 unhappy people content, but
-        // /// that is not how Microprose did it.
-        // /// </summary>
-        // [Fact]
-        // public void City6With3EntertainersAndTemple()
-        // {
-        //     var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-        //     City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
-        //     acity.Size = 6;
-        //     acity.ResetResourceTiles(); // setting city size doesn't allocate all resources
-
-        //     MakeOneEntertainer(acity);
-        //     MakeOneEntertainer(acity);
-        //     MakeOneEntertainer(acity);
-        //     acity.AddBuilding(Reflect.GetBuildings().First(b => b is Temple));
-
-        //     using (var foo = acity.Residents.GetEnumerator())
-        //     {
-        //         foo.MoveNext();
-        //         var citizenTypes = foo.Current;
-        //         Assert.Equal(0, citizenTypes.content);
-        //         Assert.Equal(3, citizenTypes.unhappy);
-        //         Assert.Equal(3, citizenTypes.elvis);
-
-        //         foo.MoveNext();
-        //         citizenTypes = foo.Current;
-        //         Assert.Equal(1, citizenTypes.happy);
-        //         Assert.Equal(1, citizenTypes.content);
-        //         Assert.Equal(1, citizenTypes.unhappy);
-        //         Assert.Equal(3, citizenTypes.elvis);
-
-        //         foo.MoveNext();
-        //         citizenTypes = foo.Current;
-        //         // temple effect
-        //         Assert.Equal(1, citizenTypes.happy);
-        //         Assert.Equal(2, citizenTypes.content);
-        //         Assert.Equal(0, citizenTypes.unhappy);
-        //         Assert.Equal(3, citizenTypes.elvis);
-        //     }
-
-        // }
-
-        // [Fact]
-        // public void City5With1EntAndTemple()
-        // {
-        //     var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-        //     City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
-        //     acity.Size = 5;
-        //     acity.ResetResourceTiles(); // setting city size doesn't allocate all resources
-
-        //     MakeOneEntertainer(acity);
-        //     acity.AddBuilding(Reflect.GetBuildings().First(b => b is Temple));
-
-        //     using (var foo = acity.Residents.GetEnumerator())
-        //     {
-        //         foo.MoveNext();
-        //         var citizenTypes = foo.Current;
-        //         // initial state
-        //         Assert.Equal(0, citizenTypes.happy);
-        //         Assert.Equal(2, citizenTypes.content);
-        //         Assert.Equal(2, citizenTypes.unhappy);
-        //         Assert.Equal(1, citizenTypes.elvis);
-
-        //         foo.MoveNext();
-        //         citizenTypes = foo.Current;
-        //         // luxury
-        //         Assert.Equal(1, citizenTypes.happy);
-        //         Assert.Equal(1, citizenTypes.content);
-        //         Assert.Equal(2, citizenTypes.unhappy);
-        //         Assert.Equal(1, citizenTypes.elvis);
-
-        //         foo.MoveNext();
-        //         citizenTypes = foo.Current;
-        //         // temple
-        //         Assert.Equal(1, citizenTypes.happy);
-        //         Assert.Equal(2, citizenTypes.content);
-        //         Assert.Equal(1, citizenTypes.unhappy);
-        //         Assert.Equal(1, citizenTypes.elvis);
-        //     }
-
-        // }
-
-        // [Fact]
-        // public void City5Colosseum()
-        // {
-        //     var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-        //     City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
-        //     acity.Size = 5;
-        //     acity.ResetResourceTiles(); // setting city size doesn't allocate all resources
-
-        //     acity.AddBuilding(Reflect.GetBuildings().First(b => b is Colosseum));
-
-        //     using (var foo = acity.Residents.GetEnumerator())
-        //     {
-        //         foo.MoveNext();
-        //         var citizenTypes = foo.Current;
-        //         // initial state
-        //         Assert.Equal(0, citizenTypes.happy);
-        //         Assert.Equal(3, citizenTypes.content);
-        //         Assert.Equal(2, citizenTypes.unhappy);
-        //         Assert.Equal(0, citizenTypes.elvis);
-
-        //         foo.MoveNext();
-        //         citizenTypes = foo.Current;
-        //         // luxury
-        //         Assert.Equal(0, citizenTypes.happy);
-        //         Assert.Equal(3, citizenTypes.content);
-        //         Assert.Equal(2, citizenTypes.unhappy);
-        //         Assert.Equal(0, citizenTypes.elvis);
-
-        //         foo.MoveNext();
-        //         citizenTypes = foo.Current;
-        //         // Colosseum
-        //         Assert.Equal(0, citizenTypes.happy);
-        //         Assert.Equal(5, citizenTypes.content);
-        //         Assert.Equal(0, citizenTypes.unhappy);
-        //         Assert.Equal(0, citizenTypes.elvis);
-        //     }
-
-        // }
     }
 }
