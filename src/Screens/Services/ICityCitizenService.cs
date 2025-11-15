@@ -12,7 +12,8 @@ namespace CivOne.Screens.Services
 		public int happy;
 		public int content;
 		public int unhappy;
-		public int redshirt;
+
+		public int redShirt;
 		public int elvis;
 		public int einstein;
 		public int taxman;
@@ -27,7 +28,7 @@ namespace CivOne.Screens.Services
 
 		public int Sum()
 		{
-			return happy + content + unhappy + redshirt + elvis + einstein + taxman;
+			return happy + content + unhappy + redShirt + elvis + einstein + taxman;
 		}
 
 		public bool Valid()

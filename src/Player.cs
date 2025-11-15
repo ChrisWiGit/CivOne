@@ -109,7 +109,7 @@ namespace CivOne
 
 		public bool IsHuman => (Game.HumanPlayer == this);
 
-		public City[] Cities => Game.GetCities().Where(c => this == c.Owner && c.Size > 0).ToArray();
+		public virtual City[] Cities => Game.GetCities().Where(c => this == c.Owner && c.Size > 0).ToArray();
 
 		public int Population => Cities.Sum(c => c.Population);
 		

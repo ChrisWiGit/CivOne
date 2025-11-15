@@ -375,7 +375,7 @@ namespace CivOne.UnitTests
             target[7] = Citizen.Scientist;
             target[8] = Citizen.Entertainer;
 
-            var (happy, content, unhappy) = testee.CountCitizenTypes(target);
+            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(target);
 
             Assert.Equal(2, happy);
             Assert.Equal(2, content);
@@ -403,7 +403,7 @@ namespace CivOne.UnitTests
             Assert.Equal(initialContent, ct.content);
             Assert.Equal(initialUnhappy, ct.unhappy);
 
-            var (happy, content, unhappy) = testee.CountCitizenTypes(ct.Citizens);
+            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
 
             Assert.Equal(ct.happy, happy);
             Assert.Equal(ct.content, content);
@@ -586,12 +586,24 @@ namespace CivOne.UnitTests
             Assert.Equal(expectedRedShirts, result);
         }
 
-        [Fact]
+        [Theory]
+        [InlineData(3, 10, 5, 5, 0)] // difficulty too low
+        [InlineData(4, 10, 5, 5, 0)] // total cities too low < 12
+        [InlineData(4, 12, 5, 5, 0)] // total cities at limit = 12 
+        [InlineData(4, 13, 5, 1, 0)] // total cities just above limit > 13
+        [InlineData(4, 24, 5, 1, 0)] // total cities at limit = 24
+        [InlineData(4, 25, 5, 0, 0)] // total cities just above limit > 24
+        [InlineData(4, 36, 5, 0, 0)] // total cities well above limit > 24
+        [InlineData(5, 37, 5, 0, 1)] // first redshirt at 37 cities > 36
+        [InlineData(5, 48, 5, 0, 2)] // second redshirt at 48 cities >= 48
+        [InlineData(5, 61, 5, 0, 3)] // third redshirt at 61 cities
+        [InlineData(5, 62, 5, 0, 3)] // third redshirt at 61 cities
         public void ApplyEmperorEffectsTests(
             int gameDifficulty,
             int totalCities,
             int citySize,
-            int expectedDowngrades
+            int expectedBornContent,
+            int expectedReadShirts
         )
         {
             mockedIGame.OnGetPlayer = (playerId) =>
@@ -601,14 +613,19 @@ namespace CivOne.UnitTests
             mockedIGame.Difficulty = gameDifficulty;
             mockedCityBasic.Size = (byte)citySize;
 
-            CitizenTypes ct = new CitizenTypes
-            {
+            CitizenTypes ct = new()
+			{
                 Citizens = new Citizen[citySize]
             };
             testee.InitCitizens(ct.Citizens, citySize, 0);
             testee.ApplyEmperorEffects(ct);
 
-            Assert.Fail("TODO: Not implemented");
+            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
+
+            Assert.Equal(expectedBornContent, content);
+            Assert.Equal(expectedReadShirts, redShirt);
+
+
             //    		protected internal void
             //  ApplyEmperorEffects(CitizenTypes ct)
             // {
@@ -637,13 +654,21 @@ namespace CivOne.UnitTests
 
             // 	WearRedShirt(ct.Citizens, NumberOfRedShirts(totalCities));
             // }
+            // rotected internal int NumberOfRedShirts(int totalCities)
+		// {
+		// 	if (totalCities <= 36)
+		// 	{
+		// 		return 0;
+		// 	}
+		// 	return 1 + (totalCities - 36) / 12;
+			// 1+ (37-36) /12 = 1 + 1/12 = 1
+			// 1+ (48-36) /12 = 1 + 12/12 = 2
+			// 1+ (61-36) /12 = 1 + 25/12 = 3
         }
         partial class MockPlayer(int citiesCount) : Player()
         {
             private readonly int citiesCount = citiesCount;
-
-			public new City[] Cities => new City[citiesCount];
-
+            public override City[] Cities => new City[citiesCount];
         }
 
         [Theory]

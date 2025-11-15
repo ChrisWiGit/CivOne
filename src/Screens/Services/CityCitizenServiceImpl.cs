@@ -36,56 +36,87 @@ namespace CivOne.Screens.Services
 		{
 			DebugService.Assert(_specialists.Count <= _city.Size);
 			CitizenTypes ct = CreateCitizenTypes();
-
-			(int initialUnhappyCount, int initialContent) =
-				CalculateCityStats(ct);
-
-			// Stage 1: basic content/unhappy
-			ct = StageBasic(ct, initialContent, initialUnhappyCount);
-
-			(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
-
-			DebugService.Assert(ct.Sum() == _city.Size);
-			DebugService.Assert(ct.Valid());
+			int initialContent = Stage1(ref ct);
 
 			yield return ct;
 
 			// Stage 2: impact of luxuries: content->happy; unhappy->content and then content->happy
 			// entertainers produce these luxury effects, but also marketplace, bank and luxury trade settings.
-			int happyUpgrades = (int)Math.Floor((double)_city.Luxuries / 2);
-			UpgradeCitizens(ct.Citizens, happyUpgrades);
-
-			(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
-
-			DebugService.Assert(ct.Sum() == _city.Size);
-			DebugService.Assert(ct.Valid());
+			ct = Stage2(ct);
 
 			yield return ct;
 
 			// Stage 3: Building effects
-			ApplyBuildingEffects(ct);
-			(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
-
-			DebugService.Assert(ct.Sum() == _city.Size);
-			DebugService.Assert(ct.Valid());
+			ct = Stage3(ct);
 			yield return ct;
 
 			// Stage 4: martial law
-			ApplyMartialLaw(ct);
-			ApplyDemocracyEffects(ct, initialContent);
-			(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
-
-			DebugService.Assert(ct.Sum() == _city.Size);
-			DebugService.Assert(ct.Valid());
+			ct = Stage4(ct, initialContent);
 			yield return ct;
 
 			//Stage 5: wonder effects
+			ct = Stage5(ct);
+			yield return ct;
+		}
+
+		protected CitizenTypes Stage5(CitizenTypes ct)
+		{
 			ApplyWonderEffects(ct);
-			(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
+			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
 
 			DebugService.Assert(ct.Sum() == _city.Size);
 			DebugService.Assert(ct.Valid());
-			yield return ct;
+			return ct;
+		}
+
+		protected CitizenTypes Stage4(CitizenTypes ct, int initialContent)
+		{
+			ApplyMartialLaw(ct);
+			ApplyDemocracyEffects(ct, initialContent);
+			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
+
+			DebugService.Assert(ct.Sum() == _city.Size);
+			DebugService.Assert(ct.Valid());
+			return ct;
+		}
+
+		protected CitizenTypes Stage3(CitizenTypes ct)
+		{
+			ApplyBuildingEffects(ct);
+			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
+
+			DebugService.Assert(ct.Sum() == _city.Size);
+			DebugService.Assert(ct.Valid());
+			return ct;
+		}
+
+		protected CitizenTypes Stage2(CitizenTypes ct)
+		{
+			int happyUpgrades = (int)Math.Floor((double)_city.Luxuries / 2);
+			UpgradeCitizens(ct.Citizens, happyUpgrades);
+
+			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
+
+			DebugService.Assert(ct.Sum() == _city.Size);
+			DebugService.Assert(ct.Valid());
+			return ct;
+		}
+
+		protected int Stage1(ref CitizenTypes ct)
+		{
+			(int initialUnhappyCount, int initialContent) =
+							CalculateCityStats(ct);
+
+			// Stage 1: basic content/unhappy
+			ct = StageBasic(ct, initialContent, initialUnhappyCount);
+
+			ApplyEmperorEffects(ct);
+
+			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
+
+			DebugService.Assert(ct.Sum() == _city.Size);
+			DebugService.Assert(ct.Valid());
+			return initialContent;
 		}
 
 		public CitizenTypes GetCitizenTypes()
@@ -93,32 +124,34 @@ namespace CivOne.Screens.Services
 			DebugService.Assert(_specialists.Count <= _city.Size);
 			CitizenTypes ct = CreateCitizenTypes();
 
-			(int initialUnhappyCount, int initialContent) = CalculateCityStats(ct);
+			// (int initialUnhappyCount, int initialContent) = CalculateCityStats(ct);
 
-			// Stage 1: basic content/unhappy
-			ct = StageBasic(ct, initialContent, initialUnhappyCount);
+			// // Stage 1: basic content/unhappy
+			// ct = StageBasic(ct, initialContent, initialUnhappyCount);
 
-			ApplyEmperorEffects(ct);
+			// ApplyEmperorEffects(ct);
+			int initialContent = Stage1(ref ct);
 
 			// Stage 2: impact of luxuries: content->happy; unhappy->content and then content->happy
-			int happyUpgrades = (int)Math.Floor((double)_city.Luxuries / 2);
-			UpgradeCitizens(ct.Citizens, happyUpgrades);
-			
+			// int happyUpgrades = (int)Math.Floor((double)_city.Luxuries / 2);
+			// UpgradeCitizens(ct.Citizens, happyUpgrades);
+
+			ct = Stage2(ct);
 
 			// Stage 3: Building effects
-			ApplyBuildingEffects(ct);
+			// ApplyBuildingEffects(ct);
+			ct = Stage3(ct);
 
 			// Stage 4: martial law
-			ApplyMartialLaw(ct);
-			ApplyDemocracyEffects(ct, initialContent);
+			// ApplyMartialLaw(ct);
+			// ApplyDemocracyEffects(ct, initialContent);
+			ct = Stage4(ct, initialContent);
 
 			//Stage 5: wonder effects
-			ApplyWonderEffects(ct);
-			(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
-
-			DebugService.Assert(ct.Sum() == _city.Size);
-			DebugService.Assert(ct.Valid());
-
+			// ApplyWonderEffects(ct);
+			// (ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
+			ct = Stage5(ct);
+			
 			return ct;
 		}
 
@@ -185,7 +218,7 @@ namespace CivOne.Screens.Services
 
 			if (totalCities <= 24)
 			{
-				downgradeCount = 1;
+				downgradeCount -= 1;
 			}
 			DowngradeCitizens(ct.Citizens, downgradeCount);
 
@@ -210,7 +243,7 @@ namespace CivOne.Screens.Services
 				happy = 0,
 				content = 0,
 				unhappy = 0,
-				redshirt = 0,
+				redShirt = 0,
 				elvis = _city.Entertainers,
 				einstein = _city.Scientists,
 				taxman = _city.Taxmen,
@@ -366,19 +399,20 @@ namespace CivOne.Screens.Services
 			InitSpecialists(_specialists, ct.Citizens);
 			InitCitizens(ct.Citizens, ct.content, ct.unhappy);
 
-			(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
+			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
 
 			DebugService.Assert(ct.Sum() == _city.Size);
 			DebugService.Assert(ct.Valid());
 			return ct;
 		}
 
-		protected internal (int happy, int content, int unhappy) CountCitizenTypes(Citizen[] citizens)
+		protected internal (int happy, int content, int unhappy, int redShirts) CountCitizenTypes(Citizen[] citizens)
 		{
 			int happy = citizens.Count(c => c is Citizen.HappyMale or Citizen.HappyFemale);
 			int content = citizens.Count(c => c is Citizen.ContentMale or Citizen.ContentFemale);
 			int unhappy = citizens.Count(c => c is Citizen.UnhappyMale or Citizen.UnhappyFemale);
-			return (happy, content, unhappy);
+			int redShirts = citizens.Count(c => c is Citizen.RedShirtMale or Citizen.RedShirtFemale);
+			return (happy, content, unhappy, redShirts);
 		}
 
 		protected internal void UpgradeCitizens(Citizen[] target, int happyUpgrades)
@@ -426,6 +460,8 @@ namespace CivOne.Screens.Services
 
 		protected internal void InitCitizens(Citizen[] target, int content, int unhappy)
 		{
+			DebugService.Assert(content + unhappy + _specialists.Count == target.Length,
+				"Invalid citizen counts for city size.");
 			for (int i = 0; i < target.Length - _specialists.Count; i++)
 			{
 				if (content > 0)
@@ -443,6 +479,7 @@ namespace CivOne.Screens.Services
 
 		protected internal void InitSpecialists(List<Citizen> specialists, Citizen[] target)
 		{
+			DebugService.Assert(specialists.Count <= target.Length, "Too many specialists for city size.");
 			// Copy specialists to end of array
 			Array.Copy(
 				sourceArray: specialists.ToArray(),
@@ -522,6 +559,7 @@ namespace CivOne.Screens.Services
 			for (int i = 0; i < total && count > 0; i++)
 			{
 				target[i] = CitizenByIndex(i, Citizen.RedShirtMale);
+				count--;
 			}
 		}
 
