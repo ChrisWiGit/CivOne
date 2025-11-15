@@ -552,14 +552,15 @@ namespace CivOne.Screens.Services
 
 		protected internal void WearRedShirt(Citizen[] target, int count)
 		{
-			if (count <= 0) return;
-
+			if (count <= 0)
+			{
+				return;
+			}
 			var total = target.Length - _specialists.Count;
 
-			for (int i = 0; i < total && count > 0; i++)
+			for (int i = 0; i < total && i < count; i++)
 			{
 				target[i] = CitizenByIndex(i, Citizen.RedShirtMale);
-				count--;
 			}
 		}
 

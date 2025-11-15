@@ -21,6 +21,8 @@ using System.Drawing;
 using CivOne.Tiles;
 using CivOne.Units;
 using System;
+using CivOne.Graphics.Sprites;
+using CivOne.Governments;
 
 namespace CivOne.UnitTests
 {
@@ -527,10 +529,54 @@ namespace CivOne.UnitTests
             // }
         }
 
-        [Fact]
-        public void ApplyDemocracyEffectsTests()
+        [Theory]
+        [InlineData(typeof(Anarchy), 0, 0)] // not democratic
+        [InlineData(typeof(Republic), 0, 0)] // no units not in city
+        [InlineData(typeof(Democracy), 0, 0)] // no units not in city
+        [InlineData(typeof(Anarchy), 1, 0)] // not democratic
+        [InlineData(typeof(Republic), 1, 0)] // no effect
+        [InlineData(typeof(Republic), 1, 1)] // 1 unit
+        [InlineData(typeof(Democracy), 1, 2)] // 2 units
+
+        public void ApplyDemocracyEffectsTests(
+            Type government,
+            int unitsNotInCityCount,
+            int expectedUnhappy
+        )
         {
-            Assert.Fail("Not implemented");
+            mockedIGame.OnGetPlayer = (playerId) =>
+            {
+                return new MockPlayer().withGovernmentType(government);
+            };
+            mockedIGame.OnGetUnits = () =>
+            {
+                var units = new List<IUnit>();
+                for (int i = 0; i < unitsNotInCityCount; i++)
+                {
+                    units.Add(new Militia());
+                    units.Last().SetHome((City)(object)mockedCityBasic);
+                    units.Last().X = 1;
+                    units.Last().Y = 1;
+                }
+                return [.. units];
+            };
+
+            var ct = new CitizenTypes
+            {
+                Citizens = new Citizen[mockedCityBasic.Size]
+            };
+            int initialContent = mockedCityBasic.Size;
+            testee.InitCitizens(ct.Citizens, initialContent, 0);
+            testee.ApplyDemocracyEffects(ct, initialContent);
+
+            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
+
+            Assert.Equal(expectedUnhappy, unhappy);
+
+            // if (!_city.Player.RepublicDemocratic)
+            // {
+            // 	return;
+            // }
             // 		protected internal void ApplyWonderEffects(CitizenTypes ct)
             // {
             // 	int happy = 0;
@@ -553,24 +599,23 @@ namespace CivOne.UnitTests
         [Fact]
         public void CreateCitizenTypesTests()
         {
-            Assert.Fail("Not implemented");
-            // 		protected internal CitizenTypes CreateCitizenTypes()
-            // {
-            // 	return new()
-            // 	{
-            // 		happy = 0,
-            // 		content = 0,
-            // 		unhappy = 0,
-            // 		redshirt = 0,
-            // 		elvis = _city.Entertainers,
-            // 		einstein = _city.Scientists,
-            // 		taxman = _city.Taxmen,
-            // 		Citizens = new Citizen[_city.Size],
-            // 		Buildings = [],
-            // 		Wonders = [],
-            // 		MarshallLawUnits = []
-            // 	};
-            // }
+            var actual = testee.CreateCitizenTypes();
+
+            Assert.Equal(0, actual.happy);
+            Assert.Equal(0, actual.content);
+            Assert.Equal(0, actual.unhappy);
+            Assert.Equal(0, actual.redShirt);
+            Assert.Equal(0, actual.elvis);
+            Assert.Equal(0, actual.einstein);
+            Assert.Equal(0, actual.taxman);
+            Assert.NotNull(actual.Citizens);
+            Assert.Equal(mockedCityBasic.Size, actual.Citizens.Length);
+            Assert.NotNull(actual.Buildings);
+            Assert.Empty(actual.Buildings);
+            Assert.NotNull(actual.Wonders);
+            Assert.Empty(actual.Wonders);
+            Assert.NotNull(actual.MarshallLawUnits);
+            Assert.Empty(actual.MarshallLawUnits);
         }
 
         [Theory]
@@ -595,9 +640,9 @@ namespace CivOne.UnitTests
         [InlineData(4, 25, 5, 0, 0)] // total cities just above limit > 24
         [InlineData(4, 36, 5, 0, 0)] // total cities well above limit > 24
         [InlineData(5, 37, 5, 0, 1)] // first redshirt at 37 cities > 36
-        [InlineData(5, 48, 5, 0, 2)] // second redshirt at 48 cities >= 48
-        [InlineData(5, 61, 5, 0, 3)] // third redshirt at 61 cities
-        [InlineData(5, 62, 5, 0, 3)] // third redshirt at 61 cities
+        [InlineData(5, 36 + 12 + 1, 5, 0, 2)] // second redshirt at 48 cities >= 48
+        [InlineData(5, 36 + 12 + 12 + 1, 5, 0, 3)] // third redshirt at 61 cities
+        [InlineData(5, 36 + 12 + 12 + 12 + 1, 5, 0, 4)] // fourth redshirt at 73 cities
         public void ApplyEmperorEffectsTests(
             int gameDifficulty,
             int totalCities,
@@ -606,15 +651,17 @@ namespace CivOne.UnitTests
             int expectedReadShirts
         )
         {
+            // Also tests:
+            //  NumberOfRedShirts(totalCities)
             mockedIGame.OnGetPlayer = (playerId) =>
             {
-                return new MockPlayer(totalCities);
+                return new MockPlayer().withCitiesCount(totalCities);
             };
             mockedIGame.Difficulty = gameDifficulty;
             mockedCityBasic.Size = (byte)citySize;
 
             CitizenTypes ct = new()
-			{
+            {
                 Citizens = new Citizen[citySize]
             };
             testee.InitCitizens(ct.Citizens, citySize, 0);
@@ -624,51 +671,40 @@ namespace CivOne.UnitTests
 
             Assert.Equal(expectedBornContent, content);
             Assert.Equal(expectedReadShirts, redShirt);
-
-
-            //    		protected internal void
-            //  ApplyEmperorEffects(CitizenTypes ct)
-            // {
-            // 	if (_game.Difficulty < 4)
-            // 	{
-            // 		return;
-            // 	}
-
-            // 	int totalCities = _game.GetPlayer(_city.Owner).Cities.Count();
-
-            // 	if (totalCities <= 12)
-            // 	{
-            // 		return;
-            // 	}
-
-            // 	// >= 24 cities = 1 born-content
-            // 	// >= 36 cities = 0 born-content
-
-            // 	int downgradeCount = _city.Size; // case >= 36
-
-            // 	if (totalCities <= 24)
-            // 	{
-            // 		downgradeCount = 1;
-            // 	}
-            // 	DowngradeCitizens(ct.Citizens, downgradeCount);
-
-            // 	WearRedShirt(ct.Citizens, NumberOfRedShirts(totalCities));
-            // }
-            // rotected internal int NumberOfRedShirts(int totalCities)
-		// {
-		// 	if (totalCities <= 36)
-		// 	{
-		// 		return 0;
-		// 	}
-		// 	return 1 + (totalCities - 36) / 12;
-			// 1+ (37-36) /12 = 1 + 1/12 = 1
-			// 1+ (48-36) /12 = 1 + 12/12 = 2
-			// 1+ (61-36) /12 = 1 + 25/12 = 3
         }
-        partial class MockPlayer(int citiesCount) : Player()
+        partial class MockPlayer : Player
         {
-            private readonly int citiesCount = citiesCount;
+            private int citiesCount;
+
+            public MockPlayer() : base()
+            {
+                this.citiesCount = 0;
+            }
+
             public override City[] Cities => new City[citiesCount];
+
+            public MockPlayer withCitiesCount(int count)
+            {
+                this.citiesCount = count;
+                return this;
+            }
+            public MockPlayer withGovernment(IGovernment government)
+            {
+                this.Government = government;
+                return this;
+            }
+            public MockPlayer withGovernmentType(Type government)
+            {
+                IGovernment gov = government switch
+                {
+                    var t when t == typeof(Republic) => new Republic(),
+                    var t when t == typeof(Democracy) => new Democracy(),
+                    var t when t == typeof(Anarchy) => new Anarchy(),
+                    _ => throw new NotImplementedException($"Government type {government} not implemented in MockPlayer"),
+                };
+                this.Government = gov;
+                return this;
+            }
         }
 
         [Theory]
