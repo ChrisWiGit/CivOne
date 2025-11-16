@@ -525,7 +525,7 @@ namespace CivOne
 			return unit;
 		}
 
-		internal IUnit[] GetUnits(int x, int y)
+		public IUnit[] GetUnits(int x, int y)
 		{
 			while (x < 0) x += Map.WIDTH;
 			while (x >= Map.WIDTH) x -= Map.WIDTH;

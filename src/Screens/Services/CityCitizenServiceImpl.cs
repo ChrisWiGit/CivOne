@@ -280,7 +280,7 @@ namespace CivOne.Screens.Services
 			}
 
 			var attackUnitsNotInCity = _game.GetUnits()
-				.Where(u => u.Home == _city && u.Attack > 0 && (new Point(u.X, u.Y) != _city.Location));
+				.Where(u => u.IsHome(_city) && u.Attack > 0 && (new Point(u.X, u.Y) != _city.Location));
 
 			ct.MarshallLawUnits.AddRange(attackUnitsNotInCity);
 

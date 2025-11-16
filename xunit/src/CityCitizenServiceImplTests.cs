@@ -23,6 +23,7 @@ using CivOne.Units;
 using System;
 using CivOne.Graphics.Sprites;
 using CivOne.Governments;
+using CivOne.UserInterface;
 
 namespace CivOne.UnitTests
 {
@@ -48,6 +49,8 @@ namespace CivOne.UnitTests
         MockedIGame mockedIGame;
         MockedICityBuildings mockedCityBuildings;
         MockedICityBasic mockedCityBasic;
+
+        MockedGrassland mockedGrassland = new();
         public override void BeforeEach()
         {
             // var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
@@ -58,7 +61,8 @@ namespace CivOne.UnitTests
             mockedCityBuildings = new MockedICityBuildings();
             mockedCityBasic = new MockedICityBasic()
             {
-                Size = 1
+                Size = 1,
+                MockTile = mockedGrassland
             };
 
             mockedIGame = new MockedIGame()
@@ -304,9 +308,12 @@ namespace CivOne.UnitTests
         public void InitCitizensTests(
             int contentCount, int unhappyCount)
         {
+            mockedCityBasic.Size = 6;
             mockedSpecialists.Clear();
 
-            var target = new Citizen[6];
+            mockedSpecialists.AddRange([.. Enumerable.Repeat(Citizen.HappyMale, mockedCityBasic.Size - contentCount - unhappyCount)]);
+
+            var target = new Citizen[mockedCityBasic.Size];
             testee.InitCitizens(target, contentCount, unhappyCount);
 
             int actualUnhappyCount = target.Count(c => c == Citizen.UnhappyMale | c == Citizen.UnhappyFemale);
@@ -412,10 +419,15 @@ namespace CivOne.UnitTests
             Assert.Equal(ct.unhappy, unhappy);
         }
 
-        [Fact]
-        public void HasBachsCathedralTests()
+        [Theory]
+        [InlineData(0)]
+        public void HasBachsCathedralTests(
+            int cityContinentId
+        )
         {
             Assert.Fail("Not implemented");
+
+            testee.HasBachsCathedral();
             //     		protected internal bool HasBachsCathedral()
             // {
             // 	return _city.Tile != null
@@ -505,28 +517,59 @@ namespace CivOne.UnitTests
             // }
         }
 
-        [Fact]
-        public void ApplyMartialLawTests()
+        [Theory]
+        [InlineData(typeof(Democracy), 0, 5)] // not despot
+        [InlineData(typeof(Anarchy), 1, 4)]
+        [InlineData(typeof(Anarchy), 2, 3)]
+        [InlineData(typeof(Anarchy), 3, 2)]
+        [InlineData(typeof(Anarchy), 4, 2)] // max 3 units affect martial law
+        [InlineData(typeof(Anarchy), 5, 2)]
+        [InlineData(typeof(Despotism), 5, 2)]
+        public void ApplyMartialLawTests(
+            Type government,
+            int unitsInCityCount,
+            int expectedUnhappy)
         {
-            Assert.Fail("Not implemented");
-            // 			protected internal void ApplyMartialLaw(CitizenTypes ct)
+            mockedCityBasic.Size = 5;
+            var player = new MockPlayer().withGovernmentType(government);
+            mockedCityBasic.MockPlayer = player;
+
+            var units = new List<IUnit>();
+            for (int i = 0; i < unitsInCityCount; i++)
+            {
+                var unit = new MockedUnit(mockedCityBasic.Location.X, mockedCityBasic.Location.Y)
+                .WithHome(mockedCityBasic);
+                units.Add(unit);
+            }
+            mockedCityBasic.MockUnits = [.. units];
+            mockedCityBasic.MockTile = mockedGrassland;
+            mockedGrassland.WithUnits([.. units]);
+
+            // mockedIGame.OnGetUnits = (x, y) =>
             // {
-            // 	if (!_city.Player.AnarchyDespotism && !_city.Player.MonarchyCommunist)
-            // 	{
-            // 		return;
-            // 	}
+            //     Assert.Equal(mockedCityBasic.Location.X, x);
+            //     Assert.Equal(mockedCityBasic.Location.Y, y);
+            //     return mockedCityBasic.MockUnits;
+            // };
 
-            // 	var attackUnitsInCity = _city.Tile.Units.Where(u => u.Attack > 0);
+            var ct = new CitizenTypes
+            {
+                Citizens = new Citizen[mockedCityBasic.Size],
+                MarshallLawUnits = []
+            };
 
-            // 	ct.MarshallLawUnits.AddRange(attackUnitsInCity);
+            ct.unhappy = 5;
+            ct.content = 0;
+            ct.happy = 0;
+            ct.redShirt = 0;
+            testee.InitCitizens(ct.Citizens, 0, mockedCityBasic.Size);
 
-            // 	const int MAX_MARTIAL_LAW_UNITS = 3;
 
-            // 	int martialLawUnits = Math.Min(MAX_MARTIAL_LAW_UNITS, attackUnitsInCity.Count());
-            // 	int unhappyToContent = Math.Min(martialLawUnits, ct.unhappy);
+            testee.ApplyMartialLaw(ct);
 
-            // 	UnhappyToContent(ct.Citizens, unhappyToContent);
-            // }
+            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
+
+            Assert.Equal(expectedUnhappy, unhappy);
         }
 
         [Theory]
@@ -534,9 +577,11 @@ namespace CivOne.UnitTests
         [InlineData(typeof(Republic), 0, 0)] // no units not in city
         [InlineData(typeof(Democracy), 0, 0)] // no units not in city
         [InlineData(typeof(Anarchy), 1, 0)] // not democratic
-        [InlineData(typeof(Republic), 1, 0)] // no effect
         [InlineData(typeof(Republic), 1, 1)] // 1 unit
+        [InlineData(typeof(Republic), 2, 2)] // 2 units
         [InlineData(typeof(Democracy), 1, 2)] // 2 units
+        [InlineData(typeof(Democracy), 2, 4)] // 2 units
+        [InlineData(typeof(Democracy), 3, 5)] // 3 units with max city size 5
 
         public void ApplyDemocracyEffectsTests(
             Type government,
@@ -544,56 +589,40 @@ namespace CivOne.UnitTests
             int expectedUnhappy
         )
         {
+            mockedCityBasic.Size = 5;
+            var player = new MockPlayer().withGovernmentType(government);
+            mockedCityBasic.MockPlayer = player;
             mockedIGame.OnGetPlayer = (playerId) =>
             {
-                return new MockPlayer().withGovernmentType(government);
+                return player;
             };
-            mockedIGame.OnGetUnits = () =>
+            mockedIGame.OnGetUnits = (_, __) =>
             {
                 var units = new List<IUnit>();
                 for (int i = 0; i < unitsNotInCityCount; i++)
                 {
-                    units.Add(new Militia());
-                    units.Last().SetHome((City)(object)mockedCityBasic);
-                    units.Last().X = 1;
-                    units.Last().Y = 1;
+                    var unit = new MockedUnit()
+                    .WithHome(mockedCityBasic);
+
+                    units.Add(unit);
                 }
                 return [.. units];
             };
 
             var ct = new CitizenTypes
             {
-                Citizens = new Citizen[mockedCityBasic.Size]
+                Citizens = new Citizen[mockedCityBasic.Size],
+                MarshallLawUnits = []
             };
             int initialContent = mockedCityBasic.Size;
+
             testee.InitCitizens(ct.Citizens, initialContent, 0);
+
             testee.ApplyDemocracyEffects(ct, initialContent);
 
             var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
 
             Assert.Equal(expectedUnhappy, unhappy);
-
-            // if (!_city.Player.RepublicDemocratic)
-            // {
-            // 	return;
-            // }
-            // 		protected internal void ApplyWonderEffects(CitizenTypes ct)
-            // {
-            // 	int happy = 0;
-            // 	if (_city.Player.HasWonderEffect<HangingGardens>() && !_game.WonderObsolete<HangingGardens>())
-            // 	{
-            // 		happy += 1;
-            // 		ct.Wonders.Add(new HangingGardens());
-            // 	}
-            // 	if (_city.Player.HasWonderEffect<CureForCancer>() && !_game.WonderObsolete<CureForCancer>())
-            // 	{
-            // 		happy += 1;
-            // 		ct.Wonders.Add(new CureForCancer());
-            // 	}
-
-            // 	int happyToContent = Math.Min(happy, ct.content);
-            // 	ContentToHappy(ct.Citizens, happyToContent);
-            // }
         }
 
         [Fact]
@@ -700,6 +729,8 @@ namespace CivOne.UnitTests
                     var t when t == typeof(Republic) => new Republic(),
                     var t when t == typeof(Democracy) => new Democracy(),
                     var t when t == typeof(Anarchy) => new Anarchy(),
+                    var t when t == typeof(Despotism) => new Despotism(),
+                    var t when t == typeof(Monarchy) => new Monarchy(),
                     _ => throw new NotImplementedException($"Government type {government} not implemented in MockPlayer"),
                 };
                 this.Government = gov;
@@ -849,7 +880,7 @@ namespace CivOne.UnitTests
             public int MaxDifficulty { get; set; }
 
             public Func<byte, Player> OnGetPlayer { get; set; }
-            public Func<IUnit[]> OnGetUnits { get; set; }
+            public Func<int, int, IUnit[]> OnGetUnits { get; set; }
             public Func<Type, bool> OnWonderObsoleteByType { get; set; }
             public Func<IWonder, bool> OnWonderObsolete { get; set; }
 
@@ -858,8 +889,12 @@ namespace CivOne.UnitTests
                     ?? throw new NotImplementedException("GetPlayer not implemented by delegate.");
 
             public IUnit[] GetUnits()
-                => OnGetUnits?.Invoke()
+                => OnGetUnits?.Invoke(int.MinValue, int.MinValue)
                     ?? throw new NotImplementedException("GetUnits not implemented by delegate.");
+            public IUnit[] GetUnits(int x, int y)
+                => OnGetUnits?.Invoke(x, y)
+                    ?? throw new NotImplementedException("GetUnits not implemented by delegate.");
+
 
             public bool WonderObsolete<T>() where T : IWonder, new()
                 => OnWonderObsoleteByType?.Invoke(typeof(T))
@@ -879,20 +914,28 @@ namespace CivOne.UnitTests
 
 
             public ITile Tile => _tile;
-            private ITile _tile = null;
+            private ITile _tile;
             public ITile MockTile
             {
                 get => _tile;
                 set => _tile = value;
             }
             public int ContinentId => 0;
-            public Player Player => null;
+            public Player Player => _player;
             private Player _player = null;
             public Player MockPlayer
             {
                 get => _player;
                 set => _player = value;
             }
+
+            private IUnit[] _units = Array.Empty<IUnit>();
+            public IUnit[] MockUnits
+            {
+                get => _units;
+                set => _units = value;
+            }
+
             public int Entertainers { get; set; } = 0;
             public int Scientists { get; set; } = 0;
             public int Taxmen { get; set; } = 0;
@@ -925,6 +968,54 @@ namespace CivOne.UnitTests
             public bool HasBuilding<T>() where T : IBuilding => _hasBuilding.Next();
 
             public bool HasWonder<T>() where T : IWonder => _hasWonder.Next();
+        }
+
+        class MockedUnit : BaseUnit, IUnit
+        {
+            public override IEnumerable<MenuItem<int>> MenuItems => throw new NotImplementedException();
+
+            public MockedUnit(int x = 1, int y = 1, byte attack = 1)
+            {
+                X = x;
+                Y = y;
+                Attack = attack;
+            }
+
+            private ICityBasic _city;
+
+            public MockedUnit WithHome(ICityBasic city)
+            {
+                _city = city;
+                return this;
+            }
+
+            public bool IsHome(ICityBasic city)
+            {
+                return _city == city;
+            }
+
+            protected override bool ValidMoveTarget(ITile tile)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        class MockedGrassland : Grassland, ITile
+        {
+            private IUnit[] _units = Array.Empty<IUnit>();
+
+
+            public MockedGrassland()
+            {
+            }
+
+            public MockedGrassland WithUnits(params IUnit[] units)
+            {
+                _units = units;
+                return this;
+            }
+
+            public override IUnit[] Units => _units;
         }
     }
 }

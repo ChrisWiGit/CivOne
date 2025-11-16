@@ -29,6 +29,7 @@ namespace CivOne
 	public interface IGameUnitsQuery
 	{
 		IUnit[] GetUnits();
+		IUnit[] GetUnits(int x, int y);
 	}
 
 	public interface IGamePlayerQuery
