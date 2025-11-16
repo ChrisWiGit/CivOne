@@ -20,6 +20,7 @@ using CivOne.Enums;
 using CivOne.IO;
 using CivOne.Leaders;
 using CivOne.Screens;
+using CivOne.Screens.Services;
 using CivOne.Services;
 using CivOne.Services.GlobalWarming;
 using CivOne.Tasks;
@@ -29,7 +30,7 @@ using CivOne.Wonders;
 
 namespace CivOne
 {
-	public partial class Game : BaseInstance, IGame, ILogger
+	public partial class Game : BaseInstance, IGame, ILogger, IGameCitizenDependency
 	{
 		private readonly int _difficulty, _competition;
 		private readonly Player[] _players;
