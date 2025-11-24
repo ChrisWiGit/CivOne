@@ -47,8 +47,9 @@ namespace CivOne.UnitTests
         List<Citizen> mockedSpecialists;
 
         MockedIGame mockedIGame;
-        MockedICityBuildings mockedCityBuildings;
-        MockedICityBasic mockedCityBasic;
+        MockedICity mockedCity;
+
+        MockedIMap mockedIMap;
 
         MockedGrassland mockedGrassland = new();
         public override void BeforeEach()
@@ -58,11 +59,10 @@ namespace CivOne.UnitTests
 
             mockedSpecialists = [];
 
-            mockedCityBuildings = new MockedICityBuildings();
-            mockedCityBasic = new MockedICityBasic()
+            mockedCity = new MockedICity()
             {
                 Size = 1,
-                MockTile = mockedGrassland
+                Tile = mockedGrassland
             };
 
             mockedIGame = new MockedIGame()
@@ -71,13 +71,14 @@ namespace CivOne.UnitTests
                 MaxDifficulty = 5,
                 GameTurn = 1
             };
+            mockedIMap = new MockedIMap();
 
             testee = new CityCitizenServiceImpl(
-                mockedCityBasic,
-                mockedCityBuildings,
+                mockedCity,
+                mockedCity,
                 mockedIGame,//Game.Instance,
                 mockedSpecialists,
-                Map.Instance
+                mockedIMap
             );
         }
 
@@ -308,12 +309,12 @@ namespace CivOne.UnitTests
         public void InitCitizensTests(
             int contentCount, int unhappyCount)
         {
-            mockedCityBasic.Size = 6;
+            mockedCity.Size = 6;
             mockedSpecialists.Clear();
 
-            mockedSpecialists.AddRange([.. Enumerable.Repeat(Citizen.HappyMale, mockedCityBasic.Size - contentCount - unhappyCount)]);
+            mockedSpecialists.AddRange([.. Enumerable.Repeat(Citizen.HappyMale, mockedCity.Size - contentCount - unhappyCount)]);
 
-            var target = new Citizen[mockedCityBasic.Size];
+            var target = new Citizen[mockedCity.Size];
             testee.InitCitizens(target, contentCount, unhappyCount);
 
             int actualUnhappyCount = target.Count(c => c == Citizen.UnhappyMale | c == Citizen.UnhappyFemale);
@@ -401,11 +402,11 @@ namespace CivOne.UnitTests
             int initialContent,
             int initialUnhappy)
         {
-            mockedCityBasic.Size = (byte)(initialContent + initialUnhappy);
+            mockedCity.Size = (byte)(initialContent + initialUnhappy);
 
             var ct = new CitizenTypes
             {
-                Citizens = new Citizen[mockedCityBasic.Size]
+                Citizens = new Citizen[mockedCity.Size]
             };
             ct = testee.StageBasic(ct, initialContent, initialUnhappy);
 
@@ -420,20 +421,41 @@ namespace CivOne.UnitTests
         }
 
         [Theory]
-        [InlineData(0)]
+        [InlineData(0, false)]
+        [InlineData(1, false)]
+        [InlineData(2, true)]
+        [InlineData(3, false)]
         public void HasBachsCathedralTests(
-            int cityContinentId
+            int cityContinentId,
+            bool isCathedralPresent
         )
         {
-            Assert.Fail("Not implemented");
+            mockedCity.ContinentId = cityContinentId;
 
-            testee.HasBachsCathedral();
-            //     		protected internal bool HasBachsCathedral()
-            // {
-            // 	return _city.Tile != null
-            // 				&& _map.ContinentCities(_city.Tile.ContinentId)
-            // 					.Any(x => x.Size > 0 && x.Owner == _city.Owner && x.HasWonder<JSBachsCathedral>());
-            // }
+            mockedIMap.ReturnContinentCitiesValues(
+                [
+                    new MockedICity()
+					{
+                        Owner = mockedCity.Owner,
+                        ContinentId = 1
+                    }
+                    .ReturnHasWonderValues(false, false, false, false),
+                    new MockedICity()
+					{
+                        Owner = mockedCity.Owner,
+                        ContinentId = 2
+                    }
+                    .ReturnHasWonderValues(true, true, true, true),
+                    new MockedICity()
+					{
+                        Owner = 255,
+                        ContinentId = 3
+                    }
+                    .ReturnHasWonderValues(true, true, true, true)
+                ]
+            );
+
+            Assert.Equal(isCathedralPresent, testee.HasBachsCathedral());
         }
 
         [Fact]
@@ -530,19 +552,19 @@ namespace CivOne.UnitTests
             int unitsInCityCount,
             int expectedUnhappy)
         {
-            mockedCityBasic.Size = 5;
+            mockedCity.Size = 5;
             var player = new MockPlayer().withGovernmentType(government);
-            mockedCityBasic.MockPlayer = player;
+            mockedCity.MockPlayer = player;
 
             var units = new List<IUnit>();
             for (int i = 0; i < unitsInCityCount; i++)
             {
-                var unit = new MockedUnit(mockedCityBasic.Location.X, mockedCityBasic.Location.Y)
-                .WithHome(mockedCityBasic);
+                var unit = new MockedUnit(mockedCity.Location.X, mockedCity.Location.Y)
+                .WithHome(mockedCity);
                 units.Add(unit);
             }
-            mockedCityBasic.MockUnits = [.. units];
-            mockedCityBasic.MockTile = mockedGrassland;
+            mockedCity.MockUnits = [.. units];
+            mockedCity.Tile = mockedGrassland;
             mockedGrassland.WithUnits([.. units]);
 
             // mockedIGame.OnGetUnits = (x, y) =>
@@ -554,7 +576,7 @@ namespace CivOne.UnitTests
 
             var ct = new CitizenTypes
             {
-                Citizens = new Citizen[mockedCityBasic.Size],
+                Citizens = new Citizen[mockedCity.Size],
                 MarshallLawUnits = []
             };
 
@@ -562,7 +584,7 @@ namespace CivOne.UnitTests
             ct.content = 0;
             ct.happy = 0;
             ct.redShirt = 0;
-            testee.InitCitizens(ct.Citizens, 0, mockedCityBasic.Size);
+            testee.InitCitizens(ct.Citizens, 0, mockedCity.Size);
 
 
             testee.ApplyMartialLaw(ct);
@@ -589,9 +611,9 @@ namespace CivOne.UnitTests
             int expectedUnhappy
         )
         {
-            mockedCityBasic.Size = 5;
+            mockedCity.Size = 5;
             var player = new MockPlayer().withGovernmentType(government);
-            mockedCityBasic.MockPlayer = player;
+            mockedCity.MockPlayer = player;
             mockedIGame.OnGetPlayer = (playerId) =>
             {
                 return player;
@@ -602,7 +624,7 @@ namespace CivOne.UnitTests
                 for (int i = 0; i < unitsNotInCityCount; i++)
                 {
                     var unit = new MockedUnit()
-                    .WithHome(mockedCityBasic);
+                    .WithHome(mockedCity);
 
                     units.Add(unit);
                 }
@@ -611,10 +633,10 @@ namespace CivOne.UnitTests
 
             var ct = new CitizenTypes
             {
-                Citizens = new Citizen[mockedCityBasic.Size],
+                Citizens = new Citizen[mockedCity.Size],
                 MarshallLawUnits = []
             };
-            int initialContent = mockedCityBasic.Size;
+            int initialContent = mockedCity.Size;
 
             testee.InitCitizens(ct.Citizens, initialContent, 0);
 
@@ -638,7 +660,7 @@ namespace CivOne.UnitTests
             Assert.Equal(0, actual.einstein);
             Assert.Equal(0, actual.taxman);
             Assert.NotNull(actual.Citizens);
-            Assert.Equal(mockedCityBasic.Size, actual.Citizens.Length);
+            Assert.Equal(mockedCity.Size, actual.Citizens.Length);
             Assert.NotNull(actual.Buildings);
             Assert.Empty(actual.Buildings);
             Assert.NotNull(actual.Wonders);
@@ -687,7 +709,7 @@ namespace CivOne.UnitTests
                 return new MockPlayer().withCitiesCount(totalCities);
             };
             mockedIGame.Difficulty = gameDifficulty;
-            mockedCityBasic.Size = (byte)citySize;
+            mockedCity.Size = (byte)citySize;
 
             CitizenTypes ct = new()
             {
@@ -905,22 +927,17 @@ namespace CivOne.UnitTests
                     ?? throw new NotImplementedException("WonderObsolete(IWonder) not implemented by delegate.");
         }
 
-        public class MockedICityBasic : ICityBasic
+        public class MockedICity : ICityBasic, ICityBuildings, ICityOnContinent
         {
             public Point Location => new Point(0, 0);
             public byte Size { get; set; } = 5;
             public short Luxuries { get; set; } = 0;
-            public byte Owner => 0;
+            public byte Owner { get; set; } = 0;
 
 
-            public ITile Tile => _tile;
-            private ITile _tile;
-            public ITile MockTile
-            {
-                get => _tile;
-                set => _tile = value;
-            }
-            public int ContinentId => 0;
+            public ITile Tile { get; set; } = null;
+            
+            public int ContinentId { get; set; } = 0;
             public Player Player => _player;
             private Player _player = null;
             public Player MockPlayer
@@ -939,27 +956,23 @@ namespace CivOne.UnitTests
             public int Entertainers { get; set; } = 0;
             public int Scientists { get; set; } = 0;
             public int Taxmen { get; set; } = 0;
-        }
 
-
-        public class MockedICityBuildings : ICityBuildings
-        {
             private readonly SupplyMockedValues<bool> _hasBuilding;
             private readonly SupplyMockedValues<bool> _hasWonder;
 
-            public MockedICityBuildings()
+            public MockedICity()
             {
                 _hasBuilding = new SupplyMockedValues<bool>();
                 _hasWonder = new SupplyMockedValues<bool>();
             }
 
-            public MockedICityBuildings ReturnHasBuildingValues(params bool[] values)
+            public MockedICity ReturnHasBuildingValues(params bool[] values)
             {
                 _hasBuilding.Reset(values);
                 return this;
             }
 
-            public MockedICityBuildings ReturnHasWonderValues(params bool[] values)
+            public MockedICity ReturnHasWonderValues(params bool[] values)
             {
                 _hasWonder.Reset(values);
                 return this;
@@ -1017,5 +1030,24 @@ namespace CivOne.UnitTests
 
             public override IUnit[] Units => _units;
         }
+
+        class MockedIMap : IMap
+		{
+            private readonly List<ICityOnContinent> _continentCities = new();
+	    	public IEnumerable<ICityOnContinent> ContinentCities(int continentId)
+			{
+				return [.._continentCities.Where(city => city.ContinentId == continentId)];
+			}
+
+            public MockedIMap ReturnContinentCitiesValues(params ICityOnContinent[] values)
+            {
+                _continentCities.RemoveAll(_ => true);
+                _continentCities.AddRange(values);
+
+                return this;
+            }
+        }
+
+
     }
 }

@@ -101,7 +101,11 @@ namespace CivOne
 		
 		public IEnumerable<ITile> ContinentTiles(int continentId) => AllTiles().Where(t => t.ContinentId == continentId);
 		
-		public IEnumerable<City> ContinentCities(int continentId) => ContinentTiles(continentId).Where(x => x.City != null).Select(x => x.City).ToArray();
+		public IEnumerable<ICityOnContinent> ContinentCities(int continentId) =>
+			[.. ContinentTiles(continentId)
+				.Where(x => x.City != null)
+				.Select(x => x.City)
+				.Cast<ICityOnContinent>()];
 		
 		public ITile this[int x, int y]
 		{

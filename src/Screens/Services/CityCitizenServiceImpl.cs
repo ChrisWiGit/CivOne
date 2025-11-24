@@ -383,9 +383,11 @@ namespace CivOne.Screens.Services
 
 		protected internal bool HasBachsCathedral()
 		{
-			return _city.Tile != null
-						&& _map.ContinentCities(_city.Tile.ContinentId)
-							.Any(x => x.Size > 0 && x.Owner == _city.Owner && x.HasWonder<JSBachsCathedral>());
+			DebugService.Assert(_city.Tile != null, "City has no tile assigned.");
+			return _map
+					.ContinentCities(_city.ContinentId)
+					.Any(city => city.Owner == _city.Owner &&
+							city.HasWonder<JSBachsCathedral>());
 		}
 
 		protected internal CitizenTypes StageBasic(CitizenTypes ct, int initialContent, int initialUnhappy)
