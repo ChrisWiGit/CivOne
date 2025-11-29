@@ -29,7 +29,9 @@ using UniversityBuilding = CivOne.Buildings.University;
 
 namespace CivOne
 {
-	public class City : BaseInstance, ITurn, ICityBasic, ICityBuildings, ICityOnContinent
+	public interface ICity : ITurn, ICityBasic, ICityBuildings, ICityOnContinent
+	{}
+	public class City : BaseInstance, ICity
 	{
 		// Dependency Injection
 		public static Game Game;

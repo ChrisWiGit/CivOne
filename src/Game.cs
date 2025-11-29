@@ -553,6 +553,14 @@ namespace CivOne
 		public City[] GetCities() => _cities.ToArray();
 
 		public ReadOnlyCollection<City> Cities { get { return _cities.AsReadOnly(); } }
+		
+		/** <summary>
+		 * Interface for City collection.
+		 * This new property is to avoid exposing the City class directly,
+		 * and will be used to refactor code to use ICity instead of City.
+		 * </summary> */
+		public ReadOnlyCollection<ICity> CitiesInterface { get { 
+			return _cities.Cast<ICity>().ToList().AsReadOnly(); } }
 
 		public IWonder[] BuiltWonders => _cities.SelectMany(c => c.Wonders).ToArray();
 

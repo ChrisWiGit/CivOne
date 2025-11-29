@@ -110,6 +110,13 @@ namespace CivOne
 		public bool IsHuman => (Game.HumanPlayer == this);
 
 		public virtual City[] Cities => Game.GetCities().Where(c => this == c.Owner && c.Size > 0).ToArray();
+		
+		/** <summary>
+		 * Interface for City collection.
+		 * This new property is to avoid exposing the City class directly,
+		 * and will be used to refactor code to use ICity instead of City.
+		 * </summary> */
+		public virtual ICity[] CitiesInterface => Game.GetCities().Where(c => this == c.Owner && c.Size > 0).ToArray();
 
 		public int Population => Cities.Sum(c => c.Population);
 		
