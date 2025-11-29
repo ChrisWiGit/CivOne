@@ -8,7 +8,7 @@ namespace CivOne
 		Point Location { get; }
 		byte Size { get; }
 		short Luxuries { get; }
-		byte Owner { get; }
+		byte Owner { get; set; }
 		ITile Tile { get; }
 
 		int ContinentId { get; }

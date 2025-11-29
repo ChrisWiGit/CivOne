@@ -371,10 +371,12 @@ namespace CivOne.Screens.Services
 
 			// CW: Michelangelo's Chapel gives +6 happiness if on same continent as city with wonder, else +4
 			// https://civilization.fandom.com/wiki/Michelangelo%27s_Chapel_(Civ1)
-			bool hasChapel = !_game.WonderObsolete<MichelangelosChapel>()
-					&& _game.GetPlayer(_city.Owner).Cities.Any(c => c.HasWonder<MichelangelosChapel>()
+			bool isObsolete = _game.WonderObsolete<MichelangelosChapel>();
+			bool hasChapelOnSameContinent = !isObsolete &&
+						_game.GetPlayer(_city.Owner)
+							.CitiesInterface.Any(c => c.HasWonder<MichelangelosChapel>()
 					&& c.ContinentId == _city.ContinentId);
-			int chapelBonus = hasChapel ? 6 : 4;
+			int chapelBonus = !isObsolete && hasChapelOnSameContinent ? 6 : 4;
 
 			unhappyDelta += chapelBonus;
 

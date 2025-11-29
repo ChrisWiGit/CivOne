@@ -458,10 +458,42 @@ namespace CivOne.UnitTests
             Assert.Equal(isCathedralPresent, testee.HasBachsCathedral());
         }
 
-        [Fact]
-        public void CathedralDeltaTest()
+        [Theory]
+        [InlineData(false, false, true, 0)]
+        [InlineData(true, true, false, 4)]
+        [InlineData(true, false, false, 4)]
+        [InlineData(true, false, true, 6)]
+        public void CathedralDeltaTest(
+            bool hasCathedral,
+            bool obsoleteMichelangelosChapel,
+            bool hasMichelangelosChapel,
+            int expectedDelta
+        )
         {
-            Assert.Fail("Not implemented");
+            mockedIGame.OnWonderObsoleteByType = 
+                (type) => obsoleteMichelangelosChapel;
+
+            mockedCity.ReturnHasBuildingValues(
+                hasCathedral);
+
+            mockedIGame.OnGetPlayer = (owner) =>
+            {
+                var player = new MockPlayer();
+                player
+                    .withCitiesInterface([
+                        new MockedICity()
+                        .ReturnHasWonderValues(
+                                hasMichelangelosChapel)
+                        .WithContinentId(mockedCity.ContinentId),
+                        new MockedICity()
+                        .ReturnHasWonderValues(
+                                true)
+                        .WithContinentId(mockedCity.ContinentId+1)
+                    ]);
+                return player;
+            };
+
+            Assert.Equal(expectedDelta, testee.CathedralDelta());
             // internal int CathedralDelta()
             // {
             // 	if (!_cityBuildings.HasBuilding<Cathedral>()) return 0;
@@ -471,7 +503,8 @@ namespace CivOne.UnitTests
             // 	// CW: Michelangelo's Chapel gives +6 happiness if on same continent as city with wonder, else +4
             // 	// https://civilization.fandom.com/wiki/Michelangelo%27s_Chapel_(Civ1)
             // 	bool hasChapel = !_game.WonderObsolete<MichelangelosChapel>()
-            // 			&& _game.GetPlayer(_city.Owner).Cities.Any(c => c.HasWonder<MichelangelosChapel>()
+            // 			&& _game.GetPlayer(_city.Owner)
+            //          .Cities.Any(c => c.HasWonder<MichelangelosChapel>()
             // 			&& c.ContinentId == _city.ContinentId);
             // 	int chapelBonus = hasChapel ? 6 : 4;
 
@@ -723,42 +756,6 @@ namespace CivOne.UnitTests
             Assert.Equal(expectedBornContent, content);
             Assert.Equal(expectedReadShirts, redShirt);
         }
-        partial class MockPlayer : Player
-        {
-            private int citiesCount;
-
-            public MockPlayer() : base()
-            {
-                this.citiesCount = 0;
-            }
-
-            public override City[] Cities => new City[citiesCount];
-
-            public MockPlayer withCitiesCount(int count)
-            {
-                this.citiesCount = count;
-                return this;
-            }
-            public MockPlayer withGovernment(IGovernment government)
-            {
-                this.Government = government;
-                return this;
-            }
-            public MockPlayer withGovernmentType(Type government)
-            {
-                IGovernment gov = government switch
-                {
-                    var t when t == typeof(Republic) => new Republic(),
-                    var t when t == typeof(Democracy) => new Democracy(),
-                    var t when t == typeof(Anarchy) => new Anarchy(),
-                    var t when t == typeof(Despotism) => new Despotism(),
-                    var t when t == typeof(Monarchy) => new Monarchy(),
-                    _ => throw new NotImplementedException($"Government type {government} not implemented in MockPlayer"),
-                };
-                this.Government = gov;
-                return this;
-            }
-        }
 
         [Theory]
         [InlineData(2, 2)]
@@ -927,7 +924,9 @@ namespace CivOne.UnitTests
                     ?? throw new NotImplementedException("WonderObsolete(IWonder) not implemented by delegate.");
         }
 
-        public class MockedICity : ICityBasic, ICityBuildings, ICityOnContinent
+        public class MockedICity : 
+            // ICityBasic, ICityBuildings, ICityOnContinent
+            ICity
         {
             public Point Location => new Point(0, 0);
             public byte Size { get; set; } = 5;
@@ -978,11 +977,74 @@ namespace CivOne.UnitTests
                 return this;
             }
 
+            public MockedICity WithContinentId(int continentId)
+            {
+                ContinentId = continentId;
+                return this;
+            }
+
             public bool HasBuilding<T>() where T : IBuilding => _hasBuilding.Next();
 
             public bool HasWonder<T>() where T : IWonder => _hasWonder.Next();
-        }
 
+			public void NewTurn()
+			{
+				throw new NotImplementedException();
+			}
+		}
+
+        partial class MockPlayer : Player
+        {
+            private int citiesCount;
+            private City[] _cities;
+            private ICity[] _citiesInterface;
+
+            public MockPlayer() : base()
+            {
+                this.citiesCount = 0;
+            }
+
+            public override City[] Cities => _cities;
+            public override ICity[] CitiesInterface => _citiesInterface;
+            public MockPlayer withCities(City[] cities)
+            {
+                this._cities = cities;
+                this.citiesCount = cities.Length;
+                return this;
+            }
+            public MockPlayer withCitiesInterface(ICity[] cities)
+            {
+                this._citiesInterface = cities;
+                this.citiesCount = cities.Length;
+                return this;
+            }
+
+            public MockPlayer withCitiesCount(int count)
+            {
+                this.citiesCount = count;
+                this._cities = new City[count];
+                return this;
+            }
+            public MockPlayer withGovernment(IGovernment government)
+            {
+                this.Government = government;
+                return this;
+            }
+            public MockPlayer withGovernmentType(Type government)
+            {
+                IGovernment gov = government switch
+                {
+                    var t when t == typeof(Republic) => new Republic(),
+                    var t when t == typeof(Democracy) => new Democracy(),
+                    var t when t == typeof(Anarchy) => new Anarchy(),
+                    var t when t == typeof(Despotism) => new Despotism(),
+                    var t when t == typeof(Monarchy) => new Monarchy(),
+                    _ => throw new NotImplementedException($"Government type {government} not implemented in MockPlayer"),
+                };
+                this.Government = gov;
+                return this;
+            }
+        }
         class MockedUnit : BaseUnit, IUnit
         {
             public override IEnumerable<MenuItem<int>> MenuItems => throw new NotImplementedException();
