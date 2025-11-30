@@ -24,6 +24,7 @@ using System;
 using CivOne.Graphics.Sprites;
 using CivOne.Governments;
 using CivOne.UserInterface;
+using CivOne.Advances;
 
 namespace CivOne.UnitTests
 {
@@ -42,7 +43,7 @@ namespace CivOne.UnitTests
     /// </summary>
     public class CityCitizenServiceImplTests : TestsBase
     {
-        CityCitizenServiceImpl testee;
+        CityCitizenServiceImpl2 testee;
         City city;
         List<Citizen> mockedSpecialists;
 
@@ -73,7 +74,7 @@ namespace CivOne.UnitTests
             };
             mockedIMap = new MockedIMap();
 
-            testee = new CityCitizenServiceImpl(
+            testee = new CityCitizenServiceImpl2(
                 mockedCity,
                 mockedCity,
                 mockedIGame,//Game.Instance,
@@ -435,19 +436,19 @@ namespace CivOne.UnitTests
             mockedIMap.ReturnContinentCitiesValues(
                 [
                     new MockedICity()
-					{
+                    {
                         Owner = mockedCity.Owner,
                         ContinentId = 1
                     }
                     .ReturnHasWonderValues(false, false, false, false),
                     new MockedICity()
-					{
+                    {
                         Owner = mockedCity.Owner,
                         ContinentId = 2
                     }
                     .ReturnHasWonderValues(true, true, true, true),
                     new MockedICity()
-					{
+                    {
                         Owner = 255,
                         ContinentId = 3
                     }
@@ -470,7 +471,7 @@ namespace CivOne.UnitTests
             int expectedDelta
         )
         {
-            mockedIGame.OnWonderObsoleteByType = 
+            mockedIGame.OnWonderObsoleteByType =
                 (type) => obsoleteMichelangelosChapel;
 
             mockedCity.ReturnHasBuildingValues(
@@ -494,86 +495,160 @@ namespace CivOne.UnitTests
             };
 
             Assert.Equal(expectedDelta, testee.CathedralDelta());
-            // internal int CathedralDelta()
-            // {
-            // 	if (!_cityBuildings.HasBuilding<Cathedral>()) return 0;
-
-            // 	int unhappyDelta = 0;
-
-            // 	// CW: Michelangelo's Chapel gives +6 happiness if on same continent as city with wonder, else +4
-            // 	// https://civilization.fandom.com/wiki/Michelangelo%27s_Chapel_(Civ1)
-            // 	bool hasChapel = !_game.WonderObsolete<MichelangelosChapel>()
-            // 			&& _game.GetPlayer(_city.Owner)
-            //          .Cities.Any(c => c.HasWonder<MichelangelosChapel>()
-            // 			&& c.ContinentId == _city.ContinentId);
-            // 	int chapelBonus = hasChapel ? 6 : 4;
-
-            // 	unhappyDelta += chapelBonus;
-
-            // 	return unhappyDelta;
-            // }
         }
 
         [Fact]
-        public void ApplyBuildingEffectsTests()
+        public void ApplyBuildingEffectsTestsWithShakespearesTheatre()
         {
-            Assert.Fail("Not implemented");
-            // protected internal void ApplyBuildingEffects(CitizenTypes ct)
-            // {
-            // 	if (_cityBuildings.HasWonder<ShakespearesTheatre>() && !_game.WonderObsolete<ShakespearesTheatre>())
-            // 	{
-            // 		// All unhappy become content, but only in this city.
-            // 		UnhappyToContent(ct.Citizens, ct.unhappy);
+            mockedCity.ReturnHasWonderValues(true);
+            mockedIGame.OnWonderObsoleteByType = (type) => false;
 
-            // 		ct.Wonders.Add(new ShakespearesTheatre());
+            var ct = new CitizenTypes
+            {
+                Citizens = new Citizen[5],
+                Wonders = []
+            };
+            testee.InitCitizens(ct.Citizens, 5, 0);
 
-            // 		// Continuing would not make sense, as all unhappy are already content
-            // 		return;
-            // 	}
+            testee.ApplyBuildingEffects(ct);
 
-            // 	int unhappyToContent = 0;
+            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
 
-            // 	if (_cityBuildings.HasBuilding<Temple>())
-            // 	{
-            // 		unhappyToContent++;
-            // 		if (_city.Player.HasAdvance<Mysticism>()) unhappyToContent <<= 1;
-            // 		if (_city.Player.HasWonderEffect<Oracle>())
-            // 		{
-            // 			unhappyToContent <<= 1;
-            // 			// CW: showing this wonder while processing it in this stage
-            // 			// would be confusing for the player to see
-            // 			// ct.Wonders.Add(new Oracle()); 
-            // 		}
+            Assert.Equal(0, unhappy);
+            Assert.Equal(5, content);
 
-            // 		ct.Buildings.Add(new Temple());
-            // 	}
-
-            // 	if (HasBachsCathedral())
-            // 	{
-            // 		unhappyToContent += 2;
-            // 		// CW: Same as above, don't show wonder here
-            // 		// ct.Wonders.Add(new JSBachsCathedral());
-            // 	}
-
-            // 	if (_cityBuildings.HasBuilding<Colosseum>())
-            // 	{
-            // 		unhappyToContent += 3;
-            // 		ct.Buildings.Add(new Colosseum());
-            // 	}
-
-            // 	unhappyToContent += CathedralDelta();
-
-            // 	if (unhappyToContent <= 0)
-            // 	{
-            // 		return;
-            // 	}
-
-            // 	UnhappyToContent(ct.Citizens, unhappyToContent);
-            // }
+            Assert.Single(ct.Wonders);
+            Assert.IsType<ShakespearesTheatre>(ct.Wonders[0]);
         }
 
         [Theory]
-        [InlineData(typeof(Democracy), 0, 5)] // not despot
+        [InlineData(false, false, 1)]
+        [InlineData(true, false, 2)]
+        [InlineData(true, true, 4)]
+        public void ApplyBuildingEffectsTestsWithTemple(
+            bool hasMysticism,
+            bool hasOracle,
+            int expectedContent)
+        {
+            mockedCity.Size = 5;
+            mockedCity.ReturnHasWonderValues(false);
+            mockedCity.ReturnHasBuildingValues(true, false); // Temple
+
+            mockedCity.MockPlayer = new MockPlayer()
+                .withAdvance<Mysticism>(hasMysticism)
+                .withWonderEffect<Oracle>(hasOracle);
+
+            var ct = new CitizenTypes
+            {
+                Citizens = new Citizen[5],
+                Buildings = [],
+                Wonders = []
+            };
+
+            testee.InitCitizens(ct.Citizens, 1, 4); // 1 content, 4 unhappy
+
+            testee.ApplyBuildingEffects(ct);
+
+            Assert.Single(ct.Buildings);
+            Assert.IsType<Temple>(ct.Buildings[0]);
+
+            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
+
+            Assert.Equal(0, happy);
+            Assert.Equal(0, redShirt);
+            Assert.Equal(mockedCity.Size - content, unhappy);
+            Assert.Equal(expectedContent + 1, content);
+        }
+
+        [Fact]
+        public void ApplyBuildingEffectsTests_Cathedrals()
+        {
+            mockedCity.Size = 5;
+            mockedCity.ReturnHasWonderValues(false);
+            mockedCity.ReturnHasBuildingValues(false, false); // Temple and Colosseum
+            testee.BachsCathedral = true;
+            testee.CathedralDeltaValue = 2;
+
+            var ct = new CitizenTypes
+            {
+                Citizens = new Citizen[5],
+                Buildings = [],
+                Wonders = []
+            };
+            testee.InitCitizens(ct.Citizens, 1, 4); // 1 content, 4 unhappy
+
+            testee.ApplyBuildingEffects(ct);
+
+            Assert.Empty(ct.Buildings);
+
+            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
+            Assert.Equal(0, happy);
+            Assert.Equal(0, redShirt);
+            Assert.Equal(0, unhappy);
+            Assert.Equal(1 + 4, content); // 1 initial + Bach (2) + Cathedral delta (2)
+        }
+
+        [Fact]
+        public void ApplyBuildingEffectsTests_Colosseum()
+        {
+            mockedCity.Size = 5;
+            mockedCity.ReturnHasWonderValues(false);
+            mockedCity.ReturnHasBuildingValues(false, true); // Colosseum
+            testee.BachsCathedral = false;
+            testee.CathedralDeltaValue = 0;
+
+            var ct = new CitizenTypes
+            {
+                Citizens = new Citizen[5],
+                Buildings = [],
+                Wonders = []
+            };
+            testee.InitCitizens(ct.Citizens, 1, 4);
+
+            testee.ApplyBuildingEffects(ct);
+
+            Assert.Single(ct.Buildings);
+            Assert.IsType<Colosseum>(ct.Buildings[0]);
+
+            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
+
+            Assert.Equal(0, happy);
+            Assert.Equal(0, redShirt);
+            Assert.Equal(1, unhappy);
+            Assert.Equal(4, content); // 1 initial + 3 from Colosseum
+        }
+
+        [Fact]
+        public void ApplyBuildingEffectsTests_NoEffects()
+        {
+            mockedCity.Size = 5;
+            mockedCity.ReturnHasWonderValues(false);
+            mockedCity.ReturnHasBuildingValues(false, false); // no Temple or Colosseum
+            testee.BachsCathedral = false;
+            testee.CathedralDeltaValue = 0;
+
+            var ct = new CitizenTypes
+            {
+                Citizens = new Citizen[5],
+                Buildings = [],
+                Wonders = []
+            };
+            testee.InitCitizens(ct.Citizens, 1, 4);
+
+            testee.ApplyBuildingEffects(ct);
+
+            Assert.Empty(ct.Buildings);
+            Assert.Empty(ct.Wonders);
+            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
+
+            Assert.Equal(0, happy);
+            Assert.Equal(0, redShirt);
+            Assert.Equal(4, unhappy);
+            Assert.Equal(1, content); // no change
+        }
+
+        [Theory]
+        [InlineData(typeof(CivOne.Governments.Democracy), 0, 5)] // not despot
         [InlineData(typeof(Anarchy), 1, 4)]
         [InlineData(typeof(Anarchy), 2, 3)]
         [InlineData(typeof(Anarchy), 3, 2)]
@@ -630,13 +705,13 @@ namespace CivOne.UnitTests
         [Theory]
         [InlineData(typeof(Anarchy), 0, 0)] // not democratic
         [InlineData(typeof(Republic), 0, 0)] // no units not in city
-        [InlineData(typeof(Democracy), 0, 0)] // no units not in city
+        [InlineData(typeof(CivOne.Governments.Democracy), 0, 0)] // no units not in city
         [InlineData(typeof(Anarchy), 1, 0)] // not democratic
         [InlineData(typeof(Republic), 1, 1)] // 1 unit
         [InlineData(typeof(Republic), 2, 2)] // 2 units
-        [InlineData(typeof(Democracy), 1, 2)] // 2 units
-        [InlineData(typeof(Democracy), 2, 4)] // 2 units
-        [InlineData(typeof(Democracy), 3, 5)] // 3 units with max city size 5
+        [InlineData(typeof(CivOne.Governments.Democracy), 1, 2)] // 2 units
+        [InlineData(typeof(CivOne.Governments.Democracy), 2, 4)] // 2 units
+        [InlineData(typeof(CivOne.Governments.Democracy), 3, 5)] // 3 units with max city size 5
 
         public void ApplyDemocracyEffectsTests(
             Type government,
@@ -758,40 +833,78 @@ namespace CivOne.UnitTests
         }
 
         [Theory]
-        [InlineData(2, 2)]
-        public void CalculateCityStatsTests(int initialUnhappyCount, int initialContent)
+        //
+        // difficulty, size, specialists, expectedContent, expectedUnhappy
+        //
+        [InlineData(0, 5, 0, 5, 0)]  // maximaler Content bei niedrigster Difficulty
+        [InlineData(0, 5, 3, 2, 0)]  // nur 1 Worker, hoher ContentLimit
+        [InlineData(3, 5, 1, 2, 2)]  // mittlere Difficulty, gemischter Case
+        [InlineData(5, 5, 3, 0, 2)]  // negativer contentLimit -> content=0
+        [InlineData(2, 3, 0, 3, 0)]  // contentLimit<workersAvailable
+        [InlineData(4, 3, 3, 0, 0)]  // alle Spezialisten -> keine Workers, alles 0
+        public void CalculateCityStats_AllCases(
+            byte difficulty,
+            byte citySize,
+            int specialists,
+            int expectedContent,
+            int expectedUnhappy)
         {
-            Assert.Fail("Not implemented");
-            // protected internal (int initialUnhappyCount, int initialContent)
-            // 	CalculateCityStats(CitizenTypes ct, IGame _game)
-            // {
-            // 	// max difficulty = 4|5, easiest = 0
-            // 	// int difficulty = 4; //Debug only
-            // 	int difficulty = _game.Difficulty;
-            // 	int specialists = ct.elvis + ct.einstein + ct.taxman;
-            // 	int workersAvailable = _city.Size - specialists;
+            // Arrange
+            mockedIGame.Difficulty = difficulty;
+            mockedCity.Size = citySize;
 
-            // 	// https://civfanatics.com/civ1/difficulty/
-            // 	// diff 0 = 6 content, all else unhappy
-            // 	// diff 1 = 5 content, all else unhappy
-            // 	// diff 2 = 4 content, all else unhappy
-            // 	// diff 3 = 3 content, all else unhappy
-            // 	// diff 4 = 2 content, all else unhappy
-            // 	// diff 5 = 1 content, all else unhappy
-            // 	int contentLimit = 6 - difficulty - specialists;
+            var ct = new CitizenTypes
+            {
+                Citizens = new Citizen[citySize],
+                // Spezialisten direkt setzen
+                elvis = specialists >= 1 ? 1 : 0,
+                einstein = specialists >= 2 ? 1 : 0,
+                taxman = specialists >= 3 ? 1 : 0
+            };
 
-            // 	// size 4, 0 ent → specialists=0, available=4 → contentLimit=3 → 3c + 1u
-            // 	// size 4, 1 ent → specialists=1, available=3 → 2c + 1u + 1ent
-            // 	// size 4, 2 ent → specialists=2, available=2 → 1c + 1u + 2ent
-            // 	// size 4, 3 ent → specialists=3, available=1 → 0c + 1u + 3ent
-            // 	// Anzahl der zufriedenen Bürger (content), aber niemals größer als die verfügbare Anzahl
-            // 	int initialContent = Math.Min(workersAvailable, contentLimit);
+            // This test only supports up to 3 specialists.
+            Assert.InRange(specialists, 0, 3);
 
-            // 	int initialUnhappyCount = Math.Max(0, workersAvailable - initialContent);
+            // Act
+            var (initialUnhappyCount, initialContent) = testee.CalculateCityStats(ct);
 
-            // 	return (initialUnhappyCount, initialContent);
-            // }
+            // Assert
+            Assert.Equal(expectedContent, initialContent);
+            Assert.Equal(expectedUnhappy, initialUnhappyCount);
         }
+
+
+
+
+        // protected internal (int initialUnhappyCount, int initialContent)
+        // 	CalculateCityStats(CitizenTypes ct)
+        // {
+        // 	// max difficulty = 4|5, easiest = 0
+        // 	// int difficulty = 4; //Debug only
+        // 	int difficulty = _game.Difficulty;
+        // 	int specialists = ct.elvis + ct.einstein + ct.taxman;
+        // 	int workersAvailable = _city.Size - specialists;
+
+        // 	// https://civfanatics.com/civ1/difficulty/
+        // 	// diff 0 = 6 content, all else unhappy
+        // 	// diff 1 = 5 content, all else unhappy
+        // 	// diff 2 = 4 content, all else unhappy
+        // 	// diff 3 = 3 content, all else unhappy
+        // 	// diff 4 = 2 content, all else unhappy
+        // 	// diff 5 = 1 content, all else unhappy
+        // 	int contentLimit = 6 - difficulty - specialists;
+
+        // 	// size 4, 0 ent → specialists=0, available=4 → contentLimit=3 → 3c + 1u
+        // 	// size 4, 1 ent → specialists=1, available=3 → 2c + 1u + 1ent
+        // 	// size 4, 2 ent → specialists=2, available=2 → 1c + 1u + 2ent
+        // 	// size 4, 3 ent → specialists=3, available=1 → 0c + 1u + 3ent
+        // 	// Anzahl der zufriedenen Bürger (content), aber niemals größer als die verfügbare Anzahl
+        // 	int initialContent = Math.Min(workersAvailable, contentLimit);
+
+        // 	int initialUnhappyCount = Math.Max(0, workersAvailable - initialContent);
+
+        // 	return (initialUnhappyCount, initialContent);
+        // }
 
         [Fact]
         public void GetCitizenTypesTests()
@@ -924,7 +1037,7 @@ namespace CivOne.UnitTests
                     ?? throw new NotImplementedException("WonderObsolete(IWonder) not implemented by delegate.");
         }
 
-        public class MockedICity : 
+        public class MockedICity :
             // ICityBasic, ICityBuildings, ICityOnContinent
             ICity
         {
@@ -935,7 +1048,7 @@ namespace CivOne.UnitTests
 
 
             public ITile Tile { get; set; } = null;
-            
+
             public int ContinentId { get; set; } = 0;
             public Player Player => _player;
             private Player _player = null;
@@ -987,11 +1100,11 @@ namespace CivOne.UnitTests
 
             public bool HasWonder<T>() where T : IWonder => _hasWonder.Next();
 
-			public void NewTurn()
-			{
-				throw new NotImplementedException();
-			}
-		}
+            public void NewTurn()
+            {
+                throw new NotImplementedException();
+            }
+        }
 
         partial class MockPlayer : Player
         {
@@ -1025,6 +1138,56 @@ namespace CivOne.UnitTests
                 this._cities = new City[count];
                 return this;
             }
+
+            private IAdvance[] _advances = Array.Empty<IAdvance>();
+            public MockPlayer withAdvances(params IAdvance[] advances)
+            {
+                this._advances = advances;
+                return this;
+            }
+            public MockPlayer withAdvance<TAdvance>(bool add = true)
+                where TAdvance : IAdvance, new()
+            {
+                if (add)
+                {
+                    var advancesList = _advances.ToList();
+                    advancesList.Add(new TAdvance());
+                    _advances = advancesList.ToArray();
+                }
+                else
+                {
+                    _advances = _advances
+                        .Where(a => a.GetType() != typeof(TAdvance))
+                        .ToArray();
+                }
+                return this;
+            }
+
+            public override bool HasAdvance<T>()
+                 => _advances.Any(a => a.GetType() == typeof(T));
+
+            public override bool HasAdvance(IAdvance advance)
+            {
+                return _advances.Any(a => a.GetType() == advance.GetType());
+            }
+
+            private HashSet<Type> _wonderEffects = new HashSet<Type>();
+            public MockPlayer withWonderEffect<T>(bool add = true)
+                where T : IWonder, new()
+            {
+                if (add)
+                {
+                    _wonderEffects.Add(typeof(T));
+                }
+                else
+                {
+                    _wonderEffects.Remove(typeof(T));
+                }
+                return this;
+            }
+            public override bool HasWonderEffect<T>()
+                 => _wonderEffects.Contains(typeof(T));
+
             public MockPlayer withGovernment(IGovernment government)
             {
                 this.Government = government;
@@ -1035,10 +1198,10 @@ namespace CivOne.UnitTests
                 IGovernment gov = government switch
                 {
                     var t when t == typeof(Republic) => new Republic(),
-                    var t when t == typeof(Democracy) => new Democracy(),
+                    var t when t == typeof(CivOne.Governments.Democracy) => new CivOne.Governments.Democracy(),
                     var t when t == typeof(Anarchy) => new Anarchy(),
                     var t when t == typeof(Despotism) => new Despotism(),
-                    var t when t == typeof(Monarchy) => new Monarchy(),
+                    var t when t == typeof(CivOne.Governments.Monarchy) => new CivOne.Governments.Monarchy(),
                     _ => throw new NotImplementedException($"Government type {government} not implemented in MockPlayer"),
                 };
                 this.Government = gov;
@@ -1094,12 +1257,12 @@ namespace CivOne.UnitTests
         }
 
         class MockedIMap : IMap
-		{
+        {
             private readonly List<ICityOnContinent> _continentCities = new();
-	    	public IEnumerable<ICityOnContinent> ContinentCities(int continentId)
-			{
-				return [.._continentCities.Where(city => city.ContinentId == continentId)];
-			}
+            public IEnumerable<ICityOnContinent> ContinentCities(int continentId)
+            {
+                return [.. _continentCities.Where(city => city.ContinentId == continentId)];
+            }
 
             public MockedIMap ReturnContinentCitiesValues(params ICityOnContinent[] values)
             {
@@ -1110,6 +1273,36 @@ namespace CivOne.UnitTests
             }
         }
 
+        class CityCitizenServiceImpl2 : CityCitizenServiceImpl
+        {
+            public CityCitizenServiceImpl2(ICityBasic city,
+                    ICityBuildings cityBuildings,
+                    IGameCitizenDependency game,
+                    List<Citizen> specialists,
+                    IMap map) : base(city, cityBuildings, game, specialists, map)
+            {
+            }
 
+            public bool? BachsCathedral { get; set; } = null;
+
+            protected override internal bool HasBachsCathedral()
+            {
+                if (BachsCathedral.HasValue)
+                {
+                    return BachsCathedral.Value;
+                }
+                return base.HasBachsCathedral();
+            }
+
+            public int? CathedralDeltaValue { get; set; } = null;
+            internal override int CathedralDelta()
+            {
+                if (CathedralDeltaValue.HasValue)
+                {
+                    return CathedralDeltaValue.Value;
+                }
+                return base.CathedralDelta();
+            }
+        }
     }
 }
