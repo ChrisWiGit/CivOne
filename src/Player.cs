@@ -175,9 +175,9 @@ namespace CivOne
 
 		public IAdvance[] Advances => _advances.Select(a => Common.Advances.First(x => x.Id == a)).ToArray();
 		
-		public bool HasAdvance<T>() where T : IAdvance => Advances.Any(a => a is T);
+		public virtual bool HasAdvance<T>() where T : IAdvance => Advances.Any(a => a is T);
 
-		public bool HasAdvance(IAdvance advance) => (advance == null || Advances.Any(a => a.Id == advance.Id));
+		public virtual bool HasAdvance(IAdvance advance) => (advance == null || Advances.Any(a => a.Id == advance.Id));
 
 		public Player[] Embassies => _embassies.Select(e => Game.Players.FirstOrDefault(p => e == Game.PlayerNumber(p))).Where(p => p != null).ToArray();
 
@@ -276,7 +276,7 @@ namespace CivOne
 			return false;
 		}
 
-		public bool HasWonderEffect<T>() where T : IWonder, new() => HasWonder<T>() && !Game.WonderObsolete<T>();
+		public virtual bool HasWonderEffect<T>() where T : IWonder, new() => HasWonder<T>() && !Game.WonderObsolete<T>();
 		
 		public bool HasWonder<T>() where T : IWonder => Cities.Any(c => c.HasWonder<T>());
 

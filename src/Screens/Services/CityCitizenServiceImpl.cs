@@ -178,7 +178,7 @@ namespace CivOne.Screens.Services
 			// size 4, 2 ent → specialists=2, available=2 → 1c + 1u + 2ent
 			// size 4, 3 ent → specialists=3, available=1 → 0c + 1u + 3ent
 			// Anzahl der zufriedenen Bürger (content), aber niemals größer als die verfügbare Anzahl
-			int initialContent = Math.Min(workersAvailable, contentLimit);
+			int initialContent = Math.Max(0, Math.Min(workersAvailable, contentLimit));
 
 			int initialUnhappyCount = Math.Max(0, workersAvailable - initialContent);
 
@@ -312,7 +312,8 @@ namespace CivOne.Screens.Services
 
 		protected internal void ApplyBuildingEffects(CitizenTypes ct)
 		{
-			if (_cityBuildings.HasWonder<ShakespearesTheatre>() && !_game.WonderObsolete<ShakespearesTheatre>())
+			if (_cityBuildings.HasWonder<ShakespearesTheatre>() && 
+				!_game.WonderObsolete<ShakespearesTheatre>())
 			{
 				// All unhappy become content, but only in this city.
 				UnhappyToContent(ct.Citizens, ct.unhappy);
@@ -363,7 +364,7 @@ namespace CivOne.Screens.Services
 			UnhappyToContent(ct.Citizens, unhappyToContent);
 		}
 
-		internal int CathedralDelta()
+		internal virtual int CathedralDelta()
 		{
 			if (!_cityBuildings.HasBuilding<Cathedral>()) return 0;
 
@@ -383,7 +384,7 @@ namespace CivOne.Screens.Services
 			return unhappyDelta;
 		}
 
-		protected internal bool HasBachsCathedral()
+		protected virtual internal bool HasBachsCathedral()
 		{
 			DebugService.Assert(_city.Tile != null, "City has no tile assigned.");
 			return _map
