@@ -425,6 +425,8 @@ namespace CivOne.Screens.Services
 
 			var count = target.Length - _specialists.Count;
 
+			int upgradedToHappyCount = 0;
+
 			// Steps for each citizen, until happyUpgrades run out:
 			// 1. unhappy to content if possible then content to happy
 			// 2. go to next citizen and repeat 1.
@@ -436,6 +438,7 @@ namespace CivOne.Screens.Services
 
 				if (IsHappy(target[i]))
 				{
+					upgradedToHappyCount++;
 					continue;
 				}
 				if (happyUpgrades <= 0)
@@ -459,7 +462,15 @@ namespace CivOne.Screens.Services
 				// content -> happy
 				target[i] = UpgradeCitizen(target[i]);
 				happyUpgrades--;
+				upgradedToHappyCount++;
 			}
+
+			if (upgradedToHappyCount == 0)
+			{
+				return;
+			}
+
+			UnhappyToContent(target, upgradedToHappyCount);
 		}
 
 		protected internal void InitCitizens(Citizen[] target, int content, int unhappy)

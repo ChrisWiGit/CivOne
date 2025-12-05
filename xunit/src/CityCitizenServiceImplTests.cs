@@ -7,8 +7,6 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-// Author: Kevin Routley : July, 2019
-
 using CivOne.src;
 using System.Linq;
 using CivOne.Buildings;
@@ -41,7 +39,6 @@ namespace CivOne.UnitTests
     public partial class CityCitizenServiceImplTests : TestsBase
     {
         CityCitizenServiceImplShims testee;
-        City city;
         List<Citizen> mockedSpecialists;
 
         MockedGame mockedIGame;
@@ -72,7 +69,7 @@ namespace CivOne.UnitTests
             testee = new CityCitizenServiceImplShims(
                 mockedCity,
                 mockedCity,
-                mockedIGame,//Game.Instance,
+                mockedIGame,
                 mockedSpecialists,
                 mockedIMap
             );
@@ -81,7 +78,6 @@ namespace CivOne.UnitTests
         public override void AfterEach()
         {
             testee = null;
-            city = null;
         }
 
         [Fact]
@@ -102,10 +98,9 @@ namespace CivOne.UnitTests
                 .withGovernmentType(typeof(Anarchy))
                 .withWonderEffect<HangingGardens>(true);
 
-            mockedCity.MockUnits = [new MockedUnit()
-                .WithHome(mockedCity)];
             mockedCity.Tile = mockedGrassland;
-            mockedGrassland.WithUnits([.. mockedCity.MockUnits]);
+            mockedGrassland.WithUnits(
+                [new MockedUnit().WithHome(mockedCity)]);
 
             mockedCity.ReturnHasWonderValues(false);
             mockedCity.ReturnHasBuildingValues(true, false); // Temple to test building effects
@@ -141,10 +136,9 @@ namespace CivOne.UnitTests
                 .withGovernmentType(typeof(Anarchy))
                 .withWonderEffect<HangingGardens>(true);
 
-            mockedCity.MockUnits = [new MockedUnit()
-                .WithHome(mockedCity)];
             mockedCity.Tile = mockedGrassland;
-            mockedGrassland.WithUnits([.. mockedCity.MockUnits]);
+            mockedGrassland.WithUnits([new MockedUnit()
+                .WithHome(mockedCity)]);
 
             mockedCity.ReturnHasWonderValues(false);
             mockedCity.ReturnHasBuildingValues(true, false); // Temple to test building effects
@@ -807,7 +801,6 @@ namespace CivOne.UnitTests
                 .WithHome(mockedCity);
                 units.Add(unit);
             }
-            mockedCity.MockUnits = [.. units];
             mockedCity.Tile = mockedGrassland;
             mockedGrassland.WithUnits([.. units]);
 
