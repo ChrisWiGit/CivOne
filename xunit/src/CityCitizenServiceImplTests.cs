@@ -17,13 +17,10 @@ using CivOne.Screens.Services;
 using CivOne.Enums;
 using System.Collections.Generic;
 using CivOne.Wonders;
-using System.Drawing;
-using CivOne.Tiles;
 using CivOne.Units;
 using System;
 using CivOne.Graphics.Sprites;
 using CivOne.Governments;
-using CivOne.UserInterface;
 using CivOne.Advances;
 
 namespace CivOne.UnitTests
@@ -41,40 +38,38 @@ namespace CivOne.UnitTests
     /// The final results are displayed in the 'header' of the City manager
     /// view and dictate if a city goes into disorder or celebration.
     /// </summary>
-    public class CityCitizenServiceImplTests : TestsBase
+    public partial class CityCitizenServiceImplTests : TestsBase
     {
-        CityCitizenServiceImpl2 testee;
+        CityCitizenServiceImplShims testee;
         City city;
         List<Citizen> mockedSpecialists;
 
-        MockedIGame mockedIGame;
-        MockedICity mockedCity;
+        MockedGame mockedIGame;
+        MockedCity mockedCity;
 
-        MockedIMap mockedIMap;
+        MockedMap mockedIMap;
 
-        MockedGrassland mockedGrassland = new();
+        MockedGrassland mockedGrassland;
         public override void BeforeEach()
         {
-            // var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            // city = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
-
             mockedSpecialists = [];
+            mockedGrassland = new MockedGrassland();
 
-            mockedCity = new MockedICity()
+            mockedCity = new MockedCity()
             {
                 Size = 1,
                 Tile = mockedGrassland
             };
 
-            mockedIGame = new MockedIGame()
+            mockedIGame = new MockedGame()
             {
                 Difficulty = 4,
                 MaxDifficulty = 5,
                 GameTurn = 1
             };
-            mockedIMap = new MockedIMap();
+            mockedIMap = new MockedMap();
 
-            testee = new CityCitizenServiceImpl2(
+            testee = new CityCitizenServiceImplShims(
                 mockedCity,
                 mockedCity,
                 mockedIGame,//Game.Instance,
@@ -88,27 +83,168 @@ namespace CivOne.UnitTests
             testee = null;
             city = null;
         }
-        /// <summary>
-        /// Turn one citizen into an entertainer. This is done
-        /// by using SetResourceTile() to toggle the first resource
-        /// generating tile [like clicking on a resource tile in
-        /// the City Manager map].
-        /// </summary>
-        /// <param name="acity"></param>
-        private void MakeOneEntertainer(City acity)
-        {
-            var tiles = acity.ResourceTiles.ToArray();
-            foreach (var tile in tiles)
-            {
-                if (tile.X != acity.X || tile.Y != acity.Y)
-                {
-                    acity.SetResourceTile(tile);
-                    acity.Citizens.ToArray(); // TODO fire-eggs used to force side effect of updating specialists counts
-                    return;
-                }
-            }
 
-            Assert.Fail("failed to make entertainer");
+        [Fact]
+        public void GetCitizenTypesTests()
+        {
+            // no emperor effects
+            mockedIGame.Difficulty = 3;
+
+            mockedCity.Size = 15;
+            mockedCity.Entertainers = 1;
+            mockedCity.Scientists = 1;
+            mockedCity.Taxmen = 1;
+            mockedCity.Luxuries = 2;
+
+            mockedSpecialists.AddRange([Citizen.Entertainer, Citizen.Scientist, Citizen.Taxman]);
+
+            mockedCity.MockPlayer = new MockedPlayer()
+                .withGovernmentType(typeof(Anarchy))
+                .withWonderEffect<HangingGardens>(true);
+
+            mockedCity.MockUnits = [new MockedUnit()
+                .WithHome(mockedCity)];
+            mockedCity.Tile = mockedGrassland;
+            mockedGrassland.WithUnits([.. mockedCity.MockUnits]);
+
+            mockedCity.ReturnHasWonderValues(false);
+            mockedCity.ReturnHasBuildingValues(true, false); // Temple to test building effects
+            mockedIGame.OnWonderObsoleteByType = (type) => false;
+
+
+            var actual = testee.GetCitizenTypes();
+
+            AssertCitizenTypes(actual,
+                expectedHappy: 1,
+                expectedContent: 2,
+                expectedUnhappy: 9,
+                expectedRedShirt: 0,
+                expectedElvis: 1,
+                expectedEinstein: 1,
+                expectedTaxman: 1);
+        }
+
+        [Fact]
+        public void EnumerateCitizensTests()
+        {
+            mockedIGame.Difficulty = 3;
+
+            mockedCity.Size = 15;
+            mockedCity.Entertainers = 1;
+            mockedCity.Scientists = 1;
+            mockedCity.Taxmen = 1;
+            mockedCity.Luxuries = 2;
+
+            mockedSpecialists.AddRange([Citizen.Entertainer, Citizen.Scientist, Citizen.Taxman]);
+
+            mockedCity.MockPlayer = new MockedPlayer()
+                .withGovernmentType(typeof(Anarchy))
+                .withWonderEffect<HangingGardens>(true);
+
+            mockedCity.MockUnits = [new MockedUnit()
+                .WithHome(mockedCity)];
+            mockedCity.Tile = mockedGrassland;
+            mockedGrassland.WithUnits([.. mockedCity.MockUnits]);
+
+            mockedCity.ReturnHasWonderValues(false);
+            mockedCity.ReturnHasBuildingValues(true, false); // Temple to test building effects
+            mockedIGame.OnWonderObsoleteByType = (type) => false;
+
+
+            var enumeration = testee.EnumerateCitizens().GetEnumerator();
+
+            Assert.True(enumeration.MoveNext());
+            var stage1 = enumeration.Current;
+
+            AssertCitizenTypes(stage1,
+                expectedHappy: 0,
+                expectedContent: 0,
+                expectedUnhappy: 12,
+                expectedRedShirt: 0,
+                expectedElvis: 1,
+                expectedEinstein: 1,
+                expectedTaxman: 1);
+
+
+            Assert.True(enumeration.MoveNext());
+            var stage2 = enumeration.Current;
+
+            AssertCitizenTypes(stage2,
+                expectedHappy: 0,
+                expectedContent: 1,
+                expectedUnhappy: 11,
+                expectedRedShirt: 0,
+                expectedElvis: 1,
+                expectedEinstein: 1,
+                expectedTaxman: 1);
+
+            Assert.True(enumeration.MoveNext());
+            var stage3 = enumeration.Current;
+
+            AssertCitizenTypes(stage3,
+                expectedHappy: 0,
+                expectedContent: 2,
+                expectedUnhappy: 10,
+                expectedRedShirt: 0,
+                expectedElvis: 1,
+                expectedEinstein: 1,
+                expectedTaxman: 1);
+            Assert.Single(stage3.Buildings);
+            Assert.IsType<Temple>(stage3.Buildings[0]);
+
+            Assert.True(enumeration.MoveNext());
+            var stage4 = enumeration.Current;
+
+            Assert.Single(stage4.MarshallLawUnits);
+            AssertCitizenTypes(stage4,
+                expectedHappy: 0,
+                expectedContent: 3,
+                expectedUnhappy: 9,
+                expectedRedShirt: 0,
+                expectedElvis: 1,
+                expectedEinstein: 1,
+                expectedTaxman: 1);
+
+            Assert.True(enumeration.MoveNext());
+            var stage5 = enumeration.Current;
+
+            AssertCitizenTypes(stage5,
+                expectedHappy: 1,
+                expectedContent: 2,
+                expectedUnhappy: 9,
+                expectedRedShirt: 0,
+                expectedElvis: 1,
+                expectedEinstein: 1,
+                expectedTaxman: 1);
+        }
+
+        private void AssertCitizenTypes(
+            CitizenTypes ct,
+            int expectedHappy,
+            int expectedContent,
+            int expectedUnhappy,
+            int expectedRedShirt,
+            int expectedElvis,
+            int expectedEinstein,
+            int expectedTaxman)
+        {
+            Assert.Equal(ct.happy, expectedHappy);
+            Assert.Equal(ct.content, expectedContent);
+            Assert.Equal(ct.unhappy, expectedUnhappy);
+            Assert.Equal(ct.redShirt, expectedRedShirt);
+            Assert.Equal(ct.elvis, expectedElvis);
+            Assert.Equal(ct.einstein, expectedEinstein);
+            Assert.Equal(ct.taxman, expectedTaxman);
+            
+            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct. Citizens);
+
+            Assert.Equal(expectedHappy, happy);
+            Assert.Equal(expectedContent, content);
+            Assert.Equal(expectedUnhappy, unhappy);
+            Assert.Equal(expectedRedShirt, redShirt);
+            Assert.Equal(expectedElvis, ct.elvis);
+            Assert.Equal(expectedEinstein, ct.einstein);
+            Assert.Equal(expectedTaxman, ct.taxman);
         }
 
         [Fact]
@@ -435,19 +571,19 @@ namespace CivOne.UnitTests
 
             mockedIMap.ReturnContinentCitiesValues(
                 [
-                    new MockedICity()
+                    new MockedCity()
                     {
                         Owner = mockedCity.Owner,
                         ContinentId = 1
                     }
                     .ReturnHasWonderValues(false, false, false, false),
-                    new MockedICity()
+                    new MockedCity()
                     {
                         Owner = mockedCity.Owner,
                         ContinentId = 2
                     }
                     .ReturnHasWonderValues(true, true, true, true),
-                    new MockedICity()
+                    new MockedCity()
                     {
                         Owner = 255,
                         ContinentId = 3
@@ -479,14 +615,14 @@ namespace CivOne.UnitTests
 
             mockedIGame.OnGetPlayer = (owner) =>
             {
-                var player = new MockPlayer();
+                var player = new MockedPlayer();
                 player
                     .withCitiesInterface([
-                        new MockedICity()
+                        new MockedCity()
                         .ReturnHasWonderValues(
                                 hasMichelangelosChapel)
                         .WithContinentId(mockedCity.ContinentId),
-                        new MockedICity()
+                        new MockedCity()
                         .ReturnHasWonderValues(
                                 true)
                         .WithContinentId(mockedCity.ContinentId+1)
@@ -534,7 +670,7 @@ namespace CivOne.UnitTests
             mockedCity.ReturnHasWonderValues(false);
             mockedCity.ReturnHasBuildingValues(true, false); // Temple
 
-            mockedCity.MockPlayer = new MockPlayer()
+            mockedCity.MockPlayer = new MockedPlayer()
                 .withAdvance<Mysticism>(hasMysticism)
                 .withWonderEffect<Oracle>(hasOracle);
 
@@ -661,7 +797,7 @@ namespace CivOne.UnitTests
             int expectedUnhappy)
         {
             mockedCity.Size = 5;
-            var player = new MockPlayer().withGovernmentType(government);
+            var player = new MockedPlayer().withGovernmentType(government);
             mockedCity.MockPlayer = player;
 
             var units = new List<IUnit>();
@@ -720,7 +856,7 @@ namespace CivOne.UnitTests
         )
         {
             mockedCity.Size = 5;
-            var player = new MockPlayer().withGovernmentType(government);
+            var player = new MockedPlayer().withGovernmentType(government);
             mockedCity.MockPlayer = player;
             mockedIGame.OnGetPlayer = (playerId) =>
             {
@@ -814,7 +950,7 @@ namespace CivOne.UnitTests
             //  NumberOfRedShirts(totalCities)
             mockedIGame.OnGetPlayer = (playerId) =>
             {
-                return new MockPlayer().withCitiesCount(totalCities);
+                return new MockedPlayer().withCitiesCount(totalCities);
             };
             mockedIGame.Difficulty = gameDifficulty;
             mockedCity.Size = (byte)citySize;
@@ -873,409 +1009,9 @@ namespace CivOne.UnitTests
             Assert.Equal(expectedUnhappy, initialUnhappyCount);
         }
 
-
-
-
-        // protected internal (int initialUnhappyCount, int initialContent)
-        // 	CalculateCityStats(CitizenTypes ct)
-        // {
-        // 	// max difficulty = 4|5, easiest = 0
-        // 	// int difficulty = 4; //Debug only
-        // 	int difficulty = _game.Difficulty;
-        // 	int specialists = ct.elvis + ct.einstein + ct.taxman;
-        // 	int workersAvailable = _city.Size - specialists;
-
-        // 	// https://civfanatics.com/civ1/difficulty/
-        // 	// diff 0 = 6 content, all else unhappy
-        // 	// diff 1 = 5 content, all else unhappy
-        // 	// diff 2 = 4 content, all else unhappy
-        // 	// diff 3 = 3 content, all else unhappy
-        // 	// diff 4 = 2 content, all else unhappy
-        // 	// diff 5 = 1 content, all else unhappy
-        // 	int contentLimit = 6 - difficulty - specialists;
-
-        // 	// size 4, 0 ent → specialists=0, available=4 → contentLimit=3 → 3c + 1u
-        // 	// size 4, 1 ent → specialists=1, available=3 → 2c + 1u + 1ent
-        // 	// size 4, 2 ent → specialists=2, available=2 → 1c + 1u + 2ent
-        // 	// size 4, 3 ent → specialists=3, available=1 → 0c + 1u + 3ent
-        // 	// Anzahl der zufriedenen Bürger (content), aber niemals größer als die verfügbare Anzahl
-        // 	int initialContent = Math.Min(workersAvailable, contentLimit);
-
-        // 	int initialUnhappyCount = Math.Max(0, workersAvailable - initialContent);
-
-        // 	return (initialUnhappyCount, initialContent);
-        // }
-
-        [Fact]
-        public void GetCitizenTypesTests()
+        class CityCitizenServiceImplShims : CityCitizenServiceImpl
         {
-            Assert.Fail("Not implemented");
-            //   public CitizenTypes GetCitizenTypes()
-            // {
-            // 	DebugService.Assert(_specialists.Count <= _city.Size);
-            // 	CitizenTypes ct = CreateCitizenTypes();
-
-            // 	(int initialUnhappyCount, int initialContent) = CalculateCityStats(ct, _game);
-
-            // 	// Stage 1: basic content/unhappy
-            // 	ct = StageBasic(ct, initialContent, initialUnhappyCount);
-
-            // 	ApplyEmperorEffects(ct);
-
-            // 	// Stage 2: impact of luxuries: content->happy; unhappy->content and then content->happy
-            // 	int happyUpgrades = (int)Math.Floor((double)_city.Luxuries / 2);
-            // 	UpgradeCitizens(ct.Citizens, happyUpgrades);
-
-
-            // 	// Stage 3: Building effects
-            // 	ApplyBuildingEffects(ct);
-
-            // 	// Stage 4: martial law
-            // 	ApplyMartialLaw(ct);
-            // 	ApplyDemocracyEffects(ct, initialContent);
-
-            // 	//Stage 5: wonder effects
-            // 	ApplyWonderEffects(ct);
-            // 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
-
-            // 	DebugService.Assert(ct.Sum() == _city.Size);
-            // 	DebugService.Assert(ct.Valid());
-
-            // 	return ct;
-            // }
-        }
-
-        [Fact]
-        public void EnumerateCitizensTests()
-        {
-            Assert.Fail("Not implemented");
-            //   public IEnumerable<CitizenTypes> EnumerateCitizens()
-            // {
-            // 	DebugService.Assert(_specialists.Count <= _city.Size);
-            // 	CitizenTypes ct = CreateCitizenTypes();
-
-            // 	(int initialUnhappyCount, int initialContent) = CalculateCityStats(ct, _game);
-
-            // 	// Stage 1: basic content/unhappy
-            // 	ct = StageBasic(ct, initialContent, initialUnhappyCount);
-
-            // 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
-
-            // 	DebugService.Assert(ct.Sum() == _city.Size);
-            // 	DebugService.Assert(ct.Valid());
-
-            // 	yield return ct;
-
-            // 	// Stage 2: impact of luxuries: content->happy; unhappy->content and then content->happy
-            // 	// entertainers produce these luxury effects, but also marketplace, bank and luxury trade settings.
-            // 	int happyUpgrades = (int)Math.Floor((double)_city.Luxuries / 2);
-            // 	UpgradeCitizens(ct.Citizens, happyUpgrades);
-
-            // 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
-
-            // 	DebugService.Assert(ct.Sum() == _city.Size);
-            // 	DebugService.Assert(ct.Valid());
-
-            // 	yield return ct;
-
-            // 	// Stage 3: Building effects
-            // 	ApplyBuildingEffects(ct);
-            // 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
-
-            // 	DebugService.Assert(ct.Sum() == _city.Size);
-            // 	DebugService.Assert(ct.Valid());
-            // 	yield return ct;
-
-            // 	// Stage 4: martial law
-            // 	ApplyMartialLaw(ct);
-            // 	ApplyDemocracyEffects(ct, initialContent);
-            // 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
-
-            // 	DebugService.Assert(ct.Sum() == _city.Size);
-            // 	DebugService.Assert(ct.Valid());
-            // 	yield return ct;
-
-            // 	//Stage 5: wonder effects
-            // 	ApplyWonderEffects(ct);
-            // 	(ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
-
-            // 	DebugService.Assert(ct.Sum() == _city.Size);
-            // 	DebugService.Assert(ct.Valid());
-            // 	yield return ct;
-            // }
-        }
-
-        public class MockedIGame : IGameCitizenDependency
-        {
-            public ushort GameTurn { get; set; }
-            public int Difficulty { get; set; }
-            public int MaxDifficulty { get; set; }
-
-            public Func<byte, Player> OnGetPlayer { get; set; }
-            public Func<int, int, IUnit[]> OnGetUnits { get; set; }
-            public Func<Type, bool> OnWonderObsoleteByType { get; set; }
-            public Func<IWonder, bool> OnWonderObsolete { get; set; }
-
-            public Player GetPlayer(byte playerId)
-                => OnGetPlayer?.Invoke(playerId)
-                    ?? throw new NotImplementedException("GetPlayer not implemented by delegate.");
-
-            public IUnit[] GetUnits()
-                => OnGetUnits?.Invoke(int.MinValue, int.MinValue)
-                    ?? throw new NotImplementedException("GetUnits not implemented by delegate.");
-            public IUnit[] GetUnits(int x, int y)
-                => OnGetUnits?.Invoke(x, y)
-                    ?? throw new NotImplementedException("GetUnits not implemented by delegate.");
-
-
-            public bool WonderObsolete<T>() where T : IWonder, new()
-                => OnWonderObsoleteByType?.Invoke(typeof(T))
-                    ?? throw new NotImplementedException("WonderObsolete<T> not implemented by delegate.");
-
-            public bool WonderObsolete(IWonder wonder)
-                => OnWonderObsolete?.Invoke(wonder)
-                    ?? throw new NotImplementedException("WonderObsolete(IWonder) not implemented by delegate.");
-        }
-
-        public class MockedICity :
-            // ICityBasic, ICityBuildings, ICityOnContinent
-            ICity
-        {
-            public Point Location => new Point(0, 0);
-            public byte Size { get; set; } = 5;
-            public short Luxuries { get; set; } = 0;
-            public byte Owner { get; set; } = 0;
-
-
-            public ITile Tile { get; set; } = null;
-
-            public int ContinentId { get; set; } = 0;
-            public Player Player => _player;
-            private Player _player = null;
-            public Player MockPlayer
-            {
-                get => _player;
-                set => _player = value;
-            }
-
-            private IUnit[] _units = Array.Empty<IUnit>();
-            public IUnit[] MockUnits
-            {
-                get => _units;
-                set => _units = value;
-            }
-
-            public int Entertainers { get; set; } = 0;
-            public int Scientists { get; set; } = 0;
-            public int Taxmen { get; set; } = 0;
-
-            private readonly SupplyMockedValues<bool> _hasBuilding;
-            private readonly SupplyMockedValues<bool> _hasWonder;
-
-            public MockedICity()
-            {
-                _hasBuilding = new SupplyMockedValues<bool>();
-                _hasWonder = new SupplyMockedValues<bool>();
-            }
-
-            public MockedICity ReturnHasBuildingValues(params bool[] values)
-            {
-                _hasBuilding.Reset(values);
-                return this;
-            }
-
-            public MockedICity ReturnHasWonderValues(params bool[] values)
-            {
-                _hasWonder.Reset(values);
-                return this;
-            }
-
-            public MockedICity WithContinentId(int continentId)
-            {
-                ContinentId = continentId;
-                return this;
-            }
-
-            public bool HasBuilding<T>() where T : IBuilding => _hasBuilding.Next();
-
-            public bool HasWonder<T>() where T : IWonder => _hasWonder.Next();
-
-            public void NewTurn()
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        partial class MockPlayer : Player
-        {
-            private int citiesCount;
-            private City[] _cities;
-            private ICity[] _citiesInterface;
-
-            public MockPlayer() : base()
-            {
-                this.citiesCount = 0;
-            }
-
-            public override City[] Cities => _cities;
-            public override ICity[] CitiesInterface => _citiesInterface;
-            public MockPlayer withCities(City[] cities)
-            {
-                this._cities = cities;
-                this.citiesCount = cities.Length;
-                return this;
-            }
-            public MockPlayer withCitiesInterface(ICity[] cities)
-            {
-                this._citiesInterface = cities;
-                this.citiesCount = cities.Length;
-                return this;
-            }
-
-            public MockPlayer withCitiesCount(int count)
-            {
-                this.citiesCount = count;
-                this._cities = new City[count];
-                return this;
-            }
-
-            private IAdvance[] _advances = Array.Empty<IAdvance>();
-            public MockPlayer withAdvances(params IAdvance[] advances)
-            {
-                this._advances = advances;
-                return this;
-            }
-            public MockPlayer withAdvance<TAdvance>(bool add = true)
-                where TAdvance : IAdvance, new()
-            {
-                if (add)
-                {
-                    var advancesList = _advances.ToList();
-                    advancesList.Add(new TAdvance());
-                    _advances = advancesList.ToArray();
-                }
-                else
-                {
-                    _advances = _advances
-                        .Where(a => a.GetType() != typeof(TAdvance))
-                        .ToArray();
-                }
-                return this;
-            }
-
-            public override bool HasAdvance<T>()
-                 => _advances.Any(a => a.GetType() == typeof(T));
-
-            public override bool HasAdvance(IAdvance advance)
-            {
-                return _advances.Any(a => a.GetType() == advance.GetType());
-            }
-
-            private HashSet<Type> _wonderEffects = new HashSet<Type>();
-            public MockPlayer withWonderEffect<T>(bool add = true)
-                where T : IWonder, new()
-            {
-                if (add)
-                {
-                    _wonderEffects.Add(typeof(T));
-                }
-                else
-                {
-                    _wonderEffects.Remove(typeof(T));
-                }
-                return this;
-            }
-            public override bool HasWonderEffect<T>()
-                 => _wonderEffects.Contains(typeof(T));
-
-            public MockPlayer withGovernment(IGovernment government)
-            {
-                this.Government = government;
-                return this;
-            }
-            public MockPlayer withGovernmentType(Type government)
-            {
-                IGovernment gov = government switch
-                {
-                    var t when t == typeof(Republic) => new Republic(),
-                    var t when t == typeof(CivOne.Governments.Democracy) => new CivOne.Governments.Democracy(),
-                    var t when t == typeof(Anarchy) => new Anarchy(),
-                    var t when t == typeof(Despotism) => new Despotism(),
-                    var t when t == typeof(CivOne.Governments.Monarchy) => new CivOne.Governments.Monarchy(),
-                    _ => throw new NotImplementedException($"Government type {government} not implemented in MockPlayer"),
-                };
-                this.Government = gov;
-                return this;
-            }
-        }
-        class MockedUnit : BaseUnit, IUnit
-        {
-            public override IEnumerable<MenuItem<int>> MenuItems => throw new NotImplementedException();
-
-            public MockedUnit(int x = 1, int y = 1, byte attack = 1)
-            {
-                X = x;
-                Y = y;
-                Attack = attack;
-            }
-
-            private ICityBasic _city;
-
-            public MockedUnit WithHome(ICityBasic city)
-            {
-                _city = city;
-                return this;
-            }
-
-            public bool IsHome(ICityBasic city)
-            {
-                return _city == city;
-            }
-
-            protected override bool ValidMoveTarget(ITile tile)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        class MockedGrassland : Grassland, ITile
-        {
-            private IUnit[] _units = Array.Empty<IUnit>();
-
-
-            public MockedGrassland()
-            {
-            }
-
-            public MockedGrassland WithUnits(params IUnit[] units)
-            {
-                _units = units;
-                return this;
-            }
-
-            public override IUnit[] Units => _units;
-        }
-
-        class MockedIMap : IMap
-        {
-            private readonly List<ICityOnContinent> _continentCities = new();
-            public IEnumerable<ICityOnContinent> ContinentCities(int continentId)
-            {
-                return [.. _continentCities.Where(city => city.ContinentId == continentId)];
-            }
-
-            public MockedIMap ReturnContinentCitiesValues(params ICityOnContinent[] values)
-            {
-                _continentCities.RemoveAll(_ => true);
-                _continentCities.AddRange(values);
-
-                return this;
-            }
-        }
-
-        class CityCitizenServiceImpl2 : CityCitizenServiceImpl
-        {
-            public CityCitizenServiceImpl2(ICityBasic city,
+            public CityCitizenServiceImplShims(ICityBasic city,
                     ICityBuildings cityBuildings,
                     IGameCitizenDependency game,
                     List<Citizen> specialists,

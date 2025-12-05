@@ -59,76 +59,15 @@ namespace CivOne.Screens.Services
 			yield return ct;
 		}
 
-		protected CitizenTypes Stage5(CitizenTypes ct)
-		{
-			ApplyWonderEffects(ct);
-			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
-
-			DebugService.Assert(ct.Sum() == _city.Size);
-			DebugService.Assert(ct.Valid());
-			return ct;
-		}
-
-		protected CitizenTypes Stage4(CitizenTypes ct, int initialContent)
-		{
-			ApplyMartialLaw(ct);
-			ApplyDemocracyEffects(ct, initialContent);
-			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
-
-			DebugService.Assert(ct.Sum() == _city.Size);
-			DebugService.Assert(ct.Valid());
-			return ct;
-		}
-
-		protected CitizenTypes Stage3(CitizenTypes ct)
-		{
-			ApplyBuildingEffects(ct);
-			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
-
-			DebugService.Assert(ct.Sum() == _city.Size);
-			DebugService.Assert(ct.Valid());
-			return ct;
-		}
-
-		protected CitizenTypes Stage2(CitizenTypes ct)
-		{
-			int happyUpgrades = (int)Math.Floor((double)_city.Luxuries / 2);
-			UpgradeCitizens(ct.Citizens, happyUpgrades);
-
-			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
-
-			DebugService.Assert(ct.Sum() == _city.Size);
-			DebugService.Assert(ct.Valid());
-			return ct;
-		}
-
-		protected int Stage1(ref CitizenTypes ct)
-		{
-			(int initialUnhappyCount, int initialContent) =
-							CalculateCityStats(ct);
-
-			// Stage 1: basic content/unhappy
-			ct = StageBasic(ct, initialContent, initialUnhappyCount);
-
-			ApplyEmperorEffects(ct);
-
-			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
-
-			DebugService.Assert(ct.Sum() == _city.Size);
-			DebugService.Assert(ct.Valid());
-			return initialContent;
-		}
-
 		public CitizenTypes GetCitizenTypes()
 		{
 			DebugService.Assert(_specialists.Count <= _city.Size);
 			CitizenTypes ct = CreateCitizenTypes();
 
+
+			// Stage 1: basic content/unhappy
 			// (int initialUnhappyCount, int initialContent) = CalculateCityStats(ct);
-
-			// // Stage 1: basic content/unhappy
 			// ct = StageBasic(ct, initialContent, initialUnhappyCount);
-
 			// ApplyEmperorEffects(ct);
 			int initialContent = Stage1(ref ct);
 
@@ -152,6 +91,66 @@ namespace CivOne.Screens.Services
 			// (ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
 			ct = Stage5(ct);
 			
+			return ct;
+		}
+
+		protected int Stage1(ref CitizenTypes ct)
+		{
+			(int initialUnhappyCount, int initialContent) =
+							CalculateCityStats(ct);
+
+			// Stage 1: basic content/unhappy
+			ct = StageBasic(ct, initialContent, initialUnhappyCount);
+
+			ApplyEmperorEffects(ct);
+
+			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
+
+			DebugService.Assert(ct.Sum() == _city.Size);
+			DebugService.Assert(ct.Valid());
+			return initialContent;
+		}
+
+		protected CitizenTypes Stage2(CitizenTypes ct)
+		{
+			int happyUpgrades = (int)Math.Floor((double)_city.Luxuries / 2);
+			UpgradeCitizens(ct.Citizens, happyUpgrades);
+
+			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
+
+			DebugService.Assert(ct.Sum() == _city.Size);
+			DebugService.Assert(ct.Valid());
+			return ct;
+		}
+
+		protected CitizenTypes Stage3(CitizenTypes ct)
+		{
+			ApplyBuildingEffects(ct);
+			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
+
+			DebugService.Assert(ct.Sum() == _city.Size);
+			DebugService.Assert(ct.Valid());
+			return ct;
+		}
+		
+		protected CitizenTypes Stage4(CitizenTypes ct, int initialContent)
+		{
+			ApplyMartialLaw(ct);
+			ApplyDemocracyEffects(ct, initialContent);
+			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
+
+			DebugService.Assert(ct.Sum() == _city.Size);
+			DebugService.Assert(ct.Valid());
+			return ct;
+		}
+
+		protected CitizenTypes Stage5(CitizenTypes ct)
+		{
+			ApplyWonderEffects(ct);
+			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
+
+			DebugService.Assert(ct.Sum() == _city.Size);
+			DebugService.Assert(ct.Valid());
 			return ct;
 		}
 
@@ -268,8 +267,8 @@ namespace CivOne.Screens.Services
 				ct.Wonders.Add(new CureForCancer());
 			}
 
-			int happyToContent = Math.Min(happy, ct.content);
-			ContentToHappy(ct.Citizens, happyToContent);
+			int contentToHappy = Math.Min(happy, ct.content);
+			ContentToHappy(ct.Citizens, contentToHappy);
 		}
 
 		protected internal void ApplyDemocracyEffects(CitizenTypes ct, int initialContent)
