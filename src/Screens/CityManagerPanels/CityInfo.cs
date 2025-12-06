@@ -19,6 +19,10 @@ using CivOne.Units;
 
 namespace CivOne.Screens.CityManagerPanels
 {
+	/// <summary>
+	/// City Information Panel showing city units, happiness, local map 
+	/// and option to view city screen.
+	/// </summary>
     internal class CityInfo : BaseScreen
 	{
 		private readonly City _city;
@@ -55,7 +59,10 @@ namespace CivOne.Screens.CityManagerPanels
 
         private void DrawHappyRow(Picture output, int yy, int happy, int content, int unhappy, int ent, int sci, int tax)
         {
-			int leftStartPackedForBigCities = _citizenLayoutService.IsBigCity ? _citizenLayoutService.CitizenOffset : 8;
+			// Reduce gaps between citizens for big cities
+			// Icons on right side need may overlap citizen icons if city is big.
+			int middleSizedCityXOffset = _city.Size >= 10 ? 5 : 8;
+			int leftStartPackedForBigCities = _citizenLayoutService.IsBigCity ? _citizenLayoutService.CitizenOffset : middleSizedCityXOffset;
 			int startX = 7;
 
             int deltaX = 0;

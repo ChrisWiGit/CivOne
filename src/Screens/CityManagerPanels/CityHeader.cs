@@ -19,6 +19,9 @@ using CivOne.Tasks;
 
 namespace CivOne.Screens.CityManagerPanels
 {
+	/// <summary>
+	/// City Header Panel showing city name, population and citizens
+	/// </summary>
 	internal class CityHeader : BaseScreen
 	{
 		private readonly City _city;
