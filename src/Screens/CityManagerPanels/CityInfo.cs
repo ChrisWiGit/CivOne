@@ -153,7 +153,8 @@ namespace CivOne.Screens.CityManagerPanels
 							DrawHappyRow(citizens, yy, group2);
 
 							int deltaX = 0;
-							foreach (var unit in group2.MarshallLawUnits.Take(5))
+							group2.MarshallLawUnits.Reverse();
+							foreach (var unit in group2.MarshallLawUnits)
 							{
 								const int width = 16;
 								background.AddLayer(unit.ToBitmap(false),

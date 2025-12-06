@@ -297,9 +297,11 @@ namespace CivOne.Screens.Services
 				return;
 			}
 
-			var attackUnitsInCity = _city.Tile.Units.Where(u => u.Attack > 0);
+			var attackUnitsInCity = _city.Tile.Units
+				.Where(u => u.Attack > 0)
+				.OrderByDescending(u => u.Attack); //CW: show strongest units first
 
-			ct.MarshallLawUnits.AddRange(attackUnitsInCity);
+			ct.MarshallLawUnits.AddRange(attackUnitsInCity.Take(3));
 
 			const int MAX_MARTIAL_LAW_UNITS = 3;
 
