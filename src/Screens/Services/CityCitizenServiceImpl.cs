@@ -94,6 +94,11 @@ namespace CivOne.Screens.Services
 			return ct;
 		}
 
+		Citizen[] ICityCitizenService.GetCitizens()
+		{
+			return GetCitizenTypes().Citizens;
+		}
+
 		protected int Stage1(ref CitizenTypes ct)
 		{
 			(int initialUnhappyCount, int initialContent) =

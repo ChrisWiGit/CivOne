@@ -41,6 +41,8 @@ namespace CivOne.Screens.Services
 		IEnumerable<CitizenTypes> EnumerateCitizens();
 		CitizenTypes GetCitizenTypes();
 
+		Citizen[] GetCitizens();
+
 		static ICityCitizenService Create(City city, IGame game, List<Citizen> specialists, Map map) =>
 			new CityCitizenServiceImpl(city, city, game as IGameCitizenDependency, specialists, map);
 	}

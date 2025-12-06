@@ -1011,6 +1011,20 @@ namespace CivOne
 			}
 		}
 
+		internal IEnumerable<Citizen> Citizens
+		{
+			get
+			{
+				// Update specialist count
+				while (_specialists.Count < Size - (ResourceTiles.Count() - 1)) _specialists.Add(Citizen.Entertainer);
+				while (_specialists.Count > Size - (ResourceTiles.Count() - 1)) _specialists.Remove(_specialists.Last());
+
+				var service = ICityCitizenService.Create(this,
+					Game.Instance, this._specialists, Map.Instance);
+				return service.GetCitizens();
+			}
+		}
+
 		internal int CathedralDelta()
 		{
 			if (!HasBuilding<Cathedral>()) return 0;
@@ -1029,7 +1043,7 @@ namespace CivOne
 		}
 
 
-		internal IEnumerable<Citizen> Citizens
+		internal IEnumerable<Citizen> Citizens2
 		{
 			get
 			{
