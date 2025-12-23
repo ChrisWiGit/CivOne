@@ -56,7 +56,7 @@ namespace CivOne.Screens.Services
 
 			//Stage 5: wonder effects
 			ct = Stage5(ct);
-			yield return ct;
+				
 		}
 
 		public CitizenTypes GetCitizenTypes()
@@ -72,9 +72,7 @@ namespace CivOne.Screens.Services
 			int initialContent = Stage1(ref ct);
 
 			// Stage 2: impact of luxuries: content->happy; unhappy->content and then content->happy
-			// int happyUpgrades = (int)Math.Floor((double)_city.Luxuries / 2);
 			// UpgradeCitizens(ct.Citizens, happyUpgrades);
-
 			ct = Stage2(ct);
 
 			// Stage 3: Building effects
@@ -90,6 +88,9 @@ namespace CivOne.Screens.Services
 			// ApplyWonderEffects(ct);
 			// (ct.happy, ct.content, ct.unhappy) = CountCitizenTypes(ct.Citizens);
 			ct = Stage5(ct);
+
+			// In orig Civ citizens change sex if different from previous type
+			ct = AdaptCitizens(ct);
 			
 			return ct;
 		}
@@ -97,6 +98,20 @@ namespace CivOne.Screens.Services
 		Citizen[] ICityCitizenService.GetCitizens()
 		{
 			return GetCitizenTypes().Citizens;
+		}
+
+		protected internal CitizenTypes AdaptCitizens(CitizenTypes ct)
+		{
+			byte offset = 0;
+			for (int i = 1; i < ct.Citizens.Length; i++)
+			{
+				if (!EqualCitizenType(ct.Citizens[i - 1], ct.Citizens[i]))
+				{
+					offset = i % 2 == 0 ? (byte)0 : (byte)1;
+				}
+				ct.Citizens[i] = CitizenByIndex(i + offset, ct.Citizens[i]);
+			}
+			return ct;
 		}
 
 		protected int Stage1(ref CitizenTypes ct)
@@ -118,8 +133,17 @@ namespace CivOne.Screens.Services
 
 		protected CitizenTypes Stage2(CitizenTypes ct)
 		{
-			int happyUpgrades = (int)Math.Floor((double)_city.Luxuries / 2);
-			UpgradeCitizens(ct.Citizens, happyUpgrades);
+			int lux = _city.Luxuries;
+			lux -= _city.EntertainerLuxuries;
+			
+			int luxuryUpgrades = (int)Math.Floor((double)lux / 2);
+			// Luxury goods make content from unhappy citizens
+			// and happy from content citizens
+			UpgradeCitizens(ct.Citizens, luxuryUpgrades);
+
+			int entertainerUpgrades = (int)Math.Floor((double)_city.EntertainerLuxuries / 2); 
+			// Entertainers make happy from content
+			UpgradeCitizens(ct.Citizens, entertainerUpgrades);
 
 			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
 
@@ -152,6 +176,7 @@ namespace CivOne.Screens.Services
 		protected CitizenTypes Stage5(CitizenTypes ct)
 		{
 			ApplyWonderEffects(ct);
+
 			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
 
 			DebugService.Assert(ct.Sum() == _city.Size);
@@ -175,17 +200,19 @@ namespace CivOne.Screens.Services
 			// diff 3 = 3 content, all else unhappy
 			// diff 4 = 2 content, all else unhappy
 			// diff 5 = 1 content, all else unhappy
-			int contentLimit = 6 - difficulty - specialists;
+			// Always 5 as max difficulty for calculation purposes
+			// do not use _game.MaxDifficulty here!
+			// 6 = max content at easiest level 0
+			int contentLimit = 1 + 5 - difficulty;
 
 			// size 4, 0 ent → specialists=0, available=4 → contentLimit=3 → 3c + 1u
 			// size 4, 1 ent → specialists=1, available=3 → 2c + 1u + 1ent
 			// size 4, 2 ent → specialists=2, available=2 → 1c + 1u + 2ent
 			// size 4, 3 ent → specialists=3, available=1 → 0c + 1u + 3ent
-			// Anzahl der zufriedenen Bürger (content), aber niemals größer als die verfügbare Anzahl
-			int initialContent = Math.Max(0, Math.Min(workersAvailable, contentLimit));
+			int initialUnhappyCount = Math.Max(0, _city.Size - contentLimit);
+			// unhappy will stay the same
 
-			int initialUnhappyCount = Math.Max(0, workersAvailable - initialContent);
-
+			int initialContent = Math.Max(0, workersAvailable - initialUnhappyCount);
 			return (initialUnhappyCount, initialContent);
 		}
 
@@ -357,7 +384,17 @@ namespace CivOne.Screens.Services
 				ct.Buildings.Add(new Colosseum());
 			}
 
-			unhappyToContent += CathedralDelta();
+			int cathedralDelta = CathedralDelta();
+			if (cathedralDelta > 0)
+			{
+				ct.Wonders.Add(new MichelangelosChapel());
+			}
+			unhappyToContent += cathedralDelta;
+
+			if (_cityBuildings.HasBuilding<Cathedral>()) 
+			{
+				ct.Buildings.Add(new Cathedral());
+			}
 
 			if (unhappyToContent <= 0)
 			{
@@ -422,6 +459,7 @@ namespace CivOne.Screens.Services
 			int redShirts = citizens.Count(c => c is Citizen.RedShirtMale or Citizen.RedShirtFemale);
 			return (happy, content, unhappy, redShirts);
 		}
+
 
 		protected internal void UpgradeCitizens(Citizen[] target, int happyUpgrades)
 		{
@@ -593,8 +631,23 @@ namespace CivOne.Screens.Services
 		}
 
 
+		
+		private bool EqualCitizenType(Citizen c1, Citizen c2)
+		{
+			return c1 switch
+			{
+				Citizen.HappyMale or Citizen.HappyFemale => c2 is Citizen.HappyMale or Citizen.HappyFemale,
+				Citizen.ContentMale or Citizen.ContentFemale => c2 is Citizen.ContentMale or Citizen.ContentFemale,
+				Citizen.UnhappyMale or Citizen.UnhappyFemale => c2 is Citizen.UnhappyMale or Citizen.UnhappyFemale,
+				Citizen.RedShirtMale or Citizen.RedShirtFemale => c2 is Citizen.RedShirtMale or Citizen.RedShirtFemale,
+				_ => false
+			};
+			// bool isPrevMale = index > 0 && !EqualCitizenType(target[index - 1], target[index]);
 
-		// liefert Citizen male, female je nachdem welcher Index
+		}
+
+
+
 		protected internal Citizen CitizenByIndex(int index, Citizen type)
 		{
 			bool isMale = (index % 2) == 0;
