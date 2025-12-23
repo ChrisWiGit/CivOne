@@ -188,7 +188,7 @@ namespace CivOne.Screens.Services
 			CalculateCityStats(CitizenTypes ct)
 		{
 			// max difficulty = 4|5, easiest = 0
-			// int difficulty = 4; //Debug only
+			// int difficulty = 3; //Debug only
 			int difficulty = _game.Difficulty;
 			int specialists = ct.elvis + ct.einstein + ct.taxman;
 			int workersAvailable = _city.Size - specialists;
@@ -205,14 +205,17 @@ namespace CivOne.Screens.Services
 			// 6 = max content at easiest level 0
 			int contentLimit = 1 + 5 - difficulty;
 
-			// size 4, 0 ent → specialists=0, available=4 → contentLimit=3 → 3c + 1u
-			// size 4, 1 ent → specialists=1, available=3 → 2c + 1u + 1ent
-			// size 4, 2 ent → specialists=2, available=2 → 1c + 1u + 2ent
-			// size 4, 3 ent → specialists=3, available=1 → 0c + 1u + 3ent
-			int initialUnhappyCount = Math.Max(0, _city.Size - contentLimit);
-			// unhappy will stay the same
+			// unhappy will always stay the same from city size
+			int unhappyCount = Math.Max(_city.Size - contentLimit, 0);
 
-			int initialContent = Math.Max(0, workersAvailable - initialUnhappyCount);
+			// content is whatever is left from workers available
+			int initialContent = Math.Max(0, workersAvailable - unhappyCount);
+
+			// cap initial unhappy to max workers available or leave it to unhappy count
+			int initialUnhappyCount = Math.Min(workersAvailable, unhappyCount);
+
+			DebugService.Assert(initialContent + initialUnhappyCount + specialists == _city.Size,
+				"Initial citizen counts do not add up to city size.");
 			return (initialUnhappyCount, initialContent);
 		}
 
