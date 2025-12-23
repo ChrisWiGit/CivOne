@@ -366,9 +366,13 @@ namespace CivOne
 				short luxuries = TradeLuxuries;
 				if (HasBuilding<MarketPlace>()) luxuries += (short)Math.Floor((double)luxuries * 0.5);
 				if (HasBuilding<Bank>()) luxuries += (short)Math.Floor((double)luxuries * 0.5);
-				luxuries += (short)(_specialists.Count(c => c == Citizen.Entertainer) * 2);
+				luxuries += (short)EntertainerLuxuries;
 				return luxuries;
 			}
+		}
+
+		public int EntertainerLuxuries {
+			get => Entertainers * 3;	
 		}
 
 		/// <summary>
