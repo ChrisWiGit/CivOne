@@ -131,10 +131,15 @@ namespace CivOne.Screens.CityManagerPanels
 							DrawHappyRow(citizens, yy, group2);
 
 							int deltaX = 0;
+							int middleSizedCityXOffset = _city.Size >= 10 ? 10 : 16;
+							int leftStartPackedForBigCities = 
+								_citizenLayoutService.IsBigCity ? _citizenLayoutService.CitizenOffset : middleSizedCityXOffset;
+			
 							foreach (var building in group.Buildings)
 							{
 								background.AddLayer(building.SmallIcon,
-									left: background.Width - building.SmallIcon.Width() - 15 - (building.SmallIcon.Width() + 1) * deltaX++,
+									left: background.Width - building.SmallIcon.Width() 
+											- 15 - (building.SmallIcon.Width() + 1 - leftStartPackedForBigCities) * deltaX++,
 									top: yy + heightOffset);
 							}
 
@@ -153,6 +158,7 @@ namespace CivOne.Screens.CityManagerPanels
 							DrawHappyRow(citizens, yy, group2);
 
 							int deltaX = 0;
+							// best marshal law units first shown
 							group2.MarshallLawUnits.Reverse();
 							foreach (var unit in group2.MarshallLawUnits)
 							{
@@ -172,7 +178,7 @@ namespace CivOne.Screens.CityManagerPanels
                     if (residents.MoveNext())
                     {
                         var group2 = residents.Current;
-						if (!group2.Equals(group))
+						if (!group2.Equals(group) || group2.Wonders.Count > 0)
 						{
 							DrawHappyRow(citizens, yy, group2);
 
