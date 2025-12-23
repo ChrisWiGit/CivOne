@@ -85,6 +85,7 @@ namespace CivOne.UnitTests
         {
             // no emperor effects
             mockedIGame.Difficulty = 3;
+            mockedIGame.MaxDifficulty = 5;
 
             mockedCity.Size = 15;
             mockedCity.Entertainers = 1;
@@ -110,9 +111,9 @@ namespace CivOne.UnitTests
             var actual = testee.GetCitizenTypes();
 
             AssertCitizenTypes(actual,
-                expectedHappy: 1,
-                expectedContent: 2,
-                expectedUnhappy: 9,
+                expectedHappy: 2,
+                expectedContent: 3,
+                expectedUnhappy: 7,
                 expectedRedShirt: 0,
                 expectedElvis: 1,
                 expectedEinstein: 1,
@@ -124,11 +125,14 @@ namespace CivOne.UnitTests
         {
             mockedIGame.Difficulty = 3;
 
-            mockedCity.Size = 15;
+            const int citySize = 15;
+            const int specialists = 3;
+
+            mockedCity.Size = citySize;
             mockedCity.Entertainers = 1;
             mockedCity.Scientists = 1;
             mockedCity.Taxmen = 1;
-            mockedCity.Luxuries = 2;
+            mockedCity.Luxuries = 4 + 1; // 4 lux + entertainer effect
 
             mockedSpecialists.AddRange([Citizen.Entertainer, Citizen.Scientist, Citizen.Taxman]);
 
@@ -140,7 +144,7 @@ namespace CivOne.UnitTests
             mockedGrassland.WithUnits([new MockedUnit()
                 .WithHome(mockedCity)]);
 
-            mockedCity.ReturnHasWonderValues(false);
+            mockedCity.ReturnHasWonderValues(false, true); //hanging gardens
             mockedCity.ReturnHasBuildingValues(true, false); // Temple to test building effects
             mockedIGame.OnWonderObsoleteByType = (type) => false;
 
@@ -150,10 +154,12 @@ namespace CivOne.UnitTests
             Assert.True(enumeration.MoveNext());
             var stage1 = enumeration.Current;
 
+            // 3 content max from difficulty 3
+            // 15 - 3specs - 3 content = 9 unhappy
             AssertCitizenTypes(stage1,
                 expectedHappy: 0,
-                expectedContent: 0,
-                expectedUnhappy: 12,
+                expectedContent: 3,
+                expectedUnhappy: citySize - specialists - 3,
                 expectedRedShirt: 0,
                 expectedElvis: 1,
                 expectedEinstein: 1,
@@ -163,10 +169,12 @@ namespace CivOne.UnitTests
             Assert.True(enumeration.MoveNext());
             var stage2 = enumeration.Current;
 
+            // 4 luxuries: 1 unhappy to content to happy (2 stages from luxuries)
+            // entertainer make content to happy
             AssertCitizenTypes(stage2,
-                expectedHappy: 0,
+                expectedHappy: 2,
                 expectedContent: 1,
-                expectedUnhappy: 11,
+                expectedUnhappy: citySize - specialists - 3,
                 expectedRedShirt: 0,
                 expectedElvis: 1,
                 expectedEinstein: 1,
@@ -175,10 +183,11 @@ namespace CivOne.UnitTests
             Assert.True(enumeration.MoveNext());
             var stage3 = enumeration.Current;
 
+            // 1 unhappy to content from temple
             AssertCitizenTypes(stage3,
-                expectedHappy: 0,
+                expectedHappy: 2,
                 expectedContent: 2,
-                expectedUnhappy: 10,
+                expectedUnhappy: citySize - specialists - 4,
                 expectedRedShirt: 0,
                 expectedElvis: 1,
                 expectedEinstein: 1,
@@ -190,10 +199,12 @@ namespace CivOne.UnitTests
             var stage4 = enumeration.Current;
 
             Assert.Single(stage4.MarshallLawUnits);
+
+            // an unhappy to content from unit present
             AssertCitizenTypes(stage4,
-                expectedHappy: 0,
+                expectedHappy: 2,
                 expectedContent: 3,
-                expectedUnhappy: 9,
+                expectedUnhappy: citySize - specialists - 5,
                 expectedRedShirt: 0,
                 expectedElvis: 1,
                 expectedEinstein: 1,
@@ -202,10 +213,11 @@ namespace CivOne.UnitTests
             Assert.True(enumeration.MoveNext());
             var stage5 = enumeration.Current;
 
+            // 1 content to happy from wonder hanging gardens
             AssertCitizenTypes(stage5,
-                expectedHappy: 1,
+                expectedHappy: 3,
                 expectedContent: 2,
-                expectedUnhappy: 9,
+                expectedUnhappy: citySize - specialists - 5,
                 expectedRedShirt: 0,
                 expectedElvis: 1,
                 expectedEinstein: 1,
@@ -222,13 +234,13 @@ namespace CivOne.UnitTests
             int expectedEinstein,
             int expectedTaxman)
         {
-            Assert.Equal(ct.happy, expectedHappy);
-            Assert.Equal(ct.content, expectedContent);
-            Assert.Equal(ct.unhappy, expectedUnhappy);
-            Assert.Equal(ct.redShirt, expectedRedShirt);
-            Assert.Equal(ct.elvis, expectedElvis);
-            Assert.Equal(ct.einstein, expectedEinstein);
-            Assert.Equal(ct.taxman, expectedTaxman);
+            Assert.Equal(expectedHappy, ct.happy);
+            Assert.Equal(expectedContent, ct.content);
+            Assert.Equal(expectedUnhappy, ct.unhappy);
+            Assert.Equal(expectedRedShirt, ct.redShirt);
+            Assert.Equal(expectedElvis, ct.elvis);
+            Assert.Equal(expectedEinstein, ct.einstein);
+            Assert.Equal(expectedTaxman, ct.taxman);
             
             var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct. Citizens);
 
@@ -723,7 +735,7 @@ namespace CivOne.UnitTests
         {
             mockedCity.Size = 5;
             mockedCity.ReturnHasWonderValues(false);
-            mockedCity.ReturnHasBuildingValues(false, true); // Colosseum
+            mockedCity.ReturnHasBuildingValues(false, true, false); // Colosseum
             testee.BachsCathedral = false;
             testee.CathedralDeltaValue = 0;
 
@@ -967,8 +979,8 @@ namespace CivOne.UnitTests
         //
         [InlineData(0, 5, 0, 5, 0)]  // maximaler Content bei niedrigster Difficulty
         [InlineData(0, 5, 3, 2, 0)]  // nur 1 Worker, hoher ContentLimit
-        [InlineData(3, 5, 1, 2, 2)]  // mittlere Difficulty, gemischter Case
-        [InlineData(5, 5, 3, 0, 2)]  // negativer contentLimit -> content=0
+        [InlineData(3, 5, 1, 3, 1)]  // mittlere Difficulty, gemischter Case
+        [InlineData(5, 4, 3, 1, 0)]  // negativer contentLimit -> content=0
         [InlineData(2, 3, 0, 3, 0)]  // contentLimit<workersAvailable
         [InlineData(4, 3, 3, 0, 0)]  // alle Spezialisten -> keine Workers, alles 0
         public void CalculateCityStats_AllCases(

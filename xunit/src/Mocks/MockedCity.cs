@@ -46,7 +46,8 @@ public partial class CityCitizenServiceImplTests
             public int Scientists { get; set; } = 0;
             public int Taxmen { get; set; } = 0;
 
-            private readonly SupplyMockedValues<bool> _hasBuilding;
+			public int EntertainerLuxuries => Entertainers * 3;
+			private readonly SupplyMockedValues<bool> _hasBuilding;
             private readonly SupplyMockedValues<bool> _hasWonder;
 
             public MockedCity()
