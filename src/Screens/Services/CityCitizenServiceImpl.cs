@@ -56,7 +56,7 @@ namespace CivOne.Screens.Services
 
 			//Stage 5: wonder effects
 			ct = Stage5(ct);
-				
+			yield return ct;				
 		}
 
 		public CitizenTypes GetCitizenTypes()
@@ -475,6 +475,10 @@ namespace CivOne.Screens.Services
 			// 2. go to next citizen and repeat 1.
 			for (int i = 0; i < count && happyUpgrades > 0; i++)
 			{
+				if (IsHappy(target[i]))
+				{
+					continue;
+				}
 				// unhappy -> content OR content -> happy
 				target[i] = UpgradeCitizen(target[i]);
 				happyUpgrades--;

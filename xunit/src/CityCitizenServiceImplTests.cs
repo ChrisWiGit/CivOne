@@ -91,7 +91,7 @@ namespace CivOne.UnitTests
             mockedCity.Entertainers = 1;
             mockedCity.Scientists = 1;
             mockedCity.Taxmen = 1;
-            mockedCity.Luxuries = 2;
+            mockedCity.Luxuries = 5; // 2 + 3 from entertainer
 
             mockedSpecialists.AddRange([Citizen.Entertainer, Citizen.Scientist, Citizen.Taxman]);
 
@@ -112,8 +112,8 @@ namespace CivOne.UnitTests
 
             AssertCitizenTypes(actual,
                 expectedHappy: 2,
-                expectedContent: 3,
-                expectedUnhappy: 7,
+                expectedContent: 1,
+                expectedUnhappy: 9,
                 expectedRedShirt: 0,
                 expectedElvis: 1,
                 expectedEinstein: 1,
@@ -132,7 +132,7 @@ namespace CivOne.UnitTests
             mockedCity.Entertainers = 1;
             mockedCity.Scientists = 1;
             mockedCity.Taxmen = 1;
-            mockedCity.Luxuries = 4 + 1; // 4 lux + entertainer effect
+            mockedCity.Luxuries = 4 + 3; // 4 lux + entertainer effect
 
             mockedSpecialists.AddRange([Citizen.Entertainer, Citizen.Scientist, Citizen.Taxman]);
 
@@ -154,12 +154,13 @@ namespace CivOne.UnitTests
             Assert.True(enumeration.MoveNext());
             var stage1 = enumeration.Current;
 
-            // 3 content max from difficulty 3
+            // 3 content max from difficulty 3 
+            // all content are going to be specialists, so 0. 
             // 15 - 3specs - 3 content = 9 unhappy
             AssertCitizenTypes(stage1,
                 expectedHappy: 0,
-                expectedContent: 3,
-                expectedUnhappy: citySize - specialists - 3,
+                expectedContent: 0,
+                expectedUnhappy: citySize - specialists,
                 expectedRedShirt: 0,
                 expectedElvis: 1,
                 expectedEinstein: 1,
@@ -169,12 +170,13 @@ namespace CivOne.UnitTests
             Assert.True(enumeration.MoveNext());
             var stage2 = enumeration.Current;
 
-            // 4 luxuries: 1 unhappy to content to happy (2 stages from luxuries)
-            // entertainer make content to happy
+            // 7 luxuries: 
+            // 1 unhappy to content to happy ( +2 + 2)
+            // 1 unhappy to content (+2)
             AssertCitizenTypes(stage2,
-                expectedHappy: 2,
+                expectedHappy: 1,
                 expectedContent: 1,
-                expectedUnhappy: citySize - specialists - 3,
+                expectedUnhappy: citySize - specialists - 2,
                 expectedRedShirt: 0,
                 expectedElvis: 1,
                 expectedEinstein: 1,
@@ -185,9 +187,9 @@ namespace CivOne.UnitTests
 
             // 1 unhappy to content from temple
             AssertCitizenTypes(stage3,
-                expectedHappy: 2,
+                expectedHappy: 1,
                 expectedContent: 2,
-                expectedUnhappy: citySize - specialists - 4,
+                expectedUnhappy: citySize - specialists - 3,
                 expectedRedShirt: 0,
                 expectedElvis: 1,
                 expectedEinstein: 1,
@@ -202,9 +204,9 @@ namespace CivOne.UnitTests
 
             // an unhappy to content from unit present
             AssertCitizenTypes(stage4,
-                expectedHappy: 2,
+                expectedHappy: 1,
                 expectedContent: 3,
-                expectedUnhappy: citySize - specialists - 5,
+                expectedUnhappy: citySize - specialists - 4,
                 expectedRedShirt: 0,
                 expectedElvis: 1,
                 expectedEinstein: 1,
@@ -215,9 +217,9 @@ namespace CivOne.UnitTests
 
             // 1 content to happy from wonder hanging gardens
             AssertCitizenTypes(stage5,
-                expectedHappy: 3,
+                expectedHappy: 2,
                 expectedContent: 2,
-                expectedUnhappy: citySize - specialists - 5,
+                expectedUnhappy: citySize - specialists - 4,
                 expectedRedShirt: 0,
                 expectedElvis: 1,
                 expectedEinstein: 1,
@@ -513,6 +515,77 @@ namespace CivOne.UnitTests
             int actualHappyCount = target.Count(c => c == Citizen.HappyMale | c == Citizen.HappyFemale);
             Assert.Equal(expectedHappyCount, actualHappyCount);
         }
+
+        [Fact]
+        public void UpgradeCitizensCallsDoNotStopAtHappyTests()
+		{
+            var target = new Citizen[3];
+
+            target[0] = Citizen.UnhappyMale;
+            target[1] = Citizen.UnhappyFemale;
+            target[2] = Citizen.UnhappyMale;
+
+            testee.UpgradeCitizens(target, 1);
+            testee.UpgradeCitizens(target, 1);
+            testee.UpgradeCitizens(target, 1);
+            testee.UpgradeCitizens(target, 1);
+            testee.UpgradeCitizens(target, 1);
+
+            Assert.Equal(Citizen.HappyMale, target[0]);
+            Assert.Equal(Citizen.HappyFemale, target[1]);
+            Assert.Equal(Citizen.ContentMale, target[2]);
+			
+		}
+
+
+        // protected internal void UpgradeCitizens(Citizen[] target, int happyUpgrades)
+		// {
+		// 	if (happyUpgrades <= 0) return;
+
+		// 	var count = target.Length - _specialists.Count;
+
+		// 	// Steps for each citizen, until happyUpgrades run out:
+		// 	// 1. unhappy to content if possible then content to happy
+		// 	// 2. go to next citizen and repeat 1.
+		// 	for (int i = 0; i < count && happyUpgrades > 0; i++)
+		// 	{
+		// 		if (IsHappy(target[i]))
+		// 		{
+		// 			continue;
+		// 		}
+		// 		// unhappy -> content OR content -> happy
+		// 		target[i] = UpgradeCitizen(target[i]);
+		// 		happyUpgrades--;
+
+		// 		if (IsHappy(target[i]))
+		// 		{
+		// 			continue;
+		// 		}
+		// 		if (happyUpgrades <= 0)
+		// 		{
+		// 			// CW: Currently, a redshirt is made to unhappy only, not content.
+		// 			break;
+		// 		}
+
+		// 		// still unhappy because of redshirt?
+		// 		if (IsUnhappy(target[i]))
+		// 		{
+		// 			target[i] = UpgradeCitizen(target[i]);
+		// 			happyUpgrades--;
+		// 		}
+
+		// 		if (happyUpgrades <= 0)
+		// 		{
+		// 			break;
+		// 		}
+
+		// 		// content -> happy
+		// 		target[i] = UpgradeCitizen(target[i]);
+		// 		happyUpgrades--;
+		// 	}
+		// }
+
+
 
         [Fact]
         public void CountCitizenTypesTests()
@@ -977,12 +1050,31 @@ namespace CivOne.UnitTests
         //
         // difficulty, size, specialists, expectedContent, expectedUnhappy
         //
-        [InlineData(0, 5, 0, 5, 0)]  // maximaler Content bei niedrigster Difficulty
-        [InlineData(0, 5, 3, 2, 0)]  // nur 1 Worker, hoher ContentLimit
-        [InlineData(3, 5, 1, 3, 1)]  // mittlere Difficulty, gemischter Case
-        [InlineData(5, 4, 3, 1, 0)]  // negativer contentLimit -> content=0
+        [InlineData(0, 10, 0, 6, 4)]  //standard count of unhappy citizens
+        [InlineData(1, 10, 0, 5, 5)]  // for different difficulties
+        [InlineData(2, 10, 0, 4, 6)]
+        [InlineData(3, 10, 0, 3, 7)]
+        [InlineData(4, 10, 0, 2, 8)]
+        [InlineData(5, 10, 0, 1, 9)]
+        [InlineData(5, 10, 1, 0, 9)] // last content citizen becomes specialist
+
+        [InlineData(0, 10, -1, 5, 4)]  //standard count of unhappy citizens
+        [InlineData(0, 10, -2, 4, 4)]
+        [InlineData(0, 10, -3, 3, 4)]
+        [InlineData(0, 10, -4, 2, 4)]
+        [InlineData(0, 10, -5, 1, 4)]
+        [InlineData(0, 10, -6, 0, 4)]
+        [InlineData(0, 10, -7, 0, 3)] // specialist start reducing unhappy citizens
+        [InlineData(0, 10, -8, 0, 2)]
+        [InlineData(0, 10, -9, 0, 1)]
+        [InlineData(0, 10, -10, 0, 0)]
+
+        [InlineData(0, 5, 0, 5, 0)]  // maximum Content at lowest Difficulty
+        [InlineData(0, 5, 3, 2, 0)]  // only 1 Worker, high ContentLimit
         [InlineData(2, 3, 0, 3, 0)]  // contentLimit<workersAvailable
-        [InlineData(4, 3, 3, 0, 0)]  // alle Spezialisten -> keine Workers, alles 0
+        [InlineData(4, 3, 3, 0, 0)]  // all Specialists -> no Workers, everything 0
+        [InlineData(3, 5, 1, 2, 2)]  // medium Difficulty, mixed Case
+        [InlineData(5, 4, 3, 0, 1)]  // negative contentLimit -> content=0
         public void CalculateCityStats_AllCases(
             byte difficulty,
             byte citySize,
@@ -997,14 +1089,12 @@ namespace CivOne.UnitTests
             var ct = new CitizenTypes
             {
                 Citizens = new Citizen[citySize],
-                // Spezialisten direkt setzen
-                elvis = specialists >= 1 ? 1 : 0,
+                elvis = specialists < 0 ? -specialists : specialists >= 1 ? 1 : 0,
                 einstein = specialists >= 2 ? 1 : 0,
                 taxman = specialists >= 3 ? 1 : 0
             };
 
-            // This test only supports up to 3 specialists.
-            Assert.InRange(specialists, 0, 3);
+            Assert.InRange(specialists, -10, 3);
 
             // Act
             var (initialUnhappyCount, initialContent) = testee.CalculateCityStats(ct);
