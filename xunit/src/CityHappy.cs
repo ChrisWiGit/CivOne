@@ -148,7 +148,6 @@ namespace CivOne.UnitTests
                 citizenTypes = foo.Current;
                 Assert.Equal(1, citizenTypes.happy);
                 Assert.Equal(1, citizenTypes.elvis);
-
             }
         }
 
@@ -236,8 +235,11 @@ namespace CivOne.UnitTests
 
                 foo.MoveNext();
                 citizenTypes = foo.Current;
-                Assert.Equal(1, citizenTypes.happy);
-                Assert.Equal(1, citizenTypes.content);
+                // CW: 2 Entertainer = 2 * 3 Luxury = 6
+                // 6 Luxury = upgrade 3 times 
+                // 1 content -> happy, 1 unhappy -> content -> happy
+                Assert.Equal(2, citizenTypes.happy);
+                Assert.Equal(0, citizenTypes.content);
                 Assert.Equal(0, citizenTypes.unhappy);
                 Assert.Equal(2, citizenTypes.elvis);
             }
@@ -352,16 +354,19 @@ namespace CivOne.UnitTests
 
                 foo.MoveNext();
                 citizenTypes = foo.Current;
-                Assert.Equal(1, citizenTypes.happy);
-                Assert.Equal(1, citizenTypes.content);
+                // CW: 3 Entertainer = 3 * 3 Luxury = 9
+                // 9 Luxury = upgrade 4 times
+                // unhappy-> 2 content -> 2 happy
+                Assert.Equal(2, citizenTypes.happy);
+                Assert.Equal(0, citizenTypes.content);
                 Assert.Equal(1, citizenTypes.unhappy);
                 Assert.Equal(3, citizenTypes.elvis);
 
                 foo.MoveNext();
                 citizenTypes = foo.Current;
                 // temple effect
-                Assert.Equal(1, citizenTypes.happy);
-                Assert.Equal(2, citizenTypes.content);
+                Assert.Equal(2, citizenTypes.happy);
+                Assert.Equal(1, citizenTypes.content);
                 Assert.Equal(0, citizenTypes.unhappy);
                 Assert.Equal(3, citizenTypes.elvis);
             }
@@ -384,6 +389,7 @@ namespace CivOne.UnitTests
                 foo.MoveNext();
                 var citizenTypes = foo.Current;
                 // initial state
+                // difficulty 3: 3 content, 2 unhappy
                 Assert.Equal(0, citizenTypes.happy);
                 Assert.Equal(2, citizenTypes.content);
                 Assert.Equal(2, citizenTypes.unhappy);
