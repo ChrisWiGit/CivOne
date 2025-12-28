@@ -18,110 +18,106 @@ using CivOne.Advances;
 
 namespace CivOne.UnitTests
 {
+    partial class MockedPlayer : Player
+    {
+        private int citiesCount;
+        private City[] _cities;
+        private ICity[] _citiesInterface;
 
-public partial class CityCitizenServiceImplTests
-	{
-		partial class MockedPlayer : Player
+        public MockedPlayer() : base()
         {
-            private int citiesCount;
-            private City[] _cities;
-            private ICity[] _citiesInterface;
+            this.citiesCount = 0;
+        }
 
-            public MockedPlayer() : base()
-            {
-                this.citiesCount = 0;
-            }
+        public override City[] Cities => _cities;
+        public override ICity[] CitiesInterface => _citiesInterface;
+        public MockedPlayer withCities(City[] cities)
+        {
+            this._cities = cities;
+            this.citiesCount = cities.Length;
+            return this;
+        }
+        public MockedPlayer withCitiesInterface(ICity[] cities)
+        {
+            this._citiesInterface = cities;
+            this.citiesCount = cities.Length;
+            return this;
+        }
 
-            public override City[] Cities => _cities;
-            public override ICity[] CitiesInterface => _citiesInterface;
-            public MockedPlayer withCities(City[] cities)
-            {
-                this._cities = cities;
-                this.citiesCount = cities.Length;
-                return this;
-            }
-            public MockedPlayer withCitiesInterface(ICity[] cities)
-            {
-                this._citiesInterface = cities;
-                this.citiesCount = cities.Length;
-                return this;
-            }
+        public MockedPlayer withCitiesCount(int count)
+        {
+            this.citiesCount = count;
+            this._cities = new City[count];
+            return this;
+        }
 
-            public MockedPlayer withCitiesCount(int count)
+        private IAdvance[] _advances = Array.Empty<IAdvance>();
+        public MockedPlayer withAdvances(params IAdvance[] advances)
+        {
+            this._advances = advances;
+            return this;
+        }
+        public MockedPlayer withAdvance<TAdvance>(bool add = true)
+            where TAdvance : IAdvance, new()
+        {
+            if (add)
             {
-                this.citiesCount = count;
-                this._cities = new City[count];
-                return this;
+                var advancesList = _advances.ToList();
+                advancesList.Add(new TAdvance());
+                _advances = advancesList.ToArray();
             }
+            else
+            {
+                _advances = _advances
+                    .Where(a => a.GetType() != typeof(TAdvance))
+                    .ToArray();
+            }
+            return this;
+        }
 
-            private IAdvance[] _advances = Array.Empty<IAdvance>();
-            public MockedPlayer withAdvances(params IAdvance[] advances)
-            {
-                this._advances = advances;
-                return this;
-            }
-            public MockedPlayer withAdvance<TAdvance>(bool add = true)
-                where TAdvance : IAdvance, new()
-            {
-                if (add)
-                {
-                    var advancesList = _advances.ToList();
-                    advancesList.Add(new TAdvance());
-                    _advances = advancesList.ToArray();
-                }
-                else
-                {
-                    _advances = _advances
-                        .Where(a => a.GetType() != typeof(TAdvance))
-                        .ToArray();
-                }
-                return this;
-            }
+        public override bool HasAdvance<T>()
+             => _advances.Any(a => a.GetType() == typeof(T));
 
-            public override bool HasAdvance<T>()
-                 => _advances.Any(a => a.GetType() == typeof(T));
+        public override bool HasAdvance(IAdvance advance)
+        {
+            return _advances.Any(a => a.GetType() == advance.GetType());
+        }
 
-            public override bool HasAdvance(IAdvance advance)
+        private HashSet<Type> _wonderEffects = new HashSet<Type>();
+        public MockedPlayer WithWonderEffect<T>(bool add = true)
+            where T : IWonder, new()
+        {
+            if (add)
             {
-                return _advances.Any(a => a.GetType() == advance.GetType());
+                _wonderEffects.Add(typeof(T));
             }
+            else
+            {
+                _wonderEffects.Remove(typeof(T));
+            }
+            return this;
+        }
+        public override bool HasWonderEffect<T>()
+             => _wonderEffects.Contains(typeof(T));
 
-            private HashSet<Type> _wonderEffects = new HashSet<Type>();
-            public MockedPlayer withWonderEffect<T>(bool add = true)
-                where T : IWonder, new()
+        public MockedPlayer withGovernment(IGovernment government)
+        {
+            this.Government = government;
+            return this;
+        }
+        public MockedPlayer WithGovernmentType(Type government)
+        {
+            IGovernment gov = government switch
             {
-                if (add)
-                {
-                    _wonderEffects.Add(typeof(T));
-                }
-                else
-                {
-                    _wonderEffects.Remove(typeof(T));
-                }
-                return this;
-            }
-            public override bool HasWonderEffect<T>()
-                 => _wonderEffects.Contains(typeof(T));
-
-            public MockedPlayer withGovernment(IGovernment government)
-            {
-                this.Government = government;
-                return this;
-            }
-            public MockedPlayer withGovernmentType(Type government)
-            {
-                IGovernment gov = government switch
-                {
-                    var t when t == typeof(Republic) => new Republic(),
-                    var t when t == typeof(CivOne.Governments.Democracy) => new CivOne.Governments.Democracy(),
-                    var t when t == typeof(Anarchy) => new Anarchy(),
-                    var t when t == typeof(Despotism) => new Despotism(),
-                    var t when t == typeof(CivOne.Governments.Monarchy) => new CivOne.Governments.Monarchy(),
-                    _ => throw new NotImplementedException($"Government type {government} not implemented in MockPlayer"),
-                };
-                this.Government = gov;
-                return this;
-            }
+                var t when t == typeof(Republic) => new Republic(),
+                var t when t == typeof(CivOne.Governments.Democracy) => new CivOne.Governments.Democracy(),
+                var t when t == typeof(Anarchy) => new Anarchy(),
+                var t when t == typeof(Despotism) => new Despotism(),
+                var t when t == typeof(CivOne.Governments.Monarchy) => new CivOne.Governments.Monarchy(),
+                _ => throw new NotImplementedException($"Government type {government} not implemented in MockPlayer"),
+            };
+            this.Government = gov;
+            return this;
         }
     }
 }

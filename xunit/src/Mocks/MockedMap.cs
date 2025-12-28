@@ -15,23 +15,20 @@ using System.Collections.Generic;
 namespace CivOne.UnitTests
 {
 
-public partial class CityCitizenServiceImplTests
-	{
-		class MockedMap : IMap
+    class MockedMap : IMap
+    {
+        private readonly List<ICityOnContinent> _continentCities = new();
+        public IEnumerable<ICityOnContinent> ContinentCities(int continentId)
         {
-            private readonly List<ICityOnContinent> _continentCities = new();
-            public IEnumerable<ICityOnContinent> ContinentCities(int continentId)
-            {
-                return [.. _continentCities.Where(city => city.ContinentId == continentId)];
-            }
+            return [.. _continentCities.Where(city => city.ContinentId == continentId)];
+        }
 
-            public MockedMap ReturnContinentCitiesValues(params ICityOnContinent[] values)
-            {
-                _continentCities.RemoveAll(_ => true);
-                _continentCities.AddRange(values);
+        public MockedMap ReturnContinentCitiesValues(params ICityOnContinent[] values)
+        {
+            _continentCities.RemoveAll(_ => true);
+            _continentCities.AddRange(values);
 
-                return this;
-            }
+            return this;
         }
     }
 }
