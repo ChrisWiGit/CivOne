@@ -15,6 +15,7 @@ using System.Drawing;
 using CivOne.Tiles;
 using CivOne.Units;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace CivOne.UnitTests
@@ -81,9 +82,14 @@ namespace CivOne.UnitTests
             return this;
         }
 
-        public bool HasBuilding<T>() where T : IBuilding => _hasBuilding.Next() || _buildings.Contains(Activator.CreateInstance<T>());
-
-        public bool HasWonder<T>() where T : IWonder => _hasWonder.Next() || _wonders.Contains(Activator.CreateInstance<T>());
+        public bool HasBuilding<T>() where T : IBuilding => _hasBuilding.Next() || 
+            _buildings.Any(
+                t => t.GetType() == typeof(T)
+            );
+        public bool HasWonder<T>() where T : IWonder => _hasWonder.Next() || 
+            _wonders.Any(
+                t => t.GetType() == typeof(T)
+            );
 
         public void NewTurn()
         {
