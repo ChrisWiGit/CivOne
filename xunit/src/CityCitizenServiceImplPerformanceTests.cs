@@ -27,6 +27,12 @@ namespace CivOne.UnitTests
 {
 
     /// <summary>
+    /// CW: Use this test to measure performance 
+    /// of CityCitizenServiceImpl.
+    /// Usually this implementation will take longer than
+    /// the original one, due to added flexibility and features
+    /// that were not present in the original code in City.cs.
+    /// This test will allow to optimize performance without preoptimizing too much.
     /// </summary>
     public partial class CityCitizenServiceImplPerformanceTests : TestsBase
     {
@@ -84,10 +90,17 @@ namespace CivOne.UnitTests
 
             mockedCity
                 .WithWonder<ShakespearesTheatre>()
+                .WithWonder<MichelangelosChapel>()
                 .WithWonder<JSBachsCathedral>();
             mockedIGame.OnWonderObsoleteByType = 
-                (type) => type != typeof(ShakespearesTheatre);
-            mockedCity.WithBuilding<Temple>();
+                (type) => 
+                    type != typeof(MichelangelosChapel) &&
+                    type != typeof(ShakespearesTheatre);
+            
+            mockedCity
+                .WithBuilding<Colosseum>()
+                .WithBuilding<Cathedral>()
+                .WithBuilding<Temple>();
 
             
             testee = new CityCitizenServiceImplShim(
@@ -121,14 +134,16 @@ namespace CivOne.UnitTests
             long minElapsedMs = long.MaxValue;
             long maxElapsedMs = long.MinValue;
 
-            while (watch.ElapsedMilliseconds < 1000)
+            while (watch.ElapsedMilliseconds < 2_000)
             {
                 long innerWatchStart = watch.ElapsedMilliseconds;
                 
                 testee.GetCitizenTypes();
+
+                long diff = watch.ElapsedMilliseconds - innerWatchStart;
                 
-                minElapsedMs = Math.Min(minElapsedMs, watch.ElapsedMilliseconds - innerWatchStart);
-                maxElapsedMs = Math.Max(maxElapsedMs, watch.ElapsedMilliseconds - innerWatchStart);
+                minElapsedMs = diff != 0 ? Math.Min(minElapsedMs, diff) : minElapsedMs;
+                maxElapsedMs = Math.Max(maxElapsedMs, diff);
                 
                 iterations++;
             }
@@ -136,7 +151,7 @@ namespace CivOne.UnitTests
             var elapsedMs = watch.ElapsedMilliseconds;
             Console.WriteLine($"Elapsed time for {iterations} iterations: {elapsedMs} ms");
 
-            Assert.True(iterations >= 500, $"Performance test failed: only {iterations} iterations in {elapsedMs} ms");
+            Assert.True(iterations >= 1000, $"Performance test failed: only {iterations} iterations in {elapsedMs} ms");
 
             Assert.True(elapsedMs / iterations < 30, $"Performance test failed: single call took {elapsedMs} ms");
 
