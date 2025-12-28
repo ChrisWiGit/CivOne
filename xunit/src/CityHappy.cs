@@ -18,6 +18,9 @@ namespace CivOne.UnitTests
 {
 
     /// <summary>
+    /// CW: This is an integration Test, and needs a lot of game setup.
+    /// For unit tests see CityCitizenServiceImplTests.cs
+    /// --------------------------------
     /// Tests to exercise City citizen happiness. Citizen happiness
     /// is displayed in the 'Happy' pane of the City manager view
     /// as a five-step sequence:
@@ -29,6 +32,7 @@ namespace CivOne.UnitTests
     /// The final results are displayed in the 'header' of the City manager
     /// view and dictate if a city goes into disorder or celebration.
     /// </summary>
+    /// <seealso cref="CityCitizenServiceImplTests"/>
     public class CityHappy : TestsBase
     {
         /// <summary>
