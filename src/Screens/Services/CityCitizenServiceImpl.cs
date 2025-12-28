@@ -240,7 +240,7 @@ namespace CivOne.Screens.Services
 
 			int totalCities = _game.GetPlayer(_city.Owner).Cities.Count();
 
-			if (totalCities <= 12)
+			if (totalCities < MinEmperorCityCount)
 			{
 				return;
 			}
@@ -250,7 +250,7 @@ namespace CivOne.Screens.Services
 
 			int downgradeCount = _city.Size; // case >= 36
 
-			if (totalCities <= 24)
+			if (totalCities < MinEmperorCityCountStage2)
 			{
 				downgradeCount -= 1;
 			}
@@ -258,9 +258,14 @@ namespace CivOne.Screens.Services
 
 			WearRedShirt(ct.Citizens, NumberOfRedShirts(totalCities));
 		}
+
+		public static int MinEmperorCityCount => 13;
+		public static int MinRedShirtCityCount => 37;
+
+		public static int MinEmperorCityCountStage2 => 25;
 		protected internal int NumberOfRedShirts(int totalCities)
 		{
-			if (totalCities <= 36)
+			if (totalCities < MinRedShirtCityCount)
 			{
 				return 0;
 			}
@@ -298,6 +303,9 @@ namespace CivOne.Screens.Services
 			}
 			if (_city.Player.HasWonderEffect<CureForCancer>() && !_game.WonderObsolete<CureForCancer>())
 			{
+				// CW: check for obstoletion first, 
+				// even if in original Civ it is not done.
+				// But if we extend the game later, this may become relevant.
 				happy += 1;
 				ct.Wonders.Add(new CureForCancer());
 			}
