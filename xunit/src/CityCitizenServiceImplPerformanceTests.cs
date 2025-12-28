@@ -42,7 +42,7 @@ namespace CivOne.UnitTests
         {
             this.output = output;
         }
-        
+
         CityCitizenServiceImplShim testee;
         List<Citizen> mockedSpecialists;
 
@@ -74,7 +74,8 @@ namespace CivOne.UnitTests
                 .WithWonderEffect<HangingGardens>(true)
                 .WithWonderEffect<Oracle>(true)
                 .WithWonderEffect<CureForCancer>(true)
-                .withCitiesCount(25);
+                .withCitiesInterface([mockedCity])
+                .withCitiesCount(CityCitizenServiceImpl.MinRedShirtCityCount);
 
             mockedIGame = new MockedGame()
             {
@@ -84,25 +85,29 @@ namespace CivOne.UnitTests
                 OnGetPlayer = (playerId) => mockedCity.MockPlayer
             };
             mockedIMap = new MockedMap();
+            mockedIMap.ReturnContinentCitiesValues(
+                [mockedCity]);
 
-            mockedSpecialists.AddRange([Citizen.Entertainer, 
+            mockedSpecialists.AddRange([Citizen.Entertainer,
                 Citizen.Entertainer]);
 
             mockedCity
-                .WithWonder<ShakespearesTheatre>()
+                // .WithWonder<ShakespearesTheatre>() //This would shortcut ApplyBuildingEffects()
                 .WithWonder<MichelangelosChapel>()
                 .WithWonder<JSBachsCathedral>();
-            mockedIGame.OnWonderObsoleteByType = 
-                (type) => 
+            mockedIGame.OnWonderObsoleteByType =
+                (type) =>
                     type != typeof(MichelangelosChapel) &&
+                    type != typeof(HangingGardens) &&
+                    type != typeof(CureForCancer) &&
                     type != typeof(ShakespearesTheatre);
-            
+
             mockedCity
                 .WithBuilding<Colosseum>()
                 .WithBuilding<Cathedral>()
                 .WithBuilding<Temple>();
 
-            
+
             testee = new CityCitizenServiceImplShim(
                 mockedCity,
                 mockedCity,
@@ -134,24 +139,24 @@ namespace CivOne.UnitTests
             long minElapsedMs = long.MaxValue;
             long maxElapsedMs = long.MinValue;
 
-            while (watch.ElapsedMilliseconds < 2_000)
+            while (watch.ElapsedMilliseconds < 1_000)
             {
                 long innerWatchStart = watch.ElapsedMilliseconds;
-                
+
                 testee.GetCitizenTypes();
 
                 long diff = watch.ElapsedMilliseconds - innerWatchStart;
-                
+
                 minElapsedMs = diff != 0 ? Math.Min(minElapsedMs, diff) : minElapsedMs;
                 maxElapsedMs = Math.Max(maxElapsedMs, diff);
-                
+
                 iterations++;
             }
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
             Console.WriteLine($"Elapsed time for {iterations} iterations: {elapsedMs} ms");
 
-            Assert.True(iterations >= 1000, $"Performance test failed: only {iterations} iterations in {elapsedMs} ms");
+            Assert.True(iterations >= 500, $"Performance test failed: only {iterations} iterations in {elapsedMs} ms");
 
             Assert.True(elapsedMs / iterations < 30, $"Performance test failed: single call took {elapsedMs} ms");
 
