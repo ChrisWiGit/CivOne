@@ -28,17 +28,10 @@ namespace CivOne.UnitTests
     /// Tests to exercise City citizen happiness. Citizen happiness
     /// is displayed in the 'Happy' pane of the City manager view
     /// as a five-step sequence:
-    /// 1. initial state - determined by game difficulty
-    /// 2. impact of luxuries - from entertainers or settings
-    /// 3. impact of buildings - temple, etc
-    /// 4. impact of units - presence or absence of units depending on government
-    /// 5. impact of wonders
-    /// The final results are displayed in the 'header' of the City manager
-    /// view and dictate if a city goes into disorder or celebration.
     /// </summary>
     public partial class CityCitizenServiceImplTests : TestsBase
     {
-        CityCitizenServiceImplShims testee;
+        CityCitizenServiceImplShim testee;
         List<Citizen> mockedSpecialists;
 
         MockedGame mockedIGame;
@@ -66,7 +59,7 @@ namespace CivOne.UnitTests
             };
             mockedIMap = new MockedMap();
 
-            testee = new CityCitizenServiceImplShims(
+            testee = new CityCitizenServiceImplShim(
                 mockedCity,
                 mockedCity,
                 mockedIGame,
@@ -96,8 +89,8 @@ namespace CivOne.UnitTests
             mockedSpecialists.AddRange([Citizen.Entertainer, Citizen.Scientist, Citizen.Taxman]);
 
             mockedCity.MockPlayer = new MockedPlayer()
-                .withGovernmentType(typeof(Anarchy))
-                .withWonderEffect<HangingGardens>(true);
+                .WithGovernmentType(typeof(Anarchy))
+                .WithWonderEffect<HangingGardens>(true);
 
             mockedCity.Tile = mockedGrassland;
             mockedGrassland.WithUnits(
@@ -137,8 +130,8 @@ namespace CivOne.UnitTests
             mockedSpecialists.AddRange([Citizen.Entertainer, Citizen.Scientist, Citizen.Taxman]);
 
             mockedCity.MockPlayer = new MockedPlayer()
-                .withGovernmentType(typeof(Anarchy))
-                .withWonderEffect<HangingGardens>(true);
+                .WithGovernmentType(typeof(Anarchy))
+                .WithWonderEffect<HangingGardens>(true);
 
             mockedCity.Tile = mockedGrassland;
             mockedGrassland.WithUnits([new MockedUnit()
@@ -751,7 +744,7 @@ namespace CivOne.UnitTests
 
             mockedCity.MockPlayer = new MockedPlayer()
                 .withAdvance<Mysticism>(hasMysticism)
-                .withWonderEffect<Oracle>(hasOracle);
+                .WithWonderEffect<Oracle>(hasOracle);
 
             var ct = new CitizenTypes
             {
@@ -876,7 +869,7 @@ namespace CivOne.UnitTests
             int expectedUnhappy)
         {
             mockedCity.Size = 5;
-            var player = new MockedPlayer().withGovernmentType(government);
+            var player = new MockedPlayer().WithGovernmentType(government);
             mockedCity.MockPlayer = player;
 
             var units = new List<IUnit>();
@@ -934,7 +927,7 @@ namespace CivOne.UnitTests
         )
         {
             mockedCity.Size = 5;
-            var player = new MockedPlayer().withGovernmentType(government);
+            var player = new MockedPlayer().WithGovernmentType(government);
             mockedCity.MockPlayer = player;
             mockedIGame.OnGetPlayer = (playerId) =>
             {
@@ -1102,38 +1095,6 @@ namespace CivOne.UnitTests
             // Assert
             Assert.Equal(expectedContent, initialContent);
             Assert.Equal(expectedUnhappy, initialUnhappyCount);
-        }
-
-        class CityCitizenServiceImplShims : CityCitizenServiceImpl
-        {
-            public CityCitizenServiceImplShims(ICityBasic city,
-                    ICityBuildings cityBuildings,
-                    IGameCitizenDependency game,
-                    List<Citizen> specialists,
-                    IMap map) : base(city, cityBuildings, game, specialists, map)
-            {
-            }
-
-            public bool? BachsCathedral { get; set; } = null;
-
-            protected override internal bool HasBachsCathedral()
-            {
-                if (BachsCathedral.HasValue)
-                {
-                    return BachsCathedral.Value;
-                }
-                return base.HasBachsCathedral();
-            }
-
-            public int? CathedralDeltaValue { get; set; } = null;
-            internal override int CathedralDelta()
-            {
-                if (CathedralDeltaValue.HasValue)
-                {
-                    return CathedralDeltaValue.Value;
-                }
-                return base.CathedralDelta();
-            }
         }
     }
 }
