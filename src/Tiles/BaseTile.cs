@@ -221,7 +221,7 @@ namespace CivOne.Tiles
 		protected bool AlternateSpecial() => ((X + Y) % 4 == 0) || ((X + Y) % 4 == 3);
 		public City City => Game?.GetCity(X, Y);
         public bool HasCity => City != null;
-		public IUnit[] Units => Game?.GetUnits(X, Y);
+		public virtual IUnit[] Units => Game?.GetUnits(X, Y);
 
 		public ITile this[int relativeX, int relativeY] => Map[X + relativeX, Y + relativeY];
 		public ITile[,] this[int relativeX, int relativeY, int width, int height] => Map[X + relativeX, Y + relativeY, width, height];

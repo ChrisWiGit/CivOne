@@ -20,6 +20,7 @@ using CivOne.Enums;
 using CivOne.IO;
 using CivOne.Leaders;
 using CivOne.Screens;
+using CivOne.Screens.Services;
 using CivOne.Services;
 using CivOne.Services.GlobalWarming;
 using CivOne.Tasks;
@@ -29,7 +30,7 @@ using CivOne.Wonders;
 
 namespace CivOne
 {
-	public partial class Game : BaseInstance, IGame, ILogger
+	public partial class Game : BaseInstance, IGame, ILogger, IGameCitizenDependency
 	{
 		private readonly int _difficulty, _competition;
 		private readonly Player[] _players;
@@ -72,7 +73,19 @@ namespace CivOne
 			return false;
 		}
 
-		public int Difficulty => _difficulty;
+		public int Difficulty => Math.Clamp(_difficulty, 0, MaxDifficulty);
+		
+		/*
+		 * Chieftain = 0 (easiest)
+		 * Warlord = 1
+		 * Prince = 2
+		 * King = 3
+		 * Emperor = 4 (hardest in original Civ1)
+		 * Deity = 5 (hardest)
+		 */
+		public int MaxDifficulty {
+			get { return Settings.Instance.DeityEnabled ? 5 : 4; }
+		}
 
 		public bool HasUpdate => false;
 
@@ -513,7 +526,7 @@ namespace CivOne
 			return unit;
 		}
 
-		internal IUnit[] GetUnits(int x, int y)
+		public IUnit[] GetUnits(int x, int y)
 		{
 			while (x < 0) x += Map.WIDTH;
 			while (x >= Map.WIDTH) x -= Map.WIDTH;
@@ -522,7 +535,7 @@ namespace CivOne
 			return _units.Where(u => u.X == x && u.Y == y).OrderBy(u => (u == ActiveUnit) ? 0 : (u.Fortify || u.FortifyActive ? 1 : 2)).ToArray();
 		}
 
-		internal IUnit[] GetUnits() => _units.ToArray();
+		public IUnit[] GetUnits() => _units.ToArray();
 
 		internal void UpdateResources(ITile tile, bool ownerCities = true)
 		{
@@ -540,6 +553,14 @@ namespace CivOne
 		public City[] GetCities() => _cities.ToArray();
 
 		public ReadOnlyCollection<City> Cities { get { return _cities.AsReadOnly(); } }
+		
+		/** <summary>
+		 * Interface for City collection.
+		 * This new property is to avoid exposing the City class directly,
+		 * and will be used to refactor code to use ICity instead of City.
+		 * </summary> */
+		public ReadOnlyCollection<ICity> CitiesInterface { get { 
+			return _cities.Cast<ICity>().ToList().AsReadOnly(); } }
 
 		public IWonder[] BuiltWonders => _cities.SelectMany(c => c.Wonders).ToArray();
 

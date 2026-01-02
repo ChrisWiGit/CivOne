@@ -20,4 +20,3 @@ SetArray(ref cities[i], nameof(SaveData.City.TradingCities), 0xFF, 0xFF, 0xFF);
 1. ActualSize vs. VisibleSize.
    - Looks like, as if enemy city size for the player is only shown as VisibleSize, but not as ActualSize.
    - This may be a fog of war kind of thing.
-2. Trading is not implemented yet.

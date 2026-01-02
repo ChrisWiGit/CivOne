@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using CivOne.Advances;
 using CivOne.Buildings;
@@ -17,6 +18,7 @@ using CivOne.Enums;
 using CivOne.Governments;
 using CivOne.Screens;
 using CivOne.Screens.Reports;
+using CivOne.Screens.Services;
 using CivOne.src;
 using CivOne.Tasks;
 using CivOne.Tiles;
@@ -27,7 +29,9 @@ using UniversityBuilding = CivOne.Buildings.University;
 
 namespace CivOne
 {
-	public class City : BaseInstance, ITurn
+	public interface ICity : ITurn, ICityBasic, ICityBuildings, ICityOnContinent
+	{}
+	public class City : BaseInstance, ICity
 	{
 		// Dependency Injection
 		public static Game Game;
@@ -39,8 +43,11 @@ namespace CivOne
 		internal int NameId { get; set; }
 		internal byte X;
 		internal byte Y;
+
+		public Point Location => new(X, Y);
+
 		private byte _owner;
-		internal byte Owner
+		public byte Owner
 		{
 			get => _owner;
 			set
@@ -51,7 +58,7 @@ namespace CivOne
 		}
 		internal string Name => Game.CityNames[NameId];
 		private byte _size;
-		internal byte Size
+		public byte Size
 		{
 			get => _size;
 			set
@@ -352,16 +359,20 @@ namespace CivOne
 		/// Luxury count for the city, taking trade, buildings and entertainers
 		/// into account.
 		/// </summary>
-		internal short Luxuries
+		public short Luxuries
 		{
 			get
 			{
 				short luxuries = TradeLuxuries;
 				if (HasBuilding<MarketPlace>()) luxuries += (short)Math.Floor((double)luxuries * 0.5);
 				if (HasBuilding<Bank>()) luxuries += (short)Math.Floor((double)luxuries * 0.5);
-				luxuries += (short)(_specialists.Count(c => c == Citizen.Entertainer) * 2);
+				luxuries += (short)EntertainerLuxuries;
 				return luxuries;
 			}
+		}
+
+		public int EntertainerLuxuries {
+			get => Entertainers * 3;	
 		}
 
 		/// <summary>
@@ -717,11 +728,19 @@ namespace CivOne
 					if (unit is Nuclear && !Game.WonderBuilt<ManhattanProject>()) continue;
 					yield return unit;
 				}
-				foreach (IBuilding building in Reflect.GetBuildings().Where(b => Player.ProductionAvailable(b) && !_buildings.Any(x => x.Id == b.Id)))
+
+
+				if (!HasBuilding<Palace>())
 				{
-					if (HasBuilding<Palace>() && building is Courthouse) continue;
-					yield return building;
+					// CW: Show always Palace as available production if not yet built. It moves capital city to this city.
+					yield return new Palace();
 				}
+									
+				foreach (IBuilding building in Reflect.GetBuildings().Where(b => Player.ProductionAvailable(b) && !_buildings.Any(x => x.Id == b.Id)))
+					{
+						if (HasBuilding<Palace>() && building is Courthouse) continue;
+						yield return building;
+					}
 				foreach (IWonder wonder in Reflect.GetWonders().Where(b => Player.ProductionAvailable(b)))
 				{
 					yield return wonder;
@@ -800,202 +819,33 @@ namespace CivOne
 				return output;
 			}
 		}
+	
 
-		public struct CitizenTypes
-        {
-            public int happy;
-            public int content;
-            public int unhappy;
-            public int redshirt;
-            public int elvis;
-            public int einstein;
-            public int taxman;
+		public int ContinentId => Map[X, Y].ContinentId;
 
-            public int Sum()
-            {
-                return happy + content + unhappy + redshirt + elvis + einstein + taxman;
-            }
-
-            public bool Valid()
-            {
-                return happy >= 0 && content >= 0 && unhappy >= 0;
-            }
-        }
-
-        // Microprose: initial state -> add entertainers -> 'after luxury' state
-        // City size 4, King:
-        //   3c1u -> 2c1u1ent -> 1h1c1u1ent
-        //   3c1u -> 1c1u2ent -> 1h1c2ent
-        //   3c1u -> 1u3ent   -> 1h3ent
-        // City size 5, King:
-        //   3c2u -> 2c2u1ent -> 1h1c2u1ent
-        //   3c2u -> 1c2u2ent -> 1h1c1u2ent
-        //   3c2u -> 2u3ent   -> 1h1c3ent
-        //   3c2u -> 1u4ent   -> 1h4ent
-        // City size 6, King:
-        //   3c3u -> 2c3u1ent -> 1h1c3u1ent
-        //   3c3u -> 1c3u2ent -> 1h1c2u2ent
-        //   3c3u -> 3u3ent   -> 1h1c1u3ent
-        //   3c3u -> 2u4ent   -> 2h4ent
-
-        internal IEnumerable<CitizenTypes> Residents
-        {
-            get
-            {
-                // TODO fire-eggs: add side-effect of recalc specialties a la Citizens
-                CitizenTypes start = new CitizenTypes();
-                start.elvis = Entertainers;
-                start.einstein = Scientists;
-                start.taxman = Taxmen;
-
-                int specialists = start.elvis + start.einstein + start.taxman;
-                int available = Size - specialists;
-                int initialContent = 6 - Game.Difficulty;
-
-                // Stage 1: basic content/unhappy
-                start.content = Math.Max(0, Math.Min(available, initialContent - specialists));
-                start.unhappy = available - start.content;
-
-                Debug.Assert(start.Sum() == Size);
-                Debug.Assert(start.Valid());
-                yield return start;
-
-                if (available < 1)
-                    yield return start;
-                else
-                {
-                    // Stage 2: impact of luxuries: content->happy; unhappy->content and then content->happy
-                    int happyUpgrades = (int)Math.Floor((double)Luxuries / 2);
-                    int cont = start.content;
-                    int unha = start.unhappy;
-                    int happ = start.happy;
-                    for (int h = 0; h < happyUpgrades; h++)
-                    {
-                        if (cont > 0)
-                        {
-                            happ++;
-                            cont--;
-                            continue;
-                        }
-                        if (unha > 0)
-                        {
-                            cont++;
-                            unha--;
-                        }
-                    }
-
-                    start.happy = happ;
-                    start.content = cont;
-                    start.unhappy = unha;
-
-                    Debug.Assert(start.Sum() == Size);
-                    Debug.Assert(start.Valid());
-
-                    // TODO fire-eggs impact of luxury setting?
-                    yield return start;
-                }
-
-                // Stage 3: impact of buildings
-                if (!(HasBuilding<Temple>() || HasBuilding<Colosseum>() || HasBuilding<Cathedral>()))
-                    yield return start;
-
-                int unhappyDelta = 0;
-                if (HasBuilding<Temple>())
-                {
-                    int templeEffect = 1;
-                    if (Player.HasAdvance<Mysticism>()) templeEffect <<= 1;
-                    if (Player.HasWonder<Oracle>() && !Game.WonderObsolete<Oracle>()) templeEffect <<= 1;
-                    unhappyDelta += templeEffect;
-                }
-                if (HasBuilding<Colosseum>()) unhappyDelta += 3;
-                if (HasBuilding<Cathedral>()) unhappyDelta += 4;
-
-                unhappyDelta = Math.Min(start.unhappy, unhappyDelta);
-                start.content += unhappyDelta;
-                start.unhappy -= unhappyDelta;
-
-                Debug.Assert(start.Sum() == Size);
-                Debug.Assert(start.Valid());
-
-                yield return start;
-            }
-        }
-
+		internal IEnumerable<CitizenTypes> Residents
+		{
+			get
+			{
+				var service = ICityCitizenService.Create(this,
+					Game.Instance, this._specialists, Map.Instance);
+				return service.EnumerateCitizens();
+			}
+		}
 
 		internal IEnumerable<Citizen> Citizens
 		{
 			get
 			{
-				// Update specialist count
 				while (_specialists.Count < Size - (ResourceTiles.Count() - 1)) _specialists.Add(Citizen.Entertainer);
 				while (_specialists.Count > Size - (ResourceTiles.Count() - 1)) _specialists.Remove(_specialists.Last());
 
-                // TODO fire-eggs verify luxury makes happy first, then clears unhappy
-				int happyCount = (int)Math.Floor((double)Luxuries / 2);
-				if (Player.HasWonder<HangingGardens>() && !Game.WonderObsolete<HangingGardens>()) happyCount++;
-				if (Player.HasWonder<CureForCancer>()) happyCount++;
-
-				int unhappyCount = Size - (6 - Game.Difficulty) - happyCount;
-				if (HasWonder<ShakespearesTheatre>() && !Game.WonderObsolete<ShakespearesTheatre>())
-				{
-					unhappyCount = 0;
-				}
-				else
-				{
-					if (HasBuilding<Temple>())
-					{
-						int templeEffect = 1;
-						if (Player.HasAdvance<Mysticism>()) templeEffect <<= 1;
-						if (Player.HasWonder<Oracle>() && !Game.WonderObsolete<Oracle>()) templeEffect <<= 1;
-						unhappyCount -= templeEffect;
-					}
-					if (Tile != null && Map.ContentCities(Tile.ContinentId).Any(x => x.Size > 0 && x.Owner == Owner && x.HasWonder<JSBachsCathedral>()))
-					{
-						unhappyCount -= 2;
-					}
-					if (HasBuilding<Colosseum>()) unhappyCount -= 3;
-					if (HasBuilding<Cathedral>()) unhappyCount -= 4;
-				}
-
-                // 20190612 fire-eggs Martial law : reduce unhappy count for every attack-capable unit in city [max 3]
-                if (Player.AnarchyDespotism || Player.MonarchyCommunist)
-                {
-                    var attackUnitsInCity = Game.Instance.GetUnits()
-                        .Where(u => u.X == this.X && u.Y == this.Y && u.Attack > 0)
-                        .Count();
-                    attackUnitsInCity = Math.Min(attackUnitsInCity, 3);
-                    unhappyCount -= attackUnitsInCity;
-
-                    // TODO fire-eggs: absent units make people unhappy (republic, democracy)
-                }
-
-                int content = 0;
-				int unhappy = 0;
-				int working = (ResourceTiles.Count() - 1);
-				int specialist = 0;
-
-				for (int i = 0; i < Size; i++)
-				{
-					if (i < working)
-					{
-						if (happyCount-- > 0)
-						{
-							yield return (i % 2 == 0) ? Citizen.HappyMale : Citizen.HappyFemale;
-							continue;
-						}
-						if ((unhappyCount - (working - i)) >= 0)
-						{
-							unhappyCount--;
-							yield return ((unhappy++) % 2 == 0) ? Citizen.UnhappyMale : Citizen.UnhappyFemale;
-							continue;
-						}
-						yield return ((content++) % 2 == 0) ? Citizen.ContentMale : Citizen.ContentFemale;
-						continue;
-					}
-					yield return _specialists[specialist++];
-				}
+				var service = ICityCitizenService.Create(this,
+					Game.Instance, this._specialists, Map.Instance);
+				return service.GetCitizens();
 			}
 		}
+
 		internal void ChangeSpecialist(int index)
 		{
 			if (index >= _specialists.Count) return;

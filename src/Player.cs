@@ -109,7 +109,14 @@ namespace CivOne
 
 		public bool IsHuman => (Game.HumanPlayer == this);
 
-		public City[] Cities => Game.GetCities().Where(c => this == c.Owner && c.Size > 0).ToArray();
+		public virtual City[] Cities => Game.GetCities().Where(c => this == c.Owner && c.Size > 0).ToArray();
+		
+		/** <summary>
+		 * Interface for City collection.
+		 * This new property is to avoid exposing the City class directly,
+		 * and will be used to refactor code to use ICity instead of City.
+		 * </summary> */
+		public virtual ICity[] CitiesInterface => Game.GetCities().Where(c => this == c.Owner && c.Size > 0).ToArray();
 
 		public int Population => Cities.Sum(c => c.Population);
 		
@@ -168,9 +175,9 @@ namespace CivOne
 
 		public IAdvance[] Advances => _advances.Select(a => Common.Advances.First(x => x.Id == a)).ToArray();
 		
-		public bool HasAdvance<T>() where T : IAdvance => Advances.Any(a => a is T);
+		public virtual bool HasAdvance<T>() where T : IAdvance => Advances.Any(a => a is T);
 
-		public bool HasAdvance(IAdvance advance) => (advance == null || Advances.Any(a => a.Id == advance.Id));
+		public virtual bool HasAdvance(IAdvance advance) => (advance == null || Advances.Any(a => a.Id == advance.Id));
 
 		public Player[] Embassies => _embassies.Select(e => Game.Players.FirstOrDefault(p => e == Game.PlayerNumber(p))).Where(p => p != null).ToArray();
 
@@ -268,6 +275,8 @@ namespace CivOne
 			
 			return false;
 		}
+
+		public virtual bool HasWonderEffect<T>() where T : IWonder, new() => HasWonder<T>() && !Game.WonderObsolete<T>();
 		
 		public bool HasWonder<T>() where T : IWonder => Cities.Any(c => c.HasWonder<T>());
 
@@ -410,7 +419,7 @@ namespace CivOne
 		
 		public static bool operator ==(Player p1, byte p2) => Game.PlayerNumber(p1) == p2;
 		public static bool operator !=(Player p1, byte p2) => Game.PlayerNumber(p1) != p2;
-		
+
 		public Player(ICivilization civilization, string customLeaderName = null, string customTribeName = null, string customTribeNamePlural = null)
 		{
 			_civilization = civilization;
@@ -418,13 +427,17 @@ namespace CivOne
 			_tribeName = customTribeName ?? _civilization.Name;
 			_tribeNamePlural = customTribeNamePlural ?? _civilization.NamePlural;
 			Government = new Despotism();
-			
+
 			for (int xx = 0; xx < Map.WIDTH; xx++)
-			for (int yy = 0; yy < Map.HEIGHT; yy++)
-			{
-				_explored[xx, yy] = false;
-				_visible[xx, yy] = false;
-			}
+				for (int yy = 0; yy < Map.HEIGHT; yy++)
+				{
+					_explored[xx, yy] = false;
+					_visible[xx, yy] = false;
+				}
+		}
+		internal Player()
+		{
+			// for MockPlayer
 		}
 	}
 }

@@ -16,7 +16,7 @@ using CivOne.Tiles;
 
 namespace CivOne
 {
-	public partial class Map
+	public partial class Map : IMap
 	{
 		private static Resources Resources = Resources.Instance;
 		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
@@ -101,7 +101,11 @@ namespace CivOne
 		
 		public IEnumerable<ITile> ContinentTiles(int continentId) => AllTiles().Where(t => t.ContinentId == continentId);
 		
-		public IEnumerable<City> ContentCities(int continentId) => ContinentTiles(continentId).Where(x => x.City != null).Select(x => x.City).ToArray();
+		public IEnumerable<ICityOnContinent> ContinentCities(int continentId) =>
+			[.. ContinentTiles(continentId)
+				.Where(x => x.City != null)
+				.Select(x => x.City)
+				.Cast<ICityOnContinent>()];
 		
 		public ITile this[int x, int y]
 		{
@@ -163,7 +167,7 @@ namespace CivOne
 			}
 		}
 		
-		private Map()
+		internal Map()
 		{
 			_terrainMasterWord = Common.Random.Next(16);
 			Ready = false;
@@ -174,9 +178,9 @@ namespace CivOne
         /// <summary>
         /// Fire-eggs 20190704: for unit testing, reset
         /// </summary>
-        internal static void Wipe()
+        internal static void Reset(Map newInstance = null)
         {
-            _instance = null;
+            _instance = newInstance;
         }
 	}
 }

@@ -32,8 +32,13 @@ namespace CivOne.Units
 		UnitType Type { get; }
 		/// <summary>
 		/// Defines home (supporting city) of the unit
+		/// Deprecated: use IsHome(ICityBasic city) method instead
+		/// to check if unit's home is the given city
 		/// </summary>
 		City Home { get; }
+
+		virtual bool IsHome(ICityBasic city) => HasHome && Home == city;
+		bool HasHome => Home != null;
 		UnitRole Role { get; }
 		byte Attack { get; }
 		byte Defense { get; }

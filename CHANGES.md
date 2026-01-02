@@ -6,6 +6,20 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Major refactor and extensive tests of city happiness mechanics in [CityCitizenServiceImpl.cs](src/Screens/Services/CityCitizenServiceImpl.cs)
+  * Fix: The original code contained duplicated logic in City::Citizens and City::Residents methods.
+  * Completely rewritten with unit tests ([xunit/src/CityCitizenServiceImplTests.cs](xunit/src/CityCitizenServiceImplTests.cs)) and performance tests ([xunit/src/CityCitizenServiceImplPerformanceTests.cs](xunit/src/CityCitizenServiceImplPerformanceTests.cs))
+    * No need for game simulation to test the logic.
+  * Implement building, wonders and advancements effects on happiness
+    * including MichelangelosChapel and JSBachsCathedral on same continent as city with wonder
+  * Marshall Law effects on happiness
+  * Democracy/Republic effects on happiness
+  * Luxury tax rate effects on happiness
+  * Entertainer specialists effects on happiness
+  * RedShirts citizens on Emperor difficulty level with more t
+  * Base performance tests for future changes and optimizations
+* Fix: Michelangelo's Chapel now gives +6 happiness instead of +4 with Cathedral if on same continent as city with wonder.
+* Fix: Allow Palace to be build again after it was sold.
 * Fix: City science calculation is now correct according to original game behavior.
   * Libraries and Universities receive a 66% bonus to science each if Isaac Newton's College is built, not obsolete and SETI Program is not built otherwise 50% bonus each.
   * Copernicus Observatory doubles the total science output of the city if it is not obsolete.

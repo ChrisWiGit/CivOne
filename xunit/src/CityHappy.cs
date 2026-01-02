@@ -18,6 +18,9 @@ namespace CivOne.UnitTests
 {
 
     /// <summary>
+    /// CW: This is an integration Test, and needs a lot of game setup.
+    /// For unit tests see CityCitizenServiceImplTests.cs
+    /// --------------------------------
     /// Tests to exercise City citizen happiness. Citizen happiness
     /// is displayed in the 'Happy' pane of the City manager view
     /// as a five-step sequence:
@@ -29,6 +32,7 @@ namespace CivOne.UnitTests
     /// The final results are displayed in the 'header' of the City manager
     /// view and dictate if a city goes into disorder or celebration.
     /// </summary>
+    /// <seealso cref="CityCitizenServiceImplTests"/>
     public class CityHappy : TestsBase
     {
         /// <summary>
@@ -148,7 +152,6 @@ namespace CivOne.UnitTests
                 citizenTypes = foo.Current;
                 Assert.Equal(1, citizenTypes.happy);
                 Assert.Equal(1, citizenTypes.elvis);
-
             }
         }
 
@@ -236,8 +239,11 @@ namespace CivOne.UnitTests
 
                 foo.MoveNext();
                 citizenTypes = foo.Current;
-                Assert.Equal(1, citizenTypes.happy);
-                Assert.Equal(1, citizenTypes.content);
+                // CW: 2 Entertainer = 2 * 3 Luxury = 6
+                // 6 Luxury = upgrade 3 times 
+                // 1 content -> happy, 1 unhappy -> content -> happy
+                Assert.Equal(2, citizenTypes.happy);
+                Assert.Equal(0, citizenTypes.content);
                 Assert.Equal(0, citizenTypes.unhappy);
                 Assert.Equal(2, citizenTypes.elvis);
             }
@@ -323,7 +329,7 @@ namespace CivOne.UnitTests
         /// First tricky one. City size 6 at King level: starts with 3 content, 3 unhappy.
         /// Switch 3 people to entertainers: now 3 unhappy, 3 entertainers. Entertainers
         /// make content people happy, then unhappy people content, but sequentially.
-        /// Specifically: a) 1 unhappy-> 1 content; b) the 1 content-> 1 happy; c) 1 happy
+        /// Specifically: a) 1 unhappy-> 1 content; b) the 1 content-> 1 happy; c) 1 unhappy
         /// to 1 content. Final: 1 happy, 1 content, 1 unhappy, 3 entertainers.
         ///
         /// The "parallel" approach would be to make all 3 unhappy people content, but
@@ -352,16 +358,19 @@ namespace CivOne.UnitTests
 
                 foo.MoveNext();
                 citizenTypes = foo.Current;
-                Assert.Equal(1, citizenTypes.happy);
-                Assert.Equal(1, citizenTypes.content);
+                // CW: 3 Entertainer = 3 * 3 Luxury = 9
+                // 9 Luxury = upgrade 4 times
+                // unhappy-> 2 content -> 2 happy
+                Assert.Equal(2, citizenTypes.happy);
+                Assert.Equal(0, citizenTypes.content);
                 Assert.Equal(1, citizenTypes.unhappy);
                 Assert.Equal(3, citizenTypes.elvis);
 
                 foo.MoveNext();
                 citizenTypes = foo.Current;
                 // temple effect
-                Assert.Equal(1, citizenTypes.happy);
-                Assert.Equal(2, citizenTypes.content);
+                Assert.Equal(2, citizenTypes.happy);
+                Assert.Equal(1, citizenTypes.content);
                 Assert.Equal(0, citizenTypes.unhappy);
                 Assert.Equal(3, citizenTypes.elvis);
             }
@@ -384,6 +393,7 @@ namespace CivOne.UnitTests
                 foo.MoveNext();
                 var citizenTypes = foo.Current;
                 // initial state
+                // difficulty 3: 3 content, 2 unhappy
                 Assert.Equal(0, citizenTypes.happy);
                 Assert.Equal(2, citizenTypes.content);
                 Assert.Equal(2, citizenTypes.unhappy);

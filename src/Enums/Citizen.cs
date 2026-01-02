@@ -19,6 +19,8 @@ namespace CivOne.Enums
 		UnhappyFemale = 5,
 		Taxman = 6,
 		Scientist = 7,
-		Entertainer = 8
+		Entertainer = 8,
+		RedShirtMale = 9,
+		RedShirtFemale = 10
 	}
 }
