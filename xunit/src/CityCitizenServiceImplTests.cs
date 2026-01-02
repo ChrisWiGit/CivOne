@@ -1,13 +1,4 @@
-﻿// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
-using CivOne.src;
+﻿using CivOne.src;
 using System.Linq;
 using CivOne.Buildings;
 using Xunit;
@@ -773,7 +764,7 @@ namespace CivOne.UnitTests
         {
             mockedCity.Size = 5;
             mockedCity.ReturnHasWonderValues(false);
-            mockedCity.ReturnHasBuildingValues(false, false); // Temple and Colosseum
+            mockedCity.WithBuilding<Cathedral>();
             testee.BachsCathedral = true;
             testee.CathedralDeltaValue = 2;
 
@@ -787,7 +778,12 @@ namespace CivOne.UnitTests
 
             testee.ApplyBuildingEffects(ct);
 
-            Assert.Empty(ct.Buildings);
+            Assert.Single(ct.Buildings);
+            Assert.IsType<Cathedral>(ct.Buildings[0]);
+
+            Assert.Equal(2, ct.Wonders.Count);
+            Assert.IsType<JSBachsCathedral>(ct.Wonders[0]);
+            Assert.IsType<MichelangelosChapel>(ct.Wonders[1]);
 
             var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
             Assert.Equal(0, happy);
@@ -853,6 +849,67 @@ namespace CivOne.UnitTests
             Assert.Equal(0, redShirt);
             Assert.Equal(4, unhappy);
             Assert.Equal(1, content); // no change
+        }
+
+        [Fact]
+        public void ApplyWonderEffectsTests()
+        {
+            mockedCity.Size = 5;
+            mockedCity.MockPlayer = new MockedPlayer()
+                .WithWonderEffect<HangingGardens>(true)
+                .WithWonderEffect<CureForCancer>(true);
+
+            mockedIGame.OnWonderObsoleteByType = (type) => false;
+
+            var ct = new CitizenTypes
+            {
+                Citizens = new Citizen[5],
+                Wonders = [],
+                content = 2,
+                unhappy = 3
+            };
+            testee.InitCitizens(ct.Citizens, 2, 3); // 2 content, 3 unhappy
+
+            testee.ApplyWonderEffects(ct);
+
+            Assert.Equal(2, ct.Wonders.Count);
+            Assert.IsType<HangingGardens>(ct.Wonders[0]);
+            Assert.IsType<CureForCancer>(ct.Wonders[1]);
+
+            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
+
+            Assert.Equal(2, happy); // 2 from wonders
+            Assert.Equal(0, content);
+            Assert.Equal(3, unhappy);
+        }
+
+        [Fact]
+        public void ApplyWonderEffectsNoWondersEffectsTests()
+        {
+            mockedCity.Size = 5;
+            mockedCity.MockPlayer = new MockedPlayer()
+                .WithWonderEffect<HangingGardens>(true)
+                .WithWonderEffect<CureForCancer>(false);
+
+            mockedIGame.OnWonderObsoleteByType = (type) => true;
+
+            var ct = new CitizenTypes
+            {
+                Citizens = new Citizen[5],
+                Wonders = [],
+                content = 2,
+                unhappy = 3
+            };
+            testee.InitCitizens(ct.Citizens, 2, 3); // 2 content, 3 unhappy
+
+            testee.ApplyWonderEffects(ct);
+
+            Assert.Empty(ct.Wonders);
+
+            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
+            Assert.Equal(0, happy); // no effect
+            Assert.Equal(2, content);
+            Assert.Equal(3, unhappy);
         }
 
         [Theory]
