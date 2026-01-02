@@ -41,19 +41,24 @@ namespace CivOne.Screens.Services
 			// Stage 2: impact of luxuries: content->happy; unhappy->content and then content->happy
 			// entertainers produce these luxury effects, but also marketplace, bank and luxury trade settings.
 			ct = Stage2(ct);
+			// In orig Civ citizens change sex if different from previous type
+			ct = AdaptCitizens(ct);
 
 			yield return ct;
 
 			// Stage 3: Building effects
 			ct = Stage3(ct);
+			ct = AdaptCitizens(ct);
 			yield return ct;
 
 			// Stage 4: martial law
 			ct = Stage4(ct, initialContent);
+			ct = AdaptCitizens(ct);
 			yield return ct;
 
 			//Stage 5: wonder effects
 			ct = Stage5(ct);
+			ct = AdaptCitizens(ct);
 			yield return ct;				
 		}
 
@@ -98,6 +103,15 @@ namespace CivOne.Screens.Services
 			return GetCitizenTypes().Citizens;
 		}
 
+		/// <summary>
+		/// Adapt citizens.
+		/// This method makes sure that the first citizen of each type 
+		/// is a male, the second a female, and so on.
+		/// This is how the original Civ seems to do it.
+		/// (imo, a rather weird way of doing it, because of sex changes on upgrades/downgrades)
+		/// </summary>
+		/// <param name="ct">The citizen types.</param>
+		/// <returns>>The adapted citizen types on the same instance.</returns>
 		protected internal CitizenTypes AdaptCitizens(CitizenTypes ct)
 		{
 			byte offset = 0;
