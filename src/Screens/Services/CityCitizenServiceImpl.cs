@@ -1,12 +1,10 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Enums;
-using CivOne.Units;
 using CivOne.Wonders;
 using DebugService = System.Diagnostics.Debug;
 
@@ -303,7 +301,7 @@ namespace CivOne.Screens.Services
 			}
 			if (_city.Player.HasWonderEffect<CureForCancer>() && !_game.WonderObsolete<CureForCancer>())
 			{
-				// CW: check for obstoletion first, 
+				// CW: check for obsoletion first, 
 				// even if in original Civ it is not done.
 				// But if we extend the game later, this may become relevant.
 				happy += 1;
