@@ -1153,5 +1153,88 @@ namespace CivOne.UnitTests
             Assert.Equal(expectedContent, initialContent);
             Assert.Equal(expectedUnhappy, initialUnhappyCount);
         }
+
+        [Fact]
+        public void AdaptCitizensTests()
+        {
+            var ct = new CitizenTypes
+            {
+                Citizens =
+				[
+					Citizen.ContentFemale,
+                    Citizen.ContentMale,
+                    Citizen.UnhappyFemale,
+                    Citizen.UnhappyMale,
+                    Citizen.RedShirtFemale,
+                    Citizen.RedShirtMale,
+                    Citizen.HappyFemale,
+                    Citizen.HappyMale
+                ]
+            };
+
+            ct = testee.AdaptCitizens(ct);
+
+            Assert.Equal(Citizen.ContentMale, ct.Citizens[0]);
+            Assert.Equal(Citizen.ContentFemale, ct.Citizens[1]);
+            Assert.Equal(Citizen.UnhappyMale, ct.Citizens[2]);
+            Assert.Equal(Citizen.UnhappyFemale, ct.Citizens[3]);
+            Assert.Equal(Citizen.RedShirtMale, ct.Citizens[4]);
+            Assert.Equal(Citizen.RedShirtFemale, ct.Citizens[5]);
+            Assert.Equal(Citizen.HappyMale, ct.Citizens[6]);
+            Assert.Equal(Citizen.HappyFemale, ct.Citizens[7]);
+        }
+       
+        [Fact]
+        public void AdaptCitizensNoChangesTests()
+        {
+            var ct = new CitizenTypes
+            {
+                Citizens =
+                [
+                    Citizen.ContentMale,
+                    Citizen.ContentFemale,
+                    Citizen.UnhappyMale,
+                    Citizen.UnhappyFemale,
+                    Citizen.RedShirtMale,
+                    Citizen.RedShirtFemale,
+                    Citizen.HappyMale,
+                    Citizen.HappyFemale
+                ]
+            };
+
+            ct = testee.AdaptCitizens(ct);
+
+            Assert.Equal(Citizen.ContentMale, ct.Citizens[0]);
+            Assert.Equal(Citizen.ContentFemale, ct.Citizens[1]);
+            Assert.Equal(Citizen.UnhappyMale, ct.Citizens[2]);
+            Assert.Equal(Citizen.UnhappyFemale, ct.Citizens[3]);
+            Assert.Equal(Citizen.RedShirtMale, ct.Citizens[4]);
+            Assert.Equal(Citizen.RedShirtFemale, ct.Citizens[5]);
+            Assert.Equal(Citizen.HappyMale, ct.Citizens[6]);
+            Assert.Equal(Citizen.HappyFemale, ct.Citizens[7]);
+        }
+
+        		/// <summary>
+		/// Adapt citizens.
+		/// This method makes sure that the first citizen of each type 
+		/// is a male, the second a female, and so on.
+		/// This is how the original Civ seems to do it.
+		/// (imo, a rather weird way of doing it, because of sex changes on upgrades/downgrades)
+		/// </summary>
+		/// <param name="ct">The citizen types.</param>
+		/// <returns>>The adapted citizen types on the same instance.</returns>
+		// protected internal CitizenTypes AdaptCitizens(CitizenTypes ct)
+		// {
+		// 	byte offset = 0;
+		// 	for (int i = 1; i < ct.Citizens.Length; i++)
+		// 	{
+		// 		if (!EqualCitizenType(ct.Citizens[i - 1], ct.Citizens[i]))
+		// 		{
+		// 			offset = i % 2 == 0 ? (byte)0 : (byte)1;
+		// 		}
+		// 		ct.Citizens[i] = CitizenByIndex(i + offset, ct.Citizens[i]);
+		// 	}
+		// 	return ct;
+		// }
     }
 }

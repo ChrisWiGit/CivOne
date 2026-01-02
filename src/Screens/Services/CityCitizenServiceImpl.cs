@@ -59,7 +59,7 @@ namespace CivOne.Screens.Services
 			//Stage 5: wonder effects
 			ct = Stage5(ct);
 			ct = AdaptCitizens(ct);
-			yield return ct;				
+			yield return ct;
 		}
 
 		public CitizenTypes GetCitizenTypes()
@@ -94,7 +94,7 @@ namespace CivOne.Screens.Services
 
 			// In orig Civ citizens change sex if different from previous type
 			ct = AdaptCitizens(ct);
-			
+
 			return ct;
 		}
 
@@ -114,15 +114,29 @@ namespace CivOne.Screens.Services
 		/// <returns>>The adapted citizen types on the same instance.</returns>
 		protected internal CitizenTypes AdaptCitizens(CitizenTypes ct)
 		{
-			byte offset = 0;
+			if (ct.Citizens.Length < 2)
+			{
+				return ct;
+			}
+
+			int indexWithinType = 0;
+
+			ct.Citizens[0] = CitizenByIndex(0, ct.Citizens[0]);
+
 			for (int i = 1; i < ct.Citizens.Length; i++)
 			{
 				if (!EqualCitizenType(ct.Citizens[i - 1], ct.Citizens[i]))
 				{
-					offset = i % 2 == 0 ? (byte)0 : (byte)1;
+					indexWithinType = 0;
 				}
-				ct.Citizens[i] = CitizenByIndex(i + offset, ct.Citizens[i]);
+				else
+				{
+					indexWithinType++;
+				}
+
+				ct.Citizens[i] = CitizenByIndex(indexWithinType, ct.Citizens[i]);
 			}
+
 			return ct;
 		}
 
@@ -147,13 +161,13 @@ namespace CivOne.Screens.Services
 		{
 			int lux = _city.Luxuries;
 			lux -= _city.EntertainerLuxuries;
-			
+
 			int luxuryUpgrades = (int)Math.Floor((double)lux / 2);
 			// Luxury goods make content from unhappy citizens
 			// and happy from content citizens
 			UpgradeCitizens(ct.Citizens, luxuryUpgrades);
 
-			int entertainerUpgrades = (int)Math.Floor((double)_city.EntertainerLuxuries / 2); 
+			int entertainerUpgrades = (int)Math.Floor((double)_city.EntertainerLuxuries / 2);
 			// Entertainers make happy from content
 			UpgradeCitizens(ct.Citizens, entertainerUpgrades);
 
@@ -173,7 +187,7 @@ namespace CivOne.Screens.Services
 			DebugService.Assert(ct.Valid());
 			return ct;
 		}
-		
+
 		protected CitizenTypes Stage4(CitizenTypes ct, int initialContent)
 		{
 			ApplyMartialLaw(ct);
@@ -368,7 +382,7 @@ namespace CivOne.Screens.Services
 
 		protected internal void ApplyBuildingEffects(CitizenTypes ct)
 		{
-			if (_cityBuildings.HasWonder<ShakespearesTheatre>() && 
+			if (_cityBuildings.HasWonder<ShakespearesTheatre>() &&
 				!_game.WonderObsolete<ShakespearesTheatre>())
 			{
 				// All unhappy become content, but only in this city.
@@ -389,7 +403,7 @@ namespace CivOne.Screens.Services
 				if (_city.Player.HasWonderEffect<Oracle>())
 				{
 					unhappyToContent <<= 1;
-					ct.Wonders.Add(new Oracle()); 
+					ct.Wonders.Add(new Oracle());
 				}
 
 				ct.Buildings.Add(new Temple());
@@ -414,7 +428,7 @@ namespace CivOne.Screens.Services
 			}
 			unhappyToContent += cathedralDelta;
 
-			if (_cityBuildings.HasBuilding<Cathedral>()) 
+			if (_cityBuildings.HasBuilding<Cathedral>())
 			{
 				ct.Buildings.Add(new Cathedral());
 			}
@@ -641,7 +655,7 @@ namespace CivOne.Screens.Services
 		{
 			return c is Citizen.ContentMale or Citizen.ContentFemale;
 		}
-		
+
 		protected internal bool IsHappy(Citizen c)
 		{
 			return c is Citizen.HappyMale or Citizen.HappyFemale;
@@ -658,7 +672,7 @@ namespace CivOne.Screens.Services
 		}
 
 
-		
+
 		private bool EqualCitizenType(Citizen c1, Citizen c2)
 		{
 			return c1 switch
