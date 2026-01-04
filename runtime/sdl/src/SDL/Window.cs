@@ -12,6 +12,7 @@ using CivOne.IO;
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 // ReSharper disable InconsistentNaming
 
@@ -81,6 +82,62 @@ namespace CivOne
 				}
 			}
 
+			private bool HitDebugKeys(SDL_Event sdlEvent, SDL_Scancode scancode)
+			{
+				if (sdlEvent.SDL_EventType != SDL_EventType.SDL_KEYDOWN) return false;
+
+				SDL_KeyboardEvent keyboardEvent = CastToStruct<SDL_KeyboardEvent>(sdlEvent);
+				if (keyboardEvent.KeySym.Scancode == scancode &&
+					(keyboardEvent.KeySym.Modifier & (SDL_KMOD.KMOD_LSHIFT | SDL_KMOD.KMOD_RSHIFT)) != 0 &&
+					(keyboardEvent.KeySym.Modifier & (SDL_KMOD.KMOD_LCTRL | SDL_KMOD.KMOD_RCTRL)) != 0)
+				{
+					sdlEvent.SDL_EventType = SDL_EventType.SDL_MIN;
+					return true;
+				}
+				return false;
+			}
+
+			private void TrapDebbugger(SDL_Event sdlEvent)
+			{
+#if DEBUG
+				if (HitDebugKeys(sdlEvent, SDL_Scancode.SDL_SCANCODE_F12))
+				{
+					sdlEvent.SDL_EventType = SDL_EventType.SDL_MIN;
+
+					System.Diagnostics.Debugger.Break();
+				}
+#endif
+			}
+
+			private int _eventLoopWaitCounter = 0;
+
+
+			private void HandleDebuggingEvents(SDL_Event sdlEvent)
+			{
+#if DEBUG
+				if (HitDebugKeys(sdlEvent, SDL_Scancode.SDL_SCANCODE_F10))
+				{
+					_eventLoopWaitCounter += 1;
+					Log($"Increased event loop wait counter to {_eventLoopWaitCounter} ms");
+
+					sdlEvent.SDL_EventType = SDL_EventType.SDL_MIN;
+				}
+				else if (_eventLoopWaitCounter > 0 && HitDebugKeys(sdlEvent, SDL_Scancode.SDL_SCANCODE_F9))
+				{
+					_eventLoopWaitCounter -= 1;
+					_eventLoopWaitCounter = Math.Max(0, _eventLoopWaitCounter);
+					Log($"Decreased event loop wait counter to {_eventLoopWaitCounter} ms");
+
+					sdlEvent.SDL_EventType = SDL_EventType.SDL_MIN;
+				}
+
+				if (_eventLoopWaitCounter > 0)
+				{
+					Wait((uint)_eventLoopWaitCounter);
+				}
+#endif
+			}
+
 			public void Run()
 			{
 				OnLoad?.Invoke(this, EventArgs.Empty);
@@ -89,6 +146,8 @@ namespace CivOne
 				{
 					if (SDL_PollEvent(out SDL_Event sdlEvent) == 1)
 					{
+						HandleDebuggingEvents(sdlEvent);
+
 						HandleEvent(sdlEvent);
 
 						if (!_running)
@@ -96,6 +155,8 @@ namespace CivOne
 							// fast exit, if the window was closed
 							break;
 						}
+
+						TrapDebbugger(sdlEvent);
 					}
 
 					OnUpdate?.Invoke(this, EventArgs.Empty);

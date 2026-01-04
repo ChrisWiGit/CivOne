@@ -40,6 +40,8 @@ namespace CivOne
 		internal int CanvasHeight => Math.Max(200, Math.Min(384, Runtime.CanvasHeight));
 
 		private Stopwatch _tickWatch = new Stopwatch();
+
+		private uint _tickWatchOffset = 0;
 		private uint TickWatch
 		{
 			get
@@ -48,7 +50,7 @@ namespace CivOne
 				{
 					_tickWatch.Start();
 				}
-				return Convert.ToUInt32(((double)_tickWatch.ElapsedMilliseconds / 1000) * 60);
+				return _tickWatchOffset + Convert.ToUInt32(((double)_tickWatch.ElapsedMilliseconds / 1000) * 60);
 			}
 		}
 		private uint _gameTick = 0;
@@ -90,8 +92,29 @@ namespace CivOne
 			while (_gameTick < TickWatch)
 			{
 				_gameTick++;
+
+#if DEBUG
+				if (TickWatch - _gameTick > 1_000)
+				{
+					// NOTE:
+					// When debugging, the game tick stops advancing while real time continues.
+					// This causes the difference between TickWatch and _gameTick to grow continuously,
+					// making this while-loop take an increasingly long time to finish.
+					//
+					// To avoid resetting _gameTick, we restart the TickWatch and apply the current
+					// _gameTick as an offset, effectively continuing from the current tick.
+					//
+					// In the previous implementation, after continuing from the debugger and
+					// returning to normal gameplay, all user input was stalled until the loop
+					// had completed.
+					_tickWatchOffset = _gameTick;
+					_tickWatch.Restart();
+					break;
+				}
+#endif
 				if (!Update()) continue;
 				args.HasUpdate = true;
+
 			}
 		}
 

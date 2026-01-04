@@ -6,6 +6,13 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Added Debug keys for debugging purposes in DEBUG mode
+  * Ctrl + Shift + F12 to hit debugger breakpoint
+  * Ctrl + Shift + F9/F10 to decrease/increase event loop wait time by 1 ms.
+    This will allow for debugging in Linux to use the mouse in Visual Studio. Due to a known problem in SDL2,
+     mouse events are not handled correctly if the program is run under a debugger. This occurs, if the debugger
+     is triggered by a breakpoint or an exception. Adding a sleep may increase the chances of mouse events being processed.
+* Fix: Fixed an issue where resuming from the debugger caused the game loop to stall user input until all pending ticks were processed.
 * Major refactor and extensive tests of city happiness mechanics in [CityCitizenServiceImpl.cs](src/Screens/Services/CityCitizenServiceImpl.cs)
   * Fix: The original code contained duplicated logic in City::Citizens and City::Residents methods.
   * Completely rewritten with unit tests ([xunit/src/CityCitizenServiceImplTests.cs](xunit/src/CityCitizenServiceImplTests.cs)) and performance tests ([xunit/src/CityCitizenServiceImplPerformanceTests.cs](xunit/src/CityCitizenServiceImplPerformanceTests.cs))
