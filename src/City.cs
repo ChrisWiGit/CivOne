@@ -34,9 +34,6 @@ namespace CivOne
 	public class City : BaseInstance, ICity
 	{
 		// Dependency Injection
-		public static Game Game;
-
-		// Dependency Injection
 		// TODO: Replace by DI container instantiation
 		internal BitFlagExtensions bitFlagExtensions = new();
 

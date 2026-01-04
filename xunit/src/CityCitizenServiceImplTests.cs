@@ -521,56 +521,6 @@ namespace CivOne.UnitTests
 			
 		}
 
-
-        // protected internal void UpgradeCitizens(Citizen[] target, int happyUpgrades)
-		// {
-		// 	if (happyUpgrades <= 0) return;
-
-		// 	var count = target.Length - _specialists.Count;
-
-		// 	// Steps for each citizen, until happyUpgrades run out:
-		// 	// 1. unhappy to content if possible then content to happy
-		// 	// 2. go to next citizen and repeat 1.
-		// 	for (int i = 0; i < count && happyUpgrades > 0; i++)
-		// 	{
-		// 		if (IsHappy(target[i]))
-		// 		{
-		// 			continue;
-		// 		}
-		// 		// unhappy -> content OR content -> happy
-		// 		target[i] = UpgradeCitizen(target[i]);
-		// 		happyUpgrades--;
-
-		// 		if (IsHappy(target[i]))
-		// 		{
-		// 			continue;
-		// 		}
-		// 		if (happyUpgrades <= 0)
-		// 		{
-		// 			// CW: Currently, a redshirt is made to unhappy only, not content.
-		// 			break;
-		// 		}
-
-		// 		// still unhappy because of redshirt?
-		// 		if (IsUnhappy(target[i]))
-		// 		{
-		// 			target[i] = UpgradeCitizen(target[i]);
-		// 			happyUpgrades--;
-		// 		}
-
-		// 		if (happyUpgrades <= 0)
-		// 		{
-		// 			break;
-		// 		}
-
-		// 		// content -> happy
-		// 		target[i] = UpgradeCitizen(target[i]);
-		// 		happyUpgrades--;
-		// 	}
-		// }
-
-
-
         [Fact]
         public void CountCitizenTypesTests()
         {
@@ -939,13 +889,6 @@ namespace CivOne.UnitTests
             mockedCity.Tile = mockedGrassland;
             mockedGrassland.WithUnits([.. units]);
 
-            // mockedIGame.OnGetUnits = (x, y) =>
-            // {
-            //     Assert.Equal(mockedCityBasic.Location.X, x);
-            //     Assert.Equal(mockedCityBasic.Location.Y, y);
-            //     return mockedCityBasic.MockUnits;
-            // };
-
             var ct = new CitizenTypes
             {
                 Citizens = new Citizen[mockedCity.Size],
@@ -1213,28 +1156,5 @@ namespace CivOne.UnitTests
             Assert.Equal(Citizen.HappyMale, ct.Citizens[6]);
             Assert.Equal(Citizen.HappyFemale, ct.Citizens[7]);
         }
-
-        		/// <summary>
-		/// Adapt citizens.
-		/// This method makes sure that the first citizen of each type 
-		/// is a male, the second a female, and so on.
-		/// This is how the original Civ seems to do it.
-		/// (imo, a rather weird way of doing it, because of sex changes on upgrades/downgrades)
-		/// </summary>
-		/// <param name="ct">The citizen types.</param>
-		/// <returns>>The adapted citizen types on the same instance.</returns>
-		// protected internal CitizenTypes AdaptCitizens(CitizenTypes ct)
-		// {
-		// 	byte offset = 0;
-		// 	for (int i = 1; i < ct.Citizens.Length; i++)
-		// 	{
-		// 		if (!EqualCitizenType(ct.Citizens[i - 1], ct.Citizens[i]))
-		// 		{
-		// 			offset = i % 2 == 0 ? (byte)0 : (byte)1;
-		// 		}
-		// 		ct.Citizens[i] = CitizenByIndex(i + offset, ct.Citizens[i]);
-		// 	}
-		// 	return ct;
-		// }
     }
 }

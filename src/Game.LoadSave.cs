@@ -124,7 +124,6 @@ namespace CivOne
 
 			// CW: Dependency Injection. Otherwise this would be handled after this constructor (too late to call HandleExtinction).
 			Player.Game = this;
-			City.Game = this;
 
 			_players = new Player[_competition + 1];
 			_cities = new List<City>();
