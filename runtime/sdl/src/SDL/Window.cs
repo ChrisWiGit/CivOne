@@ -112,8 +112,6 @@ namespace CivOne
 			private int _eventLoopWaitCounter = 0;
 
 
-			// umschalt+stg+F9 erhöht zähler, ...+F10 erniedriegt Zähler
-			// Zähler ist zum Warten innerhalb  von Event loop
 			private void HandleDebuggingEvents(SDL_Event sdlEvent)
 			{
 #if DEBUG
