@@ -101,6 +101,7 @@ namespace CivOne
 					// that this while loop will take longer to complete.
 					// Not to reset _gameTick we restart TickWatcher and add _gameTick to TickWatch
 					// as if we just continued at _gameTick.
+					// In game this will stall all user input untile the loop is finished.
 					_tickWatchOffset = _gameTick;
 					_tickWatch.Restart();
 					break;
