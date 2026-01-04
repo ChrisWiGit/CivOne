@@ -43,8 +43,6 @@ namespace CivOne.src
             Game.CreateGame(3, 2, Common.Civilizations.First(x => x.Name == "Babylonian"));
             playa = Game.Instance.HumanPlayer;
 
-            City.Game = Game.Instance; // CW: Dependency Injection for now. Ensure static Game reference is set
-
             BeforeEach();
         }
 
