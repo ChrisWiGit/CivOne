@@ -96,12 +96,17 @@ namespace CivOne
 #if DEBUG
 				if (TickWatch - _gameTick > 1_000)
 				{
-					//CW: In scenario of debugging, the game tick does not advance
-					// but the elapsed time does, so the difference is increasing in a way
-					// that this while loop will take longer to complete.
-					// Not to reset _gameTick we restart TickWatcher and add _gameTick to TickWatch
-					// as if we just continued at _gameTick.
-					// In game this will stall all user input until the loop is finished.
+					// NOTE:
+					// When debugging, the game tick stops advancing while real time continues.
+					// This causes the difference between TickWatch and _gameTick to grow continuously,
+					// making this while-loop take an increasingly long time to finish.
+					//
+					// To avoid resetting _gameTick, we restart the TickWatch and apply the current
+					// _gameTick as an offset, effectively continuing from the current tick.
+					//
+					// In the previous implementation, after continuing from the debugger and
+					// returning to normal gameplay, all user input was stalled until the loop
+					// had completed.
 					_tickWatchOffset = _gameTick;
 					_tickWatch.Restart();
 					break;
