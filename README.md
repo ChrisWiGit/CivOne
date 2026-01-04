@@ -24,3 +24,17 @@ civone --load-slot c0
 ```
 
 If you omit the slot number, a loading screen will be shown, allowing you to select a saved game interactively.
+
+## Tests
+
+To run the tests, you can use the following command:
+
+```sh
+dotnet test
+```
+
+Extended console output will be shown during the test run, providing more insights into the test execution and results.
+
+```sh
+dotnet test --logger "console;verbosity=detailed"
+```

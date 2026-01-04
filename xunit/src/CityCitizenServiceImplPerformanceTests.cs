@@ -145,7 +145,7 @@ namespace CivOne.UnitTests
             }
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
-            Console.WriteLine($"Elapsed time for {iterations} iterations: {elapsedMs} ms");
+            output.WriteLine($"Elapsed time for {iterations} iterations: {elapsedMs} ms");
 
             Assert.True(iterations >= 500, $"Performance test failed: only {iterations} iterations in {elapsedMs} ms");
 
