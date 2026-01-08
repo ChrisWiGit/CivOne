@@ -91,15 +91,15 @@ namespace CivOne.Screens.Reports
 			Palette = Common.DefaultPalette;
 
 			// I'm not sure about the order of top 5 cities, but this is pretty close
-			_cities = Game.GetCities()
+			_cities = [.. Game.GetCities()
 							.Where(c => c.Size > 0)
 							.OrderByDescending(c => c.Wonders.Length)
 							.ThenByDescending(c => c.Size)
-							.ThenByDescending(c => c.Citizens.Count(x => x == Citizen.HappyMale || x == Citizen.HappyFemale))
-							.ThenByDescending(c => c.Citizens.Count(x => x == Citizen.ContentMale || x == Citizen.ContentFemale))
-							.ThenBy(c => c.Citizens.Count(x => x == Citizen.UnhappyMale || x == Citizen.UnhappyFemale))
-							.Take(5)
-							.ToArray();
+							.ThenByDescending(c => c.GetCitizenTypes().happy)
+							.ThenByDescending(c => c.GetCitizenTypes().content)
+							.ThenBy(c => c.GetCitizenTypes().redShirt) //CW: not verified
+							.ThenBy(c => c.GetCitizenTypes().unhappy)
+							.Take(5)];
 
 			Refresh();
 		}

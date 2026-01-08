@@ -18,6 +18,8 @@ namespace CivOne.Screens.Services
 		public int einstein;
 		public int taxman;
 
+		public readonly bool InDisorder => unhappy > happy;
+
 		public Citizen[] Citizens;
 
 		public List<IBuilding> Buildings;

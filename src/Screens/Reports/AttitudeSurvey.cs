@@ -75,12 +75,12 @@ namespace CivOne.Screens.Reports
 			y += 8;
 			if (y <= 190)
 			{
-				Citizen[] citizens = Human.Cities.SelectMany(x => x.Citizens).ToArray();
+				Citizen[] allCitizens = [.. Human.Cities.SelectMany(x => x.GetCitizens())];
 				string population = Common.NumberSeperator(Human.Population);
 				if (Human.Population == 0) population = "00,000";
-				int totalCitizens = citizens.Length;
-				int happyCitizens = citizens.Count(c => c == Citizen.HappyMale || c == Citizen.HappyFemale);
-				int unhappyCitizens = citizens.Count(c => c == Citizen.UnhappyMale || c == Citizen.UnhappyFemale);
+				int totalCitizens = allCitizens.Length;
+				int happyCitizens = allCitizens.Count(c => c == Citizen.HappyMale || c == Citizen.HappyFemale);
+				int unhappyCitizens = allCitizens.Count(c => c == Citizen.UnhappyMale || c == Citizen.UnhappyFemale);
 				int contentCitizens = totalCitizens - happyCitizens - unhappyCitizens;
 
 				if (totalCitizens > 0)
