@@ -122,7 +122,6 @@ namespace CivOne.UnitTests
                 if (tile.X != acity.X || tile.Y != acity.Y)
                 {
                     acity.SetResourceTile(tile);
-                    //acity.GetCitizenTypes();
                     return;
                 }
             }
@@ -139,6 +138,7 @@ namespace CivOne.UnitTests
             var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
             City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
             acity.Size = 2;
+            acity.ResetResourceTiles();
 
             MakeOneEntertainer(acity);
 
