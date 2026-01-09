@@ -279,10 +279,13 @@ namespace CivOne.Tiles
 
 			if (settings.Cities && tile.City != null)
 			{
-				output.AddLayer(Icons.City(tile.City, smallFont: settings.CitySmallFonts));
 				if (settings.ActiveUnit && tile.Units.Any(u => u == Game.ActiveUnit && u.Owner != Game.PlayerNumber(player)))
 				{
 					output.AddLayer(tile.UnitsToPicture(), -1, -1, dispose: true);
+				} 
+				else 
+				{
+					output.AddLayer(Icons.City(tile.City, smallFont: settings.CitySmallFonts));
 				}
 			}
 			
