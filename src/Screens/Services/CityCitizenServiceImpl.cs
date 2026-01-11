@@ -683,8 +683,6 @@ namespace CivOne.Screens.Services
 				Citizen.RedShirtMale or Citizen.RedShirtFemale => c2 is Citizen.RedShirtMale or Citizen.RedShirtFemale,
 				_ => false
 			};
-			// bool isPrevMale = index > 0 && !EqualCitizenType(target[index - 1], target[index]);
-
 		}
 
 
