@@ -102,7 +102,7 @@ namespace CivOne.UnitTests
 
             enumerator.MoveNext();
             var citizenTypes = enumerator.Current;
-        
+
             Assert.Equal(0, citizenTypes.content);
             Assert.Equal(1, citizenTypes.elvis);
         }
@@ -142,17 +142,17 @@ namespace CivOne.UnitTests
 
             MakeOneEntertainer(acity);
 
-			using var foo = acity.Residents.GetEnumerator();
-			foo.MoveNext();
-			var citizenTypes = foo.Current;
-			Assert.Equal(1, citizenTypes.content);
-			Assert.Equal(1, citizenTypes.elvis);
+            using var foo = acity.Residents.GetEnumerator();
+            foo.MoveNext();
+            var citizenTypes = foo.Current;
+            Assert.Equal(1, citizenTypes.content);
+            Assert.Equal(1, citizenTypes.elvis);
 
-			foo.MoveNext();
-			citizenTypes = foo.Current;
-			Assert.Equal(1, citizenTypes.happy);
-			Assert.Equal(1, citizenTypes.elvis);
-		}
+            foo.MoveNext();
+            citizenTypes = foo.Current;
+            Assert.Equal(1, citizenTypes.happy);
+            Assert.Equal(1, citizenTypes.elvis);
+        }
 
         /// <summary>
         /// City size 2, with 2 entertainer: results are always 2 entertainer
