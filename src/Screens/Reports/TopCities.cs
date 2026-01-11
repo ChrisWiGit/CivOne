@@ -92,14 +92,21 @@ namespace CivOne.Screens.Reports
 
 			// I'm not sure about the order of top 5 cities, but this is pretty close
 			_cities = [.. Game.GetCities()
-							.Where(c => c.Size > 0)
-							.OrderByDescending(c => c.Wonders.Length)
-							.ThenByDescending(c => c.Size)
-							.ThenByDescending(c => c.GetCitizenTypes().happy)
-							.ThenByDescending(c => c.GetCitizenTypes().content)
-							.ThenBy(c => c.GetCitizenTypes().redShirt) //CW: not verified
-							.ThenBy(c => c.GetCitizenTypes().unhappy)
-							.Take(5)];
+				.Where(c => c.Size > 0)
+				.Select(c => new
+				{
+					City = c,
+					Citizens = c.GetCitizenTypes()
+				})
+				.OrderByDescending(x => x.City.Wonders.Length)
+				.ThenByDescending(x => x.City.Size)
+				.ThenByDescending(x => x.Citizens.happy)
+				.ThenByDescending(x => x.Citizens.content)
+				.ThenBy(x => x.Citizens.redShirt)
+				.ThenBy(x => x.Citizens.unhappy)
+				.Take(5)
+				.Select(x => x.City)
+			];
 
 			Refresh();
 		}
