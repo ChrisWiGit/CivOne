@@ -25,6 +25,7 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Entertainer specialists effects on happiness
   * RedShirts citizens on Emperor difficulty level with more t
   * Base performance tests for future changes and optimizations
+  * Optimization of calling the new implementation by decreasing calls to CityCitizenServiceImpl
 * Fix: Michelangelo's Chapel now gives +6 happiness instead of +4 with Cathedral if on same continent as city with wonder.
 * Fix: Allow Palace to be build again after it was sold.
 * Fix: City science calculation is now correct according to original game behavior.
