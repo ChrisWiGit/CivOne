@@ -69,7 +69,7 @@ namespace CivOne.Screens.Reports
 			// don't count unhappy
 			// happy is *2
 			// all others are content
-			return citizens.happy + (citizens.Citizens.Length - citizens.unhappy - citizens.redShirt);
+			return 2 * citizens.happy + (citizens.Citizens.Length - citizens.unhappy - citizens.redShirt);
         }
 
 		protected override bool HasUpdate(uint gameTick)
