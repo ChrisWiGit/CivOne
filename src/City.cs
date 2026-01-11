@@ -888,8 +888,6 @@ namespace CivOne
 			}
 		}
 
-		private long _citizenCalls = 0;
-
 		/// <summary>
 		/// Get the citizen types for the city.
 		/// This was refactored from the property Citizens because calling it creates a bigger workload

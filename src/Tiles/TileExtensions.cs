@@ -284,7 +284,7 @@ namespace CivOne.Tiles
 					tile.Units.Any(u => u == Game.ActiveUnit && u.Owner != Game.PlayerNumber(player)))
 				{
 					output.AddLayer(tile.UnitsToPicture(), -1, -1, dispose: true);
-				} 
+				}
 			}
 			
 			if ((settings.EnemyUnits || settings.Units) && (tile.City == null || tile.Units.Any(u => u == Game.ActiveUnit)))
