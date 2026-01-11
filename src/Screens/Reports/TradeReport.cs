@@ -14,6 +14,7 @@ using CivOne.Concepts;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
+using CivOne.Screens.Services;
 
 namespace CivOne.Screens.Reports
 {
@@ -32,8 +33,8 @@ namespace CivOne.Screens.Reports
 
 		private void DrawCityTrade()
 		{
-			int totalIncome = _cities.Where(c => !c.IsInDisorder).Sum(c => c.TotalIncome);
-			int totalScience = _cities.Where(c => !c.IsInDisorder).Sum(c => c.Science);
+			int totalIncome = _cities.Sum(c => c.GetRealTotalIncome());
+			int totalScience = _cities.Sum(c => c.GetRealTotalScience());
 
 			this.DrawText("City Trade", 0, 15, 8, 32);
 
@@ -42,9 +43,12 @@ namespace CivOne.Screens.Reports
 			{
 				City city = _cities[i];
 
-				var Luxuries = city.IsInDisorder ? 0 : city.Luxuries;
-				var Taxes = city.IsInDisorder ? 0 : city.TotalIncome;
-				var Science = city.IsInDisorder ? 0 : city.Science;
+				CitizenTypes citizenTypes = city.GetCitizenTypes();
+
+				var Luxuries = citizenTypes.InDisorder ? 0 : city.Luxuries;
+				// Calling GetRealTotalIncome would call GetCitizenTypes twice, so don't use. 
+				var Taxes = citizenTypes.InDisorder ? 0 : city.TotalIncome;
+				var Science = citizenTypes.InDisorder ? 0 : city.Science;
 
 				this.DrawText(city.Name, 0, 5, 16, yy + 1)
 					.DrawText(city.Name, 0, 15, 16, yy)

@@ -113,15 +113,11 @@ namespace CivOne
 		public bool HasWonder(Type type) => _wonders.Any(w => w.GetType() == type);
 		public bool HasWonder<T>() where T : IWonder => _wonders.Any(w => w is T);
 
-		public int HappyCitizens => Citizens.Count(c => c == Citizen.HappyMale || c == Citizen.HappyFemale);
-		public int UnhappyCitizens => Citizens.Count(c => c == Citizen.UnhappyMale || c == Citizen.UnhappyFemale);
-        public int ContentCitizens => Citizens.Count(c => c == Citizen.ContentFemale || c == Citizen.ContentMale);
 
         public int Entertainers => _specialists.Count(c => c == Citizen.Entertainer);
         public int Scientists => _specialists.Count(c => c == Citizen.Scientist);
         public int Taxmen => _specialists.Count(c => c == Citizen.Taxman);
 
-        public bool IsInDisorder => _size > 0 && UnhappyCitizens > HappyCitizens;
 		public bool WasInDisorder {get; set;}
 
         public bool IsBuildingWonder => CurrentProduction is IWonder;
@@ -318,6 +314,16 @@ namespace CivOne
 		public int TradingCitiesSumValue => TradingCities.Sum(CalculateTradeValue);
 
 		public int TotalIncome => Taxes + TradingCitiesSumValue;
+
+		public int GetRealTotalIncome()
+		{
+			CitizenTypes citizenTypes = GetCitizenTypes();
+			if (citizenTypes.InDisorder)
+			{
+				return 0;
+			}
+			return TotalIncome;
+		}
 		/// <summary>
 		/// Amount of corruption, taking government, buildings, and distance
 		/// to capital into account.
@@ -429,6 +435,15 @@ namespace CivOne
 				science *= Player.ScienceRate / 10;
 				return (short)Math.Min((int)Math.Round(science), short.MaxValue);
 			}
+		}
+		internal int GetRealTotalScience()
+		{
+			CitizenTypes citizenTypes = GetCitizenTypes();
+			if (citizenTypes.InDisorder)
+			{
+				return 0;
+			}
+			return Science;
 		}
 
 		internal short TotalMaintenance => (short)_buildings.Sum(b => b.Maintenance);
@@ -559,10 +574,17 @@ namespace CivOne
 			return (Game.GetCities().Where(c => c != this).Any(c => c.ResourceTiles.Any(t => t.X == tile.X && t.Y == tile.Y)) || tile.Units.Any(u => u.Owner != Owner));
 		}
 
-		private void UpdateSpecialists()
+		public void UpdateSpecialists()
 		{
-			while (_specialists.Count < (_size - ResourceTiles.Count())) _specialists.Add(Citizen.Entertainer);
-			while (_specialists.Count > 0 && _specialists.Count > (_size - ResourceTiles.Count() - 1)) _specialists.RemoveAt(_specialists.Count - 1);
+			int target = Size - (ResourceTiles.Count() - 1);
+			
+			Debug.Assert(target >= 0, "City.UpdateSpecialists: target < 0");
+
+			_specialists =
+			[
+				.. _specialists.Take(target),
+				.. Enumerable.Repeat(Citizen.Entertainer, Math.Max(0, target - _specialists.Count)),
+			];
 		}
 
 		/// <summary>
@@ -646,12 +668,45 @@ namespace CivOne
 		{
 			if (!Game.Started) return;
 
+			if (_resourceTiles.Count > Size)
+			{
+				_resourceTiles.RemoveRange(Size, _resourceTiles.Count - Size);
+			}
+
+			if (_resourceTiles.Count < Size)
+			{
+				// CW: must recalculate due to tile removal
+				var resourceTiles = ResourceTiles;
+				var bestTile = CityTiles
+					.Where(t => !OccupiedTile(t) && !resourceTiles.Contains(t))
+					.OrderByDescending(FoodValue)
+					.ThenByDescending(ShieldValue)
+					.ThenByDescending(TradeValue)
+					.FirstOrDefault();
+
+				if (bestTile != null)
+					_resourceTiles.Add(bestTile);
+			}
+
+			UpdateSpecialists();
+			SetupCoastalFlag();
+		}
+
+		private void SetResourceTiles2()
+		{
+			if (!Game.Started) return;
+
 			while (_resourceTiles.Count > Size)
 				_resourceTiles.RemoveAt(_resourceTiles.Count - 1);
+			
 			if (_resourceTiles.Count == Size) return;
 			if (_resourceTiles.Count < Size)
 			{
-				IEnumerable<ITile> tiles = CityTiles.Where(t => !OccupiedTile(t) && !ResourceTiles.Contains(t)).OrderByDescending(t => FoodValue(t)).ThenByDescending(t => ShieldValue(t)).ThenByDescending(t => TradeValue(t));
+				IEnumerable<ITile> tiles = CityTiles.Where(
+					t => !OccupiedTile(t) && !ResourceTiles.Contains(t))
+							.OrderByDescending(t => FoodValue(t))
+							.ThenByDescending(t => ShieldValue(t))
+							.ThenByDescending(t => TradeValue(t));
 				if (tiles.Count() > 0)
 					_resourceTiles.Add(tiles.First());
 			}
@@ -660,6 +715,7 @@ namespace CivOne
 
 			SetupCoastalFlag();
 		}
+
 
 		private void SetupCoastalFlag()
 		{
@@ -703,6 +759,8 @@ namespace CivOne
 			if (_resourceTiles.Contains(tile))
 			{
 				_resourceTiles.Remove(tile);
+				UpdateSpecialists();
+
 				return;
 			}
 			_resourceTiles.Add(tile);
@@ -820,27 +878,43 @@ namespace CivOne
 
 		public int ContinentId => Map[X, Y].ContinentId;
 
+		private long _debugResidentsCalls = 0;
 		internal IEnumerable<CitizenTypes> Residents
 		{
 			get
 			{
+				Log($"[Residents] Calling ICityCitizenService.Create: {++_debugResidentsCalls}");
+
 				var service = ICityCitizenService.Create(this,
 					Game.Instance, this._specialists, Map.Instance);
 				return service.EnumerateCitizens();
 			}
 		}
 
-		internal IEnumerable<Citizen> Citizens
-		{
-			get
-			{
-				while (_specialists.Count < Size - (ResourceTiles.Count() - 1)) _specialists.Add(Citizen.Entertainer);
-				while (_specialists.Count > Size - (ResourceTiles.Count() - 1)) _specialists.Remove(_specialists.Last());
+		private long _citizenCalls = 0;
 
-				var service = ICityCitizenService.Create(this,
-					Game.Instance, this._specialists, Map.Instance);
-				return service.GetCitizens();
-			}
+		/// <summary>
+		/// Get the citizen types for the city.
+		/// This was refactored from the property Citizens because calling it creates a bigger workload
+		/// than you would expect when accessing as a property.
+		/// So in this way you have to explicitly call the method when you need it.
+		/// In the same way, the properties IsInDisorder, ContentCitizens, UnhappyCitizens, HappyCitizens
+		/// also have been removed. Use the returned structure of GetCitizenTypes() instead.
+		/// </summary>
+		/// <returns></returns>
+		internal CitizenTypes GetCitizenTypes()
+		{
+			UpdateSpecialists();
+
+			Log($"[Citizens] Calling ICityCitizenService.Create: {++_citizenCalls}");
+
+			var service = ICityCitizenService.Create(this,
+				Game.Instance, this._specialists, Map.Instance);
+			return service.GetCitizenTypes();
+		}
+		internal IEnumerable<Citizen> GetCitizens()
+		{
+			return GetCitizenTypes().Citizens;
 		}
 
 		internal void ChangeSpecialist(int index)
@@ -973,7 +1047,9 @@ namespace CivOne
 
 			UpdateResources();
 
-			if (IsInDisorder)
+			CitizenTypes citizenTypes = GetCitizenTypes();
+
+			if (citizenTypes.InDisorder)
 			{
 				if (Common.Random.Next(20) == 1 && HasBuilding<Buildings.NuclearPlant>() && !Player.HasAdvance<Advances.FusionPower>())
 				{
@@ -1011,7 +1087,7 @@ namespace CivOne
 				}
 				WasInDisorder = false;
 			}
-			if (UnhappyCitizens == 0 && HappyCitizens >= ContentCitizens && Size >= 3)
+			if (citizenTypes.unhappy == 0 && citizenTypes.redShirt == 0 && citizenTypes.happy >= citizenTypes.content && Size >= 3)
 			{
 				// we love the president day
 				if (Player.Government is Governments.Democracy || Player.Government is Republic)
@@ -1028,7 +1104,7 @@ namespace CivOne
 						GameTask.Insert(Show.WeLovePresidentDayCity(this));
 				}
 			}
-			Food += IsInDisorder ? 0 : FoodIncome;
+			Food += citizenTypes.InDisorder ? 0 : FoodIncome;
 
 			if (Food < 0)
 			{
@@ -1057,7 +1133,7 @@ namespace CivOne
 				{
 					if (Food < (FoodRequired / 2))
 					{
-						Food = (FoodRequired / 2);
+						Food = FoodRequired / 2;
 					}
 				}
 			}
@@ -1082,7 +1158,7 @@ namespace CivOne
 			}
 			else if (ShieldIncome > 0)
 			{
-				Shields += IsInDisorder ? 0 : ShieldIncome;
+				Shields += citizenTypes.InDisorder ? 0 : ShieldIncome;
 			}
 
 			if (Shields >= (int)CurrentProduction.Price * 10)
@@ -1163,8 +1239,8 @@ namespace CivOne
 			}
 
 			// TODO: Handle luxuries
-			Player.Gold += IsInDisorder ? (short)0 : Taxes;
-			Player.Gold += IsInDisorder ? (short)0 : (short)TradingCitiesSumValue;
+			Player.Gold += citizenTypes.InDisorder ? (short)0 : Taxes;
+			Player.Gold += citizenTypes.InDisorder ? (short)0 : (short)TradingCitiesSumValue;
 			Player.Gold -= TotalMaintenance;
 			Player.Science += Science;
 
@@ -1324,8 +1400,9 @@ namespace CivOne
 					string[] disasterTypes = { "Scandal", "Riot", "Corruption" };
 					string disasterType = disasterTypes[Common.Random.Next(0, disasterTypes.Length - 1)];
 					string buildingDemanded = "";
+					CitizenTypes citizenTypes = GetCitizenTypes();
 
-					if (HappyCitizens >= UnhappyCitizens)
+					if (!citizenTypes.InDisorder)
 						return;
 
 					if (!HasBuilding<Temple>())
@@ -1366,7 +1443,9 @@ namespace CivOne
                             continue;
                         }
 
-						int appeal = ((city.HappyCitizens - city.UnhappyCitizens) * 32) / city.Tile.DistanceTo(this);
+						CitizenTypes ct = city.GetCitizenTypes();
+
+						int appeal = (ct.happy - ct.unhappy) * 32 / city.Tile.DistanceTo(this);
 						if (appeal > 4 && appeal > mostAppeal)
 						{
 							admired = city;

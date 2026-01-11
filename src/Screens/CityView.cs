@@ -988,7 +988,7 @@ namespace CivOne.Screens
 			int group = -1;
 			int offsetX = 24;
 			bool modern = Human.HasAdvance<Industrialization>();
-			foreach (Citizen citizen in _city.Citizens)
+			foreach (Citizen citizen in _city.GetCitizens())
 			{
 				if (group != (group = Common.CitizenGroup(citizen)) && group > 0) offsetX += 8;
 
