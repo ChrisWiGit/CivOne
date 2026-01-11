@@ -18,7 +18,7 @@ namespace CivOne.Screens.Services
 		public int einstein;
 		public int taxman;
 
-		public readonly bool InDisorder => unhappy > happy;
+		public readonly bool InDisorder => unhappy + redShirt > happy;
 
 		public Citizen[] Citizens;
 
@@ -35,7 +35,7 @@ namespace CivOne.Screens.Services
 
 		public bool Valid()
 		{
-			return happy >= 0 && content >= 0 && unhappy >= 0;
+			return happy >= 0 && content >= 0 && unhappy >= 0 && redShirt >= 0 && elvis >= 0 && einstein >= 0 && taxman >= 0;
 		}
 	}
 	public interface ICityCitizenService
