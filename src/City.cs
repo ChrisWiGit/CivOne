@@ -574,7 +574,7 @@ namespace CivOne
 			return (Game.GetCities().Where(c => c != this).Any(c => c.ResourceTiles.Any(t => t.X == tile.X && t.Y == tile.Y)) || tile.Units.Any(u => u.Owner != Owner));
 		}
 
-		public void UpdateSpecialists()
+		internal void UpdateSpecialists()
 		{
 			int target = Size - (ResourceTiles.Count() - 1);
 			
@@ -878,13 +878,10 @@ namespace CivOne
 
 		public int ContinentId => Map[X, Y].ContinentId;
 
-		private long _debugResidentsCalls = 0;
 		internal IEnumerable<CitizenTypes> Residents
 		{
 			get
 			{
-				Log($"[Residents] Calling ICityCitizenService.Create: {++_debugResidentsCalls}");
-
 				var service = ICityCitizenService.Create(this,
 					Game.Instance, this._specialists, Map.Instance);
 				return service.EnumerateCitizens();
@@ -905,8 +902,6 @@ namespace CivOne
 		internal CitizenTypes GetCitizenTypes()
 		{
 			UpdateSpecialists();
-
-			Log($"[Citizens] Calling ICityCitizenService.Create: {++_citizenCalls}");
 
 			var service = ICityCitizenService.Create(this,
 				Game.Instance, this._specialists, Map.Instance);
