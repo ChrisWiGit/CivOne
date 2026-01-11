@@ -11,6 +11,7 @@ using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Graphics.Sprites;
 using CivOne.Governments;
+using CivOne.Screens.Services;
 
 namespace CivOne.Graphics
 {
@@ -452,7 +453,8 @@ namespace CivOne.Graphics
 				.ColourReplace(3, 0)
 				.ColourReplace(5, Common.ColourDark[city.Owner]);
 				
-			if (city.IsInDisorder)
+			CitizenTypes citizenType = city.GetCitizenTypes();
+			if (citizenType.InDisorder)
 			{
 				output.AddLayer(resource, 0, 0)
 					.AddLayer(Icons.Citizen(Enums.Citizen.UnhappyMale), 5, 1);

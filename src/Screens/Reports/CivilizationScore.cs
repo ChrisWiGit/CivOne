@@ -49,11 +49,10 @@ namespace CivOne.Screens.Reports
 		int _citizenY;
 		// TODO max wide is 35 citizens
 
-		private void DrawCityCitizens(City _city)
+		private void DrawCityCitizens(Citizen[] citizens)
         {
 			int group = -1;
-			Citizen[] citizens = _city.Citizens.ToArray();
-			for (int i = 0; i < _city.Size; i++)
+			for (int i = 0; i < citizens.Length; i++)
 			{
 				// TODO probably need to stick to a fixed width
 				_xx += 8;
@@ -65,12 +64,12 @@ namespace CivOne.Screens.Reports
 			}
 		}
 
-		private int CityScore(City city)
+		private int CityScore(CitizenTypes citizens)
         {
 			// don't count unhappy
 			// happy is *2
 			// all others are content
-			return city.HappyCitizens + (city.Size - city.UnhappyCitizens);
+			return 2 * citizens.happy + (citizens.Citizens.Length - citizens.unhappy - citizens.redShirt);
         }
 
 		protected override bool HasUpdate(uint gameTick)
@@ -84,25 +83,29 @@ namespace CivOne.Screens.Reports
 			int fh = Resources.GetFontHeight(0);
 			var TribeName = Human.TribeName;
 			int wonderCount = 0;       // TODO
+			CitizenTypes[] citizens = Human.Cities.Select(c => c.GetCitizenTypes()).ToArray();
 
 			// Citizen score
-			foreach (City city in _cities)
-				totalScore += CityScore(city);			
-
+			foreach (CitizenTypes cityCitizens in citizens)
+			{
+				totalScore += CityScore(cityCitizens);
+			}
 			int yy = 32;
 			this.DrawText($"{TribeName} Citizens ({totalScore})", 0, 15, 8, yy);
 			yy += fh;
 
-			// Draw citizens
 			_xx = 0;
 			_citizenY = yy;
-			foreach (City city in _cities)
+			foreach (CitizenTypes cityCitizens in citizens)
 			{
-				DrawCityCitizens(city);
-				wonderCount += city.Wonders.Length; // TODO different wonders
+				DrawCityCitizens(cityCitizens.Citizens);
 			}
 
 			// count wonders
+			foreach (City city in _cities)
+			{
+				wonderCount += city.Wonders.Length; // TODO different wonders
+			}
 			yy += 15;
 			this.DrawText($"{TribeName} Achievements ({wonderCount})", 0, 15, 8, yy);
 			totalScore += wonderCount * 20;

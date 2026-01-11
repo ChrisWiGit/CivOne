@@ -15,6 +15,7 @@ using System.Linq;
 using CivOne.Buildings;
 using System.Collections.Generic;
 using CivOne.src;
+using CivOne.Screens.Services;
 
 namespace CivOne.Units
 {
@@ -34,7 +35,8 @@ namespace CivOne.Units
 			int cost = (cityToIncite.Player.Gold + 1000) / (distance + 3);
 
 			// if city is in disorder need to halve the cost
-            if (cityToIncite.IsInDisorder)
+			CitizenTypes citizenTypes = cityToIncite.GetCitizenTypes();
+            if (citizenTypes.InDisorder)
                 cost /= 2;
 
 			return cost;

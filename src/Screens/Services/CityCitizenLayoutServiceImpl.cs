@@ -32,7 +32,7 @@ namespace CivOne.Screens
 
 		public IEnumerable<CitizenDrawInfo> EnumerateCitizens()
 		{
-			Citizen[] citizens = [.._city.Citizens];
+			Citizen[] citizens = [.._city.GetCitizens()];
 
 			int leftStartPackedForBigCities = IsBigCity ? -CitizenOffset + 1 : 0;
 			int xx = leftStartPackedForBigCities;

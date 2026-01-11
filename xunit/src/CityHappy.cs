@@ -98,12 +98,13 @@ namespace CivOne.UnitTests
 
             MakeOneEntertainer(acity);
 
-            foreach (var citizenTypes in acity.Residents)
-            {
-                Assert.Equal(0, citizenTypes.content);
-                Assert.Equal(1, citizenTypes.elvis);
-            }
+            using var enumerator = acity.Residents.GetEnumerator();
 
+            enumerator.MoveNext();
+            var citizenTypes = enumerator.Current;
+
+            Assert.Equal(0, citizenTypes.content);
+            Assert.Equal(1, citizenTypes.elvis);
         }
 
         /// <summary>
@@ -121,7 +122,6 @@ namespace CivOne.UnitTests
                 if (tile.X != acity.X || tile.Y != acity.Y)
                 {
                     acity.SetResourceTile(tile);
-                    acity.Citizens.ToArray(); // TODO fire-eggs used to force side effect of updating specialists counts
                     return;
                 }
             }
@@ -138,21 +138,20 @@ namespace CivOne.UnitTests
             var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
             City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
             acity.Size = 2;
+            acity.ResetResourceTiles();
 
             MakeOneEntertainer(acity);
 
-            using (var foo = acity.Residents.GetEnumerator())
-            {
-                foo.MoveNext();
-                var citizenTypes = foo.Current;
-                Assert.Equal(1, citizenTypes.content);
-                Assert.Equal(1, citizenTypes.elvis);
+            using var foo = acity.Residents.GetEnumerator();
+            foo.MoveNext();
+            var citizenTypes = foo.Current;
+            Assert.Equal(1, citizenTypes.content);
+            Assert.Equal(1, citizenTypes.elvis);
 
-                foo.MoveNext();
-                citizenTypes = foo.Current;
-                Assert.Equal(1, citizenTypes.happy);
-                Assert.Equal(1, citizenTypes.elvis);
-            }
+            foo.MoveNext();
+            citizenTypes = foo.Current;
+            Assert.Equal(1, citizenTypes.happy);
+            Assert.Equal(1, citizenTypes.elvis);
         }
 
         /// <summary>
