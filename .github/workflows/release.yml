@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - testsinpipeline
     tags:
       - 'v*.*.*'
 
