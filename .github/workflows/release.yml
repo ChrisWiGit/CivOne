@@ -69,7 +69,7 @@ jobs:
           fi
           # Only create ZIP if we have files
           if [ -n "$(ls -A release-artifacts 2>/dev/null)" ]; then
-            cd release-artifacts && zip -r ../CivOne-${{ steps.get_version.outputs.VERSION }}.zip .
+            (cd release-artifacts && zip -r ../CivOne-${{ steps.get_version.outputs.VERSION }}.zip .)
           else
             echo "Warning: No binaries found to package"
             exit 1
