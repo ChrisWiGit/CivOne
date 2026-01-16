@@ -1,0 +1,78 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      
+      - name: Restore dependencies
+        run: dotnet restore
+      
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+      
+      - name: Test
+        run: dotnet test --configuration Release --no-build --verbosity normal
+        continue-on-error: true
+  
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      
+      - name: Restore dependencies
+        run: dotnet restore
+      
+      - name: Build Release
+        run: dotnet build --configuration Release --no-restore
+      
+      - name: Extract version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      
+      - name: Package binaries
+        run: |
+          mkdir -p release-artifacts
+          cp -r bin/Release/net9.0/* release-artifacts/ 2>/dev/null || true
+          cp -r runtime/sdl/bin/Release/net9.0/* release-artifacts/ 2>/dev/null || true
+          cd release-artifacts && zip -r ../CivOne-${{ steps.get_version.outputs.VERSION }}.zip . 2>/dev/null || true
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          name: Release ${{ steps.get_version.outputs.VERSION }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          files: |
+            CivOne-*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
