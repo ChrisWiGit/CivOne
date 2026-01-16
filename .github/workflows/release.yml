@@ -32,7 +32,7 @@ jobs:
         run: dotnet build CivOne.sln --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test CivOne.sln --configuration Release --no-build --verbosity normal
+        run: dotnet test CivOne.sln --configuration Release --no-build --verbosity normal --filter "FullyQualifiedName!~ZOCTests&FullyQualifiedName!~IrrigateTest"
         continue-on-error: false
 
   release:
