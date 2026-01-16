@@ -12,78 +12,105 @@ permissions:
 
 jobs:
   build:
+    name: Build & Test
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
-      
+
       - name: Restore dependencies
         run: dotnet restore CivOne.sln
-      
+
       - name: Build
         run: dotnet build CivOne.sln --configuration Release --no-restore
-      
+
       - name: Test
         run: dotnet test CivOne.sln --configuration Release --no-build --verbosity normal
         continue-on-error: true
-  
+
   release:
+    name: Publish & Release
     needs: build
-    runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
-    
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+            suffix: linux-x64
+          - os: windows-latest
+            rid: win-x64
+            suffix: win-x64
+
+    runs-on: ${{ matrix.os }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
-      
+
       - name: Restore dependencies
         run: dotnet restore CivOne.sln
-      
-      - name: Build Release
-        run: dotnet build CivOne.sln --configuration Release --no-restore
-      
+
+      - name: Publish
+        run: >
+          dotnet publish CivOne.sln
+          -c Release
+          -r ${{ matrix.rid }}
+          --self-contained true
+          -p:PublishSingleFile=true
+
       - name: Extract version from tag
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-      
+        shell: bash
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
+
       - name: Package binaries
+        shell: bash
         run: |
-          mkdir -p release-artifacts
-          # Copy all built binaries from various projects
-          if [ -d "bin/Release/net9.0" ]; then 
-            cp -r bin/Release/net9.0/* release-artifacts/
-          fi
-          if [ -d "runtime/sdl/bin/Release/net9.0" ]; then 
-            cp -r runtime/sdl/bin/Release/net9.0/* release-artifacts/
-          fi
-          # Only create ZIP if we have files
-          if [ -n "$(ls -A release-artifacts 2>/dev/null)" ]; then
-            (cd release-artifacts && zip -r ../CivOne-${{ steps.get_version.outputs.VERSION }}.zip .)
-          else
-            echo "Warning: No binaries found to package"
-            exit 1
-          fi
-      
+          OUT="release-${{ matrix.suffix }}"
+          mkdir -p "$OUT"
+
+          find . -path "*/bin/Release/*/${{ matrix.rid }}/publish/*" \
+            -type f -exec cp --parents {} "$OUT" \;
+
+          cd "$OUT"
+          zip -r "../CivOne-${VERSION}-${{ matrix.suffix }}.zip" .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CivOne-${{ matrix.suffix }}
+          path: CivOne-*.zip
+
+  github-release:
+    name: Create GitHub Release
+    needs: release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.get_version.outputs.VERSION }}
-          name: Release ${{ steps.get_version.outputs.VERSION }}
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
           generate_release_notes: true
-          draft: false
-          prerelease: false
           files: |
-            CivOne-*.zip
+            **/CivOne-*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
