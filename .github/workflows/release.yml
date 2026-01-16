@@ -55,17 +55,17 @@ jobs:
       
       - name: Extract version from tag
         id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
       
       - name: Package binaries
         run: |
           mkdir -p release-artifacts
-          cp -r bin/Release/net9.0/* release-artifacts/ 2>/dev/null || true
-          cp -r runtime/sdl/bin/Release/net9.0/* release-artifacts/ 2>/dev/null || true
-          cd release-artifacts && zip -r ../CivOne-${{ steps.get_version.outputs.VERSION }}.zip . 2>/dev/null || true
+          if [ -d "bin/Release/net9.0" ]; then cp -r bin/Release/net9.0/* release-artifacts/; fi
+          if [ -d "runtime/sdl/bin/Release/net9.0" ]; then cp -r runtime/sdl/bin/Release/net9.0/* release-artifacts/; fi
+          if [ -d "release-artifacts" ]; then cd release-artifacts && zip -r ../CivOne-${{ steps.get_version.outputs.VERSION }}.zip .; fi
       
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.get_version.outputs.VERSION }}
           name: Release ${{ steps.get_version.outputs.VERSION }}
