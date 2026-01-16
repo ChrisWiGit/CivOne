@@ -19,7 +19,7 @@ namespace CivOne
 	public partial class Map : IMap
 	{
 		private static Resources Resources = Resources.Instance;
-		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
+		protected static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
 
 		private static int _width = 80, _height = 50;
 		public static int WIDTH => _width;

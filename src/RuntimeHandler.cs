@@ -270,10 +270,12 @@ namespace CivOne
 
 			if (concurrent)
 			{
+				runtime.Log("Preloading Civilopedia in background task");
 				Task.Run(() => Reflect.PreloadCivilopedia());
 			}
 			else
 			{
+				runtime.Log("Preloading Civilopedia synchronously");
 				Reflect.PreloadCivilopedia();
 			}
 		}
