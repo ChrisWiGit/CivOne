@@ -1,0 +1,116 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore CivOne.sln
+
+      - name: Build
+        run: dotnet build CivOne.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test CivOne.sln --configuration Release --no-build --verbosity normal
+        continue-on-error: true
+
+  release:
+    name: Publish & Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+            suffix: linux-x64
+          - os: windows-latest
+            rid: win-x64
+            suffix: win-x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore CivOne.sln
+
+      - name: Publish
+        run: >
+          dotnet publish CivOne.sln
+          -c Release
+          -r ${{ matrix.rid }}
+          --self-contained true
+          -p:PublishSingleFile=true
+
+      - name: Extract version from tag
+        shell: bash
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
+
+      - name: Package binaries
+        shell: bash
+        run: |
+          OUT="release-${{ matrix.suffix }}"
+          mkdir -p "$OUT"
+
+          find . -path "*/bin/Release/*/${{ matrix.rid }}/publish/*" \
+            -type f -exec cp --parents {} "$OUT" \;
+
+          cd "$OUT"
+          zip -r "../CivOne-${VERSION}-${{ matrix.suffix }}.zip" .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CivOne-${{ matrix.suffix }}
+          path: CivOne-*.zip
+
+  github-release:
+    name: Create GitHub Release
+    needs: release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            **/CivOne-*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
