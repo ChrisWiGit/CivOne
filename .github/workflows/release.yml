@@ -24,13 +24,13 @@ jobs:
           dotnet-version: '9.0.x'
       
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore CivOne.sln
       
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build CivOne.sln --configuration Release --no-restore
       
       - name: Test
-        run: dotnet test --configuration Release --no-build --verbosity normal
+        run: dotnet test CivOne.sln --configuration Release --no-build --verbosity normal
         continue-on-error: true
   
   release:
@@ -48,10 +48,10 @@ jobs:
           dotnet-version: '9.0.x'
       
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore CivOne.sln
       
       - name: Build Release
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build CivOne.sln --configuration Release --no-restore
       
       - name: Extract version from tag
         id: get_version
@@ -60,9 +60,20 @@ jobs:
       - name: Package binaries
         run: |
           mkdir -p release-artifacts
-          if [ -d "bin/Release/net9.0" ]; then cp -r bin/Release/net9.0/* release-artifacts/; fi
-          if [ -d "runtime/sdl/bin/Release/net9.0" ]; then cp -r runtime/sdl/bin/Release/net9.0/* release-artifacts/; fi
-          if [ -d "release-artifacts" ]; then cd release-artifacts && zip -r ../CivOne-${{ steps.get_version.outputs.VERSION }}.zip .; fi
+          # Copy all built binaries from various projects
+          if [ -d "bin/Release/net9.0" ]; then 
+            cp -r bin/Release/net9.0/* release-artifacts/
+          fi
+          if [ -d "runtime/sdl/bin/Release/net9.0" ]; then 
+            cp -r runtime/sdl/bin/Release/net9.0/* release-artifacts/
+          fi
+          # Only create ZIP if we have files
+          if [ -n "$(ls -A release-artifacts 2>/dev/null)" ]; then
+            cd release-artifacts && zip -r ../CivOne-${{ steps.get_version.outputs.VERSION }}.zip .
+          else
+            echo "Warning: No binaries found to package"
+            exit 1
+          fi
       
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
