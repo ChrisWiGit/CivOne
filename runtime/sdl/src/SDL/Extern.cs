@@ -149,7 +149,7 @@ namespace CivOne
 		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern uint SDL_GetQueuedAudioSize(uint device);
 
-		[DllImport("SDL2.dll", CallingConvention = CallingConvention.Cdecl)]
+		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern uint SDL_OpenAudioDevice(
 			[MarshalAs(UnmanagedType.LPStr)] string device,
 			int iscapture,
@@ -170,10 +170,10 @@ namespace CivOne
 		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void SDL_CloseAudio();
 
-		[DllImport("SDL2.dll", CallingConvention = CallingConvention.Cdecl)]
+		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void SDL_CloseAudioDevice(uint dev);
 
-		[DllImport("SDL2.dll", CallingConvention = CallingConvention.Cdecl)]
+		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void SDL_PauseAudioDevice(uint dev, int pause_on);
 	}
 }

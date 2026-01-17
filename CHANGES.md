@@ -6,6 +6,7 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Github pipeline to build and automatic testing and creating release artifacts (Windows, Linux)
 * Feature: Added Debug keys for debugging purposes in DEBUG mode
   * Ctrl + Shift + F12 to hit debugger breakpoint
   * Ctrl + Shift + F9/F10 to decrease/increase event loop wait time by 1 ms.

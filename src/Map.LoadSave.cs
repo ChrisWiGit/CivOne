@@ -215,6 +215,7 @@ namespace CivOne
 		
 		protected virtual void TaskRunEarthMapGeneration()
 		{
+			Log("Map: Starting Earth map generation thread");
 			Task.Run(RunEarthMapThread);
 		}
 	}

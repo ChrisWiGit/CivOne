@@ -224,6 +224,15 @@ namespace CivOne
 
 			_instance = new RuntimeHandler(runtime);
 		}
+		public static void RegisterForTest(IRuntime runtime)
+		{
+			if (_instance != null)
+			{
+				throw new Exception("Only one runtime can be registered.");
+			}
+
+			_instance = new RuntimeHandler(runtime, false);
+		}
 
         /// <summary>
         /// Fire-eggs 20190704: for unit testing, reset
@@ -233,7 +242,7 @@ namespace CivOne
             _instance = null;
         }
 
-		private RuntimeHandler(IRuntime runtime)
+		private RuntimeHandler(IRuntime runtime, bool concurrent = true)
 		{
 			Runtime = runtime;
 
@@ -259,7 +268,16 @@ namespace CivOne
 				runtime.Log($"Plugin loaded: {plugin.Name} version {plugin.Version} by {plugin.Author}");
 			}
 
-			Task.Run(() => Reflect.PreloadCivilopedia());
+			if (concurrent)
+			{
+				runtime.Log("Preloading Civilopedia in background task");
+				Task.Run(() => Reflect.PreloadCivilopedia());
+			}
+			else
+			{
+				runtime.Log("Preloading Civilopedia synchronously");
+				Reflect.PreloadCivilopedia();
+			}
 		}
 	}
 }
