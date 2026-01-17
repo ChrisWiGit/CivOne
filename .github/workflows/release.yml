@@ -65,7 +65,19 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore CivOne.sln
 
-      - name: Publish
+      - name: Publish (Linux)
+        if: runner.os == 'Linux'
+        run: >
+          dotnet publish runtime/sdl/CivOne.SDL.csproj
+          -c Release
+          -r ${{ matrix.rid }}
+          --self-contained true
+          -p:PublishSingleFile=false
+          -p:UseAppHost=true
+          -p:DefineConstants="LINUX;NET"
+
+      - name: Publish (Windows)
+        if: runner.os == 'Windows'
         run: >
           dotnet publish runtime/sdl/CivOne.SDL.csproj
           -c Release
