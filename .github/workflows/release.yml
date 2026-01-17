@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - master
-      - testsinpipeline
+      # use for testing release pipeline
+      - pipeline/test
     tags:
-      - 'v*.*.*'
+      # e.g. v1.0.0 (do not allow a single point after v)
+      - 'v[0-9].*.*'
 
 permissions:
   contents: write
