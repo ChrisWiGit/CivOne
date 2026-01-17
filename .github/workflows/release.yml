@@ -74,7 +74,7 @@ jobs:
           --self-contained true
           -p:PublishSingleFile=false
           -p:UseAppHost=true
-          -p:DefineConstants="LINUX;NET"
+          '-p:DefineConstants=LINUX'
 
       - name: Publish (Windows)
         if: runner.os == 'Windows'
