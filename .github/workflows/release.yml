@@ -78,7 +78,8 @@ jobs:
         shell: bash
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
 
-      - name: Package binaries
+      - name: Package binaries (Linux)
+        if: runner.os == 'Linux'
         shell: bash
         run: |
           OUT="release-${{ matrix.suffix }}"
@@ -89,6 +90,22 @@ jobs:
 
           cd "$OUT"
           zip -r "../CivOne-${VERSION}-${{ matrix.suffix }}.zip" .
+
+      - name: Package binaries (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $OUT = "release-${{ matrix.suffix }}"
+          New-Item -ItemType Directory -Path $OUT -Force | Out-Null
+
+          Get-ChildItem -Path ".\bin\Release\*\${{ matrix.rid }}\publish\" -Recurse -File | ForEach-Object {
+            $RelativePath = $_.FullName -replace [regex]::Escape((Resolve-Path ".\bin\Release\*\${{ matrix.rid }}\publish\").Path + "\"), ""
+            $TargetPath = Join-Path $OUT $RelativePath
+            New-Item -ItemType Directory -Path (Split-Path $TargetPath) -Force | Out-Null
+            Copy-Item -Path $_.FullName -Destination $TargetPath
+          }
+
+          Compress-Archive -Path $OUT -DestinationPath "CivOne-${env:VERSION}-${{ matrix.suffix }}.zip"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
