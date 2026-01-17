@@ -67,7 +67,7 @@ jobs:
 
       - name: Publish
         run: >
-          dotnet publish runtime/sdl/CivOne.SDL.csproj api/CivOne.API.csproj
+          dotnet publish runtime/sdl/CivOne.SDL.csproj
           -c Release
           -r ${{ matrix.rid }}
           --self-contained true
