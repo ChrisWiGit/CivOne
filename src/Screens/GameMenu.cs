@@ -119,7 +119,7 @@ namespace CivOne.Screens
 					return false;
 				case Key.Enter:
 					if (_activeItem >= 0)
-						Items[_activeItem].Select();
+						Items[_activeItem]?.Select();
 					return false;
 			}
 			return true;
