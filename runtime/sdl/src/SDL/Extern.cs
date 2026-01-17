@@ -18,7 +18,7 @@ namespace CivOne
 #if MACOS
 		private const string DLL_SDL = "/Library/Frameworks/SDL2.framework/Versions/Current/SDL2";
 #elif LINUX
-		private const string DLL_SDL = "libSDL2-2.0.so.0";
+		private const string DLL_SDL = "libSDL2-2.0";
 #else
 		private const string DLL_SDL = "SDL2";
 #endif
@@ -149,7 +149,7 @@ namespace CivOne
 		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern uint SDL_GetQueuedAudioSize(uint device);
 
-		[DllImport("SDL2.dll", CallingConvention = CallingConvention.Cdecl)]
+		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern uint SDL_OpenAudioDevice(
 			[MarshalAs(UnmanagedType.LPStr)] string device,
 			int iscapture,
@@ -170,10 +170,10 @@ namespace CivOne
 		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void SDL_CloseAudio();
 
-		[DllImport("SDL2.dll", CallingConvention = CallingConvention.Cdecl)]
+		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void SDL_CloseAudioDevice(uint dev);
 
-		[DllImport("SDL2.dll", CallingConvention = CallingConvention.Cdecl)]
+		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void SDL_PauseAudioDevice(uint dev, int pause_on);
 	}
 }
