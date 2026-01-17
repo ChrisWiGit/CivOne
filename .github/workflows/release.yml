@@ -83,11 +83,9 @@ jobs:
         shell: bash
         run: |
           OUT="release-${{ matrix.suffix }}"
+          PublishPath="runtime/sdl/bin/Release/net9.0/${{ matrix.rid }}/publish"
           mkdir -p "$OUT"
-
-          find . -path "*/bin/Release/*/${{ matrix.rid }}/publish/*" \
-            -type f -exec cp --parents {} "$OUT" \;
-
+          cp -r "$PublishPath"/* "$OUT/"
           cd "$OUT"
           zip -r "../CivOne-${VERSION}-${{ matrix.suffix }}.zip" .
 
@@ -96,16 +94,12 @@ jobs:
         shell: pwsh
         run: |
           $OUT = "release-${{ matrix.suffix }}"
+          $PublishPath = "runtime/sdl/bin/Release/net9.0/${{ matrix.rid }}/publish"
+          
           New-Item -ItemType Directory -Path $OUT -Force | Out-Null
-
-          Get-ChildItem -Path ".\bin\Release\*\${{ matrix.rid }}\publish\" -Recurse -File | ForEach-Object {
-            $RelativePath = $_.FullName -replace [regex]::Escape((Resolve-Path ".\bin\Release\*\${{ matrix.rid }}\publish\").Path + "\"), ""
-            $TargetPath = Join-Path $OUT $RelativePath
-            New-Item -ItemType Directory -Path (Split-Path $TargetPath) -Force | Out-Null
-            Copy-Item -Path $_.FullName -Destination $TargetPath
-          }
-
-          Compress-Archive -Path $OUT -DestinationPath "CivOne-${env:VERSION}-${{ matrix.suffix }}.zip"
+          Copy-Item -Path "$PublishPath/*" -Destination $OUT -Recurse -Force
+          
+          Compress-Archive -Path $OUT -DestinationPath "CivOne-${env:VERSION}-${{ matrix.suffix }}.zip" -Force
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
