@@ -26,6 +26,7 @@ namespace CivOne
 		public static int HEIGHT => _height;
 		
 		private int _terrainMasterWord;
+		public int TerrainMasterWord { get { return _terrainMasterWord; } }
 		private int _landMass, _temperature, _climate, _age;
 		private ITile[,] _tiles;
 

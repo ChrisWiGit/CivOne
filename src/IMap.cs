@@ -8,5 +8,7 @@ namespace CivOne
 	public interface IMap
 	{
 		IEnumerable<ICityOnContinent> ContinentCities(int continentId);
+
+		int TerrainMasterWord { get; }
 	}
 }

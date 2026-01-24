@@ -7,7 +7,10 @@ namespace CivOne.UnitTests
     class MockedMap : IMap
     {
         private readonly List<ICityOnContinent> _continentCities = new();
-        public IEnumerable<ICityOnContinent> ContinentCities(int continentId)
+
+		public int TerrainMasterWord => throw new System.NotImplementedException();
+
+		public IEnumerable<ICityOnContinent> ContinentCities(int continentId)
         {
             return [.. _continentCities.Where(city => city.ContinentId == continentId)];
         }
