@@ -1,7 +1,10 @@
+using System.Collections.Generic;
+using CivOne.Units;
+
 namespace CivOne.Persistence
 {
     // 1:1 Abbild von IGameData – reines DTO
-    public class GameState
+    public class GameState2
     {
         public ushort GameTurn { get; set; }
         public ushort HumanPlayer { get; set; }
@@ -30,12 +33,43 @@ namespace CivOne.Persistence
 
         public ushort[] Wonders { get; set; }
         public bool[][,] TileVisibility { get; set; }
-        public ushort[] AdvanceFirstDiscovery { get; set; }
+        // public ushort[] AdvanceFirstDiscovery { get; set; }
+        public Dictionary<byte, byte> AdvanceFirstDiscovery { get; set; }
         public bool[] GameOptions { get; set; }
 
         public ushort NextAnthologyTurn { get; set; }
         public ushort OpponentCount { get; set; }
+        public int TerrainMasterWord { get; set; }
 
         public ReplayData[] ReplayData { get; set; }
+
     }
+
+    /*
+		Muss anders konvertiert werden. Wir brauchen einen Zwischenschritt, d.h. eine DTO wo noch unsere internen Typen verwendet werden, da sie einfacher zu handeln sind (z.b. yaml)
+		aber die alte art in Binär muss dann nochmal extra in einen andere DTO Klasse umgewandelt werden.
+
+		*/
+
+    public class GameState
+	{
+		public int Difficulty { get; set; }
+		public Player CurrentPlayer { get; set; }
+		public Player HumanPlayer { get; set; }
+
+		public Player[] Players { get; set; }
+		public List<City> Cities { get; set; }
+		public List<IUnit> Units { get; set; }
+
+		public Dictionary<byte, byte> AdvanceOrigin { get; set; }
+
+		public ushort GameTurn { get; set; }
+		public ushort AnthologyTurn { get; set; }
+
+		public string[] CityNames { get; set; }
+		public int TerrainMasterWord { get; set; }
+
+		public List<ReplayData> ReplayData { get; set; }
+
+	}
 }

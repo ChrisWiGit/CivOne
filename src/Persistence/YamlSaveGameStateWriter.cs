@@ -4,7 +4,7 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace CivOne.Persistence
 {
-    public class YamlSaveWriter : IGameStateWriter
+    public class YamlSaveGameStateWriter : IGameStateWriter
     {
         public void Write(Stream stream, GameState snapshot)
         {

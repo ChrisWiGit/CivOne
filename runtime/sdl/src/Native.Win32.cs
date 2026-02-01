@@ -112,5 +112,103 @@ namespace CivOne
 			(shortcut as IPersistFile).Save(filename, false);
 			return File.Exists(filename);
 		}
+
+		private const int MAX_PATH = 260;
+
+		[ StructLayout( LayoutKind.Sequential, CharSet=CharSet.Unicode )]  
+		internal struct OPENFILENAME
+		{
+			public int lStructSize;
+			public IntPtr hwndOwner;
+			public IntPtr hInstance;
+			[MarshalAs(UnmanagedType.LPWStr)]
+			public string lpstrFilter;
+			[MarshalAs(UnmanagedType.LPWStr)]
+			public string lpstrCustomFilter;
+			public int nMaxCustFilter;
+			public int nFilterIndex;
+			[MarshalAs(UnmanagedType.LPWStr)]
+			public string lpstrFile;
+			public int nMaxFile;
+			[MarshalAs(UnmanagedType.LPWStr)]
+			public string lpstrFileTitle;
+			public int nMaxFileTitle;
+			[MarshalAs(UnmanagedType.LPWStr)]
+			public string lpstrInitialDir;
+			[MarshalAs(UnmanagedType.LPWStr)]
+			public string lpstrTitle;
+			public int Flags;
+			public short nFileOffset;
+			public short nFileExtension;
+			[MarshalAs(UnmanagedType.LPWStr)]
+			public string lpstrDefExt;
+			public IntPtr lCustData;
+			public IntPtr lpfnHook;
+			[MarshalAs(UnmanagedType.LPWStr)]
+			public string lpTemplateName;
+			public IntPtr pvReserved;
+			public int dwReserved;
+			public int FlagsEx;
+		}
+
+		[DllImport("comdlg32.dll", CharSet = CharSet.Unicode)]
+		private static extern bool GetOpenFileName(ref OPENFILENAME ofn);
+
+		[DllImport("comdlg32.dll", CharSet = CharSet.Unicode)]
+		private static extern bool GetSaveFileName(ref OPENFILENAME ofn);
+
+		// CommDlgExtendedError
+		[DllImport("comdlg32.dll", CharSet = CharSet.Unicode)]
+		private static extern int CommDlgExtendedError();
+
+		internal static string Win32FileDialog(
+			IntPtr ownerHwnd,
+			bool save,
+			string title,
+			string initialFileName,
+			string filter)
+		{
+			ShowCursor();
+
+			var fileBuffer = new StringBuilder(MAX_PATH);
+			if (!string.IsNullOrEmpty(initialFileName))
+				fileBuffer.Append(initialFileName);
+			fileBuffer.Append('\0');
+
+			// Win32-Filterformat:
+			// "Textdateien (*.txt)\0*.txt\0Alle Dateien (*.*)\0*.*\0"
+			filter = filter.Replace("|", "\0");
+			if (!filter.EndsWith("\0\0"))
+				filter += "\0\0";
+
+			OPENFILENAME ofn = new OPENFILENAME
+			{
+				lStructSize = Marshal.SizeOf(typeof(OPENFILENAME)),
+				hwndOwner = ownerHwnd,
+				hInstance = IntPtr.Zero,
+				lpstrInitialDir = null,
+				lpstrFilter = filter,
+				lpstrFile = fileBuffer.ToString(),
+				nMaxFile = MAX_PATH,
+				lpstrTitle = title,
+				Flags =
+					0x00000008 | // OFN_EXPLORER
+					0x00001000 | // OFN_PATHMUSTEXIST
+					(save ? 0x00000002 : 0x00000800), // SAVE: OVERWRITEPROMPT, OPEN: FILEMUSTEXIST
+			};
+
+			bool result = save
+				? GetSaveFileName(ref ofn)
+				: GetOpenFileName(ref ofn);
+			// CommDlgExtendedError
+			int lastError = CommDlgExtendedError();
+
+			if (lastError != 0)
+				Console.WriteLine("Get{0}FileName failed with error code {1}", save ? "Save" : "Open", lastError);
+
+			HideCursor();
+
+			return result ? ofn.lpstrFile.ToString() : null;
+		}
 	}
 }

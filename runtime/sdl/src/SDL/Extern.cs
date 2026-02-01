@@ -175,5 +175,50 @@ namespace CivOne
 
 		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void SDL_PauseAudioDevice(uint dev, int pause_on);
+
+
+
+		
+		[StructLayout(LayoutKind.Sequential)]
+		struct SDL_version
+		{
+			public byte major;
+			public byte minor;
+			public byte patch;
+		}
+
+		enum SDL_SYSWM_TYPE
+		{
+			SDL_SYSWM_UNKNOWN,
+			SDL_SYSWM_WINDOWS,
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		struct SDL_SysWMinfo
+		{
+			public SDL_version version;
+			public SDL_SYSWM_TYPE subsystem;
+			public SDL_SysWMinfo_Windows info;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		struct SDL_SysWMinfo_Windows
+		{
+			public IntPtr window; // HWND
+		}
+		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
+		static extern bool SDL_GetWindowWMInfo(
+			IntPtr window,
+			ref SDL_SysWMinfo info
+		);
+		public static IntPtr GetSDLWindowHandle(IntPtr sdlWindow)
+		{
+			SDL_SysWMinfo info = new SDL_SysWMinfo();
+
+			if (!SDL_GetWindowWMInfo(sdlWindow, ref info))
+				return IntPtr.Zero;
+
+			return info.info.window; // HWND
+		}
 	}
 }

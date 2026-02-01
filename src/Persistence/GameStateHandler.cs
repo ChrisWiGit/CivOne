@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CivOne.Civilizations;
@@ -43,7 +44,36 @@ namespace CivOne
 
 	public class GameStateHandler
 	{
+		/*
+		Muss anders konvertiert werden. Wir brauchen einen Zwischenschritt, d.h. eine DTO wo noch unsere internen Typen verwendet werden, da sie einfacher zu handeln sind (z.b. yaml)
+		aber die alte art in Binär muss dann nochmal extra in einen andere DTO Klasse umgewandelt werden.
+
+		*/
 		public GameState Create(IGameSnapshotSource game)
+		{
+			return new GameState
+			{
+				Difficulty = game.Difficulty,
+				CurrentPlayer = game.CurrentPlayer,
+				HumanPlayer = game.HumanPlayer,
+
+				Players = game.Players,
+
+				Cities = game.Cities,
+				Units = game.Units,
+
+				AdvanceOrigin = game.AdvanceOrigin,
+
+				GameTurn = game.GameTurn,
+				AnthologyTurn = game.AnthologyTurn,
+
+				CityNames = game.CityNames,
+
+				ReplayData = game.ReplayData
+			};
+		}
+
+		public GameState2 CreateOld(IGameSnapshotSource game)
 		{
 			// Discovered advances
 			byte[][] discoveredAdvanceIDs = new byte[game.Players.Length][];
@@ -76,11 +106,12 @@ namespace CivOne
 			}
 
 			// Advance first discovery
-			ushort[] firstDiscovery = new ushort[72];
+			byte maxKey = Math.Min((byte)72, game.AdvanceOrigin.Keys.Max());
+			ushort[] firstDiscovery = new ushort[maxKey + 1];
 			foreach (byte key in game.AdvanceOrigin.Keys)
 				firstDiscovery[key] = game.AdvanceOrigin[key];
 
-			return new GameState
+			return new GameState2
 			{
 				GameTurn = game.GameTurn,
 				HumanPlayer = game.PlayerNumber(game.HumanPlayer),
@@ -115,7 +146,8 @@ namespace CivOne
 
 				Wonders = wonders,
 				TileVisibility = visibility,
-				AdvanceFirstDiscovery = firstDiscovery,
+				// AdvanceFirstDiscovery = game.AdvanceOrigin.ToDictionary(entry => entry.Key, entry => entry.Value),
+				AdvanceFirstDiscovery = game.AdvanceOrigin,
 
 				GameOptions =
 				[
@@ -131,7 +163,7 @@ namespace CivOne
 
 				NextAnthologyTurn = game.AnthologyTurn,
 				OpponentCount = (ushort)(game.Players.Length - 2),
-				ReplayData = [.. game.ReplayData]
+				// ReplayData = [.. game.ReplayData]  // TODO: CW: Produces Heap Corruption. App stops 0xc0000374 with "A heap has been corrupted" error.
 			};
 		}
 	}

@@ -2,7 +2,7 @@ using System.IO;
 
 namespace CivOne.Persistence
 {
-    public class BinarySaveWriter : IGameStateWriter
+    public class BinarySaveGameStateWriter : IGameStateWriter
     {
         public void Write(Stream stream, GameState snapshot)
         {
@@ -34,7 +34,7 @@ namespace CivOne.Persistence
             gameData.Units = snapshot.Units;
             gameData.Wonders = snapshot.Wonders;
             gameData.TileVisibility = snapshot.TileVisibility;
-            gameData.AdvanceFirstDiscovery = snapshot.AdvanceFirstDiscovery;
+            // gameData.AdvanceFirstDiscovery = snapshot.AdvanceFirstDiscovery; // TODO: Check serialization of Dictionary
             gameData.GameOptions = snapshot.GameOptions;
 
             gameData.NextAnthologyTurn = snapshot.NextAnthologyTurn;

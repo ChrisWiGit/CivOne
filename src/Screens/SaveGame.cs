@@ -10,8 +10,10 @@
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
+using CivOne.Persistence;
 using CivOne.UserInterface;
 using System;
+using System.IO;
 using System.Linq;
 
 namespace CivOne.Screens
@@ -19,11 +21,13 @@ namespace CivOne.Screens
     [Modal]
 	internal class SaveGame : BaseScreen
 	{
-        internal static int SelectedGame = 0;
+        internal static int SelectedGame = -1;
 		
 		private char _driveLetter = 'C';
 		private readonly int _border = Common.Random.Next(2);
 		private int _gameId;
+
+		internal static string SaveFileName = "";
 		private bool _update = true;
 		private bool _saving = false;
 		private Menu _menu;
@@ -40,6 +44,41 @@ namespace CivOne.Screens
 
 			SaveGameFile file = SaveGameFile.GetSaveGames(_driveLetter).ToArray()[item];
 			Game.Save(file.SveFile, file.MapFile);
+		}
+
+		private void SaveFileDialog(object sender, EventArgs args)
+		{
+			_menu.Close();
+			_menu = null;
+			SelectedGame = -1;
+			_gameId = -1;
+
+			string sveFile = RuntimeHandler.Runtime.FileChooser(
+				true,
+				"Save Game As...",
+				SaveFileName,
+				"CivOne Save Game (*.cos)|*.cos"
+			);
+			if (string.IsNullOrEmpty(sveFile))
+			{
+				_update = true;
+				return;
+			}
+
+			string mapFile = System.IO.Path.ChangeExtension(sveFile, ".map");
+			SaveFileName = System.IO.Path.ChangeExtension(sveFile, ".cos");
+
+			GameStateHandler gameState = new();
+			using var stream = System.IO.File.Create(SaveFileName);
+			YamlSaveGameStateWriter writer = new();
+			writer.Write(stream, gameState.Create(Game));
+			// gameState.Create(Game);
+
+			//TODO: save last save path to profile settings
+
+			// Game.Save(sveFile, mapFile);
+			_saving = true;
+			_update = true;
 		}
 		
 		private void DrawDriveQuestion()
@@ -74,8 +113,15 @@ namespace CivOne.Screens
 				}
 
 				DrawPanel(64, 86, 124, 41);
-				this.DrawText($"{char.ToLower(_driveLetter)}:CIVIL{_gameId}.SVE", 0, 5, 75, 91)
-					.DrawText($"{Common.DifficultyName(Game.Difficulty)} {Game.HumanPlayer.LeaderName}", 0, 5, 75, 99)
+
+				if (_gameId >= 0)
+				{
+					this.DrawText($"{char.ToLower(_driveLetter)}:CIVIL{_gameId}.SVE", 0, 5, 75, 91);
+				} else {
+					this.DrawText(Path.GetFileName(SaveFileName), 0, 5, 75, 91);
+				}
+
+				this.DrawText($"{Common.DifficultyName(Game.Difficulty)} {Game.HumanPlayer.LeaderName}", 0, 5, 75, 99)
 					.DrawText($"{Game.HumanPlayer.TribeNamePlural}/{Game.GameYear}", 0, 5, 75, 107)
 					.DrawText("... save in progress.", 0, 5, 75, 115);
 				
@@ -147,6 +193,7 @@ namespace CivOne.Screens
 					RowHeight = 8
 				};
 				
+				_menu.Items.Add("Save with file dialog...", -1).OnSelect(SaveFileDialog);
 				int i = 0;
 				foreach (SaveGameFile file in SaveGameFile.GetSaveGames(_driveLetter).Take(4))
 				{

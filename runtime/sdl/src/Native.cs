@@ -40,6 +40,31 @@ namespace CivOne
 					return null;
 			}
 		}
+		
+		internal static string FileChooser(
+			bool save,
+			string title,
+			string initialFileName,
+			string filter)
+		{
+			switch (Platform)
+			{
+				case Platform.Windows:
+					return Native.Win32FileDialog(
+						SDL.GetSDLWindowHandle(_handle),
+						save,
+						title,
+						initialFileName,
+						filter
+					);
+// case Platform.Linux:
+// 					return GtkFolderBrowser(...);
+// 				case Platform.macOS:
+// 					return MacFolderBrowser(...);					
+				default:
+					return null;
+			}
+		}
 
 		internal static void ShowCursor()
 		{
