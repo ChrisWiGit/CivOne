@@ -53,23 +53,39 @@ namespace CivOne.Persistence
 
     public class GameState
 	{
-		public int Difficulty { get; set; }
-		public Player CurrentPlayer { get; set; }
+		public uint GameTurn { get; set; }
 		public Player HumanPlayer { get; set; }
 
+        public int RandomSeed { get; set; }
+
+		public int Difficulty { get; set; }
+
+        public List<bool> ActiveCivilizations { get; set; }
+        public List<byte> CivilizationIdentity { get; set; }
+        public ushort CurrentResearch { get; set; }
+        public Dictionary<byte, List<byte>> DiscoveredAdvanceIDs { get; set; }
+
+        public List<string> LeaderNames { get; set; }
+        public List<string> CivilizationNames { get; set; }
+        public List<string> CitizenNames { get; set; }
+        public List<string> CityNames { get; set; }
+		
+        // PlayerGold, ResearchProgress, TaxRate, ScienceRate, StartingPositionX, Government
+        public Player CurrentPlayer { get; set; }
+
+        // ActiveCivilizations, AdvanceOrigin,
+        // CivilizationNames, Cities, Units, Wonders, TileVisibility, AdvanceFirstDiscovery        
 		public Player[] Players { get; set; }
-		public List<City> Cities { get; set; }
-		public List<IUnit> Units { get; set; }
 
-		public Dictionary<byte, byte> AdvanceOrigin { get; set; }
+		// public Dictionary<byte, byte> AdvanceOrigin { get; set; }
 
-		public ushort GameTurn { get; set; }
 		public ushort AnthologyTurn { get; set; }
 
-		public string[] CityNames { get; set; }
 		public int TerrainMasterWord { get; set; }
 
-		public List<ReplayData> ReplayData { get; set; }
+		// public List<ReplayData> ReplayData { get; set; }
+
+        public List<bool> GameOptions { get; set; }
 
 	}
 }

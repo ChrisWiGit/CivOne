@@ -19,6 +19,8 @@ namespace CivOne
 		List<City> Cities { get; }
 		List<IUnit> Units { get; }
 
+		
+
 		Dictionary<byte, byte> AdvanceOrigin { get; }
 
 		ushort GameTurn { get; }
@@ -53,9 +55,11 @@ namespace CivOne
 		{
 			return new GameState
 			{
+				GameTurn = game.GameTurn,
+				HumanPlayer = game.HumanPlayer,
+
 				Difficulty = game.Difficulty,
 				CurrentPlayer = game.CurrentPlayer,
-				HumanPlayer = game.HumanPlayer,
 
 				Players = game.Players,
 
@@ -64,7 +68,6 @@ namespace CivOne
 
 				AdvanceOrigin = game.AdvanceOrigin,
 
-				GameTurn = game.GameTurn,
 				AnthologyTurn = game.AnthologyTurn,
 
 				CityNames = game.CityNames,
