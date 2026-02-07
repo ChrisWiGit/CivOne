@@ -439,5 +439,11 @@ namespace CivOne
 		{
 			// for MockPlayer
 		}
+
+		internal Player(ICivilization civilization)
+		{
+			// for MockPlayer. Do not access Map here
+			_civilization = civilization;
+		}
 	}
 }

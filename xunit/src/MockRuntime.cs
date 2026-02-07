@@ -88,7 +88,12 @@ namespace CivOne.UnitTests
         {
         }
 
-        public MockRuntime(RuntimeSettings settings)
+		public string FileChooser(bool save, string title, string initialFileName, string filter)
+		{
+			throw new NotImplementedException();
+		}
+
+		public MockRuntime(RuntimeSettings settings)
         {
             Settings = settings;
             // TODO fire-eggs this needs to be false if you want to use Earth! and must have a pointer to the Civ data files!

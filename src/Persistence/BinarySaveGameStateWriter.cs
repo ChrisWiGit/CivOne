@@ -8,41 +8,41 @@ namespace CivOne.Persistence
         {
             using SaveDataAdapter gameData = new();
 
-            gameData.GameTurn = snapshot.GameTurn;
-            gameData.HumanPlayer = snapshot.HumanPlayer;
-            gameData.RandomSeed = (ushort)snapshot.RandomSeed;
-            gameData.Difficulty = (ushort)snapshot.Difficulty;
+            // gameData.GameTurn = snapshot.GameTurn;
+            // gameData.HumanPlayer = snapshot.HumanPlayer;
+            // gameData.RandomSeed = (ushort)snapshot.RandomSeed;
+            // gameData.Difficulty = (ushort)snapshot.Difficulty;
 
-            gameData.ActiveCivilizations = snapshot.ActiveCivilizations;
-            gameData.CivilizationIdentity = snapshot.CivilizationIdentity;
-            gameData.CurrentResearch = snapshot.CurrentResearch;
-            gameData.DiscoveredAdvanceIDs = snapshot.DiscoveredAdvanceIDs;
+            // gameData.ActiveCivilizations = snapshot.ActiveCivilizations;
+            // gameData.CivilizationIdentity = snapshot.CivilizationIdentity;
+            // gameData.CurrentResearch = snapshot.CurrentResearch;
+            // gameData.DiscoveredAdvanceIDs = snapshot.DiscoveredAdvanceIDs;
 
-            gameData.LeaderNames = snapshot.LeaderNames;
-            gameData.CivilizationNames = snapshot.CivilizationNames;
-            gameData.CitizenNames = snapshot.CitizenNames;
-            gameData.CityNames = snapshot.CityNames;
+            // gameData.LeaderNames = snapshot.LeaderNames;
+            // gameData.CivilizationNames = snapshot.CivilizationNames;
+            // gameData.CitizenNames = snapshot.CitizenNames;
+            // gameData.CityNames = snapshot.CityNames;
 
-            gameData.PlayerGold = snapshot.PlayerGold;
-            gameData.ResearchProgress = snapshot.ResearchProgress;
-            gameData.TaxRate = snapshot.TaxRate;
-            gameData.ScienceRate = snapshot.ScienceRate;
-            gameData.StartingPositionX = snapshot.StartingPositionX;
-            gameData.Government = snapshot.Government;
+            // gameData.PlayerGold = snapshot.PlayerGold;
+            // gameData.ResearchProgress = snapshot.ResearchProgress;
+            // gameData.TaxRate = snapshot.TaxRate;
+            // gameData.ScienceRate = snapshot.ScienceRate;
+            // gameData.StartingPositionX = snapshot.StartingPositionX;
+            // gameData.Government = snapshot.Government;
 
-            gameData.Cities = snapshot.Cities;
-            gameData.Units = snapshot.Units;
-            gameData.Wonders = snapshot.Wonders;
-            gameData.TileVisibility = snapshot.TileVisibility;
-            // gameData.AdvanceFirstDiscovery = snapshot.AdvanceFirstDiscovery; // TODO: Check serialization of Dictionary
-            gameData.GameOptions = snapshot.GameOptions;
+            // gameData.Cities = snapshot.Cities;
+            // gameData.Units = snapshot.Units;
+            // gameData.Wonders = snapshot.Wonders;
+            // gameData.TileVisibility = snapshot.TileVisibility;
+            // // gameData.AdvanceFirstDiscovery = snapshot.AdvanceFirstDiscovery; // TODO: Check serialization of Dictionary
+            // gameData.GameOptions = snapshot.GameOptions;
 
-            gameData.NextAnthologyTurn = snapshot.NextAnthologyTurn;
-            gameData.OpponentCount = snapshot.OpponentCount;
-            gameData.ReplayData = snapshot.ReplayData;
+            // gameData.NextAnthologyTurn = snapshot.NextAnthologyTurn;
+            // gameData.OpponentCount = snapshot.OpponentCount;
+            // gameData.ReplayData = snapshot.ReplayData;
 
-            byte[] data = gameData.GetBytes();
-            stream.Write(data, 0, data.Length);
+            // byte[] data = gameData.GetBytes();
+            // stream.Write(data, 0, data.Length);
         }
     }
 }
