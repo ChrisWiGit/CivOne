@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Persistence;
+using CivOne.Tiles;
 using CivOne.Units;
 using CivOne.Wonders;
 
@@ -31,6 +32,8 @@ namespace CivOne
 		List<ReplayData> ReplayData { get; }
 
 		byte PlayerNumber(Player player);
+
+		ITile[,] MapTiles { get; }
 
 		public bool Animations { get; }
 		public bool Sound { get; }
@@ -63,16 +66,25 @@ namespace CivOne
 
 				Players = game.Players,
 
-				Cities = game.Cities,
-				Units = game.Units,
-
-				AdvanceOrigin = game.AdvanceOrigin,
-
 				AnthologyTurn = game.AnthologyTurn,
+				TerrainSeed = game.TerrainMasterWord,
 
-				CityNames = game.CityNames,
-
-				ReplayData = game.ReplayData
+				RandomSeed = game.TerrainMasterWord,
+				MapWidth = game.MapTiles.GetLength(0),
+				MapHeight = game.MapTiles.GetLength(0) > 0 ? 
+							game.MapTiles.GetLength(1) : 0,
+				
+				MapTiles = game.MapTiles, 
+				GameOptions = [
+					game.InstantAdvice,
+					game.AutoSave,
+					game.EndOfTurn,
+					game.Animations,
+					game.Sound,
+					game.EnemyMoves,
+					game.CivilopediaText,
+					game.Palace
+				]
 			};
 		}
 

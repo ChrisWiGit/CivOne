@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CivOne.Tiles;
 using CivOne.Units;
 
 namespace CivOne.Persistence
@@ -60,15 +61,18 @@ namespace CivOne.Persistence
 
 		public int Difficulty { get; set; }
 
-        public List<bool> ActiveCivilizations { get; set; }
+        // -> Players
+        // public List<bool> ActiveCivilizations { get; set; }
         public List<byte> CivilizationIdentity { get; set; }
-        public ushort CurrentResearch { get; set; }
-        public Dictionary<byte, List<byte>> DiscoveredAdvanceIDs { get; set; }
+        // -> CurrentPlayer
+        // public ushort CurrentResearch { get; set; }
+        // -> Players
+        // public Dictionary<byte, List<byte>> DiscoveredAdvanceIDs { get; set; }
 
-        public List<string> LeaderNames { get; set; }
-        public List<string> CivilizationNames { get; set; }
-        public List<string> CitizenNames { get; set; }
-        public List<string> CityNames { get; set; }
+        // public List<string> LeaderNames { get; set; }
+        // public List<string> CivilizationNames { get; set; }
+        // public List<string> CitizenNames { get; set; }
+        // public List<string> CityNames { get; set; }
 		
         // PlayerGold, ResearchProgress, TaxRate, ScienceRate, StartingPositionX, Government
         public Player CurrentPlayer { get; set; }
@@ -81,11 +85,14 @@ namespace CivOne.Persistence
 
 		public ushort AnthologyTurn { get; set; }
 
-		public int TerrainMasterWord { get; set; }
+		public int TerrainSeed { get; set; }
 
-		// public List<ReplayData> ReplayData { get; set; }
+        public ITile[,] MapTiles { get; set; }
+
+        public int MapWidth { get; set; }
+        public int MapHeight { get; set; }
 
         public List<bool> GameOptions { get; set; }
-
+		// public List<ReplayData> ReplayData { get; set; }
 	}
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CivOne.Tiles;
 using CivOne.Units;
 
 namespace CivOne
@@ -14,6 +15,8 @@ namespace CivOne
 		public List<ReplayData> ReplayData => _replayData;
 
 		public int TerrainMasterWord => Map.Instance.TerrainMasterWord;
+
+		public ITile[,] MapTiles => Map.Instance.Tiles;
 
 		Player IGameSnapshotSource.CurrentPlayer => CurrentPlayer;
 
