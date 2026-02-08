@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using CivOne.Civilizations;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -108,22 +109,26 @@ namespace CivOne.Persistence
                 GameOptions = snapshot.GameOptions
             };
         }
-// // Players = [
-//                     new PlayerDto { 
-//                         Civilization = new CivilizationDto { LeaderClassName = "Gandhi", LeaderId = 1 }
-//                     }
-//                 ]
 
         List<PlayerDto> MapPlayPlayersToDto(Player[] players)
         {
-            return players.Select(p => new PlayerDto
+            return [.. players.Select(MapPlayerToDto)];
+        }
+        PlayerDto MapPlayerToDto(Player player)
+        {
+            return new PlayerDto
             {
-                Civilization = new CivilizationDto
-                {
-                    LeaderClassName = p.Civilization.Leader.GetType().Name,
-                    LeaderId = (uint)p.Civilization.Id
-                }
-            }).ToList();
+                Civilization = MapCivilizationToDto(player.Civilization)
+            };
+        }
+        CivilizationDto MapCivilizationToDto(ICivilization civ)
+        {
+            return new CivilizationDto
+            {
+                LeaderClassName = civ.Leader.GetType().FullName,
+                LeaderId = (uint)civ.Id,
+                
+            };
         }
     }
 }

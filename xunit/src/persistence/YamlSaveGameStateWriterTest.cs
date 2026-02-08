@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Enums;
@@ -9,21 +10,40 @@ using Xunit;
 
 namespace CivOne.UnitTests.Persistence
 {
-    public class YamlSaveGameStateWriterTest : TestsBase2
+    public class YamlSaveGameStateWriterTest : IDisposable
     {
+        private RuntimeSettings rs;
+        private MockRuntime runtime;
         private GameState mockGameState;
         private GameStateDto gameStateDto;
 
+        private Player[] players;
+
         private YamlSaveGameStateWriter actualWriter;
+
+        protected void SetupRuntime()
+        {
+            rs = new RuntimeSettings();
+            rs.InitialSeed = 7595;
+            runtime = new MockRuntime(rs);
+        }
 
         // setup
         public YamlSaveGameStateWriterTest()
         {
+            SetupRuntime();
+
+            players =
+			[
+				new (new Roman()),
+                new (new German())
+            ];
+            // players[0].Id = 1;
             // Create a mock GameState with some test data
             mockGameState = new GameState
             {
                 Difficulty = 3, // King
-                Players = [new (new MockPlayerCiv())]
+                Players = players
             };
 
             actualWriter = new YamlSaveGameStateWriter();
@@ -32,7 +52,7 @@ namespace CivOne.UnitTests.Persistence
         [Fact]
         public void TestWrite()
         {
-           // TextStream
+            // TextStream
             using var stream = new MemoryStream();
             actualWriter.Write(stream, mockGameState);
 
@@ -43,46 +63,13 @@ namespace CivOne.UnitTests.Persistence
             string yamlOutput = reader.ReadToEnd();
             File.WriteAllText("test_output.yaml", yamlOutput);
         }
-    }
 
-    public class PlayerLeader : BaseLeader
-	{
-		protected override Leader Leader => Leader.Montezuma;
-
-		public PlayerLeader() : base("Caesar", "DOESNOTSTARTWITHKING", 40, 22)
-		{
-            // King name disables usage of global Resource instance (null reference exception), 
-            // so we set the name to something else, and set the default name to "Caesar"
-			Development = DevelopmentLevel.Expansionistic;
-			Militarism = MilitarismLevel.Civilized;
-		}
-	}
-
-    internal class MockPlayerCiv : BaseCivilization<PlayerLeader>
-	{
-		public MockPlayerCiv() : base(Enums.Civilization.Romans, "Roman", "Romans", "ceas")
-		{
-			StartX = 36;
-			StartY = 19;
-			CityNames = new[]
-			{
-				"Rome",
-				"Caesarea",
-				"Carthage",
-				"Nicopolis",
-				"Byzantium",
-				"Brundisium",
-				"Syracuse",
-				"Antioch",
-				"Palmyra",
-				"Cyrene",
-				"Gordion",
-				"Tyrus",
-				"Jerusalem",
-				"Seleucia",
-				"Ravenna",
-				"Artaxata"
-			};
-		}
+        public void Dispose()
+        {
+            // Tear everything down
+            Map.Reset();
+            runtime?.Dispose();
+            RuntimeHandler.Wipe();
+        }
     }
 }
