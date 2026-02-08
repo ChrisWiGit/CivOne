@@ -46,6 +46,19 @@ namespace CivOne.Persistence
 
     }
 
+    public enum GameOptionEnum
+    {
+        // order must be same as in GameStateHandler
+        Animations,
+        Sound,
+        CivilopediaText,
+        EndOfTurn,
+        InstantAdvice,
+        AutoSave,
+        EnemyMoves,
+        Palace
+    }
+
     /*
 		Muss anders konvertiert werden. Wir brauchen einen Zwischenschritt, d.h. eine DTO wo noch unsere internen Typen verwendet werden, da sie einfacher zu handeln sind (z.b. yaml)
 		aber die alte art in Binär muss dann nochmal extra in einen andere DTO Klasse umgewandelt werden.
@@ -92,7 +105,7 @@ namespace CivOne.Persistence
         public int MapWidth { get; set; }
         public int MapHeight { get; set; }
 
-        public List<bool> GameOptions { get; set; }
+        public List<GameOptionEnum> GameOptions { get; set; }
 		// public List<ReplayData> ReplayData { get; set; }
 	}
 }

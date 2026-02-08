@@ -9,6 +9,11 @@ using CivOne.Wonders;
 
 namespace CivOne
 {
+	/**
+	* Provides a way to create a GameState from the current game. 
+	* The game implements these and adapters 
+	* are used to convert the internal types to the DTO types.
+	*/
 	public interface IGameSnapshotSource
 	{
 		int Difficulty { get; }
@@ -56,6 +61,18 @@ namespace CivOne
 		*/
 		public GameState Create(IGameSnapshotSource game)
 		{
+			List<bool> options =
+				[
+					// order must be same as in GameOptionEnum
+					game.Animations,
+					game.Sound,
+					game.CivilopediaText,
+					game.EndOfTurn,
+					game.InstantAdvice,
+					game.AutoSave,
+					game.EnemyMoves,
+					game.Palace
+				];
 			return new GameState
 			{
 				GameTurn = game.GameTurn,
@@ -75,16 +92,10 @@ namespace CivOne
 							game.MapTiles.GetLength(1) : 0,
 				
 				MapTiles = game.MapTiles, 
-				GameOptions = [
-					game.InstantAdvice,
-					game.AutoSave,
-					game.EndOfTurn,
-					game.Animations,
-					game.Sound,
-					game.EnemyMoves,
-					game.CivilopediaText,
-					game.Palace
-				]
+				GameOptions = [.. options				
+					.Select((option, index) => (option, index))
+					.Where(x => x.option)
+					.Select(x => (GameOptionEnum)x.index)]
 			};
 		}
 

@@ -46,17 +46,7 @@ namespace CivOne.Persistence
         Emperor,
         Deity
     }
-    public enum GameOptionEnum
-    {
-        Animations,
-        Sound,
-        CivilopediaText,
-        EndOfTurn,
-        InstantAdvice,
-        AutoSave,
-        EnemyMoves,
-        Palace
-    }
+    
     public class GameStateDto
     {
         // wichtig: nicht nur 1:1 abbilden, sondern für menschen lesbar
@@ -93,7 +83,7 @@ namespace CivOne.Persistence
 
     public class YamlSaveGameStateWriter : IGameStateWriter
     {
-        public YamlSaveGameStateWriter(Settings settings)
+        public YamlSaveGameStateWriter()
         {
         }
         public void Write(Stream stream, GameState snapshot)
@@ -115,6 +105,7 @@ namespace CivOne.Persistence
                 Difficulty = (DifficultyLevel)snapshot.Difficulty,
                 GameTurn = snapshot.GameTurn,
                 Players = MapPlayPlayersToDto(snapshot.Players),
+                GameOptions = snapshot.GameOptions
             };
         }
 // // Players = [

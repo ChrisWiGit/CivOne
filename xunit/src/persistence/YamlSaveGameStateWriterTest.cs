@@ -1,13 +1,15 @@
 ﻿using System.IO;
 using System.Linq;
 using CivOne.Civilizations;
+using CivOne.Enums;
+using CivOne.Leaders;
 using CivOne.Persistence;
 using CivOne.Tiles;
 using Xunit;
 
 namespace CivOne.UnitTests.Persistence
 {
-    public class YamlSaveGameStateWriterTest
+    public class YamlSaveGameStateWriterTest : TestsBase2
     {
         private GameState mockGameState;
         private GameStateDto gameStateDto;
@@ -21,7 +23,7 @@ namespace CivOne.UnitTests.Persistence
             mockGameState = new GameState
             {
                 Difficulty = 3, // King
-                Players = [new(new Roman())]
+                Players = [new (new MockPlayerCiv())]
             };
 
             actualWriter = new YamlSaveGameStateWriter();
@@ -41,5 +43,46 @@ namespace CivOne.UnitTests.Persistence
             string yamlOutput = reader.ReadToEnd();
             File.WriteAllText("test_output.yaml", yamlOutput);
         }
+    }
+
+    public class PlayerLeader : BaseLeader
+	{
+		protected override Leader Leader => Leader.Montezuma;
+
+		public PlayerLeader() : base("Caesar", "DOESNOTSTARTWITHKING", 40, 22)
+		{
+            // King name disables usage of global Resource instance (null reference exception), 
+            // so we set the name to something else, and set the default name to "Caesar"
+			Development = DevelopmentLevel.Expansionistic;
+			Militarism = MilitarismLevel.Civilized;
+		}
+	}
+
+    internal class MockPlayerCiv : BaseCivilization<PlayerLeader>
+	{
+		public MockPlayerCiv() : base(Enums.Civilization.Romans, "Roman", "Romans", "ceas")
+		{
+			StartX = 36;
+			StartY = 19;
+			CityNames = new[]
+			{
+				"Rome",
+				"Caesarea",
+				"Carthage",
+				"Nicopolis",
+				"Byzantium",
+				"Brundisium",
+				"Syracuse",
+				"Antioch",
+				"Palmyra",
+				"Cyrene",
+				"Gordion",
+				"Tyrus",
+				"Jerusalem",
+				"Seleucia",
+				"Ravenna",
+				"Artaxata"
+			};
+		}
     }
 }
