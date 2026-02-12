@@ -5,18 +5,12 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using CivOne.Civilizations;
+using CivOne.Persistence.Model;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
 namespace CivOne.Persistence
 {
-    public class CivilizationDto
-    {
-        public string LeaderClassName { get; set; }
-        public uint LeaderId { get; set; }
-        public string AllLeaderClassNames { get => string.Join(", ", 
-                Common.Civilizations.Select(c => $"{c.Id}: {c.Leader.GetType().Name}")); }
-    }
     public class PlayerDto
     {
         public CivilizationDto Civilization { get; set; }
@@ -125,9 +119,7 @@ namespace CivOne.Persistence
         {
             return new CivilizationDto
             {
-                LeaderClassName = civ.Leader.GetType().FullName,
-                LeaderId = (uint)civ.Id,
-                
+                LeaderClassName = civ.Leader.GetType().Name
             };
         }
     }
