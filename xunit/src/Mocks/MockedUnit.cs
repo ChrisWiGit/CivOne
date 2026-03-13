@@ -6,7 +6,6 @@ using CivOne.UserInterface;
 
 namespace CivOne.UnitTests
 {
-
     class MockedUnit : BaseUnit, IUnit
     {
         public override IEnumerable<MenuItem<int>> MenuItems => throw new NotImplementedException();

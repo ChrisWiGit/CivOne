@@ -95,7 +95,9 @@ namespace CivOne
 				GameOptions = [.. options				
 					.Select((option, index) => (option, index))
 					.Where(x => x.option)
-					.Select(x => (GameOptionEnum)x.index)]
+					.Select(x => (GameOptionEnum)x.index)],
+
+				Cities = game.Cities,
 			};
 		}
 

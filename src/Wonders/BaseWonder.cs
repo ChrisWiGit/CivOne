@@ -59,7 +59,7 @@ namespace CivOne.Wonders
 			return output;
 		}
 		
-		protected Wonder Type { get; set; }
+		public Wonder Type { get; set; }
 		
 		public IAdvance RequiredTech { get; protected set; }
 		public IAdvance ObsoleteTech { get; protected set; }

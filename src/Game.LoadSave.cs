@@ -183,7 +183,8 @@ namespace CivOne
 					NameId = cityData.NameId,
 					Size = cityData.ActualSize,
 					Food = cityData.Food,
-					Shields = cityData.Shields
+					Shields = cityData.Shields,
+					VisibleSize = cityData.VisibleSize
 				};
 				city.SetProduction(cityData.CurrentProduction);
 

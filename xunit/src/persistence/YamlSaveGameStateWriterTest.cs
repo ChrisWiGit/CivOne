@@ -15,7 +15,7 @@ namespace CivOne.UnitTests.Persistence
         private RuntimeSettings rs;
         private MockRuntime runtime;
         private GameState mockGameState;
-        private GameStateDto gameStateDto;
+        // private GameStateDto gameStateDto;
 
         private Player[] players;
 

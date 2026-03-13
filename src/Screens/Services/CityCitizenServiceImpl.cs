@@ -322,12 +322,12 @@ namespace CivOne.Screens.Services
 		protected internal void ApplyWonderEffects(CitizenTypes ct)
 		{
 			int happy = 0;
-			if (_city.Player.HasWonderEffect<HangingGardens>() && !_game.WonderObsolete<HangingGardens>())
+			if (_city.PlayerIntf.HasWonderEffect<HangingGardens>() && !_game.WonderObsolete<HangingGardens>())
 			{
 				happy += 1;
 				ct.Wonders.Add(new HangingGardens());
 			}
-			if (_city.Player.HasWonderEffect<CureForCancer>() && !_game.WonderObsolete<CureForCancer>())
+			if (_city.PlayerIntf.HasWonderEffect<CureForCancer>() && !_game.WonderObsolete<CureForCancer>())
 			{
 				// CW: check for obsoletion first, 
 				// even if in original Civ it is not done.
@@ -342,7 +342,7 @@ namespace CivOne.Screens.Services
 
 		protected internal void ApplyDemocracyEffects(CitizenTypes ct, int initialContent)
 		{
-			if (!_city.Player.RepublicDemocratic)
+			if (!_city.PlayerIntf.RepublicDemocratic)
 			{
 				return;
 			}
@@ -352,7 +352,7 @@ namespace CivOne.Screens.Services
 
 			ct.MarshallLawUnits.AddRange(attackUnitsNotInCity);
 
-			int unhappyPerUnit = _city.Player.Government is Governments.Republic ? 1 : 2;
+			int unhappyPerUnit = _city.PlayerIntf.Government is Governments.Republic ? 1 : 2;
 
 			int totalUnhappiness = Math.Min(initialContent, attackUnitsNotInCity.Count() * unhappyPerUnit);
 
@@ -361,7 +361,7 @@ namespace CivOne.Screens.Services
 
 		protected internal void ApplyMartialLaw(CitizenTypes ct)
 		{
-			if (!_city.Player.AnarchyDespotism && !_city.Player.MonarchyCommunist)
+			if (!_city.PlayerIntf.AnarchyDespotism && !_city.PlayerIntf.MonarchyCommunist)
 			{
 				return;
 			}
@@ -399,8 +399,8 @@ namespace CivOne.Screens.Services
 			if (_cityBuildings.HasBuilding<Temple>())
 			{
 				unhappyToContent++;
-				if (_city.Player.HasAdvance<Mysticism>()) unhappyToContent <<= 1;
-				if (_city.Player.HasWonderEffect<Oracle>())
+				if (_city.PlayerIntf.HasAdvance<Mysticism>()) unhappyToContent <<= 1;
+				if (_city.PlayerIntf.HasWonderEffect<Oracle>())
 				{
 					unhappyToContent <<= 1;
 					ct.Wonders.Add(new Oracle());

@@ -96,6 +96,7 @@ namespace CivOne.Persistence
 
 		// public Dictionary<byte, byte> AdvanceOrigin { get; set; }
 
+        public List<City> Cities { get; set; }
 		public ushort AnthologyTurn { get; set; }
 
 		public int TerrainSeed { get; set; }

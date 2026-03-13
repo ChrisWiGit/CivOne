@@ -13,6 +13,9 @@ namespace CivOne.UnitTests
         public MockedGrassland()
         {
         }
+        public MockedGrassland(int x, int y) : base(x, y)
+        {
+        }
 
         public MockedGrassland WithUnits(params IUnit[] units)
         {
@@ -21,5 +24,10 @@ namespace CivOne.UnitTests
         }
 
         public override IUnit[] Units => _units;
+
+        public ITile[,] MockedMap { get; set; }
+
+        public new ITile this[int relativeX, int relativeY] => MockedMap[X + relativeX, Y + relativeY];
+		
     }
 }

@@ -106,7 +106,7 @@ namespace CivOne
 				ResourceTiles = city.GetResourceTiles(),
 				// fire-eggs 20190622 make sure to save fortify/veteran status as per Microprose
 				FortifiedUnits = units?.Select(x => (byte)((int)x.Type | 0x40 | (x.Veteran ? 0x80 : 0))).ToArray(),
-				TradingCities = [.. city.TradingCities.Select(c => c.GetId())]
+				TradingCities = [.. city.TradingCitiesAsCity.Select(c => c.GetId())]
 			};
 		}
 

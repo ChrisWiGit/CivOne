@@ -16,6 +16,7 @@ using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Governments;
+using CivOne.Persistence.Model;
 using CivOne.Screens;
 using CivOne.Screens.Reports;
 using CivOne.Screens.Services;
@@ -29,13 +30,22 @@ using UniversityBuilding = CivOne.Buildings.University;
 
 namespace CivOne
 {
-	public interface ICity : ITurn, ICityBasic, ICityBuildings, ICityOnContinent
+	public interface ICity : ITurn, ICityBasic, ICityStatus, ICityTile, ICityBuildings, ICityOnContinent, ICityMapper
 	{}
 	public class City : BaseInstance, ICity
 	{
 		// Dependency Injection
 		// TODO: Replace by DI container instantiation
 		internal BitFlagExtensions bitFlagExtensions = new();
+		
+		Guid _id = Guid.NewGuid();
+		
+		/*
+		New. Each City gets a unique Guid.
+		For new saving format.
+		*/
+		public Guid Id { get => _id; set => _id = value; }
+		
 
 		internal int NameId { get; set; }
 		internal byte X;
@@ -53,7 +63,7 @@ namespace CivOne
 				ResetResourceTiles();
 			}
 		}
-		internal string Name => Game.CityNames[NameId];
+		public string Name => Game.CityNames[NameId];
 		private byte _size;
 		public byte Size
 		{
@@ -74,9 +84,9 @@ namespace CivOne
 				SetResourceTiles();
 			}
 		}
-		internal int Shields { get; set; }
-		internal int Food { get; set; }
-		internal IProduction CurrentProduction { get; private set; }
+		public int Shields { get; set; }
+		public int Food { get; set; }
+		public IProduction CurrentProduction { get; private set; }
 
 		private List<ITile> _resourceTiles = new List<ITile>();
 		private List<Citizen> _specialists = new List<Citizen>();
@@ -89,6 +99,8 @@ namespace CivOne
 				_resourceTiles = value;
 			}
 		}
+		public ITile[] ResourceTiles => _resourceTiles.ToArray();
+		public Citizen[] Specialists => _specialists.ToArray();
 
 		internal List<Citizen> SetupSpecialists
 		{
@@ -299,7 +311,7 @@ namespace CivOne
 			get
 			{
 				Dictionary<City, int> tradingCitiesValue = [];
-				foreach (City city in TradingCities)
+				foreach (City city in TradingCitiesAsCity)
 				{
 					int trading = CalculateTradeValue(city);
 					tradingCitiesValue[city] = trading;
@@ -311,7 +323,7 @@ namespace CivOne
 		/// <summary>
 		/// Sum of trade values from all (up to 3) trading cities.
 		/// </summary>
-		public int TradingCitiesSumValue => TradingCities.Sum(CalculateTradeValue);
+		public int TradingCitiesSumValue => TradingCitiesAsCity.Sum(CalculateTradeValue);
 
 		public int TotalIncome => Taxes + TradingCitiesSumValue;
 
@@ -516,7 +528,11 @@ namespace CivOne
 			set => SetStatusFlag(CityStatus.RIOT, value);
 		}
 
-		public bool IsCoastal => bitFlagExtensions.HasFlag(_status, CityStatus.COASTAL);
+		public bool IsCoastal 
+		{
+			get => bitFlagExtensions.HasFlag(_status, CityStatus.COASTAL);
+			set => SetStatusFlag(CityStatus.COASTAL, value);
+		}
 
 		public bool CelebrationCancelled
 		{
@@ -524,8 +540,10 @@ namespace CivOne
 			set => SetStatusFlag(CityStatus.CELEBRATION_CANCELLED, value);
 		}
 
-		public bool HydroAvailable	{
+		public bool HydroAvailable
+		{
 			get => bitFlagExtensions.HasFlag(_status, CityStatus.HYDRO_AVAILABLE);
+			set => SetStatusFlag(CityStatus.HYDRO_AVAILABLE, value);
 		}
 
 		public bool AutoBuild
@@ -560,7 +578,7 @@ namespace CivOne
 			_status = value ? bitFlagExtensions.SetFlag(_status, status) : bitFlagExtensions.ClearFlag(_status, status);
 		}
 
-		internal IEnumerable<ITile> ResourceTiles => CityTiles.Where(t => (t.X == X && t.Y == Y) || _resourceTiles.Contains(t));
+		// internal IEnumerable<ITile> ResourceTiles => CityTiles.Where(t => (t.X == X && t.Y == Y) || _resourceTiles.Contains(t));
 
 		internal bool OccupiedTile(ITile tile)
 		{
@@ -768,6 +786,7 @@ namespace CivOne
 		}
 
 		public Player Player => Game.Instance.GetPlayer(Owner);
+		public IPlayer PlayerIntf => Player;
 
 		/// <summary>
 		/// Return the list of possible city production [units, buildings,
@@ -1494,15 +1513,34 @@ namespace CivOne
 			this.tradingCities = [.. tradingCities.Skip(Math.Max(0, tradingCities.Length - 3))];
 		}
 
-		public City[] TradingCities {
+		public City[] TradingCitiesAsCity {
 			get
 			{
 				if (tradingCities == null)
 				{
-					return Array.Empty<City>();
+					return [];
 				}
 				return [.. tradingCities.Select(index => Game.Instance.Cities[index])];
 			}
+		}
+
+		public ICity[] TradingCities {
+			get
+			{
+				return [.. TradingCitiesAsCity];
+			}
+		}
+
+		private uint[] _visibleSizes = new uint[16];
+		public uint[] VisibleSizes {
+			get => _visibleSizes;
+			set => _visibleSizes = value ?? new uint[16];
+		}
+
+		// currently 0 is the player
+		public uint VisibleSize {
+			get => VisibleSizes[0];
+			set => VisibleSizes[0] = value;
 		}
 
 		int IndexOfCity(City city)
@@ -1516,12 +1554,12 @@ namespace CivOne
 
 		public void AddTradingCity(City city)
 		{
-			if (city == null || city == this || TradingCities.Contains(city))
+			if (city == null || city == this || TradingCitiesAsCity.Contains(city))
 			{
 				return;
 			}
 
-			List<City> cities = [.. TradingCities];
+			List<City> cities = [.. TradingCitiesAsCity];
 			cities.Add(city);
 			SetTradingCitiesIndexes([.. cities.Select(c => IndexOfCity(c)).Where(i => i >= 0)]);
 		}
