@@ -99,7 +99,11 @@ namespace CivOne
 				_resourceTiles = value;
 			}
 		}
-		public ITile[] ResourceTiles => _resourceTiles.ToArray();
+
+		/// <summary>
+		/// List of tiles that are worked by the city, always including the city tile itself.
+		/// </summary>
+		public ITile[] ResourceTiles => [.. CityTiles.Where(t => (t.X == X && t.Y == Y) || _resourceTiles.Contains(t))];
 		public Citizen[] Specialists => _specialists.ToArray();
 
 		internal List<Citizen> SetupSpecialists
@@ -577,8 +581,6 @@ namespace CivOne
 		{
 			_status = value ? bitFlagExtensions.SetFlag(_status, status) : bitFlagExtensions.ClearFlag(_status, status);
 		}
-
-		// internal IEnumerable<ITile> ResourceTiles => CityTiles.Where(t => (t.X == X && t.Y == Y) || _resourceTiles.Contains(t));
 
 		internal bool OccupiedTile(ITile tile)
 		{
