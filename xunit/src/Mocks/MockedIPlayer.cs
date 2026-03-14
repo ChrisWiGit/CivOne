@@ -11,7 +11,6 @@ namespace CivOne.UnitTests
 {
 	public class MockedIPlayer : IPlayer
 	{
-		// Standard Player mit minimalen Eigenschaften erstellen
 		public MockedIPlayer()
 		{
 			Civilization = new MockedICivilization();

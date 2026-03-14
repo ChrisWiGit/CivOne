@@ -13,7 +13,6 @@ namespace CivOne.Persistence.Model
         * This is not a property of the dto, but a helper to provide documentation.
         * It will be ignored during serialization.
         */
-        public static string AllLeaderClassNames { get => string.Join(", ", 
-                Common.Civilizations.Select(c => c.Leader.GetType().Name)); }
+        public static string[] AllLeaderClassNames = [];
     }
 }

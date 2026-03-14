@@ -17,24 +17,24 @@ namespace CivOne.Persistence.Model.Attributes
 	/// public static readonly Citizen[] AllSpecialists = [Citizen.Entertainer, Citizen.Scientist, Citizen.Taxman];
 	/// </example>
 	[AttributeUsage(AttributeTargets.Property)]
-    public sealed class DocAttribute(
+	public sealed class DocAttribute(
 		string description,
-		string allowedValuesPropertyName = null) : Attribute
-    {
+		string allowedValuesPropertyName = null,
+		string commentValuesPropertyName = null) : Attribute
+	{
 		public string Description { get; } = description;
 		public string AllowedValuesPropertyName { get; } = allowedValuesPropertyName;
+		public string CommentValuesPropertyName { get; } = commentValuesPropertyName;
+		public string AllowedValues { get; }
 
-        public string AllowedValues { get; }
+		public DocAttribute(string description, string[] allowedValues) : this(description)
+		{
+			AllowedValues = string.Join(", ", allowedValues);
+		}
 
-        public DocAttribute(string description, string[] allowedValues) : this(description)
-        {
-            AllowedValues = string.Join(", ", allowedValues);
-        }
-
-        public DocAttribute(string description, long minValue, long maxValue) : this(description)
-        {
-            AllowedValues = $"[{minValue}, {maxValue}]";
-        }
+		public DocAttribute(string description, long minValue, long maxValue) : this(description)
+		{
+			AllowedValues = $"[{minValue} to {maxValue}]";
+		}
 	}
-
 }

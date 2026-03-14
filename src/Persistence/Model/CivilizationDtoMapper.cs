@@ -8,9 +8,13 @@ namespace CivOne.Persistence.Model
     {
         private readonly IEnumerable<ICivilization> _availableCivilizations;
 
-        public CivilizationMapper(IEnumerable<ICivilization> availableCivilizations = null)
+        public CivilizationMapper(IEnumerable<ICivilization> availableCivilizations)
         {
-            _availableCivilizations = availableCivilizations ?? Common.Civilizations;
+            if (availableCivilizations == null || !availableCivilizations.Any())
+            {
+                throw new System.ArgumentException("At least one civilization must be provided.", nameof(availableCivilizations));
+            }
+            _availableCivilizations = availableCivilizations;
         }
 
         public ICivilization FromDto(CivilizationDto dto)

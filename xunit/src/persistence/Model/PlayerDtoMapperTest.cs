@@ -1,8 +1,10 @@
 namespace CivOne.Persistence.Model
 {
 	using System;
+	using System.Collections.Generic;
 	using System.Linq;
 	using CivOne.Civilizations;
+	using CivOne.Leaders;
 	using CivOne.UnitTests;
 	using Xunit;
 	using AdvanceId = System.UInt32;
@@ -14,164 +16,54 @@ namespace CivOne.Persistence.Model
 
 		public PlayerDtoMapperTest()
 		{
+			var civsInGame = MockedICivilization.Mock(3);
+			// how to initialize in real game: var civs = Common.Civilizations.Select(c => c.Leader.GetType().Name);
+			// * var civsInGame = Common.Civilizations;
+			// * var govs = Reflect.GetGovernments();
+			// * PlayerDto.AllGovernments = govs.Select(g => $"{g.GetType().Name}:{g.Id}").ToArray();
+			string[] classes = this.GetType().Assembly.GetTypes()
+				.Where(t => typeof(ILeader).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+				.Select(t => t.Name)
+				.ToArray();
+			
+			CivilizationDto.AllLeaderClassNames = classes;
+
 			_testee = new PlayerDtoMapper(
 				null, // IPlayerGame – only used in FromDto, not needed for ToDto
-				new CivilizationMapper([new MockedICivilization()]),
+				new CivilizationMapper(civsInGame),
 				new PalaceDtoMapper(),
 				new CityDtoMapper(new ProductionDtoMapper(new MockedReflect())));
 			_player = new MockedIPlayer()
+			{
+				Advances = [1, 2, 3],
+				Embassies = [4, 5],
+				Anarchy = 2,
+				Gold = 1234,
+				CurrentResearch = new MockedIAdvance() { Id = 1 },
+				Government = new MockedIGovernment() { Id = 1 },
+				Palace = new MockedIPalace(),
+			};
+			PlayerDto.AllAdvances = ["0(Advance0)", "1(Advance1)", "2(Advance2)", "3(Advance3)"];
+			PlayerDto.AllAdvancesInfo = new Dictionary<AdvanceId, string>
+							{   { 0, "Advance0" },
+								{ 1, "Advance1" },
+								{ 2, "Advance2" },
+								{ 3, "Advance3" }
+
+							};
+			PlayerDto.AllGovernments = ["0(Government0)", "1(Government1)", "42(MockedGovernment42)"];
+				
+			
+
+			
 		}
-
 		[Fact]
-		public void ToDto_MapsTribeNames()
+		public void TestPlayerDtoMapper()
 		{
-			var player = new MockedIPlayer();
-			var dto = _testee.ToDto(player);
+			var dto = _testee.ToDto(_player);
+			Assert.NotNull(dto);
 
-			Assert.Equal(player.TribeName, dto.TribeName);
-			Assert.Equal(player.TribeNamePlural, dto.TribeNamePlural);
-		}
-
-		[Fact]
-		public void ToDto_MapsCivilization()
-		{
-			var player = AsInterface;
-			var dto = _testee.ToDto(player);
-
-			Assert.NotNull(dto.Civilization);
-			Assert.Equal(player.Civilization.Leader.GetType().Name, dto.Civilization.LeaderClassName);
-		}
-
-		[Fact]
-		public void ToDto_MapsAdvances()
-		{
-			var player = AsInterface;
-			var dto = _testee.ToDto(player);
-
-			Assert.Equal(player.Advances.Count, dto.Advances.Count);
-			for (int i = 0; i < player.Advances.Count; i++)
-				Assert.Equal((AdvanceId)player.Advances[i], dto.Advances[i]);
-		}
-
-		[Fact]
-		public void ToDto_MapsEmbassies_WhenEmpty()
-		{
-			var dto = _testee.ToDto(AsInterface);
-
-			Assert.Empty(dto.Embassies);
-		}
-
-		[Fact]
-		public void ToDto_MapsGold()
-		{
-			var player = AsInterface;
-			var dto = _testee.ToDto(player);
-
-			Assert.Equal(player.Gold, dto.Gold);
-		}
-
-		[Fact]
-		public void ToDto_MapsAnarchy()
-		{
-			var player = AsInterface;
-			var dto = _testee.ToDto(player);
-
-			Assert.Equal(player.Anarchy, dto.Anarchy);
-		}
-
-		[Fact]
-		public void ToDto_MapsGovernment()
-		{
-			var player = AsInterface;
-			var dto = _testee.ToDto(player);
-
-			Assert.Equal((byte)player.Government.Id, dto.Government);
-		}
-
-		[Fact]
-		public void ToDto_MapsRates()
-		{
-			var player = AsInterface;
-			var dto = _testee.ToDto(player);
-
-			Assert.Equal(player.LuxuriesRate, dto.LuxuriesRate);
-			Assert.Equal(player.TaxesRate, dto.TaxesRate);
-			Assert.Equal(player.ScienceRate, dto.ScienceRate);
-		}
-
-		[Fact]
-		public void ToDto_MapsScience()
-		{
-			var player = AsInterface;
-			var dto = _testee.ToDto(player);
-
-			Assert.Equal(player.Science, dto.Science);
-		}
-
-		[Fact]
-		public void ToDto_MapsCityNamesSkipped()
-		{
-			var player = AsInterface;
-			var dto = _testee.ToDto(player);
-
-			Assert.Equal(player.CityNamesSkipped, dto.CityNamesSkipped);
-		}
-
-		[Fact]
-		public void ToDto_MapsCities()
-		{
-			var player = AsInterface;
-			var dto = _testee.ToDto(player);
-
-			Assert.Equal(player.Cities.Count, dto.Cities.Count);
-		}
-
-		[Fact]
-		public void ToDto_MapsCurrentResearch_WhenSet()
-		{
-			var player = AsInterface;
-			var dto = _testee.ToDto(player);
-
-			Assert.Equal((AdvanceId)player.CurrentResearch.Id, dto.CurrentResearch);
-		}
-
-		[Fact]
-		public void ToDto_ThrowsWhenCurrentResearchIsNull()
-		{
-			playa.CurrentResearch = null;
-
-			Assert.Throws<InvalidOperationException>(() => _testee.ToDto(AsInterface));
-		}
-
-		[Fact]
-		public void ToDto_MapsExploredMap()
-		{
-			var player = AsInterface;
-			var dto = _testee.ToDto(player);
-
-			Assert.NotNull(dto.Explored);
-			Assert.Equal(player.Explored.GetLength(0), dto.Explored.Width());
-			Assert.Equal(player.Explored.GetLength(1), dto.Explored.Height());
-		}
-
-		[Fact]
-		public void ToDto_MapsVisibleMap()
-		{
-			var player = AsInterface;
-			var dto = _testee.ToDto(player);
-
-			Assert.NotNull(dto.Visible);
-			Assert.Equal(player.Visible.GetLength(0), dto.Visible.Width());
-			Assert.Equal(player.Visible.GetLength(1), dto.Visible.Height());
-		}
-
-		[Fact]
-		public void ToDto_MapsPalace()
-		{
-			var player = AsInterface;
-			var dto = _testee.ToDto(player);
-
-			Assert.NotNull(dto.Palace);
+			YamlWriter.Of(dto).WithStandard().ToFile("PlayerDtoMapperTest.TestPlayerDtoMapper.yaml");
 		}
 
 

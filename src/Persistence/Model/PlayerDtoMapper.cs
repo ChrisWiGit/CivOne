@@ -54,7 +54,7 @@ namespace CivOne.Persistence.Model
 				CurrentResearch = (AdvanceId)player.CurrentResearch?.Id,
 				CityNamesSkipped = player.CityNamesSkipped,
 
-				Government = (GovernmentId)player.Government?.Id,
+				Government = player.Government.Id,
 				LuxuriesRate = player.LuxuriesRate,
 				TaxesRate = player.TaxesRate,
 				ScienceRate = player.ScienceRate,

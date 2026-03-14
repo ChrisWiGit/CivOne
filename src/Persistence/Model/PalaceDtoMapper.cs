@@ -44,6 +44,8 @@ namespace CivOne.Persistence.Model
 
 		public PalaceDto ToDto(PalaceData palace)
 		{
+			if (palace == null) return null;
+			
 			var dto = new PalaceDto();
 			for (int i = 0; i < _sectionSetters.Length; i++)
 				_sectionSetters[i](dto, new PalaceSectionDto(palace.GetPalaceStyle(i), palace.GetPalaceLevel(i)));

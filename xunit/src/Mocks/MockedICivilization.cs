@@ -16,6 +16,11 @@ namespace CivOne.UnitTests
 {
 	public class MockedICivilization : ICivilization
 	{
+		public static List<MockedICivilization> Mock(int count)
+		{
+			return [.. Enumerable.Range(1, count).Select(i => new MockedICivilization((byte)i))];
+		}
+
 		public MockedICivilization(byte id = 1)
 		{
 			Id = id;
