@@ -11,6 +11,11 @@ namespace CivOne.Persistence.Model
     using GovernmentId = System.Byte;
 	using CityId = System.UInt32;
 
+	public interface PlayerFactory
+	{
+		IPlayer Create(ICivilization civilization);
+	}
+
     public class PlayerDtoMapper(
 		IPlayerGame gameInstance,
 		DtoMapper<CivilizationDto, ICivilization> civilizationMapper,

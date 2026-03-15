@@ -26,7 +26,17 @@ using CivOne.Wonders;
 
 namespace CivOne.Units
 {
-	internal abstract class BaseUnit : BaseInstance, IUnit
+	/// <summary>
+	/// IUnit contains FortifyActive that has no setter.
+	/// This value is restored from Status but
+	/// cannot set otherwise.
+	/// For UnitDtoMapper to restore FortifyActive, IUnitRestorable is introduced.
+	/// </summary>
+	public interface IUnitRestorable : IUnit
+	{
+		new bool FortifyActive { get; set; }
+	}
+	internal abstract class BaseUnit : BaseInstance, IUnitRestorable, IUnit
 	{
 		protected int _x, _y;
 
@@ -80,7 +90,7 @@ namespace CivOne.Units
 		}
 
 		public bool Veteran { get; set; }
-		public bool FortifyActive { get; private set; }
+		public bool FortifyActive { get; set; }
 		private bool _fortify = false;
 		public bool Fortify
 		{
