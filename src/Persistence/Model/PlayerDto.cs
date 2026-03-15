@@ -44,8 +44,8 @@ namespace CivOne.Persistence.Model
 		[Doc("A list of the player's cities")]
         public List<CityDto> Cities { get; set; }
 
-		[Doc("A list of the player's units classes.")]
-		public List<UnitDto> Units { get; set; }
+		// Units are not in PlayerDto. This is in GameStateDto as a list of all units, and each unit has a PlayerId to indicate which player it belongs to. 
+		// This makes it easier to load players first and then all units and then assign units to players.
 
 		[Doc("A 2D array indicating which tiles have been explored by the player (1) or not (0). This only accounts for the city tiles to be shown (4x4). Center tile is always 1.", 0,4)]
         public Bool2dMap Explored { get; set; }
