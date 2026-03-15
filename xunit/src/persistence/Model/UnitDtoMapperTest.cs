@@ -1,74 +1,295 @@
+using System;
+using System.Linq;
+using CivOne.Enums;
+using CivOne.Units;
+using CivOne.UnitTests;
+using Xunit;
+
 namespace CivOne.Persistence.Model
 {
-	using System;
-	using System.Diagnostics;
-	using System.Drawing;
-	using System.Linq;
-	using CivOne.Units;
-	using CityId = System.UInt32;
-	using PlayerId = System.Byte;
-
-	public interface IUnitFactory
+	public class UnitFactory : IUnitFactory
 	{
-		IUnitRestorable Create(string className, PlayerId player, string HomeCityUuid);
-	}
-
-
-	public class UnitDtoMapper(IUnitFactory _unitFactory) : DtoMapper<UnitDto, IUnit>
-	{
-		public IUnit FromDto(UnitDto dto)
+		public IUnitRestorable Create(string className, byte player, string HomeCityUuid)
 		{
-			var unit = _unitFactory.Create(dto.ClassName, dto.PlayerId, dto.HomeCity);
-			unit.Owner = dto.PlayerId;
-			unit.X = Math.Abs((int)dto.Location.X);
-			unit.Y = Math.Abs((int)dto.Location.Y);
-			unit.Goto = new Point(Math.Abs((int)dto.Goto.X), Math.Abs((int)dto.Goto.Y));
-			unit.Busy = dto.Busy;
-			unit.Veteran = dto.Veteran;
-			unit.Sentry = dto.Sentry;
-			unit.FortifyActive = dto.FortifyActive;
-			unit.Fortify = dto.Fortify;
-			unit.FuelOrProgress = dto.FuelOrProgress;
-			unit.Fuel = dto.Fuel;
-			unit.WorkProgress = dto.WorkProgress;
-			unit.order = dto.Order;
-			unit.MovesSkip = dto.MovesSkip;
-			unit.MovesLeft = dto.MovesLeft;
-			unit.PartMoves = dto.PartMoves;
+			Assert.Equal("MockedIUnit", className);
+			// * var result = new MockedIUnit
+			// * {
+			// * 	Owner = player //just for testing, do not do this in real code because index of player it game list may not be the same as player id in save file.
+			// * };
+			// Just for fun, let's use reflection to create the instance instead of hardcoding it. This way we can test that the className is used correctly.
+			var result = (IUnitRestorable)Activator.CreateInstance(Type.GetType($"CivOne.UnitTests.{className}"));
+			result.Owner = player; 
 
-			return unit;
+			return result;
+		}
+	}
+	public class UnitDtoMapperTest
+	{
+		private UnitDtoMapper _testee;
+		public UnitDtoMapperTest()
+		{
+			_testee = new UnitDtoMapper(new UnitFactory());
 		}
 
-		public UnitDto ToDto(IUnit domain)
+		[Fact]
+		public void TestUnitToDto()
 		{
-			Debug.Assert(domain.X >= 0, "Unit X coordinate cannot be negative");
-			Debug.Assert(domain.Y >= 0, "Unit Y coordinate cannot be negative");
-
-			return new UnitDto
+			var unit = new MockedIUnit
 			{
-				ClassName = domain.GetType().Name,
-				PlayerId = domain.Owner,
-				Location = new MapLocation((uint)domain.X, (uint)domain.Y),
-				Goto = new MapLocation(domain.Goto),
-				HomeCity = domain.Home?.Id.ToString() ?? null,
-				Busy = domain.Busy,
-				HasAction = domain.HasAction,
-				HasMovesLeft = domain.HasMovesLeft,
-				Veteran = domain.Veteran,
-				Sentry = domain.Sentry,
-				FortifyActive = domain.FortifyActive,
-				Fortify = domain.Fortify,
-				FuelOrProgress = domain.FuelOrProgress,
-				Fuel = domain.Fuel,
-				WorkProgress = domain.WorkProgress,
-				Order = domain.order,
-				MovesSkip = domain.MovesSkip,
-				MovesLeft = domain.MovesLeft,
-				PartMoves = domain.PartMoves,
+				Owner = 1,
 			};
+			var dto = _testee.ToDto(unit);
+			Assert.NotNull(dto);
+			Assert.Equal("MockedIUnit", dto.ClassName);
+
+			var restored = _testee.FromDto(dto);
+			Assert.NotNull(restored);
+			Assert.Equal(unit.Owner, restored.Owner);
+			Assert.Equal(unit.Type, restored.Type);
+			Assert.Equal(unit.GetType().Name, dto.ClassName);
+			Assert.Equal(unit.Busy, restored.Busy);
+			Assert.Equal(unit.HasAction, restored.HasAction);
+			Assert.Equal(unit.HasMovesLeft, restored.HasMovesLeft);
+			Assert.Equal(unit.Veteran, restored.Veteran);
+			Assert.Equal(unit.Sentry, restored.Sentry);
+			Assert.Equal(unit.FortifyActive, restored.FortifyActive);
+			Assert.Equal(unit.Fortify, restored.Fortify);
+			Assert.Equal(unit.FuelOrProgress, restored.FuelOrProgress);
+			Assert.Equal(unit.Fuel, restored.Fuel);
+			Assert.Equal(unit.WorkProgress, restored.WorkProgress);
+			Assert.Equal(unit.order, restored.order);
+			Assert.Equal(unit.MovesSkip, restored.MovesSkip);
+			Assert.Equal(unit.MovesLeft, restored.MovesLeft);
+			Assert.Equal(unit.PartMoves, restored.PartMoves);	
 		}
 	}
 }
+
+// public MockedIUnit()
+//         {
+//             MenuItems = [];
+//             Modifications = [];
+
+//             // standard values
+//             RequiredTech = null;
+//             RequiredWonder = null;
+//             ObsoleteTech = null;
+//             Class = UnitClass.Land;
+//             Type = UnitType.Settlers;
+//             Home = null;
+//             Role = UnitRole.Settler;
+//             Attack = 0;
+//             Defense = 1;
+//             Move = 1;
+//             X = 2;
+//             Y = 3;
+//             Goto = new Point(1, 2);
+//             Tile = null;
+//             Busy = false;
+//             HasAction = false;
+//             HasMovesLeft = true;
+//             Veteran = false;
+//             Sentry = false;
+//             Fortify = false;
+//             FuelOrProgress = 0;
+//             Fuel = 0;
+//             WorkProgress = 0;
+//             Moving = false;
+//             Movement = null;
+//             Owner = 0;
+//             Status = 0;
+//             order = Order.None;
+//             MovesSkip = 0;
+//             MovesLeft = 1;
+//             PartMoves = 0;
+//             MoveTargets = [];
+//             MenuItems = [];
+//             Modifications = [];
+//             NearestCity = 0;
+//             Player = null;
+//             Name = "Mocked Unit";
+//             Icon = null;
+//             PageCount = 0;
+//             Price = 0;
+//             BuyPrice = 0;
+//             ProductionId = 0;
+//         }
+// public enum UnitType
+// 	{
+// 		Settlers = 0,
+// 		Militia = 1,
+// 		Phalanx = 2,
+// 		Legion = 3,
+// 		Musketeers = 4,
+// 		Riflemen = 5,
+// 		Cavalry = 6,
+// 		Knights = 7,
+// 		Catapult = 8,
+// 		Cannon = 9,
+// 		Chariot = 10,
+// 		Armor = 11,
+// 		MechInf = 12,
+// 		Artillery = 13,
+
+// 		private readonly IReflect _reflect = new GameReflect();
+// 		private readonly ProductionDtoMapper _testee;
+
+// 		public ProductionDtoMapperTest()
+// 		{
+// 			_testee = new ProductionDtoMapper(_reflect);
+// 		}
+
+// 		[Fact]
+// 		public void ToDto_MapsAllFieldsCorrectly()
+// 		{
+// 			IProduction production = _reflect.GetProduction().First();
+
+// 			ProductionDto dto = _testee.ToDto(production);
+
+// 			Assert.Equal((uint)production.Price, dto.Price);
+// 			Assert.Equal((uint)production.BuyPrice, dto.BuyPrice);
+// 			Assert.Equal((uint)production.ProductionId, dto.ProductionId);
+// 		}
+
+// 		[Fact]
+// 		public void FromDto_WithValidProductionId_ReturnsMatchingProduction()
+// 		{
+// 			// 0 is okay, but we want to test another one.
+// 			IProduction expected = _reflect.GetProduction().First(p => p.Price > 0);
+// 			var dto = new ProductionDto { ProductionId = expected.ProductionId };
+
+// 			IProduction actual = _testee.FromDto(dto);
+
+// 			Assert.Equal(expected.ProductionId, actual.ProductionId);
+// 		}
+
+// 		[Fact]
+// 		public void FromDto_WithInvalidProductionId_ThrowsException()
+// 		{
+// 			var dto = new ProductionDto { ProductionId = uint.MaxValue };
+
+// 			Assert.Throws<Exception>(() => _testee.FromDto(dto));
+// 		}
+
+// 		[Fact]
+// 		public void RoundTrip_ToDtoThenFromDto_PreservesProductionId()
+// 		{
+// 			foreach (IProduction production in _reflect.GetProduction())
+// 			{
+// 				ProductionDto dto = _testee.ToDto(production);
+// 				IProduction restored = _testee.FromDto(dto);
+
+// 				Assert.Equal(production.ProductionId, restored.ProductionId);
+// 			}
+// 		}
+// 	}
+// }
+
+// using CivOne.Enums;
+
+// namespace CivOne.Persistence.Model
+// {
+//     public class UnitDto
+//     {
+//         public string ClassName { get; set; }
+//         public MapLocation Location { get; set; }
+//         public MapLocation Goto { get; set; }
+
+//         public string HomeCity { get; set; }
+
+//         public bool Busy { get; set; }
+//         public bool HasAction { get; set; }
+//         public bool HasMovesLeft { get; set; }
+//         public bool Veteran { get; set; }
+//         public bool Sentry { get; set; }
+//         public bool FortifyActive { get; set; }
+//         public bool Fortify { get; set; }
+
+//         public byte FuelOrProgress { get; set; }
+//         public byte Fuel { get; set; }
+//         public byte WorkProgress { get; set; }
+
+//         public Order Order { get; set; }
+
+//         public int MovesSkip { get; set; }
+//         public byte MovesLeft { get; set; }
+//         public byte PartMoves { get; set; }
+
+//         // Owner wil be set from Player
+//         public byte PlayerId { get; set; }
+//     }
+// }
+
+
+// namespace CivOne.Persistence.Model
+// {
+// 	using System;
+// 	using System.Diagnostics;
+// 	using System.Drawing;
+// 	using System.Linq;
+// 	using CivOne.Units;
+// 	using CityId = System.UInt32;
+// 	using PlayerId = System.Byte;
+
+// 	public interface IUnitFactory
+// 	{
+// 		IUnitRestorable Create(string className, PlayerId player, string HomeCity);
+// 	}
+
+
+// 	public class UnitDtoMapper(IUnitFactory _unitFactory) : DtoMapper<UnitDto, IUnit>
+// 	{
+// 		public IUnit FromDto(UnitDto dto)
+// 		{
+// 			var unit = _unitFactory.Create(dto.ClassName, dto.PlayerId, dto.HomeCity);
+// 			unit.X = Math.Abs((int)dto.Location.X);
+// 			unit.Y = Math.Abs((int)dto.Location.Y);
+// 			unit.Goto = new Point(Math.Abs((int)dto.Goto.X), Math.Abs((int)dto.Goto.Y));
+// 			unit.Busy = dto.Busy;
+// 			unit.Veteran = dto.Veteran;
+// 			unit.Sentry = dto.Sentry;
+// 			unit.FortifyActive = dto.FortifyActive;
+// 			unit.Fortify = dto.Fortify;
+// 			unit.FuelOrProgress = dto.FuelOrProgress;
+// 			unit.Fuel = dto.Fuel;
+// 			unit.WorkProgress = dto.WorkProgress;
+// 			unit.order = dto.Order;
+// 			unit.MovesSkip = dto.MovesSkip;
+// 			unit.MovesLeft = dto.MovesLeft;
+// 			unit.PartMoves = dto.PartMoves;
+
+// 			return unit;
+// 		}
+
+// 		public UnitDto ToDto(IUnit domain)
+// 		{
+// 			Debug.Assert(domain.X >= 0, "Unit X coordinate cannot be negative");
+// 			Debug.Assert(domain.Y >= 0, "Unit Y coordinate cannot be negative");
+
+// 			return new UnitDto
+// 			{
+// 				ClassName = domain.GetType().Name,
+// 				Location = new MapLocation((uint)domain.X, (uint)domain.Y),
+// 				Goto = new MapLocation(domain.Goto),
+// 				HomeCity = domain.Home?.Id.ToString() ?? null,
+// 				Busy = domain.Busy,
+// 				HasAction = domain.HasAction,
+// 				HasMovesLeft = domain.HasMovesLeft,
+// 				Veteran = domain.Veteran,
+// 				Sentry = domain.Sentry,
+// 				FortifyActive = domain.FortifyActive,
+// 				Fortify = domain.Fortify,
+// 				FuelOrProgress = domain.FuelOrProgress,
+// 				Fuel = domain.Fuel,
+// 				WorkProgress = domain.WorkProgress,
+// 				Order = domain.order,
+// 				MovesSkip = domain.MovesSkip,
+// 				MovesLeft = domain.MovesLeft,
+// 				PartMoves = domain.PartMoves,
+// 			};
+// 		}
+// 	}
+// }
 
 
 // // CivOne
