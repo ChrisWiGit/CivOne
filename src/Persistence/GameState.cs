@@ -93,6 +93,7 @@ namespace CivOne.Persistence
         // ActiveCivilizations, AdvanceOrigin,
         // CivilizationNames, Cities, Units, Wonders, TileVisibility, AdvanceFirstDiscovery        
 		public Player[] Players { get; set; }
+        public List<IUnit> Units { get; set; }
 
 		// public Dictionary<byte, byte> AdvanceOrigin { get; set; }
 

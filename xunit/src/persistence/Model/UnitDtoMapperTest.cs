@@ -16,6 +16,12 @@ namespace CivOne.Persistence.Model
 		public UnitDtoMapperTest()
 		{
 			_testee = new UnitDtoMapper(new UnitFactory());
+
+			// Code how to get all Unit class names for DocAttribute. 
+			// UnitDto.AllUnitsClassNames = [.. typeof(IUnit).Assembly.GetTypes()
+			// 	.Where(t => typeof(IUnit).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+			// 	.Select(t => t.Name)];
+			UnitDto.AllUnitsClassNames = ["MockedIUnit"];
 		}
 
 		[Fact]

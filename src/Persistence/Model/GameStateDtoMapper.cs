@@ -7,7 +7,8 @@ using CivOne.Persistence.Model.Attributes;
 namespace CivOne.Persistence.Model
 {
     public class GameStateDtoMapper(
-        DtoMapper<PlayerDto, Player> playerMapper
+        PlayerDtoMapper playerMapper,
+        UnitDtoMapper unitMapper
     ) : DtoMapper<GameStateDto, GameState>
     {
         public GameState FromDto(GameStateDto dto)
@@ -29,7 +30,7 @@ namespace CivOne.Persistence.Model
 
         public GameStateDto ToDto(GameState gameState)
 		{
-			return new GameStateDto
+			var gameStateDto = new GameStateDto
             {
                 Difficulty = (DifficultyLevel)gameState.Difficulty,
                 GameTurn = gameState.GameTurn,
@@ -42,7 +43,14 @@ namespace CivOne.Persistence.Model
                 // Map = new MapDto(), // TODO: implement map dto and mapper
 
                 GameOptions = gameState.GameOptions,
-            };
+                Units = [.. gameState.Units.Select(unitMapper.ToDto)]
+			};
+            
+            foreach (var player in gameStateDto.Players)
+            {
+                player.Id = (ushort)gameStateDto.Players.IndexOf(player);
+            }
+            return gameStateDto;
 		}
 
         // public class GameStateDto

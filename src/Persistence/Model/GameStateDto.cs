@@ -15,6 +15,8 @@ namespace CivOne.Persistence.Model
 
         public List<PlayerDto> Players { get; set; }
 
+        public List<UnitDto> Units { get; set; }
+
         public uint RandomSeed { get; set; }
 
         public uint AnthologyTurn { get; set; }
