@@ -26,7 +26,7 @@ namespace CivOne
 		// Dependency Injection
 		// Todo: Replace with DI framework
 		internal readonly CityLoadGame _cityLoadGame = new();
-		public static void LoadGame(string sveFile, string mapFile)
+		public static bool LoadGame(string sveFile, string mapFile)
 		{
 			// Allow loading a game in-game.
 
@@ -35,7 +35,7 @@ namespace CivOne
 				if (!adapter.ValidData)
 				{
 					BaseInstance.Log("SaveDataAdapter failed to load game");
-					return;
+					return false;
 				}
 
 				// Always use the save game's seed
@@ -44,6 +44,8 @@ namespace CivOne
 				Map.Instance.LoadMap(mapFile, adapter.RandomSeed);
 				_instance = new Game(adapter);
 				BaseInstance.Log($"Game instance loaded (difficulty: {_instance._difficulty}, competition: {_instance._competition}");
+
+				return true;
 			}
 		}
 

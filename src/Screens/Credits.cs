@@ -45,7 +45,8 @@ namespace CivOne.Screens
 		private int _introLine = -1;
 		
 		// Auto-Load a saved game at startup? (--load-slot)
-		private bool _loadSavedGame = false; 
+		// Used only once, and then reset to null to avoid re-loading when coming back to the credits screen.
+		private static bool? _loadSavedGame = false; 
 
 		private IScreen _overlay = null; // TODO fire-eggs: with fix for issue #34, this logic may no longer be required
 
@@ -80,9 +81,9 @@ namespace CivOne.Screens
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_loadSavedGame)
+			if (_loadSavedGame.GetValueOrDefault(false))
 			{
-				_loadSavedGame = false;
+				_loadSavedGame = null;
 				LoadSavedGame();
 				_done = true;
 				return true;
@@ -424,7 +425,7 @@ namespace CivOne.Screens
 			}
 
 			if (!Runtime.Settings.ShowCredits) SkipIntro();
-			if (Runtime.Settings.LoadSaveGameSlot != null)
+			if (Runtime.Settings.LoadSaveGameSlot != null && _loadSavedGame.HasValue)
 			{
 				_loadSavedGame = true;
 			}
