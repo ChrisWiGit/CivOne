@@ -36,18 +36,26 @@ namespace CivOne.Screens
 			LoadSaveFileByItem(_driveLetter, item);
 		}
 
-		private void LoadSaveFileByItem(char driveLetter, int item)
+		private bool LoadSaveFileByItem(char driveLetter, int item)
 		{
 			SaveGameFile file = SaveGameFile.GetSaveGames(driveLetter).ToArray()[item];
 			SaveGame.SelectedGame = (item > 3 ? 3 : item);
 			Log("Load game: {0}", file.Name);
 			Destroy();
 			
-			Game.LoadGame(file.SveFile, file.MapFile);
+			if (!Game.LoadGame(file.SveFile, file.MapFile))
+			{
+				Log("Failed to load game");
+				Cancel = true;
+				_update = true;
+				BackToCredits();
+				return false;
+			}
 
 			// Allows in-game loading of a game (destroy old gameplay)
 			Common.DestroyScreen(Common.Screens.FirstOrDefault(s => s is GamePlay, null));
 			Common.AddScreen(new GamePlay());
+			return true;
 		}
 
 		public static void LoadSaveFile(char driveLetter, int slotId)
