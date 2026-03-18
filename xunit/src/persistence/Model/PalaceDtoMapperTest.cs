@@ -3,7 +3,7 @@ namespace CivOne.Persistence.Model
 	using System;
 	using System.Linq;
 	using CivOne.Civilizations;
-	using CivOne.Persistence.YamlConverter;
+	using CivOne.Persistence.Yaml;
 	using CivOne.UnitTests;
 	using Xunit;
 	using AdvanceId = System.UInt32;

@@ -5,6 +5,7 @@ namespace CivOne.Persistence.Model
 	using System.Linq;
 	using CivOne.Civilizations;
 	using CivOne.Leaders;
+	using CivOne.Persistence.Yaml;
 	using CivOne.UnitTests;
 	using Xunit;
 	using AdvanceId = System.UInt32;
