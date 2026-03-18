@@ -1,7 +1,17 @@
+using CivOne.Enums;
+
 namespace CivOne.Persistence.Model
 {
-    public class TileDto 
+    public class TileDto
     {
+        public Terrain Terrain { get; set; }
+        public bool Road { get; set; }
+        public bool RailRoad { get; set; }
+        public bool Irrigation { get; set; }
+        public bool Pollution { get; set; }
+        public bool Fortress { get; set; }
+        public bool Mine { get; set; }
+        public bool Hut { get; set; }
     }
 }
 
@@ -13,10 +23,7 @@ namespace CivOne.Persistence.Model
 // {
 // 	public interface ITile : ICivilopedia
 // 	{
-// 		int X { get; } nein
-// 		int Y { get; } nein
 // 		Terrain Type { get; }
-// 		bool Special { get; }
 // 		byte ContinentId { get; set; }
 // 		byte LandValue { get; set; }
 // 		byte LandScore { get; }
