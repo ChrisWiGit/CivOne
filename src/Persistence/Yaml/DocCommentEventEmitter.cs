@@ -5,14 +5,12 @@ using System.Linq;
 using System.Reflection;
 using CivOne.Persistence.Model;
 using CivOne.Persistence.Model.Attributes;
-using Newtonsoft.Json.Schema;
-using Xunit;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.EventEmitters;
 
-namespace CivOne.Persistence.YamlConverter
+namespace CivOne.Persistence.Yaml
 {
     /// <summary>
     /// Custom event emitter that adds comments to the emitted YAML based on the DocAttribute applied to properties.

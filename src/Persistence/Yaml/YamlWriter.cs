@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
-using CivOne.Persistence.YamlConverter;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace CivOne.UnitTests
+namespace CivOne.Persistence.Yaml
 {
     /// <summary>
     /// Fluent builder for serializing a DTO to YAML.

@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CivOne.Civilizations;
+using CivOne.Persistence.Model;
 using CivOne.Persistence.Model.Attributes;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
-namespace CivOne.Persistence.Model
+namespace CivOne.Persistence.Yaml
 {
     /* für YAML ein converter, welche eine MapDto anders serialisiert. wie geht das?
     */

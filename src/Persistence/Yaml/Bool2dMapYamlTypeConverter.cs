@@ -1,10 +1,9 @@
 using System;
 using CivOne.Persistence.Model;
-using Xunit;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
-namespace CivOne.Persistence.YamlConverter
+namespace CivOne.Persistence.Yaml
 {
     class Bool2dMapYamlTypeConverter : IYamlTypeConverter
     {
