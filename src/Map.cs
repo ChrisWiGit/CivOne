@@ -24,6 +24,9 @@ namespace CivOne
 		private static int _width = 80, _height = 50;
 		public static int WIDTH => _width;
 		public static int HEIGHT => _height;
+
+		public int Width => WIDTH;
+		public int Height => HEIGHT;
 		
 		private int _terrainMasterWord;
 		public int TerrainMasterWord { get { return _terrainMasterWord; } }

@@ -26,32 +26,39 @@ namespace CivOne.Persistence.Model
     ///          Ocean  (10), no flags → "AK"
     ///          Plains (1), Road=true → "AR"
     ///
-    /// A complete map row of 80 tiles becomes a 160-character YAML string.
+    /// The codec itself is not limited to any fixed row width; the caller
+    /// determines how many tiles to encode/decode. For a standard Civ1 map
+    /// row of 80 tiles the resulting YAML string is 160 characters long.
     /// </summary>
-    public static class TileCodec
+    public class TileCodec
     {
-        private const string Alphabet =
+        private readonly string _alphabet =
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
         /// <summary>Terrain.None (-1) is stored as 15 in the 4-bit terrain field.</summary>
-        private const int NoneTerrain = 15;
+        private readonly int _noneTerrain = 15;
 
         // Reverse lookup table for O(1) decode.
-        private static readonly int[] Reverse = BuildReverse();
+        private readonly int[] _reverse;
 
-        private static int[] BuildReverse()
+        public TileCodec(int[] reverse = null)
+        {
+            _reverse = reverse ?? BuildReverse();
+        }
+
+        private int[] BuildReverse()
         {
             var table = new int[128];
             for (int i = 0; i < table.Length; i++) table[i] = -1;
-            for (int i = 0; i < Alphabet.Length; i++) table[Alphabet[i]] = i;
+            for (int i = 0; i < _alphabet.Length; i++) table[_alphabet[i]] = i;
             return table;
         }
 
         /// <summary>Encodes a single tile into exactly 2 characters.</summary>
-        public static string Encode(TileDto tile)
+        public string Encode(TileDto tile)
         {
             int terrainBits = tile.Terrain == Terrain.None
-                ? NoneTerrain
+                ? _noneTerrain
                 : (int)tile.Terrain & 0xF;
 
             int value = terrainBits
@@ -65,13 +72,13 @@ namespace CivOne.Persistence.Model
 
             return new string(new[]
             {
-                Alphabet[(value >> 6) & 0x3F],
-                Alphabet[value & 0x3F]
+                _alphabet[(value >> 6) & 0x3F],
+                _alphabet[value & 0x3F]
             });
         }
 
         /// <summary>Decodes 2 characters from a row string at the given offset.</summary>
-        public static TileDto Decode(string row, int offset)
+        public TileDto Decode(string row, int offset)
         {
             if (offset + 1 >= row.Length)
                 throw new ArgumentOutOfRangeException(nameof(offset), "Row string too short.");
@@ -79,8 +86,8 @@ namespace CivOne.Persistence.Model
             char c1 = row[offset];
             char c2 = row[offset + 1];
 
-            int v1 = c1 < 128 ? Reverse[c1] : -1;
-            int v2 = c2 < 128 ? Reverse[c2] : -1;
+            int v1 = c1 < 128 ? _reverse[c1] : -1;
+            int v2 = c2 < 128 ? _reverse[c2] : -1;
 
             if (v1 < 0 || v2 < 0)
                 throw new FormatException(
@@ -89,7 +96,7 @@ namespace CivOne.Persistence.Model
             int value = (v1 << 6) | v2;
 
             int terrainRaw = value & 0xF;
-            Terrain terrain = terrainRaw == NoneTerrain
+            Terrain terrain = terrainRaw == _noneTerrain
                 ? Terrain.None
                 : (Terrain)terrainRaw;
 
