@@ -90,15 +90,16 @@ namespace CivOne.Persistence.Yaml
     /// Each row is a string of Base64-encoded tile data (2 chars per tile).
     /// LandValues is stored as a separate 2D array to keep the tile encoding compact.
     /// </summary>
+	/// <seealso cref="MapDto"/>
     internal class MapDtoYamlRepresentation
     {
         [Doc("The seed used for procedural terrain generation. This ensures that the same map can be recreated if needed.", 0, uint.MaxValue)]
         public uint TerrainSeed { get; set; }
         
-        [Doc("Encoded tile data. Each row contains Base64-encoded tiles (2 chars per tile). Use TileCodec to decode individual tiles.")]
+        [Doc("Encoded tile data. Each row contains Base64-encoded tiles (2 chars per tile). Use TileCodec to decode individual tiles. See YAML.md for encoding details.")]
         public string[] Tiles { get; set; }
         
-        [Doc("Land values for each tile. Higher values indicate more desirable locations for founding cities.")]
+        [Doc("Land values for each tile. Higher values indicate more desirable locations for founding cities. See INTERNALS.md for details on how this value is used.")]
         public byte[][] LandValues { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Enums;
@@ -16,8 +17,13 @@ namespace CivOne.Persistence.Model
     }
     public interface IMapFactory
     {
-        // wird in class Map gemacht, aber mehr als nur den Array initialisieren wird nicht passieren
-        // aktuell ist eh nur 80 x 50 möglich und CreateMap wird ne exception werfen (todo)
+        /// <summary>
+        /// Creates a new map with the specified width, height, and terrain seed. The terrain seed is used to generate the same map layout consistently. The method returns an IMapTiles instance, which provides access to the individual tiles of the map. The implementation of this method should initialize the map's tile array and populate it based on the terrain seed, ensuring that the resulting map matches the expected layout for that seed.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="terrainSeed"></param>
+        /// <returns></returns>
         IMapTiles CreateMap(int width, int height, uint terrainSeed);
     }
 
@@ -51,15 +57,6 @@ namespace CivOne.Persistence.Model
             return map;
         }
 
-        public MapDto ToDto(IMapTiles map)
-        {
-            return new MapDto
-            {
-                TerrainSeed = _terrainSeed,
-                Tiles = ConvertTileDtos(map)
-            };
-        }
-
         void ConvertTileDtos(Map2d<TileDto> tileDtos)
         {
             int width = tileDtos.Width();
@@ -71,17 +68,23 @@ namespace CivOne.Persistence.Model
                 {
                     var tileDto = tileDtos[x, y];
                     _tileDtoMapper.SetTileFromDto(tileDto, x, y);
-                    // result value is discarded because SetTileFromDto modifies the tile in place rather than returning a new tile instance
-                    
                 }
             }
         }
+        public MapDto ToDto(IMapTiles map)
+        {
+            return new MapDto
+            {
+                TerrainSeed = _terrainSeed,
+                Tiles = ConvertMapTilesToTileDtos(map)
+            };
+        }
 
-        Map2d<TileDto> ConvertTileDtos(IMapTiles map)
+
+        Map2d<TileDto> ConvertMapTilesToTileDtos(IMapTiles map)
         {
             int width = map.Width;
             int height = map.Height;
-            var result = new Map2d<TileDto>(width, height);
             var tileDtos = new TileDto[width, height];
 
             for (int x = 0; x < width; x++)
@@ -89,10 +92,11 @@ namespace CivOne.Persistence.Model
                 for (int y = 0; y < height; y++)
                 {
                     var tile = map[x, y];
+                    Debug.Assert(tile != null, $"Tile at position ({x}, {y}) is null. This should not happen in a valid map.");
                     tileDtos[x, y] = _tileDtoMapper.ToDto(tile);
                 }
             }
-            return result;
+            return new Map2d<TileDto>(tileDtos);
         }
     }
 
@@ -135,26 +139,4 @@ namespace CivOne.Persistence.Model
             throw new NotImplementedException("Use FromDto(TileDto dto, int x, int y) instead");
         }
     }
-
 }
-
-// public class TileDto
-    //     public Terrain Terrain { get; set; }
-    //     public bool Road { get; set; }
-    //     public bool RailRoad { get; set; }
-    //     public bool Irrigation { get; set; }
-    //     public bool Pollution { get; set; }
-    //     public bool Fortress { get; set; }
-    //     public bool Mine { get; set; }
-    //     public bool Hut { get; set; }
-
-    //     public byte LandValue { get; set; }
-    // }
-
-// 	public interface IMapTiles
-// {
-// 	ITile this[int x, int y] { get; }
-
-// 	int Width { get; }
-// 	int Height { get; }
-// }
