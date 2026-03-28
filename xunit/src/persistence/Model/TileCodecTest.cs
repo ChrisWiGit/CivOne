@@ -15,8 +15,7 @@ namespace CivOne.Persistence.Model
 
 		[Theory]
 		//               Terrain.Type,   Road,  RR,   Irrig., Poll., Fort., Mine, Hut, ExpectedEncoding
-		[InlineData((int)Terrain.Tundra, false, false, false, false, false, false, false, "AG")]
-		// Additional test cases from YAML.md table
+		// from YAML.md table
 		[InlineData((int)Terrain.Ocean, false, false, false, false, false, false, false, "AK")] // Ocean with no flags = 10
 		[InlineData((int)Terrain.Ocean, true, false, false, false, false, false, false, "Aa")] // Ocean with Road = 138
 		[InlineData((int)Terrain.Ocean, true, true, false, false, false, false, false, "A6")]  // Ocean with Road + RailRoad = 154
@@ -40,6 +39,7 @@ namespace CivOne.Persistence.Model
 		[InlineData((int)Terrain.Grassland1, true, false, false, false, false, false, false, "AS")] // Grassland with Road = 16
 		[InlineData((int)Terrain.Grassland1, true, true, false, false, false, false, false, "Ay")] // Grassland with Road + RailRoad = 48
 		[InlineData((int)Terrain.Forest, false, false, false, false, false, false, true, "QD")]  // Forest with Hut = 548
+		[InlineData((int)Terrain.Tundra, false, false, false, false, false, false, false, "AG")] // Tundra with no flags = 6
 		[InlineData((int)Terrain.Tundra, false, false, false, false, false, false, true, "QG")]  // Tundra with Hut = 1030
 		public void Encode_KnownExamples(
 			int terrain,
