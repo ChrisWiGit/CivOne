@@ -33,8 +33,8 @@ namespace CivOne.Persistence.Yaml
     {
         private readonly object _dto;
         private INamingConvention _namingConvention;
-        private readonly List<IYamlTypeConverter> _typeConverters = new();
-        private readonly List<Func<IEventEmitter, IEventEmitter>> _eventEmitterFactories = new();
+        private readonly List<IYamlTypeConverter> _typeConverters = [];
+        private readonly List<Func<IEventEmitter, IEventEmitter>> _eventEmitterFactories = [];
 
         private YamlWriter(object dto)
         {

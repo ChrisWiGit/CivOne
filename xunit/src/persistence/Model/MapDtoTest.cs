@@ -5,6 +5,7 @@ using CivOne.Persistence.Yaml;
 using CivOne.Tiles;
 using CivOne.Units;
 using Xunit;
+using YamlDotNet.Serialization;
 
 namespace CivOne.Persistence.Model
 {
@@ -18,11 +19,13 @@ namespace CivOne.Persistence.Model
 		private readonly int expectedWidth = 5;
 		private readonly int expectedHeight = 6;
 
+		private readonly uint _terrainSeed = 12345;
+
 		public MapDtoTest()
 		{
 			_mockedMapFactory = new MockedIMapFactory();
 			_mockedTileDtoMapper = new MockedITileDtoMapper(() => _mockedMapFactory.CurrentMapTiles);
-			_testee = new MapDtoMapper(_mockedMapFactory, _mockedTileDtoMapper, _terrainSeed: 12345);
+			_testee = new MapDtoMapper(_mockedMapFactory, _mockedTileDtoMapper, _terrainSeed: _terrainSeed);
 
 			_tileDtos = new TileDto[expectedWidth, expectedHeight];
 			for (int x = 0; x < expectedWidth; x++)
@@ -50,7 +53,7 @@ namespace CivOne.Persistence.Model
 		{
 			var actualMapDto = new MapDto
 			{
-				TerrainSeed = 12345,
+				TerrainSeed = _terrainSeed,
 				Tiles = new Map2d<TileDto>(_tileDtos)
 			};
 
@@ -111,6 +114,123 @@ namespace CivOne.Persistence.Model
 			}
 		}
 
+		[Fact]
+		public void TestByteArrayArrayFlowStyleYamlTypeConverterRoundTrip()
+		{
+			// Test data: 3x2 byte array
+			byte[][] testData =
+			[
+				[0, 10, 20, 30, 40],
+				[50, 60, 70, 80, 90],
+				[100, 110, 120, 130, 140]
+			];
+
+			// Serialize to YAML
+			string yaml = YamlWriter.Of(testData)
+				.WithTypeConverter(new ByteArrayArrayFlowStyleYamlTypeConverter())
+				.AsString();
+
+			Assert.NotNull(yaml);
+			Assert.NotEmpty(yaml);
+
+			// ByteArrayArrayFlowStyleYamlTypeConverter creates flow style arrays
+			Assert.Contains("- [", yaml);
+			Assert.Contains("0, 10, 20, 30, 40", yaml);
+
+			// Deserialize back
+			var deserializer = new YamlDotNet.Serialization.DeserializerBuilder()
+				.WithTypeConverter(new ByteArrayArrayFlowStyleYamlTypeConverter())
+				.Build();
+
+			byte[][] roundTripped = deserializer.Deserialize<byte[][]>(yaml);
+
+			// Verify round trip
+			Assert.NotNull(roundTripped);
+			Assert.Equal(testData.Length, roundTripped.Length);
+
+			for (int i = 0; i < testData.Length; i++)
+			{
+				Assert.Equal(testData[i].Length, roundTripped[i].Length);
+				for (int j = 0; j < testData[i].Length; j++)
+				{
+					Assert.Equal(testData[i][j], roundTripped[i][j]);
+				}
+			}
+		}
+
+		[Fact]
+		public void TestMapDtoTileDtoYamlConverterEncoding()
+		{
+			var mapDto = new MapDto
+			{
+				TerrainSeed = 99999,
+				Tiles = new Map2d<TileDto>(_tileDtos)
+			};
+
+			string yaml = YamlWriter.Of(mapDto)
+				.WithTypeConverter(new MapDtoTileDtoYamlConverter())
+				.AsString();
+
+			Assert.NotNull(yaml);
+			Assert.NotEmpty(yaml);
+
+			// Verify that tiles are encoded as Base64 strings (2 chars per tile)
+			// For a 5-wide map, each row should have at least 10 characters of Base64-encoded data
+			Assert.Equal(
+				"TerrainSeed: 99999\n" +
+				"Tiles:\n" +
+				"- AxAhAxAhAx\n" +
+				"- ARABARABAR\n" +
+				"- AxAhAxAhAx\n" +
+				"- ARABARABAR\n" +
+				"- AxAhAxAhAx\n" +
+				"- ARABARABAR\n" +
+				"LandValues:\n" +
+				"- - 0\n  - 10\n  - 20\n  - 30\n  - 40\n" +
+				"- - 10\n  - 20\n  - 30\n  - 40\n  - 50\n" +
+				"- - 20\n  - 30\n  - 40\n  - 50\n  - 60\n" +
+				"- - 30\n  - 40\n  - 50\n  - 60\n  - 70\n" +
+				"- - 40\n  - 50\n  - 60\n  - 70\n  - 80\n" +
+				"- - 50\n  - 60\n  - 70\n  - 80\n  - 90\n",
+				yaml.Replace("\r\n", "\n")); 
+		}
+
+		[Fact]
+		public void TestByteArrayArrayFlowStyleYamlTypeConverterEmptyArray()
+		{
+			// Test with empty array
+			byte[][] testData = [];
+
+			string yaml = YamlWriter.Of(testData)
+				.WithTypeConverter(new ByteArrayArrayFlowStyleYamlTypeConverter())
+				.AsString();
+
+			Assert.NotNull(yaml);
+
+			var roundTripped = YamlReader.OfString(yaml)
+				.WithTypeConverter(new ByteArrayArrayFlowStyleYamlTypeConverter())
+				.As<byte[][]>();	
+
+			Assert.Empty(roundTripped);
+		}
+
+		[Fact]
+		public void TestByteArrayArrayFlowStyleYamlTypeConverterSingleRow()
+		{
+			byte[][] testData = [[1, 2, 3]];
+
+			string yaml = YamlWriter.Of(testData)
+				.WithTypeConverter(new ByteArrayArrayFlowStyleYamlTypeConverter())
+				.AsString();
+
+			var roundTripped = YamlReader.OfString(yaml)
+				.WithTypeConverter(new ByteArrayArrayFlowStyleYamlTypeConverter())
+				.As<byte[][]>();
+
+			Assert.Single(roundTripped);
+			Assert.Equal(new byte[] { 1, 2, 3 }, roundTripped[0]);
+		}
+
 
 		public class MockedIMapFactory : IMapFactory
 		{
@@ -152,7 +272,7 @@ namespace CivOne.Persistence.Model
 		/// <summary>
 		/// Mock implementation of ITileDtoMapper for testing purposes.
 		/// </summary>
-		public class MockedITileDtoMapper(Func<MapDtoTest.IMapTilesCommand> getMapTiles = null) : ITileDtoMapper
+		public class MockedITileDtoMapper(Func<IMapTilesCommand> getMapTiles = null) : ITileDtoMapper
 		{
 			private readonly Func<IMapTilesCommand> _getMapTiles = getMapTiles;
 

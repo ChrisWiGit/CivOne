@@ -24,10 +24,27 @@ namespace CivOne.Persistence.Yaml
 
 		public object ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
 		{
-			var rows = (byte[][])rootDeserializer(typeof(byte[][]));
-			return rows;
-		}
+			// Deserialize as List<List<byte>> to avoid infinite recursion, then convert to byte[][]
+			var listOfLists = (List<List<byte>>)rootDeserializer(typeof(List<List<byte>>));
 
+			if (listOfLists == null)
+				return null;
+
+			var result = new byte[listOfLists.Count][];
+			for (int i = 0; i < listOfLists.Count; i++)
+			{
+				if (listOfLists[i] != null)
+				{
+					result[i] = new byte[listOfLists[i].Count];
+					for (int j = 0; j < listOfLists[i].Count; j++)
+					{
+						result[i][j] = listOfLists[i][j];
+					}
+				}
+			}
+
+			return result;
+		}
 		public void WriteYaml(IEmitter emitter, object value, Type type, ObjectSerializer serializer)
 		{
 			var data = (byte[][])value;
