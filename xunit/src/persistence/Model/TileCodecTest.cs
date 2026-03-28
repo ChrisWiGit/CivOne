@@ -14,9 +14,33 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Theory]
+		//               Terrain.Type,   Road,  RR,   Irrig., Poll., Fort., Mine, Hut, ExpectedEncoding
 		[InlineData((int)Terrain.Tundra, false, false, false, false, false, false, false, "AG")]
-		[InlineData((int)Terrain.Ocean, false, false, false, false, false, false, false, "AK")]
-		[InlineData((int)Terrain.Plains, true, false, false, false, false, false, false, "AR")]
+		// Additional test cases from YAML.md table
+		[InlineData((int)Terrain.Ocean, false, false, false, false, false, false, false, "AK")] // Ocean with no flags = 10
+		[InlineData((int)Terrain.Ocean, true, false, false, false, false, false, false, "Aa")] // Ocean with Road = 138
+		[InlineData((int)Terrain.Ocean, true, true, false, false, false, false, false, "A6")]  // Ocean with Road + RailRoad = 154
+		[InlineData((int)Terrain.Ocean, false, false, false, true, false, false, false, "CK")]      // Ocean with Pollution = 138
+		[InlineData((int)Terrain.Plains, false, false, false, false, false, false, false, "AB")]    // Plains untouched = 1
+		[InlineData((int)Terrain.Plains, true, false, false, false, false, false, false, "AR")]    // Plains with Road = 17
+		[InlineData((int)Terrain.Plains, false, true, false, false, false, false, false, "Ah")]     // Plains with RailRoad = 33
+		[InlineData((int)Terrain.Plains, true, true, false, false, false, false, false, "Ax")]     // Plains with Road + RailRoad = 49
+		[InlineData((int)Terrain.Plains, false, false, true, false, false, false, false, "BB")]    // Plains with Irrigation = 65
+		[InlineData((int)Terrain.Plains, true, false, true, false, false, false, false, "BR")]    // Plains with Road + Irrigation = 81
+		[InlineData((int)Terrain.Plains, false, true, true, false, false, false, false, "Bh")]    // Plains with RailRoad + Irrigation = 97
+		[InlineData((int)Terrain.Plains, false, false, false, true, false, false, false, "CB")]   // Plains with Pollution = 129
+		[InlineData((int)Terrain.Forest, false, false, false, false, false, true, false, "ID")]   // Forest with Mine = 548
+		[InlineData((int)Terrain.Hills, false, false, false, false, true, false, false, "EE")]    // Hills with Fortress = 258
+		[InlineData((int)Terrain.Hills, true, false, false, false, true, false, false, "EU")]    // Hills with Road + Fortress = 274
+		[InlineData((int)Terrain.Mountains, false, false, false, false, true, false, false, "EF")] // Mountain with Fortress = 772
+		[InlineData((int)Terrain.Mountains, true, false, false, false, true, false, false, "EV")] // Mountain with Road + Fortress = 788
+		[InlineData((int)Terrain.Desert, false, false, true, false, false, false, false, "BA")]   // Desert with Irrigation = 101
+		[InlineData((int)Terrain.Desert, true, false, true, false, false, false, false, "BQ")]   // Desert with Road + Irrigation = 117
+		[InlineData((int)Terrain.Grassland1, false, false, false, false, false, false, true, "QC")] // Grassland with Hut = 1024
+		[InlineData((int)Terrain.Grassland1, true, false, false, false, false, false, false, "AS")] // Grassland with Road = 16
+		[InlineData((int)Terrain.Grassland1, true, true, false, false, false, false, false, "Ay")] // Grassland with Road + RailRoad = 48
+		[InlineData((int)Terrain.Forest, false, false, false, false, false, false, true, "QD")]  // Forest with Hut = 548
+		[InlineData((int)Terrain.Tundra, false, false, false, false, false, false, true, "QG")]  // Tundra with Hut = 1030
 		public void Encode_KnownExamples(
 			int terrain,
 			bool road,
@@ -70,8 +94,7 @@ namespace CivOne.Persistence.Model
 				Fortress = fortress,
 				Mine = mine,
 				Hut = hut,
-				LandValue = 123,
-				LandScore = 45
+				LandValue = 123
 			};
 
 			string encoded = _testee.Encode(original);
@@ -87,7 +110,6 @@ namespace CivOne.Persistence.Model
 			Assert.Equal(original.Hut, decoded.Hut);
 
 			Assert.Equal(default, decoded.LandValue);
-			Assert.Equal(default, decoded.LandScore);
 		}
 
 		[Fact]

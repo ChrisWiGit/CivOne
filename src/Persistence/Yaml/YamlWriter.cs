@@ -42,8 +42,8 @@ namespace CivOne.Persistence.Yaml
         }
 
         /// <summary>
-        /// Creates a <see cref="YamlWriter"/> for <paramref name="dto"/>.
         /// No serialization options are pre-applied; use <see cref="WithStandard"/> or
+        /// Creates a <see cref="YamlWriter"/> for <paramref name="dto"/>.
         /// the individual <c>With*</c> methods to configure the serializer before
         /// calling <see cref="AsString"/> or <see cref="ToFile"/>.
         /// </summary>

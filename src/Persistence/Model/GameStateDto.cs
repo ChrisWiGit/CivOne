@@ -21,7 +21,8 @@ namespace CivOne.Persistence.Model
 
         public uint AnthologyTurn { get; set; }
 
-        public uint TerrainSeed { get; set; }
+        // in MapDto.cs
+        // public uint TerrainSeed { get; set; }
 
         public MapDto Map { get; set; }
 

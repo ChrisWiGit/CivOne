@@ -13,6 +13,7 @@ namespace CivOne.Persistence.Model
     {
         public GameState FromDto(GameStateDto dto)
         {
+            //var terrainSeed = dto.Map.TerrainSeed;
             throw new NotImplementedException();
         }
 
@@ -39,8 +40,12 @@ namespace CivOne.Persistence.Model
                 
                 RandomSeed = (uint)gameState.RandomSeed,
                 AnthologyTurn = gameState.AnthologyTurn,
-                TerrainSeed = (uint)gameState.TerrainSeed,
                 // Map = new MapDto(), // TODO: implement map dto and mapper
+                Map = new MapDto
+                {
+                    // TerrainSeed = gameState.Map.TerrainSeed,
+                    // Tiles = new Map2d<TileDto>(gameState.Map.Width, gameState.Map.Height)
+                },
 
                 GameOptions = gameState.GameOptions,
                 Units = [.. gameState.Units.Select(unitMapper.ToDto)]

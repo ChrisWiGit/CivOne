@@ -90,6 +90,7 @@ namespace CivOne
 				case Terrain.Desert: _tiles[x, y] = new Desert(x, y, special); break;
 				case Terrain.Arctic: _tiles[x, y] = new Arctic(x, y, special); break;
 				case Terrain.Ocean: _tiles[x, y] = new Ocean(x, y, special); break;
+				default: throw new ArgumentException($"Invalid terrain type: {type}");
 			}
 			_tiles[x, y].Road = road;
 			_tiles[x, y].RailRoad = railRoad;
