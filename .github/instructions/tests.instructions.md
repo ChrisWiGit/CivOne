@@ -166,3 +166,9 @@ If requirements conflict (e.g. real game class required):
 → Instead explain why it cannot be done
 
 ---
+
+## Executing Tests
+
+Execute only specific test (class or method) relevant to the task, not the entire suite, because
+the suite is large and too much output is generated that may cause the agent to lose context.
+e.g. `dotnet test --filter "FullyQualifiedName~TestsClassName"` or `dotnet test --filter "FullyQualifiedName~TestsClassName.TestMethodName"`
