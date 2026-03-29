@@ -7,14 +7,36 @@ using CivOne.Persistence.Model.Attributes;
 namespace CivOne.Persistence.Model
 {
     public class GameStateDtoMapper(
-        PlayerDtoMapper playerMapper,
-        UnitDtoMapper unitMapper
+        PlayerDtoMapper playerMapper
     ) : DtoMapper<GameStateDto, GameState>
     {
         public GameState FromDto(GameStateDto dto)
         {
-            //var terrainSeed = dto.Map.TerrainSeed;
-            throw new NotImplementedException();
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            var players = dto.Players
+                .Select(playerMapper.FromDto)
+                .Cast<Player>()
+                .ToArray();
+
+            if (dto.HumanPlayer >= players.Length)
+                throw new InvalidOperationException($"Human player index {dto.HumanPlayer} is out of range");
+
+            var gameState = new GameState
+            {
+                GameTurn = dto.GameTurn,
+                HumanPlayer = players[dto.HumanPlayer],
+                RandomSeed = (int)dto.RandomSeed,
+                Difficulty = (int)dto.Difficulty,
+                Players = players,
+                Units = [],  // TODO: implement units mapping from players
+                GameOptions = dto.GameOptions,
+                AnthologyTurn = (ushort)dto.AnthologyTurn,
+                // TODO: implement map deserialization
+            };
+
+            return gameState;
         }
 
         ushort FindHumanPlayerIndex(Player[] players, Player humanPlayer)
@@ -47,8 +69,7 @@ namespace CivOne.Persistence.Model
                     // Tiles = new Map2d<TileDto>(gameState.Map.Width, gameState.Map.Height)
                 },
 
-                GameOptions = gameState.GameOptions,
-                Units = [.. gameState.Units.Select(unitMapper.ToDto)]
+                GameOptions = gameState.GameOptions
 			};
             
             foreach (var player in gameStateDto.Players)

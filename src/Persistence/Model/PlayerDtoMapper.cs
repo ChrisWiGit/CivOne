@@ -11,39 +11,46 @@ namespace CivOne.Persistence.Model
     using GovernmentId = System.Byte;
 	using CityId = System.UInt32;
 
-	public interface PlayerFactory
+	public interface IPlayerFactory
 	{
-		IPlayer Create(ICivilization civilization);
+		/// <summary>
+		/// Creates or reassigns a player to a civilization. 
+		/// </summary>
+		/// <param name="civilization"></param>
+		/// <returns></returns>
+		IPlayer Create(ICivilization civilization, PlayerDto dto);
 	}
 
     public class PlayerDtoMapper(
 		IPlayerGame gameInstance,
-		DtoMapper<CivilizationDto, ICivilization> civilizationMapper,
-		PalaceDtoMapper palaceMapper,
-		CityDtoMapper cityMapper
+		IPlayerFactory _playerFactory,
+		DtoMapper<CivilizationDto, ICivilization> _civilizationMapper,
+		PalaceDtoMapper _palaceMapper,
+		CityDtoMapper _cityMapper,
+		UnitDtoMapper _unitMapper
 		) : DtoMapper<PlayerDto, IPlayer>
 	{
-		private readonly DtoMapper<CivilizationDto, ICivilization> 
-			_civilizationMapper = civilizationMapper;
-		private readonly PalaceDtoMapper _palaceMapper = palaceMapper;
-		private readonly CityDtoMapper _cityMapper = cityMapper;
 
 		public IPlayer FromDto(PlayerDto dto)
 		{
-			if (Player.Game == null) {
-				// TODO: remove if we can inject the game instance into the player by constructor
-				Player.Game = gameInstance;
-			}
-			return new Player(
-				civilization: _civilizationMapper.FromDto(dto.Civilization)
-				// TODO: many more properties to be mapped here
-			);
+			// must be set by Create()
+			// if (Player.Game == null) {
+			// 	// TODO: remove if we can inject the game instance into the player by constructor
+			// 	// not good here. should be assigned by higher abstraction layer
+			// 	Player.Game = gameInstance;
+			// }
+			
+			var civilization = _civilizationMapper.FromDto(dto.Civilization);
+			return _playerFactory.Create(civilization, dto);
 		}
         public PlayerDto ToDto(IPlayer player)
-        {
-            return new PlayerDto
-            {
-                Civilization = _civilizationMapper.ToDto(player.Civilization),
+		{
+			// Find the player's index in the game to use for unit filtering
+			int playerIndex = Validate(player);
+
+			return new PlayerDto
+			{
+				Civilization = _civilizationMapper.ToDto(player.Civilization),
 
 				Explored = player.Explored,
 				Visible = player.Visible,
@@ -67,9 +74,22 @@ namespace CivOne.Persistence.Model
 				Palace = _palaceMapper.ToDto(player.Palace),
 
 				Cities = [.. player.Cities
-					.Select(_cityMapper.ToDto)]
+					.Select(_cityMapper.ToDto)],
+
+				// Filter units by owner ID (byte) to avoid instance comparison issues
+				Units = [.. gameInstance.GetUnits()
+					.Where(u => u.Owner == (byte)playerIndex)
+					.Select(_unitMapper.ToDto)]
 			};
-        }
+		}
+
+		private int Validate(IPlayer player)
+		{
+			var playerIndex = gameInstance.Players.ToList().IndexOf((Player)player);
+			if (playerIndex < 0)
+				throw new InvalidOperationException($"Player {player.TribeName} not found in game instance");
+			return playerIndex;
+		}
 	}
 }
 
