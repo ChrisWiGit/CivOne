@@ -17,7 +17,6 @@ namespace CivOne.Persistence.Model
 
             var players = dto.Players
                 .Select(playerMapper.FromDto)
-                .Cast<Player>()
                 .ToArray();
 
             if (dto.HumanPlayer >= players.Length)
@@ -39,7 +38,7 @@ namespace CivOne.Persistence.Model
             return gameState;
         }
 
-        ushort FindHumanPlayerIndex(Player[] players, Player humanPlayer)
+        ushort FindHumanPlayerIndex(IPlayer[] players, IPlayer humanPlayer)
         {
             for (ushort i = 0; i < players.Length; i++)
             {

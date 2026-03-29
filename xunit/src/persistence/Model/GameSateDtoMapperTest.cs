@@ -16,7 +16,7 @@ namespace CivOne.Persistence.Model
 	public class GameSateDtoMapperTest
 	{
 		private readonly GameStateDtoMapper _testee;
-		private readonly MockedIPlayer _player;
+		private readonly List<MockedIPlayer> _players;
 		private readonly IPlayerGame _gameInstance;
 
 		public GameSateDtoMapperTest()
@@ -26,32 +26,45 @@ namespace CivOne.Persistence.Model
 				.Where(t => typeof(ILeader).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
 				.Select(t => t.Name)
 				.ToArray();
-			
+
 			CivilizationDto.AllLeaderClassNames = classes;
 
-			_player = new MockedIPlayer()
-			{
-				Advances = [1, 2, 3],
-				Embassies = [4, 5],
-				Anarchy = 2,
-				Gold = 1234,
-				CurrentResearch = new MockedIAdvance() { Id = 1 },
-				Government = new MockedIGovernment() { Id = 1 },
-				Palace = new MockedIPalace(),
-			};
+			_players = [
+				new MockedIPlayer()
+				{
+					Civilization = civsInGame[0],
+					Advances = [1, 2, 3],
+					Embassies = [1],
+					Anarchy = 2,
+					Gold = 1234,
+					CurrentResearch = new MockedIAdvance() { Id = 1 },
+					Government = new MockedIGovernment() { Id = 1 },
+					Palace = new MockedIPalace(),
+				},
+				new MockedIPlayer() {
+					Civilization = civsInGame[1],
+					Advances = [0, 2],
+					Embassies = [0],
+					Anarchy = 1,
+					Gold = 5678,
+					CurrentResearch = new MockedIAdvance() { Id = 2 },
+					Government = new MockedIGovernment() { Id = 42 },
+					Palace = new MockedIPalace(),
+				}
+			];
 
-			_gameInstance = new MockGameInstanceForTesting(_player);
+			_gameInstance = new MockGameInstanceForTesting([.. _players.Cast<IPlayer>()]);
 
 			var playerMapper = new PlayerDtoMapper(
 				_gameInstance,
-				new MockPlayerFactoryForTesting(),
+				new MockPlayerFactoryForTesting([.. _players.Cast<IPlayer>()]),
 				new CivilizationMapper(civsInGame),
 				new PalaceDtoMapper(),
 				new CityDtoMapper(new ProductionDtoMapper(new MockedReflect())),
 				new UnitDtoMapper(new MockUnitFactoryForTesting()));
 
 			_testee = new GameStateDtoMapper(playerMapper);
-			
+
 			PlayerDto.AllAdvances = ["0(Advance0)", "1(Advance1)", "2(Advance2)", "3(Advance3)"];
 			PlayerDto.AllAdvancesInfo = new Dictionary<AdvanceId, string>
 			{   { 0, "Advance0" },
@@ -68,10 +81,10 @@ namespace CivOne.Persistence.Model
 			var gameState = new GameState
 			{
 				GameTurn = 42,
-				HumanPlayer = (_player as Player) ?? throw new InvalidOperationException("Player must be a Player instance"),
+				HumanPlayer = _players.First(),
 				RandomSeed = 12345,
 				Difficulty = 3,
-				Players = [(_player as Player) ?? throw new InvalidOperationException("Player must be a Player instance")],
+				Players = [.. _players],
 				Units = [], // Empty units list
 				GameOptions = [GameOptionEnum.Sound, GameOptionEnum.AutoSave],
 				AnthologyTurn = 0
@@ -85,8 +98,8 @@ namespace CivOne.Persistence.Model
 			Assert.Equal(42u, dto.GameTurn);
 			Assert.Equal(0u, dto.HumanPlayer); // First player index
 			Assert.Equal(12345u, dto.RandomSeed);
-			Assert.Equal(DifficultyLevel.Monarch, dto.Difficulty);
-			Assert.Single(dto.Players);
+			Assert.Equal(DifficultyLevel.King, dto.Difficulty); // 3 = King
+			Assert.Equal(2, dto.Players.Count);
 			Assert.Contains(GameOptionEnum.Sound, dto.GameOptions);
 			Assert.Contains(GameOptionEnum.AutoSave, dto.GameOptions);
 
@@ -101,7 +114,7 @@ namespace CivOne.Persistence.Model
 			var playerDto = new PlayerDto
 			{
 				Id = 0,
-				Civilization = new CivilizationDto { Leader = new MockedILeader().GetType().Name },
+				Civilization = new CivilizationDto { LeaderClassName = new MockedILeader().GetType().Name },
 				Advances = [1, 2, 3],
 				Embassies = [4, 5],
 				Anarchy = 2,
@@ -134,6 +147,9 @@ namespace CivOne.Persistence.Model
 				Map = new MapDto()
 			};
 
+			//TODO: also hier noch weitere player und die units auch noch rein, denn die müssen richtig verbunden werden
+			Assert.Fail("TODO: implement units mapping from players in GameStateDtoMapper.FromDto and add more players to this test to verify the mapping of human player index and unit ownership");
+
 			// Act: Convert GameStateDto back to GameState
 			var gameState = _testee.FromDto(dto);
 
@@ -141,7 +157,7 @@ namespace CivOne.Persistence.Model
 			Assert.NotNull(gameState);
 			Assert.Equal(50u, gameState.GameTurn);
 			Assert.Equal(99999, gameState.RandomSeed);
-			Assert.Equal(3, gameState.Difficulty);
+			Assert.Equal(0, gameState.Difficulty); // Chieftain = 0
 			Assert.Single(gameState.Players);
 			Assert.Contains(GameOptionEnum.Sound, gameState.GameOptions);
 		}
@@ -150,18 +166,24 @@ namespace CivOne.Persistence.Model
 		// Mock implementations for testing
 		private class MockGameInstanceForTesting : IPlayerGame
 		{
-			private readonly IPlayer _player;
-			public MockGameInstanceForTesting(IPlayer player) => _player = player;
+			private readonly List<IPlayer> _players;
+
+			public MockGameInstanceForTesting(List<IPlayer> players)
+			{
+				_players = players;
+			}
 
 			public bool Started => true;
 			public ushort GameTurn => 0;
 			public int Difficulty => 3;
-			public Player HumanPlayer => (_player as Player) ?? throw new InvalidOperationException("Player must be a Player instance");
-			public Player CurrentPlayer => (_player as Player) ?? throw new InvalidOperationException("Player must be a Player instance");
-			public IEnumerable<Player> Players => [(_player as Player) ?? throw new InvalidOperationException("Player must be a Player instance")];
+			public Player HumanPlayer => throw new NotImplementedException();
+			public Player CurrentPlayer => throw new NotImplementedException();
+			// Return a dummy Player array for Validate to use as fallback
+			// In tests, this satisfies the check that gameInstance.Players.Any()
+			public IEnumerable<Player> Players => []; // Empty is acceptable for test fallback logic
 
 			public byte PlayerNumber(Player player) => 0;
-			public Player GetPlayer(byte number) => (_player as Player) ?? throw new InvalidOperationException("Player must be a Player instance");
+			public Player GetPlayer(byte number) => throw new NotImplementedException();
 			public City[] GetCities() => [];
 			public IUnit[] GetUnits() => [];
 			public void DisbandUnit(IUnit unit) => throw new NotImplementedException();
@@ -173,7 +195,19 @@ namespace CivOne.Persistence.Model
 
 		private class MockPlayerFactoryForTesting : IPlayerFactory
 		{
-			public IPlayer Create(ICivilization civilization, PlayerDto dto) => throw new NotImplementedException();
+			private readonly List<IPlayer> _players;
+
+			public MockPlayerFactoryForTesting(List<IPlayer> players)
+			{
+				_players = players;
+			}
+
+			public IPlayer Create(ICivilization civilization, PlayerDto dto)
+			{
+				var result = _players.FirstOrDefault(p => p.Civilization.Name == civilization.Name)
+					?? throw new Exception("No matching player found for civilization " + civilization.Name);
+				return result;
+			}
 		}
 
 		private class MockUnitFactoryForTesting : IUnitFactory
@@ -415,7 +449,7 @@ namespace CivOne.Persistence.Model
 //                 GameTurn = gameState.GameTurn,
 //                 Players = [.. gameState.Players.Select(playerMapper.ToDto)],
 //                 HumanPlayer = FindHumanPlayerIndex(gameState.Players, gameState.HumanPlayer),
-                
+
 //                 RandomSeed = (uint)gameState.RandomSeed,
 //                 AnthologyTurn = gameState.AnthologyTurn,
 //                 TerrainSeed = (uint)gameState.TerrainSeed,
@@ -424,7 +458,7 @@ namespace CivOne.Persistence.Model
 //                 GameOptions = gameState.GameOptions,
 //                 Units = [.. gameState.Units.Select(unitMapper.ToDto)]
 // 			};
-            
+
 //             foreach (var player in gameStateDto.Players)
 //             {
 //                 player.Id = (ushort)gameStateDto.Players.IndexOf(player);
@@ -432,32 +466,32 @@ namespace CivOne.Persistence.Model
 //             return gameStateDto;
 // 		}
 
-        // public class GameStateDto
-        // {
-        //     [Doc("The difficulty level of the game.",
-        //         nameof(DifficultyAll))]
-        //     public DifficultyLevel Difficulty { get; set; }
+// public class GameStateDto
+// {
+//     [Doc("The difficulty level of the game.",
+//         nameof(DifficultyAll))]
+//     public DifficultyLevel Difficulty { get; set; }
 
-        //     public uint GameTurn { get; set; }
-        //     public ushort HumanPlayer { get; set; }
+//     public uint GameTurn { get; set; }
+//     public ushort HumanPlayer { get; set; }
 
-        //     public List<PlayerDto> Players { get; set; }
+//     public List<PlayerDto> Players { get; set; }
 
-        //     public uint RandomSeed { get; set; }
+//     public uint RandomSeed { get; set; }
 
-        //     public uint AnthologyTurn { get; set; }
+//     public uint AnthologyTurn { get; set; }
 
-        //     public uint TerrainSeed { get; set; }
+//     public uint TerrainSeed { get; set; }
 
-        //     public MapDto Map { get; set; }
+//     public MapDto Map { get; set; }
 
-        //     [Doc("The game options that are enabled in the game.",
-        //         nameof(GameOptionsAll))]
-        //     [YamlDotNet.Serialization.YamlMember(typeof(List<string>))]
-        //     public List<GameOptionEnum> GameOptions { get; set; }
+//     [Doc("The game options that are enabled in the game.",
+//         nameof(GameOptionsAll))]
+//     [YamlDotNet.Serialization.YamlMember(typeof(List<string>))]
+//     public List<GameOptionEnum> GameOptions { get; set; }
 
-        //     private static string DifficultyAll { get => string.Join(", ", Enum.GetNames<DifficultyLevel>()); }
-        //     private static string GameOptionsAll { get => string.Join(", ", Enum.GetNames<GameOptionEnum>()); }
-        // }
+//     private static string DifficultyAll { get => string.Join(", ", Enum.GetNames<DifficultyLevel>()); }
+//     private static string GameOptionsAll { get => string.Join(", ", Enum.GetNames<GameOptionEnum>()); }
+// }
 //     }
 // }

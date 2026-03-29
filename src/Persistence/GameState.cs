@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CivOne.Persistence.Model;
 using CivOne.Tiles;
 using CivOne.Units;
 
@@ -68,7 +69,7 @@ namespace CivOne.Persistence
     public class GameState
 	{
 		public uint GameTurn { get; set; }
-		public Player HumanPlayer { get; set; }
+		public IPlayer HumanPlayer { get; set; }
 
         public int RandomSeed { get; set; }
 
@@ -88,11 +89,11 @@ namespace CivOne.Persistence
         // public List<string> CityNames { get; set; }
 		
         // PlayerGold, ResearchProgress, TaxRate, ScienceRate, StartingPositionX, Government
-        public Player CurrentPlayer { get; set; }
+        public IPlayer CurrentPlayer { get; set; }
 
         // ActiveCivilizations, AdvanceOrigin,
         // CivilizationNames, Cities, Units, Wonders, TileVisibility, AdvanceFirstDiscovery        
-		public Player[] Players { get; set; }
+		public IPlayer[] Players { get; set; }
         public List<IUnit> Units { get; set; }
 
 		// public Dictionary<byte, byte> AdvanceOrigin { get; set; }
