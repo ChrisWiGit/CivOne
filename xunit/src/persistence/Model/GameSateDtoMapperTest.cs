@@ -68,10 +68,10 @@ namespace CivOne.Persistence.Model
 			var gameState = new GameState
 			{
 				GameTurn = 42,
-				HumanPlayer = (_player as Player) ?? throw new InvalidOperationException("Player must be a Player instance"),
+				HumanPlayer = _player,
 				RandomSeed = 12345,
 				Difficulty = 3,
-				Players = [(_player as Player) ?? throw new InvalidOperationException("Player must be a Player instance")],
+				Players = [_player],
 				Units = [], // Empty units list
 				GameOptions = [GameOptionEnum.Sound, GameOptionEnum.AutoSave],
 				AnthologyTurn = 0
@@ -85,7 +85,7 @@ namespace CivOne.Persistence.Model
 			Assert.Equal(42u, dto.GameTurn);
 			Assert.Equal(0u, dto.HumanPlayer); // First player index
 			Assert.Equal(12345u, dto.RandomSeed);
-			Assert.Equal(DifficultyLevel.Monarch, dto.Difficulty);
+			Assert.Equal(DifficultyLevel.Emperor, dto.Difficulty);
 			Assert.Single(dto.Players);
 			Assert.Contains(GameOptionEnum.Sound, dto.GameOptions);
 			Assert.Contains(GameOptionEnum.AutoSave, dto.GameOptions);
@@ -101,7 +101,8 @@ namespace CivOne.Persistence.Model
 			var playerDto = new PlayerDto
 			{
 				Id = 0,
-				Civilization = new CivilizationDto { Leader = new MockedILeader().GetType().Name },
+				Civilization = new CivilizationDto { 
+						LeaderClassName = new MockedILeader().GetType().Name },
 				Advances = [1, 2, 3],
 				Embassies = [4, 5],
 				Anarchy = 2,

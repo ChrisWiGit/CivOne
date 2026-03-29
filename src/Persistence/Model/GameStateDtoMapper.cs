@@ -39,7 +39,7 @@ namespace CivOne.Persistence.Model
             return gameState;
         }
 
-        ushort FindHumanPlayerIndex(Player[] players, Player humanPlayer)
+        ushort FindHumanPlayerIndex(IPlayer[] players, IPlayer humanPlayer)
         {
             for (ushort i = 0; i < players.Length; i++)
             {
