@@ -9,7 +9,7 @@ using CivOne.Civilizations;
 
 namespace CivOne.UnitTests
 {
-	public class MockedIPlayer : IPlayer
+	public class MockedIPlayer : IPlayerRestorable
 	{
 		public MockedIPlayer()
 		{

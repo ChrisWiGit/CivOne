@@ -7,7 +7,8 @@ using CivOne.Persistence.Model.Attributes;
 namespace CivOne.Persistence.Model
 {
     public class GameStateDtoMapper(
-        PlayerDtoMapper playerMapper
+        PlayerDtoMapper playerMapper,
+        UnitDtoMapper unitMapper
     ) : DtoMapper<GameStateDto, GameState>
     {
         public GameState FromDto(GameStateDto dto)
@@ -22,6 +23,12 @@ namespace CivOne.Persistence.Model
             if (dto.HumanPlayer >= players.Length)
                 throw new InvalidOperationException($"Human player index {dto.HumanPlayer} is out of range");
 
+            // Extract units from player DTOs
+            var units = dto.Players
+                .SelectMany(p => p.Units ?? [])
+                .Select(u => unitMapper.FromDto(u))
+                .ToList();
+
             var gameState = new GameState
             {
                 GameTurn = dto.GameTurn,
@@ -29,7 +36,8 @@ namespace CivOne.Persistence.Model
                 RandomSeed = (int)dto.RandomSeed,
                 Difficulty = (int)dto.Difficulty,
                 Players = players,
-                Units = [],  // TODO: implement units mapping from players
+                Cities = [],  // TODO: implement via CityDtoMapper.FromDto()
+                Units = units,
                 GameOptions = dto.GameOptions,
                 AnthologyTurn = (ushort)dto.AnthologyTurn,
                 // TODO: implement map deserialization
