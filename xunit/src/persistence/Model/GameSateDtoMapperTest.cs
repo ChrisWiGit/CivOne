@@ -40,6 +40,7 @@ namespace CivOne.Persistence.Model
 
 			var playerMapper = new PlayerDtoMapper(
 				_gameInstance,
+				new FixedPlayerOwnerResolver(),
 				new MockPlayerFactoryForTesting([.. _players.Cast<IPlayerRestorable>()]),
 				new CivilizationMapper(civsInGame),
 				new PalaceDtoMapper(),
@@ -335,6 +336,15 @@ namespace CivOne.Persistence.Model
 		{
 			public IUnitRestorable Create(string className, byte player, Guid? HomeCityGuid)
 				=> new MockedIUnit { Owner = player, Name = className };
+		}
+
+		private class FixedPlayerOwnerResolver : IPlayerOwnerResolver
+		{
+			public bool TryResolveOwnerId(IPlayer player, out byte ownerId)
+			{
+				ownerId = 0;
+				return false;
+			}
 		}
 	}
 }
