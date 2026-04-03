@@ -4,11 +4,11 @@ using CivOne.Civilizations;
 
 namespace CivOne.Persistence.Model
 {
-    public class CivilizationMapper : DtoMapper<CivilizationDto, ICivilization>
+    public class CivilizationDtoMapper : DtoMapper<CivilizationDto, ICivilization>
     {
         private readonly IEnumerable<ICivilization> _availableCivilizations;
 
-        public CivilizationMapper(IEnumerable<ICivilization> availableCivilizations)
+        public CivilizationDtoMapper(IEnumerable<ICivilization> availableCivilizations)
         {
             if (availableCivilizations == null || !availableCivilizations.Any())
             {

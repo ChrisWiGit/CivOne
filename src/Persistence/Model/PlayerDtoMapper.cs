@@ -1,11 +1,23 @@
 using System;
 using System.Linq;
+using CivOne.Advances;
 using CivOne.Civilizations;
 using CivOne.Enums;
+using CivOne.Governments;
 
 namespace CivOne.Persistence.Model
 {
 	using AdvanceId = System.UInt32;
+
+	public interface IAdvanceResolver
+	{
+		IAdvance ResolveById(uint id);
+	}
+
+	public interface IGovernmentResolver
+	{
+		IGovernment ResolveById(byte id);
+	}
 
     public class PlayerDtoMapper(
 		IPlayerGame gameInstance,
@@ -14,7 +26,9 @@ namespace CivOne.Persistence.Model
 		DtoMapper<CivilizationDto, ICivilization> _civilizationMapper,
 		PalaceDtoMapper _palaceMapper,
 		CityDtoMapper _cityMapper,
-		UnitDtoMapper _unitMapper
+		UnitDtoMapper _unitMapper,
+		IAdvanceResolver _advanceResolver,
+		IGovernmentResolver _governmentResolver
 		) : DtoMapper<PlayerDto, IPlayer>
 	{
 
@@ -44,9 +58,9 @@ namespace CivOne.Persistence.Model
 			player.Embassies = [.. (dto.Embassies ?? []).Select(x => (byte)x)];
 			player.Anarchy = dto.Anarchy;
 			player.Gold = (short)Math.Clamp(dto.Gold, short.MinValue, short.MaxValue);
-			player.CurrentResearch = Common.Advances.FirstOrDefault(x => x.Id == dto.CurrentResearch);
+			player.CurrentResearch = _advanceResolver.ResolveById(dto.CurrentResearch);
 			player.CityNamesSkipped = dto.CityNamesSkipped;
-			player.Government = Reflect.GetGovernments().FirstOrDefault(x => x.Id == dto.Government);
+			player.Government = _governmentResolver.ResolveById(dto.Government);
 
 			// Keep rate invariant (luxuries + taxes + science == 10) by setting all three.
 			player.TaxesRate = dto.TaxesRate;
@@ -58,6 +72,12 @@ namespace CivOne.Persistence.Model
 			{
 				player.Palace = _palaceMapper.FromDto(dto.Palace);
 			}
+
+			player.Cities = [..
+				(dto.Cities ?? [])
+				.Select(_cityMapper.FromDto)
+				.Select(city => city as ICity ?? throw new InvalidOperationException("City mapper must return ICity instances"))
+			];
 
 			return player;
 		}

@@ -1,15 +1,52 @@
 namespace CivOne.Persistence.Model
 {
+    using System;
+    using System.Drawing;
 	using System.Collections.Generic;
 	using System.Linq;
+    using CivOne.Buildings;
+    using CivOne.Enums;
+    using CivOne.Wonders;
     using CivOne.Tiles;
     
     public class CityDtoMapper(
-        ProductionDtoMapper productionMapper) : DtoMapper<CityDto, ICityMapper>
+        ProductionDtoMapper productionMapper,
+		ICityDefinitionResolver cityDefinitionResolver) : DtoMapper<CityDto, ICityMapper>
     {
         public ICityMapper FromDto(CityDto dto)
         {
-            throw new System.NotImplementedException();
+            ArgumentNullException.ThrowIfNull(dto);
+
+            var location = dto.Location ?? new MapLocation();
+            var centerTile = new Grassland((int)location.X, (int)location.Y);
+
+            var restored = new RestorableCity
+            {
+                Id = dto.Id,
+                Owner = dto.Owner,
+                Name = dto.Name ?? string.Empty,
+                Size = (byte)Math.Clamp((int)dto.Size, byte.MinValue, byte.MaxValue),
+                Location = new Point((int)location.X, (int)location.Y),
+                Tile = centerTile,
+                CurrentProduction = dto.CurrentProduction == null ? null : productionMapper.FromDto(dto.CurrentProduction),
+                Specialists = [.. (dto.Specialists ?? []).ToArray()],
+                VisibleSizes = dto.VisibleSizes ?? [],
+                ContinentId = dto.ContinentId,
+                WasInDisorder = dto.WasInDisorder,
+                Buildings = cityDefinitionResolver.ResolveBuildings(dto.Buildings),
+                Wonders = cityDefinitionResolver.ResolveWonders(dto.Wonders),
+                TradingCities = []
+            };
+
+            MapStatusFlags(restored, dto.Status ?? []);
+
+            Bool2dMap resourceMap = dto.ResourceTiles ?? new Bool2dMap(5, 5);
+            restored.ResourceTiles = [..
+                MapMapToTiles(restored, resourceMap)
+                .Where(t => !(t.X == restored.Tile.X && t.Y == restored.Tile.Y))
+            ];
+
+            return restored;
         }
 
         public List<ITile> MapMapToTiles(ICityTile city, Bool2dMap activatedResourceTileMap)
@@ -40,6 +77,10 @@ namespace CivOne.Persistence.Model
         public Bool2dMap MapResourceTiles(ITile[] resourceTiles)
         {
             Bool2dMap map = new(5, 5);
+			if (resourceTiles == null || resourceTiles.Length == 0)
+			{
+				return map;
+			}
 
             int minX = resourceTiles.Min(t => t.X);
             int minY = resourceTiles.Min(t => t.Y);
@@ -119,6 +160,48 @@ namespace CivOne.Persistence.Model
             status.TechStolen = flags.Contains(CityStatusEnum.TechStolen);
             status.CelebrationOrRapture = flags.Contains(CityStatusEnum.CelebrationRapture);
             status.BuildingSold = flags.Contains(CityStatusEnum.ImprovementSold);
+        }
+
+        private class RestorableCity : ICityTradingCitiesWritable
+        {
+            public Guid Id { get; set; }
+            public Point Location { get; set; }
+            public byte Size { get; set; }
+            public short Luxuries { get; set; }
+            public int EntertainerLuxuries { get; set; }
+            public byte Owner { get; set; }
+            public string Name { get; set; }
+            public ITile[] ResourceTiles { get; set; }
+            public Citizen[] Specialists { get; set; }
+            public int Shields { get; set; }
+            public int Food { get; set; }
+            public int ContinentId { get; set; }
+            public IPlayer PlayerIntf { get; set; }
+            public int Entertainers { get; set; }
+            public int Scientists { get; set; }
+            public int Taxmen { get; set; }
+            public IProduction CurrentProduction { get; set; }
+            public IBuilding[] Buildings { get; set; }
+            public IWonder[] Wonders { get; set; }
+            public byte Status { get; set; }
+            public bool WasInDisorder { get; set; }
+            public ICity[] TradingCities { get; set; }
+            public uint[] VisibleSizes { get; set; }
+            public ITile Tile { get; set; }
+            public bool IsRiot { get; set; }
+            public bool IsCoastal { get; set; }
+            public bool CelebrationCancelled { get; set; }
+            public bool HydroAvailable { get; set; }
+            public bool AutoBuild { get; set; }
+            public bool TechStolen { get; set; }
+            public bool CelebrationOrRapture { get; set; }
+            public bool BuildingSold { get; set; }
+
+            public bool HasBuilding<T>() where T : IBuilding => Buildings?.Any(b => b is T) == true;
+            public bool HasWonder<T>() where T : IWonder => Wonders?.Any(w => w is T) == true;
+            public void NewTurn()
+            {
+            }
         }
 	}
 }

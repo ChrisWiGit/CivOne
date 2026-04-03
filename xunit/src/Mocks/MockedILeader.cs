@@ -14,9 +14,9 @@ using CivOne.Leaders;
 
 namespace CivOne.UnitTests
 {
-	public class MockedILeader : ILeader
+	public class MockedILeader(int id) : ILeader
 	{
-		public string Name { get; set; } = "TestLeader";
+		public string Name { get; set; } = $"TestLeader{id}";
 
 
 		public AggressionLevel Aggression { get; set; } = AggressionLevel.Normal;
@@ -29,5 +29,15 @@ namespace CivOne.UnitTests
 			return new MockedIBitmap([Colour.Black], new byte[,] { { 0,0 } });
 		}
 	}
+
+	// NOTE:
+	// CivilizationDtoMapper.FromDto() resolves civilizations by comparing
+	// dto.LeaderClassName with civ.Leader.GetType().Name (reflection-based type name matching).
+	// Therefore tests need distinct leader *types* (not only different instances/ids),
+	// otherwise multiple civilizations would map to the same LeaderClassName and matching
+	// becomes ambiguous/non-deterministic in roundtrip tests.
+	public sealed class MockedILeader1() : MockedILeader(1);
+	public sealed class MockedILeader2() : MockedILeader(2);
+	public sealed class MockedILeader3() : MockedILeader(3);
 
 }

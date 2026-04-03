@@ -59,9 +59,7 @@ namespace CivOne.Persistence.Model
 
 			Assert.NotNull(actualMapDto);
 
-			// Write with flow style converter - produces true YAML arrays
-			// Output will be: LandValues: [[0, 10, 20, 30, 40], [10, 20, 30, 40, 50], ...]
-			// Instead of string-based format
+			// Write map YAML with compact row encoding for LandValues
 			YamlWriter.Of(actualMapDto)
 				.WithStandard()
 				.WithTypeConverter(new MapDtoTileDtoYamlConverter())
@@ -186,13 +184,52 @@ namespace CivOne.Persistence.Model
 				"- AxAhAxAhAx\n" +
 				"- ARABARABAR\n" +
 				"LandValues:\n" +
-				"- - 0\n  - 10\n  - 20\n  - 30\n  - 40\n" +
-				"- - 10\n  - 20\n  - 30\n  - 40\n  - 50\n" +
-				"- - 20\n  - 30\n  - 40\n  - 50\n  - 60\n" +
-				"- - 30\n  - 40\n  - 50\n  - 60\n  - 70\n" +
-				"- - 40\n  - 50\n  - 60\n  - 70\n  - 80\n" +
-				"- - 50\n  - 60\n  - 70\n  - 80\n  - 90\n",
+				"- 0,10,20,30,40\n" +
+				"- 10,20,30,40,50\n" +
+				"- 20,30,40,50,60\n" +
+				"- 30,40,50,60,70\n" +
+				"- 40,50,60,70,80\n" +
+				"- 50,60,70,80,90\n",
 				yaml.Replace("\r\n", "\n")); 
+		}
+
+		[Fact]
+		public void TestMapDtoTileDtoYamlConverterDecoding()
+		{
+			const string yaml =
+				"TerrainSeed: 4242\n" +
+				"Tiles:\n" +
+				"- ARIE\n" +
+				"- AiQD\n" +
+				"LandValues:\n" +
+				"- 1,3\n" +
+				"- 2,4\n";
+
+			var actual = YamlReader.OfString(yaml)
+				.WithTypeConverter(new MapDtoTileDtoYamlConverter())
+				.As<MapDto>();
+
+			Assert.NotNull(actual);
+			Assert.Equal((uint)4242, actual.TerrainSeed);
+			Assert.NotNull(actual.Tiles);
+			Assert.Equal(2, actual.Tiles.Width());
+			Assert.Equal(2, actual.Tiles.Height());
+
+			Assert.Equal(Terrain.Plains, actual.Tiles[0, 0].Terrain);
+			Assert.True(actual.Tiles[0, 0].Road);
+			Assert.Equal((byte)1, actual.Tiles[0, 0].LandValue);
+
+			Assert.Equal(Terrain.Hills, actual.Tiles[1, 0].Terrain);
+			Assert.True(actual.Tiles[1, 0].Mine);
+			Assert.Equal((byte)3, actual.Tiles[1, 0].LandValue);
+
+			Assert.Equal(Terrain.Grassland1, actual.Tiles[0, 1].Terrain);
+			Assert.True(actual.Tiles[0, 1].RailRoad);
+			Assert.Equal((byte)2, actual.Tiles[0, 1].LandValue);
+
+			Assert.Equal(Terrain.Forest, actual.Tiles[1, 1].Terrain);
+			Assert.True(actual.Tiles[1, 1].Hut);
+			Assert.Equal((byte)4, actual.Tiles[1, 1].LandValue);
 		}
 
 		[Fact]

@@ -1,7 +1,6 @@
 using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using CivOne.Civilizations;
 using CivOne.Persistence.Model;
 using CivOne.Persistence.Model.Attributes;
 using YamlDotNet.Core;
@@ -24,14 +23,25 @@ namespace CivOne.Persistence.Yaml
 
         public object ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
         {
-            throw new NotImplementedException("MapDto deserialization from YAML not yet implemented");
+            var yamlMap = (MapDtoYamlRepresentation)rootDeserializer(typeof(MapDtoYamlRepresentation));
+
+            ArgumentNullException.ThrowIfNull(yamlMap);
+            ArgumentNullException.ThrowIfNull(yamlMap.Tiles);
+
+            var tiles = DecodeMapFromRows(yamlMap.Tiles, yamlMap.LandValues);
+
+            return new MapDto
+            {
+                TerrainSeed = yamlMap.TerrainSeed,
+                Tiles = tiles
+            };
         }
 
         public void WriteYaml(IEmitter emitter, object value, Type type, ObjectSerializer serializer)
         {
             var mapDto = (MapDto)value;
             
-            // Convert to a serializable format with encoded tiles and separate land values
+            // Convert to a serializable format with encoded tiles and compact land values
             var encodedRows = EncodeMapToRows(mapDto.Tiles);
             var landValues = ExtractLandValues(mapDto.Tiles);
             
@@ -66,19 +76,96 @@ namespace CivOne.Persistence.Yaml
             return rows;
         }
 
-        private byte[][] ExtractLandValues(Map2d<TileDto> tiles)
+        private Map2d<TileDto> DecodeMapFromRows(string[] encodedRows, string[] landValuesRows)
         {
-            int width = tiles.Width();
-            int height = tiles.Height();
-            var landValues = new byte[height][];
+            int height = encodedRows.Length;
+            int width = height == 0 ? 0 : encodedRows[0].Length / 2;
+            var tiles = new TileDto[width, height];
 
             for (int y = 0; y < height; y++)
             {
-                landValues[y] = new byte[width];
+                var row = encodedRows[y] ?? string.Empty;
+                if (row.Length % 2 != 0)
+                {
+                    throw new FormatException($"Encoded tile row at index {y} has invalid length {row.Length} (must be even).");
+                }
+
+                int rowWidth = row.Length / 2;
+                if (y == 0)
+                {
+                    width = rowWidth;
+                }
+                else if (rowWidth != width)
+                {
+                    throw new FormatException($"Encoded tile row at index {y} has width {rowWidth}, expected {width}.");
+                }
+
                 for (int x = 0; x < width; x++)
                 {
-                    landValues[y][x] = tiles[x, y].LandValue;
+                    tiles[x, y] = _codec.Decode(row, x * 2);
                 }
+            }
+
+            ApplyLandValues(tiles, landValuesRows);
+
+            return new Map2d<TileDto>(tiles);
+        }
+
+        private static void ApplyLandValues(TileDto[,] tiles, string[] landValuesRows)
+        {
+            if (landValuesRows == null || landValuesRows.Length == 0)
+            {
+                return;
+            }
+
+            int width = tiles.GetLength(0);
+            int height = tiles.GetLength(1);
+
+            for (int y = 0; y < Math.Min(height, landValuesRows.Length); y++)
+            {
+                var values = SplitLandValuesRow(landValuesRows[y]);
+                for (int x = 0; x < Math.Min(width, values.Length); x++)
+                {
+                    tiles[x, y].LandValue = values[x];
+                }
+            }
+        }
+
+        private static byte[] SplitLandValuesRow(string row)
+        {
+            if (string.IsNullOrWhiteSpace(row))
+            {
+                return [];
+            }
+
+            var normalized = row.Trim();
+            if (normalized.StartsWith("[", StringComparison.Ordinal) && normalized.EndsWith("]", StringComparison.Ordinal))
+            {
+                normalized = normalized[1..^1];
+            }
+
+            return [..
+                normalized
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(x => byte.Parse(x.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture))
+            ];
+        }
+
+        private string[] ExtractLandValues(Map2d<TileDto> tiles)
+        {
+            int width = tiles.Width();
+            int height = tiles.Height();
+            var landValues = new string[height];
+
+            for (int y = 0; y < height; y++)
+            {
+                var rowValues = new string[width];
+                for (int x = 0; x < width; x++)
+                {
+                    rowValues[x] = tiles[x, y].LandValue.ToString();
+                }
+
+                landValues[y] = string.Join(',', rowValues);
             }
 
             return landValues;
@@ -88,7 +175,7 @@ namespace CivOne.Persistence.Yaml
     /// <summary>
     /// Intermediate class for YAML serialization of encoded map data.
     /// Each row is a string of Base64-encoded tile data (2 chars per tile).
-    /// LandValues is stored as a separate 2D array to keep the tile encoding compact.
+    /// LandValues is stored as comma-separated strings (one row per entry) to keep YAML compact.
     /// </summary>
 	/// <seealso cref="MapDto"/>
     internal class MapDtoYamlRepresentation
@@ -99,7 +186,7 @@ namespace CivOne.Persistence.Yaml
         [Doc("Encoded tile data. Each row contains Base64-encoded tiles (2 chars per tile). Use TileCodec to decode individual tiles. See YAML.md for encoding details.")]
         public string[] Tiles { get; set; }
         
-        [Doc("Land values for each tile. Higher values indicate more desirable locations for founding cities. See INTERNALS.md for details on how this value is used.")]
-        public byte[][] LandValues { get; set; }
+        [Doc("Land values for each tile row, encoded as comma-separated numbers to reduce YAML size on large maps. See INTERNALS.md for details on how this value is used.")]
+        public string[] LandValues { get; set; }
     }
 }

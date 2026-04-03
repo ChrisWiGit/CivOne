@@ -29,5 +29,6 @@ namespace CivOne.Persistence.Model
 		new int ScienceRate { get; set; }
 		new short Science { get; set; }
 		new PalaceData Palace { get; set; }
+		new List<ICity> Cities { get; set; }
 	}
 }

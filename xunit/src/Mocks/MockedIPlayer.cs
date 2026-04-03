@@ -13,7 +13,7 @@ namespace CivOne.UnitTests
 	{
 		public MockedIPlayer()
 		{
-			Civilization = new MockedICivilization();
+			Civilization = new MockedICivilization(1);
 			TribeName = "Mock Tribe";
 			TribeNamePlural = "Mock Tribes";
 			Explored = new bool[10, 10];

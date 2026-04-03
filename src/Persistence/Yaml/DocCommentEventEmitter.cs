@@ -145,9 +145,15 @@ namespace CivOne.Persistence.Yaml
         {
             if (docAttribute.AllowedValuesPropertyName != null)
             {
-                var field = CurrentType.GetFields().FirstOrDefault(p => p.Name == docAttribute.AllowedValuesPropertyName);
-                if (field?.GetValue(eventInfo.Source) is IEnumerable values)
+                var valuesSource = TryGetMemberValue(CurrentType, docAttribute.AllowedValuesPropertyName, eventInfo.Source?.Value);
+                if (valuesSource is string valueString)
+                {
+                    emitter.Emit(new Comment($"Allowed values: {valueString}", false));
+                }
+                else if (valuesSource is IEnumerable values)
+                {
                     emitter.Emit(new Comment($"Allowed values: {string.Join(", ", values.Cast<object>())}", false));
+                }
             }
 
             if (docAttribute.AllowedValues != null)
@@ -163,20 +169,33 @@ namespace CivOne.Persistence.Yaml
             // Allow re-commenting each time this property is serialized, since comments depend on instance data
             DoNotCreateCommentForPropertyNextTime(propName, ignore: false);
 
-            var field = CurrentType
-                .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
-                .FirstOrDefault(p => p.Name == docAttribute.CommentValuesPropertyName);
-            if (field == null)
-            {
-                return;
-            }
-
-            object dictValue = field.IsStatic ? field.GetValue(null) : field.GetValue(eventInfo.Source?.Value);
+            object dictValue = TryGetMemberValue(CurrentType, docAttribute.CommentValuesPropertyName, eventInfo.Source?.Value);
             activeCommentValues = ConvertToDictionaryIntString(dictValue);
             if (activeCommentValues != null)
             {
                 nextSequenceHasComments = true;
             }
+        }
+
+        private static object TryGetMemberValue(Type type, string memberName, object instance)
+        {
+            const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
+
+            var field = type.GetField(memberName, flags);
+            if (field != null)
+            {
+                return field.IsStatic ? field.GetValue(null) : field.GetValue(instance);
+            }
+
+            var property = type.GetProperty(memberName, flags);
+            if (property != null && property.CanRead)
+            {
+                var getter = property.GetMethod;
+                bool isStatic = getter?.IsStatic == true;
+                return property.GetValue(isStatic ? null : instance);
+            }
+
+            return null;
         }
 
         private void DoNotCreateCommentForPropertyNextTime(string propName, bool ignore = true)

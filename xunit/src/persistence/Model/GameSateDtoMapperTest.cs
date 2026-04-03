@@ -5,8 +5,10 @@ namespace CivOne.Persistence.Model
 	using System.Linq;
 	using CivOne;
 	using CivOne.Advances;
+	using CivOne.Buildings;
 	using CivOne.Civilizations;
 	using CivOne.Enums;
+	using CivOne.Governments;
 	using CivOne.Leaders;
 	using CivOne.Persistence.Yaml;
 	using CivOne.UnitTests;
@@ -15,7 +17,7 @@ namespace CivOne.Persistence.Model
 	using Xunit;
 	using AdvanceId = System.UInt32;
 
-	public class GameSateDtoMapperTest : TestsBase2
+	public class GameSateDtoMapperTest
 	{
 		private readonly GameStateDtoMapper _testee;
 		private readonly List<MockedIPlayer> _players;
@@ -24,7 +26,7 @@ namespace CivOne.Persistence.Model
 
 		public GameSateDtoMapperTest()
 		{
-			var civsInGame = Common.Civilizations.Take(3).ToList();
+			var civsInGame = MockedICivilization.Mock(3);
 			CivilizationDto.AllLeaderClassNames = [.. civsInGame.Select(c => c.Leader.GetType().Name).Distinct()];
 
 			// Only Civilization is needed for the Factory to match players.
@@ -37,17 +39,22 @@ namespace CivOne.Persistence.Model
 			_gameInstance = new MockGameInstanceForTesting([.. _players.Cast<IPlayer>()]);
 
 			var unitMapper = new UnitDtoMapper(new MockUnitFactoryForTesting());
+			var mockedMapFactory = new MapDtoTest.MockedIMapFactory();
+			var mockedTileMapper = new MapDtoTest.MockedITileDtoMapper(() => mockedMapFactory.CurrentMapTiles);
+			var mapMapper = new MapDtoMapper(mockedMapFactory, mockedTileMapper);
 
 			var playerMapper = new PlayerDtoMapper(
 				_gameInstance,
 				new FixedPlayerOwnerResolver(),
 				new MockPlayerFactoryForTesting([.. _players.Cast<IPlayerRestorable>()]),
-				new CivilizationMapper(civsInGame),
+				new CivilizationDtoMapper(civsInGame),
 				new PalaceDtoMapper(),
-				new CityDtoMapper(new ProductionDtoMapper(new MockedReflect())),
-				unitMapper);
+				new CityDtoMapper(new ProductionDtoMapper(new MockedReflect()), new TestCityDefinitionResolver()),
+				unitMapper,
+				new TestAdvanceResolver(),
+				new TestGovernmentResolver());
 
-			_testee = new GameStateDtoMapper(playerMapper, unitMapper);
+			_testee = new GameStateDtoMapper(playerMapper, unitMapper, mapMapper);
 
 			PlayerDto.AllAdvances = ["0(Advance0)", "1(Advance1)", "2(Advance2)", "3(Advance3)"];
 			PlayerDto.AllAdvancesInfo = new Dictionary<AdvanceId, string>
@@ -87,7 +94,7 @@ namespace CivOne.Persistence.Model
 						Wonders = [],
 						Status = [],
 						WasInDisorder = false,
-						TradingCities = [],
+						TradingCities = [cityId1],
 						ContinentId = 1
 					}
 				],
@@ -151,7 +158,7 @@ namespace CivOne.Persistence.Model
 						Wonders = [],
 						Status = [],
 						WasInDisorder = false,
-						TradingCities = [],
+						TradingCities = [cityId0],
 						ContinentId = 2
 					}
 				],
@@ -198,56 +205,60 @@ namespace CivOne.Persistence.Model
 				Players = [playerDto0, playerDto1],
 				AnthologyTurn = 0,
 				GameOptions = [GameOptionEnum.Sound],
-				Map = new MapDto()
+				Map = new MapDto
+				{
+					TerrainSeed = 4242,
+					Tiles = new Map2d<TileDto>(new TileDto[,]
+					{
+						{
+							new() { Terrain = Terrain.Plains, Road = true, LandValue = 1 },
+							new() { Terrain = Terrain.Grassland1, RailRoad = true, LandValue = 2 }
+						},
+						{
+							new() { Terrain = Terrain.Hills, Mine = true, LandValue = 3 },
+							new() { Terrain = Terrain.Forest, Hut = true, LandValue = 4 }
+						}
+					})
+				}
 			};
 		}
 
 		[Fact]
 		public void TestGameStateDtoMapper_ContractCheck()
 		{
-			var requiredProperties = new[]
-			{
-				nameof(GameStateDto.Difficulty),
-				nameof(GameStateDto.GameTurn),
-				nameof(GameStateDto.HumanPlayer),
-				nameof(GameStateDto.Players),
-				nameof(GameStateDto.RandomSeed),
-				nameof(GameStateDto.AnthologyTurn),
-				nameof(GameStateDto.Map),
-				nameof(GameStateDto.GameOptions)
-			};
+			var dtoProperties = GetWritablePropertyNames<GameStateDto>();
+			// This prevents silent mapper drift: every writable GameStateDto property must
+			// be covered by roundtrip assertions, so new fields cannot be forgotten.
+			var expectedProperties = GetGameStateDtoRoundTripAssertionMap(_dto, _dto).Keys.ToHashSet();
 
-			var dtoProperties = typeof(GameStateDto).GetProperties()
-				.Where(p => p.CanRead && p.CanWrite)
-				.Select(p => p.Name)
-				.ToHashSet();
-
-			foreach (var prop in requiredProperties)
-			{
-				Assert.Contains(prop, dtoProperties);
-			}
+			Assert.Equal([], dtoProperties.Except(expectedProperties).OrderBy(x => x));
 		}
 
 		[Fact]
 		public void TestGameStateDtoMapper_RoundTrip()
 		{
-			// Act: DTO -> GameState -> DTO
 			var gameState = _testee.FromDto(_dto);
 			var roundTripDto = _testee.ToDto(gameState);
 
-			YamlWriter.Of(roundTripDto).WithStandard().ToFile("GameSateDtoMapperTest.TestGameStateDtoMapper_ToDto.yaml");
+			YamlWriter.Of(roundTripDto)
+				.WithStandard()
+				.WithTypeConverter(new MapDtoTileDtoYamlConverter())
+				.ToFile("GameSateDtoMapperTest.TestGameStateDtoMapper_ToDto.yaml");
 
-			// Assert - GameState properties
 			Assert.NotNull(gameState);
 			Assert.Equal(50u, gameState.GameTurn);
 			Assert.Equal(99999, gameState.RandomSeed);
 			Assert.Equal(0, gameState.Difficulty); // Chieftain = 0
 			Assert.Equal(2, gameState.Players.Length);
 			Assert.Contains(GameOptionEnum.Sound, gameState.GameOptions);
+			Assert.Equal(4242, gameState.TerrainSeed);
+			Assert.Equal(2, gameState.MapWidth);
+			Assert.Equal(2, gameState.MapHeight);
+			Assert.NotNull(gameState.MapTiles);
+			Assert.NotNull(gameState.MapTiles[0, 0]);
+			Assert.True(gameState.MapTiles[0, 0].Road);
+			Assert.Equal(Terrain.Forest, gameState.MapTiles[1, 1].Type);
 
-			// Assert - Cities: CityDtoMapper.FromDto() is not yet implemented,
-			// so cities are empty for now.
-			// TODO: Assert.NotEmpty(gameState.Cities) when CityDtoMapper.FromDto() is done
 			Assert.Empty(gameState.Cities);
 
 			{
@@ -257,32 +268,72 @@ namespace CivOne.Persistence.Model
 				Assert.Single(unitsPlayer1);
 			}
 
-			// Assert roundtrip DTO matches original
 			Assert.NotNull(roundTripDto);
-			Assert.Equal(_dto.GameTurn, roundTripDto.GameTurn);
-			Assert.Equal(_dto.RandomSeed, roundTripDto.RandomSeed);
-			Assert.Equal(_dto.Difficulty, roundTripDto.Difficulty);
-			Assert.Equal(_dto.HumanPlayer, roundTripDto.HumanPlayer);
-			Assert.Equal(_dto.AnthologyTurn, roundTripDto.AnthologyTurn);
-			Assert.Contains(GameOptionEnum.Sound, roundTripDto.GameOptions);
-
+			Assert.NotNull(roundTripDto.Players);
 			Assert.Equal(2, roundTripDto.Players.Count);
+			Assert.Single(roundTripDto.Players[0].Cities);
+			Assert.Single(roundTripDto.Players[1].Cities);
+			Assert.Single(roundTripDto.Players[0].Cities[0].TradingCities);
+			Assert.Single(roundTripDto.Players[1].Cities[0].TradingCities);
+			Assert.Equal(_dto.Players[1].Cities[0].Id, roundTripDto.Players[0].Cities[0].TradingCities[0]);
+			Assert.Equal(_dto.Players[0].Cities[0].Id, roundTripDto.Players[1].Cities[0].TradingCities[0]);
 
-			// Player 0
-			Assert.Equal(_dto.Players[0].Gold, roundTripDto.Players[0].Gold);
-			Assert.Equal(_dto.Players[0].Anarchy, roundTripDto.Players[0].Anarchy);
-			Assert.Equal(_dto.Players[0].TribeName, roundTripDto.Players[0].TribeName);
-			Assert.Equal(_dto.Players[0].Advances.Count, roundTripDto.Players[0].Advances.Count);
-
-			// Player 1
-			Assert.Equal(_dto.Players[1].Gold, roundTripDto.Players[1].Gold);
-			Assert.Equal(_dto.Players[1].Anarchy, roundTripDto.Players[1].Anarchy);
-			Assert.Equal(_dto.Players[1].TribeName, roundTripDto.Players[1].TribeName);
-			Assert.Equal(_dto.Players[1].Advances.Count, roundTripDto.Players[1].Advances.Count);
-
-			// Note: unit roundtrip via ToDto is not asserted here because MockGameInstanceForTesting.GetUnits()
-			// returns [] and Validate() falls back to index 0 for all mock players.
+			var assertions = GetGameStateDtoRoundTripAssertionMap(_dto, roundTripDto);
+			foreach (var assertion in assertions.Values)
+			{
+				assertion();
+			}
 		}
+
+		private static Dictionary<string, Action> GetGameStateDtoRoundTripAssertionMap(GameStateDto expected, GameStateDto actual)
+			=> new()
+			{
+				[nameof(GameStateDto.Difficulty)] = () => Assert.Equal(expected.Difficulty, actual.Difficulty),
+				[nameof(GameStateDto.GameTurn)] = () => Assert.Equal(expected.GameTurn, actual.GameTurn),
+				[nameof(GameStateDto.HumanPlayer)] = () => Assert.Equal(expected.HumanPlayer, actual.HumanPlayer),
+				[nameof(GameStateDto.Players)] = () =>
+				{
+					Assert.Equal(expected.Players.Count, actual.Players.Count);
+					for (int i = 0; i < expected.Players.Count; i++)
+					{
+						var expectedPlayer = expected.Players[i];
+						var actualPlayer = actual.Players.FirstOrDefault(p => p.Id == expectedPlayer.Id)
+							?? throw new Exception($"Player with ID {expectedPlayer.Id} not found in actual players");
+						Assert.Equal(expectedPlayer.Gold, actualPlayer.Gold);
+						Assert.Equal(expectedPlayer.Anarchy, actualPlayer.Anarchy);
+						Assert.Equal(expectedPlayer.TribeName, actualPlayer.TribeName);
+						Assert.Equal(expectedPlayer.Advances.Count, actualPlayer.Advances.Count);
+					}
+				},
+				[nameof(GameStateDto.RandomSeed)] = () => Assert.Equal(expected.RandomSeed, actual.RandomSeed),
+				[nameof(GameStateDto.AnthologyTurn)] = () => Assert.Equal(expected.AnthologyTurn, actual.AnthologyTurn),
+				[nameof(GameStateDto.Map)] = () =>
+				{
+					Assert.NotNull(actual.Map);
+					Assert.NotNull(actual.Map.Tiles);
+					Assert.Equal(expected.Map.TerrainSeed, actual.Map.TerrainSeed);
+					Assert.Equal(expected.Map.Tiles.Width(), actual.Map.Tiles.Width());
+					Assert.Equal(expected.Map.Tiles.Height(), actual.Map.Tiles.Height());
+					for (var x = 0; x < expected.Map.Tiles.Width(); x++)
+					{
+						for (var y = 0; y < expected.Map.Tiles.Height(); y++)
+						{
+							Assert.Equal(expected.Map.Tiles[x, y].Terrain, actual.Map.Tiles[x, y].Terrain);
+							Assert.Equal(expected.Map.Tiles[x, y].Road, actual.Map.Tiles[x, y].Road);
+							Assert.Equal(expected.Map.Tiles[x, y].RailRoad, actual.Map.Tiles[x, y].RailRoad);
+							Assert.Equal(expected.Map.Tiles[x, y].Mine, actual.Map.Tiles[x, y].Mine);
+							Assert.Equal(expected.Map.Tiles[x, y].Hut, actual.Map.Tiles[x, y].Hut);
+							Assert.Equal(expected.Map.Tiles[x, y].LandValue, actual.Map.Tiles[x, y].LandValue);
+						}
+					}
+				},
+				[nameof(GameStateDto.GameOptions)] = () => Assert.Equal(expected.GameOptions, actual.GameOptions)
+			};
+
+		private static HashSet<string> GetWritablePropertyNames<T>() => typeof(T).GetProperties()
+			.Where(p => p.CanRead && p.CanWrite)
+			.Select(p => p.Name)
+			.ToHashSet();
 
 
 		// Mock implementations for testing
@@ -344,6 +395,31 @@ namespace CivOne.Persistence.Model
 			{
 				ownerId = 0;
 				return false;
+			}
+		}
+
+		private sealed class TestCityDefinitionResolver : ICityDefinitionResolver
+		{
+			public IBuilding[] ResolveBuildings(IEnumerable<Building> buildingTypes)
+				=> [.. (buildingTypes ?? []).Select(type => new MockedIBuilding { Type = type })];
+
+			public IWonder[] ResolveWonders(IEnumerable<Wonder> wonderTypes)
+				=> [.. (wonderTypes ?? []).Select(type => new MockedIWonder { Type = type })];
+		}
+
+		private sealed class TestAdvanceResolver : IAdvanceResolver
+		{
+			public IAdvance ResolveById(uint id)
+			{
+				return new MockedIAdvance { Id = (byte)id };
+			}
+		}
+
+		private sealed class TestGovernmentResolver : IGovernmentResolver
+		{
+			public IGovernment ResolveById(byte id)
+			{
+				return new MockedIGovernment { Id = id };
 			}
 		}
 	}

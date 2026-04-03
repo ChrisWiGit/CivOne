@@ -5,7 +5,9 @@ namespace CivOne.Persistence.Model
 	using System.Drawing;
 	using System.Linq;
 	using CivOne.Advances;
+	using CivOne.Buildings;
 	using CivOne.Civilizations;
+	using CivOne.Governments;
 	using CivOne.Leaders;
 	using CivOne.Enums;
 	using CivOne.Persistence.Yaml;
@@ -15,7 +17,7 @@ namespace CivOne.Persistence.Model
 	using Xunit;
 	using AdvanceId = System.UInt32;
 
-	public class PlayerDtoMapperTest : TestsBase2
+	public class PlayerDtoMapperTest
 	{
 		private readonly PlayerDto originalDto;
 		private readonly PlayerDtoMapper _testee;
@@ -70,7 +72,7 @@ namespace CivOne.Persistence.Model
 			originalDto = new PlayerDto
 			{
 				Id = 0,
-				Civilization = new CivilizationDto { LeaderClassName = new MockedILeader().GetType().Name },
+				Civilization = new CivilizationDto { LeaderClassName = civsInGame[0].Leader.GetType().Name },
 				Advances = [1, 2, 3],
 				Embassies = [4, 5],
 				Anarchy = 2,
@@ -126,10 +128,12 @@ namespace CivOne.Persistence.Model
 				gameInstance,
 				new FixedPlayerOwnerResolver(0),
 				new MockPlayerFactoryForTesting(_player),
-				new CivilizationMapper(civsInGame),
+				new CivilizationDtoMapper(civsInGame),
 				new PalaceDtoMapper(),
-				new CityDtoMapper(new ProductionDtoMapper(new MockedReflect())),
-				new UnitDtoMapper(new MockUnitFactoryForTesting()));
+				new CityDtoMapper(new ProductionDtoMapper(new MockedReflect()), new TestCityDefinitionResolver()),
+				new UnitDtoMapper(new MockUnitFactoryForTesting()),
+				new TestAdvanceResolver(),
+				new TestGovernmentResolver());
 			
 			PlayerDto.AllAdvances = ["0(Advance0)", "1(Advance1)", "2(Advance2)", "3(Advance3)"];
 			PlayerDto.AllAdvancesInfo = new Dictionary<AdvanceId, string>
@@ -145,78 +149,92 @@ namespace CivOne.Persistence.Model
 		[Fact]
 		public void TestPlayerDtoMapper_ContractCheck()
 		{
-			// Verify that PlayerDto has all required properties for serialization
-			var requiredProperties = new[]
-			{
-				nameof(PlayerDto.TribeName),
-				nameof(PlayerDto.TribeNamePlural),
-				nameof(PlayerDto.Anarchy),
-				nameof(PlayerDto.Gold),
-				nameof(PlayerDto.CurrentResearch),
-				nameof(PlayerDto.Government),
-				nameof(PlayerDto.LuxuriesRate),
-				nameof(PlayerDto.TaxesRate),
-				nameof(PlayerDto.ScienceRate),
-				nameof(PlayerDto.Science),
-				nameof(PlayerDto.CityNamesSkipped),
-				nameof(PlayerDto.Advances),
-				nameof(PlayerDto.Embassies),
-				nameof(PlayerDto.Explored),
-				nameof(PlayerDto.Visible),
-				nameof(PlayerDto.Civilization),
-				nameof(PlayerDto.Palace),
-				nameof(PlayerDto.Cities),
-				nameof(PlayerDto.Units)
-			};
-
-			var dtoProperties = typeof(PlayerDto).GetProperties()
-				.Where(p => p.CanRead && p.CanWrite)
-				.Select(p => p.Name)
+			var dtoProperties = GetWritablePropertyNames<PlayerDto>();
+			// This guards mapping completeness: when a new writable PlayerDto property is added,
+			// the test fails until it is either asserted in roundtrip checks or explicitly excluded.
+			var expectedProperties = GetPlayerDtoRoundTripAssertionMap(originalDto, originalDto).Keys
+				.Concat(GetExcludedPlayerDtoProperties())
 				.ToHashSet();
 
-			foreach (var prop in requiredProperties)
-			{
-				Assert.Contains(prop, dtoProperties);
-			}
+			Assert.Equal([], dtoProperties.Except(expectedProperties).OrderBy(x => x));
 		}
 
 		[Fact]
 		public void TestPlayerDtoMapper_RoundTrip()
 		{
-			// Act: Convert PlayerDto -> IPlayer -> PlayerDto
 			var player = _testee.FromDto(originalDto);
 			var roundTripDto = _testee.ToDto(player);
 
 			YamlWriter.Of(roundTripDto).WithStandard().ToFile("PlayerDtoMapperTest.yaml");
 
-			// Assert: Round-trip consistency - all properties should be preserved
 			Assert.NotNull(roundTripDto);
-			Assert.Equal(originalDto.TribeName, roundTripDto.TribeName);
-			Assert.Equal(originalDto.TribeNamePlural, roundTripDto.TribeNamePlural);
-			Assert.Equal(originalDto.Anarchy, roundTripDto.Anarchy);
-			Assert.Equal(originalDto.Gold, roundTripDto.Gold);
-			Assert.Equal(originalDto.CurrentResearch, roundTripDto.CurrentResearch);
-			Assert.Equal(originalDto.Government, roundTripDto.Government);
-			Assert.Equal(originalDto.LuxuriesRate, roundTripDto.LuxuriesRate);
-			Assert.Equal(originalDto.TaxesRate, roundTripDto.TaxesRate);
-			Assert.Equal(originalDto.ScienceRate, roundTripDto.ScienceRate); // Now properly preserved
-			Assert.Equal(originalDto.Science, roundTripDto.Science);
-			Assert.Equal(originalDto.CityNamesSkipped, roundTripDto.CityNamesSkipped);
-			Assert.Equal(originalDto.Advances.Count, roundTripDto.Advances.Count);
-			Assert.Equal(originalDto.Embassies.Count, roundTripDto.Embassies.Count);
 
-			Assert.Single(roundTripDto.Cities);
-			Assert.Equal("Rome", roundTripDto.Cities[0].Name);
-			Assert.Equal((uint)7, roundTripDto.Cities[0].Size);
-			Assert.Equal((byte)0, roundTripDto.Cities[0].Owner);
+			var assertions = GetPlayerDtoRoundTripAssertionMap(originalDto, roundTripDto);
+			foreach (var assertion in assertions.Values)
+			{
+				assertion();
+			}
+		}
 
-			Assert.Single(roundTripDto.Units);
-			Assert.Equal((uint)10, roundTripDto.Units[0].Location.X);
-			Assert.Equal((uint)20, roundTripDto.Units[0].Location.Y);
-			Assert.True(roundTripDto.Units[0].Veteran);
-			Assert.Equal(2, roundTripDto.Units[0].MovesLeft);
-			Assert.Equal(1, roundTripDto.Units[0].PartMoves);
-			Assert.Equal(Order.Fortify, roundTripDto.Units[0].Order);
+		private static Dictionary<string, Action> GetPlayerDtoRoundTripAssertionMap(PlayerDto expected, PlayerDto actual)
+			=> new()
+			{
+				[nameof(PlayerDto.TribeName)] = () => Assert.Equal(expected.TribeName, actual.TribeName),
+				[nameof(PlayerDto.TribeNamePlural)] = () => Assert.Equal(expected.TribeNamePlural, actual.TribeNamePlural),
+				[nameof(PlayerDto.Anarchy)] = () => Assert.Equal(expected.Anarchy, actual.Anarchy),
+				[nameof(PlayerDto.Gold)] = () => Assert.Equal(expected.Gold, actual.Gold),
+				[nameof(PlayerDto.CurrentResearch)] = () => Assert.Equal(expected.CurrentResearch, actual.CurrentResearch),
+				[nameof(PlayerDto.Government)] = () => Assert.Equal(expected.Government, actual.Government),
+				[nameof(PlayerDto.LuxuriesRate)] = () => Assert.Equal(expected.LuxuriesRate, actual.LuxuriesRate),
+				[nameof(PlayerDto.TaxesRate)] = () => Assert.Equal(expected.TaxesRate, actual.TaxesRate),
+				[nameof(PlayerDto.ScienceRate)] = () => Assert.Equal(expected.ScienceRate, actual.ScienceRate),
+				[nameof(PlayerDto.Science)] = () => Assert.Equal(expected.Science, actual.Science),
+				[nameof(PlayerDto.CityNamesSkipped)] = () => Assert.Equal(expected.CityNamesSkipped, actual.CityNamesSkipped),
+				[nameof(PlayerDto.Advances)] = () => Assert.Equal(expected.Advances, actual.Advances),
+				[nameof(PlayerDto.Embassies)] = () => Assert.Equal(expected.Embassies, actual.Embassies),
+				[nameof(PlayerDto.Explored)] = () => AssertBool2dMapEqual(expected.Explored, actual.Explored),
+				[nameof(PlayerDto.Visible)] = () => AssertBool2dMapEqual(expected.Visible, actual.Visible),
+				[nameof(PlayerDto.Civilization)] = () => Assert.Equal(expected.Civilization.LeaderClassName, actual.Civilization.LeaderClassName),
+				[nameof(PlayerDto.Palace)] = () => Assert.NotNull(actual.Palace),
+				[nameof(PlayerDto.Cities)] = () =>
+				{
+					Assert.Single(actual.Cities);
+					Assert.Equal(expected.Cities[0].Name, actual.Cities[0].Name);
+					Assert.Equal(expected.Cities[0].Size, actual.Cities[0].Size);
+					Assert.Equal(expected.Cities[0].Owner, actual.Cities[0].Owner);
+				},
+				[nameof(PlayerDto.Units)] = () =>
+				{
+					Assert.Single(actual.Units);
+					Assert.Equal(expected.Units[0].Location.X, actual.Units[0].Location.X);
+					Assert.Equal(expected.Units[0].Location.Y, actual.Units[0].Location.Y);
+					Assert.Equal(expected.Units[0].Veteran, actual.Units[0].Veteran);
+					Assert.Equal(expected.Units[0].MovesLeft, actual.Units[0].MovesLeft);
+					Assert.Equal(expected.Units[0].PartMoves, actual.Units[0].PartMoves);
+					Assert.Equal(expected.Units[0].Order, actual.Units[0].Order);
+				}
+			};
+
+		private static HashSet<string> GetExcludedPlayerDtoProperties() =>
+			[nameof(PlayerDto.Id)];
+
+		private static HashSet<string> GetWritablePropertyNames<T>() => typeof(T).GetProperties()
+			.Where(p => p.CanRead && p.CanWrite)
+			.Select(p => p.Name)
+			.ToHashSet();
+
+		private static void AssertBool2dMapEqual(bool[,] expected, bool[,] actual)
+		{
+			Assert.Equal(expected.GetLength(0), actual.GetLength(0));
+			Assert.Equal(expected.GetLength(1), actual.GetLength(1));
+
+			for (var x = 0; x < expected.GetLength(0); x++)
+			{
+				for (var y = 0; y < expected.GetLength(1); y++)
+				{
+					Assert.Equal(expected[x, y], actual[x, y]);
+				}
+			}
 		}
 
 		private class MockPlayerGameForTesting : IPlayerGame
@@ -291,7 +309,30 @@ namespace CivOne.Persistence.Model
 				return true;
 			}
 		}
-	}
+		private sealed class TestCityDefinitionResolver : ICityDefinitionResolver
+		{
+			public IBuilding[] ResolveBuildings(IEnumerable<Building> buildingTypes)
+				=> [.. (buildingTypes ?? []).Select(type => new MockedIBuilding { Type = type })];
+
+			public IWonder[] ResolveWonders(IEnumerable<Wonder> wonderTypes)
+				=> [.. (wonderTypes ?? []).Select(type => new MockedIWonder { Type = type })];
+		}
+
+		private sealed class TestAdvanceResolver : IAdvanceResolver
+		{
+			public IAdvance ResolveById(uint id)
+			{
+				return new MockedIAdvance { Id = (byte)id };
+			}
+		}
+
+		private sealed class TestGovernmentResolver : IGovernmentResolver
+		{
+			public IGovernment ResolveById(byte id)
+			{
+				return new MockedIGovernment { Id = id };
+			}
+		}	}
 }
 
 /*

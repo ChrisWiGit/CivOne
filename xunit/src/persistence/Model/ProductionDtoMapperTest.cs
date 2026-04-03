@@ -5,9 +5,9 @@ using Xunit;
 
 namespace CivOne.Persistence.Model
 {
-	public class ProductionDtoMapperTest : TestsBase2
+	public class ProductionDtoMapperTest
 	{
-		private readonly IReflect _reflect = new GameReflect();
+		private readonly IReflect _reflect = new MockedReflect();
 		private readonly ProductionDtoMapper _testee;
 
 		public ProductionDtoMapperTest()

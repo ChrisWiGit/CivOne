@@ -20,7 +20,7 @@ namespace CivOne.Persistence.Model
     using YamlDotNet.Serialization.NamingConventions;
     using CityId = System.UInt32;
 
-    public class CityDtoToDtoMapperTest : TestsBase2
+    public class CityDtoToDtoMapperTest
     {
         private readonly CityDtoMapper _testee;
         public List<ICity> _cities = [];
@@ -28,7 +28,8 @@ namespace CivOne.Persistence.Model
         public CityDtoToDtoMapperTest()
         {
             _testee = new CityDtoMapper(
-                new ProductionDtoMapper(new MockedReflect()));
+                new ProductionDtoMapper(new MockedReflect()),
+                new TestCityDefinitionResolver());
 
             var city2 = new MockedICity(2);
             _cities.Add(city2);
@@ -68,6 +69,15 @@ namespace CivOne.Persistence.Model
 
             string yaml = serializer.Serialize(dto);
             System.IO.File.WriteAllText(filename, yaml);
+        }
+
+        private sealed class TestCityDefinitionResolver : ICityDefinitionResolver
+        {
+            public IBuilding[] ResolveBuildings(IEnumerable<Building> buildingTypes)
+                => [.. (buildingTypes ?? []).Select(type => new MockedIBuilding { Type = type })];
+
+            public IWonder[] ResolveWonders(IEnumerable<Wonder> wonderTypes)
+                => [.. (wonderTypes ?? []).Select(type => new MockedIWonder { Type = type })];
         }
     }
 }
