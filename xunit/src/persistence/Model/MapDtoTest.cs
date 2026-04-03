@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Persistence.Yaml;
@@ -46,6 +48,17 @@ namespace CivOne.Persistence.Model
 					};
 				}
 			}
+		}
+
+		[Fact]
+		public void TestMapDtoMapper_ContractCheck()
+		{
+			var dtoProperties = GetWritablePropertyNames<MapDto>();
+			var expectedProperties = GetMapDtoRoundTripAssertionMap(
+				new MapDto { TerrainSeed = _terrainSeed, Tiles = new Map2d<TileDto>(_tileDtos) },
+				new MapDto { TerrainSeed = _terrainSeed, Tiles = new Map2d<TileDto>(_tileDtos) }).Keys.ToHashSet();
+
+			Assert.Equal([], dtoProperties.Except(expectedProperties).OrderBy(x => x));
 		}
 
 		[Fact]
@@ -305,6 +318,24 @@ namespace CivOne.Persistence.Model
 			Assert.Single(roundTripped);
 			Assert.Equal(new byte[] { 1, 2, 3 }, roundTripped[0]);
 		}
+
+		private static Dictionary<string, Action> GetMapDtoRoundTripAssertionMap(MapDto expected, MapDto actual)
+			=> new()
+			{
+				[nameof(MapDto.TerrainSeed)] = () => Assert.Equal(expected.TerrainSeed, actual.TerrainSeed),
+				[nameof(MapDto.Tiles)] = () =>
+				{
+					Assert.NotNull(expected.Tiles);
+					Assert.NotNull(actual.Tiles);
+					Assert.Equal(expected.Tiles.Width(), actual.Tiles.Width());
+					Assert.Equal(expected.Tiles.Height(), actual.Tiles.Height());
+				}
+			};
+
+		private static HashSet<string> GetWritablePropertyNames<T>() => typeof(T).GetProperties()
+			.Where(p => p.CanRead && p.CanWrite && !(p.GetMethod?.IsStatic ?? false))
+			.Select(p => p.Name)
+			.ToHashSet();
 
 
 		public class MockedIMapFactory : IMapFactory
