@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using CivOne.UnitTests;
 using Xunit;
@@ -9,10 +10,27 @@ namespace CivOne.Persistence.Model
 	{
 		private readonly IReflect _reflect = new MockedReflect();
 		private readonly ProductionDtoMapper _testee;
+		private readonly ProductionDto _originalDto;
 
 		public ProductionDtoMapperTest()
 		{
 			_testee = new ProductionDtoMapper(_reflect);
+			var production = _reflect.GetProduction().First(p => p.Price > 0);
+			_originalDto = new ProductionDto
+			{
+				Price = production.Price,
+				BuyPrice = (uint)production.BuyPrice,
+				ProductionId = production.ProductionId
+			};
+		}
+
+		[Fact]
+		public void TestProductionDtoMapper_ContractCheck()
+		{
+			var dtoProperties = GetWritablePropertyNames<ProductionDto>();
+			var expectedProperties = GetProductionDtoRoundTripAssertionMap(_originalDto, _originalDto).Keys.ToHashSet();
+
+			Assert.Equal([], dtoProperties.Except(expectedProperties).OrderBy(x => x));
 		}
 
 		[Fact]
@@ -48,15 +66,31 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void RoundTrip_ToDtoThenFromDto_PreservesProductionId()
+		public void TestProductionDtoMapper_RoundTrip()
 		{
-			foreach (IProduction production in _reflect.GetProduction())
-			{
-				ProductionDto dto = _testee.ToDto(production);
-				IProduction restored = _testee.FromDto(dto);
+			var restoredProduction = _testee.FromDto(_originalDto);
+			var roundTripDto = _testee.ToDto(restoredProduction);
 
-				Assert.Equal(production.ProductionId, restored.ProductionId);
+			Assert.NotNull(roundTripDto);
+
+			var assertions = GetProductionDtoRoundTripAssertionMap(_originalDto, roundTripDto);
+			foreach (var assertion in assertions.Values)
+			{
+				assertion();
 			}
 		}
+
+		private static Dictionary<string, Action> GetProductionDtoRoundTripAssertionMap(ProductionDto expected, ProductionDto actual)
+			=> new()
+			{
+				[nameof(ProductionDto.Price)] = () => Assert.Equal(expected.Price, actual.Price),
+				[nameof(ProductionDto.BuyPrice)] = () => Assert.Equal(expected.BuyPrice, actual.BuyPrice),
+				[nameof(ProductionDto.ProductionId)] = () => Assert.Equal(expected.ProductionId, actual.ProductionId)
+			};
+
+		private static HashSet<string> GetWritablePropertyNames<T>() => typeof(T).GetProperties()
+			.Where(p => p.CanRead && p.CanWrite)
+			.Select(p => p.Name)
+			.ToHashSet();
 	}
 }

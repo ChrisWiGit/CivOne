@@ -147,8 +147,28 @@ namespace CivOne.Persistence.Yaml
             return [..
                 normalized
                     .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(x => byte.Parse(x.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture))
+                    .Select(x => ParseLandValue(x.Trim()))
             ];
+        }
+
+        private static byte ParseLandValue(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new FormatException("Land value token cannot be empty.");
+            }
+
+            if (token.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+            {
+                return byte.Parse(token[2..], NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+            }
+
+            if (byte.TryParse(token, NumberStyles.Integer, CultureInfo.InvariantCulture, out var decimalValue))
+            {
+                return decimalValue;
+            }
+
+            return byte.Parse(token, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
         }
 
         private string[] ExtractLandValues(Map2d<TileDto> tiles)
@@ -162,7 +182,7 @@ namespace CivOne.Persistence.Yaml
                 var rowValues = new string[width];
                 for (int x = 0; x < width; x++)
                 {
-                    rowValues[x] = tiles[x, y].LandValue.ToString();
+                    rowValues[x] = tiles[x, y].LandValue.ToString("X2", CultureInfo.InvariantCulture);
                 }
 
                 landValues[y] = string.Join(',', rowValues);
@@ -175,7 +195,7 @@ namespace CivOne.Persistence.Yaml
     /// <summary>
     /// Intermediate class for YAML serialization of encoded map data.
     /// Each row is a string of Base64-encoded tile data (2 chars per tile).
-    /// LandValues is stored as comma-separated strings (one row per entry) to keep YAML compact.
+    /// LandValues is stored as comma-separated hexadecimal byte strings (one row per entry) to keep YAML compact.
     /// </summary>
 	/// <seealso cref="MapDto"/>
     internal class MapDtoYamlRepresentation
@@ -186,7 +206,7 @@ namespace CivOne.Persistence.Yaml
         [Doc("Encoded tile data. Each row contains Base64-encoded tiles (2 chars per tile). Use TileCodec to decode individual tiles. See YAML.md for encoding details.")]
         public string[] Tiles { get; set; }
         
-        [Doc("Land values for each tile row, encoded as comma-separated numbers to reduce YAML size on large maps. See INTERNALS.md for details on how this value is used.")]
+        [Doc("Land values for each tile row, encoded as comma-separated 2-digit hex bytes to reduce YAML size on large maps. See INTERNALS.md for details on how this value is used.")]
         public string[] LandValues { get; set; }
     }
 }

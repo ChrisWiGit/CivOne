@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Units;
@@ -12,16 +13,50 @@ namespace CivOne.Persistence.Model
 		public static Guid ExpectedHomeCityGuid { get; set; } = Guid.NewGuid();
 
 		public static byte ExpectedPlayerId { get; set; } = 123;
-		private UnitDtoMapper _testee;
+		private readonly UnitDtoMapper _testee;
+		private readonly UnitFactory _unitFactory;
+		private readonly UnitDto _originalDto;
+
 		public UnitDtoMapperTest()
 		{
-			_testee = new UnitDtoMapper(new UnitFactory());
+			_unitFactory = new UnitFactory();
+			_testee = new UnitDtoMapper(_unitFactory);
 
 			// Code how to get all Unit class names for DocAttribute. 
 			// UnitDto.AllUnitsClassNames = [.. typeof(IUnit).Assembly.GetTypes()
 			// 	.Where(t => typeof(IUnit).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
 			// 	.Select(t => t.Name)];
 			UnitDto.AllUnitsClassNames = ["MockedIUnit"];
+
+			_originalDto = new UnitDto
+			{
+				ClassName = "MockedIUnit",
+				Location = new MapLocation(10, 20),
+				Goto = new MapLocation(5, 8),
+				HomeCityGuid = null,
+				Busy = true,
+				Veteran = true,
+				Sentry = true,
+				FortifyActive = true,
+				Fortify = true,
+				FuelOrProgress = 7,
+				Fuel = 3,
+				WorkProgress = 2,
+				Order = Order.Fortify,
+				MovesSkip = 1,
+				MovesLeft = 2,
+				PartMoves = 1,
+				PlayerId = ExpectedPlayerId,
+			};
+		}
+
+		[Fact]
+		public void TestUnitDtoMapper_ContractCheck()
+		{
+			var dtoProperties = GetWritablePropertyNames<UnitDto>();
+			var expectedProperties = GetUnitDtoRoundTripAssertionMap(_originalDto, _originalDto).Keys.ToHashSet();
+
+			Assert.Equal([], dtoProperties.Except(expectedProperties).OrderBy(x => x));
 		}
 
 		[Fact]
@@ -40,6 +75,9 @@ namespace CivOne.Persistence.Model
 
 			var restored = _testee.FromDto(dto);
 			Assert.NotNull(restored);
+			Assert.Equal("MockedIUnit", _unitFactory.LastClassName);
+			Assert.Equal(ExpectedHomeCityGuid, _unitFactory.LastHomeCityGuid);
+			Assert.Equal(ExpectedPlayerId, _unitFactory.LastPlayerId);
 			Assert.Equal(ExpectedPlayerId, restored.Owner);
 			Assert.Equal(unit.Type, restored.Type);
 			Assert.Equal(unit.GetType().Name, dto.ClassName);
@@ -59,15 +97,60 @@ namespace CivOne.Persistence.Model
 			Assert.Equal(unit.PartMoves, restored.PartMoves);
 		}
 
+		[Fact]
+		public void TestUnitDtoMapper_RoundTrip()
+		{
+			var unit = _testee.FromDto(_originalDto);
+			var roundTripDto = _testee.ToDto(unit);
+
+			Assert.NotNull(roundTripDto);
+
+			var assertions = GetUnitDtoRoundTripAssertionMap(_originalDto, roundTripDto);
+			foreach (var assertion in assertions.Values)
+			{
+				assertion();
+			}
+		}
+
+		private static Dictionary<string, Action> GetUnitDtoRoundTripAssertionMap(UnitDto expected, UnitDto actual)
+			=> new()
+			{
+				[nameof(UnitDto.ClassName)] = () => Assert.Equal(expected.ClassName, actual.ClassName),
+				[nameof(UnitDto.Location)] = () => Assert.Equal(expected.Location, actual.Location),
+				[nameof(UnitDto.Goto)] = () => Assert.Equal(expected.Goto, actual.Goto),
+				[nameof(UnitDto.HomeCityGuid)] = () => Assert.Equal(expected.HomeCityGuid, actual.HomeCityGuid),
+				[nameof(UnitDto.Busy)] = () => Assert.Equal(expected.Busy, actual.Busy),
+				[nameof(UnitDto.Veteran)] = () => Assert.Equal(expected.Veteran, actual.Veteran),
+				[nameof(UnitDto.Sentry)] = () => Assert.Equal(expected.Sentry, actual.Sentry),
+				[nameof(UnitDto.FortifyActive)] = () => Assert.Equal(expected.FortifyActive, actual.FortifyActive),
+				[nameof(UnitDto.Fortify)] = () => Assert.Equal(expected.Fortify, actual.Fortify),
+				[nameof(UnitDto.FuelOrProgress)] = () => Assert.Equal(expected.FuelOrProgress, actual.FuelOrProgress),
+				[nameof(UnitDto.Fuel)] = () => Assert.Equal(expected.Fuel, actual.Fuel),
+				[nameof(UnitDto.WorkProgress)] = () => Assert.Equal(expected.WorkProgress, actual.WorkProgress),
+				[nameof(UnitDto.Order)] = () => Assert.Equal(expected.Order, actual.Order),
+				[nameof(UnitDto.MovesSkip)] = () => Assert.Equal(expected.MovesSkip, actual.MovesSkip),
+				[nameof(UnitDto.MovesLeft)] = () => Assert.Equal(expected.MovesLeft, actual.MovesLeft),
+				[nameof(UnitDto.PartMoves)] = () => Assert.Equal(expected.PartMoves, actual.PartMoves),
+				[nameof(UnitDto.PlayerId)] = () => Assert.Equal(expected.PlayerId, actual.PlayerId)
+			};
+
+		private static HashSet<string> GetWritablePropertyNames<T>() => typeof(T).GetProperties()
+			.Where(p => p.CanRead && p.CanWrite && !(p.GetMethod?.IsStatic ?? false))
+			.Select(p => p.Name)
+			.ToHashSet();
+
 
 		public class UnitFactory : IUnitFactory
 		{
+			public string LastClassName { get; private set; }
+			public byte LastPlayerId { get; private set; }
+			public Guid? LastHomeCityGuid { get; private set; }
+
 			public IUnitRestorable Create(string className, byte player, Guid? HomeCityGuid)
 			{
-				Assert.Equal("MockedIUnit", className);
-				Assert.NotNull(HomeCityGuid);
-				Assert.Equal(UnitDtoMapperTest.ExpectedHomeCityGuid, HomeCityGuid.Value);
-				Assert.Equal(UnitDtoMapperTest.ExpectedPlayerId, player);
+				LastClassName = className;
+				LastPlayerId = player;
+				LastHomeCityGuid = HomeCityGuid;
 				// * var result = new MockedIUnit
 				// * {
 				// * 	Owner = player //just for testing, do not do this in real code because index of player it game list may not be the same as player id in save file.

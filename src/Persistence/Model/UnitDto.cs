@@ -20,8 +20,8 @@ namespace CivOne.Persistence.Model
         public Guid? HomeCityGuid { get; set; }
 
         public bool Busy { get; set; }
-        public bool HasAction { get; set; }
-        public bool HasMovesLeft { get; set; }
+        // HasAction and HasMovesLeft are not stored in the DTO,
+        // they are calculated in the IUnit implementation based on the Order and MovesLeft properties, so they are not needed in the DTO.
         public bool Veteran { get; set; }
         public bool Sentry { get; set; }
         public bool FortifyActive { get; set; }

@@ -52,8 +52,6 @@ namespace CivOne.Persistence.Model
 				Goto = new MapLocation(domain.Goto),
 				HomeCityGuid = domain.Home?.Id,
 				Busy = domain.Busy,
-				HasAction = domain.HasAction,
-				HasMovesLeft = domain.HasMovesLeft,
 				Veteran = domain.Veteran,
 				Sentry = domain.Sentry,
 				FortifyActive = domain.FortifyActive,

@@ -1,6 +1,7 @@
 namespace CivOne.Persistence.Model
 {
 	using System;
+	using System.Collections.Generic;
 	using System.Linq;
 	using CivOne.Civilizations;
 	using CivOne.Persistence.Yaml;
@@ -30,6 +31,16 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
+		public void TestPalaceDtoMapper_ContractCheck()
+		{
+			var dto = _testee.ToDto(_palaceData);
+			var dtoProperties = GetWritablePropertyNames<PalaceDto>();
+			var expectedProperties = GetPalaceDtoRoundTripAssertionMap(dto, dto).Keys.ToHashSet();
+
+			Assert.Equal([], dtoProperties.Except(expectedProperties).OrderBy(x => x));
+		}
+
+		[Fact]
 		public void TestMapPalaceDataToDtoAndBack()
 		{
 			var dto = _testee.ToDto(_palaceData);
@@ -56,5 +67,47 @@ namespace CivOne.Persistence.Model
 				.WithStandard()
 				.ToFile("palaceDto.yaml");
 		}
+
+		[Fact]
+		public void TestPalaceDtoMapper_RoundTrip()
+		{
+			var expected = _testee.ToDto(_palaceData);
+			var roundTripDto = _testee.ToDto(_testee.FromDto(expected));
+
+			Assert.NotNull(roundTripDto);
+
+			var assertions = GetPalaceDtoRoundTripAssertionMap(expected, roundTripDto);
+			foreach (var assertion in assertions.Values)
+			{
+				assertion();
+			}
+		}
+
+		private static Dictionary<string, Action> GetPalaceDtoRoundTripAssertionMap(PalaceDto expected, PalaceDto actual)
+			=> new()
+			{
+				[nameof(PalaceDto.LeftTower)] = () => AssertPalaceSectionEqual(expected.LeftTower, actual.LeftTower),
+				[nameof(PalaceDto.LeftWing)] = () => AssertPalaceSectionEqual(expected.LeftWing, actual.LeftWing),
+				[nameof(PalaceDto.LeftAnnex)] = () => AssertPalaceSectionEqual(expected.LeftAnnex, actual.LeftAnnex),
+				[nameof(PalaceDto.Center)] = () => AssertPalaceSectionEqual(expected.Center, actual.Center),
+				[nameof(PalaceDto.RightAnnex)] = () => AssertPalaceSectionEqual(expected.RightAnnex, actual.RightAnnex),
+				[nameof(PalaceDto.RightWing)] = () => AssertPalaceSectionEqual(expected.RightWing, actual.RightWing),
+				[nameof(PalaceDto.RightTower)] = () => AssertPalaceSectionEqual(expected.RightTower, actual.RightTower),
+				[nameof(PalaceDto.GardenLeftLevel)] = () => Assert.Equal(expected.GardenLeftLevel, actual.GardenLeftLevel),
+				[nameof(PalaceDto.GardenCenterLevel)] = () => Assert.Equal(expected.GardenCenterLevel, actual.GardenCenterLevel),
+				[nameof(PalaceDto.GardenRightLevel)] = () => Assert.Equal(expected.GardenRightLevel, actual.GardenRightLevel)
+			};
+
+		private static void AssertPalaceSectionEqual(PalaceSectionDto expected, PalaceSectionDto actual)
+		{
+			Assert.NotNull(actual);
+			Assert.Equal(expected.Style, actual.Style);
+			Assert.Equal(expected.Level, actual.Level);
+		}
+
+		private static HashSet<string> GetWritablePropertyNames<T>() => typeof(T).GetProperties()
+			.Where(p => p.CanRead && p.CanWrite)
+			.Select(p => p.Name)
+			.ToHashSet();
 	}
 }

@@ -184,12 +184,12 @@ namespace CivOne.Persistence.Model
 				"- AxAhAxAhAx\n" +
 				"- ARABARABAR\n" +
 				"LandValues:\n" +
-				"- 0,10,20,30,40\n" +
-				"- 10,20,30,40,50\n" +
-				"- 20,30,40,50,60\n" +
-				"- 30,40,50,60,70\n" +
-				"- 40,50,60,70,80\n" +
-				"- 50,60,70,80,90\n",
+				"- 00,64,C8,2C,90\n" +
+				"- 64,C8,2C,90,F4\n" +
+				"- C8,2C,90,F4,58\n" +
+				"- 2C,90,F4,58,BC\n" +
+				"- 90,F4,58,BC,20\n" +
+				"- F4,58,BC,20,84\n",
 				yaml.Replace("\r\n", "\n")); 
 		}
 
@@ -202,8 +202,8 @@ namespace CivOne.Persistence.Model
 				"- ARIE\n" +
 				"- AiQD\n" +
 				"LandValues:\n" +
-				"- 1,3\n" +
-				"- 2,4\n";
+				"- 01,03\n" +
+				"- 02,04\n";
 
 			var actual = YamlReader.OfString(yaml)
 				.WithTypeConverter(new MapDtoTileDtoYamlConverter())
@@ -259,6 +259,44 @@ namespace CivOne.Persistence.Model
 			string yaml = YamlWriter.Of(testData)
 				.WithTypeConverter(new ByteArrayArrayFlowStyleYamlTypeConverter())
 				.AsString();
+
+			var roundTripped = YamlReader.OfString(yaml)
+				.WithTypeConverter(new ByteArrayArrayFlowStyleYamlTypeConverter())
+				.As<byte[][]>();
+
+			Assert.Single(roundTripped);
+			Assert.Equal(new byte[] { 1, 2, 3 }, roundTripped[0]);
+		}
+
+		[Fact]
+		public void TestByteArrayArrayFlowStyleYamlTypeConverterHexadecimalFormat()
+		{
+			byte[][] testData = [[0, 10, 255]];
+
+			string yaml = YamlWriter.Of(testData)
+				.WithTypeConverter(new ByteArrayArrayFlowStyleYamlTypeConverter(ByteArrayValueFormat.Hexadecimal))
+				.AsString();
+
+			Assert.Contains("- [00, 0A, FF]", yaml);
+
+			var roundTripped = YamlReader.OfString(yaml)
+				.WithTypeConverter(new ByteArrayArrayFlowStyleYamlTypeConverter())
+				.As<byte[][]>();
+
+			Assert.Single(roundTripped);
+			Assert.Equal(new byte[] { 0, 10, 255 }, roundTripped[0]);
+		}
+
+		[Fact]
+		public void TestByteArrayArrayFlowStyleYamlTypeConverterBinaryFormat()
+		{
+			byte[][] testData = [[1, 2, 3]];
+
+			string yaml = YamlWriter.Of(testData)
+				.WithTypeConverter(new ByteArrayArrayFlowStyleYamlTypeConverter(ByteArrayValueFormat.Binary))
+				.AsString();
+
+			Assert.Contains("- [00000001, 00000010, 00000011]", yaml);
 
 			var roundTripped = YamlReader.OfString(yaml)
 				.WithTypeConverter(new ByteArrayArrayFlowStyleYamlTypeConverter())
