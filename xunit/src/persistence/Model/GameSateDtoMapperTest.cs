@@ -37,8 +37,9 @@ namespace CivOne.Persistence.Model
 			];
 
 			_gameInstance = new MockGameInstanceForTesting([.. _players.Cast<IPlayer>()]);
+			var yamlReadValueSanitizer = new YamlReadValueSanitizer(new NoOpLogger());
 
-			var unitMapper = new UnitDtoMapper(new MockUnitFactoryForTesting());
+			var unitMapper = new UnitDtoMapper(new MockUnitFactoryForTesting(), yamlReadValueSanitizer);
 			var mockedMapFactory = new MapDtoTest.MockedIMapFactory();
 			var mockedTileMapper = new MapDtoTest.MockedITileDtoMapper(() => mockedMapFactory.CurrentMapTiles);
 			var mapMapper = new MapDtoMapper(mockedMapFactory, mockedTileMapper);
@@ -48,13 +49,14 @@ namespace CivOne.Persistence.Model
 				new FixedPlayerOwnerResolver(),
 				new MockPlayerFactoryForTesting([.. _players.Cast<IPlayerRestorable>()]),
 				new CivilizationDtoMapper(civsInGame),
-				new PalaceDtoMapper(),
-				new CityDtoMapper(new ProductionDtoMapper(new MockedReflect()), new TestCityDefinitionResolver()),
+				new PalaceDtoMapper(yamlReadValueSanitizer),
+				new CityDtoMapper(new ProductionDtoMapper(new MockedReflect()), new TestCityDefinitionResolver(), yamlReadValueSanitizer),
 				unitMapper,
 				new TestAdvanceResolver(),
-				new TestGovernmentResolver());
+				new TestGovernmentResolver(),
+				yamlReadValueSanitizer);
 
-			_testee = new GameStateDtoMapper(playerMapper, unitMapper, mapMapper);
+			_testee = new GameStateDtoMapper(playerMapper, unitMapper, mapMapper, yamlReadValueSanitizer);
 
 			PlayerDto.AllAdvances = ["0(Advance0)", "1(Advance1)", "2(Advance2)", "3(Advance3)"];
 			PlayerDto.AllAdvancesInfo = new Dictionary<AdvanceId, string>

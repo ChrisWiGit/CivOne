@@ -138,9 +138,11 @@ namespace CivOne.Persistence.Yaml
         public override string ToString() => AsString();
 
         /// <summary>
-		/// Base path for output files. 
-        /// This will output all files to folder 'CivOne/xunit'.
-		/// </summary>
-        public static string BasePath { get; set; } = "../../..";
+        /// Base path for output files.
+        /// Defaults to the current working directory of the running process
+        /// (typically the test binary output folder, e.g. <c>bin/Debug/net9.0/</c>),
+        /// which is already covered by <c>.gitignore</c> and cleaned by <c>dotnet clean</c>.
+        /// </summary>
+        public static string BasePath { get; set; } = ".";
     }
 }

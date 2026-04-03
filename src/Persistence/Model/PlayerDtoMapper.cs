@@ -28,7 +28,8 @@ namespace CivOne.Persistence.Model
 		CityDtoMapper _cityMapper,
 		UnitDtoMapper _unitMapper,
 		IAdvanceResolver _advanceResolver,
-		IGovernmentResolver _governmentResolver
+		IGovernmentResolver _governmentResolver,
+		IYamlReadValueSanitizer _yamlReadValueSanitizer
 		) : DtoMapper<PlayerDto, IPlayer>
 	{
 
@@ -54,10 +55,16 @@ namespace CivOne.Persistence.Model
 			player.TribeNamePlural = dto.TribeNamePlural;
 			player.Explored = dto.Explored;
 			player.Visible = dto.Visible;
-			player.Advances = [.. (dto.Advances ?? []).Select(x => (byte)x)];
-			player.Embassies = [.. (dto.Embassies ?? []).Select(x => (byte)x)];
+			player.Advances = [..
+				(dto.Advances ?? [])
+					.Select(x => _yamlReadValueSanitizer.ClampToByte(x, nameof(PlayerDtoMapper), nameof(PlayerDto.Advances)))
+			];
+			player.Embassies = [..
+				(dto.Embassies ?? [])
+					.Select(x => _yamlReadValueSanitizer.ClampToByte(x, nameof(PlayerDtoMapper), nameof(PlayerDto.Embassies)))
+			];
 			player.Anarchy = dto.Anarchy;
-			player.Gold = (short)Math.Clamp(dto.Gold, short.MinValue, short.MaxValue);
+			player.Gold = _yamlReadValueSanitizer.ClampToInt16(dto.Gold, nameof(PlayerDtoMapper), nameof(PlayerDto.Gold));
 			player.CurrentResearch = _advanceResolver.ResolveById(dto.CurrentResearch);
 			player.CityNamesSkipped = dto.CityNamesSkipped;
 			player.Government = _governmentResolver.ResolveById(dto.Government);
@@ -66,7 +73,7 @@ namespace CivOne.Persistence.Model
 			player.TaxesRate = dto.TaxesRate;
 			player.LuxuriesRate = dto.LuxuriesRate;
 			player.ScienceRate = dto.ScienceRate;
-			player.Science = (short)Math.Clamp(dto.Science, short.MinValue, short.MaxValue);
+			player.Science = _yamlReadValueSanitizer.ClampToInt16(dto.Science, nameof(PlayerDtoMapper), nameof(PlayerDto.Science));
 
 			if (dto.Palace != null)
 			{

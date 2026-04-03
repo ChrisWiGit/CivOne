@@ -14,15 +14,20 @@ namespace CivOne.Persistence.Model
 	}
 
 
-	public class UnitDtoMapper(IUnitFactory _unitFactory) : DtoMapper<UnitDto, IUnit>
+	public class UnitDtoMapper(IUnitFactory _unitFactory, IYamlReadValueSanitizer yamlReadValueSanitizer) : DtoMapper<UnitDto, IUnit>
 	{
 		public IUnit FromDto(UnitDto dto)
 		{
 			var unit = _unitFactory.Create(dto.ClassName, dto.PlayerId, dto.HomeCityGuid);
 			unit.Owner = dto.PlayerId;
-			unit.X = Math.Abs((int)dto.Location.X);
-			unit.Y = Math.Abs((int)dto.Location.Y);
-			unit.Goto = new Point(Math.Abs((int)dto.Goto.X), Math.Abs((int)dto.Goto.Y));
+			var locationX = yamlReadValueSanitizer.ClampToInt32(dto.Location.X, nameof(UnitDtoMapper), nameof(UnitDto.Location));
+			var locationY = yamlReadValueSanitizer.ClampToInt32(dto.Location.Y, nameof(UnitDtoMapper), nameof(UnitDto.Location));
+			var gotoX = yamlReadValueSanitizer.ClampToInt32(dto.Goto.X, nameof(UnitDtoMapper), nameof(UnitDto.Goto));
+			var gotoY = yamlReadValueSanitizer.ClampToInt32(dto.Goto.Y, nameof(UnitDtoMapper), nameof(UnitDto.Goto));
+
+			unit.X = Math.Abs(locationX);
+			unit.Y = Math.Abs(locationY);
+			unit.Goto = new Point(Math.Abs(gotoX), Math.Abs(gotoY));
 			unit.Busy = dto.Busy;
 			unit.Veteran = dto.Veteran;
 			unit.Sentry = dto.Sentry;

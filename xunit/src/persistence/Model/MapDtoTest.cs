@@ -44,7 +44,7 @@ namespace CivOne.Persistence.Model
 						Fortress = false,
 						Mine = false,
 						Hut = false,
-						LandValue = (byte)((x + y) * 10)
+						LandValue = (byte)Math.Clamp((x + y) * 10, 0, 255)
 					};
 				}
 			}
@@ -187,6 +187,7 @@ namespace CivOne.Persistence.Model
 
 			// Verify that tiles are encoded as Base64 strings (2 chars per tile)
 			// For a 5-wide map, each row should have at least 10 characters of Base64-encoded data
+			// LandValues are calculated as (x + y) * 10 in setup
 			Assert.Equal(
 				"TerrainSeed: 99999\n" +
 				"Tiles:\n" +
@@ -197,12 +198,12 @@ namespace CivOne.Persistence.Model
 				"- AxAhAxAhAx\n" +
 				"- ARABARABAR\n" +
 				"LandValues:\n" +
-				"- 00,64,C8,2C,90\n" +
-				"- 64,C8,2C,90,F4\n" +
-				"- C8,2C,90,F4,58\n" +
-				"- 2C,90,F4,58,BC\n" +
-				"- 90,F4,58,BC,20\n" +
-				"- F4,58,BC,20,84\n",
+				"- 00,0A,14,1E,28\n" +
+				"- 0A,14,1E,28,32\n" +
+				"- 14,1E,28,32,3C\n" +
+				"- 1E,28,32,3C,46\n" +
+				"- 28,32,3C,46,50\n" +
+				"- 32,3C,46,50,5A\n",
 				yaml.Replace("\r\n", "\n")); 
 		}
 

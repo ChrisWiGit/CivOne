@@ -29,7 +29,8 @@ namespace CivOne.Persistence.Model
         {
             _testee = new CityDtoMapper(
                 new ProductionDtoMapper(new MockedReflect()),
-                new TestCityDefinitionResolver());
+				new TestCityDefinitionResolver(),
+				new YamlReadValueSanitizer(new NoOpLogger()));
 
             var city2 = new MockedICity(2);
             _cities.Add(city2);

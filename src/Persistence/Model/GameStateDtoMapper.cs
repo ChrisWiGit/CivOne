@@ -10,7 +10,8 @@ namespace CivOne.Persistence.Model
     public class GameStateDtoMapper(
         PlayerDtoMapper playerMapper,
         UnitDtoMapper unitMapper,
-        DtoMapper<MapDto, IMapTiles> mapMapper
+        DtoMapper<MapDto, IMapTiles> mapMapper,
+        IYamlReadValueSanitizer yamlReadValueSanitizer
     ) : DtoMapper<GameStateDto, GameState>
     {
         public GameState FromDto(GameStateDto dto)
@@ -24,8 +25,11 @@ namespace CivOne.Persistence.Model
             var units = MapUnits(dto);
             var cities = MapCities(players);
             var map = MapMap(dto.Map);
+            var randomSeed = yamlReadValueSanitizer.ClampToInt32(dto.RandomSeed, nameof(GameStateDtoMapper), nameof(GameStateDto.RandomSeed));
+            var difficulty = yamlReadValueSanitizer.ClampToInt32((int)dto.Difficulty, nameof(GameStateDtoMapper), nameof(GameStateDto.Difficulty));
+            var anthologyTurn = (ushort)yamlReadValueSanitizer.ClampToInt32(dto.AnthologyTurn, nameof(GameStateDtoMapper), nameof(GameStateDto.AnthologyTurn), min: 0, max: ushort.MaxValue);
 
-            return BuildGameState(dto, players, units, cities, map);
+            return BuildGameState(dto, players, units, cities, map, randomSeed, difficulty, anthologyTurn);
         }
 
         private IPlayer[] MapPlayers(GameStateDto dto)
@@ -54,7 +58,7 @@ namespace CivOne.Persistence.Model
             Debug.Assert(dtoMap != null, "MapDto should not be null");
             Debug.Assert(dtoMap.Tiles != null, "MapDto.Tiles should not be null");
 
-            var terrainSeed = (int)Math.Clamp(dtoMap.TerrainSeed, 0, int.MaxValue);
+            var terrainSeed = yamlReadValueSanitizer.ClampToInt32(dtoMap.TerrainSeed, nameof(GameStateDtoMapper), nameof(MapDto.TerrainSeed), min: 0, max: int.MaxValue);
 
             var mappedMap = mapMapper.FromDto(dtoMap);
             var mapWidth = mappedMap.Width;
@@ -69,19 +73,22 @@ namespace CivOne.Persistence.Model
             IPlayer[] players,
             List<IUnit> units,
             List<City> cities,
-            (int width, int height, int terrainSeed, ITile[,] mapTiles) map)
+			(int width, int height, int terrainSeed, ITile[,] mapTiles) map,
+			int randomSeed,
+			int difficulty,
+            ushort anthologyTurn)
         {
             return new GameState
             {
                 GameTurn = dto.GameTurn,
                 HumanPlayer = players[dto.HumanPlayer],
-                RandomSeed = (int)Math.Clamp(dto.RandomSeed, 0, int.MaxValue),
-                Difficulty = (int)Math.Clamp((int)dto.Difficulty, 0, int.MaxValue),
+                RandomSeed = randomSeed,
+                Difficulty = difficulty,
                 Players = players,
                 Cities = cities,
                 Units = units,
                 GameOptions = dto.GameOptions ?? [],
-                AnthologyTurn = (ushort)Math.Clamp(dto.AnthologyTurn, 0, ushort.MaxValue),
+                AnthologyTurn = anthologyTurn,
                 TerrainSeed = map.terrainSeed,
                 MapWidth = map.width,
                 MapHeight = map.height,

@@ -11,22 +11,24 @@ namespace CivOne.Persistence.Model
     
     public class CityDtoMapper(
         ProductionDtoMapper productionMapper,
-		ICityDefinitionResolver cityDefinitionResolver) : DtoMapper<CityDto, ICityMapper>
+		ICityDefinitionResolver cityDefinitionResolver,
+		IYamlReadValueSanitizer yamlReadValueSanitizer) : DtoMapper<CityDto, ICityMapper>
     {
         public ICityMapper FromDto(CityDto dto)
         {
             ArgumentNullException.ThrowIfNull(dto);
 
             var location = dto.Location ?? new MapLocation();
-            var centerTile = new Grassland((int)location.X, (int)location.Y);
-
+            var locationX = yamlReadValueSanitizer.ClampToInt32(location.X, nameof(CityDtoMapper), nameof(CityDto.Location));
+            var locationY = yamlReadValueSanitizer.ClampToInt32(location.Y, nameof(CityDtoMapper), nameof(CityDto.Location));
+            var centerTile = new Grassland(locationX, locationY);
             var restored = new RestorableCity
             {
                 Id = dto.Id,
                 Owner = dto.Owner,
                 Name = dto.Name ?? string.Empty,
-                Size = (byte)Math.Clamp((int)dto.Size, byte.MinValue, byte.MaxValue),
-                Location = new Point((int)location.X, (int)location.Y),
+                Size = yamlReadValueSanitizer.ClampToByte(dto.Size, nameof(CityDtoMapper), nameof(CityDto.Size)),
+                Location = new Point(locationX, locationY),
                 Tile = centerTile,
                 CurrentProduction = dto.CurrentProduction == null ? null : productionMapper.FromDto(dto.CurrentProduction),
                 Specialists = [.. (dto.Specialists ?? []).ToArray()],

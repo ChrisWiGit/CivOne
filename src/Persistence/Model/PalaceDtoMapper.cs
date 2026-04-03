@@ -3,7 +3,7 @@ using CivOne.Enums;
 
 namespace CivOne.Persistence.Model
 {
-	public class PalaceDtoMapper : DtoMapper<PalaceDto, PalaceData>
+	public class PalaceDtoMapper(IYamlReadValueSanitizer yamlReadValueSanitizer) : DtoMapper<PalaceDto, PalaceData>
 	{
 		private static readonly Func<PalaceDto, PalaceSectionDto>[] _sectionGetters =
 		[
@@ -34,11 +34,15 @@ namespace CivOne.Persistence.Model
 			{
 				var section = _sectionGetters[i](dto);
 				if (section != null)
-					palace.SetPalace(i, (byte)section.Style, section.Level);
+				{
+					var style = yamlReadValueSanitizer.ClampToByte((int)section.Style, nameof(PalaceDtoMapper), nameof(PalaceSectionDto.Style), min: 0, max: 3);
+					var level = yamlReadValueSanitizer.ClampToByte(section.Level, nameof(PalaceDtoMapper), nameof(PalaceSectionDto.Level), min: 0, max: 4);
+					palace.SetPalace(i, style, level);
+				}
 			}
-			palace.SetGarden(0, dto.GardenLeftLevel);
-			palace.SetGarden(1, dto.GardenCenterLevel);
-			palace.SetGarden(2, dto.GardenRightLevel);
+			palace.SetGarden(0, yamlReadValueSanitizer.ClampToByte(dto.GardenLeftLevel, nameof(PalaceDtoMapper), nameof(PalaceDto.GardenLeftLevel), min: 0, max: 3));
+			palace.SetGarden(1, yamlReadValueSanitizer.ClampToByte(dto.GardenCenterLevel, nameof(PalaceDtoMapper), nameof(PalaceDto.GardenCenterLevel), min: 0, max: 3));
+			palace.SetGarden(2, yamlReadValueSanitizer.ClampToByte(dto.GardenRightLevel, nameof(PalaceDtoMapper), nameof(PalaceDto.GardenRightLevel), min: 0, max: 3));
 			return palace;
 		}
 

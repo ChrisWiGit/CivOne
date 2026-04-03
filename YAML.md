@@ -136,3 +136,46 @@ The tile encoding/decoding is implemented in [src/Persistence/Model/TileCodec.cs
 - **`Decode(string row, int offset)`**: Decodes 2 characters from a row string starting at the given offset
 
 Tests for the TileCodec can be found in the unit test project at [xunit/src/](xunit/src/) in the persistence-related test files.
+
+---
+
+## YAML Read: Range Handling and Clamp Logging
+
+When YAML contains numeric values outside domain limits, mapping now uses a dedicated DI service instead of silent casts.
+
+### Service
+
+- Interface: `IYamlReadValueSanitizer`
+- Implementation: `YamlReadValueSanitizer`
+- Source: [src/Persistence/Model/IYamlReadValueSanitizer.cs](src/Persistence/Model/IYamlReadValueSanitizer.cs)
+
+The service provides typed clamp methods such as:
+
+- `ClampToByte(...)`
+- `ClampToInt16(...)`
+- `ClampToInt32(...)`
+
+### Logging Behavior
+
+If an input value is outside the allowed range:
+
+- The value is clamped to the nearest valid boundary.
+- A log entry is emitted through injected `ILogger`.
+- The log includes mapper name, field name, original value, valid range, clamped value, and reason (`underflow` or `overflow`).
+
+### Current Usage
+
+The sanitizer is used in YAML read paths of these mappers:
+
+- [src/Persistence/Model/PlayerDtoMapper.cs](src/Persistence/Model/PlayerDtoMapper.cs)
+- [src/Persistence/Model/CityDtoMapper.cs](src/Persistence/Model/CityDtoMapper.cs)
+- [src/Persistence/Model/UnitDtoMapper.cs](src/Persistence/Model/UnitDtoMapper.cs)
+- [src/Persistence/Model/PalaceDtoMapper.cs](src/Persistence/Model/PalaceDtoMapper.cs)
+- [src/Persistence/Model/GameStateDtoMapper.cs](src/Persistence/Model/GameStateDtoMapper.cs)
+
+### Tests
+
+Behavior is covered by:
+
+- [xunit/src/persistence/Model/YamlReadValueSanitizerTest.cs](xunit/src/persistence/Model/YamlReadValueSanitizerTest.cs)
+

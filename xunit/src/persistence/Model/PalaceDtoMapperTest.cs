@@ -16,7 +16,7 @@ namespace CivOne.Persistence.Model
 
 		public PalaceDtoMapperTest()
 		{
-			_testee = new PalaceDtoMapper();
+			_testee = new PalaceDtoMapper(new YamlReadValueSanitizer(new NoOpLogger()));
 			_palaceData = new PalaceData();
 			_palaceData.SetGarden(0, 0);
 			_palaceData.SetGarden(1, 1);

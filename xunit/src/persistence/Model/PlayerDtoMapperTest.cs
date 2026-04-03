@@ -123,17 +123,19 @@ namespace CivOne.Persistence.Model
 
 			// Setup game instance mock
 			var gameInstance = new MockPlayerGameForTesting(_player, [_unit]);
+			var yamlReadValueSanitizer = new YamlReadValueSanitizer(new NoOpLogger());
 			
 			_testee = new PlayerDtoMapper(
 				gameInstance,
 				new FixedPlayerOwnerResolver(0),
 				new MockPlayerFactoryForTesting(_player),
 				new CivilizationDtoMapper(civsInGame),
-				new PalaceDtoMapper(),
-				new CityDtoMapper(new ProductionDtoMapper(new MockedReflect()), new TestCityDefinitionResolver()),
-				new UnitDtoMapper(new MockUnitFactoryForTesting()),
+				new PalaceDtoMapper(yamlReadValueSanitizer),
+				new CityDtoMapper(new ProductionDtoMapper(new MockedReflect()), new TestCityDefinitionResolver(), yamlReadValueSanitizer),
+				new UnitDtoMapper(new MockUnitFactoryForTesting(), yamlReadValueSanitizer),
 				new TestAdvanceResolver(),
-				new TestGovernmentResolver());
+				new TestGovernmentResolver(),
+				yamlReadValueSanitizer);
 			
 			PlayerDto.AllAdvances = ["0(Advance0)", "1(Advance1)", "2(Advance2)", "3(Advance3)"];
 			PlayerDto.AllAdvancesInfo = new Dictionary<AdvanceId, string>
