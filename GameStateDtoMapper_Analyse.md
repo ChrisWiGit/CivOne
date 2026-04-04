@@ -123,23 +123,24 @@ Noch offen / jetzt umzusetzen:
    - YamlSaveGameStateWriter: lokalen toDto-Stub entfernen/ersetzen.
    - Stattdessen GameStateDtoMapper + abhängige Mapper verwenden, damit der produktive Pfad identisch zum getesteten Mapping ist.
    - Ergebnis: Players/Cities/Units/Map/CurrentPlayer/Seeds werden vollständig serialisiert.
-
+ DONE! 
 3) Snapshot-Erzeugung vervollständigen
    - GameStateHandler.Create(...): Units = game.Units setzen (falls noch nicht geschehen).
    - Seed-Zuordnung prüfen/korrigieren:
      - GameRandomSeed darf nicht blind TerrainMasterWord kopieren.
      - MapSeed soll aus dem Map-Kontext kommen.
    - Falls Legacy-Source nur einen Seed liefert: klar dokumentierter Fallback (explizit, nachvollziehbar).
-
+ DONE! 
 4) Tests ergänzen/aktualisieren
    - GameSateDtoMapperTest auf neue Seed-Namen prüfen/anpassen.
    - Zusätzlicher Integrationstest für den produktiven YAML-Writer:
      - GameStateHandler -> YamlSaveGameStateWriter -> YAML
      - Verifizieren: Player-Units vorhanden, CurrentPlayer korrekt, beide Seed-Semantiken konsistent.
-
+ DONE! 
 Akzeptanzkriterien:
 - Kein Datenverlust im produktiven YAML-Save-Pfad.
 - CurrentPlayer und HumanPlayer werden korrekt und nachvollziehbar persistiert.
 - Seed-Semantik ist eindeutig (GameRandomSeed vs MapSeed), Legacy-Aliase funktionieren.
 - Relevante Unit- und Integrationstests sind grün.
 ```
+ DONE! 
