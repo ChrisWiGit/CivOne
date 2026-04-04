@@ -6,16 +6,34 @@ namespace CivOne.Persistence.Model
 {
     public class GameStateDto
     {
+        private uint _gameRandomSeed;
+
         [Doc("The difficulty level of the game.",
             nameof(DifficultyAll))]
         public DifficultyLevel Difficulty { get; set; }
 
         public uint GameTurn { get; set; }
+
+        [Doc("The id of the human-controlled player. This usually matches CurrentPlayer at the start/end of turns, but can differ while AI turns are processed.")]
         public ushort HumanPlayer { get; set; }
+
+        [Doc("The id of the player whose turn is currently active. This is typically equal to HumanPlayer, but can differ when loading/saving in the middle of AI turns.")]
+        public ushort CurrentPlayer { get; set; }
 
         public List<PlayerDto> Players { get; set; }
 
-        public uint RandomSeed { get; set; }
+        [Doc("Seed for the game-wide random generator used by gameplay logic.")]
+        public uint GameRandomSeed
+        {
+            get => _gameRandomSeed;
+            set => _gameRandomSeed = value;
+        }
+
+        public uint RandomSeed
+        {
+            get => _gameRandomSeed;
+            set => _gameRandomSeed = value;
+        }
 
         public uint AnthologyTurn { get; set; }
 

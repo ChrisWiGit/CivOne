@@ -69,8 +69,16 @@ namespace CivOne.Persistence
     public class GameState
 	{
 		public uint GameTurn { get; set; }
+        /// <summary>
+        /// The player controlled by the human user.
+        /// In most situations this is equal to <see cref="CurrentPlayer"/>,
+        /// but it can differ when a snapshot is taken during AI turns.
+        /// </summary>
 		public IPlayer HumanPlayer { get; set; }
 
+        /// <summary>
+        /// The game-level random seed (global RNG state source for gameplay logic).
+        /// </summary>
         public int RandomSeed { get; set; }
 
 		public int Difficulty { get; set; }
@@ -89,6 +97,10 @@ namespace CivOne.Persistence
         // public List<string> CityNames { get; set; }
 		
         // PlayerGold, ResearchProgress, TaxRate, ScienceRate, StartingPositionX, Government
+        /// <summary>
+        /// The player whose turn is currently active.
+        /// Usually equal to <see cref="HumanPlayer"/>, but can differ during AI turns.
+        /// </summary>
         public IPlayer CurrentPlayer { get; set; }
 
         // ActiveCivilizations, AdvanceOrigin,
@@ -101,6 +113,9 @@ namespace CivOne.Persistence
         public List<City> Cities { get; set; }
 		public ushort AnthologyTurn { get; set; }
 
+        /// <summary>
+        /// The map generation seed used by map/terrain algorithms.
+        /// </summary>
 		public int TerrainSeed { get; set; }
 
         public ITile[,] MapTiles { get; set; }

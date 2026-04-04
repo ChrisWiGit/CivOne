@@ -10,8 +10,21 @@ namespace CivOne.Persistence.Model
     /// <seealso cref="MapDtoYamlRepresentation"/>
     public class MapDto
     {
-        [Doc("The seed used for procedural terrain generation. This ensures that the same map can be recreated if needed.", 0, uint.MaxValue)]
-        public uint TerrainSeed { get; set; }
+        private uint _mapSeed;
+
+        [Doc("The seed used for procedural map generation. This ensures that the same map can be recreated if needed.", 0, uint.MaxValue)]
+        public uint MapSeed
+        {
+            get => _mapSeed;
+            set => _mapSeed = value;
+        }
+
+        [Doc("Legacy alias for MapSeed. Kept for backward-compatible YAML field names. Always maps to the same map seed value as MapSeed.", 0, uint.MaxValue)]
+        public uint TerrainSeed
+        {
+            get => _mapSeed;
+            set => _mapSeed = value;
+        }
         
         [Doc("2D array of TileDto representing the terrain and features of each tile on the map. The dimensions should match the width and height of the map.")]
         public Map2d<TileDto> Tiles { get; set; }

@@ -198,14 +198,15 @@ namespace CivOne.Persistence.Model
 			{
 				GameTurn = 50,
 				HumanPlayer = 0,
-				RandomSeed = 99999,
+				CurrentPlayer = 0,
+				GameRandomSeed = 99999,
 				Difficulty = DifficultyLevel.Chieftain,
 				Players = [playerDto0, playerDto1],
 				AnthologyTurn = 0,
 				GameOptions = [GameOptionEnum.Sound],
 				Map = new MapDto
 				{
-					TerrainSeed = 4242,
+					MapSeed = 4242,
 					Tiles = new Map2d<TileDto>(new TileDto[,]
 					{
 						{
@@ -289,6 +290,7 @@ namespace CivOne.Persistence.Model
 				[nameof(GameStateDto.Difficulty)] = () => Assert.Equal(expected.Difficulty, actual.Difficulty),
 				[nameof(GameStateDto.GameTurn)] = () => Assert.Equal(expected.GameTurn, actual.GameTurn),
 				[nameof(GameStateDto.HumanPlayer)] = () => Assert.Equal(expected.HumanPlayer, actual.HumanPlayer),
+				[nameof(GameStateDto.CurrentPlayer)] = () => Assert.Equal(expected.CurrentPlayer, actual.CurrentPlayer),
 				[nameof(GameStateDto.Players)] = () =>
 				{
 					Assert.Equal(expected.Players.Count, actual.Players.Count);
@@ -304,12 +306,14 @@ namespace CivOne.Persistence.Model
 						Assert.Equal(expectedPlayer.Units?.Count ?? 0, actualPlayer.Units?.Count ?? 0);
 					}
 				},
+				[nameof(GameStateDto.GameRandomSeed)] = () => Assert.Equal(expected.GameRandomSeed, actual.GameRandomSeed),
 				[nameof(GameStateDto.RandomSeed)] = () => Assert.Equal(expected.RandomSeed, actual.RandomSeed),
 				[nameof(GameStateDto.AnthologyTurn)] = () => Assert.Equal(expected.AnthologyTurn, actual.AnthologyTurn),
 				[nameof(GameStateDto.Map)] = () =>
 				{
 					Assert.NotNull(actual.Map);
 					Assert.NotNull(actual.Map.Tiles);
+					Assert.Equal(expected.Map.MapSeed, actual.Map.MapSeed);
 					Assert.Equal(expected.Map.TerrainSeed, actual.Map.TerrainSeed);
 					Assert.Equal(expected.Map.Tiles.Width(), actual.Map.Tiles.Width());
 					Assert.Equal(expected.Map.Tiles.Height(), actual.Map.Tiles.Height());

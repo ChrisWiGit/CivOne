@@ -20,12 +20,13 @@ namespace CivOne.Persistence.Model
 
             var players = MapPlayers(dto);
             ValidateHumanPlayerIndex(dto, players);
+            ValidateCurrentPlayerIndex(dto, players);
             ResolveTradingCities(dto, players);
 
             var units = MapUnits(dto);
             var cities = MapCities(players);
             var map = MapMap(dto.Map);
-            var randomSeed = yamlReadValueSanitizer.ClampToInt32(dto.RandomSeed, nameof(GameStateDtoMapper), nameof(GameStateDto.RandomSeed));
+            var randomSeed = yamlReadValueSanitizer.ClampToInt32(dto.GameRandomSeed, nameof(GameStateDtoMapper), nameof(GameStateDto.GameRandomSeed));
             var difficulty = yamlReadValueSanitizer.ClampToInt32((int)dto.Difficulty, nameof(GameStateDtoMapper), nameof(GameStateDto.Difficulty));
             var anthologyTurn = (ushort)yamlReadValueSanitizer.ClampToInt32(dto.AnthologyTurn, nameof(GameStateDtoMapper), nameof(GameStateDto.AnthologyTurn), min: 0, max: ushort.MaxValue);
 
@@ -40,6 +41,14 @@ namespace CivOne.Persistence.Model
             if (dto.HumanPlayer >= players.Length)
             {
                 throw new InvalidOperationException($"Human player index {dto.HumanPlayer} is out of range");
+            }
+        }
+
+        private void ValidateCurrentPlayerIndex(GameStateDto dto, IPlayer[] players)
+        {
+            if (dto.CurrentPlayer >= players.Length)
+            {
+                throw new InvalidOperationException($"Current player index {dto.CurrentPlayer} is out of range");
             }
         }
 
@@ -58,7 +67,7 @@ namespace CivOne.Persistence.Model
             Debug.Assert(dtoMap != null, "MapDto should not be null");
             Debug.Assert(dtoMap.Tiles != null, "MapDto.Tiles should not be null");
 
-            var terrainSeed = yamlReadValueSanitizer.ClampToInt32(dtoMap.TerrainSeed, nameof(GameStateDtoMapper), nameof(MapDto.TerrainSeed), min: 0, max: int.MaxValue);
+            var terrainSeed = yamlReadValueSanitizer.ClampToInt32(dtoMap.MapSeed, nameof(GameStateDtoMapper), nameof(MapDto.MapSeed), min: 0, max: int.MaxValue);
 
             var mappedMap = mapMapper.FromDto(dtoMap);
             var mapWidth = mappedMap.Width;
@@ -82,6 +91,7 @@ namespace CivOne.Persistence.Model
             {
                 GameTurn = dto.GameTurn,
                 HumanPlayer = players[dto.HumanPlayer],
+                CurrentPlayer = players[dto.CurrentPlayer],
                 RandomSeed = randomSeed,
                 Difficulty = difficulty,
                 Players = players,
@@ -129,16 +139,17 @@ namespace CivOne.Persistence.Model
             }
         }
 
-        ushort FindHumanPlayerIndex(IPlayer[] players, IPlayer humanPlayer)
+        private static ushort FindPlayerIndex(IPlayer[] players, IPlayer player, string playerKind)
         {
             for (ushort i = 0; i < players.Length; i++)
             {
-                if (players[i] == humanPlayer)
+                if (players[i] == player)
                 {
                     return i;
                 }
             }
-            throw new Exception("Human player not found in players array");
+
+            throw new Exception($"{playerKind} player not found in players array");
         }
 
         public GameStateDto ToDto(GameState gameState)
@@ -151,9 +162,10 @@ namespace CivOne.Persistence.Model
                 Difficulty = (DifficultyLevel)gameState.Difficulty,
                 GameTurn = gameState.GameTurn,
                 Players = [.. gameState.Players.Select(playerMapper.ToDto)],
-                HumanPlayer = FindHumanPlayerIndex(gameState.Players, gameState.HumanPlayer),
+                HumanPlayer = FindPlayerIndex(gameState.Players, gameState.HumanPlayer, "Human"),
+                CurrentPlayer = FindPlayerIndex(gameState.Players, gameState.CurrentPlayer ?? gameState.HumanPlayer, "Current"),
 
-                RandomSeed = (uint)gameState.RandomSeed,
+                GameRandomSeed = (uint)gameState.RandomSeed,
                 AnthologyTurn = gameState.AnthologyTurn,
                 Map = mapDto,
                 GameOptions = gameState.GameOptions ?? []
@@ -197,13 +209,13 @@ namespace CivOne.Persistence.Model
             if (gameState.MapTiles != null && mapMapper != null)
             {
                 var mappedDto = mapMapper.ToDto(new MapTilesArrayAdapter(gameState.MapTiles));
-                mappedDto.TerrainSeed = (uint)Math.Clamp(gameState.TerrainSeed, 0, int.MaxValue);
+                mappedDto.MapSeed = (uint)Math.Clamp(gameState.TerrainSeed, 0, int.MaxValue);
                 return mappedDto;
             }
 
             return new MapDto
             {
-                TerrainSeed = (uint)Math.Clamp(gameState.TerrainSeed, 0, int.MaxValue),
+                MapSeed = (uint)Math.Clamp(gameState.TerrainSeed, 0, int.MaxValue),
                 Tiles = new Map2d<TileDto>(width, height)
             };
         }

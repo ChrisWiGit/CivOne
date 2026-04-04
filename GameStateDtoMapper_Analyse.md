@@ -93,3 +93,52 @@ Akzeptanzkriterien:
 - Roundtrip verliert keine Units.
 - Tests sind grün.
 ```
+
+---
+
+## Prompt für die restlichen Aufgaben (aktueller Stand)
+
+```text
+Bitte setze die verbleibenden Aufgaben im YAML-Persistenzumbau um.
+
+Wichtiger Kontext (bereits erledigt):
+- CurrentPlayer ist bereits im GameStateDto enthalten und im GameStateDtoMapper in beide Richtungen gemappt.
+- HumanPlayer vs CurrentPlayer ist dokumentiert (meist gleich, kann aber abweichen).
+- Unit-Mapping im GameStateDtoMapper.ToDto(...) ist bereits auf gameState.Units pro Owner korrigiert.
+
+Noch offen / jetzt umzusetzen:
+
+1) Seed-Modell ohne Überraschung finalisieren
+   - GameStateDto: getrennte Semantik mit zwei eigenständigen Feldern sicherstellen:
+     - GameRandomSeed (Game-RNG)
+     - legacy alias RandomSeed -> delegiert auf GameRandomSeed
+   - MapDto: getrennte Semantik mit eigenständigem Feld:
+     - MapSeed (Map-Seed)
+     - legacy alias TerrainSeed -> delegiert auf MapSeed
+   - Keine Obsolete-Attribute verwenden; nur klare Doku/Metadaten.
+   - Sicherstellen, dass NICHT mehrere fachlich verschiedene Seeds auf dasselbe private Backing-Field zeigen.
+
+2) Save-Pipeline auf den echten Mapper umstellen
+   - YamlSaveGameStateWriter: lokalen toDto-Stub entfernen/ersetzen.
+   - Stattdessen GameStateDtoMapper + abhängige Mapper verwenden, damit der produktive Pfad identisch zum getesteten Mapping ist.
+   - Ergebnis: Players/Cities/Units/Map/CurrentPlayer/Seeds werden vollständig serialisiert.
+
+3) Snapshot-Erzeugung vervollständigen
+   - GameStateHandler.Create(...): Units = game.Units setzen (falls noch nicht geschehen).
+   - Seed-Zuordnung prüfen/korrigieren:
+     - GameRandomSeed darf nicht blind TerrainMasterWord kopieren.
+     - MapSeed soll aus dem Map-Kontext kommen.
+   - Falls Legacy-Source nur einen Seed liefert: klar dokumentierter Fallback (explizit, nachvollziehbar).
+
+4) Tests ergänzen/aktualisieren
+   - GameSateDtoMapperTest auf neue Seed-Namen prüfen/anpassen.
+   - Zusätzlicher Integrationstest für den produktiven YAML-Writer:
+     - GameStateHandler -> YamlSaveGameStateWriter -> YAML
+     - Verifizieren: Player-Units vorhanden, CurrentPlayer korrekt, beide Seed-Semantiken konsistent.
+
+Akzeptanzkriterien:
+- Kein Datenverlust im produktiven YAML-Save-Pfad.
+- CurrentPlayer und HumanPlayer werden korrekt und nachvollziehbar persistiert.
+- Seed-Semantik ist eindeutig (GameRandomSeed vs MapSeed), Legacy-Aliase funktionieren.
+- Relevante Unit- und Integrationstests sind grün.
+```
