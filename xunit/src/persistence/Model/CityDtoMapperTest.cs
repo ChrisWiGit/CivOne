@@ -99,7 +99,7 @@ namespace CivOne.Persistence.Model
 		public void TestMapResourceTiles()
 		{
 			resourceTiles.RemoveAt(2 * 5 + 2); // center tile is not a resource tile
-			var map = _testee.MapResourceTiles([.. resourceTiles]);
+			var map = _testee.MapResourceTiles([.. resourceTiles], _cityTile.Tile);
 
 			Assert.False(map[2, 2]);
 			Assert.Equal(resourceTiles.Count, map.ToArray().Cast<bool>().Count(b => b));
@@ -111,7 +111,7 @@ namespace CivOne.Persistence.Model
 			resourceTiles[0] = new Grassland(-3, -3);
 
 			Assert.Throws<System.ArgumentException>(
-				() => _testee.MapResourceTiles([.. resourceTiles]));
+				() => _testee.MapResourceTiles([.. resourceTiles], _cityTile.Tile));
 		}
 
 		[Fact]
@@ -151,7 +151,7 @@ namespace CivOne.Persistence.Model
 		[Fact]
 		public void TestMapResourceTiles_MapMapToTiles()
 		{
-			var map = _testee.MapResourceTiles([.. resourceTiles]);
+			var map = _testee.MapResourceTiles([.. resourceTiles], _cityTile.Tile);
 			var tiles = _testee.MapMapToTiles(_cityTile, map);
 
 			Assert.Equal(resourceTiles.Count, tiles.Count);
@@ -160,7 +160,7 @@ namespace CivOne.Persistence.Model
 				Assert.Contains(tiles, t => t.X == tile.X && t.Y == tile.Y);
 			}
 
-			var map2 = _testee.MapResourceTiles(tiles.ToArray());
+			var map2 = _testee.MapResourceTiles(tiles.ToArray(), _cityTile.Tile);
 			Assert.Equal(map.ToArray(), map2.ToArray());
 		}
 

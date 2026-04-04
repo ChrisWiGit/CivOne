@@ -1539,10 +1539,18 @@ namespace CivOne
 			set => _visibleSizes = value ?? new uint[16];
 		}
 
-		// currently 0 is the player
-		public uint VisibleSize {
-			get => VisibleSizes[0];
-			set => VisibleSizes[0] = value;
+		/// <summary>
+		/// Legacy bridge property for the original SVE save format, which stores only a single visible city size per city —
+		/// in contrast to the newer per-player <see cref="VisibleSizes"/> array.
+		/// <para>
+		/// In Civ1, only the human player's perception of a city's size was persisted (fog of war).
+		/// This property maps to <see cref="VisibleSizes"/> at the human player's index.
+		/// </para>
+		/// </summary>
+		public uint VisibleSizeToHumanPlayer
+		{
+			get => VisibleSizes[Game.Instance.HumanPlayerId];
+			set => VisibleSizes[Game.Instance.HumanPlayerId] = value;
 		}
 
 		int IndexOfCity(City city)

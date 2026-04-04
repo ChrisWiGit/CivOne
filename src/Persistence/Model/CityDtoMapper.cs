@@ -76,7 +76,7 @@ namespace CivOne.Persistence.Model
             return tiles;
         }
 
-        public Bool2dMap MapResourceTiles(ITile[] resourceTiles)
+        public Bool2dMap MapResourceTiles(ITile[] resourceTiles, ITile cityCenter)
         {
             Bool2dMap map = new(5, 5);
 			if (resourceTiles == null || resourceTiles.Length == 0)
@@ -84,13 +84,11 @@ namespace CivOne.Persistence.Model
 				return map;
 			}
 
-            int minX = resourceTiles.Min(t => t.X);
-            int minY = resourceTiles.Min(t => t.Y);
-
             foreach (var tile in resourceTiles)
             {
-                int dx = tile.X - minX;
-                int dy = tile.Y - minY;
+                // Index [dx+2, dy+2] corresponds to offset (dx, dy) from city position.
+                int dx = tile.X - cityCenter.X + 2;
+                int dy = tile.Y - cityCenter.Y + 2;
 
                 if (dx < 0 || dx >= 5 || dy < 0 || dy >= 5)
                 {
@@ -111,7 +109,7 @@ namespace CivOne.Persistence.Model
                 Owner = domain.Owner,
                 Size = domain.Size,
 
-                ResourceTiles = MapResourceTiles(domain.ResourceTiles),
+                ResourceTiles = MapResourceTiles(domain.ResourceTiles, domain.Tile),
                 Specialists = [.. domain.Specialists],
 
                 Location = new MapLocation(

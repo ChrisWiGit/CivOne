@@ -186,7 +186,7 @@ namespace CivOne
 					Size = cityData.ActualSize,
 					Food = cityData.Food,
 					Shields = cityData.Shields,
-					VisibleSize = cityData.VisibleSize
+					VisibleSizeToHumanPlayer = cityData.VisibleSize
 				};
 				city.SetProduction(cityData.CurrentProduction);
 

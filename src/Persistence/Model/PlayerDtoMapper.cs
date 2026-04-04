@@ -107,9 +107,7 @@ namespace CivOne.Persistence.Model
 
 				Anarchy = player.Anarchy,
 				Gold = player.Gold,
-				CurrentResearch = (AdvanceId)player.CurrentResearch?.Id,
-				CityNamesSkipped = player.CityNamesSkipped,
-
+			CurrentResearch = (AdvanceId)(player.CurrentResearch?.Id ?? 0),
 				Government = player.Government.Id,
 				LuxuriesRate = player.LuxuriesRate,
 				TaxesRate = player.TaxesRate,

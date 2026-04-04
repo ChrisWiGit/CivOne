@@ -323,6 +323,7 @@ namespace CivOne.Persistence.Model
 		private static Dictionary<string, Action> GetMapDtoRoundTripAssertionMap(MapDto expected, MapDto actual)
 			=> new()
 			{
+				[nameof(MapDto.MapSeed)] = () => Assert.Equal(expected.MapSeed, actual.MapSeed),
 				[nameof(MapDto.TerrainSeed)] = () => Assert.Equal(expected.TerrainSeed, actual.TerrainSeed),
 				[nameof(MapDto.Tiles)] = () =>
 				{

@@ -112,6 +112,8 @@ namespace CivOne
 
 		internal Player HumanPlayer { get; set; }
 
+		internal byte HumanPlayerId => PlayerNumber(HumanPlayer);
+
 		internal Player CurrentPlayer => _players[_currentPlayer];
 
 		internal ReplayData[] GetReplayData() => _replayData.ToArray();

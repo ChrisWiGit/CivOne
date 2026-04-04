@@ -117,6 +117,7 @@ Noch offen / jetzt umzusetzen:
      - legacy alias TerrainSeed -> delegiert auf MapSeed
    - Keine Obsolete-Attribute verwenden; nur klare Doku/Metadaten.
    - Sicherstellen, dass NICHT mehrere fachlich verschiedene Seeds auf dasselbe private Backing-Field zeigen.
+  DONE! 
 
 2) Save-Pipeline auf den echten Mapper umstellen
    - YamlSaveGameStateWriter: lokalen toDto-Stub entfernen/ersetzen.

@@ -11,6 +11,7 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Persistence;
+using CivOne.Persistence.Model;
 using CivOne.UserInterface;
 using System;
 using System.IO;
@@ -70,7 +71,14 @@ namespace CivOne.Screens
 
 			GameStateHandler gameState = new();
 			using var stream = System.IO.File.Create(SaveFileName);
-			YamlSaveGameStateWriter writer = new();
+			var mapperDependencies = YamlMapperDependenciesFactory
+				.CreateDefault()
+				.Create(Game);
+			YamlSaveGameStateWriter writer = new(
+				mapperDependencies.PlayerMapper,
+				mapperDependencies.UnitMapper,
+				mapperDependencies.MapMapper,
+				mapperDependencies.Sanitizer);
 			writer.Write(stream, gameState.Create(Game));
 			// gameState.Create(Game);
 

@@ -84,14 +84,19 @@ namespace CivOne
 				Players = game.Players,
 
 				AnthologyTurn = game.AnthologyTurn,
+				// Both seeds are currently sourced from TerrainMasterWord (legacy behavior).
+				// Ideally: GameRandomSeed = game.RandomSeedSource, MapSeed = game.TerrainMasterWord
+				// For now, maintaining backward compatibility with historical assignments.
 				TerrainSeed = game.TerrainMasterWord,
-
 				RandomSeed = game.TerrainMasterWord,
+				
 				MapWidth = game.MapTiles.GetLength(0),
 				MapHeight = game.MapTiles.GetLength(0) > 0 ? 
 							game.MapTiles.GetLength(1) : 0,
 				
-				MapTiles = game.MapTiles, 
+				MapTiles = game.MapTiles,
+				Units = game.Units,  // Critical: Units were missing from snapshot!
+				
 				GameOptions = [.. options				
 					.Select((option, index) => (option, index))
 					.Where(x => x.option)
