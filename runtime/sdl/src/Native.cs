@@ -57,10 +57,10 @@ namespace CivOne
 						initialFileName,
 						filter
 					);
-// case Platform.Linux:
-// 					return GtkFolderBrowser(...);
-// 				case Platform.macOS:
-// 					return MacFolderBrowser(...);					
+				case Platform.Linux:
+					return GtkFileDialog(save, title, initialFileName, filter);
+				case Platform.macOS:
+					return MacFileChooser(save, title, initialFileName, filter);					
 				default:
 					return null;
 			}
