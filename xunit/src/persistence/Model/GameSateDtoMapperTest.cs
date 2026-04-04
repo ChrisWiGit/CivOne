@@ -301,6 +301,7 @@ namespace CivOne.Persistence.Model
 						Assert.Equal(expectedPlayer.Anarchy, actualPlayer.Anarchy);
 						Assert.Equal(expectedPlayer.TribeName, actualPlayer.TribeName);
 						Assert.Equal(expectedPlayer.Advances.Count, actualPlayer.Advances.Count);
+						Assert.Equal(expectedPlayer.Units?.Count ?? 0, actualPlayer.Units?.Count ?? 0);
 					}
 				},
 				[nameof(GameStateDto.RandomSeed)] = () => Assert.Equal(expected.RandomSeed, actual.RandomSeed),

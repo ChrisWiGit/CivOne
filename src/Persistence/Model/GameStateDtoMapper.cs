@@ -144,6 +144,7 @@ namespace CivOne.Persistence.Model
         public GameStateDto ToDto(GameState gameState)
         {
             var mapDto = CreateMapDto(gameState);
+            var gameUnits = gameState.Units ?? [];
 
             var gameStateDto = new GameStateDto
             {
@@ -161,6 +162,9 @@ namespace CivOne.Persistence.Model
             foreach (var player in gameStateDto.Players)
             {
                 player.Id = (ushort)gameStateDto.Players.IndexOf(player);
+                player.Units = [.. gameUnits
+                    .Where(unit => unit.Owner == player.Id)
+                    .Select(unitMapper.ToDto)];
             }
             return gameStateDto;
         }
