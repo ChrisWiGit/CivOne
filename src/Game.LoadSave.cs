@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -121,6 +122,8 @@ namespace CivOne
 
 		private Game(IGameData gameData)
 		{
+			_instance = this;
+
 			_difficulty = gameData.Difficulty;
 			_competition = (gameData.OpponentCount + 1);
 
@@ -169,6 +172,7 @@ namespace CivOne
 			GameTurn = gameData.GameTurn;
 			CityNames = gameData.CityNames;
 			HumanPlayer = _players[gameData.HumanPlayer];
+			Debug.Assert(HumanPlayer != null, "LoadGame invariant violated: HumanPlayer must be initialized before loading cities.");
 			HumanPlayer.CurrentResearch = Common.Advances.FirstOrDefault(a => a.Id == gameData.CurrentResearch);
 		
 			_anthologyTurn = gameData.NextAnthologyTurn;

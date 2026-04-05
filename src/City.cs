@@ -1536,7 +1536,7 @@ namespace CivOne
 		private uint[] _visibleSizes = new uint[16];
 		public uint[] VisibleSizes {
 			get => _visibleSizes;
-			set => _visibleSizes = value ?? new uint[16];
+			set => _visibleSizes = value is { Length: >= 16 } ? value : new uint[16];
 		}
 
 		/// <summary>
@@ -1549,8 +1549,28 @@ namespace CivOne
 		/// </summary>
 		public uint VisibleSizeToHumanPlayer
 		{
-			get => VisibleSizes[Game.Instance.HumanPlayerId];
-			set => VisibleSizes[Game.Instance.HumanPlayerId] = value;
+			get
+			{
+				Game game = Game.Instance;
+				Debug.Assert(game?.HumanPlayer != null, "City.VisibleSizeToHumanPlayer accessed before HumanPlayer was initialized.");
+				if (game?.HumanPlayer == null)
+				{
+					return 0;
+				}
+
+				return _visibleSizes[game.HumanPlayerId];
+			}
+			set
+			{
+				Game game = Game.Instance;
+				Debug.Assert(game?.HumanPlayer != null, "City.VisibleSizeToHumanPlayer assigned before HumanPlayer was initialized.");
+				if (game?.HumanPlayer == null)
+				{
+					return;
+				}
+
+				_visibleSizes[game.HumanPlayerId] = value;
+			}
 		}
 
 		int IndexOfCity(City city)
@@ -1577,6 +1597,7 @@ namespace CivOne
 
 		internal City(byte owner)
 		{
+			_visibleSizes = new uint[16];
 			Owner = owner;
 			if (!Game.Started) return;
 			CurrentProduction = Reflect.GetUnits().Where(u => Player.ProductionAvailable(u)).OrderBy(u => Common.HasAttribute<Default>(u) ? -1 : (int)u.Type).First();

@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using CivOne.Advances;
 using CivOne.Civilizations;
@@ -187,6 +188,8 @@ namespace CivOne
 
 		private Game(int difficulty, int competition, ICivilization tribe, string leaderName, string playerTribeName, string playerTribeNamePlural)
 		{
+			_instance = this;
+
 			_difficulty = difficulty;
 			_competition = competition;
 			Log("Game instance created (difficulty: {0}, competition: {1})", _difficulty, _competition);
@@ -234,6 +237,8 @@ namespace CivOne
 				}
 				Log("- Player {0} is {1} of the {2}", i, _players[i].LeaderName, _players[i].TribeNamePlural);
 			}
+
+			Debug.Assert(HumanPlayer != null, "NewGame invariant violated: HumanPlayer must be initialized during player setup.");
 
 			Log("Adding starting units...");
 			for (byte i = 1; i <= competition; i++)
