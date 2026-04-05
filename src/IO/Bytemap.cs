@@ -43,7 +43,11 @@ namespace CivOne.IO
 				for (int yy = sy1; yy < sy2; yy++)
 				{
 					Marshal.Copy(IntPtr.Add(_handle, (Width * yy) + sx1), buffer, 0, buffer.Length);
-					Marshal.Copy(buffer, 0, IntPtr.Add(output._handle, ((yy - top + dy) * buffer.Length) + dx), buffer.Length);
+					// Row index in the output bitmap: (yy - top) maps source row yy to the
+				// correct destination row. The old formula added 'dy' a second time,
+				// which (when top < 0, dy = -top) doubled the offset and wrote past
+				// the end of the output buffer, corrupting the native heap.
+				Marshal.Copy(buffer, 0, IntPtr.Add(output._handle, ((yy - top) * buffer.Length) + dx), buffer.Length);
 				}
 				return output;
 			}

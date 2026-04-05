@@ -84,11 +84,13 @@ namespace CivOne
 				{
 					SDL_PauseAudioDevice(deviceId, 1);
 					SDL_CloseAudioDevice(deviceId);
+					deviceId = UInt32.MaxValue;
 				}
 
 				if (_buffer != IntPtr.Zero)
 				{
 					SDL_FreeWAV(_buffer);
+					_buffer = IntPtr.Zero;
 				}
 			}
 		}

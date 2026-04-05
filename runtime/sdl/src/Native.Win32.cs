@@ -76,27 +76,37 @@ namespace CivOne
 		private static string Win32FolderBrowser(string caption)
 		{
 			ShowCursor();
-			IntPtr bufferAddress = Marshal.AllocHGlobal(256);
-			IntPtr pidl;
-			BROWSEINFO browseInfo = new BROWSEINFO()
+			// MAX_PATH = 260 Unicode characters = 520 bytes. The old 256-byte buffer
+			// was only 128 chars and caused heap corruption for longer paths.
+			IntPtr bufferAddress = Marshal.AllocHGlobal(MAX_PATH * 2);
+			IntPtr pidl = IntPtr.Zero;
+			try
 			{
-				hwndOwner = IntPtr.Zero,
-				pidlRoot = IntPtr.Zero,
-				lpszTitle = caption,
-				ulFlags = 0x310,
-				lParam = IntPtr.Zero,
-				iImage = 0
-			};
-			pidl = SHBrowseForFolder(ref browseInfo);
-			if (!SHGetPathFromIDList(pidl, bufferAddress))
-			{
-				// User pressed cancel
-				return null;
-			}
+				BROWSEINFO browseInfo = new BROWSEINFO()
+				{
+					hwndOwner = IntPtr.Zero,
+					pidlRoot = IntPtr.Zero,
+					lpszTitle = caption,
+					ulFlags = 0x310,
+					lParam = IntPtr.Zero,
+					iImage = 0
+				};
+				pidl = SHBrowseForFolder(ref browseInfo);
+				if (pidl == IntPtr.Zero || !SHGetPathFromIDList(pidl, bufferAddress))
+				{
+					// User pressed cancel
+					return null;
+				}
 
-			HideCursor();
-			
-			return Marshal.PtrToStringUni(bufferAddress);
+				HideCursor();
+				return Marshal.PtrToStringUni(bufferAddress);
+			}
+			finally
+			{
+				Marshal.FreeHGlobal(bufferAddress);
+				if (pidl != IntPtr.Zero)
+					Marshal.FreeCoTaskMem(pidl);
+			}
 		}
 
 		private static bool Win32CreateShortcut(string name, string description, string path, string[] arguments, string workingDirectory, string icon)
@@ -181,6 +191,12 @@ namespace CivOne
 			if (!filter.EndsWith("\0\0"))
 				filter += "\0\0";
 
+			// Pre-pad lpstrFile to MAX_PATH chars so the P/Invoke marshaler allocates
+			// a native buffer large enough for GetOpenFileName to write the result
+			// into (up to nMaxFile = MAX_PATH chars). Without this, the marshaler
+			// allocated only a tiny buffer and GetOpenFileName overwrote it, causing
+			// STATUS_HEAP_CORRUPTION detected later during the next load.
+			string initialContent = (initialFileName ?? "").PadRight(MAX_PATH, '\0');
 			OPENFILENAME ofn = new OPENFILENAME
 			{
 				lStructSize = Marshal.SizeOf(typeof(OPENFILENAME)),
@@ -188,7 +204,7 @@ namespace CivOne
 				hInstance = IntPtr.Zero,
 				lpstrInitialDir = null,
 				lpstrFilter = filter,
-				lpstrFile = fileBuffer.ToString(),
+				lpstrFile = initialContent,
 				nMaxFile = MAX_PATH,
 				lpstrTitle = title,
 				Flags =
