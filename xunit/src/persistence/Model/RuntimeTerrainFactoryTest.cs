@@ -1,0 +1,73 @@
+using System;
+using System.Linq;
+using CivOne.Enums;
+using CivOne.Tiles;
+using Xunit;
+
+namespace CivOne.Persistence.Model
+{
+	public class RuntimeTerrainFactoryTest
+	{
+		private readonly RuntimeTerrainFactory _testee;
+
+		public RuntimeTerrainFactoryTest()
+		{
+			_testee = new RuntimeTerrainFactory();
+		}
+
+		[Theory]
+		[InlineData(Terrain.Forest,     typeof(Forest))]
+		[InlineData(Terrain.Swamp,      typeof(Swamp))]
+		[InlineData(Terrain.Plains,     typeof(Plains))]
+		[InlineData(Terrain.Tundra,     typeof(Tundra))]
+		[InlineData(Terrain.River,      typeof(River))]
+		[InlineData(Terrain.Grassland1, typeof(Grassland))]
+		[InlineData(Terrain.Grassland2, typeof(Grassland))]
+		[InlineData(Terrain.Jungle,     typeof(Jungle))]
+		[InlineData(Terrain.Hills,      typeof(Hills))]
+		[InlineData(Terrain.Mountains,  typeof(Mountains))]
+		[InlineData(Terrain.Desert,     typeof(Desert))]
+		[InlineData(Terrain.Arctic,     typeof(Arctic))]
+		[InlineData(Terrain.Ocean,      typeof(Ocean))]
+		public void CreateTile_KnownTerrain_ReturnsCorrectTileType(Terrain terrain, Type expectedType)
+		{
+			// Act
+			ITile actual = _testee.CreateTile(terrain, 0, 0, false);
+
+			// Assert
+			Assert.NotNull(actual);
+			Assert.IsType(expectedType, actual);
+		}
+
+		[Fact]
+		public void CreateTile_AllDefinedTerrainValues_AreHandledWithoutException()
+		{
+			// Arrange
+			var terrains = Enum.GetValues<Terrain>()
+				.Where(t => t != Terrain.None)
+				.ToList();
+
+			// Act & Assert – if a new Terrain value is added to the enum but not
+			// to RuntimeTerrainFactory the factory will throw, failing this test.
+			foreach (Terrain terrain in terrains)
+			{
+				var exception = Record.Exception(() => _testee.CreateTile(terrain, 0, 0, false));
+				Assert.Null(exception);
+			}
+		}
+
+		[Fact]
+		public void CreateTile_NoneTerrain_ThrowsArgumentOutOfRangeException()
+		{
+			// Act & Assert
+			Assert.Throws<ArgumentOutOfRangeException>(() => _testee.CreateTile(Terrain.None, 0, 0, false));
+		}
+
+		[Fact]
+		public void CreateTile_UnknownTerrain_ThrowsArgumentOutOfRangeException()
+		{
+			// Act & Assert
+			Assert.Throws<ArgumentOutOfRangeException>(() => _testee.CreateTile((Terrain)999, 0, 0, false));
+		}
+	}
+}

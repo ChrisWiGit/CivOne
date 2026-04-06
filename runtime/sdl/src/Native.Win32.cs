@@ -137,8 +137,7 @@ namespace CivOne
 			public string lpstrCustomFilter;
 			public int nMaxCustFilter;
 			public int nFilterIndex;
-			[MarshalAs(UnmanagedType.LPWStr)]
-			public string lpstrFile;
+			public StringBuilder lpstrFile;
 			public int nMaxFile;
 			[MarshalAs(UnmanagedType.LPWStr)]
 			public string lpstrFileTitle;
@@ -180,10 +179,9 @@ namespace CivOne
 		{
 			ShowCursor();
 
-			var fileBuffer = new StringBuilder(MAX_PATH);
+			var lpstrFile = new StringBuilder(MAX_PATH);
 			if (!string.IsNullOrEmpty(initialFileName))
-				fileBuffer.Append(initialFileName);
-			fileBuffer.Append('\0');
+				lpstrFile.Append(initialFileName);
 
 			// Win32-Filterformat:
 			// "Textdateien (*.txt)\0*.txt\0Alle Dateien (*.*)\0*.*\0"
@@ -191,12 +189,6 @@ namespace CivOne
 			if (!filter.EndsWith("\0\0"))
 				filter += "\0\0";
 
-			// Pre-pad lpstrFile to MAX_PATH chars so the P/Invoke marshaler allocates
-			// a native buffer large enough for GetOpenFileName to write the result
-			// into (up to nMaxFile = MAX_PATH chars). Without this, the marshaler
-			// allocated only a tiny buffer and GetOpenFileName overwrote it, causing
-			// STATUS_HEAP_CORRUPTION detected later during the next load.
-			string initialContent = (initialFileName ?? "").PadRight(MAX_PATH, '\0');
 			OPENFILENAME ofn = new OPENFILENAME
 			{
 				lStructSize = Marshal.SizeOf(typeof(OPENFILENAME)),
@@ -204,7 +196,7 @@ namespace CivOne
 				hInstance = IntPtr.Zero,
 				lpstrInitialDir = null,
 				lpstrFilter = filter,
-				lpstrFile = initialContent,
+				lpstrFile = lpstrFile,
 				nMaxFile = MAX_PATH,
 				lpstrTitle = title,
 				Flags =

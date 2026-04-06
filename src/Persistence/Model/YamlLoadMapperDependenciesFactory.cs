@@ -22,7 +22,7 @@ namespace CivOne.Persistence.Model
 			var unitMapper = new UnitDtoMapper(new RuntimeUnitFactory(), sanitizer);
 			var mapMapper = new MapDtoMapper(
 				new RuntimeMapFactory(map),
-				new RuntimeTileDtoMapper(map),
+				new RuntimeTileDtoMapper(map, new RuntimeTerrainFactory()),
 				0);
 			var cityMapper = new CityDtoMapper(new ProductionDtoMapper(new GameReflect()), new CityDefinitionResolver(), sanitizer);
 			var playerMapper = new PlayerDtoMapper(
