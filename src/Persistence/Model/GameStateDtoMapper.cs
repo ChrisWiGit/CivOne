@@ -85,18 +85,19 @@ namespace CivOne.Persistence.Model
 
         private (List<string>, Dictionary<string, int>) BuildCityNameCatalog(List<ICity> sourceCities)
         {
-            var cityNames = new List<string>();
+            // Seed from the full global catalog so that NameId values align with
+            // Common.AllCityNames offsets that Game.CityNameId() depends on.
+            var cityNames = new List<string>(Common.AllCityNames);
             var cityNameIndexByName = new Dictionary<string, int>(StringComparer.Ordinal);
+            for (var i = 0; i < cityNames.Count; i++)
+                cityNameIndexByName[cityNames[i]] = i;
 
+            // Custom / renamed city names that are not in the global catalog
+            // are appended at the end so they remain accessible via NameId.
             foreach (var sourceCity in sourceCities.Where(c => !string.IsNullOrWhiteSpace(c.Name)))
             {
-                if (cityNameIndexByName.ContainsKey(sourceCity.Name))
-                {
-                    continue;
-                }
-
-                cityNameIndexByName[sourceCity.Name] = cityNames.Count;
-                cityNames.Add(sourceCity.Name);
+                if (!cityNameIndexByName.ContainsKey(sourceCity.Name))
+                    AddCityName(cityNames, cityNameIndexByName, sourceCity.Name);
             }
 
             return (cityNames, cityNameIndexByName);
