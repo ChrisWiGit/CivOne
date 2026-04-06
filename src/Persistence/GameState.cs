@@ -86,6 +86,8 @@ namespace CivOne.Persistence
         // -> Players
         // public List<bool> ActiveCivilizations { get; set; }
         public List<byte> CivilizationIdentity { get; set; }
+
+        // TODO: Code????
         // -> CurrentPlayer
         // public ushort CurrentResearch { get; set; }
         // -> Players
@@ -108,6 +110,7 @@ namespace CivOne.Persistence
 		public IPlayer[] Players { get; set; }
         public List<IUnit> Units { get; set; }
 
+        // TODO: Missing????
 		// public Dictionary<byte, byte> AdvanceOrigin { get; set; }
 
         public List<City> Cities { get; set; }
@@ -126,6 +129,8 @@ namespace CivOne.Persistence
         public string[] CityNames { get; set; }
 
         public List<GameOptionEnum> GameOptions { get; set; }
+
+        // TODO: To Implement!
 		// public List<ReplayData> ReplayData { get; set; }
 	}
 }
