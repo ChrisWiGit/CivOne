@@ -123,6 +123,8 @@ namespace CivOne.Persistence
         public int MapWidth { get; set; }
         public int MapHeight { get; set; }
 
+        public string[] CityNames { get; set; }
+
         public List<GameOptionEnum> GameOptions { get; set; }
 		// public List<ReplayData> ReplayData { get; set; }
 	}

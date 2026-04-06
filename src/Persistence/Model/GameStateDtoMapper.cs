@@ -18,19 +18,36 @@ namespace CivOne.Persistence.Model
         {
             ArgumentNullException.ThrowIfNull(dto);
 
+            // Map MUST be initialized before players, because CityDtoMapper.MapMapToTiles
+            // accesses Map.Instance[x,y] when resolving city resource tiles.
+            var map = MapMap(dto.Map);
+
             var players = MapPlayers(dto);
             ValidateHumanPlayerIndex(dto, players);
             ValidateCurrentPlayerIndex(dto, players);
             ResolveTradingCities(dto, players);
 
             var units = MapUnits(dto);
-            var cities = MapCities(players);
-            var map = MapMap(dto.Map);
-            var randomSeed = yamlReadValueSanitizer.ClampToInt32(dto.GameRandomSeed, nameof(GameStateDtoMapper), nameof(GameStateDto.GameRandomSeed));
-            var difficulty = yamlReadValueSanitizer.ClampToInt32((int)dto.Difficulty, nameof(GameStateDtoMapper), nameof(GameStateDto.Difficulty));
-            var anthologyTurn = (ushort)yamlReadValueSanitizer.ClampToInt32(dto.AnthologyTurn, nameof(GameStateDtoMapper), nameof(GameStateDto.AnthologyTurn), min: 0, max: ushort.MaxValue);
+            
+            // During city materialization, City.Size setter triggers SetResourceTiles() which
+            // may call methods that check Player.Game (e.g., AnarchyDespotism).
+            // Create a temporary stub context to allow these checks to work during mapping.
+            var savedGame = Player.Game;
+            try
+            {
+                Player.Game = new PlayerGameStub();
+                var (cities, cityNames) = MapCities(players);
+                
+                var randomSeed = yamlReadValueSanitizer.ClampToInt32(dto.GameRandomSeed, nameof(GameStateDtoMapper), nameof(GameStateDto.GameRandomSeed));
+                var difficulty = yamlReadValueSanitizer.ClampToInt32((int)dto.Difficulty, nameof(GameStateDtoMapper), nameof(GameStateDto.Difficulty));
+                var anthologyTurn = (ushort)yamlReadValueSanitizer.ClampToInt32(dto.AnthologyTurn, nameof(GameStateDtoMapper), nameof(GameStateDto.AnthologyTurn), min: 0, max: ushort.MaxValue);
 
-            return BuildGameState(dto, players, units, cities, map, randomSeed, difficulty, anthologyTurn);
+                return BuildGameState(dto, players, units, cities, cityNames, map, randomSeed, difficulty, anthologyTurn);
+            }
+            finally
+            {
+                Player.Game = savedGame;
+            }
         }
 
         private IPlayer[] MapPlayers(GameStateDto dto)
@@ -57,10 +74,145 @@ namespace CivOne.Persistence.Model
                 .SelectMany(p => p.Units ?? [])
                 .Select(unitMapper.FromDto)];
 
-        private List<City> MapCities(IPlayer[] players)
-            => [.. players
-                .SelectMany(p => p.Cities ?? [])
-                .OfType<City>()];
+        private (List<City> cities, string[] cityNames) MapCities(IPlayer[] players)
+        {
+            List<ICity> sourceCities = [.. players.SelectMany(p => p.Cities ?? [])];
+            var (cityNames, cityNameIndexByName) = BuildCityNameCatalog(sourceCities);
+            var (mappedCities, cityIndexById) = MaterializeCities(sourceCities, cityNames, cityNameIndexByName);
+            ApplyTradingLinks(sourceCities, mappedCities, cityIndexById);
+            return (mappedCities, [.. cityNames]);
+        }
+
+        private (List<string>, Dictionary<string, int>) BuildCityNameCatalog(List<ICity> sourceCities)
+        {
+            var cityNames = new List<string>();
+            var cityNameIndexByName = new Dictionary<string, int>(StringComparer.Ordinal);
+
+            foreach (var sourceCity in sourceCities.Where(c => !string.IsNullOrWhiteSpace(c.Name)))
+            {
+                if (cityNameIndexByName.ContainsKey(sourceCity.Name))
+                {
+                    continue;
+                }
+
+                cityNameIndexByName[sourceCity.Name] = cityNames.Count;
+                cityNames.Add(sourceCity.Name);
+            }
+
+            return (cityNames, cityNameIndexByName);
+        }
+
+        private (List<City>, Dictionary<Guid, int>) MaterializeCities(List<ICity> sourceCities, List<string> cityNames, Dictionary<string, int> cityNameIndexByName)
+        {
+            var mappedCities = new List<City>(sourceCities.Count);
+            var cityIndexById = new Dictionary<Guid, int>();
+
+            for (var i = 0; i < sourceCities.Count; i++)
+            {
+                var sourceCity = sourceCities[i];
+                var city = CreateCity(sourceCity, cityNames, cityNameIndexByName);
+                ApplyStatusFlags(city, sourceCity);
+                ApplyProductionAndCollections(city, sourceCity);
+                ApplySize(city, sourceCity);
+                
+                mappedCities.Add(city);
+                if (!cityIndexById.ContainsKey(city.Id))
+                {
+                    cityIndexById[city.Id] = i;
+                }
+            }
+
+            return (mappedCities, cityIndexById);
+        }
+
+        private City CreateCity(ICity sourceCity, List<string> cityNames, Dictionary<string, int> cityNameIndexByName)
+        {
+            var locationX = yamlReadValueSanitizer.ClampToInt32(sourceCity.Location.X, nameof(GameStateDtoMapper), "City.Location.X", min: 0, max: byte.MaxValue);
+            var locationY = yamlReadValueSanitizer.ClampToInt32(sourceCity.Location.Y, nameof(GameStateDtoMapper), "City.Location.Y", min: 0, max: byte.MaxValue);
+            var cityName = sourceCity.Name ?? string.Empty;
+            var nameId = cityNameIndexByName.TryGetValue(cityName, out var mappedNameId)
+                ? mappedNameId
+                : AddCityName(cityNames, cityNameIndexByName, cityName);
+
+            return new City(sourceCity.Owner)
+            {
+                Id = sourceCity.Id,
+                X = (byte)locationX,
+                Y = (byte)locationY,
+                NameId = nameId,
+                Food = sourceCity.Food,
+                Shields = sourceCity.Shields,
+                WasInDisorder = sourceCity.WasInDisorder,
+                VisibleSizes = sourceCity.VisibleSizes ?? [],
+            };
+        }
+
+        private void ApplySize(City city, ICity sourceCity)
+        {
+            city.Size = sourceCity.Size;
+        }
+
+        private void ApplyStatusFlags(City city, ICity sourceCity)
+        {
+            city.SetupStatus(sourceCity.Status);
+            city.IsRiot = sourceCity.IsRiot;
+            city.IsCoastal = sourceCity.IsCoastal;
+            city.CelebrationCancelled = sourceCity.CelebrationCancelled;
+            city.HydroAvailable = sourceCity.HydroAvailable;
+            city.AutoBuild = sourceCity.AutoBuild;
+            city.TechStolen = sourceCity.TechStolen;
+            city.CelebrationOrRapture = sourceCity.CelebrationOrRapture;
+            city.BuildingSold = sourceCity.BuildingSold;
+        }
+
+        private void ApplyProductionAndCollections(City city, ICity sourceCity)
+        {
+            if (sourceCity.CurrentProduction != null)
+            {
+                city.SetProduction(sourceCity.CurrentProduction);
+            }
+
+            city.SetupSpecialists = [.. sourceCity.Specialists ?? []];
+            city.SetupResourceTiles = [.. (sourceCity.ResourceTiles ?? [])
+                .Where(t => t != null && !(t.X == city.X && t.Y == city.Y))];
+
+            foreach (var building in sourceCity.Buildings ?? [])
+            {
+                city.AddBuilding(building);
+            }
+
+            foreach (var wonder in sourceCity.Wonders ?? [])
+            {
+                city.AddWonder(wonder);
+            }
+        }
+
+        private void ApplyTradingLinks(List<ICity> sourceCities, List<City> mappedCities, Dictionary<Guid, int> cityIndexById)
+        {
+            for (var i = 0; i < sourceCities.Count; i++)
+            {
+                int[] tradingIndexes = [.. (sourceCities[i].TradingCities ?? [])
+                    .Where(tradingCity => tradingCity != null && cityIndexById.ContainsKey(tradingCity.Id))
+                    .Select(tradingCity => cityIndexById[tradingCity.Id])
+                    .Where(index => index != i)
+                    .Distinct()];
+
+                mappedCities[i].SetTradingCitiesIndexes(tradingIndexes);
+            }
+        }
+
+        private static int AddCityName(List<string> cityNames, Dictionary<string, int> cityNameIndexByName, string cityName)
+        {
+            if (cityNameIndexByName.TryGetValue(cityName, out var existingIndex))
+            {
+                return existingIndex;
+            }
+
+            var newIndex = cityNames.Count;
+            cityNames.Add(cityName);
+            cityNameIndexByName[cityName] = newIndex;
+            return newIndex;
+        }
 
         private (int width, int height, int terrainSeed, ITile[,] mapTiles) MapMap(MapDto dtoMap)
         {
@@ -82,6 +234,7 @@ namespace CivOne.Persistence.Model
             IPlayer[] players,
             List<IUnit> units,
             List<City> cities,
+            string[] cityNames,
 			(int width, int height, int terrainSeed, ITile[,] mapTiles) map,
 			int randomSeed,
 			int difficulty,
@@ -97,6 +250,7 @@ namespace CivOne.Persistence.Model
                 Players = players,
                 Cities = cities,
                 Units = units,
+                CityNames = cityNames,
                 GameOptions = dto.GameOptions ?? [],
                 AnthologyTurn = anthologyTurn,
                 TerrainSeed = map.terrainSeed,

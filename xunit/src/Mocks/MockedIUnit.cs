@@ -64,6 +64,7 @@ namespace CivOne.UnitTests
             ProductionId = 0;
         }
 		public bool FortifyActive { get; set; }
+		public Guid? PendingHomeCityGuid { get; set; }
 
 		public IAdvance RequiredTech { get; set; }
 

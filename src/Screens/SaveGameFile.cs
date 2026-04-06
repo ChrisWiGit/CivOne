@@ -9,6 +9,8 @@ namespace CivOne.Screens
         public bool ValidFile { get; private set; }
         public string SveFile { get; private set; }
         public string MapFile { get; private set; }
+        public string CosFile { get; private set; }
+        public bool IsYamlFile { get; private set; }
         public int Difficulty { get; private set; }
 
         public string Name { get; private set; }
@@ -23,10 +25,25 @@ namespace CivOne.Screens
             return Common.BinaryReadStrings(reader, position, length, itemLength);
         }
 
+        private SaveGameFile(string cosFile, string displayName)
+        {
+            ValidFile = true;
+            IsYamlFile = true;
+            CosFile = cosFile;
+            Name = displayName;
+            SveFile = string.Empty;
+            MapFile = string.Empty;
+        }
+
+        private static SaveGameFile FromCosFile(string cosFile) =>
+            new SaveGameFile(cosFile, Path.GetFileNameWithoutExtension(cosFile));
+
         public SaveGameFile(string filename)
         {
             ValidFile = false;
             Name = "(EMPTY)";
+            CosFile = string.Empty;
+            IsYamlFile = false;
             SveFile = string.Format("{0}.SVE", filename);
             MapFile = string.Format("{0}.MAP", filename);
             if (!File.Exists(SveFile) || !File.Exists(MapFile)) return;
@@ -70,6 +87,10 @@ namespace CivOne.Screens
                 string filename = Path.Combine(path, string.Format("CIVIL{0}", i));
                 yield return new SaveGameFile(filename);
             }
+
+            if (!Directory.Exists(path)) yield break;
+            foreach (string cosFile in Directory.GetFiles(path, "*.cos"))
+                yield return FromCosFile(cosFile);
         }
 
     }

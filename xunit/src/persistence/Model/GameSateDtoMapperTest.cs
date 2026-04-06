@@ -258,7 +258,8 @@ namespace CivOne.Persistence.Model
 			Assert.True(gameState.MapTiles[0, 0].Road);
 			Assert.Equal(Terrain.Forest, gameState.MapTiles[1, 1].Type);
 
-			Assert.Empty(gameState.Cities);
+			Assert.NotNull(gameState.Cities);
+			Assert.Equal(2, gameState.Cities.Count);
 
 			{
 				var unitsPlayer0 = gameState.Units.Where(u => u.Owner == 0).ToList();

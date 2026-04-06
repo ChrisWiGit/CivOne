@@ -31,7 +31,7 @@ namespace CivOne
 		// Dependency injection via IPlayerGame; set by Game on load/new game.
 		internal static new IPlayerGame Game = null;
 		private readonly ICivilization _civilization;
-		private readonly string _tribeName, _tribeNamePlural;
+		private string _tribeName, _tribeNamePlural;
 
 		private readonly bool[,] _explored = new bool[Map.WIDTH, Map.HEIGHT];
 		private readonly bool[,] _visible = new bool[Map.WIDTH, Map.HEIGHT];
@@ -62,7 +62,8 @@ namespace CivOne
 
 		public byte Handicap { get; internal set; }
 
-		public readonly PalaceData Palace = new PalaceData();
+		private PalaceData _palace = new PalaceData();
+		public PalaceData Palace => _palace;
 
 		internal AI AI => !IsHuman ? AI.Instance(this) : null;
 		
@@ -426,9 +427,11 @@ namespace CivOne
 
 		short IPlayer.StartX => StartX;
 
-		PalaceData IPlayer.Palace => Palace;
+		PalaceData IPlayer.Palace => _palace;
 
-		List<ICity> IPlayer.Cities => Cities.Cast<ICity>().ToList();
+		List<ICity> IPlayer.Cities => (Game != null && Game.Started)
+			? Cities.Cast<ICity>().ToList()
+			: (RestoredCities?.ToList() ?? []);
 
 		
 		public override int GetHashCode() => Game.PlayerNumber(this);

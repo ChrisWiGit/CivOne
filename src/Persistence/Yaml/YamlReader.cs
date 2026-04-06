@@ -75,7 +75,8 @@ namespace CivOne.Persistence.Yaml
         /// </summary>
         public YamlReader WithStandard()
             => WithNamingConvention(PascalCaseNamingConvention.Instance)
-               .WithTypeConverter(new Bool2dMapYamlTypeConverter());
+               .WithTypeConverter(new Bool2dMapYamlTypeConverter())
+               .WithTypeConverter(new MapLocationYamlConverter());
 
         /// <summary>
         /// Sets the naming convention used when deserializing property names.

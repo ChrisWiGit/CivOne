@@ -35,6 +35,11 @@ namespace CivOne.Units
 	public interface IUnitRestorable : IUnit
 	{
 		new bool FortifyActive { get; set; }
+		/// <summary>
+		/// Stores the home city GUID during YAML load until the city objects are fully
+		/// hydrated and can be resolved by the <c>Game(GameState)</c> constructor.
+		/// </summary>
+		Guid? PendingHomeCityGuid { get; set; }
 	}
 	internal abstract class BaseUnit : BaseInstance, IUnitRestorable, IUnit
 	{
@@ -91,6 +96,7 @@ namespace CivOne.Units
 
 		public bool Veteran { get; set; }
 		public bool FortifyActive { get; set; }
+		public Guid? PendingHomeCityGuid { get; set; }
 		private bool _fortify = false;
 		public bool Fortify
 		{

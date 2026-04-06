@@ -96,6 +96,7 @@ namespace CivOne
 				
 				MapTiles = game.MapTiles,
 				Units = game.Units,  // Critical: Units were missing from snapshot!
+				CityNames = game.CityNames,
 				
 				GameOptions = [.. options				
 					.Select((option, index) => (option, index))

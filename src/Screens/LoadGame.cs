@@ -14,6 +14,7 @@ using CivOne.UserInterface;
 using System;
 using System.Linq;
 using CivOne.Tasks;
+using System.IO;
 
 namespace CivOne.Screens
 {
@@ -39,11 +40,21 @@ namespace CivOne.Screens
 		private bool LoadSaveFileByItem(char driveLetter, int item)
 		{
 			SaveGameFile file = SaveGameFile.GetSaveGames(driveLetter).ToArray()[item];
-			SaveGame.SelectedGame = (item > 3 ? 3 : item);
 			Log("Load game: {0}", file.Name);
 			Destroy();
-			
-			if (!Game.LoadGame(file.SveFile, file.MapFile))
+
+			bool success;
+			if (file.IsYamlFile)
+			{
+				success = Game.LoadYamlGame(file.CosFile);
+			}
+			else
+			{
+				SaveGame.SelectedGame = (item > 3 ? 3 : item);
+				success = Game.LoadGame(file.SveFile, file.MapFile);
+			}
+
+			if (!success)
 			{
 				Log("Failed to load game");
 				Cancel = true;
@@ -78,6 +89,41 @@ namespace CivOne.Screens
 			if (file.ValidFile)
 				return LoadSaveFile;
 			return LoadEmptyFile;
+		}
+
+		private void LoadYamlFromBrowser(object sender, EventArgs args)
+		{
+			_menu.Close();
+			_menu = null;
+			_update = true;
+
+			string cosFile = RuntimeHandler.Runtime.FileChooser(
+				false,
+				"Load Game...",
+				"",
+				"CivOne Save Game (*.cos)|*.cos"
+			);
+			if (string.IsNullOrEmpty(cosFile))
+			{
+				_update = true;
+				return;
+			}
+
+			Log("Load game: {0}", Path.GetFileName(cosFile));
+			Destroy();
+
+			if (!Game.LoadYamlGame(cosFile))
+			{
+				Log("Failed to load game");
+				Cancel = true;
+				_update = true;
+				BackToCredits();
+				return;
+			}
+
+			// Allows in-game loading of a game (destroy old gameplay)
+			Common.DestroyScreen(Common.Screens.FirstOrDefault(s => s is GamePlay, null));
+			Common.AddScreen(new GamePlay());
 		}
 		
 		private void DrawDriveQuestion()
@@ -167,6 +213,10 @@ namespace CivOne.Screens
 				};
 				
 				int i = 0;
+				
+				// Add "Load from new format..." option at the top
+				_menu.Items.Add("Load game from new format...", i++).OnSelect(LoadYamlFromBrowser);
+				
 				foreach (SaveGameFile file in SaveGameFile.GetSaveGames(_driveLetter))
 				{
 					_menu.Items.Add(file.Name, i++).OnSelect(LoadFileHandler(file));

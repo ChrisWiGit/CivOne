@@ -20,6 +20,7 @@ namespace CivOne.Persistence.Model
 		{
 			var unit = _unitFactory.Create(dto.ClassName, dto.PlayerId, dto.HomeCityGuid);
 			unit.Owner = dto.PlayerId;
+			unit.PendingHomeCityGuid = dto.HomeCityGuid;
 			var locationX = yamlReadValueSanitizer.ClampToInt32(dto.Location.X, nameof(UnitDtoMapper), nameof(UnitDto.Location));
 			var locationY = yamlReadValueSanitizer.ClampToInt32(dto.Location.Y, nameof(UnitDtoMapper), nameof(UnitDto.Location));
 			var gotoX = yamlReadValueSanitizer.ClampToInt32(dto.Goto.X, nameof(UnitDtoMapper), nameof(UnitDto.Goto));

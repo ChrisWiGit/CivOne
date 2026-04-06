@@ -23,6 +23,7 @@ namespace CivOne
 		public bool DataCheck { get; set; }
 
 		public Tuple<char, int> LoadSaveGameSlot { get; set; } = null;
+		public string LoadCosFile { get; set; } = null;
 		public static Tuple<char, int> UseLoadingScreen => new Tuple<char, int>('0', -1);
 
         // fire-eggs 20190711 allow specifying the initial RNG seed for game repeatability/debugging

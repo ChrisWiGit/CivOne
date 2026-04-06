@@ -1600,7 +1600,13 @@ namespace CivOne
 			_visibleSizes = new uint[16];
 			Owner = owner;
 			if (!Game.Started) return;
-			CurrentProduction = Reflect.GetUnits().Where(u => Player.ProductionAvailable(u)).OrderBy(u => Common.HasAttribute<Default>(u) ? -1 : (int)u.Type).First();
+			if (Player.Game == null) return;
+			var player = Game.Instance?.GetPlayer(owner);
+			if (player == null) return;
+			CurrentProduction = Reflect.GetUnits()
+				.Where(u => player.ProductionAvailable(u))
+				.OrderBy(u => Common.HasAttribute<Default>(u) ? -1 : (int)u.Type)
+				.FirstOrDefault();
 			SetResourceTiles();
 		}
 
