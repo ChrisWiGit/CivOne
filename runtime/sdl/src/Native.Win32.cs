@@ -123,6 +123,8 @@ namespace CivOne
 			return File.Exists(filename);
 		}
 
+		// Use 32KB for file dialog buffer to support long paths (> 260 chars)
+		private const int MAX_PATH_DIALOG = 32768;
 		private const int MAX_PATH = 260;
 
 		[ StructLayout( LayoutKind.Sequential, CharSet=CharSet.Unicode )]  
@@ -179,7 +181,7 @@ namespace CivOne
 		{
 			ShowCursor();
 
-			var lpstrFile = new StringBuilder(MAX_PATH);
+			var lpstrFile = new StringBuilder(MAX_PATH_DIALOG);
 			if (!string.IsNullOrEmpty(initialFileName))
 				lpstrFile.Append(initialFileName);
 
@@ -197,7 +199,7 @@ namespace CivOne
 				lpstrInitialDir = null,
 				lpstrFilter = filter,
 				lpstrFile = lpstrFile,
-				nMaxFile = MAX_PATH,
+				nMaxFile = MAX_PATH_DIALOG,
 				lpstrTitle = title,
 				Flags =
 					0x00000008 | // OFN_EXPLORER
