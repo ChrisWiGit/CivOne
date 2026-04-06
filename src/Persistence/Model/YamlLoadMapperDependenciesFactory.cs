@@ -25,9 +25,13 @@ namespace CivOne.Persistence.Model
 				new RuntimeTileDtoMapper(map, new RuntimeTerrainFactory()),
 				0);
 			var cityMapper = new CityDtoMapper(new ProductionDtoMapper(new GameReflect()), new CityDefinitionResolver(), sanitizer);
+			// NullPlayerGame: no game instance exists yet during load; PlayerDtoMapper
+			// requires IPlayerGame only for ToDto (save path), which is never called here.
+			// NoopPlayerOwnerResolver: owner resolution is used exclusively in ToDto to
+			// filter units by player; always returning false is safe and emits all units.
 			var playerMapper = new PlayerDtoMapper(
 				new NullPlayerGame(),
-				new IndexBasedPlayerOwnerResolver(),
+				new NoopPlayerOwnerResolver(),
 				new RuntimePlayerFactory(),
 				new CivilizationDtoMapper(Common.Civilizations),
 				new PalaceDtoMapper(sanitizer),
@@ -80,6 +84,15 @@ namespace CivOne.Persistence.Model
 			{
 				return Reflect.GetGovernments().FirstOrDefault(g => g.Id == id)
 					?? throw new InvalidOperationException($"Government with ID {id} was not found.");
+			}
+		}
+
+		private sealed class NoopPlayerOwnerResolver : IPlayerOwnerResolver
+		{
+			public bool TryResolveOwnerId(IPlayer player, out byte ownerId)
+			{
+				ownerId = 0;
+				return false;
 			}
 		}
 
