@@ -83,35 +83,18 @@ namespace CivOne.Persistence
 
 		public int Difficulty { get; set; }
 
-        // -> Players
-        // public List<bool> ActiveCivilizations { get; set; }
         public List<byte> CivilizationIdentity { get; set; }
 
-        // TODO: Code????
-        // -> CurrentPlayer
-        // public ushort CurrentResearch { get; set; }
-        // -> Players
-        // public Dictionary<byte, List<byte>> DiscoveredAdvanceIDs { get; set; }
-
-        // public List<string> LeaderNames { get; set; }
-        // public List<string> CivilizationNames { get; set; }
-        // public List<string> CitizenNames { get; set; }
-        // public List<string> CityNames { get; set; }
-		
-        // PlayerGold, ResearchProgress, TaxRate, ScienceRate, StartingPositionX, Government
         /// <summary>
         /// The player whose turn is currently active.
         /// Usually equal to <see cref="HumanPlayer"/>, but can differ during AI turns.
         /// </summary>
         public IPlayer CurrentPlayer { get; set; }
 
-        // ActiveCivilizations, AdvanceOrigin,
-        // CivilizationNames, Cities, Units, Wonders, TileVisibility, AdvanceFirstDiscovery        
 		public IPlayer[] Players { get; set; }
         public List<IUnit> Units { get; set; }
 
-        // TODO: Missing????
-		// public Dictionary<byte, byte> AdvanceOrigin { get; set; }
+        // TODO: public Dictionary<byte, byte> AdvanceOrigin { get; set; }
 
         public List<City> Cities { get; set; }
 		public ushort AnthologyTurn { get; set; }
