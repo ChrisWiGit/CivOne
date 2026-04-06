@@ -107,6 +107,7 @@ namespace CivOne
 					.Select(x => (GameOptionEnum)x.index)],
 
 				Cities = game.Cities,
+				AdvanceOrigin = game.AdvanceOrigin,
 			};
 		}
 

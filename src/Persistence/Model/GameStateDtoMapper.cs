@@ -257,7 +257,8 @@ namespace CivOne.Persistence.Model
                 TerrainSeed = map.terrainSeed,
                 MapWidth = map.width,
                 MapHeight = map.height,
-                MapTiles = map.mapTiles
+                MapTiles = map.mapTiles,
+                AdvanceOrigin = dto.AdvanceOrigin
             };
         }
 
@@ -323,7 +324,8 @@ namespace CivOne.Persistence.Model
                 GameRandomSeed = (uint)gameState.RandomSeed,
                 AnthologyTurn = gameState.AnthologyTurn,
                 Map = mapDto,
-                GameOptions = gameState.GameOptions ?? []
+                GameOptions = gameState.GameOptions ?? [],
+                AdvanceOrigin = gameState.AdvanceOrigin
             };
 
             foreach (var player in gameStateDto.Players)

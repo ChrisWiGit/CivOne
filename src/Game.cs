@@ -36,10 +36,10 @@ namespace CivOne
 		private readonly Player[] _players;
 		private readonly List<City> _cities;
 		private readonly List<IUnit> _units;
-		private readonly Dictionary<byte, byte> _advanceOrigin = new Dictionary<byte, byte>();
-		private readonly List<ReplayData> _replayData = new List<ReplayData>();
+		private readonly Dictionary<byte, byte> _advanceOrigin = [];
+		private readonly List<ReplayData> _replayData = [];
 
-		internal readonly string[] CityNames = Common.AllCityNames.ToArray();
+		internal readonly string[] CityNames = [.. Common.AllCityNames];
 
 		public int _currentPlayer = 0; // public for unit testing
 		private int _activeUnit;
@@ -69,7 +69,7 @@ namespace CivOne
 		public bool GetAdvanceOrigin(IAdvance advance, Player player)
 		{
 			if (_advanceOrigin.ContainsKey(advance.Id))
-				return (_advanceOrigin[advance.Id] == PlayerNumber(player));
+				return _advanceOrigin[advance.Id] == PlayerNumber(player);
 			return false;
 		}
 

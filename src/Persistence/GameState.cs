@@ -94,7 +94,8 @@ namespace CivOne.Persistence
 		public IPlayer[] Players { get; set; }
         public List<IUnit> Units { get; set; }
 
-        // TODO: public Dictionary<byte, byte> AdvanceOrigin { get; set; }
+        /// <summary>Maps each advance ID to the player number who first discovered it.</summary>
+        public Dictionary<byte, byte> AdvanceOrigin { get; set; }
 
         public List<City> Cities { get; set; }
 		public ushort AnthologyTurn { get; set; }

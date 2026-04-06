@@ -81,6 +81,11 @@ namespace CivOne
 			}
 
 			_anthologyTurn = state.AnthologyTurn;
+
+			if (state.AdvanceOrigin != null)
+				foreach (var kvp in state.AdvanceOrigin)
+					_advanceOrigin[kvp.Key] = kvp.Value;
+
 			CityNames = state.CityNames?.Length > 0 ? state.CityNames : Common.AllCityNames.ToArray();
 
 			Common.SetRandomSeed((ushort)Math.Clamp(state.RandomSeed, ushort.MinValue, ushort.MaxValue));

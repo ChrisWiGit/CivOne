@@ -47,6 +47,9 @@ namespace CivOne.Persistence.Model
         [YamlDotNet.Serialization.YamlMember(typeof(List<string>))]
         public List<GameOptionEnum> GameOptions { get; set; }
 
+        [Doc("Maps each advance ID to the player number who first discovered it.")]
+        public Dictionary<byte, byte> AdvanceOrigin { get; set; }
+
         private static string DifficultyAll { get => string.Join(", ", Enum.GetNames<DifficultyLevel>()); }
         private static string GameOptionsAll { get => string.Join(", ", Enum.GetNames<GameOptionEnum>()); }
     }
