@@ -32,11 +32,11 @@ namespace CivOne.Persistence.Model
 		public void CreateTile_KnownTerrain_ReturnsCorrectTileType(Terrain terrain, Type expectedType)
 		{
 			// Act
-			ITile actual = _testee.CreateTile(terrain, 0, 0, false);
+			ITile tile = _testee.CreateTile(terrain, 0, 0, false);
 
 			// Assert
-			Assert.NotNull(actual);
-			Assert.IsType(expectedType, actual);
+			Assert.NotNull(tile);
+			Assert.IsType(expectedType, tile);
 		}
 
 		[Fact]
@@ -51,8 +51,8 @@ namespace CivOne.Persistence.Model
 			// to RuntimeTerrainFactory the factory will throw, failing this test.
 			foreach (Terrain terrain in terrains)
 			{
-				var exception = Record.Exception(() => _testee.CreateTile(terrain, 0, 0, false));
-				Assert.Null(exception);
+				var actualException = Record.Exception(() => _testee.CreateTile(terrain, 0, 0, false));
+				Assert.Null(actualException);
 			}
 		}
 
