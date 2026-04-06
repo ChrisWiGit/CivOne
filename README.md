@@ -61,6 +61,7 @@ There are some command line parameters that can be used to modify the behavior o
 | `--no-sound` | Disables sound in the game. |
 | `--no-data-check` | Skips the data integrity check at startup. |
 | `--load-slot <drive><slot>` | Loads a saved game from the specified drive and slot. Replace `<drive>` with a letter (a-z) and `<slot>` with a number (0-15) as if you were in the game |
+| `--load-cos <path>` | Loads a savegame file directly from a file path. |
 
 ### Loading a saved game immediately
 
@@ -80,6 +81,24 @@ You can find your saves in the following locations:
 
 * on Linux/macOS: `~/CivOne/saves/`
 * on Windows: `C:\Users\<YourUsername>\AppData\Local\CivOne\saves\` (also `%LOCALAPPDATA%\CivOne\saves\`)
+
+### Loading a savegame from a file (new file format - YAML)
+
+To load a savegame file directly when starting the game, use the `--load-cos` option followed by the file path.
+The path can be absolute or relative to the current working directory.
+
+Example:
+
+```sh
+civone --load-cos ./SaveGames/c/auto-save.cos
+```
+
+On Windows you can also use:
+
+```cmd
+CivOne.SDL.exe --load-cos "C:\\Users\\<YourUsername>\\AppData\\Local\\CivOne\\saves\\c\\auto-save.cos"
+```
+
 
 ### The debug menu (in game)
 

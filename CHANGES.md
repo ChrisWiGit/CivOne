@@ -6,6 +6,18 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix:Heap corruption due to buffer allocation and indexing issues in Win32 folder browser and Bytemap copy operations.
+* Implemented YAML savegame format to save and load games
+  * Implemented extensive DTO and Mapper classes to convert between internal game state and YAML save format.
+  * Using modern software design principles, patterns and methods.
+  * Using extensive Tests to ensure correctness and maintainability of the code.
+  * Added YAML-based loading and saving for game state persistence.
+  * Added command line loading of YAML save files via `--load-cos <path>`.
+  * Added runtime support setting `LoadCosFile` to start directly from a YAML save file.
+  * Designed to support future in-memory model refactoring while keeping save format mapping isolated.
+  * Current scope focuses on CivOne YAML save files and does not target binary CIV save compatibility.
+  * Prepared for future changes to how data is handled in memory for more flexibility and maintainability.
+  * See [YAML Save Format](YAML.md) for more details.
 * Github pipeline to build and automatic testing and creating release artifacts (Windows, Linux)
 * Feature: Added Debug keys for debugging purposes in DEBUG mode
   * Ctrl + Shift + F12 to hit debugger breakpoint
