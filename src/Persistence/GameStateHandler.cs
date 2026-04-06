@@ -49,6 +49,8 @@ namespace CivOne
 		public bool EnemyMoves { get; }
 		public bool Palace { get; }
 
+		int? GameRandomSeed { get; }
+
 		int TerrainMasterWord { get; }
 	}
 
@@ -84,11 +86,12 @@ namespace CivOne
 				Players = game.Players,
 
 				AnthologyTurn = game.AnthologyTurn,
-				// Both seeds are currently sourced from TerrainMasterWord (legacy behavior).
-				// Ideally: GameRandomSeed = game.RandomSeedSource, MapSeed = game.TerrainMasterWord
-				// For now, maintaining backward compatibility with historical assignments.
+				// Seed semantics:
+				// - TerrainSeed is always sourced from map context (TerrainMasterWord)
+				// - RandomSeed prefers explicit GameRandomSeed, with legacy fallback to TerrainMasterWord
+				//   when no dedicated RNG seed source is exposed by the snapshot source.
 				TerrainSeed = game.TerrainMasterWord,
-				RandomSeed = game.TerrainMasterWord,
+				RandomSeed = game.GameRandomSeed ?? game.TerrainMasterWord,
 				
 				MapWidth = game.MapTiles.GetLength(0),
 				MapHeight = game.MapTiles.GetLength(0) > 0 ? 

@@ -14,6 +14,10 @@ namespace CivOne
 
 		public List<ReplayData> ReplayData => _replayData;
 
+		// No dedicated persisted game-RNG state is currently exposed here.
+		// Returning null keeps GameStateHandler on the documented legacy fallback path.
+		public int? GameRandomSeed => null;
+
 		public int TerrainMasterWord => Map.Instance.TerrainMasterWord;
 
 		public ITile[,] MapTiles => Map.Instance.Tiles;

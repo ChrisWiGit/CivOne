@@ -110,3 +110,67 @@ This mechanic rewards players for exploring fertile lands, as they encounter mor
 #### Persistence
 
 `LandValue` is persisted when saving and loading games through the `TileDto` data transfer object, ensuring that calculated land values are preserved across save/load cycles.
+
+## Seed Semantics (legacy vs. new YAML model)
+
+Relevant files:
+
+- [GameState.RandomSeed](src/Persistence/GameState.cs#L82), [GameState.TerrainSeed](src/Persistence/GameState.cs#L122), [GameState.CurrentPlayer](src/Persistence/GameState.cs#L106)
+- [IGameSnapshotSource.GameRandomSeed](src/Persistence/GameStateHandler.cs#L52), [IGameSnapshotSource.TerrainMasterWord](src/Persistence/GameStateHandler.cs#L54), [GameStateHandler.Create(...)](src/Persistence/GameStateHandler.cs#L64), [fallback assignment](src/Persistence/GameStateHandler.cs#L93)
+- [GameStateDto.GameRandomSeed](src/Persistence/Model/GameStateDto.cs#L26), [GameStateDto.RandomSeed](src/Persistence/Model/GameStateDto.cs#L32), [GameStateDto.CurrentPlayer](src/Persistence/Model/GameStateDto.cs#L21)
+- [MapDto.MapSeed](src/Persistence/Model/MapDto.cs#L16), [MapDto.TerrainSeed](src/Persistence/Model/MapDto.cs#L23)
+- [GameStateDtoMapper: FromDto game seed](src/Persistence/Model/GameStateDtoMapper.cs#L41), [FromDto map seed](src/Persistence/Model/GameStateDtoMapper.cs#L223), [ToDto game seed](src/Persistence/Model/GameStateDtoMapper.cs#L323), [ToDto map seed](src/Persistence/Model/GameStateDtoMapper.cs#L367)
+
+### Why this changed
+
+Historically, save/snapshot code often reused one legacy seed source for multiple concerns.
+In particular, game RNG and map generation seed could both end up coming from the same legacy value.
+
+For YAML persistence, we now treat these concerns as separate concepts:
+
+- **Game RNG seed**: controls game-level random behavior
+- **Map seed**: controls terrain/map reproducibility
+
+### Domain model (runtime snapshot)
+
+In `GameState` there are two explicit fields:
+
+- `RandomSeed` = game-level RNG seed
+- `TerrainSeed` = map generation seed
+
+### YAML DTO model
+
+The YAML-facing DTOs preserve this split while keeping compatibility aliases:
+
+- `GameStateDto.GameRandomSeed` (primary)
+- `GameStateDto.RandomSeed` (legacy alias to the same backing value)
+
+and
+
+- `MapDto.MapSeed` (primary)
+- `MapDto.TerrainSeed` (legacy alias to the same backing value)
+
+This allows old YAML naming to continue working while documenting the newer, clearer semantics.
+
+### Mapping behavior
+
+`GameStateDtoMapper` maps the two seed domains independently:
+
+- `GameState.RandomSeed` ↔ `GameStateDto.GameRandomSeed`
+- `GameState.TerrainSeed` ↔ `MapDto.MapSeed`
+
+### Legacy compatibility note
+
+`GameStateHandler.Create(...)` may still assign both seeds from the same legacy source (`TerrainMasterWord`) if no dedicated game RNG seed source is exposed by the snapshot interface.
+
+That behavior is intentionally documented as **compatibility fallback** and should be treated as transitional.
+When a dedicated RNG source is available, the intended mapping is:
+
+- `RandomSeed` from the game RNG source
+- `TerrainSeed` from terrain/map seed source
+
+### Practical guidance
+
+- New code should prefer the primary names (`GameRandomSeed`, `MapSeed`).
+- Legacy aliases (`RandomSeed`, `TerrainSeed`) should be kept for backward compatibility in persisted YAML.
+- Avoid introducing separate backing fields for alias pairs; aliases must point to the same logical value.
