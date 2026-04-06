@@ -66,11 +66,10 @@ namespace CivOne.Screens
 				return;
 			}
 
-			string mapFile = System.IO.Path.ChangeExtension(sveFile, ".map");
-			SaveFileName = System.IO.Path.ChangeExtension(sveFile, ".cos");
+			SaveFileName = Path.ChangeExtension(sveFile, ".cos");
 
 			GameStateHandler gameState = new();
-			using var stream = System.IO.File.Create(SaveFileName);
+			using var stream = File.Create(SaveFileName);
 			var mapperDependencies = YamlMapperDependenciesFactory
 				.CreateDefault()
 				.Create(Game);
@@ -80,11 +79,9 @@ namespace CivOne.Screens
 				mapperDependencies.MapMapper,
 				mapperDependencies.Sanitizer);
 			writer.Write(stream, gameState.Create(Game));
-			// gameState.Create(Game);
 
 			//TODO: save last save path to profile settings
 
-			// Game.Save(sveFile, mapFile);
 			_saving = true;
 			_update = true;
 		}
