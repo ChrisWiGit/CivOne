@@ -39,7 +39,17 @@ namespace CivOne.Screens
 
 		private bool LoadSaveFileByItem(char driveLetter, int item)
 		{
-			SaveGameFile file = SaveGameFile.GetSaveGames(driveLetter).ToArray()[item];
+			SaveGameFile[] saveGames = SaveGameFile.GetSaveGames(driveLetter).ToArray();
+			if (item < 0 || item >= saveGames.Length)
+			{
+				Log("Invalid save game index: {0}", item);
+				Cancel = true;
+				_update = true;
+				BackToCredits();
+				return false;
+			}
+
+			SaveGameFile file = saveGames[item];
 			Log("Load game: {0}", file.Name);
 			Destroy();
 
@@ -50,7 +60,7 @@ namespace CivOne.Screens
 			}
 			else
 			{
-				SaveGame.SelectedGame = (item > 3 ? 3 : item);
+				SaveGame.SelectedGame = item > 3 ? 3 : item;
 				success = Game.LoadGame(file.SveFile, file.MapFile);
 			}
 
@@ -212,14 +222,15 @@ namespace CivOne.Screens
 					RowHeight = 8
 				};
 				
-				int i = 0;
+				int menuValue = -1;
+				int saveGameIndex = 0;
 				
 				// Add "Load from new format..." option at the top
-				_menu.Items.Add("Load game from new format...", i++).OnSelect(LoadYamlFromBrowser);
+				_menu.Items.Add("Load game from new format...", menuValue).OnSelect(LoadYamlFromBrowser);
 				
 				foreach (SaveGameFile file in SaveGameFile.GetSaveGames(_driveLetter))
 				{
-					_menu.Items.Add(file.Name, i++).OnSelect(LoadFileHandler(file));
+					_menu.Items.Add(file.Name, saveGameIndex++).OnSelect(LoadFileHandler(file));
 				}
 				_cursor = MouseCursor.Pointer;
 			}
