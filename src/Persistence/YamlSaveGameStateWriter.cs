@@ -1,14 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using CivOne.Civilizations;
 using CivOne.Persistence.Model;
 using CivOne.Persistence.Yaml;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
 
 #nullable enable
 
@@ -26,17 +19,10 @@ namespace CivOne.Persistence
 		private readonly IYamlReadValueSanitizer? _sanitizer;
 
 		/// <summary>
-		/// Parameterless constructor for backward compatibility.
-		/// Used by legacy code that doesn't have access to mapper dependencies.
-		/// Falls back to minimal stub behavior if mappers cannot be constructed.
+		/// Constructor for subclasses that provide their own DTO mapping strategy.
 		/// </summary>
-		public YamlSaveGameStateWriter()
+		protected YamlSaveGameStateWriter()
 		{
-			// Lazy initialization intentionally null to signal fallback mode
-			_playerMapper = null;
-			_unitMapper = null;
-			_mapMapper = null;
-			_sanitizer = null;
 		}
 
 		/// <summary>
@@ -60,19 +46,8 @@ namespace CivOne.Persistence
 			ArgumentNullException.ThrowIfNull(stream);
 			ArgumentNullException.ThrowIfNull(snapshot);
 
-			if (_playerMapper == null || _unitMapper == null || _mapMapper == null || _sanitizer == null)
-			{
-				// Fallback to stub for backward compatibility (if mappers not injected)
-				// This path should only be hit from legacy code without proper DI setup
-				WriteUsingStub(stream, snapshot);
-				return;
-			}
+			var dto = CreateDto(snapshot);
 
-			// Use the tested, bidirectional mapper with full data support
-			var mapper = new GameStateDtoMapper(_playerMapper, _unitMapper, _mapMapper, _sanitizer);
-			var dto = mapper.ToDto(snapshot);
-
-			// Serialize with custom YAML formatting (camelCase, custom tile converter, doc comments)
 			var yaml = YamlWriter
 				.Of(dto)
 				.WithStandard()
@@ -82,29 +57,12 @@ namespace CivOne.Persistence
 			stream.Write(System.Text.Encoding.UTF8.GetBytes(yaml));
 		}
 
-		private static void WriteUsingStub(Stream stream, GameState snapshot)
+		protected virtual GameStateDto CreateDto(GameState snapshot)
 		{
-			// Minimal stub for legacy code paths without proper mapper setup
-			// WARN: This loses Units, Players, Cities, and Map data!
-			var serializer = new SerializerBuilder()
-				.WithNamingConvention(CamelCaseNamingConvention.Instance)
-				.Build();
+			ArgumentNullException.ThrowIfNull(snapshot);
 
-			var stubDto = new GameStateDto
-			{
-				Difficulty = (DifficultyLevel)snapshot.Difficulty,
-				GameTurn = snapshot.GameTurn,
-				GameOptions = snapshot.GameOptions
-				// NOTE: The following data is NOT serialized in stub mode:
-				// - Players (critical!)
-				// - Units (critical!)
-				// - Cities
-				// - Map & Tiles
-				// This is a regression from the previous stub. Use dependency injection!
-			};
-
-			var yaml = serializer.Serialize(stubDto);
-			stream.Write(System.Text.Encoding.UTF8.GetBytes(yaml));
+			var mapper = new GameStateDtoMapper(_playerMapper, _unitMapper, _mapMapper, _sanitizer);
+			return mapper.ToDto(snapshot);
 		}
 	}
 }

@@ -1,11 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using CivOne.Civilizations;
-using CivOne.Enums;
-using CivOne.Leaders;
 using CivOne.Persistence;
-using CivOne.Tiles;
+using CivOne.Persistence.Model;
 using Xunit;
 
 namespace CivOne.UnitTests.Persistence
@@ -46,7 +43,7 @@ namespace CivOne.UnitTests.Persistence
                 Players = players
             };
 
-            actualWriter = new YamlSaveGameStateWriter();
+            actualWriter = new StubYamlSaveGameStateWriter();
         }
 
         [Fact]
@@ -70,6 +67,27 @@ namespace CivOne.UnitTests.Persistence
             Map.Reset();
             runtime?.Dispose();
             RuntimeHandler.Wipe();
+        }
+
+        private sealed class StubYamlSaveGameStateWriter : YamlSaveGameStateWriter
+        {
+            public StubYamlSaveGameStateWriter() : base()
+            {
+            }
+            
+            protected override GameStateDto CreateDto(GameState snapshot)
+                => new()
+                {
+                    // Stubbed mapping logic - only map a few properties for testing
+                    Difficulty = (DifficultyLevel)snapshot.Difficulty,
+                    GameTurn = snapshot.GameTurn,
+                    GameOptions = snapshot.GameOptions,
+                    Map = new MapDto
+                    {
+                        TerrainSeed = 0,
+                        Tiles = new Map2d<TileDto>(0, 0)
+                    }
+                };
         }
     }
 }
