@@ -188,17 +188,17 @@ namespace CivOne.Persistence.Model
             }
         }
 
-        private void ApplyTradingLinks(List<ICity> sourceCities, List<City> mappedCities, Dictionary<Guid, int> cityIndexById)
+        private void ApplyTradingLinks(List<ICity> sourceCities, List<City> mappedCities)
         {
             for (var i = 0; i < sourceCities.Count; i++)
             {
-                int[] tradingIndexes = [.. (sourceCities[i].TradingCities ?? [])
-                    .Where(tradingCity => tradingCity != null && cityIndexById.ContainsKey(tradingCity.Id))
-                    .Select(tradingCity => cityIndexById[tradingCity.Id])
-                    .Where(index => index != i)
+                Guid selfId = sourceCities[i].Id;
+                Guid[] tradingIds = [.. (sourceCities[i].TradingCities ?? [])
+                    .Where(c => c != null && c.Id != selfId)
+                    .Select(c => c.Id)
                     .Distinct()];
 
-                mappedCities[i].SetTradingCitiesIndexes(tradingIndexes);
+                mappedCities[i].SetTradingCityIds(tradingIds);
             }
         }
 

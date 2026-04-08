@@ -1057,6 +1057,10 @@ namespace CivOne
 
 		public void NewTurn()
 		{
+			// City was destroyed (DestroyCity sets X/Y to 255 as tombstone but keeps the object
+			// in _cities for index-stability of trading routes). Skip processing it.
+			if (X == 255 || Y == 255) return;
+
 			ExecutePollution();
 
 			UpdateResources();
@@ -1508,21 +1512,23 @@ namespace CivOne
 			}
 		}
 
-		private int[] tradingCities;
-		internal void SetTradingCitiesIndexes(int[] tradingCities)
+		private Guid[] _tradingCityIds;
+		internal void SetTradingCityIds(Guid[] ids)
 		{
 			// only keep the last 3 trading cities
-			this.tradingCities = [.. tradingCities.Skip(Math.Max(0, tradingCities.Length - 3))];
+			_tradingCityIds = [.. ids.Skip(Math.Max(0, ids.Length - 3))];
 		}
 
 		public City[] TradingCitiesAsCity {
 			get
 			{
-				if (tradingCities == null)
+				if (_tradingCityIds == null)
 				{
 					return [];
 				}
-				return [.. tradingCities.Select(index => Game.Instance.Cities[index])];
+				return [.. _tradingCityIds
+					.Select(id => Game.Instance.GetCities().FirstOrDefault(c => c.Id == id))
+					.Where(c => c != null)];
 			}
 		}
 
@@ -1573,15 +1579,6 @@ namespace CivOne
 			}
 		}
 
-		int IndexOfCity(City city)
-		{
-			for (int i = 0; i < Game.Instance.Cities.Count; i++)
-			{
-				if (Game.Instance.Cities[i] == city) return i;
-			}
-			return -1;
-		}
-
 		public void AddTradingCity(City city)
 		{
 			if (city == null || city == this || TradingCitiesAsCity.Contains(city))
@@ -1589,9 +1586,7 @@ namespace CivOne
 				return;
 			}
 
-			List<City> cities = [.. TradingCitiesAsCity];
-			cities.Add(city);
-			SetTradingCitiesIndexes([.. cities.Select(c => IndexOfCity(c)).Where(i => i >= 0)]);
+			SetTradingCityIds([.. (_tradingCityIds ?? []), city.Id]);
 		}
 
 

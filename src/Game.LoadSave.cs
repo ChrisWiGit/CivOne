@@ -180,6 +180,7 @@ namespace CivOne
 			// City.Game = this; // Dependency Injection (for GetSpecialistsFromGameData)
 
 			Dictionary<byte, City> cityList = new Dictionary<byte, City>();
+			List<(City city, byte[] tradingBytes)> pendingTradingCities = [];
 			foreach (CityData cityData in gameData.Cities)
 			{
 				City city = new City(cityData.Owner)
@@ -252,8 +253,17 @@ namespace CivOne
 
 				cityList.Add(cityData.Id, city);
 
-				const byte NO_CITY = 0xFF;
-				city.SetTradingCitiesIndexes([.. cityData.TradingCities.Select(index => (int)index).Where(index => index != NO_CITY)]);
+				pendingTradingCities.Add((city, cityData.TradingCities));
+			}
+
+			// Resolve trading city byte-indices to GUIDs after all cities are loaded,
+			// so forward-references (a city trading with one later in the list) work correctly.
+			const byte NO_CITY = 0xFF;
+			foreach (var (tradingCity, tradingBytes) in pendingTradingCities)
+			{
+				tradingCity.SetTradingCityIds([.. tradingBytes
+					.Where(i => i != NO_CITY && cityList.ContainsKey(i))
+					.Select(i => cityList[i].Id)]);
 			}
 
             // TODO fire-eggs: wrong when playing with fewer than 7?
