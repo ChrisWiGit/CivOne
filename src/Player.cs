@@ -67,7 +67,7 @@ namespace CivOne
 
 		internal AI AI => !IsHuman ? AI.Instance(this) : null;
 		
-		private IGovernment _government;
+		private IGovernment _government = new Despotism();
 		public IGovernment Government
 		{
 			get => _government;
@@ -446,9 +446,9 @@ namespace CivOne
 		public Player(ICivilization civilization, string customLeaderName = null, string customTribeName = null, string customTribeNamePlural = null)
 		{
 			_civilization = civilization;
-			if (customLeaderName != null) _civilization.Leader.Name = customLeaderName;
-			_tribeName = customTribeName ?? _civilization.Name;
-			_tribeNamePlural = customTribeNamePlural ?? _civilization.NamePlural;
+			if (!string.IsNullOrEmpty(customLeaderName)) _civilization.Leader.Name = customLeaderName;
+			_tribeName = string.IsNullOrEmpty(customTribeName) ? _civilization.Name : customTribeName;
+			_tribeNamePlural = string.IsNullOrEmpty(customTribeNamePlural) ? _civilization.NamePlural : customTribeNamePlural;
 			Government = new Despotism();
 
 			for (int xx = 0; xx < Map.WIDTH; xx++)

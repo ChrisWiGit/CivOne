@@ -51,8 +51,8 @@ namespace CivOne.Persistence.Model
 			
 			IPlayerRestorable player = _playerFactory.Create(civilization, dto);
 			
-			player.TribeName = dto.TribeName;
-			player.TribeNamePlural = dto.TribeNamePlural;
+			player.TribeName = string.IsNullOrEmpty(dto.TribeName) ? civilization.Name : dto.TribeName;
+			player.TribeNamePlural = string.IsNullOrEmpty(dto.TribeNamePlural) ? civilization.NamePlural : dto.TribeNamePlural;
 			player.Explored = dto.Explored;
 			player.Visible = dto.Visible;
 			player.Advances = [..
@@ -108,7 +108,7 @@ namespace CivOne.Persistence.Model
 				Anarchy = player.Anarchy,
 				Gold = player.Gold,
 			CurrentResearch = (AdvanceId)(player.CurrentResearch?.Id ?? 0),
-				Government = player.Government.Id,
+				Government = player.Government?.Id ?? 0,
 				LuxuriesRate = player.LuxuriesRate,
 				TaxesRate = player.TaxesRate,
 				ScienceRate = player.ScienceRate,
