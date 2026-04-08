@@ -11,9 +11,11 @@ namespace CivOne.Persistence.Model
         PlayerDtoMapper playerMapper,
         UnitDtoMapper unitMapper,
         DtoMapper<MapDto, IMapTiles> mapMapper,
-        IYamlReadValueSanitizer yamlReadValueSanitizer
+        IYamlReadValueSanitizer yamlReadValueSanitizer,
+        ICityNameCatalog cityNameCatalog = null
     ) : DtoMapper<GameStateDto, GameState>
     {
+        private readonly ICityNameCatalog _cityNameCatalog = cityNameCatalog ?? new CommonCityNameCatalog();
         public GameState FromDto(GameStateDto dto)
         {
             ArgumentNullException.ThrowIfNull(dto);
@@ -78,8 +80,8 @@ namespace CivOne.Persistence.Model
         {
             List<ICity> sourceCities = [.. players.SelectMany(p => p.Cities ?? [])];
             var (cityNames, cityNameIndexByName) = BuildCityNameCatalog(sourceCities);
-            var (mappedCities, cityIndexById) = MaterializeCities(sourceCities, cityNames, cityNameIndexByName);
-            ApplyTradingLinks(sourceCities, mappedCities, cityIndexById);
+            var (mappedCities, _) = MaterializeCities(sourceCities, cityNames, cityNameIndexByName);
+            ApplyTradingLinks(sourceCities, mappedCities);
             return (mappedCities, [.. cityNames]);
         }
 
@@ -87,7 +89,8 @@ namespace CivOne.Persistence.Model
         {
             // Seed from the full global catalog so that NameId values align with
             // Common.AllCityNames offsets that Game.CityNameId() depends on.
-            var cityNames = new List<string>(Common.AllCityNames);
+            // The catalog is injected to keep this class testable without a live graphics runtime.
+            var cityNames = new List<string>(_cityNameCatalog.GetAllCityNames());
             var cityNameIndexByName = new Dictionary<string, int>(StringComparer.Ordinal);
             for (var i = 0; i < cityNames.Count; i++)
                 cityNameIndexByName[cityNames[i]] = i;

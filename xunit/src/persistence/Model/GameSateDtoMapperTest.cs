@@ -56,7 +56,7 @@ namespace CivOne.Persistence.Model
 				new TestGovernmentResolver(),
 				yamlReadValueSanitizer);
 
-			_testee = new GameStateDtoMapper(playerMapper, unitMapper, mapMapper, yamlReadValueSanitizer);
+			_testee = new GameStateDtoMapper(playerMapper, unitMapper, mapMapper, yamlReadValueSanitizer, new EmptyCityNameCatalog());
 
 			PlayerDto.AllAdvances = ["0(Advance0)", "1(Advance1)", "2(Advance2)", "3(Advance3)"];
 			PlayerDto.AllAdvancesInfo = new Dictionary<AdvanceId, string>
@@ -430,6 +430,16 @@ namespace CivOne.Persistence.Model
 			{
 				return new MockedIGovernment { Id = id };
 			}
+		}
+
+		/// <summary>
+		/// Provides an empty city name catalog so that GameStateDtoMapper.FromDto()
+		/// does not call Common.AllCityNames, which would trigger Reflect.GetCivilizations()
+		/// and instantiate real leader classes that require the graphics Resources subsystem.
+		/// </summary>
+		private sealed class EmptyCityNameCatalog : ICityNameCatalog
+		{
+			public IEnumerable<string> GetAllCityNames() => [];
 		}
 	}
 }
