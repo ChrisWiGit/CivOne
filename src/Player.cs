@@ -57,8 +57,8 @@ namespace CivOne
 		public ICivilization Civilization => _civilization;
 		
 		public string LeaderName => _civilization.Leader.Name;
-		public string TribeName => _tribeName;
-		public string TribeNamePlural => _tribeNamePlural;
+		public string TribeName => _tribeName ?? _civilization?.Name;
+		public string TribeNamePlural => _tribeNamePlural ?? _civilization?.NamePlural;
 
 		public byte Handicap { get; internal set; }
 

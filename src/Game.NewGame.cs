@@ -229,7 +229,7 @@ namespace CivOne
 				}
 				ICivilization[] civs = Common.Civilizations.Where(civ => civ.PreferredPlayerNumber == i).ToArray();
 				int r = startRandom.Next(civs.Length);
-				_players[i] = new Player(civs[r]);
+				_players[i] = new Player(civs[r], customTribeName: null);
 				if (i != 0)
 				{
 					// fire-eggs 20190730 never show "barbarian civilization destroyed"

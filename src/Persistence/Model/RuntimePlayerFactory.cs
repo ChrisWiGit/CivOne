@@ -19,6 +19,6 @@ namespace CivOne.Persistence.Model
 	public sealed class RuntimePlayerFactory : IPlayerFactory
 	{
 		public IPlayerRestorable Create(ICivilization civilization, PlayerDto dto)
-			=> new Player(civilization);
+			=> new Player(civilization, customTribeName: null);
 	}
 }
