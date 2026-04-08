@@ -360,7 +360,25 @@ namespace CivOne
 				if (sea && !Map[xx, yy].IsOcean && (Math.Abs(relX) > 1 || Math.Abs(relY) > 1))
 					continue;
 				_visible[xx, yy] = true;
-			} 
+			}
+			UpdateVisibleCitySizes();
+		}
+
+		/// <summary>
+		/// For every enemy city now visible to this player, update its <see cref="City.VisibleSizes"/>
+		/// entry so the map shows the correct (last-known) city size under fog-of-war.
+		/// </summary>
+		private void UpdateVisibleCitySizes()
+		{
+			if (!Game.Started) return;
+			byte playerId = Game.PlayerNumber(this);
+			foreach (City city in Game.GetCities())
+			{
+				if (city.Size == 0) continue; // destroyed city
+				if (city.Owner == playerId) continue;
+				if (_visible[city.X, city.Y])
+					city.VisibleSizes[playerId] = city.Size;
+			}
 		}
 
 		public bool Visible(int x, int y)
