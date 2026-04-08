@@ -205,6 +205,7 @@ namespace CivOne.Persistence.Model
 				AnthologyTurn = 0,
 				GameOptions = [GameOptionEnum.Sound],
 				AdvanceOrigin = new Dictionary<byte, byte> { [3] = 1, [7] = 0 },
+				ReplayData = [new ReplayDataDto { Turn = 5, CivilizationDestroyed = new() { DestroyedId = 1, DestroyedById = 2 } }],
 				Map = new MapDto
 				{
 					MapSeed = 4242,
@@ -333,7 +334,9 @@ namespace CivOne.Persistence.Model
 					}
 				},
 				[nameof(GameStateDto.GameOptions)] = () => Assert.Equal(expected.GameOptions, actual.GameOptions),
-				[nameof(GameStateDto.AdvanceOrigin)] = () => Assert.Equal(expected.AdvanceOrigin, actual.AdvanceOrigin)
+				[nameof(GameStateDto.AdvanceOrigin)] = () => Assert.Equal(expected.AdvanceOrigin, actual.AdvanceOrigin),
+				[nameof(GameStateDto.ReplayData)] = () => Assert.Equal(
+					expected.ReplayData?.Count ?? 0, actual.ReplayData?.Count ?? 0)
 			};
 
 		private static HashSet<string> GetWritablePropertyNames<T>() => typeof(T).GetProperties()

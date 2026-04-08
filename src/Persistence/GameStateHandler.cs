@@ -108,6 +108,7 @@ namespace CivOne
 
 				Cities = game.Cities,
 				AdvanceOrigin = game.AdvanceOrigin,
+				ReplayData = [.. game.ReplayData],
 			};
 		}
 

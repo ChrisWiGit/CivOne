@@ -33,6 +33,7 @@ namespace CivOne.Persistence.Yaml
     {
         private readonly object _dto;
         private INamingConvention _namingConvention;
+        private bool _omitNulls;
         private readonly List<IYamlTypeConverter> _typeConverters = [];
         private readonly List<Func<IEventEmitter, IEventEmitter>> _eventEmitterFactories = [];
 
@@ -62,7 +63,8 @@ namespace CivOne.Persistence.Yaml
         public YamlWriter WithStandard()
             => WithNamingConvention(PascalCaseNamingConvention.Instance)
                .WithTypeConverter(new Bool2dMapYamlTypeConverter())
-               .WithEventEmitter(next => new DocCommentEventEmitter(next));
+               .WithEventEmitter(next => new DocCommentEventEmitter(next))
+               .WithoutNullValues();
 
         /// <summary>
         /// Sets the naming convention used when serializing property names.
@@ -76,6 +78,16 @@ namespace CivOne.Persistence.Yaml
         public YamlWriter WithNamingConvention(INamingConvention namingConvention)
         {
             _namingConvention = namingConvention;
+            return this;
+        }
+
+        /// <summary>
+        /// Suppresses null-valued properties from the serialized output so that they
+        /// do not appear as empty keys in the YAML file.
+        /// </summary>
+        public YamlWriter WithoutNullValues()
+        {
+            _omitNulls = true;
             return this;
         }
 
@@ -116,6 +128,9 @@ namespace CivOne.Persistence.Yaml
 
             if (_namingConvention != null)
                 builder = builder.WithNamingConvention(_namingConvention);
+
+            if (_omitNulls)
+                builder = builder.ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull);
 
             foreach (var converter in _typeConverters)
                 builder = builder.WithTypeConverter(converter);

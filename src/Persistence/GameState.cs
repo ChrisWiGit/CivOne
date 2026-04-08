@@ -114,7 +114,7 @@ namespace CivOne.Persistence
 
         public List<GameOptionEnum> GameOptions { get; set; }
 
-        // TODO: To Implement!
-		// public List<ReplayData> ReplayData { get; set; }
+        /// <summary>Replay events recorded during the game session.</summary>
+        public List<ReplayData> ReplayData { get; set; }
 	}
 }

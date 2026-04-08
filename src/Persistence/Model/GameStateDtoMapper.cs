@@ -258,7 +258,8 @@ namespace CivOne.Persistence.Model
                 MapWidth = map.width,
                 MapHeight = map.height,
                 MapTiles = map.mapTiles,
-                AdvanceOrigin = dto.AdvanceOrigin
+                AdvanceOrigin = dto.AdvanceOrigin,
+                ReplayData = new ReplayDataDtoMapper().FromDtoList(dto.ReplayData ?? [])
             };
         }
 
@@ -325,7 +326,8 @@ namespace CivOne.Persistence.Model
                 AnthologyTurn = gameState.AnthologyTurn,
                 Map = mapDto,
                 GameOptions = gameState.GameOptions ?? [],
-                AdvanceOrigin = gameState.AdvanceOrigin
+                AdvanceOrigin = gameState.AdvanceOrigin,
+                ReplayData = new ReplayDataDtoMapper().ToDtoList(gameState.ReplayData ?? [])
             };
 
             foreach (var player in gameStateDto.Players)

@@ -50,6 +50,9 @@ namespace CivOne.Persistence.Model
         [Doc("Maps each advance ID to the player number who first discovered it.")]
         public Dictionary<byte, byte> AdvanceOrigin { get; set; }
 
+        [Doc("Replay events recorded during the game session.")]
+        public List<ReplayDataDto> ReplayData { get; set; }
+
         private static string DifficultyAll { get => string.Join(", ", Enum.GetNames<DifficultyLevel>()); }
         private static string GameOptionsAll { get => string.Join(", ", Enum.GetNames<GameOptionEnum>()); }
     }
