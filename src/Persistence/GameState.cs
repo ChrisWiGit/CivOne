@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using CivOne.Persistence.Model;
+using CivOne.Services.GlobalWarming;
 using CivOne.Tiles;
 using CivOne.Units;
 
@@ -116,5 +117,9 @@ namespace CivOne.Persistence
 
         /// <summary>Replay events recorded during the game session.</summary>
         public List<ReplayData> ReplayData { get; set; }
+
+        public int GlobalWarmingCount { get; set; }
+        public int PollutedSquaresCount { get; set; }
+        public WarmingIndicator WarmingIndicator { get; set; }
 	}
 }

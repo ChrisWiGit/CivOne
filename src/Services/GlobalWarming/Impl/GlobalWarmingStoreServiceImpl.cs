@@ -11,9 +11,9 @@ namespace CivOne.Services.GlobalWarming.Impl
 	{
 		public void Store(IGameData gameData)
 		{
-			// gameData.GlobalWarmingCount = globalWarmingService.GlobalWarmingCount;
-			// gameData.PollutedSquaresCount = globalWarmingService.PollutedSquaresCount;
-			// gameData.WarmingIndicator = (short)globalWarmingService.WarmingIndicator;
+			gameData.GlobalWarmingCount = (ushort)globalWarmingService.GlobalWarmingCount;
+			gameData.PollutedSquaresCount = (ushort)globalWarmingService.PollutedSquaresCount;
+			gameData.WarmingIndicator = (ushort)globalWarmingService.WarmingIndicator;
 		}
 	}
 }

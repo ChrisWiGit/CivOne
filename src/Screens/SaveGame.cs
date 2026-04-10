@@ -108,6 +108,7 @@ namespace CivOne.Screens
 				mapperDependencies.PlayerMapper,
 				mapperDependencies.UnitMapper,
 				mapperDependencies.MapMapper,
+				mapperDependencies.GlobalWarmingMapper,
 				mapperDependencies.Sanitizer);
 			writer.Write(stream, gameState.Create(Game), Game.SaveMetaData);
 

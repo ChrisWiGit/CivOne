@@ -26,6 +26,7 @@ namespace CivOne.Persistence.Yaml
 			new RuntimeMapFactory(map),
 			new RuntimeTileDtoMapper(map, new RuntimeTerrainFactory()),
 			0);
+			var globalWarmingMapper = new GlobalWarmingDtoMapper(sanitizer);
 			var cityMapper = new CityDtoMapper(new ProductionDtoMapper(new GameReflect()), new CityDefinitionResolver(), sanitizer);
 			// NullPlayerGame: no game instance exists yet during load; PlayerDtoMapper
 			// requires IPlayerGame only for ToDto (save path), which is never called here.
@@ -44,7 +45,7 @@ namespace CivOne.Persistence.Yaml
 			sanitizer);
 
 			InitializeDocLists();
-			return new YamlMapperDependencies(playerMapper, unitMapper, mapMapper, sanitizer);
+			return new YamlMapperDependencies(playerMapper, unitMapper, mapMapper, globalWarmingMapper, sanitizer);
 		}
 
 		private static void InitializeDocLists()

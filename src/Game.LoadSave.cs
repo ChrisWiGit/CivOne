@@ -115,6 +115,7 @@ namespace CivOne
 				gameData.NextAnthologyTurn = _anthologyTurn;
 				gameData.OpponentCount = (ushort)(_players.Length - 2);
 				gameData.ReplayData = _replayData.ToArray();
+				GlobalWarmingServiceFactory.CreateGlobalWarmingStoreService(globalWarmingService).Store(gameData);
 				File.WriteAllBytes(sveFile, gameData.GetBytes());
 			}
 		}
@@ -290,7 +291,7 @@ namespace CivOne
 
 			_replayData.AddRange(gameData.ReplayData);
 
-			globalWarmingService = GlobalWarmingServiceFactory.CreateGlobalWarmingService(gameData, _cities.AsReadOnly(), Map.AllTiles());
+			globalWarmingService = GlobalWarmingServiceFactory.CreateGlobalWarmingService(gameData, Map.AllTiles());
 			globalWarmingScourgeService = GlobalWarmingServiceFactory.CreateGlobalWarmingScourgeService(
 				globalWarmingService,
 				Map.Tiles,

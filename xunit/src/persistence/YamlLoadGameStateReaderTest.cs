@@ -76,7 +76,7 @@ namespace CivOne.UnitTests.Persistence
 			var dto = YamlLoadGameStateReaderTestData.BuildSampleGameStateDto();
 			Player.Game = null;
 			var deps = YamlLoadMapperDependenciesFactory.Create(_sanitizer);
-			var mapper = new GameStateDtoMapper(deps.PlayerMapper, deps.UnitMapper, deps.MapMapper, deps.Sanitizer);
+			var mapper = new GameStateDtoMapper(deps.PlayerMapper, deps.UnitMapper, deps.MapMapper, deps.GlobalWarmingMapper, deps.Sanitizer);
 
 			// Act
 			var actual = mapper.FromDto(dto);
@@ -103,7 +103,7 @@ namespace CivOne.UnitTests.Persistence
 			var dto = YamlLoadGameStateReaderTestData.BuildSampleGameStateDto();
 			Player.Game = null;
 			var deps = YamlLoadMapperDependenciesFactory.Create(_sanitizer);
-			var mapper = new GameStateDtoMapper(deps.PlayerMapper, deps.UnitMapper, deps.MapMapper, deps.Sanitizer);
+			var mapper = new GameStateDtoMapper(deps.PlayerMapper, deps.UnitMapper, deps.MapMapper, deps.GlobalWarmingMapper, deps.Sanitizer);
 
 			// Act
 			var actual = mapper.FromDto(dto);
@@ -129,7 +129,7 @@ namespace CivOne.UnitTests.Persistence
 
 			Player.Game = null;
 			var deps = YamlLoadMapperDependenciesFactory.Create(_sanitizer);
-			var mapper = new GameStateDtoMapper(deps.PlayerMapper, deps.UnitMapper, deps.MapMapper, deps.Sanitizer);
+			var mapper = new GameStateDtoMapper(deps.PlayerMapper, deps.UnitMapper, deps.MapMapper, deps.GlobalWarmingMapper, deps.Sanitizer);
 
 			// Act
 			var actual = mapper.FromDto(dto);

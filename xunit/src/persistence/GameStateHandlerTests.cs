@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using CivOne.Persistence;
+using CivOne.Services.GlobalWarming;
 using CivOne.Tiles;
 using CivOne.Units;
 using Xunit;
@@ -85,6 +85,9 @@ namespace CivOne.UnitTests.Persistence
             public bool Palace { get; set; }
             public int? GameRandomSeed { get; set; }
             public int TerrainMasterWord { get; set; }
+
+            // Must be null: real GlobalWarmingService would require a live Game/Map context.
+            public IGlobalWarmingService GlobalWarmingService { get; set; } = null;
 
             public byte PlayerNumber(Player player) => 0;
         }

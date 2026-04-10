@@ -55,7 +55,7 @@ namespace CivOne
 			InitializePlayerState(state);
 			InitializeGameState(state);
 			ApplyGameOptions(state.GameOptions ?? []);
-			InitializeServices();
+			InitializeGlobalWarmingServices(state);
 			InitializeActiveUnit();
 
 			_players.ToList().ForEach(p => p.HandleExtinction(false));
@@ -136,9 +136,10 @@ namespace CivOne
 			if (Settings.Palace == GameOption.Default) Palace = optionList.Contains(GameOptionEnum.Palace);
 		}
 
-		private void InitializeServices()
+		private void InitializeGlobalWarmingServices(GameState state)
 		{
-			globalWarmingService = GlobalWarmingServiceFactory.CreateGlobalWarmingService(_cities.AsReadOnly(), Map.AllTiles());
+			globalWarmingService = GlobalWarmingServiceFactory.CreateGlobalWarmingService(
+				state.GlobalWarmingCount, state.PollutedSquaresCount, state.WarmingIndicator, Map.AllTiles());
 			globalWarmingScourgeService = GlobalWarmingServiceFactory.CreateGlobalWarmingScourgeService(
 				globalWarmingService,
 				Map.Tiles,
@@ -177,7 +178,7 @@ namespace CivOne
 
 				var sanitizer = new YamlReadValueSanitizer(new RuntimeLogger());
 				var deps = YamlLoadMapperDependenciesFactory.Create(sanitizer);
-				var mapper = new GameStateDtoMapper(deps.PlayerMapper, deps.UnitMapper, deps.MapMapper, deps.Sanitizer);
+				var mapper = new GameStateDtoMapper(deps.PlayerMapper, deps.UnitMapper, deps.MapMapper, deps.GlobalWarmingMapper, deps.Sanitizer);
 				var yaml = File.ReadAllText(cosFile);
 
 				SaveGameFileRootDto saveFile = null;

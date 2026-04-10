@@ -53,6 +53,9 @@ namespace CivOne.Persistence.Model
         [Doc("Replay events recorded during the game session.")]
         public List<ReplayDataDto> ReplayData { get; set; }
 
+		[Doc("Global warming simulation state (count, pollution level, warning indicator).")]
+		public GlobalWarmingDto GlobalWarming { get; set; }
+
         private static string DifficultyAll { get => string.Join(", ", Enum.GetNames<DifficultyLevel>()); }
         private static string GameOptionsAll { get => string.Join(", ", Enum.GetNames<GameOptionEnum>()); }
     }

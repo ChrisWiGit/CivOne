@@ -12,6 +12,7 @@ namespace CivOne.Persistence.Model
         PlayerDtoMapper playerMapper,
         UnitDtoMapper unitMapper,
         DtoMapper<MapDto, IMapTiles> mapMapper,
+        DtoMapper<GlobalWarmingDto, GameState> globalWarmingMapper,
         IYamlReadValueSanitizer yamlReadValueSanitizer,
         ICityNameCatalog cityNameCatalog = null
     ) : DtoMapper<GameStateDto, GameState>
@@ -44,8 +45,9 @@ namespace CivOne.Persistence.Model
                 var randomSeed = yamlReadValueSanitizer.ClampToInt32(dto.GameRandomSeed, nameof(GameStateDtoMapper), nameof(GameStateDto.GameRandomSeed));
                 var difficulty = yamlReadValueSanitizer.ClampToInt32((int)dto.Difficulty, nameof(GameStateDtoMapper), nameof(GameStateDto.Difficulty));
                 var anthologyTurn = (ushort)yamlReadValueSanitizer.ClampToInt32(dto.AnthologyTurn, nameof(GameStateDtoMapper), nameof(GameStateDto.AnthologyTurn), min: 0, max: ushort.MaxValue);
+                var globalWarmingState = globalWarmingMapper.FromDto(dto.GlobalWarming);
 
-                return BuildGameState(dto, players, units, cities, cityNames, map, randomSeed, difficulty, anthologyTurn);
+                return BuildGameState(dto, players, units, cities, cityNames, map, randomSeed, difficulty, anthologyTurn, globalWarmingState);
             }
             finally
             {
@@ -243,7 +245,8 @@ namespace CivOne.Persistence.Model
 			(int width, int height, int terrainSeed, ITile[,] mapTiles) map,
 			int randomSeed,
 			int difficulty,
-            ushort anthologyTurn)
+            ushort anthologyTurn,
+            GameState globalWarmingState)
         {
             return new GameState
             {
@@ -263,7 +266,10 @@ namespace CivOne.Persistence.Model
                 MapHeight = map.height,
                 MapTiles = map.mapTiles,
                 AdvanceOrigin = dto.AdvanceOrigin,
-                ReplayData = new ReplayDataDtoMapper().FromDtoList(dto.ReplayData ?? [])
+                ReplayData = new ReplayDataDtoMapper().FromDtoList(dto.ReplayData ?? []),
+                GlobalWarmingCount = globalWarmingState.GlobalWarmingCount,
+                PollutedSquaresCount = globalWarmingState.PollutedSquaresCount,
+                WarmingIndicator = globalWarmingState.WarmingIndicator
             };
         }
 
@@ -331,7 +337,8 @@ namespace CivOne.Persistence.Model
                 Map = mapDto,
                 GameOptions = gameState.GameOptions ?? [],
                 AdvanceOrigin = gameState.AdvanceOrigin,
-                ReplayData = new ReplayDataDtoMapper().ToDtoList(gameState.ReplayData ?? [])
+                ReplayData = new ReplayDataDtoMapper().ToDtoList(gameState.ReplayData ?? []),
+                GlobalWarming = globalWarmingMapper.ToDto(gameState)
             };
 
             foreach (var player in gameStateDto.Players)

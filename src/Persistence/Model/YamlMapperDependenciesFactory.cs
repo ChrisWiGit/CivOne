@@ -14,6 +14,7 @@ namespace CivOne.Persistence.Model
 		PlayerDtoMapper PlayerMapper,
 		UnitDtoMapper UnitMapper,
 		MapDtoMapper MapMapper,
+		DtoMapper<GlobalWarmingDto, GameState> GlobalWarmingMapper,
 		IYamlReadValueSanitizer Sanitizer);
 
 	public interface IYamlMapperDependenciesFactory
@@ -34,6 +35,7 @@ namespace CivOne.Persistence.Model
 
 			var unitMapper = new UnitDtoMapper(new NotSupportedUnitFactory(), _sanitizer);
 			var mapMapper = new MapDtoMapper(new NotSupportedMapFactory(), new DefaultTileDtoMapper(new NotSupportedTileFactory()));
+			var globalWarmingMapper = new GlobalWarmingDtoMapper(_sanitizer);
 			var cityMapper = new CityDtoMapper(new ProductionDtoMapper(_reflect), new CityDefinitionResolver(), _sanitizer);
 			var playerMapper = new PlayerDtoMapper(
 				gameInstance,
@@ -49,7 +51,7 @@ namespace CivOne.Persistence.Model
 
 			InitializeDocLists();
 
-			return new YamlMapperDependencies(playerMapper, unitMapper, mapMapper, _sanitizer);
+			return new YamlMapperDependencies(playerMapper, unitMapper, mapMapper, globalWarmingMapper, _sanitizer);
 		}
 
 		public static IYamlMapperDependenciesFactory CreateDefault()

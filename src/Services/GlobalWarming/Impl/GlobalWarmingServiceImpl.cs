@@ -9,38 +9,37 @@ namespace CivOne.Services.GlobalWarming.Impl
 {
 	public class GlobalWarmingCountServiceImpl : IGlobalWarmingService
 	{
-		private ReadOnlyCollection<City> _cities = null;
 		private IEnumerable<ITile> _tiles = null;
 		int _pollutedSquaresCount = 0;
 		short _globalWarmingCount = 0;
 		WarmingIndicator _warmingIndicator = WarmingIndicator.None;
 
 		public GlobalWarmingCountServiceImpl(IGameData gameData,
-				ReadOnlyCollection<City> cities,
 				IEnumerable<ITile> tiles)
 		{
-			// Constructor implementation
 			if (gameData != null)
 			{
-				// _globalWarmingCount = gameData.GlobalWarmingCount;
-				// _pollutedSquaresCount = gameData.PollutedSquaresCount;
-				// _warmingIndicator = (WarmingIndicator)gameData.WarmingIndicator;
+				_globalWarmingCount = (short)gameData.GlobalWarmingCount;
+				_pollutedSquaresCount = gameData.PollutedSquaresCount;
+				_warmingIndicator = (WarmingIndicator)gameData.WarmingIndicator;
 			}
 			if (_warmingIndicator > WarmingIndicator.White)
-				{
-					_warmingIndicator = WarmingIndicator.None;
-				}
-			// Testwerte
-			_globalWarmingCount = 0;
-			_pollutedSquaresCount = 0;
-			_warmingIndicator = WarmingIndicator.None;
+				_warmingIndicator = WarmingIndicator.None;
 
-			SetCities(cities);
 			SetReadonlyTiles(tiles);
 		}
 
-		public GlobalWarmingCountServiceImpl(ReadOnlyCollection<City> cities,
-				IEnumerable<ITile> tiles): this(null, cities, tiles)
+		public GlobalWarmingCountServiceImpl(int globalWarmingCount, int pollutedSquaresCount, WarmingIndicator warmingIndicator,
+				IEnumerable<ITile> tiles)
+		{
+			_globalWarmingCount = (short)Math.Clamp(globalWarmingCount, short.MinValue, short.MaxValue);
+			_pollutedSquaresCount = pollutedSquaresCount;
+			_warmingIndicator = warmingIndicator > WarmingIndicator.White ? WarmingIndicator.None : warmingIndicator;
+
+			SetReadonlyTiles(tiles);
+		}
+
+		public GlobalWarmingCountServiceImpl(IEnumerable<ITile> tiles) : this(null, tiles)
 		{
 		}
 
@@ -60,6 +59,12 @@ namespace CivOne.Services.GlobalWarming.Impl
 			}
 
 			return false;
+		}
+
+		public void RefreshPollutionState()
+		{
+			_pollutedSquaresCount = GetPollutedSquareCount();
+			_warmingIndicator = GetWarmingIndicator(_pollutedSquaresCount);
 		}
 
 		protected int GetPollutedSquareCount()
@@ -99,10 +104,6 @@ namespace CivOne.Services.GlobalWarming.Impl
 
 		public int GlobalWarmingCount => _globalWarmingCount;
 
-		public void SetCities(ReadOnlyCollection<City> cities)
-		{
-			_cities = cities;
-		}
 		public void SetReadonlyTiles(IEnumerable<ITile> tiles)
 		{
 			_tiles = tiles;

@@ -177,7 +177,7 @@ namespace CivOne
 
 		private void InitGlobalWarmingServices()
 		{
-			globalWarmingService = GlobalWarmingServiceFactory.CreateGlobalWarmingService(_cities.AsReadOnly(), Map.AllTiles());
+			globalWarmingService = GlobalWarmingServiceFactory.CreateGlobalWarmingService(Map.AllTiles());
 			globalWarmingScourgeService = GlobalWarmingServiceFactory.CreateGlobalWarmingScourgeService(
 				globalWarmingService,
 				Map.Tiles,

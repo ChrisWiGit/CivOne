@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CivOne.Services.GlobalWarming;
 using CivOne.Tiles;
 using CivOne.Units;
 
@@ -19,6 +20,8 @@ namespace CivOne
 		public int? GameRandomSeed => null;
 
 		public int TerrainMasterWord => Map.Instance.TerrainMasterWord;
+
+		IGlobalWarmingService IGameSnapshotSource.GlobalWarmingService => globalWarmingService;
 
 		public ITile[,] MapTiles => Map.Instance.Tiles;
 

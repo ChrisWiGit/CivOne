@@ -290,6 +290,7 @@ namespace CivOne
 			}
 			
 			globalWarmingScourgeService.UnleashScourgeOfPollution();
+			globalWarmingService.RefreshPollutionState();
 
 			GameTask.Enqueue(Message.Newspaper(null, "Global temperature", "rises! Icecaps melt.", "Severe Drought."));
 		}

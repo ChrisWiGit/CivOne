@@ -282,6 +282,24 @@ namespace CivOne
 			set => _saveData.OpponentCount = value;
 		}
 
+		public ushort GlobalWarmingCount
+		{
+			get => _saveData.GlobalWarming;
+			set => _saveData.GlobalWarming = value;
+		}
+
+		public ushort PollutedSquaresCount
+		{
+			get => _saveData.PollutionSquares;
+			set => _saveData.PollutionSquares = value;
+		}
+
+		public ushort WarmingIndicator
+		{
+			get => _saveData.PollutionEffect;
+			set => _saveData.PollutionEffect = value;
+		}
+
 		public ReplayData[] ReplayData
 		{
 			get => GetReplayData().ToArray();

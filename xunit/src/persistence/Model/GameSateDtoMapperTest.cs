@@ -43,6 +43,7 @@ namespace CivOne.Persistence.Model
 			var mockedMapFactory = new MapDtoTest.MockedIMapFactory();
 			var mockedTileMapper = new MapDtoTest.MockedITileDtoMapper(() => mockedMapFactory.CurrentMapTiles);
 			var mapMapper = new MapDtoMapper(mockedMapFactory, mockedTileMapper);
+			var globalWarmingMapper = new GlobalWarmingDtoMapper(yamlReadValueSanitizer);
 
 			var playerMapper = new PlayerDtoMapper(
 				_gameInstance,
@@ -56,7 +57,7 @@ namespace CivOne.Persistence.Model
 				new TestGovernmentResolver(),
 				yamlReadValueSanitizer);
 
-			_testee = new GameStateDtoMapper(playerMapper, unitMapper, mapMapper, yamlReadValueSanitizer, new EmptyCityNameCatalog());
+			_testee = new GameStateDtoMapper(playerMapper, unitMapper, mapMapper, globalWarmingMapper, yamlReadValueSanitizer, new EmptyCityNameCatalog());
 
 			PlayerDto.AllAdvances = ["0(Advance0)", "1(Advance1)", "2(Advance2)", "3(Advance3)"];
 			PlayerDto.AllAdvancesInfo = new Dictionary<AdvanceId, string>
@@ -206,6 +207,12 @@ namespace CivOne.Persistence.Model
 				GameOptions = [GameOptionEnum.Sound],
 				AdvanceOrigin = new Dictionary<byte, byte> { [3] = 1, [7] = 0 },
 				ReplayData = [new ReplayDataDto { Turn = 5, CivilizationDestroyed = new() { DestroyedId = 1, DestroyedById = 2 } }],
+				GlobalWarming = new GlobalWarmingDto
+				{
+					GlobalWarmingCount = 3,
+					PollutedSquaresCount = 7,
+					WarmingIndicator = Services.GlobalWarming.WarmingIndicator.Yellow
+				},
 				Map = new MapDto
 				{
 					MapSeed = 4242,
@@ -336,7 +343,14 @@ namespace CivOne.Persistence.Model
 				[nameof(GameStateDto.GameOptions)] = () => Assert.Equal(expected.GameOptions, actual.GameOptions),
 				[nameof(GameStateDto.AdvanceOrigin)] = () => Assert.Equal(expected.AdvanceOrigin, actual.AdvanceOrigin),
 				[nameof(GameStateDto.ReplayData)] = () => Assert.Equal(
-					expected.ReplayData?.Count ?? 0, actual.ReplayData?.Count ?? 0)
+					expected.ReplayData?.Count ?? 0, actual.ReplayData?.Count ?? 0),
+				[nameof(GameStateDto.GlobalWarming)] = () =>
+				{
+					Assert.NotNull(actual.GlobalWarming);
+					Assert.Equal(expected.GlobalWarming.GlobalWarmingCount, actual.GlobalWarming.GlobalWarmingCount);
+					Assert.Equal(expected.GlobalWarming.PollutedSquaresCount, actual.GlobalWarming.PollutedSquaresCount);
+					Assert.Equal(expected.GlobalWarming.WarmingIndicator, actual.GlobalWarming.WarmingIndicator);
+				}
 			};
 
 		private static HashSet<string> GetWritablePropertyNames<T>() => typeof(T).GetProperties()

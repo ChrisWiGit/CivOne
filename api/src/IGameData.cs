@@ -40,6 +40,9 @@ namespace CivOne
 		ushort NextAnthologyTurn { get; set; }
 		ushort OpponentCount { get; set; }
 		ReplayData[] ReplayData { get; set; }
+		ushort GlobalWarmingCount { get; set; }
+		ushort PollutedSquaresCount { get; set; }
+		ushort WarmingIndicator { get; set; }
 
 		bool ValidData { get; }
 		byte[] GetBytes();

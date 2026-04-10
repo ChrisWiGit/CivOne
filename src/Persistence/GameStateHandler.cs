@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Persistence;
+using CivOne.Services.GlobalWarming;
 using CivOne.Tiles;
 using CivOne.Units;
 using CivOne.Wonders;
@@ -52,6 +53,8 @@ namespace CivOne
 		int? GameRandomSeed { get; }
 
 		int TerrainMasterWord { get; }
+
+		IGlobalWarmingService GlobalWarmingService { get; }
 	}
 
 	public class GameStateHandler
@@ -104,6 +107,9 @@ namespace CivOne
 				Cities = game.Cities,
 				AdvanceOrigin = game.AdvanceOrigin,
 				ReplayData = [.. game.ReplayData],
+				GlobalWarmingCount = game.GlobalWarmingService?.GlobalWarmingCount ?? 0,
+				PollutedSquaresCount = game.GlobalWarmingService?.PollutedSquaresCount ?? 0,
+				WarmingIndicator = game.GlobalWarmingService?.WarmingIndicator ?? WarmingIndicator.None,
 			};
 		}
 

@@ -13,15 +13,20 @@ namespace CivOne.Services.GlobalWarming
 	{
 
 		public static IGlobalWarmingService CreateGlobalWarmingService(IGameData gameData,
-				ReadOnlyCollection<City> cities,
 				IEnumerable<ITile> tiles)
 		{
-			return new GlobalWarmingCountServiceImpl(gameData, cities, tiles);
+			return new GlobalWarmingCountServiceImpl(gameData, tiles);
 		}
-		public static IGlobalWarmingService CreateGlobalWarmingService(ReadOnlyCollection<City> cities,
+		public static IGlobalWarmingService CreateGlobalWarmingService(IEnumerable<ITile> tiles)
+		{
+			return new GlobalWarmingCountServiceImpl(tiles);
+		}
+
+		public static IGlobalWarmingService CreateGlobalWarmingService(
+				int globalWarmingCount, int pollutedSquaresCount, WarmingIndicator warmingIndicator,
 				IEnumerable<ITile> tiles)
 		{
-			return new GlobalWarmingCountServiceImpl(cities, tiles);
+			return new GlobalWarmingCountServiceImpl(globalWarmingCount, pollutedSquaresCount, warmingIndicator, tiles);
 		}
 
 		public static IGlobalWarmingStoreService CreateGlobalWarmingStoreService(IGlobalWarmingService globalWarmingService)
@@ -57,15 +62,15 @@ namespace CivOne.Services.GlobalWarming
 					mapHeight
 				);
 		}
-		
+
 	}
 }
 
 // 			globalWarmingService = new GlobalWarmingCountServiceImpl(gameData, _cities.AsReadOnly(), Map.AllTiles());
-			// globalWarmingScourgeService = new GlobalWarmingScourgeWithFloodServiceImpl(
-			// 		globalWarmingService,
-			// 		Map.Tiles,
-			// 		(tile, newTerrainType) => Map.ChangeTileType(tile.X, tile.Y, newTerrainType),
-			// 		Map.WIDTH,
-			// 		Map.HEIGHT
-			// 	);
+// globalWarmingScourgeService = new GlobalWarmingScourgeWithFloodServiceImpl(
+// 		globalWarmingService,
+// 		Map.Tiles,
+// 		(tile, newTerrainType) => Map.ChangeTileType(tile.X, tile.Y, newTerrainType),
+// 		Map.WIDTH,
+// 		Map.HEIGHT
+// 	);
