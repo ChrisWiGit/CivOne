@@ -94,10 +94,7 @@ namespace CivOne.Screens
 			SaveFileName = Path.ChangeExtension(sveFile, ".cos");
 			SetLastUsedSaveGameDialogPath(SaveFileName);
 
-			if (string.IsNullOrWhiteSpace(Game.SaveMetaData.DisplayName))
-			{
-				Game.SaveMetaData.DisplayName = Game.SaveMetaData.DisplayName ?? Game.SaveMetaDataService.BuildDisplayName(Game.Difficulty, Game.HumanPlayer);
-			}
+			Game.SaveMetaData.DisplayName = Game.SaveMetaData.DisplayName ?? Game.SaveMetaDataService.BuildDisplayName(Game.Difficulty, Game.HumanPlayer);
 
 			GameStateHandler gameState = new();
 			using var stream = File.Create(SaveFileName);
