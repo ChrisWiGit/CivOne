@@ -11,7 +11,6 @@
 
 using System;
 using System.Linq;
-using System.Threading;
 using CivOne.UnitTests;
 
 namespace CivOne.src
