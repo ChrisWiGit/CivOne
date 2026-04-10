@@ -4,7 +4,7 @@ using CivOne.Advances;
 using CivOne.Units;
 using CivOne.Wonders;
 
-namespace CivOne.Persistence.Model
+namespace CivOne.Persistence.Stubs
 {
     /// <summary>
     /// Minimal stub implementation of IPlayerGame for use during YAML loading.

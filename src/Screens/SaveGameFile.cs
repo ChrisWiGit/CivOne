@@ -87,10 +87,6 @@ namespace CivOne.Screens
                 string filename = Path.Combine(path, string.Format("CIVIL{0}", i));
                 yield return new SaveGameFile(filename);
             }
-
-            if (!Directory.Exists(path)) yield break;
-            foreach (string cosFile in Directory.GetFiles(path, "*.cos"))
-                yield return FromCosFile(cosFile);
         }
 
     }

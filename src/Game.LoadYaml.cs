@@ -45,12 +45,29 @@ namespace CivOne
 			_players = [.. state.Players.Select(p => p as Player ?? throw new InvalidOperationException("YAML load requires Player instances."))];
 			_cities = state.Cities ?? [];
 			_units = state.Units ?? [];
+			CityNames = state.CityNames?.Length > 0 ? state.CityNames : Common.AllCityNames.ToArray();
 
+			RegisterPlayerDestroyedHandlers();
+			ResolveUnitHomeCities();
+			InitializePlayerState(state);
+			InitializeGameState(state);
+			ApplyGameOptions(state.GameOptions ?? []);
+			InitializeServices();
+			InitializeActiveUnit();
+
+			_players.ToList().ForEach(p => p.HandleExtinction(false));
+		}
+
+		private void RegisterPlayerDestroyedHandlers()
+		{
 			for (var i = 1; i < _players.Length; i++)
 			{
 				_players[i].Destroyed += PlayerDestroyed;
 			}
+		}
 
+		private void ResolveUnitHomeCities()
+		{
 			var cityById = _cities
 				.GroupBy(c => c.Id)
 				.ToDictionary(group => group.Key, group => group.First());
@@ -64,7 +81,10 @@ namespace CivOne
 
 				unit.PendingHomeCityGuid = null;
 			}
+		}
 
+		private void InitializePlayerState(GameState state)
+		{
 			GameTurn = (ushort)Math.Clamp((int)state.GameTurn, 0, ushort.MaxValue);
 
 			HumanPlayer = state.HumanPlayer as Player
@@ -72,14 +92,13 @@ namespace CivOne
 
 			_currentPlayer = Array.IndexOf(_players, state.CurrentPlayer as Player);
 			if (_currentPlayer < 0)
-			{
 				_currentPlayer = Array.IndexOf(_players, HumanPlayer);
-			}
 			if (_currentPlayer < 0)
-			{
 				_currentPlayer = 0;
-			}
+		}
 
+		private void InitializeGameState(GameState state)
+		{
 			_anthologyTurn = state.AnthologyTurn;
 
 			if (state.AdvanceOrigin != null)
@@ -89,11 +108,11 @@ namespace CivOne
 			if (state.ReplayData?.Count > 0)
 				_replayData.AddRange(state.ReplayData);
 
-			CityNames = state.CityNames?.Length > 0 ? state.CityNames : Common.AllCityNames.ToArray();
-
 			Common.SetRandomSeed((ushort)Math.Clamp(state.RandomSeed, ushort.MinValue, ushort.MaxValue));
+		}
 
-			// Game Settings (same precedence as binary load)
+		private void ApplyGameOptions(IEnumerable<GameOptionEnum> options)
+		{
 			InstantAdvice = (Settings.InstantAdvice == GameOption.On);
 			AutoSave = (Settings.AutoSave != GameOption.Off);
 			EndOfTurn = (Settings.EndOfTurn == GameOption.On);
@@ -103,16 +122,19 @@ namespace CivOne
 			CivilopediaText = (Settings.CivilopediaText != GameOption.Off);
 			Palace = (Settings.Palace != GameOption.Off);
 
-			var options = state.GameOptions ?? [];
-			if (Settings.InstantAdvice == GameOption.Default) InstantAdvice = options.Contains(GameOptionEnum.InstantAdvice);
-			if (Settings.AutoSave == GameOption.Default) AutoSave = options.Contains(GameOptionEnum.AutoSave);
-			if (Settings.EndOfTurn == GameOption.Default) EndOfTurn = options.Contains(GameOptionEnum.EndOfTurn);
-			if (Settings.Animations == GameOption.Default) Animations = options.Contains(GameOptionEnum.Animations);
-			if (Settings.Sound == GameOption.Default) Sound = options.Contains(GameOptionEnum.Sound);
-			if (Settings.EnemyMoves == GameOption.Default) EnemyMoves = options.Contains(GameOptionEnum.EnemyMoves);
-			if (Settings.CivilopediaText == GameOption.Default) CivilopediaText = options.Contains(GameOptionEnum.CivilopediaText);
-			if (Settings.Palace == GameOption.Default) Palace = options.Contains(GameOptionEnum.Palace);
+			var optionList = options as IList<GameOptionEnum> ?? [.. options];
+			if (Settings.InstantAdvice == GameOption.Default) InstantAdvice = optionList.Contains(GameOptionEnum.InstantAdvice);
+			if (Settings.AutoSave == GameOption.Default) AutoSave = optionList.Contains(GameOptionEnum.AutoSave);
+			if (Settings.EndOfTurn == GameOption.Default) EndOfTurn = optionList.Contains(GameOptionEnum.EndOfTurn);
+			if (Settings.Animations == GameOption.Default) Animations = optionList.Contains(GameOptionEnum.Animations);
+			if (Settings.Sound == GameOption.Default) Sound = optionList.Contains(GameOptionEnum.Sound);
+			if (Settings.EnemyMoves == GameOption.Default) EnemyMoves = optionList.Contains(GameOptionEnum.EnemyMoves);
+			if (Settings.CivilopediaText == GameOption.Default) CivilopediaText = optionList.Contains(GameOptionEnum.CivilopediaText);
+			if (Settings.Palace == GameOption.Default) Palace = optionList.Contains(GameOptionEnum.Palace);
+		}
 
+		private void InitializeServices()
+		{
 			globalWarmingService = GlobalWarmingServiceFactory.CreateGlobalWarmingService(_cities.AsReadOnly(), Map.AllTiles());
 			globalWarmingScourgeService = GlobalWarmingServiceFactory.CreateGlobalWarmingScourgeService(
 				globalWarmingService,
@@ -122,23 +144,20 @@ namespace CivOne
 				Map.WIDTH,
 				Map.HEIGHT
 			);
+		}
 
+		private void InitializeActiveUnit()
+		{
 			var humanPlayerId = HumanPlayerId;
 			for (var i = 0; i < _units.Count; i++)
 			{
 				if (_units[i].Owner != humanPlayerId || _units[i].Busy)
-				{
 					continue;
-				}
 
 				_activeUnit = i;
 				if (_units[i].MovesLeft > 0)
-				{
 					break;
-				}
 			}
-
-			_players.ToList().ForEach(p => p.HandleExtinction(false));
 		}
 
 		public static bool LoadYamlGame(string cosFile)

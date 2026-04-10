@@ -1,10 +1,11 @@
 using System;
 using System.Linq;
 using CivOne.Enums;
+using CivOne.Persistence.Factories;
 using CivOne.Tiles;
 using Xunit;
 
-namespace CivOne.Persistence.Model
+namespace CivOne.Persistence.Factories.Tests
 {
 	public class RuntimeTerrainFactoryTest
 	{

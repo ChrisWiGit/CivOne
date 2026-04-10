@@ -1,5 +1,6 @@
 using System;
 using CivOne.Enums;
+using CivOne.Persistence.Factories;
 using CivOne.Tiles;
 
 namespace CivOne.Persistence.Model
