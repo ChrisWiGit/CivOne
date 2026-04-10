@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CivOne.Enums;
+using CivOne.Persistence.Model;
 using CivOne.Services.GlobalWarming.Impl;
 using CivOne.Tiles;
 
@@ -29,9 +30,9 @@ namespace CivOne.Services.GlobalWarming
 			return new GlobalWarmingCountServiceImpl(globalWarmingCount, pollutedSquaresCount, warmingIndicator, tiles);
 		}
 
-		public static IGlobalWarmingStoreService CreateGlobalWarmingStoreService(IGlobalWarmingService globalWarmingService)
+		public static IGlobalWarmingStoreService CreateGlobalWarmingStoreService(IGlobalWarmingService globalWarmingService, IValueSanitizer valueSanitizer)
 		{
-			return new GlobalWarmingStoreServiceImpl(globalWarmingService);
+			return new GlobalWarmingStoreServiceImpl(globalWarmingService, valueSanitizer);
 		}
 
 		public static IGlobalWarmingScourgeService CreateGlobalWarmingScourgeService(IGlobalWarmingService globalWarmingService,

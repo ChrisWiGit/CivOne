@@ -15,7 +15,7 @@ namespace CivOne.Persistence.Model
 		UnitDtoMapper UnitMapper,
 		MapDtoMapper MapMapper,
 		DtoMapper<GlobalWarmingDto, GameState> GlobalWarmingMapper,
-		IYamlReadValueSanitizer Sanitizer);
+		IValueSanitizer Sanitizer);
 
 	public interface IYamlMapperDependenciesFactory
 	{
@@ -24,10 +24,10 @@ namespace CivOne.Persistence.Model
 
 	public sealed class YamlMapperDependenciesFactory(
 		IReflect reflect,
-		IYamlReadValueSanitizer sanitizer) : IYamlMapperDependenciesFactory
+		IValueSanitizer sanitizer) : IYamlMapperDependenciesFactory
 	{
 		private readonly IReflect _reflect = reflect ?? throw new ArgumentNullException(nameof(reflect));
-		private readonly IYamlReadValueSanitizer _sanitizer = sanitizer ?? throw new ArgumentNullException(nameof(sanitizer));
+		private readonly IValueSanitizer _sanitizer = sanitizer ?? throw new ArgumentNullException(nameof(sanitizer));
 
 		public YamlMapperDependencies Create(IPlayerGame gameInstance)
 		{
@@ -55,7 +55,12 @@ namespace CivOne.Persistence.Model
 		}
 
 		public static IYamlMapperDependenciesFactory CreateDefault()
-			=> new YamlMapperDependenciesFactory(new GameReflect(), new YamlReadValueSanitizer(new RuntimeLogger()));
+			=> new YamlMapperDependenciesFactory(new GameReflect(), CreateValueSanitizer());
+
+		private static IValueSanitizer CreateValueSanitizer()
+		{
+			return new ValueSanitizer(new RuntimeLogger());
+		}
 
 		private static void InitializeDocLists()
 		{

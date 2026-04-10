@@ -16,7 +16,7 @@ namespace CivOne.Persistence.Yaml
 	/// </summary>
 	public static class YamlLoadMapperDependenciesFactory
 	{
-		public static YamlMapperDependencies Create(IYamlReadValueSanitizer sanitizer)
+		public static YamlMapperDependencies Create(IValueSanitizer sanitizer)
 		{
 			ArgumentNullException.ThrowIfNull(sanitizer);
 

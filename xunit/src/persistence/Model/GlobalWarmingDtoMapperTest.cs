@@ -13,7 +13,7 @@ namespace CivOne.Persistence.Model
 
 		public GlobalWarmingDtoMapperTest()
 		{
-			var sanitizer = new YamlReadValueSanitizer(new NoOpLogger());
+			var sanitizer = new ValueSanitizer(new NoOpLogger());
 			_testee = new GlobalWarmingDtoMapper(sanitizer);
 
 			_dto = new GlobalWarmingDto

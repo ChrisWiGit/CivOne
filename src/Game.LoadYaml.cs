@@ -22,6 +22,8 @@ namespace CivOne
 {
 	public partial class Game
 	{
+		private readonly IValueSanitizer _valueSanitizer;
+
 		private sealed class RuntimeLogger : ILogger
 		{
 			public void Log(string text, params object[] parameters)
@@ -30,7 +32,17 @@ namespace CivOne
 			}
 		}
 
-		private Game(GameState state)
+		private static IValueSanitizer CreateValueSanitizer()
+		{
+			return new ValueSanitizer(new RuntimeLogger());
+		}
+
+		private Game(IValueSanitizer valueSanitizer)
+		{
+			_valueSanitizer = valueSanitizer ?? throw new ArgumentNullException(nameof(valueSanitizer));
+		}
+
+		private Game(GameState state) : this(CreateValueSanitizer())
 		{
 			// Must be first: Player methods access static Player.Game during hydration.
 			Player.Game = this;
@@ -172,11 +184,11 @@ namespace CivOne
 				return false;
 			}
 
+			var previousPlayerGame = Player.Game;
+
 			try
 			{
-				Player.Game = null;
-
-				var sanitizer = new YamlReadValueSanitizer(new RuntimeLogger());
+				var sanitizer = CreateValueSanitizer();
 				var deps = YamlLoadMapperDependenciesFactory.Create(sanitizer);
 				var mapper = new GameStateDtoMapper(deps.PlayerMapper, deps.UnitMapper, deps.MapMapper, deps.GlobalWarmingMapper, deps.Sanitizer);
 				var yaml = File.ReadAllText(cosFile);
@@ -208,6 +220,9 @@ namespace CivOne
 						.As<GameStateDto>();
 				}
 
+				// Reset static player context only for the hydration window,
+				// then Game(state) will set Player.Game to the new game instance.
+				Player.Game = null;
 				var state = mapper.FromDto(dto);
 				_instance = new Game(state);
 
@@ -228,6 +243,7 @@ namespace CivOne
 			}
 			catch (Exception ex)
 			{
+				Player.Game = previousPlayerGame;
 				BaseInstance.Log("LoadYamlGame failed: {0}", ex);
 				return false;
 			}

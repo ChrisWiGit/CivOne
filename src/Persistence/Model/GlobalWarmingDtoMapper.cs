@@ -3,7 +3,7 @@ using CivOne.Services.GlobalWarming;
 
 namespace CivOne.Persistence.Model
 {
-    public class GlobalWarmingDtoMapper(IYamlReadValueSanitizer yamlReadValueSanitizer) : DtoMapper<GlobalWarmingDto, GameState>
+    public class GlobalWarmingDtoMapper(IValueSanitizer yamlReadValueSanitizer) : DtoMapper<GlobalWarmingDto, GameState>
     {
         public GameState FromDto(GlobalWarmingDto dto)
         {

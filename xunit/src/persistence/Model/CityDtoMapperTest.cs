@@ -27,7 +27,7 @@ namespace CivOne.Persistence.Model
 			_testee = new CityDtoMapper(
 				new ProductionDtoMapper(new TestReflect([production])),
 				new TestCityDefinitionResolver(),
-				new YamlReadValueSanitizer(new NoOpLogger()));
+				new ValueSanitizer(new NoOpLogger()));
 			List<ITile> tiles = new();
 
 			for (int x = 0; x < 5; x++)

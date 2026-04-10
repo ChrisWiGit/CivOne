@@ -67,7 +67,7 @@ namespace CivOne.UnitTests.Persistence
 
 	public class YamlLoadGameStateMapperTest : TestsBase
 	{
-		private readonly IYamlReadValueSanitizer _sanitizer = new YamlReadValueSanitizer(new TestLogger());
+		private readonly IValueSanitizer _sanitizer = new ValueSanitizer(new TestLogger());
 
 		[Fact]
 		public void FromDto_MapsPlayersUnitsCitiesAndMapTiles()

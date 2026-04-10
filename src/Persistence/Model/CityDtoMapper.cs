@@ -12,7 +12,7 @@ namespace CivOne.Persistence.Model
     public class CityDtoMapper(
         ProductionDtoMapper productionMapper,
 		ICityDefinitionResolver cityDefinitionResolver,
-		IYamlReadValueSanitizer yamlReadValueSanitizer) : DtoMapper<CityDto, ICityMapper>
+		IValueSanitizer yamlReadValueSanitizer) : DtoMapper<CityDto, ICityMapper>
     {
         public ICityMapper FromDto(CityDto dto)
         {

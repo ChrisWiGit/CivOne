@@ -188,7 +188,7 @@ namespace CivOne
 			);
 		}
 
-		private Game(int difficulty, int competition, ICivilization tribe, string leaderName, string playerTribeName, string playerTribeNamePlural)
+		private Game(int difficulty, int competition, ICivilization tribe, string leaderName, string playerTribeName, string playerTribeNamePlural) : this(CreateValueSanitizer())
 		{
 			_instance = this;
 			SaveMetaData.InitializeForNewGame(GameVersion, DateTimeOffset.UtcNow);

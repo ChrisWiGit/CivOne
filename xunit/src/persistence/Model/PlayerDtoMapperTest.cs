@@ -123,7 +123,7 @@ namespace CivOne.Persistence.Model
 
 			// Setup game instance mock
 			var gameInstance = new MockPlayerGameForTesting(_player, [_unit]);
-			var yamlReadValueSanitizer = new YamlReadValueSanitizer(new NoOpLogger());
+			var yamlReadValueSanitizer = new ValueSanitizer(new NoOpLogger());
 			
 			_testee = new PlayerDtoMapper(
 				gameInstance,

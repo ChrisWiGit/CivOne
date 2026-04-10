@@ -2,14 +2,15 @@ using System;
 
 namespace CivOne.Persistence.Model
 {
-	public interface IYamlReadValueSanitizer
+	public interface IValueSanitizer
 	{
 		byte ClampToByte(long value, string mapperName, string fieldName, byte min = byte.MinValue, byte max = byte.MaxValue);
+		ushort ClampToUInt16(long value, string mapperName, string fieldName, ushort min = ushort.MinValue, ushort max = ushort.MaxValue);
 		short ClampToInt16(long value, string mapperName, string fieldName, short min = short.MinValue, short max = short.MaxValue);
 		int ClampToInt32(long value, string mapperName, string fieldName, int min = int.MinValue, int max = int.MaxValue);
 	}
 
-	public class YamlReadValueSanitizer(ILogger logger) : IYamlReadValueSanitizer
+	public class ValueSanitizer(ILogger logger) : IValueSanitizer
 	{
 		private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -18,6 +19,13 @@ namespace CivOne.Persistence.Model
 			var clamped = Math.Clamp(value, min, max);
 			LogClampIfNeeded(value, clamped, min, max, mapperName, fieldName);
 			return (byte)clamped;
+		}
+
+		public ushort ClampToUInt16(long value, string mapperName, string fieldName, ushort min = ushort.MinValue, ushort max = ushort.MaxValue)
+		{
+			var clamped = Math.Clamp(value, min, max);
+			LogClampIfNeeded(value, clamped, min, max, mapperName, fieldName);
+			return (ushort)clamped;
 		}
 
 		public short ClampToInt16(long value, string mapperName, string fieldName, short min = short.MinValue, short max = short.MaxValue)

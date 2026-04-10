@@ -14,7 +14,7 @@ namespace CivOne.Persistence.Model
 	}
 
 
-	public class UnitDtoMapper(IUnitFactory _unitFactory, IYamlReadValueSanitizer yamlReadValueSanitizer) : DtoMapper<UnitDto, IUnit>
+	public class UnitDtoMapper(IUnitFactory _unitFactory, IValueSanitizer yamlReadValueSanitizer) : DtoMapper<UnitDto, IUnit>
 	{
 		public IUnit FromDto(UnitDto dto)
 		{

@@ -37,7 +37,7 @@ namespace CivOne.Persistence.Model
 			];
 
 			_gameInstance = new MockGameInstanceForTesting([.. _players.Cast<IPlayer>()]);
-			var yamlReadValueSanitizer = new YamlReadValueSanitizer(new NoOpLogger());
+			var yamlReadValueSanitizer = new ValueSanitizer(new NoOpLogger());
 
 			var unitMapper = new UnitDtoMapper(new MockUnitFactoryForTesting(), yamlReadValueSanitizer);
 			var mockedMapFactory = new MapDtoTest.MockedIMapFactory();

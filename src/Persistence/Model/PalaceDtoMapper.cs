@@ -3,7 +3,7 @@ using CivOne.Enums;
 
 namespace CivOne.Persistence.Model
 {
-	public class PalaceDtoMapper(IYamlReadValueSanitizer yamlReadValueSanitizer) : DtoMapper<PalaceDto, PalaceData>
+	public class PalaceDtoMapper(IValueSanitizer yamlReadValueSanitizer) : DtoMapper<PalaceDto, PalaceData>
 	{
 		private static readonly Func<PalaceDto, PalaceSectionDto>[] _sectionGetters =
 		[

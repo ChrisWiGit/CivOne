@@ -18,7 +18,7 @@ namespace CivOne.Persistence
 		private readonly UnitDtoMapper? _unitMapper;
 		private readonly MapDtoMapper? _mapMapper;
 		private readonly DtoMapper<GlobalWarmingDto, GameState>? _globalWarmingMapper;
-		private readonly IYamlReadValueSanitizer? _sanitizer;
+		private readonly IValueSanitizer? _sanitizer;
 
 		private readonly SaveGameMetaDataDtoFactory _metaDataFactory;
 
@@ -39,7 +39,7 @@ namespace CivOne.Persistence
 			UnitDtoMapper unitMapper,
 			MapDtoMapper mapMapper,
 			DtoMapper<GlobalWarmingDto, GameState> globalWarmingMapper,
-			IYamlReadValueSanitizer sanitizer,
+			IValueSanitizer sanitizer,
 			SaveGameMetaDataDtoFactory? metaDataFactory = null
 			)
 		{

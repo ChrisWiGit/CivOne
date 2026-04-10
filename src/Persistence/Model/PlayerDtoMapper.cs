@@ -29,7 +29,7 @@ namespace CivOne.Persistence.Model
 		UnitDtoMapper _unitMapper,
 		IAdvanceResolver _advanceResolver,
 		IGovernmentResolver _governmentResolver,
-		IYamlReadValueSanitizer _yamlReadValueSanitizer
+		IValueSanitizer _yamlReadValueSanitizer
 		) : DtoMapper<PlayerDto, IPlayer>
 	{
 

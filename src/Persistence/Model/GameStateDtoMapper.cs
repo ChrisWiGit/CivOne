@@ -13,7 +13,7 @@ namespace CivOne.Persistence.Model
         UnitDtoMapper unitMapper,
         DtoMapper<MapDto, IMapTiles> mapMapper,
         DtoMapper<GlobalWarmingDto, GameState> globalWarmingMapper,
-        IYamlReadValueSanitizer yamlReadValueSanitizer,
+        IValueSanitizer yamlReadValueSanitizer,
         ICityNameCatalog cityNameCatalog = null
     ) : DtoMapper<GameStateDto, GameState>
     {

@@ -15,6 +15,7 @@ using System.IO;
 using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Enums;
+using CivOne.Persistence.Model;
 using CivOne.Services.GlobalWarming;
 using CivOne.Units;
 using CivOne.Wonders;
@@ -30,23 +31,21 @@ namespace CivOne
 		{
 			// Allow loading a game in-game.
 
-			using (IGameData adapter = SaveDataAdapter.Load(File.ReadAllBytes(sveFile)))
+			using IGameData adapter = SaveDataAdapter.Load(File.ReadAllBytes(sveFile));
+			if (!adapter.ValidData)
 			{
-				if (!adapter.ValidData)
-				{
-					BaseInstance.Log("SaveDataAdapter failed to load game");
-					return false;
-				}
-
-				// Always use the save game's seed
-				Common.SetRandomSeed(adapter.RandomSeed);
-
-				Map.Instance.LoadMap(mapFile, adapter.RandomSeed);
-				_instance = new Game(adapter);
-				BaseInstance.Log($"Game instance loaded (difficulty: {_instance._difficulty}, competition: {_instance._competition}");
-
-				return true;
+				BaseInstance.Log("SaveDataAdapter failed to load game");
+				return false;
 			}
+
+			// Always use the save game's seed
+			Common.SetRandomSeed(adapter.RandomSeed);
+
+			Map.Instance.LoadMap(mapFile, adapter.RandomSeed);
+			_instance = new Game(adapter);
+			BaseInstance.Log($"Game instance loaded (difficulty: {_instance._difficulty}, competition: {_instance._competition}");
+
+			return true;
 		}
 
 		public void Save(string sveFile, string mapFile)
@@ -57,7 +56,7 @@ namespace CivOne
 				gameData.HumanPlayer = (ushort)PlayerNumber(HumanPlayer);
 				gameData.RandomSeed = Map.Instance.SaveMap(mapFile);
 				gameData.Difficulty = (ushort)_difficulty;
-				gameData.ActiveCivilizations = _players.Select(x => (x.Civilization is Barbarian) || (x.Cities.Any(c => c.Size > 0) || GetUnits().Any(u => x == u.Owner))).ToArray();
+				gameData.ActiveCivilizations = _players.Select(x => (x.Civilization is Barbarian) || x.Cities.Any(c => c.Size > 0) || GetUnits().Any(u => x == u.Owner)).ToArray();
 
                 gameData.CivilizationIdentity = _players.Select(x => (byte)(x.Civilization.Id > 7 ? 1 : 0)).ToArray();
 
@@ -101,8 +100,8 @@ namespace CivOne
 				foreach (byte key in _advanceOrigin.Keys)
 					firstDiscovery[key] = _advanceOrigin[key];
 				gameData.AdvanceFirstDiscovery = firstDiscovery;
-				gameData.GameOptions = new bool[]
-				{
+				gameData.GameOptions =
+				[
 					InstantAdvice,
 					AutoSave,
 					EndOfTurn,
@@ -111,22 +110,22 @@ namespace CivOne
 					EnemyMoves,
 					CivilopediaText,
 					Palace
-				};
+				];
 				gameData.NextAnthologyTurn = _anthologyTurn;
 				gameData.OpponentCount = (ushort)(_players.Length - 2);
 				gameData.ReplayData = _replayData.ToArray();
-				GlobalWarmingServiceFactory.CreateGlobalWarmingStoreService(globalWarmingService).Store(gameData);
+				GlobalWarmingServiceFactory.CreateGlobalWarmingStoreService(globalWarmingService, _valueSanitizer).Store(gameData);
 				File.WriteAllBytes(sveFile, gameData.GetBytes());
 			}
 		}
 
-		private Game(IGameData gameData)
+		private Game(IGameData gameData) : this(CreateValueSanitizer())
 		{
 			_instance = this;
 			SaveMetaData.InitializeForLoadedGame(GameVersion);
 
 			_difficulty = gameData.Difficulty;
-			_competition = (gameData.OpponentCount + 1);
+			_competition = gameData.OpponentCount + 1;
 
 			// CW: Dependency Injection. Otherwise this would be handled after this constructor (too late to call HandleExtinction).
 			Player.Game = this;
@@ -141,7 +140,7 @@ namespace CivOne
 			{
 				ICivilization[] civs = Common.Civilizations.Where(c => c.PreferredPlayerNumber == i).ToArray();
 				ICivilization civ = civs[gameData.CivilizationIdentity[i] % civs.Length];
-				Player player = (_players[i] = new Player(civ, gameData.LeaderNames[i], gameData.CitizenNames[i], gameData.CivilizationNames[i]));
+				Player player = _players[i] = new Player(civ, gameData.LeaderNames[i], gameData.CitizenNames[i], gameData.CivilizationNames[i]);
                 if (i != 0) // don't need for barbarians (?)
 				    player.Destroyed += PlayerDestroyed;
 				player.Gold = gameData.PlayerGold[i];
@@ -177,8 +176,6 @@ namespace CivOne
 			HumanPlayer.CurrentResearch = Common.Advances.FirstOrDefault(a => a.Id == gameData.CurrentResearch);
 		
 			_anthologyTurn = gameData.NextAnthologyTurn;
-
-			// City.Game = this; // Dependency Injection (for GetSpecialistsFromGameData)
 
 			Dictionary<byte, City> cityList = new Dictionary<byte, City>();
 			List<(City city, byte[] tradingBytes)> pendingTradingCities = [];
@@ -302,14 +299,14 @@ namespace CivOne
 			);
 
 			// Game Settings
-			InstantAdvice = (Settings.InstantAdvice == GameOption.On);
-			AutoSave = (Settings.AutoSave != GameOption.Off);
-			EndOfTurn = (Settings.EndOfTurn == GameOption.On);
-			Animations = (Settings.Animations != GameOption.Off);
-			Sound = (Settings.Sound != GameOption.Off);
-			EnemyMoves = (Settings.EnemyMoves != GameOption.Off);
-			CivilopediaText = (Settings.CivilopediaText != GameOption.Off);
-			Palace = (Settings.Palace != GameOption.Off);
+			InstantAdvice = Settings.InstantAdvice == GameOption.On;
+			AutoSave = Settings.AutoSave != GameOption.Off;
+			EndOfTurn = Settings.EndOfTurn == GameOption.On;
+			Animations = Settings.Animations != GameOption.Off;
+			Sound = Settings.Sound != GameOption.Off;
+			EnemyMoves = Settings.EnemyMoves != GameOption.Off;
+			CivilopediaText = Settings.CivilopediaText != GameOption.Off;
+			Palace = Settings.Palace != GameOption.Off;
 
 			bool[] options = gameData.GameOptions;
 			if (Settings.InstantAdvice == GameOption.Default) InstantAdvice = options[0];
