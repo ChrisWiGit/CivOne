@@ -251,7 +251,7 @@ namespace CivOne.Persistence.Model
 			YamlWriter.Of(roundTripDto)
 				.WithStandard()
 				.WithTypeConverter(new MapDtoTileDtoYamlConverter())
-				.ToFile("GameSateDtoMapperTest.TestGameStateDtoMapper_ToDto.yaml");
+				.ToFile("GameStateDtoMapperTest.TestGameStateDtoMapper_ToDto.yaml");
 
 			Assert.NotNull(gameState);
 			Assert.Equal(50u, gameState.GameTurn);
