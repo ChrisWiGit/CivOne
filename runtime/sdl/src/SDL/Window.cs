@@ -261,12 +261,12 @@ namespace CivOne
 
 				_handle = SDL_CreateWindow(title, 100, 100, width, height, flags);
 				_renderer = softwareRender ? IntPtr.Zero : SDL_CreateRenderer(_handle, -1, SDL_RENDERER_FLAGS.SDL_RENDERER_ACCELERATED);
-				if (_renderer == null || _renderer == IntPtr.Zero)
+				if (_renderer == IntPtr.Zero)
 				{
 					_renderer = SDL_CreateRenderer(_handle, -1, SDL_RENDERER_FLAGS.SDL_RENDERER_SOFTWARE);
 				}
 
-				if (_handle == null)
+				if (_handle == IntPtr.Zero)
 				{
 					Log("Something is wrong");
 					return;
