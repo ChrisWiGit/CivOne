@@ -56,11 +56,6 @@ namespace CivOne
 
 	public class GameStateHandler
 	{
-		/*
-		Muss anders konvertiert werden. Wir brauchen einen Zwischenschritt, d.h. eine DTO wo noch unsere internen Typen verwendet werden, da sie einfacher zu handeln sind (z.b. yaml)
-		aber die alte art in Binär muss dann nochmal extra in einen andere DTO Klasse umgewandelt werden.
-
-		*/
 		public GameState Create(IGameSnapshotSource game)
 		{
 			List<bool> options =
