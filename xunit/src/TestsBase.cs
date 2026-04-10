@@ -45,17 +45,17 @@ namespace CivOne.src
             BeforeEach();
         }
 
-        public virtual void BeforeEach()
+        protected virtual void BeforeEach()
         {
             // Override in derived classes to set up before each test
         }
         
-        public virtual void AfterEach()
+        protected virtual void AfterEach()
         {
             // Override in derived classes to tear down after each test
         }
 
-        public virtual void Dispose()
+        protected virtual void Dispose()
         {
             AfterEach();
             // Tear everything down
