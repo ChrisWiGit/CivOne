@@ -213,7 +213,7 @@ namespace CivOne
 
 				if (saveFile?.Meta != null)
 				{
-					var playDuration = TimeSpan.FromSeconds(Math.Max(0L, saveFile.Meta.PlayDurationMinutes));
+					var playDuration = TimeSpan.FromMinutes(Math.Max(0L, saveFile.Meta.PlayDurationMinutes));
 					_instance.SaveMetaData.RestoreFromSave(
 						saveFile.Meta.GetCreatedAtOr(DateTimeOffset.UtcNow),
 						saveFile.Meta.GameVersion,
