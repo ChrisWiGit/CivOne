@@ -55,7 +55,7 @@ namespace CivOne.src
             // Override in derived classes to tear down after each test
         }
 
-        protected virtual void Dispose()
+        public virtual void Dispose()
         {
             AfterEach();
             // Tear everything down
