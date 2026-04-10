@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using CivOne.Persistence.Factories;
 using CivOne.Persistence.Model;
 using CivOne.Persistence.Yaml;
 
@@ -18,11 +19,14 @@ namespace CivOne.Persistence
 		private readonly MapDtoMapper? _mapMapper;
 		private readonly IYamlReadValueSanitizer? _sanitizer;
 
+		private readonly SaveGameMetaDataDtoFactory _metaDataFactory;
+
 		/// <summary>
 		/// Constructor for subclasses that provide their own DTO mapping strategy.
 		/// </summary>
 		protected YamlSaveGameStateWriter()
 		{
+			_metaDataFactory = new SaveGameMetaDataDtoFactory();
 		}
 
 		/// <summary>
@@ -33,23 +37,36 @@ namespace CivOne.Persistence
 			PlayerDtoMapper playerMapper,
 			UnitDtoMapper unitMapper,
 			MapDtoMapper mapMapper,
-			IYamlReadValueSanitizer sanitizer)
+			IYamlReadValueSanitizer sanitizer,
+			SaveGameMetaDataDtoFactory? metaDataFactory = null
+			)
 		{
 			_playerMapper = playerMapper ?? throw new ArgumentNullException(nameof(playerMapper));
 			_unitMapper = unitMapper ?? throw new ArgumentNullException(nameof(unitMapper));
 			_mapMapper = mapMapper ?? throw new ArgumentNullException(nameof(mapMapper));
 			_sanitizer = sanitizer ?? throw new ArgumentNullException(nameof(sanitizer));
+			_metaDataFactory = metaDataFactory ?? new SaveGameMetaDataDtoFactory();
 		}
 
 		public void Write(Stream stream, GameState snapshot)
 		{
+			Write(stream, snapshot, null);
+		}
+
+		public void Write(Stream stream, GameState snapshot, SaveFileMetaData? saveMetaData)
+		{
 			ArgumentNullException.ThrowIfNull(stream);
 			ArgumentNullException.ThrowIfNull(snapshot);
 
-			var dto = CreateDto(snapshot);
+			var fileDto = new SaveGameFileRootDto
+			{
+				FormatVersion = SaveGameFileRootDto.CurrentFormatVersion,
+				Meta = saveMetaData is null ? null : _metaDataFactory.CreateFromRuntime(saveMetaData),
+				GameState = CreateDto(snapshot)
+			};
 
 			var yaml = YamlWriter
-				.Of(dto)
+				.Of(fileDto)
 				.WithStandard()
 				.WithTypeConverter(new MapDtoTileDtoYamlConverter())
 				.AsString();

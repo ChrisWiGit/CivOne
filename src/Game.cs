@@ -12,13 +12,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
-using System.Reflection.Metadata;
+using System.Reflection;
 using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.IO;
-using CivOne.Leaders;
 using CivOne.Screens;
 using CivOne.Screens.Services;
 using CivOne.Services;
@@ -32,6 +31,8 @@ namespace CivOne
 {
 	public partial class Game : BaseInstance, IGame, ILogger, IGameCitizenDependency
 	{
+		private static readonly string GameVersion = GetGameVersion();
+
 		private readonly int _difficulty, _competition;
 		private readonly Player[] _players;
 		private readonly List<City> _cities;
@@ -46,7 +47,24 @@ namespace CivOne
 
 		private ushort _anthologyTurn = 0;
 
+		/// <summary>
+		/// The metadata for the current save file, which is initialized when starting a new game or loading an existing game, and updated when saving a game.
+		/// This is the real structure used by the game. SaveFileMetaDataDto is only used for serialization and should not be used in the game logic.
+		/// </summary>
+		public SaveFileMetaData SaveMetaData { get; } = new();
+
+		private readonly SaveMetaDataService _saveMetaDataService = new(GameVersion);
+
+		/// <summary>
+		/// This service provides methods for creating and managing save game metadata, which is used for display in the load game dialog and for informational purposes in the game.
+		/// Use this service only for SaveMetaData.
+		/// </summary>
+		public SaveMetaDataService SaveMetaDataService => _saveMetaDataService;
+
 		public int Competition => _competition;
+
+		private static string GetGameVersion()
+			=> Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown";
 
 		public bool Animations { get; set; }
 		public bool Sound { get; set; }

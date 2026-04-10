@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -14,9 +15,7 @@ using System.IO;
 using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Enums;
-using CivOne.Services;
 using CivOne.Services.GlobalWarming;
-using CivOne.Services.GlobalWarming.Impl;
 using CivOne.Units;
 using CivOne.Wonders;
 
@@ -123,6 +122,7 @@ namespace CivOne
 		private Game(IGameData gameData)
 		{
 			_instance = this;
+			SaveMetaData.InitializeForLoadedGame(GameVersion);
 
 			_difficulty = gameData.Difficulty;
 			_competition = (gameData.OpponentCount + 1);

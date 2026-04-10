@@ -19,11 +19,14 @@ using System.Linq;
 
 namespace CivOne.Screens
 {
-    [Modal]
+	[Modal]
 	internal class SaveGame : BaseScreen
 	{
-        internal static int SelectedGame = -1;
+		internal static int SelectedGame = -1;
 		
+		// See LoadGame.cs for related constants and logic around save game dialog path persistence.
+		private const string LastUsedSaveGameDialogPath = "LastUsedSaveGameDialogPath";
+
 		private char _driveLetter = 'C';
 		private readonly int _border = Common.Random.Next(2);
 		private int _gameId;
@@ -33,8 +36,30 @@ namespace CivOne.Screens
 		private bool _saving = false;
 		private Menu _menu;
 
+		private static string BuildDialogInitialFileName(string fileName)
+		{
+			string initialFileName = string.IsNullOrWhiteSpace(fileName) ? "savegame.cos" : fileName;
+			string saveGameDialogPath = RuntimeHandler.Runtime.GetSetting(LastUsedSaveGameDialogPath);
+			if (string.IsNullOrWhiteSpace(saveGameDialogPath) || !Directory.Exists(saveGameDialogPath))
+			{
+				return initialFileName;
+			}
+
+			return Path.Combine(saveGameDialogPath, Path.GetFileName(initialFileName));
+		}
+
+		private static void SetLastUsedSaveGameDialogPath(string fileName)
+		{
+			if (string.IsNullOrWhiteSpace(fileName)) return;
+
+			string saveGameDialogPath = Path.GetDirectoryName(fileName);
+			if (string.IsNullOrWhiteSpace(saveGameDialogPath)) return;
+
+			RuntimeHandler.Runtime.SetSetting(LastUsedSaveGameDialogPath, saveGameDialogPath);
+		}
+
 		public override MouseCursor Cursor => (_menu == null ? MouseCursor.Pointer : MouseCursor.None);
-        
+
 		private void SaveFile(object sender, EventArgs args)
 		{
 			int item = (sender as MenuItem<int>).Value;
@@ -57,7 +82,7 @@ namespace CivOne.Screens
 			string sveFile = RuntimeHandler.Runtime.FileChooser(
 				true,
 				"Save Game As...",
-				SaveFileName,
+				BuildDialogInitialFileName(SaveFileName),
 				"CivOne Save Game (*.cos)|*.cos"
 			);
 			if (string.IsNullOrEmpty(sveFile))
@@ -67,6 +92,12 @@ namespace CivOne.Screens
 			}
 
 			SaveFileName = Path.ChangeExtension(sveFile, ".cos");
+			SetLastUsedSaveGameDialogPath(SaveFileName);
+
+			if (string.IsNullOrWhiteSpace(Game.SaveMetaData.DisplayName))
+			{
+				Game.SaveMetaData.DisplayName = Game.SaveMetaData.DisplayName ?? Game.SaveMetaDataService.BuildDisplayName(Game.Difficulty, Game.HumanPlayer);
+			}
 
 			GameStateHandler gameState = new();
 			using var stream = File.Create(SaveFileName);
@@ -78,14 +109,12 @@ namespace CivOne.Screens
 				mapperDependencies.UnitMapper,
 				mapperDependencies.MapMapper,
 				mapperDependencies.Sanitizer);
-			writer.Write(stream, gameState.Create(Game));
-
-			//TODO: save last save path to profile settings
+			writer.Write(stream, gameState.Create(Game), Game.SaveMetaData);
 
 			_saving = true;
 			_update = true;
 		}
-		
+
 		private void DrawDriveQuestion()
 		{
 			Bitmap.Clear();
@@ -99,7 +128,7 @@ namespace CivOne.Screens
 				.DrawText("Return when disk is inserted", 0, 5, 80, 120, TextAlign.Left)
 				.DrawText("Press Escape to cancel", 0, 5, 104, 128, TextAlign.Left);
 		}
-		
+
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (_saving)
@@ -122,14 +151,16 @@ namespace CivOne.Screens
 				if (_gameId >= 0)
 				{
 					this.DrawText($"{char.ToLower(_driveLetter)}:CIVIL{_gameId}.SVE", 0, 5, 75, 91);
-				} else {
+				}
+				else
+				{
 					this.DrawText(Path.GetFileName(SaveFileName), 0, 5, 75, 91);
 				}
 
 				this.DrawText($"{Common.DifficultyName(Game.Difficulty)} {Game.HumanPlayer.LeaderName}", 0, 5, 75, 99)
 					.DrawText($"{Game.HumanPlayer.TribeNamePlural}/{Game.GameYear}", 0, 5, 75, 107)
 					.DrawText("... save in progress.", 0, 5, 75, 115);
-				
+
 				this.DrawText("Game has been saved.", 0, 5, 75, 132)
 					.DrawText("Press key to continue.", 0, 5, 75, 140);
 				return true;
@@ -153,7 +184,7 @@ namespace CivOne.Screens
 			}
 			return false;
 		}
-		
+
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
 			if (_saving)
@@ -161,7 +192,7 @@ namespace CivOne.Screens
 				Destroy();
 				return true;
 			}
-			
+
 			char c = Char.ToUpper(args.KeyChar);
 			if (args.Key == Key.Escape)
 			{
@@ -197,14 +228,14 @@ namespace CivOne.Screens
 					IndentTitle = 2,
 					RowHeight = 8
 				};
-				
+
 				_menu.Items.Add("Save with file dialog...", -1).OnSelect(SaveFileDialog);
 				int i = 0;
 				foreach (SaveGameFile file in SaveGameFile.GetSaveGames(_driveLetter).Take(4))
 				{
 					_menu.Items.Add(file.Name, i++).OnSelect(SaveFile);
 				}
-				
+
 				_menu.ActiveItem = SelectedGame;
 			}
 			else if (c >= 'A' && c <= 'Z')
@@ -215,23 +246,23 @@ namespace CivOne.Screens
 			}
 			return false;
 		}
-		
+
 		public override bool MouseDown(ScreenEventArgs args)
 		{
 			if (_menu != null)
 				return _menu.MouseDown(args);
-            if (_saving)
-                Destroy();
+			if (_saving)
+				Destroy();
 			return false;
 		}
-		
+
 		public override bool MouseUp(ScreenEventArgs args)
 		{
 			if (_menu != null)
 				return _menu.MouseUp(args);
 			return false;
 		}
-		
+
 		public override bool MouseDrag(ScreenEventArgs args)
 		{
 			if (_menu != null)
@@ -242,7 +273,7 @@ namespace CivOne.Screens
 		public SaveGame() : this(-1)
 		{
 		}
-		
+
 		public SaveGame(int gameId)
 		{
 			Palette = Resources["SP257"].Palette;

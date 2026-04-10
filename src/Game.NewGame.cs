@@ -7,12 +7,14 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using CivOne.Advances;
 using CivOne.Civilizations;
 using CivOne.Enums;
+using CivOne.Services;
 using CivOne.Services.GlobalWarming;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -79,7 +81,7 @@ namespace CivOne
 			int x = startUnit.X, y = startUnit.Y;
 
 			ITile[] continent = Map.ContinentTiles(Map[x, y].ContinentId).ToArray();
-			IUnit[] unitsOnContinent = _units.Where(u => continent.Any(c => (c.X == u.X && c.Y == u.Y))).ToArray();
+			IUnit[] unitsOnContinent = _units.Where(u => continent.Any(c => c.X == u.X && c.Y == u.Y)).ToArray();
 
 			if (unitsOnContinent.Count() == 0)
 			{
@@ -98,12 +100,12 @@ namespace CivOne
 			}
 
 			// Check the terrain of the starting position and the 8 adjacent map squares.
-			if (Map[x, y].GetBorderTiles().Count(t => (t is River)) >= 1)
+			if (Map[x, y].GetBorderTiles().Count(t => t is River) >= 1)
 			{
 				// Add +2 if there's at least one river square among them.
 				handicap += 2;
 			}
-			else if (Map[x, y].GetBorderTiles().Count(t => (t is Grassland)) >= 3)
+			else if (Map[x, y].GetBorderTiles().Count(t => t is Grassland) >= 3)
 			{
 				// If that is not the case, then add +1 if there are 3 or more grassland squares among them.
 				handicap += 1;
@@ -189,19 +191,20 @@ namespace CivOne
 		private Game(int difficulty, int competition, ICivilization tribe, string leaderName, string playerTribeName, string playerTribeNamePlural)
 		{
 			_instance = this;
+			SaveMetaData.InitializeForNewGame(GameVersion, DateTimeOffset.UtcNow);
 
 			_difficulty = difficulty;
 			_competition = competition;
 			Log("Game instance created (difficulty: {0}, competition: {1})", _difficulty, _competition);
 
-			InstantAdvice = (Settings.InstantAdvice == GameOption.On || (Settings.InstantAdvice == GameOption.Default && difficulty == 0));
-			AutoSave = (Settings.AutoSave != GameOption.Off);
-			EndOfTurn = (Settings.EndOfTurn == GameOption.On);
-			Animations = (Settings.Animations != GameOption.Off);
-			Sound = (Settings.Sound != GameOption.Off);
-			EnemyMoves = (Settings.EnemyMoves != GameOption.Off);
-			CivilopediaText = (Settings.CivilopediaText != GameOption.Off);
-			Palace = (Settings.Palace != GameOption.Off);
+			InstantAdvice = Settings.InstantAdvice == GameOption.On || (Settings.InstantAdvice == GameOption.Default && difficulty == 0);
+			AutoSave = Settings.AutoSave != GameOption.Off;
+			EndOfTurn = Settings.EndOfTurn == GameOption.On;
+			Animations = Settings.Animations != GameOption.Off;
+			Sound = Settings.Sound != GameOption.Off;
+			EnemyMoves = Settings.EnemyMoves != GameOption.Off;
+			CivilopediaText = Settings.CivilopediaText != GameOption.Off;
+			Palace = Settings.Palace != GameOption.Off;
 
 			_cities = new List<City>();
 			_units = new List<IUnit>();
@@ -239,6 +242,10 @@ namespace CivOne
 			}
 
 			Debug.Assert(HumanPlayer != null, "NewGame invariant violated: HumanPlayer must be initialized during player setup.");
+			if (string.IsNullOrWhiteSpace(SaveMetaData.DisplayName))
+			{
+				SaveMetaData.DisplayName = _saveMetaDataService.BuildDisplayName(difficulty, HumanPlayer);
+			}
 
 			Log("Adding starting units...");
 			for (byte i = 1; i <= competition; i++)

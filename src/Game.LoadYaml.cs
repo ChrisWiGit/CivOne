@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Persistence;
@@ -36,6 +37,8 @@ namespace CivOne
 
 			ArgumentNullException.ThrowIfNull(state);
 			ArgumentNullException.ThrowIfNull(state.Players);
+
+			SaveMetaData.InitializeForLoadedGame(GameVersion);
 
 			_instance = this;
 
@@ -175,15 +178,48 @@ namespace CivOne
 				var sanitizer = new YamlReadValueSanitizer(new RuntimeLogger());
 				var deps = YamlLoadMapperDependenciesFactory.Create(sanitizer);
 				var mapper = new GameStateDtoMapper(deps.PlayerMapper, deps.UnitMapper, deps.MapMapper, deps.Sanitizer);
+				var yaml = File.ReadAllText(cosFile);
 
-				var dto = YamlReader
-					.OfFile(cosFile)
-					.WithStandard()
-					.WithTypeConverter(new MapDtoTileDtoYamlConverter())
-					.As<GameStateDto>();
+				SaveGameFileRootDto saveFile = null;
+				GameStateDto dto = null;
+
+				try
+				{
+					saveFile = YamlReader
+						.OfString(yaml)
+						.WithStandard()
+						.WithTypeConverter(new MapDtoTileDtoYamlConverter())
+						.As<SaveGameFileRootDto>();
+
+					dto = saveFile?.GameState;
+				}
+				catch
+				{
+					// Legacy format fallback is handled below.
+				}
+
+				if (dto == null)
+				{
+					dto = YamlReader
+						.OfString(yaml)
+						.WithStandard()
+						.WithTypeConverter(new MapDtoTileDtoYamlConverter())
+						.As<GameStateDto>();
+				}
 
 				var state = mapper.FromDto(dto);
 				_instance = new Game(state);
+
+				if (saveFile?.Meta != null)
+				{
+					var playDuration = TimeSpan.FromSeconds(Math.Max(0L, saveFile.Meta.PlayDurationMinutes));
+					_instance.SaveMetaData.RestoreFromSave(
+						saveFile.Meta.GetCreatedAtOr(DateTimeOffset.UtcNow),
+						saveFile.Meta.GameVersion,
+						playDuration,
+						saveFile.Meta.DisplayName);
+				}
+
 				Map.Instance.FinalizeYamlLoad();
 
 				BaseInstance.Log("Game instance loaded from YAML (difficulty: {0}, competition: {1})", _instance._difficulty, _instance._competition);
