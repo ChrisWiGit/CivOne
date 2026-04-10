@@ -50,8 +50,8 @@ namespace CivOne.Screens
 
             try
             {
-                using (FileStream fs = new FileStream(SveFile, FileMode.Open))
-                using (BinaryReader br = new BinaryReader(fs))
+                using (FileStream fs = new(SveFile, FileMode.Open))
+                using (BinaryReader br = new(fs))
                 {
                     if (fs.Length != 37856)
                     {

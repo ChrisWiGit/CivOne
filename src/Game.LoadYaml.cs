@@ -113,14 +113,14 @@ namespace CivOne
 
 		private void ApplyGameOptions(IEnumerable<GameOptionEnum> options)
 		{
-			InstantAdvice = (Settings.InstantAdvice == GameOption.On);
-			AutoSave = (Settings.AutoSave != GameOption.Off);
-			EndOfTurn = (Settings.EndOfTurn == GameOption.On);
-			Animations = (Settings.Animations != GameOption.Off);
-			Sound = (Settings.Sound != GameOption.Off);
-			EnemyMoves = (Settings.EnemyMoves != GameOption.Off);
-			CivilopediaText = (Settings.CivilopediaText != GameOption.Off);
-			Palace = (Settings.Palace != GameOption.Off);
+			InstantAdvice = Settings.InstantAdvice == GameOption.On;
+			AutoSave = Settings.AutoSave != GameOption.Off;
+			EndOfTurn = Settings.EndOfTurn == GameOption.On;
+			Animations = Settings.Animations != GameOption.Off;
+			Sound = Settings.Sound != GameOption.Off;
+			EnemyMoves = Settings.EnemyMoves != GameOption.Off;
+			CivilopediaText = Settings.CivilopediaText != GameOption.Off;
+			Palace = Settings.Palace != GameOption.Off;
 
 			var optionList = options as IList<GameOptionEnum> ?? [.. options];
 			if (Settings.InstantAdvice == GameOption.Default) InstantAdvice = optionList.Contains(GameOptionEnum.InstantAdvice);
