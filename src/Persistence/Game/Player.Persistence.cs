@@ -98,6 +98,12 @@ namespace CivOne
 			set => FutureTechCount = value;
 		}
 
+		ushort IPlayerRestorable.HumanContactTurn
+		{
+			get => HumanContactTurn;
+			set => HumanContactTurn = value;
+		}
+
 		short IPlayerRestorable.StartX
 		{
 			get => StartX;

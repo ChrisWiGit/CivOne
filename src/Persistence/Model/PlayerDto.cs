@@ -44,6 +44,9 @@ namespace CivOne.Persistence.Model
 		[Doc("The number of future technologies this player has completed.", 0, ushort.MaxValue)]
 		public ushort FutureTechCount { get; set; }
 
+		[Doc("Turns since last major contact state with the human player in legacy save semantics.", 0, ushort.MaxValue)]
+		public ushort HumanContactTurn { get; set; }
+
 		[Doc("The player's initial X-position used as world map focus anchor.")]
 		public short StartX { get; set; }
 

@@ -29,6 +29,7 @@ namespace CivOne
 		short[] ResearchProgress { get; set; }
 		ushort[] TaxRate { get; set; }
 		ushort[] ScienceRate { get; set; }
+		ushort[] HumanContactTurns { get; set; }
 		ushort[] StartingPositionX { get; set; }
 		ushort[] Government { get; set; }
 		CityData[] Cities { get; set; }

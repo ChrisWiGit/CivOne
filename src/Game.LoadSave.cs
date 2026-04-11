@@ -73,6 +73,7 @@ namespace CivOne
 				gameData.ResearchProgress = _players.Select(x => x.Science).ToArray();
 				gameData.TaxRate = _players.Select(x => (ushort)x.TaxesRate).ToArray();
 				gameData.ScienceRate = _players.Select(p => (ushort)p.ScienceRate).ToArray();
+				gameData.HumanContactTurns = _players.Select(p => p.HumanContactTurn).ToArray();
 				gameData.StartingPositionX = _players.Select(x => (ushort)x.StartX).ToArray();
 				gameData.Government = _players.Select(x => (ushort)x.Government.Id).ToArray();
 				gameData.Cities = _cities.GetCityData().ToArray();
@@ -151,6 +152,7 @@ namespace CivOne
 
 				player.TaxesRate = gameData.TaxRate[i];
 				player.LuxuriesRate = 10 - gameData.ScienceRate[i] - player.TaxesRate;
+				player.HumanContactTurn = gameData.HumanContactTurns[i];
 				player.StartX = (short)gameData.StartingPositionX[i];
 				
 				// Set map visibility

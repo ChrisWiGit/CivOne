@@ -110,6 +110,8 @@ namespace CivOne
 
 		private unsafe void SetScienceRate(ushort[] values) => SetArray(nameof(SaveData.ScienceRate), values);
 
+		private unsafe void SetHumanContactTurns(ushort[] values) => SetArray(nameof(SaveData.HumanContactTurns), values);
+
 		private unsafe void SetStartingPositionX(ushort[] values) => SetArray(nameof(SaveData.StartingPositionX), values);
 
 		private unsafe void SetGovernment(ushort[] values) => SetArray(nameof(SaveData.Government), values);

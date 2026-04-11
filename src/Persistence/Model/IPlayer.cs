@@ -27,6 +27,7 @@ namespace CivOne.Persistence.Model
 		IAdvance CurrentResearch { get; }
 		int CityNamesSkipped { get; }
 		ushort FutureTechCount { get; }
+		ushort HumanContactTurn { get; }
 		short StartX { get; }
 		IGovernment Government { get; }
 		bool RepublicDemocratic { get; }

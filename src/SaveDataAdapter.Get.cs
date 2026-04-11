@@ -101,6 +101,8 @@ namespace CivOne
 		private unsafe ushort[] GetTaxRate() => GetArray<ushort>(nameof(SaveData.TaxRate), 8);
 
 		private unsafe ushort[] GetScienceRate() => GetArray<ushort>(nameof(SaveData.ScienceRate), 8);
+
+		private unsafe ushort[] GetHumanContactTurns() => GetArray<ushort>(nameof(SaveData.HumanContactTurns), 8);
 		
 		private unsafe ushort[] GetStartingPositionX() => GetArray<ushort>(nameof(SaveData.StartingPositionX), 8);
 

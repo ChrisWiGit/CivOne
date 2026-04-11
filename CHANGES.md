@@ -6,6 +6,17 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Gameplay updates
+  * Future Tech handling:
+    * Added per-player `FutureTechCount` runtime state.
+    * When no normal research is available and science threshold is reached, Future Tech is applied.
+    * Human player increments both counters (`FutureTechCount` + legacy global `PlayerFutureTech`), AI increments only per-player counter.
+  * Human contact tracking:
+    * `HumanContactTurn` is set when a non-human player gains visibility of a human-owned unit/city.
+    * Human exploration does not modify AI contact counters.
+  * Refactor: `Player.Explore(...)`
+    * Kept original visibility update logic as a dedicated contiguous method block.
+    * Moved contact-tracking behavior into separate helper methods to avoid mixing with legacy core code.
 * Implemented Future Tech counter for players, stored in save files and used for game logic (e.g. victory conditions).
   * Each new Future Tech increases the counter by 1.
 * Fix:Heap corruption due to buffer allocation and indexing issues in Win32 folder browser and Bytemap copy operations.

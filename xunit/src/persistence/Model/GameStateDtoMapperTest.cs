@@ -133,7 +133,8 @@ namespace CivOne.Persistence.Model
 				ScienceRate = 5,
 				Science = 100,
 				CityNamesSkipped = 0,
-				FutureTechCount = 4
+				FutureTechCount = 4,
+				HumanContactTurn = 17
 			};
 
 			var playerDto1 = new PlayerDto
@@ -198,7 +199,8 @@ namespace CivOne.Persistence.Model
 				ScienceRate = 5,
 				Science = 200,
 				CityNamesSkipped = 0,
-				FutureTechCount = 9
+				FutureTechCount = 9,
+				HumanContactTurn = 3
 			};
 
 			_dto = new GameStateDto
@@ -321,6 +323,7 @@ namespace CivOne.Persistence.Model
 						Assert.Equal(expectedPlayer.Anarchy, actualPlayer.Anarchy);
 						Assert.Equal(expectedPlayer.TribeName, actualPlayer.TribeName);
 						Assert.Equal(expectedPlayer.FutureTechCount, actualPlayer.FutureTechCount);
+						Assert.Equal(expectedPlayer.HumanContactTurn, actualPlayer.HumanContactTurn);
 						Assert.Equal(expectedPlayer.Advances.Count, actualPlayer.Advances.Count);
 						Assert.Equal(expectedPlayer.Units?.Count ?? 0, actualPlayer.Units?.Count ?? 0);
 					}

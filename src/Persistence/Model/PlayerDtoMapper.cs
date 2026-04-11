@@ -68,6 +68,7 @@ namespace CivOne.Persistence.Model
 			player.CurrentResearch = _advanceResolver.ResolveById(dto.CurrentResearch);
 			player.CityNamesSkipped = dto.CityNamesSkipped;
 			player.FutureTechCount = (ushort)_yamlReadValueSanitizer.ClampToInt32(dto.FutureTechCount, nameof(PlayerDtoMapper), nameof(PlayerDto.FutureTechCount), min: 0, max: ushort.MaxValue);
+			player.HumanContactTurn = (ushort)_yamlReadValueSanitizer.ClampToInt32(dto.HumanContactTurn, nameof(PlayerDtoMapper), nameof(PlayerDto.HumanContactTurn), min: 0, max: ushort.MaxValue);
 			player.StartX = _yamlReadValueSanitizer.ClampToInt16(dto.StartX, nameof(PlayerDtoMapper), nameof(PlayerDto.StartX));
 			player.Government = _governmentResolver.ResolveById(dto.Government);
 
@@ -116,6 +117,7 @@ namespace CivOne.Persistence.Model
 				ScienceRate = player.ScienceRate,
 				Science = player.Science,
 				FutureTechCount = player.FutureTechCount,
+				HumanContactTurn = player.HumanContactTurn,
 				StartX = player.StartX,
 				Palace = _palaceMapper.ToDto(player.Palace),
 

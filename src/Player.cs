@@ -46,6 +46,7 @@ namespace CivOne
 
 		internal int CityNamesSkipped = 0;
 		internal ushort FutureTechCount { get; set; }
+		internal ushort HumanContactTurn { get; set; }
 
 		internal short StartX { get; set; }
 		
@@ -349,6 +350,13 @@ namespace CivOne
 
 		public void Explore(int x, int y, int range = 1, bool sea = false)
 		{
+			ExploreVisibleTiles(x, y, range, sea);
+			UpdateHumanContactTurnIfHumanAssetsSeen(x, y, range, sea);
+			UpdateVisibleCitySizes();
+		}
+
+		private void ExploreVisibleTiles(int x, int y, int range, bool sea)
+		{
 			_explored[x, y] = true;
 			for (int relX = -range; relX <= range; relX++)
 			for (int relY = -range; relY <= range; relY++)
@@ -362,7 +370,55 @@ namespace CivOne
 					continue;
 				_visible[xx, yy] = true;
 			}
-			UpdateVisibleCitySizes();
+		}
+
+		private void UpdateHumanContactTurnIfHumanAssetsSeen(int x, int y, int range, bool sea)
+		{
+			if (!ShouldTrackHumanContact(out var humanPlayerId))
+			{
+				return;
+			}
+
+			if (CanSeeHumanAssetsInExploreArea(x, y, range, sea, humanPlayerId))
+			{
+				HumanContactTurn = Game.GameTurn;
+			}
+		}
+
+		private bool ShouldTrackHumanContact(out byte humanPlayerId)
+		{
+			humanPlayerId = 0;
+			if (!Game.Started || IsHuman || Game.HumanPlayer == null)
+			{
+				return false;
+			}
+
+			humanPlayerId = Game.PlayerNumber(Game.HumanPlayer);
+			return true;
+		}
+
+		private bool CanSeeHumanAssetsInExploreArea(int x, int y, int range, bool sea, byte humanPlayerId)
+		{
+			for (int relX = -range; relX <= range; relX++)
+			for (int relY = -range; relY <= range; relY++)
+			{
+				int xx = x + relX;
+				int yy = y + relY;
+				if (yy < 0 || yy >= Map.HEIGHT) continue;
+				while (xx < 0) xx += Map.WIDTH;
+				while (xx >= Map.WIDTH) xx -= Map.WIDTH;
+				if (sea && !Map[xx, yy].IsOcean && (Math.Abs(relX) > 1 || Math.Abs(relY) > 1))
+					continue;
+
+				ITile visibleTile = Map[xx, yy];
+				if ((visibleTile.City != null && visibleTile.City.Owner == humanPlayerId) ||
+					visibleTile.Units.Any(unit => unit.Owner == humanPlayerId))
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		/// <summary>
@@ -445,6 +501,8 @@ namespace CivOne
 		int IPlayer.CityNamesSkipped => CityNamesSkipped;
 
 		ushort IPlayer.FutureTechCount => FutureTechCount;
+
+		ushort IPlayer.HumanContactTurn => HumanContactTurn;
 
 		short IPlayer.StartX => StartX;
 

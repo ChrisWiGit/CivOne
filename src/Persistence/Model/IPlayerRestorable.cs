@@ -24,6 +24,7 @@ namespace CivOne.Persistence.Model
 		new IAdvance CurrentResearch { get; set; }
 		new int CityNamesSkipped { get; set; }
 		new ushort FutureTechCount { get; set; }
+		new ushort HumanContactTurn { get; set; }
 		new short StartX { get; set; }
 		new IGovernment Government { get; set; }
 		new int LuxuriesRate { get; set; }

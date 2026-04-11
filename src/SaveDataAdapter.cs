@@ -196,6 +196,12 @@ namespace CivOne
 			set => SetScienceRate(value);
 		}
 
+		public ushort[] HumanContactTurns
+		{
+			get => GetHumanContactTurns();
+			set => SetHumanContactTurns(value);
+		}
+
 		public ushort[] StartingPositionX
 		{
 			get => GetStartingPositionX();

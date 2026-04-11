@@ -25,6 +25,7 @@ namespace CivOne.UnitTests
 			CurrentResearch = null;
 			CityNamesSkipped = 0;
 			FutureTechCount = 0;
+			HumanContactTurn = 0;
 			StartX = 0;
 			Government = null;
 			RepublicDemocratic = false;
@@ -60,6 +61,8 @@ namespace CivOne.UnitTests
 		public int CityNamesSkipped { get; set; }
 
 		public ushort FutureTechCount { get; set; }
+
+		public ushort HumanContactTurn { get; set; }
 
 		public short StartX { get; set; }
 
