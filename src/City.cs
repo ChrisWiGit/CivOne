@@ -1541,7 +1541,11 @@ namespace CivOne
 
 		private uint[] _visibleSizes = new uint[16];
 		public uint[] VisibleSizes {
-			get => _visibleSizes;
+			get { 
+				// Owner always sees his city size;
+				_visibleSizes[Owner] = Size;
+				return _visibleSizes;
+			}
 			set => _visibleSizes = value is { Length: >= 16 } ? value : new uint[16];
 		}
 
