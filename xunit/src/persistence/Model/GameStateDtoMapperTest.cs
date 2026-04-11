@@ -132,7 +132,8 @@ namespace CivOne.Persistence.Model
 				TaxesRate = 5,
 				ScienceRate = 5,
 				Science = 100,
-				CityNamesSkipped = 0
+				CityNamesSkipped = 0,
+				FutureTechCount = 4
 			};
 
 			var playerDto1 = new PlayerDto
@@ -151,8 +152,10 @@ namespace CivOne.Persistence.Model
 						Id = cityId1,
 						Name = "Alexandria",
 						Owner = 1,
-						Size = 4,                   Food = 12,
-					Shields = 8,                        Location = new MapLocation(20, 20),
+						Size = 4,
+						Food = 12,
+						Shields = 8,
+						Location = new MapLocation(20, 20),
 						VisibleSizes = [4, 2],
 						CurrentProduction = null,
 						ResourceTiles = new Bool2dMap(5, 5),
@@ -194,7 +197,8 @@ namespace CivOne.Persistence.Model
 				TaxesRate = 5,
 				ScienceRate = 5,
 				Science = 200,
-				CityNamesSkipped = 0
+				CityNamesSkipped = 0,
+				FutureTechCount = 9
 			};
 
 			_dto = new GameStateDto
@@ -203,6 +207,8 @@ namespace CivOne.Persistence.Model
 				HumanPlayer = 0,
 				CurrentPlayer = 0,
 				GameRandomSeed = 99999,
+				PeaceTurns = 11,
+				PlayerFutureTech = 4,
 				Difficulty = DifficultyLevel.Chieftain,
 				Players = [playerDto0, playerDto1],
 				AnthologyTurn = 0,
@@ -314,6 +320,7 @@ namespace CivOne.Persistence.Model
 						Assert.Equal(expectedPlayer.Gold, actualPlayer.Gold);
 						Assert.Equal(expectedPlayer.Anarchy, actualPlayer.Anarchy);
 						Assert.Equal(expectedPlayer.TribeName, actualPlayer.TribeName);
+						Assert.Equal(expectedPlayer.FutureTechCount, actualPlayer.FutureTechCount);
 						Assert.Equal(expectedPlayer.Advances.Count, actualPlayer.Advances.Count);
 						Assert.Equal(expectedPlayer.Units?.Count ?? 0, actualPlayer.Units?.Count ?? 0);
 					}
@@ -321,6 +328,8 @@ namespace CivOne.Persistence.Model
 				[nameof(GameStateDto.GameRandomSeed)] = () => Assert.Equal(expected.GameRandomSeed, actual.GameRandomSeed),
 				[nameof(GameStateDto.RandomSeed)] = () => Assert.Equal(expected.RandomSeed, actual.RandomSeed),
 				[nameof(GameStateDto.AnthologyTurn)] = () => Assert.Equal(expected.AnthologyTurn, actual.AnthologyTurn),
+				[nameof(GameStateDto.PeaceTurns)] = () => Assert.Equal(expected.PeaceTurns, actual.PeaceTurns),
+				[nameof(GameStateDto.PlayerFutureTech)] = () => Assert.Equal(expected.PlayerFutureTech, actual.PlayerFutureTech),
 				[nameof(GameStateDto.Map)] = () =>
 				{
 					Assert.NotNull(actual.Map);

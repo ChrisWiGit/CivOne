@@ -113,6 +113,8 @@ namespace CivOne
 				];
 				gameData.NextAnthologyTurn = _anthologyTurn;
 				gameData.OpponentCount = (ushort)(_players.Length - 2);
+				gameData.PeaceTurns = _peaceTurns;
+				gameData.PlayerFutureTech = HumanPlayer?.FutureTechCount ?? _playerFutureTech;
 				gameData.ReplayData = _replayData.ToArray();
 				GlobalWarmingServiceFactory.CreateGlobalWarmingStoreService(globalWarmingService, _valueSanitizer).Store(gameData);
 				File.WriteAllBytes(sveFile, gameData.GetBytes());
@@ -176,6 +178,9 @@ namespace CivOne
 			HumanPlayer.CurrentResearch = Common.Advances.FirstOrDefault(a => a.Id == gameData.CurrentResearch);
 		
 			_anthologyTurn = gameData.NextAnthologyTurn;
+			_peaceTurns = gameData.PeaceTurns;
+			_playerFutureTech = gameData.PlayerFutureTech;
+			HumanPlayer.FutureTechCount = _playerFutureTech;
 
 			Dictionary<byte, City> cityList = new Dictionary<byte, City>();
 			List<(City city, byte[] tradingBytes)> pendingTradingCities = [];

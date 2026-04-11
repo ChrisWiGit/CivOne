@@ -27,6 +27,7 @@ namespace CivOne.Persistence.Model
             var map = MapMap(dto.Map);
 
             var players = MapPlayers(dto);
+            ApplyLegacyFutureTech(dto, players);
             ValidateHumanPlayerIndex(dto, players);
             ValidateCurrentPlayerIndex(dto, players);
             ResolveTradingCities(dto, players);
@@ -71,6 +72,29 @@ namespace CivOne.Persistence.Model
             if (dto.CurrentPlayer >= players.Length)
             {
                 throw new InvalidOperationException($"Current player index {dto.CurrentPlayer} is out of range");
+            }
+        }
+
+        private static void ApplyLegacyFutureTech(GameStateDto dto, IPlayer[] players)
+        {
+            if (dto.HumanPlayer >= players.Length)
+            {
+                return;
+            }
+
+            if (dto.Players?.Any(player => player.FutureTechCount > 0) == true)
+            {
+                return;
+            }
+
+            if (dto.PlayerFutureTech == 0)
+            {
+                return;
+            }
+
+            if (players[dto.HumanPlayer] is IPlayerRestorable humanPlayer)
+            {
+                humanPlayer.FutureTechCount = dto.PlayerFutureTech;
             }
         }
 
@@ -267,6 +291,8 @@ namespace CivOne.Persistence.Model
                 MapTiles = map.mapTiles,
                 AdvanceOrigin = dto.AdvanceOrigin,
                 ReplayData = new ReplayDataDtoMapper().FromDtoList(dto.ReplayData ?? []),
+                PeaceTurns = dto.PeaceTurns,
+                PlayerFutureTech = players[dto.HumanPlayer].FutureTechCount,
                 GlobalWarmingCount = globalWarmingState.GlobalWarmingCount,
                 PollutedSquaresCount = globalWarmingState.PollutedSquaresCount,
                 WarmingIndicator = globalWarmingState.WarmingIndicator
@@ -338,6 +364,8 @@ namespace CivOne.Persistence.Model
                 GameOptions = gameState.GameOptions ?? [],
                 AdvanceOrigin = gameState.AdvanceOrigin,
                 ReplayData = new ReplayDataDtoMapper().ToDtoList(gameState.ReplayData ?? []),
+                PeaceTurns = gameState.PeaceTurns,
+				PlayerFutureTech = gameState.HumanPlayer?.FutureTechCount ?? gameState.PlayerFutureTech,
                 GlobalWarming = globalWarmingMapper.ToDto(gameState)
             };
 

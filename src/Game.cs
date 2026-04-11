@@ -46,6 +46,8 @@ namespace CivOne
 		private int _activeUnit;
 
 		private ushort _anthologyTurn = 0;
+		private ushort _peaceTurns = 0;
+		private ushort _playerFutureTech = 0;
 
 		/// <summary>
 		/// The metadata for the current save file, which is initialized when starting a new game or loading an existing game, and updated when saving a game.
@@ -136,6 +138,20 @@ namespace CivOne
 
 		internal ReplayData[] GetReplayData() => _replayData.ToArray();
 		internal T[] GetReplayData<T>() where T : ReplayData => _replayData.Where(x => x is T).Select(x => (x as T)).ToArray();
+
+		internal void RegisterFutureTech(Player player)
+		{
+			if (player == null)
+			{
+				return;
+			}
+
+			player.FutureTechCount++;
+			if (player == HumanPlayer)
+			{
+				_playerFutureTech = player.FutureTechCount;
+			}
+		}
 
 		private void PlayerDestroyed(object sender, EventArgs args)
 		{

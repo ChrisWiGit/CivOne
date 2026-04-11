@@ -13,6 +13,10 @@ namespace CivOne
 
 		public ushort AnthologyTurn => _anthologyTurn;
 
+		public ushort PeaceTurns => _peaceTurns;
+
+		public ushort PlayerFutureTech => HumanPlayer?.FutureTechCount ?? _playerFutureTech;
+
 		public List<ReplayData> ReplayData => _replayData;
 
 		// No dedicated persisted game-RNG state is currently exposed here.

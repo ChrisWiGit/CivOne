@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Linq;
 using CivOne.Screens;
 
 namespace CivOne.Tasks
@@ -35,6 +36,18 @@ namespace CivOne.Tasks
 		{
 			if (_player.CurrentResearch == null)
 			{
+				if (!_player.AvailableResearch.Any())
+				{
+					if (_player.Science >= _player.ScienceCost)
+					{
+						_player.Science -= _player.ScienceCost;
+						Game.RegisterFutureTech(_player);
+					}
+
+					EndTask();
+					return;
+				}
+
 				if (_human)
 					GameTask.Enqueue(new TechSelect(_player));
 				else

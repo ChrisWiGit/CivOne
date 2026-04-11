@@ -115,6 +115,8 @@ namespace CivOne
 		private void InitializeGameState(GameState state)
 		{
 			_anthologyTurn = state.AnthologyTurn;
+			_peaceTurns = state.PeaceTurns;
+			_playerFutureTech = HumanPlayer?.FutureTechCount ?? state.PlayerFutureTech;
 
 			if (state.AdvanceOrigin != null)
 				foreach (var kvp in state.AdvanceOrigin)

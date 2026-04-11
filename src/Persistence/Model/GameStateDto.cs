@@ -53,6 +53,12 @@ namespace CivOne.Persistence.Model
         [Doc("Replay events recorded during the game session.")]
         public List<ReplayDataDto> ReplayData { get; set; }
 
+        [Doc("Global peace turn counter from the original save format. Reserved for future diplomacy logic.", 0, ushort.MaxValue)]
+        public ushort PeaceTurns { get; set; }
+
+        [Doc("Legacy future-tech counter from the original save format. New YAML should prefer Players[].FutureTechCount. For backward compatibility this still mirrors the human player's count.", 0, ushort.MaxValue)]
+        public ushort PlayerFutureTech { get; set; }
+
 		[Doc("Global warming simulation state (count, pollution level, warning indicator).")]
 		public GlobalWarmingDto GlobalWarming { get; set; }
 

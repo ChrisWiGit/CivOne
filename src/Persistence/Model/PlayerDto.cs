@@ -41,6 +41,9 @@ namespace CivOne.Persistence.Model
         [Doc("The current index of the city name list for this player, and to be shown next time a city name is needed for a new city.")]
         public int CityNamesSkipped { get; set; }
 
+		[Doc("The number of future technologies this player has completed.", 0, ushort.MaxValue)]
+		public ushort FutureTechCount { get; set; }
+
 		[Doc("The player's initial X-position used as world map focus anchor.")]
 		public short StartX { get; set; }
 

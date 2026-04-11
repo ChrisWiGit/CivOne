@@ -92,6 +92,12 @@ namespace CivOne
 			set => CityNamesSkipped = value;
 		}
 
+		ushort IPlayerRestorable.FutureTechCount
+		{
+			get => FutureTechCount;
+			set => FutureTechCount = value;
+		}
+
 		short IPlayerRestorable.StartX
 		{
 			get => StartX;

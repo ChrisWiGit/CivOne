@@ -43,6 +43,8 @@ namespace CivOne
 		ushort GlobalWarmingCount { get; set; }
 		ushort PollutedSquaresCount { get; set; }
 		ushort WarmingIndicator { get; set; }
+		ushort PeaceTurns { get; set; }
+		ushort PlayerFutureTech { get; set; }
 
 		bool ValidData { get; }
 		byte[] GetBytes();

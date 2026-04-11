@@ -112,6 +112,12 @@ namespace CivOne.Persistence
         /// <summary>Replay events recorded during the game session.</summary>
         public List<ReplayData> ReplayData { get; set; }
 
+		/// <summary>Global peace turn counter from the original save format.</summary>
+		public ushort PeaceTurns { get; set; }
+
+		/// <summary>Future-tech counter from the original save format.</summary>
+		public ushort PlayerFutureTech { get; set; }
+
         public int GlobalWarmingCount { get; set; }
         public int PollutedSquaresCount { get; set; }
         public WarmingIndicator WarmingIndicator { get; set; }

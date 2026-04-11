@@ -72,6 +72,8 @@ namespace CivOne.UnitTests.Persistence
             public Dictionary<byte, byte> AdvanceOrigin { get; set; } = [];
             public ushort GameTurn { get; set; } = 1;
             public ushort AnthologyTurn { get; set; }
+			public ushort PeaceTurns { get; set; }
+			public ushort PlayerFutureTech { get; set; }
             public string[] CityNames { get; set; } = [];
             public List<ReplayData> ReplayData { get; set; } = [];
             public ITile[,] MapTiles { get; set; } = new ITile[2, 3];

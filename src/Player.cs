@@ -45,6 +45,7 @@ namespace CivOne
 		public event EventHandler Destroyed;
 
 		internal int CityNamesSkipped = 0;
+		internal ushort FutureTechCount { get; set; }
 
 		internal short StartX { get; set; }
 		
@@ -442,6 +443,8 @@ namespace CivOne
 		public short Anarchy => _anarchy;
 
 		int IPlayer.CityNamesSkipped => CityNamesSkipped;
+
+		ushort IPlayer.FutureTechCount => FutureTechCount;
 
 		short IPlayer.StartX => StartX;
 

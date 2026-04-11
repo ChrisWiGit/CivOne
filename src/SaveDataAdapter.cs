@@ -300,6 +300,18 @@ namespace CivOne
 			set => _saveData.PollutionEffect = value;
 		}
 
+		public ushort PeaceTurns
+		{
+			get => _saveData.PeaceTurns;
+			set => _saveData.PeaceTurns = value;
+		}
+
+		public ushort PlayerFutureTech
+		{
+			get => _saveData.PlayerFutureTech;
+			set => _saveData.PlayerFutureTech = value;
+		}
+
 		public ReplayData[] ReplayData
 		{
 			get => GetReplayData().ToArray();

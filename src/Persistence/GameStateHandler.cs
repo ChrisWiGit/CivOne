@@ -32,6 +32,8 @@ namespace CivOne
 
 		ushort GameTurn { get; }
 		ushort AnthologyTurn { get; }
+		ushort PeaceTurns { get; }
+		ushort PlayerFutureTech { get; }
 
 		string[] CityNames { get; }
 
@@ -107,6 +109,8 @@ namespace CivOne
 				Cities = game.Cities,
 				AdvanceOrigin = game.AdvanceOrigin,
 				ReplayData = [.. game.ReplayData],
+				PeaceTurns = game.PeaceTurns,
+				PlayerFutureTech = game.PlayerFutureTech,
 				GlobalWarmingCount = game.GlobalWarmingService?.GlobalWarmingCount ?? 0,
 				PollutedSquaresCount = game.GlobalWarmingService?.PollutedSquaresCount ?? 0,
 				WarmingIndicator = game.GlobalWarmingService?.WarmingIndicator ?? WarmingIndicator.None,

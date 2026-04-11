@@ -64,6 +64,7 @@ namespace CivOne.Persistence.Model
 				Anarchy = 2,
 				Gold = 1234,
 				CurrentResearch = new MockedIAdvance() { Id = 1 },
+				FutureTechCount = 6,
 				Government = new MockedIGovernment() { Id = 1 },
 				Palace = new MockedIPalace(),
 				Cities = [_city],
@@ -119,6 +120,7 @@ namespace CivOne.Persistence.Model
 				ScienceRate = 5,
 				Science = 100,
 				CityNamesSkipped = 0,
+				FutureTechCount = 6,
 				StartX = 33
 			};
 
@@ -193,6 +195,7 @@ namespace CivOne.Persistence.Model
 				[nameof(PlayerDto.ScienceRate)] = () => Assert.Equal(expected.ScienceRate, actual.ScienceRate),
 				[nameof(PlayerDto.Science)] = () => Assert.Equal(expected.Science, actual.Science),
 				[nameof(PlayerDto.CityNamesSkipped)] = () => Assert.Equal(expected.CityNamesSkipped, actual.CityNamesSkipped),
+				[nameof(PlayerDto.FutureTechCount)] = () => Assert.Equal(expected.FutureTechCount, actual.FutureTechCount),
 				[nameof(PlayerDto.StartX)] = () => Assert.Equal(expected.StartX, actual.StartX),
 				[nameof(PlayerDto.Advances)] = () => Assert.Equal(expected.Advances, actual.Advances),
 				[nameof(PlayerDto.Embassies)] = () => Assert.Equal(expected.Embassies, actual.Embassies),

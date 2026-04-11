@@ -6,6 +6,8 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Implemented Future Tech counter for players, stored in save files and used for game logic (e.g. victory conditions).
+  * Each new Future Tech increases the counter by 1.
 * Fix:Heap corruption due to buffer allocation and indexing issues in Win32 folder browser and Bytemap copy operations.
 * Implemented YAML savegame format to save and load games
   * Implemented extensive DTO and Mapper classes to convert between internal game state and YAML save format.
