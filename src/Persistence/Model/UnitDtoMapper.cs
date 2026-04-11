@@ -30,10 +30,8 @@ namespace CivOne.Persistence.Model
 			unit.Y = Math.Abs(locationY);
 			unit.Goto = new Point(Math.Abs(gotoX), Math.Abs(gotoY));
 			unit.Busy = dto.Busy;
-			unit.Veteran = dto.Veteran;
-			unit.Sentry = dto.Sentry;
-			unit.FortifyActive = dto.FortifyActive;
-			unit.Fortify = dto.Fortify;
+			unit.ForceStatus(dto.Sentry, dto.FortifyActive, dto.Fortify, dto.Veteran);
+
 			unit.FuelOrProgress = dto.FuelOrProgress;
 			unit.Fuel = dto.Fuel;
 			unit.WorkProgress = dto.WorkProgress;
@@ -61,7 +59,7 @@ namespace CivOne.Persistence.Model
 				Veteran = domain.Veteran,
 				Sentry = domain.Sentry,
 				FortifyActive = domain.FortifyActive,
-				Fortify = domain.Fortify,
+				Fortify = domain is BaseUnit ? domain.Fortify && !domain.FortifyActive : domain.Fortify,
 				FuelOrProgress = domain.FuelOrProgress,
 				Fuel = domain.Fuel,
 				WorkProgress = domain.WorkProgress,

@@ -112,6 +112,35 @@ namespace CivOne.Persistence.Model
 			}
 		}
 
+		[Theory]
+		[InlineData(false, true, true, false)]
+		[InlineData(false, false, false, true)]
+		public void FromDto_UsesRestorableStatusMapping(
+			bool expectedSentry,
+			bool expectedFortifyActive,
+			bool expectedFortify,
+			bool expectedVeteran)
+		{
+			var dto = new UnitDto
+			{
+				ClassName = "MockedIUnit",
+				Location = new MapLocation(10, 20),
+				Goto = new MapLocation(5, 8),
+				Sentry = expectedSentry,
+				FortifyActive = expectedFortifyActive,
+				Fortify = expectedFortify,
+				Veteran = expectedVeteran,
+				PlayerId = ExpectedPlayerId,
+			};
+
+			var restored = _testee.FromDto(dto);
+
+			Assert.Equal(expectedSentry, restored.Sentry);
+			Assert.Equal(expectedFortifyActive, restored.FortifyActive);
+			Assert.Equal(expectedFortify, restored.Fortify);
+			Assert.Equal(expectedVeteran, restored.Veteran);
+		}
+
 		private static Dictionary<string, Action> GetUnitDtoRoundTripAssertionMap(UnitDto expected, UnitDto actual)
 			=> new()
 			{
