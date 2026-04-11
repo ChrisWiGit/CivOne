@@ -6,7 +6,7 @@ Please be aware of it.
 
 ## LandValue of Tiles
 
-### TL;DR
+### Diplomacy TL;DR
 
 `LandValue` is a numeric property (range 8-15) assigned to each map tile that represents the **fertility and productivity quality** of the land. It is primarily calculated based on the surrounding terrain types and special resources in a neighborhood pattern. Higher values indicate more fertile, desirable land. The value is mainly used to determine which tribal hut events are triggered when explorers encounter them.
 
@@ -169,8 +169,131 @@ When a dedicated RNG source is available, the intended mapping is:
 - `RandomSeed` from the game RNG source
 - `TerrainSeed` from terrain/map seed source
 
-### Practical guidance
+### Diplomacy practical guidance
 
 - New code should prefer the primary names (`GameRandomSeed`, `MapSeed`).
 - Legacy aliases (`RandomSeed`, `TerrainSeed`) should be kept for backward compatibility in persisted YAML.
 - Avoid introducing separate backing fields for alias pairs; aliases must point to the same logical value.
+
+## Diplomacy fields
+
+### TL;DR
+
+The original Civ1 save format stores diplomacy as a **pairwise 8×8 matrix** of `ushort` flag words.
+Each player has one diplomacy entry per target player, and each entry is a bitmask rather than a single boolean.
+
+In CivOne, this is now prepared in the YAML/game persistence model as per-player diplomacy entries with:
+
+- `TargetPlayerId`
+- `RawFlags`
+- `Decoded` (currently placeholder only)
+
+### Binary save layout
+
+Relevant legacy fields in [SaveData](src/IO/SaveData.cs):
+
+- `Diplomacy[8 * 8]` — pairwise diplomacy state words
+- `HumanContactTurns[8]` — per-player contact counter relative to the human player
+- `PeaceTurns` — global peace timer in the original save model
+- `PeaceChart[8 * 150]` — historical peace chart data
+
+The memory-map text files expose the same diplomacy matrix as fields like:
+
+- `game.civ0.diplo_civ1`
+- `game.civ3.diplo_civ7`
+
+That means the effective lookup rule is:
+
+```text
+index = sourcePlayer * 8 + targetPlayer
+```
+
+Each matrix cell is stored as a `flagshort`/`ushort`, so one entry can hold multiple diplomacy-related bits.
+
+### What `Diplomacy[8 * 8]` contains conceptually
+
+The exact bit meanings are not fully decoded yet, but the structure strongly indicates:
+
+- one relationship record per player pair
+- multiple boolean-like states packed into one 16-bit word
+- likely states such as war/peace/contact/treaty variants or other diplomatic markers
+
+Important: this is **not** “8 booleans per pair” as separate fields.
+It is **one bitmask per pair**, which may contain up to 16 individual flags.
+
+### Current CivOne runtime model
+
+Current gameplay/persistence pieces are split across several concepts:
+
+- `Player._embassies` in [Player.cs](src/Player.cs) — explicit embassy list already used by gameplay/UI
+- `Player.HumanContactTurn` in [Player.cs](src/Player.cs) — per-player contact timing/marker
+- `Game._peaceTurns` in [Game.cs](src/Game.cs) — global peace timer
+- `Player._diplomacy` in [Player.cs](src/Player.cs) — raw 8-entry diplomacy array per player
+
+So the current model is:
+
+- **Embassy** = explicit, already meaningful gameplay concept
+- **HumanContactTurn** = separate legacy per-player counter
+- **PeaceTurns** = separate global legacy counter
+- **Diplomacy** = raw pairwise relationship flags, prepared for persistence and later decoding
+
+### YAML model
+
+The YAML-facing model stores diplomacy per player as a list of structured entries.
+
+Relevant files:
+
+- [PlayerDto](src/Persistence/Model/PlayerDto.cs)
+- [DiplomacyEntryDto](src/Persistence/Model/DiplomacyEntryDto.cs)
+- [PlayerDtoMapper](src/Persistence/Model/PlayerDtoMapper.cs)
+
+Shape:
+
+```yaml
+Players:
+  - Id: 2
+    Diplomacy:
+      - TargetPlayerId: 0
+        RawFlags: 0
+        Decoded: {}
+      - TargetPlayerId: 1
+        RawFlags: 5
+        Decoded: {}
+```
+
+This design is intentional:
+
+- `RawFlags` preserves the legacy save data **losslessly**
+- `Decoded` is reserved for future human-readable semantics
+- the model can evolve without breaking existing YAML saves
+
+### Why `Decoded` exists even though it is empty
+
+`DiplomacyDecodedDto` is currently just a placeholder in [DiplomacyEntryDto.cs](src/Persistence/Model/DiplomacyEntryDto.cs).
+It exists so decoded bit meanings can later be added without changing the outer YAML structure.
+
+Planned future examples:
+
+- `IsAtWar`
+- `HasPeaceTreaty`
+- `HasCeaseFire`
+- `HasContact`
+
+Until those meanings are verified, `RawFlags` remains the authoritative persisted value.
+
+### Current limitations
+
+At the moment, the raw diplomacy matrix is **prepared and persisted**, but not yet fully interpreted into gameplay logic.
+
+That means:
+
+- matrix data can be stored and round-tripped
+- the exact bit semantics are still open work
+- gameplay still mostly relies on already-separated concepts like embassies, contact tracking, and peace timer
+
+### Practical guidance
+
+- Treat `RawFlags` as the source of truth for legacy diplomacy matrix data.
+- Do not infer specific bit meanings unless verified against real save diffs or original Civ1 behavior.
+- Add decoded flags only after their semantics are confirmed.
+- Keep `Decoded` additive; it should never replace `RawFlags` as the lossless source.

@@ -19,6 +19,7 @@ namespace CivOne.Persistence.Model
 		new bool[,] Visible { get; set; }
 		new List<byte> Advances { get; set; }
 		new List<byte> Embassies { get; set; }
+		new ushort[] Diplomacy { get; set; }
 		new short Anarchy { get; set; }
 		new short Gold { get; set; }
 		new IAdvance CurrentResearch { get; set; }

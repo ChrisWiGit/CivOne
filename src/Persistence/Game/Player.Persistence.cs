@@ -67,6 +67,24 @@ namespace CivOne
 			set { _embassies.Clear(); if (value != null) _embassies.AddRange(value); }
 		}
 
+		ushort[] IPlayerRestorable.Diplomacy
+		{
+			get => _diplomacy;
+			set
+			{
+				Array.Clear(_diplomacy, 0, _diplomacy.Length);
+				if (value == null)
+				{
+					return;
+				}
+
+				for (var i = 0; i < _diplomacy.Length && i < value.Length; i++)
+				{
+					_diplomacy[i] = value[i];
+				}
+			}
+		}
+
 		short IPlayerRestorable.Anarchy
 		{
 			get => _anarchy;

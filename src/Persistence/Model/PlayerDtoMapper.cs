@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using CivOne.Advances;
 using CivOne.Civilizations;
@@ -63,6 +64,7 @@ namespace CivOne.Persistence.Model
 				(dto.Embassies ?? [])
 					.Select(x => _yamlReadValueSanitizer.ClampToByte(x, nameof(PlayerDtoMapper), nameof(PlayerDto.Embassies)))
 			];
+			player.Diplomacy = BuildDiplomacyArray(dto.Diplomacy);
 			player.Anarchy = dto.Anarchy;
 			player.Gold = _yamlReadValueSanitizer.ClampToInt16(dto.Gold, nameof(PlayerDtoMapper), nameof(PlayerDto.Gold));
 			player.CurrentResearch = _advanceResolver.ResolveById(dto.CurrentResearch);
@@ -107,6 +109,12 @@ namespace CivOne.Persistence.Model
 
 				Advances = [.. player.Advances.Select(a => (AdvanceId)a)],
 				Embassies = [.. player.Embassies],
+				Diplomacy = [.. player.Diplomacy.Select((flags, targetId) => new DiplomacyEntryDto
+				{
+					TargetPlayerId = (ushort)targetId,
+					RawFlags = flags,
+					Decoded = new DiplomacyDecodedDto()
+				})],
 
 				Anarchy = player.Anarchy,
 				Gold = player.Gold,
@@ -129,6 +137,39 @@ namespace CivOne.Persistence.Model
 					.Where(u => !hasOwnerId || u.Owner == ownerId)
 					.Select(_unitMapper.ToDto)]
 			};
+		}
+
+		private ushort[] BuildDiplomacyArray(List<DiplomacyEntryDto> entries)
+		{
+			var diplomacy = new ushort[8];
+			if (entries == null)
+			{
+				return diplomacy;
+			}
+
+			foreach (var entry in entries)
+			{
+				if (entry == null)
+				{
+					continue;
+				}
+
+				var target = _yamlReadValueSanitizer.ClampToInt32(
+					entry.TargetPlayerId,
+					nameof(PlayerDtoMapper),
+					$"{nameof(PlayerDto.Diplomacy)}.{nameof(DiplomacyEntryDto.TargetPlayerId)}",
+					min: 0,
+					max: diplomacy.Length - 1);
+
+				diplomacy[target] = (ushort)_yamlReadValueSanitizer.ClampToInt32(
+					entry.RawFlags,
+					nameof(PlayerDtoMapper),
+					$"{nameof(PlayerDto.Diplomacy)}.{nameof(DiplomacyEntryDto.RawFlags)}",
+					min: 0,
+					max: ushort.MaxValue);
+			}
+
+			return diplomacy;
 		}
 	}
 }

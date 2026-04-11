@@ -37,6 +37,7 @@ namespace CivOne
 		private readonly bool[,] _visible = new bool[Map.WIDTH, Map.HEIGHT];
 		private readonly List<byte> _advances = new List<byte>();
 		private readonly List<byte> _embassies = new List<byte>();
+		private readonly ushort[] _diplomacy = new ushort[8];
 		
 		private short _anarchy = 0;
 		private short _gold;
@@ -495,6 +496,8 @@ namespace CivOne
 		List<byte> IPlayer.Advances => _advances;
 
 		List<byte> IPlayer.Embassies => _embassies;
+
+		ushort[] IPlayer.Diplomacy => _diplomacy;
 
 		public short Anarchy => _anarchy;
 

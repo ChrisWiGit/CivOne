@@ -20,6 +20,7 @@ namespace CivOne.UnitTests
 			Visible = new bool[10, 10];
 			Advances = [];
 			Embassies = [];
+			Diplomacy = new ushort[8];
 			Anarchy = 0;
 			Gold = 100;
 			CurrentResearch = null;
@@ -51,6 +52,8 @@ namespace CivOne.UnitTests
 		public List<byte> Advances { get; set; }
 
 		public List<byte> Embassies { get; set; }
+
+		public ushort[] Diplomacy { get; set; }
 
 		public short Anarchy { get; set; }
 

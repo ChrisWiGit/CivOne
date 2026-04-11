@@ -14,6 +14,9 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Human contact tracking:
     * `HumanContactTurn` is set when a non-human player gains visibility of a human-owned unit/city.
     * Human exploration does not modify AI contact counters.
+  * Diplomacy persistence:
+    * Added per-player `Diplomacy` field (8 target entries with raw bitmask flags) to the YAML/game persistence model.
+    * Added `DiplomacyDecodedDto` as placeholder for future decoded diplomacy flags.
   * Peace timer (minimal integration):
     * `PeaceTurns` now increases by 1 when a full game turn advances without hostile action.
     * Any hostile action during a turn resets `PeaceTurns` to `0` on the next turn advance.

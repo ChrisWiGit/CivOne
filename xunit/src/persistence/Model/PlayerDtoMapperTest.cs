@@ -61,6 +61,7 @@ namespace CivOne.Persistence.Model
 			{
 				Advances = [1, 2, 3],
 				Embassies = [4, 5],
+				Diplomacy = [0, 1, 2, 3, 4, 5, 6, 7],
 				Anarchy = 2,
 				Gold = 1234,
 				CurrentResearch = new MockedIAdvance() { Id = 1 },
@@ -77,6 +78,17 @@ namespace CivOne.Persistence.Model
 				Civilization = new CivilizationDto { LeaderClassName = civsInGame[0].Leader.GetType().Name },
 				Advances = [1, 2, 3],
 				Embassies = [4, 5],
+				Diplomacy =
+				[
+					new DiplomacyEntryDto { TargetPlayerId = 0, RawFlags = 0, Decoded = new DiplomacyDecodedDto() },
+					new DiplomacyEntryDto { TargetPlayerId = 1, RawFlags = 1, Decoded = new DiplomacyDecodedDto() },
+					new DiplomacyEntryDto { TargetPlayerId = 2, RawFlags = 2, Decoded = new DiplomacyDecodedDto() },
+					new DiplomacyEntryDto { TargetPlayerId = 3, RawFlags = 3, Decoded = new DiplomacyDecodedDto() },
+					new DiplomacyEntryDto { TargetPlayerId = 4, RawFlags = 4, Decoded = new DiplomacyDecodedDto() },
+					new DiplomacyEntryDto { TargetPlayerId = 5, RawFlags = 5, Decoded = new DiplomacyDecodedDto() },
+					new DiplomacyEntryDto { TargetPlayerId = 6, RawFlags = 6, Decoded = new DiplomacyDecodedDto() },
+					new DiplomacyEntryDto { TargetPlayerId = 7, RawFlags = 7, Decoded = new DiplomacyDecodedDto() }
+				],
 				Anarchy = 2,
 				Gold = 1234,
 				CurrentResearch = 1,
@@ -202,6 +214,17 @@ namespace CivOne.Persistence.Model
 				[nameof(PlayerDto.StartX)] = () => Assert.Equal(expected.StartX, actual.StartX),
 				[nameof(PlayerDto.Advances)] = () => Assert.Equal(expected.Advances, actual.Advances),
 				[nameof(PlayerDto.Embassies)] = () => Assert.Equal(expected.Embassies, actual.Embassies),
+				[nameof(PlayerDto.Diplomacy)] = () =>
+				{
+					Assert.NotNull(actual.Diplomacy);
+					Assert.Equal(expected.Diplomacy.Count, actual.Diplomacy.Count);
+					for (var i = 0; i < expected.Diplomacy.Count; i++)
+					{
+						Assert.Equal(expected.Diplomacy[i].TargetPlayerId, actual.Diplomacy[i].TargetPlayerId);
+						Assert.Equal(expected.Diplomacy[i].RawFlags, actual.Diplomacy[i].RawFlags);
+						Assert.NotNull(actual.Diplomacy[i].Decoded);
+					}
+				},
 				[nameof(PlayerDto.Explored)] = () => AssertBool2dMapEqual(expected.Explored, actual.Explored),
 				[nameof(PlayerDto.Visible)] = () => AssertBool2dMapEqual(expected.Visible, actual.Visible),
 				[nameof(PlayerDto.Civilization)] = () => Assert.Equal(expected.Civilization.LeaderClassName, actual.Civilization.LeaderClassName),

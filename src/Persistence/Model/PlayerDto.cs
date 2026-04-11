@@ -10,6 +10,7 @@ namespace CivOne.Persistence.Model
     using AdvanceId = System.UInt32;
     using GovernmentId = System.Byte;
 	using CityId = System.UInt16;
+
     public class PlayerDto
     {
 		[Doc("The civilization of the player.")]
@@ -23,6 +24,9 @@ namespace CivOne.Persistence.Model
         
 		[Doc("A list of player ids with which this player has an embassy.")]
 		public List<PlayerId> Embassies { get; set; }
+
+		[Doc("Per-target diplomacy state entries. RawFlags are persisted 1:1 from legacy diplomacy bitmasks.")]
+		public List<DiplomacyEntryDto> Diplomacy { get; set; }
 
 		public static Dictionary<AdvanceId, string> AllAdvancesInfo = [];
 
