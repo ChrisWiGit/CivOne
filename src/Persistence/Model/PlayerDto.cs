@@ -41,6 +41,9 @@ namespace CivOne.Persistence.Model
         [Doc("The current index of the city name list for this player, and to be shown next time a city name is needed for a new city.")]
         public int CityNamesSkipped { get; set; }
 
+		[Doc("The player's initial X-position used as world map focus anchor.")]
+		public short StartX { get; set; }
+
 		[Doc("A list of the player's cities")]
         public List<CityDto> Cities { get; set; }
 

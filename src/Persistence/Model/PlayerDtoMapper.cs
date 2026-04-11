@@ -67,6 +67,7 @@ namespace CivOne.Persistence.Model
 			player.Gold = _yamlReadValueSanitizer.ClampToInt16(dto.Gold, nameof(PlayerDtoMapper), nameof(PlayerDto.Gold));
 			player.CurrentResearch = _advanceResolver.ResolveById(dto.CurrentResearch);
 			player.CityNamesSkipped = dto.CityNamesSkipped;
+			player.StartX = _yamlReadValueSanitizer.ClampToInt16(dto.StartX, nameof(PlayerDtoMapper), nameof(PlayerDto.StartX));
 			player.Government = _governmentResolver.ResolveById(dto.Government);
 
 			// Keep rate invariant (luxuries + taxes + science == 10) by setting all three.
@@ -113,6 +114,7 @@ namespace CivOne.Persistence.Model
 				TaxesRate = player.TaxesRate,
 				ScienceRate = player.ScienceRate,
 				Science = player.Science,
+				StartX = player.StartX,
 				Palace = _palaceMapper.ToDto(player.Palace),
 
 				Cities = [.. player.Cities

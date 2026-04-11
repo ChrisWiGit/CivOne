@@ -92,6 +92,12 @@ namespace CivOne
 			set => CityNamesSkipped = value;
 		}
 
+		short IPlayerRestorable.StartX
+		{
+			get => StartX;
+			set => StartX = value;
+		}
+
 		IGovernment IPlayerRestorable.Government
 		{
 			get => _government;

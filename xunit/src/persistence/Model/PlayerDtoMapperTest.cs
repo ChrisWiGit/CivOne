@@ -118,7 +118,8 @@ namespace CivOne.Persistence.Model
 				TaxesRate = 5,
 				ScienceRate = 5,
 				Science = 100,
-				CityNamesSkipped = 0
+				CityNamesSkipped = 0,
+				StartX = 33
 			};
 
 			// Setup game instance mock
@@ -192,6 +193,7 @@ namespace CivOne.Persistence.Model
 				[nameof(PlayerDto.ScienceRate)] = () => Assert.Equal(expected.ScienceRate, actual.ScienceRate),
 				[nameof(PlayerDto.Science)] = () => Assert.Equal(expected.Science, actual.Science),
 				[nameof(PlayerDto.CityNamesSkipped)] = () => Assert.Equal(expected.CityNamesSkipped, actual.CityNamesSkipped),
+				[nameof(PlayerDto.StartX)] = () => Assert.Equal(expected.StartX, actual.StartX),
 				[nameof(PlayerDto.Advances)] = () => Assert.Equal(expected.Advances, actual.Advances),
 				[nameof(PlayerDto.Embassies)] = () => Assert.Equal(expected.Embassies, actual.Embassies),
 				[nameof(PlayerDto.Explored)] = () => AssertBool2dMapEqual(expected.Explored, actual.Explored),

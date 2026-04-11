@@ -23,6 +23,7 @@ namespace CivOne.Persistence.Model
 		new short Gold { get; set; }
 		new IAdvance CurrentResearch { get; set; }
 		new int CityNamesSkipped { get; set; }
+		new short StartX { get; set; }
 		new IGovernment Government { get; set; }
 		new int LuxuriesRate { get; set; }
 		new int TaxesRate { get; set; }
