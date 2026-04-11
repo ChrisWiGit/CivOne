@@ -17,27 +17,51 @@ namespace CivOne.Services
 	/// </summary>
 	public class SaveMetaDataService(string _gameVersion, ITranslationService _translationService = null)
 	{
-		private readonly ITranslationService translationService = _translationService ?? new TranslationIdentityServiceImpl();
-		
+		private readonly ITranslationService _translation = _translationService ?? new TranslationIdentityServiceImpl();
+		private readonly GameCalendarService _calendar;
+
+		public SaveMetaDataService(string gameVersion, ITranslationService translationService, GameCalendarService calendar)
+			: this(gameVersion, translationService)
+		{
+			_calendar = calendar ?? new GameCalendarService(translationService);
+		}
+
+		private GameCalendarService Calendar => _calendar ?? new GameCalendarService(_translation);
+
 		public SaveFileMetaData CreateForNewGame(int difficulty, Player humanPlayer)
 		{
 			var metadata = new SaveFileMetaData();
 			metadata.InitializeForNewGame(_gameVersion, DateTimeOffset.UtcNow);
-			metadata.DisplayName = BuildDisplayName(difficulty, humanPlayer);
+			metadata.DisplayName = BuildDisplayName(difficulty, humanPlayer, 0);
 			return metadata;
 		}
 
-		string TranslateDisplayName(int difficulty, Player humanPlayer)
+		private string TranslateDisplayName(int difficulty, Player humanPlayer, ushort gameTurn)
 		{
-			return translationService.TranslateFormatted(
-				"{0} {1} of {2}",
-				translationService.Translate(Common.DifficultyName(difficulty)),
-				translationService.Translate(humanPlayer.LeaderName),
-				translationService.Translate(humanPlayer.TribeNamePlural)
+			return _translation.TranslateFormatted(
+				"In {3} leader {0} {1} of the {2}",
+				_translation.Translate(DifficultyName(difficulty)),
+				_translation.Translate(humanPlayer.LeaderName),
+				_translation.Translate(humanPlayer.TribeNamePlural),
+				Calendar.FormatYear(gameTurn)
 			);
 		}
 
-		public string BuildDisplayName(int difficulty, Player humanPlayer)
-			=> TranslateDisplayName(difficulty, humanPlayer);
+		/// <summary>
+		/// Returns the localized difficulty name for the given level.
+		/// Kept here (not in Common) so it can be translated without a Common dependency.
+		/// </summary>
+		public string DifficultyName(int difficulty) => difficulty switch
+		{
+			1 => _translation.Translate("Lord"),
+			2 => _translation.Translate("Prince"),
+			3 => _translation.Translate("King"),
+			4 => _translation.Translate("Emperor"),
+			5 => _translation.Translate("Deity"),
+			_ => _translation.Translate("Chief"),
+		};
+
+		public string BuildDisplayName(int difficulty, Player humanPlayer, ushort gameTurn)
+			=> $"{TranslateDisplayName(difficulty, humanPlayer, gameTurn)}";
 	}
 }

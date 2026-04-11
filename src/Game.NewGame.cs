@@ -244,7 +244,7 @@ namespace CivOne
 			Debug.Assert(HumanPlayer != null, "NewGame invariant violated: HumanPlayer must be initialized during player setup.");
 			if (string.IsNullOrWhiteSpace(SaveMetaData.DisplayName))
 			{
-				SaveMetaData.DisplayName = _saveMetaDataService.BuildDisplayName(difficulty, HumanPlayer);
+				SaveMetaData.DisplayName = _saveMetaDataService.BuildDisplayName(difficulty, HumanPlayer, 0);
 			}
 
 			Log("Adding starting units...");
