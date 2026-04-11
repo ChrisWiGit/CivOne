@@ -28,6 +28,8 @@ namespace CivOne.Persistence.Model
                 Owner = dto.Owner,
                 Name = dto.Name ?? string.Empty,
                 Size = yamlReadValueSanitizer.ClampToByte(dto.Size, nameof(CityDtoMapper), nameof(CityDto.Size)),
+                Food = yamlReadValueSanitizer.ClampToInt32(dto.Food, nameof(CityDtoMapper), nameof(CityDto.Food), min: 0, max: 65535),
+                Shields = yamlReadValueSanitizer.ClampToInt32(dto.Shields, nameof(CityDtoMapper), nameof(CityDto.Shields), min: 0, max: 65535),
                 Location = new Point(locationX, locationY),
                 Tile = centerTile,
                 CurrentProduction = dto.CurrentProduction == null ? null : productionMapper.FromDto(dto.CurrentProduction),
@@ -108,6 +110,8 @@ namespace CivOne.Persistence.Model
                 Id = domain.Id,
                 Owner = domain.Owner,
                 Size = domain.Size,
+                Food = domain.Food,
+                Shields = domain.Shields,
 
                 ResourceTiles = MapResourceTiles(domain.ResourceTiles, domain.Tile),
                 Specialists = [.. domain.Specialists],

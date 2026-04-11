@@ -204,6 +204,8 @@ namespace CivOne.Persistence.Model
 					Assert.Equal(expected.Cities[0].Name, actual.Cities[0].Name);
 					Assert.Equal(expected.Cities[0].Size, actual.Cities[0].Size);
 					Assert.Equal(expected.Cities[0].Owner, actual.Cities[0].Owner);
+					Assert.Equal(expected.Cities[0].Food, actual.Cities[0].Food);
+					Assert.Equal(expected.Cities[0].Shields, actual.Cities[0].Shields);
 				},
 				[nameof(PlayerDto.Units)] = () =>
 				{

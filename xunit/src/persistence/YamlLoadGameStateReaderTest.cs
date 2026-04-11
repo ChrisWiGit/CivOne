@@ -176,6 +176,8 @@ namespace CivOne.UnitTests.Persistence
 				Owner = 0,
 				Name = "Babylon",
 				Size = 2,
+				Food = 8,
+				Shields = 5,
 				Location = new MapLocation(2, 2),
 				ResourceTiles = new Bool2dMap(5, 5),
 				Specialists = new List<Citizen>(),
