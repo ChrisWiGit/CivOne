@@ -28,7 +28,6 @@ using CivOne.Units;
 
 namespace CivOne.Units
 {
-	// ...existing code...
 	internal abstract class BaseUnit : BaseInstance, IUnitRestorable, IUnit
 	{
 		protected int _x, _y;
