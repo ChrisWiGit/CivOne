@@ -48,6 +48,7 @@ namespace CivOne
 		private ushort _anthologyTurn = 0;
 		private ushort _peaceTurns = 0;
 		private ushort _playerFutureTech = 0;
+		private bool _hostileActionOccurred = false;
 
 		/// <summary>
 		/// The metadata for the current save file, which is initialized when starting a new game or loading an existing game, and updated when saving a game.
@@ -153,6 +154,11 @@ namespace CivOne
 			}
 		}
 
+		internal void RegisterHostileAction()
+		{
+			_hostileActionOccurred = true;
+		}
+
 		private void PlayerDestroyed(object sender, EventArgs args)
 		{
 			Player player = (sender as Player);
@@ -233,6 +239,7 @@ namespace CivOne
 			{
 				_currentPlayer = 0;
 				GameTurn++;
+				AdvancePeaceTurns();
 				if (GameTurn % 50 == 0 && AutoSave)
 				{
 					GameTask.Enqueue(Show.AutoSave);
@@ -309,6 +316,21 @@ namespace CivOne
 			globalWarmingService.RefreshPollutionState();
 
 			GameTask.Enqueue(Message.Newspaper(null, "Global temperature", "rises! Icecaps melt.", "Severe Drought."));
+		}
+
+		private void AdvancePeaceTurns()
+		{
+			if (_hostileActionOccurred)
+			{
+				_peaceTurns = 0;
+				_hostileActionOccurred = false;
+				return;
+			}
+
+			if (_peaceTurns < ushort.MaxValue)
+			{
+				_peaceTurns++;
+			}
 		}
 
 		// store last active player unit to check if a previous player move happened or a game was loaded.

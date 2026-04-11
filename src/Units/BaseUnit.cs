@@ -322,6 +322,8 @@ namespace CivOne.Units
 
 			ITile moveTarget = Map[X, Y][relX, relY];
 			if (moveTarget == null) return false;
+
+			Game.RegisterHostileAction();
 			if (moveTarget.Units.Length == 0 && moveTarget.City != null && moveTarget.City.Owner != Owner)
 			{
 				if (Class != UnitClass.Land) // can't occupy city with sea/air unit
