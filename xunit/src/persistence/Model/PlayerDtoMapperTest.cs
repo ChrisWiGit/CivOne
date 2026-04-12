@@ -144,6 +144,12 @@ namespace CivOne.Persistence.Model
 				FutureTechCount = 6,
 				HumanContactTurn = 12,
 				StartX = 33,
+				SpaceShip = new SpaceShipDto
+				{
+					Grid = new SpaceShipGridMap2d(new SpaceShipComponentType[12, 12]),
+					Population = 0,
+					LaunchYear = 0
+				},
 				UnitsLost = [.. Enumerable.Range(0, 28).Select(i => (long)i)],
 				UnitsDestroyedBy = [.. Enumerable.Range(0, 8).Select(i => (long)i)],
 				EpicRanking = 11,
@@ -266,7 +272,8 @@ namespace CivOne.Persistence.Model
 					Assert.Equal(expected.Units[0].MovesLeft, actual.Units[0].MovesLeft);
 					Assert.Equal(expected.Units[0].PartMoves, actual.Units[0].PartMoves);
 					Assert.Equal(expected.Units[0].Order, actual.Units[0].Order);
-				}
+				},
+				[nameof(PlayerDto.SpaceShip)] = () => AssertSpaceShipEqual(expected.SpaceShip, actual.SpaceShip)
 			};
 
 		private static HashSet<string> GetExcludedPlayerDtoProperties() =>
@@ -287,6 +294,34 @@ namespace CivOne.Persistence.Model
 				for (var y = 0; y < expected.GetLength(1); y++)
 				{
 					Assert.Equal(expected[x, y], actual[x, y]);
+				}
+			}
+		}
+
+		private static void AssertSpaceShipEqual(SpaceShipDto expected, SpaceShipDto actual)
+		{
+			if (expected == null)
+			{
+				Assert.Null(actual);
+				return;
+			}
+
+			Assert.NotNull(actual);
+			Assert.Equal(expected.Population, actual.Population);
+			Assert.Equal(expected.LaunchYear, actual.LaunchYear);
+
+			var expectedGrid = expected.Grid?.ToArray();
+			var actualGrid = actual.Grid?.ToArray();
+			Assert.NotNull(expectedGrid);
+			Assert.NotNull(actualGrid);
+			Assert.Equal(expectedGrid.GetLength(0), actualGrid.GetLength(0));
+			Assert.Equal(expectedGrid.GetLength(1), actualGrid.GetLength(1));
+
+			for (var x = 0; x < expectedGrid.GetLength(0); x++)
+			{
+				for (var y = 0; y < expectedGrid.GetLength(1); y++)
+				{
+					Assert.Equal(expectedGrid[x, y], actualGrid[x, y]);
 				}
 			}
 		}

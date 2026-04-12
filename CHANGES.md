@@ -41,6 +41,7 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Designed to support future in-memory model refactoring while keeping save format mapping isolated.
   * Current scope focuses on CivOne YAML save files and does not target binary CIV save compatibility.
   * Prepared for future changes to how data is handled in memory for more flexibility and maintainability.
+  * Added space ship grid mapping support in YAML **Not yet active in gameplay** (see [docs/SPACESHIP_FULL_IMPLEMENTATION_PLAN.md](docs/SPACESHIP_FULL_IMPLEMENTATION_PLAN.md)).
   * See [YAML Save Format](YAML.md) for more details.
 * Github pipeline to build and automatic testing and creating release artifacts (Windows, Linux)
 * Feature: Added Debug keys for debugging purposes in DEBUG mode
@@ -97,7 +98,6 @@ I did not browse all issues on github at first, so I did not recognize that some
     * Removes units on affected tiles
     * Removes improvements on affected tiles
     * Removes pole ice caps (Arctic and Tundra tiles on top and bottom 3 rows of map) in 20% of cases.
-  * [ ] TODO: store and load from save files.
 * Feature: Implement pollution mechanics and visual representation in city management
 * Fix: Removed duplicate update check in DrawLayer to allow using false as return value in HasUpdate in city screens and still be able to draw the contents.
 * Feature: Citizens in Attitude Survey screen and Top Five Cities screen are drawn tightly packed in big cities (size > 20) to show up to 99 citizens.

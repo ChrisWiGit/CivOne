@@ -6,6 +6,7 @@ using CivOne.Governments;
 using CivOne.Advances;
 using CivOne.Persistence.Model;
 using CivOne.Civilizations;
+using CivOne.Enums;
 
 namespace CivOne.UnitTests
 {
@@ -106,6 +107,9 @@ namespace CivOne.UnitTests
 		public PalaceData Palace { get; set; }
 
 		public List<ICity> Cities { get; set; }
+		public SpaceShipComponentType[,] SpaceShipGrid { get; set; }
+		public ushort SpaceShipPopulation { get; set; }
+		public short SpaceShipLaunchYear { get; set; }
 
 		public bool HasAdvance<T>() where T : IAdvance
 		{
