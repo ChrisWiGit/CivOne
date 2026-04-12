@@ -80,6 +80,14 @@ namespace CivOne.Persistence.Model
 			player.CivilizationScore = (ushort)_yamlReadValueSanitizer.ClampToInt32(dto.CivilizationScore, nameof(PlayerDtoMapper), nameof(PlayerDto.CivilizationScore), min: 0, max: ushort.MaxValue);
 			player.Government = _governmentResolver.ResolveById(dto.Government);
 
+			// Spaceship state
+			if (dto.SpaceShip != null)
+			{
+				player.SpaceShipGrid = dto.SpaceShip.Grid?.ToArray() ?? new CivOne.Enums.SpaceShipComponentType[12, 12];
+				player.SpaceShipPopulation = (ushort)_yamlReadValueSanitizer.ClampToInt32(dto.SpaceShip.Population, nameof(PlayerDtoMapper), $"{nameof(PlayerDto.SpaceShip)}.{nameof(SpaceShipDto.Population)}", min: 0, max: ushort.MaxValue);
+				player.SpaceShipLaunchYear = (short)_yamlReadValueSanitizer.ClampToInt32(dto.SpaceShip.LaunchYear, nameof(PlayerDtoMapper), $"{nameof(PlayerDto.SpaceShip)}.{nameof(SpaceShipDto.LaunchYear)}", min: short.MinValue, max: short.MaxValue);
+			}
+
 			// Keep rate invariant (luxuries + taxes + science == 10) by setting all three.
 			player.TaxesRate = dto.TaxesRate;
 			player.LuxuriesRate = dto.LuxuriesRate;
@@ -140,6 +148,7 @@ namespace CivOne.Persistence.Model
 				MilitaryPower = player.MilitaryPower,
 				CivilizationScore = player.CivilizationScore,
 				Palace = _palaceMapper.ToDto(player.Palace),
+				SpaceShip = BuildSpaceShipDto(player),
 
 				Cities = [.. player.Cities
 					.Select(_cityMapper.ToDto)],
@@ -148,6 +157,28 @@ namespace CivOne.Persistence.Model
 				Units = [.. gameInstance.GetUnits()
 					.Where(u => !hasOwnerId || u.Owner == ownerId)
 					.Select(_unitMapper.ToDto)]
+			};
+		}
+
+		private SpaceShipDto BuildSpaceShipDto(IPlayer player)
+		{
+			if (player is not IPlayerRestorable restorablePlayer)
+			{
+				return new SpaceShipDto
+				{
+					Grid = new SpaceShipGridMap2d(new CivOne.Enums.SpaceShipComponentType[12, 12]),
+					Population = 0,
+					LaunchYear = 0
+				};
+			}
+
+			var grid = restorablePlayer.SpaceShipGrid ?? new CivOne.Enums.SpaceShipComponentType[12, 12];
+
+			return new SpaceShipDto
+			{
+				Grid = new SpaceShipGridMap2d(grid),
+				Population = restorablePlayer.SpaceShipPopulation,
+				LaunchYear = restorablePlayer.SpaceShipLaunchYear
 			};
 		}
 

@@ -139,6 +139,74 @@ Tests for the TileCodec can be found in the unit test project at [xunit/src/](xu
 
 ---
 
+## SpaceShip Storage (per Player)
+
+The spaceship state is stored under each player as an optional `SpaceShip` object.
+
+Location in YAML:
+
+- `GameState.Players[n].SpaceShip`
+
+### YAML Structure
+
+```yaml
+Players:
+  - Id: 1
+    SpaceShip:
+      Grid:
+        - ECEEMEEEEEEE
+        - MMSEEEEEEEEE
+        - SEEEEEEEEEEE
+        - EEEEEEEEEEEE
+        - EEEEEEEEEEEE
+        - EEEEEEEEEEEE
+        - EEEEEEEEEEEE
+        - EEEEEEEEEEEE
+        - EEEEEEEEEEEE
+        - EEEEEEEEEEEE
+        - EEEEEEEEEEEE
+        - EEEEEEEEEEEE
+      Population: 32000
+      LaunchYear: 2050
+```
+
+### `Grid` layout (12×12)
+
+- Exactly 12 rows
+- Each row has exactly 12 characters
+- Row-major order (`Grid[y][x]`)
+
+Character mapping:
+
+- `E` = Empty
+- `S` = Structural (`SSStructural`)
+- `C` = Component (`SSComponent`)
+- `M` = Module (`SSModule`)
+
+Legacy input compatibility:
+
+- `0` is also accepted while reading and treated as `E` (empty)
+
+### Numeric fields
+
+- `Population` is represented as `long` in DTO and clamped to `ushort` range on load (`0..65535`)
+- `LaunchYear` is represented as `long` in DTO and clamped to `short` range on load (`-32768..32767`)
+
+### Binary compatibility mapping (`SaveData`)
+
+The YAML model corresponds to legacy binary save data in [src/IO/SaveData.cs](src/IO/SaveData.cs):
+
+- `SpaceShips[1462]`
+  - Per player block: 180 bytes
+  - `36` bytes: legacy unused header data
+  - `144` bytes: 12×12 cell grid
+- `SpaceShipPopulation[8]` → `Population`
+- `SpaceShipLaunchYear[8]` → `LaunchYear`
+
+`SpaceShip` may be omitted/null for players without any spaceship progress.
+
+---
+
 ## YAML Read: Range Handling and Clamp Logging
 
 When YAML contains numeric values outside domain limits, mapping now uses a dedicated DI service instead of silent casts.

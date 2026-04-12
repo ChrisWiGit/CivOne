@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System;
 using CivOne.Advances;
 using CivOne.Governments;
+using CivOne.Enums;
 
 namespace CivOne.Persistence.Model
 {
@@ -40,6 +41,9 @@ namespace CivOne.Persistence.Model
 		new int ScienceRate { get; set; }
 		new short Science { get; set; }
 		new PalaceData Palace { get; set; }
+		SpaceShipComponentType[,] SpaceShipGrid { get; set; }
+		ushort SpaceShipPopulation { get; set; }
+		short SpaceShipLaunchYear { get; set; }
 		new List<ICity> Cities { get; set; }
 	}
 }

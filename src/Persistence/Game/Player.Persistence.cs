@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CivOne.Advances;
+using CivOne.Enums;
 using CivOne.Governments;
 using CivOne.Persistence.Model;
 
@@ -224,6 +225,24 @@ namespace CivOne
 		{
 			get => _palace;
 			set => _palace = value ?? new PalaceData();
+		}
+
+		SpaceShipComponentType[,] IPlayerRestorable.SpaceShipGrid
+		{
+			get => SpaceShipGrid;
+			set => SpaceShipGrid = value ?? new SpaceShipComponentType[12, 12];
+		}
+
+		ushort IPlayerRestorable.SpaceShipPopulation
+		{
+			get => SpaceShipPopulation;
+			set => SpaceShipPopulation = value;
+		}
+
+		short IPlayerRestorable.SpaceShipLaunchYear
+		{
+			get => SpaceShipLaunchYear;
+			set => SpaceShipLaunchYear = value;
 		}
 
 		List<ICity> IPlayerRestorable.Cities

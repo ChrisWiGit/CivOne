@@ -56,15 +56,17 @@ namespace CivOne.Persistence.Yaml
         /// <list type="bullet">
         ///   <item><see cref="PascalCaseNamingConvention"/></item>
         ///   <item><see cref="Bool2dMapYamlTypeConverter"/></item>
+        ///   <item><see cref="SpaceShipGridMapYamlTypeConverter"/></item>
         ///   <item><see cref="DocCommentEventEmitter"/></item>
         /// </list>
         /// Further <c>With*</c> calls can supplement or override individual settings.
         /// </summary>
         public YamlWriter WithStandard()
             => WithNamingConvention(PascalCaseNamingConvention.Instance)
-               .WithTypeConverter(new Bool2dMapYamlTypeConverter())
-               .WithEventEmitter(next => new DocCommentEventEmitter(next))
-               .WithoutNullValues();
+                .WithTypeConverter(new Bool2dMapYamlTypeConverter())
+                .WithTypeConverter(new SpaceShipGridMapYamlTypeConverter())
+                .WithEventEmitter(next => new DocCommentEventEmitter(next))
+                .WithoutNullValues();
 
         /// <summary>
         /// Sets the naming convention used when serializing property names.

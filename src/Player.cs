@@ -56,6 +56,10 @@ namespace CivOne
 		internal ushort HumanContactTurn { get; set; }
 
 		internal short StartX { get; set; }
+
+		internal SpaceShipComponentType[,] SpaceShipGrid { get; set; } = new SpaceShipComponentType[12, 12];
+		internal ushort SpaceShipPopulation { get; set; }
+		internal short SpaceShipLaunchYear { get; set; }
 		
 		public bool AnarchyDespotism => Game.Started && (Government is Anarchy || Government is Despotism);
 

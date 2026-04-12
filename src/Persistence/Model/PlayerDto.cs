@@ -120,5 +120,8 @@ namespace CivOne.Persistence.Model
 
 		[Doc("The player's palace. This may be null if the player has no palace.")]
         public PalaceDto Palace { get; set; }
+
+		[Doc("The player's spaceship state. Null if no Apollo Program or not started.")]
+		public SpaceShipDto SpaceShip { get; set; }
     }
 }
