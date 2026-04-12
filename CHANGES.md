@@ -6,7 +6,7 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
-* Gameplay updates
+* Feature: Gameplay updates
   * Future Tech handling:
     * Added per-player `FutureTechCount` runtime state.
     * When no normal research is available and science threshold is reached, Future Tech is applied.
@@ -17,15 +17,20 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Diplomacy persistence:
     * Added per-player `Diplomacy` field (8 target entries with raw bitmask flags) to the YAML/game persistence model.
     * Added `DiplomacyDecodedDto` as placeholder for future decoded diplomacy flags.
+    * **Not yet active in gameplay** — diplomacy flags are loaded and saved but not yet modified during gameplay.
   * Peace timer (minimal integration):
     * `PeaceTurns` now increases by 1 when a full game turn advances without hostile action.
     * Any hostile action during a turn resets `PeaceTurns` to `0` on the next turn advance.
   * Refactor: `Player.Explore(...)`
     * Kept original visibility update logic as a dedicated contiguous method block.
     * Moved contact-tracking behavior into separate helper methods to avoid mixing with legacy core code.
-* Implemented Future Tech counter for players, stored in save files and used for game logic (e.g. victory conditions).
+* Feature:Implemented Future Tech counter for players, stored in save files and used for game logic (e.g. victory conditions).
   * Each new Future Tech increases the counter by 1.
 * Fix:Heap corruption due to buffer allocation and indexing issues in Win32 folder browser and Bytemap copy operations.
+* YAML: Added `UnitsDestroyedBy` statistics per player
+  * Each player now tracks how many units they have destroyed, broken down by opponent.
+  * **Not yet active in gameplay** — counters are loaded and saved but not yet incremented during combat.
+  * See [docs/UNITS_DESTROYED_BY_GAME_IMPLEMENTATION.md](docs/UNITS_DESTROYED_BY_GAME_IMPLEMENTATION.md) for the planned runtime implementation.
 * Implemented YAML savegame format to save and load games
   * Implemented extensive DTO and Mapper classes to convert between internal game state and YAML save format.
   * Using modern software design principles, patterns and methods.

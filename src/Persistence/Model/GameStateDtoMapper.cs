@@ -14,10 +14,12 @@ namespace CivOne.Persistence.Model
         DtoMapper<MapDto, IMapTiles> mapMapper,
         DtoMapper<GlobalWarmingDto, GameState> globalWarmingMapper,
         IValueSanitizer yamlReadValueSanitizer,
-        ICityNameCatalog cityNameCatalog = null
+        ICityNameCatalog cityNameCatalog = null,
+        UnitsDestroyedByResolver unitsDestroyedByResolver = null
     ) : DtoMapper<GameStateDto, GameState>
     {
         private readonly ICityNameCatalog _cityNameCatalog = cityNameCatalog ?? new CommonCityNameCatalog();
+        private readonly UnitsDestroyedByResolver _unitsDestroyedByResolver = unitsDestroyedByResolver ?? new UnitsDestroyedByResolver(yamlReadValueSanitizer);
         public GameState FromDto(GameStateDto dto)
         {
             ArgumentNullException.ThrowIfNull(dto);
@@ -62,66 +64,7 @@ namespace CivOne.Persistence.Model
 
         private void ResolveUnitsDestroyedByByPlayerGuid(GameStateDto dto, IPlayer[] players)
         {
-            if (dto.Players == null || dto.Players.Count == 0 || players.Length == 0)
-            {
-                return;
-            }
-
-            for (var ownerIndex = 0; ownerIndex < dto.Players.Count && ownerIndex < players.Length; ownerIndex++)
-            {
-                var playerDto = dto.Players[ownerIndex];
-                if (playerDto?.UnitsDestroyedByByPlayerGuid == null || playerDto.UnitsDestroyedByByPlayerGuid.Count == 0)
-                {
-                    continue;
-                }
-
-                if (players[ownerIndex] is not IPlayerRestorable ownerRestorable)
-                {
-                    continue;
-                }
-
-                var resolved = new ushort[Math.Max(8, players.Length)];
-                if (ownerRestorable.UnitsDestroyedBy != null)
-                {
-                    Array.Copy(ownerRestorable.UnitsDestroyedBy, resolved, Math.Min(ownerRestorable.UnitsDestroyedBy.Length, resolved.Length));
-                }
-
-                foreach (var pair in playerDto.UnitsDestroyedByByPlayerGuid)
-                {
-                    var targetIndex = FindPlayerIndexByGuid(players, pair.Key);
-                    if (targetIndex < 0 || targetIndex >= resolved.Length)
-                    {
-                        continue;
-                    }
-
-                    resolved[targetIndex] = (ushort)yamlReadValueSanitizer.ClampToInt32(
-                        pair.Value,
-                        nameof(GameStateDtoMapper),
-                        $"{nameof(PlayerDto.UnitsDestroyedByByPlayerGuid)}[{pair.Key}]",
-                        min: 0,
-                        max: ushort.MaxValue);
-                }
-
-                ownerRestorable.UnitsDestroyedBy = resolved;
-            }
-        }
-
-        private static int FindPlayerIndexByGuid(IPlayer[] players, Guid playerGuid)
-        {
-            if (playerGuid == Guid.Empty)
-            {
-                return -1;
-            }
-
-            for (var i = 0; i < players.Length; i++)
-            {
-                if (players[i].PlayerGuid == playerGuid)
-                {
-                    return i;
-                }
-            }
-
-            return -1;
+            _unitsDestroyedByResolver.ResolveAndApply(players, dto.Players);
         }
 
         private void ValidateHumanPlayerIndex(GameStateDto dto, IPlayer[] players)
