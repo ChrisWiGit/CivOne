@@ -74,6 +74,7 @@ namespace CivOne.Persistence.Model
 			var playerDto0 = new PlayerDto
 			{
 				Id = 0,
+				PlayerGuid = _players[0].PlayerGuid,
 				Civilization = new CivilizationDto { LeaderClassName = civsInGame[0].Leader.GetType().Name },
 				Advances = [1, 2, 3],
 				Embassies = [1],
@@ -134,12 +135,19 @@ namespace CivOne.Persistence.Model
 				Science = 100,
 				CityNamesSkipped = 0,
 				FutureTechCount = 4,
-				HumanContactTurn = 17
+				HumanContactTurn = 17,
+				UnitsDestroyedBy = [10, 20],
+				UnitsDestroyedByByPlayerGuid = new Dictionary<Guid, long>
+				{
+					[_players[0].PlayerGuid] = 10,
+					[_players[1].PlayerGuid] = 20
+				}
 			};
 
 			var playerDto1 = new PlayerDto
 			{
 				Id = 1,
+				PlayerGuid = _players[1].PlayerGuid,
 				Civilization = new CivilizationDto { LeaderClassName = civsInGame[1].Leader.GetType().Name },
 				Advances = [0, 2],
 				Embassies = [0],
@@ -200,7 +208,13 @@ namespace CivOne.Persistence.Model
 				Science = 200,
 				CityNamesSkipped = 0,
 				FutureTechCount = 9,
-				HumanContactTurn = 3
+				HumanContactTurn = 3,
+				UnitsDestroyedBy = [30, 40],
+				UnitsDestroyedByByPlayerGuid = new Dictionary<Guid, long>
+				{
+					[_players[0].PlayerGuid] = 30,
+					[_players[1].PlayerGuid] = 40
+				}
 			};
 
 			_dto = new GameStateDto
@@ -321,6 +335,7 @@ namespace CivOne.Persistence.Model
 							?? throw new Exception($"Player with ID {expectedPlayer.Id} not found in actual players");
 						Assert.Equal(expectedPlayer.Gold, actualPlayer.Gold);
 						Assert.Equal(expectedPlayer.Anarchy, actualPlayer.Anarchy);
+						Assert.Equal(expectedPlayer.PlayerGuid, actualPlayer.PlayerGuid);
 						Assert.Equal(expectedPlayer.TribeName, actualPlayer.TribeName);
 						Assert.Equal(expectedPlayer.FutureTechCount, actualPlayer.FutureTechCount);
 						Assert.Equal(expectedPlayer.HumanContactTurn, actualPlayer.HumanContactTurn);

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System;
 using CivOne.Advances;
 using CivOne.Civilizations;
 using CivOne.Governments;
@@ -16,6 +17,7 @@ namespace CivOne.Persistence.Model
 	public interface IPlayer : IPlayerEffects
 	{
 		ICivilization Civilization { get; }
+		Guid PlayerGuid { get; }
 		string TribeName { get; }
 		string TribeNamePlural { get; }
 		bool[,] Explored { get; }
@@ -30,6 +32,11 @@ namespace CivOne.Persistence.Model
 		ushort FutureTechCount { get; }
 		ushort HumanContactTurn { get; }
 		short StartX { get; }
+		ushort[] UnitsLost { get; }
+		ushort[] UnitsDestroyedBy { get; }
+		ushort EpicRanking { get; }
+		ushort MilitaryPower { get; }
+		ushort CivilizationScore { get; }
 		IGovernment Government { get; }
 		bool RepublicDemocratic { get; }
 		bool AnarchyDespotism { get; }

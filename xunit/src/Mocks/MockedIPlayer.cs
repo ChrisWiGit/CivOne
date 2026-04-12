@@ -14,6 +14,7 @@ namespace CivOne.UnitTests
 		public MockedIPlayer()
 		{
 			Civilization = new MockedICivilization(1);
+			PlayerGuid = Guid.NewGuid();
 			TribeName = "Mock Tribe";
 			TribeNamePlural = "Mock Tribes";
 			Explored = new bool[10, 10];
@@ -28,6 +29,11 @@ namespace CivOne.UnitTests
 			FutureTechCount = 0;
 			HumanContactTurn = 0;
 			StartX = 0;
+			UnitsLost = new ushort[28];
+			UnitsDestroyedBy = new ushort[8];
+			EpicRanking = 0;
+			MilitaryPower = 0;
+			CivilizationScore = 0;
 			Government = null;
 			RepublicDemocratic = false;
 			AnarchyDespotism = false;
@@ -40,6 +46,8 @@ namespace CivOne.UnitTests
 			Cities = [];
 		}
 		public ICivilization Civilization { get; set; }
+
+		public Guid PlayerGuid { get; set; }
 
 		public string TribeName { get; set; }
 
@@ -68,6 +76,16 @@ namespace CivOne.UnitTests
 		public ushort HumanContactTurn { get; set; }
 
 		public short StartX { get; set; }
+
+		public ushort[] UnitsLost { get; set; }
+
+		public ushort[] UnitsDestroyedBy { get; set; }
+
+		public ushort EpicRanking { get; set; }
+
+		public ushort MilitaryPower { get; set; }
+
+		public ushort CivilizationScore { get; set; }
 
 		public IGovernment Government { get; set; }
 

@@ -31,6 +31,7 @@ namespace CivOne
 		// Dependency injection via IPlayerGame; set by Game on load/new game.
 		internal static new IPlayerGame Game = null;
 		private readonly ICivilization _civilization;
+		private Guid _playerGuid = Guid.NewGuid();
 		private string _tribeName, _tribeNamePlural;
 
 		private readonly bool[,] _explored = new bool[Map.WIDTH, Map.HEIGHT];
@@ -38,8 +39,13 @@ namespace CivOne
 		private readonly List<byte> _advances = new List<byte>();
 		private readonly List<byte> _embassies = new List<byte>();
 		private readonly ushort[] _diplomacy = new ushort[8];
+		private readonly ushort[] _unitsLost = new ushort[28];
+		private readonly ushort[] _unitsDestroyedBy = new ushort[8];
 		
 		private short _anarchy = 0;
+		private ushort _epicRanking;
+		private ushort _militaryPower;
+		private ushort _civilizationScore;
 		private short _gold;
 		private IAdvance _currentResearch = null;
 
@@ -58,6 +64,7 @@ namespace CivOne
 		public bool RepublicDemocratic => Game.Started && (Government is Republic || Government is Gov.Democracy);
 
 		public ICivilization Civilization => _civilization;
+		public Guid PlayerGuid => _playerGuid;
 		
 		public string LeaderName => _civilization.Leader.Name;
 		public string TribeName => _tribeName ?? _civilization?.Name;
@@ -508,6 +515,16 @@ namespace CivOne
 		ushort IPlayer.HumanContactTurn => HumanContactTurn;
 
 		short IPlayer.StartX => StartX;
+
+		ushort[] IPlayer.UnitsLost => _unitsLost;
+
+		ushort[] IPlayer.UnitsDestroyedBy => _unitsDestroyedBy;
+
+		ushort IPlayer.EpicRanking => _epicRanking;
+
+		ushort IPlayer.MilitaryPower => _militaryPower;
+
+		ushort IPlayer.CivilizationScore => _civilizationScore;
 
 		PalaceData IPlayer.Palace => _palace;
 

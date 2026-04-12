@@ -37,6 +37,12 @@ namespace CivOne
 			set => _tribeName = value;
 		}
 
+		Guid IPlayerRestorable.PlayerGuid
+		{
+			get => _playerGuid;
+			set => _playerGuid = value;
+		}
+
 		string IPlayerRestorable.TribeNamePlural
 		{
 			get => _tribeNamePlural;
@@ -126,6 +132,60 @@ namespace CivOne
 		{
 			get => StartX;
 			set => StartX = value;
+		}
+
+		ushort[] IPlayerRestorable.UnitsLost
+		{
+			get => _unitsLost;
+			set
+			{
+				Array.Clear(_unitsLost, 0, _unitsLost.Length);
+				if (value == null)
+				{
+					return;
+				}
+
+				for (var i = 0; i < _unitsLost.Length && i < value.Length; i++)
+				{
+					_unitsLost[i] = value[i];
+				}
+			}
+		}
+
+		ushort[] IPlayerRestorable.UnitsDestroyedBy
+		{
+			get => _unitsDestroyedBy;
+			set
+			{
+				Array.Clear(_unitsDestroyedBy, 0, _unitsDestroyedBy.Length);
+				if (value == null)
+				{
+					return;
+				}
+
+				for (var i = 0; i < _unitsDestroyedBy.Length && i < value.Length; i++)
+				{
+					_unitsDestroyedBy[i] = value[i];
+				}
+			}
+		}
+
+		ushort IPlayerRestorable.EpicRanking
+		{
+			get => _epicRanking;
+			set => _epicRanking = value;
+		}
+
+		ushort IPlayerRestorable.MilitaryPower
+		{
+			get => _militaryPower;
+			set => _militaryPower = value;
+		}
+
+		ushort IPlayerRestorable.CivilizationScore
+		{
+			get => _civilizationScore;
+			set => _civilizationScore = value;
 		}
 
 		IGovernment IPlayerRestorable.Government

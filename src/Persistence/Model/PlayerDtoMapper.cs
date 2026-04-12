@@ -52,6 +52,7 @@ namespace CivOne.Persistence.Model
 			
 			IPlayerRestorable player = _playerFactory.Create(civilization, dto);
 			
+			player.PlayerGuid = dto.PlayerGuid == Guid.Empty ? Guid.NewGuid() : dto.PlayerGuid;
 			player.TribeName = string.IsNullOrEmpty(dto.TribeName) ? civilization.Name : dto.TribeName;
 			player.TribeNamePlural = string.IsNullOrEmpty(dto.TribeNamePlural) ? civilization.NamePlural : dto.TribeNamePlural;
 			player.Explored = dto.Explored;
@@ -72,6 +73,11 @@ namespace CivOne.Persistence.Model
 			player.FutureTechCount = (ushort)_yamlReadValueSanitizer.ClampToInt32(dto.FutureTechCount, nameof(PlayerDtoMapper), nameof(PlayerDto.FutureTechCount), min: 0, max: ushort.MaxValue);
 			player.HumanContactTurn = (ushort)_yamlReadValueSanitizer.ClampToInt32(dto.HumanContactTurn, nameof(PlayerDtoMapper), nameof(PlayerDto.HumanContactTurn), min: 0, max: ushort.MaxValue);
 			player.StartX = _yamlReadValueSanitizer.ClampToInt16(dto.StartX, nameof(PlayerDtoMapper), nameof(PlayerDto.StartX));
+			player.UnitsLost = BuildUnitsLostArray(dto.UnitsLost);
+			player.UnitsDestroyedBy = BuildUnitsDestroyedByArray(dto.UnitsDestroyedBy);
+			player.EpicRanking = (ushort)_yamlReadValueSanitizer.ClampToInt32(dto.EpicRanking, nameof(PlayerDtoMapper), nameof(PlayerDto.EpicRanking), min: 0, max: ushort.MaxValue);
+			player.MilitaryPower = (ushort)_yamlReadValueSanitizer.ClampToInt32(dto.MilitaryPower, nameof(PlayerDtoMapper), nameof(PlayerDto.MilitaryPower), min: 0, max: ushort.MaxValue);
+			player.CivilizationScore = (ushort)_yamlReadValueSanitizer.ClampToInt32(dto.CivilizationScore, nameof(PlayerDtoMapper), nameof(PlayerDto.CivilizationScore), min: 0, max: ushort.MaxValue);
 			player.Government = _governmentResolver.ResolveById(dto.Government);
 
 			// Keep rate invariant (luxuries + taxes + science == 10) by setting all three.
@@ -100,6 +106,7 @@ namespace CivOne.Persistence.Model
 			return new PlayerDto
 			{
 				Civilization = _civilizationMapper.ToDto(player.Civilization),
+				PlayerGuid = player.PlayerGuid,
 
 				Explored = player.Explored,
 				Visible = player.Visible,
@@ -127,6 +134,11 @@ namespace CivOne.Persistence.Model
 				FutureTechCount = player.FutureTechCount,
 				HumanContactTurn = player.HumanContactTurn,
 				StartX = player.StartX,
+				UnitsLost = [.. player.UnitsLost.Select(x => (long)x)],
+				UnitsDestroyedBy = [.. player.UnitsDestroyedBy.Select(x => (long)x)],
+				EpicRanking = player.EpicRanking,
+				MilitaryPower = player.MilitaryPower,
+				CivilizationScore = player.CivilizationScore,
 				Palace = _palaceMapper.ToDto(player.Palace),
 
 				Cities = [.. player.Cities
@@ -170,6 +182,48 @@ namespace CivOne.Persistence.Model
 			}
 
 			return diplomacy;
+		}
+
+		private ushort[] BuildUnitsLostArray(List<long> values)
+		{
+			var output = new ushort[28];
+			if (values == null)
+			{
+				return output;
+			}
+
+			for (var i = 0; i < output.Length && i < values.Count; i++)
+			{
+				output[i] = (ushort)_yamlReadValueSanitizer.ClampToInt32(
+					values[i],
+					nameof(PlayerDtoMapper),
+					$"{nameof(PlayerDto.UnitsLost)}[{i}]",
+					min: 0,
+					max: ushort.MaxValue);
+			}
+
+			return output;
+		}
+
+		private ushort[] BuildUnitsDestroyedByArray(List<long> values)
+		{
+			var output = new ushort[8];
+			if (values == null)
+			{
+				return output;
+			}
+
+			for (var i = 0; i < output.Length && i < values.Count; i++)
+			{
+				output[i] = (ushort)_yamlReadValueSanitizer.ClampToInt32(
+					values[i],
+					nameof(PlayerDtoMapper),
+					$"{nameof(PlayerDto.UnitsDestroyedBy)}[{i}]",
+					min: 0,
+					max: ushort.MaxValue);
+			}
+
+			return output;
 		}
 	}
 }

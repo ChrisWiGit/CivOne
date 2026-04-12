@@ -24,6 +24,7 @@ namespace CivOne.Persistence.Model
 		private readonly MockedIPlayer _player;
 		private readonly MockedICity _city;
 		private readonly MockedIUnit _unit;
+		private readonly Guid _playerGuid = Guid.NewGuid();
 
 		public PlayerDtoMapperTest()
 		{
@@ -59,6 +60,7 @@ namespace CivOne.Persistence.Model
 
 			_player = new MockedIPlayer()
 			{
+				PlayerGuid = _playerGuid,
 				Advances = [1, 2, 3],
 				Embassies = [4, 5],
 				Diplomacy = [0, 1, 2, 3, 4, 5, 6, 7],
@@ -67,6 +69,11 @@ namespace CivOne.Persistence.Model
 				CurrentResearch = new MockedIAdvance() { Id = 1 },
 				FutureTechCount = 6,
 				HumanContactTurn = 12,
+				UnitsLost = [.. Enumerable.Range(0, 28).Select(i => (ushort)i)],
+				UnitsDestroyedBy = [.. Enumerable.Range(0, 8).Select(i => (ushort)i)],
+				EpicRanking = 11,
+				MilitaryPower = 222,
+				CivilizationScore = 333,
 				Government = new MockedIGovernment() { Id = 1 },
 				Palace = new MockedIPalace(),
 				Cities = [_city],
@@ -75,6 +82,7 @@ namespace CivOne.Persistence.Model
 			originalDto = new PlayerDto
 			{
 				Id = 0,
+				PlayerGuid = _playerGuid,
 				Civilization = new CivilizationDto { LeaderClassName = civsInGame[0].Leader.GetType().Name },
 				Advances = [1, 2, 3],
 				Embassies = [4, 5],
@@ -135,7 +143,12 @@ namespace CivOne.Persistence.Model
 				CityNamesSkipped = 0,
 				FutureTechCount = 6,
 				HumanContactTurn = 12,
-				StartX = 33
+				StartX = 33,
+				UnitsLost = [.. Enumerable.Range(0, 28).Select(i => (long)i)],
+				UnitsDestroyedBy = [.. Enumerable.Range(0, 8).Select(i => (long)i)],
+				EpicRanking = 11,
+				MilitaryPower = 222,
+				CivilizationScore = 333
 			};
 
 			// Setup game instance mock
@@ -198,6 +211,7 @@ namespace CivOne.Persistence.Model
 		private static Dictionary<string, Action> GetPlayerDtoRoundTripAssertionMap(PlayerDto expected, PlayerDto actual)
 			=> new()
 			{
+				[nameof(PlayerDto.PlayerGuid)] = () => Assert.Equal(expected.PlayerGuid, actual.PlayerGuid),
 				[nameof(PlayerDto.TribeName)] = () => Assert.Equal(expected.TribeName, actual.TribeName),
 				[nameof(PlayerDto.TribeNamePlural)] = () => Assert.Equal(expected.TribeNamePlural, actual.TribeNamePlural),
 				[nameof(PlayerDto.Anarchy)] = () => Assert.Equal(expected.Anarchy, actual.Anarchy),
@@ -212,6 +226,11 @@ namespace CivOne.Persistence.Model
 				[nameof(PlayerDto.FutureTechCount)] = () => Assert.Equal(expected.FutureTechCount, actual.FutureTechCount),
 				[nameof(PlayerDto.HumanContactTurn)] = () => Assert.Equal(expected.HumanContactTurn, actual.HumanContactTurn),
 				[nameof(PlayerDto.StartX)] = () => Assert.Equal(expected.StartX, actual.StartX),
+				[nameof(PlayerDto.UnitsLost)] = () => Assert.Equal(expected.UnitsLost, actual.UnitsLost),
+				[nameof(PlayerDto.UnitsDestroyedBy)] = () => Assert.Equal(expected.UnitsDestroyedBy, actual.UnitsDestroyedBy),
+				[nameof(PlayerDto.EpicRanking)] = () => Assert.Equal(expected.EpicRanking, actual.EpicRanking),
+				[nameof(PlayerDto.MilitaryPower)] = () => Assert.Equal(expected.MilitaryPower, actual.MilitaryPower),
+				[nameof(PlayerDto.CivilizationScore)] = () => Assert.Equal(expected.CivilizationScore, actual.CivilizationScore),
 				[nameof(PlayerDto.Advances)] = () => Assert.Equal(expected.Advances, actual.Advances),
 				[nameof(PlayerDto.Embassies)] = () => Assert.Equal(expected.Embassies, actual.Embassies),
 				[nameof(PlayerDto.Diplomacy)] = () =>
@@ -251,7 +270,7 @@ namespace CivOne.Persistence.Model
 			};
 
 		private static HashSet<string> GetExcludedPlayerDtoProperties() =>
-			[nameof(PlayerDto.Id)];
+			[nameof(PlayerDto.Id), nameof(PlayerDto.UnitsDestroyedByByPlayerGuid)];
 
 		private static HashSet<string> GetWritablePropertyNames<T>() => typeof(T).GetProperties()
 			.Where(p => p.CanRead && p.CanWrite)

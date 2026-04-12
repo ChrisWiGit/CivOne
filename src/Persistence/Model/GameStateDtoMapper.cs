@@ -27,6 +27,7 @@ namespace CivOne.Persistence.Model
             var map = MapMap(dto.Map);
 
             var players = MapPlayers(dto);
+            ResolveUnitsDestroyedByByPlayerGuid(dto, players);
             ApplyLegacyFutureTech(dto, players);
             ValidateHumanPlayerIndex(dto, players);
             ValidateCurrentPlayerIndex(dto, players);
@@ -58,6 +59,70 @@ namespace CivOne.Persistence.Model
 
         private IPlayer[] MapPlayers(GameStateDto dto)
             => [.. dto.Players.Select(playerMapper.FromDto)];
+
+        private void ResolveUnitsDestroyedByByPlayerGuid(GameStateDto dto, IPlayer[] players)
+        {
+            if (dto.Players == null || dto.Players.Count == 0 || players.Length == 0)
+            {
+                return;
+            }
+
+            for (var ownerIndex = 0; ownerIndex < dto.Players.Count && ownerIndex < players.Length; ownerIndex++)
+            {
+                var playerDto = dto.Players[ownerIndex];
+                if (playerDto?.UnitsDestroyedByByPlayerGuid == null || playerDto.UnitsDestroyedByByPlayerGuid.Count == 0)
+                {
+                    continue;
+                }
+
+                if (players[ownerIndex] is not IPlayerRestorable ownerRestorable)
+                {
+                    continue;
+                }
+
+                var resolved = new ushort[Math.Max(8, players.Length)];
+                if (ownerRestorable.UnitsDestroyedBy != null)
+                {
+                    Array.Copy(ownerRestorable.UnitsDestroyedBy, resolved, Math.Min(ownerRestorable.UnitsDestroyedBy.Length, resolved.Length));
+                }
+
+                foreach (var pair in playerDto.UnitsDestroyedByByPlayerGuid)
+                {
+                    var targetIndex = FindPlayerIndexByGuid(players, pair.Key);
+                    if (targetIndex < 0 || targetIndex >= resolved.Length)
+                    {
+                        continue;
+                    }
+
+                    resolved[targetIndex] = (ushort)yamlReadValueSanitizer.ClampToInt32(
+                        pair.Value,
+                        nameof(GameStateDtoMapper),
+                        $"{nameof(PlayerDto.UnitsDestroyedByByPlayerGuid)}[{pair.Key}]",
+                        min: 0,
+                        max: ushort.MaxValue);
+                }
+
+                ownerRestorable.UnitsDestroyedBy = resolved;
+            }
+        }
+
+        private static int FindPlayerIndexByGuid(IPlayer[] players, Guid playerGuid)
+        {
+            if (playerGuid == Guid.Empty)
+            {
+                return -1;
+            }
+
+            for (var i = 0; i < players.Length; i++)
+            {
+                if (players[i].PlayerGuid == playerGuid)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
 
         private void ValidateHumanPlayerIndex(GameStateDto dto, IPlayer[] players)
         {
@@ -369,12 +434,25 @@ namespace CivOne.Persistence.Model
                 GlobalWarming = globalWarmingMapper.ToDto(gameState)
             };
 
-            foreach (var player in gameStateDto.Players)
+            for (var i = 0; i < gameStateDto.Players.Count; i++)
             {
-                player.Id = (ushort)gameStateDto.Players.IndexOf(player);
+                var player = gameStateDto.Players[i];
+                player.Id = (ushort)i;
                 player.Units = [.. gameUnits
-                    .Where(unit => unit.Owner == player.Id)
+                    .Where(unit => unit.Owner == i)
                     .Select(unitMapper.ToDto)];
+
+                player.UnitsDestroyedByByPlayerGuid = [];
+                for (var targetIndex = 0; targetIndex < gameState.Players.Length && targetIndex < player.UnitsDestroyedBy.Count; targetIndex++)
+                {
+                    var targetGuid = gameState.Players[targetIndex].PlayerGuid;
+                    if (targetGuid == Guid.Empty)
+                    {
+                        continue;
+                    }
+
+                    player.UnitsDestroyedByByPlayerGuid[targetGuid] = player.UnitsDestroyedBy[targetIndex];
+                }
             }
             return gameStateDto;
         }

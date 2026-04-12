@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using CivOne.Advances;
 using CivOne.Civilizations;
@@ -18,6 +19,9 @@ namespace CivOne.Persistence.Model
 
 		[Doc("The unique id of the player. This may be the index of a player list, but it is not guaranteed to be stable across game sessions.")]
         public PlayerId Id { get; set; }
+
+		[Doc("Stable player identity independent from list/index positions.")]
+		public Guid PlayerGuid { get; set; }
         
 		[Doc("A list of explored advances", null, nameof(AllAdvancesInfo))]
 		public List<AdvanceId> Advances { get; set; }
@@ -53,6 +57,24 @@ namespace CivOne.Persistence.Model
 
 		[Doc("The player's initial X-position used as world map focus anchor.")]
 		public short StartX { get; set; }
+
+		[Doc("Units lost per unit type (28 entries). YAML allows long values; mapper clamps to ushort range.")]
+		public List<long> UnitsLost { get; set; }
+
+		[Doc("Units destroyed by this player indexed by current player list order. YAML allows long values; mapper clamps to ushort range.")]
+		public List<long> UnitsDestroyedBy { get; set; }
+
+		[Doc("Units destroyed by this player keyed by target PlayerGuid. Preferred over index-based UnitsDestroyedBy for durable cross-references.")]
+		public Dictionary<Guid, long> UnitsDestroyedByByPlayerGuid { get; set; }
+
+		[Doc("Legacy epic ranking value for this player. YAML allows long values; mapper clamps to ushort range.")]
+		public long EpicRanking { get; set; }
+
+		[Doc("Legacy military power value for this player. YAML allows long values; mapper clamps to ushort range.")]
+		public long MilitaryPower { get; set; }
+
+		[Doc("Legacy civilization score value for this player. YAML allows long values; mapper clamps to ushort range.")]
+		public long CivilizationScore { get; set; }
 
 		[Doc("A list of the player's cities")]
         public List<CityDto> Cities { get; set; }
