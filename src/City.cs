@@ -392,8 +392,6 @@ namespace CivOne
 				if (HasBuilding<Bank>()) taxes += (int)Math.Floor((double)taxes * 0.5);
 				taxes += _specialists.Count(c => c == Citizen.Taxman) * 2;
 
-				taxes = (int)Math.Round((double)taxes * Player.TaxesRate / 10);
-
 				return (short)Math.Min(short.MaxValue, taxes);
 			}
 		}
