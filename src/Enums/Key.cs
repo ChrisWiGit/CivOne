@@ -13,6 +13,7 @@ namespace CivOne.Enums
 	{
 		None,
 		Character,
+		Tab,
 		F1,
 		F2,
 		F3,

@@ -44,6 +44,15 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Prepared for future changes to how data is handled in memory for more flexibility and maintainability.
   * Added space ship grid mapping support in YAML **Not yet active in gameplay** (see [docs/SPACESHIP_FULL_IMPLEMENTATION_PLAN.md](docs/SPACESHIP_FULL_IMPLEMENTATION_PLAN.md)).
   * See [YAML Save Format](YAML.md) for more details.
+* Fix: Improved CityView panorama road generation to prevent random road breaks while keeping layout natural.
+  * Added targeted post-processing to close only real single-tile gaps on the road axes.
+  * Restores missing intersection tiles when at least two adjacent road segments connect to the crossing.
+  * Keeps a minimum number of houses when removing isolated tiles, avoiding empty-looking city views.
+* Fix: Improved SDL keyboard event conversion for modifier + digit combinations (top-row digits), including debug diagnostics.
+  * Ctrl + Shift + 0 now maps reliably to digit input for specialist hotkeys.
+  * Added detailed DEBUG keyboard logs (raw scancode/keycode/modifier and converted key event).
+* Feature: Added a new hotkey (Tab) to cycle through production filter modes in the city production menu (All, Units, Buildings, Wonders, All).
+* Fix: Fixed an issue where the game would freeze in city production menu screen, if more than 20 items were available and the player hit "More..." to see the next page of items.
 * Github pipeline to build and automatic testing and creating release artifacts (Windows, Linux)
 * Feature: Added Debug keys for debugging purposes in DEBUG mode
   * Ctrl + Shift + F12 to hit debugger breakpoint

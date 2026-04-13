@@ -84,6 +84,7 @@ namespace CivOne.Screens.CityManagerPanels
 
 		protected int GetSpecialistIndex(KeyboardEventArgs args)
 		{
+			bool isTopRowDigit = (args.KeyChar >= '0' && args.KeyChar <= '9');
 			int offset = 0;
 			switch (args.Modifier)
 			{
@@ -104,7 +105,9 @@ namespace CivOne.Screens.CityManagerPanels
 					offset += 50;
 					break;
 				case KeyModifier.Alt | KeyModifier.Control:
-					offset += 60;
+					// Some layouts / OS hotkey settings may report Ctrl+Shift+digit as Ctrl+Alt+digit.
+					// Keep documented Ctrl+Alt behavior for numpad digits, but map top-row digits to 41..50.
+					offset += isTopRowDigit ? 40 : 60;
 					break;
 				case KeyModifier.Alt | KeyModifier.Control | KeyModifier.Shift:
 					offset += 70;
@@ -114,6 +117,12 @@ namespace CivOne.Screens.CityManagerPanels
 			if (args.KeyChar >= '0' && args.KeyChar <= '9')
 			{
 				return offset + (args.KeyChar == '0' ? 9 : args.KeyChar - '1');
+			}
+
+			if (args.Key >= Key.NumPad0 && args.Key <= Key.NumPad9)
+			{
+				int numeric = args.Key - Key.NumPad0;
+				return offset + (numeric == 0 ? 9 : numeric - 1);
 			}
 
 			return -1;

@@ -377,14 +377,18 @@ namespace CivOne.Screens
 							(yy == 0 || (cityMap[xx, yy - 1] != CityViewMap.House && cityMap[xx, yy - 1] != CityViewMap.Tree)) &&
 							(yy == 10 || (cityMap[xx, yy + 1] != CityViewMap.House && cityMap[xx, yy + 1] != CityViewMap.Tree)))
 						{
-							if (cityMap[xx, yy] == CityViewMap.House)
-							{
-								houseCount--;
-							}
-
+							// Keep at least MIN_HOUSES actual houses in the city view:
+							// trees may always be cleared, but isolated houses are only cleared
+							// while we still have more than the minimum house count.
 							bool isHouse = cityMap[xx, yy] == CityViewMap.House;
-							if (!isHouse || (isHouse && houseCount >= MIN_HOUSES))
+							bool canClear = !isHouse || houseCount > MIN_HOUSES;
+							if (canClear)
 							{
+								if (isHouse)
+								{
+									houseCount--;
+								}
+
 								// FIX: some houses may be placed on xx:0,10;yy:0,17 (above) by PlaceHouses by sheer luck.
 								// and may be erased until no houses are left, so we test for it.
 								cityMap[xx, yy] = CityViewMap.Empty;
@@ -415,6 +419,10 @@ namespace CivOne.Screens
 						((yy == 10 || (int)cityMap[xx, yy + 1] != 1 ? 1 : 0)) > 1) continue;
 					cityMap[xx, yy] = CityViewMap.Road;
 				}
+
+					// After cleanup, only close real 1-tile gaps
+					// so roads stay connected without making the panorama artificially dense.
+					CloseSingleRoadGaps(cityMap);
 
 				
 				foreach (Type type in new Type[] { typeof(Barracks), typeof(Granary), typeof(Temple), typeof(MarketPlace), typeof(Library), typeof(Courthouse), typeof(Bank), typeof(Cathedral), typeof(UniversityBuilding), typeof(Colosseum), typeof(Factory), typeof(MfgPlant), typeof(SdiDefense), typeof(RecyclingCenter), typeof(NuclearPlant), typeof(Lighthouse), typeof(HangingGardens), typeof(Oracle), typeof(DarwinsVoyage) })
@@ -544,6 +552,50 @@ namespace CivOne.Screens
 				}
 			}
 			return placed;
+		}
+
+		/// <summary>
+		/// Closes only single-tile gaps on the designated road axes (x=6/11, y=2/6)
+		/// when roads already connect from left/right or top/bottom.
+		/// For crossing tiles, it also fills the gap when at least two adjacent
+		/// roads are present. This keeps connectivity stable without globally
+		/// refilling entire road axes.
+		/// </summary>
+		/// <param name="cityMap">The computed city map to patch locally.</param>
+		private static void CloseSingleRoadGaps(CityViewMap[,] cityMap)
+		{
+			for (int yy = 0; yy < cityMap.GetLength(1); yy++)
+			for (int xx = 0; xx < cityMap.GetLength(0); xx++)
+			{
+				if (cityMap[xx, yy] != CityViewMap.Empty) continue;
+				if (!(xx == 6 || xx == 11 || yy == 2 || yy == 6)) continue;
+
+				bool horizontalGap =
+					(yy == 2 || yy == 6)
+					&& xx > 0 && xx < cityMap.GetUpperBound(0)
+					&& cityMap[xx - 1, yy] == CityViewMap.Road
+					&& cityMap[xx + 1, yy] == CityViewMap.Road;
+
+				bool verticalGap =
+					(xx == 6 || xx == 11)
+					&& yy > 0 && yy < cityMap.GetUpperBound(1)
+					&& cityMap[xx, yy - 1] == CityViewMap.Road
+					&& cityMap[xx, yy + 1] == CityViewMap.Road;
+
+				bool crossingGap = false;
+				if ((xx == 6 || xx == 11) && (yy == 2 || yy == 6))
+				{
+					int adjacentRoads = 0;
+					if (xx > 0 && cityMap[xx - 1, yy] == CityViewMap.Road) adjacentRoads++;
+					if (xx < cityMap.GetUpperBound(0) && cityMap[xx + 1, yy] == CityViewMap.Road) adjacentRoads++;
+					if (yy > 0 && cityMap[xx, yy - 1] == CityViewMap.Road) adjacentRoads++;
+					if (yy < cityMap.GetUpperBound(1) && cityMap[xx, yy + 1] == CityViewMap.Road) adjacentRoads++;
+					crossingGap = adjacentRoads >= 2;
+				}
+
+				if (horizontalGap || verticalGap || crossingGap)
+					cityMap[xx, yy] = CityViewMap.Road;
+			}
 		}
 
 		private void DrawBuildings()
