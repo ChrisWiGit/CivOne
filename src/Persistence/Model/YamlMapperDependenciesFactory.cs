@@ -94,12 +94,21 @@ namespace CivOne.Persistence.Model
 			}
 		}
 
+		// Extracted methods to separate the global class Common from the mappers.
+		// May be useful in the future to be moved somewhere else.
 		private sealed class RuntimeAdvanceResolver : IAdvanceResolver
 		{
 			public IAdvance ResolveById(uint id)
 			{
 				return Common.Advances.FirstOrDefault(a => a.Id == id)
 					?? throw new InvalidOperationException($"Advance with ID {id} was not found.");
+			}
+
+			public IEnumerable<byte> ResolveAllIds()
+			{
+				return Common.Advances
+					.OrderBy(a => a.Id)
+					.Select(a => a.Id);
 			}
 		}
 

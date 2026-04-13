@@ -63,6 +63,27 @@ namespace CivOne.UnitTests.Persistence
 			Assert.Equal((ushort)0, actual.HumanPlayer);
 			Assert.Equal((ushort)1, actual.CurrentPlayer);
 		}
+
+		[Fact]
+		public void GameStateDtoYamlRead_PreservesNegativeAdvanceSentinel()
+		{
+			const string yaml =
+				"Players:\n" +
+				"- Civilization:\n" +
+				"    LeaderClassName: Hammurabi\n" +
+				"  Advances: [-1]\n" +
+				"  Embassies: []\n" +
+				"  Cities: []\n" +
+				"  Units: []\n";
+
+			var actual = YamlReader.OfString(yaml)
+				.WithStandard()
+				.As<GameStateDto>();
+
+			Assert.NotNull(actual);
+			Assert.Single(actual.Players);
+			Assert.Equal([-1L], actual.Players[0].Advances);
+		}
 	}
 
 	public class YamlLoadGameStateMapperTest : TestsBase
@@ -180,10 +201,10 @@ namespace CivOne.UnitTests.Persistence
 				Shields = 5,
 				Location = new MapLocation(2, 2),
 				ResourceTiles = new Bool2dMap(5, 5),
-				Specialists = new List<Citizen>(),
-				Buildings = new List<Building>(),
-				Wonders = new List<Wonder>(),
-				Status = new List<CityStatusEnum>(),
+				Specialists = [],
+				Buildings = [],
+				Wonders = [],
+				Status = [],
 				VisibleSizes = new uint[] { 2, 0 },
 				TradingCities = Array.Empty<Guid>(),
 				ContinentId = 1
@@ -197,8 +218,8 @@ namespace CivOne.UnitTests.Persistence
 				TribeNamePlural = "Babylonians",
 				Explored = new Bool2dMap(80, 50),
 				Visible = new Bool2dMap(80, 50),
-				Advances = new List<uint> { advanceId },
-				Embassies = new List<ushort>(),
+				Advances = [advanceId],
+				Embassies = [],
 				Anarchy = 0,
 				Gold = 50,
 				CurrentResearch = advanceId,
@@ -209,9 +230,9 @@ namespace CivOne.UnitTests.Persistence
 				ScienceRate = 5,
 				Science = 10,
 				Palace = null,
-				Cities = new List<CityDto> { city },
-				Units = new List<UnitDto>
-				{
+				Cities = [city],
+				Units =
+				[
 					new UnitDto
 					{
 						ClassName = "Settlers",
@@ -232,7 +253,7 @@ namespace CivOne.UnitTests.Persistence
 						MovesLeft = 1,
 						PartMoves = 0
 					}
-				}
+				]
 			};
 
 			var player1 = new PlayerDto
@@ -243,8 +264,8 @@ namespace CivOne.UnitTests.Persistence
 				TribeNamePlural = "Romans",
 				Explored = new Bool2dMap(80, 50),
 				Visible = new Bool2dMap(80, 50),
-				Advances = new List<uint> { advanceId },
-				Embassies = new List<ushort>(),
+				Advances = [advanceId],
+				Embassies = [],
 				Anarchy = 0,
 				Gold = 100,
 				CurrentResearch = advanceId,
@@ -255,9 +276,9 @@ namespace CivOne.UnitTests.Persistence
 				ScienceRate = 5,
 				Science = 12,
 				Palace = null,
-				Cities = new List<CityDto>(),
-				Units = new List<UnitDto>
-				{
+				Cities = [],
+				Units =
+				[
 					new UnitDto
 					{
 						ClassName = "Militia",
@@ -278,7 +299,7 @@ namespace CivOne.UnitTests.Persistence
 						MovesLeft = 1,
 						PartMoves = 0
 					}
-				}
+				]
 			};
 
 			return new GameStateDto
@@ -287,11 +308,11 @@ namespace CivOne.UnitTests.Persistence
 				GameTurn = 42,
 				HumanPlayer = 0,
 				CurrentPlayer = 1,
-				Players = new List<PlayerDto> { player0, player1 },
+				Players = [player0, player1],
 				GameRandomSeed = 1234,
 				AnthologyTurn = 75,
 				Map = map,
-				GameOptions = new List<GameOptionEnum> { GameOptionEnum.EndOfTurn, GameOptionEnum.Sound }
+				GameOptions = [GameOptionEnum.EndOfTurn, GameOptionEnum.Sound]
 			};
 		}
 

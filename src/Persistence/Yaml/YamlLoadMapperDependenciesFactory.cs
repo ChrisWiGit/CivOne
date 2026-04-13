@@ -82,6 +82,13 @@ namespace CivOne.Persistence.Yaml
 				return Common.Advances.FirstOrDefault(a => a.Id == id)
 				?? throw new InvalidOperationException($"Advance with ID {id} was not found.");
 			}
+
+			public IEnumerable<byte> ResolveAllIds()
+			{
+				return Common.Advances
+					.OrderBy(a => a.Id)
+					.Select(a => a.Id);
+			}
 		}
 
 		private sealed class RuntimeGovernmentResolver : IGovernmentResolver

@@ -465,6 +465,11 @@ namespace CivOne.Persistence.Model
 			{
 				return new MockedIAdvance { Id = (byte)id };
 			}
+
+			public IEnumerable<byte> ResolveAllIds()
+			{
+				return [0, 1, 2, 3];
+			}
 		}
 
 		private sealed class TestGovernmentResolver : IGovernmentResolver

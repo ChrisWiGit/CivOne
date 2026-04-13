@@ -23,8 +23,9 @@ namespace CivOne.Persistence.Model
 		[Doc("Stable player identity independent from list/index positions.")]
 		public Guid PlayerGuid { get; set; }
         
-		[Doc("A list of explored advances", null, nameof(AllAdvancesInfo))]
-		public List<AdvanceId> Advances { get; set; }
+		[Doc("A list of explored advances. Use -1 to indicate all advances.", null, nameof(AllAdvancesInfo))]
+		// We use long to allow YAML to read/write the values without overflow issues, but the mapper will clamp to the valid range of advances.
+		public List<long> Advances { get; set; }
         
 		[Doc("A list of player ids with which this player has an embassy.")]
 		public List<PlayerId> Embassies { get; set; }

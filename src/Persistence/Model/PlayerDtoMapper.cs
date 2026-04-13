@@ -13,6 +13,10 @@ namespace CivOne.Persistence.Model
 	public interface IAdvanceResolver
 	{
 		IAdvance ResolveById(uint id);
+		/// <summary>
+		/// Resolves the IDs of all advances in the game. Used to support the "all advances" sentinel value.
+		/// </summary>
+		IEnumerable<byte> ResolveAllIds();
 	}
 
 	public interface IGovernmentResolver
@@ -33,21 +37,12 @@ namespace CivOne.Persistence.Model
 		IValueSanitizer _yamlReadValueSanitizer
 		) : DtoMapper<PlayerDto, IPlayer>
 	{
+		private const long AllAdvancesSentinel = -1;
 
 		public IPlayer FromDto(PlayerDto dto)
 		{
-			if (dto == null)
-			{
-				throw new ArgumentNullException(nameof(dto));
-			}
+			ArgumentNullException.ThrowIfNull(dto);
 
-			// must be set by Create()
-			// if (Player.Game == null) {
-			// 	// TODO: remove if we can inject the game instance into the player by constructor
-			// 	// not good here. should be assigned by higher abstraction layer
-			// 	Player.Game = gameInstance;
-			// }
-			
 			var civilization = _civilizationMapper.FromDto(dto.Civilization);
 			
 			IPlayerRestorable player = _playerFactory.Create(civilization, dto);
@@ -57,10 +52,7 @@ namespace CivOne.Persistence.Model
 			player.TribeNamePlural = string.IsNullOrEmpty(dto.TribeNamePlural) ? civilization.NamePlural : dto.TribeNamePlural;
 			player.Explored = dto.Explored;
 			player.Visible = dto.Visible;
-			player.Advances = [..
-				(dto.Advances ?? [])
-					.Select(x => _yamlReadValueSanitizer.ClampToByte(x, nameof(PlayerDtoMapper), nameof(PlayerDto.Advances)))
-			];
+			player.Advances = BuildAdvances(dto.Advances);
 			player.Embassies = [..
 				(dto.Embassies ?? [])
 					.Select(x => _yamlReadValueSanitizer.ClampToByte(x, nameof(PlayerDtoMapper), nameof(PlayerDto.Embassies)))
@@ -122,7 +114,7 @@ namespace CivOne.Persistence.Model
 				TribeName = player.TribeName,
 				TribeNamePlural = player.TribeNamePlural,
 
-				Advances = [.. player.Advances.Select(a => (AdvanceId)a)],
+				Advances = [.. player.Advances],
 				Embassies = [.. player.Embassies],
 				Diplomacy = [.. player.Diplomacy.Select((flags, targetId) => new DiplomacyEntryDto
 				{
@@ -133,7 +125,7 @@ namespace CivOne.Persistence.Model
 
 				Anarchy = player.Anarchy,
 				Gold = player.Gold,
-			CurrentResearch = (AdvanceId)(player.CurrentResearch?.Id ?? 0),
+				CurrentResearch = player.CurrentResearch?.Id ?? 0,
 				Government = player.Government?.Id ?? 0,
 				LuxuriesRate = player.LuxuriesRate,
 				TaxesRate = player.TaxesRate,
@@ -158,6 +150,25 @@ namespace CivOne.Persistence.Model
 					.Where(u => !hasOwnerId || u.Owner == ownerId)
 					.Select(_unitMapper.ToDto)]
 			};
+		}
+
+		private List<byte> BuildAdvances(List<long> advances)
+		{
+			if (advances == null || advances.Count == 0)
+			{
+				return [];
+			}
+
+			if (advances.Contains(AllAdvancesSentinel))
+			{
+				return [..
+					_advanceResolver.ResolveAllIds()
+						.Distinct()
+						.OrderBy(id => id)];
+			}
+
+			return [..
+				advances.Select(x => _yamlReadValueSanitizer.ClampToByte(x, nameof(PlayerDtoMapper), nameof(PlayerDto.Advances)))];
 		}
 
 		private SpaceShipDto BuildSpaceShipDto(IPlayer player)

@@ -214,6 +214,28 @@ namespace CivOne.Persistence.Model
 			}
 		}
 
+		[Fact]
+		public void TestPlayerDtoMapper_FromDto_ExpandsAllAdvancesSentinel()
+		{
+			var dto = new PlayerDto
+			{
+				Civilization = originalDto.Civilization,
+				Advances = [-1],
+				Embassies = [],
+				Diplomacy = [],
+				CurrentResearch = 1,
+				Government = 1,
+				Cities = [],
+				Units = [],
+				Explored = new Bool2dMap(5, 5),
+				Visible = new Bool2dMap(5, 5)
+			};
+
+			var actual = _testee.FromDto(dto);
+
+			Assert.Equal([0, 1, 2, 3], actual.Advances);
+		}
+
 		private static Dictionary<string, Action> GetPlayerDtoRoundTripAssertionMap(PlayerDto expected, PlayerDto actual)
 			=> new()
 			{
@@ -412,6 +434,11 @@ namespace CivOne.Persistence.Model
 			public IAdvance ResolveById(uint id)
 			{
 				return new MockedIAdvance { Id = (byte)id };
+			}
+
+			public IEnumerable<byte> ResolveAllIds()
+			{
+				return [0, 1, 2, 3];
 			}
 		}
 

@@ -247,3 +247,18 @@ Behavior is covered by:
 
 - [xunit/src/persistence/Model/YamlReadValueSanitizerTest.cs](xunit/src/persistence/Model/YamlReadValueSanitizerTest.cs)
 
+## Player
+
+### Advances: "All Advances" Sentinel Value
+
+Feature: In Yaml, Advances allows -1 as an indicator to represent "all advances", e.g. for debugging or testing purposes. The mapper will resolve this to the full list of advance IDs in the game.
+
+```yaml
+Players:
+  - Id: 3
+    PlayerGuid: dd5760ec-0df5-48ac-b4d6-f9e3acec17f3
+    Advances:
+    - -1
+    Embassies: []
+    Diplomacy:
+```
