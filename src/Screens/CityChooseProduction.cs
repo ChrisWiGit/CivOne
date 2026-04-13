@@ -25,6 +25,8 @@ namespace CivOne.Screens
 	[ScreenResizeable]
 	internal class CityChooseProduction : BaseScreen
 	{
+		private const int MaxItemsPerPage = 28;
+
 		private readonly City _city;
 
 		private readonly IProduction[] _availableProduction;
@@ -39,22 +41,49 @@ namespace CivOne.Screens
 
 		private void MenuCancel(object sender, EventArgs args)
 		{
-			CloseMenus();
+			CloseCurrentMenu();
 			Destroy();
+		}
+
+		private void CloseCurrentMenu()
+		{
+			CloseMenus();
+			_menu = null;
+		}
+
+		private void UpdateMenuHeight()
+		{
+			int additionalItems = _pages.Count > 1 ? 1 : 0;
+			_menuHeight = Resources.GetFontHeight(_fontId) * (_pages[_page].Length + additionalItems);
+		}
+
+		private void BuildPages()
+		{
+			_pages.Clear();
+
+			foreach (IProduction[] page in _availableProduction.Chunk(MaxItemsPerPage))
+			{
+				_pages.Add(page);
+			}
+
+			if (_pages.Count == 0)
+			{
+				_pages.Add([]);
+			}
 		}
 
 		private void ProductionChoice(object sender, EventArgs args)
 		{
 			if (_pages.Count > 1 && ((sender as MenuItem<int>).Value == _pages[_page].Length))
 			{
-				CloseMenus();
+				CloseCurrentMenu();
 				_page++;
 				if (_page >= _pages.Count) _page = 0;
-				_menuHeight = Resources.GetFontHeight(1) * (_pages[_page].Length + 1);
+				UpdateMenuHeight();
 				_update = true;
 				return;
 			}
-			_city.SetProduction(_pages[_page].ToArray()[(sender as MenuItem<int>).Value]);
+			_city.SetProduction(_pages[_page][(sender as MenuItem<int>).Value]);
 			MenuCancel(sender, args);
 		}
 
@@ -148,10 +177,8 @@ namespace CivOne.Screens
 
 		private void AddMenu(List<string> menuItems, int itemWidth, Picture background)
 		{
-			if (_menu != null)
+			if (_menu != null && HasMenu)
 			{
-				// The menu does not have to be recreated if it already exists
-				// Otherwise Selection is lost when resizing the screen
 				return;
 			}
 			_menu = new Menu(Palette, background)
@@ -182,7 +209,7 @@ namespace CivOne.Screens
 		protected override void Resize(int width, int height)
 		{
 			_update = true;
-			_menu.Refresh();
+			_menu?.Refresh();
 			base.Resize(width, height);
 		}
 
@@ -200,21 +227,13 @@ namespace CivOne.Screens
 				_menuHeight = Resources.GetFontHeight(1) * _availableProduction.Length;
 				if (_menuHeight > 170)
 				{
-					_pages.Add(_availableProduction.Where(p => (p is IUnit)).Take(28).ToArray());
-					if (_availableProduction.Count(p => (p is IBuilding || p is IWonder)) > 28)
-					{
-						_pages.Add(_availableProduction.Where(p => (p is IBuilding)).Take(28).ToArray());
-						_pages.Add(_availableProduction.Where(p => (p is IWonder)).Take(28).ToArray());
-					}
-					else
-					{
-						_pages.Add(_availableProduction.Where(p => (p is IBuilding || p is IWonder)).Take(28).ToArray());
-					}
-					_menuHeight = Resources.GetFontHeight(1) * (_pages[0].Length + 1);
+					BuildPages();
+					UpdateMenuHeight();
 					return;
 				}
 			}
 			_pages.Add(_availableProduction);
+			UpdateMenuHeight();
 		}
 	}
 }
