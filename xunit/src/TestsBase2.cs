@@ -34,8 +34,8 @@ namespace CivOne.UnitTests
             rs.InitialSeed = 7595;
             runtime = new MockRuntime(rs);
 
-            // Load Earth map
-            Map.Reset(new MapGenerationWithoutThread());
+            // Load Earth map from bundled earth.yml (no MAP.PIC required)
+            Map.Reset(new MapGenerationFromYaml());
             Map.Instance.LoadEarthMapInThread();
 
             // Start with Chinese, 7 players, at King level

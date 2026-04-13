@@ -34,8 +34,8 @@ namespace CivOne.src
             rs.InitialSeed = 23905;
             runtime = new MockRuntime(rs);
 
-            // Load Earth map
-            Map.Reset(new MapGenerationWithoutThread());
+            // Load Earth map from bundled earth.yml (no MAP.PIC required)
+            Map.Reset(new MapGenerationFromYaml());
             Map.Instance.LoadEarthMapInThread();
 
             // Start with Babylonians at King level

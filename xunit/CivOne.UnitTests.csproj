@@ -32,6 +32,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Content Include="earth.yml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
 		<Compile Include="xunit/src/**/*.cs" />
 	</ItemGroup>
 

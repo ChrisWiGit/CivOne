@@ -42,6 +42,7 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Designed to support future in-memory model refactoring while keeping save format mapping isolated.
   * Current scope focuses on CivOne YAML save files and does not target binary CIV save compatibility.
   * Prepared for future changes to how data is handled in memory for more flexibility and maintainability.
+  * TestBase and TestBase2 now load the Earth map from bundled `earth.yml` instead of relying on `MAP.PIC`, ensuring consistent test environments without external dependencies.
   * Added space ship grid mapping support in YAML **Not yet active in gameplay** (see [docs/SPACESHIP_FULL_IMPLEMENTATION_PLAN.md](docs/SPACESHIP_FULL_IMPLEMENTATION_PLAN.md)).
   * See [YAML Save Format](YAML.md) for more details.
 * Fix: Improved CityView panorama road generation to prevent random road breaks while keeping layout natural.
