@@ -13,6 +13,7 @@ using System.ComponentModel;
 using System.Linq;
 using CivOne.Buildings;
 using CivOne.Enums;
+using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.IO;
@@ -22,6 +23,14 @@ using CivOne.Wonders;
 
 namespace CivOne.Screens
 {
+	public enum ProductionFilterMode
+	{
+		All = 0,
+		Units = 1,
+		Buildings = 2,
+		Wonders = 3
+	}
+
 	[ScreenResizeable]
 	internal class CityChooseProduction : BaseScreen
 	{
@@ -37,7 +46,8 @@ namespace CivOne.Screens
 		private int _menuHeight;
 		private int _page = 0;
 
-		private Menu _menu;
+		private ProductionFilterMenu _menu;
+		private ProductionFilterMode _filterMode = ProductionFilterMode.All;
 
 		private void MenuCancel(object sender, EventArgs args)
 		{
@@ -51,6 +61,43 @@ namespace CivOne.Screens
 			_menu = null;
 		}
 
+		private IProduction[] GetFilteredProduction()
+		{
+			return _filterMode switch
+			{
+				ProductionFilterMode.Units => _availableProduction.Where(p => p is IUnit).ToArray(),
+				ProductionFilterMode.Buildings => _availableProduction.Where(p => p is IBuilding).ToArray(),
+				ProductionFilterMode.Wonders => _availableProduction.Where(p => p is IWonder).ToArray(),
+				_ => _availableProduction
+			};
+		}
+
+		private void CycleFilter()
+		{
+			_filterMode = (ProductionFilterMode)(((int)_filterMode + 1) % 4);
+			_page = 0;
+			CloseCurrentMenu();
+			BuildPages();
+			UpdateMenuHeight();
+			_update = true;
+		}
+
+		private IProduction[] InsertSeparators(IProduction[] production)
+		{
+			var result = new List<IProduction>();
+			bool hasUnits = false, hasBuildings = false, hasWonders = false;
+
+			foreach (var item in production)
+			{
+				if (item is IUnit && !hasUnits) { result.Add(new ProductionSeparator("--- Units ---")); hasUnits = true; }
+				else if (item is IBuilding && !hasBuildings) { result.Add(new ProductionSeparator("--- Buildings ---")); hasBuildings = true; }
+				else if (item is IWonder && !hasWonders) { result.Add(new ProductionSeparator("--- Wonders ---")); hasWonders = true; }
+				result.Add(item);
+			}
+
+			return result.ToArray();
+		}
+
 		private void UpdateMenuHeight()
 		{
 			int additionalItems = _pages.Count > 1 ? 1 : 0;
@@ -61,7 +108,12 @@ namespace CivOne.Screens
 		{
 			_pages.Clear();
 
-			foreach (IProduction[] page in _availableProduction.Chunk(MaxItemsPerPage))
+			IProduction[] filteredProduction = GetFilteredProduction();
+			IProduction[] productionWithSeparators = (_filterMode == ProductionFilterMode.All) 
+				? InsertSeparators(filteredProduction) 
+				: filteredProduction;
+
+			foreach (IProduction[] page in productionWithSeparators.Chunk(MaxItemsPerPage))
 			{
 				_pages.Add(page);
 			}
@@ -83,8 +135,12 @@ namespace CivOne.Screens
 				_update = true;
 				return;
 			}
-			_city.SetProduction(_pages[_page][(sender as MenuItem<int>).Value]);
-			MenuCancel(sender, args);
+			var selectedProduction = _pages[_page][(sender as MenuItem<int>).Value];
+			if (selectedProduction != null && !(selectedProduction is ProductionSeparator))
+			{
+				_city.SetProduction(selectedProduction);
+				MenuCancel(sender, args);
+			}
 		}
 
 		private void ProductionContext(object sender, EventArgs args)
@@ -94,8 +150,12 @@ namespace CivOne.Screens
 				ProductionChoice(sender, args);
 				return;
 			}
-			ICivilopedia page = (_pages[_page][(sender as MenuItem<int>).Value] as ICivilopedia);
-			Common.AddScreen(new Civilopedia(page, icon: false));
+			var selectedProduction = _pages[_page][(sender as MenuItem<int>).Value];
+			if (selectedProduction != null && !(selectedProduction is ProductionSeparator))
+			{
+				ICivilopedia page = selectedProduction as ICivilopedia;
+				Common.AddScreen(new Civilopedia(page, icon: false));
+			}
 		}
 
 		protected override bool HasUpdate(uint gameTick)
@@ -110,12 +170,17 @@ namespace CivOne.Screens
 				//    and store the results to be used here for drawing.
 
 				List<string> menuItems = new List<string>();
-				string menuHeaderText = $"What shall we build in {_city.Name}?";
+				string filterLabel = _filterMode == ProductionFilterMode.All ? "" : $" [{_filterMode}]";
+				string menuHeaderText = $"What shall we build in {_city.Name}?{filterLabel}";
 				int itemWidth = Resources.GetTextSize(_fontId, menuHeaderText).Width;
 				foreach (IProduction production in _pages[_page])
 				{
 					string menuText = string.Empty;
-					if (production is IUnit)
+					if (production is ProductionSeparator)
+					{
+						menuText = (production as ProductionSeparator).Text;
+					}
+					else if (production is IUnit)
 					{
 						IUnit unit = (production as IUnit);
 						int turns = ((int)unit.Price * 10) - _city.Shields;
@@ -125,7 +190,7 @@ namespace CivOne.Screens
 						menuText = $"{unit.Name} ({turns} turns, ADM:{unit.Attack}/{unit.Defense}/{unit.Move})";
 						if (Resources.GetTextSize(_fontId, menuText).Width > itemWidth) itemWidth = Resources.GetTextSize(_fontId, menuText).Width;
 					}
-					if (production is IBuilding)
+					else if (production is IBuilding)
 					{
 						IBuilding building = (production as IBuilding);
 						int turns = ((int)building.Price * 10) - _city.Shields;
@@ -135,7 +200,7 @@ namespace CivOne.Screens
 						menuText = $"{building.Name} ({turns} turns)";
 						if (Resources.GetTextSize(_fontId, menuText).Width > itemWidth) itemWidth = Resources.GetTextSize(_fontId, menuText).Width;
 					}
-					if (production is IWonder)
+					else if (production is IWonder)
 					{
 						IWonder wonder = (production as IWonder);
 						int turns = ((int)wonder.Price * 10) - _city.Shields;
@@ -162,7 +227,7 @@ namespace CivOne.Screens
 				menuGfx.Tile(Pattern.PanelGrey)
 					.DrawRectangle3D()
 					.DrawText(menuHeaderText, _fontId, 15, 4, 4)
-					.DrawText($"(Help available)", 1, 10, width, height - Resources.GetFontHeight(1), TextAlign.Right);
+					.DrawText($"(Help available, Tab=Filter)", 1, 10, width, height - Resources.GetFontHeight(1), TextAlign.Right);
 
 				this.FillRectangle(80, 8, width + 2, height + 2, 5); // produces black border, +2 because of round errors when resizing
 				this.AddLayer(menuGfx, 81, 9);
@@ -181,25 +246,32 @@ namespace CivOne.Screens
 			{
 				return;
 			}
-			_menu = new Menu(Palette, background)
+			_menu = new ProductionFilterMenu(Palette, background)
 			{
 				X = 83,
 				Y = 12 + Resources.GetFontHeight(_fontId),
 				MenuWidth = itemWidth,
 				ActiveColour = 11,
 				TextColour = 5,
+				DisabledColour = 8,
 				FontId = _fontId
 			};
 
-			int i = 0;
-			foreach (string item in menuItems)
+			for (int i = 0; i < menuItems.Count; i++)
 			{
-				_menu.Items.Add(item, i++)
+				var menuItem = _menu.Items.Add(menuItems[i], i)
 					.OnSelect(ProductionChoice)
 					.OnContext(ProductionContext)
 					.OnHelp(ProductionContext);
+			
+				// Disable separators
+				if (i < _pages[_page].Length && _pages[_page][i] is ProductionSeparator)
+				{
+					menuItem.Disable();
+				}
 			}
 			_menu.MenuWidth += 10;
+			_menu.TabPressed += (s, a) => CycleFilter();
 			_menu.MissClick += MenuCancel;
 			_menu.Cancel += MenuCancel;
 

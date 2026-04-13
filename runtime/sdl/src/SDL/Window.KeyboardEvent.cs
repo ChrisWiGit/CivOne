@@ -32,6 +32,8 @@ namespace CivOne
 			{
 				switch (scanCode)
 				{
+					case SDL_Scancode.SDL_SCANCODE_TAB:
+						return Key.Tab;
 					case SDL_Scancode.SDL_SCANCODE_F1:
 						return Key.F1;
 					case SDL_Scancode.SDL_SCANCODE_F2:
