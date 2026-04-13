@@ -6,6 +6,9 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Improved SDL keyboard event conversion for modifier + digit combinations (top-row digits), including debug diagnostics.
+  * Ctrl + Shift + 0 now maps reliably to digit input for specialist hotkeys.
+  * Added detailed DEBUG keyboard logs (raw scancode/keycode/modifier and converted key event).
 * Feature: Added a new hotkey (Tab) to cycle through production filter modes in the city production menu (All, Units, Buildings, Wonders, All).
 * Fix: Fixed an issue where the game would freeze in city production menu screen, if more than 20 items were available and the player hit "More..." to see the next page of items.
 * Github pipeline to build and automatic testing and creating release artifacts (Windows, Linux)
