@@ -6,6 +6,10 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Improved CityView panorama road generation to prevent random road breaks while keeping layout natural.
+  * Added targeted post-processing to close only real single-tile gaps on the road axes.
+  * Restores missing intersection tiles when at least two adjacent road segments connect to the crossing.
+  * Keeps a minimum number of houses when removing isolated tiles, avoiding empty-looking city views.
 * Fix: Improved SDL keyboard event conversion for modifier + digit combinations (top-row digits), including debug diagnostics.
   * Ctrl + Shift + 0 now maps reliably to digit input for specialist hotkeys.
   * Added detailed DEBUG keyboard logs (raw scancode/keycode/modifier and converted key event).
