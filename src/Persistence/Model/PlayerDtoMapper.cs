@@ -34,7 +34,7 @@ namespace CivOne.Persistence.Model
 		UnitDtoMapper _unitMapper,
 		IAdvanceResolver _advanceResolver,
 		IGovernmentResolver _governmentResolver,
-		IValueSanitizer _yamlReadValueSanitizer
+		IValueSanitizer _valueSanitizer
 		) : DtoMapper<PlayerDto, IPlayer>
 	{
 		private const long AllAdvancesSentinel = -1;
@@ -55,36 +55,36 @@ namespace CivOne.Persistence.Model
 			player.Advances = BuildAdvances(dto.Advances);
 			player.Embassies = [..
 				(dto.Embassies ?? [])
-					.Select(x => _yamlReadValueSanitizer.ClampToByte(x, nameof(PlayerDtoMapper), nameof(PlayerDto.Embassies)))
+					.Select(x => _valueSanitizer.ClampToByte(x, nameof(PlayerDtoMapper), nameof(PlayerDto.Embassies)))
 			];
 			player.Diplomacy = BuildDiplomacyArray(dto.Diplomacy);
 			player.Anarchy = dto.Anarchy;
-			player.Gold = _yamlReadValueSanitizer.ClampToInt16(dto.Gold, nameof(PlayerDtoMapper), nameof(PlayerDto.Gold));
+			player.Gold = _valueSanitizer.ClampToInt16(dto.Gold, nameof(PlayerDtoMapper), nameof(PlayerDto.Gold));
 			player.CurrentResearch = _advanceResolver.ResolveById(dto.CurrentResearch);
 			player.CityNamesSkipped = dto.CityNamesSkipped;
-			player.FutureTechCount = _yamlReadValueSanitizer.ClampToUInt16(dto.FutureTechCount, nameof(PlayerDtoMapper), nameof(PlayerDto.FutureTechCount));
-			player.HumanContactTurn = _yamlReadValueSanitizer.ClampToUInt16(dto.HumanContactTurn, nameof(PlayerDtoMapper), nameof(PlayerDto.HumanContactTurn));
-			player.StartX = _yamlReadValueSanitizer.ClampToInt16(dto.StartX, nameof(PlayerDtoMapper), nameof(PlayerDto.StartX));
+			player.FutureTechCount = _valueSanitizer.ClampToUInt16(dto.FutureTechCount, nameof(PlayerDtoMapper), nameof(PlayerDto.FutureTechCount));
+			player.HumanContactTurn = _valueSanitizer.ClampToUInt16(dto.HumanContactTurn, nameof(PlayerDtoMapper), nameof(PlayerDto.HumanContactTurn));
+			player.StartX = _valueSanitizer.ClampToInt16(dto.StartX, nameof(PlayerDtoMapper), nameof(PlayerDto.StartX));
 			player.UnitsLost = BuildUnitsLostArray(dto.UnitsLost);
 			player.UnitsDestroyedBy = BuildUnitsDestroyedByArray(dto.UnitsDestroyedBy);
-			player.EpicRanking = _yamlReadValueSanitizer.ClampToUInt16(dto.EpicRanking, nameof(PlayerDtoMapper), nameof(PlayerDto.EpicRanking));
-			player.MilitaryPower = _yamlReadValueSanitizer.ClampToUInt16(dto.MilitaryPower, nameof(PlayerDtoMapper), nameof(PlayerDto.MilitaryPower));
-			player.CivilizationScore = _yamlReadValueSanitizer.ClampToUInt16(dto.CivilizationScore, nameof(PlayerDtoMapper), nameof(PlayerDto.CivilizationScore));
+			player.EpicRanking = _valueSanitizer.ClampToUInt16(dto.EpicRanking, nameof(PlayerDtoMapper), nameof(PlayerDto.EpicRanking));
+			player.MilitaryPower = _valueSanitizer.ClampToUInt16(dto.MilitaryPower, nameof(PlayerDtoMapper), nameof(PlayerDto.MilitaryPower));
+			player.CivilizationScore = _valueSanitizer.ClampToUInt16(dto.CivilizationScore, nameof(PlayerDtoMapper), nameof(PlayerDto.CivilizationScore));
 			player.Government = _governmentResolver.ResolveById(dto.Government);
 
 			// Spaceship state
 			if (dto.SpaceShip != null)
 			{
 				player.SpaceShipGrid = dto.SpaceShip.Grid?.ToArray() ?? new CivOne.Enums.SpaceShipComponentType[12, 12];
-				player.SpaceShipPopulation = _yamlReadValueSanitizer.ClampToUInt16(dto.SpaceShip.Population, nameof(PlayerDtoMapper), $"{nameof(PlayerDto.SpaceShip)}.{nameof(SpaceShipDto.Population)}");
-				player.SpaceShipLaunchYear = _yamlReadValueSanitizer.ClampToInt16(dto.SpaceShip.LaunchYear, nameof(PlayerDtoMapper), $"{nameof(PlayerDto.SpaceShip)}.{nameof(SpaceShipDto.LaunchYear)}");
+				player.SpaceShipPopulation = _valueSanitizer.ClampToUInt16(dto.SpaceShip.Population, nameof(PlayerDtoMapper), $"{nameof(PlayerDto.SpaceShip)}.{nameof(SpaceShipDto.Population)}");
+				player.SpaceShipLaunchYear = _valueSanitizer.ClampToInt16(dto.SpaceShip.LaunchYear, nameof(PlayerDtoMapper), $"{nameof(PlayerDto.SpaceShip)}.{nameof(SpaceShipDto.LaunchYear)}");
 			}
 
 			// Keep rate invariant (luxuries + taxes + science == 10) by setting all three.
 			player.TaxesRate = dto.TaxesRate;
 			player.LuxuriesRate = dto.LuxuriesRate;
 			player.ScienceRate = dto.ScienceRate;
-			player.Science = _yamlReadValueSanitizer.ClampToInt16(dto.Science, nameof(PlayerDtoMapper), nameof(PlayerDto.Science));
+			player.Science = _valueSanitizer.ClampToInt16(dto.Science, nameof(PlayerDtoMapper), nameof(PlayerDto.Science));
 
 			if (dto.Palace != null)
 			{
@@ -168,7 +168,7 @@ namespace CivOne.Persistence.Model
 			}
 
 			return [..
-				advances.Select(x => _yamlReadValueSanitizer.ClampToByte(x, nameof(PlayerDtoMapper), nameof(PlayerDto.Advances)))];
+				advances.Select(x => _valueSanitizer.ClampToByte(x, nameof(PlayerDtoMapper), nameof(PlayerDto.Advances)))];
 		}
 
 		private SpaceShipDto BuildSpaceShipDto(IPlayer player)
@@ -208,14 +208,14 @@ namespace CivOne.Persistence.Model
 					continue;
 				}
 
-				var target = _yamlReadValueSanitizer.ClampToInt32(
+				var target = _valueSanitizer.ClampToInt32(
 					entry.TargetPlayerId,
 					nameof(PlayerDtoMapper),
 					$"{nameof(PlayerDto.Diplomacy)}.{nameof(DiplomacyEntryDto.TargetPlayerId)}",
 					min: 0,
 					max: diplomacy.Length - 1);
 
-				diplomacy[target] = _yamlReadValueSanitizer.ClampToUInt16(
+				diplomacy[target] = _valueSanitizer.ClampToUInt16(
 					entry.RawFlags,
 					nameof(PlayerDtoMapper),
 					$"{nameof(PlayerDto.Diplomacy)}.{nameof(DiplomacyEntryDto.RawFlags)}"
@@ -235,7 +235,7 @@ namespace CivOne.Persistence.Model
 
 			for (var i = 0; i < output.Length && i < values.Count; i++)
 			{
-				output[i] = _yamlReadValueSanitizer.ClampToUInt16(
+				output[i] = _valueSanitizer.ClampToUInt16(
 					values[i],
 					nameof(PlayerDtoMapper),
 					$"{nameof(PlayerDto.UnitsLost)}[{i}]"
@@ -255,7 +255,7 @@ namespace CivOne.Persistence.Model
 
 			for (var i = 0; i < output.Length && i < values.Count; i++)
 			{
-				output[i] = _yamlReadValueSanitizer.ClampToUInt16(
+				output[i] = _valueSanitizer.ClampToUInt16(
 					values[i],
 					nameof(PlayerDtoMapper),
 					$"{nameof(PlayerDto.UnitsDestroyedBy)}[{i}]"
