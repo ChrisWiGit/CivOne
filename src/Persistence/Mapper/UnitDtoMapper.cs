@@ -4,6 +4,7 @@ namespace CivOne.Persistence.Model
 	using System.Diagnostics;
 	using System.Drawing;
 	using System.Linq;
+	using CivOne.Persistence.Mapper;
 	using CivOne.Units;
 	using CityId = System.UInt32;
 	using PlayerId = System.Byte;

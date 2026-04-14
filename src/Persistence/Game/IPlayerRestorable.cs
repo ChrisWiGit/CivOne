@@ -4,7 +4,7 @@ using CivOne.Advances;
 using CivOne.Governments;
 using CivOne.Enums;
 
-namespace CivOne.Persistence.Model
+namespace CivOne.Persistence.Game
 {
 	/// <summary>
 	/// This interface extends IPlayer with setters for all properties that need to be restored from a DTO.

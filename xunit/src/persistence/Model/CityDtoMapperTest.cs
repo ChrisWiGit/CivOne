@@ -6,6 +6,7 @@ namespace CivOne.Persistence.Model
 	using CivOne;
 	using CivOne.Buildings;
 	using CivOne.Enums;
+	using CivOne.Persistence.Resolver;
 	using CivOne.Persistence.Yaml;
 	using CivOne.Tiles;
 	using CivOne.UnitTests;

@@ -16,6 +16,9 @@ namespace CivOne.Persistence.Model
 	using CivOne.Wonders;
 	using Xunit;
 	using AdvanceId = System.UInt32;
+	using CivOne.Persistence.Game;
+	using CivOne.Persistence.Resolver;
+	using CivOne.Persistence.Mapper;
 
 	public class PlayerDtoMapperTest
 	{
@@ -450,23 +453,3 @@ namespace CivOne.Persistence.Model
 			}
 		}	}
 }
-
-/*
-		[Fact]
-		public void TestByteArrayArrayFlowStyleYamlTypeConverterSingleRow()
-		{
-			byte[][] testData = [[1, 2, 3]];
-
-			string yaml = YamlWriter.Of(testData)
-				.WithTypeConverter(new ByteArrayArrayFlowStyleYamlTypeConverter())
-				.AsString();
-
-			var roundTripped = YamlReader.OfString(yaml)
-				.WithTypeConverter(new ByteArrayArrayFlowStyleYamlTypeConverter())
-				.As<byte[][]>();
-
-			Assert.Single(roundTripped);
-			Assert.Equal(new byte[] { 1, 2, 3 }, roundTripped[0]);
-		}
-
-*/

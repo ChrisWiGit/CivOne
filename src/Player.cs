@@ -16,6 +16,7 @@ using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.Governments;
 using CivOne.Graphics.Sprites;
+using CivOne.Persistence.Game;
 using CivOne.Persistence.Model;
 using CivOne.Tasks;
 using CivOne.Tiles;

@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using CivOne.Civilizations;
+using CivOne.Persistence.Game;
 using CivOne.Persistence.Model;
 
 namespace CivOne.Persistence.Factories

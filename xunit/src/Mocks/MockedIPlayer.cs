@@ -7,6 +7,7 @@ using CivOne.Advances;
 using CivOne.Persistence.Model;
 using CivOne.Civilizations;
 using CivOne.Enums;
+using CivOne.Persistence.Game;
 
 namespace CivOne.UnitTests
 {

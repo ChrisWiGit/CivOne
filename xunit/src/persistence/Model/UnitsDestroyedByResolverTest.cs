@@ -4,6 +4,8 @@ namespace CivOne.Persistence.Model
 	using System.Collections.Generic;
 	using Xunit;
 	using CivOne.UnitTests;
+	using CivOne.Persistence.Game;
+	using CivOne.Persistence.Resolver;
 
 	/// <summary>
 	/// Tests for UnitsDestroyedByResolver class.

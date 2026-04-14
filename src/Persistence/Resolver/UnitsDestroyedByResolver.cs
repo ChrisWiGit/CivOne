@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using CivOne.Persistence.Game;
+using CivOne.Persistence.Model;
 
-namespace CivOne.Persistence.Model
+namespace CivOne.Persistence.Resolver
 {
 	/// <summary>
 	/// Resolves and applies units destroyed counts from player GUIDs to player indices.

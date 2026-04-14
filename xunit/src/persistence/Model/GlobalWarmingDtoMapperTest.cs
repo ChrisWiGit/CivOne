@@ -3,6 +3,7 @@ namespace CivOne.Persistence.Model
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using CivOne.Persistence.Mapper;
 	using CivOne.Services.GlobalWarming;
 	using Xunit;
 

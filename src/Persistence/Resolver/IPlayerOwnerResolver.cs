@@ -1,4 +1,7 @@
-namespace CivOne.Persistence.Model
+using CivOne.Persistence.Game;
+using CivOne.Persistence.Model;
+
+namespace CivOne.Persistence.Resolver
 {
 	public interface IPlayerOwnerResolver
 	{

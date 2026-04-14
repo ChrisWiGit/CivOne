@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using CivOne.Enums;
 using CivOne.Persistence;
+using CivOne.Persistence.Mapper;
 using CivOne.Persistence.Model;
 using CivOne.Persistence.Yaml;
 using CivOne.src;

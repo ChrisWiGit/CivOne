@@ -1,5 +1,6 @@
 using System;
 using CivOne.Enums;
+using CivOne.Persistence.Mapper;
 
 namespace CivOne.Persistence.Model
 {

@@ -4,7 +4,7 @@ using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Wonders;
 
-namespace CivOne.Persistence.Model
+namespace CivOne.Persistence.Resolver
 {
 	public class CityDefinitionResolver : ICityDefinitionResolver
 	{

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CivOne.Persistence.Game;
 using CivOne.Persistence.Model;
 using CivOne.Services.GlobalWarming;
 using CivOne.Tiles;

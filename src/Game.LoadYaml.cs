@@ -13,7 +13,7 @@ using System.IO;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Persistence;
-using CivOne.Persistence.Factories;
+using CivOne.Persistence.Mapper;
 using CivOne.Persistence.Model;
 using CivOne.Persistence.Yaml;
 using CivOne.Services.GlobalWarming;

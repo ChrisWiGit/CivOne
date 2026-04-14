@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Enums;
+using CivOne.Persistence.Mapper;
 using CivOne.Persistence.Model.Attributes;
 using CivOne.Tiles;
 using YamlDotNet.Core;

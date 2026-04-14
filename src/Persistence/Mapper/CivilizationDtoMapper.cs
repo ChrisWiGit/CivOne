@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using CivOne.Civilizations;
+using CivOne.Persistence.Mapper;
 
 namespace CivOne.Persistence.Model
 {

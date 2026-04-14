@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace CivOne.Persistence.Model
+namespace CivOne.Persistence.Factories
 {
     public interface ICityNameCatalog
     {

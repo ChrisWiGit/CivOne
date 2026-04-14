@@ -1,6 +1,7 @@
 using System.Linq;
+using CivOne.Persistence.Game;
 
-namespace CivOne.Persistence.Model
+namespace CivOne.Persistence.Resolver
 {
 	public class GamePlayerOwnerResolver(IPlayerGame gameInstance) : IPlayerOwnerResolver
 	{

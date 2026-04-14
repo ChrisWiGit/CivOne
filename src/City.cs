@@ -16,6 +16,7 @@ using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Governments;
+using CivOne.Persistence.Game;
 using CivOne.Persistence.Model;
 using CivOne.Screens;
 using CivOne.Screens.Reports;

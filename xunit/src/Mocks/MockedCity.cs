@@ -8,6 +8,7 @@ using System.Linq;
 using System.Collections.Generic;
 using CivOne.Enums;
 using CivOne.Persistence.Model;
+using CivOne.Persistence.Game;
 
 namespace CivOne.UnitTests
 {

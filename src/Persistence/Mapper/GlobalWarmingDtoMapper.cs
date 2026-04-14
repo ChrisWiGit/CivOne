@@ -1,9 +1,10 @@
 using System;
+using CivOne.Persistence.Model;
 using CivOne.Services.GlobalWarming;
 
-namespace CivOne.Persistence.Model
+namespace CivOne.Persistence.Mapper
 {
-    public class GlobalWarmingDtoMapper(IValueSanitizer yamlReadValueSanitizer) : DtoMapper<GlobalWarmingDto, GameState>
+    public class GlobalWarmingDtoMapper(IValueSanitizer valueSanitizer) : DtoMapper<GlobalWarmingDto, GameState>
     {
         public GameState FromDto(GlobalWarmingDto dto)
         {
@@ -17,14 +18,14 @@ namespace CivOne.Persistence.Model
                 };
             }
 
-            var globalWarmingCount = yamlReadValueSanitizer.ClampToInt32(
+            var globalWarmingCount = valueSanitizer.ClampToInt32(
                 dto.GlobalWarmingCount,
                 nameof(GlobalWarmingDtoMapper),
                 nameof(GlobalWarmingDto.GlobalWarmingCount),
                 min: 0,
                 max: short.MaxValue);
 
-            var pollutedSquaresCount = yamlReadValueSanitizer.ClampToInt32(
+            var pollutedSquaresCount = valueSanitizer.ClampToInt32(
                 dto.PollutedSquaresCount,
                 nameof(GlobalWarmingDtoMapper),
                 nameof(GlobalWarmingDto.PollutedSquaresCount),
@@ -47,14 +48,14 @@ namespace CivOne.Persistence.Model
         {
             ArgumentNullException.ThrowIfNull(domain);
 
-            var globalWarmingCount = yamlReadValueSanitizer.ClampToInt32(
+            var globalWarmingCount = valueSanitizer.ClampToInt32(
                 domain.GlobalWarmingCount,
                 nameof(GlobalWarmingDtoMapper),
                 nameof(GameState.GlobalWarmingCount),
                 min: 0,
                 max: short.MaxValue);
 
-            var pollutedSquaresCount = yamlReadValueSanitizer.ClampToInt32(
+            var pollutedSquaresCount = valueSanitizer.ClampToInt32(
                 domain.PollutedSquaresCount,
                 nameof(GlobalWarmingDtoMapper),
                 nameof(GameState.PollutedSquaresCount),

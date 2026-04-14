@@ -9,6 +9,9 @@ using CivOne.Persistence.Model;
 using CivOne.Tiles;
 using CivOne.Units;
 using CivOne.Persistence.Factories;
+using CivOne.Persistence.Mapper;
+using CivOne.Persistence.Resolver;
+using CivOne.Persistence.Game;
 
 namespace CivOne.Persistence.Factories
 {
@@ -43,7 +46,7 @@ namespace CivOne.Persistence.Factories
 				gameInstance,
 				new GamePlayerOwnerResolver(gameInstance),
 				new NotSupportedPlayerFactory(),
-				new CivilizationDtoMapper(Common.Civilizations),
+				new CivilizationDtoMapper(RuntimeFactory.Civilizations),
 				new PalaceDtoMapper(_sanitizer),
 				cityMapper,
 				unitMapper,
@@ -64,31 +67,43 @@ namespace CivOne.Persistence.Factories
 			return new ValueSanitizer(new RuntimeLogger());
 		}
 
+		private static class RuntimeFactory
+		{
+			public static IEnumerable<ICivilization> Civilizations => Reflect.GetCivilizations();
+			public static IEnumerable<IAdvance> Advances => Reflect.GetAdvances();
+
+			// units
+			public static IEnumerable<IUnit> Units => Reflect.GetUnits();
+
+			// governments
+			public static IEnumerable<IGovernment> Governments => Reflect.GetGovernments();
+		}
+
 		/// <summary>
 		/// Initializes the DTO documentation fields.
 		/// This will provide all runtime information into the Doc-Attributes of these DTO to be shown within a YAML file as a comment for the user.
-		/// The access to the Common class is always encapsulated because we do not want Common in classes that are tested in unit tests.
+		/// The access to the RuntimeFactory class is always encapsulated because we do not want RuntimeFactory in classes that are tested in unit tests.
 		/// </summary>
 		private static void InitializeDocLists()
 		{
-			CivilizationDto.AllLeaderClassNames = [.. Common.Civilizations
+			CivilizationDto.AllLeaderClassNames = [.. RuntimeFactory.Civilizations
 				.Select(c => c.Leader.GetType().Name)
 				.Distinct()
 				.OrderBy(leaderName => leaderName.ToUpperInvariant())];
 
-			UnitDto.AllUnitsClassNames = [.. Reflect.GetUnits()
+			UnitDto.AllUnitsClassNames = [.. RuntimeFactory.Units
 				.Select(u => u.GetType().Name)
 				.Distinct()
 				.OrderBy(className => className.ToUpperInvariant())];
 
-			PlayerDto.AllAdvances = [.. Common.Advances
+			PlayerDto.AllAdvances = [.. RuntimeFactory.Advances
 				.OrderBy(a => a.Id)
 				.Select(a => $"{a.Id}({a.Name})")];
 
-			PlayerDto.AllAdvancesInfo = Common.Advances
+			PlayerDto.AllAdvancesInfo = RuntimeFactory.Advances
 				.ToDictionary(a => (uint)a.Id, a => a.Name);
 
-			PlayerDto.AllGovernments = [.. Reflect.GetGovernments()
+			PlayerDto.AllGovernments = [.. RuntimeFactory.Governments
 				.OrderBy(g => g.Id)
 				.Select(g => $"{g.Id}({g.Name})")];
 		}

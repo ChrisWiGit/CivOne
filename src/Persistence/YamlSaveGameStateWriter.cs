@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using CivOne.Persistence.Factories;
+using CivOne.Persistence.Mapper;
 using CivOne.Persistence.Model;
 using CivOne.Persistence.Yaml;
 

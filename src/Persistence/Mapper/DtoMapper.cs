@@ -1,4 +1,4 @@
-namespace CivOne.Persistence.Model
+namespace CivOne.Persistence.Mapper
 {
     public interface DtoMapper<TDto, TDomain>
     {

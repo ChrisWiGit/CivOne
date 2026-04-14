@@ -3,10 +3,9 @@ using System;
 using CivOne.Advances;
 using CivOne.Civilizations;
 using CivOne.Governments;
-using CivOne.Persistence.Model.Attributes;
 using CivOne.Wonders;
 
-namespace CivOne.Persistence.Model
+namespace CivOne.Persistence.Game
 {
 	public interface IPlayerEffects
 	{

@@ -9,7 +9,8 @@ namespace CivOne.Persistence.Model
     using CivOne.Buildings;
     using CivOne.Enums;
     using CivOne.Persistence.Model.Attributes;
-    using CivOne.Persistence.Yaml;
+	using CivOne.Persistence.Resolver;
+	using CivOne.Persistence.Yaml;
     using CivOne.UnitTests;
     using CivOne.Wonders;
     using Xunit;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CivOne.Persistence.Mapper;
 
 namespace CivOne.Persistence.Model
 {
@@ -17,8 +18,6 @@ namespace CivOne.Persistence.Model
 	/// </summary>
 	public class ReplayDataDtoMapper : DtoMapper<ReplayDataDto, ReplayData>
 	{
-		// ── ToDto ───────────────────────────────────────────────────────────────────
-
 		public ReplayDataDto ToDto(ReplayData domain)
 		{
 			ArgumentNullException.ThrowIfNull(domain);

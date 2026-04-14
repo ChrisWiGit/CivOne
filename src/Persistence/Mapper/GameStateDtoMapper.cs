@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using CivOne.Persistence.Factories;
+using CivOne.Persistence.Game;
+using CivOne.Persistence.Model;
+using CivOne.Persistence.Resolver;
 using CivOne.Persistence.Stubs;
 using CivOne.Tiles;
 using CivOne.Units;
 
-namespace CivOne.Persistence.Model
+namespace CivOne.Persistence.Mapper
 {
     public class GameStateDtoMapper(
         PlayerDtoMapper playerMapper,

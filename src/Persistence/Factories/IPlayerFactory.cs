@@ -1,4 +1,5 @@
 using CivOne.Civilizations;
+using CivOne.Persistence.Game;
 
 namespace CivOne.Persistence.Model
 {

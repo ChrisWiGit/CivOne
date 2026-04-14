@@ -8,28 +8,31 @@ namespace CivOne.Persistence.Model
     using CivOne.Enums;
     using CivOne.Wonders;
     using CivOne.Tiles;
-    
-    public class CityDtoMapper(
+	using CivOne.Persistence.Game;
+	using CivOne.Persistence.Resolver;
+	using CivOne.Persistence.Mapper;
+
+	public class CityDtoMapper(
         ProductionDtoMapper productionMapper,
 		ICityDefinitionResolver cityDefinitionResolver,
-		IValueSanitizer yamlReadValueSanitizer) : DtoMapper<CityDto, ICityMapper>
+		IValueSanitizer valueSanitizer) : DtoMapper<CityDto, ICityMapper>
     {
         public ICityMapper FromDto(CityDto dto)
         {
             ArgumentNullException.ThrowIfNull(dto);
 
             var location = dto.Location ?? new MapLocation();
-            var locationX = yamlReadValueSanitizer.ClampToInt32(location.X, nameof(CityDtoMapper), nameof(CityDto.Location));
-            var locationY = yamlReadValueSanitizer.ClampToInt32(location.Y, nameof(CityDtoMapper), nameof(CityDto.Location));
+            var locationX = valueSanitizer.ClampToInt32(location.X, nameof(CityDtoMapper), nameof(CityDto.Location));
+            var locationY = valueSanitizer.ClampToInt32(location.Y, nameof(CityDtoMapper), nameof(CityDto.Location));
             var centerTile = new Grassland(locationX, locationY);
             var restored = new RestorableCity
             {
                 Id = dto.Id,
                 Owner = dto.Owner,
                 Name = dto.Name ?? string.Empty,
-                Size = yamlReadValueSanitizer.ClampToByte(dto.Size, nameof(CityDtoMapper), nameof(CityDto.Size)),
-                Food = yamlReadValueSanitizer.ClampToInt32(dto.Food, nameof(CityDtoMapper), nameof(CityDto.Food), min: 0, max: 65535),
-                Shields = yamlReadValueSanitizer.ClampToInt32(dto.Shields, nameof(CityDtoMapper), nameof(CityDto.Shields), min: 0, max: 65535),
+                Size = valueSanitizer.ClampToByte(dto.Size, nameof(CityDtoMapper), nameof(CityDto.Size)),
+                Food = valueSanitizer.ClampToInt32(dto.Food, nameof(CityDtoMapper), nameof(CityDto.Food), min: 0, max: 65535),
+                Shields = valueSanitizer.ClampToInt32(dto.Shields, nameof(CityDtoMapper), nameof(CityDto.Shields), min: 0, max: 65535),
                 Location = new Point(locationX, locationY),
                 Tile = centerTile,
                 CurrentProduction = dto.CurrentProduction == null ? null : productionMapper.FromDto(dto.CurrentProduction),
@@ -209,135 +212,3 @@ namespace CivOne.Persistence.Model
         }
 	}
 }
-
-
-/*
-	public byte Status
-		{
-			get => _status;
-		}
-
-		public void SetupStatus(byte status)
-		{
-			_status = status;
-
-			// recalculate these specific flags, because older versions may not have set them
-			SetupCoastalFlag();
-			SetupHydroFlag();
-		}
-
-		public bool IsRiot
-		{
-			get => bitFlagExtensions.HasFlag(_status, CityStatus.RIOT);
-			set => SetStatusFlag(CityStatus.RIOT, value);
-		}
-
-		public bool IsCoastal => bitFlagExtensions.HasFlag(_status, CityStatus.COASTAL);
-
-		public bool CelebrationCancelled
-		{
-			get => bitFlagExtensions.HasFlag(_status, CityStatus.CELEBRATION_CANCELLED);
-			set => SetStatusFlag(CityStatus.CELEBRATION_CANCELLED, value);
-		}
-
-		public bool HydroAvailable	{
-			get => bitFlagExtensions.HasFlag(_status, CityStatus.HYDRO_AVAILABLE);
-		}
-
-		public bool AutoBuild
-		{
-			get => bitFlagExtensions.HasFlag(_status, CityStatus.AUTO_BUILD);
-			set => SetStatusFlag(CityStatus.AUTO_BUILD, value);
-		}
-
-		public bool TechStolen
-		{
-			get => bitFlagExtensions.HasFlag(_status, CityStatus.TECH_STOLEN);
-			set => SetStatusFlag(CityStatus.TECH_STOLEN, value);
-		}
-
-		public bool CelebrationOrRapture
-		{
-			get => bitFlagExtensions.HasFlag(_status, CityStatus.CELEBRATION_RAPTURE);
-			set => SetStatusFlag(CityStatus.CELEBRATION_RAPTURE, value);
-		}
-		
-		/// <summary>
-		/// Was a building sold in this turn?
-		/// </summary>
-		public bool BuildingSold
-		{
-			get => bitFlagExtensions.HasFlag(_status, CityStatus.IMPROVEMENT_SOLD);
-			set => SetStatusFlag(CityStatus.IMPROVEMENT_SOLD, value);
-		}
-*/
-/*
-
-public interface ICity : ITurn, ICityBasic, ICityBuildings, ICityOnContinent
-	{
-
-
-    public interface ICityBasic
-	{
-		Point Location { get; }
-		byte Size { get; }
-		short Luxuries { get; }
-		public int EntertainerLuxuries { get; }
-		byte Owner { get; set; }
-		ITile Tile { get; }
-
-		int ContinentId { get; }
-
-		Player Player { get; }
-
-		int Entertainers { get; }
-		int Scientists { get; }
-		int Taxmen { get; }
-	}
-
-namespace CivOne.Persistence.Model
-{
-	using System.Collections.Generic;
-	using CivOne.Enums;
-	using CityId = System.UInt32;
-    using PlayerId = System.Byte;
-
-    public class CityDto
-	{
-		public CityId Id { get; set; }
-
-        public MapLocation Location { get; set; }
-
-        public PlayerId Owner { get; set; }
-
-        public string Name { get; set; }
-
-        public uint Size { get; set; }
-
-        public int Shields { get; set; }
-
-        public int Food { get; set; }
-
-        public ProductionDto CurrentProduction { get; set; }
-
-        /// <summary>
-        /// 5x5 bitmask of active resource tiles relative to the city center.
-        /// Index [dx+2, dy+2] corresponds to offset (dx, dy) from city position.
-        /// The center tile [2,2] is always implicitly used and not stored here.
-        /// </summary>
-        public Bool2dMap ResourceTiles { get; set; }
-
-        public List<Citizen> Specialists { get; set; }
-
-        public List<Building> Buildings { get; set; }
-
-        public List<Wonder> Wonders { get; set; }
-
-        public byte Status { get; set; }
-
-        public bool WasInDisorder { get; set; }
-
-        public CityId[] TradingCities { get; set; }
-	}
-}
-*/

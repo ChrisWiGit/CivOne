@@ -13,6 +13,7 @@ using System.Linq;
 using CivOne.Advances;
 using CivOne.Enums;
 using CivOne.Governments;
+using CivOne.Persistence.Game;
 using CivOne.Persistence.Model;
 
 namespace CivOne

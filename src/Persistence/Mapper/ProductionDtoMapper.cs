@@ -1,8 +1,7 @@
 namespace CivOne.Persistence.Model
 {
 	using System.Linq;
-	using CityId = System.UInt32;
-    using PlayerId = System.Byte;
+	using CivOne.Persistence.Mapper;
 
     public class ProductionDtoMapper(IReflect _reflect) : DtoMapper<ProductionDto, IProduction>
 	{

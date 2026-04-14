@@ -1,4 +1,6 @@
-namespace CivOne.Persistence.Model
+using CivOne.Persistence.Game;
+
+namespace CivOne.Persistence.Game
 {
     public interface ICityTradingCitiesWritable : ICity, ICityMapper
     {
