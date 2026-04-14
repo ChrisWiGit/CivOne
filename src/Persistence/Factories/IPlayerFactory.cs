@@ -1,7 +1,8 @@
 using CivOne.Civilizations;
 using CivOne.Persistence.Game;
+using CivOne.Persistence.Model;
 
-namespace CivOne.Persistence.Model
+namespace CivOne.Persistence.Factories
 {
 	public interface IPlayerFactory
 	{

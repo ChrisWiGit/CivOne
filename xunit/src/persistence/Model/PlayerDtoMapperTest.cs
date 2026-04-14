@@ -16,6 +16,7 @@ namespace CivOne.Persistence.Model
 	using CivOne.Wonders;
 	using Xunit;
 	using AdvanceId = System.UInt32;
+	using CivOne.Persistence.Factories;
 	using CivOne.Persistence.Game;
 	using CivOne.Persistence.Resolver;
 	using CivOne.Persistence.Mapper;

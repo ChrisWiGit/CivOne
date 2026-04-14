@@ -5,6 +5,7 @@ using CivOne.Advances;
 using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.Governments;
+using CivOne.Persistence.Factories;
 using CivOne.Persistence.Game;
 using CivOne.Persistence.Mapper;
 using CivOne.Persistence.Resolver;
