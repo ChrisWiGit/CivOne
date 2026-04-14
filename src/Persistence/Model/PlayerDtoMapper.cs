@@ -134,8 +134,8 @@ namespace CivOne.Persistence.Model
 				FutureTechCount = player.FutureTechCount,
 				HumanContactTurn = player.HumanContactTurn,
 				StartX = player.StartX,
-				UnitsLost = [.. player.UnitsLost.Select(x => (long)x)],
-				UnitsDestroyedBy = [.. player.UnitsDestroyedBy.Select(x => (long)x)],
+				UnitsLost = [.. player.UnitsLost],
+				UnitsDestroyedBy = [.. player.UnitsDestroyedBy],
 				EpicRanking = player.EpicRanking,
 				MilitaryPower = player.MilitaryPower,
 				CivilizationScore = player.CivilizationScore,
@@ -215,12 +215,11 @@ namespace CivOne.Persistence.Model
 					min: 0,
 					max: diplomacy.Length - 1);
 
-				diplomacy[target] = (ushort)_yamlReadValueSanitizer.ClampToInt32(
+				diplomacy[target] = _yamlReadValueSanitizer.ClampToUInt16(
 					entry.RawFlags,
 					nameof(PlayerDtoMapper),
-					$"{nameof(PlayerDto.Diplomacy)}.{nameof(DiplomacyEntryDto.RawFlags)}",
-					min: 0,
-					max: ushort.MaxValue);
+					$"{nameof(PlayerDto.Diplomacy)}.{nameof(DiplomacyEntryDto.RawFlags)}"
+				);
 			}
 
 			return diplomacy;
@@ -236,12 +235,11 @@ namespace CivOne.Persistence.Model
 
 			for (var i = 0; i < output.Length && i < values.Count; i++)
 			{
-				output[i] = (ushort)_yamlReadValueSanitizer.ClampToInt32(
+				output[i] = _yamlReadValueSanitizer.ClampToUInt16(
 					values[i],
 					nameof(PlayerDtoMapper),
-					$"{nameof(PlayerDto.UnitsLost)}[{i}]",
-					min: 0,
-					max: ushort.MaxValue);
+					$"{nameof(PlayerDto.UnitsLost)}[{i}]"
+				);
 			}
 
 			return output;
@@ -257,12 +255,11 @@ namespace CivOne.Persistence.Model
 
 			for (var i = 0; i < output.Length && i < values.Count; i++)
 			{
-				output[i] = (ushort)_yamlReadValueSanitizer.ClampToInt32(
+				output[i] = _yamlReadValueSanitizer.ClampToUInt16(
 					values[i],
 					nameof(PlayerDtoMapper),
-					$"{nameof(PlayerDto.UnitsDestroyedBy)}[{i}]",
-					min: 0,
-					max: ushort.MaxValue);
+					$"{nameof(PlayerDto.UnitsDestroyedBy)}[{i}]"
+				);
 			}
 
 			return output;
