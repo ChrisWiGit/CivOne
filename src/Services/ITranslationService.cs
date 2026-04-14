@@ -14,7 +14,18 @@ namespace CivOne.Services
 
 	public interface ITranslationService
 	{
+		/// <summary>
+		/// Translates a key to a localized string.
+		/// The <paramref name="key"/> should be a human-readable English text that also serves as
+		/// a unique identifier (e.g. <c>"4000 BC"</c>, <c>"Load game from new format…"</c>).
+		/// If no translation is available the key itself should be returned unchanged.
+		/// </summary>
 		string Translate(string key);
+
+		/// <summary>
+		/// Translates a key and formats the result using <paramref name="args"/>.
+		/// See <see cref="Translate(string)"/> for key conventions.
+		/// </summary>
 		string TranslateFormatted(string key, params object[] args);
 	}
 }

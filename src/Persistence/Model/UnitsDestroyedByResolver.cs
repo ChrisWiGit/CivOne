@@ -12,6 +12,7 @@ namespace CivOne.Persistence.Model
 		IValueSanitizer yamlReadValueSanitizer
 	)
 	{
+		private const int MinimumPlayerSlots = 8;
 		/// <summary>
 		/// Resolves units destroyed by GUID mapping for all players and applies the resolved counts.
 		/// </summary>
@@ -86,15 +87,17 @@ namespace CivOne.Persistence.Model
 		/// </summary>
 		private static ushort[] InitializeResolvedArray(IPlayerRestorable ownerRestorable, int playerCount)
 		{
-			var resolved = new ushort[Math.Max(8, playerCount)];
-			if (ownerRestorable.UnitsDestroyedBy != null)
+			var resolved = new ushort[Math.Max(MinimumPlayerSlots, playerCount)];
+			if (ownerRestorable.UnitsDestroyedBy == null)
 			{
-				Array.Copy(
-					ownerRestorable.UnitsDestroyedBy,
-					resolved,
-					Math.Min(ownerRestorable.UnitsDestroyedBy.Length, resolved.Length)
-				);
+				return resolved;
 			}
+
+			Array.Copy(
+				ownerRestorable.UnitsDestroyedBy,
+				resolved,
+				Math.Min(ownerRestorable.UnitsDestroyedBy.Length, resolved.Length)
+			);
 
 			return resolved;
 		}
@@ -126,12 +129,10 @@ namespace CivOne.Persistence.Model
 				return;
 			}
 
-			var sanitizedCount = (ushort)yamlReadValueSanitizer.ClampToInt32(
+			var sanitizedCount = yamlReadValueSanitizer.ClampToUInt16(
 				destroyedCount,
 				nameof(UnitsDestroyedByResolver),
-				$"{nameof(PlayerDto.UnitsDestroyedByByPlayerGuid)}[{targetGuid}]",
-				min: 0,
-				max: ushort.MaxValue
+				$"{nameof(PlayerDto.UnitsDestroyedByByPlayerGuid)}[{targetGuid}]"
 			);
 
 			resolvedCounts[targetIndex] = sanitizedCount;

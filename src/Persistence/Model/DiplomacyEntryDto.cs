@@ -15,6 +15,9 @@ namespace CivOne.Persistence.Model
 		[Doc("Target player id this diplomacy entry refers to.", 0, 255)]
 		public PlayerId TargetPlayerId { get; set; }
 
+		[Doc("Target player GUID for future stable cross-player references.")]
+		public System.Guid TargetPlayerGuid { get; set; }
+
 		[Doc("Raw diplomacy flags (ushort bitmask), 1:1 with legacy save format.", 0, 65535)]
 		public ushort RawFlags { get; set; }
 

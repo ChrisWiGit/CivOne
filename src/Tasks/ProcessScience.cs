@@ -31,18 +31,23 @@ namespace CivOne.Tasks
 			civilopedia.Closed += CivilopediaClosed;
 			Common.AddScreen(civilopedia);
 		}
-		
+
+		private void TryRegisterFutureTech()
+		{
+			if (_player.Science >= _player.ScienceCost)
+			{
+				_player.Science -= _player.ScienceCost;
+				Game.RegisterFutureTech(_player);
+			}
+		}
+
 		public override void Run()
 		{
 			if (_player.CurrentResearch == null)
 			{
 				if (!_player.AvailableResearch.Any())
 				{
-					if (_player.Science >= _player.ScienceCost)
-					{
-						_player.Science -= _player.ScienceCost;
-						Game.RegisterFutureTech(_player);
-					}
+					TryRegisterFutureTech();
 
 					EndTask();
 					return;

@@ -142,10 +142,7 @@ namespace CivOne
 
 		internal void RegisterFutureTech(Player player)
 		{
-			if (player == null)
-			{
-				return;
-			}
+			ArgumentNullException.ThrowIfNull(player);
 
 			player.FutureTechCount++;
 			if (player == HumanPlayer)

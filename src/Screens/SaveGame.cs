@@ -11,6 +11,7 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Persistence;
+using CivOne.Persistence.Factories;
 using CivOne.Persistence.Model;
 using CivOne.UserInterface;
 using System;

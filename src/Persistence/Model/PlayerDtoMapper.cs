@@ -62,22 +62,22 @@ namespace CivOne.Persistence.Model
 			player.Gold = _yamlReadValueSanitizer.ClampToInt16(dto.Gold, nameof(PlayerDtoMapper), nameof(PlayerDto.Gold));
 			player.CurrentResearch = _advanceResolver.ResolveById(dto.CurrentResearch);
 			player.CityNamesSkipped = dto.CityNamesSkipped;
-			player.FutureTechCount = (ushort)_yamlReadValueSanitizer.ClampToInt32(dto.FutureTechCount, nameof(PlayerDtoMapper), nameof(PlayerDto.FutureTechCount), min: 0, max: ushort.MaxValue);
-			player.HumanContactTurn = (ushort)_yamlReadValueSanitizer.ClampToInt32(dto.HumanContactTurn, nameof(PlayerDtoMapper), nameof(PlayerDto.HumanContactTurn), min: 0, max: ushort.MaxValue);
+			player.FutureTechCount = _yamlReadValueSanitizer.ClampToUInt16(dto.FutureTechCount, nameof(PlayerDtoMapper), nameof(PlayerDto.FutureTechCount));
+			player.HumanContactTurn = _yamlReadValueSanitizer.ClampToUInt16(dto.HumanContactTurn, nameof(PlayerDtoMapper), nameof(PlayerDto.HumanContactTurn));
 			player.StartX = _yamlReadValueSanitizer.ClampToInt16(dto.StartX, nameof(PlayerDtoMapper), nameof(PlayerDto.StartX));
 			player.UnitsLost = BuildUnitsLostArray(dto.UnitsLost);
 			player.UnitsDestroyedBy = BuildUnitsDestroyedByArray(dto.UnitsDestroyedBy);
-			player.EpicRanking = (ushort)_yamlReadValueSanitizer.ClampToInt32(dto.EpicRanking, nameof(PlayerDtoMapper), nameof(PlayerDto.EpicRanking), min: 0, max: ushort.MaxValue);
-			player.MilitaryPower = (ushort)_yamlReadValueSanitizer.ClampToInt32(dto.MilitaryPower, nameof(PlayerDtoMapper), nameof(PlayerDto.MilitaryPower), min: 0, max: ushort.MaxValue);
-			player.CivilizationScore = (ushort)_yamlReadValueSanitizer.ClampToInt32(dto.CivilizationScore, nameof(PlayerDtoMapper), nameof(PlayerDto.CivilizationScore), min: 0, max: ushort.MaxValue);
+			player.EpicRanking = _yamlReadValueSanitizer.ClampToUInt16(dto.EpicRanking, nameof(PlayerDtoMapper), nameof(PlayerDto.EpicRanking));
+			player.MilitaryPower = _yamlReadValueSanitizer.ClampToUInt16(dto.MilitaryPower, nameof(PlayerDtoMapper), nameof(PlayerDto.MilitaryPower));
+			player.CivilizationScore = _yamlReadValueSanitizer.ClampToUInt16(dto.CivilizationScore, nameof(PlayerDtoMapper), nameof(PlayerDto.CivilizationScore));
 			player.Government = _governmentResolver.ResolveById(dto.Government);
 
 			// Spaceship state
 			if (dto.SpaceShip != null)
 			{
 				player.SpaceShipGrid = dto.SpaceShip.Grid?.ToArray() ?? new CivOne.Enums.SpaceShipComponentType[12, 12];
-				player.SpaceShipPopulation = (ushort)_yamlReadValueSanitizer.ClampToInt32(dto.SpaceShip.Population, nameof(PlayerDtoMapper), $"{nameof(PlayerDto.SpaceShip)}.{nameof(SpaceShipDto.Population)}", min: 0, max: ushort.MaxValue);
-				player.SpaceShipLaunchYear = (short)_yamlReadValueSanitizer.ClampToInt32(dto.SpaceShip.LaunchYear, nameof(PlayerDtoMapper), $"{nameof(PlayerDto.SpaceShip)}.{nameof(SpaceShipDto.LaunchYear)}", min: short.MinValue, max: short.MaxValue);
+				player.SpaceShipPopulation = _yamlReadValueSanitizer.ClampToUInt16(dto.SpaceShip.Population, nameof(PlayerDtoMapper), $"{nameof(PlayerDto.SpaceShip)}.{nameof(SpaceShipDto.Population)}");
+				player.SpaceShipLaunchYear = _yamlReadValueSanitizer.ClampToInt16(dto.SpaceShip.LaunchYear, nameof(PlayerDtoMapper), $"{nameof(PlayerDto.SpaceShip)}.{nameof(SpaceShipDto.LaunchYear)}");
 			}
 
 			// Keep rate invariant (luxuries + taxes + science == 10) by setting all three.

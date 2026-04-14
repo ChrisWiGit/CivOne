@@ -417,8 +417,8 @@ namespace CivOne
 				int xx = x + relX;
 				int yy = y + relY;
 				if (yy < 0 || yy >= Map.HEIGHT) continue;
-				while (xx < 0) xx += Map.WIDTH;
-				while (xx >= Map.WIDTH) xx -= Map.WIDTH;
+				while (xx < 0) { xx += Map.WIDTH; }
+				while (xx >= Map.WIDTH) { xx -= Map.WIDTH; }
 				if (sea && !Map[xx, yy].IsOcean && (Math.Abs(relX) > 1 || Math.Abs(relY) > 1))
 					continue;
 

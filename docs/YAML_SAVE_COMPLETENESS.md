@@ -1,267 +1,109 @@
-# YAML Persistierung – Vollständigkeitsanalyse
+# YAML Persistence – Completeness Analysis
 
-Vergleich des YAML-Speicherformats mit dem originalen binären Civ1-Savegame-Format (`SaveData`).
+Comparison of the YAML save format against the original binary Civ1 savegame format (`SaveData`).
 
-Stand: April 2026 (Branch `yaml-review`)
-
----
-
-## 🔴 Kritische Lücken – Spielzustand geht verloren
-
-### `CityDto` fehlt: `Food` und `Shields`
-
-| Feld | Binär (`CityData`) | YAML (`CityDto`) | Auswirkung |
-|------|--------------------|-----------------|------------|
-| `Food` | ✅ vorhanden | ❌ fehlt | Stadtwachstum-Timer auf 0 zurückgesetzt |
-| `Shields` | ✅ vorhanden | ❌ fehlt | Produktionsfortschritt geht verloren |
-
-`Food` und `Shields` werden zwar in `GameStateDtoMapper.CreateCity()` bei der City-Instanzierung
-gesetzt (`Food = sourceCity.Food`), aber da `CityDto` keine entsprechenden Felder hat, liefert
-`RestorableCity.Food/Shields` immer `0`. Auch `CityDtoMapper.ToDto()` speichert sie nicht.
-
-**Behebung:** `Food` und `Shields` in `CityDto` hinzufügen und in beiden Mapper-Richtungen
-(`ToDto` / `FromDto`) übertragen.
+Last updated: April 2026 (Branch `yaml-review`)
 
 ---
 
-## 🟡 Kleiner Verlust – UI betroffen, kein Gameplay-Bug
+## ✅ Previously Reported Gaps – Now Implemented
 
-### `PlayerDto` fehlt: `StartX`
+The following items were originally reported as missing but have since been implemented:
 
-| Feld | Binär (`SaveData.StartingPositionX`) | YAML (`PlayerDto`) | Auswirkung |
-|------|--------------------------------------|--------------------|------------|
-| `StartX` | ✅ vorhanden | ❌ fehlt | Karten-Scroll-Position nach Laden falsch |
-
-`Player.StartX` wird nur in `WorldMap.cs` für das initiale Karten-Scrolling genutzt.
-Nach dem Laden aus YAML scrollt die Weltkarte ggf. an die falsche Ausgangsposition.
-
-**Behebung:** `StartX` (als `short`) in `PlayerDto` ergänzen und in `PlayerDtoMapper`
-beidseitig mappen.
-
----
-
-## 🔵 Im Binary vorhanden, aber im Spiel **generell nicht implementiert**
-
-Diese Felder existieren im Binärformat (`SaveData`), werden aber beim Laden **nicht**
-ausgelesen und auch nicht vom Spiel aktiv genutzt. Es handelt sich also nicht um ein
-YAML-spezifisches Problem, sondern um einen generellen Feature-Gap.
-
-| Feld in `SaveData` | Zustand im Spiel-Code |
-|--------------------|-----------------------|
-| `Diplomacy[8*8]` | Nicht ausgelesen; nur `Embassies` pro Spieler vorhanden |
-| `HumanContactTurns[8]` | Nicht implementiert |
-| `PeaceTurns` | Nicht implementiert |
-| `SpaceShips[1462]` + `SpaceShipPopulation` + `SpaceShipLaunchYear` | TODO-Kommentar in `City.cs`; Raumschiff-Bau ohne Persistenz |
-| `PlayerFutureTech` | Nicht implementiert |
-| `ScoreChart[8*150]` / `PeaceChart[8*150]` | Nicht ausgelesen |
-| `EpicRanking[8]` | Nicht ausgelesen |
-| `UnitsDestroyedBy[8*16]` / `UnitsLost[8*28]` | Nicht ausgelesen |
-| `ContinentStrategy`, `ContinentDefense`, `ContinentAttack`, `ContinentCities` | KI-Daten, nicht ausgelesen |
-| `StrategicLocation*` (Status/Policy/X/Y) | Nicht ausgelesen |
-| `LandPathFinding[260]` | Nicht ausgelesen |
-| `DebugSwitches` | Nicht ausgelesen |
+| Item | Status |
+|------|--------|
+| `CityDto.Food` and `CityDto.Shields` | ✅ Implemented in `CityDto` and `CityDtoMapper` |
+| `PlayerDto.StartX` | ✅ Implemented in `PlayerDto` and `PlayerDtoMapper` |
+| `PlayerDto.HumanContactTurn` | ✅ Implemented |
+| `GameStateDto.PeaceTurns` | ✅ Implemented |
+| `PlayerDto.FutureTechCount` | ✅ Implemented |
+| `PlayerDto` statistics (EpicRanking, MilitaryPower, CivilizationScore, UnitsLost, UnitsDestroyedBy) | ✅ Implemented |
+| `PlayerDto.Diplomacy` (DiplomacyEntryDto with RawFlags) | ✅ Implemented |
+| `SpaceShipDto` per player | ✅ Implemented |
 
 ---
 
-## 🟢 YAML hat mehr als das Binary
+## 🔵 Present in Binary but **not implemented in game logic**
 
-Das YAML-Format speichert einige Daten, die im Binärformat **nicht direkt** vorhanden
-sind oder daraus abgeleitet werden müssen:
+These fields exist in the binary format (`SaveData`) but are not read during loading and are not
+actively used by the game logic. This is a general feature gap, not a YAML-specific problem.
 
-| Feld | Binary | YAML | Anmerkung |
-|------|--------|------|-----------|
-| `Player.Anarchy` | ❌ nicht direkt | ✅ `PlayerDto.Anarchy` | Im Binary aus Government-Zustand abgeleitet |
-| `Player.LuxuriesRate` | ❌ abgeleitet | ✅ `PlayerDto.LuxuriesRate` | Binary: `10 - TaxRate - ScienceRate` |
-| `Player.CityNamesSkipped` | ❌ fehlt | ✅ `PlayerDto.CityNamesSkipped` | Zähler für nächsten Stadtnamen |
-| `CityDto.VisibleSizes[]` | 1 Byte (nur Human) | ✅ Array pro Spieler | Feinere Kontrolle pro Spieler |
-| `CityDto.WasInDisorder` | ❌ fehlt | ✅ vorhanden | Spielrunden-Zustandsflag |
-| `CityDto.Specialists` | ❌ aus ResourceTiles | ✅ explizit | Direkter Zustand statt Bitmask |
-| `GlobalWarmingDto` | 3 Felder | ✅ strukturiert | Klarer als Binary-Rohdaten |
+| Field in `SaveData` | State in game code |
+|---------------------|--------------------|
+| `ContinentStrategy`, `ContinentDefense`, `ContinentAttack`, `ContinentCities` | AI data, not read |
+| `StrategicLocation*` (Status/Policy/X/Y) | Not read |
+| `LandPathFinding[260]` | Not read |
+| `DebugSwitches` | Not read |
+| `ScoreChart[8*150]` / `PeaceChart[8*150]` | Not read |
 
 ---
 
-## ✅ Vollständig implementiert (Binary ↔ YAML)
+## 🟢 YAML Stores More Than the Binary
 
-| Bereich | Status |
-|---------|--------|
+The YAML format stores some data that is **not directly** present in the binary format or must
+be derived from it:
+
+| Field | Binary | YAML | Note |
+|-------|--------|------|------|
+| `Player.Anarchy` | ❌ not direct | ✅ `PlayerDto.Anarchy` | In binary derived from Government state |
+| `Player.LuxuriesRate` | ❌ derived | ✅ `PlayerDto.LuxuriesRate` | Binary: `10 - TaxRate - ScienceRate` |
+| `Player.CityNamesSkipped` | ❌ missing | ✅ `PlayerDto.CityNamesSkipped` | Counter for next city name |
+| `CityDto.VisibleSizes[]` | 1 byte (human only) | ✅ array per player | Finer per-player control |
+| `CityDto.WasInDisorder` | ❌ missing | ✅ present | Turn state flag |
+| `CityDto.Specialists` | ❌ from ResourceTiles | ✅ explicit | Direct state instead of bitmask |
+| `GlobalWarmingDto` | 3 fields | ✅ structured | Clearer than binary raw data |
+| `PlayerDto.PlayerGuid` | ❌ missing | ✅ stable player identity | GUID for cross-reference stability |
+| `PlayerDto.UnitsDestroyedByByPlayerGuid` | ❌ missing | ✅ GUID-based | More robust than index-based |
+
+---
+
+## ✅ Fully Implemented (Binary ↔ YAML)
+
+| Area | Status |
+|------|--------|
 | `GameTurn`, `HumanPlayer`, `CurrentPlayer` | ✅ |
 | `Difficulty`, `OpponentCount` | ✅ |
-| `RandomSeed` / `TerrainSeed` (getrennt) | ✅ |
+| `RandomSeed` / `TerrainSeed` (separate) | ✅ |
 | `AnthologyTurn` | ✅ |
-| Spieler: Gold, Science, TaxRate, ScienceRate, Government | ✅ |
-| Spieler: Advances, Embassies, CurrentResearch | ✅ |
-| Spieler: LeaderName, TribeName, TribeNamePlural | ✅ |
-| Spieler: Palace | ✅ |
-| Spieler: Explored / Visible (Tile-Sichtbarkeit) | ✅ |
-| Städte: Position, Besitzer, Name, Größe | ✅ |
-| Städte: Produktion, Gebäude, Wunder | ✅ |
-| Städte: ResourceTiles, Status-Flags | ✅ |
-| Städte: TradingCities, ContinentId | ✅ |
-| Einheiten: Typ, Position, Goto, Status, Moves | ✅ |
-| Einheiten: Veteran, Sentry, Fortify, Order | ✅ |
-| Einheiten: HomeCity (via GUID) | ✅ |
-| Karte: Terrain-Tiles, MapSeed | ✅ |
-| `AdvanceOrigin` (Erstentdecker je Advance) | ✅ |
-| `GameOptions` (8 Flags) | ✅ |
-| `CityNames` (256 Einträge) | ✅ |
-| `Wonders` (22 Einträge, Besitzer-City) | ✅ (in Binary/GameState, in YAML über City.Wonders) |
-| `ReplayData` | ✅ (teilweise – nur CivilizationDestroyed vollständig) |
+| Players: Gold, Science, TaxRate, ScienceRate, Government | ✅ |
+| Players: Advances, Embassies, CurrentResearch | ✅ |
+| Players: LeaderName, TribeName, TribeNamePlural | ✅ |
+| Players: Palace | ✅ |
+| Players: Explored / Visible (tile visibility) | ✅ |
+| Players: Food, StartX, HumanContactTurn, FutureTechCount | ✅ |
+| Players: EpicRanking, MilitaryPower, CivilizationScore | ✅ |
+| Players: UnitsLost, UnitsDestroyedBy (index + GUID) | ✅ |
+| Players: Diplomacy (RawFlags, decoded placeholder) | ✅ |
+| Players: SpaceShip (Grid, Population, LaunchYear) | ✅ |
+| Cities: Position, owner, name, size | ✅ |
+| Cities: Production, buildings, wonders | ✅ |
+| Cities: ResourceTiles, status flags | ✅ |
+| Cities: TradingCities, ContinentId | ✅ |
+| Cities: Food, Shields | ✅ |
+| Units: Type, position, goto, status, moves | ✅ |
+| Units: Veteran, Sentry, Fortify, Order | ✅ |
+| Units: HomeCity (via GUID) | ✅ |
+| Map: Terrain tiles, MapSeed | ✅ |
+| `AdvanceOrigin` (first discoverer per advance) | ✅ |
+| `GameOptions` (8 flags) | ✅ |
+| `CityNames` (256 entries) | ✅ |
+| `Wonders` (22 entries, owner city) | ✅ |
+| `ReplayData` | ✅ (partial – only CivilizationDestroyed fully implemented) |
 | `GlobalWarming` (Count, Pollution, Indicator) | ✅ |
+| `PeaceTurns` | ✅ |
 
 ---
 
-## Umsetzungsplan: YAML-Vollständigkeit
+## 📋 Remaining Optional Items (Low Priority)
 
-Ziel: Alle Felder des binären Savegames in YAML speichern und laden,
-auch wenn die Spiellogik dafür noch nicht implementiert ist.
-Funktionen können später auf die gespeicherten Daten aufbauen.
+These items are either AI-internal data (can be reconstructed) or historical charts not yet
+needed for gameplay:
 
----
+| Item | Description | Priority |
+|------|-------------|----------|
+| `ScoreChart[8*150]` / `PeaceChart[8*150]` | Historical score/peace curves per player (end screen) | Low |
+| `ContinentStrategy/Defense/Attack/Cities` | AI continent strategy per player (reconstructable) | Optional |
+| `StrategicLocation*` (X/Y/Status/Policy) | AI strategic points per player (reconstructable) | Optional |
+| `LandPathFinding[260]` | Internal pathfinding cache (reconstructable) | Optional |
+| `DebugSwitches` | Development-only | Optional |
 
-### Stufe 1 – Kritisch (Datenverlust beim Speichern)
-
-#### 1.1 `CityDto`: `Food` und `Shields` ergänzen
-
-**Dateien:** `Model/CityDto.cs`, `Model/CityDtoMapper.cs`
-
-- `CityDto`: zwei neue Properties `int Food` und `int Shields` hinzufügen
-- `CityDtoMapper.ToDto()`: `Food = domain.Food, Shields = domain.Shields` eintragen
-- `CityDtoMapper.FromDto()`: `RestorableCity` hat bereits `Food`/`Shields` –
-  nur noch aus `dto.Food` / `dto.Shields` befüllen
-
----
-
-### Stufe 2 – Einfach (einzelne Properties, ein paar Zeilen)
-
-#### 2.1 `PlayerDto`: `StartX` ergänzen
-
-**Dateien:** `Model/PlayerDto.cs`, `Model/PlayerDtoMapper.cs`
-
-- `PlayerDto`: `short StartX { get; set; }` hinzufügen
-- `PlayerDtoMapper.ToDto()`: `StartX = player.StartX`
-- `PlayerDtoMapper.FromDto()`: `player.StartX = dto.StartX`  
-  *(benötigt `StartX` in `IPlayerRestorable`)*
-
-#### 2.2 `PlayerDto`: `HumanContactTurn` ergänzen
-
-**Dateien:** `Model/PlayerDto.cs`, `Model/PlayerDtoMapper.cs`
-
-- Entspricht `SaveData.HumanContactTurns[p]` (Countdown bis KI den Spieler kontaktiert)
-- `PlayerDto`: `ushort HumanContactTurn { get; set; }` hinzufügen
-- Mapper: Wert speichern/laden; `Player` braucht ein gleichnamiges internes Feld
-- Spiellogik kann später implementiert werden
-
-#### 2.3 `GameStateDto`: `PeaceTurns` ergänzen
-
-**Dateien:** `Model/GameStateDto.cs`, `Model/GameStateDtoMapper.cs`, `src/Game.cs`
-
-- Entspricht `SaveData.PeaceTurns`
-- `GameStateDto`: `ushort PeaceTurns { get; set; }` hinzufügen
-- `GameState`: gleiches Feld ergänzen
-- `Game.GameStateSource.cs`: aus `_peaceTurns` (oder neuem Feld) befüllen
-done 
-
-#### 2.4 `PlayerDto`: `FutureTechCount` ergänzen
-
-**Dateien:** `Model/PlayerDto.cs`, `Model/PlayerDtoMapper.cs`, `Model/GameStateDto.cs`, `Model/GameStateDtoMapper.cs`
-
-- Neue Hauptquelle in YAML: `PlayerDto.FutureTechCount`
-- Legacy-Kompatibilität: `GameStateDto.PlayerFutureTech` bleibt als Alias für den Human-Player erhalten
-- Beim Einlesen alter YAML-Dateien kann `PlayerFutureTech` in `Players[HumanPlayer].FutureTechCount` übernommen werden
-- Damit ist die Struktur schon heute für mehrere Human-Player vorbereitet
-
-done
----
-
-### Stufe 3 – Mittel (neue Felder mit Struktur, kein neues DTO nötig)
-
-#### 3.1 `PlayerDto`: Diplomatischer Status (`Diplomacy`)
-
-**Dateien:** `Model/PlayerDto.cs`, `Model/PlayerDtoMapper.cs`, `src/Player.cs`
-
-- Entspricht `SaveData.Diplomacy[p * 8 + target]` – 8 Werte pro Spieler
-- `PlayerDto`: Liste mit strukturierten Einträgen statt Dictionary, z. B.:
-
-  - `List<DiplomacyEntryDto> Diplomacy`
-  - `DiplomacyEntryDto`
-    - `ushort TargetPlayerId`
-    - `ushort RawFlags` (1:1 SaveData-Wert)
-    - `DiplomacyDecodedDto Decoded` (optional; vorerst leer)
-  - `DiplomacyDecodedDto`
-    - **jetzt nur Platzhalter/Kommentar**, später für dekodierte Bit-Flags
-    - geplanter Inhalt (später): `IsAtWar`, `HasPeaceTreaty`, `HasCeaseFire`, `HasContact`, etc.
-
-  Vorteil: `RawFlags` bleibt verlustfrei kompatibel, `Decoded` kann später ohne Breaking Changes ergänzt werden.
-- `Player`: internes `ushort[] _diplomacy = new ushort[8]` ergänzen
-- Mapper: speichern/laden; Logik (Krieg, Frieden, Vendetta) folgt später
-
-#### 3.2 `PlayerDto`: Statistik-Felder
-
-**Dateien:** `Model/PlayerDto.cs`, `src/Player.cs`
-
-Folgende Felder als einfache Arrays hinzufügen (je 28 Einträge für Einheitentypen):
-
-| Property in `PlayerDto` | Entspricht | Typ |
-|--------------------------|------------|-----|
-| `UnitsLost` | `SaveData.UnitsLost[p*28..+28]` | `List<long>` (Mapper clamp → `ushort[28]`) |
-| `UnitsDestroyedBy` | `SaveData.UnitsDestroyedBy[p*16..+16]` | `List<long>` (Mapper clamp → `byte[16]`) |
-| `EpicRanking` | `SaveData.EpicRanking[p]` | `long` (Mapper clamp → `ushort`) |
-| `MilitaryPower` | `SaveData.MilitaryPower[p]` | `long` (Mapper clamp → `ushort`) |
-| `CivilizationScore` | `SaveData.CivilizationScore[p]` | `long` (Mapper clamp → `ushort`) |
-
-DTO-seitig bewusst `long`/`List<long>` verwenden; Validierung und Bereichsgrenzen passieren zentral im Mapper per Clamp.
-
-Spiellogik kann die Werte später befüllen und auswerten.
-
----
-
-### Stufe 4 – Aufwändig (benötigt neue DTOs)
-
-#### 4.1 SpaceShip-Daten pro Spieler
-
-**Dateien:** `Model/SpaceShipDto.cs` (neu), `Model/PlayerDto.cs`, `Model/PlayerDtoMapper.cs`
-
-- Entspricht `SaveData.SpaceShips[1462]` + `SpaceShipPopulation[8]` + `SpaceShipLaunchYear[8]`
-- Neue Klasse `SpaceShipDto` mit strukturierten Feldern (Komponenten-Slots, Population, Startjahr)
-- `PlayerDto`: `SpaceShipDto SpaceShip { get; set; }` hinzufügen
-- Vorerst nur speichern/laden; Spiellogik (Apollo-Programm, Sieg) folgt separat
-
-#### 4.2 Score- und Peace-Charts
-
-**Dateien:** `Model/PlayerDto.cs` oder `Model/GameStateDto.cs`
-
-- Entspricht `SaveData.ScoreChart[p*150..+150]` und `SaveData.PeaceChart[p*150..+150]`
-- 150 Einträge pro Spieler (historische Punkteentwicklung über 150 Runden)
-- `PlayerDto`: `byte[] ScoreHistory { get; set; }` und `byte[] PeaceHistory { get; set; }`
-- Wird für den Endbildschirm und die Highscore-Kurven benötigt
-
----
-
-### Stufe 5 – Optional (KI-Interna, niedriger Mehrwert)
-
-Diese Daten werden ausschließlich von der KI intern berechnet und könnten
-bei Bedarf rekonstruiert werden. Persistieren ist möglich, aber nachrangig.
-
-| Feld | Beschreibung |
-|------|--------------|
-| `ContinentStrategy/Defense/Attack/Cities[p*16]` | KI-Kontinentalstrategie pro Spieler |
-| `StrategicLocation*` (X/Y/Status/Policy) | Strategische Punkte pro Spieler |
-| `LandPathFinding[260]` | Interner Pfadfindungs-Cache (rekonstruierbar) |
-| `DebugSwitches` | Nur für Entwicklungszwecke relevant |
-
----
-
-### Reihenfolge der Umsetzung
-
-```
-1.1  CityDto Food + Shields          ← sofort, Datenverlust-Fix
-2.1  PlayerDto StartX                ← schnell, 5 Minuten
-2.2  PlayerDto HumanContactTurn      ← schnell
-2.3  GameStateDto PeaceTurns         ← schnell
-2.4  GameStateDto PlayerFutureTech   ← schnell
-3.1  PlayerDto Diplomacy             ← mittel, Player braucht neues Feld
-3.2  PlayerDto Statistik-Felder      ← mittel, aber nur Arrays
-4.1  SpaceShipDto                    ← aufwändig, eigenes DTO
-4.2  Score/Peace-Charts              ← aufwändig, viele Daten
-5.*  KI-Interna                      ← optional, bei Bedarf
-```

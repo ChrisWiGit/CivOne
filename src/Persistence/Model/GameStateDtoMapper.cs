@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using CivOne.Persistence.Factories;
 using CivOne.Persistence.Stubs;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -18,7 +19,7 @@ namespace CivOne.Persistence.Model
         UnitsDestroyedByResolver unitsDestroyedByResolver = null
     ) : DtoMapper<GameStateDto, GameState>
     {
-        private readonly ICityNameCatalog _cityNameCatalog = cityNameCatalog ?? new CommonCityNameCatalog();
+        private readonly ICityNameCatalog _cityNameCatalog = cityNameCatalog ?? new RuntimeCityNameCatalog();
         private readonly UnitsDestroyedByResolver _unitsDestroyedByResolver = unitsDestroyedByResolver ?? new UnitsDestroyedByResolver(yamlReadValueSanitizer);
         public GameState FromDto(GameStateDto dto)
         {

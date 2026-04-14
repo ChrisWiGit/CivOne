@@ -30,7 +30,12 @@ namespace CivOne.Persistence.Yaml
 
         public void WriteYaml(IEmitter emitter, object value, Type type, ObjectSerializer serializer)
         {
-            var loc = (MapLocation)value;
+            if (value is not MapLocation loc)
+            {
+                throw new InvalidOperationException(
+                    $"WriteYaml expected a {nameof(MapLocation)} but received {value?.GetType().FullName ?? "null"}.");
+            }
+
             serializer(new MapLocationData { X = loc.X, Y = loc.Y }, typeof(MapLocationData));
         }
     }

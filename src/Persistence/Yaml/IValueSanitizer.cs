@@ -2,11 +2,38 @@ using System;
 
 namespace CivOne.Persistence.Model
 {
+	/// <summary>
+	/// Sanitizes numeric values read from YAML during deserialization,
+	/// clamping them to the valid range of the target type and logging when clamping occurs.
+	/// </summary>
 	public interface IValueSanitizer
 	{
+		/// <summary>
+		/// Clamps <paramref name="value"/> to [<paramref name="min"/>, <paramref name="max"/>]
+		/// and returns the result as <c>byte</c> (System.Byte, 0–255).
+		/// Logs a warning if clamping was applied.
+		/// </summary>
 		byte ClampToByte(long value, string mapperName, string fieldName, byte min = byte.MinValue, byte max = byte.MaxValue);
+
+		/// <summary>
+		/// Clamps <paramref name="value"/> to [<paramref name="min"/>, <paramref name="max"/>]
+		/// and returns the result as <c>ushort</c> (System.UInt16, 0–65535).
+		/// Logs a warning if clamping was applied.
+		/// </summary>
 		ushort ClampToUInt16(long value, string mapperName, string fieldName, ushort min = ushort.MinValue, ushort max = ushort.MaxValue);
+
+		/// <summary>
+		/// Clamps <paramref name="value"/> to [<paramref name="min"/>, <paramref name="max"/>]
+		/// and returns the result as <c>short</c> (System.Int16, −32768–32767).
+		/// Logs a warning if clamping was applied.
+		/// </summary>
 		short ClampToInt16(long value, string mapperName, string fieldName, short min = short.MinValue, short max = short.MaxValue);
+
+		/// <summary>
+		/// Clamps <paramref name="value"/> to [<paramref name="min"/>, <paramref name="max"/>]
+		/// and returns the result as <c>int</c> (System.Int32, −2147483648–2147483647).
+		/// Logs a warning if clamping was applied.
+		/// </summary>
 		int ClampToInt32(long value, string mapperName, string fieldName, int min = int.MinValue, int max = int.MaxValue);
 	}
 

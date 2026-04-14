@@ -23,9 +23,9 @@ namespace CivOne.Persistence.Yaml
 			var map = Map.Instance;
 			var unitMapper = new UnitDtoMapper(new RuntimeUnitFactory(), sanitizer);
 			var mapMapper = new MapDtoMapper(
-			new RuntimeMapFactory(map),
-			new RuntimeTileDtoMapper(map, new RuntimeTerrainFactory()),
-			0);
+				new RuntimeMapFactory(map),
+				new RuntimeTileDtoMapper(map, new RuntimeTerrainFactory()),
+				0);
 			var globalWarmingMapper = new GlobalWarmingDtoMapper(sanitizer);
 			var cityMapper = new CityDtoMapper(new ProductionDtoMapper(new GameReflect()), new CityDefinitionResolver(), sanitizer);
 			// NullPlayerGame: no game instance exists yet during load; PlayerDtoMapper
@@ -33,21 +33,30 @@ namespace CivOne.Persistence.Yaml
 			// NoopPlayerOwnerResolver: owner resolution is used exclusively in ToDto to
 			// filter units by player; always returning false is safe and emits all units.
 			var playerMapper = new PlayerDtoMapper(
-			new NullPlayerGame(),
-			new NoopPlayerOwnerResolver(),
-			new RuntimePlayerFactory(),
-			new CivilizationDtoMapper(Common.Civilizations),
-			new PalaceDtoMapper(sanitizer),
-			cityMapper,
-			unitMapper,
-			new RuntimeAdvanceResolver(),
-			new RuntimeGovernmentResolver(),
-			sanitizer);
+				new NullPlayerGame(),
+				new NoopPlayerOwnerResolver(),
+				new RuntimePlayerFactory(),
+				// Common.Civilizations: direct access is acceptable here; a CommonFactory
+				// abstraction may be introduced in the future if more Common calls accumulate.
+				new CivilizationDtoMapper(Common.Civilizations),
+				new PalaceDtoMapper(sanitizer),
+				cityMapper,
+				unitMapper,
+				new RuntimeAdvanceResolver(),
+				new RuntimeGovernmentResolver(),
+				sanitizer);
 
 			InitializeDocLists();
 			return new YamlMapperDependencies(playerMapper, unitMapper, mapMapper, globalWarmingMapper, sanitizer);
 		}
 
+		/// <summary>
+		/// Populates static documentation/hint lists on DTO types used by YAML editors and validators.
+		/// These lists reference <see cref="Common"/> and <see cref="Reflect"/> directly because no
+		/// game instance is available yet during load. If the number of such calls grows, consider
+		/// extracting them to a <c>Persistence.Factories.CommonFactory</c> or similar abstraction so
+		/// that <c>Common</c> and <c>Reflect</c> are not imported directly into the mapper layer.
+		/// </summary>
 		private static void InitializeDocLists()
 		{
 			CivilizationDto.AllLeaderClassNames = [
@@ -75,12 +84,14 @@ namespace CivOne.Persistence.Yaml
 					.Select(g => $"{g.Id}({g.Name})")];
 		}
 
+		// RuntimeAdvanceResolver wraps Common.Advances to isolate the Common static dependency.
+		// If a Persistence.Factories.CommonFactory is introduced in the future, this can delegate to it.
 		private sealed class RuntimeAdvanceResolver : IAdvanceResolver
 		{
 			public IAdvance ResolveById(uint id)
 			{
 				return Common.Advances.FirstOrDefault(a => a.Id == id)
-				?? throw new InvalidOperationException($"Advance with ID {id} was not found.");
+					?? throw new InvalidOperationException($"Advance with ID {id} was not found.");
 			}
 
 			public IEnumerable<byte> ResolveAllIds()
@@ -91,12 +102,14 @@ namespace CivOne.Persistence.Yaml
 			}
 		}
 
+		// RuntimeGovernmentResolver wraps Reflect.GetGovernments() to isolate the Reflect static dependency.
+		// If a Persistence.Factories.ReflectFactory is introduced in the future, this can delegate to it.
 		private sealed class RuntimeGovernmentResolver : IGovernmentResolver
 		{
 			public IGovernment ResolveById(byte id)
 			{
 				return Reflect.GetGovernments().FirstOrDefault(g => g.Id == id)
-				?? throw new InvalidOperationException($"Government with ID {id} was not found.");
+					?? throw new InvalidOperationException($"Government with ID {id} was not found.");
 			}
 		}
 

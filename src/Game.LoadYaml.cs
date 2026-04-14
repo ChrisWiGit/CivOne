@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Persistence;
+using CivOne.Persistence.Factories;
 using CivOne.Persistence.Model;
 using CivOne.Persistence.Yaml;
 using CivOne.Services.GlobalWarming;
@@ -20,6 +21,9 @@ using CivOne.Units;
 
 namespace CivOne
 {
+	// This partial file contains the YAML load pipeline for Game.
+	// _valueSanitizer is declared here because it is only needed during
+	// YAML hydration (Game(GameState) constructor and its helpers).
 	public partial class Game
 	{
 		private readonly IValueSanitizer _valueSanitizer;
@@ -100,7 +104,7 @@ namespace CivOne
 
 		private void InitializePlayerState(GameState state)
 		{
-			GameTurn = (ushort)Math.Clamp((int)state.GameTurn, 0, ushort.MaxValue);
+			GameTurn = _valueSanitizer.ClampToUInt16(state.GameTurn, nameof(Game), nameof(GameTurn));
 
 			HumanPlayer = state.HumanPlayer as Player
 				?? throw new InvalidOperationException("YAML load requires HumanPlayer to be a Player instance.");
@@ -119,13 +123,19 @@ namespace CivOne
 			_playerFutureTech = HumanPlayer?.FutureTechCount ?? state.PlayerFutureTech;
 
 			if (state.AdvanceOrigin != null)
+			{
 				foreach (var kvp in state.AdvanceOrigin)
+				{
 					_advanceOrigin[kvp.Key] = kvp.Value;
+				}
+			}
 
 			if (state.ReplayData?.Count > 0)
+			{
 				_replayData.AddRange(state.ReplayData);
+			}
 
-			Common.SetRandomSeed((ushort)Math.Clamp(state.RandomSeed, ushort.MinValue, ushort.MaxValue));
+			Common.SetRandomSeed(_valueSanitizer.ClampToUInt16(state.RandomSeed, nameof(Game), nameof(state.RandomSeed)));
 		}
 
 		private void ApplyGameOptions(IEnumerable<GameOptionEnum> options)
