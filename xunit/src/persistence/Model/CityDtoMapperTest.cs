@@ -6,6 +6,7 @@ namespace CivOne.Persistence.Model
 	using CivOne;
 	using CivOne.Buildings;
 	using CivOne.Enums;
+	using CivOne.Persistence.Resolver;
 	using CivOne.Persistence.Yaml;
 	using CivOne.Tiles;
 	using CivOne.UnitTests;
@@ -27,7 +28,7 @@ namespace CivOne.Persistence.Model
 			_testee = new CityDtoMapper(
 				new ProductionDtoMapper(new TestReflect([production])),
 				new TestCityDefinitionResolver(),
-				new YamlReadValueSanitizer(new NoOpLogger()));
+				new ValueSanitizer(new NoOpLogger()));
 			List<ITile> tiles = new();
 
 			for (int x = 0; x < 5; x++)
@@ -50,6 +51,8 @@ namespace CivOne.Persistence.Model
 				Owner = 1,
 				Name = "Rome",
 				Size = 7,
+				Food = 42,
+				Shields = 17,
 				VisibleSizes = [7, 5],
 				CurrentProduction = productionDto,
 				ResourceTiles = new Bool2dMap(5, 5),
@@ -221,6 +224,8 @@ namespace CivOne.Persistence.Model
 				[nameof(CityDto.Owner)] = () => Assert.Equal(expected.Owner, actual.Owner),
 				[nameof(CityDto.Name)] = () => Assert.Equal(expected.Name, actual.Name),
 				[nameof(CityDto.Size)] = () => Assert.Equal(expected.Size, actual.Size),
+				[nameof(CityDto.Food)] = () => Assert.Equal(expected.Food, actual.Food),
+				[nameof(CityDto.Shields)] = () => Assert.Equal(expected.Shields, actual.Shields),
 				[nameof(CityDto.VisibleSizes)] = () => Assert.Equal(expected.VisibleSizes, actual.VisibleSizes),
 				[nameof(CityDto.CurrentProduction)] = () =>
 				{

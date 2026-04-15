@@ -16,6 +16,7 @@ using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.Governments;
 using CivOne.Graphics.Sprites;
+using CivOne.Persistence.Game;
 using CivOne.Persistence.Model;
 using CivOne.Tasks;
 using CivOne.Tiles;
@@ -31,22 +32,35 @@ namespace CivOne
 		// Dependency injection via IPlayerGame; set by Game on load/new game.
 		internal static new IPlayerGame Game = null;
 		private readonly ICivilization _civilization;
-		private readonly string _tribeName, _tribeNamePlural;
+		private Guid _playerGuid = Guid.NewGuid();
+		private string _tribeName, _tribeNamePlural;
 
 		private readonly bool[,] _explored = new bool[Map.WIDTH, Map.HEIGHT];
 		private readonly bool[,] _visible = new bool[Map.WIDTH, Map.HEIGHT];
 		private readonly List<byte> _advances = new List<byte>();
 		private readonly List<byte> _embassies = new List<byte>();
+		private readonly ushort[] _diplomacy = new ushort[8];
+		private readonly ushort[] _unitsLost = new ushort[28];
+		private readonly ushort[] _unitsDestroyedBy = new ushort[8];
 		
 		private short _anarchy = 0;
+		private ushort _epicRanking;
+		private ushort _militaryPower;
+		private ushort _civilizationScore;
 		private short _gold;
 		private IAdvance _currentResearch = null;
 
 		public event EventHandler Destroyed;
 
 		internal int CityNamesSkipped = 0;
+		internal ushort FutureTechCount { get; set; }
+		internal ushort HumanContactTurn { get; set; }
 
 		internal short StartX { get; set; }
+
+		internal SpaceShipComponentType[,] SpaceShipGrid { get; set; } = new SpaceShipComponentType[12, 12];
+		internal ushort SpaceShipPopulation { get; set; }
+		internal short SpaceShipLaunchYear { get; set; }
 		
 		public bool AnarchyDespotism => Game.Started && (Government is Anarchy || Government is Despotism);
 
@@ -55,18 +69,20 @@ namespace CivOne
 		public bool RepublicDemocratic => Game.Started && (Government is Republic || Government is Gov.Democracy);
 
 		public ICivilization Civilization => _civilization;
+		public Guid PlayerGuid => _playerGuid;
 		
 		public string LeaderName => _civilization.Leader.Name;
-		public string TribeName => _tribeName;
-		public string TribeNamePlural => _tribeNamePlural;
+		public string TribeName => _tribeName ?? _civilization?.Name;
+		public string TribeNamePlural => _tribeNamePlural ?? _civilization?.NamePlural;
 
 		public byte Handicap { get; internal set; }
 
-		public readonly PalaceData Palace = new PalaceData();
+		private PalaceData _palace = new PalaceData();
+		public PalaceData Palace => _palace;
 
 		internal AI AI => !IsHuman ? AI.Instance(this) : null;
 		
-		private IGovernment _government;
+		private IGovernment _government = new Despotism();
 		public IGovernment Government
 		{
 			get => _government;
@@ -347,6 +363,13 @@ namespace CivOne
 
 		public void Explore(int x, int y, int range = 1, bool sea = false)
 		{
+			ExploreVisibleTiles(x, y, range, sea);
+			UpdateHumanContactTurnIfHumanAssetsSeen(x, y, range, sea);
+			UpdateVisibleCitySizes();
+		}
+
+		private void ExploreVisibleTiles(int x, int y, int range, bool sea)
+		{
 			_explored[x, y] = true;
 			for (int relX = -range; relX <= range; relX++)
 			for (int relY = -range; relY <= range; relY++)
@@ -359,7 +382,73 @@ namespace CivOne
 				if (sea && !Map[xx, yy].IsOcean && (Math.Abs(relX) > 1 || Math.Abs(relY) > 1))
 					continue;
 				_visible[xx, yy] = true;
-			} 
+			}
+		}
+
+		private void UpdateHumanContactTurnIfHumanAssetsSeen(int x, int y, int range, bool sea)
+		{
+			if (!ShouldTrackHumanContact(out var humanPlayerId))
+			{
+				return;
+			}
+
+			if (CanSeeHumanAssetsInExploreArea(x, y, range, sea, humanPlayerId))
+			{
+				HumanContactTurn = Game.GameTurn;
+			}
+		}
+
+		private bool ShouldTrackHumanContact(out byte humanPlayerId)
+		{
+			humanPlayerId = 0;
+			if (!Game.Started || IsHuman || Game.HumanPlayer == null)
+			{
+				return false;
+			}
+
+			humanPlayerId = Game.PlayerNumber(Game.HumanPlayer);
+			return true;
+		}
+
+		private bool CanSeeHumanAssetsInExploreArea(int x, int y, int range, bool sea, byte humanPlayerId)
+		{
+			for (int relX = -range; relX <= range; relX++)
+			for (int relY = -range; relY <= range; relY++)
+			{
+				int xx = x + relX;
+				int yy = y + relY;
+				if (yy < 0 || yy >= Map.HEIGHT) continue;
+				while (xx < 0) { xx += Map.WIDTH; }
+				while (xx >= Map.WIDTH) { xx -= Map.WIDTH; }
+				if (sea && !Map[xx, yy].IsOcean && (Math.Abs(relX) > 1 || Math.Abs(relY) > 1))
+					continue;
+
+				ITile visibleTile = Map[xx, yy];
+				if ((visibleTile.City != null && visibleTile.City.Owner == humanPlayerId) ||
+					visibleTile.Units.Any(unit => unit.Owner == humanPlayerId))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// For every enemy city now visible to this player, update its <see cref="City.VisibleSizes"/>
+		/// entry so the map shows the correct (last-known) city size under fog-of-war.
+		/// </summary>
+		private void UpdateVisibleCitySizes()
+		{
+			if (!Game.Started) return;
+			byte playerId = Game.PlayerNumber(this);
+			foreach (City city in Game.GetCities())
+			{
+				if (city.Size == 0) continue; // destroyed city
+				if (city.Owner == playerId) continue;
+				if (_visible[city.X, city.Y])
+					city.VisibleSizes[playerId] = city.Size;
+			}
 		}
 
 		public bool Visible(int x, int y)
@@ -420,15 +509,33 @@ namespace CivOne
 
 		List<byte> IPlayer.Embassies => _embassies;
 
+		ushort[] IPlayer.Diplomacy => _diplomacy;
+
 		public short Anarchy => _anarchy;
 
 		int IPlayer.CityNamesSkipped => CityNamesSkipped;
 
+		ushort IPlayer.FutureTechCount => FutureTechCount;
+
+		ushort IPlayer.HumanContactTurn => HumanContactTurn;
+
 		short IPlayer.StartX => StartX;
 
-		PalaceData IPlayer.Palace => Palace;
+		ushort[] IPlayer.UnitsLost => _unitsLost;
 
-		List<ICity> IPlayer.Cities => Cities.Cast<ICity>().ToList();
+		ushort[] IPlayer.UnitsDestroyedBy => _unitsDestroyedBy;
+
+		ushort IPlayer.EpicRanking => _epicRanking;
+
+		ushort IPlayer.MilitaryPower => _militaryPower;
+
+		ushort IPlayer.CivilizationScore => _civilizationScore;
+
+		PalaceData IPlayer.Palace => _palace;
+
+		List<ICity> IPlayer.Cities => (Game != null && Game.Started)
+			? Cities.Cast<ICity>().ToList()
+			: (RestoredCities?.ToList() ?? []);
 
 		
 		public override int GetHashCode() => Game.PlayerNumber(this);
@@ -443,9 +550,9 @@ namespace CivOne
 		public Player(ICivilization civilization, string customLeaderName = null, string customTribeName = null, string customTribeNamePlural = null)
 		{
 			_civilization = civilization;
-			if (customLeaderName != null) _civilization.Leader.Name = customLeaderName;
-			_tribeName = customTribeName ?? _civilization.Name;
-			_tribeNamePlural = customTribeNamePlural ?? _civilization.NamePlural;
+			if (!string.IsNullOrEmpty(customLeaderName)) _civilization.Leader.Name = customLeaderName;
+			_tribeName = string.IsNullOrEmpty(customTribeName) ? _civilization.Name : customTribeName;
+			_tribeNamePlural = string.IsNullOrEmpty(customTribeNamePlural) ? _civilization.NamePlural : customTribeNamePlural;
 			Government = new Despotism();
 
 			for (int xx = 0; xx < Map.WIDTH; xx++)

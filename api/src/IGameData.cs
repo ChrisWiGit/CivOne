@@ -29,6 +29,7 @@ namespace CivOne
 		short[] ResearchProgress { get; set; }
 		ushort[] TaxRate { get; set; }
 		ushort[] ScienceRate { get; set; }
+		ushort[] HumanContactTurns { get; set; }
 		ushort[] StartingPositionX { get; set; }
 		ushort[] Government { get; set; }
 		CityData[] Cities { get; set; }
@@ -40,6 +41,11 @@ namespace CivOne
 		ushort NextAnthologyTurn { get; set; }
 		ushort OpponentCount { get; set; }
 		ReplayData[] ReplayData { get; set; }
+		ushort GlobalWarmingCount { get; set; }
+		ushort PollutedSquaresCount { get; set; }
+		ushort WarmingIndicator { get; set; }
+		ushort PeaceTurns { get; set; }
+		ushort PlayerFutureTech { get; set; }
 
 		bool ValidData { get; }
 		byte[] GetBytes();

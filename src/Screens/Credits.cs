@@ -44,7 +44,7 @@ namespace CivOne.Screens
 		private bool _introSkipped;
 		private int _introLine = -1;
 		
-		// Auto-Load a saved game at startup? (--load-slot)
+		// Auto-Load a saved game at startup? (--load-slot or --load-cos)
 		// Used only once, and then reset to null to avoid re-loading when coming back to the credits screen.
 		private static bool? _loadSavedGame = false; 
 
@@ -292,7 +292,22 @@ namespace CivOne.Screens
 
 		private void LoadSavedGame()
 		{
-			
+			// Check if --load-cos was specified
+			if (!string.IsNullOrEmpty(Runtime.Settings.LoadCosFile))
+			{
+				Log("Main Menu: Load a YAML game from {0}", Runtime.Settings.LoadCosFile);
+				Destroy();
+				if (!Game.LoadYamlGame(Runtime.Settings.LoadCosFile))
+				{
+					Log("Failed to load YAML game");
+					Common.AddScreen(new Credits());
+					return;
+				}
+				Common.DestroyScreen(Common.Screens.FirstOrDefault(s => s is GamePlay, null));
+				Common.AddScreen(new GamePlay());
+				return;
+			}
+
 			var slot = Runtime.Settings.LoadSaveGameSlot;
 			if (slot.Equals(RuntimeSettings.UseLoadingScreen))
 			{
@@ -425,7 +440,7 @@ namespace CivOne.Screens
 			}
 
 			if (!Runtime.Settings.ShowCredits) SkipIntro();
-			if (Runtime.Settings.LoadSaveGameSlot != null && _loadSavedGame.HasValue)
+			if ((Runtime.Settings.LoadSaveGameSlot != null || !string.IsNullOrEmpty(Runtime.Settings.LoadCosFile)) && _loadSavedGame.HasValue)
 			{
 				_loadSavedGame = true;
 			}

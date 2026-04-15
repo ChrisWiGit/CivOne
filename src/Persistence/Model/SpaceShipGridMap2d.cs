@@ -1,0 +1,128 @@
+// CivOne
+//
+// To the extent possible under law, the person who associated CC0 with
+// CivOne has waived all copyright and related or neighboring rights
+// to CivOne.
+//
+// You should have received a copy of the CC0 legalcode along with this
+// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+
+using System;
+using System.Linq;
+using CivOne.Enums;
+
+namespace CivOne.Persistence.Model
+{
+	/// <summary>
+	/// Specialized Map2d for 12×12 spaceship component grids. Encodes
+	/// SpaceShipComponentType values as single-character strings in YAML:
+	/// 'E' for Empty, 'S' for Structural, 'C' for Component, 'M' for Module.
+	/// 
+	/// YAML output example:
+	/// - ECMM000000000
+	/// - S00000000000
+	/// - M00000000000
+	/// (12 rows × 12 columns per row)
+	/// </summary>
+	public class SpaceShipGridMap2d : Map2d<SpaceShipComponentType>
+	{
+		public SpaceShipGridMap2d() : base(12, 12)
+		{
+		}
+
+		public SpaceShipGridMap2d(SpaceShipComponentType[,] ownsData) : base(ownsData)
+		{
+		}
+
+		public SpaceShipGridMap2d(SpaceShipComponentType[][] ownsData) : base(ownsData)
+		{
+		}
+
+		public SpaceShipGridMap2d(string[] rows)
+			: base(FromRows(rows))
+		{
+		}
+
+		public SpaceShipGridMap2d(SpaceShipGridMap2d other) : base((Map2d<SpaceShipComponentType>)other)
+		{
+		}
+
+		public static implicit operator SpaceShipGridMap2d(SpaceShipComponentType[,] data) => new(data);
+		public static implicit operator SpaceShipComponentType[,](SpaceShipGridMap2d map) => map.Data;
+
+		public string[] Rows
+		{
+			get => ToRows();
+			set
+			{
+				var jagged = FromRows(value);
+				int height = jagged.Length;
+				int width = height == 0 ? 0 : jagged[0].Length;
+				Data = new SpaceShipComponentType[width, height];
+				for (int y = 0; y < height; y++)
+				{
+					for (int x = 0; x < width; x++)
+						Data[x, y] = jagged[y][x];
+				}
+			}
+		}
+
+		private string[] ToRows()
+		{
+			var result = new string[Height()];
+
+			for (int y = 0; y < Height(); y++)
+			{
+				char[] row = new char[Width()];
+
+				for (int x = 0; x < Width(); x++)
+				{
+					row[x] = ComponentTypeToChar(Data[x, y]);
+				}
+
+				result[y] = new string(row);
+			}
+
+			return result;
+		}
+
+		private static SpaceShipComponentType[][] FromRows(string[] rows)
+		{
+			if (rows == null)
+				return [];
+
+			var data = new SpaceShipComponentType[rows.Length][];
+
+			for (int y = 0; y < rows.Length; y++)
+			{
+				if (rows[y] == null)
+					throw new ArgumentException($"Row {y} cannot be null.");
+
+				data[y] = [.. rows[y].Select(CharToComponentType)];
+			}
+
+			return data;
+		}
+
+		private static char ComponentTypeToChar(SpaceShipComponentType type)
+			=> type switch
+			{
+				SpaceShipComponentType.Empty => 'E',
+				SpaceShipComponentType.Structural => 'S',
+				SpaceShipComponentType.Component => 'C',
+				SpaceShipComponentType.Module => 'M',
+				_ => 'E'
+			};
+
+		private static SpaceShipComponentType CharToComponentType(char c)
+			=> c switch
+			{
+				'E' => SpaceShipComponentType.Empty,
+				'0' => SpaceShipComponentType.Empty,   // Legacy support: 0 = empty
+				'S' => SpaceShipComponentType.Structural,
+				'C' => SpaceShipComponentType.Component,
+				'M' => SpaceShipComponentType.Module,
+				_ => throw new FormatException($"Invalid spaceship component character '{c}'.")
+			};
+	}
+}

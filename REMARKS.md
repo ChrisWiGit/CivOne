@@ -61,19 +61,19 @@ Following todo's are to be implemented in the city view:
   * Up, Down keys cycle through the buildings in the city.
   * Space/Enter selects the building to be sold.
   * ESC closes building selection and city view.
-* Hotkey p selects city tile view
+* [x] Hotkey p selects city tile view
   * Up, Down, Left, Right keys cycle through the city tiles.
   * Space/Enter selects the tile to be removed or worked.
   * ESC closes tile selection.
 * [x] Hotkey 1-9 cycles through the specialists in the city.
   * Hotkey changes the specialist entertainer to be changed to tax and science and back to entertainer.
   * What about > 9?
-* Hotkey shift+a sets production to auto build.
-* On CityView Info Tile (see manual page 75)
+* [x] Hotkey shift+a sets production to auto build.
+* [x] On CityView Info Tile (see manual page 75)
   * Bottom row contains tiles of pollution indicators
   * Traderoutes to city with trade values
     * City name: 3 (up/down arrow symbol)
-* [ ] Building View
+* [x] Building View
   * More than 14 buildings shows More Button
 
 ## Trading Cities

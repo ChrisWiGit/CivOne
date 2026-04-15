@@ -1,14 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using CivOne.Civilizations;
+using CivOne.Persistence.Factories;
+using CivOne.Persistence.Mapper;
 using CivOne.Persistence.Model;
 using CivOne.Persistence.Yaml;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
 
 #nullable enable
 
@@ -23,20 +18,17 @@ namespace CivOne.Persistence
 		private readonly PlayerDtoMapper? _playerMapper;
 		private readonly UnitDtoMapper? _unitMapper;
 		private readonly MapDtoMapper? _mapMapper;
-		private readonly IYamlReadValueSanitizer? _sanitizer;
+		private readonly DtoMapper<GlobalWarmingDto, GameState>? _globalWarmingMapper;
+		private readonly IValueSanitizer? _sanitizer;
+
+		private readonly SaveGameMetaDataDtoFactory _metaDataFactory;
 
 		/// <summary>
-		/// Parameterless constructor for backward compatibility.
-		/// Used by legacy code that doesn't have access to mapper dependencies.
-		/// Falls back to minimal stub behavior if mappers cannot be constructed.
+		/// Constructor for subclasses that provide their own DTO mapping strategy.
 		/// </summary>
-		public YamlSaveGameStateWriter()
+		protected YamlSaveGameStateWriter()
 		{
-			// Lazy initialization intentionally null to signal fallback mode
-			_playerMapper = null;
-			_unitMapper = null;
-			_mapMapper = null;
-			_sanitizer = null;
+			_metaDataFactory = new SaveGameMetaDataDtoFactory();
 		}
 
 		/// <summary>
@@ -47,34 +39,38 @@ namespace CivOne.Persistence
 			PlayerDtoMapper playerMapper,
 			UnitDtoMapper unitMapper,
 			MapDtoMapper mapMapper,
-			IYamlReadValueSanitizer sanitizer)
+			DtoMapper<GlobalWarmingDto, GameState> globalWarmingMapper,
+			IValueSanitizer sanitizer,
+			SaveGameMetaDataDtoFactory? metaDataFactory = null
+			)
 		{
 			_playerMapper = playerMapper ?? throw new ArgumentNullException(nameof(playerMapper));
 			_unitMapper = unitMapper ?? throw new ArgumentNullException(nameof(unitMapper));
 			_mapMapper = mapMapper ?? throw new ArgumentNullException(nameof(mapMapper));
+			_globalWarmingMapper = globalWarmingMapper ?? throw new ArgumentNullException(nameof(globalWarmingMapper));
 			_sanitizer = sanitizer ?? throw new ArgumentNullException(nameof(sanitizer));
+			_metaDataFactory = metaDataFactory ?? new SaveGameMetaDataDtoFactory();
 		}
 
 		public void Write(Stream stream, GameState snapshot)
 		{
+			Write(stream, snapshot, null);
+		}
+
+		public void Write(Stream stream, GameState snapshot, SaveFileMetaData? saveMetaData)
+		{
 			ArgumentNullException.ThrowIfNull(stream);
 			ArgumentNullException.ThrowIfNull(snapshot);
 
-			if (_playerMapper == null || _unitMapper == null || _mapMapper == null || _sanitizer == null)
+			var fileDto = new SaveGameFileRootDto
 			{
-				// Fallback to stub for backward compatibility (if mappers not injected)
-				// This path should only be hit from legacy code without proper DI setup
-				WriteUsingStub(stream, snapshot);
-				return;
-			}
+				FormatVersion = SaveGameFileRootDto.CurrentFormatVersion,
+				Meta = saveMetaData is null ? null : _metaDataFactory.CreateFromRuntime(saveMetaData),
+				GameState = CreateDto(snapshot)
+			};
 
-			// Use the tested, bidirectional mapper with full data support
-			var mapper = new GameStateDtoMapper(_playerMapper, _unitMapper, _mapMapper, _sanitizer);
-			var dto = mapper.ToDto(snapshot);
-
-			// Serialize with custom YAML formatting (camelCase, custom tile converter, doc comments)
 			var yaml = YamlWriter
-				.Of(dto)
+				.Of(fileDto)
 				.WithStandard()
 				.WithTypeConverter(new MapDtoTileDtoYamlConverter())
 				.AsString();
@@ -82,29 +78,17 @@ namespace CivOne.Persistence
 			stream.Write(System.Text.Encoding.UTF8.GetBytes(yaml));
 		}
 
-		private static void WriteUsingStub(Stream stream, GameState snapshot)
+		protected virtual GameStateDto CreateDto(GameState snapshot)
 		{
-			// Minimal stub for legacy code paths without proper mapper setup
-			// WARN: This loses Units, Players, Cities, and Map data!
-			var serializer = new SerializerBuilder()
-				.WithNamingConvention(CamelCaseNamingConvention.Instance)
-				.Build();
+			ArgumentNullException.ThrowIfNull(snapshot);
 
-			var stubDto = new GameStateDto
-			{
-				Difficulty = (DifficultyLevel)snapshot.Difficulty,
-				GameTurn = snapshot.GameTurn,
-				GameOptions = snapshot.GameOptions
-				// NOTE: The following data is NOT serialized in stub mode:
-				// - Players (critical!)
-				// - Units (critical!)
-				// - Cities
-				// - Map & Tiles
-				// This is a regression from the previous stub. Use dependency injection!
-			};
-
-			var yaml = serializer.Serialize(stubDto);
-			stream.Write(System.Text.Encoding.UTF8.GetBytes(yaml));
+			var mapper = new GameStateDtoMapper(
+				_playerMapper,
+				_unitMapper,
+				_mapMapper,
+				_globalWarmingMapper,
+				_sanitizer);
+			return mapper.ToDto(snapshot);
 		}
 	}
 }

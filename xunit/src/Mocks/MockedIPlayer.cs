@@ -6,6 +6,8 @@ using CivOne.Governments;
 using CivOne.Advances;
 using CivOne.Persistence.Model;
 using CivOne.Civilizations;
+using CivOne.Enums;
+using CivOne.Persistence.Game;
 
 namespace CivOne.UnitTests
 {
@@ -14,17 +16,26 @@ namespace CivOne.UnitTests
 		public MockedIPlayer()
 		{
 			Civilization = new MockedICivilization(1);
+			PlayerGuid = Guid.NewGuid();
 			TribeName = "Mock Tribe";
 			TribeNamePlural = "Mock Tribes";
 			Explored = new bool[10, 10];
 			Visible = new bool[10, 10];
 			Advances = [];
 			Embassies = [];
+			Diplomacy = new ushort[8];
 			Anarchy = 0;
 			Gold = 100;
 			CurrentResearch = null;
 			CityNamesSkipped = 0;
+			FutureTechCount = 0;
+			HumanContactTurn = 0;
 			StartX = 0;
+			UnitsLost = new ushort[28];
+			UnitsDestroyedBy = new ushort[8];
+			EpicRanking = 0;
+			MilitaryPower = 0;
+			CivilizationScore = 0;
 			Government = null;
 			RepublicDemocratic = false;
 			AnarchyDespotism = false;
@@ -38,6 +49,8 @@ namespace CivOne.UnitTests
 		}
 		public ICivilization Civilization { get; set; }
 
+		public Guid PlayerGuid { get; set; }
+
 		public string TribeName { get; set; }
 
 		public string TribeNamePlural { get; set; }
@@ -50,6 +63,8 @@ namespace CivOne.UnitTests
 
 		public List<byte> Embassies { get; set; }
 
+		public ushort[] Diplomacy { get; set; }
+
 		public short Anarchy { get; set; }
 
 		public short Gold { get; set; }
@@ -58,7 +73,21 @@ namespace CivOne.UnitTests
 
 		public int CityNamesSkipped { get; set; }
 
+		public ushort FutureTechCount { get; set; }
+
+		public ushort HumanContactTurn { get; set; }
+
 		public short StartX { get; set; }
+
+		public ushort[] UnitsLost { get; set; }
+
+		public ushort[] UnitsDestroyedBy { get; set; }
+
+		public ushort EpicRanking { get; set; }
+
+		public ushort MilitaryPower { get; set; }
+
+		public ushort CivilizationScore { get; set; }
 
 		public IGovernment Government { get; set; }
 
@@ -79,6 +108,9 @@ namespace CivOne.UnitTests
 		public PalaceData Palace { get; set; }
 
 		public List<ICity> Cities { get; set; }
+		public SpaceShipComponentType[,] SpaceShipGrid { get; set; }
+		public ushort SpaceShipPopulation { get; set; }
+		public short SpaceShipLaunchYear { get; set; }
 
 		public bool HasAdvance<T>() where T : IAdvance
 		{

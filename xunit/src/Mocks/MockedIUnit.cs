@@ -64,6 +64,14 @@ namespace CivOne.UnitTests
             ProductionId = 0;
         }
 		public bool FortifyActive { get; set; }
+		public Guid? PendingHomeCityGuid { get; set; }
+		void IUnitRestorable.ForceStatus(bool sentry, bool fortifyActive, bool fortify, bool veteran)
+		{
+			Sentry = sentry;
+			FortifyActive = fortifyActive;
+			Fortify = fortify;
+			Veteran = veteran;
+		}
 
 		public IAdvance RequiredTech { get; set; }
 

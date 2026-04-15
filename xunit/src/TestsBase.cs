@@ -11,7 +11,6 @@
 
 using System;
 using System.Linq;
-using System.Threading;
 using CivOne.UnitTests;
 
 namespace CivOne.src
@@ -35,8 +34,8 @@ namespace CivOne.src
             rs.InitialSeed = 23905;
             runtime = new MockRuntime(rs);
 
-            // Load Earth map
-            Map.Reset(new MapGenerationWithoutThread());
+            // Load Earth map from bundled earth.yml (no MAP.PIC required)
+            Map.Reset(new MapGenerationFromYaml());
             Map.Instance.LoadEarthMapInThread();
 
             // Start with Babylonians at King level
@@ -46,12 +45,12 @@ namespace CivOne.src
             BeforeEach();
         }
 
-        public virtual void BeforeEach()
+        protected virtual void BeforeEach()
         {
             // Override in derived classes to set up before each test
         }
         
-        public virtual void AfterEach()
+        protected virtual void AfterEach()
         {
             // Override in derived classes to tear down after each test
         }

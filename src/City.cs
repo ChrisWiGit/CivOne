@@ -16,6 +16,7 @@ using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Governments;
+using CivOne.Persistence.Game;
 using CivOne.Persistence.Model;
 using CivOne.Screens;
 using CivOne.Screens.Reports;
@@ -407,8 +408,6 @@ namespace CivOne
 				if (HasBuilding<MarketPlace>()) taxes += (int)Math.Floor((double)taxes * 0.5);
 				if (HasBuilding<Bank>()) taxes += (int)Math.Floor((double)taxes * 0.5);
 				taxes += _specialists.Count(c => c == Citizen.Taxman) * 2;
-
-				taxes = (int)Math.Round((double)taxes * Player.TaxesRate / 10);
 
 				return (short)Math.Min(short.MaxValue, taxes);
 			}
@@ -1057,6 +1056,10 @@ namespace CivOne
 
 		public void NewTurn()
 		{
+			// City was destroyed (DestroyCity sets X/Y to 255 as tombstone but keeps the object
+			// in _cities for index-stability of trading routes). Skip processing it.
+			if (X == 255 || Y == 255) return;
+
 			ExecutePollution();
 
 			UpdateResources();
@@ -1508,21 +1511,23 @@ namespace CivOne
 			}
 		}
 
-		private int[] tradingCities;
-		internal void SetTradingCitiesIndexes(int[] tradingCities)
+		private Guid[] _tradingCityIds;
+		internal void SetTradingCityIds(Guid[] ids)
 		{
 			// only keep the last 3 trading cities
-			this.tradingCities = [.. tradingCities.Skip(Math.Max(0, tradingCities.Length - 3))];
+			_tradingCityIds = [.. ids.Skip(Math.Max(0, ids.Length - 3))];
 		}
 
 		public City[] TradingCitiesAsCity {
 			get
 			{
-				if (tradingCities == null)
+				if (_tradingCityIds == null)
 				{
 					return [];
 				}
-				return [.. tradingCities.Select(index => Game.Instance.Cities[index])];
+				return [.. _tradingCityIds
+					.Select(id => Game.Instance.GetCities().FirstOrDefault(c => c.Id == id))
+					.Where(c => c != null)];
 			}
 		}
 
@@ -1535,7 +1540,11 @@ namespace CivOne
 
 		private uint[] _visibleSizes = new uint[16];
 		public uint[] VisibleSizes {
-			get => _visibleSizes;
+			get { 
+				// Owner always sees his city size;
+				_visibleSizes[Owner] = Size;
+				return _visibleSizes;
+			}
 			set => _visibleSizes = value is { Length: >= 16 } ? value : new uint[16];
 		}
 
@@ -1573,15 +1582,6 @@ namespace CivOne
 			}
 		}
 
-		int IndexOfCity(City city)
-		{
-			for (int i = 0; i < Game.Instance.Cities.Count; i++)
-			{
-				if (Game.Instance.Cities[i] == city) return i;
-			}
-			return -1;
-		}
-
 		public void AddTradingCity(City city)
 		{
 			if (city == null || city == this || TradingCitiesAsCity.Contains(city))
@@ -1589,9 +1589,7 @@ namespace CivOne
 				return;
 			}
 
-			List<City> cities = [.. TradingCitiesAsCity];
-			cities.Add(city);
-			SetTradingCitiesIndexes([.. cities.Select(c => IndexOfCity(c)).Where(i => i >= 0)]);
+			SetTradingCityIds([.. (_tradingCityIds ?? []), city.Id]);
 		}
 
 
@@ -1600,7 +1598,13 @@ namespace CivOne
 			_visibleSizes = new uint[16];
 			Owner = owner;
 			if (!Game.Started) return;
-			CurrentProduction = Reflect.GetUnits().Where(u => Player.ProductionAvailable(u)).OrderBy(u => Common.HasAttribute<Default>(u) ? -1 : (int)u.Type).First();
+			if (Player.Game == null) return;
+			var player = Game.Instance?.GetPlayer(owner);
+			if (player == null) return;
+			CurrentProduction = Reflect.GetUnits()
+				.Where(u => player.ProductionAvailable(u))
+				.OrderBy(u => Common.HasAttribute<Default>(u) ? -1 : (int)u.Type)
+				.FirstOrDefault();
 			SetResourceTiles();
 		}
 

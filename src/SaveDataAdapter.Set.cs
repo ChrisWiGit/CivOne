@@ -110,6 +110,8 @@ namespace CivOne
 
 		private unsafe void SetScienceRate(ushort[] values) => SetArray(nameof(SaveData.ScienceRate), values);
 
+		private unsafe void SetHumanContactTurns(ushort[] values) => SetArray(nameof(SaveData.HumanContactTurns), values);
+
 		private unsafe void SetStartingPositionX(ushort[] values) => SetArray(nameof(SaveData.StartingPositionX), values);
 
 		private unsafe void SetGovernment(ushort[] values) => SetArray(nameof(SaveData.Government), values);
@@ -157,7 +159,7 @@ namespace CivOne
 				cities[i].Y = data.Y;
 				cities[i].Status = data.Status;
 				cities[i].ActualSize = data.ActualSize;
-				cities[i].VisibleSize = data.ActualSize;
+				cities[i].VisibleSize = data.VisibleSize;
 				cities[i].CurrentProduction = data.CurrentProduction;
 				cities[i].BaseTrade = data.BaseTrade;
 				cities[i].Owner = data.Owner;

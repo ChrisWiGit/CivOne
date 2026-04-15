@@ -44,6 +44,12 @@ namespace CivOne.Persistence.Model
         [Doc("Size of the city.")]
         public uint Size { get; set; }
 
+        [Doc("Food storage of the city. Determines how close the city is to growing.", 0, 65535)]
+        public int Food { get; set; }
+
+        [Doc("Shield storage of the city. Determines how close the current production is to completion.", 0, 65535)]
+        public int Shields { get; set; }
+
         [Doc("Visible sizes of the city for other players. Index corresponds to player ID.")]
         public uint[] VisibleSizes { get; set; }
 

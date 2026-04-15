@@ -101,6 +101,8 @@ namespace CivOne
 		private unsafe ushort[] GetTaxRate() => GetArray<ushort>(nameof(SaveData.TaxRate), 8);
 
 		private unsafe ushort[] GetScienceRate() => GetArray<ushort>(nameof(SaveData.ScienceRate), 8);
+
+		private unsafe ushort[] GetHumanContactTurns() => GetArray<ushort>(nameof(SaveData.HumanContactTurns), 8);
 		
 		private unsafe ushort[] GetStartingPositionX() => GetArray<ushort>(nameof(SaveData.StartingPositionX), 8);
 
@@ -127,6 +129,9 @@ namespace CivOne
 					Status = city.Status,
 					ActualSize = city.ActualSize,
 					VisibleSize = city.VisibleSize,
+					// BaseTrade is preserved for round-trip fidelity with CIV1 DOS saves.
+					// CivOne recalculates trade dynamically and never reads this value back at runtime.
+					BaseTrade = city.BaseTrade,
 					CurrentProduction = city.CurrentProduction,
 					Owner = city.Owner,
 					Food = city.Food,

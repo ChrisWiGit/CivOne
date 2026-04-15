@@ -32,6 +32,25 @@ namespace CivOne.Persistence.Model.Attributes
 			AllowedValues = string.Join(", ", allowedValues);
 		}
 
+		/// <summary>
+		/// Constructor for enum types. The allowed values will be automatically populated with the names of the enum members.
+		/// </summary>
+		/// <example>
+		/// [Doc("The architectural style of this palace section.", typeof(PalaceStyle))]
+		/// public PalaceStyle Style { get; set; }
+		/// </example>
+		/// <param name="description"></param>
+		/// <param name="enumType"></param>
+		/// <exception cref="ArgumentException"></exception>
+		public DocAttribute(string description, Type enumType) : this(description)
+		{
+			if (!enumType.IsEnum)
+			{
+				throw new ArgumentException("Provided type must be an enum.", nameof(enumType));
+			}
+			AllowedValues = string.Join(", ", Enum.GetNames(enumType));
+		}
+
 		public DocAttribute(string description, long minValue, long maxValue) : this(description)
 		{
 			AllowedValues = $"[{minValue} to {maxValue}]";

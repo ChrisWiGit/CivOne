@@ -20,7 +20,7 @@ namespace CivOne.Persistence.Model
 		public UnitDtoMapperTest()
 		{
 			_unitFactory = new UnitFactory();
-			_testee = new UnitDtoMapper(_unitFactory, new YamlReadValueSanitizer(new NoOpLogger()));
+			_testee = new UnitDtoMapper(_unitFactory, new ValueSanitizer(new NoOpLogger()));
 
 			// Code how to get all Unit class names for DocAttribute. 
 			// UnitDto.AllUnitsClassNames = [.. typeof(IUnit).Assembly.GetTypes()
@@ -110,6 +110,35 @@ namespace CivOne.Persistence.Model
 			{
 				assertion();
 			}
+		}
+
+		[Theory]
+		[InlineData(false, true, true, false)]
+		[InlineData(false, false, false, true)]
+		public void FromDto_UsesRestorableStatusMapping(
+			bool expectedSentry,
+			bool expectedFortifyActive,
+			bool expectedFortify,
+			bool expectedVeteran)
+		{
+			var dto = new UnitDto
+			{
+				ClassName = "MockedIUnit",
+				Location = new MapLocation(10, 20),
+				Goto = new MapLocation(5, 8),
+				Sentry = expectedSentry,
+				FortifyActive = expectedFortifyActive,
+				Fortify = expectedFortify,
+				Veteran = expectedVeteran,
+				PlayerId = ExpectedPlayerId,
+			};
+
+			var restored = _testee.FromDto(dto);
+
+			Assert.Equal(expectedSentry, restored.Sentry);
+			Assert.Equal(expectedFortifyActive, restored.FortifyActive);
+			Assert.Equal(expectedFortify, restored.Fortify);
+			Assert.Equal(expectedVeteran, restored.Veteran);
 		}
 
 		private static Dictionary<string, Action> GetUnitDtoRoundTripAssertionMap(UnitDto expected, UnitDto actual)

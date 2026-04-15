@@ -11,14 +11,14 @@ namespace CivOne.UnitTests
 {
     public class MockRuntime : IRuntime, IDisposable
     {
-        public event EventHandler Initialize;
-        public event EventHandler Draw;
-        public event UpdateEventHandler Update;
-        public event KeyboardEventHandler KeyboardUp;
-        public event KeyboardEventHandler KeyboardDown;
-        public event ScreenEventHandler MouseUp;
-        public event ScreenEventHandler MouseDown;
-        public event ScreenEventHandler MouseMove;
+        public event EventHandler Initialize { add { } remove { } }
+        public event EventHandler Draw { add { } remove { } }
+        public event UpdateEventHandler Update { add { } remove { } }
+        public event KeyboardEventHandler KeyboardUp { add { } remove { } }
+        public event KeyboardEventHandler KeyboardDown { add { } remove { } }
+        public event ScreenEventHandler MouseUp { add { } remove { } }
+        public event ScreenEventHandler MouseDown { add { } remove { } }
+        public event ScreenEventHandler MouseMove { add { } remove { } }
         public Platform CurrentPlatform { get; }
 
         public string StorageDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CivOne");

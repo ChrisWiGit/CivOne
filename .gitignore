@@ -8,3 +8,9 @@
 **/settings/**
 **/sounds/**
 **/obj/**
+**/TestResults/**
+**/CoverageReport/**
+**/*.cos
+**/*.lnk
+**/*.7z
+**/*.java*

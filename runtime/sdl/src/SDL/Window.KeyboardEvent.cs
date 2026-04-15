@@ -32,6 +32,8 @@ namespace CivOne
 			{
 				switch (scanCode)
 				{
+					case SDL_Scancode.SDL_SCANCODE_TAB:
+						return Key.Tab;
 					case SDL_Scancode.SDL_SCANCODE_F1:
 						return Key.F1;
 					case SDL_Scancode.SDL_SCANCODE_F2:
@@ -116,6 +118,79 @@ namespace CivOne
 				}
 			}
 
+			/// <summary>
+			/// Converts physical top-row digit keys by scancode (30..39) to '1'..'0'.
+			/// This is required because keycode values depend on keyboard layout and Shift state,
+			/// while scancodes identify the physical key reliably.
+			/// </summary>
+			private KeyboardEventArgs ConvertTopRowDigitByScancode(SDL_Scancode scanCode, KeyModifier modifier)
+			{
+				// Top-row digits by scancode are stable across keyboard layouts:
+				// 30..38 => 1..9 and 39 => 0.
+				int scancode = (int)scanCode;
+				if (scancode < 30 || scancode > 39) return null;
+
+				char digit = (scancode == 39) ? '0' : (char)('1' + (scancode - 30));
+				return new KeyboardEventArgs(digit, modifier);
+			}
+
+			/// <summary>
+			/// Maps control-modified symbol keycodes (for example '!' instead of '1') back to digits.
+			/// This is needed for certain layout/OS combinations where Ctrl+digit arrives as a symbol
+			/// and would otherwise be filtered out as non-digit input.
+			/// </summary>
+			private KeyboardEventArgs ConvertControlDigitSymbolToDigit(char keyChar, KeyModifier modifier)
+			{
+				if ((modifier & KeyModifier.Control) == 0) return null;
+
+				switch (keyChar)
+				{
+					case '!': return new KeyboardEventArgs('1', modifier);
+					case '"':
+					case '@': return new KeyboardEventArgs('2', modifier);
+					case '#':
+					case '§': return new KeyboardEventArgs('3', modifier);
+					case '$': return new KeyboardEventArgs('4', modifier);
+					case '%': return new KeyboardEventArgs('5', modifier);
+					case '^':
+					case '&': return new KeyboardEventArgs('6', modifier);
+					case '/': return new KeyboardEventArgs('7', modifier);
+					case '(': return new KeyboardEventArgs('8', modifier);
+					case ')': return new KeyboardEventArgs('9', modifier);
+					case '=': return new KeyboardEventArgs('0', modifier);
+					default: return null;
+				}
+			}
+
+			private string BuildKeyboardDebugMessage(SDL_KeyboardEvent keyboardEvent, KeyboardEventArgs args)
+			{
+				char rawChar = (char)keyboardEvent.KeySym.Keycode;
+				string rawCharText = char.IsControl(rawChar)
+					? $"0x{((int)rawChar):X2}"
+					: $"'{rawChar}'";
+
+				string convertedText;
+				if (args == null)
+				{
+					convertedText = "null";
+				}
+				else if (args.Key == Key.Character)
+				{
+					convertedText = $"Key=Character, KeyChar='{args.KeyChar}', Modifier={args.Modifier}";
+				}
+				else
+				{
+					convertedText = $"Key={args.Key}, KeyChar=0x{((int)args.KeyChar):X2}, Modifier={args.Modifier}";
+				}
+
+				return $"[Keyboard] State={keyboardEvent.State}, Scancode={keyboardEvent.KeySym.Scancode} ({(int)keyboardEvent.KeySym.Scancode}), Keycode={(int)keyboardEvent.KeySym.Keycode} ({rawCharText}), RawModifier={keyboardEvent.KeySym.Modifier}, Converted={convertedText}";
+			}
+
+			/// <summary>
+			/// Normalizes SDL keyboard events into CivOne keyboard events with stable semantics.
+			/// The conversion order intentionally prefers explicit key mappings, then layout-independent
+			/// digit recovery, and finally character fallback.
+			/// </summary>
 			private KeyboardEventArgs ConvertKeyEvent(SDL_KeyboardEvent keyboardEvent)
 			{
 				KeyModifier modifier = ConvertModifier(keyboardEvent.KeySym.Modifier);
@@ -125,7 +200,12 @@ namespace CivOne
 					return new KeyboardEventArgs(key, modifier);
 				}
 
+				KeyboardEventArgs topRowDigit = ConvertTopRowDigitByScancode(keyboardEvent.KeySym.Scancode, modifier);
+				if (topRowDigit != null) return topRowDigit;
+
 				char keyChar = (char)keyboardEvent.KeySym.Keycode;
+				KeyboardEventArgs controlDigit = ConvertControlDigitSymbolToDigit(keyChar, modifier);
+				if (controlDigit != null) return controlDigit;
 				if (keyChar != '.' && keyChar != ',' && (char.ToLower(keyChar) < 'a' || (int)char.ToLower(keyChar) > 'z') && (keyChar < '0' || keyChar > '9')) return null;
 				return new KeyboardEventArgs(char.ToUpper(keyChar), modifier);
 			}
@@ -133,6 +213,11 @@ namespace CivOne
 			private void HandleEventKeyboard(SDL_KeyboardEvent keyboardEvent)
 			{
 				KeyboardEventArgs args = ConvertKeyEvent(keyboardEvent);
+
+#if DEBUG
+				Log(BuildKeyboardDebugMessage(keyboardEvent, args));
+#endif
+
 				if (args == null) return;
 
 				switch (keyboardEvent.State)

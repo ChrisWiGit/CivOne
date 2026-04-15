@@ -12,13 +12,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
-using System.Reflection.Metadata;
+using System.Reflection;
 using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.IO;
-using CivOne.Leaders;
 using CivOne.Screens;
 using CivOne.Screens.Services;
 using CivOne.Services;
@@ -32,21 +31,43 @@ namespace CivOne
 {
 	public partial class Game : BaseInstance, IGame, ILogger, IGameCitizenDependency
 	{
+		private static readonly string GameVersion = GetGameVersion();
+
 		private readonly int _difficulty, _competition;
 		private readonly Player[] _players;
 		private readonly List<City> _cities;
 		private readonly List<IUnit> _units;
-		private readonly Dictionary<byte, byte> _advanceOrigin = new Dictionary<byte, byte>();
-		private readonly List<ReplayData> _replayData = new List<ReplayData>();
+		private readonly Dictionary<byte, byte> _advanceOrigin = [];
+		private readonly List<ReplayData> _replayData = [];
 
-		internal readonly string[] CityNames = Common.AllCityNames.ToArray();
+		internal readonly string[] CityNames = [.. Common.AllCityNames];
 
 		public int _currentPlayer = 0; // public for unit testing
 		private int _activeUnit;
 
 		private ushort _anthologyTurn = 0;
+		private ushort _peaceTurns = 0;
+		private ushort _playerFutureTech = 0;
+		private bool _hostileActionOccurred = false;
+
+		/// <summary>
+		/// The metadata for the current save file, which is initialized when starting a new game or loading an existing game, and updated when saving a game.
+		/// This is the real structure used by the game. SaveFileMetaDataDto is only used for serialization and should not be used in the game logic.
+		/// </summary>
+		public SaveFileMetaData SaveMetaData { get; } = new();
+
+		private readonly SaveMetaDataService _saveMetaDataService = new(GameVersion);
+
+		/// <summary>
+		/// This service provides methods for creating and managing save game metadata, which is used for display in the load game dialog and for informational purposes in the game.
+		/// Use this service only for SaveMetaData.
+		/// </summary>
+		public SaveMetaDataService SaveMetaDataService => _saveMetaDataService;
 
 		public int Competition => _competition;
+
+		private static string GetGameVersion()
+			=> Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown";
 
 		public bool Animations { get; set; }
 		public bool Sound { get; set; }
@@ -69,7 +90,7 @@ namespace CivOne
 		public bool GetAdvanceOrigin(IAdvance advance, Player player)
 		{
 			if (_advanceOrigin.ContainsKey(advance.Id))
-				return (_advanceOrigin[advance.Id] == PlayerNumber(player));
+				return _advanceOrigin[advance.Id] == PlayerNumber(player);
 			return false;
 		}
 
@@ -118,6 +139,22 @@ namespace CivOne
 
 		internal ReplayData[] GetReplayData() => _replayData.ToArray();
 		internal T[] GetReplayData<T>() where T : ReplayData => _replayData.Where(x => x is T).Select(x => (x as T)).ToArray();
+
+		internal void RegisterFutureTech(Player player)
+		{
+			ArgumentNullException.ThrowIfNull(player);
+
+			player.FutureTechCount++;
+			if (player == HumanPlayer)
+			{
+				_playerFutureTech = player.FutureTechCount;
+			}
+		}
+
+		internal void RegisterHostileAction()
+		{
+			_hostileActionOccurred = true;
+		}
 
 		private void PlayerDestroyed(object sender, EventArgs args)
 		{
@@ -199,6 +236,7 @@ namespace CivOne
 			{
 				_currentPlayer = 0;
 				GameTurn++;
+				AdvancePeaceTurns();
 				if (GameTurn % 50 == 0 && AutoSave)
 				{
 					GameTask.Enqueue(Show.AutoSave);
@@ -272,8 +310,24 @@ namespace CivOne
 			}
 			
 			globalWarmingScourgeService.UnleashScourgeOfPollution();
+			globalWarmingService.RefreshPollutionState();
 
 			GameTask.Enqueue(Message.Newspaper(null, "Global temperature", "rises! Icecaps melt.", "Severe Drought."));
+		}
+
+		private void AdvancePeaceTurns()
+		{
+			if (_hostileActionOccurred)
+			{
+				_peaceTurns = 0;
+				_hostileActionOccurred = false;
+				return;
+			}
+
+			if (_peaceTurns < ushort.MaxValue)
+			{
+				_peaceTurns++;
+			}
 		}
 
 		// store last active player unit to check if a previous player move happened or a game was loaded.

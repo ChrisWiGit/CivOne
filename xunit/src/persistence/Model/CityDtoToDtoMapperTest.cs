@@ -9,7 +9,8 @@ namespace CivOne.Persistence.Model
     using CivOne.Buildings;
     using CivOne.Enums;
     using CivOne.Persistence.Model.Attributes;
-    using CivOne.Persistence.Yaml;
+	using CivOne.Persistence.Resolver;
+	using CivOne.Persistence.Yaml;
     using CivOne.UnitTests;
     using CivOne.Wonders;
     using Xunit;
@@ -30,7 +31,7 @@ namespace CivOne.Persistence.Model
             _testee = new CityDtoMapper(
                 new ProductionDtoMapper(new MockedReflect()),
 				new TestCityDefinitionResolver(),
-				new YamlReadValueSanitizer(new NoOpLogger()));
+				new ValueSanitizer(new NoOpLogger()));
 
             var city2 = new MockedICity(2);
             _cities.Add(city2);

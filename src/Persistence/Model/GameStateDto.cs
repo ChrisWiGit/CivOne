@@ -47,6 +47,21 @@ namespace CivOne.Persistence.Model
         [YamlDotNet.Serialization.YamlMember(typeof(List<string>))]
         public List<GameOptionEnum> GameOptions { get; set; }
 
+        [Doc("Maps each advance ID to the player number who first discovered it.")]
+        public Dictionary<byte, byte> AdvanceOrigin { get; set; }
+
+        [Doc("Replay events recorded during the game session.")]
+        public List<ReplayDataDto> ReplayData { get; set; }
+
+        [Doc("Global peace turn counter from the original save format. Reserved for future diplomacy logic.", 0, ushort.MaxValue)]
+        public ushort PeaceTurns { get; set; }
+
+        [Doc("Legacy future-tech counter from the original save format. New YAML should prefer Players[].FutureTechCount. For backward compatibility this still mirrors the human player's count.", 0, ushort.MaxValue)]
+        public ushort PlayerFutureTech { get; set; }
+
+		[Doc("Global warming simulation state (count, pollution level, warning indicator).")]
+		public GlobalWarmingDto GlobalWarming { get; set; }
+
         private static string DifficultyAll { get => string.Join(", ", Enum.GetNames<DifficultyLevel>()); }
         private static string GameOptionsAll { get => string.Join(", ", Enum.GetNames<GameOptionEnum>()); }
     }

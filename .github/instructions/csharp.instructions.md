@@ -52,3 +52,9 @@ applyTo: "**/*.cs"
 ## Comments
 - Write code that is self-explanatory
 - Only add comments for complex or non-obvious logic
+
+
+## C# Features
+
+- Use primary constructors most of the time
+- Use records for immutable data structures

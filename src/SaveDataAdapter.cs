@@ -196,6 +196,12 @@ namespace CivOne
 			set => SetScienceRate(value);
 		}
 
+		public ushort[] HumanContactTurns
+		{
+			get => GetHumanContactTurns();
+			set => SetHumanContactTurns(value);
+		}
+
 		public ushort[] StartingPositionX
 		{
 			get => GetStartingPositionX();
@@ -280,6 +286,36 @@ namespace CivOne
 		{
 			get => _saveData.OpponentCount;
 			set => _saveData.OpponentCount = value;
+		}
+
+		public ushort GlobalWarmingCount
+		{
+			get => _saveData.GlobalWarming;
+			set => _saveData.GlobalWarming = value;
+		}
+
+		public ushort PollutedSquaresCount
+		{
+			get => _saveData.PollutionSquares;
+			set => _saveData.PollutionSquares = value;
+		}
+
+		public ushort WarmingIndicator
+		{
+			get => _saveData.PollutionEffect;
+			set => _saveData.PollutionEffect = value;
+		}
+
+		public ushort PeaceTurns
+		{
+			get => _saveData.PeaceTurns;
+			set => _saveData.PeaceTurns = value;
+		}
+
+		public ushort PlayerFutureTech
+		{
+			get => _saveData.PlayerFutureTech;
+			set => _saveData.PlayerFutureTech = value;
 		}
 
 		public ReplayData[] ReplayData

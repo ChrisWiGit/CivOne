@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using CivOne.Persistence.Game;
 using CivOne.Persistence.Model;
+using CivOne.Services.GlobalWarming;
 using CivOne.Tiles;
 using CivOne.Units;
 
@@ -60,12 +62,6 @@ namespace CivOne.Persistence
         Palace
     }
 
-    /*
-		Muss anders konvertiert werden. Wir brauchen einen Zwischenschritt, d.h. eine DTO wo noch unsere internen Typen verwendet werden, da sie einfacher zu handeln sind (z.b. yaml)
-		aber die alte art in Binär muss dann nochmal extra in einen andere DTO Klasse umgewandelt werden.
-
-		*/
-
     public class GameState
 	{
 		public uint GameTurn { get; set; }
@@ -83,32 +79,19 @@ namespace CivOne.Persistence
 
 		public int Difficulty { get; set; }
 
-        // -> Players
-        // public List<bool> ActiveCivilizations { get; set; }
         public List<byte> CivilizationIdentity { get; set; }
-        // -> CurrentPlayer
-        // public ushort CurrentResearch { get; set; }
-        // -> Players
-        // public Dictionary<byte, List<byte>> DiscoveredAdvanceIDs { get; set; }
 
-        // public List<string> LeaderNames { get; set; }
-        // public List<string> CivilizationNames { get; set; }
-        // public List<string> CitizenNames { get; set; }
-        // public List<string> CityNames { get; set; }
-		
-        // PlayerGold, ResearchProgress, TaxRate, ScienceRate, StartingPositionX, Government
         /// <summary>
         /// The player whose turn is currently active.
         /// Usually equal to <see cref="HumanPlayer"/>, but can differ during AI turns.
         /// </summary>
         public IPlayer CurrentPlayer { get; set; }
 
-        // ActiveCivilizations, AdvanceOrigin,
-        // CivilizationNames, Cities, Units, Wonders, TileVisibility, AdvanceFirstDiscovery        
 		public IPlayer[] Players { get; set; }
         public List<IUnit> Units { get; set; }
 
-		// public Dictionary<byte, byte> AdvanceOrigin { get; set; }
+        /// <summary>Maps each advance ID to the player number who first discovered it.</summary>
+        public Dictionary<byte, byte> AdvanceOrigin { get; set; }
 
         public List<City> Cities { get; set; }
 		public ushort AnthologyTurn { get; set; }
@@ -123,7 +106,21 @@ namespace CivOne.Persistence
         public int MapWidth { get; set; }
         public int MapHeight { get; set; }
 
+        public string[] CityNames { get; set; }
+
         public List<GameOptionEnum> GameOptions { get; set; }
-		// public List<ReplayData> ReplayData { get; set; }
+
+        /// <summary>Replay events recorded during the game session.</summary>
+        public List<ReplayData> ReplayData { get; set; }
+
+		/// <summary>Global peace turn counter from the original save format.</summary>
+		public ushort PeaceTurns { get; set; }
+
+		/// <summary>Future-tech counter from the original save format.</summary>
+		public ushort PlayerFutureTech { get; set; }
+
+        public int GlobalWarmingCount { get; set; }
+        public int PollutedSquaresCount { get; set; }
+        public WarmingIndicator WarmingIndicator { get; set; }
 	}
 }

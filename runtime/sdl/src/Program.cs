@@ -86,12 +86,21 @@ Try 'civone-sdl --help' for more information.
 						{
 							Console.WriteLine("Invalid load slot format. Use: --load-slot [a-z1..10] to specify a drive letter and slot number for the game file.");
 							return;
-						}						
+						}					
 
 						char driveLetter = char.ToUpper(match.Groups[1].Value[0]);
 						int slotId = int.Parse(match.Groups[2].Value);
 
 						settings.LoadSaveGameSlot = new Tuple<char, int>(driveLetter, slotId);
+						break;
+					case "load-cos":
+						// --load-cos <path/to/file.cos>
+						if (args.GetUpperBound(0) == i)
+						{
+							Console.WriteLine("Missing file path argument for --load-cos");
+							return;
+						}
+						settings.LoadCosFile = args[++i];
 						break;
 					case "skip-credits": settings.ShowCredits = false; continue;
 					case "skip-intro": settings.ShowIntro = false; continue;

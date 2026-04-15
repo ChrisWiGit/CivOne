@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using CivOne.Advances;
 using CivOne.Civilizations;
@@ -10,6 +11,7 @@ namespace CivOne.Persistence.Model
     using AdvanceId = System.UInt32;
     using GovernmentId = System.Byte;
 	using CityId = System.UInt16;
+
     public class PlayerDto
     {
 		[Doc("The civilization of the player.")]
@@ -17,12 +19,19 @@ namespace CivOne.Persistence.Model
 
 		[Doc("The unique id of the player. This may be the index of a player list, but it is not guaranteed to be stable across game sessions.")]
         public PlayerId Id { get; set; }
+
+		[Doc("Stable player identity independent from list/index positions.")]
+		public Guid PlayerGuid { get; set; }
         
-		[Doc("A list of explored advances", null, nameof(AllAdvancesInfo))]
-		public List<AdvanceId> Advances { get; set; }
+		[Doc("A list of explored advances. Use -1 to indicate all advances.", null, nameof(AllAdvancesInfo))]
+		// We use long to allow YAML to read/write the values without overflow issues, but the mapper will clamp to the valid range of advances.
+		public List<long> Advances { get; set; }
         
 		[Doc("A list of player ids with which this player has an embassy.")]
 		public List<PlayerId> Embassies { get; set; }
+
+		[Doc("Per-target diplomacy state entries. RawFlags are persisted 1:1 from legacy diplomacy bitmasks.")]
+		public List<DiplomacyEntryDto> Diplomacy { get; set; }
 
 		public static Dictionary<AdvanceId, string> AllAdvancesInfo = [];
 
@@ -40,6 +49,33 @@ namespace CivOne.Persistence.Model
 
         [Doc("The current index of the city name list for this player, and to be shown next time a city name is needed for a new city.")]
         public int CityNamesSkipped { get; set; }
+
+		[Doc("The number of future technologies this player has completed.", 0, ushort.MaxValue)]
+		public ushort FutureTechCount { get; set; }
+
+		[Doc("Turns since last major contact state with the human player in legacy save semantics.", 0, ushort.MaxValue)]
+		public ushort HumanContactTurn { get; set; }
+
+		[Doc("The player's initial X-position used as world map focus anchor.")]
+		public short StartX { get; set; }
+
+		[Doc("Units lost per unit type (28 entries). YAML allows long values; mapper clamps to ushort range.")]
+		public List<long> UnitsLost { get; set; }
+
+		[Doc("Units destroyed by this player indexed by current player list order. YAML allows long values; mapper clamps to ushort range.")]
+		public List<long> UnitsDestroyedBy { get; set; }
+
+		[Doc("Units destroyed by this player keyed by target PlayerGuid. Preferred over index-based UnitsDestroyedBy for durable cross-references.")]
+		public Dictionary<Guid, long> UnitsDestroyedByByPlayerGuid { get; set; }
+
+		[Doc("Legacy epic ranking value for this player. YAML allows long values; mapper clamps to ushort range.")]
+		public long EpicRanking { get; set; }
+
+		[Doc("Legacy military power value for this player. YAML allows long values; mapper clamps to ushort range.")]
+		public long MilitaryPower { get; set; }
+
+		[Doc("Legacy civilization score value for this player. YAML allows long values; mapper clamps to ushort range.")]
+		public long CivilizationScore { get; set; }
 
 		[Doc("A list of the player's cities")]
         public List<CityDto> Cities { get; set; }
@@ -85,151 +121,8 @@ namespace CivOne.Persistence.Model
 
 		[Doc("The player's palace. This may be null if the player has no palace.")]
         public PalaceDto Palace { get; set; }
+
+		[Doc("The player's spaceship state. Null if no Apollo Program or not started.")]
+		public SpaceShipDto SpaceShip { get; set; }
     }
 }
-
-/*
-public partial class Player : BaseInstance, ITurn
-	{
-		// Dependency injection, but static for all the static members.
-		public static Game Game = null;
-		private readonly ICivilization _civilization;
-		private readonly string _tribeName, _tribeNamePlural;
-
-		private readonly bool[,] _explored = new bool[Map.WIDTH, Map.HEIGHT];
-		private readonly bool[,] _visible = new bool[Map.WIDTH, Map.HEIGHT];
-		private readonly List<byte> _advances = new List<byte>();
-		private readonly List<byte> _embassies = new List<byte>();
-		
-		private short _anarchy = 0;
-		private short _gold;
-		private IAdvance _currentResearch = null;
-
-		public event EventHandler Destroyed;
-
-		internal int CityNamesSkipped = 0;
-
-		internal short StartX { get; set; }
-		
-		internal bool AnarchyDespotism => Game.Started && (Government is Anarchy || Government is Despotism);
-
-		internal bool MonarchyCommunist => Game.Started && (Government is Gov.Monarchy || Government is Gov.Communism);
-
-		internal bool RepublicDemocratic => Game.Started && (Government is Republic || Government is Gov.Democracy);
-
-		public ICivilization Civilization => _civilization;
-		
-		public string LeaderName => _civilization.Leader.Name;
-		public string TribeName => _tribeName;
-		public string TribeNamePlural => _tribeNamePlural;
-
-		public byte Handicap { get; internal set; }
-
-		public readonly PalaceData Palace = new PalaceData();
-
-		internal AI AI => !IsHuman ? AI.Instance(this) : null;
-		
-		private IGovernment _government;
-		public IGovernment Government
-		{
-			get => _government;
-			internal set
-			{
-				if (value == null) return;
-				_government = value;
-			}
-		}
-
-		private int _luxuriesRate = 0, _taxesRate = 5, _scienceRate = 5;
-		public int LuxuriesRate
-		{
-			get => _luxuriesRate;
-			set
-			{
-				int diff = _luxuriesRate - value;
-				_luxuriesRate = value;
-				_scienceRate += diff;
-			}
-		}
-		public int TaxesRate
-		{
-			get => _taxesRate;
-			set
-			{
-				int diff = _taxesRate - value;
-				_taxesRate = value;
-				_scienceRate += diff;
-			}
-		}
-		public int ScienceRate => _scienceRate;
-
-		public void Revolt()
-		{
-			_anarchy = (short)((HasWonder<Pyramids>() && !Game.WonderObsolete<Pyramids>()) ? 0 : 4 - (Game.GameTurn % 4) - 1);
-			Government = new Anarchy();
-			if (!IsHuman) return;
-			GameTask.Enqueue(Message.Newspaper(null, $"The {Game.Instance.HumanPlayer.TribeNamePlural} are", "revolting! Citizens", "demand new govt."));
-		}
-
-		public bool IsHuman => (Game.HumanPlayer == this);
-
-		public virtual City[] Cities => Game.GetCities().Where(c => this == c.Owner && c.Size > 0).ToArray();
-		
-		public virtual ICity[] CitiesInterface => Game.GetCities().Where(c => this == c.Owner && c.Size > 0).ToArray();
-
-		public int Population => Cities.Sum(c => c.Population);
-		
-		public short Gold
-		{
-			get
-			{
-				return _gold;
-			}
-			internal set
-			{
-				if (value < 0)
-				{
-					//TODO: Implement sold improvements task
-					value = 0;
-				}
-				if (value > 30000)
-					value = 30000;
-				_gold = value;
-			}
-		}
-
-		internal short ScienceCost
-		{
-			get
-			{
-				short cost = (short)((Game.Instance.Difficulty + 3) * 2 * (_advances.Count() + 1) * (Common.TurnToYear(Game.Instance.GameTurn) > 0 ? 2 : 1));
-				if (cost < 12)
-					return 12;
-				return cost;
-			}
-		}
-		
-		public short Science { get; internal set; }
-
-		public void AddAdvance(IAdvance advance, bool setOrigin = true)
-		{
-			if (Game.Started && Game.CurrentPlayer.CurrentResearch?.Id == advance.Id)
-				GameTask.Enqueue(new TechSelect(Game.CurrentPlayer));
-			_advances.Add(advance.Id);
-			if (!setOrigin) return;
-			Game.Instance.SetAdvanceOrigin(advance, this);
-		}
-
-		public void DeleteAdvance(IAdvance advance) => _advances.RemoveAll(x => x == advance.Id);
-		
-		public string LatestAdvance
-		{
-			get
-			{
-				if (_advances.Count == 0)
-					return "Irrigation";
-				return Reflect.GetAdvances().First(a => a.Id == _advances.Last()).Name;
-			}
-		}
-
-*/

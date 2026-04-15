@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Persistence;
+using CivOne.Services.GlobalWarming;
 using CivOne.Tiles;
 using CivOne.Units;
 using CivOne.Wonders;
@@ -31,6 +32,8 @@ namespace CivOne
 
 		ushort GameTurn { get; }
 		ushort AnthologyTurn { get; }
+		ushort PeaceTurns { get; }
+		ushort PlayerFutureTech { get; }
 
 		string[] CityNames { get; }
 
@@ -49,16 +52,15 @@ namespace CivOne
 		public bool EnemyMoves { get; }
 		public bool Palace { get; }
 
+		int? GameRandomSeed { get; }
+
 		int TerrainMasterWord { get; }
+
+		IGlobalWarmingService GlobalWarmingService { get; }
 	}
 
 	public class GameStateHandler
 	{
-		/*
-		Muss anders konvertiert werden. Wir brauchen einen Zwischenschritt, d.h. eine DTO wo noch unsere internen Typen verwendet werden, da sie einfacher zu handeln sind (z.b. yaml)
-		aber die alte art in Binär muss dann nochmal extra in einen andere DTO Klasse umgewandelt werden.
-
-		*/
 		public GameState Create(IGameSnapshotSource game)
 		{
 			List<bool> options =
@@ -84,11 +86,12 @@ namespace CivOne
 				Players = game.Players,
 
 				AnthologyTurn = game.AnthologyTurn,
-				// Both seeds are currently sourced from TerrainMasterWord (legacy behavior).
-				// Ideally: GameRandomSeed = game.RandomSeedSource, MapSeed = game.TerrainMasterWord
-				// For now, maintaining backward compatibility with historical assignments.
+				// Seed semantics:
+				// - TerrainSeed is always sourced from map context (TerrainMasterWord)
+				// - RandomSeed prefers explicit GameRandomSeed, with legacy fallback to TerrainMasterWord
+				//   when no dedicated RNG seed source is exposed by the snapshot source.
 				TerrainSeed = game.TerrainMasterWord,
-				RandomSeed = game.TerrainMasterWord,
+				RandomSeed = game.GameRandomSeed ?? game.TerrainMasterWord,
 				
 				MapWidth = game.MapTiles.GetLength(0),
 				MapHeight = game.MapTiles.GetLength(0) > 0 ? 
@@ -96,6 +99,7 @@ namespace CivOne
 				
 				MapTiles = game.MapTiles,
 				Units = game.Units,  // Critical: Units were missing from snapshot!
+				CityNames = game.CityNames,
 				
 				GameOptions = [.. options				
 					.Select((option, index) => (option, index))
@@ -103,6 +107,13 @@ namespace CivOne
 					.Select(x => (GameOptionEnum)x.index)],
 
 				Cities = game.Cities,
+				AdvanceOrigin = game.AdvanceOrigin,
+				ReplayData = [.. game.ReplayData],
+				PeaceTurns = game.PeaceTurns,
+				PlayerFutureTech = game.PlayerFutureTech,
+				GlobalWarmingCount = game.GlobalWarmingService?.GlobalWarmingCount ?? 0,
+				PollutedSquaresCount = game.GlobalWarmingService?.PollutedSquaresCount ?? 0,
+				WarmingIndicator = game.GlobalWarmingService?.WarmingIndicator ?? WarmingIndicator.None,
 			};
 		}
 

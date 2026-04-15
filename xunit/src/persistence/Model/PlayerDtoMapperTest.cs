@@ -16,6 +16,10 @@ namespace CivOne.Persistence.Model
 	using CivOne.Wonders;
 	using Xunit;
 	using AdvanceId = System.UInt32;
+	using CivOne.Persistence.Factories;
+	using CivOne.Persistence.Game;
+	using CivOne.Persistence.Resolver;
+	using CivOne.Persistence.Mapper;
 
 	public class PlayerDtoMapperTest
 	{
@@ -24,6 +28,7 @@ namespace CivOne.Persistence.Model
 		private readonly MockedIPlayer _player;
 		private readonly MockedICity _city;
 		private readonly MockedIUnit _unit;
+		private readonly Guid _playerGuid = Guid.NewGuid();
 
 		public PlayerDtoMapperTest()
 		{
@@ -59,11 +64,20 @@ namespace CivOne.Persistence.Model
 
 			_player = new MockedIPlayer()
 			{
+				PlayerGuid = _playerGuid,
 				Advances = [1, 2, 3],
 				Embassies = [4, 5],
+				Diplomacy = [0, 1, 2, 3, 4, 5, 6, 7],
 				Anarchy = 2,
 				Gold = 1234,
 				CurrentResearch = new MockedIAdvance() { Id = 1 },
+				FutureTechCount = 6,
+				HumanContactTurn = 12,
+				UnitsLost = [.. Enumerable.Range(0, 28).Select(i => (ushort)i)],
+				UnitsDestroyedBy = [.. Enumerable.Range(0, 8).Select(i => (ushort)i)],
+				EpicRanking = 11,
+				MilitaryPower = 222,
+				CivilizationScore = 333,
 				Government = new MockedIGovernment() { Id = 1 },
 				Palace = new MockedIPalace(),
 				Cities = [_city],
@@ -72,9 +86,21 @@ namespace CivOne.Persistence.Model
 			originalDto = new PlayerDto
 			{
 				Id = 0,
+				PlayerGuid = _playerGuid,
 				Civilization = new CivilizationDto { LeaderClassName = civsInGame[0].Leader.GetType().Name },
 				Advances = [1, 2, 3],
 				Embassies = [4, 5],
+				Diplomacy =
+				[
+					new DiplomacyEntryDto { TargetPlayerId = 0, RawFlags = 0, Decoded = new DiplomacyDecodedDto() },
+					new DiplomacyEntryDto { TargetPlayerId = 1, RawFlags = 1, Decoded = new DiplomacyDecodedDto() },
+					new DiplomacyEntryDto { TargetPlayerId = 2, RawFlags = 2, Decoded = new DiplomacyDecodedDto() },
+					new DiplomacyEntryDto { TargetPlayerId = 3, RawFlags = 3, Decoded = new DiplomacyDecodedDto() },
+					new DiplomacyEntryDto { TargetPlayerId = 4, RawFlags = 4, Decoded = new DiplomacyDecodedDto() },
+					new DiplomacyEntryDto { TargetPlayerId = 5, RawFlags = 5, Decoded = new DiplomacyDecodedDto() },
+					new DiplomacyEntryDto { TargetPlayerId = 6, RawFlags = 6, Decoded = new DiplomacyDecodedDto() },
+					new DiplomacyEntryDto { TargetPlayerId = 7, RawFlags = 7, Decoded = new DiplomacyDecodedDto() }
+				],
 				Anarchy = 2,
 				Gold = 1234,
 				CurrentResearch = 1,
@@ -118,12 +144,26 @@ namespace CivOne.Persistence.Model
 				TaxesRate = 5,
 				ScienceRate = 5,
 				Science = 100,
-				CityNamesSkipped = 0
+				CityNamesSkipped = 0,
+				FutureTechCount = 6,
+				HumanContactTurn = 12,
+				StartX = 33,
+				SpaceShip = new SpaceShipDto
+				{
+					Grid = new SpaceShipGridMap2d(new SpaceShipComponentType[12, 12]),
+					Population = 0,
+					LaunchYear = 0
+				},
+				UnitsLost = [.. Enumerable.Range(0, 28).Select(i => (long)i)],
+				UnitsDestroyedBy = [.. Enumerable.Range(0, 8).Select(i => (long)i)],
+				EpicRanking = 11,
+				MilitaryPower = 222,
+				CivilizationScore = 333
 			};
 
 			// Setup game instance mock
 			var gameInstance = new MockPlayerGameForTesting(_player, [_unit]);
-			var yamlReadValueSanitizer = new YamlReadValueSanitizer(new NoOpLogger());
+			var yamlReadValueSanitizer = new ValueSanitizer(new NoOpLogger());
 			
 			_testee = new PlayerDtoMapper(
 				gameInstance,
@@ -178,9 +218,32 @@ namespace CivOne.Persistence.Model
 			}
 		}
 
+		[Fact]
+		public void TestPlayerDtoMapper_FromDto_ExpandsAllAdvancesSentinel()
+		{
+			var dto = new PlayerDto
+			{
+				Civilization = originalDto.Civilization,
+				Advances = [-1],
+				Embassies = [],
+				Diplomacy = [],
+				CurrentResearch = 1,
+				Government = 1,
+				Cities = [],
+				Units = [],
+				Explored = new Bool2dMap(5, 5),
+				Visible = new Bool2dMap(5, 5)
+			};
+
+			var actual = _testee.FromDto(dto);
+
+			Assert.Equal([0, 1, 2, 3], actual.Advances);
+		}
+
 		private static Dictionary<string, Action> GetPlayerDtoRoundTripAssertionMap(PlayerDto expected, PlayerDto actual)
 			=> new()
 			{
+				[nameof(PlayerDto.PlayerGuid)] = () => Assert.Equal(expected.PlayerGuid, actual.PlayerGuid),
 				[nameof(PlayerDto.TribeName)] = () => Assert.Equal(expected.TribeName, actual.TribeName),
 				[nameof(PlayerDto.TribeNamePlural)] = () => Assert.Equal(expected.TribeNamePlural, actual.TribeNamePlural),
 				[nameof(PlayerDto.Anarchy)] = () => Assert.Equal(expected.Anarchy, actual.Anarchy),
@@ -192,8 +255,27 @@ namespace CivOne.Persistence.Model
 				[nameof(PlayerDto.ScienceRate)] = () => Assert.Equal(expected.ScienceRate, actual.ScienceRate),
 				[nameof(PlayerDto.Science)] = () => Assert.Equal(expected.Science, actual.Science),
 				[nameof(PlayerDto.CityNamesSkipped)] = () => Assert.Equal(expected.CityNamesSkipped, actual.CityNamesSkipped),
+				[nameof(PlayerDto.FutureTechCount)] = () => Assert.Equal(expected.FutureTechCount, actual.FutureTechCount),
+				[nameof(PlayerDto.HumanContactTurn)] = () => Assert.Equal(expected.HumanContactTurn, actual.HumanContactTurn),
+				[nameof(PlayerDto.StartX)] = () => Assert.Equal(expected.StartX, actual.StartX),
+				[nameof(PlayerDto.UnitsLost)] = () => Assert.Equal(expected.UnitsLost, actual.UnitsLost),
+				[nameof(PlayerDto.UnitsDestroyedBy)] = () => Assert.Equal(expected.UnitsDestroyedBy, actual.UnitsDestroyedBy),
+				[nameof(PlayerDto.EpicRanking)] = () => Assert.Equal(expected.EpicRanking, actual.EpicRanking),
+				[nameof(PlayerDto.MilitaryPower)] = () => Assert.Equal(expected.MilitaryPower, actual.MilitaryPower),
+				[nameof(PlayerDto.CivilizationScore)] = () => Assert.Equal(expected.CivilizationScore, actual.CivilizationScore),
 				[nameof(PlayerDto.Advances)] = () => Assert.Equal(expected.Advances, actual.Advances),
 				[nameof(PlayerDto.Embassies)] = () => Assert.Equal(expected.Embassies, actual.Embassies),
+				[nameof(PlayerDto.Diplomacy)] = () =>
+				{
+					Assert.NotNull(actual.Diplomacy);
+					Assert.Equal(expected.Diplomacy.Count, actual.Diplomacy.Count);
+					for (var i = 0; i < expected.Diplomacy.Count; i++)
+					{
+						Assert.Equal(expected.Diplomacy[i].TargetPlayerId, actual.Diplomacy[i].TargetPlayerId);
+						Assert.Equal(expected.Diplomacy[i].RawFlags, actual.Diplomacy[i].RawFlags);
+						Assert.NotNull(actual.Diplomacy[i].Decoded);
+					}
+				},
 				[nameof(PlayerDto.Explored)] = () => AssertBool2dMapEqual(expected.Explored, actual.Explored),
 				[nameof(PlayerDto.Visible)] = () => AssertBool2dMapEqual(expected.Visible, actual.Visible),
 				[nameof(PlayerDto.Civilization)] = () => Assert.Equal(expected.Civilization.LeaderClassName, actual.Civilization.LeaderClassName),
@@ -204,6 +286,8 @@ namespace CivOne.Persistence.Model
 					Assert.Equal(expected.Cities[0].Name, actual.Cities[0].Name);
 					Assert.Equal(expected.Cities[0].Size, actual.Cities[0].Size);
 					Assert.Equal(expected.Cities[0].Owner, actual.Cities[0].Owner);
+					Assert.Equal(expected.Cities[0].Food, actual.Cities[0].Food);
+					Assert.Equal(expected.Cities[0].Shields, actual.Cities[0].Shields);
 				},
 				[nameof(PlayerDto.Units)] = () =>
 				{
@@ -214,11 +298,12 @@ namespace CivOne.Persistence.Model
 					Assert.Equal(expected.Units[0].MovesLeft, actual.Units[0].MovesLeft);
 					Assert.Equal(expected.Units[0].PartMoves, actual.Units[0].PartMoves);
 					Assert.Equal(expected.Units[0].Order, actual.Units[0].Order);
-				}
+				},
+				[nameof(PlayerDto.SpaceShip)] = () => AssertSpaceShipEqual(expected.SpaceShip, actual.SpaceShip)
 			};
 
 		private static HashSet<string> GetExcludedPlayerDtoProperties() =>
-			[nameof(PlayerDto.Id)];
+			[nameof(PlayerDto.Id), nameof(PlayerDto.UnitsDestroyedByByPlayerGuid)];
 
 		private static HashSet<string> GetWritablePropertyNames<T>() => typeof(T).GetProperties()
 			.Where(p => p.CanRead && p.CanWrite)
@@ -235,6 +320,34 @@ namespace CivOne.Persistence.Model
 				for (var y = 0; y < expected.GetLength(1); y++)
 				{
 					Assert.Equal(expected[x, y], actual[x, y]);
+				}
+			}
+		}
+
+		private static void AssertSpaceShipEqual(SpaceShipDto expected, SpaceShipDto actual)
+		{
+			if (expected == null)
+			{
+				Assert.Null(actual);
+				return;
+			}
+
+			Assert.NotNull(actual);
+			Assert.Equal(expected.Population, actual.Population);
+			Assert.Equal(expected.LaunchYear, actual.LaunchYear);
+
+			var expectedGrid = expected.Grid?.ToArray();
+			var actualGrid = actual.Grid?.ToArray();
+			Assert.NotNull(expectedGrid);
+			Assert.NotNull(actualGrid);
+			Assert.Equal(expectedGrid.GetLength(0), actualGrid.GetLength(0));
+			Assert.Equal(expectedGrid.GetLength(1), actualGrid.GetLength(1));
+
+			for (var x = 0; x < expectedGrid.GetLength(0); x++)
+			{
+				for (var y = 0; y < expectedGrid.GetLength(1); y++)
+				{
+					Assert.Equal(expectedGrid[x, y], actualGrid[x, y]);
 				}
 			}
 		}
@@ -326,6 +439,11 @@ namespace CivOne.Persistence.Model
 			{
 				return new MockedIAdvance { Id = (byte)id };
 			}
+
+			public IEnumerable<byte> ResolveAllIds()
+			{
+				return [0, 1, 2, 3];
+			}
 		}
 
 		private sealed class TestGovernmentResolver : IGovernmentResolver
@@ -336,23 +454,3 @@ namespace CivOne.Persistence.Model
 			}
 		}	}
 }
-
-/*
-		[Fact]
-		public void TestByteArrayArrayFlowStyleYamlTypeConverterSingleRow()
-		{
-			byte[][] testData = [[1, 2, 3]];
-
-			string yaml = YamlWriter.Of(testData)
-				.WithTypeConverter(new ByteArrayArrayFlowStyleYamlTypeConverter())
-				.AsString();
-
-			var roundTripped = YamlReader.OfString(yaml)
-				.WithTypeConverter(new ByteArrayArrayFlowStyleYamlTypeConverter())
-				.As<byte[][]>();
-
-			Assert.Single(roundTripped);
-			Assert.Equal(new byte[] { 1, 2, 3 }, roundTripped[0]);
-		}
-
-*/

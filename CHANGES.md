@@ -6,6 +6,54 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: In Yaml, Advances allows -1 as an indicator to represent "all advances", e.g. for debugging or testing purposes. The mapper will resolve this to the full list of advance IDs in the game.
+* Feature: Gameplay updates
+  * Future Tech handling:
+    * Added per-player `FutureTechCount` runtime state.
+    * When no normal research is available and science threshold is reached, Future Tech is applied.
+    * Human player increments both counters (`FutureTechCount` + legacy global `PlayerFutureTech`), AI increments only per-player counter.
+  * Human contact tracking:
+    * `HumanContactTurn` is set when a non-human player gains visibility of a human-owned unit/city.
+    * Human exploration does not modify AI contact counters.
+  * Diplomacy persistence:
+    * Added per-player `Diplomacy` field (8 target entries with raw bitmask flags) to the YAML/game persistence model.
+    * Added `DiplomacyDecodedDto` as placeholder for future decoded diplomacy flags.
+    * **Not yet active in gameplay** — diplomacy flags are loaded and saved but not yet modified during gameplay.
+  * Peace timer (minimal integration):
+    * `PeaceTurns` now increases by 1 when a full game turn advances without hostile action.
+    * Any hostile action during a turn resets `PeaceTurns` to `0` on the next turn advance.
+  * Refactor: `Player.Explore(...)`
+    * Kept original visibility update logic as a dedicated contiguous method block.
+    * Moved contact-tracking behavior into separate helper methods to avoid mixing with legacy core code.
+* Feature:Implemented Future Tech counter for players, stored in save files and used for game logic (e.g. victory conditions).
+  * Each new Future Tech increases the counter by 1.
+* Fix:Heap corruption due to buffer allocation and indexing issues in Win32 folder browser and Bytemap copy operations.
+* YAML: Added `UnitsDestroyedBy` statistics per player
+  * Each player now tracks how many units they have destroyed, broken down by opponent.
+  * **Not yet active in gameplay** — counters are loaded and saved but not yet incremented during combat.
+  * See [docs/UNITS_DESTROYED_BY_GAME_IMPLEMENTATION.md](docs/UNITS_DESTROYED_BY_GAME_IMPLEMENTATION.md) for the planned runtime implementation.
+* Implemented YAML savegame format to save and load games
+  * Implemented extensive DTO and Mapper classes to convert between internal game state and YAML save format.
+  * Using modern software design principles, patterns and methods.
+  * Using extensive Tests to ensure correctness and maintainability of the code.
+  * Added YAML-based loading and saving for game state persistence.
+  * Added command line loading of YAML save files via `--load-cos <path>`.
+  * Added runtime support setting `LoadCosFile` to start directly from a YAML save file.
+  * Designed to support future in-memory model refactoring while keeping save format mapping isolated.
+  * Current scope focuses on CivOne YAML save files and does not target binary CIV save compatibility.
+  * Prepared for future changes to how data is handled in memory for more flexibility and maintainability.
+  * TestBase and TestBase2 now load the Earth map from bundled `earth.yml` instead of relying on `MAP.PIC`, ensuring consistent test environments without external dependencies.
+  * Added space ship grid mapping support in YAML **Not yet active in gameplay** (see [docs/SPACESHIP_FULL_IMPLEMENTATION_PLAN.md](docs/SPACESHIP_FULL_IMPLEMENTATION_PLAN.md)).
+  * See [YAML Save Format](YAML.md) for more details.
+* Fix: Improved CityView panorama road generation to prevent random road breaks while keeping layout natural.
+  * Added targeted post-processing to close only real single-tile gaps on the road axes.
+  * Restores missing intersection tiles when at least two adjacent road segments connect to the crossing.
+  * Keeps a minimum number of houses when removing isolated tiles, avoiding empty-looking city views.
+* Fix: Improved SDL keyboard event conversion for modifier + digit combinations (top-row digits), including debug diagnostics.
+  * Ctrl + Shift + 0 now maps reliably to digit input for specialist hotkeys.
+  * Added detailed DEBUG keyboard logs (raw scancode/keycode/modifier and converted key event).
+* Feature: Added a new hotkey (Tab) to cycle through production filter modes in the city production menu (All, Units, Buildings, Wonders, All).
+* Fix: Fixed an issue where the game would freeze in city production menu screen, if more than 20 items were available and the player hit "More..." to see the next page of items.
 * Github pipeline to build and automatic testing and creating release artifacts (Windows, Linux)
 * Feature: Added Debug keys for debugging purposes in DEBUG mode
   * Ctrl + Shift + F12 to hit debugger breakpoint
@@ -61,7 +109,6 @@ I did not browse all issues on github at first, so I did not recognize that some
     * Removes units on affected tiles
     * Removes improvements on affected tiles
     * Removes pole ice caps (Arctic and Tundra tiles on top and bottom 3 rows of map) in 20% of cases.
-  * [ ] TODO: store and load from save files.
 * Feature: Implement pollution mechanics and visual representation in city management
 * Fix: Removed duplicate update check in DrawLayer to allow using false as return value in HasUpdate in city screens and still be able to draw the contents.
 * Feature: Citizens in Attitude Survey screen and Top Five Cities screen are drawn tightly packed in big cities (size > 20) to show up to 99 citizens.

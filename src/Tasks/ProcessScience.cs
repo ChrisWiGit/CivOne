@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Linq;
 using CivOne.Screens;
 
 namespace CivOne.Tasks
@@ -30,11 +31,28 @@ namespace CivOne.Tasks
 			civilopedia.Closed += CivilopediaClosed;
 			Common.AddScreen(civilopedia);
 		}
-		
+
+		private void TryRegisterFutureTech()
+		{
+			if (_player.Science >= _player.ScienceCost)
+			{
+				_player.Science -= _player.ScienceCost;
+				Game.RegisterFutureTech(_player);
+			}
+		}
+
 		public override void Run()
 		{
 			if (_player.CurrentResearch == null)
 			{
+				if (!_player.AvailableResearch.Any())
+				{
+					TryRegisterFutureTech();
+
+					EndTask();
+					return;
+				}
+
 				if (_human)
 					GameTask.Enqueue(new TechSelect(_player));
 				else

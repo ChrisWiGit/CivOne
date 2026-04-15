@@ -1,0 +1,61 @@
+name: Test Coverage
+
+on:
+  push:
+    branches: [master, yaml-review]
+  pull_request:
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - run: dotnet restore
+
+      - name: Run tests with coverage
+        run: >
+          dotnet test
+          xunit/CivOne.UnitTests.csproj
+          --collect:"XPlat Code Coverage"
+          --results-directory TestResults
+          --filter "FullyQualifiedName!~CivOne.UnitTests.CityCitizenServiceImplPerformanceTests.Measure"
+
+      - name: Generate coverage report
+        uses: danielpalme/ReportGenerator-GitHub-Action@5
+        with:
+          reports: "TestResults/**/coverage.cobertura.xml"
+          targetdir: "CoverageReport"
+          reporttypes: "Html;Cobertura;TextSummary"
+
+      - name: Add coverage to PR
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: CoverageReport/Cobertura.xml
+          badge: true
+          format: markdown
+          output: both
+
+      - name: Post coverage comment to PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          recreate: true
+          path: code-coverage-results.md
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: CoverageReport

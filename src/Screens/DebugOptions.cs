@@ -132,6 +132,7 @@ namespace CivOne.Screens
 				Game.globalWarmingScourgeService.UnleashScourgeOfPollution();
 			}
 			PolluteTiles(false);
+			Game.GlobalWarmingService.RefreshPollutionState();
 			Common.GamePlay.RefreshMap();
 			GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has caused", "instant global warming!"));
 			Destroy();
