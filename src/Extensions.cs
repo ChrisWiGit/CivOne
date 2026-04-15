@@ -104,6 +104,11 @@ namespace CivOne
 				Owner = city.Owner,
 				Food = (ushort)Math.Clamp(city.Food, 0, ushort.MaxValue),
 				Shields = (ushort)Math.Clamp(city.Shields, 0, ushort.MaxValue),
+				// BaseTrade is written solely for compatibility with original CIV1 DOS saves.
+				// CivOne itself never reads this value back – trade is recalculated dynamically
+				// from resource tiles each turn. Original CIV1 uses this cached value in the
+				// trade-route yield formula: (BaseTrade_A + BaseTrade_B + 4) / 8.
+				BaseTrade = (byte)Math.Clamp(city.TradeTotal, 0, byte.MaxValue),
 				ResourceTiles = city.GetResourceTiles(),
 				// fire-eggs 20190622 make sure to save fortify/veteran status as per Microprose
 				FortifiedUnits = units?.Select(x => (byte)((int)x.Type | 0x40 | (x.Veteran ? 0x80 : 0))).ToArray(),

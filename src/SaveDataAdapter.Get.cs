@@ -129,6 +129,9 @@ namespace CivOne
 					Status = city.Status,
 					ActualSize = city.ActualSize,
 					VisibleSize = city.VisibleSize,
+					// BaseTrade is preserved for round-trip fidelity with CIV1 DOS saves.
+					// CivOne recalculates trade dynamically and never reads this value back at runtime.
+					BaseTrade = city.BaseTrade,
 					CurrentProduction = city.CurrentProduction,
 					Owner = city.Owner,
 					Food = city.Food,
