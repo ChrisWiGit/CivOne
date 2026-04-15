@@ -27,8 +27,11 @@ jobs:
             - name: Restore dependencies
               run: dotnet restore CivOne.sln
 
-            - name: Restore local tools
-              run: dotnet tool restore
+            - name: Install ReportGenerator tool
+              run: dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.*
+
+            - name: Add dotnet tools to PATH
+              run: echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
 
             - name: Run tests with coverage
               run: >
@@ -41,7 +44,7 @@ jobs:
 
             - name: Generate coverage report
               run: >
-                  dotnet tool run reportgenerator --
+                  reportgenerator
                   "-reports:TestResults/**/coverage.cobertura.xml"
                   "-targetdir:CoverageReport"
                   "-reporttypes:Html;TextSummary"
