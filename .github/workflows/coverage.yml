@@ -1,71 +1,52 @@
 name: Test Coverage
 
 on:
-    pull_request:
     push:
-        branches:
-            - master
-            - yaml-review
-
-permissions:
-    contents: read
+        branches: [master, yaml-review]
+    pull_request:
 
 jobs:
     coverage:
-        name: Test with coverage
         runs-on: ubuntu-latest
 
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
+        permissions:
+            contents: read
+            pull-requests: write
 
-            - name: Setup .NET
-              uses: actions/setup-dotnet@v4
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-dotnet@v4
               with:
                   dotnet-version: "9.0.x"
 
-            - name: Restore dependencies
-              run: dotnet restore CivOne.sln
-
-            - name: Install ReportGenerator tool
-              run: dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.*
-
-            - name: Add dotnet tools to PATH
-              run: echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+            - run: dotnet restore
 
             - name: Run tests with coverage
               run: >
-                  dotnet test xunit/CivOne.UnitTests.csproj
-                  --configuration Debug
-                  --collect:"XPlat Code Coverage"
-                  --results-directory TestResults
+                  dotnet test
+                  /p:CollectCoverage=true
+                  /p:CoverletOutputFormat=cobertura
+                  /p:CoverletOutput=coverage/
                   --filter "FullyQualifiedName!~CivOne.UnitTests.CityCitizenServiceImplPerformanceTests.Measure"
 
             - name: Generate coverage report
-              run: |
-                REPORT=$(find TestResults -name 'coverage.cobertura.xml' -type f | head -1)
-                if [ -z "$REPORT" ]; then
-                  echo "No coverage.cobertura.xml found under TestResults/" && exit 1
-                fi
-                echo "Using coverage file: $REPORT"
-                reportgenerator "-reports:$REPORT" "-targetdir:CoverageReport" "-reporttypes:Html;TextSummary"
+              uses: danielpalme/ReportGenerator-GitHub-Action@5
+              with:
+                  reports: "coverage/coverage.cobertura.xml"
+                  targetdir: "CoverageReport"
+                  reporttypes: "Html;Cobertura;TextSummary"
 
-            - name: Print coverage summary
-              run: |
-                  echo
-                  echo "=== Coverage Summary ==="
-                  cat CoverageReport/Summary.txt
-
-            - name: Add coverage summary to job summary
-              run: |
-                  echo "## Coverage Summary" >> "$GITHUB_STEP_SUMMARY"
-                  echo '```text' >> "$GITHUB_STEP_SUMMARY"
-                  cat CoverageReport/Summary.txt >> "$GITHUB_STEP_SUMMARY"
-                  echo '```' >> "$GITHUB_STEP_SUMMARY"
+            - name: Add coverage to PR
+              uses: irongut/CodeCoverageSummary@v1
+              with:
+                  filename: CoverageReport/Cobertura.xml
+                  badge: true
+                  format: markdown
+                  output: both
 
             - name: Upload coverage artifact
               uses: actions/upload-artifact@v4
               with:
                   name: coverage-report
                   path: CoverageReport
-                  if-no-files-found: error
