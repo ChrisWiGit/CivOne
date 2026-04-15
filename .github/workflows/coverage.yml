@@ -43,11 +43,13 @@ jobs:
                   --filter "FullyQualifiedName!~CivOne.UnitTests.CityCitizenServiceImplPerformanceTests.Measure"
 
             - name: Generate coverage report
-              run: >
-                  reportgenerator
-                  "-reports:TestResults/**/coverage.cobertura.xml"
-                  "-targetdir:CoverageReport"
-                  "-reporttypes:Html;TextSummary"
+              run: |
+                REPORT=$(find TestResults -name 'coverage.cobertura.xml' -type f | head -1)
+                if [ -z "$REPORT" ]; then
+                  echo "No coverage.cobertura.xml found under TestResults/" && exit 1
+                fi
+                echo "Using coverage file: $REPORT"
+                reportgenerator "-reports:$REPORT" "-targetdir:CoverageReport" "-reporttypes:Html;TextSummary"
 
             - name: Print coverage summary
               run: |
