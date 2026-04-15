@@ -1,5 +1,8 @@
 using System.Collections.Generic;
+using System.Linq;
+using CivOne.Civilizations;
 using CivOne.Services.GlobalWarming;
+using CivOne.src;
 using CivOne.Tiles;
 using CivOne.Units;
 using Xunit;
@@ -92,6 +95,85 @@ namespace CivOne.UnitTests.Persistence
             public IGlobalWarmingService GlobalWarmingService { get; set; } = null;
 
             public byte PlayerNumber(Player player) => 0;
+        }
+    }
+
+    public class GameStateHandlerLegacyCityExportTests : TestsBase
+    {
+        private readonly GameStateHandler _testee;
+
+        public GameStateHandlerLegacyCityExportTests()
+        {
+            _testee = new GameStateHandler();
+        }
+
+        [Fact]
+        public void CreateOld_UsesHumanVisibleSize_ForEnemyCityExport()
+        {
+            // Arrange
+            var otherPlayer = Game.Instance.Players.First(player => player != playa && player.Civilization is not Barbarian);
+            var city = Game.Instance.AddCity(otherPlayer, 3, 52, 14);
+            city.Size = 7;
+            city.VisibleSizeToHumanPlayer = 3;
+            var snapshot = new RuntimeGameSnapshotSource(Game.Instance);
+
+            // Act
+            var actual = _testee.CreateOld(snapshot);
+
+            // Assert
+            var actualCity = Assert.Single(actual.Cities);
+            Assert.Equal(city.Size, actualCity.ActualSize);
+            Assert.Equal((byte)city.VisibleSizeToHumanPlayer, actualCity.VisibleSize);
+        }
+
+        private sealed class RuntimeGameSnapshotSource : IGameSnapshotSource
+        {
+            private readonly Game _game;
+
+            public RuntimeGameSnapshotSource(Game game)
+            {
+                _game = game;
+            }
+
+            public int Difficulty => _game.Difficulty;
+            public Player CurrentPlayer => _game.CurrentPlayer;
+            public Player HumanPlayer => _game.HumanPlayer;
+            public Player[] Players => [.. _game.Players];
+            public List<City> Cities => [.. _game.GetCities()];
+            public List<IUnit> Units => [.. _game.GetUnits()];
+            public Dictionary<byte, byte> AdvanceOrigin => new() { [0] = 0 };
+            public ushort GameTurn => Game.Instance.GameTurn;
+            public ushort AnthologyTurn => 0;
+            public ushort PeaceTurns => 0;
+            public ushort PlayerFutureTech => 0;
+            public string[] CityNames => _game.CityNames;
+            public List<ReplayData> ReplayData => [];
+            public ITile[,] MapTiles => GetMapTiles();
+            public bool Animations => _game.Animations;
+            public bool Sound => _game.Sound;
+            public bool CivilopediaText => _game.CivilopediaText;
+            public bool EndOfTurn => _game.EndOfTurn;
+            public bool InstantAdvice => _game.InstantAdvice;
+            public bool AutoSave => _game.AutoSave;
+            public bool EnemyMoves => _game.EnemyMoves;
+            public bool Palace => _game.Palace;
+            public int? GameRandomSeed => null;
+            public int TerrainMasterWord => 1;
+            public IGlobalWarmingService GlobalWarmingService => null;
+
+            public byte PlayerNumber(Player player) => _game.PlayerNumber(player);
+
+            private static ITile[,] GetMapTiles()
+            {
+                var output = new ITile[Map.WIDTH, Map.HEIGHT];
+                for (var x = 0; x < Map.WIDTH; x++)
+                for (var y = 0; y < Map.HEIGHT; y++)
+                {
+                    output[x, y] = Map.Instance[x, y];
+                }
+
+                return output;
+            }
         }
     }
 }

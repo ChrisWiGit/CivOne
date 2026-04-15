@@ -99,10 +99,11 @@ namespace CivOne
 				X = city.X,
 				Y = city.Y,
 				ActualSize = city.Size,
+				VisibleSize = (byte)Math.Clamp(city.VisibleSizeToHumanPlayer, 0, byte.MaxValue),
 				CurrentProduction = city.CurrentProduction.ProductionId,
 				Owner = city.Owner,
-				Food = (ushort)city.Food,
-				Shields = (ushort)city.Shields,
+				Food = (ushort)Math.Clamp(city.Food, 0, ushort.MaxValue),
+				Shields = (ushort)Math.Clamp(city.Shields, 0, ushort.MaxValue),
 				ResourceTiles = city.GetResourceTiles(),
 				// fire-eggs 20190622 make sure to save fortify/veteran status as per Microprose
 				FortifiedUnits = units?.Select(x => (byte)((int)x.Type | 0x40 | (x.Veteran ? 0x80 : 0))).ToArray(),
