@@ -27,15 +27,15 @@ jobs:
       - name: Run tests with coverage
         run: >
           dotnet test
-          /p:CollectCoverage=true
-          /p:CoverletOutputFormat=cobertura
-          /p:CoverletOutput=coverage/
+          xunit/CivOne.UnitTests.csproj
+          --collect:"XPlat Code Coverage"
+          --results-directory TestResults
           --filter "FullyQualifiedName!~CivOne.UnitTests.CityCitizenServiceImplPerformanceTests.Measure"
 
       - name: Generate coverage report
         uses: danielpalme/ReportGenerator-GitHub-Action@5
         with:
-          reports: "**/coverage/coverage.cobertura.xml"
+          reports: "TestResults/**/coverage.cobertura.xml"
           targetdir: "CoverageReport"
           reporttypes: "Html;Cobertura;TextSummary"
 
