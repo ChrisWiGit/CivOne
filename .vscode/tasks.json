@@ -58,6 +58,89 @@
 			}
 		},
 		{
+			"label": "test-coverage",
+			"group": "test",
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"test-coverage-run",
+				"test-coverage-report",
+				"test-coverage-summary"
+			],
+			"presentation": {
+				"focus": true,
+				"panel": "dedicated"
+			}
+		},
+		{
+			"label": "test-coverage-run",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"test",
+				"${workspaceRoot}/xunit/CivOne.UnitTests.csproj",
+				"--collect:XPlat Code Coverage",
+				"--results-directory",
+				"${workspaceRoot}/TestResults",
+				"--filter",
+				"FullyQualifiedName!~CivOne.UnitTests.CityCitizenServiceImplPerformanceTests.Measure"
+			],
+			"presentation": {
+				"focus": true,
+				"panel": "dedicated"
+			},
+			"hide": true
+		},
+		{
+			"label": "test-coverage-report",
+			"type": "process",
+			"command": "dotnet",
+			"args": [
+				"tool",
+				"run",
+				"reportgenerator",
+				"--",
+				"-reports:${workspaceRoot}/TestResults/**/coverage.cobertura.xml",
+				"-targetdir:${workspaceRoot}/CoverageReport",
+				"-reporttypes:Html;TextSummary"
+			],
+			"presentation": {
+				"focus": true,
+				"panel": "dedicated"
+			},
+			"hide": true
+		},
+		{
+			"label": "test-coverage-summary",
+			"type": "shell",
+			"windows": {
+				"command": "cmd",
+				"args": [
+					"/d",
+					"/c",
+					"echo. && echo === Coverage Summary === && type \"${workspaceRoot}\\CoverageReport\\Summary.txt\" && echo. && echo Coverage HTML generated at ${workspaceRoot}/CoverageReport/index.html"
+				]
+			},
+			"linux": {
+				"command": "bash",
+				"args": [
+					"-lc",
+					"echo; echo '=== Coverage Summary ==='; cat '${workspaceRoot}/CoverageReport/Summary.txt'; echo; echo 'Coverage HTML generated at ${workspaceRoot}/CoverageReport/index.html'"
+				]
+			},
+			"osx": {
+				"command": "bash",
+				"args": [
+					"-lc",
+					"echo; echo '=== Coverage Summary ==='; cat '${workspaceRoot}/CoverageReport/Summary.txt'; echo; echo 'Coverage HTML generated at ${workspaceRoot}/CoverageReport/index.html'"
+				]
+			},
+			"presentation": {
+				"focus": true,
+				"panel": "dedicated"
+			},
+			"hide": true
+		},
+		{
 			"label": "build-api",
 			"type": "shell",
 			"group": "build",
@@ -65,6 +148,65 @@
 			"args": [
 				"build",
 				"${workspaceRoot}/api/CivOne.API.csproj"
+			],
+			"presentation": {
+				"focus": true,
+				"panel": "dedicated"
+			}
+		},
+		{
+			"label": "clean",
+			"type": "shell",
+			"group": "build",
+			"command": "dotnet",
+			"args": [
+				"clean",
+				"${workspaceRoot}/CivOne.sln"
+			],
+			"presentation": {
+				"focus": true,
+				"panel": "dedicated"
+			},
+			"hide": true
+		},
+		{
+			"label": "clean-coverage-folders",
+			"type": "shell",
+			"windows": {
+				"command": "cmd",
+				"args": [
+					"/d",
+					"/c",
+					"if exist \"${workspaceRoot}\\TestResults\" rmdir /s /q \"${workspaceRoot}\\TestResults\" & if exist \"${workspaceRoot}\\CoverageReport\" rmdir /s /q \"${workspaceRoot}\\CoverageReport\""
+				]
+			},
+			"linux": {
+				"command": "bash",
+				"args": [
+					"-lc",
+					"rm -rf '${workspaceRoot}/TestResults' '${workspaceRoot}/CoverageReport'"
+				]
+			},
+			"osx": {
+				"command": "bash",
+				"args": [
+					"-lc",
+					"rm -rf '${workspaceRoot}/TestResults' '${workspaceRoot}/CoverageReport'"
+				]
+			},
+			"presentation": {
+				"focus": true,
+				"panel": "dedicated"
+			},
+			"hide": true
+		},
+		{
+			"label": "clean-all",
+			"group": "build",
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"clean",
+				"clean-coverage-folders"
 			],
 			"presentation": {
 				"focus": true,

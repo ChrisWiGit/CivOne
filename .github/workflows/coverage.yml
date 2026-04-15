@@ -1,0 +1,67 @@
+name: Test Coverage
+
+on:
+    pull_request:
+    push:
+        branches:
+            - master
+            - yaml-review
+
+permissions:
+    contents: read
+
+jobs:
+    coverage:
+        name: Test with coverage
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: "9.0.x"
+
+            - name: Restore dependencies
+              run: dotnet restore CivOne.sln
+
+            - name: Restore local tools
+              run: dotnet tool restore
+
+            - name: Run tests with coverage
+              run: >
+                  dotnet test xunit/CivOne.UnitTests.csproj
+                  --configuration Release
+                  --no-restore
+                  --collect:"XPlat Code Coverage"
+                  --results-directory TestResults
+                  --filter "FullyQualifiedName!~CivOne.UnitTests.CityCitizenServiceImplPerformanceTests.Measure"
+
+            - name: Generate coverage report
+              run: >
+                  dotnet tool run reportgenerator --
+                  "-reports:TestResults/**/coverage.cobertura.xml"
+                  "-targetdir:CoverageReport"
+                  "-reporttypes:Html;TextSummary"
+
+            - name: Print coverage summary
+              run: |
+                  echo
+                  echo "=== Coverage Summary ==="
+                  cat CoverageReport/Summary.txt
+
+            - name: Add coverage summary to job summary
+              run: |
+                  echo "## Coverage Summary" >> "$GITHUB_STEP_SUMMARY"
+                  echo '```text' >> "$GITHUB_STEP_SUMMARY"
+                  cat CoverageReport/Summary.txt >> "$GITHUB_STEP_SUMMARY"
+                  echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+            - name: Upload coverage artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: coverage-report
+                  path: CoverageReport
+                  if-no-files-found: error

@@ -301,6 +301,58 @@ To skip them use
 dotnet test --filter "FullyQualifiedName!~ZOCTests&FullyQualifiedName!~IrrigateTest"
 ```
 
+### Test coverage
+
+This repository supports code coverage with Coverlet and ReportGenerator.
+You can generate a text summary for the console and an HTML report for local inspection.
+
+Run coverage from command line.
+
+```sh
+dotnet test xunit/CivOne.UnitTests.csproj --collect:"XPlat Code Coverage" --results-directory TestResults --filter "FullyQualifiedName!~CivOne.UnitTests.CityCitizenServiceImplPerformanceTests.Measure"
+dotnet tool restore
+dotnet tool run reportgenerator -- "-reports:TestResults/**/coverage.cobertura.xml" "-targetdir:CoverageReport" "-reporttypes:Html;TextSummary"
+```
+
+Read the text summary in console friendly format.
+
+```sh
+cat CoverageReport/Summary.txt
+```
+
+On Windows Command Prompt you can use.
+
+```cmd
+type CoverageReport\Summary.txt
+```
+
+Open the HTML report at [CoverageReport/index.html](CoverageReport/index.html).
+
+If you use Visual Studio Code, run the task `test-coverage`.
+This task runs tests with coverage, generates HTML, and prints the text summary in the terminal.
+
+### Coverage in GitHub Actions
+
+A workflow is available at [.github/workflows/coverage.yml](.github/workflows/coverage.yml).
+It runs on push and pull request, prints the coverage summary in the job logs, writes the summary into the GitHub job summary, and uploads the HTML report as an artifact.
+
+### Cleaning up
+
+To clean build artifacts and coverage files:
+
+Run `dotnet clean` to remove `bin/` and `obj/` directories.
+
+```sh
+dotnet clean
+```
+
+Run the `clean-all` VS Code task to remove build artifacts and coverage data (`TestResults/` and `CoverageReport/`).
+
+Alternatively, run individual cleanup tasks in VS Code:
+
+* `clean` – Runs `dotnet clean`
+* `clean-coverage-folders` – Removes `TestResults/` and `CoverageReport/` directories
+
 ## Changes (Log)
 
 See [CHANGES.md](CHANGES.md) for a detailed list of changes and updates.
