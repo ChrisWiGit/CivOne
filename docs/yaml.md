@@ -5,9 +5,9 @@ The source of truth is the code in `src` and `api/src`.
 
 ## Scope
 
-The core game data contract is `IGameData` in `/home/runner/work/CivOne/CivOne/api/src/IGameData.cs`.
-The concrete implementation is `SaveDataAdapter` in `/home/runner/work/CivOne/CivOne/src/SaveDataAdapter.cs` and related partial files.
-Map persistence is implemented in `/home/runner/work/CivOne/CivOne/src/Map.LoadSave.cs`.
+The core game data contract is `IGameData` in `api/src/IGameData.cs`.
+The concrete implementation is `SaveDataAdapter` in `src/SaveDataAdapter.cs` and related partial files.
+Map persistence is implemented in `src/Map.LoadSave.cs`.
 
 ## Top-level YAML keys
 
@@ -58,7 +58,7 @@ The following top-level keys are expected to mirror `IGameData`.
 
 ## CityData shape
 
-`CityData` fields mirror `/home/runner/work/CivOne/CivOne/api/src/CityData.cs`.
+`CityData` fields mirror `api/src/CityData.cs`.
 
 | Key | Type | Notes |
 | --- | --- | --- |
@@ -81,7 +81,7 @@ The following top-level keys are expected to mirror `IGameData`.
 
 ## UnitData shape
 
-`UnitData` fields mirror `/home/runner/work/CivOne/CivOne/api/src/UnitData.cs`.
+`UnitData` fields mirror `api/src/UnitData.cs`.
 
 | Key | Type |
 | --- | --- |
@@ -111,7 +111,7 @@ If an older document used tokens like `Ah`, treat that table as obsolete.
 
 ### Terrain layer byte values
 
-From `/home/runner/work/CivOne/CivOne/src/Map.LoadSave.cs`.
+From `src/Map.LoadSave.cs`.
 
 | Byte | Terrain |
 | --- | --- |
