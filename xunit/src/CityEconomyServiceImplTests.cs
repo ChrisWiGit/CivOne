@@ -90,8 +90,9 @@ namespace CivOne.UnitTests
         [Fact]
         public void CalculateBreakdown_IncludesTradingRoutesAndWonderRules()
         {
-            City city = Game.Instance.AddCity(playa, 0, 40, 30);
-            City tradingCity = Game.Instance.AddCity(playa, 1, 42, 30);
+            Player player = playa;
+            City city = Game.Instance.AddCity(player, 0, 40, 30);
+            City tradingCity = Game.Instance.AddCity(player, 1, 42, 30);
 
             city.AddTradingCity(tradingCity);
             city.AddBuilding(new MarketPlace());
@@ -104,15 +105,15 @@ namespace CivOne.UnitTests
             city.SetupSpecialists = new List<Citizen> { Citizen.Entertainer, Citizen.Taxman, Citizen.Scientist };
             city.InvalidateCityBreakdownCache();
 
-            playa.TaxesRate = 4;
-            playa.LuxuriesRate = 3;
+            player.TaxesRate = 4;
+            player.LuxuriesRate = 3;
 
             CityEconomyServiceImpl service = new(city, Game.Instance);
             CityEconomyBreakdown breakdown = service.CalculateBreakdown();
 
             int expectedTotalTrade = city.RawTradeTotal + city.TradingCitiesSumValue;
-            short expectedTradeTaxes = service.CalculateTradeTaxes(expectedTotalTrade, playa.TaxesRate);
-            short expectedTradeLuxuries = service.CalculateTradeLuxuries(expectedTotalTrade, expectedTradeTaxes, playa.TaxesRate, playa.LuxuriesRate);
+            short expectedTradeTaxes = service.CalculateTradeTaxes(expectedTotalTrade, player.TaxesRate);
+            short expectedTradeLuxuries = service.CalculateTradeLuxuries(expectedTotalTrade, expectedTradeTaxes, player.TaxesRate, player.LuxuriesRate);
             short expectedTradeScience = service.CalculateTradeScience(expectedTotalTrade, expectedTradeLuxuries, expectedTradeTaxes);
             short expectedLuxuries = service.CalculateLuxuries(expectedTradeLuxuries, hasMarketPlace: true, hasBank: true, city.EntertainerLuxuries);
             short expectedTaxes = service.CalculateTaxes(expectedTradeTaxes, hasMarketPlace: true, hasBank: true, city.Taxmen);
