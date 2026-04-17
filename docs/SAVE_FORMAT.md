@@ -9,7 +9,7 @@ The core game data contract is `IGameData` in `api/src/IGameData.cs`.
 The concrete implementation is `SaveDataAdapter` in `src/SaveDataAdapter.cs` and related partial files.
 Map persistence is implemented in `src/Map.LoadSave.cs`.
 
-## Top-level binary save file format keys
+## Top-level keys
 
 The following top-level keys are expected to mirror `IGameData`.
 
@@ -158,4 +158,4 @@ Stored in layer `y + (HEIGHT * 3)`.
 ## Map size rules
 
 `ValidMapSize(width, height)` currently only accepts `80 x 50`.
-Binary save file format map payloads must match this size when targeting the savegame adapter.
+Map payloads must match this size when targeting the savegame adapter.
