@@ -3,7 +3,6 @@ using CivOne.Enums;
 
 namespace CivOne.Persistence.Model
 {
-	/// AI AI AI AI WARNING
     /// <summary>
     /// Encodes and decodes a <see cref="TileDto"/> to/from exactly 2 Base64 characters.
     ///
@@ -70,11 +69,11 @@ namespace CivOne.Persistence.Model
                 | (tile.Mine       ? 1 << 9 : 0)
                 | (tile.Hut        ? 1 << 10 : 0);
 
-            return new string(new[]
-            {
-                _alphabet[(value >> 6) & 0x3F],
+            return new string(
+			[
+				_alphabet[(value >> 6) & 0x3F],
                 _alphabet[value & 0x3F]
-            });
+            ]);
         }
 
         /// <summary>Decodes 2 characters from a row string at the given offset.</summary>

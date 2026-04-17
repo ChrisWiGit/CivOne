@@ -86,34 +86,34 @@ Each 6-bit group is mapped to the Base64 alphabet:
 
 In the `Terrain` column, the value in parentheses is the enum value from `CivOne.Enums.Terrain`.
 
-| Terrain         | Road | Rail | Irr | Pol | Fort | Mine | Hut | Decimal | Base64 |
-| --------------- | ---- | ---- | --- | --- | ---- | ---- | --- | ------- | ------ |
-| Ocean (10)      | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 10      | AK     |
-| Ocean (10)      | 1    | 0    | 0   | 0   | 0    | 0    | 0   | 26      | Aa     |
-| Ocean (10)      | 1    | 1    | 0   | 0   | 0    | 0    | 0   | 58      | A6     |
-| Ocean (10)      | 0    | 0    | 0   | 1   | 0    | 0    | 0   | 138     | CK     |
-| Plains (1)      | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 1       | AB     |
-| Plains (1)      | 1    | 0    | 0   | 0   | 0    | 0    | 0   | 17      | AR     |
-| Plains (1)      | 0    | 1    | 0   | 0   | 0    | 0    | 0   | 33      | Ah     |
-| Plains (1)      | 1    | 1    | 0   | 0   | 0    | 0    | 0   | 49      | Ax     |
-| Plains (1)      | 0    | 0    | 1   | 0   | 0    | 0    | 0   | 65      | BB     |
-| Plains (1)      | 1    | 0    | 1   | 0   | 0    | 0    | 0   | 81      | BR     |
-| Plains (1)      | 0    | 1    | 1   | 0   | 0    | 0    | 0   | 97      | Bh     |
-| Plains (1)      | 0    | 0    | 0   | 1   | 0    | 0    | 0   | 129     | CB     |
-| Forest (3)      | 0    | 0    | 0   | 0   | 0    | 1    | 0   | 515     | ID     |
-| Hills (4)       | 0    | 0    | 0   | 0   | 1    | 0    | 0   | 260     | EE     |
-| Hills (4)       | 1    | 0    | 0   | 0   | 1    | 0    | 0   | 276     | EU     |
-| Mountains (5)   | 0    | 0    | 0   | 0   | 1    | 0    | 0   | 261     | EF     |
-| Mountains (5)   | 1    | 0    | 0   | 0   | 1    | 0    | 0   | 277     | EV     |
-| Desert (0)      | 0    | 0    | 1   | 0   | 0    | 0    | 0   | 64      | BA     |
-| Desert (0)      | 1    | 0    | 1   | 0   | 0    | 0    | 0   | 80      | BQ     |
-| Grassland1 (2)  | 0    | 0    | 0   | 0   | 0    | 0    | 1   | 1026    | QC     |
-| Grassland1 (2)  | 1    | 0    | 0   | 0   | 0    | 0    | 0   | 18      | AS     |
-| Grassland1 (2)  | 1    | 1    | 0   | 0   | 0    | 0    | 0   | 50      | Ay     |
-| Forest (3)      | 0    | 0    | 0   | 0   | 0    | 0    | 1   | 1027    | QD     |
-| Tundra (6)      | 0    | 0    | 0   | 0   | 0    | 0    | 1   | 1030    | QG     |
-| Tundra (6)      | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 6       | AG     |
-| None (-1 → 15)  | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 15      | AP     |
+The table below highlights common and useful reference encodings. For the complete list of all possible encodings, see [YAML_TILE_ENCODING.md](YAML_TILE_ENCODING.md).
+
+| Terrain         | Road | Rail | Irr | Pol | Fort | Mine | Hut | Decimal | Base64 | Description |
+| --------------- | ---- | ---- | --- | --- | ---- | ---- | --- | ------- | ------ | ----------- |
+| Desert (0)      | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 0       | AA     | Desert, untouched |
+| Desert (0)      | 0    | 0    | 1   | 0   | 0    | 0    | 0   | 64      | BA     | Desert, irrigation |
+| Desert (0)      | 1    | 0    | 1   | 0   | 0    | 0    | 0   | 80      | BQ     | Desert, road+irrigation |
+| Plains (1)      | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 1       | AB     | Plains, untouched |
+| Plains (1)      | 1    | 0    | 0   | 0   | 0    | 0    | 0   | 17      | AR     | Plains, road |
+| Plains (1)      | 0    | 1    | 0   | 0   | 0    | 0    | 0   | 33      | Ah     | Plains, rail |
+| Plains (1)      | 1    | 0    | 1   | 0   | 0    | 0    | 0   | 81      | BR     | Plains, road+irrigation |
+| Grassland1 (2)  | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 2       | AC     | Grassland1, untouched |
+| Grassland1 (2)  | 1    | 0    | 0   | 0   | 0    | 0    | 0   | 18      | AS     | Grassland1, road |
+| Grassland1 (2)  | 0    | 0    | 0   | 0   | 0    | 0    | 1   | 1026    | QC     | Grassland1, hut |
+| Forest (3)      | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 3       | AD     | Forest, untouched |
+| Forest (3)      | 0    | 0    | 0   | 0   | 0    | 1    | 0   | 515     | ID     | Forest, mine |
+| Forest (3)      | 0    | 0    | 0   | 0   | 0    | 0    | 1   | 1027    | QD     | Forest, hut |
+| Hills (4)       | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 4       | AE     | Hills, untouched |
+| Hills (4)       | 0    | 0    | 0   | 0   | 1    | 0    | 0   | 260     | EE     | Hills, fortress |
+| Mountains (5)   | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 5       | AF     | Mountains, untouched |
+| Mountains (5)   | 0    | 0    | 0   | 0   | 1    | 0    | 0   | 261     | EF     | Mountains, fortress |
+| Tundra (6)      | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 6       | AG     | Tundra, untouched |
+| Tundra (6)      | 0    | 0    | 0   | 0   | 0    | 0    | 1   | 1030    | QG     | Tundra, hut |
+| Ocean (10)      | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 10      | AK     | Ocean, untouched |
+| Ocean (10)      | 1    | 0    | 0   | 0   | 0    | 0    | 0   | 26      | Aa     | Ocean, road |
+| River (11)      | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 11      | AL     | River, untouched |
+| Grassland2 (12) | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 12      | AM     | Grassland2, untouched |
+| None (-1 → 15)  | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 15      | AP     | No terrain, untouched |
 
 ---
 
