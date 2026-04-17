@@ -28,10 +28,14 @@ namespace CivOne.Persistence.Yaml
             ArgumentNullException.ThrowIfNull(yamlMap);
             ArgumentNullException.ThrowIfNull(yamlMap.Tiles);
 
-            var tiles = DecodeMapFromRows(yamlMap.Tiles, yamlMap.LandValues);
+            var tiles = DecodeMapFromRows(yamlMap.Tiles, yamlMap.LandValues, yamlMap.Width, yamlMap.Height);
+            var width = yamlMap.Width > 0 ? yamlMap.Width : tiles.Width();
+            var height = yamlMap.Height > 0 ? yamlMap.Height : tiles.Height();
 
             return new MapDto
             {
+                Width = width,
+                Height = height,
                 TerrainSeed = yamlMap.TerrainSeed,
                 Tiles = tiles
             };
@@ -40,6 +44,19 @@ namespace CivOne.Persistence.Yaml
         public void WriteYaml(IEmitter emitter, object value, Type type, ObjectSerializer serializer)
         {
             var mapDto = (MapDto)value;
+            ArgumentNullException.ThrowIfNull(mapDto);
+            ArgumentNullException.ThrowIfNull(mapDto.Tiles);
+
+            int tileWidth = mapDto.Tiles.Width();
+            int tileHeight = mapDto.Tiles.Height();
+            int width = mapDto.Width > 0 ? mapDto.Width : tileWidth;
+            int height = mapDto.Height > 0 ? mapDto.Height : tileHeight;
+
+            if (width != tileWidth || height != tileHeight)
+            {
+                throw new InvalidOperationException(
+                    $"MapDto dimensions ({width}x{height}) do not match tile data dimensions ({tileWidth}x{tileHeight}).");
+            }
             
             // Convert to a serializable format with encoded tiles and compact land values
             var encodedRows = EncodeMapToRows(mapDto.Tiles);
@@ -47,6 +64,8 @@ namespace CivOne.Persistence.Yaml
             
             var mapYamlRepresentation = new MapDtoYamlRepresentation
             {
+                Width = width,
+                Height = height,
                 TerrainSeed = mapDto.TerrainSeed,
                 Tiles = encodedRows,
                 LandValues = landValues
@@ -76,10 +95,16 @@ namespace CivOne.Persistence.Yaml
             return rows;
         }
 
-        private Map2d<TileDto> DecodeMapFromRows(string[] encodedRows, string[] landValuesRows)
+        private Map2d<TileDto> DecodeMapFromRows(string[] encodedRows, string[] landValuesRows, int expectedWidth, int expectedHeight)
         {
             int height = encodedRows.Length;
             int width = height == 0 ? 0 : encodedRows[0].Length / 2;
+
+            if (expectedHeight > 0 && expectedHeight != height)
+            {
+                throw new FormatException($"Encoded tile row count {height} does not match declared map height {expectedHeight}.");
+            }
+
             var tiles = new TileDto[width, height];
 
             for (int y = 0; y < height; y++)
@@ -94,6 +119,11 @@ namespace CivOne.Persistence.Yaml
                 if (y == 0)
                 {
                     width = rowWidth;
+
+                    if (expectedWidth > 0 && expectedWidth != width)
+                    {
+                        throw new FormatException($"Encoded tile row width {width} does not match declared map width {expectedWidth}.");
+                    }
                 }
                 else if (rowWidth != width)
                 {
@@ -200,6 +230,12 @@ namespace CivOne.Persistence.Yaml
 	/// <seealso cref="MapDto"/>
     internal class MapDtoYamlRepresentation
     {
+        [Doc("The width of the map in tiles. Must match the encoded tile row width.", 1, int.MaxValue)]
+        public int Width { get; set; }
+
+        [Doc("The height of the map in tiles. Must match the number of encoded tile rows.", 1, int.MaxValue)]
+        public int Height { get; set; }
+
         [Doc("The seed used for procedural terrain generation. This ensures that the same map can be recreated if needed.", 0, uint.MaxValue)]
         public uint TerrainSeed { get; set; }
         

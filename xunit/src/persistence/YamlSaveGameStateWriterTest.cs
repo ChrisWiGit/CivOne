@@ -84,6 +84,8 @@ namespace CivOne.UnitTests.Persistence
                     GameOptions = snapshot.GameOptions,
                     Map = new MapDto
                     {
+                        Width = 0,
+                        Height = 0,
                         TerrainSeed = 0,
                         Tiles = new Map2d<TileDto>(0, 0)
                     }

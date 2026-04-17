@@ -37,6 +37,8 @@ namespace CivOne.UnitTests.Persistence
 				"  - ClassName: Militia\n" +
 				"    PlayerId: 1\n" +
 				"Map:\n" +
+				"  Width: 2\n" +
+				"  Height: 2\n" +
 				"  TerrainSeed: 4242\n" +
 				"  Tiles:\n" +
 				"  - ARIE\n" +
@@ -59,6 +61,8 @@ namespace CivOne.UnitTests.Persistence
 			Assert.NotNull(actual.Players[1].Units);
 			Assert.True(actual.Players[1].Units.Count > 0);
 			Assert.NotNull(actual.Map);
+			Assert.Equal(2, actual.Map.Width);
+			Assert.Equal(2, actual.Map.Height);
 			Assert.NotNull(actual.Map.Tiles);
 			Assert.True(actual.Map.MapSeed > 0);
 			Assert.Equal((ushort)0, actual.HumanPlayer);

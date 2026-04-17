@@ -58,4 +58,9 @@
 	<ItemGroup>
 		<EmbeddedResource Include="Resources/**" />
 	</ItemGroup>
+	<ItemGroup>
+		<Content Include="../../xunit/earth.yml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 </Project>

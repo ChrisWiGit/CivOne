@@ -432,12 +432,16 @@ namespace CivOne.Persistence.Mapper
             if (gameState.MapTiles != null && mapMapper != null)
             {
                 var mappedDto = mapMapper.ToDto(new MapTilesArrayAdapter(gameState.MapTiles));
+                mappedDto.Width = width;
+                mappedDto.Height = height;
                 mappedDto.MapSeed = (uint)Math.Clamp(gameState.TerrainSeed, 0, int.MaxValue);
                 return mappedDto;
             }
 
             return new MapDto
             {
+                Width = width,
+                Height = height,
                 MapSeed = (uint)Math.Clamp(gameState.TerrainSeed, 0, int.MaxValue),
                 Tiles = new Map2d<TileDto>(width, height)
             };

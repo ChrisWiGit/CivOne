@@ -55,8 +55,8 @@ namespace CivOne.Persistence.Model
 		{
 			var dtoProperties = GetWritablePropertyNames<MapDto>();
 			var expectedProperties = GetMapDtoRoundTripAssertionMap(
-				new MapDto { TerrainSeed = _terrainSeed, Tiles = new Map2d<TileDto>(_tileDtos) },
-				new MapDto { TerrainSeed = _terrainSeed, Tiles = new Map2d<TileDto>(_tileDtos) }).Keys.ToHashSet();
+				new MapDto { Width = expectedWidth, Height = expectedHeight, TerrainSeed = _terrainSeed, Tiles = new Map2d<TileDto>(_tileDtos) },
+				new MapDto { Width = expectedWidth, Height = expectedHeight, TerrainSeed = _terrainSeed, Tiles = new Map2d<TileDto>(_tileDtos) }).Keys.ToHashSet();
 
 			Assert.Equal([], dtoProperties.Except(expectedProperties).OrderBy(x => x));
 		}
@@ -66,6 +66,8 @@ namespace CivOne.Persistence.Model
 		{
 			var actualMapDto = new MapDto
 			{
+				Width = expectedWidth,
+				Height = expectedHeight,
 				TerrainSeed = _terrainSeed,
 				Tiles = new Map2d<TileDto>(_tileDtos)
 			};
@@ -85,6 +87,8 @@ namespace CivOne.Persistence.Model
 		{
 			var mapDto = new MapDto
 			{
+				Width = expectedWidth,
+				Height = expectedHeight,
 				TerrainSeed = 12345,
 				Tiles = new Map2d<TileDto>(_tileDtos)
 			};
@@ -99,6 +103,8 @@ namespace CivOne.Persistence.Model
 			var mapDto2 = _testee.ToDto(map);
 
 			Assert.Equal(mapDto.TerrainSeed, mapDto2.TerrainSeed);
+			Assert.Equal(mapDto.Width, mapDto2.Width);
+			Assert.Equal(mapDto.Height, mapDto2.Height);
 			Assert.Equal(expectedWidth, mapDto2.Tiles.Width());
 			Assert.Equal(expectedHeight, mapDto2.Tiles.Height());
 
@@ -174,6 +180,8 @@ namespace CivOne.Persistence.Model
 		{
 			var mapDto = new MapDto
 			{
+				Width = expectedWidth,
+				Height = expectedHeight,
 				TerrainSeed = 99999,
 				Tiles = new Map2d<TileDto>(_tileDtos)
 			};
@@ -189,6 +197,8 @@ namespace CivOne.Persistence.Model
 			// For a 5-wide map, each row should have at least 10 characters of Base64-encoded data
 			// LandValues are calculated as (x + y) * 10 in setup
 			Assert.Equal(
+				"Width: 5\n" +
+				"Height: 6\n" +
 				"TerrainSeed: 99999\n" +
 				"Tiles:\n" +
 				"- AxAhAxAhAx\n" +
@@ -211,6 +221,8 @@ namespace CivOne.Persistence.Model
 		public void TestMapDtoTileDtoYamlConverterDecoding()
 		{
 			const string yaml =
+				"Width: 2\n" +
+				"Height: 2\n" +
 				"TerrainSeed: 4242\n" +
 				"Tiles:\n" +
 				"- ARIE\n" +
@@ -224,6 +236,8 @@ namespace CivOne.Persistence.Model
 				.As<MapDto>();
 
 			Assert.NotNull(actual);
+			Assert.Equal(2, actual.Width);
+			Assert.Equal(2, actual.Height);
 			Assert.Equal((uint)4242, actual.TerrainSeed);
 			Assert.NotNull(actual.Tiles);
 			Assert.Equal(2, actual.Tiles.Width());
@@ -323,6 +337,8 @@ namespace CivOne.Persistence.Model
 		private static Dictionary<string, Action> GetMapDtoRoundTripAssertionMap(MapDto expected, MapDto actual)
 			=> new()
 			{
+				[nameof(MapDto.Width)] = () => Assert.Equal(expected.Width, actual.Width),
+				[nameof(MapDto.Height)] = () => Assert.Equal(expected.Height, actual.Height),
 				[nameof(MapDto.MapSeed)] = () => Assert.Equal(expected.MapSeed, actual.MapSeed),
 				[nameof(MapDto.TerrainSeed)] = () => Assert.Equal(expected.TerrainSeed, actual.TerrainSeed),
 				[nameof(MapDto.Tiles)] = () =>

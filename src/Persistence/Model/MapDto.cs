@@ -12,6 +12,12 @@ namespace CivOne.Persistence.Model
     {
         private uint _mapSeed;
 
+        [Doc("The width of the map in tiles.", 1, int.MaxValue)]
+        public int Width { get; set; }
+
+        [Doc("The height of the map in tiles.", 1, int.MaxValue)]
+        public int Height { get; set; }
+
         [Doc("The seed used for procedural map generation. This ensures that the same map can be recreated if needed.", 0, uint.MaxValue)]
         public uint MapSeed
         {

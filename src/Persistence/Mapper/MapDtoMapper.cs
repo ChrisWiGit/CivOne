@@ -50,8 +50,17 @@ namespace CivOne.Persistence.Model
         public IMapTiles FromDto(MapDto dto)
         {
             var tiles = dto.Tiles;
-            int width = tiles.Width();
-            int height = tiles.Height();
+            int tileWidth = tiles.Width();
+            int tileHeight = tiles.Height();
+            int width = dto.Width > 0 ? dto.Width : tileWidth;
+            int height = dto.Height > 0 ? dto.Height : tileHeight;
+
+            if (width != tileWidth || height != tileHeight)
+            {
+                throw new InvalidOperationException(
+                    $"MapDto dimensions ({width}x{height}) do not match tile data dimensions ({tileWidth}x{tileHeight}).");
+            }
+
             var map = _mapFactory.CreateMap(width, height, dto.TerrainSeed);
             ConvertTileDtos(tiles);
 
@@ -76,6 +85,8 @@ namespace CivOne.Persistence.Model
         {
             return new MapDto
             {
+                Width = map.Width,
+                Height = map.Height,
                 TerrainSeed = _terrainSeed,
                 Tiles = ConvertMapTilesToTileDtos(map)
             };

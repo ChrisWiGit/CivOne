@@ -13,6 +13,7 @@ using System.Linq;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Tiles;
+using CivOne.Services.Map;
 
 namespace CivOne
 {
@@ -21,6 +22,9 @@ namespace CivOne
 		private static Resources Resources = Resources.Instance;
 		protected static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
 
+		internal const int BinaryFormatWidth = 80;
+		internal const int BinaryFormatHeight = 50;
+
 		private static int _width = 80, _height = 50;
 		public static int WIDTH => _width;
 		public static int HEIGHT => _height;
@@ -28,15 +32,42 @@ namespace CivOne
 		public int Width => WIDTH;
 		public int Height => HEIGHT;
 		
+		/// <summary>
+		/// Initializes the map dimensions. Should only be called once at startup or when changing map size.
+		/// </summary>
+		public static void InitializeMapDimensions(int width, int height)
+		{
+			if (width <= 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(width), width, "Map width must be greater than zero.");
+			}
+
+			if (height <= 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(height), height, "Map height must be greater than zero.");
+			}
+
+			_width = width;
+			_height = height;
+			Log("Map: Dimensions set to {0} x {1}", _width, _height);
+		}
+		
 		private int _terrainMasterWord;
 		public int TerrainMasterWord { get { return _terrainMasterWord; } }
+		internal int TerrainMasterWordInternal { set { _terrainMasterWord = value; } }
+		
 		private int _landMass, _temperature, _climate, _age;
+		internal int LandMassInternal { get { return _landMass; } set { _landMass = value; } }
+		internal int TemperatureInternal { get { return _temperature; } set { _temperature = value; } }
+		internal int ClimateInternal { get { return _climate; } set { _climate = value; } }
+		internal int AgeInternal { get { return _age; } set { _age = value; } }
+		
 		private ITile[,] _tiles;
 
 		public ITile[,] Tiles { get { return _tiles; } }
 
-		public bool Ready { get; private set; }
-		public bool FixedStartPositions { get; private set; }
+		public bool Ready { get; set; }
+		public bool FixedStartPositions { get; set; }
 
 		public IEnumerable<ITile> QueryMapPart(int x, int y, int width, int height)
 		{
@@ -123,7 +154,7 @@ namespace CivOne
 				
 				return _tiles[x, y];
 			}
-			private set
+			internal set
 			{
 				while (x < 0) x += WIDTH;
 				while (y < 0) y += HEIGHT;
@@ -187,5 +218,97 @@ namespace CivOne
         {
             _instance = newInstance;
         }
+
+		// Internal methods for service classes
+		internal void InitializeForLoadService()
+		{
+			_tiles = new ITile[WIDTH, HEIGHT];
+		}
+
+		internal void InitializeForGeneration()
+		{
+			_tiles = new ITile[WIDTH, HEIGHT];
+		}
+
+		/// <summary>
+		/// Prepares the map for loading from a YAML save file.
+		/// Allocates the tile grid and sets the terrain seed so that
+		/// <see cref="TileIsSpecial"/> works correctly during tile restoration.
+		/// Does NOT call PlaceHuts() or CalculateLandValue() – those values
+		/// come pre-serialized in the YAML (Hut = TileCodec bit 10, LandValue = LandValues array).
+		/// </summary>
+		internal void InitializeForYamlLoad(int width, int height, int terrainSeed)
+		{
+			InitializeMapDimensions(width, height);
+			_terrainMasterWord = terrainSeed;
+			_tiles = new ITile[width, height];
+			Ready = false;
+		}
+
+		/// <summary>
+		/// Marks the map as ready after all tiles have been restored from YAML.
+		/// Call this after <see cref="InitializeForYamlLoad"/> and after all tile data
+		/// has been set via <see cref="CivOne.Persistence.Model.RuntimeTileDtoMapper"/>.
+		/// </summary>
+		internal void FinalizeYamlLoad()
+		{
+			Ready = true;
+			Log("Map: Ready (loaded from YAML)");
+		}
+
+		/// <summary>
+		/// Internal accessor for the special-resource flag during YAML tile restoration.
+		/// Delegates to the private <c>TileIsSpecial</c> method. Requires
+		/// <see cref="InitializeForYamlLoad"/> to have been called first so that
+		/// <c>_terrainMasterWord</c> is set correctly.
+		/// </summary>
+		internal bool TileIsSpecialInternal(int x, int y) => TileIsSpecial(x, y);
+
+		/// <summary>
+		/// Directly writes a tile into the map grid during YAML load.
+		/// Only intended for use by <see cref="CivOne.Persistence.Model.RuntimeTileDtoMapper"/>.
+		/// </summary>
+		internal void SetTileInternal(int x, int y, ITile tile) => _tiles[x, y] = tile;
+
+		internal static void SetMapDimensions(int width, int height)
+		{
+			InitializeMapDimensions(width, height);
+		}
+
+		// Public methods using services
+		private readonly IMapLoadService _loadService = new MapLoadService();
+		private readonly IMapSaveService _saveService = new MapSaveService();
+		private readonly IMapGenerationService _generationService = new MapGenerationService();
+		private readonly IMapYamlService _yamlService = new MapYamlService();
+
+		public void LoadMap(string filename, int randomSeed)
+		{
+			_loadService.Load(this, filename, randomSeed);
+		}
+
+		public ushort SaveMap(string filename)
+		{
+			return _saveService.Save(this, filename);
+		}
+
+		public void Generate(int landMass = 1, int temperature = 1, int climate = 1, int age = 1)
+		{
+			_generationService.Generate(this, landMass, temperature, climate, age);
+		}
+
+		protected void RunEarthMapThread()
+		{
+			_yamlService.RunEarthMapThread(this);
+		}
+
+		protected virtual void TaskRunEarthMapGeneration()
+		{
+			_yamlService.LoadEarthMapInThread(this);
+		}
+
+		public void LoadEarthMapInThread()
+		{
+			TaskRunEarthMapGeneration();
+		}
 	}
 }
