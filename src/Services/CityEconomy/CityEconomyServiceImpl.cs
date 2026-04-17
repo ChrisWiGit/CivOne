@@ -1,7 +1,6 @@
 using System;
 using CivOne.Advances;
 using CivOne.Buildings;
-using CivOne.Wonders;
 
 using UniversityBuilding = CivOne.Buildings.University;
 
