@@ -256,9 +256,9 @@ namespace CivOne
 				GameTask.Enqueue(Turn.New(city));
 			}
 			GameTask.Enqueue(Turn.New(CurrentPlayer));
-			if (Game.InstantAdvice && (Common.TurnToYear(Game.GameTurn) == -3600 || Common.TurnToYear(Game.GameTurn) == -2800))
+			if (Game.InstantAdvice && CurrentPlayer == HumanPlayer && (Common.TurnToYear(Game.GameTurn) == -3600 || Common.TurnToYear(Game.GameTurn) == -2800))
 				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFile.Instance.GetGameText("HELP/HELP1")));
-			else if (Game.InstantAdvice && (Common.TurnToYear(Game.GameTurn) == -3200 || Common.TurnToYear(Game.GameTurn) == -2400))
+			else if (Game.InstantAdvice && CurrentPlayer == HumanPlayer && (Common.TurnToYear(Game.GameTurn) == -3200 || Common.TurnToYear(Game.GameTurn) == -2400))
 				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFile.Instance.GetGameText("HELP/HELP2")));
 		}
 
