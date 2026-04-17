@@ -11,7 +11,7 @@ namespace CivOne
 	/// </summary>
 	internal sealed class CityEconomyServiceImpl(City city, IGame game) : ICityEconomyService
 	{
-		// Testing skipped because this method is a orchestration of pure calculations that are individually tested in CityEconomyServiceImplTests.
+		// Testing skipped because this method is an orchestration of pure calculations that are individually tested in CityEconomyServiceImplTests.
 		private readonly City _city = city;
 		private readonly IGame _game = game;
 
@@ -63,7 +63,7 @@ namespace CivOne
 		public short CalculateTradeTaxes(int totalTrade, int taxesRate)
 		{
 			// Truncate taxes toward zero to avoid overcharging the player when TotalTrade is low and TaxesRate is high.
-			return (short)Math.Round((double)totalTrade / 10 * taxesRate, MidpointRounding.ToZero);
+			return (short)Math.Truncate((double)totalTrade * taxesRate / 10);
 		}
 
 		public short CalculateTradeLuxuries(int totalTrade, short tradeTaxes, int taxesRate, int luxuriesRate)
