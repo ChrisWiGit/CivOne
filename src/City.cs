@@ -272,9 +272,10 @@ namespace CivOne
 		// often in cities located on distant continents with high corruption.
 		// This negative value is not displayed in the city screen, but appears in the trade report and confuses players.
 		internal int TradeTotal => Math.Max(0, ResourceTiles.Sum(TradeValue) - Corruption);
-		internal short TradeScience => (short)Math.Max(0, TradeTotal - TradeLuxuries - TradeTaxes);
-		internal short TradeLuxuries => (short)Math.Round((double)(TradeTotal - TradeTaxes) / (10 - Player.TaxesRate) * Player.LuxuriesRate, MidpointRounding.AwayFromZero);
-		internal short TradeTaxes => (short)Math.Round((double)TradeTotal / 10 * Player.TaxesRate, MidpointRounding.AwayFromZero);
+		internal int TotalTrade => TradeTotal + TradingCitiesSumValue;
+		internal short TradeScience => (short)Math.Max(0, TotalTrade - TradeLuxuries - TradeTaxes);
+		internal short TradeLuxuries => (short)Math.Round((double)(TotalTrade - TradeTaxes) / (10 - Player.TaxesRate) * Player.LuxuriesRate, MidpointRounding.AwayFromZero);
+		internal short TradeTaxes => (short)Math.Round((double)TotalTrade / 10 * Player.TaxesRate, MidpointRounding.AwayFromZero);
 
 
 		public bool CityOfSameCiv(City city)
@@ -313,7 +314,7 @@ namespace CivOne
 		/// </summary>
 		public int TradingCitiesSumValue => TradingCities.Sum(CalculateTradeValue);
 
-		public int TotalIncome => Taxes + TradingCitiesSumValue;
+		public int TotalIncome => Taxes;
 
 		public int GetRealTotalIncome()
 		{
@@ -429,8 +430,6 @@ namespace CivOne
 				{
 					science *= 2.0;
 				}
-
-				science *= Player.ScienceRate / 10;
 				return (short)Math.Min((int)Math.Round(science), short.MaxValue);
 			}
 		}
@@ -1231,7 +1230,6 @@ namespace CivOne
 
 			// TODO: Handle luxuries
 			Player.Gold += citizenTypes.InDisorder ? (short)0 : Taxes;
-			Player.Gold += citizenTypes.InDisorder ? (short)0 : (short)TradingCitiesSumValue;
 			Player.Gold -= TotalMaintenance;
 			Player.Science += Science;
 
