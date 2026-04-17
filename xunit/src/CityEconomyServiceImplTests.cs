@@ -8,11 +8,17 @@ namespace CivOne.UnitTests
 		// so no City/IGame setup is needed; null is safe here.
 		private readonly CityEconomyServiceImpl _service = new(null, null);
 
-		[Fact]
-		public void CalculateTradeTaxes_TruncatesTowardsZero()
+		[Theory]
+		[InlineData(1, 5, 0)]
+		[InlineData(1, 6, 0)]
+		[InlineData(1, 9, 0)]
+		[InlineData(19, 5, 9)]
+		[InlineData(19, 9, 17)]
+		public void CalculateTradeTaxes_TruncatesTowardsZero(int totalTrade, int taxesRate, short expectedTaxes)
 		{
-			short taxes = _service.CalculateTradeTaxes(1, 5);
-			Assert.Equal(0, taxes);
+			short taxes = _service.CalculateTradeTaxes(totalTrade, taxesRate);
+
+			Assert.Equal(expectedTaxes, taxes);
 		}
 
 		[Fact]

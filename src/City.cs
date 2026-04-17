@@ -270,11 +270,11 @@ namespace CivOne
 
 		private CityEconomyBreakdown GetCachedCityBreakdown()
 		{
-			if (_cachedCityBreakdown == null)
+			if (!_cachedCityBreakdown.HasValue)
 			{
 				_cachedCityBreakdown = GetCityBreakdown();
 			}
-			return _cachedCityBreakdown;
+			return _cachedCityBreakdown.Value;
 		}
 
 		internal void InvalidateCityBreakdownCache()

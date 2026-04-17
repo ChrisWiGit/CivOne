@@ -1,7 +1,6 @@
 using System;
-using CivOne.Advances;
 using CivOne.Buildings;
-
+using CivOne.Wonders;
 using UniversityBuilding = CivOne.Buildings.University;
 
 namespace CivOne
@@ -12,7 +11,7 @@ namespace CivOne
 	/// </summary>
 	internal sealed class CityEconomyServiceImpl(City city, IGame game) : ICityEconomyService
 	{
-		// Testing skipped because this methode is a orchestration of pure calculations that are individually tested in CityEconomyServiceImplTests.
+		// Testing skipped because this method is a orchestration of pure calculations that are individually tested in CityEconomyServiceImplTests.
 		private readonly City _city = city;
 		private readonly IGame _game = game;
 
