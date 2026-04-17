@@ -84,6 +84,8 @@ Each 6-bit group is mapped to the Base64 alphabet:
 
 #### Encoding examples
 
+In the `Terrain` column, the value in parentheses is the enum value from `CivOne.Enums.Terrain`.
+
 | Terrain         | Road | Rail | Irr | Pol | Fort | Mine | Hut | Decimal | Base64 |
 | --------------- | ---- | ---- | --- | --- | ---- | ---- | --- | ------- | ------ |
 | Ocean (10)      | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 10      | AK     |
