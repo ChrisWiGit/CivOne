@@ -58,42 +58,60 @@ Each 6-bit group is mapped to the Base64 alphabet:
 
 ---
 
-### Valid Bit Combinations (Realistic Scenarios)
+### Reference Encodings (Current Implementation)
 
-#### Constraints
+#### Terrain values (enum `CivOne.Enums.Terrain`)
 
-- **Irrigation + Mine**: Impossible (mutually exclusive)
-- **Road + RailRoad**: Contradictory but technically allowed
+- Desert = 0
+- Plains = 1
+- Grassland1 = 2
+- Forest = 3
+- Hills = 4
+- Mountains = 5
+- Tundra = 6
+- Arctic = 7
+- Swamp = 8
+- Jungle = 9
+- Ocean = 10
+- River = 11
+- Grassland2 = 12
+- None = -1 (encoded as terrain nibble `15`)
 
-#### Table of Valid Combinations
+#### Notes
 
-| Terrain       | Road | Rail | Irr | Pol | Fort | Mine | Hut | Decimal | Base64 | Description                       |
-| ------------- | ---- | ---- | --- | --- | ---- | ---- | --- | ------- | ------ | --------------------------------- |
-| Ocean (10)    | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 10      | AK     | Ocean, untouched                  |
-| Ocean (10)    | 1    | 0    | 0   | 0   | 0    | 0    | 0   | 138     | Aa     | Ocean with Road                   |
-| Ocean (10)    | 1    | 1    | 0   | 0   | 0    | 0    | 0   | 154     | A6     | Ocean with Road + RailRoad        |
-| Ocean (10)    | 0    | 0    | 0   | 1   | 0    | 0    | 0   | 138     | CK     | Ocean with Pollution              |
-| Plains (1)    | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 1       | AB     | Plains, untouched                 |
-| Plains (1)    | 1    | 0    | 0   | 0   | 0    | 0    | 0   | 17      | AR     | Plains with Road                  |
-| Plains (1)    | 0    | 1    | 0   | 0   | 0    | 0    | 0   | 33      | Ah     | Plains with RailRoad              |
-| Plains (1)    | 1    | 1    | 0   | 0   | 0    | 0    | 0   | 49      | Ax     | Plains with Road + RailRoad       |
-| Plains (1)    | 0    | 0    | 1   | 0   | 0    | 0    | 0   | 65      | BB     | Plains with Irrigation            |
-| Plains (1)    | 1    | 0    | 1   | 0   | 0    | 0    | 0   | 81      | BR     | Plains with Road + Irrigation     |
-| Plains (1)    | 0    | 1    | 1   | 0   | 0    | 0    | 0   | 97      | Bh     | Plains with RailRoad + Irrigation |
-| Plains (1)    | 0    | 0    | 0   | 1   | 0    | 0    | 0   | 129     | Ah     | Plains with Pollution             |
-| Forest (4)    | 0    | 0    | 0   | 0   | 0    | 1    | 0   | 548     | ID     | Forest with Mine                  |
-| Hills (2)     | 0    | 0    | 0   | 0   | 1    | 0    | 0   | 258     | EE     | Hills with Fortress               |
-| Hills (2)     | 1    | 0    | 0   | 0   | 1    | 0    | 0   | 274     | EU     | Hills with Road + Fortress        |
-| Mountain (3)  | 0    | 0    | 0   | 0   | 1    | 0    | 0   | 772     | EF     | Mountain with Fortress            |
-| Mountain (3)  | 1    | 0    | 0   | 0   | 1    | 0    | 0   | 788     | EV     | Mountain with Road + Fortress     |
-| Desert (5)    | 0    | 0    | 1   | 0   | 0    | 0    | 0   | 101     | BA     | Desert with Irrigation            |
-| Desert (5)    | 1    | 0    | 1   | 0   | 0    | 0    | 0   | 117     | BQ     | Desert with Road + Irrigation     |
-| Grassland (0) | 0    | 0    | 0   | 0   | 0    | 0    | 1   | 1024    | QC     | Grassland with Hut                |
-| Grassland (0) | 1    | 0    | 0   | 0   | 0    | 0    | 0   | 16      | AS     | Grassland with Road               |
-| Grassland (0) | 1    | 1    | 0   | 0   | 0    | 0    | 0   | 48      | Ay     | Grassland with Road + RailRoad    |
-| Forest (4)    | 0    | 0    | 0   | 0   | 0    | 0    | 1   | 548     | QD     | Forest with Hut                   |
-| Tundra (6)    | 0    | 0    | 0   | 0   | 0    | 0    | 1   | 1030    | QG     | Tundra with Hut                   |
-| Tundra (6)    | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 6       | AG     | Tundra with no flags              |
+- `Road + RailRoad` is representable by the codec.
+- `Irrigation + Mine` is representable by the codec (gameplay rules may still treat this as invalid/impossible in practice).
+
+#### Encoding examples
+
+| Terrain         | Road | Rail | Irr | Pol | Fort | Mine | Hut | Decimal | Base64 |
+| --------------- | ---- | ---- | --- | --- | ---- | ---- | --- | ------- | ------ |
+| Ocean (10)      | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 10      | AK     |
+| Ocean (10)      | 1    | 0    | 0   | 0   | 0    | 0    | 0   | 26      | Aa     |
+| Ocean (10)      | 1    | 1    | 0   | 0   | 0    | 0    | 0   | 58      | A6     |
+| Ocean (10)      | 0    | 0    | 0   | 1   | 0    | 0    | 0   | 138     | CK     |
+| Plains (1)      | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 1       | AB     |
+| Plains (1)      | 1    | 0    | 0   | 0   | 0    | 0    | 0   | 17      | AR     |
+| Plains (1)      | 0    | 1    | 0   | 0   | 0    | 0    | 0   | 33      | Ah     |
+| Plains (1)      | 1    | 1    | 0   | 0   | 0    | 0    | 0   | 49      | Ax     |
+| Plains (1)      | 0    | 0    | 1   | 0   | 0    | 0    | 0   | 65      | BB     |
+| Plains (1)      | 1    | 0    | 1   | 0   | 0    | 0    | 0   | 81      | BR     |
+| Plains (1)      | 0    | 1    | 1   | 0   | 0    | 0    | 0   | 97      | Bh     |
+| Plains (1)      | 0    | 0    | 0   | 1   | 0    | 0    | 0   | 129     | CB     |
+| Forest (3)      | 0    | 0    | 0   | 0   | 0    | 1    | 0   | 515     | ID     |
+| Hills (4)       | 0    | 0    | 0   | 0   | 1    | 0    | 0   | 260     | EE     |
+| Hills (4)       | 1    | 0    | 0   | 0   | 1    | 0    | 0   | 276     | EU     |
+| Mountains (5)   | 0    | 0    | 0   | 0   | 1    | 0    | 0   | 261     | EF     |
+| Mountains (5)   | 1    | 0    | 0   | 0   | 1    | 0    | 0   | 277     | EV     |
+| Desert (0)      | 0    | 0    | 1   | 0   | 0    | 0    | 0   | 64      | BA     |
+| Desert (0)      | 1    | 0    | 1   | 0   | 0    | 0    | 0   | 80      | BQ     |
+| Grassland1 (2)  | 0    | 0    | 0   | 0   | 0    | 0    | 1   | 1026    | QC     |
+| Grassland1 (2)  | 1    | 0    | 0   | 0   | 0    | 0    | 0   | 18      | AS     |
+| Grassland1 (2)  | 1    | 1    | 0   | 0   | 0    | 0    | 0   | 50      | Ay     |
+| Forest (3)      | 0    | 0    | 0   | 0   | 0    | 0    | 1   | 1027    | QD     |
+| Tundra (6)      | 0    | 0    | 0   | 0   | 0    | 0    | 1   | 1030    | QG     |
+| Tundra (6)      | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 6       | AG     |
+| None (-1 → 15)  | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 15      | AP     |
 
 ---
 
@@ -130,7 +148,7 @@ Each 6-bit group is mapped to the Base64 alphabet:
 
 ### Implementation
 
-The tile encoding/decoding is implemented in [src/Persistence/Model/TileCodec.cs](src/Persistence/Model/TileCodec.cs):
+The tile encoding/decoding is implemented in [src/Persistence/Util/TileCodec.cs](src/Persistence/Util/TileCodec.cs):
 
 - **`Encode(TileDto tile)`**: Converts a tile object into exactly 2 Base64 characters
 - **`Decode(string row, int offset)`**: Decodes 2 characters from a row string starting at the given offset
