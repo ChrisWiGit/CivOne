@@ -274,8 +274,11 @@ namespace CivOne
 		internal int TradeTotal => Math.Max(0, ResourceTiles.Sum(TradeValue) - Corruption);
 		internal int TotalTrade => TradeTotal + TradingCitiesSumValue;
 		internal short TradeScience => (short)Math.Max(0, TotalTrade - TradeLuxuries - TradeTaxes);
-		internal short TradeLuxuries => (short)Math.Round((double)(TotalTrade - TradeTaxes) / (10 - Player.TaxesRate) * Player.LuxuriesRate, MidpointRounding.AwayFromZero);
-		internal short TradeTaxes => (short)Math.Round((double)TotalTrade / 10 * Player.TaxesRate, MidpointRounding.AwayFromZero);
+		internal short TradeLuxuries => Player.TaxesRate >= 10 ? (short)0 : (short)Math.Round((double)(TotalTrade - TradeTaxes) / (10 - Player.TaxesRate) * Player.LuxuriesRate, MidpointRounding.AwayFromZero);
+		// CW: Truncate taxes toward zero to avoid overcharging the player when TotalTrade is low and TaxesRate is high.
+		// This may happen early in the game when the only city produces a single trade unit and TaxesRate is set to the standard 5.
+		// Otherwise the player may see no science progress at all, and the science dialog will not appear.
+		internal short TradeTaxes => (short)Math.Round((double)TotalTrade / 10 * Player.TaxesRate, MidpointRounding.ToZero);
 
 
 		public bool CityOfSameCiv(City city)
@@ -430,6 +433,8 @@ namespace CivOne
 				{
 					science *= 2.0;
 				}
+
+				// science *= Player.ScienceRate / 10;
 				return (short)Math.Min((int)Math.Round(science), short.MaxValue);
 			}
 		}
