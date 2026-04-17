@@ -6,6 +6,8 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Calculation of city economy after my change to how the city economy breakdown was calculated.
+  * Refactoring: Extracted the city economy breakdown calculation into a separate service (CityEconomyServiceImpl) to improve separation of concerns and testability.
 * Fix: InstantAdvice messages only show once.
 * Fix: Improved CityView panorama road generation to prevent random road breaks while keeping layout natural.
   * Added targeted post-processing to close only real single-tile gaps on the road axes.
