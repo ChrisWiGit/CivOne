@@ -1,6 +1,6 @@
-# YAML format reference
+# Binary save file format reference
 
-This document describes the YAML representation of CivOne save and map data.
+This document describes the binary save file format representation of CivOne save and map data.
 The source of truth is the code in `src` and `api/src`.
 
 ## Scope
@@ -9,7 +9,7 @@ The core game data contract is `IGameData` in `api/src/IGameData.cs`.
 The concrete implementation is `SaveDataAdapter` in `src/SaveDataAdapter.cs` and related partial files.
 Map persistence is implemented in `src/Map.LoadSave.cs`.
 
-## Top-level YAML keys
+## Top-level binary save file format keys
 
 The following top-level keys are expected to mirror `IGameData`.
 
@@ -158,4 +158,4 @@ Stored in layer `y + (HEIGHT * 3)`.
 ## Map size rules
 
 `ValidMapSize(width, height)` currently only accepts `80 x 50`.
-YAML map payloads must match this size when targeting the savegame adapter.
+Binary save file format map payloads must match this size when targeting the savegame adapter.
