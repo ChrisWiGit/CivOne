@@ -6,6 +6,7 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: InstantAdvice messages only show once.
 * Fix: Improved CityView panorama road generation to prevent random road breaks while keeping layout natural.
   * Added targeted post-processing to close only real single-tile gaps on the road axes.
   * Restores missing intersection tiles when at least two adjacent road segments connect to the crossing.
