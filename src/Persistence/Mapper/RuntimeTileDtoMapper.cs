@@ -19,7 +19,9 @@ namespace CivOne.Persistence.Model
 
 		public void SetTileFromDto(TileDto dto, int x, int y)
 		{
-			bool special = _map.TileIsSpecialInternal(x, y);
+			// dto.Special=true means explicitly set in YAML → honour it directly.
+			// dto.Special=false means not stored (old saves) → derive from map seed for backwards compatibility.
+			bool special = dto.Special || _map.TileIsSpecialInternal(x, y);
 
 			ITile tile = _terrainFactory.CreateTile(dto.Terrain, x, y, special);
 
@@ -47,6 +49,7 @@ namespace CivOne.Persistence.Model
 				Fortress   = domain.Fortress,
 				Mine       = domain.Mine,
 				Hut        = domain.Hut,
+				Special    = domain.Special,
 				LandValue  = domain.LandValue,
 			};
 		}

@@ -32,6 +32,11 @@ namespace CivOne.Persistence.Model
         [Doc("Whether the tile has a hut (true) or not (false).")]
         public bool Hut { get; set; }
 
+        [Doc("Whether the tile has a special resource (e.g. Oasis for Desert, Game for Forest/Plains, etc.). "
+           + "If false, the value is derived from the terrain master word on load (TileIsSpecial). "
+           + "If true, the special resource is explicitly present regardless of map seed.")]
+        public bool Special { get; set; }
+
         [Doc("Land value of the tile, used for city site evaluation. Higher values indicate more desirable locations for founding cities. See INTERNALS.md for details on how this value is calculated.")]
         public byte LandValue { get; set; }
     }

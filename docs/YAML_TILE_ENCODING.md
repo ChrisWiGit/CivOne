@@ -4,1798 +4,1926 @@
 
 In the `Terrain` column, the value in parentheses is the enum value from `CivOne.Enums.Terrain`.
 
-| Terrain | Road | Rail | Irr | Pol | Fort | Mine | Hut | Decimal | Base64 | Description |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
-| Desert (0) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | AA | Desert, untouched |
-| Desert (0) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 16 | AQ | Desert, road |
-| Desert (0) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 32 | Ag | Desert, rail |
-| Desert (0) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 48 | Aw | Desert, road+rail |
-| Desert (0) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 64 | BA | Desert, irrigation |
-| Desert (0) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 80 | BQ | Desert, road+irrigation |
-| Desert (0) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 96 | Bg | Desert, rail+irrigation |
-| Desert (0) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 112 | Bw | Desert, road+rail+irrigation |
-| Desert (0) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 128 | CA | Desert, pollution |
-| Desert (0) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 144 | CQ | Desert, road+pollution |
-| Desert (0) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 160 | Cg | Desert, rail+pollution |
-| Desert (0) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 176 | Cw | Desert, road+rail+pollution |
-| Desert (0) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 192 | DA | Desert, irrigation+pollution |
-| Desert (0) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 208 | DQ | Desert, road+irrigation+pollution |
-| Desert (0) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 224 | Dg | Desert, rail+irrigation+pollution |
-| Desert (0) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 240 | Dw | Desert, road+rail+irrigation+pollution |
-| Desert (0) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 256 | EA | Desert, fortress |
-| Desert (0) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 272 | EQ | Desert, road+fortress |
-| Desert (0) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 288 | Eg | Desert, rail+fortress |
-| Desert (0) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 304 | Ew | Desert, road+rail+fortress |
-| Desert (0) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 320 | FA | Desert, irrigation+fortress |
-| Desert (0) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 336 | FQ | Desert, road+irrigation+fortress |
-| Desert (0) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 352 | Fg | Desert, rail+irrigation+fortress |
-| Desert (0) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 368 | Fw | Desert, road+rail+irrigation+fortress |
-| Desert (0) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 384 | GA | Desert, pollution+fortress |
-| Desert (0) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 400 | GQ | Desert, road+pollution+fortress |
-| Desert (0) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 416 | Gg | Desert, rail+pollution+fortress |
-| Desert (0) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 432 | Gw | Desert, road+rail+pollution+fortress |
-| Desert (0) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 448 | HA | Desert, irrigation+pollution+fortress |
-| Desert (0) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 464 | HQ | Desert, road+irrigation+pollution+fortress |
-| Desert (0) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 480 | Hg | Desert, rail+irrigation+pollution+fortress |
-| Desert (0) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 496 | Hw | Desert, road+rail+irrigation+pollution+fortress |
-| Desert (0) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 512 | IA | Desert, mine |
-| Desert (0) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 528 | IQ | Desert, road+mine |
-| Desert (0) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 544 | Ig | Desert, rail+mine |
-| Desert (0) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 560 | Iw | Desert, road+rail+mine |
-| Desert (0) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 576 | JA | Desert, irrigation+mine |
-| Desert (0) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 592 | JQ | Desert, road+irrigation+mine |
-| Desert (0) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 608 | Jg | Desert, rail+irrigation+mine |
-| Desert (0) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 624 | Jw | Desert, road+rail+irrigation+mine |
-| Desert (0) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 640 | KA | Desert, pollution+mine |
-| Desert (0) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 656 | KQ | Desert, road+pollution+mine |
-| Desert (0) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 672 | Kg | Desert, rail+pollution+mine |
-| Desert (0) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 688 | Kw | Desert, road+rail+pollution+mine |
-| Desert (0) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 704 | LA | Desert, irrigation+pollution+mine |
-| Desert (0) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 720 | LQ | Desert, road+irrigation+pollution+mine |
-| Desert (0) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 736 | Lg | Desert, rail+irrigation+pollution+mine |
-| Desert (0) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 752 | Lw | Desert, road+rail+irrigation+pollution+mine |
-| Desert (0) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 768 | MA | Desert, fortress+mine |
-| Desert (0) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 784 | MQ | Desert, road+fortress+mine |
-| Desert (0) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 800 | Mg | Desert, rail+fortress+mine |
-| Desert (0) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 816 | Mw | Desert, road+rail+fortress+mine |
-| Desert (0) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 832 | NA | Desert, irrigation+fortress+mine |
-| Desert (0) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 848 | NQ | Desert, road+irrigation+fortress+mine |
-| Desert (0) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 864 | Ng | Desert, rail+irrigation+fortress+mine |
-| Desert (0) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 880 | Nw | Desert, road+rail+irrigation+fortress+mine |
-| Desert (0) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 896 | OA | Desert, pollution+fortress+mine |
-| Desert (0) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 912 | OQ | Desert, road+pollution+fortress+mine |
-| Desert (0) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 928 | Og | Desert, rail+pollution+fortress+mine |
-| Desert (0) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 944 | Ow | Desert, road+rail+pollution+fortress+mine |
-| Desert (0) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 960 | PA | Desert, irrigation+pollution+fortress+mine |
-| Desert (0) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 976 | PQ | Desert, road+irrigation+pollution+fortress+mine |
-| Desert (0) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 992 | Pg | Desert, rail+irrigation+pollution+fortress+mine |
-| Desert (0) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 1008 | Pw | Desert, road+rail+irrigation+pollution+fortress+mine |
-| Desert (0) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1024 | QA | Desert, hut |
-| Desert (0) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 1040 | QQ | Desert, road+hut |
-| Desert (0) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 1056 | Qg | Desert, rail+hut |
-| Desert (0) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 1072 | Qw | Desert, road+rail+hut |
-| Desert (0) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 1088 | RA | Desert, irrigation+hut |
-| Desert (0) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 1104 | RQ | Desert, road+irrigation+hut |
-| Desert (0) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 1120 | Rg | Desert, rail+irrigation+hut |
-| Desert (0) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1136 | Rw | Desert, road+rail+irrigation+hut |
-| Desert (0) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 1152 | SA | Desert, pollution+hut |
-| Desert (0) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 1168 | SQ | Desert, road+pollution+hut |
-| Desert (0) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 1184 | Sg | Desert, rail+pollution+hut |
-| Desert (0) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 1200 | Sw | Desert, road+rail+pollution+hut |
-| Desert (0) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 1216 | TA | Desert, irrigation+pollution+hut |
-| Desert (0) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 1232 | TQ | Desert, road+irrigation+pollution+hut |
-| Desert (0) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 1248 | Tg | Desert, rail+irrigation+pollution+hut |
-| Desert (0) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 1264 | Tw | Desert, road+rail+irrigation+pollution+hut |
-| Desert (0) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 1280 | UA | Desert, fortress+hut |
-| Desert (0) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 1296 | UQ | Desert, road+fortress+hut |
-| Desert (0) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 1312 | Ug | Desert, rail+fortress+hut |
-| Desert (0) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 1328 | Uw | Desert, road+rail+fortress+hut |
-| Desert (0) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 1344 | VA | Desert, irrigation+fortress+hut |
-| Desert (0) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 1360 | VQ | Desert, road+irrigation+fortress+hut |
-| Desert (0) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 1376 | Vg | Desert, rail+irrigation+fortress+hut |
-| Desert (0) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 1392 | Vw | Desert, road+rail+irrigation+fortress+hut |
-| Desert (0) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 1408 | WA | Desert, pollution+fortress+hut |
-| Desert (0) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 1424 | WQ | Desert, road+pollution+fortress+hut |
-| Desert (0) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 1440 | Wg | Desert, rail+pollution+fortress+hut |
-| Desert (0) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 1456 | Ww | Desert, road+rail+pollution+fortress+hut |
-| Desert (0) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 1472 | XA | Desert, irrigation+pollution+fortress+hut |
-| Desert (0) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 1488 | XQ | Desert, road+irrigation+pollution+fortress+hut |
-| Desert (0) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 1504 | Xg | Desert, rail+irrigation+pollution+fortress+hut |
-| Desert (0) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 1520 | Xw | Desert, road+rail+irrigation+pollution+fortress+hut |
-| Desert (0) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 1536 | YA | Desert, mine+hut |
-| Desert (0) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 1552 | YQ | Desert, road+mine+hut |
-| Desert (0) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 1568 | Yg | Desert, rail+mine+hut |
-| Desert (0) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 1584 | Yw | Desert, road+rail+mine+hut |
-| Desert (0) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1600 | ZA | Desert, irrigation+mine+hut |
-| Desert (0) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 1616 | ZQ | Desert, road+irrigation+mine+hut |
-| Desert (0) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 1632 | Zg | Desert, rail+irrigation+mine+hut |
-| Desert (0) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1648 | Zw | Desert, road+rail+irrigation+mine+hut |
-| Desert (0) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 1664 | aA | Desert, pollution+mine+hut |
-| Desert (0) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 1680 | aQ | Desert, road+pollution+mine+hut |
-| Desert (0) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 1696 | ag | Desert, rail+pollution+mine+hut |
-| Desert (0) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 1712 | aw | Desert, road+rail+pollution+mine+hut |
-| Desert (0) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 1728 | bA | Desert, irrigation+pollution+mine+hut |
-| Desert (0) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 1744 | bQ | Desert, road+irrigation+pollution+mine+hut |
-| Desert (0) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 1760 | bg | Desert, rail+irrigation+pollution+mine+hut |
-| Desert (0) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 1776 | bw | Desert, road+rail+irrigation+pollution+mine+hut |
-| Desert (0) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 1792 | cA | Desert, fortress+mine+hut |
-| Desert (0) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 1808 | cQ | Desert, road+fortress+mine+hut |
-| Desert (0) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1824 | cg | Desert, rail+fortress+mine+hut |
-| Desert (0) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 1840 | cw | Desert, road+rail+fortress+mine+hut |
-| Desert (0) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 1856 | dA | Desert, irrigation+fortress+mine+hut |
-| Desert (0) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 1872 | dQ | Desert, road+irrigation+fortress+mine+hut |
-| Desert (0) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 1888 | dg | Desert, rail+irrigation+fortress+mine+hut |
-| Desert (0) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1904 | dw | Desert, road+rail+irrigation+fortress+mine+hut |
-| Desert (0) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 1920 | eA | Desert, pollution+fortress+mine+hut |
-| Desert (0) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1936 | eQ | Desert, road+pollution+fortress+mine+hut |
-| Desert (0) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 1952 | eg | Desert, rail+pollution+fortress+mine+hut |
-| Desert (0) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1968 | ew | Desert, road+rail+pollution+fortress+mine+hut |
-| Desert (0) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1984 | fA | Desert, irrigation+pollution+fortress+mine+hut |
-| Desert (0) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 2000 | fQ | Desert, road+irrigation+pollution+fortress+mine+hut |
-| Desert (0) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 2016 | fg | Desert, rail+irrigation+pollution+fortress+mine+hut |
-| Desert (0) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 2032 | fw | Desert, road+rail+irrigation+pollution+fortress+mine+hut |
-| Plains (1) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | AB | Plains, untouched |
-| Plains (1) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 17 | AR | Plains, road |
-| Plains (1) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 33 | Ah | Plains, rail |
-| Plains (1) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 49 | Ax | Plains, road+rail |
-| Plains (1) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 65 | BB | Plains, irrigation |
-| Plains (1) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 81 | BR | Plains, road+irrigation |
-| Plains (1) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 97 | Bh | Plains, rail+irrigation |
-| Plains (1) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 113 | Bx | Plains, road+rail+irrigation |
-| Plains (1) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 129 | CB | Plains, pollution |
-| Plains (1) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 145 | CR | Plains, road+pollution |
-| Plains (1) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 161 | Ch | Plains, rail+pollution |
-| Plains (1) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 177 | Cx | Plains, road+rail+pollution |
-| Plains (1) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 193 | DB | Plains, irrigation+pollution |
-| Plains (1) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 209 | DR | Plains, road+irrigation+pollution |
-| Plains (1) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 225 | Dh | Plains, rail+irrigation+pollution |
-| Plains (1) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 241 | Dx | Plains, road+rail+irrigation+pollution |
-| Plains (1) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 257 | EB | Plains, fortress |
-| Plains (1) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 273 | ER | Plains, road+fortress |
-| Plains (1) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 289 | Eh | Plains, rail+fortress |
-| Plains (1) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 305 | Ex | Plains, road+rail+fortress |
-| Plains (1) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 321 | FB | Plains, irrigation+fortress |
-| Plains (1) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 337 | FR | Plains, road+irrigation+fortress |
-| Plains (1) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 353 | Fh | Plains, rail+irrigation+fortress |
-| Plains (1) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 369 | Fx | Plains, road+rail+irrigation+fortress |
-| Plains (1) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 385 | GB | Plains, pollution+fortress |
-| Plains (1) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 401 | GR | Plains, road+pollution+fortress |
-| Plains (1) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 417 | Gh | Plains, rail+pollution+fortress |
-| Plains (1) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 433 | Gx | Plains, road+rail+pollution+fortress |
-| Plains (1) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 449 | HB | Plains, irrigation+pollution+fortress |
-| Plains (1) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 465 | HR | Plains, road+irrigation+pollution+fortress |
-| Plains (1) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 481 | Hh | Plains, rail+irrigation+pollution+fortress |
-| Plains (1) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 497 | Hx | Plains, road+rail+irrigation+pollution+fortress |
-| Plains (1) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 513 | IB | Plains, mine |
-| Plains (1) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 529 | IR | Plains, road+mine |
-| Plains (1) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 545 | Ih | Plains, rail+mine |
-| Plains (1) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 561 | Ix | Plains, road+rail+mine |
-| Plains (1) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 577 | JB | Plains, irrigation+mine |
-| Plains (1) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 593 | JR | Plains, road+irrigation+mine |
-| Plains (1) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 609 | Jh | Plains, rail+irrigation+mine |
-| Plains (1) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 625 | Jx | Plains, road+rail+irrigation+mine |
-| Plains (1) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 641 | KB | Plains, pollution+mine |
-| Plains (1) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 657 | KR | Plains, road+pollution+mine |
-| Plains (1) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 673 | Kh | Plains, rail+pollution+mine |
-| Plains (1) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 689 | Kx | Plains, road+rail+pollution+mine |
-| Plains (1) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 705 | LB | Plains, irrigation+pollution+mine |
-| Plains (1) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 721 | LR | Plains, road+irrigation+pollution+mine |
-| Plains (1) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 737 | Lh | Plains, rail+irrigation+pollution+mine |
-| Plains (1) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 753 | Lx | Plains, road+rail+irrigation+pollution+mine |
-| Plains (1) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 769 | MB | Plains, fortress+mine |
-| Plains (1) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 785 | MR | Plains, road+fortress+mine |
-| Plains (1) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 801 | Mh | Plains, rail+fortress+mine |
-| Plains (1) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 817 | Mx | Plains, road+rail+fortress+mine |
-| Plains (1) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 833 | NB | Plains, irrigation+fortress+mine |
-| Plains (1) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 849 | NR | Plains, road+irrigation+fortress+mine |
-| Plains (1) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 865 | Nh | Plains, rail+irrigation+fortress+mine |
-| Plains (1) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 881 | Nx | Plains, road+rail+irrigation+fortress+mine |
-| Plains (1) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 897 | OB | Plains, pollution+fortress+mine |
-| Plains (1) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 913 | OR | Plains, road+pollution+fortress+mine |
-| Plains (1) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 929 | Oh | Plains, rail+pollution+fortress+mine |
-| Plains (1) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 945 | Ox | Plains, road+rail+pollution+fortress+mine |
-| Plains (1) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 961 | PB | Plains, irrigation+pollution+fortress+mine |
-| Plains (1) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 977 | PR | Plains, road+irrigation+pollution+fortress+mine |
-| Plains (1) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 993 | Ph | Plains, rail+irrigation+pollution+fortress+mine |
-| Plains (1) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 1009 | Px | Plains, road+rail+irrigation+pollution+fortress+mine |
-| Plains (1) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1025 | QB | Plains, hut |
-| Plains (1) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 1041 | QR | Plains, road+hut |
-| Plains (1) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 1057 | Qh | Plains, rail+hut |
-| Plains (1) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 1073 | Qx | Plains, road+rail+hut |
-| Plains (1) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 1089 | RB | Plains, irrigation+hut |
-| Plains (1) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 1105 | RR | Plains, road+irrigation+hut |
-| Plains (1) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 1121 | Rh | Plains, rail+irrigation+hut |
-| Plains (1) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1137 | Rx | Plains, road+rail+irrigation+hut |
-| Plains (1) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 1153 | SB | Plains, pollution+hut |
-| Plains (1) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 1169 | SR | Plains, road+pollution+hut |
-| Plains (1) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 1185 | Sh | Plains, rail+pollution+hut |
-| Plains (1) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 1201 | Sx | Plains, road+rail+pollution+hut |
-| Plains (1) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 1217 | TB | Plains, irrigation+pollution+hut |
-| Plains (1) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 1233 | TR | Plains, road+irrigation+pollution+hut |
-| Plains (1) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 1249 | Th | Plains, rail+irrigation+pollution+hut |
-| Plains (1) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 1265 | Tx | Plains, road+rail+irrigation+pollution+hut |
-| Plains (1) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 1281 | UB | Plains, fortress+hut |
-| Plains (1) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 1297 | UR | Plains, road+fortress+hut |
-| Plains (1) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 1313 | Uh | Plains, rail+fortress+hut |
-| Plains (1) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 1329 | Ux | Plains, road+rail+fortress+hut |
-| Plains (1) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 1345 | VB | Plains, irrigation+fortress+hut |
-| Plains (1) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 1361 | VR | Plains, road+irrigation+fortress+hut |
-| Plains (1) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 1377 | Vh | Plains, rail+irrigation+fortress+hut |
-| Plains (1) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 1393 | Vx | Plains, road+rail+irrigation+fortress+hut |
-| Plains (1) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 1409 | WB | Plains, pollution+fortress+hut |
-| Plains (1) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 1425 | WR | Plains, road+pollution+fortress+hut |
-| Plains (1) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 1441 | Wh | Plains, rail+pollution+fortress+hut |
-| Plains (1) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 1457 | Wx | Plains, road+rail+pollution+fortress+hut |
-| Plains (1) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 1473 | XB | Plains, irrigation+pollution+fortress+hut |
-| Plains (1) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 1489 | XR | Plains, road+irrigation+pollution+fortress+hut |
-| Plains (1) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 1505 | Xh | Plains, rail+irrigation+pollution+fortress+hut |
-| Plains (1) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 1521 | Xx | Plains, road+rail+irrigation+pollution+fortress+hut |
-| Plains (1) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 1537 | YB | Plains, mine+hut |
-| Plains (1) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 1553 | YR | Plains, road+mine+hut |
-| Plains (1) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 1569 | Yh | Plains, rail+mine+hut |
-| Plains (1) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 1585 | Yx | Plains, road+rail+mine+hut |
-| Plains (1) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1601 | ZB | Plains, irrigation+mine+hut |
-| Plains (1) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 1617 | ZR | Plains, road+irrigation+mine+hut |
-| Plains (1) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 1633 | Zh | Plains, rail+irrigation+mine+hut |
-| Plains (1) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1649 | Zx | Plains, road+rail+irrigation+mine+hut |
-| Plains (1) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 1665 | aB | Plains, pollution+mine+hut |
-| Plains (1) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 1681 | aR | Plains, road+pollution+mine+hut |
-| Plains (1) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 1697 | ah | Plains, rail+pollution+mine+hut |
-| Plains (1) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 1713 | ax | Plains, road+rail+pollution+mine+hut |
-| Plains (1) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 1729 | bB | Plains, irrigation+pollution+mine+hut |
-| Plains (1) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 1745 | bR | Plains, road+irrigation+pollution+mine+hut |
-| Plains (1) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 1761 | bh | Plains, rail+irrigation+pollution+mine+hut |
-| Plains (1) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 1777 | bx | Plains, road+rail+irrigation+pollution+mine+hut |
-| Plains (1) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 1793 | cB | Plains, fortress+mine+hut |
-| Plains (1) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 1809 | cR | Plains, road+fortress+mine+hut |
-| Plains (1) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1825 | ch | Plains, rail+fortress+mine+hut |
-| Plains (1) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 1841 | cx | Plains, road+rail+fortress+mine+hut |
-| Plains (1) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 1857 | dB | Plains, irrigation+fortress+mine+hut |
-| Plains (1) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 1873 | dR | Plains, road+irrigation+fortress+mine+hut |
-| Plains (1) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 1889 | dh | Plains, rail+irrigation+fortress+mine+hut |
-| Plains (1) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1905 | dx | Plains, road+rail+irrigation+fortress+mine+hut |
-| Plains (1) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 1921 | eB | Plains, pollution+fortress+mine+hut |
-| Plains (1) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1937 | eR | Plains, road+pollution+fortress+mine+hut |
-| Plains (1) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 1953 | eh | Plains, rail+pollution+fortress+mine+hut |
-| Plains (1) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1969 | ex | Plains, road+rail+pollution+fortress+mine+hut |
-| Plains (1) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1985 | fB | Plains, irrigation+pollution+fortress+mine+hut |
-| Plains (1) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 2001 | fR | Plains, road+irrigation+pollution+fortress+mine+hut |
-| Plains (1) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 2017 | fh | Plains, rail+irrigation+pollution+fortress+mine+hut |
-| Plains (1) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 2033 | fx | Plains, road+rail+irrigation+pollution+fortress+mine+hut |
-| Grassland1 (2) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 2 | AC | Grassland1, untouched |
-| Grassland1 (2) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 18 | AS | Grassland1, road |
-| Grassland1 (2) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 34 | Ai | Grassland1, rail |
-| Grassland1 (2) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 50 | Ay | Grassland1, road+rail |
-| Grassland1 (2) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 66 | BC | Grassland1, irrigation |
-| Grassland1 (2) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 82 | BS | Grassland1, road+irrigation |
-| Grassland1 (2) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 98 | Bi | Grassland1, rail+irrigation |
-| Grassland1 (2) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 114 | By | Grassland1, road+rail+irrigation |
-| Grassland1 (2) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 130 | CC | Grassland1, pollution |
-| Grassland1 (2) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 146 | CS | Grassland1, road+pollution |
-| Grassland1 (2) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 162 | Ci | Grassland1, rail+pollution |
-| Grassland1 (2) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 178 | Cy | Grassland1, road+rail+pollution |
-| Grassland1 (2) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 194 | DC | Grassland1, irrigation+pollution |
-| Grassland1 (2) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 210 | DS | Grassland1, road+irrigation+pollution |
-| Grassland1 (2) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 226 | Di | Grassland1, rail+irrigation+pollution |
-| Grassland1 (2) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 242 | Dy | Grassland1, road+rail+irrigation+pollution |
-| Grassland1 (2) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 258 | EC | Grassland1, fortress |
-| Grassland1 (2) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 274 | ES | Grassland1, road+fortress |
-| Grassland1 (2) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 290 | Ei | Grassland1, rail+fortress |
-| Grassland1 (2) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 306 | Ey | Grassland1, road+rail+fortress |
-| Grassland1 (2) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 322 | FC | Grassland1, irrigation+fortress |
-| Grassland1 (2) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 338 | FS | Grassland1, road+irrigation+fortress |
-| Grassland1 (2) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 354 | Fi | Grassland1, rail+irrigation+fortress |
-| Grassland1 (2) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 370 | Fy | Grassland1, road+rail+irrigation+fortress |
-| Grassland1 (2) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 386 | GC | Grassland1, pollution+fortress |
-| Grassland1 (2) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 402 | GS | Grassland1, road+pollution+fortress |
-| Grassland1 (2) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 418 | Gi | Grassland1, rail+pollution+fortress |
-| Grassland1 (2) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 434 | Gy | Grassland1, road+rail+pollution+fortress |
-| Grassland1 (2) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 450 | HC | Grassland1, irrigation+pollution+fortress |
-| Grassland1 (2) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 466 | HS | Grassland1, road+irrigation+pollution+fortress |
-| Grassland1 (2) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 482 | Hi | Grassland1, rail+irrigation+pollution+fortress |
-| Grassland1 (2) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 498 | Hy | Grassland1, road+rail+irrigation+pollution+fortress |
-| Grassland1 (2) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 514 | IC | Grassland1, mine |
-| Grassland1 (2) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 530 | IS | Grassland1, road+mine |
-| Grassland1 (2) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 546 | Ii | Grassland1, rail+mine |
-| Grassland1 (2) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 562 | Iy | Grassland1, road+rail+mine |
-| Grassland1 (2) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 578 | JC | Grassland1, irrigation+mine |
-| Grassland1 (2) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 594 | JS | Grassland1, road+irrigation+mine |
-| Grassland1 (2) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 610 | Ji | Grassland1, rail+irrigation+mine |
-| Grassland1 (2) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 626 | Jy | Grassland1, road+rail+irrigation+mine |
-| Grassland1 (2) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 642 | KC | Grassland1, pollution+mine |
-| Grassland1 (2) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 658 | KS | Grassland1, road+pollution+mine |
-| Grassland1 (2) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 674 | Ki | Grassland1, rail+pollution+mine |
-| Grassland1 (2) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 690 | Ky | Grassland1, road+rail+pollution+mine |
-| Grassland1 (2) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 706 | LC | Grassland1, irrigation+pollution+mine |
-| Grassland1 (2) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 722 | LS | Grassland1, road+irrigation+pollution+mine |
-| Grassland1 (2) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 738 | Li | Grassland1, rail+irrigation+pollution+mine |
-| Grassland1 (2) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 754 | Ly | Grassland1, road+rail+irrigation+pollution+mine |
-| Grassland1 (2) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 770 | MC | Grassland1, fortress+mine |
-| Grassland1 (2) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 786 | MS | Grassland1, road+fortress+mine |
-| Grassland1 (2) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 802 | Mi | Grassland1, rail+fortress+mine |
-| Grassland1 (2) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 818 | My | Grassland1, road+rail+fortress+mine |
-| Grassland1 (2) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 834 | NC | Grassland1, irrigation+fortress+mine |
-| Grassland1 (2) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 850 | NS | Grassland1, road+irrigation+fortress+mine |
-| Grassland1 (2) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 866 | Ni | Grassland1, rail+irrigation+fortress+mine |
-| Grassland1 (2) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 882 | Ny | Grassland1, road+rail+irrigation+fortress+mine |
-| Grassland1 (2) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 898 | OC | Grassland1, pollution+fortress+mine |
-| Grassland1 (2) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 914 | OS | Grassland1, road+pollution+fortress+mine |
-| Grassland1 (2) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 930 | Oi | Grassland1, rail+pollution+fortress+mine |
-| Grassland1 (2) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 946 | Oy | Grassland1, road+rail+pollution+fortress+mine |
-| Grassland1 (2) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 962 | PC | Grassland1, irrigation+pollution+fortress+mine |
-| Grassland1 (2) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 978 | PS | Grassland1, road+irrigation+pollution+fortress+mine |
-| Grassland1 (2) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 994 | Pi | Grassland1, rail+irrigation+pollution+fortress+mine |
-| Grassland1 (2) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 1010 | Py | Grassland1, road+rail+irrigation+pollution+fortress+mine |
-| Grassland1 (2) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1026 | QC | Grassland1, hut |
-| Grassland1 (2) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 1042 | QS | Grassland1, road+hut |
-| Grassland1 (2) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 1058 | Qi | Grassland1, rail+hut |
-| Grassland1 (2) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 1074 | Qy | Grassland1, road+rail+hut |
-| Grassland1 (2) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 1090 | RC | Grassland1, irrigation+hut |
-| Grassland1 (2) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 1106 | RS | Grassland1, road+irrigation+hut |
-| Grassland1 (2) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 1122 | Ri | Grassland1, rail+irrigation+hut |
-| Grassland1 (2) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1138 | Ry | Grassland1, road+rail+irrigation+hut |
-| Grassland1 (2) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 1154 | SC | Grassland1, pollution+hut |
-| Grassland1 (2) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 1170 | SS | Grassland1, road+pollution+hut |
-| Grassland1 (2) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 1186 | Si | Grassland1, rail+pollution+hut |
-| Grassland1 (2) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 1202 | Sy | Grassland1, road+rail+pollution+hut |
-| Grassland1 (2) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 1218 | TC | Grassland1, irrigation+pollution+hut |
-| Grassland1 (2) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 1234 | TS | Grassland1, road+irrigation+pollution+hut |
-| Grassland1 (2) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 1250 | Ti | Grassland1, rail+irrigation+pollution+hut |
-| Grassland1 (2) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 1266 | Ty | Grassland1, road+rail+irrigation+pollution+hut |
-| Grassland1 (2) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 1282 | UC | Grassland1, fortress+hut |
-| Grassland1 (2) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 1298 | US | Grassland1, road+fortress+hut |
-| Grassland1 (2) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 1314 | Ui | Grassland1, rail+fortress+hut |
-| Grassland1 (2) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 1330 | Uy | Grassland1, road+rail+fortress+hut |
-| Grassland1 (2) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 1346 | VC | Grassland1, irrigation+fortress+hut |
-| Grassland1 (2) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 1362 | VS | Grassland1, road+irrigation+fortress+hut |
-| Grassland1 (2) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 1378 | Vi | Grassland1, rail+irrigation+fortress+hut |
-| Grassland1 (2) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 1394 | Vy | Grassland1, road+rail+irrigation+fortress+hut |
-| Grassland1 (2) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 1410 | WC | Grassland1, pollution+fortress+hut |
-| Grassland1 (2) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 1426 | WS | Grassland1, road+pollution+fortress+hut |
-| Grassland1 (2) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 1442 | Wi | Grassland1, rail+pollution+fortress+hut |
-| Grassland1 (2) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 1458 | Wy | Grassland1, road+rail+pollution+fortress+hut |
-| Grassland1 (2) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 1474 | XC | Grassland1, irrigation+pollution+fortress+hut |
-| Grassland1 (2) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 1490 | XS | Grassland1, road+irrigation+pollution+fortress+hut |
-| Grassland1 (2) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 1506 | Xi | Grassland1, rail+irrigation+pollution+fortress+hut |
-| Grassland1 (2) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 1522 | Xy | Grassland1, road+rail+irrigation+pollution+fortress+hut |
-| Grassland1 (2) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 1538 | YC | Grassland1, mine+hut |
-| Grassland1 (2) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 1554 | YS | Grassland1, road+mine+hut |
-| Grassland1 (2) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 1570 | Yi | Grassland1, rail+mine+hut |
-| Grassland1 (2) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 1586 | Yy | Grassland1, road+rail+mine+hut |
-| Grassland1 (2) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1602 | ZC | Grassland1, irrigation+mine+hut |
-| Grassland1 (2) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 1618 | ZS | Grassland1, road+irrigation+mine+hut |
-| Grassland1 (2) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 1634 | Zi | Grassland1, rail+irrigation+mine+hut |
-| Grassland1 (2) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1650 | Zy | Grassland1, road+rail+irrigation+mine+hut |
-| Grassland1 (2) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 1666 | aC | Grassland1, pollution+mine+hut |
-| Grassland1 (2) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 1682 | aS | Grassland1, road+pollution+mine+hut |
-| Grassland1 (2) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 1698 | ai | Grassland1, rail+pollution+mine+hut |
-| Grassland1 (2) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 1714 | ay | Grassland1, road+rail+pollution+mine+hut |
-| Grassland1 (2) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 1730 | bC | Grassland1, irrigation+pollution+mine+hut |
-| Grassland1 (2) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 1746 | bS | Grassland1, road+irrigation+pollution+mine+hut |
-| Grassland1 (2) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 1762 | bi | Grassland1, rail+irrigation+pollution+mine+hut |
-| Grassland1 (2) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 1778 | by | Grassland1, road+rail+irrigation+pollution+mine+hut |
-| Grassland1 (2) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 1794 | cC | Grassland1, fortress+mine+hut |
-| Grassland1 (2) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 1810 | cS | Grassland1, road+fortress+mine+hut |
-| Grassland1 (2) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1826 | ci | Grassland1, rail+fortress+mine+hut |
-| Grassland1 (2) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 1842 | cy | Grassland1, road+rail+fortress+mine+hut |
-| Grassland1 (2) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 1858 | dC | Grassland1, irrigation+fortress+mine+hut |
-| Grassland1 (2) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 1874 | dS | Grassland1, road+irrigation+fortress+mine+hut |
-| Grassland1 (2) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 1890 | di | Grassland1, rail+irrigation+fortress+mine+hut |
-| Grassland1 (2) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1906 | dy | Grassland1, road+rail+irrigation+fortress+mine+hut |
-| Grassland1 (2) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 1922 | eC | Grassland1, pollution+fortress+mine+hut |
-| Grassland1 (2) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1938 | eS | Grassland1, road+pollution+fortress+mine+hut |
-| Grassland1 (2) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 1954 | ei | Grassland1, rail+pollution+fortress+mine+hut |
-| Grassland1 (2) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1970 | ey | Grassland1, road+rail+pollution+fortress+mine+hut |
-| Grassland1 (2) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1986 | fC | Grassland1, irrigation+pollution+fortress+mine+hut |
-| Grassland1 (2) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 2002 | fS | Grassland1, road+irrigation+pollution+fortress+mine+hut |
-| Grassland1 (2) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 2018 | fi | Grassland1, rail+irrigation+pollution+fortress+mine+hut |
-| Grassland1 (2) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 2034 | fy | Grassland1, road+rail+irrigation+pollution+fortress+mine+hut |
-| Forest (3) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 3 | AD | Forest, untouched |
-| Forest (3) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 19 | AT | Forest, road |
-| Forest (3) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 35 | Aj | Forest, rail |
-| Forest (3) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 51 | Az | Forest, road+rail |
-| Forest (3) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 67 | BD | Forest, irrigation |
-| Forest (3) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 83 | BT | Forest, road+irrigation |
-| Forest (3) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 99 | Bj | Forest, rail+irrigation |
-| Forest (3) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 115 | Bz | Forest, road+rail+irrigation |
-| Forest (3) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 131 | CD | Forest, pollution |
-| Forest (3) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 147 | CT | Forest, road+pollution |
-| Forest (3) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 163 | Cj | Forest, rail+pollution |
-| Forest (3) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 179 | Cz | Forest, road+rail+pollution |
-| Forest (3) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 195 | DD | Forest, irrigation+pollution |
-| Forest (3) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 211 | DT | Forest, road+irrigation+pollution |
-| Forest (3) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 227 | Dj | Forest, rail+irrigation+pollution |
-| Forest (3) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 243 | Dz | Forest, road+rail+irrigation+pollution |
-| Forest (3) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 259 | ED | Forest, fortress |
-| Forest (3) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 275 | ET | Forest, road+fortress |
-| Forest (3) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 291 | Ej | Forest, rail+fortress |
-| Forest (3) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 307 | Ez | Forest, road+rail+fortress |
-| Forest (3) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 323 | FD | Forest, irrigation+fortress |
-| Forest (3) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 339 | FT | Forest, road+irrigation+fortress |
-| Forest (3) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 355 | Fj | Forest, rail+irrigation+fortress |
-| Forest (3) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 371 | Fz | Forest, road+rail+irrigation+fortress |
-| Forest (3) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 387 | GD | Forest, pollution+fortress |
-| Forest (3) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 403 | GT | Forest, road+pollution+fortress |
-| Forest (3) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 419 | Gj | Forest, rail+pollution+fortress |
-| Forest (3) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 435 | Gz | Forest, road+rail+pollution+fortress |
-| Forest (3) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 451 | HD | Forest, irrigation+pollution+fortress |
-| Forest (3) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 467 | HT | Forest, road+irrigation+pollution+fortress |
-| Forest (3) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 483 | Hj | Forest, rail+irrigation+pollution+fortress |
-| Forest (3) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 499 | Hz | Forest, road+rail+irrigation+pollution+fortress |
-| Forest (3) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 515 | ID | Forest, mine |
-| Forest (3) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 531 | IT | Forest, road+mine |
-| Forest (3) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 547 | Ij | Forest, rail+mine |
-| Forest (3) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 563 | Iz | Forest, road+rail+mine |
-| Forest (3) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 579 | JD | Forest, irrigation+mine |
-| Forest (3) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 595 | JT | Forest, road+irrigation+mine |
-| Forest (3) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 611 | Jj | Forest, rail+irrigation+mine |
-| Forest (3) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 627 | Jz | Forest, road+rail+irrigation+mine |
-| Forest (3) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 643 | KD | Forest, pollution+mine |
-| Forest (3) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 659 | KT | Forest, road+pollution+mine |
-| Forest (3) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 675 | Kj | Forest, rail+pollution+mine |
-| Forest (3) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 691 | Kz | Forest, road+rail+pollution+mine |
-| Forest (3) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 707 | LD | Forest, irrigation+pollution+mine |
-| Forest (3) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 723 | LT | Forest, road+irrigation+pollution+mine |
-| Forest (3) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 739 | Lj | Forest, rail+irrigation+pollution+mine |
-| Forest (3) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 755 | Lz | Forest, road+rail+irrigation+pollution+mine |
-| Forest (3) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 771 | MD | Forest, fortress+mine |
-| Forest (3) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 787 | MT | Forest, road+fortress+mine |
-| Forest (3) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 803 | Mj | Forest, rail+fortress+mine |
-| Forest (3) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 819 | Mz | Forest, road+rail+fortress+mine |
-| Forest (3) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 835 | ND | Forest, irrigation+fortress+mine |
-| Forest (3) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 851 | NT | Forest, road+irrigation+fortress+mine |
-| Forest (3) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 867 | Nj | Forest, rail+irrigation+fortress+mine |
-| Forest (3) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 883 | Nz | Forest, road+rail+irrigation+fortress+mine |
-| Forest (3) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 899 | OD | Forest, pollution+fortress+mine |
-| Forest (3) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 915 | OT | Forest, road+pollution+fortress+mine |
-| Forest (3) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 931 | Oj | Forest, rail+pollution+fortress+mine |
-| Forest (3) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 947 | Oz | Forest, road+rail+pollution+fortress+mine |
-| Forest (3) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 963 | PD | Forest, irrigation+pollution+fortress+mine |
-| Forest (3) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 979 | PT | Forest, road+irrigation+pollution+fortress+mine |
-| Forest (3) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 995 | Pj | Forest, rail+irrigation+pollution+fortress+mine |
-| Forest (3) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 1011 | Pz | Forest, road+rail+irrigation+pollution+fortress+mine |
-| Forest (3) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1027 | QD | Forest, hut |
-| Forest (3) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 1043 | QT | Forest, road+hut |
-| Forest (3) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 1059 | Qj | Forest, rail+hut |
-| Forest (3) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 1075 | Qz | Forest, road+rail+hut |
-| Forest (3) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 1091 | RD | Forest, irrigation+hut |
-| Forest (3) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 1107 | RT | Forest, road+irrigation+hut |
-| Forest (3) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 1123 | Rj | Forest, rail+irrigation+hut |
-| Forest (3) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1139 | Rz | Forest, road+rail+irrigation+hut |
-| Forest (3) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 1155 | SD | Forest, pollution+hut |
-| Forest (3) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 1171 | ST | Forest, road+pollution+hut |
-| Forest (3) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 1187 | Sj | Forest, rail+pollution+hut |
-| Forest (3) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 1203 | Sz | Forest, road+rail+pollution+hut |
-| Forest (3) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 1219 | TD | Forest, irrigation+pollution+hut |
-| Forest (3) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 1235 | TT | Forest, road+irrigation+pollution+hut |
-| Forest (3) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 1251 | Tj | Forest, rail+irrigation+pollution+hut |
-| Forest (3) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 1267 | Tz | Forest, road+rail+irrigation+pollution+hut |
-| Forest (3) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 1283 | UD | Forest, fortress+hut |
-| Forest (3) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 1299 | UT | Forest, road+fortress+hut |
-| Forest (3) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 1315 | Uj | Forest, rail+fortress+hut |
-| Forest (3) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 1331 | Uz | Forest, road+rail+fortress+hut |
-| Forest (3) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 1347 | VD | Forest, irrigation+fortress+hut |
-| Forest (3) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 1363 | VT | Forest, road+irrigation+fortress+hut |
-| Forest (3) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 1379 | Vj | Forest, rail+irrigation+fortress+hut |
-| Forest (3) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 1395 | Vz | Forest, road+rail+irrigation+fortress+hut |
-| Forest (3) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 1411 | WD | Forest, pollution+fortress+hut |
-| Forest (3) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 1427 | WT | Forest, road+pollution+fortress+hut |
-| Forest (3) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 1443 | Wj | Forest, rail+pollution+fortress+hut |
-| Forest (3) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 1459 | Wz | Forest, road+rail+pollution+fortress+hut |
-| Forest (3) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 1475 | XD | Forest, irrigation+pollution+fortress+hut |
-| Forest (3) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 1491 | XT | Forest, road+irrigation+pollution+fortress+hut |
-| Forest (3) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 1507 | Xj | Forest, rail+irrigation+pollution+fortress+hut |
-| Forest (3) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 1523 | Xz | Forest, road+rail+irrigation+pollution+fortress+hut |
-| Forest (3) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 1539 | YD | Forest, mine+hut |
-| Forest (3) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 1555 | YT | Forest, road+mine+hut |
-| Forest (3) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 1571 | Yj | Forest, rail+mine+hut |
-| Forest (3) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 1587 | Yz | Forest, road+rail+mine+hut |
-| Forest (3) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1603 | ZD | Forest, irrigation+mine+hut |
-| Forest (3) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 1619 | ZT | Forest, road+irrigation+mine+hut |
-| Forest (3) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 1635 | Zj | Forest, rail+irrigation+mine+hut |
-| Forest (3) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1651 | Zz | Forest, road+rail+irrigation+mine+hut |
-| Forest (3) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 1667 | aD | Forest, pollution+mine+hut |
-| Forest (3) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 1683 | aT | Forest, road+pollution+mine+hut |
-| Forest (3) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 1699 | aj | Forest, rail+pollution+mine+hut |
-| Forest (3) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 1715 | az | Forest, road+rail+pollution+mine+hut |
-| Forest (3) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 1731 | bD | Forest, irrigation+pollution+mine+hut |
-| Forest (3) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 1747 | bT | Forest, road+irrigation+pollution+mine+hut |
-| Forest (3) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 1763 | bj | Forest, rail+irrigation+pollution+mine+hut |
-| Forest (3) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 1779 | bz | Forest, road+rail+irrigation+pollution+mine+hut |
-| Forest (3) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 1795 | cD | Forest, fortress+mine+hut |
-| Forest (3) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 1811 | cT | Forest, road+fortress+mine+hut |
-| Forest (3) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1827 | cj | Forest, rail+fortress+mine+hut |
-| Forest (3) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 1843 | cz | Forest, road+rail+fortress+mine+hut |
-| Forest (3) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 1859 | dD | Forest, irrigation+fortress+mine+hut |
-| Forest (3) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 1875 | dT | Forest, road+irrigation+fortress+mine+hut |
-| Forest (3) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 1891 | dj | Forest, rail+irrigation+fortress+mine+hut |
-| Forest (3) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1907 | dz | Forest, road+rail+irrigation+fortress+mine+hut |
-| Forest (3) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 1923 | eD | Forest, pollution+fortress+mine+hut |
-| Forest (3) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1939 | eT | Forest, road+pollution+fortress+mine+hut |
-| Forest (3) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 1955 | ej | Forest, rail+pollution+fortress+mine+hut |
-| Forest (3) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1971 | ez | Forest, road+rail+pollution+fortress+mine+hut |
-| Forest (3) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1987 | fD | Forest, irrigation+pollution+fortress+mine+hut |
-| Forest (3) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 2003 | fT | Forest, road+irrigation+pollution+fortress+mine+hut |
-| Forest (3) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 2019 | fj | Forest, rail+irrigation+pollution+fortress+mine+hut |
-| Forest (3) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 2035 | fz | Forest, road+rail+irrigation+pollution+fortress+mine+hut |
-| Hills (4) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 4 | AE | Hills, untouched |
-| Hills (4) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 20 | AU | Hills, road |
-| Hills (4) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 36 | Ak | Hills, rail |
-| Hills (4) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 52 | A0 | Hills, road+rail |
-| Hills (4) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 68 | BE | Hills, irrigation |
-| Hills (4) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 84 | BU | Hills, road+irrigation |
-| Hills (4) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 100 | Bk | Hills, rail+irrigation |
-| Hills (4) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 116 | B0 | Hills, road+rail+irrigation |
-| Hills (4) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 132 | CE | Hills, pollution |
-| Hills (4) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 148 | CU | Hills, road+pollution |
-| Hills (4) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 164 | Ck | Hills, rail+pollution |
-| Hills (4) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 180 | C0 | Hills, road+rail+pollution |
-| Hills (4) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 196 | DE | Hills, irrigation+pollution |
-| Hills (4) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 212 | DU | Hills, road+irrigation+pollution |
-| Hills (4) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 228 | Dk | Hills, rail+irrigation+pollution |
-| Hills (4) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 244 | D0 | Hills, road+rail+irrigation+pollution |
-| Hills (4) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 260 | EE | Hills, fortress |
-| Hills (4) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 276 | EU | Hills, road+fortress |
-| Hills (4) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 292 | Ek | Hills, rail+fortress |
-| Hills (4) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 308 | E0 | Hills, road+rail+fortress |
-| Hills (4) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 324 | FE | Hills, irrigation+fortress |
-| Hills (4) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 340 | FU | Hills, road+irrigation+fortress |
-| Hills (4) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 356 | Fk | Hills, rail+irrigation+fortress |
-| Hills (4) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 372 | F0 | Hills, road+rail+irrigation+fortress |
-| Hills (4) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 388 | GE | Hills, pollution+fortress |
-| Hills (4) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 404 | GU | Hills, road+pollution+fortress |
-| Hills (4) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 420 | Gk | Hills, rail+pollution+fortress |
-| Hills (4) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 436 | G0 | Hills, road+rail+pollution+fortress |
-| Hills (4) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 452 | HE | Hills, irrigation+pollution+fortress |
-| Hills (4) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 468 | HU | Hills, road+irrigation+pollution+fortress |
-| Hills (4) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 484 | Hk | Hills, rail+irrigation+pollution+fortress |
-| Hills (4) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 500 | H0 | Hills, road+rail+irrigation+pollution+fortress |
-| Hills (4) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 516 | IE | Hills, mine |
-| Hills (4) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 532 | IU | Hills, road+mine |
-| Hills (4) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 548 | Ik | Hills, rail+mine |
-| Hills (4) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 564 | I0 | Hills, road+rail+mine |
-| Hills (4) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 580 | JE | Hills, irrigation+mine |
-| Hills (4) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 596 | JU | Hills, road+irrigation+mine |
-| Hills (4) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 612 | Jk | Hills, rail+irrigation+mine |
-| Hills (4) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 628 | J0 | Hills, road+rail+irrigation+mine |
-| Hills (4) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 644 | KE | Hills, pollution+mine |
-| Hills (4) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 660 | KU | Hills, road+pollution+mine |
-| Hills (4) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 676 | Kk | Hills, rail+pollution+mine |
-| Hills (4) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 692 | K0 | Hills, road+rail+pollution+mine |
-| Hills (4) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 708 | LE | Hills, irrigation+pollution+mine |
-| Hills (4) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 724 | LU | Hills, road+irrigation+pollution+mine |
-| Hills (4) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 740 | Lk | Hills, rail+irrigation+pollution+mine |
-| Hills (4) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 756 | L0 | Hills, road+rail+irrigation+pollution+mine |
-| Hills (4) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 772 | ME | Hills, fortress+mine |
-| Hills (4) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 788 | MU | Hills, road+fortress+mine |
-| Hills (4) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 804 | Mk | Hills, rail+fortress+mine |
-| Hills (4) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 820 | M0 | Hills, road+rail+fortress+mine |
-| Hills (4) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 836 | NE | Hills, irrigation+fortress+mine |
-| Hills (4) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 852 | NU | Hills, road+irrigation+fortress+mine |
-| Hills (4) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 868 | Nk | Hills, rail+irrigation+fortress+mine |
-| Hills (4) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 884 | N0 | Hills, road+rail+irrigation+fortress+mine |
-| Hills (4) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 900 | OE | Hills, pollution+fortress+mine |
-| Hills (4) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 916 | OU | Hills, road+pollution+fortress+mine |
-| Hills (4) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 932 | Ok | Hills, rail+pollution+fortress+mine |
-| Hills (4) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 948 | O0 | Hills, road+rail+pollution+fortress+mine |
-| Hills (4) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 964 | PE | Hills, irrigation+pollution+fortress+mine |
-| Hills (4) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 980 | PU | Hills, road+irrigation+pollution+fortress+mine |
-| Hills (4) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 996 | Pk | Hills, rail+irrigation+pollution+fortress+mine |
-| Hills (4) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 1012 | P0 | Hills, road+rail+irrigation+pollution+fortress+mine |
-| Hills (4) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1028 | QE | Hills, hut |
-| Hills (4) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 1044 | QU | Hills, road+hut |
-| Hills (4) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 1060 | Qk | Hills, rail+hut |
-| Hills (4) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 1076 | Q0 | Hills, road+rail+hut |
-| Hills (4) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 1092 | RE | Hills, irrigation+hut |
-| Hills (4) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 1108 | RU | Hills, road+irrigation+hut |
-| Hills (4) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 1124 | Rk | Hills, rail+irrigation+hut |
-| Hills (4) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1140 | R0 | Hills, road+rail+irrigation+hut |
-| Hills (4) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 1156 | SE | Hills, pollution+hut |
-| Hills (4) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 1172 | SU | Hills, road+pollution+hut |
-| Hills (4) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 1188 | Sk | Hills, rail+pollution+hut |
-| Hills (4) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 1204 | S0 | Hills, road+rail+pollution+hut |
-| Hills (4) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 1220 | TE | Hills, irrigation+pollution+hut |
-| Hills (4) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 1236 | TU | Hills, road+irrigation+pollution+hut |
-| Hills (4) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 1252 | Tk | Hills, rail+irrigation+pollution+hut |
-| Hills (4) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 1268 | T0 | Hills, road+rail+irrigation+pollution+hut |
-| Hills (4) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 1284 | UE | Hills, fortress+hut |
-| Hills (4) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 1300 | UU | Hills, road+fortress+hut |
-| Hills (4) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 1316 | Uk | Hills, rail+fortress+hut |
-| Hills (4) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 1332 | U0 | Hills, road+rail+fortress+hut |
-| Hills (4) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 1348 | VE | Hills, irrigation+fortress+hut |
-| Hills (4) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 1364 | VU | Hills, road+irrigation+fortress+hut |
-| Hills (4) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 1380 | Vk | Hills, rail+irrigation+fortress+hut |
-| Hills (4) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 1396 | V0 | Hills, road+rail+irrigation+fortress+hut |
-| Hills (4) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 1412 | WE | Hills, pollution+fortress+hut |
-| Hills (4) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 1428 | WU | Hills, road+pollution+fortress+hut |
-| Hills (4) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 1444 | Wk | Hills, rail+pollution+fortress+hut |
-| Hills (4) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 1460 | W0 | Hills, road+rail+pollution+fortress+hut |
-| Hills (4) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 1476 | XE | Hills, irrigation+pollution+fortress+hut |
-| Hills (4) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 1492 | XU | Hills, road+irrigation+pollution+fortress+hut |
-| Hills (4) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 1508 | Xk | Hills, rail+irrigation+pollution+fortress+hut |
-| Hills (4) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 1524 | X0 | Hills, road+rail+irrigation+pollution+fortress+hut |
-| Hills (4) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 1540 | YE | Hills, mine+hut |
-| Hills (4) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 1556 | YU | Hills, road+mine+hut |
-| Hills (4) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 1572 | Yk | Hills, rail+mine+hut |
-| Hills (4) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 1588 | Y0 | Hills, road+rail+mine+hut |
-| Hills (4) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1604 | ZE | Hills, irrigation+mine+hut |
-| Hills (4) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 1620 | ZU | Hills, road+irrigation+mine+hut |
-| Hills (4) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 1636 | Zk | Hills, rail+irrigation+mine+hut |
-| Hills (4) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1652 | Z0 | Hills, road+rail+irrigation+mine+hut |
-| Hills (4) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 1668 | aE | Hills, pollution+mine+hut |
-| Hills (4) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 1684 | aU | Hills, road+pollution+mine+hut |
-| Hills (4) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 1700 | ak | Hills, rail+pollution+mine+hut |
-| Hills (4) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 1716 | a0 | Hills, road+rail+pollution+mine+hut |
-| Hills (4) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 1732 | bE | Hills, irrigation+pollution+mine+hut |
-| Hills (4) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 1748 | bU | Hills, road+irrigation+pollution+mine+hut |
-| Hills (4) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 1764 | bk | Hills, rail+irrigation+pollution+mine+hut |
-| Hills (4) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 1780 | b0 | Hills, road+rail+irrigation+pollution+mine+hut |
-| Hills (4) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 1796 | cE | Hills, fortress+mine+hut |
-| Hills (4) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 1812 | cU | Hills, road+fortress+mine+hut |
-| Hills (4) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1828 | ck | Hills, rail+fortress+mine+hut |
-| Hills (4) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 1844 | c0 | Hills, road+rail+fortress+mine+hut |
-| Hills (4) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 1860 | dE | Hills, irrigation+fortress+mine+hut |
-| Hills (4) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 1876 | dU | Hills, road+irrigation+fortress+mine+hut |
-| Hills (4) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 1892 | dk | Hills, rail+irrigation+fortress+mine+hut |
-| Hills (4) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1908 | d0 | Hills, road+rail+irrigation+fortress+mine+hut |
-| Hills (4) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 1924 | eE | Hills, pollution+fortress+mine+hut |
-| Hills (4) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1940 | eU | Hills, road+pollution+fortress+mine+hut |
-| Hills (4) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 1956 | ek | Hills, rail+pollution+fortress+mine+hut |
-| Hills (4) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1972 | e0 | Hills, road+rail+pollution+fortress+mine+hut |
-| Hills (4) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1988 | fE | Hills, irrigation+pollution+fortress+mine+hut |
-| Hills (4) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 2004 | fU | Hills, road+irrigation+pollution+fortress+mine+hut |
-| Hills (4) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 2020 | fk | Hills, rail+irrigation+pollution+fortress+mine+hut |
-| Hills (4) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 2036 | f0 | Hills, road+rail+irrigation+pollution+fortress+mine+hut |
-| Mountains (5) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 5 | AF | Mountains, untouched |
-| Mountains (5) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 21 | AV | Mountains, road |
-| Mountains (5) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 37 | Al | Mountains, rail |
-| Mountains (5) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 53 | A1 | Mountains, road+rail |
-| Mountains (5) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 69 | BF | Mountains, irrigation |
-| Mountains (5) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 85 | BV | Mountains, road+irrigation |
-| Mountains (5) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 101 | Bl | Mountains, rail+irrigation |
-| Mountains (5) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 117 | B1 | Mountains, road+rail+irrigation |
-| Mountains (5) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 133 | CF | Mountains, pollution |
-| Mountains (5) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 149 | CV | Mountains, road+pollution |
-| Mountains (5) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 165 | Cl | Mountains, rail+pollution |
-| Mountains (5) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 181 | C1 | Mountains, road+rail+pollution |
-| Mountains (5) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 197 | DF | Mountains, irrigation+pollution |
-| Mountains (5) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 213 | DV | Mountains, road+irrigation+pollution |
-| Mountains (5) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 229 | Dl | Mountains, rail+irrigation+pollution |
-| Mountains (5) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 245 | D1 | Mountains, road+rail+irrigation+pollution |
-| Mountains (5) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 261 | EF | Mountains, fortress |
-| Mountains (5) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 277 | EV | Mountains, road+fortress |
-| Mountains (5) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 293 | El | Mountains, rail+fortress |
-| Mountains (5) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 309 | E1 | Mountains, road+rail+fortress |
-| Mountains (5) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 325 | FF | Mountains, irrigation+fortress |
-| Mountains (5) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 341 | FV | Mountains, road+irrigation+fortress |
-| Mountains (5) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 357 | Fl | Mountains, rail+irrigation+fortress |
-| Mountains (5) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 373 | F1 | Mountains, road+rail+irrigation+fortress |
-| Mountains (5) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 389 | GF | Mountains, pollution+fortress |
-| Mountains (5) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 405 | GV | Mountains, road+pollution+fortress |
-| Mountains (5) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 421 | Gl | Mountains, rail+pollution+fortress |
-| Mountains (5) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 437 | G1 | Mountains, road+rail+pollution+fortress |
-| Mountains (5) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 453 | HF | Mountains, irrigation+pollution+fortress |
-| Mountains (5) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 469 | HV | Mountains, road+irrigation+pollution+fortress |
-| Mountains (5) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 485 | Hl | Mountains, rail+irrigation+pollution+fortress |
-| Mountains (5) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 501 | H1 | Mountains, road+rail+irrigation+pollution+fortress |
-| Mountains (5) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 517 | IF | Mountains, mine |
-| Mountains (5) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 533 | IV | Mountains, road+mine |
-| Mountains (5) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 549 | Il | Mountains, rail+mine |
-| Mountains (5) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 565 | I1 | Mountains, road+rail+mine |
-| Mountains (5) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 581 | JF | Mountains, irrigation+mine |
-| Mountains (5) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 597 | JV | Mountains, road+irrigation+mine |
-| Mountains (5) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 613 | Jl | Mountains, rail+irrigation+mine |
-| Mountains (5) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 629 | J1 | Mountains, road+rail+irrigation+mine |
-| Mountains (5) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 645 | KF | Mountains, pollution+mine |
-| Mountains (5) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 661 | KV | Mountains, road+pollution+mine |
-| Mountains (5) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 677 | Kl | Mountains, rail+pollution+mine |
-| Mountains (5) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 693 | K1 | Mountains, road+rail+pollution+mine |
-| Mountains (5) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 709 | LF | Mountains, irrigation+pollution+mine |
-| Mountains (5) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 725 | LV | Mountains, road+irrigation+pollution+mine |
-| Mountains (5) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 741 | Ll | Mountains, rail+irrigation+pollution+mine |
-| Mountains (5) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 757 | L1 | Mountains, road+rail+irrigation+pollution+mine |
-| Mountains (5) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 773 | MF | Mountains, fortress+mine |
-| Mountains (5) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 789 | MV | Mountains, road+fortress+mine |
-| Mountains (5) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 805 | Ml | Mountains, rail+fortress+mine |
-| Mountains (5) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 821 | M1 | Mountains, road+rail+fortress+mine |
-| Mountains (5) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 837 | NF | Mountains, irrigation+fortress+mine |
-| Mountains (5) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 853 | NV | Mountains, road+irrigation+fortress+mine |
-| Mountains (5) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 869 | Nl | Mountains, rail+irrigation+fortress+mine |
-| Mountains (5) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 885 | N1 | Mountains, road+rail+irrigation+fortress+mine |
-| Mountains (5) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 901 | OF | Mountains, pollution+fortress+mine |
-| Mountains (5) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 917 | OV | Mountains, road+pollution+fortress+mine |
-| Mountains (5) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 933 | Ol | Mountains, rail+pollution+fortress+mine |
-| Mountains (5) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 949 | O1 | Mountains, road+rail+pollution+fortress+mine |
-| Mountains (5) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 965 | PF | Mountains, irrigation+pollution+fortress+mine |
-| Mountains (5) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 981 | PV | Mountains, road+irrigation+pollution+fortress+mine |
-| Mountains (5) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 997 | Pl | Mountains, rail+irrigation+pollution+fortress+mine |
-| Mountains (5) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 1013 | P1 | Mountains, road+rail+irrigation+pollution+fortress+mine |
-| Mountains (5) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1029 | QF | Mountains, hut |
-| Mountains (5) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 1045 | QV | Mountains, road+hut |
-| Mountains (5) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 1061 | Ql | Mountains, rail+hut |
-| Mountains (5) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 1077 | Q1 | Mountains, road+rail+hut |
-| Mountains (5) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 1093 | RF | Mountains, irrigation+hut |
-| Mountains (5) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 1109 | RV | Mountains, road+irrigation+hut |
-| Mountains (5) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 1125 | Rl | Mountains, rail+irrigation+hut |
-| Mountains (5) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1141 | R1 | Mountains, road+rail+irrigation+hut |
-| Mountains (5) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 1157 | SF | Mountains, pollution+hut |
-| Mountains (5) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 1173 | SV | Mountains, road+pollution+hut |
-| Mountains (5) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 1189 | Sl | Mountains, rail+pollution+hut |
-| Mountains (5) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 1205 | S1 | Mountains, road+rail+pollution+hut |
-| Mountains (5) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 1221 | TF | Mountains, irrigation+pollution+hut |
-| Mountains (5) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 1237 | TV | Mountains, road+irrigation+pollution+hut |
-| Mountains (5) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 1253 | Tl | Mountains, rail+irrigation+pollution+hut |
-| Mountains (5) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 1269 | T1 | Mountains, road+rail+irrigation+pollution+hut |
-| Mountains (5) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 1285 | UF | Mountains, fortress+hut |
-| Mountains (5) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 1301 | UV | Mountains, road+fortress+hut |
-| Mountains (5) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 1317 | Ul | Mountains, rail+fortress+hut |
-| Mountains (5) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 1333 | U1 | Mountains, road+rail+fortress+hut |
-| Mountains (5) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 1349 | VF | Mountains, irrigation+fortress+hut |
-| Mountains (5) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 1365 | VV | Mountains, road+irrigation+fortress+hut |
-| Mountains (5) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 1381 | Vl | Mountains, rail+irrigation+fortress+hut |
-| Mountains (5) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 1397 | V1 | Mountains, road+rail+irrigation+fortress+hut |
-| Mountains (5) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 1413 | WF | Mountains, pollution+fortress+hut |
-| Mountains (5) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 1429 | WV | Mountains, road+pollution+fortress+hut |
-| Mountains (5) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 1445 | Wl | Mountains, rail+pollution+fortress+hut |
-| Mountains (5) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 1461 | W1 | Mountains, road+rail+pollution+fortress+hut |
-| Mountains (5) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 1477 | XF | Mountains, irrigation+pollution+fortress+hut |
-| Mountains (5) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 1493 | XV | Mountains, road+irrigation+pollution+fortress+hut |
-| Mountains (5) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 1509 | Xl | Mountains, rail+irrigation+pollution+fortress+hut |
-| Mountains (5) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 1525 | X1 | Mountains, road+rail+irrigation+pollution+fortress+hut |
-| Mountains (5) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 1541 | YF | Mountains, mine+hut |
-| Mountains (5) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 1557 | YV | Mountains, road+mine+hut |
-| Mountains (5) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 1573 | Yl | Mountains, rail+mine+hut |
-| Mountains (5) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 1589 | Y1 | Mountains, road+rail+mine+hut |
-| Mountains (5) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1605 | ZF | Mountains, irrigation+mine+hut |
-| Mountains (5) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 1621 | ZV | Mountains, road+irrigation+mine+hut |
-| Mountains (5) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 1637 | Zl | Mountains, rail+irrigation+mine+hut |
-| Mountains (5) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1653 | Z1 | Mountains, road+rail+irrigation+mine+hut |
-| Mountains (5) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 1669 | aF | Mountains, pollution+mine+hut |
-| Mountains (5) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 1685 | aV | Mountains, road+pollution+mine+hut |
-| Mountains (5) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 1701 | al | Mountains, rail+pollution+mine+hut |
-| Mountains (5) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 1717 | a1 | Mountains, road+rail+pollution+mine+hut |
-| Mountains (5) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 1733 | bF | Mountains, irrigation+pollution+mine+hut |
-| Mountains (5) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 1749 | bV | Mountains, road+irrigation+pollution+mine+hut |
-| Mountains (5) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 1765 | bl | Mountains, rail+irrigation+pollution+mine+hut |
-| Mountains (5) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 1781 | b1 | Mountains, road+rail+irrigation+pollution+mine+hut |
-| Mountains (5) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 1797 | cF | Mountains, fortress+mine+hut |
-| Mountains (5) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 1813 | cV | Mountains, road+fortress+mine+hut |
-| Mountains (5) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1829 | cl | Mountains, rail+fortress+mine+hut |
-| Mountains (5) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 1845 | c1 | Mountains, road+rail+fortress+mine+hut |
-| Mountains (5) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 1861 | dF | Mountains, irrigation+fortress+mine+hut |
-| Mountains (5) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 1877 | dV | Mountains, road+irrigation+fortress+mine+hut |
-| Mountains (5) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 1893 | dl | Mountains, rail+irrigation+fortress+mine+hut |
-| Mountains (5) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1909 | d1 | Mountains, road+rail+irrigation+fortress+mine+hut |
-| Mountains (5) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 1925 | eF | Mountains, pollution+fortress+mine+hut |
-| Mountains (5) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1941 | eV | Mountains, road+pollution+fortress+mine+hut |
-| Mountains (5) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 1957 | el | Mountains, rail+pollution+fortress+mine+hut |
-| Mountains (5) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1973 | e1 | Mountains, road+rail+pollution+fortress+mine+hut |
-| Mountains (5) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1989 | fF | Mountains, irrigation+pollution+fortress+mine+hut |
-| Mountains (5) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 2005 | fV | Mountains, road+irrigation+pollution+fortress+mine+hut |
-| Mountains (5) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 2021 | fl | Mountains, rail+irrigation+pollution+fortress+mine+hut |
-| Mountains (5) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 2037 | f1 | Mountains, road+rail+irrigation+pollution+fortress+mine+hut |
-| Tundra (6) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 6 | AG | Tundra, untouched |
-| Tundra (6) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 22 | AW | Tundra, road |
-| Tundra (6) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 38 | Am | Tundra, rail |
-| Tundra (6) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 54 | A2 | Tundra, road+rail |
-| Tundra (6) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 70 | BG | Tundra, irrigation |
-| Tundra (6) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 86 | BW | Tundra, road+irrigation |
-| Tundra (6) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 102 | Bm | Tundra, rail+irrigation |
-| Tundra (6) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 118 | B2 | Tundra, road+rail+irrigation |
-| Tundra (6) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 134 | CG | Tundra, pollution |
-| Tundra (6) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 150 | CW | Tundra, road+pollution |
-| Tundra (6) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 166 | Cm | Tundra, rail+pollution |
-| Tundra (6) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 182 | C2 | Tundra, road+rail+pollution |
-| Tundra (6) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 198 | DG | Tundra, irrigation+pollution |
-| Tundra (6) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 214 | DW | Tundra, road+irrigation+pollution |
-| Tundra (6) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 230 | Dm | Tundra, rail+irrigation+pollution |
-| Tundra (6) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 246 | D2 | Tundra, road+rail+irrigation+pollution |
-| Tundra (6) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 262 | EG | Tundra, fortress |
-| Tundra (6) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 278 | EW | Tundra, road+fortress |
-| Tundra (6) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 294 | Em | Tundra, rail+fortress |
-| Tundra (6) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 310 | E2 | Tundra, road+rail+fortress |
-| Tundra (6) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 326 | FG | Tundra, irrigation+fortress |
-| Tundra (6) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 342 | FW | Tundra, road+irrigation+fortress |
-| Tundra (6) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 358 | Fm | Tundra, rail+irrigation+fortress |
-| Tundra (6) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 374 | F2 | Tundra, road+rail+irrigation+fortress |
-| Tundra (6) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 390 | GG | Tundra, pollution+fortress |
-| Tundra (6) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 406 | GW | Tundra, road+pollution+fortress |
-| Tundra (6) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 422 | Gm | Tundra, rail+pollution+fortress |
-| Tundra (6) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 438 | G2 | Tundra, road+rail+pollution+fortress |
-| Tundra (6) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 454 | HG | Tundra, irrigation+pollution+fortress |
-| Tundra (6) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 470 | HW | Tundra, road+irrigation+pollution+fortress |
-| Tundra (6) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 486 | Hm | Tundra, rail+irrigation+pollution+fortress |
-| Tundra (6) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 502 | H2 | Tundra, road+rail+irrigation+pollution+fortress |
-| Tundra (6) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 518 | IG | Tundra, mine |
-| Tundra (6) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 534 | IW | Tundra, road+mine |
-| Tundra (6) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 550 | Im | Tundra, rail+mine |
-| Tundra (6) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 566 | I2 | Tundra, road+rail+mine |
-| Tundra (6) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 582 | JG | Tundra, irrigation+mine |
-| Tundra (6) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 598 | JW | Tundra, road+irrigation+mine |
-| Tundra (6) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 614 | Jm | Tundra, rail+irrigation+mine |
-| Tundra (6) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 630 | J2 | Tundra, road+rail+irrigation+mine |
-| Tundra (6) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 646 | KG | Tundra, pollution+mine |
-| Tundra (6) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 662 | KW | Tundra, road+pollution+mine |
-| Tundra (6) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 678 | Km | Tundra, rail+pollution+mine |
-| Tundra (6) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 694 | K2 | Tundra, road+rail+pollution+mine |
-| Tundra (6) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 710 | LG | Tundra, irrigation+pollution+mine |
-| Tundra (6) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 726 | LW | Tundra, road+irrigation+pollution+mine |
-| Tundra (6) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 742 | Lm | Tundra, rail+irrigation+pollution+mine |
-| Tundra (6) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 758 | L2 | Tundra, road+rail+irrigation+pollution+mine |
-| Tundra (6) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 774 | MG | Tundra, fortress+mine |
-| Tundra (6) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 790 | MW | Tundra, road+fortress+mine |
-| Tundra (6) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 806 | Mm | Tundra, rail+fortress+mine |
-| Tundra (6) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 822 | M2 | Tundra, road+rail+fortress+mine |
-| Tundra (6) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 838 | NG | Tundra, irrigation+fortress+mine |
-| Tundra (6) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 854 | NW | Tundra, road+irrigation+fortress+mine |
-| Tundra (6) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 870 | Nm | Tundra, rail+irrigation+fortress+mine |
-| Tundra (6) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 886 | N2 | Tundra, road+rail+irrigation+fortress+mine |
-| Tundra (6) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 902 | OG | Tundra, pollution+fortress+mine |
-| Tundra (6) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 918 | OW | Tundra, road+pollution+fortress+mine |
-| Tundra (6) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 934 | Om | Tundra, rail+pollution+fortress+mine |
-| Tundra (6) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 950 | O2 | Tundra, road+rail+pollution+fortress+mine |
-| Tundra (6) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 966 | PG | Tundra, irrigation+pollution+fortress+mine |
-| Tundra (6) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 982 | PW | Tundra, road+irrigation+pollution+fortress+mine |
-| Tundra (6) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 998 | Pm | Tundra, rail+irrigation+pollution+fortress+mine |
-| Tundra (6) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 1014 | P2 | Tundra, road+rail+irrigation+pollution+fortress+mine |
-| Tundra (6) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1030 | QG | Tundra, hut |
-| Tundra (6) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 1046 | QW | Tundra, road+hut |
-| Tundra (6) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 1062 | Qm | Tundra, rail+hut |
-| Tundra (6) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 1078 | Q2 | Tundra, road+rail+hut |
-| Tundra (6) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 1094 | RG | Tundra, irrigation+hut |
-| Tundra (6) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 1110 | RW | Tundra, road+irrigation+hut |
-| Tundra (6) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 1126 | Rm | Tundra, rail+irrigation+hut |
-| Tundra (6) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1142 | R2 | Tundra, road+rail+irrigation+hut |
-| Tundra (6) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 1158 | SG | Tundra, pollution+hut |
-| Tundra (6) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 1174 | SW | Tundra, road+pollution+hut |
-| Tundra (6) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 1190 | Sm | Tundra, rail+pollution+hut |
-| Tundra (6) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 1206 | S2 | Tundra, road+rail+pollution+hut |
-| Tundra (6) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 1222 | TG | Tundra, irrigation+pollution+hut |
-| Tundra (6) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 1238 | TW | Tundra, road+irrigation+pollution+hut |
-| Tundra (6) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 1254 | Tm | Tundra, rail+irrigation+pollution+hut |
-| Tundra (6) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 1270 | T2 | Tundra, road+rail+irrigation+pollution+hut |
-| Tundra (6) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 1286 | UG | Tundra, fortress+hut |
-| Tundra (6) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 1302 | UW | Tundra, road+fortress+hut |
-| Tundra (6) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 1318 | Um | Tundra, rail+fortress+hut |
-| Tundra (6) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 1334 | U2 | Tundra, road+rail+fortress+hut |
-| Tundra (6) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 1350 | VG | Tundra, irrigation+fortress+hut |
-| Tundra (6) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 1366 | VW | Tundra, road+irrigation+fortress+hut |
-| Tundra (6) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 1382 | Vm | Tundra, rail+irrigation+fortress+hut |
-| Tundra (6) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 1398 | V2 | Tundra, road+rail+irrigation+fortress+hut |
-| Tundra (6) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 1414 | WG | Tundra, pollution+fortress+hut |
-| Tundra (6) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 1430 | WW | Tundra, road+pollution+fortress+hut |
-| Tundra (6) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 1446 | Wm | Tundra, rail+pollution+fortress+hut |
-| Tundra (6) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 1462 | W2 | Tundra, road+rail+pollution+fortress+hut |
-| Tundra (6) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 1478 | XG | Tundra, irrigation+pollution+fortress+hut |
-| Tundra (6) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 1494 | XW | Tundra, road+irrigation+pollution+fortress+hut |
-| Tundra (6) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 1510 | Xm | Tundra, rail+irrigation+pollution+fortress+hut |
-| Tundra (6) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 1526 | X2 | Tundra, road+rail+irrigation+pollution+fortress+hut |
-| Tundra (6) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 1542 | YG | Tundra, mine+hut |
-| Tundra (6) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 1558 | YW | Tundra, road+mine+hut |
-| Tundra (6) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 1574 | Ym | Tundra, rail+mine+hut |
-| Tundra (6) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 1590 | Y2 | Tundra, road+rail+mine+hut |
-| Tundra (6) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1606 | ZG | Tundra, irrigation+mine+hut |
-| Tundra (6) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 1622 | ZW | Tundra, road+irrigation+mine+hut |
-| Tundra (6) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 1638 | Zm | Tundra, rail+irrigation+mine+hut |
-| Tundra (6) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1654 | Z2 | Tundra, road+rail+irrigation+mine+hut |
-| Tundra (6) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 1670 | aG | Tundra, pollution+mine+hut |
-| Tundra (6) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 1686 | aW | Tundra, road+pollution+mine+hut |
-| Tundra (6) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 1702 | am | Tundra, rail+pollution+mine+hut |
-| Tundra (6) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 1718 | a2 | Tundra, road+rail+pollution+mine+hut |
-| Tundra (6) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 1734 | bG | Tundra, irrigation+pollution+mine+hut |
-| Tundra (6) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 1750 | bW | Tundra, road+irrigation+pollution+mine+hut |
-| Tundra (6) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 1766 | bm | Tundra, rail+irrigation+pollution+mine+hut |
-| Tundra (6) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 1782 | b2 | Tundra, road+rail+irrigation+pollution+mine+hut |
-| Tundra (6) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 1798 | cG | Tundra, fortress+mine+hut |
-| Tundra (6) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 1814 | cW | Tundra, road+fortress+mine+hut |
-| Tundra (6) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1830 | cm | Tundra, rail+fortress+mine+hut |
-| Tundra (6) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 1846 | c2 | Tundra, road+rail+fortress+mine+hut |
-| Tundra (6) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 1862 | dG | Tundra, irrigation+fortress+mine+hut |
-| Tundra (6) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 1878 | dW | Tundra, road+irrigation+fortress+mine+hut |
-| Tundra (6) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 1894 | dm | Tundra, rail+irrigation+fortress+mine+hut |
-| Tundra (6) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1910 | d2 | Tundra, road+rail+irrigation+fortress+mine+hut |
-| Tundra (6) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 1926 | eG | Tundra, pollution+fortress+mine+hut |
-| Tundra (6) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1942 | eW | Tundra, road+pollution+fortress+mine+hut |
-| Tundra (6) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 1958 | em | Tundra, rail+pollution+fortress+mine+hut |
-| Tundra (6) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1974 | e2 | Tundra, road+rail+pollution+fortress+mine+hut |
-| Tundra (6) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1990 | fG | Tundra, irrigation+pollution+fortress+mine+hut |
-| Tundra (6) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 2006 | fW | Tundra, road+irrigation+pollution+fortress+mine+hut |
-| Tundra (6) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 2022 | fm | Tundra, rail+irrigation+pollution+fortress+mine+hut |
-| Tundra (6) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 2038 | f2 | Tundra, road+rail+irrigation+pollution+fortress+mine+hut |
-| Arctic (7) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 7 | AH | Arctic, untouched |
-| Arctic (7) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 23 | AX | Arctic, road |
-| Arctic (7) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 39 | An | Arctic, rail |
-| Arctic (7) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 55 | A3 | Arctic, road+rail |
-| Arctic (7) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 71 | BH | Arctic, irrigation |
-| Arctic (7) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 87 | BX | Arctic, road+irrigation |
-| Arctic (7) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 103 | Bn | Arctic, rail+irrigation |
-| Arctic (7) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 119 | B3 | Arctic, road+rail+irrigation |
-| Arctic (7) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 135 | CH | Arctic, pollution |
-| Arctic (7) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 151 | CX | Arctic, road+pollution |
-| Arctic (7) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 167 | Cn | Arctic, rail+pollution |
-| Arctic (7) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 183 | C3 | Arctic, road+rail+pollution |
-| Arctic (7) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 199 | DH | Arctic, irrigation+pollution |
-| Arctic (7) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 215 | DX | Arctic, road+irrigation+pollution |
-| Arctic (7) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 231 | Dn | Arctic, rail+irrigation+pollution |
-| Arctic (7) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 247 | D3 | Arctic, road+rail+irrigation+pollution |
-| Arctic (7) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 263 | EH | Arctic, fortress |
-| Arctic (7) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 279 | EX | Arctic, road+fortress |
-| Arctic (7) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 295 | En | Arctic, rail+fortress |
-| Arctic (7) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 311 | E3 | Arctic, road+rail+fortress |
-| Arctic (7) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 327 | FH | Arctic, irrigation+fortress |
-| Arctic (7) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 343 | FX | Arctic, road+irrigation+fortress |
-| Arctic (7) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 359 | Fn | Arctic, rail+irrigation+fortress |
-| Arctic (7) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 375 | F3 | Arctic, road+rail+irrigation+fortress |
-| Arctic (7) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 391 | GH | Arctic, pollution+fortress |
-| Arctic (7) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 407 | GX | Arctic, road+pollution+fortress |
-| Arctic (7) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 423 | Gn | Arctic, rail+pollution+fortress |
-| Arctic (7) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 439 | G3 | Arctic, road+rail+pollution+fortress |
-| Arctic (7) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 455 | HH | Arctic, irrigation+pollution+fortress |
-| Arctic (7) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 471 | HX | Arctic, road+irrigation+pollution+fortress |
-| Arctic (7) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 487 | Hn | Arctic, rail+irrigation+pollution+fortress |
-| Arctic (7) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 503 | H3 | Arctic, road+rail+irrigation+pollution+fortress |
-| Arctic (7) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 519 | IH | Arctic, mine |
-| Arctic (7) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 535 | IX | Arctic, road+mine |
-| Arctic (7) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 551 | In | Arctic, rail+mine |
-| Arctic (7) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 567 | I3 | Arctic, road+rail+mine |
-| Arctic (7) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 583 | JH | Arctic, irrigation+mine |
-| Arctic (7) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 599 | JX | Arctic, road+irrigation+mine |
-| Arctic (7) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 615 | Jn | Arctic, rail+irrigation+mine |
-| Arctic (7) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 631 | J3 | Arctic, road+rail+irrigation+mine |
-| Arctic (7) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 647 | KH | Arctic, pollution+mine |
-| Arctic (7) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 663 | KX | Arctic, road+pollution+mine |
-| Arctic (7) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 679 | Kn | Arctic, rail+pollution+mine |
-| Arctic (7) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 695 | K3 | Arctic, road+rail+pollution+mine |
-| Arctic (7) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 711 | LH | Arctic, irrigation+pollution+mine |
-| Arctic (7) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 727 | LX | Arctic, road+irrigation+pollution+mine |
-| Arctic (7) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 743 | Ln | Arctic, rail+irrigation+pollution+mine |
-| Arctic (7) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 759 | L3 | Arctic, road+rail+irrigation+pollution+mine |
-| Arctic (7) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 775 | MH | Arctic, fortress+mine |
-| Arctic (7) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 791 | MX | Arctic, road+fortress+mine |
-| Arctic (7) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 807 | Mn | Arctic, rail+fortress+mine |
-| Arctic (7) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 823 | M3 | Arctic, road+rail+fortress+mine |
-| Arctic (7) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 839 | NH | Arctic, irrigation+fortress+mine |
-| Arctic (7) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 855 | NX | Arctic, road+irrigation+fortress+mine |
-| Arctic (7) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 871 | Nn | Arctic, rail+irrigation+fortress+mine |
-| Arctic (7) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 887 | N3 | Arctic, road+rail+irrigation+fortress+mine |
-| Arctic (7) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 903 | OH | Arctic, pollution+fortress+mine |
-| Arctic (7) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 919 | OX | Arctic, road+pollution+fortress+mine |
-| Arctic (7) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 935 | On | Arctic, rail+pollution+fortress+mine |
-| Arctic (7) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 951 | O3 | Arctic, road+rail+pollution+fortress+mine |
-| Arctic (7) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 967 | PH | Arctic, irrigation+pollution+fortress+mine |
-| Arctic (7) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 983 | PX | Arctic, road+irrigation+pollution+fortress+mine |
-| Arctic (7) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 999 | Pn | Arctic, rail+irrigation+pollution+fortress+mine |
-| Arctic (7) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 1015 | P3 | Arctic, road+rail+irrigation+pollution+fortress+mine |
-| Arctic (7) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1031 | QH | Arctic, hut |
-| Arctic (7) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 1047 | QX | Arctic, road+hut |
-| Arctic (7) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 1063 | Qn | Arctic, rail+hut |
-| Arctic (7) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 1079 | Q3 | Arctic, road+rail+hut |
-| Arctic (7) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 1095 | RH | Arctic, irrigation+hut |
-| Arctic (7) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 1111 | RX | Arctic, road+irrigation+hut |
-| Arctic (7) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 1127 | Rn | Arctic, rail+irrigation+hut |
-| Arctic (7) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1143 | R3 | Arctic, road+rail+irrigation+hut |
-| Arctic (7) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 1159 | SH | Arctic, pollution+hut |
-| Arctic (7) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 1175 | SX | Arctic, road+pollution+hut |
-| Arctic (7) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 1191 | Sn | Arctic, rail+pollution+hut |
-| Arctic (7) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 1207 | S3 | Arctic, road+rail+pollution+hut |
-| Arctic (7) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 1223 | TH | Arctic, irrigation+pollution+hut |
-| Arctic (7) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 1239 | TX | Arctic, road+irrigation+pollution+hut |
-| Arctic (7) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 1255 | Tn | Arctic, rail+irrigation+pollution+hut |
-| Arctic (7) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 1271 | T3 | Arctic, road+rail+irrigation+pollution+hut |
-| Arctic (7) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 1287 | UH | Arctic, fortress+hut |
-| Arctic (7) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 1303 | UX | Arctic, road+fortress+hut |
-| Arctic (7) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 1319 | Un | Arctic, rail+fortress+hut |
-| Arctic (7) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 1335 | U3 | Arctic, road+rail+fortress+hut |
-| Arctic (7) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 1351 | VH | Arctic, irrigation+fortress+hut |
-| Arctic (7) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 1367 | VX | Arctic, road+irrigation+fortress+hut |
-| Arctic (7) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 1383 | Vn | Arctic, rail+irrigation+fortress+hut |
-| Arctic (7) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 1399 | V3 | Arctic, road+rail+irrigation+fortress+hut |
-| Arctic (7) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 1415 | WH | Arctic, pollution+fortress+hut |
-| Arctic (7) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 1431 | WX | Arctic, road+pollution+fortress+hut |
-| Arctic (7) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 1447 | Wn | Arctic, rail+pollution+fortress+hut |
-| Arctic (7) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 1463 | W3 | Arctic, road+rail+pollution+fortress+hut |
-| Arctic (7) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 1479 | XH | Arctic, irrigation+pollution+fortress+hut |
-| Arctic (7) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 1495 | XX | Arctic, road+irrigation+pollution+fortress+hut |
-| Arctic (7) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 1511 | Xn | Arctic, rail+irrigation+pollution+fortress+hut |
-| Arctic (7) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 1527 | X3 | Arctic, road+rail+irrigation+pollution+fortress+hut |
-| Arctic (7) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 1543 | YH | Arctic, mine+hut |
-| Arctic (7) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 1559 | YX | Arctic, road+mine+hut |
-| Arctic (7) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 1575 | Yn | Arctic, rail+mine+hut |
-| Arctic (7) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 1591 | Y3 | Arctic, road+rail+mine+hut |
-| Arctic (7) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1607 | ZH | Arctic, irrigation+mine+hut |
-| Arctic (7) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 1623 | ZX | Arctic, road+irrigation+mine+hut |
-| Arctic (7) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 1639 | Zn | Arctic, rail+irrigation+mine+hut |
-| Arctic (7) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1655 | Z3 | Arctic, road+rail+irrigation+mine+hut |
-| Arctic (7) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 1671 | aH | Arctic, pollution+mine+hut |
-| Arctic (7) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 1687 | aX | Arctic, road+pollution+mine+hut |
-| Arctic (7) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 1703 | an | Arctic, rail+pollution+mine+hut |
-| Arctic (7) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 1719 | a3 | Arctic, road+rail+pollution+mine+hut |
-| Arctic (7) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 1735 | bH | Arctic, irrigation+pollution+mine+hut |
-| Arctic (7) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 1751 | bX | Arctic, road+irrigation+pollution+mine+hut |
-| Arctic (7) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 1767 | bn | Arctic, rail+irrigation+pollution+mine+hut |
-| Arctic (7) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 1783 | b3 | Arctic, road+rail+irrigation+pollution+mine+hut |
-| Arctic (7) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 1799 | cH | Arctic, fortress+mine+hut |
-| Arctic (7) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 1815 | cX | Arctic, road+fortress+mine+hut |
-| Arctic (7) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1831 | cn | Arctic, rail+fortress+mine+hut |
-| Arctic (7) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 1847 | c3 | Arctic, road+rail+fortress+mine+hut |
-| Arctic (7) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 1863 | dH | Arctic, irrigation+fortress+mine+hut |
-| Arctic (7) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 1879 | dX | Arctic, road+irrigation+fortress+mine+hut |
-| Arctic (7) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 1895 | dn | Arctic, rail+irrigation+fortress+mine+hut |
-| Arctic (7) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1911 | d3 | Arctic, road+rail+irrigation+fortress+mine+hut |
-| Arctic (7) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 1927 | eH | Arctic, pollution+fortress+mine+hut |
-| Arctic (7) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1943 | eX | Arctic, road+pollution+fortress+mine+hut |
-| Arctic (7) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 1959 | en | Arctic, rail+pollution+fortress+mine+hut |
-| Arctic (7) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1975 | e3 | Arctic, road+rail+pollution+fortress+mine+hut |
-| Arctic (7) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1991 | fH | Arctic, irrigation+pollution+fortress+mine+hut |
-| Arctic (7) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 2007 | fX | Arctic, road+irrigation+pollution+fortress+mine+hut |
-| Arctic (7) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 2023 | fn | Arctic, rail+irrigation+pollution+fortress+mine+hut |
-| Arctic (7) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 2039 | f3 | Arctic, road+rail+irrigation+pollution+fortress+mine+hut |
-| Swamp (8) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 8 | AI | Swamp, untouched |
-| Swamp (8) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 24 | AY | Swamp, road |
-| Swamp (8) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 40 | Ao | Swamp, rail |
-| Swamp (8) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 56 | A4 | Swamp, road+rail |
-| Swamp (8) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 72 | BI | Swamp, irrigation |
-| Swamp (8) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 88 | BY | Swamp, road+irrigation |
-| Swamp (8) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 104 | Bo | Swamp, rail+irrigation |
-| Swamp (8) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 120 | B4 | Swamp, road+rail+irrigation |
-| Swamp (8) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 136 | CI | Swamp, pollution |
-| Swamp (8) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 152 | CY | Swamp, road+pollution |
-| Swamp (8) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 168 | Co | Swamp, rail+pollution |
-| Swamp (8) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 184 | C4 | Swamp, road+rail+pollution |
-| Swamp (8) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 200 | DI | Swamp, irrigation+pollution |
-| Swamp (8) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 216 | DY | Swamp, road+irrigation+pollution |
-| Swamp (8) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 232 | Do | Swamp, rail+irrigation+pollution |
-| Swamp (8) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 248 | D4 | Swamp, road+rail+irrigation+pollution |
-| Swamp (8) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 264 | EI | Swamp, fortress |
-| Swamp (8) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 280 | EY | Swamp, road+fortress |
-| Swamp (8) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 296 | Eo | Swamp, rail+fortress |
-| Swamp (8) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 312 | E4 | Swamp, road+rail+fortress |
-| Swamp (8) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 328 | FI | Swamp, irrigation+fortress |
-| Swamp (8) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 344 | FY | Swamp, road+irrigation+fortress |
-| Swamp (8) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 360 | Fo | Swamp, rail+irrigation+fortress |
-| Swamp (8) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 376 | F4 | Swamp, road+rail+irrigation+fortress |
-| Swamp (8) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 392 | GI | Swamp, pollution+fortress |
-| Swamp (8) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 408 | GY | Swamp, road+pollution+fortress |
-| Swamp (8) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 424 | Go | Swamp, rail+pollution+fortress |
-| Swamp (8) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 440 | G4 | Swamp, road+rail+pollution+fortress |
-| Swamp (8) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 456 | HI | Swamp, irrigation+pollution+fortress |
-| Swamp (8) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 472 | HY | Swamp, road+irrigation+pollution+fortress |
-| Swamp (8) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 488 | Ho | Swamp, rail+irrigation+pollution+fortress |
-| Swamp (8) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 504 | H4 | Swamp, road+rail+irrigation+pollution+fortress |
-| Swamp (8) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 520 | II | Swamp, mine |
-| Swamp (8) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 536 | IY | Swamp, road+mine |
-| Swamp (8) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 552 | Io | Swamp, rail+mine |
-| Swamp (8) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 568 | I4 | Swamp, road+rail+mine |
-| Swamp (8) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 584 | JI | Swamp, irrigation+mine |
-| Swamp (8) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 600 | JY | Swamp, road+irrigation+mine |
-| Swamp (8) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 616 | Jo | Swamp, rail+irrigation+mine |
-| Swamp (8) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 632 | J4 | Swamp, road+rail+irrigation+mine |
-| Swamp (8) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 648 | KI | Swamp, pollution+mine |
-| Swamp (8) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 664 | KY | Swamp, road+pollution+mine |
-| Swamp (8) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 680 | Ko | Swamp, rail+pollution+mine |
-| Swamp (8) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 696 | K4 | Swamp, road+rail+pollution+mine |
-| Swamp (8) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 712 | LI | Swamp, irrigation+pollution+mine |
-| Swamp (8) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 728 | LY | Swamp, road+irrigation+pollution+mine |
-| Swamp (8) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 744 | Lo | Swamp, rail+irrigation+pollution+mine |
-| Swamp (8) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 760 | L4 | Swamp, road+rail+irrigation+pollution+mine |
-| Swamp (8) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 776 | MI | Swamp, fortress+mine |
-| Swamp (8) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 792 | MY | Swamp, road+fortress+mine |
-| Swamp (8) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 808 | Mo | Swamp, rail+fortress+mine |
-| Swamp (8) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 824 | M4 | Swamp, road+rail+fortress+mine |
-| Swamp (8) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 840 | NI | Swamp, irrigation+fortress+mine |
-| Swamp (8) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 856 | NY | Swamp, road+irrigation+fortress+mine |
-| Swamp (8) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 872 | No | Swamp, rail+irrigation+fortress+mine |
-| Swamp (8) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 888 | N4 | Swamp, road+rail+irrigation+fortress+mine |
-| Swamp (8) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 904 | OI | Swamp, pollution+fortress+mine |
-| Swamp (8) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 920 | OY | Swamp, road+pollution+fortress+mine |
-| Swamp (8) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 936 | Oo | Swamp, rail+pollution+fortress+mine |
-| Swamp (8) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 952 | O4 | Swamp, road+rail+pollution+fortress+mine |
-| Swamp (8) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 968 | PI | Swamp, irrigation+pollution+fortress+mine |
-| Swamp (8) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 984 | PY | Swamp, road+irrigation+pollution+fortress+mine |
-| Swamp (8) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1000 | Po | Swamp, rail+irrigation+pollution+fortress+mine |
-| Swamp (8) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 1016 | P4 | Swamp, road+rail+irrigation+pollution+fortress+mine |
-| Swamp (8) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1032 | QI | Swamp, hut |
-| Swamp (8) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 1048 | QY | Swamp, road+hut |
-| Swamp (8) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 1064 | Qo | Swamp, rail+hut |
-| Swamp (8) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 1080 | Q4 | Swamp, road+rail+hut |
-| Swamp (8) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 1096 | RI | Swamp, irrigation+hut |
-| Swamp (8) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 1112 | RY | Swamp, road+irrigation+hut |
-| Swamp (8) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 1128 | Ro | Swamp, rail+irrigation+hut |
-| Swamp (8) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1144 | R4 | Swamp, road+rail+irrigation+hut |
-| Swamp (8) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 1160 | SI | Swamp, pollution+hut |
-| Swamp (8) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 1176 | SY | Swamp, road+pollution+hut |
-| Swamp (8) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 1192 | So | Swamp, rail+pollution+hut |
-| Swamp (8) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 1208 | S4 | Swamp, road+rail+pollution+hut |
-| Swamp (8) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 1224 | TI | Swamp, irrigation+pollution+hut |
-| Swamp (8) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 1240 | TY | Swamp, road+irrigation+pollution+hut |
-| Swamp (8) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 1256 | To | Swamp, rail+irrigation+pollution+hut |
-| Swamp (8) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 1272 | T4 | Swamp, road+rail+irrigation+pollution+hut |
-| Swamp (8) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 1288 | UI | Swamp, fortress+hut |
-| Swamp (8) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 1304 | UY | Swamp, road+fortress+hut |
-| Swamp (8) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 1320 | Uo | Swamp, rail+fortress+hut |
-| Swamp (8) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 1336 | U4 | Swamp, road+rail+fortress+hut |
-| Swamp (8) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 1352 | VI | Swamp, irrigation+fortress+hut |
-| Swamp (8) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 1368 | VY | Swamp, road+irrigation+fortress+hut |
-| Swamp (8) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 1384 | Vo | Swamp, rail+irrigation+fortress+hut |
-| Swamp (8) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 1400 | V4 | Swamp, road+rail+irrigation+fortress+hut |
-| Swamp (8) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 1416 | WI | Swamp, pollution+fortress+hut |
-| Swamp (8) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 1432 | WY | Swamp, road+pollution+fortress+hut |
-| Swamp (8) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 1448 | Wo | Swamp, rail+pollution+fortress+hut |
-| Swamp (8) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 1464 | W4 | Swamp, road+rail+pollution+fortress+hut |
-| Swamp (8) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 1480 | XI | Swamp, irrigation+pollution+fortress+hut |
-| Swamp (8) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 1496 | XY | Swamp, road+irrigation+pollution+fortress+hut |
-| Swamp (8) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 1512 | Xo | Swamp, rail+irrigation+pollution+fortress+hut |
-| Swamp (8) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 1528 | X4 | Swamp, road+rail+irrigation+pollution+fortress+hut |
-| Swamp (8) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 1544 | YI | Swamp, mine+hut |
-| Swamp (8) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 1560 | YY | Swamp, road+mine+hut |
-| Swamp (8) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 1576 | Yo | Swamp, rail+mine+hut |
-| Swamp (8) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 1592 | Y4 | Swamp, road+rail+mine+hut |
-| Swamp (8) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1608 | ZI | Swamp, irrigation+mine+hut |
-| Swamp (8) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 1624 | ZY | Swamp, road+irrigation+mine+hut |
-| Swamp (8) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 1640 | Zo | Swamp, rail+irrigation+mine+hut |
-| Swamp (8) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1656 | Z4 | Swamp, road+rail+irrigation+mine+hut |
-| Swamp (8) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 1672 | aI | Swamp, pollution+mine+hut |
-| Swamp (8) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 1688 | aY | Swamp, road+pollution+mine+hut |
-| Swamp (8) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 1704 | ao | Swamp, rail+pollution+mine+hut |
-| Swamp (8) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 1720 | a4 | Swamp, road+rail+pollution+mine+hut |
-| Swamp (8) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 1736 | bI | Swamp, irrigation+pollution+mine+hut |
-| Swamp (8) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 1752 | bY | Swamp, road+irrigation+pollution+mine+hut |
-| Swamp (8) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 1768 | bo | Swamp, rail+irrigation+pollution+mine+hut |
-| Swamp (8) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 1784 | b4 | Swamp, road+rail+irrigation+pollution+mine+hut |
-| Swamp (8) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 1800 | cI | Swamp, fortress+mine+hut |
-| Swamp (8) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 1816 | cY | Swamp, road+fortress+mine+hut |
-| Swamp (8) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1832 | co | Swamp, rail+fortress+mine+hut |
-| Swamp (8) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 1848 | c4 | Swamp, road+rail+fortress+mine+hut |
-| Swamp (8) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 1864 | dI | Swamp, irrigation+fortress+mine+hut |
-| Swamp (8) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 1880 | dY | Swamp, road+irrigation+fortress+mine+hut |
-| Swamp (8) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 1896 | do | Swamp, rail+irrigation+fortress+mine+hut |
-| Swamp (8) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1912 | d4 | Swamp, road+rail+irrigation+fortress+mine+hut |
-| Swamp (8) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 1928 | eI | Swamp, pollution+fortress+mine+hut |
-| Swamp (8) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1944 | eY | Swamp, road+pollution+fortress+mine+hut |
-| Swamp (8) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 1960 | eo | Swamp, rail+pollution+fortress+mine+hut |
-| Swamp (8) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1976 | e4 | Swamp, road+rail+pollution+fortress+mine+hut |
-| Swamp (8) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1992 | fI | Swamp, irrigation+pollution+fortress+mine+hut |
-| Swamp (8) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 2008 | fY | Swamp, road+irrigation+pollution+fortress+mine+hut |
-| Swamp (8) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 2024 | fo | Swamp, rail+irrigation+pollution+fortress+mine+hut |
-| Swamp (8) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 2040 | f4 | Swamp, road+rail+irrigation+pollution+fortress+mine+hut |
-| Jungle (9) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 9 | AJ | Jungle, untouched |
-| Jungle (9) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 25 | AZ | Jungle, road |
-| Jungle (9) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 41 | Ap | Jungle, rail |
-| Jungle (9) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 57 | A5 | Jungle, road+rail |
-| Jungle (9) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 73 | BJ | Jungle, irrigation |
-| Jungle (9) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 89 | BZ | Jungle, road+irrigation |
-| Jungle (9) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 105 | Bp | Jungle, rail+irrigation |
-| Jungle (9) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 121 | B5 | Jungle, road+rail+irrigation |
-| Jungle (9) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 137 | CJ | Jungle, pollution |
-| Jungle (9) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 153 | CZ | Jungle, road+pollution |
-| Jungle (9) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 169 | Cp | Jungle, rail+pollution |
-| Jungle (9) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 185 | C5 | Jungle, road+rail+pollution |
-| Jungle (9) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 201 | DJ | Jungle, irrigation+pollution |
-| Jungle (9) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 217 | DZ | Jungle, road+irrigation+pollution |
-| Jungle (9) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 233 | Dp | Jungle, rail+irrigation+pollution |
-| Jungle (9) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 249 | D5 | Jungle, road+rail+irrigation+pollution |
-| Jungle (9) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 265 | EJ | Jungle, fortress |
-| Jungle (9) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 281 | EZ | Jungle, road+fortress |
-| Jungle (9) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 297 | Ep | Jungle, rail+fortress |
-| Jungle (9) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 313 | E5 | Jungle, road+rail+fortress |
-| Jungle (9) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 329 | FJ | Jungle, irrigation+fortress |
-| Jungle (9) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 345 | FZ | Jungle, road+irrigation+fortress |
-| Jungle (9) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 361 | Fp | Jungle, rail+irrigation+fortress |
-| Jungle (9) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 377 | F5 | Jungle, road+rail+irrigation+fortress |
-| Jungle (9) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 393 | GJ | Jungle, pollution+fortress |
-| Jungle (9) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 409 | GZ | Jungle, road+pollution+fortress |
-| Jungle (9) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 425 | Gp | Jungle, rail+pollution+fortress |
-| Jungle (9) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 441 | G5 | Jungle, road+rail+pollution+fortress |
-| Jungle (9) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 457 | HJ | Jungle, irrigation+pollution+fortress |
-| Jungle (9) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 473 | HZ | Jungle, road+irrigation+pollution+fortress |
-| Jungle (9) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 489 | Hp | Jungle, rail+irrigation+pollution+fortress |
-| Jungle (9) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 505 | H5 | Jungle, road+rail+irrigation+pollution+fortress |
-| Jungle (9) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 521 | IJ | Jungle, mine |
-| Jungle (9) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 537 | IZ | Jungle, road+mine |
-| Jungle (9) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 553 | Ip | Jungle, rail+mine |
-| Jungle (9) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 569 | I5 | Jungle, road+rail+mine |
-| Jungle (9) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 585 | JJ | Jungle, irrigation+mine |
-| Jungle (9) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 601 | JZ | Jungle, road+irrigation+mine |
-| Jungle (9) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 617 | Jp | Jungle, rail+irrigation+mine |
-| Jungle (9) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 633 | J5 | Jungle, road+rail+irrigation+mine |
-| Jungle (9) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 649 | KJ | Jungle, pollution+mine |
-| Jungle (9) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 665 | KZ | Jungle, road+pollution+mine |
-| Jungle (9) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 681 | Kp | Jungle, rail+pollution+mine |
-| Jungle (9) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 697 | K5 | Jungle, road+rail+pollution+mine |
-| Jungle (9) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 713 | LJ | Jungle, irrigation+pollution+mine |
-| Jungle (9) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 729 | LZ | Jungle, road+irrigation+pollution+mine |
-| Jungle (9) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 745 | Lp | Jungle, rail+irrigation+pollution+mine |
-| Jungle (9) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 761 | L5 | Jungle, road+rail+irrigation+pollution+mine |
-| Jungle (9) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 777 | MJ | Jungle, fortress+mine |
-| Jungle (9) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 793 | MZ | Jungle, road+fortress+mine |
-| Jungle (9) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 809 | Mp | Jungle, rail+fortress+mine |
-| Jungle (9) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 825 | M5 | Jungle, road+rail+fortress+mine |
-| Jungle (9) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 841 | NJ | Jungle, irrigation+fortress+mine |
-| Jungle (9) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 857 | NZ | Jungle, road+irrigation+fortress+mine |
-| Jungle (9) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 873 | Np | Jungle, rail+irrigation+fortress+mine |
-| Jungle (9) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 889 | N5 | Jungle, road+rail+irrigation+fortress+mine |
-| Jungle (9) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 905 | OJ | Jungle, pollution+fortress+mine |
-| Jungle (9) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 921 | OZ | Jungle, road+pollution+fortress+mine |
-| Jungle (9) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 937 | Op | Jungle, rail+pollution+fortress+mine |
-| Jungle (9) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 953 | O5 | Jungle, road+rail+pollution+fortress+mine |
-| Jungle (9) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 969 | PJ | Jungle, irrigation+pollution+fortress+mine |
-| Jungle (9) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 985 | PZ | Jungle, road+irrigation+pollution+fortress+mine |
-| Jungle (9) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1001 | Pp | Jungle, rail+irrigation+pollution+fortress+mine |
-| Jungle (9) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 1017 | P5 | Jungle, road+rail+irrigation+pollution+fortress+mine |
-| Jungle (9) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1033 | QJ | Jungle, hut |
-| Jungle (9) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 1049 | QZ | Jungle, road+hut |
-| Jungle (9) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 1065 | Qp | Jungle, rail+hut |
-| Jungle (9) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 1081 | Q5 | Jungle, road+rail+hut |
-| Jungle (9) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 1097 | RJ | Jungle, irrigation+hut |
-| Jungle (9) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 1113 | RZ | Jungle, road+irrigation+hut |
-| Jungle (9) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 1129 | Rp | Jungle, rail+irrigation+hut |
-| Jungle (9) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1145 | R5 | Jungle, road+rail+irrigation+hut |
-| Jungle (9) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 1161 | SJ | Jungle, pollution+hut |
-| Jungle (9) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 1177 | SZ | Jungle, road+pollution+hut |
-| Jungle (9) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 1193 | Sp | Jungle, rail+pollution+hut |
-| Jungle (9) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 1209 | S5 | Jungle, road+rail+pollution+hut |
-| Jungle (9) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 1225 | TJ | Jungle, irrigation+pollution+hut |
-| Jungle (9) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 1241 | TZ | Jungle, road+irrigation+pollution+hut |
-| Jungle (9) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 1257 | Tp | Jungle, rail+irrigation+pollution+hut |
-| Jungle (9) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 1273 | T5 | Jungle, road+rail+irrigation+pollution+hut |
-| Jungle (9) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 1289 | UJ | Jungle, fortress+hut |
-| Jungle (9) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 1305 | UZ | Jungle, road+fortress+hut |
-| Jungle (9) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 1321 | Up | Jungle, rail+fortress+hut |
-| Jungle (9) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 1337 | U5 | Jungle, road+rail+fortress+hut |
-| Jungle (9) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 1353 | VJ | Jungle, irrigation+fortress+hut |
-| Jungle (9) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 1369 | VZ | Jungle, road+irrigation+fortress+hut |
-| Jungle (9) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 1385 | Vp | Jungle, rail+irrigation+fortress+hut |
-| Jungle (9) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 1401 | V5 | Jungle, road+rail+irrigation+fortress+hut |
-| Jungle (9) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 1417 | WJ | Jungle, pollution+fortress+hut |
-| Jungle (9) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 1433 | WZ | Jungle, road+pollution+fortress+hut |
-| Jungle (9) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 1449 | Wp | Jungle, rail+pollution+fortress+hut |
-| Jungle (9) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 1465 | W5 | Jungle, road+rail+pollution+fortress+hut |
-| Jungle (9) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 1481 | XJ | Jungle, irrigation+pollution+fortress+hut |
-| Jungle (9) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 1497 | XZ | Jungle, road+irrigation+pollution+fortress+hut |
-| Jungle (9) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 1513 | Xp | Jungle, rail+irrigation+pollution+fortress+hut |
-| Jungle (9) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 1529 | X5 | Jungle, road+rail+irrigation+pollution+fortress+hut |
-| Jungle (9) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 1545 | YJ | Jungle, mine+hut |
-| Jungle (9) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 1561 | YZ | Jungle, road+mine+hut |
-| Jungle (9) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 1577 | Yp | Jungle, rail+mine+hut |
-| Jungle (9) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 1593 | Y5 | Jungle, road+rail+mine+hut |
-| Jungle (9) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1609 | ZJ | Jungle, irrigation+mine+hut |
-| Jungle (9) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 1625 | ZZ | Jungle, road+irrigation+mine+hut |
-| Jungle (9) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 1641 | Zp | Jungle, rail+irrigation+mine+hut |
-| Jungle (9) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1657 | Z5 | Jungle, road+rail+irrigation+mine+hut |
-| Jungle (9) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 1673 | aJ | Jungle, pollution+mine+hut |
-| Jungle (9) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 1689 | aZ | Jungle, road+pollution+mine+hut |
-| Jungle (9) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 1705 | ap | Jungle, rail+pollution+mine+hut |
-| Jungle (9) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 1721 | a5 | Jungle, road+rail+pollution+mine+hut |
-| Jungle (9) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 1737 | bJ | Jungle, irrigation+pollution+mine+hut |
-| Jungle (9) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 1753 | bZ | Jungle, road+irrigation+pollution+mine+hut |
-| Jungle (9) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 1769 | bp | Jungle, rail+irrigation+pollution+mine+hut |
-| Jungle (9) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 1785 | b5 | Jungle, road+rail+irrigation+pollution+mine+hut |
-| Jungle (9) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 1801 | cJ | Jungle, fortress+mine+hut |
-| Jungle (9) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 1817 | cZ | Jungle, road+fortress+mine+hut |
-| Jungle (9) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1833 | cp | Jungle, rail+fortress+mine+hut |
-| Jungle (9) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 1849 | c5 | Jungle, road+rail+fortress+mine+hut |
-| Jungle (9) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 1865 | dJ | Jungle, irrigation+fortress+mine+hut |
-| Jungle (9) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 1881 | dZ | Jungle, road+irrigation+fortress+mine+hut |
-| Jungle (9) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 1897 | dp | Jungle, rail+irrigation+fortress+mine+hut |
-| Jungle (9) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1913 | d5 | Jungle, road+rail+irrigation+fortress+mine+hut |
-| Jungle (9) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 1929 | eJ | Jungle, pollution+fortress+mine+hut |
-| Jungle (9) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1945 | eZ | Jungle, road+pollution+fortress+mine+hut |
-| Jungle (9) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 1961 | ep | Jungle, rail+pollution+fortress+mine+hut |
-| Jungle (9) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1977 | e5 | Jungle, road+rail+pollution+fortress+mine+hut |
-| Jungle (9) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1993 | fJ | Jungle, irrigation+pollution+fortress+mine+hut |
-| Jungle (9) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 2009 | fZ | Jungle, road+irrigation+pollution+fortress+mine+hut |
-| Jungle (9) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 2025 | fp | Jungle, rail+irrigation+pollution+fortress+mine+hut |
-| Jungle (9) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 2041 | f5 | Jungle, road+rail+irrigation+pollution+fortress+mine+hut |
-| Ocean (10) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 10 | AK | Ocean, untouched |
-| Ocean (10) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 26 | Aa | Ocean, road |
-| Ocean (10) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 42 | Aq | Ocean, rail |
-| Ocean (10) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 58 | A6 | Ocean, road+rail |
-| Ocean (10) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 74 | BK | Ocean, irrigation |
-| Ocean (10) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 90 | Ba | Ocean, road+irrigation |
-| Ocean (10) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 106 | Bq | Ocean, rail+irrigation |
-| Ocean (10) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 122 | B6 | Ocean, road+rail+irrigation |
-| Ocean (10) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 138 | CK | Ocean, pollution |
-| Ocean (10) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 154 | Ca | Ocean, road+pollution |
-| Ocean (10) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 170 | Cq | Ocean, rail+pollution |
-| Ocean (10) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 186 | C6 | Ocean, road+rail+pollution |
-| Ocean (10) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 202 | DK | Ocean, irrigation+pollution |
-| Ocean (10) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 218 | Da | Ocean, road+irrigation+pollution |
-| Ocean (10) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 234 | Dq | Ocean, rail+irrigation+pollution |
-| Ocean (10) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 250 | D6 | Ocean, road+rail+irrigation+pollution |
-| Ocean (10) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 266 | EK | Ocean, fortress |
-| Ocean (10) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 282 | Ea | Ocean, road+fortress |
-| Ocean (10) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 298 | Eq | Ocean, rail+fortress |
-| Ocean (10) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 314 | E6 | Ocean, road+rail+fortress |
-| Ocean (10) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 330 | FK | Ocean, irrigation+fortress |
-| Ocean (10) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 346 | Fa | Ocean, road+irrigation+fortress |
-| Ocean (10) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 362 | Fq | Ocean, rail+irrigation+fortress |
-| Ocean (10) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 378 | F6 | Ocean, road+rail+irrigation+fortress |
-| Ocean (10) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 394 | GK | Ocean, pollution+fortress |
-| Ocean (10) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 410 | Ga | Ocean, road+pollution+fortress |
-| Ocean (10) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 426 | Gq | Ocean, rail+pollution+fortress |
-| Ocean (10) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 442 | G6 | Ocean, road+rail+pollution+fortress |
-| Ocean (10) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 458 | HK | Ocean, irrigation+pollution+fortress |
-| Ocean (10) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 474 | Ha | Ocean, road+irrigation+pollution+fortress |
-| Ocean (10) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 490 | Hq | Ocean, rail+irrigation+pollution+fortress |
-| Ocean (10) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 506 | H6 | Ocean, road+rail+irrigation+pollution+fortress |
-| Ocean (10) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 522 | IK | Ocean, mine |
-| Ocean (10) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 538 | Ia | Ocean, road+mine |
-| Ocean (10) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 554 | Iq | Ocean, rail+mine |
-| Ocean (10) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 570 | I6 | Ocean, road+rail+mine |
-| Ocean (10) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 586 | JK | Ocean, irrigation+mine |
-| Ocean (10) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 602 | Ja | Ocean, road+irrigation+mine |
-| Ocean (10) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 618 | Jq | Ocean, rail+irrigation+mine |
-| Ocean (10) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 634 | J6 | Ocean, road+rail+irrigation+mine |
-| Ocean (10) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 650 | KK | Ocean, pollution+mine |
-| Ocean (10) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 666 | Ka | Ocean, road+pollution+mine |
-| Ocean (10) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 682 | Kq | Ocean, rail+pollution+mine |
-| Ocean (10) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 698 | K6 | Ocean, road+rail+pollution+mine |
-| Ocean (10) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 714 | LK | Ocean, irrigation+pollution+mine |
-| Ocean (10) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 730 | La | Ocean, road+irrigation+pollution+mine |
-| Ocean (10) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 746 | Lq | Ocean, rail+irrigation+pollution+mine |
-| Ocean (10) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 762 | L6 | Ocean, road+rail+irrigation+pollution+mine |
-| Ocean (10) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 778 | MK | Ocean, fortress+mine |
-| Ocean (10) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 794 | Ma | Ocean, road+fortress+mine |
-| Ocean (10) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 810 | Mq | Ocean, rail+fortress+mine |
-| Ocean (10) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 826 | M6 | Ocean, road+rail+fortress+mine |
-| Ocean (10) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 842 | NK | Ocean, irrigation+fortress+mine |
-| Ocean (10) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 858 | Na | Ocean, road+irrigation+fortress+mine |
-| Ocean (10) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 874 | Nq | Ocean, rail+irrigation+fortress+mine |
-| Ocean (10) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 890 | N6 | Ocean, road+rail+irrigation+fortress+mine |
-| Ocean (10) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 906 | OK | Ocean, pollution+fortress+mine |
-| Ocean (10) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 922 | Oa | Ocean, road+pollution+fortress+mine |
-| Ocean (10) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 938 | Oq | Ocean, rail+pollution+fortress+mine |
-| Ocean (10) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 954 | O6 | Ocean, road+rail+pollution+fortress+mine |
-| Ocean (10) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 970 | PK | Ocean, irrigation+pollution+fortress+mine |
-| Ocean (10) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 986 | Pa | Ocean, road+irrigation+pollution+fortress+mine |
-| Ocean (10) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1002 | Pq | Ocean, rail+irrigation+pollution+fortress+mine |
-| Ocean (10) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 1018 | P6 | Ocean, road+rail+irrigation+pollution+fortress+mine |
-| Ocean (10) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1034 | QK | Ocean, hut |
-| Ocean (10) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 1050 | Qa | Ocean, road+hut |
-| Ocean (10) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 1066 | Qq | Ocean, rail+hut |
-| Ocean (10) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 1082 | Q6 | Ocean, road+rail+hut |
-| Ocean (10) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 1098 | RK | Ocean, irrigation+hut |
-| Ocean (10) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 1114 | Ra | Ocean, road+irrigation+hut |
-| Ocean (10) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 1130 | Rq | Ocean, rail+irrigation+hut |
-| Ocean (10) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1146 | R6 | Ocean, road+rail+irrigation+hut |
-| Ocean (10) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 1162 | SK | Ocean, pollution+hut |
-| Ocean (10) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 1178 | Sa | Ocean, road+pollution+hut |
-| Ocean (10) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 1194 | Sq | Ocean, rail+pollution+hut |
-| Ocean (10) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 1210 | S6 | Ocean, road+rail+pollution+hut |
-| Ocean (10) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 1226 | TK | Ocean, irrigation+pollution+hut |
-| Ocean (10) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 1242 | Ta | Ocean, road+irrigation+pollution+hut |
-| Ocean (10) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 1258 | Tq | Ocean, rail+irrigation+pollution+hut |
-| Ocean (10) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 1274 | T6 | Ocean, road+rail+irrigation+pollution+hut |
-| Ocean (10) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 1290 | UK | Ocean, fortress+hut |
-| Ocean (10) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 1306 | Ua | Ocean, road+fortress+hut |
-| Ocean (10) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 1322 | Uq | Ocean, rail+fortress+hut |
-| Ocean (10) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 1338 | U6 | Ocean, road+rail+fortress+hut |
-| Ocean (10) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 1354 | VK | Ocean, irrigation+fortress+hut |
-| Ocean (10) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 1370 | Va | Ocean, road+irrigation+fortress+hut |
-| Ocean (10) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 1386 | Vq | Ocean, rail+irrigation+fortress+hut |
-| Ocean (10) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 1402 | V6 | Ocean, road+rail+irrigation+fortress+hut |
-| Ocean (10) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 1418 | WK | Ocean, pollution+fortress+hut |
-| Ocean (10) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 1434 | Wa | Ocean, road+pollution+fortress+hut |
-| Ocean (10) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 1450 | Wq | Ocean, rail+pollution+fortress+hut |
-| Ocean (10) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 1466 | W6 | Ocean, road+rail+pollution+fortress+hut |
-| Ocean (10) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 1482 | XK | Ocean, irrigation+pollution+fortress+hut |
-| Ocean (10) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 1498 | Xa | Ocean, road+irrigation+pollution+fortress+hut |
-| Ocean (10) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 1514 | Xq | Ocean, rail+irrigation+pollution+fortress+hut |
-| Ocean (10) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 1530 | X6 | Ocean, road+rail+irrigation+pollution+fortress+hut |
-| Ocean (10) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 1546 | YK | Ocean, mine+hut |
-| Ocean (10) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 1562 | Ya | Ocean, road+mine+hut |
-| Ocean (10) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 1578 | Yq | Ocean, rail+mine+hut |
-| Ocean (10) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 1594 | Y6 | Ocean, road+rail+mine+hut |
-| Ocean (10) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1610 | ZK | Ocean, irrigation+mine+hut |
-| Ocean (10) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 1626 | Za | Ocean, road+irrigation+mine+hut |
-| Ocean (10) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 1642 | Zq | Ocean, rail+irrigation+mine+hut |
-| Ocean (10) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1658 | Z6 | Ocean, road+rail+irrigation+mine+hut |
-| Ocean (10) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 1674 | aK | Ocean, pollution+mine+hut |
-| Ocean (10) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 1690 | aa | Ocean, road+pollution+mine+hut |
-| Ocean (10) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 1706 | aq | Ocean, rail+pollution+mine+hut |
-| Ocean (10) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 1722 | a6 | Ocean, road+rail+pollution+mine+hut |
-| Ocean (10) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 1738 | bK | Ocean, irrigation+pollution+mine+hut |
-| Ocean (10) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 1754 | ba | Ocean, road+irrigation+pollution+mine+hut |
-| Ocean (10) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 1770 | bq | Ocean, rail+irrigation+pollution+mine+hut |
-| Ocean (10) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 1786 | b6 | Ocean, road+rail+irrigation+pollution+mine+hut |
-| Ocean (10) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 1802 | cK | Ocean, fortress+mine+hut |
-| Ocean (10) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 1818 | ca | Ocean, road+fortress+mine+hut |
-| Ocean (10) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1834 | cq | Ocean, rail+fortress+mine+hut |
-| Ocean (10) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 1850 | c6 | Ocean, road+rail+fortress+mine+hut |
-| Ocean (10) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 1866 | dK | Ocean, irrigation+fortress+mine+hut |
-| Ocean (10) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 1882 | da | Ocean, road+irrigation+fortress+mine+hut |
-| Ocean (10) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 1898 | dq | Ocean, rail+irrigation+fortress+mine+hut |
-| Ocean (10) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1914 | d6 | Ocean, road+rail+irrigation+fortress+mine+hut |
-| Ocean (10) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 1930 | eK | Ocean, pollution+fortress+mine+hut |
-| Ocean (10) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1946 | ea | Ocean, road+pollution+fortress+mine+hut |
-| Ocean (10) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 1962 | eq | Ocean, rail+pollution+fortress+mine+hut |
-| Ocean (10) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1978 | e6 | Ocean, road+rail+pollution+fortress+mine+hut |
-| Ocean (10) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1994 | fK | Ocean, irrigation+pollution+fortress+mine+hut |
-| Ocean (10) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 2010 | fa | Ocean, road+irrigation+pollution+fortress+mine+hut |
-| Ocean (10) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 2026 | fq | Ocean, rail+irrigation+pollution+fortress+mine+hut |
-| Ocean (10) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 2042 | f6 | Ocean, road+rail+irrigation+pollution+fortress+mine+hut |
-| River (11) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 11 | AL | River, untouched |
-| River (11) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 27 | Ab | River, road |
-| River (11) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 43 | Ar | River, rail |
-| River (11) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 59 | A7 | River, road+rail |
-| River (11) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 75 | BL | River, irrigation |
-| River (11) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 91 | Bb | River, road+irrigation |
-| River (11) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 107 | Br | River, rail+irrigation |
-| River (11) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 123 | B7 | River, road+rail+irrigation |
-| River (11) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 139 | CL | River, pollution |
-| River (11) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 155 | Cb | River, road+pollution |
-| River (11) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 171 | Cr | River, rail+pollution |
-| River (11) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 187 | C7 | River, road+rail+pollution |
-| River (11) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 203 | DL | River, irrigation+pollution |
-| River (11) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 219 | Db | River, road+irrigation+pollution |
-| River (11) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 235 | Dr | River, rail+irrigation+pollution |
-| River (11) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 251 | D7 | River, road+rail+irrigation+pollution |
-| River (11) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 267 | EL | River, fortress |
-| River (11) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 283 | Eb | River, road+fortress |
-| River (11) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 299 | Er | River, rail+fortress |
-| River (11) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 315 | E7 | River, road+rail+fortress |
-| River (11) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 331 | FL | River, irrigation+fortress |
-| River (11) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 347 | Fb | River, road+irrigation+fortress |
-| River (11) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 363 | Fr | River, rail+irrigation+fortress |
-| River (11) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 379 | F7 | River, road+rail+irrigation+fortress |
-| River (11) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 395 | GL | River, pollution+fortress |
-| River (11) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 411 | Gb | River, road+pollution+fortress |
-| River (11) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 427 | Gr | River, rail+pollution+fortress |
-| River (11) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 443 | G7 | River, road+rail+pollution+fortress |
-| River (11) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 459 | HL | River, irrigation+pollution+fortress |
-| River (11) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 475 | Hb | River, road+irrigation+pollution+fortress |
-| River (11) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 491 | Hr | River, rail+irrigation+pollution+fortress |
-| River (11) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 507 | H7 | River, road+rail+irrigation+pollution+fortress |
-| River (11) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 523 | IL | River, mine |
-| River (11) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 539 | Ib | River, road+mine |
-| River (11) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 555 | Ir | River, rail+mine |
-| River (11) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 571 | I7 | River, road+rail+mine |
-| River (11) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 587 | JL | River, irrigation+mine |
-| River (11) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 603 | Jb | River, road+irrigation+mine |
-| River (11) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 619 | Jr | River, rail+irrigation+mine |
-| River (11) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 635 | J7 | River, road+rail+irrigation+mine |
-| River (11) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 651 | KL | River, pollution+mine |
-| River (11) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 667 | Kb | River, road+pollution+mine |
-| River (11) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 683 | Kr | River, rail+pollution+mine |
-| River (11) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 699 | K7 | River, road+rail+pollution+mine |
-| River (11) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 715 | LL | River, irrigation+pollution+mine |
-| River (11) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 731 | Lb | River, road+irrigation+pollution+mine |
-| River (11) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 747 | Lr | River, rail+irrigation+pollution+mine |
-| River (11) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 763 | L7 | River, road+rail+irrigation+pollution+mine |
-| River (11) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 779 | ML | River, fortress+mine |
-| River (11) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 795 | Mb | River, road+fortress+mine |
-| River (11) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 811 | Mr | River, rail+fortress+mine |
-| River (11) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 827 | M7 | River, road+rail+fortress+mine |
-| River (11) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 843 | NL | River, irrigation+fortress+mine |
-| River (11) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 859 | Nb | River, road+irrigation+fortress+mine |
-| River (11) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 875 | Nr | River, rail+irrigation+fortress+mine |
-| River (11) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 891 | N7 | River, road+rail+irrigation+fortress+mine |
-| River (11) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 907 | OL | River, pollution+fortress+mine |
-| River (11) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 923 | Ob | River, road+pollution+fortress+mine |
-| River (11) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 939 | Or | River, rail+pollution+fortress+mine |
-| River (11) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 955 | O7 | River, road+rail+pollution+fortress+mine |
-| River (11) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 971 | PL | River, irrigation+pollution+fortress+mine |
-| River (11) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 987 | Pb | River, road+irrigation+pollution+fortress+mine |
-| River (11) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1003 | Pr | River, rail+irrigation+pollution+fortress+mine |
-| River (11) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 1019 | P7 | River, road+rail+irrigation+pollution+fortress+mine |
-| River (11) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1035 | QL | River, hut |
-| River (11) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 1051 | Qb | River, road+hut |
-| River (11) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 1067 | Qr | River, rail+hut |
-| River (11) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 1083 | Q7 | River, road+rail+hut |
-| River (11) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 1099 | RL | River, irrigation+hut |
-| River (11) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 1115 | Rb | River, road+irrigation+hut |
-| River (11) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 1131 | Rr | River, rail+irrigation+hut |
-| River (11) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1147 | R7 | River, road+rail+irrigation+hut |
-| River (11) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 1163 | SL | River, pollution+hut |
-| River (11) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 1179 | Sb | River, road+pollution+hut |
-| River (11) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 1195 | Sr | River, rail+pollution+hut |
-| River (11) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 1211 | S7 | River, road+rail+pollution+hut |
-| River (11) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 1227 | TL | River, irrigation+pollution+hut |
-| River (11) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 1243 | Tb | River, road+irrigation+pollution+hut |
-| River (11) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 1259 | Tr | River, rail+irrigation+pollution+hut |
-| River (11) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 1275 | T7 | River, road+rail+irrigation+pollution+hut |
-| River (11) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 1291 | UL | River, fortress+hut |
-| River (11) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 1307 | Ub | River, road+fortress+hut |
-| River (11) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 1323 | Ur | River, rail+fortress+hut |
-| River (11) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 1339 | U7 | River, road+rail+fortress+hut |
-| River (11) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 1355 | VL | River, irrigation+fortress+hut |
-| River (11) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 1371 | Vb | River, road+irrigation+fortress+hut |
-| River (11) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 1387 | Vr | River, rail+irrigation+fortress+hut |
-| River (11) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 1403 | V7 | River, road+rail+irrigation+fortress+hut |
-| River (11) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 1419 | WL | River, pollution+fortress+hut |
-| River (11) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 1435 | Wb | River, road+pollution+fortress+hut |
-| River (11) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 1451 | Wr | River, rail+pollution+fortress+hut |
-| River (11) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 1467 | W7 | River, road+rail+pollution+fortress+hut |
-| River (11) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 1483 | XL | River, irrigation+pollution+fortress+hut |
-| River (11) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 1499 | Xb | River, road+irrigation+pollution+fortress+hut |
-| River (11) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 1515 | Xr | River, rail+irrigation+pollution+fortress+hut |
-| River (11) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 1531 | X7 | River, road+rail+irrigation+pollution+fortress+hut |
-| River (11) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 1547 | YL | River, mine+hut |
-| River (11) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 1563 | Yb | River, road+mine+hut |
-| River (11) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 1579 | Yr | River, rail+mine+hut |
-| River (11) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 1595 | Y7 | River, road+rail+mine+hut |
-| River (11) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1611 | ZL | River, irrigation+mine+hut |
-| River (11) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 1627 | Zb | River, road+irrigation+mine+hut |
-| River (11) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 1643 | Zr | River, rail+irrigation+mine+hut |
-| River (11) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1659 | Z7 | River, road+rail+irrigation+mine+hut |
-| River (11) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 1675 | aL | River, pollution+mine+hut |
-| River (11) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 1691 | ab | River, road+pollution+mine+hut |
-| River (11) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 1707 | ar | River, rail+pollution+mine+hut |
-| River (11) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 1723 | a7 | River, road+rail+pollution+mine+hut |
-| River (11) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 1739 | bL | River, irrigation+pollution+mine+hut |
-| River (11) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 1755 | bb | River, road+irrigation+pollution+mine+hut |
-| River (11) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 1771 | br | River, rail+irrigation+pollution+mine+hut |
-| River (11) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 1787 | b7 | River, road+rail+irrigation+pollution+mine+hut |
-| River (11) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 1803 | cL | River, fortress+mine+hut |
-| River (11) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 1819 | cb | River, road+fortress+mine+hut |
-| River (11) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1835 | cr | River, rail+fortress+mine+hut |
-| River (11) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 1851 | c7 | River, road+rail+fortress+mine+hut |
-| River (11) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 1867 | dL | River, irrigation+fortress+mine+hut |
-| River (11) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 1883 | db | River, road+irrigation+fortress+mine+hut |
-| River (11) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 1899 | dr | River, rail+irrigation+fortress+mine+hut |
-| River (11) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1915 | d7 | River, road+rail+irrigation+fortress+mine+hut |
-| River (11) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 1931 | eL | River, pollution+fortress+mine+hut |
-| River (11) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1947 | eb | River, road+pollution+fortress+mine+hut |
-| River (11) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 1963 | er | River, rail+pollution+fortress+mine+hut |
-| River (11) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1979 | e7 | River, road+rail+pollution+fortress+mine+hut |
-| River (11) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1995 | fL | River, irrigation+pollution+fortress+mine+hut |
-| River (11) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 2011 | fb | River, road+irrigation+pollution+fortress+mine+hut |
-| River (11) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 2027 | fr | River, rail+irrigation+pollution+fortress+mine+hut |
-| River (11) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 2043 | f7 | River, road+rail+irrigation+pollution+fortress+mine+hut |
-| Grassland2 (12) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 12 | AM | Grassland2, untouched |
-| Grassland2 (12) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 28 | Ac | Grassland2, road |
-| Grassland2 (12) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 44 | As | Grassland2, rail |
-| Grassland2 (12) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 60 | A8 | Grassland2, road+rail |
-| Grassland2 (12) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 76 | BM | Grassland2, irrigation |
-| Grassland2 (12) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 92 | Bc | Grassland2, road+irrigation |
-| Grassland2 (12) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 108 | Bs | Grassland2, rail+irrigation |
-| Grassland2 (12) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 124 | B8 | Grassland2, road+rail+irrigation |
-| Grassland2 (12) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 140 | CM | Grassland2, pollution |
-| Grassland2 (12) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 156 | Cc | Grassland2, road+pollution |
-| Grassland2 (12) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 172 | Cs | Grassland2, rail+pollution |
-| Grassland2 (12) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 188 | C8 | Grassland2, road+rail+pollution |
-| Grassland2 (12) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 204 | DM | Grassland2, irrigation+pollution |
-| Grassland2 (12) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 220 | Dc | Grassland2, road+irrigation+pollution |
-| Grassland2 (12) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 236 | Ds | Grassland2, rail+irrigation+pollution |
-| Grassland2 (12) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 252 | D8 | Grassland2, road+rail+irrigation+pollution |
-| Grassland2 (12) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 268 | EM | Grassland2, fortress |
-| Grassland2 (12) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 284 | Ec | Grassland2, road+fortress |
-| Grassland2 (12) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 300 | Es | Grassland2, rail+fortress |
-| Grassland2 (12) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 316 | E8 | Grassland2, road+rail+fortress |
-| Grassland2 (12) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 332 | FM | Grassland2, irrigation+fortress |
-| Grassland2 (12) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 348 | Fc | Grassland2, road+irrigation+fortress |
-| Grassland2 (12) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 364 | Fs | Grassland2, rail+irrigation+fortress |
-| Grassland2 (12) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 380 | F8 | Grassland2, road+rail+irrigation+fortress |
-| Grassland2 (12) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 396 | GM | Grassland2, pollution+fortress |
-| Grassland2 (12) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 412 | Gc | Grassland2, road+pollution+fortress |
-| Grassland2 (12) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 428 | Gs | Grassland2, rail+pollution+fortress |
-| Grassland2 (12) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 444 | G8 | Grassland2, road+rail+pollution+fortress |
-| Grassland2 (12) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 460 | HM | Grassland2, irrigation+pollution+fortress |
-| Grassland2 (12) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 476 | Hc | Grassland2, road+irrigation+pollution+fortress |
-| Grassland2 (12) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 492 | Hs | Grassland2, rail+irrigation+pollution+fortress |
-| Grassland2 (12) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 508 | H8 | Grassland2, road+rail+irrigation+pollution+fortress |
-| Grassland2 (12) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 524 | IM | Grassland2, mine |
-| Grassland2 (12) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 540 | Ic | Grassland2, road+mine |
-| Grassland2 (12) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 556 | Is | Grassland2, rail+mine |
-| Grassland2 (12) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 572 | I8 | Grassland2, road+rail+mine |
-| Grassland2 (12) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 588 | JM | Grassland2, irrigation+mine |
-| Grassland2 (12) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 604 | Jc | Grassland2, road+irrigation+mine |
-| Grassland2 (12) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 620 | Js | Grassland2, rail+irrigation+mine |
-| Grassland2 (12) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 636 | J8 | Grassland2, road+rail+irrigation+mine |
-| Grassland2 (12) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 652 | KM | Grassland2, pollution+mine |
-| Grassland2 (12) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 668 | Kc | Grassland2, road+pollution+mine |
-| Grassland2 (12) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 684 | Ks | Grassland2, rail+pollution+mine |
-| Grassland2 (12) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 700 | K8 | Grassland2, road+rail+pollution+mine |
-| Grassland2 (12) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 716 | LM | Grassland2, irrigation+pollution+mine |
-| Grassland2 (12) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 732 | Lc | Grassland2, road+irrigation+pollution+mine |
-| Grassland2 (12) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 748 | Ls | Grassland2, rail+irrigation+pollution+mine |
-| Grassland2 (12) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 764 | L8 | Grassland2, road+rail+irrigation+pollution+mine |
-| Grassland2 (12) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 780 | MM | Grassland2, fortress+mine |
-| Grassland2 (12) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 796 | Mc | Grassland2, road+fortress+mine |
-| Grassland2 (12) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 812 | Ms | Grassland2, rail+fortress+mine |
-| Grassland2 (12) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 828 | M8 | Grassland2, road+rail+fortress+mine |
-| Grassland2 (12) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 844 | NM | Grassland2, irrigation+fortress+mine |
-| Grassland2 (12) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 860 | Nc | Grassland2, road+irrigation+fortress+mine |
-| Grassland2 (12) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 876 | Ns | Grassland2, rail+irrigation+fortress+mine |
-| Grassland2 (12) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 892 | N8 | Grassland2, road+rail+irrigation+fortress+mine |
-| Grassland2 (12) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 908 | OM | Grassland2, pollution+fortress+mine |
-| Grassland2 (12) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 924 | Oc | Grassland2, road+pollution+fortress+mine |
-| Grassland2 (12) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 940 | Os | Grassland2, rail+pollution+fortress+mine |
-| Grassland2 (12) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 956 | O8 | Grassland2, road+rail+pollution+fortress+mine |
-| Grassland2 (12) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 972 | PM | Grassland2, irrigation+pollution+fortress+mine |
-| Grassland2 (12) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 988 | Pc | Grassland2, road+irrigation+pollution+fortress+mine |
-| Grassland2 (12) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1004 | Ps | Grassland2, rail+irrigation+pollution+fortress+mine |
-| Grassland2 (12) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 1020 | P8 | Grassland2, road+rail+irrigation+pollution+fortress+mine |
-| Grassland2 (12) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1036 | QM | Grassland2, hut |
-| Grassland2 (12) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 1052 | Qc | Grassland2, road+hut |
-| Grassland2 (12) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 1068 | Qs | Grassland2, rail+hut |
-| Grassland2 (12) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 1084 | Q8 | Grassland2, road+rail+hut |
-| Grassland2 (12) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 1100 | RM | Grassland2, irrigation+hut |
-| Grassland2 (12) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 1116 | Rc | Grassland2, road+irrigation+hut |
-| Grassland2 (12) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 1132 | Rs | Grassland2, rail+irrigation+hut |
-| Grassland2 (12) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1148 | R8 | Grassland2, road+rail+irrigation+hut |
-| Grassland2 (12) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 1164 | SM | Grassland2, pollution+hut |
-| Grassland2 (12) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 1180 | Sc | Grassland2, road+pollution+hut |
-| Grassland2 (12) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 1196 | Ss | Grassland2, rail+pollution+hut |
-| Grassland2 (12) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 1212 | S8 | Grassland2, road+rail+pollution+hut |
-| Grassland2 (12) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 1228 | TM | Grassland2, irrigation+pollution+hut |
-| Grassland2 (12) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 1244 | Tc | Grassland2, road+irrigation+pollution+hut |
-| Grassland2 (12) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 1260 | Ts | Grassland2, rail+irrigation+pollution+hut |
-| Grassland2 (12) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 1276 | T8 | Grassland2, road+rail+irrigation+pollution+hut |
-| Grassland2 (12) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 1292 | UM | Grassland2, fortress+hut |
-| Grassland2 (12) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 1308 | Uc | Grassland2, road+fortress+hut |
-| Grassland2 (12) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 1324 | Us | Grassland2, rail+fortress+hut |
-| Grassland2 (12) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 1340 | U8 | Grassland2, road+rail+fortress+hut |
-| Grassland2 (12) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 1356 | VM | Grassland2, irrigation+fortress+hut |
-| Grassland2 (12) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 1372 | Vc | Grassland2, road+irrigation+fortress+hut |
-| Grassland2 (12) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 1388 | Vs | Grassland2, rail+irrigation+fortress+hut |
-| Grassland2 (12) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 1404 | V8 | Grassland2, road+rail+irrigation+fortress+hut |
-| Grassland2 (12) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 1420 | WM | Grassland2, pollution+fortress+hut |
-| Grassland2 (12) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 1436 | Wc | Grassland2, road+pollution+fortress+hut |
-| Grassland2 (12) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 1452 | Ws | Grassland2, rail+pollution+fortress+hut |
-| Grassland2 (12) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 1468 | W8 | Grassland2, road+rail+pollution+fortress+hut |
-| Grassland2 (12) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 1484 | XM | Grassland2, irrigation+pollution+fortress+hut |
-| Grassland2 (12) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 1500 | Xc | Grassland2, road+irrigation+pollution+fortress+hut |
-| Grassland2 (12) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 1516 | Xs | Grassland2, rail+irrigation+pollution+fortress+hut |
-| Grassland2 (12) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 1532 | X8 | Grassland2, road+rail+irrigation+pollution+fortress+hut |
-| Grassland2 (12) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 1548 | YM | Grassland2, mine+hut |
-| Grassland2 (12) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 1564 | Yc | Grassland2, road+mine+hut |
-| Grassland2 (12) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 1580 | Ys | Grassland2, rail+mine+hut |
-| Grassland2 (12) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 1596 | Y8 | Grassland2, road+rail+mine+hut |
-| Grassland2 (12) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1612 | ZM | Grassland2, irrigation+mine+hut |
-| Grassland2 (12) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 1628 | Zc | Grassland2, road+irrigation+mine+hut |
-| Grassland2 (12) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 1644 | Zs | Grassland2, rail+irrigation+mine+hut |
-| Grassland2 (12) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1660 | Z8 | Grassland2, road+rail+irrigation+mine+hut |
-| Grassland2 (12) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 1676 | aM | Grassland2, pollution+mine+hut |
-| Grassland2 (12) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 1692 | ac | Grassland2, road+pollution+mine+hut |
-| Grassland2 (12) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 1708 | as | Grassland2, rail+pollution+mine+hut |
-| Grassland2 (12) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 1724 | a8 | Grassland2, road+rail+pollution+mine+hut |
-| Grassland2 (12) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 1740 | bM | Grassland2, irrigation+pollution+mine+hut |
-| Grassland2 (12) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 1756 | bc | Grassland2, road+irrigation+pollution+mine+hut |
-| Grassland2 (12) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 1772 | bs | Grassland2, rail+irrigation+pollution+mine+hut |
-| Grassland2 (12) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 1788 | b8 | Grassland2, road+rail+irrigation+pollution+mine+hut |
-| Grassland2 (12) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 1804 | cM | Grassland2, fortress+mine+hut |
-| Grassland2 (12) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 1820 | cc | Grassland2, road+fortress+mine+hut |
-| Grassland2 (12) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1836 | cs | Grassland2, rail+fortress+mine+hut |
-| Grassland2 (12) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 1852 | c8 | Grassland2, road+rail+fortress+mine+hut |
-| Grassland2 (12) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 1868 | dM | Grassland2, irrigation+fortress+mine+hut |
-| Grassland2 (12) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 1884 | dc | Grassland2, road+irrigation+fortress+mine+hut |
-| Grassland2 (12) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 1900 | ds | Grassland2, rail+irrigation+fortress+mine+hut |
-| Grassland2 (12) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1916 | d8 | Grassland2, road+rail+irrigation+fortress+mine+hut |
-| Grassland2 (12) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 1932 | eM | Grassland2, pollution+fortress+mine+hut |
-| Grassland2 (12) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1948 | ec | Grassland2, road+pollution+fortress+mine+hut |
-| Grassland2 (12) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 1964 | es | Grassland2, rail+pollution+fortress+mine+hut |
-| Grassland2 (12) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1980 | e8 | Grassland2, road+rail+pollution+fortress+mine+hut |
-| Grassland2 (12) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1996 | fM | Grassland2, irrigation+pollution+fortress+mine+hut |
-| Grassland2 (12) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 2012 | fc | Grassland2, road+irrigation+pollution+fortress+mine+hut |
-| Grassland2 (12) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 2028 | fs | Grassland2, rail+irrigation+pollution+fortress+mine+hut |
-| Grassland2 (12) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 2044 | f8 | Grassland2, road+rail+irrigation+pollution+fortress+mine+hut |
-| None (-1 -> 15) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 15 | AP | No terrain, untouched |
-| None (-1 -> 15) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 31 | Af | No terrain, road |
-| None (-1 -> 15) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 47 | Av | No terrain, rail |
-| None (-1 -> 15) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 63 | A/ | No terrain, road+rail |
-| None (-1 -> 15) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 79 | BP | No terrain, irrigation |
-| None (-1 -> 15) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 95 | Bf | No terrain, road+irrigation |
-| None (-1 -> 15) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 111 | Bv | No terrain, rail+irrigation |
-| None (-1 -> 15) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 127 | B/ | No terrain, road+rail+irrigation |
-| None (-1 -> 15) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 143 | CP | No terrain, pollution |
-| None (-1 -> 15) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 159 | Cf | No terrain, road+pollution |
-| None (-1 -> 15) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 175 | Cv | No terrain, rail+pollution |
-| None (-1 -> 15) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 191 | C/ | No terrain, road+rail+pollution |
-| None (-1 -> 15) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 207 | DP | No terrain, irrigation+pollution |
-| None (-1 -> 15) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 223 | Df | No terrain, road+irrigation+pollution |
-| None (-1 -> 15) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 239 | Dv | No terrain, rail+irrigation+pollution |
-| None (-1 -> 15) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 255 | D/ | No terrain, road+rail+irrigation+pollution |
-| None (-1 -> 15) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 271 | EP | No terrain, fortress |
-| None (-1 -> 15) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 287 | Ef | No terrain, road+fortress |
-| None (-1 -> 15) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 303 | Ev | No terrain, rail+fortress |
-| None (-1 -> 15) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 319 | E/ | No terrain, road+rail+fortress |
-| None (-1 -> 15) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 335 | FP | No terrain, irrigation+fortress |
-| None (-1 -> 15) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 351 | Ff | No terrain, road+irrigation+fortress |
-| None (-1 -> 15) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 367 | Fv | No terrain, rail+irrigation+fortress |
-| None (-1 -> 15) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 383 | F/ | No terrain, road+rail+irrigation+fortress |
-| None (-1 -> 15) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 399 | GP | No terrain, pollution+fortress |
-| None (-1 -> 15) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 415 | Gf | No terrain, road+pollution+fortress |
-| None (-1 -> 15) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 431 | Gv | No terrain, rail+pollution+fortress |
-| None (-1 -> 15) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 447 | G/ | No terrain, road+rail+pollution+fortress |
-| None (-1 -> 15) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 463 | HP | No terrain, irrigation+pollution+fortress |
-| None (-1 -> 15) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 479 | Hf | No terrain, road+irrigation+pollution+fortress |
-| None (-1 -> 15) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 495 | Hv | No terrain, rail+irrigation+pollution+fortress |
-| None (-1 -> 15) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 511 | H/ | No terrain, road+rail+irrigation+pollution+fortress |
-| None (-1 -> 15) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 527 | IP | No terrain, mine |
-| None (-1 -> 15) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 543 | If | No terrain, road+mine |
-| None (-1 -> 15) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 559 | Iv | No terrain, rail+mine |
-| None (-1 -> 15) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 575 | I/ | No terrain, road+rail+mine |
-| None (-1 -> 15) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 591 | JP | No terrain, irrigation+mine |
-| None (-1 -> 15) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 607 | Jf | No terrain, road+irrigation+mine |
-| None (-1 -> 15) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 623 | Jv | No terrain, rail+irrigation+mine |
-| None (-1 -> 15) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 639 | J/ | No terrain, road+rail+irrigation+mine |
-| None (-1 -> 15) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 655 | KP | No terrain, pollution+mine |
-| None (-1 -> 15) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 671 | Kf | No terrain, road+pollution+mine |
-| None (-1 -> 15) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 687 | Kv | No terrain, rail+pollution+mine |
-| None (-1 -> 15) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 703 | K/ | No terrain, road+rail+pollution+mine |
-| None (-1 -> 15) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 719 | LP | No terrain, irrigation+pollution+mine |
-| None (-1 -> 15) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 735 | Lf | No terrain, road+irrigation+pollution+mine |
-| None (-1 -> 15) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 751 | Lv | No terrain, rail+irrigation+pollution+mine |
-| None (-1 -> 15) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 767 | L/ | No terrain, road+rail+irrigation+pollution+mine |
-| None (-1 -> 15) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 783 | MP | No terrain, fortress+mine |
-| None (-1 -> 15) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 799 | Mf | No terrain, road+fortress+mine |
-| None (-1 -> 15) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 815 | Mv | No terrain, rail+fortress+mine |
-| None (-1 -> 15) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 831 | M/ | No terrain, road+rail+fortress+mine |
-| None (-1 -> 15) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 847 | NP | No terrain, irrigation+fortress+mine |
-| None (-1 -> 15) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 863 | Nf | No terrain, road+irrigation+fortress+mine |
-| None (-1 -> 15) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 879 | Nv | No terrain, rail+irrigation+fortress+mine |
-| None (-1 -> 15) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 895 | N/ | No terrain, road+rail+irrigation+fortress+mine |
-| None (-1 -> 15) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 911 | OP | No terrain, pollution+fortress+mine |
-| None (-1 -> 15) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 927 | Of | No terrain, road+pollution+fortress+mine |
-| None (-1 -> 15) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 943 | Ov | No terrain, rail+pollution+fortress+mine |
-| None (-1 -> 15) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 959 | O/ | No terrain, road+rail+pollution+fortress+mine |
-| None (-1 -> 15) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 975 | PP | No terrain, irrigation+pollution+fortress+mine |
-| None (-1 -> 15) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 991 | Pf | No terrain, road+irrigation+pollution+fortress+mine |
-| None (-1 -> 15) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1007 | Pv | No terrain, rail+irrigation+pollution+fortress+mine |
-| None (-1 -> 15) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 1023 | P/ | No terrain, road+rail+irrigation+pollution+fortress+mine |
-| None (-1 -> 15) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1039 | QP | No terrain, hut |
-| None (-1 -> 15) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 1055 | Qf | No terrain, road+hut |
-| None (-1 -> 15) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 1071 | Qv | No terrain, rail+hut |
-| None (-1 -> 15) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 1087 | Q/ | No terrain, road+rail+hut |
-| None (-1 -> 15) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 1103 | RP | No terrain, irrigation+hut |
-| None (-1 -> 15) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 1119 | Rf | No terrain, road+irrigation+hut |
-| None (-1 -> 15) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 1135 | Rv | No terrain, rail+irrigation+hut |
-| None (-1 -> 15) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1151 | R/ | No terrain, road+rail+irrigation+hut |
-| None (-1 -> 15) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 1167 | SP | No terrain, pollution+hut |
-| None (-1 -> 15) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 1183 | Sf | No terrain, road+pollution+hut |
-| None (-1 -> 15) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 1199 | Sv | No terrain, rail+pollution+hut |
-| None (-1 -> 15) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 1215 | S/ | No terrain, road+rail+pollution+hut |
-| None (-1 -> 15) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 1231 | TP | No terrain, irrigation+pollution+hut |
-| None (-1 -> 15) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 1247 | Tf | No terrain, road+irrigation+pollution+hut |
-| None (-1 -> 15) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 1263 | Tv | No terrain, rail+irrigation+pollution+hut |
-| None (-1 -> 15) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 1279 | T/ | No terrain, road+rail+irrigation+pollution+hut |
-| None (-1 -> 15) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 1295 | UP | No terrain, fortress+hut |
-| None (-1 -> 15) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 1311 | Uf | No terrain, road+fortress+hut |
-| None (-1 -> 15) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 1327 | Uv | No terrain, rail+fortress+hut |
-| None (-1 -> 15) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 1343 | U/ | No terrain, road+rail+fortress+hut |
-| None (-1 -> 15) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 1359 | VP | No terrain, irrigation+fortress+hut |
-| None (-1 -> 15) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 1375 | Vf | No terrain, road+irrigation+fortress+hut |
-| None (-1 -> 15) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 1391 | Vv | No terrain, rail+irrigation+fortress+hut |
-| None (-1 -> 15) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 1407 | V/ | No terrain, road+rail+irrigation+fortress+hut |
-| None (-1 -> 15) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 1423 | WP | No terrain, pollution+fortress+hut |
-| None (-1 -> 15) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 1439 | Wf | No terrain, road+pollution+fortress+hut |
-| None (-1 -> 15) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 1455 | Wv | No terrain, rail+pollution+fortress+hut |
-| None (-1 -> 15) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 1471 | W/ | No terrain, road+rail+pollution+fortress+hut |
-| None (-1 -> 15) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 1487 | XP | No terrain, irrigation+pollution+fortress+hut |
-| None (-1 -> 15) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 1503 | Xf | No terrain, road+irrigation+pollution+fortress+hut |
-| None (-1 -> 15) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 1519 | Xv | No terrain, rail+irrigation+pollution+fortress+hut |
-| None (-1 -> 15) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 1535 | X/ | No terrain, road+rail+irrigation+pollution+fortress+hut |
-| None (-1 -> 15) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 1551 | YP | No terrain, mine+hut |
-| None (-1 -> 15) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 1567 | Yf | No terrain, road+mine+hut |
-| None (-1 -> 15) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 1583 | Yv | No terrain, rail+mine+hut |
-| None (-1 -> 15) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 1599 | Y/ | No terrain, road+rail+mine+hut |
-| None (-1 -> 15) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1615 | ZP | No terrain, irrigation+mine+hut |
-| None (-1 -> 15) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 1631 | Zf | No terrain, road+irrigation+mine+hut |
-| None (-1 -> 15) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 1647 | Zv | No terrain, rail+irrigation+mine+hut |
-| None (-1 -> 15) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1663 | Z/ | No terrain, road+rail+irrigation+mine+hut |
-| None (-1 -> 15) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 1679 | aP | No terrain, pollution+mine+hut |
-| None (-1 -> 15) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 1695 | af | No terrain, road+pollution+mine+hut |
-| None (-1 -> 15) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 1711 | av | No terrain, rail+pollution+mine+hut |
-| None (-1 -> 15) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 1727 | a/ | No terrain, road+rail+pollution+mine+hut |
-| None (-1 -> 15) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 1743 | bP | No terrain, irrigation+pollution+mine+hut |
-| None (-1 -> 15) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 1759 | bf | No terrain, road+irrigation+pollution+mine+hut |
-| None (-1 -> 15) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 1775 | bv | No terrain, rail+irrigation+pollution+mine+hut |
-| None (-1 -> 15) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 1791 | b/ | No terrain, road+rail+irrigation+pollution+mine+hut |
-| None (-1 -> 15) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 1807 | cP | No terrain, fortress+mine+hut |
-| None (-1 -> 15) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 1823 | cf | No terrain, road+fortress+mine+hut |
-| None (-1 -> 15) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1839 | cv | No terrain, rail+fortress+mine+hut |
-| None (-1 -> 15) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 1855 | c/ | No terrain, road+rail+fortress+mine+hut |
-| None (-1 -> 15) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 1871 | dP | No terrain, irrigation+fortress+mine+hut |
-| None (-1 -> 15) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 1887 | df | No terrain, road+irrigation+fortress+mine+hut |
-| None (-1 -> 15) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 1903 | dv | No terrain, rail+irrigation+fortress+mine+hut |
-| None (-1 -> 15) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1919 | d/ | No terrain, road+rail+irrigation+fortress+mine+hut |
-| None (-1 -> 15) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 1935 | eP | No terrain, pollution+fortress+mine+hut |
-| None (-1 -> 15) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1951 | ef | No terrain, road+pollution+fortress+mine+hut |
-| None (-1 -> 15) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 1967 | ev | No terrain, rail+pollution+fortress+mine+hut |
-| None (-1 -> 15) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1983 | e/ | No terrain, road+rail+pollution+fortress+mine+hut |
-| None (-1 -> 15) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1999 | fP | No terrain, irrigation+pollution+fortress+mine+hut |
-| None (-1 -> 15) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 2015 | ff | No terrain, road+irrigation+pollution+fortress+mine+hut |
-| None (-1 -> 15) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 2031 | fv | No terrain, rail+irrigation+pollution+fortress+mine+hut |
-| None (-1 -> 15) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 2047 | f/ | No terrain, road+rail+irrigation+pollution+fortress+mine+hut |
+| Terrain | Road | Rail | Irr | Pol | Fort | Mine | Hut | Spec | Decimal | Base64 | Description |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
+| Desert (0) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | AA | Desert, untouched |
+| Desert (0) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 16 | AQ | Desert, road |
+| Desert (0) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 32 | Ag | Desert, rail |
+| Desert (0) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 48 | Aw | Desert, road+rail |
+| Desert (0) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 64 | BA | Desert, irrigation |
+| Desert (0) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 80 | BQ | Desert, road+irrigation |
+| Desert (0) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 96 | Bg | Desert, rail+irrigation |
+| Desert (0) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 112 | Bw | Desert, road+rail+irrigation |
+| Desert (0) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 128 | CA | Desert, pollution |
+| Desert (0) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 144 | CQ | Desert, road+pollution |
+| Desert (0) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 160 | Cg | Desert, rail+pollution |
+| Desert (0) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 176 | Cw | Desert, road+rail+pollution |
+| Desert (0) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 192 | DA | Desert, irrigation+pollution |
+| Desert (0) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 208 | DQ | Desert, road+irrigation+pollution |
+| Desert (0) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 224 | Dg | Desert, rail+irrigation+pollution |
+| Desert (0) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 240 | Dw | Desert, road+rail+irrigation+pollution |
+| Desert (0) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 256 | EA | Desert, fortress |
+| Desert (0) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 272 | EQ | Desert, road+fortress |
+| Desert (0) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 288 | Eg | Desert, rail+fortress |
+| Desert (0) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 304 | Ew | Desert, road+rail+fortress |
+| Desert (0) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 320 | FA | Desert, irrigation+fortress |
+| Desert (0) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 336 | FQ | Desert, road+irrigation+fortress |
+| Desert (0) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 352 | Fg | Desert, rail+irrigation+fortress |
+| Desert (0) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 368 | Fw | Desert, road+rail+irrigation+fortress |
+| Desert (0) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 384 | GA | Desert, pollution+fortress |
+| Desert (0) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 400 | GQ | Desert, road+pollution+fortress |
+| Desert (0) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 416 | Gg | Desert, rail+pollution+fortress |
+| Desert (0) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 432 | Gw | Desert, road+rail+pollution+fortress |
+| Desert (0) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 448 | HA | Desert, irrigation+pollution+fortress |
+| Desert (0) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 464 | HQ | Desert, road+irrigation+pollution+fortress |
+| Desert (0) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 480 | Hg | Desert, rail+irrigation+pollution+fortress |
+| Desert (0) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 496 | Hw | Desert, road+rail+irrigation+pollution+fortress |
+| Desert (0) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 512 | IA | Desert, mine |
+| Desert (0) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 528 | IQ | Desert, road+mine |
+| Desert (0) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 544 | Ig | Desert, rail+mine |
+| Desert (0) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 560 | Iw | Desert, road+rail+mine |
+| Desert (0) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 576 | JA | Desert, irrigation+mine |
+| Desert (0) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 592 | JQ | Desert, road+irrigation+mine |
+| Desert (0) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 608 | Jg | Desert, rail+irrigation+mine |
+| Desert (0) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 624 | Jw | Desert, road+rail+irrigation+mine |
+| Desert (0) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 640 | KA | Desert, pollution+mine |
+| Desert (0) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 656 | KQ | Desert, road+pollution+mine |
+| Desert (0) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 672 | Kg | Desert, rail+pollution+mine |
+| Desert (0) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 688 | Kw | Desert, road+rail+pollution+mine |
+| Desert (0) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 704 | LA | Desert, irrigation+pollution+mine |
+| Desert (0) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 720 | LQ | Desert, road+irrigation+pollution+mine |
+| Desert (0) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 736 | Lg | Desert, rail+irrigation+pollution+mine |
+| Desert (0) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 752 | Lw | Desert, road+rail+irrigation+pollution+mine |
+| Desert (0) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 768 | MA | Desert, fortress+mine |
+| Desert (0) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 784 | MQ | Desert, road+fortress+mine |
+| Desert (0) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 800 | Mg | Desert, rail+fortress+mine |
+| Desert (0) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 816 | Mw | Desert, road+rail+fortress+mine |
+| Desert (0) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 832 | NA | Desert, irrigation+fortress+mine |
+| Desert (0) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 848 | NQ | Desert, road+irrigation+fortress+mine |
+| Desert (0) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 864 | Ng | Desert, rail+irrigation+fortress+mine |
+| Desert (0) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 880 | Nw | Desert, road+rail+irrigation+fortress+mine |
+| Desert (0) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 896 | OA | Desert, pollution+fortress+mine |
+| Desert (0) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 912 | OQ | Desert, road+pollution+fortress+mine |
+| Desert (0) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 928 | Og | Desert, rail+pollution+fortress+mine |
+| Desert (0) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 944 | Ow | Desert, road+rail+pollution+fortress+mine |
+| Desert (0) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 960 | PA | Desert, irrigation+pollution+fortress+mine |
+| Desert (0) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 976 | PQ | Desert, road+irrigation+pollution+fortress+mine |
+| Desert (0) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 992 | Pg | Desert, rail+irrigation+pollution+fortress+mine |
+| Desert (0) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1008 | Pw | Desert, road+rail+irrigation+pollution+fortress+mine |
+| Desert (0) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1024 | QA | Desert, hut |
+| Desert (0) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1040 | QQ | Desert, road+hut |
+| Desert (0) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1056 | Qg | Desert, rail+hut |
+| Desert (0) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1072 | Qw | Desert, road+rail+hut |
+| Desert (0) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1088 | RA | Desert, irrigation+hut |
+| Desert (0) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1104 | RQ | Desert, road+irrigation+hut |
+| Desert (0) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1120 | Rg | Desert, rail+irrigation+hut |
+| Desert (0) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1136 | Rw | Desert, road+rail+irrigation+hut |
+| Desert (0) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1152 | SA | Desert, pollution+hut |
+| Desert (0) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1168 | SQ | Desert, road+pollution+hut |
+| Desert (0) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1184 | Sg | Desert, rail+pollution+hut |
+| Desert (0) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1200 | Sw | Desert, road+rail+pollution+hut |
+| Desert (0) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1216 | TA | Desert, irrigation+pollution+hut |
+| Desert (0) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1232 | TQ | Desert, road+irrigation+pollution+hut |
+| Desert (0) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1248 | Tg | Desert, rail+irrigation+pollution+hut |
+| Desert (0) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1264 | Tw | Desert, road+rail+irrigation+pollution+hut |
+| Desert (0) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1280 | UA | Desert, fortress+hut |
+| Desert (0) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1296 | UQ | Desert, road+fortress+hut |
+| Desert (0) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1312 | Ug | Desert, rail+fortress+hut |
+| Desert (0) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1328 | Uw | Desert, road+rail+fortress+hut |
+| Desert (0) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1344 | VA | Desert, irrigation+fortress+hut |
+| Desert (0) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1360 | VQ | Desert, road+irrigation+fortress+hut |
+| Desert (0) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1376 | Vg | Desert, rail+irrigation+fortress+hut |
+| Desert (0) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1392 | Vw | Desert, road+rail+irrigation+fortress+hut |
+| Desert (0) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1408 | WA | Desert, pollution+fortress+hut |
+| Desert (0) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1424 | WQ | Desert, road+pollution+fortress+hut |
+| Desert (0) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1440 | Wg | Desert, rail+pollution+fortress+hut |
+| Desert (0) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1456 | Ww | Desert, road+rail+pollution+fortress+hut |
+| Desert (0) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1472 | XA | Desert, irrigation+pollution+fortress+hut |
+| Desert (0) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1488 | XQ | Desert, road+irrigation+pollution+fortress+hut |
+| Desert (0) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1504 | Xg | Desert, rail+irrigation+pollution+fortress+hut |
+| Desert (0) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1520 | Xw | Desert, road+rail+irrigation+pollution+fortress+hut |
+| Desert (0) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1536 | YA | Desert, mine+hut |
+| Desert (0) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1552 | YQ | Desert, road+mine+hut |
+| Desert (0) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1568 | Yg | Desert, rail+mine+hut |
+| Desert (0) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1584 | Yw | Desert, road+rail+mine+hut |
+| Desert (0) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1600 | ZA | Desert, irrigation+mine+hut |
+| Desert (0) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1616 | ZQ | Desert, road+irrigation+mine+hut |
+| Desert (0) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1632 | Zg | Desert, rail+irrigation+mine+hut |
+| Desert (0) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1648 | Zw | Desert, road+rail+irrigation+mine+hut |
+| Desert (0) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1664 | aA | Desert, pollution+mine+hut |
+| Desert (0) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1680 | aQ | Desert, road+pollution+mine+hut |
+| Desert (0) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1696 | ag | Desert, rail+pollution+mine+hut |
+| Desert (0) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1712 | aw | Desert, road+rail+pollution+mine+hut |
+| Desert (0) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1728 | bA | Desert, irrigation+pollution+mine+hut |
+| Desert (0) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1744 | bQ | Desert, road+irrigation+pollution+mine+hut |
+| Desert (0) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1760 | bg | Desert, rail+irrigation+pollution+mine+hut |
+| Desert (0) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1776 | bw | Desert, road+rail+irrigation+pollution+mine+hut |
+| Desert (0) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1792 | cA | Desert, fortress+mine+hut |
+| Desert (0) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1808 | cQ | Desert, road+fortress+mine+hut |
+| Desert (0) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1824 | cg | Desert, rail+fortress+mine+hut |
+| Desert (0) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1840 | cw | Desert, road+rail+fortress+mine+hut |
+| Desert (0) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1856 | dA | Desert, irrigation+fortress+mine+hut |
+| Desert (0) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1872 | dQ | Desert, road+irrigation+fortress+mine+hut |
+| Desert (0) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1888 | dg | Desert, rail+irrigation+fortress+mine+hut |
+| Desert (0) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1904 | dw | Desert, road+rail+irrigation+fortress+mine+hut |
+| Desert (0) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1920 | eA | Desert, pollution+fortress+mine+hut |
+| Desert (0) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1936 | eQ | Desert, road+pollution+fortress+mine+hut |
+| Desert (0) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1952 | eg | Desert, rail+pollution+fortress+mine+hut |
+| Desert (0) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1968 | ew | Desert, road+rail+pollution+fortress+mine+hut |
+| Desert (0) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1984 | fA | Desert, irrigation+pollution+fortress+mine+hut |
+| Desert (0) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 2000 | fQ | Desert, road+irrigation+pollution+fortress+mine+hut |
+| Desert (0) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2016 | fg | Desert, rail+irrigation+pollution+fortress+mine+hut |
+| Desert (0) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2032 | fw | Desert, road+rail+irrigation+pollution+fortress+mine+hut |
+| Desert (0) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 2048 | gA | Desert, oasis |
+| Desert (0) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 2064 | gQ | Desert, oasis+road |
+| Desert (0) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 2080 | gg | Desert, oasis+rail |
+| Desert (0) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 2096 | gw | Desert, oasis+road+rail |
+| Desert (0) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 2112 | hA | Desert, oasis+irrigation |
+| Desert (0) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 2128 | hQ | Desert, oasis+road+irrigation |
+| Desert (0) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 2144 | hg | Desert, oasis+rail+irrigation |
+| Desert (0) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 2160 | hw | Desert, oasis+road+rail+irrigation |
+| Desert (0) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 2176 | iA | Desert, oasis+pollution |
+| Desert (0) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 2192 | iQ | Desert, oasis+road+pollution |
+| Desert (0) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 2208 | ig | Desert, oasis+rail+pollution |
+| Desert (0) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 2224 | iw | Desert, oasis+road+rail+pollution |
+| Desert (0) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 2240 | jA | Desert, oasis+irrigation+pollution |
+| Desert (0) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 2256 | jQ | Desert, oasis+road+irrigation+pollution |
+| Desert (0) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 2272 | jg | Desert, oasis+rail+irrigation+pollution |
+| Desert (0) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 2288 | jw | Desert, oasis+road+rail+irrigation+pollution |
+| Desert (0) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 2304 | kA | Desert, oasis+fortress |
+| Desert (0) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 2320 | kQ | Desert, oasis+road+fortress |
+| Desert (0) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 2336 | kg | Desert, oasis+rail+fortress |
+| Desert (0) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 2352 | kw | Desert, oasis+road+rail+fortress |
+| Desert (0) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 2368 | lA | Desert, oasis+irrigation+fortress |
+| Desert (0) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 2384 | lQ | Desert, oasis+road+irrigation+fortress |
+| Desert (0) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 2400 | lg | Desert, oasis+rail+irrigation+fortress |
+| Desert (0) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 2416 | lw | Desert, oasis+road+rail+irrigation+fortress |
+| Desert (0) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 2432 | mA | Desert, oasis+pollution+fortress |
+| Desert (0) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 2448 | mQ | Desert, oasis+road+pollution+fortress |
+| Desert (0) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 2464 | mg | Desert, oasis+rail+pollution+fortress |
+| Desert (0) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 2480 | mw | Desert, oasis+road+rail+pollution+fortress |
+| Desert (0) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 2496 | nA | Desert, oasis+irrigation+pollution+fortress |
+| Desert (0) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 2512 | nQ | Desert, oasis+road+irrigation+pollution+fortress |
+| Desert (0) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 2528 | ng | Desert, oasis+rail+irrigation+pollution+fortress |
+| Desert (0) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 2544 | nw | Desert, oasis+road+rail+irrigation+pollution+fortress |
+| Desert (0) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 2560 | oA | Desert, oasis+mine |
+| Desert (0) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 2576 | oQ | Desert, oasis+road+mine |
+| Desert (0) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 2592 | og | Desert, oasis+rail+mine |
+| Desert (0) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 2608 | ow | Desert, oasis+road+rail+mine |
+| Desert (0) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 2624 | pA | Desert, oasis+irrigation+mine |
+| Desert (0) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 2640 | pQ | Desert, oasis+road+irrigation+mine |
+| Desert (0) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 2656 | pg | Desert, oasis+rail+irrigation+mine |
+| Desert (0) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 2672 | pw | Desert, oasis+road+rail+irrigation+mine |
+| Desert (0) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 2688 | qA | Desert, oasis+pollution+mine |
+| Desert (0) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 2704 | qQ | Desert, oasis+road+pollution+mine |
+| Desert (0) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 2720 | qg | Desert, oasis+rail+pollution+mine |
+| Desert (0) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 2736 | qw | Desert, oasis+road+rail+pollution+mine |
+| Desert (0) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 2752 | rA | Desert, oasis+irrigation+pollution+mine |
+| Desert (0) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 2768 | rQ | Desert, oasis+road+irrigation+pollution+mine |
+| Desert (0) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 2784 | rg | Desert, oasis+rail+irrigation+pollution+mine |
+| Desert (0) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 2800 | rw | Desert, oasis+road+rail+irrigation+pollution+mine |
+| Desert (0) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 2816 | sA | Desert, oasis+fortress+mine |
+| Desert (0) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 2832 | sQ | Desert, oasis+road+fortress+mine |
+| Desert (0) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 2848 | sg | Desert, oasis+rail+fortress+mine |
+| Desert (0) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 2864 | sw | Desert, oasis+road+rail+fortress+mine |
+| Desert (0) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 2880 | tA | Desert, oasis+irrigation+fortress+mine |
+| Desert (0) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 2896 | tQ | Desert, oasis+road+irrigation+fortress+mine |
+| Desert (0) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 2912 | tg | Desert, oasis+rail+irrigation+fortress+mine |
+| Desert (0) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 2928 | tw | Desert, oasis+road+rail+irrigation+fortress+mine |
+| Desert (0) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 2944 | uA | Desert, oasis+pollution+fortress+mine |
+| Desert (0) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 2960 | uQ | Desert, oasis+road+pollution+fortress+mine |
+| Desert (0) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 2976 | ug | Desert, oasis+rail+pollution+fortress+mine |
+| Desert (0) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 2992 | uw | Desert, oasis+road+rail+pollution+fortress+mine |
+| Desert (0) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 3008 | vA | Desert, oasis+irrigation+pollution+fortress+mine |
+| Desert (0) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 3024 | vQ | Desert, oasis+road+irrigation+pollution+fortress+mine |
+| Desert (0) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 3040 | vg | Desert, oasis+rail+irrigation+pollution+fortress+mine |
+| Desert (0) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 3056 | vw | Desert, oasis+road+rail+irrigation+pollution+fortress+mine |
+| Desert (0) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 3072 | wA | Desert, oasis+hut |
+| Desert (0) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 3088 | wQ | Desert, oasis+road+hut |
+| Desert (0) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 3104 | wg | Desert, oasis+rail+hut |
+| Desert (0) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 3120 | ww | Desert, oasis+road+rail+hut |
+| Desert (0) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 3136 | xA | Desert, oasis+irrigation+hut |
+| Desert (0) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 3152 | xQ | Desert, oasis+road+irrigation+hut |
+| Desert (0) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 3168 | xg | Desert, oasis+rail+irrigation+hut |
+| Desert (0) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 3184 | xw | Desert, oasis+road+rail+irrigation+hut |
+| Desert (0) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 3200 | yA | Desert, oasis+pollution+hut |
+| Desert (0) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 3216 | yQ | Desert, oasis+road+pollution+hut |
+| Desert (0) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 3232 | yg | Desert, oasis+rail+pollution+hut |
+| Desert (0) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 3248 | yw | Desert, oasis+road+rail+pollution+hut |
+| Desert (0) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 3264 | zA | Desert, oasis+irrigation+pollution+hut |
+| Desert (0) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 3280 | zQ | Desert, oasis+road+irrigation+pollution+hut |
+| Desert (0) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 3296 | zg | Desert, oasis+rail+irrigation+pollution+hut |
+| Desert (0) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 3312 | zw | Desert, oasis+road+rail+irrigation+pollution+hut |
+| Desert (0) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 3328 | 0A | Desert, oasis+fortress+hut |
+| Desert (0) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 3344 | 0Q | Desert, oasis+road+fortress+hut |
+| Desert (0) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 3360 | 0g | Desert, oasis+rail+fortress+hut |
+| Desert (0) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 3376 | 0w | Desert, oasis+road+rail+fortress+hut |
+| Desert (0) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 3392 | 1A | Desert, oasis+irrigation+fortress+hut |
+| Desert (0) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 3408 | 1Q | Desert, oasis+road+irrigation+fortress+hut |
+| Desert (0) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 3424 | 1g | Desert, oasis+rail+irrigation+fortress+hut |
+| Desert (0) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 3440 | 1w | Desert, oasis+road+rail+irrigation+fortress+hut |
+| Desert (0) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 3456 | 2A | Desert, oasis+pollution+fortress+hut |
+| Desert (0) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 3472 | 2Q | Desert, oasis+road+pollution+fortress+hut |
+| Desert (0) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 3488 | 2g | Desert, oasis+rail+pollution+fortress+hut |
+| Desert (0) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 3504 | 2w | Desert, oasis+road+rail+pollution+fortress+hut |
+| Desert (0) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 3520 | 3A | Desert, oasis+irrigation+pollution+fortress+hut |
+| Desert (0) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 3536 | 3Q | Desert, oasis+road+irrigation+pollution+fortress+hut |
+| Desert (0) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 3552 | 3g | Desert, oasis+rail+irrigation+pollution+fortress+hut |
+| Desert (0) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 3568 | 3w | Desert, oasis+road+rail+irrigation+pollution+fortress+hut |
+| Desert (0) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 3584 | 4A | Desert, oasis+mine+hut |
+| Desert (0) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 3600 | 4Q | Desert, oasis+road+mine+hut |
+| Desert (0) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 3616 | 4g | Desert, oasis+rail+mine+hut |
+| Desert (0) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 3632 | 4w | Desert, oasis+road+rail+mine+hut |
+| Desert (0) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 3648 | 5A | Desert, oasis+irrigation+mine+hut |
+| Desert (0) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 3664 | 5Q | Desert, oasis+road+irrigation+mine+hut |
+| Desert (0) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 3680 | 5g | Desert, oasis+rail+irrigation+mine+hut |
+| Desert (0) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 3696 | 5w | Desert, oasis+road+rail+irrigation+mine+hut |
+| Desert (0) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 3712 | 6A | Desert, oasis+pollution+mine+hut |
+| Desert (0) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 3728 | 6Q | Desert, oasis+road+pollution+mine+hut |
+| Desert (0) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 3744 | 6g | Desert, oasis+rail+pollution+mine+hut |
+| Desert (0) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 3760 | 6w | Desert, oasis+road+rail+pollution+mine+hut |
+| Desert (0) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 3776 | 7A | Desert, oasis+irrigation+pollution+mine+hut |
+| Desert (0) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 3792 | 7Q | Desert, oasis+road+irrigation+pollution+mine+hut |
+| Desert (0) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 3808 | 7g | Desert, oasis+rail+irrigation+pollution+mine+hut |
+| Desert (0) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 3824 | 7w | Desert, oasis+road+rail+irrigation+pollution+mine+hut |
+| Desert (0) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 3840 | 8A | Desert, oasis+fortress+mine+hut |
+| Desert (0) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 3856 | 8Q | Desert, oasis+road+fortress+mine+hut |
+| Desert (0) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 3872 | 8g | Desert, oasis+rail+fortress+mine+hut |
+| Desert (0) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 3888 | 8w | Desert, oasis+road+rail+fortress+mine+hut |
+| Desert (0) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 3904 | 9A | Desert, oasis+irrigation+fortress+mine+hut |
+| Desert (0) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 3920 | 9Q | Desert, oasis+road+irrigation+fortress+mine+hut |
+| Desert (0) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 3936 | 9g | Desert, oasis+rail+irrigation+fortress+mine+hut |
+| Desert (0) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 3952 | 9w | Desert, oasis+road+rail+irrigation+fortress+mine+hut |
+| Desert (0) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 3968 | +A | Desert, oasis+pollution+fortress+mine+hut |
+| Desert (0) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 3984 | +Q | Desert, oasis+road+pollution+fortress+mine+hut |
+| Desert (0) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 4000 | +g | Desert, oasis+rail+pollution+fortress+mine+hut |
+| Desert (0) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 4016 | +w | Desert, oasis+road+rail+pollution+fortress+mine+hut |
+| Desert (0) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 4032 | /A | Desert, oasis+irrigation+pollution+fortress+mine+hut |
+| Desert (0) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 4048 | /Q | Desert, oasis+road+irrigation+pollution+fortress+mine+hut |
+| Desert (0) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 4064 | /g | Desert, oasis+rail+irrigation+pollution+fortress+mine+hut |
+| Desert (0) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 4080 | /w | Desert, oasis+road+rail+irrigation+pollution+fortress+mine+hut |
+| Plains (1) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | AB | Plains, untouched |
+| Plains (1) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 17 | AR | Plains, road |
+| Plains (1) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 33 | Ah | Plains, rail |
+| Plains (1) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 49 | Ax | Plains, road+rail |
+| Plains (1) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 65 | BB | Plains, irrigation |
+| Plains (1) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 81 | BR | Plains, road+irrigation |
+| Plains (1) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 97 | Bh | Plains, rail+irrigation |
+| Plains (1) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 113 | Bx | Plains, road+rail+irrigation |
+| Plains (1) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 129 | CB | Plains, pollution |
+| Plains (1) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 145 | CR | Plains, road+pollution |
+| Plains (1) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 161 | Ch | Plains, rail+pollution |
+| Plains (1) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 177 | Cx | Plains, road+rail+pollution |
+| Plains (1) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 193 | DB | Plains, irrigation+pollution |
+| Plains (1) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 209 | DR | Plains, road+irrigation+pollution |
+| Plains (1) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 225 | Dh | Plains, rail+irrigation+pollution |
+| Plains (1) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 241 | Dx | Plains, road+rail+irrigation+pollution |
+| Plains (1) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 257 | EB | Plains, fortress |
+| Plains (1) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 273 | ER | Plains, road+fortress |
+| Plains (1) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 289 | Eh | Plains, rail+fortress |
+| Plains (1) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 305 | Ex | Plains, road+rail+fortress |
+| Plains (1) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 321 | FB | Plains, irrigation+fortress |
+| Plains (1) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 337 | FR | Plains, road+irrigation+fortress |
+| Plains (1) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 353 | Fh | Plains, rail+irrigation+fortress |
+| Plains (1) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 369 | Fx | Plains, road+rail+irrigation+fortress |
+| Plains (1) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 385 | GB | Plains, pollution+fortress |
+| Plains (1) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 401 | GR | Plains, road+pollution+fortress |
+| Plains (1) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 417 | Gh | Plains, rail+pollution+fortress |
+| Plains (1) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 433 | Gx | Plains, road+rail+pollution+fortress |
+| Plains (1) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 449 | HB | Plains, irrigation+pollution+fortress |
+| Plains (1) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 465 | HR | Plains, road+irrigation+pollution+fortress |
+| Plains (1) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 481 | Hh | Plains, rail+irrigation+pollution+fortress |
+| Plains (1) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 497 | Hx | Plains, road+rail+irrigation+pollution+fortress |
+| Plains (1) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 513 | IB | Plains, mine |
+| Plains (1) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 529 | IR | Plains, road+mine |
+| Plains (1) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 545 | Ih | Plains, rail+mine |
+| Plains (1) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 561 | Ix | Plains, road+rail+mine |
+| Plains (1) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 577 | JB | Plains, irrigation+mine |
+| Plains (1) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 593 | JR | Plains, road+irrigation+mine |
+| Plains (1) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 609 | Jh | Plains, rail+irrigation+mine |
+| Plains (1) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 625 | Jx | Plains, road+rail+irrigation+mine |
+| Plains (1) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 641 | KB | Plains, pollution+mine |
+| Plains (1) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 657 | KR | Plains, road+pollution+mine |
+| Plains (1) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 673 | Kh | Plains, rail+pollution+mine |
+| Plains (1) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 689 | Kx | Plains, road+rail+pollution+mine |
+| Plains (1) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 705 | LB | Plains, irrigation+pollution+mine |
+| Plains (1) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 721 | LR | Plains, road+irrigation+pollution+mine |
+| Plains (1) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 737 | Lh | Plains, rail+irrigation+pollution+mine |
+| Plains (1) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 753 | Lx | Plains, road+rail+irrigation+pollution+mine |
+| Plains (1) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 769 | MB | Plains, fortress+mine |
+| Plains (1) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 785 | MR | Plains, road+fortress+mine |
+| Plains (1) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 801 | Mh | Plains, rail+fortress+mine |
+| Plains (1) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 817 | Mx | Plains, road+rail+fortress+mine |
+| Plains (1) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 833 | NB | Plains, irrigation+fortress+mine |
+| Plains (1) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 849 | NR | Plains, road+irrigation+fortress+mine |
+| Plains (1) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 865 | Nh | Plains, rail+irrigation+fortress+mine |
+| Plains (1) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 881 | Nx | Plains, road+rail+irrigation+fortress+mine |
+| Plains (1) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 897 | OB | Plains, pollution+fortress+mine |
+| Plains (1) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 913 | OR | Plains, road+pollution+fortress+mine |
+| Plains (1) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 929 | Oh | Plains, rail+pollution+fortress+mine |
+| Plains (1) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 945 | Ox | Plains, road+rail+pollution+fortress+mine |
+| Plains (1) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 961 | PB | Plains, irrigation+pollution+fortress+mine |
+| Plains (1) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 977 | PR | Plains, road+irrigation+pollution+fortress+mine |
+| Plains (1) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 993 | Ph | Plains, rail+irrigation+pollution+fortress+mine |
+| Plains (1) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1009 | Px | Plains, road+rail+irrigation+pollution+fortress+mine |
+| Plains (1) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1025 | QB | Plains, hut |
+| Plains (1) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1041 | QR | Plains, road+hut |
+| Plains (1) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1057 | Qh | Plains, rail+hut |
+| Plains (1) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1073 | Qx | Plains, road+rail+hut |
+| Plains (1) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1089 | RB | Plains, irrigation+hut |
+| Plains (1) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1105 | RR | Plains, road+irrigation+hut |
+| Plains (1) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1121 | Rh | Plains, rail+irrigation+hut |
+| Plains (1) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1137 | Rx | Plains, road+rail+irrigation+hut |
+| Plains (1) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1153 | SB | Plains, pollution+hut |
+| Plains (1) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1169 | SR | Plains, road+pollution+hut |
+| Plains (1) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1185 | Sh | Plains, rail+pollution+hut |
+| Plains (1) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1201 | Sx | Plains, road+rail+pollution+hut |
+| Plains (1) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1217 | TB | Plains, irrigation+pollution+hut |
+| Plains (1) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1233 | TR | Plains, road+irrigation+pollution+hut |
+| Plains (1) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1249 | Th | Plains, rail+irrigation+pollution+hut |
+| Plains (1) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1265 | Tx | Plains, road+rail+irrigation+pollution+hut |
+| Plains (1) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1281 | UB | Plains, fortress+hut |
+| Plains (1) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1297 | UR | Plains, road+fortress+hut |
+| Plains (1) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1313 | Uh | Plains, rail+fortress+hut |
+| Plains (1) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1329 | Ux | Plains, road+rail+fortress+hut |
+| Plains (1) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1345 | VB | Plains, irrigation+fortress+hut |
+| Plains (1) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1361 | VR | Plains, road+irrigation+fortress+hut |
+| Plains (1) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1377 | Vh | Plains, rail+irrigation+fortress+hut |
+| Plains (1) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1393 | Vx | Plains, road+rail+irrigation+fortress+hut |
+| Plains (1) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1409 | WB | Plains, pollution+fortress+hut |
+| Plains (1) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1425 | WR | Plains, road+pollution+fortress+hut |
+| Plains (1) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1441 | Wh | Plains, rail+pollution+fortress+hut |
+| Plains (1) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1457 | Wx | Plains, road+rail+pollution+fortress+hut |
+| Plains (1) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1473 | XB | Plains, irrigation+pollution+fortress+hut |
+| Plains (1) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1489 | XR | Plains, road+irrigation+pollution+fortress+hut |
+| Plains (1) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1505 | Xh | Plains, rail+irrigation+pollution+fortress+hut |
+| Plains (1) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1521 | Xx | Plains, road+rail+irrigation+pollution+fortress+hut |
+| Plains (1) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1537 | YB | Plains, mine+hut |
+| Plains (1) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1553 | YR | Plains, road+mine+hut |
+| Plains (1) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1569 | Yh | Plains, rail+mine+hut |
+| Plains (1) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1585 | Yx | Plains, road+rail+mine+hut |
+| Plains (1) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1601 | ZB | Plains, irrigation+mine+hut |
+| Plains (1) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1617 | ZR | Plains, road+irrigation+mine+hut |
+| Plains (1) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1633 | Zh | Plains, rail+irrigation+mine+hut |
+| Plains (1) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1649 | Zx | Plains, road+rail+irrigation+mine+hut |
+| Plains (1) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1665 | aB | Plains, pollution+mine+hut |
+| Plains (1) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1681 | aR | Plains, road+pollution+mine+hut |
+| Plains (1) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1697 | ah | Plains, rail+pollution+mine+hut |
+| Plains (1) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1713 | ax | Plains, road+rail+pollution+mine+hut |
+| Plains (1) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1729 | bB | Plains, irrigation+pollution+mine+hut |
+| Plains (1) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1745 | bR | Plains, road+irrigation+pollution+mine+hut |
+| Plains (1) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1761 | bh | Plains, rail+irrigation+pollution+mine+hut |
+| Plains (1) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1777 | bx | Plains, road+rail+irrigation+pollution+mine+hut |
+| Plains (1) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1793 | cB | Plains, fortress+mine+hut |
+| Plains (1) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1809 | cR | Plains, road+fortress+mine+hut |
+| Plains (1) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1825 | ch | Plains, rail+fortress+mine+hut |
+| Plains (1) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1841 | cx | Plains, road+rail+fortress+mine+hut |
+| Plains (1) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1857 | dB | Plains, irrigation+fortress+mine+hut |
+| Plains (1) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1873 | dR | Plains, road+irrigation+fortress+mine+hut |
+| Plains (1) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1889 | dh | Plains, rail+irrigation+fortress+mine+hut |
+| Plains (1) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1905 | dx | Plains, road+rail+irrigation+fortress+mine+hut |
+| Plains (1) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1921 | eB | Plains, pollution+fortress+mine+hut |
+| Plains (1) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1937 | eR | Plains, road+pollution+fortress+mine+hut |
+| Plains (1) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1953 | eh | Plains, rail+pollution+fortress+mine+hut |
+| Plains (1) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1969 | ex | Plains, road+rail+pollution+fortress+mine+hut |
+| Plains (1) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1985 | fB | Plains, irrigation+pollution+fortress+mine+hut |
+| Plains (1) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 2001 | fR | Plains, road+irrigation+pollution+fortress+mine+hut |
+| Plains (1) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2017 | fh | Plains, rail+irrigation+pollution+fortress+mine+hut |
+| Plains (1) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2033 | fx | Plains, road+rail+irrigation+pollution+fortress+mine+hut |
+| Grassland1 (2) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 2 | AC | Grassland1, untouched |
+| Grassland1 (2) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 18 | AS | Grassland1, road |
+| Grassland1 (2) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 34 | Ai | Grassland1, rail |
+| Grassland1 (2) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 50 | Ay | Grassland1, road+rail |
+| Grassland1 (2) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 66 | BC | Grassland1, irrigation |
+| Grassland1 (2) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 82 | BS | Grassland1, road+irrigation |
+| Grassland1 (2) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 98 | Bi | Grassland1, rail+irrigation |
+| Grassland1 (2) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 114 | By | Grassland1, road+rail+irrigation |
+| Grassland1 (2) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 130 | CC | Grassland1, pollution |
+| Grassland1 (2) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 146 | CS | Grassland1, road+pollution |
+| Grassland1 (2) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 162 | Ci | Grassland1, rail+pollution |
+| Grassland1 (2) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 178 | Cy | Grassland1, road+rail+pollution |
+| Grassland1 (2) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 194 | DC | Grassland1, irrigation+pollution |
+| Grassland1 (2) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 210 | DS | Grassland1, road+irrigation+pollution |
+| Grassland1 (2) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 226 | Di | Grassland1, rail+irrigation+pollution |
+| Grassland1 (2) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 242 | Dy | Grassland1, road+rail+irrigation+pollution |
+| Grassland1 (2) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 258 | EC | Grassland1, fortress |
+| Grassland1 (2) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 274 | ES | Grassland1, road+fortress |
+| Grassland1 (2) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 290 | Ei | Grassland1, rail+fortress |
+| Grassland1 (2) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 306 | Ey | Grassland1, road+rail+fortress |
+| Grassland1 (2) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 322 | FC | Grassland1, irrigation+fortress |
+| Grassland1 (2) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 338 | FS | Grassland1, road+irrigation+fortress |
+| Grassland1 (2) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 354 | Fi | Grassland1, rail+irrigation+fortress |
+| Grassland1 (2) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 370 | Fy | Grassland1, road+rail+irrigation+fortress |
+| Grassland1 (2) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 386 | GC | Grassland1, pollution+fortress |
+| Grassland1 (2) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 402 | GS | Grassland1, road+pollution+fortress |
+| Grassland1 (2) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 418 | Gi | Grassland1, rail+pollution+fortress |
+| Grassland1 (2) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 434 | Gy | Grassland1, road+rail+pollution+fortress |
+| Grassland1 (2) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 450 | HC | Grassland1, irrigation+pollution+fortress |
+| Grassland1 (2) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 466 | HS | Grassland1, road+irrigation+pollution+fortress |
+| Grassland1 (2) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 482 | Hi | Grassland1, rail+irrigation+pollution+fortress |
+| Grassland1 (2) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 498 | Hy | Grassland1, road+rail+irrigation+pollution+fortress |
+| Grassland1 (2) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 514 | IC | Grassland1, mine |
+| Grassland1 (2) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 530 | IS | Grassland1, road+mine |
+| Grassland1 (2) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 546 | Ii | Grassland1, rail+mine |
+| Grassland1 (2) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 562 | Iy | Grassland1, road+rail+mine |
+| Grassland1 (2) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 578 | JC | Grassland1, irrigation+mine |
+| Grassland1 (2) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 594 | JS | Grassland1, road+irrigation+mine |
+| Grassland1 (2) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 610 | Ji | Grassland1, rail+irrigation+mine |
+| Grassland1 (2) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 626 | Jy | Grassland1, road+rail+irrigation+mine |
+| Grassland1 (2) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 642 | KC | Grassland1, pollution+mine |
+| Grassland1 (2) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 658 | KS | Grassland1, road+pollution+mine |
+| Grassland1 (2) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 674 | Ki | Grassland1, rail+pollution+mine |
+| Grassland1 (2) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 690 | Ky | Grassland1, road+rail+pollution+mine |
+| Grassland1 (2) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 706 | LC | Grassland1, irrigation+pollution+mine |
+| Grassland1 (2) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 722 | LS | Grassland1, road+irrigation+pollution+mine |
+| Grassland1 (2) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 738 | Li | Grassland1, rail+irrigation+pollution+mine |
+| Grassland1 (2) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 754 | Ly | Grassland1, road+rail+irrigation+pollution+mine |
+| Grassland1 (2) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 770 | MC | Grassland1, fortress+mine |
+| Grassland1 (2) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 786 | MS | Grassland1, road+fortress+mine |
+| Grassland1 (2) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 802 | Mi | Grassland1, rail+fortress+mine |
+| Grassland1 (2) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 818 | My | Grassland1, road+rail+fortress+mine |
+| Grassland1 (2) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 834 | NC | Grassland1, irrigation+fortress+mine |
+| Grassland1 (2) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 850 | NS | Grassland1, road+irrigation+fortress+mine |
+| Grassland1 (2) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 866 | Ni | Grassland1, rail+irrigation+fortress+mine |
+| Grassland1 (2) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 882 | Ny | Grassland1, road+rail+irrigation+fortress+mine |
+| Grassland1 (2) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 898 | OC | Grassland1, pollution+fortress+mine |
+| Grassland1 (2) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 914 | OS | Grassland1, road+pollution+fortress+mine |
+| Grassland1 (2) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 930 | Oi | Grassland1, rail+pollution+fortress+mine |
+| Grassland1 (2) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 946 | Oy | Grassland1, road+rail+pollution+fortress+mine |
+| Grassland1 (2) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 962 | PC | Grassland1, irrigation+pollution+fortress+mine |
+| Grassland1 (2) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 978 | PS | Grassland1, road+irrigation+pollution+fortress+mine |
+| Grassland1 (2) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 994 | Pi | Grassland1, rail+irrigation+pollution+fortress+mine |
+| Grassland1 (2) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1010 | Py | Grassland1, road+rail+irrigation+pollution+fortress+mine |
+| Grassland1 (2) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1026 | QC | Grassland1, hut |
+| Grassland1 (2) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1042 | QS | Grassland1, road+hut |
+| Grassland1 (2) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1058 | Qi | Grassland1, rail+hut |
+| Grassland1 (2) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1074 | Qy | Grassland1, road+rail+hut |
+| Grassland1 (2) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1090 | RC | Grassland1, irrigation+hut |
+| Grassland1 (2) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1106 | RS | Grassland1, road+irrigation+hut |
+| Grassland1 (2) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1122 | Ri | Grassland1, rail+irrigation+hut |
+| Grassland1 (2) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1138 | Ry | Grassland1, road+rail+irrigation+hut |
+| Grassland1 (2) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1154 | SC | Grassland1, pollution+hut |
+| Grassland1 (2) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1170 | SS | Grassland1, road+pollution+hut |
+| Grassland1 (2) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1186 | Si | Grassland1, rail+pollution+hut |
+| Grassland1 (2) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1202 | Sy | Grassland1, road+rail+pollution+hut |
+| Grassland1 (2) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1218 | TC | Grassland1, irrigation+pollution+hut |
+| Grassland1 (2) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1234 | TS | Grassland1, road+irrigation+pollution+hut |
+| Grassland1 (2) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1250 | Ti | Grassland1, rail+irrigation+pollution+hut |
+| Grassland1 (2) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1266 | Ty | Grassland1, road+rail+irrigation+pollution+hut |
+| Grassland1 (2) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1282 | UC | Grassland1, fortress+hut |
+| Grassland1 (2) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1298 | US | Grassland1, road+fortress+hut |
+| Grassland1 (2) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1314 | Ui | Grassland1, rail+fortress+hut |
+| Grassland1 (2) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1330 | Uy | Grassland1, road+rail+fortress+hut |
+| Grassland1 (2) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1346 | VC | Grassland1, irrigation+fortress+hut |
+| Grassland1 (2) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1362 | VS | Grassland1, road+irrigation+fortress+hut |
+| Grassland1 (2) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1378 | Vi | Grassland1, rail+irrigation+fortress+hut |
+| Grassland1 (2) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1394 | Vy | Grassland1, road+rail+irrigation+fortress+hut |
+| Grassland1 (2) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1410 | WC | Grassland1, pollution+fortress+hut |
+| Grassland1 (2) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1426 | WS | Grassland1, road+pollution+fortress+hut |
+| Grassland1 (2) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1442 | Wi | Grassland1, rail+pollution+fortress+hut |
+| Grassland1 (2) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1458 | Wy | Grassland1, road+rail+pollution+fortress+hut |
+| Grassland1 (2) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1474 | XC | Grassland1, irrigation+pollution+fortress+hut |
+| Grassland1 (2) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1490 | XS | Grassland1, road+irrigation+pollution+fortress+hut |
+| Grassland1 (2) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1506 | Xi | Grassland1, rail+irrigation+pollution+fortress+hut |
+| Grassland1 (2) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1522 | Xy | Grassland1, road+rail+irrigation+pollution+fortress+hut |
+| Grassland1 (2) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1538 | YC | Grassland1, mine+hut |
+| Grassland1 (2) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1554 | YS | Grassland1, road+mine+hut |
+| Grassland1 (2) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1570 | Yi | Grassland1, rail+mine+hut |
+| Grassland1 (2) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1586 | Yy | Grassland1, road+rail+mine+hut |
+| Grassland1 (2) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1602 | ZC | Grassland1, irrigation+mine+hut |
+| Grassland1 (2) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1618 | ZS | Grassland1, road+irrigation+mine+hut |
+| Grassland1 (2) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1634 | Zi | Grassland1, rail+irrigation+mine+hut |
+| Grassland1 (2) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1650 | Zy | Grassland1, road+rail+irrigation+mine+hut |
+| Grassland1 (2) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1666 | aC | Grassland1, pollution+mine+hut |
+| Grassland1 (2) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1682 | aS | Grassland1, road+pollution+mine+hut |
+| Grassland1 (2) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1698 | ai | Grassland1, rail+pollution+mine+hut |
+| Grassland1 (2) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1714 | ay | Grassland1, road+rail+pollution+mine+hut |
+| Grassland1 (2) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1730 | bC | Grassland1, irrigation+pollution+mine+hut |
+| Grassland1 (2) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1746 | bS | Grassland1, road+irrigation+pollution+mine+hut |
+| Grassland1 (2) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1762 | bi | Grassland1, rail+irrigation+pollution+mine+hut |
+| Grassland1 (2) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1778 | by | Grassland1, road+rail+irrigation+pollution+mine+hut |
+| Grassland1 (2) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1794 | cC | Grassland1, fortress+mine+hut |
+| Grassland1 (2) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1810 | cS | Grassland1, road+fortress+mine+hut |
+| Grassland1 (2) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1826 | ci | Grassland1, rail+fortress+mine+hut |
+| Grassland1 (2) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1842 | cy | Grassland1, road+rail+fortress+mine+hut |
+| Grassland1 (2) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1858 | dC | Grassland1, irrigation+fortress+mine+hut |
+| Grassland1 (2) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1874 | dS | Grassland1, road+irrigation+fortress+mine+hut |
+| Grassland1 (2) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1890 | di | Grassland1, rail+irrigation+fortress+mine+hut |
+| Grassland1 (2) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1906 | dy | Grassland1, road+rail+irrigation+fortress+mine+hut |
+| Grassland1 (2) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1922 | eC | Grassland1, pollution+fortress+mine+hut |
+| Grassland1 (2) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1938 | eS | Grassland1, road+pollution+fortress+mine+hut |
+| Grassland1 (2) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1954 | ei | Grassland1, rail+pollution+fortress+mine+hut |
+| Grassland1 (2) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1970 | ey | Grassland1, road+rail+pollution+fortress+mine+hut |
+| Grassland1 (2) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1986 | fC | Grassland1, irrigation+pollution+fortress+mine+hut |
+| Grassland1 (2) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 2002 | fS | Grassland1, road+irrigation+pollution+fortress+mine+hut |
+| Grassland1 (2) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2018 | fi | Grassland1, rail+irrigation+pollution+fortress+mine+hut |
+| Grassland1 (2) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2034 | fy | Grassland1, road+rail+irrigation+pollution+fortress+mine+hut |
+| Forest (3) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 3 | AD | Forest, untouched |
+| Forest (3) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 19 | AT | Forest, road |
+| Forest (3) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 35 | Aj | Forest, rail |
+| Forest (3) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 51 | Az | Forest, road+rail |
+| Forest (3) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 67 | BD | Forest, irrigation |
+| Forest (3) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 83 | BT | Forest, road+irrigation |
+| Forest (3) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 99 | Bj | Forest, rail+irrigation |
+| Forest (3) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 115 | Bz | Forest, road+rail+irrigation |
+| Forest (3) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 131 | CD | Forest, pollution |
+| Forest (3) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 147 | CT | Forest, road+pollution |
+| Forest (3) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 163 | Cj | Forest, rail+pollution |
+| Forest (3) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 179 | Cz | Forest, road+rail+pollution |
+| Forest (3) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 195 | DD | Forest, irrigation+pollution |
+| Forest (3) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 211 | DT | Forest, road+irrigation+pollution |
+| Forest (3) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 227 | Dj | Forest, rail+irrigation+pollution |
+| Forest (3) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 243 | Dz | Forest, road+rail+irrigation+pollution |
+| Forest (3) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 259 | ED | Forest, fortress |
+| Forest (3) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 275 | ET | Forest, road+fortress |
+| Forest (3) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 291 | Ej | Forest, rail+fortress |
+| Forest (3) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 307 | Ez | Forest, road+rail+fortress |
+| Forest (3) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 323 | FD | Forest, irrigation+fortress |
+| Forest (3) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 339 | FT | Forest, road+irrigation+fortress |
+| Forest (3) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 355 | Fj | Forest, rail+irrigation+fortress |
+| Forest (3) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 371 | Fz | Forest, road+rail+irrigation+fortress |
+| Forest (3) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 387 | GD | Forest, pollution+fortress |
+| Forest (3) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 403 | GT | Forest, road+pollution+fortress |
+| Forest (3) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 419 | Gj | Forest, rail+pollution+fortress |
+| Forest (3) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 435 | Gz | Forest, road+rail+pollution+fortress |
+| Forest (3) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 451 | HD | Forest, irrigation+pollution+fortress |
+| Forest (3) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 467 | HT | Forest, road+irrigation+pollution+fortress |
+| Forest (3) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 483 | Hj | Forest, rail+irrigation+pollution+fortress |
+| Forest (3) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 499 | Hz | Forest, road+rail+irrigation+pollution+fortress |
+| Forest (3) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 515 | ID | Forest, mine |
+| Forest (3) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 531 | IT | Forest, road+mine |
+| Forest (3) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 547 | Ij | Forest, rail+mine |
+| Forest (3) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 563 | Iz | Forest, road+rail+mine |
+| Forest (3) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 579 | JD | Forest, irrigation+mine |
+| Forest (3) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 595 | JT | Forest, road+irrigation+mine |
+| Forest (3) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 611 | Jj | Forest, rail+irrigation+mine |
+| Forest (3) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 627 | Jz | Forest, road+rail+irrigation+mine |
+| Forest (3) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 643 | KD | Forest, pollution+mine |
+| Forest (3) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 659 | KT | Forest, road+pollution+mine |
+| Forest (3) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 675 | Kj | Forest, rail+pollution+mine |
+| Forest (3) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 691 | Kz | Forest, road+rail+pollution+mine |
+| Forest (3) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 707 | LD | Forest, irrigation+pollution+mine |
+| Forest (3) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 723 | LT | Forest, road+irrigation+pollution+mine |
+| Forest (3) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 739 | Lj | Forest, rail+irrigation+pollution+mine |
+| Forest (3) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 755 | Lz | Forest, road+rail+irrigation+pollution+mine |
+| Forest (3) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 771 | MD | Forest, fortress+mine |
+| Forest (3) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 787 | MT | Forest, road+fortress+mine |
+| Forest (3) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 803 | Mj | Forest, rail+fortress+mine |
+| Forest (3) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 819 | Mz | Forest, road+rail+fortress+mine |
+| Forest (3) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 835 | ND | Forest, irrigation+fortress+mine |
+| Forest (3) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 851 | NT | Forest, road+irrigation+fortress+mine |
+| Forest (3) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 867 | Nj | Forest, rail+irrigation+fortress+mine |
+| Forest (3) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 883 | Nz | Forest, road+rail+irrigation+fortress+mine |
+| Forest (3) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 899 | OD | Forest, pollution+fortress+mine |
+| Forest (3) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 915 | OT | Forest, road+pollution+fortress+mine |
+| Forest (3) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 931 | Oj | Forest, rail+pollution+fortress+mine |
+| Forest (3) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 947 | Oz | Forest, road+rail+pollution+fortress+mine |
+| Forest (3) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 963 | PD | Forest, irrigation+pollution+fortress+mine |
+| Forest (3) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 979 | PT | Forest, road+irrigation+pollution+fortress+mine |
+| Forest (3) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 995 | Pj | Forest, rail+irrigation+pollution+fortress+mine |
+| Forest (3) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1011 | Pz | Forest, road+rail+irrigation+pollution+fortress+mine |
+| Forest (3) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1027 | QD | Forest, hut |
+| Forest (3) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1043 | QT | Forest, road+hut |
+| Forest (3) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1059 | Qj | Forest, rail+hut |
+| Forest (3) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1075 | Qz | Forest, road+rail+hut |
+| Forest (3) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1091 | RD | Forest, irrigation+hut |
+| Forest (3) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1107 | RT | Forest, road+irrigation+hut |
+| Forest (3) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1123 | Rj | Forest, rail+irrigation+hut |
+| Forest (3) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1139 | Rz | Forest, road+rail+irrigation+hut |
+| Forest (3) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1155 | SD | Forest, pollution+hut |
+| Forest (3) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1171 | ST | Forest, road+pollution+hut |
+| Forest (3) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1187 | Sj | Forest, rail+pollution+hut |
+| Forest (3) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1203 | Sz | Forest, road+rail+pollution+hut |
+| Forest (3) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1219 | TD | Forest, irrigation+pollution+hut |
+| Forest (3) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1235 | TT | Forest, road+irrigation+pollution+hut |
+| Forest (3) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1251 | Tj | Forest, rail+irrigation+pollution+hut |
+| Forest (3) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1267 | Tz | Forest, road+rail+irrigation+pollution+hut |
+| Forest (3) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1283 | UD | Forest, fortress+hut |
+| Forest (3) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1299 | UT | Forest, road+fortress+hut |
+| Forest (3) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1315 | Uj | Forest, rail+fortress+hut |
+| Forest (3) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1331 | Uz | Forest, road+rail+fortress+hut |
+| Forest (3) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1347 | VD | Forest, irrigation+fortress+hut |
+| Forest (3) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1363 | VT | Forest, road+irrigation+fortress+hut |
+| Forest (3) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1379 | Vj | Forest, rail+irrigation+fortress+hut |
+| Forest (3) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1395 | Vz | Forest, road+rail+irrigation+fortress+hut |
+| Forest (3) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1411 | WD | Forest, pollution+fortress+hut |
+| Forest (3) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1427 | WT | Forest, road+pollution+fortress+hut |
+| Forest (3) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1443 | Wj | Forest, rail+pollution+fortress+hut |
+| Forest (3) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1459 | Wz | Forest, road+rail+pollution+fortress+hut |
+| Forest (3) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1475 | XD | Forest, irrigation+pollution+fortress+hut |
+| Forest (3) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1491 | XT | Forest, road+irrigation+pollution+fortress+hut |
+| Forest (3) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1507 | Xj | Forest, rail+irrigation+pollution+fortress+hut |
+| Forest (3) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1523 | Xz | Forest, road+rail+irrigation+pollution+fortress+hut |
+| Forest (3) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1539 | YD | Forest, mine+hut |
+| Forest (3) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1555 | YT | Forest, road+mine+hut |
+| Forest (3) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1571 | Yj | Forest, rail+mine+hut |
+| Forest (3) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1587 | Yz | Forest, road+rail+mine+hut |
+| Forest (3) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1603 | ZD | Forest, irrigation+mine+hut |
+| Forest (3) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1619 | ZT | Forest, road+irrigation+mine+hut |
+| Forest (3) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1635 | Zj | Forest, rail+irrigation+mine+hut |
+| Forest (3) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1651 | Zz | Forest, road+rail+irrigation+mine+hut |
+| Forest (3) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1667 | aD | Forest, pollution+mine+hut |
+| Forest (3) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1683 | aT | Forest, road+pollution+mine+hut |
+| Forest (3) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1699 | aj | Forest, rail+pollution+mine+hut |
+| Forest (3) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1715 | az | Forest, road+rail+pollution+mine+hut |
+| Forest (3) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1731 | bD | Forest, irrigation+pollution+mine+hut |
+| Forest (3) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1747 | bT | Forest, road+irrigation+pollution+mine+hut |
+| Forest (3) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1763 | bj | Forest, rail+irrigation+pollution+mine+hut |
+| Forest (3) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1779 | bz | Forest, road+rail+irrigation+pollution+mine+hut |
+| Forest (3) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1795 | cD | Forest, fortress+mine+hut |
+| Forest (3) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1811 | cT | Forest, road+fortress+mine+hut |
+| Forest (3) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1827 | cj | Forest, rail+fortress+mine+hut |
+| Forest (3) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1843 | cz | Forest, road+rail+fortress+mine+hut |
+| Forest (3) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1859 | dD | Forest, irrigation+fortress+mine+hut |
+| Forest (3) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1875 | dT | Forest, road+irrigation+fortress+mine+hut |
+| Forest (3) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1891 | dj | Forest, rail+irrigation+fortress+mine+hut |
+| Forest (3) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1907 | dz | Forest, road+rail+irrigation+fortress+mine+hut |
+| Forest (3) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1923 | eD | Forest, pollution+fortress+mine+hut |
+| Forest (3) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1939 | eT | Forest, road+pollution+fortress+mine+hut |
+| Forest (3) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1955 | ej | Forest, rail+pollution+fortress+mine+hut |
+| Forest (3) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1971 | ez | Forest, road+rail+pollution+fortress+mine+hut |
+| Forest (3) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1987 | fD | Forest, irrigation+pollution+fortress+mine+hut |
+| Forest (3) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 2003 | fT | Forest, road+irrigation+pollution+fortress+mine+hut |
+| Forest (3) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2019 | fj | Forest, rail+irrigation+pollution+fortress+mine+hut |
+| Forest (3) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2035 | fz | Forest, road+rail+irrigation+pollution+fortress+mine+hut |
+| Hills (4) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 4 | AE | Hills, untouched |
+| Hills (4) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 20 | AU | Hills, road |
+| Hills (4) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 36 | Ak | Hills, rail |
+| Hills (4) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 52 | A0 | Hills, road+rail |
+| Hills (4) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 68 | BE | Hills, irrigation |
+| Hills (4) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 84 | BU | Hills, road+irrigation |
+| Hills (4) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 100 | Bk | Hills, rail+irrigation |
+| Hills (4) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 116 | B0 | Hills, road+rail+irrigation |
+| Hills (4) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 132 | CE | Hills, pollution |
+| Hills (4) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 148 | CU | Hills, road+pollution |
+| Hills (4) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 164 | Ck | Hills, rail+pollution |
+| Hills (4) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 180 | C0 | Hills, road+rail+pollution |
+| Hills (4) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 196 | DE | Hills, irrigation+pollution |
+| Hills (4) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 212 | DU | Hills, road+irrigation+pollution |
+| Hills (4) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 228 | Dk | Hills, rail+irrigation+pollution |
+| Hills (4) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 244 | D0 | Hills, road+rail+irrigation+pollution |
+| Hills (4) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 260 | EE | Hills, fortress |
+| Hills (4) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 276 | EU | Hills, road+fortress |
+| Hills (4) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 292 | Ek | Hills, rail+fortress |
+| Hills (4) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 308 | E0 | Hills, road+rail+fortress |
+| Hills (4) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 324 | FE | Hills, irrigation+fortress |
+| Hills (4) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 340 | FU | Hills, road+irrigation+fortress |
+| Hills (4) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 356 | Fk | Hills, rail+irrigation+fortress |
+| Hills (4) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 372 | F0 | Hills, road+rail+irrigation+fortress |
+| Hills (4) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 388 | GE | Hills, pollution+fortress |
+| Hills (4) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 404 | GU | Hills, road+pollution+fortress |
+| Hills (4) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 420 | Gk | Hills, rail+pollution+fortress |
+| Hills (4) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 436 | G0 | Hills, road+rail+pollution+fortress |
+| Hills (4) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 452 | HE | Hills, irrigation+pollution+fortress |
+| Hills (4) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 468 | HU | Hills, road+irrigation+pollution+fortress |
+| Hills (4) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 484 | Hk | Hills, rail+irrigation+pollution+fortress |
+| Hills (4) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 500 | H0 | Hills, road+rail+irrigation+pollution+fortress |
+| Hills (4) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 516 | IE | Hills, mine |
+| Hills (4) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 532 | IU | Hills, road+mine |
+| Hills (4) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 548 | Ik | Hills, rail+mine |
+| Hills (4) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 564 | I0 | Hills, road+rail+mine |
+| Hills (4) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 580 | JE | Hills, irrigation+mine |
+| Hills (4) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 596 | JU | Hills, road+irrigation+mine |
+| Hills (4) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 612 | Jk | Hills, rail+irrigation+mine |
+| Hills (4) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 628 | J0 | Hills, road+rail+irrigation+mine |
+| Hills (4) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 644 | KE | Hills, pollution+mine |
+| Hills (4) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 660 | KU | Hills, road+pollution+mine |
+| Hills (4) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 676 | Kk | Hills, rail+pollution+mine |
+| Hills (4) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 692 | K0 | Hills, road+rail+pollution+mine |
+| Hills (4) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 708 | LE | Hills, irrigation+pollution+mine |
+| Hills (4) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 724 | LU | Hills, road+irrigation+pollution+mine |
+| Hills (4) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 740 | Lk | Hills, rail+irrigation+pollution+mine |
+| Hills (4) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 756 | L0 | Hills, road+rail+irrigation+pollution+mine |
+| Hills (4) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 772 | ME | Hills, fortress+mine |
+| Hills (4) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 788 | MU | Hills, road+fortress+mine |
+| Hills (4) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 804 | Mk | Hills, rail+fortress+mine |
+| Hills (4) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 820 | M0 | Hills, road+rail+fortress+mine |
+| Hills (4) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 836 | NE | Hills, irrigation+fortress+mine |
+| Hills (4) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 852 | NU | Hills, road+irrigation+fortress+mine |
+| Hills (4) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 868 | Nk | Hills, rail+irrigation+fortress+mine |
+| Hills (4) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 884 | N0 | Hills, road+rail+irrigation+fortress+mine |
+| Hills (4) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 900 | OE | Hills, pollution+fortress+mine |
+| Hills (4) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 916 | OU | Hills, road+pollution+fortress+mine |
+| Hills (4) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 932 | Ok | Hills, rail+pollution+fortress+mine |
+| Hills (4) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 948 | O0 | Hills, road+rail+pollution+fortress+mine |
+| Hills (4) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 964 | PE | Hills, irrigation+pollution+fortress+mine |
+| Hills (4) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 980 | PU | Hills, road+irrigation+pollution+fortress+mine |
+| Hills (4) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 996 | Pk | Hills, rail+irrigation+pollution+fortress+mine |
+| Hills (4) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1012 | P0 | Hills, road+rail+irrigation+pollution+fortress+mine |
+| Hills (4) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1028 | QE | Hills, hut |
+| Hills (4) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1044 | QU | Hills, road+hut |
+| Hills (4) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1060 | Qk | Hills, rail+hut |
+| Hills (4) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1076 | Q0 | Hills, road+rail+hut |
+| Hills (4) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1092 | RE | Hills, irrigation+hut |
+| Hills (4) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1108 | RU | Hills, road+irrigation+hut |
+| Hills (4) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1124 | Rk | Hills, rail+irrigation+hut |
+| Hills (4) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1140 | R0 | Hills, road+rail+irrigation+hut |
+| Hills (4) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1156 | SE | Hills, pollution+hut |
+| Hills (4) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1172 | SU | Hills, road+pollution+hut |
+| Hills (4) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1188 | Sk | Hills, rail+pollution+hut |
+| Hills (4) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1204 | S0 | Hills, road+rail+pollution+hut |
+| Hills (4) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1220 | TE | Hills, irrigation+pollution+hut |
+| Hills (4) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1236 | TU | Hills, road+irrigation+pollution+hut |
+| Hills (4) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1252 | Tk | Hills, rail+irrigation+pollution+hut |
+| Hills (4) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1268 | T0 | Hills, road+rail+irrigation+pollution+hut |
+| Hills (4) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1284 | UE | Hills, fortress+hut |
+| Hills (4) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1300 | UU | Hills, road+fortress+hut |
+| Hills (4) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1316 | Uk | Hills, rail+fortress+hut |
+| Hills (4) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1332 | U0 | Hills, road+rail+fortress+hut |
+| Hills (4) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1348 | VE | Hills, irrigation+fortress+hut |
+| Hills (4) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1364 | VU | Hills, road+irrigation+fortress+hut |
+| Hills (4) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1380 | Vk | Hills, rail+irrigation+fortress+hut |
+| Hills (4) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1396 | V0 | Hills, road+rail+irrigation+fortress+hut |
+| Hills (4) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1412 | WE | Hills, pollution+fortress+hut |
+| Hills (4) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1428 | WU | Hills, road+pollution+fortress+hut |
+| Hills (4) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1444 | Wk | Hills, rail+pollution+fortress+hut |
+| Hills (4) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1460 | W0 | Hills, road+rail+pollution+fortress+hut |
+| Hills (4) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1476 | XE | Hills, irrigation+pollution+fortress+hut |
+| Hills (4) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1492 | XU | Hills, road+irrigation+pollution+fortress+hut |
+| Hills (4) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1508 | Xk | Hills, rail+irrigation+pollution+fortress+hut |
+| Hills (4) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1524 | X0 | Hills, road+rail+irrigation+pollution+fortress+hut |
+| Hills (4) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1540 | YE | Hills, mine+hut |
+| Hills (4) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1556 | YU | Hills, road+mine+hut |
+| Hills (4) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1572 | Yk | Hills, rail+mine+hut |
+| Hills (4) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1588 | Y0 | Hills, road+rail+mine+hut |
+| Hills (4) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1604 | ZE | Hills, irrigation+mine+hut |
+| Hills (4) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1620 | ZU | Hills, road+irrigation+mine+hut |
+| Hills (4) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1636 | Zk | Hills, rail+irrigation+mine+hut |
+| Hills (4) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1652 | Z0 | Hills, road+rail+irrigation+mine+hut |
+| Hills (4) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1668 | aE | Hills, pollution+mine+hut |
+| Hills (4) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1684 | aU | Hills, road+pollution+mine+hut |
+| Hills (4) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1700 | ak | Hills, rail+pollution+mine+hut |
+| Hills (4) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1716 | a0 | Hills, road+rail+pollution+mine+hut |
+| Hills (4) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1732 | bE | Hills, irrigation+pollution+mine+hut |
+| Hills (4) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1748 | bU | Hills, road+irrigation+pollution+mine+hut |
+| Hills (4) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1764 | bk | Hills, rail+irrigation+pollution+mine+hut |
+| Hills (4) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1780 | b0 | Hills, road+rail+irrigation+pollution+mine+hut |
+| Hills (4) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1796 | cE | Hills, fortress+mine+hut |
+| Hills (4) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1812 | cU | Hills, road+fortress+mine+hut |
+| Hills (4) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1828 | ck | Hills, rail+fortress+mine+hut |
+| Hills (4) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1844 | c0 | Hills, road+rail+fortress+mine+hut |
+| Hills (4) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1860 | dE | Hills, irrigation+fortress+mine+hut |
+| Hills (4) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1876 | dU | Hills, road+irrigation+fortress+mine+hut |
+| Hills (4) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1892 | dk | Hills, rail+irrigation+fortress+mine+hut |
+| Hills (4) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1908 | d0 | Hills, road+rail+irrigation+fortress+mine+hut |
+| Hills (4) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1924 | eE | Hills, pollution+fortress+mine+hut |
+| Hills (4) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1940 | eU | Hills, road+pollution+fortress+mine+hut |
+| Hills (4) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1956 | ek | Hills, rail+pollution+fortress+mine+hut |
+| Hills (4) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1972 | e0 | Hills, road+rail+pollution+fortress+mine+hut |
+| Hills (4) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1988 | fE | Hills, irrigation+pollution+fortress+mine+hut |
+| Hills (4) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 2004 | fU | Hills, road+irrigation+pollution+fortress+mine+hut |
+| Hills (4) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2020 | fk | Hills, rail+irrigation+pollution+fortress+mine+hut |
+| Hills (4) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2036 | f0 | Hills, road+rail+irrigation+pollution+fortress+mine+hut |
+| Mountains (5) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 5 | AF | Mountains, untouched |
+| Mountains (5) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 21 | AV | Mountains, road |
+| Mountains (5) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 37 | Al | Mountains, rail |
+| Mountains (5) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 53 | A1 | Mountains, road+rail |
+| Mountains (5) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 69 | BF | Mountains, irrigation |
+| Mountains (5) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 85 | BV | Mountains, road+irrigation |
+| Mountains (5) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 101 | Bl | Mountains, rail+irrigation |
+| Mountains (5) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 117 | B1 | Mountains, road+rail+irrigation |
+| Mountains (5) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 133 | CF | Mountains, pollution |
+| Mountains (5) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 149 | CV | Mountains, road+pollution |
+| Mountains (5) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 165 | Cl | Mountains, rail+pollution |
+| Mountains (5) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 181 | C1 | Mountains, road+rail+pollution |
+| Mountains (5) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 197 | DF | Mountains, irrigation+pollution |
+| Mountains (5) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 213 | DV | Mountains, road+irrigation+pollution |
+| Mountains (5) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 229 | Dl | Mountains, rail+irrigation+pollution |
+| Mountains (5) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 245 | D1 | Mountains, road+rail+irrigation+pollution |
+| Mountains (5) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 261 | EF | Mountains, fortress |
+| Mountains (5) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 277 | EV | Mountains, road+fortress |
+| Mountains (5) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 293 | El | Mountains, rail+fortress |
+| Mountains (5) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 309 | E1 | Mountains, road+rail+fortress |
+| Mountains (5) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 325 | FF | Mountains, irrigation+fortress |
+| Mountains (5) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 341 | FV | Mountains, road+irrigation+fortress |
+| Mountains (5) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 357 | Fl | Mountains, rail+irrigation+fortress |
+| Mountains (5) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 373 | F1 | Mountains, road+rail+irrigation+fortress |
+| Mountains (5) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 389 | GF | Mountains, pollution+fortress |
+| Mountains (5) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 405 | GV | Mountains, road+pollution+fortress |
+| Mountains (5) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 421 | Gl | Mountains, rail+pollution+fortress |
+| Mountains (5) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 437 | G1 | Mountains, road+rail+pollution+fortress |
+| Mountains (5) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 453 | HF | Mountains, irrigation+pollution+fortress |
+| Mountains (5) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 469 | HV | Mountains, road+irrigation+pollution+fortress |
+| Mountains (5) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 485 | Hl | Mountains, rail+irrigation+pollution+fortress |
+| Mountains (5) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 501 | H1 | Mountains, road+rail+irrigation+pollution+fortress |
+| Mountains (5) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 517 | IF | Mountains, mine |
+| Mountains (5) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 533 | IV | Mountains, road+mine |
+| Mountains (5) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 549 | Il | Mountains, rail+mine |
+| Mountains (5) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 565 | I1 | Mountains, road+rail+mine |
+| Mountains (5) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 581 | JF | Mountains, irrigation+mine |
+| Mountains (5) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 597 | JV | Mountains, road+irrigation+mine |
+| Mountains (5) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 613 | Jl | Mountains, rail+irrigation+mine |
+| Mountains (5) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 629 | J1 | Mountains, road+rail+irrigation+mine |
+| Mountains (5) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 645 | KF | Mountains, pollution+mine |
+| Mountains (5) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 661 | KV | Mountains, road+pollution+mine |
+| Mountains (5) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 677 | Kl | Mountains, rail+pollution+mine |
+| Mountains (5) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 693 | K1 | Mountains, road+rail+pollution+mine |
+| Mountains (5) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 709 | LF | Mountains, irrigation+pollution+mine |
+| Mountains (5) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 725 | LV | Mountains, road+irrigation+pollution+mine |
+| Mountains (5) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 741 | Ll | Mountains, rail+irrigation+pollution+mine |
+| Mountains (5) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 757 | L1 | Mountains, road+rail+irrigation+pollution+mine |
+| Mountains (5) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 773 | MF | Mountains, fortress+mine |
+| Mountains (5) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 789 | MV | Mountains, road+fortress+mine |
+| Mountains (5) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 805 | Ml | Mountains, rail+fortress+mine |
+| Mountains (5) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 821 | M1 | Mountains, road+rail+fortress+mine |
+| Mountains (5) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 837 | NF | Mountains, irrigation+fortress+mine |
+| Mountains (5) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 853 | NV | Mountains, road+irrigation+fortress+mine |
+| Mountains (5) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 869 | Nl | Mountains, rail+irrigation+fortress+mine |
+| Mountains (5) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 885 | N1 | Mountains, road+rail+irrigation+fortress+mine |
+| Mountains (5) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 901 | OF | Mountains, pollution+fortress+mine |
+| Mountains (5) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 917 | OV | Mountains, road+pollution+fortress+mine |
+| Mountains (5) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 933 | Ol | Mountains, rail+pollution+fortress+mine |
+| Mountains (5) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 949 | O1 | Mountains, road+rail+pollution+fortress+mine |
+| Mountains (5) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 965 | PF | Mountains, irrigation+pollution+fortress+mine |
+| Mountains (5) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 981 | PV | Mountains, road+irrigation+pollution+fortress+mine |
+| Mountains (5) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 997 | Pl | Mountains, rail+irrigation+pollution+fortress+mine |
+| Mountains (5) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1013 | P1 | Mountains, road+rail+irrigation+pollution+fortress+mine |
+| Mountains (5) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1029 | QF | Mountains, hut |
+| Mountains (5) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1045 | QV | Mountains, road+hut |
+| Mountains (5) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1061 | Ql | Mountains, rail+hut |
+| Mountains (5) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1077 | Q1 | Mountains, road+rail+hut |
+| Mountains (5) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1093 | RF | Mountains, irrigation+hut |
+| Mountains (5) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1109 | RV | Mountains, road+irrigation+hut |
+| Mountains (5) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1125 | Rl | Mountains, rail+irrigation+hut |
+| Mountains (5) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1141 | R1 | Mountains, road+rail+irrigation+hut |
+| Mountains (5) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1157 | SF | Mountains, pollution+hut |
+| Mountains (5) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1173 | SV | Mountains, road+pollution+hut |
+| Mountains (5) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1189 | Sl | Mountains, rail+pollution+hut |
+| Mountains (5) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1205 | S1 | Mountains, road+rail+pollution+hut |
+| Mountains (5) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1221 | TF | Mountains, irrigation+pollution+hut |
+| Mountains (5) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1237 | TV | Mountains, road+irrigation+pollution+hut |
+| Mountains (5) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1253 | Tl | Mountains, rail+irrigation+pollution+hut |
+| Mountains (5) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1269 | T1 | Mountains, road+rail+irrigation+pollution+hut |
+| Mountains (5) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1285 | UF | Mountains, fortress+hut |
+| Mountains (5) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1301 | UV | Mountains, road+fortress+hut |
+| Mountains (5) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1317 | Ul | Mountains, rail+fortress+hut |
+| Mountains (5) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1333 | U1 | Mountains, road+rail+fortress+hut |
+| Mountains (5) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1349 | VF | Mountains, irrigation+fortress+hut |
+| Mountains (5) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1365 | VV | Mountains, road+irrigation+fortress+hut |
+| Mountains (5) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1381 | Vl | Mountains, rail+irrigation+fortress+hut |
+| Mountains (5) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1397 | V1 | Mountains, road+rail+irrigation+fortress+hut |
+| Mountains (5) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1413 | WF | Mountains, pollution+fortress+hut |
+| Mountains (5) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1429 | WV | Mountains, road+pollution+fortress+hut |
+| Mountains (5) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1445 | Wl | Mountains, rail+pollution+fortress+hut |
+| Mountains (5) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1461 | W1 | Mountains, road+rail+pollution+fortress+hut |
+| Mountains (5) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1477 | XF | Mountains, irrigation+pollution+fortress+hut |
+| Mountains (5) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1493 | XV | Mountains, road+irrigation+pollution+fortress+hut |
+| Mountains (5) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1509 | Xl | Mountains, rail+irrigation+pollution+fortress+hut |
+| Mountains (5) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1525 | X1 | Mountains, road+rail+irrigation+pollution+fortress+hut |
+| Mountains (5) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1541 | YF | Mountains, mine+hut |
+| Mountains (5) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1557 | YV | Mountains, road+mine+hut |
+| Mountains (5) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1573 | Yl | Mountains, rail+mine+hut |
+| Mountains (5) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1589 | Y1 | Mountains, road+rail+mine+hut |
+| Mountains (5) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1605 | ZF | Mountains, irrigation+mine+hut |
+| Mountains (5) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1621 | ZV | Mountains, road+irrigation+mine+hut |
+| Mountains (5) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1637 | Zl | Mountains, rail+irrigation+mine+hut |
+| Mountains (5) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1653 | Z1 | Mountains, road+rail+irrigation+mine+hut |
+| Mountains (5) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1669 | aF | Mountains, pollution+mine+hut |
+| Mountains (5) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1685 | aV | Mountains, road+pollution+mine+hut |
+| Mountains (5) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1701 | al | Mountains, rail+pollution+mine+hut |
+| Mountains (5) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1717 | a1 | Mountains, road+rail+pollution+mine+hut |
+| Mountains (5) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1733 | bF | Mountains, irrigation+pollution+mine+hut |
+| Mountains (5) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1749 | bV | Mountains, road+irrigation+pollution+mine+hut |
+| Mountains (5) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1765 | bl | Mountains, rail+irrigation+pollution+mine+hut |
+| Mountains (5) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1781 | b1 | Mountains, road+rail+irrigation+pollution+mine+hut |
+| Mountains (5) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1797 | cF | Mountains, fortress+mine+hut |
+| Mountains (5) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1813 | cV | Mountains, road+fortress+mine+hut |
+| Mountains (5) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1829 | cl | Mountains, rail+fortress+mine+hut |
+| Mountains (5) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1845 | c1 | Mountains, road+rail+fortress+mine+hut |
+| Mountains (5) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1861 | dF | Mountains, irrigation+fortress+mine+hut |
+| Mountains (5) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1877 | dV | Mountains, road+irrigation+fortress+mine+hut |
+| Mountains (5) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1893 | dl | Mountains, rail+irrigation+fortress+mine+hut |
+| Mountains (5) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1909 | d1 | Mountains, road+rail+irrigation+fortress+mine+hut |
+| Mountains (5) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1925 | eF | Mountains, pollution+fortress+mine+hut |
+| Mountains (5) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1941 | eV | Mountains, road+pollution+fortress+mine+hut |
+| Mountains (5) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1957 | el | Mountains, rail+pollution+fortress+mine+hut |
+| Mountains (5) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1973 | e1 | Mountains, road+rail+pollution+fortress+mine+hut |
+| Mountains (5) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1989 | fF | Mountains, irrigation+pollution+fortress+mine+hut |
+| Mountains (5) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 2005 | fV | Mountains, road+irrigation+pollution+fortress+mine+hut |
+| Mountains (5) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2021 | fl | Mountains, rail+irrigation+pollution+fortress+mine+hut |
+| Mountains (5) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2037 | f1 | Mountains, road+rail+irrigation+pollution+fortress+mine+hut |
+| Tundra (6) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 6 | AG | Tundra, untouched |
+| Tundra (6) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 22 | AW | Tundra, road |
+| Tundra (6) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 38 | Am | Tundra, rail |
+| Tundra (6) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 54 | A2 | Tundra, road+rail |
+| Tundra (6) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 70 | BG | Tundra, irrigation |
+| Tundra (6) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 86 | BW | Tundra, road+irrigation |
+| Tundra (6) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 102 | Bm | Tundra, rail+irrigation |
+| Tundra (6) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 118 | B2 | Tundra, road+rail+irrigation |
+| Tundra (6) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 134 | CG | Tundra, pollution |
+| Tundra (6) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 150 | CW | Tundra, road+pollution |
+| Tundra (6) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 166 | Cm | Tundra, rail+pollution |
+| Tundra (6) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 182 | C2 | Tundra, road+rail+pollution |
+| Tundra (6) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 198 | DG | Tundra, irrigation+pollution |
+| Tundra (6) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 214 | DW | Tundra, road+irrigation+pollution |
+| Tundra (6) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 230 | Dm | Tundra, rail+irrigation+pollution |
+| Tundra (6) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 246 | D2 | Tundra, road+rail+irrigation+pollution |
+| Tundra (6) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 262 | EG | Tundra, fortress |
+| Tundra (6) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 278 | EW | Tundra, road+fortress |
+| Tundra (6) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 294 | Em | Tundra, rail+fortress |
+| Tundra (6) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 310 | E2 | Tundra, road+rail+fortress |
+| Tundra (6) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 326 | FG | Tundra, irrigation+fortress |
+| Tundra (6) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 342 | FW | Tundra, road+irrigation+fortress |
+| Tundra (6) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 358 | Fm | Tundra, rail+irrigation+fortress |
+| Tundra (6) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 374 | F2 | Tundra, road+rail+irrigation+fortress |
+| Tundra (6) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 390 | GG | Tundra, pollution+fortress |
+| Tundra (6) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 406 | GW | Tundra, road+pollution+fortress |
+| Tundra (6) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 422 | Gm | Tundra, rail+pollution+fortress |
+| Tundra (6) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 438 | G2 | Tundra, road+rail+pollution+fortress |
+| Tundra (6) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 454 | HG | Tundra, irrigation+pollution+fortress |
+| Tundra (6) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 470 | HW | Tundra, road+irrigation+pollution+fortress |
+| Tundra (6) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 486 | Hm | Tundra, rail+irrigation+pollution+fortress |
+| Tundra (6) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 502 | H2 | Tundra, road+rail+irrigation+pollution+fortress |
+| Tundra (6) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 518 | IG | Tundra, mine |
+| Tundra (6) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 534 | IW | Tundra, road+mine |
+| Tundra (6) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 550 | Im | Tundra, rail+mine |
+| Tundra (6) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 566 | I2 | Tundra, road+rail+mine |
+| Tundra (6) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 582 | JG | Tundra, irrigation+mine |
+| Tundra (6) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 598 | JW | Tundra, road+irrigation+mine |
+| Tundra (6) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 614 | Jm | Tundra, rail+irrigation+mine |
+| Tundra (6) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 630 | J2 | Tundra, road+rail+irrigation+mine |
+| Tundra (6) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 646 | KG | Tundra, pollution+mine |
+| Tundra (6) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 662 | KW | Tundra, road+pollution+mine |
+| Tundra (6) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 678 | Km | Tundra, rail+pollution+mine |
+| Tundra (6) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 694 | K2 | Tundra, road+rail+pollution+mine |
+| Tundra (6) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 710 | LG | Tundra, irrigation+pollution+mine |
+| Tundra (6) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 726 | LW | Tundra, road+irrigation+pollution+mine |
+| Tundra (6) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 742 | Lm | Tundra, rail+irrigation+pollution+mine |
+| Tundra (6) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 758 | L2 | Tundra, road+rail+irrigation+pollution+mine |
+| Tundra (6) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 774 | MG | Tundra, fortress+mine |
+| Tundra (6) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 790 | MW | Tundra, road+fortress+mine |
+| Tundra (6) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 806 | Mm | Tundra, rail+fortress+mine |
+| Tundra (6) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 822 | M2 | Tundra, road+rail+fortress+mine |
+| Tundra (6) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 838 | NG | Tundra, irrigation+fortress+mine |
+| Tundra (6) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 854 | NW | Tundra, road+irrigation+fortress+mine |
+| Tundra (6) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 870 | Nm | Tundra, rail+irrigation+fortress+mine |
+| Tundra (6) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 886 | N2 | Tundra, road+rail+irrigation+fortress+mine |
+| Tundra (6) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 902 | OG | Tundra, pollution+fortress+mine |
+| Tundra (6) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 918 | OW | Tundra, road+pollution+fortress+mine |
+| Tundra (6) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 934 | Om | Tundra, rail+pollution+fortress+mine |
+| Tundra (6) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 950 | O2 | Tundra, road+rail+pollution+fortress+mine |
+| Tundra (6) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 966 | PG | Tundra, irrigation+pollution+fortress+mine |
+| Tundra (6) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 982 | PW | Tundra, road+irrigation+pollution+fortress+mine |
+| Tundra (6) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 998 | Pm | Tundra, rail+irrigation+pollution+fortress+mine |
+| Tundra (6) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1014 | P2 | Tundra, road+rail+irrigation+pollution+fortress+mine |
+| Tundra (6) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1030 | QG | Tundra, hut |
+| Tundra (6) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1046 | QW | Tundra, road+hut |
+| Tundra (6) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1062 | Qm | Tundra, rail+hut |
+| Tundra (6) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1078 | Q2 | Tundra, road+rail+hut |
+| Tundra (6) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1094 | RG | Tundra, irrigation+hut |
+| Tundra (6) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1110 | RW | Tundra, road+irrigation+hut |
+| Tundra (6) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1126 | Rm | Tundra, rail+irrigation+hut |
+| Tundra (6) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1142 | R2 | Tundra, road+rail+irrigation+hut |
+| Tundra (6) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1158 | SG | Tundra, pollution+hut |
+| Tundra (6) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1174 | SW | Tundra, road+pollution+hut |
+| Tundra (6) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1190 | Sm | Tundra, rail+pollution+hut |
+| Tundra (6) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1206 | S2 | Tundra, road+rail+pollution+hut |
+| Tundra (6) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1222 | TG | Tundra, irrigation+pollution+hut |
+| Tundra (6) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1238 | TW | Tundra, road+irrigation+pollution+hut |
+| Tundra (6) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1254 | Tm | Tundra, rail+irrigation+pollution+hut |
+| Tundra (6) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1270 | T2 | Tundra, road+rail+irrigation+pollution+hut |
+| Tundra (6) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1286 | UG | Tundra, fortress+hut |
+| Tundra (6) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1302 | UW | Tundra, road+fortress+hut |
+| Tundra (6) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1318 | Um | Tundra, rail+fortress+hut |
+| Tundra (6) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1334 | U2 | Tundra, road+rail+fortress+hut |
+| Tundra (6) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1350 | VG | Tundra, irrigation+fortress+hut |
+| Tundra (6) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1366 | VW | Tundra, road+irrigation+fortress+hut |
+| Tundra (6) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1382 | Vm | Tundra, rail+irrigation+fortress+hut |
+| Tundra (6) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1398 | V2 | Tundra, road+rail+irrigation+fortress+hut |
+| Tundra (6) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1414 | WG | Tundra, pollution+fortress+hut |
+| Tundra (6) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1430 | WW | Tundra, road+pollution+fortress+hut |
+| Tundra (6) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1446 | Wm | Tundra, rail+pollution+fortress+hut |
+| Tundra (6) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1462 | W2 | Tundra, road+rail+pollution+fortress+hut |
+| Tundra (6) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1478 | XG | Tundra, irrigation+pollution+fortress+hut |
+| Tundra (6) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1494 | XW | Tundra, road+irrigation+pollution+fortress+hut |
+| Tundra (6) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1510 | Xm | Tundra, rail+irrigation+pollution+fortress+hut |
+| Tundra (6) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1526 | X2 | Tundra, road+rail+irrigation+pollution+fortress+hut |
+| Tundra (6) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1542 | YG | Tundra, mine+hut |
+| Tundra (6) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1558 | YW | Tundra, road+mine+hut |
+| Tundra (6) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1574 | Ym | Tundra, rail+mine+hut |
+| Tundra (6) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1590 | Y2 | Tundra, road+rail+mine+hut |
+| Tundra (6) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1606 | ZG | Tundra, irrigation+mine+hut |
+| Tundra (6) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1622 | ZW | Tundra, road+irrigation+mine+hut |
+| Tundra (6) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1638 | Zm | Tundra, rail+irrigation+mine+hut |
+| Tundra (6) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1654 | Z2 | Tundra, road+rail+irrigation+mine+hut |
+| Tundra (6) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1670 | aG | Tundra, pollution+mine+hut |
+| Tundra (6) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1686 | aW | Tundra, road+pollution+mine+hut |
+| Tundra (6) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1702 | am | Tundra, rail+pollution+mine+hut |
+| Tundra (6) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1718 | a2 | Tundra, road+rail+pollution+mine+hut |
+| Tundra (6) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1734 | bG | Tundra, irrigation+pollution+mine+hut |
+| Tundra (6) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1750 | bW | Tundra, road+irrigation+pollution+mine+hut |
+| Tundra (6) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1766 | bm | Tundra, rail+irrigation+pollution+mine+hut |
+| Tundra (6) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1782 | b2 | Tundra, road+rail+irrigation+pollution+mine+hut |
+| Tundra (6) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1798 | cG | Tundra, fortress+mine+hut |
+| Tundra (6) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1814 | cW | Tundra, road+fortress+mine+hut |
+| Tundra (6) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1830 | cm | Tundra, rail+fortress+mine+hut |
+| Tundra (6) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1846 | c2 | Tundra, road+rail+fortress+mine+hut |
+| Tundra (6) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1862 | dG | Tundra, irrigation+fortress+mine+hut |
+| Tundra (6) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1878 | dW | Tundra, road+irrigation+fortress+mine+hut |
+| Tundra (6) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1894 | dm | Tundra, rail+irrigation+fortress+mine+hut |
+| Tundra (6) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1910 | d2 | Tundra, road+rail+irrigation+fortress+mine+hut |
+| Tundra (6) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1926 | eG | Tundra, pollution+fortress+mine+hut |
+| Tundra (6) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1942 | eW | Tundra, road+pollution+fortress+mine+hut |
+| Tundra (6) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1958 | em | Tundra, rail+pollution+fortress+mine+hut |
+| Tundra (6) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1974 | e2 | Tundra, road+rail+pollution+fortress+mine+hut |
+| Tundra (6) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1990 | fG | Tundra, irrigation+pollution+fortress+mine+hut |
+| Tundra (6) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 2006 | fW | Tundra, road+irrigation+pollution+fortress+mine+hut |
+| Tundra (6) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2022 | fm | Tundra, rail+irrigation+pollution+fortress+mine+hut |
+| Tundra (6) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2038 | f2 | Tundra, road+rail+irrigation+pollution+fortress+mine+hut |
+| Arctic (7) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 7 | AH | Arctic, untouched |
+| Arctic (7) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 23 | AX | Arctic, road |
+| Arctic (7) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 39 | An | Arctic, rail |
+| Arctic (7) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 55 | A3 | Arctic, road+rail |
+| Arctic (7) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 71 | BH | Arctic, irrigation |
+| Arctic (7) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 87 | BX | Arctic, road+irrigation |
+| Arctic (7) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 103 | Bn | Arctic, rail+irrigation |
+| Arctic (7) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 119 | B3 | Arctic, road+rail+irrigation |
+| Arctic (7) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 135 | CH | Arctic, pollution |
+| Arctic (7) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 151 | CX | Arctic, road+pollution |
+| Arctic (7) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 167 | Cn | Arctic, rail+pollution |
+| Arctic (7) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 183 | C3 | Arctic, road+rail+pollution |
+| Arctic (7) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 199 | DH | Arctic, irrigation+pollution |
+| Arctic (7) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 215 | DX | Arctic, road+irrigation+pollution |
+| Arctic (7) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 231 | Dn | Arctic, rail+irrigation+pollution |
+| Arctic (7) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 247 | D3 | Arctic, road+rail+irrigation+pollution |
+| Arctic (7) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 263 | EH | Arctic, fortress |
+| Arctic (7) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 279 | EX | Arctic, road+fortress |
+| Arctic (7) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 295 | En | Arctic, rail+fortress |
+| Arctic (7) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 311 | E3 | Arctic, road+rail+fortress |
+| Arctic (7) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 327 | FH | Arctic, irrigation+fortress |
+| Arctic (7) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 343 | FX | Arctic, road+irrigation+fortress |
+| Arctic (7) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 359 | Fn | Arctic, rail+irrigation+fortress |
+| Arctic (7) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 375 | F3 | Arctic, road+rail+irrigation+fortress |
+| Arctic (7) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 391 | GH | Arctic, pollution+fortress |
+| Arctic (7) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 407 | GX | Arctic, road+pollution+fortress |
+| Arctic (7) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 423 | Gn | Arctic, rail+pollution+fortress |
+| Arctic (7) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 439 | G3 | Arctic, road+rail+pollution+fortress |
+| Arctic (7) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 455 | HH | Arctic, irrigation+pollution+fortress |
+| Arctic (7) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 471 | HX | Arctic, road+irrigation+pollution+fortress |
+| Arctic (7) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 487 | Hn | Arctic, rail+irrigation+pollution+fortress |
+| Arctic (7) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 503 | H3 | Arctic, road+rail+irrigation+pollution+fortress |
+| Arctic (7) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 519 | IH | Arctic, mine |
+| Arctic (7) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 535 | IX | Arctic, road+mine |
+| Arctic (7) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 551 | In | Arctic, rail+mine |
+| Arctic (7) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 567 | I3 | Arctic, road+rail+mine |
+| Arctic (7) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 583 | JH | Arctic, irrigation+mine |
+| Arctic (7) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 599 | JX | Arctic, road+irrigation+mine |
+| Arctic (7) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 615 | Jn | Arctic, rail+irrigation+mine |
+| Arctic (7) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 631 | J3 | Arctic, road+rail+irrigation+mine |
+| Arctic (7) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 647 | KH | Arctic, pollution+mine |
+| Arctic (7) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 663 | KX | Arctic, road+pollution+mine |
+| Arctic (7) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 679 | Kn | Arctic, rail+pollution+mine |
+| Arctic (7) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 695 | K3 | Arctic, road+rail+pollution+mine |
+| Arctic (7) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 711 | LH | Arctic, irrigation+pollution+mine |
+| Arctic (7) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 727 | LX | Arctic, road+irrigation+pollution+mine |
+| Arctic (7) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 743 | Ln | Arctic, rail+irrigation+pollution+mine |
+| Arctic (7) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 759 | L3 | Arctic, road+rail+irrigation+pollution+mine |
+| Arctic (7) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 775 | MH | Arctic, fortress+mine |
+| Arctic (7) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 791 | MX | Arctic, road+fortress+mine |
+| Arctic (7) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 807 | Mn | Arctic, rail+fortress+mine |
+| Arctic (7) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 823 | M3 | Arctic, road+rail+fortress+mine |
+| Arctic (7) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 839 | NH | Arctic, irrigation+fortress+mine |
+| Arctic (7) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 855 | NX | Arctic, road+irrigation+fortress+mine |
+| Arctic (7) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 871 | Nn | Arctic, rail+irrigation+fortress+mine |
+| Arctic (7) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 887 | N3 | Arctic, road+rail+irrigation+fortress+mine |
+| Arctic (7) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 903 | OH | Arctic, pollution+fortress+mine |
+| Arctic (7) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 919 | OX | Arctic, road+pollution+fortress+mine |
+| Arctic (7) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 935 | On | Arctic, rail+pollution+fortress+mine |
+| Arctic (7) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 951 | O3 | Arctic, road+rail+pollution+fortress+mine |
+| Arctic (7) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 967 | PH | Arctic, irrigation+pollution+fortress+mine |
+| Arctic (7) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 983 | PX | Arctic, road+irrigation+pollution+fortress+mine |
+| Arctic (7) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 999 | Pn | Arctic, rail+irrigation+pollution+fortress+mine |
+| Arctic (7) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1015 | P3 | Arctic, road+rail+irrigation+pollution+fortress+mine |
+| Arctic (7) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1031 | QH | Arctic, hut |
+| Arctic (7) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1047 | QX | Arctic, road+hut |
+| Arctic (7) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1063 | Qn | Arctic, rail+hut |
+| Arctic (7) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1079 | Q3 | Arctic, road+rail+hut |
+| Arctic (7) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1095 | RH | Arctic, irrigation+hut |
+| Arctic (7) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1111 | RX | Arctic, road+irrigation+hut |
+| Arctic (7) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1127 | Rn | Arctic, rail+irrigation+hut |
+| Arctic (7) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1143 | R3 | Arctic, road+rail+irrigation+hut |
+| Arctic (7) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1159 | SH | Arctic, pollution+hut |
+| Arctic (7) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1175 | SX | Arctic, road+pollution+hut |
+| Arctic (7) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1191 | Sn | Arctic, rail+pollution+hut |
+| Arctic (7) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1207 | S3 | Arctic, road+rail+pollution+hut |
+| Arctic (7) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1223 | TH | Arctic, irrigation+pollution+hut |
+| Arctic (7) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1239 | TX | Arctic, road+irrigation+pollution+hut |
+| Arctic (7) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1255 | Tn | Arctic, rail+irrigation+pollution+hut |
+| Arctic (7) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1271 | T3 | Arctic, road+rail+irrigation+pollution+hut |
+| Arctic (7) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1287 | UH | Arctic, fortress+hut |
+| Arctic (7) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1303 | UX | Arctic, road+fortress+hut |
+| Arctic (7) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1319 | Un | Arctic, rail+fortress+hut |
+| Arctic (7) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1335 | U3 | Arctic, road+rail+fortress+hut |
+| Arctic (7) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1351 | VH | Arctic, irrigation+fortress+hut |
+| Arctic (7) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1367 | VX | Arctic, road+irrigation+fortress+hut |
+| Arctic (7) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1383 | Vn | Arctic, rail+irrigation+fortress+hut |
+| Arctic (7) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1399 | V3 | Arctic, road+rail+irrigation+fortress+hut |
+| Arctic (7) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1415 | WH | Arctic, pollution+fortress+hut |
+| Arctic (7) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1431 | WX | Arctic, road+pollution+fortress+hut |
+| Arctic (7) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1447 | Wn | Arctic, rail+pollution+fortress+hut |
+| Arctic (7) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1463 | W3 | Arctic, road+rail+pollution+fortress+hut |
+| Arctic (7) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1479 | XH | Arctic, irrigation+pollution+fortress+hut |
+| Arctic (7) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1495 | XX | Arctic, road+irrigation+pollution+fortress+hut |
+| Arctic (7) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1511 | Xn | Arctic, rail+irrigation+pollution+fortress+hut |
+| Arctic (7) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1527 | X3 | Arctic, road+rail+irrigation+pollution+fortress+hut |
+| Arctic (7) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1543 | YH | Arctic, mine+hut |
+| Arctic (7) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1559 | YX | Arctic, road+mine+hut |
+| Arctic (7) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1575 | Yn | Arctic, rail+mine+hut |
+| Arctic (7) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1591 | Y3 | Arctic, road+rail+mine+hut |
+| Arctic (7) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1607 | ZH | Arctic, irrigation+mine+hut |
+| Arctic (7) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1623 | ZX | Arctic, road+irrigation+mine+hut |
+| Arctic (7) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1639 | Zn | Arctic, rail+irrigation+mine+hut |
+| Arctic (7) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1655 | Z3 | Arctic, road+rail+irrigation+mine+hut |
+| Arctic (7) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1671 | aH | Arctic, pollution+mine+hut |
+| Arctic (7) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1687 | aX | Arctic, road+pollution+mine+hut |
+| Arctic (7) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1703 | an | Arctic, rail+pollution+mine+hut |
+| Arctic (7) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1719 | a3 | Arctic, road+rail+pollution+mine+hut |
+| Arctic (7) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1735 | bH | Arctic, irrigation+pollution+mine+hut |
+| Arctic (7) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1751 | bX | Arctic, road+irrigation+pollution+mine+hut |
+| Arctic (7) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1767 | bn | Arctic, rail+irrigation+pollution+mine+hut |
+| Arctic (7) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1783 | b3 | Arctic, road+rail+irrigation+pollution+mine+hut |
+| Arctic (7) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1799 | cH | Arctic, fortress+mine+hut |
+| Arctic (7) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1815 | cX | Arctic, road+fortress+mine+hut |
+| Arctic (7) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1831 | cn | Arctic, rail+fortress+mine+hut |
+| Arctic (7) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1847 | c3 | Arctic, road+rail+fortress+mine+hut |
+| Arctic (7) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1863 | dH | Arctic, irrigation+fortress+mine+hut |
+| Arctic (7) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1879 | dX | Arctic, road+irrigation+fortress+mine+hut |
+| Arctic (7) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1895 | dn | Arctic, rail+irrigation+fortress+mine+hut |
+| Arctic (7) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1911 | d3 | Arctic, road+rail+irrigation+fortress+mine+hut |
+| Arctic (7) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1927 | eH | Arctic, pollution+fortress+mine+hut |
+| Arctic (7) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1943 | eX | Arctic, road+pollution+fortress+mine+hut |
+| Arctic (7) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1959 | en | Arctic, rail+pollution+fortress+mine+hut |
+| Arctic (7) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1975 | e3 | Arctic, road+rail+pollution+fortress+mine+hut |
+| Arctic (7) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1991 | fH | Arctic, irrigation+pollution+fortress+mine+hut |
+| Arctic (7) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 2007 | fX | Arctic, road+irrigation+pollution+fortress+mine+hut |
+| Arctic (7) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2023 | fn | Arctic, rail+irrigation+pollution+fortress+mine+hut |
+| Arctic (7) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2039 | f3 | Arctic, road+rail+irrigation+pollution+fortress+mine+hut |
+| Swamp (8) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 8 | AI | Swamp, untouched |
+| Swamp (8) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 24 | AY | Swamp, road |
+| Swamp (8) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 40 | Ao | Swamp, rail |
+| Swamp (8) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 56 | A4 | Swamp, road+rail |
+| Swamp (8) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 72 | BI | Swamp, irrigation |
+| Swamp (8) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 88 | BY | Swamp, road+irrigation |
+| Swamp (8) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 104 | Bo | Swamp, rail+irrigation |
+| Swamp (8) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 120 | B4 | Swamp, road+rail+irrigation |
+| Swamp (8) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 136 | CI | Swamp, pollution |
+| Swamp (8) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 152 | CY | Swamp, road+pollution |
+| Swamp (8) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 168 | Co | Swamp, rail+pollution |
+| Swamp (8) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 184 | C4 | Swamp, road+rail+pollution |
+| Swamp (8) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 200 | DI | Swamp, irrigation+pollution |
+| Swamp (8) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 216 | DY | Swamp, road+irrigation+pollution |
+| Swamp (8) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 232 | Do | Swamp, rail+irrigation+pollution |
+| Swamp (8) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 248 | D4 | Swamp, road+rail+irrigation+pollution |
+| Swamp (8) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 264 | EI | Swamp, fortress |
+| Swamp (8) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 280 | EY | Swamp, road+fortress |
+| Swamp (8) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 296 | Eo | Swamp, rail+fortress |
+| Swamp (8) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 312 | E4 | Swamp, road+rail+fortress |
+| Swamp (8) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 328 | FI | Swamp, irrigation+fortress |
+| Swamp (8) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 344 | FY | Swamp, road+irrigation+fortress |
+| Swamp (8) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 360 | Fo | Swamp, rail+irrigation+fortress |
+| Swamp (8) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 376 | F4 | Swamp, road+rail+irrigation+fortress |
+| Swamp (8) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 392 | GI | Swamp, pollution+fortress |
+| Swamp (8) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 408 | GY | Swamp, road+pollution+fortress |
+| Swamp (8) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 424 | Go | Swamp, rail+pollution+fortress |
+| Swamp (8) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 440 | G4 | Swamp, road+rail+pollution+fortress |
+| Swamp (8) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 456 | HI | Swamp, irrigation+pollution+fortress |
+| Swamp (8) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 472 | HY | Swamp, road+irrigation+pollution+fortress |
+| Swamp (8) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 488 | Ho | Swamp, rail+irrigation+pollution+fortress |
+| Swamp (8) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 504 | H4 | Swamp, road+rail+irrigation+pollution+fortress |
+| Swamp (8) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 520 | II | Swamp, mine |
+| Swamp (8) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 536 | IY | Swamp, road+mine |
+| Swamp (8) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 552 | Io | Swamp, rail+mine |
+| Swamp (8) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 568 | I4 | Swamp, road+rail+mine |
+| Swamp (8) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 584 | JI | Swamp, irrigation+mine |
+| Swamp (8) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 600 | JY | Swamp, road+irrigation+mine |
+| Swamp (8) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 616 | Jo | Swamp, rail+irrigation+mine |
+| Swamp (8) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 632 | J4 | Swamp, road+rail+irrigation+mine |
+| Swamp (8) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 648 | KI | Swamp, pollution+mine |
+| Swamp (8) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 664 | KY | Swamp, road+pollution+mine |
+| Swamp (8) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 680 | Ko | Swamp, rail+pollution+mine |
+| Swamp (8) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 696 | K4 | Swamp, road+rail+pollution+mine |
+| Swamp (8) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 712 | LI | Swamp, irrigation+pollution+mine |
+| Swamp (8) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 728 | LY | Swamp, road+irrigation+pollution+mine |
+| Swamp (8) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 744 | Lo | Swamp, rail+irrigation+pollution+mine |
+| Swamp (8) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 760 | L4 | Swamp, road+rail+irrigation+pollution+mine |
+| Swamp (8) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 776 | MI | Swamp, fortress+mine |
+| Swamp (8) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 792 | MY | Swamp, road+fortress+mine |
+| Swamp (8) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 808 | Mo | Swamp, rail+fortress+mine |
+| Swamp (8) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 824 | M4 | Swamp, road+rail+fortress+mine |
+| Swamp (8) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 840 | NI | Swamp, irrigation+fortress+mine |
+| Swamp (8) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 856 | NY | Swamp, road+irrigation+fortress+mine |
+| Swamp (8) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 872 | No | Swamp, rail+irrigation+fortress+mine |
+| Swamp (8) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 888 | N4 | Swamp, road+rail+irrigation+fortress+mine |
+| Swamp (8) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 904 | OI | Swamp, pollution+fortress+mine |
+| Swamp (8) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 920 | OY | Swamp, road+pollution+fortress+mine |
+| Swamp (8) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 936 | Oo | Swamp, rail+pollution+fortress+mine |
+| Swamp (8) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 952 | O4 | Swamp, road+rail+pollution+fortress+mine |
+| Swamp (8) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 968 | PI | Swamp, irrigation+pollution+fortress+mine |
+| Swamp (8) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 984 | PY | Swamp, road+irrigation+pollution+fortress+mine |
+| Swamp (8) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1000 | Po | Swamp, rail+irrigation+pollution+fortress+mine |
+| Swamp (8) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1016 | P4 | Swamp, road+rail+irrigation+pollution+fortress+mine |
+| Swamp (8) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1032 | QI | Swamp, hut |
+| Swamp (8) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1048 | QY | Swamp, road+hut |
+| Swamp (8) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1064 | Qo | Swamp, rail+hut |
+| Swamp (8) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1080 | Q4 | Swamp, road+rail+hut |
+| Swamp (8) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1096 | RI | Swamp, irrigation+hut |
+| Swamp (8) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1112 | RY | Swamp, road+irrigation+hut |
+| Swamp (8) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1128 | Ro | Swamp, rail+irrigation+hut |
+| Swamp (8) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1144 | R4 | Swamp, road+rail+irrigation+hut |
+| Swamp (8) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1160 | SI | Swamp, pollution+hut |
+| Swamp (8) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1176 | SY | Swamp, road+pollution+hut |
+| Swamp (8) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1192 | So | Swamp, rail+pollution+hut |
+| Swamp (8) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1208 | S4 | Swamp, road+rail+pollution+hut |
+| Swamp (8) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1224 | TI | Swamp, irrigation+pollution+hut |
+| Swamp (8) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1240 | TY | Swamp, road+irrigation+pollution+hut |
+| Swamp (8) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1256 | To | Swamp, rail+irrigation+pollution+hut |
+| Swamp (8) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1272 | T4 | Swamp, road+rail+irrigation+pollution+hut |
+| Swamp (8) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1288 | UI | Swamp, fortress+hut |
+| Swamp (8) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1304 | UY | Swamp, road+fortress+hut |
+| Swamp (8) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1320 | Uo | Swamp, rail+fortress+hut |
+| Swamp (8) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1336 | U4 | Swamp, road+rail+fortress+hut |
+| Swamp (8) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1352 | VI | Swamp, irrigation+fortress+hut |
+| Swamp (8) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1368 | VY | Swamp, road+irrigation+fortress+hut |
+| Swamp (8) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1384 | Vo | Swamp, rail+irrigation+fortress+hut |
+| Swamp (8) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1400 | V4 | Swamp, road+rail+irrigation+fortress+hut |
+| Swamp (8) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1416 | WI | Swamp, pollution+fortress+hut |
+| Swamp (8) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1432 | WY | Swamp, road+pollution+fortress+hut |
+| Swamp (8) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1448 | Wo | Swamp, rail+pollution+fortress+hut |
+| Swamp (8) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1464 | W4 | Swamp, road+rail+pollution+fortress+hut |
+| Swamp (8) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1480 | XI | Swamp, irrigation+pollution+fortress+hut |
+| Swamp (8) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1496 | XY | Swamp, road+irrigation+pollution+fortress+hut |
+| Swamp (8) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1512 | Xo | Swamp, rail+irrigation+pollution+fortress+hut |
+| Swamp (8) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1528 | X4 | Swamp, road+rail+irrigation+pollution+fortress+hut |
+| Swamp (8) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1544 | YI | Swamp, mine+hut |
+| Swamp (8) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1560 | YY | Swamp, road+mine+hut |
+| Swamp (8) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1576 | Yo | Swamp, rail+mine+hut |
+| Swamp (8) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1592 | Y4 | Swamp, road+rail+mine+hut |
+| Swamp (8) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1608 | ZI | Swamp, irrigation+mine+hut |
+| Swamp (8) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1624 | ZY | Swamp, road+irrigation+mine+hut |
+| Swamp (8) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1640 | Zo | Swamp, rail+irrigation+mine+hut |
+| Swamp (8) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1656 | Z4 | Swamp, road+rail+irrigation+mine+hut |
+| Swamp (8) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1672 | aI | Swamp, pollution+mine+hut |
+| Swamp (8) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1688 | aY | Swamp, road+pollution+mine+hut |
+| Swamp (8) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1704 | ao | Swamp, rail+pollution+mine+hut |
+| Swamp (8) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1720 | a4 | Swamp, road+rail+pollution+mine+hut |
+| Swamp (8) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1736 | bI | Swamp, irrigation+pollution+mine+hut |
+| Swamp (8) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1752 | bY | Swamp, road+irrigation+pollution+mine+hut |
+| Swamp (8) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1768 | bo | Swamp, rail+irrigation+pollution+mine+hut |
+| Swamp (8) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1784 | b4 | Swamp, road+rail+irrigation+pollution+mine+hut |
+| Swamp (8) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1800 | cI | Swamp, fortress+mine+hut |
+| Swamp (8) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1816 | cY | Swamp, road+fortress+mine+hut |
+| Swamp (8) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1832 | co | Swamp, rail+fortress+mine+hut |
+| Swamp (8) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1848 | c4 | Swamp, road+rail+fortress+mine+hut |
+| Swamp (8) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1864 | dI | Swamp, irrigation+fortress+mine+hut |
+| Swamp (8) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1880 | dY | Swamp, road+irrigation+fortress+mine+hut |
+| Swamp (8) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1896 | do | Swamp, rail+irrigation+fortress+mine+hut |
+| Swamp (8) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1912 | d4 | Swamp, road+rail+irrigation+fortress+mine+hut |
+| Swamp (8) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1928 | eI | Swamp, pollution+fortress+mine+hut |
+| Swamp (8) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1944 | eY | Swamp, road+pollution+fortress+mine+hut |
+| Swamp (8) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1960 | eo | Swamp, rail+pollution+fortress+mine+hut |
+| Swamp (8) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1976 | e4 | Swamp, road+rail+pollution+fortress+mine+hut |
+| Swamp (8) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1992 | fI | Swamp, irrigation+pollution+fortress+mine+hut |
+| Swamp (8) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 2008 | fY | Swamp, road+irrigation+pollution+fortress+mine+hut |
+| Swamp (8) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2024 | fo | Swamp, rail+irrigation+pollution+fortress+mine+hut |
+| Swamp (8) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2040 | f4 | Swamp, road+rail+irrigation+pollution+fortress+mine+hut |
+| Jungle (9) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 9 | AJ | Jungle, untouched |
+| Jungle (9) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 25 | AZ | Jungle, road |
+| Jungle (9) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 41 | Ap | Jungle, rail |
+| Jungle (9) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 57 | A5 | Jungle, road+rail |
+| Jungle (9) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 73 | BJ | Jungle, irrigation |
+| Jungle (9) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 89 | BZ | Jungle, road+irrigation |
+| Jungle (9) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 105 | Bp | Jungle, rail+irrigation |
+| Jungle (9) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 121 | B5 | Jungle, road+rail+irrigation |
+| Jungle (9) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 137 | CJ | Jungle, pollution |
+| Jungle (9) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 153 | CZ | Jungle, road+pollution |
+| Jungle (9) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 169 | Cp | Jungle, rail+pollution |
+| Jungle (9) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 185 | C5 | Jungle, road+rail+pollution |
+| Jungle (9) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 201 | DJ | Jungle, irrigation+pollution |
+| Jungle (9) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 217 | DZ | Jungle, road+irrigation+pollution |
+| Jungle (9) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 233 | Dp | Jungle, rail+irrigation+pollution |
+| Jungle (9) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 249 | D5 | Jungle, road+rail+irrigation+pollution |
+| Jungle (9) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 265 | EJ | Jungle, fortress |
+| Jungle (9) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 281 | EZ | Jungle, road+fortress |
+| Jungle (9) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 297 | Ep | Jungle, rail+fortress |
+| Jungle (9) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 313 | E5 | Jungle, road+rail+fortress |
+| Jungle (9) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 329 | FJ | Jungle, irrigation+fortress |
+| Jungle (9) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 345 | FZ | Jungle, road+irrigation+fortress |
+| Jungle (9) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 361 | Fp | Jungle, rail+irrigation+fortress |
+| Jungle (9) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 377 | F5 | Jungle, road+rail+irrigation+fortress |
+| Jungle (9) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 393 | GJ | Jungle, pollution+fortress |
+| Jungle (9) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 409 | GZ | Jungle, road+pollution+fortress |
+| Jungle (9) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 425 | Gp | Jungle, rail+pollution+fortress |
+| Jungle (9) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 441 | G5 | Jungle, road+rail+pollution+fortress |
+| Jungle (9) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 457 | HJ | Jungle, irrigation+pollution+fortress |
+| Jungle (9) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 473 | HZ | Jungle, road+irrigation+pollution+fortress |
+| Jungle (9) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 489 | Hp | Jungle, rail+irrigation+pollution+fortress |
+| Jungle (9) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 505 | H5 | Jungle, road+rail+irrigation+pollution+fortress |
+| Jungle (9) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 521 | IJ | Jungle, mine |
+| Jungle (9) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 537 | IZ | Jungle, road+mine |
+| Jungle (9) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 553 | Ip | Jungle, rail+mine |
+| Jungle (9) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 569 | I5 | Jungle, road+rail+mine |
+| Jungle (9) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 585 | JJ | Jungle, irrigation+mine |
+| Jungle (9) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 601 | JZ | Jungle, road+irrigation+mine |
+| Jungle (9) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 617 | Jp | Jungle, rail+irrigation+mine |
+| Jungle (9) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 633 | J5 | Jungle, road+rail+irrigation+mine |
+| Jungle (9) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 649 | KJ | Jungle, pollution+mine |
+| Jungle (9) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 665 | KZ | Jungle, road+pollution+mine |
+| Jungle (9) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 681 | Kp | Jungle, rail+pollution+mine |
+| Jungle (9) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 697 | K5 | Jungle, road+rail+pollution+mine |
+| Jungle (9) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 713 | LJ | Jungle, irrigation+pollution+mine |
+| Jungle (9) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 729 | LZ | Jungle, road+irrigation+pollution+mine |
+| Jungle (9) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 745 | Lp | Jungle, rail+irrigation+pollution+mine |
+| Jungle (9) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 761 | L5 | Jungle, road+rail+irrigation+pollution+mine |
+| Jungle (9) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 777 | MJ | Jungle, fortress+mine |
+| Jungle (9) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 793 | MZ | Jungle, road+fortress+mine |
+| Jungle (9) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 809 | Mp | Jungle, rail+fortress+mine |
+| Jungle (9) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 825 | M5 | Jungle, road+rail+fortress+mine |
+| Jungle (9) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 841 | NJ | Jungle, irrigation+fortress+mine |
+| Jungle (9) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 857 | NZ | Jungle, road+irrigation+fortress+mine |
+| Jungle (9) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 873 | Np | Jungle, rail+irrigation+fortress+mine |
+| Jungle (9) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 889 | N5 | Jungle, road+rail+irrigation+fortress+mine |
+| Jungle (9) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 905 | OJ | Jungle, pollution+fortress+mine |
+| Jungle (9) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 921 | OZ | Jungle, road+pollution+fortress+mine |
+| Jungle (9) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 937 | Op | Jungle, rail+pollution+fortress+mine |
+| Jungle (9) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 953 | O5 | Jungle, road+rail+pollution+fortress+mine |
+| Jungle (9) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 969 | PJ | Jungle, irrigation+pollution+fortress+mine |
+| Jungle (9) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 985 | PZ | Jungle, road+irrigation+pollution+fortress+mine |
+| Jungle (9) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1001 | Pp | Jungle, rail+irrigation+pollution+fortress+mine |
+| Jungle (9) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1017 | P5 | Jungle, road+rail+irrigation+pollution+fortress+mine |
+| Jungle (9) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1033 | QJ | Jungle, hut |
+| Jungle (9) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1049 | QZ | Jungle, road+hut |
+| Jungle (9) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1065 | Qp | Jungle, rail+hut |
+| Jungle (9) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1081 | Q5 | Jungle, road+rail+hut |
+| Jungle (9) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1097 | RJ | Jungle, irrigation+hut |
+| Jungle (9) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1113 | RZ | Jungle, road+irrigation+hut |
+| Jungle (9) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1129 | Rp | Jungle, rail+irrigation+hut |
+| Jungle (9) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1145 | R5 | Jungle, road+rail+irrigation+hut |
+| Jungle (9) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1161 | SJ | Jungle, pollution+hut |
+| Jungle (9) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1177 | SZ | Jungle, road+pollution+hut |
+| Jungle (9) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1193 | Sp | Jungle, rail+pollution+hut |
+| Jungle (9) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1209 | S5 | Jungle, road+rail+pollution+hut |
+| Jungle (9) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1225 | TJ | Jungle, irrigation+pollution+hut |
+| Jungle (9) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1241 | TZ | Jungle, road+irrigation+pollution+hut |
+| Jungle (9) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1257 | Tp | Jungle, rail+irrigation+pollution+hut |
+| Jungle (9) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1273 | T5 | Jungle, road+rail+irrigation+pollution+hut |
+| Jungle (9) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1289 | UJ | Jungle, fortress+hut |
+| Jungle (9) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1305 | UZ | Jungle, road+fortress+hut |
+| Jungle (9) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1321 | Up | Jungle, rail+fortress+hut |
+| Jungle (9) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1337 | U5 | Jungle, road+rail+fortress+hut |
+| Jungle (9) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1353 | VJ | Jungle, irrigation+fortress+hut |
+| Jungle (9) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1369 | VZ | Jungle, road+irrigation+fortress+hut |
+| Jungle (9) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1385 | Vp | Jungle, rail+irrigation+fortress+hut |
+| Jungle (9) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1401 | V5 | Jungle, road+rail+irrigation+fortress+hut |
+| Jungle (9) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1417 | WJ | Jungle, pollution+fortress+hut |
+| Jungle (9) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1433 | WZ | Jungle, road+pollution+fortress+hut |
+| Jungle (9) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1449 | Wp | Jungle, rail+pollution+fortress+hut |
+| Jungle (9) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1465 | W5 | Jungle, road+rail+pollution+fortress+hut |
+| Jungle (9) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1481 | XJ | Jungle, irrigation+pollution+fortress+hut |
+| Jungle (9) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1497 | XZ | Jungle, road+irrigation+pollution+fortress+hut |
+| Jungle (9) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1513 | Xp | Jungle, rail+irrigation+pollution+fortress+hut |
+| Jungle (9) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1529 | X5 | Jungle, road+rail+irrigation+pollution+fortress+hut |
+| Jungle (9) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1545 | YJ | Jungle, mine+hut |
+| Jungle (9) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1561 | YZ | Jungle, road+mine+hut |
+| Jungle (9) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1577 | Yp | Jungle, rail+mine+hut |
+| Jungle (9) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1593 | Y5 | Jungle, road+rail+mine+hut |
+| Jungle (9) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1609 | ZJ | Jungle, irrigation+mine+hut |
+| Jungle (9) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1625 | ZZ | Jungle, road+irrigation+mine+hut |
+| Jungle (9) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1641 | Zp | Jungle, rail+irrigation+mine+hut |
+| Jungle (9) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1657 | Z5 | Jungle, road+rail+irrigation+mine+hut |
+| Jungle (9) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1673 | aJ | Jungle, pollution+mine+hut |
+| Jungle (9) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1689 | aZ | Jungle, road+pollution+mine+hut |
+| Jungle (9) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1705 | ap | Jungle, rail+pollution+mine+hut |
+| Jungle (9) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1721 | a5 | Jungle, road+rail+pollution+mine+hut |
+| Jungle (9) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1737 | bJ | Jungle, irrigation+pollution+mine+hut |
+| Jungle (9) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1753 | bZ | Jungle, road+irrigation+pollution+mine+hut |
+| Jungle (9) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1769 | bp | Jungle, rail+irrigation+pollution+mine+hut |
+| Jungle (9) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1785 | b5 | Jungle, road+rail+irrigation+pollution+mine+hut |
+| Jungle (9) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1801 | cJ | Jungle, fortress+mine+hut |
+| Jungle (9) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1817 | cZ | Jungle, road+fortress+mine+hut |
+| Jungle (9) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1833 | cp | Jungle, rail+fortress+mine+hut |
+| Jungle (9) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1849 | c5 | Jungle, road+rail+fortress+mine+hut |
+| Jungle (9) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1865 | dJ | Jungle, irrigation+fortress+mine+hut |
+| Jungle (9) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1881 | dZ | Jungle, road+irrigation+fortress+mine+hut |
+| Jungle (9) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1897 | dp | Jungle, rail+irrigation+fortress+mine+hut |
+| Jungle (9) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1913 | d5 | Jungle, road+rail+irrigation+fortress+mine+hut |
+| Jungle (9) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1929 | eJ | Jungle, pollution+fortress+mine+hut |
+| Jungle (9) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1945 | eZ | Jungle, road+pollution+fortress+mine+hut |
+| Jungle (9) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1961 | ep | Jungle, rail+pollution+fortress+mine+hut |
+| Jungle (9) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1977 | e5 | Jungle, road+rail+pollution+fortress+mine+hut |
+| Jungle (9) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1993 | fJ | Jungle, irrigation+pollution+fortress+mine+hut |
+| Jungle (9) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 2009 | fZ | Jungle, road+irrigation+pollution+fortress+mine+hut |
+| Jungle (9) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2025 | fp | Jungle, rail+irrigation+pollution+fortress+mine+hut |
+| Jungle (9) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2041 | f5 | Jungle, road+rail+irrigation+pollution+fortress+mine+hut |
+| Ocean (10) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 10 | AK | Ocean, untouched |
+| Ocean (10) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 26 | Aa | Ocean, road |
+| Ocean (10) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 42 | Aq | Ocean, rail |
+| Ocean (10) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 58 | A6 | Ocean, road+rail |
+| Ocean (10) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 74 | BK | Ocean, irrigation |
+| Ocean (10) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 90 | Ba | Ocean, road+irrigation |
+| Ocean (10) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 106 | Bq | Ocean, rail+irrigation |
+| Ocean (10) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 122 | B6 | Ocean, road+rail+irrigation |
+| Ocean (10) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 138 | CK | Ocean, pollution |
+| Ocean (10) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 154 | Ca | Ocean, road+pollution |
+| Ocean (10) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 170 | Cq | Ocean, rail+pollution |
+| Ocean (10) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 186 | C6 | Ocean, road+rail+pollution |
+| Ocean (10) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 202 | DK | Ocean, irrigation+pollution |
+| Ocean (10) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 218 | Da | Ocean, road+irrigation+pollution |
+| Ocean (10) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 234 | Dq | Ocean, rail+irrigation+pollution |
+| Ocean (10) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 250 | D6 | Ocean, road+rail+irrigation+pollution |
+| Ocean (10) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 266 | EK | Ocean, fortress |
+| Ocean (10) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 282 | Ea | Ocean, road+fortress |
+| Ocean (10) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 298 | Eq | Ocean, rail+fortress |
+| Ocean (10) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 314 | E6 | Ocean, road+rail+fortress |
+| Ocean (10) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 330 | FK | Ocean, irrigation+fortress |
+| Ocean (10) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 346 | Fa | Ocean, road+irrigation+fortress |
+| Ocean (10) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 362 | Fq | Ocean, rail+irrigation+fortress |
+| Ocean (10) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 378 | F6 | Ocean, road+rail+irrigation+fortress |
+| Ocean (10) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 394 | GK | Ocean, pollution+fortress |
+| Ocean (10) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 410 | Ga | Ocean, road+pollution+fortress |
+| Ocean (10) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 426 | Gq | Ocean, rail+pollution+fortress |
+| Ocean (10) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 442 | G6 | Ocean, road+rail+pollution+fortress |
+| Ocean (10) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 458 | HK | Ocean, irrigation+pollution+fortress |
+| Ocean (10) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 474 | Ha | Ocean, road+irrigation+pollution+fortress |
+| Ocean (10) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 490 | Hq | Ocean, rail+irrigation+pollution+fortress |
+| Ocean (10) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 506 | H6 | Ocean, road+rail+irrigation+pollution+fortress |
+| Ocean (10) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 522 | IK | Ocean, mine |
+| Ocean (10) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 538 | Ia | Ocean, road+mine |
+| Ocean (10) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 554 | Iq | Ocean, rail+mine |
+| Ocean (10) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 570 | I6 | Ocean, road+rail+mine |
+| Ocean (10) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 586 | JK | Ocean, irrigation+mine |
+| Ocean (10) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 602 | Ja | Ocean, road+irrigation+mine |
+| Ocean (10) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 618 | Jq | Ocean, rail+irrigation+mine |
+| Ocean (10) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 634 | J6 | Ocean, road+rail+irrigation+mine |
+| Ocean (10) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 650 | KK | Ocean, pollution+mine |
+| Ocean (10) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 666 | Ka | Ocean, road+pollution+mine |
+| Ocean (10) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 682 | Kq | Ocean, rail+pollution+mine |
+| Ocean (10) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 698 | K6 | Ocean, road+rail+pollution+mine |
+| Ocean (10) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 714 | LK | Ocean, irrigation+pollution+mine |
+| Ocean (10) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 730 | La | Ocean, road+irrigation+pollution+mine |
+| Ocean (10) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 746 | Lq | Ocean, rail+irrigation+pollution+mine |
+| Ocean (10) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 762 | L6 | Ocean, road+rail+irrigation+pollution+mine |
+| Ocean (10) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 778 | MK | Ocean, fortress+mine |
+| Ocean (10) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 794 | Ma | Ocean, road+fortress+mine |
+| Ocean (10) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 810 | Mq | Ocean, rail+fortress+mine |
+| Ocean (10) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 826 | M6 | Ocean, road+rail+fortress+mine |
+| Ocean (10) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 842 | NK | Ocean, irrigation+fortress+mine |
+| Ocean (10) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 858 | Na | Ocean, road+irrigation+fortress+mine |
+| Ocean (10) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 874 | Nq | Ocean, rail+irrigation+fortress+mine |
+| Ocean (10) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 890 | N6 | Ocean, road+rail+irrigation+fortress+mine |
+| Ocean (10) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 906 | OK | Ocean, pollution+fortress+mine |
+| Ocean (10) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 922 | Oa | Ocean, road+pollution+fortress+mine |
+| Ocean (10) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 938 | Oq | Ocean, rail+pollution+fortress+mine |
+| Ocean (10) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 954 | O6 | Ocean, road+rail+pollution+fortress+mine |
+| Ocean (10) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 970 | PK | Ocean, irrigation+pollution+fortress+mine |
+| Ocean (10) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 986 | Pa | Ocean, road+irrigation+pollution+fortress+mine |
+| Ocean (10) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1002 | Pq | Ocean, rail+irrigation+pollution+fortress+mine |
+| Ocean (10) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1018 | P6 | Ocean, road+rail+irrigation+pollution+fortress+mine |
+| Ocean (10) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1034 | QK | Ocean, hut |
+| Ocean (10) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1050 | Qa | Ocean, road+hut |
+| Ocean (10) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1066 | Qq | Ocean, rail+hut |
+| Ocean (10) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1082 | Q6 | Ocean, road+rail+hut |
+| Ocean (10) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1098 | RK | Ocean, irrigation+hut |
+| Ocean (10) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1114 | Ra | Ocean, road+irrigation+hut |
+| Ocean (10) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1130 | Rq | Ocean, rail+irrigation+hut |
+| Ocean (10) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1146 | R6 | Ocean, road+rail+irrigation+hut |
+| Ocean (10) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1162 | SK | Ocean, pollution+hut |
+| Ocean (10) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1178 | Sa | Ocean, road+pollution+hut |
+| Ocean (10) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1194 | Sq | Ocean, rail+pollution+hut |
+| Ocean (10) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1210 | S6 | Ocean, road+rail+pollution+hut |
+| Ocean (10) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1226 | TK | Ocean, irrigation+pollution+hut |
+| Ocean (10) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1242 | Ta | Ocean, road+irrigation+pollution+hut |
+| Ocean (10) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1258 | Tq | Ocean, rail+irrigation+pollution+hut |
+| Ocean (10) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1274 | T6 | Ocean, road+rail+irrigation+pollution+hut |
+| Ocean (10) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1290 | UK | Ocean, fortress+hut |
+| Ocean (10) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1306 | Ua | Ocean, road+fortress+hut |
+| Ocean (10) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1322 | Uq | Ocean, rail+fortress+hut |
+| Ocean (10) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1338 | U6 | Ocean, road+rail+fortress+hut |
+| Ocean (10) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1354 | VK | Ocean, irrigation+fortress+hut |
+| Ocean (10) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1370 | Va | Ocean, road+irrigation+fortress+hut |
+| Ocean (10) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1386 | Vq | Ocean, rail+irrigation+fortress+hut |
+| Ocean (10) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1402 | V6 | Ocean, road+rail+irrigation+fortress+hut |
+| Ocean (10) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1418 | WK | Ocean, pollution+fortress+hut |
+| Ocean (10) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1434 | Wa | Ocean, road+pollution+fortress+hut |
+| Ocean (10) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1450 | Wq | Ocean, rail+pollution+fortress+hut |
+| Ocean (10) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1466 | W6 | Ocean, road+rail+pollution+fortress+hut |
+| Ocean (10) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1482 | XK | Ocean, irrigation+pollution+fortress+hut |
+| Ocean (10) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1498 | Xa | Ocean, road+irrigation+pollution+fortress+hut |
+| Ocean (10) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1514 | Xq | Ocean, rail+irrigation+pollution+fortress+hut |
+| Ocean (10) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1530 | X6 | Ocean, road+rail+irrigation+pollution+fortress+hut |
+| Ocean (10) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1546 | YK | Ocean, mine+hut |
+| Ocean (10) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1562 | Ya | Ocean, road+mine+hut |
+| Ocean (10) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1578 | Yq | Ocean, rail+mine+hut |
+| Ocean (10) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1594 | Y6 | Ocean, road+rail+mine+hut |
+| Ocean (10) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1610 | ZK | Ocean, irrigation+mine+hut |
+| Ocean (10) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1626 | Za | Ocean, road+irrigation+mine+hut |
+| Ocean (10) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1642 | Zq | Ocean, rail+irrigation+mine+hut |
+| Ocean (10) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1658 | Z6 | Ocean, road+rail+irrigation+mine+hut |
+| Ocean (10) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1674 | aK | Ocean, pollution+mine+hut |
+| Ocean (10) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1690 | aa | Ocean, road+pollution+mine+hut |
+| Ocean (10) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1706 | aq | Ocean, rail+pollution+mine+hut |
+| Ocean (10) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1722 | a6 | Ocean, road+rail+pollution+mine+hut |
+| Ocean (10) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1738 | bK | Ocean, irrigation+pollution+mine+hut |
+| Ocean (10) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1754 | ba | Ocean, road+irrigation+pollution+mine+hut |
+| Ocean (10) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1770 | bq | Ocean, rail+irrigation+pollution+mine+hut |
+| Ocean (10) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1786 | b6 | Ocean, road+rail+irrigation+pollution+mine+hut |
+| Ocean (10) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1802 | cK | Ocean, fortress+mine+hut |
+| Ocean (10) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1818 | ca | Ocean, road+fortress+mine+hut |
+| Ocean (10) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1834 | cq | Ocean, rail+fortress+mine+hut |
+| Ocean (10) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1850 | c6 | Ocean, road+rail+fortress+mine+hut |
+| Ocean (10) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1866 | dK | Ocean, irrigation+fortress+mine+hut |
+| Ocean (10) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1882 | da | Ocean, road+irrigation+fortress+mine+hut |
+| Ocean (10) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1898 | dq | Ocean, rail+irrigation+fortress+mine+hut |
+| Ocean (10) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1914 | d6 | Ocean, road+rail+irrigation+fortress+mine+hut |
+| Ocean (10) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1930 | eK | Ocean, pollution+fortress+mine+hut |
+| Ocean (10) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1946 | ea | Ocean, road+pollution+fortress+mine+hut |
+| Ocean (10) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1962 | eq | Ocean, rail+pollution+fortress+mine+hut |
+| Ocean (10) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1978 | e6 | Ocean, road+rail+pollution+fortress+mine+hut |
+| Ocean (10) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1994 | fK | Ocean, irrigation+pollution+fortress+mine+hut |
+| Ocean (10) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 2010 | fa | Ocean, road+irrigation+pollution+fortress+mine+hut |
+| Ocean (10) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2026 | fq | Ocean, rail+irrigation+pollution+fortress+mine+hut |
+| Ocean (10) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2042 | f6 | Ocean, road+rail+irrigation+pollution+fortress+mine+hut |
+| River (11) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 11 | AL | River, untouched |
+| River (11) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 27 | Ab | River, road |
+| River (11) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 43 | Ar | River, rail |
+| River (11) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 59 | A7 | River, road+rail |
+| River (11) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 75 | BL | River, irrigation |
+| River (11) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 91 | Bb | River, road+irrigation |
+| River (11) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 107 | Br | River, rail+irrigation |
+| River (11) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 123 | B7 | River, road+rail+irrigation |
+| River (11) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 139 | CL | River, pollution |
+| River (11) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 155 | Cb | River, road+pollution |
+| River (11) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 171 | Cr | River, rail+pollution |
+| River (11) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 187 | C7 | River, road+rail+pollution |
+| River (11) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 203 | DL | River, irrigation+pollution |
+| River (11) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 219 | Db | River, road+irrigation+pollution |
+| River (11) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 235 | Dr | River, rail+irrigation+pollution |
+| River (11) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 251 | D7 | River, road+rail+irrigation+pollution |
+| River (11) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 267 | EL | River, fortress |
+| River (11) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 283 | Eb | River, road+fortress |
+| River (11) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 299 | Er | River, rail+fortress |
+| River (11) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 315 | E7 | River, road+rail+fortress |
+| River (11) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 331 | FL | River, irrigation+fortress |
+| River (11) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 347 | Fb | River, road+irrigation+fortress |
+| River (11) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 363 | Fr | River, rail+irrigation+fortress |
+| River (11) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 379 | F7 | River, road+rail+irrigation+fortress |
+| River (11) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 395 | GL | River, pollution+fortress |
+| River (11) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 411 | Gb | River, road+pollution+fortress |
+| River (11) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 427 | Gr | River, rail+pollution+fortress |
+| River (11) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 443 | G7 | River, road+rail+pollution+fortress |
+| River (11) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 459 | HL | River, irrigation+pollution+fortress |
+| River (11) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 475 | Hb | River, road+irrigation+pollution+fortress |
+| River (11) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 491 | Hr | River, rail+irrigation+pollution+fortress |
+| River (11) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 507 | H7 | River, road+rail+irrigation+pollution+fortress |
+| River (11) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 523 | IL | River, mine |
+| River (11) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 539 | Ib | River, road+mine |
+| River (11) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 555 | Ir | River, rail+mine |
+| River (11) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 571 | I7 | River, road+rail+mine |
+| River (11) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 587 | JL | River, irrigation+mine |
+| River (11) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 603 | Jb | River, road+irrigation+mine |
+| River (11) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 619 | Jr | River, rail+irrigation+mine |
+| River (11) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 635 | J7 | River, road+rail+irrigation+mine |
+| River (11) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 651 | KL | River, pollution+mine |
+| River (11) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 667 | Kb | River, road+pollution+mine |
+| River (11) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 683 | Kr | River, rail+pollution+mine |
+| River (11) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 699 | K7 | River, road+rail+pollution+mine |
+| River (11) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 715 | LL | River, irrigation+pollution+mine |
+| River (11) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 731 | Lb | River, road+irrigation+pollution+mine |
+| River (11) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 747 | Lr | River, rail+irrigation+pollution+mine |
+| River (11) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 763 | L7 | River, road+rail+irrigation+pollution+mine |
+| River (11) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 779 | ML | River, fortress+mine |
+| River (11) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 795 | Mb | River, road+fortress+mine |
+| River (11) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 811 | Mr | River, rail+fortress+mine |
+| River (11) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 827 | M7 | River, road+rail+fortress+mine |
+| River (11) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 843 | NL | River, irrigation+fortress+mine |
+| River (11) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 859 | Nb | River, road+irrigation+fortress+mine |
+| River (11) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 875 | Nr | River, rail+irrigation+fortress+mine |
+| River (11) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 891 | N7 | River, road+rail+irrigation+fortress+mine |
+| River (11) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 907 | OL | River, pollution+fortress+mine |
+| River (11) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 923 | Ob | River, road+pollution+fortress+mine |
+| River (11) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 939 | Or | River, rail+pollution+fortress+mine |
+| River (11) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 955 | O7 | River, road+rail+pollution+fortress+mine |
+| River (11) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 971 | PL | River, irrigation+pollution+fortress+mine |
+| River (11) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 987 | Pb | River, road+irrigation+pollution+fortress+mine |
+| River (11) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1003 | Pr | River, rail+irrigation+pollution+fortress+mine |
+| River (11) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1019 | P7 | River, road+rail+irrigation+pollution+fortress+mine |
+| River (11) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1035 | QL | River, hut |
+| River (11) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1051 | Qb | River, road+hut |
+| River (11) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1067 | Qr | River, rail+hut |
+| River (11) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1083 | Q7 | River, road+rail+hut |
+| River (11) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1099 | RL | River, irrigation+hut |
+| River (11) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1115 | Rb | River, road+irrigation+hut |
+| River (11) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1131 | Rr | River, rail+irrigation+hut |
+| River (11) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1147 | R7 | River, road+rail+irrigation+hut |
+| River (11) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1163 | SL | River, pollution+hut |
+| River (11) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1179 | Sb | River, road+pollution+hut |
+| River (11) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1195 | Sr | River, rail+pollution+hut |
+| River (11) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1211 | S7 | River, road+rail+pollution+hut |
+| River (11) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1227 | TL | River, irrigation+pollution+hut |
+| River (11) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1243 | Tb | River, road+irrigation+pollution+hut |
+| River (11) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1259 | Tr | River, rail+irrigation+pollution+hut |
+| River (11) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1275 | T7 | River, road+rail+irrigation+pollution+hut |
+| River (11) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1291 | UL | River, fortress+hut |
+| River (11) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1307 | Ub | River, road+fortress+hut |
+| River (11) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1323 | Ur | River, rail+fortress+hut |
+| River (11) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1339 | U7 | River, road+rail+fortress+hut |
+| River (11) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1355 | VL | River, irrigation+fortress+hut |
+| River (11) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1371 | Vb | River, road+irrigation+fortress+hut |
+| River (11) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1387 | Vr | River, rail+irrigation+fortress+hut |
+| River (11) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1403 | V7 | River, road+rail+irrigation+fortress+hut |
+| River (11) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1419 | WL | River, pollution+fortress+hut |
+| River (11) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1435 | Wb | River, road+pollution+fortress+hut |
+| River (11) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1451 | Wr | River, rail+pollution+fortress+hut |
+| River (11) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1467 | W7 | River, road+rail+pollution+fortress+hut |
+| River (11) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1483 | XL | River, irrigation+pollution+fortress+hut |
+| River (11) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1499 | Xb | River, road+irrigation+pollution+fortress+hut |
+| River (11) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1515 | Xr | River, rail+irrigation+pollution+fortress+hut |
+| River (11) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1531 | X7 | River, road+rail+irrigation+pollution+fortress+hut |
+| River (11) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1547 | YL | River, mine+hut |
+| River (11) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1563 | Yb | River, road+mine+hut |
+| River (11) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1579 | Yr | River, rail+mine+hut |
+| River (11) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1595 | Y7 | River, road+rail+mine+hut |
+| River (11) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1611 | ZL | River, irrigation+mine+hut |
+| River (11) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1627 | Zb | River, road+irrigation+mine+hut |
+| River (11) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1643 | Zr | River, rail+irrigation+mine+hut |
+| River (11) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1659 | Z7 | River, road+rail+irrigation+mine+hut |
+| River (11) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1675 | aL | River, pollution+mine+hut |
+| River (11) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1691 | ab | River, road+pollution+mine+hut |
+| River (11) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1707 | ar | River, rail+pollution+mine+hut |
+| River (11) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1723 | a7 | River, road+rail+pollution+mine+hut |
+| River (11) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1739 | bL | River, irrigation+pollution+mine+hut |
+| River (11) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1755 | bb | River, road+irrigation+pollution+mine+hut |
+| River (11) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1771 | br | River, rail+irrigation+pollution+mine+hut |
+| River (11) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1787 | b7 | River, road+rail+irrigation+pollution+mine+hut |
+| River (11) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1803 | cL | River, fortress+mine+hut |
+| River (11) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1819 | cb | River, road+fortress+mine+hut |
+| River (11) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1835 | cr | River, rail+fortress+mine+hut |
+| River (11) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1851 | c7 | River, road+rail+fortress+mine+hut |
+| River (11) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1867 | dL | River, irrigation+fortress+mine+hut |
+| River (11) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1883 | db | River, road+irrigation+fortress+mine+hut |
+| River (11) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1899 | dr | River, rail+irrigation+fortress+mine+hut |
+| River (11) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1915 | d7 | River, road+rail+irrigation+fortress+mine+hut |
+| River (11) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1931 | eL | River, pollution+fortress+mine+hut |
+| River (11) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1947 | eb | River, road+pollution+fortress+mine+hut |
+| River (11) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1963 | er | River, rail+pollution+fortress+mine+hut |
+| River (11) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1979 | e7 | River, road+rail+pollution+fortress+mine+hut |
+| River (11) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1995 | fL | River, irrigation+pollution+fortress+mine+hut |
+| River (11) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 2011 | fb | River, road+irrigation+pollution+fortress+mine+hut |
+| River (11) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2027 | fr | River, rail+irrigation+pollution+fortress+mine+hut |
+| River (11) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2043 | f7 | River, road+rail+irrigation+pollution+fortress+mine+hut |
+| Grassland2 (12) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 12 | AM | Grassland2, untouched |
+| Grassland2 (12) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 28 | Ac | Grassland2, road |
+| Grassland2 (12) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 44 | As | Grassland2, rail |
+| Grassland2 (12) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 60 | A8 | Grassland2, road+rail |
+| Grassland2 (12) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 76 | BM | Grassland2, irrigation |
+| Grassland2 (12) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 92 | Bc | Grassland2, road+irrigation |
+| Grassland2 (12) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 108 | Bs | Grassland2, rail+irrigation |
+| Grassland2 (12) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 124 | B8 | Grassland2, road+rail+irrigation |
+| Grassland2 (12) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 140 | CM | Grassland2, pollution |
+| Grassland2 (12) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 156 | Cc | Grassland2, road+pollution |
+| Grassland2 (12) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 172 | Cs | Grassland2, rail+pollution |
+| Grassland2 (12) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 188 | C8 | Grassland2, road+rail+pollution |
+| Grassland2 (12) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 204 | DM | Grassland2, irrigation+pollution |
+| Grassland2 (12) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 220 | Dc | Grassland2, road+irrigation+pollution |
+| Grassland2 (12) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 236 | Ds | Grassland2, rail+irrigation+pollution |
+| Grassland2 (12) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 252 | D8 | Grassland2, road+rail+irrigation+pollution |
+| Grassland2 (12) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 268 | EM | Grassland2, fortress |
+| Grassland2 (12) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 284 | Ec | Grassland2, road+fortress |
+| Grassland2 (12) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 300 | Es | Grassland2, rail+fortress |
+| Grassland2 (12) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 316 | E8 | Grassland2, road+rail+fortress |
+| Grassland2 (12) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 332 | FM | Grassland2, irrigation+fortress |
+| Grassland2 (12) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 348 | Fc | Grassland2, road+irrigation+fortress |
+| Grassland2 (12) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 364 | Fs | Grassland2, rail+irrigation+fortress |
+| Grassland2 (12) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 380 | F8 | Grassland2, road+rail+irrigation+fortress |
+| Grassland2 (12) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 396 | GM | Grassland2, pollution+fortress |
+| Grassland2 (12) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 412 | Gc | Grassland2, road+pollution+fortress |
+| Grassland2 (12) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 428 | Gs | Grassland2, rail+pollution+fortress |
+| Grassland2 (12) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 444 | G8 | Grassland2, road+rail+pollution+fortress |
+| Grassland2 (12) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 460 | HM | Grassland2, irrigation+pollution+fortress |
+| Grassland2 (12) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 476 | Hc | Grassland2, road+irrigation+pollution+fortress |
+| Grassland2 (12) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 492 | Hs | Grassland2, rail+irrigation+pollution+fortress |
+| Grassland2 (12) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 508 | H8 | Grassland2, road+rail+irrigation+pollution+fortress |
+| Grassland2 (12) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 524 | IM | Grassland2, mine |
+| Grassland2 (12) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 540 | Ic | Grassland2, road+mine |
+| Grassland2 (12) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 556 | Is | Grassland2, rail+mine |
+| Grassland2 (12) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 572 | I8 | Grassland2, road+rail+mine |
+| Grassland2 (12) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 588 | JM | Grassland2, irrigation+mine |
+| Grassland2 (12) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 604 | Jc | Grassland2, road+irrigation+mine |
+| Grassland2 (12) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 620 | Js | Grassland2, rail+irrigation+mine |
+| Grassland2 (12) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 636 | J8 | Grassland2, road+rail+irrigation+mine |
+| Grassland2 (12) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 652 | KM | Grassland2, pollution+mine |
+| Grassland2 (12) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 668 | Kc | Grassland2, road+pollution+mine |
+| Grassland2 (12) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 684 | Ks | Grassland2, rail+pollution+mine |
+| Grassland2 (12) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 700 | K8 | Grassland2, road+rail+pollution+mine |
+| Grassland2 (12) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 716 | LM | Grassland2, irrigation+pollution+mine |
+| Grassland2 (12) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 732 | Lc | Grassland2, road+irrigation+pollution+mine |
+| Grassland2 (12) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 748 | Ls | Grassland2, rail+irrigation+pollution+mine |
+| Grassland2 (12) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 764 | L8 | Grassland2, road+rail+irrigation+pollution+mine |
+| Grassland2 (12) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 780 | MM | Grassland2, fortress+mine |
+| Grassland2 (12) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 796 | Mc | Grassland2, road+fortress+mine |
+| Grassland2 (12) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 812 | Ms | Grassland2, rail+fortress+mine |
+| Grassland2 (12) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 828 | M8 | Grassland2, road+rail+fortress+mine |
+| Grassland2 (12) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 844 | NM | Grassland2, irrigation+fortress+mine |
+| Grassland2 (12) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 860 | Nc | Grassland2, road+irrigation+fortress+mine |
+| Grassland2 (12) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 876 | Ns | Grassland2, rail+irrigation+fortress+mine |
+| Grassland2 (12) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 892 | N8 | Grassland2, road+rail+irrigation+fortress+mine |
+| Grassland2 (12) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 908 | OM | Grassland2, pollution+fortress+mine |
+| Grassland2 (12) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 924 | Oc | Grassland2, road+pollution+fortress+mine |
+| Grassland2 (12) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 940 | Os | Grassland2, rail+pollution+fortress+mine |
+| Grassland2 (12) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 956 | O8 | Grassland2, road+rail+pollution+fortress+mine |
+| Grassland2 (12) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 972 | PM | Grassland2, irrigation+pollution+fortress+mine |
+| Grassland2 (12) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 988 | Pc | Grassland2, road+irrigation+pollution+fortress+mine |
+| Grassland2 (12) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1004 | Ps | Grassland2, rail+irrigation+pollution+fortress+mine |
+| Grassland2 (12) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1020 | P8 | Grassland2, road+rail+irrigation+pollution+fortress+mine |
+| Grassland2 (12) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1036 | QM | Grassland2, hut |
+| Grassland2 (12) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1052 | Qc | Grassland2, road+hut |
+| Grassland2 (12) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1068 | Qs | Grassland2, rail+hut |
+| Grassland2 (12) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1084 | Q8 | Grassland2, road+rail+hut |
+| Grassland2 (12) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1100 | RM | Grassland2, irrigation+hut |
+| Grassland2 (12) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1116 | Rc | Grassland2, road+irrigation+hut |
+| Grassland2 (12) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1132 | Rs | Grassland2, rail+irrigation+hut |
+| Grassland2 (12) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1148 | R8 | Grassland2, road+rail+irrigation+hut |
+| Grassland2 (12) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1164 | SM | Grassland2, pollution+hut |
+| Grassland2 (12) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1180 | Sc | Grassland2, road+pollution+hut |
+| Grassland2 (12) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1196 | Ss | Grassland2, rail+pollution+hut |
+| Grassland2 (12) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1212 | S8 | Grassland2, road+rail+pollution+hut |
+| Grassland2 (12) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1228 | TM | Grassland2, irrigation+pollution+hut |
+| Grassland2 (12) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1244 | Tc | Grassland2, road+irrigation+pollution+hut |
+| Grassland2 (12) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1260 | Ts | Grassland2, rail+irrigation+pollution+hut |
+| Grassland2 (12) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1276 | T8 | Grassland2, road+rail+irrigation+pollution+hut |
+| Grassland2 (12) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1292 | UM | Grassland2, fortress+hut |
+| Grassland2 (12) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1308 | Uc | Grassland2, road+fortress+hut |
+| Grassland2 (12) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1324 | Us | Grassland2, rail+fortress+hut |
+| Grassland2 (12) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1340 | U8 | Grassland2, road+rail+fortress+hut |
+| Grassland2 (12) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1356 | VM | Grassland2, irrigation+fortress+hut |
+| Grassland2 (12) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1372 | Vc | Grassland2, road+irrigation+fortress+hut |
+| Grassland2 (12) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1388 | Vs | Grassland2, rail+irrigation+fortress+hut |
+| Grassland2 (12) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1404 | V8 | Grassland2, road+rail+irrigation+fortress+hut |
+| Grassland2 (12) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1420 | WM | Grassland2, pollution+fortress+hut |
+| Grassland2 (12) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1436 | Wc | Grassland2, road+pollution+fortress+hut |
+| Grassland2 (12) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1452 | Ws | Grassland2, rail+pollution+fortress+hut |
+| Grassland2 (12) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1468 | W8 | Grassland2, road+rail+pollution+fortress+hut |
+| Grassland2 (12) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1484 | XM | Grassland2, irrigation+pollution+fortress+hut |
+| Grassland2 (12) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1500 | Xc | Grassland2, road+irrigation+pollution+fortress+hut |
+| Grassland2 (12) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1516 | Xs | Grassland2, rail+irrigation+pollution+fortress+hut |
+| Grassland2 (12) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1532 | X8 | Grassland2, road+rail+irrigation+pollution+fortress+hut |
+| Grassland2 (12) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1548 | YM | Grassland2, mine+hut |
+| Grassland2 (12) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1564 | Yc | Grassland2, road+mine+hut |
+| Grassland2 (12) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1580 | Ys | Grassland2, rail+mine+hut |
+| Grassland2 (12) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1596 | Y8 | Grassland2, road+rail+mine+hut |
+| Grassland2 (12) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1612 | ZM | Grassland2, irrigation+mine+hut |
+| Grassland2 (12) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1628 | Zc | Grassland2, road+irrigation+mine+hut |
+| Grassland2 (12) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1644 | Zs | Grassland2, rail+irrigation+mine+hut |
+| Grassland2 (12) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1660 | Z8 | Grassland2, road+rail+irrigation+mine+hut |
+| Grassland2 (12) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1676 | aM | Grassland2, pollution+mine+hut |
+| Grassland2 (12) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1692 | ac | Grassland2, road+pollution+mine+hut |
+| Grassland2 (12) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1708 | as | Grassland2, rail+pollution+mine+hut |
+| Grassland2 (12) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1724 | a8 | Grassland2, road+rail+pollution+mine+hut |
+| Grassland2 (12) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1740 | bM | Grassland2, irrigation+pollution+mine+hut |
+| Grassland2 (12) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1756 | bc | Grassland2, road+irrigation+pollution+mine+hut |
+| Grassland2 (12) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1772 | bs | Grassland2, rail+irrigation+pollution+mine+hut |
+| Grassland2 (12) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1788 | b8 | Grassland2, road+rail+irrigation+pollution+mine+hut |
+| Grassland2 (12) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1804 | cM | Grassland2, fortress+mine+hut |
+| Grassland2 (12) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1820 | cc | Grassland2, road+fortress+mine+hut |
+| Grassland2 (12) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1836 | cs | Grassland2, rail+fortress+mine+hut |
+| Grassland2 (12) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1852 | c8 | Grassland2, road+rail+fortress+mine+hut |
+| Grassland2 (12) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1868 | dM | Grassland2, irrigation+fortress+mine+hut |
+| Grassland2 (12) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1884 | dc | Grassland2, road+irrigation+fortress+mine+hut |
+| Grassland2 (12) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1900 | ds | Grassland2, rail+irrigation+fortress+mine+hut |
+| Grassland2 (12) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1916 | d8 | Grassland2, road+rail+irrigation+fortress+mine+hut |
+| Grassland2 (12) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1932 | eM | Grassland2, pollution+fortress+mine+hut |
+| Grassland2 (12) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1948 | ec | Grassland2, road+pollution+fortress+mine+hut |
+| Grassland2 (12) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1964 | es | Grassland2, rail+pollution+fortress+mine+hut |
+| Grassland2 (12) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1980 | e8 | Grassland2, road+rail+pollution+fortress+mine+hut |
+| Grassland2 (12) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1996 | fM | Grassland2, irrigation+pollution+fortress+mine+hut |
+| Grassland2 (12) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 2012 | fc | Grassland2, road+irrigation+pollution+fortress+mine+hut |
+| Grassland2 (12) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2028 | fs | Grassland2, rail+irrigation+pollution+fortress+mine+hut |
+| Grassland2 (12) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2044 | f8 | Grassland2, road+rail+irrigation+pollution+fortress+mine+hut |
+| None (-1 -> 15) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 15 | AP | No terrain, untouched |
+| None (-1 -> 15) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 31 | Af | No terrain, road |
+| None (-1 -> 15) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 47 | Av | No terrain, rail |
+| None (-1 -> 15) | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 63 | A/ | No terrain, road+rail |
+| None (-1 -> 15) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 79 | BP | No terrain, irrigation |
+| None (-1 -> 15) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 95 | Bf | No terrain, road+irrigation |
+| None (-1 -> 15) | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 111 | Bv | No terrain, rail+irrigation |
+| None (-1 -> 15) | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 127 | B/ | No terrain, road+rail+irrigation |
+| None (-1 -> 15) | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 143 | CP | No terrain, pollution |
+| None (-1 -> 15) | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 159 | Cf | No terrain, road+pollution |
+| None (-1 -> 15) | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 175 | Cv | No terrain, rail+pollution |
+| None (-1 -> 15) | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 191 | C/ | No terrain, road+rail+pollution |
+| None (-1 -> 15) | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 207 | DP | No terrain, irrigation+pollution |
+| None (-1 -> 15) | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 223 | Df | No terrain, road+irrigation+pollution |
+| None (-1 -> 15) | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 239 | Dv | No terrain, rail+irrigation+pollution |
+| None (-1 -> 15) | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 255 | D/ | No terrain, road+rail+irrigation+pollution |
+| None (-1 -> 15) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 271 | EP | No terrain, fortress |
+| None (-1 -> 15) | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 287 | Ef | No terrain, road+fortress |
+| None (-1 -> 15) | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 303 | Ev | No terrain, rail+fortress |
+| None (-1 -> 15) | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 319 | E/ | No terrain, road+rail+fortress |
+| None (-1 -> 15) | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 335 | FP | No terrain, irrigation+fortress |
+| None (-1 -> 15) | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 351 | Ff | No terrain, road+irrigation+fortress |
+| None (-1 -> 15) | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 367 | Fv | No terrain, rail+irrigation+fortress |
+| None (-1 -> 15) | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 383 | F/ | No terrain, road+rail+irrigation+fortress |
+| None (-1 -> 15) | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 399 | GP | No terrain, pollution+fortress |
+| None (-1 -> 15) | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 415 | Gf | No terrain, road+pollution+fortress |
+| None (-1 -> 15) | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 431 | Gv | No terrain, rail+pollution+fortress |
+| None (-1 -> 15) | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 447 | G/ | No terrain, road+rail+pollution+fortress |
+| None (-1 -> 15) | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 463 | HP | No terrain, irrigation+pollution+fortress |
+| None (-1 -> 15) | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 479 | Hf | No terrain, road+irrigation+pollution+fortress |
+| None (-1 -> 15) | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 495 | Hv | No terrain, rail+irrigation+pollution+fortress |
+| None (-1 -> 15) | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 511 | H/ | No terrain, road+rail+irrigation+pollution+fortress |
+| None (-1 -> 15) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 527 | IP | No terrain, mine |
+| None (-1 -> 15) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 543 | If | No terrain, road+mine |
+| None (-1 -> 15) | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 559 | Iv | No terrain, rail+mine |
+| None (-1 -> 15) | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 575 | I/ | No terrain, road+rail+mine |
+| None (-1 -> 15) | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 591 | JP | No terrain, irrigation+mine |
+| None (-1 -> 15) | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 607 | Jf | No terrain, road+irrigation+mine |
+| None (-1 -> 15) | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 623 | Jv | No terrain, rail+irrigation+mine |
+| None (-1 -> 15) | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 639 | J/ | No terrain, road+rail+irrigation+mine |
+| None (-1 -> 15) | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 655 | KP | No terrain, pollution+mine |
+| None (-1 -> 15) | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 671 | Kf | No terrain, road+pollution+mine |
+| None (-1 -> 15) | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 687 | Kv | No terrain, rail+pollution+mine |
+| None (-1 -> 15) | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 703 | K/ | No terrain, road+rail+pollution+mine |
+| None (-1 -> 15) | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 719 | LP | No terrain, irrigation+pollution+mine |
+| None (-1 -> 15) | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 735 | Lf | No terrain, road+irrigation+pollution+mine |
+| None (-1 -> 15) | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 751 | Lv | No terrain, rail+irrigation+pollution+mine |
+| None (-1 -> 15) | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 767 | L/ | No terrain, road+rail+irrigation+pollution+mine |
+| None (-1 -> 15) | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 783 | MP | No terrain, fortress+mine |
+| None (-1 -> 15) | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 799 | Mf | No terrain, road+fortress+mine |
+| None (-1 -> 15) | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 815 | Mv | No terrain, rail+fortress+mine |
+| None (-1 -> 15) | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 831 | M/ | No terrain, road+rail+fortress+mine |
+| None (-1 -> 15) | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 847 | NP | No terrain, irrigation+fortress+mine |
+| None (-1 -> 15) | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 863 | Nf | No terrain, road+irrigation+fortress+mine |
+| None (-1 -> 15) | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 879 | Nv | No terrain, rail+irrigation+fortress+mine |
+| None (-1 -> 15) | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 895 | N/ | No terrain, road+rail+irrigation+fortress+mine |
+| None (-1 -> 15) | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 911 | OP | No terrain, pollution+fortress+mine |
+| None (-1 -> 15) | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 927 | Of | No terrain, road+pollution+fortress+mine |
+| None (-1 -> 15) | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 943 | Ov | No terrain, rail+pollution+fortress+mine |
+| None (-1 -> 15) | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 959 | O/ | No terrain, road+rail+pollution+fortress+mine |
+| None (-1 -> 15) | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 975 | PP | No terrain, irrigation+pollution+fortress+mine |
+| None (-1 -> 15) | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 991 | Pf | No terrain, road+irrigation+pollution+fortress+mine |
+| None (-1 -> 15) | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1007 | Pv | No terrain, rail+irrigation+pollution+fortress+mine |
+| None (-1 -> 15) | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 1023 | P/ | No terrain, road+rail+irrigation+pollution+fortress+mine |
+| None (-1 -> 15) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1039 | QP | No terrain, hut |
+| None (-1 -> 15) | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1055 | Qf | No terrain, road+hut |
+| None (-1 -> 15) | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1071 | Qv | No terrain, rail+hut |
+| None (-1 -> 15) | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1087 | Q/ | No terrain, road+rail+hut |
+| None (-1 -> 15) | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1103 | RP | No terrain, irrigation+hut |
+| None (-1 -> 15) | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1119 | Rf | No terrain, road+irrigation+hut |
+| None (-1 -> 15) | 0 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1135 | Rv | No terrain, rail+irrigation+hut |
+| None (-1 -> 15) | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 1151 | R/ | No terrain, road+rail+irrigation+hut |
+| None (-1 -> 15) | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1167 | SP | No terrain, pollution+hut |
+| None (-1 -> 15) | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1183 | Sf | No terrain, road+pollution+hut |
+| None (-1 -> 15) | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1199 | Sv | No terrain, rail+pollution+hut |
+| None (-1 -> 15) | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | 1215 | S/ | No terrain, road+rail+pollution+hut |
+| None (-1 -> 15) | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1231 | TP | No terrain, irrigation+pollution+hut |
+| None (-1 -> 15) | 1 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 1247 | Tf | No terrain, road+irrigation+pollution+hut |
+| None (-1 -> 15) | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1263 | Tv | No terrain, rail+irrigation+pollution+hut |
+| None (-1 -> 15) | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1279 | T/ | No terrain, road+rail+irrigation+pollution+hut |
+| None (-1 -> 15) | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1295 | UP | No terrain, fortress+hut |
+| None (-1 -> 15) | 1 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1311 | Uf | No terrain, road+fortress+hut |
+| None (-1 -> 15) | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1327 | Uv | No terrain, rail+fortress+hut |
+| None (-1 -> 15) | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1343 | U/ | No terrain, road+rail+fortress+hut |
+| None (-1 -> 15) | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1359 | VP | No terrain, irrigation+fortress+hut |
+| None (-1 -> 15) | 1 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 1375 | Vf | No terrain, road+irrigation+fortress+hut |
+| None (-1 -> 15) | 0 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1391 | Vv | No terrain, rail+irrigation+fortress+hut |
+| None (-1 -> 15) | 1 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 1407 | V/ | No terrain, road+rail+irrigation+fortress+hut |
+| None (-1 -> 15) | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1423 | WP | No terrain, pollution+fortress+hut |
+| None (-1 -> 15) | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 0 | 1439 | Wf | No terrain, road+pollution+fortress+hut |
+| None (-1 -> 15) | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1455 | Wv | No terrain, rail+pollution+fortress+hut |
+| None (-1 -> 15) | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 1471 | W/ | No terrain, road+rail+pollution+fortress+hut |
+| None (-1 -> 15) | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1487 | XP | No terrain, irrigation+pollution+fortress+hut |
+| None (-1 -> 15) | 1 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 1503 | Xf | No terrain, road+irrigation+pollution+fortress+hut |
+| None (-1 -> 15) | 0 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1519 | Xv | No terrain, rail+irrigation+pollution+fortress+hut |
+| None (-1 -> 15) | 1 | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 1535 | X/ | No terrain, road+rail+irrigation+pollution+fortress+hut |
+| None (-1 -> 15) | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1551 | YP | No terrain, mine+hut |
+| None (-1 -> 15) | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1567 | Yf | No terrain, road+mine+hut |
+| None (-1 -> 15) | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1583 | Yv | No terrain, rail+mine+hut |
+| None (-1 -> 15) | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 0 | 1599 | Y/ | No terrain, road+rail+mine+hut |
+| None (-1 -> 15) | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1615 | ZP | No terrain, irrigation+mine+hut |
+| None (-1 -> 15) | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 1631 | Zf | No terrain, road+irrigation+mine+hut |
+| None (-1 -> 15) | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1647 | Zv | No terrain, rail+irrigation+mine+hut |
+| None (-1 -> 15) | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 1663 | Z/ | No terrain, road+rail+irrigation+mine+hut |
+| None (-1 -> 15) | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1679 | aP | No terrain, pollution+mine+hut |
+| None (-1 -> 15) | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | 1695 | af | No terrain, road+pollution+mine+hut |
+| None (-1 -> 15) | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1711 | av | No terrain, rail+pollution+mine+hut |
+| None (-1 -> 15) | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 0 | 1727 | a/ | No terrain, road+rail+pollution+mine+hut |
+| None (-1 -> 15) | 0 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1743 | bP | No terrain, irrigation+pollution+mine+hut |
+| None (-1 -> 15) | 1 | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1759 | bf | No terrain, road+irrigation+pollution+mine+hut |
+| None (-1 -> 15) | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1775 | bv | No terrain, rail+irrigation+pollution+mine+hut |
+| None (-1 -> 15) | 1 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 1791 | b/ | No terrain, road+rail+irrigation+pollution+mine+hut |
+| None (-1 -> 15) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1807 | cP | No terrain, fortress+mine+hut |
+| None (-1 -> 15) | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 1823 | cf | No terrain, road+fortress+mine+hut |
+| None (-1 -> 15) | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1839 | cv | No terrain, rail+fortress+mine+hut |
+| None (-1 -> 15) | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1855 | c/ | No terrain, road+rail+fortress+mine+hut |
+| None (-1 -> 15) | 0 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1871 | dP | No terrain, irrigation+fortress+mine+hut |
+| None (-1 -> 15) | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 0 | 1887 | df | No terrain, road+irrigation+fortress+mine+hut |
+| None (-1 -> 15) | 0 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1903 | dv | No terrain, rail+irrigation+fortress+mine+hut |
+| None (-1 -> 15) | 1 | 1 | 1 | 0 | 1 | 1 | 1 | 0 | 1919 | d/ | No terrain, road+rail+irrigation+fortress+mine+hut |
+| None (-1 -> 15) | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1935 | eP | No terrain, pollution+fortress+mine+hut |
+| None (-1 -> 15) | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 0 | 1951 | ef | No terrain, road+pollution+fortress+mine+hut |
+| None (-1 -> 15) | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1967 | ev | No terrain, rail+pollution+fortress+mine+hut |
+| None (-1 -> 15) | 1 | 1 | 0 | 1 | 1 | 1 | 1 | 0 | 1983 | e/ | No terrain, road+rail+pollution+fortress+mine+hut |
+| None (-1 -> 15) | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 1999 | fP | No terrain, irrigation+pollution+fortress+mine+hut |
+| None (-1 -> 15) | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 2015 | ff | No terrain, road+irrigation+pollution+fortress+mine+hut |
+| None (-1 -> 15) | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2031 | fv | No terrain, rail+irrigation+pollution+fortress+mine+hut |
+| None (-1 -> 15) | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 2047 | f/ | No terrain, road+rail+irrigation+pollution+fortress+mine+hut |
 ---

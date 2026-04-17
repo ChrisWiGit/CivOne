@@ -7,16 +7,16 @@ namespace CivOne.Persistence.Model
     /// Encodes and decodes a <see cref="TileDto"/> to/from exactly 2 Base64 characters.
     ///
     /// 12-bit layout (bits 11..0):
-    ///   bit 11   : unused (always 0)
-    ///   bits 10..7 : (unused padding, all 0)
-    ///   bits  3..0 : Terrain  (4 bits, values 0-12; -1 is stored as 15)
-    ///   bit   4    : Road
-    ///   bit   5    : RailRoad
-    ///   bit   6    : Irrigation
-    ///   bit   7    : Pollution
-    ///   bit   8    : Fortress
-    ///   bit   9    : Mine
+    ///   bit 11   : Special (Oasis for Desert; special resource for other terrain types)
+    ///              If 0 on decode, the caller should fall back to TileIsSpecial for backwards compatibility.
     ///   bit  10    : Hut
+    ///   bit   9    : Mine
+    ///   bit   8    : Fortress
+    ///   bit   7    : Pollution
+    ///   bit   6    : Irrigation
+    ///   bit   5    : RailRoad
+    ///   bit   4    : Road
+    ///   bits  3..0 : Terrain  (4 bits, values 0-12; -1 is stored as 15)
     ///
     /// The 12 bits are split into two 6-bit groups, each mapped to the standard
     /// Base64 alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/
@@ -67,7 +67,8 @@ namespace CivOne.Persistence.Model
                 | (tile.Pollution  ? 1 << 7 : 0)
                 | (tile.Fortress   ? 1 << 8 : 0)
                 | (tile.Mine       ? 1 << 9 : 0)
-                | (tile.Hut        ? 1 << 10 : 0);
+                | (tile.Hut        ? 1 << 10 : 0)
+                | (tile.Special    ? 1 << 11 : 0);
 
             return new string(
 			[
@@ -109,6 +110,7 @@ namespace CivOne.Persistence.Model
                 Fortress  = (value & (1 << 8)) != 0,
                 Mine      = (value & (1 << 9)) != 0,
                 Hut       = (value & (1 << 10)) != 0,
+                Special   = (value & (1 << 11)) != 0,
             };
         }
     }

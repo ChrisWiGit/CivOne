@@ -108,8 +108,51 @@ namespace CivOne.Persistence.Model
 			Assert.Equal(original.Fortress, decoded.Fortress);
 			Assert.Equal(original.Mine, decoded.Mine);
 			Assert.Equal(original.Hut, decoded.Hut);
+			Assert.Equal(original.Special, decoded.Special);
 
 			Assert.Equal(default, decoded.LandValue);
+		}
+
+		[Theory]
+		// Desert+Special (Oasis) = terrain 0, bit 11 set → value 2048 → first char index 32 = 'g', second 0 = 'A'
+		[InlineData((int)Terrain.Desert, false, "gA")]
+		// Desert+Special+Road → value 2048+16 = 2064 → first 2064>>6 = 32 = 'g', second 2064&63 = 16 = 'Q'
+		[InlineData((int)Terrain.Desert, true, "gQ")]
+		public void Encode_DesertWithSpecial_UsesExpectedEncoding(int terrain, bool road, string expected)
+		{
+			TileDto tile = new()
+			{
+				Terrain = (Terrain)terrain,
+				Road    = road,
+				Special = true,
+			};
+
+			string actual = _testee.Encode(tile);
+
+			Assert.Equal(expected, actual);
+		}
+
+		[Theory]
+		[InlineData((int)Terrain.Desert, false, false)]
+		[InlineData((int)Terrain.Desert, true,  false)]
+		[InlineData((int)Terrain.Desert, false, true)]
+		[InlineData((int)Terrain.Desert, true,  true)]
+		[InlineData((int)Terrain.Plains, false, true)]
+		public void EncodeDecode_RoundTrip_PreservesSpecialFlag(int terrain, bool road, bool special)
+		{
+			TileDto original = new()
+			{
+				Terrain = (Terrain)terrain,
+				Road    = road,
+				Special = special,
+			};
+
+			string encoded = _testee.Encode(original);
+			TileDto decoded = _testee.Decode(encoded, 0);
+
+			Assert.Equal(original.Special, decoded.Special);
+			Assert.Equal(original.Terrain, decoded.Terrain);
+			Assert.Equal(original.Road, decoded.Road);
 		}
 
 		[Fact]

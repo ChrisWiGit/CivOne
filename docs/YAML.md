@@ -1,5 +1,7 @@
 # YAML Save Format
 
+<!-- markdownlint-configure-file {"MD060": {"style": "compact"}} -->
+
 This document outlines the structure of the YAML save format for the new way of saving and loading games in CivOne.
 Providing a base to add new functionality to the game that are currently not supported by the old save format, such as bigger maps.
 
@@ -35,16 +37,17 @@ Bits 3..0:  Terrain-ID
 
 #### Bit Assignment
 
-| Bit | Purpose    | Values           |
-| --- | ---------- | ---------------- |
-| 3-0 | Terrain    | 0-12 (15 = None) |
-| 4   | Road       | 0/1              |
-| 5   | RailRoad   | 0/1              |
-| 6   | Irrigation | 0/1              |
-| 7   | Pollution  | 0/1              |
-| 8   | Fortress   | 0/1              |
-| 9   | Mine       | 0/1              |
-| 10  | Hut        | 0/1              |
+| Bit | Purpose | Values |
+| --- | --- | --- |
+| 3-0 | Terrain | 0-12 (15 = None) |
+| 4 | Road | 0/1 |
+| 5 | RailRoad | 0/1 |
+| 6 | Irrigation | 0/1 |
+| 7 | Pollution | 0/1 |
+| 8 | Fortress | 0/1 |
+| 9 | Mine | 0/1 |
+| 10 | Hut | 0/1 |
+| 11 | Special | 0/1 (Oasis for Desert; special resource for other terrain types. If 0, derived from map seed on load.) |
 
 #### Encoding in Base64
 
@@ -88,32 +91,33 @@ In the `Terrain` column, the value in parentheses is the enum value from `CivOne
 
 The table below highlights common and useful reference encodings. For the complete list of all possible encodings, see [YAML_TILE_ENCODING.md](YAML_TILE_ENCODING.md).
 
-| Terrain         | Road | Rail | Irr | Pol | Fort | Mine | Hut | Decimal | Base64 | Description |
-| --------------- | ---- | ---- | --- | --- | ---- | ---- | --- | ------- | ------ | ----------- |
-| Desert (0)      | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 0       | AA     | Desert, untouched |
-| Desert (0)      | 0    | 0    | 1   | 0   | 0    | 0    | 0   | 64      | BA     | Desert, irrigation |
-| Desert (0)      | 1    | 0    | 1   | 0   | 0    | 0    | 0   | 80      | BQ     | Desert, road+irrigation |
-| Plains (1)      | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 1       | AB     | Plains, untouched |
-| Plains (1)      | 1    | 0    | 0   | 0   | 0    | 0    | 0   | 17      | AR     | Plains, road |
-| Plains (1)      | 0    | 1    | 0   | 0   | 0    | 0    | 0   | 33      | Ah     | Plains, rail |
-| Plains (1)      | 1    | 0    | 1   | 0   | 0    | 0    | 0   | 81      | BR     | Plains, road+irrigation |
-| Grassland1 (2)  | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 2       | AC     | Grassland1, untouched |
-| Grassland1 (2)  | 1    | 0    | 0   | 0   | 0    | 0    | 0   | 18      | AS     | Grassland1, road |
-| Grassland1 (2)  | 0    | 0    | 0   | 0   | 0    | 0    | 1   | 1026    | QC     | Grassland1, hut |
-| Forest (3)      | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 3       | AD     | Forest, untouched |
-| Forest (3)      | 0    | 0    | 0   | 0   | 0    | 1    | 0   | 515     | ID     | Forest, mine |
-| Forest (3)      | 0    | 0    | 0   | 0   | 0    | 0    | 1   | 1027    | QD     | Forest, hut |
-| Hills (4)       | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 4       | AE     | Hills, untouched |
-| Hills (4)       | 0    | 0    | 0   | 0   | 1    | 0    | 0   | 260     | EE     | Hills, fortress |
-| Mountains (5)   | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 5       | AF     | Mountains, untouched |
-| Mountains (5)   | 0    | 0    | 0   | 0   | 1    | 0    | 0   | 261     | EF     | Mountains, fortress |
-| Tundra (6)      | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 6       | AG     | Tundra, untouched |
-| Tundra (6)      | 0    | 0    | 0   | 0   | 0    | 0    | 1   | 1030    | QG     | Tundra, hut |
-| Ocean (10)      | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 10      | AK     | Ocean, untouched |
-| Ocean (10)      | 1    | 0    | 0   | 0   | 0    | 0    | 0   | 26      | Aa     | Ocean, road |
-| River (11)      | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 11      | AL     | River, untouched |
-| Grassland2 (12) | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 12      | AM     | Grassland2, untouched |
-| None (-1 → 15)  | 0    | 0    | 0   | 0   | 0    | 0    | 0   | 15      | AP     | No terrain, untouched |
+| Terrain | Road | Rail | Irr | Pol | Fort | Mine | Hut | Decimal | Base64 | Description |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Desert (0) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | AA | Desert, untouched |
+| Desert (0) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | AA | Desert, Oasis |
+| Desert (0) | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 64 | BA | Desert, irrigation |
+| Desert (0) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 80 | BQ | Desert, road+irrigation |
+| Plains (1) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | AB | Plains, untouched |
+| Plains (1) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 17 | AR | Plains, road |
+| Plains (1) | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 33 | Ah | Plains, rail |
+| Plains (1) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 81 | BR | Plains, road+irrigation |
+| Grassland1 (2) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 2 | AC | Grassland1, untouched |
+| Grassland1 (2) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 18 | AS | Grassland1, road |
+| Grassland1 (2) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1026 | QC | Grassland1, hut |
+| Forest (3) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 3 | AD | Forest, untouched |
+| Forest (3) | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 515 | ID | Forest, mine |
+| Forest (3) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1027 | QD | Forest, hut |
+| Hills (4) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 4 | AE | Hills, untouched |
+| Hills (4) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 260 | EE | Hills, fortress |
+| Mountains (5) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 5 | AF | Mountains, untouched |
+| Mountains (5) | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 261 | EF | Mountains, fortress |
+| Tundra (6) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 6 | AG | Tundra, untouched |
+| Tundra (6) | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1030 | QG | Tundra, hut |
+| Ocean (10) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 10 | AK | Ocean, untouched |
+| Ocean (10) | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 26 | Aa | Ocean, road |
+| River (11) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 11 | AL | River, untouched |
+| Grassland2 (12) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 12 | AM | Grassland2, untouched |
+| None (-1 → 15) | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 15 | AP | No terrain, untouched |
 
 ---
 
