@@ -18,6 +18,8 @@ using CivOne.Graphics;
 using CivOne.Graphics.ImageFormats;
 using CivOne.IO;
 using CivOne.Leaders;
+using CivOne.Persistence.Factories;
+using CivOne.Persistence.Model;
 using CivOne.Units;
 
 namespace CivOne
@@ -25,6 +27,8 @@ namespace CivOne
 	internal static class Extensions
 	{
 		private static Settings Settings => Settings.Instance;
+		// CVS = Checked Value Sanitizer. Used for all conversions. Shorthand to clarify intent and reduce verbosity in this save/load specific code.
+		private static ICheckedValueSanitizer CVS => ValueSanitizerFactory.GetCheckedValueSanitizer();
 
 		public static string GetSoundFile(this string input)
 		{
@@ -89,26 +93,31 @@ namespace CivOne
 		{
             // TODO fire-eggs fails to take 'fortifyING' into account?
             IUnit[] units = city.Tile?.Units.Where(x => x.Home == city && x.Fortify).Take(2).ToArray();
+			var cityNameId = CVS.CheckedByte(city.NameId, nameof(Extensions), "CityData.NameId");
+			var visibleSize = CVS.CheckedByte(city.VisibleSizeToHumanPlayer, nameof(Extensions), "CityData.VisibleSize");
+			var food = CVS.CheckedUInt16(city.Food, nameof(Extensions), "CityData.Food");
+			var shields = CVS.CheckedUInt16(city.Shields, nameof(Extensions), "CityData.Shields");
+			var baseTrade = CVS.CheckedByte(city.TradeTotal, nameof(Extensions), "CityData.BaseTrade");
 			
 			return new CityData
 			{
 				Id = city.GetId(),
-				NameId = (byte)city.NameId,
+				NameId = cityNameId,
 				Status = city.Status,
 				Buildings = city.Buildings.Select(b => b.Id).ToArray(),
 				X = city.X,
 				Y = city.Y,
 				ActualSize = city.Size,
-				VisibleSize = (byte)Math.Clamp(city.VisibleSizeToHumanPlayer, 0, byte.MaxValue),
+				VisibleSize = visibleSize,
 				CurrentProduction = city.CurrentProduction.ProductionId,
 				Owner = city.Owner,
-				Food = (ushort)Math.Clamp(city.Food, 0, ushort.MaxValue),
-				Shields = (ushort)Math.Clamp(city.Shields, 0, ushort.MaxValue),
+				Food = food,
+				Shields = shields,
 				// BaseTrade is written solely for compatibility with original CIV1 DOS saves.
 				// CivOne itself never reads this value back – trade is recalculated dynamically
 				// from resource tiles each turn. Original CIV1 uses this cached value in the
 				// trade-route yield formula: (BaseTrade_A + BaseTrade_B + 4) / 8.
-				BaseTrade = (byte)Math.Clamp(city.TradeTotal, 0, byte.MaxValue),
+				BaseTrade = baseTrade,
 				ResourceTiles = city.GetResourceTiles(),
 				// fire-eggs 20190622 make sure to save fortify/veteran status as per Microprose
 				FortifiedUnits = units?.Select(x => (byte)((int)x.Type | 0x40 | (x.Veteran ? 0x80 : 0))).ToArray(),
@@ -151,6 +160,8 @@ namespace CivOne
 				case Order.ClearPollution:
 					result |= 0b10000010;
 					break;
+				default:
+					throw new InvalidOperationException($"Unexpected settler order {unit.order} in GetSettlerStatus");
 			}
 		}
 
@@ -189,19 +200,24 @@ namespace CivOne
 			byte gotoX = 0xFF, gotoY = 0;
 			if (!unit.Goto.IsEmpty)
 			{
-				gotoX = (byte)unit.Goto.X;
-				gotoY = (byte)unit.Goto.Y;
+				gotoX = CVS.CheckedByte(unit.Goto.X, nameof(Extensions), "UnitData.GotoX");
+				gotoY = CVS.CheckedByte(unit.Goto.Y, nameof(Extensions), "UnitData.GotoY");
 			}
+
+			var remainingMoves = (unit.MovesLeft * 3) + unit.PartMoves;
+			var unitX = CVS.CheckedByte(unit.X, nameof(Extensions), "UnitData.X");
+			var unitY = CVS.CheckedByte(unit.Y, nameof(Extensions), "UnitData.Y");
+			var unitTypeId = CVS.CheckedByte((int)unit.Type, nameof(Extensions), "UnitData.TypeId");
 
 			// TODO need to save (Settlers.)MovesSkip value to savefile
 
 			return new UnitData {
 				Id = id,
 				Status = unit.GetUnitStatus(),
-				X = (byte)unit.X,
-				Y = (byte)unit.Y,
-				TypeId = (byte)unit.Type,
-				RemainingMoves = (byte)((unit.MovesLeft * 3) + unit.PartMoves),
+				X = unitX,
+				Y = unitY,
+				TypeId = unitTypeId,
+				RemainingMoves = CVS.CheckedByte(remainingMoves, nameof(Extensions), "UnitData.RemainingMoves"),
 				SpecialMoves = unit.FuelOrProgress,
 				GotoX = gotoX,
 				GotoY = gotoY,

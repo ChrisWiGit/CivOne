@@ -11,6 +11,8 @@
 
 using System;
 using System.Linq;
+using CivOne.Persistence.Factories;
+using CivOne.Persistence.Model;
 using CivOne.UnitTests;
 
 namespace CivOne.src
@@ -23,6 +25,9 @@ namespace CivOne.src
     {
         private RuntimeSettings rs;
         private MockRuntime runtime;
+
+        // Use the unchecked cast sanitizer for all tests deriving from this base, to preserve legacy behavior in integration-like scenarios where clamping would hide or alter values under test.
+        private readonly IDisposable _checkedSanitizerScope;
         internal Player playa;
 
         /// <summary>
@@ -30,6 +35,8 @@ namespace CivOne.src
         /// </summary>
         protected TestsBase()
         {
+            _checkedSanitizerScope = ValueSanitizerFactory.UseCheckedValueSanitizer(new UncheckedCastValueSanitizer());
+
             rs = new RuntimeSettings();
             rs.InitialSeed = 23905;
             runtime = new MockRuntime(rs);
@@ -58,6 +65,7 @@ namespace CivOne.src
         public virtual void Dispose()
         {
             AfterEach();
+            _checkedSanitizerScope.Dispose();
             // Tear everything down
             Map.Reset();
             Game.Wipe();

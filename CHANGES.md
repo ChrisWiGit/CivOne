@@ -6,6 +6,9 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Hardening against silent out-of-range errors
+  * Added boundary checks for types with smaller range than `int` and consistent logging of overflow/underflow events during save/snapshot mapping.
+  * Prepared plan for more checks. See [docs/plan-boundaryCastCheckedSanitizer.prompt.md](docs/plan-boundaryCastCheckedSanitizer.prompt.md) for details.
 * Feature: Autosave format is configurable in patches menu (YAML or COS).
   * `YAML` autosave writes `autosave.cos` to the last used folder (fallback profile save folder).
 * Feature: In Yaml, Advances allows -1 as an indicator to represent "all advances", e.g. for debugging or testing purposes. The mapper will resolve this to the full list of advance IDs in the game.

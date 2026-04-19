@@ -37,36 +37,115 @@ namespace CivOne.Persistence.Model
 		int ClampToInt32(long value, string mapperName, string fieldName, int min = int.MinValue, int max = int.MaxValue);
 	}
 
-	public class ValueSanitizer(ILogger logger) : IValueSanitizer
+	public class ValueSanitizer(ILogger logger) : IValueSanitizer, ICheckedValueSanitizer
 	{
 		private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-		public byte ClampToByte(long value, string mapperName, string fieldName, byte min = byte.MinValue, byte max = byte.MaxValue)
+		public byte CheckedByte(long value, string mapperName, string fieldName, byte min = byte.MinValue, byte max = byte.MaxValue)
 		{
-			var clamped = Math.Clamp(value, min, max);
-			LogClampIfNeeded(value, clamped, min, max, mapperName, fieldName);
-			return (byte)clamped;
+			try
+			{
+				byte castValue = checked((byte)value);
+				byte clamped = Math.Clamp(castValue, min, max);
+				LogClampIfNeeded(castValue, clamped, min, max, mapperName, fieldName);
+				return clamped;
+			}
+			catch (OverflowException ex)
+			{
+				var clamped = Math.Clamp(value, (long)min, (long)max);
+				LogCheckedCastFailure(value, clamped, min, max, mapperName, fieldName, "byte", signed: false, ex);
+				return (byte)clamped;
+			}
 		}
+
+		public ushort CheckedUInt16(long value, string mapperName, string fieldName, ushort min = ushort.MinValue, ushort max = ushort.MaxValue)
+		{
+			try
+			{
+				ushort castValue = checked((ushort)value);
+				ushort clamped = Math.Clamp(castValue, min, max);
+				LogClampIfNeeded(castValue, clamped, min, max, mapperName, fieldName);
+				return clamped;
+			}
+			catch (OverflowException ex)
+			{
+				var clamped = Math.Clamp(value, (long)min, (long)max);
+				LogCheckedCastFailure(value, clamped, min, max, mapperName, fieldName, "ushort", signed: false, ex);
+				return (ushort)clamped;
+			}
+		}
+
+		public short CheckedInt16(long value, string mapperName, string fieldName, short min = short.MinValue, short max = short.MaxValue)
+		{
+			try
+			{
+				short castValue = checked((short)value);
+				short clamped = Math.Clamp(castValue, min, max);
+				LogClampIfNeeded(castValue, clamped, min, max, mapperName, fieldName);
+				return clamped;
+			}
+			catch (OverflowException ex)
+			{
+				var clamped = Math.Clamp(value, (long)min, (long)max);
+				LogCheckedCastFailure(value, clamped, min, max, mapperName, fieldName, "short", signed: true, ex);
+				return (short)clamped;
+			}
+		}
+
+		public int CheckedInt32(long value, string mapperName, string fieldName, int min = int.MinValue, int max = int.MaxValue)
+		{
+			try
+			{
+				int castValue = checked((int)value);
+				int clamped = Math.Clamp(castValue, min, max);
+				LogClampIfNeeded(castValue, clamped, min, max, mapperName, fieldName);
+				return clamped;
+			}
+			catch (OverflowException ex)
+			{
+				var clamped = Math.Clamp(value, (long)min, (long)max);
+				LogCheckedCastFailure(value, clamped, min, max, mapperName, fieldName, "int", signed: true, ex);
+				return (int)clamped;
+			}
+		}
+
+		public byte ClampToByte(long value, string mapperName, string fieldName, byte min = byte.MinValue, byte max = byte.MaxValue)
+			=> CheckedByte(value, mapperName, fieldName, min, max);
 
 		public ushort ClampToUInt16(long value, string mapperName, string fieldName, ushort min = ushort.MinValue, ushort max = ushort.MaxValue)
-		{
-			var clamped = Math.Clamp(value, min, max);
-			LogClampIfNeeded(value, clamped, min, max, mapperName, fieldName);
-			return (ushort)clamped;
-		}
+			=> CheckedUInt16(value, mapperName, fieldName, min, max);
 
 		public short ClampToInt16(long value, string mapperName, string fieldName, short min = short.MinValue, short max = short.MaxValue)
-		{
-			var clamped = Math.Clamp(value, min, max);
-			LogClampIfNeeded(value, clamped, min, max, mapperName, fieldName);
-			return (short)clamped;
-		}
+			=> CheckedInt16(value, mapperName, fieldName, min, max);
 
 		public int ClampToInt32(long value, string mapperName, string fieldName, int min = int.MinValue, int max = int.MaxValue)
+			=> CheckedInt32(value, mapperName, fieldName, min, max);
+
+		private void LogCheckedCastFailure(
+			long value,
+			long clamped,
+			long min,
+			long max,
+			string mapperName,
+			string fieldName,
+			string targetType,
+			bool signed,
+			Exception ex)
 		{
-			var clamped = Math.Clamp(value, min, max);
-			LogClampIfNeeded(value, clamped, min, max, mapperName, fieldName);
-			return (int)clamped;
+			var reason = value < min ? "underflow" : "overflow";
+			var numberKind = signed ? "signed" : "unsigned";
+			_logger.Log(
+				"YAML {0} during checked cast in {1}.{2}: value {3} is outside [{4}..{5}] for {6} ({7}), clamped to {8}. ({9})",
+				reason,
+				mapperName,
+				fieldName,
+				value,
+				min,
+				max,
+				targetType,
+				numberKind,
+				clamped,
+				ex.Message);
 		}
 
 		private void LogClampIfNeeded(long value, long clamped, long min, long max, string mapperName, string fieldName)

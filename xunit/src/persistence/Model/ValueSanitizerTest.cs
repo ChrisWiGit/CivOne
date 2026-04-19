@@ -58,6 +58,40 @@ namespace CivOne.Persistence.Model
 		}
 
 		/// <summary>
+		/// Ensures checked conversion for unsigned target logs underflow and clamps negative values.
+		/// </summary>
+		[Fact]
+		public void CheckedToUInt16OrClamp_LogsUnderflow_WhenValueIsNegative()
+		{
+			var logger = new CapturingLogger();
+			var testee = new ValueSanitizer(logger);
+
+			var actual = testee.CheckedUInt16(-123, "TestMapper", "UnsignedCheckedField");
+
+			Assert.Equal(ushort.MinValue, actual);
+			Assert.Single(logger.Messages);
+			Assert.Contains("underflow", logger.Messages[0]);
+			Assert.Contains("unsigned", logger.Messages[0]);
+		}
+
+		/// <summary>
+		/// Ensures checked conversion for signed target logs overflow and clamps large values.
+		/// </summary>
+		[Fact]
+		public void CheckedToInt16OrClamp_LogsOverflow_WhenValueExceedsMaximum()
+		{
+			var logger = new CapturingLogger();
+			var testee = new ValueSanitizer(logger);
+
+			var actual = testee.CheckedInt16(999_999, "TestMapper", "SignedCheckedField");
+
+			Assert.Equal(short.MaxValue, actual);
+			Assert.Single(logger.Messages);
+			Assert.Contains("overflow", logger.Messages[0]);
+			Assert.Contains("signed", logger.Messages[0]);
+		}
+
+		/// <summary>
 		/// Test logger used to capture formatted messages emitted by the sanitizer.
 		/// </summary>
 		private sealed class CapturingLogger : ILogger
