@@ -14,8 +14,8 @@ namespace CivOne.Services
 
 		public void ReplaceFile(string destinationPath, Action<Stream> writeAction)
 		{
+			ArgumentNullException.ThrowIfNull(writeAction);
 			if (string.IsNullOrWhiteSpace(destinationPath)) throw new ArgumentException("Destination path is required.", nameof(destinationPath));
-			if (writeAction == null) throw new ArgumentNullException(nameof(writeAction));
 
 			string directory = _fileOperations.GetDirectoryName(destinationPath);
 			if (string.IsNullOrWhiteSpace(directory)) throw new InvalidOperationException("Cannot determine destination directory.");

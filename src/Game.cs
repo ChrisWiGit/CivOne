@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using CivOne.Advances;
@@ -237,9 +238,19 @@ namespace CivOne
 				_currentPlayer = 0;
 				GameTurn++;
 				AdvancePeaceTurns();
-				if (GameTurn % 50 == 0 && AutoSave)
+				if (AutoSave)
 				{
-					GameTask.Enqueue(Show.AutoSave);
+					if (Settings.Instance.PreferSveSaveFormat)
+					{
+						if (GameTurn % 50 == 0)
+						{
+							GameTask.Enqueue(Show.AutoSave);
+						}
+					}
+					else
+					{
+						SaveCosAutoSave();
+					}
 				}
 
 				IEnumerable<City> disasterCities = _cities.OrderBy(o => Common.Random.Next(0, 1000)).Take(2).AsEnumerable();
@@ -330,6 +341,14 @@ namespace CivOne
 			}
 		}
 
+		private void SaveCosAutoSave()
+		{
+			ISaveGamePathProvider pathProvider = new SaveGamePathProvider(RuntimeHandler.Runtime, Settings.Instance);
+			string saveDirectory = pathProvider.EnsureAutoSaveDirectory();
+			string autoSaveFile = Path.Combine(saveDirectory, "autosave.cos");
+			new YamlSaveGameService(this).SaveCos(autoSaveFile);
+		}
+
 		// store last active player unit to check if a previous player move happened or a game was loaded.
 		IUnit LastActivePlayerUnit = null;
 
@@ -338,7 +357,7 @@ namespace CivOne
 			IUnit unit = ActiveUnit;
 			if (CurrentPlayer == HumanPlayer)
 			{
-				LastActivePlayerUnit = unit != null ? unit : LastActivePlayerUnit;
+				LastActivePlayerUnit = unit ?? LastActivePlayerUnit;
 
 				if (unit != null && !unit.Goto.IsEmpty)
 				{

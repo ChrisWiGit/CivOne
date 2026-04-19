@@ -28,7 +28,8 @@ namespace CivOne.UnitTests
 		public SaveGamePathProviderTests()
 		{
 			_runtime = new FakeRuntime();
-			_settings = new FakeSettings(Path.Combine(Path.GetTempPath(), "CivOneTests", Guid.NewGuid().ToString("N"), "saves", "cos"));
+			string savesDirectory = Path.Combine(Path.GetTempPath(), "CivOneTests", Guid.NewGuid().ToString("N"), "saves");
+			_settings = new FakeSettings(savesDirectory, Path.Combine(savesDirectory, "cos"));
 		}
 
 		[Fact]
@@ -56,7 +57,7 @@ namespace CivOne.UnitTests
 				createDirectory: createdPaths.Add,
 				directoryExists: path => path == lastUsedPath);
 
-			string actual = provider.GetInitialSaveFilePath();
+			string actual = provider.EnsureInitialSaveFilePath();
 
 			Assert.Equal(Path.Combine(lastUsedPath, "savegame.cos"), actual);
 			Assert.Contains(lastUsedPath, createdPaths);
@@ -70,7 +71,7 @@ namespace CivOne.UnitTests
 				createDirectory: createdPaths.Add,
 				directoryExists: _ => false);
 
-			string actual = provider.GetInitialSaveFilePath();
+			string actual = provider.EnsureInitialSaveFilePath();
 
 			Assert.Equal(Path.Combine(_settings.CosSavesDirectory, "savegame.cos"), actual);
 			Assert.Contains(_settings.CosSavesDirectory, createdPaths);
@@ -89,6 +90,37 @@ namespace CivOne.UnitTests
 			Assert.Equal(_settings.CosSavesDirectory, _runtime.GetSetting(LastUsedSaveGameDialogPathKey));
 		}
 
+		[Fact]
+		public void EnsureAutoSaveDirectory_UsesLastUsedPathWhenAvailable()
+		{
+			List<string> createdPaths = [];
+			string lastUsedPath = Path.Combine(_settings.SavesDirectory, "custom");
+			_runtime.SetSetting(LastUsedSaveGameDialogPathKey, lastUsedPath);
+
+			var provider = CreateProvider(
+				createDirectory: createdPaths.Add,
+				directoryExists: path => path == lastUsedPath);
+
+			string actual = provider.EnsureAutoSaveDirectory();
+
+			Assert.Equal(lastUsedPath, actual);
+			Assert.Contains(lastUsedPath, createdPaths);
+		}
+
+		[Fact]
+		public void EnsureAutoSaveDirectory_FallsBackToProfileSavesDirectory()
+		{
+			List<string> createdPaths = [];
+			var provider = CreateProvider(
+				createDirectory: createdPaths.Add,
+				directoryExists: _ => false);
+
+			string actual = provider.EnsureAutoSaveDirectory();
+
+			Assert.Equal(_settings.SavesDirectory, actual);
+			Assert.Contains(_settings.SavesDirectory, createdPaths);
+		}
+
 		public void Dispose()
 		{
 		}
@@ -96,8 +128,9 @@ namespace CivOne.UnitTests
 		private SaveGamePathProvider CreateProvider(Action<string> createDirectory, Func<string, bool> directoryExists)
 			=> new(_runtime, _settings, createDirectory, directoryExists);
 
-		private sealed class FakeSettings(string cosSavesDirectory) : ISettings
+		private sealed class FakeSettings(string savesDirectory, string cosSavesDirectory) : ISettings
 		{
+			public string SavesDirectory { get; } = savesDirectory;
 			public string CosSavesDirectory { get; } = cosSavesDirectory;
 		}
 

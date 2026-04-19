@@ -43,9 +43,9 @@ namespace CivOne.Services
             return path;
         }
 
-        public string GetInitialSaveFilePath()
+        public string EnsureInitialSaveFilePath()
         {
-            string lastUsed = GetLastUsedSaveGamePath();
+            string lastUsed = EnsureLastUsedSaveGamePath();
             if (!string.IsNullOrWhiteSpace(lastUsed))
             {
                 return Path.Combine(EnsurePathExists(lastUsed), CosDefaultFileName);
@@ -54,13 +54,24 @@ namespace CivOne.Services
             return Path.Combine(EnsurePathExists(EnsureCurrentSaveDirectory()), CosDefaultFileName);
         }
 
-        public string GetLastUsedSaveGamePath()
+        public string EnsureLastUsedSaveGamePath()
         {
             string path = _runtime.GetSetting(LastUsedSaveGameDialogPathKey);
             if (string.IsNullOrWhiteSpace(path) || !_directoryExistsFunc(path))
                 return null;
 
-            return path;
+            return EnsurePathExists(path);
+        }
+
+        public string EnsureAutoSaveDirectory()
+        {
+            string lastUsed = EnsureLastUsedSaveGamePath();
+            if (!string.IsNullOrWhiteSpace(lastUsed))
+            {
+                return EnsurePathExists(lastUsed);
+            }
+
+            return EnsurePathExists(_settings.SavesDirectory);
         }
 
         public void SetLastUsedSaveGamePath(string filePath)

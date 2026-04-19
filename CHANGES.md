@@ -6,11 +6,8 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
-* Feature: Improved `.cos` save/load dialog handling
-  * Save and load dialogs now default to the dedicated `saves/cos` directory when no valid previous dialog path is stored.
-  * The dialog now reuses the last manually selected directory via the existing `LastUsedSaveGameDialogPath` profile key.
-* Feature: Saving no longer overwrites an existing file in place.
-  * The new save is written to a temporary file first, then the old target is deleted, and finally the new file is moved into place.
+* Feature: Autosave format is configurable in patches menu (YAML or COS).
+  * `YAML` autosave writes `autosave.cos` to the last used folder (fallback profile save folder).
 * Feature: In Yaml, Advances allows -1 as an indicator to represent "all advances", e.g. for debugging or testing purposes. The mapper will resolve this to the full list of advance IDs in the game.
 * Feature: Gameplay updates
   * Future Tech handling:

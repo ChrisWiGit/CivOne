@@ -16,12 +16,18 @@ namespace CivOne.Services
         /// <summary>
         /// Returns the initial file path for the save dialog.
         /// </summary>
-        string GetInitialSaveFilePath();
+        string EnsureInitialSaveFilePath();
 
         /// <summary>
         /// Returns the last used savegame path, or null if not set.
         /// </summary>
-        string GetLastUsedSaveGamePath();
+        string EnsureLastUsedSaveGamePath();
+
+        /// <summary>
+        /// Returns the directory to be used for autosaves, ensuring it exists.
+        /// This method never returns null.
+        /// </summary>
+        string EnsureAutoSaveDirectory();
 
         /// <summary>
         /// Persists the last used savegame path in the profile.

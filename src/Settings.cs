@@ -36,6 +36,7 @@ namespace CivOne
 		private bool _pathFinding = false;
 		private bool _riverFastMovement = false;
 		private bool _canalCity = false;
+		private bool _preferSveSaveFormat = true;
 		private GlobalWarmingFeatureFlag _globalWarmingFeatureFlags = GlobalWarmingFeatureFlag.None;
         private bool _autoSettlers;
 		private CursorType _cursorType = CursorType.Default;
@@ -51,6 +52,7 @@ namespace CivOne
 		internal string CosSavesDirectory => Path.Combine(StorageDirectory, "saves", "cos");
 		internal string SoundsDirectory => Path.Combine(StorageDirectory, "sounds");
 
+		string ISettings.SavesDirectory => SavesDirectory;
 		string ISettings.CosSavesDirectory => CosSavesDirectory;
 
 		// Settings
@@ -236,6 +238,17 @@ namespace CivOne
 			{
 				_canalCity = value;
 				SetSetting("CanalCity", _canalCity ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal bool PreferSveSaveFormat
+		{
+			get => _preferSveSaveFormat;
+			set
+			{
+				_preferSveSaveFormat = value;
+				SetSetting("PreferSveSaveFormat", _preferSveSaveFormat ? "1" : "0");
 				Common.ReloadSettings = true;
 			}
 		}
@@ -507,6 +520,7 @@ namespace CivOne
 			GetSetting("PathFindingAlgorithm", ref _pathFinding);
 			GetSetting("AutoSettlers", ref _autoSettlers);
 			GetSetting("RiverFastMovement", ref _riverFastMovement);
+			GetSetting("PreferSveSaveFormat", ref _preferSveSaveFormat);
 			GetSetting<CursorType>("CursorType", ref _cursorType);
 			GetSetting<DestroyAnimation>("DestroyAnimation", ref _destroyAnimation);
 			GetSetting<GameOption>("GameInstantAdvice", ref _instantAdvice);

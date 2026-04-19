@@ -36,7 +36,7 @@ namespace CivOne.Screens
 
 		private static string BuildDialogInitialFileName()
 		{
-			return PathProvider.GetInitialSaveFilePath();
+			return PathProvider.EnsureInitialSaveFilePath();
 		}
 
 		private static void SetLastUsedSaveGameDialogPath(string fileName)

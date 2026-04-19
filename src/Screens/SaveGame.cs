@@ -10,9 +10,6 @@
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
-using CivOne.Persistence;
-using CivOne.Persistence.Factories;
-using CivOne.Persistence.Model;
 using CivOne.Services;
 using CivOne.UserInterface;
 using System;
@@ -32,6 +29,9 @@ namespace CivOne.Screens
 		private static IAtomicFileReplacementService AtomicFileReplacementService =>
 			new AtomicFileReplacementService();
 
+		private IYamlSaveGameService YamlSaveGameService =>
+			new YamlSaveGameService(Game, AtomicFileReplacementService);
+
 		private char _driveLetter = 'C';
 		private readonly int _border = Common.Random.Next(2);
 		private int _gameId;
@@ -41,12 +41,13 @@ namespace CivOne.Screens
 		private bool _saving = false;
 		private Menu _menu;
 
-		private static string BuildDialogInitialFileName(string fileName)
+		private static string BuildDialogInitialFileName(string fileName, string defaultExtension)
 		{
 			var provider = PathProvider;
-			string initial = provider.GetInitialSaveFilePath();
+			string initial = provider.EnsureInitialSaveFilePath();
+			initial = Path.ChangeExtension(initial, defaultExtension);
 			if (!string.IsNullOrWhiteSpace(fileName))
-				return Path.Combine(Path.GetDirectoryName(initial) ?? string.Empty, Path.GetFileName(fileName));
+				return Path.ChangeExtension(Path.Combine(Path.GetDirectoryName(initial) ?? string.Empty, Path.GetFileName(fileName)), defaultExtension);
 			return initial;
 		}
 
@@ -75,37 +76,24 @@ namespace CivOne.Screens
 			_menu = null;
 			SelectedGame = -1;
 			_gameId = -1;
+			const string extension = ".cos";
+			const string filter = "CivOne Save Game (*.cos)|*.cos";
 
-			string sveFile = RuntimeHandler.Runtime.FileChooser(
+			string selectedFile = RuntimeHandler.Runtime.FileChooser(
 				true,
 				"Save Game As...",
-				BuildDialogInitialFileName(SaveFileName),
-				"CivOne Save Game (*.cos)|*.cos"
+				BuildDialogInitialFileName(SaveFileName, extension),
+				filter
 			);
-			if (string.IsNullOrEmpty(sveFile))
+			if (string.IsNullOrEmpty(selectedFile))
 			{
 				_update = true;
 				return;
 			}
 
-			SaveFileName = Path.ChangeExtension(sveFile, ".cos");
+			SaveFileName = Path.ChangeExtension(selectedFile, extension);
 			SetLastUsedSaveGameDialogPath(SaveFileName);
-
-			Game.SaveMetaData.DisplayName = Game.SaveMetaDataService.BuildDisplayName(Game.Difficulty, Game.HumanPlayer, Game.GameTurn);
-
-			GameStateHandler gameState = new();
-			var mapperDependencies = YamlMapperDependenciesFactory
-				.CreateDefault()
-				.Create(Game);
-			YamlSaveGameStateWriter writer = new(
-				mapperDependencies.PlayerMapper,
-				mapperDependencies.UnitMapper,
-				mapperDependencies.MapMapper,
-				mapperDependencies.GlobalWarmingMapper,
-				mapperDependencies.Sanitizer);
-			AtomicFileReplacementService.ReplaceFile(
-				SaveFileName,
-				stream => writer.Write(stream, gameState.Create(Game), Game.SaveMetaData));
+			YamlSaveGameService.SaveCos(SaveFileName);
 
 			_saving = true;
 			_update = true;
