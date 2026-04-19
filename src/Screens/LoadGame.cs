@@ -10,6 +10,7 @@
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
+using CivOne.Services;
 using CivOne.UserInterface;
 using System;
 using System.Linq;
@@ -20,8 +21,8 @@ namespace CivOne.Screens
 	[Modal]
 	internal class LoadGame : BaseScreen
 	{
-		// See SaveGame.cs for related constants and logic around save game dialog path persistence.
-		private const string LastUsedSaveGameDialogPath = "LastUsedSaveGameDialogPath";
+		private static ISaveGamePathProvider PathProvider =>
+			new SaveGamePathProvider(RuntimeHandler.Runtime, Settings.Instance);
 
 
 		private MouseCursor _cursor = MouseCursor.None;
@@ -35,23 +36,12 @@ namespace CivOne.Screens
 
 		private static string BuildDialogInitialFileName()
 		{
-			string saveGameDialogPath = RuntimeHandler.Runtime.GetSetting(LastUsedSaveGameDialogPath);
-			if (string.IsNullOrWhiteSpace(saveGameDialogPath) || !Directory.Exists(saveGameDialogPath))
-			{
-				return string.Empty;
-			}
-
-			return Path.Combine(saveGameDialogPath, "savegame.cos");
+			return PathProvider.GetInitialSaveFilePath();
 		}
 
 		private static void SetLastUsedSaveGameDialogPath(string fileName)
 		{
-			if (string.IsNullOrWhiteSpace(fileName)) return;
-
-			string saveGameDialogPath = Path.GetDirectoryName(fileName);
-			if (string.IsNullOrWhiteSpace(saveGameDialogPath)) return;
-
-			RuntimeHandler.Runtime.SetSetting(LastUsedSaveGameDialogPath, saveGameDialogPath);
+			PathProvider.SetLastUsedSaveGamePath(fileName);
 		}
 
 		private void LoadSaveFile(object sender, MenuItemEventArgs<int> args)

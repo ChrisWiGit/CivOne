@@ -13,6 +13,7 @@ using CivOne.Graphics;
 using CivOne.Persistence;
 using CivOne.Persistence.Factories;
 using CivOne.Persistence.Model;
+using CivOne.Services;
 using CivOne.UserInterface;
 using System;
 using System.IO;
@@ -24,9 +25,12 @@ namespace CivOne.Screens
 	internal class SaveGame : BaseScreen
 	{
 		internal static int SelectedGame = -1;
-		
-		// See LoadGame.cs for related constants and logic around save game dialog path persistence.
-		private const string LastUsedSaveGameDialogPath = "LastUsedSaveGameDialogPath";
+
+		private static ISaveGamePathProvider PathProvider =>
+			new SaveGamePathProvider(RuntimeHandler.Runtime, Settings.Instance);
+
+		private static IAtomicFileReplacementService AtomicFileReplacementService =>
+			new AtomicFileReplacementService();
 
 		private char _driveLetter = 'C';
 		private readonly int _border = Common.Random.Next(2);
@@ -39,24 +43,16 @@ namespace CivOne.Screens
 
 		private static string BuildDialogInitialFileName(string fileName)
 		{
-			string initialFileName = string.IsNullOrWhiteSpace(fileName) ? "savegame.cos" : fileName;
-			string saveGameDialogPath = RuntimeHandler.Runtime.GetSetting(LastUsedSaveGameDialogPath);
-			if (string.IsNullOrWhiteSpace(saveGameDialogPath) || !Directory.Exists(saveGameDialogPath))
-			{
-				return initialFileName;
-			}
-
-			return Path.Combine(saveGameDialogPath, Path.GetFileName(initialFileName));
+			var provider = PathProvider;
+			string initial = provider.GetInitialSaveFilePath();
+			if (!string.IsNullOrWhiteSpace(fileName))
+				return Path.Combine(Path.GetDirectoryName(initial) ?? string.Empty, Path.GetFileName(fileName));
+			return initial;
 		}
 
 		private static void SetLastUsedSaveGameDialogPath(string fileName)
 		{
-			if (string.IsNullOrWhiteSpace(fileName)) return;
-
-			string saveGameDialogPath = Path.GetDirectoryName(fileName);
-			if (string.IsNullOrWhiteSpace(saveGameDialogPath)) return;
-
-			RuntimeHandler.Runtime.SetSetting(LastUsedSaveGameDialogPath, saveGameDialogPath);
+			PathProvider.SetLastUsedSaveGamePath(fileName);
 		}
 
 		public override MouseCursor Cursor => (_menu == null ? MouseCursor.Pointer : MouseCursor.None);
@@ -98,7 +94,6 @@ namespace CivOne.Screens
 			Game.SaveMetaData.DisplayName = Game.SaveMetaDataService.BuildDisplayName(Game.Difficulty, Game.HumanPlayer, Game.GameTurn);
 
 			GameStateHandler gameState = new();
-			using var stream = File.Create(SaveFileName);
 			var mapperDependencies = YamlMapperDependenciesFactory
 				.CreateDefault()
 				.Create(Game);
@@ -108,7 +103,9 @@ namespace CivOne.Screens
 				mapperDependencies.MapMapper,
 				mapperDependencies.GlobalWarmingMapper,
 				mapperDependencies.Sanitizer);
-			writer.Write(stream, gameState.Create(Game), Game.SaveMetaData);
+			AtomicFileReplacementService.ReplaceFile(
+				SaveFileName,
+				stream => writer.Write(stream, gameState.Create(Game), Game.SaveMetaData));
 
 			_saving = true;
 			_update = true;

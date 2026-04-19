@@ -15,7 +15,7 @@ using CivOne.Graphics.Sprites;
 
 namespace CivOne
 {
-	public class Settings
+	public class Settings : ISettings
 	{
 		private static IRuntime Runtime => RuntimeHandler.Runtime;
 		//private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
@@ -48,7 +48,10 @@ namespace CivOne
 		internal string DataDirectory => Path.Combine(StorageDirectory, "data");
 		internal string PluginsDirectory => Path.Combine(StorageDirectory, "plugins");
 		internal string SavesDirectory => Path.Combine(StorageDirectory, "saves");
+		internal string CosSavesDirectory => Path.Combine(StorageDirectory, "saves", "cos");
 		internal string SoundsDirectory => Path.Combine(StorageDirectory, "sounds");
+
+		string ISettings.CosSavesDirectory => CosSavesDirectory;
 
 		// Settings
 
@@ -460,7 +463,7 @@ namespace CivOne
 		
 		private void CreateDirectories()
 		{
-			foreach (string dir in new[] { StorageDirectory, CaptureDirectory, DataDirectory, PluginsDirectory, SavesDirectory, SoundsDirectory })
+			foreach (string dir in new[] { StorageDirectory, CaptureDirectory, DataDirectory, PluginsDirectory, SavesDirectory, CosSavesDirectory, SoundsDirectory })
                 if (!Directory.Exists(dir))
 			    {
 				    Directory.CreateDirectory(dir);
