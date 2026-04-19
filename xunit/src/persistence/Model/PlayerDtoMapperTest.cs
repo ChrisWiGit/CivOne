@@ -92,7 +92,7 @@ namespace CivOne.Persistence.Model
 				Embassies = [4, 5],
 				Diplomacy =
 				[
-					new DiplomacyEntryDto { TargetPlayerId = 0, RawFlags = 0, Decoded = new DiplomacyDecodedDto() },
+					new DiplomacyEntryDto { TargetPlayerId = 0, TargetPlayerGuid = _playerGuid, RawFlags = 0, Decoded = new DiplomacyDecodedDto() },
 					new DiplomacyEntryDto { TargetPlayerId = 1, RawFlags = 1, Decoded = new DiplomacyDecodedDto() },
 					new DiplomacyEntryDto { TargetPlayerId = 2, RawFlags = 2, Decoded = new DiplomacyDecodedDto() },
 					new DiplomacyEntryDto { TargetPlayerId = 3, RawFlags = 3, Decoded = new DiplomacyDecodedDto() },
@@ -272,6 +272,7 @@ namespace CivOne.Persistence.Model
 					for (var i = 0; i < expected.Diplomacy.Count; i++)
 					{
 						Assert.Equal(expected.Diplomacy[i].TargetPlayerId, actual.Diplomacy[i].TargetPlayerId);
+						Assert.Equal(expected.Diplomacy[i].TargetPlayerGuid, actual.Diplomacy[i].TargetPlayerGuid);
 						Assert.Equal(expected.Diplomacy[i].RawFlags, actual.Diplomacy[i].RawFlags);
 						Assert.NotNull(actual.Diplomacy[i].Decoded);
 					}

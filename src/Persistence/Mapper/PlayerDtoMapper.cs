@@ -106,6 +106,7 @@ namespace CivOne.Persistence.Model
         public PlayerDto ToDto(IPlayer player)
 		{
 			var hasOwnerId = ownerResolver.TryResolveOwnerId(player, out var ownerId);
+			var playersByIndex = TryGetPlayersByIndex();
 
 			return new PlayerDto
 			{
@@ -123,6 +124,7 @@ namespace CivOne.Persistence.Model
 				Diplomacy = [.. player.Diplomacy.Select((flags, targetId) => new DiplomacyEntryDto
 				{
 					TargetPlayerId = (ushort)targetId,
+					TargetPlayerGuid = ResolveTargetPlayerGuid(playersByIndex, targetId, hasOwnerId, ownerId, player.PlayerGuid),
 					RawFlags = flags,
 					Decoded = new DiplomacyDecodedDto()
 				})],
@@ -154,6 +156,33 @@ namespace CivOne.Persistence.Model
 					.Where(u => !hasOwnerId || u.Owner == ownerId)
 					.Select(_unitMapper.ToDto)]
 			};
+		}
+
+		private Player[] TryGetPlayersByIndex()
+		{
+			try
+			{
+				return (gameInstance.Players ?? []).ToArray();
+			}
+			catch
+			{
+				return [];
+			}
+		}
+
+		private static Guid ResolveTargetPlayerGuid(Player[] playersByIndex, int targetId, bool hasOwnerId, byte ownerId, Guid ownerGuid)
+		{
+			if (hasOwnerId && targetId == ownerId)
+			{
+				return ownerGuid;
+			}
+
+			if (playersByIndex == null || targetId < 0 || targetId >= playersByIndex.Length)
+			{
+				return Guid.Empty;
+			}
+
+			return playersByIndex[targetId]?.PlayerGuid ?? Guid.Empty;
 		}
 
 		private List<byte> BuildAdvances(List<long> advances)
