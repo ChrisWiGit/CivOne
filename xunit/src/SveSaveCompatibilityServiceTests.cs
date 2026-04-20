@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Xunit;
 using CivOne.Services;
 
@@ -20,8 +21,15 @@ namespace CivOne.src
 			bool hasOutOfBoundsUnitGotoCoordinates = false,
 			int[] tradeCityCountsPerCity = null,
 			byte[] cityOwners = null,
-			byte[] unitOwners = null)
+			byte[] unitOwners = null,
+			int? unitsCount = null,
+			int[] fortifiedUnitCountsPerCity = null,
+			int? fortifiedUnitsCount = null)
 		{
+			var actualCityOwners = cityOwners ?? [1];
+			var actualUnitOwners = unitOwners ?? [1];
+			var actualFortifiedUnitCountsPerCity = fortifiedUnitCountsPerCity ?? Enumerable.Repeat(0, actualCityOwners.Length).ToArray();
+
 			return SveSaveCompatibilitySnapshot.Builder()
 				.FromYamlSource(isLoadedFromYaml)
 				.WithPlayerCount(playerCount)
@@ -34,8 +42,11 @@ namespace CivOne.src
 				.WithOutOfBoundsUnitCoordinates(hasOutOfBoundsUnitCoordinates)
 				.WithOutOfBoundsUnitGotoCoordinates(hasOutOfBoundsUnitGotoCoordinates)
 				.WithTradeCityCountsPerCity(tradeCityCountsPerCity ?? [0])
-				.WithCityOwners(cityOwners ?? [1])
-				.WithUnitOwners(unitOwners ?? [1])
+				.WithCityOwners(actualCityOwners)
+				.WithUnitOwners(actualUnitOwners)
+				.WithUnitsCount(unitsCount ?? actualUnitOwners.Length)
+				.WithFortifiedUnitCountsPerCity(actualFortifiedUnitCountsPerCity)
+				.WithFortifiedUnitsCount(fortifiedUnitsCount ?? actualFortifiedUnitCountsPerCity.Sum())
 				.Build();
 		}
 
@@ -152,6 +163,18 @@ namespace CivOne.src
 
 			Assert.True(actual.CanSaveAsSve);
 			Assert.True(string.IsNullOrWhiteSpace(actual.Reason));
+		}
+
+		[Fact]
+		public void Evaluate_WhenUnitsCountDiffersFromUnitOwnersCount_ReturnsIncompatible()
+		{
+			var testee = new SveSaveCompatibilityService();
+			var snapshot = CreateSnapshot(unitOwners: [0, 0], unitsCount: 1);
+
+			var actual = testee.Evaluate(snapshot);
+
+			Assert.False(actual.CanSaveAsSve);
+			Assert.Contains("UnitsCount", actual.Reason, StringComparison.OrdinalIgnoreCase);
 		}
 	}
 }

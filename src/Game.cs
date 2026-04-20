@@ -137,9 +137,15 @@ namespace CivOne
 
 		internal SveSaveCompatibilityResult GetSveSaveCompatibility()
 		{
+			var cityLookup = _cities.ToHashSet();
+			var sveUnitOwners = _players
+				.SelectMany((player, index) => Enumerable.Repeat((byte)index, _units.Where(unit => player == unit.Owner).GetUnitData().Count()))
+				.ToArray();
+			var fortifiedUnitCountsPerCity = _cities
+				.Select(city => city.Tile?.Units.Count(unit => unit.Home == city && unit.Fortify) ?? 0)
+				.ToArray();
 			// CW: TODO simply inject service associated with Game constructor in future if necessary.
 			var service = new SveSaveCompatibilityService();
-			var cityLookup = _cities.ToHashSet();
 			var snapshot = SveSaveCompatibilitySnapshot.Builder()
 				.FromYamlSource(_loadedFromYamlSaveSource)
 				.WithPlayerCount(_players.Length)
@@ -153,7 +159,10 @@ namespace CivOne
 				.WithOutOfBoundsUnitGotoCoordinates(_units.Any(unit => !unit.Goto.IsEmpty && (unit.Goto.X < 0 || unit.Goto.Y < 0 || unit.Goto.X >= Map.WIDTH || unit.Goto.Y >= Map.HEIGHT)))
 				.WithTradeCityCountsPerCity([.. _cities.Select(city => city.TradingCities?.Length ?? 0)])
 				.WithCityOwners([.. _cities.Select(city => city.Owner)])
-				.WithUnitOwners([.. _units.Select(unit => unit.Owner)])
+				.WithUnitOwners(sveUnitOwners)
+				.WithUnitsCount(sveUnitOwners.Length)
+				.WithFortifiedUnitCountsPerCity(fortifiedUnitCountsPerCity)
+				.WithFortifiedUnitsCount(fortifiedUnitCountsPerCity.Sum())
 				.Build();
 
 			return service.Evaluate(snapshot);
