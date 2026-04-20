@@ -12,6 +12,12 @@ namespace CivOne.src
 			int mapWidth = 80,
 			int mapHeight = 50,
 			int cityCount = 1,
+			int replayDataLengthBytes = 0,
+			bool hasInvalidTradeCityReferences = false,
+			bool hasInvalidUnitHomeCityReferences = false,
+			bool hasOutOfBoundsCityCoordinates = false,
+			bool hasOutOfBoundsUnitCoordinates = false,
+			bool hasOutOfBoundsUnitGotoCoordinates = false,
 			int[] tradeCityCountsPerCity = null,
 			byte[] cityOwners = null,
 			byte[] unitOwners = null)
@@ -21,6 +27,12 @@ namespace CivOne.src
 				.WithPlayerCount(playerCount)
 				.WithMapSize(mapWidth, mapHeight)
 				.WithCityCount(cityCount)
+				.WithReplayDataLengthBytes(replayDataLengthBytes)
+				.WithInvalidTradeCityReferences(hasInvalidTradeCityReferences)
+				.WithInvalidUnitHomeCityReferences(hasInvalidUnitHomeCityReferences)
+				.WithOutOfBoundsCityCoordinates(hasOutOfBoundsCityCoordinates)
+				.WithOutOfBoundsUnitCoordinates(hasOutOfBoundsUnitCoordinates)
+				.WithOutOfBoundsUnitGotoCoordinates(hasOutOfBoundsUnitGotoCoordinates)
 				.WithTradeCityCountsPerCity(tradeCityCountsPerCity ?? [0])
 				.WithCityOwners(cityOwners ?? [1])
 				.WithUnitOwners(unitOwners ?? [1])
@@ -73,6 +85,54 @@ namespace CivOne.src
 
 			Assert.False(actual.CanSaveAsSve);
 			Assert.Contains("at most 3 trade cities", actual.Reason, StringComparison.OrdinalIgnoreCase);
+		}
+
+		[Fact]
+		public void Evaluate_WhenReplayDataExceeds4096Bytes_ReturnsIncompatible()
+		{
+			var testee = new SveSaveCompatibilityService();
+			var snapshot = CreateSnapshot(replayDataLengthBytes: 4097);
+
+			var actual = testee.Evaluate(snapshot);
+
+			Assert.False(actual.CanSaveAsSve);
+			Assert.Contains("at most 4096 bytes", actual.Reason, StringComparison.OrdinalIgnoreCase);
+		}
+
+		[Fact]
+		public void Evaluate_WhenUnitHomeCityReferenceIsInvalid_ReturnsIncompatible()
+		{
+			var testee = new SveSaveCompatibilityService();
+			var snapshot = CreateSnapshot(hasInvalidUnitHomeCityReferences: true);
+
+			var actual = testee.Evaluate(snapshot);
+
+			Assert.False(actual.CanSaveAsSve);
+			Assert.Contains("home-city reference", actual.Reason, StringComparison.OrdinalIgnoreCase);
+		}
+
+		[Fact]
+		public void Evaluate_WhenTradeCityReferenceIsInvalid_ReturnsIncompatible()
+		{
+			var testee = new SveSaveCompatibilityService();
+			var snapshot = CreateSnapshot(hasInvalidTradeCityReferences: true);
+
+			var actual = testee.Evaluate(snapshot);
+
+			Assert.False(actual.CanSaveAsSve);
+			Assert.Contains("trade-city reference", actual.Reason, StringComparison.OrdinalIgnoreCase);
+		}
+
+		[Fact]
+		public void Evaluate_WhenUnitCoordinatesAreOutOfBounds_ReturnsIncompatible()
+		{
+			var testee = new SveSaveCompatibilityService();
+			var snapshot = CreateSnapshot(hasOutOfBoundsUnitCoordinates: true);
+
+			var actual = testee.Evaluate(snapshot);
+
+			Assert.False(actual.CanSaveAsSve);
+			Assert.Contains("coordinates outside", actual.Reason, StringComparison.OrdinalIgnoreCase);
 		}
 
 		[Fact]

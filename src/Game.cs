@@ -138,17 +138,40 @@ namespace CivOne
 		internal SveSaveCompatibilityResult GetSveSaveCompatibility()
 		{
 			var service = new SveSaveCompatibilityService();
+			var cityLookup = _cities.ToHashSet();
 			var snapshot = SveSaveCompatibilitySnapshot.Builder()
 				.FromYamlSource(_loadedFromYamlSaveSource)
 				.WithPlayerCount(_players.Length)
 				.WithMapSize(Map.WIDTH, Map.HEIGHT)
 				.WithCityCount(_cities.Count)
+				.WithReplayDataLengthBytes(GetSveReplayDataLengthBytes())
+				.WithInvalidTradeCityReferences(_cities.Any(city => city.TradingCitiesAsCity.Any(tradingCity => !cityLookup.Contains(tradingCity))))
+				.WithInvalidUnitHomeCityReferences(_units.Any(unit => unit.Home != null && !cityLookup.Contains(unit.Home)))
+				.WithOutOfBoundsCityCoordinates(_cities.Any(city => city.X >= Map.WIDTH || city.Y >= Map.HEIGHT))
+				.WithOutOfBoundsUnitCoordinates(_units.Any(unit => unit.X < 0 || unit.Y < 0 || unit.X >= Map.WIDTH || unit.Y >= Map.HEIGHT))
+				.WithOutOfBoundsUnitGotoCoordinates(_units.Any(unit => !unit.Goto.IsEmpty && (unit.Goto.X < 0 || unit.Goto.Y < 0 || unit.Goto.X >= Map.WIDTH || unit.Goto.Y >= Map.HEIGHT)))
 				.WithTradeCityCountsPerCity([.. _cities.Select(city => city.TradingCities?.Length ?? 0)])
 				.WithCityOwners([.. _cities.Select(city => city.Owner)])
 				.WithUnitOwners([.. _units.Select(unit => unit.Owner)])
 				.Build();
 
 			return service.Evaluate(snapshot);
+		}
+
+		private int GetSveReplayDataLengthBytes()
+		{
+			var length = 0;
+			foreach (var replayEntry in _replayData)
+			{
+				switch (replayEntry)
+				{
+					case ReplayData.CivilizationDestroyed _:
+						length += 4;
+						break;
+				}
+			}
+
+			return length;
 		}
 
 		SveSaveCompatibilityResult ISveSaveCompatibilityProvider.GetSveSaveCompatibility() => GetSveSaveCompatibility();
