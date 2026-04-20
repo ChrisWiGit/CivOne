@@ -145,6 +145,15 @@ namespace CivOne
         {
 			switch (unit.order)
 			{
+				case Order.None:
+				case Order.NewCity:
+				case Order.Sentry:
+				case Order.Fortify:
+				case Order.Wait:
+				case Order.Skip:
+				case Order.Unload:
+				case Order.Disband:
+					break;
 				case Order.Road:
 					result |= 0b00000010;
 					break;
