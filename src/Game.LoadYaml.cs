@@ -48,6 +48,8 @@ namespace CivOne
 
 		private Game(GameState state) : this(CreateValueSanitizer())
 		{
+			_loadedFromYamlSaveSource = true;
+
 			// Must be first: Player methods access static Player.Game during hydration.
 			Player.Game = this;
 
