@@ -32,6 +32,8 @@ namespace CivOne.Screens
 		private IYamlSaveGameService YamlSaveGameService =>
 			new YamlSaveGameService(Game, AtomicFileReplacementService);
 
+		private static ISveSaveCompatibilityProvider SveSaveCompatibilityProvider => Game;
+
 		private char _driveLetter = 'C';
 		private readonly int _border = Common.Random.Next(2);
 		private int _gameId;
@@ -40,6 +42,7 @@ namespace CivOne.Screens
 		private bool _update = true;
 		private bool _saving = false;
 		private Menu _menu;
+		private string _sveUnavailableReason = string.Empty;
 
 		private static string BuildDialogInitialFileName(string fileName, string defaultExtension)
 		{
@@ -60,6 +63,15 @@ namespace CivOne.Screens
 
 		private void SaveFile(object sender, EventArgs args)
 		{
+			var sveCompatibility = SveSaveCompatibilityProvider.GetSveSaveCompatibility();
+			if (!sveCompatibility.CanSaveAsSve)
+			{
+				_sveUnavailableReason = sveCompatibility.Reason;
+				Log("SVE save unavailable: {0}. Switching to YAML/COS save dialog.", _sveUnavailableReason);
+				SaveFileDialog(sender, args);
+				return;
+			}
+
 			int item = (sender as MenuItem<int>).Value;
 			_gameId = item;
 			SelectedGame = item;
@@ -72,8 +84,9 @@ namespace CivOne.Screens
 
 		private void SaveFileDialog(object sender, EventArgs args)
 		{
-			_menu.Close();
+			_menu?.Close();
 			_menu = null;
+
 			SelectedGame = -1;
 			_gameId = -1;
 			const string extension = ".cos";
@@ -192,6 +205,15 @@ namespace CivOne.Screens
 			{
 				if (_gameId >= 0)
 				{
+					var sveCompatibility = SveSaveCompatibilityProvider.GetSveSaveCompatibility();
+					if (!sveCompatibility.CanSaveAsSve)
+					{
+						_sveUnavailableReason = sveCompatibility.Reason;
+						Log("SVE save unavailable: {0}. Switching to YAML/COS save dialog.", _sveUnavailableReason);
+						SaveFileDialog(this, EventArgs.Empty);
+						return true;
+					}
+
 					SaveGameFile file = SaveGameFile.GetSaveGames(_driveLetter).ToArray()[_gameId];
 					Game.Save(file.SveFile, file.MapFile);
 					_saving = true;
@@ -213,11 +235,21 @@ namespace CivOne.Screens
 					RowHeight = 8
 				};
 
+				var currentSveCompatibility = SveSaveCompatibilityProvider.GetSveSaveCompatibility();
+				_sveUnavailableReason = currentSveCompatibility.CanSaveAsSve ? string.Empty : currentSveCompatibility.Reason;
+
 				_menu.Items.Add("Save with file dialog...", -1).OnSelect(SaveFileDialog);
+				if (!currentSveCompatibility.CanSaveAsSve)
+				{
+					_menu.Items.Add($"SVE unavailable: {_sveUnavailableReason}", -2).SetEnabled(false);
+				}
+
 				int i = 0;
 				foreach (SaveGameFile file in SaveGameFile.GetSaveGames(_driveLetter).Take(4))
 				{
-					_menu.Items.Add(file.Name, i++).OnSelect(SaveFile);
+					_menu.Items.Add(file.Name, i++)
+						.OnSelect(SaveFile)
+						.SetEnabled(currentSveCompatibility.CanSaveAsSve);
 				}
 
 				_menu.ActiveItem = SelectedGame;

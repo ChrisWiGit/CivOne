@@ -50,6 +50,12 @@ namespace CivOne
 
 		public void Save(string sveFile, string mapFile)
 		{
+			var sveCompatibility = GetSveSaveCompatibility();
+			if (!sveCompatibility.CanSaveAsSve)
+			{
+				throw new InvalidOperationException($"SVE save is not available for this game state: {sveCompatibility.Reason}");
+			}
+
 			using (IGameData gameData = new SaveDataAdapter())
 			{
 				gameData.GameTurn = _gameTurn;
@@ -124,6 +130,8 @@ namespace CivOne
 
 		private Game(IGameData gameData) : this(CreateValueSanitizer())
 		{
+			_loadedFromYamlSaveSource = false;
+
 			_instance = this;
 			SaveMetaData.InitializeForLoadedGame(GameVersion);
 

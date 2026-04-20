@@ -30,7 +30,7 @@ using CivOne.Wonders;
 
 namespace CivOne
 {
-	public partial class Game : BaseInstance, IGame, ILogger, IGameCitizenDependency
+	public partial class Game : BaseInstance, IGame, ILogger, IGameCitizenDependency, ISveSaveCompatibilityProvider
 	{
 		private static readonly string GameVersion = GetGameVersion();
 
@@ -50,6 +50,7 @@ namespace CivOne
 		private ushort _peaceTurns = 0;
 		private ushort _playerFutureTech = 0;
 		private bool _hostileActionOccurred = false;
+		private bool _loadedFromYamlSaveSource;
 
 		/// <summary>
 		/// The metadata for the current save file, which is initialized when starting a new game or loading an existing game, and updated when saving a game.
@@ -131,6 +132,26 @@ namespace CivOne
 		}
 
 		internal string GameYear => Common.YearString(GameTurn);
+
+		internal bool IsYamlSaveSource => _loadedFromYamlSaveSource;
+
+		internal SveSaveCompatibilityResult GetSveSaveCompatibility()
+		{
+			var service = new SveSaveCompatibilityService();
+			var snapshot = SveSaveCompatibilitySnapshot.Builder()
+				.FromYamlSource(_loadedFromYamlSaveSource)
+				.WithPlayerCount(_players.Length)
+				.WithMapSize(Map.WIDTH, Map.HEIGHT)
+				.WithCityCount(_cities.Count)
+				.WithTradeCityCountsPerCity([.. _cities.Select(city => city.TradingCities?.Length ?? 0)])
+				.WithCityOwners([.. _cities.Select(city => city.Owner)])
+				.WithUnitOwners([.. _units.Select(unit => unit.Owner)])
+				.Build();
+
+			return service.Evaluate(snapshot);
+		}
+
+		SveSaveCompatibilityResult ISveSaveCompatibilityProvider.GetSveSaveCompatibility() => GetSveSaveCompatibility();
 
 		internal Player HumanPlayer { get; set; }
 
@@ -240,11 +261,20 @@ namespace CivOne
 				AdvancePeaceTurns();
 				if (AutoSave)
 				{
+					var sveCompatibility = GetSveSaveCompatibility();
 					if (Settings.Instance.PreferSveSaveFormat)
 					{
-						if (GameTurn % 50 == 0)
+						if (sveCompatibility.CanSaveAsSve)
 						{
-							GameTask.Enqueue(Show.AutoSave);
+							if (GameTurn % 50 == 0)
+							{
+								GameTask.Enqueue(Show.AutoSave);
+							}
+						}
+						else if (GameTurn % 50 == 0)
+						{
+							Log("SVE autosave unavailable: {0}. Falling back to COS autosave.", sveCompatibility.Reason);
+							SaveCosAutoSave();
 						}
 					}
 					else
