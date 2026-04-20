@@ -14,7 +14,15 @@ namespace CivOne.Services
 		/// </summary>
 		public static SveSaveCompatibilityResult Compatible { get; } = new(true, string.Empty);
 
+		/// <summary>
+		/// Indicates whether the game snapshot is compatible with SVE save format and can be saved as an SVE save. If false, the Reason property will contain an explanation of why it is not compatible.
+		/// </summary>
 		public bool CanSaveAsSve { get; } = canSaveAsSve;
+		
+		/// <summary>
+		/// If CanSaveAsSve is false, this property contains a human-readable explanation of
+		/// why the game snapshot is not compatible with SVE save format. If CanSaveAsSve is true, this property will be an empty string.
+		/// </summary>
 		public string Reason { get; } = reason ?? string.Empty;
 	}
 
