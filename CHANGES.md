@@ -6,9 +6,9 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
-* Feature: Introduced SveSaveCompatibilitySnapshot to check for SVE savegame compatibility.
-  * This feature will allow to extend game mechanics in later stages that will prevent saving to the old savegame format and thus have to use only the new game format.
-  * Disable saving SVE save format when loading new COS format (CiveOneSave)  
+* Feature: Introduced `SveSaveCompatibilitySnapshot` to validate SVE savegame compatibility.
+  * This enables future gameplay extensions that may no longer fit into the legacy SVE save format and therefore require the newer COS format.
+  * Saving in SVE format is disabled when a game is loaded from the new COS format (`CivOneSave`).
 * Feature: Hardening against silent out-of-range errors
   * Added boundary checks for types with smaller range than `int` and consistent logging of overflow/underflow events during save/snapshot mapping.
   * Prepared plan for more checks. See [docs/plan-boundaryCastCheckedSanitizer.prompt.md](docs/plan-boundaryCastCheckedSanitizer.prompt.md) for details.
