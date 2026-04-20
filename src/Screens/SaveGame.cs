@@ -32,6 +32,7 @@ namespace CivOne.Screens
 		private IYamlSaveGameService YamlSaveGameService =>
 			new YamlSaveGameService(Game, AtomicFileReplacementService);
 
+		// CW: This is a bit of a hack to allow the SaveGame screen to access the compatibility provider without Dependency Injection or a service locator. Since the SaveGame screen is only used during the save process, it should be safe to assume that Game is available and can serve as the provider.
 		private static ISveSaveCompatibilityProvider SveSaveCompatibilityProvider => Game;
 
 		private char _driveLetter = 'C';

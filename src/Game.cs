@@ -137,6 +137,7 @@ namespace CivOne
 
 		internal SveSaveCompatibilityResult GetSveSaveCompatibility()
 		{
+			// CW: TODO simply inject service associated with Game constructor in future if necessary.
 			var service = new SveSaveCompatibilityService();
 			var cityLookup = _cities.ToHashSet();
 			var snapshot = SveSaveCompatibilitySnapshot.Builder()
