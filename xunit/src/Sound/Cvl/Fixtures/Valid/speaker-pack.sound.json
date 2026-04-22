@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "fixture-speaker-pack",
+  "displayName": "Fixture Speaker Pack",
+  "format": "speaker",
+  "driver": "ISOUND",
+  "tickRate": 300,
+  "tunes": [
+    {
+      "tuneId": 4,
+      "title": "Evolution Music",
+      "endlessLoop": false,
+      "events": [
+        { "t": 0, "type": "worker", "kind": "sound" },
+        { "t": 2, "type": "interrupt", "intNo": 8 }
+      ]
+    }
+  ]
+}

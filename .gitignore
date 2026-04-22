@@ -8,3 +8,5 @@
 **/settings/**
 **/sounds/**
 **/obj/**
+xunit/TestData/Cvl/*.cvl
+!xunit/TestData/Cvl/.gitkeep

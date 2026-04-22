@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "fixture-invalid-empty-events",
+  "displayName": "Invalid Empty Events",
+  "format": "opl2",
+  "tickRate": 300,
+  "tunes": [
+    {
+      "tuneId": 3,
+      "title": "Broken",
+      "endlessLoop": false,
+      "events": []
+    }
+  ]
+}

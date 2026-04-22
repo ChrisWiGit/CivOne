@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "fixture-adlib-pack",
+  "displayName": "Fixture AdLib Pack",
+  "format": "opl2",
+  "driver": "ASOUND",
+  "tickRate": 300,
+  "tunes": [
+    {
+      "tuneId": 3,
+      "title": "Title Music",
+      "endlessLoop": true,
+      "events": [
+        { "t": 0, "type": "worker", "kind": "sound" },
+        { "t": 1, "type": "portWrite", "port": 904, "value": 32 },
+        { "t": 16, "type": "interrupt", "intNo": 8 }
+      ]
+    },
+    {
+      "tuneId": 34,
+      "title": "Win Music",
+      "endlessLoop": false,
+      "events": [
+        { "t": 0, "type": "worker", "kind": "sound" },
+        { "t": 3, "type": "portWrite", "port": 905, "value": 127 }
+      ]
+    }
+  ]
+}
