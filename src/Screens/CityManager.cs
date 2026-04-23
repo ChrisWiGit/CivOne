@@ -89,6 +89,7 @@ namespace CivOne.Screens
 		private void CityRename(object sender, EventArgs args)
 		{
 			if (!(sender is CityName)) return;
+			if (string.IsNullOrWhiteSpace((sender as CityName).Value)) return;
 
 			Game.CityNames[_city.NameId] = (sender as CityName).Value;
 			_cityHeader.Update();
@@ -100,6 +101,14 @@ namespace CivOne.Screens
 			{
 				if (_activeScreen.KeyDown(args)) return true;
 				_update = true;
+				return true;
+			}
+
+			if (!_viewCity && args.Modifier == KeyModifier.None && Char.ToUpper(args.KeyChar) == 'R')
+			{
+				CityName name = new CityName(_city.NameId, _city.Name);
+				name.Accept += CityRename;
+				Common.AddScreen(name);
 				return true;
 			}
 

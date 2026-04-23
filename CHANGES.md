@@ -6,6 +6,7 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Added 'r' to rename a city in city view.
 * Fix: Corrected city economy calculation after refactoring the city economy breakdown logic.
   * Refactoring: Extracted the city economy breakdown calculation into a separate service (CityEconomyServiceImpl) to improve separation of concerns and testability.
 * Fix: InstantAdvice messages now only appear once.
