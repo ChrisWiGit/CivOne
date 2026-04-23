@@ -6,6 +6,9 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Improved Newspaper rendering in `Aspect Ratio = Expand` mode.
+  * Keeps the newspaper at its original 320x200 aspect ratio (centered), instead of stretching it to the full expanded canvas.
+  * Redraws the newspaper correctly after window resize, so it no longer disappears while the screen is resized.
 * Feature: Added 'r' to rename a city in city view.
 * Fix: Corrected city economy calculation after refactoring the city economy breakdown logic.
   * Refactoring: Extracted the city economy breakdown calculation into a separate service (CityEconomyServiceImpl) to improve separation of concerns and testability.
