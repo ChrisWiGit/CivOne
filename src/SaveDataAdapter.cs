@@ -13,12 +13,16 @@ using System.Runtime.InteropServices;
 using System.Text;
 using CivOne.Enums;
 using CivOne.IO;
+using CivOne.Persistence.Factories;
+using CivOne.Persistence.Model;
 using CivOne.Units;
 
 namespace CivOne
 {
 	internal unsafe partial class SaveDataAdapter : IGameData
 	{
+		private static ICheckedValueSanitizer CVS => ValueSanitizerFactory.GetCheckedValueSanitizer();
+
 		private CityData[] DefaultCityData => Enumerable.Range(0, 128).Select(x => new CityData() { Status = 0xFF, Buildings = new byte[4], ResourceTiles = new byte[6] }).ToArray();
 		private UnitData[][] DefaultUnitData => Enumerable.Repeat(Enumerable.Range(0, 128).Select(id => new UnitData() { Id = (byte)id, TypeId = 0xFF }).ToArray(), 8).ToArray();
 
@@ -29,20 +33,20 @@ namespace CivOne
 			if (unit != null)
 			{
 				SetArray<SaveData.UnitType>(ref output, nameof(SaveData.UnitType.Name), 12, new string[] { unit.Name });
-				output.ObsoleteTechId = (ushort)(unit.ObsoleteTech?.Id ?? 0x7F);
-				output.TerrainCategory = (ushort)unit.Class;
-				output.TotalMoves = (ushort)unit.Move;
-				output.Attack = (ushort)unit.Attack;
-				output.Defense = (ushort)unit.Defense;
-				output.Price = (ushort)unit.Price;
+				output.ObsoleteTechId = CVS.CheckedUInt16(unit.ObsoleteTech?.Id ?? 0x7F, nameof(SaveDataAdapter), "UnitType.ObsoleteTechId");
+				output.TerrainCategory = CVS.CheckedUInt16((int)unit.Class, nameof(SaveDataAdapter), "UnitType.TerrainCategory");
+				output.TotalMoves = CVS.CheckedUInt16(unit.Move, nameof(SaveDataAdapter), "UnitType.TotalMoves");
+				output.Attack = CVS.CheckedUInt16(unit.Attack, nameof(SaveDataAdapter), "UnitType.Attack");
+				output.Defense = CVS.CheckedUInt16(unit.Defense, nameof(SaveDataAdapter), "UnitType.Defense");
+				output.Price = CVS.CheckedUInt16(unit.Price, nameof(SaveDataAdapter), "UnitType.Price");
 				switch (unit)
 				{
 					case BaseUnitAir airUnit:
-						output.OutsideMoves = (ushort)airUnit.TotalFuel;
+						output.OutsideMoves = CVS.CheckedUInt16(airUnit.TotalFuel, nameof(SaveDataAdapter), "UnitType.OutsideMoves");
 						output.ViewRange = 2;
 						break;
 					case BaseUnitSea seaUnit:
-						output.ViewRange = (ushort)seaUnit.Range;
+						output.ViewRange = CVS.CheckedUInt16(seaUnit.Range, nameof(SaveDataAdapter), "UnitType.ViewRange");
 						break;
 					default:
 						output.ViewRange = 1;
@@ -50,10 +54,10 @@ namespace CivOne
 				}
 				if (unit is IBoardable)
 				{
-					output.TransportCapacity = (ushort)(unit as IBoardable).Cargo;
+					output.TransportCapacity = CVS.CheckedUInt16((unit as IBoardable).Cargo, nameof(SaveDataAdapter), "UnitType.TransportCapacity");
 				}
-				output.Role = (ushort)unit.Role;
-				output.TechId = (ushort)(unit.RequiredTech?.Id ?? ushort.MaxValue);
+				output.Role = CVS.CheckedUInt16((int)unit.Role, nameof(SaveDataAdapter), "UnitType.Role");
+				output.TechId = CVS.CheckedUInt16(unit.RequiredTech?.Id ?? ushort.MaxValue, nameof(SaveDataAdapter), "UnitType.TechId");
 			}
 			return output;
 		}
@@ -68,7 +72,7 @@ namespace CivOne
 			set
 			{
 				_saveData.GameTurn = value;
-				_saveData.GameYear = (short)Common.TurnToYear(value);
+				_saveData.GameYear = CVS.CheckedInt16(Common.TurnToYear(value), nameof(SaveDataAdapter), "GameYear");
 			}
 		}
 
@@ -78,7 +82,7 @@ namespace CivOne
 			set
 			{
 				_saveData.HumanPlayer = value;
-				_saveData.HumanPlayerBit = (byte)(0x01 << value);
+				_saveData.HumanPlayerBit = CVS.CheckedByte(0x01 << value, nameof(SaveDataAdapter), "HumanPlayerBit");
 			}
 		}
 
@@ -144,7 +148,7 @@ namespace CivOne
 			set
 			{
 				SetDiscoveredAdvanceIDs(value);
-				SetArray(nameof(SaveData.AdvancesCount), value.Select(x => (ushort)x.Count()).ToArray());
+				SetArray(nameof(SaveData.AdvancesCount), value.Select(x => CVS.CheckedUInt16(x.Count(), nameof(SaveDataAdapter), "AdvancesCount")).ToArray());
 			}
 		}
 
@@ -220,10 +224,14 @@ namespace CivOne
 			set
 			{
 				SetCities(value);
-				SetCityX(Enumerable.Range(0, 256).Select(i => (byte)(value.Any(x => x.NameId == i) ? value.First(x => x.NameId == i).X : 0xFF)).ToArray());
-				SetCityY(Enumerable.Range(0, 256).Select(i => (byte)(value.Any(x => x.NameId == i) ? value.First(x => x.NameId == i).Y : 0xFF)).ToArray());
-				SetCityCount(Enumerable.Range(0, 8).Select(i => (ushort)value.Count(c => c.Owner == i)).ToArray());
-				SetTotalCitySize(Enumerable.Range(0, 8).Select(i => (ushort)value.Sum(c => c.ActualSize)).ToArray());
+				SetCityX(Enumerable.Range(0, 256).Select(i => value.Any(x => x.NameId == i)
+					? CVS.CheckedByte(value.First(x => x.NameId == i).X, nameof(SaveDataAdapter), "CityX")
+					: (byte)0xFF).ToArray());
+				SetCityY(Enumerable.Range(0, 256).Select(i => value.Any(x => x.NameId == i)
+					? CVS.CheckedByte(value.First(x => x.NameId == i).Y, nameof(SaveDataAdapter), "CityY")
+					: (byte)0xFF).ToArray());
+				SetCityCount(Enumerable.Range(0, 8).Select(i => CVS.CheckedUInt16(value.Count(c => c.Owner == i), nameof(SaveDataAdapter), "CityCount")).ToArray());
+				SetTotalCitySize(Enumerable.Range(0, 8).Select(i => CVS.CheckedUInt16(value.Sum(c => c.ActualSize), nameof(SaveDataAdapter), "TotalCitySize")).ToArray());
 			}
 		}
 
@@ -233,9 +241,9 @@ namespace CivOne
 			set
 			{
 				SetUnits(value);
-				SetUnitCount(value.Select(p => (ushort)p.Count()).ToArray());
+				SetUnitCount(value.Select(p => CVS.CheckedUInt16(p.Count(), nameof(SaveDataAdapter), "UnitCount")).ToArray());
 				SetUnitsActive(value);
-				SetSettlerCount(value.Select(p => (ushort)p.Count(u => u.TypeId == (byte)UnitType.Settlers)).ToArray());
+				SetSettlerCount(value.Select(p => CVS.CheckedUInt16(p.Count(u => u.TypeId == (byte)UnitType.Settlers), nameof(SaveDataAdapter), "SettlerCount")).ToArray());
 			}
 		}
 

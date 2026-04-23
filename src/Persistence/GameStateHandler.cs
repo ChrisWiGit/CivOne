@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Persistence;
+using CivOne.Persistence.Factories;
+using CivOne.Persistence.Model;
 using CivOne.Services.GlobalWarming;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -61,6 +63,8 @@ namespace CivOne
 
 	public class GameStateHandler
 	{
+		private static ICheckedValueSanitizer CVS => ValueSanitizerFactory.GetCheckedValueSanitizer();
+
 		public GameState Create(IGameSnapshotSource game)
 		{
 			List<bool> options =
@@ -150,7 +154,7 @@ namespace CivOne
 			}
 
 			// Advance first discovery
-			byte maxKey = Math.Min((byte)72, game.AdvanceOrigin.Keys.Max());
+			byte maxKey = CVS.CheckedByte(game.AdvanceOrigin.Keys.Max(), nameof(GameStateHandler), "CreateOld.AdvanceOriginMaxKey", max: 72);
 			ushort[] firstDiscovery = new ushort[maxKey + 1];
 			foreach (byte key in game.AdvanceOrigin.Keys)
 				firstDiscovery[key] = game.AdvanceOrigin[key];
@@ -159,8 +163,8 @@ namespace CivOne
 			{
 				GameTurn = game.GameTurn,
 				HumanPlayer = game.PlayerNumber(game.HumanPlayer),
-				RandomSeed = (ushort)game.TerrainMasterWord,
-				Difficulty = (ushort)game.Difficulty,
+				RandomSeed = CVS.CheckedUInt16(game.TerrainMasterWord, nameof(GameStateHandler), "CreateOld.RandomSeed"),
+				Difficulty = CVS.CheckedUInt16(game.Difficulty, nameof(GameStateHandler), "CreateOld.Difficulty"),
 
 				ActiveCivilizations = [.. game.Players
 					.Select(player =>
@@ -168,7 +172,7 @@ namespace CivOne
 						player.Cities.Any(c => c.Size > 0) ||
 						game.Units.Any(u => player == u.Owner))],
 
-				CivilizationIdentity = [.. game.Players.Select(x => (byte)(x.Civilization.Id > 7 ? 1 : 0))],
+				CivilizationIdentity = [.. game.Players.Select(x => CVS.CheckedByte(x.Civilization.Id > 7 ? 1 : 0, nameof(GameStateHandler), "CreateOld.CivilizationIdentity"))],
 
 				CurrentResearch = game.HumanPlayer.CurrentResearch?.Id ?? 0,
 				DiscoveredAdvanceIDs = discoveredAdvanceIDs,
@@ -180,10 +184,10 @@ namespace CivOne
 
 				PlayerGold = [.. game.Players.Select(x => x.Gold)],
 				ResearchProgress = [.. game.Players.Select(x => x.Science)],
-				TaxRate = [.. game.Players.Select(x => (ushort)x.TaxesRate)],
-				ScienceRate = [.. game.Players.Select(x => (ushort)x.ScienceRate)],
-				StartingPositionX = [.. game.Players.Select(x => (ushort)x.StartX)],
-				Government = [.. game.Players.Select(x => (ushort)x.Government.Id)],
+				TaxRate = [.. game.Players.Select(x => CVS.CheckedUInt16(x.TaxesRate, nameof(GameStateHandler), "CreateOld.TaxRate"))],
+				ScienceRate = [.. game.Players.Select(x => CVS.CheckedUInt16(x.ScienceRate, nameof(GameStateHandler), "CreateOld.ScienceRate"))],
+				StartingPositionX = [.. game.Players.Select(x => CVS.CheckedUInt16(x.StartX, nameof(GameStateHandler), "CreateOld.StartingPositionX"))],
+				Government = [.. game.Players.Select(x => CVS.CheckedUInt16(x.Government.Id, nameof(GameStateHandler), "CreateOld.Government"))],
 
 				Cities = [.. game.Cities.GetCityData()],
 				Units = [.. game.Players.Select(player => game.Units.Where(u => player == u.Owner).GetUnitData().ToArray())],
@@ -206,7 +210,7 @@ namespace CivOne
 				],
 
 				NextAnthologyTurn = game.AnthologyTurn,
-				OpponentCount = (ushort)(game.Players.Length - 2),
+				OpponentCount = CVS.CheckedUInt16(game.Players.Length - 2, nameof(GameStateHandler), "CreateOld.OpponentCount"),
 				// ReplayData = [.. game.ReplayData]  // TODO: CW: Produces Heap Corruption. App stops 0xc0000374 with "A heap has been corrupted" error.
 			};
 		}

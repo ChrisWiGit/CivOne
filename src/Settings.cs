@@ -12,6 +12,7 @@ using System.IO;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
+using CivOne.Persistence.Factories;
 
 namespace CivOne
 {
@@ -37,6 +38,7 @@ namespace CivOne
 		private bool _riverFastMovement = false;
 		private bool _canalCity = false;
 		private bool _preferSveSaveFormat = true;
+		private bool _useUncheckedCastSanitizer = false;
 		private GlobalWarmingFeatureFlag _globalWarmingFeatureFlags = GlobalWarmingFeatureFlag.None;
         private bool _autoSettlers;
 		private CursorType _cursorType = CursorType.Default;
@@ -249,6 +251,18 @@ namespace CivOne
 			{
 				_preferSveSaveFormat = value;
 				SetSetting("PreferSveSaveFormat", _preferSveSaveFormat ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal bool UseUncheckedCastSanitizer
+		{
+			get => _useUncheckedCastSanitizer;
+			set
+			{
+				_useUncheckedCastSanitizer = value;
+				SetSetting("UseUncheckedCastSanitizer", _useUncheckedCastSanitizer ? "1" : "0");
+				ValueSanitizerFactory.SetRuntimeUseUncheckedCastSanitizer(_useUncheckedCastSanitizer);
 				Common.ReloadSettings = true;
 			}
 		}
@@ -521,6 +535,7 @@ namespace CivOne
 			GetSetting("AutoSettlers", ref _autoSettlers);
 			GetSetting("RiverFastMovement", ref _riverFastMovement);
 			GetSetting("PreferSveSaveFormat", ref _preferSveSaveFormat);
+			GetSetting("UseUncheckedCastSanitizer", ref _useUncheckedCastSanitizer);
 			GetSetting<CursorType>("CursorType", ref _cursorType);
 			GetSetting<DestroyAnimation>("DestroyAnimation", ref _destroyAnimation);
 			GetSetting<GameOption>("GameInstantAdvice", ref _instantAdvice);
@@ -540,6 +555,8 @@ namespace CivOne
 			{
 				_globalWarmingFeatureFlags = GlobalWarmingFeatureFlag.None;
 			}
+
+			ValueSanitizerFactory.SetRuntimeUseUncheckedCastSanitizer(_useUncheckedCastSanitizer);
 		}
 	}
 }

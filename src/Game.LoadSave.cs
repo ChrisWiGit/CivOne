@@ -15,6 +15,7 @@ using System.IO;
 using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Enums;
+using CivOne.Persistence.Factories;
 using CivOne.Persistence.Model;
 using CivOne.Services.GlobalWarming;
 using CivOne.Units;
@@ -24,6 +25,8 @@ namespace CivOne
 {
 	public partial class Game
     {
+		private static ICheckedValueSanitizer CVS => ValueSanitizerFactory.GetCheckedValueSanitizer();
+
 		// Dependency Injection
 		// Todo: Replace with DI framework
 		internal readonly CityLoadGame _cityLoadGame = new();
@@ -59,12 +62,12 @@ namespace CivOne
 			using (IGameData gameData = new SaveDataAdapter())
 			{
 				gameData.GameTurn = _gameTurn;
-				gameData.HumanPlayer = (ushort)PlayerNumber(HumanPlayer);
+				gameData.HumanPlayer = CVS.CheckedUInt16(PlayerNumber(HumanPlayer), nameof(Game), "Save.HumanPlayer");
 				gameData.RandomSeed = Map.Instance.SaveMap(mapFile);
-				gameData.Difficulty = (ushort)_difficulty;
+				gameData.Difficulty = CVS.CheckedUInt16(_difficulty, nameof(Game), "Save.Difficulty");
 				gameData.ActiveCivilizations = _players.Select(x => (x.Civilization is Barbarian) || x.Cities.Any(c => c.Size > 0) || GetUnits().Any(u => x == u.Owner)).ToArray();
 
-                gameData.CivilizationIdentity = _players.Select(x => (byte)(x.Civilization.Id > 7 ? 1 : 0)).ToArray();
+				gameData.CivilizationIdentity = _players.Select(x => CVS.CheckedByte(x.Civilization.Id > 7 ? 1 : 0, nameof(Game), "Save.CivilizationIdentity")).ToArray();
 
 				gameData.CurrentResearch = HumanPlayer.CurrentResearch?.Id ?? 0;
 				byte[][] discoveredAdvanceIDs = new byte[_players.Length][];
@@ -77,11 +80,11 @@ namespace CivOne
 				gameData.CityNames = CityNames;
 				gameData.PlayerGold = _players.Select(x => x.Gold).ToArray();
 				gameData.ResearchProgress = _players.Select(x => x.Science).ToArray();
-				gameData.TaxRate = _players.Select(x => (ushort)x.TaxesRate).ToArray();
-				gameData.ScienceRate = _players.Select(p => (ushort)p.ScienceRate).ToArray();
+				gameData.TaxRate = _players.Select(x => CVS.CheckedUInt16(x.TaxesRate, nameof(Game), "Save.TaxRate")).ToArray();
+				gameData.ScienceRate = _players.Select(p => CVS.CheckedUInt16(p.ScienceRate, nameof(Game), "Save.ScienceRate")).ToArray();
 				gameData.HumanContactTurns = _players.Select(p => p.HumanContactTurn).ToArray();
-				gameData.StartingPositionX = _players.Select(x => (ushort)x.StartX).ToArray();
-				gameData.Government = _players.Select(x => (ushort)x.Government.Id).ToArray();
+				gameData.StartingPositionX = _players.Select(x => CVS.CheckedUInt16(x.StartX, nameof(Game), "Save.StartingPositionX")).ToArray();
+				gameData.Government = _players.Select(x => CVS.CheckedUInt16(x.Government.Id, nameof(Game), "Save.Government")).ToArray();
 				gameData.Cities = _cities.GetCityData().ToArray();
 				gameData.Units = _players.Select(p => _units.Where(u => p == u.Owner).GetUnitData().ToArray()).ToArray();
 				ushort[] wonders = Enumerable.Repeat(ushort.MaxValue, 22).ToArray();
@@ -119,7 +122,7 @@ namespace CivOne
 					Palace
 				];
 				gameData.NextAnthologyTurn = _anthologyTurn;
-				gameData.OpponentCount = (ushort)(_players.Length - 2);
+				gameData.OpponentCount = CVS.CheckedUInt16(_players.Length - 2, nameof(Game), "Save.OpponentCount");
 				gameData.PeaceTurns = _peaceTurns;
 				gameData.PlayerFutureTech = HumanPlayer?.FutureTechCount ?? _playerFutureTech;
 				gameData.ReplayData = _replayData.ToArray();
@@ -161,7 +164,7 @@ namespace CivOne
 				player.TaxesRate = gameData.TaxRate[i];
 				player.LuxuriesRate = 10 - gameData.ScienceRate[i] - player.TaxesRate;
 				player.HumanContactTurn = gameData.HumanContactTurns[i];
-				player.StartX = (short)gameData.StartingPositionX[i];
+				player.StartX = CVS.CheckedInt16(gameData.StartingPositionX[i], nameof(Game), "Load.StartingPositionX");
 				
 				// Set map visibility
 				for (int xx = 0; xx < 80; xx++)
@@ -257,7 +260,7 @@ namespace CivOne
                         continue;
                     }
 
-                    unit.Status = (byte)(fortified ? 8 : 0 + (veteran ? 32 : 0));
+					unit.Status = CVS.CheckedByte(fortified ? 8 : 0 + (veteran ? 32 : 0), nameof(Game), "Load.FortifiedUnitStatus");
 
 					unit.Owner = city.Owner;
 					unit.SetHome(city);
@@ -290,8 +293,8 @@ namespace CivOne
 					if (unit == null) continue;
 					unit.Status = data.Status;
 					unit.Owner = p;
-					unit.PartMoves = (byte)(data.RemainingMoves % 3);
-					unit.MovesLeft = (byte)((data.RemainingMoves - unit.PartMoves) / 3);
+					unit.PartMoves = CVS.CheckedByte(data.RemainingMoves % 3, nameof(Game), "Load.UnitPartMoves");
+					unit.MovesLeft = CVS.CheckedByte((data.RemainingMoves - unit.PartMoves) / 3, nameof(Game), "Load.UnitMovesLeft");
 					if (data.GotoX != 0xFF) unit.Goto = new Point(data.GotoX, data.GotoY);
 					if (cityList.ContainsKey(data.HomeCityId))
 					{

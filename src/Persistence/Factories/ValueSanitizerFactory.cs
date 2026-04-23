@@ -30,8 +30,10 @@ namespace CivOne.Persistence.Factories
 	{
 		private static readonly Lazy<ValueSanitizer> _defaultInstance =
 			new(() => new ValueSanitizer(new RuntimeLogger()));
+		private static readonly ICheckedValueSanitizer _uncheckedInstance = new UncheckedCastValueSanitizer();
 		private static readonly object _sync = new();
-		private static ICheckedValueSanitizer _checkedValueSanitizer = null;
+		private static ICheckedValueSanitizer _runtimeCheckedValueSanitizer = null;
+		private static ICheckedValueSanitizer _scopedCheckedValueSanitizer = null;
 
 		/// <summary>
 		/// Returns the default value sanitizer instance used by persistence and YAML mapping code.
@@ -53,7 +55,21 @@ namespace CivOne.Persistence.Factories
 		{
 			lock (_sync)
 			{
-				return _checkedValueSanitizer ?? _defaultInstance.Value;
+				return _scopedCheckedValueSanitizer ?? _runtimeCheckedValueSanitizer ?? _defaultInstance.Value;
+			}
+		}
+
+		/// <summary>
+		/// Sets the runtime checked sanitizer mode used outside scoped test overrides.
+		/// </summary>
+		/// <param name="useUnchecked">
+		/// If true, unchecked legacy cast behavior is used. If false, checked/clamping sanitizer is used.
+		/// </param>
+		public static void SetRuntimeUseUncheckedCastSanitizer(bool useUnchecked)
+		{
+			lock (_sync)
+			{
+				_runtimeCheckedValueSanitizer = useUnchecked ? _uncheckedInstance : null;
 			}
 		}
 
@@ -74,8 +90,8 @@ namespace CivOne.Persistence.Factories
 
 			lock (_sync)
 			{
-				var previous = _checkedValueSanitizer;
-				_checkedValueSanitizer = sanitizer;
+				var previous = _scopedCheckedValueSanitizer;
+				_scopedCheckedValueSanitizer = sanitizer;
 				return new CheckedValueSanitizerScope(previous);
 			}
 		}
@@ -94,7 +110,7 @@ namespace CivOne.Persistence.Factories
 
 				lock (_sync)
 				{
-					_checkedValueSanitizer = _previous;
+					_scopedCheckedValueSanitizer = _previous;
 				}
 
 				_disposed = true;
