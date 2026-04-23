@@ -135,6 +135,11 @@ namespace CivOne
 
 		internal bool IsYamlSaveSource => _loadedFromYamlSaveSource;
 
+		internal void MarkAsYamlSaveSource()
+		{
+			_loadedFromYamlSaveSource = true;
+		}
+
 		internal SveSaveCompatibilityResult GetSveSaveCompatibility()
 		{
 			var cityLookup = _cities.ToHashSet();

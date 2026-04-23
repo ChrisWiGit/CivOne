@@ -36,6 +36,8 @@ namespace CivOne.Services
 			_atomicFileReplacementService.ReplaceFile(
 				filePath,
 				stream => writer.Write(stream, gameState.Create(_game), _game.SaveMetaData));
+
+			_game.MarkAsYamlSaveSource();
 		}
 	}
 }

@@ -334,7 +334,7 @@ namespace CivOne.Services
 
 			if (snapshot.IsLoadedFromYaml)
 			{
-				return new SveSaveCompatibilityResult(false, "Game was loaded from YAML/COS and is locked to YAML/COS saves.");
+				return new SveSaveCompatibilityResult(false, "Game was loaded from YAML/COS or already saved as YAML/COS and is locked to YAML/COS saves.");
 			}
 
 			if (snapshot.MapWidth != SveMapWidth || snapshot.MapHeight != SveMapHeight)

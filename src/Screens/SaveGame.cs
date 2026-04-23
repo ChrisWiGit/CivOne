@@ -42,6 +42,7 @@ namespace CivOne.Screens
 		internal static string SaveFileName = "";
 		private bool _update = true;
 		private bool _saving = false;
+		private bool _attemptedInitialDirectSaveDialog;
 		private Menu _menu;
 		private string _sveUnavailableReason = string.Empty;
 
@@ -101,7 +102,7 @@ namespace CivOne.Screens
 			);
 			if (string.IsNullOrEmpty(selectedFile))
 			{
-				_update = true;
+				Destroy();
 				return;
 			}
 
@@ -176,6 +177,19 @@ namespace CivOne.Screens
 			}
 			else if (_update)
 			{
+				if (!_attemptedInitialDirectSaveDialog)
+				{
+					_attemptedInitialDirectSaveDialog = true;
+					var sveCompatibility = SveSaveCompatibilityProvider.GetSveSaveCompatibility();
+					if (!sveCompatibility.CanSaveAsSve)
+					{
+						_sveUnavailableReason = sveCompatibility.Reason;
+						Log("SVE save unavailable: {0}. Opening YAML/COS save dialog directly.", _sveUnavailableReason);
+						SaveFileDialog(this, EventArgs.Empty);
+						return true;
+					}
+				}
+
 				DrawDriveQuestion();
 				_update = false;
 				return true;
@@ -222,6 +236,15 @@ namespace CivOne.Screens
 					return true;
 				}
 
+				var currentSveCompatibility = SveSaveCompatibilityProvider.GetSveSaveCompatibility();
+				if (!currentSveCompatibility.CanSaveAsSve)
+				{
+					_sveUnavailableReason = currentSveCompatibility.Reason;
+					Log("SVE save unavailable: {0}. Opening YAML/COS save dialog directly.", _sveUnavailableReason);
+					SaveFileDialog(this, EventArgs.Empty);
+					return true;
+				}
+
 				_menu = new Menu(Palette)
 				{
 					Title = "Select Save File...",
@@ -236,7 +259,6 @@ namespace CivOne.Screens
 					RowHeight = 8
 				};
 
-				var currentSveCompatibility = SveSaveCompatibilityProvider.GetSveSaveCompatibility();
 				_sveUnavailableReason = currentSveCompatibility.CanSaveAsSve ? string.Empty : currentSveCompatibility.Reason;
 
 				_menu.Items.Add("Save with file dialog...", -1).OnSelect(SaveFileDialog);
