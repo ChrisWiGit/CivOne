@@ -112,7 +112,7 @@ namespace CivOne
 			{
 				ushort setValue = 0;
 				for (int i = 0; i < value.Length; i++)
-					setValue |= (ushort)(value[i] ? (1 << i) : 0);
+					setValue |= CVS.CheckedUInt16(value[i] ? (1 << i) : 0, nameof(SaveDataAdapter), "ActiveCivilizations.BitMask");
 				_saveData.ActiveCivilizations = setValue;
 			}
 		}
@@ -124,14 +124,14 @@ namespace CivOne
 			{
 				byte[] output = new byte[8];
 				for (int i = 0; i < 8; i++)
-					output[i] = (byte)(((_saveData.CivilizationIdentityFlag & (1 << i)) > 0) ? 1 : 0);
+					output[i] = CVS.CheckedByte(((_saveData.CivilizationIdentityFlag & (1 << i)) > 0) ? 1 : 0, nameof(SaveDataAdapter), "CivilizationIdentity.ReadFlag");
 				return output;
 			}
 			set
 			{
 				ushort setValue = 0;
                 for (int i = 0; i < value.Length; i++)
-                    setValue |= (ushort)(value[i] << i);
+                    setValue |= CVS.CheckedUInt16(value[i] << i, nameof(SaveDataAdapter), "CivilizationIdentity.BitMask");
 				_saveData.CivilizationIdentityFlag = setValue;
 			}
 		}
@@ -279,7 +279,7 @@ namespace CivOne
 			{
 				ushort setValue = 0;
 				for (int i = 0; i < value.Length; i++)
-					setValue |= (ushort)(value[i] ? 1 << i : 0);
+					setValue |= CVS.CheckedUInt16(value[i] ? 1 << i : 0, nameof(SaveDataAdapter), "GameOptions.BitMask");
 				_saveData.GameOptions = setValue;
 			}
 		}
