@@ -1,5 +1,7 @@
 using CivOne.IO;
 using CivOne.src;
+using System;
+using System.Linq;
 using Xunit;
 
 namespace CivOne.UnitTests.Persistence
@@ -40,6 +42,23 @@ namespace CivOne.UnitTests.Persistence
 			Assert.Equal(expected.ActualSize, actual.ActualSize);
 			Assert.Equal(expected.VisibleSize, actual.VisibleSize);
 			Assert.Equal(expected.BaseTrade, actual.BaseTrade);
+		}
+
+		[Fact]
+		public void ReplayData_Setter_ThrowsWhenSerializedDataExceedsFixedBuffer()
+		{
+			// Each CivilizationDestroyed entry serializes to 4 bytes.
+			// 1025 entries exceed the 4096-byte fixed replay buffer.
+			var replayData = Enumerable.Range(0, 1025)
+				.Select(i => new ReplayData.CivilizationDestroyed(i % 4000, 1, 2))
+				.Cast<ReplayData>()
+				.ToArray();
+
+			using var testee = new SaveDataAdapter();
+
+			var ex = Assert.Throws<InvalidOperationException>(() => testee.ReplayData = replayData);
+
+			Assert.Contains("Replay data exceeds 4096 bytes", ex.Message);
 		}
 	}
 }

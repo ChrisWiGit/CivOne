@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using CivOne.Civilizations;
 using CivOne.Persistence;
-using CivOne.Persistence.Factories;
 using CivOne.Persistence.Model;
 using CivOne.Services.GlobalWarming;
 using CivOne.Tiles;
 using CivOne.Units;
-using CivOne.Wonders;
 
 namespace CivOne
 {
@@ -63,8 +60,6 @@ namespace CivOne
 
 	public class GameStateHandler
 	{
-		private static ICheckedValueSanitizer CVS => ValueSanitizerFactory.GetCheckedValueSanitizer();
-
 		public GameState Create(IGameSnapshotSource game)
 		{
 			List<bool> options =
@@ -118,100 +113,6 @@ namespace CivOne
 				GlobalWarmingCount = game.GlobalWarmingService?.GlobalWarmingCount ?? 0,
 				PollutedSquaresCount = game.GlobalWarmingService?.PollutedSquaresCount ?? 0,
 				WarmingIndicator = game.GlobalWarmingService?.WarmingIndicator ?? WarmingIndicator.None,
-			};
-		}
-
-		public GameState2 CreateOld(IGameSnapshotSource game)
-		{
-			// Discovered advances
-			byte[][] discoveredAdvanceIDs = new byte[game.Players.Length][];
-			for (int p = 0; p < game.Players.Length; p++)
-			{
-				discoveredAdvanceIDs[p] = [.. game.Players[p].Advances.Select(x => x.Id)];
-			}
-
-			// Wonders
-			ushort[] wonders = [.. Enumerable.Repeat(ushort.MaxValue, 22)];
-			for (byte i = 0; i < game.Cities.Count; i++)
-			{
-				foreach (IWonder wonder in game.Cities[i].Wonders)
-				{
-					wonders[wonder.Id] = i;
-				}
-			}
-
-			// Tile visibility
-			bool[][,] visibility = new bool[game.Players.Length][,];
-			for (int p = 0; p < visibility.Length; p++)
-			{
-				visibility[p] = new bool[80, 50];
-				for (int xx = 0; xx < 80; xx++)
-					for (int yy = 0; yy < 50; yy++)
-					{
-						if (game.Players[p].Visible(xx, yy))
-							visibility[p][xx, yy] = true;
-					}
-			}
-
-			// Advance first discovery
-			byte maxKey = CVS.CheckedByte(game.AdvanceOrigin.Keys.Max(), nameof(GameStateHandler), "CreateOld.AdvanceOriginMaxKey", max: 72);
-			ushort[] firstDiscovery = new ushort[maxKey + 1];
-			foreach (byte key in game.AdvanceOrigin.Keys)
-				firstDiscovery[key] = game.AdvanceOrigin[key];
-
-			return new GameState2
-			{
-				GameTurn = game.GameTurn,
-				HumanPlayer = game.PlayerNumber(game.HumanPlayer),
-				RandomSeed = CVS.CheckedUInt16(game.TerrainMasterWord, nameof(GameStateHandler), "CreateOld.RandomSeed"),
-				Difficulty = CVS.CheckedUInt16(game.Difficulty, nameof(GameStateHandler), "CreateOld.Difficulty"),
-
-				ActiveCivilizations = [.. game.Players
-					.Select(player =>
-						player.Civilization is Barbarian ||
-						player.Cities.Any(c => c.Size > 0) ||
-						game.Units.Any(u => player == u.Owner))],
-
-				CivilizationIdentity = [.. game.Players.Select(x => CVS.CheckedByte(x.Civilization.Id > 7 ? 1 : 0, nameof(GameStateHandler), "CreateOld.CivilizationIdentity"))],
-
-				CurrentResearch = game.HumanPlayer.CurrentResearch?.Id ?? 0,
-				DiscoveredAdvanceIDs = discoveredAdvanceIDs,
-
-				LeaderNames = [.. game.Players.Select(x => x.LeaderName)],
-				CivilizationNames = [.. game.Players.Select(x => x.TribeNamePlural)],
-				CitizenNames = [.. game.Players.Select(x => x.TribeName)],
-				CityNames = game.CityNames,
-
-				PlayerGold = [.. game.Players.Select(x => x.Gold)],
-				ResearchProgress = [.. game.Players.Select(x => x.Science)],
-				TaxRate = [.. game.Players.Select(x => CVS.CheckedUInt16(x.TaxesRate, nameof(GameStateHandler), "CreateOld.TaxRate"))],
-				ScienceRate = [.. game.Players.Select(x => CVS.CheckedUInt16(x.ScienceRate, nameof(GameStateHandler), "CreateOld.ScienceRate"))],
-				StartingPositionX = [.. game.Players.Select(x => CVS.CheckedUInt16(x.StartX, nameof(GameStateHandler), "CreateOld.StartingPositionX"))],
-				Government = [.. game.Players.Select(x => CVS.CheckedUInt16(x.Government.Id, nameof(GameStateHandler), "CreateOld.Government"))],
-
-				Cities = [.. game.Cities.GetCityData()],
-				Units = [.. game.Players.Select(player => game.Units.Where(u => player == u.Owner).GetUnitData().ToArray())],
-
-				Wonders = wonders,
-				TileVisibility = visibility,
-				// AdvanceFirstDiscovery = game.AdvanceOrigin.ToDictionary(entry => entry.Key, entry => entry.Value),
-				AdvanceFirstDiscovery = game.AdvanceOrigin,
-
-				GameOptions =
-				[
-					game.InstantAdvice,
-					game.AutoSave,
-					game.EndOfTurn,
-					game.Animations,
-					game.Sound,
-					game.EnemyMoves,
-					game.CivilopediaText,
-					game.Palace
-				],
-
-				NextAnthologyTurn = game.AnthologyTurn,
-				OpponentCount = CVS.CheckedUInt16(game.Players.Length - 2, nameof(GameStateHandler), "CreateOld.OpponentCount"),
-				// ReplayData = [.. game.ReplayData]  // TODO: CW: Produces Heap Corruption. App stops 0xc0000374 with "A heap has been corrupted" error.
 			};
 		}
 	}

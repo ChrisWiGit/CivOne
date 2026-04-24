@@ -218,6 +218,11 @@ namespace CivOne
 		private unsafe List<ReplayData> GetReplayData()
 		{
 			ushort replayLength = _saveData.ReplayLength;
+			const int replayCapacity = 4096;
+			if (replayLength > replayCapacity)
+			{
+				replayLength = replayCapacity;
+			}
 			byte[] bytes = GetArray(nameof(SaveData.ReplayData), 4096);
 
 			// Debug output: display complete bytes in hex format with 8 per line
