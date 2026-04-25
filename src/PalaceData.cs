@@ -14,9 +14,9 @@ namespace CivOne
 {
 	public class PalaceData
 	{
-		private byte[] PalaceStyle = new byte[7];
-		private byte[] PalaceLevel = new byte[7];
-		private byte[] GardenLevel = new byte[3];
+		protected byte[] PalaceStyle = new byte[7];
+		protected byte[] PalaceLevel = new byte[7];
+		protected byte[] GardenLevel = new byte[3];
 
 		public int PalaceLeft
 		{

@@ -1,0 +1,47 @@
+using System.Collections.Generic;
+using CivOne.Services.GlobalWarming;
+using CivOne.Tiles;
+using CivOne.Units;
+
+namespace CivOne
+{
+	public partial class Game : IGameSnapshotSource
+	{
+		public List<IUnit> Units => _units;
+
+		public Dictionary<byte, byte> AdvanceOrigin => _advanceOrigin;
+
+		public ushort AnthologyTurn => _anthologyTurn;
+
+		public ushort PeaceTurns => _peaceTurns;
+
+		public ushort PlayerFutureTech => HumanPlayer?.FutureTechCount ?? _playerFutureTech;
+
+		public List<ReplayData> ReplayData => _replayData;
+
+		// No dedicated persisted game-RNG state is currently exposed here.
+		// Returning null keeps GameStateHandler on the documented legacy fallback path.
+		public int? GameRandomSeed => null;
+
+		public int TerrainMasterWord => Map.Instance.TerrainMasterWord;
+
+		IGlobalWarmingService IGameSnapshotSource.GlobalWarmingService => globalWarmingService;
+
+		public ITile[,] MapTiles => Map.Instance.Tiles;
+
+		Player IGameSnapshotSource.CurrentPlayer => CurrentPlayer;
+
+		Player IGameSnapshotSource.HumanPlayer => HumanPlayer;
+
+		Player[] IGameSnapshotSource.Players => _players;
+
+		List<City> IGameSnapshotSource.Cities => _cities;
+
+		string[] IGameSnapshotSource.CityNames => CityNames;
+
+		byte IGameSnapshotSource.PlayerNumber(Player player)
+		{
+			return PlayerNumber(player);
+		}
+	}
+}

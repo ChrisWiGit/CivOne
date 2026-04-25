@@ -9,7 +9,7 @@
 
 namespace CivOne.Enums
 {
-	internal enum Wonder
+	public enum Wonder
 	{
 		Pyramids = 1,
 		HangingGardens = 2,

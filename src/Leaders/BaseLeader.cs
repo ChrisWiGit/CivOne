@@ -41,7 +41,7 @@ namespace CivOne.Leaders
 		protected abstract Leader Leader { get; }
 
 		private IBitmap _modifiedPicture, _modifiedPortraitSmall;
-		public Picture GetPortrait(FaceState state = FaceState.Neutral)
+		public IBitmap GetPortrait(FaceState state = FaceState.Neutral)
 		{
 			if (_modifications.ContainsKey(Leader))
 			{
@@ -79,7 +79,7 @@ namespace CivOne.Leaders
 			return output;
 		}
 
-		public Picture PortraitSmall
+		public IBitmap PortraitSmall
 		{
 			get
 			{

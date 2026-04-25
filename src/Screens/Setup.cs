@@ -187,8 +187,8 @@ namespace CivOne.Screens
 			MenuItem.Create($"Enable (no keypad) arrow helper: {Settings.ArrowHelper.YesNo()}").OnSelect(GotoMenu(ArrowHelperMenu)),
 			MenuItem.Create($"Custom map sizes (experimental): {Settings.CustomMapSize.YesNo()}").OnSelect(GotoMenu(CustomMapSizeMenu)),
 			MenuItem.Create("Game behavior menu").OnSelect(GotoMenu(BehaviorMenu)),
-
-
+			MenuItem.Create($"AutoSave format: {(Settings.PreferSveSaveFormat ? "SVE" : "COS")}").OnSelect(GotoMenu(SaveFormatMenu)),
+			MenuItem.Create($"Save cast behavior: {(Settings.UseUncheckedCastSanitizer ? "Unchecked" : "Checked")}").OnSelect(GotoMenu(SaveCastBehaviorMenu)),
 			MenuItem.Create("Back").OnSelect(GotoMenu(MainMenu, 1))
 		);
 
@@ -263,6 +263,18 @@ namespace CivOne.Screens
 		private void CanalCity() => CreateMenu("No movement penalty for sea units in city", GotoMenu(BehaviorMenu, 3),
 			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.CanalCity = false).SetActive(() => !Settings.CanalCity),
 			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.CanalCity = true).SetActive(() => Settings.CanalCity),
+			MenuItem.Create("Back")
+		);
+
+		private void SaveFormatMenu() => CreateMenu("AutoSave format", GotoMenu(PatchesMenu, 9),
+			MenuItem.Create("SVE (default)").OnSelect((s, a) => Settings.PreferSveSaveFormat = true).SetActive(() => Settings.PreferSveSaveFormat),
+			MenuItem.Create("CivOne Save (COS)").OnSelect((s, a) => Settings.PreferSveSaveFormat = false).SetActive(() => !Settings.PreferSveSaveFormat),
+			MenuItem.Create("Back")
+		);
+
+		private void SaveCastBehaviorMenu() => CreateMenu("Save cast behavior", GotoMenu(PatchesMenu, 10),
+			MenuItem.Create("Checked (default)").OnSelect((s, a) => Settings.UseUncheckedCastSanitizer = false).SetActive(() => !Settings.UseUncheckedCastSanitizer),
+			MenuItem.Create("Unchecked (legacy)").OnSelect((s, a) => Settings.UseUncheckedCastSanitizer = true).SetActive(() => Settings.UseUncheckedCastSanitizer),
 			MenuItem.Create("Back")
 		);
 

@@ -110,6 +110,8 @@ namespace CivOne
 
 		private unsafe void SetScienceRate(ushort[] values) => SetArray(nameof(SaveData.ScienceRate), values);
 
+		private unsafe void SetHumanContactTurns(ushort[] values) => SetArray(nameof(SaveData.HumanContactTurns), values);
+
 		private unsafe void SetStartingPositionX(ushort[] values) => SetArray(nameof(SaveData.StartingPositionX), values);
 
 		private unsafe void SetGovernment(ushort[] values) => SetArray(nameof(SaveData.Government), values);
@@ -157,7 +159,7 @@ namespace CivOne
 				cities[i].Y = data.Y;
 				cities[i].Status = data.Status;
 				cities[i].ActualSize = data.ActualSize;
-				cities[i].VisibleSize = data.ActualSize;
+				cities[i].VisibleSize = data.VisibleSize;
 				cities[i].CurrentProduction = data.CurrentProduction;
 				cities[i].BaseTrade = data.BaseTrade;
 				cities[i].Owner = data.Owner;
@@ -223,7 +225,9 @@ namespace CivOne
 
 		private unsafe void SetReplayData(ReplayData[] values)
 		{
-			List<byte> output = new List<byte>();
+			values ??= [];
+
+			List<byte> output = [];
 			foreach (ReplayData value in values)
 			{
 				byte entryId;
@@ -245,15 +249,26 @@ namespace CivOne
 				output.AddRange(data);
 			}
 
+			const int replayCapacity = 4096;
+			if (output.Count > replayCapacity)
+			{
+				throw new InvalidOperationException($"Replay data exceeds {replayCapacity} bytes ({output.Count}).");
+			}
+
             var outArr = output.ToArray();
 			_saveData.ReplayLength = (ushort)output.Count;
-            fixed (byte* p = _saveData.ReplayData)
+            fixed (byte* replayDataPtr = _saveData.ReplayData)
             {
-                for (int i = 0; i < output.Count; i++)
-                    p[i] = outArr[i];
-            }
+				for (int i = 0; i < replayCapacity; i++)
+				{
+					replayDataPtr[i] = 0;
+				}
 
-            //SetArray(nameof(SaveData.ReplayData), output.ToArray());
+				for (int i = 0; i < outArr.Length; i++)
+				{
+                    replayDataPtr[i] = outArr[i];
+				}
+            }
 		}
 	}
 }

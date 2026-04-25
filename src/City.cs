@@ -16,6 +16,8 @@ using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Governments;
+using CivOne.Persistence.Game;
+using CivOne.Persistence.Model;
 using CivOne.Screens;
 using CivOne.Screens.Reports;
 using CivOne.Screens.Services;
@@ -27,13 +29,22 @@ using CivOne.Wonders;
 
 namespace CivOne
 {
-	public interface ICity : ITurn, ICityBasic, ICityBuildings, ICityOnContinent
+	public interface ICity : ITurn, ICityBasic, ICityStatus, ICityTile, ICityBuildings, ICityOnContinent, ICityMapper
 	{}
 	public class City : BaseInstance, ICity
 	{
 		// Dependency Injection
 		// TODO: Replace by DI container instantiation
 		internal BitFlagExtensions bitFlagExtensions = new();
+		
+		Guid _id = Guid.NewGuid();
+		
+		/*
+		New. Each City gets a unique Guid.
+		For new saving format.
+		*/
+		public Guid Id { get => _id; set => _id = value; }
+		
 
 		internal int NameId { get; set; }
 		internal byte X;
@@ -51,7 +62,7 @@ namespace CivOne
 				ResetResourceTiles();
 			}
 		}
-		internal string Name => Game.CityNames[NameId];
+		public string Name => Game.CityNames[NameId];
 		private byte _size;
 		public byte Size
 		{
@@ -72,9 +83,9 @@ namespace CivOne
 				SetResourceTiles();
 			}
 		}
-		internal int Shields { get; set; }
-		internal int Food { get; set; }
-		internal IProduction CurrentProduction { get; private set; }
+		public int Shields { get; set; }
+		public int Food { get; set; }
+		public IProduction CurrentProduction { get; private set; }
 
 		private List<ITile> _resourceTiles = new List<ITile>();
 		private List<Citizen> _specialists = new List<Citizen>();
@@ -88,6 +99,12 @@ namespace CivOne
 				_resourceTiles = value;
 			}
 		}
+
+		/// <summary>
+		/// List of tiles that are worked by the city, always including the city tile itself.
+		/// </summary>
+		public ITile[] ResourceTiles => [.. CityTiles.Where(t => (t.X == X && t.Y == Y) || _resourceTiles.Contains(t))];
+		public Citizen[] Specialists => _specialists.ToArray();
 
 		internal List<Citizen> SetupSpecialists
 		{
@@ -316,7 +333,7 @@ namespace CivOne
 			get
 			{
 				Dictionary<City, int> tradingCitiesValue = [];
-				foreach (City city in TradingCities)
+				foreach (City city in TradingCitiesAsCity)
 				{
 					int trading = CalculateTradeValue(city);
 					tradingCitiesValue[city] = trading;
@@ -328,7 +345,7 @@ namespace CivOne
 		/// <summary>
 		/// Sum of trade values from all (up to 3) trading cities.
 		/// </summary>
-		public int TradingCitiesSumValue => TradingCities.Sum(CalculateTradeValue);
+		public int TradingCitiesSumValue => TradingCitiesAsCity.Sum(CalculateTradeValue);
 
 		public int TotalIncome => Taxes;
 
@@ -495,7 +512,11 @@ namespace CivOne
 			set => SetStatusFlag(CityStatus.RIOT, value);
 		}
 
-		public bool IsCoastal => bitFlagExtensions.HasFlag(_status, CityStatus.COASTAL);
+		public bool IsCoastal 
+		{
+			get => bitFlagExtensions.HasFlag(_status, CityStatus.COASTAL);
+			set => SetStatusFlag(CityStatus.COASTAL, value);
+		}
 
 		public bool CelebrationCancelled
 		{
@@ -503,8 +524,10 @@ namespace CivOne
 			set => SetStatusFlag(CityStatus.CELEBRATION_CANCELLED, value);
 		}
 
-		public bool HydroAvailable	{
+		public bool HydroAvailable
+		{
 			get => bitFlagExtensions.HasFlag(_status, CityStatus.HYDRO_AVAILABLE);
+			set => SetStatusFlag(CityStatus.HYDRO_AVAILABLE, value);
 		}
 
 		public bool AutoBuild
@@ -538,8 +561,6 @@ namespace CivOne
 		{
 			_status = value ? bitFlagExtensions.SetFlag(_status, status) : bitFlagExtensions.ClearFlag(_status, status);
 		}
-
-		internal IEnumerable<ITile> ResourceTiles => CityTiles.Where(t => (t.X == X && t.Y == Y) || _resourceTiles.Contains(t));
 
 		internal bool OccupiedTile(ITile tile)
 		{
@@ -747,6 +768,7 @@ namespace CivOne
 		}
 
 		public Player Player => Game.Instance.GetPlayer(Owner);
+		public IPlayer PlayerIntf => Player;
 
 		/// <summary>
 		/// Return the list of possible city production [units, buildings,
@@ -1015,6 +1037,10 @@ namespace CivOne
 
 		public void NewTurn()
 		{
+			// City was destroyed (DestroyCity sets X/Y to 255 as tombstone but keeps the object
+			// in _cities for index-stability of trading routes). Skip processing it.
+			if (X == 255 || Y == 255) return;
+
 			ExecutePollution();
 
 			UpdateResources();
@@ -1465,51 +1491,100 @@ namespace CivOne
 			}
 		}
 
-		private int[] tradingCities;
-		internal void SetTradingCitiesIndexes(int[] tradingCities)
+		private Guid[] _tradingCityIds;
+		internal void SetTradingCityIds(Guid[] ids)
 		{
 			// only keep the last 3 trading cities
-			this.tradingCities = [.. tradingCities.Skip(Math.Max(0, tradingCities.Length - 3))];
+			_tradingCityIds = [.. ids.Skip(Math.Max(0, ids.Length - 3))];
 		}
 
-		public City[] TradingCities {
+		public City[] TradingCitiesAsCity {
 			get
 			{
-				if (tradingCities == null)
+				if (_tradingCityIds == null)
 				{
-					return Array.Empty<City>();
+					return [];
 				}
-				return [.. tradingCities.Select(index => Game.Instance.Cities[index])];
+				return [.. _tradingCityIds
+					.Select(id => Game.Instance.GetCities().FirstOrDefault(c => c.Id == id))
+					.Where(c => c != null)];
 			}
 		}
 
-		int IndexOfCity(City city)
-		{
-			for (int i = 0; i < Game.Instance.Cities.Count; i++)
+		public ICity[] TradingCities {
+			get
 			{
-				if (Game.Instance.Cities[i] == city) return i;
+				return [.. TradingCitiesAsCity];
 			}
-			return -1;
+		}
+
+		private uint[] _visibleSizes = new uint[16];
+		public uint[] VisibleSizes {
+			get { 
+				// Owner always sees his city size;
+				_visibleSizes[Owner] = Size;
+				return _visibleSizes;
+			}
+			set => _visibleSizes = value is { Length: >= 16 } ? value : new uint[16];
+		}
+
+		/// <summary>
+		/// Legacy bridge property for the original SVE save format, which stores only a single visible city size per city —
+		/// in contrast to the newer per-player <see cref="VisibleSizes"/> array.
+		/// <para>
+		/// In Civ1, only the human player's perception of a city's size was persisted (fog of war).
+		/// This property maps to <see cref="VisibleSizes"/> at the human player's index.
+		/// </para>
+		/// </summary>
+		public uint VisibleSizeToHumanPlayer
+		{
+			get
+			{
+				Game game = Game.Instance;
+				Debug.Assert(game?.HumanPlayer != null, "City.VisibleSizeToHumanPlayer accessed before HumanPlayer was initialized.");
+				if (game?.HumanPlayer == null)
+				{
+					return 0;
+				}
+
+				return _visibleSizes[game.HumanPlayerId];
+			}
+			set
+			{
+				Game game = Game.Instance;
+				Debug.Assert(game?.HumanPlayer != null, "City.VisibleSizeToHumanPlayer assigned before HumanPlayer was initialized.");
+				if (game?.HumanPlayer == null)
+				{
+					return;
+				}
+
+				_visibleSizes[game.HumanPlayerId] = value;
+			}
 		}
 
 		public void AddTradingCity(City city)
 		{
-			if (city == null || city == this || TradingCities.Contains(city))
+			if (city == null || city == this || TradingCitiesAsCity.Contains(city))
 			{
 				return;
 			}
 
-			List<City> cities = [.. TradingCities];
-			cities.Add(city);
-			SetTradingCitiesIndexes([.. cities.Select(c => IndexOfCity(c)).Where(i => i >= 0)]);
+			SetTradingCityIds([.. (_tradingCityIds ?? []), city.Id]);
 		}
 
 
 		internal City(byte owner)
 		{
+			_visibleSizes = new uint[16];
 			Owner = owner;
 			if (!Game.Started) return;
-			CurrentProduction = Reflect.GetUnits().Where(u => Player.ProductionAvailable(u)).OrderBy(u => Common.HasAttribute<Default>(u) ? -1 : (int)u.Type).First();
+			if (Player.Game == null) return;
+			var player = Game.Instance?.GetPlayer(owner);
+			if (player == null) return;
+			CurrentProduction = Reflect.GetUnits()
+				.Where(u => player.ProductionAvailable(u))
+				.OrderBy(u => Common.HasAttribute<Default>(u) ? -1 : (int)u.Type)
+				.FirstOrDefault();
 			SetResourceTiles();
 		}
 

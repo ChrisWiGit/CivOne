@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using CivOne.Advances;
+using CivOne.Enums;
 using CivOne.Graphics;
 
 namespace CivOne.Wonders
@@ -19,5 +20,7 @@ namespace CivOne.Wonders
 		IAdvance ObsoleteTech { get; }
 		IBitmap SmallIcon { get; }
 		string FormatWorldWonder(City city);
+
+		Wonder Type { get; }
 	}
 }

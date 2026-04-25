@@ -62,7 +62,7 @@ namespace CivOne.Buildings
 			return output;
 		}
 		
-		protected Building Type { get; set; }
+		public Building Type { get; set; }
 		
 		public IAdvance RequiredTech { get; protected set; }
 		public short SellPrice { get; private set; }

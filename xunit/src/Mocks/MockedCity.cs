@@ -6,6 +6,9 @@ using CivOne.Units;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using CivOne.Enums;
+using CivOne.Persistence.Model;
+using CivOne.Persistence.Game;
 
 namespace CivOne.UnitTests
 {
@@ -22,7 +25,7 @@ namespace CivOne.UnitTests
         public ITile Tile { get; set; } = null;
 
         public int ContinentId { get; set; } = 0;
-        public Player Player => _player;
+        public IPlayer Player => _player;
         private Player _player = null;
         public Player MockPlayer
         {
@@ -35,7 +38,46 @@ namespace CivOne.UnitTests
         public int Taxmen { get; set; } = 0;
 
         public int EntertainerLuxuries => Entertainers * 3;
-        private readonly SupplyMockedValues<bool> _hasBuilding = new SupplyMockedValues<bool>();
+
+		public string Name => throw new NotImplementedException();
+
+		public ITile[] ResourceTiles => throw new NotImplementedException();
+
+		public Citizen[] Specialists => throw new NotImplementedException();
+
+		public int Shields => throw new NotImplementedException();
+
+		public int Food => throw new NotImplementedException();
+
+		public IProduction CurrentProduction => throw new NotImplementedException();
+
+		public IBuilding[] Buildings => throw new NotImplementedException();
+
+		public IWonder[] Wonders => throw new NotImplementedException();
+
+		public byte Status => throw new NotImplementedException();
+
+		public bool WasInDisorder => throw new NotImplementedException();
+
+		public ICity[] TradingCities => throw new NotImplementedException();
+
+		public uint VisibleSize => throw new NotImplementedException();
+
+		public bool IsRiot { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public bool IsCoastal { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public bool CelebrationCancelled { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public bool HydroAvailable { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public bool AutoBuild { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public bool TechStolen { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public bool CelebrationOrRapture { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public bool BuildingSold { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public Guid Id { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+		public uint[] VisibleSizes => throw new NotImplementedException();
+
+		public IPlayer PlayerIntf => Player;
+
+		private readonly SupplyMockedValues<bool> _hasBuilding = new SupplyMockedValues<bool>();
         private readonly SupplyMockedValues<bool> _hasWonder = new SupplyMockedValues<bool>();
 
         private readonly ISet<IWonder> _wonders = new HashSet<IWonder>();

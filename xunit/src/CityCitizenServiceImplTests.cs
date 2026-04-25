@@ -31,7 +31,7 @@ namespace CivOne.UnitTests
         MockedMap mockedIMap;
 
         MockedGrassland mockedGrassland;
-        public override void BeforeEach()
+        protected override void BeforeEach()
         {
             mockedSpecialists = [];
             mockedGrassland = new MockedGrassland();
@@ -59,7 +59,7 @@ namespace CivOne.UnitTests
             );
         }
 
-        public override void AfterEach()
+        protected override void AfterEach()
         {
             testee = null;
         }

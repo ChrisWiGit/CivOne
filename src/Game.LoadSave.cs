@@ -7,15 +7,17 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Enums;
-using CivOne.Services;
+using CivOne.Persistence.Factories;
+using CivOne.Persistence.Model;
 using CivOne.Services.GlobalWarming;
-using CivOne.Services.GlobalWarming.Impl;
 using CivOne.Units;
 using CivOne.Wonders;
 
@@ -23,41 +25,49 @@ namespace CivOne
 {
 	public partial class Game
     {
+		private static ICheckedValueSanitizer CVS => ValueSanitizerFactory.GetCheckedValueSanitizer();
+
 		// Dependency Injection
 		// Todo: Replace with DI framework
 		internal readonly CityLoadGame _cityLoadGame = new();
-		public static void LoadGame(string sveFile, string mapFile)
+		public static bool LoadGame(string sveFile, string mapFile)
 		{
 			// Allow loading a game in-game.
 
-			using (IGameData adapter = SaveDataAdapter.Load(File.ReadAllBytes(sveFile)))
+			using IGameData adapter = SaveDataAdapter.Load(File.ReadAllBytes(sveFile));
+			if (!adapter.ValidData)
 			{
-				if (!adapter.ValidData)
-				{
-					BaseInstance.Log("SaveDataAdapter failed to load game");
-					return;
-				}
-
-				// Always use the save game's seed
-				Common.SetRandomSeed(adapter.RandomSeed);
-
-				Map.Instance.LoadMap(mapFile, adapter.RandomSeed);
-				_instance = new Game(adapter);
-				BaseInstance.Log($"Game instance loaded (difficulty: {_instance._difficulty}, competition: {_instance._competition}");
+				BaseInstance.Log("SaveDataAdapter failed to load game");
+				return false;
 			}
+
+			// Always use the save game's seed
+			Common.SetRandomSeed(adapter.RandomSeed);
+
+			Map.Instance.LoadMap(mapFile, adapter.RandomSeed);
+			_instance = new Game(adapter);
+			BaseInstance.Log($"Game instance loaded (difficulty: {_instance._difficulty}, competition: {_instance._competition}");
+
+			return true;
 		}
 
 		public void Save(string sveFile, string mapFile)
 		{
+			var sveCompatibility = GetSveSaveCompatibility();
+			if (!sveCompatibility.CanSaveAsSve)
+			{
+				throw new InvalidOperationException($"SVE save is not available for this game state: {sveCompatibility.Reason}");
+			}
+
 			using (IGameData gameData = new SaveDataAdapter())
 			{
 				gameData.GameTurn = _gameTurn;
-				gameData.HumanPlayer = (ushort)PlayerNumber(HumanPlayer);
+				gameData.HumanPlayer = CVS.CheckedUInt16(PlayerNumber(HumanPlayer), nameof(Game), "Save.HumanPlayer");
 				gameData.RandomSeed = Map.Instance.SaveMap(mapFile);
-				gameData.Difficulty = (ushort)_difficulty;
-				gameData.ActiveCivilizations = _players.Select(x => (x.Civilization is Barbarian) || (x.Cities.Any(c => c.Size > 0) || GetUnits().Any(u => x == u.Owner))).ToArray();
+				gameData.Difficulty = CVS.CheckedUInt16(_difficulty, nameof(Game), "Save.Difficulty");
+				gameData.ActiveCivilizations = _players.Select(x => (x.Civilization is Barbarian) || x.Cities.Any(c => c.Size > 0) || GetUnits().Any(u => x == u.Owner)).ToArray();
 
-                gameData.CivilizationIdentity = _players.Select(x => (byte)(x.Civilization.Id > 7 ? 1 : 0)).ToArray();
+				gameData.CivilizationIdentity = _players.Select(x => CVS.CheckedByte(x.Civilization.Id > 7 ? 1 : 0, nameof(Game), "Save.CivilizationIdentity")).ToArray();
 
 				gameData.CurrentResearch = HumanPlayer.CurrentResearch?.Id ?? 0;
 				byte[][] discoveredAdvanceIDs = new byte[_players.Length][];
@@ -70,10 +80,11 @@ namespace CivOne
 				gameData.CityNames = CityNames;
 				gameData.PlayerGold = _players.Select(x => x.Gold).ToArray();
 				gameData.ResearchProgress = _players.Select(x => x.Science).ToArray();
-				gameData.TaxRate = _players.Select(x => (ushort)x.TaxesRate).ToArray();
-				gameData.ScienceRate = _players.Select(p => (ushort)p.ScienceRate).ToArray();
-				gameData.StartingPositionX = _players.Select(x => (ushort)x.StartX).ToArray();
-				gameData.Government = _players.Select(x => (ushort)x.Government.Id).ToArray();
+				gameData.TaxRate = _players.Select(x => CVS.CheckedUInt16(x.TaxesRate, nameof(Game), "Save.TaxRate")).ToArray();
+				gameData.ScienceRate = _players.Select(p => CVS.CheckedUInt16(p.ScienceRate, nameof(Game), "Save.ScienceRate")).ToArray();
+				gameData.HumanContactTurns = _players.Select(p => p.HumanContactTurn).ToArray();
+				gameData.StartingPositionX = _players.Select(x => CVS.CheckedUInt16(x.StartX, nameof(Game), "Save.StartingPositionX")).ToArray();
+				gameData.Government = _players.Select(x => CVS.CheckedUInt16(x.Government.Id, nameof(Game), "Save.Government")).ToArray();
 				gameData.Cities = _cities.GetCityData().ToArray();
 				gameData.Units = _players.Select(p => _units.Where(u => p == u.Owner).GetUnitData().ToArray()).ToArray();
 				ushort[] wonders = Enumerable.Repeat(ushort.MaxValue, 22).ToArray();
@@ -99,8 +110,8 @@ namespace CivOne
 				foreach (byte key in _advanceOrigin.Keys)
 					firstDiscovery[key] = _advanceOrigin[key];
 				gameData.AdvanceFirstDiscovery = firstDiscovery;
-				gameData.GameOptions = new bool[]
-				{
+				gameData.GameOptions =
+				[
 					InstantAdvice,
 					AutoSave,
 					EndOfTurn,
@@ -109,18 +120,26 @@ namespace CivOne
 					EnemyMoves,
 					CivilopediaText,
 					Palace
-				};
+				];
 				gameData.NextAnthologyTurn = _anthologyTurn;
-				gameData.OpponentCount = (ushort)(_players.Length - 2);
+				gameData.OpponentCount = CVS.CheckedUInt16(_players.Length - 2, nameof(Game), "Save.OpponentCount");
+				gameData.PeaceTurns = _peaceTurns;
+				gameData.PlayerFutureTech = HumanPlayer?.FutureTechCount ?? _playerFutureTech;
 				gameData.ReplayData = _replayData.ToArray();
+				GlobalWarmingServiceFactory.CreateGlobalWarmingStoreService(globalWarmingService, _valueSanitizer).Store(gameData);
 				File.WriteAllBytes(sveFile, gameData.GetBytes());
 			}
 		}
 
-		private Game(IGameData gameData)
+		private Game(IGameData gameData) : this(CreateValueSanitizer())
 		{
+			_loadedFromYamlSaveSource = false;
+
+			_instance = this;
+			SaveMetaData.InitializeForLoadedGame(GameVersion);
+
 			_difficulty = gameData.Difficulty;
-			_competition = (gameData.OpponentCount + 1);
+			_competition = gameData.OpponentCount + 1;
 
 			// CW: Dependency Injection. Otherwise this would be handled after this constructor (too late to call HandleExtinction).
 			Player.Game = this;
@@ -135,7 +154,7 @@ namespace CivOne
 			{
 				ICivilization[] civs = Common.Civilizations.Where(c => c.PreferredPlayerNumber == i).ToArray();
 				ICivilization civ = civs[gameData.CivilizationIdentity[i] % civs.Length];
-				Player player = (_players[i] = new Player(civ, gameData.LeaderNames[i], gameData.CitizenNames[i], gameData.CivilizationNames[i]));
+				Player player = _players[i] = new Player(civ, gameData.LeaderNames[i], gameData.CitizenNames[i], gameData.CivilizationNames[i]);
                 if (i != 0) // don't need for barbarians (?)
 				    player.Destroyed += PlayerDestroyed;
 				player.Gold = gameData.PlayerGold[i];
@@ -144,7 +163,8 @@ namespace CivOne
 
 				player.TaxesRate = gameData.TaxRate[i];
 				player.LuxuriesRate = 10 - gameData.ScienceRate[i] - player.TaxesRate;
-				player.StartX = (short)gameData.StartingPositionX[i];
+				player.HumanContactTurn = gameData.HumanContactTurns[i];
+				player.StartX = CVS.CheckedInt16(gameData.StartingPositionX[i], nameof(Game), "Load.StartingPositionX");
 				
 				// Set map visibility
 				for (int xx = 0; xx < 80; xx++)
@@ -167,13 +187,16 @@ namespace CivOne
 			GameTurn = gameData.GameTurn;
 			CityNames = gameData.CityNames;
 			HumanPlayer = _players[gameData.HumanPlayer];
+			Debug.Assert(HumanPlayer != null, "LoadGame invariant violated: HumanPlayer must be initialized before loading cities.");
 			HumanPlayer.CurrentResearch = Common.Advances.FirstOrDefault(a => a.Id == gameData.CurrentResearch);
 		
 			_anthologyTurn = gameData.NextAnthologyTurn;
-
-			// City.Game = this; // Dependency Injection (for GetSpecialistsFromGameData)
+			_peaceTurns = gameData.PeaceTurns;
+			_playerFutureTech = gameData.PlayerFutureTech;
+			HumanPlayer.FutureTechCount = _playerFutureTech;
 
 			Dictionary<byte, City> cityList = new Dictionary<byte, City>();
+			List<(City city, byte[] tradingBytes)> pendingTradingCities = [];
 			foreach (CityData cityData in gameData.Cities)
 			{
 				City city = new City(cityData.Owner)
@@ -183,7 +206,8 @@ namespace CivOne
 					NameId = cityData.NameId,
 					Size = cityData.ActualSize,
 					Food = cityData.Food,
-					Shields = cityData.Shields
+					Shields = cityData.Shields,
+					VisibleSizeToHumanPlayer = cityData.VisibleSize
 				};
 				city.SetProduction(cityData.CurrentProduction);
 
@@ -236,7 +260,7 @@ namespace CivOne
                         continue;
                     }
 
-                    unit.Status = (byte)(fortified ? 8 : 0 + (veteran ? 32 : 0));
+					unit.Status = CVS.CheckedByte(fortified ? 8 : 0 + (veteran ? 32 : 0), nameof(Game), "Load.FortifiedUnitStatus");
 
 					unit.Owner = city.Owner;
 					unit.SetHome(city);
@@ -245,8 +269,17 @@ namespace CivOne
 
 				cityList.Add(cityData.Id, city);
 
-				const byte NO_CITY = 0xFF;
-				city.SetTradingCitiesIndexes([.. cityData.TradingCities.Select(index => (int)index).Where(index => index != NO_CITY)]);
+				pendingTradingCities.Add((city, cityData.TradingCities));
+			}
+
+			// Resolve trading city byte-indices to GUIDs after all cities are loaded,
+			// so forward-references (a city trading with one later in the list) work correctly.
+			const byte NO_CITY = 0xFF;
+			foreach (var (tradingCity, tradingBytes) in pendingTradingCities)
+			{
+				tradingCity.SetTradingCityIds([.. tradingBytes
+					.Where(i => i != NO_CITY && cityList.ContainsKey(i))
+					.Select(i => cityList[i].Id)]);
 			}
 
             // TODO fire-eggs: wrong when playing with fewer than 7?
@@ -260,8 +293,8 @@ namespace CivOne
 					if (unit == null) continue;
 					unit.Status = data.Status;
 					unit.Owner = p;
-					unit.PartMoves = (byte)(data.RemainingMoves % 3);
-					unit.MovesLeft = (byte)((data.RemainingMoves - unit.PartMoves) / 3);
+					unit.PartMoves = CVS.CheckedByte(data.RemainingMoves % 3, nameof(Game), "Load.UnitPartMoves");
+					unit.MovesLeft = CVS.CheckedByte((data.RemainingMoves - unit.PartMoves) / 3, nameof(Game), "Load.UnitMovesLeft");
 					if (data.GotoX != 0xFF) unit.Goto = new Point(data.GotoX, data.GotoY);
 					if (cityList.ContainsKey(data.HomeCityId))
 					{
@@ -273,7 +306,7 @@ namespace CivOne
 
 			_replayData.AddRange(gameData.ReplayData);
 
-			globalWarmingService = GlobalWarmingServiceFactory.CreateGlobalWarmingService(gameData, _cities.AsReadOnly(), Map.AllTiles());
+			globalWarmingService = GlobalWarmingServiceFactory.CreateGlobalWarmingService(gameData, Map.AllTiles());
 			globalWarmingScourgeService = GlobalWarmingServiceFactory.CreateGlobalWarmingScourgeService(
 				globalWarmingService,
 				Map.Tiles,
@@ -284,14 +317,14 @@ namespace CivOne
 			);
 
 			// Game Settings
-			InstantAdvice = (Settings.InstantAdvice == GameOption.On);
-			AutoSave = (Settings.AutoSave != GameOption.Off);
-			EndOfTurn = (Settings.EndOfTurn == GameOption.On);
-			Animations = (Settings.Animations != GameOption.Off);
-			Sound = (Settings.Sound != GameOption.Off);
-			EnemyMoves = (Settings.EnemyMoves != GameOption.Off);
-			CivilopediaText = (Settings.CivilopediaText != GameOption.Off);
-			Palace = (Settings.Palace != GameOption.Off);
+			InstantAdvice = Settings.InstantAdvice == GameOption.On;
+			AutoSave = Settings.AutoSave != GameOption.Off;
+			EndOfTurn = Settings.EndOfTurn == GameOption.On;
+			Animations = Settings.Animations != GameOption.Off;
+			Sound = Settings.Sound != GameOption.Off;
+			EnemyMoves = Settings.EnemyMoves != GameOption.Off;
+			CivilopediaText = Settings.CivilopediaText != GameOption.Off;
+			Palace = Settings.Palace != GameOption.Off;
 
 			bool[] options = gameData.GameOptions;
 			if (Settings.InstantAdvice == GameOption.Default) InstantAdvice = options[0];

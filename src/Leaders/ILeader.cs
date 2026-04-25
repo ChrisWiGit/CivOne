@@ -15,8 +15,8 @@ namespace CivOne.Leaders
 	public interface ILeader
 	{
 		string Name { get; set; }
-		Picture GetPortrait(FaceState state = FaceState.Neutral);
-		Picture PortraitSmall { get; }
+		IBitmap GetPortrait(FaceState state = FaceState.Neutral);
+		IBitmap PortraitSmall { get; }
 		AggressionLevel Aggression { get; set; }
 		DevelopmentLevel Development { get; set; }
 		MilitarismLevel Militarism { get; set; }

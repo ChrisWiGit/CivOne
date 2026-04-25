@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Collections.Generic;
+using CivOne.Tiles;
 
 namespace CivOne.UnitTests
 {
@@ -7,7 +8,16 @@ namespace CivOne.UnitTests
     class MockedMap : IMap
     {
         private readonly List<ICityOnContinent> _continentCities = new();
-        public IEnumerable<ICityOnContinent> ContinentCities(int continentId)
+
+		public ITile this[int x, int y] => throw new System.NotImplementedException();
+
+		public int TerrainMasterWord => throw new System.NotImplementedException();
+
+		public int Width => throw new System.NotImplementedException();
+
+		public int Height => throw new System.NotImplementedException();
+
+		public IEnumerable<ICityOnContinent> ContinentCities(int continentId)
         {
             return [.. _continentCities.Where(city => city.ContinentId == continentId)];
         }

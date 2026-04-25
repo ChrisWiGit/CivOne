@@ -1,0 +1,119 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using CivOne.Persistence;
+using CivOne.Persistence.Model;
+using CivOne.Services.GlobalWarming;
+using CivOne.Tiles;
+using CivOne.Units;
+
+namespace CivOne
+{
+	/**
+	* Provides a way to create a GameState from the current game. 
+	* The game implements these and adapters 
+	* are used to convert the internal types to the DTO types.
+	*/
+	public interface IGameSnapshotSource
+	{
+		int Difficulty { get; }
+		Player CurrentPlayer { get; }
+		Player HumanPlayer { get; }
+
+		Player[] Players { get; }
+
+		List<City> Cities { get; }
+		List<IUnit> Units { get; }
+
+		
+
+		Dictionary<byte, byte> AdvanceOrigin { get; }
+
+		ushort GameTurn { get; }
+		ushort AnthologyTurn { get; }
+		ushort PeaceTurns { get; }
+		ushort PlayerFutureTech { get; }
+
+		string[] CityNames { get; }
+
+		List<ReplayData> ReplayData { get; }
+
+		byte PlayerNumber(Player player);
+
+		ITile[,] MapTiles { get; }
+
+		public bool Animations { get; }
+		public bool Sound { get; }
+		public bool CivilopediaText { get; }
+		public bool EndOfTurn { get; }
+		public bool InstantAdvice { get; }
+		public bool AutoSave { get; }
+		public bool EnemyMoves { get; }
+		public bool Palace { get; }
+
+		int? GameRandomSeed { get; }
+
+		int TerrainMasterWord { get; }
+
+		IGlobalWarmingService GlobalWarmingService { get; }
+	}
+
+	public class GameStateHandler
+	{
+		public GameState Create(IGameSnapshotSource game)
+		{
+			List<bool> options =
+				[
+					// order must be same as in GameOptionEnum
+					game.Animations,
+					game.Sound,
+					game.CivilopediaText,
+					game.EndOfTurn,
+					game.InstantAdvice,
+					game.AutoSave,
+					game.EnemyMoves,
+					game.Palace
+				];
+			return new GameState
+			{
+				GameTurn = game.GameTurn,
+				HumanPlayer = game.HumanPlayer,
+
+				Difficulty = game.Difficulty,
+				CurrentPlayer = game.CurrentPlayer,
+
+				Players = game.Players,
+
+				AnthologyTurn = game.AnthologyTurn,
+				// Seed semantics:
+				// - TerrainSeed is always sourced from map context (TerrainMasterWord)
+				// - RandomSeed prefers explicit GameRandomSeed, with legacy fallback to TerrainMasterWord
+				//   when no dedicated RNG seed source is exposed by the snapshot source.
+				TerrainSeed = game.TerrainMasterWord,
+				RandomSeed = game.GameRandomSeed ?? game.TerrainMasterWord,
+				
+				MapWidth = game.MapTiles.GetLength(0),
+				MapHeight = game.MapTiles.GetLength(0) > 0 ? 
+							game.MapTiles.GetLength(1) : 0,
+				
+				MapTiles = game.MapTiles,
+				Units = game.Units,  // Critical: Units were missing from snapshot!
+				CityNames = game.CityNames,
+				
+				GameOptions = [.. options				
+					.Select((option, index) => (option, index))
+					.Where(x => x.option)
+					.Select(x => (GameOptionEnum)x.index)],
+
+				Cities = game.Cities,
+				AdvanceOrigin = game.AdvanceOrigin,
+				ReplayData = [.. game.ReplayData],
+				PeaceTurns = game.PeaceTurns,
+				PlayerFutureTech = game.PlayerFutureTech,
+				GlobalWarmingCount = game.GlobalWarmingService?.GlobalWarmingCount ?? 0,
+				PollutedSquaresCount = game.GlobalWarmingService?.PollutedSquaresCount ?? 0,
+				WarmingIndicator = game.GlobalWarmingService?.WarmingIndicator ?? WarmingIndicator.None,
+			};
+		}
+	}
+}

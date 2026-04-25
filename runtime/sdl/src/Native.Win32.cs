@@ -76,27 +76,37 @@ namespace CivOne
 		private static string Win32FolderBrowser(string caption)
 		{
 			ShowCursor();
-			IntPtr bufferAddress = Marshal.AllocHGlobal(256);
-			IntPtr pidl;
-			BROWSEINFO browseInfo = new BROWSEINFO()
+			// MAX_PATH = 260 Unicode characters = 520 bytes. The old 256-byte buffer
+			// was only 128 chars and caused heap corruption for longer paths.
+			IntPtr bufferAddress = Marshal.AllocHGlobal(MAX_PATH * 2);
+			IntPtr pidl = IntPtr.Zero;
+			try
 			{
-				hwndOwner = IntPtr.Zero,
-				pidlRoot = IntPtr.Zero,
-				lpszTitle = caption,
-				ulFlags = 0x310,
-				lParam = IntPtr.Zero,
-				iImage = 0
-			};
-			pidl = SHBrowseForFolder(ref browseInfo);
-			if (!SHGetPathFromIDList(pidl, bufferAddress))
-			{
-				// User pressed cancel
-				return null;
-			}
+				BROWSEINFO browseInfo = new BROWSEINFO()
+				{
+					hwndOwner = IntPtr.Zero,
+					pidlRoot = IntPtr.Zero,
+					lpszTitle = caption,
+					ulFlags = 0x310,
+					lParam = IntPtr.Zero,
+					iImage = 0
+				};
+				pidl = SHBrowseForFolder(ref browseInfo);
+				if (pidl == IntPtr.Zero || !SHGetPathFromIDList(pidl, bufferAddress))
+				{
+					// User pressed cancel
+					return null;
+				}
 
-			HideCursor();
-			
-			return Marshal.PtrToStringUni(bufferAddress);
+				HideCursor();
+				return Marshal.PtrToStringUni(bufferAddress);
+			}
+			finally
+			{
+				Marshal.FreeHGlobal(bufferAddress);
+				if (pidl != IntPtr.Zero)
+					Marshal.FreeCoTaskMem(pidl);
+			}
 		}
 
 		private static bool Win32CreateShortcut(string name, string description, string path, string[] arguments, string workingDirectory, string icon)
@@ -111,6 +121,134 @@ namespace CivOne
 			string filename = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"{name}.lnk");
 			(shortcut as IPersistFile).Save(filename, false);
 			return File.Exists(filename);
+		}
+
+		// Use 32KB for file dialog buffer to support long paths (> 260 chars)
+		private const int MAX_PATH_DIALOG = 32768;
+		private const int MAX_PATH = 260;
+		private const int WCHAR_SIZE = 2;
+
+		private const int OFN_OVERWRITEPROMPT = 0x00000002;
+		private const int OFN_EXPLORER = 0x00080000;
+		private const int OFN_PATHMUSTEXIST = 0x00000800;
+		private const int OFN_FILEMUSTEXIST = 0x00001000;
+		private const int OFN_NOCHANGEDIR = 0x00000008;
+
+		[ StructLayout( LayoutKind.Sequential, CharSet=CharSet.Unicode )]  
+		internal struct OPENFILENAME
+		{
+			public int lStructSize;
+			public IntPtr hwndOwner;
+			public IntPtr hInstance;
+			[MarshalAs(UnmanagedType.LPWStr)]
+			public string lpstrFilter;
+			[MarshalAs(UnmanagedType.LPWStr)]
+			public string lpstrCustomFilter;
+			public int nMaxCustFilter;
+			public int nFilterIndex;
+			public IntPtr lpstrFile;
+			public int nMaxFile;
+			[MarshalAs(UnmanagedType.LPWStr)]
+			public string lpstrFileTitle;
+			public int nMaxFileTitle;
+			[MarshalAs(UnmanagedType.LPWStr)]
+			public string lpstrInitialDir;
+			[MarshalAs(UnmanagedType.LPWStr)]
+			public string lpstrTitle;
+			public int Flags;
+			public short nFileOffset;
+			public short nFileExtension;
+			[MarshalAs(UnmanagedType.LPWStr)]
+			public string lpstrDefExt;
+			public IntPtr lCustData;
+			public IntPtr lpfnHook;
+			[MarshalAs(UnmanagedType.LPWStr)]
+			public string lpTemplateName;
+			public IntPtr pvReserved;
+			public int dwReserved;
+			public int FlagsEx;
+		}
+
+		[DllImport("comdlg32.dll", CharSet = CharSet.Unicode)]
+		private static extern bool GetOpenFileName(ref OPENFILENAME ofn);
+
+		[DllImport("comdlg32.dll", CharSet = CharSet.Unicode)]
+		private static extern bool GetSaveFileName(ref OPENFILENAME ofn);
+
+		// CommDlgExtendedError
+		[DllImport("comdlg32.dll", CharSet = CharSet.Unicode)]
+		private static extern int CommDlgExtendedError();
+
+		private static string BuildNativeFilter(string filter)
+		{
+			// OPENFILENAME expects MULTI_SZ: pairs separated by '\0', final '\0\0'.
+			if (string.IsNullOrWhiteSpace(filter))
+				return "All Files (*.*)\0*.*\0\0";
+
+			string normalized = filter.Replace("|", "\0").TrimEnd('\0');
+			return normalized + "\0\0";
+		}
+
+		internal static string Win32FileDialog(
+			IntPtr ownerHwnd,
+			bool save,
+			string title,
+			string initialFileName,
+			string filter)
+		{
+			ShowCursor();
+			IntPtr fileBuffer = IntPtr.Zero;
+			int bufferChars = MAX_PATH_DIALOG;
+			int bufferBytes = checked(bufferChars * WCHAR_SIZE);
+			try
+			{
+				fileBuffer = Marshal.AllocHGlobal(bufferBytes);
+
+				// Write initial filename as UTF-16 and always null-terminate.
+				string safeInitialFileName = initialFileName ?? string.Empty;
+				int maxContentChars = Math.Max(0, bufferChars - 1);
+				int initialCharCount = Math.Min(safeInitialFileName.Length, maxContentChars);
+				if (initialCharCount > 0)
+					Marshal.Copy(safeInitialFileName.ToCharArray(), 0, fileBuffer, initialCharCount);
+				Marshal.WriteInt16(fileBuffer, initialCharCount * WCHAR_SIZE, 0);
+
+				string nativeFilter = BuildNativeFilter(filter);
+
+				OPENFILENAME ofn = new OPENFILENAME
+				{
+					lStructSize = Marshal.SizeOf(typeof(OPENFILENAME)),
+					hwndOwner = ownerHwnd,
+					hInstance = IntPtr.Zero,
+					lpstrInitialDir = null,
+					lpstrFilter = nativeFilter,
+					lpstrFile = fileBuffer,
+					nMaxFile = bufferChars, // Character count, not byte count.
+					lpstrTitle = title,
+					Flags =
+						OFN_EXPLORER |
+						OFN_NOCHANGEDIR |
+						OFN_PATHMUSTEXIST |
+						(save ? OFN_OVERWRITEPROMPT : OFN_FILEMUSTEXIST),
+					// Reserved capacity is already large enough for future OFN_ALLOWMULTISELECT.
+				};
+
+				bool result = save
+					? GetSaveFileName(ref ofn)
+					: GetOpenFileName(ref ofn);
+				// CommDlgExtendedError
+				int lastError = CommDlgExtendedError();
+
+				if (lastError != 0)
+					Console.WriteLine("Get{0}FileName failed with error code {1}", save ? "Save" : "Open", lastError);
+
+				return result ? Marshal.PtrToStringUni(fileBuffer) : null;
+			}
+			finally
+			{
+				HideCursor();
+				if (fileBuffer != IntPtr.Zero)
+					Marshal.FreeHGlobal(fileBuffer);
+			}
 		}
 	}
 }

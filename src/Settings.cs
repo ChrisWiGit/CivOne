@@ -12,10 +12,11 @@ using System.IO;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
+using CivOne.Persistence.Factories;
 
 namespace CivOne
 {
-	public class Settings
+	public class Settings : ISettings
 	{
 		private static IRuntime Runtime => RuntimeHandler.Runtime;
 		//private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
@@ -36,6 +37,8 @@ namespace CivOne
 		private bool _pathFinding = false;
 		private bool _riverFastMovement = false;
 		private bool _canalCity = false;
+		private bool _preferSveSaveFormat = true;
+		private bool _useUncheckedCastSanitizer = false;
 		private GlobalWarmingFeatureFlag _globalWarmingFeatureFlags = GlobalWarmingFeatureFlag.None;
         private bool _autoSettlers;
 		private CursorType _cursorType = CursorType.Default;
@@ -48,7 +51,11 @@ namespace CivOne
 		internal string DataDirectory => Path.Combine(StorageDirectory, "data");
 		internal string PluginsDirectory => Path.Combine(StorageDirectory, "plugins");
 		internal string SavesDirectory => Path.Combine(StorageDirectory, "saves");
+		internal string CosSavesDirectory => Path.Combine(StorageDirectory, "saves", "cos");
 		internal string SoundsDirectory => Path.Combine(StorageDirectory, "sounds");
+
+		string ISettings.SavesDirectory => SavesDirectory;
+		string ISettings.CosSavesDirectory => CosSavesDirectory;
 
 		// Settings
 
@@ -233,6 +240,29 @@ namespace CivOne
 			{
 				_canalCity = value;
 				SetSetting("CanalCity", _canalCity ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal bool PreferSveSaveFormat
+		{
+			get => _preferSveSaveFormat;
+			set
+			{
+				_preferSveSaveFormat = value;
+				SetSetting("PreferSveSaveFormat", _preferSveSaveFormat ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal bool UseUncheckedCastSanitizer
+		{
+			get => _useUncheckedCastSanitizer;
+			set
+			{
+				_useUncheckedCastSanitizer = value;
+				SetSetting("UseUncheckedCastSanitizer", _useUncheckedCastSanitizer ? "1" : "0");
+				ValueSanitizerFactory.SetRuntimeUseUncheckedCastSanitizer(_useUncheckedCastSanitizer);
 				Common.ReloadSettings = true;
 			}
 		}
@@ -460,7 +490,7 @@ namespace CivOne
 		
 		private void CreateDirectories()
 		{
-			foreach (string dir in new[] { StorageDirectory, CaptureDirectory, DataDirectory, PluginsDirectory, SavesDirectory, SoundsDirectory })
+			foreach (string dir in new[] { StorageDirectory, CaptureDirectory, DataDirectory, PluginsDirectory, SavesDirectory, CosSavesDirectory, SoundsDirectory })
                 if (!Directory.Exists(dir))
 			    {
 				    Directory.CreateDirectory(dir);
@@ -504,6 +534,8 @@ namespace CivOne
 			GetSetting("PathFindingAlgorithm", ref _pathFinding);
 			GetSetting("AutoSettlers", ref _autoSettlers);
 			GetSetting("RiverFastMovement", ref _riverFastMovement);
+			GetSetting("PreferSveSaveFormat", ref _preferSveSaveFormat);
+			GetSetting("UseUncheckedCastSanitizer", ref _useUncheckedCastSanitizer);
 			GetSetting<CursorType>("CursorType", ref _cursorType);
 			GetSetting<DestroyAnimation>("DestroyAnimation", ref _destroyAnimation);
 			GetSetting<GameOption>("GameInstantAdvice", ref _instantAdvice);
@@ -523,6 +555,8 @@ namespace CivOne
 			{
 				_globalWarmingFeatureFlags = GlobalWarmingFeatureFlag.None;
 			}
+
+			ValueSanitizerFactory.SetRuntimeUseUncheckedCastSanitizer(_useUncheckedCastSanitizer);
 		}
 	}
 }

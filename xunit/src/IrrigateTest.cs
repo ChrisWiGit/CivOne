@@ -22,7 +22,7 @@ namespace CivOne.UnitTests
             City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
 
             ITile tile = Map.Instance[unit.X, unit.Y];
-            Assert.Equal(true, tile.HasCity);
+            Assert.True(tile.HasCity);
             Assert.True(tile is Grassland);
 
             // Before 20190810, this would incorrectly return true

@@ -25,6 +25,20 @@ using CivOne.Wonders;
 
 namespace CivOne
 {
+	public interface IReflect
+	{
+		IEnumerable<IProduction> GetProduction();
+	}
+
+	/**
+	 * Implementation of IReflect that is used
+	 * by dto mappers to get access to the internal types. 
+	*/
+	public class GameReflect : IReflect
+	{
+		public IEnumerable<IProduction> GetProduction() => Reflect.GetProduction();
+	}
+		
 	internal static class Reflect
 	{
 		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);

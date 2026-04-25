@@ -126,7 +126,7 @@ namespace CivOne.UnitTests
                 }
             }
 
-            Assert.True(false, "failed to make entertainer");
+            Assert.Fail("failed to make entertainer");
         }
 
         /// <summary>

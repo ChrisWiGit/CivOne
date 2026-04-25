@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using CivOne.Advances;
+using CivOne.Enums;
 using CivOne.Graphics;
 
 namespace CivOne.Buildings
@@ -19,5 +20,7 @@ namespace CivOne.Buildings
 		byte Maintenance { get; }
 		IBitmap SmallIcon { get; }
 		short SellPrice { get; }
+
+		Building Type { get; }
 	}
 }

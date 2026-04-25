@@ -31,7 +31,7 @@ namespace CivOne.UnitTests
 
             // give other player a city
             Game.Instance.AddCity(otherP, 3, 52, 14);
-            Assert.Equal(true, Map.Instance[52,14].HasCity);
+            Assert.True(Map.Instance[52,14].HasCity);
 
             // set up other player units
             if (defendedCity)
@@ -75,7 +75,7 @@ namespace CivOne.UnitTests
 
             // give other player a city
             Game.Instance.AddCity(otherP, 3, 52, 14);
-            Assert.Equal(true, Map.Instance[52,14].HasCity);
+            Assert.True(Map.Instance[52,14].HasCity);
 
             // set up other player unit in city
             Game.Instance.CreateUnit(UnitType.Militia, 52, 14, Game.Instance.PlayerNumber(otherP));
@@ -114,7 +114,7 @@ namespace CivOne.UnitTests
 
             // give human a city
             Game.Instance.AddCity(playa, 3, 52, 14);
-            Assert.Equal(true, Map.Instance[52,14].HasCity);
+            Assert.True(Map.Instance[52,14].HasCity);
 
             // give human a unit
             var chariot1 = Game.Instance.CreateUnit(UnitType.Chariot, 52, 13, Game.Instance.PlayerNumber(playa));
@@ -133,7 +133,7 @@ namespace CivOne.UnitTests
 
             // give other player a city [undefended]
             Game.Instance.AddCity(otherP, 3, 52, 14);
-            Assert.Equal(true, Map.Instance[52,14].HasCity);
+            Assert.True(Map.Instance[52,14].HasCity);
 
             // give other player a unit
             Game.Instance.CreateUnit(UnitType.Militia, 51, 13, Game.Instance.PlayerNumber(otherP));
@@ -169,7 +169,7 @@ namespace CivOne.UnitTests
 
             // Confirm it was set up properly
             ITile tile = Map.Instance[unit.X, unit.Y];
-            Assert.Equal(true, tile.HasCity);
+            Assert.True(tile.HasCity);
             Assert.True(tile is Grassland); // NOTE: if the tile is Ocean, likely failed to load MAP.PIC
 
             // find another player

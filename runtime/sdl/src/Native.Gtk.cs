@@ -26,6 +26,21 @@ namespace CivOne
 		private static extern IntPtr gtk_file_chooser_get_filename(IntPtr raw);
 
 		[DllImport(LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
+		private static extern void gtk_file_chooser_set_current_name(IntPtr raw, IntPtr name);
+
+		[DllImport(LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
+		private static extern IntPtr gtk_file_filter_new();
+
+		[DllImport(LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
+		private static extern void gtk_file_filter_set_name(IntPtr filter, IntPtr name);
+
+		[DllImport(LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
+		private static extern void gtk_file_filter_add_pattern(IntPtr filter, IntPtr pattern);
+
+		[DllImport(LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
+		private static extern void gtk_file_chooser_add_filter(IntPtr chooser, IntPtr filter);
+
+		[DllImport(LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
 		private static extern IntPtr gtk_dialog_add_button(IntPtr raw, IntPtr button_text, int response_id);
 
 		[DllImport (LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
@@ -109,6 +124,54 @@ namespace CivOne
 				output = test2;
 			}
 			gtk_widget_destroy(test);
+			while (gtk_events_pending())
+				gtk_main_iteration();
+			return output;
+		}
+
+		private static string GtkFileDialog(bool save, string title, string initialFileName, string filter)
+		{
+			// action: 0 = GTK_FILE_CHOOSER_ACTION_OPEN, 1 = GTK_FILE_CHOOSER_ACTION_SAVE
+			int action = save ? 1 : 0;
+			IntPtr nativeTitle = StringToIntPtr(title);
+			IntPtr dialog = gtk_file_chooser_dialog_new(nativeTitle, IntPtr.Zero, action, IntPtr.Zero);
+			g_free(nativeTitle);
+
+			if (save && !string.IsNullOrEmpty(initialFileName))
+			{
+				IntPtr nativeName = StringToIntPtr(initialFileName);
+				gtk_file_chooser_set_current_name(dialog, nativeName);
+				g_free(nativeName);
+			}
+
+			// filter format: "Description (*.ext)|*.ext|All Files (*.*)|*.*"
+			if (!string.IsNullOrEmpty(filter))
+			{
+				string[] parts = filter.Split('|');
+				for (int i = 0; i + 1 < parts.Length; i += 2)
+				{
+					IntPtr gtkFilter = gtk_file_filter_new();
+					IntPtr nativeName = StringToIntPtr(parts[i]);
+					gtk_file_filter_set_name(gtkFilter, nativeName);
+					g_free(nativeName);
+					IntPtr nativePattern = StringToIntPtr(parts[i + 1]);
+					gtk_file_filter_add_pattern(gtkFilter, nativePattern);
+					g_free(nativePattern);
+					gtk_file_chooser_add_filter(dialog, gtkFilter);
+				}
+			}
+
+			AddButton(dialog, "Cancel", -6);
+			AddButton(dialog, save ? "Save" : "Open", -5);
+
+			string output = null;
+			if (gtk_dialog_run(dialog) == -5)
+			{
+				IntPtr response = gtk_file_chooser_get_filename(dialog);
+				output = GetFileName(response);
+				g_free(response);
+			}
+			gtk_widget_destroy(dialog);
 			while (gtk_events_pending())
 				gtk_main_iteration();
 			return output;

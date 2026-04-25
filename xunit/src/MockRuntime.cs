@@ -11,14 +11,14 @@ namespace CivOne.UnitTests
 {
     public class MockRuntime : IRuntime, IDisposable
     {
-        public event EventHandler Initialize;
-        public event EventHandler Draw;
-        public event UpdateEventHandler Update;
-        public event KeyboardEventHandler KeyboardUp;
-        public event KeyboardEventHandler KeyboardDown;
-        public event ScreenEventHandler MouseUp;
-        public event ScreenEventHandler MouseDown;
-        public event ScreenEventHandler MouseMove;
+        public event EventHandler Initialize { add { } remove { } }
+        public event EventHandler Draw { add { } remove { } }
+        public event UpdateEventHandler Update { add { } remove { } }
+        public event KeyboardEventHandler KeyboardUp { add { } remove { } }
+        public event KeyboardEventHandler KeyboardDown { add { } remove { } }
+        public event ScreenEventHandler MouseUp { add { } remove { } }
+        public event ScreenEventHandler MouseDown { add { } remove { } }
+        public event ScreenEventHandler MouseMove { add { } remove { } }
         public Platform CurrentPlatform { get; }
 
         public string StorageDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CivOne");
@@ -88,7 +88,12 @@ namespace CivOne.UnitTests
         {
         }
 
-        public MockRuntime(RuntimeSettings settings)
+		public string FileChooser(bool save, string title, string initialFileName, string filter)
+		{
+			throw new NotImplementedException();
+		}
+
+		public MockRuntime(RuntimeSettings settings)
         {
             Settings = settings;
             // TODO fire-eggs this needs to be false if you want to use Earth! and must have a pointer to the Civ data files!

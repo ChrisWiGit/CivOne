@@ -22,11 +22,13 @@ using CivOne.Screens.Dialogs;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.UserInterface;
+
 using CivOne.Wonders;
+using CivOne.Units;
 
 namespace CivOne.Units
 {
-	internal abstract class BaseUnit : BaseInstance, IUnit
+	internal abstract class BaseUnit : BaseInstance, IUnitRestorable, IUnit
 	{
 		protected int _x, _y;
 
@@ -80,7 +82,38 @@ namespace CivOne.Units
 		}
 
 		public bool Veteran { get; set; }
-		public bool FortifyActive { get; private set; }
+		public bool FortifyActive { get; set; }
+		public Guid? PendingHomeCityGuid { get; set; }
+
+		/// <summary>
+		/// Sets the unit's status flags based on the provided boolean values.
+		/// This is only used to restore the status from YAML, and is not intended to be called directly by game logic.
+		/// Calling the properties does not have the same effect as setting the status via this method, 
+		/// e.g. setting FortifyActive will first show start fortifying the unit (takes one round) and
+		/// shows an F, instead of just put the unit into fortified status with no animation and no F. 
+		/// </summary>
+		void IUnitRestorable.ForceStatus(bool sentry, bool fortifyActive, bool fortify, bool veteran)
+		{
+			byte status = 0;
+			if (sentry)
+			{
+				status |= 0x1;
+			}
+			if (fortify)
+			{
+				status |= 0x8;
+			}
+			else if (fortifyActive)
+			{
+				status |= 0x4;
+			}
+			if (veteran)
+			{
+				status |= 0x20;
+			}
+
+			Status = status;
+		}
 		private bool _fortify = false;
 		public bool Fortify
 		{
@@ -289,6 +322,8 @@ namespace CivOne.Units
 
 			ITile moveTarget = Map[X, Y][relX, relY];
 			if (moveTarget == null) return false;
+
+			Game.RegisterHostileAction();
 			if (moveTarget.Units.Length == 0 && moveTarget.City != null && moveTarget.City.Owner != Owner)
 			{
 				if (Class != UnitClass.Land) // can't occupy city with sea/air unit

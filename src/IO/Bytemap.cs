@@ -39,11 +39,14 @@ namespace CivOne.IO
 				if (sy2 > Height) sy2 = Height;
 
 				byte[] buffer = new byte[sx2 - sx1];
-				Bytemap output = new Bytemap(width, height);
+				Bytemap output = new(width, height);
 				for (int yy = sy1; yy < sy2; yy++)
 				{
 					Marshal.Copy(IntPtr.Add(_handle, (Width * yy) + sx1), buffer, 0, buffer.Length);
-					Marshal.Copy(buffer, 0, IntPtr.Add(output._handle, ((yy - top + dy) * buffer.Length) + dx), buffer.Length);
+					// Row index in the output bitmap: (yy - top) maps source row yy to the
+					// correct destination row. The destination row stride is the full output
+					// width, not the clipped source row width in buffer.Length.
+					Marshal.Copy(buffer, 0, IntPtr.Add(output._handle, ((yy - top) * output.Width) + dx), buffer.Length);
 				}
 				return output;
 			}

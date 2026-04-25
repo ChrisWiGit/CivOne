@@ -24,8 +24,12 @@ namespace CivOne
 		private static int _width = 80, _height = 50;
 		public static int WIDTH => _width;
 		public static int HEIGHT => _height;
+
+		public int Width => WIDTH;
+		public int Height => HEIGHT;
 		
 		private int _terrainMasterWord;
+		public int TerrainMasterWord { get { return _terrainMasterWord; } }
 		private int _landMass, _temperature, _climate, _age;
 		private ITile[,] _tiles;
 
@@ -86,6 +90,7 @@ namespace CivOne
 				case Terrain.Desert: _tiles[x, y] = new Desert(x, y, special); break;
 				case Terrain.Arctic: _tiles[x, y] = new Arctic(x, y, special); break;
 				case Terrain.Ocean: _tiles[x, y] = new Ocean(x, y, special); break;
+				default: throw new ArgumentException($"Invalid terrain type: {type}");
 			}
 			_tiles[x, y].Road = road;
 			_tiles[x, y].RailRoad = railRoad;

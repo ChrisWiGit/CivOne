@@ -10,25 +10,40 @@
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
+using CivOne.Services;
 using CivOne.UserInterface;
 using System;
 using System.Linq;
-using CivOne.Tasks;
+using System.IO;
 
 namespace CivOne.Screens
 {
-    [Modal]
+	[Modal]
 	internal class LoadGame : BaseScreen
 	{
+		private static ISaveGamePathProvider PathProvider =>
+			new SaveGamePathProvider(RuntimeHandler.Runtime, Settings.Instance);
+
+
 		private MouseCursor _cursor = MouseCursor.None;
 		public override MouseCursor Cursor => _cursor;
-		
+
 		private char _driveLetter = 'C';
 		private bool _update = true;
 		private Menu _menu;
-		
+
 		public bool Cancel { get; private set; }
-        
+
+		private static string BuildDialogInitialFileName()
+		{
+			return PathProvider.EnsureInitialSaveFilePath();
+		}
+
+		private static void SetLastUsedSaveGameDialogPath(string fileName)
+		{
+			PathProvider.SetLastUsedSaveGamePath(fileName);
+		}
+
 		private void LoadSaveFile(object sender, MenuItemEventArgs<int> args)
 		{
 			int item = args.Value;
@@ -36,18 +51,46 @@ namespace CivOne.Screens
 			LoadSaveFileByItem(_driveLetter, item);
 		}
 
-		private void LoadSaveFileByItem(char driveLetter, int item)
+		private bool LoadSaveFileByItem(char driveLetter, int item)
 		{
-			SaveGameFile file = SaveGameFile.GetSaveGames(driveLetter).ToArray()[item];
-			SaveGame.SelectedGame = (item > 3 ? 3 : item);
+			SaveGameFile[] saveGames = SaveGameFile.GetSaveGames(driveLetter).ToArray();
+			if (item < 0 || item >= saveGames.Length)
+			{
+				Log("Invalid save game index: {0}", item);
+				Cancel = true;
+				_update = true;
+				BackToCredits();
+				return false;
+			}
+
+			SaveGameFile file = saveGames[item];
 			Log("Load game: {0}", file.Name);
 			Destroy();
-			
-			Game.LoadGame(file.SveFile, file.MapFile);
+
+			bool success;
+			if (file.IsYamlFile)
+			{
+				success = Game.LoadYamlGame(file.CosFile);
+			}
+			else
+			{
+				SaveGame.SelectedGame = item > 3 ? 3 : item;
+				success = Game.LoadGame(file.SveFile, file.MapFile);
+			}
+
+			if (!success)
+			{
+				Log("Failed to load game");
+				Cancel = true;
+				_update = true;
+				BackToCredits();
+				return false;
+			}
 
 			// Allows in-game loading of a game (destroy old gameplay)
 			Common.DestroyScreen(Common.Screens.FirstOrDefault(s => s is GamePlay, null));
 			Common.AddScreen(new GamePlay());
+			return true;
 		}
 
 		public static void LoadSaveFile(char driveLetter, int slotId)
@@ -56,7 +99,7 @@ namespace CivOne.Screens
 			loadGame.LoadSaveFileByItem(driveLetter, slotId);
 		}
 
-		
+
 		private void LoadEmptyFile(object sender, MenuItemEventArgs<int> args)
 		{
 			Log("Empty save file, cancel");
@@ -71,7 +114,43 @@ namespace CivOne.Screens
 				return LoadSaveFile;
 			return LoadEmptyFile;
 		}
-		
+
+		private void LoadYamlFromBrowser(object sender, EventArgs args)
+		{
+			_menu.Close();
+			_menu = null;
+			_update = true;
+
+			string cosFile = RuntimeHandler.Runtime.FileChooser(
+				false,
+				"Load Game...",
+				BuildDialogInitialFileName(),
+				"CivOne Save Game (*.cos)|*.cos"
+			);
+			if (string.IsNullOrEmpty(cosFile))
+			{
+				_update = true;
+				return;
+			}
+			SetLastUsedSaveGameDialogPath(cosFile);
+
+			Log("Load game: {0}", Path.GetFileName(cosFile));
+			Destroy();
+
+			if (!Game.LoadYamlGame(cosFile))
+			{
+				Log("Failed to load game");
+				Cancel = true;
+				_update = true;
+				BackToCredits();
+				return;
+			}
+
+			// Allows in-game loading of a game (destroy old gameplay)
+			Common.DestroyScreen(Common.Screens.FirstOrDefault(s => s is GamePlay, null));
+			Common.AddScreen(new GamePlay());
+		}
+
 		private void DrawDriveQuestion()
 		{
 			Bitmap.Clear();
@@ -83,7 +162,7 @@ namespace CivOne.Screens
 				.DrawText("Return when disk is inserted", 0, 5, 80, 120, TextAlign.Left)
 				.DrawText("Press Escape to cancel", 0, 5, 104, 128, TextAlign.Left);
 		}
-		
+
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (_menu != null)
@@ -106,8 +185,8 @@ namespace CivOne.Screens
 			return Cancel;
 		}
 
-        private void BackToCredits()
-        {
+		private void BackToCredits()
+		{
 			if (Common.HasScreenType<GamePlay>())
 			{
 				// Loading a game while in game already,
@@ -115,27 +194,27 @@ namespace CivOne.Screens
 				Destroy();
 				return;
 			}
-            // fire-eggs fix for issue #34: when cancel out of this, go back to 
-            // credits screen, _always_ skipping the intro, and not animating 
-            // the logo.
-            var blah = new Credits();
-            blah.SkipIntro();
-            blah.SkipLogo();
-            Common.AddScreen(blah);
-            Destroy();
-        }
+			// fire-eggs fix for issue #34: when cancel out of this, go back to 
+			// credits screen, _always_ skipping the intro, and not animating 
+			// the logo.
+			var blah = new Credits();
+			blah.SkipIntro();
+			blah.SkipLogo();
+			Common.AddScreen(blah);
+			Destroy();
+		}
 
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
 			if (Cancel) return false;
-			
+
 			char c = Char.ToUpper(args.KeyChar);
 			if (args.Key == Key.Escape)
 			{
 				Log("Cancel");
 				Cancel = true;
 				_update = true;
-                BackToCredits();
+				BackToCredits();
 				return true;
 			}
 			else if (_menu != null)
@@ -157,11 +236,16 @@ namespace CivOne.Screens
 					IndentTitle = 2,
 					RowHeight = 8
 				};
-				
-				int i = 0;
+
+				int menuValue = -1;
+				int saveGameIndex = 0;
+
+				// Add "Load from new format..." option at the top
+				_menu.Items.Add("Load game from new format...", menuValue).OnSelect(LoadYamlFromBrowser);
+
 				foreach (SaveGameFile file in SaveGameFile.GetSaveGames(_driveLetter))
 				{
-					_menu.Items.Add(file.Name, i++).OnSelect(LoadFileHandler(file));
+					_menu.Items.Add(file.Name, saveGameIndex++).OnSelect(LoadFileHandler(file));
 				}
 				_cursor = MouseCursor.Pointer;
 			}
@@ -173,37 +257,37 @@ namespace CivOne.Screens
 			}
 			return false;
 		}
-		
+
 		public override bool MouseDown(ScreenEventArgs args)
 		{
 			if (_menu != null)
 				return _menu.MouseDown(args);
 			return false;
 		}
-		
+
 		public override bool MouseUp(ScreenEventArgs args)
 		{
 			if (_menu != null)
 				return _menu.MouseUp(args);
 			return false;
 		}
-		
+
 		public override bool MouseDrag(ScreenEventArgs args)
 		{
 			if (_menu != null)
 				return _menu.MouseDrag(args);
 			return false;
 		}
-		
+
 		public LoadGame(Palette palette)
 		{
 			Palette = palette;
 		}
 
-        public LoadGame()
-        {
-            var blah = Resources["LOGO"];
-            Palette = blah.Palette;
-        }
+		public LoadGame()
+		{
+			var blah = Resources["LOGO"];
+			Palette = blah.Palette;
+		}
 	}
 }
