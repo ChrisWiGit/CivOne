@@ -163,6 +163,8 @@ This screen allows to change additional modification options for the game.
 | Enable (no keypad) arrow helper | Toggle an arrow helper for users without a numeric keypad. |
 | Custom map sizes (experimental) | Enable experimental custom map sizes. |
 | Game behavior menu | Open the behavior submenu to change gameplay-related toggles and cheats. |
+| AutoSave format | Choose whether autosaves prefer legacy `SVE` output with automatic `COS` fallback or always write `COS`. |
+| Save cast behavior | Select whether save/load casts use checked conversion or the legacy unchecked mode. |
 | (Gbm) Use smart PathFinding for "goto" | Enable smart pathfinding for unit movement. |
 | (Gbm) Use auto-settlers-cheat | Enable automatic settlers (cheat) to place settlers automatically. |
 | (Gbm) Use fast river movement | Movements on rivers behave like roads (faster movement). |

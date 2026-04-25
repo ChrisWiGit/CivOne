@@ -534,6 +534,7 @@ namespace CivOne
 			GetSetting("PathFindingAlgorithm", ref _pathFinding);
 			GetSetting("AutoSettlers", ref _autoSettlers);
 			GetSetting("RiverFastMovement", ref _riverFastMovement);
+			GetSetting("CanalCity", ref _canalCity);
 			GetSetting("PreferSveSaveFormat", ref _preferSveSaveFormat);
 			GetSetting("UseUncheckedCastSanitizer", ref _useUncheckedCastSanitizer);
 			GetSetting<CursorType>("CursorType", ref _cursorType);

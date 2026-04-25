@@ -177,6 +177,16 @@ namespace CivOne.Screens
 			MenuItem.Create("Back")
 		);
 
+		private int ActiveBehaviorPatchCount()
+			=> new[]
+			{
+				Settings.PathFinding,
+				Settings.AutoSettlers,
+				Settings.RiverFastMovement,
+				Settings.CanalCity,
+				Settings.GlobalWarmingFeatureFlags != Settings.GlobalWarmingFeatureFlag.None
+			}.Count(static enabled => enabled);
+
 		private void PatchesMenu(int activeItem = 0) => CreateMenu("Patches", activeItem,
 			MenuItem.Create($"Reveal world: {Settings.RevealWorld.YesNo()}").OnSelect(GotoMenu(RevealWorldMenu)),
 			MenuItem.Create($"Side bar location: {(Settings.RightSideBar ? "right" : "left")}{(Game.Started ? " (restart required)" : "")}").OnSelect(GotoMenu(SideBarMenu)),
@@ -186,8 +196,8 @@ namespace CivOne.Screens
 			MenuItem.Create($"Enable Deity difficulty: {Settings.DeityEnabled.YesNo()}").OnSelect(GotoMenu(DeityEnabledMenu)),
 			MenuItem.Create($"Enable (no keypad) arrow helper: {Settings.ArrowHelper.YesNo()}").OnSelect(GotoMenu(ArrowHelperMenu)),
 			MenuItem.Create($"Custom map sizes (experimental): {Settings.CustomMapSize.YesNo()}").OnSelect(GotoMenu(CustomMapSizeMenu)),
-			MenuItem.Create("Game behavior menu").OnSelect(GotoMenu(BehaviorMenu)),
-			MenuItem.Create($"AutoSave format: {(Settings.PreferSveSaveFormat ? "SVE" : "COS")}").OnSelect(GotoMenu(SaveFormatMenu)),
+			MenuItem.Create($"Game behavior menu: {ActiveBehaviorPatchCount()} active").OnSelect(GotoMenu(BehaviorMenu)),
+			MenuItem.Create($"AutoSave format: {(Settings.PreferSveSaveFormat ? "SVE (fallback COS)" : "COS")}").OnSelect(GotoMenu(SaveFormatMenu)),
 			MenuItem.Create($"Save cast behavior: {(Settings.UseUncheckedCastSanitizer ? "Unchecked" : "Checked")}").OnSelect(GotoMenu(SaveCastBehaviorMenu)),
 			MenuItem.Create("Back").OnSelect(GotoMenu(MainMenu, 1))
 		);
@@ -267,7 +277,7 @@ namespace CivOne.Screens
 		);
 
 		private void SaveFormatMenu() => CreateMenu("AutoSave format", GotoMenu(PatchesMenu, 9),
-			MenuItem.Create("SVE (default)").OnSelect((s, a) => Settings.PreferSveSaveFormat = true).SetActive(() => Settings.PreferSveSaveFormat),
+			MenuItem.Create("SVE with COS fallback (default)").OnSelect((s, a) => Settings.PreferSveSaveFormat = true).SetActive(() => Settings.PreferSveSaveFormat),
 			MenuItem.Create("CivOne Save (COS)").OnSelect((s, a) => Settings.PreferSveSaveFormat = false).SetActive(() => !Settings.PreferSveSaveFormat),
 			MenuItem.Create("Back")
 		);
@@ -298,7 +308,7 @@ namespace CivOne.Screens
 					MenuItem.Create($"Use auto-settlers-cheat: {Settings.AutoSettlers.YesNo()}").OnSelect(GotoMenu(AutoSettlersMenu)),
 					MenuItem.Create($"Use fast river movement: {Settings.RiverFastMovement.YesNo()}").OnSelect(GotoMenu(FastRiverMovementMenu)),
 					MenuItem.Create($"No movement penalty for sea units in city: {Settings.CanalCity.YesNo()}").OnSelect(GotoMenu(CanalCity)),
-					MenuItem.Create($"Extended global warming").OnSelect(GotoMenu(ExtendedGlobalWarmingMenu)),
+					MenuItem.Create($"Extended global warming: {(Settings.GlobalWarmingFeatureFlags != Settings.GlobalWarmingFeatureFlag.None).YesNo()}").OnSelect(GotoMenu(ExtendedGlobalWarmingMenu)),
 					MenuItem.Create("Back").OnSelect(GotoMenu(PatchesMenu, 8))
 			]
 		);
