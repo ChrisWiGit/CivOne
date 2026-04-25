@@ -6,6 +6,10 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Improved Newspaper rendering in `Aspect Ratio = Expand` mode.
+  * Keeps the newspaper at its original 320x200 aspect ratio (centered), instead of stretching it to the full expanded canvas.
+  * Redraws the newspaper correctly after window resize, so it no longer disappears while the screen is resized.
+* Feature: Added 'r' to rename a city in city view.
 * Feature: Introduced `SveSaveCompatibilitySnapshot` to validate SVE savegame compatibility.
   * This enables future gameplay extensions that may no longer fit into the legacy SVE save format and therefore require the newer COS format.
   * Saving in SVE format is disabled when a game is loaded from the new COS format (`CivOneSave`), i.e. once a game is loaded from COS, it can only be saved in COS to prevent accidental data loss.
