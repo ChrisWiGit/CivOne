@@ -33,6 +33,11 @@ namespace CivOne.Tiles
 
 		private static TextSettings CityLabel = TextSettings.ShadowText(11, 5);
 
+		private static void LogNullTile(string methodName)
+		{
+			RuntimeHandler.Runtime.Log("TileExtensions.{0}: tile was null", methodName);
+		}
+
         private static bool DrawRoad(this ITile tile) => (tile.Road || tile.RailRoad) && (!tile.RailRoad || (tile.RailRoad && tile.BorderRoads() != tile.BorderRailRoads()));
         private static bool DrawRailRoad(this ITile tile) => tile.RailRoad;
         private static bool DrawIrrigation(this ITile tile) => tile.Irrigation && tile.City == null;
@@ -48,6 +53,13 @@ namespace CivOne.Tiles
 
 		public static Terrain GetBorderType(this ITile tile, Direction direction)
 		{
+			if (tile == null)
+			{
+				Debug.Assert(false, "TileExtensions.GetBorderType: tile was null");
+				LogNullTile(nameof(GetBorderType));
+				return Terrain.None;
+			}
+
 			ITile borderTile = GetBorderTile(tile, direction);
 			if (borderTile == null) return Terrain.None;
 			if (borderTile.Type == Terrain.Grassland2) return Terrain.Grassland1;
@@ -56,6 +68,13 @@ namespace CivOne.Tiles
 
 		public static ITile GetBorderTile(this ITile tile, Direction direction)
 		{
+			if (tile == null)
+			{
+				Debug.Assert(false, "TileExtensions.GetBorderTile: tile was null");
+				LogNullTile(nameof(GetBorderTile));
+				return null;
+			}
+
 			switch (direction)
 			{
 				case North: return tile[0, -1];
@@ -76,12 +95,20 @@ namespace CivOne.Tiles
         /// <param name="tile"></param>
 		public static IEnumerable<ITile> GetBorderTiles(this ITile tile)
 		{
+			if (tile == null)
+			{
+				Debug.Assert(false, "TileExtensions.GetBorderTiles: tile was null");
+				LogNullTile(nameof(GetBorderTiles));
+				yield break;
+			}
+
 			for (int relY = -1; relY <= 1; relY++)
 			for (int relX = -1; relX <= 1; relX++)
 			{
 				if (relX == 0 && relY == 0) continue;
-				if (tile[relX, relY] == null) continue;
-				yield return tile[relX, relY];
+				ITile borderTile = tile[relX, relY];
+				if (borderTile == null) continue;
+				yield return borderTile;
 			}
 		}
 
@@ -91,6 +118,13 @@ namespace CivOne.Tiles
         /// <param name="tile"></param>
 		public static IEnumerable<ITile> CrossTiles(this ITile tile)
         {
+			if (tile == null)
+			{
+				Debug.Assert(false, "TileExtensions.CrossTiles: tile was null");
+				LogNullTile(nameof(CrossTiles));
+				yield break;
+			}
+
             yield return tile[-1, 0];
             yield return tile[0, +1];
             yield return tile[+1, 0];
