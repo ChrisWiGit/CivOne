@@ -28,4 +28,13 @@ namespace CivOne.Services
 			return string.Format(key, args);
 		}
 	}
+
+	// Factory method to create the default translation service instance, allowing for easy replacement with a real translation service in the future.
+	public static class TranslationServiceFactory
+	{
+		public static ITranslationService CreateDefault()
+		{
+			return new TranslationIdentityServiceImpl();
+		}
+	}
 }

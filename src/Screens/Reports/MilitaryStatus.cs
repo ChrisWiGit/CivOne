@@ -14,10 +14,16 @@ using CivOne.Units;
 
 namespace CivOne.Screens.Reports
 {
+	[ScreenResizeable]
 	internal class MilitaryStatus : BaseReport
 	{
-		public MilitaryStatus() : base("MILITARY STATUS", 1)
+		private bool _update = true;
+
+		private void Render()
 		{
+			this.Clear(1);
+			DrawReportHeader();
+
 			byte player = Game.PlayerNumber(Human);
 			IUnit[] units = Game.GetUnits().Where(u => u.Owner == player && u.Home != null).ToArray();
 			IUnit[] production = Game.GetCities().Where(c => c.Owner == player).Where(c => (c.CurrentProduction is IUnit)).Select(c => (c.CurrentProduction as IUnit)).ToArray();
@@ -29,20 +35,40 @@ namespace CivOne.Screens.Reports
 
 				int active = units.Count(u => u.Type == unit.Type);
 				int inProduction = production.Count(u => u.Type == unit.Type);
-				
-				this.AddLayer(unit.ToBitmap(player, false), ((i % 2 == 0) ? 1 : 18), 27 + (9 * i))
-					.FillRectangle(36, 30 + (i * 9), 284, 1, 9)
-					.DrawText(unit.Name, 0, 15, 36, 32 + (i * 9))
-					.DrawText($"({unit.Attack}/{unit.Defense}/{unit.Move})", 0, 11, 112, 32 + (i * 9));
+
+				int rowY = OffsetY + 30 + (i * 9);
+				this.AddLayer(unit.ToBitmap(player, false), OffsetX + ((i % 2 == 0) ? 1 : 18), OffsetY + 27 + (9 * i))
+					.FillRectangle(OffsetX + 36, rowY, 284, 1, 9)
+					.DrawText(unit.Name, 0, 15, OffsetX + 36, OffsetY + 32 + (i * 9))
+					.DrawText($"({unit.Attack}/{unit.Defense}/{unit.Move})", 0, 11, OffsetX + 112, OffsetY + 32 + (i * 9));
 				if (active > 0)
-					this.DrawText($"{active} active", 0, 15, 168, 32 + (i * 9));
+					this.DrawText($"{active} active", 0, 15, OffsetX + 168, OffsetY + 32 + (i * 9));
 				if (inProduction > 0)
-					this.DrawText($"{inProduction} in production", 0, 11, 232, 32 + (i * 9));
-				
+					this.DrawText($"{inProduction} in production", 0, 11, OffsetX + 232, OffsetY + 32 + (i * 9));
+
 				i++;
 			}
-			
-			this.AddLayer(Portrait[(int)Advisor.Defense], 278, 2);
+
+			this.AddLayer(Portrait[(int)Advisor.Defense], OffsetX + 278, OffsetY + 2);
+		}
+
+		protected override bool HasUpdate(uint gameTick)
+		{
+			if (!_update) return false;
+			Render();
+			_update = false;
+			return true;
+		}
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_update = true;
+		}
+
+		public MilitaryStatus() : base("MILITARY STATUS", 1)
+		{
+			Render();
 		}
 	}
 }

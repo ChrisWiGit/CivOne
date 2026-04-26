@@ -13,6 +13,7 @@ using CivOne.Graphics;
 
 namespace CivOne.Screens.Reports
 {
+	[ScreenResizeable]
 	internal class CityStatus : BaseReport
 	{
 		private const char FOOD = '{';
@@ -25,42 +26,56 @@ namespace CivOne.Screens.Reports
 		private bool _update = true;
 		private int _page = 0;
 
-		protected override bool HasUpdate(uint gameTick)
+		private void Render()
 		{
-            const int MAGIC = 157;
+			this.Clear(8);
+			DrawReportHeader();
 
-			if (!_update) return false;
-
-			this.FillRectangle(0, 32, 320, 168, 8);
-
+			const int MAGIC = 157;
 			int fontHeight = Resources.GetFontHeight(FONT_ID);
-			int yy = 32;
-			for (int i = (_page++ * 20); i < _cities.Length && i < (_page * 20); i++)
+			int yy = OffsetY + 32;
+			int start = _page * 20;
+			int end = System.Math.Min(_cities.Length, start + 20);
+			for (int i = start; i < end; i++)
 			{
 				City city = _cities[i];
 
 				string production = (city.CurrentProduction as ICivilopedia).Name;
-                // fire-eggs 20190721 in microprose, longer wonder names are abbreviated
-                if (production.Length > 16)
-                    production = production.Substring(1, 16) + ".";
+				// fire-eggs 20190721 in microprose, longer wonder names are abbreviated
+				if (production.Length > 16)
+					production = production.Substring(1, 16) + ".";
 
 				int productionWidth = Resources.GetTextSize(1, production).Width;
 
-				this.DrawText(city.Name, FONT_ID, 15, 8, yy)
-					.DrawText($"{city.Size}-{city.FoodTotal}{FOOD} {city.ShieldTotal}{SHIELD} {city.TradeTotal}{TRADE}", FONT_ID, 15, 80, yy)
-					.DrawText(production, FONT_ID, 15, MAGIC, yy)
-					.DrawText($"({city.Shields}/{city.CurrentProduction.Price * 10})", FONT_ID, 7, MAGIC + productionWidth + 12, yy);
+				this.DrawText(city.Name, FONT_ID, 15, OffsetX + 8, yy)
+					.DrawText($"{city.Size}-{city.FoodTotal}{FOOD} {city.ShieldTotal}{SHIELD} {city.TradeTotal}{TRADE}", FONT_ID, 15, OffsetX + 80, yy)
+					.DrawText(production, FONT_ID, 15, OffsetX + MAGIC, yy)
+					.DrawText($"({city.Shields}/{city.CurrentProduction.Price * 10})", FONT_ID, 7, OffsetX + MAGIC + productionWidth + 12, yy);
 				yy += fontHeight;
 			}
+		}
+
+		protected override bool HasUpdate(uint gameTick)
+		{
+			if (!_update) return false;
+
+			Render();
 
 			_update = false;
 			return true;
 		}
 
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_update = true;
+		}
+
 		private bool NextPage()
 		{
-			if ((_page * 20) < _cities.Length)
+			if (((_page + 1) * 20) < _cities.Length)
 			{
+				_page++;
 				_update = true;
 			}
 			else

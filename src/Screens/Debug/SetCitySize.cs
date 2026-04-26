@@ -17,9 +17,13 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens.Debug
 {
+	[ScreenResizeable]
 	internal class SetCitySize : BaseScreen
 	{
 		private readonly City[] _cities = Game.GetCities().OrderBy(x => x.Name).ToArray();
+		private int OffsetX => Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => Math.Max(0, (Height - 200) / 2);
+		private readonly int _cityMenuWidth = 136;
 
 		private Menu _citySelect;
 
@@ -33,6 +37,25 @@ namespace CivOne.Screens.Debug
 
 		public event EventHandler Accept, Cancel;
 
+		private void DrawInputDialog()
+		{
+			int ox = OffsetX;
+			int oy = OffsetY;
+
+			this.Clear();
+			this.FillRectangle(80 + ox, 80 + oy, 161, 33, 11)
+				.FillRectangle(81 + ox, 81 + oy, 159, 31, 15)
+				.DrawText("Set City Size...", 0, 5, 88 + ox, 82 + oy)
+				.FillRectangle(88 + ox, 95 + oy, 105, 14, 5)
+				.FillRectangle(89 + ox, 96 + oy, 103, 12, 15);
+
+			if (_input != null)
+			{
+				_input.X = 90 + ox;
+				_input.Y = 97 + oy;
+			}
+		}
+
 		private void CitiesMenu()
 		{
 			Palette = Common.Screens.Last().OriginalColours;
@@ -43,7 +66,7 @@ namespace CivOne.Screens.Debug
 
 			int fontHeight = Resources.GetFontHeight(0);
 			int hh = (fontHeight * (cities.Length + (more ? 2 : 1))) + 5;
-			int ww = 136;
+			int ww = _cityMenuWidth;
 
 			int xx = (320 - ww) / 2;
 			int yy = (200 - hh) / 2;
@@ -54,14 +77,15 @@ namespace CivOne.Screens.Debug
 				.As<Picture>();
 			IBitmap menuBackground = menuGfx[2, 11, ww - 4, hh - 11].ColourReplace((7, 11), (22, 3));
 
-			this.FillRectangle(xx - 1, yy - 1, ww + 2, hh + 2, 5)
-				.AddLayer(menuGfx, xx, yy)
-				.DrawText("Set City Size...", 0, 15, xx + 8, yy + 3);
+			this.Clear();
+			this.FillRectangle(xx + OffsetX - 1, yy + OffsetY - 1, ww + 2, hh + 2, 5)
+				.AddLayer(menuGfx, xx + OffsetX, yy + OffsetY)
+				.DrawText("Set City Size...", 0, 15, xx + OffsetX + 8, yy + OffsetY + 3);
 
 			_citySelect = new Menu(Palette, menuBackground)
 			{
-				X = xx + 2,
-				Y = yy + 11,
+				X = xx + OffsetX + 2,
+				Y = yy + OffsetY + 11,
 				MenuWidth = ww - 4,
 				ActiveColour = 11,
 				TextColour = 5,
@@ -118,17 +142,13 @@ namespace CivOne.Screens.Debug
 		{
 			Palette = Common.Screens.Last().OriginalColours;
 
-			this.FillRectangle(80, 80, 161, 33, 11)
-				.FillRectangle(81, 81, 159, 31, 15)
-				.DrawText("Set City Size...", 0, 5, 88, 82)
-				.FillRectangle(88, 95, 105, 14, 5)
-				.FillRectangle(89, 96, 103, 12, 15);
-
 			_selectedCity = _cities[_citySelect.ActiveItem + _index];
 
-			_input = new Input(Palette, _selectedCity.Size.ToString(), 0, 5, 11, 90, 97, 101, 10, 3);
+			_input = new Input(Palette, _selectedCity.Size.ToString(), 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 3);
 			_input.Accept += CitySizeSet_Accept;
 			_input.Cancel += CitySize_Cancel;
+
+			DrawInputDialog();
 
 			CloseMenus();
 		}
@@ -144,6 +164,21 @@ namespace CivOne.Screens.Debug
 
 		protected override bool HasUpdate(uint gameTick)
 		{
+			if (RefreshNeeded())
+			{
+				if (_selectedCity == null)
+				{
+					CloseMenus();
+					CitiesMenu();
+					AddMenu(_citySelect);
+				}
+				else
+				{
+					DrawInputDialog();
+				}
+				return true;
+			}
+
 			if (_cities.Length == 0)
 			{
 				Destroy();
@@ -159,7 +194,7 @@ namespace CivOne.Screens.Debug
 			{
 				Common.AddScreen(_input);
 			}
-			return false;
+			return true;
 		}
 
 		public SetCitySize() : base(MouseCursor.Pointer)

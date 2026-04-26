@@ -10,6 +10,7 @@
 using System.IO;
 using CivOne.Enums;
 using CivOne.Graphics;
+using CivOne.Services;
 using CivOne.UserInterface;
 
 namespace CivOne
@@ -24,6 +25,8 @@ namespace CivOne
 		protected static Settings Settings => Settings.Instance;
 		protected static MenuCollection Menus => MenuCollection.Instance;
 
+		protected ITranslationService Translation => TranslationServiceFactory.CreateDefault();
+
 		protected internal static void Log(string text, params object[] parameters) => Runtime.Log(text, parameters);
 		protected static void PlaySound(string filename)
 		{
@@ -32,5 +35,16 @@ namespace CivOne
 		}
 
 		protected bool GFX256 => (Settings.GraphicsMode == GraphicsMode.Graphics256);
+
+
+		public string Translate(string key)
+		{
+			return Translation.Translate(key);
+		}
+
+		public string TranslateFormatted(string key, params object[] args)
+		{
+			return Translation.TranslateFormatted(key, args);
+		}
 	}
 }

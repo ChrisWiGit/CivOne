@@ -16,6 +16,7 @@ using Gov = CivOne.Governments;
 
 namespace CivOne.Screens
 {
+	[ScreenResizeable]
 	internal class King : BaseScreen
 	{
 		private readonly Player _player;
@@ -23,12 +24,42 @@ namespace CivOne.Screens
 		private readonly Picture _background;
 
 		private bool _update = true;
+		private int OffsetX => System.Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => System.Math.Max(0, (Height - 200) / 2);
+
+		private byte OpaqueBlackColour
+		{
+			get
+			{
+				for (int i = 1; i < Palette.Length; i++)
+				{
+					Colour c = Palette[i];
+					if (c.A > 0 && c.R == 0 && c.G == 0 && c.B == 0)
+						return (byte)i;
+				}
+				return 5;
+			}
+		}
+
+		private void Render()
+		{
+			this.Clear(OpaqueBlackColour);
+			this.AddLayer(_background, OffsetX, OffsetY)
+				.AddLayer(_player.Civilization.Leader.GetPortrait(), OffsetX + 90, OffsetY);
+		}
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_update) return false;
+			if (!_update) return false;
+			Render();
 			_update = false;
 			return true;
+		}
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_update = true;
 		}
 		
 		public override bool KeyDown(KeyboardEventArgs args)
@@ -70,8 +101,7 @@ namespace CivOne.Screens
 				Palette = palette;
 			}
 			
-			this.AddLayer(_background)
-				.AddLayer(portrait, 90, 0);
+			Render();
 		}
 	}
 }

@@ -17,6 +17,7 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens.Debug
 {
+	[ScreenResizeable]
 	internal class SetPlayerScience : BaseScreen
 	{
 		private readonly Menu _civSelect;
@@ -24,6 +25,49 @@ namespace CivOne.Screens.Debug
 		private Input _input;
 
 		private Player _selectedPlayer = null;
+		private int OffsetX => Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => Math.Max(0, (Height - 200) / 2);
+		private readonly int _menuWidth;
+		private readonly int _menuHeight;
+
+		private void DrawPlayerSelectDialog()
+		{
+			int xx = OffsetX + ((320 - _menuWidth) / 2);
+			int yy = OffsetY + ((200 - _menuHeight) / 2);
+
+			Picture menuGfx = new Picture(_menuWidth, _menuHeight)
+				.Tile(Pattern.PanelGrey)
+				.DrawRectangle3D()
+				.As<Picture>();
+
+			this.Clear();
+			this.FillRectangle(xx - 1, yy - 1, _menuWidth + 2, _menuHeight + 2, 5)
+				.AddLayer(menuGfx, xx, yy, dispose: true)
+				.DrawText("Set Player Science...", 0, 15, xx + 8, yy + 3);
+
+			_civSelect.X = xx + 2;
+			_civSelect.Y = yy + 11;
+			_civSelect.ForceUpdate();
+		}
+
+		private void DrawInputDialog()
+		{
+			int ox = OffsetX;
+			int oy = OffsetY;
+
+			this.Clear();
+			this.FillRectangle(80 + ox, 80 + oy, 161, 33, 11)
+				.FillRectangle(81 + ox, 81 + oy, 159, 31, 15)
+				.DrawText("Set Player Science...", 0, 5, 88 + ox, 82 + oy)
+				.FillRectangle(88 + ox, 95 + oy, 105, 14, 5)
+				.FillRectangle(89 + ox, 96 + oy, 103, 12, 15);
+
+			if (_input != null)
+			{
+				_input.X = 90 + ox;
+				_input.Y = 97 + oy;
+			}
+		}
 
 		public string Value { get; private set; }
 
@@ -33,17 +77,13 @@ namespace CivOne.Screens.Debug
 		{
 			Palette = Common.Screens.Last().OriginalColours;
 
-			this.FillRectangle(80, 80, 161, 33, 11)
-				.FillRectangle(81, 81, 159, 31, 15)
-				.DrawText("Set Player Science...", 0, 5, 88, 82)
-				.FillRectangle(88, 95, 105, 14, 5)
-				.FillRectangle(89, 96, 103, 12, 15);
-
 			_selectedPlayer = Game.GetPlayer((byte)_civSelect.ActiveItem);
 
-			_input = new Input(Palette, _selectedPlayer.Science.ToString(), 0, 5, 11, 90, 97, 101, 10, 5);
+			_input = new Input(Palette, _selectedPlayer.Science.ToString(), 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 5);
 			_input.Accept += PlayerScience_Accept;
 			_input.Cancel += PlayerScience_Cancel;
+
+			DrawInputDialog();
 
 			CloseMenus();
 		}
@@ -82,6 +122,14 @@ namespace CivOne.Screens.Debug
 
 		protected override bool HasUpdate(uint gameTick)
 		{
+			if (RefreshNeeded())
+			{
+				if (_selectedPlayer == null)
+					DrawPlayerSelectDialog();
+				else
+					DrawInputDialog();
+			}
+
 			if (_selectedPlayer == null && Common.TopScreen.GetType() != typeof(Menu))
 			{
 				AddMenu(_civSelect);
@@ -91,35 +139,27 @@ namespace CivOne.Screens.Debug
 			{
 				Common.AddScreen(_input);
 			}
-			return false;
+			return true;
 		}
 
 		public SetPlayerScience() : base(MouseCursor.Pointer)
 		{
 			Palette = Common.Screens.Last().OriginalColours;
-
 			int fontHeight = Resources.GetFontHeight(0);
-			int hh = (fontHeight * (Game.Players.Count() + 1)) + 5;
-			int ww = 120;
+			_menuHeight = (fontHeight * (Game.Players.Count() + 1)) + 5;
+			_menuWidth = 120;
 
-			int xx = (320 - ww) / 2;
-			int yy = (200 - hh) / 2;
-
-			Picture menuGfx = new Picture(ww, hh)
+			Picture menuGfx = new Picture(_menuWidth, _menuHeight)
 				.Tile(Pattern.PanelGrey)
 				.DrawRectangle3D()
 				.As<Picture>();
-			IBitmap menuBackground = menuGfx[2, 11, ww - 4, hh - 11].ColourReplace((7, 11), (22, 3));
-
-			this.FillRectangle(xx - 1, yy - 1, ww + 2, hh + 2, 5)
-				.AddLayer(menuGfx, xx, yy)
-				.DrawText("Set Player Science...", 0, 15, xx + 8, yy + 3);
+			IBitmap menuBackground = menuGfx[2, 11, _menuWidth - 4, _menuHeight - 11].ColourReplace((7, 11), (22, 3));
 
 			_civSelect = new Menu(Palette, menuBackground)
 			{
-				X = xx + 2,
-				Y = yy + 11,
-				MenuWidth = ww - 4,
+				X = 0,
+				Y = 0,
+				MenuWidth = _menuWidth - 4,
 				ActiveColour = 11,
 				TextColour = 5,
 				DisabledColour = 3,
@@ -135,6 +175,8 @@ namespace CivOne.Screens.Debug
 			_civSelect.Cancel += PlayerScience_Cancel;
 			_civSelect.MissClick += PlayerScience_Cancel;
 			_civSelect.ActiveItem = Game.PlayerNumber(Human);
+
+			DrawPlayerSelectDialog();
 		}
 	}
 }

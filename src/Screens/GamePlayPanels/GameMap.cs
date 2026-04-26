@@ -535,7 +535,7 @@ namespace CivOne.Screens.GamePlayPanels
 			return _update;
 		}
 
-		public void Resize(int width, int height)
+		protected override void Resize(int width, int height)
 		{
 			_tilesX = (int)Math.Ceiling((double)width / 16);
 			_tilesY = (int)Math.Ceiling((double)height / 16);
@@ -546,6 +546,8 @@ namespace CivOne.Screens.GamePlayPanels
 			_update = true;
 			_fullRedraw = true;
 		}
+
+		internal void ResizeMap(int width, int height) => Resize(width, height);
 		
 		public GameMap()
 		{

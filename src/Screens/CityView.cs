@@ -22,6 +22,7 @@ using UniversityBuilding = CivOne.Buildings.University;
 
 namespace CivOne.Screens
 {
+	[ScreenResizeable]
 	[Modal]
 	internal class CityView : BaseScreen
 	{
@@ -50,6 +51,8 @@ namespace CivOne.Screens
 		private readonly Picture[] _invadersOrRevolters;
 
 		private bool _update = true;
+		private int OffsetX => Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 		
 		private int _x = 80;
         private int _y = 138;
@@ -60,6 +63,12 @@ namespace CivOne.Screens
 		private string _buildingFile = null;
 
 		public event EventHandler Skipped;
+
+		private void RenderBase()
+		{
+			this.Clear()
+				.AddLayer(_background, OffsetX, OffsetY);
+		}
 		
 		private void FadeColours()
 		{
@@ -83,7 +92,7 @@ namespace CivOne.Screens
 
 			if (_captured || _disorder)
 			{
-				this.AddLayer(_background);
+				RenderBase();
 				int frame = (_x % 30) / 3;
 				if (frame < 0)
 				{
@@ -94,7 +103,7 @@ namespace CivOne.Screens
 				{
 					int xx = (_x - 65) - (48 * i);
 					if (xx + 78 <= 0) continue;
-					this.AddLayer(_invadersOrRevolters[frame], xx, _y);
+					this.AddLayer(_invadersOrRevolters[frame], xx + OffsetX, _y + OffsetY);
 				}
 				_x++;
 				return true;
@@ -102,7 +111,7 @@ namespace CivOne.Screens
 			
 			if (_weLovePresidentDay)
 			{
-				this.AddLayer(_background);
+				RenderBase();
 				int frame = ((_x + 600) % 30) / 3;
 				if (frame < 0)
 				{
@@ -115,7 +124,7 @@ namespace CivOne.Screens
 					{
 						int xx = (_x + 65) + (48 * i);
 						//if (xx <= 0) continue;
-						this.AddLayer(_invadersOrRevolters[frame], xx, _y);
+						this.AddLayer(_invadersOrRevolters[frame], xx + OffsetX, _y + OffsetY);
 					}
 				_x--;
 
@@ -127,8 +136,8 @@ namespace CivOne.Screens
 				if (_noiseCounter > 0)
 				{
 					_overlay.ApplyNoise(_noiseMap, _noiseCounter--);
-					this.AddLayer(_background)
-						.AddLayer(_overlay);
+					RenderBase();
+					this.AddLayer(_overlay, OffsetX, OffsetY);
 					return true;
 				}
 				return false;
@@ -146,14 +155,14 @@ namespace CivOne.Screens
 			}
 			if (_showFoundedScreen && (gameTick % 3 == 0))
 			{
-				this.AddLayer(_background)
-					.DrawText($"{_city.Name} founded: {Game.GameYear}.", 5, 5, 161, 3, TextAlign.Center);
+				RenderBase();
+				this.DrawText($"{_city.Name} founded: {Game.GameYear}.", 5, 5, 161 + OffsetX, 3 + OffsetY, TextAlign.Center);
 
 				int frame = (_x % 4);
-				this.AddLayer(Resources["SETTLERS"][1, 1 + (16 * frame), 48, 15], _x, 120)
-					.AddLayer(Resources["SETTLERS"][1, 1 + (16 * ((frame + 2) % 4)), 48, 15], _x + 27, 125)
-					.AddLayer(Resources["SETTLERS"][1, 1 + (16 * ((frame + 3) % 4)), 48, 15], _x + 14, 131)
-					.AddLayer(Resources["SETTLERS"][1, 1 + (16 * ((frame + 1) % 4)), 48, 15], _x + 40, 135);
+				this.AddLayer(Resources["SETTLERS"][1, 1 + (16 * frame), 48, 15], _x + OffsetX, 120 + OffsetY)
+					.AddLayer(Resources["SETTLERS"][1, 1 + (16 * ((frame + 2) % 4)), 48, 15], _x + 27 + OffsetX, 125 + OffsetY)
+					.AddLayer(Resources["SETTLERS"][1, 1 + (16 * ((frame + 3) % 4)), 48, 15], _x + 14 + OffsetX, 131 + OffsetY)
+					.AddLayer(Resources["SETTLERS"][1, 1 + (16 * ((frame + 1) % 4)), 48, 15], _x + 40 + OffsetX, 135 + OffsetY);
 
 				_x++;
 				return true;
@@ -167,8 +176,17 @@ namespace CivOne.Screens
 			}
 
 			if (_update)
+			{
+				RenderBase();
 				_update = false;
+			}
 			return true;
+		}
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_update = true;
 		}
 
 		private bool SkipAction()
@@ -900,7 +918,7 @@ namespace CivOne.Screens
 			if (showFoundedScreen) return;
 
 			DrawBuildings();
-			this.AddLayer(_background);
+			RenderBase();
 
 			// ReSharper disable once AssignmentInConditionalExpression
 			if (_captured = captured)
@@ -1024,7 +1042,7 @@ namespace CivOne.Screens
 
 			if (captured) return;
 
-			this.DrawText(_city.Name, 5, 5, 161, 3, TextAlign.Center)
+			_background.DrawText(_city.Name, 5, 5, 161, 3, TextAlign.Center)
 				.DrawText(_city.Name, 5, 15, 160, 2, TextAlign.Center)
 				.DrawText(Game.GameYear, 5, 5, 161, 16, TextAlign.Center)
 				.DrawText(Game.GameYear, 5, 15, 160, 15, TextAlign.Center);
@@ -1047,7 +1065,7 @@ namespace CivOne.Screens
 				int sx = ((int)(citizen) * 35) + 1, sy = (modern ? 1 : 52);
 				int sw = 34, sh = (modern ? 50 : 52);
 				int dx = (int)(citizen) + offsetX + (11 * i++), dy = 140;
-				this.AddLayer(Resources["POP"][sx, sy, sw, sh], dx, dy);
+				_background.AddLayer(Resources["POP"][sx, sy, sw, sh], dx, dy);
 			}
 
 			void drawMessage(string[] lines)

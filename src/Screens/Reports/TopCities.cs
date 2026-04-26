@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
@@ -29,6 +30,9 @@ namespace CivOne.Screens.Reports
 
 			DrawBackground();
 
+			int offsetX = Math.Max(0, (Width - 320) / 2);
+			int offsetY = Math.Max(0, (Height - 200) / 2);
+
 			for (int i = 0; i < _cities.Length; i++)
 			{
 				City city = _cities[i];
@@ -36,8 +40,8 @@ namespace CivOne.Screens.Reports
 				if (city == null || city.Size == 0) continue;
 				byte colour = Common.ColourLight[city.Owner];
 
-				int xx = 8;
-				int yy = 32 + (32 * i);
+				int xx = offsetX + 8;
+				int yy = offsetY + 32 + (32 * i);
 				int ww = 304;
 				int hh = 26;
 
@@ -46,23 +50,58 @@ namespace CivOne.Screens.Reports
 				this.FillRectangle(xx, yy, ww, hh, colour)
 					.FillRectangle(xx + 1, yy + 1, ww - 2, hh - 2, 3);
 
-				int dx = 42;
+				int rowInnerLeft = xx + 4;
+				int rowInnerRight = xx + ww - 4;
+				int rowInnerWidth = rowInnerRight - rowInnerLeft;
 
 				ICityCitizenLayoutService layoutService = ICityCitizenLayoutService.Create(city);
-				foreach (var info in layoutService.EnumerateCitizens())
-				{
-					this.AddLayer(Icons.Citizen(info.Citizen), dx + info.X, yy + 10);
-				}
-				dx += layoutService.Width();
+				CitizenDrawInfo[] citizenInfos = [.. layoutService.EnumerateCitizens()];
+				int citizensMinX = citizenInfos.Length > 0 ? citizenInfos.Min(c => c.X) : 0;
+				int citizensMaxX = citizenInfos.Length > 0 ? citizenInfos.Max(c => c.X) : 0;
+				const int citizenIconWidth = 16;
+				int citizensWidth = citizenInfos.Length > 0 ? (citizensMaxX - citizensMinX + citizenIconWidth) : 0;
 
-				dx += 16;
-				foreach (IWonder wonder in city.Wonders)
+				IBitmap[] wonderIcons = [.. city.Wonders.Select(w => w.SmallIcon)];
+				int wondersWidth = 0;
+				for (int w = 0; w < wonderIcons.Length; w++)
 				{
-					this.AddLayer(wonder.SmallIcon, dx, yy + 11);
-					dx += 19;
+					if (w > 0) wondersWidth += 2;
+					wondersWidth += wonderIcons[w].Bitmap.Width;
 				}
 
-				this.DrawText($"{i + 1}. {city.Name} ({owner.Civilization.Name})", 0, 15, 160, yy + 3, TextAlign.Center);
+				int spacing = (citizensWidth > 0 && wondersWidth > 0) ? 8 : 0;
+				int targetCitizensWidth = citizensWidth;
+				if (citizensWidth + spacing + wondersWidth > rowInnerWidth)
+				{
+					targetCitizensWidth = Math.Max(16, rowInnerWidth - wondersWidth - spacing);
+				}
+
+				int contentWidth = targetCitizensWidth + spacing + wondersWidth;
+				double citizenScale = 1.0;
+				if (citizensWidth > citizenIconWidth && targetCitizensWidth < citizensWidth)
+				{
+					citizenScale = (double)(targetCitizensWidth - citizenIconWidth) / (citizensWidth - citizenIconWidth);
+				}
+
+				int dx = rowInnerLeft + ((rowInnerWidth - contentWidth) / 2);
+
+				foreach (CitizenDrawInfo info in citizenInfos)
+				{
+					int normalizedX = info.X - citizensMinX;
+					int compressedX = (int)Math.Round(normalizedX * citizenScale);
+					this.AddLayer(Icons.Citizen(info.Citizen), dx + compressedX, yy + 10);
+				}
+				dx += targetCitizensWidth;
+
+				dx += spacing;
+				for (int w = 0; w < wonderIcons.Length; w++)
+				{
+					IBitmap wonderIcon = wonderIcons[w];
+					this.AddLayer(wonderIcon, dx, yy + 11);
+					dx += wonderIcon.Bitmap.Width + 2;
+				}
+
+				this.DrawText($"{i + 1}. {city.Name} ({owner.Civilization.Name})", 0, 15, offsetX + 160, yy + 3, TextAlign.Center);
 			}
 
 			return true;
@@ -113,9 +152,12 @@ namespace CivOne.Screens.Reports
 
 		private void DrawBackground()
 		{
+			int offsetX = Math.Max(0, (Width - 320) / 2);
+			int offsetY = Math.Max(0, (Height - 200) / 2);
+
 			this.Clear(3)
-				.DrawText("The Top Five Cities in the World", 0, 5, 80, 13)
-				.DrawText("The Top Five Cities in the World", 0, 15, 80, 12);
+				.DrawText("The Top Five Cities in the World", 0, 5, offsetX + 160, offsetY + 13, TextAlign.Center)
+				.DrawText("The Top Five Cities in the World", 0, 15, offsetX + 160, offsetY + 12, TextAlign.Center);
 		}
 	}
 }

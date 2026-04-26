@@ -18,6 +18,7 @@ namespace CivOne.Screens.Reports
 	[Modal]
 	internal abstract class BaseReport : BaseScreen
 	{
+		private readonly string _title;
 		private bool _update = true;
 
 		protected readonly IBitmap[] Portrait = new Picture[4];
@@ -25,6 +26,21 @@ namespace CivOne.Screens.Reports
 		protected event ScreenEventHandler OnMouseDown;
 		
 		protected byte BackgroundColour { get; }
+		protected int OffsetX => Math.Max(0, (Width - 320) / 2);
+		protected int OffsetY => Math.Max(0, (Height - 200) / 2);
+
+		protected void DrawReportHeader()
+		{
+			this.DrawText(_title, 0, 15, OffsetX + 160, OffsetY + 2, TextAlign.Center)
+				.DrawText(string.Format("{0} of the {1}", "Empire", Human.TribeNamePlural), 0, 15, OffsetX + 160, OffsetY + 10, TextAlign.Center)
+				.DrawText(string.Format("{0} {1}: {2}", "Emperor", Human.LeaderName, Game.GameYear), 0, 15, OffsetX + 160, OffsetY + 18, TextAlign.Center);
+		}
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_update = true;
+		}
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
@@ -55,6 +71,7 @@ namespace CivOne.Screens.Reports
 		
 		public BaseReport(string title, byte backgroundColour, MouseCursor cursor = MouseCursor.None) : base(cursor)
 		{
+			_title = title;
 			BackgroundColour = backgroundColour;
 
 			bool modernGovernment = Human.HasAdvance<Invention>();
@@ -68,10 +85,8 @@ namespace CivOne.Screens.Reports
 				Palette = palette;
 			}
 			
-			this.Clear(backgroundColour)
-				.DrawText(title, 0, 15, 160, 2, TextAlign.Center)
-				.DrawText(string.Format("{0} of the {1}", "Empire", Human.TribeNamePlural), 0, 15, 160, 10, TextAlign.Center)
-				.DrawText(string.Format("{0} {1}: {2}", "Emperor", Human.LeaderName, Game.GameYear), 0, 15, 160, 18, TextAlign.Center);
+			this.Clear(backgroundColour);
+			DrawReportHeader();
 		}
 	}
 }

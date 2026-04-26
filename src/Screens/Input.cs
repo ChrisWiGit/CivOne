@@ -27,6 +27,10 @@ namespace CivOne.Screens
 		private int _width, _height;
 		private int _maxLength;
 		private int _cursorPosition = -1;
+		
+		public bool CenterTo320Coordinates { get; set; }
+		private int CoordinateOffsetX => CenterTo320Coordinates ? Math.Max(0, (Width - 320) / 2) : 0;
+		private int CoordinateOffsetY => CenterTo320Coordinates ? Math.Max(0, (Height - 200) / 2) : 0;
 
 		public int X { get; set; }
 		public int Y { get; set; }
@@ -64,9 +68,11 @@ namespace CivOne.Screens
 			int fontHeight = Resources.GetFontHeight(_fontId);
 			int cursorPosition = _cursorPosition;
 			if (cursorPosition < 0) cursorPosition = 0;
+			int x = X + CoordinateOffsetX;
+			int y = Y + CoordinateOffsetY;
 			
-			int xx = X;
-			int yy = Y + (int)Math.Ceiling((float)(_height - fontHeight) / 2);
+			int xx = x;
+			int yy = y + (int)Math.Ceiling((float)(_height - fontHeight) / 2);
 			
 			if (gameTick % 4 < 2)
 			{
@@ -76,7 +82,7 @@ namespace CivOne.Screens
 					
 					if (i == cursorPosition)
 					{
-						this.FillRectangle(xx, Y, letterWidth + 1, _height, _cursorColour);
+						this.FillRectangle(xx, y, letterWidth + 1, _height, _cursorColour);
 						break;
 					}
 					
@@ -84,7 +90,7 @@ namespace CivOne.Screens
 				}
 			}
 			if (!string.IsNullOrEmpty(_text))
-				this.DrawText(_text, _fontId, _textColour, X, yy);
+				this.DrawText(_text, _fontId, _textColour, x, yy);
 			
 			return true;
 		}

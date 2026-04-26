@@ -16,6 +16,7 @@ using CivOne.IO;
 
 namespace CivOne.Screens
 {
+	[ScreenResizeable]
 	internal class PalaceView : BaseScreen
 	{
 		private enum Stage
@@ -31,6 +32,22 @@ namespace CivOne.Screens
 
 		private readonly Picture _background;
 		private readonly byte[,] _noiseMap;
+		private int OffsetX => System.Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => System.Math.Max(0, (Height - 200) / 2);
+
+		private byte OpaqueBlackColour
+		{
+			get
+			{
+				for (int i = 1; i < Palette.Length; i++)
+				{
+					Colour c = Palette[i];
+					if (c.A > 0 && c.R == 0 && c.G == 0 && c.B == 0)
+						return (byte)i;
+				}
+				return 5;
+			}
+		}
 
 		private Picture _palaceMorph = null;
 		private int _noiseCounter = NOISE_COUNT + 5;
@@ -139,7 +156,11 @@ namespace CivOne.Screens
 		{
 			if (_update)
 			{
-				this.AddLayer(DrawPalace());
+				int ox = OffsetX;
+				int oy = OffsetY;
+
+				this.Clear(OpaqueBlackColour)
+					.AddLayer(DrawPalace(), ox, oy);
 
 				switch (_currentStage)
 				{
@@ -155,8 +176,8 @@ namespace CivOne.Screens
 								message.DrawText(line.Trim('^'), 0, 15, 4, yy);
 								yy += 8;
 							}
-							this.FillRectangle(20, 16, 271, 41, 5)
-								.AddLayer(message, 21, 17);
+							this.FillRectangle(20 + ox, 16 + oy, 271, 41, 5)
+								.AddLayer(message, 21 + ox, 17 + oy);
 						}
 						break;
 					case Stage.SelectPart:
@@ -166,24 +187,24 @@ namespace CivOne.Screens
 								.DrawRectangle3D()
 								.DrawText("Which section shall we improve?", 0, 15, 4, 4)
 								.As<Picture>();
-							this.FillRectangle(40, 16, 182, 17, 5)
-								.AddLayer(message, 41, 17);
+							this.FillRectangle(40 + ox, 16 + oy, 182, 17, 5)
+								.AddLayer(message, 41 + ox, 17 + oy);
 
 							for (int i = 0; i < 7; i++)
 							{
 								if (Human.Palace.GetPalaceLevel(i) >= 4) continue;
 
 								int xx = 12 + (48 * i);
-								this.DrawText($"{i + 1}", 0, 5, xx, 145)
-									.DrawText($"{i + 1}", 0, 14, xx, 144);
+								this.DrawText($"{i + 1}", 0, 5, xx + ox, 145 + oy)
+									.DrawText($"{i + 1}", 0, 14, xx + ox, 144 + oy);
 							}
 							for (int i = 0; i < 3; i++)
 							{
 								if (Human.Palace.GetGardenLevel(i) >= 3) continue;
 
 								int xx = 40 + (120 * i);
-								this.DrawText($"{(char)('A' + i)}", 0, 5, xx, 161)
-									.DrawText($"{(char)('A' + i)}", 0, 14, xx, 160);
+								this.DrawText($"{(char)('A' + i)}", 0, 5, xx + ox, 161 + oy)
+									.DrawText($"{(char)('A' + i)}", 0, 14, xx + ox, 160 + oy);
 							}
 						}
 						break;
@@ -191,8 +212,9 @@ namespace CivOne.Screens
 						if (_noiseCounter > 0)
 						{
 							_palaceMorph.ApplyNoise(_noiseMap, _noiseCounter--);
-							this.AddLayer(DrawPalace())
-								.AddLayer(_palaceMorph);
+							this.Clear(OpaqueBlackColour)
+								.AddLayer(DrawPalace(), ox, oy)
+								.AddLayer(_palaceMorph, ox, oy);
 							return true;
 						}
 						_currentStage = Stage.View;
@@ -206,6 +228,12 @@ namespace CivOne.Screens
 			}
 			_update = false;
 			return true;
+		}
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_update = true;
 		}
 		
 		public override bool KeyDown(KeyboardEventArgs args)
