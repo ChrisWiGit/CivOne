@@ -11,7 +11,7 @@ I did not browse all issues on github at first, so I did not recognize that some
   * All report screens (Demographics, City Status, Attitude Survey, Science Report, Trade Report) are now rendered as centered 320x200 content instead of stretching across the expanded canvas.
   * `Civilopedia` entry pages (icon/title/content/terrain text) are centered in expanded windows.
 * Fix: Civilopedia entries could show icons but no text.
-* Fix: Debug overlay dialogs/menus could
+* Fix: Debug overlay dialogs/menus could stretch across the expanded canvas.
   * Menus do not stretch across the expanded canvas and are now centered with fixed width.
   * Input dialogs are now centered and have a fixed width instead of stretching across the expanded canvas.
 * Fix: Improved Newspaper rendering in `Aspect Ratio = Expand` mode.
