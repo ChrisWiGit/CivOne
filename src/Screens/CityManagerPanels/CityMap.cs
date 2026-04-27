@@ -97,8 +97,9 @@ namespace CivOne.Screens.CityManagerPanels
 					}
 
 				_update = false;
+				return true;
 			}
-			return true;
+			return false;
 		}
 
 		public void Update()

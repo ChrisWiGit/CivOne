@@ -139,8 +139,9 @@ namespace CivOne.Screens.CityManagerPanels
 				DrawTrade();
 				
 				_update = false;
+				return true;
 			}
-			return true;
+			return false;
 		}
 
 		public void Update()
