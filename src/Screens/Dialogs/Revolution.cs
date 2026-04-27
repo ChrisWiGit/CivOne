@@ -30,6 +30,7 @@ namespace CivOne.Screens.Dialogs
 			{
 				X = 67,
 				Y = 92,
+				CenterTo320Coordinates = true,
 				MenuWidth = 227,
 				ActiveColour = 11,
 				TextColour = 5,

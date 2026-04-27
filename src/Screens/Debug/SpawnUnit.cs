@@ -19,9 +19,11 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens.Debug
 {
+	[ScreenResizeable]
 	internal class SpawnUnit : BaseScreen
     {
         private const int UNIT_COUNT = 14; // number of units to show per menu page
+		private const int MENU_WIDTH = 136;
 
 		private readonly IUnit[] _units = Reflect.GetUnits().OrderBy(x => (int)x.Type).ToArray();
 
@@ -45,6 +47,29 @@ namespace CivOne.Screens.Debug
 		private bool _hasUpdate = false;
 
 		private int _unitX, _unitY;
+		private int OffsetX => Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => Math.Max(0, (Height - 200) / 2);
+		private readonly int _civMenuHeight;
+
+		private void DrawCivMenuDialog()
+		{
+			int xx = OffsetX + ((320 - MENU_WIDTH) / 2);
+			int yy = OffsetY + ((200 - _civMenuHeight) / 2);
+
+			Picture menuGfx = new Picture(MENU_WIDTH, _civMenuHeight)
+				.Tile(Pattern.PanelGrey)
+				.DrawRectangle3D()
+				.As<Picture>();
+
+			this.Clear();
+			this.FillRectangle(xx - 1, yy - 1, MENU_WIDTH + 2, _civMenuHeight + 2, 5)
+				.AddLayer(menuGfx, xx, yy, dispose: true)
+				.DrawText("Spawn Unit...", 0, 15, xx + 8, yy + 3);
+
+			_civSelect.X = xx + 2;
+			_civSelect.Y = yy + 11;
+			_civSelect.ForceUpdate();
+		}
 
 		private int UnitX
 		{
@@ -73,10 +98,10 @@ namespace CivOne.Screens.Debug
 
 			int fontHeight = Resources.GetFontHeight(0);
 			int hh = (fontHeight * (units.Length + 2)) + 5;
-			int ww = 136;
+			int ww = MENU_WIDTH;
 
-			int xx = (320 - ww) / 2;
-			int yy = (200 - hh) / 2;
+			int xx = OffsetX + ((320 - ww) / 2);
+			int yy = OffsetY + ((200 - hh) / 2);
 
 			Picture menuGfx = new Picture(ww, hh)
 				.Tile(Pattern.PanelGrey)
@@ -84,6 +109,7 @@ namespace CivOne.Screens.Debug
 				.As<Picture>();
 			IBitmap menuBackground = menuGfx[2, 11, ww - 4, hh - 11].ColourReplace((7, 11), (22, 3));
 
+			this.Clear();
 			this.FillRectangle(xx - 1, yy - 1, ww + 2, hh + 2, 5)
 				.AddLayer(menuGfx, xx, yy)
 				.DrawText("Spawn Unit...", 0, 15, xx + 8, yy + 3);
@@ -168,7 +194,7 @@ namespace CivOne.Screens.Debug
 
 		private void SidebarHint()
 		{
-			int xx = (Settings.RightSideBar ? 240 : 0);
+			int xx = (Settings.RightSideBar ? Width - 80 : 0);
 			this.FillRectangle(xx, 153, 79, 1, 15)
 				.FillRectangle(xx, 154, 80, 46, 9)
 				.FillRectangle(xx + 1, 155, 78, 44, 1)
@@ -230,7 +256,7 @@ namespace CivOne.Screens.Debug
 		{
 			if (_selectedUnit == null) return false;
 
-			if (args.Y < 8 || (Settings.RightSideBar && args.X > 240) || (!Settings.RightSideBar && args.X < 80))
+			if (args.Y < 8 || (Settings.RightSideBar && args.X > (Width - 80)) || (!Settings.RightSideBar && args.X < 80))
 			{
 				_unitX = -1;
 				_unitY = -1;
@@ -246,6 +272,29 @@ namespace CivOne.Screens.Debug
 
 		protected override bool HasUpdate(uint gameTick)
 		{
+			if (RefreshNeeded())
+			{
+				if (_selectedPlayer == null)
+				{
+					DrawCivMenuDialog();
+					if (!_menus.Contains(_civSelect))
+					{
+						AddMenu(_civSelect);
+					}
+				}
+				else if (_selectedUnit == null)
+				{
+					CloseMenus();
+					UnitsMenu();
+					AddMenu(_unitSelect);
+				}
+				else
+				{
+					_hasUpdate = true;
+				}
+				return true;
+			}
+
 			if (_selectedPlayer == null && Common.TopScreen.GetType() != typeof(Menu))
 			{
 				AddMenu(_civSelect);
@@ -261,7 +310,7 @@ namespace CivOne.Screens.Debug
 				int xx = (_unitX * 16) + (Settings.RightSideBar ? 0 : 80);
 				int yy = (_unitY * 16) + 8;
 
-				if (xx > 320 || yy > 200) return false;
+				if (xx > Width || yy > Height) return false;
 
 				Bitmap.Clear();
 				SidebarHint();
@@ -269,9 +318,9 @@ namespace CivOne.Screens.Debug
 				if (!ValidTile) return _hasUpdate;
 				this.AddLayer(_selectedUnit.ToBitmap(Game.PlayerNumber(_selectedPlayer), false), xx, yy);
 				
-				return _hasUpdate;
+				return false;
 			}
-			return false;
+			return true;
 		}
 
 		public SpawnUnit()
@@ -279,27 +328,19 @@ namespace CivOne.Screens.Debug
 			Palette = Common.DefaultPalette;
 
 			int fontHeight = Resources.GetFontHeight(0);
-			int hh = (fontHeight * (Game.Players.Count() + 1)) + 5;
-			int ww = 136;
+			_civMenuHeight = (fontHeight * (Game.Players.Count() + 1)) + 5;
 
-			int xx = (320 - ww) / 2;
-			int yy = (200 - hh) / 2;
-
-			Picture menuGfx = new Picture(ww, hh)
+			Picture menuGfx = new Picture(MENU_WIDTH, _civMenuHeight)
 				.Tile(Pattern.PanelGrey)
 				.DrawRectangle3D()
 				.As<Picture>();
-			IBitmap menuBackground = menuGfx[2, 11, ww - 4, hh - 11].ColourReplace((7, 11), (22, 3));
-
-			this.FillRectangle(xx - 1, yy - 1, ww + 2, hh + 2, 5)
-				.AddLayer(menuGfx, xx, yy)
-				.DrawText("Spawn Unit...", 0, 15, xx + 8, yy + 3);
+			IBitmap menuBackground = menuGfx[2, 11, MENU_WIDTH - 4, _civMenuHeight - 11].ColourReplace((7, 11), (22, 3));
 
 			_civSelect = new Menu(Palette, menuBackground)
 			{
-				X = xx + 2,
-				Y = yy + 11,
-				MenuWidth = ww - 4,
+				X = 0,
+				Y = 0,
+				MenuWidth = MENU_WIDTH - 4,
 				ActiveColour = 11,
 				TextColour = 5,
 				DisabledColour = 3,
@@ -315,6 +356,8 @@ namespace CivOne.Screens.Debug
 			_civSelect.Cancel += SpawnUnit_Cancel;
 			_civSelect.MissClick += SpawnUnit_Cancel;
 			_civSelect.ActiveItem = Game.PlayerNumber(Human);
+
+			DrawCivMenuDialog();
 		}
 	}
 }

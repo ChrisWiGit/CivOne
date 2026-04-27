@@ -18,7 +18,7 @@ using System.Linq;
 
 namespace CivOne.Screens
 {
-	[Modal]
+	[Modal, ScreenResizeable]
 	internal class SaveGame : BaseScreen
 	{
 		internal static int SelectedGame = -1;
@@ -45,6 +45,9 @@ namespace CivOne.Screens
 		private bool _attemptedInitialDirectSaveDialog;
 		private Menu _menu;
 		private string _sveUnavailableReason = string.Empty;
+
+		private int OffsetX => Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
 		private static string BuildDialogInitialFileName(string fileName, string defaultExtension)
 		{
@@ -120,12 +123,18 @@ namespace CivOne.Screens
 			this.Clear(15);
 			DrawBorder(_border);
 
-			this.DrawText("Which drive contains your", 0, 5, 92, 72, TextAlign.Left)
-				.DrawText("Save Game disk?", 0, 5, 104, 80, TextAlign.Left)
-				.DrawText(string.Format("{0}:", _driveLetter), 0, 5, 146, 96, TextAlign.Left)
-				.DrawText("Press drive letter and", 0, 5, 104, 112, TextAlign.Left)
-				.DrawText("Return when disk is inserted", 0, 5, 80, 120, TextAlign.Left)
-				.DrawText("Press Escape to cancel", 0, 5, 104, 128, TextAlign.Left);
+			this.DrawText("Which drive contains your", 0, 5, OffsetX + 92, OffsetY + 72, TextAlign.Left)
+				.DrawText("Save Game disk?", 0, 5, OffsetX + 104, OffsetY + 80, TextAlign.Left)
+				.DrawText(string.Format("{0}:", _driveLetter), 0, 5, OffsetX + 146, OffsetY + 96, TextAlign.Left)
+				.DrawText("Press drive letter and", 0, 5, OffsetX + 104, OffsetY + 112, TextAlign.Left)
+				.DrawText("Return when disk is inserted", 0, 5, OffsetX + 80, OffsetY + 120, TextAlign.Left)
+				.DrawText("Press Escape to cancel", 0, 5, OffsetX + 104, OffsetY + 128, TextAlign.Left);
+		}
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_update = true;
 		}
 
 		protected override bool HasUpdate(uint gameTick)
@@ -140,28 +149,28 @@ namespace CivOne.Screens
 
 				if (_menu != null)
 				{
-					this.AddLayer(_menu);
+					this.AddLayer(_menu, OffsetX, OffsetY);
 					_menu.Close();
 					_menu = null;
 				}
 
-				DrawPanel(64, 86, 124, 41);
+				DrawPanel(OffsetX + 64, OffsetY + 86, 124, 41);
 
 				if (_gameId >= 0)
 				{
-					this.DrawText($"{char.ToLower(_driveLetter)}:CIVIL{_gameId}.SVE", 0, 5, 75, 91);
+					this.DrawText($"{char.ToLower(_driveLetter)}:CIVIL{_gameId}.SVE", 0, 5, OffsetX + 75, OffsetY + 91);
 				}
 				else
 				{
-					this.DrawText(Path.GetFileName(SaveFileName), 0, 5, 75, 91);
+					this.DrawText(Path.GetFileName(SaveFileName), 0, 5, OffsetX + 75, OffsetY + 91);
 				}
 
-				this.DrawText($"{Common.DifficultyName(Game.Difficulty)} {Game.HumanPlayer.LeaderName}", 0, 5, 75, 99)
-					.DrawText($"{Game.HumanPlayer.TribeNamePlural}/{Game.GameYear}", 0, 5, 75, 107)
-					.DrawText("... save in progress.", 0, 5, 75, 115);
+				this.DrawText($"{Common.DifficultyName(Game.Difficulty)} {Game.HumanPlayer.LeaderName}", 0, 5, OffsetX + 75, OffsetY + 99)
+					.DrawText($"{Game.HumanPlayer.TribeNamePlural}/{Game.GameYear}", 0, 5, OffsetX + 75, OffsetY + 107)
+					.DrawText("... save in progress.", 0, 5, OffsetX + 75, OffsetY + 115);
 
-				this.DrawText("Game has been saved.", 0, 5, 75, 132)
-					.DrawText("Press key to continue.", 0, 5, 75, 140);
+				this.DrawText("Game has been saved.", 0, 5, OffsetX + 75, OffsetY + 132)
+					.DrawText("Press key to continue.", 0, 5, OffsetX + 75, OffsetY + 140);
 				return true;
 			}
 			else if (_menu != null)

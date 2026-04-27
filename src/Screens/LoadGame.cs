@@ -18,7 +18,7 @@ using System.IO;
 
 namespace CivOne.Screens
 {
-	[Modal]
+	[Modal, ScreenResizeable]
 	internal class LoadGame : BaseScreen
 	{
 		private static ISaveGamePathProvider PathProvider =>
@@ -31,6 +31,8 @@ namespace CivOne.Screens
 		private char _driveLetter = 'C';
 		private bool _update = true;
 		private Menu _menu;
+		private int OffsetX => Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
 		public bool Cancel { get; private set; }
 
@@ -155,12 +157,18 @@ namespace CivOne.Screens
 		{
 			Bitmap.Clear();
 			this.Clear(15)
-				.DrawText("Which drive contains your", 0, 5, 92, 72, TextAlign.Left)
-				.DrawText("saved game files?", 0, 5, 104, 80, TextAlign.Left)
-				.DrawText($"{_driveLetter}:", 0, 5, 146, 96, TextAlign.Left)
-				.DrawText("Press drive letter and", 0, 5, 104, 112, TextAlign.Left)
-				.DrawText("Return when disk is inserted", 0, 5, 80, 120, TextAlign.Left)
-				.DrawText("Press Escape to cancel", 0, 5, 104, 128, TextAlign.Left);
+				.DrawText("Which drive contains your", 0, 5, OffsetX + 92, OffsetY + 72, TextAlign.Left)
+				.DrawText("saved game files?", 0, 5, OffsetX + 104, OffsetY + 80, TextAlign.Left)
+				.DrawText($"{_driveLetter}:", 0, 5, OffsetX + 146, OffsetY + 96, TextAlign.Left)
+				.DrawText("Press drive letter and", 0, 5, OffsetX + 104, OffsetY + 112, TextAlign.Left)
+				.DrawText("Return when disk is inserted", 0, 5, OffsetX + 80, OffsetY + 120, TextAlign.Left)
+				.DrawText("Press Escape to cancel", 0, 5, OffsetX + 104, OffsetY + 128, TextAlign.Left);
+		}
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_update = true;
 		}
 
 		protected override bool HasUpdate(uint gameTick)
@@ -171,7 +179,7 @@ namespace CivOne.Screens
 				{
 					Bitmap.Clear();
 					this.Clear(15)
-						.AddLayer(_menu);
+						.AddLayer(_menu, OffsetX, OffsetY);
 					return true;
 				}
 				return Cancel;
@@ -261,21 +269,33 @@ namespace CivOne.Screens
 		public override bool MouseDown(ScreenEventArgs args)
 		{
 			if (_menu != null)
-				return _menu.MouseDown(args);
+			{
+				ScreenEventArgs menuArgs = args;
+				MouseArgsOffset(ref menuArgs, OffsetX, OffsetY);
+				return _menu.MouseDown(menuArgs);
+			}
 			return false;
 		}
 
 		public override bool MouseUp(ScreenEventArgs args)
 		{
 			if (_menu != null)
-				return _menu.MouseUp(args);
+			{
+				ScreenEventArgs menuArgs = args;
+				MouseArgsOffset(ref menuArgs, OffsetX, OffsetY);
+				return _menu.MouseUp(menuArgs);
+			}
 			return false;
 		}
 
 		public override bool MouseDrag(ScreenEventArgs args)
 		{
 			if (_menu != null)
-				return _menu.MouseDrag(args);
+			{
+				ScreenEventArgs menuArgs = args;
+				MouseArgsOffset(ref menuArgs, OffsetX, OffsetY);
+				return _menu.MouseDrag(menuArgs);
+			}
 			return false;
 		}
 

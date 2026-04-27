@@ -18,6 +18,7 @@ using CivOne.Screens.Services;
 
 namespace CivOne.Screens.Reports
 {
+	[ScreenResizeable]
 	internal class TradeReport : BaseReport
 	{
 		private const char LUXURIES = '\\';
@@ -31,15 +32,31 @@ namespace CivOne.Screens.Reports
 
         private int PAGE_SIZE = 17;
 
+		private void Render()
+		{
+			this.Clear(2);
+			DrawReportHeader();
+			this.FillRectangle(OffsetX, OffsetY + 32, 320, 168, 2);
+			DrawCityTrade();
+			if (((_page + 1) * PAGE_SIZE) >= _cities.Length)
+			{
+				DrawMaintenanceCost();
+			}
+
+			this.AddLayer(Portrait[(int)Advisor.Domestic], OffsetX + 278, OffsetY + 2);
+		}
+
 		private void DrawCityTrade()
 		{
 			int totalIncome = _cities.Sum(c => c.GetRealTotalIncome());
 			int totalScience = _cities.Sum(c => c.GetRealTotalScience());
 
-			this.DrawText("City Trade", 0, 15, 8, 32);
+			this.DrawText("City Trade", 0, 15, OffsetX + 8, OffsetY + 32);
 
-			int yy = 40;
-			for (int i = (_page++ * PAGE_SIZE); i < _cities.Length && i < (_page * PAGE_SIZE); i++)
+			int yy = OffsetY + 40;
+			int start = _page * PAGE_SIZE;
+			int end = start + PAGE_SIZE;
+			for (int i = start; i < _cities.Length && i < end; i++)
 			{
 				City city = _cities[i];
 
@@ -50,21 +67,21 @@ namespace CivOne.Screens.Reports
 				var Taxes = citizenTypes.InDisorder ? 0 : city.TotalIncome;
 				var Science = citizenTypes.InDisorder ? 0 : city.Science;
 
-				this.DrawText(city.Name, 0, 5, 16, yy + 1)
-					.DrawText(city.Name, 0, 15, 16, yy)
-					.DrawText($"{Luxuries}{LUXURIES}/{Taxes}{GOLD}/{Science}{SCIENCE}", 0, 10, 86, yy);
+				this.DrawText(city.Name, 0, 5, OffsetX + 16, yy + 1)
+					.DrawText(city.Name, 0, 15, OffsetX + 16, yy)
+					.DrawText($"{Luxuries}{LUXURIES}/{Taxes}{GOLD}/{Science}{SCIENCE}", 0, 10, OffsetX + 86, yy);
 
 				yy += Resources.GetFontHeight(0);
 			}
 			
-			if ((_page * PAGE_SIZE) >= _cities.Length)
+			if (end >= _cities.Length)
 			{
 				yy += 4;
-				this.DrawText($"Total Income: {totalIncome}$", 0, 10, 8, yy);
+				this.DrawText($"Total Income: {totalIncome}$", 0, 10, OffsetX + 8, yy);
 				yy += Resources.GetFontHeight(0);
 				if (totalScience > 0 && yy <= 188)
 				{
-					this.DrawText($"Discoveries: {(int)Math.Ceiling((double)Human.ScienceCost / totalScience)} turns", 0, 10, 8, yy);
+					this.DrawText($"Discoveries: {(int)Math.Ceiling((double)Human.ScienceCost / totalScience)} turns", 0, 10, OffsetX + 8, yy);
 				}
 			}
 		}
@@ -73,9 +90,9 @@ namespace CivOne.Screens.Reports
 		{
 			int totalCost = _cities.Sum(c => c.TotalMaintenance);
 
-			this.DrawText("Maintenance Cost", 0, 15, 160, 32);
+			this.DrawText("Maintenance Cost", 0, 15, OffsetX + 160, OffsetY + 32);
 
-			int yy = 40;
+			int yy = OffsetY + 40;
 			foreach (Building entry in Enum.GetValues(typeof(Building)))
 			{
 				int count = _cities.SelectMany(c => c.Buildings).Count(b => b.Id == (int)entry);
@@ -84,26 +101,19 @@ namespace CivOne.Screens.Reports
 				IBuilding building = _cities.SelectMany(c => c.Buildings).First(b => b.Id == (int)entry);
 				if (building.Maintenance == 0) continue;
 
-				this.DrawText($"{count} {building.Name}, {building.Maintenance * count}$", 0, 14, 160, yy);
+				this.DrawText($"{count} {building.Name}, {building.Maintenance * count}$", 0, 14, OffsetX + 160, yy);
 				yy += Resources.GetFontHeight(0);
 			}
 
 			yy += 4;
-			this.DrawText($"Total Cost: {totalCost}$", 0, 14, 160, yy);
+			this.DrawText($"Total Cost: {totalCost}$", 0, 14, OffsetX + 160, yy);
 		}
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (!_update) return false;
 
-			this.FillRectangle(0, 32, 320, 168, 2);
-			DrawCityTrade();
-			if ((_page * PAGE_SIZE) >= _cities.Length)
-			{
-				DrawMaintenanceCost();
-			}
-
-			this.AddLayer(Portrait[(int)Advisor.Domestic], 278, 2);
+			Render();
 
 			_update = false;
 			return true;
@@ -111,8 +121,9 @@ namespace CivOne.Screens.Reports
 
 		private bool NextPage()
 		{
-			if ((_page * PAGE_SIZE) < _cities.Length)
+			if (((_page + 1) * PAGE_SIZE) < _cities.Length)
 			{
+				_page++;
 				_update = true;
 			}
 			else
@@ -135,6 +146,12 @@ namespace CivOne.Screens.Reports
 		public TradeReport() : base("TRADE REPORT", 2)
 		{
 			_cities = Game.GetCities().Where(c => Human == c.Owner && c.Size > 0).ToArray();
+		}
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_update = true;
 		}
 	}
 }

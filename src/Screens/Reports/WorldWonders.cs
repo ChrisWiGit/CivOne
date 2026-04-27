@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Linq;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -14,6 +15,7 @@ using CivOne.Wonders;
 
 namespace CivOne.Screens.Reports
 {
+	[ScreenResizeable]
 	[Modal]
 	internal class WorldWonders : BaseScreen
 	{
@@ -28,20 +30,25 @@ namespace CivOne.Screens.Reports
 		private int _page = 0;
 
 		private readonly CityWonders[] _wonders;
-		
-		protected override bool HasUpdate(uint gameTick)
-		{
-			if (!_update) return false;
 
-			this.FillRectangle(8, 32, 304, 160, 3);
+		private int OffsetX => Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => Math.Max(0, (Height - 200) / 2);
+
+		private void Render()
+		{
+			this.Clear(3);
+			this.DrawText("The Wonders of the World", 0, 5, OffsetX + 100, OffsetY + 13)
+				.DrawText("The Wonders of the World", 0, 15, OffsetX + 100, OffsetY + 12);
+
+			this.FillRectangle(OffsetX + 8, OffsetY + 32, 304, 160, 3);
 
 			for (int i = (_page * 7); i < _wonders.Length && i < ((_page + 1) * 7); i++)
 			{
 				IWonder wonder = _wonders[i].Wonder;
 				City city = _wonders[i].City;
 
-				int xx = 8;
-				int yy = 32 + (24 * (i % 7));
+				int xx = OffsetX + 8;
+				int yy = OffsetY + 32 + (24 * (i % 7));
 				int ww = 304;
 				int hh = 16;
 
@@ -53,6 +60,12 @@ namespace CivOne.Screens.Reports
 					.AddLayer(wonder.SmallIcon, xx + 8, yy + 3)
 					.DrawText(wonder.FormatWorldWonder(city), 0, 15, xx + 32, yy + 5);
 			}
+		}
+		
+		protected override bool HasUpdate(uint gameTick)
+		{
+			if (!_update) return false;
+			Render();
 
 			_update = false;
 			return true;
@@ -60,19 +73,25 @@ namespace CivOne.Screens.Reports
 		
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
-			if ((++_page * 7) > _wonders.Length)
+			if (((_page + 1) * 7) >= _wonders.Length)
 				Destroy();
 			else
+			{
+				_page++;
 				_update = true;
+			}
 			return true;
 		}
 		
 		public override bool MouseDown(ScreenEventArgs args)
 		{
-			if ((++_page * 7) > _wonders.Length)
+			if (((_page + 1) * 7) >= _wonders.Length)
 				Destroy();
 			else
+			{
+				_page++;
 				_update = true;
+			}
 			return true;
 		}
 		
@@ -86,9 +105,13 @@ namespace CivOne.Screens.Reports
 				City = Game.GetCities().First(c => c.HasWonder(w))
 			}).ToArray();
 			
-			this.Clear(3)
-				.DrawText("The Wonders of the World", 0, 5, 100, 13)
-				.DrawText("The Wonders of the World", 0, 15, 100, 12);
+			Render();
+		}
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_update = true;
 		}
 	}
 }

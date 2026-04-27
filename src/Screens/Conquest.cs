@@ -19,6 +19,7 @@ using CivOne.Leaders;
 
 namespace CivOne.Screens
 {
+	[ScreenResizeable]
 	internal class Conquest : BaseScreen
 	{
 		private struct Enemy
@@ -41,8 +42,32 @@ namespace CivOne.Screens
 		private int _timer = 0;
 
 		private Picture _background, _overlay;
+		private int OffsetX => Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => Math.Max(0, (Height - 200) / 2);
+
+		private byte OpaqueBlackColour
+		{
+			get
+			{
+				for (int i = 1; i < Palette.Length; i++)
+				{
+					Colour c = Palette[i];
+					if (c.A > 0 && c.R == 0 && c.G == 0 && c.B == 0)
+						return (byte)i;
+				}
+				return 5;
+			}
+		}
 
 		private string HumanName => Game.CurrentPlayer.LeaderName;
+
+		private void DrawMessageLines()
+		{
+			this.DrawText($"{_enemies[_enemy].DestroyYear}: {Human.Civilization.NamePlural} destroy", 5, 20, 159 + OffsetX, 152 + OffsetY, TextAlign.Center)
+				.DrawText($"{_enemies[_enemy].DestroyYear}: {Human.Civilization.NamePlural} destroy", 5, 23, 159 + OffsetX, 151 + OffsetY, TextAlign.Center)
+				.DrawText($"{_enemies[_enemy].Civilization.Name} civilization!", 5, 20, 159 + OffsetX, 168 + OffsetY, TextAlign.Center)
+				.DrawText($"{_enemies[_enemy].Civilization.Name} civilization!", 5, 23, 159 + OffsetX, 167 + OffsetY, TextAlign.Center);
+		}
 
 
 		private void SetPalette()
@@ -120,31 +145,29 @@ namespace CivOne.Screens
 			switch (_step)
 			{
 				case 0:
-					this.AddLayer(_background)
-						.AddLayer(_enemies[_enemy].Leader.GetPortrait(FaceState.Smiling), 90, 0);
+					this.Clear(OpaqueBlackColour)
+						.AddLayer(_background, OffsetX, OffsetY)
+						.AddLayer(_enemies[_enemy].Leader.GetPortrait(FaceState.Smiling), 90 + OffsetX, 0 + OffsetY);
 					break;
 				case 1:
-					this.AddLayer(_background)
-						.AddLayer(_enemies[_enemy].Leader.GetPortrait(FaceState.Angry), 90, 0)
-						.DrawText($"{_enemies[_enemy].DestroyYear}: {Human.Civilization.NamePlural} destroy", 5, 20, 159, 152, TextAlign.Center)
-						.DrawText($"{_enemies[_enemy].DestroyYear}: {Human.Civilization.NamePlural} destroy", 5, 23, 159, 151, TextAlign.Center)
-						.DrawText($"{_enemies[_enemy].Civilization.Name} civilization!", 5, 20, 159, 168, TextAlign.Center)
-						.DrawText($"{_enemies[_enemy].Civilization.Name} civilization!", 5, 23, 159, 167, TextAlign.Center);
+					this.Clear(OpaqueBlackColour)
+						.AddLayer(_background, OffsetX, OffsetY)
+						.AddLayer(_enemies[_enemy].Leader.GetPortrait(FaceState.Angry), 90 + OffsetX, 0 + OffsetY);
+					DrawMessageLines();
 					break;
 				case 2:
 					_overlay.ApplyNoise(_noiseMap, --_noiseCounter);
 					if (_noiseCounter < -2) _timer = 90;
-					this.AddLayer(_background)
-						.AddLayer(_overlay)
-						.DrawText($"{_enemies[_enemy].DestroyYear}: {Human.Civilization.NamePlural} destroy", 5, 20, 159, 152, TextAlign.Center)
-						.DrawText($"{_enemies[_enemy].DestroyYear}: {Human.Civilization.NamePlural} destroy", 5, 23, 159, 151, TextAlign.Center)
-						.DrawText($"{_enemies[_enemy].Civilization.Name} civilization!", 5, 20, 159, 168, TextAlign.Center)
-						.DrawText($"{_enemies[_enemy].Civilization.Name} civilization!", 5, 23, 159, 167, TextAlign.Center);
+					this.Clear(OpaqueBlackColour)
+						.AddLayer(_background, OffsetX, OffsetY)
+						.AddLayer(_overlay, OffsetX, OffsetY);
+					DrawMessageLines();
 					break;
 				case 4:
-					this.AddLayer(_background)
-						.DrawText($"The entire world hails", 5, 22, 159, 153, TextAlign.Center)
-						.DrawText($"{HumanName} the CONQUEROR!", 5, 22, 159, 168, TextAlign.Center);
+					this.Clear(OpaqueBlackColour)
+						.AddLayer(_background, OffsetX, OffsetY)
+						.DrawText($"The entire world hails", 5, 22, 159 + OffsetX, 153 + OffsetY, TextAlign.Center)
+						.DrawText($"{HumanName} the CONQUEROR!", 5, 22, 159 + OffsetX, 168 + OffsetY, TextAlign.Center);
 
 					break;
 			}
@@ -152,6 +175,12 @@ namespace CivOne.Screens
 			if (_update) return false;
 			_update = false;
 			return true;
+		}
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_update = true;
 		}
 
 		public override bool KeyDown(KeyboardEventArgs args)
@@ -175,7 +204,7 @@ namespace CivOne.Screens
 
 			Palette = _background.Palette;
 
-			this.AddLayer(_background);
+			this.Clear(OpaqueBlackColour).AddLayer(_background, OffsetX, OffsetY);
 
 			_noiseMap = new byte[320, 200];
 			for (int x = 0; x < 320; x++)

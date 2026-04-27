@@ -20,6 +20,8 @@ namespace CivOne.Screens.Dialogs
 	internal abstract class BaseDialog : BaseScreen
 	{
 		private readonly int _left, _top;
+		private int OffsetX => Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
 		protected Picture DialogBox { get; private set; }
 
@@ -64,7 +66,7 @@ namespace CivOne.Screens.Dialogs
 			{
 				this.Clear();
 
-				this.AddLayer(DialogBox, _left, _top);
+				this.AddLayer(DialogBox, _left + OffsetX, _top + OffsetY);
 
 				FirstUpdate();
 

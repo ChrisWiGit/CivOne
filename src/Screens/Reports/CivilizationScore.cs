@@ -8,20 +8,17 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System.Linq;
+using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Enums;
 using CivOne.Screens.Services;
 
 namespace CivOne.Screens.Reports
 {
+	[ScreenResizeable]
 	internal class CivilizationScore : BaseReport
 	{
 		private bool _update = true;
-
-		public CivilizationScore() : base("CIVILIZATION SCORE", 3)
-		{
-			
-		}
 
 		private void DrawHappyRow(Picture output, int yy, int happy, int content, int unhappy, int ent, int sci, int tax)
 		{
@@ -45,23 +42,33 @@ namespace CivOne.Screens.Reports
 			DrawHappyRow(output, yy, group.happy, group.content, group.unhappy, group.elvis, group.einstein, group.taxman);
 		}
 
-		private int _xx;
-		int _citizenY;
-		// TODO max wide is 35 citizens
-
-		private void DrawCityCitizens(Citizen[] citizens)
-        {
+		private int DrawCityCitizens(Citizen[] citizens, int startX, int maxX, int startY, ref int currentX)
+		{
 			int group = -1;
+			int y = startY;
+			const int citizenStep = 6;
+			const int lineStep = 8;
+
 			for (int i = 0; i < citizens.Length; i++)
 			{
-				// TODO probably need to stick to a fixed width
-				_xx += 8;
+				int nextX = currentX + citizenStep;
 				if (group != (group = Common.CitizenGroup(citizens[i])) && group > 0 && i > 0)
 				{
-					_xx += (group == 3) ? 4 : 2;
+					nextX += (group == 3) ? 2 : 1;
 				}
-				this.AddLayer(Icons.Citizen(citizens[i]), _xx, _citizenY);
+
+				if (nextX > maxX)
+				{
+					y += lineStep;
+					currentX = startX;
+					nextX = currentX + citizenStep;
+				}
+
+				currentX = nextX;
+				this.AddLayer(Icons.Citizen(citizens[i]), currentX, y);
 			}
+
+			return y;
 		}
 
 		private int CityScore(CitizenTypes citizens)
@@ -72,52 +79,75 @@ namespace CivOne.Screens.Reports
 			return 2 * citizens.happy + (citizens.Citizens.Length - citizens.unhappy - citizens.redShirt);
         }
 
+		private void Render()
+		{
+			this.Clear(3);
+			DrawReportHeader();
+
+			int totalScore = 0;
+
+			var cities = Game.GetCities().Where(c => Human == c.Owner);
+			int fontHeight = Resources.GetFontHeight(0);
+			string tribeName = Human.TribeName;
+			int wonderCount = 0;
+			CitizenTypes[] citizens = Human.Cities.Select(c => c.GetCitizenTypes()).ToArray();
+
+			foreach (CitizenTypes cityCitizens in citizens)
+			{
+				totalScore += CityScore(cityCitizens);
+			}
+
+			int yy = OffsetY + 32;
+			this.DrawText($"{tribeName} Citizens ({totalScore})", 0, 15, OffsetX + 8, yy);
+
+			int citizenStartX = OffsetX + 8;
+			int citizenMaxX = OffsetX + 312;
+			int currentX = citizenStartX;
+			int citizenY = yy + fontHeight;
+			int lastCitizenY = citizenY;
+			foreach (CitizenTypes cityCitizens in citizens)
+			{
+				lastCitizenY = DrawCityCitizens(cityCitizens.Citizens, citizenStartX, citizenMaxX, citizenY, ref currentX);
+				currentX += 1;
+				if (currentX > citizenMaxX)
+				{
+					lastCitizenY += 8;
+					currentX = citizenStartX;
+				}
+			}
+
+			foreach (City city in cities)
+			{
+				wonderCount += city.Wonders.Length;
+			}
+			yy = lastCitizenY + 16;
+			this.DrawText($"{tribeName} Achievements ({wonderCount})", 0, 15, OffsetX + 8, yy);
+			totalScore += wonderCount * 20;
+
+			yy += fontHeight + 4;
+			this.DrawText($"Total Score: {totalScore}", 0, 15, OffsetX + 8, yy);
+		}
+
 		protected override bool HasUpdate(uint gameTick)
         {
 			if (!_update)
 				return false;
 
-			int totalScore = 0;
-
-			var _cities = Game.GetCities().Where(c => Human == c.Owner);
-			int fh = Resources.GetFontHeight(0);
-			var TribeName = Human.TribeName;
-			int wonderCount = 0;       // TODO
-			CitizenTypes[] citizens = Human.Cities.Select(c => c.GetCitizenTypes()).ToArray();
-
-			// Citizen score
-			foreach (CitizenTypes cityCitizens in citizens)
-			{
-				totalScore += CityScore(cityCitizens);
-			}
-			int yy = 32;
-			this.DrawText($"{TribeName} Citizens ({totalScore})", 0, 15, 8, yy);
-			yy += fh;
-
-			_xx = 0;
-			_citizenY = yy;
-			foreach (CitizenTypes cityCitizens in citizens)
-			{
-				DrawCityCitizens(cityCitizens.Citizens);
-			}
-
-			// count wonders
-			foreach (City city in _cities)
-			{
-				wonderCount += city.Wonders.Length; // TODO different wonders
-			}
-			yy += 15;
-			this.DrawText($"{TribeName} Achievements ({wonderCount})", 0, 15, 8, yy);
-			totalScore += wonderCount * 20;
-
-			// TODO draw wonders
-			// TODO draw peace
-
-			yy += fh + 4;
-			this.DrawText($"Total Score: {totalScore}", 0, 15, 8, yy);
+			Render();
 
 			_update = false;
 			return true;
         }
-    }
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_update = true;
+		}
+
+		public CivilizationScore() : base("CIVILIZATION SCORE", 3)
+		{
+			Render();
+		}
+	}
 }

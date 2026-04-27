@@ -17,9 +17,12 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens.Debug
 {
+	[ScreenResizeable]
 	internal class CauseDisaster : BaseScreen
 	{
 		private readonly City[] _cities = Game.GetCities().OrderBy(x => x.Name).ToArray();
+		private int OffsetX => Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
 		private Menu _citySelect;
 
@@ -43,8 +46,8 @@ namespace CivOne.Screens.Debug
 			int hh = (fontHeight * (cities.Length + (more ? 2 : 1))) + 5;
 			int ww = 136;
 
-			int xx = (320 - ww) / 2;
-			int yy = (200 - hh) / 2;
+			int xx = OffsetX + ((320 - ww) / 2);
+			int yy = OffsetY + ((200 - hh) / 2);
 
 			Picture menuGfx = new Picture(ww, hh)
 				.Tile(Pattern.PanelGrey)
@@ -52,6 +55,7 @@ namespace CivOne.Screens.Debug
 				.As<Picture>();
 			IBitmap menuBackground = menuGfx[2, 11, ww - 4, hh - 11].ColourReplace((7, 11), (22, 3));
 
+			this.Clear();
 			this.FillRectangle(xx - 1, yy - 1, ww + 2, hh + 2, 5)
 				.AddLayer(menuGfx, xx, yy)
 				.DrawText("Cause disaster...", 0, 15, xx + 8, yy + 3);
@@ -108,6 +112,14 @@ namespace CivOne.Screens.Debug
 
 		protected override bool HasUpdate(uint gameTick)
 		{
+			if (RefreshNeeded() && _selectedCity == null)
+			{
+				CloseMenus();
+				CitiesMenu();
+				AddMenu(_citySelect);
+				return true;
+			}
+
 			if (_cities.Length == 0)
 			{
 				Destroy();

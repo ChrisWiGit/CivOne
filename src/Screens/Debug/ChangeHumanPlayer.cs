@@ -17,11 +17,36 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens.Debug
 {
+	[ScreenResizeable]
 	internal class ChangeHumanPlayer : BaseScreen
 	{
 		private readonly Menu<Player> _civSelect;
 
 		private Player _selectedPlayer = null;
+		private int OffsetX => Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => Math.Max(0, (Height - 200) / 2);
+		private readonly int _menuWidth;
+		private readonly int _menuHeight;
+
+		private void DrawDialog()
+		{
+			int xx = OffsetX + ((320 - _menuWidth) / 2);
+			int yy = OffsetY + ((200 - _menuHeight) / 2);
+
+			Picture menuGfx = new Picture(_menuWidth, _menuHeight)
+				.Tile(Pattern.PanelGrey)
+				.DrawRectangle3D()
+				.As<Picture>();
+
+			this.Clear();
+			this.FillRectangle(xx - 1, yy - 1, _menuWidth + 2, _menuHeight + 2, 5)
+				.AddLayer(menuGfx, xx, yy, dispose: true)
+				.DrawText("Change Human Player...", 0, 15, xx + 8, yy + 3);
+
+			_civSelect.X = xx + 2;
+			_civSelect.Y = yy + 11;
+			_civSelect.ForceUpdate();
+		}
 
 		public string Value { get; private set; }
 
@@ -51,6 +76,11 @@ namespace CivOne.Screens.Debug
 
 		protected override bool HasUpdate(uint gameTick)
 		{
+			if (RefreshNeeded())
+			{
+				DrawDialog();
+			}
+
 			if (_selectedPlayer == null && Common.TopScreen.GetType() != typeof(Menu))
 			{
 				AddMenu(_civSelect);
@@ -62,29 +92,21 @@ namespace CivOne.Screens.Debug
 		public ChangeHumanPlayer() : base(MouseCursor.Pointer)
 		{
 			Palette = Common.Screens.Last().OriginalColours;
-
 			int fontHeight = Resources.GetFontHeight(0);
-			int hh = (fontHeight * (Game.Players.Count() + 1)) + 5;
-			int ww = 128;
+			_menuHeight = (fontHeight * (Game.Players.Count() + 1)) + 5;
+			_menuWidth = 128;
 
-			int xx = (320 - ww) / 2;
-			int yy = (200 - hh) / 2;
-
-			Picture menuGfx = new Picture(ww, hh)
+			Picture menuGfx = new Picture(_menuWidth, _menuHeight)
 				.Tile(Pattern.PanelGrey)
 				.DrawRectangle3D()
 				.As<Picture>();
-			IBitmap menuBackground = menuGfx[2, 11, ww - 4, hh - 11].ColourReplace((7, 11), (22, 3));
-
-			this.FillRectangle(xx - 1, yy - 1, ww + 2, hh + 2, 5)
-				.AddLayer(menuGfx, xx, yy)
-				.DrawText("Change Human Player...", 0, 15, xx + 8, yy + 3);
+			IBitmap menuBackground = menuGfx[2, 11, _menuWidth - 4, _menuHeight - 11].ColourReplace((7, 11), (22, 3));
 
 			_civSelect = new Menu<Player>("ChangeHumanPlayer", Palette, menuBackground)
 			{
-				X = xx + 2,
-				Y = yy + 11,
-				MenuWidth = ww - 4,
+				X = 0,
+				Y = 0,
+				MenuWidth = _menuWidth - 4,
 				ActiveColour = 11,
 				TextColour = 5,
 				DisabledColour = 3,
@@ -100,6 +122,8 @@ namespace CivOne.Screens.Debug
 			_civSelect.Cancel += ChangePlayer_Cancel;
 			_civSelect.MissClick += ChangePlayer_Cancel;
 			_civSelect.ActiveItem = Game.PlayerNumber(Human);
+
+			DrawDialog();
 		}
 	}
 }

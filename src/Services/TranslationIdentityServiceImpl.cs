@@ -28,4 +28,13 @@ namespace CivOne.Services
 			return string.Format(key, args);
 		}
 	}
+
+	public static class TranslationServiceFactory
+	{
+		private static ITranslationService _instance;
+		public static ITranslationService CreateDefault()
+		{
+			return _instance ??= new TranslationIdentityServiceImpl();
+		}
+	}
 }

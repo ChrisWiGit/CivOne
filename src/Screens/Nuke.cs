@@ -67,7 +67,7 @@ namespace CivOne.Screens
 		
 		public override bool MouseDown(ScreenEventArgs args) => false;
 
-		public void Resize(int width, int height)
+		protected override void Resize(int width, int height)
 		{
 			_tilesX = (int)Math.Ceiling((double)(width - 80) / 16);
 			_tilesY = (int)Math.Ceiling((double)(height - 8) / 16);

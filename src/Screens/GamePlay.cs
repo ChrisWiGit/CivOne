@@ -353,7 +353,7 @@ namespace CivOne.Screens
 
 			_menuBar.Resize();
 			_sideBar.Resize(args.Height - 8);
-			_gameMap.Resize(args.Width - 80, args.Height - 8);
+			_gameMap.ResizeMap(args.Width - 80, args.Height - 8);
 
 			_update = true;
 			HasUpdate(0);

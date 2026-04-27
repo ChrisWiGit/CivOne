@@ -15,11 +15,17 @@ using CivOne.Graphics;
 
 namespace CivOne.Screens
 {
+	[ScreenResizeable]
 	internal class Search : BaseScreen
 	{
 		private readonly Input _input;
 
 		private bool _done = false;
+		private bool _showUnknownCityMessage;
+		private string _unknownCityText = string.Empty;
+
+		private int OffsetX => Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
 		public void Close()
 		{
@@ -46,19 +52,18 @@ namespace CivOne.Screens
 
 		private void Search_Accept(object sender, EventArgs args)
 		{
-			City = Game.GetCities().FirstOrDefault(x => x.Name.ToLower().StartsWith(_input.Text.ToLower()) && Human.Visible(x.X, x.Y));
-			_done = true;
+			City = Game.GetCities().FirstOrDefault(x => x.Name.StartsWith(_input.Text, StringComparison.CurrentCultureIgnoreCase) && Human.Visible(x.X, x.Y));
 			if (City == null)
 			{
-				this.FillRectangle(64, 78, 224, 10, 15)
-					.DrawText("Unknown city.", 0, 5, 82, 80)
-					.FillRectangle(67, 89, 135, 12, 15)
-					.DrawText(_input.Text, 0, 5, 68, 91);
+				_showUnknownCityMessage = true;
+				_unknownCityText = _input.Text;
+				_done = true;
+				RenderDialog();
 				((Input)sender).Close();
 				return;
 			}
-			if (Accept != null)
-				Accept(this, null);
+			_done = true;
+			Accept?.Invoke(this, null);
 			((Input)sender).Close();
 			Close();
 		}
@@ -66,14 +71,19 @@ namespace CivOne.Screens
 		private void Search_Cancel(object sender, EventArgs args)
 		{
 			_done = true;
-			if (Cancel != null)
-				Cancel(this, null);
+			Cancel?.Invoke(this, null);
 			((Input)sender).Close();
 			Close();
 		}
 
 		protected override bool HasUpdate(uint gameTick)
 		{
+			if (RefreshNeeded())
+			{
+				RenderDialog();
+				return true;
+			}
+
 			if (!_done && !Common.HasScreenType<Input>())
 			{
 				Common.AddScreen(_input);
@@ -81,19 +91,43 @@ namespace CivOne.Screens
 			return false;
 		}
 
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_input.X = OffsetX + 68;
+			_input.Y = OffsetY + 90;
+			RenderDialog();
+		}
+
+		private void RenderDialog()
+		{
+			Bitmap.Clear();
+			if (_showUnknownCityMessage)
+			{
+				this.FillRectangle(OffsetX + 64, OffsetY + 78, 225, 25, 5)
+					.FillRectangle(OffsetX + 65, OffsetY + 79, 223, 23, 15)
+					.DrawText(Translate("City not found."), 0, 5, OffsetX + 66, OffsetY + 80)
+					.FillRectangle(OffsetX + 66, OffsetY + 88, 137, 14, 5)
+					.FillRectangle(OffsetX + 67, OffsetY + 89, 135, 12, 15)
+					.DrawText(_unknownCityText, 0, 5, OffsetX + 68, OffsetY + 91);
+				return;
+			}
+
+			this.FillRectangle(OffsetX + 64, OffsetY + 78, 225, 25, 5)
+				.FillRectangle(OffsetX + 65, OffsetY + 79, 223, 23, 15)
+				.DrawText(Translate("Where in the heck is ... (city name)"), 0, 5, OffsetX + 66, OffsetY + 80)
+				.FillRectangle(OffsetX + 66, OffsetY + 88, 137, 14, 5)
+				.FillRectangle(OffsetX + 67, OffsetY + 89, 135, 12, 15);
+		}
+
 		public Search()
 		{
 			Palette = Common.Screens.Last().OriginalColours;
 
-			this.FillRectangle(64, 78, 225, 25, 5)
-				.FillRectangle(65, 79, 223, 23, 15)
-				.DrawText("Where in the heck is ... (city name)", 0, 5, 66, 80)
-				.FillRectangle(66, 88, 137, 14, 5)
-				.FillRectangle(67, 89, 135, 12, 15);
-
-			_input = new Input(Palette, string.Empty, 0, 5, 11, 68, 90, 133, 10, 16);
+			_input = new Input(Palette, string.Empty, 0, 5, 11, OffsetX + 68, OffsetY + 90, 133, 10, 16);
 			_input.Accept += Search_Accept;
 			_input.Cancel += Search_Cancel;
+			RenderDialog();
 		}
 	}
 }

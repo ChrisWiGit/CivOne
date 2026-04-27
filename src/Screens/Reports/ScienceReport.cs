@@ -15,10 +15,17 @@ using CivOne.Graphics;
 
 namespace CivOne.Screens.Reports
 {
+	[ScreenResizeable]
 	internal class ScienceReport : BaseReport
 	{
-		public ScienceReport() : base("SCIENCE REPORT", 1)
+		private bool _update = true;
+
+		private void Render()
 		{
+			this.Clear(1)
+				.FillRectangle(OffsetX, OffsetY, 320, 200, 1);
+			DrawReportHeader();
+
 			double width = 8;
 			while ((width * Human.ScienceCost) > 200 || width <= 0.1)
 			{
@@ -26,20 +33,20 @@ namespace CivOne.Screens.Reports
 			}
 
 			int barWidth = (int)Math.Ceiling(width * Human.ScienceCost);
-			int barX = (320 - barWidth) / 2;
-			this.FillRectangle(barX, 25, barWidth, 16, 9);
+			int barX = OffsetX + ((320 - barWidth) / 2);
+			this.FillRectangle(barX, OffsetY + 25, barWidth, 16, 9);
 
 			if (Human.CurrentResearch != null)
 			{
-				this.DrawText($"Researching {Human.CurrentResearch.Name}", 0, 5, 160, 26, TextAlign.Center)
-					.DrawText($"Researching {Human.CurrentResearch.Name}", 0, 15, 159, 26, TextAlign.Center);
+				this.DrawText($"Researching {Human.CurrentResearch.Name}", 0, 5, OffsetX + 160, OffsetY + 26, TextAlign.Center)
+					.DrawText($"Researching {Human.CurrentResearch.Name}", 0, 15, OffsetX + 159, OffsetY + 26, TextAlign.Center);
 
 				int xx = -1;
 				for (int i = 0; i < Human.Science; i++)
 				{
 					if (xx == (int)Math.Floor((width * i) + barX - 1)) continue;
 					xx = (int)Math.Floor((width * i) + barX - 1);
-					this.AddLayer(Icons.Science, xx, 32);
+					this.AddLayer(Icons.Science, xx, OffsetY + 32);
 				}
 			}
 
@@ -47,18 +54,37 @@ namespace CivOne.Screens.Reports
 			foreach (IAdvance advance in Human.Advances.OrderBy(a => a.Id))
 			{
 				bool first = Game.GetAdvanceOrigin(advance, Human);
-				int xx = 8 + ((c % 3) * 100);
-				int yy = 42 + (((c - (c % 3)) / 3) * 7);
+				int xx = OffsetX + 8 + ((c % 3) * 100);
+				int yy = OffsetY + 42 + (((c - (c % 3)) / 3) * 7);
 				this.DrawText(advance.Name, 0, (byte)(first ? 15 : 11), xx, yy);
 				c++;
 			}
 
 			if (barWidth > 205)
 			{
-				// Bar too wide, do not draw advisor
 				return;
 			}
-			this.AddLayer(Portrait[(int)Advisor.Science], 278, 2);
+			this.AddLayer(Portrait[(int)Advisor.Science], OffsetX + 278, OffsetY + 2);
+		}
+
+		protected override bool HasUpdate(uint gameTick)
+		{
+			if (!_update) return false;
+			Render();
+			_update = false;
+			return true;
+		}
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_update = true;
+		}
+
+		public ScienceReport() : base("SCIENCE REPORT", 1)
+		{
+			Render();
+			_update = false;
 		}
 	}
 }

@@ -41,6 +41,10 @@ namespace CivOne.Screens
 		public byte DisabledColour { get; set; }
 		public int IndentTitle { get; set; }
 		public int RowHeight { get; set; }
+		public bool CenterTo320Coordinates { get; set; }
+
+		private int CoordinateOffsetX => CenterTo320Coordinates ? Math.Max(0, (Width - 320) / 2) : 0;
+		private int CoordinateOffsetY => CenterTo320Coordinates ? Math.Max(0, (Height - 200) / 2) : 0;
 		
 		private bool _mouseDown = false;
 		private bool _change = true;
@@ -79,30 +83,32 @@ namespace CivOne.Screens
 			if (RowHeight != 0) fontHeight = RowHeight;
 			if (_change)
 			{
-				int yy = Y + (_activeItem * fontHeight);
+				int x = X + CoordinateOffsetX;
+				int y = Y + CoordinateOffsetY;
+				int yy = y + (_activeItem * fontHeight);
 				int offsetY = 0;
 				
 				this.Clear();
 				if (Title != null)
 				{
-					this.DrawText(Title, FontId, TitleColour, X + IndentTitle, Y + 1);
+					this.DrawText(Title, FontId, TitleColour, x + IndentTitle, y + 1);
 					offsetY = fontHeight;
 				}
 				if (_activeItem >= 0)
 				{
 					if (_background == null)
 					{
-						this.FillRectangle(X, yy + offsetY, MenuWidth, fontHeight, ActiveColour);
+						this.FillRectangle(x, yy + offsetY, MenuWidth, fontHeight, ActiveColour);
 					}
 					else
 					{
-						this.AddLayer(_background[0, (_activeItem * fontHeight) + offsetY, MenuWidth, fontHeight], X, yy + offsetY, dispose: true);
+						this.AddLayer(_background[0, (_activeItem * fontHeight) + offsetY, MenuWidth, fontHeight], x, yy + offsetY, dispose: true);
 					}
 				}
 				for (int i = 0; i < Items.Count; i++)
 				{
-					yy = Y + (i * fontHeight) + offsetY;
-					this.DrawText(Items[i].Text, FontId, (byte)(Items[i].Enabled ? TextColour : DisabledColour), X + Indent, yy + 1);
+					yy = y + (i * fontHeight) + offsetY;
+					this.DrawText(Items[i].Text, FontId, (byte)(Items[i].Enabled ? TextColour : DisabledColour), x + Indent, yy + 1);
 				}
 				_change = false;
 				return true;
@@ -188,12 +194,13 @@ namespace CivOne.Screens
 		{
 			int fontHeight = Resources.GetFontHeight(FontId);
 			if (RowHeight != 0) fontHeight = RowHeight;
-			int yy = Y;
+			int x = X + CoordinateOffsetX;
+			int yy = Y + CoordinateOffsetY;
 
 			if (Title != null) yy += fontHeight;
 			for (int i = 0; i < Items.Count; i++)
 			{
-				if (new Rectangle(X, yy, MenuWidth, fontHeight).Contains(args.Location)) return i;
+				if (new Rectangle(x, yy, MenuWidth, fontHeight).Contains(args.Location)) return i;
 				yy += fontHeight;
 			}
 
