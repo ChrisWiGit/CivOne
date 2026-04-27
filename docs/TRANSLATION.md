@@ -17,6 +17,8 @@ protected string Translate(string key)
 protected string TranslateFormatted(string key, params object[] args)
 ```
 
+> At this time, these are simple pass-throughs to `Translation.Translate()` and `Translation.TranslateFormatted()`. In the future, they could be extended to support context-aware translation, caching, or other features without changing the call sites.
+
 Both delegate to `ITranslationService` (created via `TranslationServiceFactory.CreateDefault()`).
 
 ---
@@ -106,7 +108,7 @@ Examples:
 | `saveGame.whichDrive`            | `Which drive contains your`        |
 | `saveGame.saveDisk`              | `Save Game disk?`                  |
 | `saveGame.inProgress`            | `... save in progress.`            |
-| `saveGame.done`                  | `Game has been saved.`             |
+| `debug.changeHumanPlayer`        | `Change Human Player...`           |
 | `saveGame.pressKey`              | `Press key to continue.`           |
 | `debug.changHumanPlayer`         | `Change Human Player...`           |
 | `debug.meetWithKing`             | `Meet With King`                   |
