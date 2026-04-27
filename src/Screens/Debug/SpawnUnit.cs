@@ -276,9 +276,11 @@ namespace CivOne.Screens.Debug
 			{
 				if (_selectedPlayer == null)
 				{
-					CloseMenus();
 					DrawCivMenuDialog();
-					AddMenu(_civSelect);
+					if (!_menus.Contains(_civSelect))
+					{
+						AddMenu(_civSelect);
+					}
 				}
 				else if (_selectedUnit == null)
 				{
