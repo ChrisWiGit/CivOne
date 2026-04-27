@@ -83,7 +83,7 @@ namespace CivOne.Screens.Reports
 					citizenScale = (double)(targetCitizensWidth - citizenIconWidth) / (citizensWidth - citizenIconWidth);
 				}
 
-				int dx = rowInnerLeft + ((rowInnerWidth - contentWidth) / 2);
+				int dx = Math.Max(rowInnerLeft, rowInnerLeft + ((rowInnerWidth - contentWidth) / 2));
 
 				foreach (CitizenDrawInfo info in citizenInfos)
 				{
@@ -94,11 +94,31 @@ namespace CivOne.Screens.Reports
 				dx += targetCitizensWidth;
 
 				dx += spacing;
+				int rowRight = rowInnerRight;
 				for (int w = 0; w < wonderIcons.Length; w++)
 				{
+					if (dx >= rowRight)
+					{
+						break;
+					}
+
 					IBitmap wonderIcon = wonderIcons[w];
-					this.AddLayer(wonderIcon, dx, yy + 11);
-					dx += wonderIcon.Bitmap.Width + 2;
+					int drawWidth = Math.Min(wonderIcon.Bitmap.Width, rowRight - dx);
+					if (drawWidth <= 0)
+					{
+						break;
+					}
+
+					if (drawWidth < wonderIcon.Bitmap.Width)
+					{
+						this.AddLayer(wonderIcon.Bitmap[0, 0, drawWidth, wonderIcon.Bitmap.Height], dx, yy + 11, dispose: true);
+					}
+					else
+					{
+						this.AddLayer(wonderIcon, dx, yy + 11);
+					}
+
+					dx += drawWidth + 2;
 				}
 
 				this.DrawText($"{i + 1}. {city.Name} ({owner.Civilization.Name})", 0, 15, offsetX + 160, yy + 3, TextAlign.Center);
