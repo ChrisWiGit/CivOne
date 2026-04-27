@@ -29,12 +29,12 @@ namespace CivOne.Services
 		}
 	}
 
-	// Factory method to create the default translation service instance, allowing for easy replacement with a real translation service in the future.
 	public static class TranslationServiceFactory
 	{
+		private static ITranslationService _instance;
 		public static ITranslationService CreateDefault()
 		{
-			return new TranslationIdentityServiceImpl();
+			return _instance ??= new TranslationIdentityServiceImpl();
 		}
 	}
 }

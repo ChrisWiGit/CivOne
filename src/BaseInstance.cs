@@ -37,12 +37,12 @@ namespace CivOne
 		protected bool GFX256 => (Settings.GraphicsMode == GraphicsMode.Graphics256);
 
 
-		public string Translate(string key)
+		protected string Translate(string key)
 		{
 			return Translation.Translate(key);
 		}
 
-		public string TranslateFormatted(string key, params object[] args)
+		protected string TranslateFormatted(string key, params object[] args)
 		{
 			return Translation.TranslateFormatted(key, args);
 		}
