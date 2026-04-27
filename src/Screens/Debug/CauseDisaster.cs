@@ -132,7 +132,7 @@ namespace CivOne.Screens.Debug
 				return false;
 			}
 
-			return true;
+			return false;
 		}
 
 		public CauseDisaster() : base(MouseCursor.Pointer)

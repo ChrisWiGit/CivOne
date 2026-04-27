@@ -88,7 +88,7 @@ namespace CivOne.Screens.Debug
 				AddMenu(_civSelect);
 				return false;
 			}
-			return true;
+			return false;
 		}
 
 		public MeetWithKing() : base(MouseCursor.Pointer)

@@ -171,7 +171,7 @@ namespace CivOne.Screens.Debug
                 AddMenu(_bldgSelect);
                 return false;
             }
-            return true;
+            return false;
         }
 
         private void BuildingsMenu()

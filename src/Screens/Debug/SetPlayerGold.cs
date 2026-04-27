@@ -136,7 +136,7 @@ namespace CivOne.Screens.Debug
 			{
 				Common.AddScreen(_input);
 			}
-			return true;
+			return false;
 		}
 
 		public SetPlayerGold() : base(MouseCursor.Pointer)

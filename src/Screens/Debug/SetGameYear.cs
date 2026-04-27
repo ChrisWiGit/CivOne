@@ -84,7 +84,7 @@ namespace CivOne.Screens.Debug
 			{
 				Common.AddScreen(_input);
 			}
-			return true;
+			return false;
 		}
 
 		public SetGameYear()

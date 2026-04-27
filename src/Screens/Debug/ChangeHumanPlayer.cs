@@ -86,7 +86,7 @@ namespace CivOne.Screens.Debug
 				AddMenu(_civSelect);
 				return false;
 			}
-			return true;
+			return false;
 		}
 
 		public ChangeHumanPlayer() : base(MouseCursor.Pointer)

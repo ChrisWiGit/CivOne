@@ -166,7 +166,7 @@ namespace CivOne.Screens.Debug
 				AdvancesMenu();
 				AddMenu(_advanceSelect);
 			}
-			return true;
+			return false;
 		}
 
 		public SetPlayerAdvances() : base(MouseCursor.Pointer)

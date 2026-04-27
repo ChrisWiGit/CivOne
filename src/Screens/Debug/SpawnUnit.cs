@@ -318,7 +318,7 @@ namespace CivOne.Screens.Debug
 				if (!ValidTile) return _hasUpdate;
 				this.AddLayer(_selectedUnit.ToBitmap(Game.PlayerNumber(_selectedPlayer), false), xx, yy);
 				
-				return _hasUpdate;
+				return false;
 			}
 			return true;
 		}
