@@ -269,21 +269,33 @@ namespace CivOne.Screens
 		public override bool MouseDown(ScreenEventArgs args)
 		{
 			if (_menu != null)
-				return _menu.MouseDown(args);
+			{
+				ScreenEventArgs menuArgs = args;
+				MouseArgsOffset(ref menuArgs, OffsetX, OffsetY);
+				return _menu.MouseDown(menuArgs);
+			}
 			return false;
 		}
 
 		public override bool MouseUp(ScreenEventArgs args)
 		{
 			if (_menu != null)
-				return _menu.MouseUp(args);
+			{
+				ScreenEventArgs menuArgs = args;
+				MouseArgsOffset(ref menuArgs, OffsetX, OffsetY);
+				return _menu.MouseUp(menuArgs);
+			}
 			return false;
 		}
 
 		public override bool MouseDrag(ScreenEventArgs args)
 		{
 			if (_menu != null)
-				return _menu.MouseDrag(args);
+			{
+				ScreenEventArgs menuArgs = args;
+				MouseArgsOffset(ref menuArgs, OffsetX, OffsetY);
+				return _menu.MouseDrag(menuArgs);
+			}
 			return false;
 		}
 
