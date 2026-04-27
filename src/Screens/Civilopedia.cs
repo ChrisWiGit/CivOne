@@ -52,19 +52,19 @@ namespace CivOne.Screens
 				Palette = Resources.WorldMapTiles.Palette.Copy();
 
 				this.Clear(14)
-					.FillRectangle(60, 2, 200, 9, 15)
-					.FillRectangle(2, 14, 316, 184, 15);
+					.FillRectangle(60 + OffsetX, 2 + OffsetY, 200, 9, 15)
+					.FillRectangle(2 + OffsetX, 14 + OffsetY, 316, 184, 15);
 
-				this.DrawText("ENCYCLOPEDIA of CIVILIZATION", 0, 5, 67, 4)
-					.DrawText("ENCYCLOPEDIA of CIVILIZATION", 0, 10, 66, 3);
+				this.DrawText("ENCYCLOPEDIA of CIVILIZATION", 0, 5, 67 + OffsetX, 4 + OffsetY)
+					.DrawText("ENCYCLOPEDIA of CIVILIZATION", 0, 10, 66 + OffsetX, 3 + OffsetY);
 
 				if (_pages.Length > 78)
 				{
-					this.DrawText("MORE", 0, 12, 8, 4);
+					this.DrawText("MORE", 0, 12, 8 + OffsetX, 4 + OffsetY);
 				}
-				this.DrawText("EXIT", 0, 12, 286, 4);
+				this.DrawText("EXIT", 0, 12, 286 + OffsetX, 4 + OffsetY);
 
-				int xx = 10, yy = 16;
+				int xx = 10 + OffsetX, yy = 16 + OffsetY;
 				int columns = (int)Math.Ceiling((float)_pages.Length / 26);
 				for (int i = _startIndex; i < _pages.Length; i++)
 				{
@@ -73,11 +73,11 @@ namespace CivOne.Screens
 					this.DrawText(name, 0, 5, xx, yy);
 
 					yy += 7;
-					if (yy <= 192) continue;
+					if (yy <= 192 + OffsetY) continue;
 
 					xx += (columns < 3) ? 150 : 100;
-					if (xx >= 300) break;
-					yy = 16;
+					if (xx >= 300 + OffsetX) break;
+					yy = 16 + OffsetY;
 				}
 				return;
 			}
@@ -185,9 +185,9 @@ namespace CivOne.Screens
 				return true;
 			}
 			
-			if (args.Y < 16)
+			if (args.Y < 16 + OffsetY)
 			{
-				if (args.X < 160)
+				if (args.X < 160 + OffsetX)
 				{
 					if (_pages.Length <= 78) return false;
 					_startIndex += 78;
@@ -202,8 +202,8 @@ namespace CivOne.Screens
 				}
 			}
 			
-			if (args.X < 10 || args.X > 310) return false;
-			int xx = 10, yy = 16;
+			if (args.X < 10 + OffsetX || args.X > 310 + OffsetX) return false;
+			int xx = 10 + OffsetX, yy = 16 + OffsetY;
 			int columns = (int)Math.Ceiling((float)_pages.Length / 26);
 			int columnWidth = (columns < 3) ? 150 : 100;
 			for (int i = _startIndex; i < _pages.Length; i++)
@@ -217,11 +217,11 @@ namespace CivOne.Screens
 				}
 				
 				yy += 7;
-				if (yy <= 192) continue;
+				if (yy <= 192 + OffsetY) continue;
 				
 				xx += (columns < 3) ? 150 : 100;
-				if (xx >= 300) break;
-				yy = 16;
+				if (xx >= 300 + OffsetX) break;
+				yy = 16 + OffsetY;
 			}
 			return false;
 		}
