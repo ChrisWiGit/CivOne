@@ -15,3 +15,4 @@
 **/*.7z
 **/*.java*
 **/civ_orig/**
+temp/

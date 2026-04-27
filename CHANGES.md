@@ -53,6 +53,7 @@ I did not browse all issues on github at first, so I did not recognize that some
   * **Not yet active in gameplay** — counters are loaded and saved but not yet incremented during combat.
   * See [docs/UNITS_DESTROYED_BY_GAME_IMPLEMENTATION.md](docs/UNITS_DESTROYED_BY_GAME_IMPLEMENTATION.md) for the planned runtime implementation.
 * Implemented YAML savegame format to save and load games
+  * See example save file in [docs/SAVEGAME_EXAMPLE.cos](docs/SAVEGAME_EXAMPLE.cos).
   * Implemented extensive DTO and Mapper classes to convert between internal game state and YAML save format.
   * Using modern software design principles, patterns and methods.
   * Using extensive Tests to ensure correctness and maintainability of the code.

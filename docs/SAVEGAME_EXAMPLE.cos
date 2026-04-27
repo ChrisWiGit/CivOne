@@ -1,0 +1,3430 @@
+FormatVersion: 1
+Meta:
+  GameStartedAt: 2026-04-19T18:26:12.2128377+00:00
+  GameVersion: 0.1.0.1417
+  PlayDurationMinutes: 28
+  # A user-friendly name for the save game, which can be displayed in load/save dialogs. This is not used by the game logic and is purely for presentation purposes.
+  DisplayName: In 1360 BC leader Lord Caesar of the Romans
+GameState:
+  # The difficulty level of the game.
+  # Allowed values: Chieftain, Warlord, Prince, King, Emperor, Deity
+  Difficulty: Warlord
+  GameTurn: 132
+  # The id of the human-controlled player. This usually matches CurrentPlayer at the start/end of turns, but can differ while AI turns are processed.
+  HumanPlayer: 1
+  # The id of the player whose turn is currently active. This is typically equal to HumanPlayer, but can differ when loading/saving in the middle of AI turns.
+  CurrentPlayer: 1
+  Players:
+  - # The civilization of the player.
+    Civilization:
+      # The class name of the civilization's leader.
+      # Allowed values: Alexander, Atilla, Caesar, Elizabeth, Frederick, Gandhi, Genghis, Hammurabi, Lincoln, Mao, Montezuma, Napoleon, Ramesses, Shaka, Stalin
+      LeaderClassName: Atilla
+    # The unique id of the player. This may be the index of a player list, but it is not guaranteed to be stable across game sessions.
+    Id: 0
+    # Stable player identity independent from list/index positions.
+    PlayerGuid: 536f79e7-bc7e-4c82-8726-d4c2012e55d2
+    # A list of explored advances. Use -1 to indicate all advances.
+    Advances: []
+    # A list of player ids with which this player has an embassy.
+    Embassies: []
+    # Per-target diplomacy state entries. RawFlags are persisted 1:1 from legacy diplomacy bitmasks.
+    Diplomacy:
+    - # Target player id this diplomacy entry refers to.
+      # Allowed values: [0 to 255]
+      TargetPlayerId: 0
+      # Target player GUID for future stable cross-player references.
+      TargetPlayerGuid: 536f79e7-bc7e-4c82-8726-d4c2012e55d2
+      # Raw diplomacy flags (ushort bitmask), 1:1 with legacy save format.
+      # Allowed values: [0 to 65535]
+      RawFlags: 0
+      # Optional decoded view of RawFlags. Currently placeholder for future semantics.
+      Decoded: {}
+    - TargetPlayerId: 1
+      TargetPlayerGuid: 5df9fcfb-34e0-4e18-9a72-ae1efea9f0f2
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 2
+      TargetPlayerGuid: 6b465f8d-273d-4d31-8890-81bf81fe0823
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 3
+      TargetPlayerGuid: dfe66fac-dcca-428a-958e-84075893e539
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 4
+      TargetPlayerGuid: 101f502a-3b38-4b3c-b59a-636f462fbdd7
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 5
+      TargetPlayerGuid: 19295518-60dd-4c39-9718-ebfc078339fd
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 6
+      TargetPlayerGuid: 6c2e28bb-056d-4c17-a16a-b66ea65355ee
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 7
+      TargetPlayerGuid: c2d102f9-5854-4f42-938c-b66cb4bfe9cc
+      RawFlags: 0
+      Decoded: {}
+    # The number of turns the player is in anarchy.
+    Anarchy: 0
+    # The amount of gold the player has. Must be non-negative and not exceed 30000. If the value is out of range, it will be set to the closest valid value.
+    # Allowed values: [0 to 30000]
+    Gold: 0
+    # The id of the advance currently being researched, or null if no research is in progress.
+    # Allowed values: 0(Alphabet), 1(Code of Laws), 2(Currency), 3(Atomic Theory), 4(Democracy), 5(Monarchy), 6(Astronomy), 7(MapMaking), 8(Navigation), 9(Mathematics), 10(Medicine), 11(Physics), 12(Engineering), 13(University), 14(Magnetism), 15(Electronics), 16(Masonry), 17(Bronze Working), 18(Iron Working), 19(Bridge Building), 20(Invention), 21(Computers), 22(Writing), 23(Steam Engine), 24(Trade), 25(Ceremonial Burial), 26(Mysticism), 27(Nuclear Fission), 28(Philosophy), 29(Religion), 30(Literacy), 31(Horseback Riding), 32(Feudalism), 33(The Wheel), 34(Gunpowder), 35(Industrialization), 36(Chemistry), 37(Combustion), 38(Flight), 39(Advanced Flight), 40(Space Flight), 41(Mass Production), 42(Pottery), 43(Communism), 44(The Republic), 45(Construction), 46(Rocketry), 47(The Corporation), 48(Metallurgy), 49(RailRoad), 50(Nuclear Power), 51(Theory of Gravity), 52(Steel), 53(Banking), 54(Electricity), 55(Refining), 56(Explosives), 57(SuperConductor), 58(Automobile), 59(Genetic Engineering), 60(Plastics), 61(Recycling), 62(Chivalry), 63(Robotics), 64(Conscription), 65(Labor Union), 66(Fusion Power)
+    CurrentResearch: 0
+    # The current index of the city name list for this player, and to be shown next time a city name is needed for a new city.
+    CityNamesSkipped: 0
+    # The number of future technologies this player has completed.
+    # Allowed values: [0 to 65535]
+    FutureTechCount: 0
+    # Turns since last major contact state with the human player in legacy save semantics.
+    # Allowed values: [0 to 65535]
+    HumanContactTurn: 21
+    # The player's initial X-position used as world map focus anchor.
+    StartX: 0
+    # Units lost per unit type (28 entries). YAML allows long values; mapper clamps to ushort range.
+    UnitsLost:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    # Units destroyed by this player indexed by current player list order. YAML allows long values; mapper clamps to ushort range.
+    UnitsDestroyedBy:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    # Units destroyed by this player keyed by target PlayerGuid. Preferred over index-based UnitsDestroyedBy for durable cross-references.
+    UnitsDestroyedByByPlayerGuid:
+      536f79e7-bc7e-4c82-8726-d4c2012e55d2: 0
+      5df9fcfb-34e0-4e18-9a72-ae1efea9f0f2: 0
+      6b465f8d-273d-4d31-8890-81bf81fe0823: 0
+      dfe66fac-dcca-428a-958e-84075893e539: 0
+      101f502a-3b38-4b3c-b59a-636f462fbdd7: 0
+      19295518-60dd-4c39-9718-ebfc078339fd: 0
+      6c2e28bb-056d-4c17-a16a-b66ea65355ee: 0
+      c2d102f9-5854-4f42-938c-b66cb4bfe9cc: 0
+    # Legacy epic ranking value for this player. YAML allows long values; mapper clamps to ushort range.
+    EpicRanking: 0
+    # Legacy military power value for this player. YAML allows long values; mapper clamps to ushort range.
+    MilitaryPower: 0
+    # Legacy civilization score value for this player. YAML allows long values; mapper clamps to ushort range.
+    CivilizationScore: 0
+    # A list of the player's cities
+    Cities: []
+    # A list of the player's units
+    Units: []
+    # A 2D array indicating which tiles have been explored by the player (1) or not (0). This only accounts for the city tiles to be shown (4x4). Center tile is always 1.
+    # Allowed values: [0 to 4]
+    Explored:
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000010000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000100000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000001000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000100000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000100000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000001000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000100000000000000000000000000000000000000000000000000000000000000000
+    - 00010000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    # A 2D array indicating which tiles are visible to the player (1) or not (0). This only accounts for the city tiles to be shown (4x4). Center tile is always 1.
+    # Allowed values: [0 to 4]
+    Visible:
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000010000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000100000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000001000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000100000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000100000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000001000000000000000000000000000000000000
+    - 00000000000001110000000000000000000000000000000000000000000000000000000000000000
+    - 00111000000001110000000000000000000000000000000000000000000000000000000000000000
+    - 00111000000001110000000000000000000000000000000000000000000000000000000000000000
+    - 00111000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    # The name of the player's tribe, e.g. 'Romans'.
+    TribeName: Barbarian
+    # The plural form of the player's tribe name, e.g. 'Romans'.
+    TribeNamePlural: Barbarians
+    # The id of the government type of the player.
+    # Allowed values: 0(Anarchy), 1(Despotism), 2(Monarchy), 3(Communism), 4(Republic), 5(Democracy)
+    Government: 1
+    # The percentage of luxuries rate, from 0 to 10, where 0 means 0% and 10 means 100%.Must be in increments of 10%. If the value is out of range, it will be set to the closest valid value.The sum of all rates (luxuries, taxes, science) must be 10. If setting this property causes the sum to exceed 10, the result is undefined
+    # Allowed values: [0 to 10]
+    LuxuriesRate: 0
+    # The percentage of taxes rate, from 0 to 10, where 0 means 0% and 10 means 100%.Must be in increments of 10%. If the value is out of range, it will be set to the closest valid value.The sum of all rates (luxuries, taxes, science) must be 10. If setting this property causes the sum to exceed 10, the result is undefined
+    # Allowed values: [0 to 10]
+    TaxesRate: 5
+    # The percentage of science rate, from 0 to 10, where 0 means 0% and 10 means 100%.Must be in increments of 10%. If the value is out of range, it will be set to the closest valid value.The sum of all rates (luxuries, taxes, science) must be 10. If setting this property causes the sum to exceed 10, the result is undefined
+    # Allowed values: [0 to 10]
+    ScienceRate: 5
+    # The total amount of science points the player has.
+    # Allowed values: [0 to 30000]
+    Science: 0
+    # The player's palace. This may be null if the player has no palace.
+    Palace:
+      # The leftmost tower section of the palace.
+      LeftTower:
+        # The architectural style of this palace section.
+        # Allowed values: None, Medieval, Classical, Islamic
+        Style: None
+        # The build level of this palace section.
+        # Allowed values: [0 to 4]
+        Level: 0
+      # The left wing section of the palace.
+      LeftWing:
+        Style: None
+        Level: 0
+      # The left annex section of the palace.
+      LeftAnnex:
+        Style: None
+        Level: 0
+      # The center section of the palace.
+      Center:
+        Style: None
+        Level: 0
+      # The right annex section of the palace.
+      RightAnnex:
+        Style: None
+        Level: 0
+      # The right wing section of the palace.
+      RightWing:
+        Style: None
+        Level: 0
+      # The rightmost tower section of the palace.
+      RightTower:
+        Style: None
+        Level: 0
+      # The build level of the left garden.
+      # Allowed values: [0 to 3]
+      GardenLeftLevel: 0
+      # The build level of the center garden.
+      # Allowed values: [0 to 3]
+      GardenCenterLevel: 0
+      # The build level of the right garden.
+      # Allowed values: [0 to 3]
+      GardenRightLevel: 0
+    # The player's spaceship state. Null if no Apollo Program or not started.
+    SpaceShip:
+      # 12×12 component grid for spaceship construction. Each cell stores component type: E=Empty, S=Structural, C=Component, M=Module.
+      Grid:
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      # Population capacity of the spaceship. Clamped to [0, 65535] (ushort) during load.
+      # Allowed values: [0 to 9223372036854775807]
+      Population: 0
+      # The game year the spaceship was launched. 0 = not launched. Clamped to [-32768, 32767] (short) during load.
+      LaunchYear: 0
+  - Civilization:
+      LeaderClassName: Caesar
+    Id: 1
+    PlayerGuid: 5df9fcfb-34e0-4e18-9a72-ae1efea9f0f2
+    Advances:
+    - 16
+    - 17
+    - 42
+    - 18
+    - 0
+    - 22
+    - 9
+    - 1
+    - 25
+    - 33
+    - 30
+    - 2
+    - 45
+    - 19
+    Embassies: []
+    Diplomacy:
+    - TargetPlayerId: 0
+      TargetPlayerGuid: 536f79e7-bc7e-4c82-8726-d4c2012e55d2
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 1
+      TargetPlayerGuid: 5df9fcfb-34e0-4e18-9a72-ae1efea9f0f2
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 2
+      TargetPlayerGuid: 6b465f8d-273d-4d31-8890-81bf81fe0823
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 3
+      TargetPlayerGuid: dfe66fac-dcca-428a-958e-84075893e539
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 4
+      TargetPlayerGuid: 101f502a-3b38-4b3c-b59a-636f462fbdd7
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 5
+      TargetPlayerGuid: 19295518-60dd-4c39-9718-ebfc078339fd
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 6
+      TargetPlayerGuid: 6c2e28bb-056d-4c17-a16a-b66ea65355ee
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 7
+      TargetPlayerGuid: c2d102f9-5854-4f42-938c-b66cb4bfe9cc
+      RawFlags: 0
+      Decoded: {}
+    Anarchy: 0
+    Gold: 29847
+    CurrentResearch: 12
+    CityNamesSkipped: 0
+    FutureTechCount: 0
+    HumanContactTurn: 0
+    StartX: 49
+    UnitsLost:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    UnitsDestroyedBy:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    UnitsDestroyedByByPlayerGuid:
+      536f79e7-bc7e-4c82-8726-d4c2012e55d2: 0
+      5df9fcfb-34e0-4e18-9a72-ae1efea9f0f2: 0
+      6b465f8d-273d-4d31-8890-81bf81fe0823: 0
+      dfe66fac-dcca-428a-958e-84075893e539: 0
+      101f502a-3b38-4b3c-b59a-636f462fbdd7: 0
+      19295518-60dd-4c39-9718-ebfc078339fd: 0
+      6c2e28bb-056d-4c17-a16a-b66ea65355ee: 0
+      c2d102f9-5854-4f42-938c-b66cb4bfe9cc: 0
+    EpicRanking: 0
+    MilitaryPower: 0
+    CivilizationScore: 0
+    Cities:
+    - Id: a88691d7-deca-4cab-bbba-ee9705ec5782
+      # City location on the map.
+      Location: &o1
+        X: 49
+        Y: 31
+      # Identifier of the player who owns the city starting from 0
+      Owner: 1
+      # Name of the city.
+      Name: Rome
+      # Size of the city.
+      Size: 4
+      # Food storage of the city. Determines how close the city is to growing.
+      # Allowed values: [0 to 65535]
+      Food: 1
+      # Shield storage of the city. Determines how close the current production is to completion.
+      # Allowed values: [0 to 65535]
+      Shields: 0
+      # Visible sizes of the city for other players. Index corresponds to player ID.
+      VisibleSizes:
+      - 0
+      - 4
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      # Current production of the city.
+      CurrentProduction:
+        Price: 4
+        BuyPrice: 320
+        ProductionId: 0
+      # 5x5 bitmask of active resource tiles relative to the city center. Center will be ignored.
+      ResourceTiles:
+      - 00000
+      - 01010
+      - 00100
+      - 01000
+      - 01000
+      # Specialists in the city.
+      # Allowed values: Entertainer, Scientist, Taxman
+      Specialists: []
+      # Buildings present in the city.
+      # Allowed values: Palace, Barracks, Granary, Temple, MarketPlace, Library, Courthouse, CityWalls, Aqueduct, Bank, Cathedral, University, MassTransit, Colosseum, Factory, MfgPlant, SdiDefense, RecyclingCenter, PowerPlant, HydroPlant, NuclearPlant, SSStructural, SSComponent, SSModule
+      Buildings:
+      - Palace
+      - Barracks
+      - Granary
+      - MarketPlace
+      - Library
+      # Wonders present in the city.
+      # Allowed values: Pyramids, HangingGardens, Colossus, Lighthouse, GreatLibrary, Oracle, GreatWall, MagellansExpedition, MichelangelosChapel, CopernicusObservatory, ShakespearesTheatre, IsaacNewtonsCollege, JSBachsCathedral, DarwinsVoyage, HooverDam, WomensSuffrage, ManhattanProject, UnitedNations, ApolloProgram, SETIProgram, CureForCancer
+      Wonders:
+      - HangingGardens
+      # Status flags of the city.
+      # Allowed values: Riot, Coastal, CelebrationCancelled, HydroAvailable, AutoBuild, TechStolen, CelebrationRapture, ImprovementSold
+      Status:
+      - Coastal
+      # Indicates if the city was in disorder.
+      WasInDisorder: false
+      # IDs of cities that this city is trading with. Current maximum is 3.
+      TradingCities: &o0 []
+      # Continent ID the city is located on.
+      ContinentId: 0
+    - Id: a636c7a2-8eb6-43c5-a1dc-1c2e246f8b76
+      Location: &o2
+        X: 50
+        Y: 36
+      Owner: 1
+      Name: Caesarea
+      Size: 5
+      Food: 35
+      Shields: 15
+      VisibleSizes:
+      - 5
+      - 5
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      CurrentProduction:
+        Price: 4
+        BuyPrice: 320
+        ProductionId: 0
+      ResourceTiles:
+      - 00000
+      - 11000
+      - 11100
+      - 01000
+      - 00000
+      Specialists: []
+      Buildings:
+      - Barracks
+      - Granary
+      - MarketPlace
+      Wonders:
+      - Pyramids
+      Status:
+      - Coastal
+      WasInDisorder: false
+      TradingCities: *o0
+      ContinentId: 0
+    - Id: 89d7e590-bc6b-42ae-a2f4-259962df2f26
+      Location: &o4
+        X: 43
+        Y: 38
+      Owner: 1
+      Name: Carthage
+      Size: 3
+      Food: 6
+      Shields: 9
+      VisibleSizes:
+      - 2
+      - 3
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      CurrentProduction:
+        Price: 2
+        BuyPrice: 120
+        ProductionId: 2
+      ResourceTiles:
+      - 00100
+      - 00100
+      - 00110
+      - 00000
+      - 00000
+      Specialists: []
+      Buildings: []
+      Wonders: []
+      Status:
+      - Coastal
+      WasInDisorder: false
+      TradingCities: *o0
+      ContinentId: 0
+    Units:
+    - # ClassName of the Unit.
+      # Allowed values: Armor, Artillery, Battleship, Bomber, Cannon, Caravan, Carrier, Catapult, Cavalry, Chariot, Cruiser, Diplomat, Fighter, Frigate, Ironclad, Knights, Legion, MechInf, Militia, Musketeers, Nuclear, Phalanx, Riflemen, Sail, Settlers, Submarine, Transport, Trireme
+      ClassName: Militia
+      Location: *o1
+      # Goto location of the Unit on the Map. X and Y coordinates must be non-negative and in range of the map, otherwise the behavior is undefined.
+      Goto: &o3
+        X: 0
+        Y: 0
+      # Home city of the Unit. It is optional and can be null. If not null, it must be a valid City Guid. E.g. {00000000-0000-0000-0000-000000000001}
+      HomeCityGuid: a88691d7-deca-4cab-bbba-ee9705ec5782
+      Busy: true
+      Veteran: false
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 1
+    - ClassName: Militia
+      Location: *o2
+      Goto: *o3
+      HomeCityGuid: a88691d7-deca-4cab-bbba-ee9705ec5782
+      Busy: true
+      Veteran: false
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 1
+    - ClassName: Militia
+      Location: *o4
+      Goto: *o3
+      HomeCityGuid: a88691d7-deca-4cab-bbba-ee9705ec5782
+      Busy: true
+      Veteran: false
+      Sentry: true
+      FortifyActive: false
+      Fortify: false
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 1
+    - ClassName: Militia
+      Location: *o2
+      Goto: *o3
+      HomeCityGuid: a636c7a2-8eb6-43c5-a1dc-1c2e246f8b76
+      Busy: true
+      Veteran: false
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 1
+    - ClassName: Phalanx
+      Location: *o4
+      Goto: *o3
+      HomeCityGuid: 89d7e590-bc6b-42ae-a2f4-259962df2f26
+      Busy: true
+      Veteran: false
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 1
+    - ClassName: Phalanx
+      Location: *o4
+      Goto: *o3
+      HomeCityGuid: 89d7e590-bc6b-42ae-a2f4-259962df2f26
+      Busy: true
+      Veteran: false
+      Sentry: true
+      FortifyActive: false
+      Fortify: false
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 1
+    Explored:
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000011000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000001000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000010000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000110000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000001011000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000010011100000000000000000000000000000
+    - 00000000000000000000000000000000000000000000101111100000000000000000000000000000
+    - 00000000000000000000000000000000000000000001010000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000001100000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    Visible:
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000111100000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000111100000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000111100000000000000000000000000000
+    - 00000000000000000000000000000000000000000000001111100000000000000000000000000000
+    - 00000000000000000000000000000000000000000000011111100000000000000000000000000000
+    - 00000000000000000000000000000000000000000000111111110000000000000000000000000000
+    - 00000000000000000000000000000000000000000001111111110000000000000000000000000000
+    - 00000000000000000000000000000000000000000011111111110000000000000000000000000000
+    - 00000000000000000000000000000000000000000011111111110000000000000000000000000000
+    - 00000000000000000000000000000000000000000011111000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000011110000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    TribeName: Roman
+    TribeNamePlural: Romans
+    Government: 1
+    LuxuriesRate: 0
+    TaxesRate: 0
+    ScienceRate: 10
+    Science: 10
+    Palace:
+      LeftTower:
+        Style: None
+        Level: 0
+      LeftWing:
+        Style: None
+        Level: 0
+      LeftAnnex:
+        Style: None
+        Level: 0
+      Center:
+        Style: None
+        Level: 0
+      RightAnnex:
+        Style: None
+        Level: 0
+      RightWing:
+        Style: None
+        Level: 0
+      RightTower:
+        Style: None
+        Level: 0
+      GardenLeftLevel: 0
+      GardenCenterLevel: 0
+      GardenRightLevel: 0
+    SpaceShip:
+      Grid:
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      Population: 0
+      LaunchYear: 0
+  - Civilization:
+      LeaderClassName: Hammurabi
+    Id: 2
+    PlayerGuid: 6b465f8d-273d-4d31-8890-81bf81fe0823
+    Advances:
+    - 42
+    - 0
+    Embassies: []
+    Diplomacy:
+    - TargetPlayerId: 0
+      TargetPlayerGuid: 536f79e7-bc7e-4c82-8726-d4c2012e55d2
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 1
+      TargetPlayerGuid: 5df9fcfb-34e0-4e18-9a72-ae1efea9f0f2
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 2
+      TargetPlayerGuid: 6b465f8d-273d-4d31-8890-81bf81fe0823
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 3
+      TargetPlayerGuid: dfe66fac-dcca-428a-958e-84075893e539
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 4
+      TargetPlayerGuid: 101f502a-3b38-4b3c-b59a-636f462fbdd7
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 5
+      TargetPlayerGuid: 19295518-60dd-4c39-9718-ebfc078339fd
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 6
+      TargetPlayerGuid: 6c2e28bb-056d-4c17-a16a-b66ea65355ee
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 7
+      TargetPlayerGuid: c2d102f9-5854-4f42-938c-b66cb4bfe9cc
+      RawFlags: 0
+      Decoded: {}
+    Anarchy: 0
+    Gold: 68
+    CurrentResearch: 22
+    CityNamesSkipped: 0
+    FutureTechCount: 0
+    HumanContactTurn: 0
+    StartX: 36
+    UnitsLost:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    UnitsDestroyedBy:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    UnitsDestroyedByByPlayerGuid:
+      536f79e7-bc7e-4c82-8726-d4c2012e55d2: 0
+      5df9fcfb-34e0-4e18-9a72-ae1efea9f0f2: 0
+      6b465f8d-273d-4d31-8890-81bf81fe0823: 0
+      dfe66fac-dcca-428a-958e-84075893e539: 0
+      101f502a-3b38-4b3c-b59a-636f462fbdd7: 0
+      19295518-60dd-4c39-9718-ebfc078339fd: 0
+      6c2e28bb-056d-4c17-a16a-b66ea65355ee: 0
+      c2d102f9-5854-4f42-938c-b66cb4bfe9cc: 0
+    EpicRanking: 0
+    MilitaryPower: 0
+    CivilizationScore: 0
+    Cities:
+    - Id: 90a4afbd-138b-4d56-a6dc-79fac69fb0f5
+      Location: &o6
+        X: 36
+        Y: 14
+      Owner: 2
+      Name: Babylon
+      Size: 5
+      Food: 12
+      Shields: 14
+      VisibleSizes:
+      - 0
+      - 0
+      - 5
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      CurrentProduction:
+        Price: 1
+        BuyPrice: 50
+        ProductionId: 1
+      ResourceTiles:
+      - 00000
+      - 00000
+      - 10100
+      - 01110
+      - 00100
+      Specialists: []
+      Buildings:
+      - Palace
+      - Barracks
+      - Granary
+      Wonders: []
+      Status: []
+      WasInDisorder: false
+      TradingCities: *o0
+      ContinentId: 0
+    - Id: 86897666-f9f3-427d-84f0-1b9ee2cd1de7
+      Location: &o5
+        X: 32
+        Y: 13
+      Owner: 2
+      Name: Sumer
+      Size: 1
+      Food: 1
+      Shields: 1
+      VisibleSizes:
+      - 0
+      - 0
+      - 1
+      - 0
+      - 0
+      - 0
+      - 0
+      - 1
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      CurrentProduction:
+        Price: 20
+        BuyPrice: 800
+        ProductionId: 255
+      ResourceTiles:
+      - 00000
+      - 01000
+      - 00100
+      - 00000
+      - 00000
+      Specialists: []
+      Buildings:
+      - Barracks
+      - Granary
+      Wonders: []
+      Status:
+      - Coastal
+      WasInDisorder: false
+      TradingCities: *o0
+      ContinentId: 0
+    Units:
+    - ClassName: Militia
+      Location: *o5
+      Goto: *o3
+      HomeCityGuid: 86897666-f9f3-427d-84f0-1b9ee2cd1de7
+      Busy: true
+      Veteran: false
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 2
+    - ClassName: Settlers
+      Location:
+        X: 37
+        Y: 13
+      Goto: *o3
+      HomeCityGuid: 90a4afbd-138b-4d56-a6dc-79fac69fb0f5
+      Busy: true
+      Veteran: true
+      Sentry: false
+      FortifyActive: false
+      Fortify: false
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 0
+      PartMoves: 0
+      PlayerId: 2
+    - ClassName: Militia
+      Location: *o5
+      Goto: *o3
+      HomeCityGuid: 86897666-f9f3-427d-84f0-1b9ee2cd1de7
+      Busy: true
+      Veteran: false
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 2
+    - ClassName: Settlers
+      Location:
+        X: 33
+        Y: 13
+      Goto: *o3
+      HomeCityGuid: 86897666-f9f3-427d-84f0-1b9ee2cd1de7
+      Busy: true
+      Veteran: true
+      Sentry: false
+      FortifyActive: false
+      Fortify: false
+      FuelOrProgress: 5
+      Fuel: 5
+      WorkProgress: 5
+      Order: Mines
+      MovesSkip: 4
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 2
+    - ClassName: Militia
+      Location: *o6
+      Goto: *o3
+      HomeCityGuid: 90a4afbd-138b-4d56-a6dc-79fac69fb0f5
+      Busy: true
+      Veteran: true
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 2
+    - ClassName: Militia
+      Location: *o6
+      Goto: *o3
+      HomeCityGuid: 90a4afbd-138b-4d56-a6dc-79fac69fb0f5
+      Busy: true
+      Veteran: true
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 2
+    - ClassName: Cavalry
+      Location:
+        X: 40
+        Y: 14
+      Goto: *o3
+      Busy: true
+      Veteran: false
+      Sentry: false
+      FortifyActive: false
+      Fortify: false
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 0
+      PartMoves: 0
+      PlayerId: 2
+    Explored:
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000100000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000011110000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000011111000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000011011110000000000000000000000000000000000000000000
+    - 00000000000000000000000000000111111111111100000000000000000000000000000000000000
+    - 00000000000000000000000000001111001111111000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000101010000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    Visible:
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000001110000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000001111111000000000000000000000000000000000000000000000
+    - 00000000000000000000000000001111111100000000000000000000000000000000000000000000
+    - 00000000000000000000000000000111111111000000000000000000000000000000000000000000
+    - 00000000000000000000000000001111111111111110000000000000000000000000000000000000
+    - 00000000000000000000000000011111111111111110000000000000000000000000000000000000
+    - 00000000000000000000000000011111111111111110000000000000000000000000000000000000
+    - 00000000000000000000000000011111111111111100000000000000000000000000000000000000
+    - 00000000000000000000000000000000001111111000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    TribeName: Babylonian
+    TribeNamePlural: Babylonians
+    Government: 1
+    LuxuriesRate: 0
+    TaxesRate: 5
+    ScienceRate: 5
+    Science: 0
+    Palace:
+      LeftTower:
+        Style: None
+        Level: 0
+      LeftWing:
+        Style: None
+        Level: 0
+      LeftAnnex:
+        Style: None
+        Level: 0
+      Center:
+        Style: None
+        Level: 0
+      RightAnnex:
+        Style: None
+        Level: 0
+      RightWing:
+        Style: None
+        Level: 0
+      RightTower:
+        Style: None
+        Level: 0
+      GardenLeftLevel: 0
+      GardenCenterLevel: 0
+      GardenRightLevel: 0
+    SpaceShip:
+      Grid:
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      Population: 0
+      LaunchYear: 0
+  - Civilization:
+      LeaderClassName: Napoleon
+    Id: 3
+    PlayerGuid: dfe66fac-dcca-428a-958e-84075893e539
+    Advances: []
+    Embassies: []
+    Diplomacy:
+    - TargetPlayerId: 0
+      TargetPlayerGuid: 536f79e7-bc7e-4c82-8726-d4c2012e55d2
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 1
+      TargetPlayerGuid: 5df9fcfb-34e0-4e18-9a72-ae1efea9f0f2
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 2
+      TargetPlayerGuid: 6b465f8d-273d-4d31-8890-81bf81fe0823
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 3
+      TargetPlayerGuid: dfe66fac-dcca-428a-958e-84075893e539
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 4
+      TargetPlayerGuid: 101f502a-3b38-4b3c-b59a-636f462fbdd7
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 5
+      TargetPlayerGuid: 19295518-60dd-4c39-9718-ebfc078339fd
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 6
+      TargetPlayerGuid: 6c2e28bb-056d-4c17-a16a-b66ea65355ee
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 7
+      TargetPlayerGuid: c2d102f9-5854-4f42-938c-b66cb4bfe9cc
+      RawFlags: 0
+      Decoded: {}
+    Anarchy: 0
+    Gold: 288
+    CurrentResearch: 33
+    CityNamesSkipped: 0
+    FutureTechCount: 0
+    HumanContactTurn: 0
+    StartX: 35
+    UnitsLost:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    UnitsDestroyedBy:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    UnitsDestroyedByByPlayerGuid:
+      536f79e7-bc7e-4c82-8726-d4c2012e55d2: 0
+      5df9fcfb-34e0-4e18-9a72-ae1efea9f0f2: 0
+      6b465f8d-273d-4d31-8890-81bf81fe0823: 0
+      dfe66fac-dcca-428a-958e-84075893e539: 0
+      101f502a-3b38-4b3c-b59a-636f462fbdd7: 0
+      19295518-60dd-4c39-9718-ebfc078339fd: 0
+      6c2e28bb-056d-4c17-a16a-b66ea65355ee: 0
+      c2d102f9-5854-4f42-938c-b66cb4bfe9cc: 0
+    EpicRanking: 0
+    MilitaryPower: 0
+    CivilizationScore: 0
+    Cities:
+    - Id: 561d0c59-5da9-47aa-abfc-0cefdd403bc3
+      Location: &o7
+        X: 35
+        Y: 26
+      Owner: 3
+      Name: Paris
+      Size: 4
+      Food: 18
+      Shields: 0
+      VisibleSizes:
+      - 0
+      - 0
+      - 0
+      - 4
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      CurrentProduction:
+        Price: 1
+        BuyPrice: 50
+        ProductionId: 1
+      ResourceTiles:
+      - 00000
+      - 00100
+      - 00100
+      - 01110
+      - 00000
+      Specialists: []
+      Buildings:
+      - Palace
+      - Barracks
+      Wonders: []
+      Status: []
+      WasInDisorder: false
+      TradingCities: *o0
+      ContinentId: 0
+    - Id: b52288f7-2409-4f20-922e-29ae6c4ab37a
+      Location: &o8
+        X: 39
+        Y: 30
+      Owner: 3
+      Name: Orleans
+      Size: 2
+      Food: 1
+      Shields: 32
+      VisibleSizes:
+      - 0
+      - 0
+      - 0
+      - 2
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      CurrentProduction:
+        Price: 4
+        BuyPrice: 320
+        ProductionId: 0
+      ResourceTiles:
+      - 01000
+      - 10000
+      - 00100
+      - 00000
+      - 00000
+      Specialists: []
+      Buildings:
+      - Barracks
+      Wonders: []
+      Status: []
+      WasInDisorder: false
+      TradingCities: *o0
+      ContinentId: 0
+    Units:
+    - ClassName: Militia
+      Location: *o7
+      Goto: *o3
+      HomeCityGuid: 561d0c59-5da9-47aa-abfc-0cefdd403bc3
+      Busy: true
+      Veteran: true
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 3
+    - ClassName: Militia
+      Location: *o8
+      Goto: *o3
+      HomeCityGuid: b52288f7-2409-4f20-922e-29ae6c4ab37a
+      Busy: true
+      Veteran: false
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 3
+    - ClassName: Militia
+      Location: *o8
+      Goto: *o3
+      HomeCityGuid: b52288f7-2409-4f20-922e-29ae6c4ab37a
+      Busy: true
+      Veteran: false
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 3
+    - ClassName: Settlers
+      Location:
+        X: 39
+        Y: 26
+      Goto: *o3
+      HomeCityGuid: 561d0c59-5da9-47aa-abfc-0cefdd403bc3
+      Busy: true
+      Veteran: true
+      Sentry: false
+      FortifyActive: false
+      Fortify: false
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 0
+      PartMoves: 0
+      PlayerId: 3
+    - ClassName: Militia
+      Location: *o7
+      Goto: *o3
+      HomeCityGuid: 561d0c59-5da9-47aa-abfc-0cefdd403bc3
+      Busy: true
+      Veteran: true
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 3
+    Explored:
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000001100000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000011111100000000000000000000000000000000000000000
+    - 00000000000000000000000000000000011111111000000000000000000000000000000000000000
+    - 00000000000000000000000000000000001101110000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000111110000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000001111000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000011000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    Visible:
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000011110000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000111111110000000000000000000000000000000000000000
+    - 00000000000000000000000000000000111111111100000000000000000000000000000000000000
+    - 00000000000000000000000000000000111111111100000000000000000000000000000000000000
+    - 00000000000000000000000000000000111111111100000000000000000000000000000000000000
+    - 00000000000000000000000000000000011111111100000000000000000000000000000000000000
+    - 00000000000000000000000000000000001111111100000000000000000000000000000000000000
+    - 00000000000000000000000000000000000011111100000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000111100000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    TribeName: French
+    TribeNamePlural: French
+    Government: 1
+    LuxuriesRate: 0
+    TaxesRate: 5
+    ScienceRate: 5
+    Science: 0
+    Palace:
+      LeftTower:
+        Style: None
+        Level: 0
+      LeftWing:
+        Style: None
+        Level: 0
+      LeftAnnex:
+        Style: None
+        Level: 0
+      Center:
+        Style: None
+        Level: 0
+      RightAnnex:
+        Style: None
+        Level: 0
+      RightWing:
+        Style: None
+        Level: 0
+      RightTower:
+        Style: None
+        Level: 0
+      GardenLeftLevel: 0
+      GardenCenterLevel: 0
+      GardenRightLevel: 0
+    SpaceShip:
+      Grid:
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      Population: 0
+      LaunchYear: 0
+  - Civilization:
+      LeaderClassName: Ramesses
+    Id: 4
+    PlayerGuid: 101f502a-3b38-4b3c-b59a-636f462fbdd7
+    Advances: []
+    Embassies: []
+    Diplomacy:
+    - TargetPlayerId: 0
+      TargetPlayerGuid: 536f79e7-bc7e-4c82-8726-d4c2012e55d2
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 1
+      TargetPlayerGuid: 5df9fcfb-34e0-4e18-9a72-ae1efea9f0f2
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 2
+      TargetPlayerGuid: 6b465f8d-273d-4d31-8890-81bf81fe0823
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 3
+      TargetPlayerGuid: dfe66fac-dcca-428a-958e-84075893e539
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 4
+      TargetPlayerGuid: 101f502a-3b38-4b3c-b59a-636f462fbdd7
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 5
+      TargetPlayerGuid: 19295518-60dd-4c39-9718-ebfc078339fd
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 6
+      TargetPlayerGuid: 6c2e28bb-056d-4c17-a16a-b66ea65355ee
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 7
+      TargetPlayerGuid: c2d102f9-5854-4f42-938c-b66cb4bfe9cc
+      RawFlags: 0
+      Decoded: {}
+    Anarchy: 0
+    Gold: 431
+    CurrentResearch: 16
+    CityNamesSkipped: 0
+    FutureTechCount: 0
+    HumanContactTurn: 0
+    StartX: 67
+    UnitsLost:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    UnitsDestroyedBy:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    UnitsDestroyedByByPlayerGuid:
+      536f79e7-bc7e-4c82-8726-d4c2012e55d2: 0
+      5df9fcfb-34e0-4e18-9a72-ae1efea9f0f2: 0
+      6b465f8d-273d-4d31-8890-81bf81fe0823: 0
+      dfe66fac-dcca-428a-958e-84075893e539: 0
+      101f502a-3b38-4b3c-b59a-636f462fbdd7: 0
+      19295518-60dd-4c39-9718-ebfc078339fd: 0
+      6c2e28bb-056d-4c17-a16a-b66ea65355ee: 0
+      c2d102f9-5854-4f42-938c-b66cb4bfe9cc: 0
+    EpicRanking: 0
+    MilitaryPower: 0
+    CivilizationScore: 0
+    Cities:
+    - Id: 3be8a279-394c-4691-a6bc-7654d4e98954
+      Location: &o10
+        X: 67
+        Y: 30
+      Owner: 4
+      Name: Thebes
+      Size: 4
+      Food: 24
+      Shields: 15
+      VisibleSizes:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 4
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      CurrentProduction:
+        Price: 4
+        BuyPrice: 320
+        ProductionId: 0
+      ResourceTiles:
+      - 00100
+      - 00100
+      - 00110
+      - 00010
+      - 00000
+      Specialists: []
+      Buildings:
+      - Palace
+      - Barracks
+      Wonders: []
+      Status: []
+      WasInDisorder: false
+      TradingCities: *o0
+      ContinentId: 0
+    - Id: a9323275-e285-442b-83d8-d78976bc14ef
+      Location: &o9
+        X: 71
+        Y: 27
+      Owner: 4
+      Name: Memphis
+      Size: 3
+      Food: 12
+      Shields: 4
+      VisibleSizes:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 3
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      CurrentProduction:
+        Price: 1
+        BuyPrice: 50
+        ProductionId: 1
+      ResourceTiles:
+      - 00000
+      - 01000
+      - 01100
+      - 10000
+      - 00000
+      Specialists: []
+      Buildings:
+      - Barracks
+      Wonders: []
+      Status:
+      - Coastal
+      WasInDisorder: false
+      TradingCities: *o0
+      ContinentId: 0
+    - Id: bf06ce94-c51a-49ac-8f56-77301a1ea579
+      Location:
+        X: 73
+        Y: 32
+      Owner: 4
+      Name: Oryx
+      Size: 1
+      Food: 6
+      Shields: 3
+      VisibleSizes:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 1
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      CurrentProduction:
+        Price: 1
+        BuyPrice: 50
+        ProductionId: 1
+      ResourceTiles:
+      - 00000
+      - 00000
+      - 00100
+      - 00000
+      - 01000
+      Specialists: []
+      Buildings: []
+      Wonders: []
+      Status:
+      - Coastal
+      WasInDisorder: false
+      TradingCities: *o0
+      ContinentId: 0
+    Units:
+    - ClassName: Militia
+      Location: *o9
+      Goto: *o3
+      HomeCityGuid: a9323275-e285-442b-83d8-d78976bc14ef
+      Busy: true
+      Veteran: false
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 4
+    - ClassName: Militia
+      Location: *o9
+      Goto: *o3
+      HomeCityGuid: a9323275-e285-442b-83d8-d78976bc14ef
+      Busy: true
+      Veteran: false
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 4
+    - ClassName: Militia
+      Location: *o10
+      Goto: *o3
+      HomeCityGuid: 3be8a279-394c-4691-a6bc-7654d4e98954
+      Busy: true
+      Veteran: true
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 4
+    - ClassName: Militia
+      Location: *o10
+      Goto: *o3
+      HomeCityGuid: 3be8a279-394c-4691-a6bc-7654d4e98954
+      Busy: true
+      Veteran: true
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 4
+    - ClassName: Settlers
+      Location:
+        X: 74
+        Y: 27
+      Goto: *o3
+      HomeCityGuid: a9323275-e285-442b-83d8-d78976bc14ef
+      Busy: true
+      Veteran: true
+      Sentry: false
+      FortifyActive: false
+      Fortify: false
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 0
+      PartMoves: 0
+      PlayerId: 4
+    Explored:
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000100011000000
+    - 00000000000000000000000000000000000000000000000000000000000000000111111100100000
+    - 00000000000000000000000000000000000000000000000000000000000000000111110000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000111111000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000111110000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000011100000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000001111011000000
+    - 00000000000000000000000000000000000000000000000000000000000000000001100100000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    Visible:
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000001110111100000
+    - 00000000000000000000000000000000000000000000000000000000000000001111111111110000
+    - 00000000000000000000000000000000000000000000000000000000000000001111111111110000
+    - 00000000000000000000000000000000000000000000000000000000000000001111111111110000
+    - 00000000000000000000000000000000000000000000000000000000000000001111111100000000
+    - 00000000000000000000000000000000000000000000000000000000000000001111111100000000
+    - 00000000000000000000000000000000000000000000000000000000000000001111111111100000
+    - 00000000000000000000000000000000000000000000000000000000000000000111111111100000
+    - 00000000000000000000000000000000000000000000000000000000000000000011111111100000
+    - 00000000000000000000000000000000000000000000000000000000000000000011111110000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    TribeName: Egyptian
+    TribeNamePlural: Egyptians
+    Government: 1
+    LuxuriesRate: 0
+    TaxesRate: 5
+    ScienceRate: 5
+    Science: 0
+    Palace:
+      LeftTower:
+        Style: None
+        Level: 0
+      LeftWing:
+        Style: None
+        Level: 0
+      LeftAnnex:
+        Style: None
+        Level: 0
+      Center:
+        Style: None
+        Level: 0
+      RightAnnex:
+        Style: None
+        Level: 0
+      RightWing:
+        Style: None
+        Level: 0
+      RightTower:
+        Style: None
+        Level: 0
+      GardenLeftLevel: 0
+      GardenCenterLevel: 0
+      GardenRightLevel: 0
+    SpaceShip:
+      Grid:
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      Population: 0
+      LaunchYear: 0
+  - Civilization:
+      LeaderClassName: Lincoln
+    Id: 5
+    PlayerGuid: 19295518-60dd-4c39-9718-ebfc078339fd
+    Advances:
+    - 0
+    - 1
+    Embassies: []
+    Diplomacy:
+    - TargetPlayerId: 0
+      TargetPlayerGuid: 536f79e7-bc7e-4c82-8726-d4c2012e55d2
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 1
+      TargetPlayerGuid: 5df9fcfb-34e0-4e18-9a72-ae1efea9f0f2
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 2
+      TargetPlayerGuid: 6b465f8d-273d-4d31-8890-81bf81fe0823
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 3
+      TargetPlayerGuid: dfe66fac-dcca-428a-958e-84075893e539
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 4
+      TargetPlayerGuid: 101f502a-3b38-4b3c-b59a-636f462fbdd7
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 5
+      TargetPlayerGuid: 19295518-60dd-4c39-9718-ebfc078339fd
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 6
+      TargetPlayerGuid: 6c2e28bb-056d-4c17-a16a-b66ea65355ee
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 7
+      TargetPlayerGuid: c2d102f9-5854-4f42-938c-b66cb4bfe9cc
+      RawFlags: 0
+      Decoded: {}
+    Anarchy: 0
+    Gold: 131
+    CurrentResearch: 17
+    CityNamesSkipped: 0
+    FutureTechCount: 0
+    HumanContactTurn: 0
+    StartX: 72
+    UnitsLost:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    UnitsDestroyedBy:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    UnitsDestroyedByByPlayerGuid:
+      536f79e7-bc7e-4c82-8726-d4c2012e55d2: 0
+      5df9fcfb-34e0-4e18-9a72-ae1efea9f0f2: 0
+      6b465f8d-273d-4d31-8890-81bf81fe0823: 0
+      dfe66fac-dcca-428a-958e-84075893e539: 0
+      101f502a-3b38-4b3c-b59a-636f462fbdd7: 0
+      19295518-60dd-4c39-9718-ebfc078339fd: 0
+      6c2e28bb-056d-4c17-a16a-b66ea65355ee: 0
+      c2d102f9-5854-4f42-938c-b66cb4bfe9cc: 0
+    EpicRanking: 0
+    MilitaryPower: 0
+    CivilizationScore: 0
+    Cities:
+    - Id: 7234e222-a567-4083-9b63-edf12e3d6c8a
+      Location: &o11
+        X: 72
+        Y: 20
+      Owner: 5
+      Name: Washington
+      Size: 2
+      Food: 1
+      Shields: 5
+      VisibleSizes:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 2
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      CurrentProduction:
+        Price: 1
+        BuyPrice: 50
+        ProductionId: 1
+      ResourceTiles:
+      - 00000
+      - 01000
+      - 01100
+      - 00000
+      - 00000
+      Specialists: []
+      Buildings:
+      - Palace
+      - Barracks
+      Wonders: []
+      Status:
+      - Coastal
+      WasInDisorder: false
+      TradingCities: *o0
+      ContinentId: 0
+    Units:
+    - ClassName: Militia
+      Location: *o11
+      Goto: *o3
+      HomeCityGuid: 7234e222-a567-4083-9b63-edf12e3d6c8a
+      Busy: true
+      Veteran: true
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 5
+    - ClassName: Militia
+      Location: *o11
+      Goto: *o3
+      HomeCityGuid: 7234e222-a567-4083-9b63-edf12e3d6c8a
+      Busy: true
+      Veteran: true
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 5
+    Explored:
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000010000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    Visible:
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000111000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000111000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000111000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    TribeName: American
+    TribeNamePlural: Americans
+    Government: 1
+    LuxuriesRate: 0
+    TaxesRate: 5
+    ScienceRate: 5
+    Science: 0
+    Palace:
+      LeftTower:
+        Style: None
+        Level: 0
+      LeftWing:
+        Style: None
+        Level: 0
+      LeftAnnex:
+        Style: None
+        Level: 0
+      Center:
+        Style: None
+        Level: 0
+      RightAnnex:
+        Style: None
+        Level: 0
+      RightWing:
+        Style: None
+        Level: 0
+      RightTower:
+        Style: None
+        Level: 0
+      GardenLeftLevel: 0
+      GardenCenterLevel: 0
+      GardenRightLevel: 0
+    SpaceShip:
+      Grid:
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      Population: 0
+      LaunchYear: 0
+  - Civilization:
+      LeaderClassName: Alexander
+    Id: 6
+    PlayerGuid: 6c2e28bb-056d-4c17-a16a-b66ea65355ee
+    Advances:
+    - 16
+    - 0
+    Embassies: []
+    Diplomacy:
+    - TargetPlayerId: 0
+      TargetPlayerGuid: 536f79e7-bc7e-4c82-8726-d4c2012e55d2
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 1
+      TargetPlayerGuid: 5df9fcfb-34e0-4e18-9a72-ae1efea9f0f2
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 2
+      TargetPlayerGuid: 6b465f8d-273d-4d31-8890-81bf81fe0823
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 3
+      TargetPlayerGuid: dfe66fac-dcca-428a-958e-84075893e539
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 4
+      TargetPlayerGuid: 101f502a-3b38-4b3c-b59a-636f462fbdd7
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 5
+      TargetPlayerGuid: 19295518-60dd-4c39-9718-ebfc078339fd
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 6
+      TargetPlayerGuid: 6c2e28bb-056d-4c17-a16a-b66ea65355ee
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 7
+      TargetPlayerGuid: c2d102f9-5854-4f42-938c-b66cb4bfe9cc
+      RawFlags: 0
+      Decoded: {}
+    Anarchy: 0
+    Gold: 156
+    CurrentResearch: 31
+    CityNamesSkipped: 0
+    FutureTechCount: 0
+    HumanContactTurn: 0
+    StartX: 5
+    UnitsLost:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    UnitsDestroyedBy:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    UnitsDestroyedByByPlayerGuid:
+      536f79e7-bc7e-4c82-8726-d4c2012e55d2: 0
+      5df9fcfb-34e0-4e18-9a72-ae1efea9f0f2: 0
+      6b465f8d-273d-4d31-8890-81bf81fe0823: 0
+      dfe66fac-dcca-428a-958e-84075893e539: 0
+      101f502a-3b38-4b3c-b59a-636f462fbdd7: 0
+      19295518-60dd-4c39-9718-ebfc078339fd: 0
+      6c2e28bb-056d-4c17-a16a-b66ea65355ee: 0
+      c2d102f9-5854-4f42-938c-b66cb4bfe9cc: 0
+    EpicRanking: 0
+    MilitaryPower: 0
+    CivilizationScore: 0
+    Cities:
+    - Id: 8a848f1e-50f2-4661-80c4-f6c19647896b
+      Location: &o12
+        X: 5
+        Y: 22
+      Owner: 6
+      Name: Athens
+      Size: 5
+      Food: 12
+      Shields: 0
+      VisibleSizes:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 5
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      CurrentProduction:
+        Price: 1
+        BuyPrice: 50
+        ProductionId: 1
+      ResourceTiles:
+      - 00000
+      - 01110
+      - 00110
+      - 00010
+      - 00000
+      Specialists: []
+      Buildings:
+      - Palace
+      - Barracks
+      - CityWalls
+      Wonders: []
+      Status:
+      - Coastal
+      WasInDisorder: false
+      TradingCities: *o0
+      ContinentId: 0
+    Units:
+    - ClassName: Settlers
+      Location:
+        X: 6
+        Y: 21
+      Goto: *o3
+      HomeCityGuid: 8a848f1e-50f2-4661-80c4-f6c19647896b
+      Busy: true
+      Veteran: true
+      Sentry: false
+      FortifyActive: false
+      Fortify: false
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 0
+      PartMoves: 0
+      PlayerId: 6
+    - ClassName: Cavalry
+      Location:
+        X: 5
+        Y: 19
+      Goto:
+        X: 6
+        Y: 18
+      Busy: true
+      Veteran: false
+      Sentry: false
+      FortifyActive: false
+      Fortify: false
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 0
+      PartMoves: 0
+      PlayerId: 6
+    - ClassName: Militia
+      Location: *o12
+      Goto: *o3
+      HomeCityGuid: 8a848f1e-50f2-4661-80c4-f6c19647896b
+      Busy: true
+      Veteran: true
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 6
+    - ClassName: Militia
+      Location: *o12
+      Goto: *o3
+      HomeCityGuid: 8a848f1e-50f2-4661-80c4-f6c19647896b
+      Busy: true
+      Veteran: true
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 6
+    Explored:
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000110000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00001111000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00001111100000000000000000000000000000000000000000000000000000000000000000000000
+    - 00001111010000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000110000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000010000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    Visible:
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00001111000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00011111100000000000000000000000000000000000000000000000000000000000000000000000
+    - 00011111110000000000000000000000000000000000000000000000000000000000000000000000
+    - 00011111111000000000000000000000000000000000000000000000000000000000000000000000
+    - 00011111111000000000000000000000000000000000000000000000000000000000000000000000
+    - 00011111111000000000000000000000000000000000000000000000000000000000000000000000
+    - 00001111000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000111000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    TribeName: Greek
+    TribeNamePlural: Greeks
+    Government: 1
+    LuxuriesRate: 0
+    TaxesRate: 5
+    ScienceRate: 5
+    Science: 0
+    Palace:
+      LeftTower:
+        Style: None
+        Level: 0
+      LeftWing:
+        Style: None
+        Level: 0
+      LeftAnnex:
+        Style: None
+        Level: 0
+      Center:
+        Style: None
+        Level: 0
+      RightAnnex:
+        Style: None
+        Level: 0
+      RightWing:
+        Style: None
+        Level: 0
+      RightTower:
+        Style: None
+        Level: 0
+      GardenLeftLevel: 0
+      GardenCenterLevel: 0
+      GardenRightLevel: 0
+    SpaceShip:
+      Grid:
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      Population: 0
+      LaunchYear: 0
+  - Civilization:
+      LeaderClassName: Gandhi
+    Id: 7
+    PlayerGuid: c2d102f9-5854-4f42-938c-b66cb4bfe9cc
+    Advances:
+    - 42
+    Embassies: []
+    Diplomacy:
+    - TargetPlayerId: 0
+      TargetPlayerGuid: 536f79e7-bc7e-4c82-8726-d4c2012e55d2
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 1
+      TargetPlayerGuid: 5df9fcfb-34e0-4e18-9a72-ae1efea9f0f2
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 2
+      TargetPlayerGuid: 6b465f8d-273d-4d31-8890-81bf81fe0823
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 3
+      TargetPlayerGuid: dfe66fac-dcca-428a-958e-84075893e539
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 4
+      TargetPlayerGuid: 101f502a-3b38-4b3c-b59a-636f462fbdd7
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 5
+      TargetPlayerGuid: 19295518-60dd-4c39-9718-ebfc078339fd
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 6
+      TargetPlayerGuid: 6c2e28bb-056d-4c17-a16a-b66ea65355ee
+      RawFlags: 0
+      Decoded: {}
+    - TargetPlayerId: 7
+      TargetPlayerGuid: c2d102f9-5854-4f42-938c-b66cb4bfe9cc
+      RawFlags: 0
+      Decoded: {}
+    Anarchy: 0
+    Gold: 39
+    CurrentResearch: 25
+    CityNamesSkipped: 0
+    FutureTechCount: 0
+    HumanContactTurn: 0
+    StartX: 28
+    UnitsLost:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    UnitsDestroyedBy:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    UnitsDestroyedByByPlayerGuid:
+      536f79e7-bc7e-4c82-8726-d4c2012e55d2: 0
+      5df9fcfb-34e0-4e18-9a72-ae1efea9f0f2: 0
+      6b465f8d-273d-4d31-8890-81bf81fe0823: 0
+      dfe66fac-dcca-428a-958e-84075893e539: 0
+      101f502a-3b38-4b3c-b59a-636f462fbdd7: 0
+      19295518-60dd-4c39-9718-ebfc078339fd: 0
+      6c2e28bb-056d-4c17-a16a-b66ea65355ee: 0
+      c2d102f9-5854-4f42-938c-b66cb4bfe9cc: 0
+    EpicRanking: 0
+    MilitaryPower: 0
+    CivilizationScore: 0
+    Cities:
+    - Id: 9df4106f-59eb-4e6c-8b54-9d2f8dc6e0cd
+      Location: &o13
+        X: 28
+        Y: 15
+      Owner: 7
+      Name: Delhi
+      Size: 6
+      Food: 54
+      Shields: 0
+      VisibleSizes:
+      - 0
+      - 0
+      - 6
+      - 0
+      - 0
+      - 0
+      - 0
+      - 6
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      CurrentProduction:
+        Price: 4
+        BuyPrice: 320
+        ProductionId: 0
+      ResourceTiles:
+      - 00010
+      - 00111
+      - 00110
+      - 00100
+      - 00000
+      Specialists: []
+      Buildings:
+      - Palace
+      - Barracks
+      - Granary
+      Wonders: []
+      Status:
+      - Coastal
+      WasInDisorder: false
+      TradingCities: *o0
+      ContinentId: 0
+    Units:
+    - ClassName: Settlers
+      Location:
+        X: 29
+        Y: 14
+      Goto: *o3
+      HomeCityGuid: 9df4106f-59eb-4e6c-8b54-9d2f8dc6e0cd
+      Busy: true
+      Veteran: true
+      Sentry: false
+      FortifyActive: false
+      Fortify: false
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 0
+      PartMoves: 0
+      PlayerId: 7
+    - ClassName: Militia
+      Location: *o13
+      Goto: *o3
+      HomeCityGuid: 9df4106f-59eb-4e6c-8b54-9d2f8dc6e0cd
+      Busy: true
+      Veteran: true
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 7
+    - ClassName: Militia
+      Location: *o13
+      Goto: *o3
+      HomeCityGuid: 9df4106f-59eb-4e6c-8b54-9d2f8dc6e0cd
+      Busy: true
+      Veteran: true
+      Sentry: false
+      FortifyActive: false
+      Fortify: true
+      FuelOrProgress: 0
+      Fuel: 0
+      WorkProgress: 0
+      Order: None
+      MovesSkip: 0
+      MovesLeft: 1
+      PartMoves: 0
+      PlayerId: 7
+    Explored:
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000101000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000001111000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000001110000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000001110000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000100000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    Visible:
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000001111100000000000000000000000000000000000000000000000
+    - 00000000000000000000000000011111100000000000000000000000000000000000000000000000
+    - 00000000000000000000000000011111100000000000000000000000000000000000000000000000
+    - 00000000000000000000000000011111100000000000000000000000000000000000000000000000
+    - 00000000000000000000000000011111000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000011111000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000001110000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    - 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+    TribeName: Indian
+    TribeNamePlural: Indians
+    Government: 1
+    LuxuriesRate: 0
+    TaxesRate: 5
+    ScienceRate: 5
+    Science: 0
+    Palace:
+      LeftTower:
+        Style: None
+        Level: 0
+      LeftWing:
+        Style: None
+        Level: 0
+      LeftAnnex:
+        Style: None
+        Level: 0
+      Center:
+        Style: None
+        Level: 0
+      RightAnnex:
+        Style: None
+        Level: 0
+      RightWing:
+        Style: None
+        Level: 0
+      RightTower:
+        Style: None
+        Level: 0
+      GardenLeftLevel: 0
+      GardenCenterLevel: 0
+      GardenRightLevel: 0
+    SpaceShip:
+      Grid:
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      - EEEEEEEEEEEE
+      Population: 0
+      LaunchYear: 0
+  # Seed for the game-wide random generator used by gameplay logic.
+  GameRandomSeed: 1
+  RandomSeed: 1
+  AnthologyTurn: 185
+  Map:
+    # The seed used for procedural terrain generation. This ensures that the same map can be recreated if needed.
+    # Allowed values: [0 to 4294967295]
+    TerrainSeed: 1
+    # Encoded tile data. Each row contains Base64-encoded tiles (2 chars per tile). Use TileCodec to decode individual tiles. See YAML.md for encoding details.
+    Tiles:
+    - AHAHAGAHAHAHAHAHAHAHAHAHAHAGAHAGAGAHAHAHAHAGAHAHAHAHAHAHAHAHAHAGAHAHAHAGAHAGAHAHAHAHAHAHAHAGAHAHAHAHAHAHAHAGAHAHAGAHAHAHAHAHAGAGAHAGAHAHAGAHAHAHAHAHAGAHAGAHAHAH
+    - AKAKAGAKAKAKAKAGAKAGAGAKAKAGAKAKAKAGAKAKAKAKAKAKAKAKAGAKAKAKAGAKAGAKAKAGAKAKAKAGAKAKAKAKAKAKAKAKAKAKAKAKAKAGAGAKAKAKAKAKAGAKAKAKAGAKAGAKAKAGAKAGAKAGAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAFAHAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAHAHAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAHAFAFAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKQFAFAFAHAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAHAKAFAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKACAHAMAFAJAHAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAFAFAFAHAHAGAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAHAMAKAHAJAGABABAKAKAKAKAKAKAKAKAKAKAKAKAKAMACACAJAHAKAKAKAKAKAKAKAKAKAKADAMAHAHAHAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAJACACAEQBAEAGABAKAKAKAKAKAKAKAKAKAKAKAMAHACAHAHAJAHAKAKAKAKAKAKAKAKAKAMADADADADAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKACADADAJADADAKAKAKAKAKAKAKAKAFAHAJAHABQGAGAKAKAKAKAKAKAKAKAKAHAJQDADADAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAHADADADADABAKAKAKAKAKAKAKAKAKAMAMACABABABAKAKAKAKAKAKAKAIAJAJAFADADAGAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKAKAKAIAJAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAJADADADABAEABAKAKAKAKAKAKAKAKAKAKAMADAJABABAKAKAKAKAKACADAEAEAJADABAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKACACABAEAEABAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKACABIEBRAEABABABBBAEAFABAEAKAKAKAKAKAMACADABABAKAKAKAKAKACAMAJAJAJADAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKACAMABAEAFAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKBCBMAMABAEAKADABBRAEABAFAFAEAIAEAKAKAKAKADQMAJAJAKAKAKAKAKAMAJAEAJAJAJAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKACABABABABAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKBcBMBCAKAKAKAKBCAMADACADAKADADABAKAKAKAKAKAKAJAJAKAKAKAKAKAMAIAFAFAFAJAEAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAMABABAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKBMACAJAKAKAKAKAKAMADACAFAFAJAJABAKAKAKAKAKAIAIAIAKAKAKAKAKACAJAJAFAIABABAKAKAKAKAKAKAKAKAKACAIAJAIAEAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAJAKAKAKAKAKAKAKACAJADAIACAJABAKAKAKAKAKACAJABABAKAKAKAKAKALALACABAFABABAKAKAKAKAKAKAKAKACAJAMAJAIAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKADQJAKAKAJAJACABAKAKAKAKAIAJABAKAKAKAKAKAKAJALALALALALABAKAKAKAKAKADADACAEABAFAFAEAKAK
+    - AKAKAKAKAKAIAJAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAJABABAKAKAKAKAKAKAKAKAKAKAKAKAKAJQCACABAMABAEAKAKAKAKAKAKADADAJAJAKAKAIAKAKAK
+    - AKAKAKAKAFABABABABAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAMABAKAKAKAKAKAKAKACABALAKAKAKAKAKAKAKAKAKABAJAKABACADAJAKAKAKAKAKAKAKAKAKABADADBRAKAKAKAKAKAKAK
+    - AKAKAKAKACALBBAJAIAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKABAJAJABACAJAKABAAAAABALAEAEAEABAKAKAKAKACAEQEAAAEAJAEABABAKAKAKAKAKAKAKAKABADADABABAKAKAKAKAKAK
+    - AKAKAKAKABBbBLAEAEAEAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKABAJAJAFAEAAAAABQAAAALALAEAEAEAKAKAKAKAKALALALAEAEAFAEAFABAKAKAKAKAKAKAKAKABAMABAEABQBAKAKAKAKAK
+    - AKAKAKAKAKABBLALALAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKABABABABAEAMABAFAEALALAAAFAAAAQEAKAKAKAKABAEALAEAEAEABAFQBAKAKAKAKAKAKAKAKAMACAKABABABAKAKAKAKAK
+    - AKAKAKAKAKAKAJAJABAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKALALQBABABADAJADAAAKAAAAAAABAKAKAKAKABALALAJADADABABAKAKAKAKAKAKAKAKAKABQEABAAAAABAKAKAKAKAK
+    - AKAKAKAKAEABAJAJAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAEABALBBABAJAKADABADQBADAEADABAKAKAKAKAKAEAJAEQAAEAAABAKAKAKAKAKAKAKAKAKAEALALALAAAAAAABAKAKAK
+    - AKAKAKAKABAAAEAKAKAEAAAEAFAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKBBBBBbABABAIAIAIAEAFAAAEAEADAKAKAKAKAKAKAKABAKABABABAKAKAKAKAKAKAKAKAKAEAEALABALABABABQBAKAKAK
+    - AKAKAKAKAKAFABABAEAAABABABAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKBBALALABAIAIAIABAFAAAAABAEAKAKAKAKAKAKAKAKAKABAKAKAKAKAKAKAKAKABABAEABABALBRAEAKABAAABABAKAK
+    - AKAKAKAKAKABAEADAEABAAAAABAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAEALABADADADAJADADABAEAKAKAKAKAKAEABAEABAEAEAKAKAKAKAKAKAKAKAEABALALBLAKAKQAABABAAABABAKAK
+    - AKAKAKAKAKAKADADADABAKABABAAABAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKADADADADABADADABAEAKAKAKAKAKAKABAEADABABAJABABABABAKAKAKAKACBBALAAAAAEAKAEAEABAAABAKAKAK
+    - AKAKAKAKAKAKADABAKAKAKAJACABABAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKADAIADBSADABABAKAKAKAKAKIUABAKABAAABAAAFAFAFAEAEADAKAKAKAKAMAABbALBAAEAKAJAFABAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAFABABAKAKAKAKAKAKAMAMABAEAKAKAKAKAKAKAKAKAKAFADACAMADQDAEABABAKAKAKAKAKAKABBRAKABAEAEAAAEAFADADADAKAKAKAKAKAKADAJALABAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAIABABABAKAKAKAKAKAKAKAEAMABAEAFAFADABAKAKAKAKAKAKAKAKAKBcAFAKABADABABAAAFAFAEAEAEAKAFAAABAAAEALALAEAFABAEBRABAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAJAJAEABABAKAKAKAKABACABAEAEAEQFABABAEAKAKAKAKAKAKAKAKAKAJATAJAKAKAKAKAKAKADAJADABADACAJAJABAEAAABAEAAAKAEABABABAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKACQCAEAKAFAFABAKAKACAAABABABAFAEAAAEABAKAKAKAKAKAKAKAKAMACAZARAKAKAKAKAKAKACAMAKABABABABABAEAEAKAKADADADAJALALAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAMADAIAFAFABABAKABABAFAFAKABABABAFAFAKAKAKAKAKAKADAMACACARBLARAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKADADALALABQFAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAIAJAJAFAKAKAKAKAKAKAMACABAFAEAEAEAFABAEAEAKAKACAJABAEAKAKAKAKAKAKAMADADARARBRBLBRAKAKAKAKAKAKAKACADADABABAKAKAKAKADAMABALALAFABABAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAJAJAJACAKAKAKAKAKAKAKAKAKQMAJAEAFABABABAKAKAKACABABAKAKAKAKAKAKAKBcADAVAEAEAEALABAKAKAKAKAKAKAKAMADAEABAEAKAKAKAMABAEABQFAFAEAEAFAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAJAKAJAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAJAJAKAKAKAKAKAKAKAKBSBRAKAEAEABALALAEABAKAKAKAKAKADADABABABABAKAKABAEABAJAFAEAEABAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAJAIAKAJALAIAKAKAKAKAKAKAIAKAJAJABQBAKAKAKAKAKAJAJAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKADACABABAEABALAKAKAKAKAKAKAKAKAKAJAJAJAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKACAJAJAIAJAKAKAKAKAKAKAKAKAKAKAKAJAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKQJAJAFAJAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAJAIAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAHAHAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAFAMAIAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAIAHAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAKAK
+    - AKAKAKAGAGAKAKAGAKAKAKAKAKAGAKAKAKAKAKAKAGAGAKAKAKAKAKAKAKAKAKAGAKAKAKAGAKAKAKAKAKAKAKAGAKAKAGAKAKAKAKAGAKAKAGAGAGAGAKAKAKAKAKAKAKAGAKAKAKAKAKAKAKAKAKAKAGAKAKAK
+    - AGAHAHAGAHAHAHAHAHAHAGAHAHAHAHAHAGAHAHAHAHAHAGAHAHAGAHAGAHAHAGAHAHAHAGAHAHAHAHAHAGAHAGAHAHAHAGAHAHAGAGAHAHAHAHAGAHAGAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAGAHAHAG
+    # Land values for each tile row, encoded as comma-separated 2-digit hex bytes to reduce YAML size on large maps. See INTERNALS.md for details on how this value is used.
+    LandValues:
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,09,00,08,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,09,00,00,00,00,0A,0A,00,00,00,00,00,00,00,00,00,00,00,00,00,0A,09,08,00,00,00,00,00,00,00,00,00,00,00,00,00,0A,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0A,09,00,09,00,00,0B,00,00,00,00,00,00,00,00,00,00,00,09,00,09,00,00,00,00,00,00,00,00,00,00,00,00,00,0A,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,09,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0A,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0C,00,00,00,00,00,00,00,00,00,0A,0B,0B,0B,0B,0B,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0D,00,0C,00,00,00,00,00,00,00,00,00,00,0D,00,00,0C,0B,00,00,00,00,00,09,00,00,00,00,00,0B,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,0B,0B,0B,00,00,0A,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0C,0D,00,0D,00,0D,0D,0D,0C,00,00,0A,00,00,00,00,00,00,0D,0C,00,0C,0B,00,00,00,00,00,0B,0C,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,0C,0D,0D,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0C,0F,0E,0E,00,00,00,0E,0E,00,0C,00,00,00,00,00,00,00,00,00,00,0B,00,00,00,00,00,00,00,0C,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,0B,0E,0E,0D,0B,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0E,0F,0E,00,00,00,00,0C,0E,00,0B,00,00,00,00,0A,00,00,00,00,00,00,00,00,00,00,00,00,00,0B,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,0C,0D,0D,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0D,0C,00,00,00,00,00,00,0E,00,0B,00,00,00,00,0B,00,00,00,00,00,00,00,00,00,00,00,00,00,0A,00,00,00,00,0A,0B,00,00,00,00,00,00,00,00,00,0A,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0B,00,00,00,08,00,0B,00,00,00,00,00,08,00,09,0A,00,00,00,00,00,0B,0B,0B,0C,00,0C,0B,00,00,00,00,00,00,00,00,0A,00,09,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0A,0B,00,00,00,00,00,00,0A,00,00,00,00,00,00,00,0C,0D,0E,0D,0B,0B,00,00,00,00,00,00,00,0B,00,0A,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0B,0C,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0A,0C,0D,0D,0D,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,0B,0B,0B,0B,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0A,0A,00,00,00,00,00,00,00,09,0C,0D,00,00,00,00,00,00,00,00,00,0B,00,00,0B,0A,00,00,00,00,00,00,00,00,00,00,00,0C,00,00,0C,00,00,00,00,00,00,00
+    - 00,00,00,00,0A,0B,0D,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0B,00,00,0A,09,00,00,09,00,00,0C,0D,00,00,00,0A,00,00,00,00,0A,00,00,00,00,00,00,0B,0B,00,00,00,00,00,00,00,00,0D,00,00,0D,0C,00,00,00,00,00,00
+    - 00,00,00,00,0C,0D,0D,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0B,00,00,00,00,00,00,0B,00,00,0C,0B,00,00,00,00,00,00,00,00,0B,0C,0C,00,00,00,00,00,0B,00,00,00,00,00,00,00,00,0E,0E,0E,00,0C,0B,00,00,00,00,00
+    - 00,00,00,00,00,0D,0B,0B,0C,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0B,0A,0B,0C,00,0B,0B,00,00,0A,0A,00,00,00,00,00,00,00,00,00,0C,00,0C,00,00,00,0C,00,0C,00,00,00,00,00,00,00,00,0D,0D,00,0D,0C,0B,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,0B,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0C,0D,0E,0D,0B,00,00,00,00,00,00,00,00,0A,00,00,00,00,0B,0B,0B,00,00,00,0C,0C,00,00,00,00,00,00,00,00,00,0E,00,0D,00,00,0B,00,00,00,00,00
+    - 00,00,00,00,00,0A,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0D,0E,0E,0D,00,00,00,0A,00,0A,00,00,00,0B,00,00,00,00,00,00,00,00,00,00,00,0C,00,00,00,00,00,00,00,00,00,00,0D,0D,0A,00,00,00,0B,00,00,00
+    - 00,00,00,00,0A,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0C,0D,0D,0E,0C,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0A,00,0B,0C,0C,00,00,00,00,00,00,00,00,00,00,00,0E,0D,0B,0B,0B,0C,0C,00,00,00
+    - 00,00,00,00,00,00,0B,0B,00,00,0B,0B,0B,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0C,0D,0D,0C,00,00,00,0A,00,00,00,0B,00,00,00,00,00,00,00,00,00,00,0C,00,00,00,00,00,00,00,00,0B,0C,00,0D,0D,0C,0D,00,00,0C,00,0C,0C,00,00
+    - 00,00,00,00,00,0B,00,00,00,0B,00,00,0C,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0D,0D,00,00,00,00,00,00,0B,00,00,00,00,00,00,00,0B,00,0B,00,00,00,00,00,00,00,00,00,00,00,0D,0D,0C,0B,00,00,00,0B,0B,00,0B,0B,00,00
+    - 00,00,00,00,00,00,00,00,00,0C,00,0B,0C,00,0C,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0D,00,00,0B,00,00,00,00,00,00,00,0C,00,00,0B,0A,00,0B,0B,0C,0B,00,00,00,00,0B,0D,0D,00,00,00,00,00,00,0B,00,0B,00,00,00
+    - 00,00,00,00,00,00,00,0C,00,00,00,00,0B,0D,0C,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0C,00,0D,0C,00,00,00,00,00,00,0C,00,0C,00,0C,00,00,00,00,00,00,00,00,00,00,00,0C,00,0C,0B,00,00,00,00,00,0B,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,0C,0C,00,00,00,00,00,00,0B,0C,0C,00,00,00,00,00,00,00,00,00,00,00,00,0A,0C,00,00,00,0C,0C,00,00,00,00,00,00,0C,0C,00,0C,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0C,0B,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0D,0D,0D,00,00,00,00,00,00,00,00,0C,0B,00,00,00,00,0C,00,00,00,00,00,00,00,00,00,0B,00,00,0C,00,0C,0A,00,00,00,00,00,00,00,00,00,0B,00,00,0C,0D,00,00,0B,00,0B,0B,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0C,0B,00,00,00,00,0B,0B,0C,00,00,00,00,0A,0A,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0C,00,0A,00,00,0B,00,00,0D,00,00,00,00,0C,0C,0C,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0B,0B,00,00,00,00,0A,00,00,0B,00,0C,0C,0C,00,00,00,00,0A,00,00,00,00,00,00,00,00,0C,0C,00,0C,00,00,00,00,00,00,0A,0B,00,0D,0C,0C,0B,0B,00,00,00,00,00,00,00,00,0C,0C,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0D,00,00,00,00,0A,0B,00,0C,0B,00,00,00,0B,0B,0B,00,00,00,00,00,00,00,00,00,0D,0D,0D,0D,0D,0C,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0B,0C,0C,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0D,0C,0B,00,00,00,00,00,0B,00,00,00,00,0A,00,0B,00,00,00,00,00,00,00,0C,00,00,0E,0E,0E,0D,0D,00,00,00,00,00,00,00,0B,00,00,0C,0B,00,00,00,00,00,0D,0D,0B,0C,00,0B,0A,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,08,00,00,00,00,00,00,00,00,00,0A,00,00,00,0A,0B,0B,00,00,00,0A,0B,0B,00,00,00,00,00,00,00,0D,00,00,00,00,00,0D,0D,00,00,00,00,00,00,00,0D,00,00,0C,00,00,00,00,0C,0D,00,0C,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0C,00,00,00,00,0C,0C,0C,00,0A,00,00,00,00,00,00,00,0C,0C,0C,0B,00,00,0C,00,0C,00,00,00,00,0A,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,0B,00,00,00,00,00,00,00,00,00,00,00,0B,0B,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,09,09,09,00,0A,0A,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,09,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,08,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+    - 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+  # The game options that are enabled in the game.
+  # Allowed values: Animations, Sound, CivilopediaText, EndOfTurn, InstantAdvice, AutoSave, EnemyMoves, Palace
+  GameOptions:
+  - Animations
+  - CivilopediaText
+  - Palace
+  # Maps each advance ID to the player number who first discovered it.
+  AdvanceOrigin:
+    16: 0
+    42: 0
+    0: 0
+    1: 0
+    17: 1
+    18: 1
+    22: 1
+    9: 1
+    25: 1
+    33: 1
+    30: 1
+    2: 1
+    45: 1
+    19: 1
+  # Replay events recorded during the game session.
+  ReplayData: []
+  # Global peace turn counter from the original save format. Reserved for future diplomacy logic.
+  # Allowed values: [0 to 65535]
+  PeaceTurns: 23
+  # Legacy future-tech counter from the original save format. New YAML should prefer Players[].FutureTechCount. For backward compatibility this still mirrors the human player's count.
+  # Allowed values: [0 to 65535]
+  PlayerFutureTech: 0
+  # Global warming simulation state (count, pollution level, warning indicator).
+  GlobalWarming:
+    # The number of times global warming has triggered since the start of the game. Each event raises the pollution threshold for the next event by 2.
+    GlobalWarmingCount: 0
+    # The number of polluted map squares at the end of the last turn.
+    PollutedSquaresCount: 0
+    # The warming indicator color shown in the status bar.
+    # Allowed values: None, DarkRed, LightRed, Yellow, White
+    WarmingIndicator: None
