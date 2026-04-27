@@ -120,14 +120,19 @@ namespace CivOne
 
 		private void OnDraw(object sender, EventArgs args)
 		{
-			if (TopScreen == null) return;
+			IScreen topScreen = TopScreen;
+			if (topScreen == null) return;
 
-			Runtime.Palette?.Dispose();
-			Runtime.Palette = Common.TopScreen.Palette.Copy();
-			
-			if (Common.HasAttribute<Modal>(TopScreen))
+			// sometimes during screen transitions, the top screen may be null or have a null palette. 
+			if (topScreen.Palette != null)
 			{
-				Runtime.Layers = new[] { TopScreen.Bitmap };
+				Runtime.Palette?.Dispose();
+				Runtime.Palette = topScreen.Palette.Copy();
+			}
+			
+			if (Common.HasAttribute<Modal>(topScreen))
+			{
+				Runtime.Layers = new[] { topScreen.Bitmap };
 			}
 			else
 			{
