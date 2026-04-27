@@ -31,8 +31,14 @@ namespace CivOne.Screens.Reports
 			this.Clear(9);
 			DrawReportHeader();
 			this.FillRectangle(OffsetX, OffsetY + 28, 320, 172, 9);
+			int y = DrawCityRows();
+			DrawPopulationSummary(y);
+		}
 
+		private int DrawCityRows()
+		{
 			int y = OffsetY + 32;
+
 			int start = _page * 16;
 			int end = start + 16;
 			for (int i = start; i < _cities.Length && i < end; i++)
@@ -45,25 +51,44 @@ namespace CivOne.Screens.Reports
 				y += 10;
 			}
 
-			y += 8;
-			if (y <= OffsetY + 190)
-			{
-				Citizen[] allCitizens = [.. Human.Cities.SelectMany(x => x.GetCitizens())];
-				string population = Common.NumberSeperator(Human.Population);
-				if (Human.Population == 0) population = "00,000";
-				int totalCitizens = allCitizens.Length;
-				int happyCitizens = allCitizens.Count(c => c == Citizen.HappyMale || c == Citizen.HappyFemale);
-				int unhappyCitizens = allCitizens.Count(c => c == Citizen.UnhappyMale || c == Citizen.UnhappyFemale);
-				int contentCitizens = totalCitizens - happyCitizens - unhappyCitizens;
+			return y;
+		}
 
-				if (totalCitizens > 0)
-				{
-					int happy = (int)Math.Floor((double)(100 / totalCitizens) * happyCitizens);
-					int content = (int)Math.Floor((double)(100 / totalCitizens) * contentCitizens);
-					int unhappy = (int)Math.Floor((double)(100 / totalCitizens) * unhappyCitizens);
-					this.DrawText($"Population: {population} Happy:{happy}% Content:{content}% Unhappy:{unhappy}%", 0, 15, OffsetX + 16, y);
-				}
+		private void DrawPopulationSummary(int y)
+		{
+			y += 8;
+			if (y > OffsetY + 190)
+			{
+				return;
 			}
+
+			Citizen[] allCitizens = [.. Human.Cities.SelectMany(x => x.GetCitizens())];
+			int totalCitizens = allCitizens.Length;
+			if (totalCitizens == 0)
+			{
+				return;
+			}
+
+			string population = GetPopulationText();
+			int happyCitizens = allCitizens.Count(c => c == Citizen.HappyMale || c == Citizen.HappyFemale);
+			int unhappyCitizens = allCitizens.Count(c => c == Citizen.UnhappyMale || c == Citizen.UnhappyFemale);
+			int contentCitizens = totalCitizens - happyCitizens - unhappyCitizens;
+
+			int happy = (int)Math.Floor((double)(100 / totalCitizens) * happyCitizens);
+			int content = (int)Math.Floor((double)(100 / totalCitizens) * contentCitizens);
+			int unhappy = (int)Math.Floor((double)(100 / totalCitizens) * unhappyCitizens);
+
+			this.DrawText($"Population: {population} Happy:{happy}% Content:{content}% Unhappy:{unhappy}%", 0, 15, OffsetX + 16, y);
+		}
+
+		private string GetPopulationText()
+		{
+			string population = Common.NumberSeperator(Human.Population);
+			if (Human.Population == 0)
+			{
+				return "00,000";
+			}
+			return population;
 		}
 
 		private void DrawBuilding<T>(City city, ref int x, int y) where T : IBuilding
