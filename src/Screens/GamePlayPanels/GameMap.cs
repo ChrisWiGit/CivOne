@@ -226,8 +226,8 @@ namespace CivOne.Screens.GamePlayPanels
 			_y = y - 6;
 			while (_x < 0) _x += Map.WIDTH;
 			while (_x >= Map.WIDTH) _x -= Map.WIDTH;
-			while (_y < 0) _y++;
-			while (_y + _tilesY > Map.HEIGHT) _y--;
+			if (_y < 0) _y = 0;
+			_y = Math.Min(_y, Math.Max(0, Map.HEIGHT - _tilesY));
 			_update = true;
 			_fullRedraw = true;
 		}
@@ -536,8 +536,8 @@ namespace CivOne.Screens.GamePlayPanels
 					_y += y - 6;
 					while (_x < 0) _x += Map.WIDTH;
 					while (_x >= Map.WIDTH) _x -= Map.WIDTH;
-					while (_y < 0) _y++;
-					while (_y + _tilesY > Map.HEIGHT) _y--;
+					if (_y < 0) _y = 0;
+					_y = Math.Min(_y, Math.Max(0, Map.HEIGHT - _tilesY));
 					_update = true;
 					_fullRedraw = true;
 				}
@@ -547,11 +547,13 @@ namespace CivOne.Screens.GamePlayPanels
 
 		protected override void Resize(int width, int height)
 		{
-			_tilesX = (int)Math.Ceiling((double)width / 16);
-			_tilesY = (int)Math.Ceiling((double)height / 16);
+			// Clamp tile counts to map bounds to prevent infinite adjustment loops
+			_tilesX = Math.Min((int)Math.Ceiling((double)width / 16), Map.WIDTH);
+			_tilesY = Math.Min((int)Math.Ceiling((double)height / 16), Map.HEIGHT);
 
 			Bitmap = new Bytemap(width, height);
-			
+
+			if (_y < 0) _y = 0;
 			while (_y + _tilesY > Map.HEIGHT) _y--;
 			_update = true;
 			_fullRedraw = true;
