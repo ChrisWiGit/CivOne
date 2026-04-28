@@ -40,6 +40,7 @@ namespace CivOne.Screens
 		
 		private bool _allowEnterSetup = true;
 		private bool _done;
+		private bool _forceRedraw;
 		private bool _showIntroLine;
 		private bool _introSkipped;
 		private int _introLine = -1;
@@ -100,9 +101,9 @@ namespace CivOne.Screens
 				return true;
 			}
 
-			if (_done && (_overlay == null || !_overlay.Update(gameTick))) return false;
+			if (_done && !_forceRedraw && (_overlay == null || !_overlay.Update(gameTick))) return false;
 
-			if ((gameTick % 3) == 0) return false;
+			if (!_forceRedraw && (gameTick % 3) == 0) return false;
 			
 			// Updates
 			if (_introLeft > -320)
@@ -191,6 +192,7 @@ namespace CivOne.Screens
 				
 				CreateMenu();
 			}
+			_forceRedraw = false;
 			return true;
 		}
 		
@@ -390,11 +392,12 @@ namespace CivOne.Screens
 
 		private void Resize(object sender, ResizeEventArgs args)
 		{
-			_done = false;
+			_forceRedraw = true;
 			foreach (Menu menu in Common.Screens.Where(x => x is Menu && (x as Menu).Id == "MainMenu"))
 			{
 				menu.X = ((Width - 120) / 2) + 3;
 				menu.Y = Height - 55;
+				menu.ForceUpdate();
 			}
 		}
 
