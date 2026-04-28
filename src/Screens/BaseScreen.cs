@@ -70,7 +70,8 @@ namespace CivOne.Screens
 			if (CanExpand && SizeChanged)
 			{
 				// Use capped canvas size here to match SizeChanged checks.
-				// Using Runtime.CanvasWidth can trigger perpetual resize/redraw loops in Expand mode.Resize(CanvasWidth, CanvasHeight);
+				// Using Runtime.CanvasWidth can trigger perpetual resize/redraw loops in Expand mode.
+				Resize(CanvasWidth, CanvasHeight);
 				HasUpdate(gameTick);
 				return true;
 			}
