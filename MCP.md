@@ -1,7 +1,7 @@
 # MCP Integration
 
 CivOne includes a built-in MCP server for local automation.
-The current P0 scope focuses on screenshot capture.
+The current scope includes screenshot capture and structured game-state read access.
 
 ## Enable MCP
 
@@ -175,9 +175,130 @@ Direct method call also works:
 | ---- | ----------- | --------------- |
 | `game_capture_screenshot` | Captures a full-frame PNG screenshot. | none |
 | `game_capture_region` | Captures a cropped PNG screenshot. | `x`, `y`, `width`, `height` |
+| `game_get_state` | Returns a JSON projection of the current game state (summary by default, path-based subsets on demand). | none |
 
 Both tools accept optional `sessionId` and `includeCursor` fields.
 `includeCursor` is currently reserved for future use.
+
+`game_get_state` accepts optional `path` (dot notation + array indices), for example:
+
+- `GameState.GameTurn`
+- `GameState.Players[0].Civilization`
+- `GameState.Map`
+
+If `path` is omitted, the tool returns a compact summary (turn, player, aggregated stats), not the full state.
+
+## `game_get_state` result model
+
+The `text` field contains JSON with an object root.
+
+Success shape:
+
+```json
+{
+  "ok": true,
+  "path": "GameState.Players[0].Civilization",
+  "truncated": false,
+  "maxChars": 32000,
+  "returnedChars": 39,
+  "data": {
+    "leaderClassName": "Caesar"
+  }
+}
+```
+
+Error shape:
+
+```json
+{
+  "ok": false,
+  "path": "GameState.Players[x]",
+  "truncated": false,
+  "maxChars": 32000,
+  "returnedChars": 0,
+  "error": {
+    "code": "INVALID_PATH",
+    "message": "Array index must be an integer.",
+    "path": "GameState.Players[x]",
+    "failedSegment": "[x]"
+  }
+}
+```
+
+When no game session is active (no game loaded), `game_get_state` returns:
+
+```json
+{
+  "ok": false,
+  "path": null,
+  "truncated": false,
+  "maxChars": 32000,
+  "returnedChars": 0,
+  "error": {
+    "code": "NO_GAME",
+    "message": "No active game session.",
+    "path": null,
+    "failedSegment": null
+  }
+}
+```
+
+If the response would exceed the configured size limit, payload is truncated and metadata is included:
+
+```json
+{
+  "ok": false,
+  "truncated": true,
+  "maxChars": 32000,
+  "returnedChars": 29744,
+  "totalChars": 98125,
+  "strategy": "head-preview",
+  "dataPreview": "{...}",
+  "error": {
+    "code": "PAYLOAD_TRUNCATED",
+    "message": "The payload exceeded the configured size limit and was truncated."
+  }
+}
+```
+
+## `game_get_state` request examples
+
+Default summary (no path):
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "10",
+  "method": "tools/call",
+  "sessionToken": "<token>",
+  "params": {
+    "name": "game_get_state",
+    "arguments": {}
+  }
+}
+```
+
+Specific path:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "11",
+  "method": "tools/call",
+  "sessionToken": "<token>",
+  "params": {
+    "name": "game_get_state",
+    "arguments": {
+      "path": "GameState.Players[0].Cities"
+    }
+  }
+}
+```
+
+## Size limit configuration
+
+`game_get_state` uses a default response limit of `32000` characters.
+You can override it via runtime setting key `mcp-max-json-chars`.
 
 ## Screenshot result
 

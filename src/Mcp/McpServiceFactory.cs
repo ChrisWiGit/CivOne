@@ -6,6 +6,8 @@ using CivOne.Mcp.Automation;
 using CivOne.Mcp.Contracts;
 using CivOne.Mcp.Tools;
 using CivOne.Mcp.Transport;
+using CivOne.Persistence;
+using CivOne.Persistence.Factories;
 
 namespace CivOne.Mcp
 {
@@ -24,12 +26,19 @@ namespace CivOne.Mcp
 			IMcpArtifactWriter artifactWriter = new FileSystemMcpArtifactWriter(artifactRootFolder);
 			IMcpGameTickProvider gameTickProvider = new RuntimeHandlerGameTickProvider();
 			IMcpScreenshotRoutine screenshotRoutine = new RuntimeLayerScreenshotRoutine(runtime, artifactWriter, gameTickProvider);
+			IYamlMapperDependenciesFactory mapperDependenciesFactory = YamlMapperDependenciesFactory.CreateDefault();
+			JsonSaveGameStateWriter jsonSaveGameStateWriter = new();
+			GameStateHandler gameStateHandler = new();
+			int maxJsonChars = runtime.Settings.Get<int>("mcp-max-json-chars");
+			if (maxJsonChars <= 0)
+				maxJsonChars = GameGetStateToolHandler.MaxJsonCharsDefault;
 
 			// Real game tools — these are exposed via tools/list and tools/call
 			IMcpToolHandler[] realHandlers =
 			[
 				new CaptureScreenshotToolHandler(screenshotRoutine),
-				new CaptureRegionToolHandler(screenshotRoutine)
+				new CaptureRegionToolHandler(screenshotRoutine),
+				new GameGetStateToolHandler(gameTickProvider, gameStateHandler, mapperDependenciesFactory, jsonSaveGameStateWriter, maxJsonChars)
 			];
 
 			IReadOnlyList<ToolDefinition> definitions = realHandlers
