@@ -68,6 +68,7 @@ namespace CivOne.Screens.GamePlayPanels
 				for (int xx = 0; xx < tiles.GetLength(0); xx++)
 				{
 					ITile tile = tiles[xx, yy];
+					if (tile == null) continue;
 					if (!Settings.RevealWorld && !Human.Visible(tile)) continue;
 					yield return tile;
 				}
@@ -250,7 +251,8 @@ namespace CivOne.Screens.GamePlayPanels
 			{
 				viewRange = 2;
 			}
-			return (!Map.QueryMapPart(_x + viewRange, _y + viewRange, (_tilesX - (viewRange * 2)), (_tilesY - (viewRange * 2))).Any(t => t.X == unit.X + relX && t.Y == unit.Y + relY));
+			return !Map.QueryMapPart(_x + viewRange, _y + viewRange, (_tilesX - (viewRange * 2)), (_tilesY - (viewRange * 2)))
+				.Any(t => t != null && t.X == unit.X + relX && t.Y == unit.Y + relY);
 		}
 
 		public bool MoveTo(int relX, int relY) // public for unit testing
@@ -492,8 +494,14 @@ namespace CivOne.Screens.GamePlayPanels
 			int yy = _y + y;
 			while (xx  < 0) xx += Map.WIDTH;
 			while (xx  >= Map.WIDTH) xx -= Map.WIDTH;
-			
-			City city = Map[_x + x, _y + y].City;
+
+			ITile selectedTile = Map[xx, yy];
+			if (selectedTile == null)
+			{
+				return false;
+			}
+
+			City city = selectedTile.City;
 			
 			if ((args.Buttons & MouseButton.Right) > 0)
 			{
@@ -509,7 +517,7 @@ namespace CivOne.Screens.GamePlayPanels
 					return true;
 				}
 
-				Common.AddScreen(new Civilopedia(Map[_x + x, _y + y]));
+				Common.AddScreen(new Civilopedia(selectedTile));
 				return _update;
 			}
 			if ((args.Buttons & MouseButton.Left) > 0)
@@ -518,7 +526,7 @@ namespace CivOne.Screens.GamePlayPanels
 				{
 					Common.AddScreen(new CityManager(city));
 				}
-				else if (Map[xx, yy].Units.Any(u => Human == u.Owner))
+				else if (selectedTile.Units.Any(u => Human == u.Owner))
 				{
 					GameTask.Enqueue(Show.UnitStack(xx, yy));
 				}
