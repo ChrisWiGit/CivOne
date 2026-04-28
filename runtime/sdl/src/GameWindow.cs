@@ -31,6 +31,8 @@ namespace CivOne
 		private int _settingsScale = Settings.Scale;
 		private int _settingsWindowWidth = Settings.WindowWidth;
 		private int _settingsWindowHeight = Settings.WindowHeight;
+		private Point _settingsWindowPosition = Settings.WindowPosition;
+		private bool _settingsWindowMaximized = Settings.WindowMaximized;
 
 		private void Load(object sender, EventArgs args)
 		{
@@ -44,56 +46,148 @@ namespace CivOne
 			_runtime.InvokeUpdate(ref updateArgs);
 			_hasUpdate = (_hasUpdate || updateArgs.HasUpdate);
 
-			if (_settingsFullscreen != Settings.FullScreen)
-			{
-				_settingsFullscreen = Settings.FullScreen;
-				if (_settingsFullscreen)
-				{
-					// Save the display resolution so WindowSize knows the screen dimensions
-					var displaySize = GetDisplaySize();
-					if (displaySize.Width > 0 && displaySize.Height > 0)
-					{
-						_settingsWindowWidth  = displaySize.Width;
-						_settingsWindowHeight = displaySize.Height;
-						Settings.WindowWidth  = displaySize.Width;
-						Settings.WindowHeight = displaySize.Height;
-					}
-				}
-				Fullscreen = _settingsFullscreen;
-			}
-
-			if (_settingsScale != Settings.Scale)
-			{
-				ResetWindowScale();
-				_settingsScale = Settings.Scale;
-			}
-
-			if (!Settings.FullScreen)
-			{
-				int settW = Settings.WindowWidth;
-				int settH = Settings.WindowHeight;
-				int winW = Width;
-				int winH = Height;
-
-				// Settings changed externally (e.g. preset selected in Setup menu) → resize window immediately
-				if (settW > 0 && settH > 0 && (settW != _settingsWindowWidth || settH != _settingsWindowHeight) && (settW != winW || settH != winH))
-				{
-					SetWindowSize(settW, settH);
-					_settingsWindowWidth = settW;
-					_settingsWindowHeight = settH;
-				}
-				// Window was resized by user → persist to settings
-				else if (winW != _settingsWindowWidth || winH != _settingsWindowHeight)
-				{
-					_settingsWindowWidth = winW;
-					_settingsWindowHeight = winH;
-					Settings.WindowWidth = winW;
-					Settings.WindowHeight = winH;
-				}
-			}
+			ApplyFullscreenSettingChanges();
+			ApplyScaleSettingChanges();
+			SyncWindowedStateWithSettings();
 			
 			Runtime.CanvasSize = SetCanvasSize();
 			if (_runtime.SignalQuit) StopRunning();
+		}
+
+		private void ApplyFullscreenSettingChanges()
+		{
+			if (_settingsFullscreen == Settings.FullScreen)
+			{
+				return;
+			}
+
+			_settingsFullscreen = Settings.FullScreen;
+			if (_settingsFullscreen)
+			{
+				PersistDisplayResolutionAsWindowSize();
+			}
+
+			Fullscreen = _settingsFullscreen;
+		}
+
+		private void PersistDisplayResolutionAsWindowSize()
+		{
+			Size displaySize = GetDisplaySize();
+			if (displaySize.Width <= 0 || displaySize.Height <= 0)
+			{
+				return;
+			}
+
+			_settingsWindowWidth = displaySize.Width;
+			_settingsWindowHeight = displaySize.Height;
+			Settings.WindowWidth = displaySize.Width;
+			Settings.WindowHeight = displaySize.Height;
+		}
+
+		private void ApplyScaleSettingChanges()
+		{
+			if (_settingsScale == Settings.Scale)
+			{
+				return;
+			}
+
+			ResetWindowScale();
+			_settingsScale = Settings.Scale;
+		}
+
+		private void SyncWindowedStateWithSettings()
+		{
+			if (Settings.FullScreen)
+			{
+				return;
+			}
+
+			SyncMaximizedState();
+			if (_settingsWindowMaximized)
+			{
+				return;
+			}
+
+			SyncWindowSize();
+			PersistWindowPosition();
+		}
+
+		private void SyncMaximizedState()
+		{
+			if (_settingsWindowMaximized != Settings.WindowMaximized)
+			{
+				_settingsWindowMaximized = Settings.WindowMaximized;
+				Maximized = _settingsWindowMaximized;
+			}
+
+			bool isWindowMaximized = Maximized;
+			if (isWindowMaximized == _settingsWindowMaximized)
+			{
+				return;
+			}
+
+			_settingsWindowMaximized = isWindowMaximized;
+			Settings.WindowMaximized = isWindowMaximized;
+		}
+
+		private void SyncWindowSize()
+		{
+			int configuredWidth = Settings.WindowWidth;
+			int configuredHeight = Settings.WindowHeight;
+			int currentWidth = Width;
+			int currentHeight = Height;
+
+			if (ShouldApplyConfiguredWindowSize(configuredWidth, configuredHeight, currentWidth, currentHeight))
+			{
+				ApplyConfiguredWindowSize(configuredWidth, configuredHeight);
+				return;
+			}
+
+			PersistCurrentWindowSize(currentWidth, currentHeight);
+		}
+
+		private bool ShouldApplyConfiguredWindowSize(int configuredWidth, int configuredHeight, int currentWidth, int currentHeight)
+		{
+			if (configuredWidth <= 0 || configuredHeight <= 0)
+			{
+				return false;
+			}
+
+			bool configuredSizeChanged = configuredWidth != _settingsWindowWidth || configuredHeight != _settingsWindowHeight;
+			bool windowAlreadyHasConfiguredSize = configuredWidth == currentWidth && configuredHeight == currentHeight;
+			return configuredSizeChanged && !windowAlreadyHasConfiguredSize;
+		}
+
+		private void ApplyConfiguredWindowSize(int configuredWidth, int configuredHeight)
+		{
+			SetWindowSize(configuredWidth, configuredHeight);
+			_settingsWindowWidth = configuredWidth;
+			_settingsWindowHeight = configuredHeight;
+		}
+
+		private void PersistCurrentWindowSize(int currentWidth, int currentHeight)
+		{
+			if (currentWidth == _settingsWindowWidth && currentHeight == _settingsWindowHeight)
+			{
+				return;
+			}
+
+			_settingsWindowWidth = currentWidth;
+			_settingsWindowHeight = currentHeight;
+			Settings.WindowWidth = currentWidth;
+			Settings.WindowHeight = currentHeight;
+		}
+
+		private void PersistWindowPosition()
+		{
+			Point currentPosition = new Point(PositionX, PositionY);
+			if (currentPosition == _settingsWindowPosition)
+			{
+				return;
+			}
+
+			_settingsWindowPosition = currentPosition;
+			Settings.WindowPosition = currentPosition;
 		}
 
 		private void Draw(object sender, EventArgs args)
@@ -224,9 +318,34 @@ namespace CivOne
 			_runtime.InvokeMouseUp(args);
 		}
 
+		private void RestoreWindowPlacement()
+		{
+			if (Settings.FullScreen)
+			{
+				return;
+			}
+
+			Point position = Settings.WindowPosition;
+			int x = position.X;
+			int y = position.Y;
+			if (x < 0 || y < 0 || !IsPointInAnyDisplay(x, y))
+			{
+				x = 0;
+				y = 0;
+			}
+
+			SetWindowPosition(x, y);
+			_settingsWindowPosition = new Point(x, y);
+			Settings.WindowPosition = _settingsWindowPosition;
+
+			Maximized = Settings.WindowMaximized;
+			_settingsWindowMaximized = Settings.WindowMaximized;
+		}
+
 		public GameWindow(Runtime runtime, bool softwareRender) : base("CivOne", InitialWidth, InitialHeight, Settings.FullScreen, softwareRender)
 		{
 			Icon = Resources.GetWindowIcon();
+			RestoreWindowPlacement();
 
 			_runtime = runtime;
 			_runtime.CursorChanged += CursorChanged;

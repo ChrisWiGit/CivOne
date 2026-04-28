@@ -199,6 +199,36 @@ namespace CivOne
 				}
 			}
 
+			protected int PositionX
+			{
+				get
+				{
+					SDL_GetWindowPosition(_handle, out int x, out _);
+					return x;
+				}
+			}
+
+			protected int PositionY
+			{
+				get
+				{
+					SDL_GetWindowPosition(_handle, out _, out int y);
+					return y;
+				}
+			}
+
+			protected bool Maximized
+			{
+				get => (SDL_GetWindowFlags(_handle) & (uint)SDL_WINDOW.MAXIMIZED) != 0;
+				set
+				{
+					if (value)
+						SDL_MaximizeWindow(_handle);
+					else
+						SDL_RestoreWindow(_handle);
+				}
+			}
+
 			private string _title;
 			public string Title
 			{
@@ -284,6 +314,11 @@ namespace CivOne
 				SDL_SetWindowSize(_handle, width, height);
 			}
 
+			protected void SetWindowPosition(int x, int y)
+			{
+				SDL_SetWindowPosition(_handle, x, y);
+			}
+
 			/// <summary>Returns the resolution of the display the window is currently on.</summary>
 			protected Size GetDisplaySize()
 			{
@@ -292,6 +327,30 @@ namespace CivOne
 				if (SDL_GetDisplayBounds(idx, out SDL_DisplayRect r) != 0) 
 					return Size.Empty;
 				return new Size(r.w, r.h);
+			}
+
+			protected bool IsPointInAnyDisplay(int x, int y)
+			{
+				int displays = SDL_GetNumVideoDisplays();
+				if (displays <= 0)
+				{
+					return true;
+				}
+
+				for (int i = 0; i < displays; i++)
+				{
+					if (SDL_GetDisplayBounds(i, out SDL_DisplayRect r) != 0)
+					{
+						continue;
+					}
+
+					if (x >= r.x && x < (r.x + r.w) && y >= r.y && y < (r.y + r.h))
+					{
+						return true;
+					}
+				}
+
+				return false;
 			}
 
 			public void Dispose()

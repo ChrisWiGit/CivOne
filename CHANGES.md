@@ -7,6 +7,11 @@ I did not browse all issues on github at first, so I did not recognize that some
 ## History
 
 * Fix: `Alt+Enter` fullscreen toggle now persists the new state to the profile.
+* Feature: Window placement persistence improved.
+  * Window position is now stored in the profile and restored on startup.
+  * On restore, position is validated against currently available displays; invalid/off-screen positions fall back to top-left (`0,0`).
+  * Window maximized state is persisted and restored (windowed mode).
+  * Refactor: window placement handling in `GameWindow.Update(...)` was split into smaller helper methods with clearer names.
 * Feature: Added multiple standard screen and window resolutions to the setup menu (e.g. `1920x1080`, `2560x1440`, `3840x2160`).
   * Added preset options for "Window Size" and "Expand Size" settings in the setup menu.
   * Updated the "Expand Size" setting to allow for larger resolutions up to `7680x4320` (8K UHD).

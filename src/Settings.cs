@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Drawing;
 using System.IO;
 using CivOne.Enums;
 using CivOne.Graphics;
@@ -54,6 +55,8 @@ namespace CivOne
 		private GraphicsMode _graphicsMode = GraphicsMode.Graphics256;
 		private bool _fullScreen = false;
 		private int _windowWidth = -1, _windowHeight = -1;
+		private Point _windowPosition = new Point(-1, -1);
+		private bool _windowMaximized = false;
 		private bool _rightSideBar = false;
 		private int _scale = 2;
 		private AspectRatio _aspectRatio = AspectRatio.Auto;
@@ -141,6 +144,27 @@ namespace CivOne
 			{
 				_windowHeight = value;
 				SetSetting("WindowHeight", _windowHeight.ToString());
+			}
+		}
+
+		public Point WindowPosition
+		{
+			get => _windowPosition;
+			set
+			{
+				_windowPosition = value;
+				SetSetting("WindowPosX", _windowPosition.X.ToString());
+				SetSetting("WindowPosY", _windowPosition.Y.ToString());
+			}
+		}
+
+		public bool WindowMaximized
+		{
+			get => _windowMaximized;
+			set
+			{
+				_windowMaximized = value;
+				SetSetting("WindowMaximized", _windowMaximized ? "1" : "0");
 			}
 		}
 		
@@ -573,6 +597,17 @@ namespace CivOne
 				_windowWidth = -1;
 				_windowHeight = -1;
 			}
+			int windowPosX = -1;
+			int windowPosY = -1;
+			if (!GetSetting("WindowPosX", ref windowPosX, 0, MaxWindowWidth) || !GetSetting("WindowPosY", ref windowPosY, 0, MaxWindowHeight))
+			{
+				_windowPosition = new Point(-1, -1);
+			}
+			else
+			{
+				_windowPosition = new Point(windowPosX, windowPosY);
+			}
+			GetSetting("WindowMaximized", ref _windowMaximized);
 			GetSetting<AspectRatio>("AspectRatio", ref _aspectRatio);
 			GetSetting("Sound", ref _sound);
 			if (!GetSetting("ExpandWidth", ref _expandWidth, MinWidth, MaxExpandWidth) || !GetSetting("ExpandHeight", ref _expandHeight, MinHeight, MaxExpandHeight))
