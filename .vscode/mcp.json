@@ -1,0 +1,14 @@
+{
+	"servers": {
+		"civone": {
+			"type": "stdio",
+			"command": "dotnet",
+			"args": [
+				"runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
+				"--mcp",
+				"--mcp-no-auth",
+				"--mcp-artifacts", "${workspaceFolder}/.mcp-artifacts",
+			]
+		}
+	}
+}

@@ -21,6 +21,19 @@ namespace CivOne
 	{
 		private readonly Runtime _runtime;
 
+		private static string GetMcpTitleSuffix(Runtime runtime)
+		{
+			if (runtime?.Settings == null || !runtime.Settings.McpEnabled)
+				return string.Empty;
+
+			return runtime.Settings.McpNoAuth
+				? " [MCP is running without Auth]"
+				: " [MCP is running]";
+		}
+
+		private static string ApplyMcpTitleState(Runtime runtime, string title)
+			=> $"{title}{GetMcpTitleSuffix(runtime)}";
+
 		private static Settings Settings => Settings.Instance;
 
 		private int _mouseX = -1, _mouseY = -1;
@@ -167,13 +180,13 @@ namespace CivOne
 			_runtime.InvokeMouseUp(args);
 		}
 
-		public GameWindow(Runtime runtime, bool softwareRender) : base("CivOne", InitialWidth, InitialHeight, Settings.FullScreen, softwareRender)
+		public GameWindow(Runtime runtime, bool softwareRender) : base(ApplyMcpTitleState(runtime, "CivOne"), InitialWidth, InitialHeight, Settings.FullScreen, softwareRender)
 		{
 			Icon = Resources.GetWindowIcon();
 
 			_runtime = runtime;
 			_runtime.CursorChanged += CursorChanged;
-			_runtime.SetWindowTitle += (string title) => Title = title;
+			_runtime.SetWindowTitle += (string title) => Title = ApplyMcpTitleState(_runtime, title);
 
 			OnLog += (message) => _runtime.Log(message);
 			OnLoad += Load;

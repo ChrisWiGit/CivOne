@@ -18,6 +18,8 @@ using CivOne.Events;
 using CivOne.IO;
 using CivOne.Graphics;
 using CivOne.Graphics.ImageFormats;
+using CivOne.Mcp;
+using CivOne.Mcp.Contracts;
 using CivOne.Screens;
 using CivOne.Graphics.Sprites;
 using CivOne.Tasks;
@@ -30,6 +32,7 @@ namespace CivOne
 		private static RuntimeHandler _instance;
 		internal static RuntimeHandler Instance => _instance;
 		internal static IRuntime Runtime { get; private set; }
+		internal static uint CurrentGameTick => _instance?._gameTick ?? 0;
 		
 		private Settings Settings => Settings.Instance;
 		private IScreen TopScreen => Common.TopScreen;
@@ -54,6 +57,7 @@ namespace CivOne
 			}
 		}
 		private uint _gameTick = 0;
+		private readonly IMcpService _mcpService;
 
 		private bool Update()
 		{
@@ -84,11 +88,14 @@ namespace CivOne
 		private void OnInitialize(object sender, EventArgs args)
 		{
 			Runtime.WindowTitle = Settings.WindowTitle;
+			_mcpService.Start();
 			GameTask.Enqueue(Show.Screens(StartupScreens));
 		}
 
 		private void OnUpdate(object sender, UpdateEventArgs args)
 		{
+			_mcpService.Process();
+
 			while (_gameTick < TickWatch)
 			{
 				_gameTick++;
@@ -244,12 +251,14 @@ namespace CivOne
         /// </summary>
         internal static void Wipe()
         {
+			_instance?.Dispose();
             _instance = null;
         }
 
 		private RuntimeHandler(IRuntime runtime, bool concurrent = true)
 		{
 			Runtime = runtime;
+			_mcpService = McpServiceFactory.Create(runtime);
 
 			// fire-eggs 20170711 init the RNG if user specified
 			// Be aware: Game.LoadSave will override this with the seed from the save game
@@ -283,6 +292,17 @@ namespace CivOne
 				runtime.Log("Preloading Civilopedia synchronously");
 				Reflect.PreloadCivilopedia();
 			}
+		}
+
+		public static void Shutdown()
+		{
+			_instance?.Dispose();
+		}
+
+		private void Dispose()
+		{
+			_mcpService.Stop();
+			_mcpService.Dispose();
 		}
 	}
 }

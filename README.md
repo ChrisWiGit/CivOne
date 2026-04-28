@@ -62,6 +62,9 @@ There are some command line parameters that can be used to modify the behavior o
 | `--no-data-check` | Skips the data integrity check at startup. |
 | `--load-slot <drive><slot>` | Loads a saved game from the specified drive and slot. Replace `<drive>` with a letter (a-z) and `<slot>` with a number (0-15) as if you were in the game |
 | `--load-cos <path>` | Loads a savegame file directly from a file path. |
+| `--mcp` | Enables the MCP server. See [MCP.md](MCP.md) for setup and usage. |
+| `--mcp-no-auth` | Disables MCP session-token authentication. Useful for direct VS Code MCP client usage. |
+| `--mcp-artifacts <path>` | Sets the directory where MCP screenshot artifacts are saved. Defaults to `temp/mcp-runs/` inside the storage directory. |
 
 ### Loading a saved game immediately
 
@@ -358,3 +361,20 @@ Alternatively, run individual cleanup tasks in VS Code:
 ## Changes (Log)
 
 See [CHANGES.md](CHANGES.md) for a detailed list of changes and updates.
+
+## MCP Integration
+
+CivOne includes a built-in MCP server for local automation and screenshot capture.
+
+Start the game with `--mcp` to enable it.
+Use `--mcp-artifacts <path>` to choose where screenshots are written.
+
+```cmd
+CivOne.SDL.exe --mcp
+```
+
+The server communicates over stdio and prints a session token to `stderr` on startup.
+That token must be included in every request.
+
+For activation, request examples, available tools, response format, and Visual Studio Code integration, see [MCP.md](MCP.md).
+For internal architecture and implementation notes, see [docs/MCP.md](docs/MCP.md).

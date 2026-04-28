@@ -25,6 +25,7 @@ Try 'civone-sdl --help' for more information.
 			settings["software-render"] = false;
 			settings["no-sound"] = false;
 			settings["profile-name"] = "default";
+			settings["mcp-artifacts"] = null;
 			for (int i = 0; i < args.Length; i++)
 			{
 				string cmd = args[i].TrimStart('-');
@@ -57,8 +58,20 @@ Try 'civone-sdl --help' for more information.
 					case "demo": settings.Demo = true; continue;
 					case "setup": settings.Setup = true; continue;
 					case "free": settings.Free = true; continue;
+					case "mcp": settings.McpEnabled = true; continue;
+					case "mcp-no-auth": settings.McpNoAuth = true; continue;
 					case "no-sound": settings["no-sound"] = true; continue;
 					case "no-data-check": settings.DataCheck = false; continue;
+					case "mcp-artifacts":
+						if (args.GetUpperBound(0) == i)
+						{
+							Console.WriteLine("Missing folder path argument for --mcp-artifacts");
+							return;
+						}
+
+						settings["mcp-artifacts"] = args[++i];
+						Console.WriteLine($"MCP artifacts folder set to \"{settings["mcp-artifacts"]}\"");
+						continue;
 					case "profile":
 						if (args.GetUpperBound(0) == i)
 						{

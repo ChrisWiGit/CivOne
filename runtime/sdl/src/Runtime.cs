@@ -72,7 +72,15 @@ namespace CivOne
                 tw.Close();
             }
 
-            Console.WriteLine(value, formatArgs);
+			if (Settings?.McpEnabled == true)
+			{
+				Console.Error.WriteLine(value, formatArgs);
+				Console.Error.Flush();
+			}
+			else
+			{
+				Console.WriteLine(value, formatArgs);
+			}
         }
 #endif
 
@@ -102,7 +110,7 @@ namespace CivOne
 
 		public void Dispose()
 		{
-
+			RuntimeHandler.Shutdown();
 		}
 	}
 }
