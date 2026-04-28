@@ -284,6 +284,16 @@ namespace CivOne
 				SDL_SetWindowSize(_handle, width, height);
 			}
 
+			/// <summary>Returns the resolution of the display the window is currently on.</summary>
+			protected Size GetDisplaySize()
+			{
+				int idx = SDL_GetWindowDisplayIndex(_handle);
+				if (idx < 0) return Size.Empty;
+				if (SDL_GetDisplayBounds(idx, out SDL_DisplayRect r) != 0) 
+					return Size.Empty;
+				return new Size(r.w, r.h);
+			}
+
 			public void Dispose()
 			{
 				SDL_DestroyRenderer(_renderer);

@@ -44,6 +44,15 @@ namespace CivOne
 		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void SDL_GetWindowSize(IntPtr window, out int width, out int height);
 
+		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
+		private static extern int SDL_GetWindowDisplayIndex(IntPtr window);
+
+		[StructLayout(LayoutKind.Sequential)]
+		private struct SDL_DisplayRect { public int x, y, w, h; }
+
+		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
+		private static extern int SDL_GetDisplayBounds(int displayIndex, out SDL_DisplayRect rect);
+
 		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void SDL_SetWindowSize(IntPtr window, int width, int height);
 

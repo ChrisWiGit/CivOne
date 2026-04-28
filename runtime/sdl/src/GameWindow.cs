@@ -29,6 +29,8 @@ namespace CivOne
 		private bool _settingsFullscreen = Settings.FullScreen;
 
 		private int _settingsScale = Settings.Scale;
+		private int _settingsWindowWidth = Settings.WindowWidth;
+		private int _settingsWindowHeight = Settings.WindowHeight;
 
 		private void Load(object sender, EventArgs args)
 		{
@@ -45,6 +47,18 @@ namespace CivOne
 			if (_settingsFullscreen != Settings.FullScreen)
 			{
 				_settingsFullscreen = Settings.FullScreen;
+				if (_settingsFullscreen)
+				{
+					// Save the display resolution so WindowSize knows the screen dimensions
+					var displaySize = GetDisplaySize();
+					if (displaySize.Width > 0 && displaySize.Height > 0)
+					{
+						_settingsWindowWidth  = displaySize.Width;
+						_settingsWindowHeight = displaySize.Height;
+						Settings.WindowWidth  = displaySize.Width;
+						Settings.WindowHeight = displaySize.Height;
+					}
+				}
 				Fullscreen = _settingsFullscreen;
 			}
 
@@ -52,6 +66,30 @@ namespace CivOne
 			{
 				ResetWindowScale();
 				_settingsScale = Settings.Scale;
+			}
+
+			if (!Settings.FullScreen)
+			{
+				int settW = Settings.WindowWidth;
+				int settH = Settings.WindowHeight;
+				int winW = Width;
+				int winH = Height;
+
+				// Settings changed externally (e.g. preset selected in Setup menu) → resize window immediately
+				if (settW > 0 && settH > 0 && (settW != _settingsWindowWidth || settH != _settingsWindowHeight) && (settW != winW || settH != winH))
+				{
+					SetWindowSize(settW, settH);
+					_settingsWindowWidth = settW;
+					_settingsWindowHeight = settH;
+				}
+				// Window was resized by user → persist to settings
+				else if (winW != _settingsWindowWidth || winH != _settingsWindowHeight)
+				{
+					_settingsWindowWidth = winW;
+					_settingsWindowHeight = winH;
+					Settings.WindowWidth = winW;
+					Settings.WindowHeight = winH;
+				}
 			}
 			
 			Runtime.CanvasSize = SetCanvasSize();
@@ -77,8 +115,8 @@ namespace CivOne
 		private PointF GetScaleF()
 		{
 			GetBorders(out int x1, out int y1, out int x2, out int y2);
-			float scaleX = (float)x2 / CanvasWidth;
-			float scaleY = (float)y2 / CanvasHeight;
+			float scaleX = (float)(x2 - x1) / CanvasWidth;
+			float scaleY = (float)(y2 - y1) / CanvasHeight;
 			if (Settings.AspectRatio == AspectRatio.ScaledFixed)
 			{
 				if (scaleX > scaleY) scaleX = scaleY;
@@ -87,29 +125,49 @@ namespace CivOne
 			return new PointF(scaleX, scaleY);
 		}
 
+		private Size InputSize
+		{
+			get
+			{
+				Bytemap topLayer = _runtime.Layers?.LastOrDefault();
+				if (topLayer != null && topLayer.Width > 0 && topLayer.Height > 0)
+				{
+					return new Size(topLayer.Width, topLayer.Height);
+				}
+				return new Size(CanvasWidth, CanvasHeight);
+			}
+		}
+
+		private static ScreenEventArgs CreateScreenEventArgs(int x, int y, MouseButton buttons)
+			=> buttons == MouseButton.None ? new ScreenEventArgs(x, y) : new ScreenEventArgs(x, y, buttons);
+
+		private static int ScaleToRange(int value, int sourceSize, int targetSize)
+			=> (int)((float)value * targetSize / sourceSize);
+
+		private static int Clamp(int value, int min, int max)
+		{
+			if (value < min) return min;
+			if (value > max) return max;
+			return value;
+		}
+
 		private ScreenEventArgs Transform(ScreenEventArgs args)
 		{
-			GetBorders(out int offsetX, out int offsetY, out _, out _);
-			int x = args.X - offsetX - (args.X % ScaleX);
-			int y = args.Y - offsetY - (args.Y % ScaleY);
-
-			switch (Settings.AspectRatio)
+			GetBorders(out int offsetX, out int offsetY, out int x2, out int y2);
+			int drawWidth = x2 - offsetX;
+			int drawHeight = y2 - offsetY;
+			Size inputSize = InputSize;
+			int localX = args.X - offsetX;
+			int localY = args.Y - offsetY;
+			if (drawWidth <= 0 || drawHeight <= 0)
 			{
-				case AspectRatio.Scaled:
-				case AspectRatio.ScaledFixed:
-					PointF scaleF = GetScaleF();
-					x = (int)((float)args.X / scaleF.X);
-					y = (int)((float)args.Y / scaleF.Y);
-					break;
-				default:
-					x /= ScaleX;
-					y /= ScaleY;
-					break;
+				return CreateScreenEventArgs(0, 0, args.Buttons);
 			}
 
-			if (args.Buttons == MouseButton.None)
-				return new ScreenEventArgs(x, y);
-			return new ScreenEventArgs(x, y, args.Buttons);
+			int x = Clamp(ScaleToRange(localX, drawWidth, inputSize.Width), 0, inputSize.Width - 1);
+			int y = Clamp(ScaleToRange(localY, drawHeight, inputSize.Height), 0, inputSize.Height - 1);
+
+			return CreateScreenEventArgs(x, y, args.Buttons);
 		}
 
 		private void KeyDown(object sender, KeyboardEventArgs args)
@@ -118,6 +176,7 @@ namespace CivOne
 			if (args.Modifier == KeyModifier.Alt && args.Key == Key.Enter)
 			{
 				Fullscreen = !Fullscreen;
+				Settings.FullScreen = Fullscreen;
 				return;
 			}
 			_runtime.InvokeKeyboardDown(args);
@@ -131,39 +190,37 @@ namespace CivOne
 
 		private void MouseMove(object sender, ScreenEventArgs args)
 		{
+			if (!IsInsideDrawArea(args)) return;
 			args = Transform(args);
 			if (args.X == _mouseX && args.Y == _mouseY) return;
 			_hasUpdate = true;
 			_mouseX = args.X;
 			_mouseY = args.Y;
-            args = AdjustMousePos(args);
 			_runtime.InvokeMouseMove(args);
 		}
 
 		private void MouseDown(object sender, ScreenEventArgs args)
         {
+			if (!IsInsideDrawArea(args)) return;
             args = Transform(args);
-            args = AdjustMousePos(args);
             _runtime.InvokeMouseDown(args);
         }
 
-        private ScreenEventArgs AdjustMousePos(ScreenEventArgs args)
-        {
-            if (Settings.AspectRatio == AspectRatio.ScaledFixed)
-            {
-                PointF scaleF = GetScaleF();
-                GetBorders(out int offsetX, out int offsetY, out _, out _);
-                args = new ScreenEventArgs(args.X - (int) ((float) offsetX / scaleF.X),
-                    args.Y - (int) ((float) offsetY / scaleF.Y), args.Buttons);
-            }
-
-            return args;
-        }
+		/// <summary>
+		/// Checks if the given mouse event is within the current draw area (i.e. not in letterbox borders).
+		/// This may be used to ignore mouse events that occur outside the draw area when the window is larger than the canvas (e.g. due to aspect ratio settings or user resizing).
+		/// </summary>
+		/// <param name="args">The mouse event arguments.</param>
+		private bool IsInsideDrawArea(ScreenEventArgs args)
+		{
+			GetBorders(out int x1, out int y1, out int x2, out int y2);
+			return args.X >= x1 && args.X < x2 && args.Y >= y1 && args.Y < y2;
+		}
 
         private void MouseUp(object sender, ScreenEventArgs args)
 		{
+            if (!IsInsideDrawArea(args)) return;
             args = Transform(args);
-            args = AdjustMousePos(args);
 			_runtime.InvokeMouseUp(args);
 		}
 

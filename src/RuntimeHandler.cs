@@ -36,8 +36,8 @@ namespace CivOne
 		private MouseCursor _currentCursor = MouseCursor.None;
 		private CursorType _cursorType = CursorType.Native;
 
-		internal int CanvasWidth => Math.Max(320, Math.Min(512, Runtime.CanvasWidth));
-		internal int CanvasHeight => Math.Max(200, Math.Min(384, Runtime.CanvasHeight));
+		internal int CanvasWidth => Math.Max(Settings.MinWidth, Math.Min(Settings.MaxScreenWidth, Runtime.CanvasWidth));
+		internal int CanvasHeight => Math.Max(Settings.MinHeight, Math.Min(Settings.MaxScreenHeight, Runtime.CanvasHeight));
 
 		private Stopwatch _tickWatch = new Stopwatch();
 

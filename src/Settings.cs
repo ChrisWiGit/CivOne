@@ -21,10 +21,39 @@ namespace CivOne
 		private static IRuntime Runtime => RuntimeHandler.Runtime;
 		//private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
 
+		// ── Window / OS canvas ────────────────────────────────────────────────
+		// Hard limits for the physical OS window size and the raw SDL canvas.
+		public const int MinWidth  = 320;
+		public const int MinHeight = 200;
+		public const int MaxWindowWidth  = 7680;  // maximum OS window width  (8K)
+		public const int MaxWindowHeight = 4320;  // maximum OS window height (8K)
+
+		// ── Expand mode stored values ──────────────────────────────────────
+		// Upper bound for the ExpandWidth / ExpandHeight values that the user
+		// can configure and that are persisted in the profile.  These may be
+		// as large as the largest supported display.
+		public const int MaxExpandWidth  = 7680;
+		public const int MaxExpandHeight = 4320;
+
+		// ── Effective gameplay surface ─────────────────────────────────────
+		// Cap on the logical canvas size that game-logic code (tile counts,
+		// map queries, etc.) ever sees via RuntimeHandler.CanvasWidth/Height.
+		// Keeping this small prevents _tilesX/_tilesY from growing beyond what
+		// Map.QueryMapPart can safely handle.
+		public const int MaxScreenWidth  = 512;
+		public const int MaxScreenHeight = 384;
+
+		// ── Auto-expand fallback ───────────────────────────────────────────
+		// When AspectRatio=Auto and no explicit expand size is stored, the
+		// canvas is capped to these values instead of the full window size.
+		public const int AutoExpandMaxWidth  = 1280;
+		public const int AutoExpandMaxHeight = 720;
+
 		// Set default settings
 		private string _windowTitle = "CivOne";
 		private GraphicsMode _graphicsMode = GraphicsMode.Graphics256;
 		private bool _fullScreen = false;
+		private int _windowWidth = -1, _windowHeight = -1;
 		private bool _rightSideBar = false;
 		private int _scale = 2;
 		private AspectRatio _aspectRatio = AspectRatio.Auto;
@@ -92,6 +121,26 @@ namespace CivOne
 				_fullScreen = value;
 				SetSetting("FullScreen", _fullScreen ? "1" : "0");
 				Common.ReloadSettings = true;
+			}
+		}
+
+		public int WindowWidth
+		{
+			get => _windowWidth;
+			set
+			{
+				_windowWidth = value;
+				SetSetting("WindowWidth", _windowWidth.ToString());
+			}
+		}
+
+		public int WindowHeight
+		{
+			get => _windowHeight;
+			set
+			{
+				_windowHeight = value;
+				SetSetting("WindowHeight", _windowHeight.ToString());
 			}
 		}
 		
@@ -519,9 +568,14 @@ namespace CivOne
 			GetSetting("FullScreen", ref _fullScreen);
 			GetSetting("SideBar", ref _rightSideBar);
 			GetSetting("Scale", ref _scale, 1, 8);
+			if (!GetSetting("WindowWidth", ref _windowWidth, MinWidth, MaxWindowWidth) || !GetSetting("WindowHeight", ref _windowHeight, MinHeight, MaxWindowHeight))
+			{
+				_windowWidth = -1;
+				_windowHeight = -1;
+			}
 			GetSetting<AspectRatio>("AspectRatio", ref _aspectRatio);
 			GetSetting("Sound", ref _sound);
-			if (!GetSetting("ExpandWidth", ref _scale, 320, 512) || !GetSetting("ExpandHeight", ref _scale, 200, 384))
+			if (!GetSetting("ExpandWidth", ref _expandWidth, MinWidth, MaxExpandWidth) || !GetSetting("ExpandHeight", ref _expandHeight, MinHeight, MaxExpandHeight))
 			{
 				_expandWidth = -1;
 				_expandHeight = -1;

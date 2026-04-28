@@ -6,6 +6,11 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: `Alt+Enter` fullscreen toggle now persists the new state to the profile.
+* Feature: Added multiple standard screen and window resolutions to the setup menu (e.g. `1920x1080`, `2560x1440`, `3840x2160`).
+  * Added preset options for "Window Size" and "Expand Size" settings in the setup menu.
+  * Updated the "Expand Size" setting to allow for larger resolutions up to `7680x4320` (8K UHD).
+  * Use "Auto" option for "Expand Size" to stretch the canvas to fill the window, otherwise the game will render at the selected resolution and may be cropped if the window is smaller.
 * Feature: Ongoing migration from [`mwerneburg/CivOne`](https://github.com/mwerneburg/CivOne) (single consolidated entry; extend sub-points over time)
   * Migrated: `CivilizationIdentity` save/load bitmask fix in `SaveDataAdapter` (bit-shift mapping aligned with source fork behavior).
   * Migrated: macOS SDL native resolver registration in startup (`Program`).
@@ -22,6 +27,13 @@ I did not browse all issues on github at first, so I did not recognize that some
     * Added horizontal X-axis wrapping during connectivity checks.
     * Reduces stack overflow risk on larger maps.
     * Implementation extracted to `ContinentTraversalDelegate` for better separation of concerns and testability.
+  * Migrated: Expand settings load fix in `Settings`.
+    * `ExpandWidth`/`ExpandHeight` now load into dedicated fields instead of `_scale`.
+    * Allowed Expand ranges updated to `320..2560` and `200..1600`.
+  * Migrated: Expand canvas/scaling adjustments in `GameWindow.Graphics`.
+    * Expand default canvas fallback changed to `640x360` when no explicit Expand size is configured.
+    * Sub-canvas bytemaps in Expand mode now keep integer scaling and centered placement.
+    * Expand canvas hard cap raised from `512x384` to `2560x1600`.
   * Next migration additions come here next!
 * Feature: Extended fixed-layout UI behavior in `Aspect Ratio = Expand` mode to avoid stretching and keep screens centered.
   * `Palace`, `CityView`, `Conquest`, `Civilopedia` now renders as centered 320x200 content instead of stretching across the expanded canvas.

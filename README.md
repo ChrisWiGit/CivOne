@@ -361,6 +361,20 @@ Alternatively, run individual cleanup tasks in VS Code:
 * `clean` – Runs `dotnet clean`
 * `clean-coverage-folders` – Removes `TestResults/` and `CoverageReport/` directories
 
+## FAQ
+
+### The screen content is cut off after resizing the window
+
+This happens when **Aspect Ratio** is set to `Expand` and a fixed window size was saved.
+In `Expand` mode the game renders exactly as many tiles as fit the current window.
+When the window is later made smaller, the rendered area stays the same size but no longer fits inside the window, so parts of the screen (e.g. the top or sides) are cropped.
+
+To fix this, resize the window to match the size the game was configured for, or change the **Aspect Ratio** setting to `Fixed`, `Scaled`, or `ScaledFixed`.
+Those modes always scale or letterbox the fixed 320x200 game surface to fit any window size.
+
+If you want to use `Expand` mode, make sure to use `Auto` for the Expand size in the settings, which allows the game to automatically adjust the rendered area to fit the window size.
+
+
 ## Changes (Log)
 
 See [CHANGES.md](CHANGES.md) for a detailed list of changes and updates.
