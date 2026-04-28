@@ -160,12 +160,18 @@ namespace CivOne
 			}
 		}
 
-		public static void CreateGame(int difficulty, int competition, ICivilization tribe, string leaderName = null, string tribeName = null, string tribeNamePlural = null)
+		public static void CreateGame(int difficulty, int competition, ICivilization tribe, string leaderName = null, string tribeName = null, string tribeNamePlural = null, bool replaceExisting = false)
 		{
 			if (_instance != null)
 			{
-				BaseInstance.Log("ERROR: Game instance already exists");
-				return;
+				if (!replaceExisting)
+				{
+					BaseInstance.Log("ERROR: Game instance already exists");
+					return;
+				}
+
+				BaseInstance.Log("Replacing existing game instance with a new game");
+				_instance = null;
 			}
 			_instance = new Game(difficulty, competition, tribe, leaderName, tribeName, tribeNamePlural);
 

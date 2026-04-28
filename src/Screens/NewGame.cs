@@ -35,7 +35,8 @@ namespace CivOne.Screens
 
 		private int _difficulty = -1, _competition = -1, _tribe = -1;
 		private string _leaderName = null, _tribeName = null, _tribeNamePlural = null;
-		private bool _done = false, _showIntroText = false;
+		private bool _done = false, _showIntroText = false, _gameCreated = false, _introDirty = false;
+		private int _introBorderStyle = -1;
 		
 		private Menu CreateMenu(string title, MenuItemEventHandler<int> setChoice, params string[] menuTexts)
 		{
@@ -186,13 +187,19 @@ namespace CivOne.Screens
 			else if (_leaderName == null) InputLeaderName();
 			else if (!_done)
 			{
-				if (_showIntroText) return false;
-				
-				ICivilization civ = _tribesAvailable[_tribe];
-				Game.CreateGame(_difficulty, _competition, civ, _leaderName, _tribeName, _tribeNamePlural);
+				if (!_gameCreated)
+				{
+					ICivilization civ = _tribesAvailable[_tribe];
+					Game.CreateGame(_difficulty, _competition, civ, _leaderName, _tribeName, _tribeNamePlural, replaceExisting: true);
+					_gameCreated = true;
+					_introBorderStyle = Common.Random.Next(2);
+					_introDirty = true;
+				}
+
+				if (_showIntroText && !_introDirty) return false;
 				
 				this.Clear(15);
-				DrawBorder(Common.Random.Next(2));
+				DrawBorder(_introBorderStyle);
 				
 				this.AddLayer(DifficultyPicture, OffsetX + 134, OffsetY + 20);
 				
@@ -224,6 +231,7 @@ namespace CivOne.Screens
 				PlaySound(Human.Civilization.Tune);
 				
 				_showIntroText = true;
+				_introDirty = false;
 				return true;
 			}
 			else if (HandleScreenFadeOut())
@@ -315,7 +323,10 @@ namespace CivOne.Screens
 				input.X = OffsetX + 168;
 				input.Y = OffsetY + 105;
 			}
-			_showIntroText = false;
+			if (_showIntroText)
+			{
+				_introDirty = true;
+			}
 		}
 		
 		public NewGame() : base(MouseCursor.Pointer)
