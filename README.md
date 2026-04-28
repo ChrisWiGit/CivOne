@@ -264,6 +264,12 @@ brew install sdl2
 
 Homebrew installs SDL2 system-wide, and the dynamic library will be available automatically at runtime.
 
+The SDL loader also includes a macOS native resolver with fallback search paths.
+The resolver checks `/Library/Frameworks/SDL2.framework/Versions/Current/SDL2` first.
+The resolver then checks Homebrew library paths in `/opt/homebrew/lib` and `/usr/local/lib`.
+This reduces manual setup and usually avoids setting `DYLD_LIBRARY_PATH`.
+This behavior applies only on macOS.
+
 ### Troubleshooting
 
 * Ensure the SDL2 **native library** is installed, not only C# bindings.

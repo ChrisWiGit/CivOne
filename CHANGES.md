@@ -6,6 +6,16 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Ongoing migration from [`mwerneburg/CivOne`](https://github.com/mwerneburg/CivOne) (single consolidated entry; extend sub-points over time)
+  * Migrated: `CivilizationIdentity` save/load bitmask fix in `SaveDataAdapter` (bit-shift mapping aligned with source fork behavior).
+  * Migrated: macOS SDL native resolver registration in startup (`Program`).
+    * Adds explicit fallback search paths for SDL2 framework/Homebrew installs on macOS.
+    * Reduces manual environment setup requirements for native SDL loading.
+  * Migrated: map centering and horizontal wrapping fix in `GameMap.CenterOnPoint(...)`.
+    * Replaced hard-coded X offset with dynamic viewport-based centering.
+    * Added explicit X wrapping for negative/overflow values.
+    * Replaced hard-coded Y clamp window with `_tilesY`-based clamp.
+  * Next migration additions come here next!
 * Feature: Extended fixed-layout UI behavior in `Aspect Ratio = Expand` mode to avoid stretching and keep screens centered.
   * `Palace`, `CityView`, `Conquest`, `Civilopedia` now renders as centered 320x200 content instead of stretching across the expanded canvas.
   * All report screens (Demographics, City Status, Attitude Survey, Science Report, Trade Report) are now rendered as centered 320x200 content instead of stretching across the expanded canvas.
