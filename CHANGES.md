@@ -15,6 +15,8 @@ I did not browse all issues on github at first, so I did not recognize that some
     * Replaced hard-coded X offset with dynamic viewport-based centering.
     * Added explicit X wrapping for negative/overflow values.
     * Replaced hard-coded Y clamp window with `_tilesY`-based clamp.
+  * Migrated: map generation grassland assignment fix in `Map.Generate` climate adjustment pass.
+    * Ensures transformed `Terrain.Plains` tiles are assigned back to `_tiles[x, y]`.
   * Next migration additions come here next!
 * Feature: Extended fixed-layout UI behavior in `Aspect Ratio = Expand` mode to avoid stretching and keep screens centered.
   * `Palace`, `CityView`, `Conquest`, `Civilopedia` now renders as centered 320x200 content instead of stretching across the expanded canvas.

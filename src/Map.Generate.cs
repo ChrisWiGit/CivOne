@@ -214,7 +214,7 @@ namespace CivOne
                         switch( _tiles[ x, y ].Type )
                         {
                             case Terrain.Swamp: _tiles[ x, y ] = new Forest( x, y, special ); break;
-                            case Terrain.Plains: new Grassland( x, y ); break;
+                            case Terrain.Plains: _tiles[ x, y ] = new Grassland( x, y ); break;
                             case Terrain.Grassland1:
                             case Terrain.Grassland2: _tiles[ x, y ] = new Jungle( x, y, special ); break;
                             case Terrain.Hills: _tiles[ x, y ] = new Forest( x, y, special ); break;
@@ -439,7 +439,7 @@ namespace CivOne
                     }
                 oOcean = true;
             }
-            Log( "Map: ´Total number of tiles = {0}", nTiles );
+            Log( "Map: ï¿½Total number of tiles = {0}", nTiles );
         }
 
         /* ***********************************************************************************************/
