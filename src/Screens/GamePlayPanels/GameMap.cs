@@ -223,9 +223,10 @@ namespace CivOne.Screens.GamePlayPanels
 		internal void CenterOnPoint(int x, int y)
 		{
 			_x = x - (_tilesX / 2);
-			_y = y - 6;
 			while (_x < 0) _x += Map.WIDTH;
 			while (_x >= Map.WIDTH) _x -= Map.WIDTH;
+
+			_y = y - (_tilesY / 2);
 			if (_y < 0) _y = 0;
 			_y = Math.Min(_y, Math.Max(0, Map.HEIGHT - _tilesY));
 			_update = true;
