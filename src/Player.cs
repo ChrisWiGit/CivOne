@@ -354,16 +354,12 @@ namespace CivOne
 		{
 			foreach (City city in Cities)
 			{
-				city.SetTradingCityIds([.. city.TradingCitiesAsCity
-					.Where(tradingCity => tradingCity.Owner != enemyPlayerNumber)
-					.Select(tradingCity => tradingCity.Id)]);
+				city.RemoveTradingCitiesOwnedBy(enemyPlayerNumber);
 			}
 
 			foreach (City city in Game.GetCities().Where(city => city.Owner == enemyPlayerNumber && city.Size > 0))
 			{
-				city.SetTradingCityIds([.. city.TradingCitiesAsCity
-					.Where(tradingCity => tradingCity.Owner != ownPlayerNumber)
-					.Select(tradingCity => tradingCity.Id)]);
+				city.RemoveTradingCitiesOwnedBy(ownPlayerNumber);
 			}
 		}
 

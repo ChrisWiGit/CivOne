@@ -6,8 +6,10 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
-* Added `IsAtWarWith(...)`, `DeclareWar(...)`, `MakePeace(...)` method to `Player` to check runtime war state without consulting legacy diplomacy flags.
+* Migration from [`mwerneburg/CivOne`](https://github.com/mwerneburg/CivOne): `IsAtWarWith(...)`, `DeclareWar(...)`, `MakePeace(...)` method to `Player` to check runtime war state without consulting legacy diplomacy flags.
   * These methods are not yet integrated into gameplay and are not yet used for any game logic. They are intended to be used in future diplomacy mechanics implementation.
+* Migration from [`mwerneburg/CivOne`](https://github.com/mwerneburg/CivOne): war-time trade route purge now uses the existing city `TradingCities` model.
+  * On `DeclareWar(...)`, trade links between both parties are removed bilaterally; third-party links remain unchanged.
 * Fix: `Alt+Enter` fullscreen toggle now persists the new state to the profile.
 * Feature: Window placement persistence improved.
   * Window position is now stored in the profile and restored on startup.
