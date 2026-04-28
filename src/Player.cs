@@ -39,6 +39,17 @@ namespace CivOne
 		private readonly bool[,] _visible = new bool[Map.WIDTH, Map.HEIGHT];
 		private readonly List<byte> _advances = new List<byte>();
 		private readonly List<byte> _embassies = new List<byte>();
+		/// <summary>
+		/// Runtime-only bilateral war state used by the new diplomacy API.
+		/// This state is currently not serialized to, loaded from, or reconstructed from
+		/// legacy SVE diplomacy flags.
+		/// </summary>
+		private readonly HashSet<byte> _warWith = new HashSet<byte>();
+		/// <summary>
+		/// Raw legacy diplomacy bitmask storage (8 targets).
+		/// The bit semantics are not fully documented; gameplay war logic does not currently
+		/// read or write these flags directly.
+		/// </summary>
 		private readonly ushort[] _diplomacy = new ushort[8];
 		private readonly ushort[] _unitsLost = new ushort[28];
 		private readonly ushort[] _unitsDestroyedBy = new ushort[8];
@@ -205,6 +216,155 @@ namespace CivOne
 			byte playerNumber = Game.PlayerNumber(player);
 			if (_embassies.Contains(playerNumber)) return;
 			_embassies.Add(playerNumber);
+		}
+
+		/// <summary>
+		/// WARNING! This state is not persisted to, loaded from, or reconstructed from legacy SVE diplomacy flags or YAML data. 
+		/// Sets or clears runtime war state against a player number.
+		/// This updates only <see cref="_warWith"/> and does not write legacy diplomacy flags.
+		/// </summary>
+		/// <param name="playerNumber">Target player number.</param>
+		/// <param name="atWar">True to set war, false to clear war.</param>
+		internal void SetAtWar(byte playerNumber, bool atWar)
+		{
+			if (Game == null)
+			{
+				return;
+			}
+
+			byte ownPlayerNumber = Game.PlayerNumber(this);
+			if (ownPlayerNumber == 0 || playerNumber == 0 || ownPlayerNumber == playerNumber)
+			{
+				return;
+			}
+
+			if (atWar)
+			{
+				_warWith.Add(playerNumber);
+				return;
+			}
+
+			_warWith.Remove(playerNumber);
+		}
+
+		/// <summary>
+		/// WARNING! This state is not persisted to, loaded from, or reconstructed from legacy SVE diplomacy flags or YAML data. 
+		/// Returns whether this player is currently at war with <paramref name="player"/>
+		/// according to runtime state in <see cref="_warWith"/>.
+		/// This does not consult legacy diplomacy flags.
+		/// </summary>
+		/// <param name="player">Potential enemy player.</param>
+		/// <returns>True if runtime war state is set; otherwise false.</returns>
+		public bool IsAtWar(Player player)
+		{
+			if (player == null || Game == null)
+			{
+				return false;
+			}
+
+			byte ownPlayerNumber = Game.PlayerNumber(this);
+			byte enemyPlayerNumber = Game.PlayerNumber(player);
+			if (ownPlayerNumber == 0 || enemyPlayerNumber == 0 || ownPlayerNumber == enemyPlayerNumber)
+			{
+				return false;
+			}
+
+			return _warWith.Contains(enemyPlayerNumber);
+		}
+
+		/// <summary>
+		/// WARNING! This state is not persisted to, loaded from, or reconstructed from legacy SVE diplomacy flags or YAML data. 
+		/// Declares war symmetrically for both players in runtime state.
+		/// Also removes inter-party trading links and shows advisor messages for human-facing cases.
+		/// This method does not update legacy diplomacy bit flags in SVE data.
+		/// </summary>
+		/// <param name="enemy">The enemy player.</param>
+		public void DeclareWar(Player enemy)
+		{
+			ArgumentNullException.ThrowIfNull(enemy);
+
+			if (Game == null)
+			{
+				return;
+			}
+
+			byte ownPlayerNumber = Game.PlayerNumber(this);
+			byte enemyPlayerNumber = Game.PlayerNumber(enemy);
+			if (ownPlayerNumber == 0 || enemyPlayerNumber == 0 || ownPlayerNumber == enemyPlayerNumber)
+			{
+				return;
+			}
+
+			if (IsAtWar(enemy))
+			{
+				return;
+			}
+
+			SetAtWar(enemyPlayerNumber, true);
+			enemy.SetAtWar(ownPlayerNumber, true);
+			PurgeTradingCitiesForWar(enemyPlayerNumber, ownPlayerNumber);
+
+			if (Game.HumanPlayer == this)
+			{
+				GameTask.Enqueue(Message.Advisor(Advisor.Foreign, false, $"You have declared war on {enemy.TribeName}."));
+			}
+			else if (Game.HumanPlayer == enemy)
+			{
+				GameTask.Enqueue(Message.Advisor(Advisor.Foreign, false, $"{TribeName} has declared war on us."));
+			}
+		}
+
+		/// <summary>
+		/// Makes peace symmetrically for both players in runtime state.
+		/// This method does not update legacy diplomacy bit flags in SVE data.
+		/// </summary>
+		/// <param name="enemy">The enemy player.</param>
+		public void MakePeace(Player enemy)
+		{
+			ArgumentNullException.ThrowIfNull(enemy);
+
+			if (Game == null)
+			{
+				return;
+			}
+
+			byte ownPlayerNumber = Game.PlayerNumber(this);
+			byte enemyPlayerNumber = Game.PlayerNumber(enemy);
+			if (ownPlayerNumber == 0 || enemyPlayerNumber == 0 || ownPlayerNumber == enemyPlayerNumber)
+			{
+				return;
+			}
+
+			if (!IsAtWar(enemy))
+			{
+				return;
+			}
+
+			SetAtWar(enemyPlayerNumber, false);
+			enemy.SetAtWar(ownPlayerNumber, false);
+		}
+
+		/// <summary>
+		/// Removes bilateral trading-city links between both war parties.
+		/// Uses current TradingCities model and does not touch legacy _tradeRoutes structures.
+		/// </summary>
+		/// <param name="enemyPlayerNumber">Enemy player number.</param>
+		/// <param name="ownPlayerNumber">Own player number.</param>
+		private void PurgeTradingCitiesForWar(byte enemyPlayerNumber, byte ownPlayerNumber)
+		{
+			foreach (City city in Cities)
+			{
+				city.SetTradingCityIds([.. city.TradingCitiesAsCity
+					.Where(tradingCity => tradingCity.Owner != enemyPlayerNumber)
+					.Select(tradingCity => tradingCity.Id)]);
+			}
+
+			foreach (City city in Game.GetCities().Where(city => city.Owner == enemyPlayerNumber && city.Size > 0))
+			{
+				city.SetTradingCityIds([.. city.TradingCitiesAsCity
+					.Where(tradingCity => tradingCity.Owner != ownPlayerNumber)
+					.Select(tradingCity => tradingCity.Id)]);
+			}
 		}
 
 		public IAdvance CurrentResearch
