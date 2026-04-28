@@ -8,6 +8,8 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using CivOne.Enums;
 
@@ -15,12 +17,51 @@ namespace CivOne
 {
 	internal class Program
 	{
+		private static readonly string[] MacSdlLibraryCandidates =
+		[
+			"/Library/Frameworks/SDL2.framework/Versions/Current/SDL2",
+			"/opt/homebrew/lib/libSDL2.dylib",
+			"/opt/homebrew/lib/libSDL2-2.0.0.dylib",
+			"/usr/local/lib/libSDL2.dylib",
+			"/usr/local/lib/libSDL2-2.0.0.dylib"
+		];
+
 		private static string ErrorText => @"civone-sdl: Invalid options: '{0}'
 Try 'civone-sdl --help' for more information.
 ";
 
+		private static void RegisterNativeResolver()
+		{
+			if (Native.Platform != Platform.macOS)
+			{
+				return;
+			}
+
+			NativeLibrary.SetDllImportResolver(typeof(SDL).Assembly, ResolveSdlLibrary);
+		}
+
+		private static IntPtr ResolveSdlLibrary(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
+		{
+			if (!libraryName.Contains("SDL2", StringComparison.OrdinalIgnoreCase))
+			{
+				return IntPtr.Zero;
+			}
+
+			foreach (string libraryPath in MacSdlLibraryCandidates)
+			{
+				if (NativeLibrary.TryLoad(libraryPath, out IntPtr handle))
+				{
+					return handle;
+				}
+			}
+
+			return IntPtr.Zero;
+		}
+
 		private static void Main(string[] args)
 		{
+			RegisterNativeResolver();
+
 			RuntimeSettings settings = new RuntimeSettings();
 			settings["software-render"] = false;
 			settings["no-sound"] = false;
