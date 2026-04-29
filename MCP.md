@@ -188,7 +188,7 @@ Direct method call also works:
 | `game_get_city` | Returns a single city by `cityId`, `cityName`, or `cityNameStartsWith`, including compact production/unrest/happiness views. | one selector: `cityId` or `cityName` or `cityNameStartsWith` |
 | `game_get_player` | Returns one full player by `playerId` (index) or `playerGuid`, with optional key projection. | one selector: `playerId` or `playerGuid` |
 | `game_list_saves` | Returns metadata for valid `.cos` save files in the configured MCP saves folder. Invalid files are omitted. | none |
-| `game_load` | Loads a `.cos` save by file name from the configured MCP saves folder. | `fileName` |
+| `game_load` | Loads a `.cos` save by `fileName` or `saveGuid` from the configured MCP saves folder. | one selector: `fileName` or `saveGuid` |
 | `game_get_players` | Returns players data (all or one player) with optional key projection. | none |
 | `game_get_cities` | Returns city data (all, by player, or by city id) with optional key projection. | none |
 
@@ -705,8 +705,7 @@ For a direct setup without token handling, use `--mcp-no-auth` in your workspace
         "--mcp",
         "--mcp-no-auth",
         "--mcp-artifacts", "${workspaceFolder}/.mcp-artifacts",
-        "--mcp-saves", "${workspaceFolder}/.saves",
-        "--load-cos", "${workspaceFolder}/.saves/savegame_11.cos"
+        "--mcp-saves", "${workspaceFolder}/.saves"
       ]
     }
   }

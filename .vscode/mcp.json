@@ -10,6 +10,19 @@
 				"--mcp-artifacts",
 				"${workspaceFolder}/.mcp-artifacts",
 				"--mcp-saves",
+				"${workspaceFolder}/.saves"
+			]
+		},
+		"civone_savegame": {
+			"type": "stdio",
+			"command": "dotnet",
+			"args": [
+				"runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
+				"--mcp",
+				"--mcp-no-auth",
+				"--mcp-artifacts",
+				"${workspaceFolder}/.mcp-artifacts",
+				"--mcp-saves",
 				"${workspaceFolder}/.saves",
 				"--load-cos",
 				"${workspaceFolder}/.saves/savegame_11.cos"
