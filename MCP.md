@@ -175,10 +175,90 @@ Direct method call also works:
 | ---- | ----------- | --------------- |
 | `game_capture_screenshot` | Captures a full-frame PNG screenshot. | none |
 | `game_capture_region` | Captures a cropped PNG screenshot. | `x`, `y`, `width`, `height` |
+| `game_get_settings` | Returns persistent and runtime settings, with readable labels for enum and flag values. | none |
 | `game_get_state` | Returns a JSON projection of the current game state (summary by default, path-based subsets on demand). | none |
+| `game_get_players` | Returns players data (all or one player) with optional key projection. | none |
+| `game_get_cities` | Returns city data (all, by player, or by city id) with optional key projection. | none |
 
-Both tools accept optional `sessionId` and `includeCursor` fields.
+All tools accept optional `sessionId` and `includeCursor` fields.
 `includeCursor` is currently reserved for future use.
+
+`game_get_settings` accepts optional:
+
+- `keys` (array of dotted keys such as `display.graphicsMode`, `gameOptions.sound`, `runtime.mcpEnabled`)
+
+If `keys` is omitted, the tool returns the full grouped settings payload.
+Enum-like and flag-like settings return both raw values and readable labels, for example:
+
+- `display.graphicsMode` → `{ "value": 1, "name": "Graphics256", "text": "256 colors" }`
+- `gameOptions.sound` → `{ "value": 0, "name": "Default", "text": "Default" }`
+- `patches.globalWarmingFeatureFlags` → `{ "value": 1, "names": ["SeaLevelRise"], "text": "SeaLevelRise" }`
+
+Current key catalogue for `game_get_settings` (source of truth: [src/Mcp/Tools/GameGetSettingsToolHandler.cs](src/Mcp/Tools/GameGetSettingsToolHandler.cs)):
+
+- `paths.storageDirectory`
+- `paths.captureDirectory`
+- `paths.dataDirectory`
+- `paths.pluginsDirectory`
+- `paths.savesDirectory`
+- `paths.cosSavesDirectory`
+- `paths.soundsDirectory`
+- `display.windowTitle`
+- `display.graphicsMode`
+- `display.fullScreen`
+- `display.scale`
+- `display.aspectRatio`
+- `display.expandWidth`
+- `display.expandHeight`
+- `display.windowWidth`
+- `display.windowHeight`
+- `display.windowPosX`
+- `display.windowPosY`
+- `display.cursorType`
+- `display.destroyAnimation`
+- `patches.rightSideBar`
+- `patches.revealWorld`
+- `patches.debugMenu`
+- `patches.deityEnabled`
+- `patches.arrowHelper`
+- `patches.customMapSize`
+- `patches.pathFinding`
+- `patches.autoSettlers`
+- `patches.riverFastMovement`
+- `patches.canalCity`
+- `patches.preferSveSaveFormat`
+- `patches.useUncheckedCastSanitizer`
+- `patches.globalWarmingFeatureFlags`
+- `gameOptions.instantAdvice`
+- `gameOptions.autoSave`
+- `gameOptions.endOfTurn`
+- `gameOptions.animations`
+- `gameOptions.sound`
+- `gameOptions.enemyMoves`
+- `gameOptions.civilopediaText`
+- `gameOptions.palace`
+- `gameOptions.taxRate`
+- `runtime.demo`
+- `runtime.setup`
+- `runtime.dataCheck`
+- `runtime.mcpEnabled`
+- `runtime.mcpNoAuth`
+- `runtime.free`
+- `runtime.showCredits`
+- `runtime.showIntro`
+- `runtime.loadSaveGameSlot`
+- `runtime.loadCosFile`
+- `runtime.initialSeed`
+- `runtime.profileName`
+- `runtime.noSound`
+- `runtime.softwareRender`
+- `runtime.mcpArtifacts`
+- `runtime.mcpMaxJsonChars`
+
+Notes:
+
+- `display.windowWidth`, `display.windowHeight`, `display.windowPosX`, and `display.windowPosY` currently return placeholder text (`"currently not implemented"`).
+- Key matching in the handler is case-insensitive, but the canonical names above are the recommended spellings.
 
 `game_get_state` accepts optional `path` (dot notation + array indices), for example:
 
@@ -187,6 +267,117 @@ Both tools accept optional `sessionId` and `includeCursor` fields.
 - `GameState.Map`
 
 If `path` is omitted, the tool returns a compact summary (turn, player, aggregated stats), not the full state.
+
+`game_get_players` accepts optional:
+
+- `playerId` (0-based)
+- `keys` (array of field names)
+
+If `keys` is omitted, all fields are returned.
+
+## Recommended high-value game-state fields (compact)
+
+For LLM-driven automation, these fields provide the best value/size ratio:
+
+- **Stable IDs**: `playerGuid`, `id` (city/player), `cityId` filter support
+- **Turn context**: `gameTurn`, `currentPlayer`, `humanPlayer`, `difficulty`
+- **City planning**: `name`, `owner`, `size`, `currentProduction`, `buildings`, `wonders`
+- **Player strategy**: `tribeName`, `gold`, `science`, `currentResearch`, `advances`
+- **Diplomacy links**: `diplomacy[].targetPlayerGuid` for durable cross-player references
+
+Large structures such as full `map`, `explored`, and `visible` should be queried only when explicitly needed.
+
+### Suggested `keys` profiles
+
+Use these minimal profiles to avoid truncation and reduce repeated calls:
+
+- `game_get_players` (minimal):
+  - `keys`: `id`, `playerGuid`, `tribeName`, `gold`, `science`, `currentResearch`
+- `game_get_players` (diplomacy):
+  - `keys`: `id`, `tribeName`, `diplomacy`
+- `game_get_cities` (minimal):
+  - `keys`: `id`, `name`, `owner`, `size`
+- `game_get_cities` (production):
+  - `keys`: `id`, `name`, `size`, `currentProduction`, `buildings`, `wonders`
+
+`game_get_cities` accepts optional:
+
+- `playerId` (0-based owner filter)
+- `cityId` (GUID string)
+- `keys` (array of field names)
+
+If `keys` is omitted, all fields are returned.
+
+## `game_get_settings` result model
+
+The `text` field contains JSON with an object root.
+
+Default grouped response shape:
+
+```json
+{
+  "ok": true,
+  "truncated": false,
+  "maxChars": 32000,
+  "returnedChars": 812,
+  "data": {
+    "paths": {
+      "savesDirectory": "..."
+    },
+    "display": {
+      "graphicsMode": {
+        "value": 1,
+        "name": "Graphics256",
+        "text": "256 colors"
+      }
+    },
+    "patches": {},
+    "gameOptions": {},
+    "runtime": {}
+  }
+}
+```
+
+Filtered response example (`keys` provided):
+
+```json
+{
+  "ok": true,
+  "truncated": false,
+  "maxChars": 32000,
+  "returnedChars": 173,
+  "data": {
+    "display.graphicsMode": {
+      "value": 1,
+      "name": "Graphics256",
+      "text": "256 colors"
+    },
+    "runtime.mcpEnabled": {
+      "value": true,
+      "text": "Enabled"
+    }
+  }
+}
+```
+
+Invalid keys return the same structured MCP error envelope used by the other JSON tools with `code = "INVALID_KEYS"`.
+
+## `game_get_settings` request example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "9",
+  "method": "tools/call",
+  "sessionToken": "<token>",
+  "params": {
+    "name": "game_get_settings",
+    "arguments": {
+      "keys": ["display.graphicsMode", "gameOptions.sound", "runtime.profileName"]
+    }
+  }
+}
+```
 
 ## `game_get_state` result model
 
@@ -297,7 +488,7 @@ Specific path:
 
 ## Size limit configuration
 
-`game_get_state` uses a default response limit of `32000` characters.
+`game_get_state`, `game_get_players`, `game_get_cities`, and `game_get_settings` use a default response limit of `32000` characters.
 You can override it via runtime setting key `mcp-max-json-chars`.
 
 ## Screenshot result
@@ -372,7 +563,8 @@ For a direct setup without token handling, use `--mcp-no-auth` in your workspace
         "runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
         "--mcp",
         "--mcp-no-auth",
-        "--mcp-artifacts", "${workspaceFolder}/.mcp-artifacts"
+        "--mcp-artifacts", "${workspaceFolder}/.mcp-artifacts",
+        "--load-cos", "${workspaceFolder}/.saves/savegame_11.cos"
       ]
     }
   }
@@ -396,3 +588,4 @@ VS Code discovers tool definitions from the MCP server and makes them available 
 ## More details
 
 See [docs/MCP.md](docs/MCP.md) for internal design notes and implementation background.
+For a full real-world game-state payload example, see [docs/SAVEGAME_EXAMPLE.cos](docs/SAVEGAME_EXAMPLE.cos).

@@ -7,7 +7,10 @@
 				"runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
 				"--mcp",
 				"--mcp-no-auth",
-				"--mcp-artifacts", "${workspaceFolder}/.mcp-artifacts",
+				"--mcp-artifacts",
+				"${workspaceFolder}/.mcp-artifacts",
+				"--load-cos",
+				"${workspaceFolder}/.saves/savegame_11.cos"
 			]
 		}
 	}
