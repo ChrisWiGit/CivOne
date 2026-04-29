@@ -29,6 +29,7 @@ namespace CivOne.Mcp
 			IYamlMapperDependenciesFactory mapperDependenciesFactory = YamlMapperDependenciesFactory.CreateDefault();
 			JsonSaveGameStateWriter jsonSaveGameStateWriter = new();
 			GameStateHandler gameStateHandler = new();
+			IGameStateDtoSnapshotProvider snapshotProvider = new GameStateDtoSnapshotProvider(gameTickProvider, gameStateHandler, mapperDependenciesFactory);
 			int maxJsonChars = runtime.Settings.Get<int>("mcp-max-json-chars");
 			if (maxJsonChars <= 0)
 				maxJsonChars = GameGetStateToolHandler.MaxJsonCharsDefault;
@@ -38,7 +39,10 @@ namespace CivOne.Mcp
 			[
 				new CaptureScreenshotToolHandler(screenshotRoutine),
 				new CaptureRegionToolHandler(screenshotRoutine),
-				new GameGetStateToolHandler(gameTickProvider, gameStateHandler, mapperDependenciesFactory, jsonSaveGameStateWriter, maxJsonChars)
+				new GameGetSettingsToolHandler(runtime, jsonSaveGameStateWriter, maxJsonChars),
+				new GameGetStateToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars),
+				new GameGetPlayersToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars),
+				new GameGetCitiesToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars)
 			];
 
 			IReadOnlyList<ToolDefinition> definitions = realHandlers

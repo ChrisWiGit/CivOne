@@ -1,11 +1,8 @@
 using System;
 using System.Linq;
 using System.Text.Json;
-using CivOne.Mcp.Automation;
 using CivOne.Mcp.Contracts;
 using CivOne.Persistence;
-using CivOne.Persistence.Factories;
-using CivOne.Persistence.Mapper;
 using CivOne.Persistence.Model;
 
 namespace CivOne.Mcp.Tools
@@ -14,15 +11,10 @@ namespace CivOne.Mcp.Tools
 	{
 		public const int MaxJsonCharsDefault = 32000;
 
-		private readonly IMcpGameTickProvider _gameTickProvider;
-		private readonly GameStateHandler _gameStateHandler;
-		private readonly IYamlMapperDependenciesFactory _mapperDependenciesFactory;
+		private readonly IGameStateDtoSnapshotProvider _snapshotProvider;
 		private readonly JsonSaveGameStateWriter _jsonWriter;
 		private readonly McpGameStatePathResolver _pathResolver;
 		private readonly int _maxJsonChars;
-
-		private uint _cachedTick = uint.MaxValue;
-		private GameStateDto _cachedSnapshot;
 
 		public string Method => "game_get_state";
 
@@ -70,8 +62,8 @@ namespace CivOne.Mcp.Tools
 			}
 
 			string path = ReadString(request.Params, "path");
-			if (!TryGetSnapshot(out GameStateDto snapshot, out object errorPayload))
-				return JsonResponse(request.Id, errorPayload);
+			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string errorMessage))
+				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage, null, null));
 
 			if (string.IsNullOrWhiteSpace(path))
 				return JsonResponse(request.Id, BuildSuccessPayload(path, BuildSummary(snapshot)));
@@ -100,51 +92,17 @@ namespace CivOne.Mcp.Tools
 			using JsonDocument jsonDocument = JsonDocument.Parse(rootJson);
 			JsonElement root = jsonDocument.RootElement;
 
-			if (!_pathResolver.TryResolve(root, normalizedPath, out JsonElement resolved, out string failedSegment, out string errorMessage))
+			if (!_pathResolver.TryResolve(root, normalizedPath, out JsonElement resolved, out string failedSegment, out string pathErrorMessage))
 			{
 				return JsonResponse(request.Id, BuildErrorPayload(
 					"INVALID_PATH",
-					errorMessage,
+					pathErrorMessage,
 					normalizedPath,
 					failedSegment));
 			}
 
 			object resolvedObject = JsonSerializer.Deserialize<object>(resolved.GetRawText());
 			return JsonResponse(request.Id, BuildSuccessPayload(normalizedPath, resolvedObject));
-		}
-
-		private bool TryGetSnapshot(out GameStateDto snapshot, out object errorPayload)
-		{
-			snapshot = null;
-			errorPayload = null;
-
-			Game gameInstance = Game.Instance;
-			if (gameInstance == null)
-			{
-				errorPayload = BuildErrorPayload("NO_GAME", "No active game session.", null, null);
-				return false;
-			}
-
-			uint tick = _gameTickProvider.CurrentTick;
-			if (_cachedSnapshot != null && tick == _cachedTick)
-			{
-				snapshot = _cachedSnapshot;
-				return true;
-			}
-
-			var gameState = _gameStateHandler.Create(gameInstance);
-			var mapperDependencies = _mapperDependenciesFactory.Create(gameInstance);
-			var mapper = new GameStateDtoMapper(
-				mapperDependencies.PlayerMapper,
-				mapperDependencies.UnitMapper,
-				mapperDependencies.MapMapper,
-				mapperDependencies.GlobalWarmingMapper,
-				mapperDependencies.Sanitizer);
-
-			snapshot = mapper.ToDto(gameState);
-			_cachedSnapshot = snapshot;
-			_cachedTick = tick;
-			return true;
 		}
 
 		private McpResponse JsonResponse(object id, object payload)
@@ -270,15 +228,11 @@ namespace CivOne.Mcp.Tools
 				: null;
 
 		public GameGetStateToolHandler(
-			IMcpGameTickProvider gameTickProvider,
-			GameStateHandler gameStateHandler,
-			IYamlMapperDependenciesFactory mapperDependenciesFactory,
+			IGameStateDtoSnapshotProvider snapshotProvider,
 			JsonSaveGameStateWriter jsonWriter,
 			int maxJsonChars = MaxJsonCharsDefault)
 		{
-			_gameTickProvider = gameTickProvider ?? throw new ArgumentNullException(nameof(gameTickProvider));
-			_gameStateHandler = gameStateHandler ?? throw new ArgumentNullException(nameof(gameStateHandler));
-			_mapperDependenciesFactory = mapperDependenciesFactory ?? throw new ArgumentNullException(nameof(mapperDependenciesFactory));
+			_snapshotProvider = snapshotProvider ?? throw new ArgumentNullException(nameof(snapshotProvider));
 			_jsonWriter = jsonWriter ?? throw new ArgumentNullException(nameof(jsonWriter));
 			_pathResolver = new McpGameStatePathResolver();
 			_maxJsonChars = Math.Max(512, maxJsonChars);
