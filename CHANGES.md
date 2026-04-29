@@ -6,6 +6,45 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Migration from [`mwerneburg/CivOne`](https://github.com/mwerneburg/CivOne): added `IsAtWar(Player)` and `SetAtWar(...)` methods to `Player` to check runtime war state without consulting legacy diplomacy flags.
+  * These methods are not yet integrated into gameplay and are not yet used for any game logic. They are intended to be used in future diplomacy mechanics implementation.
+* Migration from [`mwerneburg/CivOne`](https://github.com/mwerneburg/CivOne): war-time trade route purge now uses the existing city `TradingCities` model.
+  * On `SetAtWar(...)`, trade links between both parties are removed bilaterally; third-party links remain unchanged.
+* Fix: `Alt+Enter` fullscreen toggle now persists the new state to the profile.
+* Feature: Window placement persistence improved.
+  * Window position is now stored in the profile and restored on startup.
+  * On restore, position is validated against currently available displays; invalid/off-screen positions fall back to top-left (`0,0`).
+  * Window maximized state is persisted and restored (windowed mode).
+  * Refactor: window placement handling in `GameWindow.Update(...)` was split into smaller helper methods with clearer names.
+* Feature: Added multiple standard screen and window resolutions to the setup menu (e.g. `1920x1080`, `2560x1440`, `3840x2160`).
+  * Added preset options for "Window Size" and "Expand Size" settings in the setup menu.
+  * Updated the "Expand Size" setting to allow for larger resolutions up to `7680x4320` (8K UHD).
+  * Use "Auto" option for "Expand Size" to stretch the canvas to fill the window, otherwise the game will render at the selected resolution and may be cropped if the window is smaller.
+* Feature: Ongoing migration from [`mwerneburg/CivOne`](https://github.com/mwerneburg/CivOne) (single consolidated entry; extend sub-points over time)
+  * Migrated: `CivilizationIdentity` save/load bitmask fix in `SaveDataAdapter` (bit-shift mapping aligned with source fork behavior).
+  * Migrated: macOS SDL native resolver registration in startup (`Program`).
+    * Adds explicit fallback search paths for SDL2 framework/Homebrew installs on macOS.
+    * Reduces manual environment setup requirements for native SDL loading.
+  * Migrated: map centering and horizontal wrapping fix in `GameMap.CenterOnPoint(...)`.
+    * Replaced hard-coded X offset with dynamic viewport-based centering.
+    * Added explicit X wrapping for negative/overflow values.
+    * Replaced hard-coded Y clamp window with `_tilesY`-based clamp.
+  * Migrated: map generation grassland assignment fix in `Map.Generate` climate adjustment pass.
+    * Ensures transformed `Terrain.Plains` tiles are assigned back to `_tiles[x, y]`.
+  * Migrated: continent/ocean counting flood-fill in `Map.Generate`.
+    * Replaced recursive traversal with iterative queue-based traversal.
+    * Added horizontal X-axis wrapping during connectivity checks.
+    * Reduces stack overflow risk on larger maps.
+    * Implementation extracted to `ContinentTraversalDelegate` for better separation of concerns and testability.
+  * Migrated: Expand settings load fix in `Settings`.
+    * `ExpandWidth`/`ExpandHeight` now load into dedicated fields instead of `_scale`.
+    * Allowed Expand ranges updated to `320..2560` and `200..1600`.
+  * Migrated: Expand canvas/scaling adjustments in `GameWindow.Graphics`.
+    * Expand default canvas fallback changed to `640x360` when no explicit Expand size is configured.
+    * Sub-canvas bytemaps in Expand mode now keep integer scaling and centered placement.
+    * Expand canvas hard cap raised from `512x384` to `2560x1600`.
+    * Allowed Expand ranges updated to `320..7680` and `200..4320`.
+  * Next migration additions come here next!
 * Feature: Extended fixed-layout UI behavior in `Aspect Ratio = Expand` mode to avoid stretching and keep screens centered.
   * `Palace`, `CityView`, `Conquest`, `Civilopedia` now renders as centered 320x200 content instead of stretching across the expanded canvas.
   * All report screens (Demographics, City Status, Attitude Survey, Science Report, Trade Report) are now rendered as centered 320x200 content instead of stretching across the expanded canvas.

@@ -45,10 +45,37 @@ namespace CivOne
 		private static extern void SDL_GetWindowSize(IntPtr window, out int width, out int height);
 
 		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
+		private static extern void SDL_GetWindowPosition(IntPtr window, out int x, out int y);
+
+		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
+		private static extern int SDL_GetWindowDisplayIndex(IntPtr window);
+
+		[StructLayout(LayoutKind.Sequential)]
+		private struct SDL_DisplayRect { public int x, y, w, h; }
+
+		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
+		private static extern int SDL_GetDisplayBounds(int displayIndex, out SDL_DisplayRect rect);
+
+		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
+		private static extern int SDL_GetNumVideoDisplays();
+
+		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void SDL_SetWindowSize(IntPtr window, int width, int height);
 
 		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
+		private static extern void SDL_SetWindowPosition(IntPtr window, int x, int y);
+
+		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void SDL_SetWindowFullscreen(IntPtr window, SDL_WINDOW flags);
+
+		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
+		private static extern uint SDL_GetWindowFlags(IntPtr window);
+
+		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
+		private static extern void SDL_MaximizeWindow(IntPtr window);
+
+		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
+		private static extern void SDL_RestoreWindow(IntPtr window);
 
 		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void SDL_Delay(uint ms);

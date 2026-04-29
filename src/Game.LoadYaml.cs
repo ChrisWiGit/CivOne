@@ -17,6 +17,7 @@ using CivOne.Persistence.Mapper;
 using CivOne.Persistence.Model;
 using CivOne.Persistence.Yaml;
 using CivOne.Services.GlobalWarming;
+using CivOne.Services.Random;
 using CivOne.Units;
 
 namespace CivOne
@@ -137,7 +138,7 @@ namespace CivOne
 				_replayData.AddRange(state.ReplayData);
 			}
 
-			Common.SetRandomSeed(_valueSanitizer.ClampToUInt16(state.RandomSeed, nameof(Game), nameof(state.RandomSeed)));
+			RandomServiceFactory.Reset(_valueSanitizer.ClampToUInt16(state.RandomSeed, nameof(Game), nameof(state.RandomSeed)));
 		}
 
 		private void ApplyGameOptions(IEnumerable<GameOptionEnum> options)

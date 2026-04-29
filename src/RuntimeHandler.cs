@@ -15,6 +15,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CivOne.Enums;
 using CivOne.Events;
+using CivOne.Services.Random;
 using CivOne.IO;
 using CivOne.Graphics;
 using CivOne.Graphics.ImageFormats;
@@ -36,8 +37,8 @@ namespace CivOne
 		private MouseCursor _currentCursor = MouseCursor.None;
 		private CursorType _cursorType = CursorType.Native;
 
-		internal int CanvasWidth => Math.Max(320, Math.Min(512, Runtime.CanvasWidth));
-		internal int CanvasHeight => Math.Max(200, Math.Min(384, Runtime.CanvasHeight));
+		internal int CanvasWidth => Math.Max(Settings.MinWidth, Math.Min(Settings.MaxScreenWidth, Runtime.CanvasWidth));
+		internal int CanvasHeight => Math.Max(Settings.MinHeight, Math.Min(Settings.MaxScreenHeight, Runtime.CanvasHeight));
 
 		private Stopwatch _tickWatch = new Stopwatch();
 
@@ -144,14 +145,16 @@ namespace CivOne
 				_currentCursor = Common.MouseCursor;
 				_cursorType = Settings.Instance.CursorType;
 				Runtime.CurrentCursor = _currentCursor;
-				if (Cursor.Current?.Bitmap != null)
+
+				if (_cursorType != CursorType.Native && _currentCursor != MouseCursor.None && Cursor.Current?.Bitmap != null)
 				{
 					Runtime.Cursor = Cursor.Current.ToBitmap();
 				}
 				else
 				{
+					// Explicitly clear software cursor texture when using native cursor,
+					// when cursor is hidden, or when no bitmap is available.
 					Runtime.Cursor = null;
-					// CW: prevents cursor invisible if Settings.CursorType changed to Native. (e.g. when goto screen is active)
 					Cursor.ClearCache();
 				}
 			}
@@ -254,9 +257,9 @@ namespace CivOne
 			// fire-eggs 20170711 init the RNG if user specified
 			// Be aware: Game.LoadSave will override this with the seed from the save game
             if (runtime.Settings.InitialSeed != 0)
-				Common.SetRandomSeed(runtime.Settings.InitialSeed);
+				RandomServiceFactory.Reset(runtime.Settings.InitialSeed);
 			else
-				Common.SetRandomSeed(ushort.MaxValue);
+				RandomServiceFactory.Reset();
 
 
             runtime.Initialize += OnInitialize;
