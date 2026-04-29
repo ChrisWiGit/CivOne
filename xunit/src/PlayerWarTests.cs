@@ -1,7 +1,8 @@
-namespace CivOne.src
+namespace CivOne.UnitTests
 {
 	using System.Linq;
 	using CivOne.Civilizations;
+	using CivOne.src;
 	using Xunit;
 
 	public class PlayerWarTests : TestsBase
