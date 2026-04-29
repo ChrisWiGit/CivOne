@@ -146,14 +146,15 @@ namespace CivOne
 				_cursorType = Settings.Instance.CursorType;
 				Runtime.CurrentCursor = _currentCursor;
 
-				if (_cursorType != CursorType.Native && _currentCursor != MouseCursor.None)
+				if (_cursorType != CursorType.Native && _currentCursor != MouseCursor.None && Cursor.Current?.Bitmap != null)
 				{
 					Runtime.Cursor = Cursor.Current.ToBitmap();
 				}
 				else
 				{
+					// Explicitly clear software cursor texture when using native cursor,
+					// when cursor is hidden, or when no bitmap is available.
 					Runtime.Cursor = null;
-					// CW: prevents cursor invisible if Settings.CursorType changed to Native. (e.g. when goto screen is active)
 					Cursor.ClearCache();
 				}
 			}
