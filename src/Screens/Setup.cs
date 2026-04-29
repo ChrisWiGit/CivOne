@@ -38,12 +38,12 @@ namespace CivOne.Screens
 		[
 			("Auto (stretch)", -1, -1),
 
-			// SD / kleinere Formate
+			// SD
 			("640x360", 640, 360),
 			("854x480 (FWVGA)", 854, 480),
 			("960x540", 960, 540),
 
-			// HD / Standard
+			// HD
 			("1280x720 (HD)", 1280, 720),
 			("1366x768", 1366, 768),
 			("1600x900", 1600, 900),
