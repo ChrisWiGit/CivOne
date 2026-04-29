@@ -209,6 +209,7 @@ namespace CivOne
 
 				SaveGameFileRootDto saveFile = null;
 				GameStateDto dto = null;
+				Guid saveGuid = Guid.NewGuid();
 
 				try
 				{
@@ -219,20 +220,19 @@ namespace CivOne
 						.As<SaveGameFileRootDto>();
 
 					dto = saveFile?.GameState;
+					if (saveFile?.SaveGuid is Guid parsedSaveGuid && parsedSaveGuid != Guid.Empty)
+						saveGuid = parsedSaveGuid;
 				}
 				catch
 				{
 					// Legacy format fallback is handled below.
 				}
 
-				if (dto == null)
-				{
-					dto = YamlReader
+				dto ??= YamlReader
 						.OfString(yaml)
 						.WithStandard()
 						.WithTypeConverter(new MapDtoTileDtoYamlConverter())
 						.As<GameStateDto>();
-				}
 
 				// Reset static player context only for the hydration window,
 				// then Game(state) will set Player.Game to the new game instance.
@@ -247,7 +247,12 @@ namespace CivOne
 						saveFile.Meta.GetCreatedAtOr(DateTimeOffset.UtcNow),
 						saveFile.Meta.GameVersion,
 						playDuration,
-						saveFile.Meta.DisplayName);
+						saveFile.Meta.DisplayName,
+						saveGuid);
+				}
+				else
+				{
+					_instance.SaveMetaData.RestoreSaveGuid(saveGuid);
 				}
 
 				Map.Instance.FinalizeYamlLoad();

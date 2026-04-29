@@ -151,6 +151,7 @@ namespace CivOne.Mcp.Tools
 			AddSetting(runtime, flatSettings, "runtime", "noSound", BuildBooleanValue(_runtime.Settings.Get<bool>("no-sound")));
 			AddSetting(runtime, flatSettings, "runtime", "softwareRender", BuildBooleanValue(_runtime.Settings.Get<bool>("software-render")));
 			AddSetting(runtime, flatSettings, "runtime", "mcpArtifacts", _runtime.Settings.Get<string>("mcp-artifacts"));
+			AddSetting(runtime, flatSettings, "runtime", "mcpSaves", _runtime.Settings.Get<string>("mcp-saves"));
 			AddSetting(runtime, flatSettings, "runtime", "mcpMaxJsonChars", _runtime.Settings.Get<int>("mcp-max-json-chars"));
 
 			return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)

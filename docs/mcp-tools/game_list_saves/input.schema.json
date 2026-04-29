@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_list_saves/input",
+  "title": "game_list_saves – input",
+  "description": "Lists valid .cos saves from the configured MCP saves folder.",
+  "type": "object",
+  "properties": {
+    "sessionId": {
+      "type": "string",
+      "description": "Optional caller-supplied identifier."
+    },
+    "includeCursor": {
+      "type": "boolean",
+      "description": "Reserved for future use.",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_capture_screenshot/input",
+  "title": "game_capture_screenshot – input",
+  "description": "Captures a full-frame PNG screenshot of the current game state.",
+  "type": "object",
+  "properties": {
+    "sessionId": {
+      "type": "string",
+      "description": "Optional caller-supplied identifier echoed back in the response."
+    },
+    "includeCursor": {
+      "type": "boolean",
+      "description": "Reserved for future use. Has no effect currently.",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

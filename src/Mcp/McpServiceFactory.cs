@@ -40,7 +40,18 @@ namespace CivOne.Mcp
 				new CaptureScreenshotToolHandler(screenshotRoutine),
 				new CaptureRegionToolHandler(screenshotRoutine),
 				new GameGetSettingsToolHandler(runtime, jsonSaveGameStateWriter, maxJsonChars),
+				new GameGetMapSizeToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars),
+				new GameGetMapWindowToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars),
+				new GameGetMapLandValuesWindowToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars),
+				new GameGetVisibilityToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars),
 				new GameGetStateToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars),
+				new GameGetEntitiesIndexToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars),
+				new GameValidatePathToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars),
+				new GameGetUnitsToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars),
+				new GameGetCityToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars),
+				new GameGetPlayerToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars),
+				new GameListSavesToolHandler(runtime, jsonSaveGameStateWriter, maxJsonChars),
+				new GameLoadToolHandler(runtime, jsonSaveGameStateWriter, maxJsonChars),
 				new GameGetPlayersToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars),
 				new GameGetCitiesToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars)
 			];

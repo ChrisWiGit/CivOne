@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_get_units/input",
+  "title": "game_get_units – input",
+  "description": "Returns units with optional filters by owner, class, location radius, and key projection.",
+  "type": "object",
+  "properties": {
+    "playerId": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Optional owner player id (0-based index)."
+    },
+    "playerGuid": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Optional stable owner player GUID."
+    },
+    "className": {
+      "type": "string",
+      "description": "Optional unit class name filter (case-insensitive exact match)."
+    },
+    "locationRadius": {
+      "type": "object",
+      "required": ["x", "y", "radius"],
+      "properties": {
+        "x": { "type": "integer", "minimum": 0 },
+        "y": { "type": "integer", "minimum": 0 },
+        "radius": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false,
+      "description": "Optional radial filter centered at (x,y) using Euclidean distance."
+    },
+    "keys": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true,
+      "description": "Optional list of fields to return per unit."
+    },
+    "sessionId": {
+      "type": "string",
+      "description": "Optional caller-supplied identifier."
+    },
+    "includeCursor": {
+      "type": "boolean",
+      "default": false,
+      "description": "Reserved for future use."
+    }
+  },
+  "additionalProperties": false
+}

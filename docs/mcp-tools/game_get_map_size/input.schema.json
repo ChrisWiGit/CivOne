@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_get_map_size/input",
+  "title": "game_get_map_size – input",
+  "description": "Returns map dimensions and wrap semantics. No game-specific arguments required.",
+  "type": "object",
+  "properties": {
+    "sessionId": {
+      "type": "string",
+      "description": "Optional caller-supplied identifier."
+    },
+    "includeCursor": {
+      "type": "boolean",
+      "description": "Reserved for future use.",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

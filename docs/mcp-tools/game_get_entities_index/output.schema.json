@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_get_entities_index/output",
+  "title": "game_get_entities_index – output",
+  "type": "object",
+  "required": ["ok", "truncated", "maxChars", "returnedChars"],
+  "properties": {
+    "ok":            { "type": "boolean" },
+    "truncated":     { "type": "boolean" },
+    "maxChars":      { "type": "integer" },
+    "returnedChars": { "type": "integer" },
+    "data": {
+      "type": "object",
+      "required": ["gameTurn", "players", "cities"],
+      "properties": {
+        "gameTurn": {
+          "type": "integer",
+          "description": "Current game turn number."
+        },
+        "players": {
+          "type": "array",
+          "description": "One entry per player.",
+          "items": {
+            "type": "object",
+            "required": ["id", "playerGuid", "tribeName"],
+            "properties": {
+              "id":         { "type": "integer", "description": "0-based player index." },
+              "playerGuid": { "type": "string", "format": "uuid", "description": "Stable cross-turn player identity." },
+              "tribeName":  { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "cities": {
+          "type": "array",
+          "description": "One entry per city across all players.",
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "owner", "ownerGuid"],
+            "properties": {
+              "id":        { "type": "string", "format": "uuid", "description": "Stable city GUID." },
+              "name":      { "type": "string" },
+              "owner":     { "type": "integer", "description": "0-based player index of the city owner." },
+              "ownerGuid": { "type": "string", "format": "uuid", "description": "Stable player GUID of the city owner." }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code":    { "type": "string", "enum": ["NO_GAME", "INVALID_PARAMS", "PAYLOAD_TRUNCATED"] },
+        "message": { "type": "string" }
+      }
+    }
+  }
+}

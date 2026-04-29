@@ -62,9 +62,12 @@ namespace CivOne.Persistence
 			ArgumentNullException.ThrowIfNull(stream);
 			ArgumentNullException.ThrowIfNull(snapshot);
 
+			Guid saveGuid = saveMetaData?.EnsureSaveGuid() ?? Guid.NewGuid();
+
 			var fileDto = new SaveGameFileRootDto
 			{
 				FormatVersion = SaveGameFileRootDto.CurrentFormatVersion,
+				SaveGuid = saveGuid,
 				Meta = saveMetaData is null ? null : _metaDataFactory.CreateFromRuntime(saveMetaData),
 				GameState = CreateDto(snapshot)
 			};

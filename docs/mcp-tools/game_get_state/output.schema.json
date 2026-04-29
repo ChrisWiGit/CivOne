@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_get_state/output",
+  "title": "game_get_state – output",
+  "type": "object",
+  "required": ["ok", "truncated", "maxChars", "returnedChars"],
+  "properties": {
+    "ok":            { "type": "boolean" },
+    "truncated":     { "type": "boolean" },
+    "maxChars":      { "type": "integer" },
+    "returnedChars": { "type": "integer" },
+    "path": {
+      "type": ["string", "null"],
+      "description": "The path that was resolved, or null if no path was given."
+    },
+    "data": {
+      "description": "The resolved game-state value. Shape depends on the path queried.",
+      "oneOf": [
+        { "type": "object" },
+        { "type": "array" },
+        { "type": ["string", "number", "boolean", "null"] }
+      ]
+    },
+    "dataPreview": {
+      "type": "string",
+      "description": "Present when truncated=true. A partial head preview of the full payload."
+    },
+    "totalChars": {
+      "type": "integer",
+      "description": "Present when truncated=true. Full untruncated character count."
+    },
+    "strategy": {
+      "type": "string",
+      "const": "head-preview",
+      "description": "Present when truncated=true."
+    },
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": ["INVALID_PATH", "NO_GAME", "PAYLOAD_TRUNCATED"]
+        },
+        "message":       { "type": "string" },
+        "path":          { "type": ["string", "null"] },
+        "failedSegment": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.IO;
 using System.Text.RegularExpressions;
 using CivOne.Enums;
 
@@ -18,7 +19,6 @@ namespace CivOne
 		private static string ErrorText => @"civone-sdl: Invalid options: '{0}'
 Try 'civone-sdl --help' for more information.
 ";
-
 		private static void Main(string[] args)
 		{
 			RuntimeSettings settings = new RuntimeSettings();
@@ -26,6 +26,7 @@ Try 'civone-sdl --help' for more information.
 			settings["no-sound"] = false;
 			settings["profile-name"] = "default";
 			settings["mcp-artifacts"] = null;
+			settings["mcp-saves"] = null;
 			for (int i = 0; i < args.Length; i++)
 			{
 				string cmd = args[i].TrimStart('-');
@@ -69,8 +70,31 @@ Try 'civone-sdl --help' for more information.
 							return;
 						}
 
-						settings["mcp-artifacts"] = args[++i];
-						Console.WriteLine($"MCP artifacts folder set to \"{settings["mcp-artifacts"]}\"");
+						var artifactsDir = args[++i];
+						if (!Directory.Exists(artifactsDir))
+						{
+							Console.WriteLine($"MCP artifacts folder \"{artifactsDir}\" does not exist.");
+							return;
+						}
+						settings["mcp-artifacts"] = artifactsDir;
+						Console.WriteLine($"MCP artifacts folder set to \"{artifactsDir}\"");
+						continue;
+					case "mcp-saves":
+						if (args.GetUpperBound(0) == i)
+						{
+							Console.WriteLine("Missing folder path argument for --mcp-saves");
+							return;
+						}
+
+						var savesDir = args[++i];
+						settings["mcp-saves"] = savesDir;
+
+						if (!Directory.Exists(savesDir))
+						{
+							Console.WriteLine($"MCP saves folder \"{savesDir}\" does not exist.");
+							return;
+						}
+						Console.WriteLine($"MCP saves folder set to \"{savesDir}\"");
 						continue;
 					case "profile":
 						if (args.GetUpperBound(0) == i)

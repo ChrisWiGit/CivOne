@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_get_state/input",
+  "title": "game_get_state – input",
+  "description": "Returns a JSON projection of the game state. Omit 'path' for the compact summary.",
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "Dot-notation path into GameState, optionally with array indices. Examples: 'GameState.GameTurn', 'GameState.Players[0].Civilization', 'GameState.Map'. Omit for the default compact summary."
+    },
+    "sessionId": {
+      "type": "string",
+      "description": "Optional caller-supplied identifier."
+    },
+    "includeCursor": {
+      "type": "boolean",
+      "description": "Reserved for future use.",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}
