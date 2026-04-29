@@ -43,6 +43,7 @@ I did not browse all issues on github at first, so I did not recognize that some
     * Expand default canvas fallback changed to `640x360` when no explicit Expand size is configured.
     * Sub-canvas bytemaps in Expand mode now keep integer scaling and centered placement.
     * Expand canvas hard cap raised from `512x384` to `2560x1600`.
+    * Allowed Expand ranges updated to `320..7680` and `200..4320`.
   * Next migration additions come here next!
 * Feature: Extended fixed-layout UI behavior in `Aspect Ratio = Expand` mode to avoid stretching and keep screens centered.
   * `Palace`, `CityView`, `Conquest`, `Civilopedia` now renders as centered 320x200 content instead of stretching across the expanded canvas.
