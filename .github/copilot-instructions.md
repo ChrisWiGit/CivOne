@@ -12,3 +12,9 @@ All documentation should be written in English (even if the prompt is in another
 - Follow SOLID principles
 - Prefer interfaces for services
 - Keep methods small and focused
+- Prefer 'new()' expression instead of fully qualified new syntax 
+
+## Existing useful code
+
+* Debounce Service with DebounceServiceFactory and IDebounceService
+* Random Number Generator with IRandomNumberGenerator and RandomNumberGeneratorFactory

@@ -20,6 +20,7 @@ namespace CivOne
 	internal partial class GameWindow : SDL.Window
 	{
 		private readonly Runtime _runtime;
+		private readonly IDebounceService _debounceService;
 
 		private static Settings Settings => Settings.Instance;
 
@@ -31,12 +32,11 @@ namespace CivOne
 		private int _settingsScale = Settings.Scale;
 		private int _settingsWindowWidth = Settings.WindowWidth;
 		private int _settingsWindowHeight = Settings.WindowHeight;
+		private Size? _pendingWindowSizeCandidate;
 		private Point _settingsWindowPosition = Settings.WindowPosition;
-		private Point _pendingWindowPosition = Settings.WindowPosition;
-		private bool _hasPendingWindowPositionPersist;
-		private DateTime _lastWindowPositionChangeUtc = DateTime.MinValue;
+		private Point? _pendingWindowPositionCandidate;
 		private bool _settingsWindowMaximized = Settings.WindowMaximized;
-		private static readonly TimeSpan WindowPositionPersistDebounce = TimeSpan.FromSeconds(1);
+		private static readonly TimeSpan WindowPersistDebounce = TimeSpan.FromSeconds(1);
 
 		private void Load(object sender, EventArgs args)
 		{
@@ -53,11 +53,12 @@ namespace CivOne
 			ApplyFullscreenSettingChanges();
 			ApplyScaleSettingChanges();
 			SyncWindowedStateWithSettings();
+			_debounceService.ExecuteDueCallbacks();
 			
 			Runtime.CanvasSize = SetCanvasSize();
 			if (_runtime.SignalQuit)
 			{
-				PersistPendingWindowPositionIfNeeded();
+				_debounceService.FlushPendingCallbacks();
 				StopRunning();
 			}
 		}
@@ -88,6 +89,7 @@ namespace CivOne
 
 			_settingsWindowWidth = displaySize.Width;
 			_settingsWindowHeight = displaySize.Height;
+			_pendingWindowSizeCandidate = null;
 			Settings.WindowWidth = displaySize.Width;
 			Settings.WindowHeight = displaySize.Height;
 		}
@@ -171,19 +173,44 @@ namespace CivOne
 			SetWindowSize(configuredWidth, configuredHeight);
 			_settingsWindowWidth = configuredWidth;
 			_settingsWindowHeight = configuredHeight;
+			_pendingWindowSizeCandidate = null;
+			_debounceService.Cancel(GameDebounceKeys.WindowSize);
 		}
 
 		private void PersistCurrentWindowSize(int currentWidth, int currentHeight)
 		{
 			if (currentWidth == _settingsWindowWidth && currentHeight == _settingsWindowHeight)
 			{
+				_pendingWindowSizeCandidate = null;
 				return;
 			}
 
-			_settingsWindowWidth = currentWidth;
-			_settingsWindowHeight = currentHeight;
-			Settings.WindowWidth = currentWidth;
-			Settings.WindowHeight = currentHeight;
+			Size currentSize = new Size(currentWidth, currentHeight);
+			if (_pendingWindowSizeCandidate.HasValue && _pendingWindowSizeCandidate.Value == currentSize)
+			{
+				return;
+			}
+
+			_pendingWindowSizeCandidate = currentSize;
+			_debounceService.Debounce(GameDebounceKeys.WindowSize, WindowPersistDebounce, () => PersistWindowSize(currentSize));
+		}
+
+		private void PersistWindowSize(Size size)
+		{
+			if (size.Width == _settingsWindowWidth && size.Height == _settingsWindowHeight)
+			{
+				return;
+			}
+
+			_settingsWindowWidth = size.Width;
+			_settingsWindowHeight = size.Height;
+			_pendingWindowSizeCandidate = null;
+			Settings.WindowWidth = size.Width;
+			Settings.WindowHeight = size.Height;
+
+#if DEBUG
+			_runtime.Log($"[Debounce] Persisted window size: {size.Width}x{size.Height}");
+#endif
 		}
 
 		private void PersistWindowPosition()
@@ -191,34 +218,33 @@ namespace CivOne
 			Point currentPosition = new Point(PositionX, PositionY);
 			if (currentPosition == _settingsWindowPosition)
 			{
+				_pendingWindowPositionCandidate = null;
 				return;
 			}
 
-			if (!_hasPendingWindowPositionPersist || currentPosition != _pendingWindowPosition)
-			{
-				_pendingWindowPosition = currentPosition;
-				_lastWindowPositionChangeUtc = DateTime.UtcNow;
-				_hasPendingWindowPositionPersist = true;
-			}
-
-			if ((DateTime.UtcNow - _lastWindowPositionChangeUtc) < WindowPositionPersistDebounce)
+			if (_pendingWindowPositionCandidate.HasValue && _pendingWindowPositionCandidate.Value == currentPosition)
 			{
 				return;
 			}
 
-			PersistPendingWindowPositionIfNeeded();
+			_pendingWindowPositionCandidate = currentPosition;
+			_debounceService.Debounce(GameDebounceKeys.WindowPosition, WindowPersistDebounce, () => PersistWindowPositionValue(currentPosition));
 		}
 
-		private void PersistPendingWindowPositionIfNeeded()
+		private void PersistWindowPositionValue(Point position)
 		{
-			if (!_hasPendingWindowPositionPersist)
+			if (position == _settingsWindowPosition)
 			{
 				return;
 			}
 
-			_settingsWindowPosition = _pendingWindowPosition;
-			Settings.WindowPosition = _pendingWindowPosition;
-			_hasPendingWindowPositionPersist = false;
+			_settingsWindowPosition = position;
+			_pendingWindowPositionCandidate = null;
+			Settings.WindowPosition = position;
+
+#if DEBUG
+			_runtime.Log($"[Debounce] Persisted window position: X={position.X}, Y={position.Y}");
+#endif
 		}
 
 		private void Draw(object sender, EventArgs args)
@@ -367,18 +393,21 @@ namespace CivOne
 
 			SetWindowPosition(x, y);
 			_settingsWindowPosition = new Point(x, y);
+			_pendingWindowPositionCandidate = null;
 			Settings.WindowPosition = _settingsWindowPosition;
 
 			Maximized = Settings.WindowMaximized;
 			_settingsWindowMaximized = Settings.WindowMaximized;
 		}
 
-		public GameWindow(Runtime runtime, bool softwareRender) : base("CivOne", InitialWidth, InitialHeight, Settings.FullScreen, softwareRender)
+		public GameWindow(Runtime runtime, bool softwareRender, IDebounceService debounceService) : base("CivOne", InitialWidth, InitialHeight, Settings.FullScreen, softwareRender)
 		{
+			_runtime = runtime;
+			_debounceService = debounceService ?? throw new ArgumentNullException(nameof(debounceService));
+
 			Icon = Resources.GetWindowIcon();
 			RestoreWindowPlacement();
 
-			_runtime = runtime;
 			_runtime.CursorChanged += CursorChanged;
 			_runtime.SetWindowTitle += (string title) => Title = title;
 

@@ -158,13 +158,14 @@ Try 'civone-sdl --help' for more information.
 				settings["no-sound"] = true;
 			}
 
-			using (Runtime runtime = new Runtime(settings))
-			using (GameWindow window = new GameWindow(runtime, (bool)settings["software-render"]))
-			{
-				runtime.Log("Game started");
-				window.Run();
-				runtime.Log("Game stopped");
-			}
+			using Runtime runtime = new(settings);
+			IUtcClock clock = new SystemUtcClock();
+			IDebounceService debounceService = DebounceServiceFactory.Create(message => runtime.Log(message), clock);
+			
+			using GameWindow window = new(runtime, (bool)settings["software-render"], debounceService);
+			runtime.Log("Game started");
+			window.Run();
+			runtime.Log("Game stopped");
 		}
 	}
 }
