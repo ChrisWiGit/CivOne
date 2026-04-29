@@ -67,6 +67,7 @@ namespace CivOne
 		private bool _arrowHelper = false;
 		private bool _customMapSize = false;
 		private bool _pathFinding = false;
+		private bool _computerPlayerPathFinding = true;
 		private bool _riverFastMovement = false;
 		private bool _canalCity = false;
 		private bool _preferSveSaveFormat = true;
@@ -291,6 +292,17 @@ namespace CivOne
 			{
 				_pathFinding = value;
 				SetSetting("PathFindingAlgorithm", _pathFinding ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal bool ComputerPlayerPathFinding
+		{
+			get => _computerPlayerPathFinding;
+			set
+			{
+				_computerPlayerPathFinding = value;
+				SetSetting("ComputerPlayerPathFindingAlgorithm", _computerPlayerPathFinding ? "1" : "0");
 				Common.ReloadSettings = true;
 			}
 		}
@@ -621,6 +633,7 @@ namespace CivOne
 			GetSetting("ArrowHelper", ref _arrowHelper);
 			GetSetting("CustomMapSize", ref _customMapSize);
 			GetSetting("PathFindingAlgorithm", ref _pathFinding);
+			GetSetting("ComputerPlayerPathFindingAlgorithm", ref _computerPlayerPathFinding);
 			GetSetting("AutoSettlers", ref _autoSettlers);
 			GetSetting("RiverFastMovement", ref _riverFastMovement);
 			GetSetting("CanalCity", ref _canalCity);

@@ -15,6 +15,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CivOne.Enums;
 using CivOne.Events;
+using CivOne.Services.Random;
 using CivOne.IO;
 using CivOne.Graphics;
 using CivOne.Graphics.ImageFormats;
@@ -144,7 +145,8 @@ namespace CivOne
 				_currentCursor = Common.MouseCursor;
 				_cursorType = Settings.Instance.CursorType;
 				Runtime.CurrentCursor = _currentCursor;
-				if (Cursor.Current?.Bitmap != null)
+
+				if (_cursorType != CursorType.Native && _currentCursor != MouseCursor.None)
 				{
 					Runtime.Cursor = Cursor.Current.ToBitmap();
 				}
@@ -254,9 +256,9 @@ namespace CivOne
 			// fire-eggs 20170711 init the RNG if user specified
 			// Be aware: Game.LoadSave will override this with the seed from the save game
             if (runtime.Settings.InitialSeed != 0)
-				Common.SetRandomSeed(runtime.Settings.InitialSeed);
+				RandomServiceFactory.Reset(runtime.Settings.InitialSeed);
 			else
-				Common.SetRandomSeed(ushort.MaxValue);
+				RandomServiceFactory.Reset();
 
 
             runtime.Initialize += OnInitialize;

@@ -166,6 +166,7 @@ This screen allows to change additional modification options for the game.
 | AutoSave format | Choose whether autosaves prefer legacy `SVE` output with automatic `COS` fallback or always write `COS`. |
 | Save cast behavior | Select whether save/load casts use checked conversion or the legacy unchecked mode. |
 | (Gbm) Use smart PathFinding for "goto" | Enable smart pathfinding for unit movement. |
+| (Gbm) Use smart pathfinding for computer players | Enable smart pathfinding for computer controlled units only. Disable to use legacy AI movement behavior. |
 | (Gbm) Use auto-settlers-cheat | Enable automatic settlers (cheat) to place settlers automatically. |
 | (Gbm) Use fast river movement | Movements on rivers behave like roads (faster movement). |
 | (Gbm) No movement penalty for sea units in city | Sea units suffer no movement penalty when in a city. |

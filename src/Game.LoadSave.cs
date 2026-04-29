@@ -18,6 +18,7 @@ using CivOne.Enums;
 using CivOne.Persistence.Factories;
 using CivOne.Persistence.Model;
 using CivOne.Services.GlobalWarming;
+using CivOne.Services.Random;
 using CivOne.Units;
 using CivOne.Wonders;
 
@@ -42,7 +43,7 @@ namespace CivOne
 			}
 
 			// Always use the save game's seed
-			Common.SetRandomSeed(adapter.RandomSeed);
+			RandomServiceFactory.Reset(adapter.RandomSeed);
 
 			Map.Instance.LoadMap(mapFile, adapter.RandomSeed);
 			_instance = new Game(adapter);

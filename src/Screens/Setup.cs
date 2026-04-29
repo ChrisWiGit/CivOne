@@ -397,19 +397,25 @@ namespace CivOne.Screens
 			MenuItem.Create("Back")
 		);
 
-		private void AutoSettlersMenu() => CreateMenu("Use auto settlers cheat", GotoMenu(BehaviorMenu, 1),
+		private void ComputerPlayerPathFindingMenu() => CreateMenu("Use smart pathfinding for computer players", GotoMenu(BehaviorMenu, 1),
+			MenuItem.Create($"{false.YesNo()}").OnSelect((s, a) => Settings.ComputerPlayerPathFinding = false).SetActive(() => !Settings.ComputerPlayerPathFinding),
+			MenuItem.Create($"{true.YesNo()} (default)").OnSelect((s, a) => Settings.ComputerPlayerPathFinding = true).SetActive(() => Settings.ComputerPlayerPathFinding),
+			MenuItem.Create("Back")
+		);
+
+		private void AutoSettlersMenu() => CreateMenu("Use auto settlers cheat", GotoMenu(BehaviorMenu, 2),
 			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.AutoSettlers = false).SetActive(() => !Settings.AutoSettlers),
 			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.AutoSettlers = true).SetActive(() => Settings.AutoSettlers),
 			MenuItem.Create("Back")
 		);
 
-		private void FastRiverMovementMenu() => CreateMenu("Movements on river like roads", GotoMenu(BehaviorMenu, 2),
+		private void FastRiverMovementMenu() => CreateMenu("Movements on river like roads", GotoMenu(BehaviorMenu, 3),
 			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.RiverFastMovement = false).SetActive(() => !Settings.RiverFastMovement),
 			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.RiverFastMovement = true).SetActive(() => Settings.RiverFastMovement),
 			MenuItem.Create("Back")
 		);
 
-		private void CanalCity() => CreateMenu("No movement penalty for sea units in city", GotoMenu(BehaviorMenu, 3),
+		private void CanalCity() => CreateMenu("No movement penalty for sea units in city", GotoMenu(BehaviorMenu, 4),
 			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.CanalCity = false).SetActive(() => !Settings.CanalCity),
 			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.CanalCity = true).SetActive(() => Settings.CanalCity),
 			MenuItem.Create("Back")
@@ -438,12 +444,13 @@ namespace CivOne.Screens
 		private void ExtendedGlobalWarmingMenu(int activeItem = 0) => CreateMenu("Extended global warming (needs savegame load)", activeItem,
 			MenuItem.Create($"Sea level rise: {Settings.IsGlobalWarmingFlagSet(Settings.GlobalWarmingFeatureFlag.SeaLevelRise).YesNo()}")
 				.OnSelect(GotoMenu(SeaLevelRise)),
-			MenuItem.Create("Back").OnSelect(GotoMenu(BehaviorMenu, 4))
+			MenuItem.Create("Back").OnSelect(GotoMenu(BehaviorMenu, 5))
 		);
 
 		private void BehaviorMenu(int activeItem = 0) => CreateMenu("Game behavior menu", activeItem,
 			[
 					MenuItem.Create($"Use smart PathFinding for \"goto\": {Settings.PathFinding.YesNo()}").OnSelect(GotoMenu(PathFindingMenu)),
+					MenuItem.Create($"Use smart pathfinding for computer players: {Settings.ComputerPlayerPathFinding.YesNo()}").OnSelect(GotoMenu(ComputerPlayerPathFindingMenu)),
 					MenuItem.Create($"Use auto-settlers-cheat: {Settings.AutoSettlers.YesNo()}").OnSelect(GotoMenu(AutoSettlersMenu)),
 					MenuItem.Create($"Use fast river movement: {Settings.RiverFastMovement.YesNo()}").OnSelect(GotoMenu(FastRiverMovementMenu)),
 					MenuItem.Create($"No movement penalty for sea units in city: {Settings.CanalCity.YesNo()}").OnSelect(GotoMenu(CanalCity)),

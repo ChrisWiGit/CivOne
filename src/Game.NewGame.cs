@@ -16,6 +16,7 @@ using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.Services;
 using CivOne.Services.GlobalWarming;
+using CivOne.Services.Random;
 using CivOne.Tiles;
 using CivOne.Units;
 
@@ -196,6 +197,15 @@ namespace CivOne
 
 		private Game(int difficulty, int competition, ICivilization tribe, string leaderName, string playerTribeName, string playerTribeNamePlural) : this(CreateValueSanitizer())
 		{
+			if (RuntimeHandler.Runtime.Settings.InitialSeed != 0)
+			{
+				RandomServiceFactory.Reset(RuntimeHandler.Runtime.Settings.InitialSeed);
+			}
+			else
+			{
+				RandomServiceFactory.Reset();
+			}
+
 			_loadedFromYamlSaveSource = false;
 
 			_instance = this;
