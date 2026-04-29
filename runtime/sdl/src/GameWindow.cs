@@ -32,7 +32,11 @@ namespace CivOne
 		private int _settingsWindowWidth = Settings.WindowWidth;
 		private int _settingsWindowHeight = Settings.WindowHeight;
 		private Point _settingsWindowPosition = Settings.WindowPosition;
+		private Point _pendingWindowPosition = Settings.WindowPosition;
+		private bool _hasPendingWindowPositionPersist;
+		private DateTime _lastWindowPositionChangeUtc = DateTime.MinValue;
 		private bool _settingsWindowMaximized = Settings.WindowMaximized;
+		private static readonly TimeSpan WindowPositionPersistDebounce = TimeSpan.FromSeconds(1);
 
 		private void Load(object sender, EventArgs args)
 		{
@@ -51,7 +55,11 @@ namespace CivOne
 			SyncWindowedStateWithSettings();
 			
 			Runtime.CanvasSize = SetCanvasSize();
-			if (_runtime.SignalQuit) StopRunning();
+			if (_runtime.SignalQuit)
+			{
+				PersistPendingWindowPositionIfNeeded();
+				StopRunning();
+			}
 		}
 
 		private void ApplyFullscreenSettingChanges()
@@ -186,8 +194,31 @@ namespace CivOne
 				return;
 			}
 
-			_settingsWindowPosition = currentPosition;
-			Settings.WindowPosition = currentPosition;
+			if (!_hasPendingWindowPositionPersist || currentPosition != _pendingWindowPosition)
+			{
+				_pendingWindowPosition = currentPosition;
+				_lastWindowPositionChangeUtc = DateTime.UtcNow;
+				_hasPendingWindowPositionPersist = true;
+			}
+
+			if ((DateTime.UtcNow - _lastWindowPositionChangeUtc) < WindowPositionPersistDebounce)
+			{
+				return;
+			}
+
+			PersistPendingWindowPositionIfNeeded();
+		}
+
+		private void PersistPendingWindowPositionIfNeeded()
+		{
+			if (!_hasPendingWindowPositionPersist)
+			{
+				return;
+			}
+
+			_settingsWindowPosition = _pendingWindowPosition;
+			Settings.WindowPosition = _pendingWindowPosition;
+			_hasPendingWindowPositionPersist = false;
 		}
 
 		private void Draw(object sender, EventArgs args)
