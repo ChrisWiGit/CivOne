@@ -16,8 +16,5 @@
 	// Controls whether the editor should automatically close quotes after opening them.
 	"editor.autoClosingQuotes": "never",
 	// Controls whether the editor should automatically surround selections when typing quotes or brackets.
-	"editor.autoSurround": "never",
-	"chat.tools.terminal.autoApprove": {
-		"dotnet test": true
-	}
+	"editor.autoSurround": "never"
 }
