@@ -611,7 +611,7 @@ namespace CivOne
 			}
 			int windowPosX = -1;
 			int windowPosY = -1;
-			if (!GetSetting("WindowPosX", ref windowPosX, 0, MaxWindowWidth) || !GetSetting("WindowPosY", ref windowPosY, 0, MaxWindowHeight))
+			if (!GetSetting("WindowPosX", ref windowPosX, -MaxWindowWidth, MaxWindowWidth) || !GetSetting("WindowPosY", ref windowPosY, -MaxWindowHeight, MaxWindowHeight))
 			{
 				_windowPosition = new Point(-1, -1);
 			}
