@@ -18,17 +18,22 @@ namespace CivOne.Mcp.Tools
 
 		public ToolDefinition Definition => new(
 			"game_load",
-			"Loads a .cos save by file name from the configured MCP saves folder.",
+			"Loads a .cos save by file name or saveGuid from the configured MCP saves folder. Provide exactly one of fileName or saveGuid.",
 			new
 			{
 				type = "object",
-				required = new[] { "fileName" },
 				properties = new
 				{
 					fileName = new
 					{
 						type = "string",
 						description = "Save file name (for example: savegame_11.cos). File name only, no path segments."
+					},
+					saveGuid = new
+					{
+						type = "string",
+						format = "uuid",
+						description = "Stable save GUID as returned by game_list_saves. Scans all .cos files in the saves folder."
 					}
 				}
 			});
@@ -47,18 +52,34 @@ namespace CivOne.Mcp.Tools
 			if (!ValidateParamsObject(request, out McpResponse validationError))
 				return validationError;
 
-			if (!TryReadRequiredFileName(request.Params, out string fileName, out string fileNameError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", fileNameError, "fileName"));
+			TryReadOptionalFileName(request.Params, out string fileName);
+			TryReadOptionalSaveGuid(request.Params, out Guid saveGuid);
+
+			if (string.IsNullOrWhiteSpace(fileName) && saveGuid == Guid.Empty)
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", "Provide exactly one of 'fileName' or 'saveGuid'.", null));
+
+			if (!string.IsNullOrWhiteSpace(fileName) && saveGuid != Guid.Empty)
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", "Provide exactly one of 'fileName' or 'saveGuid', not both.", null));
 
 			string saveFolder = ResolveSaveFolder();
 			if (!Directory.Exists(saveFolder))
 				return JsonResponse(request.Id, BuildErrorPayload("SAVE_FOLDER_NOT_FOUND", "Configured MCP saves folder does not exist.", "saveFolder"));
 
-			if (!TryResolveSafeCosPath(saveFolder, fileName, out string fullPath, out string pathError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_FILE_NAME", pathError, "fileName"));
+			string fullPath;
+			if (saveGuid != Guid.Empty)
+			{
+				if (!TryFindByGuid(saveFolder, saveGuid, out fullPath, out string resolvedFileName))
+					return JsonResponse(request.Id, BuildErrorPayload("FILE_NOT_FOUND", $"No .cos file with saveGuid '{saveGuid}' found in saves folder.", "saveGuid"));
+				fileName = resolvedFileName;
+			}
+			else
+			{
+				if (!TryResolveSafeCosPath(saveFolder, fileName, out fullPath, out string pathError))
+					return JsonResponse(request.Id, BuildErrorPayload("INVALID_FILE_NAME", pathError, "fileName"));
 
-			if (!File.Exists(fullPath))
-				return JsonResponse(request.Id, BuildErrorPayload("FILE_NOT_FOUND", "Save file not found.", "fileName"));
+				if (!File.Exists(fullPath))
+					return JsonResponse(request.Id, BuildErrorPayload("FILE_NOT_FOUND", "Save file not found.", "fileName"));
+			}
 
 			if (!CosSaveFileInspector.TryInspect(fullPath, out CosSaveFileInspection inspection))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_SAVE_FILE", "Save file could not be parsed as a valid .cos save.", "fileName"));
@@ -99,6 +120,25 @@ namespace CivOne.Mcp.Tools
 				configuredFolder = Settings.Instance.CosSavesDirectory;
 
 			return Path.GetFullPath(configuredFolder);
+		}
+
+		private static bool TryFindByGuid(string saveFolder, Guid saveGuid, out string fullPath, out string fileName)
+		{
+			fullPath = null;
+			fileName = null;
+
+			foreach (string candidate in Directory.EnumerateFiles(saveFolder, "*.cos", SearchOption.TopDirectoryOnly))
+			{
+				if (!CosSaveFileInspector.TryInspect(candidate, out CosSaveFileInspection inspection))
+					continue;
+				if (inspection.SaveGuid.HasValue && inspection.SaveGuid.Value == saveGuid)
+				{
+					fullPath = candidate;
+					fileName = Path.GetFileName(candidate);
+					return true;
+				}
+			}
+			return false;
 		}
 
 		private static bool TryResolveSafeCosPath(string saveFolder, string fileName, out string fullPath, out string error)
@@ -193,6 +233,25 @@ namespace CivOne.Mcp.Tools
 			return false;
 		}
 
+		private static void TryReadOptionalFileName(JsonElement value, out string fileName)
+		{
+			fileName = null;
+			if (value.ValueKind != JsonValueKind.Object) return;
+			if (!value.TryGetProperty("fileName", out JsonElement prop)) return;
+			if (prop.ValueKind == JsonValueKind.String)
+				fileName = prop.GetString()?.Trim();
+		}
+
+		private static void TryReadOptionalSaveGuid(JsonElement value, out Guid saveGuid)
+		{
+			saveGuid = Guid.Empty;
+			if (value.ValueKind != JsonValueKind.Object) return;
+			if (!value.TryGetProperty("saveGuid", out JsonElement prop)) return;
+			if (prop.ValueKind == JsonValueKind.String && Guid.TryParse(prop.GetString(), out Guid parsed))
+				saveGuid = parsed;
+		}
+
+		[Obsolete("Kept for reference only")]
 		private static bool TryReadRequiredFileName(JsonElement value, out string fileName, out string error)
 		{
 			fileName = null;

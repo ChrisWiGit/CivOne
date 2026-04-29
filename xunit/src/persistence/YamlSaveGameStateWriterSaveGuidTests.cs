@@ -29,16 +29,17 @@ namespace CivOne.UnitTests.Persistence
 			using StreamReader reader = new(stream);
 			string yaml = reader.ReadToEnd();
 
-			SaveGameFileRootDto actual = YamlReader
+			SaveGame1FileRootDto actual = YamlReader
 				.OfString(yaml)
 				.WithStandard()
 				.WithTypeConverter(new MapDtoTileDtoYamlConverter())
-				.As<SaveGameFileRootDto>();
+				.As<SaveGame1FileRootDto>();
 
 			Assert.NotNull(actual);
-			Assert.True(actual.SaveGuid.HasValue);
-			Assert.NotEqual(Guid.Empty, actual.SaveGuid.Value);
-			Assert.Equal(saveMetaData.SaveGuid, actual.SaveGuid.Value);
+			Assert.NotNull(actual.Meta);
+			Assert.True(actual.Meta.SaveGuid.HasValue);
+			Assert.NotEqual(Guid.Empty, actual.Meta.SaveGuid.Value);
+			Assert.Equal(saveMetaData.SaveGuid, actual.Meta.SaveGuid.Value);
 		}
 
 		private sealed class StubYamlSaveGameStateWriter : YamlSaveGameStateWriter

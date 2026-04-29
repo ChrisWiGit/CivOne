@@ -48,16 +48,17 @@ namespace CivOne.UnitTests
 
 		private static void CreateValidCos(string filePath)
 		{
-			SaveGameFileRootDto root = new()
+			var saveGuid = Guid.NewGuid();
+			SaveGame1FileRootDto root = new()
 			{
-				FormatVersion = SaveGameFileRootDto.CurrentFormatVersion,
-				SaveGuid = Guid.NewGuid(),
+				FormatVersion = SaveGame1FileRootDto.CurrentFormatVersion,
 				Meta = new SaveGameMetaDataDto
 				{
 					GameStartedAt = DateTimeOffset.UtcNow.ToString("O"),
 					GameVersion = "test",
 					PlayDurationMinutes = 0,
-					DisplayName = "Test Save"
+					DisplayName = "Test Save",
+					SaveGuid = saveGuid
 				},
 				GameState = new GameStateDto
 				{

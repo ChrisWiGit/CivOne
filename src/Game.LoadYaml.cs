@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using CivOne.Enums;
@@ -28,6 +29,7 @@ namespace CivOne
 	{
 		private readonly IValueSanitizer _valueSanitizer;
 
+		// CW: TODO: should be made a service for future.
 		private sealed class RuntimeLogger : ILogger
 		{
 			public void Log(string text, params object[] parameters)
@@ -207,32 +209,9 @@ namespace CivOne
 				var mapper = new GameStateDtoMapper(deps.PlayerMapper, deps.UnitMapper, deps.MapMapper, deps.GlobalWarmingMapper, deps.Sanitizer);
 				var yaml = File.ReadAllText(cosFile);
 
-				SaveGameFileRootDto saveFile = null;
-				GameStateDto dto = null;
-				Guid saveGuid = Guid.NewGuid();
-
-				try
-				{
-					saveFile = YamlReader
-						.OfString(yaml)
-						.WithStandard()
-						.WithTypeConverter(new MapDtoTileDtoYamlConverter())
-						.As<SaveGameFileRootDto>();
-
-					dto = saveFile?.GameState;
-					if (saveFile?.SaveGuid is Guid parsedSaveGuid && parsedSaveGuid != Guid.Empty)
-						saveGuid = parsedSaveGuid;
-				}
-				catch
-				{
-					// Legacy format fallback is handled below.
-				}
-
-				dto ??= YamlReader
-						.OfString(yaml)
-						.WithStandard()
-						.WithTypeConverter(new MapDtoTileDtoYamlConverter())
-						.As<GameStateDto>();
+				VersionedSaveFile parsedSaveFile = ParseVersionedSaveFile(yaml);
+				var dto = parsedSaveFile.GameState;
+				var saveGuid = parsedSaveFile.SaveGuid;
 
 				// Reset static player context only for the hydration window,
 				// then Game(state) will set Player.Game to the new game instance.
@@ -240,14 +219,14 @@ namespace CivOne
 				var state = mapper.FromDto(dto);
 				_instance = new Game(state);
 
-				if (saveFile?.Meta != null)
+				if (parsedSaveFile.Meta != null)
 				{
-					var playDuration = TimeSpan.FromMinutes(Math.Max(0L, saveFile.Meta.PlayDurationMinutes));
+					var playDuration = TimeSpan.FromMinutes(Math.Max(0L, parsedSaveFile.Meta.PlayDurationMinutes));
 					_instance.SaveMetaData.RestoreFromSave(
-						saveFile.Meta.GetCreatedAtOr(DateTimeOffset.UtcNow),
-						saveFile.Meta.GameVersion,
+						parsedSaveFile.Meta.GetCreatedAtOr(DateTimeOffset.UtcNow),
+						parsedSaveFile.Meta.GameVersion,
 						playDuration,
-						saveFile.Meta.DisplayName,
+						parsedSaveFile.Meta.DisplayName,
 						saveGuid);
 				}
 				else
@@ -266,6 +245,49 @@ namespace CivOne
 				BaseInstance.Log("LoadYamlGame failed: {0}", ex);
 				return false;
 			}
+		}
+
+		private readonly record struct VersionedSaveFile(GameStateDto GameState, SaveGameMetaDataDto Meta, Guid SaveGuid);
+
+		/// <summary>
+		/// This is the main entry point for loading a YAML save file. It reads the file, determines the format version, and dispatches to the appropriate parser. It returns a VersionedSaveFile containing the GameStateDto, metadata, and save GUID. 
+		/// The GameStateDto is then mapped to the runtime GameState and used to construct the Game instance.
+		/// Currently, only format version 1 is supported, which corresponds to SaveGame1FileRootDto. Future versions can be added with new DTOs and parsing logic as needed.
+		/// </summary>
+		/// <param name="yaml"></param>
+		/// <returns></returns>
+		/// <exception cref="NotSupportedException"></exception>
+		private static VersionedSaveFile ParseVersionedSaveFile(string yaml)
+		{
+			uint formatVersion = ReadFormatVersion(yaml);
+
+			return formatVersion switch
+			{
+				SaveGame1FileRootDto.CurrentFormatVersion => ParseSaveV1(yaml),
+				_ => throw new NotSupportedException($"Save file format version {formatVersion} is not supported.")
+			};
+		}
+
+		private static VersionedSaveFile ParseSaveV1(string yaml)
+		{
+			SaveGame1FileRootDto saveFile = YamlReader
+				.OfString(yaml)
+				.WithStandard()
+				.WithTypeConverter(new MapDtoTileDtoYamlConverter())
+				.As<SaveGame1FileRootDto>();
+
+			if (saveFile?.GameState == null)
+				throw new InvalidOperationException("GameState is required in save file.");
+
+			Guid saveGuid = saveFile.Meta?.SaveGuid ?? Guid.NewGuid();
+			return new VersionedSaveFile(saveFile.GameState, saveFile.Meta, saveGuid);
+		}
+
+		private static uint ReadFormatVersion(string yaml)
+		{
+			// Quick regex to extract FormatVersion from YAML without full parse
+			var match = System.Text.RegularExpressions.Regex.Match(yaml, @"FormatVersion:\s*(\d+)");
+			return match.Success && uint.TryParse(match.Groups[1].Value, out var version) ? version : 0;
 		}
 	}
 }

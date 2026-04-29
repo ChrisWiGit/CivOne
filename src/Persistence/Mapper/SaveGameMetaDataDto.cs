@@ -5,9 +5,8 @@ using CivOne.Persistence.Model.Attributes;
 namespace CivOne.Persistence.Model
 {
 	/// <summary>
-	/// DTO for the metadata section of a save game file, containing information about the save's creation time, game version, play duration, and display name.
+	/// DTO for the metadata section of a save game file, containing information about the save's creation time, game version, play duration, display name, and save GUID.
 	/// This class is designed for serialization and deserialization of save game metadata, with methods to convert to and from the runtime SaveMetaData class.
-	/// It will be used as part of the overall SaveGameFileDto which encapsulates both metadata and game state for saving and loading games.
 	/// </summary>
 	public class SaveGameMetaDataDto
 	{
@@ -19,6 +18,9 @@ namespace CivOne.Persistence.Model
 
 		[Doc("A user-friendly name for the save game, which can be displayed in load/save dialogs. This is not used by the game logic and is purely for presentation purposes.")]
 		public string DisplayName { get; set; }
+
+		[Doc("Stable save GUID that uniquely identifies this save across sessions. Generated at save time, persists across load/save cycles.")]
+		public Guid? SaveGuid { get; set; }
 
 		public DateTimeOffset GetCreatedAtOr(DateTimeOffset fallbackUtc)
 		{

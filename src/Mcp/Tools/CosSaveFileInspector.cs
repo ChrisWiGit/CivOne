@@ -34,11 +34,11 @@ namespace CivOne.Mcp.Tools
 
 			try
 			{
-				SaveGameFileRootDto root = YamlReader
+				SaveGame1FileRootDto root = YamlReader
 					.OfString(yaml)
 					.WithStandard()
 					.WithTypeConverter(new MapDtoTileDtoYamlConverter())
-					.As<SaveGameFileRootDto>();
+					.As<SaveGame1FileRootDto>();
 
 				if (root?.GameState == null)
 					return false;
@@ -46,7 +46,7 @@ namespace CivOne.Mcp.Tools
 				inspection = new CosSaveFileInspection
 				{
 					FormatVersion = root.FormatVersion,
-					SaveGuid = root.SaveGuid,
+					SaveGuid = root.Meta?.SaveGuid,
 					Meta = root.Meta,
 					GameState = root.GameState
 				};
