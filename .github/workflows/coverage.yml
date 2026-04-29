@@ -30,7 +30,7 @@ jobs:
           xunit/CivOne.UnitTests.csproj
           --collect:"XPlat Code Coverage"
           --results-directory TestResults
-          --filter "FullyQualifiedName!~CivOne.UnitTests.CityCitizenServiceImplPerformanceTests.Measure"
+          --filter "FullyQualifiedName!~CivOne.UnitTests.CityCitizenServiceImplPerformanceTests.Measure&Category!=IntegrationLocalData&TestCategory!=IntegrationLocalData"
 
       - name: Generate coverage report
         uses: danielpalme/ReportGenerator-GitHub-Action@5

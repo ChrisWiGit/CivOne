@@ -13,6 +13,7 @@ Ensure MCP-related tasks use consistent rules and point to the canonical referen
 - If the MCP server cannot be reached or is unavailable, clearly state this to the user.
 - Keep implementation changes aligned with documented MCP method names and payload shapes.
 - When adding or changing MCP tools, update [MCP.md](../../MCP.md) in the same change.
+- Every tool must have a `docs/mcp-tools/<tool_name>/input.schema.json` and `output.schema.json` (JSON Schema Draft-07). Update these files in the same commit as the tool change.
 - Prefer concise examples that match current behavior.
 
 ## Scope

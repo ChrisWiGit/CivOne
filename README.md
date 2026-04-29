@@ -306,6 +306,32 @@ To skip them use
 dotnet test --filter "FullyQualifiedName!~ZOCTests&FullyQualifiedName!~IrrigateTest"
 ```
 
+The test suite uses two integration trait categories.
+
+* `IntegrationEarthYaml` is for integration tests that rely only on bundled Earth YAML test data.
+* `IntegrationLocalData` is for integration tests that require local proprietary game data files.
+
+CI workflows run `IntegrationEarthYaml` tests.
+CI workflows skip `IntegrationLocalData` tests.
+
+Run all tests except local-data integration tests.
+
+```sh
+dotnet test --filter "Category!=IntegrationLocalData&TestCategory!=IntegrationLocalData"
+```
+
+Run only Earth YAML integration tests.
+
+```sh
+dotnet test --filter "Category=IntegrationEarthYaml|TestCategory=IntegrationEarthYaml"
+```
+
+Run only local-data integration tests.
+
+```sh
+dotnet test --filter "Category=IntegrationLocalData|TestCategory=IntegrationLocalData"
+```
+
 ### Test coverage
 
 This repository supports code coverage with Coverlet and ReportGenerator.
@@ -375,6 +401,8 @@ CivOne.SDL.exe --mcp
 
 The server communicates over stdio and prints a session token to `stderr` on startup.
 That token must be included in every request.
+
+> There is a mcp.json file for Visual Studio Code MCP client integration. You can use `Ctrl+Shift+P` → "MCP: List Servers" to start/connect to `civone`'s MCP server and send requests directly from VS Code.
 
 For activation, request examples, available tools, response format, and Visual Studio Code integration, see [MCP.md](MCP.md).
 For internal architecture and implementation notes, see [docs/MCP.md](docs/MCP.md).

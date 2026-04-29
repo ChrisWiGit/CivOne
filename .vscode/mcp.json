@@ -9,6 +9,8 @@
 				"--mcp-no-auth",
 				"--mcp-artifacts",
 				"${workspaceFolder}/.mcp-artifacts",
+				"--mcp-saves",
+				"${workspaceFolder}/.saves",
 				"--load-cos",
 				"${workspaceFolder}/.saves/savegame_11.cos"
 			]

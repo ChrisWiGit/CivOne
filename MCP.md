@@ -1,12 +1,13 @@
 # MCP Integration
 
 CivOne includes a built-in MCP server for local automation.
-The current scope includes screenshot capture and structured game-state read access.
+The current scope includes screenshot capture, structured game-state read access, and COS save listing/loading.
 
 ## Enable MCP
 
 Start the SDL runtime with `--mcp`.
 Use `--mcp-artifacts <path>` to choose where captured images are stored.
+Use `--mcp-saves <path>` to choose where MCP save listing/loading reads `.cos` files from.
 Use `--mcp-no-auth` when you want to run without session-token authentication.
 
 Windows:
@@ -176,7 +177,18 @@ Direct method call also works:
 | `game_capture_screenshot` | Captures a full-frame PNG screenshot. | none |
 | `game_capture_region` | Captures a cropped PNG screenshot. | `x`, `y`, `width`, `height` |
 | `game_get_settings` | Returns persistent and runtime settings, with readable labels for enum and flag values. | none |
+| `game_get_map_size` | Returns map dimensions and wrap semantics for the active game. | none |
+| `game_get_map_window` | Returns a bounded map window using required `x`, `y`, `width`, `height` and optional visibility overlay. | `x`, `y`, `width`, `height` |
+| `game_get_map_landvalues_window` | Returns bounded map land values for required `x`, `y`, `width`, `height`. | `x`, `y`, `width`, `height` |
+| `game_get_visibility` | Returns explored/visible masks for a player, optionally bounded by a box. | `playerId` |
 | `game_get_state` | Returns a JSON projection of the current game state (summary by default, path-based subsets on demand). | none |
+| `game_get_entities_index` | Returns a compact index of all players and cities with stable GUIDs and display names. | none |
+| `game_validate_path` | Validates a dot-notation GameState path without returning the full node payload. | `path` |
+| `game_get_units` | Returns units with optional filters (`playerId`, `playerGuid`, `className`, `locationRadius`) and optional key projection. | none |
+| `game_get_city` | Returns a single city by `cityId`, `cityName`, or `cityNameStartsWith`, including compact production/unrest/happiness views. | one selector: `cityId` or `cityName` or `cityNameStartsWith` |
+| `game_get_player` | Returns one full player by `playerId` (index) or `playerGuid`, with optional key projection. | one selector: `playerId` or `playerGuid` |
+| `game_list_saves` | Returns metadata for valid `.cos` save files in the configured MCP saves folder. Invalid files are omitted. | none |
+| `game_load` | Loads a `.cos` save by file name from the configured MCP saves folder. | `fileName` |
 | `game_get_players` | Returns players data (all or one player) with optional key projection. | none |
 | `game_get_cities` | Returns city data (all, by player, or by city id) with optional key projection. | none |
 
@@ -253,6 +265,7 @@ Current key catalogue for `game_get_settings` (source of truth: [src/Mcp/Tools/G
 - `runtime.noSound`
 - `runtime.softwareRender`
 - `runtime.mcpArtifacts`
+- `runtime.mcpSaves`
 - `runtime.mcpMaxJsonChars`
 
 Notes:
@@ -274,6 +287,134 @@ If `path` is omitted, the tool returns a compact summary (turn, player, aggregat
 - `keys` (array of field names)
 
 If `keys` is omitted, all fields are returned.
+
+`game_get_map_size` accepts no arguments and returns:
+
+- `width`, `height`
+- `wrapX`, `wrapY`
+
+`game_get_map_window` accepts:
+
+- required `x`, `y`, `width`, `height`
+- optional `visibilityForPlayerId` (0-based)
+- optional `format` (`decoded` or `encoded`, default `decoded`)
+- optional `includeMeta` (for `encoded`, `meta` is always included)
+
+Bounds for `x`, `y`, `width`, and `height` are strict:
+
+- `x >= 0`, `y >= 0`
+- `width > 0`, `height > 0`
+- `x + width <= mapWidth`, `y + height <= mapHeight`
+
+Invalid bounds return `INVALID_BOUNDS`.
+
+When `format = encoded`, `meta` includes a docs path reference ([docs/YAML_TILE_ENCODING.md](docs/YAML_TILE_ENCODING.md)) and notes that `landValues` are not included.
+
+`game_get_map_landvalues_window` accepts:
+
+- required `x`, `y`, `width`, `height`
+
+Bounds are validated with the same strict rules as `game_get_map_window`.
+The response includes `rows` in `hex-csv-per-row` format (for example `"01,0A,FF"`).
+
+## `game_get_map_landvalues_window` request/response example
+
+Request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "12",
+  "method": "tools/call",
+  "sessionToken": "<token>",
+  "params": {
+    "name": "game_get_map_landvalues_window",
+    "arguments": {
+      "x": 0,
+      "y": 0,
+      "width": 3,
+      "height": 2
+    }
+  }
+}
+```
+
+Response shape:
+
+```json
+{
+  "ok": true,
+  "truncated": false,
+  "maxChars": 32000,
+  "returnedChars": 187,
+  "data": {
+    "mapSize": { "width": 80, "height": 50 },
+    "bounds": { "x": 0, "y": 0, "width": 3, "height": 2 },
+    "landValuesFormat": "hex-csv-per-row",
+    "rows": [
+      "01,0A,FF",
+      "02,0B,10"
+    ]
+  }
+}
+```
+
+`game_get_visibility` accepts:
+
+- required `playerId` (0-based)
+- optional `x`, `y`, `width`, `height` as a bounding box
+
+If any bounding-box field is provided, all four fields must be provided.
+
+`game_get_entities_index` accepts no arguments and returns:
+
+- `gameTurn` — current turn number
+- `players[]` — `{ id, playerGuid, tribeName }` for every player
+- `cities[]` — `{ id, name, owner, ownerGuid }` for every city across all players
+
+This is a cheap first call to discover entity identifiers before querying details with `game_get_players` or `game_get_cities`.
+
+`game_validate_path` accepts:
+
+- required `path` — dot-notation path that must start with `GameState` (e.g. `GameState.Players[0].Gold`)
+
+Returns `{ ok, valid, path, valueKind }` when the path resolves successfully, or `{ ok, valid=false, error }` with a structured error code when it does not. Does **not** return the node value — use `game_get_state` with the same path for that.
+
+Error codes specific to `game_validate_path`:
+
+| Code | Meaning |
+| ---- | ------- |
+| `MISSING_PARAM` | `path` was not provided. |
+| `INVALID_PATH_ROOT` | Path does not start with `GameState`. |
+| `INVALID_PATH` | Path syntax is invalid or a segment does not exist. |
+
+`game_get_units` accepts optional:
+
+- `playerId` (0-based owner index)
+- `playerGuid` (stable owner GUID)
+- `className` (case-insensitive exact match)
+- `locationRadius` object with `x`, `y`, and `radius` (Euclidean distance)
+- `keys` (array of field names)
+
+The response returns units with owner metadata (`owner`, `ownerGuid`, `ownerTribeName`).
+
+`game_get_city` accepts:
+
+- exactly one selector: `cityId` (GUID) or `cityName` (exact, case-insensitive) or `cityNameStartsWith` (prefix, case-insensitive)
+- optional `keys` (array of field names)
+
+The response returns one city enriched with:
+
+- `productionView`: compact production state (`productionId`, `price`, `buyPrice`, `storedShields`, `remainingShields`)
+- `unrestView`: compact unrest state (`isRiot`, `wasInDisorder`, `isCelebrating`, `celebrationCancelled`)
+- `happinessView`: compact mood summary (`size`, `entertainerCount`, `specialistCount`, `mood`)
+
+`game_get_player` accepts:
+
+- exactly one selector: `playerId` (0-based index) or `playerGuid` (GUID)
+- optional `keys` (array of field names)
+
+The response returns one full player object (or projected keys only).
 
 ## Recommended high-value game-state fields (compact)
 
@@ -488,7 +629,7 @@ Specific path:
 
 ## Size limit configuration
 
-`game_get_state`, `game_get_players`, `game_get_cities`, and `game_get_settings` use a default response limit of `32000` characters.
+`game_get_state`, `game_get_entities_index`, `game_validate_path`, `game_get_units`, `game_get_city`, `game_get_player`, `game_list_saves`, `game_load`, `game_get_players`, `game_get_cities`, `game_get_settings`, `game_get_map_size`, `game_get_map_window`, `game_get_map_landvalues_window`, and `game_get_visibility` use a default response limit of `32000` characters.
 You can override it via runtime setting key `mcp-max-json-chars`.
 
 ## Screenshot result
@@ -564,6 +705,7 @@ For a direct setup without token handling, use `--mcp-no-auth` in your workspace
         "--mcp",
         "--mcp-no-auth",
         "--mcp-artifacts", "${workspaceFolder}/.mcp-artifacts",
+        "--mcp-saves", "${workspaceFolder}/.saves",
         "--load-cos", "${workspaceFolder}/.saves/savegame_11.cos"
       ]
     }
@@ -572,6 +714,7 @@ For a direct setup without token handling, use `--mcp-no-auth` in your workspace
 ```
 
 Use `${workspaceFolder}` in `--mcp-artifacts` to keep screenshots inside the project.
+Use `${workspaceFolder}` in `--mcp-saves` to make MCP save listing/loading deterministic per workspace.
 VS Code resolves this variable relative to the workspace root before starting the process.
 
 If you prefer token auth, remove `--mcp-no-auth` and forward `MCP_SESSION_TOKEN` from stderr in your client flow.
@@ -584,6 +727,39 @@ Use the CivOne MCP tools to capture the current game screen and tell me whether 
 
 You can also use the chat tool picker to enable or disable CivOne tools for a prompt.
 VS Code discovers tool definitions from the MCP server and makes them available to chat once the server starts successfully.
+
+## JSON Schemas
+
+Every tool has a pair of JSON Schema (Draft-07) files under `docs/mcp-tools/<tool_name>/`:
+
+| File | Purpose |
+| ---- | ------- |
+| `input.schema.json` | Valid arguments for the `arguments` object of a `tools/call` request. |
+| `output.schema.json` | Shape of the JSON inside the MCP `content[0].text` response field. |
+
+Tool schemas:
+
+| Tool | Schema folder |
+| ---- | ------------- |
+| `game_capture_screenshot` | [docs/mcp-tools/game_capture_screenshot/](docs/mcp-tools/game_capture_screenshot/) |
+| `game_capture_region` | [docs/mcp-tools/game_capture_region/](docs/mcp-tools/game_capture_region/) |
+| `game_get_settings` | [docs/mcp-tools/game_get_settings/](docs/mcp-tools/game_get_settings/) |
+| `game_get_map_size` | [docs/mcp-tools/game_get_map_size/](docs/mcp-tools/game_get_map_size/) |
+| `game_get_map_window` | [docs/mcp-tools/game_get_map_window/](docs/mcp-tools/game_get_map_window/) |
+| `game_get_map_landvalues_window` | [docs/mcp-tools/game_get_map_landvalues_window/](docs/mcp-tools/game_get_map_landvalues_window/) |
+| `game_get_visibility` | [docs/mcp-tools/game_get_visibility/](docs/mcp-tools/game_get_visibility/) |
+| `game_get_state` | [docs/mcp-tools/game_get_state/](docs/mcp-tools/game_get_state/) |
+| `game_get_entities_index` | [docs/mcp-tools/game_get_entities_index/](docs/mcp-tools/game_get_entities_index/) |
+| `game_validate_path` | [docs/mcp-tools/game_validate_path/](docs/mcp-tools/game_validate_path/) |
+| `game_get_units` | [docs/mcp-tools/game_get_units/](docs/mcp-tools/game_get_units/) |
+| `game_get_city` | [docs/mcp-tools/game_get_city/](docs/mcp-tools/game_get_city/) |
+| `game_get_player` | [docs/mcp-tools/game_get_player/](docs/mcp-tools/game_get_player/) |
+| `game_list_saves` | [docs/mcp-tools/game_list_saves/](docs/mcp-tools/game_list_saves/) |
+| `game_load` | [docs/mcp-tools/game_load/](docs/mcp-tools/game_load/) |
+| `game_get_players` | [docs/mcp-tools/game_get_players/](docs/mcp-tools/game_get_players/) |
+| `game_get_cities` | [docs/mcp-tools/game_get_cities/](docs/mcp-tools/game_get_cities/) |
+
+When adding or changing a tool, update the corresponding schema files in the same commit.
 
 ## More details
 
