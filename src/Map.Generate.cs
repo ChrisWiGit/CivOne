@@ -428,7 +428,7 @@ namespace CivOne
                     }
                 oOcean = true;
             }
-            Log( "Map: �Total number of tiles = {0}", nTiles );
+            Log( "Map: Total number of tiles = {0}", nTiles );
         }
 
         /* ***********************************************************************************************/
