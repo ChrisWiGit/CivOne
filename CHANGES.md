@@ -6,6 +6,11 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Add end credit score screen after conquering the world, showing the final score and ranking of the player.
+  * Shows the player's final score and rank compared to historical civilizations.
+  * Uses the original game's scoring system and ranking thresholds (may currently show only 0)
+  * Triggered after the conquest screen when the player wins by conquering the world.
+  * TODO: implement the actual score calculation logic based on the player's achievements and game state at the end of the game.
 * Feature: Added quick save and quick load hotkeys with profile-based COS slots.
   * `Ctrl+F1` to `Ctrl+F10` saves quick slots to `fastsave_f1.cos` to `fastsave_f10.cos`.
   * `Alt+F1` to `Alt+F10` loads quick slots from the same files.

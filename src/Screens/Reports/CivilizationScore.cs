@@ -115,19 +115,26 @@ namespace CivOne.Screens.Reports
 
 			int totalScore = 0;
 
-			var cities = Game.GetCities().Where(c => Human == c.Owner);
+			City[] cities = Human.Cities;
 			int fontHeight = Resources.GetFontHeight(0);
 			string tribeName = Human.TribeName;
 			int wonderCount = 0;
-			CitizenTypes[] citizens = Human.Cities.Select(c => c.GetCitizenTypes()).ToArray();
+			CitizenTypes[] citizens = cities.Select(c => c.GetCitizenTypes()).ToArray();
+
+			int cityCount = cities.Length;
+			int populationScore = Human.Population;
+			int cityScore = cityCount * 3;
+			int advanceScore = Human.Advances.Length * 10;
+			int goldScore = Math.Max(0, Human.Gold / 25);
+			int citizenScore = 0;
 
 			foreach (CitizenTypes cityCitizens in citizens)
 			{
-				totalScore += CityScore(cityCitizens);
+				citizenScore += CityScore(cityCitizens);
 			}
 
 			int yy = OffsetY + 32;
-			this.DrawText($"{tribeName} Citizens ({totalScore})", 0, 15, OffsetX + 8, yy);
+			this.DrawText($"{tribeName} Citizens ({citizenScore})", 0, 15, OffsetX + 8, yy);
 
 			int citizenStartX = OffsetX + 8;
 			int citizenMaxX = OffsetX + 312;
@@ -149,9 +156,24 @@ namespace CivOne.Screens.Reports
 			{
 				wonderCount += city.Wonders.Length;
 			}
+
+			int wonderScore = wonderCount * 50;
+			totalScore = citizenScore + cityScore + populationScore + advanceScore + wonderScore + goldScore;
+
 			yy = lastCitizenY + 16;
-			this.DrawText($"{tribeName} Achievements ({wonderCount})", 0, 15, OffsetX + 8, yy);
-			totalScore += wonderCount * 20;
+			this.DrawText($"Cities ({cityScore})", 0, 15, OffsetX + 8, yy);
+
+			yy += fontHeight + 4;
+			this.DrawText($"Population ({populationScore})", 0, 15, OffsetX + 8, yy);
+
+			yy += fontHeight + 4;
+			this.DrawText($"Advances ({advanceScore})", 0, 15, OffsetX + 8, yy);
+
+			yy += fontHeight + 4;
+			this.DrawText($"{tribeName} Achievements ({wonderScore})", 0, 15, OffsetX + 8, yy);
+
+			yy += fontHeight + 4;
+			this.DrawText($"Treasury ({goldScore})", 0, 15, OffsetX + 8, yy);
 
 			yy += fontHeight + 4;
 			this.DrawText($"Total Score: {totalScore}", 0, 15, OffsetX + 8, yy);
