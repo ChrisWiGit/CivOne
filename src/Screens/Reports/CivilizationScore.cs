@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Linq;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -19,6 +20,34 @@ namespace CivOne.Screens.Reports
 	internal class CivilizationScore : BaseReport
 	{
 		private bool _update = true;
+		private readonly long _ignoreInputUntil;
+
+		public override bool KeyDown(KeyboardEventArgs args)
+		{
+			if (Environment.TickCount64 < _ignoreInputUntil)
+			{
+				return true;
+			}
+
+			if (args.Key != Key.Enter && args.Key != Key.Space && args.Key != Key.Escape)
+			{
+				return true;
+			}
+
+			Destroy();
+			return true;
+		}
+
+		public override bool MouseDown(ScreenEventArgs args)
+		{
+			if (Environment.TickCount64 < _ignoreInputUntil)
+			{
+				return true;
+			}
+
+			Destroy();
+			return true;
+		}
 
 		private void DrawHappyRow(Picture output, int yy, int happy, int content, int unhappy, int ent, int sci, int tax)
 		{
@@ -147,6 +176,7 @@ namespace CivOne.Screens.Reports
 
 		public CivilizationScore() : base("CIVILIZATION SCORE", 3)
 		{
+			_ignoreInputUntil = Environment.TickCount64 + 1200;
 			Render();
 		}
 	}

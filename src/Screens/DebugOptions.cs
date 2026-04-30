@@ -116,7 +116,7 @@ namespace CivOne.Screens
 			GameTask conquest;
 			GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has cheated", "the entire planet!"));
 			GameTask.Enqueue(conquest = Show.Screen<Conquest>());
-			conquest.Done += (s, a) => Runtime.Quit();
+			conquest.Done += (s, a) => RuntimeHandler.EndGame();
 			Destroy();
 		}
 

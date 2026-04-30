@@ -20,6 +20,7 @@ using CivOne.IO;
 using CivOne.Graphics;
 using CivOne.Graphics.ImageFormats;
 using CivOne.Screens;
+using CivOne.Screens.Reports;
 using CivOne.Graphics.Sprites;
 using CivOne.Services;
 using CivOne.Tasks;
@@ -65,9 +66,14 @@ namespace CivOne
 				return Common.Screens.Last(x => Common.HasAttribute<Modal>(x)).Update(_gameTick / 4);
 			
 			bool update = false;
-			foreach (IScreen screen in Common.Screens.Reverse())
+			IScreen[] screens = Common.Screens.Reverse().ToArray();
+			foreach (IScreen screen in screens)
 			{
+				// A previous screen update may destroy screens during this loop.
+				// Skip stale instances to avoid updating disposed bytemaps.
+				if (!Common.Screens.Contains(screen)) continue;
 				if (screen.Update(_gameTick / 4)) update = true;
+				if (!Common.Screens.Contains(screen)) continue;
 				if (Common.HasAttribute<Break>(screen)) return update;
 			}
 			return update;
@@ -124,7 +130,11 @@ namespace CivOne
 		private void OnDraw(object sender, EventArgs args)
 		{
 			IScreen topScreen = TopScreen;
-			if (topScreen == null) return;
+			if (topScreen == null)
+			{
+				Runtime.Layers = null;
+				return;
+			}
 
 			// sometimes during screen transitions, the top screen may be null or have a null palette. 
 			if (topScreen.Palette != null)
@@ -228,6 +238,20 @@ namespace CivOne
 				TopScreen?.MouseDrag(args);
 			}
 			TopScreen?.MouseMove(args);
+		}
+
+		internal static void EndGame()
+		{
+			GameTask.ClearAll();
+
+			foreach (IScreen screen in Common.Screens.ToArray())
+			{
+				Common.DestroyScreen(screen);
+			}
+
+			CivilizationScore civScore = new CivilizationScore();
+			civScore.Closed += (s, a) => ReturnToCredits();
+			Common.AddScreen(civScore);
 		}
 
 		internal static void ReturnToCredits()

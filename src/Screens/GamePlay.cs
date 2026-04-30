@@ -149,6 +149,11 @@ namespace CivOne.Screens
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
+			if (!Game.Started)
+			{
+				return false;
+			}
+
 			if (Common.TopScreen is GamePlay && !GameTask.Any())
 			{
 				Game.Update();

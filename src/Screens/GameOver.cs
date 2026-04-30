@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using CivOne.Enums;
+using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
 
@@ -20,6 +21,16 @@ namespace CivOne.Screens
 		private int _currentLine = 0;
 		private int _lineTick = 0;
 		
+		public override bool KeyDown(KeyboardEventArgs args)
+		{
+			if (args.Key == Key.Escape)
+			{
+				RuntimeHandler.EndGame();
+				return true;
+			}
+			return false;
+		}
+
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (gameTick % 10 != 0) return false;
@@ -29,7 +40,7 @@ namespace CivOne.Screens
 			
 			if (_textLines.Length <= _currentLine)
 			{
-				RuntimeHandler.ReturnToCredits();
+				RuntimeHandler.EndGame();
 				return true;
 			}
 			
