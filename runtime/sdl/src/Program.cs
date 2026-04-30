@@ -147,11 +147,6 @@ Try 'civone-sdl --help' for more information.
 						}
 
 						var artifactsDir = args[++i];
-						if (!Directory.Exists(artifactsDir))
-						{
-							Console.WriteLine($"MCP artifacts folder \"{artifactsDir}\" does not exist.");
-							return;
-						}
 						settings["mcp-artifacts"] = artifactsDir;
 						Console.WriteLine($"MCP artifacts folder set to \"{artifactsDir}\"");
 						continue;
