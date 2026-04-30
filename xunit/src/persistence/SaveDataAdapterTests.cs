@@ -9,6 +9,22 @@ namespace CivOne.UnitTests.Persistence
 	public class SaveDataAdapterTests : TestsBase
 	{
 		[Fact]
+		public void CivilizationIdentity_SetterAndGetter_RoundtripFlagsWithoutBitShiftRegression()
+		{
+			// Arrange
+			using var _testee = new SaveDataAdapter();
+			byte[] expected = [1, 0, 1, 1, 0, 1, 0, 1];
+
+			// Act
+			_testee.CivilizationIdentity = expected;
+			using var actualAdapter = SaveDataAdapter.Load(_testee.GetBytes());
+			byte[] actual = actualAdapter.CivilizationIdentity;
+
+			// Assert
+			Assert.Equal(expected, actual);
+		}
+
+		[Fact]
 		public void Cities_Setter_PreservesVisibleSizeInBinarySaveData()
 		{
 			// Arrange

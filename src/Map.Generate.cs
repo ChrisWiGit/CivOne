@@ -214,7 +214,7 @@ namespace CivOne
                         switch( _tiles[ x, y ].Type )
                         {
                             case Terrain.Swamp: _tiles[ x, y ] = new Forest( x, y, special ); break;
-                            case Terrain.Plains: new Grassland( x, y ); break;
+                            case Terrain.Plains: _tiles[ x, y ] = new Grassland( x, y ); break;
                             case Terrain.Grassland1:
                             case Terrain.Grassland2: _tiles[ x, y ] = new Jungle( x, y, special ); break;
                             case Terrain.Hills: _tiles[ x, y ] = new Forest( x, y, special ); break;
@@ -357,23 +357,6 @@ namespace CivOne
         private byte ContinentId;
         private ulong ContinetSize;
 
-        private void CountContinent( int x, int y, bool oOcean )
-        {
-            for( int i = 0; i < 4; i++ )
-            {
-                int XX = x + aiRelPos[ i, 0 ];
-                int YY = y + aiRelPos[ i, 1 ];
-                if( XX < 0 || XX >= WIDTH ) continue;
-                if( YY < 0 || YY >= HEIGHT ) continue;
-
-                if( this[ XX, YY ].IsOcean != oOcean ) continue;
-                if( this[ XX, YY ].ContinentId > 0 ) continue;    // Already counted
-                this[ XX, YY ].ContinentId = ContinentId;
-                ContinetSize++;
-                CountContinent( XX, YY, oOcean );
-            }
-        }
-
         /* ***********************************************************************************************************/
 
         private struct Continent
@@ -389,6 +372,14 @@ namespace CivOne
         {
             Log( "Map: Calculate continent/ocean sizes and give continents a number in size order" );
 
+            ContinentTraversalDelegate continentTraversal = new ContinentTraversalDelegate(
+                WIDTH,
+                HEIGHT,
+                aiRelPos,
+                (x, y) => this[ x, y ].IsOcean,
+                (x, y) => this[ x, y ].ContinentId,
+                (x, y, continentId) => this[ x, y ].ContinentId = continentId);
+
             for( int y = 0; y < HEIGHT; y++ )       // todo  remove JR
                 for( int x = 0; x < WIDTH; x++ )
                     this[ x, y ].ContinentId = 0;
@@ -403,10 +394,8 @@ namespace CivOne
                     for( int x = 0; x < WIDTH; x++ )
                         if( this[ x, y ].ContinentId == 0 && ( this[ x, y ].IsOcean == oOcean ))
                         {  // Found a "new" continent/ocean
-                            ContinetSize = 1;
                             ContinentId++;
-                            this[ x, y ].ContinentId = ContinentId;
-                            CountContinent( x, y, oOcean );         // Here is where the counting is done 
+                            ContinetSize = continentTraversal.CountContinent( x, y, oOcean, ContinentId );
                             Continent continent;
                             continent.ContinentId = ContinentId;
                             continent.ContinetSize = ContinetSize;
@@ -439,7 +428,7 @@ namespace CivOne
                     }
                 oOcean = true;
             }
-            Log( "Map: ´Total number of tiles = {0}", nTiles );
+            Log( "Map: Total number of tiles = {0}", nTiles );
         }
 
         /* ***********************************************************************************************/

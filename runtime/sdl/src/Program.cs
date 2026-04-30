@@ -8,6 +8,8 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.IO;
 using System.Text.RegularExpressions;
 using CivOne.Enums;
@@ -16,11 +18,23 @@ namespace CivOne
 {
 	internal class Program
 	{
+		private static readonly string[] MacSdlLibraryCandidates =
+		[
+			"/Library/Frameworks/SDL2.framework/Versions/Current/SDL2",
+			"/opt/homebrew/lib/libSDL2.dylib",
+			"/opt/homebrew/lib/libSDL2-2.0.0.dylib",
+			"/usr/local/lib/libSDL2.dylib",
+			"/usr/local/lib/libSDL2-2.0.0.dylib"
+		];
+
 		private static string ErrorText => @"civone-sdl: Invalid options: '{0}'
 Try 'civone-sdl --help' for more information.
 ";
+
 		private static void Main(string[] args)
 		{
+			RegisterNativeResolver();
+
 			RuntimeSettings settings = new RuntimeSettings();
 			settings["software-render"] = false;
 			settings["no-sound"] = false;
@@ -188,13 +202,14 @@ Try 'civone-sdl --help' for more information.
 				settings["no-sound"] = true;
 			}
 
-			using (Runtime runtime = new Runtime(settings))
-			using (GameWindow window = new GameWindow(runtime, (bool)settings["software-render"]))
-			{
-				runtime.Log("Game started");
-				window.Run();
-				runtime.Log("Game stopped");
-			}
+			using Runtime runtime = new(settings);
+			IUtcClock clock = new SystemUtcClock();
+			IDebounceService debounceService = DebounceServiceFactory.Create(message => runtime.Log(message), clock);
+			
+			using GameWindow window = new(runtime, (bool)settings["software-render"], debounceService);
+			runtime.Log("Game started");
+			window.Run();
+			runtime.Log("Game stopped");
 		}
 	}
 }

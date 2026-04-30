@@ -15,6 +15,7 @@ using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Governments;
 using CivOne.Leaders;
+using CivOne.Services.Pathfinding;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -29,6 +30,7 @@ namespace CivOne
 	{
 		public Player Player { get; }
 		public ILeader Leader => Player.Civilization.Leader;
+		private readonly IAiGotoExecutorFactory _gotoExecutorFactory;
 
 		internal void Move(IUnit unit)
 		{
@@ -134,6 +136,19 @@ namespace CivOne
 
 					if (!unit.Goto.IsEmpty)
 					{
+						IAiGotoExecutor gotoExecutor = _gotoExecutorFactory.CreateFor(unit);
+						AiGotoExecutionResult gotoExecutionResult = gotoExecutor.TryExecute(unit);
+
+						if (gotoExecutionResult == AiGotoExecutionResult.Continue)
+						{
+							continue;
+						}
+
+						if (gotoExecutionResult == AiGotoExecutionResult.TurnComplete)
+						{
+							return;
+						}
+
 						int distance = unit.Tile.DistanceTo(unit.Goto);
 						ITile[] tiles = unit.MoveTargets.OrderBy(x => x.DistanceTo(unit.Goto)).ThenBy(x => x.Movement).ToArray();
 						if (tiles.Length == 0 || tiles[0].DistanceTo(unit.Goto) > distance)
@@ -302,13 +317,18 @@ namespace CivOne
 		{
 			if (_instances.ContainsKey(player))
 				return _instances[player];
-			_instances.Add(player, new AI(player));
+			_instances.Add(player, Create(player));
 			return _instances[player];
 		}
 
-		private AI(Player player)
+		private AI(Player player, IAiGotoExecutorFactory gotoExecutorFactory)
 		{
 			Player = player;
+			_gotoExecutorFactory = gotoExecutorFactory;
 		}
+
+		private static IAiGotoExecutorFactory CreateGotoExecutorFactory() => IAiGotoExecutorFactory.Create();
+
+		internal static AI Create(Player player) => new(player, CreateGotoExecutorFactory());
 	}
 }

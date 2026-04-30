@@ -22,9 +22,11 @@ namespace CivOne
 		{
 			get
 			{
-				if (Settings.AspectRatio != AspectRatio.Expand || Settings.ExpandWidth == -1 || Settings.ExpandHeight == -1)
+				if (Settings.AspectRatio != AspectRatio.Expand)
 					return new Size(320, 200);
-				return new Size(Settings.ExpandWidth, Settings.ExpandHeight);
+				if (Settings.ExpandWidth > 0 && Settings.ExpandHeight > 0)
+					return new Size(Settings.ExpandWidth, Settings.ExpandHeight);
+				return new Size(320, 200);
 			}
 		}
 
@@ -72,7 +74,7 @@ namespace CivOne
 
 		private Size SetCanvasSize()
 		{
-			if (Settings.AspectRatio != AspectRatio.Expand || (ScaleX < 1 || ScaleY < 1))
+			if (Settings.AspectRatio != AspectRatio.Expand)
 			{
 				return DefaultCanvasSize;
 			}
@@ -80,13 +82,15 @@ namespace CivOne
 			int cw = ClientRectangle.Width, ch = ClientRectangle.Height;
 			int scale = new int[] { (cw - (cw % 320)) / 320, (ch - (ch % 200)) / 200 }.Min();
 
-			if (Settings.ExpandWidth != -1 && Settings.ExpandHeight != -1)
+			bool hasExplicitExpandSize = Settings.ExpandWidth > 0 && Settings.ExpandHeight > 0;
+			if (hasExplicitExpandSize)
 			{
 				cw = Settings.ExpandWidth;
 				ch = Settings.ExpandHeight;
 			}
 			else
 			{
+				if (scale < 1) scale = 1;
 				cw /= scale;
 				ch /= scale;
 			}
@@ -95,19 +99,21 @@ namespace CivOne
 			cw -= (cw % 8);
 			ch -= (ch % 8);
 
-			// Set maximum bounds to 512x384, the maximum logical boundaries 
-			// according this this table: https://github.com/SWY1985/CivOne/wiki/Settings#expand-experimental
-			if (cw > 512) cw = 512;
-			if (ch > 384) ch = 384;
+			// CW: Keep auto-expand conservative for stability, but allow larger explicit user values.
+			// Original: https://github.com/Solen1985/CivOne/wiki/Settings#expand-experimental
+			int maxWidth  = hasExplicitExpandSize ? Settings.MaxExpandWidth  : Settings.AutoExpandMaxWidth;
+			int maxHeight = hasExplicitExpandSize ? Settings.MaxExpandHeight : Settings.AutoExpandMaxHeight;
+			if (cw > maxWidth) cw = maxWidth;
+			if (ch > maxHeight) ch = maxHeight;
 
 			return new Size(cw, ch);
 		}
 
-		private static int InitialCanvasWidth => DefaultCanvasSize.Width;
-		private static int InitialCanvasHeight => DefaultCanvasSize.Height;
+		private static int InitialCanvasWidth => 320;
+		private static int InitialCanvasHeight => 200;
 
-		private static int InitialWidth => InitialCanvasWidth * Settings.Scale;
-		private static int InitialHeight => InitialCanvasHeight * Settings.Scale;
+		private static int InitialWidth => Settings.WindowWidth > 0 ? Settings.WindowWidth : InitialCanvasWidth * Settings.Scale;
+		private static int InitialHeight => Settings.WindowHeight > 0 ? Settings.WindowHeight : InitialCanvasHeight * Settings.Scale;
 
 		private Size ClientRectangle => new Size(Width, Height);
 
@@ -132,8 +138,8 @@ namespace CivOne
 						int scaleX = (ClientRectangle.Width - (ClientRectangle.Width % cw)) / cw;
 						int scaleY = (ClientRectangle.Height - (ClientRectangle.Height % ch)) / ch;
 						if (scaleX > scaleY)
-							return scaleY;
-						return scaleX;
+								return scaleY < 1 ? 1 : scaleY;
+							return scaleX < 1 ? 1 : scaleX;
 					default:
 						return (ClientRectangle.Width - (ClientRectangle.Width % cw)) / cw;
 				}
@@ -156,8 +162,8 @@ namespace CivOne
 						int scaleX = (ClientRectangle.Width - (ClientRectangle.Width % cw)) / cw;
 						int scaleY = (ClientRectangle.Height - (ClientRectangle.Height % ch)) / ch;
 						if (scaleY > scaleX)
-							return scaleX;
-						return scaleY;
+								return scaleX < 1 ? 1 : scaleX;
+							return scaleY < 1 ? 1 : scaleY;
 					default:
 						return (ClientRectangle.Height - (ClientRectangle.Height % ch)) / ch;
 				}

@@ -179,6 +179,7 @@ This screen allows to change additional modification options for the game.
 | AutoSave format | Choose whether autosaves prefer legacy `SVE` output with automatic `COS` fallback or always write `COS`. |
 | Save cast behavior | Select whether save/load casts use checked conversion or the legacy unchecked mode. |
 | (Gbm) Use smart PathFinding for "goto" | Enable smart pathfinding for unit movement. |
+| (Gbm) Use smart pathfinding for computer players | Enable smart pathfinding for computer controlled units only. Disable to use legacy AI movement behavior. |
 | (Gbm) Use auto-settlers-cheat | Enable automatic settlers (cheat) to place settlers automatically. |
 | (Gbm) Use fast river movement | Movements on rivers behave like roads (faster movement). |
 | (Gbm) No movement penalty for sea units in city | Sea units suffer no movement penalty when in a city. |
@@ -276,6 +277,12 @@ brew install sdl2
 ```
 
 Homebrew installs SDL2 system-wide, and the dynamic library will be available automatically at runtime.
+
+The SDL loader also includes a macOS native resolver with fallback search paths.
+The resolver checks `/Library/Frameworks/SDL2.framework/Versions/Current/SDL2` first.
+The resolver then checks Homebrew library paths in `/opt/homebrew/lib` and `/usr/local/lib`.
+This reduces manual setup and usually avoids setting `DYLD_LIBRARY_PATH`.
+This behavior applies only on macOS.
 
 ### Troubleshooting
 
@@ -393,6 +400,20 @@ Alternatively, run individual cleanup tasks in VS Code:
 
 * `clean` – Runs `dotnet clean`
 * `clean-coverage-folders` – Removes `TestResults/` and `CoverageReport/` directories
+
+## FAQ
+
+### The screen content is cut off after resizing the window
+
+This happens when **Aspect Ratio** is set to `Expand` and a fixed window size was saved.
+In `Expand` mode the game renders exactly as many tiles as fit the current window.
+When the window is later made smaller, the rendered area stays the same size but no longer fits inside the window, so parts of the screen (e.g. the top or sides) are cropped.
+
+To fix this, resize the window to match the size the game was configured for, or change the **Aspect Ratio** setting to `Fixed`, `Scaled`, or `ScaledFixed`.
+Those modes always scale or letterbox the fixed 320x200 game surface to fit any window size.
+
+If you want to use `Expand` mode, make sure to use `Auto` for the Expand size in the settings, which allows the game to automatically adjust the rendered area to fit the window size.
+
 
 ## Changes (Log)
 

@@ -1572,6 +1572,28 @@ namespace CivOne
 			SetTradingCityIds([.. (_tradingCityIds ?? []), city.Id]);
 		}
 
+		internal void RemoveTradingCity(City city)
+		{
+			if (city == null || _tradingCityIds == null || _tradingCityIds.Length == 0)
+			{
+				return;
+			}
+
+			SetTradingCityIds([.. _tradingCityIds.Where(id => id != city.Id)]);
+		}
+
+		internal void RemoveTradingCitiesOwnedBy(byte owner)
+		{
+			if (_tradingCityIds == null || _tradingCityIds.Length == 0)
+			{
+				return;
+			}
+
+			SetTradingCityIds([.. TradingCitiesAsCity
+				.Where(tradingCity => tradingCity.Owner != owner)
+				.Select(tradingCity => tradingCity.Id)]);
+		}
+
 
 		internal City(byte owner)
 		{

@@ -10,6 +10,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -19,6 +20,7 @@ using CivOne.Units;
 
 namespace CivOne.Screens
 {
+	[ScreenResizeable]
 	internal class Overlay : BaseScreen
 	{
 		private struct HelpLabel
@@ -50,28 +52,53 @@ namespace CivOne.Screens
 			{
 				IUnit startUnit = Game.GetUnits().First(x => Game.Human == x.Owner);
 				IUnit activeUnit = Game.ActiveUnit;
-				((GamePlay)Common.Screens.First(x => x is GamePlay)).Update(0);
-				int offset = 0;
+				GamePlay gamePlay = (GamePlay)Common.Screens.First(x => x is GamePlay);
+				gamePlay.Update(0);
+
+				IUnit focusUnit = (activeUnit != null && activeUnit.Owner == Game.PlayerNumber(Human)) ? activeUnit : startUnit;
+				int mapOffsetX = Settings.RightSideBar ? 0 : 80;
+				const int mapOffsetY = 8;
+				int mapWidth = Math.Max(0, gamePlay.Width() - 80);
+				int mapHeight = Math.Max(0, gamePlay.Height() - 8);
+				int mapCenterX = mapOffsetX + (mapWidth / 2);
+				int mapWindowPointX = Settings.RightSideBar
+					? mapOffsetX + Math.Max(8, mapWidth - 8)
+					: Math.Max(8, mapOffsetX - 32);
+				int mapWindowPointY = mapOffsetY + 24;
+				int referenceCenterX = Settings.RightSideBar ? 120 : 200;
+				int labelShiftX = mapCenterX - referenceCenterX;
+				int tilesX = Math.Max(1, (int)Math.Ceiling((double)mapWidth / 16));
+				int tilesY = Math.Max(1, (int)Math.Ceiling((double)mapHeight / 16));
+				int mapX = gamePlay.X;
+				int mapY = gamePlay.Y;
+
+				int activeRelX = focusUnit.X - mapX;
+				while (activeRelX < 0) activeRelX += Map.WIDTH;
+				while (activeRelX >= Map.WIDTH) activeRelX -= Map.WIDTH;
+				int activeRelY = focusUnit.Y - mapY;
+				int activePointX = mapOffsetX + (activeRelX * 16) + 8;
+				int activePointY = mapOffsetY + (activeRelY * 16) + 8;
 				if (Settings.RightSideBar)
 				{
-					yield return new HelpLabel("Map Window", 148, 24, 272, 32);
-					yield return new HelpLabel("Menu Bar", 61, 16, 160, 6);
-					yield return new HelpLabel("Active Unit", 158, 170, 280, 128);
-					offset = -80;
+					yield return new HelpLabel("Map Window", 148 + labelShiftX, 24, mapWindowPointX, mapWindowPointY);
+					yield return new HelpLabel("Menu Bar", 61 + labelShiftX, 16, 160 + labelShiftX, 6);
+					yield return new HelpLabel("Active Unit", 158 + labelShiftX, 170, activePointX, activePointY);
 				}
 				else
 				{
-					yield return new HelpLabel("Map Window", 88, 24, 48, 32);
-					yield return new HelpLabel("Menu Bar", 201, 16, 160, 6);
-					yield return new HelpLabel("Active Unit", 88, 170, 40, 128);
+					yield return new HelpLabel("Map Window", 88 + labelShiftX, 24, mapWindowPointX, mapWindowPointY);
+					yield return new HelpLabel("Menu Bar", 201 + labelShiftX, 16, 160 + labelShiftX, 6);
+					yield return new HelpLabel("Active Unit", 88 + labelShiftX, 170, activePointX, activePointY);
 				}
+
+				int labelCenterBaseX = mapCenterX - 30;
 				
 				for (int yy = -1; yy <= 1; yy++)
 				for (int xx = -1; xx <= 1; xx++)
 				{
 					if (xx == 0 && yy == 0) continue;
 					string text = string.Empty;
-					ITile tile = startUnit.Tile[xx, yy];
+					ITile tile = focusUnit.Tile[xx, yy];
 					switch (tile.Type)
 					{
 						case Terrain.Desert: text = (tile.Special ? "Oasis" : "Desert"); break;
@@ -89,7 +116,20 @@ namespace CivOne.Screens
 						case Terrain.Grassland2: text = "Grassland"; break;
 					}
 					if (tile.Hut) text = "Village";
-					yield return new HelpLabel(text, 170 + (65 * xx) + offset, 100 + (49 * yy), 200 + (xx * 16) + offset, 112 + (yy * 16));
+
+					int relX = tile.X - mapX;
+					while (relX < 0) relX += Map.WIDTH;
+					while (relX >= Map.WIDTH) relX -= Map.WIDTH;
+
+					int relY = tile.Y - mapY;
+					if (relX < 0 || relY < 0 || relX >= tilesX || relY >= tilesY)
+					{
+						continue;
+					}
+
+					int pointX = mapOffsetX + (relX * 16) + 8;
+					int pointY = mapOffsetY + (relY * 16) + 8;
+					yield return new HelpLabel(text, labelCenterBaseX + (65 * xx), 100 + (49 * yy), pointX, pointY);
 				}
 			}
 		}
@@ -104,6 +144,8 @@ namespace CivOne.Screens
 
 			if (_update)
 			{
+				this.Clear();
+
 				if (_interfaceHelp)
 				{
 					foreach (HelpLabel helpLabel in HelpLabels)
@@ -135,6 +177,12 @@ namespace CivOne.Screens
 				return true;
 			}
 			return false;
+		}
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_update = true;
 		}
 		
 		public override bool KeyDown(KeyboardEventArgs args)
