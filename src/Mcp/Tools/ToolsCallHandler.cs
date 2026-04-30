@@ -13,6 +13,7 @@ namespace CivOne.Mcp.Tools
 	public sealed class ToolsCallHandler : IMcpToolHandler
 	{
 		private readonly IReadOnlyDictionary<string, IMcpToolHandler> _lookup;
+		private readonly Action<string> _logger;
 
 		public string Method => "tools/call";
 
@@ -40,16 +41,19 @@ namespace CivOne.Mcp.Tools
 				? argsElement
 				: default;
 
+			_logger?.Invoke($"tools/call: {toolName} args={arguments}");
+
 			McpRequest innerRequest = new(request.JsonRpc, request.Id, toolName, arguments, request.SessionToken);
 			return handler.Handle(innerRequest);
 		}
 
-		public ToolsCallHandler(IEnumerable<IMcpToolHandler> realHandlers)
+		public ToolsCallHandler(IEnumerable<IMcpToolHandler> realHandlers, Action<string> logger = null)
 		{
 			if (realHandlers == null) throw new ArgumentNullException(nameof(realHandlers));
 			_lookup = realHandlers
 				.Where(h => h.Definition != null)
 				.ToDictionary(h => h.Method, h => h, StringComparer.OrdinalIgnoreCase);
+			_logger = logger;
 		}
 	}
 }

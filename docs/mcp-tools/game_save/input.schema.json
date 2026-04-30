@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_save/input",
+  "title": "game_save - input",
+  "description": "Saves the current game state as a new .cos file in the configured MCP saves folder using savegame_mcp_<UTC yyyyMMddHHmmssfff>.cos. Existing files are never overwritten.",
+  "type": "object",
+  "properties": {
+    "sessionId": {
+      "type": "string",
+      "description": "Optional caller-supplied identifier."
+    },
+    "includeCursor": {
+      "type": "boolean",
+      "description": "Reserved for future use.",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

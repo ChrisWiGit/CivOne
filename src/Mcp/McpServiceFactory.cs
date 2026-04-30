@@ -51,6 +51,7 @@ namespace CivOne.Mcp
 				new GameGetCityToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars),
 				new GameGetPlayerToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars),
 				new GameListSavesToolHandler(runtime, jsonSaveGameStateWriter, maxJsonChars),
+				new GameSaveToolHandler(runtime, jsonSaveGameStateWriter, maxJsonChars),
 				new GameLoadToolHandler(runtime, jsonSaveGameStateWriter, maxJsonChars),
 				new GameGetPlayersToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars),
 				new GameGetCitiesToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars)
@@ -65,7 +66,7 @@ namespace CivOne.Mcp
 			IMcpToolHandler[] metaHandlers =
 			[
 				new ToolsListHandler(definitions),
-				new ToolsCallHandler(realHandlers)
+				new ToolsCallHandler(realHandlers, msg => runtime.Log("[MCP] {0}", msg))
 			];
 
 			IMcpToolRegistry registry = new McpToolRegistry([.. realHandlers, .. metaHandlers]);

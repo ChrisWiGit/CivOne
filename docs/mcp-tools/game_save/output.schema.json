@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_save/output",
+  "title": "game_save - output",
+  "type": "object",
+  "required": ["ok", "truncated", "maxChars", "returnedChars"],
+  "properties": {
+    "ok": { "type": "boolean" },
+    "truncated": { "type": "boolean" },
+    "maxChars": { "type": "integer" },
+    "returnedChars": { "type": "integer" },
+    "data": {
+      "type": "object",
+      "required": ["fileName", "saveGuid"],
+      "properties": {
+        "fileName": { "type": "string" },
+        "saveGuid": { "type": "string", "format": "uuid" }
+      },
+      "additionalProperties": false
+    },
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "INVALID_PARAMS",
+            "GAME_NOT_STARTED",
+            "SAVE_FOLDER_NOT_FOUND",
+            "FILE_EXISTS",
+            "SAVE_FAILED",
+            "PAYLOAD_TRUNCATED"
+          ]
+        },
+        "message": { "type": "string" },
+        "failedSegment": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

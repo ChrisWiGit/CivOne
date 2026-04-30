@@ -65,6 +65,16 @@ There are some command line parameters that can be used to modify the behavior o
 | `--mcp` | Enables the MCP server. See [MCP.md](MCP.md) for setup and usage. |
 | `--mcp-no-auth` | Disables MCP session-token authentication. Useful for direct VS Code MCP client usage. |
 | `--mcp-artifacts <path>` | Sets the directory where MCP screenshot artifacts are saved. Defaults to `temp/mcp-runs/` inside the storage directory. |
+| `--mcp-saves <path>` | Sets the directory where MCP save tools read and write `.cos` files (`game_list_saves`, `game_load`, `game_save`). |
+
+### MCP savegame tools
+
+When MCP is enabled, savegame automation tools can read and write `.cos` files in the configured MCP saves folder.
+
+`game_save` creates a new save file and never overwrites an existing file.
+The filename format is `savegame_mcp_<UTC yyyyMMddHHmmssfff>.cos`.
+If a file with the computed name already exists, the tool returns a `FILE_EXISTS` error and asks the caller to retry.
+On success, the response includes both the new `fileName` and a newly generated `saveGuid`.
 
 ### Loading a saved game immediately
 

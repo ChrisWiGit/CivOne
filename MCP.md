@@ -1,7 +1,7 @@
 # MCP Integration
 
 CivOne includes a built-in MCP server for local automation.
-The current scope includes screenshot capture, structured game-state read access, and COS save listing/loading.
+The current scope includes screenshot capture, structured game-state read access, and COS save listing/loading/saving.
 
 ## Enable MCP
 
@@ -189,6 +189,7 @@ Direct method call also works:
 | `game_get_player` | Returns one full player by `playerId` (index) or `playerGuid`, with optional key projection. | one selector: `playerId` or `playerGuid` |
 | `game_list_saves` | Returns metadata for valid `.cos` save files in the configured MCP saves folder. Invalid files are omitted. | none |
 | `game_load` | Loads a `.cos` save by `fileName` or `saveGuid` from the configured MCP saves folder. | one selector: `fileName` or `saveGuid` |
+| `game_save` | Saves the current game as a new `.cos` file in the configured MCP saves folder using a timestamped filename. Existing files are never overwritten. | none |
 | `game_get_players` | Returns players data (all or one player) with optional key projection. | none |
 | `game_get_cities` | Returns city data (all, by player, or by city id) with optional key projection. | none |
 
@@ -287,6 +288,61 @@ If `path` is omitted, the tool returns a compact summary (turn, player, aggregat
 - `keys` (array of field names)
 
 If `keys` is omitted, all fields are returned.
+
+`game_save` accepts no required arguments.
+It writes to the same folder used by `game_list_saves` and `game_load`.
+The generated file name format is `savegame_mcp_<UTC yyyyMMddHHmmssfff>.cos`.
+No existing file is overwritten.
+If the generated name already exists, the tool returns `FILE_EXISTS` with the message `file exists, wait a second, till next try`.
+The success payload includes `fileName` and the newly generated `saveGuid`.
+
+## `game_save` request/response example
+
+Request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "save-1",
+  "method": "tools/call",
+  "sessionToken": "<token>",
+  "params": {
+    "name": "game_save",
+    "arguments": {}
+  }
+}
+```
+
+Success response shape:
+
+```json
+{
+  "ok": true,
+  "truncated": false,
+  "maxChars": 32000,
+  "returnedChars": 107,
+  "data": {
+    "fileName": "savegame_mcp_20260430184512123.cos",
+    "saveGuid": "9c4ebc62-5dbd-4f06-b59a-0ae153569ac2"
+  }
+}
+```
+
+FILE_EXISTS response shape:
+
+```json
+{
+  "ok": false,
+  "truncated": false,
+  "maxChars": 32000,
+  "returnedChars": 0,
+  "error": {
+    "code": "FILE_EXISTS",
+    "message": "file exists, wait a second, till next try",
+    "failedSegment": "fileName"
+  }
+}
+```
 
 `game_get_map_size` accepts no arguments and returns:
 
