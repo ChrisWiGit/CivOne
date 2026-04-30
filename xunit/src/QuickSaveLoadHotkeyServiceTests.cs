@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using CivOne.Enums;
 using CivOne.Events;
@@ -12,11 +13,13 @@ namespace CivOne.UnitTests
 	public sealed class QuickSaveLoadHotkeyServiceTests : IDisposable
 	{
 		private readonly string _storageDirectory;
+		private readonly string _fastSavesDirectory;
 		private readonly FakeRuntime _runtime;
 
 		public QuickSaveLoadHotkeyServiceTests()
 		{
 			_storageDirectory = Path.Combine(Path.GetTempPath(), "CivOneTests", Guid.NewGuid().ToString("N"));
+			_fastSavesDirectory = Path.Combine(_storageDirectory, "saves");
 			_runtime = new FakeRuntime(_storageDirectory);
 		}
 
@@ -34,14 +37,14 @@ namespace CivOne.UnitTests
 			bool handled = service.TryHandle(new KeyboardEventArgs(Key.F1, KeyModifier.Control));
 
 			Assert.True(handled);
-			Assert.Equal(Path.Combine(_storageDirectory, "fastsave_f1.cos"), savedPath);
+			Assert.Equal(Path.Combine(_fastSavesDirectory, "fastsave_f1.cos"), savedPath);
 		}
 
 		[Fact]
 		public void TryHandle_AltF2_LoadsSlotAndRebuildsGameplay()
 		{
-			string slotPath = Path.Combine(_storageDirectory, "fastsave_f2.cos");
-			Directory.CreateDirectory(_storageDirectory);
+			string slotPath = Path.Combine(_fastSavesDirectory, "fastsave_f2.cos");
+			Directory.CreateDirectory(_fastSavesDirectory);
 			File.WriteAllText(slotPath, "test");
 
 			string loadedPath = null;
@@ -102,6 +105,76 @@ namespace CivOne.UnitTests
 			Assert.False(shiftHandled);
 		}
 
+		[Fact]
+		public void TryHandle_AltF11_OpensQuickLoadMenuWithExistingSlots()
+		{
+			Directory.CreateDirectory(_fastSavesDirectory);
+			File.WriteAllText(Path.Combine(_fastSavesDirectory, "fastsave_f2.cos"), "test");
+			File.WriteAllText(Path.Combine(_fastSavesDirectory, "fastsave_f7.cos"), "test");
+
+			IReadOnlyList<int> listedSlots = null;
+			var service = CreateService(
+				canQuickSave: () => true,
+				save: _ => { },
+				load: _ => true,
+				rebuild: () => { },
+				onError: _ => { },
+				showQuickLoadMenu: (slots, _) => listedSlots = slots);
+
+			bool handled = service.TryHandle(new KeyboardEventArgs(Key.F11, KeyModifier.Alt));
+
+			Assert.True(handled);
+			Assert.NotNull(listedSlots);
+			Assert.Equal([2, 7], listedSlots);
+		}
+
+		[Fact]
+		public void TryHandle_AltF11_SelectionLoadsChosenSlot()
+		{
+			Directory.CreateDirectory(_fastSavesDirectory);
+			string slotPath = Path.Combine(_fastSavesDirectory, "fastsave_f4.cos");
+			File.WriteAllText(slotPath, "test");
+
+			string loadedPath = null;
+			int rebuildCalls = 0;
+			var service = CreateService(
+				canQuickSave: () => true,
+				save: _ => { },
+				load: path =>
+				{
+					loadedPath = path;
+					return true;
+				},
+				rebuild: () => rebuildCalls++,
+				onError: _ => { },
+				showQuickLoadMenu: (_, onSelect) => onSelect(4));
+
+			bool handled = service.TryHandle(new KeyboardEventArgs(Key.F11, KeyModifier.Alt));
+
+			Assert.True(handled);
+			Assert.Equal(slotPath, loadedPath);
+			Assert.Equal(1, rebuildCalls);
+		}
+
+		[Fact]
+		public void TryHandle_AltF11_WhenNoSlots_PassesEmptySlotListToMenu()
+		{
+			IReadOnlyList<int> listedSlots = null;
+			var service = CreateService(
+				canQuickSave: () => true,
+				save: _ => { },
+				load: _ => true,
+				rebuild: () => { },
+				onError: _ => { },
+				showQuickLoadMenu: (slots, _) => listedSlots = slots);
+
+			bool handled = service.TryHandle(new KeyboardEventArgs(Key.F11, KeyModifier.Alt));
+
+			Assert.True(handled);
+			Assert.NotNull(listedSlots);
+			Assert.Empty(listedSlots);
+		}
+
 		public void Dispose()
 		{
 			if (Directory.Exists(_storageDirectory))
@@ -115,7 +188,8 @@ namespace CivOne.UnitTests
 			Action<string> save,
 			Func<string, bool> load,
 			Action rebuild,
-			Action<string> onError)
+			Action<string> onError,
+			Action<IReadOnlyList<int>, Action<int>> showQuickLoadMenu = null)
 			=> new(
 				_runtime,
 				TranslationServiceFactory.CreateDefault(),
@@ -125,7 +199,8 @@ namespace CivOne.UnitTests
 				load,
 				rebuild,
 				canQuickSave,
-				onError);
+				onError,
+				showQuickLoadMenu);
 
 		private sealed class FakeRuntime(string storageDirectory) : IRuntime
 		{

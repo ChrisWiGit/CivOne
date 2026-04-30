@@ -120,11 +120,12 @@ You can use fast in-game hotkeys for ten quick save slots.
 | ------ | ------ |
 | `Ctrl+F1` to `Ctrl+F10` | Save quick slot 1 to 10 |
 | `Alt+F1` to `Alt+F10` | Load quick slot 1 to 10 |
+| `Alt+F11` | Open quick load slot menu |
 
-Quick slot files are stored in the profile storage directory.
+Quick slot files are stored in the `saves` subfolder of the profile storage directory.
 
-* Windows: `%LOCALAPPDATA%\CivOne`.
-* Linux/macOS: `~/CivOne`.
+* Windows: `%LOCALAPPDATA%\CivOne\saves`.
+* Linux/macOS: `~/CivOne/saves`.
 
 File names are:
 
@@ -144,6 +145,10 @@ Behavior notes:
 * Hotkeys are handled globally and work in gameplay, credits, and end screens.
 * If a slot does not exist or load/save fails, the game shows a simple error message and writes technical details to the log.
 * After a YAML quick load, the gameplay screen is rebuilt so map centering is refreshed.
+* `Alt+F11` opens a modal quick load dialog with all existing quick slots.
+* In the `Alt+F11` dialog, `F1` to `F10` are direct slot shortcuts.
+* Slots with invalid `.cos` content are shown as `Invalid savegame`, are disabled, and cannot be selected.
+* If no quick save exists, the dialog shows `No fast savegames available. Use Ctrl+F1-F10 to save.` as a disabled entry.
 * Report shortcuts are now plain `F1` to `F12` only.
    * Modified combinations (`Shift`, `Ctrl`, `Alt`) no longer open report screens.
 

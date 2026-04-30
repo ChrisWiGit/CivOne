@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CivOne.Enums;
@@ -18,6 +19,7 @@ namespace CivOne.Services
 		private readonly Action _rebuildGamePlayAction;
 		private readonly Func<bool> _canQuickSave;
 		private readonly Action<string> _showUserErrorAction;
+		private readonly Action<IReadOnlyList<int>, Action<int>> _showQuickLoadMenuAction;
 
 		public QuickSaveLoadHotkeyService(
 			IRuntime runtime,
@@ -28,7 +30,8 @@ namespace CivOne.Services
 			Func<string, bool> loadCosAction = null,
 			Action rebuildGamePlayAction = null,
 			Func<bool> canQuickSave = null,
-			Action<string> showUserErrorAction = null)
+			Action<string> showUserErrorAction = null,
+			Action<IReadOnlyList<int>, Action<int>> showQuickLoadMenuAction = null)
 		{
 			_runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
 			_translation = translationService ?? throw new ArgumentNullException(nameof(translationService));
@@ -42,10 +45,17 @@ namespace CivOne.Services
 			_rebuildGamePlayAction = rebuildGamePlayAction ?? RebuildGamePlay;
 			_canQuickSave = canQuickSave ?? (() => Game.Started && Game.Instance != null);
 			_showUserErrorAction = showUserErrorAction ?? ShowError;
+			_showQuickLoadMenuAction = showQuickLoadMenuAction ?? ShowQuickLoadMenu;
 		}
 
 		public bool TryHandle(KeyboardEventArgs args)
 		{
+			if (args.Modifier == KeyModifier.Alt && args.Key == Key.F11)
+			{
+				OpenQuickLoadMenu();
+				return true;
+			}
+
 			if (!TryGetSlot(args.Key, out var slot))
 			{
 				return false;
@@ -86,10 +96,42 @@ namespace CivOne.Services
 			return slot > 0;
 		}
 
-		private string GetSlotFilePath(int slot)
+		private string GetFastSavesDirectory() => Path.Combine(_runtime.StorageDirectory, "saves");
+
+		private string GetSlotFilePath(int slot, bool ensureDirectory = true)
 		{
-			Directory.CreateDirectory(_runtime.StorageDirectory);
-			return Path.Combine(_runtime.StorageDirectory, $"fastsave_f{slot}.cos");
+			if (ensureDirectory)
+			{
+				Directory.CreateDirectory(GetFastSavesDirectory());
+			}
+			return Path.Combine(GetFastSavesDirectory(), $"fastsave_f{slot}.cos");
+		}
+
+		private IReadOnlyList<int> GetExistingSlots()
+		{
+			List<int> slots = [];
+			for (int slot = 1; slot <= 10; slot++)
+			{
+				if (File.Exists(GetSlotFilePath(slot, ensureDirectory: false)))
+				{
+					slots.Add(slot);
+				}
+			}
+			return slots;
+		}
+
+		private void OpenQuickLoadMenu()
+		{
+			IReadOnlyList<int> slots = GetExistingSlots();
+			_showQuickLoadMenuAction(slots, TryQuickLoad);
+		}
+
+		private void ShowQuickLoadMenu(IReadOnlyList<int> slots, Action<int> onSelect)
+		{
+			if (slots == null) throw new ArgumentNullException(nameof(slots));
+			if (onSelect == null) throw new ArgumentNullException(nameof(onSelect));
+
+			Common.AddScreen(new QuickLoadSlotsDialog(slots, onSelect));
 		}
 
 		private void TryQuickSave(int slot)
