@@ -139,7 +139,13 @@ namespace CivOne.Services
 
 		private void RebuildGamePlay()
 		{
-			Common.DestroyScreen(Common.Screens.FirstOrDefault(s => s is GamePlay, null));
+			GameTask.ClearAll();
+
+			foreach (var screen in Common.Screens.ToArray())
+			{
+				Common.DestroyScreen(screen);
+			}
+
 			Common.AddScreen(new GamePlay());
 		}
 
