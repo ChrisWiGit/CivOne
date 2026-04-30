@@ -1,6 +1,6 @@
 # CVL-Funktionen und Tunes (aus CIVPLAY)
 
-Diese Notiz beschreibt, wie die `*.cvl`-Soundmodule aus DOS Civilization vom Host (`CIVPLAY.C`) verwendet werden.
+Diese Notiz beschreibt, wie die `*.cvl`-Soundmodule aus DOS Civilization vom Host (`CIVPLAY.C`) [Origin found here](https://github.com/rajko-horvat/CivPlay) verwendet werden.
 
 ## 1) Exportierte Modul-Funktionen (ABI)
 
