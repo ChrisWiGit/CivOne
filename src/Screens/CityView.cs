@@ -153,7 +153,7 @@ namespace CivOne.Screens
 				}
 				FadeColours();
 			}
-			if (_showFoundedScreen && (gameTick % 3 == 0))
+			if (_showFoundedScreen)
 			{
 				RenderBase();
 				this.DrawText($"{_city.Name} founded: {Game.GameYear}.", 5, 5, 161 + OffsetX, 3 + OffsetY, TextAlign.Center);
@@ -164,7 +164,8 @@ namespace CivOne.Screens
 					.AddLayer(Resources["SETTLERS"][1, 1 + (16 * ((frame + 3) % 4)), 48, 15], _x + 14 + OffsetX, 131 + OffsetY)
 					.AddLayer(Resources["SETTLERS"][1, 1 + (16 * ((frame + 1) % 4)), 48, 15], _x + 40 + OffsetX, 135 + OffsetY);
 
-				_x++;
+				if (gameTick % 3 == 0)
+					_x++;
 				return true;
 			}
 
