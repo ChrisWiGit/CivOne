@@ -27,6 +27,11 @@ namespace CivOne.Mcp.Transport
 				object id = root.TryGetProperty("id", out JsonElement idValue)
 					? idValue.Clone()
 					: null;
+				if (id is JsonElement jsonId && !IsValidRequestId(jsonId))
+				{
+					parseErrorResponse = McpResponse.Failure(null, -32600, "Invalid request", "Property 'id' must be a JSON scalar.");
+					return false;
+				}
 				string method = root.TryGetProperty("method", out JsonElement methodValue)
 					? methodValue.GetString()
 					: null;
@@ -57,6 +62,14 @@ namespace CivOne.Mcp.Transport
 		{
 			if (response == null) throw new ArgumentNullException(nameof(response));
 			return JsonSerializer.Serialize(response);
+		}
+
+		private static bool IsValidRequestId(JsonElement id)
+		{
+			return id.ValueKind == JsonValueKind.String
+				|| id.ValueKind == JsonValueKind.Number
+				|| id.ValueKind == JsonValueKind.True
+				|| id.ValueKind == JsonValueKind.False;
 		}
 	}
 }

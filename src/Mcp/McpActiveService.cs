@@ -37,7 +37,7 @@ namespace CivOne.Mcp
 			if (_transport.StdinClosed)
 			{
 				Stop();
-				Environment.Exit(0);
+				return;
 			}
 
 			const int maxRequestsPerTick = 4;
@@ -57,6 +57,10 @@ namespace CivOne.Mcp
 						// Notification from client; intentionally ignored.
 						response = null;
 					}
+					else if (_authEnabled && !string.Equals(request.SessionToken, _sessionToken, StringComparison.Ordinal))
+					{
+						response = McpResponse.Failure(request.Id, -32001, "Unauthorized", "Invalid or missing session token.");
+					}
 					else if (string.Equals(request.Method, "shutdown", StringComparison.Ordinal))
 					{
 						_shutdownRequested = true;
@@ -66,10 +70,6 @@ namespace CivOne.Mcp
 					{
 						_exitRequested = true;
 						response = null;
-					}
-					else if (_authEnabled && !string.Equals(request.SessionToken, _sessionToken, StringComparison.Ordinal))
-					{
-						response = McpResponse.Failure(request.Id, -32001, "Unauthorized", "Invalid or missing session token.");
 					}
 					else if (_shutdownRequested)
 					{
@@ -98,13 +98,26 @@ namespace CivOne.Mcp
 				if (_exitRequested)
 				{
 					Stop();
-					Environment.Exit(0);
+					return;
 				}
 			}
 		}
 
 		private static bool ShouldRespond(McpRequest request)
-			=> request?.Id != null;
+		{
+			if (request?.Id == null)
+				return false;
+
+			if (request.Id is System.Text.Json.JsonElement jsonId)
+			{
+				return jsonId.ValueKind == System.Text.Json.JsonValueKind.String
+					|| jsonId.ValueKind == System.Text.Json.JsonValueKind.Number
+					|| jsonId.ValueKind == System.Text.Json.JsonValueKind.True
+					|| jsonId.ValueKind == System.Text.Json.JsonValueKind.False;
+			}
+
+			return true;
+		}
 
 		private static McpResponse HandleInitialize(McpRequest request)
 		{
