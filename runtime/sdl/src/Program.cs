@@ -31,6 +31,34 @@ namespace CivOne
 Try 'civone-sdl --help' for more information.
 ";
 
+		private static void RegisterNativeResolver()
+		{
+			if (Native.Platform != Platform.macOS)
+			{
+				return;
+			}
+
+			NativeLibrary.SetDllImportResolver(typeof(SDL).Assembly, ResolveSdlLibrary);
+		}
+
+		private static IntPtr ResolveSdlLibrary(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
+		{
+			if (!libraryName.Contains("SDL2", StringComparison.OrdinalIgnoreCase))
+			{
+				return IntPtr.Zero;
+			}
+
+			foreach (string libraryPath in MacSdlLibraryCandidates)
+			{
+				if (NativeLibrary.TryLoad(libraryPath, out IntPtr handle))
+				{
+					return handle;
+				}
+			}
+
+			return IntPtr.Zero;
+		}
+
 		private static void Main(string[] args)
 		{
 			RegisterNativeResolver();
