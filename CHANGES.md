@@ -6,6 +6,19 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Add end credit score screen after conquering the world, showing the final score and ranking of the player.
+  * Shows the player's final score and rank compared to historical civilizations.
+  * Uses the original game's scoring system and ranking thresholds (may currently show only 0)
+  * Triggered after the conquest screen when the player wins by conquering the world.
+  * TODO: implement the actual score calculation logic based on the player's achievements and game state at the end of the game.
+* Feature: Added quick save and quick load hotkeys with profile-based COS slots.
+  * `Ctrl+F1` to `Ctrl+F10` saves quick slots to `fastsave_f1.cos` to `fastsave_f10.cos`.
+  * `Alt+F1` to `Alt+F10` loads quick slots from the same files.
+  * Quick slot files are stored in the runtime profile storage directory (`%LOCALAPPDATA%\CivOne` on Windows and `~/CivOne` on Linux/macOS).
+  * Hotkeys are handled globally and work in gameplay, credits, and end screens.
+  * Missing or invalid quick slot loads now show a simple user-facing error message and log the technical error details.
+  * After YAML quick load, gameplay screen is rebuilt so map centering is refreshed correctly.
+  * Report hotkeys are now restricted to F1-F10 (without modifiers) to prevent conflicts with quick save/load hotkeys.
 * Fix: `Alt+Enter` fullscreen toggle now persists the new state to the profile.
 * Feature: Window placement persistence improved.
   * Window position is now stored in the profile and restored on startup.

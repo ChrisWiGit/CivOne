@@ -24,6 +24,11 @@ namespace CivOne
 		public static bool Is<T>() where T : GameTask => (_currentTask != null && _currentTask is T);
 		public static bool Fast => Common.HasAttribute<Fast>(_currentTask);
 		public static int Count<T>() where T : GameTask => _tasks.Count(t => t is T);
+		internal static void ClearAll()
+		{
+			_currentTask = null;
+			_tasks.Clear();
+		}
 
         public static int HowMany() => _tasks.Count;
         public static GameTask Current() => _currentTask;

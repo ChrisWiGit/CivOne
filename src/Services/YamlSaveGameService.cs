@@ -5,6 +5,16 @@ using CivOne.Persistence.Model;
 
 namespace CivOne.Services
 {
+	public sealed class YamlSaveGameServiceFactory(IAtomicFileReplacementService atomicFileReplacementService = null) : IYamlSaveGameServiceFactory
+	{
+		private readonly IAtomicFileReplacementService _atomicFileReplacementService = atomicFileReplacementService;
+
+		public IYamlSaveGameService Create(Game game)
+		{
+			return new YamlSaveGameService(game, _atomicFileReplacementService);
+		}
+	}
+
 	public class YamlSaveGameService : IYamlSaveGameService
 	{
 		private readonly Game _game;

@@ -303,6 +303,12 @@ namespace CivOne.Screens
 				{
 					Log("Failed to load YAML game");
 					Common.AddScreen(new Credits());
+
+					var savegameName = Path.GetFileName(Runtime.Settings.LoadCosFile);
+					GameTask.Enqueue(Message.Error(
+						"-- Civilization Note --",
+						"Could not load save game from --load-cos.",
+						$"File: {savegameName}"));
 					return;
 				}
 				Common.DestroyScreen(Common.Screens.FirstOrDefault(s => s is GamePlay, null));

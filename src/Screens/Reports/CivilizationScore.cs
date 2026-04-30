@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Linq;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -18,7 +19,42 @@ namespace CivOne.Screens.Reports
 	[ScreenResizeable]
 	internal class CivilizationScore : BaseReport
 	{
+		private const int HappyCitizenScoreWeight = 2;
+		private const int CityScoreWeight = 3;
+		private const int AdvanceScoreWeight = 10;
+		private const int WonderScoreWeight = 50;
+		private const int GoldPerScorePoint = 25;
+		private const int InitialInputDelayMs = 1200;
+
 		private bool _update = true;
+		private readonly long _ignoreInputUntil;
+
+		public override bool KeyDown(KeyboardEventArgs args)
+		{
+			if (Environment.TickCount64 < _ignoreInputUntil)
+			{
+				return true;
+			}
+
+			if (args.Key != Key.Enter && args.Key != Key.Space && args.Key != Key.Escape)
+			{
+				return true;
+			}
+
+			Destroy();
+			return true;
+		}
+
+		public override bool MouseDown(ScreenEventArgs args)
+		{
+			if (Environment.TickCount64 < _ignoreInputUntil)
+			{
+				return true;
+			}
+
+			Destroy();
+			return true;
+		}
 
 		private void DrawHappyRow(Picture output, int yy, int happy, int content, int unhappy, int ent, int sci, int tax)
 		{
@@ -76,7 +112,7 @@ namespace CivOne.Screens.Reports
 			// don't count unhappy
 			// happy is *2
 			// all others are content
-			return 2 * citizens.happy + (citizens.Citizens.Length - citizens.unhappy - citizens.redShirt);
+			return HappyCitizenScoreWeight * citizens.happy + (citizens.Citizens.Length - citizens.unhappy - citizens.redShirt);
         }
 
 		private void Render()
@@ -86,19 +122,26 @@ namespace CivOne.Screens.Reports
 
 			int totalScore = 0;
 
-			var cities = Game.GetCities().Where(c => Human == c.Owner);
+			City[] cities = Human.Cities;
 			int fontHeight = Resources.GetFontHeight(0);
 			string tribeName = Human.TribeName;
 			int wonderCount = 0;
-			CitizenTypes[] citizens = Human.Cities.Select(c => c.GetCitizenTypes()).ToArray();
+			CitizenTypes[] citizens = cities.Select(c => c.GetCitizenTypes()).ToArray();
+
+			int cityCount = cities.Length;
+			int populationScore = Human.Population;
+			int cityScore = cityCount * CityScoreWeight;
+			int advanceScore = Human.Advances.Length * AdvanceScoreWeight;
+			int goldScore = Math.Max(0, Human.Gold / GoldPerScorePoint);
+			int citizenScore = 0;
 
 			foreach (CitizenTypes cityCitizens in citizens)
 			{
-				totalScore += CityScore(cityCitizens);
+				citizenScore += CityScore(cityCitizens);
 			}
 
 			int yy = OffsetY + 32;
-			this.DrawText($"{tribeName} Citizens ({totalScore})", 0, 15, OffsetX + 8, yy);
+			this.DrawText($"{tribeName} Citizens ({citizenScore})", 0, 15, OffsetX + 8, yy);
 
 			int citizenStartX = OffsetX + 8;
 			int citizenMaxX = OffsetX + 312;
@@ -120,9 +163,24 @@ namespace CivOne.Screens.Reports
 			{
 				wonderCount += city.Wonders.Length;
 			}
+
+			int wonderScore = wonderCount * WonderScoreWeight;
+			totalScore = citizenScore + cityScore + populationScore + advanceScore + wonderScore + goldScore;
+
 			yy = lastCitizenY + 16;
-			this.DrawText($"{tribeName} Achievements ({wonderCount})", 0, 15, OffsetX + 8, yy);
-			totalScore += wonderCount * 20;
+			this.DrawText($"Cities ({cityScore})", 0, 15, OffsetX + 8, yy);
+
+			yy += fontHeight + 4;
+			this.DrawText($"Population ({populationScore})", 0, 15, OffsetX + 8, yy);
+
+			yy += fontHeight + 4;
+			this.DrawText($"Advances ({advanceScore})", 0, 15, OffsetX + 8, yy);
+
+			yy += fontHeight + 4;
+			this.DrawText($"{tribeName} Achievements ({wonderScore})", 0, 15, OffsetX + 8, yy);
+
+			yy += fontHeight + 4;
+			this.DrawText($"Treasury ({goldScore})", 0, 15, OffsetX + 8, yy);
 
 			yy += fontHeight + 4;
 			this.DrawText($"Total Score: {totalScore}", 0, 15, OffsetX + 8, yy);
@@ -147,6 +205,8 @@ namespace CivOne.Screens.Reports
 
 		public CivilizationScore() : base("CIVILIZATION SCORE", 3)
 		{
+			// Delay initial input briefly so the key that opened the report does not close it immediately again.
+			_ignoreInputUntil = Environment.TickCount64 + InitialInputDelayMs;
 			Render();
 		}
 	}
