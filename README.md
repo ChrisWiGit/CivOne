@@ -99,6 +99,41 @@ On Windows you can also use:
 CivOne.SDL.exe --load-cos "C:\\Users\\<YourUsername>\\AppData\\Local\\CivOne\\saves\\c\\auto-save.cos"
 ```
 
+### Quick save and quick load hotkeys
+
+You can use fast in-game hotkeys for ten quick save slots.
+
+| Hotkey | Action |
+| ------ | ------ |
+| `Ctrl+F1` to `Ctrl+F10` | Save quick slot 1 to 10 |
+| `Alt+F1` to `Alt+F10` | Load quick slot 1 to 10 |
+
+Quick slot files are stored in the profile storage directory.
+
+* Windows: `%LOCALAPPDATA%\\CivOne`.
+* Linux/macOS: `~/CivOne`.
+
+File names are:
+
+* `fastsave_f1.cos`
+* `fastsave_f2.cos`
+* `fastsave_f3.cos`
+* `fastsave_f4.cos`
+* `fastsave_f5.cos`
+* `fastsave_f6.cos`
+* `fastsave_f7.cos`
+* `fastsave_f8.cos`
+* `fastsave_f9.cos`
+* `fastsave_f10.cos`
+
+Behavior notes:
+
+* Hotkeys are handled globally and work in gameplay, credits, and end screens.
+* If a slot does not exist or load/save fails, the game shows a simple error message and writes technical details to the log.
+* After a YAML quick load, the gameplay screen is rebuilt so map centering is refreshed.
+* Report shortcuts are now plain `F1` to `F12` only.
+   * Modified combinations (`Shift`, `Ctrl`, `Alt`) no longer open report screens.
+
 
 ### The debug menu (in game)
 

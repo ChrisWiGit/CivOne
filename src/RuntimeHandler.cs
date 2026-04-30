@@ -21,6 +21,7 @@ using CivOne.Graphics;
 using CivOne.Graphics.ImageFormats;
 using CivOne.Screens;
 using CivOne.Graphics.Sprites;
+using CivOne.Services;
 using CivOne.Tasks;
 using CivOne.Tiles;
 
@@ -36,6 +37,7 @@ namespace CivOne
 		private IScreen TopScreen => Common.TopScreen;
 		private MouseCursor _currentCursor = MouseCursor.None;
 		private CursorType _cursorType = CursorType.Native;
+		private readonly IQuickSaveLoadHotkeyService _quickSaveLoadHotkeyService;
 
 		internal int CanvasWidth => Math.Max(Settings.MinWidth, Math.Min(Settings.MaxScreenWidth, Runtime.CanvasWidth));
 		internal int CanvasHeight => Math.Max(Settings.MinHeight, Math.Min(Settings.MaxScreenHeight, Runtime.CanvasHeight));
@@ -166,6 +168,11 @@ namespace CivOne
 
 		private void OnKeyboardDown(object sender, KeyboardEventArgs args)
 		{
+			if (_quickSaveLoadHotkeyService.TryHandle(args))
+			{
+				return;
+			}
+
 			if (args[KeyModifier.Control, Key.F5])
 			{
 				string filename = Common.CaptureFilename;
@@ -253,6 +260,7 @@ namespace CivOne
 		private RuntimeHandler(IRuntime runtime, bool concurrent = true)
 		{
 			Runtime = runtime;
+			_quickSaveLoadHotkeyService = new QuickSaveLoadHotkeyService(runtime);
 
 			// fire-eggs 20170711 init the RNG if user specified
 			// Be aware: Game.LoadSave will override this with the seed from the save game
