@@ -149,6 +149,11 @@ namespace CivOne.Screens
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
+			if (!Game.Started)
+			{
+				return false;
+			}
+
 			if (Common.TopScreen is GamePlay && !GameTask.Any())
 			{
 				Game.Update();
@@ -200,6 +205,18 @@ namespace CivOne.Screens
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
 			if (GameTask.Any()) return true;
+
+			if (args[KeyModifier.Control | KeyModifier.Alt, Key.F11] && Game.Started)
+			{
+				RuntimeHandler.ReturnToCredits();
+				return true;
+			}
+
+			if (args.Key >= Key.F1 && args.Key <= Key.F12 && args.Modifier != KeyModifier.None)
+			{
+				// Disallows F1-F12 with modifiers other than Shift (e.g. Ctrl+F1) to prevent conflicts with quick save/load hotkeys
+				return true;
+			}
 
 			if (CheckShift56(args))
 				return true;

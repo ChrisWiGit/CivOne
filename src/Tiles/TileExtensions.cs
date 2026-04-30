@@ -97,7 +97,10 @@ namespace CivOne.Tiles
 		{
 			if (tile == null)
 			{
-				Debug.Assert(false, "TileExtensions.GetBorderTiles: tile was null");
+				// CW
+				// Ignore these errors, as they are often caused by 
+				// checking border tiles of ocean tiles at the edge of the map, which is a normal part of gameplay and not worth logging repeatedly.
+				///Debug.Assert(false, "TileExtensions.GetBorderTiles: tile was null");
 				LogNullTile(nameof(GetBorderTiles));
 				yield break;
 			}

@@ -358,7 +358,7 @@ namespace CivOne
 				GameTask conquest;
 				GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has conquered", "the entire planet!"));
 				GameTask.Enqueue(conquest = Show.Screen<Conquest>());
-				conquest.Done += (s, a) => Runtime.Quit();
+				conquest.Done += (s, a) => RuntimeHandler.EndGame();
 			}
 
 			if (origin == 0)

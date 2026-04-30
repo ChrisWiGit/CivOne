@@ -12,28 +12,136 @@ using System.Runtime.InteropServices;
 
 namespace CivOne.IO
 {
+	/// <summary>
+	/// Base type for unmanaged byte-backed buffers used throughout rendering and bitmap operations.
+	///
+	/// Meta note:
+	/// These safety guards were introduced after end-of-game screen transitions could dispose bitmap memory
+	/// while stale update/render paths still touched the same unmanaged buffers in the same tick.
+	/// That race produced native pointer access on freed memory and resulted in AccessViolationException.
+	///
+	/// EnsureHandle and EnsureRange turn that failure mode into deterministic managed exceptions
+	/// (ObjectDisposedException / ArgumentOutOfRangeException), so callers fail fast with actionable diagnostics
+	/// instead of process-level memory faults.
+	/// </summary>
 	public abstract class BaseUnmanaged : IDisposable
 	{
 		protected IntPtr _handle;
 		protected int Size { get; private set; }
 
-		protected byte ReadByte(int offset) => Marshal.ReadByte(_handle, offset);
-		protected short ReadShort(int offset) => Marshal.ReadInt16(_handle, offset);
-		protected int ReadInt(int offset) => Marshal.ReadInt32(_handle, offset);
-		protected long ReadLong(int offset) => Marshal.ReadInt64(_handle, offset);
+		/// <summary>
+		/// Validates that unmanaged memory is still allocated.
+		/// Without this guard, reads/writes on disposed instances can trigger AccessViolationException.
+		/// </summary>
+		private void EnsureHandle()
+		{
+			if (_handle == IntPtr.Zero)
+			{
+				throw new ObjectDisposedException(GetType().Name);
+			}
+		}
 
-		protected void WriteByte(int offset, byte value) => Marshal.WriteByte(_handle, offset, value);
-		protected void WriteShort(int offset, short value) => Marshal.WriteInt16(_handle, offset, value);
-		protected void WriteInt(int offset, int value) => Marshal.WriteInt32(_handle, offset, value);
-		protected void WriteLong(int offset, long value) => Marshal.WriteInt64(_handle, offset, value);
+		/// <summary>
+		/// Validates offset boundaries before unmanaged memory access.
+		/// This prevents out-of-range pointer access that can corrupt memory or crash the process.
+		/// </summary>
+		private void EnsureRange(int offset, int bytes)
+		{
+			if (offset < 0 || offset > Size - bytes)
+			{
+				throw new ArgumentOutOfRangeException(nameof(offset), offset, $"Offset out of bounds for size {Size}.");
+			}
+		}
+
+		/// <summary>
+		/// Reads a byte from unmanaged memory after disposal/range validation.
+		/// </summary>
+		protected byte ReadByte(int offset)
+		{
+			EnsureHandle();
+			EnsureRange(offset, 1);
+			return Marshal.ReadByte(_handle, offset);
+		}
+
+		/// <summary>
+		/// Reads a 16-bit integer from unmanaged memory after disposal/range validation.
+		/// </summary>
+		protected short ReadShort(int offset)
+		{
+			EnsureHandle();
+			EnsureRange(offset, sizeof(short));
+			return Marshal.ReadInt16(_handle, offset);
+		}
+
+		/// <summary>
+		/// Reads a 32-bit integer from unmanaged memory after disposal/range validation.
+		/// </summary>
+		protected int ReadInt(int offset)
+		{
+			EnsureHandle();
+			EnsureRange(offset, sizeof(int));
+			return Marshal.ReadInt32(_handle, offset);
+		}
+
+		/// <summary>
+		/// Reads a 64-bit integer from unmanaged memory after disposal/range validation.
+		/// </summary>
+		protected long ReadLong(int offset)
+		{
+			EnsureHandle();
+			EnsureRange(offset, sizeof(long));
+			return Marshal.ReadInt64(_handle, offset);
+		}
+
+		/// <summary>
+		/// Writes a byte to unmanaged memory after disposal/range validation.
+		/// </summary>
+		protected void WriteByte(int offset, byte value)
+		{
+			EnsureHandle();
+			EnsureRange(offset, 1);
+			Marshal.WriteByte(_handle, offset, value);
+		}
+
+		/// <summary>
+		/// Writes a 16-bit integer to unmanaged memory after disposal/range validation.
+		/// </summary>
+		protected void WriteShort(int offset, short value)
+		{
+			EnsureHandle();
+			EnsureRange(offset, sizeof(short));
+			Marshal.WriteInt16(_handle, offset, value);
+		}
+
+		/// <summary>
+		/// Writes a 32-bit integer to unmanaged memory after disposal/range validation.
+		/// </summary>
+		protected void WriteInt(int offset, int value)
+		{
+			EnsureHandle();
+			EnsureRange(offset, sizeof(int));
+			Marshal.WriteInt32(_handle, offset, value);
+		}
+
+		/// <summary>
+		/// Writes a 64-bit integer to unmanaged memory after disposal/range validation.
+		/// </summary>
+		protected void WriteLong(int offset, long value)
+		{
+			EnsureHandle();
+			EnsureRange(offset, sizeof(long));
+			Marshal.WriteInt64(_handle, offset, value);
+		}
 
 		protected void Clear()
 		{
+			EnsureHandle();
 			Marshal.Copy(new byte[Size], 0, _handle, Size);
 		}
 
 		protected byte[] ToByteArray()
 		{
+			EnsureHandle();
 			byte[] output = new byte[Size];
 			Marshal.Copy(_handle, output, 0, output.Length);
 			return output;

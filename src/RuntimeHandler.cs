@@ -22,7 +22,9 @@ using CivOne.Graphics.ImageFormats;
 using CivOne.Mcp;
 using CivOne.Mcp.Contracts;
 using CivOne.Screens;
+using CivOne.Screens.Reports;
 using CivOne.Graphics.Sprites;
+using CivOne.Services;
 using CivOne.Tasks;
 using CivOne.Tiles;
 
@@ -39,6 +41,7 @@ namespace CivOne
 		private IScreen TopScreen => Common.TopScreen;
 		private MouseCursor _currentCursor = MouseCursor.None;
 		private CursorType _cursorType = CursorType.Native;
+		private readonly IQuickSaveLoadHotkeyService _quickSaveLoadHotkeyService;
 
 		internal int CanvasWidth => Math.Max(Settings.MinWidth, Math.Min(Settings.MaxScreenWidth, Runtime.CanvasWidth));
 		internal int CanvasHeight => Math.Max(Settings.MinHeight, Math.Min(Settings.MaxScreenHeight, Runtime.CanvasHeight));
@@ -67,9 +70,14 @@ namespace CivOne
 				return Common.Screens.Last(x => Common.HasAttribute<Modal>(x)).Update(_gameTick / 4);
 			
 			bool update = false;
-			foreach (IScreen screen in Common.Screens.Reverse())
+			IScreen[] screens = Common.Screens.Reverse().ToArray();
+			foreach (IScreen screen in screens)
 			{
+				// A previous screen update may destroy screens during this loop.
+				// Skip stale instances to avoid updating disposed bytemaps.
+				if (!Common.Screens.Contains(screen)) continue;
 				if (screen.Update(_gameTick / 4)) update = true;
+				if (!Common.Screens.Contains(screen)) continue;
 				if (Common.HasAttribute<Break>(screen)) return update;
 			}
 			return update;
@@ -129,7 +137,11 @@ namespace CivOne
 		private void OnDraw(object sender, EventArgs args)
 		{
 			IScreen topScreen = TopScreen;
-			if (topScreen == null) return;
+			if (topScreen == null)
+			{
+				Runtime.Layers = null;
+				return;
+			}
 
 			// sometimes during screen transitions, the top screen may be null or have a null palette. 
 			if (topScreen.Palette != null)
@@ -173,6 +185,11 @@ namespace CivOne
 
 		private void OnKeyboardDown(object sender, KeyboardEventArgs args)
 		{
+			if (_quickSaveLoadHotkeyService.TryHandle(args))
+			{
+				return;
+			}
+
 			if (args[KeyModifier.Control, Key.F5])
 			{
 				string filename = Common.CaptureFilename;
@@ -230,6 +247,34 @@ namespace CivOne
 			TopScreen?.MouseMove(args);
 		}
 
+		internal static void EndGame()
+		{
+			GameTask.ClearAll();
+
+			foreach (IScreen screen in Common.Screens.ToArray())
+			{
+				Common.DestroyScreen(screen);
+			}
+
+			CivilizationScore civScore = new CivilizationScore();
+			civScore.Closed += (s, a) => ReturnToCredits();
+			Common.AddScreen(civScore);
+		}
+
+		internal static void ReturnToCredits()
+		{
+			GameTask.ClearAll();
+
+			foreach (IScreen screen in Common.Screens.ToArray())
+			{
+				Common.DestroyScreen(screen);
+			}
+
+			Game.Wipe();
+			Map.Reset();
+			Common.AddScreen(new Credits());
+		}
+
 		public static void Register(IRuntime runtime)
 		{
 			if (_instance != null)
@@ -237,7 +282,7 @@ namespace CivOne
 				throw new Exception("Only one runtime can be registered.");
 			}
 
-			_instance = new RuntimeHandler(runtime);
+			_instance = new RuntimeHandler(runtime, CreateQuickSaveLoadHotkeyService(runtime));
 		}
 		public static void RegisterForTest(IRuntime runtime)
 		{
@@ -246,7 +291,14 @@ namespace CivOne
 				throw new Exception("Only one runtime can be registered.");
 			}
 
-			_instance = new RuntimeHandler(runtime, false);
+			_instance = new RuntimeHandler(runtime, CreateQuickSaveLoadHotkeyService(runtime), false);
+		}
+
+		private static IQuickSaveLoadHotkeyService CreateQuickSaveLoadHotkeyService(IRuntime runtime)
+		{
+			ITranslationService translationService = TranslationServiceFactory.CreateDefault();
+			IYamlSaveGameServiceFactory yamlSaveGameServiceFactory = new YamlSaveGameServiceFactory();
+			return new QuickSaveLoadHotkeyService(runtime, translationService, yamlSaveGameServiceFactory);
 		}
 
         /// <summary>
@@ -258,10 +310,11 @@ namespace CivOne
             _instance = null;
         }
 
-		private RuntimeHandler(IRuntime runtime, bool concurrent = true)
+		private RuntimeHandler(IRuntime runtime, IQuickSaveLoadHotkeyService quickSaveLoadHotkeyService, bool concurrent = true)
 		{
-			Runtime = runtime;
+			Runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
 			_mcpService = McpServiceFactory.Create(runtime);
+			_quickSaveLoadHotkeyService = quickSaveLoadHotkeyService ?? throw new ArgumentNullException(nameof(quickSaveLoadHotkeyService));
 
 			// fire-eggs 20170711 init the RNG if user specified
 			// Be aware: Game.LoadSave will override this with the seed from the save game

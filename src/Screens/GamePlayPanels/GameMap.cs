@@ -23,7 +23,7 @@ namespace CivOne.Screens.GamePlayPanels
 {
 	internal class GameMap : BaseScreen
 	{
-		private IUnit ActiveUnit => Game.ActiveUnit;
+		private IUnit ActiveUnit => Game.Started ? Game.ActiveUnit : null;
 		
 		private Point _helperDirection = new Point(0, 0);
 		private bool _update = true;
@@ -107,6 +107,12 @@ namespace CivOne.Screens.GamePlayPanels
 		
 		public bool MustUpdate(uint gameTick)
 		{
+			if (!Game.Started)
+			{
+				_update = false;
+				return false;
+			}
+
 			IUnit unit = ActiveUnit;
 
 			if ((gameTick % 2) == 0 && (_lastTurn != Game.GameTurn || _lastUnit != unit))
@@ -151,6 +157,12 @@ namespace CivOne.Screens.GamePlayPanels
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
+			if (!Game.Started)
+			{
+				_update = false;
+				return false;
+			}
+
 			if (!(_update || _fullRedraw)) return false;
 			if (Game.MovingUnit == null && (gameTick % 2 == 1)) return false;
 
