@@ -230,6 +230,20 @@ namespace CivOne
 			TopScreen?.MouseMove(args);
 		}
 
+		internal static void ReturnToCredits()
+		{
+			GameTask.ClearAll();
+
+			foreach (IScreen screen in Common.Screens.ToArray())
+			{
+				Common.DestroyScreen(screen);
+			}
+
+			Game.Wipe();
+			Map.Reset();
+			Common.AddScreen(new Credits());
+		}
+
 		public static void Register(IRuntime runtime)
 		{
 			if (_instance != null)
