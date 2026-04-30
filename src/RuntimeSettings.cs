@@ -21,6 +21,8 @@ namespace CivOne
 		public bool Demo { get; set; }
 		public bool Setup { get; set; }
 		public bool DataCheck { get; set; }
+		public bool McpEnabled { get; set; }
+		public bool McpNoAuth { get; set; }
 
 		public Tuple<char, int> LoadSaveGameSlot { get; set; } = null;
 		public string LoadCosFile { get; set; } = null;
@@ -88,6 +90,8 @@ namespace CivOne
 			ShowCredits = true;
 			ShowIntro = true;
 			Free = false;
+			McpEnabled = false;
+			McpNoAuth = false;
 		}
 	}
 }

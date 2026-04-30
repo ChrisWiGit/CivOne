@@ -23,6 +23,7 @@ namespace CivOne
 		public DateTimeOffset GameStartedAt { get; private set; }
 		public string GameVersion { get; private set; }
 		public TimeSpan PlayDuration { get; private set; }
+		public Guid SaveGuid { get; private set; }
 		public string DisplayName { get; set; }
 
 		internal void InitializeForNewGame(string gameVersion, DateTimeOffset nowUtc)
@@ -31,6 +32,7 @@ namespace CivOne
 			GameStartedAt = currentUtc;
 			GameVersion = NormalizeVersion(gameVersion);
 			PlayDuration = TimeSpan.Zero;
+			SaveGuid = Guid.NewGuid();
 			_sessionStartedAtUtc = currentUtc;
 		}
 
@@ -42,6 +44,7 @@ namespace CivOne
 			GameStartedAt = currentUtc;
 			GameVersion = NormalizeVersion(gameVersion);
 			PlayDuration = TimeSpan.Zero;
+			SaveGuid = Guid.NewGuid();
 			_sessionStartedAtUtc = currentUtc;
 		}
 
@@ -49,13 +52,28 @@ namespace CivOne
 			DateTimeOffset createdAt,
 			string gameVersion,
 			TimeSpan playDuration,
-			string displayName)
+			string displayName,
+			Guid? saveGuid = null)
 		{
 			GameStartedAt = createdAt.ToUniversalTime();
 			GameVersion = NormalizeVersion(gameVersion);
 			PlayDuration = playDuration < TimeSpan.Zero ? TimeSpan.Zero : playDuration;
 			DisplayName = displayName;
+			SaveGuid = saveGuid.GetValueOrDefault() == Guid.Empty ? Guid.NewGuid() : saveGuid.Value;
 			_sessionStartedAtUtc = DateTimeOffset.UtcNow.ToUniversalTime();
+		}
+
+		internal Guid EnsureSaveGuid()
+		{
+			if (SaveGuid == Guid.Empty)
+				SaveGuid = Guid.NewGuid();
+
+			return SaveGuid;
+		}
+
+		internal void RestoreSaveGuid(Guid? saveGuid)
+		{
+			SaveGuid = saveGuid.GetValueOrDefault() == Guid.Empty ? Guid.NewGuid() : saveGuid.Value;
 		}
 
 		internal TimeSpan GetPlayDurationForSave(DateTimeOffset nowUtc)

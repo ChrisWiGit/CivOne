@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_get_units/output",
+  "title": "game_get_units – output",
+  "type": "object",
+  "required": ["ok", "truncated", "maxChars", "returnedChars"],
+  "properties": {
+    "ok": { "type": "boolean" },
+    "truncated": { "type": "boolean" },
+    "maxChars": { "type": "integer" },
+    "returnedChars": { "type": "integer" },
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "description": "Unit object (or projected subset when keys filter is used).",
+        "properties": {
+          "ClassName": { "type": "string" },
+          "Location": { "type": "object" },
+          "PlayerId": { "type": "integer" },
+          "owner": { "type": "integer" },
+          "ownerGuid": { "type": "string", "format": "uuid" },
+          "ownerTribeName": { "type": ["string", "null"] }
+        },
+        "additionalProperties": true
+      }
+    },
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": ["NO_GAME", "INVALID_PARAMS", "INVALID_PLAYER_ID", "PLAYER_NOT_FOUND", "INVALID_KEYS", "PAYLOAD_TRUNCATED"]
+        },
+        "message": { "type": "string" },
+        "failedSegment": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

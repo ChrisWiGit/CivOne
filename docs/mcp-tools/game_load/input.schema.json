@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_load/input",
+  "title": "game_load – input",
+  "description": "Loads a .cos save by fileName or saveGuid from the configured MCP saves folder. Provide exactly one of fileName or saveGuid.",
+  "type": "object",
+  "properties": {
+    "fileName": {
+      "type": "string",
+      "description": "Save file name only, for example: savegame_11.cos. Mutually exclusive with saveGuid."
+    },
+    "saveGuid": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Stable save GUID as returned by game_list_saves. Scans all .cos files in the saves folder. Mutually exclusive with fileName."
+    },
+    "sessionId": {
+      "type": "string",
+      "description": "Optional caller-supplied identifier."
+    },
+    "includeCursor": {
+      "type": "boolean",
+      "description": "Reserved for future use.",
+      "default": false
+    }
+  },
+  "oneOf": [
+    { "required": ["fileName"], "not": { "required": ["saveGuid"] } },
+    { "required": ["saveGuid"], "not": { "required": ["fileName"] } }
+  ],
+  "additionalProperties": false
+}

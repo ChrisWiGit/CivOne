@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_get_map_window/output",
+  "title": "game_get_map_window – output",
+  "type": "object",
+  "required": ["ok", "truncated", "maxChars", "returnedChars"],
+  "properties": {
+    "ok":            { "type": "boolean" },
+    "truncated":     { "type": "boolean" },
+    "maxChars":      { "type": "integer" },
+    "returnedChars": { "type": "integer" },
+    "data": {
+      "type": "object",
+      "required": ["mapSize", "bounds", "rows"],
+      "properties": {
+        "mapSize": {
+          "type": "object",
+          "required": ["width", "height"],
+          "properties": {
+            "width":  { "type": "integer" },
+            "height": { "type": "integer" }
+          }
+        },
+        "bounds": {
+          "type": "object",
+          "required": ["x", "y", "width", "height"],
+          "properties": {
+            "x":      { "type": "integer" },
+            "y":      { "type": "integer" },
+            "width":  { "type": "integer" },
+            "height": { "type": "integer" }
+          }
+        },
+        "rows": {
+          "type": "array",
+          "description": "One entry per row. In 'decoded' format each row is an array of tile objects; in 'encoded' format each row is a string of 2-char tokens (no separator).",
+          "items": {
+            "oneOf": [
+              {
+                "title": "decoded row",
+                "type": "array",
+                "items": { "type": "object", "description": "Tile data object (terrain, improvements, visibility, …)." }
+              },
+              {
+                "title": "encoded row",
+                "type": "string",
+                "description": "Compact 2-char-per-tile string. See docs/YAML_TILE_ENCODING.md."
+              }
+            ]
+          }
+        },
+        "meta": {
+          "type": "object",
+          "description": "Present when format='encoded' or includeMeta=true.",
+          "properties": {
+            "tileEncodingDocPath": {
+              "type": "string",
+              "const": "docs/YAML_TILE_ENCODING.md"
+            },
+            "landValuesIncluded": {
+              "type": "boolean",
+              "const": false,
+              "description": "Land values are never included in this tool; use game_get_map_landvalues_window."
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": ["INVALID_BOUNDS", "INVALID_FORMAT", "NO_GAME", "PAYLOAD_TRUNCATED"]
+        },
+        "message": { "type": "string" }
+      }
+    }
+  }
+}

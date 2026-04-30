@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_get_map_size/output",
+  "title": "game_get_map_size – output",
+  "type": "object",
+  "required": ["ok", "truncated", "maxChars", "returnedChars"],
+  "properties": {
+    "ok":            { "type": "boolean" },
+    "truncated":     { "type": "boolean" },
+    "maxChars":      { "type": "integer" },
+    "returnedChars": { "type": "integer" },
+    "data": {
+      "type": "object",
+      "required": ["width", "height", "wrapX", "wrapY"],
+      "properties": {
+        "width":  { "type": "integer", "minimum": 1, "description": "Map width in tiles." },
+        "height": { "type": "integer", "minimum": 1, "description": "Map height in tiles." },
+        "wrapX":  { "type": "boolean", "description": "True if the map wraps horizontally." },
+        "wrapY":  { "type": "boolean", "description": "True if the map wraps vertically." }
+      },
+      "additionalProperties": false
+    },
+    "error": { "$ref": "#/$defs/errorObject" }
+  },
+  "$defs": {
+    "errorObject": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code":    { "type": "string" },
+        "message": { "type": "string" }
+      }
+    }
+  }
+}

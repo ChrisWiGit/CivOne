@@ -10,6 +10,7 @@
 using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.IO;
 using System.Text.RegularExpressions;
 using CivOne.Enums;
 
@@ -66,6 +67,8 @@ Try 'civone-sdl --help' for more information.
 			settings["software-render"] = false;
 			settings["no-sound"] = false;
 			settings["profile-name"] = "default";
+			settings["mcp-artifacts"] = null;
+			settings["mcp-saves"] = null;
 			for (int i = 0; i < args.Length; i++)
 			{
 				string cmd = args[i].TrimStart('-');
@@ -98,8 +101,72 @@ Try 'civone-sdl --help' for more information.
 					case "demo": settings.Demo = true; continue;
 					case "setup": settings.Setup = true; continue;
 					case "free": settings.Free = true; continue;
+					case "mcp": settings.McpEnabled = true; continue;
+					case "mcp-http":
+						settings.McpEnabled = true;
+						settings["mcp-http"] = true;
+						continue;
+					case "mcp-http-port":
+						if (args.GetUpperBound(0) == i)
+						{
+							Console.WriteLine("Missing port argument for --mcp-http-port");
+							return;
+						}
+
+						if (!int.TryParse(args[++i], out int httpPort) || httpPort < 1 || httpPort > 65535)
+						{
+							Console.WriteLine("Invalid value for --mcp-http-port (expected 1..65535)");
+							return;
+						}
+
+						settings["mcp-http-port"] = httpPort;
+						continue;
+					case "mcp-http-timeout-ms":
+						if (args.GetUpperBound(0) == i)
+						{
+							Console.WriteLine("Missing timeout argument for --mcp-http-timeout-ms");
+							return;
+						}
+
+						if (!int.TryParse(args[++i], out int httpTimeoutMs) || httpTimeoutMs < 1000)
+						{
+							Console.WriteLine("Invalid value for --mcp-http-timeout-ms (expected >= 1000)");
+							return;
+						}
+
+						settings["mcp-http-timeout-ms"] = httpTimeoutMs;
+						continue;
+					case "mcp-no-auth": settings.McpNoAuth = true; continue;
 					case "no-sound": settings["no-sound"] = true; continue;
 					case "no-data-check": settings.DataCheck = false; continue;
+					case "mcp-artifacts":
+						if (args.GetUpperBound(0) == i)
+						{
+							Console.WriteLine("Missing folder path argument for --mcp-artifacts");
+							return;
+						}
+
+						var artifactsDir = args[++i];
+						settings["mcp-artifacts"] = artifactsDir;
+						Console.WriteLine($"MCP artifacts folder set to \"{artifactsDir}\"");
+						continue;
+					case "mcp-saves":
+						if (args.GetUpperBound(0) == i)
+						{
+							Console.WriteLine("Missing folder path argument for --mcp-saves");
+							return;
+						}
+
+						var savesDir = args[++i];
+						settings["mcp-saves"] = savesDir;
+
+						if (!Directory.Exists(savesDir))
+						{
+							Console.WriteLine($"MCP saves folder \"{savesDir}\" does not exist.");
+							return;
+						}
+						Console.WriteLine($"MCP saves folder set to \"{savesDir}\"");
+						continue;
 					case "profile":
 						if (args.GetUpperBound(0) == i)
 						{

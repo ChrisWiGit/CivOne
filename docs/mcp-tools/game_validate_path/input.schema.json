@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_validate_path/input",
+  "title": "game_validate_path – input",
+  "description": "Validates a dot-notation GameState path without returning the full node payload.",
+  "type": "object",
+  "required": ["path"],
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "Dot-notation path into the game state. Must start with 'GameState'. Examples: 'GameState.Players[0].Gold', 'GameState.GameTurn'."
+    },
+    "sessionId": {
+      "type": "string",
+      "description": "Optional caller-supplied identifier."
+    },
+    "includeCursor": {
+      "type": "boolean",
+      "description": "Reserved for future use.",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

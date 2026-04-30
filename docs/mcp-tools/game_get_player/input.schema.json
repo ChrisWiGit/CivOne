@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_get_player/input",
+  "title": "game_get_player – input",
+  "description": "Returns one player by either playerId (0-based index) or playerGuid.",
+  "type": "object",
+  "properties": {
+    "playerId": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Player index selector (0-based)."
+    },
+    "playerGuid": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Stable player GUID selector."
+    },
+    "keys": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true,
+      "description": "Optional field list for projection."
+    },
+    "sessionId": {
+      "type": "string",
+      "description": "Optional caller-supplied identifier."
+    },
+    "includeCursor": {
+      "type": "boolean",
+      "default": false,
+      "description": "Reserved for future use."
+    }
+  },
+  "additionalProperties": false
+}

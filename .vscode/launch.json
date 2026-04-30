@@ -120,7 +120,7 @@
 			"request": "launch",
 			"preLaunchTask": "build",
 			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
-			"args": ["--seed", "32768", "--skip-credits", "--skip-intro", "--no-sound", "--no-data-check", "--load-cos", "${workspaceFolder}/.saves/savegame_0.cos"],
+			"args": ["--seed", "32768", "--mcp", "--mcp-no-auth", "--skip-credits", "--skip-intro", "--no-sound", "--no-data-check", "--load-cos", "${workspaceFolder}/.saves/savegame_11.cos"],
 			"cwd": "${workspaceRoot}",
 			"stopAtEntry": false,
 			"console": "internalConsole",

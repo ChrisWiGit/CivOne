@@ -1,0 +1,38 @@
+{
+	"servers": {
+		"civone": {
+			"type": "stdio",
+			"command": "dotnet",
+			"args": [
+				"runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
+				"--mcp",
+				"--mcp-no-auth",
+				"--mcp-artifacts",
+				"${workspaceFolder}/.mcp-artifacts",
+				"--mcp-saves",
+				"${workspaceFolder}/.saves",
+				"--mcp-http",
+				"--mcp-http-port",
+				"8765"
+			]
+		},
+		"civone_savegame": {
+			"type": "stdio",
+			"command": "dotnet",
+			"args": [
+				"runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
+				"--mcp",
+				"--mcp-no-auth",
+				"--mcp-artifacts",
+				"${workspaceFolder}/.mcp-artifacts",
+				"--mcp-saves",
+				"${workspaceFolder}/.saves",
+				"--load-cos",
+				"${workspaceFolder}/.saves/savegame_11.cos",
+				"--mcp-http",
+				"--mcp-http-port",
+				"8765"
+			]
+		}
+	}
+}

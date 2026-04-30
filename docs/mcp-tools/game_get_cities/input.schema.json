@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_get_cities/input",
+  "title": "game_get_cities – input",
+  "description": "Returns city data. All filters are optional; combine to narrow results.",
+  "type": "object",
+  "properties": {
+    "playerId": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "0-based owner player index. Omit to return cities for all players."
+    },
+    "cityId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "City GUID. Omit to return all cities (subject to playerId filter)."
+    },
+    "keys": {
+      "type": "array",
+      "description": "Field names to include in each city object. Omit to return all fields.",
+      "items": {
+        "type": "string",
+        "examples": [
+          "id", "name", "owner", "size",
+          "currentProduction", "buildings", "wonders"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "sessionId": {
+      "type": "string",
+      "description": "Optional caller-supplied identifier."
+    },
+    "includeCursor": {
+      "type": "boolean",
+      "description": "Reserved for future use.",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

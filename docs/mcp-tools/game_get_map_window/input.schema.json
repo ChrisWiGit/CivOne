@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_get_map_window/input",
+  "title": "game_get_map_window – input",
+  "description": "Returns a bounded tile window. Bounds must satisfy: x>=0, y>=0, width>0, height>0, x+width<=mapWidth, y+height<=mapHeight.",
+  "type": "object",
+  "required": ["x", "y", "width", "height"],
+  "properties": {
+    "x": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Left column (0-based)."
+    },
+    "y": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Top row (0-based)."
+    },
+    "width": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of columns."
+    },
+    "height": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of rows."
+    },
+    "format": {
+      "type": "string",
+      "enum": ["decoded", "encoded"],
+      "default": "decoded",
+      "description": "'decoded' returns a structured tile object per cell; 'encoded' returns compact 2-char tokens (see docs/YAML_TILE_ENCODING.md)."
+    },
+    "visibilityForPlayerId": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Optional 0-based player ID. When provided, each tile includes visibility state for that player."
+    },
+    "includeMeta": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true (or when format='encoded'), the response includes a 'meta' block with encoding documentation reference."
+    },
+    "sessionId": {
+      "type": "string",
+      "description": "Optional caller-supplied identifier."
+    },
+    "includeCursor": {
+      "type": "boolean",
+      "description": "Reserved for future use.",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

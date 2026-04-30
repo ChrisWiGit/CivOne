@@ -157,14 +157,20 @@ When action/state tools are added, migrate to out-of-process MCP.
 
 ## 6) MCP Tool Surface (P0)
 
-Expose one tool first:
+Expose two tools in P0:
 
 1. `game_capture_screenshot`
+1. `game_capture_region`
 
 Optional P0 extensions:
 
-1. `game_capture_region`
 1. `game_get_render_metadata`
+
+Notes:
+
+- `game_capture_region` uses `x`, `y`, `width`, `height`.
+- Region values are validated and clamped to framebuffer/canvas bounds.
+- Region capture should reuse existing crop behavior in rendering bitmap composition path.
 
 ---
 
@@ -526,3 +532,37 @@ src/
 1. Game state query returns a consistent snapshot (no torn reads).
 1. MCP thread crash does not crash the game process.
 1. All new types follow dependency injection; no `new` for services.
+
+---
+
+## 17) Extensibility Model (Add New MCP Functions Fast)
+
+### 17.1 Goal
+
+Allow adding new MCP tools without modifying game loop logic.
+
+### 17.2 Pattern
+
+Use handler registration:
+
+- `IMcpToolHandler` (common contract)
+- one implementation per tool (`CaptureScreenshotHandler`, `CaptureRegionHandler`, later `GetGameSnapshotHandler`, etc.)
+- `IMcpToolRegistry` mapping `method` -> handler
+
+Factory behavior:
+
+- `McpServiceFactory` returns `NoopMcpService` when MCP disabled
+- `McpServiceFactory` returns `ActiveMcpService` when MCP enabled
+
+### 17.3 Runtime Flow
+
+1. Transport adapter reads JSON-RPC request (`id`, `method`, `params`, `sessionToken`).
+1. `ActiveMcpService.Process()` resolves handler by `method` in registry.
+1. Handler executes on in-game services and returns DTO.
+1. Adapter writes JSON-RPC response (`id` + `result` or `error`).
+
+### 17.4 Why This Fits Minimal-Change Requirement
+
+1. Game loop keeps single MCP call (`Process()`) per tick.
+1. New tool = new handler class + registry entry.
+1. No loop rewrites for each new MCP capability.

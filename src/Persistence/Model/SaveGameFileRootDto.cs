@@ -4,11 +4,10 @@ using System.Globalization;
 namespace CivOne.Persistence.Model
 {
 	/// <summary>
-	/// DTO for the metadata section of a save game file, containing information about the save's creation time, game version, play duration, and display name.
-	/// This class is designed for serialization and deserialization of save game metadata, with methods to convert to and from the runtime SaveMetaData class.
-	/// It will be used as part of the overall SaveGameFileDto which encapsulates both metadata and game state for saving and loading games.
+	/// DTO for save game file root (format version 1).
+	/// Contains: FormatVersion, Meta (with SaveGuid), and GameState.
 	/// </summary>
-	public class SaveGameFileRootDto
+	public class SaveGame1FileRootDto
 	{
 		public const uint CurrentFormatVersion = 1;
 

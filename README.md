@@ -62,6 +62,19 @@ There are some command line parameters that can be used to modify the behavior o
 | `--no-data-check` | Skips the data integrity check at startup. |
 | `--load-slot <drive><slot>` | Loads a saved game from the specified drive and slot. Replace `<drive>` with a letter (a-z) and `<slot>` with a number (0-15) as if you were in the game |
 | `--load-cos <path>` | Loads a savegame file directly from a file path. |
+| `--mcp` | Enables the MCP server. See [MCP.md](MCP.md) for setup and usage. |
+| `--mcp-no-auth` | Disables MCP session-token authentication. Useful for direct VS Code MCP client usage. |
+| `--mcp-artifacts <path>` | Sets the directory where MCP screenshot artifacts are saved. Defaults to `temp/mcp-runs/` inside the storage directory. |
+| `--mcp-saves <path>` | Sets the directory where MCP save tools read and write `.cos` files (`game_list_saves`, `game_load`, `game_save`). |
+
+### MCP savegame tools
+
+When MCP is enabled, savegame automation tools can read and write `.cos` files in the configured MCP saves folder.
+
+`game_save` creates a new save file and never overwrites an existing file.
+The filename format is `savegame_mcp_<UTC yyyyMMddHHmmssfff>.cos`.
+If a file with the computed name already exists, the tool returns a `FILE_EXISTS` error and asks the caller to retry.
+On success, the response includes both the new `fileName` and a newly generated `saveGuid`.
 
 ### Loading a saved game immediately
 
@@ -345,6 +358,32 @@ To skip them use
 dotnet test --filter "FullyQualifiedName!~ZOCTests&FullyQualifiedName!~IrrigateTest"
 ```
 
+The test suite uses two integration trait categories.
+
+* `IntegrationEarthYaml` is for integration tests that rely only on bundled Earth YAML test data.
+* `IntegrationLocalData` is for integration tests that require local proprietary game data files.
+
+CI workflows run `IntegrationEarthYaml` tests.
+CI workflows skip `IntegrationLocalData` tests.
+
+Run all tests except local-data integration tests.
+
+```sh
+dotnet test --filter "Category!=IntegrationLocalData&TestCategory!=IntegrationLocalData"
+```
+
+Run only Earth YAML integration tests.
+
+```sh
+dotnet test --filter "Category=IntegrationEarthYaml|TestCategory=IntegrationEarthYaml"
+```
+
+Run only local-data integration tests.
+
+```sh
+dotnet test --filter "Category=IntegrationLocalData|TestCategory=IntegrationLocalData"
+```
+
 ### Test coverage
 
 This repository supports code coverage with Coverlet and ReportGenerator.
@@ -414,3 +453,22 @@ If you want to use `Expand` mode, make sure to use `Auto` for the Expand size in
 ## Changes (Log)
 
 See [CHANGES.md](CHANGES.md) for a detailed list of changes and updates.
+
+## MCP Integration
+
+CivOne includes a built-in MCP server for local automation and screenshot capture.
+
+Start the game with `--mcp` to enable it.
+Use `--mcp-artifacts <path>` to choose where screenshots are written.
+
+```cmd
+CivOne.SDL.exe --mcp
+```
+
+The server communicates over stdio and prints a session token to `stderr` on startup.
+That token must be included in every request.
+
+> There is a mcp.json file for Visual Studio Code MCP client integration. You can use `Ctrl+Shift+P` → "MCP: List Servers" to start/connect to `civone`'s MCP server and send requests directly from VS Code.
+
+For activation, request examples, available tools, response format, and Visual Studio Code integration, see [MCP.md](MCP.md).
+For internal architecture and implementation notes, see [docs/MCP.md](docs/MCP.md).

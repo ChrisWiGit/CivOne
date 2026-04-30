@@ -22,6 +22,19 @@ namespace CivOne
 		private readonly Runtime _runtime;
 		private readonly IDebounceService _debounceService;
 
+		private static string GetMcpTitleSuffix(Runtime runtime)
+		{
+			if (runtime?.Settings == null || !runtime.Settings.McpEnabled)
+				return string.Empty;
+
+			return runtime.Settings.McpNoAuth
+				? " [MCP is running without Auth]"
+				: " [MCP is running]";
+		}
+
+		private static string ApplyMcpTitleState(Runtime runtime, string title)
+			=> $"{title}{GetMcpTitleSuffix(runtime)}";
+
 		private static Settings Settings => Settings.Instance;
 
 		private int _mouseX = -1, _mouseY = -1;
@@ -400,7 +413,7 @@ namespace CivOne
 			_settingsWindowMaximized = Settings.WindowMaximized;
 		}
 
-		public GameWindow(Runtime runtime, bool softwareRender, IDebounceService debounceService) : base("CivOne", InitialWidth, InitialHeight, Settings.FullScreen, softwareRender)
+		public GameWindow(Runtime runtime, bool softwareRender, IDebounceService debounceService) : base(ApplyMcpTitleState(runtime, "CivOne"), InitialWidth, InitialHeight, Settings.FullScreen, softwareRender)
 		{
 			_runtime = runtime;
 			_debounceService = debounceService ?? throw new ArgumentNullException(nameof(debounceService));
@@ -409,7 +422,7 @@ namespace CivOne
 			RestoreWindowPlacement();
 
 			_runtime.CursorChanged += CursorChanged;
-			_runtime.SetWindowTitle += (string title) => Title = title;
+			_runtime.SetWindowTitle += (string title) => Title = ApplyMcpTitleState(_runtime, title);
 
 			OnLog += (message) => _runtime.Log(message);
 			OnLoad += Load;

@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_validate_path/output",
+  "title": "game_validate_path – output",
+  "type": "object",
+  "required": ["ok", "valid", "truncated", "maxChars", "returnedChars"],
+  "properties": {
+    "ok":            { "type": "boolean" },
+    "valid":         { "type": "boolean", "description": "True when the path resolves successfully." },
+    "path":          { "type": ["string", "null"], "description": "The path that was evaluated." },
+    "truncated":     { "type": "boolean", "const": false },
+    "maxChars":      { "type": "integer" },
+    "returnedChars": { "type": "integer", "const": 0, "description": "Always 0 – this tool returns metadata only, not the node value." },
+    "valueKind": {
+      "type": "string",
+      "description": "JSON value kind of the resolved node. Present only when valid=true.",
+      "enum": ["object", "array", "string", "number", "true", "false", "null", "undefined"]
+    },
+    "error": {
+      "type": "object",
+      "description": "Present when ok=false.",
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "MISSING_PARAM",
+            "INVALID_PARAMS",
+            "INVALID_PATH_ROOT",
+            "INVALID_PATH",
+            "NO_GAME"
+          ]
+        },
+        "message":       { "type": "string" },
+        "path":          { "type": ["string", "null"] },
+        "failedSegment": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

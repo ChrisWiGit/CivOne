@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_get_cities/output",
+  "title": "game_get_cities – output",
+  "type": "object",
+  "required": ["ok", "truncated", "maxChars", "returnedChars"],
+  "properties": {
+    "ok":            { "type": "boolean" },
+    "truncated":     { "type": "boolean" },
+    "maxChars":      { "type": "integer" },
+    "returnedChars": { "type": "integer" },
+    "data": {
+      "description": "Array of city objects.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "description": "City object. Present keys depend on the 'keys' filter.",
+        "properties": {
+          "id":                { "type": "string", "format": "uuid", "description": "Stable city GUID." },
+          "name":              { "type": "string" },
+          "owner":             { "type": "integer", "description": "0-based player index of the city owner." },
+          "size":              { "type": "integer", "minimum": 1 },
+          "currentProduction": { "type": ["string", "null"], "description": "Name of the item currently being produced." },
+          "buildings": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Names of buildings present in the city."
+          },
+          "wonders": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Names of world wonders present in the city."
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code":    { "type": "string", "enum": ["NO_GAME", "INVALID_PLAYER", "INVALID_CITY", "PAYLOAD_TRUNCATED"] },
+        "message": { "type": "string" }
+      }
+    }
+  }
+}
