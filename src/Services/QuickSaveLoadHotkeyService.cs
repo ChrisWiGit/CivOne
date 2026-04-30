@@ -21,7 +21,8 @@ namespace CivOne.Services
 
 		public QuickSaveLoadHotkeyService(
 			IRuntime runtime,
-			ITranslationService translationService = null,
+			ITranslationService translationService,
+			IYamlSaveGameServiceFactory yamlSaveGameServiceFactory = null,
 			Action<string, object[]> log = null,
 			Action<string> saveCosAction = null,
 			Func<string, bool> loadCosAction = null,
@@ -30,9 +31,13 @@ namespace CivOne.Services
 			Action<string> showUserErrorAction = null)
 		{
 			_runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
-			_translation = translationService ?? TranslationServiceFactory.CreateDefault();
+			_translation = translationService ?? throw new ArgumentNullException(nameof(translationService));
+			if (saveCosAction == null && yamlSaveGameServiceFactory == null)
+			{
+				throw new ArgumentNullException(nameof(yamlSaveGameServiceFactory));
+			}
 			_log = log ?? ((text, parameters) => _runtime.Log(text, parameters));
-			_saveCosAction = saveCosAction ?? (filePath => new YamlSaveGameService(Game.Instance).SaveCos(filePath));
+			_saveCosAction = saveCosAction ?? (filePath => yamlSaveGameServiceFactory.Create(Game.Instance).SaveCos(filePath));
 			_loadCosAction = loadCosAction ?? Game.LoadYamlGame;
 			_rebuildGamePlayAction = rebuildGamePlayAction ?? RebuildGamePlay;
 			_canQuickSave = canQuickSave ?? (() => Game.Started && Game.Instance != null);

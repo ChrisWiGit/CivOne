@@ -118,7 +118,8 @@ namespace CivOne.UnitTests
 			Action<string> onError)
 			=> new(
 				_runtime,
-				new TranslationIdentityServiceImpl(),
+				TranslationServiceFactory.CreateDefault(),
+				null,
 				(_, _) => { },
 				save,
 				load,

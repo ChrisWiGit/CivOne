@@ -14,7 +14,7 @@ I did not browse all issues on github at first, so I did not recognize that some
 * Feature: Added quick save and quick load hotkeys with profile-based COS slots.
   * `Ctrl+F1` to `Ctrl+F10` saves quick slots to `fastsave_f1.cos` to `fastsave_f10.cos`.
   * `Alt+F1` to `Alt+F10` loads quick slots from the same files.
-  * Quick slot files are stored in the runtime profile storage directory (`%LOCALAPPDATA%\\CivOne` on Windows and `~/CivOne` on Linux/macOS).
+  * Quick slot files are stored in the runtime profile storage directory (`%LOCALAPPDATA%\CivOne` on Windows and `~/CivOne` on Linux/macOS).
   * Hotkeys are handled globally and work in gameplay, credits, and end screens.
   * Missing or invalid quick slot loads now show a simple user-facing error message and log the technical error details.
   * After YAML quick load, gameplay screen is rebuilt so map centering is refreshed correctly.

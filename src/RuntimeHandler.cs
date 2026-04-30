@@ -275,7 +275,7 @@ namespace CivOne
 				throw new Exception("Only one runtime can be registered.");
 			}
 
-			_instance = new RuntimeHandler(runtime);
+			_instance = new RuntimeHandler(runtime, CreateQuickSaveLoadHotkeyService(runtime));
 		}
 		public static void RegisterForTest(IRuntime runtime)
 		{
@@ -284,7 +284,14 @@ namespace CivOne
 				throw new Exception("Only one runtime can be registered.");
 			}
 
-			_instance = new RuntimeHandler(runtime, false);
+			_instance = new RuntimeHandler(runtime, CreateQuickSaveLoadHotkeyService(runtime), false);
+		}
+
+		private static IQuickSaveLoadHotkeyService CreateQuickSaveLoadHotkeyService(IRuntime runtime)
+		{
+			ITranslationService translationService = TranslationServiceFactory.CreateDefault();
+			IYamlSaveGameServiceFactory yamlSaveGameServiceFactory = new YamlSaveGameServiceFactory();
+			return new QuickSaveLoadHotkeyService(runtime, translationService, yamlSaveGameServiceFactory);
 		}
 
         /// <summary>
@@ -295,10 +302,10 @@ namespace CivOne
             _instance = null;
         }
 
-		private RuntimeHandler(IRuntime runtime, bool concurrent = true)
+		private RuntimeHandler(IRuntime runtime, IQuickSaveLoadHotkeyService quickSaveLoadHotkeyService, bool concurrent = true)
 		{
-			Runtime = runtime;
-			_quickSaveLoadHotkeyService = new QuickSaveLoadHotkeyService(runtime);
+			Runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
+			_quickSaveLoadHotkeyService = quickSaveLoadHotkeyService ?? throw new ArgumentNullException(nameof(quickSaveLoadHotkeyService));
 
 			// fire-eggs 20170711 init the RNG if user specified
 			// Be aware: Game.LoadSave will override this with the seed from the save game

@@ -19,6 +19,13 @@ namespace CivOne.Screens.Reports
 	[ScreenResizeable]
 	internal class CivilizationScore : BaseReport
 	{
+		private const int HappyCitizenScoreWeight = 2;
+		private const int CityScoreWeight = 3;
+		private const int AdvanceScoreWeight = 10;
+		private const int WonderScoreWeight = 50;
+		private const int GoldPerScorePoint = 25;
+		private const int InitialInputDelayMs = 1200;
+
 		private bool _update = true;
 		private readonly long _ignoreInputUntil;
 
@@ -105,7 +112,7 @@ namespace CivOne.Screens.Reports
 			// don't count unhappy
 			// happy is *2
 			// all others are content
-			return 2 * citizens.happy + (citizens.Citizens.Length - citizens.unhappy - citizens.redShirt);
+			return HappyCitizenScoreWeight * citizens.happy + (citizens.Citizens.Length - citizens.unhappy - citizens.redShirt);
         }
 
 		private void Render()
@@ -123,9 +130,9 @@ namespace CivOne.Screens.Reports
 
 			int cityCount = cities.Length;
 			int populationScore = Human.Population;
-			int cityScore = cityCount * 3;
-			int advanceScore = Human.Advances.Length * 10;
-			int goldScore = Math.Max(0, Human.Gold / 25);
+			int cityScore = cityCount * CityScoreWeight;
+			int advanceScore = Human.Advances.Length * AdvanceScoreWeight;
+			int goldScore = Math.Max(0, Human.Gold / GoldPerScorePoint);
 			int citizenScore = 0;
 
 			foreach (CitizenTypes cityCitizens in citizens)
@@ -157,7 +164,7 @@ namespace CivOne.Screens.Reports
 				wonderCount += city.Wonders.Length;
 			}
 
-			int wonderScore = wonderCount * 50;
+			int wonderScore = wonderCount * WonderScoreWeight;
 			totalScore = citizenScore + cityScore + populationScore + advanceScore + wonderScore + goldScore;
 
 			yy = lastCitizenY + 16;
@@ -198,7 +205,8 @@ namespace CivOne.Screens.Reports
 
 		public CivilizationScore() : base("CIVILIZATION SCORE", 3)
 		{
-			_ignoreInputUntil = Environment.TickCount64 + 1200;
+			// Delay initial input briefly so the key that opened the report does not close it immediately again.
+			_ignoreInputUntil = Environment.TickCount64 + InitialInputDelayMs;
 			Render();
 		}
 	}

@@ -110,7 +110,7 @@ You can use fast in-game hotkeys for ten quick save slots.
 
 Quick slot files are stored in the profile storage directory.
 
-* Windows: `%LOCALAPPDATA%\\CivOne`.
+* Windows: `%LOCALAPPDATA%\CivOne`.
 * Linux/macOS: `~/CivOne`.
 
 File names are:
