@@ -26,10 +26,12 @@ namespace CivOne.UnitTests
 			_testee = new GameLoadToolHandler(_mockRuntime, new JsonSaveGameStateWriter(), 32000);
 		}
 
-		[Fact]
-		public void Handle_PathTraversalInFileName_ReturnsInvalidFileName()
+		[Theory]
+		[InlineData("..\\evil.cos")]
+		[InlineData("../evil.cos")]
+		public void Handle_PathTraversalInFileName_ReturnsInvalidFileName(string fileName)
 		{
-			using JsonDocument args = JsonDocument.Parse("{\"fileName\":\"..\\\\evil.cos\"}");
+			using JsonDocument args = JsonDocument.Parse($"{{\"fileName\":{JsonSerializer.Serialize(fileName)}}}");
 			McpRequest request = new("2.0", "load-1", "game_load", args.RootElement.Clone(), null);
 
 			McpResponse response = _testee.Handle(request);

@@ -153,7 +153,7 @@ namespace CivOne.Mcp.Tools
 			}
 
 			string trimmed = fileName.Trim();
-			if (!string.Equals(trimmed, Path.GetFileName(trimmed), StringComparison.Ordinal))
+			if (ContainsPathSeparators(trimmed))
 			{
 				error = "Property 'fileName' must not contain path separators.";
 				return false;
@@ -178,6 +178,11 @@ namespace CivOne.Mcp.Tools
 
 			fullPath = candidate;
 			return true;
+		}
+
+		private static bool ContainsPathSeparators(string fileName)
+		{
+			return fileName.IndexOf('/') >= 0 || fileName.IndexOf('\\') >= 0;
 		}
 
 		private McpResponse JsonResponse(object id, object payload)
