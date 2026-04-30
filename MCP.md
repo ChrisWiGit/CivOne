@@ -83,6 +83,52 @@ Important:
 - The prefilled examples in [mcp/openapi.yml](mcp/openapi.yml) already include `method: "tools/call"` and the correct `params.name`.
 - Paths like `/mcp/<toolName>` are convenience OpenAPI paths; execution still goes through JSON-RPC `tools/call`.
 
+Copy/paste examples (manual HTTP execution):
+
+`game_list_saves`:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "ls1",
+  "method": "tools/call",
+  "params": {
+    "name": "game_list_saves",
+    "arguments": {}
+  }
+}
+```
+
+`game_save`:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "save1",
+  "method": "tools/call",
+  "params": {
+    "name": "game_save",
+    "arguments": {}
+  }
+}
+```
+
+`game_get_players` (minimal keys):
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "players1",
+  "method": "tools/call",
+  "params": {
+    "name": "game_get_players",
+    "arguments": {
+      "keys": ["id", "tribeName"]
+    }
+  }
+}
+```
+
 It supports the MCP lifecycle methods expected by VS Code:
 
 - `initialize`
