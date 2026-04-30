@@ -9,6 +9,9 @@ Start the SDL runtime with `--mcp`.
 Use `--mcp-artifacts <path>` to choose where captured images are stored.
 Use `--mcp-saves <path>` to choose where MCP save listing/loading reads `.cos` files from.
 Use `--mcp-no-auth` when you want to run without session-token authentication.
+Use `--mcp-http` to host MCP over local HTTP (`127.0.0.1`) instead of stdio.
+Use `--mcp-http-port <port>` to override the default HTTP port (`8765`).
+Use `--mcp-http-timeout-ms <ms>` to configure HTTP request timeout (default `30000`).
 
 Windows:
 
@@ -28,6 +31,12 @@ Windows for direct VS Code MCP client use without token handling:
 CivOne.SDL.exe --mcp --mcp-no-auth
 ```
 
+Windows for local manual HTTP testing:
+
+```cmd
+CivOne.SDL.exe --mcp-http --mcp-no-auth --mcp-saves ".\\.saves"
+```
+
 Linux or macOS:
 
 ```sh
@@ -38,9 +47,41 @@ By default, artifacts are written below the CivOne storage directory in `temp/mc
 
 ## Transport and authentication
 
+### stdio transport (default)
+
 The server uses JSON-RPC 2.0 over standard input and standard output.
 Send one JSON object per line to stdin.
 Read one JSON object per line from stdout.
+
+### HTTP transport (`--mcp-http`)
+
+When `--mcp-http` is enabled, the server listens on:
+
+- `http://127.0.0.1:8765/mcp/` (default)
+- or `http://127.0.0.1:<your-port>/mcp/` when `--mcp-http-port` is set
+
+HTTP transport accepts `POST` requests with a JSON-RPC body.
+Notifications (requests without `id`) return HTTP `202`.
+Request timeout uses `--mcp-http-timeout-ms`.
+
+### Manual execution via OpenAPI (VS Code)
+
+You can execute MCP tool calls manually in VS Code using the OpenAPI file at [mcp/openapi.yml](mcp/openapi.yml).
+
+Recommended flow:
+
+1. Start CivOne with HTTP MCP enabled (for example `--mcp-http --mcp-no-auth`).
+2. Open [mcp/openapi.yml](mcp/openapi.yml) in VS Code and use your OpenAPI client extension's "Try it out" feature.
+3. Choose an endpoint such as `/mcp/game_list_saves`.
+4. Keep the prefilled JSON-RPC envelope and usually only change:
+  - `id` (optional, any scalar)
+  - `params.arguments` (only when the tool needs input)
+
+Important:
+
+- The HTTP endpoint expects JSON-RPC requests, not raw tool arguments.
+- The prefilled examples in [mcp/openapi.yml](mcp/openapi.yml) already include `method: "tools/call"` and the correct `params.name`.
+- Paths like `/mcp/<toolName>` are convenience OpenAPI paths; execution still goes through JSON-RPC `tools/call`.
 
 It supports the MCP lifecycle methods expected by VS Code:
 
@@ -75,6 +116,14 @@ Initialize request:
     "capabilities": {}
   }
 }
+```
+
+HTTP example (`tools/list`):
+
+```sh
+curl -sS http://127.0.0.1:8765/mcp/ \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":"1","method":"tools/list"}'
 ```
 
 Initialize response shape:

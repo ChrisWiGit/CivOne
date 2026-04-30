@@ -11,6 +11,10 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Added command line option `--mcp-artifacts <folder>` to specify a custom folder for MCP artifacts (e.g. screenshots).
   * Added command line option `--mcp-saves <folder>` to specify a custom folder for MCP `.cos` save listing, loading, and MCP save creation.
   * Added command line option `--mcp-no-auth` to disable session token authentication for easier testing without token handling.
+  * Added manual MCP execution support via OpenAPI in [mcp/openapi.yml](mcp/openapi.yml) for HTTP mode (`--mcp-http`).
+    * OpenAPI examples are prefilled with valid JSON-RPC `tools/call` envelopes.
+    * In most cases only `id` and `params.arguments` need to be changed for manual testing.
+    * Can be used directly in Visual Studio Code REST Client extension or any other OpenAPI-compatible client.
   * Added MCP tool `game_save` to write the current game state as a new `.cos` file in the configured MCP saves folder.
     * Save files are always created with a unique timestamp-based name: `savegame_mcp_<UTC yyyyMMddHHmmssfff>.cos`.
     * Existing files are never overwritten.

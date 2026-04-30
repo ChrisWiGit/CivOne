@@ -10,7 +10,10 @@
 				"--mcp-artifacts",
 				"${workspaceFolder}/.mcp-artifacts",
 				"--mcp-saves",
-				"${workspaceFolder}/.saves"
+				"${workspaceFolder}/.saves",
+				"--mcp-http",
+				"--mcp-http-port",
+				"8765"
 			]
 		},
 		"civone_savegame": {
@@ -25,7 +28,10 @@
 				"--mcp-saves",
 				"${workspaceFolder}/.saves",
 				"--load-cos",
-				"${workspaceFolder}/.saves/savegame_11.cos"
+				"${workspaceFolder}/.saves/savegame_11.cos",
+				"--mcp-http",
+				"--mcp-http-port",
+				"8765"
 			]
 		}
 	}

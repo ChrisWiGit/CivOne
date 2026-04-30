@@ -71,7 +71,26 @@ namespace CivOne.Mcp
 
 			IMcpToolRegistry registry = new McpToolRegistry([.. realHandlers, .. metaHandlers]);
 			IMcpProtocolSerializer serializer = new JsonRpcProtocolSerializer();
-			IMcpTransport transport = new StdioMcpTransport(serializer, message => runtime.Log("[MCP] {0}", message));
+
+			bool httpTransportEnabled = runtime.Settings.Get<bool>("mcp-http");
+			IMcpTransport transport;
+			if (httpTransportEnabled)
+			{
+				int httpPort = runtime.Settings.Get<int>("mcp-http-port");
+				if (httpPort <= 0)
+					httpPort = 8765;
+
+				int httpTimeoutMs = runtime.Settings.Get<int>("mcp-http-timeout-ms");
+				if (httpTimeoutMs < 1000)
+					httpTimeoutMs = 30000;
+
+				transport = new HttpMcpTransport(serializer, httpPort, httpTimeoutMs, message => runtime.Log("[MCP] {0}", message));
+				runtime.Log("[MCP] HTTP transport enabled on http://127.0.0.1:{0}/mcp/", httpPort);
+			}
+			else
+			{
+				transport = new StdioMcpTransport(serializer, message => runtime.Log("[MCP] {0}", message));
+			}
 
 			string sessionToken = Guid.NewGuid().ToString("N");
 			bool authEnabled = !runtime.Settings.McpNoAuth;

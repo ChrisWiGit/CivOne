@@ -153,6 +153,9 @@ namespace CivOne.Mcp.Tools
 			AddSetting(runtime, flatSettings, "runtime", "mcpArtifacts", _runtime.Settings.Get<string>("mcp-artifacts"));
 			AddSetting(runtime, flatSettings, "runtime", "mcpSaves", _runtime.Settings.Get<string>("mcp-saves"));
 			AddSetting(runtime, flatSettings, "runtime", "mcpMaxJsonChars", _runtime.Settings.Get<int>("mcp-max-json-chars"));
+			AddSetting(runtime, flatSettings, "runtime", "mcpHttp", BuildBooleanValue(_runtime.Settings.Get<bool>("mcp-http"), "Enabled", "Disabled"));
+			AddSetting(runtime, flatSettings, "runtime", "mcpHttpPort", _runtime.Settings.Get<int>("mcp-http-port"));
+			AddSetting(runtime, flatSettings, "runtime", "mcpHttpTimeoutMs", _runtime.Settings.Get<int>("mcp-http-timeout-ms"));
 
 			return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
 			{

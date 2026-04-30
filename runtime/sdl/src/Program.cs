@@ -60,6 +60,40 @@ Try 'civone-sdl --help' for more information.
 					case "setup": settings.Setup = true; continue;
 					case "free": settings.Free = true; continue;
 					case "mcp": settings.McpEnabled = true; continue;
+					case "mcp-http":
+						settings.McpEnabled = true;
+						settings["mcp-http"] = true;
+						continue;
+					case "mcp-http-port":
+						if (args.GetUpperBound(0) == i)
+						{
+							Console.WriteLine("Missing port argument for --mcp-http-port");
+							return;
+						}
+
+						if (!int.TryParse(args[++i], out int httpPort) || httpPort < 1 || httpPort > 65535)
+						{
+							Console.WriteLine("Invalid value for --mcp-http-port (expected 1..65535)");
+							return;
+						}
+
+						settings["mcp-http-port"] = httpPort;
+						continue;
+					case "mcp-http-timeout-ms":
+						if (args.GetUpperBound(0) == i)
+						{
+							Console.WriteLine("Missing timeout argument for --mcp-http-timeout-ms");
+							return;
+						}
+
+						if (!int.TryParse(args[++i], out int httpTimeoutMs) || httpTimeoutMs < 1000)
+						{
+							Console.WriteLine("Invalid value for --mcp-http-timeout-ms (expected >= 1000)");
+							return;
+						}
+
+						settings["mcp-http-timeout-ms"] = httpTimeoutMs;
+						continue;
 					case "mcp-no-auth": settings.McpNoAuth = true; continue;
 					case "no-sound": settings["no-sound"] = true; continue;
 					case "no-data-check": settings.DataCheck = false; continue;
