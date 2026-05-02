@@ -15,6 +15,7 @@ using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
 using CivOne.Graphics.Sprites;
+using CivOne.Screens.PalaceAssets;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -231,7 +232,7 @@ namespace CivOne.Screens.GamePlayPanels
 			if (args.Y > 50 && args.Y < 62)
 			{
 				Log("Sidebar: Palace View");
-				Common.AddScreen(new PalaceView());
+				Common.AddScreen(new PalaceView(false, PalaceSpriteProviderFactory.GetInstance()));
 			}
 			else if (args.Y >= 62)
 			{

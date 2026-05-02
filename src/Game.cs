@@ -23,6 +23,7 @@ using CivOne.Screens;
 using CivOne.Screens.Services;
 using CivOne.Services;
 using CivOne.Services.GlobalWarming;
+using CivOne.Services.Palace;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -277,6 +278,17 @@ namespace CivOne
 		public IGlobalWarmingService GlobalWarmingService => globalWarmingService;
 		internal IGlobalWarmingScourgeService globalWarmingScourgeService;
 
+		internal readonly IPalaceUpgradeService _palaceUpgradeService;
+
+		private readonly struct PlayerGameStateAdapter(Player player) : IPlayerGameState
+		{
+			private readonly Player _player = player;
+
+			public int CivilizationScore => ((Persistence.Game.IPlayer)_player).CivilizationScore;
+			public IPalaceData Palace => _player.Palace;
+			public bool IsHuman => _player.IsHuman;
+		}
+
 		/// <summary>
 		/// End the current player's turn and advance to the next player.
 		/// There are multiple references to this method in various places.
@@ -364,6 +376,22 @@ namespace CivOne
 			if (origin == 0)
 			{
 				HandleGlobalWarming();
+			}
+
+			// Palace upgrade trigger check for all players (trigger evaluation is player-independent)
+			if (_palaceUpgradeService != null)
+			{
+				foreach (Player player in _players.Where(x => x.Civilization is not Barbarian))
+				{
+					if (_palaceUpgradeService.ShouldShowPalaceUpgrade(new PlayerGameStateAdapter(player)))
+					{
+						// Enqueue show-palace action only for human player (AI palace upgrades handled separately in future)
+						if (player.IsHuman)
+						{
+							GameTask.Enqueue(Show.BuildPalace());
+						}
+					}
+				}
 			}
 
 			foreach (IUnit unit in _units.Where(u => u.Owner == _currentPlayer))

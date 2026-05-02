@@ -18,6 +18,7 @@ using CivOne.Persistence.Mapper;
 using CivOne.Persistence.Model;
 using CivOne.Persistence.Yaml;
 using CivOne.Services.GlobalWarming;
+using CivOne.Services.Palace;
 using CivOne.Services.Random;
 using CivOne.Units;
 
@@ -47,6 +48,7 @@ namespace CivOne
 		private Game(IValueSanitizer valueSanitizer)
 		{
 			_valueSanitizer = valueSanitizer ?? throw new ArgumentNullException(nameof(valueSanitizer));
+			_palaceUpgradeService = PalaceUpgradeServiceFactory.GetInstance();
 		}
 
 		private Game(GameState state) : this(CreateValueSanitizer())

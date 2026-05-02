@@ -13,6 +13,7 @@ using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.IO;
+using CivOne.Screens.PalaceAssets;
 
 namespace CivOne.Screens
 {
@@ -30,8 +31,14 @@ namespace CivOne.Screens
 
 		private const int NOISE_COUNT = 40;
 
+		// Y-level offsets for text positioning (for manual fine-tuning)
+		private const int PALACE_NUMBERS_Y_OFFSET = 0;   // Base: 144 (font 14), 145 (font 5)
+		private const int GARDEN_LETTERS_Y_OFFSET = 0;   // Base: 160 (font 14), 161 (font 5)
+
 		private readonly Picture _background;
+		private readonly IPalaceSpriteProvider _sprites;
 		private readonly byte[,] _noiseMap;
+		private int _pendingPartIndex = -1;
 		private int OffsetX => System.Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => System.Math.Max(0, (Height - 200) / 2);
 
@@ -61,11 +68,11 @@ namespace CivOne.Screens
 			PalaceData palace = Human.Palace;
 			Picture picture = new Picture(320, 200);
 			picture.AddLayer(_background);
-			switch (palace.GetGardenLevel(1))
+
+			Picture backdrop = _sprites.GetGardenBackdrop(palace.GetGardenLevel(1));
+			if (backdrop != null)
 			{
-				case 1: picture.AddLayer(Resources["CBACKS1"], 0, 135); break;
-				case 2: picture.AddLayer(Resources["CBACKS2"], 0, 135); break;
-				case 3: picture.AddLayer(Resources["CBACKS3"], 0, 135); break;
+				picture.AddLayer(backdrop, 0, 135);
 			}
 
 			for (int i = palace.PalaceLeft; i <= palace.PalaceRight; i++)
@@ -73,7 +80,6 @@ namespace CivOne.Screens
 				if (i == 3) continue;
 
 				byte level = palace.GetPalaceLevel(i);
-				PalaceStyle style = palace.GetPalaceStyle(i);
 				PalacePart part = PalacePart.None;
 
 				if (level == 0 && (i < 2 || i > 4)) continue;
@@ -83,7 +89,6 @@ namespace CivOne.Screens
 				{
 					case 1:
 					case 2: xx = 17 + (48 * i) - 33; break;
-					//case 3: i = 17; break;
 					case 4:
 					case 5:
 					case 6: xx = 185 + ((i - 4) * 48); break;
@@ -131,23 +136,22 @@ namespace CivOne.Screens
 						break;
 				}
 
-				picture.AddLayer(Resources.GetPalace(palace.GetPalaceStyle(i), part, palace.GetPalaceLevel(i)), xx, 37);
+				picture.AddLayer(_sprites.GetPalacePart(palace.GetPalaceStyle(i), part, palace.GetPalaceLevel(i)), xx, 37);
 			}
 
 			// Draw palace middle
-			picture.AddLayer(Resources.GetPalace(palace.GetPalaceStyle(3), PalacePart.Center, palace.GetPalaceLevel(3)), 135, palace.GetPalaceLevel(3) == 0 ? 37 : 38);
-			
-			switch (palace.GetGardenLevel(0))
+			picture.AddLayer(_sprites.GetPalacePart(palace.GetPalaceStyle(3), PalacePart.Center, palace.GetPalaceLevel(3)), 135, palace.GetPalaceLevel(3) == 0 ? 37 : 38);
+
+			Picture leftGarden = _sprites.GetGardenBrush(0, palace.GetGardenLevel(0));
+			if (leftGarden != null)
 			{
-				case 1: picture.AddLayer(Resources["CBRUSH0"], 0, 105); break;
-				case 2: picture.AddLayer(Resources["CBRUSH2"], 0, 94); break;
-				case 3: picture.AddLayer(Resources["CBRUSH4"], 0, 94); break;
+				picture.AddLayer(leftGarden, 0, palace.GetGardenLevel(0) == 1 ? 105 : 94);
 			}
-			switch (palace.GetGardenLevel(2))
+
+			Picture rightGarden = _sprites.GetGardenBrush(2, palace.GetGardenLevel(2));
+			if (rightGarden != null)
 			{
-				case 1: picture.AddLayer(Resources["CBRUSH1"], 184, 105); break;
-				case 2: picture.AddLayer(Resources["CBRUSH3"], 184, 94); break;
-				case 3: picture.AddLayer(Resources["CBRUSH5"], 184, 94); break;
+				picture.AddLayer(rightGarden, 184, palace.GetGardenLevel(2) == 1 ? 105 : 94);
 			}
 			return picture;
 		}
@@ -192,20 +196,32 @@ namespace CivOne.Screens
 
 							for (int i = 0; i < 7; i++)
 							{
-								if (Human.Palace.GetPalaceLevel(i) >= 4) continue;
+								if (!Human.Palace.IsSlotUnlocked(i) || Human.Palace.GetPalaceLevel(i) >= 4) continue;
 
 								int xx = 12 + (48 * i);
-								this.DrawText($"{i + 1}", 0, 5, xx + ox, 145 + oy)
-									.DrawText($"{i + 1}", 0, 14, xx + ox, 144 + oy);
+								this.DrawText($"{i + 1}", 0, 5, xx + ox, 145 + oy + PALACE_NUMBERS_Y_OFFSET)
+									.DrawText($"{i + 1}", 0, 14, xx + ox, 144 + oy + PALACE_NUMBERS_Y_OFFSET);
 							}
 							for (int i = 0; i < 3; i++)
 							{
 								if (Human.Palace.GetGardenLevel(i) >= 3) continue;
 
 								int xx = 40 + (120 * i);
-								this.DrawText($"{(char)('A' + i)}", 0, 5, xx + ox, 161 + oy)
-									.DrawText($"{(char)('A' + i)}", 0, 14, xx + ox, 160 + oy);
+								this.DrawText($"{(char)('A' + i)}", 0, 5, xx + ox, 161 + oy + GARDEN_LETTERS_Y_OFFSET)
+									.DrawText($"{(char)('A' + i)}", 0, 14, xx + ox, 160 + oy + GARDEN_LETTERS_Y_OFFSET);
 							}
+						}
+						break;
+					case Stage.SelectStyle:
+						{
+							Picture message = new Picture(180, 23)
+								.Tile(Pattern.PanelGrey)
+								.DrawRectangle3D()
+								.DrawText("Which style shall we use?", 0, 15, 4, 4)
+								.DrawText("1=Med  2=Classic  3=Islamic", 0, 5, 4, 13)
+								.As<Picture>();
+							this.FillRectangle(40 + ox, 16 + oy, 182, 25, 5)
+								.AddLayer(message, 41 + ox, 17 + oy);
 						}
 						break;
 					case Stage.Morph:
@@ -219,8 +235,6 @@ namespace CivOne.Screens
 						}
 						_currentStage = Stage.View;
 						return true;
-					case Stage.SelectStyle:
-						break;
 				}
 
 				_update = false;
@@ -247,53 +261,44 @@ namespace CivOne.Screens
 					_update = true;
 					break;
 				case Stage.SelectPart:
-					bool morph = false;
-					_palaceMorph = DrawPalace();
-					
-					try
+					if (args.KeyChar >= 'A' && args.KeyChar <= 'C')
 					{
-						switch (args.KeyChar)
+						int index = args.KeyChar - 'A';
+						if (palace.GetGardenLevel(index) < 3)
 						{
-							case 'A': 
-							case 'B': 
-							case 'C':
-								{
-									int index = (int)(args.KeyChar - 'A');
-									byte level = (byte)(palace.GetGardenLevel(index) + 1);
-									if (level > 2) break;
-									morph = true; palace.SetGarden(index, (byte)(Human.Palace.GetGardenLevel(2) + 1));
-								}
-								break;
-							case '1':
-							case '2':
-							case '3':
-							case '4':
-							case '5':
-							case '6':
-							case '7':
-								{
-									int index = (int)(args.KeyChar - '1');
-									byte level = (byte)(palace.GetPalaceLevel(index) + 1);
-									if (level > 4) break;
-									morph = true; palace.SetPalace(index, 1, level);
-								}
-								break;
-						};
-					}
-					catch
-					{
-						// TODO: Check for valid choice before handling keypress
-						_currentStage = Stage.View;
-						_update = true;
+							_palaceMorph = DrawPalace();
+							palace.SetGarden(index, (byte)(palace.GetGardenLevel(index) + 1));
+							_currentStage = Stage.Morph;
+							_update = true;
+						}
 						break;
 					}
-					if (morph)
+
+					if (args.KeyChar >= '1' && args.KeyChar <= '7')
 					{
-						_update = true;
-						_currentStage = Stage.Morph;
-						break;
+						int index = args.KeyChar - '1';
+						if (palace.IsSlotUnlocked(index) && palace.GetPalaceLevel(index) < 4)
+						{
+							_pendingPartIndex = index;
+							_currentStage = Stage.SelectStyle;
+							_update = true;
+						}
 					}
-					_palaceMorph = null;
+					break;
+				case Stage.SelectStyle:
+					if (args.KeyChar >= '1' && args.KeyChar <= '3' && _pendingPartIndex >= 0)
+					{
+						byte newLevel = (byte)(palace.GetPalaceLevel(_pendingPartIndex) + 1);
+						if (newLevel <= 4)
+						{
+							PalaceStyle style = (PalaceStyle)(args.KeyChar - '0');
+							_palaceMorph = DrawPalace();
+							palace.SetPalace(_pendingPartIndex, (byte)style, newLevel);
+							_pendingPartIndex = -1;
+							_currentStage = Stage.Morph;
+							_update = true;
+						}
+					}
 					break;
 				case Stage.View:
 					Destroy();
@@ -311,8 +316,8 @@ namespace CivOne.Screens
 					_update = true;
 					break;
 				case Stage.SelectPart:
-					// _currentStage = Stage.View;
-					// _update = true;
+						_currentStage = Stage.View;
+						_update = true;
 					break;
 				case Stage.View:
 					Destroy();
@@ -321,16 +326,20 @@ namespace CivOne.Screens
 			return true;
 		}
 		
-		public PalaceView(bool build = false)
+		public PalaceView(bool build = false, IPalaceSpriteProvider sprites = null)
 		{
+			_sprites = sprites ?? PalaceSpriteProviderFactory.GetInstance();
+
 			_noiseMap = new byte[320, 200];
 			for (int x = 0; x < 320; x++)
-			for (int y = 0; y < 200; y++)
 			{
-				_noiseMap[x, y] = (byte)Common.Random.Next(1, NOISE_COUNT);
+				for (int y = 0; y < 200; y++)
+				{
+					_noiseMap[x, y] = (byte)Common.Random.Next(1, NOISE_COUNT);
+				}
 			}
 			
-			_background = Resources["CBACK"];
+			_background = _sprites.GetBackground();
 			Palette = _background.Palette;
 			if (build) _currentStage = Stage.Message;
 		}
