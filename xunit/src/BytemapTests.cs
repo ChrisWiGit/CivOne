@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using CivOne.Graphics;
 using CivOne.IO;
 using Xunit;
 
@@ -21,8 +22,12 @@ namespace CivOne.UnitTests
 		{
 			var src = new Bytemap(5, 2);
 			for (int y = 0; y < 2; y++)
-			for (int x = 0; x < 5; x++)
-				src[x, y] = (byte)((y * 5) + x + 1);
+			{
+				for (int x = 0; x < 5; x++)
+				{
+					src[x, y] = (byte)((y * 5) + x + 1);
+				}
+			}
 			return src;
 		}
 
@@ -35,8 +40,12 @@ namespace CivOne.UnitTests
 		{
 			var src = new Bytemap(4, 4);
 			for (int y = 0; y < 4; y++)
-			for (int x = 0; x < 4; x++)
-				src[x, y] = (byte)((y * 4) + x + 1);
+			{
+				for (int x = 0; x < 4; x++)
+				{
+					src[x, y] = (byte)((y * 4) + x + 1);
+				}
+			}
 			return src;
 		}
 
@@ -130,6 +139,24 @@ namespace CivOne.UnitTests
 			Assert.Equal(9, actual[1, 3]);
 			Assert.Equal(10, actual[2, 3]);
 			Assert.Equal(11, actual[3, 3]);
+		}
+
+		[Fact]
+		public void DrawLine_WhenEndpointsCrossBitmapBounds_DoesNotThrow()
+		{
+			// Arrange
+			var picture = new Picture(16, 16);
+
+			// Act
+			var exception = Record.Exception(() =>
+				picture
+					.DrawLine(6, -1, 8, 5, 77)
+					.DrawLine(11, 5, 16, 6, 77));
+
+			// Assert
+			Assert.Null(exception);
+			Assert.Equal(77, picture.Bitmap[6, 0]);
+			Assert.Equal(77, picture.Bitmap[15, 6]);
 		}
 	}
 }
