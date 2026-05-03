@@ -23,7 +23,6 @@ namespace CivOne.Graphics
 		private const int TOWER_LAYER_TOP_OFFSET = 2;
 		private const int TOWER_LAYER_LEFT_OFFSET_CLASSICAL = 0;
 		private const int TOWER_LAYER_LEFT_OFFSET_OTHER = 8;
-		private const int CASTLE4_RIGHT_TOWER_LEFT_ADJUSTMENT = -1;
 		private const int LEFT_TOWER_WALL_LEFT_OFFSET = 33;
 		private const int RIGHT_TOWER_WALL_LEFT_OFFSET_CLASSICAL = 22;
 		private const int RIGHT_TOWER_WALL_LEFT_OFFSET_OTHER = 21;
@@ -65,11 +64,9 @@ namespace CivOne.Graphics
         {
 			Picture picture = CreateTowerPicture();
 			
-			picture.AddLayer(GetCastleSourcePartImage(level, PalacePart.LeftTower, style, layout, offsetX), TOWER_LAYER_LEFT_OFFSET_OTHER, TOWER_LAYER_TOP_OFFSET);
 
 			if (style == PalaceStyle.Classical)
 			{
-				// draw tower after wall layers to make sure the tower is shown on front of the wall.
 				picture.AddLayer(
 					GetCastleSourcePartImage(level, PalacePart.LeftTower, style, layout),
 					TOWER_LAYER_LEFT_OFFSET_CLASSICAL,
@@ -77,27 +74,24 @@ namespace CivOne.Graphics
 				return picture;
 			}
 
+			picture.AddLayer(GetCastleSourcePartImage(level, PalacePart.LeftTower, style, layout, offsetX), TOWER_LAYER_LEFT_OFFSET_OTHER, TOWER_LAYER_TOP_OFFSET);
+
 			return picture;
 		}
 
 		private Picture BuildRightTowerPart(PalaceStyle style, int level, PalacePictureLayout layout, int offsetX)
 		{
-			Picture picture = CreateTowerPicture();
 			if (style == PalaceStyle.Classical)
 			{
-				// Special case for castle 4 right tower, which image is shifted by one pixel to the right compared to the other towers. 
-				// This would cause the laste classical tower to have a one pixel gap on the left side to the rest of the building.
-				int leftOffset = level == 4
-					? TOWER_LAYER_LEFT_OFFSET_CLASSICAL + CASTLE4_RIGHT_TOWER_LEFT_ADJUSTMENT
-					: TOWER_LAYER_LEFT_OFFSET_CLASSICAL;
-
-				picture.AddLayer(
+				Picture classicalPicture = CreateTowerPicture();
+				classicalPicture.AddLayer(
 					GetCastleSourcePartImage(level, PalacePart.RightTower, style, layout),
-					leftOffset,
+					TOWER_LAYER_LEFT_OFFSET_CLASSICAL,
 					TOWER_LAYER_TOP_OFFSET);
-				return picture;
+				return classicalPicture;
 			}
 
+			Picture picture = CreateTowerPicture();
 			picture.AddLayer(GetCastleSourcePartImage(level, PalacePart.RightTower, style, layout, offsetX), TOWER_LAYER_LEFT_OFFSET_CLASSICAL, TOWER_LAYER_TOP_OFFSET);
 			return picture;
 		}
@@ -158,8 +152,8 @@ namespace CivOne.Graphics
 					top: TOWER_LAYER_TOP_OFFSET);
 				return picture;
 			}
-
 			picture.AddLayer(GetCastleSourcePartImage(level, part, style, layout, offsetX), left: RIGHT_TOWER_WALL_LEFT_OFFSET_OTHER, top: TOWER_LAYER_TOP_OFFSET);
+
 			return picture;
 		}
 

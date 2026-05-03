@@ -91,7 +91,7 @@ namespace CivOne.Graphics
 		// Q4 is special and contains only outer classical end pieces.
 		private static readonly PalaceTowerEndSlices ClassicalTowerEndSlices = new(
 			LeftEnd: new PixelRange(160, 194),
-			RightEnd: new PixelRange(196, 228),
+			RightEnd: new PixelRange(196, 230),
 			DrawOffsetY: 0);
 
 		public static IReadOnlyDictionary<int, PalacePictureLayout> Castle1To4 { get; } =
@@ -156,7 +156,7 @@ namespace CivOne.Graphics
 		/// <param name="style">The style of the palace (e.g., Classical, Islamic).</param>
 		/// <param name="part">The specific part of the palace (e.g., LeftTower, RightTower).</param>
 		/// <param name="layout">The layout of the palace for the given level.</param>
-		/// <returns>A PalaceBuildingPartSourceLocation object containing the relevant offsets and x-coordinates.</returns>
+		/// <returns>A PalacePartSourceSelection object containing the relevant offsets and x-coordinates.</returns>
 		public PalacePartSourceSelection GetSpriteCoordinatesForPart(PalaceStyle style, PalacePart part, PalacePictureLayout layout)
 		{
 			// Determine quadrant and slices based on style

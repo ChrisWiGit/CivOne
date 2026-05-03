@@ -6,6 +6,20 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Added the new palace rendering and palace part composition.
+  * Palace sprite selection and part composition were refactored to support the new palace layout across styles and castle levels.
+  * Fixed multiple placement and offset issues for palace parts, including special-case alignment for the classical right tower in castle level 4.
+  * The palace upgrade trigger currently uses `CivilizationScore >= 1 + n*n + n` (`HumanCivScorePalaceTrigger`), where `n` is the number of existing palace upgrades.
+    This can be adjusted later if balancing changes are needed.
+  * TODO: Add the small palace preview image for map view and report screens.
+  * TODO: AI still needs to be able to build the palace.
+  * Some minor changes may apply:
+    * Alignment and placement of palace parts may be slightly different from the original game.
+    * The furthest left and right (key 1 and 7) towers are now fully visible in the palace view, while in the original game they were behind the wall.
+  * Debug: when the palace screen is opened from the debug menu you can:
+    * Press F1 to toggle noise on/off for easier debugging of the morph stages.
+    * Place all parts of the palace manually.
+    * Press Escape to exit the palace screen.
 * Feature: Added support for MCP (Multi Client Protocol) to allow external clients (e.g. VS Code extension) to connect and interact with the game for testing, debugging, and automation purposes. See [MCP.md](MCP.md) for details on how to use the MCP server and its current capabilities.
   * Added command line option `--mcp` to start the game in MCP server mode.
   * Added command line option `--mcp-artifacts <folder>` to specify a custom folder for MCP artifacts (e.g. screenshots).

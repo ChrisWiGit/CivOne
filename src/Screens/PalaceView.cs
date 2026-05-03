@@ -96,37 +96,19 @@ namespace CivOne.Screens
 
 		private Stage GetPostMorphStage() => _build && _debug ? Stage.SelectPart : Stage.View;
 
-		private Picture DrawPalace()
+		private void DrawLeftPalaceSide(Picture picture, PalaceData palace)
 		{
-			PalaceData palace = Human.Palace;
-			Picture picture = new(320, 200);
-			picture.AddLayer(_background);
+			Picture deferredLeftTower = null;
+			int leftStart = System.Math.Max(palace.PalaceLeft, 0);
+			int leftEnd = System.Math.Min(palace.PalaceRight, 2);
 
-			Picture backdrop = _sprites.GetGardenBackdrop(palace.GetGardenLevel(1));
-			if (backdrop != null)
+			for (int i = leftStart; i <= leftEnd; i++)
 			{
-				picture.AddLayer(backdrop, 0, 135);
-			}
-
-			for (int i = palace.PalaceLeft; i <= palace.PalaceRight; i++)
-			{
-				if (i == 3) continue;
-
 				byte level = palace.GetPalaceLevel(i);
-				PalacePart part = PalacePart.None;
+				if (level == 0 && i < 2) continue;
 
-				if (level == 0 && (i < 2 || i > 4)) continue;
-
-				int xx = 17;
-				switch (i)
-				{
-					case 1:
-					case 2: xx = 17 + (48 * i) - 33; break;
-					case 4:
-					case 5:
-					case 6: xx = 185 + ((i - 4) * 48); break;
-				}
-
+				PalacePart part;
+				int xx;
 				switch (i)
 				{
 					case 0:
@@ -140,37 +122,100 @@ namespace CivOne.Screens
 						{
 							part = PalacePart.Wall;
 							xx -= 24;
-							break;
 						}
-						part = PalacePart.LeftTowerWall;
-						xx -= 33;
+						else
+						{
+							part = PalacePart.LeftTowerWall;
+							xx -= 33;
+						}
 						break;
+					default:
+						continue;
+				}
+
+				Picture palacePart = _sprites.GetPalacePart(palace.GetPalaceStyle(i), part, palace.GetPalaceLevel(i));
+				if (i == 0)
+				{
+					// Draw left tower after side walls so it stays visually in front.
+					deferredLeftTower = palacePart;
+					continue;
+				}
+
+				picture.AddLayer(palacePart, xx, 37);
+			}
+
+			if (deferredLeftTower != null)
+			{
+				picture.AddLayer(deferredLeftTower, 9, 37);
+			}
+		}
+
+		private void DrawRightPalaceSide(Picture picture, PalaceData palace)
+		{
+			int rightStart = System.Math.Max(palace.PalaceLeft, 4);
+			int rightEnd = System.Math.Min(palace.PalaceRight, 6);
+
+			for (int i = rightStart; i <= rightEnd; i++)
+			{
+				byte level = palace.GetPalaceLevel(i);
+				if (level == 0 && i > 4) continue;
+
+				PalacePart part;
+				int xx;
+				switch (i)
+				{
 					case 4:
-						xx = 185 + ((i - 4) * 48);
+						xx = 185;
 						if (palace.GetPalaceLevel(i + 1) > 0)
 						{
 							part = PalacePart.WallShadow;
-							break;
 						}
-						part = PalacePart.RightTowerWallShadow;
+						else
+						{
+							part = PalacePart.RightTowerWallShadow;
+						}
 						break;
 					case 5:
-						xx = 185 + ((i - 4) * 48);
+						xx = 233;
 						if (palace.GetPalaceLevel(i + 1) > 0)
 						{
 							part = PalacePart.Wall;
-							break;
 						}
-						part = PalacePart.RightTowerWall;
+						else
+						{
+							part = PalacePart.RightTowerWall;
+						}
 						break;
 					case 6:
-						xx = 185 + ((i - 4) * 48) - 3;
+						xx = 278;
+						if (level == 4)
+						{
+							xx -= 1;
+						}
 						part = PalacePart.RightTower;
 						break;
+					default:
+						continue;
 				}
 
 				picture.AddLayer(_sprites.GetPalacePart(palace.GetPalaceStyle(i), part, palace.GetPalaceLevel(i)), xx, 37);
 			}
+		}
+
+		private Picture DrawPalace()
+		{
+			PalaceData palace = Human.Palace;
+			Picture picture = new(320, 200);
+			picture.AddLayer(_background);
+
+			Picture backdrop = _sprites.GetGardenBackdrop(palace.GetGardenLevel(1));
+			if (backdrop != null)
+			{
+				picture.AddLayer(backdrop, 0, 135);
+			}
+
+			DrawLeftPalaceSide(picture, palace);
+			DrawRightPalaceSide(picture, palace);
 
 			// Draw palace middle
 			picture.AddLayer(_sprites.GetPalacePart(palace.GetPalaceStyle(3), PalacePart.Center, palace.GetPalaceLevel(3)), 135, palace.GetPalaceLevel(3) == 0 ? 37 : 38);
