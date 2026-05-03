@@ -73,7 +73,7 @@ namespace CivOne.Screens
 				1 or 2 => palace.GetPalaceLevel(index - 1) > 0 ? PalacePart.Wall : PalacePart.LeftTowerWall,
 				3 => PalacePart.Center,
 				4 => palace.GetPalaceLevel(index + 1) > 0 ? PalacePart.WallShadow : PalacePart.RightTowerWallShadow,
-				5 => PalacePart.Wall,
+				5 => palace.GetPalaceLevel(index + 1) > 0 ? PalacePart.Wall : PalacePart.RightTowerWall,
 				6 => PalacePart.RightTower,
 				_ => PalacePart.None
 			};
@@ -92,7 +92,7 @@ namespace CivOne.Screens
 		private Picture DrawPalace()
 		{
 			PalaceData palace = Human.Palace;
-			Picture picture = new Picture(320, 200);
+			Picture picture = new(320, 200);
 			picture.AddLayer(_background);
 
 			Picture backdrop = _sprites.GetGardenBackdrop(palace.GetGardenLevel(1));
@@ -149,7 +149,12 @@ namespace CivOne.Screens
 						break;
 					case 5:
 						xx = 185 + ((i - 4) * 48);
-						part = PalacePart.Wall;
+						if (palace.GetPalaceLevel(i + 1) > 0)
+						{
+							part = PalacePart.Wall;
+							break;
+						}
+						part = PalacePart.RightTowerWall;
 						break;
 					case 6:
 						xx = 185 + ((i - 4) * 48) - 3;

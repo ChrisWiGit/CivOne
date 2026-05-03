@@ -16,7 +16,7 @@ namespace CivOne.Graphics
 	internal sealed class PalaceResourcesDelegate
 	{
 		private const int ClassicalLeftTowerSourceOffsetX = 0;
-		private const int ClassicalMiddleSourceOffsetX = 1;
+		private const int ClassicalMiddleSourceOffsetX = 0;
 
 		private readonly Func<string, Picture> _getPictureByName;
 		private readonly Dictionary<int, Picture> _cache = new Dictionary<int, Picture>();
@@ -108,8 +108,8 @@ namespace CivOne.Graphics
 							break;
 						}
 						int firstHalfX = part == PalacePart.WallShadow ? middleShadowX : middleNormalX;
-						picture.AddLayer(_getPictureByName($"CASTLE{level}")[firstHalfX, 1 + offsetY, layout.Q3Slices.MiddleShadow.Length, 99], 0);
-						picture.AddLayer(_getPictureByName($"CASTLE{level}")[middleNormalX, 1 + offsetY, layout.Q3Slices.MiddleNormal.Length, 99], layout.Q3Slices.MiddleShadow.Length);
+						picture.AddLayer(_getPictureByName($"CASTLE{level}")[firstHalfX, 1 + offsetY, layout.Q3Slices.MiddleShadow.Length, 99], left: 0);
+						picture.AddLayer(_getPictureByName($"CASTLE{level}")[middleNormalX, 1 + offsetY, layout.Q3Slices.MiddleNormal.Length, 99], left: layout.Q3Slices.MiddleShadow.Length);
 						break;
 					}
 					case PalacePart.LeftTowerWall:
@@ -117,7 +117,8 @@ namespace CivOne.Graphics
 						picture = new Picture(57, 101);
 						if (level == 0)
 						{
-							picture.AddLayer(_getPictureByName("CASTLE0")[layout.Q1Slices.MiddleNormal.StartInclusive + offsetX, 1 + offsetY, layout.Q1Slices.MiddleNormal.Length, 99], 33);
+							picture.AddLayer(_getPictureByName("CASTLE0")[layout.Q1Slices.MiddleNormal.StartInclusive + offsetX, 1 + offsetY, layout.Q1Slices.MiddleNormal.Length, 99], 
+								left: 33);
 							break;
 						}
 						picture.AddLayer(_getPictureByName($"CASTLE{level}")[middleNormalX, 1 + offsetY, layout.Q3Slices.MiddleNormal.Length, 99], 33);
@@ -125,11 +126,11 @@ namespace CivOne.Graphics
 						{
 							picture.AddLayer(
 								_getPictureByName($"CASTLE{level}")[layout.Q4Slices.LeftEnd.StartInclusive + _classicalDebugOffsetX + ClassicalLeftTowerSourceOffsetX, layout.Q4.Y.StartInclusive + 1, layout.Q4Slices.LeftEnd.Length, 99],
-								0,
-								2 + classicalTowerOffsetY);
+								left: 1,
+								top: 2 + classicalTowerOffsetY);
 							break;
 						}
-						picture.AddLayer(_getPictureByName($"CASTLE{level}")[104 + offsetX, 1 + offsetY, 27, 99], 8, 2);
+						picture.AddLayer(_getPictureByName($"CASTLE{level}")[104 + offsetX, 1 + offsetY, 27, 99], left: 8, top: 2);
 						break;
 					}
 					case PalacePart.RightTowerWall:
@@ -141,16 +142,17 @@ namespace CivOne.Graphics
 							picture.AddLayer(_getPictureByName("CASTLE0")[layout.Q1Slices.MiddleShadow.StartInclusive + offsetX, 1 + offsetY, layout.Q1Slices.MiddleShadow.Length, 99]);
 							break;
 						}
-						picture.AddLayer(_getPictureByName($"CASTLE{level}")[middleShadowX, 1 + offsetY, layout.Q3Slices.MiddleShadow.Length, 99], 0);
+						int rightWallX = part == PalacePart.RightTowerWall ? middleNormalX : middleShadowX;
+						picture.AddLayer(_getPictureByName($"CASTLE{level}")[rightWallX, 1 + offsetY, layout.Q3Slices.MiddleShadow.Length, 99], 0);
 						if (style == PalaceStyle.Classical)
 						{
 							picture.AddLayer(
 								_getPictureByName($"CASTLE{level}")[layout.Q4Slices.RightEnd.StartInclusive + _classicalDebugOffsetX, layout.Q4.Y.StartInclusive + 1, layout.Q4Slices.RightEnd.Length, 99],
-								21,
-								2 + classicalTowerOffsetY);
+								left: 22,
+								top: 2 + classicalTowerOffsetY);
 							break;
 						}
-						picture.AddLayer(_getPictureByName($"CASTLE{level}")[132 + offsetX, 1 + offsetY, 27, 99], 21, 2);
+						picture.AddLayer(_getPictureByName($"CASTLE{level}")[132 + offsetX, 1 + offsetY, 27, 99], left: 21, top: 2);
 						break;
 					}
 					case PalacePart.Center:

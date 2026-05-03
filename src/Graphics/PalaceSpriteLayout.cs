@@ -58,13 +58,13 @@ namespace CivOne.Graphics
 			Center: new PixelRange(0, 51),
 			Separator: new PixelRange(52, 52),
 			MiddleShadow: new PixelRange(53, 76),
-			MiddleNormal: new PixelRange(77, 100),
-			LeftTower: new PixelRange(104, 131),
-			RightTower: new PixelRange(132, 159));
+			MiddleNormal: new PixelRange(78, 101),
+			LeftTower: new PixelRange(103, 130),
+			RightTower: new PixelRange(132, 158));
 
 		// Q4 is special and contains only outer classical end pieces.
 		private static readonly PalaceTowerEndSlices ClassicalTowerEndSlices = new(
-			LeftEnd: new PixelRange(160, 193),
+			LeftEnd: new PixelRange(160, 194),
 			RightEnd: new PixelRange(196, 228),
 			DrawOffsetY: 0);
 
