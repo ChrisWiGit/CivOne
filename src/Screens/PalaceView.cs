@@ -38,6 +38,8 @@ namespace CivOne.Screens
 		private readonly Picture _background;
 		private readonly IPalaceSpriteProvider _sprites;
 		private readonly byte[,] _noiseMap;
+		private readonly bool _build;
+		private readonly bool _keepOpenUntilEscape;
 		private int _pendingPartIndex = -1;
 		private int OffsetX => System.Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => System.Math.Max(0, (Height - 200) / 2);
@@ -62,6 +64,30 @@ namespace CivOne.Screens
 		private Stage _currentStage = Stage.View;
 
 		private bool _update = true;
+
+		private static PalacePart GetPalacePartPreview(PalaceData palace, int index)
+		{
+			return index switch
+			{
+				0 => PalacePart.LeftTower,
+				1 or 2 => palace.GetPalaceLevel(index - 1) > 0 ? PalacePart.Wall : PalacePart.LeftTowerWall,
+				3 => PalacePart.Center,
+				4 => palace.GetPalaceLevel(index + 1) > 0 ? PalacePart.WallShadow : PalacePart.RightTowerWallShadow,
+				5 => PalacePart.Wall,
+				6 => PalacePart.RightTower,
+				_ => PalacePart.None
+			};
+		}
+
+		private void StartMorph(Picture palaceMorph)
+		{
+			_palaceMorph = palaceMorph;
+			_noiseCounter = NOISE_COUNT + 5;
+			_currentStage = Stage.Morph;
+			_update = true;
+		}
+
+		private Stage GetPostMorphStage() => _build && _keepOpenUntilEscape ? Stage.SelectPart : Stage.View;
 
 		private Picture DrawPalace()
 		{
@@ -123,12 +149,7 @@ namespace CivOne.Screens
 						break;
 					case 5:
 						xx = 185 + ((i - 4) * 48);
-						if (palace.GetPalaceLevel(i + 1) > 0)
-						{
-							part = PalacePart.Wall;
-							break;
-						}
-						part = PalacePart.RightTowerWall;
+						part = PalacePart.Wall;
 						break;
 					case 6:
 						xx = 185 + ((i - 4) * 48) - 3;
@@ -162,6 +183,7 @@ namespace CivOne.Screens
 			{
 				int ox = OffsetX;
 				int oy = OffsetY;
+				PalaceData palace = Human.Palace;
 
 				this.Clear(OpaqueBlackColour)
 					.AddLayer(DrawPalace(), ox, oy);
@@ -196,7 +218,7 @@ namespace CivOne.Screens
 
 							for (int i = 0; i < 7; i++)
 							{
-								if (!Human.Palace.IsSlotUnlocked(i) || Human.Palace.GetPalaceLevel(i) >= 4) continue;
+								if (!palace.IsSlotUnlocked(i) || palace.GetPalaceLevel(i) >= 4) continue;
 
 								int xx = 12 + (48 * i);
 								this.DrawText($"{i + 1}", 0, 5, xx + ox, 145 + oy + PALACE_NUMBERS_Y_OFFSET)
@@ -204,7 +226,7 @@ namespace CivOne.Screens
 							}
 							for (int i = 0; i < 3; i++)
 							{
-								if (Human.Palace.GetGardenLevel(i) >= 3) continue;
+								if (palace.GetGardenLevel(i) >= 3) continue;
 
 								int xx = 40 + (120 * i);
 								this.DrawText($"{(char)('A' + i)}", 0, 5, xx + ox, 161 + oy + GARDEN_LETTERS_Y_OFFSET)
@@ -214,14 +236,33 @@ namespace CivOne.Screens
 						break;
 					case Stage.SelectStyle:
 						{
-							Picture message = new Picture(180, 23)
+							Picture message = new Picture(280, 118)
 								.Tile(Pattern.PanelGrey)
 								.DrawRectangle3D()
 								.DrawText("Which style shall we use?", 0, 15, 4, 4)
-								.DrawText("1=Med  2=Classic  3=Islamic", 0, 5, 4, 13)
 								.As<Picture>();
-							this.FillRectangle(40 + ox, 16 + oy, 182, 25, 5)
-								.AddLayer(message, 41 + ox, 17 + oy);
+
+							if (_pendingPartIndex >= 0)
+							{
+								PalacePart previewPart = GetPalacePartPreview(palace, _pendingPartIndex);
+								byte previewLevel = (byte)(palace.GetPalaceLevel(_pendingPartIndex) + 1);
+								for (int i = 1; i <= 3; i++)
+								{
+									int panelX = 12 + ((i - 1) * 88);
+									Picture preview = _sprites.GetPalacePart((PalaceStyle)i, previewPart, previewLevel);
+									message.DrawRectangle(panelX, 18, 76, 92, 5)
+										.DrawText($"{i}", 0, 14, panelX + 33, 21);
+									if (preview != null)
+									{
+										int previewX = panelX + ((76 - preview.Width) / 2);
+										int previewY = 108 - preview.Height;
+										message.AddLayer(preview, previewX, previewY);
+									}
+								}
+							}
+
+							this.FillRectangle(20 + ox, 16 + oy, 282, 120, 5)
+								.AddLayer(message, 21 + ox, 17 + oy);
 						}
 						break;
 					case Stage.Morph:
@@ -233,7 +274,8 @@ namespace CivOne.Screens
 								.AddLayer(_palaceMorph, ox, oy);
 							return true;
 						}
-						_currentStage = Stage.View;
+						_currentStage = GetPostMorphStage();
+						_update = true;
 						return true;
 				}
 
@@ -254,6 +296,12 @@ namespace CivOne.Screens
 		{
 			PalaceData palace = Human.Palace;
 
+			if (_keepOpenUntilEscape && args[Key.Escape])
+			{
+				Destroy();
+				return true;
+			}
+
 			switch (_currentStage)
 			{
 				case Stage.Message:
@@ -266,10 +314,9 @@ namespace CivOne.Screens
 						int index = args.KeyChar - 'A';
 						if (palace.GetGardenLevel(index) < 3)
 						{
-							_palaceMorph = DrawPalace();
+							Picture palaceMorph = DrawPalace();
 							palace.SetGarden(index, (byte)(palace.GetGardenLevel(index) + 1));
-							_currentStage = Stage.Morph;
-							_update = true;
+							StartMorph(palaceMorph);
 						}
 						break;
 					}
@@ -292,11 +339,10 @@ namespace CivOne.Screens
 						if (newLevel <= 4)
 						{
 							PalaceStyle style = (PalaceStyle)(args.KeyChar - '0');
-							_palaceMorph = DrawPalace();
+							Picture palaceMorph = DrawPalace();
 							palace.SetPalace(_pendingPartIndex, (byte)style, newLevel);
 							_pendingPartIndex = -1;
-							_currentStage = Stage.Morph;
-							_update = true;
+							StartMorph(palaceMorph);
 						}
 					}
 					break;
@@ -316,8 +362,11 @@ namespace CivOne.Screens
 					_update = true;
 					break;
 				case Stage.SelectPart:
+					if (!_keepOpenUntilEscape)
+					{
 						_currentStage = Stage.View;
 						_update = true;
+					}
 					break;
 				case Stage.View:
 					Destroy();
@@ -326,8 +375,10 @@ namespace CivOne.Screens
 			return true;
 		}
 		
-		public PalaceView(bool build = false, IPalaceSpriteProvider sprites = null)
+		public PalaceView(bool build = false, IPalaceSpriteProvider sprites = null, bool keepOpenUntilEscape = false)
 		{
+			_build = build;
+			_keepOpenUntilEscape = keepOpenUntilEscape;
 			_sprites = sprites ?? PalaceSpriteProviderFactory.GetInstance();
 
 			_noiseMap = new byte[320, 200];

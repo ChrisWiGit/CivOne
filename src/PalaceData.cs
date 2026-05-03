@@ -97,8 +97,8 @@ namespace CivOne
 			return index switch
 			{
 				3 => true,
-				2 => PalaceLevel[3] > 0,
-				4 => PalaceLevel[3] > 0,
+				2 => true,
+				4 => true,
 				1 => PalaceLevel[2] > 0,
 				5 => PalaceLevel[4] > 0,
 				0 => PalaceLevel[1] > 0,
@@ -110,11 +110,11 @@ namespace CivOne
 		public void SetPalace(int index, byte style, byte level)
 		{
 			if (index < 0 || index > 6)
-				throw new Exception("Invalid palace index");
+				throw new InvalidOperationException($"Invalid palace index: {index}");
 			if (style < 0 || style > 3)
-				throw new Exception("Invalid palace style");
+				throw new InvalidOperationException($"Invalid palace style: {style}");
 			if (level < 0 || level > 4)
-				throw new Exception("Invalid palace level");
+				throw new InvalidOperationException($"Invalid palace level: {level}");
 
 			if (level == 0 || style == 0)
 			{
