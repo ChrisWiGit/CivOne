@@ -247,7 +247,7 @@ namespace CivOne.Graphics
 		
 		private Resources()
 		{
-			_palaceResources = new PalaceResourcesDelegate(name => this[name], 0);
+			_palaceResources = new PalaceResourcesDelegate(name => this[name]);
 			if (!RuntimeHandler.Runtime.Settings.Free) LoadFonts();
 		}
 	}

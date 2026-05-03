@@ -39,7 +39,8 @@ namespace CivOne.Screens
 		private readonly IPalaceSpriteProvider _sprites;
 		private readonly byte[,] _noiseMap;
 		private readonly bool _build;
-		private readonly bool _keepOpenUntilEscape;
+		private readonly bool _debug;
+		private bool _disableNoise = false;
 		private int _pendingPartIndex = -1;
 		private int OffsetX => System.Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => System.Math.Max(0, (Height - 200) / 2);
@@ -81,13 +82,19 @@ namespace CivOne.Screens
 
 		private void StartMorph(Picture palaceMorph)
 		{
+			if (_disableNoise)
+			{
+				_currentStage = GetPostMorphStage();
+				_update = true;
+				return;
+			}
 			_palaceMorph = palaceMorph;
 			_noiseCounter = NOISE_COUNT + 5;
 			_currentStage = Stage.Morph;
 			_update = true;
 		}
 
-		private Stage GetPostMorphStage() => _build && _keepOpenUntilEscape ? Stage.SelectPart : Stage.View;
+		private Stage GetPostMorphStage() => _build && _debug ? Stage.SelectPart : Stage.View;
 
 		private Picture DrawPalace()
 		{
@@ -119,7 +126,7 @@ namespace CivOne.Screens
 					case 5:
 					case 6: xx = 185 + ((i - 4) * 48); break;
 				}
-				
+
 				switch (i)
 				{
 					case 0:
@@ -181,112 +188,113 @@ namespace CivOne.Screens
 			}
 			return picture;
 		}
-		
+
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_update)
+			if (!_update)
 			{
-				int ox = OffsetX;
-				int oy = OffsetY;
-				PalaceData palace = Human.Palace;
-
-				this.Clear(OpaqueBlackColour)
-					.AddLayer(DrawPalace(), ox, oy);
-
-				switch (_currentStage)
-				{
-					case Stage.Message:
-						{
-							Picture message = new Picture(269, 39)
-								.Tile(Pattern.PanelGrey)
-								.DrawRectangle3D()
-								.As<Picture>();
-							int yy = 4;
-							foreach (string line in TextFile.Instance.GetGameText("KING/PALACE"))
-							{
-								message.DrawText(line.Trim('^'), 0, 15, 4, yy);
-								yy += 8;
-							}
-							this.FillRectangle(20 + ox, 16 + oy, 271, 41, 5)
-								.AddLayer(message, 21 + ox, 17 + oy);
-						}
-						break;
-					case Stage.SelectPart:
-						{
-							Picture message = new Picture(180, 15)
-								.Tile(Pattern.PanelGrey)
-								.DrawRectangle3D()
-								.DrawText("Which section shall we improve?", 0, 15, 4, 4)
-								.As<Picture>();
-							this.FillRectangle(40 + ox, 16 + oy, 182, 17, 5)
-								.AddLayer(message, 41 + ox, 17 + oy);
-
-							for (int i = 0; i < 7; i++)
-							{
-								if (!palace.IsSlotUnlocked(i) || palace.GetPalaceLevel(i) >= 4) continue;
-
-								int xx = 12 + (48 * i);
-								this.DrawText($"{i + 1}", 0, 5, xx + ox, 145 + oy + PALACE_NUMBERS_Y_OFFSET)
-									.DrawText($"{i + 1}", 0, 14, xx + ox, 144 + oy + PALACE_NUMBERS_Y_OFFSET);
-							}
-							for (int i = 0; i < 3; i++)
-							{
-								if (palace.GetGardenLevel(i) >= 3) continue;
-
-								int xx = 40 + (120 * i);
-								this.DrawText($"{(char)('A' + i)}", 0, 5, xx + ox, 161 + oy + GARDEN_LETTERS_Y_OFFSET)
-									.DrawText($"{(char)('A' + i)}", 0, 14, xx + ox, 160 + oy + GARDEN_LETTERS_Y_OFFSET);
-							}
-						}
-						break;
-					case Stage.SelectStyle:
-						{
-							Picture message = new Picture(280, 118)
-								.Tile(Pattern.PanelGrey)
-								.DrawRectangle3D()
-								.DrawText("Which style shall we use?", 0, 15, 4, 4)
-								.As<Picture>();
-
-							if (_pendingPartIndex >= 0)
-							{
-								PalacePart previewPart = GetPalacePartPreview(palace, _pendingPartIndex);
-								byte previewLevel = (byte)(palace.GetPalaceLevel(_pendingPartIndex) + 1);
-								for (int i = 1; i <= 3; i++)
-								{
-									int panelX = 12 + ((i - 1) * 88);
-									Picture preview = _sprites.GetPalacePart((PalaceStyle)i, previewPart, previewLevel);
-									message.DrawRectangle(panelX, 18, 76, 92, 5)
-										.DrawText($"{i}", 0, 14, panelX + 33, 21);
-									if (preview != null)
-									{
-										int previewX = panelX + ((76 - preview.Width) / 2);
-										int previewY = 108 - preview.Height;
-										message.AddLayer(preview, previewX, previewY);
-									}
-								}
-							}
-
-							this.FillRectangle(20 + ox, 16 + oy, 282, 120, 5)
-								.AddLayer(message, 21 + ox, 17 + oy);
-						}
-						break;
-					case Stage.Morph:
-						if (_noiseCounter > 0)
-						{
-							_palaceMorph.ApplyNoise(_noiseMap, _noiseCounter--);
-							this.Clear(OpaqueBlackColour)
-								.AddLayer(DrawPalace(), ox, oy)
-								.AddLayer(_palaceMorph, ox, oy);
-							return true;
-						}
-						_currentStage = GetPostMorphStage();
-						_update = true;
-						return true;
-				}
-
 				_update = false;
 				return true;
 			}
+
+			int ox = OffsetX;
+			int oy = OffsetY;
+			PalaceData palace = Human.Palace;
+
+			this.Clear(OpaqueBlackColour)
+				.AddLayer(DrawPalace(), ox, oy);
+
+			switch (_currentStage)
+			{
+				case Stage.Message:
+					{
+						Picture message = new Picture(269, 39)
+							.Tile(Pattern.PanelGrey)
+							.DrawRectangle3D()
+							.As<Picture>();
+						int yy = 4;
+						foreach (string line in TextFile.Instance.GetGameText("KING/PALACE"))
+						{
+							message.DrawText(line.Trim('^'), 0, 15, 4, yy);
+							yy += 8;
+						}
+						this.FillRectangle(20 + ox, 16 + oy, 271, 41, 5)
+							.AddLayer(message, 21 + ox, 17 + oy);
+					}
+					break;
+				case Stage.SelectPart:
+					{
+						Picture message = new Picture(180, 15)
+							.Tile(Pattern.PanelGrey)
+							.DrawRectangle3D()
+							.DrawText("Which section shall we improve?", 0, 15, 4, 4)
+							.As<Picture>();
+						this.FillRectangle(40 + ox, 16 + oy, 182, 17, 5)
+							.AddLayer(message, 41 + ox, 17 + oy);
+
+						for (int i = 0; i < 7; i++)
+						{
+							if (!palace.IsSlotUnlocked(i) || palace.GetPalaceLevel(i) >= 4) continue;
+
+							int xx = 12 + (48 * i);
+							this.DrawText($"{i + 1}", 0, 5, xx + ox, 145 + oy + PALACE_NUMBERS_Y_OFFSET)
+								.DrawText($"{i + 1}", 0, 14, xx + ox, 144 + oy + PALACE_NUMBERS_Y_OFFSET);
+						}
+						for (int i = 0; i < 3; i++)
+						{
+							if (palace.GetGardenLevel(i) >= 3) continue;
+
+							int xx = 40 + (120 * i);
+							this.DrawText($"{(char)('A' + i)}", 0, 5, xx + ox, 161 + oy + GARDEN_LETTERS_Y_OFFSET)
+								.DrawText($"{(char)('A' + i)}", 0, 14, xx + ox, 160 + oy + GARDEN_LETTERS_Y_OFFSET);
+						}
+					}
+					break;
+				case Stage.SelectStyle:
+					{
+						Picture message = new Picture(280, 118)
+							.Tile(Pattern.PanelGrey)
+							.DrawRectangle3D()
+							.DrawText("Which style shall we use?", 0, 15, 4, 4)
+							.As<Picture>();
+
+						if (_pendingPartIndex >= 0)
+						{
+							PalacePart previewPart = GetPalacePartPreview(palace, _pendingPartIndex);
+							byte previewLevel = (byte)(palace.GetPalaceLevel(_pendingPartIndex) + 1);
+							for (int i = 1; i <= 3; i++)
+							{
+								int panelX = 12 + ((i - 1) * 88);
+								Picture preview = _sprites.GetPalacePart((PalaceStyle)i, previewPart, previewLevel);
+								message.DrawRectangle(panelX, 18, 76, 92, 5)
+									.DrawText($"{i}", 0, 14, panelX + 33, 21);
+								if (preview != null)
+								{
+									int previewX = panelX + ((76 - preview.Width) / 2);
+									int previewY = 108 - preview.Height;
+									message.AddLayer(preview, previewX, previewY);
+								}
+							}
+						}
+
+						this.FillRectangle(20 + ox, 16 + oy, 282, 120, 5)
+							.AddLayer(message, 21 + ox, 17 + oy);
+					}
+					break;
+				case Stage.Morph:
+					if (_noiseCounter > 0)
+					{
+						_palaceMorph.ApplyNoise(_noiseMap, _noiseCounter--);
+						this.Clear(OpaqueBlackColour)
+							.AddLayer(DrawPalace(), ox, oy)
+							.AddLayer(_palaceMorph, ox, oy);
+						return true;
+					}
+					_currentStage = GetPostMorphStage();
+					_update = true;
+					return true;
+			}
+
 			_update = false;
 			return true;
 		}
@@ -296,14 +304,21 @@ namespace CivOne.Screens
 			base.Resize(width, height);
 			_update = true;
 		}
-		
+
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
 			PalaceData palace = Human.Palace;
 
-			if (_keepOpenUntilEscape && args[Key.Escape])
+			if (_debug && args[Key.Escape])
 			{
 				Destroy();
+				return true;
+			}
+
+			if (_debug && args[Key.F1])
+			{
+				_disableNoise = !_disableNoise;
+				_update = true;
 				return true;
 			}
 
@@ -357,7 +372,7 @@ namespace CivOne.Screens
 			}
 			return true;
 		}
-		
+
 		public override bool MouseDown(ScreenEventArgs args)
 		{
 			switch (_currentStage)
@@ -367,7 +382,7 @@ namespace CivOne.Screens
 					_update = true;
 					break;
 				case Stage.SelectPart:
-					if (!_keepOpenUntilEscape)
+					if (!_debug)
 					{
 						_currentStage = Stage.View;
 						_update = true;
@@ -379,11 +394,11 @@ namespace CivOne.Screens
 			}
 			return true;
 		}
-		
-		public PalaceView(bool build = false, IPalaceSpriteProvider sprites = null, bool keepOpenUntilEscape = false)
+
+		public PalaceView(bool build = false, IPalaceSpriteProvider sprites = null, bool debug = false)
 		{
 			_build = build;
-			_keepOpenUntilEscape = keepOpenUntilEscape;
+			_debug = debug;
 			_sprites = sprites ?? PalaceSpriteProviderFactory.GetInstance();
 
 			_noiseMap = new byte[320, 200];
@@ -394,7 +409,7 @@ namespace CivOne.Screens
 					_noiseMap[x, y] = (byte)Common.Random.Next(1, NOISE_COUNT);
 				}
 			}
-			
+
 			_background = _sprites.GetBackground();
 			Palette = _background.Palette;
 			if (build) _currentStage = Stage.Message;
