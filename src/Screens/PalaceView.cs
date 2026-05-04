@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Collections.Generic;
 using CivOne.Enums;
 using CivOne.Events;
@@ -96,110 +97,148 @@ namespace CivOne.Screens
 
 		private Stage GetPostMorphStage() => _build && _debug ? Stage.SelectPart : Stage.View;
 
-		private void DrawLeftPalaceSide(Picture picture, PalaceData palace)
+		private void DrawLeftPalaceSide(IBitmap picture, PalaceData palace)
 		{
-			Picture deferredLeftTower = null;
-			int leftStart = System.Math.Max(palace.PalaceLeft, 0);
-			int leftEnd = System.Math.Min(palace.PalaceRight, 2);
+			// The left side of the palace consists of sections 0, 1 and 2. 
+			const int maxLeftSectionIndex = 2;
+			const int minLeftSectionIndex = 0;
 
-			for (int i = leftStart; i <= leftEnd; i++)
+			// buildings start from the right and draw leftwards
+			// so startSection is the rightmost section that can be drawn, 
+			int startSection = Math.Max(palace.PalaceLeft, minLeftSectionIndex);
+			// and endSection is the leftmost section that can be drawn
+			int endSection = Math.Min(palace.PalaceRight, maxLeftSectionIndex);
+
+			const int spriteBaseY = 37;
+
+			for (int sectionIndex = endSection; sectionIndex >= startSection; sectionIndex--)
 			{
-				byte level = palace.GetPalaceLevel(i);
-				if (level == 0 && i < 2) continue;
+				if (sectionIndex < minLeftSectionIndex || sectionIndex > maxLeftSectionIndex)
+					continue;
+
+				byte sectionLevel = palace.GetPalaceLevel(sectionIndex);
+
+				bool isEmptySection = sectionLevel == 0;
+				bool isInnerSection = sectionIndex < maxLeftSectionIndex;
+
+				if (isEmptySection && isInnerSection)
+					continue;
 
 				PalacePart part;
-				int xx;
-				switch (i)
+				int spriteX;
+
+				if (sectionIndex == minLeftSectionIndex)
 				{
-					case 0:
-						xx = 9;
-						part = PalacePart.LeftTower;
-						break;
-					case 1:
-					case 2:
-						xx = 17 + (48 * i);
-						if (palace.GetPalaceLevel(i - 1) > 0)
-						{
-							part = PalacePart.Wall;
-							xx -= 24;
-						}
-						else
-						{
-							part = PalacePart.LeftTowerWall;
-							xx -= 33;
-						}
-						break;
-					default:
-						continue;
+					spriteX = 9;
+					part = PalacePart.LeftTower;
+				}
+				else
+				{
+					const int sectionWidth = 48;
+					const int leftmostSpriteX = 17;
+					const int towerWallOverlap = 24;
+					const int leftTowerWallOffset = 33;
+
+					spriteX = leftmostSpriteX + (sectionWidth * sectionIndex);
+
+					bool hasLeftNeighbor = palace.GetPalaceLevel(sectionIndex - 1) > 0;
+
+					if (hasLeftNeighbor)
+					{
+						part = PalacePart.Wall;
+						spriteX -= towerWallOverlap;
+					}
+					else
+					{
+						part = PalacePart.LeftTowerWall;
+						spriteX -= leftTowerWallOffset;
+					}
 				}
 
-				Picture palacePart = _sprites.GetPalacePart(palace.GetPalaceStyle(i), part, palace.GetPalaceLevel(i));
-				if (i == 0)
-				{
-					// Draw left tower after side walls so it stays visually in front.
-					deferredLeftTower = palacePart;
-					continue;
-				}
-
-				picture.AddLayer(palacePart, xx, 37);
-			}
-
-			if (deferredLeftTower != null)
-			{
-				picture.AddLayer(deferredLeftTower, 9, 37);
+				AddPalaceLayer(picture, spriteX, spriteBaseY, sectionIndex, sectionLevel, palace, part);
 			}
 		}
 
-		private void DrawRightPalaceSide(Picture picture, PalaceData palace)
+		void AddPalaceLayer(IBitmap picture, int left, int top,
+				int sectionIndex,
+				int sectionLevel,
+				PalaceData palace,
+				PalacePart part)
 		{
-			int rightStart = System.Math.Max(palace.PalaceLeft, 4);
-			int rightEnd = System.Math.Min(palace.PalaceRight, 6);
+			IBitmap sprite = _sprites.GetPalacePart(
+					palace.GetPalaceStyle(sectionIndex),
+					part,
+					sectionLevel);
 
-			for (int i = rightStart; i <= rightEnd; i++)
+			picture.AddLayer(sprite, left, top);
+		}
+
+		private void DrawRightPalaceSide(IBitmap picture, PalaceData palace)
+		{
+			// The right side of the palace consists of sections 4, 5 and 6.
+			const int minRightSectionIndex = 4;
+			const int maxRightSectionIndex = 6;
+
+			int startSection = Math.Max(palace.PalaceLeft, minRightSectionIndex);
+			int endSection = Math.Min(palace.PalaceRight, maxRightSectionIndex);
+
+			const int spriteBaseY = 37;
+
+			for (int sectionIndex = startSection; sectionIndex <= endSection; sectionIndex++)
 			{
-				byte level = palace.GetPalaceLevel(i);
-				if (level == 0 && i > 4) continue;
+				byte sectionLevel = palace.GetPalaceLevel(sectionIndex);
+
+				bool isEmptySection = sectionLevel == 0;
+				bool isInnerSection = sectionIndex > minRightSectionIndex;
+
+				if (isEmptySection && isInnerSection)
+					continue;
 
 				PalacePart part;
-				int xx;
-				switch (i)
+
+				if (sectionIndex == minRightSectionIndex)
 				{
-					case 4:
-						xx = 185;
-						if (palace.GetPalaceLevel(i + 1) > 0)
-						{
-							part = PalacePart.WallShadow;
-						}
-						else
-						{
-							part = PalacePart.RightTowerWallShadow;
-						}
-						break;
-					case 5:
-						xx = 233;
-						if (palace.GetPalaceLevel(i + 1) > 0)
-						{
-							part = PalacePart.Wall;
-						}
-						else
-						{
-							part = PalacePart.RightTowerWall;
-						}
-						break;
-					case 6:
-						xx = 278;
-						if (level == 4)
-						{
-							xx -= 1;
-						}
-						part = PalacePart.RightTower;
-						break;
-					default:
-						continue;
+					const int leftmostSpriteX = 185;					
+					part = GetPalacePartWithRightNeighbour(palace, PalacePart.WallShadow, PalacePart.RightTowerWallShadow, sectionIndex);
+
+					AddPalaceLayer(picture, leftmostSpriteX, spriteBaseY, sectionIndex, sectionLevel, palace, part);
+					continue;
 				}
 
-				picture.AddLayer(_sprites.GetPalacePart(palace.GetPalaceStyle(i), part, palace.GetPalaceLevel(i)), xx, 37);
+				if (sectionIndex == 5)
+				{
+					const int rightmostSpriteX = 233;					
+					part = GetPalacePartWithRightNeighbour(palace, PalacePart.Wall, PalacePart.RightTowerWall, sectionIndex);
+
+					AddPalaceLayer(picture, rightmostSpriteX, spriteBaseY, sectionIndex, sectionLevel, palace, part);
+					continue;
+				}
+				
+				const int rightTowerSpriteX = 278;
+				int spriteX = rightTowerSpriteX;
+				if (sectionLevel == 4)
+				{
+					// For the highest level of the rightmost tower, the sprite is 1 pixel wider and overlaps with the center part by 1 pixel, so adjust left position to compensate.
+					spriteX -= 1;
+				}
+				part = PalacePart.RightTower;
+
+				AddPalaceLayer(picture, spriteX, spriteBaseY, sectionIndex, sectionLevel, palace, part);
 			}
+		}
+
+		/// <summary>
+		/// Returns the palace part for a section based on whether the section to the right exists.
+		/// </summary>
+		/// <param name="palace">The palace data.</param>
+		/// <param name="wall">Part to return when the section has a right neighbor.</param>
+		/// <param name="rightTowerWall">Part to return when the section has no right neighbor.</param>
+		/// <param name="sectionIndex">Current section index.</param>
+		/// <returns>The selected palace part for the current section.</returns>
+		static PalacePart GetPalacePartWithRightNeighbour(PalaceData palace,  PalacePart wall, PalacePart rightTowerWall, int sectionIndex)
+		{
+			bool hasRightNeighbor = palace.GetPalaceLevel(sectionIndex + 1) > 0;
+			return hasRightNeighbor ? wall : rightTowerWall;
 		}
 
 		private Picture DrawPalace()
