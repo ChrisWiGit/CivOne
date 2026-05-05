@@ -119,6 +119,15 @@ namespace CivOne.Screens.GamePlayPanels
 			DrawPollutionSun(width);
 
 			_demographics.DrawText($"{Human.Gold}$ {Human.LuxuriesRate}.{Human.TaxesRate}.{Human.ScienceRate}", 0, 5, 2, 31, TextAlign.Left);
+			
+			DrawPreviewPalace(_demographics);
+		}
+
+		private void DrawPreviewPalace(IBitmap targetLayer)
+		{
+			IBitmap palacePreview = _palaceRenderer.RenderPalace(Human.Palace);
+			int palacePreviewX = (80 - palacePreview.Width()) / 2;
+			targetLayer.AddLayer(palacePreview, palacePreviewX, 1);
 		}
 
 		private void DrawPollutionSun(int width)
@@ -264,6 +273,7 @@ namespace CivOne.Screens.GamePlayPanels
 		}
 
 		private readonly IGlobalWarmingService _globalWarmingService;
+		private readonly IPreviewPalaceRenderer _palaceRenderer = PreviewPalaceRendererFactory.GetInstance();
 
 		public SideBar(Palette palette, IGlobalWarmingService globalWarmingService) : base(80, 192)
 		{

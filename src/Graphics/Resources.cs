@@ -30,7 +30,6 @@ namespace CivOne.Graphics
 		private readonly List<Fontset> _fonts = new List<Fontset>();
 		private readonly Dictionary<Direction, IBitmap> _fog = new Dictionary<Direction, IBitmap>();
 		private readonly PalaceResourcesDelegate _palaceResources;
-		
 		internal void ClearTextCache() => _textCache.Clear();
 		
 		private void LoadFonts()
