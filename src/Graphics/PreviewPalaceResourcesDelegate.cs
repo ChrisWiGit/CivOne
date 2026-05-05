@@ -15,25 +15,33 @@ namespace CivOne.Graphics
 {
 	public sealed class PreviewPalaceResourcesDelegate(Func<string, Picture> getPictureByName)
 	{
-		private const int BASE_X = 112;
+		private const int BASE_X = 160;
 		private const int LEVEL_STRIDE = 35;  // 5 parts × 7px
 		private const int PART_WIDTH = 7;
-		private const int PREVIEW_Y = 147;
-		private const int PREVIEW_H = 12;     // 147–158 inclusive
+		private const int PREVIEW_H = 14;
 
 		private readonly Func<string, Picture> _getPictureByName = getPictureByName ?? throw new ArgumentNullException(nameof(getPictureByName));
 		private readonly Dictionary<int, Picture> _cache = [];
 
+		private static int GetStyleY(PalaceStyle style) => style switch
+		{
+			PalaceStyle.Medieval  => 1,
+			PalaceStyle.Classical => 17,
+			PalaceStyle.Islamic   => 32,
+			_ => throw new ArgumentOutOfRangeException(nameof(style), $"Unexpected palace style: {style}"),
+		};
+
 		internal void ClearCache() => _cache.Clear();
 
-		internal Picture GetPreviewPart(PreviewPalacePart part, int level)
+		internal Picture GetPreviewPart(PreviewPalacePart part, int level, PalaceStyle style)
 		{
-			int key = level * 10 + (int)part;
+			int key = (int)style * 1000 + level * 10 + (int)part;
 			if (_cache.TryGetValue(key, out Picture cached))
 				return cached;
 
 			int x = BASE_X + ((level - 1) * LEVEL_STRIDE) + ((int)part * PART_WIDTH);
-			Picture result = _getPictureByName("SP257")[x, PREVIEW_Y, PART_WIDTH, PREVIEW_H];
+			int y = GetStyleY(style);
+			Picture result = _getPictureByName("SP257")[x, y, PART_WIDTH, PREVIEW_H];
 			_cache[key] = result;
 			return result;
 		}

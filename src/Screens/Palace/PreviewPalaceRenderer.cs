@@ -15,7 +15,7 @@ namespace CivOne.Screens.PalaceAssets
 	public sealed class PreviewPalaceRenderer(PreviewPalaceResourcesDelegate resources) : IPreviewPalaceRenderer
 	{
 		private const int PART_WIDTH = 7;
-		private const int PART_HEIGHT = 12;
+		private const int PART_HEIGHT = 13;
 
 		// Maps PalaceData index (0–6) to the corresponding sprite part.
 		// Indices 1 and 2 share the WallLeft sprite; indices 4 and 5 share the WallRight sprite.
@@ -32,9 +32,11 @@ namespace CivOne.Screens.PalaceAssets
 
 		public IBitmap RenderPalace(IPalaceData palace)
 		{
-			int partCount = CountActiveParts(palace);
+			int partCount = CountRenderParts(palace);
 			if (partCount == 0)
+			{
 				return new Picture(1, 1);
+			}
 
 			Picture result = new(partCount * PART_WIDTH, PART_HEIGHT);
 			int xPos = 0;
@@ -42,24 +44,44 @@ namespace CivOne.Screens.PalaceAssets
 			for (int i = 0; i < 7; i++)
 			{
 				byte level = palace.GetPalaceLevel(i);
+				PalaceStyle style = palace.GetPalaceStyle(i);
+
+				// Towers are always shown when the adjacent wall is built, even if the tower itself isn't upgraded yet.
+				if (i == 0 && palace.GetPalaceLevel(1) > 0)
+				{
+					level = palace.GetPalaceLevel(1);
+					style = palace.GetPalaceStyle(1);
+				}
+				else if (i == 6 && palace.GetPalaceLevel(5) > 0)
+				{
+					level = palace.GetPalaceLevel(5);
+					style = palace.GetPalaceStyle(5);
+				}
+
 				if (level == 0) continue;
 
-				result.AddLayer(resources.GetPreviewPart(IndexToPart[i], level), xPos, 0);
+				const int baseOffset = -1;
+
+				result.AddLayer(resources.GetPreviewPart(IndexToPart[i], level, style), xPos, baseOffset);
 				xPos += PART_WIDTH;
 			}
 
 			return result;
 		}
 
-		private static int CountActiveParts(IPalaceData palace)
+		private static int CountRenderParts(IPalaceData palace)
 		{
 			int count = 0;
 			for (int i = 0; i < 7; i++)
 			{
-				if (palace.GetPalaceLevel(i) > 0) 
+				byte level = palace.GetPalaceLevel(i);
+				if (level > 0)
 				{
 					count++;
+					continue;
 				}
+				if (i == 0 && palace.GetPalaceLevel(1) > 0) count++;
+				else if (i == 6 && palace.GetPalaceLevel(5) > 0) count++;
 			}
 			return count;
 		}
