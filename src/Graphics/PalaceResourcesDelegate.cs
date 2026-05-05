@@ -13,7 +13,7 @@ using CivOne.Enums;
 
 namespace CivOne.Graphics
 {
-	public sealed class PalaceResourcesDelegate
+	public sealed class PalaceResourcesDelegate(Func<string, Picture> getPictureByName, IPalaceSpriteLayout palaceSpriteLayout = null)
 	{
 		private const int TOWER_WIDTH = 35;
 		private const int WALL_WIDTH = 48;
@@ -27,15 +27,9 @@ namespace CivOne.Graphics
 		private const int RIGHT_TOWER_WALL_LEFT_OFFSET_CLASSICAL = 22;
 		private const int RIGHT_TOWER_WALL_LEFT_OFFSET_OTHER = 21;
 
-		private readonly Func<string, Picture> _getPictureByName;
-		private readonly IPalaceSpriteLayout _palaceSpriteLayout;
+		private readonly Func<string, Picture> _getPictureByName = getPictureByName ?? throw new ArgumentNullException(nameof(getPictureByName));
+		private readonly IPalaceSpriteLayout _palaceSpriteLayout = palaceSpriteLayout ?? new PalaceSpriteLayout();
 		private readonly Dictionary<int, Picture> _cache = [];
-
-		public PalaceResourcesDelegate(Func<string, Picture> getPictureByName, IPalaceSpriteLayout palaceSpriteLayout = null)
-		{
-			_getPictureByName = getPictureByName ?? throw new ArgumentNullException(nameof(getPictureByName));
-			_palaceSpriteLayout = palaceSpriteLayout ?? new PalaceSpriteLayout();
-		}
 
 		internal void ClearCache() => _cache.Clear();
 

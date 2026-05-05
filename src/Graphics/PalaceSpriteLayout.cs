@@ -136,15 +136,21 @@ namespace CivOne.Graphics
 			=> (part, style) switch
 			{
 				(PalacePart.LeftTower, PalaceStyle.Classical) => new(layout.Q4Slices.LeftEnd.StartInclusive, layout.Q4.Y.StartInclusive + 1, layout.Q4Slices.LeftEnd.Length, 99),
+				(PalacePart.LeftTower, PalaceStyle.Islamic) => new(104, 101, 27, 99),
 				(PalacePart.LeftTower, _) => new(104, 1, 27, 99),
 				(PalacePart.RightTower, PalaceStyle.Classical) => new(layout.Q4Slices.RightEnd.StartInclusive, layout.Q4.Y.StartInclusive + 1, layout.Q4Slices.RightEnd.Length, 99),
+				(PalacePart.RightTower, PalaceStyle.Islamic) => new(132, 101, 27, 99),
 				(PalacePart.RightTower, _) => new(132, 1, 27, 99),
 				(PalacePart.LeftTowerWall, PalaceStyle.Classical) => new(layout.Q4Slices.LeftEnd.StartInclusive, layout.Q4.Y.StartInclusive + 1, layout.Q4Slices.LeftEnd.Length, 99),
+				(PalacePart.LeftTowerWall, PalaceStyle.Islamic) => new(104, 101, 27, 99),
 				(PalacePart.LeftTowerWall, _) => new(104, 1, 27, 99),
 				(PalacePart.RightTowerWall, PalaceStyle.Classical) => new(layout.Q4Slices.RightEnd.StartInclusive, layout.Q4.Y.StartInclusive + 1, layout.Q4Slices.RightEnd.Length, 99),
 				(PalacePart.RightTowerWallShadow, PalaceStyle.Classical) => new(layout.Q4Slices.RightEnd.StartInclusive, layout.Q4.Y.StartInclusive + 1, layout.Q4Slices.RightEnd.Length, 99),
+				(PalacePart.RightTowerWall, PalaceStyle.Islamic) => new(132, 101, 27, 99),
+				(PalacePart.RightTowerWallShadow, PalaceStyle.Islamic) => new(132, 101, 27, 99),
 				(PalacePart.RightTowerWall, _) => new(132, 1, 27, 99),
 				(PalacePart.RightTowerWallShadow, _) => new(132, 1, 27, 99),
+				(PalacePart.Center, PalaceStyle.Islamic) => new(0, 101, 52, 99),
 				(PalacePart.Center, _) => new(0, 1, 52, 99),
 				_ => throw new ArgumentException($"Unknown part/style combination: {part}, {style}")
 			};
