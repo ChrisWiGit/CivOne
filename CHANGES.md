@@ -6,6 +6,18 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Added Civilization Ranking screen integration with turn-based trigger service.
+  * The ranking screen is now triggered from a dedicated service checked on each human turn.
+  * Temporary (non-original) trigger algorithm: show the ranking every random 300-500 years.
+    * The next trigger year is randomized after each display.
+    * This is an interim implementation until original game conditions are identified.
+  * Palace preview rendering is integrated into the ranking screen, showing the palace corresponding to each civilization's current palace level.
+  * Debug controls on the ranking screen:
+    * `F1`: cycle ranking category.
+    * `F2`: toggle known civilizations vs all civilizations.
+  * Save-state note:
+    * The current ranking screen trigger state/category rotation is not persisted.
+    * There is an SVE/SAV `rank` field, but its exact original semantic meaning is currently unknown and is not yet used as source of truth for this feature.
 * Feature: Added the new palace rendering and palace part composition.
   * The palace upgrade trigger currently uses `CivilizationScore >= 1 + n*n + n` (`HumanCivScorePalaceTrigger`), where `n` is the number of existing palace upgrades.
     This can be adjusted later if balancing changes are needed.

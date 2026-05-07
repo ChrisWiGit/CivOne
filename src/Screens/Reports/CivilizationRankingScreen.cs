@@ -21,6 +21,14 @@ namespace CivOne.Screens.Reports
 
 	public static class CivilizationRankingScreenFactory
 	{
+		public static CivilizationRankingScreen Create(
+			bool randomSelection = true)
+		{
+			return new CivilizationRankingScreen(
+				randomSelection: randomSelection,
+				debugMode: false);
+		}
+
 		public static CivilizationRankingScreen CreateDebug(
 			bool randomSelection = false)
 		{

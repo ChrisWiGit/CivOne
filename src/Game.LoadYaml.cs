@@ -20,6 +20,7 @@ using CivOne.Persistence.Yaml;
 using CivOne.Services.GlobalWarming;
 using CivOne.Services.Palace;
 using CivOne.Services.Random;
+using CivOne.Services;
 using CivOne.Units;
 
 namespace CivOne
@@ -45,10 +46,14 @@ namespace CivOne
 			return new ValueSanitizer(new RuntimeLogger());
 		}
 
-		private Game(IValueSanitizer valueSanitizer)
+		private Game(
+			IValueSanitizer valueSanitizer,
+			IPalaceUpgradeService palaceUpgradeService = null,
+			ICivilizationRankingTriggerService civilizationRankingTriggerService = null)
 		{
 			_valueSanitizer = valueSanitizer ?? throw new ArgumentNullException(nameof(valueSanitizer));
-			_palaceUpgradeService = PalaceUpgradeServiceFactory.GetInstance();
+			_palaceUpgradeService = palaceUpgradeService ?? PalaceUpgradeServiceFactory.GetInstance();
+			_civilizationRankingTriggerService = civilizationRankingTriggerService ?? CivilizationRankingTriggerServiceFactory.GetInstance();
 		}
 
 		private Game(GameState state) : this(CreateValueSanitizer())

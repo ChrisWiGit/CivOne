@@ -20,6 +20,7 @@ using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.IO;
 using CivOne.Screens;
+using CivOne.Screens.Reports;
 using CivOne.Screens.Services;
 using CivOne.Services;
 using CivOne.Services.GlobalWarming;
@@ -279,6 +280,7 @@ namespace CivOne
 		internal IGlobalWarmingScourgeService globalWarmingScourgeService;
 
 		internal readonly IPalaceUpgradeService _palaceUpgradeService;
+		internal readonly ICivilizationRankingTriggerService _civilizationRankingTriggerService;
 
 		private readonly struct PlayerGameStateAdapter(Player player) : IPlayerGameState
 		{
@@ -403,6 +405,12 @@ namespace CivOne
 				GameTask.Enqueue(Turn.New(city));
 			}
 			GameTask.Enqueue(Turn.New(CurrentPlayer));
+
+			if (CurrentPlayer == HumanPlayer && _civilizationRankingTriggerService?.ShouldShowRanking(HumanPlayer, this) == true)
+			{
+				GameTask.Enqueue(Show.Screen(CivilizationRankingScreenFactory.Create()));
+			}
+
 			if (Game.InstantAdvice && CurrentPlayer == HumanPlayer && (Common.TurnToYear(Game.GameTurn) == -3600 || Common.TurnToYear(Game.GameTurn) == -2800))
 				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFile.Instance.GetGameText("HELP/HELP1")));
 			else if (Game.InstantAdvice && CurrentPlayer == HumanPlayer && (Common.TurnToYear(Game.GameTurn) == -3200 || Common.TurnToYear(Game.GameTurn) == -2400))
