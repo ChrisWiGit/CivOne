@@ -20,6 +20,8 @@ namespace CivOne
 {
     internal partial class AI
 	{
+		private static bool IsPolarTile(ITile tile) => tile.Type == Terrain.Arctic;
+
 		private void BarbarianMove(IUnit unit)
 		{
 			switch (unit.Class)
@@ -46,9 +48,9 @@ namespace CivOne
 
 			for (int i = 0; i < 1000; i++)
 			{
-				if (unit.Tile.GetBorderTiles().Any(x => !x.IsOcean))
+				if (unit.Tile.GetBorderTiles().Any(x => !x.IsOcean && !IsPolarTile(x)))
 				{
-					if (Game.GetCities().Any(x => x.Owner != 0) && unit.Tile.GetBorderTiles().Any(x => !x.IsOcean && !x.Units.Any(u => u.Owner != 0)))
+					if (Game.GetCities().Any(x => x.Owner != 0) && unit.Tile.GetBorderTiles().Any(x => !x.IsOcean && !IsPolarTile(x) && !x.Units.Any(u => u.Owner != 0)))
 					{
 						City nearestCity = Game.GetCities().Where(x => x.Owner != 0).OrderBy(x => Common.DistanceToTile(x.X, x.Y, unit.X, unit.Y)).ThenBy(x => x.Player == Human ? 0 : 1).First();
 						if (nearestCity.Player == Human && Human.Visible(unit.Tile))
@@ -122,7 +124,7 @@ namespace CivOne
 				IUnit ship = unit.Tile.Units.FirstOrDefault(u => u.Class == UnitClass.Water && u.MovesLeft > 0);
 				if (ship != null)
 				{
-					ITile[] landTiles = unit.Tile.GetBorderTiles().Where(x => !x.IsOcean && x.Units.Any(u => u.Owner != 0)).ToArray();
+					ITile[] landTiles = unit.Tile.GetBorderTiles().Where(x => !x.IsOcean && !IsPolarTile(x) && x.Units.Any(u => u.Owner != 0)).ToArray();
 					if (landTiles.Length > 0)
 					{
 						ITile tile = landTiles[Common.Random.Next(landTiles.Length)];
@@ -144,7 +146,7 @@ namespace CivOne
 				}
 				unit.WorkProgress = (byte)(unit.WorkProgress > 0 ? unit.WorkProgress - 1 : 0);
 
-				ITile[] friendlyTiles = unit.Tile.GetBorderTiles().Where(x => !x.IsOcean && x.Units.Any() && x.Units.First().Owner == 0).ToArray(); //Game.GetUnits().Where(x => x.Owner == 0 && x.Class == UnitClass.Land && x.Tile.DistanceTo(unit.Tile) == 1).FirstOrDefault();
+				ITile[] friendlyTiles = unit.Tile.GetBorderTiles().Where(x => !x.IsOcean && !IsPolarTile(x) && x.Units.Any() && x.Units.First().Owner == 0).ToArray(); //Game.GetUnits().Where(x => x.Owner == 0 && x.Class == UnitClass.Land && x.Tile.DistanceTo(unit.Tile) == 1).FirstOrDefault();
 				if (friendlyTiles.Length > 0)
 				{
 					ITile moveTo = friendlyTiles[Common.Random.Next(friendlyTiles.Length)];
@@ -172,7 +174,7 @@ namespace CivOne
 				}
 
                 // fire-eggs 20180628 Do NOT move barbarian leader onto enemy unit!
-                ITile[] unfriend = unit.Tile.GetBorderTiles().Where(z=> !z.IsOcean && !z.Units.Any()).ToArray();
+				ITile[] unfriend = unit.Tile.GetBorderTiles().Where(z=> !z.IsOcean && !IsPolarTile(z) && !z.Units.Any()).ToArray();
                 if (unfriend.Length > 0)
                 {
                     ITile moveTo = unfriend[Common.Random.Next(unfriend.Length)];
@@ -185,7 +187,7 @@ namespace CivOne
                 return;
             }
 
-            ITile[] tiles = unit.Tile.GetBorderTiles().Where(t => !((unit.Tile.IsOcean || unit is Diplomat) && t.City != null) && !t.IsOcean && t.Units.Any(u => u.Owner != 0)).ToArray();
+			ITile[] tiles = unit.Tile.GetBorderTiles().Where(t => !((unit.Tile.IsOcean || unit is Diplomat) && t.City != null) && !t.IsOcean && !IsPolarTile(t) && t.Units.Any(u => u.Owner != 0)).ToArray();
 			if (tiles.Length == 0)
 			{
 				// No adjecent units found
@@ -196,7 +198,7 @@ namespace CivOne
 						int relX = Common.Random.Next(-1, 2);
 						int relY = Common.Random.Next(-1, 2);
 						if (relX == 0 && relY == 0) continue;
-						if (unit.Tile[relX, relY] is Ocean) continue;
+						if (unit.Tile[relX, relY] is Ocean || IsPolarTile(unit.Tile[relX, relY])) continue;
 						if (unit is Diplomat && unit.Tile[relX, relY].City != null) continue;
 						if (unit.Tile.IsOcean && unit.Tile[relX, relY].City != null) continue;
 						unit.MoveTo(relX, relY);

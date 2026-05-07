@@ -60,6 +60,7 @@ namespace CivOne.Screens.Dialogs
 			{
 				Game.DisbandUnit(_diplomat);
 				_cityToIncite.Owner = newOwner;
+				_cityToIncite.TechStolen = false;
 
                 // fire-eggs 20190701 city units must convert
                 // TODO fire-eggs not all units _always_ convert, e.g. settlers ?
