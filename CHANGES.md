@@ -6,6 +6,15 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Addressed multiple long-standing gameplay issues from issue tracker from [https://github.com/fire-eggs/CivOne/issues](https://github.com/fire-eggs/CivOne/issues).
+  * Fixed city buy edge case where overpayment could lead to invalid negative-cost purchase handling ([#179](https://github.com/fire-eggs/CivOne/issues/179)).
+  * Buying city improvements is now blocked while the city is in civil disorder. ([#153](https://github.com/fire-eggs/CivOne/issues/153)).
+  * AI city production no longer defaults to excessive caravan production once basic unit thresholds are met ([#172](https://github.com/fire-eggs/CivOne/issues/172)).
+  * Diplomat tech theft is now limited to one successful theft per city until ownership changes ([#121](https://github.com/fire-eggs/CivOne/issues/121)).
+  * Tech-theft city state now resets correctly when a city changes owner (conquest/incite/flip) ([#121](https://github.com/fire-eggs/CivOne/issues/121)).
+  * Barbarians no longer land/spawn on arctic polar tiles ([#122](https://github.com/fire-eggs/CivOne/issues/122)).
+  * Open/under review: No code change included yet for "We love the president" population behavior and "Unit trying to leave city blocked"; current behavior appears rule-dependent or already covered by existing movement logic/tests, but both tickets stay open for targeted regression verification ([#182](https://github.com/fire-eggs/CivOne/issues/182), [#123](https://github.com/fire-eggs/CivOne/issues/123)).
+
 * Feature: Added support for MCP (Multi Client Protocol) to allow external clients (e.g. VS Code extension) to connect and interact with the game for testing, debugging, and automation purposes. See [MCP.md](MCP.md) for details on how to use the MCP server and its current capabilities.
   * Added command line option `--mcp` to start the game in MCP server mode.
   * Added command line option `--mcp-artifacts <folder>` to specify a custom folder for MCP artifacts (e.g. screenshots).

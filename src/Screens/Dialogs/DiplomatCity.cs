@@ -61,6 +61,13 @@ namespace CivOne.Screens.Dialogs
 
 		private void StealTechnology(object sender, EventArgs args)
 		{
+			if (_enemyCity.TechStolen)
+			{
+				GameTask.Insert(Message.General($"No new technology found"));
+				Cancel();
+				return;
+			}
+
 			IAdvance advance = _diplomat.GetAdvanceToSteal(_enemyCity.Player);
 
 			if (advance == null)
@@ -73,6 +80,7 @@ namespace CivOne.Screens.Dialogs
 
 				task.Done += (s1, a1) =>
 				{
+					_enemyCity.TechStolen = true;
 					Game.DisbandUnit(_diplomat);
 					if (_diplomat.Player == Human || _enemyCity.Player == Human)
 						GameTask.Insert(Message.Spy("Spies report:", $"{_diplomat.Player.TribeName} steal", $"{advance.Name}"));
@@ -102,7 +110,7 @@ namespace CivOne.Screens.Dialogs
 
 			menu.Items.Add("Establish Embassy").OnSelect(EstablishEmbassy).SetEnabled(!Human.HasEmbassy(_enemyCity.Player));
 			menu.Items.Add("Investigate City").OnSelect(InvestigateCity);
-			menu.Items.Add("Steal Technology").OnSelect(StealTechnology);
+			menu.Items.Add("Steal Technology").OnSelect(StealTechnology).SetEnabled(!_enemyCity.TechStolen);
 			menu.Items.Add("Industrial Sabotage").OnSelect(IndustrialSabotage);
 			menu.Items.Add("Incite a Revolt").OnSelect(InciteRevolt).SetEnabled(!_enemyCity.HasBuilding<Palace>());
 			menu.Items.Add("Meet with King").OnSelect(MeetWithKing).SetEnabled(!(_enemyCity.Player.Civilization is Barbarian));
