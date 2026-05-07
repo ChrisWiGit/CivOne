@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using CivOne.Enums;
 using CivOne.Graphics;
 
@@ -84,6 +85,40 @@ namespace CivOne.Screens.PalaceAssets
 				else if (i == 6 && palace.GetPalaceLevel(5) > 0) count++;
 			}
 			return count;
+		}
+
+		public int GetMaxPalaceHeight(IPalaceData palace)
+		{
+			var style = palace.GetPalaceStyle(3);
+			byte level = palace.GetPalaceLevel(3);
+
+			if (level == 0)
+			{
+				return 0;
+			}
+
+			const int baseClassic = 14;
+			const int baseMedieval = 30;
+			const int baseIslamic = 46;
+
+			return (level, style) switch
+			{
+				(1, PalaceStyle.Classical) => baseClassic - 9 + 1, // = 6
+				(2, PalaceStyle.Classical) => baseClassic - 8 + 1, // = 7
+				(3, PalaceStyle.Classical) => baseClassic - 7 + 1, // = 8
+				(4, PalaceStyle.Classical) => baseClassic - 6 + 1, // = 9
+
+				(1, PalaceStyle.Medieval) => baseMedieval - 25 + 1, // = 6
+				(2, PalaceStyle.Medieval) => baseMedieval - 24 + 1, // = 7
+				(3, PalaceStyle.Medieval) => baseMedieval - 23 + 1, // = 8
+				(4, PalaceStyle.Medieval) => baseMedieval - 22 + 1, // = 9
+
+				(1, PalaceStyle.Islamic) => baseIslamic - 37 + 1, // = 10
+				(2, PalaceStyle.Islamic) => baseIslamic - 36 + 1, // = 11
+				(3, PalaceStyle.Islamic) => baseIslamic - 34 + 1, // = 13
+				(4, PalaceStyle.Islamic) => baseIslamic - 33 + 1, // = 14
+				(_, _) => throw new ArgumentOutOfRangeException($"Unexpected palace style/level combination: style={style}, level={level}")
+			};
 		}
 	}
 }

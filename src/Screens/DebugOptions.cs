@@ -12,6 +12,7 @@ using System.Linq;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Screens.Debug;
+using CivOne.Screens.Reports;
 using CivOne.Graphics.Sprites;
 using CivOne.Tasks;
 using CivOne.UserInterface;
@@ -144,6 +145,12 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		private void MenuShowCivilizationRanking(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen(CivilizationRankingScreenFactory.CreateDebug()));
+			Destroy();
+		}
+
 		private void ShowSettings(object sender, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screens(typeof(Setup)));
@@ -246,6 +253,8 @@ namespace CivOne.Screens
 				new("Meet With King", MenuMeetWithKing),
 				new("Toggle Reveal World", MenuRevealWorld),
 				new("Build Palace", MenuBuildPalace),
+				new("Ranking (Random)", MenuShowCivilizationRanking),
+				new("Show Power Graph", MenuShowPowerGraph),
 				new("Instant Conquest", InstantConquest),
 				new("Instant Global Warming", InstantGlobalWarming),
 				new("Settings", ShowSettings)

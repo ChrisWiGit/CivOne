@@ -7,11 +7,9 @@ I did not browse all issues on github at first, so I did not recognize that some
 ## History
 
 * Feature: Added the new palace rendering and palace part composition.
-  * Palace sprite selection and part composition were refactored to support the new palace layout across styles and castle levels.
-  * Fixed multiple placement and offset issues for palace parts, including special-case alignment for the classical right tower in castle level 4.
   * The palace upgrade trigger currently uses `CivilizationScore >= 1 + n*n + n` (`HumanCivScorePalaceTrigger`), where `n` is the number of existing palace upgrades.
     This can be adjusted later if balancing changes are needed.
-  * TODO: Add the small palace preview image for map view and report screens.
+  * Preview of the palace is shown in the sidebar demographics panel.
   * TODO: AI still needs to be able to build the palace.
   * Some minor changes may apply:
     * Alignment and placement of palace parts may be slightly different from the original game.
