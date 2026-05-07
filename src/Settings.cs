@@ -613,7 +613,8 @@ namespace CivOne
 			int windowPosY = -1;
 			if (!GetSetting("WindowPosX", ref windowPosX, -MaxWindowWidth, MaxWindowWidth) || !GetSetting("WindowPosY", ref windowPosY, -MaxWindowHeight, MaxWindowHeight))
 			{
-				_windowPosition = new Point(-1, -1);
+				// Default to a position near the top-left corner, but not exactly (to avoid issues with taskbars and such).
+				_windowPosition = new Point(100, 100);
 			}
 			else
 			{
