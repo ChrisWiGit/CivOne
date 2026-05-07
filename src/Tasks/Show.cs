@@ -13,6 +13,7 @@ using System.Drawing;
 using System.Linq;
 using CivOne.Advances;
 using CivOne.Screens;
+using CivOne.Screens.PalaceAssets;
 using CivOne.Screens.Dialogs;
 using CivOne.Units;
 
@@ -119,7 +120,7 @@ namespace CivOne.Tasks
 
  		public static Show WeLovePresidentDayCity(City city) => new Show(CityView.WeLovePresidentDay(city));
 
-		public static Show BuildPalace() => new Show(new PalaceView(true));
+		public static Show BuildPalace(bool keepOpenUntilEscape = false) => new Show(new PalaceView(true, PalaceSpriteProviderFactory.GetInstance(), keepOpenUntilEscape));
 
 		public static Show CaravanChoice(Caravan unit, City city) => new Show(new CaravanChoice(unit, city));
 
