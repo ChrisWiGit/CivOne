@@ -6,6 +6,10 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* The game is now paused when
+  * the window is minimized or hidden to waste less CPU resources when the game is not visible.
+  * the user presses the Pause key to toggle pause state of the game.
+  * Pressing the Pause key and minimizing and then restoring the window will not unpause the game.
 * Feature: Added Civilization Ranking screen integration with turn-based trigger service.
   * The ranking screen is now triggered from a dedicated service checked on each human turn.
   * Temporary (non-original) trigger algorithm: show the ranking every random 300-500 years.

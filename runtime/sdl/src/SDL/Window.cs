@@ -26,8 +26,10 @@ namespace CivOne
 
 			private bool _running = true;
 			private bool _redraw;
-
 			private void Log(string message) => OnLog?.Invoke(message);
+			private bool _paused;
+			private string _sdlTitle;
+			private string _title;
 
 			protected event Action<string> OnLog;
 
@@ -80,6 +82,29 @@ namespace CivOne
 						return;
 					_pixelScale = value;
 				}
+			}
+
+			protected bool Paused
+			{
+				get => _paused;
+				set
+				{
+					if (_paused == value) return;
+					_paused = value;
+					UpdateTitle();
+				}
+			}
+
+			private void UpdateTitle()
+			{
+				string title = Title;
+				if (_paused)
+				{
+					title += " (Paused)";
+				}
+				if (title == _sdlTitle) return;
+				_sdlTitle = title;
+				SDL_SetWindowTitle(_handle, _sdlTitle);
 			}
 
 			private bool HitDebugKeys(SDL_Event sdlEvent, SDL_Scancode scancode)
@@ -159,6 +184,13 @@ namespace CivOne
 						TrapDebbugger(sdlEvent);
 					}
 
+					if (_paused)
+					{
+						Wait(100);
+
+						continue;
+					}
+
 					OnUpdate?.Invoke(this, EventArgs.Empty);
 					OnDraw?.Invoke(this, EventArgs.Empty);
 
@@ -229,16 +261,16 @@ namespace CivOne
 				}
 			}
 
-			private string _title;
 			public string Title
 			{
-				get => _title;
+				get => _title ?? string.Empty;
 				set
 				{
-					if (value == _title) return;
-					Log($@"Changing window title changed from ""{_title}"" to ""{value}""");
-					_title = value;
-					SDL_SetWindowTitle(_handle, _title);
+					string baseTitle = value ?? string.Empty;
+					if (baseTitle == _title) return;
+					Log($@"Changing window title from ""{_title}"" to ""{baseTitle}""");
+					_title = baseTitle;
+					UpdateTitle();
 				}
 			}
 
@@ -307,6 +339,7 @@ namespace CivOne
 
 				// Run OS native functions for initialization
 				Native.Init(_handle);
+				UpdateTitle();
 			}
 
 			protected void SetWindowSize(int width, int height)

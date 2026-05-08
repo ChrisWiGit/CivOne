@@ -349,10 +349,16 @@ namespace CivOne
 		private void KeyUp(object sender, KeyboardEventArgs args)
 		{
 			if (args.Key == Key.None) return;
+			if (args.Key == Key.Pause)
+			{
+				Paused = !Paused;
+				return;
+			}
 			_runtime.InvokeKeyboardUp(args);
-		}
 
-		private void MouseMove(object sender, ScreenEventArgs args)
+		}			
+
+			private void MouseMove(object sender, ScreenEventArgs args)
 		{
 			if (!IsInsideDrawArea(args)) return;
 			args = Transform(args);
