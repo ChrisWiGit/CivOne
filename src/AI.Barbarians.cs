@@ -18,6 +18,12 @@ using System.Linq;
 
 namespace CivOne
 {
+	/// <summary>
+	/// AI logic for barbarian units. 
+	/// This version was updated from 
+	/// <a href="https://github.com/mwerneburg/CivOne/commit/eec2410b583cd3c119cd3889fecc579bcffa4374">mwerneburg/CivOne</a> to use the new A* pathfinding implementation 
+	/// in <see cref="UnitGotoServiceImpl2"/>, while preserving the same behaviour and logic for barbarian movement. 
+	/// </summary>
     internal partial class AI
 	{
 		private readonly IUnitGotoService _unitGotoService = UnitGotoServiceFactory.Create();

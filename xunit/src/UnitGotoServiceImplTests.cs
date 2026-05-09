@@ -230,6 +230,57 @@ namespace CivOne.UnitTests
 		}
 
 
+		[Fact]
+		public void GotoStep_WithRiverFastMovement_PrefersRiverOverPlainTerrain()
+		{
+			if (!_useNewImpl) return; // only test new implementation, as riverFastMovement is not supported in old one
+									  // Arrange
+									  // 10-wide, 5-tall map. Unit at (2,2), goal at (7,2).
+									  // y=2 row: River tiles  → cost 3/step with riverFastMovement=true
+									  // y=1 row: plain terrain → cost 18/step always
+									  // River path (5 steps × 3 = 15) is clearly cheaper than plain detour.
+			var (map, tiles) = MakeLandMap(10, 5);
+			for (int x = 0; x < 10; x++)
+				tiles[x, 2].Type = Terrain.River;
+
+			var unit = MakeUnit(2, 2, 7, 2, UnitClass.Land);
+			var testee = CreateTestee(map, riverFastMovement: true);
+
+			// Act
+			ITile actual = testee.GotoStep(unit);
+
+			// Assert: first step stays on y=2 (river row)
+			Assert.NotNull(actual);
+			Assert.Equal(2, actual.Y);
+		}
+
+		[Fact]
+		public void GotoStep_WithoutRiverFastMovement_PrefersRoadOverRiver()
+		{
+			// Arrange
+			// 10-wide, 5-tall map. Unit at (2,2), goal at (7,2).
+			// y=2 row: River tiles → cost 18/step without riverFastMovement
+			// y=1 row: Road tiles  → cost 3/step always
+			// Road detour (~5 steps × 3 + 18 goal = 33) beats river row (5 × 18 = 90).
+			var (map, tiles) = MakeLandMap(10, 5);
+			for (int x = 0; x < 10; x++)
+			{
+				tiles[x, 2].Type = Terrain.River;
+				tiles[x, 1].Road = true;
+			}
+
+			var unit = MakeUnit(2, 2, 7, 2, UnitClass.Land);
+			var testee = CreateTestee(map, riverFastMovement: false);
+
+			// Act
+			ITile actual = testee.GotoStep(unit);
+
+			// Assert: first step moves to the road row (y=1)
+			Assert.NotNull(actual);
+			Assert.Equal(1, actual.Y);
+		}
+
+
 		// ── helpers ──────────────────────────────────────────────────────────────
 
 		/// <summary>
@@ -336,7 +387,12 @@ namespace CivOne.UnitTests
 			};
 		}
 
-		private static UnitGotoServiceImpl CreateTestee(IMapTiles map)
-			=> new(map);
+
+
+		private static readonly bool _useNewImpl = true;
+
+		private static IUnitGotoService CreateTestee(IMapTiles map, bool riverFastMovement = false)
+			=> _useNewImpl ? new UnitGotoServiceImpl2(map, riverFastMovement) :
+							new UnitGotoServiceImpl(map);
 	}
 }

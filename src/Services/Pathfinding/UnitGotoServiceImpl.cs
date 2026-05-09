@@ -1,3 +1,4 @@
+//NOSONAR
 using System;
 using System.Collections.Generic;
 using CivOne.Enums;
@@ -6,6 +7,19 @@ using CivOne.Units;
 
 namespace CivOne.Services.Pathfinding
 {
+	/// <summary>
+	/// A* pathfinding implementation for unit GoTo orders. Returns the next tile to move into, or null if unreachable.
+	/// Cost units: railroad=1, road=3, terrain=Movement*9 (max 18 for hills/forest). 
+	/// Optionally, river tiles can be treated as roads (cost 3) if the "River Fast Movement" setting is enabled.
+	/// 
+	/// This version is the original implementation of the A* pathfinding from 
+	/// <a href="https://github.com/mwerneburg/CivOne/commit/eec2410b583cd3c119cd3889fecc579bcffa4374">mwerneburg/CivOne</a>, 
+	/// kept for reference and to allow for comparison and testing of the new refactored implementation in <see cref="UnitGotoServiceImpl2"/>. 
+	/// The new implementation is available in the same factory and can be switched by changing the factory method to return the desired implementation.
+	/// 
+	/// A refactored version of this implementation with improved readability and maintainability is available in <see cref="UnitGotoServiceImpl2"/>, while preserving the same pathfinding logic and behaviour.
+	/// </summary>
+	/// <param name="_mapTiles">Required map tiles service to access tile information for pathfinding.</param>
 	internal sealed class UnitGotoServiceImpl(IMapTiles _mapTiles) : IUnitGotoService
 	{
 		// A* pathfinder for GoTo orders. Returns the next tile to move into, or null if unreachable.
