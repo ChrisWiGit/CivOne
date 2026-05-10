@@ -432,7 +432,7 @@ namespace CivOne
 			
 			Bytemap output = new Bytemap(input.Width(), input.Height());
 			for (int yy = 0; yy < input.Height(); yy++)
-			for (int xx = 0; xx < input.Height(); xx++)
+			for (int xx = 0; xx < input.Width(); xx++)
 			{
 				output[xx, yy] = (byte)matches[input.Bitmap[xx, yy]];
 			}
