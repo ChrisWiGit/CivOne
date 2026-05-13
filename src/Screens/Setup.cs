@@ -421,6 +421,25 @@ namespace CivOne.Screens
 			MenuItem.Create("Back")
 		);
 
+		private void RemoveObsoleteBuildingsMenu() => CreateMenu("Remove obsolete buildings", GotoMenu(BehaviorMenu, 5),
+			MenuItem.Create(false.YesNo())
+				.WithDescription(
+					"Leave obsolete buildings in cities when",
+					"new technologies are discovered that obsoletes them.",
+					"")
+				.OnSelect((s, a) => Settings.RemoveObsoleteBuildings = false)
+				.SetActive(() => !Settings.RemoveObsoleteBuildings),
+			MenuItem.Create($"{true.YesNo()} (default)")
+				.WithDescription(
+					"Remove obsolete buildings in cities when new", 
+					"technologies are discovered. Barracks are removed",
+					"when Gunpowder or Combustion is discovered.")
+				.OnSelect((s, a) => Settings.RemoveObsoleteBuildings = true)
+				.SetActive(() => Settings.RemoveObsoleteBuildings),
+			MenuItem.Create("Back"),
+			Description.Create("Return to the game behavior menu.")
+		);
+
 		private void SaveFormatMenu() => CreateMenu("AutoSave format", GotoMenu(PatchesMenu, 9),
 			MenuItem.Create("SVE with COS fallback (default)").OnSelect((s, a) => Settings.PreferSveSaveFormat = true).SetActive(() => Settings.PreferSveSaveFormat),
 			MenuItem.Create("CivOne Save (COS)").OnSelect((s, a) => Settings.PreferSveSaveFormat = false).SetActive(() => !Settings.PreferSveSaveFormat),
@@ -444,7 +463,7 @@ namespace CivOne.Screens
 		private void ExtendedGlobalWarmingMenu(int activeItem = 0) => CreateMenu("Extended global warming (needs savegame load)", activeItem,
 			MenuItem.Create($"Sea level rise: {Settings.IsGlobalWarmingFlagSet(Settings.GlobalWarmingFeatureFlag.SeaLevelRise).YesNo()}")
 				.OnSelect(GotoMenu(SeaLevelRise)),
-			MenuItem.Create("Back").OnSelect(GotoMenu(BehaviorMenu, 5))
+			MenuItem.Create("Back").OnSelect(GotoMenu(BehaviorMenu, 6))
 		);
 
 		private void BehaviorMenu(int activeItem = 0) => CreateMenu("Game behavior menu", activeItem,
@@ -454,6 +473,7 @@ namespace CivOne.Screens
 					MenuItem.Create($"Use auto-settlers-cheat: {Settings.AutoSettlers.YesNo()}").OnSelect(GotoMenu(AutoSettlersMenu)),
 					MenuItem.Create($"Use fast river movement: {Settings.RiverFastMovement.YesNo()}").OnSelect(GotoMenu(FastRiverMovementMenu)),
 					MenuItem.Create($"No movement penalty for sea units in city: {Settings.CanalCity.YesNo()}").OnSelect(GotoMenu(CanalCity)),
+					MenuItem.Create($"Remove obsolete buildings: {Settings.RemoveObsoleteBuildings.YesNo()}").OnSelect(GotoMenu(RemoveObsoleteBuildingsMenu)),
 					MenuItem.Create($"Extended global warming: {(Settings.GlobalWarmingFeatureFlags != Settings.GlobalWarmingFeatureFlag.None).YesNo()}").OnSelect(GotoMenu(ExtendedGlobalWarmingMenu)),
 					MenuItem.Create("Back").OnSelect(GotoMenu(PatchesMenu, 8))
 			]
