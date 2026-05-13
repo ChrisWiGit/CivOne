@@ -21,6 +21,7 @@ namespace CivOne
 		protected static Map Map => Map.Instance;
 		protected static Player Human => Game.Instance.HumanPlayer;
 		protected static Resources Resources => Resources.Instance;
+		protected IResourceService ResourcesDI => Resources.Instance;
 		protected static IRuntime Runtime => RuntimeHandler.Runtime;
 		protected static Settings Settings => Settings.Instance;
 		protected static MenuCollection Menus => MenuCollection.Instance;
