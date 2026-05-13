@@ -18,7 +18,7 @@ using CivOne.Tiles;
 
 namespace CivOne.Graphics
 {
-	public class Resources
+	public class Resources : IResourceFileBitmapProvider, IResourceFontHeightProvider
 	{
 		private static Settings Settings => Settings.Instance;
 
@@ -128,9 +128,9 @@ namespace CivOne.Graphics
 			return _fonts[font];
 		}
 		
-		public int GetFontHeight(int font)
+		public int GetFontHeight(int FontId)
 		{
-			return Font(font).FontHeight;
+			return Font(FontId).FontHeight;
 		}
 		
 		private Bytemap GetLetter(byte colour, int font, char letter)
@@ -217,6 +217,12 @@ namespace CivOne.Graphics
 				if (!_cache.ContainsKey(key)) _cache.Add(key, output);
 				return new Picture(_cache[key].Bitmap, _cache[key].Palette);
 			}
+		}
+
+		// Explicit interface implementation for IResourceService
+		IBitmap IResourceFileBitmapProvider.this[string filename]
+		{
+			get { return this[filename]; }
 		}
 
 		public Picture GetPalace(PalaceStyle style, PalacePart part, int level)
