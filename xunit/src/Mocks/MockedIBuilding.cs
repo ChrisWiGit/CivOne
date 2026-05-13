@@ -21,6 +21,7 @@ namespace CivOne.UnitTests
             BuyPrice = 20;
             Maintenance = 1;
             RequiredTech = null;
+            ObsoleteTechs = [];
             Icon = null;
             SmallIcon = null;
             PageCount = 0;
@@ -30,6 +31,8 @@ namespace CivOne.UnitTests
 		public byte Id { get; set; }
 
 		public IAdvance RequiredTech { get; set; }
+
+		public IAdvance[] ObsoleteTechs { get; set; }
 
 		public byte Maintenance { get; set; }
 

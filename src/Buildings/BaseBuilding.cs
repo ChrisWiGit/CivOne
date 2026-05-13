@@ -65,6 +65,7 @@ namespace CivOne.Buildings
 		public Building Type { get; set; }
 		
 		public IAdvance RequiredTech { get; protected set; }
+		public IAdvance[] ObsoleteTechs { get; protected set; } = System.Array.Empty<IAdvance>();
 		public short SellPrice { get; private set; }
 		public short BuyPrice { get; private set; }
 		public byte ProductionId => (byte)(255 - Type);
