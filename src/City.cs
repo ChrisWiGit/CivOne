@@ -17,10 +17,8 @@ using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Governments;
 using CivOne.Persistence.Game;
-using CivOne.Persistence.Model;
-using CivOne.Screens;
-using CivOne.Screens.Reports;
 using CivOne.Screens.Services;
+using CivOne.Services.SpaceShip;
 using CivOne.src;
 using CivOne.Tasks;
 using CivOne.Tiles;
@@ -29,8 +27,8 @@ using CivOne.Wonders;
 
 namespace CivOne
 {
-	public interface ICity : ITurn, ICityBasic, ICityStatus, ICityTile, ICityBuildings, ICityOnContinent, ICityMapper
-	{}
+	public interface ICity : ITurn, ICityOnContinent, ICityMapper
+    { }
 	public class City : BaseInstance, ICity
 	{
 		// Dependency Injection
@@ -1198,7 +1196,20 @@ namespace CivOne
 						Message message = Message.Newspaper(this, $"{this.Name} builds", $"{(CurrentProduction as ICivilopedia).Name}.");
 						message.Done += (s, a) =>
 						{
-							// TODO: Add space ship component
+							ISpaceShipService service = SpaceShipServiceFactoryProvider.GetInstance().Create(Player);
+							SpaceShipComponentType partType = CurrentProduction switch
+							{
+								SSStructural => SpaceShipComponentType.Structural,
+								SSComponent => SpaceShipComponentType.Component,
+								SSModule => SpaceShipComponentType.Module,
+								_ => SpaceShipComponentType.Empty
+							};
+
+							if (partType != SpaceShipComponentType.Empty && !service.TryAddPart(partType))
+							{
+								GameTask.Enqueue(Message.Advisor(Advisor.Science, true, "Space ship", "No free slot available for this part."));
+							}
+
 							GameTask.Insert(Show.CityManager(this));
 						};
 						GameTask.Enqueue(message);

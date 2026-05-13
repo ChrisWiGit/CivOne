@@ -25,6 +25,7 @@ using CivOne.Screens.Services;
 using CivOne.Services;
 using CivOne.Services.GlobalWarming;
 using CivOne.Services.Palace;
+using CivOne.Services.SpaceShip;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -371,8 +372,15 @@ namespace CivOne
 
 				GameTask conquest;
 				GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has conquered", "the entire planet!"));
-				GameTask.Enqueue(conquest = Show.Screen<Conquest>());
+				conquest = Show.Screen<Conquest>();
+				GameTask.Enqueue(conquest);
 				conquest.Done += (s, a) => RuntimeHandler.EndGame();
+			}
+
+			bool gameEnds = !CheckSpaceVitory();
+			if (gameEnds)
+			{
+				return;
 			}
 
 			if (origin == 0)
@@ -415,6 +423,43 @@ namespace CivOne
 				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFile.Instance.GetGameText("HELP/HELP1")));
 			else if (Game.InstantAdvice && CurrentPlayer == HumanPlayer && (Common.TurnToYear(Game.GameTurn) == -3200 || Common.TurnToYear(Game.GameTurn) == -2400))
 				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFile.Instance.GetGameText("HELP/HELP2")));
+		}
+
+		private bool CheckSpaceVitory()
+		{
+			int currentYear = Common.TurnToYear(GameTurn);
+			foreach (Player player in _players.Where(x => x.Civilization is not Barbarian && x.SpaceShipLaunchYear != 0))
+			{
+				ISpaceShipService shipService = SpaceShipServiceFactoryProvider.GetInstance().Create(player);
+				SpaceShipScreenData screenData = shipService.GetScreenData();
+				int arrivalYear = player.SpaceShipLaunchYear + (int)Math.Ceiling(screenData.FlightTimeYears);
+				if (currentYear < arrivalYear)
+				{
+					continue;
+				}
+
+				if (player == HumanPlayer)
+				{
+					PlaySound("wintune");
+					GameTask victory;
+					GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has reached", "Alpha Centauri!"));
+					victory = Show.Screen(new SpaceVictory(player));
+					GameTask.Enqueue(victory);
+					victory.Done += (s, a) => RuntimeHandler.EndGame();
+				}
+				else
+				{
+					GameTask endGame;
+					GameTask.Enqueue(Message.Newspaper(null, $"{player.TribeName} space ship", "has reached", "Alpha Centauri!"));
+					endGame = Show.Screen(new SpaceVictory(player));
+					GameTask.Enqueue(endGame);
+					endGame.Done += (s, a) => RuntimeHandler.EndGame();
+				}
+
+				return false;
+			}
+
+			return true;
 		}
 
 		protected void HandleGlobalWarming()

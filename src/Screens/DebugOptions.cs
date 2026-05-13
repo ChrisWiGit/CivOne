@@ -17,6 +17,7 @@ using CivOne.Graphics.Sprites;
 using CivOne.Tasks;
 using CivOne.UserInterface;
 using System.Collections.Generic;
+using CivOne.Services.SpaceShip;
 
 namespace CivOne.Screens
 {
@@ -93,6 +94,18 @@ namespace CivOne.Screens
 		private void MenuBuildPalace(object sender, EventArgs args)
 		{
 			GameTask.Enqueue(Show.BuildPalace(keepOpenUntilEscape: true));
+			Destroy();
+		}
+
+		private void MenuBuildSpaceShip(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen(new SpaceShipView(Human, true, SpaceShipServiceFactoryProvider.GetDebugInstance())));
+			Destroy();
+		}
+
+		private void MenuPaletteViewer(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen<PaletteViewerScreen>());
 			Destroy();
 		}
 
@@ -257,7 +270,9 @@ namespace CivOne.Screens
 				new("Show Power Graph", MenuShowPowerGraph),
 				new("Instant Conquest", InstantConquest),
 				new("Instant Global Warming", InstantGlobalWarming),
-				new("Settings", ShowSettings)
+				new("Palette Viewer", MenuPaletteViewer),
+				new("Settings", ShowSettings),
+				new("Build SpaceShip", MenuBuildSpaceShip)
 			];
 
 			const int itemHeight = 8 + 1;

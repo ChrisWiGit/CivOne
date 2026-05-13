@@ -16,7 +16,8 @@ namespace CivOne.Persistence.Model
 	/// <summary>
 	/// Specialized Map2d for 12×12 spaceship component grids. Encodes
 	/// SpaceShipComponentType values as single-character strings in YAML:
-	/// 'E' for Empty, 'S' for Structural, 'C' for Component, 'M' for Module.
+	/// 'E' for Empty, 'S' for Structural, 'C' for Component, 'M' for Module,
+	/// and dedicated characters for detailed spaceship parts.
 	/// 
 	/// YAML output example:
 	/// - ECMM000000000
@@ -39,8 +40,9 @@ namespace CivOne.Persistence.Model
 		}
 
 		public SpaceShipGridMap2d(string[] rows)
-			: base(FromRows(rows))
+			: base()
 		{
+			Rows = rows;
 		}
 
 		public SpaceShipGridMap2d(SpaceShipGridMap2d other) : base((Map2d<SpaceShipComponentType>)other)
@@ -111,6 +113,15 @@ namespace CivOne.Persistence.Model
 				SpaceShipComponentType.Structural => 'S',
 				SpaceShipComponentType.Component => 'C',
 				SpaceShipComponentType.Module => 'M',
+				SpaceShipComponentType.StructureHorizontal => 'H',
+				SpaceShipComponentType.StructureVertical => 'V',
+				SpaceShipComponentType.StructureNode => 'N',
+				SpaceShipComponentType.CommandModule => 'K',
+				SpaceShipComponentType.LifeSupportModule => 'L',
+				SpaceShipComponentType.HabitationModule => 'B',
+				SpaceShipComponentType.SolarPanelModule => 'O',
+				SpaceShipComponentType.FuelComponent => 'F',
+				SpaceShipComponentType.PropulsionComponent => 'P',
 				_ => 'E'
 			};
 
@@ -122,6 +133,15 @@ namespace CivOne.Persistence.Model
 				'S' => SpaceShipComponentType.Structural,
 				'C' => SpaceShipComponentType.Component,
 				'M' => SpaceShipComponentType.Module,
+				'H' => SpaceShipComponentType.StructureHorizontal,
+				'V' => SpaceShipComponentType.StructureVertical,
+				'N' => SpaceShipComponentType.StructureNode,
+				'K' => SpaceShipComponentType.CommandModule,
+				'L' => SpaceShipComponentType.LifeSupportModule,
+				'B' => SpaceShipComponentType.HabitationModule,
+				'O' => SpaceShipComponentType.SolarPanelModule,
+				'F' => SpaceShipComponentType.FuelComponent,
+				'P' => SpaceShipComponentType.PropulsionComponent,
 				_ => throw new FormatException($"Invalid spaceship component character '{c}'.")
 			};
 	}

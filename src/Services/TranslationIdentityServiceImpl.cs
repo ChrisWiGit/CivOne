@@ -32,6 +32,11 @@ namespace CivOne.Services
 	public static class TranslationServiceFactory
 	{
 		private static ITranslationService _instance;
+
+		/// <summary>
+		/// Creates and returns the default translation service instance. If an instance already exists, it returns the existing one.
+		/// </summary>
+		/// <returns>The default translation service instance.</returns>
 		public static ITranslationService CreateDefault()
 		{
 			return _instance ??= new TranslationIdentityServiceImpl();

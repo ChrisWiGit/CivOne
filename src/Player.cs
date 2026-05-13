@@ -22,12 +22,13 @@ using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
 using CivOne.Wonders;
+using CivOne.Services.SpaceShip;
 
 using Gov = CivOne.Governments;
 
 namespace CivOne
 {
-	public partial class Player : BaseInstance, ITurn, IPlayer, IPlayerEffects
+	public partial class Player : BaseInstance, ITurn, IPlayer, IPlayerEffects, IPlayerSpaceRace
 	{
 		// Dependency injection via IPlayerGame; set by Game on load/new game.
 		internal static new IPlayerGame Game = null;
@@ -206,6 +207,32 @@ namespace CivOne
 		public virtual bool HasAdvance<T>() where T : IAdvance => Advances.Any(a => a is T);
 
 		public virtual bool HasAdvance(IAdvance advance) => (advance == null || Advances.Any(a => a.Id == advance.Id));
+
+		SpaceShipComponentType[,] IPlayerSpaceRace.SpaceShipGrid
+		{
+			get => SpaceShipGrid;
+			set => SpaceShipGrid = value;
+		}
+
+		ushort IPlayerSpaceRace.SpaceShipPopulation
+		{
+			get => SpaceShipPopulation;
+			set => SpaceShipPopulation = value;
+		}
+
+		short IPlayerSpaceRace.SpaceShipLaunchYear
+		{
+			get => SpaceShipLaunchYear;
+			set => SpaceShipLaunchYear = value;
+		}
+
+		bool IPlayerSpaceRace.HasSpaceFlightAdvance() => HasAdvance<SpaceFlight>();
+
+		bool IPlayerSpaceRace.HasPlasticsAdvance() => HasAdvance<Plastics>();
+
+		bool IPlayerSpaceRace.HasRoboticsAdvance() => HasAdvance<Robotics>();
+
+		bool IPlayerSpaceRace.HasApolloProgram() => HasWonder<ApolloProgram>();
 
 		public Player[] Embassies => _embassies.Select(e => Game.Players.FirstOrDefault(p => e == Game.PlayerNumber(p))).Where(p => p != null).ToArray();
 
