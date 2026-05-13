@@ -327,97 +327,190 @@ namespace CivOne.Screens
 			}.Count(static enabled => enabled);
 
 		private void PatchesMenu(int activeItem = 0) => CreateMenu("Patches", activeItem,
-			MenuItem.Create($"Reveal world: {Settings.RevealWorld.YesNo()}").OnSelect(GotoMenu(RevealWorldMenu)),
-			MenuItem.Create($"Side bar location: {(Settings.RightSideBar ? "right" : "left")}{(Game.Started ? " (restart required)" : "")}").OnSelect(GotoMenu(SideBarMenu)),
-			MenuItem.Create($"Debug menu: {Settings.DebugMenu.YesNo()}").OnSelect(GotoMenu(DebugMenuMenu)).SetEnabled(!Game.Started),
-			MenuItem.Create($"Cursor type: {Settings.CursorType.ToText()}").OnSelect(GotoMenu(CursorTypeMenu)),
-			MenuItem.Create($"Destroy animation: {Settings.DestroyAnimation.ToText()}").OnSelect(GotoMenu(DestroyAnimationMenu)),
-			MenuItem.Create($"Enable Deity difficulty: {Settings.DeityEnabled.YesNo()}").OnSelect(GotoMenu(DeityEnabledMenu)),
-			MenuItem.Create($"Enable (no keypad) arrow helper: {Settings.ArrowHelper.YesNo()}").OnSelect(GotoMenu(ArrowHelperMenu)),
-			MenuItem.Create($"Custom map sizes (experimental): {Settings.CustomMapSize.YesNo()}").OnSelect(GotoMenu(CustomMapSizeMenu)),
-			MenuItem.Create($"Game behavior menu: {ActiveBehaviorPatchCount()} active").OnSelect(GotoMenu(BehaviorMenu)),
-			MenuItem.Create($"AutoSave format: {(Settings.PreferSveSaveFormat ? "SVE (fallback COS)" : "COS")}").OnSelect(GotoMenu(SaveFormatMenu)),
-			MenuItem.Create($"Save cast behavior: {(Settings.UseUncheckedCastSanitizer ? "Unchecked" : "Checked")}").OnSelect(GotoMenu(SaveCastBehaviorMenu)),
+			MenuItem.Create($"Reveal world: {Settings.RevealWorld.YesNo()}")
+				.WithDescription(
+					"Show map tiles, cities, and units for all players.",
+					"Useful for testing and debugging runs.")
+				.OnSelect(GotoMenu(RevealWorldMenu)),
+			MenuItem.Create($"Side bar location: {(Settings.RightSideBar ? "right" : "left")}{(Game.Started ? " (restart required)" : "")}")
+				.WithDescription(
+					"Choose whether sidebar appears left or right.",
+					"Changing in-game requires a restart.")
+				.OnSelect(GotoMenu(SideBarMenu)),
+			MenuItem.Create($"Debug menu: {Settings.DebugMenu.YesNo()}")
+				.WithDescription(
+					"Enable extra debug commands and diagnostics.",
+					"Can only be changed before a game starts.")
+				.OnSelect(GotoMenu(DebugMenuMenu)).SetEnabled(!Game.Started),
+			MenuItem.Create($"Cursor type: {Settings.CursorType.ToText()}")
+				.WithDescription(
+					"Select cursor source: original, builtin, or native.")
+				.OnSelect(GotoMenu(CursorTypeMenu)),
+			MenuItem.Create($"Destroy animation: {Settings.DestroyAnimation.ToText()}")
+				.WithDescription(
+					"Choose visual effect used when units are destroyed.")
+				.OnSelect(GotoMenu(DestroyAnimationMenu)),
+			MenuItem.Create($"Enable Deity difficulty: {Settings.DeityEnabled.YesNo()}")
+				.WithDescription(
+					"Allow Deity to appear in difficulty selection.")
+				.OnSelect(GotoMenu(DeityEnabledMenu)),
+			MenuItem.Create($"Enable (no keypad) arrow helper: {Settings.ArrowHelper.YesNo()}")
+				.WithDescription(
+					"Show movement helper for keyboards without keypad.")
+				.OnSelect(GotoMenu(ArrowHelperMenu)),
+			MenuItem.Create($"Custom map sizes (experimental): {Settings.CustomMapSize.YesNo()}")
+				.WithDescription(
+					"Enable experimental map dimensions.",
+					"May affect game balance and compatibility.")
+				.OnSelect(GotoMenu(CustomMapSizeMenu)),
+			MenuItem.Create($"Game behavior menu: {ActiveBehaviorPatchCount()} active")
+				.WithDescription(
+					"Configure optional rule tweaks and AI behavior.")
+				.OnSelect(GotoMenu(BehaviorMenu)),
+			MenuItem.Create($"AutoSave format: {(Settings.PreferSveSaveFormat ? "SVE (fallback COS)" : "COS")}")
+				.WithDescription(
+					"Select preferred format for automatic saves.",
+					"SVE uses COS as fallback when needed.")
+				.OnSelect(GotoMenu(SaveFormatMenu)),
+			MenuItem.Create($"Save cast behavior: {(Settings.UseUncheckedCastSanitizer ? "Unchecked" : "Checked")}")
+				.WithDescription(
+					"Choose checked or unchecked cast handling.",
+					"Unchecked keeps legacy behavior.")
+				.OnSelect(GotoMenu(SaveCastBehaviorMenu)),
 			MenuItem.Create("Back").OnSelect(GotoMenu(MainMenu, 1))
 		);
 
 		private void RevealWorldMenu() => CreateMenu("Reveal world", GotoMenu(PatchesMenu, 0),
-			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.RevealWorld = false).SetActive(() => !Settings.RevealWorld),
-			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.RevealWorld = true).SetActive(() => Settings.RevealWorld),
+			MenuItem.Create($"{false.YesNo()} (default)")
+				.WithDescription("Keep normal fog of war behavior.")
+				.OnSelect((s, a) => Settings.RevealWorld = false).SetActive(() => !Settings.RevealWorld),
+			MenuItem.Create(true.YesNo())
+				.WithDescription("Reveal full world and all units.")
+				.OnSelect((s, a) => Settings.RevealWorld = true).SetActive(() => Settings.RevealWorld),
 			MenuItem.Create("Back")
 		);
 
 		private void SideBarMenu() => CreateMenu("Side bar location", GotoMenu(PatchesMenu, 1),
-			MenuItem.Create("Left (default)").OnSelect((s, a) => Settings.RightSideBar = false).SetActive(() => !Settings.RightSideBar),
-			MenuItem.Create("Right").OnSelect((s, a) => Settings.RightSideBar = true).SetActive(() => Settings.RightSideBar),
+			MenuItem.Create("Left (default)")
+				.WithDescription("Place sidebar on the left side.")
+				.OnSelect((s, a) => Settings.RightSideBar = false).SetActive(() => !Settings.RightSideBar),
+			MenuItem.Create("Right")
+				.WithDescription("Place sidebar on the right side.")
+				.OnSelect((s, a) => Settings.RightSideBar = true).SetActive(() => Settings.RightSideBar),
 			MenuItem.Create("Back")
 		);
 
 		private void DebugMenuMenu() => CreateMenu("Show debug menu", GotoMenu(PatchesMenu, 2),
-			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.DebugMenu = false || Game.Started).SetActive(() => !Settings.DebugMenu || Game.Started),
-			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.DebugMenu = true).SetActive(() => Settings.DebugMenu),
+			MenuItem.Create($"{false.YesNo()} (default)")
+				.WithDescription("Hide debug menu entries.")
+				.OnSelect((s, a) => Settings.DebugMenu = false || Game.Started).SetActive(() => !Settings.DebugMenu || Game.Started),
+			MenuItem.Create(true.YesNo())
+				.WithDescription("Show debug menu entries.")
+				.OnSelect((s, a) => Settings.DebugMenu = true).SetActive(() => Settings.DebugMenu),
 			MenuItem.Create("Back")
 		);
 
 		private void CursorTypeMenu() => CreateMenu("Mouse cursor type", GotoMenu(PatchesMenu, 3),
-			MenuItem.Create(Default.ToText()).OnSelect((s, a) => Settings.CursorType = Default).SetActive(() => Settings.CursorType == Default && FileSystem.DataFilesExist(FileSystem.MouseCursorFiles)).SetEnabled(FileSystem.DataFilesExist(FileSystem.MouseCursorFiles)),
-			MenuItem.Create(Builtin.ToText()).OnSelect((s, a) => Settings.CursorType = Builtin).SetActive(() => Settings.CursorType == Builtin || (Settings.CursorType == Default && !FileSystem.DataFilesExist(FileSystem.MouseCursorFiles))),
-			MenuItem.Create(Native.ToText()).OnSelect((s, a) => Settings.CursorType = Native).SetActive(() => Settings.CursorType == Native),
+			MenuItem.Create(Default.ToText())
+				.WithDescription("Use original cursor assets from game files.")
+				.OnSelect((s, a) => Settings.CursorType = Default).SetActive(() => Settings.CursorType == Default && FileSystem.DataFilesExist(FileSystem.MouseCursorFiles)).SetEnabled(FileSystem.DataFilesExist(FileSystem.MouseCursorFiles)),
+			MenuItem.Create(Builtin.ToText())
+				.WithDescription("Use built-in CivOne cursor graphics.")
+				.OnSelect((s, a) => Settings.CursorType = Builtin).SetActive(() => Settings.CursorType == Builtin || (Settings.CursorType == Default && !FileSystem.DataFilesExist(FileSystem.MouseCursorFiles))),
+			MenuItem.Create(Native.ToText())
+				.WithDescription("Use operating system native mouse cursor.")
+				.OnSelect((s, a) => Settings.CursorType = Native).SetActive(() => Settings.CursorType == Native),
 			MenuItem.Create("Back")
 		);
 
 		private void DestroyAnimationMenu() => CreateMenu("Destroy animation", GotoMenu(PatchesMenu, 4),
-			MenuItem.Create(Sprites.ToText()).OnSelect((s, a) => Settings.DestroyAnimation = Sprites).SetActive(() => Settings.DestroyAnimation == Sprites),
-			MenuItem.Create(Noise.ToText()).OnSelect((s, a) => Settings.DestroyAnimation = Noise).SetActive(() => Settings.DestroyAnimation == Noise),
+			MenuItem.Create(Sprites.ToText())
+				.WithDescription("Use sprite animation for destruction effects.")
+				.OnSelect((s, a) => Settings.DestroyAnimation = Sprites).SetActive(() => Settings.DestroyAnimation == Sprites),
+			MenuItem.Create(Noise.ToText())
+				.WithDescription("Use classic noise effect for destruction.")
+				.OnSelect((s, a) => Settings.DestroyAnimation = Noise).SetActive(() => Settings.DestroyAnimation == Noise),
 			MenuItem.Create("Back")
 		);
 
 		private void DeityEnabledMenu() => CreateMenu("Enable Deity difficulty", GotoMenu(PatchesMenu, 5),
-			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.DeityEnabled = false).SetActive(() => !Settings.DeityEnabled),
-			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.DeityEnabled = true).SetActive(() => Settings.DeityEnabled),
+			MenuItem.Create($"{false.YesNo()} (default)")
+				.WithDescription("Hide Deity from difficulty selection.")
+				.OnSelect((s, a) => Settings.DeityEnabled = false).SetActive(() => !Settings.DeityEnabled),
+			MenuItem.Create(true.YesNo())
+				.WithDescription("Show Deity in difficulty selection.")
+				.OnSelect((s, a) => Settings.DeityEnabled = true).SetActive(() => Settings.DeityEnabled),
 			MenuItem.Create("Back")
 		);
 
 		private void ArrowHelperMenu() => CreateMenu("Enable (no keypad) arrow helper", GotoMenu(PatchesMenu, 6),
-			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.ArrowHelper = false).SetActive(() => !Settings.ArrowHelper),
-			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.ArrowHelper = true).SetActive(() => Settings.ArrowHelper),
+			MenuItem.Create($"{false.YesNo()} (default)")
+				.WithDescription("Disable movement helper hints.")
+				.OnSelect((s, a) => Settings.ArrowHelper = false).SetActive(() => !Settings.ArrowHelper),
+			MenuItem.Create(true.YesNo())
+				.WithDescription("Enable movement helper hints.")
+				.OnSelect((s, a) => Settings.ArrowHelper = true).SetActive(() => Settings.ArrowHelper),
 			MenuItem.Create("Back")
 		);
 
 		private void CustomMapSizeMenu() => CreateMenu("Custom map sizes (experimental)", GotoMenu(PatchesMenu, 7),
-			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.CustomMapSize = false).SetActive(() => !Settings.CustomMapSize),
-			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.CustomMapSize = true).SetActive(() => Settings.CustomMapSize),
+			MenuItem.Create($"{false.YesNo()} (default)")
+				.WithDescription("Use classic map size presets only.")
+				.OnSelect((s, a) => Settings.CustomMapSize = false).SetActive(() => !Settings.CustomMapSize),
+			MenuItem.Create(true.YesNo())
+				.WithDescription("Allow additional experimental map sizes.")
+				.OnSelect((s, a) => Settings.CustomMapSize = true).SetActive(() => Settings.CustomMapSize),
 			MenuItem.Create("Back")
 		);
 
 
 		private void PathFindingMenu() => CreateMenu("Use smart PathFinding for \"goto\"", GotoMenu(BehaviorMenu, 0),
-		MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.PathFinding = false).SetActive(() => !Settings.PathFinding),
-			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.PathFinding = true).SetActive(() => Settings.PathFinding),
+		MenuItem.Create($"{false.YesNo()} (default)")
+			.WithDescription("Use classic goto route behavior.")
+			.OnSelect((s, a) => Settings.PathFinding = false).SetActive(() => !Settings.PathFinding),
+			MenuItem.Create(true.YesNo())
+				.WithDescription("Use smarter goto route selection.")
+				.OnSelect((s, a) => Settings.PathFinding = true).SetActive(() => Settings.PathFinding),
 			MenuItem.Create("Back")
 		);
 
 		private void ComputerPlayerPathFindingMenu() => CreateMenu("Use smart pathfinding for computer players", GotoMenu(BehaviorMenu, 1),
-			MenuItem.Create($"{false.YesNo()}").OnSelect((s, a) => Settings.ComputerPlayerPathFinding = false).SetActive(() => !Settings.ComputerPlayerPathFinding),
-			MenuItem.Create($"{true.YesNo()} (default)").OnSelect((s, a) => Settings.ComputerPlayerPathFinding = true).SetActive(() => Settings.ComputerPlayerPathFinding),
+			MenuItem.Create($"{false.YesNo()}")
+				.WithDescription("Use classic pathfinding for computer players.")
+				.OnSelect((s, a) => Settings.ComputerPlayerPathFinding = false).SetActive(() => !Settings.ComputerPlayerPathFinding),
+			MenuItem.Create($"{true.YesNo()} (default)")
+				.WithDescription("Use smarter pathfinding for computer players.")
+				.OnSelect((s, a) => Settings.ComputerPlayerPathFinding = true).SetActive(() => Settings.ComputerPlayerPathFinding),
 			MenuItem.Create("Back")
 		);
 
 		private void AutoSettlersMenu() => CreateMenu("Use auto settlers cheat", GotoMenu(BehaviorMenu, 2),
-			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.AutoSettlers = false).SetActive(() => !Settings.AutoSettlers),
-			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.AutoSettlers = true).SetActive(() => Settings.AutoSettlers),
+			MenuItem.Create($"{false.YesNo()} (default)")
+				.WithDescription("Settlers remain under normal player control.")
+				.OnSelect((s, a) => Settings.AutoSettlers = false).SetActive(() => !Settings.AutoSettlers),
+			MenuItem.Create(true.YesNo())
+				.WithDescription("Enable cheat behavior for auto settlers.")
+				.OnSelect((s, a) => Settings.AutoSettlers = true).SetActive(() => Settings.AutoSettlers),
 			MenuItem.Create("Back")
 		);
 
 		private void FastRiverMovementMenu() => CreateMenu("Movements on river like roads", GotoMenu(BehaviorMenu, 3),
-			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.RiverFastMovement = false).SetActive(() => !Settings.RiverFastMovement),
-			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.RiverFastMovement = true).SetActive(() => Settings.RiverFastMovement),
+			MenuItem.Create($"{false.YesNo()} (default)")
+				.WithDescription("Keep normal movement costs on rivers.")
+				.OnSelect((s, a) => Settings.RiverFastMovement = false).SetActive(() => !Settings.RiverFastMovement),
+			MenuItem.Create(true.YesNo())
+				.WithDescription("Treat river movement similar to roads.")
+				.OnSelect((s, a) => Settings.RiverFastMovement = true).SetActive(() => Settings.RiverFastMovement),
 			MenuItem.Create("Back")
 		);
 
 		private void CanalCity() => CreateMenu("No movement penalty for sea units in city", GotoMenu(BehaviorMenu, 4),
-			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.CanalCity = false).SetActive(() => !Settings.CanalCity),
-			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.CanalCity = true).SetActive(() => Settings.CanalCity),
+			MenuItem.Create($"{false.YesNo()} (default)")
+				.WithDescription("Apply normal movement penalty in city tiles.")
+				.OnSelect((s, a) => Settings.CanalCity = false).SetActive(() => !Settings.CanalCity),
+			MenuItem.Create(true.YesNo())
+				.WithDescription("Ignore sea-unit penalty when crossing city tiles.")
+				.OnSelect((s, a) => Settings.CanalCity = true).SetActive(() => Settings.CanalCity),
 			MenuItem.Create("Back")
 		);
 
@@ -441,40 +534,76 @@ namespace CivOne.Screens
 		);
 
 		private void SaveFormatMenu() => CreateMenu("AutoSave format", GotoMenu(PatchesMenu, 9),
-			MenuItem.Create("SVE with COS fallback (default)").OnSelect((s, a) => Settings.PreferSveSaveFormat = true).SetActive(() => Settings.PreferSveSaveFormat),
-			MenuItem.Create("CivOne Save (COS)").OnSelect((s, a) => Settings.PreferSveSaveFormat = false).SetActive(() => !Settings.PreferSveSaveFormat),
+			MenuItem.Create("SVE with COS fallback (default)")
+				.WithDescription(
+					"Prefer SVE save files.",
+					"Fallback to COS when SVE cannot be used.")
+				.OnSelect((s, a) => Settings.PreferSveSaveFormat = true).SetActive(() => Settings.PreferSveSaveFormat),
+			MenuItem.Create("CivOne Save (COS)")
+				.WithDescription("Always write CivOne COS save files.")
+				.OnSelect((s, a) => Settings.PreferSveSaveFormat = false).SetActive(() => !Settings.PreferSveSaveFormat),
 			MenuItem.Create("Back")
 		);
 
 		private void SaveCastBehaviorMenu() => CreateMenu("Save cast behavior", GotoMenu(PatchesMenu, 10),
-			MenuItem.Create("Checked (default)").OnSelect((s, a) => Settings.UseUncheckedCastSanitizer = false).SetActive(() => !Settings.UseUncheckedCastSanitizer),
-			MenuItem.Create("Unchecked (legacy)").OnSelect((s, a) => Settings.UseUncheckedCastSanitizer = true).SetActive(() => Settings.UseUncheckedCastSanitizer),
+			MenuItem.Create("Checked (default)")
+				.WithDescription("Use checked casts for safer save handling.")
+				.OnSelect((s, a) => Settings.UseUncheckedCastSanitizer = false).SetActive(() => !Settings.UseUncheckedCastSanitizer),
+			MenuItem.Create("Unchecked (legacy)")
+				.WithDescription("Use unchecked casts for legacy compatibility.")
+				.OnSelect((s, a) => Settings.UseUncheckedCastSanitizer = true).SetActive(() => Settings.UseUncheckedCastSanitizer),
 			MenuItem.Create("Back")
 		);
 
 		private void SeaLevelRise() => CreateMenu("Tiles replace with ocean", GotoMenu(ExtendedGlobalWarmingMenu, 0),
-			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) =>  Settings.SetGlobalWarmingFlag(Settings.GlobalWarmingFeatureFlag.SeaLevelRise, false)
+			MenuItem.Create($"{false.YesNo()} (default)")
+				.WithDescription("Keep global warming behavior without sea rise.")
+				.OnSelect((s, a) =>  Settings.SetGlobalWarmingFlag(Settings.GlobalWarmingFeatureFlag.SeaLevelRise, false)
 				).SetActive(() => !Settings.IsGlobalWarmingFlagSet(Settings.GlobalWarmingFeatureFlag.SeaLevelRise)),
-			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.SetGlobalWarmingFlag(Settings.GlobalWarmingFeatureFlag.SeaLevelRise, true)
+			MenuItem.Create(true.YesNo())
+				.WithDescription("Allow coastal tiles to turn into ocean.")
+				.OnSelect((s, a) => Settings.SetGlobalWarmingFlag(Settings.GlobalWarmingFeatureFlag.SeaLevelRise, true)
 				).SetActive(() => Settings.IsGlobalWarmingFlagSet(Settings.GlobalWarmingFeatureFlag.SeaLevelRise)),
 			MenuItem.Create("Back")
 		);
 
 		private void ExtendedGlobalWarmingMenu(int activeItem = 0) => CreateMenu("Extended global warming (needs savegame load)", activeItem,
 			MenuItem.Create($"Sea level rise: {Settings.IsGlobalWarmingFlagSet(Settings.GlobalWarmingFeatureFlag.SeaLevelRise).YesNo()}")
-				.OnSelect(GotoMenu(SeaLevelRise)),
+				.OnSelect(GotoMenu(SeaLevelRise))
+				.WithDescription("Allow coastal tiles to turn into ocean."),
 			MenuItem.Create("Back").OnSelect(GotoMenu(BehaviorMenu, 6))
 		);
 
 		private void BehaviorMenu(int activeItem = 0) => CreateMenu("Game behavior menu", activeItem,
 			[
-					MenuItem.Create($"Use smart PathFinding for \"goto\": {Settings.PathFinding.YesNo()}").OnSelect(GotoMenu(PathFindingMenu)),
-					MenuItem.Create($"Use smart pathfinding for computer players: {Settings.ComputerPlayerPathFinding.YesNo()}").OnSelect(GotoMenu(ComputerPlayerPathFindingMenu)),
-					MenuItem.Create($"Use auto-settlers-cheat: {Settings.AutoSettlers.YesNo()}").OnSelect(GotoMenu(AutoSettlersMenu)),
-					MenuItem.Create($"Use fast river movement: {Settings.RiverFastMovement.YesNo()}").OnSelect(GotoMenu(FastRiverMovementMenu)),
-					MenuItem.Create($"No movement penalty for sea units in city: {Settings.CanalCity.YesNo()}").OnSelect(GotoMenu(CanalCity)),
-					MenuItem.Create($"Remove obsolete buildings: {Settings.RemoveObsoleteBuildings.YesNo()}").OnSelect(GotoMenu(RemoveObsoleteBuildingsMenu)),
-					MenuItem.Create($"Extended global warming: {(Settings.GlobalWarmingFeatureFlags != Settings.GlobalWarmingFeatureFlag.None).YesNo()}").OnSelect(GotoMenu(ExtendedGlobalWarmingMenu)),
+					MenuItem.Create($"Use smart PathFinding for \"goto\": {Settings.PathFinding.YesNo()}")
+						.WithDescription(
+							"Improve goto route selection for player units.")
+						.OnSelect(GotoMenu(PathFindingMenu)),
+					MenuItem.Create($"Use smart pathfinding for computer players: {Settings.ComputerPlayerPathFinding.YesNo()}")
+						.WithDescription(
+							"Improve route selection for AI controlled units.")
+						.OnSelect(GotoMenu(ComputerPlayerPathFindingMenu)),
+					MenuItem.Create($"Use auto-settlers-cheat: {Settings.AutoSettlers.YesNo()}")
+						.WithDescription(
+							"Allow cheat behavior for automatic settlers.")
+						.OnSelect(GotoMenu(AutoSettlersMenu)),
+					MenuItem.Create($"Use fast river movement: {Settings.RiverFastMovement.YesNo()}")
+						.WithDescription(
+							"Rivers act closer to roads for movement speed.")
+						.OnSelect(GotoMenu(FastRiverMovementMenu)),
+					MenuItem.Create($"No movement penalty for sea units in city: {Settings.CanalCity.YesNo()}")
+						.WithDescription(
+							"Sea units ignore city movement penalty.")
+						.OnSelect(GotoMenu(CanalCity)),
+					MenuItem.Create($"Remove obsolete buildings: {Settings.RemoveObsoleteBuildings.YesNo()}")
+						.WithDescription(
+							"Remove buildings when technology obsoletes them.")
+						.OnSelect(GotoMenu(RemoveObsoleteBuildingsMenu)),
+					MenuItem.Create($"Extended global warming: {(Settings.GlobalWarmingFeatureFlags != Settings.GlobalWarmingFeatureFlag.None).YesNo()}")
+						.WithDescription(
+							"Enable extra global warming gameplay effects.")
+						.OnSelect(GotoMenu(ExtendedGlobalWarmingMenu)),
 					MenuItem.Create("Back").OnSelect(GotoMenu(PatchesMenu, 8))
 			]
 		);
