@@ -55,6 +55,9 @@ namespace CivOne.Tasks
 
 		private void RemoveObsoleteBuildingsOnNewTech()
 		{
+			if (!Settings.Instance.RemoveObsoleteBuildings)
+				return;
+
 			foreach (City city in _player.Cities)
 			{
 				foreach (IBuilding building in city.Buildings)
