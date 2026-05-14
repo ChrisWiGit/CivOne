@@ -8,7 +8,7 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 * Barracks are now obsolete when Gunpowder or Combustion is discovered, i.e. all existing Barracks are removed immediately when either of these technologies is researched.
   * The behaviour can be turned on or off in the setup menu under "Remove obsolete buildings".
-* Settings (Shift-F1) shows an helpful description for each setting when it is selected.
+* Settings (Shift-F1) shows a helpful description for each setting when it is selected.
 * The game is now paused when
   * the window is minimized or hidden to waste less CPU resources when the game is not visible.
   * the user presses the Pause key to toggle pause state of the game.

@@ -465,9 +465,9 @@ namespace CivOne.Screens
 
 
 		private void PathFindingMenu() => CreateMenu("Use smart PathFinding for \"goto\"", GotoMenu(BehaviorMenu, 0),
-		MenuItem.Create($"{false.YesNo()} (default)")
-			.WithDescription("Use classic goto route behavior.")
-			.OnSelect((s, a) => Settings.PathFinding = false).SetActive(() => !Settings.PathFinding),
+			MenuItem.Create($"{false.YesNo()} (default)")
+				.WithDescription("Use classic goto route behavior.")
+				.OnSelect((s, a) => Settings.PathFinding = false).SetActive(() => !Settings.PathFinding),
 			MenuItem.Create(true.YesNo())
 				.WithDescription("Use smarter goto route selection.")
 				.OnSelect((s, a) => Settings.PathFinding = true).SetActive(() => Settings.PathFinding),
@@ -518,8 +518,7 @@ namespace CivOne.Screens
 			MenuItem.Create(false.YesNo())
 				.WithDescription(
 					"Leave obsolete buildings in cities when",
-					"new technologies are discovered that obsoletes them.",
-					"")
+					"new technologies are discovered that obsoletes them.")
 				.OnSelect((s, a) => Settings.RemoveObsoleteBuildings = false)
 				.SetActive(() => !Settings.RemoveObsoleteBuildings),
 			MenuItem.Create($"{true.YesNo()} (default)")
