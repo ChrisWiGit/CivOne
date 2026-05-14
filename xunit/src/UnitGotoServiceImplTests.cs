@@ -10,13 +10,20 @@ namespace CivOne.UnitTests
 {
 	public class UnitGotoServiceImplTests
 	{
-		[Fact]
-		public void GotoStep_WhenAlreadyAtGoal_ReturnsNull()
+		public static TheoryData<bool> ImplementationModes => new()
+		{
+			false,
+			true
+		};
+
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
+		public void GotoStep_WhenAlreadyAtGoal_ReturnsNull(bool useNewImpl)
 		{
 			// Arrange
 			var (map, _) = MakeLandMap(10, 10);
 			var unit = MakeUnit(5, 5, 5, 5);
-			var testee = CreateTestee(map);
+			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
 			ITile actual = testee.GotoStep(unit);
@@ -25,13 +32,14 @@ namespace CivOne.UnitTests
 			Assert.Null(actual);
 		}
 
-		[Fact]
-		public void GotoStep_WhenGoalIsDirectNeighbour_ReturnsTileAtGoal()
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
+		public void GotoStep_WhenGoalIsDirectNeighbour_ReturnsTileAtGoal(bool useNewImpl)
 		{
 			// Arrange
 			var (map, _) = MakeLandMap(10, 10);
 			var unit = MakeUnit(5, 5, 6, 5);
-			var testee = CreateTestee(map);
+			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
 			ITile actual = testee.GotoStep(unit);
@@ -42,15 +50,16 @@ namespace CivOne.UnitTests
 			Assert.Equal(5, actual.Y);
 		}
 
-		[Fact]
-		public void GotoStep_WhenMultipleStepsAway_ReturnsFirstStepNotGoal()
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
+		public void GotoStep_WhenMultipleStepsAway_ReturnsFirstStepNotGoal(bool useNewImpl)
 		{
 			// Arrange
 			// 10-wide map, unit at (0,5) wants to reach (4,5).
 			// First step must be X=1 (one step right); Y may vary since A* uses diagonal movement.
 			var (map, _) = MakeLandMap(10, 10);
 			var unit = MakeUnit(0, 5, 4, 5);
-			var testee = CreateTestee(map);
+			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
 			ITile actual = testee.GotoStep(unit);
@@ -60,8 +69,9 @@ namespace CivOne.UnitTests
 			Assert.Equal(1, actual.X); // moved exactly one step toward goal
 		}
 
-		[Fact]
-		public void GotoStep_LandUnit_DoesNotEnterOceanTile()
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
+		public void GotoStep_LandUnit_DoesNotEnterOceanTile(bool useNewImpl)
 		{
 			// Arrange
 			// Horizontal ocean wall: all x at y=1..8 are ocean.
@@ -74,7 +84,7 @@ namespace CivOne.UnitTests
 					tiles[x, y].Type = Terrain.Ocean;
 				}
 			var unit = MakeUnit(2, 0, 2, 9, UnitClass.Land);
-			var testee = CreateTestee(map);
+			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
 			ITile actual = testee.GotoStep(unit);
@@ -83,8 +93,9 @@ namespace CivOne.UnitTests
 			Assert.Null(actual);
 		}
 
-		[Fact]
-		public void GotoStep_LandUnit_DoesNotEnterArcticTile()
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
+		public void GotoStep_LandUnit_DoesNotEnterArcticTile(bool useNewImpl)
 		{
 			// Arrange
 			// Horizontal arctic wall: all x at y=1..3 are arctic.
@@ -94,7 +105,7 @@ namespace CivOne.UnitTests
 				for (int y = 1; y <= 3; y++)
 					tiles[x, y].Type = Terrain.Arctic;
 			var unit = MakeUnit(2, 0, 2, 4, UnitClass.Land);
-			var testee = CreateTestee(map);
+			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
 			ITile actual = testee.GotoStep(unit);
@@ -103,8 +114,9 @@ namespace CivOne.UnitTests
 			Assert.Null(actual);
 		}
 
-		[Fact]
-		public void GotoStep_WaterUnit_DoesNotEnterLandTile()
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
+		public void GotoStep_WaterUnit_DoesNotEnterLandTile(bool useNewImpl)
 		{
 			// Arrange
 			// All-ocean 10×10 map. Tile (6,5) is land, blocking the direct path.
@@ -119,7 +131,7 @@ namespace CivOne.UnitTests
 			tiles[6, 5].IsOcean = false;
 			tiles[6, 5].Type = Terrain.Grassland1;
 			var unit = MakeUnit(5, 5, 7, 5, UnitClass.Water);
-			var testee = CreateTestee(map);
+			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
 			ITile actual = testee.GotoStep(unit);
@@ -129,8 +141,9 @@ namespace CivOne.UnitTests
 			Assert.False(actual.X == 6 && actual.Y == 5, "water unit must not step onto land tile");
 		}
 
-		[Fact]
-		public void GotoStep_WaterUnit_CanLandOnGoalTileEvenIfNotOcean()
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
+		public void GotoStep_WaterUnit_CanLandOnGoalTileEvenIfNotOcean(bool useNewImpl)
 		{
 			// Arrange
 			// All-ocean map. Goal tile at (4,5) is a land tile (isGoal bypass).
@@ -146,7 +159,7 @@ namespace CivOne.UnitTests
 			tiles[4, 5].Type = Terrain.Grassland1;
 
 			var unit = MakeUnit(0, 5, 4, 5, UnitClass.Water);
-			var testee = CreateTestee(map);
+			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
 			ITile actual = testee.GotoStep(unit);
@@ -155,8 +168,9 @@ namespace CivOne.UnitTests
 			Assert.NotNull(actual);
 		}
 
-		[Fact]
-		public void GotoStep_WhenFullyBlocked_ReturnsNull()
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
+		public void GotoStep_WhenFullyBlocked_ReturnsNull(bool useNewImpl)
 		{
 			// Arrange
 			// 3×3 map. Unit at (0,0), goal at (2,2).
@@ -170,7 +184,7 @@ namespace CivOne.UnitTests
 						tiles[x, y].Type = Terrain.Ocean;
 					}
 			var unit = MakeUnit(0, 0, 2, 2, UnitClass.Land);
-			var testee = CreateTestee(map);
+			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
 			ITile actual = testee.GotoStep(unit);
@@ -179,8 +193,9 @@ namespace CivOne.UnitTests
 			Assert.Null(actual);
 		}
 
-		[Fact]
-		public void GotoStep_PrefersRailroadOverRoadOverTerrain()
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
+		public void GotoStep_PrefersRailroadOverRoadOverTerrain(bool useNewImpl)
 		{
 			// Arrange
 			// 5-wide map (y=2 only usable row). Two paths from (0,2) to (4,2):
@@ -193,7 +208,7 @@ namespace CivOne.UnitTests
 				tiles[x, 2].RailRoad = true;
 
 			var unit = MakeUnit(0, 2, 4, 2, UnitClass.Land);
-			var testee = CreateTestee(map);
+			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
 			ITile actual = testee.GotoStep(unit);
@@ -203,8 +218,9 @@ namespace CivOne.UnitTests
 			Assert.Equal(2, actual.Y);
 		}
 
-		[Fact]
-		public void GotoStep_HorizontalWrap_FindsPathAroundMapEdge()
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
+		public void GotoStep_HorizontalWrap_FindsPathAroundMapEdge(bool useNewImpl)
 		{
 			// Arrange
 			// 10-wide, 5-tall map. Unit at x=1, goal at x=9.
@@ -219,7 +235,7 @@ namespace CivOne.UnitTests
 				}
 
 			var unit = MakeUnit(1, 2, 9, 2, UnitClass.Land);
-			var testee = CreateTestee(map);
+			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
 			ITile actual = testee.GotoStep(unit);
@@ -233,18 +249,17 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void GotoStep_WithRiverFastMovement_PrefersRiverOverPlainTerrain()
 		{
-			if (!_useNewImpl) return; // only test new implementation, as riverFastMovement is not supported in old one
-									  // Arrange
-									  // 10-wide, 5-tall map. Unit at (2,2), goal at (7,2).
-									  // y=2 row: River tiles  → cost 3/step with riverFastMovement=true
-									  // y=1 row: plain terrain → cost 18/step always
-									  // River path (5 steps × 3 = 15) is clearly cheaper than plain detour.
+			// Arrange
+			// 10-wide, 5-tall map. Unit at (2,2), goal at (7,2).
+			// y=2 row: River tiles  -> cost 3/step with riverFastMovement=true
+			// y=1 row: plain terrain -> cost 18/step always
+			// River path (5 steps x 3 = 15) is clearly cheaper than plain detour.
 			var (map, tiles) = MakeLandMap(10, 5);
 			for (int x = 0; x < 10; x++)
 				tiles[x, 2].Type = Terrain.River;
 
 			var unit = MakeUnit(2, 2, 7, 2, UnitClass.Land);
-			var testee = CreateTestee(map, riverFastMovement: true);
+			var testee = CreateTestee(map, useNewImpl: true, riverFastMovement: true);
 
 			// Act
 			ITile actual = testee.GotoStep(unit);
@@ -254,8 +269,9 @@ namespace CivOne.UnitTests
 			Assert.Equal(2, actual.Y);
 		}
 
-		[Fact]
-		public void GotoStep_WithoutRiverFastMovement_PrefersRoadOverRiver()
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
+		public void GotoStep_WithoutRiverFastMovement_PrefersRoadOverRiver(bool useNewImpl)
 		{
 			// Arrange
 			// 10-wide, 5-tall map. Unit at (2,2), goal at (7,2).
@@ -270,7 +286,7 @@ namespace CivOne.UnitTests
 			}
 
 			var unit = MakeUnit(2, 2, 7, 2, UnitClass.Land);
-			var testee = CreateTestee(map, riverFastMovement: false);
+			var testee = CreateTestee(map, useNewImpl, riverFastMovement: false);
 
 			// Act
 			ITile actual = testee.GotoStep(unit);
@@ -389,10 +405,8 @@ namespace CivOne.UnitTests
 
 
 
-		private static readonly bool _useNewImpl = true;
-
-		private static IUnitGotoService CreateTestee(IMapTiles map, bool riverFastMovement = false)
-			=> _useNewImpl ? new UnitGotoServiceImpl2(map, riverFastMovement) :
+		private static IUnitGotoService CreateTestee(IMapTiles map, bool useNewImpl, bool riverFastMovement = false)
+			=> useNewImpl ? new UnitGotoServiceImpl2(map, riverFastMovement) :
 							new UnitGotoServiceImpl(map);
 	}
 }

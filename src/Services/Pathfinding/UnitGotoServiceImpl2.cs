@@ -49,12 +49,18 @@ namespace CivOne.Services.Pathfinding
 			state.GCostMap[startPosition] = 0;
 			state.OpenSet.Add((DistanceToTile(startX, startY, goalX, goalY), startPosition));
 
-			int maxIterations = mapWidth * mapHeight;
-			while (state.OpenSet.Count > 0 && maxIterations-- > 0)
+			HashSet<int> closedPositions = [];
+			int maxClosedNodes = mapWidth * mapHeight;
+			while (state.OpenSet.Count > 0 && closedPositions.Count < maxClosedNodes)
 			{
 				int nextNodeIndex = FindNextOpenNodeWithLowestFScore(state.OpenSet);
 				int currentPosition = state.OpenSet[nextNodeIndex].position;
 				state.OpenSet.RemoveAt(nextNodeIndex);
+
+				if (!closedPositions.Add(currentPosition))
+				{
+					continue;
+				}
 
 				int currentX = currentPosition % mapWidth, currentY = currentPosition / mapWidth;
 				bool isCurrentPositionGoal = currentX == goalX && currentY == goalY;
@@ -170,8 +176,8 @@ namespace CivOne.Services.Pathfinding
 				return 1;
 			}
 
-			if (tile.Road || 
-				_riverFastMovement && tile.Type == Terrain.River)
+			if (tile.Road ||
+				(_riverFastMovement && tile.Type == Terrain.River))
 			{
 				return 3;
 			}

@@ -59,9 +59,7 @@ namespace CivOne
 				// Only try to disembark when there are enemy-free land tiles to land on.
 				// If every adjacent land tile is occupied by a non-barbarian, fall through
 				// to the Goto navigation so the ship can seek a better landing spot.
-				ITile[] landingZones = unit.Tile.GetBorderTiles()
-					.Where(x => !x.IsOcean && !IsPolarTile(x) && !x.Units.Any(u => u.Owner != 0))
-					.ToArray();
+				ITile[] landingZones = [.. unit.Tile.GetBorderTiles().Where(x => !x.IsOcean && !IsPolarTile(x) && !x.Units.Any(u => u.Owner != 0))];
 				if (landingZones.Length > 0)
 				{
 					if (Game.GetCities().Any(x => x.Owner != 0))
@@ -145,7 +143,7 @@ namespace CivOne
 				IUnit ship = unit.Tile.Units.FirstOrDefault(u => u.Class == UnitClass.Water && u.MovesLeft > 0);
 				if (ship != null)
 				{
-					ITile[] landTiles = unit.Tile.GetBorderTiles().Where(x => !x.IsOcean && !IsPolarTile(x) && x.Units.Any(u => u.Owner != 0)).ToArray();
+					ITile[] landTiles = [.. unit.Tile.GetBorderTiles().Where(x => !x.IsOcean && !IsPolarTile(x) && x.Units.Any(u => u.Owner != 0))];
 					if (landTiles.Length > 0)
 					{
 						ITile tile = landTiles[Common.Random.Next(landTiles.Length)];
@@ -160,19 +158,29 @@ namespace CivOne
 
 			if (unit is Diplomat)
 			{
-				ITile[] friendlyTiles = unit.Tile.GetBorderTiles().Where(x => !x.IsOcean && !IsPolarTile(x) && x.Units.Any() && x.Units.First().Owner == 0).ToArray();
+				if (unit.WorkProgress <= 0)
+				{
+					// A barbarian leader was able to flee after at max of 30 turns of pursuit.
+					Game.DisbandUnit(unit);
+					return;
+				}
+
+				unit.WorkProgress = unit.WorkProgress == 0 ? (byte)0 : (byte)(unit.WorkProgress - 1);
+
+				ITile[] friendlyTiles = [.. unit.Tile.GetBorderTiles().Where(x => !x.IsOcean && !IsPolarTile(x) && x.Units.Length != 0 && x.Units[0].Owner == 0)];
 				if (friendlyTiles.Length > 0)
 				{
 					ITile moveTo = friendlyTiles[Common.Random.Next(friendlyTiles.Length)];
 					int relX = moveTo.X - unit.X;
 					int relY = moveTo.Y - unit.Y;
 					unit.MoveTo(relX, relY);
+					unit.WorkProgress = (byte)(10 + Common.Random.Next(0, 20));
 					return;
 				}
 
 				if (unit.Tile.Units.Any(x => !(x is Diplomat) && x.MovesLeft > 0))
 				{
-					Game.UnitWait();
+					unit.SkipTurn();
 					return;
 				}
 
@@ -181,6 +189,19 @@ namespace CivOne
 					unit.SkipTurn();
 					return;
 				}
+
+				ITile[] unfriend = [.. unit.Tile.GetBorderTiles().Where(z => !z.IsOcean && !IsPolarTile(z) && z.Units.Length == 0)];
+				if (unfriend.Length > 0)
+				{
+					ITile moveTo = unfriend[Common.Random.Next(unfriend.Length)];
+					int relX = moveTo.X - unit.X;
+					int relY = moveTo.Y - unit.Y;
+					unit.MoveTo(relX, relY);
+					return;
+				}
+
+				unit.SkipTurn();
+				return;
 			}
 
 			ITile[] tiles = unit.Tile.GetBorderTiles().Where(t => !((unit.Tile.IsOcean || unit is Diplomat) && t.City != null) && !t.IsOcean && !IsPolarTile(t) && t.Units.Any(u => u.Owner != 0)).ToArray();
