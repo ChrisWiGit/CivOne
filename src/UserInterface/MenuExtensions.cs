@@ -33,7 +33,13 @@ namespace CivOne.UserInterface
 
 		public static Menu<T> Items<T>(this Menu<T> menu, params MenuItem<T>[] menuItems)
 		{
-			menu.Items.AddRange(menuItems);
+			MenuDescriptionItem<T> defaultDescription = menuItems.OfType<MenuDescriptionItem<T>>().LastOrDefault();
+			if (defaultDescription != null)
+			{
+				menu.DefaultDescription = defaultDescription.Description;
+			}
+
+			menu.Items.AddRange(menuItems.Where(x => x is not MenuDescriptionItem<T>));
 			menu.MenuWidth = menu.GetMenuWidth();
 			return menu;
 		}

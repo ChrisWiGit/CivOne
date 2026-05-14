@@ -6,12 +6,14 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Barracks are now obsolete when Gunpowder or Combustion is discovered, i.e. all existing Barracks are removed immediately when either of these technologies is researched.
+  * The behaviour can be turned on or off in the setup menu under "Remove obsolete buildings".
+* Settings (Shift-F1) shows a helpful description for each setting when it is selected.
 * Migration:
   * Copied A* pathfinding (`GotoStep`) implementation from [mwerneburg/CivOne/`Common.cs`](https://github.com/mwerneburg/CivOne/commit/e33b3968ebceea45a5f046c99c166574a5dfa08f)
   * Copied behaviour of [mwerneburg/CivOne/`Ai.Barbarians.cs`](https://github.com/mwerneburg/CivOne/commit/5525827163b01996553b3b7a854c5d16b406a509) for better movement decisions of barbarian units, including ocean/land avoidance and goal tile bypass.
   * Added as new service `UnitGotoServiceImpl` in `Services/Pathfinding` and factory method in `UnitGotoServiceFactory` to not mix the A* implementation with the existing movement logic and to allow for future extension to other pathfinding algorithms if needed.
   * Unit tests added (`UnitGotoServiceImplTests`) for the A* pathfinding implementation, covering various terrain and unit scenarios.
-
 * The game is now paused when
   * the window is minimized or hidden to waste less CPU resources when the game is not visible.
   * the user presses the Pause key to toggle pause state of the game.
