@@ -22,10 +22,6 @@ using CivOne.Tasks;
 
 namespace CivOne.Screens
 {
-	public interface ISpaceShipResourceService : IResourceFileBitmapProvider, IResourceFontHeightProvider
-	{
-	}
-
 	[ScreenResizeable]
 	internal class SpaceShipView : BaseScreen
 	{
@@ -37,7 +33,12 @@ namespace CivOne.Screens
 		private readonly Player _player;
 		private readonly bool _debug;
 		private bool _debugLaunch = false;
-		private readonly ISpaceShipService _service;
+		private ISpaceShipService _service;
+		private readonly ISpaceShipService _standardService;
+		private readonly ISpaceShipService _debugService;
+		private bool _useDebugRules;
+		private readonly SpaceShipComponentType _pendingInstall;
+		private bool _pendingInstallHandled;
 		private readonly ISpaceShipSpriteProvider _sprites;
 		private readonly ISpaceShipSlotBlueprint _slotBlueprint;
 		private SpaceShipScreenData _data;
@@ -47,6 +48,9 @@ namespace CivOne.Screens
 		private readonly SpaceShipPaletteAnimationDelegate _paletteAnimation;
 
 		private readonly byte StartFieldBackgroundColorIndex = 96;
+
+		private byte _playerBackgroundColor;
+
 		private const int TitleBarTop = 1;
 
 		private const int LeftBottomMargin = 1;
@@ -122,6 +126,12 @@ namespace CivOne.Screens
 
 		protected override bool HasUpdate(uint gameTick)
 		{
+			if (!_pendingInstallHandled && _pendingInstall != SpaceShipComponentType.Empty)
+			{
+				_pendingInstallHandled = true;
+				HandlePendingInstall();
+			}
+
 			int[] parallaxOffsets = HasLaunched ? _starfield.GetParallaxOffsets(gameTick, StarfieldWidth) : StarfieldDelegate.ZeroOffsets;
 			bool needsScroll = _starfield.HasParallaxMoved(parallaxOffsets);
 			bool paletteChanged = _paletteAnimation.Update(gameTick);
@@ -158,7 +168,7 @@ namespace CivOne.Screens
 
 		private void DrawBackground()
 		{
-			this.Clear(PlayerColor);
+			this.Clear(_playerBackgroundColor);
 
 			this.DrawText($"{_player.TribeName} SpaceShip: R.S.S. Caesar", TitleFontId, 5, 160, TitleBarTop, TextAlign.Center);
 		}
@@ -166,8 +176,9 @@ namespace CivOne.Screens
 		private void DrawSidePanel(int ox, int oy)
 		{
 			const byte textColour = 15;
+			bool canLaunch = _service.CanLaunch();
 
-			this.FillRectangle(ox + SidePanelLeft, oy, ScreenWidth - SidePanelLeft, ScreenHeight, PlayerColor);
+			this.FillRectangle(ox + SidePanelLeft, oy, ScreenWidth - SidePanelLeft, ScreenHeight, _playerBackgroundColor);
 
 			DrawLocalizedText("Population:", 0, textColour, ox + SidePanelLeft, oy + 18, TextAlign.Left)
 			.DrawText($"{_data.Population:N0}", 0, textColour, ox + SidePanelLeft, oy + 26, TextAlign.Left);
@@ -187,9 +198,9 @@ namespace CivOne.Screens
 			if (!HasLaunched)
 			{
 				DrawLocalizedText("Can Launch:", 0, textColour, ox + 236, oy + 148, TextAlign.Left)
-				.DrawText(_data.CanLaunch ? "YES" : "NO", 0, _data.CanLaunch ? (byte)2 : (byte)4, ox + 236, oy + 156, TextAlign.Left);
+				.DrawText(canLaunch ? "YES" : "NO", 0, canLaunch ? (byte)2 : (byte)4, ox + 236, oy + 156, TextAlign.Left);
 
-				if (_data.CanLaunch)
+				if (canLaunch)
 				{
 					DrawButton("LAUNCH", 0, 23, 5, LaunchButtonLeft, LaunchButtonTop, LaunchButtonWidth, LaunchButtonRenderHeight);
 				}
@@ -203,15 +214,17 @@ namespace CivOne.Screens
 
 			}
 
-			this.DrawText($"S:{_data.StructuralCount} C:{_data.ComponentCount} M:{_data.ModuleCount}", 0, 15, ox + 16, oy + 176, TextAlign.Left);
 			if (_debug)
 			{
-				DrawLocalizedText("SpaceBackgroundColorId", 0, 15, ox + 16, oy + 184, TextAlign.Left)
-				.DrawText($"{_debugSpaceBackgroundColorId}", 0, 15, ox + 184, oy + 184, TextAlign.Left);
+				int fontHeight = _resources.GetFontHeight(0);
+				int yy = oy + 184 - 3 * fontHeight;
+				this.DrawText($"S:{_data.StructuralCount} C:{_data.ComponentCount} M:{_data.ModuleCount}", 0, 15, ox + 16, yy, TextAlign.Left);
+				this.DrawText("Debug: (L)aunch (B)ackgr F3/F4 dialogs (V)ictory", 0, 15, ox + 16, yy + fontHeight, TextAlign.Left);
+				string ruleMode = _useDebugRules ? "DBG" : "REAL";
+				this.DrawText($"Debug Rules={ruleMode} (F5)", 0, 15, ox + 16, yy + 2 * fontHeight, TextAlign.Left);
 			}
 		}
 
-		private byte _debugSpaceBackgroundColorId = 0;
 
 		private void DrawStarsBackground(IBitmap target, int oy, int[] parallaxOffsets)
 		{
@@ -320,16 +333,19 @@ namespace CivOne.Screens
 				return true;
 			}
 
-			if (args[Key.F1])
+			if (IsCharacterKey(args, 'b'))
 			{
-				if (args.Shift)
-				{
-					_debugSpaceBackgroundColorId = (byte)((_debugSpaceBackgroundColorId - 1) % 255);
-				}
-				else
-				{
-					_debugSpaceBackgroundColorId = (byte)((_debugSpaceBackgroundColorId + 1) % 255);
-				}
+				_playerBackgroundColor = (byte)((_playerBackgroundColor % 7) + 1);
+				
+				_playerBackgroundColor = _debug ? _playerBackgroundColor : PlayerColor;
+				RefreshData();
+				return true;
+			}
+
+			if (_debug && args[Key.F5])
+			{
+				_useDebugRules = !_useDebugRules;
+				_service = _useDebugRules ? _debugService : _standardService;
 				RefreshData();
 				return true;
 			}
@@ -348,10 +364,22 @@ namespace CivOne.Screens
 				return true;
 			}
 
+			if (args[Key.F3])
+			{
+				Common.AddScreen(new SpaceShipPartSelectorDialog(_service, SpaceShipComponentType.Component, RefreshData, _debug));
+				return true;
+			}
+
 			if (args[Key.NumPad3] || IsCharacterKey(args, '3'))
 			{
 				_service.TryAddPart(SpaceShipComponentType.Module);
 				RefreshData();
+				return true;
+			}
+
+			if (args[Key.F4])
+			{
+				Common.AddScreen(new SpaceShipPartSelectorDialog(_service, SpaceShipComponentType.Module, RefreshData, _debug));
 				return true;
 			}
 
@@ -403,32 +431,60 @@ namespace CivOne.Screens
 
 		private string T(string key) => Translation.Translate(key);
 
+		/// <summary>
+		/// Handles the pending installation of a space ship part if specified.
+		/// This is used to trigger the part installation flow when the screen is opened with a specific part to install.
+		/// </summary>
+		/// <remarks>
+		/// This method is called during the first update cycle of the screen. It checks if there is a pending part installation specified by the _pendingInstall field, and if so, it initiates the installation process for that part type. This allows the screen to be opened directly to the part installation flow when needed (e.g., from a debug menu).
+		/// </remarks>
+		private void HandlePendingInstall()
+		{
+			ISpaceShipService pendingInstallService = _standardService;
+
+			switch (_pendingInstall)
+			{
+				case SpaceShipComponentType.Structural:
+					pendingInstallService.TryAddPart(SpaceShipComponentType.Structural);
+					RefreshData();
+					break;
+				case SpaceShipComponentType.Component:
+					if (SpaceShipPartOptions.HasAnyAvailable(pendingInstallService, SpaceShipComponentType.Component))
+					{
+						Common.AddScreen(new SpaceShipPartSelectorDialog(pendingInstallService, SpaceShipComponentType.Component, RefreshData, _debug));
+					}
+					break;
+				case SpaceShipComponentType.Module:
+					if (SpaceShipPartOptions.HasAnyAvailable(pendingInstallService, SpaceShipComponentType.Module))
+					{
+						Common.AddScreen(new SpaceShipPartSelectorDialog(pendingInstallService, SpaceShipComponentType.Module, RefreshData, _debug));
+					}
+					break;
+			}
+		}
+
 		private readonly Palette SpaceShipPalette;
 
 		public SpaceShipView(Player player = null, bool debug = false,
-				ISpaceShipServiceFactory spaceShipServiceFactory = null,
-				ISpaceShipSpriteProvider spaceShipSpriteProvider = null,
-				ISpaceShipSlotBlueprint slotBlueprint = null,
-				ISpaceShipResourceService resources = null,
-				IGameCalendarService calendarService = null,
-				IRandomService randomService = null) : base(MouseCursor.Pointer)
+				SpaceShipViewServices services = null,
+				SpaceShipComponentType pendingInstall = SpaceShipComponentType.Empty) : base(MouseCursor.Pointer)
 		{
 			_player = player ?? Human;
 			_debug = debug;
+			_pendingInstall = pendingInstall;
 
-			IRandomService effectiveRandomService = randomService ?? RandomServiceFactory.Create();
-			_starfield = new StarfieldDelegate(effectiveRandomService, StarfieldScrollDividers);
-			_slotBlueprint = slotBlueprint ?? SpaceShipSlotBlueprintFactoryProvider.GetInstance().Create();
+			services ??= SpaceShipViewServicesFactory.CreateDefault(Translation);
 
-			ISpaceShipServiceFactory serviceFactory = spaceShipServiceFactory ?? SpaceShipServiceFactoryProvider.GetInstance();
+			_starfield = new StarfieldDelegate(services.RandomService, StarfieldScrollDividers);
+			_slotBlueprint = services.SlotBlueprint;
+			_resources = services.Resources;
+			_calendarService = services.CalendarService;
 
-			_resources = resources ?? new SpaceShipResourceServiceAdapter(Resources.Instance, Resources.Instance);
-
-
-			_calendarService = calendarService ?? new GameCalendarService(Translation);
-
-			_service = serviceFactory.Create(_player);
-			_sprites = spaceShipSpriteProvider ?? SpaceShipSpriteProviderFactory.GetInstance();
+			_standardService = services.SpaceShipServiceFactory.Create(_player);
+			_debugService = services.DebugSpaceShipServiceFactory.Create(_player);
+			_useDebugRules = _debug;
+			_service = _useDebugRules ? _debugService : _standardService;
+			_sprites = services.SpaceShipSpriteProvider;
 			_data = _service.GetScreenData();
 
 			SpaceShipPalette = _resources["DOCKER"].Palette.Copy();
@@ -437,27 +493,13 @@ namespace CivOne.Screens
 
 			Palette = SpaceShipPalette;
 
+			_playerBackgroundColor = PlayerColor;
 		}
 
 		public void LoadPalette()
 		{
 			Palette = SpaceShipPalette;
 			Refresh();
-		}
-
-		internal class SpaceShipResourceServiceAdapter(IResourceFileBitmapProvider bitmapProvider, IResourceFontHeightProvider fontHeightProvider) : ISpaceShipResourceService
-		{
-			private readonly IResourceFileBitmapProvider _bitmapProvider = bitmapProvider;
-			private readonly IResourceFontHeightProvider _fontHeightProvider = fontHeightProvider;
-
-			public IBitmap this[string filename] => _bitmapProvider[filename];
-
-			public bool Exists(string filename)
-			{
-				return _bitmapProvider.Exists(filename);
-			}
-
-			public int GetFontHeight(int FontId) => _fontHeightProvider.GetFontHeight(FontId);
 		}
 	}
 }

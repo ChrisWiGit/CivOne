@@ -24,7 +24,7 @@ namespace CivOne.Persistence.Model
 				"EEEEEEEEEFPE"
 			];
 
-			var actual = new SpaceShipGridMap2d(rows);
+			var actual = new SpaceShipGridMap2D(rows);
 
 			Assert.Equal(rows, actual.Rows);
 			Assert.Equal(SpaceShipComponentType.CommandModule, actual[3, 0]);

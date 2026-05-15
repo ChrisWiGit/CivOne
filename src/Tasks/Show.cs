@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using CivOne.Advances;
+using CivOne.Enums;
 using CivOne.Screens;
 using CivOne.Screens.PalaceAssets;
 using CivOne.Screens.Dialogs;
@@ -123,6 +124,8 @@ namespace CivOne.Tasks
 		public static Show BuildPalace(bool keepOpenUntilEscape = false) => new(new PalaceView(true, PalaceSpriteProviderFactory.GetInstance(), keepOpenUntilEscape));
 
 		public static Show BuildSpaceShip() => new(new SpaceShipView(Human));
+
+		public static Show SpaceShipWithInstall(SpaceShipComponentType partType) => new(new SpaceShipView(Human, pendingInstall: partType));
 
 		public static Show CaravanChoice(Caravan unit, City city) => new Show(new CaravanChoice(unit, city));
 

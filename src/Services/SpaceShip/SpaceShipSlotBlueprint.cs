@@ -77,9 +77,9 @@ namespace CivOne.Services.SpaceShip
 				"............",
 			];
 
-			// Propulsion order map.
+			// Fuel order map.
 			// 1-9,A-Z,a-z indicate placement order.
-			PropulsionOrderMap =
+			FuelOrderMap =
 			[
 				".........8..",
 				"............",
@@ -95,9 +95,9 @@ namespace CivOne.Services.SpaceShip
 				".........7..",
 			];
 
-			// Fuel order map.
+			// Propulsion order map.
 			// 1-9,A-Z,a-z indicate placement order.
-			FuelOrderMap =
+			PropulsionOrderMap =
 			[
 				"..........8.",
 				"............",

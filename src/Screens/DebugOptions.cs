@@ -99,7 +99,7 @@ namespace CivOne.Screens
 
 		private void MenuBuildSpaceShip(object sender, EventArgs args)
 		{
-			GameTask.Enqueue(Show.Screen(new SpaceShipView(Human, true, SpaceShipServiceFactoryProvider.GetDebugInstance())));
+			GameTask.Enqueue(Show.Screen(new SpaceShipView(Human, true, SpaceShipViewServicesFactory.CreateDefault(Translation))));
 			Destroy();
 		}
 

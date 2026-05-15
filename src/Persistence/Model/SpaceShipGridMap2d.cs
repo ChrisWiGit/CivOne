@@ -25,32 +25,32 @@ namespace CivOne.Persistence.Model
 	/// - M00000000000
 	/// (12 rows × 12 columns per row)
 	/// </summary>
-	public class SpaceShipGridMap2d : Map2d<SpaceShipComponentType>
+	public class SpaceShipGridMap2D : Map2d<SpaceShipComponentType>
 	{
-		public SpaceShipGridMap2d() : base(12, 12)
+		public SpaceShipGridMap2D() : base(12, 12)
 		{
 		}
 
-		public SpaceShipGridMap2d(SpaceShipComponentType[,] ownsData) : base(ownsData)
+		internal SpaceShipGridMap2D(SpaceShipComponentType[,] ownsData) : base(ownsData)
 		{
 		}
 
-		public SpaceShipGridMap2d(SpaceShipComponentType[][] ownsData) : base(ownsData)
+		internal SpaceShipGridMap2D(SpaceShipComponentType[][] ownsData) : base(ownsData)
 		{
 		}
 
-		public SpaceShipGridMap2d(string[] rows)
+		public SpaceShipGridMap2D(string[] rows)
 			: base()
 		{
 			Rows = rows;
 		}
 
-		public SpaceShipGridMap2d(SpaceShipGridMap2d other) : base((Map2d<SpaceShipComponentType>)other)
+		public SpaceShipGridMap2D(SpaceShipGridMap2D other) : base((Map2d<SpaceShipComponentType>)other)
 		{
 		}
 
-		public static implicit operator SpaceShipGridMap2d(SpaceShipComponentType[,] data) => new(data);
-		public static implicit operator SpaceShipComponentType[,](SpaceShipGridMap2d map) => map.Data;
+		public static implicit operator SpaceShipGridMap2D(SpaceShipComponentType[,] data) => new(data);
+		public static implicit operator SpaceShipComponentType[,](SpaceShipGridMap2D map) => map.Data;
 
 		public string[] Rows
 		{

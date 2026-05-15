@@ -150,7 +150,7 @@ namespace CivOne.Persistence.Model
 				StartX = 33,
 				SpaceShip = new SpaceShipDto
 				{
-					Grid = new SpaceShipGridMap2d(new SpaceShipComponentType[12, 12]),
+					Grid = new SpaceShipGridMap2D(new SpaceShipComponentType[12, 12]),
 					Population = 0,
 					LaunchYear = 0
 				},

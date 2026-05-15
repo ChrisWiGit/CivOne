@@ -12,7 +12,7 @@ using CivOne.Persistence.Resolver;
 
 namespace CivOne.Persistence.Model
 {
-	using AdvanceId = System.UInt32;
+	using AdvanceId = UInt32;
 
 	public interface IAdvanceResolver
 	{
@@ -79,7 +79,7 @@ namespace CivOne.Persistence.Model
 			// Spaceship state
 			if (dto.SpaceShip != null)
 			{
-				player.SpaceShipGrid = dto.SpaceShip.Grid?.ToArray() ?? new CivOne.Enums.SpaceShipComponentType[12, 12];
+				player.SpaceShipGrid = dto.SpaceShip.Grid?.ToArray() ?? new SpaceShipComponentType[12, 12];
 				player.SpaceShipPopulation = _valueSanitizer.ClampToUInt16(dto.SpaceShip.Population, nameof(PlayerDtoMapper), $"{nameof(PlayerDto.SpaceShip)}.{nameof(SpaceShipDto.Population)}");
 				player.SpaceShipLaunchYear = _valueSanitizer.ClampToInt16(dto.SpaceShip.LaunchYear, nameof(PlayerDtoMapper), $"{nameof(PlayerDto.SpaceShip)}.{nameof(SpaceShipDto.LaunchYear)}");
 			}
@@ -210,17 +210,17 @@ namespace CivOne.Persistence.Model
 			{
 				return new SpaceShipDto
 				{
-					Grid = new SpaceShipGridMap2d(new CivOne.Enums.SpaceShipComponentType[12, 12]),
+					Grid = new SpaceShipGridMap2D(new SpaceShipComponentType[12, 12]),
 					Population = 0,
 					LaunchYear = 0
 				};
 			}
 
-			var grid = restorablePlayer.SpaceShipGrid ?? new CivOne.Enums.SpaceShipComponentType[12, 12];
+			var grid = restorablePlayer.SpaceShipGrid ?? new SpaceShipComponentType[12, 12];
 
 			return new SpaceShipDto
 			{
-				Grid = new SpaceShipGridMap2d(grid),
+				Grid = new SpaceShipGridMap2D(grid),
 				Population = restorablePlayer.SpaceShipPopulation,
 				LaunchYear = restorablePlayer.SpaceShipLaunchYear
 			};
