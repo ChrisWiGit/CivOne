@@ -189,7 +189,7 @@ namespace CivOne.UnitTests.Services.SpaceShip
 		{
 			return new FakePlayerSpaceRace
 			{
-				SpaceShipGrid = new SpaceShipComponentType[12, 12],
+				SpaceShipGrid = new SpaceShipComponentType[SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight],
 				SpaceShipPopulation = 0,
 				SpaceShipLaunchYear = 0
 			};

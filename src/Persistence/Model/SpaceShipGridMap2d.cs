@@ -10,11 +10,12 @@
 using System;
 using System.Linq;
 using CivOne.Enums;
+using CivOne.Services.SpaceShip;
 
 namespace CivOne.Persistence.Model
 {
 	/// <summary>
-	/// Specialized Map2d for 12×12 spaceship component grids. Encodes
+	/// Specialized Map2d for canonical spaceship component grids. Encodes
 	/// SpaceShipComponentType values as single-character strings in YAML:
 	/// 'E' for Empty, 'S' for Structural, 'C' for Component, 'M' for Module,
 	/// and dedicated characters for detailed spaceship parts.
@@ -23,11 +24,11 @@ namespace CivOne.Persistence.Model
 	/// - ECMM000000000
 	/// - S00000000000
 	/// - M00000000000
-	/// (12 rows × 12 columns per row)
+	/// (canonical spaceship grid dimensions)
 	/// </summary>
 	public class SpaceShipGridMap2D : Map2d<SpaceShipComponentType>
 	{
-		public SpaceShipGridMap2D() : base(12, 12)
+		public SpaceShipGridMap2D() : base(SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight)
 		{
 		}
 

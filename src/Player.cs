@@ -70,7 +70,7 @@ namespace CivOne
 
 		internal short StartX { get; set; }
 
-		internal SpaceShipComponentType[,] SpaceShipGrid { get; set; } = new SpaceShipComponentType[12, 12];
+		internal SpaceShipComponentType[,] SpaceShipGrid { get; set; } = new SpaceShipComponentType[SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight];
 		internal ushort SpaceShipPopulation { get; set; }
 		internal short SpaceShipLaunchYear { get; set; }
 		

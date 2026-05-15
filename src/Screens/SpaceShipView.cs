@@ -59,8 +59,8 @@ namespace CivOne.Screens
 
 		private const int SidePanelLeft = 236;
 		private const int GridCellSize = 16;
-		private const int GridCols = 12;
-		private const int GridRows = 12;
+		private const int GridCols = SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth;
+		private const int GridRows = SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight;
 		private const int GridLeft = 22 + 16;
 		private const int GridTop = 8;
 

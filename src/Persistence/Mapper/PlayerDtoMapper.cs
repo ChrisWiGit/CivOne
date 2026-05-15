@@ -9,6 +9,7 @@ using CivOne.Persistence.Factories;
 using CivOne.Persistence.Game;
 using CivOne.Persistence.Mapper;
 using CivOne.Persistence.Resolver;
+using CivOne.Services.SpaceShip;
 
 namespace CivOne.Persistence.Model
 {
@@ -79,7 +80,7 @@ namespace CivOne.Persistence.Model
 			// Spaceship state
 			if (dto.SpaceShip != null)
 			{
-				player.SpaceShipGrid = dto.SpaceShip.Grid?.ToArray() ?? new SpaceShipComponentType[12, 12];
+				player.SpaceShipGrid = dto.SpaceShip.Grid?.ToArray() ?? new SpaceShipComponentType[SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight];
 				player.SpaceShipPopulation = _valueSanitizer.ClampToUInt16(dto.SpaceShip.Population, nameof(PlayerDtoMapper), $"{nameof(PlayerDto.SpaceShip)}.{nameof(SpaceShipDto.Population)}");
 				player.SpaceShipLaunchYear = _valueSanitizer.ClampToInt16(dto.SpaceShip.LaunchYear, nameof(PlayerDtoMapper), $"{nameof(PlayerDto.SpaceShip)}.{nameof(SpaceShipDto.LaunchYear)}");
 			}
@@ -210,13 +211,13 @@ namespace CivOne.Persistence.Model
 			{
 				return new SpaceShipDto
 				{
-					Grid = new SpaceShipGridMap2D(new SpaceShipComponentType[12, 12]),
+					Grid = new SpaceShipGridMap2D(new SpaceShipComponentType[SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight]),
 					Population = 0,
 					LaunchYear = 0
 				};
 			}
 
-			var grid = restorablePlayer.SpaceShipGrid ?? new SpaceShipComponentType[12, 12];
+			var grid = restorablePlayer.SpaceShipGrid ?? new SpaceShipComponentType[SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight];
 
 			return new SpaceShipDto
 			{

@@ -260,6 +260,16 @@ namespace CivOne.Services.SpaceShip
 
 	public static class SpaceShipSlotBlueprintFactoryProvider
 	{
+		/// <summary>
+		/// Canonical spaceship grid width used by blueprint-driven layout and grid allocations.
+		/// </summary>
+		public const int CanonicalGridWidth = 12;
+
+		/// <summary>
+		/// Canonical spaceship grid height used by blueprint-driven layout and grid allocations.
+		/// </summary>
+		public const int CanonicalGridHeight = 12;
+
 		private static ISpaceShipSlotBlueprintFactory _instance;
 
 		public static ISpaceShipSlotBlueprintFactory GetInstance()
