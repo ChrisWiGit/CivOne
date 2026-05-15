@@ -32,6 +32,7 @@ namespace CivOne.Screens
 		private readonly static byte[] ColourDark = Common.ColourDark;
 		private readonly Player _player;
 		private readonly bool _debug;
+		private readonly bool _viewOnly;
 		private bool _debugLaunch = false;
 		private ISpaceShipService _service;
 		private readonly ISpaceShipService _standardService;
@@ -126,7 +127,7 @@ namespace CivOne.Screens
 
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (!_pendingInstallHandled && _pendingInstall != SpaceShipComponentType.Empty)
+			if (!_viewOnly && !_pendingInstallHandled && _pendingInstall != SpaceShipComponentType.Empty)
 			{
 				_pendingInstallHandled = true;
 				HandlePendingInstall();
@@ -200,7 +201,7 @@ namespace CivOne.Screens
 				DrawLocalizedText("Can Launch:", 0, textColour, ox + 236, oy + 148, TextAlign.Left)
 				.DrawText(canLaunch ? "YES" : "NO", 0, canLaunch ? (byte)2 : (byte)4, ox + 236, oy + 156, TextAlign.Left);
 
-				if (canLaunch)
+				if (canLaunch && !_viewOnly)
 				{
 					DrawButton("LAUNCH", 0, 23, 5, LaunchButtonLeft, LaunchButtonTop, LaunchButtonWidth, LaunchButtonRenderHeight);
 				}
@@ -326,6 +327,11 @@ namespace CivOne.Screens
 
 		private bool HandleDebugKey(KeyboardEventArgs args)
 		{
+			if (_viewOnly)
+			{
+				return true;
+			}
+
 			if (IsCharacterKey(args, 'l'))
 			{
 				_debugLaunch = true;
@@ -396,6 +402,12 @@ namespace CivOne.Screens
 
 		public override bool MouseDown(ScreenEventArgs args)
 		{
+			if ((args.Buttons & MouseButton.Right) > 0)
+			{
+				Destroy();
+				return true;
+			}
+
 			bool launchHit = args.X >= LaunchButtonLeft
 				&& args.X < (LaunchButtonLeft + LaunchButtonWidth)
 				&& args.Y >= LaunchButtonTop
@@ -403,6 +415,11 @@ namespace CivOne.Screens
 
 			if (launchHit)
 			{
+				if (_viewOnly)
+				{
+					return true;
+				}
+
 				if (_player.SpaceShipLaunchYear != 0)
 				{
 					GameTask.Enqueue(Message.Advisor(Advisor.Science, true, T("Space ship"), T("already launched.")));
@@ -419,11 +436,6 @@ namespace CivOne.Screens
 				RefreshData();
 				GameTask.Enqueue(Message.Newspaper(null, $"{_player.TribeName} {T("space ship")}", T("launches for"), T("Alpha Centauri!")));
 				return true;
-			}
-
-			if ((args.Buttons & MouseButton.Right) > 0)
-			{
-				Destroy();
 			}
 
 			return true;
@@ -467,10 +479,12 @@ namespace CivOne.Screens
 
 		public SpaceShipView(Player player = null, bool debug = false,
 				SpaceShipViewServices services = null,
-				SpaceShipComponentType pendingInstall = SpaceShipComponentType.Empty) : base(MouseCursor.Pointer)
+				SpaceShipComponentType pendingInstall = SpaceShipComponentType.Empty,
+				bool viewOnly = false) : base(MouseCursor.Pointer)
 		{
 			_player = player ?? Human;
 			_debug = debug;
+			_viewOnly = viewOnly;
 			_pendingInstall = pendingInstall;
 
 			services ??= SpaceShipViewServicesFactory.CreateDefault(Translation);
@@ -482,7 +496,7 @@ namespace CivOne.Screens
 
 			_standardService = services.SpaceShipServiceFactory.Create(_player);
 			_debugService = services.DebugSpaceShipServiceFactory.Create(_player);
-			_useDebugRules = _debug;
+			_useDebugRules = _debug && !_viewOnly;
 			_service = _useDebugRules ? _debugService : _standardService;
 			_sprites = services.SpaceShipSpriteProvider;
 			_data = _service.GetScreenData();
