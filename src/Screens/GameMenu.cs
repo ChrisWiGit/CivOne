@@ -36,8 +36,11 @@ namespace CivOne.Screens
 			}
 			set
 			{
-				_keepOpen = true;
-				_activeItem = 0;
+				_keepOpen = value;
+				if (value)
+				{
+					_activeItem = 0;
+				}
 			}
 		}
 
@@ -100,17 +103,17 @@ namespace CivOne.Screens
 			{
 				case Key.NumPad8:
 				case Key.Up:
-					if (_activeItem > 0)
+					if (Items.Count > 0)
 					{
-						_activeItem--;
+						_activeItem = (_activeItem <= 0) ? (Items.Count - 1) : (_activeItem - 1);
 						_update = true;
 					}
 					return true;
 				case Key.NumPad2:
 				case Key.Down:
-					if (_activeItem < (Items.Count - 1))
+					if (Items.Count > 0)
 					{
-						_activeItem++;
+						_activeItem = (_activeItem >= (Items.Count - 1)) ? 0 : (_activeItem + 1);
 						_update = true;
 					}
 					return true;
@@ -118,6 +121,11 @@ namespace CivOne.Screens
 					KeepOpen = false;
 					return false;
 				case Key.Enter:
+					if (Items[_activeItem]?.Enabled == false)
+					{
+						KeepOpen = true;
+						return true;
+					}
 					if (_activeItem >= 0)
 						Items[_activeItem]?.Select();
 					return false;
@@ -169,6 +177,10 @@ namespace CivOne.Screens
 			if (_activeItem < 0 && KeepOpen)
 			{
 				KeepOpen = false;
+				return true;
+			}
+			if (Items[_activeItem]?.Enabled == false)
+			{
 				return false;
 			}
 			Items[_activeItem]?.Select();

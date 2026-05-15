@@ -6,6 +6,11 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Extended game menu
+  * Menu items now wrap at the top and bottom, so moving past the first or last entry jumps to the other end.
+  * When a submenu is already open, `Left` and `Right` now switch between the main menu groups (`Game`, `Orders`, `Advisors`, `World`, `Civilopedia`) in a loop.
+  * Disabled menu items stay disabled for both mouse and keyboard input and no longer close the menu when selected.
+  * The World -> SpaceShips entry is only shown when at least one civilization can actually access spaceship content.
 * The game is now paused when
   * the window is minimized or hidden to waste less CPU resources when the game is not visible.
   * the user presses the Pause key to toggle pause state of the game.
