@@ -182,6 +182,12 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		private void MenuCityGridTest(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen<TestCityGridMenu>());
+			Destroy();
+		}
+
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (!RefreshNeeded())
@@ -266,6 +272,7 @@ namespace CivOne.Screens
 				new("Meet With King", MenuMeetWithKing),
 				new("Toggle Reveal World", MenuRevealWorld),
 				new("Build Palace", MenuBuildPalace),
+				new("City Menu Grid (Test)", MenuCityGridTest),
 				new("Ranking (Random)", MenuShowCivilizationRanking),
 				new("Show Power Graph", MenuShowPowerGraph),
 				new("Instant Conquest", InstantConquest),
