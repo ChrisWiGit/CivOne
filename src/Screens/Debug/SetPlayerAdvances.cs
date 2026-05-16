@@ -28,7 +28,7 @@ namespace CivOne.Screens.Debug
 		private readonly int _playerMenuWidth;
 		private readonly int _playerMenuHeight;
 
-		private readonly Menu _civSelect;
+		private Menu _civSelect;
 
 		// Grid state
 		private IAdvance[][] _advanceGrid;
@@ -47,7 +47,7 @@ namespace CivOne.Screens.Debug
 
 		private Player _selectedPlayer = null;
 
-		public string Value { get; private set; }
+		public string Value { get; }
 
 		public event EventHandler Cancel;
 
@@ -94,11 +94,31 @@ namespace CivOne.Screens.Debug
 
 		private void MoveVerticalSelection(int delta)
 		{
-			for (int i = 0; i < _gridRows; i++)
+			MoveLinearSelection(delta);
+		}
+
+		private void MoveLinearSelection(int delta)
+		{
+			if (_advanceGrid == null || _gridRows <= 0 || _gridCols <= 0)
+				return;
+
+			EnsureSelectionValid();
+
+			int totalCells = _gridRows * _gridCols;
+			int index = _gridCol * _gridRows + _gridRow;
+
+			for (int i = 0; i < totalCells; i++)
 			{
-				_gridRow = (_gridRow + delta + _gridRows) % _gridRows;
-				if (IsValidGridCell(_gridRow, _gridCol))
-					return;
+				index = (index + delta + totalCells) % totalCells;
+				int col = index / _gridRows;
+				int row = index % _gridRows;
+
+				if (!IsValidGridCell(row, col))
+					continue;
+
+				_gridRow = row;
+				_gridCol = col;
+				return;
 			}
 		}
 
@@ -164,20 +184,27 @@ namespace CivOne.Screens.Debug
 		private void InitializeGrid()
 		{
 			IAdvance[] advances = _advanceService.GetAllAdvances();
+			const int maxVisibleRows = 28;
 			const int rowPadding = 1;
 			const int headerHeight = 16;
 			const int bottomPadding = 4;
+			const int verticalDialogMargin = 4;
 			int fontHeight = Resources.GetFontHeight(1);
 			int maxAdvanceWidth = advances.Max(a => Resources.GetTextSize(1, $"* {a.Name}").Width);
+			int cellHeight = fontHeight + rowPadding;
 
 			// Calculate grid dimensions
-			int contentWidth = Math.Max(200, Width - OffsetX * 2 - 20);
-			int contentHeight = Math.Max(150, Height - OffsetY * 2 - 50);
-			
-			int cellWidth = maxAdvanceWidth + 8;
-			_gridCols = Math.Max(3, Math.Min(10, contentWidth / cellWidth));
-			int cellHeight = fontHeight + rowPadding;
+			int availableHeight = Math.Max(1, CanvasHeight - headerHeight - bottomPadding - (verticalDialogMargin * 2));
+			int maxRowsByHeight = Math.Max(1, Math.Min(maxVisibleRows, availableHeight / cellHeight));
+			int minColsForMaxRows = (advances.Length + maxRowsByHeight - 1) / maxRowsByHeight;
+			_gridCols = Math.Max(1, minColsForMaxRows);
 			_gridRows = (advances.Length + _gridCols - 1) / _gridCols;
+
+			int dialogMaxWidth = Math.Max(64, Width - 8);
+			int usableGridWidth = Math.Max(64, dialogMaxWidth - 8);
+
+			int desiredCellWidth = maxAdvanceWidth + 8;
+			int cellWidth = Math.Min(desiredCellWidth, Math.Max(8, usableGridWidth / _gridCols));
 
 			// Build 2D grid (column-major: top-to-bottom, left-to-right)
 			_advanceGrid = new IAdvance[_gridRows][];
@@ -194,8 +221,9 @@ namespace CivOne.Screens.Debug
 
 			_gridContentWidth = cellWidth * _gridCols + 8;
 			_gridContentHeight = headerHeight + (cellHeight * _gridRows) + bottomPadding;
-			_gridX = OffsetX + ((320 - _gridContentWidth) / 2);
-			_gridY = OffsetY + ((200 - _gridContentHeight) / 2);
+			_gridContentHeight = Math.Min(_gridContentHeight, CanvasHeight - (verticalDialogMargin * 2));
+			_gridX = Math.Max(0, (Width - _gridContentWidth) / 2);
+			_gridY = Math.Max(0, (Height - _gridContentHeight) / 2);
 			_gridCellWidth = cellWidth;
 			_gridCellHeight = cellHeight;
 			_gridCellStartX = _gridX + 4;
@@ -226,8 +254,13 @@ namespace CivOne.Screens.Debug
 			this.Clear();
 			this.FillRectangle(_gridX - 1, _gridY - 1, _gridContentWidth + 2, _gridContentHeight + 2, 5)
 				.AddLayer(gridGfx, _gridX, _gridY)
-				.DrawText($"Set Advances: {_selectedPlayer.TribeNamePlural}", 0, 15, _gridX + 8, _gridY + 3);
+				.DrawText($"Set Advances: {_selectedPlayer.TribeNamePlural} (Help: Alt+H)", 0, 15, _gridX + 8, _gridY + 3);
+			
+			DrawAdvancesGrid(fontId, cellWidth, cellHeight);
+		}
 
+		private void DrawAdvancesGrid(byte fontId, int cellWidth, int cellHeight)
+		{
 			// Render grid cells
 			int cellStartX = _gridCellStartX;
 			int cellStartY = _gridCellStartY;
@@ -247,10 +280,64 @@ namespace CivOne.Screens.Debug
 						this.DrawRectangle(x - 2, y - 1, cellWidth + 2, cellHeight, 11);
 
 					string prefix = _selectedPlayer.HasAdvance(advance) ? "*" : " ";
-					string text = $"{prefix} {advance.Name}";
+					string text = TruncateTextToWidth(fontId, $"{prefix} {advance.Name}", cellWidth - 2);
 					this.DrawText(text, fontId, 5, x, y);
 				}
 			}
+		}
+
+		private static string TruncateTextToWidth(byte fontId, string text, int maxWidth)
+		{
+			if (maxWidth <= 0)
+				return string.Empty;
+
+			if (Resources.GetTextSize(fontId, text).Width <= maxWidth)
+				return text;
+
+			const string suffix = "...";
+			int suffixWidth = Resources.GetTextSize(fontId, suffix).Width;
+			if (suffixWidth > maxWidth)
+				return string.Empty;
+
+			int length = text.Length;
+			while (length > 0)
+			{
+				length--;
+				string candidate = text.Substring(0, length) + suffix;
+				if (Resources.GetTextSize(fontId, candidate).Width <= maxWidth)
+					return candidate;
+			}
+
+			return suffix;
+		}
+
+		private Menu CreateCivSelectMenu()
+		{
+			Picture menuGfx = new Picture(_playerMenuWidth, _playerMenuHeight)
+				.Tile(Pattern.PanelGrey)
+				.DrawRectangle3D()
+				.As<Picture>();
+			IBitmap menuBackground = menuGfx[2, 11, _playerMenuWidth - 4, _playerMenuHeight - 11].ColourReplace((7, 11), (22, 3));
+
+			Menu menu = new(Palette, menuBackground)
+			{
+				X = 0,
+				Y = 0,
+				MenuWidth = _playerMenuWidth - 4,
+				ActiveColour = 11,
+				TextColour = 5,
+				DisabledColour = 3,
+				FontId = 0,
+				Indent = 8
+			};
+
+			foreach (Player player in Game.Players)
+				menu.Items.Add(player.TribeNamePlural).OnSelect(CivSelect_Accept);
+
+			menu.Cancel += OnCancel;
+			menu.MissClick += OnCancel;
+			menu.ActiveItem = Game.PlayerNumber(Human);
+			return menu;
 		}
 
 		private void CivSelect_Accept(object sender, EventArgs args)
@@ -263,8 +350,19 @@ namespace CivOne.Screens.Debug
 
 		private void OnCancel(object sender, EventArgs args)
 		{
-			Cancel?.Invoke(this, null);
+			Cancel?.Invoke(this, EventArgs.Empty);
 			Destroy();
+		}
+
+		private bool TryOpenCivilopediaForSelectedAdvance()
+		{
+			EnsureSelectionValid();
+			IAdvance advance = _advanceGrid[_gridRow][_gridCol];
+			if (advance == null)
+				return false;
+
+			Common.AddScreen(new CivOne.Screens.Civilopedia(advance));
+			return true;
 		}
 
 		protected override bool HasUpdate(uint gameTick)
@@ -299,6 +397,9 @@ namespace CivOne.Screens.Debug
 
 			if (_advanceGrid == null)
 				return false;
+
+			if (args.Alt && args.Key == Key.Character && (args.KeyChar == 'h' || args.KeyChar == 'H'))
+				return TryOpenCivilopediaForSelectedAdvance();
 
 			switch (args.Key)
 			{
@@ -340,6 +441,7 @@ namespace CivOne.Screens.Debug
 
 				case Key.Escape:
 					_selectedPlayer = null;
+					_civSelect = CreateCivSelectMenu();
 					Refresh();
 					return true;
 			}
@@ -372,35 +474,10 @@ namespace CivOne.Screens.Debug
 			Palette sourcePalette = Common.Screens.LastOrDefault()?.OriginalColours ?? Common.DefaultPalette;
 			Palette = sourcePalette;
 			int fontHeight = Resources.GetFontHeight(0);
-			_playerMenuHeight = (fontHeight * (Game.Players.Count() + 2)) + 5;
+			_playerMenuHeight = fontHeight * (Game.Players.Count() + 2);
 			_playerMenuWidth = 136;
 
-			Picture menuGfx = new Picture(_playerMenuWidth, _playerMenuHeight)
-				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D()
-				.As<Picture>();
-			IBitmap menuBackground = menuGfx[2, 11, _playerMenuWidth - 4, _playerMenuHeight - 11].ColourReplace((7, 11), (22, 3));
-
-			_civSelect = new Menu(Palette, menuBackground)
-			{
-				X = 0,
-				Y = 0,
-				MenuWidth = _playerMenuWidth - 4,
-				ActiveColour = 11,
-				TextColour = 5,
-				DisabledColour = 3,
-				FontId = 0,
-				Indent = 8
-			};
-
-			foreach (Player player in Game.Players)
-			{
-				_civSelect.Items.Add(player.TribeNamePlural).OnSelect(CivSelect_Accept);
-			}
-
-			_civSelect.Cancel += OnCancel;
-			_civSelect.MissClick += OnCancel;
-			_civSelect.ActiveItem = Game.PlayerNumber(Human);
+			_civSelect = CreateCivSelectMenu();
 
 			DrawPlayerMenuDialog();
 		}
