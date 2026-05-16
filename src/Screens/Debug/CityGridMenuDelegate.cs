@@ -18,8 +18,14 @@ namespace CivOne.Screens.Debug
 
 		public event Action<City> CitySelected;
 
-		public CityGridMenuDelegate(City[] cities)
-			: base([.. cities.Select(x => x.Name)], SelectionMode.Select, fontId: 0)
+		private static string[] GetLabels(City[] cities, Func<City, string> labelSelector)
+		{
+			Func<City, string> selector = labelSelector ?? (city => city.Name);
+			return [.. cities.Select(selector)];
+		}
+
+			public CityGridMenuDelegate(City[] cities, Func<City, string> labelSelector = null)
+			: base(GetLabels(cities, labelSelector), SelectionMode.Select, fontId: 0)
 		{
 			_cities = cities;
 			ItemSelected += OnCitySelected;

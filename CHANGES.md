@@ -6,7 +6,9 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
-* Debug Option: Set Advances: The dialog now shows all advances in a single 2d list.
+* Debug Option: 
+  * Introduce large 2d menu for large lists of items (e.g. cities, units, etc.) with keyboard navigation and selection.
+  * Refactored existing civilization and city selection menus to use the new grid menu, allowing for more items and better navigation.
 * Extended game menu
   * Menu items now wrap at the top and bottom, so moving past the first or last entry jumps to the other end.
   * When a submenu is already open, `Left` and `Right` now switch between the main menu groups (`Game`, `Orders`, `Advisors`, `World`, `Civilopedia`) in a loop.

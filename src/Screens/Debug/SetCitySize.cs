@@ -10,6 +10,7 @@
 using System;
 using System.Linq;
 using CivOne.Enums;
+using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.Tasks;
@@ -23,13 +24,10 @@ namespace CivOne.Screens.Debug
 		private readonly City[] _cities = Game.GetCities().OrderBy(x => x.Name).ToArray();
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => Math.Max(0, (Height - 200) / 2);
-		private readonly int _cityMenuWidth = 136;
 
-		private Menu _citySelect;
+		private CityGridMenuDelegate _citySelect;
 
 		private Input _input;
-
-		private int _index = 0;
 
 		private City _selectedCity = null;
 
@@ -56,57 +54,19 @@ namespace CivOne.Screens.Debug
 			}
 		}
 
-		private void CitiesMenu()
+		private void DrawCityMenuDialog()
 		{
-			Palette = Common.Screens.Last().OriginalColours;
-
-			City[] cities = _cities.Skip(_index).Take(15).ToArray();
-
-			bool more = (cities.Length < _cities.Length);
-
-			int fontHeight = Resources.GetFontHeight(0);
-			int hh = (fontHeight * (cities.Length + (more ? 2 : 1))) + 5;
-			int ww = _cityMenuWidth;
-
-			int xx = (320 - ww) / 2;
-			int yy = (200 - hh) / 2;
-
-			Picture menuGfx = new Picture(ww, hh)
-				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D()
-				.As<Picture>();
-			IBitmap menuBackground = menuGfx[2, 11, ww - 4, hh - 11].ColourReplace((7, 11), (22, 3));
-
-			this.Clear();
-			this.FillRectangle(xx + OffsetX - 1, yy + OffsetY - 1, ww + 2, hh + 2, 5)
-				.AddLayer(menuGfx, xx + OffsetX, yy + OffsetY)
-				.DrawText("Set City Size...", 0, 15, xx + OffsetX + 8, yy + OffsetY + 3);
-
-			_citySelect = new Menu(Palette, menuBackground)
+			if (_citySelect == null)
 			{
-				X = xx + OffsetX + 2,
-				Y = yy + OffsetY + 11,
-				MenuWidth = ww - 4,
-				ActiveColour = 11,
-				TextColour = 5,
-				DisabledColour = 3,
-				FontId = 0,
-				Indent = 8
-			};
-
-			foreach (City city in cities)
-			{
-				_citySelect.Items.Add($"{city.Name} ({Game.GetPlayer(city.Owner).TribeName})").OnSelect(CitySize_Accept);
+				Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
+				_citySelect = new CityGridMenuDelegate(
+					_cities,
+					city => $"{city.Name} ({Game.GetPlayer(city.Owner).TribeName})");
+				_citySelect.CitySelected += OnCitySelected;
+				_citySelect.Cancelled += CitySize_Cancel;
 			}
 
-			if (more)
-			{
-				_citySelect.Items.Add($" ---MORE---").OnSelect(CitySize_More);
-			}
-
-			_citySelect.Cancel += CitySize_Cancel;
-			_citySelect.MissClick += CitySize_Cancel;
-			_citySelect.ActiveItem = (_citySelect.Items.Count - 1);
+			_citySelect.Draw(this, "Set City Size...", CanvasHeight);
 		}
 
 		private void CitySizeSet_Accept(object sender, EventArgs args)
@@ -125,40 +85,30 @@ namespace CivOne.Screens.Debug
 			}
 
 			if (Accept != null)
-				Accept(this, null);
-			if (sender is Input)
-				((Input)sender)?.Close();
+				Accept(this, EventArgs.Empty);
+			if (sender is Input input)
+				input.Close();
 			Destroy();
 		}
 
-		private void CitySize_More(object sender, EventArgs args)
+		private void OnCitySelected(City city)
 		{
-			_index += 15;
-			if (_index > _cities.Count()) _index = 0;
-			CloseMenus();
-		}
-
-		private void CitySize_Accept(object sender, EventArgs args)
-		{
-			Palette = Common.Screens.Last().OriginalColours;
-
-			_selectedCity = _cities[_citySelect.ActiveItem + _index];
+			Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
+			_selectedCity = city;
 
 			_input = new Input(Palette, _selectedCity.Size.ToString(), 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 3);
 			_input.Accept += CitySizeSet_Accept;
 			_input.Cancel += CitySize_Cancel;
 
-			DrawInputDialog();
-
-			CloseMenus();
+			Refresh();
 		}
 
 		private void CitySize_Cancel(object sender, EventArgs args)
 		{
 			if (Cancel != null)
-				Cancel(this, null);
-			if (sender is Input)
-				((Input)sender)?.Close();
+				Cancel(this, EventArgs.Empty);
+			if (sender is Input input)
+				input.Close();
 			Destroy();
 		}
 
@@ -168,9 +118,7 @@ namespace CivOne.Screens.Debug
 			{
 				if (_selectedCity == null)
 				{
-					CloseMenus();
-					CitiesMenu();
-					AddMenu(_citySelect);
+					DrawCityMenuDialog();
 				}
 				else
 				{
@@ -187,13 +135,43 @@ namespace CivOne.Screens.Debug
 
 			if (_selectedCity == null && Common.TopScreen.GetType() != typeof(Menu))
 			{
-				AddMenu(_citySelect);
+				DrawCityMenuDialog();
 				return false;
 			}
 			else if (_selectedCity != null && Common.TopScreen.GetType() != typeof(Input))
 			{
 				Common.AddScreen(_input);
 			}
+			return false;
+		}
+
+		public override bool KeyDown(KeyboardEventArgs args)
+		{
+			if (_selectedCity == null && _citySelect != null)
+			{
+				bool handled = _citySelect.KeyDown(args);
+				if (handled) Refresh();
+				return handled;
+			}
+
+			if (args.Key == Key.Escape)
+			{
+				Destroy();
+				return true;
+			}
+
+			return false;
+		}
+
+		public override bool MouseDown(ScreenEventArgs args)
+		{
+			if (_selectedCity == null && _citySelect != null)
+			{
+				bool handled = _citySelect.MouseDown(args.X, args.Y);
+				if (handled) Refresh();
+				return handled;
+			}
+
 			return false;
 		}
 
@@ -205,7 +183,7 @@ namespace CivOne.Screens.Debug
 				return;
 			}
 
-			CitiesMenu();
+			DrawCityMenuDialog();
 		}
 	}
 }
