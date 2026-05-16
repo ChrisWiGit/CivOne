@@ -108,7 +108,7 @@ namespace CivOne.Screens.Debug
 
         private void CreateBuildingGrid()
         {
-            Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
+            Palette = Common.Screens[Common.Screens.Length - 1].OriginalColours;
 
             string[] labels = [.. _buildings.Select(x => x.Name)];
             _buildingSelect = new GridMenuDelegate(
