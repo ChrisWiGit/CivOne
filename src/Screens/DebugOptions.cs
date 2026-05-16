@@ -151,6 +151,12 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		private void MenuShowTopLeaderScreen(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen(TopLeaderScreenFactory.CreateDebug()));
+			Destroy();
+		}
+
 		private void ShowSettings(object sender, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screens(typeof(Setup)));
@@ -254,6 +260,7 @@ namespace CivOne.Screens
 				new("Toggle Reveal World", MenuRevealWorld),
 				new("Build Palace", MenuBuildPalace),
 				new("Ranking (Random)", MenuShowCivilizationRanking),
+				new("Top Leader Screen", MenuShowTopLeaderScreen),
 				new("Show Power Graph", MenuShowPowerGraph),
 				new("Instant Conquest", InstantConquest),
 				new("Instant Global Warming", InstantGlobalWarming),
