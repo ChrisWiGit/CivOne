@@ -218,6 +218,14 @@ namespace CivOne.Screens.Debug
 		{
 			ComputeLayout(canvasHeight, target.Bitmap.Width, target.Bitmap.Height);
 
+			int minTitleContentWidth = Resources.GetTextSize(0, title).Width + 16;
+			if (_gridContentWidth < minTitleContentWidth)
+			{
+				_gridContentWidth = minTitleContentWidth;
+				_gridX = Math.Max(0, (target.Bitmap.Width - _gridContentWidth) / 2);
+				_gridCellStartX = _gridX + 4;
+			}
+
 			Picture gridGfx = new Picture(_gridContentWidth, _gridContentHeight)
 				.Tile(Pattern.PanelGrey)
 				.DrawRectangle3D()
@@ -227,24 +235,39 @@ namespace CivOne.Screens.Debug
 			target.FillRectangle(_gridX - 1, _gridY - 1, _gridContentWidth + 2, _gridContentHeight + 2, 5)
 				.AddLayer(gridGfx, _gridX, _gridY)
 				.DrawText(title, 0, 15, _gridX + 8, _gridY + 3);
+			DrawGrid(target);
+		}
 
+		private void DrawGrid(IBitmap target)
+		{
 			for (int row = 0; row < _gridRows; row++)
 			{
 				for (int col = 0; col < _gridCols; col++)
 				{
-					if (!IsValidCell(row, col)) continue;
+					if (!IsValidCell(row, col))
+					{
+						continue;
+					}
 					int idx = col * _gridRows + row;
 					int x = _gridCellStartX + col * _gridCellWidth;
 					int y = _gridCellStartY + row * _gridCellHeight;
+					
+					DrawSelectionRectangle(target, row, col, x, y);
 
-					if (row == _gridRow && col == _gridCol)
-						target.DrawRectangle(x - 2, y - 1, _gridCellWidth + 2, _gridCellHeight, 11);
-
-					string prefix = _isChecked != null ? (_isChecked(idx) ? "*" : " ") : string.Empty;
+					string checkLabel = _isChecked(idx) ? "*" : " ";
+					string prefix = _isChecked != null ? checkLabel : string.Empty;
 					string raw = _isChecked != null ? $"{prefix} {_items[idx]}" : _items[idx];
 					string text = TruncateTextToWidth(_fontId, raw, _gridCellWidth - 2);
 					target.DrawText(text, _fontId, 5, x, y);
 				}
+			}
+		}
+
+		private void DrawSelectionRectangle(IBitmap target, int row, int col, int x, int y)
+		{
+			if (row == _gridRow && col == _gridCol)
+			{
+				target.DrawRectangle(x - 2, y - 1, _gridCellWidth + 2, _gridCellHeight, 11);
 			}
 		}
 

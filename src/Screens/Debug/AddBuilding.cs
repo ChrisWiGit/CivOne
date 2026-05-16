@@ -13,143 +13,186 @@ using System;
 using System.Linq;
 using CivOne.Buildings;
 using CivOne.Enums;
+using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.Tasks;
-using CivOne.UserInterface;
 
 namespace CivOne.Screens.Debug
 {
 	[ScreenResizeable]
     internal class AddBuilding : BaseScreen
     {
-        private readonly City[] _cities = Game.GetCities().OrderBy(x => x.Name).ToArray();
+        private readonly City[] _cities = [.. Game.GetCities().OrderBy(x => x.Name)];
         private int OffsetX => Math.Max(0, (Width - 320) / 2);
         private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
+        private CivSelectMenuDelegate _playerSelect;
+
+        private City[] _playerCities = [];
         private IBuilding[] _buildings;
+        private CityGridMenuDelegate _citySelect;
+        private GridMenuDelegate _buildingSelect;
 
-        private Menu _citySelect;
-
-        private int _index;
-
+        private Player _selectedPlayer;
         private City _selectedCity;
 
-        private IBuilding _selectedBldg;
-
-        private Menu _bldgSelect;
-
-        //public event EventHandler Cancel;
-
-        // TODO fire-eggs generalize to eliminate duplication
-
-        private void CitiesMenu()
+        private void EnsurePlayerSelectDelegate()
         {
-            Palette = Common.Screens.Last().OriginalColours;
+            if (_playerSelect != null && _menus.Contains(_playerSelect.Menu)) return;
+            _playerSelect = CreatePlayerSelectDelegate();
+        }
 
-            City[] cities = _cities.Skip(_index).Take(15).ToArray();
+        private void DrawPlayerMenuDialog()
+        {
+            EnsurePlayerSelectDelegate();
+            _playerSelect.DrawDialog(this, OffsetX, OffsetY);
+        }
 
-            bool more = (cities.Length < _cities.Length);
+        private CivSelectMenuDelegate CreatePlayerSelectDelegate()
+        {
+            Palette palette = Palette
+                ?? Common.Screens.LastOrDefault()?.OriginalColours
+                ?? Common.DefaultPalette;
 
-            int fontHeight = Resources.GetFontHeight(0);
-            int hh = (fontHeight * (cities.Length + (more ? 2 : 1))) + 5;
-            int ww = 136;
+            CivSelectMenuDelegate delegate_ = new(palette, "Add building...");
+            delegate_.PlayerSelected += OnPlayerSelected;
+            delegate_.Cancelled += Cancel;
+            return delegate_;
+        }
 
-            int xx = OffsetX + ((320 - ww) / 2);
-            int yy = OffsetY + ((200 - hh) / 2);
+        private void OnPlayerSelected(Player player)
+        {
+            _selectedPlayer = player;
+            _playerCities = [.. _cities.Where(c => c.Owner == Game.PlayerNumber(player))];
 
-            Picture menuGfx = new Picture(ww, hh)
-                .Tile(Pattern.PanelGrey)
-                .DrawRectangle3D()
-                .As<Picture>();
-            IBitmap menuBackground = menuGfx[2, 11, ww - 4, hh - 11].ColourReplace((7, 11), (22, 3));
-
-            this.Clear();
-            this.FillRectangle(xx - 1, yy - 1, ww + 2, hh + 2, 5)
-                .AddLayer(menuGfx, xx, yy)
-                .DrawText("Add building...", 0, 15, xx + 8, yy + 3);
-
-            _citySelect = new Menu(Palette, menuBackground)
+            if (_playerCities.Length == 0)
             {
-                X = xx + 2,
-                Y = yy + 11,
-                MenuWidth = ww - 4,
-                ActiveColour = 11,
-                TextColour = 5,
-                DisabledColour = 3,
-                FontId = 0,
-                Indent = 8
-            };
-
-            foreach (City city in cities)
-            {
-                _citySelect.Items.Add($"{city.Name} ({Game.GetPlayer(city.Owner).TribeName})").OnSelect(Accept);
+                _selectedPlayer = null;
+                _citySelect = null;
+                Refresh();
+                return;
             }
 
-            if (more)
+            _citySelect = null;
+            Refresh();
+        }
+
+        private void CreateCityGrid()
+        {
+            Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
+            _citySelect = new CityGridMenuDelegate(_playerCities);
+            _citySelect.CitySelected += OnCitySelected;
+            _citySelect.Cancelled += Cancel;
+        }
+
+        private void DrawCityMenuDialog()
+        {
+            if (_citySelect == null)
             {
-                _citySelect.Items.Add($" ---MORE---").OnSelect(More);
+                CreateCityGrid();
             }
 
-            _citySelect.Cancel += Cancel;
-            _citySelect.MissClick += Cancel;
-            _citySelect.ActiveItem = (_citySelect.Items.Count - 1);
+            _citySelect.Draw(this, "Select city...", CanvasHeight);
         }
 
-        private void More(object sender, EventArgs args)
+        private void OnCitySelected(City city)
         {
-            _index += 15;
-            if (_index > _cities.Count()) _index = 0;
-            CloseMenus();
+            _selectedCity = city;
+
+            _buildings = [.. Reflect.GetBuildings().Where(b => b is not Palace).OrderBy(b => b.Name)];
+            _buildingSelect = null;
+
+            Refresh();
         }
 
-        private void BMore(object sender, EventArgs args)
+        private void CreateBuildingGrid()
         {
-            _index += 15;
-            if (_index > _buildings.Length) _index = 0;
-            CloseMenus();
+            Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
+
+            string[] labels = [.. _buildings.Select(x => x.Name)];
+            _buildingSelect = new GridMenuDelegate(
+                labels,
+                GridMenuDelegate.SelectionMode.CheckUncheck,
+                i => _selectedCity.HasBuilding(_buildings[i]),
+                fontId: 0);
+            _buildingSelect.ItemChecked += OnBuildingToggled;
+            _buildingSelect.Cancelled += OnBuildingSelectionCancelled;
         }
 
-        private void BAccept(object sender, EventArgs args)
+        private void OnBuildingSelectionCancelled(object sender, EventArgs args)
         {
-            _selectedBldg = _buildings[_bldgSelect.ActiveItem + _index];
-            _selectedCity.AddBuilding(_selectedBldg);
-            Destroy();
+            _selectedCity = null;
+            _buildingSelect = null;
+            Refresh();
         }
 
-        private void Accept(object sender, EventArgs args)
+        private void DrawBuildingSelection()
         {
-            _selectedCity = _cities[_citySelect.ActiveItem + _index];
+            if (_buildingSelect == null)
+            {
+                CreateBuildingGrid();
+            }
+            _buildingSelect.Draw(this, "Toggle buildings...", CanvasHeight);
+        }
 
-            _index = 0;
-            var currBldgs = _selectedCity.Buildings;
-            _buildings = Reflect.GetBuildings().Where(b => currBldgs.All(x => x.Id != b.Id) && !(b is Palace)).ToArray();
+        private void OnBuildingToggled(int index)
+        {
+            if (index < 0 || index >= _buildings.Length) return;
 
-            CloseMenus();
+            IBuilding building = _buildings[index];
+            if (_selectedCity.HasBuilding(building))
+            {
+                _selectedCity.RemoveBuilding(building);
+            }
+            else
+            {
+                _selectedCity.AddBuilding(building);
+            }
+
+            Refresh();
         }
 
         private void Cancel(object sender, EventArgs args)
         {
-            if (sender is Input)
-                ((Input)sender)?.Close();
+            if (sender is Input input)
+                input.Close();
             Destroy();
+        }
+
+        private bool IsBuildingSelectionActive => _selectedPlayer != null && _selectedCity != null;
+
+        private void HandleRefreshNeededState()
+        {
+            if (_selectedPlayer == null)
+            {
+                DrawPlayerMenuDialog();
+                if (!_menus.Contains(_playerSelect.Menu))
+                {
+                    AddMenu(_playerSelect.Menu);
+                }
+                return;
+            }
+
+            CloseMenus();
+
+            if (_selectedCity == null)
+            {
+                DrawCityMenuDialog();
+                return;
+            }
+
+            if (IsBuildingSelectionActive)
+            {
+                DrawBuildingSelection();
+            }
         }
 
         protected override bool HasUpdate(uint gameTick)
         {
             if (RefreshNeeded())
             {
-                CloseMenus();
-                if (_selectedCity == null)
-                {
-                    CitiesMenu();
-                    AddMenu(_citySelect);
-                }
-                else if (_selectedBldg == null)
-                {
-                    BuildingsMenu();
-                    AddMenu(_bldgSelect);
-                }
+                HandleRefreshNeededState();
                 return true;
             }
 
@@ -159,84 +202,87 @@ namespace CivOne.Screens.Debug
                 return false;
             }
 
-            if (_selectedCity == null && Common.TopScreen.GetType() != typeof(Menu))
+            if (_selectedPlayer == null)
             {
-                AddMenu(_citySelect);
+                if (!_menus.Contains(_playerSelect.Menu))
+                {
+                    DrawPlayerMenuDialog();
+                    AddMenu(_playerSelect.Menu);
+                }
                 return false;
             }
 
-            if (_selectedCity != null && _selectedBldg == null && Common.TopScreen.GetType() != typeof(Menu))
+            if (_selectedCity == null)
             {
-                BuildingsMenu();
-                AddMenu(_bldgSelect);
+                DrawCityMenuDialog();
+                return false;
+            }
+
+            if (IsBuildingSelectionActive)
+            {
+                DrawBuildingSelection();
                 return false;
             }
             return false;
         }
 
-        private void BuildingsMenu()
-        {
-            Palette = Common.Screens.Last().OriginalColours;
-
-            IBuilding[] bldgs = _buildings.Skip(_index).Take(15).ToArray();
-
-            bool more = (bldgs.Length < _buildings.Length);
-
-            int fontHeight = Resources.GetFontHeight(0);
-            int hh = (fontHeight * (bldgs.Length + (more ? 2 : 1))) + 5;
-            int ww = 136;
-
-            int xx = OffsetX + ((320 - ww) / 2);
-            int yy = OffsetY + ((200 - hh) / 2);
-
-            Picture menuGfx = new Picture(ww, hh)
-                .Tile(Pattern.PanelGrey)
-                .DrawRectangle3D()
-                .As<Picture>();
-            IBitmap menuBackground = menuGfx[2, 11, ww - 4, hh - 11].ColourReplace((7, 11), (22, 3));
-
-            this.Clear();
-            this.FillRectangle(xx - 1, yy - 1, ww + 2, hh + 2, 5)
-                .AddLayer(menuGfx, xx, yy)
-                .DrawText("Select building...", 0, 15, xx + 8, yy + 3);
-
-            _bldgSelect = new Menu(Palette, menuBackground)
+        public override bool KeyDown(KeyboardEventArgs args)
+		{
+            if (_selectedPlayer != null && _selectedCity == null && _citySelect != null)
             {
-                X = xx + 2,
-                Y = yy + 11,
-                MenuWidth = ww - 4,
-                ActiveColour = 11,
-                TextColour = 5,
-                DisabledColour = 3,
-                FontId = 0,
-                Indent = 8
-            };
-
-            foreach (IBuilding bldg in bldgs)
-            {
-                _bldgSelect.Items.Add($"{bldg.Name}").OnSelect(BAccept);
+                bool handled = _citySelect.KeyDown(args);
+                if (handled) Refresh();
+                return handled;
             }
 
-            if (more)
+            if (IsBuildingSelectionActive && _buildingSelect != null)
+			{
+				bool handled = _buildingSelect.KeyDown(args);
+				if (handled) Refresh();
+				return handled;
+			}
+
+			if (args.Key == Key.Escape)
+			{
+				Destroy();
+				return true;
+			}
+
+			return false;
+		}
+
+		public override bool MouseDown(ScreenEventArgs args)
+		{
+            if (_selectedPlayer != null && _selectedCity == null && _citySelect != null)
             {
-                _bldgSelect.Items.Add($" ---MORE---").OnSelect(BMore);
+                bool handled = _citySelect.MouseDown(args.X, args.Y);
+                if (handled) Refresh();
+                return handled;
             }
 
-            _bldgSelect.Cancel += Cancel;
-            _bldgSelect.MissClick += Cancel;
-            _bldgSelect.ActiveItem = (_bldgSelect.Items.Count - 1);
-        }
+            if (IsBuildingSelectionActive && _buildingSelect != null)
+			{
+				bool handled = _buildingSelect.MouseDown(args.X, args.Y);
+				if (handled) Refresh();
+				return handled;
+			}
+
+			return false;
+		}
 
 
         public AddBuilding() : base(MouseCursor.Pointer)
         {
+            Palette = Common.Screens.LastOrDefault()?.OriginalColours ?? Common.DefaultPalette;
+
             if (_cities.Length == 0)
             {
                 GameTask.Enqueue(Message.General($"There are no cities yet."));
                 return;
             }
 
-            CitiesMenu();
+            _playerSelect = CreatePlayerSelectDelegate();
+            DrawPlayerMenuDialog();
         }
 
     }

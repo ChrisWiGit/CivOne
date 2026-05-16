@@ -15,18 +15,15 @@ using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.Tiles;
 using CivOne.Units;
-using CivOne.UserInterface;
 
 namespace CivOne.Screens.Debug
 {
 	[ScreenResizeable]
 	internal class SpawnUnit : BaseScreen
     {
-		private const int MENU_WIDTH = 136;
-
 		private readonly IUnit[] _units = [.. Reflect.GetUnits().OrderBy(x => x.Name)];
 
-		private readonly Menu _civSelect;
+		private readonly CivSelectMenuDelegate _civSelect;
 		private GridMenuDelegate _unitSelect;
 
 		private Player _selectedPlayer = null;
@@ -45,26 +42,10 @@ namespace CivOne.Screens.Debug
 		private int _unitX, _unitY;
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => Math.Max(0, (Height - 200) / 2);
-		private readonly int _civMenuHeight;
 
 		private void DrawCivMenuDialog()
 		{
-			int xx = OffsetX + ((320 - MENU_WIDTH) / 2);
-			int yy = OffsetY + ((200 - _civMenuHeight) / 2);
-
-			Picture menuGfx = new Picture(MENU_WIDTH, _civMenuHeight)
-				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D()
-				.As<Picture>();
-
-			this.Clear();
-			this.FillRectangle(xx - 1, yy - 1, MENU_WIDTH + 2, _civMenuHeight + 2, 5)
-				.AddLayer(menuGfx, xx, yy, dispose: true)
-				.DrawText("Spawn Unit...", 0, 15, xx + 8, yy + 3);
-
-			_civSelect.X = xx + 2;
-			_civSelect.Y = yy + 11;
-			_civSelect.ForceUpdate();
+			_civSelect.DrawDialog(this, OffsetX, OffsetY);
 		}
 
 		private int UnitX
@@ -96,11 +77,19 @@ namespace CivOne.Screens.Debug
 			_unitSelect.Cancelled += SpawnUnit_Cancel;
 		}
 
-		private void CivSelect_Accept(object sender, EventArgs args)
+		private void OnCivSelected(Player player)
 		{
-			_selectedPlayer = Game.GetPlayer((byte)_civSelect.ActiveItem);
+			_selectedPlayer = player;
 			Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
 			CloseMenus();
+		}
+
+		private CivSelectMenuDelegate CreateCivSelectDelegate()
+		{
+			CivSelectMenuDelegate delegate_ = new(Palette, "Spawn Unit...");
+			delegate_.PlayerSelected += OnCivSelected;
+			delegate_.Cancelled += SpawnUnit_Cancel;
+			return delegate_;
 		}
 
 		private void UnitSelected(int index)
@@ -179,44 +168,65 @@ namespace CivOne.Screens.Debug
 		
 		public override bool MouseDown(ScreenEventArgs args)
 		{
-			if (_selectedPlayer != null && _selectedUnit == null && _unitSelect != null)
-			{
-				bool handled = _unitSelect.MouseDown(args.X, args.Y);
-				if (handled) Refresh();
-				return handled;
-			}
-
+			if (TryHandleUnitGridMouseDown(args)) return true;
 			if (_selectedUnit == null) return false;
 
-			if (ValidTile)
+			bool validTile = ValidTile;
+			if (validTile)
 			{
-				IUnit unit = Game.CreateUnit(_selectedUnit.Type, UnitX, UnitY, Game.PlayerNumber(_selectedPlayer), false);
-				if (unit.Class == UnitClass.Land && Map[UnitX, UnitY].Type == Terrain.Ocean) unit.Sentry = true;
-
-				if (Game.PlayerNumber(_selectedPlayer) < Game.PlayerNumber(Game.CurrentPlayer))
-				{
-					unit.MovesLeft = 0;
-				}
-
-				if (unit.Class == UnitClass.Land && Map[UnitX, UnitY].Hut)
-				{
-					Map[UnitX, UnitY].Hut = false;
-				}
-
-				if (unit.Class == UnitClass.Air)
-				{
-					(unit as BaseUnitAir).FuelLeft = (unit as BaseUnitAir).TotalFuel;
-				}
-				
-				unit.Explore();
-				_hasUpdate = true;
-				Common.GamePlay.RefreshMap();
+				SpawnSelectedUnit();
 			}
-			if ((args.Buttons & MouseButton.Left) > 0 || !ValidTile)
+
+			if ((args.Buttons & MouseButton.Left) > 0 || !validTile)
 			{
 				Destroy();
 			}
 			return true;
+		}
+
+		private bool TryHandleUnitGridMouseDown(ScreenEventArgs args)
+		{
+			if (_selectedPlayer == null || _selectedUnit != null || _unitSelect == null) return false;
+
+			bool handled = _unitSelect.MouseDown(args.X, args.Y);
+			if (handled) Refresh();
+			return handled;
+		}
+
+		private void SpawnSelectedUnit()
+		{
+			IUnit unit = Game.CreateUnit(_selectedUnit.Type, UnitX, UnitY, Game.PlayerNumber(_selectedPlayer), false);
+			ApplySpawnRules(unit);
+			unit.Explore();
+			_hasUpdate = true;
+			Common.GamePlay.RefreshMap();
+		}
+
+		private void ApplySpawnRules(IUnit unit)
+		{
+			if (unit.Class == UnitClass.Land && Map[UnitX, UnitY].Type == Terrain.Ocean)
+			{
+				unit.Sentry = true;
+			}
+
+			if (Game.PlayerNumber(_selectedPlayer) < Game.PlayerNumber(Game.CurrentPlayer))
+			{
+				unit.MovesLeft = 0;
+			}
+
+			if (unit.Class == UnitClass.Land && Map[UnitX, UnitY].Hut)
+			{
+				Map[UnitX, UnitY].Hut = false;
+			}
+
+			if (unit.Class == UnitClass.Air)
+			{
+				BaseUnitAir airUnit = unit as BaseUnitAir;
+				if (airUnit != null)
+				{
+					airUnit.FuelLeft = airUnit.TotalFuel;
+				}
+			}
 		}
 
 		public override bool MouseMove(ScreenEventArgs args)
@@ -241,95 +251,88 @@ namespace CivOne.Screens.Debug
 		{
 			if (RefreshNeeded())
 			{
-				if (_selectedPlayer == null)
-				{
-					DrawCivMenuDialog();
-					if (!_menus.Contains(_civSelect))
-					{
-						AddMenu(_civSelect);
-					}
-				}
-				else if (_selectedUnit == null)
-				{
-					CloseMenus();
-					if (_unitSelect == null)
-					{
-						CreateUnitGrid();
-					}
-					_unitSelect.Draw(this, "Spawn Unit...", CanvasHeight);
-				}
-				else
-				{
-					_hasUpdate = true;
-				}
+				HandleRefreshNeeded();
 				return true;
 			}
 
-			if (_selectedPlayer == null && Common.TopScreen.GetType() != typeof(Menu))
+			if (TryEnsureCivMenuVisible()) return false;
+			if (TryDrawUnitSelectionGrid()) return false;
+			if (TryDrawUnitPreview()) return false;
+
+			return true;
+		}
+
+		private void HandleRefreshNeeded()
+		{
+			if (_selectedPlayer == null)
 			{
-				AddMenu(_civSelect);
-				return false;
-			}
-			else if (_selectedPlayer != null && _selectedUnit == null)
-			{
-				if (_unitSelect == null)
+				DrawCivMenuDialog();
+				if (!_menus.Contains(_civSelect.Menu))
 				{
-					CreateUnitGrid();
+					AddMenu(_civSelect.Menu);
 				}
-				_unitSelect.Draw(this, "Spawn Unit...", CanvasHeight);
-				return false;
+				return;
 			}
-			else if (_selectedUnit != null && _hasUpdate)
+
+			if (_selectedUnit == null)
 			{
-				int xx = (_unitX * 16) + (Settings.RightSideBar ? 0 : 80);
-				int yy = (_unitY * 16) + 8;
-
-				if (xx > Width || yy > Height) return false;
-
-				Bitmap.Clear();
-				SidebarHint();
-				_cursor = ValidTile ? MouseCursor.Goto : MouseCursor.Pointer;
-				if (!ValidTile) return _hasUpdate;
-				this.AddLayer(_selectedUnit.ToBitmap(Game.PlayerNumber(_selectedPlayer), false), xx, yy);
-				
-				return false;
+				CloseMenus();
+				DrawUnitSelectionGrid();
+				return;
 			}
+
+			_hasUpdate = true;
+		}
+
+		private bool TryEnsureCivMenuVisible()
+		{
+			if (_selectedPlayer != null || _menus.Contains(_civSelect.Menu)) return false;
+
+			AddMenu(_civSelect.Menu);
+			return true;
+		}
+
+		private bool TryDrawUnitSelectionGrid()
+		{
+			if (_selectedPlayer == null || _selectedUnit != null) return false;
+
+			DrawUnitSelectionGrid();
+			return true;
+		}
+
+		private void DrawUnitSelectionGrid()
+		{
+			if (_unitSelect == null)
+			{
+				CreateUnitGrid();
+			}
+			_unitSelect.Draw(this, "Spawn Unit...", CanvasHeight);
+		}
+
+		private bool TryDrawUnitPreview()
+		{
+			if (_selectedUnit == null || !_hasUpdate) return false;
+
+			int xx = (_unitX * 16) + (Settings.RightSideBar ? 0 : 80);
+			int yy = (_unitY * 16) + 8;
+			if (xx > Width || yy > Height) return true;
+
+			Bitmap.Clear();
+			SidebarHint();
+			bool validTile = ValidTile;
+			_cursor = validTile ? MouseCursor.Goto : MouseCursor.Pointer;
+			if (validTile)
+			{
+				this.AddLayer(_selectedUnit.ToBitmap(Game.PlayerNumber(_selectedPlayer), false), xx, yy);
+			}
+
 			return true;
 		}
 
 		public SpawnUnit()
 		{
 			Palette = Common.DefaultPalette;
-
-			int fontHeight = Resources.GetFontHeight(0);
-			_civMenuHeight = (fontHeight * (Game.Players.Count() + 1)) + 5;
-
-			Picture menuGfx = new Picture(MENU_WIDTH, _civMenuHeight)
-				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D()
-				.As<Picture>();
-			IBitmap menuBackground = menuGfx[2, 11, MENU_WIDTH - 4, _civMenuHeight - 11].ColourReplace((7, 11), (22, 3));
-
-			_civSelect = new Menu(Palette, menuBackground)
-			{
-				X = 0,
-				Y = 0,
-				MenuWidth = MENU_WIDTH - 4,
-				ActiveColour = 11,
-				TextColour = 5,
-				DisabledColour = 3,
-				FontId = 0,
-				Indent = 8
-			};
-
-			foreach (Player player in Game.Players)
-			{
-				_civSelect.Items.Add(player.TribeNamePlural).OnSelect(CivSelect_Accept);
-			}
-
-			_civSelect.Cancel += SpawnUnit_Cancel;
-			_civSelect.MissClick += SpawnUnit_Cancel;
-			_civSelect.ActiveItem = Game.PlayerNumber(Human);
+			_civSelect = CreateCivSelectDelegate();
 
 			DrawCivMenuDialog();
 		}
