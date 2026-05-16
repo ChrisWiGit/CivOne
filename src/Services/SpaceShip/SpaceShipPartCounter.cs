@@ -117,6 +117,13 @@ namespace CivOne.Services.SpaceShip
 				}
 			}
 
+			// Special case, but if there are 3 or more life support/habitation modules, 
+			// then there must be at least 1 command module, even if it isn't actually present on the grid.
+			if (commandModule == 0 && (lifeSupportModule + habitationModule) >= 3)
+			{
+				commandModule = 1;
+			}
+
 			return new SpaceShipPartCounts(
 				structural,
 				component,

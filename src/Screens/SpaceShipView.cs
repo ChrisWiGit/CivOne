@@ -106,6 +106,12 @@ namespace CivOne.Screens
 			}
 		}
 
+		private string FormatYearLabel(int year)
+		{
+			ushort turn = _calendarService.YearToTurn(year);
+			return _calendarService.FormatYear(turn);
+		}
+
 		private void RefreshData()
 		{
 			_data = _service.GetScreenData();
@@ -171,7 +177,7 @@ namespace CivOne.Screens
 		{
 			this.Clear(_playerBackgroundColor);
 
-			this.DrawText($"{_player.TribeName} SpaceShip: R.S.S. Caesar", TitleFontId, 5, 160, TitleBarTop, TextAlign.Center);
+			this.DrawText($"{_player.TribeName} SpaceShip: R.S.S. Caesar", TitleFontId, 15, 160, TitleBarTop, TextAlign.Center);
 		}
 
 		private void DrawSidePanel(int ox, int oy)
@@ -196,6 +202,11 @@ namespace CivOne.Screens
 			DrawLocalizedText("Success:", 0, textColour, ox + SidePanelLeft, oy + 130, TextAlign.Left)
 			.DrawText($"{_data.SuccessProbabilityPercent}%", 0, textColour, ox + SidePanelLeft, oy + 138, TextAlign.Left);
 
+			if (_debug)
+			{
+				this.DrawText($"S:{_data.StructuralCount} C:{_data.ComponentCount} M:{_data.ModuleCount}", 0, 15, ox + 4, oy + 2, TextAlign.Left);
+			}
+
 			if (!HasLaunched)
 			{
 				DrawLocalizedText("Can Launch:", 0, textColour, ox + 236, oy + 148, TextAlign.Left)
@@ -208,10 +219,13 @@ namespace CivOne.Screens
 			}
 			else
 			{
+				int launchYear = _player.SpaceShipLaunchYear;
+				int arrivalYear = launchYear + (int)Math.Ceiling(_data.FlightTimeYears);
+
 				DrawLocalizedText("Launched:", 0, textColour, ox + 236, oy + 148, TextAlign.Left)
-				.DrawText($"{_player.SpaceShipLaunchYear} AD", 0, textColour, ox + 236, oy + 156, TextAlign.Left);
+				.DrawText(FormatYearLabel(launchYear), 0, textColour, ox + 236, oy + 156, TextAlign.Left);
 				DrawLocalizedText("Est. Arrival:", 0, textColour, ox + 236, oy + 166, TextAlign.Left)
-				.DrawText($"{_player.SpaceShipLaunchYear + (int)Math.Ceiling(_data.FlightTimeYears)} AD", 0, textColour, ox + 236, oy + 174, TextAlign.Left);
+				.DrawText(FormatYearLabel(arrivalYear), 0, textColour, ox + 236, oy + 174, TextAlign.Left);
 
 			}
 
@@ -219,10 +233,10 @@ namespace CivOne.Screens
 			{
 				int fontHeight = _resources.GetFontHeight(0);
 				int yy = oy + 184 - 3 * fontHeight;
-				this.DrawText($"S:{_data.StructuralCount} C:{_data.ComponentCount} M:{_data.ModuleCount}", 0, 15, ox + 16, yy, TextAlign.Left);
-				this.DrawText("Debug: (L)aunch (B)ackgr F3/F4 dialogs (V)ictory", 0, 15, ox + 16, yy + fontHeight, TextAlign.Left);
-				string ruleMode = _useDebugRules ? "DBG" : "REAL";
-				this.DrawText($"Debug Rules={ruleMode} (F5)", 0, 15, ox + 16, yy + 2 * fontHeight, TextAlign.Left);
+				this.DrawText("(L)aunch (B)ackground (C)ivs", 0, 15, ox + 16, yy, TextAlign.Left);
+				this.DrawText("1 Struct. 2/F3 Compts.  3/F4 Modules", 0, 15, ox + 16, yy + fontHeight, TextAlign.Left);
+				string ruleMode = _useDebugRules ? "Debug" : "Real";
+				this.DrawText($"F5:{ruleMode}  (V)ictory", 0, 15, ox + 16, yy + 2 * fontHeight, TextAlign.Left);
 			}
 		}
 
@@ -332,30 +346,77 @@ namespace CivOne.Screens
 				return true;
 			}
 
+			if (HandleDebugCivilizationSelect(args)
+				|| HandleDebugLaunchAndBackground(args)
+				|| HandleDebugRuleMode(args)
+				|| HandleDebugParts(args)
+				|| HandleDebugVictory(args))
+			{
+				return true;
+			}
+
+			return true;
+		}
+
+		private bool HandleDebugCivilizationSelect(KeyboardEventArgs args)
+		{
+			if (!IsCharacterKey(args, 'c'))
+			{
+				return false;
+			}
+
+			OpenDebugCivilizationSelector();
+			return true;
+		}
+
+		private bool HandleDebugLaunchAndBackground(KeyboardEventArgs args)
+		{
 			if (IsCharacterKey(args, 'l'))
 			{
-				_debugLaunch = true;
+				if (HasLaunched)
+				{
+					_player.SpaceShipLaunchYear = 0;
+					_debugLaunch = false;
+				}
+				else
+				{
+					_debugLaunch = true;
+					if (_player.SpaceShipLaunchYear == 0)
+					{
+						_player.SpaceShipLaunchYear = (short)_calendarService.TurnToYear(Game.GameTurn);
+					}
+				}
+
 				RefreshData();
 				return true;
 			}
 
-			if (IsCharacterKey(args, 'b'))
+			if (!IsCharacterKey(args, 'b'))
 			{
-				_playerBackgroundColor = (byte)((_playerBackgroundColor % 7) + 1);
-				
-				_playerBackgroundColor = _debug ? _playerBackgroundColor : PlayerColor;
-				RefreshData();
-				return true;
+				return false;
 			}
 
-			if (_debug && args[Key.F5])
+			_playerBackgroundColor = (byte)((_playerBackgroundColor % 7) + 1);
+			_playerBackgroundColor = _debug ? _playerBackgroundColor : PlayerColor;
+			RefreshData();
+			return true;
+		}
+
+		private bool HandleDebugRuleMode(KeyboardEventArgs args)
+		{
+			if (!_debug || !args[Key.F5])
 			{
-				_useDebugRules = !_useDebugRules;
-				_service = _useDebugRules ? _debugService : _standardService;
-				RefreshData();
-				return true;
+				return false;
 			}
 
+			_useDebugRules = !_useDebugRules;
+			_service = _useDebugRules ? _debugService : _standardService;
+			RefreshData();
+			return true;
+		}
+
+		private bool HandleDebugParts(KeyboardEventArgs args)
+		{
 			if (args[Key.NumPad1] || IsCharacterKey(args, '1'))
 			{
 				_service.TryAddPart(SpaceShipComponentType.Structural);
@@ -383,19 +444,52 @@ namespace CivOne.Screens
 				return true;
 			}
 
-			if (args[Key.F4])
+			if (!args[Key.F4])
 			{
-				Common.AddScreen(new SpaceShipPartSelectorDialog(_service, SpaceShipComponentType.Module, RefreshData, _debug));
-				return true;
+				return false;
 			}
 
-			if (IsCharacterKey(args, 'v'))
-			{
-				GameTask.Enqueue(Show.Screen(new SpaceVictory(_player)));
-				return true;
-			}
-
+			Common.AddScreen(new SpaceShipPartSelectorDialog(_service, SpaceShipComponentType.Module, RefreshData, _debug));
 			return true;
+		}
+
+		private bool HandleDebugVictory(KeyboardEventArgs args)
+		{
+			if (!IsCharacterKey(args, 'v'))
+			{
+				return false;
+			}
+
+			GameTask.Enqueue(Show.Screen(new SpaceVictory(_player)));
+			return true;
+		}
+
+		private void OpenDebugCivilizationSelector()
+		{
+			SpaceShipCivilizationSelectorServices selectorServices = new()
+			{
+				SelectorService = new SpaceShipCivilizationSelectorService(
+					new SpaceShipCivilizationEligibilityEvaluator(),
+					includeDestroyed: true,
+					includeDisabled: true),
+				TranslationService = Translation
+			};
+
+			Common.AddScreen(new SpaceShipCivilizationSelectorDialog(OpenSelectedDebugCivilization, selectorServices));
+		}
+
+		private void OpenSelectedDebugCivilization(Player player)
+		{
+			if (player == null)
+			{
+				return;
+			}
+
+			Common.AddScreen(new SpaceShipView(
+				player,
+				debug: true,
+				services: SpaceShipViewServicesFactory.CreateDefault(Translation),
+				viewOnly: false));
 		}
 
 		private static bool IsCharacterKey(KeyboardEventArgs args, char key) => args[Key.Character] && (args.KeyChar == key || args.KeyChar == char.ToUpperInvariant(key));

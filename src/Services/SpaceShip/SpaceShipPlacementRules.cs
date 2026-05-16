@@ -35,6 +35,7 @@ namespace CivOne.Services.SpaceShip
 			SpaceShipComponentType.PropulsionComponent => _slotBlueprint.PropulsionOrder,
 
 			SpaceShipComponentType.Module => _slotBlueprint.ModuleOrder,
+			SpaceShipComponentType.CommandModule => FindSlots(_slotBlueprint.SlotMap, 'C'),
 			SpaceShipComponentType.LifeSupportModule => _slotBlueprint.LifeSupportOrder,
 			SpaceShipComponentType.HabitationModule => _slotBlueprint.HabitationOrder,
 			SpaceShipComponentType.SolarPanelModule => _slotBlueprint.SolarPanelOrder,

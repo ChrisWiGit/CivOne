@@ -82,9 +82,14 @@ namespace CivOne.Screens
 		}
 	}
 
-	internal sealed class SpaceShipCivilizationSelectorService(ISpaceShipCivilizationEligibilityEvaluator eligibilityEvaluator) : ISpaceShipCivilizationSelectorService
+	internal sealed class SpaceShipCivilizationSelectorService(
+		ISpaceShipCivilizationEligibilityEvaluator eligibilityEvaluator,
+		bool includeDestroyed = false,
+		bool includeDisabled = false) : ISpaceShipCivilizationSelectorService
 	{
 		private readonly ISpaceShipCivilizationEligibilityEvaluator _eligibilityEvaluator = eligibilityEvaluator ?? throw new ArgumentNullException(nameof(eligibilityEvaluator));
+		private readonly bool _includeDestroyed = includeDestroyed;
+		private readonly bool _includeDisabled = includeDisabled;
 
 		public SpaceShipCivilizationListItem[] GetCivilizations()
 		{
@@ -102,12 +107,18 @@ namespace CivOne.Screens
 			List<SpaceShipCivilizationListItem> items = [];
 			foreach (Player player in game.Players)
 			{
-				if (player == null || player.Civilization is Barbarian || player.IsDestroyed)
+				if (player == null || player.Civilization is Barbarian)
 				{
 					continue;
 				}
 
-				items.Add(new SpaceShipCivilizationListItem(player, _eligibilityEvaluator.IsEnabled(player)));
+				if (!_includeDestroyed && player.IsDestroyed)
+				{
+					continue;
+				}
+
+				bool isEnabled = _includeDisabled || _eligibilityEvaluator.IsEnabled(player);
+				items.Add(new SpaceShipCivilizationListItem(player, isEnabled));
 			}
 
 			return [.. items];

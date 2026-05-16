@@ -128,6 +128,59 @@ bonus = (trade1 + trade2 + 4) / 8
 
 * In [City View](./src/Screens/CityManagerPanels/CityInfoUnits.cs) shall show trading cities with trade values.
 
+## SpaceShip Launch Condition and Flight Duration
+
+### Launch condition
+
+The launch check is implemented in:
+
+* [src/Services/SpaceShip/SpaceShipLaunchRules.cs](./src/Services/SpaceShip/SpaceShipLaunchRules.cs)
+
+Current behavior:
+
+* Launch is only possible if `SpaceShipLaunchYear == 0` (not launched yet).
+* The game uses detailed rules if detailed parts exist.
+* Detailed launch requires:
+  * `CommandModule >= 1`
+  * `HabitationModule >= 1`
+  * `LifeSupportModule >= 1`
+  * `PropulsionComponent >= 2`
+  * `FuelComponent >= 2`
+  * `StructuralTotal > 0`
+
+Important detail:
+
+* The command module is currently treated as automatically present when
+  `LifeSupportModule + HabitationModule >= 3`, even if no explicit command module slot exists in the ship grid.
+* This logic is implemented in:
+  * [src/Services/SpaceShip/SpaceShipPartCounter.cs](./src/Services/SpaceShip/SpaceShipPartCounter.cs)
+
+### Flight duration
+
+The flight time calculation is implemented in:
+
+* [src/Services/SpaceShip/SpaceShipScreenDataFactory.cs](./src/Services/SpaceShip/SpaceShipScreenDataFactory.cs)
+
+Current formula:
+
+```text
+flightTimeYears = max(3.0, 22.0 - propulsionCount * 2.1 - fuelCount * 0.6)
+```
+
+Special case:
+
+* If `propulsionCount == 0`, flight time is `0.0`.
+
+Arrival year display is calculated in:
+
+* [src/Screens/SpaceShipView.cs](./src/Screens/SpaceShipView.cs)
+
+The view uses:
+
+```text
+arrivalYear = launchYear + ceil(flightTimeYears)
+```
+
 ## DrawText Symbols
 
 | Symbol | Meaning         |
