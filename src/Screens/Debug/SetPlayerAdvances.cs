@@ -25,10 +25,8 @@ namespace CivOne.Screens.Debug
 		private readonly IAdvanceManagementService _advanceService;
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => Math.Max(0, (Height - 200) / 2);
-		private readonly int _playerMenuWidth;
-		private readonly int _playerMenuHeight;
 
-		private Menu _civSelect;
+		private CivSelectMenuDelegate _civSelectDelegate;
 
 		// Grid state
 		private IAdvance[][] _advanceGrid;
@@ -164,21 +162,7 @@ namespace CivOne.Screens.Debug
 
 		private void DrawPlayerMenuDialog()
 		{
-			int xx = OffsetX + ((320 - _playerMenuWidth) / 2);
-			int yy = OffsetY + ((200 - _playerMenuHeight) / 2);
-
-			Picture menuGfx = new Picture(_playerMenuWidth, _playerMenuHeight)
-				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D()
-				.As<Picture>();
-
-			this.Clear();
-			this.FillRectangle(xx - 1, yy - 1, _playerMenuWidth + 2, _playerMenuHeight + 2, 5)
-				.AddLayer(menuGfx, xx, yy, dispose: true)
-				.DrawText("Set Player Advances...", 0, 15, xx + 8, yy + 3);
-
-			_civSelect.X = xx + 2;
-			_civSelect.Y = yy + 11;
+			_civSelectDelegate.DrawDialog(this, OffsetX, OffsetY);
 		}
 
 		private void InitializeGrid()
@@ -311,38 +295,17 @@ namespace CivOne.Screens.Debug
 			return suffix;
 		}
 
-		private Menu CreateCivSelectMenu()
+		private CivSelectMenuDelegate CreateCivSelectDelegate()
 		{
-			Picture menuGfx = new Picture(_playerMenuWidth, _playerMenuHeight)
-				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D()
-				.As<Picture>();
-			IBitmap menuBackground = menuGfx[2, 11, _playerMenuWidth - 4, _playerMenuHeight - 11].ColourReplace((7, 11), (22, 3));
-
-			Menu menu = new(Palette, menuBackground)
-			{
-				X = 0,
-				Y = 0,
-				MenuWidth = _playerMenuWidth - 4,
-				ActiveColour = 11,
-				TextColour = 5,
-				DisabledColour = 3,
-				FontId = 0,
-				Indent = 8
-			};
-
-			foreach (Player player in Game.Players)
-				menu.Items.Add(player.TribeNamePlural).OnSelect(CivSelect_Accept);
-
-			menu.Cancel += OnCancel;
-			menu.MissClick += OnCancel;
-			menu.ActiveItem = Game.PlayerNumber(Human);
-			return menu;
+			var delegate_ = new CivSelectMenuDelegate(Palette, "Set Player Advances...");
+			delegate_.PlayerSelected += OnCivSelected;
+			delegate_.Cancelled += OnCancel;
+			return delegate_;
 		}
 
-		private void CivSelect_Accept(object sender, EventArgs args)
+		private void OnCivSelected(Player player)
 		{
-			_selectedPlayer = Game.GetPlayer((byte)_civSelect.ActiveItem);
+			_selectedPlayer = player;
 			_advanceGrid = null;
 			CloseMenus();
 			Refresh();
@@ -376,7 +339,7 @@ namespace CivOne.Screens.Debug
 
 				if (Common.TopScreen.GetType() != typeof(Menu))
 				{
-					AddMenu(_civSelect);
+					AddMenu(_civSelectDelegate.Menu);
 					return false;
 				}
 			}
@@ -441,7 +404,7 @@ namespace CivOne.Screens.Debug
 
 				case Key.Escape:
 					_selectedPlayer = null;
-					_civSelect = CreateCivSelectMenu();
+					_civSelectDelegate = CreateCivSelectDelegate();
 					Refresh();
 					return true;
 			}
@@ -471,13 +434,9 @@ namespace CivOne.Screens.Debug
 		public SetPlayerAdvances() : base(MouseCursor.Pointer)
 		{
 			_advanceService = new AdvanceManagementService();
-			Palette sourcePalette = Common.Screens.LastOrDefault()?.OriginalColours ?? Common.DefaultPalette;
-			Palette = sourcePalette;
-			int fontHeight = Resources.GetFontHeight(0);
-			_playerMenuHeight = fontHeight * (Game.Players.Count() + 2);
-			_playerMenuWidth = 136;
+			Palette = Common.Screens.LastOrDefault()?.OriginalColours ?? Common.DefaultPalette;
 
-			_civSelect = CreateCivSelectMenu();
+			_civSelectDelegate = CreateCivSelectDelegate();
 
 			DrawPlayerMenuDialog();
 		}
