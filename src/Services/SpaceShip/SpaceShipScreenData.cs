@@ -9,6 +9,10 @@
 
 namespace CivOne.Services.SpaceShip
 {
+	/// <summary>
+	/// Snapshot of derived spaceship metrics for UI rendering and launch readiness display.
+	/// Created by <see cref="ISpaceShipScreenDataFactory"/>.
+	/// </summary>
 	public record SpaceShipScreenData(
 		int Population,
 		int SupportPercent,

@@ -11,6 +11,9 @@ using CivOne.Enums;
 
 namespace CivOne.Services.SpaceShip
 {
+	/// <summary>
+	/// Default launch validation logic supporting both legacy and detailed spaceship part models.
+	/// </summary>
 	public class SpaceShipLaunchRules : ISpaceShipLaunchRules
 	{
 		private static bool CanLaunchLegacy(SpaceShipPartCounts counts)

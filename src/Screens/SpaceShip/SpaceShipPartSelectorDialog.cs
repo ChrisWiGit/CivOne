@@ -17,6 +17,10 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens
 {
+	/// <summary>
+	/// Modal chooser for concrete spaceship parts when the user selects a generic family
+	/// such as <see cref="SpaceShipComponentType.Component"/> or <see cref="SpaceShipComponentType.Module"/>.
+	/// </summary>
 	[Modal, ScreenResizeable]
 	internal sealed class SpaceShipPartSelectorDialog : BaseScreen
 	{

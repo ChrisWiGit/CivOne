@@ -11,6 +11,9 @@ using System;
 
 namespace CivOne.Services.SpaceShip
 {
+	/// <summary>
+	/// Default factory that wires one player to shared spaceship rule services.
+	/// </summary>
 	public class SpaceShipServiceFactory(
 		ISpaceShipPlacementRules placementRules,
 		ISpaceShipLaunchRules launchRules,
@@ -27,6 +30,9 @@ namespace CivOne.Services.SpaceShip
 		}
 	}
 
+	/// <summary>
+	/// Singleton provider for production and debug <see cref="ISpaceShipServiceFactory"/> instances.
+	/// </summary>
 	public static class SpaceShipServiceFactoryProvider
 	{
 		private static ISpaceShipServiceFactory _instance;

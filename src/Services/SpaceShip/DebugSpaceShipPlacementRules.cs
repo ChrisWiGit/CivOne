@@ -11,6 +11,9 @@ using CivOne.Enums;
 
 namespace CivOne.Services.SpaceShip
 {
+	/// <summary>
+	/// Debug variant of <see cref="SpaceShipPlacementRules"/> that allows placing any non-empty part type.
+	/// </summary>
 	public class DebugSpaceShipPlacementRules : SpaceShipPlacementRules
 	{
 		public DebugSpaceShipPlacementRules(ISpaceShipSlotBlueprint slotBlueprint) : base(slotBlueprint)

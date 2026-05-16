@@ -11,6 +11,9 @@ using CivOne.Enums;
 
 namespace CivOne.Services.SpaceShip
 {
+	/// <summary>
+	/// Aggregated spaceship part counters used by <see cref="SpaceShipLaunchRules"/> and <see cref="SpaceShipScreenDataFactory"/>.
+	/// </summary>
 	public readonly record struct SpaceShipPartCounts(
 		int Structural,
 		int Component,
@@ -34,6 +37,9 @@ namespace CivOne.Services.SpaceShip
 			+ FuelComponent + PropulsionComponent;
 	}
 
+	/// <summary>
+	/// Counts spaceship parts in the grid while handling multi-cell detailed modules.
+	/// </summary>
 	internal static class SpaceShipPartCounter
 	{
 		private static bool IsLargeDetailedPart(SpaceShipComponentType type) =>

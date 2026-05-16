@@ -13,6 +13,10 @@ using CivOne.Enums;
 
 namespace CivOne.Services.SpaceShip
 {
+	/// <summary>
+	/// High-level API for building and launching a player's spaceship.
+	/// Implemented by <see cref="SpaceShipService"/> and consumed by <see cref="CivOne.Screens.SpaceShipView"/>.
+	/// </summary>
 	public interface ISpaceShipService
 	{
 		bool CanAddAnyPart();
@@ -22,6 +26,9 @@ namespace CivOne.Services.SpaceShip
 		SpaceShipScreenData GetScreenData();
 	}
 
+	/// <summary>
+	/// Minimal player projection used by spaceship services to avoid direct coupling to full <see cref="Player"/> behavior.
+	/// </summary>
 	public interface IPlayerSpaceRace
 	{
 		SpaceShipComponentType[,] SpaceShipGrid { get; set; }
@@ -33,27 +40,43 @@ namespace CivOne.Services.SpaceShip
 		bool HasApolloProgram();
 	}
 
+	/// <summary>
+	/// Factory for creating <see cref="ISpaceShipService"/> instances per player.
+	/// </summary>
 	public interface ISpaceShipServiceFactory
 	{
 		ISpaceShipService Create(Player player);
 	}
 
+	/// <summary>
+	/// Placement rules for adding spaceship parts to the canonical grid.
+	/// </summary>
 	public interface ISpaceShipPlacementRules
 	{
 		bool CanAddPart(IPlayerSpaceRace player, SpaceShipComponentType partType);
 		bool TryAddPart(IPlayerSpaceRace player, SpaceShipComponentType partType);
 	}
 
+	/// <summary>
+	/// Launch validation rules for a player's spaceship.
+	/// </summary>
 	public interface ISpaceShipLaunchRules
 	{
 		bool CanLaunch(IPlayerSpaceRace player);
 	}
 
+	/// <summary>
+	/// Creates derived UI metrics for the spaceship screen from current player state.
+	/// </summary>
 	public interface ISpaceShipScreenDataFactory
 	{
 		SpaceShipScreenData Create(IPlayerSpaceRace player, bool canLaunch);
 	}
 
+	/// <summary>
+	/// Immutable slot and render blueprint for spaceship construction layout.
+	/// Produced by <see cref="ISpaceShipSlotBlueprintFactory"/>.
+	/// </summary>
 	public interface ISpaceShipSlotBlueprint
 	{
 		string[] SlotMap { get; }
@@ -140,6 +163,9 @@ namespace CivOne.Services.SpaceShip
 	}
 
 
+	/// <summary>
+	/// Factory for creating canonical spaceship slot blueprints.
+	/// </summary>
 	public interface ISpaceShipSlotBlueprintFactory
 	{
 		ISpaceShipSlotBlueprint Create();

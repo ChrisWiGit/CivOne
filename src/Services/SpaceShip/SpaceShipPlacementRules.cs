@@ -12,6 +12,9 @@ using CivOne.Enums;
 
 namespace CivOne.Services.SpaceShip
 {
+	/// <summary>
+	/// Canonical placement engine for spaceship parts based on <see cref="ISpaceShipSlotBlueprint"/> order maps and footprints.
+	/// </summary>
 	public class SpaceShipPlacementRules : ISpaceShipPlacementRules
 	{
 		private readonly ISpaceShipSlotBlueprint _slotBlueprint;

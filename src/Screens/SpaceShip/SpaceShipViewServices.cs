@@ -15,10 +15,16 @@ using CivOne.Services.SpaceShip;
 
 namespace CivOne.Screens
 {
+	/// <summary>
+	/// Resource abstraction used by <see cref="SpaceShipView"/> for bitmap and font access.
+	/// </summary>
 	public interface ISpaceShipResourceService : IResourceFileBitmapProvider, IResourceFontHeightProvider
 	{
 	}
 
+	/// <summary>
+	/// Aggregates all dependencies required to construct <see cref="SpaceShipView"/>.
+	/// </summary>
 	public sealed class SpaceShipViewServices
 	{
 		public required ISpaceShipServiceFactory SpaceShipServiceFactory { get; init; }
@@ -30,6 +36,9 @@ namespace CivOne.Screens
 		public required IRandomService RandomService { get; init; }
 	}
 
+	/// <summary>
+	/// Adapts generic resource services to <see cref="ISpaceShipResourceService"/> for spaceship rendering.
+	/// </summary>
 	internal sealed class SpaceShipResourceServiceAdapter(IResourceFileBitmapProvider bitmapProvider, IResourceFontHeightProvider fontHeightProvider) : ISpaceShipResourceService
 	{
 		private readonly IResourceFileBitmapProvider _bitmapProvider = bitmapProvider;

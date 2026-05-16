@@ -22,6 +22,10 @@ using CivOne.Tasks;
 
 namespace CivOne.Screens
 {
+	/// <summary>
+	/// Main spaceship construction and launch screen.
+	/// Coordinates rendering and user input with <see cref="ISpaceShipService"/>, <see cref="ISpaceShipSpriteProvider"/>, and <see cref="ISpaceShipSlotBlueprint"/>.
+	/// </summary>
 	[ScreenResizeable]
 	internal class SpaceShipView : BaseScreen
 	{
@@ -202,22 +206,7 @@ namespace CivOne.Screens
 			DrawLocalizedText("Success:", 0, textColour, ox + SidePanelLeft, oy + 130, TextAlign.Left)
 			.DrawText($"{_data.SuccessProbabilityPercent}%", 0, textColour, ox + SidePanelLeft, oy + 138, TextAlign.Left);
 
-			if (_debug)
-			{
-				this.DrawText($"S:{_data.StructuralCount} C:{_data.ComponentCount} M:{_data.ModuleCount}", 0, 15, ox + 4, oy + 2, TextAlign.Left);
-			}
-
-			if (!HasLaunched)
-			{
-				DrawLocalizedText("Can Launch:", 0, textColour, ox + 236, oy + 148, TextAlign.Left)
-				.DrawText(canLaunch ? "YES" : "NO", 0, canLaunch ? (byte)2 : (byte)4, ox + 236, oy + 156, TextAlign.Left);
-
-				if (canLaunch && !_viewOnly)
-				{
-					DrawButton("LAUNCH", 0, 23, 5, LaunchButtonLeft, LaunchButtonTop, LaunchButtonWidth, LaunchButtonRenderHeight);
-				}
-			}
-			else
+			if (HasLaunched)
 			{
 				int launchYear = _player.SpaceShipLaunchYear;
 				int arrivalYear = launchYear + (int)Math.Ceiling(_data.FlightTimeYears);
@@ -228,9 +217,21 @@ namespace CivOne.Screens
 				.DrawText(FormatYearLabel(arrivalYear), 0, textColour, ox + 236, oy + 174, TextAlign.Left);
 
 			}
+			else
+			{
+				DrawLocalizedText("Can Launch:", 0, textColour, ox + 236, oy + 148, TextAlign.Left)
+				.DrawText(canLaunch ? "YES" : "NO", 0, canLaunch ? (byte)2 : (byte)4, ox + 236, oy + 156, TextAlign.Left);
+
+				if (canLaunch && !_viewOnly)
+				{
+					DrawButton("LAUNCH", 0, 23, 5, LaunchButtonLeft, LaunchButtonTop, LaunchButtonWidth, LaunchButtonRenderHeight);
+				}
+			}
 
 			if (_debug)
 			{
+				this.DrawText($"S:{_data.StructuralCount} C:{_data.ComponentCount} M:{_data.ModuleCount}", 0, 15, ox + 4, oy + 2, TextAlign.Left);
+
 				int fontHeight = _resources.GetFontHeight(0);
 				int yy = oy + 184 - 3 * fontHeight;
 				this.DrawText("(L)aunch (B)ackground (C)ivs", 0, 15, ox + 16, yy, TextAlign.Left);

@@ -11,6 +11,10 @@ using CivOne.Enums;
 
 namespace CivOne.Services.SpaceShip
 {
+	/// <summary>
+	/// Default <see cref="ISpaceShipService"/> implementation coordinating placement, launch checks,
+	/// and screen data generation for one player.
+	/// </summary>
 	public class SpaceShipService(
 		IPlayerSpaceRace player,
 		ISpaceShipPlacementRules placementRules,

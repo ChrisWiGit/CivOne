@@ -11,6 +11,9 @@ using CivOne.Graphics;
 
 namespace CivOne.Screens.SpaceShipAssets
 {
+	/// <summary>
+	/// Creates and caches the default <see cref="ISpaceShipSpriteProvider"/> for spaceship rendering.
+	/// </summary>
 	public static class SpaceShipSpriteProviderFactory
 	{
 		private static ISpaceShipSpriteProvider _instance;

@@ -15,6 +15,9 @@ using CivOne.Services.SpaceShip;
 
 namespace CivOne.Screens
 {
+	/// <summary>
+	/// Creates the default dependency graph for <see cref="SpaceShipView"/>.
+	/// </summary>
 	public static class SpaceShipViewServicesFactory
 	{
 		public static SpaceShipViewServices CreateDefault(ITranslationService translationService)

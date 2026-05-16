@@ -16,24 +16,41 @@ using CivOne.Wonders;
 
 namespace CivOne.Screens
 {
+	/// <summary>
+	/// One entry shown in <see cref="SpaceShipCivilizationSelectorDialog"/>.
+	/// Contains player reference and whether selection is currently enabled.
+	/// </summary>
 	public readonly record struct SpaceShipCivilizationListItem(Player Player, bool IsEnabled);
 
+	/// <summary>
+	/// Provides civilization entries for <see cref="SpaceShipCivilizationSelectorDialog"/>.
+	/// </summary>
 	public interface ISpaceShipCivilizationSelectorService
 	{
 		SpaceShipCivilizationListItem[] GetCivilizations();
 	}
 
+	/// <summary>
+	/// Evaluates if a specific civilization is selectable in the spaceship selector dialog.
+	/// </summary>
 	public interface ISpaceShipCivilizationEligibilityEvaluator
 	{
 		bool IsEnabled(Player player);
 	}
 
+	/// <summary>
+	/// Service bundle required by <see cref="SpaceShipCivilizationSelectorDialog"/>.
+	/// </summary>
 	public sealed class SpaceShipCivilizationSelectorServices
 	{
 		public required ISpaceShipCivilizationSelectorService SelectorService { get; init; }
 		public required ITranslationService TranslationService { get; init; }
 	}
 
+	/// <summary>
+	/// Default eligibility evaluator for the civilization selector.
+	/// Delegates checks to <see cref="SpaceShipCivilizationSelectionRules"/>.
+	/// </summary>
 	public sealed class SpaceShipCivilizationEligibilityEvaluator : ISpaceShipCivilizationEligibilityEvaluator
 	{
 		public bool IsEnabled(Player player)
@@ -48,6 +65,9 @@ namespace CivOne.Screens
 		}
 	}
 
+	/// <summary>
+	/// Shared rule set used to decide whether a civilization can be opened in <see cref="SpaceShipView"/>.
+	/// </summary>
 	public static class SpaceShipCivilizationSelectionRules
 	{
 		internal static bool IsEnabled(bool hasApolloProgram, SpaceShipComponentType[,] spaceShipGrid)
@@ -82,6 +102,9 @@ namespace CivOne.Screens
 		}
 	}
 
+	/// <summary>
+	/// Default selector implementation that reads players from <see cref="Game"/> and applies eligibility filters.
+	/// </summary>
 	internal sealed class SpaceShipCivilizationSelectorService(
 		ISpaceShipCivilizationEligibilityEvaluator eligibilityEvaluator,
 		bool includeDestroyed = false,

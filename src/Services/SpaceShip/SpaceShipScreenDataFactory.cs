@@ -11,6 +11,9 @@ using System;
 
 namespace CivOne.Services.SpaceShip
 {
+	/// <summary>
+	/// Builds <see cref="SpaceShipScreenData"/> values shown by <see cref="CivOne.Screens.SpaceShipView"/>.
+	/// </summary>
 	public class SpaceShipScreenDataFactory(ISpaceShipSlotBlueprint slotBlueprint) : ISpaceShipScreenDataFactory
 	{
 		private readonly ISpaceShipSlotBlueprint _slotBlueprint = slotBlueprint;

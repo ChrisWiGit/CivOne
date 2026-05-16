@@ -11,6 +11,9 @@ using CivOne.Enums;
 
 namespace CivOne.Services.SpaceShip
 {
+	/// <summary>
+	/// Helper for resolving concrete part choices for generic part families used by <see cref="CivOne.Screens.SpaceShipPartSelectorDialog"/>.
+	/// </summary>
 	public static class SpaceShipPartOptions
 	{
 		public static SpaceShipComponentType[] GetOptions(SpaceShipComponentType genericType) => genericType switch

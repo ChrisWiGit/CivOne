@@ -12,6 +12,10 @@ using CivOne.Graphics;
 
 namespace CivOne.Screens.SpaceShipAssets
 {
+	/// <summary>
+	/// Resolves spaceship part sprites from the shared <see cref="Resources"/> bitmap atlas.
+	/// Used as the default <see cref="ISpaceShipSpriteProvider"/> implementation.
+	/// </summary>
 	public class ResourcesSpaceShipSpriteProvider(Resources resources) : ISpaceShipSpriteProvider
 	{
 		private readonly string DOCKER_PIC = "DOCKER";

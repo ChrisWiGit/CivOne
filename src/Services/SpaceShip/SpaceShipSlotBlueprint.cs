@@ -253,11 +253,17 @@ namespace CivOne.Services.SpaceShip
 		}
 	}
 
+	/// <summary>
+	/// Default factory creating canonical <see cref="SpaceShipSlotBlueprint"/> instances.
+	/// </summary>
 	public class SpaceShipSlotBlueprintFactory : ISpaceShipSlotBlueprintFactory
 	{
 		public ISpaceShipSlotBlueprint Create() => new SpaceShipSlotBlueprint();
 	}
 
+	/// <summary>
+	/// Singleton provider for the shared <see cref="ISpaceShipSlotBlueprintFactory"/> used across spaceship services.
+	/// </summary>
 	public static class SpaceShipSlotBlueprintFactoryProvider
 	{
 		/// <summary>

@@ -11,6 +11,9 @@ using CivOne.Graphics;
 
 namespace CivOne.Screens.SpaceShipAssets
 {
+	/// <summary>
+	/// Applies frame-based palette animation for spaceship scene lights and module glow cycles.
+	/// </summary>
 	internal sealed class SpaceShipPaletteAnimationDelegate(Palette palette)
 	{
 		private const int LightsAnimationSpeed = 45;

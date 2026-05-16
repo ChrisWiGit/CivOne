@@ -17,6 +17,10 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens
 {
+	/// <summary>
+	/// Modal dialog that lists civilizations and opens a read-only <see cref="SpaceShipView"/> for the selected player.
+	/// Uses <see cref="ISpaceShipCivilizationSelectorService"/> data provided by <see cref="SpaceShipCivilizationSelectorServices"/>.
+	/// </summary>
 	[Modal, ScreenResizeable]
 	internal sealed class SpaceShipCivilizationSelectorDialog : BaseScreen
 	{
