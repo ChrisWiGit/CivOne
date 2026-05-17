@@ -52,12 +52,8 @@ namespace CivOne.Screens.Dialogs
 			bool modernGovernment = Human.HasAdvance<Invention>();
 			IBitmap governmentPortrait = Icons.GovernmentPortrait(Human.Government, Advisor.Defense, modernGovernment);
 			
-			Palette palette = Common.DefaultPalette;
-			for (int i = 144; i < 256; i++)
-			{
-				palette[i] = governmentPortrait.Palette[i];
-			}
-			this.SetPalette(palette);
+			using Palette palette = Common.DefaultPalette.Merge(governmentPortrait.Palette, 144);
+			Palette = palette;
 
 			DialogBox.AddLayer(governmentPortrait, 2, 2);
 			DialogBox.DrawText("Defense Minister:", 0, 15, 47, 4);

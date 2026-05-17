@@ -82,7 +82,9 @@ namespace CivOne.Screens
 			_title = title;
 			_message = message;
 
-			Palette = Common.DefaultPalette;
+			using var defaultPalette = Common.DefaultPalette;
+			Palette = defaultPalette;
+
 			Render();
 		}
 	}

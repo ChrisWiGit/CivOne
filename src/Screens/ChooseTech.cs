@@ -80,7 +80,7 @@ namespace CivOne.Screens
 			IBitmap governmentPortrait = Icons.GovernmentPortrait(Human.Government, Advisor.Science, modernGovernment);
 			using (Palette palette = Common.DefaultPalette)
 			{
-				palette.MergePalette(governmentPortrait.Palette, 144);
+				palette.Merge(governmentPortrait.Palette, 144);
 				Palette = palette;
 			}
 

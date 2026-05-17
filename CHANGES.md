@@ -6,6 +6,9 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Refactored palette handling
+  * Extended the `Palette.Merge` method and used it to improve performance and code clarity.
+  * Replaced all direct `Palette = Common.DefaultPalette` assignments with `using` blocks to ensure immediate disposal.
 * Barracks are now obsolete when Gunpowder or Combustion is discovered, i.e. all existing Barracks are removed immediately when either of these technologies is researched.
   * The behaviour can be turned on or off in the setup menu under "Remove obsolete buildings".
 * Settings (Shift-F1) shows a helpful description for each setting when it is selected.
