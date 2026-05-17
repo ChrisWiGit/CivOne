@@ -251,6 +251,43 @@ The following table summarizes the SpaceShip-related classes and core types and 
 | ~      | Light Bulb      |
 | _      | Sun             |
 
+## DrawButton / Font IDs
+
+`DrawButton` uses the provided `fontId` directly:
+
+```csharp
+DrawButton(string text, byte fontId, byte colour, byte colourDark, int x, int y, int width, int height)
+```
+
+There is also a shorthand overload without `fontId`, which defaults to font `1`:
+
+```csharp
+DrawButton(string text, byte colour, byte colourDark, int x, int y, int width)
+// internally uses fontId = 1 and height = Resources.GetFontHeight(1) + 3
+```
+
+### Known font IDs used in code
+
+The exact glyph shapes come from `FONTS.CV` (runtime data file, not in this repository), so visual style below is based on where each font is used in-game.
+
+| Font ID | Typical usage in CivOne | Likely visual style |
+|--------:|--------------------------|---------------------|
+| 0 | Standard UI text, menus, dialogs, reports | Default readable UI font (regular) |
+| 1 | Compact UI text, many buttons/panels, small labels | Smaller/compact UI font |
+| 2 | Newspaper headline accents (`_shout`) | Decorative headline style |
+| 3 | Demo / newspaper emphasis text | Bold or stylized display font |
+| 4 | Newspaper title (`_name`), credits text settings | Title-like decorative font |
+| 5 | Big event/title text (city banners, game over, discovery) | Large ornamental title font |
+| 6 | Civilopedia/body info text, intro/new game descriptive text | Thin/compact info font |
+| 8 | Unit letter overlay on sprites | Very compact symbol/letter font |
+
+### Practical button guidance
+
+* If you want vanilla-looking UI buttons, use the shorthand overload (font `1`).
+* For compact buttons, keep `height` close to `Resources.GetFontHeight(fontId) + 3`.
+* If text appears vertically off-center, adjust only `height` first (the text is drawn at `y + 2`).
+* If a chosen font is unavailable/out-of-range, rendering falls back to `DefaultFont`.
+
 ## Colors
 
 | Code | Color Name     | Description         |

@@ -17,6 +17,7 @@ namespace CivOne.Buildings
 	{
 		byte Id { get; }
 		IAdvance RequiredTech { get; }
+		IAdvance[] ObsoleteTechs { get; }
 		byte Maintenance { get; }
 		IBitmap SmallIcon { get; }
 		short SellPrice { get; }

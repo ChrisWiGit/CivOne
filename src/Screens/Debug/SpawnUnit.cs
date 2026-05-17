@@ -69,7 +69,7 @@ namespace CivOne.Screens.Debug
 
 		private void CreateUnitGrid()
 		{
-			Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
+			Palette = Common.LastScreen.OriginalColours;
 
 			string[] labels = [.. _units.Select(x => x.Name)];
 			_unitSelect = new GridMenuDelegate(labels, GridMenuDelegate.SelectionMode.Select, fontId: 0);
@@ -80,7 +80,7 @@ namespace CivOne.Screens.Debug
 		private void OnCivSelected(Player player)
 		{
 			_selectedPlayer = player;
-			Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
+			Palette = Common.LastScreen.OriginalColours;
 			CloseMenus();
 		}
 
@@ -331,7 +331,9 @@ namespace CivOne.Screens.Debug
 
 		public SpawnUnit()
 		{
-			Palette = Common.DefaultPalette;
+			using var defaultPalette = Common.DefaultPalette;
+			Palette = defaultPalette;
+			
 			_civSelect = CreateCivSelectDelegate();
 
 			DrawCivMenuDialog();

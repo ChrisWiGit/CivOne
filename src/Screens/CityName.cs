@@ -78,7 +78,8 @@ namespace CivOne.Screens
 		public CityName(int nameId, string cityName)
 		{
 			NameId = nameId;
-			Palette = Common.DefaultPalette;
+			using var defaultPalette = Common.DefaultPalette;
+			Palette = defaultPalette;
 
 			_input = new Input(Palette, cityName, 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 12);
 			_input.Accept += CityName_Accept;

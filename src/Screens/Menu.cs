@@ -20,6 +20,10 @@ namespace CivOne.Screens
 	[ScreenResizeable]
 	public class Menu<T> : BaseScreen, IMenu
 	{
+		private const int DescriptionFontId = 0;
+		private const int DescriptionTopPadding = 10;
+		private const byte DescriptionTextColour = 1;
+
 		private readonly Picture _background;
 		
 		public event EventHandler Cancel;
@@ -42,6 +46,7 @@ namespace CivOne.Screens
 		public int IndentTitle { get; set; }
 		public int RowHeight { get; set; }
 		public bool CenterTo320Coordinates { get; set; }
+		public string[] DefaultDescription { get; set; } = [];
 
 		private int CoordinateOffsetX => CenterTo320Coordinates ? Math.Max(0, (Width - 320) / 2) : 0;
 		private int CoordinateOffsetY => CenterTo320Coordinates ? Math.Max(0, (Height - 200) / 2) : 0;
@@ -87,7 +92,7 @@ namespace CivOne.Screens
 				int y = Y + CoordinateOffsetY;
 				int yy = y + (_activeItem * fontHeight);
 				int offsetY = 0;
-				
+
 				this.Clear();
 				if (Title != null)
 				{
@@ -110,12 +115,41 @@ namespace CivOne.Screens
 					yy = y + (i * fontHeight) + offsetY;
 					this.DrawText(Items[i].Text, FontId, (byte)(Items[i].Enabled ? TextColour : DisabledColour), x + Indent, yy + 1);
 				}
+
+				DrawDescription(fontHeight, x, y, offsetY);
 				_change = false;
 				return true;
 			}
 			return false;
 		}
-		
+
+		private void DrawDescription(int fontHeight, int x, int y, int offsetY)
+		{
+			if (_activeItem >= 0 && _activeItem < Items.Count)
+			{
+				string[] description = Items[_activeItem].Description;
+				if (description.Length == 0)
+				{
+					description = DefaultDescription;
+				}
+				if (description.Length > 0)
+				{
+					// Lower and center description text within the menu, with a minimum of 
+					// DescriptionTopPadding pixels between the active item and the description
+					int descriptionLineHeight = Resources.GetFontHeight(DescriptionFontId);
+					int descriptionHeight = description.Length * descriptionLineHeight;
+					int descriptionTop = y + offsetY + (Items.Count * fontHeight) + DescriptionTopPadding;
+					int availableHeight = Math.Max(0, Height - descriptionTop - CoordinateOffsetY);
+					int descriptionY = descriptionTop + Math.Max(0, (availableHeight - descriptionHeight) / 2);
+					for (int i = 0; i < description.Length; i++)
+					{
+						this.DrawText(description[i], DescriptionFontId, DescriptionTextColour, x + (MenuWidth / 2), descriptionY, TextAlign.Center);
+						descriptionY += descriptionLineHeight;
+					}
+				}
+			}
+		}
+
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
 			switch (args.Key)

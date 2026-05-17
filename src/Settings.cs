@@ -70,6 +70,7 @@ namespace CivOne
 		private bool _computerPlayerPathFinding = true;
 		private bool _riverFastMovement = false;
 		private bool _canalCity = false;
+		private bool _removeObsoleteBuildings = true;
 		private bool _preferSveSaveFormat = true;
 		private bool _useUncheckedCastSanitizer = false;
 		private GlobalWarmingFeatureFlag _globalWarmingFeatureFlags = GlobalWarmingFeatureFlag.None;
@@ -325,6 +326,17 @@ namespace CivOne
 			{
 				_canalCity = value;
 				SetSetting("CanalCity", _canalCity ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal bool RemoveObsoleteBuildings
+		{
+			get => _removeObsoleteBuildings;
+			set
+			{
+				_removeObsoleteBuildings = value;
+				SetSetting("RemoveObsoleteBuildings", _removeObsoleteBuildings ? "1" : "0");
 				Common.ReloadSettings = true;
 			}
 		}
@@ -638,6 +650,7 @@ namespace CivOne
 			GetSetting("AutoSettlers", ref _autoSettlers);
 			GetSetting("RiverFastMovement", ref _riverFastMovement);
 			GetSetting("CanalCity", ref _canalCity);
+			GetSetting("RemoveObsoleteBuildings", ref _removeObsoleteBuildings);
 			GetSetting("PreferSveSaveFormat", ref _preferSveSaveFormat);
 			GetSetting("UseUncheckedCastSanitizer", ref _useUncheckedCastSanitizer);
 			GetSetting<CursorType>("CursorType", ref _cursorType);

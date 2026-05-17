@@ -33,7 +33,9 @@ namespace CivOne.Screens
 			_slots = slots?.OrderBy(x => x).ToArray() ?? throw new ArgumentNullException(nameof(slots));
 			_onSelect = onSelect ?? throw new ArgumentNullException(nameof(onSelect));
 
-			Palette = Common.DefaultPalette;
+			using var defaultPalette = Common.DefaultPalette;
+			Palette = defaultPalette;
+			
 			if (Common.TopScreen != null)
 			{
 				_capturedBackground = new Picture(Common.TopScreen);

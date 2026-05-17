@@ -144,8 +144,10 @@ namespace CivOne.Screens
 
 		public GameOptions() : base(MouseCursor.Pointer)
 		{
-			Palette = Common.DefaultPalette;
-			this.AddLayer(Common.Screens.Last(), 0, 0)
+			using var defaultPalette = Common.DefaultPalette;
+			Palette = defaultPalette;
+
+			this.AddLayer(Common.LastScreen, 0, 0)
 				.FillRectangle(24, 16, 105, 81, 5);
 		}
 	}

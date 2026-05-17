@@ -97,7 +97,7 @@ namespace CivOne.Screens
 			
 			using (Palette palette = _background.Palette.Copy())
 			{
-				palette.MergePalette(portrait.Palette, 64, 80);
+				palette.Merge(portrait.Palette, 64, 80);
 				Palette = palette;
 			}
 			

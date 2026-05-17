@@ -126,10 +126,11 @@ namespace CivOne.Screens
 		{
 			GetPaperLayout(out int paperX, out int paperY);
 
-			Palette palette = Common.DefaultPalette;
-			IBitmap[] governmentPortraits = PrepareGovernmentPortraits(palette);
+			using var defaultPalette = Common.DefaultPalette;
 
-			Palette = palette;
+			IBitmap[] governmentPortraits = PrepareGovernmentPortraits(defaultPalette);
+
+			Palette = defaultPalette;
 			DrawHeader(paperX, paperY);
 			DrawMessageLines(paperX, paperY);
 

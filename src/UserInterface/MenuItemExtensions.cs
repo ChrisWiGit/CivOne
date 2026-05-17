@@ -46,6 +46,12 @@ namespace CivOne.UserInterface
 			return menuItem;
 		}
 
+		public static MenuItem<T> WithDescription<T>(this MenuItem<T> menuItem, params string[] description)
+		{
+			menuItem.SetDescription(description);
+			return menuItem;
+		}
+
 		public static MenuItem<T> OnSelect<T>(this MenuItem<T> menuItem, MenuItemEventHandler<T> eventMethod)
 		{
 			menuItem.Selected += eventMethod;
