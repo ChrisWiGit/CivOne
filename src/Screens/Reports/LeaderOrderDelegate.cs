@@ -73,6 +73,7 @@ namespace CivOne.Screens.Reports
 				}
 			}
 
+			// Fallback to the last leader (Dan Quayle) if the rating percent is below all thresholds.
 			return orderedEntries.Count - 1;
 		}
 	}
