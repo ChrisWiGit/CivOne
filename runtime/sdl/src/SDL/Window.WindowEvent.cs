@@ -41,9 +41,13 @@ namespace CivOne
 			{
 				switch(windowEvent.Event)
 				{
+					case SDL_WindowEventID.SDL_WINDOWEVENT_RESTORED:
 					case SDL_WindowEventID.SDL_WINDOWEVENT_SHOWN:
+						Paused = false;
+						_redraw = true;
 						break;
 					case SDL_WindowEventID.SDL_WINDOWEVENT_HIDDEN:
+						Paused = true;
 						break;
 					case SDL_WindowEventID.SDL_WINDOWEVENT_EXPOSED:
 						break;
@@ -54,10 +58,9 @@ namespace CivOne
 					case SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED:
 						break;
 					case SDL_WindowEventID.SDL_WINDOWEVENT_MINIMIZED:
+						Paused = true;
 						break;
 					case SDL_WindowEventID.SDL_WINDOWEVENT_MAXIMIZED:
-						break;
-					case SDL_WindowEventID.SDL_WINDOWEVENT_RESTORED:
 						break;
 					case SDL_WindowEventID.SDL_WINDOWEVENT_ENTER:
 						break;

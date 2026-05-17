@@ -43,8 +43,9 @@ namespace CivOne.Units.TribalHuts
 					bool hasCity = tile.City != null;
 					bool hasUnits = tile.Units.Length > 0;
 					bool isOcean = tile.IsOcean;
+					bool isPolar = tile.Type == Terrain.Arctic;
 
-					if (hasCity || hasUnits || isOcean) continue;
+					if (hasCity || hasUnits || isOcean || isPolar) continue;
 
 					if (random.Next(0, 10) < 6) continue;
 

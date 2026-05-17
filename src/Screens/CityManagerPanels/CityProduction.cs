@@ -148,6 +148,11 @@ namespace CivOne.Screens.CityManagerPanels
 			string name = (_city.CurrentProduction as ICivilopedia).Name;
 			short playerGold = Game.CurrentPlayer.Gold;
 			short buyPrice = _city.BuyPrice;
+			if (_city.IsRiot && _city.CurrentProduction is IBuilding)
+			{
+				Common.AddScreen(new MessageBox("Civil Disorder", $"{_city.Name} cannot buy", "city improvements now."));
+				return true;
+			}
 			if (buyPrice <= 0)
 				return true;
 			if (playerGold < buyPrice)

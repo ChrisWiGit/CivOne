@@ -120,6 +120,7 @@ namespace CivOne.Mcp.Tools
 			AddSetting(patches, flatSettings, "patches", "autoSettlers", BuildBooleanValue(settings.AutoSettlers));
 			AddSetting(patches, flatSettings, "patches", "riverFastMovement", BuildBooleanValue(settings.RiverFastMovement));
 			AddSetting(patches, flatSettings, "patches", "canalCity", BuildBooleanValue(settings.CanalCity));
+			AddSetting(patches, flatSettings, "patches", "removeObsoleteBuildings", BuildBooleanValue(settings.RemoveObsoleteBuildings));
 			AddSetting(patches, flatSettings, "patches", "preferSveSaveFormat", BuildBooleanValue(settings.PreferSveSaveFormat));
 			AddSetting(patches, flatSettings, "patches", "useUncheckedCastSanitizer", BuildBooleanValue(settings.UseUncheckedCastSanitizer));
 			AddSetting(patches, flatSettings, "patches", "globalWarmingFeatureFlags", BuildFlagsValue(settings.GlobalWarmingFeatureFlags));

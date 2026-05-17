@@ -8,11 +8,25 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Linq;
 using CivOne.Enums;
 
 namespace CivOne
 {
-	public class PalaceData
+	public interface IPalaceData
+	{
+		int PalaceLeft { get; }
+		int PalaceRight { get; }
+
+		PalaceStyle GetPalaceStyle(int index);
+		byte GetPalaceLevel(int index);
+		byte GetGardenLevel(int index);
+		int UpgradeCount { get; }
+		bool CanUpgrade { get; }
+		bool IsSlotUnlocked(int index);
+	}
+
+	public class PalaceData : IPalaceData
 	{
 		protected byte[] PalaceStyle = new byte[7];
 		protected byte[] PalaceLevel = new byte[7];
@@ -60,14 +74,47 @@ namespace CivOne
 			return GardenLevel[index];
 		}
 
+		public int UpgradeCount => PalaceLevel.Sum(x => x) + GardenLevel.Sum(x => x);
+
+		public bool CanUpgrade
+		{
+			get
+			{
+				for (int i = 0; i < 7; i++)
+				{
+					if (IsSlotUnlocked(i) && PalaceLevel[i] < 4)
+					{
+						return true;
+					}
+				}
+
+				return GardenLevel.Any(x => x < 3);
+			}
+		}
+
+		public bool IsSlotUnlocked(int index)
+		{
+			return index switch
+			{
+				3 => true,
+				2 => true,
+				4 => true,
+				1 => PalaceLevel[2] > 0,
+				5 => PalaceLevel[4] > 0,
+				0 => PalaceLevel[1] > 0,
+				6 => PalaceLevel[5] > 0,
+				_ => false
+			};
+		}
+
 		public void SetPalace(int index, byte style, byte level)
 		{
 			if (index < 0 || index > 6)
-				throw new Exception("Invalid palace index");
+				throw new InvalidOperationException($"Invalid palace index: {index}");
 			if (style < 0 || style > 3)
-				throw new Exception("Invalid palace style");
+				throw new InvalidOperationException($"Invalid palace style: {style}");
 			if (level < 0 || level > 4)
-				throw new Exception("Invalid palace level");
+				throw new InvalidOperationException($"Invalid palace level: {level}");
 
 			if (level == 0 || style == 0)
 			{

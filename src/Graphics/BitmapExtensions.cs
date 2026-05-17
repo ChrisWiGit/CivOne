@@ -102,7 +102,7 @@ namespace CivOne.Graphics
 			return bitmap;
 		}
 		
-		public static IBitmap DrawLine(this IBitmap bitmap, Point from, Point to, byte colour) => DrawLine(bitmap, from.X, from.Y, to.X, to.Y, colour = 5);
+		public static IBitmap DrawLine(this IBitmap bitmap, Point from, Point to, byte colour) => DrawLine(bitmap, from.X, from.Y, to.X, to.Y, colour);
 		public static IBitmap DrawLine(this IBitmap bitmap, int x1, int y1, int x2, int y2, byte colour = 5)
 		{
 			int difX = (x2 - x1), difY = (y2 - y1);
@@ -124,7 +124,12 @@ namespace CivOne.Graphics
 			}
 			for (int i = 0; i < Math.Abs(steps); i++)
 			{
-				bitmap.Bitmap[(int)Math.Round(xx), (int)Math.Round(yy)] = colour;
+				int x = (int)Math.Round(xx);
+				int y = (int)Math.Round(yy);
+				if (!bitmap.OutBoundX(x) && !bitmap.OutBoundY(y))
+				{
+					bitmap.Bitmap[x, y] = colour;
+				}
 				xx += incX;
 				yy += incY;
 			}

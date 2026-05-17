@@ -58,6 +58,8 @@ namespace CivOne
 						return Key.F11;
 					case SDL_Scancode.SDL_SCANCODE_F12:
 						return Key.F12;
+					case SDL_Scancode.SDL_SCANCODE_PAUSE:
+						return Key.Pause;
 					case SDL_Scancode.SDL_SCANCODE_SLASH:
 					case SDL_Scancode.SDL_SCANCODE_KP_DIVIDE:
 						return Key.Slash;
@@ -212,6 +214,12 @@ namespace CivOne
 
 			private void HandleEventKeyboard(SDL_KeyboardEvent keyboardEvent)
 			{
+				if (_paused && ConvertKey(keyboardEvent.KeySym.Scancode) != Key.Pause)
+				{
+					// discard all key events except for Pause when paused, to avoid processing a backlog of inputs after unpausing
+					return;
+				}
+
 				KeyboardEventArgs args = ConvertKeyEvent(keyboardEvent);
 
 #if DEBUG

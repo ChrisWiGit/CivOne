@@ -9,6 +9,50 @@ I did not browse all issues on github at first, so I did not recognize that some
 * Refactored palette handling
   * Extended the `Palette.Merge` method and used it to improve performance and code clarity.
   * Replaced all direct `Palette = Common.DefaultPalette` assignments with `using` blocks to ensure immediate disposal.
+* Barracks are now obsolete when Gunpowder or Combustion is discovered, i.e. all existing Barracks are removed immediately when either of these technologies is researched.
+  * The behaviour can be turned on or off in the setup menu under "Remove obsolete buildings".
+* Settings (Shift-F1) shows a helpful description for each setting when it is selected.
+* Migration:
+  * Copied A* pathfinding (`GotoStep`) implementation from [mwerneburg/CivOne/`Common.cs`](https://github.com/mwerneburg/CivOne/commit/e33b3968ebceea45a5f046c99c166574a5dfa08f)
+  * Copied behaviour of [mwerneburg/CivOne/`Ai.Barbarians.cs`](https://github.com/mwerneburg/CivOne/commit/5525827163b01996553b3b7a854c5d16b406a509) for better movement decisions of barbarian units, including ocean/land avoidance and goal tile bypass.
+  * Added as new service `UnitGotoServiceImpl` in `Services/Pathfinding` and factory method in `UnitGotoServiceFactory` to not mix the A* implementation with the existing movement logic and to allow for future extension to other pathfinding algorithms if needed.
+  * Unit tests added (`UnitGotoServiceImplTests`) for the A* pathfinding implementation, covering various terrain and unit scenarios.
+* The game is now paused when
+  * the window is minimized or hidden to waste less CPU resources when the game is not visible.
+  * the user presses the Pause key to toggle pause state of the game.
+  * Pressing the Pause key and minimizing and then restoring the window will not unpause the game.
+* Feature: Added Civilization Ranking screen integration with turn-based trigger service.
+  * The ranking screen is now triggered from a dedicated service checked on each human turn.
+  * Temporary (non-original) trigger algorithm: show the ranking every random 300-500 years.
+    * The next trigger year is randomized after each display.
+    * This is an interim implementation until original game conditions are identified.
+  * Palace preview rendering is integrated into the ranking screen, showing the palace corresponding to each civilization's current palace level.
+  * Debug controls on the ranking screen:
+    * `F1`: cycle ranking category.
+    * `F2`: toggle known civilizations vs all civilizations.
+  * Save-state note:
+    * The current ranking screen trigger state/category rotation is not persisted.
+    * There is an SVE/SAV `rank` field, but its exact original semantic meaning is currently unknown and is not yet used as source of truth for this feature.
+* Feature: Added the new palace rendering and palace part composition.
+  * The palace upgrade trigger currently uses `CivilizationScore >= 1 + n*n + n` (`HumanCivScorePalaceTrigger`), where `n` is the number of existing palace upgrades.
+    This can be adjusted later if balancing changes are needed.
+  * Preview of the palace is shown in the sidebar demographics panel.
+  * TODO: AI still needs to be able to build the palace.
+  * Some minor changes may apply:
+    * Alignment and placement of palace parts may be slightly different from the original game.
+    * The furthest left and right (key 1 and 7) towers are now fully visible in the palace view, while in the original game they were behind the wall.
+  * Debug: when the palace screen is opened from the debug menu you can:
+    * Press F1 to toggle noise on/off for easier debugging of the morph stages.
+    * Place all parts of the palace manually.
+    * Press Escape to exit the palace screen.
+* Fix: Addressed multiple long-standing gameplay issues from issue tracker from [https://github.com/fire-eggs/CivOne/issues](https://github.com/fire-eggs/CivOne/issues).
+  * Fixed city buy edge case where overpayment could lead to invalid negative-cost purchase handling ([#179](https://github.com/fire-eggs/CivOne/issues/179)).
+  * Buying city improvements is now blocked while the city is in civil disorder. ([#153](https://github.com/fire-eggs/CivOne/issues/153)).
+  * AI city production no longer defaults to excessive caravan production once basic unit thresholds are met ([#172](https://github.com/fire-eggs/CivOne/issues/172)).
+  * Diplomat tech theft is now limited to one successful theft per city until ownership changes ([#121](https://github.com/fire-eggs/CivOne/issues/121)).
+  * Tech-theft city state now resets correctly when a city changes owner (conquest/incite/flip) ([#121](https://github.com/fire-eggs/CivOne/issues/121)).
+  * Barbarians no longer land/spawn on arctic polar tiles ([#122](https://github.com/fire-eggs/CivOne/issues/122)).
+  * Open/under review: No code change included yet for "We love the president" population behavior and "Unit trying to leave city blocked"; current behavior appears rule-dependent or already covered by existing movement logic/tests, but both tickets stay open for targeted regression verification ([#182](https://github.com/fire-eggs/CivOne/issues/182), [#123](https://github.com/fire-eggs/CivOne/issues/123)).
 * Feature: Added support for MCP (Multi Client Protocol) to allow external clients (e.g. VS Code extension) to connect and interact with the game for testing, debugging, and automation purposes. See [MCP.md](MCP.md) for details on how to use the MCP server and its current capabilities.
   * Added command line option `--mcp` to start the game in MCP server mode.
   * Added command line option `--mcp-artifacts <folder>` to specify a custom folder for MCP artifacts (e.g. screenshots).

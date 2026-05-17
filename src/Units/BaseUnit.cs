@@ -347,6 +347,7 @@ namespace CivOne.Units
 						while (capturedCity.Units.Length > 0)
 							Game.DisbandUnit(capturedCity.Units[0]);
 						capturedCity.Owner = Owner;
+						capturedCity.TechStolen = false;
 
 						if (!capturedCity.HasBuilding<CityWalls>())
 						{

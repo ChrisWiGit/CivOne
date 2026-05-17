@@ -7,12 +7,14 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Collections.Generic;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.IO;
+using CivOne.Screens.PalaceAssets;
 
 namespace CivOne.Screens
 {
@@ -30,8 +32,17 @@ namespace CivOne.Screens
 
 		private const int NOISE_COUNT = 40;
 
+		// Y-level offsets for text positioning (for manual fine-tuning)
+		private const int PALACE_NUMBERS_Y_OFFSET = 0;   // Base: 144 (font 14), 145 (font 5)
+		private const int GARDEN_LETTERS_Y_OFFSET = 0;   // Base: 160 (font 14), 161 (font 5)
+
 		private readonly Picture _background;
+		private readonly IPalaceSpriteProvider _sprites;
 		private readonly byte[,] _noiseMap;
+		private readonly bool _build;
+		private readonly bool _debug;
+		private bool _disableNoise = false;
+		private int _pendingPartIndex = -1;
 		private int OffsetX => System.Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => System.Math.Max(0, (Height - 200) / 2);
 
@@ -56,176 +67,318 @@ namespace CivOne.Screens
 
 		private bool _update = true;
 
+		private static PalacePart GetPalacePartPreview(PalaceData palace, int index)
+		{
+			return index switch
+			{
+				0 => PalacePart.LeftTower,
+				1 or 2 => palace.GetPalaceLevel(index - 1) > 0 ? PalacePart.Wall : PalacePart.LeftTowerWall,
+				3 => PalacePart.Center,
+				4 => palace.GetPalaceLevel(index + 1) > 0 ? PalacePart.WallShadow : PalacePart.RightTowerWallShadow,
+				5 => palace.GetPalaceLevel(index + 1) > 0 ? PalacePart.Wall : PalacePart.RightTowerWall,
+				6 => PalacePart.RightTower,
+				_ => PalacePart.None
+			};
+		}
+
+		private void StartMorph(Picture palaceMorph)
+		{
+			if (_disableNoise)
+			{
+				_currentStage = GetPostMorphStage();
+				_update = true;
+				return;
+			}
+			_palaceMorph = palaceMorph;
+			_noiseCounter = NOISE_COUNT + 5;
+			_currentStage = Stage.Morph;
+			_update = true;
+		}
+
+		private Stage GetPostMorphStage() => _build && _debug ? Stage.SelectPart : Stage.View;
+
+		private void DrawLeftPalaceSide(IBitmap picture, PalaceData palace)
+		{
+			// The left side of the palace consists of sections 0, 1 and 2. 
+			const int maxLeftSectionIndex = 2;
+			const int minLeftSectionIndex = 0;
+
+			// buildings start from the right and draw leftwards
+			// so startSection is the rightmost section that can be drawn, 
+			int startSection = Math.Max(palace.PalaceLeft, minLeftSectionIndex);
+			// and endSection is the leftmost section that can be drawn
+			int endSection = Math.Min(palace.PalaceRight, maxLeftSectionIndex);
+
+			const int spriteBaseY = 37;
+
+			for (int sectionIndex = endSection; sectionIndex >= startSection; sectionIndex--)
+			{
+				if (sectionIndex < minLeftSectionIndex || sectionIndex > maxLeftSectionIndex)
+					continue;
+
+				byte sectionLevel = palace.GetPalaceLevel(sectionIndex);
+
+				bool isEmptySection = sectionLevel == 0;
+				bool isInnerSection = sectionIndex < maxLeftSectionIndex;
+
+				if (isEmptySection && isInnerSection)
+					continue;
+
+				PalacePart part;
+				int spriteX;
+
+				if (sectionIndex == minLeftSectionIndex)
+				{
+					spriteX = 9;
+					part = PalacePart.LeftTower;
+				}
+				else
+				{
+					const int sectionWidth = 48;
+					const int leftmostSpriteX = 17;
+					const int towerWallOverlap = 24;
+					const int leftTowerWallOffset = 33;
+
+					spriteX = leftmostSpriteX + (sectionWidth * sectionIndex);
+
+					bool hasLeftNeighbor = palace.GetPalaceLevel(sectionIndex - 1) > 0;
+
+					if (hasLeftNeighbor)
+					{
+						part = PalacePart.Wall;
+						spriteX -= towerWallOverlap;
+					}
+					else
+					{
+						part = PalacePart.LeftTowerWall;
+						spriteX -= leftTowerWallOffset;
+					}
+				}
+
+				AddPalaceLayer(picture, spriteX, spriteBaseY, sectionIndex, sectionLevel, palace, part);
+			}
+		}
+
+		void AddPalaceLayer(IBitmap picture, int left, int top,
+				int sectionIndex,
+				int sectionLevel,
+				PalaceData palace,
+				PalacePart part)
+		{
+			IBitmap sprite = _sprites.GetPalacePart(
+					palace.GetPalaceStyle(sectionIndex),
+					part,
+					sectionLevel);
+
+			picture.AddLayer(sprite, left, top);
+		}
+
+		private void DrawRightPalaceSide(IBitmap picture, PalaceData palace)
+		{
+			// The right side of the palace consists of sections 4, 5 and 6.
+			const int minRightSectionIndex = 4;
+			const int maxRightSectionIndex = 6;
+
+			int startSection = Math.Max(palace.PalaceLeft, minRightSectionIndex);
+			int endSection = Math.Min(palace.PalaceRight, maxRightSectionIndex);
+
+			const int spriteBaseY = 37;
+
+			for (int sectionIndex = startSection; sectionIndex <= endSection; sectionIndex++)
+			{
+				byte sectionLevel = palace.GetPalaceLevel(sectionIndex);
+
+				bool isEmptySection = sectionLevel == 0;
+				bool isInnerSection = sectionIndex > minRightSectionIndex;
+
+				if (isEmptySection && isInnerSection)
+					continue;
+
+				PalacePart part;
+
+				if (sectionIndex == minRightSectionIndex)
+				{
+					const int leftmostSpriteX = 185;					
+					part = GetPalacePartWithRightNeighbour(palace, PalacePart.WallShadow, PalacePart.RightTowerWallShadow, sectionIndex);
+
+					AddPalaceLayer(picture, leftmostSpriteX, spriteBaseY, sectionIndex, sectionLevel, palace, part);
+					continue;
+				}
+
+				if (sectionIndex == 5)
+				{
+					const int rightmostSpriteX = 233;					
+					part = GetPalacePartWithRightNeighbour(palace, PalacePart.Wall, PalacePart.RightTowerWall, sectionIndex);
+
+					AddPalaceLayer(picture, rightmostSpriteX, spriteBaseY, sectionIndex, sectionLevel, palace, part);
+					continue;
+				}
+				
+				const int rightTowerSpriteX = 278;
+				int spriteX = rightTowerSpriteX;
+				if (sectionLevel == 4)
+				{
+					// For the highest level of the rightmost tower, the sprite is 1 pixel wider and overlaps with the center part by 1 pixel, so adjust left position to compensate.
+					spriteX -= 1;
+				}
+				part = PalacePart.RightTower;
+
+				AddPalaceLayer(picture, spriteX, spriteBaseY, sectionIndex, sectionLevel, palace, part);
+			}
+		}
+
+		/// <summary>
+		/// Returns the palace part for a section based on whether the section to the right exists.
+		/// </summary>
+		/// <param name="palace">The palace data.</param>
+		/// <param name="wall">Part to return when the section has a right neighbor.</param>
+		/// <param name="rightTowerWall">Part to return when the section has no right neighbor.</param>
+		/// <param name="sectionIndex">Current section index.</param>
+		/// <returns>The selected palace part for the current section.</returns>
+		static PalacePart GetPalacePartWithRightNeighbour(PalaceData palace,  PalacePart wall, PalacePart rightTowerWall, int sectionIndex)
+		{
+			bool hasRightNeighbor = palace.GetPalaceLevel(sectionIndex + 1) > 0;
+			return hasRightNeighbor ? wall : rightTowerWall;
+		}
+
 		private Picture DrawPalace()
 		{
 			PalaceData palace = Human.Palace;
-			Picture picture = new Picture(320, 200);
+			Picture picture = new(320, 200);
 			picture.AddLayer(_background);
-			switch (palace.GetGardenLevel(1))
+
+			Picture backdrop = _sprites.GetGardenBackdrop(palace.GetGardenLevel(1));
+			if (backdrop != null)
 			{
-				case 1: picture.AddLayer(Resources["CBACKS1"], 0, 135); break;
-				case 2: picture.AddLayer(Resources["CBACKS2"], 0, 135); break;
-				case 3: picture.AddLayer(Resources["CBACKS3"], 0, 135); break;
+				picture.AddLayer(backdrop, 0, 135);
 			}
 
-			for (int i = palace.PalaceLeft; i <= palace.PalaceRight; i++)
-			{
-				if (i == 3) continue;
-
-				byte level = palace.GetPalaceLevel(i);
-				PalaceStyle style = palace.GetPalaceStyle(i);
-				PalacePart part = PalacePart.None;
-
-				if (level == 0 && (i < 2 || i > 4)) continue;
-
-				int xx = 17;
-				switch (i)
-				{
-					case 1:
-					case 2: xx = 17 + (48 * i) - 33; break;
-					//case 3: i = 17; break;
-					case 4:
-					case 5:
-					case 6: xx = 185 + ((i - 4) * 48); break;
-				}
-				
-				switch (i)
-				{
-					case 0:
-						xx = 9;
-						part = PalacePart.LeftTower;
-						break;
-					case 1:
-					case 2:
-						xx = 17 + (48 * i);
-						if (palace.GetPalaceLevel(i - 1) > 0)
-						{
-							part = PalacePart.Wall;
-							xx -= 24;
-							break;
-						}
-						part = PalacePart.LeftTowerWall;
-						xx -= 33;
-						break;
-					case 4:
-						xx = 185 + ((i - 4) * 48);
-						if (palace.GetPalaceLevel(i + 1) > 0)
-						{
-							part = PalacePart.WallShadow;
-							break;
-						}
-						part = PalacePart.RightTowerWallShadow;
-						break;
-					case 5:
-						xx = 185 + ((i - 4) * 48);
-						if (palace.GetPalaceLevel(i + 1) > 0)
-						{
-							part = PalacePart.Wall;
-							break;
-						}
-						part = PalacePart.RightTowerWall;
-						break;
-					case 6:
-						xx = 185 + ((i - 4) * 48) - 3;
-						part = PalacePart.RightTower;
-						break;
-				}
-
-				picture.AddLayer(Resources.GetPalace(palace.GetPalaceStyle(i), part, palace.GetPalaceLevel(i)), xx, 37);
-			}
+			DrawLeftPalaceSide(picture, palace);
+			DrawRightPalaceSide(picture, palace);
 
 			// Draw palace middle
-			picture.AddLayer(Resources.GetPalace(palace.GetPalaceStyle(3), PalacePart.Center, palace.GetPalaceLevel(3)), 135, palace.GetPalaceLevel(3) == 0 ? 37 : 38);
-			
-			switch (palace.GetGardenLevel(0))
+			picture.AddLayer(_sprites.GetPalacePart(palace.GetPalaceStyle(3), PalacePart.Center, palace.GetPalaceLevel(3)), 135, palace.GetPalaceLevel(3) == 0 ? 37 : 38);
+
+			Picture leftGarden = _sprites.GetGardenBrush(0, palace.GetGardenLevel(0));
+			if (leftGarden != null)
 			{
-				case 1: picture.AddLayer(Resources["CBRUSH0"], 0, 105); break;
-				case 2: picture.AddLayer(Resources["CBRUSH2"], 0, 94); break;
-				case 3: picture.AddLayer(Resources["CBRUSH4"], 0, 94); break;
+				picture.AddLayer(leftGarden, 0, palace.GetGardenLevel(0) == 1 ? 105 : 94);
 			}
-			switch (palace.GetGardenLevel(2))
+
+			Picture rightGarden = _sprites.GetGardenBrush(2, palace.GetGardenLevel(2));
+			if (rightGarden != null)
 			{
-				case 1: picture.AddLayer(Resources["CBRUSH1"], 184, 105); break;
-				case 2: picture.AddLayer(Resources["CBRUSH3"], 184, 94); break;
-				case 3: picture.AddLayer(Resources["CBRUSH5"], 184, 94); break;
+				picture.AddLayer(rightGarden, 184, palace.GetGardenLevel(2) == 1 ? 105 : 94);
 			}
 			return picture;
 		}
-		
+
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_update)
+			if (!_update)
 			{
-				int ox = OffsetX;
-				int oy = OffsetY;
-
-				this.Clear(OpaqueBlackColour)
-					.AddLayer(DrawPalace(), ox, oy);
-
-				switch (_currentStage)
-				{
-					case Stage.Message:
-						{
-							Picture message = new Picture(269, 39)
-								.Tile(Pattern.PanelGrey)
-								.DrawRectangle3D()
-								.As<Picture>();
-							int yy = 4;
-							foreach (string line in TextFile.Instance.GetGameText("KING/PALACE"))
-							{
-								message.DrawText(line.Trim('^'), 0, 15, 4, yy);
-								yy += 8;
-							}
-							this.FillRectangle(20 + ox, 16 + oy, 271, 41, 5)
-								.AddLayer(message, 21 + ox, 17 + oy);
-						}
-						break;
-					case Stage.SelectPart:
-						{
-							Picture message = new Picture(180, 15)
-								.Tile(Pattern.PanelGrey)
-								.DrawRectangle3D()
-								.DrawText("Which section shall we improve?", 0, 15, 4, 4)
-								.As<Picture>();
-							this.FillRectangle(40 + ox, 16 + oy, 182, 17, 5)
-								.AddLayer(message, 41 + ox, 17 + oy);
-
-							for (int i = 0; i < 7; i++)
-							{
-								if (Human.Palace.GetPalaceLevel(i) >= 4) continue;
-
-								int xx = 12 + (48 * i);
-								this.DrawText($"{i + 1}", 0, 5, xx + ox, 145 + oy)
-									.DrawText($"{i + 1}", 0, 14, xx + ox, 144 + oy);
-							}
-							for (int i = 0; i < 3; i++)
-							{
-								if (Human.Palace.GetGardenLevel(i) >= 3) continue;
-
-								int xx = 40 + (120 * i);
-								this.DrawText($"{(char)('A' + i)}", 0, 5, xx + ox, 161 + oy)
-									.DrawText($"{(char)('A' + i)}", 0, 14, xx + ox, 160 + oy);
-							}
-						}
-						break;
-					case Stage.Morph:
-						if (_noiseCounter > 0)
-						{
-							_palaceMorph.ApplyNoise(_noiseMap, _noiseCounter--);
-							this.Clear(OpaqueBlackColour)
-								.AddLayer(DrawPalace(), ox, oy)
-								.AddLayer(_palaceMorph, ox, oy);
-							return true;
-						}
-						_currentStage = Stage.View;
-						return true;
-					case Stage.SelectStyle:
-						break;
-				}
-
 				_update = false;
 				return true;
 			}
+
+			int ox = OffsetX;
+			int oy = OffsetY;
+			PalaceData palace = Human.Palace;
+
+			this.Clear(OpaqueBlackColour)
+				.AddLayer(DrawPalace(), ox, oy);
+
+			switch (_currentStage)
+			{
+				case Stage.Message:
+					{
+						Picture message = new Picture(269, 39)
+							.Tile(Pattern.PanelGrey)
+							.DrawRectangle3D()
+							.As<Picture>();
+						int yy = 4;
+						foreach (string line in TextFile.Instance.GetGameText("KING/PALACE"))
+						{
+							message.DrawText(line.Trim('^'), 0, 15, 4, yy);
+							yy += 8;
+						}
+						this.FillRectangle(20 + ox, 16 + oy, 271, 41, 5)
+							.AddLayer(message, 21 + ox, 17 + oy);
+					}
+					break;
+				case Stage.SelectPart:
+					{
+						Picture message = new Picture(180, 15)
+							.Tile(Pattern.PanelGrey)
+							.DrawRectangle3D()
+							.DrawText("Which section shall we improve?", 0, 15, 4, 4)
+							.As<Picture>();
+						this.FillRectangle(40 + ox, 16 + oy, 182, 17, 5)
+							.AddLayer(message, 41 + ox, 17 + oy);
+
+						for (int i = 0; i < 7; i++)
+						{
+							if (!palace.IsSlotUnlocked(i) || palace.GetPalaceLevel(i) >= 4) continue;
+
+							int xx = 12 + (48 * i);
+							this.DrawText($"{i + 1}", 0, 5, xx + ox, 145 + oy + PALACE_NUMBERS_Y_OFFSET)
+								.DrawText($"{i + 1}", 0, 14, xx + ox, 144 + oy + PALACE_NUMBERS_Y_OFFSET);
+						}
+						for (int i = 0; i < 3; i++)
+						{
+							if (palace.GetGardenLevel(i) >= 3) continue;
+
+							int xx = 40 + (120 * i);
+							this.DrawText($"{(char)('A' + i)}", 0, 5, xx + ox, 161 + oy + GARDEN_LETTERS_Y_OFFSET)
+								.DrawText($"{(char)('A' + i)}", 0, 14, xx + ox, 160 + oy + GARDEN_LETTERS_Y_OFFSET);
+						}
+					}
+					break;
+				case Stage.SelectStyle:
+					{
+						Picture message = new Picture(280, 118)
+							.Tile(Pattern.PanelGrey)
+							.DrawRectangle3D()
+							.DrawText("Which style shall we use?", 0, 15, 4, 4)
+							.As<Picture>();
+
+						if (_pendingPartIndex >= 0)
+						{
+							PalacePart previewPart = GetPalacePartPreview(palace, _pendingPartIndex);
+							byte previewLevel = (byte)(palace.GetPalaceLevel(_pendingPartIndex) + 1);
+							for (int i = 1; i <= 3; i++)
+							{
+								int panelX = 12 + ((i - 1) * 88);
+								Picture preview = _sprites.GetPalacePart((PalaceStyle)i, previewPart, previewLevel);
+								message.DrawRectangle(panelX, 18, 76, 92, 5)
+									.DrawText($"{i}", 0, 14, panelX + 33, 21);
+								if (preview != null)
+								{
+									int previewX = panelX + ((76 - preview.Width) / 2);
+									int previewY = 108 - preview.Height;
+									message.AddLayer(preview, previewX, previewY);
+								}
+							}
+						}
+
+						this.FillRectangle(20 + ox, 16 + oy, 282, 120, 5)
+							.AddLayer(message, 21 + ox, 17 + oy);
+					}
+					break;
+				case Stage.Morph:
+					if (_noiseCounter > 0)
+					{
+						_palaceMorph.ApplyNoise(_noiseMap, _noiseCounter--);
+						this.Clear(OpaqueBlackColour)
+							.AddLayer(DrawPalace(), ox, oy)
+							.AddLayer(_palaceMorph, ox, oy);
+						return true;
+					}
+					_currentStage = GetPostMorphStage();
+					_update = true;
+					return true;
+			}
+
 			_update = false;
 			return true;
 		}
@@ -235,10 +388,23 @@ namespace CivOne.Screens
 			base.Resize(width, height);
 			_update = true;
 		}
-		
+
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
 			PalaceData palace = Human.Palace;
+
+			if (_debug && args[Key.Escape])
+			{
+				Destroy();
+				return true;
+			}
+
+			if (_debug && args[Key.F1])
+			{
+				_disableNoise = !_disableNoise;
+				_update = true;
+				return true;
+			}
 
 			switch (_currentStage)
 			{
@@ -247,53 +413,42 @@ namespace CivOne.Screens
 					_update = true;
 					break;
 				case Stage.SelectPart:
-					bool morph = false;
-					_palaceMorph = DrawPalace();
-					
-					try
+					if (args.KeyChar >= 'A' && args.KeyChar <= 'C')
 					{
-						switch (args.KeyChar)
+						int index = args.KeyChar - 'A';
+						if (palace.GetGardenLevel(index) < 3)
 						{
-							case 'A': 
-							case 'B': 
-							case 'C':
-								{
-									int index = (int)(args.KeyChar - 'A');
-									byte level = (byte)(palace.GetGardenLevel(index) + 1);
-									if (level > 2) break;
-									morph = true; palace.SetGarden(index, (byte)(Human.Palace.GetGardenLevel(2) + 1));
-								}
-								break;
-							case '1':
-							case '2':
-							case '3':
-							case '4':
-							case '5':
-							case '6':
-							case '7':
-								{
-									int index = (int)(args.KeyChar - '1');
-									byte level = (byte)(palace.GetPalaceLevel(index) + 1);
-									if (level > 4) break;
-									morph = true; palace.SetPalace(index, 1, level);
-								}
-								break;
-						};
-					}
-					catch
-					{
-						// TODO: Check for valid choice before handling keypress
-						_currentStage = Stage.View;
-						_update = true;
+							Picture palaceMorph = DrawPalace();
+							palace.SetGarden(index, (byte)(palace.GetGardenLevel(index) + 1));
+							StartMorph(palaceMorph);
+						}
 						break;
 					}
-					if (morph)
+
+					if (args.KeyChar >= '1' && args.KeyChar <= '7')
 					{
-						_update = true;
-						_currentStage = Stage.Morph;
-						break;
+						int index = args.KeyChar - '1';
+						if (palace.IsSlotUnlocked(index) && palace.GetPalaceLevel(index) < 4)
+						{
+							_pendingPartIndex = index;
+							_currentStage = Stage.SelectStyle;
+							_update = true;
+						}
 					}
-					_palaceMorph = null;
+					break;
+				case Stage.SelectStyle:
+					if (args.KeyChar >= '1' && args.KeyChar <= '3' && _pendingPartIndex >= 0)
+					{
+						byte newLevel = (byte)(palace.GetPalaceLevel(_pendingPartIndex) + 1);
+						if (newLevel <= 4)
+						{
+							PalaceStyle style = (PalaceStyle)(args.KeyChar - '0');
+							Picture palaceMorph = DrawPalace();
+							palace.SetPalace(_pendingPartIndex, (byte)style, newLevel);
+							_pendingPartIndex = -1;
+							StartMorph(palaceMorph);
+						}
+					}
 					break;
 				case Stage.View:
 					Destroy();
@@ -301,7 +456,7 @@ namespace CivOne.Screens
 			}
 			return true;
 		}
-		
+
 		public override bool MouseDown(ScreenEventArgs args)
 		{
 			switch (_currentStage)
@@ -311,8 +466,11 @@ namespace CivOne.Screens
 					_update = true;
 					break;
 				case Stage.SelectPart:
-					// _currentStage = Stage.View;
-					// _update = true;
+					if (!_debug)
+					{
+						_currentStage = Stage.View;
+						_update = true;
+					}
 					break;
 				case Stage.View:
 					Destroy();
@@ -320,17 +478,23 @@ namespace CivOne.Screens
 			}
 			return true;
 		}
-		
-		public PalaceView(bool build = false)
+
+		public PalaceView(bool build = false, IPalaceSpriteProvider sprites = null, bool debug = false)
 		{
+			_build = build;
+			_debug = debug;
+			_sprites = sprites ?? PalaceSpriteProviderFactory.GetInstance();
+
 			_noiseMap = new byte[320, 200];
 			for (int x = 0; x < 320; x++)
-			for (int y = 0; y < 200; y++)
 			{
-				_noiseMap[x, y] = (byte)Common.Random.Next(1, NOISE_COUNT);
+				for (int y = 0; y < 200; y++)
+				{
+					_noiseMap[x, y] = (byte)Common.Random.Next(1, NOISE_COUNT);
+				}
 			}
-			
-			_background = Resources["CBACK"];
+
+			_background = _sprites.GetBackground();
 			Palette = _background.Palette;
 			if (build) _currentStage = Stage.Message;
 		}

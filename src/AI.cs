@@ -298,7 +298,10 @@ namespace CivOne
 				}
 				else
 				{
-					if (Player.HasAdvance<Trade>()) production = new Caravan();
+					if (Player.HasAdvance<Trade>() && city.TradingCities.Length < 3 && city.Units.Count(x => x is Caravan) == 0)
+					{
+						production = new Caravan();
+					}
 				}
 			}
 

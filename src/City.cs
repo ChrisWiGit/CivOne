@@ -845,9 +845,12 @@ namespace CivOne
 		/// <returns>false if purchase not possible</returns>
 		public bool Buy()
 		{
-			if (Game.CurrentPlayer.Gold < BuyPrice) return false;
+			int buyPrice = BuyPrice;
+			if (buyPrice <= 0) return false;
+			if (IsRiot && CurrentProduction is IBuilding) return false;
+			if (Game.CurrentPlayer.Gold < buyPrice) return false;
 
-			Game.CurrentPlayer.Gold -= BuyPrice;
+			Game.CurrentPlayer.Gold -= (short)buyPrice;
 			Shields = (int)CurrentProduction.Price * 10;
 			return true;
 		}
@@ -1465,6 +1468,7 @@ namespace CivOne
 						captureCity.Done += (s1, a1) =>
 						{
 							this.Owner = admired.Owner;
+							this.TechStolen = false;
 
 							previousOwner.HandleExtinction();
 
