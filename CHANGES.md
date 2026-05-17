@@ -6,6 +6,12 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Added `civtranslate` CLI tool to scan `*.cs` files for translation calls and update key-value translation files.
+  * Scans for `.Translate("...")`, `.TranslateFormatted("...", ...)`, and `T("...")`.
+  * Normalizes keys to uppercase while keeping values as source text.
+  * Writes `key=value` entries and escapes literal `=` as `[EQ]`.
+  * Merges with existing output files, overwrites existing values for found keys, and prints old/new value changes.
+  * Writes obsolete keys to `obsoletekeys.txt` in the output directory.
 * Refactored palette handling
   * Extended the `Palette.Merge` method and used it to improve performance and code clarity.
   * Replaced all direct `Palette = Common.DefaultPalette` assignments with `using` blocks to ensure immediate disposal.

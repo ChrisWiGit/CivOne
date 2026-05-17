@@ -67,6 +67,26 @@ There are some command line parameters that can be used to modify the behavior o
 | `--mcp-artifacts <path>` | Sets the directory where MCP screenshot artifacts are saved. Defaults to `temp/mcp-runs/` inside the storage directory. |
 | `--mcp-saves <path>` | Sets the directory where MCP save tools read and write `.cos` files (`game_list_saves`, `game_load`, `game_save`). |
 
+### Translation workflow
+
+The repository includes a small CLI tool named `civtranslate` to maintain translation key-value files from C# code.
+
+Run from the repository root:
+
+```sh
+dotnet run --project ./civtranslate/civtranslate.csproj -- ./src --output ./translation/all.txt
+```
+
+The scanner looks for `.Translate("...")`, `.TranslateFormatted("...", ...)`, and `T("...")` calls in `*.cs` files.
+Keys are normalized to uppercase for matching and output, while values keep the source text casing.
+Existing keys found during scan have their value overwritten with the latest source text.
+Obsolete keys are written to `./translation/obsoletekeys.txt`.
+
+Helper scripts are available in the repository root:
+
+* `translate.ps1`
+* `translate.sh`
+
 ### MCP savegame tools
 
 When MCP is enabled, savegame automation tools can read and write `.cos` files in the configured MCP saves folder.
