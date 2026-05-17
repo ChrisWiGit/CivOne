@@ -14,6 +14,7 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Screens.GovernmentPortraits;
+using CivOne.Services;
 using CivOne.Services.Random;
 using Adv = CivOne.Advances;
 using Gov = CivOne.Governments;
@@ -77,27 +78,31 @@ namespace CivOne.Screens.Reports
 
 		private void DrawPortraits(int ox, int oy)
 		{
-			const int leftFrameX = 8;
-			const int rightFrameX = 264;
-			const int frameY = 8;
-			const int frameWidth = 48;
-			const int frameHeight = 68;
-			const int portraitOffsetX = 4;
-			const int portraitOffsetY = 4;
+			const int frameOffsetFromBorder = 9;
+			const int portraitOffsetX = 1;
+			const int portraitOffsetY = 1;
+			const int frameY = frameOffsetFromBorder;
 
 			AdvisorGovernment government = ResolveAdvisorGovernment();
 			AdvisorEra era = ResolveAdvisorEra();
+			byte frameColour = era == AdvisorEra.Ancient ? (byte)0 : (byte)9;
 
 			IBitmap tradePortrait = _portraitSpriteProvider.GetPortrait(AdvisorType.TradeAdvisor, government: government, era: era);
 			IBitmap foreignPortrait = _portraitSpriteProvider.GetPortrait(AdvisorType.ForeignAdvisor, government: government, era: era);
+			
+			int frameWidth = tradePortrait.Width() + 2;
+			int frameHeight = tradePortrait.Height() + 2;
+
+			int leftFrameX = frameOffsetFromBorder;
+			int rightFrameX = ox + Width - frameWidth - frameOffsetFromBorder;
 
 			this.FillRectangle(ox + leftFrameX, oy + frameY, frameWidth, frameHeight, 15);
-			DrawFrame(this, ox + leftFrameX, oy + frameY, frameWidth, frameHeight, 9);
+			DrawFrame(this, ox + leftFrameX, oy + frameY, frameWidth, frameHeight, frameColour);
 			this.AddLayer(tradePortrait, ox + leftFrameX + portraitOffsetX, oy + frameY + portraitOffsetY);
 
-			this.FillRectangle(ox + rightFrameX, oy + frameY, frameWidth, frameHeight, 15);
-			DrawFrame(this, ox + rightFrameX, oy + frameY, frameWidth, frameHeight, 9);
-			this.AddLayer(foreignPortrait, ox + rightFrameX + portraitOffsetX, oy + frameY + portraitOffsetY);
+			this.FillRectangle(rightFrameX, oy + frameY, frameWidth, frameHeight, 15);
+			DrawFrame(this, rightFrameX, oy + frameY, frameWidth, frameHeight, frameColour);
+			this.AddLayer(foreignPortrait, rightFrameX + portraitOffsetX, oy + frameY + portraitOffsetY);
 		}
 
 		private AdvisorGovernment ResolveAdvisorGovernment()
@@ -286,15 +291,13 @@ namespace CivOne.Screens.Reports
 			_environment = environment ?? new TopLeaderScreenEnvironment();
 			_portraitSpriteProvider = portraitSpriteProvider ?? AdvisorPortraitSpriteProviderFactory.GetInstance();
 			_randomService = randomService ?? RandomServiceFactory.Create();
-			_leaderOrderDelegate = leaderOrderDelegate ?? new LeaderOrderDelegate(_randomService);
+			_leaderOrderDelegate = leaderOrderDelegate ?? new LeaderOrderDelegate(TranslationServiceFactory.CreateDefault());
 			_debugMode = debugMode;
 			_debugScore = 19;
 			_fontHeight = _environment.GetFontHeight(HeaderAndLeaderFontId);
-
 			
 
-			Palette = _environment.GetDefaultPalette().Copy();
-			Palette.MergePalette(_portraitSpriteProvider.Palette, 144, 16 * 7);
+			Palette = _environment.GetDefaultPalette().Merge(_portraitSpriteProvider.Palette, 144);
 		}
 	}
 }

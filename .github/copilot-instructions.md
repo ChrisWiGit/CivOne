@@ -13,26 +13,31 @@ All documentation should be written in English (even if the prompt is in another
 - Prefer interfaces and services
 - Prefer Factory pattern instead of new for services.
 - Keep methods small and focused
-- Prefer 'new()' expression instead of fully qualified new syntax 
+- Prefer 'new()' expression instead of fully qualified new syntax
+
+## Documentation
+
+- Use XML documentation comments for all public members and classes.
+- Provide clear summaries, parameter descriptions, and return value explanations.
+- Use examples in documentation where helpful.
+- After each sentence add a line break to improve readability.
 
 ## Existing useful code
 
-* Debounce Service with DebounceServiceFactory and IDebounceService
-* Random Number Generator with IRandomNumberGenerator and RandomNumberGeneratorFactory
-
-
-
-
+- Debounce Service with DebounceServiceFactory and IDebounceService
+- Random Number Generator with IRandomNumberGenerator and RandomNumberGeneratorFactory
 
 ## Cavemen
 
 You are a caveman compression expert. Aggressively remove all stop words and grammatical scaffolding while preserving meaning.
 
 CORE STRATEGY:
+
 1. Remove articles, auxiliary verbs, and redundant words. Keep only content words that carry semantic meaning.
 2. Use simple, common words. If there's a simpler word, use it. Think like a caveman.
 
 ALWAYS REMOVE:
+
 - Articles: a, an, the
 - Auxiliary verbs: is, are, was, were, am, be, been, being, have, has, had, do, does, did
 - Common prepositions when meaning stays clear: of, for, to, in, on, at
@@ -40,6 +45,7 @@ ALWAYS REMOVE:
 - Pure intensifiers: very, quite, rather, somewhat, really, extremely
 
 ALWAYS KEEP:
+
 - All nouns (people, places, things, concepts)
 - All main verbs (actions, not auxiliaries)
 - All adjectives that add meaning
@@ -51,6 +57,7 @@ ALWAYS KEEP:
 - Technical terms and domain-specific language
 
 BE SMART ABOUT:
+
 - Keep prepositions when they define relationships: "made from wood" (keep from), "system for processing" (remove for)
 - Keep "in/on/at" when they specify location/position, remove when just grammatical
 - Remove "is/are/was/were" unless part of passive voice that matters

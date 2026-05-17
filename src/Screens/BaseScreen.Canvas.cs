@@ -63,7 +63,7 @@ namespace CivOne.Screens
 		}
 		public Palette OriginalColours => _originalColours;
 		public void SetOriginalColours() => _originalColours.Merge(_palette);
-		
+
 		protected void DrawPanel(int x, int y, int width, int height, bool border = true)
 		{
 			int xx = x, yy = y, ww = width, hh = height;
@@ -82,21 +82,21 @@ namespace CivOne.Screens
 
 		protected void DrawBorder(int border)
 		{
-			border = (border % 2);
+			border %= 2;
 			Picture[] borders = new Picture[8];
 			int index = 0;
 			for (int yy = 0; yy < 2; yy++)
-			for (int xx = 0; xx < 4; xx++)
-			{
-				borders[index] = Resources["SP299"][((border == 0) ? 192 : 224) + (8 * xx), 120 + (8 * yy), 8, 8];
-				index++;
-			}
-			
+				for (int xx = 0; xx < 4; xx++)
+				{
+					borders[index] = Resources["SP299"][((border == 0) ? 192 : 224) + (8 * xx), 120 + (8 * yy), 8, 8];
+					index++;
+				}
+
 			for (int x = 8; x < Width - 8; x += 8)
 			{
 				this.AddLayer(borders[4], x, 0)
 					.AddLayer(borders[6], x, Height - 8);
-	}
+			}
 			for (int y = 8; y < Height - 8; y += 8)
 			{
 				this.AddLayer(borders[7], 0, y)

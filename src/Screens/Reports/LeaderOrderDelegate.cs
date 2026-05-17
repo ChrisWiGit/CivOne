@@ -9,7 +9,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using CivOne.Services.Random;
+using CivOne.Services;
 
 namespace CivOne.Screens.Reports
 {
@@ -19,11 +19,11 @@ namespace CivOne.Screens.Reports
 
 	internal sealed class LeaderOrderDelegate
 	{
-		private readonly IRandomService _randomService;
+		private readonly ITranslationService _translationService;
 
-		public LeaderOrderDelegate(IRandomService randomService = null)
+		public LeaderOrderDelegate(ITranslationService translationService = null)
 		{
-			_randomService = randomService ?? RandomServiceFactory.Create();
+			_translationService = translationService ?? TranslationServiceFactory.CreateDefault();
 		}
 
 		public LeaderOrderResult Calculate(int ratingPercent)
@@ -40,23 +40,30 @@ namespace CivOne.Screens.Reports
 		{
 			return
 			[
-				new LeaderOrderEntry("Sulayman the Magnificent", 200),
-				new LeaderOrderEntry("Winston Churchill", 184),
-				new LeaderOrderEntry("Cleopatra", 167),
-				new LeaderOrderEntry("Charles De Gaulle", 150),
-				new LeaderOrderEntry("Vladimir Lenin", 134),
-				new LeaderOrderEntry("Otto von Bismarck", 117),
-				new LeaderOrderEntry("Eric the Red", 100),
-				new LeaderOrderEntry("Kaiser Wilhelm", 84),
-				new LeaderOrderEntry("Louis the XVI", 67),
-				new LeaderOrderEntry("Neville Chamberlain", 50),
-				new LeaderOrderEntry("Ferdinand Marcos", 34),
-				new LeaderOrderEntry("Emperor Nero", 17),
-				new LeaderOrderEntry("Dan Quayle", 0)
+				// source: https://civilization.fandom.com/wiki/Hall_of_Fame_(Civ1)
+				new LeaderOrderEntry(_translationService.Translate("Solomon the Wise"), 137),
+				new LeaderOrderEntry(_translationService.Translate("Emperor Augustus"), 129),
+				new LeaderOrderEntry(_translationService.Translate("King Charlemagne"), 111),
+				new LeaderOrderEntry(_translationService.Translate("Thomas Jefferson"), 100),
+				new LeaderOrderEntry(_translationService.Translate("Shogun Tokugawa"), 88),
+				new LeaderOrderEntry(_translationService.Translate("Franklin Delano Roosevelt"), 82),
+				new LeaderOrderEntry(_translationService.Translate("Sulayman the Magnificent"), 66),
+				new LeaderOrderEntry(_translationService.Translate("Winston Churchill"), 59),
+				new LeaderOrderEntry(_translationService.Translate("Cleopatra"), 49),
+				new LeaderOrderEntry(_translationService.Translate("Charles De Gaulle"), 41),
+				new LeaderOrderEntry(_translationService.Translate("Vladimir Lenin"), 36),
+				new LeaderOrderEntry(_translationService.Translate("Otto von Bismarck"), 23),
+				new LeaderOrderEntry(_translationService.Translate("Eric the Red"), 14),
+				new LeaderOrderEntry(_translationService.Translate("Kaiser Wilhelm"), 13),
+				new LeaderOrderEntry(_translationService.Translate("Louis the XVI"), 10),
+				new LeaderOrderEntry(_translationService.Translate("Neville Chamberlain"), 6),
+				new LeaderOrderEntry(_translationService.Translate("Ferdinand Marcos"), 4),
+				new LeaderOrderEntry(_translationService.Translate("Emperor Nero"), 2),
+				new LeaderOrderEntry(_translationService.Translate("Dan Quayle"), 1)
 			];
 		}
 
-		private int GetSelectedLeaderIndex(int ratingPercent, IReadOnlyList<LeaderOrderEntry> orderedEntries)
+		private static int GetSelectedLeaderIndex(int ratingPercent, IReadOnlyList<LeaderOrderEntry> orderedEntries)
 		{
 			for (int i = 0; i < orderedEntries.Count; i++)
 			{

@@ -6,6 +6,8 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Top Leader screen now shows a percentage-based rating bar for each leader, with the player's leader highlighted. The rating is calculated based on the player's score relative to the top leader's score, and is displayed as a horizontal bar with a percentage label.
+  * TODO: Currently, only available through debug menu. Future integration into the original ranking screen trigger conditions is planned once they are identified.
 * Refactored palette handling
   * Extended the `Palette.Merge` method and used it to improve performance and code clarity.
   * Replaced all direct `Palette = Common.DefaultPalette` assignments with `using` blocks to ensure immediate disposal.
