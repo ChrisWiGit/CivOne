@@ -147,7 +147,8 @@ namespace CivOne.Screens.Reports
 		
 		public TopCities()
 		{
-			Palette = Common.DefaultPalette;
+			using var defaultPalette = Common.DefaultPalette;
+			Palette = defaultPalette;
 
 			// I'm not sure about the order of top 5 cities, but this is pretty close
 			_cities = [.. Game.GetCities()

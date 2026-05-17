@@ -6,8 +6,9 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
-* Refactoring of palette handling
-  * Extended `Palette.Merge` method and use it for performance and code clarity improvements.
+* Refactored palette handling
+  * Extended the `Palette.Merge` method and used it to improve performance and code clarity.
+  * Replaced all direct `Palette = Common.DefaultPalette` assignments with `using` blocks to ensure immediate disposal.
 * Feature: Added support for MCP (Multi Client Protocol) to allow external clients (e.g. VS Code extension) to connect and interact with the game for testing, debugging, and automation purposes. See [MCP.md](MCP.md) for details on how to use the MCP server and its current capabilities.
   * Added command line option `--mcp` to start the game in MCP server mode.
   * Added command line option `--mcp-artifacts <folder>` to specify a custom folder for MCP artifacts (e.g. screenshots).

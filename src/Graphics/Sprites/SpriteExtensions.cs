@@ -15,7 +15,9 @@ namespace CivOne.Graphics.Sprites
 		{
 			if (sprite == null)
 				return null;
-			return new Picture(sprite.Bitmap, Common.DefaultPalette);
+			
+			using var defaultPalette = Common.DefaultPalette;
+			return new Picture(sprite.Bitmap, defaultPalette);
 		}
 	}
 }

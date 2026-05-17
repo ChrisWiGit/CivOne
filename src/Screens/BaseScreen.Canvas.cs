@@ -37,6 +37,17 @@ namespace CivOne.Screens
 			}
 		}
 		private Palette _palette, _originalColours;
+		/// <summary>
+		/// Gets or sets the active screen palette.
+		///
+		/// Setting this property replaces the entire active palette with a copy of the provided palette.
+		///
+		/// Use this when you intentionally want a full palette switch for the screen.
+		///
+		/// This includes index 0, which is commonly used as transparency.
+		///
+		/// If you need to preserve transparency index 0 while applying colors from another palette, use <see cref="SetPalette(Palette)"/> instead.
+		/// </summary>
 		public Palette Palette
 		{
 			get
@@ -115,6 +126,18 @@ namespace CivOne.Screens
 				Palette[i] = OriginalColours[i];
 		}
 
+		/// <summary>
+		/// Merges the provided palette into the current active palette.
+		///
+		/// This method preserves index 0 from the current palette.
+		///
+		/// Index 0 is often used as transparency, so preserving it avoids transparency artifacts.
+		///
+		/// Use this when you want to apply another palette's colors without fully replacing the current palette.
+		///
+		/// Use <see cref="Palette"/> assignment for a complete palette replacement.
+		/// </summary>
+		/// <param name="palette">The palette whose colors should be merged into the current palette.</param>
 		public void SetPalette(Palette palette)
 		{
 			Colour indexZero = Palette[0];

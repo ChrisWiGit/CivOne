@@ -325,7 +325,8 @@ namespace CivOne.Screens.Debug
 
 		public SpawnUnit()
 		{
-			Palette = Common.DefaultPalette;
+			using var defaultPalette = Common.DefaultPalette;
+			Palette = defaultPalette;
 
 			int fontHeight = Resources.GetFontHeight(0);
 			_civMenuHeight = (fontHeight * (Game.Players.Count() + 1)) + 5;

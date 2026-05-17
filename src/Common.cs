@@ -42,6 +42,8 @@ namespace CivOne
 		private static List<IScreen> _screens = new List<IScreen>();
 		internal static IScreen[] Screens => _screens.ToArray();
 
+		internal static IScreen LastScreen => _screens.LastOrDefault();
+
 		internal static bool HasAttribute<T>(object checkObject) where T : Attribute
 		{
 			if (checkObject == null)

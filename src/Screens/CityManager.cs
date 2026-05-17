@@ -228,7 +228,8 @@ namespace CivOne.Screens
 			
 			_city = city;
 
-			Palette = Common.DefaultPalette;
+			using var defaultPalette = Common.DefaultPalette;
+			Palette = defaultPalette;
 			this.Clear(5);
 			
 			_subScreens.Add(_cityHeader = new CityHeader(_city));
