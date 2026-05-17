@@ -15,6 +15,12 @@ All documentation should be written in English (even if the prompt is in another
 - Keep methods small and focused
 - Prefer 'new()' expression instead of fully qualified new syntax 
 
+## Tests
+
+* Run tests only when necessary.
+* Run only the tests that are relevant to the current change.
+* e.g. `dotnet test xunit/CivOne.UnitTests.csproj --filter "FullyQualifiedName~TranslationFileRepositoryImplTests|FullyQualifiedName~TranslationServiceFactoryTests"`
+
 ## Existing useful code
 
 * Debounce Service with DebounceServiceFactory and IDebounceService
