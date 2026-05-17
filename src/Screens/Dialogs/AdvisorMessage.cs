@@ -45,13 +45,10 @@ namespace CivOne.Screens.Dialogs
 			bool modernGovernment = Human.HasAdvance<Invention>();
 			IBitmap governmentPortrait = Icons.GovernmentPortrait(Human.Government, advisor, modernGovernment);
 			
-            // TODO fire-eggs common operation
-			Palette palette = Common.DefaultPalette;
-			for (int i = 144; i < 256; i++)
-			{
-				palette[i] = governmentPortrait.Palette[i];
-			}
-			this.SetPalette(palette);
+			const int portraitPaletteStart = 144;
+			using Palette palette = Common.DefaultPalette
+				.Merge(governmentPortrait.Palette, portraitPaletteStart, 256 - portraitPaletteStart);
+			SetPalette(palette);
 			
 			_textLines = TextBitmaps(message);
 			DialogBox.AddLayer(governmentPortrait, 2, 2);

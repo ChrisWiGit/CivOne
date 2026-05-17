@@ -97,7 +97,8 @@ namespace CivOne.Screens.Reports
 		
 		public WorldWonders()
 		{
-			Palette = Common.DefaultPalette;
+			using var defaultPalette = Common.DefaultPalette;
+			Palette = defaultPalette;
 
 			_wonders = Game.BuiltWonders.OrderBy(w => w.Id).Select(w => new CityWonders()
 			{

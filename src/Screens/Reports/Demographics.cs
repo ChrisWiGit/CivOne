@@ -154,7 +154,8 @@ namespace CivOne.Screens.Reports
 
 		public Demographics()
 		{
-			Palette = Common.DefaultPalette;
+			using var defaultPalette = Common.DefaultPalette;
+			Palette = defaultPalette;
 
 			_normalText = new TextSettings() { Colour = 15 };
 			_shadowText = TextSettings.ShadowText(15, 5);

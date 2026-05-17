@@ -42,6 +42,8 @@ namespace CivOne
 		private static List<IScreen> _screens = new List<IScreen>();
 		internal static IScreen[] Screens => _screens.ToArray();
 
+		internal static IScreen LastScreen => _screens.LastOrDefault();
+
 		internal static bool HasAttribute<T>(object checkObject) where T : Attribute
 		{
 			if (checkObject == null)
@@ -69,6 +71,18 @@ namespace CivOne
 			}
 		}
 
+
+		/// <summary>
+		/// Gets a <b>copy</b> of the default palette.
+		/// You must not call Copy() on the returned palette, as it is already a copy.
+		/// 
+		/// You should use "using" on the returned palette, to ensure it is disposed properly after use, to avoid memory leaks.
+		/// </summary>
+		/// <example>
+		/// <code>
+		/// using Palette palette = Common.DefaultPalette
+		/// </code>
+		/// </example>
 		public static Palette DefaultPalette
 		{
 			get

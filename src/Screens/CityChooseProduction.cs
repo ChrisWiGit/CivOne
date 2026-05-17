@@ -289,7 +289,8 @@ namespace CivOne.Screens
 		{
 			_city = city;
 
-			Palette = Common.DefaultPalette;
+			using var defaultPalette = Common.DefaultPalette;
+			Palette = defaultPalette;
 
 			_availableProduction = _city.AvailableProduction.ToArray();
 			_menuHeight = Resources.GetFontHeight(0) * _availableProduction.Length;

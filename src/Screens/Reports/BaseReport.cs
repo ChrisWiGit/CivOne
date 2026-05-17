@@ -69,7 +69,7 @@ namespace CivOne.Screens.Reports
 			return true;
 		}
 		
-		public BaseReport(string title, byte backgroundColour, MouseCursor cursor = MouseCursor.None) : base(cursor)
+		protected BaseReport(string title, byte backgroundColour, MouseCursor cursor = MouseCursor.None) : base(cursor)
 		{
 			_title = title;
 			BackgroundColour = backgroundColour;
@@ -79,11 +79,9 @@ namespace CivOne.Screens.Reports
 			{
 				Portrait[i] = Icons.GovernmentPortrait(Human.Government, (Advisor)Enum.Parse(typeof(Advisor), $"{i}"), modernGovernment); 
 			}
-			using (Palette palette = Common.DefaultPalette)
-			{
-				palette.MergePalette(Portrait[0].Palette, 144);
-				Palette = palette;
-			}
+
+			using Palette palette = Common.DefaultPalette.Merge(Portrait[0].Palette, 144);
+			Palette = palette;
 			
 			this.Clear(backgroundColour);
 			DrawReportHeader();

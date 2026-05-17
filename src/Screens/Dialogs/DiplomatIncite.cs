@@ -138,12 +138,8 @@ namespace CivOne.Screens.Dialogs
 
 			IBitmap spyPortrait = Icons.Spy;
 
-			Palette palette = Common.DefaultPalette;
-			for (int i = 144; i < 256; i++)
-			{
-				palette[i] = spyPortrait.Palette[i];
-			}
-			this.SetPalette(palette);
+			using Palette palette = Common.DefaultPalette.Merge(spyPortrait.Palette, 144);
+			Palette = palette; // No transparent colour in spy portrait
 
 			DialogBox.AddLayer(spyPortrait, 2, 2);
 

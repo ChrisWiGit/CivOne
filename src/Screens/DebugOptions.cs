@@ -15,6 +15,7 @@ using CivOne.Screens.Debug;
 using CivOne.Screens.Reports;
 using CivOne.Graphics.Sprites;
 using CivOne.Tasks;
+using CivOne.Units;
 using CivOne.UserInterface;
 using System.Collections.Generic;
 
@@ -169,6 +170,31 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		private void MenuRunDiplomatIncite(object sender, EventArgs args)
+		{
+			Diplomat diplomat = Game.GetUnits()
+				.OfType<Diplomat>()
+				.FirstOrDefault(x => x.Player == Human);
+
+			if (diplomat == null)
+			{
+				GameTask.Enqueue(Message.General("No human Diplomat/Spy available.", "You need to spawn one first."));
+				Destroy();
+				return;
+			}
+
+			City cityToIncite = Game.Cities.FirstOrDefault(x => x.Owner != diplomat.Owner);
+			if (cityToIncite == null)
+			{
+				GameTask.Enqueue(Message.General("No foreign city available for incite test."));
+				Destroy();
+				return;
+			}
+
+			GameTask.Enqueue(Show.DiplomatIncite(cityToIncite, diplomat));
+			Destroy();
+		}
+
 		private void LoadGame(object sender, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<LoadGame>());
@@ -242,7 +268,8 @@ namespace CivOne.Screens
 
 		public DebugOptions() : base(MouseCursor.Pointer)
 		{
-			Palette = Common.DefaultPalette;
+			using var defaultPalette = Common.DefaultPalette;
+			Palette = defaultPalette;
 
 			_menuEntries =
 			[
@@ -254,6 +281,7 @@ namespace CivOne.Screens
 				new("Set City Size", MenuSetCitySize),
 				new("Cause City Disaster", MenuCityDisaster),
 				new("Add building to city", MenuAddBuilding),
+				new("DiplomatIncite", MenuRunDiplomatIncite),
 				new("Change Human Player", MenuChangeHumanPlayer),
 				new("Spawn Unit", MenuSpawnUnit),
 				new("Meet With King", MenuMeetWithKing),
