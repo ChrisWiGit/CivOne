@@ -21,8 +21,8 @@ namespace CivOne.Screens
 
 		protected bool _doRefresh = true;
 		
-		private int CanvasWidth => RuntimeHandler.Instance.CanvasWidth;
-		private int CanvasHeight => RuntimeHandler.Instance.CanvasHeight;
+		protected int CanvasWidth => RuntimeHandler.Instance.CanvasWidth;
+		protected int CanvasHeight => RuntimeHandler.Instance.CanvasHeight;
 		private bool CanExpand => Common.HasAttribute<ScreenResizeable>(this);
 		private bool SizeChanged => (this.Width() != CanvasWidth || this.Height() != CanvasHeight);
 

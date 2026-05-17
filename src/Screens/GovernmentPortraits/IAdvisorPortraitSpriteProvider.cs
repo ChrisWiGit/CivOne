@@ -31,7 +31,10 @@ namespace CivOne.Screens.GovernmentPortraits
 		Large
 	}
 
-
+	/// <summary>
+	/// Provides portraits for the various advisors, based on their type, face, government and era.
+	/// This is an uncoupled version of <see cref="CivOne.Enums.Advisor"/>, which is used by the various screens to request portraits without needing to know about the underlying logic of how portraits are determined.
+	/// </summary>
 	internal enum AdvisorType
 	{
 		MilitaryAdvisor,
@@ -47,13 +50,16 @@ namespace CivOne.Screens.GovernmentPortraits
 		Happy
 	}
 
+
 	internal interface IAdvisorPortraitSpriteProvider
 	{
-		Picture GetPortrait(
+		IBitmap GetPortrait(
 			AdvisorType portraitType,
 			AdvisorFace face = AdvisorFace.Neutral,
 			AdvisorGovernment government = AdvisorGovernment.Democracy,
 			AdvisorEra era = AdvisorEra.Modern,
 			AdvisorPortraitSize size = AdvisorPortraitSize.Small);
+
+		Palette Palette { get; }
 	}
 }

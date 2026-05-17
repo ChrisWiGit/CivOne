@@ -84,16 +84,20 @@ namespace CivOne.Screens.Reports
 			const int frameHeight = 68;
 			const int portraitOffsetX = 4;
 			const int portraitOffsetY = 4;
+
 			AdvisorGovernment government = ResolveAdvisorGovernment();
 			AdvisorEra era = ResolveAdvisorEra();
 
+			IBitmap tradePortrait = _portraitSpriteProvider.GetPortrait(AdvisorType.TradeAdvisor, government: government, era: era);
+			IBitmap foreignPortrait = _portraitSpriteProvider.GetPortrait(AdvisorType.ForeignAdvisor, government: government, era: era);
+
 			this.FillRectangle(ox + leftFrameX, oy + frameY, frameWidth, frameHeight, 15);
 			DrawFrame(this, ox + leftFrameX, oy + frameY, frameWidth, frameHeight, 9);
-			this.AddLayer(_portraitSpriteProvider.GetPortrait(AdvisorType.TradeAdvisor, government: government, era: era), ox + leftFrameX + portraitOffsetX, oy + frameY + portraitOffsetY);
+			this.AddLayer(tradePortrait, ox + leftFrameX + portraitOffsetX, oy + frameY + portraitOffsetY);
 
 			this.FillRectangle(ox + rightFrameX, oy + frameY, frameWidth, frameHeight, 15);
 			DrawFrame(this, ox + rightFrameX, oy + frameY, frameWidth, frameHeight, 9);
-			this.AddLayer(_portraitSpriteProvider.GetPortrait(AdvisorType.ForeignAdvisor, government: government, era: era), ox + rightFrameX + portraitOffsetX, oy + frameY + portraitOffsetY);
+			this.AddLayer(foreignPortrait, ox + rightFrameX + portraitOffsetX, oy + frameY + portraitOffsetY);
 		}
 
 		private AdvisorGovernment ResolveAdvisorGovernment()
@@ -287,7 +291,10 @@ namespace CivOne.Screens.Reports
 			_debugScore = 19;
 			_fontHeight = _environment.GetFontHeight(HeaderAndLeaderFontId);
 
-			Palette = _environment.GetDefaultPalette();
+			
+
+			Palette = _environment.GetDefaultPalette().Copy();
+			Palette.MergePalette(_portraitSpriteProvider.Palette, 144, 16 * 7);
 		}
 	}
 }
