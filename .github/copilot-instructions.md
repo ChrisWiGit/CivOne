@@ -19,15 +19,16 @@ Also follow [.github/instructions/mcp.instructions.md](instructions/mcp.instruct
 - Prefer Factory pattern instead of new for services.
 - Keep methods small and focused
 - Prefer 'new()' expression instead of fully qualified new syntax 
+- Instead of .toArray() use [.. collection] to create a new array from an IEnumerable
+- Instead of .Any() use .Length when working with arrays for better readability and performance.
+
+
+
 
 ## Existing useful code
 
 * Debounce Service with DebounceServiceFactory and IDebounceService
 * Random Number Generator with IRandomNumberGenerator and RandomNumberGeneratorFactory
-
-
-
-
 
 ## Cavemen
 
