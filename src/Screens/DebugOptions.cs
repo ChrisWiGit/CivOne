@@ -16,7 +16,7 @@ using CivOne.Screens.Reports;
 using CivOne.Graphics.Sprites;
 using CivOne.Tasks;
 using CivOne.Units;
-using CivOne.UserInterface;
+using CivOne.Events;
 using System.Collections.Generic;
 using CivOne.Services.SpaceShip;
 
@@ -25,7 +25,7 @@ namespace CivOne.Screens
 	[ScreenResizeable]
 	internal class DebugOptions : BaseScreen
 	{
-		private Menu _menu;
+		private readonly GridMenuDelegate _gridMenu;
 
 		private void MenuCancel(object sender, EventArgs args)
 		{
@@ -177,6 +177,7 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		// This is a simple test for showing the diplomat incite screen.
 		private void MenuRunDiplomatIncite(object sender, EventArgs args)
 		{
 			Diplomat diplomat = Game.GetUnits()
@@ -214,67 +215,28 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		public override bool KeyDown(KeyboardEventArgs args)
+		{
+			bool handled = _gridMenu.KeyDown(args);
+			if (handled) Refresh();
+			return handled;
+		}
+
+		public override bool MouseDown(ScreenEventArgs args)
+		{
+			bool handled = _gridMenu.MouseDown(args.X, args.Y);
+			if (handled) Refresh();
+			return handled;
+		}
+
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (!RefreshNeeded())
-			{
-				return false;
-			}
-
-			this.Clear();
-
-			int textFontId = 0;
-
-			const int menuBoxWidth = 131;
-			int itemHeight = Resources.GetFontHeight(textFontId);
-			int menuHeight = (itemHeight + 1) * _menuEntries.Count;
-
-			using Picture menuGfx = new(menuBoxWidth, menuHeight);
-			menuGfx
-				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D()
-				.DrawText("Debug Options (F12):", textFontId, 15, 4, 4);
-
-			using Picture menuBackground = menuGfx[2, 11, menuBoxWidth, menuHeight];
-			menuBackground.ColourReplace((7, 11), (22, 3));
-
-			this.FillRectangle(24, 16, menuBoxWidth + 2, menuHeight + 2, colour: 5); // produces black border, +2 because of round errors when resizing
-			this.AddLayer(menuGfx, 25, 17);
-			CreateMenu(textFontId, menuBoxWidth, itemHeight, menuBackground);
+			if (!RefreshNeeded()) return false;
+			_gridMenu.Draw(this, "Debug Options (F12):", CanvasHeight);
 			return true;
 		}
 
-		private void CreateMenu(int textFontId, int menuBoxWidth, int itemHeight, Picture menuBackground)
-		{
-			if (_menu != null)
-			{
-				return;
-			}
-			_menu = new(Palette, menuBackground)
-			{
-				X = 27,
-				Y = 28,
-				MenuWidth = menuBoxWidth - 4,
-				ActiveColour = 11, // Light blue
-				TextColour = 5, // Black
-				DisabledColour = 3, // Light grey
-				FontId = textFontId,
-				Indent = 8, // Left margin
-				RowHeight = itemHeight
-
-			};
-			_menu.MissClick += MenuCancel;
-			_menu.Cancel += MenuCancel;
-
-			foreach (var entry in _menuEntries)
-			{
-				_menu.Items.Add(entry.Text).OnSelect(entry.Handler);
-			}
-
-			AddMenu(_menu);
-		}
-
-		private record MenuEntry(string Text, Events.MenuItemEventHandler<int> Handler);
+		private record MenuEntry(string Text, Action Handler);
 
 		private readonly List<MenuEntry> _menuEntries;
 
@@ -286,36 +248,37 @@ namespace CivOne.Screens
 
 			_menuEntries =
 			[
-				new("Load a Game", LoadGame),
-				new("Set Game Year", MenuSetGameYear),
-				new("Set Player Gold", MenuSetPlayerGold),
-				new("Set Player Science", MenuSetPlayerScience),
-				new("Set Player Advances", MenuSetPlayerAdvances),
-				new("Set City Size", MenuSetCitySize),
-				new("Cause City Disaster", MenuCityDisaster),
-				new("Add building to city", MenuAddBuilding),
-				new("DiplomatIncite", MenuRunDiplomatIncite),
-				new("Change Human Player", MenuChangeHumanPlayer),
-				new("Spawn Unit", MenuSpawnUnit),
-				new("Meet With King", MenuMeetWithKing),
-				new("Toggle Reveal World", MenuRevealWorld),
-				new("Build Palace", MenuBuildPalace),
-				new("City Menu Grid (Test)", MenuCityGridTest),
-				new("Ranking (Random)", MenuShowCivilizationRanking),
-				new("Show Power Graph", MenuShowPowerGraph),
-				new("Instant Conquest", InstantConquest),
-				new("Instant Global Warming", InstantGlobalWarming),
-				new("Palette Viewer", MenuPaletteViewer),
-				new("Settings", ShowSettings),
-				new("Build SpaceShip", MenuBuildSpaceShip)
+				new("Load a Game", () => LoadGame(null, EventArgs.Empty)),
+				new("Set Game Year", () => MenuSetGameYear(null, EventArgs.Empty)),
+				new("Set Player Gold", () => MenuSetPlayerGold(null, EventArgs.Empty)),
+				new("Set Player Science", () => MenuSetPlayerScience(null, EventArgs.Empty)),
+				new("Set Player Advances", () => MenuSetPlayerAdvances(null, EventArgs.Empty)),
+				new("Set City Size", () => MenuSetCitySize(null, EventArgs.Empty)),
+				new("Cause City Disaster", () => MenuCityDisaster(null, EventArgs.Empty)),
+				new("Add building to city", () => MenuAddBuilding(null, EventArgs.Empty)),
+				new("DiplomatIncite", () => MenuRunDiplomatIncite(null, EventArgs.Empty)),
+				new("Change Human Player", () => MenuChangeHumanPlayer(null, EventArgs.Empty)),
+				new("Spawn Unit", () => MenuSpawnUnit(null, EventArgs.Empty)),
+				new("Meet With King", () => MenuMeetWithKing(null, EventArgs.Empty)),
+				new("Toggle Reveal World", () => MenuRevealWorld(null, EventArgs.Empty)),
+				new("Build Palace", () => MenuBuildPalace(null, EventArgs.Empty)),
+				new("City Menu Grid (Test)", () => MenuCityGridTest(null, EventArgs.Empty)),
+				new("Ranking (Random)", () => MenuShowCivilizationRanking(null, EventArgs.Empty)),
+				new("Show Power Graph", () => MenuShowPowerGraph(null, EventArgs.Empty)),
+				new("Instant Conquest", () => InstantConquest(null, EventArgs.Empty)),
+				new("Instant Global Warming", () => InstantGlobalWarming(null, EventArgs.Empty)),
+				new("Palette Viewer", () => MenuPaletteViewer(null, EventArgs.Empty)),
+				new("Settings", () => ShowSettings(null, EventArgs.Empty)),
+				new("Build SpaceShip", () => MenuBuildSpaceShip(null, EventArgs.Empty))
 			];
 
-			const int itemHeight = 8 + 1;
-			const int menuWidth = 133;
-			int menuHeight = itemHeight * _menuEntries.Count;
+			string[] labels = [.. _menuEntries.Select(e => e.Text)];
+			_gridMenu = new GridMenuDelegate(labels, GridMenuDelegate.SelectionMode.Select, fontId: 0, enableHotkeys: true);
+			_gridMenu.ItemSelected += index => _menuEntries[index].Handler();
+			_gridMenu.Cancelled += (_, _) => Destroy();
 
-			this.AddLayer(Common.Screens.Last(), 0, 0)
-				.FillRectangle(24, 16, menuWidth, menuHeight + 2, 5);
+			this.AddLayer(Common.Screens.Last(), 0, 0);
+			Refresh();
 		}
 	}
 }

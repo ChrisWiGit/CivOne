@@ -37,6 +37,9 @@ namespace CivOne.Screens.Debug
 	/// - <see cref="SelectionMode.Select"/>:
 	///   activating an item fires <see cref="ItemSelected"/>; host typically closes or switches screen.
 	///   You can optionally select an item by default on first draw by passing its global index to the constructor with <c>defaultSelectedIndex</c>.
+	/// Hotkeys:
+	/// - If <c>enableHotkeys</c> is true, items are prefixed with a hotkey (0-9, A-Z) based on their global index. Activating the hotkey triggers the corresponding item.
+	/// - If multiple items within the same page share a hotkey (e.g. more than 36 items), hotkey activation will cycle through those items and not trigger an item directly.
 	/// Notes:
 	/// - Item mapping is flat index based and column-major.
 	/// - Checked marker rendering is optional and driven by the provided <c>isChecked</c> callback.
@@ -87,6 +90,7 @@ namespace CivOne.Screens.Debug
 		private int _lastCanvasHeight, _lastTargetWidth, _lastTargetHeight;
 		private bool _layoutDirty = true;
 		private bool _defaultSelectionPending;
+		private readonly bool _enableHotkeys;
 
 		/// <summary>Flat index (global) of the currently highlighted item, or -1 if none.</summary>
 		public int SelectedIndex
@@ -585,6 +589,12 @@ namespace CivOne.Screens.Debug
 				raw = $"{checkLabel} {raw}";
 			}
 
+			if (_enableHotkeys)
+			{
+				char hk = GetHotkeyChar(globalIdx);
+				raw = $"{hk}. {raw}";
+			}
+
 			return TruncateTextToWidth(_fontId, raw, _gridCellWidth - 2);
 		}
 
@@ -604,6 +614,8 @@ namespace CivOne.Screens.Debug
 		/// </summary>
 		public bool KeyDown(KeyboardEventArgs args)
 		{
+			if (TryHandleHotkey(args)) return true;
+
 			switch (args.Key)
 			{
 				case Key.Up:
@@ -703,6 +715,80 @@ namespace CivOne.Screens.Debug
 			}
 		}
 
+		// Maps item index to its hotkey character: 0-9 for slots 0-9, a-z for slots 10-35, then repeats.
+		private static char GetHotkeyChar(int itemIndex)
+		{
+			int slot = itemIndex % 36;
+			return slot < 10 ? (char)('0' + slot) : (char)('A' + slot - 10);
+		}
+
+		private static int GetHotkeySlot(char c)
+		{
+			if (c >= '0' && c <= '9') return c - '0';
+			if (c >= 'a' && c <= 'z') return c - 'a' + 10;
+			return -1;
+		}
+
+		// Navigates to a global item index, switching page if needed.
+		private void NavigateToGlobalIndex(int globalIndex)
+		{
+			if (_maxVisibleItems <= 0 || _gridRows <= 0) return;
+			int page = globalIndex / _maxVisibleItems;
+			_pageOffset = page * _maxVisibleItems;
+			int localIndex = globalIndex - _pageOffset;
+			_gridCol = localIndex / _gridRows;
+			_gridRow = localIndex % _gridRows;
+		}
+
+		private bool TryHandleHotkey(KeyboardEventArgs args)
+		{
+			if (!_enableHotkeys || args.Key != Key.Character) return false;
+
+			char c = char.ToLower(args.KeyChar);
+			int startSlot = GetHotkeySlot(c);
+			if (startSlot < 0) return false;
+
+			// Collect all global indices that share this hotkey (slot, slot+36, slot+72, ...)
+			int matchCount = 0;
+			for (int i = startSlot; i < _items.Length; i += 36) matchCount++;
+			if (matchCount == 0) return false;
+
+			int[] matches = new int[matchCount];
+			int j = 0;
+			for (int i = startSlot; i < _items.Length; i += 36) matches[j++] = i;
+
+			int currentGlobal = SelectedIndex;
+			int posInMatches = -1;
+			for (int i = 0; i < matches.Length; i++)
+			{
+				if (matches[i] == currentGlobal) { posInMatches = i; break; }
+			}
+
+			if (posInMatches < 0)
+			{
+				// Not on a matching item: jump to first
+				NavigateToGlobalIndex(matches[0]);
+				if (matches.Length == 1)
+					ActivateSelected();
+			}
+			else
+			{
+				int nextPos = posInMatches + 1;
+				if (nextPos >= matches.Length)
+				{
+					// Wrap back to first without activating
+					NavigateToGlobalIndex(matches[0]);
+				}
+				else
+				{
+					NavigateToGlobalIndex(matches[nextPos]);
+					if (nextPos == matches.Length - 1)
+						ActivateSelected(); // Last in cycle: activate
+				}
+			}
+			return true;
+		}
+
 		private static string TruncateTextToWidth(byte fontId, string text, int maxWidth)
 		{
 			if (maxWidth <= 0)
@@ -740,8 +826,15 @@ namespace CivOne.Screens.Debug
 		/// <param name="fontId">Font to use for rendering.</param>
 		/// <param name="allowCancel">If true, pressing Escape fires the <see cref="Cancelled"/> event. Default is true.</param>
 		/// <param name="defaultSelectedIndex">Optional initial selected item index for Select mode. Ignored for CheckUncheck mode.</param>
+		/// <param name="enableHotkeys">
+		/// If true, items are prefixed with auto-assigned hotkey characters (0-9, then a-z, repeating).
+		/// Pressing a hotkey character navigates to the matching item; if there is only one match it is
+		/// activated immediately. With multiple matches the cursor cycles through them and activates on
+		/// the last one in the cycle.
+		/// </param>
 		public GridMenuDelegate(string[] items, SelectionMode mode, Func<int, bool> isChecked = null,
-				byte fontId = 1, bool allowCancel = true, int defaultSelectedIndex = -1)
+				byte fontId = 1, bool allowCancel = true, int defaultSelectedIndex = -1,
+				bool enableHotkeys = false)
 		{
 			_items = items;
 			_mode = mode;
@@ -749,6 +842,7 @@ namespace CivOne.Screens.Debug
 			_fontId = fontId;
 			_allowCancel = allowCancel;
 			_defaultSelectedIndex = defaultSelectedIndex;
+			_enableHotkeys = enableHotkeys;
 			_defaultSelectionPending = _mode == SelectionMode.Select
 				&& _defaultSelectedIndex >= 0
 				&& _defaultSelectedIndex < _items.Length;
