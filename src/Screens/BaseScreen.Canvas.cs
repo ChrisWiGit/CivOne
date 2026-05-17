@@ -51,7 +51,7 @@ namespace CivOne.Screens
 			}
 		}
 		public Palette OriginalColours => _originalColours;
-		public void SetOriginalColours() => _originalColours.MergePalette(_palette);
+		public void SetOriginalColours() => _originalColours.Merge(_palette);
 		
 		protected void DrawPanel(int x, int y, int width, int height, bool border = true)
 		{
@@ -117,8 +117,9 @@ namespace CivOne.Screens
 
 		public void SetPalette(Palette palette)
 		{
-			for (int i = 1; i < palette.Length && i < 256; i++)
-				Palette[i] = palette[i];
+			Colour indexZero = Palette[0];
+			Palette.Merge(palette);
+			Palette[0] = indexZero;
 		}
 
 		public virtual void Dispose()

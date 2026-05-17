@@ -85,7 +85,7 @@ namespace CivOne.Screens
 			if (_singlePage.Icon != null && _icon)
 			{
 				Palette = Common.DefaultPalette;
-				Palette.MergePalette(_singlePage.Icon.Palette, 16);
+				Palette.Merge(_singlePage.Icon.Palette, 16);
 				SetOriginalColours();
 			}
 
@@ -364,7 +364,7 @@ namespace CivOne.Screens
 			Palette = Common.DefaultPalette;
 
             if (page.Icon != null)
-                Palette.MergePalette(page.Icon.Palette, 16);
+                Palette.Merge(page.Icon.Palette, 16);
 
 		    SetOriginalColours();
 			
