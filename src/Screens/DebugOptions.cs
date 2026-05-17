@@ -277,7 +277,7 @@ namespace CivOne.Screens
 			_gridMenu.ItemSelected += index => _menuEntries[index].Handler();
 			_gridMenu.Cancelled += (_, _) => Destroy();
 
-			this.AddLayer(Common.Screens.Last(), 0, 0);
+			this.AddLayer(Common.LastScreen, 0, 0);
 			Refresh();
 		}
 	}

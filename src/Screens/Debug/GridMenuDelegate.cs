@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Collections.Generic;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -722,14 +723,14 @@ namespace CivOne.Screens.Debug
 			return slot < 10 ? (char)('0' + slot) : (char)('A' + slot - 10);
 		}
 
-		private static int GetHotkeySlot(char c)
+		private static int GetHotkeySlot(char c) => c switch
 		{
-			if (c >= '0' && c <= '9') return c - '0';
-			if (c >= 'a' && c <= 'z') return c - 'a' + 10;
-			return -1;
-		}
+			>= '0' and <= '9' => c - '0',
+			>= 'a' and <= 'z' => c - 'a' + 10,
+			_ => -1
+		};
 
-		// Navigates to a global item index, switching page if needed.
+		/// <summary>Navigates to a global item index, switching page if needed.</summary>
 		private void NavigateToGlobalIndex(int globalIndex)
 		{
 			if (_maxVisibleItems <= 0 || _gridRows <= 0) return;
@@ -740,52 +741,56 @@ namespace CivOne.Screens.Debug
 			_gridRow = localIndex % _gridRows;
 		}
 
+		/// <summary>Collects all global indices that share a hotkey character (slot, slot+36, slot+72, ...).</summary>
+		private int[] CollectHotkeyMatches(char c)
+		{
+			int startSlot = GetHotkeySlot(c);
+			if (startSlot < 0) return [];
+
+			var matches = new List<int>();
+			for (int i = startSlot; i < _items.Length; i += 36)
+				matches.Add(i);
+
+			return [..matches];
+		}
+
+		/// <summary>Finds the position of the current selection in the matches array.</summary>
+		private int FindPositionInMatches(int[] matches, int currentGlobal)
+		{
+			for (int i = 0; i < matches.Length; i++)
+				if (matches[i] == currentGlobal)
+					return i;
+			return -1;
+		}
+
+		/// <summary>Navigates to the next matching hotkey item and activates if at end of cycle.</summary>
+		private void NavigateToNextMatch(int[] matches, int currentPos)
+		{
+			if (currentPos < 0)
+			{
+				NavigateToGlobalIndex(matches[0]);
+				if (matches.Length == 1)
+					ActivateSelected();
+				return;
+			}
+
+			int nextPos = (currentPos + 1) % matches.Length;
+			NavigateToGlobalIndex(matches[nextPos]);
+
+			if (nextPos == matches.Length - 1)
+				ActivateSelected();
+		}
+
 		private bool TryHandleHotkey(KeyboardEventArgs args)
 		{
 			if (!_enableHotkeys || args.Key != Key.Character) return false;
 
 			char c = char.ToLower(args.KeyChar);
-			int startSlot = GetHotkeySlot(c);
-			if (startSlot < 0) return false;
+			int[] matches = CollectHotkeyMatches(c);
+			if (matches.Length == 0) return false;
 
-			// Collect all global indices that share this hotkey (slot, slot+36, slot+72, ...)
-			int matchCount = 0;
-			for (int i = startSlot; i < _items.Length; i += 36) matchCount++;
-			if (matchCount == 0) return false;
-
-			int[] matches = new int[matchCount];
-			int j = 0;
-			for (int i = startSlot; i < _items.Length; i += 36) matches[j++] = i;
-
-			int currentGlobal = SelectedIndex;
-			int posInMatches = -1;
-			for (int i = 0; i < matches.Length; i++)
-			{
-				if (matches[i] == currentGlobal) { posInMatches = i; break; }
-			}
-
-			if (posInMatches < 0)
-			{
-				// Not on a matching item: jump to first
-				NavigateToGlobalIndex(matches[0]);
-				if (matches.Length == 1)
-					ActivateSelected();
-			}
-			else
-			{
-				int nextPos = posInMatches + 1;
-				if (nextPos >= matches.Length)
-				{
-					// Wrap back to first without activating
-					NavigateToGlobalIndex(matches[0]);
-				}
-				else
-				{
-					NavigateToGlobalIndex(matches[nextPos]);
-					if (nextPos == matches.Length - 1)
-						ActivateSelected(); // Last in cycle: activate
-				}
-			}
+			int currentPos = FindPositionInMatches(matches, SelectedIndex);
+			NavigateToNextMatch(matches, currentPos);
 			return true;
 		}
 
