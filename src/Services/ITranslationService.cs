@@ -11,7 +11,11 @@ using System;
 
 namespace CivOne.Services
 {
-
+	/// <summary>
+	/// Defines the runtime translation contract used by UI and gameplay services.
+	/// Implementations include identity fallback (<see cref="TranslationIdentityServiceImpl"/>) and file-based lookup
+	/// (<see cref="Translation.FileTranslationServiceImpl"/>).
+	/// </summary>
 	public interface ITranslationService
 	{
 		/// <summary>

@@ -72,6 +72,7 @@ namespace CivOne
 		private bool _canalCity = false;
 		private bool _removeObsoleteBuildings = true;
 		private bool _preferSveSaveFormat = true;
+		private string _languagePostfix = string.Empty;
 		private bool _useUncheckedCastSanitizer = false;
 		private GlobalWarmingFeatureFlag _globalWarmingFeatureFlags = GlobalWarmingFeatureFlag.None;
         private bool _autoSettlers;
@@ -554,6 +555,17 @@ namespace CivOne
 			set => SetSetting("DisabledPlugins", string.Join(";", value));
 		}
 
+		public string LanguagePostfix
+		{
+			get => _languagePostfix;
+			set
+			{
+				_languagePostfix = value ?? string.Empty;
+				SetSetting("LanguagePostfix", _languagePostfix);
+				Common.ReloadSettings = true;
+			}
+		}
+
 		internal void RevealWorldCheat() => _revealWorld = !_revealWorld;
 		
 		//internal int ScaleX => _scale;
@@ -652,6 +664,7 @@ namespace CivOne
 			GetSetting("CanalCity", ref _canalCity);
 			GetSetting("RemoveObsoleteBuildings", ref _removeObsoleteBuildings);
 			GetSetting("PreferSveSaveFormat", ref _preferSveSaveFormat);
+			GetSetting("LanguagePostfix", ref _languagePostfix);
 			GetSetting("UseUncheckedCastSanitizer", ref _useUncheckedCastSanitizer);
 			GetSetting<CursorType>("CursorType", ref _cursorType);
 			GetSetting<DestroyAnimation>("DestroyAnimation", ref _destroyAnimation);

@@ -177,11 +177,17 @@ static IEnumerable<InvocationCandidate> EnumerateInvocationCandidates(string con
 			index = openParen2;
 			continue;
 		}
-
-		if (TryMatchTInvocation(content, index, out int openParen3))
+		if (TryMatchInvocation(content, index, "Translate", out int openParen3))
 		{
-			yield return new InvocationCandidate("T", openParen3);
+			yield return new InvocationCandidate("Translate", openParen3);
 			index = openParen3;
+			continue;
+		}
+
+		if (TryMatchTInvocation(content, index, out int openParen4))
+		{
+			yield return new InvocationCandidate("T", openParen4);
+			index = openParen4;
 		}
 	}
 }
@@ -604,6 +610,7 @@ static void PrintHelp()
 	Console.WriteLine();
 	Console.WriteLine("Scan patterns:");
 	Console.WriteLine("  .Translate(\"...\")");
+	Console.WriteLine("  Translate(\"...\")");
 	Console.WriteLine("  .TranslateFormatted(\"...\", ...)");
 	Console.WriteLine("  T(\"...\")");
 	Console.WriteLine();

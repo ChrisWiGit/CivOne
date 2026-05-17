@@ -1,0 +1,70 @@
+using System;
+using System.IO;
+using CivOne.Services.Translation;
+using Xunit;
+
+namespace CivOne.UnitTests
+{
+	public class TranslationFileRepositoryImplTests : IDisposable
+	{
+		private readonly string _storageDirectory;
+		private readonly string _translationDirectory;
+		private readonly TranslationFileRepositoryImpl _testee;
+
+		public TranslationFileRepositoryImplTests()
+		{
+			_storageDirectory = Path.Combine(Path.GetTempPath(), "CivOneTests", Guid.NewGuid().ToString("N"));
+			_translationDirectory = Path.Combine(_storageDirectory, "translations");
+			Directory.CreateDirectory(_translationDirectory);
+			_testee = new TranslationFileRepositoryImpl();
+		}
+
+		[Fact]
+		public void GetAvailableLanguages_ReturnsOnlyValidCivFiles()
+		{
+			File.WriteAllText(Path.Combine(_translationDirectory, "civ_german.txt"), "HELLO=Hallo");
+			File.WriteAllText(Path.Combine(_translationDirectory, "civ_invalid.txt"), "malformed-line");
+			File.WriteAllText(Path.Combine(_translationDirectory, "all.txt"), "HELLO=Hallo");
+			File.WriteAllText(Path.Combine(_translationDirectory, "CIV_upper.txt"), "HELLO=Hallo");
+
+			var actual = _testee.GetAvailableLanguages(_storageDirectory);
+
+			Assert.Single(actual);
+			Assert.Equal("german", actual[0].Postfix);
+		}
+
+		[Fact]
+		public void TryLoadTranslations_NormalizesKeyAndUnescapesEqualsPlaceholder()
+		{
+			string filePath = Path.Combine(_translationDirectory, "civ_german.txt");
+			File.WriteAllText(filePath, "quick save/load=Quick Save/Load\nA[EQ]B=X[EQ]Y\n");
+
+			bool success = _testee.TryLoadTranslations(filePath, out var translations, out var error);
+
+			Assert.True(success);
+			Assert.Null(error);
+			Assert.Equal("Quick Save/Load", translations["QUICK SAVE/LOAD"]);
+			Assert.Equal("X=Y", translations["A=B"]);
+		}
+
+		[Fact]
+		public void TryLoadTranslations_WithMalformedLine_ReturnsFalse()
+		{
+			string filePath = Path.Combine(_translationDirectory, "civ_german.txt");
+			File.WriteAllText(filePath, "HELLO=Hallo\nmalformed\n");
+
+			bool success = _testee.TryLoadTranslations(filePath, out _, out var error);
+
+			Assert.False(success);
+			Assert.Contains("Malformed line", error, StringComparison.Ordinal);
+		}
+
+		public void Dispose()
+		{
+			if (Directory.Exists(_storageDirectory))
+			{
+				Directory.Delete(_storageDirectory, true);
+			}
+		}
+	}
+}

@@ -177,6 +177,22 @@ Try 'civone-sdl --help' for more information.
 						settings["profile-name"] = args[++i];
 						Console.WriteLine($@"Using profile ""{settings["profile-name"]}""");
 						break;
+					case "language":
+						if (args.GetUpperBound(0) == i)
+						{
+							Console.WriteLine("Missing language postfix argument");
+							return;
+						}
+
+						string languagePostfix = args[++i];
+						if (string.IsNullOrEmpty(languagePostfix))
+						{
+							Console.WriteLine("Invalid language postfix.");
+							return;
+						}
+
+						settings.LanguagePostfix = languagePostfix;
+						break;
 					case "load-slot":
 						// --load-slot [a-z1..10] (default no options defaults to null)
 						// optional argument is a drive letter (a-z) and a slot number (1-10)

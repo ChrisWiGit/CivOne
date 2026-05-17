@@ -219,16 +219,16 @@ namespace CivOne.Screens
             _noiseCounter = 0;
         }
 
-		// liefert eine Liste (später übersetzt) der menu items zurück
+		// Returns menu items resolved through the active translation service.
 		private string[] GetMenuItems()
 		{
 			return
 			[
-				"Start a New Game",
-				"Load a Saved Game",
-				"EARTH",
-				"Customize World",
-				"View Hall of Fame"
+				Translate("Start a New Game"),
+				Translate("Load a Saved Game"),
+				Translate("EARTH"),
+				Translate("Customize World"),
+				Translate("View Hall of Fame")
 			];
 		}
 

@@ -1,3 +1,16 @@
+# CivOne - General translation file TEST
+# This file is used to list all translation keys and their default English values.
+# See README.md from civtranslate for instructions on how to create a translation file for a specific language.
+
+START A NEW GAME=Start a New Game
+LOAD A SAVED GAME=Load a Saved Game
+EARTH=EARTH
+CUSTOMIZE WORLD=Customize World
+VIEW HALL OF FAME=View Hall of Fame
+NO FAST SAVEGAMES AVAILABLE. USE CTRL+F1-F10 TO SAVE.=No fast savegames available. Use Ctrl+F1-F10 to save.
+QUICK LOAD SLOTS=Quick Load Slots
+CITY NOT FOUND.=City not found.
+WHERE IN THE HECK IS ... (CITY NAME)=Where in the heck is ... (city name)
 BC=BC
 AD=AD
 FAST SAVE IS NOT AVAILABLE RIGHT NOW.=Fast save is not available right now.
