@@ -87,6 +87,25 @@ Helper scripts are available in the repository root:
 * `translate.ps1`
 * `translate.sh`
 
+### Use translation in game
+
+Translation is now active in the game UI and gameplay text.
+You can select the language in the setup menu with `Shift + F1`.
+Open `Game Options`, then select `Language`.
+Choose `Identity (default)` to use original keys, or choose one of the available `civ_<postfix>.txt` language files.
+
+Language files must be placed in your CivOne profile translation folder.
+On Windows this is `%LOCALAPPDATA%\CivOne\translation`.
+On Linux and macOS this is `~/CivOne/translation`.
+
+To create or update language files, run the CLI scanner from repository root and copy the output file to your profile translation folder with a `civ_<postfix>.txt` name.
+
+Example:
+
+```sh
+dotnet run --project ./civtranslate/civtranslate.csproj -- ./src --output ./translation/civ_german.txt
+```
+
 ### MCP savegame tools
 
 When MCP is enabled, savegame automation tools can read and write `.cos` files in the configured MCP saves folder.
@@ -265,6 +284,7 @@ These options affect the gameplay mechanics and rules and can also be changed in
 | Civilopedia Text | Select Civilopedia text display mode (affects in-game encyclopedia text). |
 | Palace | Toggle palace-related behaviour or display options in cities. |
 | Tax Rate | Set the tax rate which splits commerce between gold and science (0%–100%). |
+| Language | Select active translation language (`Identity` or any valid `civ_<postfix>.txt` file from the profile translation folder). |
 
 
 #### Launch Game / Return to Game

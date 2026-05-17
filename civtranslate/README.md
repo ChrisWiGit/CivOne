@@ -71,3 +71,37 @@ Run from repository root or any working directory.
 ```sh
 dotnet build ./civtranslate/civtranslate.csproj
 ```
+
+## Example output
+
+```
+Keys reused: 14
+Keys added: 0
+Keys overwritten: 0
+Obsolete keys kept: 1
+Output written: C:\Users\Christian\Documents\Projekte\CivOne-Chris\translation\all.txt
+PS C:\Users\Christian\Documents\Projekte\CivOne-Chris> .\translate.ps1
+Warning: Key not found in current scan but kept in output: FAST SAVE1 IS NOT AVAILABLE RIGHT NOW.
+
+Warning: Key not found in current scan but kept in output: FAST SAVE1 IS NOT AVAILABLE RIGHT NOW.
+```
+
+## Example all.txt
+
+```txt
+BC=BC
+AD=AD
+FAST SAVE IS NOT AVAILABLE RIGHT NOW.=Fast save is not available right now.
+COULD NOT SAVE FAST SAVE SLOT.=Could not save fast save slot.
+FAST SAVE SLOT IS EMPTY.=Fast save slot is empty.
+COULD NOT LOAD FAST SAVE SLOT.=Could not load fast save slot.
+QUICK SAVE/LOAD=Quick Save/Load
+IN {3} LEADER {0} {1} OF THE {2}=In {3} leader {0} {1} of the {2}
+LORD=Lord
+PRINCE=Prince
+KING=King
+EMPEROR=Emperor
+DEITY=Deity
+CHIEF=Chief
+FAST SAVE1 IS NOT AVAILABLE RIGHT NOW.=Fast save1 is not available right now.
+```
