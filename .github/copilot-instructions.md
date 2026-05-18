@@ -15,6 +15,21 @@ All documentation should be written in English (even if the prompt is in another
 - Keep methods small and focused
 - Prefer 'new()' expression instead of fully qualified new syntax
 
+## Building
+
+Use build command with quiet verbosity and only show the last lines of output to confirm successful build without overwhelming with details.
+
+Example with PowerShell and with the last 15 lines of output:
+
+```powershell
+dotnet build CivOne.csproj -v q 2>&1 | Select-Object -Last 15
+```
+
+Example with bash and with the last 15 lines of output:
+```sh
+dotnet build CivOne.csproj -v q 2>&1 | tail -n 15
+```
+
 ## Documentation
 
 - Use XML documentation comments for all public members and classes.
