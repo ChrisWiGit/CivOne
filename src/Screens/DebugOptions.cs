@@ -13,6 +13,7 @@ using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Screens.Debug;
 using CivOne.Screens.Reports;
+using CivOne.Services.EndGame;
 using CivOne.Graphics.Sprites;
 using CivOne.Tasks;
 using CivOne.Units;
@@ -195,6 +196,24 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		private void EndGameConquest(object sender, EventArgs args)
+		{
+			_ = EndGameServiceFactory.CreateDefault().HandleConquestAsync();
+			Destroy();
+		}
+
+		private void EndGameDefeat(object sender, EventArgs args)
+		{
+			_ = EndGameServiceFactory.CreateDefault().HandleDefeatAsync();
+			Destroy();
+		}
+
+		private void EndGameAlphaCentauri(object sender, EventArgs args)
+		{
+			_ = EndGameServiceFactory.CreateDefault().HandleAlphaCentauriAsync();
+			Destroy();
+		}
+
 		private void LoadGame(object sender, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<LoadGame>());
@@ -292,6 +311,9 @@ namespace CivOne.Screens
 				new("Show Power Graph", MenuShowPowerGraph),
 				new("Instant Conquest", InstantConquest),
 				new("Instant Global Warming", InstantGlobalWarming),
+				new("End Game: Conquest", EndGameConquest),
+				new("End Game: Defeat", EndGameDefeat),
+				new("End Game: Alpha Centauri", EndGameAlphaCentauri),
 				new("Settings", ShowSettings)
 			];
 

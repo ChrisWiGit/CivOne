@@ -17,6 +17,7 @@ using CivOne.Screens.GamePlayPanels;
 using CivOne.Screens.Reports;
 using CivOne.Tasks;
 using CivOne.Units;
+using CivOne.Services.EndGame;
 using CivOne.UserInterface;
 
 namespace CivOne.Screens
@@ -65,7 +66,7 @@ namespace CivOne.Screens
 				_gameMenu.Items.Add("Debug Options").OnSelect((s, a) => GameTask.Enqueue(Show.Screen<DebugOptions>()));
 				_gameMenu.Items.Add(null);
 			}
-			_gameMenu.Items.Add("Retire").Disable();
+			_gameMenu.Items.Add("Retire").OnSelect((s, a) => _ = EndGameServiceFactory.CreateDefault().HandleRetireAsync());
 			_gameMenu.Items.Add("QUIT to DOS").OnSelect((s, a) => GameTask.Enqueue(Show.Screen<ConfirmQuit>()));
 			
 			_menuX = 16;
