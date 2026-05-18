@@ -1,4 +1,4 @@
-# CivOne - General translation file TEST
+# CivOne - General translation file
 # This file is used to list all translation keys and their default English values.
 # See README.md from civtranslate for instructions on how to create a translation file for a specific language.
 

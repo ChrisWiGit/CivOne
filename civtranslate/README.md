@@ -30,7 +30,7 @@ Rules:
 
 - Key matching is case-insensitive by normalizing keys to uppercase.
 - Output keys are always uppercase.
-- If a key is new, value is set to the same uppercase key.
+- If a key is new, value is set to the original source text.
 
 Separator escape rule:
 
@@ -43,7 +43,7 @@ If the output file already exists:
 
 - Existing entries are loaded into a dictionary by uppercase key.
 - Found keys reuse existing values.
-- New keys are added.
+- New keys are added with the original source text as the value.
 - Keys not found in current scan are kept.
 - A warning is printed for each kept key that is no longer found.
 

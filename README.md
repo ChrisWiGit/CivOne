@@ -95,8 +95,8 @@ Open `Game Options`, then select `Language`.
 Choose `Identity (default)` to use original keys, or choose one of the available `civ_<postfix>.txt` language files.
 
 Language files must be placed in your CivOne profile translation folder.
-On Windows this is `%LOCALAPPDATA%\CivOne\translation`.
-On Linux and macOS this is `~/CivOne/translation`.
+On Windows this is `%LOCALAPPDATA%\CivOne\translations`.
+On Linux and macOS this is `~/.local/share/CivOne/translations`.
 
 To create or update language files, run the CLI scanner from repository root and copy the output file to your profile translation folder with a `civ_<postfix>.txt` name.
 
