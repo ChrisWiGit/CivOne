@@ -38,6 +38,7 @@ namespace CivOne.Screens
 
 		private readonly Picture _background;
 		private readonly IPalaceSpriteProvider _sprites;
+		private readonly PalaceData _palace;
 		private readonly byte[,] _noiseMap;
 		private readonly bool _build;
 		private readonly bool _debug;
@@ -243,8 +244,8 @@ namespace CivOne.Screens
 
 		private Picture DrawPalace()
 		{
-			PalaceData palace = Human.Palace;
-			Picture picture = new(320, 200);
+			PalaceData palace = _palace;
+			Picture picture = new(320, 200, _background.Palette);
 			picture.AddLayer(_background);
 
 			Picture backdrop = _sprites.GetGardenBackdrop(palace.GetGardenLevel(1));
@@ -273,6 +274,29 @@ namespace CivOne.Screens
 			return picture;
 		}
 
+		/// <summary>
+		/// Creates a static palace picture for use on other screens.
+		/// </summary>
+		/// <param name="sprites">Optional palace sprite provider.</param>
+		/// <param name="palaceData">Optional palace data.</param>
+		/// <returns>The rendered palace image.</returns>
+		public static Picture CreatePicture(IPalaceSpriteProvider sprites = null, PalaceData palaceData = null)
+		{
+			PalaceView palaceView = new(false, sprites ?? PalaceSpriteProviderFactory.GetInstance(), false, palaceData);
+			return palaceView.DrawPalace();
+		}
+
+		private void DrawDebugHelp(int ox, int oy)
+		{
+			if (!_debug)
+			{
+				return;
+			}
+
+			this.DrawText("F1 Disable Noise", 0, 5, ox + 4, oy + 190)
+				.DrawText("F1 Disable Noise", 0, 14, ox + 4, oy + 189);
+		}
+
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (!_update)
@@ -283,7 +307,7 @@ namespace CivOne.Screens
 
 			int ox = OffsetX;
 			int oy = OffsetY;
-			PalaceData palace = Human.Palace;
+			PalaceData palace = _palace;
 
 			this.Clear(OpaqueBlackColour)
 				.AddLayer(DrawPalace(), ox, oy);
@@ -372,12 +396,15 @@ namespace CivOne.Screens
 						this.Clear(OpaqueBlackColour)
 							.AddLayer(DrawPalace(), ox, oy)
 							.AddLayer(_palaceMorph, ox, oy);
+						DrawDebugHelp(ox, oy);
 						return true;
 					}
 					_currentStage = GetPostMorphStage();
 					_update = true;
 					return true;
 			}
+
+			DrawDebugHelp(ox, oy);
 
 			_update = false;
 			return true;
@@ -391,7 +418,7 @@ namespace CivOne.Screens
 
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
-			PalaceData palace = Human.Palace;
+			PalaceData palace = _palace;
 
 			if (_debug && args[Key.Escape])
 			{
@@ -479,11 +506,12 @@ namespace CivOne.Screens
 			return true;
 		}
 
-		public PalaceView(bool build = false, IPalaceSpriteProvider sprites = null, bool debug = false)
+		public PalaceView(bool buildMode = false, IPalaceSpriteProvider sprites = null, bool debug = false, PalaceData palaceData = null)
 		{
-			_build = build;
+			_build = buildMode;
 			_debug = debug;
 			_sprites = sprites ?? PalaceSpriteProviderFactory.GetInstance();
+			_palace = palaceData ?? Human.Palace;
 
 			_noiseMap = new byte[320, 200];
 			for (int x = 0; x < 320; x++)
@@ -496,7 +524,7 @@ namespace CivOne.Screens
 
 			_background = _sprites.GetBackground();
 			Palette = _background.Palette;
-			if (build) _currentStage = Stage.Message;
+			if (buildMode) _currentStage = Stage.Message;
 		}
 	}
 }
