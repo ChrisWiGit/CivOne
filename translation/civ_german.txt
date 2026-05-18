@@ -1,0 +1,21 @@
+# CivOne - German translation file
+# This file is used to provide German translations for the game.
+BC=v.Chr.
+AD=n.Chr.
+FAST SAVE IS NOT AVAILABLE RIGHT NOW.=Schnellspeichern ist derzeit nicht verfügbar.
+COULD NOT SAVE FAST SAVE SLOT.=Konnte den Schnellspeicherplatz nicht speichern.
+FAST SAVE SLOT IS EMPTY.=Schnellspeicherplatz ist leer.
+COULD NOT LOAD FAST SAVE SLOT.=Konnte den Schnellspeicherplatz nicht laden.
+QUICK SAVE/LOAD=Schnellspeichern/Laden
+IN {3} LEADER {0} {1} OF THE {2}=In {3} Anführer {0} {1} von {2}
+LORD=Herr
+PRINCE=Prinz
+KING=König
+EMPEROR=Kaiser
+DEITY=Gottheit
+CHIEF=Häuptling
+START A NEW GAME=Neues Spiel starten
+LOAD A SAVED GAME=Spiel laden
+EARTH=ERDE
+CUSTOMIZE WORLD=Welt anpassen
+VIEW HALL OF FAME=Ruhmeshalle anzeigen
