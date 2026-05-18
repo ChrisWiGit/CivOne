@@ -23,9 +23,9 @@ namespace CivOne.Screens.Reports
 {
 	internal static class TopLeaderScreenFactory
 	{
-		public static TopLeaderScreen Create(bool debugMode = false)
+		public static TopLeaderScreen Create()
 		{
-			return new TopLeaderScreen(debugMode: debugMode);
+			return new TopLeaderScreen();
 		}
 
 		public static TopLeaderScreen CreateDebug()
@@ -37,9 +37,7 @@ namespace CivOne.Screens.Reports
 	[Modal, ScreenResizeable]
 	internal class TopLeaderScreen : BaseScreen
 	{
-		private readonly TopLeaderScreenEnvironment _environment;
 		private readonly IAdvisorPortraitSpriteProvider _portraitSpriteProvider;
-		private readonly IRandomService _randomService;
 		private readonly LeaderOrderDelegate _leaderOrderDelegate;
 		private readonly bool _debugMode;
 		private readonly int _fontHeight;
@@ -277,27 +275,26 @@ namespace CivOne.Screens.Reports
 			return true;
 		}
 
-		public TopLeaderScreen() : this(debugMode: false, environment: null, portraitSpriteProvider: null, randomService: null, leaderOrderDelegate: null)
+		public TopLeaderScreen() : this(debugMode: false, environment: null, portraitSpriteProvider: null, leaderOrderDelegate: null)
 		{
 		}
 
 		public TopLeaderScreen(
-			bool debugMode = false,
+			bool debugMode,
 			TopLeaderScreenEnvironment environment = null,
 			IAdvisorPortraitSpriteProvider portraitSpriteProvider = null,
-			IRandomService randomService = null,
 			LeaderOrderDelegate leaderOrderDelegate = null) : base(MouseCursor.None)
 		{
-			_environment = environment ?? new TopLeaderScreenEnvironment();
+			var _environment = environment ?? new TopLeaderScreenEnvironment();
 			_portraitSpriteProvider = portraitSpriteProvider ?? AdvisorPortraitSpriteProviderFactory.GetInstance();
-			_randomService = randomService ?? RandomServiceFactory.Create();
 			_leaderOrderDelegate = leaderOrderDelegate ?? new LeaderOrderDelegate(TranslationServiceFactory.CreateDefault());
 			_debugMode = debugMode;
 			_debugScore = 19;
 			_fontHeight = _environment.GetFontHeight(HeaderAndLeaderFontId);
 			
 
-			Palette = _environment.GetDefaultPalette().Merge(_portraitSpriteProvider.Palette, 144);
+			const byte PALETTE_START_INDEX = 144;
+			Palette = _environment.GetDefaultPalette().Merge(_portraitSpriteProvider.Palette, PALETTE_START_INDEX);
 		}
 	}
 }
