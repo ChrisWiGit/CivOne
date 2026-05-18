@@ -37,6 +37,12 @@ dotnet build CivOne.csproj -v q 2>&1 | tail -n 15
 - Use examples in documentation where helpful.
 - After each sentence add a line break to improve readability.
 
+## Tests
+
+* Run tests only when necessary.
+* Run only the tests that are relevant to the current change.
+* e.g. `dotnet test xunit/CivOne.UnitTests.csproj --filter "FullyQualifiedName~TranslationFileRepositoryImplTests|FullyQualifiedName~TranslationServiceFactoryTests"`
+
 ## Existing useful code
 
 - Debounce Service with DebounceServiceFactory and IDebounceService

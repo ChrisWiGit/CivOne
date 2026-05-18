@@ -19,7 +19,7 @@ protected string TranslateFormatted(string key, params object[] args)
 
 > At this time, these are simple pass-throughs to `Translation.Translate()` and `Translation.TranslateFormatted()`. In the future, they could be extended to support context-aware translation, caching, or other features without changing the call sites.
 
-Both delegate to `ITranslationService` (created via `TranslationServiceFactory.CreateDefault()`).
+Both delegate to `ITranslationService` (created via `TranslationServiceFactory.GetCurrent()`).
 
 ---
 

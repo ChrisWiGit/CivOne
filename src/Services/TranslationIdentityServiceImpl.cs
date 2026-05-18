@@ -13,28 +13,22 @@ namespace CivOne.Services
 {
 
 	/// <summary>
-	/// Default translation service implementation that performs no translation and simply returns the input key or formatted string.
-	/// This is used as a fallback when no actual translation service is provided, ensuring that the game can still function without localization while allowing for future integration of a proper translation service.
+	/// Identity translation implementation.
+	/// Returns keys unchanged and only applies string formatting for formatted calls.
+	/// Used as fallback when no language file is active.
 	/// </summary>
 	public class TranslationIdentityServiceImpl : ITranslationService
 	{
+		/// <inheritdoc/>
 		public string Translate(string key)
 		{
 			return key;
 		}
 
+		/// <inheritdoc/>
 		public string TranslateFormatted(string key, params object[] args)
 		{
 			return string.Format(key, args);
-		}
-	}
-
-	public static class TranslationServiceFactory
-	{
-		private static ITranslationService _instance;
-		public static ITranslationService CreateDefault()
-		{
-			return _instance ??= new TranslationIdentityServiceImpl();
 		}
 	}
 }

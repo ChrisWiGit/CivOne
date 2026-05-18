@@ -25,7 +25,7 @@ namespace CivOne
 		protected static Settings Settings => Settings.Instance;
 		protected static MenuCollection Menus => MenuCollection.Instance;
 
-		protected ITranslationService Translation => TranslationServiceFactory.CreateDefault();
+		protected ITranslationService Translation => TranslationServiceFactory.GetCurrent();
 
 		protected internal static void Log(string text, params object[] parameters) => Runtime.Log(text, parameters);
 		protected static void PlaySound(string filename)
