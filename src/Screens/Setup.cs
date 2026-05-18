@@ -8,11 +8,15 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
+using CivOne.Services;
+using CivOne.Services.Translation;
+using CivOne.Tasks;
 using CivOne.UserInterface;
 
 using static CivOne.Enums.AspectRatio;
@@ -574,37 +578,35 @@ namespace CivOne.Screens
 		);
 
 		private void BehaviorMenu(int activeItem = 0) => CreateMenu("Game behavior menu", activeItem,
-			[
-					MenuItem.Create($"Use smart PathFinding for \"goto\": {Settings.PathFinding.YesNo()}")
-						.WithDescription(
-							"Improve goto route selection for player units.")
-						.OnSelect(GotoMenu(PathFindingMenu)),
-					MenuItem.Create($"Use smart pathfinding for computer players: {Settings.ComputerPlayerPathFinding.YesNo()}")
-						.WithDescription(
-							"Improve route selection for AI controlled units.")
-						.OnSelect(GotoMenu(ComputerPlayerPathFindingMenu)),
-					MenuItem.Create($"Use auto-settlers-cheat: {Settings.AutoSettlers.YesNo()}")
-						.WithDescription(
-							"Allow cheat behavior for automatic settlers.")
-						.OnSelect(GotoMenu(AutoSettlersMenu)),
-					MenuItem.Create($"Use fast river movement: {Settings.RiverFastMovement.YesNo()}")
-						.WithDescription(
-							"Rivers act closer to roads for movement speed.")
-						.OnSelect(GotoMenu(FastRiverMovementMenu)),
-					MenuItem.Create($"No movement penalty for sea units in city: {Settings.CanalCity.YesNo()}")
-						.WithDescription(
-							"Sea units ignore city movement penalty.")
-						.OnSelect(GotoMenu(CanalCity)),
-					MenuItem.Create($"Remove obsolete buildings: {Settings.RemoveObsoleteBuildings.YesNo()}")
-						.WithDescription(
-							"Remove buildings when technology obsoletes them.")
-						.OnSelect(GotoMenu(RemoveObsoleteBuildingsMenu)),
-					MenuItem.Create($"Extended global warming: {(Settings.GlobalWarmingFeatureFlags != Settings.GlobalWarmingFeatureFlag.None).YesNo()}")
-						.WithDescription(
-							"Enable extra global warming gameplay effects.")
-						.OnSelect(GotoMenu(ExtendedGlobalWarmingMenu)),
-					MenuItem.Create("Back").OnSelect(GotoMenu(PatchesMenu, 8))
-			]
+			MenuItem.Create($"Use smart PathFinding for \"goto\": {Settings.PathFinding.YesNo()}")
+				.WithDescription(
+					"Improve goto route selection for player units.")
+				.OnSelect(GotoMenu(PathFindingMenu)),
+			MenuItem.Create($"Use smart pathfinding for computer players: {Settings.ComputerPlayerPathFinding.YesNo()}")
+				.WithDescription(
+					"Improve route selection for AI controlled units.")
+				.OnSelect(GotoMenu(ComputerPlayerPathFindingMenu)),
+			MenuItem.Create($"Use auto-settlers-cheat: {Settings.AutoSettlers.YesNo()}")
+				.WithDescription(
+					"Allow cheat behavior for automatic settlers.")
+				.OnSelect(GotoMenu(AutoSettlersMenu)),
+			MenuItem.Create($"Use fast river movement: {Settings.RiverFastMovement.YesNo()}")
+				.WithDescription(
+					"Rivers act closer to roads for movement speed.")
+				.OnSelect(GotoMenu(FastRiverMovementMenu)),
+			MenuItem.Create($"No movement penalty for sea units in city: {Settings.CanalCity.YesNo()}")
+				.WithDescription(
+					"Sea units ignore city movement penalty.")
+				.OnSelect(GotoMenu(CanalCity)),
+			MenuItem.Create($"Remove obsolete buildings: {Settings.RemoveObsoleteBuildings.YesNo()}")
+				.WithDescription(
+					"Remove buildings when technology obsoletes them.")
+				.OnSelect(GotoMenu(RemoveObsoleteBuildingsMenu)),
+			MenuItem.Create($"Extended global warming: {(Settings.GlobalWarmingFeatureFlags != Settings.GlobalWarmingFeatureFlag.None).YesNo()}")
+				.WithDescription(
+					"Enable extra global warming gameplay effects.")
+				.OnSelect(GotoMenu(ExtendedGlobalWarmingMenu)),
+			MenuItem.Create("Back").OnSelect(GotoMenu(PatchesMenu, 8))
 		);
 
 		private void PluginsMenu(int activeItem = 0) => CreateMenu("Plugins", activeItem,
@@ -651,6 +653,7 @@ namespace CivOne.Screens
 			MenuItem.Create($"Civilopedia Text: {Settings.CivilopediaText.ToText()}").OnSelect(GotoMenu(GameOptionMenu(6, "Civilopedia Text", () => Settings.CivilopediaText, (GameOption option) => Settings.CivilopediaText = option))),
 			MenuItem.Create($"Palace: {Settings.Palace.ToText()}").OnSelect(GotoMenu(GameOptionMenu(7, "Palace", () => Settings.Palace, (GameOption option) => Settings.Palace = option))),
 			MenuItem.Create($"Tax Rate: {Settings.TaxRate * 10}%").OnSelect(GotoMenu(TaxRateMenu)),
+			MenuItem.Create($"Language: {CurrentLanguageText()}").OnSelect(GotoMenu(LanguageMenu)),
 			MenuItem.Create("Back").OnSelect(GotoMenu(MainMenu, 3))
 		);
 
@@ -675,6 +678,74 @@ namespace CivOne.Screens
 			MenuItem.Create("100% Tax,  0% Science").OnSelect((s, a) => Settings.TaxRate = 10).SetActive(() => Settings.TaxRate == 10),
 			MenuItem.Create("Back")
 		);
+
+		private string CurrentLanguageText()
+		{
+			string activePostfix = TranslationServiceFactory.ActiveLanguagePostfix;
+			return string.IsNullOrEmpty(activePostfix) ? "Identity" : activePostfix;
+		}
+
+		private void LanguageMenu()
+		{
+			IReadOnlyList<TranslationLanguageInfo> availableLanguages = TranslationServiceFactory.GetAvailableLanguages(Runtime.StorageDirectory, message => Log(message));
+			List<MenuItem<int>> menuItems =
+			[
+				MenuItem.Create("Identity (default)").OnSelect((s, a) => SelectLanguage(string.Empty)).SetActive(() => string.IsNullOrEmpty(TranslationServiceFactory.ActiveLanguagePostfix))
+			];
+
+			if (availableLanguages.Count == 0)
+			{
+				menuItems.Add(MenuItem.Create("No valid language files found.").Disable());
+				menuItems.Add(MenuItem.Create("Add civ_xx.txt to .../translations.").Disable());
+			}
+			else
+			{
+				menuItems.AddRange(availableLanguages.Select(language => language.Postfix)
+					.Select(postfix => MenuItem.Create(postfix)
+						.OnSelect((s, a) => SelectLanguage(postfix))
+						.SetActive(() => string.Equals(TranslationServiceFactory.ActiveLanguagePostfix, postfix, StringComparison.Ordinal))));
+			}
+
+			menuItems.Add(MenuItem.Create("Back"));
+			CreateMenu("Language", GotoMenu(GameOptionsMenu, 9), [.. menuItems]);
+		}
+
+		private void SelectLanguage(string postfix)
+		{
+			if (string.IsNullOrEmpty(postfix))
+			{
+				Settings.LanguagePostfix = string.Empty;
+				TranslationServiceFactory.UseIdentity();
+				NotifyLanguageSelection("Identity");
+				GameOptionsMenu(9);
+				return;
+			}
+
+			if (!TranslationServiceFactory.TryUseLanguage(Runtime.StorageDirectory, postfix, out string error, message => Log(message)))
+			{
+				Log("Could not activate language '{0}': {1}", postfix, error);
+				if (Game.Started)
+				{
+					GameTask.Enqueue(Message.Error("Language", $"Could not load language '{postfix}'.", error));
+				}
+				GameOptionsMenu(9);
+				return;
+			}
+
+			Settings.LanguagePostfix = postfix;
+			NotifyLanguageSelection(postfix);
+			GameOptionsMenu(9);
+		}
+
+		private void NotifyLanguageSelection(string languageName)
+		{
+			if (!Game.Started)
+			{
+				return;
+			}
+
+			GameTask.Enqueue(Message.General($"Language switched to {languageName}."));
+		}
 
 		private void Resize(object sender, ResizeEventArgs args)
 		{

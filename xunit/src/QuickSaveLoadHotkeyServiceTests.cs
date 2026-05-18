@@ -192,7 +192,7 @@ namespace CivOne.UnitTests
 			Action<IReadOnlyList<int>, Action<int>> showQuickLoadMenu = null)
 			=> new(
 				_runtime,
-				TranslationServiceFactory.CreateDefault(),
+				TranslationServiceFactory.GetCurrent(),
 				null,
 				(_, _) => { },
 				save,
