@@ -15,7 +15,7 @@ using CivOne.Screens.PalaceAssets;
 namespace CivOne.Screens
 {
 	/// <summary>
-	/// Victory screen displayed when player achieves conquest or Alpha Centauri victory.
+	/// Victory screen displayed when player achieves conquest victory.
 	/// </summary>
 	internal class VictoryScreen : BaseScreen
 	{
@@ -115,6 +115,12 @@ namespace CivOne.Screens
 
 			for (int i = 0; i < _textLines.Length; i++)
 				_textLines[i] = _textLines[i].Replace("$RPLC1", Human.LatestAdvance).Replace("$US", Human.LeaderName.ToUpper());
+		}
+
+		public override void Dispose()
+		{
+			_background?.Dispose();
+			base.Dispose();
 		}
 	}
 }

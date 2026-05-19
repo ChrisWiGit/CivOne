@@ -39,6 +39,7 @@ namespace CivOne.Screens.Reports
 	{
 		private readonly IAdvisorPortraitSpriteProvider _portraitSpriteProvider;
 		private readonly LeaderOrderDelegate _leaderOrderDelegate;
+		private readonly ICivilizationScoreService _civilizationScoreService;
 		private readonly bool _debugMode;
 		private readonly int _fontHeight;
 
@@ -60,26 +61,45 @@ namespace CivOne.Screens.Reports
 				.FillRectangle(x + width - 1, y, 1, height, frameColour);
 		}
 
-		private int GetPlayerRatingPercent() => _debugMode ? _debugScore : 19;
+		private int GetPlayerRatingPercent()
+		{
+			if (_debugMode)
+			{
+				return _debugScore;
+			}
+
+			int totalScore = _civilizationScoreService.TotalScore(Human);
+			int topLeaderThreshold = _leaderOrderDelegate.GetLeaderOrder()[0].RatingThreshold;
+			return _civilizationScoreService.RatingPercent(totalScore, topLeaderThreshold);
+		}
 
 		private void DrawMessageBox(int ox, int oy, LeaderOrderResult leaderOrderResult)
 		{
-			int boxHeight = 3 + (_fontHeight * 3);
+			const byte textLineCount = 3;
+			int boxHeight = 3 + (_fontHeight * textLineCount);
 
 			DrawPanel(ox + HeaderBoxX, oy + HeaderBoxY, HeaderBoxWidth, boxHeight, border: true);
 
 			int textCenterX = ox + HeaderBoxX + (HeaderBoxWidth / 2);
-			this.DrawText(Translate("Sire, your Civilization"), HeaderAndLeaderFontId, 15, textCenterX, oy + HeaderBoxY + 2, TextAlign.Center)
-				.DrawText(string.Format(Translate("Rating of {0}% exceeds even"), leaderOrderResult.RatingPercent), HeaderAndLeaderFontId, 15, textCenterX, oy + HeaderBoxY + 2 + _fontHeight, TextAlign.Center)
-				.DrawText(string.Format(Translate("{0}!"), leaderOrderResult.SelectedLeaderName), HeaderAndLeaderFontId, 15, textCenterX, oy + HeaderBoxY + 2 + (_fontHeight * 2), TextAlign.Center);
+			string[] lines =
+			[
+				Translate("Sire, your Civilization"),
+				string.Format(Translate("Rating of {0}% exceeds even"), leaderOrderResult.RatingPercent),
+				string.Format(Translate("{0}!"), leaderOrderResult.SelectedLeaderName)
+			];
+
+			for (int i = 0; i < lines.Length; i++)
+			{
+				this.DrawText(lines[i], HeaderAndLeaderFontId, 15, textCenterX, oy + HeaderBoxY + 2 + (_fontHeight * i), TextAlign.Center);
+			}
 		}
 
 		private void DrawPortraits(int ox, int oy)
 		{
-			const int frameOffsetFromBorder = 9;
-			const int portraitOffsetX = 1;
-			const int portraitOffsetY = 1;
-			const int frameY = frameOffsetFromBorder;
+			int frameOffsetFromBorder = BorderTileSize + 1;
+			const int portraitOffsetBorderGapX = 1;
+			const int portraitOffsetBorderGapY = 1;
+			int frameY = frameOffsetFromBorder;
 
 			AdvisorGovernment government = ResolveAdvisorGovernment();
 			AdvisorEra era = ResolveAdvisorEra();
@@ -87,23 +107,23 @@ namespace CivOne.Screens.Reports
 
 			IBitmap tradePortrait = _portraitSpriteProvider.GetPortrait(AdvisorType.TradeAdvisor, government: government, era: era);
 			IBitmap foreignPortrait = _portraitSpriteProvider.GetPortrait(AdvisorType.ForeignAdvisor, government: government, era: era);
-			
+
 			int frameWidth = tradePortrait.Width() + 2;
 			int frameHeight = tradePortrait.Height() + 2;
 
 			int leftFrameX = frameOffsetFromBorder;
-			int rightFrameX = ox + Width - frameWidth - frameOffsetFromBorder;
+			int rightFrameX = Width - frameWidth - frameOffsetFromBorder;
 
 			this.FillRectangle(ox + leftFrameX, oy + frameY, frameWidth, frameHeight, 15);
 			DrawFrame(this, ox + leftFrameX, oy + frameY, frameWidth, frameHeight, frameColour);
-			this.AddLayer(tradePortrait, ox + leftFrameX + portraitOffsetX, oy + frameY + portraitOffsetY);
+			this.AddLayer(tradePortrait, ox + leftFrameX + portraitOffsetBorderGapX, oy + frameY + portraitOffsetBorderGapY);
 
-			this.FillRectangle(rightFrameX, oy + frameY, frameWidth, frameHeight, 15);
-			DrawFrame(this, rightFrameX, oy + frameY, frameWidth, frameHeight, frameColour);
-			this.AddLayer(foreignPortrait, rightFrameX + portraitOffsetX, oy + frameY + portraitOffsetY);
+			this.FillRectangle(ox + rightFrameX, oy + frameY, frameWidth, frameHeight, 15);
+			DrawFrame(this, ox + rightFrameX, oy + frameY, frameWidth, frameHeight, frameColour);
+			this.AddLayer(foreignPortrait, ox + rightFrameX + portraitOffsetBorderGapX, oy + frameY + portraitOffsetBorderGapY);
 		}
 
-		private AdvisorGovernment ResolveAdvisorGovernment()
+		private static AdvisorGovernment ResolveAdvisorGovernment()
 		{
 			if (Human.Government is Gov.Monarchy)
 			{
@@ -123,48 +143,42 @@ namespace CivOne.Screens.Reports
 			return AdvisorGovernment.Despotism;
 		}
 
-		private AdvisorEra ResolveAdvisorEra() => Human.HasAdvance<Adv.Invention>() ? AdvisorEra.Modern : AdvisorEra.Ancient;
+		private static AdvisorEra ResolveAdvisorEra() => Human.HasAdvance<Adv.Invention>() ? AdvisorEra.Modern : AdvisorEra.Ancient;
 
-		private void DrawLeaderRanking(int ox, int oy, LeaderOrderResult leaderOrderResult)
+		private void DrawLeaderRanking(int ox, int oy, LeaderOrderResult result)
 		{
 			int rowStep = _fontHeight + 1;
-			int listTopLimit = oy + HeaderBoxY + (3 + (_fontHeight * 3)) + 2;
-			int bottomY = (Height - 9) - _fontHeight;
-			if (bottomY < listTopLimit)
-			{
-				return;
-			}
+			int topY = oy + HeaderBoxY + 3 + (_fontHeight * 3) + 2;
+			int bottomY = Height - (BorderTileSize + 1) - _fontHeight;
 
-			int availableHeight = bottomY - listTopLimit;
-			int maxVisibleRows = (availableHeight / rowStep) + 1;
-			IReadOnlyList<string> leaderNamesFromSelectedDown = leaderOrderResult
-				.OrderedLeaderNames
-				.Skip(leaderOrderResult.SelectedLeaderIndex)
+			if (bottomY < topY)
+				return;
+
+			// calculate how many leaders can fit in the space available.
+			int maxRows = ((bottomY - topY) / rowStep) + 1;
+
+			var names = result.OrderedLeaderNames
+				.Skip(result.SelectedLeaderIndex)
+				.Take(maxRows)
 				.ToArray();
-			int visibleRows = Math.Min(leaderNamesFromSelectedDown.Count, Math.Max(1, maxVisibleRows));
-			IReadOnlyList<string> visibleLeaderNames = leaderNamesFromSelectedDown.Take(visibleRows).ToArray();
 
 			int centerX = ox + 160;
 			int highlightX = ox + 84;
 			int highlightWidth = 152;
 
-			// Row 0 = selected (top), row visibleRows-1 = Dan Quayle (bottom)
-			for (int i = 0; i < visibleRows; i++)
+			for (int i = 0; i < names.Length; i++)
 			{
-				int y = bottomY - ((visibleRows - 1 - i) * rowStep);
-				if (y < listTopLimit)
-				{
-					continue;
-				}
-
+				// display from the bottom up, with the selected leader at the bottom
+				int y = bottomY - ((names.Length - 1 - i) * rowStep);
 				bool selected = i == 0;
+
 				if (selected)
 				{
 					this.FillRectangle(highlightX, y - 1, highlightWidth, _fontHeight + 2, 14);
 				}
 
 				this.DrawText(
-					visibleLeaderNames[i],
+					names[i],
 					HeaderAndLeaderFontId,
 					selected ? (byte)5 : (byte)8,
 					centerX,
@@ -173,15 +187,17 @@ namespace CivOne.Screens.Reports
 			}
 		}
 
-		private void DrawDebugInfo(int ox, int oy)
+		private void DrawDebugInfo()
 		{
 			if (!_debugMode)
 			{
 				return;
 			}
+			int borderSize = BorderTileSize;
+			const byte black = 5;
 
-			int debugTextY = Height - (_fontHeight * 2) - 1;
-			this.DrawText("F1/F2 Inc/Dec Score", HeaderAndLeaderFontId, 5, ox + 8, debugTextY);
+			int debugTextY = CanvasHeight - borderSize - _fontHeight;
+			this.DrawText("F1/F2 Inc/Dec Score", HeaderAndLeaderFontId, black, borderSize, debugTextY);
 		}
 
 		private bool IncreaseScoreStep()
@@ -197,19 +213,6 @@ namespace CivOne.Screens.Reports
 			return true;
 		}
 
-		private bool DecreaseScoreStep()
-		{
-			IReadOnlyList<LeaderOrderEntry> order = _leaderOrderDelegate.GetLeaderOrder();
-			int? nextLower = order.Select(x => x.RatingThreshold).Where(x => x < _debugScore).OrderByDescending(x => x).Cast<int?>().FirstOrDefault();
-			if (nextLower == null)
-			{
-				return false;
-			}
-
-			_debugScore = nextLower.Value;
-			return true;
-		}
-
 		private void Render()
 		{
 			int ox = OffsetX;
@@ -219,10 +222,10 @@ namespace CivOne.Screens.Reports
 			this.Clear(15);
 			DrawBorder(0);
 
-			DrawMessageBox(ox, oy, leaderOrderResult);
-			DrawPortraits(ox, oy);
+			DrawMessageBox(OffsetX, 0, leaderOrderResult);
+			DrawPortraits(0, 0);
 			DrawLeaderRanking(ox, oy, leaderOrderResult);
-			DrawDebugInfo(ox, oy);
+			DrawDebugInfo();
 		}
 
 		protected override bool HasUpdate(uint gameTick)
@@ -257,7 +260,7 @@ namespace CivOne.Screens.Reports
 
 			if (_debugMode && args[Key.F2])
 			{
-				if (DecreaseScoreStep())
+				if (DebugDecreaseScoreStep())
 				{
 					_update = true;
 					Refresh();
@@ -266,6 +269,19 @@ namespace CivOne.Screens.Reports
 			}
 
 			Destroy();
+			return true;
+		}
+
+		private bool DebugDecreaseScoreStep()
+		{
+			IReadOnlyList<LeaderOrderEntry> order = _leaderOrderDelegate.GetLeaderOrder();
+			int? nextLower = order.Select(x => x.RatingThreshold).Where(x => x < _debugScore).OrderByDescending(x => x).Cast<int?>().FirstOrDefault();
+			if (nextLower == null)
+			{
+				return false;
+			}
+
+			_debugScore = nextLower.Value;
 			return true;
 		}
 
@@ -283,18 +299,24 @@ namespace CivOne.Screens.Reports
 			bool debugMode,
 			TopLeaderScreenEnvironment environment = null,
 			IAdvisorPortraitSpriteProvider portraitSpriteProvider = null,
-			LeaderOrderDelegate leaderOrderDelegate = null) : base(MouseCursor.None)
+			LeaderOrderDelegate leaderOrderDelegate = null,
+			ICivilizationScoreService civilizationScoreService = null) : base(MouseCursor.None)
 		{
 			var _environment = environment ?? new TopLeaderScreenEnvironment();
 			_portraitSpriteProvider = portraitSpriteProvider ?? AdvisorPortraitSpriteProviderFactory.GetInstance();
 			_leaderOrderDelegate = leaderOrderDelegate ?? new LeaderOrderDelegate(TranslationServiceFactory.CreateDefault());
+			_civilizationScoreService = civilizationScoreService ?? CivilizationScoreServiceFactory.CreateDefault();
 			_debugMode = debugMode;
-			_debugScore = 19;
+			_debugScore = 42;
 			_fontHeight = _environment.GetFontHeight(HeaderAndLeaderFontId);
-			
+
 
 			const byte PALETTE_START_INDEX = 144;
-			Palette = _environment.GetDefaultPalette().Merge(_portraitSpriteProvider.Palette, PALETTE_START_INDEX);
+			using var defaultPalette = _environment.GetDefaultPalette();
+			AdvisorGovernment government = ResolveAdvisorGovernment();
+			AdvisorEra era = ResolveAdvisorEra();
+			IBitmap tradePortrait = _portraitSpriteProvider.GetPortrait(AdvisorType.TradeAdvisor, government: government, era: era);
+			Palette = defaultPalette.Merge(tradePortrait.Palette, PALETTE_START_INDEX);
 		}
 	}
 }

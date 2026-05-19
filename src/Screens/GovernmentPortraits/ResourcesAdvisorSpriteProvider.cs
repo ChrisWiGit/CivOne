@@ -12,37 +12,12 @@ using System.Drawing;
 using CivOne.Graphics;
 using CivOne.IO;
 
-/*
-MilitaryAdvisorPortrait: 1,1 w=39 h=59
-TradeAdvisorPortrait: 41,1
-ForeignAdvisorPortrait: 81,1
-ScienceAdvisorPortrait: 121,1
-FacePortraitPos: 11x17
-
-
-MilitaryAdvisorFullPortrait: 1,101  w=79,99
-TradeAdvisorFullPortrait: 81,101
-ForeignAdvisorFullPortrait: 161,101
-ScienceAdvisorFullPortrait: 241,101
-FaceFullPortraitPos: 37x119
-
-Faces werden auf die oberen sprites der jeweiligen Berater gezeichet
-enum Face = neutral, grim, happy
-
-w=28 h=24
-MilitaryAdvisorFace[Face] = 161x1, 190x1, 219x1
-TradeAdvisorFace[Face] = 161x26, 190x26, 219x26
-ForeignAdvisorFace[Face] = 161x51, 190x51, 219x51
-ScienceAdvisorFace[Face] = 161x76, 190x76, 219x76
-
-
-*/
 
 namespace CivOne.Screens.GovernmentPortraits
 {
 	/// <summary>
 	/// Provides portraits for the various advisors, based on their type, face, government and era.
-	/// This is an uncoupled version of <see cref="CivOne.CivOne.Graphics.Icons.GovernmentPortrait"/>, which 
+	/// This is an uncoupled version of <see cref="CivOne.Graphics.Icons.GovernmentPortrait"/>, which 
 	/// is used by the various screens to request portraits without needing to know about the underlying logic of how portraits are determined.
 	/// </summary>
 	internal class ResourcesAdvisorSpriteProvider : IAdvisorPortraitSpriteProvider
@@ -77,8 +52,6 @@ namespace CivOne.Screens.GovernmentPortraits
 
 		private readonly Resources _resources;
 		private readonly Dictionary<(AdvisorType Type, AdvisorFace Face, AdvisorGovernment Government, AdvisorEra Era, AdvisorPortraitSize Size), IBitmap> _cache = [];
-
-		public Palette Palette => _resources["GOVT0A"].Palette;
 
 		public ResourcesAdvisorSpriteProvider(Resources resources)
 		{

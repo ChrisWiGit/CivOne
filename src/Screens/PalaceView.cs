@@ -282,7 +282,7 @@ namespace CivOne.Screens
 		/// <returns>The rendered palace image.</returns>
 		public static Picture CreatePicture(IPalaceSpriteProvider sprites = null, PalaceData palaceData = null)
 		{
-			PalaceView palaceView = new(false, sprites ?? PalaceSpriteProviderFactory.GetInstance(), false, palaceData);
+			using PalaceView palaceView = new(false, sprites ?? PalaceSpriteProviderFactory.GetInstance(), false, palaceData);
 			return palaceView.DrawPalace();
 		}
 
