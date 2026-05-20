@@ -296,6 +296,7 @@ namespace CivOne
 				throw new Exception("Only one runtime can be registered.");
 			}
 
+			ConfigureTranslation(runtime);
 			_instance = new RuntimeHandler(runtime, CreateQuickSaveLoadHotkeyService(runtime));
 		}
 		public static void RegisterForTest(IRuntime runtime)
@@ -305,14 +306,41 @@ namespace CivOne
 				throw new Exception("Only one runtime can be registered.");
 			}
 
+			ConfigureTranslation(runtime);
 			_instance = new RuntimeHandler(runtime, CreateQuickSaveLoadHotkeyService(runtime), false);
 		}
 
 		private static IQuickSaveLoadHotkeyService CreateQuickSaveLoadHotkeyService(IRuntime runtime)
 		{
-			ITranslationService translationService = TranslationServiceFactory.CreateDefault();
+			ITranslationService translationService = TranslationServiceFactory.GetCurrent();
 			IYamlSaveGameServiceFactory yamlSaveGameServiceFactory = new YamlSaveGameServiceFactory();
 			return new QuickSaveLoadHotkeyService(runtime, translationService, yamlSaveGameServiceFactory);
+		}
+
+		private static void ConfigureTranslation(IRuntime runtime)
+		{
+			string languagePostfix = runtime.Settings.LanguagePostfix;
+			if (string.IsNullOrEmpty(languagePostfix))
+			{
+				// During registration RuntimeHandler.Runtime is not assigned yet,
+				// so Settings.Instance would recurse into an uninitialized runtime.
+				languagePostfix = runtime.GetSetting("LanguagePostfix");
+			}
+
+			if (string.IsNullOrEmpty(languagePostfix))
+			{
+				TranslationServiceFactory.UseIdentity();
+				return;
+			}
+
+			if (TranslationServiceFactory.TryUseLanguage(runtime.StorageDirectory, languagePostfix, out string error, message => runtime.Log(message)))
+			{
+				runtime.Log("Translation language activated: {0}", languagePostfix);
+				return;
+			}
+
+			runtime.Log("Could not activate translation language '{0}': {1}", languagePostfix, error);
+			TranslationServiceFactory.UseIdentity();
 		}
 
         /// <summary>

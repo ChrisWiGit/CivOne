@@ -17,7 +17,7 @@ namespace CivOne.Services
 	/// </summary>
 	public class SaveMetaDataService(string _gameVersion, ITranslationService _translationService = null)
 	{
-		private readonly ITranslationService _translation = _translationService ?? new TranslationIdentityServiceImpl();
+		private readonly ITranslationService _translation = _translationService ?? TranslationServiceFactory.GetCurrent();
 		private readonly IGameCalendarService _calendar;
 
 		public SaveMetaDataService(string gameVersion, ITranslationService translationService, IGameCalendarService calendar)

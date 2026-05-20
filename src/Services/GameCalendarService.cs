@@ -22,7 +22,7 @@ namespace CivOne.Services
 	/// </summary>
 	public class GameCalendarService(ITranslationService _translationService = null) : IGameCalendarService
 	{
-		private readonly ITranslationService _translation = _translationService ?? new TranslationIdentityServiceImpl();
+		private readonly ITranslationService _translation = _translationService ?? TranslationServiceFactory.GetCurrent();
 
 		/// <summary>
 		/// Converts a calendar year to the corresponding game turn.

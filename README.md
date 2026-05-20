@@ -67,6 +67,45 @@ There are some command line parameters that can be used to modify the behavior o
 | `--mcp-artifacts <path>` | Sets the directory where MCP screenshot artifacts are saved. Defaults to `temp/mcp-runs/` inside the storage directory. |
 | `--mcp-saves <path>` | Sets the directory where MCP save tools read and write `.cos` files (`game_list_saves`, `game_load`, `game_save`). |
 
+### Translation workflow
+
+The repository includes a small CLI tool named `civtranslate` to maintain translation key-value files from C# code.
+
+Run from the repository root:
+
+```sh
+dotnet run --project ./civtranslate/civtranslate.csproj -- ./src --output ./translation/all.txt
+```
+
+The scanner looks for `.Translate("...")`, `.TranslateFormatted("...", ...)`, and `T("...")` calls in `*.cs` files.
+Keys are normalized to uppercase for matching and output, while values keep the source text casing.
+Existing keys found during scan have their value overwritten with the latest source text.
+Obsolete keys are written to `./translation/obsoletekeys.txt`.
+
+Helper scripts are available in the repository root:
+
+* `translate.ps1`
+* `translate.sh`
+
+### Use translation in game
+
+Translation is now active in the game UI and gameplay text.
+You can select the language in the setup menu with `Shift + F1`.
+Open `Game Options`, then select `Language`.
+Choose `Identity (default)` to use original keys, or choose one of the available `civ_<postfix>.txt` language files.
+
+Language files must be placed in your CivOne profile translation folder.
+On Windows this is `%LOCALAPPDATA%\CivOne\translations`.
+On Linux and macOS this is `~/.local/share/CivOne/translations`.
+
+To create or update language files, run the CLI scanner from repository root and copy the output file to your profile translation folder with a `civ_<postfix>.txt` name.
+
+Example:
+
+```sh
+dotnet run --project ./civtranslate/civtranslate.csproj -- ./src --output ./translation/civ_german.txt
+```
+
 ### MCP savegame tools
 
 When MCP is enabled, savegame automation tools can read and write `.cos` files in the configured MCP saves folder.
@@ -245,6 +284,7 @@ These options affect the gameplay mechanics and rules and can also be changed in
 | Civilopedia Text | Select Civilopedia text display mode (affects in-game encyclopedia text). |
 | Palace | Toggle palace-related behaviour or display options in cities. |
 | Tax Rate | Set the tax rate which splits commerce between gold and science (0%–100%). |
+| Language | Select active translation language (`Identity` or any valid `civ_<postfix>.txt` file from the profile translation folder). |
 
 
 #### Launch Game / Return to Game
