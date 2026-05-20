@@ -33,14 +33,11 @@ namespace CivOne.Graphics
 		/// </summary>
 		/// <param name="bytes">Raw bytes of the <c>FONTS.CV</c> file.</param>
 		/// <param name="offset">Byte offset pointing to the start of the font data block.</param>
-		/// <param name="onClearFonts">Optional callback invoked before the font is created,
-		/// used to flush any previously cached font data.</param>
 		/// <returns>An <see cref="IFont"/> implementation appropriate for the current language setting.</returns>
-		internal static IFont Create(byte[] bytes, ushort offset, Action onClearFonts)
+		internal static IFont Create(byte[] bytes, ushort offset)
 		{
 			byte firstChar = bytes[offset - 8];
 
-			onClearFonts?.Invoke();
 			return Settings.Instance.SimulateInternationalFont switch
 			{
 				SimulateInternationalFont.Yes => new InternationalSimulatedFontSet(bytes, offset),
@@ -58,7 +55,7 @@ namespace CivOne.Graphics
 		/// </summary>
 		internal static bool IsInternationalFontSet(IFont font)
 		{
-			return font.FirstChar == 0;
+			return font.FirstChar < 32;
 		}
 	}
 }

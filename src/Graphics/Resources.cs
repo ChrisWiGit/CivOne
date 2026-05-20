@@ -72,10 +72,11 @@ namespace CivOne.Graphics
 			}
 			
 			bool isInternationalFontSet = false;
+			ClearTextCache();
 			for (int fontId = 0; fontId < fontOffsets.Count; fontId++)
 			{
 				ushort offset = fontOffsets[fontId];
-				IFont font = FontSetFactory.Create(file, offset, ClearTextCache);
+				IFont font = FontSetFactory.Create(file, offset);
 				_fonts.Add(font);
 				isInternationalFontSet = isInternationalFontSet || FontSetFactory.IsInternationalFontSet(font);
 			}
