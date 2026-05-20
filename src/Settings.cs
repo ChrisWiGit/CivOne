@@ -73,6 +73,7 @@ namespace CivOne
 		private bool _removeObsoleteBuildings = true;
 		private bool _preferSveSaveFormat = true;
 		private string _languagePostfix = string.Empty;
+		private SimulateInternationalFont _simulateInternationalFont = SimulateInternationalFont.Auto;
 		private bool _useUncheckedCastSanitizer = false;
 		private GlobalWarmingFeatureFlag _globalWarmingFeatureFlags = GlobalWarmingFeatureFlag.None;
         private bool _autoSettlers;
@@ -566,6 +567,18 @@ namespace CivOne
 			}
 		}
 
+		internal SimulateInternationalFont SimulateInternationalFont
+		{
+			get => _simulateInternationalFont;
+			set
+			{
+				_simulateInternationalFont = value;
+				SetSetting("SimulateInternationalFont", ((int)_simulateInternationalFont).ToString());
+				Common.ReloadSettings = true;
+				Resources.Instance.ReloadFonts();
+			}
+		}
+
 		internal void RevealWorldCheat() => _revealWorld = !_revealWorld;
 		
 		//internal int ScaleX => _scale;
@@ -665,6 +678,7 @@ namespace CivOne
 			GetSetting("RemoveObsoleteBuildings", ref _removeObsoleteBuildings);
 			GetSetting("PreferSveSaveFormat", ref _preferSveSaveFormat);
 			GetSetting("LanguagePostfix", ref _languagePostfix);
+			GetSetting<SimulateInternationalFont>("SimulateInternationalFont", ref _simulateInternationalFont);
 			GetSetting("UseUncheckedCastSanitizer", ref _useUncheckedCastSanitizer);
 			GetSetting<CursorType>("CursorType", ref _cursorType);
 			GetSetting<DestroyAnimation>("DestroyAnimation", ref _destroyAnimation);

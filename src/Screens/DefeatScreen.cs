@@ -14,54 +14,83 @@ using CivOne.IO;
 
 namespace CivOne.Screens
 {
-	internal class GameOver : BaseScreen
+	/// <summary>
+	/// Defeat screen displayed when player loses the game.
+	/// </summary>
+	internal class DefeatScreen : BaseScreen
 	{
 		private readonly Picture _background;
 		private readonly string[] _textLines;
 		private int _currentLine = 0;
 		private int _lineTick = 0;
-		
+		private bool _showFirstFrame = true;
+
+		/// <summary>
+		/// Handles keyboard input to skip or close the screen.
+		/// </summary>
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
 			if (args.Key == Key.Escape)
 			{
-				RuntimeHandler.EndGame();
+				Destroy();
+				return true;
+			}
+			if (IsLastLine && args.Key == Key.Enter)
+			{
+				Destroy();
 				return true;
 			}
 			return false;
 		}
 
+		private bool IsLastLine => _textLines.Length == 0 || _currentLine >= _textLines.Length - 1;
+
+		/// <summary>
+		/// Updates the screen, scrolling through defeat text lines.
+		/// </summary>
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (gameTick % 10 != 0) return false;
-			_lineTick++;
-			
-			if (_lineTick % 6 != 0) return false;
-			
-			if (_textLines.Length <= _currentLine)
+			if (_showFirstFrame)
 			{
-				RuntimeHandler.EndGame();
+				_showFirstFrame = false;
+			}
+			else
+			{
+				if (gameTick % 10 != 0) return false;
+				_lineTick++;
+
+				if (_lineTick % 6 != 0) return false;
+			}
+
+			if (_textLines.Length == 0)
+			{
 				return true;
 			}
-			
+
 			this.AddLayer(_background)
 				.DrawText(_textLines[_currentLine], 5, 15, 159, 7, TextAlign.Center)
 				.DrawText(_textLines[_currentLine], 5, 13, 159, 9, TextAlign.Center)
 				.DrawText(_textLines[_currentLine], 5, 14, 159, 8, TextAlign.Center);
-			
-			_currentLine++;
+
+			if (!IsLastLine)
+			{
+				_currentLine++;
+			}
 			return true;
 		}
-		
-		public GameOver()
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DefeatScreen"/>.
+		/// </summary>
+		public DefeatScreen()
 		{
 			_background = Resources["ARCH"];
 			Palette = _background.Palette;
 			this.AddLayer(_background);
 
 			PlaySound("lose2");
-			
-			// Load text and replace strings
+
+			// Load defeat text
 			_textLines = TextFile.Instance.GetGameText("KING/ARCH");
 			for (int i = 0; i < _textLines.Length; i++)
 				_textLines[i] = _textLines[i].Replace("$RPLC1", Human.LatestAdvance).Replace("$US", Human.LeaderName.ToUpper()).Replace("^", "");

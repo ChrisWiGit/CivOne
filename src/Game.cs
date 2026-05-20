@@ -23,6 +23,7 @@ using CivOne.Screens;
 using CivOne.Screens.Reports;
 using CivOne.Screens.Services;
 using CivOne.Services;
+using CivOne.Services.EndGame;
 using CivOne.Services.GlobalWarming;
 using CivOne.Services.Palace;
 using CivOne.Services.SpaceShip;
@@ -372,9 +373,8 @@ namespace CivOne
 
 				GameTask conquest;
 				GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has conquered", "the entire planet!"));
-				conquest = Show.Screen<Conquest>();
-				GameTask.Enqueue(conquest);
-				conquest.Done += (s, a) => RuntimeHandler.EndGame();
+				GameTask.Enqueue(conquest = Show.Screen<Conquest>());
+				conquest.Done += (s, a) => _ = EndGameServiceFactory.CreateDefault().HandleConquestAsync();
 			}
 
 			bool gameEnds = !CheckSpaceVitory();

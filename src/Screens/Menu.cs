@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using CivOne.Enums;
@@ -17,6 +18,10 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens
 {
+	/// <summary>
+	/// Generic menu UI component used throughout the UI to display selectable items.
+	/// </summary>
+	/// <typeparam name="T">Menu item payload type (commonly an enum or integer).</typeparam>
 	[ScreenResizeable]
 	public class Menu<T> : BaseScreen, IMenu
 	{
@@ -47,6 +52,11 @@ namespace CivOne.Screens
 		public int RowHeight { get; set; }
 		public bool CenterTo320Coordinates { get; set; }
 		public string[] DefaultDescription { get; set; } = [];
+		
+		/// <summary>
+		/// Optional action to call when Shift+F1 is pressed while the menu is active.
+		/// </summary>
+		public Action OnShiftF1 { get; set; }
 
 		private int CoordinateOffsetX => CenterTo320Coordinates ? Math.Max(0, (Width - 320) / 2) : 0;
 		private int CoordinateOffsetY => CenterTo320Coordinates ? Math.Max(0, (Height - 200) / 2) : 0;
@@ -152,6 +162,17 @@ namespace CivOne.Screens
 
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
+			if (args.Shift && args.Key == Key.F1)
+			{
+				// CW: Allow opening the setup screen from anywhere in the credits menu.
+				// Previously, the setup screen was only accessible before the credits menu
+				// had been shown for the first time, due to how the credits animation
+				// was initialized. This makes the game settings consistently accessible
+				// throughout the entire credits menu. Other menus do not use this behavior.
+				OnShiftF1?.Invoke();
+				return true;
+			}
+
 			switch (args.Key)
 			{
 				case Key.NumPad8:
@@ -327,6 +348,9 @@ namespace CivOne.Screens
 		}
 	}
 
+	/// <summary>
+	/// Non-generic convenience `Menu` specialized for `int` menu identifiers.
+	/// </summary>
 	public class Menu : Menu<int>
 	{
 		public Menu(Palette palette, IBitmap background = null) : base(null, palette, background)

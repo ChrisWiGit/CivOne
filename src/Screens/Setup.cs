@@ -218,6 +218,11 @@ namespace CivOne.Screens
 		private void SettingsMenu(int activeItem = 0) => CreateMenu("Settings", activeItem,
 			MenuItem.Create($"Window Title: {Settings.WindowTitle}").OnSelect(GotoScreen<WindowTitle>(ChangeWindowTitle)),
 			MenuItem.Create($"Graphics Mode: {Settings.GraphicsMode.ToText()}").OnSelect(GotoMenu(GraphicsModeMenu)),
+			MenuItem.Create($"Simulate intl font: {Settings.SimulateInternationalFont.ToText()}")
+				.WithDescription(
+					"Override international font simulation behavior.",
+					"Auto detects, Yes forces simulation, No disables it.")
+				.OnSelect(GotoMenu(SimulateInternationalFontMenu)),
 			MenuItem.Create($"Aspect Ratio: {Settings.AspectRatio.ToText()}").OnSelect(GotoMenu(AspectRatioMenu)),
 			MenuItem.Create($"Expand Size: {ExpandSizeText()}").OnSelect(GotoMenu(ExpandCanvasSizeMenu)),
 			MenuItem.Create($"Full Screen: {Settings.FullScreen.YesNo()}").OnSelect(GotoMenu(FullScreenMenu)),
@@ -233,7 +238,20 @@ namespace CivOne.Screens
 			MenuItem.Create("Back")
 		);
 
-		private void AspectRatioMenu() => CreateMenu("Aspect Ratio", GotoMenu(SettingsMenu, 2),
+		private void SimulateInternationalFontMenu() => CreateMenu("Simulate international font", GotoMenu(SettingsMenu, 2),
+			MenuItem.Create("AUTO (default)")
+				.WithDescription("Automatically detect and simulate when needed.")
+				.OnSelect((s, a) => Settings.SimulateInternationalFont = SimulateInternationalFont.Auto).SetActive(() => Settings.SimulateInternationalFont == SimulateInternationalFont.Auto),
+			MenuItem.Create("YES")
+				.WithDescription("Always use simulated international font rendering.")
+				.OnSelect((s, a) => Settings.SimulateInternationalFont = SimulateInternationalFont.Yes).SetActive(() => Settings.SimulateInternationalFont == SimulateInternationalFont.Yes),
+			MenuItem.Create("NO")
+				.WithDescription("Never simulate; use original font set as-is.")
+				.OnSelect((s, a) => Settings.SimulateInternationalFont = SimulateInternationalFont.No).SetActive(() => Settings.SimulateInternationalFont == SimulateInternationalFont.No),
+			MenuItem.Create("Back")
+		);
+
+		private void AspectRatioMenu() => CreateMenu("Aspect Ratio", GotoMenu(SettingsMenu, 3),
 			MenuItem.Create($"{Auto.ToText()} (default)").OnSelect((s, a) => Settings.AspectRatio = Auto).SetActive(() => Settings.AspectRatio == Auto),
 			MenuItem.Create(Fixed.ToText()).OnSelect((s, a) => Settings.AspectRatio = Fixed).SetActive(() => Settings.AspectRatio == Fixed),
 			MenuItem.Create(Scaled.ToText()).OnSelect((s, a) => Settings.AspectRatio = Scaled).SetActive(() => Settings.AspectRatio == Scaled),
@@ -275,13 +293,13 @@ namespace CivOne.Screens
 
 		private void ExpandCanvasSizeMenu() => CreateMenu(
 			"Expand Size (only if Aspect Ratio is set to Expand)",
-			GotoMenu(SettingsMenu, 3),
+			GotoMenu(SettingsMenu, 4),
 			BuildSizeMenuItems(
 				ExpandSizeOptions,
 				(width, height) => IsActiveSize(Settings.ExpandWidth, Settings.ExpandHeight, width, height),
 				SetExpandSize));
 
-		private void FullScreenMenu() => CreateMenu("Full Screen", GotoMenu(SettingsMenu, 4),
+		private void FullScreenMenu() => CreateMenu("Full Screen", GotoMenu(SettingsMenu, 5),
 			MenuItem.Create($"{false.YesNo()} (default)").OnSelect((s, a) => Settings.FullScreen = false).SetActive(() => !Settings.FullScreen),
 			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.FullScreen = true).SetActive(() => Settings.FullScreen),
 			MenuItem.Create("Back")
@@ -297,13 +315,13 @@ namespace CivOne.Screens
 
 		private void WindowSizeMenu() => CreateMenu(
 			"Window Size",
-			GotoMenu(SettingsMenu, 5),
+			GotoMenu(SettingsMenu, 6),
 			BuildSizeMenuItems(
 				WindowSizeOptions,
 				(width, height) => IsActiveSize(Settings.WindowWidth, Settings.WindowHeight, width, height),
 				SetWindowSizePreset));
 
-		private void WindowScaleMenu() => CreateMenu("Window Scale", GotoMenu(SettingsMenu, 6),
+		private void WindowScaleMenu() => CreateMenu("Window Scale", GotoMenu(SettingsMenu, 7),
 			MenuItem.Create("1x").OnSelect((s, a) => Settings.Scale = 1).SetActive(() => Settings.Scale == 1),
 			MenuItem.Create("2x (default)").OnSelect((s, a) => Settings.Scale = 2).SetActive(() => Settings.Scale == 2),
 			MenuItem.Create("3x").OnSelect((s, a) => Settings.Scale = 3).SetActive(() => Settings.Scale == 3),
@@ -315,7 +333,7 @@ namespace CivOne.Screens
 			MenuItem.Create("Back")
 		);
 
-		private void SoundMenu() => CreateMenu("In-game sound", GotoMenu(SettingsMenu, 7),
+		private void SoundMenu() => CreateMenu("In-game sound", GotoMenu(SettingsMenu, 8),
 			MenuItem.Create("Browse for files...").OnSelect(BrowseForSoundFiles).SetEnabled(!FileSystem.SoundFilesExist()).SetEnabled(!Game.Started),
 			MenuItem.Create("Back")
 		);

@@ -40,8 +40,22 @@ namespace CivOne
 		internal static IEnumerable<string> AllCityNames => Civilizations.Select(x => x.CityNames).SelectMany(x => x);
 
 		private static List<IScreen> _screens = new List<IScreen>();
+		/// <summary>
+		/// Returns a snapshot of all currently active screens in stack order (bottom to top).
+		/// </summary>
+		/// <remarks>
+		/// For new code, prefer IScreenQueryService.Screens obtained from ScreenServiceFactory.CreateQueryService().
+		/// This provides better testability and loose coupling.
+		/// </remarks>
 		internal static IScreen[] Screens => _screens.ToArray();
 
+		/// <summary>
+		/// Returns the screen at the bottom of the stack, or <c>null</c> if the stack is empty.
+		/// </summary>
+		/// <remarks>
+		/// For new code, prefer IScreenQueryService.LastScreen obtained from ScreenServiceFactory.CreateQueryService().
+		/// This provides better testability and loose coupling.
+		/// </remarks>
 		internal static IScreen LastScreen => _screens.LastOrDefault();
 
 		internal static bool HasAttribute<T>(object checkObject) where T : Attribute
@@ -51,6 +65,14 @@ namespace CivOne
 			return Attribute.IsDefined(checkObject.GetType(), typeof(T));
 		}
 
+		/// <summary>
+		/// Returns the topmost active screen, favouring modal screens if any are present.
+		/// Returns <c>null</c> if the stack is empty.
+		/// </summary>
+		/// <remarks>
+		/// For new code, prefer IScreenQueryService.TopScreen obtained from ScreenServiceFactory.CreateQueryService().
+		/// This provides better testability and loose coupling.
+		/// </remarks>
 		public static IScreen TopScreen
 		{
 			get
@@ -99,8 +121,24 @@ namespace CivOne
         internal static void SetRandomSeed(ushort seed) => Random = new Random(seed == ushort.MaxValue ? -1 : seed);
         internal static void SetRandomSeed() => SetRandomSeed(ushort.MaxValue);
 		
+		/// <summary>
+		/// Adds a screen to the top of the screen stack and makes it active.
+		/// </summary>
+		/// <param name="screen">The screen to add.</param>
+		/// <remarks>
+		/// For new code, prefer IScreenCommandService.AddScreen obtained from ScreenServiceFactory.CreateCommandService().
+		/// This provides better testability and loose coupling.
+		/// </remarks>
 		internal static void AddScreen(IScreen screen) => _screens.Add(screen);
 		
+		/// <summary>
+		/// Removes a screen from the screen stack and disposes it.
+		/// </summary>
+		/// <param name="screen">The screen to remove and dispose.</param>
+		/// <remarks>
+		/// For new code, prefer IScreenCommandService.DestroyScreen obtained from ScreenServiceFactory.CreateCommandService().
+		/// This provides better testability and loose coupling.
+		/// </remarks>
 		internal static void DestroyScreen(IScreen screen)
 		{
 			screen?.Dispose();
