@@ -1,5 +1,37 @@
 # Remarks
 
+## International Font Simulation
+
+The original `FONTS.CV` file shipped with Civilization 1 contains only ASCII characters (space through `~`, i.e. codes 32–126) plus a small set of Western European characters stored in the control-character range (codes 0–31), such as `ü`, `é`, `â`, `ä`, `ö`, `ü`, `ß` and `ç`.
+
+Players who own an English-only `FONTS.CV` — which lacks even those control-character glyphs — cannot display translated text containing non-ASCII letters without a modified font file.
+
+### Solution
+
+`InternationalSimulatedFontSet` extends `Fontset` and synthesises missing glyphs at runtime:
+
+1. It first checks the static mapping table for characters already encoded in the control-character range.
+2. If the character is not found there, it decomposes the Unicode code point into its base letter and combining diacritic mark (Unicode NFD), renders the base letter from the font, and draws the accent pixel-by-pixel on top.
+3. As a last resort it falls back to the unaccented base letter.
+
+### Mode selection (`FontSetFactory`)
+
+The behaviour is controlled by the **Simulate International Font** setting (**Shift+F1 → Game Options → Language**):
+
+| Setting              | Effect                                                                                                                            |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **Yes**              | Always use the simulating font set                                                                                                |
+| **No**               | Always use the plain font set                                                                                                     |
+| **Auto** *(default)* | Use the simulating font set only when `FONTS.CV` starts with ASCII space (code 32), which identifies a standard English-only file |
+
+### Relevant classes
+
+| Class                           | File                                            |
+| ------------------------------- | ----------------------------------------------- |
+| `Fontset`                       | `src/Graphics/FontSet.cs`                       |
+| `InternationalSimulatedFontSet` | `src/Graphics/InternationalSimulatedFontSet.cs` |
+| `FontSetFactory`                | `src/Graphics/FontSetFactory.cs`                |
+
 ## Number of Civilizations
 
 The maximum number of civilizations that can participate in a game is limited to 8. This total includes the player and the Barbarians, which means that up to 6 civilizations can be controlled by the AI in a single game.
@@ -128,19 +160,96 @@ bonus = (trade1 + trade2 + 4) / 8
 
 * In [City View](./src/Screens/CityManagerPanels/CityInfoUnits.cs) shall show trading cities with trade values.
 
+## Hall of Fame
+
+### Where is it stored?
+
+Hall of Fame data is persisted in:
+
+* `HallOfFame.yaml` inside `Runtime.StorageDirectory`
+
+For the SDL runtime on Windows, `Runtime.StorageDirectory` is:
+
+* `%LOCALAPPDATA%/CivOne`
+
+So the effective file path is usually:
+
+On Windows this is `%LOCALAPPDATA%\CivOne\HallOfFame.yaml`.
+On Linux and macOS this is `~/.local/share/CivOne/HallOfFame.yaml`.
+
+### When is it read or written?
+
+* **Read only (view mode):** opening Hall of Fame from credits/debug uses `ViewEntries(...)`.
+* **Write (add score):** at end game flow (`conquest`, `defeat`, `alpha centauri`, `retire`) `AddScore()` composes current human entry and stores it.
+* **Write (clear):** pressing **C** on the post-game Hall of Fame screen calls `Clear()`.
+
+If the file is missing, view mode shows placeholders and does **not** create a file.
+
+### Persistence rules
+
+After loading existing entries and adding the newest one, entries are normalized:
+
+* Sort by `Score` descending
+* Tie-break by `CreatedAtUtc` descending (newer first)
+* Keep only top `5` entries
+
+### File format
+
+The file uses YAML with PascalCase properties.
+
+Top-level model:
+
+* `Version` (currently default `1`)
+* `Entries` (array of hall of fame entries)
+
+Entry model fields:
+
+* `LeaderName`: player-entered leader name
+* `LeaderTitle`: difficulty title (`Chief`, `Lord`, `Prince`, `King`, `Emperor`, `Deity`)
+* `CivilizationNamePlural`: tribe plural name (example: `Romans`)
+* `YearLabel`: formatted game year label (example: `1850 AD`)
+* `Population`: total population integer
+* `Score`: final civilization score integer
+* `RatingRankLabel`: historical personality label from rating calculation (top-leader table)
+* `RatingPercent`: civilization rating percent integer
+* `CreatedAtUtc`: UTC timestamp used for tie-breaking and chronology
+
+### Example `HallOfFame.yaml`
+
+```yaml
+Version: 1
+Entries:
+  - LeaderName: "Marcus"
+    LeaderTitle: "King"
+    CivilizationNamePlural: "Romans"
+    YearLabel: "1850 AD"
+    Population: 1234567
+    Score: 1876
+    RatingRankLabel: "Augustus Caesar"
+    RatingPercent: 74
+    CreatedAtUtc: 2026-05-20T12:34:56.0000000+00:00
+```
+
+### Clear behavior detail
+
+Clear does not always mean empty file:
+
+* If a current human game context exists, clear keeps exactly **one** entry: the current human composed score.
+* If no active game context exists (for example credits/debug without `Game.Instance`), clear falls back to empty entries.
+
 ## DrawText Symbols
 
-| Symbol | Meaning         |
-|--------|-----------------|
-| #      | Stick Figure    |
-| $      | Coin            |
-| ^      | Check Mark      |
-| {      | Wheat Stalk     |
-| }      | Trade Arrows    |
-| \      | Diamond         |
-| \|     | Shield          |
-| ~      | Light Bulb      |
-| _      | Sun             |
+| Symbol | Meaning      |
+| ------ | ------------ |
+| #      | Stick Figure |
+| $      | Coin         |
+| ^      | Check Mark   |
+| {      | Wheat Stalk  |
+| }      | Trade Arrows |
+| \      | Diamond      |
+| \|     | Shield       |
+| ~      | Light Bulb   |
+| _      | Sun          |
 
 ## DrawButton / Font IDs
 
@@ -161,16 +270,16 @@ DrawButton(string text, byte colour, byte colourDark, int x, int y, int width)
 
 The exact glyph shapes come from `FONTS.CV` (runtime data file, not in this repository), so visual style below is based on where each font is used in-game.
 
-| Font ID | Typical usage in CivOne | Likely visual style |
-|--------:|--------------------------|---------------------|
-| 0 | Standard UI text, menus, dialogs, reports | Default readable UI font (regular) |
-| 1 | Compact UI text, many buttons/panels, small labels | Smaller/compact UI font |
-| 2 | Newspaper headline accents (`_shout`) | Decorative headline style |
-| 3 | Demo / newspaper emphasis text | Bold or stylized display font |
-| 4 | Newspaper title (`_name`), credits text settings | Title-like decorative font |
-| 5 | Big event/title text (city banners, game over, discovery) | Large ornamental title font |
-| 6 | Civilopedia/body info text, intro/new game descriptive text | Thin/compact info font |
-| 8 | Unit letter overlay on sprites | Very compact symbol/letter font |
+| Font ID | Typical usage in CivOne                                     | Likely visual style                |
+| ------: | ----------------------------------------------------------- | ---------------------------------- |
+|       0 | Standard UI text, menus, dialogs, reports                   | Default readable UI font (regular) |
+|       1 | Compact UI text, many buttons/panels, small labels          | Smaller/compact UI font            |
+|       2 | Newspaper headline accents (`_shout`)                       | Decorative headline style          |
+|       3 | Demo / newspaper emphasis text                              | Bold or stylized display font      |
+|       4 | Newspaper title (`_name`), credits text settings            | Title-like decorative font         |
+|       5 | Big event/title text (city banners, game over, discovery)   | Large ornamental title font        |
+|       6 | Civilopedia/body info text, intro/new game descriptive text | Thin/compact info font             |
+|       8 | Unit letter overlay on sprites                              | Very compact symbol/letter font    |
 
 ### Practical button guidance
 
@@ -181,21 +290,21 @@ The exact glyph shapes come from `FONTS.CV` (runtime data file, not in this repo
 
 ## Colors
 
-| Code | Color Name      | Description         |
-|------|----------------|---------------------|
-| 1    | Blue           | Standard blue       |
-| 2    | Green          | Standard green      |
-| 3    | Light Grey     | Grey for disabled items |
-| 4    | Dark Red       | Dark red            |
-| 5    | Black          | Standard black      |
-| 6    | Brown          | Standard brown      |
-| 7    | Light Brown    | Light brown         |
-| 8    | Dark Brown     | Dark brown          |
-| 9    | None           | No color            |
-| 10   | Light Green    | Light green         |
-| 11   | Light Blue     | Light blue          |
-| 12   | Light Red      | Light red           |
-| 13   | Pink           | Pink                |
-| 14   | Light Yellow   | Light yellow        |
-| 15   | White          | White               |
-| 16   | White          | White               |
+| Code | Color Name   | Description             |
+| ---- | ------------ | ----------------------- |
+| 1    | Blue         | Standard blue           |
+| 2    | Green        | Standard green          |
+| 3    | Light Grey   | Grey for disabled items |
+| 4    | Dark Red     | Dark red                |
+| 5    | Black        | Standard black          |
+| 6    | Brown        | Standard brown          |
+| 7    | Light Brown  | Light brown             |
+| 8    | Dark Brown   | Dark brown              |
+| 9    | None         | No color                |
+| 10   | Light Green  | Light green             |
+| 11   | Light Blue   | Light blue              |
+| 12   | Light Red    | Light red               |
+| 13   | Pink         | Pink                    |
+| 14   | Light Yellow | Light yellow            |
+| 15   | White        | White                   |
+| 16   | White        | White                   |

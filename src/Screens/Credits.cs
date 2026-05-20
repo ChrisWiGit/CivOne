@@ -15,6 +15,7 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
+using CivOne.Screens.Reports;
 using CivOne.Tasks;
 using CivOne.UserInterface;
 
@@ -254,7 +255,7 @@ namespace CivOne.Screens
 			menu.Items.Add(items[1]).OnSelect(LoadSavedGame);
 			menu.Items.Add(items[2]).OnSelect(Earth);
 			menu.Items.Add(items[3]).OnSelect(CustomizeWorld);
-			menu.Items.Add(items[4]).Disable();
+			menu.Items.Add(items[4]).OnSelect(ViewHallOfFame);
 
 			AddMenu(menu);
 
@@ -341,6 +342,12 @@ namespace CivOne.Screens
 			Log("Main Menu: Customize World");
 			Destroy();
 			Common.AddScreen(new CustomizeWorld());
+		}
+
+		private static void ViewHallOfFame(object sender, EventArgs args)
+		{
+			Log("Main Menu: View Hall of Fame");
+			Common.AddScreen(HallOfFameScreenFactory.ViewScore());
 		}
 
 		public override bool KeyDown(KeyboardEventArgs args)
@@ -461,7 +468,7 @@ namespace CivOne.Screens
 				{ menuItems[1].ToUpper()[0], LoadSavedGame },
 				{ menuItems[2].ToUpper()[0], Earth },
 				{ menuItems[3].ToUpper()[0], CustomizeWorld },
-				{ menuItems[4].ToUpper()[0], (_,_) => { } } 
+				{ menuItems[4].ToUpper()[0], ViewHallOfFame }
 			};
 		}
 	}
