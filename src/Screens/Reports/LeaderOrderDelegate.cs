@@ -17,14 +17,9 @@ namespace CivOne.Screens.Reports
 
 	internal readonly record struct LeaderOrderResult(int RatingPercent, int SelectedLeaderIndex, string SelectedLeaderName, IReadOnlyList<string> OrderedLeaderNames);
 
-	internal sealed class LeaderOrderDelegate
+	internal sealed class LeaderOrderDelegate(ITranslationService translationService = null)
 	{
-		private readonly ITranslationService _translationService;
-
-		public LeaderOrderDelegate(ITranslationService translationService = null)
-		{
-			_translationService = translationService ?? TranslationServiceFactory.CreateDefault();
-		}
+		private readonly ITranslationService _translationService = translationService ?? TranslationServiceFactory.CreateDefault();
 
 		public LeaderOrderResult Calculate(int ratingPercent)
 		{

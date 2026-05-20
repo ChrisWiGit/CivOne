@@ -159,6 +159,12 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		private void MenuShowHallOfFameScreen(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen(HallOfFameScreenFactory.ViewScore()));
+			Destroy();
+		}
+
 		private void ShowSettings(object sender, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screens(typeof(Setup)));
@@ -308,6 +314,7 @@ namespace CivOne.Screens
 				new("Build Palace", MenuBuildPalace),
 				new("Ranking (Random)", MenuShowCivilizationRanking),
 				new("Top Leader Screen", MenuShowTopLeaderScreen),
+				new("Hall Of Fame Screen", MenuShowHallOfFameScreen),
 				new("Show Power Graph", MenuShowPowerGraph),
 				new("Instant Conquest", InstantConquest),
 				new("Instant Global Warming", InstantGlobalWarming),

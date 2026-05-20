@@ -247,7 +247,14 @@ namespace CivOne.Screens
 				ActiveColour = 11,
 				TextColour = 5,
 				DisabledColour = 8,
-				FontId = 0
+				FontId = 0,
+				OnShiftF1 = () =>
+				{
+					if (!_allowEnterSetup) return;
+					
+					GameTask.Enqueue(Show.Screens(typeof(Setup), typeof(Credits)));
+					Destroy();
+				}
 			};
 
 			var items = GetMenuItems();

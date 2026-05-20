@@ -18,25 +18,25 @@ namespace CivOne.Services.EndGame
 	{
 		/// <summary>
 		/// Handles the end-game sequence for a conquest victory.
-		/// Shows CivilizationScore, then TopLeaderScreen, then returns to credits.
+		/// Shows VictoryScreen, CivilizationScore, TopLeaderScreen, HallOfFame, then returns to credits.
 		/// </summary>
 		Task HandleConquestAsync();
 
 		/// <summary>
 		/// Handles the end-game sequence for a defeat.
-		/// Shows CivilizationScore, then TopLeaderScreen, then returns to credits.
+		/// Shows DefeatScreen, CivilizationScore, TopLeaderScreen, HallOfFame, then returns to credits.
 		/// </summary>
 		Task HandleDefeatAsync();
 
 		/// <summary>
 		/// Handles the end-game sequence for an Alpha Centauri victory.
-		/// Shows CivilizationScore, then TopLeaderScreen, then returns to credits.
+		/// Shows CivilizationScore, then TopLeaderScreen, then HallOfFame, then returns to credits.
 		/// </summary>
 		Task HandleAlphaCentauriAsync();
 
 		/// <summary>
 		/// Handles the end-game sequence for a player retirement.
-		/// Shows CivilizationScore, then returns to credits (no TopLeaderScreen).
+		/// Shows CivilizationScore, then HallOfFame, then returns to credits (no TopLeaderScreen).
 		/// </summary>
 		Task HandleRetireAsync();
 	}

@@ -21,7 +21,8 @@ namespace CivOne.Services.EndGame
 	/// </summary>
 	/// <remarks>
 	/// Sequences are chained via ShowScreenAsync and sequential orchestration.
-	/// Retire excludes TopLeaderScreen; all other end reasons include it between CivilizationScore and credits.
+	/// HallOfFame is always shown as the last screen before returning to credits.
+	/// Retire excludes TopLeaderScreen; all other end reasons include it between CivilizationScore and HallOfFame.
 	/// </remarks>
 	/// <remarks>
 	/// Initializes a new instance of <see cref="EndGameService"/>.
@@ -42,6 +43,7 @@ namespace CivOne.Services.EndGame
 			await ShowScreenAsync(new VictoryScreen());
 			await ShowScreenAsync(new CivilizationScore());
 			await ShowScreenAsync(TopLeaderScreenFactory.Create());
+			await ShowScreenAsync(HallOfFameScreenFactory.AddScore());
 
 			ReturnToCredits();
 		}
@@ -53,6 +55,7 @@ namespace CivOne.Services.EndGame
 			await ShowScreenAsync(new DefeatScreen());
 			await ShowScreenAsync(new CivilizationScore());
 			await ShowScreenAsync(TopLeaderScreenFactory.Create());
+			// No HallOfFame entry for defeat.
 
 			ReturnToCredits();
 		}
@@ -61,9 +64,9 @@ namespace CivOne.Services.EndGame
 		public async Task HandleAlphaCentauriAsync()
 		{
 			ClearScreensAndTasks();
-			// TODO: add when spaceshipt branch is merged await ShowScreenAsync(new SpaceVictory());
 			await ShowScreenAsync(new CivilizationScore());
 			await ShowScreenAsync(TopLeaderScreenFactory.Create());
+			await ShowScreenAsync(HallOfFameScreenFactory.AddScore());
 
 			ReturnToCredits();
 		}
@@ -74,6 +77,7 @@ namespace CivOne.Services.EndGame
 			ClearScreensAndTasks();
 			
 			await ShowScreenAsync(new CivilizationScore());
+			await ShowScreenAsync(HallOfFameScreenFactory.AddScore());
 			
 			ReturnToCredits();
 		}

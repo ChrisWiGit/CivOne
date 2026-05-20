@@ -6,6 +6,14 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: International font simulation for non-English languages
+  * Players with an English-only `FONTS.CV` can now display translated text (e.g. German umlauts, French accented letters) without a modified font file.
+  * Missing glyphs are synthesised at runtime by composing the base letter with the required diacritic mark.
+  * Activated automatically in auto language mode; can also be set explicitly via **Shift+F1 → Game Options → Language**.
+* Feature: Added Hall of Fame screen showing top historical civilizations based on the player's score
+  * Shown during end-game flow after the score/ranking sequence for conquest, defeat, Alpha Centauri, and retire outcomes.
+  * The Hall of Fame screen shows a ranked list of civilizations with their score, leader name, civilization name, and victory type.
+  * The look does not match the original game.
 * Feature: Added victory screen showing a victory message and the player's palace in the background when the player conquers the world. This is not original game behavior.
 * Top Leader screen now shows a percentage-based rating bar for each leader, with the player's leader highlighted. The rating is calculated based on the player's score relative to the top leader's score, and is displayed as a horizontal bar with a percentage label.
   * TODO: Currently, only available through debug menu. Future integration into the original ranking screen trigger conditions is planned once they are identified.

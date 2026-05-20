@@ -27,7 +27,7 @@ namespace CivOne.Screens.Reports
 		private const int AdvanceScoreWeight = 10;
 		private const int WonderScoreWeight = 50;
 		private const int GoldPerScorePoint = 25;
-		private const int InitialInputDelayMs = 1200;
+		private const int InitialInputDelayMs = 500;
 
 		private bool _update = true;
 		private readonly long _ignoreInputUntil;
