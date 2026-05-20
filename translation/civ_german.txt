@@ -2,15 +2,15 @@
 # This file is used to list all translation keys and their default English values.
 # See README.md from civtranslate for instructions on how to create a translation file for a specific language.
 
-START A NEW GAME=Neues Spiel starten
+START A NEW GAME=Neues Spiel
 LOAD A SAVED GAME=Spiel laden
 EARTH=ERDE
 CUSTOMIZE WORLD=Welt anpassen
-VIEW HALL OF FAME=Ruhmeshalle anzeigen
+VIEW HALL OF FAME=Die Ruhmeshalle
 _KEEP PLAYING.=_Weiterspielen
 _YES, RETIRE.=_Ja, zurücktreten.
-ARE YOU SURE YOU WANT TO RETIRE?=Sind Sie sicher, dass Sie zurücktreten möchten?
-NO FAST SAVEGAMES AVAILABLE. USE CTRL+F1-F10 TO SAVE.=Keine Schnellspielstände verfügbar. Verwenden Sie Strg+F1-F10 zum Speichern.
+ARE YOU SURE YOU WANT TO RETIRE?=Sicher zurücktreten?
+NO FAST SAVEGAMES AVAILABLE. USE CTRL+F1-F10 TO SAVE.=Nicht verfügbar. Verwenden Sie Strg+F1-F10 zum Speichern.
 QUICK LOAD SLOTS=Schnellladeplätze
 CIVILIZATION=ZIVILISATION
 HALL OF FAME=RUHMESHALLE
@@ -38,7 +38,7 @@ SIRE, YOUR CIVILIZATION=Sir, Ihre Zivilisation
 RATING OF {0}% EXCEEDS EVEN=von {0}% übertrifft sogar
 {0}!={0}!
 CITY NOT FOUND.=Stadt nicht gefunden.
-WHERE IN THE HECK IS ... (CITY NAME)=Wo zum Teufel ist ... (Stadtname)
+WHERE IN THE HECK IS ... (CITY NAME)=Wo ist nur die Stadt?
 A GLORIOUS VICTORY IS YOURS.=Ein glorreicher Sieg gehört Ihnen.
 YOUR PALACE RISES ABOVE ALL NATIONS.=Ihr Palast ragt über alles hinaus.
 YOUR PEOPLE CELEBRATE IN EVERY CITY.=Ihre Bürger feiern in jeder Stadt.
