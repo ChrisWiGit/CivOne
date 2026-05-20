@@ -1,5 +1,49 @@
-# CivOne - German translation file
-# This file is used to provide German translations for the game.
+# CivOne - General translation file
+# This file is used to list all translation keys and their default English values.
+# See README.md from civtranslate for instructions on how to create a translation file for a specific language.
+
+START A NEW GAME=Neues Spiel
+LOAD A SAVED GAME=Spiel laden
+EARTH=ERDE
+CUSTOMIZE WORLD=Welt anpassen
+VIEW HALL OF FAME=Die Ruhmeshalle
+_KEEP PLAYING.=_Weiterspielen
+_YES, RETIRE.=_Ja, zurücktreten.
+ARE YOU SURE YOU WANT TO RETIRE?=Sicher zurücktreten?
+NO FAST SAVEGAMES AVAILABLE. USE CTRL+F1-F10 TO SAVE.=Nicht verfügbar. Verwenden Sie Strg+F1-F10 zum Speichern.
+QUICK LOAD SLOTS=Schnellladeplätze
+CIVILIZATION=ZIVILISATION
+HALL OF FAME=RUHMESHALLE
+CLEAR=Löschen
+SOLOMON THE WISE=Salomo der Weise
+EMPEROR AUGUSTUS=Kaiser Augustus
+KING CHARLEMAGNE=önig Karl der Große
+THOMAS JEFFERSON=Thomas Jefferson
+SHOGUN TOKUGAWA=Shogun Tokugawa
+FRANKLIN DELANO ROOSEVELT=Franklin Delano Roosevelt
+SULAYMAN THE MAGNIFICENT=Sulayman the Magnificent
+WINSTON CHURCHILL=Winston Churchill
+CLEOPATRA=Cleopatra
+CHARLES DE GAULLE=Charles De Gaulle
+VLADIMIR LENIN=Vladimir Lenin
+OTTO VON BISMARCK=Otto von Bismarck
+ERIC THE RED=Eric der Rote
+KAISER WILHELM=Kaiser Wilhelm
+LOUIS THE XVI=Louis der XVI
+NEVILLE CHAMBERLAIN=Neville Chamberlain
+FERDINAND MARCOS=Ferdinand Marcos
+EMPEROR NERO=Kaiser Nero
+DAN QUAYLE=Don Quijote
+SIRE, YOUR CIVILIZATION=Sir, Ihre Zivilisation
+RATING OF {0}% EXCEEDS EVEN=von {0}% übertrifft sogar
+{0}!={0}!
+CITY NOT FOUND.=Stadt nicht gefunden.
+WHERE IN THE HECK IS ... (CITY NAME)=Wo ist nur die Stadt?
+A GLORIOUS VICTORY IS YOURS.=Ein glorreicher Sieg gehört Ihnen.
+YOUR PALACE RISES ABOVE ALL NATIONS.=Ihr Palast ragt über alles hinaus.
+YOUR PEOPLE CELEBRATE IN EVERY CITY.=Ihre Bürger feiern in jeder Stadt.
+BARDS SING FOREVER OF=Barden singen für immer von
+$US^ CONQUEROR OF THE WORLD!=$US^ Eroberer der Welt!
 BC=v.Chr.
 AD=n.Chr.
 FAST SAVE IS NOT AVAILABLE RIGHT NOW.=Schnellspeichern ist derzeit nicht verfügbar.
@@ -8,14 +52,9 @@ FAST SAVE SLOT IS EMPTY.=Schnellspeicherplatz ist leer.
 COULD NOT LOAD FAST SAVE SLOT.=Konnte den Schnellspeicherplatz nicht laden.
 QUICK SAVE/LOAD=Schnellspeichern/Laden
 IN {3} LEADER {0} {1} OF THE {2}=In {3} Anführer {0} {1} von {2}
-LORD=Herr
+LORD=Häuptling
 PRINCE=Prinz
 KING=König
 EMPEROR=Kaiser
 DEITY=Gottheit
 CHIEF=Häuptling
-START A NEW GAME=Neues Spiel starten
-LOAD A SAVED GAME=Spiel laden
-EARTH=ERDE
-CUSTOMIZE WORLD=Welt anpassen
-VIEW HALL OF FAME=Ruhmeshalle anzeigen

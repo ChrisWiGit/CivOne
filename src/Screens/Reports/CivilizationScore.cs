@@ -13,18 +13,29 @@ using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Enums;
 using CivOne.Screens.Services;
+using CivOne.Services;
 
 namespace CivOne.Screens.Reports
 {
+	/// <summary>
+	/// Report screen that shows a detailed breakdown of a civilization's score.
+	/// </summary>
+	/// <remarks>
+	/// Uses the `ICivilizationScoreService` to compute totals and individual components.
+	/// </remarks>
 	[ScreenResizeable]
 	internal class CivilizationScore : BaseReport
 	{
+		private readonly ICivilizationScoreService _civilizationScoreService;
+
 		private const int HappyCitizenScoreWeight = 2;
 		private const int CityScoreWeight = 3;
 		private const int AdvanceScoreWeight = 10;
 		private const int WonderScoreWeight = 50;
 		private const int GoldPerScorePoint = 25;
-		private const int InitialInputDelayMs = 1200;
+		
+		// prevents accidental immediate closure of the report when opened via a key press
+		private const int InitialInputDelayMs = 500;
 
 		private bool _update = true;
 		private readonly long _ignoreInputUntil;
@@ -120,8 +131,6 @@ namespace CivOne.Screens.Reports
 			this.Clear(3);
 			DrawReportHeader();
 
-			int totalScore = 0;
-
 			City[] cities = Human.Cities;
 			int fontHeight = Resources.GetFontHeight(0);
 			string tribeName = Human.TribeName;
@@ -165,7 +174,7 @@ namespace CivOne.Screens.Reports
 			}
 
 			int wonderScore = wonderCount * WonderScoreWeight;
-			totalScore = citizenScore + cityScore + populationScore + advanceScore + wonderScore + goldScore;
+			int totalScore = _civilizationScoreService.TotalScore(Human);
 
 			yy = lastCitizenY + 16;
 			this.DrawText($"Cities ({cityScore})", 0, 15, OffsetX + 8, yy);
@@ -203,8 +212,9 @@ namespace CivOne.Screens.Reports
 			_update = true;
 		}
 
-		public CivilizationScore() : base("CIVILIZATION SCORE", 3)
+		public CivilizationScore(ICivilizationScoreService civilizationScoreService = null) : base("CIVILIZATION SCORE", 3)
 		{
+			_civilizationScoreService = civilizationScoreService ?? CivilizationScoreServiceFactory.CreateDefault();
 			// Delay initial input briefly so the key that opened the report does not close it immediately again.
 			_ignoreInputUntil = Environment.TickCount64 + InitialInputDelayMs;
 			Render();

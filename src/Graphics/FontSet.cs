@@ -12,6 +12,13 @@ using CivOne.IO;
 
 namespace CivOne.Graphics
 {
+	/// <summary>
+	/// Loads and renders a bitmap font from a <c>FONTS.CV</c> data block.
+	/// <br/>
+	/// The font covers only the ASCII range stored in the file (typically English characters).
+	/// For non-ASCII characters (e.g. German umlauts, accented letters), use
+	/// <see cref="InternationalSimulatedFontSet"/> which simulates missing glyphs on top of this base.
+	/// </summary>
 	internal class Fontset : IFont
 	{
 		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
@@ -21,51 +28,75 @@ namespace CivOne.Graphics
 		private readonly byte _charByteLength;
 		private readonly byte _charTopRow;
 		private readonly byte _charBottomRow;
-		private readonly byte _fontSpaceX;
-		private readonly byte _fontSpaceY;
-		private Dictionary<char, byte> _charWidths = new Dictionary<char, byte>();
-		private Dictionary<char, byte[]> _characters = new Dictionary<char, byte[]>();
-		
+		private readonly Dictionary<char, byte> _charWidths = [];
+		private readonly Dictionary<char, byte[]> _characters = [];
+
 		public int FontHeight => 1 + _charBottomRow - _charTopRow;
 		public byte FirstChar => _fontAsciiFirst;
 		public byte LastChar => _fontAsciiLast;
-		
-		public Bytemap GetLetter(char character, byte colour)
-		{
-			if (!_charWidths.ContainsKey(character) || !_characters.ContainsKey(character)) return new Bytemap(8, 8);
-			int ww = _charWidths[character];
 
-			byte[] pixels = new byte[ww * FontHeight];
-			int index = 0, b = 0, bit = 0;;
+		public virtual Bytemap GetLetter(char character, byte colour)
+		{
+			if (!TryGetCharacterData(character, out int width, out byte[] characterData))
+			{
+				return new Bytemap(8, 8);
+			}
+
+			return new Bytemap(width, FontHeight).FromByteArray(BuildPixels(characterData, width, colour));
+		}
+
+		protected bool HasCharacter(char character)
+		=> _charWidths.ContainsKey(character) && _characters.ContainsKey(character);
+
+		private bool TryGetCharacterData(char character, out int width, out byte[] characterData)
+		{
+			width = 0;
+			characterData = null;
+
+			if (!_charWidths.TryGetValue(character, out byte charWidth))
+			{
+				return false;
+			}
+
+			if (!_characters.TryGetValue(character, out characterData))
+			{
+				return false;
+			}
+
+			width = charWidth;
+			return true;
+		}
+
+		private byte[] BuildPixels(byte[] characterData, int width, byte colour)
+		{
+			byte[] pixels = new byte[width * FontHeight];
+			int index = 0;
+			int dataIndex = 0;
+			int bit = 0;
 			for (int y = 0; y < FontHeight; y++)
 			{
 				if (bit > 0)
 				{
 					bit = 0;
-					b++;
+					dataIndex++;
 				}
+
 				for (int x = 0; x < _charByteLength * 8; x++)
 				{
-					if (x < _charWidths[character])
+					if (x < width)
 					{
-						if ((_characters[character][b] & (0x80 >> bit)) > 0)
-						{
-							pixels[index++] = colour;
-						}
-						else
-						{
-							pixels[index++] = 0;
-						}
+						pixels[index++] = ((characterData[dataIndex] & (0x80 >> bit)) > 0) ? colour : (byte)0;
 					}
 
 					if (++bit == 8)
 					{
 						bit = 0;
-						b++;
+						dataIndex++;
 					}
 				}
 			}
-			return new Bytemap(ww, FontHeight).FromByteArray(pixels);
+
+			return pixels;
 		}
 
 		public Fontset(byte[] bytes, ushort offset)
@@ -75,24 +106,24 @@ namespace CivOne.Graphics
 			_charByteLength = bytes[offset - 6];
 			_charTopRow = bytes[offset - 5];
 			_charBottomRow = bytes[offset - 4];
-			_fontSpaceX = bytes[offset - 3];
-			_fontSpaceY = bytes[offset - 2];
 
 			int i = 0;
-			int index = (int)offset;
+			int index = offset;
 			int charCount = 1 + (_fontAsciiLast - _fontAsciiFirst);
 			for (int c = _fontAsciiFirst; c <= _fontAsciiLast; c++)
 			{
-				int ww = i++;
+				i++;
 				char character = (char)c;
 				byte[] b = new byte[(1 + _charBottomRow - _charTopRow) * _charByteLength];
 				for (int row = 0; row < (1 + _charBottomRow - _charTopRow); row++)
-				for (int col = 0; col < _charByteLength; col++)
 				{
-					int ind = (row * _charByteLength) + col;
-					int bin = index + (row * (_charByteLength * charCount)) + col;
+					for (int col = 0; col < _charByteLength; col++)
+					{
+						int ind = (row * _charByteLength) + col;
+						int bin = index + (row * (_charByteLength * charCount)) + col;
 
-					b[ind] = bytes[bin];
+						b[ind] = bytes[bin];
+					}
 				}
 				_characters.Add(character, b);
 
@@ -100,7 +131,7 @@ namespace CivOne.Graphics
 				if (charWidth > (_charByteLength * 8))
 				{
 					/*
-					The _ character in FONTS.CV has a length of 9 bytes or 72 bits, 
+					The _ character in FONTS.CV has a length of 9 bytes or 72 bits,
 					but the width can be 8 bytes or 64 bits.
 					This is a mistake in the original game and will be fixed here.
 					*/

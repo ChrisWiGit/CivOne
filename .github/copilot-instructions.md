@@ -1,8 +1,15 @@
 # CoPilot Instructions
 
+## Chat Answers
+
+* Use [Caveman Compression](./instructions/cavemen.instructions.md) to compress your answers when possible.
+* Do not comment on current progress or if necessary only use short phrases in Caveman style.
+
 ## Documentation
 
 All documentation should be written in English (even if the prompt is in another language). Use clear and concise language to explain concepts, code, and processes. Avoid jargon and technical terms unless necessary, and provide definitions when they are used.
+
+
 
 ## C# Coding Guidelines
 
@@ -12,8 +19,31 @@ All documentation should be written in English (even if the prompt is in another
 - Follow SOLID principles
 - Prefer interfaces and services
 - Prefer Factory pattern instead of new for services.
+  - Prefer one factory for multiple services instead of one factory per service (e.g. MyServiceFooFactory for MyCommandFooService, MyQueryFooService)
 - Keep methods small and focused
-- Prefer 'new()' expression instead of fully qualified new syntax 
+- Prefer 'new()' expression instead of fully qualified new syntax
+
+## Building
+
+Use build command with quiet verbosity and only show the last lines of output to confirm successful build without overwhelming with details.
+
+Example with PowerShell and with the last 15 lines of output:
+
+```powershell
+dotnet build CivOne.csproj -v q 2>&1 | Select-Object -Last 15
+```
+
+Example with bash and with the last 15 lines of output:
+```sh
+dotnet build CivOne.csproj -v q 2>&1 | tail -n 15
+```
+
+## Documentation
+
+- Use XML documentation comments for all public members and classes.
+- Provide clear summaries, parameter descriptions, and return value explanations.
+- Use examples in documentation where helpful.
+- After each sentence add a line break to improve readability.
 
 ## Tests
 
@@ -23,68 +53,30 @@ All documentation should be written in English (even if the prompt is in another
 
 ## Existing useful code
 
-* Debounce Service with DebounceServiceFactory and IDebounceService
-* Random Number Generator with IRandomNumberGenerator and RandomNumberGeneratorFactory
+- Debounce Service with DebounceServiceFactory and IDebounceService
+- Random Number Generator with IRandomNumberGenerator and RandomNumberGeneratorFactory
 
 
+## Delegate Pattern
 
+Use the Delegate Pattern when the user requests refactoring logic into delegates, callbacks, handlers, or interchangeable behaviors.
 
+The Delegate Pattern should be applied when:
 
-## Cavemen
+* behavior needs to be passed dynamically to another class or method
+* responsibilities should be separated to reduce coupling
+* different implementations of the same behavior may exist
+* event handling, callbacks, command execution, or strategy-like behavior is needed
+* the user explicitly mentions “delegate”, “delegation”, “refactor into delegates”
 
-You are a caveman compression expert. Aggressively remove all stop words and grammatical scaffolding while preserving meaning.
+The implementation should:
 
-CORE STRATEGY:
-1. Remove articles, auxiliary verbs, and redundant words. Keep only content words that carry semantic meaning.
-2. Use simple, common words. If there's a simpler word, use it. Think like a caveman.
+* keep the calling class focused on orchestration
+* move executable behavior into dedicated delegate functions/classes
+* make behaviors replaceable and testable
+* use language-native delegate/function types where appropriate
 
-ALWAYS REMOVE:
-- Articles: a, an, the
-- Auxiliary verbs: is, are, was, were, am, be, been, being, have, has, had, do, does, did
-- Common prepositions when meaning stays clear: of, for, to, in, on, at
-- Pronouns when context is clear: it, this, that, these, those
-- Pure intensifiers: very, quite, rather, somewhat, really, extremely
+Implementation:
 
-ALWAYS KEEP:
-- All nouns (people, places, things, concepts)
-- All main verbs (actions, not auxiliaries)
-- All adjectives that add meaning
-- All numbers and quantifiers (at least, approximately, more than, 15, many)
-- Uncertainty qualifiers (what sounded like, appears to be, seems, might)
-- Critical prepositions that change meaning (from, with, without, stuck to)
-- Time/frequency words (every Tuesday, weekly, daily, always, never)
-- Names, titles (Dr., Mr., Senator)
-- Technical terms and domain-specific language
-
-BE SMART ABOUT:
-- Keep prepositions when they define relationships: "made from wood" (keep from), "system for processing" (remove for)
-- Keep "in/on/at" when they specify location/position, remove when just grammatical
-- Remove "is/are/was/were" unless part of passive voice that matters
-- Keep negations (not, no, never, without)
-
-EXAMPLES:
-
-"Caveman Compression is a semantic compression method for LLM contexts"
-→ "Caveman Compression semantic compression method LLM contexts."
-(Remove: is, a, for)
-
-"It removes predictable grammar while preserving the unpredictable content"
-→ "Removes predictable grammar preserving unpredictable content."
-(Remove: It, the, while → keep main meaning)
-
-"The system was designed to process data efficiently"
-→ "System designed process data efficiently."
-(Remove: The, was, to)
-
-"There were at least 20 people"
-→ "At least 20 people."
-(Keep: at least - quantifier matters)
-
-"Made from wood and metal"
-→ "Made from wood and metal."
-(Keep: from - shows material relationship)
-
-Output ONLY the caveman compressed text, nothing else.
-
-TEXT TO COMPRESS:
-{text}
+* Create a class ending with "Delegate" that contains the delegate function(s).
+* Instantiate the delegate class within the calling class using new() and call the delegate function(s) where the behavior is needed.

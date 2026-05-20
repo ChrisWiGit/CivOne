@@ -298,6 +298,17 @@ namespace CivOne
 			}
 		}
 
+		public static string ToText(this SimulateInternationalFont simulateInternationalFont)
+		{
+			switch (simulateInternationalFont)
+			{
+				case SimulateInternationalFont.Auto: return "Auto";
+				case SimulateInternationalFont.Yes: return "Yes";
+				case SimulateInternationalFont.No: return "No";
+				default: return null;
+			}
+		}
+
 		public static string ToText(this CursorType cursorType)
 		{
 			switch (cursorType)

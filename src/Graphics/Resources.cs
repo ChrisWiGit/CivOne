@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Text;
 using CivOne.Enums;
 using CivOne.Graphics.ImageFormats;
 using CivOne.IO;
@@ -27,10 +28,21 @@ namespace CivOne.Graphics
 		private readonly Dictionary<string, Picture> _cache = new Dictionary<string, Picture>();
 		private readonly Dictionary<string, Bytemap> _textCache = new Dictionary<string, Bytemap>();
 		private readonly IFont _defaultFont = new DefaultFont();
-		private readonly List<Fontset> _fonts = new List<Fontset>();
+		private readonly List<IFont> _fonts = [];
 		private readonly Dictionary<Direction, IBitmap> _fog = new Dictionary<Direction, IBitmap>();
 		private readonly PalaceResourcesDelegate _palaceResources;
 		internal void ClearTextCache() => _textCache.Clear();
+		
+		/// <summary>
+		/// Reloads all fonts and clears associated caches.
+		/// Call this when font settings have changed in the game.
+		/// </summary>
+		public void ReloadFonts()
+		{
+			_fonts.Clear();
+			_textCache.Clear();
+			LoadFonts();
+		}
 		
 		private void LoadFonts()
 		{
@@ -59,9 +71,21 @@ namespace CivOne.Graphics
 				index += 2;
 			}
 			
-			foreach (ushort offset in fontOffsets)
+			bool isInternationalFontSet = false;
+			ClearTextCache();
+			for (int fontId = 0; fontId < fontOffsets.Count; fontId++)
 			{
-				_fonts.Add(new Fontset(file, offset));
+				ushort offset = fontOffsets[fontId];
+				IFont font = FontSetFactory.Create(file, offset);
+				_fonts.Add(font);
+				isInternationalFontSet = isInternationalFontSet || FontSetFactory.IsInternationalFontSet(font);
+			}
+
+			if (!isInternationalFontSet)
+			{
+				Log("The file FONTS.CV does not contain an international font set, " +
+				"which means that the game will not be able to display Unicode characters." +
+				" Instead these characters will be simulated as fallback to ensure that text is still visible, albeit not in the correct way. ");
 			}
 		}
 		
@@ -91,6 +115,7 @@ namespace CivOne.Graphics
 		public Picture GetText(string text, int font, byte colourFirstLetter, byte colour)
 		{
 			if (text == null) text = "[MISSING STRING]";
+			text = text.Normalize(NormalizationForm.FormC);
 
 			List<Bytemap> letters = new List<Bytemap>();
 			bool isFirstLetter = true;

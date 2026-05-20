@@ -13,6 +13,7 @@ using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Screens.Debug;
 using CivOne.Screens.Reports;
+using CivOne.Services.EndGame;
 using CivOne.Graphics.Sprites;
 using CivOne.Tasks;
 using CivOne.Units;
@@ -21,6 +22,12 @@ using System.Collections.Generic;
 
 namespace CivOne.Screens
 {
+	/// <summary>
+	/// Developer debug options screen exposing various test and cheat utilities.
+	/// </summary>
+	/// <remarks>
+	/// Used during development to quickly access debug screens and end-game flows.
+	/// </remarks>
 	[ScreenResizeable]
 	internal class DebugOptions : BaseScreen
 	{
@@ -152,6 +159,18 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		private void MenuShowTopLeaderScreen(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen(TopLeaderScreenFactory.CreateDebug()));
+			Destroy();
+		}
+
+		private void MenuShowHallOfFameScreen(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen(HallOfFameScreenFactory.ViewScore()));
+			Destroy();
+		}
+
 		private void ShowSettings(object sender, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screens(typeof(Setup)));
@@ -186,6 +205,24 @@ namespace CivOne.Screens
 			}
 
 			GameTask.Enqueue(Show.DiplomatIncite(cityToIncite, diplomat));
+			Destroy();
+		}
+
+		private void EndGameConquest(object sender, EventArgs args)
+		{
+			_ = EndGameServiceFactory.CreateDefault().HandleConquestAsync();
+			Destroy();
+		}
+
+		private void EndGameDefeat(object sender, EventArgs args)
+		{
+			_ = EndGameServiceFactory.CreateDefault().HandleDefeatAsync();
+			Destroy();
+		}
+
+		private void EndGameAlphaCentauri(object sender, EventArgs args)
+		{
+			_ = EndGameServiceFactory.CreateDefault().HandleAlphaCentauriAsync();
 			Destroy();
 		}
 
@@ -282,9 +319,14 @@ namespace CivOne.Screens
 				new("Toggle Reveal World", MenuRevealWorld),
 				new("Build Palace", MenuBuildPalace),
 				new("Ranking (Random)", MenuShowCivilizationRanking),
+				new("Top Leader Screen", MenuShowTopLeaderScreen),
+				new("Hall Of Fame Screen", MenuShowHallOfFameScreen),
 				new("Show Power Graph", MenuShowPowerGraph),
 				new("Instant Conquest", InstantConquest),
 				new("Instant Global Warming", InstantGlobalWarming),
+				new("End Game: Conquest", EndGameConquest),
+				new("End Game: Defeat", EndGameDefeat),
+				new("End Game: Alpha Centauri", EndGameAlphaCentauri),
 				new("Settings", ShowSettings)
 			];
 
