@@ -10,6 +10,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using CivOne.Persistence.Game;
 using CivOne.Screens;
 using CivOne.Screens.Reports;
 using CivOne.Services.Screen;
@@ -30,11 +31,13 @@ namespace CivOne.Services.EndGame
 	/// <param name="screenCommand">Provides screen management commands (AddScreen, DestroyScreen).</param>
 	/// <param name="screenQuery">Provides screen stack queries (Screens, TopScreen).</param>
 	/// <param name="gameService">Provides game state management (End).</param>
-	internal class EndGameService(IScreenCommandService screenCommand, IScreenQueryService screenQuery, IGameService gameService) : IEndGameService
+	/// <param name="winner">The player who won the game.</param>
+	internal class EndGameService(IScreenCommandService screenCommand, IScreenQueryService screenQuery, IGameService gameService, IPlayer winner) : IEndGameService
 	{
 		private readonly IScreenCommandService _screenCommand = screenCommand;
 		private readonly IScreenQueryService _screenQuery = screenQuery;
 		private readonly IGameService _gameService = gameService;
+		private readonly IPlayer _winner = winner;
 
 		/// <inheritdoc/>
 		public async Task HandleConquestAsync()
@@ -64,6 +67,7 @@ namespace CivOne.Services.EndGame
 		public async Task HandleAlphaCentauriAsync()
 		{
 			ClearScreensAndTasks();
+			await ShowScreenAsync(new SpaceVictory(_winner));
 			await ShowScreenAsync(new CivilizationScore());
 			await ShowScreenAsync(TopLeaderScreenFactory.Create());
 			await ShowScreenAsync(HallOfFameScreenFactory.AddScore());

@@ -6,6 +6,10 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Implementation of spaceship construction and victory condition
+  * Added spaceship construction mechanics that let cities produce ship parts and assemble them through the spaceship screen.
+  * Added end-game handling for a completed spaceship so it can participate in victory processing as a distinct late-game win path.
+  * Debug: added spaceship construction menu with part placement and launch action to the debug options for testing purposes.
 * Debug Option:
   * Introduce large 2d menu for large lists of items (e.g. cities, units, etc.) with keyboard navigation and selection.
   * Refactored existing civilization and city selection menus to use the new grid menu, allowing for more items and better navigation.
@@ -214,7 +218,6 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Current scope focuses on CivOne YAML save files and does not target binary CIV save compatibility.
   * Prepared for future changes to how data is handled in memory for more flexibility and maintainability.
   * TestBase and TestBase2 now load the Earth map from bundled `earth.yml` instead of relying on `MAP.PIC`, ensuring consistent test environments without external dependencies.
-  * Added space ship grid mapping support in YAML **Not yet active in gameplay** (see [docs/SPACESHIP_FULL_IMPLEMENTATION_PLAN.md](docs/SPACESHIP_FULL_IMPLEMENTATION_PLAN.md)).
   * See [YAML Save Format](YAML.md) for more details.
 * Fix: Corrected city economy calculation after refactoring the city economy breakdown logic.
   * Refactoring: Extracted the city economy breakdown calculation into a separate service (CityEconomyServiceImpl) to improve separation of concerns and testability.

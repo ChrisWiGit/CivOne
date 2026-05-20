@@ -28,8 +28,8 @@ using Gov = CivOne.Governments;
 
 namespace CivOne
 {
-	public partial class Player : BaseInstance, ITurn, IPlayer, IPlayerEffects, IPlayerSpaceRace
-	{
+	public partial class Player : BaseInstance, ITurn, IPlayer, IPlayerSpaceRace
+    {
 		// Dependency injection via IPlayerGame; set by Game on load/new game.
 		internal static new IPlayerGame Game = null;
 		private readonly ICivilization _civilization;

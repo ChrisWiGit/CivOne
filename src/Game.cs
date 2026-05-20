@@ -374,7 +374,7 @@ namespace CivOne
 				GameTask conquest;
 				GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has conquered", "the entire planet!"));
 				GameTask.Enqueue(conquest = Show.Screen<Conquest>());
-				conquest.Done += (s, a) => _ = EndGameServiceFactory.CreateDefault().HandleConquestAsync();
+				conquest.Done += (s, a) => _ = EndGameServiceFactory.CreateForHuman().HandleConquestAsync();
 			}
 
 			bool gameEnds = !CheckSpaceVitory();
@@ -441,19 +441,14 @@ namespace CivOne
 				if (player == HumanPlayer)
 				{
 					PlaySound("wintune");
-					GameTask victory;
+
 					GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has reached", "Alpha Centauri!"));
-					victory = Show.Screen(new SpaceVictory(player));
-					GameTask.Enqueue(victory);
-					victory.Done += (s, a) => RuntimeHandler.EndGame();
+					EndGameServiceFactory.CreateForHuman().HandleAlphaCentauriAsync();
 				}
 				else
 				{
-					GameTask endGame;
 					GameTask.Enqueue(Message.Newspaper(null, $"{player.TribeName} space ship", "has reached", "Alpha Centauri!"));
-					endGame = Show.Screen(new SpaceVictory(player));
-					GameTask.Enqueue(endGame);
-					endGame.Done += (s, a) => RuntimeHandler.EndGame();
+					EndGameServiceFactory.CreateForHuman().HandleDefeatAsync();
 				}
 
 				return false;

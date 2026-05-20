@@ -11,6 +11,7 @@ using System;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
+using CivOne.Persistence.Game;
 
 namespace CivOne.Screens
 {
@@ -18,7 +19,7 @@ namespace CivOne.Screens
 	internal sealed class SpaceVictory : BaseScreen
 	{
 		private readonly Picture _background;
-		private readonly Player _winner;
+		private readonly string _tribeName;
 		private bool _update = true;
 
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
@@ -51,7 +52,7 @@ namespace CivOne.Screens
 			_update = false;
 			this.Clear(OpaqueBlackColour)
 				.AddLayer(_background, OffsetX, OffsetY)
-				.DrawText($"{_winner.TribeName} reaches Alpha Centauri!", 5, 22, 160 + OffsetX, 174 + OffsetY, TextAlign.Center)
+				.DrawText($"{_tribeName} reaches Alpha Centauri!", 5, 22, 160 + OffsetX, 174 + OffsetY, TextAlign.Center)
 				.DrawText("Press any key to continue", 5, 15, 160 + OffsetX, 188 + OffsetY, TextAlign.Center);
 			return true;
 		}
@@ -74,9 +75,9 @@ namespace CivOne.Screens
 			return true;
 		}
 
-		public SpaceVictory(Player winner)
+		public SpaceVictory(IPlayer winner)
 		{
-			_winner = winner ?? Human;
+			_tribeName = winner?.TribeName ?? throw new ArgumentNullException(nameof(winner));
 			_background = Resources["SPACEST"];
 			Palette = _background.Palette;
 		}

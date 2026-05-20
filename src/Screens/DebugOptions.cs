@@ -224,19 +224,19 @@ namespace CivOne.Screens
 
 		private void EndGameConquest(object sender, EventArgs args)
 		{
-			_ = EndGameServiceFactory.CreateDefault().HandleConquestAsync();
+			_ = EndGameServiceFactory.CreateForHuman().HandleConquestAsync();
 			Destroy();
 		}
 
 		private void EndGameDefeat(object sender, EventArgs args)
 		{
-			_ = EndGameServiceFactory.CreateDefault().HandleDefeatAsync();
+			_ = EndGameServiceFactory.CreateForHuman().HandleDefeatAsync();
 			Destroy();
 		}
 
 		private void EndGameAlphaCentauri(object sender, EventArgs args)
 		{
-			_ = EndGameServiceFactory.CreateDefault().HandleAlphaCentauriAsync();
+			_ = EndGameServiceFactory.CreateForHuman().HandleAlphaCentauriAsync();
 			Destroy();
 		}
 
