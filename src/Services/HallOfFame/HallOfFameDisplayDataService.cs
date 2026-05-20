@@ -2,9 +2,19 @@ using System.Collections.Generic;
 
 namespace CivOne.Services.HallOfFame
 {
-	internal sealed record HallOfFameDisplayRow(string Headline, string Details, string Rating, bool IsPlaceholder);
+		/// <summary>
+		/// Represents a single display row for the Hall of Fame UI.
+		/// </summary>
+		/// <param name="Headline">Primary headline text for the row.</param>
+		/// <param name="Details">Secondary details text.</param>
+		/// <param name="Rating">Rating text displayed on the right side.</param>
+		/// <param name="IsPlaceholder">Indicates whether the row is a placeholder.</param>
+		internal sealed record HallOfFameDisplayRow(string Headline, string Details, string Rating, bool IsPlaceholder);
 
-	internal sealed class HallOfFameDisplayDataService : IHallOfFameDisplayDataService
+		/// <summary>
+		/// Builds presentation rows for the Hall of Fame screen from persisted entries.
+		/// </summary>
+		internal sealed class HallOfFameDisplayDataService : IHallOfFameDisplayDataService
 	{
 		public IReadOnlyList<HallOfFameDisplayRow> BuildRows(IReadOnlyList<HallOfFameEntry> entries, int maxRows)
 		{

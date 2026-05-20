@@ -2,8 +2,11 @@ using System;
 
 namespace CivOne.Services.HallOfFame
 {
-	internal static class HallOfFameServiceFactory
-	{
+		/// <summary>
+		/// Factory for creating Hall of Fame related services and providing a configurable repository.
+		/// </summary>
+		internal static class HallOfFameServiceFactory
+		{
 		private static readonly object _sync = new();
 		private static IHallOfFameFileRepository _repository = new HallOfFameFileRepositoryImpl(new AtomicFileReplacementService());
 

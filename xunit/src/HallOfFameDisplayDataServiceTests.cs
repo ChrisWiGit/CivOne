@@ -5,6 +5,9 @@ using Xunit;
 
 namespace CivOne.UnitTests
 {
+	/// <summary>
+	/// Unit tests for <see cref="HallOfFameDisplayDataService"/> presentation logic.
+	/// </summary>
 	public sealed class HallOfFameDisplayDataServiceTests
 	{
 		private readonly IHallOfFameDisplayDataService _testee;

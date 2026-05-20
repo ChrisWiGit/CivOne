@@ -3,6 +3,12 @@ using System.Collections.Generic;
 
 namespace CivOne.Services.HallOfFame
 {
+	/// <summary>
+	/// Provides commands for mutating Hall of Fame storage, e.g. clearing entries.
+	/// </summary>
+	/// <remarks>
+	/// Persists changes via <see cref="IHallOfFameFileRepository"/> and composes entries with the provided composer.
+	/// </remarks>
 	internal sealed class HallOfFameCommandService(
 		string storageDirectory,
 		IHallOfFamePersistService persistService,

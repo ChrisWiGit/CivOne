@@ -18,6 +18,10 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens
 {
+	/// <summary>
+	/// Generic menu UI component used throughout the UI to display selectable items.
+	/// </summary>
+	/// <typeparam name="T">Menu item payload type (commonly an enum or integer).</typeparam>
 	[ScreenResizeable]
 	public class Menu<T> : BaseScreen, IMenu
 	{
@@ -344,6 +348,9 @@ namespace CivOne.Screens
 		}
 	}
 
+	/// <summary>
+	/// Non-generic convenience `Menu` specialized for `int` menu identifiers.
+	/// </summary>
 	public class Menu : Menu<int>
 	{
 		public Menu(Palette palette, IBitmap background = null) : base(null, palette, background)

@@ -17,6 +17,12 @@ using CivOne.Services;
 
 namespace CivOne.Screens.Reports
 {
+	/// <summary>
+	/// Report screen that shows a detailed breakdown of a civilization's score.
+	/// </summary>
+	/// <remarks>
+	/// Uses the `ICivilizationScoreService` to compute totals and individual components.
+	/// </remarks>
 	[ScreenResizeable]
 	internal class CivilizationScore : BaseReport
 	{
@@ -27,6 +33,8 @@ namespace CivOne.Screens.Reports
 		private const int AdvanceScoreWeight = 10;
 		private const int WonderScoreWeight = 50;
 		private const int GoldPerScorePoint = 25;
+		
+		// prevents accidental immediate closure of the report when opened via a key press
 		private const int InitialInputDelayMs = 500;
 
 		private bool _update = true;

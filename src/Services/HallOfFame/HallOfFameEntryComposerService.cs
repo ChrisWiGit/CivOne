@@ -3,6 +3,12 @@ using CivOne.Screens.Reports;
 
 namespace CivOne.Services.HallOfFame
 {
+	/// <summary>
+	/// Composes a <see cref="HallOfFameEntry"/> from the current game state for persistence.
+	/// </summary>
+	/// <remarks>
+	/// Uses score, calendar and leader ordering to create a displayable/persistable entry.
+	/// </remarks>
 	internal sealed class HallOfFameEntryComposerService(
 		ICivilizationScoreService civilizationScoreService,
 		GameCalendarService gameCalendarService,

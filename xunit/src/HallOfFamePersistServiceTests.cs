@@ -8,6 +8,9 @@ using Xunit;
 
 namespace CivOne.UnitTests
 {
+	/// <summary>
+	/// Unit tests for <see cref="HallOfFamePersistService"/> persistence behaviour.
+	/// </summary>
 	public sealed class HallOfFamePersistServiceTests : IDisposable
 	{
 		private readonly string _storageDirectory;

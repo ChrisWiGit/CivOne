@@ -21,6 +21,12 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens
 {
+	/// <summary>
+	/// Displays the animated credits sequence and provides the main menu entry point.
+	/// </summary>
+	/// <remarks>
+	/// Shows the intro animation, handles skipping, and exposes the main menu.
+	/// </remarks>
 	[ScreenResizeable]
 	internal class Credits : BaseScreen
 	{

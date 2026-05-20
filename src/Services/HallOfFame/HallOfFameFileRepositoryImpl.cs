@@ -9,6 +9,9 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace CivOne.Services.HallOfFame
 {
+	/// <summary>
+	/// File-based implementation for reading and writing Hall of Fame entries as YAML.
+	/// </summary>
 	internal sealed class HallOfFameFileRepositoryImpl(IAtomicFileReplacementService atomicFileReplacementService) : IHallOfFameFileRepository
 	{
 		private const string FileName = "HallOfFame.yaml";
@@ -141,12 +144,18 @@ namespace CivOne.Services.HallOfFame
 
 	}
 
+	/// <summary>
+	/// Serialized file model for the Hall of Fame YAML storage.
+	/// </summary>
 	public sealed class HallOfFameFileModel
 	{
 		public int Version { get; set; } = 1;
 		public List<HallOfFameEntryModel> Entries { get; set; } = [];
 	}
 
+	/// <summary>
+	/// Individual entry model used for YAML serialization/deserialization.
+	/// </summary>
 	public sealed class HallOfFameEntryModel
 	{
 		public string LeaderName { get; set; }

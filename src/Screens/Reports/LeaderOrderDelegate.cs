@@ -13,11 +13,30 @@ using CivOne.Services;
 
 namespace CivOne.Screens.Reports
 {
-	internal readonly record struct LeaderOrderEntry(string Name, int RatingThreshold);
+		/// <summary>
+		/// Represents a single leader and the rating threshold required to select them.
+		/// </summary>
+		/// <param name="Name">Localized leader display name.</param>
+		/// <param name="RatingThreshold">Minimum civilization rating required for selection.</param>
+		internal readonly record struct LeaderOrderEntry(string Name, int RatingThreshold);
 
-	internal readonly record struct LeaderOrderResult(int RatingPercent, int SelectedLeaderIndex, string SelectedLeaderName, IReadOnlyList<string> OrderedLeaderNames);
+		/// <summary>
+		/// Result object returned by <see cref="LeaderOrderDelegate"/> calculations.
+		/// </summary>
+		/// <param name="RatingPercent">Computed rating percent for the civilization.</param>
+		/// <param name="SelectedLeaderIndex">Index of the selected leader in the ordered list.</param>
+		/// <param name="SelectedLeaderName">Name of the selected leader.</param>
+		/// <param name="OrderedLeaderNames">Ordered list of leader names used for selection.</param>
+		internal readonly record struct LeaderOrderResult(int RatingPercent, int SelectedLeaderIndex, string SelectedLeaderName, IReadOnlyList<string> OrderedLeaderNames);
 
-	internal sealed class LeaderOrderDelegate(ITranslationService translationService = null)
+		/// <summary>
+		/// Determines the ordered list of historical leaders and maps a civilization rating
+		/// percentage to the corresponding leader.
+		/// </summary>
+		/// <remarks>
+		/// Use <see cref="Calculate(int)"/> to obtain a <see cref="LeaderOrderResult"/> for a rating percent.
+		/// </remarks>
+		internal sealed class LeaderOrderDelegate(ITranslationService translationService = null)
 	{
 		private readonly ITranslationService _translationService = translationService ?? TranslationServiceFactory.CreateDefault();
 

@@ -4,6 +4,9 @@ using System.Linq;
 
 namespace CivOne.Services.HallOfFame
 {
+	/// <summary>
+	/// Provides persistence-level operations for Hall of Fame entries (load, add, normalize).
+	/// </summary>
 	internal sealed class HallOfFamePersistService(IHallOfFameFileRepository repository) : IHallOfFamePersistService
 	{
 		private const int MaxEntries = 5;

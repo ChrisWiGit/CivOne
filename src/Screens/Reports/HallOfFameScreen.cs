@@ -17,6 +17,9 @@ using CivOne.Services.HallOfFame;
 
 namespace CivOne.Screens.Reports
 {
+	/// <summary>
+	/// Factory methods to create and configure <see cref="HallOfFameScreen"/> instances.
+	/// </summary>
 	internal static class HallOfFameScreenFactory
 	{
 		public static HallOfFameScreen ViewScore()
@@ -77,6 +80,12 @@ namespace CivOne.Screens.Reports
 		}
 	}
 
+	/// <summary>
+	/// Screen that displays the Hall of Fame entries and optionally allows clearing them.
+	/// </summary>
+	/// <remarks>
+	/// Constructed with display and command services supplied by the factory methods.
+	/// </remarks>
 	[Modal, ScreenResizeable]
 	internal class HallOfFameScreen : BaseScreen
 	{

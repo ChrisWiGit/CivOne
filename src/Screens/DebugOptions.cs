@@ -22,6 +22,12 @@ using System.Collections.Generic;
 
 namespace CivOne.Screens
 {
+	/// <summary>
+	/// Developer debug options screen exposing various test and cheat utilities.
+	/// </summary>
+	/// <remarks>
+	/// Used during development to quickly access debug screens and end-game flows.
+	/// </remarks>
 	[ScreenResizeable]
 	internal class DebugOptions : BaseScreen
 	{

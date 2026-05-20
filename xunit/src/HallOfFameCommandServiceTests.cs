@@ -6,6 +6,9 @@ using Xunit;
 
 namespace CivOne.UnitTests
 {
+	/// <summary>
+	/// Unit tests for <see cref="HallOfFameCommandService"/> behaviour.
+	/// </summary>
 	public sealed class HallOfFameCommandServiceTests : IDisposable
 	{
 		private readonly string _storageDirectory;
