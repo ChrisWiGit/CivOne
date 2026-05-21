@@ -6,6 +6,10 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Fix and Migration of [mwerneburg](https://github.com/ChrisWiGit/CivOne/pull/33)
+  * Keep city home-unit cache and unit home reference consistent during removal.
+  * `DestroyCity(...)` and `DisbandUnit(...)` now clear a unit's home via `SetHome(null)` before removing it from game unit lists.
+  * Prevents stale `city.Units` cache entries and avoids mismatches where `unit.Home` still points to an old city after disband/removal.
 * Refactoring: Added translation support for texts in dialogs and reports.
 * Fix: Dialogs now render correctly when using "Expand Size" in the setup menu, instead of being stretched across the expanded canvas.
 * Feature: Implementation of spaceship construction and victory condition

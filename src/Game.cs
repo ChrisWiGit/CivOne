@@ -662,7 +662,10 @@ namespace CivOne
 		public void DestroyCity(City city)
 		{
 			foreach (IUnit unit in _units.Where(u => u.Home == city).ToArray())
+			{
+				unit.SetHome(null);
 				_units.Remove(unit);
+			}
 			city.X = 255;
 			city.Y = 255;
 			city.Owner = 0;
@@ -807,11 +810,13 @@ namespace CivOne
 				while (unit.Tile.Units.Count(u => u.Class != UnitClass.Water) > totalCargo)
 				{
 					IUnit subUnit = unit.Tile.Units.First(u => u.Class != UnitClass.Water);
+					subUnit.SetHome(null);
 					subUnit.X = 255;
 					subUnit.Y = 255;
 					_units.Remove(subUnit);
 				}
 			}
+			unit.SetHome(null);
 			unit.X = 255;
 			unit.Y = 255;
 			_units.Remove(unit);
