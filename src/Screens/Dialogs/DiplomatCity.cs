@@ -26,6 +26,7 @@ namespace CivOne.Screens.Dialogs
 
 		private readonly City _enemyCity;
 		private readonly Diplomat _diplomat;
+		private Menu _menu;
 
 		private void EstablishEmbassy(object sender, EventArgs args)
 		{
@@ -94,13 +95,24 @@ namespace CivOne.Screens.Dialogs
 
 		protected override void FirstUpdate()
 		{
-			int choices = 6;
+			CreateMenu();
+			base.FirstUpdate();
+        }
 
-            int high = (2 * Resources.GetFontHeight(FONT_ID)) + (choices * Resources.GetFontHeight(FONT_ID)) + 8;
-			Menu menu = new Menu(Palette, Selection(3, 5 + (2 * Resources.GetFontHeight(FONT_ID)), 125, high ))
+		private void CreateMenu()
+		{
+			if (_menu is not null)
+			{
+				return;
+			}
+
+			int choices = 6;
+			int high = (2 * Resources.GetFontHeight(FONT_ID)) + (choices * Resources.GetFontHeight(FONT_ID)) + 8;
+			_menu = new Menu(Palette, Selection(3, 5 + (2 * Resources.GetFontHeight(FONT_ID)), 125, high))
 			{
 				X = 103,
 				Y = 100,
+				CenterTo320Coordinates = true,
 				MenuWidth = 130,
 				ActiveColour = 11,
 				TextColour = 5,
@@ -108,19 +120,18 @@ namespace CivOne.Screens.Dialogs
 				FontId = FONT_ID
 			};
 
-			menu.Items.Add("Establish Embassy").OnSelect(EstablishEmbassy).SetEnabled(!Human.HasEmbassy(_enemyCity.Player));
-			menu.Items.Add("Investigate City").OnSelect(InvestigateCity);
-			menu.Items.Add("Steal Technology").OnSelect(StealTechnology).SetEnabled(!_enemyCity.TechStolen);
-			menu.Items.Add("Industrial Sabotage").OnSelect(IndustrialSabotage);
-			menu.Items.Add("Incite a Revolt").OnSelect(InciteRevolt).SetEnabled(!_enemyCity.HasBuilding<Palace>());
-			menu.Items.Add("Meet with King").OnSelect(MeetWithKing).SetEnabled(!(_enemyCity.Player.Civilization is Barbarian));
-			
-			AddMenu(menu);
+			_menu.Items.Add("Establish Embassy").OnSelect(EstablishEmbassy).SetEnabled(!Human.HasEmbassy(_enemyCity.Player));
+			_menu.Items.Add("Investigate City").OnSelect(InvestigateCity);
+			_menu.Items.Add("Steal Technology").OnSelect(StealTechnology).SetEnabled(!_enemyCity.TechStolen);
+			_menu.Items.Add("Industrial Sabotage").OnSelect(IndustrialSabotage);
+			_menu.Items.Add("Incite a Revolt").OnSelect(InciteRevolt).SetEnabled(!_enemyCity.HasBuilding<Palace>());
+			_menu.Items.Add("Meet with King").OnSelect(MeetWithKing).SetEnabled(!(_enemyCity.Player.Civilization is Barbarian));
 
-            // TODO fire-eggs is there any dialog-based menu which DOESN'T want these established?
-            menu.Cancel += Cancel;
-            menu.MissClick += Cancel;
-        }
+			_menu.Cancel += Cancel;
+			_menu.MissClick += Cancel;
+
+			AddMenu(_menu);
+		}
 
 		private static int DialogHeight()
 		{

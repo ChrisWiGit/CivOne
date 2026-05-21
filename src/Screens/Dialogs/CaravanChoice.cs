@@ -22,6 +22,7 @@ namespace CivOne.Screens.Dialogs
 
 		private readonly Caravan _unit;
 		private readonly City _city;
+		private Menu _menu;
 
 		private void KeepMoving(object sender, EventArgs args)
 		{
@@ -48,32 +49,44 @@ namespace CivOne.Screens.Dialogs
 
         protected override void FirstUpdate()
 		{
+			CreateMenu();
+			base.FirstUpdate();
+		}
+
+		private void CreateMenu()
+		{
+			if (_menu is not null)
+			{
+				return;
+			}
+
 			int choices = _city.IsBuildingWonder ? 3 : 2;
 
-			Menu menu = new Menu(Palette, Selection(3, 12, 130, (choices * Resources.GetFontHeight(FONT_ID)) + 4))
+			_menu = new Menu(Palette, Selection(3, 12, 130, (choices * Resources.GetFontHeight(FONT_ID)) + 4))
 			{
 				X = 103,
 				Y = 92,
+				CenterTo320Coordinates = true,
 				MenuWidth = 130,
 				ActiveColour = 11,
 				TextColour = 5,
 				FontId = FONT_ID
 			};
 
-			menu.Items.Add("Keep moving").OnSelect(KeepMoving);
-			menu.Items.Add("Establish trade route")
-				.SetEnabled(AllowEstablishTradeRoute(_unit,_city))
+			_menu.Items.Add("Keep moving").OnSelect(KeepMoving);
+			_menu.Items.Add("Establish trade route")
+				.SetEnabled(AllowEstablishTradeRoute(_unit, _city))
 				.OnSelect(EstablishTradeRoute);
 
 			if (_city.IsBuildingWonder)
 			{
-				menu.Items.Add("Help build WONDER.").OnSelect(HelpBuildWonder);
+				_menu.Items.Add("Help build WONDER.").OnSelect(HelpBuildWonder);
 			}
-			
-			AddMenu(menu);
+
+			AddMenu(_menu);
 		}
 
-		private static int DialogHeight(Caravan unit, City city)
+		private static int DialogHeight(City city)
 		{
 			int choices = 2;
 			if (city.CurrentProduction is IWonder) choices++;

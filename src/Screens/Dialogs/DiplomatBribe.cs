@@ -27,6 +27,7 @@ namespace CivOne.Screens.Dialogs
 		private readonly int _bribeCost;
 
 		private readonly bool _canBribe;
+		private Menu _menu;
 
 		private void DontBrbe(object sender, EventArgs args)
 		{
@@ -65,25 +66,32 @@ namespace CivOne.Screens.Dialogs
 
 		protected override void FirstUpdate()
 		{
-			int choices = _canBribe ? 2 : 0;
+			CreateMenu();
+			base.FirstUpdate();
+		}
 
-			if (_canBribe)
+		private void CreateMenu()
+		{
+			if (_menu is not null || !_canBribe)
 			{
-				Menu menu = new Menu(Palette, Selection(3, 5 + (3 * Resources.GetFontHeight(FONT_ID)), 130, ((2 * Resources.GetFontHeight(FONT_ID)) + (choices * Resources.GetFontHeight(FONT_ID)) + 9)))
-				{
-					X = 103,
-					Y = 110,
-					MenuWidth = 130,
-					ActiveColour = 11,
-					TextColour = 5,
-					FontId = FONT_ID
-				};
-
-				menu.Items.Add("Forget It.").OnSelect(DontBrbe);
-				menu.Items.Add("Pay").OnSelect(Bribe);
-				
-				AddMenu(menu);
+				return;
 			}
+
+			int choices = 2;
+			_menu = new Menu(Palette, Selection(3, 5 + (3 * Resources.GetFontHeight(FONT_ID)), 130, ((2 * Resources.GetFontHeight(FONT_ID)) + (choices * Resources.GetFontHeight(FONT_ID)) + 9)))
+			{
+				X = 103,
+				Y = 110,
+				CenterTo320Coordinates = true,
+				MenuWidth = 130,
+				ActiveColour = 11,
+				TextColour = 5,
+				FontId = FONT_ID
+			};
+
+			_menu.Items.Add("Forget It.").OnSelect(DontBrbe);
+			_menu.Items.Add("Pay").OnSelect(Bribe);
+			AddMenu(_menu);
 		}
 
 		private static int DialogHeight(BaseUnitLand unitToBribe, short gold)

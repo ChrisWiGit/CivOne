@@ -22,6 +22,7 @@ namespace CivOne.Screens.Dialogs
 
 		private readonly bool _luxuries;
 		private readonly string[] _menuItems;
+		private Menu _menu;
 
 		private void TaxesChoice(object sender, MenuItemEventArgs<int> args)
 		{
@@ -65,10 +66,22 @@ namespace CivOne.Screens.Dialogs
 
 		protected override void FirstUpdate()
 		{
-			Menu menu = new Menu(Palette, Selection(3, 12, ItemWidth, (_menuItems.Length * Resources.GetFontHeight(FONT_ID)) + 4))
+			CreateMenu();
+			base.FirstUpdate();
+		}
+
+		private void CreateMenu()
+		{
+			if (_menu is not null)
+			{
+				return;
+			}
+
+			_menu = new Menu(Palette, Selection(3, 12, ItemWidth, (_menuItems.Length * Resources.GetFontHeight(FONT_ID)) + 4))
 			{
 				X = 103,
 				Y = 92,
+				CenterTo320Coordinates = true,
 				MenuWidth = ItemWidth,
 				ActiveColour = 11,
 				TextColour = 5,
@@ -76,18 +89,18 @@ namespace CivOne.Screens.Dialogs
 			};
 			for (int i = 0; i < _menuItems.Length; i++)
 			{
-				menu.Items.Add(_menuItems[i], i).OnSelect(ChoiceMethod);
+				_menu.Items.Add(_menuItems[i], i).OnSelect(ChoiceMethod);
 			}
 
-			menu.MissClick += Cancel;
-			menu.Cancel += Cancel;
+			_menu.MissClick += Cancel;
+			_menu.Cancel += Cancel;
 
 			if (_luxuries)
-				menu.ActiveItem = Human.LuxuriesRate;
+				_menu.ActiveItem = Human.LuxuriesRate;
 			else
-				menu.ActiveItem = Human.TaxesRate;
+				_menu.ActiveItem = Human.TaxesRate;
 			
-			AddMenu(menu);
+			AddMenu(_menu);
 		}
 
 		private static IEnumerable<string> MenuOptions(bool luxuries)

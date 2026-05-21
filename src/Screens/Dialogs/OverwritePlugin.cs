@@ -17,6 +17,7 @@ namespace CivOne.Screens.Dialogs
 	internal class OverwritePlugin : BaseDialog
 	{
 		private readonly string _source, _destination, _filename;
+		private Menu _menu;
 
 		private void ConfirmOverwrite(object sender, EventArgs args)
 		{
@@ -33,10 +34,22 @@ namespace CivOne.Screens.Dialogs
 
 		protected override void FirstUpdate()
 		{
-			Menu menu = new Menu(Palette, Selection(3, 20, 160, 16))
+			CreateMenu();
+			base.FirstUpdate();
+		}
+
+		private void CreateMenu()
+		{
+			if (_menu is not null)
+			{
+				return;
+			}
+
+			_menu = new Menu(Palette, Selection(3, 20, 160, 16))
 			{
 				X = 73,
 				Y = 100,
+				CenterTo320Coordinates = true,
 				MenuWidth = 160,
 				ActiveColour = 11,
 				TextColour = 5,
@@ -44,14 +57,14 @@ namespace CivOne.Screens.Dialogs
 			};
 			foreach (string choice in new [] { "No, keep existing", "Yes, overwrite" })
 			{
-				menu.Items.Add(choice);
+				_menu.Items.Add(choice);
 			}
-			menu.Items[0].Selected += Cancel;
-			menu.Items[1].Selected += ConfirmOverwrite;
+			_menu.Items[0].Selected += Cancel;
+			_menu.Items[1].Selected += ConfirmOverwrite;
 
-			menu.MissClick += Cancel;
-			menu.Cancel += Cancel;
-			AddMenu(menu);
+			_menu.MissClick += Cancel;
+			_menu.Cancel += Cancel;
+			AddMenu(_menu);
 		}
 
 		public OverwritePlugin(string source, string destination) : base(70, 80, 164, 39)

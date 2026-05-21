@@ -15,6 +15,8 @@ namespace CivOne.Screens.Dialogs
 {
 	internal class Revolution : BaseDialog
 	{
+		private Menu _menu;
+
 		private void MenuRevolution(object sender, EventArgs args)
 		{
 			Human.Revolt();
@@ -26,7 +28,18 @@ namespace CivOne.Screens.Dialogs
 
 		protected override void FirstUpdate()
 		{
-			Menu menu = new Menu(Palette, Selection(3, 12, 228, 16))
+			CreateMenu();
+			base.FirstUpdate();
+		}
+
+		private void CreateMenu()
+		{
+			if (_menu is not null)
+			{
+				return;
+			}
+
+			_menu = new Menu(Palette, Selection(3, 12, 228, 16))
 			{
 				X = 67,
 				Y = 92,
@@ -40,14 +53,14 @@ namespace CivOne.Screens.Dialogs
 			int i = 0;
 			foreach (string choice in new [] { "_No thanks.", "_Yes, we need a new government." })
 			{
-				menu.Items.Add(choice, i++);
+				_menu.Items.Add(choice, i++);
 			}
-			menu.Items[0].Selected += Cancel;
-			menu.Items[1].Selected += MenuRevolution;
+			_menu.Items[0].Selected += Cancel;
+			_menu.Items[1].Selected += MenuRevolution;
 
-			menu.MissClick += Cancel;
-			menu.Cancel += Cancel;
-			AddMenu(menu);
+			_menu.MissClick += Cancel;
+			_menu.Cancel += Cancel;
+			AddMenu(_menu);
 		}
 
 		public Revolution() : base(64, 80, 231, 31)

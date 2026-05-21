@@ -16,49 +16,59 @@ namespace CivOne.Screens.Dialogs
 	{
 		public event EventHandler Buy;
 
-		private void MenuYes(object sender, EventArgs args)
-		{
-			Buy?.Invoke(this, args);
-			Cancel();
-		}
+		private Menu _menu;
 
-		protected override void FirstUpdate()
-		{
-			DrawMenu();
-
-			base.FirstUpdate();
-		}
-
-		private void DrawMenu()
-		{
-			Menu menu = new(Palette, Selection(3, 28, TextWidth + 5, 20))
-			{
-				X = 103,
-				Y = 108,
-				MenuWidth = TextWidth + 5,
-				ActiveColour = 11,
-				TextColour = 5,
-				FontId = 0
-			};
-			int i = 0;
-			foreach (string choice in new[] { "Yes", "No" })
-			{
-				menu.Items.Add(choice, i++);
-			}
-			menu.Items[0].Selected += MenuYes;
-			menu.Items[1].Selected += Cancel;
-
-			menu.MissClick += Cancel;
-			menu.Cancel += Cancel;
-			AddMenu(menu);
-		}
-
-		public ConfirmBuy(string name, short price, short treasury) : base(100, 80, 9, 23, new string[] { "Cost to complete", $"{name}: ${price}", $"Treasury: ${treasury}" })
+		public ConfirmBuy(string name, short price, short treasury)
+			: base(100, 80, 9, 23, [
+				"Cost to complete",
+				$"{name}: ${price}",
+				$"Treasury: ${treasury}"
+			])
 		{
 			for (int i = 0; i < TextLines.Length; i++)
 			{
 				DialogBox.AddLayer(TextLines[i], 5, (TextLines[i].Height * i) + 5);
 			}
+		}
+
+		protected override void FirstUpdate()
+		{
+			CreateMenu();
+			base.FirstUpdate();
+		}
+
+		private void CreateMenu()
+		{
+			if (_menu is not null)
+				return;
+
+			_menu = new Menu(Palette, Selection(3, 28, TextWidth + 5, 20))
+			{
+				X = 103,
+				Y = 108,
+				CenterTo320Coordinates = true,
+				MenuWidth = TextWidth + 5,
+				ActiveColour = 11,
+				TextColour = 5,
+				FontId = 0
+			};
+
+			_menu.Items.Add("Yes", 0);
+			_menu.Items.Add("No", 1);
+
+			_menu.Items[0].Selected += Confirm;
+			_menu.Items[1].Selected += Cancel;
+
+			_menu.MissClick += Cancel;
+			_menu.Cancel += Cancel;
+
+			AddMenu(_menu);
+		}
+
+		private void Confirm(object sender, EventArgs args)
+		{
+			Buy?.Invoke(this, args);
+			Cancel();
 		}
 	}
 }

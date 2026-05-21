@@ -19,6 +19,8 @@ namespace CivOne.Screens.Dialogs
 
 		public event EventHandler Sell;
 
+		private Menu _menu;
+
 		private void MenuYes(object sender, EventArgs args)
 		{
 			if (Sell != null)
@@ -28,10 +30,22 @@ namespace CivOne.Screens.Dialogs
 
 		protected override void FirstUpdate()
 		{
-			Menu menu = new Menu(Palette, Selection(3, 20, TextWidth + 5, 20))
+			CreateMenu();
+			base.FirstUpdate();
+		}
+
+		private void CreateMenu()
+		{
+			if (_menu is not null)
+			{
+				return;
+			}
+
+			_menu = new Menu(Palette, Selection(3, 20, TextWidth + 5, 20))
 			{
 				X = 131,
 				Y = 100,
+				CenterTo320Coordinates = true,
 				MenuWidth = TextWidth + 5,
 				ActiveColour = 11,
 				TextColour = 5,
@@ -40,14 +54,14 @@ namespace CivOne.Screens.Dialogs
 			int i = 0;
 			foreach (string choice in new [] { "No.", "Yes." })
 			{
-				menu.Items.Add(choice, i++);
+				_menu.Items.Add(choice, i++);
 			}
-			menu.Items[0].Selected += Cancel;
-			menu.Items[1].Selected += MenuYes;
+			_menu.Items[0].Selected += Cancel;
+			_menu.Items[1].Selected += MenuYes;
 
-			menu.MissClick += Cancel;
-			menu.Cancel += Cancel;
-			AddMenu(menu);
+			_menu.MissClick += Cancel;
+			_menu.Cancel += Cancel;
+			AddMenu(_menu);
 		}
 
 		public ConfirmSell(IBuilding building) : base(128, 80, 9, 23, new string[] { "Do you want to sell", $"your {building.Name} for {building.SellPrice}$?" })

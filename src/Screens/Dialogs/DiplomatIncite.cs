@@ -27,6 +27,7 @@ namespace CivOne.Screens.Dialogs
 		private readonly int _inciteCost;
 
 		private readonly bool _canIncite;
+		private Menu _menu;
 
 		private void DontIncite(object sender, EventArgs args)
 		{
@@ -47,9 +48,7 @@ namespace CivOne.Screens.Dialogs
                 "suspected.");
             GameTask.Insert(msg);
 
-            // TODO fire-eggs gold captured
             int plundered = 0;
-            // TODO fire-eggs advance stolen
 
             string[] lines = { $"{newPlayer.TribeNamePlural} capture", 
                                $"{_cityToIncite.Name}. {plundered} gold", 
@@ -62,8 +61,6 @@ namespace CivOne.Screens.Dialogs
 				_cityToIncite.Owner = newOwner;
 				_cityToIncite.TechStolen = false;
 
-                // fire-eggs 20190701 city units must convert
-                // TODO fire-eggs not all units _always_ convert, e.g. settlers ?
                 foreach (var unit in _cityToIncite.Units)
                 {
                     unit.Owner = newOwner;
@@ -80,7 +77,6 @@ namespace CivOne.Screens.Dialogs
 
 				previousOwner.HandleExtinction();
 
-                // TODO fire-eggs not sure if human-city being incited should be here [except incite of rebelling human city?]
 				if (Human == _cityToIncite.Owner || Human == newOwner)
 				{
 					GameTask.Insert(Tasks.Show.CityManager(_cityToIncite));
@@ -90,15 +86,11 @@ namespace CivOne.Screens.Dialogs
 
 			if (Human == _cityToIncite.Owner || Human == _diplomat.Owner)
             {
-                // TODO fire-eggs not showing loses side-effects
-                //if (!Game.Animations)
-                    GameTask.Insert(captureCity);
-                //else
-                //    capture_done(null, null);
+				GameTask.Insert(captureCity);
             }
             else
             {
-                capture_done(null, null); // non-human city incite
+				capture_done(null, EventArgs.Empty);
             }
 
 			Cancel();
@@ -106,29 +98,32 @@ namespace CivOne.Screens.Dialogs
 
 		protected override void FirstUpdate()
 		{
-			int choices = _canIncite ? 2 : 0;
+			CreateMenu();
+			base.FirstUpdate();
+		}
 
-			if (_canIncite)
+		private void CreateMenu()
+		{
+			if (_menu is not null || !_canIncite)
 			{
-				Menu menu = new Menu(Palette, Selection(45, 5 + (3 * Resources.GetFontHeight(FONT_ID)), 130, ((2 * Resources.GetFontHeight(FONT_ID)) + (choices * Resources.GetFontHeight(FONT_ID)) + 9)))
-				{
-					X = 143,
-					Y = 110,
-					MenuWidth = 130,
-					ActiveColour = 11,
-					TextColour = 5,
-					FontId = FONT_ID
-				};
-
-				menu.Items.Add("Forget It.").OnSelect(DontIncite);
-
-				if (_canIncite)
-				{
-					menu.Items.Add("Incite revolt").OnSelect(Incite);
-				}
-
-				AddMenu(menu);
+				return;
 			}
+
+			int choices = 2;
+			_menu = new Menu(Palette, Selection(45, 5 + (3 * Resources.GetFontHeight(FONT_ID)), 130, ((2 * Resources.GetFontHeight(FONT_ID)) + (choices * Resources.GetFontHeight(FONT_ID)) + 9)))
+			{
+				X = 143,
+				Y = 110,
+				CenterTo320Coordinates = true,
+				MenuWidth = 130,
+				ActiveColour = 11,
+				TextColour = 5,
+				FontId = FONT_ID
+			};
+
+			_menu.Items.Add("Forget It.").OnSelect(DontIncite);
+			_menu.Items.Add("Incite revolt").OnSelect(Incite);
+			AddMenu(_menu);
 		}
 
 		internal DiplomatIncite(City cityToIncite, Diplomat diplomat) : base(100, 80, 180, 56)
