@@ -17,7 +17,7 @@ namespace CivOne.Screens.Dialogs
 	{
 		private static void MenuRetire(object sender, EventArgs args)
 		{
-			_ = EndGameServiceFactory.CreateDefault().HandleRetireAsync();
+			_ = EndGameServiceFactory.CreateForHuman().HandleRetireAsync();
 		}
 
 		protected override void FirstUpdate()
