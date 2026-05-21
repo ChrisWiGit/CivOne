@@ -114,7 +114,7 @@ namespace CivOne.Tasks
 
 			if (_gameOver.IsHuman)
 			{
-				_ = EndGameServiceFactory.CreateDefault().HandleDefeatAsync();
+				_ = EndGameServiceFactory.CreateForHuman().HandleDefeatAsync();
 			}
 			else
 			{

@@ -10,45 +10,48 @@
 using System;
 using System.Linq;
 using CivOne.Enums;
+using CivOne.Services.SpaceShip;
 
 namespace CivOne.Persistence.Model
 {
 	/// <summary>
-	/// Specialized Map2d for 12×12 spaceship component grids. Encodes
+	/// Specialized Map2d for canonical spaceship component grids. Encodes
 	/// SpaceShipComponentType values as single-character strings in YAML:
-	/// 'E' for Empty, 'S' for Structural, 'C' for Component, 'M' for Module.
+	/// 'E' for Empty, 'S' for Structural, 'C' for Component, 'M' for Module,
+	/// and dedicated characters for detailed spaceship parts.
 	/// 
 	/// YAML output example:
 	/// - ECMM000000000
 	/// - S00000000000
 	/// - M00000000000
-	/// (12 rows × 12 columns per row)
+	/// (canonical spaceship grid dimensions)
 	/// </summary>
-	public class SpaceShipGridMap2d : Map2d<SpaceShipComponentType>
+	public class SpaceShipGridMap2D : Map2d<SpaceShipComponentType>
 	{
-		public SpaceShipGridMap2d() : base(12, 12)
+		public SpaceShipGridMap2D() : base(SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight)
 		{
 		}
 
-		public SpaceShipGridMap2d(SpaceShipComponentType[,] ownsData) : base(ownsData)
+		internal SpaceShipGridMap2D(SpaceShipComponentType[,] ownsData) : base(ownsData)
 		{
 		}
 
-		public SpaceShipGridMap2d(SpaceShipComponentType[][] ownsData) : base(ownsData)
+		internal SpaceShipGridMap2D(SpaceShipComponentType[][] ownsData) : base(ownsData)
 		{
 		}
 
-		public SpaceShipGridMap2d(string[] rows)
-			: base(FromRows(rows))
+		public SpaceShipGridMap2D(string[] rows)
+			: base()
+		{
+			Rows = rows;
+		}
+
+		public SpaceShipGridMap2D(SpaceShipGridMap2D other) : base((Map2d<SpaceShipComponentType>)other)
 		{
 		}
 
-		public SpaceShipGridMap2d(SpaceShipGridMap2d other) : base((Map2d<SpaceShipComponentType>)other)
-		{
-		}
-
-		public static implicit operator SpaceShipGridMap2d(SpaceShipComponentType[,] data) => new(data);
-		public static implicit operator SpaceShipComponentType[,](SpaceShipGridMap2d map) => map.Data;
+		public static implicit operator SpaceShipGridMap2D(SpaceShipComponentType[,] data) => new(data);
+		public static implicit operator SpaceShipComponentType[,](SpaceShipGridMap2D map) => map.Data;
 
 		public string[] Rows
 		{
@@ -111,6 +114,15 @@ namespace CivOne.Persistence.Model
 				SpaceShipComponentType.Structural => 'S',
 				SpaceShipComponentType.Component => 'C',
 				SpaceShipComponentType.Module => 'M',
+				SpaceShipComponentType.StructureHorizontal => 'H',
+				SpaceShipComponentType.StructureVertical => 'V',
+				SpaceShipComponentType.StructureNode => 'N',
+				SpaceShipComponentType.CommandModule => 'K',
+				SpaceShipComponentType.LifeSupportModule => 'L',
+				SpaceShipComponentType.HabitationModule => 'B',
+				SpaceShipComponentType.SolarPanelModule => 'O',
+				SpaceShipComponentType.FuelComponent => 'F',
+				SpaceShipComponentType.PropulsionComponent => 'P',
 				_ => 'E'
 			};
 
@@ -122,6 +134,15 @@ namespace CivOne.Persistence.Model
 				'S' => SpaceShipComponentType.Structural,
 				'C' => SpaceShipComponentType.Component,
 				'M' => SpaceShipComponentType.Module,
+				'H' => SpaceShipComponentType.StructureHorizontal,
+				'V' => SpaceShipComponentType.StructureVertical,
+				'N' => SpaceShipComponentType.StructureNode,
+				'K' => SpaceShipComponentType.CommandModule,
+				'L' => SpaceShipComponentType.LifeSupportModule,
+				'B' => SpaceShipComponentType.HabitationModule,
+				'O' => SpaceShipComponentType.SolarPanelModule,
+				'F' => SpaceShipComponentType.FuelComponent,
+				'P' => SpaceShipComponentType.PropulsionComponent,
 				_ => throw new FormatException($"Invalid spaceship component character '{c}'.")
 			};
 	}

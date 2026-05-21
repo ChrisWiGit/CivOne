@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using CivOne.Advances;
+using CivOne.Enums;
 using CivOne.Screens;
 using CivOne.Screens.PalaceAssets;
 using CivOne.Screens.Dialogs;
@@ -120,17 +121,21 @@ namespace CivOne.Tasks
 
  		public static Show WeLovePresidentDayCity(City city) => new Show(CityView.WeLovePresidentDay(city));
 
-		public static Show BuildPalace(bool keepOpenUntilEscape = false) => new Show(new PalaceView(true, PalaceSpriteProviderFactory.GetInstance(), keepOpenUntilEscape));
+		public static Show BuildPalace(bool keepOpenUntilEscape = false) => new(new PalaceView(true, PalaceSpriteProviderFactory.GetInstance(), keepOpenUntilEscape));
 
-		public static Show CaravanChoice(Caravan unit, City city) => new Show(new CaravanChoice(unit, city));
+		public static Show BuildSpaceShip() => new(new SpaceShipView(Human));
+
+		public static Show SpaceShipWithInstall(SpaceShipComponentType partType) => new(new SpaceShipView(Human, pendingInstall: partType));
+
+		public static Show CaravanChoice(Caravan unit, City city) => new Show(CaravanChoiceDialogFactory.CreateDialog(unit, city));
 
         public static Show WeakAttack(BaseUnit unit, int relx, int rely) => new Show(new WeakAttack(unit, relx, rely));
 
-		public static Show DiplomatBribe(BaseUnitLand unitToBribe, Diplomat diplomat) => new Show(new DiplomatBribe(unitToBribe, diplomat));
+		public static Show DiplomatBribe(BaseUnitLand unitToBribe, Diplomat diplomat) => new(DiplomatBribeDialogFactory.CreateDialog(unitToBribe, diplomat));
 
-		public static Show DiplomatCity(City enemyCity, Diplomat diplomat) => new Show(new DiplomatCity(enemyCity, diplomat));
+		public static Show DiplomatCity(City enemyCity, Diplomat diplomat) => new(DiplomatCityDialogFactory.CreateDialog(enemyCity, diplomat));
 
-		public static Show DiplomatIncite(City enemyCity, Diplomat diplomat) => new Show(new DiplomatIncite(enemyCity, diplomat));
+		public static Show DiplomatIncite(City enemyCity, Diplomat diplomat) => new Show(DiplomatInciteDialogFactory.CreateDialog(enemyCity, diplomat));
 
 		public static Show SelectAdvanceAfterCityCapture(Player player, IList<IAdvance> advances) => new Show(new SelectAdvanceAfterCityCapture(player, advances));
 
@@ -143,6 +148,8 @@ namespace CivOne.Tasks
 			if (!typeof(IScreen).IsAssignableFrom(type)) return null;
 			return new Show((IScreen)Activator.CreateInstance(type));
 		}
+
+		public static Show Screen(IScreen screen) => new Show(screen);
 
 		public static Show Screens(IEnumerable<Type> types)
 		{
@@ -160,8 +167,6 @@ namespace CivOne.Tasks
 		}
 
 		public static Show Screens(params Type[] types) => Screens(types.ToList());
-
-		public static Show Screen(IScreen screen) => new Show(screen);
 
 		private Show(IScreen screen)
 		{

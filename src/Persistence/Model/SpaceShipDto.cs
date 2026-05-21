@@ -27,7 +27,7 @@ namespace CivOne.Persistence.Model
 	public class SpaceShipDto
 	{
 		[Doc("12×12 component grid for spaceship construction. Each cell stores component type: E=Empty, S=Structural, C=Component, M=Module.")]
-		public SpaceShipGridMap2d Grid { get; set; }
+		public SpaceShipGridMap2D Grid { get; set; }
 
 		[Doc("Population capacity of the spaceship. Clamped to [0, 65535] (ushort) during load.", 0, long.MaxValue)]
 		public long Population { get; set; }

@@ -20,6 +20,7 @@ namespace CivOne.Persistence.Model
 	using CivOne.Persistence.Game;
 	using CivOne.Persistence.Resolver;
 	using CivOne.Persistence.Mapper;
+	using CivOne.Services.SpaceShip;
 
 	public class PlayerDtoMapperTest
 	{
@@ -150,7 +151,7 @@ namespace CivOne.Persistence.Model
 				StartX = 33,
 				SpaceShip = new SpaceShipDto
 				{
-					Grid = new SpaceShipGridMap2d(new SpaceShipComponentType[12, 12]),
+					Grid = new SpaceShipGridMap2D(new SpaceShipComponentType[SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight]),
 					Population = 0,
 					LaunchYear = 0
 				},

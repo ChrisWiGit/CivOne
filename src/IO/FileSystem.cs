@@ -14,7 +14,7 @@ using CivOne.Screens.Dialogs;
 
 namespace CivOne.IO
 {
-	public class FileSystem
+	public static class FileSystem
 	{
 		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
 
@@ -51,7 +51,8 @@ namespace CivOne.IO
 			{
 				string[] files;
 				if (File.Exists(Path.Combine(Settings.Instance.DataDirectory, filename))) continue;
-				if ((files = Directory.GetFiles(folder, filename)).Length > 0)
+				files = Directory.GetFiles(folder, filename);
+				if (files.Length > 0)
 				{
 					File.Copy(Path.Combine(folder, files[0]), Path.Combine(Settings.Instance.DataDirectory, filename));
 					continue;
@@ -85,7 +86,8 @@ namespace CivOne.IO
 			{
 				string[] files;
 				if (File.Exists(Path.Combine(Settings.Instance.SoundsDirectory, filename))) continue;
-				if ((files = Directory.GetFiles(folder, filename)).Length > 0)
+				files = Directory.GetFiles(folder, filename);
+				if (files.Length > 0)
 				{
 					File.Copy(Path.Combine(folder, files[0]), Path.Combine(Settings.Instance.SoundsDirectory, filename));
 					continue;
@@ -115,7 +117,7 @@ namespace CivOne.IO
 				if (File.Exists(destinationFile))
 				{
 					Log($"- Plugin already exists: {filepath}");
-					dialogs.Enqueue(new OverwritePlugin(filepath, destinationFile));
+					dialogs.Enqueue((OverwritePlugin)OverwritePluginDialogFactory.CreateDialog(filepath, destinationFile));
 					continue;
 				}
 

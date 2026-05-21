@@ -15,18 +15,30 @@ namespace CivOne.Screens.Dialogs
 {
 	internal class Revolution : BaseDialog
 	{
+		private Menu _menu;
+
 		private void MenuRevolution(object sender, EventArgs args)
 		{
 			Human.Revolt();
-			GameTask.Enqueue(Message.Newspaper(null, 
-				$"The {Human.Civilization.NamePlural} are", 
-				"revolting! Citizens", "demand new govt."));
+			GameTask.Enqueue(Message.Newspaper(null,
+				TranslateFormattedArray("The {0} are\nrevolting! Citizens\ndemand new govt.", Human.Civilization.NamePlural)));
 			Cancel();
 		}
 
 		protected override void FirstUpdate()
 		{
-			Menu menu = new Menu(Palette, Selection(3, 12, 228, 16))
+			CreateMenu();
+			base.FirstUpdate();
+		}
+
+		private void CreateMenu()
+		{
+			if (_menu is not null)
+			{
+				return;
+			}
+
+			_menu = new Menu(Palette, Selection(3, 12, 228, 16))
 			{
 				X = 67,
 				Y = 92,
@@ -38,21 +50,22 @@ namespace CivOne.Screens.Dialogs
 				Indent = 2
 			};
 			int i = 0;
-			foreach (string choice in new [] { "_No thanks.", "_Yes, we need a new government." })
+			string[] choices = [Translate("_No thanks."), Translate("_Yes, we need a new government.")];
+			foreach (string choice in choices)
 			{
-				menu.Items.Add(choice, i++);
+				_menu.Items.Add(choice, i++);
 			}
-			menu.Items[0].Selected += Cancel;
-			menu.Items[1].Selected += MenuRevolution;
+			_menu.Items[0].Selected += Cancel;
+			_menu.Items[1].Selected += MenuRevolution;
 
-			menu.MissClick += Cancel;
-			menu.Cancel += Cancel;
-			AddMenu(menu);
+			_menu.MissClick += Cancel;
+			_menu.Cancel += Cancel;
+			AddMenu(_menu);
 		}
 
 		public Revolution() : base(64, 80, 231, 31)
 		{
-			DialogBox.DrawText("Are you sure you want a REVOLUTION?", 0, 15, 5, 5);
+			DialogBox.DrawText(Translate("Are you sure you want a REVOLUTION?"), 0, 15, 5, 5);
 		}
 	}
 }

@@ -10,6 +10,20 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Keep city home-unit cache and unit home reference consistent during removal.
   * `DestroyCity(...)` and `DisbandUnit(...)` now clear a unit's home via `SetHome(null)` before removing it from game unit lists.
   * Prevents stale `city.Units` cache entries and avoids mismatches where `unit.Home` still points to an old city after disband/removal.
+* Refactoring: Added translation support for texts in dialogs and reports.
+* Fix: Dialogs now render correctly when using "Expand Size" in the setup menu, instead of being stretched across the expanded canvas.
+* Feature: Implementation of spaceship construction and victory condition
+  * Added spaceship construction mechanics that let cities produce ship parts and assemble them through the spaceship screen.
+  * Added end-game handling for a completed spaceship so it can participate in victory processing as a distinct late-game win path.
+  * Debug: added spaceship construction menu with part placement and launch action to the debug options for testing purposes.
+* Debug Option:
+  * Introduce large 2d menu for large lists of items (e.g. cities, units, etc.) with keyboard navigation and selection.
+  * Refactored existing civilization and city selection menus to use the new grid menu, allowing for more items and better navigation.
+* Extended game menu
+  * Menu items now wrap at the top and bottom, so moving past the first or last entry jumps to the other end.
+  * When a submenu is already open, `Left` and `Right` now switch between the main menu groups (`Game`, `Orders`, `Advisors`, `World`, `Civilopedia`) in a loop.
+  * Disabled menu items stay disabled for both mouse and keyboard input and no longer close the menu when selected.
+  * The World -> SpaceShips entry is only shown when at least one civilization can actually access spaceship content.
 * Feature: International font simulation for non-English languages
   * Players with an English-only `FONTS.CV` can now display translated text (e.g. German umlauts, French accented letters) without a modified font file.
   * Missing glyphs are synthesised at runtime by composing the base letter with the required diacritic mark.
@@ -210,7 +224,6 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Current scope focuses on CivOne YAML save files and does not target binary CIV save compatibility.
   * Prepared for future changes to how data is handled in memory for more flexibility and maintainability.
   * TestBase and TestBase2 now load the Earth map from bundled `earth.yml` instead of relying on `MAP.PIC`, ensuring consistent test environments without external dependencies.
-  * Added space ship grid mapping support in YAML **Not yet active in gameplay** (see [docs/SPACESHIP_FULL_IMPLEMENTATION_PLAN.md](docs/SPACESHIP_FULL_IMPLEMENTATION_PLAN.md)).
   * See [YAML Save Format](YAML.md) for more details.
 * Fix: Corrected city economy calculation after refactoring the city economy breakdown logic.
   * Refactoring: Extracted the city economy breakdown calculation into a separate service (CityEconomyServiceImpl) to improve separation of concerns and testability.

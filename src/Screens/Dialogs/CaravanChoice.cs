@@ -22,70 +22,129 @@ namespace CivOne.Screens.Dialogs
 
 		private readonly Caravan _unit;
 		private readonly City _city;
+		private readonly ICaravanChoiceService _service;
+		private Menu _menu;
 
 		private void KeepMoving(object sender, EventArgs args)
 		{
-			_unit.KeepMoving(_city);
+			_service.KeepMoving(_unit, _city);
 			Cancel();
 		}
 
 		private void EstablishTradeRoute(object sender, EventArgs args)
 		{
-			_unit.EstablishTradeRoute(_city);
+			_service.EstablishTradeRoute(_unit, _city);
 			Cancel();
 		}
 
 		private void HelpBuildWonder(object sender, EventArgs args)
 		{
-			_unit.HelpBuildWonder(_city);
+			_service.HelpBuildWonder(_unit, _city);
 			Cancel();
 		}
 
-        public static bool AllowEstablishTradeRoute(Caravan _unit, City _city)
-        {
-            return (_unit.Home == null) || (_unit.Home.Tile.DistanceTo(_city) >= 10);
-        }
-
-        protected override void FirstUpdate()
+		protected override void FirstUpdate()
 		{
+			CreateMenu();
+			base.FirstUpdate();
+		}
+
+		private void CreateMenu()
+		{
+			if (_menu is not null)
+			{
+				return;
+			}
+
 			int choices = _city.IsBuildingWonder ? 3 : 2;
 
-			Menu menu = new Menu(Palette, Selection(3, 12, 130, (choices * Resources.GetFontHeight(FONT_ID)) + 4))
+			_menu = new Menu(Palette, Selection(3, 12, 130, (choices * Resources.GetFontHeight(FONT_ID)) + 4))
 			{
 				X = 103,
 				Y = 92,
+				CenterTo320Coordinates = true,
 				MenuWidth = 130,
 				ActiveColour = 11,
 				TextColour = 5,
 				FontId = FONT_ID
 			};
 
-			menu.Items.Add("Keep moving").OnSelect(KeepMoving);
-			menu.Items.Add("Establish trade route")
-				.SetEnabled(AllowEstablishTradeRoute(_unit,_city))
+			_menu.Items.Add(Translate("Keep moving")).OnSelect(KeepMoving);
+			_menu.Items.Add(Translate("Establish trade route"))
+				.SetEnabled(_service.CanEstablishTradeRoute(_unit, _city))
 				.OnSelect(EstablishTradeRoute);
 
 			if (_city.IsBuildingWonder)
 			{
-				menu.Items.Add("Help build WONDER.").OnSelect(HelpBuildWonder);
+				_menu.Items.Add(Translate("Help build WONDER.")).OnSelect(HelpBuildWonder);
 			}
-			
-			AddMenu(menu);
+
+			AddMenu(_menu);
 		}
 
-		private static int DialogHeight(Caravan unit, City city)
+		private static int DialogHeight(City city)
 		{
 			int choices = 2;
 			if (city.CurrentProduction is IWonder) choices++;
 			return (choices * Resources.GetFontHeight(FONT_ID)) + 17;
 		}
 
-		internal CaravanChoice(Caravan unit, City city) : base(100, 80, 136, DialogHeight(unit, city))
+		internal CaravanChoice(Caravan unit, City city, ICaravanChoiceService service) : base(100, 80, 136, DialogHeight(city))
 		{
 			_city = city;
 			_unit = unit;
+			_service = service ?? throw new ArgumentNullException(nameof(service));
 
-			DialogBox.DrawText($"Will you?", 0, 15, 5, 5);
+			DialogBox.DrawText(Translate("Will you?"), 0, 15, 5, 5);
+		}
+	}
+
+	internal static class CaravanChoiceDialogFactory
+	{
+		public static ICaravanChoiceService CreateService()
+		{
+			return new CaravanChoiceService();
+		}
+
+		public static IScreen CreateDialog(Caravan unit, City city)
+		{
+			return new CaravanChoice(unit, city, CreateService());
+		}
+
+		public static IScreen CreateDialog(Caravan unit, City city, ICaravanChoiceService service)
+		{
+			return new CaravanChoice(unit, city, service);
+		}
+	}
+
+	internal interface ICaravanChoiceService
+	{
+		void KeepMoving(Caravan unit, City city);
+		void EstablishTradeRoute(Caravan unit, City city);
+		void HelpBuildWonder(Caravan unit, City city);
+		bool CanEstablishTradeRoute(Caravan unit, City city);
+	}
+
+	internal class CaravanChoiceService : ICaravanChoiceService
+	{
+		public void KeepMoving(Caravan unit, City city)
+		{
+			unit.KeepMoving(city);
+		}
+
+		public void EstablishTradeRoute(Caravan unit, City city)
+		{
+			unit.EstablishTradeRoute(city);
+		}
+
+		public void HelpBuildWonder(Caravan unit, City city)
+		{
+			unit.HelpBuildWonder(city);
+		}
+
+		public bool CanEstablishTradeRoute(Caravan unit, City city)
+		{
+			return (unit.Home == null) || (unit.Home.Tile.DistanceTo(city) >= 10);
 		}
 	}
 }

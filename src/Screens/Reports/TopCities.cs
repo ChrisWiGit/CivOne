@@ -121,7 +121,7 @@ namespace CivOne.Screens.Reports
 					dx += drawWidth + 2;
 				}
 
-				this.DrawText($"{i + 1}. {city.Name} ({owner.Civilization.Name})", 0, 15, offsetX + 160, yy + 3, TextAlign.Center);
+				this.DrawText(TranslateFormatted("{0}. {1} ({2})", i + 1, city.Name, owner.Civilization.Name), 0, 15, offsetX + 160, yy + 3, TextAlign.Center);
 			}
 
 			return true;
@@ -177,8 +177,8 @@ namespace CivOne.Screens.Reports
 			int offsetY = Math.Max(0, (Height - 200) / 2);
 
 			this.Clear(3)
-				.DrawText("The Top Five Cities in the World", 0, 5, offsetX + 160, offsetY + 13, TextAlign.Center)
-				.DrawText("The Top Five Cities in the World", 0, 15, offsetX + 160, offsetY + 12, TextAlign.Center);
+				.DrawText(Translate("The Top Five Cities in the World"), 0, 5, offsetX + 160, offsetY + 13, TextAlign.Center)
+				.DrawText(Translate("The Top Five Cities in the World"), 0, 15, offsetX + 160, offsetY + 12, TextAlign.Center);
 		}
 	}
 }

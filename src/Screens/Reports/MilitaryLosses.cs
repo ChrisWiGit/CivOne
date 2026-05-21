@@ -68,7 +68,9 @@ namespace CivOne.Screens.Reports
 			_update = true;
 		}
 
-		public MilitaryLosses() : base("MILITARY LOSSES", 4)
+		public override string Title() => Translate("MILITARY LOSSES");
+
+		public MilitaryLosses() : base(4)
 		{
 			Render();
 		}

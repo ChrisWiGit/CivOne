@@ -15,6 +15,7 @@ using CivOne.Enums;
 using CivOne.Governments;
 using CivOne.Persistence.Game;
 using CivOne.Persistence.Model;
+using CivOne.Services.SpaceShip;
 
 namespace CivOne
 {
@@ -231,7 +232,7 @@ namespace CivOne
 		SpaceShipComponentType[,] IPlayerRestorable.SpaceShipGrid
 		{
 			get => SpaceShipGrid;
-			set => SpaceShipGrid = value ?? new SpaceShipComponentType[12, 12];
+			set => SpaceShipGrid = value ?? new SpaceShipComponentType[SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight];
 		}
 
 		ushort IPlayerRestorable.SpaceShipPopulation

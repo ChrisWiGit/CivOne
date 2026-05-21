@@ -48,9 +48,9 @@ namespace CivOne.Screens.Reports
 				int productionWidth = Resources.GetTextSize(1, production).Width;
 
 				this.DrawText(city.Name, FONT_ID, 15, OffsetX + 8, yy)
-					.DrawText($"{city.Size}-{city.FoodTotal}{FOOD} {city.ShieldTotal}{SHIELD} {city.TradeTotal}{TRADE}", FONT_ID, 15, OffsetX + 80, yy)
+					.DrawText(TranslateFormatted("{0}-{1}{2} {3}{4} {5}{6}", city.Size, city.FoodTotal, FOOD, city.ShieldTotal, SHIELD, city.TradeTotal, TRADE), FONT_ID, 15, OffsetX + 80, yy)
 					.DrawText(production, FONT_ID, 15, OffsetX + MAGIC, yy)
-					.DrawText($"({city.Shields}/{city.CurrentProduction.Price * 10})", FONT_ID, 7, OffsetX + MAGIC + productionWidth + 12, yy);
+					.DrawText(TranslateFormatted("({0}/{1})", city.Shields, city.CurrentProduction.Price * 10), FONT_ID, 7, OffsetX + MAGIC + productionWidth + 12, yy);
 				yy += fontHeight;
 			}
 		}
@@ -95,9 +95,12 @@ namespace CivOne.Screens.Reports
 			return NextPage();
 		}
 
-		public CityStatus() : base("CITY STATUS", 8)
+		public override string Title() => Translate("CITY STATUS");
+
+		public CityStatus() : base(8)
 		{
 			_cities = Game.GetCities().Where(c => Human == c.Owner && c.Size > 0).ToArray();
+			Render();
 		}
 	}
 }

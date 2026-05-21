@@ -33,6 +33,7 @@ namespace CivOne.Screens
 		
 		private GameMenu _gameMenu = null;
 		private int _menuX, _menuY;
+		private int _menuIndex = -1;
 		private uint _lastGameTick;
 		private bool _update = true;
 		private bool _redraw = false;
@@ -53,6 +54,7 @@ namespace CivOne.Screens
 		
 		private void MenuBarGame(object sender, EventArgs args)
 		{
+			_menuIndex = 0;
 			_gameMenu = new GameMenu("MenuBarGame", Palette.Copy());
 			_gameMenu.Items.Add("Tax Rate").OnSelect((s, a) => GameTask.Enqueue(Show.TaxRate));
 			_gameMenu.Items.Add("Luxuries Rate").OnSelect((s, a) => GameTask.Enqueue(Show.LuxuryRate));
@@ -79,6 +81,8 @@ namespace CivOne.Screens
 		{
 			if (Game.ActiveUnit == null) return;
 
+			_menuIndex = 1;
+
 			_gameMenu = new GameMenu("MenuBarOrders", Palette);
 			_gameMenu.Items.AddRange(Game.ActiveUnit.MenuItems);
 			
@@ -90,6 +94,7 @@ namespace CivOne.Screens
 		
 		private void MenuBarAdvisors(object sender, EventArgs args)
 		{
+			_menuIndex = 2;
 			_gameMenu = new GameMenu("MenuBarAdvisors", Palette);
 			_gameMenu.Items.Add("City Status (F1)").OnSelect((s, a) => Common.AddScreen(new CityStatus()));
 			_gameMenu.Items.Add("Military Advisor (F2)").OnSelect((s, a) => { Common.AddScreen(new MilitaryLosses()); Common.AddScreen(new MilitaryStatus()); });
@@ -106,6 +111,7 @@ namespace CivOne.Screens
 		
 		private void MenuBarWorld(object sender, EventArgs args)
 		{
+			_menuIndex = 3;
 			_gameMenu = new GameMenu("MenuBarWorld", Palette);
 			_gameMenu.Items.Add("Wonders of the World (F7)").OnSelect((s, a) => {
 				if (Game.BuiltWonders.Length == 0)
@@ -117,7 +123,9 @@ namespace CivOne.Screens
 			_gameMenu.Items.Add("Civilization Score (F9)").OnSelect((s, a) => Common.AddScreen(new CivilizationScore()));
 			_gameMenu.Items.Add("World Map (F10)").OnSelect((s, a) => Common.AddScreen(new WorldMap()));
 			_gameMenu.Items.Add("Demographics").OnSelect((s, a) => Common.AddScreen(new Demographics()));
-			_gameMenu.Items.Add("SpaceShips").Disable();
+			
+			_gameMenu.Items.Add("SpaceShips").OnSelect((s, a) => Common.AddScreen(new SpaceShipCivilizationSelectorDialog())).
+				SetEnabled(SpaceShipCivilizationSelectorServicesFactory.CreateDefault().SelectorService.GetCivilizations().Any(c => c.IsEnabled));
 			
 			_menuX = 144;
 			_menuY = 8;
@@ -127,6 +135,7 @@ namespace CivOne.Screens
 		
 		private void MenuBarCivilopedia(object sender, EventArgs args)
 		{
+			_menuIndex = 4;
 			_gameMenu = new GameMenu("MenuBarCivilopedia", Palette);
 			_gameMenu.Items.Add("Complete").OnSelect((s, a) => Common.AddScreen(new Civilopedia(Civilopedia.Complete)));
 			_gameMenu.Items.Add("Civilization Advances").OnSelect((s, a) => Common.AddScreen(new Civilopedia(Civilopedia.Advances)));
@@ -224,6 +233,13 @@ namespace CivOne.Screens
 			
 			if (_gameMenu != null)
 			{
+				if (args.Key == Key.Left || args.Key == Key.Right)
+				{
+					int delta = (args.Key == Key.Left) ? -1 : 1;
+					SelectMainMenu(delta);
+					return true;
+				}
+
 				if (!_gameMenu.KeyDown(args))
 				{
 					_gameMenu = null;
@@ -292,6 +308,50 @@ namespace CivOne.Screens
 			}
 			return _gameMap.KeyDown(args);
 		}
+
+		private void SelectMainMenu(int delta)
+		{
+			if (_gameMenu == null)
+			{
+				return;
+			}
+
+			int nextIndex = _menuIndex;
+			for (int attempts = 0; attempts < 5; attempts++)
+			{
+				GameMenu previousMenu = _gameMenu;
+				int previousIndex = _menuIndex;
+
+				nextIndex = (nextIndex + delta + 5) % 5;
+				switch (nextIndex)
+				{
+					case 0:
+						MenuBarGame(this, EventArgs.Empty);
+						break;
+					case 1:
+						MenuBarOrders(this, EventArgs.Empty);
+						break;
+					case 2:
+						MenuBarAdvisors(this, EventArgs.Empty);
+						break;
+					case 3:
+						MenuBarWorld(this, EventArgs.Empty);
+						break;
+					case 4:
+						MenuBarCivilopedia(this, EventArgs.Empty);
+						break;
+				}
+
+				if (_gameMenu != previousMenu)
+				{
+					_gameMenu.KeepOpen = true;
+					_redraw = true;
+					return;
+				}
+
+				_menuIndex = previousIndex;
+			}
+		}
 		
 		public override bool MouseDown(ScreenEventArgs args)
 		{
@@ -349,9 +409,11 @@ namespace CivOne.Screens
 				}
 			}
 			
-			_gameMenu.MouseUp(args);
-			_gameMenu = null;
-			_redraw = true;
+			if (_gameMenu.MouseUp(args))
+			{
+				_gameMenu = null;
+				_redraw = true;
+			}
 			return true;
 		}
 		

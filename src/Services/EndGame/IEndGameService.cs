@@ -30,7 +30,7 @@ namespace CivOne.Services.EndGame
 
 		/// <summary>
 		/// Handles the end-game sequence for an Alpha Centauri victory.
-		/// Shows CivilizationScore, then TopLeaderScreen, then HallOfFame, then returns to credits.
+		/// Shows SpaceVictory, CivilizationScore, TopLeaderScreen, HallOfFame, then returns to credits.
 		/// </summary>
 		Task HandleAlphaCentauriAsync();
 

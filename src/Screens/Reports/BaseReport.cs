@@ -18,7 +18,6 @@ namespace CivOne.Screens.Reports
 	[Modal]
 	internal abstract class BaseReport : BaseScreen
 	{
-		private readonly string _title;
 		private bool _update = true;
 
 		protected readonly IBitmap[] Portrait = new Picture[4];
@@ -31,9 +30,9 @@ namespace CivOne.Screens.Reports
 
 		protected void DrawReportHeader()
 		{
-			this.DrawText(_title, 0, 15, OffsetX + 160, OffsetY + 2, TextAlign.Center)
-				.DrawText(string.Format("{0} of the {1}", "Empire", Human.TribeNamePlural), 0, 15, OffsetX + 160, OffsetY + 10, TextAlign.Center)
-				.DrawText(string.Format("{0} {1}: {2}", "Emperor", Human.LeaderName, Game.GameYear), 0, 15, OffsetX + 160, OffsetY + 18, TextAlign.Center);
+			this.DrawText(Title(), 0, 15, OffsetX + 160, OffsetY + 2, TextAlign.Center)
+				.DrawText(TranslateFormatted("{0} of the {1}", Translate("Empire"), Human.TribeNamePlural), 0, 15, OffsetX + 160, OffsetY + 10, TextAlign.Center)
+				.DrawText(TranslateFormatted("{0} {1}: {2}", Translate("Emperor"), Human.LeaderName, Game.GameYear), 0, 15, OffsetX + 160, OffsetY + 18, TextAlign.Center);
 		}
 
 		protected override void Resize(int width, int height)
@@ -68,10 +67,11 @@ namespace CivOne.Screens.Reports
 			Destroy();
 			return true;
 		}
+
+		public virtual string Title() => "UNDEFINED REPORT";
 		
-		protected BaseReport(string title, byte backgroundColour, MouseCursor cursor = MouseCursor.None) : base(cursor)
+		protected BaseReport(byte backgroundColour, MouseCursor cursor = MouseCursor.None) : base(cursor)
 		{
-			_title = title;
 			BackgroundColour = backgroundColour;
 
 			bool modernGovernment = Human.HasAdvance<Invention>();
@@ -84,7 +84,6 @@ namespace CivOne.Screens.Reports
 			Palette = palette;
 			
 			this.Clear(backgroundColour);
-			DrawReportHeader();
 		}
 	}
 }
