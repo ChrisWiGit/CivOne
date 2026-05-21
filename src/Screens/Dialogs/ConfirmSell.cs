@@ -10,6 +10,7 @@
 using System;
 using CivOne.Buildings;
 using CivOne.Graphics;
+using CivOne.Services;
 
 namespace CivOne.Screens.Dialogs
 {
@@ -52,7 +53,8 @@ namespace CivOne.Screens.Dialogs
 				FontId = 0
 			};
 			int i = 0;
-			foreach (string choice in new [] { "No.", "Yes." })
+			string[] choices = [Translate("No."), Translate("Yes.")];
+			foreach (string choice in choices)
 			{
 				_menu.Items.Add(choice, i++);
 			}
@@ -64,7 +66,13 @@ namespace CivOne.Screens.Dialogs
 			AddMenu(_menu);
 		}
 
-		public ConfirmSell(IBuilding building) : base(128, 80, 9, 23, new string[] { "Do you want to sell", $"your {building.Name} for {building.SellPrice}$?" })
+		private static string[] MessageLines(IBuilding building)
+		{
+			return TranslationServiceFactory.GetCurrent()
+				.TranslateFormattedArray("Do you want to sell\nyour {0} for {1}$?", building.Name, building.SellPrice);
+		}
+
+		public ConfirmSell(IBuilding building) : base(128, 80, 9, 23, MessageLines(building))
 		{
 			Building = building;
 			

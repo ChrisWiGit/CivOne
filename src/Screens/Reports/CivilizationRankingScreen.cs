@@ -174,14 +174,14 @@ namespace CivOne.Screens.Reports
 			int offsetY = Math.Max(0, (Height - 200) / 2);
 
 			var screen = this.Clear(3)
-				.DrawText("CIVILIZATION RANKING", 0, 5, offsetX + 160, offsetY + 3, TextAlign.Center)
-				.DrawText("CIVILIZATION RANKING", 0, 15, offsetX + 160, offsetY + 2, TextAlign.Center)
-				.DrawText($"{GetHistorianLabel(_historian)} completes his great historical work:", 0, 15, offsetX + 160, offsetY + 13, TextAlign.Center)
-				.DrawText($"'The {GetCategoryHeadline(_category)} Civilization of the World'", 0, 15, offsetX + 160, offsetY + 21, TextAlign.Center);
+				.DrawText(Translate("CIVILIZATION RANKING"), 0, 5, offsetX + 160, offsetY + 3, TextAlign.Center)
+				.DrawText(Translate("CIVILIZATION RANKING"), 0, 15, offsetX + 160, offsetY + 2, TextAlign.Center)
+				.DrawText(TranslateFormatted("{0} completes his great historical work:", GetHistorianLabel(_historian)), 0, 15, offsetX + 160, offsetY + 13, TextAlign.Center)
+				.DrawText(TranslateFormatted("'The {0} Civilization of the World'", GetCategoryHeadline(_category)), 0, 15, offsetX + 160, offsetY + 21, TextAlign.Center);
 
 			if (_debugMode)
 			{
-				screen.DrawText("F1: Cycle Category   F2: Toggle All/Known Civilizations", 1, 15, offsetX + 6, offsetY + 192);
+				screen.DrawText(Translate("F1: Cycle Category   F2: Toggle All/Known Civilizations"), 1, 15, offsetX + 6, offsetY + 192);
 			}
 
 			IReadOnlyList<CivilizationRankingRow> rankingRows = GetRowsByCategory(_category);
@@ -226,7 +226,7 @@ namespace CivOne.Screens.Reports
 				palacePreview.Dispose();
 			}
 
-			string rankingText = $"{rankingRow.RankNumber}. The {GetRankingAdjective(rankingRow.RankNumber - 1)} {rankingRow.CivilizationName}";
+			string rankingText = TranslateFormatted("{0}. The {1} {2}", rankingRow.RankNumber, GetRankingAdjective(rankingRow.RankNumber - 1), rankingRow.CivilizationName);
 			this.DrawText(rankingText, font: 0, colour: 15, x: offsetX + 160, y: rowY + 4, align: TextAlign.Center);
 
 			return rowY + rowHeight + 2;
@@ -245,43 +245,43 @@ namespace CivOne.Screens.Reports
 			};
 		}
 
-		private static string GetRankingAdjective(int index)
+		private string GetRankingAdjective(int index)
 		{
 			if (index < 0)
 			{
-				return RankingAdjectives[^1];
+				return Translate(RankingAdjectives[^1]);
 			}
 
 			if (index >= RankingAdjectives.Length)
 			{
-				return RankingAdjectives[^1];
+				return Translate(RankingAdjectives[^1]);
 			}
 
-			return RankingAdjectives[index];
+			return Translate(RankingAdjectives[index]);
 		}
 
-		private static string GetHistorianLabel(CivilizationRankingHistorian historian)
+		private string GetHistorianLabel(CivilizationRankingHistorian historian)
 		{
 			return historian switch
 			{
-				CivilizationRankingHistorian.Herodotus => "Herodotus",
-				CivilizationRankingHistorian.Pliny => "Pliny",
-				CivilizationRankingHistorian.Toynbee => "Toynbee",
-				CivilizationRankingHistorian.Gibbon => "Gibbon",
-				_ => "Herodotus"
+				CivilizationRankingHistorian.Herodotus => Translate("Herodotus"),
+				CivilizationRankingHistorian.Pliny => Translate("Pliny"),
+				CivilizationRankingHistorian.Toynbee => Translate("Toynbee"),
+				CivilizationRankingHistorian.Gibbon => Translate("Gibbon"),
+				_ => Translate("Herodotus")
 			};
 		}
 
-		private static string GetCategoryHeadline(CivilizationRankingCategory category)
+		private string GetCategoryHeadline(CivilizationRankingCategory category)
 		{
 			return category switch
 			{
-				CivilizationRankingCategory.Richest => "RICHEST",
-				CivilizationRankingCategory.Strongest => "STRONGEST",
-				CivilizationRankingCategory.MostAdvanced => "MOST ADVANCED",
-				CivilizationRankingCategory.Happiest => "HAPPIEST",
-				CivilizationRankingCategory.Largest => "LARGEST",
-				_ => "LARGEST"
+				CivilizationRankingCategory.Richest => Translate("RICHEST"),
+				CivilizationRankingCategory.Strongest => Translate("STRONGEST"),
+				CivilizationRankingCategory.MostAdvanced => Translate("MOST ADVANCED"),
+				CivilizationRankingCategory.Happiest => Translate("HAPPIEST"),
+				CivilizationRankingCategory.Largest => Translate("LARGEST"),
+				_ => Translate("LARGEST")
 			};
 		}
 	}

@@ -38,8 +38,9 @@ namespace CivOne.Screens.Reports
 
 			if (Human.CurrentResearch != null)
 			{
-				this.DrawText($"Researching {Human.CurrentResearch.Name}", 0, 5, OffsetX + 160, OffsetY + 26, TextAlign.Center)
-					.DrawText($"Researching {Human.CurrentResearch.Name}", 0, 15, OffsetX + 159, OffsetY + 26, TextAlign.Center);
+				string researching = TranslateFormatted("Researching {0}", Human.CurrentResearch.Name);
+				this.DrawText(researching, 0, 5, OffsetX + 160, OffsetY + 26, TextAlign.Center)
+					.DrawText(researching, 0, 15, OffsetX + 159, OffsetY + 26, TextAlign.Center);
 
 				int xx = -1;
 				for (int i = 0; i < Human.Science; i++)
@@ -81,7 +82,9 @@ namespace CivOne.Screens.Reports
 			_update = true;
 		}
 
-		public ScienceReport() : base("SCIENCE REPORT", 1)
+		public override string Title() => Translate("SCIENCE REPORT");
+
+		public ScienceReport() : base(1)
 		{
 			Render();
 			_update = false;

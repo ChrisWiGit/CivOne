@@ -51,7 +51,7 @@ namespace CivOne.Screens.Reports
 			int totalIncome = _cities.Sum(c => c.GetRealTotalIncome());
 			int totalScience = _cities.Sum(c => c.GetRealTotalScience());
 
-			this.DrawText("City Trade", 0, 15, OffsetX + 8, OffsetY + 32);
+			this.DrawText(Translate("City Trade"), 0, 15, OffsetX + 8, OffsetY + 32);
 
 			int yy = OffsetY + 40;
 			int start = _page * PAGE_SIZE;
@@ -69,7 +69,7 @@ namespace CivOne.Screens.Reports
 
 				this.DrawText(city.Name, 0, 5, OffsetX + 16, yy + 1)
 					.DrawText(city.Name, 0, 15, OffsetX + 16, yy)
-					.DrawText($"{Luxuries}{LUXURIES}/{Taxes}{GOLD}/{Science}{SCIENCE}", 0, 10, OffsetX + 86, yy);
+					.DrawText(TranslateFormatted("{0}{1}/{2}{3}/{4}{5}", Luxuries, LUXURIES, Taxes, GOLD, Science, SCIENCE), 0, 10, OffsetX + 86, yy);
 
 				yy += Resources.GetFontHeight(0);
 			}
@@ -77,11 +77,11 @@ namespace CivOne.Screens.Reports
 			if (end >= _cities.Length)
 			{
 				yy += 4;
-				this.DrawText($"Total Income: {totalIncome}$", 0, 10, OffsetX + 8, yy);
+				this.DrawText(TranslateFormatted("Total Income: {0}$", totalIncome), 0, 10, OffsetX + 8, yy);
 				yy += Resources.GetFontHeight(0);
 				if (totalScience > 0 && yy <= 188)
 				{
-					this.DrawText($"Discoveries: {(int)Math.Ceiling((double)Human.ScienceCost / totalScience)} turns", 0, 10, OffsetX + 8, yy);
+					this.DrawText(TranslateFormatted("Discoveries: {0} turns", (int)Math.Ceiling((double)Human.ScienceCost / totalScience)), 0, 10, OffsetX + 8, yy);
 				}
 			}
 		}
@@ -90,7 +90,7 @@ namespace CivOne.Screens.Reports
 		{
 			int totalCost = _cities.Sum(c => c.TotalMaintenance);
 
-			this.DrawText("Maintenance Cost", 0, 15, OffsetX + 160, OffsetY + 32);
+			this.DrawText(Translate("Maintenance Cost"), 0, 15, OffsetX + 160, OffsetY + 32);
 
 			int yy = OffsetY + 40;
 			foreach (Building entry in Enum.GetValues(typeof(Building)))
@@ -101,12 +101,12 @@ namespace CivOne.Screens.Reports
 				IBuilding building = _cities.SelectMany(c => c.Buildings).First(b => b.Id == (int)entry);
 				if (building.Maintenance == 0) continue;
 
-				this.DrawText($"{count} {building.Name}, {building.Maintenance * count}$", 0, 14, OffsetX + 160, yy);
+				this.DrawText(TranslateFormatted("{0} {1}, {2}$", count, building.Name, building.Maintenance * count), 0, 14, OffsetX + 160, yy);
 				yy += Resources.GetFontHeight(0);
 			}
 
 			yy += 4;
-			this.DrawText($"Total Cost: {totalCost}$", 0, 14, OffsetX + 160, yy);
+			this.DrawText(TranslateFormatted("Total Cost: {0}$", totalCost), 0, 14, OffsetX + 160, yy);
 		}
 		
 		protected override bool HasUpdate(uint gameTick)
@@ -143,7 +143,9 @@ namespace CivOne.Screens.Reports
 			return NextPage();
 		}
 
-		public TradeReport() : base("TRADE REPORT", 2)
+		public override string Title() => Translate("TRADE REPORT");
+
+		public TradeReport() : base(2)
 		{
 			_cities = Game.GetCities().Where(c => Human == c.Owner && c.Size > 0).ToArray();
 		}

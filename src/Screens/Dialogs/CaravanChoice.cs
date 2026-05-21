@@ -69,14 +69,14 @@ namespace CivOne.Screens.Dialogs
 				FontId = FONT_ID
 			};
 
-			_menu.Items.Add("Keep moving").OnSelect(KeepMoving);
-			_menu.Items.Add("Establish trade route")
+			_menu.Items.Add(Translate("Keep moving")).OnSelect(KeepMoving);
+			_menu.Items.Add(Translate("Establish trade route"))
 				.SetEnabled(_service.CanEstablishTradeRoute(_unit, _city))
 				.OnSelect(EstablishTradeRoute);
 
 			if (_city.IsBuildingWonder)
 			{
-				_menu.Items.Add("Help build WONDER.").OnSelect(HelpBuildWonder);
+				_menu.Items.Add(Translate("Help build WONDER.")).OnSelect(HelpBuildWonder);
 			}
 
 			AddMenu(_menu);
@@ -95,7 +95,7 @@ namespace CivOne.Screens.Dialogs
 			_unit = unit;
 			_service = service ?? new CaravanChoiceService();
 
-			DialogBox.DrawText("Will you?", 0, 15, 5, 5);
+			DialogBox.DrawText(Translate("Will you?"), 0, 15, 5, 5);
 		}
 	}
 

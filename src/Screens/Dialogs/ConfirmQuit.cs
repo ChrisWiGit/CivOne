@@ -45,7 +45,8 @@ namespace CivOne.Screens.Dialogs
 				TextColour = 5,
 				FontId = 0
 			};
-			foreach (string choice in new [] { "Keep Playing", "Yes, Quit" })
+			string[] choices = [Translate("Keep Playing"), Translate("Yes, Quit")];
+			foreach (string choice in choices)
 			{
 				_menu.Items.Add(choice);
 			}
@@ -59,8 +60,8 @@ namespace CivOne.Screens.Dialogs
 
 		public ConfirmQuit() : base(100, 80, 104, 39)
 		{
-			DialogBox.DrawText("Are you sure you", 0, 15, 5, 5);
-			DialogBox.DrawText("want to Quit?", 0, 15, 5, 13);
+			DialogBox.DrawText(Translate("Are you sure you"), 0, 15, 5, 5);
+			DialogBox.DrawText(Translate("want to Quit?"), 0, 15, 5, 13);
 		}
 	}
 }

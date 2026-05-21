@@ -37,8 +37,8 @@ namespace CivOne.Screens.Reports
 		private void Render()
 		{
 			this.Clear(3);
-			this.DrawText("The Wonders of the World", 0, 5, OffsetX + 100, OffsetY + 13)
-				.DrawText("The Wonders of the World", 0, 15, OffsetX + 100, OffsetY + 12);
+			this.DrawText(Translate("The Wonders of the World"), 0, 5, OffsetX + 100, OffsetY + 13)
+				.DrawText(Translate("The Wonders of the World"), 0, 15, OffsetX + 100, OffsetY + 12);
 
 			this.FillRectangle(OffsetX + 8, OffsetY + 32, 304, 160, 3);
 

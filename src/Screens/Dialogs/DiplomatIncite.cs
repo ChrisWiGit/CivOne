@@ -11,6 +11,7 @@ using System;
 using System.Linq;
 using CivOne.Buildings;
 using CivOne.Graphics;
+using CivOne.Services;
 using CivOne.Tasks;
 using CivOne.Units;
 using CivOne.UserInterface;
@@ -64,8 +65,8 @@ namespace CivOne.Screens.Dialogs
 				FontId = FONT_ID
 			};
 
-			_menu.Items.Add("Forget It.").OnSelect(DontIncite);
-			_menu.Items.Add("Incite revolt").OnSelect(Incite);
+			_menu.Items.Add(Translate("Forget It.")).OnSelect(DontIncite);
+			_menu.Items.Add(Translate("Incite revolt")).OnSelect(Incite);
 			AddMenu(_menu);
 		}
 
@@ -73,7 +74,7 @@ namespace CivOne.Screens.Dialogs
 		{
 			_cityToIncite = cityToIncite ?? throw new ArgumentNullException(nameof(cityToIncite));
 			_diplomat = diplomat ?? throw new ArgumentNullException(nameof(diplomat));
-			_service = service ?? new DiplomatInciteService();
+			_service = service ?? new DiplomatInciteService(TranslationServiceFactory.GetCurrent());
 
 			IBitmap spyPortrait = Icons.Spy;
 			using Palette palette = Common.DefaultPalette.Merge(spyPortrait.Palette, 144);
@@ -84,9 +85,9 @@ namespace CivOne.Screens.Dialogs
 			var _inciteCost = Diplomat.InciteCost(cityToIncite);
 			_canIncite = Diplomat.CanIncite(cityToIncite, diplomat.Player.Gold);
 
-			DialogBox.DrawText("Spies Report", 0, 15, 45, 5);
-			DialogBox.DrawText($"Dissidents in {_cityToIncite.Name}", 0, 15, 45, 5 + Resources.GetFontHeight(FONT_ID));
-			DialogBox.DrawText($"will revolt for ${_inciteCost}", 0, 15, 45, 5 + (2 * Resources.GetFontHeight(FONT_ID)));
+			DialogBox.DrawText(Translate("Spies Report"), 0, 15, 45, 5);
+			DialogBox.DrawText(TranslateFormatted("Dissidents in {0}", _cityToIncite.Name), 0, 15, 45, 5 + Resources.GetFontHeight(FONT_ID));
+			DialogBox.DrawText(TranslateFormatted("will revolt for ${0}", _inciteCost), 0, 15, 45, 5 + (2 * Resources.GetFontHeight(FONT_ID)));
 		}
 	}
 
@@ -95,9 +96,10 @@ namespace CivOne.Screens.Dialogs
 		void InciteRevolt(City cityToIncite, Diplomat diplomat);
 	}
 
-	internal class DiplomatInciteService : IDiplomatInciteService
+	internal class DiplomatInciteService(ITranslationService translationService) : IDiplomatInciteService
 	{
 		private static Player Human => Game.Instance.HumanPlayer;
+		private readonly ITranslationService _t = translationService ?? throw new ArgumentNullException(nameof(translationService));
 
 		public void InciteRevolt(City cityToIncite, Diplomat diplomat)
 		{
@@ -105,15 +107,11 @@ namespace CivOne.Screens.Dialogs
 			var newOwner = diplomat.Owner;
 			var newPlayer = Game.Instance.GetPlayer(newOwner);
 
-			var msg = Message.General($"{previousOwner.TribeNamePlural} rebel!",
-				"Civil War in",
-				$"{cityToIncite.Name}.",
-				$"{newPlayer.TribeName} influence",
-				"suspected.");
+			var msg = Message.General(_t.TranslateFormattedArray("{0} rebel!\nCivil War in\n{1}.\n{2} influence\nsuspected.", previousOwner.TribeNamePlural, cityToIncite.Name, newPlayer.TribeName));
 			GameTask.Insert(msg);
 
 			int plundered = 0;
-			string[] lines = [$"{newPlayer.TribeNamePlural} capture", $"{cityToIncite.Name}. {plundered} gold", "pieces plundered."];
+			string[] lines = _t.TranslateFormattedArray("{0} capture\n{1}. {2} gold\npieces plundered.", newPlayer.TribeNamePlural, cityToIncite.Name, plundered);
 
 			Show captureCity = Show.CaptureCity(cityToIncite, lines);
 			EventHandler capture_done = (s1, a1) =>

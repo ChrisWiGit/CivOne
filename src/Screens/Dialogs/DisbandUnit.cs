@@ -11,6 +11,7 @@ using System.Linq;
 using CivOne.Advances;
 using CivOne.Enums;
 using CivOne.Graphics;
+using CivOne.Services;
 using CivOne.Units;
 using CivOne.UserInterface;
 
@@ -45,7 +46,7 @@ namespace CivOne.Screens.Dialogs
 				TextColour = 5,
 				FontId = 0
 			};
-			_menu.Items.Add("Unit Disbanded.").OnSelect(Cancel);
+			_menu.Items.Add(Translate("Unit Disbanded.")).OnSelect(Cancel);
 			_menu.MissClick += Cancel;
 			_menu.Cancel += Cancel;
 			AddMenu(_menu);
@@ -53,7 +54,7 @@ namespace CivOne.Screens.Dialogs
 
 		private static Picture[] TextPictures(City city, IUnit unit)
 		{
-			string[] message = [$"{city.Name} can't support", $"{unit.Name}."];
+			string[] message = TranslationServiceFactory.GetCurrent().TranslateFormattedArray("{0} can't support\\n{1}.", city.Name, unit.Name);
 			Picture[] output = new Picture[message.Length];
 			for (int i = 0; i < message.Length; i++)
 				output[i] = Resources.GetText(message[i], 0, 15);
@@ -69,8 +70,9 @@ namespace CivOne.Screens.Dialogs
 			Palette = palette;
 
 			DialogBox.AddLayer(governmentPortrait, 2, 2);
-			DialogBox.DrawText("Defense Minister:", 0, 15, 47, 4);
-			DialogBox.FillRectangle(47, 11, 94, 1, 11);
+			string advisorLabel = Translate("Defense Minister:");
+			DialogBox.DrawText(advisorLabel, 0, 15, 47, 4);
+			DialogBox.FillRectangle(47, 11, Resources.GetText(advisorLabel, 0, 15).Width + 1, 1, 11);
 
 			_textLines = TextPictures(city, unit);
 			for (int i = 0; i < _textLines.Length; i++)

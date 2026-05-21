@@ -55,8 +55,8 @@ namespace CivOne.Screens.Dialogs
                 FontId = 0
             };
 
-            _menu.Items.Add("Cancel").OnSelect(Cancel);
-            _menu.Items.Add("Attack").OnSelect(Continue);
+            _menu.Items.Add(Translate("Cancel")).OnSelect(Cancel);
+            _menu.Items.Add(Translate("Attack")).OnSelect(Continue);
 
             _menu.MissClick += Cancel;
             _menu.Cancel += Cancel;
@@ -78,9 +78,9 @@ namespace CivOne.Screens.Dialogs
             _dY = relY;
             _unit = unit;
 
-            string prompt = unit.PartMoves >= 2 ? "2" : "1";
-            prompt += "/3 strength?";
-            DialogBox.DrawText($"Attack at", 0, 15, 5, 5);
+            int strength = unit.PartMoves >= 2 ? 2 : 1;
+            string prompt = TranslateFormatted("{0}/3 strength?", strength);
+            DialogBox.DrawText(Translate("Attack at"), 0, 15, 5, 5);
             DialogBox.DrawText(prompt, 0, 15, 5, 5 + FontHigh);
         }
     }

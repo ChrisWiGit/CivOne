@@ -20,9 +20,8 @@ namespace CivOne.Screens.Dialogs
 		private void MenuRevolution(object sender, EventArgs args)
 		{
 			Human.Revolt();
-			GameTask.Enqueue(Message.Newspaper(null, 
-				$"The {Human.Civilization.NamePlural} are", 
-				"revolting! Citizens", "demand new govt."));
+			GameTask.Enqueue(Message.Newspaper(null,
+				TranslateFormattedArray("The {0} are\nrevolting! Citizens\ndemand new govt.", Human.Civilization.NamePlural)));
 			Cancel();
 		}
 
@@ -51,7 +50,8 @@ namespace CivOne.Screens.Dialogs
 				Indent = 2
 			};
 			int i = 0;
-			foreach (string choice in new [] { "_No thanks.", "_Yes, we need a new government." })
+			string[] choices = [Translate("_No thanks."), Translate("_Yes, we need a new government.")];
+			foreach (string choice in choices)
 			{
 				_menu.Items.Add(choice, i++);
 			}
@@ -65,7 +65,7 @@ namespace CivOne.Screens.Dialogs
 
 		public Revolution() : base(64, 80, 231, 31)
 		{
-			DialogBox.DrawText("Are you sure you want a REVOLUTION?", 0, 15, 5, 5);
+			DialogBox.DrawText(Translate("Are you sure you want a REVOLUTION?"), 0, 15, 5, 5);
 		}
 	}
 }

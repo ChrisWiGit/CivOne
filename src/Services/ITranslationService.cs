@@ -64,6 +64,7 @@ namespace CivOne.Services
 
 		/// <summary>
 		/// Translates a key, formats the result using <paramref name="args"/>, then splits on <c>\n</c>.
+		/// Use "\n" and not "\\n" in the translation value, as the splitting is done after formatting.
 		/// </summary>
 		string[] TranslateFormattedArray(string key, params object[] args);
 	}

@@ -50,7 +50,8 @@ namespace CivOne.Screens.Dialogs
 				TextColour = 5,
 				FontId = 0
 			};
-			foreach (string choice in new [] { "No, keep existing", "Yes, overwrite" })
+			string[] choices = [Translate("No, keep existing"), Translate("Yes, overwrite")];
+			foreach (string choice in choices)
 			{
 				_menu.Items.Add(choice);
 			}
@@ -69,8 +70,8 @@ namespace CivOne.Screens.Dialogs
 			_destination = destination;
 			_filename = Path.GetFileName(destination);
 
-			DialogBox.DrawText("Overwrite existing plugin", 0, 15, 5, 5);
-			DialogBox.DrawText($"file {_filename}?", 0, 15, 5, 13);
+			DialogBox.DrawText(Translate("Overwrite existing plugin"), 0, 15, 5, 5);
+			DialogBox.DrawText(TranslateFormatted("file {0}?", _filename), 0, 15, 5, 13);
 		}
 	}
 

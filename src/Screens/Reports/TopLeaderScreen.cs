@@ -84,8 +84,8 @@ namespace CivOne.Screens.Reports
 			string[] lines =
 			[
 				Translate("Sire, your Civilization"),
-				string.Format(Translate("Rating of {0}% exceeds even"), leaderOrderResult.RatingPercent),
-				string.Format(Translate("{0}!"), leaderOrderResult.SelectedLeaderName)
+				TranslateFormatted("Rating of {0}% exceeds even", leaderOrderResult.RatingPercent),
+				TranslateFormatted("{0}!", leaderOrderResult.SelectedLeaderName)
 			];
 
 			for (int i = 0; i < lines.Length; i++)
@@ -197,7 +197,7 @@ namespace CivOne.Screens.Reports
 			const byte black = 5;
 
 			int debugTextY = CanvasHeight - borderSize - _fontHeight;
-			this.DrawText("F1/F2 Inc/Dec Score", HeaderAndLeaderFontId, black, borderSize, debugTextY);
+			this.DrawText(Translate("F1/F2 Inc/Dec Score"), HeaderAndLeaderFontId, black, borderSize, debugTextY);
 		}
 
 		private bool IncreaseScoreStep()

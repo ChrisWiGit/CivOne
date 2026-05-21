@@ -75,7 +75,7 @@ namespace CivOne.Screens.Dialogs
 			_player = player ?? throw new ArgumentNullException(nameof(player));
 			_advances = advances ?? throw new ArgumentNullException(nameof(advances));
 
-			DialogBox.DrawText($"Select one...", 0, 15, 5, 5);
+			DialogBox.DrawText(Translate("Select one..."), 0, 15, 5, 5);
 		}
 	}
 }

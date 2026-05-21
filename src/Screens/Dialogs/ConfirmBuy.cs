@@ -9,6 +9,7 @@
 
 using System;
 using CivOne.Graphics;
+using CivOne.Services;
 
 namespace CivOne.Screens.Dialogs
 {
@@ -18,12 +19,14 @@ namespace CivOne.Screens.Dialogs
 
 		private Menu _menu;
 
+		private static string[] MessageLines(string name, short price, short treasury)
+		{
+			return TranslationServiceFactory.GetCurrent()
+				.TranslateFormattedArray("Cost to complete\n{0}: ${1}\nTreasury: ${2}", name, price, treasury);
+		}
+
 		public ConfirmBuy(string name, short price, short treasury)
-			: base(100, 80, 9, 23, [
-				"Cost to complete",
-				$"{name}: ${price}",
-				$"Treasury: ${treasury}"
-			])
+			: base(100, 80, 9, 23, MessageLines(name, price, treasury))
 		{
 			for (int i = 0; i < TextLines.Length; i++)
 			{
@@ -53,8 +56,8 @@ namespace CivOne.Screens.Dialogs
 				FontId = 0
 			};
 
-			_menu.Items.Add("Yes", 0);
-			_menu.Items.Add("No", 1);
+			_menu.Items.Add(Translate("Yes"), 0);
+			_menu.Items.Add(Translate("No"), 1);
 
 			_menu.Items[0].Selected += Confirm;
 			_menu.Items[1].Selected += Cancel;

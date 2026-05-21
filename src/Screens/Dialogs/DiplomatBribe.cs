@@ -62,8 +62,8 @@ namespace CivOne.Screens.Dialogs
 				FontId = FONT_ID
 			};
 
-			_menu.Items.Add("Forget It.").OnSelect(DontBribe);
-			_menu.Items.Add("Pay").OnSelect(Bribe);
+			_menu.Items.Add(Translate("Forget It.")).OnSelect(DontBribe);
+			_menu.Items.Add(Translate("Pay")).OnSelect(Bribe);
 			AddMenu(_menu);
 		}
 
@@ -81,9 +81,9 @@ namespace CivOne.Screens.Dialogs
 			var _bribeCost = _service.CalculateBribeCost();
 			_canBribe = _service.CanBribe();
 
-			DialogBox.DrawText($"{_service.TribeName} {_service.UnitName}", 0, 15, 5, 5);
-			DialogBox.DrawText($"will desert for ${_bribeCost}", 0, 15, 5, 5 + Resources.GetFontHeight(FONT_ID));
-			DialogBox.DrawText($"Treasury ${_service.Gold}", 0, 15, 5, 5 + (2 * Resources.GetFontHeight(FONT_ID)));
+			DialogBox.DrawText(TranslateFormatted("{0} {1}", _service.TribeName, _service.UnitName), 0, 15, 5, 5);
+			DialogBox.DrawText(TranslateFormatted("will desert for ${0}", _bribeCost), 0, 15, 5, 5 + Resources.GetFontHeight(FONT_ID));
+			DialogBox.DrawText(TranslateFormatted("Treasury ${0}", _service.Gold), 0, 15, 5, 5 + (2 * Resources.GetFontHeight(FONT_ID)));
 		}
 	}
 
