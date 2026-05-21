@@ -53,9 +53,10 @@ namespace CivOne
 				bool validRoad = (tile.City == null) && tile.Road;
 				int nearestCity = 255;
 				int nearestOwnCity = 255;
-				
-				if (Game.GetCities().Any()) nearestCity = Game.GetCities().Min(x => Common.DistanceToTile(x.X, x.Y, tile.X, tile.Y));
-				if (Game.GetCities().Any(x => x.Owner == unit.Owner)) nearestOwnCity = Game.GetCities().Where(x => x.Owner == unit.Owner).Min(x => Common.DistanceToTile(x.X, x.Y, tile.X, tile.Y));
+				City[] cities = Game.GetCities();
+				City[] ownCities = cities.Where(x => x.Owner == unit.Owner).ToArray();
+				if (cities.Any()) nearestCity = cities.Min(x => Common.DistanceToTile(x.X, x.Y, tile.X, tile.Y));
+				if (ownCities.Any()) nearestOwnCity = ownCities.Min(x => Common.DistanceToTile(x.X, x.Y, tile.X, tile.Y));
 				
 				if (validCity && nearestCity > 3)
 				{
