@@ -6,6 +6,10 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Stabilized city food caching to prevent stale values after resource tile changes.
+  * `FoodRaw` cache is now validated per game turn and recalculated when needed.
+  * Cache invalidation now runs on relevant city/resource tile mutation paths (owner/size/resource tile updates).
+  * Keeps the performance optimization while ensuring correct `FoodIncome` and `FoodTotal` values.
 * Feature: International font simulation for non-English languages
   * Players with an English-only `FONTS.CV` can now display translated text (e.g. German umlauts, French accented letters) without a modified font file.
   * Missing glyphs are synthesised at runtime by composing the base letter with the required diacritic mark.
