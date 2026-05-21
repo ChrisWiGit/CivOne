@@ -962,7 +962,7 @@ namespace CivOne
 			}
 		}
 
-		private readonly List<IUnit> _homeUnits = new();
+		private readonly List<IUnit> _homeUnits = [];
 		internal void AddHomeUnit(IUnit unit) { if (!_homeUnits.Contains(unit)) _homeUnits.Add(unit); }
 		internal void RemoveHomeUnit(IUnit unit) => _homeUnits.Remove(unit);
 		public IUnit[] Units => _homeUnits.ToArray();
