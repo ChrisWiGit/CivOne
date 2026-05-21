@@ -30,5 +30,13 @@ namespace CivOne.Services
 		{
 			return string.Format(key, args);
 		}
+
+		/// <inheritdoc/>
+		public string[] TranslateArray(string key)
+			=> Translate(key).Split('\n');
+
+		/// <inheritdoc/>
+		public string[] TranslateFormattedArray(string key, params object[] args)
+			=> TranslateFormatted(key, args).Split('\n');
 	}
 }

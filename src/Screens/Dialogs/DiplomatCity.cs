@@ -12,6 +12,7 @@ using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Civilizations;
 using CivOne.Graphics;
+using CivOne.Services;
 using CivOne.Tasks;
 using CivOne.Units;
 using CivOne.UserInterface;
@@ -88,12 +89,12 @@ namespace CivOne.Screens.Dialogs
 				FontId = FONT_ID
 			};
 
-			_menu.Items.Add("Establish Embassy").OnSelect(EstablishEmbassy).SetEnabled(!_service.HasEmbassy);
-			_menu.Items.Add("Investigate City").OnSelect(InvestigateCity);
-			_menu.Items.Add("Steal Technology").OnSelect(StealTechnology).SetEnabled(!_service.TechStolen);
-			_menu.Items.Add("Industrial Sabotage").OnSelect(IndustrialSabotage);
-			_menu.Items.Add("Incite a Revolt").OnSelect(InciteRevolt).SetEnabled(!_service.HasPalace);
-			_menu.Items.Add("Meet with King").OnSelect(MeetWithKing).SetEnabled(!_service.IsBarbarian);
+			_menu.Items.Add(Translate("Establish Embassy")).OnSelect(EstablishEmbassy).SetEnabled(!_service.HasEmbassy);
+			_menu.Items.Add(Translate("Investigate City")).OnSelect(InvestigateCity);
+			_menu.Items.Add(Translate("Steal Technology")).OnSelect(StealTechnology).SetEnabled(!_service.TechStolen);
+			_menu.Items.Add(Translate("Industrial Sabotage")).OnSelect(IndustrialSabotage);
+			_menu.Items.Add(Translate("Incite a Revolt")).OnSelect(InciteRevolt).SetEnabled(!_service.HasPalace);
+			_menu.Items.Add(Translate("Meet with King")).OnSelect(MeetWithKing).SetEnabled(!_service.IsBarbarian);
 
 			_menu.Cancel += Cancel;
 			_menu.MissClick += Cancel;
@@ -111,21 +112,22 @@ namespace CivOne.Screens.Dialogs
 		{
 			_service = service ?? throw new ArgumentNullException(nameof(service));
 
-			DialogBox.DrawText($"{_service.TribeName} diplomat arrives", 0, 15, 5, 5);
-			DialogBox.DrawText($"in {_service.CityName}", 0, 15, 5, 5 + Resources.GetFontHeight(FONT_ID));
+			DialogBox.DrawText(TranslateFormatted("{0} diplomat", _service.TribeName), 0, 15, 5, 5);
+			DialogBox.DrawText(TranslateFormatted("arrives in {0}", _service.CityName), 0, 15, 5, 5 + Resources.GetFontHeight(FONT_ID));
 		}
 	}
 
 	internal static class DiplomatCityDialogFactory
 	{
-		public static IDiplomatCityService CreateService(City enemyCity, Diplomat diplomat)
+		public static IDiplomatCityService CreateService(City enemyCity, Diplomat diplomat, ITranslationService translationService)
 		{
-			return new DiplomatCityService(enemyCity, diplomat);
+			return new DiplomatCityService(enemyCity, diplomat, translationService);
 		}
 
-		public static IScreen CreateDialog(City enemyCity, Diplomat diplomat)
+		public static IScreen CreateDialog(City enemyCity, Diplomat diplomat, ITranslationService translationService = null)
 		{
-			IDiplomatCityService service = CreateService(enemyCity, diplomat);
+			translationService ??= TranslationServiceFactory.GetCurrent();
+			IDiplomatCityService service = CreateService(enemyCity, diplomat, translationService);
 			return new DiplomatCity(service);
 		}
 
@@ -152,11 +154,12 @@ namespace CivOne.Screens.Dialogs
 		bool IsBarbarian { get; }
 	}
 
-	internal class DiplomatCityService(City enemyCity, Diplomat diplomat) : IDiplomatCityService
+	internal class DiplomatCityService(City enemyCity, Diplomat diplomat, ITranslationService translationService) : IDiplomatCityService
 	{
 		private static Player Human => Game.Instance.HumanPlayer;
 		private readonly City _enemyCity = enemyCity ?? throw new ArgumentNullException(nameof(enemyCity));
 		private readonly Diplomat _diplomat = diplomat ?? throw new ArgumentNullException(nameof(diplomat));
+		private readonly ITranslationService _t = translationService ?? throw new ArgumentNullException(nameof(translationService));
 
 		public string TribeName => _enemyCity.Player.TribeName;
 
@@ -189,7 +192,8 @@ namespace CivOne.Screens.Dialogs
 
 		public void IndustrialSabotage()
 		{
-			GameTask.Enqueue(Message.Spy("Spies report:", $"{_diplomat.Sabotage(_enemyCity)}", $"in {_enemyCity.Name}"));
+			GameTask.Enqueue(Message.Spy(
+				_t.TranslateFormattedArray("Spies report:\n{0} sabotage\nin {1}", _diplomat.Player.TribeName, _enemyCity.Name)));
 		}
 
 		public void MeetWithKing()
@@ -201,14 +205,14 @@ namespace CivOne.Screens.Dialogs
 		{
 			if (_enemyCity.TechStolen)
 			{
-				GameTask.Insert(Message.General("No new technology found"));
+				GameTask.Insert(Message.General(_t.Translate("No new technology found")));
 				return;
 			}
 
 			IAdvance advance = _diplomat.GetAdvanceToSteal(_enemyCity.Player);
 			if (advance == null)
 			{
-				GameTask.Insert(Message.General("No new technology found"));
+				GameTask.Insert(Message.General(_t.Translate("No new technology found")));
 				return;
 			}
 
@@ -218,7 +222,8 @@ namespace CivOne.Screens.Dialogs
 				_enemyCity.TechStolen = true;
 				Game.Instance.DisbandUnit(_diplomat);
 				if (_diplomat.Player == Human || _enemyCity.Player == Human)
-					GameTask.Insert(Message.Spy("Spies report:", $"{_diplomat.Player.TribeName} steal", $"{advance.Name}"));
+					GameTask.Insert(Message.Spy(
+						_t.TranslateFormattedArray("Spies report:\n{0} steal\n{1}", _diplomat.Player.TribeName, advance.Name)));
 			};
 			GameTask.Enqueue(task);
 		}

@@ -615,7 +615,7 @@ namespace CivOne.Screens
 				var diplomat = (Diplomat)Game.CreateUnit(UnitType.Diplomat);
 				diplomat.Owner = _humanOwner;
 
-				var service = DiplomatCityDialogFactory.CreateService(enemyCity, diplomat);
+				var service = DiplomatCityDialogFactory.CreateService(enemyCity, diplomat, Translation);
 				GameTask diplomatCityDialog = Show.Screen(DiplomatCityDialogFactory.CreateDialog(service));
 				diplomatCityDialog.Done += (_, _) =>
 				{
