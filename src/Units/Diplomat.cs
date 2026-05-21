@@ -95,18 +95,13 @@ namespace CivOne.Units
 				return true;
 			}
 
-			IUnit[] units = moveTarget.Units;
+			IUnit[] enemies = moveTarget.Units.Where(u => u.Owner != Owner).ToArray();
 
-			if (units.Length == 1)
+			if (enemies.Length > 0)
 			{
-				IUnit unit = units[0];
-
-                // TODO fire-eggs bribe ocean unit
-				if (Human == Owner && unit.Owner != Owner && unit is BaseUnitLand)
-				{
-					GameTask.Enqueue(Show.DiplomatBribe(unit as BaseUnitLand, this));
-					return true;
-				}
+				if (Human == Owner && enemies.Length == 1 && enemies[0] is BaseUnitLand)
+					GameTask.Enqueue(Show.DiplomatBribe(enemies[0] as BaseUnitLand, this));
+				return false;
 			}
 
 			MovementTo(relX, relY);
