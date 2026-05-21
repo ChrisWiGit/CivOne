@@ -118,6 +118,9 @@ namespace CivOne.UnitTests
             Assert.True(city.FoodTotal < initial);
 
             tile.Pollution = false;
+            int restoredExpected = city.ResourceTiles.Sum(t => city.FoodValue(t));
+            Assert.Equal(restoredExpected, city.FoodTotal);
+            Assert.Equal(initial, city.FoodTotal);
         }
 
         [Fact]
