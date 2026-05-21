@@ -93,13 +93,13 @@ namespace CivOne.UnitTests
         [Fact]
         public void FoodTotal_Recomputes_WhenWorkedTileFoodChangesWithinSameTurn()
         {
-            Player player = playa;
-            var unit = Game.Instance.GetUnits().First(x => x.Owner == player.Civilization.Id);
-            City city = Game.Instance.AddCity(player, 0, unit.X, unit.Y);
+            var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
+            City city = Game.Instance.AddCity(playa, 0, unit.X, unit.Y);
             city.Size = 4;
             city.ResetResourceTiles();
-            player.Government = new Monarchy();
+            playa.Government = new Monarchy();
 
+            // Find a worked tile where toggling pollution actually changes effective food on the current map/government setup.
             ITile tile = city.ResourceTiles.First(t =>
             {
                 bool originalPollution = t.Pollution;

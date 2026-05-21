@@ -325,6 +325,7 @@ namespace CivOne
 		{
 			unchecked
 			{
+				// FNV-1a 64-bit hash over food-affecting city/tile state.
 				ulong hash = 1469598103934665603UL;
 
 				hash = (hash ^ (uint)Owner) * 1099511628211UL;
@@ -334,6 +335,7 @@ namespace CivOne
 					hash = (hash ^ (uint)tile.X) * 1099511628211UL;
 					hash = (hash ^ (uint)tile.Y) * 1099511628211UL;
 					hash = (hash ^ (uint)tile.Type) * 1099511628211UL;
+					// Food is signed; shift into a non-negative byte range for stable hashing.
 					hash = (hash ^ (uint)(tile.Food + 128)) * 1099511628211UL;
 					hash = (hash ^ (tile.Special ? 1UL : 0UL)) * 1099511628211UL;
 					hash = (hash ^ (tile.Irrigation ? 1UL : 0UL)) * 1099511628211UL;
