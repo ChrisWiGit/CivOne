@@ -57,6 +57,7 @@ namespace CivOne
 			set
 			{
 				_owner = value;
+				InvalidateCityBreakdownCache();
 				ResetResourceTiles();
 			}
 		}
@@ -70,6 +71,7 @@ namespace CivOne
 				if (X == 255 || Y == 255) return;
 
 				_size = value;
+				InvalidateCityBreakdownCache();
 				if (_size == 0)
 				{
 					Map[X, Y].Road = false;
@@ -95,6 +97,7 @@ namespace CivOne
 			set
 			{
 				_resourceTiles = value;
+				InvalidateCityBreakdownCache();
 			}
 		}
 
@@ -177,9 +180,9 @@ namespace CivOne
 			}
 		}
 
-		internal int FoodIncome => ResourceTiles.Sum(t => FoodValue(t)) - FoodCosts;
+		internal int FoodIncome => FoodRaw - FoodCosts;
 		internal int FoodRequired => (int)(Size + 1) * 10;
-		internal int FoodTotal => ResourceTiles.Sum(t => FoodValue(t));
+		internal int FoodTotal => FoodRaw;
 
 		/// <summary>
 		/// Food produced by a tile, taking government and improvements into account
@@ -282,6 +285,9 @@ namespace CivOne
 		}
 
 		private CityEconomyBreakdown? _cachedCityBreakdown;
+		private int? _cachedFoodRaw;
+		private ulong _cachedFoodRawStateHash = ulong.MaxValue;
+		private const int TileFoodHashOffset = 128;
 
 		private CityEconomyBreakdown GetCachedCityBreakdown()
 		{
@@ -295,6 +301,49 @@ namespace CivOne
 		internal void InvalidateCityBreakdownCache()
 		{
 			_cachedCityBreakdown = null;
+			_cachedFoodRaw = null;
+			_cachedFoodRawStateHash = ulong.MaxValue;
+		}
+
+		private int FoodRaw
+		{
+			get
+			{
+				ulong currentFoodStateHash = GetFoodRawStateHash();
+				if (!_cachedFoodRaw.HasValue || _cachedFoodRawStateHash != currentFoodStateHash)
+				{
+					_cachedFoodRaw = ResourceTiles.Sum(t => FoodValue(t));
+					_cachedFoodRawStateHash = currentFoodStateHash;
+				}
+
+				return _cachedFoodRaw.Value;
+			}
+		}
+
+		private ulong GetFoodRawStateHash()
+		{
+			unchecked
+			{
+				// FNV-1a 64-bit hash over food-affecting city/tile state.
+				ulong hash = 1469598103934665603UL;
+
+				hash = (hash ^ (uint)Owner) * 1099511628211UL;
+				hash = (hash ^ (Player.AnarchyDespotism ? 1UL : 0UL)) * 1099511628211UL;
+				foreach (ITile tile in ResourceTiles)
+				{
+					hash = (hash ^ (uint)tile.X) * 1099511628211UL;
+					hash = (hash ^ (uint)tile.Y) * 1099511628211UL;
+					hash = (hash ^ (uint)tile.Type) * 1099511628211UL;
+					// Food is sbyte (-128..127); shift into 0..255 for stable hashing.
+					hash = (hash ^ (uint)(tile.Food + TileFoodHashOffset)) * 1099511628211UL;
+					hash = (hash ^ (tile.Special ? 1UL : 0UL)) * 1099511628211UL;
+					hash = (hash ^ (tile.Irrigation ? 1UL : 0UL)) * 1099511628211UL;
+					hash = (hash ^ (tile.RailRoad ? 1UL : 0UL)) * 1099511628211UL;
+					hash = (hash ^ (tile.Pollution ? 1UL : 0UL)) * 1099511628211UL;
+				}
+
+				return hash;
+			}
 		}
 
 		// CW: Prevent negative trade values.
@@ -665,6 +714,7 @@ namespace CivOne
 		private void SetResourceTiles()
 		{
 			if (!Game.Started) return;
+			InvalidateCityBreakdownCache();
 
 			if (_resourceTiles.Count > Size)
 			{
@@ -693,6 +743,7 @@ namespace CivOne
 		private void SetResourceTiles2()
 		{
 			if (!Game.Started) return;
+			InvalidateCityBreakdownCache();
 
 			while (_resourceTiles.Count > Size)
 				_resourceTiles.RemoveAt(_resourceTiles.Count - 1);
@@ -735,6 +786,7 @@ namespace CivOne
 
 		public void ResetResourceTiles()
 		{
+			InvalidateCityBreakdownCache();
 			_resourceTiles.Clear();
 			for (int i = 0; i < Size; i++)
 				SetResourceTiles();
@@ -757,11 +809,13 @@ namespace CivOne
 			if (_resourceTiles.Contains(tile))
 			{
 				_resourceTiles.Remove(tile);
+				InvalidateCityBreakdownCache();
 				UpdateSpecialists();
 
 				return;
 			}
 			_resourceTiles.Add(tile);
+			InvalidateCityBreakdownCache();
 			UpdateSpecialists();
 		}
 

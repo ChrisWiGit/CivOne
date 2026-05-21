@@ -1,7 +1,10 @@
 using System.Collections.Generic;
+using System.Linq;
 using CivOne.Buildings;
 using CivOne.Enums;
+using CivOne.Governments;
 using CivOne.src;
+using CivOne.Tiles;
 using CivOne.Wonders;
 using Xunit;
 
@@ -87,6 +90,39 @@ namespace CivOne.UnitTests
 
     public class CityEconomyServiceImplCalculateBreakdownTests : TestsBase
     {
+        [Fact]
+        public void FoodTotal_Recomputes_WhenWorkedTileFoodChangesWithinSameTurn()
+        {
+            var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
+            City city = Game.Instance.AddCity(playa, 0, unit.X, unit.Y);
+            city.Size = 4;
+            city.ResetResourceTiles();
+            playa.Government = new Monarchy();
+
+            // Find a worked tile where toggling pollution actually changes effective food on the current map/government setup.
+            ITile tile = city.ResourceTiles.First(t =>
+            {
+                bool originalPollution = t.Pollution;
+                int originalFood = city.FoodValue(t);
+                t.Pollution = true;
+                int pollutedFood = city.FoodValue(t);
+                t.Pollution = originalPollution;
+                return pollutedFood < originalFood;
+            });
+
+            int initial = city.FoodTotal;
+            tile.Pollution = true;
+            int expected = city.ResourceTiles.Sum(t => city.FoodValue(t));
+
+            Assert.Equal(expected, city.FoodTotal);
+            Assert.True(city.FoodTotal < initial);
+
+            tile.Pollution = false;
+            int restoredExpected = city.ResourceTiles.Sum(t => city.FoodValue(t));
+            Assert.Equal(restoredExpected, city.FoodTotal);
+            Assert.Equal(initial, city.FoodTotal);
+        }
+
         [Fact]
         public void CalculateBreakdown_IncludesTradingRoutesAndWonderRules()
         {

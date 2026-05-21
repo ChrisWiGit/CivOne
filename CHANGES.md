@@ -6,6 +6,10 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Stabilized city food caching to prevent stale values after resource tile changes.
+  * `FoodRaw` cache is now validated per game turn and recalculated when needed.
+  * Cache invalidation now runs on relevant city/resource tile mutation paths (owner/size/resource tile updates).
+  * Keeps the performance optimization while ensuring correct `FoodIncome` and `FoodTotal` values.
 * Fix: Fix and Migration of [mwerneburg](https://github.com/ChrisWiGit/CivOne/pull/33)
   * Keep city home-unit cache and unit home reference consistent during removal.
   * `DestroyCity(...)` and `DisbandUnit(...)` now clear a unit's home via `SetHome(null)` before removing it from game unit lists.
