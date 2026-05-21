@@ -47,7 +47,7 @@ namespace CivOne.Screens.Reports
 		private const byte HeaderAndLeaderFontId = 0;
 		private const int HeaderBoxX = 78;
 		private const int HeaderBoxY = 8;
-		private const int HeaderBoxWidth = 164;
+		private const int HeaderBoxWidth = 180;
 		private int _debugScore;
 
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);

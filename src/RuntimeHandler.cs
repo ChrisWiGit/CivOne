@@ -143,11 +143,25 @@ namespace CivOne
 				return;
 			}
 
-			// sometimes during screen transitions, the top screen may be null or have a null palette. 
-			if (topScreen.Palette != null)
+			// During screen/menu transitions, a disposed screen palette can briefly be observed.
+			// Guard palette copy so rendering falls back safely instead of crashing.
+			if (topScreen.Palette is { IsDisposed: false })
+			{
+				try
+				{
+					Runtime.Palette?.Dispose();
+					Runtime.Palette = topScreen.Palette.Copy();
+				}
+				catch (ObjectDisposedException)
+				{
+					Runtime.Palette?.Dispose();
+					Runtime.Palette = Common.DefaultPalette;
+				}
+			}
+			else
 			{
 				Runtime.Palette?.Dispose();
-				Runtime.Palette = topScreen.Palette.Copy();
+				Runtime.Palette = Common.DefaultPalette;
 			}
 			
 			if (Common.HasAttribute<Modal>(topScreen))

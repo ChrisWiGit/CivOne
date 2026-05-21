@@ -9,11 +9,18 @@
 
 namespace CivOne.Services
 {
+	public interface IGameCalendarService
+	{
+		ushort YearToTurn(int year);
+		int TurnToYear(ushort turn);
+		string FormatYear(ushort turn, bool zeroAd = false);
+		string FormatEra(ushort turn);
+	}
 	/// <summary>
 	/// Converts between game turns and calendar years, and formats years for display.
 	/// BC/AD labels are resolved through the translation service to support localization.
 	/// </summary>
-	public class GameCalendarService(ITranslationService _translationService = null)
+	public class GameCalendarService(ITranslationService _translationService = null) : IGameCalendarService
 	{
 		private readonly ITranslationService _translation = _translationService ?? TranslationServiceFactory.GetCurrent();
 
