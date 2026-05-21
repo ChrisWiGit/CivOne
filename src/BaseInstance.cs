@@ -46,5 +46,15 @@ namespace CivOne
 		{
 			return Translation.TranslateFormatted(key, args);
 		}
+
+		protected string[] TranslateArray(string key)
+		{
+			return Translation.TranslateArray(key);
+		}
+
+		protected string[] TranslateFormattedArray(string key, params object[] args)
+		{
+			return Translation.TranslateFormattedArray(key, args);
+		}
 	}
 }

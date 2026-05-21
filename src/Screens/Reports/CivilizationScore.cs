@@ -150,7 +150,7 @@ namespace CivOne.Screens.Reports
 			}
 
 			int yy = OffsetY + 32;
-			this.DrawText($"{tribeName} Citizens ({citizenScore})", 0, 15, OffsetX + 8, yy);
+			this.DrawText(TranslateFormatted("{0} Citizens ({1})", tribeName, citizenScore), 0, 15, OffsetX + 8, yy);
 
 			int citizenStartX = OffsetX + 8;
 			int citizenMaxX = OffsetX + 312;
@@ -177,22 +177,22 @@ namespace CivOne.Screens.Reports
 			int totalScore = _civilizationScoreService.TotalScore(Human);
 
 			yy = lastCitizenY + 16;
-			this.DrawText($"Cities ({cityScore})", 0, 15, OffsetX + 8, yy);
+			this.DrawText(TranslateFormatted("Cities ({0})", cityScore), 0, 15, OffsetX + 8, yy);
 
 			yy += fontHeight + 4;
-			this.DrawText($"Population ({populationScore})", 0, 15, OffsetX + 8, yy);
+			this.DrawText(TranslateFormatted("Population ({0})", populationScore), 0, 15, OffsetX + 8, yy);
 
 			yy += fontHeight + 4;
-			this.DrawText($"Advances ({advanceScore})", 0, 15, OffsetX + 8, yy);
+			this.DrawText(TranslateFormatted("Advances ({0})", advanceScore), 0, 15, OffsetX + 8, yy);
 
 			yy += fontHeight + 4;
-			this.DrawText($"{tribeName} Achievements ({wonderScore})", 0, 15, OffsetX + 8, yy);
+			this.DrawText(TranslateFormatted("{0} Achievements ({1})", tribeName, wonderScore), 0, 15, OffsetX + 8, yy);
 
 			yy += fontHeight + 4;
-			this.DrawText($"Treasury ({goldScore})", 0, 15, OffsetX + 8, yy);
+			this.DrawText(TranslateFormatted("Treasury ({0})", goldScore), 0, 15, OffsetX + 8, yy);
 
 			yy += fontHeight + 4;
-			this.DrawText($"Total Score: {totalScore}", 0, 15, OffsetX + 8, yy);
+			this.DrawText(TranslateFormatted("Total Score: {0}", totalScore), 0, 15, OffsetX + 8, yy);
 		}
 
 		protected override bool HasUpdate(uint gameTick)
@@ -212,7 +212,9 @@ namespace CivOne.Screens.Reports
 			_update = true;
 		}
 
-		public CivilizationScore(ICivilizationScoreService civilizationScoreService = null) : base("CIVILIZATION SCORE", 3)
+		public override string Title() => Translate("CIVILIZATION SCORE");
+
+		public CivilizationScore(ICivilizationScoreService civilizationScoreService = null) : base(3)
 		{
 			_civilizationScoreService = civilizationScoreService ?? CivilizationScoreServiceFactory.CreateDefault();
 			// Delay initial input briefly so the key that opened the report does not close it immediately again.

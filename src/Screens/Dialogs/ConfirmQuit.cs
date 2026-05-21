@@ -14,6 +14,8 @@ namespace CivOne.Screens.Dialogs
 {
 	internal class ConfirmQuit : BaseDialog
 	{
+		private Menu _menu;
+
 		private void MenuQuit(object sender, EventArgs args)
 		{
 			Runtime.Quit();
@@ -22,31 +24,44 @@ namespace CivOne.Screens.Dialogs
 
 		protected override void FirstUpdate()
 		{
-			Menu menu = new Menu(Palette, Selection(3, 20, 100, 16))
+			CreateMenu();
+			base.FirstUpdate();
+		}
+
+		private void CreateMenu()
+		{
+			if (_menu is not null)
+			{
+				return;
+			}
+
+			_menu = new Menu(Palette, Selection(3, 20, 100, 16))
 			{
 				X = 103,
 				Y = 100,
+				CenterTo320Coordinates = true,
 				MenuWidth = 100,
 				ActiveColour = 11,
 				TextColour = 5,
 				FontId = 0
 			};
-			foreach (string choice in new [] { "Keep Playing", "Yes, Quit" })
+			string[] choices = [Translate("Keep Playing"), Translate("Yes, Quit")];
+			foreach (string choice in choices)
 			{
-				menu.Items.Add(choice);
+				_menu.Items.Add(choice);
 			}
-			menu.Items[0].Selected += Cancel;
-			menu.Items[1].Selected += MenuQuit;
+			_menu.Items[0].Selected += Cancel;
+			_menu.Items[1].Selected += MenuQuit;
 
-			menu.MissClick += Cancel;
-			menu.Cancel += Cancel;
-			AddMenu(menu);
+			_menu.MissClick += Cancel;
+			_menu.Cancel += Cancel;
+			AddMenu(_menu);
 		}
 
 		public ConfirmQuit() : base(100, 80, 104, 39)
 		{
-			DialogBox.DrawText("Are you sure you", 0, 15, 5, 5);
-			DialogBox.DrawText("want to Quit?", 0, 15, 5, 13);
+			DialogBox.DrawText(Translate("Are you sure you"), 0, 15, 5, 5);
+			DialogBox.DrawText(Translate("want to Quit?"), 0, 15, 5, 13);
 		}
 	}
 }

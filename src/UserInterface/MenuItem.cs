@@ -30,6 +30,7 @@ namespace CivOne.UserInterface
 
 		internal void Select()
 		{
+			if (!Enabled) return;
 			if (Selected == null) return;
 			Selected(this, _args);
 		}

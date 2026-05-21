@@ -78,10 +78,10 @@ namespace CivOne.Screens.Reports
 			int content = (int)Math.Floor((double)(100 / totalCitizens) * contentCitizens);
 			int unhappy = (int)Math.Floor((double)(100 / totalCitizens) * unhappyCitizens);
 
-			this.DrawText($"Population: {population} Happy:{happy}% Content:{content}% Unhappy:{unhappy}%", 0, 15, OffsetX + 16, y);
+			this.DrawText(TranslateFormatted("Population: {0} Happy:{1}% Content:{2}% Unhappy:{3}%", population, happy, content, unhappy), 0, 15, OffsetX + 16, y);
 		}
 
-		private string GetPopulationText()
+		private static string GetPopulationText()
 		{
 			string population = Common.NumberSeperator(Human.Population);
 			if (Human.Population == 0)
@@ -159,9 +159,12 @@ namespace CivOne.Screens.Reports
 			_update = true;
 		}
 
-		public AttitudeSurvey() : base("ATTITUDE SURVEY", 9)
+		public override string Title() => Translate("ATTITUDE SURVEY");
+
+		public AttitudeSurvey() : base(9)
 		{
 			_cities = Game.GetCities().Where(c => Human == c.Owner && c.Size > 0).ToArray();
+			Render();
 		}
 	}
 }

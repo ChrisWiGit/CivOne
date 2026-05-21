@@ -15,6 +15,30 @@ namespace CivOne.Services
 	/// Defines the runtime translation contract used by UI and gameplay services.
 	/// Implementations include identity fallback (<see cref="TranslationIdentityServiceImpl"/>) and file-based lookup
 	/// (<see cref="Translation.FileTranslationServiceImpl"/>).
+	///
+	/// Static text example:
+	/// Before:
+	/// <code>
+	/// this.DrawText("Population:", 0, 15, x, y);
+	/// </code>
+	/// After:
+	/// <code>
+	/// this.DrawText(Translate("Population"), 0, 15, x, y);
+	/// </code>
+	///
+	/// Dynamic text with placeholders example:
+	/// Before:
+	/// <code>
+	/// this.DrawText($"Population: {population} Happy:{happy}% Content:{content}% Unhappy:{unhappy}%", 0, 15, x, y);
+	/// </code>
+	/// After:
+	/// <code>
+	/// this.DrawText(TranslateFormatted("Population: {0} Happy:{1}% Content:{2}% Unhappy:{3}%", population, happy, content, unhappy), 0, 15, x, y);
+	/// </code>
+	/// The Translation key entry looks like this:
+	/// <code>
+	/// POPULATION: {0} HAPPY:{1}% CONTENT:{2}% UNHAPPY:{3}%: "Population: {0} Happy:{1}% Content:{2}% Unhappy:{3}%"
+	/// </code>
 	/// </summary>
 	public interface ITranslationService
 	{
@@ -31,5 +55,17 @@ namespace CivOne.Services
 		/// See <see cref="Translate(string)"/> for key conventions.
 		/// </summary>
 		string TranslateFormatted(string key, params object[] args);
+
+		/// <summary>
+		/// Translates a key and splits the result on <c>\n</c>, returning each line as a separate array entry.
+		/// Allows a multi-line message to be stored as a single translation key.
+		/// </summary>
+		string[] TranslateArray(string key);
+
+		/// <summary>
+		/// Translates a key, formats the result using <paramref name="args"/>, then splits on <c>\n</c>.
+		/// Use "\n" and not "\\n" in the translation value, as the splitting is done after formatting.
+		/// </summary>
+		string[] TranslateFormattedArray(string key, params object[] args);
 	}
 }

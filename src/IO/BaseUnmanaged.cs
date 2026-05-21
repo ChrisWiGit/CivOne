@@ -28,6 +28,7 @@ namespace CivOne.IO
 	{
 		protected IntPtr _handle;
 		protected int Size { get; private set; }
+		public bool IsDisposed => _handle == IntPtr.Zero;
 
 		/// <summary>
 		/// Validates that unmanaged memory is still allocated.

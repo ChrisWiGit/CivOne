@@ -780,7 +780,17 @@ namespace CivOne.Units
 
 		public UnitClass Class { get; protected set; }
 		public UnitType Type { get; protected set; }
-		public City Home { get; private set; }
+		private City _home;
+		public City Home
+		{
+			get => _home;
+			private set
+			{
+				_home?.RemoveHomeUnit(this);
+				_home = value;
+				_home?.AddHomeUnit(this);
+			}
+		}
 
         private short _buyPrice;
 		public short BuyPrice

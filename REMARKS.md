@@ -160,6 +160,115 @@ bonus = (trade1 + trade2 + 4) / 8
 
 * In [City View](./src/Screens/CityManagerPanels/CityInfoUnits.cs) shall show trading cities with trade values.
 
+## SpaceShip Launch Condition and Flight Duration
+
+### Launch condition
+
+The launch check is implemented in:
+
+* [src/Services/SpaceShip/SpaceShipLaunchRules.cs](./src/Services/SpaceShip/SpaceShipLaunchRules.cs)
+
+Current behavior:
+
+* Launch is only possible if `SpaceShipLaunchYear == 0` (not launched yet).
+* The game uses detailed rules if detailed parts exist.
+* Detailed launch requires:
+  * `CommandModule >= 1`
+  * `HabitationModule >= 1`
+  * `LifeSupportModule >= 1`
+  * `PropulsionComponent >= 2`
+  * `FuelComponent >= 2`
+  * `StructuralTotal > 0`
+
+Important detail:
+
+* The command module is currently treated as automatically present when
+  `LifeSupportModule + HabitationModule >= 3`, even if no explicit command module slot exists in the ship grid.
+* This logic is implemented in:
+  * [src/Services/SpaceShip/SpaceShipPartCounter.cs](./src/Services/SpaceShip/SpaceShipPartCounter.cs)
+
+### Flight duration
+
+The flight time calculation is implemented in:
+
+* [src/Services/SpaceShip/SpaceShipScreenDataFactory.cs](./src/Services/SpaceShip/SpaceShipScreenDataFactory.cs)
+
+Current formula:
+
+```text
+flightTimeYears = max(3.0, 22.0 - propulsionCount * 2.1 - fuelCount * 0.6)
+```
+
+Special case:
+
+* If `propulsionCount == 0`, flight time is `0.0`.
+
+Arrival year display is calculated in:
+
+* [src/Screens/SpaceShipView.cs](./src/Screens/SpaceShipView.cs)
+
+The view uses:
+
+```text
+arrivalYear = launchYear + ceil(flightTimeYears)
+```
+
+### SpaceShip Class Overview
+
+The following table summarizes the SpaceShip-related classes and core types and what they are used for.
+
+| Type | File | Purpose |
+| ------ | ------ | --------- |
+| ISpaceShip | [src/Buildings/ISpaceShip.cs](./src/Buildings/ISpaceShip.cs) | Marker interface for production entries that build spaceship parts instead of normal city buildings. |
+| SpaceShipView | [src/Screens/SpaceShipView.cs](./src/Screens/SpaceShipView.cs) | Main spaceship screen (rendering, launch interaction, debug helpers). |
+| SpaceShipPartSelectorDialog | [src/Screens/SpaceShip/SpaceShipPartSelectorDialog.cs](./src/Screens/SpaceShip/SpaceShipPartSelectorDialog.cs) | Modal picker for concrete module/component types. |
+| SpaceShipCivilizationSelectorDialog | [src/Screens/SpaceShip/SpaceShipCivilizationSelectorDialog.cs](./src/Screens/SpaceShip/SpaceShipCivilizationSelectorDialog.cs) | Modal picker to open spaceship view for another civilization. |
+| SpaceShipCivilizationListItem | [src/Screens/SpaceShip/SpaceShipCivilizationSelectorServices.cs](./src/Screens/SpaceShip/SpaceShipCivilizationSelectorServices.cs) | Row model for civilization selection list entries. |
+| ISpaceShipCivilizationSelectorService | [src/Screens/SpaceShip/SpaceShipCivilizationSelectorServices.cs](./src/Screens/SpaceShip/SpaceShipCivilizationSelectorServices.cs) | Provides the civilization list for selector dialogs. |
+| ISpaceShipCivilizationEligibilityEvaluator | [src/Screens/SpaceShip/SpaceShipCivilizationSelectorServices.cs](./src/Screens/SpaceShip/SpaceShipCivilizationSelectorServices.cs) | Decides whether a civilization entry is enabled/selectable. |
+| SpaceShipCivilizationSelectorServices | [src/Screens/SpaceShip/SpaceShipCivilizationSelectorServices.cs](./src/Screens/SpaceShip/SpaceShipCivilizationSelectorServices.cs) | Dependency bundle used by the civilization selector dialog. |
+| SpaceShipCivilizationEligibilityEvaluator | [src/Screens/SpaceShip/SpaceShipCivilizationSelectorServices.cs](./src/Screens/SpaceShip/SpaceShipCivilizationSelectorServices.cs) | Default evaluator for Apollo/ship-part based visibility rules. |
+| SpaceShipCivilizationSelectionRules | [src/Screens/SpaceShip/SpaceShipCivilizationSelectorServices.cs](./src/Screens/SpaceShip/SpaceShipCivilizationSelectorServices.cs) | Shared pure rule helpers for selector eligibility. |
+| SpaceShipCivilizationSelectorService | [src/Screens/SpaceShip/SpaceShipCivilizationSelectorServices.cs](./src/Screens/SpaceShip/SpaceShipCivilizationSelectorServices.cs) | Default selector service implementation reading players from game state. |
+| SpaceShipCivilizationSelectorServicesFactory | [src/Screens/SpaceShip/SpaceShipCivilizationSelectorServicesFactory.cs](./src/Screens/SpaceShip/SpaceShipCivilizationSelectorServicesFactory.cs) | Factory for default selector dependencies. |
+| ISpaceShipResourceService | [src/Screens/SpaceShip/SpaceShipViewServices.cs](./src/Screens/SpaceShip/SpaceShipViewServices.cs) | Resource abstraction for spaceship screen (bitmaps/fonts). |
+| SpaceShipViewServices | [src/Screens/SpaceShip/SpaceShipViewServices.cs](./src/Screens/SpaceShip/SpaceShipViewServices.cs) | Aggregates all dependencies needed by SpaceShipView. |
+| SpaceShipResourceServiceAdapter | [src/Screens/SpaceShip/SpaceShipViewServices.cs](./src/Screens/SpaceShip/SpaceShipViewServices.cs) | Adapter from general resource services to spaceship-specific resource contract. |
+| SpaceShipViewServicesFactory | [src/Screens/SpaceShip/SpaceShipViewServicesFactory.cs](./src/Screens/SpaceShip/SpaceShipViewServicesFactory.cs) | Builds default dependency graph for SpaceShipView. |
+| ISpaceShipSpriteProvider | [src/Screens/SpaceShip/ISpaceShipSpriteProvider.cs](./src/Screens/SpaceShip/ISpaceShipSpriteProvider.cs) | Contract for retrieving part sprites by component type. |
+| ResourcesSpaceShipSpriteProvider | [src/Screens/SpaceShip/ResourcesSpaceShipSpriteProvider.cs](./src/Screens/SpaceShip/ResourcesSpaceShipSpriteProvider.cs) | Sprite provider backed by docker resource sprite atlas. |
+| SpaceShipSpriteProviderFactory | [src/Screens/SpaceShip/SpaceShipSpriteProviderFactory.cs](./src/Screens/SpaceShip/SpaceShipSpriteProviderFactory.cs) | Singleton-like provider factory for sprite access. |
+| SpaceShipPaletteAnimationDelegate | [src/Screens/SpaceShip/SpaceShipPaletteAnimationDelegate.cs](./src/Screens/SpaceShip/SpaceShipPaletteAnimationDelegate.cs) | Palette-cycle animation for spaceship lights/modules. |
+| ISpaceShipService | [src/Services/SpaceShip/ISpaceShipService.cs](./src/Services/SpaceShip/ISpaceShipService.cs) | High-level build/launch/screen-data service contract. |
+| IPlayerSpaceRace | [src/Services/SpaceShip/ISpaceShipService.cs](./src/Services/SpaceShip/ISpaceShipService.cs) | Minimal player projection required by spaceship services. |
+| ISpaceShipServiceFactory | [src/Services/SpaceShip/ISpaceShipService.cs](./src/Services/SpaceShip/ISpaceShipService.cs) | Factory for per-player spaceship services. |
+| ISpaceShipPlacementRules | [src/Services/SpaceShip/ISpaceShipService.cs](./src/Services/SpaceShip/ISpaceShipService.cs) | Placement rule contract for adding parts to grid. |
+| ISpaceShipLaunchRules | [src/Services/SpaceShip/ISpaceShipService.cs](./src/Services/SpaceShip/ISpaceShipService.cs) | Launch readiness rule contract. |
+| ISpaceShipScreenDataFactory | [src/Services/SpaceShip/ISpaceShipService.cs](./src/Services/SpaceShip/ISpaceShipService.cs) | Creates derived screen metrics from current ship/player state. |
+| ISpaceShipSlotBlueprint | [src/Services/SpaceShip/ISpaceShipService.cs](./src/Services/SpaceShip/ISpaceShipService.cs) | Slot layout and ordering contract for canonical ship grid. |
+| SpaceShipOverlaySpriteIds | [src/Services/SpaceShip/ISpaceShipService.cs](./src/Services/SpaceShip/ISpaceShipService.cs) | Constants for overlay sprite groups. |
+| SpaceShipOverlaySprite | [src/Services/SpaceShip/ISpaceShipService.cs](./src/Services/SpaceShip/ISpaceShipService.cs) | Overlay sprite data record with visibility/offset helpers. |
+| ISpaceShipSlotBlueprintFactory | [src/Services/SpaceShip/ISpaceShipService.cs](./src/Services/SpaceShip/ISpaceShipService.cs) | Factory contract for blueprint instances. |
+| SpaceShipService | [src/Services/SpaceShip/SpaceShipService.cs](./src/Services/SpaceShip/SpaceShipService.cs) | Main orchestration service for add-part, launch check, and screen data. |
+| SpaceShipServiceFactory | [src/Services/SpaceShip/SpaceShipServiceFactory.cs](./src/Services/SpaceShip/SpaceShipServiceFactory.cs) | Concrete factory wiring player + rules + data factory into service. |
+| SpaceShipServiceFactoryProvider | [src/Services/SpaceShip/SpaceShipServiceFactory.cs](./src/Services/SpaceShip/SpaceShipServiceFactory.cs) | Provides cached normal and debug service factories. |
+| SpaceShipPlacementRules | [src/Services/SpaceShip/SpaceShipPlacementRules.cs](./src/Services/SpaceShip/SpaceShipPlacementRules.cs) | Canonical slot-based placement algorithm. |
+| DebugSpaceShipPlacementRules | [src/Services/SpaceShip/DebugSpaceShipPlacementRules.cs](./src/Services/SpaceShip/DebugSpaceShipPlacementRules.cs) | Relaxed placement rules for debug/testing flows. |
+| SpaceShipLaunchRules | [src/Services/SpaceShip/SpaceShipLaunchRules.cs](./src/Services/SpaceShip/SpaceShipLaunchRules.cs) | Launch validity checks for legacy and detailed ships. |
+| DebugSpaceShipLaunchRules | [src/Services/SpaceShip/DebugSpaceShipLaunchRules.cs](./src/Services/SpaceShip/DebugSpaceShipLaunchRules.cs) | Relaxed launch checks for debug/testing flows. |
+| SpaceShipPartOptions | [src/Services/SpaceShip/SpaceShipPartOptions.cs](./src/Services/SpaceShip/SpaceShipPartOptions.cs) | Maps generic part families to concrete build options. |
+| SpaceShipPartCounts | [src/Services/SpaceShip/SpaceShipPartCounter.cs](./src/Services/SpaceShip/SpaceShipPartCounter.cs) | Aggregated count model used for launch/data calculations. |
+| SpaceShipPartCounter | [src/Services/SpaceShip/SpaceShipPartCounter.cs](./src/Services/SpaceShip/SpaceShipPartCounter.cs) | Grid scanner that calculates all part counters. |
+| SpaceShipScreenData | [src/Services/SpaceShip/SpaceShipScreenData.cs](./src/Services/SpaceShip/SpaceShipScreenData.cs) | Immutable data model for sidebar and mission metrics. |
+| SpaceShipScreenDataFactory | [src/Services/SpaceShip/SpaceShipScreenDataFactory.cs](./src/Services/SpaceShip/SpaceShipScreenDataFactory.cs) | Computes support, energy, mass, fuel, success, flight time, etc. |
+| SpaceShipComponentTypeMapper | [src/Services/SpaceShip/SpaceShipComponentTypeMapper.cs](./src/Services/SpaceShip/SpaceShipComponentTypeMapper.cs) | Maps slot-map symbols to concrete component types. |
+| SpaceShipSlotBlueprint | [src/Services/SpaceShip/SpaceShipSlotBlueprint.cs](./src/Services/SpaceShip/SpaceShipSlotBlueprint.cs) | Canonical 12x12 map, footprints, and placement order definitions. |
+| SpaceShipSlotBlueprintFactory | [src/Services/SpaceShip/SpaceShipSlotBlueprint.cs](./src/Services/SpaceShip/SpaceShipSlotBlueprint.cs) | Creates blueprint instances. |
+| SpaceShipSlotBlueprintFactoryProvider | [src/Services/SpaceShip/SpaceShipSlotBlueprint.cs](./src/Services/SpaceShip/SpaceShipSlotBlueprint.cs) | Shared factory provider and canonical grid size constants. |
+| SpaceShipDto | [src/Persistence/Model/SpaceShipDto.cs](./src/Persistence/Model/SpaceShipDto.cs) | Persistence DTO for grid, population, and launch year. |
+| SpaceShipGridMap2D | [src/Persistence/Model/SpaceShipGridMap2d.cs](./src/Persistence/Model/SpaceShipGridMap2d.cs) | Compact 2D grid model for spaceship component serialization. |
+| SpaceShipGridMapYamlTypeConverter | [src/Persistence/Yaml/SpaceShipGridMapYamlTypeConverter.cs](./src/Persistence/Yaml/SpaceShipGridMapYamlTypeConverter.cs) | YAML converter for SpaceShipGridMap2D row-based serialization. |
+
 ## Hall of Fame
 
 ### Where is it stored?

@@ -88,7 +88,7 @@ namespace CivOne.Units
 
 			if (isCityOwner && Human == Owner)
 			{
-				if (city.IsBuildingWonder || CaravanChoice.AllowEstablishTradeRoute(this, city))
+				if (city.IsBuildingWonder || (Home == null) || (Home.Tile.DistanceTo(city) >= 10))
 				{
 					GameTask.Enqueue(Show.CaravanChoice(this, city));
 				}

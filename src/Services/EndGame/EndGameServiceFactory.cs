@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using CivOne.Persistence.Game;
 using CivOne.Services.Screen;
 
 namespace CivOne.Services.EndGame
@@ -19,16 +20,18 @@ namespace CivOne.Services.EndGame
 	/// </remarks>
 	internal static class EndGameServiceFactory
 	{
+		public static IPlayer Human => Game.Instance.HumanPlayer;
 		/// <summary>
 		/// Creates the default <see cref="IEndGameService"/>.
 		/// </summary>
 		/// <returns>A fully configured <see cref="IEndGameService"/>.</returns>
-		public static IEndGameService CreateDefault()
+		public static IEndGameService CreateForHuman()
 		{
 			return new EndGameService(
 				screenCommand: ScreenServiceFactory.CreateCommandService(),
 				screenQuery: ScreenServiceFactory.CreateQueryService(),
-				gameService: GameServiceFactory.CreateDefault());
+				gameService: GameServiceFactory.CreateDefault(),
+				winner: Human);
 		}
 	}
 }

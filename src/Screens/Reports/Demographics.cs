@@ -57,12 +57,12 @@ namespace CivOne.Screens.Reports
 				break;
 			}
 
-			return new TableRow("Population", value, rank);
+			return new TableRow(Translate("Population"), value, rank);
 		}
 
 		private TableRow Pollution()
 		{
-			string value = Human.Pollution > 0 ? $"{Human.Pollution} tons/year" : "00 tons/year";
+			string value = Human.Pollution > 0 ? TranslateFormatted("{0} tons/year", Human.Pollution) : Translate("00 tons/year");
 
 			var players = Game.Players
 				.Where(x => x.Civilization is not Barbarian)
@@ -83,38 +83,38 @@ namespace CivOne.Screens.Reports
 			string betterCiv = null;
 			if (outRanked != null)
 			{
-				betterCiv = $"({outRanked.TribeName}: {(outRanked.Pollution == 0 ? "00" : outRanked.Pollution)} tons)";
+				betterCiv = TranslateFormatted("({0}: {1} tons)", outRanked.TribeName, outRanked.Pollution == 0 ? "00" : outRanked.Pollution.ToString());
 			}
 
-			return new TableRow("Pollution", value, rank, betterCiv);
+			return new TableRow(Translate("Pollution"), value, rank, betterCiv);
 		}
 
 
 		private IEnumerable<TableRow> GetTable()
 		{
-			yield return new TableRow("Approval Rating", "(todo)%", 999);
+			yield return new TableRow(Translate("Approval Rating"), Translate("(todo)%"), 999);
 			yield return Population();
-			yield return new TableRow("GNP", "(todo) million $", 999);
-			yield return new TableRow("Mfg. Goods", "(todo) Mtons", 999);
-			yield return new TableRow("Land Area", "(todo) sq.miles", 999);
-			yield return new TableRow("Literacy", "(todo)%", 999);
-			yield return new TableRow("Disease", "(todo)%", 999);
+			yield return new TableRow(Translate("GNP"), Translate("(todo) million $"), 999);
+			yield return new TableRow(Translate("Mfg. Goods"), Translate("(todo) Mtons"), 999);
+			yield return new TableRow(Translate("Land Area"), Translate("(todo) sq.miles"), 999);
+			yield return new TableRow(Translate("Literacy"), Translate("(todo)%"), 999);
+			yield return new TableRow(Translate("Disease"), Translate("(todo)%"), 999);
 			yield return Pollution();
-			yield return new TableRow("Life expectancy", "(todo) years", 999);
-			yield return new TableRow("Family Size", "(todo) children", 999);
-			yield return new TableRow("Military Service", "(todo) years", 999);
-			yield return new TableRow("Annual Income", "(todo)$ per capita", 999);
-			yield return new TableRow("Productivity", "(todo)", 999);
+			yield return new TableRow(Translate("Life expectancy"), Translate("(todo) years"), 999);
+			yield return new TableRow(Translate("Family Size"), Translate("(todo) children"), 999);
+			yield return new TableRow(Translate("Military Service"), Translate("(todo) years"), 999);
+			yield return new TableRow(Translate("Annual Income"), Translate("(todo)$ per capita"), 999);
+			yield return new TableRow(Translate("Productivity"), Translate("(todo)"), 999);
 		}
 
 		private string Ordinal(int number)
 		{
 			switch (number)
 			{
-				case 1: return $"{number}st";
-				case 2: return $"{number}nd";
-				case 3: return $"{number}rd";
-				default: return $"{number}th";
+				case 1: return TranslateFormatted("{0}st", number);
+				case 2: return TranslateFormatted("{0}nd", number);
+				case 3: return TranslateFormatted("{0}rd", number);
+				default: return TranslateFormatted("{0}th", number);
 			}
 		}
 
@@ -165,7 +165,7 @@ namespace CivOne.Screens.Reports
 				Alignment = TextAlign.Right
 			};
 			this.Clear(1)
-				.DrawText($"{Human.TribeName} Demographics", 0, 15, 160, 4, TextAlign.Center);
+				.DrawText(TranslateFormatted("{0} Demographics", Human.TribeName), 0, 15, 160, 4, TextAlign.Center);
 		}
 	}
 }

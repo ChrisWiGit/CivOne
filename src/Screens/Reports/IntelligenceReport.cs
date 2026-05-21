@@ -39,10 +39,11 @@ namespace CivOne.Screens.Reports
 				if (player.IsHuman || Human.HasEmbassy(player))
 				{
 					int unitCount = Game.GetUnits().Count(u => u.Owner == id && u.Home != null);
+					string leaderLine = TranslateFormatted("{0}: {1}", player.TribeNamePlural, player.LeaderName);
 
-					this.DrawText($"{player.TribeNamePlural}: {player.LeaderName}", 0, 5, OffsetX + 8, yy + 3)
-						.DrawText($"{player.TribeNamePlural}: {player.LeaderName}", 0, 15, OffsetX + 8, yy + 2)
-						.DrawText($"{player.Government.Name}, {player.Gold}$, {unitCount} Units.", 0, colour, OffsetX + 160, yy + 2);
+					this.DrawText(leaderLine, 0, 5, OffsetX + 8, yy + 3)
+						.DrawText(leaderLine, 0, 15, OffsetX + 8, yy + 2)
+						.DrawText(TranslateFormatted("{0}, {1}$, {2} Units.", player.Government.Name, player.Gold, unitCount), 0, colour, OffsetX + 160, yy + 2);
 
 					if (!player.IsHuman)
 					{
@@ -52,7 +53,7 @@ namespace CivOne.Screens.Reports
 				}
 				else
 				{
-					this.DrawText("No embassy established.", 0, colour, OffsetX + 160, yy + 2, TextAlign.Center);
+					this.DrawText(Translate("No embassy established."), 0, colour, OffsetX + 160, yy + 2, TextAlign.Center);
 				}
 
 				yy += 24;
@@ -65,24 +66,24 @@ namespace CivOne.Screens.Reports
 			int fontHeight = Resources.GetFontHeight(0);
 
 			this.FillRectangle(OffsetX, OffsetY + 25, 320, 172, BackgroundColour)
-				.DrawText($"Subject: the {player.TribeNamePlural}", 0, 5, OffsetX + 16, y + 1)
-				.DrawText($"Subject: the {player.TribeNamePlural}", 0, 15, OffsetX + 16, y)
-				.DrawText("Leader:", 0, 9, OffsetX + 16, (y += fontHeight + 4))
-				.DrawText($"Emperor {player.LeaderName}", 0, 15, OffsetX + 62, y);
+				.DrawText(TranslateFormatted("Subject: the {0}", player.TribeNamePlural), 0, 5, OffsetX + 16, y + 1)
+				.DrawText(TranslateFormatted("Subject: the {0}", player.TribeNamePlural), 0, 15, OffsetX + 16, y)
+				.DrawText(Translate("Leader:"), 0, 9, OffsetX + 16, (y += fontHeight + 4))
+				.DrawText(TranslateFormatted("Emperor {0}", player.LeaderName), 0, 15, OffsetX + 62, y);
 
 			foreach (string line in player.Civilization.Leader.Traits())
 				this.DrawText(line, 0, 7, OffsetX + 24, (y += fontHeight));
 
-			this.DrawText("Capital:", 0, 9, OffsetX + 16, (y += fontHeight + 4))
+			this.DrawText(Translate("Capital:"), 0, 9, OffsetX + 16, (y += fontHeight + 4))
 				.DrawText(player.GetCapitalName(), 0, 15, OffsetX + 63, y)
-				.DrawText("Government:", 0, 9, OffsetX + 16, (y += fontHeight))
+				.DrawText(Translate("Government:"), 0, 9, OffsetX + 16, (y += fontHeight))
 				.DrawText(player.Government.Name, 0, 15, OffsetX + 83, y)
-				.DrawText("Treasury:", 0, 9, OffsetX + 16, (y += fontHeight))
-				.DrawText($"{player.Gold}$", 0, 15, OffsetX + 73, y)
-				.DrawText("Military:", 0, 9, OffsetX + 16, (y += fontHeight))
-				.DrawText($"{Game.GetUnits().Count(x => player == x.Owner)} Units", 0, 15, OffsetX + 67, y)
-				.DrawText("Foreign Affairs:", 0, 9, OffsetX + 16, (y += fontHeight + 4))
-				.DrawText("Technologies:", 0, 9, OffsetX + 16, (y += fontHeight + 4));
+				.DrawText(Translate("Treasury:"), 0, 9, OffsetX + 16, (y += fontHeight))
+				.DrawText(TranslateFormatted("{0}$", player.Gold), 0, 15, OffsetX + 73, y)
+				.DrawText(Translate("Military:"), 0, 9, OffsetX + 16, (y += fontHeight))
+				.DrawText(TranslateFormatted("{0} Units", Game.GetUnits().Count(x => player == x.Owner)), 0, 15, OffsetX + 67, y)
+				.DrawText(Translate("Foreign Affairs:"), 0, 9, OffsetX + 16, (y += fontHeight + 4))
+				.DrawText(Translate("Technologies:"), 0, 9, OffsetX + 16, (y += fontHeight + 4));
 		}
 
 		private void MouseDown(object sender, ScreenEventArgs args)
@@ -124,7 +125,9 @@ namespace CivOne.Screens.Reports
 			return true;
 		}
 
-		public IntelligenceReport() : base("INTELLIGENCE REPORT", 1, MouseCursor.Pointer)
+		public override string Title() => Translate("INTELLIGENCE REPORT");
+
+		public IntelligenceReport() : base(1, MouseCursor.Pointer)
 		{
 			OnMouseDown += MouseDown;
 			SetUpdate();

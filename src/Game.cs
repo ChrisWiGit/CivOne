@@ -26,6 +26,7 @@ using CivOne.Services;
 using CivOne.Services.EndGame;
 using CivOne.Services.GlobalWarming;
 using CivOne.Services.Palace;
+using CivOne.Services.SpaceShip;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -373,7 +374,13 @@ namespace CivOne
 				GameTask conquest;
 				GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has conquered", "the entire planet!"));
 				GameTask.Enqueue(conquest = Show.Screen<Conquest>());
-				conquest.Done += (s, a) => _ = EndGameServiceFactory.CreateDefault().HandleConquestAsync();
+				conquest.Done += (s, a) => _ = EndGameServiceFactory.CreateForHuman().HandleConquestAsync();
+			}
+
+			bool gameEnds = !CheckSpaceVitory();
+			if (gameEnds)
+			{
+				return;
 			}
 
 			if (origin == 0)
@@ -416,6 +423,38 @@ namespace CivOne
 				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFile.Instance.GetGameText("HELP/HELP1")));
 			else if (Game.InstantAdvice && CurrentPlayer == HumanPlayer && (Common.TurnToYear(Game.GameTurn) == -3200 || Common.TurnToYear(Game.GameTurn) == -2400))
 				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFile.Instance.GetGameText("HELP/HELP2")));
+		}
+
+		private bool CheckSpaceVitory()
+		{
+			int currentYear = Common.TurnToYear(GameTurn);
+			foreach (Player player in _players.Where(x => x.Civilization is not Barbarian && x.SpaceShipLaunchYear != 0))
+			{
+				ISpaceShipService shipService = SpaceShipServiceFactoryProvider.GetInstance().Create(player);
+				SpaceShipScreenData screenData = shipService.GetScreenData();
+				int arrivalYear = player.SpaceShipLaunchYear + (int)Math.Ceiling(screenData.FlightTimeYears);
+				if (currentYear < arrivalYear)
+				{
+					continue;
+				}
+
+				if (player == HumanPlayer)
+				{
+					PlaySound("wintune");
+
+					GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has reached", "Alpha Centauri!"));
+					_ = EndGameServiceFactory.CreateForHuman().HandleAlphaCentauriAsync();
+				}
+				else
+				{
+					GameTask.Enqueue(Message.Newspaper(null, $"{player.TribeName} space ship", "has reached", "Alpha Centauri!"));
+					_ = EndGameServiceFactory.CreateForHuman().HandleDefeatAsync();
+				}
+
+				return false;
+			}
+
+			return true;
 		}
 
 		protected void HandleGlobalWarming()
@@ -623,7 +662,10 @@ namespace CivOne
 		public void DestroyCity(City city)
 		{
 			foreach (IUnit unit in _units.Where(u => u.Home == city).ToArray())
+			{
+				unit.SetHome(null);
 				_units.Remove(unit);
+			}
 			city.X = 255;
 			city.Y = 255;
 			city.Owner = 0;
@@ -768,11 +810,13 @@ namespace CivOne
 				while (unit.Tile.Units.Count(u => u.Class != UnitClass.Water) > totalCargo)
 				{
 					IUnit subUnit = unit.Tile.Units.First(u => u.Class != UnitClass.Water);
+					subUnit.SetHome(null);
 					subUnit.X = 255;
 					subUnit.Y = 255;
 					_units.Remove(subUnit);
 				}
 			}
+			unit.SetHome(null);
 			unit.X = 255;
 			unit.Y = 255;
 			_units.Remove(unit);

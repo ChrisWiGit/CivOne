@@ -17,10 +17,8 @@ using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Governments;
 using CivOne.Persistence.Game;
-using CivOne.Persistence.Model;
-using CivOne.Screens;
-using CivOne.Screens.Reports;
 using CivOne.Screens.Services;
+using CivOne.Services.SpaceShip;
 using CivOne.src;
 using CivOne.Tasks;
 using CivOne.Tiles;
@@ -29,8 +27,8 @@ using CivOne.Wonders;
 
 namespace CivOne
 {
-	public interface ICity : ITurn, ICityBasic, ICityStatus, ICityTile, ICityBuildings, ICityOnContinent, ICityMapper
-	{}
+	public interface ICity : ITurn, ICityOnContinent, ICityMapper
+    { }
 	public class City : BaseInstance, ICity
 	{
 		// Dependency Injection
@@ -1016,7 +1014,10 @@ namespace CivOne
 			}
 		}
 
-		public IUnit[] Units => Game.Instance.GetUnits().Where(u => u.Home == this).ToArray();
+		private readonly List<IUnit> _homeUnits = [];
+		internal void AddHomeUnit(IUnit unit) { if (!_homeUnits.Contains(unit)) _homeUnits.Add(unit); }
+		internal void RemoveHomeUnit(IUnit unit) => _homeUnits.Remove(unit);
+		public IUnit[] Units => _homeUnits.ToArray();
 
 		public ITile Tile => Map[X, Y];
 
@@ -1065,6 +1066,77 @@ namespace CivOne
 			{
 				RelocateResourceTile(tile);
 			}
+		}
+
+		private bool HandleSpaceShipProduction()
+		{
+			if (CurrentProduction is not ISpaceShip)
+			{
+				return false;
+			}
+
+			ISpaceShipService service = SpaceShipServiceFactoryProvider.GetInstance().Create(Player);
+			SpaceShipComponentType partType = CurrentProduction switch
+			{
+				SSStructural => SpaceShipComponentType.Structural,
+				SSComponent => SpaceShipComponentType.Component,
+				SSModule => SpaceShipComponentType.Module,
+				_ => SpaceShipComponentType.Empty
+			};
+
+			bool canShowInstallScreen = partType switch
+			{
+				SpaceShipComponentType.Structural => service.CanAddPart(partType),
+				SpaceShipComponentType.Component => SpaceShipPartOptions.HasAnyAvailable(service, partType),
+				SpaceShipComponentType.Module => SpaceShipPartOptions.HasAnyAvailable(service, partType),
+				_ => false
+			};
+
+			if (partType != SpaceShipComponentType.Empty && canShowInstallScreen)
+			{
+				Shields = 0;
+				Message message = Message.Newspaper(this, $"{this.Name} builds", $"{(CurrentProduction as ICivilopedia).Name}.");
+				message.Done += (s, a) =>
+				{
+					Show showSpaceShip = Show.SpaceShipWithInstall(partType);
+					showSpaceShip.Done += (s1, a1) => GameTask.Insert(Show.CityManager(this));
+					GameTask.Enqueue(showSpaceShip);
+				};
+				GameTask.Enqueue(message);
+			}
+
+			return true;
+		}
+
+		private bool HandlePalaceBuilding()
+		{
+			if (CurrentProduction is not Palace)
+			{
+				return false;
+			}
+
+			Shields = 0;
+			foreach (City city in Game.Instance.GetCities().Where(c => c.Owner == Owner))
+			{
+				// Remove palace from all cites.
+				city.RemoveBuilding<Palace>();
+			}
+			if (HasBuilding<Courthouse>())
+			{
+				_buildings.RemoveAll(x => x is Courthouse);
+			}
+			_buildings.Add(CurrentProduction as IBuilding);
+
+			Message message = Message.Newspaper(this, $"{this.Name} builds", $"{(CurrentProduction as ICivilopedia).Name}.");
+			message.Done += (s, a) =>
+			{
+				GameTask advisorMessage = Message.Advisor(Advisor.Foreign, true, $"{Player.TribeName} capital", $"moved to {Name}.");
+				advisorMessage.Done += (s1, a1) => GameTask.Insert(Show.CityManager(this));
+				GameTask.Enqueue(advisorMessage);
+			};
+			GameTask.Enqueue(message);
+
+			return true;
 		}
 		
 		internal void ExecutePollution()
@@ -1227,7 +1299,7 @@ namespace CivOne
 					Shields = 0;
 					IUnit unit = Game.Instance.CreateUnit((CurrentProduction as IUnit).Type, X, Y, Owner);
 					unit.SetHome();
-					unit.Veteran = (_buildings.Any(b => (b is Barracks)));
+					unit.Veteran = _buildings.Any(b => b is Barracks);
 					if (CurrentProduction is Settlers)
 					{
 						if (Size == 1 && Player.Cities.Length == 1) Size++;
@@ -1244,52 +1316,17 @@ namespace CivOne
 						GameTask.Enqueue(advisorMessage);
 					}
 				}
-				if (CurrentProduction is IBuilding && !_buildings.Any(b => b.Id == (CurrentProduction as IBuilding).Id))
+				if (CurrentProduction is IBuilding && !_buildings.Any(b => b.Id == (CurrentProduction as IBuilding).Id) && !HandleSpaceShipProduction() && !HandlePalaceBuilding())
 				{
 					Shields = 0;
-					if (CurrentProduction is ISpaceShip)
-					{
-						Message message = Message.Newspaper(this, $"{this.Name} builds", $"{(CurrentProduction as ICivilopedia).Name}.");
-						message.Done += (s, a) =>
-						{
-							// TODO: Add space ship component
-							GameTask.Insert(Show.CityManager(this));
-						};
-						GameTask.Enqueue(message);
-					}
-					else if (CurrentProduction is Palace)
-					{
-						foreach (City city in Game.Instance.GetCities().Where(c => c.Owner == Owner))
-						{
-							// Remove palace from all cites.
-							city.RemoveBuilding<Palace>();
-						}
-						if (HasBuilding<Courthouse>())
-						{
-							_buildings.RemoveAll(x => x is Courthouse);
-						}
-						_buildings.Add(CurrentProduction as IBuilding);
-
-						Message message = Message.Newspaper(this, $"{this.Name} builds", $"{(CurrentProduction as ICivilopedia).Name}.");
-						message.Done += (s, a) =>
-						{
-							GameTask advisorMessage = Message.Advisor(Advisor.Foreign, true, $"{Player.TribeName} capital", $"moved to {Name}.");
-							advisorMessage.Done += (s1, a1) => GameTask.Insert(Show.CityManager(this));
-							GameTask.Enqueue(advisorMessage);
-						};
-						GameTask.Enqueue(message);
-					}
-					else
-					{
-						_buildings.Add(CurrentProduction as IBuilding);
-						GameTask.Enqueue(new ImprovementBuilt(this, (CurrentProduction as IBuilding)));
-					}
+					_buildings.Add(CurrentProduction as IBuilding);
+					GameTask.Enqueue(new ImprovementBuilt(this, CurrentProduction as IBuilding));
 				}
 				if (CurrentProduction is IWonder && !Game.Instance.BuiltWonders.Any(w => w.Id == (CurrentProduction as IWonder).Id))
 				{
 					Shields = 0;
 					AddWonder(CurrentProduction as IWonder);
-					GameTask.Enqueue(new ImprovementBuilt(this, (CurrentProduction as IWonder)));
+					GameTask.Enqueue(new ImprovementBuilt(this, CurrentProduction as IWonder));
 				}
 			}
 

@@ -17,8 +17,13 @@ using CivOne.Services.EndGame;
 using CivOne.Graphics.Sprites;
 using CivOne.Tasks;
 using CivOne.Units;
-using CivOne.UserInterface;
+using CivOne.Events;
 using System.Collections.Generic;
+using CivOne.Services.SpaceShip;
+using CivOne.Screens.Dialogs;
+using CivOne.Advances;
+using CivOne.Buildings;
+using CivOne.Civilizations;
 
 namespace CivOne.Screens
 {
@@ -31,7 +36,7 @@ namespace CivOne.Screens
 	[ScreenResizeable]
 	internal class DebugOptions : BaseScreen
 	{
-		private Menu _menu;
+		private readonly GridMenuDelegate _gridMenu;
 
 		private void MenuCancel(object sender, EventArgs args)
 		{
@@ -104,6 +109,18 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		private void MenuBuildSpaceShip(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen(new SpaceShipView(Human, true, SpaceShipViewServicesFactory.CreateDefault(Translation))));
+			Destroy();
+		}
+
+		private void MenuPaletteViewer(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen<PaletteViewerScreen>());
+			Destroy();
+		}
+
 		private void InstantConquest(object sender, EventArgs args)
 		{
 			Game.Players.ToList().ForEach(p =>
@@ -119,17 +136,17 @@ namespace CivOne.Screens
 					Game.DestroyCity(c);
 				});
 				p.HandleExtinction(true);
-				// Console.WriteLine($"Instantly conquered {p.Civilization.Name} ({p.Civilization.Id})");
 			});
 
 			GameTask conquest;
 			GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has cheated", "the entire planet!"));
-			GameTask.Enqueue(conquest = Show.Screen<Conquest>());
+			conquest = Show.Screen<Conquest>();
+			GameTask.Enqueue(conquest);
 			conquest.Done += (s, a) => RuntimeHandler.EndGame();
 			Destroy();
 		}
 
-		private void PolluteTiles(bool pollution)
+		private static void PolluteTiles(bool pollution)
 		{
 			Map.AllTiles().ToList().ForEach(t => t.Pollution = pollution);
 		}
@@ -183,46 +200,23 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
-		private void MenuRunDiplomatIncite(object sender, EventArgs args)
-		{
-			Diplomat diplomat = Game.GetUnits()
-				.OfType<Diplomat>()
-				.FirstOrDefault(x => x.Player == Human);
 
-			if (diplomat == null)
-			{
-				GameTask.Enqueue(Message.General("No human Diplomat/Spy available.", "You need to spawn one first."));
-				Destroy();
-				return;
-			}
-
-			City cityToIncite = Game.Cities.FirstOrDefault(x => x.Owner != diplomat.Owner);
-			if (cityToIncite == null)
-			{
-				GameTask.Enqueue(Message.General("No foreign city available for incite test."));
-				Destroy();
-				return;
-			}
-
-			GameTask.Enqueue(Show.DiplomatIncite(cityToIncite, diplomat));
-			Destroy();
-		}
 
 		private void EndGameConquest(object sender, EventArgs args)
 		{
-			_ = EndGameServiceFactory.CreateDefault().HandleConquestAsync();
+			_ = EndGameServiceFactory.CreateForHuman().HandleConquestAsync();
 			Destroy();
 		}
 
 		private void EndGameDefeat(object sender, EventArgs args)
 		{
-			_ = EndGameServiceFactory.CreateDefault().HandleDefeatAsync();
+			_ = EndGameServiceFactory.CreateForHuman().HandleDefeatAsync();
 			Destroy();
 		}
 
 		private void EndGameAlphaCentauri(object sender, EventArgs args)
 		{
-			_ = EndGameServiceFactory.CreateDefault().HandleAlphaCentauriAsync();
+			_ = EndGameServiceFactory.CreateForHuman().HandleAlphaCentauriAsync();
 			Destroy();
 		}
 
@@ -232,67 +226,230 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
-		protected override bool HasUpdate(uint gameTick)
+		private void MenuCityGridTest(object sender, EventArgs args)
 		{
-			if (!RefreshNeeded())
+			GameTask.Enqueue(Show.Screen<TestCityGridMenu>());
+			Destroy();
+		}
+
+		private void MenuRunConfirmBuy(object sender, EventArgs args)
+		{
+			short treasury = Human?.Gold ?? 0;
+			GameTask.Enqueue(Show.Screen(new ConfirmBuy("Debug Building", 80, treasury)));
+			Destroy();
+		}
+
+		private void MenuRunConfirmSell(object sender, EventArgs args)
+		{
+			byte humanOwner = Game.PlayerNumber(Human);
+			IBuilding building = Game.Cities
+				.Where(c => c.Owner == humanOwner)
+				.SelectMany(c => c.Buildings)
+				.FirstOrDefault();
+
+			building ??= new Barracks();
+
+			GameTask.Enqueue(Show.Screen(new ConfirmSell(building)));
+			Destroy();
+		}
+
+		private void MenuRunConfirmQuit(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen<ConfirmQuit>());
+			Destroy();
+		}
+
+		private void MenuRunConfirmRetire(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen<ConfirmRetire>());
+			Destroy();
+		}
+
+		private void MenuRunRevolution(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen<Revolution>());
+			Destroy();
+		}
+
+		private void MenuRunSetRateTaxes(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen(SetRate.Taxes));
+			Destroy();
+		}
+
+		private void MenuRunSetRateLuxuries(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen(SetRate.Luxuries));
+			Destroy();
+		}
+
+		private void MenuRunDisbandUnitDialog(object sender, EventArgs args)
+		{
+			byte humanOwner = Game.PlayerNumber(Human);
+			var city = Game.Cities.FirstOrDefault(c => c.Owner == humanOwner);
+			if (city == null)
 			{
-				return false;
+				GameTask.Enqueue(Message.General("No human city available for DisbandUnit test."));
+				Destroy();
+				return;
 			}
 
-			this.Clear();
+			var unit = Game.GetUnits().FirstOrDefault(u => u.Owner == humanOwner);
+			if (unit == null)
+			{
+				GameTask.Enqueue(Message.General("No human unit available for DisbandUnit test."));
+				Destroy();
+				return;
+			}
 
-			int textFontId = 0;
+			GameTask.Enqueue(Show.Screen(new DisbandUnit(city, unit)));
+			Destroy();
+		}
 
-			const int menuBoxWidth = 131;
-			int itemHeight = Resources.GetFontHeight(textFontId);
-			int menuHeight = (itemHeight + 1) * _menuEntries.Count;
+		private void MenuRunSelectAdvanceAfterCityCapture(object sender, EventArgs args)
+		{
+			var enemy = Game.Players.FirstOrDefault(p => p != Human && p.Civilization.Id != 0);
+			if (enemy == null)
+			{
+				GameTask.Enqueue(Message.General("No enemy player available for advance capture test."));
+				Destroy();
+				return;
+			}
 
-			using Picture menuGfx = new(menuBoxWidth, menuHeight);
-			menuGfx
-				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D()
-				.DrawText("Debug Options (F12):", textFontId, 15, 4, 4);
+			IList<IAdvance> advances = Common.Advances
+				.Where(a => enemy.HasAdvance(a) && !Human.HasAdvance(a))
+				.Take(5)
+				.ToList();
 
-			using Picture menuBackground = menuGfx[2, 11, menuBoxWidth, menuHeight];
-			menuBackground.ColourReplace((7, 11), (22, 3));
+			if (advances.Count == 0)
+			{
+				advances = Common.Advances.Take(5).ToList();
+			}
 
-			this.FillRectangle(24, 16, menuBoxWidth + 2, menuHeight + 2, colour: 5); // produces black border, +2 because of round errors when resizing
-			this.AddLayer(menuGfx, 25, 17);
-			CreateMenu(textFontId, menuBoxWidth, itemHeight, menuBackground);
+			GameTask.Enqueue(Show.SelectAdvanceAfterCityCapture(Human, advances));
+			Destroy();
+		}
+
+		private void MenuRunWeakAttack(object sender, EventArgs args)
+		{
+			byte humanOwner = Game.PlayerNumber(Human);
+			var baseUnit = Game.GetUnits().OfType<BaseUnit>().FirstOrDefault(u => u.Owner == humanOwner);
+			if (baseUnit == null)
+			{
+				GameTask.Enqueue(Message.General("No human base unit available for WeakAttack test."));
+				Destroy();
+				return;
+			}
+
+			GameTask.Enqueue(Show.WeakAttack(baseUnit, 1, 0));
+			Destroy();
+		}
+
+		private void MenuRunDiplomatBribe(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen(new DiplomatBribe(new StubDiplomatBribeService(), true)));
+			Destroy();
+		}
+
+		private void MenuRunDiplomatIncite(object sender, EventArgs args)
+		{
+			byte humanOwner = Game.PlayerNumber(Human);
+			var diplomat = Game.GetUnits()
+				.OfType<Diplomat>()
+				.FirstOrDefault(u => u.Owner == humanOwner);
+			if (diplomat == null)
+			{
+				GameTask.Enqueue(Message.General("No human Diplomat/Spy available."));
+				Destroy();
+				return;
+			}
+
+			var enemyCity = Game.Cities.FirstOrDefault(c => c.Owner != humanOwner);
+			if (enemyCity == null)
+			{
+				GameTask.Enqueue(Message.General("No enemy city available for incite test."));
+				Destroy();
+				return;
+			}
+
+			GameTask.Enqueue(Show.Screen(new DiplomatIncite(enemyCity, diplomat, new StubDiplomatInciteService())));
+			Destroy();
+		}
+
+		private void MenuRunCaravanChoice(object sender, EventArgs args)
+		{
+			byte humanOwner = Game.PlayerNumber(Human);
+			var caravan = Game.GetUnits()
+				.OfType<Caravan>()
+				.FirstOrDefault(u => u.Owner == humanOwner);
+			if (caravan == null)
+			{
+				GameTask.Enqueue(Message.General("No human Caravan available."));
+				Destroy();
+				return;
+			}
+
+			var city = Game.Cities.FirstOrDefault(c => c.Owner == humanOwner);
+			if (city == null)
+			{
+				GameTask.Enqueue(Message.General("No human city available for caravan choice test."));
+				Destroy();
+				return;
+			}
+
+			GameTask.Enqueue(Show.Screen(new CaravanChoice(caravan, city, new StubCaravanChoiceService())));
+			Destroy();
+		}
+
+		private void MenuRunDiplomatCity(object sender, EventArgs args)
+		{
+			byte humanOwner = Game.PlayerNumber(Human);
+			City[] enemyCities = [.. Game.Cities
+				.Where(c => c.Owner != humanOwner)
+				.OrderBy(c => c.Name)];
+
+			if (enemyCities.Length == 0)
+			{
+				GameTask.Enqueue(Message.General("No enemy city available for DiplomatCity test."));
+				Destroy();
+				return;
+			}
+
+			GameTask.Enqueue(Show.Screen(new DiplomatCitySelection(enemyCities, humanOwner)));
+			Destroy();
+		}
+
+		private void MenuRunOverwritePlugin(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen(new OverwritePlugin(
+				"plugin-source.dll",
+				"plugin-destination.dll",
+				new StubPluginOverwriteService())));
+			Destroy();
+		}
+
+		public override bool KeyDown(KeyboardEventArgs args)
+		{
+			bool handled = _gridMenu.KeyDown(args);
+			if (handled) Refresh();
+			return handled;
+		}
+
+		public override bool MouseDown(ScreenEventArgs args)
+		{
+			bool handled = _gridMenu.MouseDown(args.X, args.Y);
+			if (handled) Refresh();
+			return handled;
+		}
+
+		protected override bool HasUpdate(uint gameTick)
+		{
+			if (!RefreshNeeded()) return false;
+			_gridMenu.Draw(this, "Debug Options (F12):", CanvasHeight);
 			return true;
 		}
 
-		private void CreateMenu(int textFontId, int menuBoxWidth, int itemHeight, Picture menuBackground)
-		{
-			if (_menu != null)
-			{
-				return;
-			}
-			_menu = new(Palette, menuBackground)
-			{
-				X = 27,
-				Y = 28,
-				MenuWidth = menuBoxWidth - 4,
-				ActiveColour = 11, // Light blue
-				TextColour = 5, // Black
-				DisabledColour = 3, // Light grey
-				FontId = textFontId,
-				Indent = 8, // Left margin
-				RowHeight = itemHeight
-
-			};
-			_menu.MissClick += MenuCancel;
-			_menu.Cancel += MenuCancel;
-
-			foreach (var entry in _menuEntries)
-			{
-				_menu.Items.Add(entry.Text).OnSelect(entry.Handler);
-			}
-
-			AddMenu(_menu);
-		}
-
-		private record MenuEntry(string Text, Events.MenuItemEventHandler<int> Handler);
+		private sealed record MenuEntry(string Text, Action Handler);
 
 		private readonly List<MenuEntry> _menuEntries;
 
@@ -304,38 +461,223 @@ namespace CivOne.Screens
 
 			_menuEntries =
 			[
-				new("Load a Game", LoadGame),
-				new("Set Game Year", MenuSetGameYear),
-				new("Set Player Gold", MenuSetPlayerGold),
-				new("Set Player Science", MenuSetPlayerScience),
-				new("Set Player Advances", MenuSetPlayerAdvances),
-				new("Set City Size", MenuSetCitySize),
-				new("Cause City Disaster", MenuCityDisaster),
-				new("Add building to city", MenuAddBuilding),
-				new("DiplomatIncite", MenuRunDiplomatIncite),
-				new("Change Human Player", MenuChangeHumanPlayer),
-				new("Spawn Unit", MenuSpawnUnit),
-				new("Meet With King", MenuMeetWithKing),
-				new("Toggle Reveal World", MenuRevealWorld),
-				new("Build Palace", MenuBuildPalace),
-				new("Ranking (Random)", MenuShowCivilizationRanking),
-				new("Top Leader Screen", MenuShowTopLeaderScreen),
-				new("Hall Of Fame Screen", MenuShowHallOfFameScreen),
-				new("Show Power Graph", MenuShowPowerGraph),
-				new("Instant Conquest", InstantConquest),
-				new("Instant Global Warming", InstantGlobalWarming),
-				new("End Game: Conquest", EndGameConquest),
-				new("End Game: Defeat", EndGameDefeat),
-				new("End Game: Alpha Centauri", EndGameAlphaCentauri),
-				new("Settings", ShowSettings)
+				new("Load a Game", () => LoadGame(null, EventArgs.Empty)),
+				new("Set Game Year", () => MenuSetGameYear(null, EventArgs.Empty)),
+				new("Set Player Gold", () => MenuSetPlayerGold(null, EventArgs.Empty)),
+				new("Set Player Science", () => MenuSetPlayerScience(null, EventArgs.Empty)),
+				new("Set Player Advances", () => MenuSetPlayerAdvances(null, EventArgs.Empty)),
+				new("Set City Size", () => MenuSetCitySize(null, EventArgs.Empty)),
+				new("Cause City Disaster", () => MenuCityDisaster(null, EventArgs.Empty)),
+				new("Add building to city", () => MenuAddBuilding(null, EventArgs.Empty)),
+				new("Test Dialog: ConfirmBuy", () => MenuRunConfirmBuy(null, EventArgs.Empty)),
+				new("Test Dialog: ConfirmSell", () => MenuRunConfirmSell(null, EventArgs.Empty)),
+				new("Test Dialog: ConfirmQuit", () => MenuRunConfirmQuit(null, EventArgs.Empty)),
+				new("Test Dialog: ConfirmRetire", () => MenuRunConfirmRetire(null, EventArgs.Empty)),
+				new("Test Dialog: Revolution", () => MenuRunRevolution(null, EventArgs.Empty)),
+				new("Test Dialog: SetRate Taxes", () => MenuRunSetRateTaxes(null, EventArgs.Empty)),
+				new("Test Dialog: SetRate Luxuries", () => MenuRunSetRateLuxuries(null, EventArgs.Empty)),
+				new("Test Dialog: DisbandUnit", () => MenuRunDisbandUnitDialog(null, EventArgs.Empty)),
+				new("Test Dialog: SelectAdvanceAfterCapture", () => MenuRunSelectAdvanceAfterCityCapture(null, EventArgs.Empty)),
+				new("Test Dialog: WeakAttack", () => MenuRunWeakAttack(null, EventArgs.Empty)),
+				new("Test Dialog: DiplomatBribe", () => MenuRunDiplomatBribe(null, EventArgs.Empty)),
+				new("Test Dialog: DiplomatIncite", () => MenuRunDiplomatIncite(null, EventArgs.Empty)),
+				new("Test Dialog: CaravanChoice", () => MenuRunCaravanChoice(null, EventArgs.Empty)),
+				new("Test Dialog: DiplomatCity", () => MenuRunDiplomatCity(null, EventArgs.Empty)),
+				new("Test Dialog: OverwritePlugin", () => MenuRunOverwritePlugin(null, EventArgs.Empty)),
+
+				new("Change Human Player", () => MenuChangeHumanPlayer(null, EventArgs.Empty)),
+				new("Spawn Unit", () => MenuSpawnUnit(null, EventArgs.Empty)),
+				new("Meet With King", () => MenuMeetWithKing(null, EventArgs.Empty)),
+				new("Toggle Reveal World", () => MenuRevealWorld(null, EventArgs.Empty)),
+				new("Build Palace", () => MenuBuildPalace(null, EventArgs.Empty)),
+				new("City Menu Grid (Test)", () => MenuCityGridTest(null, EventArgs.Empty)),
+				new("Ranking (Random)", () => MenuShowCivilizationRanking(null, EventArgs.Empty)),
+				new("Top Leader Screen",  () => MenuShowTopLeaderScreen(null, EventArgs.Empty)),
+				new("Hall Of Fame Screen", () => MenuShowHallOfFameScreen(null, EventArgs.Empty)),
+				new("Show Power Graph", () => MenuShowPowerGraph(null, EventArgs.Empty)),
+				new("Instant Conquest", () => InstantConquest(null, EventArgs.Empty)),
+				new("Instant Global Warming", () => InstantGlobalWarming(null, EventArgs.Empty)),
+				new("Palette Viewer", () => MenuPaletteViewer(null, EventArgs.Empty)),
+				new("Settings", () => ShowSettings(null, EventArgs.Empty)),
+				new("End Game: Conquest",  () => EndGameConquest(null, EventArgs.Empty)),
+				new("End Game: Defeat", () => EndGameDefeat(null, EventArgs.Empty)),
+				new("End Game: Alpha Centauri", () => EndGameAlphaCentauri(null, EventArgs.Empty)),
+				new("Build SpaceShip", () => MenuBuildSpaceShip(null, EventArgs.Empty))
 			];
 
-			const int itemHeight = 8 + 1;
-			const int menuWidth = 133;
-			int menuHeight = itemHeight * _menuEntries.Count;
+			string[] labels = [.. _menuEntries.Select(e => e.Text)];
+			_gridMenu = new GridMenuDelegate(labels, GridMenuDelegate.SelectionMode.Select, fontId: 0, enableHotkeys: true);
+			_gridMenu.ItemSelected += index => _menuEntries[index].Handler();
+			_gridMenu.Cancelled += (_, _) => Destroy();
 
-			this.AddLayer(Common.Screens.Last(), 0, 0)
-				.FillRectangle(24, 16, menuWidth, menuHeight + 2, 5);
+			this.AddLayer(Common.LastScreen, 0, 0);
+			Refresh();
+		}
+
+		private sealed class StubDiplomatBribeService : IDiplomatBribeService
+		{
+			public string UnitName => "Stub Unit";
+
+			public string TribeName => "Stub Tribe";
+
+			public int Gold => 1000;
+
+			public void BribeUnit()
+			{
+				GameTask.Enqueue(Message.General(
+					$"[STUB] Bribing {UnitName}",
+					$"for {Gold} gold"));
+			}
+
+			public int CalculateBribeCost()
+			{
+				return 500;
+			}
+
+			public bool CanBribe()
+			{
+				return true;
+			}
+		}
+
+		private sealed class StubDiplomatInciteService : IDiplomatInciteService
+		{
+			public void InciteRevolt(City cityToIncite, Diplomat diplomat)
+			{
+				GameTask.Enqueue(Message.General(
+					$"[STUB] Inciting revolt",
+					$"in {cityToIncite.Name}"));
+			}
+		}
+
+		private sealed class StubCaravanChoiceService : ICaravanChoiceService
+		{
+			public void KeepMoving(Caravan unit, City city)
+			{
+				GameTask.Enqueue(Message.General("[STUB] Caravan keeps moving"));
+			}
+
+			public void EstablishTradeRoute(Caravan unit, City city)
+			{
+				GameTask.Enqueue(Message.General(
+					$"[STUB] Trade route established",
+					$"to {city.Name}"));
+			}
+
+			public void HelpBuildWonder(Caravan unit, City city)
+			{
+				GameTask.Enqueue(Message.General(
+					"[STUB] Caravan helps",
+					"build wonder"));
+			}
+
+			public bool CanEstablishTradeRoute(Caravan unit, City city)
+			{
+				return true;
+			}
+		}
+
+		private sealed class StubPluginOverwriteService : IPluginOverwriteService
+		{
+			public void ConfirmOverwrite(string source, string destination, string filename)
+			{
+				GameTask.Enqueue(Message.General(
+					"[STUB] Overwrite plugin",
+					$"{filename}",
+					$"{source} -> {destination}"));
+			}
+		}
+
+		[ScreenResizeable]
+		private sealed class DiplomatCitySelection : BaseScreen
+		{
+			private readonly City[] _enemyCities;
+			private readonly byte _humanOwner;
+			private CityGridMenuDelegate _citySelect;
+
+			private void DrawCityMenuDialog()
+			{
+				if (_citySelect == null)
+				{
+					Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
+					_citySelect = new CityGridMenuDelegate(
+						_enemyCities,
+						city => $"{city.Name} ({Game.GetPlayer(city.Owner).TribeName})");
+					_citySelect.CitySelected += OnCitySelected;
+					_citySelect.Cancelled += CitySelection_Cancel;
+				}
+
+				_citySelect.Draw(this, "DiplomatCity Test - Select City", CanvasHeight);
+			}
+
+			private void OnCitySelected(City enemyCity)
+			{
+				var diplomat = (Diplomat)Game.CreateUnit(UnitType.Diplomat);
+				diplomat.Owner = _humanOwner;
+
+				var service = DiplomatCityDialogFactory.CreateService(enemyCity, diplomat, Translation);
+				GameTask diplomatCityDialog = Show.Screen(DiplomatCityDialogFactory.CreateDialog(service));
+				diplomatCityDialog.Done += (_, _) =>
+				{
+					// Show the city selection screen again for next round
+					GameTask.Enqueue(Show.Screen(new DiplomatCitySelection(_enemyCities, _humanOwner)));
+				};
+				GameTask.Enqueue(diplomatCityDialog);
+				Destroy();
+			}
+
+			private void CitySelection_Cancel(object sender, EventArgs args)
+			{
+				Destroy();
+			}
+
+			protected override bool HasUpdate(uint gameTick)
+			{
+				if (!RefreshNeeded())
+				{
+					return false;
+				}
+
+				DrawCityMenuDialog();
+				return true;
+			}
+
+			public override bool KeyDown(KeyboardEventArgs args)
+			{
+				if (_citySelect == null)
+				{
+					return false;
+				}
+
+				bool handled = _citySelect.KeyDown(args);
+				if (handled)
+				{
+					Refresh();
+				}
+				return handled;
+			}
+
+			public override bool MouseDown(ScreenEventArgs args)
+			{
+				if (_citySelect == null)
+				{
+					return false;
+				}
+
+				bool handled = _citySelect.MouseDown(args.X, args.Y);
+				if (handled)
+				{
+					Refresh();
+				}
+				return handled;
+			}
+
+			public DiplomatCitySelection(City[] enemyCities, byte humanOwner) : base(MouseCursor.Pointer)
+			{
+				_enemyCities = enemyCities;
+				_humanOwner = humanOwner;
+				DrawCityMenuDialog();
+			}
 		}
 	}
 }

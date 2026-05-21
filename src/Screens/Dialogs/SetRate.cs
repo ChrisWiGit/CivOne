@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CivOne.Events;
 using CivOne.Graphics;
+using CivOne.Services;
 using CivOne.UserInterface;
 
 namespace CivOne.Screens.Dialogs
@@ -22,6 +23,7 @@ namespace CivOne.Screens.Dialogs
 
 		private readonly bool _luxuries;
 		private readonly string[] _menuItems;
+		private Menu _menu;
 
 		private void TaxesChoice(object sender, MenuItemEventArgs<int> args)
 		{
@@ -40,8 +42,8 @@ namespace CivOne.Screens.Dialogs
 			get
 			{
 				if (_luxuries)
-					return "Luxuries";
-				return "Tax";
+					return Translate("Luxuries");
+				return Translate("Tax");
 			}
 		}
 
@@ -65,10 +67,22 @@ namespace CivOne.Screens.Dialogs
 
 		protected override void FirstUpdate()
 		{
-			Menu menu = new Menu(Palette, Selection(3, 12, ItemWidth, (_menuItems.Length * Resources.GetFontHeight(FONT_ID)) + 4))
+			CreateMenu();
+			base.FirstUpdate();
+		}
+
+		private void CreateMenu()
+		{
+			if (_menu is not null)
+			{
+				return;
+			}
+
+			_menu = new Menu(Palette, Selection(3, 12, ItemWidth, (_menuItems.Length * Resources.GetFontHeight(FONT_ID)) + 4))
 			{
 				X = 103,
 				Y = 92,
+				CenterTo320Coordinates = true,
 				MenuWidth = ItemWidth,
 				ActiveColour = 11,
 				TextColour = 5,
@@ -76,28 +90,30 @@ namespace CivOne.Screens.Dialogs
 			};
 			for (int i = 0; i < _menuItems.Length; i++)
 			{
-				menu.Items.Add(_menuItems[i], i).OnSelect(ChoiceMethod);
+				_menu.Items.Add(_menuItems[i], i).OnSelect(ChoiceMethod);
 			}
 
-			menu.MissClick += Cancel;
-			menu.Cancel += Cancel;
+			_menu.MissClick += Cancel;
+			_menu.Cancel += Cancel;
 
 			if (_luxuries)
-				menu.ActiveItem = Human.LuxuriesRate;
+				_menu.ActiveItem = Human.LuxuriesRate;
 			else
-				menu.ActiveItem = Human.TaxesRate;
+				_menu.ActiveItem = Human.TaxesRate;
 			
-			AddMenu(menu);
+			AddMenu(_menu);
 		}
 
 		private static IEnumerable<string> MenuOptions(bool luxuries)
 		{
+			var translation = TranslationServiceFactory.GetCurrent();
+
 			if (luxuries)
 			{
 				for (int i = 0; i <= (10 - Human.TaxesRate); i++)
 				{
 					int science = 10 - Human.TaxesRate - i;
-					yield return $"{i * 10}% Luxuries, ({science * 10}% Science)";
+					yield return translation.TranslateFormatted("{0}% Luxuries, ({1}% Science)", i * 10, science * 10);
 				}
 				yield break;
 			}
@@ -105,7 +121,7 @@ namespace CivOne.Screens.Dialogs
 			for (int i = 0; i <= (10 - Human.LuxuriesRate); i++)
 			{
 				int science = 10 - Human.LuxuriesRate - i;
-				yield return $"{i * 10}% Tax, ({science * 10}% Science)";
+				yield return translation.TranslateFormatted("{0}% Tax, ({1}% Science)", i * 10, science * 10);
 			}
 		}
 
@@ -140,7 +156,7 @@ namespace CivOne.Screens.Dialogs
 			_luxuries = luxuries;
 			_menuItems = MenuOptions(luxuries).ToArray();
 			
-			DialogBox.DrawText($"Select new {ScreenName} rate...", 0, 15, 5, 5);
+			DialogBox.DrawText(TranslateFormatted("Select new {0} rate...", ScreenName), 0, 15, 5, 5);
 		}
 	}
 }

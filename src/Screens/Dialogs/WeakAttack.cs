@@ -20,9 +20,10 @@ namespace CivOne.Screens.Dialogs
     internal class WeakAttack : BaseDialog
     {
         private static int WIDE = 80;
-        private int _dX;
-        private int _dY;
-        private BaseUnit _unit;
+        private readonly int _dX;
+        private readonly int _dY;
+        private readonly BaseUnit _unit;
+        private Menu _menu;
 
         private void Continue(object sender, EventArgs args)
         {
@@ -32,23 +33,35 @@ namespace CivOne.Screens.Dialogs
 
         protected override void FirstUpdate()
         {
-            Menu menu = new Menu(Palette, Selection(3, 10 + 2*FontHigh, WIDE-8, (2 * FontHigh) + 4))
+            CreateMenu();
+            base.FirstUpdate();
+        }
+
+        private void CreateMenu()
+        {
+            if (_menu is not null)
             {
-                X = 103, // TODO this is hard: have the menu be positioned relative to "owner"
+                return;
+            }
+
+            _menu = new Menu(Palette, Selection(3, 10 + 2*FontHigh, WIDE-8, (2 * FontHigh) + 4))
+            {
+                X = 103,
                 Y = 85 + 2 * FontHigh,
+                CenterTo320Coordinates = true,
                 MenuWidth = WIDE - 8,
                 ActiveColour = 11,
                 TextColour = 5,
                 FontId = 0
             };
 
-            menu.Items.Add("Cancel").OnSelect(Cancel);
-            menu.Items.Add("Attack").OnSelect(Continue);
+            _menu.Items.Add(Translate("Cancel")).OnSelect(Cancel);
+            _menu.Items.Add(Translate("Attack")).OnSelect(Continue);
 
-            menu.MissClick += Cancel;
-            menu.Cancel += Cancel;
+            _menu.MissClick += Cancel;
+            _menu.Cancel += Cancel;
 
-            AddMenu(menu);
+            AddMenu(_menu);
         }
 
         private static int DialogHeight()
@@ -65,9 +78,9 @@ namespace CivOne.Screens.Dialogs
             _dY = relY;
             _unit = unit;
 
-            string prompt = unit.PartMoves >= 2 ? "2" : "1";
-            prompt += "/3 strength?";
-            DialogBox.DrawText($"Attack at", 0, 15, 5, 5);
+            int strength = unit.PartMoves >= 2 ? 2 : 1;
+            string prompt = TranslateFormatted("{0}/3 strength?", strength);
+            DialogBox.DrawText(Translate("Attack at"), 0, 15, 5, 5);
             DialogBox.DrawText(prompt, 0, 15, 5, 5 + FontHigh);
         }
     }
