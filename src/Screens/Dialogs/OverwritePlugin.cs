@@ -17,18 +17,13 @@ namespace CivOne.Screens.Dialogs
 	internal class OverwritePlugin : BaseDialog
 	{
 		private readonly string _source, _destination, _filename;
+
+		private readonly IPluginOverwriteService _overwriteService;
 		private Menu _menu;
 
 		private void ConfirmOverwrite(object sender, EventArgs args)
 		{
-			Plugin plugin = Reflect.Plugins().FirstOrDefault(x => x.Filename == _filename && !x.Deleted);
-			if (plugin != null)
-			{
-				plugin.Delete();
-			}
-			File.Copy(_source, _destination);
-			Reflect.LoadPlugin(_destination);
-
+			_overwriteService.ConfirmOverwrite(_source, _destination, _filename);
 			Destroy();
 		}
 
@@ -67,14 +62,31 @@ namespace CivOne.Screens.Dialogs
 			AddMenu(_menu);
 		}
 
-		public OverwritePlugin(string source, string destination) : base(70, 80, 164, 39)
+		public OverwritePlugin(string source, string destination, IPluginOverwriteService overwriteService = null) : base(70, 80, 164, 39)
 		{
+			_overwriteService = overwriteService ?? new PluginOverwriteService();
 			_source = source;
 			_destination = destination;
 			_filename = Path.GetFileName(destination);
 
 			DialogBox.DrawText("Overwrite existing plugin", 0, 15, 5, 5);
 			DialogBox.DrawText($"file {_filename}?", 0, 15, 5, 13);
+		}
+	}
+
+	interface IPluginOverwriteService
+	{
+		void ConfirmOverwrite(string source, string destination, string filename);
+	}
+
+	internal class PluginOverwriteService : IPluginOverwriteService
+	{
+		public void ConfirmOverwrite(string source, string destination, string filename)
+		{
+			Plugin plugin = Reflect.Plugins().FirstOrDefault(x => x.Filename == filename && !x.Deleted);
+			plugin?.Delete();
+			File.Copy(source, destination);
+			Reflect.LoadPlugin(destination);
 		}
 	}
 }

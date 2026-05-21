@@ -22,32 +22,28 @@ namespace CivOne.Screens.Dialogs
 
 		private readonly Caravan _unit;
 		private readonly City _city;
+		private readonly ICaravanChoiceService _service;
 		private Menu _menu;
 
 		private void KeepMoving(object sender, EventArgs args)
 		{
-			_unit.KeepMoving(_city);
+			_service.KeepMoving(_unit, _city);
 			Cancel();
 		}
 
 		private void EstablishTradeRoute(object sender, EventArgs args)
 		{
-			_unit.EstablishTradeRoute(_city);
+			_service.EstablishTradeRoute(_unit, _city);
 			Cancel();
 		}
 
 		private void HelpBuildWonder(object sender, EventArgs args)
 		{
-			_unit.HelpBuildWonder(_city);
+			_service.HelpBuildWonder(_unit, _city);
 			Cancel();
 		}
 
-        public static bool AllowEstablishTradeRoute(Caravan _unit, City _city)
-        {
-            return (_unit.Home == null) || (_unit.Home.Tile.DistanceTo(_city) >= 10);
-        }
-
-        protected override void FirstUpdate()
+		protected override void FirstUpdate()
 		{
 			CreateMenu();
 			base.FirstUpdate();
@@ -75,7 +71,7 @@ namespace CivOne.Screens.Dialogs
 
 			_menu.Items.Add("Keep moving").OnSelect(KeepMoving);
 			_menu.Items.Add("Establish trade route")
-				.SetEnabled(AllowEstablishTradeRoute(_unit, _city))
+				.SetEnabled(_service.CanEstablishTradeRoute(_unit, _city))
 				.OnSelect(EstablishTradeRoute);
 
 			if (_city.IsBuildingWonder)
@@ -93,12 +89,44 @@ namespace CivOne.Screens.Dialogs
 			return (choices * Resources.GetFontHeight(FONT_ID)) + 17;
 		}
 
-		internal CaravanChoice(Caravan unit, City city) : base(100, 80, 136, DialogHeight(unit, city))
+		internal CaravanChoice(Caravan unit, City city, ICaravanChoiceService service = null) : base(100, 80, 136, DialogHeight(city))
 		{
 			_city = city;
 			_unit = unit;
+			_service = service ?? new CaravanChoiceService();
 
-			DialogBox.DrawText($"Will you?", 0, 15, 5, 5);
+			DialogBox.DrawText("Will you?", 0, 15, 5, 5);
+		}
+	}
+
+	internal interface ICaravanChoiceService
+	{
+		void KeepMoving(Caravan unit, City city);
+		void EstablishTradeRoute(Caravan unit, City city);
+		void HelpBuildWonder(Caravan unit, City city);
+		bool CanEstablishTradeRoute(Caravan unit, City city);
+	}
+
+	internal class CaravanChoiceService : ICaravanChoiceService
+	{
+		public void KeepMoving(Caravan unit, City city)
+		{
+			unit.KeepMoving(city);
+		}
+
+		public void EstablishTradeRoute(Caravan unit, City city)
+		{
+			unit.EstablishTradeRoute(city);
+		}
+
+		public void HelpBuildWonder(Caravan unit, City city)
+		{
+			unit.HelpBuildWonder(city);
+		}
+
+		public bool CanEstablishTradeRoute(Caravan unit, City city)
+		{
+			return (unit.Home == null) || (unit.Home.Tile.DistanceTo(city) >= 10);
 		}
 	}
 }

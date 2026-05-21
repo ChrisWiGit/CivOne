@@ -53,7 +53,7 @@ namespace CivOne.Screens.Dialogs
 
 		private static Picture[] TextPictures(City city, IUnit unit)
 		{
-			string[] message = new string[] { $"{city.Name} can't support", $"{unit.Name}." };
+			string[] message = [$"{city.Name} can't support", $"{unit.Name}."];
 			Picture[] output = new Picture[message.Length];
 			for (int i = 0; i < message.Length; i++)
 				output[i] = Resources.GetText(message[i], 0, 15);

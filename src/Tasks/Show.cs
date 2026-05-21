@@ -131,9 +131,9 @@ namespace CivOne.Tasks
 
         public static Show WeakAttack(BaseUnit unit, int relx, int rely) => new Show(new WeakAttack(unit, relx, rely));
 
-		public static Show DiplomatBribe(BaseUnitLand unitToBribe, Diplomat diplomat) => new Show(new DiplomatBribe(unitToBribe, diplomat));
+		public static Show DiplomatBribe(BaseUnitLand unitToBribe, Diplomat diplomat) => new(DiplomatBribeDialogFactory.CreateDialog(unitToBribe, diplomat));
 
-		public static Show DiplomatCity(City enemyCity, Diplomat diplomat) => new Show(new DiplomatCity(enemyCity, diplomat));
+		public static Show DiplomatCity(City enemyCity, Diplomat diplomat) => new(DiplomatCityDialogFactory.CreateDialog(enemyCity, diplomat));
 
 		public static Show DiplomatIncite(City enemyCity, Diplomat diplomat) => new Show(new DiplomatIncite(enemyCity, diplomat));
 
