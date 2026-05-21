@@ -288,7 +288,7 @@ namespace CivOne
 
 		private CityEconomyBreakdown? _cachedCityBreakdown;
 		private int? _cachedFoodRaw;
-		private ushort _cachedFoodRawTurn = ushort.MaxValue;
+		private ulong _cachedFoodRawStateHash = ulong.MaxValue;
 
 		private CityEconomyBreakdown GetCachedCityBreakdown()
 		{
@@ -303,20 +303,45 @@ namespace CivOne
 		{
 			_cachedCityBreakdown = null;
 			_cachedFoodRaw = null;
-			_cachedFoodRawTurn = ushort.MaxValue;
+			_cachedFoodRawStateHash = ulong.MaxValue;
 		}
 
 		private int FoodRaw
 		{
 			get
 			{
-				if (!_cachedFoodRaw.HasValue || _cachedFoodRawTurn != Game.GameTurn)
+				ulong currentFoodStateHash = GetFoodRawStateHash();
+				if (!_cachedFoodRaw.HasValue || _cachedFoodRawStateHash != currentFoodStateHash)
 				{
 					_cachedFoodRaw = ResourceTiles.Sum(t => FoodValue(t));
-					_cachedFoodRawTurn = Game.GameTurn;
+					_cachedFoodRawStateHash = currentFoodStateHash;
 				}
 
 				return _cachedFoodRaw.Value;
+			}
+		}
+
+		private ulong GetFoodRawStateHash()
+		{
+			unchecked
+			{
+				ulong hash = 1469598103934665603UL;
+
+				hash = (hash ^ (uint)Owner) * 1099511628211UL;
+				hash = (hash ^ (Player.AnarchyDespotism ? 1UL : 0UL)) * 1099511628211UL;
+				foreach (ITile tile in ResourceTiles)
+				{
+					hash = (hash ^ (uint)tile.X) * 1099511628211UL;
+					hash = (hash ^ (uint)tile.Y) * 1099511628211UL;
+					hash = (hash ^ (uint)tile.Type) * 1099511628211UL;
+					hash = (hash ^ (uint)(tile.Food + 128)) * 1099511628211UL;
+					hash = (hash ^ (tile.Special ? 1UL : 0UL)) * 1099511628211UL;
+					hash = (hash ^ (tile.Irrigation ? 1UL : 0UL)) * 1099511628211UL;
+					hash = (hash ^ (tile.RailRoad ? 1UL : 0UL)) * 1099511628211UL;
+					hash = (hash ^ (tile.Pollution ? 1UL : 0UL)) * 1099511628211UL;
+				}
+
+				return hash;
 			}
 		}
 
