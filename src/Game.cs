@@ -768,11 +768,13 @@ namespace CivOne
 				while (unit.Tile.Units.Count(u => u.Class != UnitClass.Water) > totalCargo)
 				{
 					IUnit subUnit = unit.Tile.Units.First(u => u.Class != UnitClass.Water);
+					subUnit.Home?.RemoveHomeUnit(subUnit);
 					subUnit.X = 255;
 					subUnit.Y = 255;
 					_units.Remove(subUnit);
 				}
 			}
+			unit.Home?.RemoveHomeUnit(unit);
 			unit.X = 255;
 			unit.Y = 255;
 			_units.Remove(unit);

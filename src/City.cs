@@ -962,7 +962,10 @@ namespace CivOne
 			}
 		}
 
-		public IUnit[] Units => Game.Instance.GetUnits().Where(u => u.Home == this).ToArray();
+		private readonly List<IUnit> _homeUnits = new();
+		internal void AddHomeUnit(IUnit unit) { if (!_homeUnits.Contains(unit)) _homeUnits.Add(unit); }
+		internal void RemoveHomeUnit(IUnit unit) => _homeUnits.Remove(unit);
+		public IUnit[] Units => _homeUnits.ToArray();
 
 		public ITile Tile => Map[X, Y];
 
