@@ -70,11 +70,11 @@ namespace CivOne.Screens.Dialogs
 			AddMenu(_menu);
 		}
 
-		internal DiplomatIncite(City cityToIncite, Diplomat diplomat, IDiplomatInciteService service = null) : base(100, 80, 180, 56)
+		internal DiplomatIncite(City cityToIncite, Diplomat diplomat, IDiplomatInciteService service) : base(100, 80, 180, 56)
 		{
 			_cityToIncite = cityToIncite ?? throw new ArgumentNullException(nameof(cityToIncite));
 			_diplomat = diplomat ?? throw new ArgumentNullException(nameof(diplomat));
-			_service = service ?? new DiplomatInciteService(TranslationServiceFactory.GetCurrent());
+			_service = service ?? throw new ArgumentNullException(nameof(service));
 
 			IBitmap spyPortrait = Icons.Spy;
 			using Palette palette = Common.DefaultPalette.Merge(spyPortrait.Palette, 144);
@@ -82,12 +82,30 @@ namespace CivOne.Screens.Dialogs
 
 			DialogBox.AddLayer(spyPortrait, 2, 2);
 
-			var _inciteCost = Diplomat.InciteCost(cityToIncite);
+			int inciteCost = Diplomat.InciteCost(cityToIncite);
 			_canIncite = Diplomat.CanIncite(cityToIncite, diplomat.Player.Gold);
 
 			DialogBox.DrawText(Translate("Spies Report"), 0, 15, 45, 5);
 			DialogBox.DrawText(TranslateFormatted("Dissidents in {0}", _cityToIncite.Name), 0, 15, 45, 5 + Resources.GetFontHeight(FONT_ID));
-			DialogBox.DrawText(TranslateFormatted("will revolt for ${0}", _inciteCost), 0, 15, 45, 5 + (2 * Resources.GetFontHeight(FONT_ID)));
+			DialogBox.DrawText(TranslateFormatted("will revolt for ${0}", inciteCost), 0, 15, 45, 5 + (2 * Resources.GetFontHeight(FONT_ID)));
+		}
+	}
+
+	internal static class DiplomatInciteDialogFactory
+	{
+		public static IDiplomatInciteService CreateService()
+		{
+			return new DiplomatInciteService(TranslationServiceFactory.GetCurrent());
+		}
+
+		public static IScreen CreateDialog(City cityToIncite, Diplomat diplomat)
+		{
+			return new DiplomatIncite(cityToIncite, diplomat, CreateService());
+		}
+
+		public static IScreen CreateDialog(City cityToIncite, Diplomat diplomat, IDiplomatInciteService service)
+		{
+			return new DiplomatIncite(cityToIncite, diplomat, service);
 		}
 	}
 
@@ -125,7 +143,7 @@ namespace CivOne.Screens.Dialogs
 					unit.Owner = newOwner;
 				}
 
-				foreach (IBuilding building in cityToIncite.Buildings.Where(b => Common.Random.Next(0, 1) == 1).ToList())
+				foreach (IBuilding building in cityToIncite.Buildings.Where(b => Common.Random.Next(0, 2) == 1).ToList())
 				{
 					cityToIncite.RemoveBuilding(building);
 				}

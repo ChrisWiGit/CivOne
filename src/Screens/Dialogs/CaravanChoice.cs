@@ -89,13 +89,31 @@ namespace CivOne.Screens.Dialogs
 			return (choices * Resources.GetFontHeight(FONT_ID)) + 17;
 		}
 
-		internal CaravanChoice(Caravan unit, City city, ICaravanChoiceService service = null) : base(100, 80, 136, DialogHeight(city))
+		internal CaravanChoice(Caravan unit, City city, ICaravanChoiceService service) : base(100, 80, 136, DialogHeight(city))
 		{
 			_city = city;
 			_unit = unit;
-			_service = service ?? new CaravanChoiceService();
+			_service = service ?? throw new ArgumentNullException(nameof(service));
 
 			DialogBox.DrawText(Translate("Will you?"), 0, 15, 5, 5);
+		}
+	}
+
+	internal static class CaravanChoiceDialogFactory
+	{
+		public static ICaravanChoiceService CreateService()
+		{
+			return new CaravanChoiceService();
+		}
+
+		public static IScreen CreateDialog(Caravan unit, City city)
+		{
+			return new CaravanChoice(unit, city, CreateService());
+		}
+
+		public static IScreen CreateDialog(Caravan unit, City city, ICaravanChoiceService service)
+		{
+			return new CaravanChoice(unit, city, service);
 		}
 	}
 

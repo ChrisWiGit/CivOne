@@ -30,7 +30,7 @@ namespace CivOne.Screens.Reports
 		private bool _update = true;
 		private int _page = 0;
 
-        private int PAGE_SIZE = 17;
+		private readonly int PAGE_SIZE = 17;
 
 		private void Render()
 		{
@@ -148,6 +148,7 @@ namespace CivOne.Screens.Reports
 		public TradeReport() : base(2)
 		{
 			_cities = Game.GetCities().Where(c => Human == c.Owner && c.Size > 0).ToArray();
+			Render();
 		}
 
 		protected override void Resize(int width, int height)

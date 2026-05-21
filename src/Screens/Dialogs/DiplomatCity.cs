@@ -192,8 +192,9 @@ namespace CivOne.Screens.Dialogs
 
 		public void IndustrialSabotage()
 		{
+			string sabotageReport = _diplomat.Sabotage(_enemyCity);
 			GameTask.Enqueue(Message.Spy(
-				_t.TranslateFormattedArray("Spies report:\n{0} sabotage\nin {1}", _diplomat.Player.TribeName, _enemyCity.Name)));
+				_t.TranslateFormattedArray("Spies report:\n{0} sabotage\nin {1}", sabotageReport, _enemyCity.Name)));
 		}
 
 		public void MeetWithKing()

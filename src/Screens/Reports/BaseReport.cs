@@ -84,7 +84,6 @@ namespace CivOne.Screens.Reports
 			Palette = palette;
 			
 			this.Clear(backgroundColour);
-			DrawReportHeader();
 		}
 	}
 }

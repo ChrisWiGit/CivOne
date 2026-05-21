@@ -63,15 +63,33 @@ namespace CivOne.Screens.Dialogs
 			AddMenu(_menu);
 		}
 
-		public OverwritePlugin(string source, string destination, IPluginOverwriteService overwriteService = null) : base(70, 80, 164, 39)
+		public OverwritePlugin(string source, string destination, IPluginOverwriteService overwriteService) : base(70, 80, 164, 39)
 		{
-			_overwriteService = overwriteService ?? new PluginOverwriteService();
+			_overwriteService = overwriteService ?? throw new ArgumentNullException(nameof(overwriteService));
 			_source = source;
 			_destination = destination;
 			_filename = Path.GetFileName(destination);
 
 			DialogBox.DrawText(Translate("Overwrite existing plugin"), 0, 15, 5, 5);
 			DialogBox.DrawText(TranslateFormatted("file {0}?", _filename), 0, 15, 5, 13);
+		}
+	}
+
+	internal static class OverwritePluginDialogFactory
+	{
+		public static IPluginOverwriteService CreateService()
+		{
+			return new PluginOverwriteService();
+		}
+
+		public static IScreen CreateDialog(string source, string destination)
+		{
+			return new OverwritePlugin(source, destination, CreateService());
+		}
+
+		public static IScreen CreateDialog(string source, string destination, IPluginOverwriteService overwriteService)
+		{
+			return new OverwritePlugin(source, destination, overwriteService);
 		}
 	}
 

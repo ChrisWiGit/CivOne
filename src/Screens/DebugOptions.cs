@@ -479,9 +479,9 @@ namespace CivOne.Screens
 				new("Test Dialog: DisbandUnit", () => MenuRunDisbandUnitDialog(null, EventArgs.Empty)),
 				new("Test Dialog: SelectAdvanceAfterCapture", () => MenuRunSelectAdvanceAfterCityCapture(null, EventArgs.Empty)),
 				new("Test Dialog: WeakAttack", () => MenuRunWeakAttack(null, EventArgs.Empty)),
-			new("Test Dialog: DiplomatBribe", () => MenuRunDiplomatBribe(null, EventArgs.Empty)),
-			new("Test Dialog: DiplomatIncite", () => MenuRunDiplomatIncite(null, EventArgs.Empty)),
-			new("Test Dialog: CaravanChoice", () => MenuRunCaravanChoice(null, EventArgs.Empty)),
+				new("Test Dialog: DiplomatBribe", () => MenuRunDiplomatBribe(null, EventArgs.Empty)),
+				new("Test Dialog: DiplomatIncite", () => MenuRunDiplomatIncite(null, EventArgs.Empty)),
+				new("Test Dialog: CaravanChoice", () => MenuRunCaravanChoice(null, EventArgs.Empty)),
 				new("Test Dialog: DiplomatCity", () => MenuRunDiplomatCity(null, EventArgs.Empty)),
 				new("Test Dialog: OverwritePlugin", () => MenuRunOverwritePlugin(null, EventArgs.Empty)),
 
