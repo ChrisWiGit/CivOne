@@ -443,12 +443,12 @@ namespace CivOne
 					PlaySound("wintune");
 
 					GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has reached", "Alpha Centauri!"));
-					EndGameServiceFactory.CreateForHuman().HandleAlphaCentauriAsync();
+					_ = EndGameServiceFactory.CreateForHuman().HandleAlphaCentauriAsync();
 				}
 				else
 				{
 					GameTask.Enqueue(Message.Newspaper(null, $"{player.TribeName} space ship", "has reached", "Alpha Centauri!"));
-					EndGameServiceFactory.CreateForHuman().HandleDefeatAsync();
+					_ = EndGameServiceFactory.CreateForHuman().HandleDefeatAsync();
 				}
 
 				return false;

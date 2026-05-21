@@ -52,7 +52,7 @@ namespace CivOne.Screens
 		private readonly StarfieldDelegate _starfield;
 		private readonly SpaceShipPaletteAnimationDelegate _paletteAnimation;
 
-		private readonly byte StartFieldBackgroundColorIndex = 96;
+		private const byte StartFieldBackgroundColorIndex = 96;
 
 		private byte _playerBackgroundColor;
 
@@ -609,6 +609,12 @@ namespace CivOne.Screens
 		{
 			Palette = SpaceShipPalette;
 			Refresh();
+		}
+
+		public override void Dispose()
+		{
+			SpaceShipPalette?.Dispose();
+			base.Dispose();
 		}
 	}
 }
