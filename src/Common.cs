@@ -257,7 +257,7 @@ namespace CivOne
 		
 		public static bool InCityRange(int x1, int y1, int x2, int y2) => new Rectangle(x2 - 2, y2 - 2, 5, 5).IntersectsWith(new Rectangle(x1, y1, 1, 1));
 		
-		public static int DistanceToTile(int x1, int y1, int x2, int y2) => Math.Max(Math.Min(Math.Abs(x2 - x1), Math.Abs(Map.WIDTH - (x2 - x1))), Math.Abs(y2 - y1));
+		public static int DistanceToTile(int x1, int y1, int x2, int y2) => Math.Max(Math.Min(Math.Abs(x2 - x1), Map.WIDTH - Math.Abs(x2 - x1)), Math.Abs(y2 - y1));
 
         // The above function do not work properly at "dateline"  ( methink is is just a "Math.Abs" that is missing ? )   I use the one below.   JR
         /*  ******************************************************************************************************** */
