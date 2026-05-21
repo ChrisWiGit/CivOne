@@ -6,6 +6,10 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Fix and Migration of [mwerneburg](https://github.com/ChrisWiGit/CivOne/pull/33)
+  * Keep city home-unit cache and unit home reference consistent during removal.
+  * `DestroyCity(...)` and `DisbandUnit(...)` now clear a unit's home via `SetHome(null)` before removing it from game unit lists.
+  * Prevents stale `city.Units` cache entries and avoids mismatches where `unit.Home` still points to an old city after disband/removal.
 * Feature: International font simulation for non-English languages
   * Players with an English-only `FONTS.CV` can now display translated text (e.g. German umlauts, French accented letters) without a modified font file.
   * Missing glyphs are synthesised at runtime by composing the base letter with the required diacritic mark.
