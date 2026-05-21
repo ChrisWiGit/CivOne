@@ -415,12 +415,24 @@ namespace CivOne
 			}
 		}
 
+		/// <summary>
+		/// Match the colours in the input bitmap to the closest possible match in the provided palette, 
+		/// and return a bytemap with the remapped colour indices. This is used for loading external bitmaps as game assets, 
+		/// to ensure they are displayed with the correct colours regardless of their original palette. 
+		/// The startIndex and length parameters allow specifying a subset of the palette to match against, 
+		/// which is useful when the palette contains reserved colours that should not be used for matching (e.g. transparency or UI colours).
+		/// </summary>
+		/// <param name="input">The input bitmap to match colours from.</param>
+		/// <param name="palette">The target palette to match colours against.</param>
+		/// <param name="startIndex">The starting index in the palette to begin matching.</param>
+		/// <param name="length">The number of colours in the palette to consider for matching.</param>
+		/// <returns>A bytemap with the remapped colour indices.</returns>
 		public static Bytemap MatchColours(this IBitmap input, Palette palette, int startIndex, int length)
 		{
-			Dictionary<int, int> matches = new Dictionary<int, int>();
+			Dictionary<int, int> matches = [];
 
-			Colour[] pal = input.Palette.Entries.ToArray();
-			Colour[] cmp = palette.Entries.ToArray();
+			Colour[] pal = [.. input.Palette.Entries];
+			Colour[] cmp = [.. palette.Entries];
 			for (int i = 0; i < pal.Length; i++)
 			{
 				if (pal[i].A == 0)
@@ -433,7 +445,8 @@ namespace CivOne
 				int mx = 768;
 				for (int j = startIndex; j < cmp.Length && j < (startIndex + length); j++)
 				{
-					int total = Math.Abs((int)pal[i].R - cmp[j].R) + Math.Abs((int)pal[i].G - cmp[j].G) + Math.Abs((int)pal[i].B - cmp[j].B);
+					// Simple colour distance calculation (Manhattan distance in RGB space). 
+					int total = Math.Abs(pal[i].R - cmp[j].R) + Math.Abs(pal[i].G - cmp[j].G) + Math.Abs(pal[i].B - cmp[j].B);
 					if (total >= mx) continue;
 					entry = j;
 					mx = total;
@@ -441,30 +454,32 @@ namespace CivOne
 				matches.Add(i, entry);
 			}
 			
-			Bytemap output = new Bytemap(input.Width(), input.Height());
+			Bytemap output = new(input.Width(), input.Height());
 			for (int yy = 0; yy < input.Height(); yy++)
-			for (int xx = 0; xx < input.Height(); xx++)
 			{
-				output[xx, yy] = (byte)matches[input.Bitmap[xx, yy]];
+				for (int xx = 0; xx < input.Width(); xx++)
+				{
+					output[xx, yy] = (byte)matches[input.Bitmap[xx, yy]];
+				}
 			}
 			return output;
 		}
 
 		public static Picture MakePalette(this IBitmap bitmap, int startIndex, int colourLength)
 		{
-			Dictionary<byte, int> colourCount = new Dictionary<byte, int>();
+			Dictionary<byte, int> colourCount = [];
 			foreach (byte colourIndex in bitmap.Bitmap.ToByteArray())
 			{
 				if (bitmap.Palette[colourIndex].A == 0) continue; // Do not count transparent
-				if (colourCount.ContainsKey(colourIndex))
+				if (colourCount.TryGetValue(colourIndex, out int value))
 				{
-					colourCount[colourIndex]++;
+					colourCount[colourIndex] = ++value;
 					continue;
 				}
 				colourCount.Add(colourIndex, 1);
 			}
 
-			Colour[] colours = colourCount.OrderByDescending(x => x.Value).Select(x => bitmap.Palette[x.Key]).Take(colourLength).ToArray();
+			Colour[] colours = [.. colourCount.OrderByDescending(x => x.Value).Select(x => bitmap.Palette[x.Key]).Take(colourLength)];
 			Colour[] palette;
 			if (Settings.GraphicsMode == GraphicsMode.Graphics256)
 			{
@@ -474,7 +489,7 @@ namespace CivOne
 			}
 			else
 			{
-				palette = Common.GetPalette16.Entries.ToArray();
+				palette = [.. Common.GetPalette16.Entries];
 			}
 			
 			Bytemap bytemap = bitmap.MatchColours(palette, startIndex, colourLength);

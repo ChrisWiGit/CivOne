@@ -18,15 +18,15 @@ namespace CivOne.Services
 	public class SaveMetaDataService(string _gameVersion, ITranslationService _translationService = null)
 	{
 		private readonly ITranslationService _translation = _translationService ?? TranslationServiceFactory.GetCurrent();
-		private readonly GameCalendarService _calendar;
+		private readonly IGameCalendarService _calendar;
 
-		public SaveMetaDataService(string gameVersion, ITranslationService translationService, GameCalendarService calendar)
+		public SaveMetaDataService(string gameVersion, ITranslationService translationService, IGameCalendarService calendar)
 			: this(gameVersion, translationService)
 		{
 			_calendar = calendar ?? new GameCalendarService(translationService);
 		}
 
-		private GameCalendarService Calendar => _calendar ?? new GameCalendarService(_translation);
+		private IGameCalendarService Calendar => _calendar ?? new GameCalendarService(_translation);
 
 		public SaveFileMetaData CreateForNewGame(int difficulty, Player humanPlayer)
 		{

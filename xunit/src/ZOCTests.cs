@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using CivOne;
 using CivOne.Enums;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -42,7 +43,7 @@ namespace CivOne.UnitTests
             var chariot = Game.Instance.CreateUnit(UnitType.Chariot, 53, 16, Game.Instance.PlayerNumber(playa));
 
             // try to move the human unit up and left
-            var gm = new Screens.GamePlayPanels.GameMap();
+            var gm = new CivOne.Screens.GamePlayPanels.GameMap();
             Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
             Game.Instance.ActiveUnit = chariot;
             return gm.MoveTo(-1, -1);
@@ -85,7 +86,7 @@ namespace CivOne.UnitTests
             var chariot2 = Game.Instance.CreateUnit(UnitType.Chariot, 52, 15, Game.Instance.PlayerNumber(playa));
 
             // try to move the human unit down and left to own unit
-            var gm = new Screens.GamePlayPanels.GameMap();
+            var gm = new CivOne.Screens.GamePlayPanels.GameMap();
             Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
             Game.Instance.ActiveUnit = chariot1;
             Assert.True(gm.MoveTo(-1, +1));
@@ -120,7 +121,7 @@ namespace CivOne.UnitTests
             var chariot1 = Game.Instance.CreateUnit(UnitType.Chariot, 52, 13, Game.Instance.PlayerNumber(playa));
 
             // try to move the human unit down to own city
-            var gm = new Screens.GamePlayPanels.GameMap();
+            var gm = new CivOne.Screens.GamePlayPanels.GameMap();
             Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
             Game.Instance.ActiveUnit = chariot1;
             Assert.True(gm.MoveTo(0, +1));

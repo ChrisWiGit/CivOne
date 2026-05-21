@@ -28,20 +28,20 @@ namespace CivOne.Persistence.Yaml
 	/// </summary>
 	public class SpaceShipGridMapYamlTypeConverter : IYamlTypeConverter
 	{
-		public bool Accepts(Type type) => type == typeof(SpaceShipGridMap2d);
+		public bool Accepts(Type type) => type == typeof(SpaceShipGridMap2D);
 
 		public object ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
 		{
 			var rows = (string[])rootDeserializer(typeof(string[]));
-			return new SpaceShipGridMap2d(rows);
+			return new SpaceShipGridMap2D(rows);
 		}
 
 		public void WriteYaml(IEmitter emitter, object value, Type type, ObjectSerializer serializer)
 		{
-			if (value is not SpaceShipGridMap2d grid)
+			if (value is not SpaceShipGridMap2D grid)
 			{
 				throw new InvalidOperationException(
-					$"WriteYaml expected a {nameof(SpaceShipGridMap2d)} but received {value?.GetType().FullName ?? "null"}.");
+					$"WriteYaml expected a {nameof(SpaceShipGridMap2D)} but received {value?.GetType().FullName ?? "null"}.");
 			}
 
 			serializer(grid.Rows, typeof(string[]));

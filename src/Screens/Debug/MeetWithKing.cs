@@ -29,8 +29,6 @@ namespace CivOne.Screens.Debug
 
 		private Player _selectedPlayer = null;
 
-		public string Value { get; private set; }
-
 		public event EventHandler Accept, Cancel;
 
 		private void DrawDialog()
@@ -63,16 +61,16 @@ namespace CivOne.Screens.Debug
 			}
 
 			if (Accept != null)
-				Accept(this, null);
+				Accept(this, EventArgs.Empty);
 			Destroy();
 		}
 
 		private void MeetKing_Cancel(object sender, EventArgs args)
 		{
 			if (Cancel != null)
-				Cancel(this, null);
-			if (sender is Input)
-				((Input)sender)?.Close();
+				Cancel(this, EventArgs.Empty);
+			if (sender is Input input)
+				input.Close();
 			Destroy();
 		}
 
@@ -93,7 +91,7 @@ namespace CivOne.Screens.Debug
 
 		public MeetWithKing() : base(MouseCursor.Pointer)
 		{
-			Palette = Common.Screens.Last().OriginalColours;
+			Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
 			_players = Game.Players.Where(p => p != 0 && p != Human).ToArray();
 
 			int fontHeight = Resources.GetFontHeight(0);
@@ -125,7 +123,10 @@ namespace CivOne.Screens.Debug
 
 			_civSelect.Cancel += MeetKing_Cancel;
 			_civSelect.MissClick += MeetKing_Cancel;
-			_civSelect.ActiveItem = Game.PlayerNumber(Human);
+			if (_players.Length > 0)
+			{
+				_civSelect.ActiveItem = 0;
+			}
 
 			DrawDialog();
 		}

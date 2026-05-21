@@ -21,7 +21,9 @@ All documentation should be written in English (even if the prompt is in another
 - Prefer Factory pattern instead of new for services.
   - Prefer one factory for multiple services instead of one factory per service (e.g. MyServiceFooFactory for MyCommandFooService, MyQueryFooService)
 - Keep methods small and focused
-- Prefer 'new()' expression instead of fully qualified new syntax
+- Prefer 'new()' expression instead of fully qualified new syntax 
+- Instead of .toArray() use [.. collection] to create a new array from an IEnumerable
+- Instead of .Any() use .Length when working with arrays for better readability and performance.
 
 ## Building
 
@@ -55,7 +57,6 @@ dotnet build CivOne.csproj -v q 2>&1 | tail -n 15
 
 - Debounce Service with DebounceServiceFactory and IDebounceService
 - Random Number Generator with IRandomNumberGenerator and RandomNumberGeneratorFactory
-
 
 ## Delegate Pattern
 
