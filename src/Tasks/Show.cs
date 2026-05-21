@@ -127,15 +127,15 @@ namespace CivOne.Tasks
 
 		public static Show SpaceShipWithInstall(SpaceShipComponentType partType) => new(new SpaceShipView(Human, pendingInstall: partType));
 
-		public static Show CaravanChoice(Caravan unit, City city) => new Show(new CaravanChoice(unit, city));
+		public static Show CaravanChoice(Caravan unit, City city) => new Show(CaravanChoiceDialogFactory.CreateDialog(unit, city));
 
         public static Show WeakAttack(BaseUnit unit, int relx, int rely) => new Show(new WeakAttack(unit, relx, rely));
 
-		public static Show DiplomatBribe(BaseUnitLand unitToBribe, Diplomat diplomat) => new Show(new DiplomatBribe(unitToBribe, diplomat));
+		public static Show DiplomatBribe(BaseUnitLand unitToBribe, Diplomat diplomat) => new(DiplomatBribeDialogFactory.CreateDialog(unitToBribe, diplomat));
 
-		public static Show DiplomatCity(City enemyCity, Diplomat diplomat) => new Show(new DiplomatCity(enemyCity, diplomat));
+		public static Show DiplomatCity(City enemyCity, Diplomat diplomat) => new(DiplomatCityDialogFactory.CreateDialog(enemyCity, diplomat));
 
-		public static Show DiplomatIncite(City enemyCity, Diplomat diplomat) => new Show(new DiplomatIncite(enemyCity, diplomat));
+		public static Show DiplomatIncite(City enemyCity, Diplomat diplomat) => new Show(DiplomatInciteDialogFactory.CreateDialog(enemyCity, diplomat));
 
 		public static Show SelectAdvanceAfterCityCapture(Player player, IList<IAdvance> advances) => new Show(new SelectAdvanceAfterCityCapture(player, advances));
 

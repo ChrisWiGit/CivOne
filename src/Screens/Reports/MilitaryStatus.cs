@@ -42,9 +42,9 @@ namespace CivOne.Screens.Reports
 					.DrawText(unit.Name, 0, 15, OffsetX + 36, OffsetY + 32 + (i * 9))
 					.DrawText($"({unit.Attack}/{unit.Defense}/{unit.Move})", 0, 11, OffsetX + 112, OffsetY + 32 + (i * 9));
 				if (active > 0)
-					this.DrawText($"{active} active", 0, 15, OffsetX + 168, OffsetY + 32 + (i * 9));
+					this.DrawText(TranslateFormatted("{0} active", active), 0, 15, OffsetX + 168, OffsetY + 32 + (i * 9));
 				if (inProduction > 0)
-					this.DrawText($"{inProduction} in production", 0, 11, OffsetX + 232, OffsetY + 32 + (i * 9));
+					this.DrawText(TranslateFormatted("{0} in production", inProduction), 0, 11, OffsetX + 232, OffsetY + 32 + (i * 9));
 
 				i++;
 			}
@@ -66,7 +66,9 @@ namespace CivOne.Screens.Reports
 			_update = true;
 		}
 
-		public MilitaryStatus() : base("MILITARY STATUS", 1)
+		public override string Title() => Translate("MILITARY STATUS");
+
+		public MilitaryStatus() : base(1)
 		{
 			Render();
 		}

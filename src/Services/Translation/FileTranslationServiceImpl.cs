@@ -37,6 +37,14 @@ namespace CivOne.Services.Translation
 			return string.Format(formatText, args);
 		}
 
+		/// <inheritdoc/>
+		public string[] TranslateArray(string key)
+			=> Translate(key).Split('\n');
+
+		/// <inheritdoc/>
+		public string[] TranslateFormattedArray(string key, params object[] args)
+			=> TranslateFormatted(key, args).Split('\n');
+
 		private static string NormalizeKey(string key) => key?.Trim().ToUpperInvariant() ?? string.Empty;
 	}
 }

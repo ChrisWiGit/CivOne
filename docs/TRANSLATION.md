@@ -50,7 +50,7 @@ this.DrawText("Population:", 0, 15, x, y);
 After:
 
 ```csharp
-this.DrawText(Translate("report.population.label"), 0, 15, x, y);
+this.DrawText(Translate("Population"), 0, 15, x, y);
 ```
 
 ### Dynamic text with placeholders
@@ -64,13 +64,13 @@ this.DrawText($"Population: {population} Happy:{happy}% Content:{content}% Unhap
 After:
 
 ```csharp
-this.DrawText(TranslateFormatted("report.population.detail", population, happy, content, unhappy), 0, 15, x, y);
+this.DrawText(TranslateFormatted("Population: {0} Happy:{1}% Content:{2}% Unhappy:{3}%", population, happy, content, unhappy), 0, 15, x, y);
 ```
 
 Translation file entry:
 
 ```yaml
-report.population.detail: "Population: {0} Happy:{1}% Content:{2}% Unhappy:{3}%"
+POPULATION: {0} HAPPY:{1}% CONTENT:{2}% UNHAPPY:{3}%: "Population: {0} Happy:{1}% Content:{2}% Unhappy:{3}%"
 ```
 
 ---

@@ -23,6 +23,7 @@ All documentation should be written in English (even if the prompt is in another
 - Keep methods small and focused
 - Prefer 'new()' expression instead of fully qualified new syntax 
 - Instead of .toArray() use [.. collection] to create a new array from an IEnumerable
+- Instead of `new string[] { "a", "b", "c" }` use `[ "a", "b", "c" ]` for better readability and less verbosity.
 - Instead of .Any() use .Length when working with arrays for better readability and performance.
 
 ## Building

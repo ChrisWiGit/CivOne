@@ -6,6 +6,8 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Refactoring: Added translation support for texts in dialogs and reports.
+* Fix: Dialogs now render correctly when using "Expand Size" in the setup menu, instead of being stretched across the expanded canvas.
 * Feature: Implementation of spaceship construction and victory condition
   * Added spaceship construction mechanics that let cities produce ship parts and assemble them through the spaceship screen.
   * Added end-game handling for a completed spaceship so it can participate in victory processing as a distinct late-game win path.
