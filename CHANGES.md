@@ -6,6 +6,13 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Consolidated fixes ([PR #38](https://github.com/ChrisWiGit/CivOne/pull/38))
+  * [Issue #31](https://github.com/ChrisWiGit/CivOne/issues/31): Fixed Democracy war declaration flow so Senate blocking is handled correctly.
+  * [Issue #34](https://github.com/ChrisWiGit/CivOne/issues/34): Extended `CityEconomyBreakdown` performance work to include food and shield tile sums.
+  * [PR #30](https://github.com/ChrisWiGit/CivOne/pull/30): Improved unit stack handling so units can be woken up reliably from stacked selections.
+    * Sleeping units do not reset their moves left when selected from the stack, so they cannot move immediately after being woken up if they have already moved before.
+  * [PR #27](https://github.com/ChrisWiGit/CivOne/pull/27): Corrected east-west wrap distance calculation in `DistanceToTile` and related pathfinding distance checks.
+  * [PR #29](https://github.com/ChrisWiGit/CivOne/pull/29): Fixed Settler AI improvement tight-loop by correcting road eligibility and ending the turn after queuing improvement orders.
 * Fix: Stabilized city resource caching to prevent stale values after resource tile changes.
   * `FoodRaw` cache is now validated via tile/city state hash and recalculated when needed.
   * Added `ShieldRaw` cache using the same state-hash pattern to avoid repeated `ResourceTiles.Sum(t => ShieldValue(t))` scans.
