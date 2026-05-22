@@ -12,6 +12,7 @@ _YES, RETIRE.=_Ja, zurücktreten.
 ARE YOU SURE YOU WANT TO RETIRE?=Sicher zurücktreten?
 NO FAST SAVEGAMES AVAILABLE. USE CTRL+F1-F10 TO SAVE.=Nicht verfügbar. Verwenden Sie Strg+F1-F10 zum Speichern.
 QUICK LOAD SLOTS=Schnellladeplätze
+THE SENATE HAS BLOCKED YOUR ATTACK!=Der Senat hat euren Angriff gestoppt!
 CIVILIZATION=ZIVILISATION
 HALL OF FAME=RUHMESHALLE
 CLEAR=Löschen

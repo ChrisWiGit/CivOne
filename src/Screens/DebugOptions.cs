@@ -67,6 +67,12 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		private void MenuSetPlayerGovernment(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen<DebugChangeGovernment>());
+			Destroy();
+		}
+
 		private void MenuSetCitySize(object sender, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<SetCitySize>());
@@ -466,6 +472,7 @@ namespace CivOne.Screens
 				new("Set Player Gold", () => MenuSetPlayerGold(null, EventArgs.Empty)),
 				new("Set Player Science", () => MenuSetPlayerScience(null, EventArgs.Empty)),
 				new("Set Player Advances", () => MenuSetPlayerAdvances(null, EventArgs.Empty)),
+				new("Set Player Government", () => MenuSetPlayerGovernment(null, EventArgs.Empty)),
 				new("Set City Size", () => MenuSetCitySize(null, EventArgs.Empty)),
 				new("Cause City Disaster", () => MenuCityDisaster(null, EventArgs.Empty)),
 				new("Add building to city", () => MenuAddBuilding(null, EventArgs.Empty)),

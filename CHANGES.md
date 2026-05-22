@@ -6,6 +6,8 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Debug Option:
+  * Added a debug option to trigger an instant government change.
 * Fix: Stabilized city resource caching to prevent stale values after resource tile changes.
   * `FoodRaw` cache is now validated via tile/city state hash and recalculated when needed.
   * Added `ShieldRaw` cache using the same state-hash pattern to avoid repeated `ResourceTiles.Sum(t => ShieldValue(t))` scans.

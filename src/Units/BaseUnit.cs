@@ -26,12 +26,15 @@ using CivOne.UserInterface;
 using CivOne.Wonders;
 using CivOne.Units;
 using CivOne.Governments;
+using System.Diagnostics;
 
 namespace CivOne.Units
 {
-	internal abstract class BaseUnit : BaseInstance, IUnitRestorable, IUnit
+	internal abstract class BaseUnit : BaseInstance, IUnitRestorable
 	{
 		protected int _x, _y;
+		private readonly ConfrontDelegate _confrontDelegate;
+		private readonly ConfrontContextAdapter _confrontContextAdapter;
 
 		protected Order _order;
 		public Order order
@@ -309,52 +312,28 @@ namespace CivOne.Units
 			return win;
 		}
 
-		private bool AllowedToConfrontInDemocracy(ITile moveTarget)
-		{
-			if (Human != Owner || Player.Government is not Governments.Democracy)
-			{
-				return true;
-			}
-
-			Player targetOwner = GetConfrontationTargetOwner(moveTarget);
-			if (targetOwner == null || targetOwner.Civilization is Barbarian || Player.IsAtWar(targetOwner))
-			{
-				return true;
-			}
-
-			GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText("ERROR/DEMOCRACY")));
-			return false;
-		}
-
-		private Player GetConfrontationTargetOwner(ITile moveTarget)
-		{
-			if (moveTarget == null)
-			{
-				return null;
-			}
-
-			if (moveTarget.City != null && moveTarget.City.Owner != Owner)
-			{
-				return Game.GetPlayer(moveTarget.City.Owner);
-			}
-
-			IUnit targetUnit = moveTarget.Units.FirstOrDefault(u => u.Owner != Owner);
-			return targetUnit == null ? null : Game.GetPlayer(targetUnit.Owner);
-		}
-
 		internal virtual bool Confront(int relX, int relY)
 		{
             Goto = Point.Empty;             // Cancel any goto mode when Confronting
 
-			if (Class == UnitClass.Land && (this is Diplomat || this is Caravan))
-			{
-				// TODO fire-eggs this should never happen? Diplomat/Caravan have overloads
-				return false;
-			}
+			Debug.Assert(this is not Diplomat && this is not Caravan, "Confront should not be called for Diplomat or Caravan units, as they have their own special handling.");
+
 
 			ITile moveTarget = Map[X, Y][relX, relY];
 			if (moveTarget == null) return false;
-			if (!AllowedToConfrontInDemocracy(moveTarget)) return false;
+
+			// Check if confrontation is allowed (e.g., Senate veto)
+			_confrontContextAdapter.SetConfrontData(moveTarget, relX, relY);
+			var delegateResult = _confrontDelegate.Execute(_confrontContextAdapter);
+			
+			if (delegateResult.Blocked)
+			{
+				if (delegateResult.BlockReason == ConfrontBlockReason.SenateBlockedAttack)
+				{
+					GameTask.Enqueue(Message.Advisor(Advisor.Defense, false, "The Senate has blocked your attack!"));
+				}
+				return false;
+			}
 
 			Movement = new MoveUnit(relX, relY);
 
@@ -1079,6 +1058,8 @@ namespace CivOne.Units
 
 		protected BaseUnit(byte price = 1, byte attack = 1, byte defense = 1, byte move = 1)
 		{
+			_confrontDelegate = new(new ConfrontGameServicesAdapter());
+			_confrontContextAdapter = new(this);
 			Price = price;
 			BuyPrice = (short)((Price + 4) * 10 * Price);
 			Attack = attack;
