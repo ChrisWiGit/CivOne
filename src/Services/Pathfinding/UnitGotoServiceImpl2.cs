@@ -189,6 +189,6 @@ namespace CivOne.Services.Pathfinding
 			=> y * mapWidth + x;
 
 		private int DistanceToTile(int x1, int y1, int x2, int y2)
-			=> Math.Max(Math.Min(Math.Abs(x2 - x1), Math.Abs(_mapTiles.Width - (x2 - x1))), Math.Abs(y2 - y1));
+			=> Math.Max(Math.Min(Math.Abs(x2 - x1), _mapTiles.Width - Math.Abs(x2 - x1)), Math.Abs(y2 - y1));
 	}
 }
