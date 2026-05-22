@@ -6,10 +6,13 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
-* Fix: Stabilized city food caching to prevent stale values after resource tile changes.
-  * `FoodRaw` cache is now validated per game turn and recalculated when needed.
-  * Cache invalidation now runs on relevant city/resource tile mutation paths (owner/size/resource tile updates).
-  * Keeps the performance optimization while ensuring correct `FoodIncome` and `FoodTotal` values.
+* Fix: Stabilized city resource caching to prevent stale values after resource tile changes.
+  * `FoodRaw` cache is now validated via tile/city state hash and recalculated when needed.
+  * Added `ShieldRaw` cache using the same state-hash pattern to avoid repeated `ResourceTiles.Sum(t => ShieldValue(t))` scans.
+  * `ShieldTotal` now consumes `ShieldRaw` before applying building multipliers (Factory, Nuclear Plant, Mfg Plant).
+  * Cache invalidation now clears both food and shield raw caches on relevant city/resource tile mutation paths (owner/size/resource tile updates).
+  * Added focused unit test coverage for shield cache recomputation in `CityEconomyServiceImplCalculateBreakdownTests.ShieldTotal_Recomputes_WhenWorkedTileShieldChangesWithinSameTurn`.
+  * Keeps the performance optimization while ensuring correct `FoodIncome`, `FoodTotal`, and `ShieldTotal` values.
 * Fix: Fix and Migration of [mwerneburg](https://github.com/ChrisWiGit/CivOne/pull/33)
   * Keep city home-unit cache and unit home reference consistent during removal.
   * `DestroyCity(...)` and `DisbandUnit(...)` now clear a unit's home via `SetHome(null)` before removing it from game unit lists.

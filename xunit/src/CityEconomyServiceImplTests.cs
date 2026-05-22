@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Governments;
@@ -121,6 +123,51 @@ namespace CivOne.UnitTests
             int restoredExpected = city.ResourceTiles.Sum(t => city.FoodValue(t));
             Assert.Equal(restoredExpected, city.FoodTotal);
             Assert.Equal(initial, city.FoodTotal);
+        }
+
+        [Fact]
+        public void ShieldTotal_Recomputes_WhenWorkedTileShieldChangesWithinSameTurn()
+        {
+            var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
+            City city = Game.Instance.AddCity(playa, 0, unit.X, unit.Y);
+            city.Size = 4;
+            city.ResetResourceTiles();
+            playa.Government = new Monarchy();
+
+            // Prime cache and capture state hash.
+            int initialTotal = city.ShieldTotal;
+            ulong initialHash = GetCachedShieldRawStateHash(city);
+
+            ITile tile = city.ResourceTiles.First();
+            bool originalPollution = tile.Pollution;
+
+            tile.Pollution = !originalPollution;
+            int mutatedExpected = city.ResourceTiles.Sum(t => city.ShieldValue(t));
+            int mutatedActual = city.ShieldTotal;
+            ulong mutatedHash = GetCachedShieldRawStateHash(city);
+
+            Assert.Equal(mutatedExpected, mutatedActual);
+            Assert.NotEqual(initialHash, mutatedHash);
+
+            tile.Pollution = originalPollution;
+            int restoredExpected = city.ResourceTiles.Sum(t => city.ShieldValue(t));
+            int restoredActual = city.ShieldTotal;
+            ulong restoredHash = GetCachedShieldRawStateHash(city);
+
+            Assert.Equal(restoredExpected, restoredActual);
+            Assert.Equal(initialTotal, restoredActual);
+            Assert.Equal(initialHash, restoredHash);
+        }
+
+        private static ulong GetCachedShieldRawStateHash(City city)
+        {
+            var field = typeof(City).GetField("_cachedShieldRawStateHash", BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.NotNull(field);
+
+            object rawValue = field.GetValue(city);
+            Assert.NotNull(rawValue);
+
+            return (ulong)rawValue;
         }
 
         [Fact]
