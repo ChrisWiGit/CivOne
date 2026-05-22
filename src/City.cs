@@ -237,7 +237,7 @@ namespace CivOne
 		{
 			get
 			{
-				int shields = ResourceTiles.Sum(t => ShieldValue(t));
+				int shields = ShieldRaw;
 				if (_buildings.Any(b => (b is Factory))) shields += (short)Math.Floor((double)shields * (_buildings.Any(b => (b is NuclearPlant)) ? 1.0 : 0.5));
 				if (_buildings.Any(b => (b is MfgPlant))) shields += (short)Math.Floor((double)shields * 1.0);
 				return shields;
@@ -287,7 +287,10 @@ namespace CivOne
 		private CityEconomyBreakdown? _cachedCityBreakdown;
 		private int? _cachedFoodRaw;
 		private ulong _cachedFoodRawStateHash = ulong.MaxValue;
+		private int? _cachedShieldRaw;
+		private ulong _cachedShieldRawStateHash = ulong.MaxValue;
 		private const int TileFoodHashOffset = 128;
+		private const int TileShieldHashOffset = 128;
 
 		private CityEconomyBreakdown GetCachedCityBreakdown()
 		{
@@ -303,6 +306,8 @@ namespace CivOne
 			_cachedCityBreakdown = null;
 			_cachedFoodRaw = null;
 			_cachedFoodRawStateHash = ulong.MaxValue;
+			_cachedShieldRaw = null;
+			_cachedShieldRawStateHash = ulong.MaxValue;
 		}
 
 		private int FoodRaw
@@ -317,6 +322,21 @@ namespace CivOne
 				}
 
 				return _cachedFoodRaw.Value;
+			}
+		}
+
+		private int ShieldRaw
+		{
+			get
+			{
+				ulong currentShieldStateHash = GetShieldRawStateHash();
+				if (!_cachedShieldRaw.HasValue || _cachedShieldRawStateHash != currentShieldStateHash)
+				{
+					_cachedShieldRaw = ResourceTiles.Sum(t => ShieldValue(t));
+					_cachedShieldRawStateHash = currentShieldStateHash;
+				}
+
+				return _cachedShieldRaw.Value;
 			}
 		}
 
@@ -338,6 +358,31 @@ namespace CivOne
 					hash = (hash ^ (uint)(tile.Food + TileFoodHashOffset)) * 1099511628211UL;
 					hash = (hash ^ (tile.Special ? 1UL : 0UL)) * 1099511628211UL;
 					hash = (hash ^ (tile.Irrigation ? 1UL : 0UL)) * 1099511628211UL;
+					hash = (hash ^ (tile.RailRoad ? 1UL : 0UL)) * 1099511628211UL;
+					hash = (hash ^ (tile.Pollution ? 1UL : 0UL)) * 1099511628211UL;
+				}
+
+				return hash;
+			}
+		}
+
+		private ulong GetShieldRawStateHash()
+		{
+			unchecked
+			{
+				// FNV-1a 64-bit hash over shield-affecting city/tile state.
+				ulong hash = 1469598103934665603UL;
+
+				hash = (hash ^ (uint)Owner) * 1099511628211UL;
+				hash = (hash ^ (Player.AnarchyDespotism ? 1UL : 0UL)) * 1099511628211UL;
+				foreach (ITile tile in ResourceTiles)
+				{
+					hash = (hash ^ (uint)tile.X) * 1099511628211UL;
+					hash = (hash ^ (uint)tile.Y) * 1099511628211UL;
+					hash = (hash ^ (uint)tile.Type) * 1099511628211UL;
+					// Shield is sbyte (-128..127); shift into 0..255 for stable hashing.
+					hash = (hash ^ (uint)(tile.Shield + TileShieldHashOffset)) * 1099511628211UL;
+					hash = (hash ^ (tile.Mine ? 1UL : 0UL)) * 1099511628211UL;
 					hash = (hash ^ (tile.RailRoad ? 1UL : 0UL)) * 1099511628211UL;
 					hash = (hash ^ (tile.Pollution ? 1UL : 0UL)) * 1099511628211UL;
 				}
@@ -739,32 +784,6 @@ namespace CivOne
 			UpdateSpecialists();
 			SetupCoastalFlag();
 		}
-
-		private void SetResourceTiles2()
-		{
-			if (!Game.Started) return;
-			InvalidateCityBreakdownCache();
-
-			while (_resourceTiles.Count > Size)
-				_resourceTiles.RemoveAt(_resourceTiles.Count - 1);
-			
-			if (_resourceTiles.Count == Size) return;
-			if (_resourceTiles.Count < Size)
-			{
-				IEnumerable<ITile> tiles = CityTiles.Where(
-					t => !OccupiedTile(t) && !ResourceTiles.Contains(t))
-							.OrderByDescending(t => FoodValue(t))
-							.ThenByDescending(t => ShieldValue(t))
-							.ThenByDescending(t => TradeValue(t));
-				if (tiles.Count() > 0)
-					_resourceTiles.Add(tiles.First());
-			}
-
-			UpdateSpecialists();
-
-			SetupCoastalFlag();
-		}
-
 
 		private void SetupCoastalFlag()
 		{

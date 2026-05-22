@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System.Drawing;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
@@ -15,15 +16,21 @@ using CivOne.Units;
 
 namespace CivOne.Screens
 {
+	[ScreenResizeable]
 	internal class UnitStack : BaseScreen
 	{
-		private const int XX = 101;
 		private const int WIDTH = 121;
+		private const int UnitRowHeight = 16;
+		private const int VerticalPadding = 3;
+		private const int DialogHeightPadding = 6;
 
-		private readonly int _x, _y;
 		private readonly IUnit[] _units;
 
 		private bool _update = true;
+
+		private int DialogHeight => (_units.Length * UnitRowHeight) + DialogHeightPadding;
+		private int DialogLeft => (CanvasWidth - WIDTH) / 2;
+		private int DialogTop => (CanvasHeight - DialogHeight) / 2;
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
@@ -36,8 +43,9 @@ namespace CivOne.Screens
 					return true;
 				}
 
-				int height = (16 * _units.Length) + 6;
-				int yy = (200 - height) / 2;
+				int left = DialogLeft;
+				int top = DialogTop;
+				int height = DialogHeight;
 
 				Picture dialog = new Picture(WIDTH, height)
 					.FillRectangle(1, 1, WIDTH - 2, height - 2, 3)
@@ -52,12 +60,19 @@ namespace CivOne.Screens
 						.DrawText(unit.Home == null ? "NONE" : unit.Home.Name, 0, 14, 27, (i * 16) + 12);
 				}
 
-				this.FillRectangle(XX - 1, yy - 1, WIDTH + 2, height + 2, 5)
-					.AddLayer(dialog, XX, yy);
+				this.FillRectangle(left - 1, top - 1, WIDTH + 2, height + 2, 5)
+					.AddLayer(dialog, left, top);
+				_update = false;
 				
 				return true;
 			}
 			return false;
+		}
+
+		protected override void Resize(int width, int height)
+		{
+			_update = true;
+			base.Resize(width, height);
 		}
 		
 		public override bool KeyDown(KeyboardEventArgs args)
@@ -66,35 +81,74 @@ namespace CivOne.Screens
 			return true;
 		}
 		
-		public override bool MouseDown(ScreenEventArgs args)
+		public bool MouseDown2(ScreenEventArgs args)
 		{
-			if (args.X >= XX && args.X < (XX + WIDTH))
+			int left = DialogLeft;
+			int top = DialogTop;
+			int height = DialogHeight;
+
+			if (args.X >= left && args.X < (left + WIDTH) && args.Y >= top && args.Y < (top + height))
 			{
-				int height = (16 * _units.Length) + 6;
-				int yy = (200 - height) / 2;
-				if (args.Y >= yy && args.Y < (yy + height))
+				int y = (args.Y - top - VerticalPadding);
+				int uid = (y - (y % UnitRowHeight)) / UnitRowHeight;
+				if (uid < 0 || uid >= _units.Length)
 				{
-					int y = (args.Y - yy - 3);
-					int uid = (y - (y % 16)) / 16;
-					if (uid < 0 || uid >= _units.Length)
-						return true;
-					
-					Game.ActiveUnit = _units[uid];
-					_units[uid].Busy = false;
-                    _units[uid].Goto = System.Drawing.Point.Empty; // fire-eggs 20190612 clear Goto
+					_update = true;
 					return true;
 				}
+				
+				Game.ActiveUnit = _units[uid];
+				_units[uid].Busy = false;
+                    _units[uid].Goto = System.Drawing.Point.Empty; // fire-eggs 20190612 clear Goto
+				_update = true;
+				return true;
 			}
 
-			Destroy();
 			return true;
+		}
+		public override bool MouseDown(ScreenEventArgs args)
+		{
+			int dialogHeight = DialogHeight;
+			int dialogLeft = DialogLeft;
+			int dialogTop = DialogTop;
+
+			var outOfBounds = args.X < dialogLeft || args.X >= dialogLeft + WIDTH || args.Y < dialogTop || args.Y >= dialogTop + dialogHeight;
+			if (outOfBounds)
+			{
+				Destroy();
+				return true;
+			}
+
+			// Ignore gaps between units for easier calculation.
+			int relativeY = args.Y - dialogTop - VerticalPadding;
+			int unitIndex = relativeY / UnitRowHeight;
+
+			if (unitIndex < 0 || unitIndex >= _units.Length)
+			{
+				return true;
+			}
+
+			WakeAndSelectUnit(_units[unitIndex]);
+			_update = true;
+			return true;
+		}
+
+		private static void WakeAndSelectUnit(IUnit unit)
+		{
+			if (unit.Busy)
+			{
+				unit.Busy = false;
+				// do not reset MovesLeft, otherwise a unit that has 
+				// already moved would be able to move again after being selected from the stack
+			}
+
+			unit.Goto = Point.Empty;
+			Game.ActiveUnit = unit;
 		}
 
 		internal UnitStack(int x, int y) : base(MouseCursor.Pointer)
 		{
-			_x = x;
-			_y = y;
-			_units = Map[_x, _y].Units.Take(12).ToArray();
+			_units = Map[x, y].Units.Take(12).ToArray();
 
 			Palette = Common.TopScreen.Palette;
 		}

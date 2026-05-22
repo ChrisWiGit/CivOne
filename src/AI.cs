@@ -50,7 +50,9 @@ namespace CivOne
 				bool validCity = (tile is Grassland || tile is River || tile is Plains) && (tile.City == null);
 				bool validIrrigation = (tile is Grassland || tile is River || tile is Plains || tile is Desert) && (tile.City == null) && (!tile.Mine) && (!tile.Irrigation) && tile.CrossTiles().Any(x => x.IsOcean || x is River || x.Irrigation);
 				bool validMine = (tile is Mountains || tile is Hills) && (tile.City == null) && (!tile.Mine) && (!tile.Irrigation);
-				bool validRoad = (tile.City == null) && tile.Road;
+				bool validRoad = (tile.City == null) &&
+									!tile.RailRoad &&
+									(!tile.Road || Player.HasAdvance<RailRoad>());
 				int nearestCity = 255;
 				int nearestOwnCity = 255;
 				City[] cities = Game.GetCities();
@@ -71,6 +73,7 @@ namespace CivOne
 							if (validRoad)
 							{
 								GameTask.Enqueue(Orders.BuildRoad(unit));
+								unit.SkipTurn();
 								return;
 							}
 							break;
@@ -78,6 +81,7 @@ namespace CivOne
 							if (validIrrigation)
 							{
 								GameTask.Enqueue(Orders.BuildIrrigation(unit));
+								unit.SkipTurn();
 								return;
 							}
 							break;
@@ -85,6 +89,7 @@ namespace CivOne
 							if (validMine)
 							{
 								GameTask.Enqueue(Orders.BuildMines(unit));
+								unit.SkipTurn();
 								return;
 							}
 							break;

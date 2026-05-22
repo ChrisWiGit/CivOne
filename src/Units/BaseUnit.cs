@@ -25,6 +25,7 @@ using CivOne.UserInterface;
 
 using CivOne.Wonders;
 using CivOne.Units;
+using CivOne.Governments;
 
 namespace CivOne.Units
 {
@@ -308,6 +309,39 @@ namespace CivOne.Units
 			return win;
 		}
 
+		private bool AllowedToConfrontInDemocracy(ITile moveTarget)
+		{
+			if (Human != Owner || Player.Government is not Governments.Democracy)
+			{
+				return true;
+			}
+
+			Player targetOwner = GetConfrontationTargetOwner(moveTarget);
+			if (targetOwner == null || targetOwner.Civilization is Barbarian || Player.IsAtWar(targetOwner))
+			{
+				return true;
+			}
+
+			GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText("ERROR/DEMOCRACY")));
+			return false;
+		}
+
+		private Player GetConfrontationTargetOwner(ITile moveTarget)
+		{
+			if (moveTarget == null)
+			{
+				return null;
+			}
+
+			if (moveTarget.City != null && moveTarget.City.Owner != Owner)
+			{
+				return Game.GetPlayer(moveTarget.City.Owner);
+			}
+
+			IUnit targetUnit = moveTarget.Units.FirstOrDefault(u => u.Owner != Owner);
+			return targetUnit == null ? null : Game.GetPlayer(targetUnit.Owner);
+		}
+
 		internal virtual bool Confront(int relX, int relY)
 		{
             Goto = Point.Empty;             // Cancel any goto mode when Confronting
@@ -318,10 +352,11 @@ namespace CivOne.Units
 				return false;
 			}
 
-			Movement = new MoveUnit(relX, relY);
-
 			ITile moveTarget = Map[X, Y][relX, relY];
 			if (moveTarget == null) return false;
+			if (!AllowedToConfrontInDemocracy(moveTarget)) return false;
+
+			Movement = new MoveUnit(relX, relY);
 
 			Game.RegisterHostileAction();
 			if (moveTarget.Units.Length == 0 && moveTarget.City != null && moveTarget.City.Owner != Owner)
