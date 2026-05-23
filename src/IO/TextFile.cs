@@ -9,88 +9,185 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using CivOne.Services;
 
 namespace CivOne.IO
 {
-	internal class TextFile
+	internal interface ITextFileLoader
 	{
-		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
+		string[] LoadArray(string filename);
+	}
+	internal partial class TextFileLoader : ITextFileLoader
+	{
+		[GeneratedRegex(@"[^a-zA-Z0-9 _-]")]
+		private static partial Regex InvalidCharsRegex();
 
-		private readonly string[] TEXT_FILES = new[] { "BLURB0", "BLURB1", "BLURB2", "BLURB3", "BLURB4", "ERROR", "HELP", "KING", "PRODUCE" };
-		private readonly Dictionary<string, string[]> _gameTexts = new Dictionary<string,string[]>();
-		
 		public string[] LoadArray(string filename)
 		{
-			filename += ".TXT";
-			
-			Regex rgx = new Regex("[^a-zA-Z0-9 -_]");
-			List<string> textLines = new List<string>();
-			if (!File.Exists(Path.Combine(Settings.Instance.DataDirectory, filename)))
+			var path = Path.Combine(
+				Settings.Instance.DataDirectory,
+				Path.ChangeExtension(filename, ".TXT"));
+
+			if (!File.Exists(path))
 			{
-				Log($"File not found: {filename}");
-				return new string[0];
+				RuntimeHandler.Runtime.Log($"File not found: {path}");
+				return [];
 			}
-			using (FileStream fs = new FileStream(Path.Combine(Settings.Instance.DataDirectory, filename), FileMode.Open, FileAccess.Read))
-			using (StreamReader sr = new StreamReader(fs))
-				while (!sr.EndOfStream)
-					textLines.Add(rgx.Replace(sr.ReadLine(), "").Trim());
-			return textLines.ToArray();
+
+			return [.. File.ReadLines(path).Select(line => InvalidCharsRegex().Replace(line, "").Trim())];
 		}
-		
-		public string[] GetGameText(string key)
+	}
+
+	internal static class TextFileFactory
+	{
+		private static ITextFileLoader _loader;
+		private static TextFile _gameTexts;
+
+
+		public static IGameTexts Get(bool reload = false)
 		{
-			if (_gameTexts.ContainsKey(key))
-				return _gameTexts[key];
-			return new string[0];
-		}
-		
-		private static TextFile _instance;
-		public static TextFile Instance
-		{
-			get
+			_loader ??= new TextFileLoader();
+
+			if (_gameTexts == null)
 			{
-				if (_instance == null)
-					_instance = new TextFile();
-				return _instance;
+				_gameTexts = new(_loader);
+				_gameTexts.Reset();
+				TranslationServiceFactory.RegisterLanguageObserver(_gameTexts);
 			}
+
+			if (reload)
+			{
+				_gameTexts.Reset();
+			}
+
+			return _gameTexts;
 		}
+
+		public static ITextFileLoader GetLoader()
+		{
+			_loader ??= new TextFileLoader();
+			return _loader;
+		}
+
+		public static string[] LoadTextFile(string filename) => GetLoader().LoadArray(filename);
+
+		public static TextFile GetInstance(bool reload = false) => _ = Get(reload) as TextFile;
 
 		public static void ClearInstance()
 		{
-			_instance = null;
+			TranslationServiceFactory.UnregisterLanguageObserver(_gameTexts);
+			_gameTexts = null;
+			_loader = null;
 		}
-		
-		private TextFile()
+	}
+
+	internal interface IGameTexts
+	{
+		string[] GetGameText(string key);
+	}
+
+	internal interface IGameTextsCommand : IGameTexts, ITranslationLanguageObserver
+	{
+		void Reset();
+	}
+
+
+	internal class TextFile : IGameTextsCommand
+	{
+		private readonly string[] TEXT_FILES = ["BLURB0", "BLURB1", "BLURB2", "BLURB3", "BLURB4", "ERROR", "HELP", "KING", "PRODUCE"];
+		private readonly Dictionary<string, string[]> _gameTexts = [];
+
+		private readonly ITextFileLoader _textFileLoader;
+
+		public TextFile(ITextFileLoader textFileLoader)
 		{
+			_textFileLoader = textFileLoader;
+		}
+
+		public string[] GetGameText(string key)
+		{
+			if (_gameTexts.TryGetValue(key, out string[] value))
+			{
+				return value;
+			}
+			return [];
+		}
+
+		public string[] LoadArray(string filename) => _textFileLoader.LoadArray(filename);
+
+		public void OnLanguageChanged(string activeLanguagePostfix)
+		{
+			Reset();
+		}
+
+		public void Reset()
+		{
+			_gameTexts.Clear();
 			foreach (string file in TEXT_FILES)
 			{
-				string[] textfile = LoadArray(file);
-				List<string> keys = new List<string>();
-				List<string> lines = new List<string>();
-				for (int i = 0; i < textfile.Length; i++)
-				{
-					if (!textfile[i].StartsWith("*")) continue;
-					if (textfile[i] == "*END") break;
-					keys.Clear();
-					lines.Clear();
-					while (textfile.Length > i && textfile[i].StartsWith("*"))
-						keys.Add(textfile[i++].Substring(1));
-					while (textfile.Length > i && textfile[i].Length > 0 && !textfile[i].StartsWith("*"))
-						lines.Add(textfile[i++]);
-					
-					if (lines.Count == 0) continue;
-					foreach (string key in keys)
-					{
-						string ckey = string.Format("{0}/{1}", file, key);
-						if (!_gameTexts.ContainsKey(ckey))
-						{
-							_gameTexts.Add(ckey, lines.ToArray());
-						}
-					}
-					if (textfile[i].StartsWith("*")) i--;
-				}
+				AddTextEntries(file, _textFileLoader.LoadArray(file));
 			}
 		}
+
+		private void AddTextEntries(string file, string[] textFile)
+		{
+			int index = 0;
+			while (index < textFile.Length)
+			{
+				if (!IsMarkerLine(textFile[index]))
+				{
+					index++;
+					continue;
+				}
+
+				if (IsEndMarker(textFile[index]))
+				{
+					break;
+				}
+
+				ParseEntry(textFile, ref index, out List<string> keys, out List<string> lines);
+				AddEntryLines(file, keys, lines);
+			}
+		}
+
+		private static void ParseEntry(string[] textFile, ref int index, out List<string> keys, out List<string> lines)
+		{
+			keys = [];
+			lines = [];
+
+			while (index < textFile.Length && IsMarkerLine(textFile[index]) && !IsEndMarker(textFile[index]))
+			{
+				keys.Add(textFile[index][1..]);
+				index++;
+			}
+
+			while (index < textFile.Length && textFile[index].Length > 0 && !IsMarkerLine(textFile[index]))
+			{
+				lines.Add(textFile[index]);
+				index++;
+			}
+		}
+
+		private void AddEntryLines(string file, List<string> keys, List<string> lines)
+		{
+			if (lines.Count == 0)
+			{
+				return;
+			}
+
+			string[] lineArray = [.. lines];
+			foreach (string key in keys)
+			{
+				string compositeKey = $"{file}/{key}";
+				_ = _gameTexts.TryAdd(compositeKey, lineArray);
+			}
+		}
+
+		private static bool IsMarkerLine(string line) => line.StartsWith('*');
+
+		private static bool IsEndMarker(string line) => line == "*END";
 	}
 }
