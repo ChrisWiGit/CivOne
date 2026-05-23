@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -47,19 +45,7 @@ namespace CivOne.UnitTests
 
         public void Log(string text, params object[] parameters)
         {
-            // TODO tests apparently keep stepping on each other trying to access the log file; using mutex lock doesn't seem to help
-#if false
-            var path = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "Civ.log");
-            //_mutex.WaitOne();
-            using (TextWriter tw = new StreamWriter(path, append: true))
-            {
-                tw.WriteLine(text, parameters);
-                tw.Flush();
-                tw.Close();
-            }
-            //_mutex.ReleaseMutex();
-#endif
-
+            // Use dotnet test -p:SuppressConsoleLogs=true to silence console output here.
             Console.WriteLine(text, parameters);
         }
 

@@ -394,6 +394,14 @@ dotnet test
 
 Extended console output will be shown during the test run, providing more insights into the test execution and results.
 
+If you want to suppress console output from the game code during tests, run:
+
+```sh
+dotnet test xunit/CivOne.UnitTests.csproj -p:SuppressConsoleLogs=true
+```
+
+This keeps xUnit status output and hides log messages written by the code under test.
+
 ```sh
 dotnet test --logger "console;verbosity=detailed"
 ```
