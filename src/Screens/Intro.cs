@@ -18,11 +18,11 @@ namespace CivOne.Screens
 	internal class Intro : BaseScreen
 	{
 		private const float FADE_STEP = 0.0625F;
+		private const string INTRO_HINT_TEXT = "Shift+Left/Right Forward/Backward";
 		
 		private readonly string[] _introText;
 		private readonly Picture[] _pictures;
 
-		private float _fadeStep = 0.0F;
 		private int _introTicks;
 		private int _introLine = 1;
 		
@@ -44,8 +44,6 @@ namespace CivOne.Screens
 		private void FadeColours()
 		{
 			if (!GFX256) return;
-
-            FadeStep = _fadeStep;
 			
 			using (Palette palette = _pictures[_introPicture].Palette.Copy())
 			{
@@ -123,7 +121,7 @@ namespace CivOne.Screens
 						_introLine++;
 					}
 				}
-				
+
 				switch (_introPicture)
 				{
 					case 0: this.Cycle(184, 176); break;
@@ -140,7 +138,7 @@ namespace CivOne.Screens
 			{
 				return false;
 			}
-			
+
 			int x = (Width - 320) / 2;
 			int y = (Height - 200) / 2;
 			if (x != 0 || y != 0)
@@ -153,24 +151,33 @@ namespace CivOne.Screens
 			{
 				this.AddLayer(_pictures[_introPicture]);
 			}
-			
-			if (_fadeStep < 1.0F) return true;
-			
+
+			if (FadeStep < 1.0F) return true;
+
 			int previousText = 0;
 			string introLine = _introText[_introLine];
 			while (introLine == string.Empty)
 				introLine = _introText[_introLine - (++previousText)];
+			ShowHintText(x, y);
 			this.DrawText(introLine, 6, TextColour, x + 160, y + 160, TextAlign.Center);
-			
+
 			if (_introTicks % 30 == 1) LogIntroText();
 			return true;
 		}
-		
+
+		private void ShowHintText(int x, int y)
+		{
+			if (_introLine == 1)
+			{
+				this.DrawText(INTRO_HINT_TEXT, 1, 15, x + 160, y + 190, TextAlign.Center);
+			}
+		}
+
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
 			if (args.Shift)
 			{
-				if (_fadeStep < 1.0F) return false;
+				if (FadeStep < 1.0F) return false;
 				if (args.Key == Key.Left)
 				{
 					if (_introLine <= 1) return false;
@@ -228,6 +235,7 @@ namespace CivOne.Screens
 		public Intro()
 		{
 			OnResize += Resize;
+			FadeStep = 0.0F;
 			
 			_introText = TextFileFactory.LoadTextFile("STORY");
 			if (_introText.Length == 0)
