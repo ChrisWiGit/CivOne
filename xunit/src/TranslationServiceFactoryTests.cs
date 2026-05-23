@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using CivOne.Services;
 using Xunit;
@@ -9,6 +10,7 @@ namespace CivOne.UnitTests
 	{
 		private readonly string _storageDirectory;
 		private readonly string _translationDirectory;
+		private bool _disposed;
 
 		public TranslationServiceFactoryTests()
 		{
@@ -21,28 +23,28 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void TryUseLanguage_WhenLanguageFileExists_ActivatesFileTranslation()
 		{
-			File.WriteAllText(Path.Combine(_translationDirectory, "civ_german.txt"), "HELLO=Hallo");
+			File.WriteAllText(Path.Combine(_translationDirectory, "civ_neutraltest.txt"), "HELLO=Hallo");
 
-			bool success = TranslationServiceFactory.TryUseLanguage(_storageDirectory, "german", out var error);
+			bool success = TranslationServiceFactory.TryUseLanguage(_storageDirectory, "neutraltest", out var error);
 			var actual = TranslationServiceFactory.CreateDefault().Translate("hello");
 
 			Assert.True(success);
 			Assert.Null(error);
 			Assert.Equal("Hallo", actual);
-			Assert.Equal("german", TranslationServiceFactory.ActiveLanguagePostfix);
+			Assert.Equal("neutraltest", TranslationServiceFactory.ActiveLanguagePostfix);
 		}
 
 		[Fact]
 		public void TryUseLanguage_WhenSelectedAgain_ReloadsFileFromDisk()
 		{
-			string filePath = Path.Combine(_translationDirectory, "civ_german.txt");
+			string filePath = Path.Combine(_translationDirectory, "civ_neutraltest.txt");
 			File.WriteAllText(filePath, "HELLO=Hallo1");
 
-			bool firstSuccess = TranslationServiceFactory.TryUseLanguage(_storageDirectory, "german", out _);
+			bool firstSuccess = TranslationServiceFactory.TryUseLanguage(_storageDirectory, "neutraltest", out _);
 			string firstTranslation = TranslationServiceFactory.CreateDefault().Translate("HELLO");
 
 			File.WriteAllText(filePath, "HELLO=Hallo2");
-			bool secondSuccess = TranslationServiceFactory.TryUseLanguage(_storageDirectory, "german", out _);
+			bool secondSuccess = TranslationServiceFactory.TryUseLanguage(_storageDirectory, "neutraltest", out _);
 			string secondTranslation = TranslationServiceFactory.CreateDefault().Translate("HELLO");
 
 			Assert.True(firstSuccess);
@@ -54,8 +56,8 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void TryUseLanguage_WhenLanguageMissing_LeavesCurrentLanguageUntouched()
 		{
-			File.WriteAllText(Path.Combine(_translationDirectory, "civ_german.txt"), "HELLO=Hallo");
-			bool initialSuccess = TranslationServiceFactory.TryUseLanguage(_storageDirectory, "german", out _);
+			File.WriteAllText(Path.Combine(_translationDirectory, "civ_neutraltest.txt"), "HELLO=Hallo");
+			bool initialSuccess = TranslationServiceFactory.TryUseLanguage(_storageDirectory, "neutraltest", out _);
 
 			bool missingSuccess = TranslationServiceFactory.TryUseLanguage(_storageDirectory, "missing", out var error);
 			string translationAfterFailure = TranslationServiceFactory.CreateDefault().Translate("HELLO");
@@ -64,15 +66,77 @@ namespace CivOne.UnitTests
 			Assert.False(missingSuccess);
 			Assert.Contains("not found", error, StringComparison.Ordinal);
 			Assert.Equal("Hallo", translationAfterFailure);
-			Assert.Equal("german", TranslationServiceFactory.ActiveLanguagePostfix);
+			Assert.Equal("neutraltest", TranslationServiceFactory.ActiveLanguagePostfix);
+		}
+
+		[Fact]
+		public void TryUseLanguage_WhenLanguageChanges_NotifiesRegisteredObserver()
+		{
+			File.WriteAllText(Path.Combine(_translationDirectory, "civ_neutraltest.txt"), "HELLO=Hallo");
+			var observer = new TestTranslationLanguageObserver();
+
+			TranslationServiceFactory.RegisterLanguageObserver(observer);
+			bool success = TranslationServiceFactory.TryUseLanguage(_storageDirectory, "neutraltest", out _);
+			TranslationServiceFactory.UnregisterLanguageObserver(observer);
+
+			Assert.True(success);
+			Assert.Single(observer.Notifications);
+			Assert.Equal("neutraltest", observer.Notifications[0]);
+		}
+
+		[Fact]
+		public void UnregisterLanguageObserver_WhenCalled_StopsFurtherNotifications()
+		{
+			File.WriteAllText(Path.Combine(_translationDirectory, "civ_neutraltest.txt"), "HELLO=Hallo");
+			var observer = new TestTranslationLanguageObserver();
+
+			TranslationServiceFactory.RegisterLanguageObserver(observer);
+			bool firstSuccess = TranslationServiceFactory.TryUseLanguage(_storageDirectory, "neutraltest", out _);
+			TranslationServiceFactory.UnregisterLanguageObserver(observer);
+			TranslationServiceFactory.UseIdentity();
+
+			Assert.True(firstSuccess);
+			Assert.Single(observer.Notifications);
+			Assert.Equal("neutraltest", observer.Notifications[0]);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			if (disposing)
+			{
+				TranslationServiceFactory.UseIdentity();
+				if (Directory.Exists(_storageDirectory))
+				{
+					Directory.Delete(_storageDirectory, true);
+				}
+			}
+
+			_disposed = true;
 		}
 
 		public void Dispose()
 		{
-			TranslationServiceFactory.UseIdentity();
-			if (Directory.Exists(_storageDirectory))
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
+		}
+
+		~TranslationServiceFactoryTests()
+		{
+			Dispose(disposing: false);
+		}
+
+		private sealed class TestTranslationLanguageObserver : ITranslationLanguageObserver
+		{
+			public List<string> Notifications { get; } = [];
+
+			public void OnLanguageChanged(string activeLanguagePostfix)
 			{
-				Directory.Delete(_storageDirectory, true);
+				Notifications.Add(activeLanguagePostfix);
 			}
 		}
 	}
