@@ -164,10 +164,24 @@ static IEnumerable<InvocationCandidate> EnumerateInvocationCandidates(string con
 {
 	for (int index = 0; index < content.Length; index++)
 	{
-		if (TryMatchInvocation(content, index, ".TranslateFormatted", out int openParen1))
+		if (TryMatchInvocation(content, index, "TranslateFormattedArray", out int openParen0))
 		{
-			yield return new InvocationCandidate(".TranslateFormatted", openParen1);
+			yield return new InvocationCandidate("TranslateFormattedArray", openParen0);
+			index = openParen0;
+			continue;
+		}
+
+		if (TryMatchInvocation(content, index, "TranslateFormatted", out int openParen1))
+		{
+			yield return new InvocationCandidate("TranslateFormatted", openParen1);
 			index = openParen1;
+			continue;
+		}
+
+		if (TryMatchInvocation(content, index, "TranslateArray", out int openParen12))
+		{
+			yield return new InvocationCandidate("TranslateArray", openParen12);
+			index = openParen12;
 			continue;
 		}
 
@@ -294,6 +308,8 @@ static bool TryExtractFirstStringArgument(string content, int openParenIndex, ou
 	{
 		return false;
 	}
+
+	text = EscapeControlCharacters(text);
 
 	argument = new ExtractedArgument(text, hasDollar, line);
 	return true;
@@ -596,6 +612,12 @@ static string EscapeEquals(string value) => value.Replace("=", EqualsPlaceholder
 
 static string UnescapeEquals(string value) => value.Replace(EqualsPlaceholder, "=", StringComparison.Ordinal);
 
+static string EscapeControlCharacters(string value) => value
+	.Replace("\r\n", "\\n", StringComparison.Ordinal)
+	.Replace("\n", "\\n", StringComparison.Ordinal)
+	.Replace("\r", "\\r", StringComparison.Ordinal)
+	.Replace("\t", "\\t", StringComparison.Ordinal);
+
 static void PrintHelp()
 {
 	Console.WriteLine("civtranslate");
@@ -621,6 +643,7 @@ static void PrintHelp()
 	Console.WriteLine("Behavior:");
 	Console.WriteLine("  Keys are normalized to uppercase before lookup and output.");
 	Console.WriteLine("  New keys are written with value equal to key.");
+	Console.WriteLine("  Control characters are written as escaped text (e.g. \\n, \\r, \\t).");
 	Console.WriteLine("  Interpolated strings ($\"...\") are ignored with warnings.");
 	Console.WriteLine("  Existing keys not found in the current scan are kept and warned.");
 }
