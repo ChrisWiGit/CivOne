@@ -1,5 +1,4 @@
 using CivOne.Civilizations;
-using CivOne.Enums;
 
 namespace CivOne.Units;
 
@@ -14,11 +13,6 @@ namespace CivOne.Units;
 public interface IConfrontGameServices
 {
     /// <summary>
-    /// Register a hostile action between players.
-    /// </summary>
-    void RegisterHostileAction();
-
-    /// <summary>
     /// Get player by owner index.
     /// </summary>
     Player GetPlayer(byte owner);
@@ -27,14 +21,4 @@ public interface IConfrontGameServices
     /// Check if two players are at war.
     /// </summary>
     bool IsAtWar(Player playerA, Player playerB);
-
-    /// <summary>
-    /// Current game difficulty level.
-    /// </summary>
-    int Difficulty { get; }
-
-    /// <summary>
-    /// Whether the game has started.
-    /// </summary>
-    bool Started { get; }
 }

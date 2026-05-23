@@ -1,7 +1,7 @@
 using CivOne.Civilizations;
 using CivOne.Governments;
-using CivOne.Screens.Dialogs;
 using CivOne.Tiles;
+using System.Linq;
 
 namespace CivOne.Units;
 
@@ -18,33 +18,12 @@ internal class ConfrontDelegate(IConfrontGameServices gameServices)
     private readonly IConfrontGameServices _gameServices = gameServices;
 
 	/// <summary>
-	/// Execute Senate guard check and return result.
-	/// Returns Blocked=true if confrontation is not allowed.
+	/// Check if confrontation is allowed under Democracy government.
+	/// Senate blocks attacks on non-hostile, non-Barbarian civilizations.
+	/// Only affects the human player under Democracy.
 	/// </summary>
-	public ConfrontResult Execute(IConfrontContext context)
+	public bool AllowedToConfrontInDemocracy(BaseUnit attackingUnit, ITile moveTarget)
     {
-        var result = new ConfrontResult();
-
-        if (!AllowedToConfrontInDemocracy(context))
-        {
-            result.Blocked = true;
-            result.BlockReason = ConfrontBlockReason.SenateBlockedAttack;
-            return result;
-        }
-
-        // No restrictions - proceed with confrontation
-        result.Success = true;
-        return result;
-    }
-
-    /// <summary>
-    /// Check if confrontation is allowed under Democracy government.
-    /// Senate blocks attacks on non-hostile, non-Barbarian civilizations.
-    /// Only affects the human player under Democracy.
-    /// </summary>
-    private bool AllowedToConfrontInDemocracy(IConfrontContext context)
-    {
-        var attackingUnit = context.AttackingUnit as BaseUnit;
         if (attackingUnit == null)
             return true;
 
@@ -56,9 +35,9 @@ internal class ConfrontDelegate(IConfrontGameServices gameServices)
         if (attackerOwner.Government is not Democracy)
             return true;
 
-        Player targetOwner = GetConfrontationTargetOwner(context);
+        Player targetOwner = GetConfrontationTargetOwner(moveTarget);
         if (targetOwner == null)
-            return true;  // No target owner - no one to attack
+            return true;
 
         if (targetOwner.Civilization is Barbarian)
             return true;
@@ -72,13 +51,13 @@ internal class ConfrontDelegate(IConfrontGameServices gameServices)
     /// <summary>
     /// Resolve the owner of the target (from city or unit).
     /// </summary>
-    private Player GetConfrontationTargetOwner(IConfrontContext context)
+    private Player GetConfrontationTargetOwner(ITile moveTarget)
     {
-        var targetUnit = context.TargetUnit as BaseUnit;
+        var targetUnit = moveTarget?.Units.FirstOrDefault() as BaseUnit;
         if (targetUnit != null)
             return _gameServices.GetPlayer(targetUnit.Owner);
 
-        var targetCity = context.MoveTarget?.City;
+        var targetCity = moveTarget?.City;
         if (targetCity != null)
             return _gameServices.GetPlayer(targetCity.Owner);
 
