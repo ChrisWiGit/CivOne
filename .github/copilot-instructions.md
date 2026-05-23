@@ -1,84 +1,163 @@
-# CoPilot Instructions
+# Copilot Instructions
 
-## Chat Answers
+## Response Style
 
-* Use [Caveman Compression](./instructions/cavemen.instructions.md) to compress your answers when possible.
-* Do not comment on current progress or if necessary only use short phrases in Caveman style.
+* Use Caveman Compression whenever possible.
+* Do not narrate progress.
+* Keep status updates minimal and short.
 
 ## Documentation
 
-All documentation should be written in English (even if the prompt is in another language). Use clear and concise language to explain concepts, code, and processes. Avoid jargon and technical terms unless necessary, and provide definitions when they are used.
+* Always write documentation in English.
+* Keep wording concise and easy to understand.
+* Avoid jargon unless necessary.
+* Explain technical terms briefly when used.
 
+## C# Guidelines
 
+### Architecture
 
-## C# Coding Guidelines
+* Use dependency injection only.
+* Never instantiate services manually with `new`.
+* Avoid Service Locator.
+* Use constructor injection.
+* Follow SOLID.
+* Prefer interfaces and services.
 
-- Always use dependency injection. Never instantiate dependencies manually with new.
-- Avoid service locator pattern
-- Use constructor injection
-- Follow SOLID principles
-- Prefer interfaces and services
-- Prefer Factory pattern instead of new for services.
-  - Prefer one factory for multiple services instead of one factory per service (e.g. MyServiceFooFactory for MyCommandFooService, MyQueryFooService)
-- Keep methods small and focused
-- Prefer 'new()' expression instead of fully qualified new syntax 
-- Instead of .toArray() use [.. collection] to create a new array from an IEnumerable
-- Instead of `new string[] { "a", "b", "c" }` use `[ "a", "b", "c" ]` for better readability and less verbosity.
-- Instead of .Any() use .Length when working with arrays for better readability and performance.
+### Factories
 
-## Building
+* Prefer factories over direct service creation.
+* Prefer one factory handling multiple related services.
+* Delegate classes are not services and may be instantiated directly with `new()`.
 
-Use build command with quiet verbosity and only show the last lines of output to confirm successful build without overwhelming with details.
+### Code Style
 
-Example with PowerShell and with the last 15 lines of output:
+* Keep methods small and focused.
+* Prefer `new()` over explicit type construction.
+* Prefer collection expressions:
+
+  * `[ "a", "b" ]` instead of `new string[] { ... }`
+* Prefer `[ ..collection ]` over `.ToArray()`.
+* Use `.Length` instead of `.Any()` for arrays.
+
+## Build
+
+Use quiet build output and only show final lines.
+
+### PowerShell
 
 ```powershell
-dotnet build CivOne.csproj -v q 2>&1 | Select-Object -Last 15
+dotnet build Project.csproj -v q 2>&1 | Select-Object -Last 15
 ```
 
-Example with bash and with the last 15 lines of output:
+### Bash
+
 ```sh
-dotnet build CivOne.csproj -v q 2>&1 | tail -n 15
+dotnet build Project.csproj -v q 2>&1 | tail -n 15
 ```
 
-## Documentation
+## Documentation Comments
 
-- Use XML documentation comments for all public members and classes.
-- Provide clear summaries, parameter descriptions, and return value explanations.
-- Use examples in documentation where helpful.
-- After each sentence add a line break to improve readability.
+* Add XML docs to all public types and members.
+* Include summaries, params, and return descriptions.
+* Add examples when useful.
+* Add line breaks after sentences for readability.
+* Avoid redundant inline comments.
 
 ## Tests
 
-* Run tests only when necessary.
-* Run only the tests that are relevant to the current change.
-* e.g. `dotnet test xunit/CivOne.UnitTests.csproj --filter "FullyQualifiedName~TranslationFileRepositoryImplTests|FullyQualifiedName~TranslationServiceFactoryTests"`
+* Run tests only when needed.
+* Run only relevant tests.
+* Run tests without console logs from CivOne-Code when possible to reduce noise (` -p:SuppressConsoleLogs=true`).
 
-## Existing useful code
+Example:
 
-- Debounce Service with DebounceServiceFactory and IDebounceService
-- Random Number Generator with IRandomNumberGenerator and RandomNumberGeneratorFactory
+```sh
+dotnet test Tests.csproj --filter "FullyQualifiedName~MyTest" -p:SuppressConsoleLogs=true
+```
+
+## Existing Utilities
+
+Available reusable systems:
+
+* `DebounceServiceFactory` + `IDebounceService`
+* `RandomNumberGeneratorFactory` + `IRandomNumberGenerator`
+
+Reuse existing implementations before creating new ones.
 
 ## Delegate Pattern
 
-Use the Delegate Pattern when the user requests refactoring logic into delegates, callbacks, handlers, or interchangeable behaviors.
+Use when behavior should be replaceable, injected, or separated.
 
-The Delegate Pattern should be applied when:
+Apply for:
 
-* behavior needs to be passed dynamically to another class or method
-* responsibilities should be separated to reduce coupling
-* different implementations of the same behavior may exist
-* event handling, callbacks, command execution, or strategy-like behavior is needed
-* the user explicitly mentions “delegate”, “delegation”, “refactor into delegates”
+* callbacks
+* handlers
+* strategies
+* interchangeable logic
+* delegate-based refactors
 
-The implementation should:
+Rules:
 
-* keep the calling class focused on orchestration
-* move executable behavior into dedicated delegate functions/classes
-* make behaviors replaceable and testable
-* use language-native delegate/function types where appropriate
+* Calling class handles orchestration only.
+* Move behavior into `*Delegate` classes.
+* Use native delegate/function types when appropriate.
+* Instantiate delegate classes directly with `new()`.
 
-Implementation:
+## Translation
 
-* Create a class ending with "Delegate" that contains the delegate function(s).
-* Instantiate the delegate class within the calling class using new() and call the delegate function(s) where the behavior is needed.
+* Use `ITranslationService` and `TranslationServiceFactory`.
+* Prefer existing protected translation properties when available.
+* Otherwise inject `ITranslationService`.
+
+### Rules
+
+* Translation keys are the English text itself.
+* Never use string interpolation for translations.
+* Use:
+
+  * `Translate`
+  * `TranslateFormat`
+  * `TranslateArray`
+  * `TranslateFormattedArray`
+
+### Multi-line Example
+
+```csharp
+Translate("Line 1\nLine 2\nLine 3")
+```
+
+### Formatted Example
+
+```csharp
+TranslateFormat("Attack at {0}", cityName)
+```
+
+### Convenience Wrapper
+
+If many translations exist in a file:
+
+```csharp
+private string T(string key) => _translationService.Translate(key);
+```
+
+### Translation Extraction
+
+Use:
+
+```sh
+translate.ps1
+translate.sh
+```
+
+This updates:
+
+```txt
+translation/all.txt
+```
+
+Then manually move entries into language files like:
+
+```txt
+civ_german.txt
+```
