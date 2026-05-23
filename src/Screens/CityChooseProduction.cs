@@ -36,6 +36,13 @@ namespace CivOne.Screens
 	{
 		private const int MaxItemsPerPage = 28;
 
+		/// <summary>
+		/// This is a convenience to remember the last used filter mode across multiple openings of the production chooser, so that players don't have to reselect their preferred filter every time. It is static because it should be shared across all instances of CityChooseProduction.
+		/// However, it is not persisted and will reset to All when the game is restarted. 
+		/// This is a design choice to keep the implementation simple, as persisting this preference would require additional code to save and load it with the game state, and it's not critical enough to justify that complexity. If players want to reset it, they can simply restart the game.
+		/// </summary>
+		private static ProductionFilterMode _lastUsedFilterMode = ProductionFilterMode.All;
+
 		private readonly City _city;
 
 		private readonly IProduction[] _availableProduction;
@@ -48,6 +55,20 @@ namespace CivOne.Screens
 
 		private ProductionFilterMenu _menu;
 		private ProductionFilterMode _filterMode = ProductionFilterMode.All;
+
+		private static void SetLastUsedFilterMode(ProductionFilterMode filterMode)
+		{
+			_lastUsedFilterMode = filterMode;
+		}
+
+		private void SetFilterMode(ProductionFilterMode filterMode, bool remember = true)
+		{
+			_filterMode = filterMode;
+			if (remember)
+			{
+				SetLastUsedFilterMode(filterMode);
+			}
+		}
 
 		private void MenuCancel(object sender, EventArgs args)
 		{
@@ -72,9 +93,34 @@ namespace CivOne.Screens
 			};
 		}
 
+		private bool FilterHasEntries(ProductionFilterMode filterMode)
+		{
+			return filterMode switch
+			{
+				ProductionFilterMode.Units => _availableProduction.Any(p => p is IUnit),
+				ProductionFilterMode.Buildings => _availableProduction.Any(p => p is IBuilding),
+				ProductionFilterMode.Wonders => _availableProduction.Any(p => p is IWonder),
+				_ => _availableProduction.Length > 0
+			};
+		}
+
+		private ProductionFilterMode GetNextFilterWithEntries()
+		{
+			for (int i = 1; i <= Enum.GetValues<ProductionFilterMode>().Length; i++)
+			{
+				var nextMode = (ProductionFilterMode)(((int)_filterMode + i) % Enum.GetValues<ProductionFilterMode>().Length);
+				if (FilterHasEntries(nextMode))
+				{
+					return nextMode;
+				}
+			}
+
+			return _filterMode;
+		}
+
 		private void CycleFilter()
 		{
-			_filterMode = (ProductionFilterMode)(((int)_filterMode + 1) % 4);
+			SetFilterMode(GetNextFilterWithEntries());
 			_page = 0;
 			CloseCurrentMenu();
 			BuildPages();
@@ -109,6 +155,11 @@ namespace CivOne.Screens
 			_pages.Clear();
 
 			IProduction[] filteredProduction = GetFilteredProduction();
+			if (filteredProduction.Length == 0 && _filterMode != ProductionFilterMode.All)
+			{
+				SetFilterMode(GetNextFilterWithEntries(), remember: false);
+				filteredProduction = GetFilteredProduction();
+			}
 			IProduction[] productionWithSeparators = (_filterMode == ProductionFilterMode.All) 
 				? InsertSeparators(filteredProduction) 
 				: filteredProduction;
@@ -293,19 +344,18 @@ namespace CivOne.Screens
 			Palette = defaultPalette;
 
 			_availableProduction = _city.AvailableProduction.ToArray();
+			SetFilterMode(_lastUsedFilterMode, remember: false);
+			if (!FilterHasEntries(_filterMode))
+			{
+				SetFilterMode(GetNextFilterWithEntries(), remember: false);
+			}
 			_menuHeight = Resources.GetFontHeight(0) * _availableProduction.Length;
 			if (_menuHeight > 170)
 			{
 				_fontId = 1;
 				_menuHeight = Resources.GetFontHeight(1) * _availableProduction.Length;
-				if (_menuHeight > 170)
-				{
-					BuildPages();
-					UpdateMenuHeight();
-					return;
-				}
 			}
-			_pages.Add(_availableProduction);
+			BuildPages();
 			UpdateMenuHeight();
 		}
 	}
