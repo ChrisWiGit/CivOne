@@ -124,7 +124,12 @@ Apply when:
 ### Translation Rules
 
 * Translation keys are the English text itself.
-* Never use string interpolation for translations.
+* Never use string interpolation for translations, e.g. `Translate($"Attack at {cityName}")` is not allowed.
+* Never use concatenation for translations, e.g. `Translate("Attack at " + cityName)` is not allowed.
+* Never use ternary operators for translations, e.g. `Translate(isAttack ? "Attack at {cityName}" : "Defend {cityName}")` is not allowed.
+* Never use other method calls inside translation calls, e.g. `Translate(GetAttackMessage(cityName))` is not allowed.
+* Never use variables inside translation calls, e.g. `Translate(messageKey)` is not allowed.
+* If static or constant fields are used in a translation call, copy the string itself into the translation key, e.g. `Translate(fieldOrConstValue)` is not allowed, but `Translate("Population:")`. Move the `fieldOrConstValue` into the value of the translation entry instead.
 * Use:
 
   * `Translate`
