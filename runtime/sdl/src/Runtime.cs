@@ -72,7 +72,12 @@ namespace CivOne
                 tw.Close();
             }
 
-			if (Settings?.McpEnabled == true)
+			if (Settings?.ConsoleLogging != true)
+			{
+				return;
+			}
+
+			if (Settings.McpEnabled)
 			{
 				Console.Error.WriteLine(value, formatArgs);
 				Console.Error.Flush();

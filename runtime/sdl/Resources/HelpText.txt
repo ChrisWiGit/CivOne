@@ -11,6 +11,8 @@ runtime-options:
   --free                Launch the game with free assets. Does not load assets,
                         disables sound, skips data check, intro and credits
   --no-data-check       Disables checking for game data files
+  --console-log         Enable console log output
+  --no-console-log      Disable console log output
   --no-sound            Disable ingame sounds
   --profile <name>      Start CivOne using the profile specified
   --language <postfix>  Load translation file civ_<postfix>.txt from
