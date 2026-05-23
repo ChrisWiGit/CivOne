@@ -700,7 +700,7 @@ namespace CivOne.Screens
 		private string CurrentLanguageText()
 		{
 			string activePostfix = TranslationServiceFactory.ActiveLanguagePostfix;
-			return string.IsNullOrEmpty(activePostfix) ? "Identity" : activePostfix;
+			return string.IsNullOrEmpty(activePostfix) ? Translate("Identity") : activePostfix;
 		}
 
 		private void LanguageMenu()
@@ -708,13 +708,13 @@ namespace CivOne.Screens
 			IReadOnlyList<TranslationLanguageInfo> availableLanguages = TranslationServiceFactory.GetAvailableLanguages(Runtime.StorageDirectory, message => Log(message));
 			List<MenuItem<int>> menuItems =
 			[
-				MenuItem.Create("Identity (default)").OnSelect((s, a) => SelectLanguage(string.Empty)).SetActive(() => string.IsNullOrEmpty(TranslationServiceFactory.ActiveLanguagePostfix))
+				MenuItem.Create(Translate("Identity (default)")).OnSelect((s, a) => SelectLanguage(string.Empty)).SetActive(() => string.IsNullOrEmpty(TranslationServiceFactory.ActiveLanguagePostfix))
 			];
 
 			if (availableLanguages.Count == 0)
 			{
-				menuItems.Add(MenuItem.Create("No valid language files found.").Disable());
-				menuItems.Add(MenuItem.Create("Add civ_xx.txt to .../translations.").Disable());
+				menuItems.Add(MenuItem.Create(Translate("No valid language files found.")).Disable());
+				menuItems.Add(MenuItem.Create(Translate("Add civ_xx.txt to .../translations.")).Disable());
 			}
 			else
 			{
@@ -724,8 +724,8 @@ namespace CivOne.Screens
 						.SetActive(() => string.Equals(TranslationServiceFactory.ActiveLanguagePostfix, postfix, StringComparison.Ordinal))));
 			}
 
-			menuItems.Add(MenuItem.Create("Back"));
-			CreateMenu("Language", GotoMenu(GameOptionsMenu, 9), [.. menuItems]);
+			menuItems.Add(MenuItem.Create(Translate("Back")));
+			CreateMenu(Translate("Language"), GotoMenu(GameOptionsMenu, 9), [.. menuItems]);
 		}
 
 		private void SelectLanguage(string postfix)
@@ -744,7 +744,7 @@ namespace CivOne.Screens
 				Log("Could not activate language '{0}': {1}", postfix, error);
 				if (Game.Started)
 				{
-					GameTask.Enqueue(Message.Error("Language", $"Could not load language '{postfix}'.", error));
+					GameTask.Enqueue(Message.Error(Translate("Language"), TranslateFormatted("Could not load language '{0}'.", postfix), error));
 				}
 				GameOptionsMenu(9);
 				return;
@@ -762,7 +762,7 @@ namespace CivOne.Screens
 				return;
 			}
 
-			GameTask.Enqueue(Message.General($"Language switched to {languageName}."));
+			GameTask.Enqueue(Message.General(TranslateFormatted("Language switched to {0}.", languageName)));
 		}
 
 		private void Resize(object sender, ResizeEventArgs args)

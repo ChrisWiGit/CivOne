@@ -44,7 +44,7 @@ namespace CivOne.Screens.Debug
 			this.Clear();
 			this.FillRectangle(xx - 1, yy - 1, _menuWidth + 2, _menuHeight + 2, 5)
 				.AddLayer(menuGfx, xx, yy, dispose: true)
-				.DrawText("Meet With King", 0, 15, xx + 8, yy + 3);
+				.DrawText(Translate("Meet With King"), 0, 15, xx + 8, yy + 3);
 
 			_civSelect.X = xx + 2;
 			_civSelect.Y = yy + 11;

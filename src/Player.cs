@@ -133,7 +133,7 @@ namespace CivOne
 			_anarchy = (short)((HasWonder<Pyramids>() && !Game.WonderObsolete<Pyramids>()) ? 0 : 4 - (Game.GameTurn % 4) - 1);
 			Government = new Anarchy();
 			if (!IsHuman) return;
-			GameTask.Enqueue(Message.Newspaper(null, $"The {Game.HumanPlayer.TribeNamePlural} are", "revolting! Citizens", "demand new govt."));
+			GameTask.Enqueue(Message.Newspaper(null, TranslateFormattedArray("The {0} are\nrevolting! Citizens\ndemand new govt.", Game.HumanPlayer.TribeNamePlural)));
 		}
 
 		public bool IsHuman => (Game.HumanPlayer == this);

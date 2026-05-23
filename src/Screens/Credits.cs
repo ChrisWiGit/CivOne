@@ -322,8 +322,7 @@ namespace CivOne.Screens
 					var savegameName = Path.GetFileName(Runtime.Settings.LoadCosFile);
 					GameTask.Enqueue(Message.Error(
 						Translate("-- Civilization Note --"),
-						Translate("Could not load save game from --load-cos."),
-						$"File: {savegameName}"));
+						TranslateFormattedArray("Could not load save game from --load-cos.\nFile: {0}", savegameName)));
 					return;
 				}
 				Common.DestroyScreen(Common.Screens.FirstOrDefault(s => s is GamePlay, null));

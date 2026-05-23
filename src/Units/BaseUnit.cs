@@ -573,11 +573,12 @@ namespace CivOne.Units
 				return;
 			}
 
-			Player.Gold += 100;
+			const int ransomAmount = 100;
+			Player.Gold += ransomAmount;
 
 			if (Human == Player)
 			{
-				Common.AddScreen(new MessageBox("Barbarian leader captured!", "100$ ransom paid."));
+				Common.AddScreen(new MessageBox(Translate("Barbarian leader captured!"), TranslateFormatted("{0}$ ransom paid.", ransomAmount)));
 			}
 		}
 

@@ -43,7 +43,7 @@ namespace CivOne.Screens.Debug
 			this.Clear();
 			this.FillRectangle(80 + ox, 80 + oy, 161, 33, 11)
 				.FillRectangle(81 + ox, 81 + oy, 159, 31, 15)
-				.DrawText("Set City Size...", 0, 5, 88 + ox, 82 + oy)
+				.DrawText(Translate("Set City Size..."), 0, 5, 88 + ox, 82 + oy)
 				.FillRectangle(88 + ox, 95 + oy, 105, 14, 5)
 				.FillRectangle(89 + ox, 96 + oy, 103, 12, 15);
 
@@ -66,7 +66,7 @@ namespace CivOne.Screens.Debug
 				_citySelect.Cancelled += CitySize_Cancel;
 			}
 
-			_citySelect.Draw(this, "Set City Size...", CanvasHeight);
+			_citySelect.Draw(this, Translate("Set City Size..."), CanvasHeight);
 		}
 
 		private void CitySizeSet_Accept(object sender, EventArgs args)
@@ -76,12 +76,12 @@ namespace CivOne.Screens.Debug
 			byte citySize;
 			if (!byte.TryParse(Value, out citySize) || citySize < 1 || citySize > 99)
 			{
-				GameTask.Enqueue(Message.Error("-- DEBUG: Set City Size --", $"The value {Value} is invalid or out of range.", "Please enter a value between 1 and 99."));
+				GameTask.Enqueue(Message.Error(Translate("-- DEBUG: Set City Size --"), TranslateFormattedArray("The value {0} is invalid or out of range.\nPlease enter a value between 1 and 99.", Value)));
 			}
 			else
 			{
 				_selectedCity.Size = citySize;
-				GameTask.Enqueue(Message.General($"{_selectedCity.Name} size set to {citySize}."));
+				GameTask.Enqueue(Message.General(TranslateFormatted("{0} size set to {1}.", _selectedCity.Name, citySize)));
 			}
 
 			if (Accept != null)
@@ -179,7 +179,7 @@ namespace CivOne.Screens.Debug
 		{
 			if (_cities.Length == 0)
 			{
-				GameTask.Enqueue(Message.General($"There are no cities yet."));
+				GameTask.Enqueue(Message.General(Translate("There are no cities yet.")));
 				return;
 			}
 

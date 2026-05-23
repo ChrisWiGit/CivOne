@@ -152,9 +152,7 @@ namespace CivOne.Screens.CityManagerPanels
 		{
 			// CW: dialog position is not as in original game, but easier to implement and results in same effect
 			GameTask.Enqueue(Message.General(
-				"A city must have at least five",
-				"population units to support",
-				"taxmen or scientists."));
+				TranslateArray("A city must have at least five\npopulation units to support\ntaxmen or scientists.")));
 		}
 
 		public void Update()

@@ -38,14 +38,14 @@ namespace CivOne.Screens
 			Palette = Common.GetPalette256;
 
 			this.Clear(3)
-				.DrawText("Warning! Save games will be disabled on", 1, 16, 159, 176, TextAlign.Center)
-				.DrawText("anything other than Normal map size...", 1, 16, 159, 184, TextAlign.Center);
+				.DrawText(Translate("Warning! Save games will be disabled on"), 1, 16, 159, 176, TextAlign.Center)
+				.DrawText(Translate("anything other than Normal map size..."), 1, 16, 159, 184, TextAlign.Center);
 
 			_sizeSelect = new Menu<Size>("CustomMapSize", Palette)
 			{
 				X = 100,
 				Y = 80,
-				Title = "CUSTOM MAP SIZE",
+				Title = Translate("CUSTOM MAP SIZE"),
 				TitleColour = 15,
 				MenuWidth = 120,
 				ActiveColour = 11,
@@ -54,11 +54,11 @@ namespace CivOne.Screens
 				Indent = 8
 			};
 
-			_sizeSelect.Items.Add("Tiny (40x25)", new Size(40, 25));
-			_sizeSelect.Items.Add("Small (60x40)", new Size(60, 40));
-			_sizeSelect.Items.Add("Normal (80x50)", new Size(80, 50));
-			_sizeSelect.Items.Add("Large (120x75)", new Size(120, 75));
-			_sizeSelect.Items.Add("Huge (160x100)", new Size(160, 100));
+			_sizeSelect.Items.Add(Translate("Tiny (40x25)"), new Size(40, 25));
+			_sizeSelect.Items.Add(Translate("Small (60x40)"), new Size(60, 40));
+			_sizeSelect.Items.Add(Translate("Normal (80x50)"), new Size(80, 50));
+			_sizeSelect.Items.Add(Translate("Large (120x75)"), new Size(120, 75));
+			_sizeSelect.Items.Add(Translate("Huge (160x100)"), new Size(160, 100));
 
 			foreach (MenuItem<Size> item in _sizeSelect.Items)
 			{

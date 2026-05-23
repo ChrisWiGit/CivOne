@@ -234,7 +234,7 @@ namespace CivOne.Screens
 
 			this.FillRectangle(x - 1, y - 1, DialogWidth + 2, dialogHeight + 2, 5)
 				.AddLayer(panel, x, y)
-				.DrawText("What shall we build?", 0, 15, x + 8, y + 3)
+				.DrawText(Translate("What shall we build?"), 0, 15, x + 8, y + 3)
 				.AddLayer(_menu, 0, 0);
 
 			panel.Dispose();

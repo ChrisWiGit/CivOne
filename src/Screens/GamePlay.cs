@@ -56,20 +56,20 @@ namespace CivOne.Screens
 		{
 			_menuIndex = 0;
 			_gameMenu = new GameMenu("MenuBarGame", Palette.Copy());
-			_gameMenu.Items.Add("Tax Rate").OnSelect((s, a) => GameTask.Enqueue(Show.TaxRate));
-			_gameMenu.Items.Add("Luxuries Rate").OnSelect((s, a) => GameTask.Enqueue(Show.LuxuryRate));
-			_gameMenu.Items.Add("FindCity").OnSelect((s, a) => GameTask.Enqueue(Show.Search));
-			_gameMenu.Items.Add("Options").OnSelect((s, a) => GameTask.Enqueue(Show.Screen<GameOptions>()));
-			_gameMenu.Items.Add("Save Game").SetEnabled(Game.GameTurn > 0 && Common.AllowSaveGame).OnSelect((s, a) => GameTask.Enqueue(Show.Screen<SaveGame>()));
-			_gameMenu.Items.Add("REVOLUTION!").OnSelect((s, a) => GameTask.Enqueue(Show.Screen<Revolution>()));
+			_gameMenu.Items.Add(Translate("Tax Rate")).OnSelect((s, a) => GameTask.Enqueue(Show.TaxRate));
+			_gameMenu.Items.Add(Translate("Luxuries Rate")).OnSelect((s, a) => GameTask.Enqueue(Show.LuxuryRate));
+			_gameMenu.Items.Add(Translate("FindCity")).OnSelect((s, a) => GameTask.Enqueue(Show.Search));
+			_gameMenu.Items.Add(Translate("Options")).OnSelect((s, a) => GameTask.Enqueue(Show.Screen<GameOptions>()));
+			_gameMenu.Items.Add(Translate("Save Game")).SetEnabled(Game.GameTurn > 0 && Common.AllowSaveGame).OnSelect((s, a) => GameTask.Enqueue(Show.Screen<SaveGame>()));
+			_gameMenu.Items.Add(Translate("REVOLUTION!")).OnSelect((s, a) => GameTask.Enqueue(Show.Screen<Revolution>()));
 			_gameMenu.Items.Add(null);
 			if (Settings.DebugMenu)
 			{
-				_gameMenu.Items.Add("Debug Options").OnSelect((s, a) => GameTask.Enqueue(Show.Screen<DebugOptions>()));
+				_gameMenu.Items.Add(Translate("Debug Options")).OnSelect((s, a) => GameTask.Enqueue(Show.Screen<DebugOptions>()));
 				_gameMenu.Items.Add(null);
 			}
-			_gameMenu.Items.Add("Retire").OnSelect((s, a) => GameTask.Enqueue(Show.Screen<ConfirmRetire>()));
-			_gameMenu.Items.Add("QUIT to DOS").OnSelect((s, a) => GameTask.Enqueue(Show.Screen<ConfirmQuit>()));
+			_gameMenu.Items.Add(Translate("Retire")).OnSelect((s, a) => GameTask.Enqueue(Show.Screen<ConfirmRetire>()));
+			_gameMenu.Items.Add(Translate("QUIT to DOS")).OnSelect((s, a) => GameTask.Enqueue(Show.Screen<ConfirmQuit>()));
 			
 			_menuX = 16;
 			_menuY = 8;
@@ -96,12 +96,12 @@ namespace CivOne.Screens
 		{
 			_menuIndex = 2;
 			_gameMenu = new GameMenu("MenuBarAdvisors", Palette);
-			_gameMenu.Items.Add("City Status (F1)").OnSelect((s, a) => Common.AddScreen(new CityStatus()));
-			_gameMenu.Items.Add("Military Advisor (F2)").OnSelect((s, a) => { Common.AddScreen(new MilitaryLosses()); Common.AddScreen(new MilitaryStatus()); });
-			_gameMenu.Items.Add("Intelligence Advisor (F3)").OnSelect((s, a) => Common.AddScreen(new IntelligenceReport()));
-			_gameMenu.Items.Add("Attitude Advisor (F4)").OnSelect((s, a) => Common.AddScreen(new AttitudeSurvey()));
-			_gameMenu.Items.Add("Trade Advisor (F5)").OnSelect((s, a) => Common.AddScreen(new TradeReport()));
-			_gameMenu.Items.Add("Science Advisor (F6)").OnSelect((s, a) => Common.AddScreen(new ScienceReport()));
+			_gameMenu.Items.Add(Translate("City Status (F1)")).OnSelect((s, a) => Common.AddScreen(new CityStatus()));
+			_gameMenu.Items.Add(Translate("Military Advisor (F2)")).OnSelect((s, a) => { Common.AddScreen(new MilitaryLosses()); Common.AddScreen(new MilitaryStatus()); });
+			_gameMenu.Items.Add(Translate("Intelligence Advisor (F3)")).OnSelect((s, a) => Common.AddScreen(new IntelligenceReport()));
+			_gameMenu.Items.Add(Translate("Attitude Advisor (F4)")).OnSelect((s, a) => Common.AddScreen(new AttitudeSurvey()));
+			_gameMenu.Items.Add(Translate("Trade Advisor (F5)")).OnSelect((s, a) => Common.AddScreen(new TradeReport()));
+			_gameMenu.Items.Add(Translate("Science Advisor (F6)")).OnSelect((s, a) => Common.AddScreen(new ScienceReport()));
 			
 			_menuX = 112;
 			_menuY = 8;
@@ -113,18 +113,18 @@ namespace CivOne.Screens
 		{
 			_menuIndex = 3;
 			_gameMenu = new GameMenu("MenuBarWorld", Palette);
-			_gameMenu.Items.Add("Wonders of the World (F7)").OnSelect((s, a) => {
+			_gameMenu.Items.Add(Translate("Wonders of the World (F7)")).OnSelect((s, a) => {
 				if (Game.BuiltWonders.Length == 0)
 					GameTask.Enqueue(Show.Empty);
 				else
 					Common.AddScreen(new WorldWonders());
 			});
-			_gameMenu.Items.Add("Top 5 Cities (F8)").OnSelect((s, a) => Common.AddScreen(new TopCities()));;
-			_gameMenu.Items.Add("Civilization Score (F9)").OnSelect((s, a) => Common.AddScreen(new CivilizationScore()));
-			_gameMenu.Items.Add("World Map (F10)").OnSelect((s, a) => Common.AddScreen(new WorldMap()));
-			_gameMenu.Items.Add("Demographics").OnSelect((s, a) => Common.AddScreen(new Demographics()));
+			_gameMenu.Items.Add(Translate("Top 5 Cities (F8)")).OnSelect((s, a) => Common.AddScreen(new TopCities()));
+			_gameMenu.Items.Add(Translate("Civilization Score (F9)")).OnSelect((s, a) => Common.AddScreen(new CivilizationScore()));
+			_gameMenu.Items.Add(Translate("World Map (F10)")).OnSelect((s, a) => Common.AddScreen(new WorldMap()));
+			_gameMenu.Items.Add(Translate("Demographics")).OnSelect((s, a) => Common.AddScreen(new Demographics()));
 			
-			_gameMenu.Items.Add("SpaceShips").OnSelect((s, a) => Common.AddScreen(new SpaceShipCivilizationSelectorDialog())).
+			_gameMenu.Items.Add(Translate("SpaceShips")).OnSelect((s, a) => Common.AddScreen(new SpaceShipCivilizationSelectorDialog())).
 				SetEnabled(SpaceShipCivilizationSelectorServicesFactory.CreateDefault().SelectorService.GetCivilizations().Any(c => c.IsEnabled));
 			
 			_menuX = 144;
@@ -137,12 +137,12 @@ namespace CivOne.Screens
 		{
 			_menuIndex = 4;
 			_gameMenu = new GameMenu("MenuBarCivilopedia", Palette);
-			_gameMenu.Items.Add("Complete").OnSelect((s, a) => Common.AddScreen(new Civilopedia(Civilopedia.Complete)));
-			_gameMenu.Items.Add("Civilization Advances").OnSelect((s, a) => Common.AddScreen(new Civilopedia(Civilopedia.Advances)));
-			_gameMenu.Items.Add("City Improvements").OnSelect((s, a) => Common.AddScreen(new Civilopedia(Civilopedia.Improvements)));
-			_gameMenu.Items.Add("Military Units").OnSelect((s, a) => Common.AddScreen(new Civilopedia(Civilopedia.Units)));
-			_gameMenu.Items.Add("Terrain Types").OnSelect((s, a) => Common.AddScreen(new Civilopedia(Civilopedia.TerrainType)));
-			_gameMenu.Items.Add("Miscellaneous").OnSelect((s, a) => Common.AddScreen(new Civilopedia(Civilopedia.Misc)));
+			_gameMenu.Items.Add(Translate("Complete")).OnSelect((s, a) => Common.AddScreen(new Civilopedia(Civilopedia.Complete)));
+			_gameMenu.Items.Add(Translate("Civilization Advances")).OnSelect((s, a) => Common.AddScreen(new Civilopedia(Civilopedia.Advances)));
+			_gameMenu.Items.Add(Translate("City Improvements")).OnSelect((s, a) => Common.AddScreen(new Civilopedia(Civilopedia.Improvements)));
+			_gameMenu.Items.Add(Translate("Military Units")).OnSelect((s, a) => Common.AddScreen(new Civilopedia(Civilopedia.Units)));
+			_gameMenu.Items.Add(Translate("Terrain Types")).OnSelect((s, a) => Common.AddScreen(new Civilopedia(Civilopedia.TerrainType)));
+			_gameMenu.Items.Add(Translate("Miscellaneous")).OnSelect((s, a) => Common.AddScreen(new Civilopedia(Civilopedia.Misc)));
 			
 			_menuX = 182;
 			_menuY = 8;
@@ -498,7 +498,7 @@ namespace CivOne.Screens
 			
 			if (!Common.AllowSaveGame)
 			{
-				GameTask.Insert(Message.General("The save game format", "is not compatible with the", "selected map size.", "The game can not be saved!"));
+				GameTask.Insert(Message.General(TranslateArray("The save game format\nis not compatible with the\nselected map size.\nThe game can not be saved!")));
 				Game.AutoSave = false;
 			}
 		}

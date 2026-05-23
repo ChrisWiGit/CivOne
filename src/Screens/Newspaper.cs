@@ -78,7 +78,7 @@ namespace CivOne.Screens
 				.DrawText(",-.", 4, 5, paperX + 268, paperY + 11)
 				.DrawText(_name, 4, 5, paperX + 160, paperY + 11, TextAlign.Center)
 				.DrawText(_date, 0, 5, paperX + 8, paperY + 28)
-				.DrawText("10 cents", 0, 5, paperX + 272, paperY + 28)
+				.DrawText(Translate("10 cents"), 0, 5, paperX + 272, paperY + 28)
 				.FillRectangle(paperX + 1, paperY + 1, 318, 1, 5)
 				.FillRectangle(paperX + 1, paperY + 2, 1, 33, 5)
 				.FillRectangle(paperX + 318, paperY + 2, 1, 33, 5)
@@ -96,9 +96,14 @@ namespace CivOne.Screens
 
 		private void DrawGovernmentSection(int paperX, int paperY, IBitmap[] governmentPortraits)
 		{
-			string[] advisorNames = new string[] { "Defense Minister", "Domestic Advisor", "Foreign Minister", "Science Advisor" };
+			string[] advisorNames = [
+				Translate("Defense Minister"),
+				Translate("Domestic Advisor"),
+				Translate("Foreign Minister"),
+				Translate("Science Advisor")
+			];
 			this.FillRectangle(paperX, paperY + 100, PaperWidth, 100, 15)
-				.DrawText("New Cabinet:", 5, 5, paperX + 106, paperY + 102);
+				.DrawText(Translate("New Cabinet:"), 5, 5, paperX + 106, paperY + 102);
 			for (int i = 0; i < 4; i++)
 			{
 				this.AddLayer(governmentPortraits[i], paperX + 20 + (80 * i), paperY + 118)
@@ -115,7 +120,7 @@ namespace CivOne.Screens
 			using (IBitmap dialog = new Picture(151, 15)
 					.Tile(Pattern.PanelGrey)
 					.DrawRectangle3D()
-					.DrawText("Press any key to continue.", 0, 15, 4, 4))
+					.DrawText(Translate("Press any key to continue."), 0, 15, 4, 4))
 			{
 				this.FillRectangle(paperX + 80, paperY + 128, 153, 17, 5)
 					.AddLayer(dialog, paperX + 81, paperY + 129);
@@ -178,15 +183,15 @@ namespace CivOne.Screens
 			_modernGovernment = Human.HasAdvance<Invention>();
 
 			_newsflash = GetGameText($"KING/NEWS{(char)Common.Random.Next((int)'A', (int)'O')}")[0];
-			_shout = (Common.Random.Next(0, 2) == 0) ? "FLASH" : "EXTRA!";
-			_date = $"January 1, {Common.YearString(Game.GameTurn)}";
+			_shout = (Common.Random.Next(0, 2) == 0) ? Translate("FLASH") : Translate("EXTRA!");
+			_date = TranslateFormatted("January 1, {0}", Common.YearString(Game.GameTurn));
 			_name = city == null ? Human.GetCapitalName() : city.Name;
 
 			switch (Common.Random.Next(0, 3))
 			{
-				case 0: _name = $"The {_name} Times"; break;
-				case 1: _name = $"The {_name} Tribune"; break;
-				case 2: _name = $"{_name} Weekly"; break;
+				case 0: _name = TranslateFormatted("The {0} Times", _name); break;
+				case 1: _name = TranslateFormatted("The {0} Tribune", _name); break;
+				case 2: _name = TranslateFormatted("{0} Weekly", _name); break;
 			}
 
 			RenderNewspaper();

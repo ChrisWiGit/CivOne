@@ -125,9 +125,9 @@ namespace CivOne.Screens
 
 			string cosFile = RuntimeHandler.Runtime.FileChooser(
 				false,
-				"Load Game...",
+				Translate("Load Game..."),
 				BuildDialogInitialFileName(),
-				"CivOne Save Game (*.cos)|*.cos"
+				Translate("CivOne Save Game (*.cos)|*.cos")
 			);
 			if (string.IsNullOrEmpty(cosFile))
 			{
@@ -157,12 +157,12 @@ namespace CivOne.Screens
 		{
 			Bitmap.Clear();
 			this.Clear(15)
-				.DrawText("Which drive contains your", 0, 5, OffsetX + 92, OffsetY + 72, TextAlign.Left)
-				.DrawText("saved game files?", 0, 5, OffsetX + 104, OffsetY + 80, TextAlign.Left)
-				.DrawText($"{_driveLetter}:", 0, 5, OffsetX + 146, OffsetY + 96, TextAlign.Left)
-				.DrawText("Press drive letter and", 0, 5, OffsetX + 104, OffsetY + 112, TextAlign.Left)
-				.DrawText("Return when disk is inserted", 0, 5, OffsetX + 80, OffsetY + 120, TextAlign.Left)
-				.DrawText("Press Escape to cancel", 0, 5, OffsetX + 104, OffsetY + 128, TextAlign.Left);
+				.DrawText(Translate("Which drive contains your"), 0, 5, OffsetX + 92, OffsetY + 72, TextAlign.Left)
+				.DrawText(Translate("saved game files?"), 0, 5, OffsetX + 104, OffsetY + 80, TextAlign.Left)
+				.DrawText(TranslateFormatted("{0}:", _driveLetter), 0, 5, OffsetX + 146, OffsetY + 96, TextAlign.Left)
+				.DrawText(Translate("Press drive letter and"), 0, 5, OffsetX + 104, OffsetY + 112, TextAlign.Left)
+				.DrawText(Translate("Return when disk is inserted"), 0, 5, OffsetX + 80, OffsetY + 120, TextAlign.Left)
+				.DrawText(Translate("Press Escape to cancel"), 0, 5, OffsetX + 104, OffsetY + 128, TextAlign.Left);
 		}
 
 		protected override void Resize(int width, int height)
@@ -233,7 +233,7 @@ namespace CivOne.Screens
 			{
 				_menu = new Menu(Palette)
 				{
-					Title = "Select Load File...",
+					Title = Translate("Select Load File..."),
 					X = 51,
 					Y = 70,
 					MenuWidth = 217,
@@ -249,7 +249,7 @@ namespace CivOne.Screens
 				int saveGameIndex = 0;
 
 				// Add "Load from new format..." option at the top
-				_menu.Items.Add("Load game from new format...", menuValue).OnSelect(LoadYamlFromBrowser);
+				_menu.Items.Add(Translate("Load game from new format..."), menuValue).OnSelect(LoadYamlFromBrowser);
 
 				foreach (SaveGameFile file in SaveGameFile.GetSaveGames(_driveLetter))
 				{

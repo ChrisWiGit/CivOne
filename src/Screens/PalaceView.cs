@@ -293,8 +293,8 @@ namespace CivOne.Screens
 				return;
 			}
 
-			this.DrawText("F1 Disable Noise", 0, 5, ox + 4, oy + 190)
-				.DrawText("F1 Disable Noise", 0, 14, ox + 4, oy + 189);
+			this.DrawText(Translate("F1 Disable Noise"), 0, 5, ox + 4, oy + 190)
+				.DrawText(Translate("F1 Disable Noise"), 0, 14, ox + 4, oy + 189);
 		}
 
 		protected override bool HasUpdate(uint gameTick)
@@ -335,7 +335,7 @@ namespace CivOne.Screens
 						Picture message = new Picture(180, 15)
 							.Tile(Pattern.PanelGrey)
 							.DrawRectangle3D()
-							.DrawText("Which section shall we improve?", 0, 15, 4, 4)
+							.DrawText(Translate("Which section shall we improve?"), 0, 15, 4, 4)
 							.As<Picture>();
 						this.FillRectangle(40 + ox, 16 + oy, 182, 17, 5)
 							.AddLayer(message, 41 + ox, 17 + oy);
@@ -363,7 +363,7 @@ namespace CivOne.Screens
 						Picture message = new Picture(280, 118)
 							.Tile(Pattern.PanelGrey)
 							.DrawRectangle3D()
-							.DrawText("Which style shall we use?", 0, 15, 4, 4)
+							.DrawText(Translate("Which style shall we use?"), 0, 15, 4, 4)
 							.As<Picture>();
 
 						if (_pendingPartIndex >= 0)

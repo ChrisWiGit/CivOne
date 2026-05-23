@@ -63,10 +63,12 @@ namespace CivOne.Screens
 
 		private void DrawMessageLines()
 		{
-			this.DrawText($"{_enemies[_enemy].DestroyYear}: {Human.Civilization.NamePlural} destroy", 5, 20, 159 + OffsetX, 152 + OffsetY, TextAlign.Center)
-				.DrawText($"{_enemies[_enemy].DestroyYear}: {Human.Civilization.NamePlural} destroy", 5, 23, 159 + OffsetX, 151 + OffsetY, TextAlign.Center)
-				.DrawText($"{_enemies[_enemy].Civilization.Name} civilization!", 5, 20, 159 + OffsetX, 168 + OffsetY, TextAlign.Center)
-				.DrawText($"{_enemies[_enemy].Civilization.Name} civilization!", 5, 23, 159 + OffsetX, 167 + OffsetY, TextAlign.Center);
+			string line1 = TranslateFormatted("{0}: {1} destroy", _enemies[_enemy].DestroyYear, Human.Civilization.NamePlural);
+			string line2 = TranslateFormatted("{0} civilization!", _enemies[_enemy].Civilization.Name);
+			this.DrawText(line1, 5, 20, 159 + OffsetX, 152 + OffsetY, TextAlign.Center)
+				.DrawText(line1, 5, 23, 159 + OffsetX, 151 + OffsetY, TextAlign.Center)
+				.DrawText(line2, 5, 20, 159 + OffsetX, 168 + OffsetY, TextAlign.Center)
+				.DrawText(line2, 5, 23, 159 + OffsetX, 167 + OffsetY, TextAlign.Center);
 		}
 
 
@@ -166,8 +168,8 @@ namespace CivOne.Screens
 				case 4:
 					this.Clear(OpaqueBlackColour)
 						.AddLayer(_background, OffsetX, OffsetY)
-						.DrawText($"The entire world hails", 5, 22, 159 + OffsetX, 153 + OffsetY, TextAlign.Center)
-						.DrawText($"{HumanName} the CONQUEROR!", 5, 22, 159 + OffsetX, 168 + OffsetY, TextAlign.Center);
+						.DrawText(Translate("The entire world hails"), 5, 22, 159 + OffsetX, 153 + OffsetY, TextAlign.Center)
+						.DrawText(TranslateFormatted("{0} the CONQUEROR!", HumanName), 5, 22, 159 + OffsetX, 168 + OffsetY, TextAlign.Center);
 
 					break;
 			}

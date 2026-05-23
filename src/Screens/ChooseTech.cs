@@ -91,12 +91,12 @@ namespace CivOne.Screens
 					.Tile(Pattern.PanelGrey)
 					.AddLayer(governmentPortrait, 1, dialogHeight - 61)
 					.DrawRectangle3D()
-					.DrawText("Science Advisor:", 46, 3, DialogText)
+					.DrawText(Translate("Science Advisor:"), 46, 3, DialogText)
 					.FillRectangle(46, 10, 89, 1, 11)
-					.DrawText("Which discovery should our", 46, 12, DialogText)
-					.DrawText("wise men be pursuing, sire?", 46, 20, DialogText)
-					.DrawText("Pick one...", 46, 28, DialogText)
-					.DrawText($"(Help available)", 202, dialogHeight, HelpText)
+					.DrawText(Translate("Which discovery should our"), 46, 12, DialogText)
+					.DrawText(Translate("wise men be pursuing, sire?"), 46, 20, DialogText)
+					.DrawText(Translate("Pick one..."), 46, 28, DialogText)
+					.DrawText(Translate("(Help available)"), 202, dialogHeight, HelpText)
 					.As<Picture>();
 
 			this.DrawRectangle(38, 56, 204, dialogHeight + 2)

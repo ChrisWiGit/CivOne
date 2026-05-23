@@ -201,8 +201,7 @@ namespace CivOne.Screens.CityManagerPanels
 		{
 			// CW: Not like in original game but made more user friendly.
 			GameTask.Enqueue(Message.General(
-				"You have to wait until next turn",
-				"to sell another building."));
+				CivOne.Services.TranslationServiceFactory.GetCurrent().TranslateArray("You have to wait until next turn\nto sell another building.")));
 		}
 		
 		protected int FirstBuildingIndex => Array.FindIndex(_improvements, x => x is IBuilding);

@@ -140,12 +140,12 @@ namespace CivOne.Screens.Debug
 			this.FillRectangle(xx, 153, 79, 1, 15)
 				.FillRectangle(xx, 154, 80, 46, 9)
 				.FillRectangle(xx + 1, 155, 78, 44, 1)
-				.DrawText("Left click:", 1, 15, xx + 3, 157)
-				.DrawText("One unit", 1, 15, xx + 8, 164)
-				.DrawText("Right click:", 1, 15, xx + 3, 171)
-				.DrawText("Multiple units", 1, 15, xx + 8, 178)
-				.DrawText("Escape key:", 1, 15, xx + 3, 185)
-				.DrawText("Cancel", 1, 15, xx + 8, 192);
+				.DrawText(Translate("Left click:"), 1, 15, xx + 3, 157)
+				.DrawText(Translate("One unit"), 1, 15, xx + 8, 164)
+				.DrawText(Translate("Right click:"), 1, 15, xx + 3, 171)
+				.DrawText(Translate("Multiple units"), 1, 15, xx + 8, 178)
+				.DrawText(Translate("Escape key:"), 1, 15, xx + 3, 185)
+				.DrawText(Translate("Cancel"), 1, 15, xx + 8, 192);
 		}
 		
 		public override bool KeyDown(KeyboardEventArgs args)

@@ -37,7 +37,29 @@ namespace CivOne.Screens
 
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => Math.Max(0, (Height - 200) / 2);
-		private string T(string key) => _translationService.Translate(key);
+
+		private string TranslateTribeName(string tribeNamePlural)
+		{
+			return tribeNamePlural switch
+			{
+				"Americans" => _translationService.Translate("Americans"),
+				"Aztecs" => _translationService.Translate("Aztecs"),
+				"Babylonians" => _translationService.Translate("Babylonians"),
+				"Barbarians" => _translationService.Translate("Barbarians"),
+				"Chinese" => _translationService.Translate("Chinese"),
+				"Egyptians" => _translationService.Translate("Egyptians"),
+				"English" => _translationService.Translate("English"),
+				"French" => _translationService.Translate("French"),
+				"Germans" => _translationService.Translate("Germans"),
+				"Greeks" => _translationService.Translate("Greeks"),
+				"Indians" => _translationService.Translate("Indians"),
+				"Mongols" => _translationService.Translate("Mongols"),
+				"Romans" => _translationService.Translate("Romans"),
+				"Russians" => _translationService.Translate("Russians"),
+				"Zulus" => _translationService.Translate("Zulus"),
+				_ => tribeNamePlural
+			};
+		}
 
 		private static void OpenViewOnlySpaceShip(Player player)
 		{
@@ -112,14 +134,14 @@ namespace CivOne.Screens
 		{
 			if (civilizations.Length == 0)
 			{
-				_menu.Items.Add(T("No civilizations available"), null).SetEnabled(false);
+				_menu.Items.Add(_translationService.Translate("No civilizations available"), null).SetEnabled(false);
 				return;
 			}
 
 			for (int i = 0; i < civilizations.Length; i++)
 			{
 				SpaceShipCivilizationListItem civilization = civilizations[i];
-				string tribeName = _translationService.Translate(civilization.Player.TribeNamePlural);
+				string tribeName = TranslateTribeName(civilization.Player.TribeNamePlural);
 				_menu.Items.Add($"{i + 1}. {tribeName}", civilization.Player)
 					.SetEnabled(civilization.IsEnabled)
 					.OnSelect(OnSelect);
@@ -202,7 +224,7 @@ namespace CivOne.Screens
 
 			this.FillRectangle(x - 1, y - 1, DialogWidth + 2, dialogHeight + 2, 5)
 				.AddLayer(panel, x, y)
-				.DrawText(T("Whose spaceship to view?"), 0, 15, x + 8, y + 3)
+				.DrawText(_translationService.Translate("Whose spaceship to view?"), 0, 15, x + 8, y + 3)
 				.AddLayer(_menu, 0, 0);
 
 			panel.Dispose();

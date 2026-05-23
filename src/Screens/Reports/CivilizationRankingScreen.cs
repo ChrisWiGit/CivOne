@@ -58,17 +58,6 @@ namespace CivOne.Screens.Reports
 			CivilizationRankingHistorian.Gibbon
 		];
 
-		private static readonly string[] RankingAdjectives =
-		[
-			"Glorious",
-			"Great",
-			"Good",
-			"Average",
-			"Poor",
-			"Miserable",
-			"Hopeless"
-		];
-
 		private readonly ICivilizationRankingService _rankingService;
 		private readonly IPreviewPalaceRenderer _palaceRenderer;
 
@@ -247,17 +236,21 @@ namespace CivOne.Screens.Reports
 
 		private string GetRankingAdjective(int index)
 		{
-			if (index < 0)
+			if (index < 0 || index > 6)
 			{
-				return Translate(RankingAdjectives[^1]);
+				return Translate("Hopeless");
 			}
 
-			if (index >= RankingAdjectives.Length)
+			return index switch
 			{
-				return Translate(RankingAdjectives[^1]);
-			}
-
-			return Translate(RankingAdjectives[index]);
+				0 => Translate("Glorious"),
+				1 => Translate("Great"),
+				2 => Translate("Good"),
+				3 => Translate("Average"),
+				4 => Translate("Poor"),
+				5 => Translate("Miserable"),
+				_ => Translate("Hopeless")
+			};
 		}
 
 		private string GetHistorianLabel(CivilizationRankingHistorian historian)

@@ -277,7 +277,7 @@ namespace CivOne.Screens.Debug
 
             if (_cities.Length == 0)
             {
-                GameTask.Enqueue(Message.General($"There are no cities yet."));
+                GameTask.Enqueue(Message.General(Translate("There are no cities yet.")));
                 return;
             }
 

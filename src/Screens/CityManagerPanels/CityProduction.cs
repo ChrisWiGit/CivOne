@@ -101,8 +101,8 @@ namespace CivOne.Screens.CityManagerPanels
 				if (Common.TopScreen is not CityManager) blink = ProductionInvalid;
 				if (!_viewCity)
 				{
-					DrawButton(_city.AutoBuild ? "AUTO." : "Change", (byte)(blink ? 14 : 9), 1, 1, 7, 33);
-					DrawButton("Buy", 9, 1, 64, 7, 18);
+					DrawButton(_city.AutoBuild ? Translate("AUTO.") : Translate("Change"), (byte)(blink ? 14 : 9), 1, 1, 7, 33);
+					DrawButton(Translate("Buy"), 9, 1, 64, 7, 18);
 				}
 
 				DrawShields();
@@ -150,14 +150,20 @@ namespace CivOne.Screens.CityManagerPanels
 			short buyPrice = _city.BuyPrice;
 			if (_city.IsRiot && _city.CurrentProduction is IBuilding)
 			{
-				Common.AddScreen(new MessageBox("Civil Disorder", $"{_city.Name} cannot buy", "city improvements now."));
+				Common.AddScreen(new MessageBox(
+					Translate("Civil Disorder"),
+					TranslateFormatted("{0} cannot buy", _city.Name),
+					Translate("city improvements now.")));
 				return true;
 			}
 			if (buyPrice <= 0)
 				return true;
 			if (playerGold < buyPrice)
 			{
-				Common.AddScreen(new MessageBox("Cost to complete", $"{name}: ${buyPrice}", $"Treasury: ${playerGold}"));
+				Common.AddScreen(new MessageBox(
+					Translate("Cost to complete"),
+					TranslateFormatted("{0}: ${1}", name, buyPrice),
+					TranslateFormatted("Treasury: ${0}", playerGold)));
 				return true;
 			}
 

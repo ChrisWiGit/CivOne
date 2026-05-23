@@ -982,7 +982,7 @@ namespace CivOne.Screens
 					_invadersOrRevolters[ii] = revolters[xx + (frameX * (ww + 1)), yy + (frameY * (hh + 1)), ww, hh];
 				}
 				_x = 0;
-				string[] lines = { "Civil disorder in", $"{city.Name}! Mayor", "flees in panic." };
+				string[] lines = TranslateFormattedArray("Civil disorder in\n{0}! Mayor\nflees in panic.", city.Name);
 				drawMessage(lines);
 			}
 
@@ -1003,15 +1003,15 @@ namespace CivOne.Screens
 				}
 				_x = 240;
 
-				string leaderTitle = "President";
+				string leaderTitle = Translate("President");
 				if (Game.CurrentPlayer.Government is Governments.Monarchy)
-					leaderTitle = "King";
+					leaderTitle = Translate("King");
 				if (Game.CurrentPlayer.Government is Governments.Communism)
-					leaderTitle = "Comrade";
+					leaderTitle = Translate("Comrade");
 				if (Game.CurrentPlayer.Government is Despotism)
-					leaderTitle = "Emperor";
+					leaderTitle = Translate("Emperor");
 
-				string[] lines = { "'We Love the " + leaderTitle + "'", "day celebrated in", $"{city.Name}!" };
+				string[] lines = TranslateFormattedArray("'We Love the {0}'\nday celebrated in\n{1}!", leaderTitle, city.Name);
 				drawMessage(lines);
 			}
 
@@ -1024,7 +1024,7 @@ namespace CivOne.Screens
 						_noiseMap[x, y] = (byte)Common.Random.Next(1, NOISE_COUNT);
 					}
 
-				string[] lines = { $"{_city.Name} builds", $"{(production as ICivilopedia).Name}." };
+				string[] lines = TranslateFormattedArray("{0} builds\n{1}.", _city.Name, (production as ICivilopedia).Name);
 				int width = lines.Max(l => Resources.GetTextSize(5, l).Width) + 12;
 				Picture dialog = new Picture(width, 39)
 					.Tile(Pattern.PanelGrey, 1, 1)

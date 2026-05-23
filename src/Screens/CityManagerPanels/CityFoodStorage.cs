@@ -29,7 +29,7 @@ namespace CivOne.Screens.CityManagerPanels
 				this.Tile(Pattern.PanelBlue)
 					.DrawRectangle(colour: 1)
 					.FillRectangle(1, 1, (Width - 2), 8, 1)
-					.DrawText($"Food Storage", 1, 17, 6, 2, TextAlign.Left);
+					.DrawText(Translate("Food Storage"), 1, 17, 6, 2, TextAlign.Left);
 
 				int foodPerLine = (_city.Size + 1);
 				int foodWidth = 8;

@@ -37,11 +37,11 @@ namespace CivOne.Screens.GamePlayPanels
 			if (_update)
 			{
 				this.Clear(5)
-					.DrawText("GAME", 8, 1)
-					.DrawText("ORDERS", 64, 1)
-					.DrawText("ADVISORS", 128, 1)
-					.DrawText("WORLD", 192, 1)
-					.DrawText("CIVILOPEDIA", 240, 1);
+					.DrawText(Translate("GAME"), 8, 1)
+					.DrawText(Translate("ORDERS"), 64, 1)
+					.DrawText(Translate("ADVISORS"), 128, 1)
+					.DrawText(Translate("WORLD"), 192, 1)
+					.DrawText(Translate("CIVILOPEDIA"), 240, 1);
 
 				_update = false;
 				return true;

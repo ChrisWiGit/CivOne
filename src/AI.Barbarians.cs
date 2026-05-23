@@ -67,7 +67,8 @@ namespace CivOne
 						City nearestCity = Game.GetCities().Where(x => x.Owner != 0).OrderBy(x => Common.DistanceToTile(x.X, x.Y, unit.X, unit.Y)).ThenBy(x => x.Player == Human ? 0 : 1).First();
 						if (nearestCity.Player == Human && Human.Visible(unit.Tile))
 						{
-							GameTask.Insert(Message.Advisor(Advisor.Defense, false, "Barbarian raiding party", $"lands near {nearestCity.Name}!", "Citizens are alarmed."));
+							GameTask.Insert(Message.Advisor(Advisor.Defense, false,
+								TranslateFormattedArray("Barbarian raiding party\nlands near {0}!\nCitizens are alarmed.", nearestCity.Name)));
 						}
 					}
 

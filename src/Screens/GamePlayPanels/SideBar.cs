@@ -160,32 +160,32 @@ namespace CivOne.Screens.GamePlayPanels
 				
 				if (unit.Veteran)
 				{
-					_gameInfo.DrawText("Veteran", 0, 5, 8, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(Translate("Veteran"), 0, 5, 8, (yy += 8), TextAlign.Left);
 				}
 
 				if (unit is BaseUnitAir)
 				{
-					_gameInfo.DrawText($"Moves: {unit.MovesLeft}({(unit as BaseUnitAir).FuelLeft})", 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(TranslateFormatted("Moves: {0}({1})", unit.MovesLeft, (unit as BaseUnitAir).FuelLeft), 0, 5, 4, (yy += 8), TextAlign.Left);
 				}
 				else if (unit.PartMoves > 0)
 				{
-					_gameInfo.DrawText($"Moves: {unit.MovesLeft}.{unit.PartMoves}", 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(TranslateFormatted("Moves: {0}.{1}", unit.MovesLeft, unit.PartMoves), 0, 5, 4, (yy += 8), TextAlign.Left);
 				}
 				else
 				{
-					_gameInfo.DrawText($"Moves: {unit.MovesLeft}", 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(TranslateFormatted("Moves: {0}", unit.MovesLeft), 0, 5, 4, (yy += 8), TextAlign.Left);
 				}
-				_gameInfo.DrawText((unit.Home == null ? "NONE" : unit.Home.Name), 0, 5, 4, (yy += 8), TextAlign.Left);
+				_gameInfo.DrawText((unit.Home == null ? Translate("NONE") : unit.Home.Name), 0, 5, 4, (yy += 8), TextAlign.Left);
 				_gameInfo.DrawText($"({Map[unit.X, unit.Y].Name})", 0, 5, 4, (yy += 8), TextAlign.Left);
 				
 				if (Map[unit.X, unit.Y].RailRoad)
-					_gameInfo.DrawText("(RailRoad)", 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(Translate("(RailRoad)"), 0, 5, 4, (yy += 8), TextAlign.Left);
 				else if (Map[unit.X, unit.Y].Road)
-					_gameInfo.DrawText("(Road)", 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(Translate("(Road)"), 0, 5, 4, (yy += 8), TextAlign.Left);
 				if (Map[unit.X, unit.Y].Irrigation)
-					_gameInfo.DrawText("(Irrigation)", 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(Translate("(Irrigation)"), 0, 5, 4, (yy += 8), TextAlign.Left);
 				else if (Map[unit.X, unit.Y].Mine)
-					_gameInfo.DrawText("(Mining)", 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(Translate("(Mining)"), 0, 5, 4, (yy += 8), TextAlign.Left);
 				
 				yy += 11;
 
@@ -200,9 +200,9 @@ namespace CivOne.Screens.GamePlayPanels
 			else
 			{
 				if (gameTick % 4 < 2)
-					_gameInfo.DrawText($"End of Turn", 0, 5, 4, 26, TextAlign.Left);
-				_gameInfo.DrawText($"Press Enter", 0, 5, 4, 42, TextAlign.Left);
-				_gameInfo.DrawText($"to continue", 0, 5, 4, 50, TextAlign.Left);
+					_gameInfo.DrawText(Translate("End of Turn"), 0, 5, 4, 26, TextAlign.Left);
+				_gameInfo.DrawText(Translate("Press Enter"), 0, 5, 4, 42, TextAlign.Left);
+				_gameInfo.DrawText(Translate("to continue"), 0, 5, 4, 50, TextAlign.Left);
 			}
 		}
 		
