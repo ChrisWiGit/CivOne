@@ -48,6 +48,19 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
+		public void TryLoadTranslations_UnescapesControlCharactersInKeyAndValue()
+		{
+			string filePath = Path.Combine(_translationDirectory, "civ_german.txt");
+			File.WriteAllText(filePath, "FOO\\nBAR=Line1\\nLine2\n");
+
+			bool success = _testee.TryLoadTranslations(filePath, out var translations, out var error);
+
+			Assert.True(success);
+			Assert.Null(error);
+			Assert.Equal("Line1\nLine2", translations["FOO\nBAR"]);
+		}
+
+		[Fact]
 		public void TryLoadTranslations_WithMalformedLine_ReturnsFalse()
 		{
 			string filePath = Path.Combine(_translationDirectory, "civ_german.txt");

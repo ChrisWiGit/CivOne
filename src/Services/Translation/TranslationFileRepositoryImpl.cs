@@ -91,14 +91,14 @@ namespace CivOne.Services.Translation
 						return false;
 					}
 
-					string key = NormalizeKey(UnescapeEquals(line[..separatorIndex]));
+					string key = NormalizeKey(UnescapeControlCharacters(UnescapeEquals(line[..separatorIndex])));
 					if (key.Length == 0)
 					{
 						error = $"Malformed line {i + 1}: empty key.";
 						return false;
 					}
 
-					string value = UnescapeEquals(line[(separatorIndex + 1)..]);
+					string value = UnescapeControlCharacters(UnescapeEquals(line[(separatorIndex + 1)..]));
 					output[key] = value;
 				}
 			}
@@ -131,5 +131,11 @@ namespace CivOne.Services.Translation
 		private static string NormalizeKey(string key) => key?.Trim().ToUpperInvariant() ?? string.Empty;
 
 		private static string UnescapeEquals(string value) => value.Replace(EqualsPlaceholder, "=", StringComparison.Ordinal);
+
+		private static string UnescapeControlCharacters(string value) => value
+			.Replace("\\r\\n", "\r\n", StringComparison.Ordinal)
+			.Replace("\\n", "\n", StringComparison.Ordinal)
+			.Replace("\\r", "\r", StringComparison.Ordinal)
+			.Replace("\\t", "\t", StringComparison.Ordinal);
 	}
 }
