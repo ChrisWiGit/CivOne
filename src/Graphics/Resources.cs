@@ -176,8 +176,8 @@ namespace CivOne.Graphics
 		
 		internal string[] GetCivilopediaText(string name)
 		{
-			List<string> textLines = new List<string>();
-			string text = string.Join(" ", TextFile.Instance.GetGameText(name));
+			List<string> textLines = [];
+			string text = string.Join(" ", TextFileFactory.Get().GetGameText(name));
 			string t = "";
 			while (text.Length > 0)
 			{
@@ -271,7 +271,7 @@ namespace CivOne.Graphics
 			_instance = null;
 			_worldMapTiles = null;
 			PicFile.ClearCache();
-			TextFile.ClearInstance();
+			TextFileFactory.ClearInstance();
 			Sprites.Cursor.ClearCache();
 		}
 		

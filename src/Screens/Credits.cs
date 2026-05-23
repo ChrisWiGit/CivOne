@@ -434,7 +434,7 @@ namespace CivOne.Screens
 			OnResize += Resize;
 			Closed += (s, a) => Runtime.WindowTitle = Settings.WindowTitle;
 
-			_introText = TextFile.Instance.LoadArray("CREDITS");
+			_introText = TextFileFactory.LoadTextFile("CREDITS");
 			if (_introText.Length == 0) _introText = new string[25];
 			_pictures = new Picture[3];
 			for (int i = 0; i < 2; i++)

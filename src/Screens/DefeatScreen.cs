@@ -91,7 +91,7 @@ namespace CivOne.Screens
 			PlaySound("lose2");
 
 			// Load defeat text
-			_textLines = TextFile.Instance.GetGameText("KING/ARCH");
+			_textLines = GetGameText("KING/ARCH");
 			for (int i = 0; i < _textLines.Length; i++)
 				_textLines[i] = _textLines[i].Replace("$RPLC1", Human.LatestAdvance).Replace("$US", Human.LeaderName.ToUpper()).Replace("^", "");
 		}

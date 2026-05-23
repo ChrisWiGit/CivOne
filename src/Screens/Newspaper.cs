@@ -177,7 +177,7 @@ namespace CivOne.Screens
 			_showGovernment = showGovernment;
 			_modernGovernment = Human.HasAdvance<Invention>();
 
-			_newsflash = TextFile.Instance.GetGameText($"KING/NEWS{(char)Common.Random.Next((int)'A', (int)'O')}")[0];
+			_newsflash = GetGameText($"KING/NEWS{(char)Common.Random.Next((int)'A', (int)'O')}")[0];
 			_shout = (Common.Random.Next(0, 2) == 0) ? "FLASH" : "EXTRA!";
 			_date = $"January 1, {Common.YearString(Game.GameTurn)}";
 			_name = city == null ? Human.GetCapitalName() : city.Name;

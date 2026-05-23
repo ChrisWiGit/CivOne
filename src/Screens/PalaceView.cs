@@ -321,7 +321,7 @@ namespace CivOne.Screens
 							.DrawRectangle3D()
 							.As<Picture>();
 						int yy = 4;
-						foreach (string line in TextFile.Instance.GetGameText("KING/PALACE"))
+						foreach (string line in GetGameText("KING/PALACE"))
 						{
 							message.DrawText(line.Trim('^'), 0, 15, 4, yy);
 							yy += 8;

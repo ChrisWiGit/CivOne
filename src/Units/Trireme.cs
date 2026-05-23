@@ -31,7 +31,7 @@ namespace CivOne.Units
 			if (Common.Random.Next(0, 100) < 50) return;
 
 			Game.DisbandUnit(this);
-			GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText("ERROR/TRIREME")));
+			GameTask.Enqueue(Message.Error("-- Civilization Note --", GetGameText("ERROR/TRIREME")));
 		}
 
 		public override int Cargo

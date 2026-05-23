@@ -204,7 +204,7 @@ namespace CivOne.Screens
 				this.AddLayer(DifficultyPicture, OffsetX + 134, OffsetY + 20);
 				
 				int yy = OffsetY + 81;
-				foreach (string textLine in TextFile.Instance.GetGameText("KING/INIT"))
+				foreach (string textLine in GetGameText("KING/INIT"))
 				{
 					string line = textLine.Replace("$RPLC1", Human.LeaderName).Replace("$US", Human.TribeNamePlural).Replace("^", "");
 					this.DrawText(line, 0, 5, OffsetX + 88, yy);
@@ -250,7 +250,7 @@ namespace CivOne.Screens
 				if (Game.InstantAdvice)
 				{
 					GameTask.Enqueue(Show.InterfaceHelp);
-					GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFile.Instance.GetGameText("HELP/FIRSTMOVE")));
+					GameTask.Enqueue(Message.Help("--- Civilization Note ---", GetGameText("HELP/FIRSTMOVE")));
 				}
 				return true;
 			}

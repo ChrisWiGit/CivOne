@@ -229,7 +229,7 @@ namespace CivOne.Screens
 		{
 			OnResize += Resize;
 			
-			_introText = TextFile.Instance.LoadArray("STORY");
+			_introText = TextFileFactory.LoadTextFile("STORY");
 			if (_introText.Length == 0)
 			{
 				_introText = new string[16];

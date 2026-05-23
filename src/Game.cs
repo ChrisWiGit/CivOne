@@ -420,9 +420,9 @@ namespace CivOne
 			}
 
 			if (Game.InstantAdvice && CurrentPlayer == HumanPlayer && (Common.TurnToYear(Game.GameTurn) == -3600 || Common.TurnToYear(Game.GameTurn) == -2800))
-				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFile.Instance.GetGameText("HELP/HELP1")));
+				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFileFactory.Get().GetGameText("HELP/HELP1")));
 			else if (Game.InstantAdvice && CurrentPlayer == HumanPlayer && (Common.TurnToYear(Game.GameTurn) == -3200 || Common.TurnToYear(Game.GameTurn) == -2400))
-				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFile.Instance.GetGameText("HELP/HELP2")));
+				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFileFactory.Get().GetGameText("HELP/HELP2")));
 		}
 
 		private bool CheckSpaceVitory()

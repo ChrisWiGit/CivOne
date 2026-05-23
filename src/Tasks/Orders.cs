@@ -26,7 +26,7 @@ namespace CivOne.Tasks
 
 		private void Error(string error)
 		{
-			GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText($"ERROR/{error}")));
+			GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFileFactory.Get().GetGameText($"ERROR/{error}")));
 		}
 
 		private void CityManagerClosed(object sender, EventArgs args)

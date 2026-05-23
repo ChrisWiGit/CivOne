@@ -322,7 +322,7 @@ namespace CivOne.Units
 				return true;
 			}
 
-			GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText("ERROR/DEMOCRACY")));
+			GameTask.Enqueue(Message.Error("-- Civilization Note --", GetGameText("ERROR/DEMOCRACY")));
 			return false;
 		}
 
@@ -363,7 +363,7 @@ namespace CivOne.Units
 			{
 				if (Class != UnitClass.Land) // can't occupy city with sea/air unit
 				{
-					GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText($"ERROR/OCCUPY")));
+					GameTask.Enqueue(Message.Error("-- Civilization Note --", GetGameText($"ERROR/OCCUPY")));
 					Movement = null;
 					return false;
 				}
