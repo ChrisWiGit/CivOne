@@ -250,7 +250,7 @@ namespace CivOne.Screens
 				if (Game.InstantAdvice)
 				{
 					GameTask.Enqueue(Show.InterfaceHelp);
-					GameTask.Enqueue(Message.Help("--- Civilization Note ---", GetGameText("HELP/FIRSTMOVE")));
+					GameTask.Enqueue(Message.Help(Translate("--- Civilization Note ---"), GetGameText("HELP/FIRSTMOVE")));
 				}
 				return true;
 			}

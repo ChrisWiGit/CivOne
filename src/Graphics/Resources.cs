@@ -15,6 +15,7 @@ using System.Text;
 using CivOne.Enums;
 using CivOne.Graphics.ImageFormats;
 using CivOne.IO;
+using CivOne.IO.Text;
 using CivOne.Tiles;
 
 namespace CivOne.Graphics

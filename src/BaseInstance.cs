@@ -11,6 +11,7 @@ using System.IO;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.IO;
+using CivOne.IO.Text;
 using CivOne.Services;
 using CivOne.UserInterface;
 

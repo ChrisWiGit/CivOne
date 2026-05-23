@@ -191,7 +191,7 @@ namespace CivOne.Units
 					if (Human == Owner)
 					{
 						Goto = Point.Empty;             // Cancel any goto mode ( maybe for AI too ?? )
-						GameTask.Enqueue(Message.Error("-- Civilization Note --", GetGameText($"ERROR/ZOC")));
+						GameTask.Enqueue(Message.Error(Translate("-- Civilization Note --"), GetGameText($"ERROR/ZOC")));
 					}
 					return false;
 				}
@@ -292,7 +292,7 @@ namespace CivOne.Units
 			if (Tile.IsOcean)
 			{
 				if (Human == Owner)
-					GameTask.Enqueue(Message.Error("-- Civilization Note --", GetGameText($"ERROR/AMPHIB")));
+					GameTask.Enqueue(Message.Error(Translate("-- Civilization Note --"), GetGameText($"ERROR/AMPHIB")));
 				return false;
 			}
 

@@ -156,7 +156,7 @@ namespace CivOne.Units
 			if (!tile.TerrainAllowsIrrigation())
 			{
 				if (Human == Owner)
-					GameTask.Enqueue(Message.Error("-- Civilization Note --", GetGameText("ERROR/NOIRR")));
+					GameTask.Enqueue(Message.Error(Translate("-- Civilization Note --"), GetGameText("ERROR/NOIRR")));
 				return false;
 			}
 
@@ -169,7 +169,7 @@ namespace CivOne.Units
 			}
 
 			if (Human == Owner)
-				GameTask.Enqueue(Message.Error("-- Civilization Note --", GetGameText("ERROR/NOIRR")));
+				GameTask.Enqueue(Message.Error(Translate("-- Civilization Note --"), GetGameText("ERROR/NOIRR")));
 			return false;
 		}
 

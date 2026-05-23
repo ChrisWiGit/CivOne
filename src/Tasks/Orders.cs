@@ -10,7 +10,9 @@
 using System;
 using CivOne.Advances;
 using CivOne.IO;
+using CivOne.IO.Text;
 using CivOne.Screens;
+using CivOne.Services;
 using CivOne.Units;
 using CivOne.Enums;
 
@@ -26,7 +28,7 @@ namespace CivOne.Tasks
 
 		private void Error(string error)
 		{
-			GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFileFactory.Get().GetGameText($"ERROR/{error}")));
+			GameTask.Enqueue(Message.Error(TranslationServiceFactory.GetCurrent().Translate("-- Civilization Note --"), TextFileFactory.Get().GetGameText($"ERROR/{error}")));
 		}
 
 		private void CityManagerClosed(object sender, EventArgs args)

@@ -15,6 +15,7 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
+using CivOne.IO.Text;
 using CivOne.Screens.Reports;
 using CivOne.Tasks;
 using CivOne.UserInterface;
@@ -320,8 +321,8 @@ namespace CivOne.Screens
 
 					var savegameName = Path.GetFileName(Runtime.Settings.LoadCosFile);
 					GameTask.Enqueue(Message.Error(
-						"-- Civilization Note --",
-						"Could not load save game from --load-cos.",
+						Translate("-- Civilization Note --"),
+						Translate("Could not load save game from --load-cos."),
 						$"File: {savegameName}"));
 					return;
 				}

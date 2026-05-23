@@ -96,7 +96,7 @@ namespace CivOne.Units
 		{
 			// TODO: CW: We should disallow setting sentry (or just remove it here?) -> This would be a convenience setting for the player.
 			Game.DisbandUnit(this);
-			GameTask.Enqueue(Message.Error("-- Civilization Note --", GetGameText("ERROR/FUEL")));
+			GameTask.Enqueue(Message.Error(Translate("-- Civilization Note --"), GetGameText("ERROR/FUEL")));
 		}
 
 		protected override void MovementDone(ITile previousTile)

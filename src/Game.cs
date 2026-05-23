@@ -19,6 +19,7 @@ using CivOne.Buildings;
 using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.IO;
+using CivOne.IO.Text;
 using CivOne.Screens;
 using CivOne.Screens.Reports;
 using CivOne.Screens.Services;
@@ -420,9 +421,9 @@ namespace CivOne
 			}
 
 			if (Game.InstantAdvice && CurrentPlayer == HumanPlayer && (Common.TurnToYear(Game.GameTurn) == -3600 || Common.TurnToYear(Game.GameTurn) == -2800))
-				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFileFactory.Get().GetGameText("HELP/HELP1")));
+				GameTask.Enqueue(Message.Help(Translate("--- Civilization Note ---"), TextFileFactory.Get().GetGameText("HELP/HELP1")));
 			else if (Game.InstantAdvice && CurrentPlayer == HumanPlayer && (Common.TurnToYear(Game.GameTurn) == -3200 || Common.TurnToYear(Game.GameTurn) == -2400))
-				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFileFactory.Get().GetGameText("HELP/HELP2")));
+				GameTask.Enqueue(Message.Help(Translate("--- Civilization Note ---"), TextFileFactory.Get().GetGameText("HELP/HELP2")));
 		}
 
 		private bool CheckSpaceVitory()
