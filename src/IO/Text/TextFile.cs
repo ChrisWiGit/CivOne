@@ -6,95 +6,14 @@
 //
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
-using CivOne.Services;
 
-namespace CivOne.IO
+namespace CivOne.IO.Text
 {
-	internal interface ITextFileLoader
-	{
-		string[] LoadArray(string filename);
-	}
-	internal partial class TextFileLoader : ITextFileLoader
-	{
-		[GeneratedRegex(@"[^a-zA-Z0-9 _-]")]
-		private static partial Regex InvalidCharsRegex();
-
-		public string[] LoadArray(string filename)
-		{
-			var path = Path.Combine(
-				Settings.Instance.DataDirectory,
-				Path.ChangeExtension(filename, ".TXT"));
-
-			if (!File.Exists(path))
-			{
-				RuntimeHandler.Runtime.Log($"File not found: {path}");
-				return [];
-			}
-
-			return [.. File.ReadLines(path).Select(line => InvalidCharsRegex().Replace(line, "").Trim())];
-		}
-	}
-
-	internal static class TextFileFactory
-	{
-		private static ITextFileLoader _loader;
-		private static TextFile _gameTexts;
-
-
-		public static IGameTexts Get(bool reload = false)
-		{
-			_loader ??= new TextFileLoader();
-
-			if (_gameTexts == null)
-			{
-				_gameTexts = new(_loader);
-				_gameTexts.Reset();
-				TranslationServiceFactory.RegisterLanguageObserver(_gameTexts);
-			}
-
-			if (reload)
-			{
-				_gameTexts.Reset();
-			}
-
-			return _gameTexts;
-		}
-
-		public static ITextFileLoader GetLoader()
-		{
-			_loader ??= new TextFileLoader();
-			return _loader;
-		}
-
-		public static string[] LoadTextFile(string filename) => GetLoader().LoadArray(filename);
-
-		public static TextFile GetInstance(bool reload = false) => _ = Get(reload) as TextFile;
-
-		public static void ClearInstance()
-		{
-			TranslationServiceFactory.UnregisterLanguageObserver(_gameTexts);
-			_gameTexts = null;
-			_loader = null;
-		}
-	}
-
-	internal interface IGameTexts
-	{
-		string[] GetGameText(string key);
-	}
-
-	internal interface IGameTextsCommand : IGameTexts, ITranslationLanguageObserver
-	{
-		void Reset();
-	}
-
-
+	/// <summary>
+	/// Parses Civ text files and exposes entries by composite key.
+	/// Composite keys use FILE/MARKER format, for example ERROR/DEMOCRACY.
+	/// </summary>
 	internal class TextFile : IGameTextsCommand
 	{
 		private readonly string[] TEXT_FILES = ["BLURB0", "BLURB1", "BLURB2", "BLURB3", "BLURB4", "ERROR", "HELP", "KING", "PRODUCE"];
@@ -102,11 +21,27 @@ namespace CivOne.IO
 
 		private readonly ITextFileLoader _textFileLoader;
 
+		/// <summary>
+		/// Creates a parser with an injected line loader.
+		/// </summary>
+		/// <param name="textFileLoader">
+		/// Loader used to read source files.
+		/// </param>
 		public TextFile(ITextFileLoader textFileLoader)
 		{
 			_textFileLoader = textFileLoader;
 		}
 
+		/// <summary>
+		/// Returns parsed text lines for one composite key.
+		/// </summary>
+		/// <param name="key">
+		/// Composite key in format FILE/MARKER.
+		/// </param>
+		/// <returns>
+		/// Matching lines.
+		/// Returns an empty array when key is not present.
+		/// </returns>
 		public string[] GetGameText(string key)
 		{
 			if (_gameTexts.TryGetValue(key, out string[] value))
@@ -116,13 +51,32 @@ namespace CivOne.IO
 			return [];
 		}
 
+		/// <summary>
+		/// Delegates raw file loading to the configured loader.
+		/// </summary>
+		/// <param name="filename">
+		/// Logical file name without extension.
+		/// </param>
+		/// <returns>
+		/// Cleaned file lines.
+		/// </returns>
 		public string[] LoadArray(string filename) => _textFileLoader.LoadArray(filename);
 
+		/// <summary>
+		/// Handles language-change notifications by rebuilding cached entries.
+		/// </summary>
+		/// <param name="activeLanguagePostfix">
+		/// Active language postfix.
+		/// Not used directly because full cache reload is required.
+		/// </param>
 		public void OnLanguageChanged(string activeLanguagePostfix)
 		{
 			Reset();
 		}
 
+		/// <summary>
+		/// Clears cache and reloads all configured source files.
+		/// </summary>
 		public void Reset()
 		{
 			_gameTexts.Clear();
