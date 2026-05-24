@@ -156,7 +156,7 @@ namespace CivOne.Screens
 			if (_showFoundedScreen)
 			{
 				RenderBase();
-				this.DrawText($"{_city.Name} founded: {Game.GameYear}.", 5, 5, 161 + OffsetX, 3 + OffsetY, TextAlign.Center);
+				this.DrawText(TranslateFormatted("{0} founded: {1}.", _city.Name, Game.GameYear), 5, 5, 161 + OffsetX, 3 + OffsetY, TextAlign.Center);
 
 				int frame = (_x % 4);
 				this.AddLayer(Resources["SETTLERS"][1, 1 + (16 * frame), 48, 15], _x + OffsetX, 120 + OffsetY)

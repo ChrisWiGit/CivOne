@@ -221,8 +221,8 @@ namespace CivOne
 			int year = TurnToYear(turn);
 			if (zeroAd && year == 1) year = 0;
 			if (year < 0)
-				return $"{-year} BC";
-			return $"{year} AD";
+				return $"{-year} " + TranslationServiceFactory.GetCurrent().Translate("BC");
+			return $"{year} " + TranslationServiceFactory.GetCurrent().Translate("AD");
 		}
 
 		public static string DifficultyName(int difficuly)
