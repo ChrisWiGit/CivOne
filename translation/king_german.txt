@@ -1,3 +1,6 @@
+# CivOne Translation File
+# CC-BY-SA 4.0
+# This file contains the German translation
 *NEWSA
 Lions besiegen Gladiators mit 7:0!
 
