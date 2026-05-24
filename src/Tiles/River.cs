@@ -28,7 +28,7 @@ namespace CivOne.Tiles
 		{
 			Type = Terrain.River;
 			Special = AlternateSpecial();
-			Name = "River";
+			Name = Translate("River");
 		}
 		public River() : this(-1, -1)
 		{

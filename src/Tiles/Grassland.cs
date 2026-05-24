@@ -35,7 +35,7 @@ namespace CivOne.Tiles
 		{
 			Type = CalculateTileType();
 			Special = AlternateSpecial();
-			Name = "Grassland";
+			Name = Translate("Grassland");
 		}
 		public Grassland() : this(-1, -1)
 		{

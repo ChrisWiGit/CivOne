@@ -27,7 +27,7 @@ namespace CivOne.Tiles
 		public Desert(int x, int y, bool special) : base(x, y, special)
 		{
 			Type = Terrain.Desert;
-			Name = "Desert";
+			Name = Translate("Desert");
 		}
 		public Desert() : this(-1, -1, false)
 		{
