@@ -230,12 +230,12 @@ namespace CivOne
 			ITranslationService translation = TranslationServiceFactory.GetCurrent();
 			return difficuly switch
 			{
-				1 => translation.Translate("Lord"),
+				1 => translation.Translate("Warlord"),
 				2 => translation.Translate("Prince"),
 				3 => translation.Translate("King"),
 				4 => translation.Translate("Emperor"),
 				5 => translation.Translate("Deity"),
-				_ => translation.Translate("Chief"),
+				_ => translation.Translate("Chieftain"),
 			};
 		}
 

@@ -9,34 +9,33 @@
 
 using CivOne.Enums;
 using CivOne.Leaders;
+using CivOne.Services;
 
 namespace CivOne.Civilizations
 {
 	internal class Aztec : BaseCivilization<Montezuma>
 	{
-		public Aztec() : base(Civilization.Aztecs, "Aztec", "Aztecs", "mont")
+		public Aztec() : base(Civilization.Aztecs, TranslationServiceFactory.GetCurrent().Translate("Aztec"), TranslationServiceFactory.GetCurrent().Translate("Aztecs"), "mont")
 		{
 			StartX = 5;
 			StartY = 23;
-			CityNames = new[]
-			{
-				"Tenochtitlan",
-				"Chiauhtia",
-				"Chapultapec",
-				"Coatepec",
-				"Ayontzinco",
-				"Itzapalapa",
-				"Itzapam",
-				"Mitxcoac",
-				"Tucubaya",
-				"Tecamac",
-				"Tepezinco",
-				"Ticoman",
-				"Tlaxcala",
-				"Xaltocan",
-				"Xicalango",
-				"Zumpanco"
-			};
+			CityNames = TranslateArray(
+				"Tenochtitlan\n" +
+				"Chiauhtia\n" +
+				"Chapultapec\n" +
+				"Coatepec\n" +
+				"Ayontzinco\n" +
+				"Itzapalapa\n" +
+				"Itzapam\n" +
+				"Mitxcoac\n" +
+				"Tucubaya\n" +
+				"Tecamac\n" +
+				"Tepezinco\n" +
+				"Ticoman\n" +
+				"Tlaxcala\n" +
+				"Xaltocan\n" +
+				"Xicalango\n" +
+				"Zumpanco");
 		}
 	}
 }

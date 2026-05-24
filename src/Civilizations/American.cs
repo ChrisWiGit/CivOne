@@ -9,34 +9,33 @@
 
 using CivOne.Enums;
 using CivOne.Leaders;
+using CivOne.Services;
 
 namespace CivOne.Civilizations
 {
 	internal class American : BaseCivilization<Lincoln>
 	{
-		public American() : base(Civilization.Americans, "American", "Americans", "linc")
+		public American() : base(Civilization.Americans, TranslationServiceFactory.GetCurrent().Translate("American"), TranslationServiceFactory.GetCurrent().Translate("Americans"), "linc")
 		{
 			StartX = 12;
 			StartY = 18;
-			CityNames = new[]
-			{
-				"Washington",
-				"New York",
-				"Boston",
-				"Philadelphia",
-				"Atlanta",
-				"Chicago",
-				"Buffalo",
-				"St. Louis",
-				"Detroit",
-				"New Orleans",
-				"Baltimore",
-				"Denver",
-				"Cincinnati",
-				"Dallas",
-				"Los Angeles",
-				"Las Vegas"
-			};
+			CityNames = TranslateArray(
+				"Washington\n" +
+				"New York\n" +
+				"Boston\n" +
+				"Philadelphia\n" +
+				"Atlanta\n" +
+				"Chicago\n" +
+				"Buffalo\n" +
+				"St. Louis\n" +
+				"Detroit\n" +
+				"New Orleans\n" +
+				"Baltimore\n" +
+				"Denver\n" +
+				"Cincinnati\n" +
+				"Dallas\n" +
+				"Los Angeles\n" +
+				"Las Vegas");
 		}
 	}
 }

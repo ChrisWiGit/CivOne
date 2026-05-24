@@ -26,7 +26,7 @@ namespace CivOne.IO.Text
 		/// Allowed characters are letters, digits, space, underscore, asterisk, dollar sign,
 		/// comma, caret and hyphen.
 		/// This includes accented letters as single Unicode letters, for example in French words
-		/// such as francais, ecole, crème brûlée and cœur.
+		/// such as français, école, crème brûlée and cœur.
 		/// Combining mark characters are removed, so decomposed accents are not preserved.
 		/// Used by <see cref="CleanLine"/> to remove unsupported characters from input files.
 		/// </summary>

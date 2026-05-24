@@ -9,34 +9,33 @@
 
 using CivOne.Enums;
 using CivOne.Leaders;
+using CivOne.Services;
 
 namespace CivOne.Civilizations
 {
 	internal class Babylonian : BaseCivilization<Hammurabi>
 	{
-		public Babylonian() : base(Civilization.Babylonians, "Babylonian", "Babylonians", "hama")
+		public Babylonian() : base(Civilization.Babylonians, TranslationServiceFactory.GetCurrent().Translate("Babylonian"), TranslationServiceFactory.GetCurrent().Translate("Babylonians"), "hama")
 		{
 			StartX = 45;
 			StartY = 22;
-			CityNames = new[]
-			{
-				"Babylon",
-				"Sumer",
-				"Uruk",
-				"Ninevah",
-				"Ashur",
-				"Ellipi",
-				"Akkad",
-				"Eridu",
-				"Kish",
-				"Nippur",
-				"Shuruppak",
-				"Zariqum",
-				"Izibia",
-				"Nimrud",
-				"Arbela",
-				"Zamua"
-			};
+			CityNames = TranslateArray(
+				"Babylon\n" +
+				"Sumer\n" +
+				"Uruk\n" +
+				"Ninevah\n" +
+				"Ashur\n" +
+				"Ellipi\n" +
+				"Akkad\n" +
+				"Eridu\n" +
+				"Kish\n" +
+				"Nippur\n" +
+				"Shuruppak\n" +
+				"Zariqum\n" +
+				"Izibia\n" +
+				"Nimrud\n" +
+				"Arbela\n" +
+				"Zamua");
 		}
 	}
 }

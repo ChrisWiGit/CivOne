@@ -9,34 +9,33 @@
 
 using CivOne.Enums;
 using CivOne.Leaders;
+using CivOne.Services;
 
 namespace CivOne.Civilizations
 {
 	internal class Zulu : BaseCivilization<Shaka>
 	{
-		public Zulu() : base(Civilization.Zulus, "Zulu", "Zulus", "shak")
+		public Zulu() : base(Civilization.Zulus, TranslationServiceFactory.GetCurrent().Translate("Zulu"), TranslationServiceFactory.GetCurrent().Translate("Zulus"), "shak")
 		{
 			StartX = 42;
 			StartY = 42;
-			CityNames = new[]
-			{
-				"Zimbabwe",
-				"Ulundi",
-				"Bapedi",
-				"Hlobane",
-				"Isandhlwala",
-				"Intombe",
-				"Mpondo",
-				"Ngome",
-				"Swazi",
-				"Tugela",
-				"Umtata",
-				"Umfolozi",
-				"Ibabanago",
-				"Isipezi",
-				"Amatikulu",
-				"Zunquin"
-			};
+			CityNames = TranslateArray(
+				"Zimbabwe\n" +
+				"Ulundi\n" +
+				"Bapedi\n" +
+				"Hlobane\n" +
+				"Isandhlwala\n" +
+				"Intombe\n" +
+				"Mpondo\n" +
+				"Ngome\n" +
+				"Swazi\n" +
+				"Tugela\n" +
+				"Umtata\n" +
+				"Umfolozi\n" +
+				"Ibabanago\n" +
+				"Isipezi\n" +
+				"Amatikulu\n" +
+				"Zunquin");
 		}
 	}
 }
