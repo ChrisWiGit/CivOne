@@ -727,6 +727,7 @@ namespace CivOne.Screens.Debug
 		{
 			>= '0' and <= '9' => c - '0',
 			>= 'a' and <= 'z' => c - 'a' + 10,
+			>= 'A' and <= 'Z' => c - 'A' + 10,
 			_ => -1
 		};
 
@@ -780,10 +781,15 @@ namespace CivOne.Screens.Debug
 		{
 			if (!_enableHotkeys || args.Key != Key.Character) return false;
 
-			char c = char.ToLower(args.KeyChar);
+			char c = char.ToLowerInvariant(args.KeyChar);
 			int[] matches = CollectHotkeyMatches(c);
 			if (matches.Length == 0) return false;
-			if (matches.Length == 1) return true;
+			if (matches.Length == 1)
+			{
+				NavigateToGlobalIndex(matches[0]);
+				ActivateSelected();
+				return true;
+			}
 
 			int currentPos = FindPositionInMatches(matches, SelectedIndex);
 			NavigateToNextMatch(matches, currentPos);
@@ -829,8 +835,8 @@ namespace CivOne.Screens.Debug
 		/// <param name="defaultSelectedIndex">Optional initial selected item index for Select mode. Ignored for CheckUncheck mode.</param>
 		/// <param name="enableHotkeys">
 		/// If true, items are prefixed with auto-assigned hotkey characters (0-9, then a-z, repeating).
-		/// Pressing a hotkey character only moves the selection cursor among matching items.
-		/// Single-match hotkeys are consumed but do not trigger item activation.
+		/// Pressing a single-match hotkey activates that item immediately.
+		/// Pressing a multi-match hotkey only cycles the selection cursor among matching items.
 		/// </param>
 		public GridMenuDelegate(string[] items, SelectionMode mode, Func<int, bool> isChecked = null,
 				byte fontId = 1, bool allowCancel = true, int defaultSelectedIndex = -1,
