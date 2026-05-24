@@ -61,6 +61,19 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
+		public void TryLoadTranslations_UnescapesUppercaseControlCharactersInKeyAndValue()
+		{
+			string filePath = Path.Combine(_translationDirectory, "civ_german.txt");
+			File.WriteAllText(filePath, "ROME\\NCAESAREA=Rom\\NCaesarea\n");
+
+			bool success = _testee.TryLoadTranslations(filePath, out var translations, out var error);
+
+			Assert.True(success);
+			Assert.Null(error);
+			Assert.Equal("Rom\nCaesarea", translations["ROME\nCAESAREA"]);
+		}
+
+		[Fact]
 		public void TryLoadTranslations_WithMalformedLine_ReturnsFalse()
 		{
 			string filePath = Path.Combine(_translationDirectory, "civ_german.txt");
