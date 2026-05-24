@@ -69,23 +69,11 @@ There are some command line parameters that can be used to modify the behavior o
 
 ### Translation workflow
 
-The repository includes a small CLI tool named `civtranslate` to maintain translation key-value files from C# code.
-
-Run from the repository root:
-
-```sh
-dotnet run --project ./civtranslate/civtranslate.csproj -- ./src --output ./translation/all.txt
-```
-
-The scanner looks for `.Translate("...")`, `.TranslateFormatted("...", ...)`, and `T("...")` calls in `*.cs` files.
-Keys are normalized to uppercase for matching and output, while values keep the source text casing.
-Existing keys found during scan have their value overwritten with the latest source text.
-Obsolete keys are written to `./translation/obsoletekeys.txt`.
-
-Helper scripts are available in the repository root:
-
-* `translate.ps1`
-* `translate.sh`
+The repository includes translation helper tools in the repository root.
+Use `translate.ps1` or `translate.sh` to generate or update `translation/all.txt`.
+Use `translate-interactive.ps1` or `translate-interactive.sh` to run the values-only translation roundtrip for a language file.
+Use `copy-translations.ps1` or `copy-translations.sh` to copy final language files to the active CivOne profile.
+For the full translation workflow and naming rules, see [civtranslate/README.md](civtranslate/README.md).
 
 ### Use translation in game
 
@@ -97,6 +85,15 @@ Choose `Identity (default)` to use original keys, or choose one of the available
 Language files must be placed in your CivOne profile translation folder.
 On Windows this is `%LOCALAPPDATA%\CivOne\translations`.
 On Linux and macOS this is `~/.local/share/CivOne/translations`.
+
+The CivOne profile root is the parent folder of those files.
+On Windows this is `%LOCALAPPDATA%\CivOne`.
+On Linux and macOS this is `~/.local/share/CivOne`.
+
+Other common folders are:
+
+* Windows: `%LOCALAPPDATA%\CivOne\data`, `%LOCALAPPDATA%\CivOne\saves`, `%LOCALAPPDATA%\CivOne\sounds`
+* Linux and macOS: `~/.local/share/CivOne/data`, `~/.local/share/CivOne/saves`, `~/.local/share/CivOne/sounds`
 
 To create or update language files, run the CLI scanner from repository root and copy the output file to your profile translation folder with a `civ_<postfix>.txt` name.
 

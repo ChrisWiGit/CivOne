@@ -23,7 +23,7 @@ $files = Get-ChildItem -Path $sourceDir -Filter '*.txt' -File | Where-Object { $
 
 foreach ($file in $files) {
 	Copy-Item -Path $file.FullName -Destination (Join-Path $targetDir $file.Name) -Force
-	Write-Host "Copied $($file.Name)"
+	Write-Host "Copied $($file.Name)" to $targetDir
 }
 
 Write-Host "Done: $($files.Count) file(s) copied to $targetDir"

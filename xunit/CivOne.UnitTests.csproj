@@ -33,6 +33,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\CivOne.csproj" />
+		<ProjectReference Include="..\civtranslate-interactive\civtranslate-interactive.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -456,6 +456,7 @@ static TranslationFile ReadTranslationFileIfExists(string outputFile)
 static MergeReport Merge(ScanReport scanReport, TranslationFile existingFile)
 {
 	List<TranslationEntry> finalEntries = [];
+	List<TranslationEntry> newEntries = [];
 	HashSet<string> usedKeys = new(StringComparer.OrdinalIgnoreCase);
 	List<OverwrittenEntry> overwrittenEntries = [];
 	int reused = 0;
@@ -481,7 +482,7 @@ static MergeReport Merge(ScanReport scanReport, TranslationFile existingFile)
 		}
 		else
 		{
-			finalEntries.Add(new TranslationEntry(found.NormalizedKey, found.OriginalText));
+			newEntries.Add(new TranslationEntry(found.NormalizedKey, found.OriginalText));
 			added++;
 		}
 
@@ -499,6 +500,7 @@ static MergeReport Merge(ScanReport scanReport, TranslationFile existingFile)
 		obsoleteEntries.Add(existing);
 	}
 
+	finalEntries.AddRange(newEntries);
 	finalEntries.AddRange(obsoleteEntries);
 
 	return new MergeReport(finalEntries, added, reused, obsoleteEntries, overwrittenEntries, comments);
