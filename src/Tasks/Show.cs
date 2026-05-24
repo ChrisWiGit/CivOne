@@ -17,6 +17,7 @@ using CivOne.Screens;
 using CivOne.Screens.PalaceAssets;
 using CivOne.Screens.Dialogs;
 using CivOne.Units;
+using CivOne.Services;
 
 namespace CivOne.Tasks
 {
@@ -105,7 +106,8 @@ namespace CivOne.Tasks
 				ChooseGovernment chooseGovernment = new ChooseGovernment();
 				chooseGovernment.Closed += (s, a) => {
 					Human.Government = (s as ChooseGovernment).Result;
-					GameTask.Insert(Message.NewGoverment(null, $"{Human.TribeName} government", $"changed to {Human.Government.Name}!"));
+					GameTask.Insert(Message.NewGoverment(null, 
+					TranslationServiceFactory.GetCurrent().TranslateFormattedArray("{0} government\nchanged to {1}!", Human.TribeName, Human.Government.Name)));
 				};
 				return new Show(chooseGovernment);
 			}

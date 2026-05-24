@@ -992,3 +992,5 @@ AGE=Zeitalter
 3 BILLION YEARS=3 Milliarden Jahre
 4 BILLION YEARS=4 Milliarden Jahre
 5 BILLION YEARS=5 Milliarden Jahre
+{0} GOVERNMENT\NCHANGED TO {1}!={0} Regierung\Ngeändert zu {1}!
+{0} WISE MEN\NDISCOVER THE SECRET\NOF {1}!={0} Wissenschaftler\nentdecken das Geheimnis\nvon {1}!
