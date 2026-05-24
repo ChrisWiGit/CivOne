@@ -273,51 +273,108 @@ static bool TryExtractFirstStringArgument(string content, int openParenIndex, ou
 		cursor++;
 	}
 
-	bool hasDollar = false;
-	bool isVerbatim = false;
-
-	bool consumedPrefix = true;
-	while (consumedPrefix && cursor < content.Length)
-	{
-		consumedPrefix = false;
-		if (content[cursor] == '$')
-		{
-			hasDollar = true;
-			cursor++;
-			consumedPrefix = true;
-		}
-		else if (content[cursor] == '@')
-		{
-			isVerbatim = true;
-			cursor++;
-			consumedPrefix = true;
-		}
-	}
-
-	if (cursor >= content.Length || content[cursor] != '"')
+	if (!TryParseConcatenatedStringExpression(content, cursor, out string text, out bool isInterpolated, out int firstQuoteIndex))
 	{
 		return false;
 	}
 
-	int line = GetLineNumber(content, cursor);
-	bool success = isVerbatim
-		? TryParseVerbatimString(content, cursor, out string text)
-		: TryParseRegularString(content, cursor, out text);
-
-	if (!success)
-	{
-		return false;
-	}
+	int line = GetLineNumber(content, firstQuoteIndex);
 
 	text = EscapeControlCharacters(text);
 
-	argument = new ExtractedArgument(text, hasDollar, line);
+	argument = new ExtractedArgument(text, isInterpolated, line);
 	return true;
 }
 
-static bool TryParseRegularString(string content, int startQuoteIndex, out string text)
+static bool TryParseConcatenatedStringExpression(string content, int startIndex, out string text, out bool isInterpolated, out int firstQuoteIndex)
 {
 	text = string.Empty;
+	isInterpolated = false;
+	firstQuoteIndex = -1;
+
+	StringBuilder builder = new();
+	int cursor = startIndex;
+	bool parsedAny = false;
+
+	while (cursor < content.Length)
+	{
+		while (cursor < content.Length && char.IsWhiteSpace(content[cursor]))
+		{
+			cursor++;
+		}
+
+		bool hasDollar = false;
+		bool isVerbatim = false;
+
+		bool consumedPrefix = true;
+		while (consumedPrefix && cursor < content.Length)
+		{
+			consumedPrefix = false;
+			if (content[cursor] == '$')
+			{
+				hasDollar = true;
+				cursor++;
+				consumedPrefix = true;
+			}
+			else if (content[cursor] == '@')
+			{
+				isVerbatim = true;
+				cursor++;
+				consumedPrefix = true;
+			}
+		}
+
+		if (cursor >= content.Length || content[cursor] != '"')
+		{
+			return false;
+		}
+
+		if (firstQuoteIndex < 0)
+		{
+			firstQuoteIndex = cursor;
+		}
+
+		bool parsed = isVerbatim
+			? TryParseVerbatimString(content, cursor, out string segment, out int nextIndex)
+			: TryParseRegularString(content, cursor, out segment, out nextIndex);
+
+		if (!parsed)
+		{
+			return false;
+		}
+
+		parsedAny = true;
+		builder.Append(segment);
+		isInterpolated |= hasDollar;
+		cursor = nextIndex;
+
+		while (cursor < content.Length && char.IsWhiteSpace(content[cursor]))
+		{
+			cursor++;
+		}
+
+		if (cursor < content.Length && content[cursor] == '+')
+		{
+			cursor++;
+			continue;
+		}
+
+		break;
+	}
+
+	if (!parsedAny)
+	{
+		return false;
+	}
+
+	text = builder.ToString();
+	return true;
+}
+
+static bool TryParseRegularString(string content, int startQuoteIndex, out string text, out int nextIndex)
+{
+	text = string.Empty;
+	nextIndex = -1;
 	StringBuilder builder = new();
 
 	int cursor = startQuoteIndex + 1;
@@ -327,6 +384,7 @@ static bool TryParseRegularString(string content, int startQuoteIndex, out strin
 		if (ch == '"')
 		{
 			text = builder.ToString();
+			nextIndex = cursor + 1;
 			return true;
 		}
 
@@ -358,9 +416,10 @@ static bool TryParseRegularString(string content, int startQuoteIndex, out strin
 	return false;
 }
 
-static bool TryParseVerbatimString(string content, int startQuoteIndex, out string text)
+static bool TryParseVerbatimString(string content, int startQuoteIndex, out string text, out int nextIndex)
 {
 	text = string.Empty;
+	nextIndex = -1;
 	StringBuilder builder = new();
 
 	int cursor = startQuoteIndex + 1;
@@ -377,6 +436,7 @@ static bool TryParseVerbatimString(string content, int startQuoteIndex, out stri
 			}
 
 			text = builder.ToString();
+			nextIndex = cursor + 1;
 			return true;
 		}
 

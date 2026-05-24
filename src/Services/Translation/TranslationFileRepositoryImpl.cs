@@ -133,9 +133,13 @@ namespace CivOne.Services.Translation
 		private static string UnescapeEquals(string value) => value.Replace(EqualsPlaceholder, "=", StringComparison.Ordinal);
 
 		private static string UnescapeControlCharacters(string value) => value
+			.Replace("\\R\\N", "\r\n", StringComparison.Ordinal)
 			.Replace("\\r\\n", "\r\n", StringComparison.Ordinal)
+			.Replace("\\N", "\n", StringComparison.Ordinal)
 			.Replace("\\n", "\n", StringComparison.Ordinal)
+			.Replace("\\R", "\r", StringComparison.Ordinal)
 			.Replace("\\r", "\r", StringComparison.Ordinal)
+			.Replace("\\T", "\t", StringComparison.Ordinal)
 			.Replace("\\t", "\t", StringComparison.Ordinal);
 	}
 }
