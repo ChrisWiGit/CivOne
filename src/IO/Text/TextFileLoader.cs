@@ -21,8 +21,17 @@ namespace CivOne.IO.Text
 	/// </summary>
 	internal class TextFileLoader : ITextFileLoader
 	{
+		/// <summary>
+		/// Matches every character that is not allowed in a loaded text line.
+		/// Allowed characters are letters, digits, space, underscore, asterisk, dollar sign,
+		/// comma, caret and hyphen.
+		/// This includes accented letters as single Unicode letters, for example in French words
+		/// such as francais, ecole, crème brûlée and cœur.
+		/// Combining mark characters are removed, so decomposed accents are not preserved.
+		/// Used by <see cref="CleanLine"/> to remove unsupported characters from input files.
+		/// </summary>
 		private readonly Regex _invalidCharsRegex = new(
-			@"[^a-zA-Z0-9 _-]",
+			@"[^\p{L}\p{N} _*\$,\^-]",
 			RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
 		/// <summary>
@@ -38,8 +47,27 @@ namespace CivOne.IO.Text
 		/// </returns>
 		public string[] LoadArray(string filename)
 		{
-			var path = GetLocalizedPath(filename) ?? GetDefaultPath(filename);
+			var localizedPath = GetLocalizedPath(filename);
+			var defaultPath = GetDefaultPath(filename);
 
+			if (localizedPath == null)
+			{
+				return ReadArray(defaultPath);
+			}
+
+			string[] localizedLines = StripEndMarker(ReadArray(localizedPath));
+			string[] defaultLines = ReadArray(defaultPath);
+
+			if (defaultLines.Length == 0)
+			{
+				return localizedLines;
+			}
+
+			return [.. localizedLines, .. defaultLines];
+		}
+
+		private string[] ReadArray(string path)
+		{
 			if (!File.Exists(path))
 			{
 				RuntimeHandler.Runtime.Log($"File not found: {path}");
@@ -48,7 +76,23 @@ namespace CivOne.IO.Text
 
 			return [.. File
 				.ReadLines(path, Encoding.UTF8)
+				.Where(line => !IsCommentLine(line))
 				.Select(CleanLine)];
+		}
+
+		private static string[] StripEndMarker(string[] lines)
+		{
+			return [.. lines.Where(line => !IsEndMarker(line))];
+		}
+
+		private static bool IsCommentLine(string line)
+		{
+			return line.TrimStart().StartsWith('#');
+		}
+
+		private static bool IsEndMarker(string line)
+		{
+			return line == "*END";
 		}
 
 		private string CleanLine(string line)

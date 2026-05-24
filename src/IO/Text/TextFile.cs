@@ -82,7 +82,8 @@ namespace CivOne.IO.Text
 			_gameTexts.Clear();
 			foreach (string file in TEXT_FILES)
 			{
-				AddTextEntries(file, _textFileLoader.LoadArray(file));
+				var text = _textFileLoader.LoadArray(file);
+				AddTextEntries(file, text);
 			}
 		}
 
