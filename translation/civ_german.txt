@@ -887,3 +887,4 @@ SS MODULE=SS-Modul
 SS STRUCTURAL=SS-Struktur
 TEMPLE=Tempel
 UNIVERSITY=Universität
+THE SENATE HAS BLOCKED YOUR ATTACK!=Der Senat hat Ihren Angriff blockiert!

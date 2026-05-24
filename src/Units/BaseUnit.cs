@@ -26,12 +26,14 @@ using CivOne.UserInterface;
 using CivOne.Wonders;
 using CivOne.Units;
 using CivOne.Governments;
+using System.Diagnostics;
 
 namespace CivOne.Units
 {
-	internal abstract class BaseUnit : BaseInstance, IUnitRestorable, IUnit
+	internal abstract class BaseUnit : BaseInstance, IUnitRestorable
 	{
 		protected int _x, _y;
+		private readonly ConfrontDelegate _confrontDelegate;
 
 		protected Order _order;
 		public Order order
@@ -275,13 +277,13 @@ namespace CivOne.Units
 			// Step 6: If the defending unit is a veteran unit, increase the defense strength by 50%.
 			if (defendUnit.Veteran)
 			{
-				defendStrength += (defendStrength / 2);
+				defendStrength += defendStrength / 2;
 			}
 
 			return defendStrength;
 		}
 
-		private bool AttackOutcome(IUnit attackUnit, ITile defendTile)
+		private bool AttackOutcome(BaseUnit attackUnit, ITile defendTile)
 		{
 			IUnit defendUnit = defendTile.Units.OrderByDescending(x => x.Attack * (x.Veteran ? 1.5 : 1)).ThenBy(x => (int)x.Type).First();
 
@@ -289,14 +291,14 @@ namespace CivOne.Units
 			int defenseStrength = DefendStrength(defendUnit, attackUnit);
 			int randomAttack = Common.Random.Next(attackStrength);
 			int randomDefense = Common.Random.Next(defenseStrength);
-			bool win = (randomAttack > randomDefense);
+			bool win = randomAttack > randomDefense;
 			if (win && attackUnit.Owner == 0 && defendUnit.Tile.City != null)
 			{
-				 // If the attacking unit is a Barbarian unit and the defending unit is inside a city, then, if the attacking unit won, the procedure will be repeated once
-				 // This time, the attacking unit wins on a tie.
+				// If the attacking unit is a Barbarian unit and the defending unit is inside a city, then, if the attacking unit won, the procedure will be repeated once
+				// This time, the attacking unit wins on a tie.
 				randomAttack = Common.Random.Next(attackStrength);
 				randomDefense = Common.Random.Next(defenseStrength);
-				win = (randomAttack >= randomDefense);
+				win = randomAttack >= randomDefense;
 			}
 
 			// 50% chance to award veteran status to the winner
@@ -309,237 +311,330 @@ namespace CivOne.Units
 			return win;
 		}
 
-		private bool AllowedToConfrontInDemocracy(ITile moveTarget)
-		{
-			if (Human != Owner || Player.Government is not Governments.Democracy)
-			{
-				return true;
-			}
-
-			Player targetOwner = GetConfrontationTargetOwner(moveTarget);
-			if (targetOwner == null || targetOwner.Civilization is Barbarian || Player.IsAtWar(targetOwner))
-			{
-				return true;
-			}
-
-			GameTask.Enqueue(Message.Error(Translate("-- Civilization Note --"), GetGameText("ERROR/DEMOCRACY")));
-			return false;
-		}
-
-		private Player GetConfrontationTargetOwner(ITile moveTarget)
-		{
-			if (moveTarget == null)
-			{
-				return null;
-			}
-
-			if (moveTarget.City != null && moveTarget.City.Owner != Owner)
-			{
-				return Game.GetPlayer(moveTarget.City.Owner);
-			}
-
-			IUnit targetUnit = moveTarget.Units.FirstOrDefault(u => u.Owner != Owner);
-			return targetUnit == null ? null : Game.GetPlayer(targetUnit.Owner);
-		}
-
 		internal virtual bool Confront(int relX, int relY)
 		{
-            Goto = Point.Empty;             // Cancel any goto mode when Confronting
+			Goto = Point.Empty;             // Cancel any goto mode when Confronting
 
-			if (Class == UnitClass.Land && (this is Diplomat || this is Caravan))
-			{
-				// TODO fire-eggs this should never happen? Diplomat/Caravan have overloads
-				return false;
-			}
+			Debug.Assert(this is not Diplomat && this is not Caravan, "Confront should not be called for Diplomat or Caravan units, as they have their own special handling.");
+
 
 			ITile moveTarget = Map[X, Y][relX, relY];
 			if (moveTarget == null) return false;
-			if (!AllowedToConfrontInDemocracy(moveTarget)) return false;
+
+			if (HandleSenateBlock(moveTarget))
+			{
+				return false;
+			}
 
 			Movement = new MoveUnit(relX, relY);
 
 			Game.RegisterHostileAction();
-			if (moveTarget.Units.Length == 0 && moveTarget.City != null && moveTarget.City.Owner != Owner)
+			if (IsCapturingEnemyCity(moveTarget))
 			{
-				if (Class != UnitClass.Land) // can't occupy city with sea/air unit
+				if (!TryHandleCityCapture(moveTarget))
 				{
-					GameTask.Enqueue(Message.Error(Translate("-- Civilization Note --"), GetGameText($"ERROR/OCCUPY")));
-					Movement = null;
 					return false;
 				}
-
-				City capturedCity = moveTarget.City;
-				Movement.Done += (s, a) =>
-				{
-					Action changeOwner = delegate()
-					{
-						Player previousOwner = Game.GetPlayer(capturedCity.Owner);
-
-						if (capturedCity.HasBuilding<Palace>())
-							capturedCity.RemoveBuilding<Palace>();
-						capturedCity.Food = 0;
-						capturedCity.Shields = 0;
-						while (capturedCity.Units.Length > 0)
-							Game.DisbandUnit(capturedCity.Units[0]);
-						capturedCity.Owner = Owner;
-						capturedCity.TechStolen = false;
-
-						if (!capturedCity.HasBuilding<CityWalls>())
-						{
-							capturedCity.Size--;
-						}
-
-						previousOwner.HandleExtinction();
-					};
-
-					IList<IAdvance> advancesToSteal = GetAdvancesToSteal(capturedCity.Player);
-
-                    if (Human == capturedCity.Owner || Human == Owner)
-					{
-						Player cityOwner = Game.GetPlayer(capturedCity.Owner);
-						float totalSize = cityOwner.Cities.Sum(x => x.Size);
-						int totalGold = cityOwner.Gold;
-
-						// Issue #56 : Gold formula from CivFanatics
-						int captureGold = (int)(totalGold * ((float)capturedCity.Size / totalSize));
-
-                        Game.GetPlayer(capturedCity.Owner).Gold -= (short)captureGold;
-                        Game.CurrentPlayer.Gold += (short)captureGold;
-
-                        string[] lines = { $"{Game.CurrentPlayer.TribeNamePlural} capture",
-                                           $"{capturedCity.Name}. {captureGold} gold",
-                                           "pieces plundered." };
-
-                        EventHandler doneCapture = (s1,a1) =>
-                        {
-                            changeOwner();
-
-                            if (capturedCity.Size == 0 || Human != Owner) return;
-                            GameTask.Insert(Show.CityManager(capturedCity));
-
-							// fire-eggs 20190628 no 'select advance' dialog when non-human is doing the capturing!
-							if (advancesToSteal.Any() && Human == Owner)
-								GameTask.Enqueue(Show.SelectAdvanceAfterCityCapture(Player, advancesToSteal));
-						};
-
-                        if (Game.Animations)
-                        {
-                            Show captureCity = Show.CaptureCity(capturedCity, lines);
-                            captureCity.Done += doneCapture;
-                            GameTask.Insert(captureCity);
-                        }
-                        else
-                        {
-                            IScreen captureNews = new Newspaper(capturedCity, lines, false);
-                            captureNews.Closed += doneCapture;
-                            Common.AddScreen(captureNews);
-                        }
-					}
-					else
-					{
-						changeOwner();
-						if (advancesToSteal.Any())
-							Player.AddAdvance(advancesToSteal.First());
-					}
-					MoveEnd(s, a);
-				};
 			}
 			else if (this is Nuclear)
 			{
-				int xx = (X - Common.GamePlay.X + relX) * 16;
-				int yy = (Y - Common.GamePlay.Y + relY) * 16;
-				Show nuke = Show.Nuke(xx, yy);
-
-				if (Map[X, Y][relX, relY].City != null)
-					PlaySound("airnuke");
-				else
-					PlaySound("s_nuke");
-
-				nuke.Done += (s, a) =>
-				{
-					foreach (ITile tile in Map.QueryMapPart(X + relX - 1, Y + relY - 1, 3, 3))
-					{
-						while (tile.Units.Length > 0)
-						{
-							Game.DisbandUnit(tile.Units[0]);
-						}
-					}
-				};
-				GameTask.Enqueue(nuke);
+				HandleNuclear(moveTarget, relX, relY);
 			}
-			else if (AttackOutcome(this, Map[X, Y][relX, relY]))
+			else if (AttackOutcome(this, moveTarget))
 			{
-				Movement.Done += (s, a) =>
-				{
-					if (this is Cannon)
-					{
-						PlaySound("cannon");
-					}
-					else if (this is Musketeers || this is Riflemen || this is Armor || this is Artillery || this is MechInf)
-					{
-						PlaySound("s_land");
-					}
-					else
-					{
-						PlaySound("they_die");
-					}
-
-					// fire-eggs 20190702 capture barbarian leader, get ransom
-					IUnit[] attackedUnits = moveTarget.Units;
-
-					CaptureBarbarianLeader(attackedUnits);
-
-					IUnit unit = attackedUnits.FirstOrDefault();
-
-					DestroyAttackedUnit(unit);
-
-					if (MovesLeft == 0)
-					{
-						PartMoves = 0;
-					}
-					else if (MovesLeft > 0)
-					{
-						if (this is Bomber)
-						{
-							SkipTurn();
-						}
-						else
-						{
-							MovesLeft--;
-						}
-					}
-					Movement = null;
-					if (Map[X, Y][relX, relY].City != null)
-					{
-						if (!Map[X, Y][relX, relY].City.HasBuilding<CityWalls>())
-						{
-							Map[X, Y][relX, relY].City.Size--;
-						}
-					}
-				};
+				HandleAttackWin(moveTarget);
 			}
 			else
 			{
-				Movement.Done += (s, a) =>
-				{
-					if (this is Cannon)
-					{
-						PlaySound("cannon");
-					}
-					else if (this is Musketeers || this is Riflemen || this is Armor || this is Artillery || this is MechInf)
-					{
-						PlaySound("s_land");
-					}
-					else
-					{
-						PlaySound("we_die");
-					}
-					GameTask.Insert(Show.DestroyUnit(this, false));
-					Movement = null;
-				};
+				HandleAttackLoss();
 			}
+
 			GameTask.Insert(Movement);
 			return false;
+		}
+
+		private bool HandleSenateBlock(ITile moveTarget)
+		{
+			if (_confrontDelegate.AllowedToConfrontInDemocracy(this, moveTarget))
+			{
+				return false;
+			}
+
+			GameTask.Enqueue(Message.Advisor(Advisor.Defense, false, "The Senate has blocked your attack!"));
+			return true;
+		}
+
+		private bool IsCapturingEnemyCity(ITile moveTarget)
+			=> moveTarget.Units.Length == 0 && moveTarget.City != null && moveTarget.City.Owner != Owner;
+
+		private bool TryHandleCityCapture(ITile moveTarget)
+		{
+			if (!CanOccupyEnemyCity())
+			{
+				RejectCityCapture();
+				return false;
+			}
+
+			City capturedCity = moveTarget.City;
+			Movement.Done += (s, a) => CompleteCityCapture(capturedCity, s, a);
+			return true;
+		}
+
+		private bool CanOccupyEnemyCity()
+		{
+			return Class == UnitClass.Land;
+		}
+
+		private void RejectCityCapture()
+		{
+			GameTask.Enqueue(Message.Error(Translate("-- Civilization Note --"), GetGameText($"ERROR/OCCUPY")));
+			Movement = null;
+		}
+
+		private void CompleteCityCapture(City capturedCity, object sender, EventArgs args)
+		{
+			IList<IAdvance> advancesToSteal = GetAdvancesToSteal(capturedCity.Player);
+			Action changeOwner = () => ChangeCapturedCityOwner(capturedCity);
+
+			if (IsHumanInvolvedInCityCapture(capturedCity))
+			{
+				HandleHumanCityCapture(capturedCity, advancesToSteal, changeOwner);
+			}
+			else
+			{
+				HandleAiCityCapture(advancesToSteal, changeOwner);
+			}
+
+			MoveEnd(sender, args);
+		}
+
+		private bool IsHumanInvolvedInCityCapture(City capturedCity)
+		{
+			return Human == capturedCity.Owner || Human == Owner;
+		}
+
+		private void ChangeCapturedCityOwner(City capturedCity)
+		{
+			Player previousOwner = Game.GetPlayer(capturedCity.Owner);
+
+			RemovePalaceFromCapturedCity(capturedCity);
+			ResetCapturedCityProduction(capturedCity);
+			DisbandCapturedCityUnits(capturedCity);
+			TransferCapturedCity(capturedCity);
+
+			previousOwner.HandleExtinction();
+		}
+
+		private static void RemovePalaceFromCapturedCity(City capturedCity)
+		{
+			if (capturedCity.HasBuilding<Palace>())
+			{
+				capturedCity.RemoveBuilding<Palace>();
+			}
+		}
+
+		private static void ResetCapturedCityProduction(City capturedCity)
+		{
+			capturedCity.Food = 0;
+			capturedCity.Shields = 0;
+		}
+
+		private static void DisbandCapturedCityUnits(City capturedCity)
+		{
+			while (capturedCity.Units.Length > 0)
+			{
+				Game.DisbandUnit(capturedCity.Units[0]);
+			}
+		}
+
+		private void TransferCapturedCity(City capturedCity)
+		{
+			capturedCity.Owner = Owner;
+			capturedCity.TechStolen = false;
+
+			if (!capturedCity.HasBuilding<CityWalls>())
+			{
+				capturedCity.Size--;
+			}
+		}
+
+		private void HandleAiCityCapture(IList<IAdvance> advancesToSteal, Action changeOwner)
+		{
+			changeOwner();
+			StealAdvanceAfterAiCityCapture(advancesToSteal);
+		}
+
+		private void StealAdvanceAfterAiCityCapture(IList<IAdvance> advancesToSteal)
+		{
+			if (advancesToSteal.Any())
+			{
+				Player.AddAdvance(advancesToSteal[0]);
+			}
+		}
+
+		private void HandleHumanCityCapture(City capturedCity, IList<IAdvance> advancesToSteal, Action changeOwner)
+		{
+			int captureGold = PlunderCapturedCityGold(capturedCity);
+			string[] lines = CreateCityCaptureNewsLines(capturedCity, captureGold);
+			EventHandler doneCapture = CreateCityCaptureDoneHandler(capturedCity, advancesToSteal, changeOwner);
+
+			ShowCityCaptureResult(capturedCity, lines, doneCapture);
+		}
+
+		private int PlunderCapturedCityGold(City capturedCity)
+		{
+			Player cityOwner = Game.GetPlayer(capturedCity.Owner);
+			float totalSize = cityOwner.Cities.Sum(x => x.Size);
+			int captureGold = (int)(cityOwner.Gold * ((float)capturedCity.Size / totalSize));
+
+			cityOwner.Gold -= (short)captureGold;
+			Game.CurrentPlayer.Gold += (short)captureGold;
+
+			return captureGold;
+		}
+
+		private static string[] CreateCityCaptureNewsLines(City capturedCity, int captureGold)
+		{
+			return [$"{Game.CurrentPlayer.TribeNamePlural} capture", $"{capturedCity.Name}. {captureGold} gold", "pieces plundered."];
+		}
+
+		private EventHandler CreateCityCaptureDoneHandler(City capturedCity, IList<IAdvance> advancesToSteal, Action changeOwner)
+		{
+			return (s1, a1) =>
+			{
+				changeOwner();
+				OpenCapturedCityManager(capturedCity);
+				OfferAdvanceAfterHumanCityCapture(advancesToSteal);
+			};
+		}
+
+		private void OpenCapturedCityManager(City capturedCity)
+		{
+			if (capturedCity.Size == 0 || Human != Owner)
+			{
+				return;
+			}
+
+			GameTask.Insert(Show.CityManager(capturedCity));
+		}
+
+		private void OfferAdvanceAfterHumanCityCapture(IList<IAdvance> advancesToSteal)
+		{
+			if (advancesToSteal.Any() && Human == Owner)
+			{
+				GameTask.Enqueue(Show.SelectAdvanceAfterCityCapture(Player, advancesToSteal));
+			}
+		}
+
+		private static void ShowCityCaptureResult(City capturedCity, string[] lines, EventHandler doneCapture)
+		{
+			if (Game.Animations)
+			{
+				Show captureCity = Show.CaptureCity(capturedCity, lines);
+				captureCity.Done += doneCapture;
+				GameTask.Insert(captureCity);
+				return;
+			}
+
+			IScreen captureNews = new Newspaper(capturedCity, lines, false);
+			captureNews.Closed += doneCapture;
+			Common.AddScreen(captureNews);
+		}
+
+		private void HandleNuclear(ITile moveTarget, int relX, int relY)
+		{
+			Show nuke = CreateNukeAnimation(relX, relY);
+
+			PlaySound(moveTarget.City != null ? "airnuke" : "s_nuke");
+			nuke.Done += (s, a) => DestroyUnitsInNuclearBlast(relX, relY);
+
+			GameTask.Enqueue(nuke);
+		}
+
+		private Show CreateNukeAnimation(int relX, int relY)
+		{
+			int xx = (X - Common.GamePlay.X + relX) * 16;
+			int yy = (Y - Common.GamePlay.Y + relY) * 16;
+			return Show.Nuke(xx, yy);
+		}
+
+		private void DestroyUnitsInNuclearBlast(int relX, int relY)
+		{
+			foreach (ITile tile in Map.QueryMapPart(X + relX - 1, Y + relY - 1, 3, 3)) // NOSONAR: tile.Units must be re-evaluated after each Game.DisbandUnit() call; selecting tile.Units would capture a stale array snapshot and can cause repeated processing or an endless loop.
+			{
+				while (tile.Units.Length > 0)
+				{
+					Game.DisbandUnit(tile.Units[0]);
+				}
+			}
+		}
+
+		private void HandleAttackWin(ITile moveTarget)
+		{
+			Movement.Done += (s, a) =>
+			{
+				PlayAttackSound(attackerWon: true);
+				IUnit[] attackedUnits = moveTarget.Units;
+
+				CaptureBarbarianLeader(attackedUnits);
+				DestroyAttackedUnit(attackedUnits.FirstOrDefault());
+				ConsumeConfrontMoves();
+				Movement = null;
+				ReduceCitySizeAfterSuccessfulAttack(moveTarget);
+			};
+		}
+
+		private void HandleAttackLoss()
+		{
+			Movement.Done += (s, a) =>
+			{
+				PlayAttackSound(attackerWon: false);
+				GameTask.Insert(Show.DestroyUnit(this, false));
+				Movement = null;
+			};
+		}
+
+		private void PlayAttackSound(bool attackerWon)
+		{
+			if (this is Cannon)
+			{
+				PlaySound("cannon");
+			}
+			else if (this is Musketeers || this is Riflemen || this is Armor || this is Artillery || this is MechInf)
+			{
+				PlaySound("s_land");
+			}
+			else
+			{
+				PlaySound(attackerWon ? "they_die" : "we_die");
+			}
+		}
+
+		private void ConsumeConfrontMoves()
+		{
+			if (MovesLeft == 0)
+			{
+				PartMoves = 0;
+			}
+			else if (MovesLeft > 0)
+			{
+				if (this is Bomber)
+				{
+					SkipTurn();
+				}
+				else
+				{
+					MovesLeft--;
+				}
+			}
+		}
+
+		private static void ReduceCitySizeAfterSuccessfulAttack(ITile moveTarget)
+		{
+			if (moveTarget.City != null && !moveTarget.City.HasBuilding<CityWalls>())
+			{
+				moveTarget.City.Size--;
+			}
 		}
 
 		private static void DestroyAttackedUnit(IUnit unit)
@@ -566,7 +661,7 @@ namespace CivOne.Units
 			}
 
 			// CW: only a single barbarian diplomat can be captured and receive ransom
-				bool isBarbarianLeader = attackedUnits.Length == 1 && attackedUnits.First().Owner == Barbarian.Owner && attackedUnits.First() is Diplomat;
+			bool isBarbarianLeader = attackedUnits.Length == 1 && attackedUnits[0].Owner == Barbarian.Owner && attackedUnits[0] is Diplomat;
 
 			if (!isBarbarianLeader)
 			{
@@ -591,34 +686,34 @@ namespace CivOne.Units
 			.ToList();
 		}
 
-        public bool CanMoveTo(int relX, int relY)
-        {
+		public bool CanMoveTo(int relX, int relY)
+		{
 			// TODO only referenced by land units, move to BaseUnitLand?
 
-            // Issue #93: fix problems with zone-of-control.
+			// Issue #93: fix problems with zone-of-control.
 
-            // refactored out for unit testability
-            ITile moveTarget = Map[X, Y][relX, relY];
-            if (moveTarget == null) return false;
+			// refactored out for unit testability
+			ITile moveTarget = Map[X, Y][relX, relY];
+			if (moveTarget == null) return false;
 
 			// Issue #116: allow ship-borne units to move to any unoccupied tile
-			if (Map[X,Y].IsOcean)
-            {
+			if (Map[X, Y].IsOcean)
+			{
 				return !moveTarget.Units.Any(u => u.Owner != Owner);
-            }
+			}
 
-            var thisUnits = Map[X, Y].GetBorderTiles().SelectMany(t => t.Units);
-            var destUnits = moveTarget.GetBorderTiles().SelectMany(t => t.Units);
+			var thisUnits = Map[X, Y].GetBorderTiles().SelectMany(t => t.Units);
+			var destUnits = moveTarget.GetBorderTiles().SelectMany(t => t.Units);
 
-            // Any enemy units around my position OR the target position?
-            bool thisBlocked = thisUnits.Any(u => u.Owner != Owner);
-            bool destBlocked = destUnits.Any(u => u.Owner != Owner);
-            bool destOK = moveTarget.Units.Any(u => u.Owner == Owner) || moveTarget.HasCity;
+			// Any enemy units around my position OR the target position?
+			bool thisBlocked = thisUnits.Any(u => u.Owner != Owner);
+			bool destBlocked = destUnits.Any(u => u.Owner != Owner);
+			bool destOK = moveTarget.Units.Any(u => u.Owner == Owner) || moveTarget.HasCity;
 
-            // Cannot move from a square adjacent to enemy unit to a square adjacent to enemy unit
-            // but _can_ move to square occupied by own units or to any undefended city square
-            return destOK || !thisBlocked || !destBlocked;
-        }
+			// Cannot move from a square adjacent to enemy unit to a square adjacent to enemy unit
+			// but _can_ move to square occupied by own units or to any undefended city square
+			return destOK || !thisBlocked || !destBlocked;
+		}
 
 		public virtual bool MoveTo(int relX, int relY)
 		{
@@ -627,7 +722,6 @@ namespace CivOne.Units
 			ITile moveTarget = Map[X, Y][relX, relY];
 			if (moveTarget == null) return false;
 
-			// if (!MoveTargets.Any(t => t.X == moveTarget.X && t.Y == moveTarget.Y))
 			if (!MoveTargets.Any(t => t.SameLocationAs(moveTarget)))
 			{
 				// Target tile is invalid
@@ -646,7 +740,6 @@ namespace CivOne.Units
 				return ConfrontEnemy(moveTarget, relX, relY);
 			}
 
-			// if (!MoveTargets.Any(t => t.X == moveTarget.X && t.Y == moveTarget.Y))
 			if (!MoveTargets.Any(t => t.SameLocationAs(moveTarget)))
 			{
 				// Target tile is invalid
@@ -828,7 +921,7 @@ namespace CivOne.Units
 			}
 		}
 
-        private short _buyPrice;
+		private short _buyPrice;
 		public short BuyPrice
 		{
 			get => Modifications.LastOrDefault(x => x.BuyPrice.HasValue)?.BuyPrice.Value ?? _buyPrice;
@@ -928,7 +1021,7 @@ namespace CivOne.Units
 				if (bits[0]) Sentry = true;
 				else if (bits[2]) FortifyActive = true;
 				else if (bits[3]) _fortify = true;
-				
+
 				if (this is Settlers)
 				{
 					(this as Settlers).SetStatus(bits);
@@ -940,7 +1033,7 @@ namespace CivOne.Units
 		public byte MovesLeft { get; set; }
 		public int MovesSkip { get; set; }
 		public byte PartMoves { get; set; }
-		
+
 		public virtual void NewTurn()
 		{
 			if (FortifyActive)
@@ -955,7 +1048,7 @@ namespace CivOne.Units
 			}
 
 			MovesLeft = Move;
-            PartMoves = 0;
+			PartMoves = 0;
 			Explore();
 		}
 
@@ -971,7 +1064,7 @@ namespace CivOne.Units
 		{
 			if (!(Tile.Irrigation || Tile.Mine || Tile.Road || Tile.RailRoad))
 				return;
-			
+
 			if (Tile.Irrigation)
 				Tile.Irrigation = false;
 			else if (Tile.Mine)
@@ -983,7 +1076,7 @@ namespace CivOne.Units
 				Tile.RailRoad = false;
 				Tile.Road = true;
 			}
-			SkipTurn();			
+			SkipTurn();
 		}
 
 		public virtual void SkipTurn()
@@ -991,7 +1084,7 @@ namespace CivOne.Units
 			MovesLeft = 0;
 			PartMoves = 0;
 		}
-		
+
 		protected void SetIcon(char page, int col, int row)
 		{
 			if (_iconCache[(int)Type] == null)
@@ -1080,6 +1173,7 @@ namespace CivOne.Units
 
 		protected BaseUnit(byte price = 1, byte attack = 1, byte defense = 1, byte move = 1)
 		{
+			_confrontDelegate = new(new ConfrontGameServicesAdapter());
 			Price = price;
 			BuyPrice = (short)((Price + 4) * 10 * Price);
 			Attack = attack;

@@ -68,6 +68,12 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		private void MenuSetPlayerGovernment(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen<DebugChangeGovernment>());
+			Destroy();
+		}
+
 		private void MenuSetCitySize(object sender, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<SetCitySize>());
@@ -467,6 +473,7 @@ namespace CivOne.Screens
 				new(Translate("Set Player Gold"), () => MenuSetPlayerGold(null, EventArgs.Empty)),
 				new(Translate("Set Player Science"), () => MenuSetPlayerScience(null, EventArgs.Empty)),
 				new(Translate("Set Player Advances"), () => MenuSetPlayerAdvances(null, EventArgs.Empty)),
+				new(Translate("Set Player Government"), () => MenuSetPlayerGovernment(null, EventArgs.Empty)),
 				new(Translate("Set City Size"), () => MenuSetCitySize(null, EventArgs.Empty)),
 				new(Translate("Cause City Disaster"), () => MenuCityDisaster(null, EventArgs.Empty)),
 				new(Translate("Add building to city"), () => MenuAddBuilding(null, EventArgs.Empty)),
@@ -485,7 +492,6 @@ namespace CivOne.Screens
 				new(Translate("Test Dialog: CaravanChoice"), () => MenuRunCaravanChoice(null, EventArgs.Empty)),
 				new(Translate("Test Dialog: DiplomatCity"), () => MenuRunDiplomatCity(null, EventArgs.Empty)),
 				new(Translate("Test Dialog: OverwritePlugin"), () => MenuRunOverwritePlugin(null, EventArgs.Empty)),
-
 				new(Translate("Change Human Player"), () => MenuChangeHumanPlayer(null, EventArgs.Empty)),
 				new(Translate("Spawn Unit"), () => MenuSpawnUnit(null, EventArgs.Empty)),
 				new(Translate("Meet With King"), () => MenuMeetWithKing(null, EventArgs.Empty)),
