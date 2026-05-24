@@ -60,6 +60,8 @@ There are some command line parameters that can be used to modify the behavior o
 | `--skip-intro` | Skips the intro cinematic at the start of the game. |
 | `--no-sound` | Disables sound in the game. |
 | `--no-data-check` | Skips the data integrity check at startup. |
+| `--console-log` | Enables console log output. This is the default. |
+| `--no-console-log` | Disables console log output on the console. The log file is still written. |
 | `--load-slot <drive><slot>` | Loads a saved game from the specified drive and slot. Replace `<drive>` with a letter (a-z) and `<slot>` with a number (0-15) as if you were in the game |
 | `--load-cos <path>` | Loads a savegame file directly from a file path. |
 | `--mcp` | Enables the MCP server. See [MCP.md](MCP.md) for setup and usage. |
@@ -388,6 +390,14 @@ dotnet test
 ```
 
 Extended console output will be shown during the test run, providing more insights into the test execution and results.
+
+If you want to suppress console output from the game code during tests, run:
+
+```sh
+dotnet test xunit/CivOne.UnitTests.csproj -p:SuppressConsoleLogs=true
+```
+
+This keeps xUnit status output and hides log messages written by the code under test.
 
 ```sh
 dotnet test --logger "console;verbosity=detailed"

@@ -96,7 +96,12 @@ namespace CivOne
 					tw.Close();
 				}
 			}
-			if (Settings?.McpEnabled == true)
+			if (Settings?.ConsoleLogging != true)
+			{
+				return;
+			}
+
+			if (Settings.McpEnabled)
 			{
 				Console.Error.WriteLine(text, parameters);
 				Console.Error.Flush();

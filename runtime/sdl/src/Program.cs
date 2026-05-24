@@ -69,6 +69,7 @@ Try 'civone-sdl --help' for more information.
 			settings["profile-name"] = "default";
 			settings["mcp-artifacts"] = null;
 			settings["mcp-saves"] = null;
+			settings.ConsoleLogging = true;
 			for (int i = 0; i < args.Length; i++)
 			{
 				string cmd = args[i].TrimStart('-');
@@ -139,6 +140,8 @@ Try 'civone-sdl --help' for more information.
 					case "mcp-no-auth": settings.McpNoAuth = true; continue;
 					case "no-sound": settings["no-sound"] = true; continue;
 					case "no-data-check": settings.DataCheck = false; continue;
+					case "console-log": settings.ConsoleLogging = true; continue;
+					case "no-console-log": settings.ConsoleLogging = false; continue;
 					case "mcp-artifacts":
 						if (args.GetUpperBound(0) == i)
 						{

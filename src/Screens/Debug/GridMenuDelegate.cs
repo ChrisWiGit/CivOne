@@ -755,7 +755,7 @@ namespace CivOne.Screens.Debug
 		}
 
 		/// <summary>Finds the position of the current selection in the matches array.</summary>
-		private int FindPositionInMatches(int[] matches, int currentGlobal)
+		private static int FindPositionInMatches(int[] matches, int currentGlobal)
 		{
 			for (int i = 0; i < matches.Length; i++)
 				if (matches[i] == currentGlobal)
@@ -763,22 +763,17 @@ namespace CivOne.Screens.Debug
 			return -1;
 		}
 
-		/// <summary>Navigates to the next matching hotkey item and activates if at end of cycle.</summary>
+		/// <summary>Navigates to the next matching hotkey item, wrapping around at the end.</summary>
 		private void NavigateToNextMatch(int[] matches, int currentPos)
 		{
 			if (currentPos < 0)
 			{
 				NavigateToGlobalIndex(matches[0]);
-				if (matches.Length == 1)
-					ActivateSelected();
 				return;
 			}
 
 			int nextPos = (currentPos + 1) % matches.Length;
 			NavigateToGlobalIndex(matches[nextPos]);
-
-			if (nextPos == matches.Length - 1)
-				ActivateSelected();
 		}
 
 		private bool TryHandleHotkey(KeyboardEventArgs args)
@@ -788,6 +783,7 @@ namespace CivOne.Screens.Debug
 			char c = char.ToLower(args.KeyChar);
 			int[] matches = CollectHotkeyMatches(c);
 			if (matches.Length == 0) return false;
+			if (matches.Length == 1) return true;
 
 			int currentPos = FindPositionInMatches(matches, SelectedIndex);
 			NavigateToNextMatch(matches, currentPos);
@@ -833,9 +829,8 @@ namespace CivOne.Screens.Debug
 		/// <param name="defaultSelectedIndex">Optional initial selected item index for Select mode. Ignored for CheckUncheck mode.</param>
 		/// <param name="enableHotkeys">
 		/// If true, items are prefixed with auto-assigned hotkey characters (0-9, then a-z, repeating).
-		/// Pressing a hotkey character navigates to the matching item; if there is only one match it is
-		/// activated immediately. With multiple matches the cursor cycles through them and activates on
-		/// the last one in the cycle.
+		/// Pressing a hotkey character only moves the selection cursor among matching items.
+		/// Single-match hotkeys are consumed but do not trigger item activation.
 		/// </param>
 		public GridMenuDelegate(string[] items, SelectionMode mode, Func<int, bool> isChecked = null,
 				byte fontId = 1, bool allowCancel = true, int defaultSelectedIndex = -1,
