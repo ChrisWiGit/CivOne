@@ -13,6 +13,7 @@ using CivOne.Graphics;
 
 namespace CivOne.Screens
 {
+	// NO [ScreenResizeable] - it auto-resizes and redraws itself on each update, so no need to handle resize events separately
 	internal class Discovery : BaseScreen
 	{
 		private const float FADE_STEP = 0.025f;

@@ -45,6 +45,16 @@
 * Prefer `[ ..collection ]` over `.ToArray()`.
 * Prefer `.Length` instead of `.Any()` when working with arrays.
 
+### Resizable Screens
+
+* If a screen must react to window size changes, add `[ScreenResizeable]` to the screen class.
+* Problem: without `[ScreenResizeable]`, the screen does not receive resize handling from `BaseScreen` and keeps stale 320x200-era drawing state.
+* Problem: with `[ScreenResizeable]` but without redraw handling, the bitmap is recreated on resize but static content and menus may stay at old coordinates or not be redrawn correctly.
+* Required fix: make the screen redraw itself after resize.
+* Required fix: if the screen uses an `_update` flag or cached UI state, set it so the UI is rebuilt after resize.
+* Required fix: if the screen is centered in 320x200 space, apply resize-safe offsets or use menu/dialog centering support so content stays aligned.
+* Required fix: preserve menu selection where possible; do not recreate menus on every refresh unless necessary.
+
 ## Build
 
 Use quiet build output and only show final lines.

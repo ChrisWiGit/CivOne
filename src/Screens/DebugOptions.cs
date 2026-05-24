@@ -435,6 +435,51 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		private void MenuRunChooseTech(object sender, EventArgs args)
+		{
+			if (Human == null)
+			{
+				GameTask.Enqueue(Message.General(Translate("No human player available for ChooseTech test.")));
+				Destroy();
+				return;
+			}
+
+			var availableAdvances = Human.AvailableResearch.ToList();
+			if (availableAdvances.Count == 0)
+			{
+				GameTask.Enqueue(Message.General(Translate("No available advances for ChooseTech test.")));
+				Destroy();
+				return;
+			}
+
+			GameTask.Enqueue(Show.Screen<ChooseTech>());
+			Destroy();
+		}
+
+		private void MenuRunDiscovery(object sender, EventArgs args)
+		{
+			if (Human == null)
+			{
+				GameTask.Enqueue(Message.General(Translate("No human player available for Discovery test.")));
+				Destroy();
+				return;
+			}
+
+			IAdvance advance = Human.AvailableResearch.FirstOrDefault()
+				?? Common.Advances.FirstOrDefault(a => !Human.HasAdvance(a))
+				?? Common.Advances.FirstOrDefault();
+
+			if (advance == null)
+			{
+				GameTask.Enqueue(Message.General(Translate("No advance available for Discovery test.")));
+				Destroy();
+				return;
+			}
+
+			GameTask.Enqueue(Show.Screen(new Discovery(advance)));
+			Destroy();
+		}
+
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
 			bool handled = _gridMenu.KeyDown(args);
@@ -492,6 +537,8 @@ namespace CivOne.Screens
 				new(Translate("Test Dialog: CaravanChoice"), () => MenuRunCaravanChoice(null, EventArgs.Empty)),
 				new(Translate("Test Dialog: DiplomatCity"), () => MenuRunDiplomatCity(null, EventArgs.Empty)),
 				new(Translate("Test Dialog: OverwritePlugin"), () => MenuRunOverwritePlugin(null, EventArgs.Empty)),
+				new(Translate("Test Dialog: ChooseTech"), () => MenuRunChooseTech(null, EventArgs.Empty)),
+				new(Translate("Test Dialog: Discovery"), () => MenuRunDiscovery(null, EventArgs.Empty)),
 				new(Translate("Change Human Player"), () => MenuChangeHumanPlayer(null, EventArgs.Empty)),
 				new(Translate("Spawn Unit"), () => MenuSpawnUnit(null, EventArgs.Empty)),
 				new(Translate("Meet With King"), () => MenuMeetWithKing(null, EventArgs.Empty)),
