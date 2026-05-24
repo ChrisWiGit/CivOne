@@ -360,7 +360,7 @@ namespace CivOne.Units
 				return false;
 			}
 
-			GameTask.Enqueue(Message.Advisor(Advisor.Defense, false, "The Senate has blocked your attack!"));
+			GameTask.Enqueue(Message.Advisor(Advisor.Defense, false, Translate("The Senate has blocked your attack!")));
 			return true;
 		}
 
