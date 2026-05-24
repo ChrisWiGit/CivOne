@@ -264,10 +264,10 @@ namespace CivOne.Screens.CityManagerPanels
 				this.Tile(Pattern.PanelBlue)
 					.DrawRectangle(colour: 1);
 				
-				DrawButton("Info", (byte)((_choice == CityInfoChoice.Info) ? 15 : 9), 1, 0, 0, 34);
-				DrawButton("Happy", (byte)((_choice == CityInfoChoice.Happy) ? 15 : 9), 1, 34, 0, 32);
-				DrawButton("Map", (byte)((_choice == CityInfoChoice.Map) ? 15 : 9), 1, 66, 0, 33);
-				DrawButton("View", 9, 1, 99, 0, 33);
+				DrawButton(Translate("Info"), (byte)((_choice == CityInfoChoice.Info) ? 15 : 9), 1, 0, 0, 34);
+				DrawButton(Translate("Happy"), (byte)((_choice == CityInfoChoice.Happy) ? 15 : 9), 1, 34, 0, 32);
+				DrawButton(Translate("Map"), (byte)((_choice == CityInfoChoice.Map) ? 15 : 9), 1, 66, 0, 33);
+				DrawButton(Translate("View"), 9, 1, 99, 0, 33);
 
 				switch (_choice)
 				{
