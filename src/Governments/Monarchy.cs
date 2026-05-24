@@ -11,8 +11,10 @@ namespace CivOne.Governments
 {
 	internal class Monarchy : BaseGovernment
 	{
-		public Monarchy() : base(2, "Monarchy", new Advances.Monarchy())
+		public Monarchy() : base(2, new Advances.Monarchy())
 		{
+			Name = Translate("Monarchy");
+			NameAdjective = Translate("Monarchic");
 			CorruptionMultiplier = 16;
 		}
 	}

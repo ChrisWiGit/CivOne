@@ -11,8 +11,9 @@ namespace CivOne.Governments
 {
 	internal class Anarchy : BaseGovernment
 	{
-		public Anarchy() : base(0, "Anarchy")
+		public Anarchy() : base(0)
 		{
+			Name = Translate("Anarchy");
 			CorruptionMultiplier = 12;
 		}
 	}

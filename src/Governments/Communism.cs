@@ -11,8 +11,10 @@ namespace CivOne.Governments
 {
 	internal class Communism : BaseGovernment
 	{
-		public Communism() : base(3, "Communism", "Communist", new Advances.Communism())
+		public Communism() : base(3, new Advances.Communism())
 		{
+			Name = Translate("Communism");
+			NameAdjective = Translate("Communist");
 			CorruptionMultiplier = 20;
 		}
 	}

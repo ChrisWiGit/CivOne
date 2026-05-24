@@ -11,8 +11,10 @@ namespace CivOne.Governments
 {
 	internal class Democracy : BaseGovernment
 	{
-		public Democracy() : base(5, "Democracy", "Democratic", new Advances.Democracy())
+		public Democracy() : base(5, new Advances.Democracy())
 		{
+			Name = Translate("Democracy");
+			NameAdjective = Translate("Democratic");
 			CorruptionMultiplier = 0;
 		}
 	}

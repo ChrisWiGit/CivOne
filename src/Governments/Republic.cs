@@ -13,8 +13,10 @@ namespace CivOne.Governments
 {
 	internal class Republic : BaseGovernment
 	{
-		public Republic() : base(4, "Republic", new TheRepublic())
+		public Republic() : base(4, new TheRepublic())
 		{
+			Name = Translate("Republic");
+			NameAdjective = Translate("Republican");
 			CorruptionMultiplier = 24;
 		}
 	}

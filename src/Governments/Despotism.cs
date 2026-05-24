@@ -11,8 +11,10 @@ namespace CivOne.Governments
 {
 	internal class Despotism : BaseGovernment
 	{
-		public Despotism() : base(1, "Despotism")
+		public Despotism() : base(1)
 		{
+			Name = Translate("Despotism");
+			NameAdjective = Translate("Despotic");
 			CorruptionMultiplier = 8;
 		}
 	}
