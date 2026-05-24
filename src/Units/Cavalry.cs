@@ -17,7 +17,7 @@ namespace CivOne.Units
 		public Cavalry() : base(2, 2, 1, 2)
 		{
 			Type = UnitType.Cavalry;
-			Name = "Cavalry";
+			Name = Translate("Cavalry");
 			RequiredTech = new HorsebackRiding();
 			ObsoleteTech = new Conscription();
 			SetIcon('C', 1, 1);

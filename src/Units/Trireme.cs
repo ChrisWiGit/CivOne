@@ -45,7 +45,7 @@ namespace CivOne.Units
 		public Trireme() : base(4, 1, 0, 3)
 		{
 			Type = UnitType.Trireme;
-			Name = "Trireme";
+			Name = Translate("Trireme");
 			RequiredTech = new MapMaking();
 			ObsoleteTech = new Navigation();
 			SetIcon('B', 0, 1);

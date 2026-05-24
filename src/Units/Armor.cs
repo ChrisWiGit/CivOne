@@ -17,7 +17,7 @@ namespace CivOne.Units
 		public Armor() : base(8, 10, 5, 3)
 		{
 			Type = UnitType.Armor;
-			Name = "Armor";
+			Name = Translate("Armor");
 			RequiredTech = new Automobile();
 			ObsoleteTech = null;
 			SetIcon('D', 0, 1);

@@ -16,7 +16,7 @@ namespace CivOne.Wonders
 	{
 		public Colossus() : base(20)
 		{
-			Name = "Colossus";
+			Name = Translate("Colossus");
 			RequiredTech = new BronzeWorking();
 			ObsoleteTech = new Electricity();
 			SetSmallIcon(4, 3);

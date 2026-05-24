@@ -17,7 +17,7 @@ namespace CivOne.Units
 		public Catapult() : base(4, 6, 1, 1)
 		{
 			Type = UnitType.Catapult;
-			Name = "Catapult";
+			Name = Translate("Catapult");
 			RequiredTech = new Mathematics();
 			ObsoleteTech = new Metallurgy();
 			SetIcon('B', 0, 2);

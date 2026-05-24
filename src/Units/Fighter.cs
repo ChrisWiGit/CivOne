@@ -44,7 +44,7 @@ namespace CivOne.Units
 		public Fighter() : base(6, 4, 2, MAX_MOVES)
 		{
 			Type = UnitType.Fighter;
-			Name = "Fighter";
+			Name = Translate("Fighter");
 			RequiredTech = new Flight();
 			ObsoleteTech = null;
 			SetIcon('A', 1, 1);

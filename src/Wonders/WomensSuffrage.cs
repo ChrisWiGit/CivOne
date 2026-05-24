@@ -16,7 +16,7 @@ namespace CivOne.Wonders
 	{
 		public WomensSuffrage() : base(60)
 		{
-			Name = "Women's Suffrage";
+			Name = Translate("Women's Suffrage");
 			RequiredTech = new Industrialization();
 			ObsoleteTech = null;
 			SetSmallIcon(7, 1);

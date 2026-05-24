@@ -16,7 +16,7 @@ namespace CivOne.Wonders
 	{
 		public CureForCancer() : base(60)
 		{
-			Name = "Cure for Cancer";
+			Name = Translate("Cure for Cancer");
 			RequiredTech = new GeneticEngineering();
 			ObsoleteTech = null;
 			SetSmallIcon(1, 5);

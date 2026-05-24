@@ -16,7 +16,7 @@ namespace CivOne.Wonders
 	{
 		public Lighthouse() : base(20)
 		{
-			Name = "Lighthouse";
+			Name = Translate("Lighthouse");
 			RequiredTech = new MapMaking();
 			ObsoleteTech = new Magnetism();
 			SetSmallIcon(4, 4);

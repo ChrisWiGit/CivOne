@@ -140,7 +140,7 @@ namespace CivOne.Units
 		public Caravan() : base(5, 0, 1, 1)
 		{
 			Type = UnitType.Caravan;
-			Name = "Caravan";
+			Name = Translate("Caravan");
 			RequiredTech = new Trade();
 			ObsoleteTech = null;
 			SetIcon('E', 0, 1);

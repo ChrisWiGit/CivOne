@@ -17,7 +17,7 @@ namespace CivOne.Units
 		public Knights() : base(4, 4, 2, 2)
 		{
 			Type = UnitType.Knights;
-			Name = "Knights";
+			Name = Translate("Knights");
 			RequiredTech = new Chivalry();
 			ObsoleteTech = new Automobile();
 			SetIcon('E', 1, 1);

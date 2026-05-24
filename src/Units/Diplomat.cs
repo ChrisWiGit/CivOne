@@ -113,7 +113,7 @@ namespace CivOne.Units
 		public Diplomat() : base(3, 0, 0, 2)
 		{
 			Type = UnitType.Diplomat;
-			Name = "Diplomat";
+			Name = Translate("Diplomat");
 			RequiredTech = new Writing();
 			ObsoleteTech = null;
 			SetIcon('C', 1, 0);

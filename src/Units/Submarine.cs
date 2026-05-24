@@ -17,7 +17,7 @@ namespace CivOne.Units
 		public Submarine() : base(5, 8, 2, 3, 2)
 		{
 			Type = UnitType.Submarine;
-			Name = "Submarine";
+			Name = Translate("Submarine");
 			RequiredTech = new MassProduction();
 			ObsoleteTech = null;
 			SetIcon('C', 1, 2);

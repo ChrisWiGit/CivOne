@@ -17,7 +17,7 @@ namespace CivOne.Units
 		public Phalanx() : base(2, 1, 2, 1)
 		{
 			Type = UnitType.Phalanx;
-			Name = "Phalanx";
+			Name = Translate("Phalanx");
 			RequiredTech = new BronzeWorking();
 			ObsoleteTech = new Gunpowder();
 			SetIcon('E', 0, 0);

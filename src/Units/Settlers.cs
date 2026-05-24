@@ -429,7 +429,7 @@ namespace CivOne.Units
 		public Settlers() : base(4, 0, 1, 1)
 		{
 			Type = UnitType.Settlers;
-			Name = "Settlers";
+			Name = Translate("Settlers");
 			RequiredTech = null;
 			ObsoleteTech = null;
 			SetIcon('D', 1, 1);

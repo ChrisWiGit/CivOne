@@ -16,7 +16,7 @@ namespace CivOne.Wonders
 	{
 		public SETIProgram() : base(60)
 		{
-			Name = "SETI Program";
+			Name = Translate("SETI Program");
 			RequiredTech = new Computers();
 			ObsoleteTech = null;
 			SetSmallIcon(0, 5);

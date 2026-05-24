@@ -16,7 +16,7 @@ namespace CivOne.Wonders
 	{
 		public GreatLibrary() : base(30)
 		{
-			Name = "Great Library";
+			Name = Translate("Great Library");
 			RequiredTech = new Literacy();
 			ObsoleteTech = new University();
 			SetSmallIcon(5, 0);

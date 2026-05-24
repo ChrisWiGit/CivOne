@@ -16,7 +16,7 @@ namespace CivOne.Wonders
 	{
 		public HooverDam() : base(60)
 		{
-			Name = "Hoover Dam";
+			Name = Translate("Hoover Dam");
 			RequiredTech = new Electronics();
 			ObsoleteTech = null;
 			SetSmallIcon(7, 0);
