@@ -163,7 +163,7 @@ namespace CivOne.Screens
 					if (_cityBuildings.MouseDown(args))
 						return true;
 				}
-				if (new Rectangle(230 + ExtraLeft, 99, 88, 99).Contains(args.Location))
+				if (new Rectangle(230 + ExtraLeft, 99, _cityProduction.Width(), _cityProduction.Height()).Contains(args.Location))
 				{
 					MouseArgsOffset(ref args, 230 + ExtraLeft, 99);
 					if (_cityProduction.MouseDown(args))
@@ -178,7 +178,7 @@ namespace CivOne.Screens
 		{
 			if (!_mouseDown) return true;
 
-			if (new Rectangle(230 + ExtraLeft, 99, 88, 99).Contains(args.Location))
+			if (new Rectangle(230 + ExtraLeft, 99, _cityProduction.Width(), _cityProduction.Height()).Contains(args.Location))
 			{
 				MouseArgsOffset(ref args, 230 + ExtraLeft, 99);
 				return _cityProduction.MouseUp(args);
