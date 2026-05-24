@@ -22,6 +22,7 @@ using static CivOne.Enums.Direction;
 
 namespace CivOne.Screens
 {
+	[ScreenResizeable]
 	internal class DestroyUnit : BaseScreen
 	{
 		private struct RenderTile
