@@ -105,10 +105,10 @@ namespace CivOne.Screens
 			
 			if (!_hasUpdate) return false;
 			
-			if (_landMass < 0) AddMenu(CreateMenu(6, "LAND MASS:", SetLandMass, "Small", "Normal", "Large"));
-			else if (_temperature < 0) AddMenu(CreateMenu(56, "TEMPERATURE:", SetTemperature, "Cool", "Temperate", "Warm"));
-			else if (_climate < 0) AddMenu(CreateMenu(106, "CLIMATE:", SetClimate, "Arid", "Normal", "Wet"));
-			else if (_age < 0) AddMenu(CreateMenu(156, "AGE:", SetAge, "3 billion years", "4 billion years", "5 billion years"));
+			if (_landMass < 0) AddMenu(CreateMenu(6, Translate("LAND MASS:"), SetLandMass, Translate("Small"), Translate("Normal"), Translate("Large")));
+			else if (_temperature < 0) AddMenu(CreateMenu(56, Translate("TEMPERATURE:"), SetTemperature, Translate("Cool"), Translate("Temperate"), Translate("Warm")));
+			else if (_climate < 0) AddMenu(CreateMenu(106, Translate("CLIMATE:"), SetClimate, Translate("Arid"), Translate("Normal"), Translate("Wet")));
+			else if (_age < 0) AddMenu(CreateMenu(156, Translate("AGE:"), SetAge, Translate("3 billion years"), Translate("4 billion years"), Translate("5 billion years")));
 			else
 			{
 				_closing = true;

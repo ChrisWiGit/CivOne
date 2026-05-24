@@ -15,8 +15,10 @@ namespace CivOne.Leaders
 	{
 		protected override Leader Leader => Leader.Stalin;
 
-		public Stalin() : base("Stalin", "KING08", 40, 26)
+		public Stalin() : base("KING08", 40, 26)
 		{
+			Name = Translate("Stalin");
+			DefaultName = Name;
 			Aggression = AggressionLevel.Aggressive;
 			Militarism = MilitarismLevel.Militaristic;
 		}

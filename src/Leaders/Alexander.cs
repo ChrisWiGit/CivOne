@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using CivOne.Enums;
+using CivOne.Units;
 
 namespace CivOne.Leaders
 {
@@ -15,8 +16,10 @@ namespace CivOne.Leaders
 	{
 		protected override Leader Leader => Leader.Alexander;
 
-		public Alexander() : base("Alexander", "KING13", 41, 19)
+		public Alexander() : base("KING13", 41, 19)
 		{
+			Name = Translate("Alexander");
+			DefaultName = Name;
 			Development = DevelopmentLevel.Expansionistic;
 			Militarism = MilitarismLevel.Militaristic;
 		}
