@@ -1,0 +1,157 @@
+# CivOne Translation File
+# CC-BY-SA 4.0
+# This file contains the German translation
+*FIRSTMOVE
+Deine erste Aufgabe besteht darin, einen geeigneten^
+Standort zu finden und deine Hauptstadt zu gründen.^
+Die besten Standorte für Städte befinden sich in der Nähe von Flüssen,^
+Grasland, Küstengebieten oder in der Nähe von^
+besonderen Ressourcen.^
+
+*BUILDCITY
+Dieser Ort scheint ein guter Standort für eine^
+Stadt zu sein. Wähle „Neue Stadt gründen“ aus dem^
+Befehlsmenü oder benutze die Taste „b“, um hier^
+eine Stadt zu gründen.^
+
+*FIRSTPRODUCT
+Jede deiner Städte kann zusätzliche^
+Siedler, Militäreinheiten oder Stadtverbesserungen^
+produzieren, um das Wachstum deiner Zivilisation^
+voranzutreiben. Pro Stadt kann nur ein Gegenstand^
+produziert werden. Produktionsaufträge können^
+jederzeit geändert werden. Wähle den Gegenstand, den du^
+bauen möchtest, indem du auf die Schaltfläche „ÄNDERN“ im^
+folgenden Stadtinformationsbildschirm klickst.^
+
+*FIRSTCIV
+Städte dienen auch als Zentren für Handel und^
+Informationsfluss. Ihre Weisen^
+und Wissenschaftler können diese Informationen sammeln,^
+um wichtige neue Fähigkeiten und^
+Fertigkeiten für Ihre Zivilisation zu erwerben. Nutzen Sie das^
+folgende Menü, um ihre Forschungen zu lenken:^
+
+*FIRSTUNIT1
+Sie haben gerade Ihre erste Militäreinheit^
+gebaut. Verwenden Sie die Pfeiltasten der Tastatur, um^
+diese Einheit zu bewegen und das Befehlsmenü, um^
+spezielle Befehle zu erteilen. Mit militärischen Einheiten kannst^
+du deine Zivilisation erkunden, erweitern, angreifen und^
+verteidigen. 
+
+*FIRSTUNIT2
+Befestige Einheiten in deinen Städten, um sie^
+gegen Barbaren oder feindliche Armeen zu verteidigen.^
+Siedler-Einheiten können neue Städte gründen sowie^
+Straßen, Bewässerungsanlagen und Minen bauen.^
+Greife deine Feinde mit Legionen, Streitwagen und^
+Katapulten an.
+
+*MINING
+Dieses Gebiet könnte mehr Ressourcen liefern.^
+Der Bergbau („m“) in diesen Hügeln erhöht die^
+Produktionskapazität von $US.^
+
+*IRRIGATE
+Dies wäre ein geeignetes Gebiet, um eine^
+Bewässerungsanlage („i“) zu errichten. Mehr Nahrung wird der^
+Stadt $US helfen, schneller zu wachsen.^
+
+*ROAD
+Dies wäre ein guter Ort, um eine^
+Straße zu bauen. Deine Einheiten können sich^
+schneller bewegen und es wird mehr Handel^
+in der Stadt $US generiert.^
+
+*MONARCHY
+Du hast gerade Kenntnisse über^
+MONARCHIE erworben. Unter einer MONARCHIE sind deine Bürger^
+produktiver, aber die Unterhaltskosten^
+für Militäreinheiten sind höher. Um^
+deine Regierungsform in eine MONARCHIE zu ändern,^
+musst du zuerst eine Revolution durchführen!^
+(Revolution: siehe das SPIEL-Menü).^
+
+*LAND
+LANDMASSE:^
+^
+- Ein Planet mit einer normalen Landmasse begünstigt eine Mischung aus Inseln und Kontinenten.^
+- Ein Planet mit einer kleinen Landmasse neigt dazu, mehr Inseln zu haben, was eine
+isolierte und ungestörte Entwicklung der Zivilisation fördert.^
+- Ein Planet mit einer großen Landmasse neigt dazu, mehr Kontinente zu haben, was
+mehr Handel und Krieg zwischen Zivilisationen begünstigt.^
+
+*TEMPERATURE
+TEMPERATUR:^
+^
+- Ein Planet mit GEMÄSSIGTEN Temperaturen begünstigt eine Mischung aus allen Geländetypen.^
+- Ein Planet mit KÜHLEN Temperaturen begünstigt die Bildung von Arktis- und
+Tundra-Gelände auf Kosten von Wüste.^
+- Ein Planet mit WARMEN Temperaturen begünstigt die Bildung von Wüsten-
+Gelände auf Kosten von Tundra und Arktis.^
+
+*CLIMATE
+KLIMA:^
+^
+- Ein Planet mit einem NORMALEN Klima begünstigt eine Mischung aus allen Geländetypen.^
+- Ein Planet mit einem TROCKENEN Klima weist mehr Wüsten und Ebenen auf.^
+- Ein Planet mit einem FEUCHTEN Klima weist mehr Dschungel, Sümpfe und Flüsse auf.^
+
+*AGE
+ALTER:
+^
+- Ein jüngerer Planet weist große Gebiete mit ähnlichem Gelände auf (Wälder, Berge usw.).
+- Ein älterer Planet weist kleinere, zerklüftete Landschaften auf.
+
+*HELP1
+ALLGEMEINE GRUNDSÄTZE: (1)^
+^
+Verteidige deine Städte mit mindestens einer^
+(vorzugsweise zwei) guten Verteidigungseinheiten.^
+^
+Finde ein Gleichgewicht zwischen der Verbesserung deiner^
+bestehenden Städte und der Gründung^
+neuer Städte.^
+^
+Expandiere nicht über deine Verteidigungsfähigkeiten hinaus;^
+Barbaren und feindliche Armeen^
+können ohne Vorwarnung auftauchen.^
+
+*HELP2
+ALLGEMEINE GRUNDSÄTZE: (2)^
+^
+Schließe Frieden mit deinen stärkeren Nachbarn.^
+Isoliere und erobere deine schwächeren Nachbarn.^
+^
+Erwäge, deine Regierungsform in eine^
+Monarchie zu ändern, sobald deine Städte eine Größe von^
+sechs oder sieben erreicht haben.^
+^
+Vergiss nicht, während deine Zivilisation wächst,^
+deine Diplomaten einzusetzen, um herauszufinden, was deine^
+Gegner vorhaben. Nutze Karawanen, um^
+Handelsrouten zu etablieren und deine^
+Wirtschaft zu stärken.^
+
+*DISORDER
+Eine Stadt verfällt in zivile Unruhen, wenn^
+die Zahl der unzufriedenen Bürger die^
+Zahl der zufriedenen Bürger übersteigt. Wachstum^
+und Produktion kommen zum Erliegen, solange sich eine Stadt^
+in Unruhen befindet. Abhilfemaßnahmen gegen Unruhen^
+sind unter anderem: Bürger zu Unterhaltungskünstlern^
+machen, Militäreinheiten in die^
+Stadt verlegen, einen Tempel, eine Kathedrale^
+oder ein Kolosseum errichten, den Anteil des^
+Handels mit Luxusgütern erhöhen. Weitere Details finden Sie auf Seite 66 im^
+Handbuch.^
+
+*SCHISM
+Die $THEM sind eine große und mächtige^
+Zivilisation. Allerdings drohen Rebellengruppen^ 
+einen Bürgerkrieg auszulösen. Wenn Ihre^
+Armeen ihre Hauptstadt einnehmen können,^
+könnte der Schock das Land in zwei Teile spalten!^
+
+*END
