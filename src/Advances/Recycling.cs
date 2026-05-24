@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public Recycling() : base(5, 0, 2, Advance.MassProduction, Advance.Democracy)
 		{
-			Name = "Recycling";
+			Name = Translate("Recycling");
 			Type = Advance.Recycling;
 		}
 	}

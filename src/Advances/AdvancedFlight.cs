@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public AdvancedFlight() : base(2, 1, 0, Advance.Flight, Advance.Electricity)
 		{
-			Name = "Advanced Flight";
+			Name = Translate("Advanced Flight");
 			Type = Advance.AdvancedFlight;
 		}
 	}

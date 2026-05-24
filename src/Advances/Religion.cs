@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public Religion() : base(3, 2, 0, Advance.Philosophy, Advance.Writing)
 		{
-			Name = "Religion";
+			Name = Translate("Religion");
 			Type = Advance.Religion;
 		}
 	}

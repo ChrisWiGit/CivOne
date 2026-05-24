@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public Explosives() : base(5, 1, 2, Advance.Gunpowder, Advance.Chemistry)
 		{
-			Name = "Explosives";
+			Name = Translate("Explosives");
 			Type = Advance.Explosives;
 		}
 	}

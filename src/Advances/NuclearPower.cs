@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public NuclearPower() : base(2, 2, 2, Advance.NuclearFission, Advance.Electronics)
 		{
-			Name = "Nuclear Power";
+			Name = Translate("Nuclear Power");
 			Type = Advance.NuclearPower;
 		}
 	}

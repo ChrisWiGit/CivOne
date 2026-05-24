@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public TheRepublic() : base(2, 0, 0, Advance.CodeOfLaws, Advance.Literacy)
 		{
-			Name = "The Republic";
+			Name = Translate("The Republic");
 			Type = Advance.TheRepublic;
 		}
 	}

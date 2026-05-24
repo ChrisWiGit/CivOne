@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public BronzeWorking() : base(5, 2, 0)
 		{
-			Name = "Bronze Working";
+			Name = Translate("Bronze Working");
 			Type = Advance.BronzeWorking;
 		}
 	}

@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public CodeOfLaws() : base(2, 0, 1, Advance.Alphabet)
 		{
-			Name = "Code of Laws";
+			Name = Translate("Code of Laws");
 			Type = Advance.CodeOfLaws;
 		}
 	}

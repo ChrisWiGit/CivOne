@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public Democracy() : base(2, 2, 1, Advance.Philosophy, Advance.Literacy)
 		{
-			Name = "Democracy";
+			Name = Translate("Democracy");
 			Type = Advance.Democracy;
 		}
 	}

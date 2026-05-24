@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public Gunpowder() : base(6, 1, 0, Advance.Invention, Advance.IronWorking)
 		{
-			Name = "Gunpowder";
+			Name = Translate("Gunpowder");
 			Type = Advance.Gunpowder;
 		}
 	}

@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public CeremonialBurial() : base(8, 2, 0)
 		{
-			Name = "Ceremonial Burial";
+			Name = Translate("Ceremonial Burial");
 			Type = Advance.CeremonialBurial;
 		}
 	}

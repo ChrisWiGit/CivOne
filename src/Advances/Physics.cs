@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public Physics() : base(1, 2, 0, Advance.Mathematics, Advance.Navigation)
 		{
-			Name = "Physics";
+			Name = Translate("Physics");
 			Type = Advance.Physics;
 		}
 	}

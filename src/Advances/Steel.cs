@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public Steel() : base(3, 0, 0, Advance.Metallurgy, Advance.Industrialization)
 		{
-			Name = "Steel";
+			Name = Translate("Steel");
 			Type = Advance.Steel;
 		}
 	}

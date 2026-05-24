@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public Medicine() : base(3, 1, 2, Advance.Philosophy, Advance.Trade)
 		{
-			Name = "Medicine";
+			Name = Translate("Medicine");
 			Type = Advance.Medicine;
 		}
 	}

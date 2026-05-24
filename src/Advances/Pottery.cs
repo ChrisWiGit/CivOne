@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public Pottery() : base(7, 0, 2)
 		{
-			Name = "Pottery";
+			Name = Translate("Pottery");
 			Type = Advance.Pottery;
 		}
 	}

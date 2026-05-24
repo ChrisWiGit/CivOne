@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public Conscription() : base(7, 0, 0, Advance.TheRepublic, Advance.Explosives)
 		{
-			Name = "Conscription";
+			Name = Translate("Conscription");
 			Type = Advance.Conscription;
 		}
 	}

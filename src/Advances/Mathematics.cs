@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public Mathematics() : base(7, 1, 1, Advance.Alphabet, Advance.Masonry)
 		{
-			Name = "Mathematics";
+			Name = Translate("Mathematics");
 			Type = Advance.Mathematics;
 		}
 	}

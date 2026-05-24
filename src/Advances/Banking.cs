@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public Banking() : base(1, 2, 2, Advance.Trade, Advance.TheRepublic)
 		{
-			Name = "Banking";
+			Name = Translate("Banking");
 			Type = Advance.Banking;
 		}
 	}

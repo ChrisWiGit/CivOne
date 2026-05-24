@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public HorsebackRiding() : base(7, 0, 1)
 		{
-			Name = "Horseback Riding";
+			Name = Translate("Horseback Riding");
 			Type = Advance.HorsebackRiding;
 		}
 	}

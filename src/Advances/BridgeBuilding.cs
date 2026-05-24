@@ -15,7 +15,7 @@ namespace CivOne.Advances
 	{
 		public BridgeBuilding() : base(4, 1, 0, Advance.IronWorking, Advance.Construction)
 		{
-			Name = "Bridge Building";
+			Name = Translate("Bridge Building");
 			Type = Advance.BridgeBuilding;
 		}
 	}
