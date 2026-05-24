@@ -16,7 +16,7 @@ namespace CivOne.Buildings
 	{
 		public CityWalls() : base(12, 2)
 		{
-			Name = "City Walls";
+			Name = Translate("City Walls");
 			RequiredTech = new Masonry();
 			SetIcon(1, 2, false);
 			SetSmallIcon(1, 2);

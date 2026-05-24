@@ -16,7 +16,7 @@ namespace CivOne.Buildings
 	{
 		public Courthouse() : base(8, 1)
 		{
-			Name = "Courthouse";
+			Name = Translate("Courthouse");
 			RequiredTech = new CodeOfLaws();
 			SetIcon(1, 1, true);
 			SetSmallIcon(1, 1);

@@ -16,7 +16,7 @@ namespace CivOne.Buildings
 	{
 		public Factory() : base(20, 4)
 		{
-			Name = "Factory";
+			Name = Translate("Factory");
 			RequiredTech = new Industrialization();
 			SetIcon(3, 1, true);
 			SetSmallIcon(2, 4);

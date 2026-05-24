@@ -16,7 +16,7 @@ namespace CivOne.Buildings
 	{
 		public Library() : base(8, 1)
 		{
-			Name = "Library";
+			Name = Translate("Library");
 			RequiredTech = new Writing();
 			SetIcon(1, 0, true);
 			SetSmallIcon(1, 0);

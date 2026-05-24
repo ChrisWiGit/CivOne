@@ -15,7 +15,7 @@ namespace CivOne.Buildings
 	{
 		public University() : base(16, 3)
 		{
-			Name = "University";
+			Name = Translate("University");
 			RequiredTech = new Advances.University();
 			SetIcon(2, 2, false);
 			SetSmallIcon(2, 1);

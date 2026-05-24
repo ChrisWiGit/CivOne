@@ -16,7 +16,7 @@ namespace CivOne.Buildings
 	{
 		public HydroPlant() : base(24, 4)
 		{
-			Name = "Hydro Plant";
+			Name = Translate("Hydro Plant");
 			RequiredTech = new Electronics();
 			SetIcon(4, 2, false);
 			SetSmallIcon(3, 4);

@@ -16,7 +16,7 @@ namespace CivOne.Buildings
 	{
 		public Granary() : base(6, 1)
 		{
-			Name = "Granary";
+			Name = Translate("Granary");
 			RequiredTech = new Pottery();
 			SetIcon(0, 1, true);
 			SetSmallIcon(0, 2);
