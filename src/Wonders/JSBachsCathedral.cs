@@ -17,6 +17,7 @@ namespace CivOne.Wonders
 		public JSBachsCathedral() : base(40)
 		{
 			Name = "J.S.Bach's Cathedral";
+			TranslatedName = Translate("J.S.Bach's Cathedral");
 			RequiredTech = new Religion();
 			ObsoleteTech = null;
 			SetSmallIcon(6, 3);

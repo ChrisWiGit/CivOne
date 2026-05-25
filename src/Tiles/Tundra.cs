@@ -30,6 +30,7 @@ namespace CivOne.Tiles
 		{
 			Type = Terrain.Tundra;
 			Name = "Tundra";
+			TranslatedName = Translate("Tundra");
 		}
 		public Tundra() : this(-1, -1, false)
 		{

@@ -12,6 +12,7 @@ using System.Linq;
 using CivOne.Advances;
 using CivOne.Enums;
 using CivOne.Leaders;
+using CivOne.Services;
 using CivOne.Tiles;
 
 // KBR 20200927 integrate cdonges land spawn code
@@ -89,45 +90,43 @@ namespace CivOne.Civilizations
 			}
 		}
 
-		public Barbarian() : base(Civilization.Barbarians, "Barbarian", "Barbarians")
+		public Barbarian() : base(Civilization.Barbarians, TranslationServiceFactory.GetCurrent().Translate("Barbarian"), TranslationServiceFactory.GetCurrent().Translate("Barbarians"))
 		{
 			StartX = 255;
 			StartY = 255;
-			CityNames = new[]
-			{
-				"Mecca",
-				"Naples",
-				"Sidon",
-				"Tyre",
-				"Tarsus",
-				"Issus",
-				"Cunaxa",
-				"Cremona",
-				"Cannae",
-				"Capua",
-				"Turin",
-				"Genoa",
-				"Utica",
-				"Crete",
-				"Damascus",
-				"Verona",
-				"Salamis",
-				"Lisbon",
-				"Hamburg",
-				"Prague",
-				"Salzburg",
-				"Bergen",
-				"Venice",
-				"Milan",
-				"Ghent",
-				"Pisa",
-				"Cordoba",
-				"Seville",
-				"Dublin",
-				"Toronto",
-				"Melbourne",
-				"Sydney"
-			};
+			CityNames = TranslateArray(
+				"Mecca\n" +
+				"Naples\n" +
+				"Sidon\n" +
+				"Tyre\n" +
+				"Tarsus\n" +
+				"Issus\n" +
+				"Cunaxa\n" +
+				"Cremona\n" +
+				"Cannae\n" +
+				"Capua\n" +
+				"Turin\n" +
+				"Genoa\n" +
+				"Utica\n" +
+				"Crete\n" +
+				"Damascus\n" +
+				"Verona\n" +
+				"Salamis\n" +
+				"Lisbon\n" +
+				"Hamburg\n" +
+				"Prague\n" +
+				"Salzburg\n" +
+				"Bergen\n" +
+				"Venice\n" +
+				"Milan\n" +
+				"Ghent\n" +
+				"Pisa\n" +
+				"Cordoba\n" +
+				"Seville\n" +
+				"Dublin\n" +
+				"Toronto\n" +
+				"Melbourne\n" +
+				"Sydney");
 		}
 	}
 }

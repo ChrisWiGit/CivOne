@@ -30,6 +30,7 @@ namespace CivOne.Tiles
 		{
 			Type = Terrain.Jungle;
 			Name = "Jungle";
+			TranslatedName = Translate("Jungle");
 		}
 		public Jungle() : this(-1, -1, false)
 		{

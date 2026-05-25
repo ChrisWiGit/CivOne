@@ -9,34 +9,33 @@
 
 using CivOne.Enums;
 using CivOne.Leaders;
+using CivOne.Services;
 
 namespace CivOne.Civilizations
 {
 	internal class French : BaseCivilization<Napoleon>
 	{
-		public French() : base(Civilization.French, "French", "French", "napo")
+		public French() : base(Civilization.French, TranslationServiceFactory.GetCurrent().Translate("French"), TranslationServiceFactory.GetCurrent().Translate("French"), "napo")
 		{
 			StartX = 33;
 			StartY = 16;
-			CityNames = new[]
-			{
-				"Paris",
-				"Orleans",
-				"Lyons",
-				"Tours",
-				"Chartres",
-				"Bordeaux",
-				"Rouen",
-				"Avignon",
-				"Marseilles",
-				"Grenoble",
-				"Dijon",
-				"Amiens",
-				"Cherbourg",
-				"Poitiers",
-				"Toulouse",
-				"Bayonne"
-			};
+			CityNames = TranslateArray(
+				"Paris\n" +
+				"Orleans\n" +
+				"Lyons\n" +
+				"Tours\n" +
+				"Chartres\n" +
+				"Bordeaux\n" +
+				"Rouen\n" +
+				"Avignon\n" +
+				"Marseilles\n" +
+				"Grenoble\n" +
+				"Dijon\n" +
+				"Amiens\n" +
+				"Cherbourg\n" +
+				"Poitiers\n" +
+				"Toulouse\n" +
+				"Bayonne");
 		}
 	}
 }

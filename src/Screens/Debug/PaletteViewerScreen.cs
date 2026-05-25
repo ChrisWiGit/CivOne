@@ -68,7 +68,7 @@ namespace CivOne.Screens.Debug
 			{
 				if (!Resources.Exists(resourceName))
 				{
-					GameTask.Enqueue(Message.Error("-- DEBUG: Palette Viewer --", $"Resource '{resourceName}' not found.", "Please choose another resource."));
+					GameTask.Enqueue(Message.Error(Translate("-- DEBUG: Palette Viewer --"), TranslateFormattedArray("Resource '{0}' not found.\nPlease choose another resource.", resourceName)));
 					return;
 				}
 			}
@@ -151,9 +151,9 @@ namespace CivOne.Screens.Debug
 			this.Clear()
 				.FillRectangle(24 + ox, 54 + oy, 273, 73, 11)
 				.FillRectangle(25 + ox, 55 + oy, 271, 71, 15)
-				.DrawText("Palette Viewer", 0, 5, 114 + ox, 60 + oy)
-				.DrawText("Select resource palette:", 0, 5, 87 + ox, 72 + oy)
-				.DrawText("ESC: close", 0, 5, 122 + ox, 114 + oy);
+				.DrawText(Translate("Palette Viewer"), 0, 5, 114 + ox, 60 + oy)
+				.DrawText(Translate("Select resource palette:"), 0, 5, 87 + ox, 72 + oy)
+				.DrawText(Translate("ESC: close"), 0, 5, 122 + ox, 114 + oy);
 
 			CreateSelectionMenu();
 		}
@@ -165,8 +165,8 @@ namespace CivOne.Screens.Debug
 
 			this.Clear()
 				.Tile(Pattern.PanelGrey)
-				.DrawText($"Palette Viewer: {_selectedPaletteName}", 0, 15, 8 + ox, 4 + oy)
-				.DrawText("ESC: close, BACKSPACE: resource menu", 0, 15, 8 + ox, 192 + oy);
+				.DrawText(TranslateFormatted("Palette Viewer: {0}", _selectedPaletteName), 0, 15, 8 + ox, 4 + oy)
+				.DrawText(Translate("ESC: close, BACKSPACE: resource menu"), 0, 15, 8 + ox, 192 + oy);
 
 			for (int i = 0; i < DisplayColorCount; i++)
 			{
@@ -188,11 +188,11 @@ namespace CivOne.Screens.Debug
 				this.DrawRectangle(hoverX - 1, hoverY - 1, CellSize + 1, CellSize + 1, 15);
 
 				Colour colour = _selectedPalette[_hoverIndex];
-				this.DrawText($"Index: {_hoverIndex}   A:{colour.A} R:{colour.R} G:{colour.G} B:{colour.B}", 0, 15, 8 + ox, 181 + oy);
+				this.DrawText(TranslateFormatted("Index: {0}   A:{1} R:{2} G:{3} B:{4}", _hoverIndex, colour.A, colour.R, colour.G, colour.B), 0, 15, 8 + ox, 181 + oy);
 			}
 			else
 			{
-				this.DrawText("Hover a color square to inspect index and A/R/G/B values.", 0, 15, 8 + ox, 181 + oy);
+				this.DrawText(Translate("Hover a color square to inspect index and A/R/G/B values."), 0, 15, 8 + ox, 181 + oy);
 			}
 		}
 

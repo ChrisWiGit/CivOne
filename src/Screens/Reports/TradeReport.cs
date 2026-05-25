@@ -101,7 +101,7 @@ namespace CivOne.Screens.Reports
 				IBuilding building = _cities.SelectMany(c => c.Buildings).First(b => b.Id == (int)entry);
 				if (building.Maintenance == 0) continue;
 
-				this.DrawText(TranslateFormatted("{0} {1}, {2}$", count, building.Name, building.Maintenance * count), 0, 14, OffsetX + 160, yy);
+				this.DrawText(TranslateFormatted("{0} {1}, {2}$", count, building.TranslatedName, building.Maintenance * count), 0, 14, OffsetX + 160, yy);
 				yy += Resources.GetFontHeight(0);
 			}
 

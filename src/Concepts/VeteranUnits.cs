@@ -14,6 +14,8 @@ namespace CivOne.Concepts
 		public VeteranUnits()
 		{
 			Name = "Veteran Units";
+			Name = "Veteran Units";
+			TranslatedName = Translate("Veteran Units");
 		}
 	}
 }

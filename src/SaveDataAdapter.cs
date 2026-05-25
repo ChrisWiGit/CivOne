@@ -32,7 +32,7 @@ namespace CivOne
 			SaveData.UnitType output = new SaveData.UnitType();
 			if (unit != null)
 			{
-				SetArray<SaveData.UnitType>(ref output, nameof(SaveData.UnitType.Name), 12, new string[] { unit.Name });
+				SetArray<SaveData.UnitType>(ref output, nameof(SaveData.UnitType.Name), 12, unit.Name);
 				output.ObsoleteTechId = CVS.CheckedUInt16(unit.ObsoleteTech?.Id ?? 0x7F, nameof(SaveDataAdapter), "UnitType.ObsoleteTechId");
 				output.TerrainCategory = CVS.CheckedUInt16((int)unit.Class, nameof(SaveDataAdapter), "UnitType.TerrainCategory");
 				output.TotalMoves = CVS.CheckedUInt16(unit.Move, nameof(SaveDataAdapter), "UnitType.TotalMoves");

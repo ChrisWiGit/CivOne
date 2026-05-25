@@ -9,34 +9,33 @@
 
 using CivOne.Enums;
 using CivOne.Leaders;
+using CivOne.Services;
 
 namespace CivOne.Civilizations
 {
 	internal class Greek : BaseCivilization<Alexander>
 	{
-		public Greek() : base(Civilization.Greeks, "Greek", "Greeks", "alex")
+		public Greek() : base(Civilization.Greeks, TranslationServiceFactory.GetCurrent().Translate("Greek"), TranslationServiceFactory.GetCurrent().Translate("Greeks"), "alex")
 		{
 			StartX = 39;
 			StartY = 18;
-			CityNames = new[]
-			{
-				"Athens",
-				"Sparta",
-				"Corinth",
-				"Delphi",
-				"Eretria",
-				"Pharsalos",
-				"Argos",
-				"Mycenae",
-				"Herakleia",
-				"Antioch",
-				"Ephesos",
-				"Rhodes",
-				"Knossos",
-				"Troy",
-				"Pergamon",
-				"Miletos"
-			};
+			CityNames = TranslateArray(
+				"Athens\n" +
+				"Sparta\n" +
+				"Corinth\n" +
+				"Delphi\n" +
+				"Eretria\n" +
+				"Pharsalos\n" +
+				"Argos\n" +
+				"Mycenae\n" +
+				"Herakleia\n" +
+				"Antioch\n" +
+				"Ephesos\n" +
+				"Rhodes\n" +
+				"Knossos\n" +
+				"Troy\n" +
+				"Pergamon\n" +
+				"Miletos");
 		}
 	}
 }

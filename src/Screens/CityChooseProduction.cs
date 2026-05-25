@@ -128,6 +128,17 @@ namespace CivOne.Screens
 			_update = true;
 		}
 
+		private string GetFilterModeText()
+		{
+			return _filterMode switch
+			{
+				ProductionFilterMode.Units => Translate("Units"),
+				ProductionFilterMode.Buildings => Translate("Buildings"),
+				ProductionFilterMode.Wonders => Translate("Wonders"),
+				_ => string.Empty
+			};
+		}
+
 		private IProduction[] InsertSeparators(IProduction[] production)
 		{
 			var result = new List<IProduction>();
@@ -135,9 +146,9 @@ namespace CivOne.Screens
 
 			foreach (var item in production)
 			{
-				if (item is IUnit && !hasUnits) { result.Add(new ProductionSeparator("--- Units ---")); hasUnits = true; }
-				else if (item is IBuilding && !hasBuildings) { result.Add(new ProductionSeparator("--- Buildings ---")); hasBuildings = true; }
-				else if (item is IWonder && !hasWonders) { result.Add(new ProductionSeparator("--- Wonders ---")); hasWonders = true; }
+				if (item is IUnit && !hasUnits) { result.Add(new ProductionSeparator(Translate("--- Units ---"))); hasUnits = true; }
+				else if (item is IBuilding && !hasBuildings) { result.Add(new ProductionSeparator(Translate("--- Buildings ---"))); hasBuildings = true; }
+				else if (item is IWonder && !hasWonders) { result.Add(new ProductionSeparator(Translate("--- Wonders ---"))); hasWonders = true; }
 				result.Add(item);
 			}
 
@@ -220,9 +231,12 @@ namespace CivOne.Screens
 				// CW: Refactoring idea would be to remove all calculations from here into a separate method called only once
 				//    and store the results to be used here for drawing.
 
-				List<string> menuItems = new List<string>();
-				string filterLabel = _filterMode == ProductionFilterMode.All ? "" : $" [{_filterMode}]";
-				string menuHeaderText = $"What shall we build in {_city.Name}?{filterLabel}";
+				List<string> menuItems = [];
+				string filterLabel = _filterMode == ProductionFilterMode.All
+					? string.Empty
+					: $" [{GetFilterModeText()}]";
+
+				string menuHeaderText = TranslateFormatted("What shall we build in {0}?{1}", _city.Name, filterLabel);
 				int itemWidth = Resources.GetTextSize(_fontId, menuHeaderText).Width;
 				foreach (IProduction production in _pages[_page])
 				{
@@ -238,7 +252,7 @@ namespace CivOne.Screens
 						if (_city.ShieldIncome > 1)
 							turns = (int)Math.Ceiling((double)turns / _city.ShieldIncome);
 						if (turns < 1) turns = 1;
-						menuText = $"{unit.Name} ({turns} turns, ADM:{unit.Attack}/{unit.Defense}/{unit.Move})";
+						menuText = TranslateFormatted("{0} ({1} turns, ADM:{2}/{3}/{4})", unit.TranslatedName, turns, unit.Attack, unit.Defense, unit.Move);
 						if (Resources.GetTextSize(_fontId, menuText).Width > itemWidth) itemWidth = Resources.GetTextSize(_fontId, menuText).Width;
 					}
 					else if (production is IBuilding)
@@ -248,7 +262,7 @@ namespace CivOne.Screens
 						if (_city.ShieldIncome > 1)
 							turns = (int)Math.Ceiling((double)turns / _city.ShieldIncome);
 						if (turns < 1) turns = 1;
-						menuText = $"{building.Name} ({turns} turns)";
+						menuText = TranslateFormatted("{0} ({1} turns)", building.TranslatedName, turns);
 						if (Resources.GetTextSize(_fontId, menuText).Width > itemWidth) itemWidth = Resources.GetTextSize(_fontId, menuText).Width;
 					}
 					else if (production is IWonder)
@@ -258,7 +272,7 @@ namespace CivOne.Screens
 						if (_city.ShieldIncome > 1)
 							turns = (int)Math.Ceiling((double)turns / _city.ShieldIncome);
 						if (turns < 1) turns = 1;
-						menuText = $"{wonder.Name} ({turns} turns)";
+						menuText = TranslateFormatted("{0} ({1} turns)", wonder.TranslatedName, turns);
 						if (Game.WonderObsolete(wonder)) menuText = $"*{menuText}";
 						if (Resources.GetTextSize(_fontId, menuText).Width > itemWidth) itemWidth = Resources.GetTextSize(_fontId, menuText).Width;
 					}
@@ -266,7 +280,7 @@ namespace CivOne.Screens
 				}
 				if (_pages.Count > 1)
 				{
-					menuItems.Add("More...");
+					menuItems.Add(Translate("More..."));
 				}
 				itemWidth += 10;
 
@@ -278,7 +292,7 @@ namespace CivOne.Screens
 				menuGfx.Tile(Pattern.PanelGrey)
 					.DrawRectangle3D()
 					.DrawText(menuHeaderText, _fontId, 15, 4, 4)
-					.DrawText($"(Help available, Tab=Filter)", 1, 10, width, height - Resources.GetFontHeight(1), TextAlign.Right);
+					.DrawText(Translate("(Help available, Tab=Filter)"), 1, 10, width, height - Resources.GetFontHeight(1), TextAlign.Right);
 
 				this.FillRectangle(80, 8, width + 2, height + 2, 5); // produces black border, +2 because of round errors when resizing
 				this.AddLayer(menuGfx, 81, 9);

@@ -71,23 +71,29 @@ There are some command line parameters that can be used to modify the behavior o
 
 ### Translation workflow
 
-The repository includes a small CLI tool named `civtranslate` to maintain translation key-value files from C# code.
-
-Run from the repository root:
+The repository includes translation helper tools in the repository root.
+Use `translate.ps1` or `translate.sh` to generate or update `translation/all.txt`.
+If you already have an existing language file with manual translations, it is often better to merge missing keys instead of generating the whole file again.
+Use `civtranslate-mergekeys` to append keys from `translation/all.txt` that are missing in your `civ_<postfix>.txt` file without changing existing translated values.
 
 ```sh
-dotnet run --project ./civtranslate/civtranslate.csproj -- ./src --output ./translation/all.txt
+dotnet run --project ./civtranslate-mergekeys/civtranslate-mergekeys.csproj -- ./translation/all.txt ./translation/civ_german.txt
 ```
 
-The scanner looks for `.Translate("...")`, `.TranslateFormatted("...", ...)`, and `T("...")` calls in `*.cs` files.
-Keys are normalized to uppercase for matching and output, while values keep the source text casing.
-Existing keys found during scan have their value overwritten with the latest source text.
-Obsolete keys are written to `./translation/obsoletekeys.txt`.
+You can also use the helper scripts from repository root and pass only file names.
 
-Helper scripts are available in the repository root:
+```powershell
+.\translate-mergekeys.ps1 all civ_german
+```
 
-* `translate.ps1`
-* `translate.sh`
+```sh
+./translate-mergekeys.sh all civ_german
+```
+
+Use `translate-interactive.ps1` or `translate-interactive.sh` to run the values-only translation roundtrip for a language file.
+Use `copy-translations.ps1` or `copy-translations.sh` to copy final language files to the active CivOne profile.
+For the full translation workflow and naming rules, see [civtranslate/README.md](civtranslate/README.md).
+For merge helper details, see [civtranslate-mergekeys/README.md](civtranslate-mergekeys/README.md).
 
 ### Use translation in game
 
@@ -100,6 +106,15 @@ Language files must be placed in your CivOne profile translation folder.
 On Windows this is `%LOCALAPPDATA%\CivOne\translations`.
 On Linux and macOS this is `~/.local/share/CivOne/translations`.
 
+The CivOne profile root is the parent folder of those files.
+On Windows this is `%LOCALAPPDATA%\CivOne`.
+On Linux and macOS this is `~/.local/share/CivOne`.
+
+Other common folders are:
+
+* Windows: `%LOCALAPPDATA%\CivOne\data`, `%LOCALAPPDATA%\CivOne\saves`, `%LOCALAPPDATA%\CivOne\sounds`
+* Linux and macOS: `~/.local/share/CivOne/data`, `~/.local/share/CivOne/saves`, `~/.local/share/CivOne/sounds`
+
 To create or update language files, run the CLI scanner from repository root and copy the output file to your profile translation folder with a `civ_<postfix>.txt` name.
 
 Example:
@@ -107,6 +122,29 @@ Example:
 ```sh
 dotnet run --project ./civtranslate/civtranslate.csproj -- ./src --output ./translation/civ_german.txt
 ```
+
+### Game menu hotkeys
+
+The top gameplay menu supports translator-defined hotkeys.
+Use `~` directly before the character that should be highlighted and used for the `Alt+<key>` shortcut.
+The `~` marker is not shown in the UI.
+The marked character is highlighted in the menu bar.
+If no valid marker exists, the first visible character is used as fallback.
+The translation keys in code must still be written as explicit `Translate("...")` calls so the translation tools can find them.
+
+Example entries in a translation file:
+
+```txt
+GAME=~SPIEL
+ORDERS=~BEFEHLE
+ADVISORS=BE~RATER
+WORLD=~WELT
+CIVILOPEDIA=~CIVILOPEDIA
+```
+
+In this example, `Alt+S` opens `SPIEL`, `Alt+B` opens `BEFEHLE`, and `Alt+R` opens `BERATER`.
+
+If no `~` marker is present, the first character is used as fallback.
 
 ### MCP savegame tools
 

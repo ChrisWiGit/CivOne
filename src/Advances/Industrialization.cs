@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public Industrialization() : base(2, 0, 2, Advance.RailRoad, Advance.Banking)
 		{
 			Name = "Industrialization";
+			TranslatedName = Translate("Industrialization");
 			Type = Advance.Industrialization;
 		}
 	}

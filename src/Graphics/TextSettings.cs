@@ -18,11 +18,20 @@ namespace CivOne.Graphics
 		public int FontId { get; set; }
 		public byte Colour { get; set; }
 		public byte FirstLetterColour { get; private set; }
+		public int HighlightedCharacterIndex { get; private set; }
 		public byte TopColour { get; private set; }
 		public byte BottomColour { get; private set; }
 
 		public static TextSettings DifferentFirstLetter(byte firstLetterColour, byte colour) => new TextSettings()
 		{
+			HighlightedCharacterIndex = 0,
+			FirstLetterColour = firstLetterColour,
+			Colour = colour
+		};
+
+		public static TextSettings DifferentCharacter(byte firstLetterColour, byte colour, int highlightedCharacterIndex) => new TextSettings()
+		{
+			HighlightedCharacterIndex = highlightedCharacterIndex,
 			FirstLetterColour = firstLetterColour,
 			Colour = colour
 		};
@@ -52,6 +61,7 @@ namespace CivOne.Graphics
 			Alignment = TextAlign.Left;
 			FontId = 0;
 			Colour = 5;
+			HighlightedCharacterIndex = 0;
 		}
 	}
 }

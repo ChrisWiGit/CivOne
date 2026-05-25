@@ -58,20 +58,44 @@ namespace CivOne
 			}
 		}
 
-#if RELEASE
-		public void Log(string value, params object[] formatArgs) { }
-#else
-        public void Log(string value, params object[] formatArgs) // => Console.WriteLine(value, formatArgs);
-        {
-            var path = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
-                "Civ.log");
-            using (TextWriter tw = new StreamWriter(path, append: true))
-            {
-                tw.WriteLine(value, formatArgs);
-                tw.Flush();
-                tw.Close();
-            }
 
+		private readonly object _sync = new();
+
+		private StreamWriter TryOpenWrite(string path)
+		{
+			// 3 mal versuchen mit 1 sekunde pause dazwischen, 
+			// share mode auf readwrite
+			for (int i = 0; i < 3; i++)
+			{
+				try				
+				{
+					return new StreamWriter(new FileStream(path, FileMode.Append, FileAccess.Write, FileShare.ReadWrite));
+				}
+				catch (IOException)
+				{
+					Console.Error.WriteLine($"Failed to open log file for writing (attempt {i + 1}/3): {path}");
+					System.Threading.Thread.Sleep(1000);
+				}
+			}
+			return null;
+		}
+
+        public void Log(string text, params object[] parameters)
+        {
+			// civone local folder verwenden
+			var storage = ((IRuntime)this).StorageDirectory;
+            var path = Path.Combine(storage,"Civ.log");
+
+			lock (_sync)
+			{
+				using StreamWriter tw = TryOpenWrite(path);
+				if (tw != null)
+				{
+					tw.WriteLine(text, parameters);
+					tw.Flush();
+					tw.Close();
+				}
+			}
 			if (Settings?.ConsoleLogging != true)
 			{
 				return;
@@ -79,15 +103,14 @@ namespace CivOne
 
 			if (Settings.McpEnabled)
 			{
-				Console.Error.WriteLine(value, formatArgs);
+				Console.Error.WriteLine(text, parameters);
 				Console.Error.Flush();
 			}
 			else
 			{
-				Console.WriteLine(value, formatArgs);
+				Console.WriteLine(text, parameters);
 			}
         }
-#endif
 
 		Platform IRuntime.CurrentPlatform => Platform.Windows;
 		string IRuntime.StorageDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CivOne");
@@ -106,10 +129,10 @@ namespace CivOne
 		void IRuntime.StopSound() => StopSound?.Invoke();
 		void IRuntime.Quit() => SignalQuit = true;
 
-		public Runtime(RuntimeSettings settings)
+		public Runtime(RuntimeSettings runtimeSettings)
 		{	
-			Settings = settings;
-			Profile = Profile.Get(this, settings.Get<string>("profile-name"));
+			Settings = runtimeSettings;
+			Profile = Profile.Get(this, runtimeSettings.Get<string>("profile-name"));
 			RuntimeHandler.Register(this);
 		}
 

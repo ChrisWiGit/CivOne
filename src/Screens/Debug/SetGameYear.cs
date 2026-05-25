@@ -30,7 +30,7 @@ namespace CivOne.Screens.Debug
 			this.Clear();
 			this.FillRectangle(80 + ox, 80 + oy, 161, 33, 11)
 				.FillRectangle(81 + ox, 81 + oy, 159, 31, 15)
-				.DrawText("Set Game Year...", 0, 5, 88 + ox, 82 + oy)
+				.DrawText(Translate("Set Game Year..."), 0, 5, 88 + ox, 82 + oy)
 				.FillRectangle(88 + ox, 95 + oy, 105, 14, 5)
 				.FillRectangle(89 + ox, 96 + oy, 103, 12, 15);
 
@@ -49,12 +49,12 @@ namespace CivOne.Screens.Debug
 			int gameYear;
 			if (!int.TryParse(Value, out gameYear) || gameYear < -4000 || gameYear > 6000)
 			{
-				GameTask.Enqueue(Message.Error("-- DEBUG: Set Game Year --", $"The value {Value} is invalid or out of range.", "Please enter a value between -4000 and", "6000."));
+				GameTask.Enqueue(Message.Error(Translate("-- DEBUG: Set Game Year --"), TranslateFormattedArray("The value {0} is invalid or out of range.\nPlease enter a value between -4000 and\n6000.", Value)));
 			}
 			else
 			{
 				Game.GameTurn = Common.YearToTurn(gameYear);
-				GameTask.Enqueue(Message.General($"Game year set to {Game.GameYear}."));
+				GameTask.Enqueue(Message.General(TranslateFormatted("Game year set to {0}.", Game.GameYear)));
 			}
 
 			if (Accept != null)

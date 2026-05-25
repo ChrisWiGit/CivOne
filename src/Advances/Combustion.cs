@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public Combustion() : base(4, 2, 0, Advance.Refining, Advance.Explosives)
 		{
 			Name = "Combustion";
+			TranslatedName = Translate("Combustion");
 			Type = Advance.Combustion;
 		}
 	}

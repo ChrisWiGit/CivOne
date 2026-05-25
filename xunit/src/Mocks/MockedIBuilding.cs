@@ -15,6 +15,7 @@ namespace CivOne.UnitTests
         public MockedIBuilding()
         {
             Id = 1;
+            TranslatedName = "Mocked Building";
             Name = "Mocked Building";
             Type = Building.Library;
             Price = 10;
@@ -42,6 +43,7 @@ namespace CivOne.UnitTests
 
 		public Building Type { get; set; }
 
+		public string TranslatedName { get; set; }
 		public string Name { get; set; }
 
 		public IBitmap Icon { get; set; }

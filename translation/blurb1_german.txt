@@ -1,0 +1,578 @@
+# CivOne Translation File
+# CC-BY-SA 4.0
+# This file contains the German translation
+# This file was auto translated using ChatGPT. Please check for errors and report them to the project.
+*PALACE
+Als Menschen begannen, sich in Städten zu sammeln, wurden auch ihre
+Regierungen fester gegliedert und formeller. Schon früh richtete der
+Herrscher einer Stadt Amtsgebäude ein, in denen die Geschäfte der Stadt
+geführt wurden: Bürger wurden angehört, Erlasse verkündet, Steuern erhoben
+und gelagert, und Diplomatie betrieben. Oft dienten diese Sitze staatlicher
+Macht zugleich als Wohnsitz des Herrschers. In ausreichend reichen Städten
+wurden diese Amtsgebäude oft zu PALÄSTEN, gewaltigen und eindrucksvollen
+Bauten, die bürgerlichen Stolz weckten und die Aura der Macht des Herrschers
+verstärkten.
+
+*PALACE2
+Ein Zentrum von Verwaltung und staatlicher Macht. Je weiter Städte von einem
+PALAST entfernt sind, desto wahrscheinlicher ist Korruption.
+
+*BARRACKS
+Krieg war in der Geschichte der Zivilisation ein wiederkehrendes Phänomen
+und plagt die Welt bis heute. Wer auf Krieg nicht vorbereitet ist, ob
+geistig, materiell oder technisch, fällt bald aus dem Zug. Durch die
+Geschichte war Krieg ein Hauptmittel der Ausdehnung. Roms Nachbarn traten
+dem Reich meist erst nach lebhaften Verhandlungen Mann gegen Mann mit
+römischen Legionen bei. Waren kriegführende Zivilisationen technisch und
+materiell ähnlich stark, siegte meist die Seite mit besserer Ausbildung,
+Organisation, Moral, Strategie und Taktik. Die Pflege dieser Fähigkeiten
+und Traditionen fand in den KASERNEN statt.
+
+*BARRACKS2
+Neue Einheiten sind Veteranen, wenn sie in einer Stadt mit KASERNE erzeugt
+werden; das gibt ihnen Vorteile im Kampf gegen ähnliche Nicht-Veteranen.
+
+*GRANARY
+Städte wurden erst möglich, als die Entwicklung der Landwirtschaft die
+Nahrungsversorgung reichlicher und verlässlicher machte. Doch die neuen
+Städte brauchten eine Möglichkeit, den Vorrat zu sichern; saisonale Ernten
+mussten für später gelagert werden. Der KORNSPEICHER diente der Lagerung
+und dem Schutz von Nahrungsüberschüssen. Neue Agrartechniken und Vorräte
+bedeuteten, dass nur ein Teil der Menschen Nahrung für alle erzeugen musste.
+Die übrigen konnten ihre Zeit darauf verwenden, Alphabet, Mathematik,
+Computerspiele und andere wichtige Fortschritte der Zivilisation zu ersinnen.
+
+*GRANARY2
+Nur 50% des Nahrungsspeichers werden für neue Bevölkerung benötigt. Schützt
+die Stadt vor der Katastrophe Hungersnot.
+
+*TEMPLE
+In der Antike hatte fast jede Stadt einen TEMPEL, der ihrem eigenen Gott
+geweiht war, sowie Tempel für andere Gottheiten. Auch wenn TEMPEL und Kirchen
+heute Orte der Andacht sind, galten sie Griechen, Römern und anderen vor allem
+als Wohnstätten ihrer Götter und Göttinnen. Hier wurde die Gottheit geehrt
+und verehrt, hier brachten die Gläubigen Gaben aus Nahrung, seltenen Metallen
+und Gewürzen. Ein TEMPEL in der Stadt beruhigte das Volk, und ein kluger
+Herrscher investierte oft in TEMPEL, sobald eine Stadt zu wachsen begann.
+
+*TEMPLE2
+Unzufriedene Menschen werden zufrieden (1 bei Zeremonieller Bestattung,
+2 bei Mystizismus). Dies verdoppelt sich mit dem Wunder Orakel.
+
+*MARKETPLACE
+Als Städte wuchsen und gediehen, trug der Handel zwischen Bauern, Handwerkern
+und Kunsthandwerkern in der Umgebung zur wirtschaftlichen Gesundheit der Stadt
+bei. Bald zeigte sich, dass ein zentraler Ort, ein MARKTPLATZ, dafür am besten
+geeignet war: Dort konnten sich Anbieter von Waren und Diensten sowie Käufer
+treffen. Zwischen dem Tumult und Treiben von Zelten und Ständen wurden
+Menschen, Waren und Vieh ausgestellt, gehandelt und verkauft. Je wichtiger der
+MARKTPLATZ wurde, desto stärker wuchs die Wirtschaftskraft der Stadt selbst.
+  
+*MARKETPLACE2
+Luxusgüter und Steuereinnahmen steigen um 50%.
+
+*LIBRARY
+Die Entwicklung der SCHRIFT bedeutete, dass das gesammelte Wissen einer
+Gesellschaft nicht länger auswendig gelernt und mündlich weitergegeben werden
+musste. Es konnte aufgeschrieben, gelagert und später nachgeschlagen werden.
+So entstand ein großer Schatz an Wissen in schriftlichen Texten, der in alle
+Welt übertragen werden konnte. Das Lagerhaus dieser Texte nannte man nach dem
+lateinischen Wort liber, Buch, eine BIBLIOTHEK. Die großen BIBLIOTHEKEN der
+Antike, besonders in Alexandria und Pergamon, wurden führende Zentren von
+Wissenschaft und Gelehrsamkeit. Bibliothekare sammelten aktiv die Bücher der
+Welt und beschleunigten so die Verbreitung neuen Wissens.
+
+*LIBRARY2
+Wissensproduktion steigt um 50%.
+
+*COURTHOUSE
+Als Königreiche und Reiche wuchsen, wurde es für den Herrscher immer schwerer,
+die entfernten Teile des Reiches zu kontrollieren. Damit die weit verstreuten
+Städte ihren erwarteten Anteil in die Kassen zahlten, wurden örtliche Richter
+und Gerichte eingesetzt. Im GERICHTSHAUS hörten die Vertreter des Herrschers
+die Klagen des Volkes an und sprachen Recht. Hier wurden die Gesetze für das
+soziale Zusammenleben festgelegt und durchgesetzt. Das GERICHTSHAUS senkte
+die Kriminalität und hielt so die Bevölkerung produktiv und zufrieden.
+Unzufriedene, unproduktive Bürger waren keine willigen Steuerzahler.
+
+*COURTHOUSE2
+Senkt Korruption in der Stadt um 50%.
+
+*CITY WALLS
+Vor der Entwicklung großer, öffentlich finanzierter, zentraler Regierungen,
+die starke nationale Armeen unterhalten konnten, mussten Städte meist selbst
+für ihren Schutz sorgen. Daher errichteten viele Zivilisationen MAUERN um ihre
+Städte, zum Schutz vor Eindringlingen aus anderen Regionen oder vor Banditen
+und Piraten. STADTMAUERN waren eine große Investition an Ressourcen und
+brauchten viele Jahre bis zur Vollendung. Doch diese MAUERN verwandelten die
+Stadt in eine Festung, die fast jedem Angriff standhalten konnte, außer dem
+entschlossensten.
+
+*CITY WALLS2
+Verteidigungsbonus = +200%; kein Bevölkerungsverlust bei Angriffen.
+
+*AQUEDUCT
+Ein großes Hindernis für das Wachstum früher Städte war der Wassermangel. Die
+Antwort darauf war oft ein AQUÄDUKT: ein großer, erhöhter Stein-"Kanal", der
+Wasser von nahen Hügeln direkt in die Stadt brachte. So wurde eine bequeme
+und verlässliche Versorgung mit frischem Wasser gesichert. AQUÄDUKTE ließen
+Städte zu nie gekannter Größe wachsen und verringerten zugleich Krankheiten,
+die durch Wasser übertragen wurden. Nun waren nicht nur größere Städte möglich;
+sie konnten auch an sonst unwirtlichen Orten liegen, etwa Los Angeles, das in
+einer Wüste liegt.
+
+*AQUEDUCT2
+Eine Stadt ohne AQUÄDUKT kann nicht über Größe 10 hinaus wachsen.
+
+*BANK
+Ein hoch entwickeltes Bankwesen ist ein Kennzeichen fortgeschrittener
+Zivilisation. BANKEN verleihen Geld an Einzelne oder Gruppen und stellen
+Kapital für Industrie- und Immobilienentwicklung bereit. BANKEN fördern das
+Wirtschaftswachstum einer Stadt oder Region, indem sie den Ausbau von
+Produktionsanlagen anregen. Außerdem können Menschen ihr überschüssiges Geld
+anlegen und dafür Zinsen erhalten.
+
+*BANK2
+Luxusgüter und Steuereinnahmen steigen um 50%.
+
+*CATHEDRAL
+In den dunklen Jahrhunderten nach dem Fall des Römischen Reiches in Europa
+war die christliche Kirche ein wichtiger Einfluss bei der Wiederbelebung der
+Zivilisation. Anderswo weiteten auch andere große Religionen ihren Einfluss
+aus. In Anerkennung der Bedeutung der Religion im örtlichen Leben bauten die
+größten europäischen Städte KATHEDRALEN, Zentren religiöser Lehre und Andacht,
+geleitet vom örtlichen Bischof. Nach ihrer Vollendung wurden KATHEDRALEN zu
+Zentren sozialen und kulturellen Lebens ebenso wie der religiösen Verehrung.
+Sie brachten ihrer Gemeinde großen Stolz, Stabilität und Tradition.
+
+*CATHEDRAL2
+Vier unzufriedene Menschen werden zufrieden.
+
+*UNIVERSITY
+Eine UNIVERSITÄT ist eine Einrichtung höherer Bildung mit Studiengängen für
+Menschen, die besondere Ausbildung suchen. Im Westen wurden UNIVERSITÄTEN
+zuerst im Mittelalter gegründet, meist in Städten mit wichtigen KATHEDRALEN,
+um Fragen zu studieren, die Kirchenführer interessierten. Die Lehrpläne
+weiteten sich rasch auf klassische Kunst, Literatur und Sprachen aus. Die
+moderne UNIVERSITÄT ist neben einer Bildungsstätte auch ein Motor der
+Forschung. Experimente werden in vielen Bereichen durchgeführt, darunter
+Waffen, Computer, Physik und Fußball.
+
+*UNIVERSITY2
+Wissensproduktion steigt um 50%.
+
+*COLOSSEUM
+Das ursprüngliche KOLOSSEUM in Rom bot Spektakel, die die landlosen und
+arbeitslosen Bürger unterhalten und ablenken sollten, die von massiven Gaben
+lebten. Als das Reich verfiel, spiegelte die wachsende Grausamkeit der
+Spektakel den moralischen Bankrott Roms. Im 20. Jahrhundert wurden KOLOSSEEN
+wiederbelebt, erneut zur Unterhaltung und Ablenkung. Heute sind die Darbietungen
+Musikkonzerte und Profisport. Die modernen Spektakel zeigen jedoch nicht die
+Barbarei der Antike, mit der bemerkenswerten Ausnahme von Eishockeyspielen.
+
+*COLOSSEUM2
+Drei unzufriedene Menschen in der Stadt werden zufrieden.
+
+*RECYCLING CNTR.
+Als Städte wuchsen, erzeugten sie immer mehr Abfall, bis die herkömmlichen
+Abladestellen schließlich voll waren. Dadurch begann Verschmutzung allmählich
+die Umwelt zu verderben. Um dies umzukehren, richteten viele Städte
+RECYCLINGZENTREN ein, in denen ein großer Teil dieses Mülls sortiert,
+eingeschmolzen oder sonst zu wiederverwendbaren Bestandteilen verringert
+wurde, die in die Herstellung neuer Produkte RECYCELT werden konnten. So wurde
+viel städtischer Müll zum Rohstoff für die Produktion, nicht zum Abfall auf der
+Deponie.
+
+*RECYCLING CNTR.2
+Senkt industrielle Verschmutzung in der Stadt um zwei Drittel.
+
+*FACTORY
+Die Entwicklung der FABRIK entstand aus der Spezialisierung der Arbeit, bei der
+jeder Arbeiter nur einen Schritt des Herstellungsprozesses lernte. Wurde er in
+dieser einen Aufgabe zum Fachmann, stieg die Gesamtproduktion der FABRIK. In
+Adam Smiths klassischem Beispiel aus Der Wohlstand der Nationen stellte eine
+FABRIK von Spezialisten weit mehr Nägel her als eine, in der jeder Arbeiter
+Nägel einzeln von Hand fertigte. Das FABRIKsystem war eine Voraussetzung der
+bald folgenden Industriellen Revolution.
+
+*FACTORY2
+Produktion steigt um 50%.
+
+*MFG. PLANT
+FERTIGUNGSWERKE waren große Industrieanlagen, die Waren aller Art erzeugten,
+vor allem langlebige Konsumgüter wie das AUTOMOBIL. Ein FERTIGUNGSWERK war im
+Wesentlichen eine große, hochentwickelte FABRIK. Neben Arbeitsteilung nutzte es
+austauschbare Teile, komplexe Maschinen und Fließbänder, um Effizienz und
+Größenvorteile zu gewinnen. Das Ergebnis waren sehr produktive Arbeiter und
+vergleichsweise niedrige Kosten.
+
+*MFG. PLANT2
+Produktion steigt um 100%.
+
+*POWER PLANT
+KRAFTWERKE verbrennen fossile Brennstoffe, vor allem Öl und Kohle, um Wärme
+und Dampf zur Stromerzeugung zu gewinnen. Elektrische Energie ist wichtig,
+weil nicht jede Fabrik eine Dampfmaschine für ihre Maschinen benötigt.
+Zentral erzeugter Strom wird über das Land verteilt und treibt überall Maschinen
+an. Doch die steigende Nachfrage nach Strom verlangt immer mehr fossile
+Brennstoffe; dies führte zu Luftverschmutzung und saurem Regen. Da die moderne
+Gesellschaft ohne Elektrizität nicht funktionieren kann, arbeiten Forscher an
+anderen Methoden der Energieerzeugung.
+
+*POWER PLANT2
+Fabrikproduktion steigt um 50%; starke Verschmutzung.
+
+*HYDRO PLANT
+Eine Alternative zur Stromerzeugung aus fossilen Brennstoffen ist das
+WASSERKRAFTWERK. Es nutzt die Energie fallenden Wassers, um Turbinen mit hoher
+Geschwindigkeit zu drehen und so Elektrizität zu erzeugen. Wo Wasserführung
+WASSERKRAFTWERKE sinnvoll macht, bieten sie sicheren, sauberen Strom ohne die
+Verschmutzung und den sauren Regen durch fossile Brennstoffe. Doch sie sind
+nicht problemlos. Sie stören die Umwelt, überfluten große Flächen hinter ihren
+Dämmen, unterbrechen den natürlichen Flusslauf und zerstören Lebensräume
+wilder Tierarten.
+
+*HYDRO PLANT2
+Fabrikproduktion steigt um 50%; vorhandene Verschmutzung wird gesenkt.
+
+*NUCLEAR PLANT
+KERNKRAFTWERKE nutzen atomare Brennstoffe durch KERNSPALTUNG, um Wärme und
+Dampf zur Stromerzeugung zu gewinnen. Da sie nicht die Verschmutzungsprobleme
+des Verbrennens fossiler Brennstoffe verursachen, wird KERNKRAFT als mögliche
+Alternative zu diesen "schmutzigen" Energiequellen untersucht. Die äußerst
+gefährliche Natur der KERNSPALTUNG bringt jedoch eigene Gefahren mit sich,
+darunter das Risiko einer Kernschmelze des Reaktors. Auch wenn die Zukunft der
+KERNKRAFT unklar ist, kann weitere Forschung an Fusionskraft zu einer sicheren
+und billigen Energiequelle führen.
+
+*NUCLEAR PLANT2
+Fabrikproduktion steigt um 50%; geringe Verschmutzung -- Risiko einer
+KERNschmelze!
+
+*MASS TRANSIT
+Wenige Jahrzehnte nach der Erfindung des AUTOMOBILS verschwanden Pferd und
+Kutsche aus den Straßen der Städte. Das AUTOMOBIL brachte jedoch neue Probleme:
+Luftverschmutzung und die Freisetzung großer Mengen Kohlenmonoxid in die
+Atmosphäre. Als Städte größer und voller wurden, wurde die Fahrt durch die
+Stadt schwierig und zeitraubend. Die Entwicklung des MASSENVERKEHRS mit
+Bussen, Straßenbahnen, U-Bahnen und Stadtbahnen verringerte den Verkehr und
+damit auch die Verschmutzung.
+
+*MASS TRANSIT2
+Senkt Verschmutzung durch Stadtbevölkerung.
+
+*SDI DEFENSE
+Die Geschichte des Krieges war ein Ringen zwischen Angriff und Verteidigung;
+mal hatte die eine Seite die Oberhand, mal die andere. Die Entwicklung von
+Atomwaffen schien erstmals zu zeigen, dass es eine Angriffswaffe gab, gegen
+die keine wirksame Verteidigung existierte. SDI (Strategische
+Verteidigungsinitiative) könnte jedoch die Antwort sein. Mit orbitalen
+Laserwaffen oder Tausenden raketengestarteter "Brilliant Pebbles", die mit
+Atomsprengkopf-Raketen in der Luft kollidieren sollen, bietet SDI-VERTEIDIGUNG
+die reale Möglichkeit, die Bedrohung durch Atomraketen aufzuheben.
+
+*SDI DEFENSE2
+Schützt die Stadt vor Atomwaffen.
+
+*SS MODULE
+Die MODULE sind die zentralen Teile deines Raumschiffs. Es gibt drei Arten:
+Wohnmodule, Lebenserhaltung und Solarzellen. Jedes Wohn-MODUL bietet Platz für
+10.000 Kolonisten. Jedes Lebenserhaltungs-MODUL liefert Nahrung und sonstige
+Bedürfnisse für die Kolonisten eines Wohn-MODULS. Ein Solar-MODUL liefert
+genug Energie für zwei andere MODULE. Ein erfolgreiches Raumschiff muss
+mindestens je ein MODUL jeder Art enthalten. Um mehr als die Mindestzahl an
+Kolonisten zu befördern, musst du zusätzliche MODUL-Sätze bauen.
+
+*SS MODULE2
+Wohn- und Lebenserhaltungs-MODULE haben 1.600 Tonnen Masse, Solar-MODULE
+400 Tonnen. Ein Raumschiff kann höchstens vier MODULE jeder Art enthalten.
+
+*SS COMPONENT
+Die KOMPONENTEN liefern den Antrieb deines Raumschiffs. Es gibt zwei Arten:
+Antrieb und Treibstoff. Antriebs-KOMPONENTEN sind die Triebwerke des Schiffs
+und liefern Beschleunigung und Bremsung für die Reise. Treibstoff-KOMPONENTEN
+sind Vorräte, jeder ausreichend für eine Antriebs-KOMPONENTE. Ein Raumschiff
+braucht mindestens je eine KOMPONENTE, doch für die beste Geschwindigkeit
+braucht es von beiden viel mehr.
+
+*SS COMPONENT2
+Raumschiff-KOMPONENTEN haben je 400 Tonnen Masse; ein Raumschiff kann
+höchstens acht KOMPONENTEN jeder Art enthalten.
+
+*SS STRUCTURAL
+Die STRUKTURteile deines Raumschiffs bilden den Rahmen, an dem alle anderen
+Teile befestigt werden. Es muss genug STRUKTUR geben, um die anderen Teile zu
+verbinden, sonst können sie nicht funktionieren. Ein MODUL oder eine
+KOMPONENTE, die nicht durch STRUKTURteile verbunden ist, erscheint in der
+Raumschiffanzeige in einem roten Kasten. Werden genug STRUKTURteile ergänzt,
+verschwindet der rote Kasten.
+
+*SS STRUCTURAL2
+Raumschiff-STRUKTURteile haben je 100 Tonnen Masse; ein Raumschiff kann bis
+zu neununddreißig STRUKTURteile enthalten.
+
+*PYRAMIDS
+Die PYRAMIDEN, von der vierten Dynastie ägyptischer Herrscher auf dem
+Gizeh-Plateau bei dem heutigen Kairo erbaut, stehen für den Gipfel alter
+ägyptischer Kulturleistung. Diese Wunder waren Grabstätten und Denkmäler für
+die Pharaonen und erforderten wohl Generationen und Zehntausende Arbeiter zu
+ihrer Vollendung. Für Herodot, der sie Jahrhunderte vor Christus besuchte,
+waren sie bereits alte Monumente. Sie sind das einzige der allgemein anerkannten
+Sieben Weltwunder der Antike, das noch steht. Der Bau der PYRAMIDEN setzte eine
+sehr stabile Regierung und eine gut organisierte Gesellschaft voraus.
+
+*PYRAMIDS2
+Erlaubt Regierungswechsel ohne Anarchie;
+Macht alle Regierungsformen verfügbar. Beide Effekte dauern
+bis zur Entwicklung des KOMMUNISMUS.
+
+*HANGING GARDENS
+Die HÄNGENDEN GÄRTEN von Babylon sollen eine Reihe aufsteigender, gestufter
+Gärten im Palast gewesen sein, gebaut, um einer Königin aus grünerer Heimat zu
+gefallen. Die Gärten enthielten allerlei Bäume, Sträucher und Ranken und
+wirkten wie ein großer grüner Berg in einer Stadt aus sonnengetrockneten
+Lehmziegeln. Schön anzusehen, kühl zum Verweilen und ein bemerkenswertes Werk
+der Ingenieurkunst, waren die Gärten ein besonderes Merkmal Babylons. Viele
+Besucher schrieben über sie, und sie waren eine große Quelle des Stolzes für
+die Menschen.
+
+*HANGING GARDENS2
++1 zufriedenes Gesicht in jeder Stadt, bis zur Entwicklung der ERFINDUNG.
+
+*COLOSSUS
+Der KOLOSS von Rhodos war eine Bronzestatue des Helios, Gottes der Sonne,
+errichtet nahe dem Hafen der Stadt. Er war über 100 Fuß hoch, etwa zwei Drittel
+der Höhe der Freiheitsstatue. Leider wurde er nur 56 Jahre nach seinem Bau von
+einem Erdbeben umgeworfen. Auf Rat eines Orakels ließ die Stadt die Statue
+liegen, wo sie gefallen war; dort blieb sie 900 Jahre, bis Muslime, die die
+Stadt 654 n. Chr. plünderten, sie als Altmetall verkauften. Reisende aus der
+ganzen antiken Welt kamen nach Rhodos, um den KOLOSS zu sehen, stehend wie
+auch nach seinem Fall.
+
+*COLOSSUS2
++1 Handel pro Handelsfeld der Stadt, bis zur Entwicklung der ELEKTRIZITÄT.
+
+*LIGHTHOUSE
+Der Pharos von Alexandria war ein marmorner Wachturm und LEUCHTTURM auf einer
+Insel im Hafen der Stadt. Der um 280 v. Chr. errichtete Bau soll 300 Fuß hoch
+gewesen sein. Hauptaufgabe des LEUCHTTURMS war es, ankommende Schiffe an einer
+sonst unmarkierten Küste zum Hafen zu führen. Historiker streiten, ob auf dem
+Turm Feuer brannten oder Spiegel Sonnenlicht reflektierten. Da Schiffe selten
+nachts an Küsten entlang segelten, war Licht nach Dunkelheit vielleicht kaum
+nötig. Der Pharos wurde im 14. Jahrhundert endgültig zerstört, nachdem mehrere
+Erdbeben ihn beschädigt hatten.
+
+*LIGHTHOUSE2
+Erhöht Seebewegung um 1 BP, bis zur Entwicklung des MAGNETISMUS.
+
+*GREAT LIBRARY
+Die Königliche GROSSE BIBLIOTHEK von Alexandria war eine der beiden wichtigsten
+Bibliotheken der Antike. Sie wurde um 300 v. Chr. von Ptolemaios I. gegründet
+und von späteren ptolemäischen Herrschern stark erweitert, als Alexandria das
+kulturelle Zentrum der hellenistischen Welt war. Die BIBLIOTHEK versuchte,
+Kopien aller bekannten bedeutenden Schriftrollen zu erhalten; angeblich enthielt
+sie über 700.000 Bände. Sie wurde ein Zentrum des Lernens und ein Speicher des
+Wissens. Religiöse Fanatiker zerstörten die BIBLIOTHEK schließlich 391 n. Chr.
+Nur Teile des Katalogs blieben und lassen ahnen, welche Schätze sie barg.
+
+*GREAT LIBRARY2
+Gibt dir jede Technologie, die zwei andere Zivilisationen besitzen, bis zur
+Entwicklung der UNIVERSITÄT.
+
+*ORACLE
+In der alten griechischen Religion war ein ORAKEL ein Priester oder eine
+Priesterin, die die Antwort eines Gottes auf Fragen übermittelte. Das Orakel
+deutete Träume, Handlungen entrückter Personen und Zeichen in den Eingeweiden
+geopferter Tiere. Das berühmteste ORAKEL war das Heiligtum Apollons in Delphi
+an den Hängen des Parnass. Griechen, Römer und andere befragten es jahrhundertelang
+zu Politik und privaten Dingen. Eine Priesterin namens Pythia sagte gegen
+Gebühr die Zukunft voraus. Diese ekstatischen Aussprüche (Orakel) wurden für
+ihre Mehrdeutigkeit berühmt oder berüchtigt.
+
+*ORACLE2
+Verdoppelt die Wirkung von Tempeln, bis zur Entwicklung der RELIGION.
+
+*GREAT WALL
+Die GROSSE MAUER Chinas, vom Gelben Meer bis zu den asiatischen Wüsten, wurde
+über ungefähr 1.800 Jahre hinweg gebaut. Die Bautätigkeit war nicht ständig,
+sondern nahm je nach Barbarenbedrohung aus dem Norden zu und ab. Die Mauer ist
+25 Fuß hoch und 12 Fuß dick; sie zieht sich 1.500 Meilen durch Nordchina. Der
+Zweck der GROSSEN MAUER war, Räubern die Flucht mit Beute zu erschweren und so
+Einfälle zu entmutigen. Sie sollte Eindringlinge nicht grundsätzlich fernhalten,
+denn sie ständig zu bemannen wäre unbezahlbar gewesen.
+
+*GREAT WALL2
+Andere Zivilisationen bieten dir immer Frieden an, bis zur Entwicklung von
+SCHIESSPULVER.
+
+*MAGELLAN'S EXPEDITION
+1519 segelte Ferdinand Magellan von Spanien aus los, um die gewürzreichen
+Molukken Indonesiens zu erreichen, indem er westwärts statt ostwärts fuhr.
+Obwohl der Anführer auf den Philippinen von Einheimischen getötet wurde,
+bewies MAGELLANS EXPEDITION schlüssig, dass die Welt rund war, und, wichtiger,
+dass Amerika tatsächlich eine Neue Welt war. MAGELLANS EXPEDITION war eine der
+großen Seereisen der Geschichte und inspirierte weitere Fahrten anderer
+Abenteurer. Ihre Entdeckungen eröffneten neue Welten und minderten die Gefahren
+für jene, die ihr folgten.
+
+*MAGELLAN'S EXPEDITION2
+Erhöht Seebewegung um 1 BP.
+
+*MICHELANGELO'S CHAPEL
+Die Schönheit der Sixtinischen Kapelle in Rom, deren Decke Michelangelo malte,
+ist seit langem ein Zeugnis für die Mischung aus starkem Glauben und Liebe zur
+Kunst, die Europa in der Renaissance prägte. Der Künstler widmete vier Jahre
+diesem Werk, das wichtige Szenen aus Genesis und anderen Büchern der Bibel
+zeigt. Wenige Besucher von MICHELANGELOS KAPELLE blieben unberührt von der
+Hingabe des Künstlers an sein Thema oder seinem Gespür für menschlichen Kampf,
+Leid und geistigen Triumph.
+
+*MICHELANGELO'S CHAPEL2
+Steigert die Wirkung von KATHEDRALEN, bis zur Entwicklung des KOMMUNISMUS.
+
+*COPERNICUS' OBSERVATORY
+Anfang des 16. Jahrhunderts entdeckte Nikolaus Kopernikus die heliozentrische
+Theorie der Planetenbewegung wieder, also die Ansicht -- heute als Tatsache
+bekannt -- dass die Planeten die Sonne umkreisen. Diese Theorie und die
+sorgfältigen wissenschaftlichen Daten, die Kopernikus in seinem OBSERVATORIUM,
+einem kleinen Raum in einem ostpreußischen Domturm, sammelte, legten das
+Fundament der modernen Astronomie. Die Methoden seiner Forschung und
+Beobachtung, die ihn zur richtigen Schlussfolgerung führten, waren zugleich
+eine Wiedergeburt der wissenschaftlichen Methode und ein wichtiger Schritt des
+Wissensfortschritts.
+
+*COPERNICUS' OBSERVATORY2
+Verdoppelt die Wissensproduktion der Stadt, bis zur Entwicklung des AUTOMOBILS.
+
+*SHAKESPEARE'S THEATRE
+Die meisten Stücke William Shakespeares wurden im 17. Jahrhundert zuerst im
+Londoner Globe Theatre aufgeführt. SHAKESPEARES THEATER bot den Menschen eine
+Ablenkung von ihren eigenen Sorgen und erfreute sie mit Tragödien, Komödien
+und Triumphen auf der Bühne. Ähnliche Theater, etwa die Comédie-Française in
+Paris und die Scala, das berühmte Opernhaus Mailands, erfüllten ähnliche
+Rollen, indem sie den Bürgern ihrer Städte Unterhaltung boten.
+
+*SHAKESPEARE'S THEATRE2
+Alle unzufriedenen Menschen in der Stadt sind zufrieden, bis zur Entwicklung
+der ELEKTRONIK.
+
+*ISAAC NEWTON'S COLLEGE
+Sir Isaac Newton, Mathematiker und Physiker, gilt vielen als der größte
+Wissenschaftler aller Zeiten. Ihm werden viele wichtige Entdeckungen
+zugeschrieben, darunter die Gesetze der Schwerkraft, das Farbspektrum des
+Lichts, die Infinitesimalrechnung, Strömungslehre und ein Verständnis der
+Gezeiten. Er baute auch das erste Spiegelteleskop. 32 Jahre lang hatte er eine
+wichtige Lehrstelle an der Universität Cambridge inne, setzte seine Forschung
+fort und unterrichtete eine Generation von Studenten.
+
+*ISAAC NEWTON'S COLLEGE2
+Erhöht den Nutzen von BIBLIOTHEKEN+UNIVERSITÄTEN, bis zur Entwicklung der
+KERNSPALTUNG.
+
+*J.S.BACH'S CATHEDRAL
+Nur wenige Komponisten waren produktiver oder beliebter als Johann Sebastian
+Bach, das bekannteste Mitglied einer begabten deutschen Musikerfamilie. Bach
+war vielleicht der feinste Vertreter des barocken Musikstils, wie seine vielen
+Chor- und Orchesterwerke zeigen. Zu Lebzeiten war Bach eher als Organist und
+Musikdirektor der Thomaskirche in Leipzig, Sachsen, berühmt. Seit seinem Tod
+hat seine Musik jedoch weltweit Publikum und Anerkennung gefunden.
+
+*J.S.BACH'S CATHEDRAL2
+Senkt unzufriedene Menschen auf dem Kontinent um 2 je Stadt.
+
+*DARWIN'S VOYAGE
+Charles Darwin, der wichtigste Vertreter der Theorie der organischen Evolution,
+sammelte einen Großteil seiner Belege für natürliche Auslese an Bord der H.M.S.
+Beagle auf ihrer fünfjährigen Weltreise. DARWINS REISE war nicht nur für die
+Begründung seiner Theorie wichtig, sondern auch für die strenge Anwendung der
+wissenschaftlichen Methode auf die Natur. Darwin veröffentlichte Theorie und
+Belege in seinem Hauptwerk Die Entstehung der Arten. Er war so vollständig und
+überzeugend, dass man ihn nur aus philosophischen, nicht aus wissenschaftlichen
+Gründen kritisierte. Seine Arbeit eröffnete viele neue Forschungswege und löste
+eine Welle biologischer Forschung aus.
+
+*DARWIN'S VOYAGE2
+Zwei sofortige Zivilisationsfortschritte.
+
+*HOOVER DAM
+Seit Jahrhunderten nutzt die Menschheit die Kraft rauschenden Wassers zum
+Antrieb von Wasserrädern; später erwies sich Wasser auch zur Stromerzeugung
+als nützlich. Um Flüsse zur Energiegewinnung zu nutzen, baute man Dämme für
+eine verlässliche Wasserversorgung. Dann wurde der Überlauf durch besondere
+Kammern geleitet, in denen das bewegte Wasser riesige Turbinen drehte und so
+Elektrizität erzeugte. Der HOOVER-DAMM war einer der ersten Wasserkraftdämme;
+er zähmte den Colorado River und brachte Strom in die Wüsten Arizonas.
+
+*HOOVER DAM2
+Versorgt alle Städte des Kontinents mit Wasserkraft.
+
+*WOMEN'S SUFFRAGE
+Nach vielen Jahren des Kampfes erhielten Frauen in den Vereinigten Staaten
+1920 mit dem 19. Zusatzartikel zur US-Verfassung das Wahlrecht. Der Erfolg des
+FRAUENWAHLRECHTS wurde durch die hervorragende Leistung von Frauen in
+traditionellen Männerberufen während des Ersten Weltkriegs beschleunigt. In
+Großbritannien erhielten Frauen 1928 das volle Wahlrecht. Seitdem haben Frauen
+dieses Recht in den meisten entwickelten Ländern gewonnen.
+
+*WOMEN'S SUFFRAGE2
+Senkt unzufriedene Menschen um einen je Einheit, die unter Republik oder
+Demokratie nicht in der Heimatstadt ist.
+
+*MANHATTAN PROJECT
+Die Atombombe gewann ihre Kraft aus der plötzlichen Freisetzung von Kernenergie
+nach der Spaltung schwerer Atomkerne. Das MANHATTAN-PROJEKT, ein intensives
+und teures Forschungsvorhaben, entwickelte im Zweiten Weltkrieg die ersten
+Atombomben. Für kurze Zeit besaßen die Vereinigten Staaten ein Monopol auf
+diese Waffen. Doch bis 1949 hatte auch die Sowjetunion sie entwickelt, teils
+dank Spionage, die viel Forschung des MANHATTAN-PROJEKTS beschaffte. Die
+daraus folgende nukleare Pattsituation scheint wesentlich für das Ausbleiben
+großer Kriege seitdem verantwortlich gewesen zu sein.
+
+*MANHATTAN PROJECT2
+Erlaubt den Bau von Atomwaffen.
+
+*UNITED NATIONS
+Nach dem Holocaust des Zweiten Weltkriegs gegründet, sind die VEREINTEN
+NATIONEN eine internationale Organisation zur Förderung von Frieden und
+Sicherheit. Sie versuchen auch, internationale Zusammenarbeit bei der Lösung
+von Weltproblemen in Umwelt, Wirtschaft und Kulturen zu erreichen. Selbst wenn
+ihre friedenserhaltende Rolle nicht immer wirksam war, blieben sie ein Forum
+für Debatten, in dem alle Nationen ihre Anliegen äußern können.
+
+*UNITED NATIONS2
+Andere Zivilisationen bieten dir immer Frieden an.
+
+*APOLLO PROGRAM
+Das APOLLO-PROGRAMM wurde von den Vereinigten Staaten als Antwort auf frühe
+sowjetische Erfolge im Weltraum begonnen und sollte Menschen auf den Mond
+bringen. Dies gelang dramatisch am 20. Juli 1969, als zwei amerikanische
+Astronauten erstmals die Mondoberfläche betraten. Die für das APOLLO-PROGRAMM
+entwickelte Technik erwies sich später als unschätzbar wertvoll für den Entwurf
+künftiger Raumfahrzeuge und orbitaler Plattformen.
+
+*APOLLO PROGRAM2
+Erlaubt den Bau von Raumschiffen. Macht alle Städte auf der Karte sichtbar.
+
+*SETI PROGRAM
+Ist dort draußen jemand? Sind wir allein? Die Suche nach außerirdischer
+Intelligenz (SETI), in den USA in den letzten Jahrzehnten des 20. Jahrhunderts
+zumindest offiziell begonnen, war zunächst nicht erfolgreich darin, die
+Anwesenheit anderen intelligenten Lebens im Universum nachzuweisen. Die in das
+Vorhaben gesteckte Forschung brachte jedoch viele nützliche Nebenergebnisse
+für Astronomie, Telekommunikation und andere Hightech-Bereiche.
+
+*SETI PROGRAM2
+Erhöht Wissensproduktion in allen Städten um 50%.
+
+*CURE FOR CANCER
+Krebs bleibt trotz gewaltiger Ausgaben für eine HEILUNG eine furchtbare und
+tödliche Plage des Lebens. Wir haben gelernt, dass es viele Krebsarten gibt und
+viele Faktoren ihn auslösen können, doch bisher entzieht sich uns ein Mittel
+gegen diese Geißel. Eine HEILUNG VON KREBS würde Leid und Angst in unermesslichem
+Ausmaß beenden und Millionen Menschen, die sonst verdammt wären, Jahre glücklichen
+und produktiven Lebens schenken.
+
+*CURE FOR CANCER2
++1 glücklicher Bürger in jeder Stadt.
+
+*END

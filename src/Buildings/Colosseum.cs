@@ -17,6 +17,7 @@ namespace CivOne.Buildings
 		public Colosseum() : base(10, 4)
 		{
 			Name = "Colosseum";
+			TranslatedName = Translate("Colosseum");
 			RequiredTech = new Construction();
 			SetIcon(3, 0, false);
 			SetSmallIcon(2, 3);

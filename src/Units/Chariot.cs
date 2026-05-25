@@ -18,6 +18,7 @@ namespace CivOne.Units
 		{
 			Type = UnitType.Chariot;
 			Name = "Chariot";
+			TranslatedName = Translate("Chariot");
 			RequiredTech = new TheWheel();
 			ObsoleteTech = new Chivalry();
 			SetIcon('D', 0, 2);

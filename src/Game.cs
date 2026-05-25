@@ -19,6 +19,7 @@ using CivOne.Buildings;
 using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.IO;
+using CivOne.IO.Text;
 using CivOne.Screens;
 using CivOne.Screens.Reports;
 using CivOne.Screens.Services;
@@ -251,7 +252,8 @@ namespace CivOne
 				// In higher dificulties, does the civ get more units and techs?
 			}
 
-			GameTask.Insert(Message.Advisor(Advisor.Defense, false, destroyed.Name, "civilization", "destroyed", $"by {destroyedBy.NamePlural}!"));
+			GameTask.Insert(Message.Advisor(Advisor.Defense, false,
+				TranslateFormattedArray("{0}\ncivilization\ndestroyed\nby {1}!", destroyed.Name, destroyedBy.NamePlural)));
 		}
 
 		internal byte PlayerNumber(Player player)
@@ -372,7 +374,7 @@ namespace CivOne
 				PlaySound("wintune");
 
 				GameTask conquest;
-				GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has conquered", "the entire planet!"));
+				GameTask.Enqueue(Message.Newspaper(null, TranslateArray("Your civilization\nhas conquered\nthe entire planet!")));
 				GameTask.Enqueue(conquest = Show.Screen<Conquest>());
 				conquest.Done += (s, a) => _ = EndGameServiceFactory.CreateForHuman().HandleConquestAsync();
 			}
@@ -420,9 +422,9 @@ namespace CivOne
 			}
 
 			if (Game.InstantAdvice && CurrentPlayer == HumanPlayer && (Common.TurnToYear(Game.GameTurn) == -3600 || Common.TurnToYear(Game.GameTurn) == -2800))
-				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFile.Instance.GetGameText("HELP/HELP1")));
+				GameTask.Enqueue(Message.Help(Translate("--- Civilization Note ---"), TextFileFactory.Get().GetGameText("HELP/HELP1")));
 			else if (Game.InstantAdvice && CurrentPlayer == HumanPlayer && (Common.TurnToYear(Game.GameTurn) == -3200 || Common.TurnToYear(Game.GameTurn) == -2400))
-				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFile.Instance.GetGameText("HELP/HELP2")));
+				GameTask.Enqueue(Message.Help(Translate("--- Civilization Note ---"), TextFileFactory.Get().GetGameText("HELP/HELP2")));
 		}
 
 		private bool CheckSpaceVitory()
@@ -442,12 +444,12 @@ namespace CivOne
 				{
 					PlaySound("wintune");
 
-					GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has reached", "Alpha Centauri!"));
+					GameTask.Enqueue(Message.Newspaper(null, TranslateArray("Your civilization\nhas reached\nAlpha Centauri!")));
 					_ = EndGameServiceFactory.CreateForHuman().HandleAlphaCentauriAsync();
 				}
 				else
 				{
-					GameTask.Enqueue(Message.Newspaper(null, $"{player.TribeName} space ship", "has reached", "Alpha Centauri!"));
+					GameTask.Enqueue(Message.Newspaper(null, TranslateFormattedArray("{0} space ship\nhas reached\nAlpha Centauri!", player.TribeName)));
 					_ = EndGameServiceFactory.CreateForHuman().HandleDefeatAsync();
 				}
 
@@ -467,7 +469,7 @@ namespace CivOne
 			globalWarmingScourgeService.UnleashScourgeOfPollution();
 			globalWarmingService.RefreshPollutionState();
 
-			GameTask.Enqueue(Message.Newspaper(null, "Global temperature", "rises! Icecaps melt.", "Severe Drought."));
+			GameTask.Enqueue(Message.Newspaper(null, TranslateArray("Global temperature\nrises! Icecaps melt.\nSevere Drought.")));
 		}
 
 		private void AdvancePeaceTurns()

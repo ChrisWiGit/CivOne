@@ -17,6 +17,7 @@ namespace CivOne.Buildings
 		public NuclearPlant() : base(16, 2)
 		{
 			Name = "Nuclear Plant";
+			TranslatedName = Translate("Nuclear Plant");
 			RequiredTech = new NuclearPower();
 			SetIcon(4, 3, true);
 			SetSmallIcon(4, 0);

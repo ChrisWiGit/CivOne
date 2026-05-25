@@ -59,7 +59,7 @@ namespace CivOne.Screens.Dialogs
 
 			foreach (IAdvance advance in _advances)
 			{
-				_menu.Items.Add(advance.Name).OnSelect((s, a) => Steal(advance));
+				_menu.Items.Add(advance.TranslatedName).OnSelect((s, a) => Steal(advance));
 			}
 
 			AddMenu(_menu);

@@ -43,7 +43,7 @@ namespace CivOne.Screens.Reports
 
 					this.DrawText(leaderLine, 0, 5, OffsetX + 8, yy + 3)
 						.DrawText(leaderLine, 0, 15, OffsetX + 8, yy + 2)
-						.DrawText(TranslateFormatted("{0}, {1}$, {2} Units.", player.Government.Name, player.Gold, unitCount), 0, colour, OffsetX + 160, yy + 2);
+						.DrawText(TranslateFormatted("{0}, {1}$, {2} Units.", player.Government.TranslatedName, player.Gold, unitCount), 0, colour, OffsetX + 160, yy + 2);
 
 					if (!player.IsHuman)
 					{
@@ -77,7 +77,7 @@ namespace CivOne.Screens.Reports
 			this.DrawText(Translate("Capital:"), 0, 9, OffsetX + 16, (y += fontHeight + 4))
 				.DrawText(player.GetCapitalName(), 0, 15, OffsetX + 63, y)
 				.DrawText(Translate("Government:"), 0, 9, OffsetX + 16, (y += fontHeight))
-				.DrawText(player.Government.Name, 0, 15, OffsetX + 83, y)
+				.DrawText(player.Government.TranslatedName, 0, 15, OffsetX + 83, y)
 				.DrawText(Translate("Treasury:"), 0, 9, OffsetX + 16, (y += fontHeight))
 				.DrawText(TranslateFormatted("{0}$", player.Gold), 0, 15, OffsetX + 73, y)
 				.DrawText(Translate("Military:"), 0, 9, OffsetX + 16, (y += fontHeight))

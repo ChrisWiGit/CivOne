@@ -64,17 +64,17 @@ namespace CivOne.Screens
 		
 		private void MenuDifficulty()
 		{
-			AddMenu(CreateMenu("Difficulty Level...", SetDifficulty, _menuItemsDifficulty));
+			AddMenu(CreateMenu(Translate("Difficulty Level..."), SetDifficulty, _menuItemsDifficulty));
 		}
 		
 		private void MenuCompetition()
 		{
-			AddMenu(CreateMenu("Level of Competition...", SetCompetition, _menuItemsCompetition));
+			AddMenu(CreateMenu(Translate("Level of Competition..."), SetCompetition, _menuItemsCompetition));
 		}
 		
 		private void MenuTribe()
 		{
-			Menu menu = CreateMenu("Pick your tribe...", SetTribe, _menuItemsTribes);
+			Menu menu = CreateMenu(Translate("Pick your tribe..."), SetTribe, _menuItemsTribes);
 			if (_menuItemsTribes.Length > 14)
 			{
 				menu.FontId = 1;
@@ -204,7 +204,7 @@ namespace CivOne.Screens
 				this.AddLayer(DifficultyPicture, OffsetX + 134, OffsetY + 20);
 				
 				int yy = OffsetY + 81;
-				foreach (string textLine in TextFile.Instance.GetGameText("KING/INIT"))
+				foreach (string textLine in GetGameText("KING/INIT"))
 				{
 					string line = textLine.Replace("$RPLC1", Human.LeaderName).Replace("$US", Human.TribeNamePlural).Replace("^", "");
 					this.DrawText(line, 0, 5, OffsetX + 88, yy);
@@ -215,11 +215,11 @@ namespace CivOne.Screens
 				int i = 0;
 				foreach (IAdvance advance in Human.Advances.OrderBy(a => a.Id))
 				{
-					sb.Append($"{advance.Name}, ");
+					sb.Append($"{advance.TranslatedName}, ");
 					i++;
 					if (i % 2 == 0) sb.Append("|");
 				}
-				sb.Append("and Roads.");
+				sb.Append(Translate("and Roads."));
 
 				foreach (string line in sb.ToString().Split('|'))
 				{
@@ -250,14 +250,14 @@ namespace CivOne.Screens
 				if (Game.InstantAdvice)
 				{
 					GameTask.Enqueue(Show.InterfaceHelp);
-					GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFile.Instance.GetGameText("HELP/FIRSTMOVE")));
+					GameTask.Enqueue(Message.Help(Translate("--- Civilization Note ---"), GetGameText("HELP/FIRSTMOVE")));
 				}
 				return true;
 			}
 			
 			if (_tribe != -1 && _tribeName == null)
 			{
-				DrawInputBox("Name of your Tribe...");
+				DrawInputBox(Translate("Name of your Tribe..."));
 				return true;
 			}
 			
@@ -280,7 +280,7 @@ namespace CivOne.Screens
 				if (_tribe != -1 && _leaderName == null)
 				{
 					this.DrawText(_tribeNamePlural, 6, 15, OffsetX + 47, OffsetY + 92, TextAlign.Center);
-					DrawInputBox("Your Name...");
+					DrawInputBox(Translate("Your Name..."));
 				}
 			}
 			
@@ -328,6 +328,33 @@ namespace CivOne.Screens
 				_introDirty = true;
 			}
 		}
+
+		private string[] BuildDifficultyMenuItems()
+		{
+			string easiest = TranslateFormatted("{0} (easiest)", Common.DifficultyName(0));
+			string toughestEnabled = TranslateFormatted("{0} (toughest)", Common.DifficultyName(5));
+			string toughestDefault = TranslateFormatted("{0} (toughest)", Common.DifficultyName(4));
+
+			if (Settings.Instance.DeityEnabled)
+			{
+				return [
+					easiest,
+					Common.DifficultyName(1),
+					Common.DifficultyName(2),
+					Common.DifficultyName(3),
+					Common.DifficultyName(4),
+					toughestEnabled
+				];
+			}
+
+			return [
+				easiest,
+				Common.DifficultyName(1),
+				Common.DifficultyName(2),
+				Common.DifficultyName(3),
+				toughestDefault
+			];
+		}
 		
 		public NewGame() : base(MouseCursor.Pointer)
 		{
@@ -344,12 +371,9 @@ namespace CivOne.Screens
 			
 			Palette = _background.Palette.Copy();
 			this.AddLayer(_background);
-			
-			if (Settings.Instance.DeityEnabled)
-				_menuItemsDifficulty = new[] { "Chieftain (easiest)", "Warlord", "Prince", "King", "Emperor", "Deity (toughest)" };
-			else
-				_menuItemsDifficulty = new[] { "Chieftain (easiest)", "Warlord", "Prince", "King", "Emperor (toughest)" };
-			_menuItemsCompetition = Enumerable.Range(3, 5).Reverse().Select(i => string.Format("{0} Civilizations", i)).ToArray();
+
+			_menuItemsDifficulty = BuildDifficultyMenuItems();
+			_menuItemsCompetition = Enumerable.Range(3, 5).Reverse().Select(i => TranslateFormatted("{0} Civilizations", i)).ToArray();
 		}
 	}
 }

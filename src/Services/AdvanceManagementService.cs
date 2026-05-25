@@ -10,7 +10,7 @@ namespace CivOne.Services
 	internal class AdvanceManagementService : IAdvanceManagementService
 	{
 		private static readonly IAdvance[] AllAdvancesSorted = 
-			Reflect.GetAdvances().OrderBy(x => x.Name).ToArray();
+			Reflect.GetAdvances().OrderBy(x => x.TranslatedName).ToArray();
 
 		public IAdvance[] GetAllAdvances() => AllAdvancesSorted;
 

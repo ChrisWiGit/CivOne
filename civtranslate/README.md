@@ -72,6 +72,86 @@ Run from repository root or any working directory.
 dotnet build ./civtranslate/civtranslate.csproj
 ```
 
+## Recommended translation workflow
+
+Use this end-to-end flow when creating a new language file.
+
+### 1. Generate or update `all.txt`
+
+From repository root, generate the source translation file.
+
+```sh
+./translate.sh
+```
+
+```powershell
+.\translate.ps1
+```
+
+This writes or updates `translation/all.txt`.
+
+### 2. Create your language file from `all.txt`
+
+Copy or rename `translation/all.txt` to `translation/civ_<mylang>.txt`.
+
+Examples:
+
+- `civ_german.txt`
+- `civ_french.txt`
+
+If your language also uses other text files, rename them with the same language suffix pattern.
+For example, rename `story.txt` to `story_<mylang>.txt`.
+
+### 3. Translate values using the interactive roundtrip
+
+Use `civtranslate-interactive` with your language file.
+
+```sh
+dotnet run --project ./civtranslate-interactive/civtranslate-interactive.csproj -- ./translation/civ_german.txt
+```
+
+Or use helper scripts from repository root.
+
+```powershell
+.\translate-interactive.ps1
+.\translate-interactive.ps1 civ_german.txt
+.\translate-interactive.ps1 translation\civ_german.txt
+```
+
+```sh
+./translate-interactive.sh
+./translate-interactive.sh civ_german.txt
+./translate-interactive.sh translation/civ_german.txt
+```
+
+Passing only a file name (for example `civ_german.txt`) resolves it from the repository `translation` folder.
+
+Roundtrip behavior:
+
+1. Creates a values work file next to your language file, for example `civ_german.values.txt`.
+2. Waits for Enter so you can translate values in that work file.
+3. Reads translated values back and writes them into the original `key=value` language file.
+4. Preserves key order and comment lines.
+
+Safety behavior:
+
+- The values work file must not exist before start.
+- If it already exists, the tool fails and leaves the language file unchanged.
+
+### 4. Copy final files to the active CivOne profile
+
+Copy generated translation `.txt` files from repository `translation` to the active CivOne translations folder.
+
+```sh
+./copy-translations.sh
+```
+
+```powershell
+.\copy-translations.ps1
+```
+
+`copy-translations` excludes `all.txt` and copies all other `.txt` files.
+
 ## Example output
 
 ```

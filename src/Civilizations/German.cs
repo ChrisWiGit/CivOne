@@ -9,34 +9,33 @@
 
 using CivOne.Enums;
 using CivOne.Leaders;
+using CivOne.Services;
 
 namespace CivOne.Civilizations
 {
 	internal class German : BaseCivilization<Frederick>
 	{
-		public German() : base(Civilization.Germans, "German", "Germans", "fred")
+		public German() : base(Civilization.Germans, TranslationServiceFactory.GetCurrent().Translate("German"), TranslationServiceFactory.GetCurrent().Translate("Germans"), "fred")
 		{
 			StartX = 38;
 			StartY = 15;
-			CityNames = new[]
-			{
-				"Berlin",
-				"Leipzig",
-				"Hamburg",
-				"Bremen",
-				"Frankfurt",
-				"Bonn",
-				"Nuremberg",
-				"Cologne",
-				"Hannover",
-				"Munich",
-				"Stuttgart",
-				"Heidelberg",
-				"Salzburg",
-				"Konigsberg",
-				"Dortmond",
-				"Brandenburg"
-			};
+			CityNames = TranslateArray(
+				"Berlin\n" +
+				"Leipzig\n" +
+				"Hamburg\n" +
+				"Bremen\n" +
+				"Frankfurt\n" +
+				"Bonn\n" +
+				"Nuremberg\n" +
+				"Cologne\n" +
+				"Hannover\n" +
+				"Munich\n" +
+				"Stuttgart\n" +
+				"Heidelberg\n" +
+				"Salzburg\n" +
+				"Konigsberg\n" +
+				"Dortmond\n" +
+				"Brandenburg");
 		}
 	}
 }

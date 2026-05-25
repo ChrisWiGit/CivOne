@@ -156,7 +156,7 @@ namespace CivOne.Units
 			if (!tile.TerrainAllowsIrrigation())
 			{
 				if (Human == Owner)
-					GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText("ERROR/NOIRR")));
+					GameTask.Enqueue(Message.Error(Translate("-- Civilization Note --"), GetGameText("ERROR/NOIRR")));
 				return false;
 			}
 
@@ -169,7 +169,7 @@ namespace CivOne.Units
 			}
 
 			if (Human == Owner)
-				GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText("ERROR/NOIRR")));
+				GameTask.Enqueue(Message.Error(Translate("-- Civilization Note --"), GetGameText("ERROR/NOIRR")));
 			return false;
 		}
 
@@ -329,37 +329,37 @@ namespace CivOne.Units
 		}
 
 		private MenuItem<int> MenuFoundCity() => MenuItem<int>
-			.Create((Map[X, Y].City == null) ? "Found New City" : "Add to City")
+			.Create((Map[X, Y].City == null) ? Translate("Found New City") : Translate("Add to City"))
 			.SetShortcut("b")
 			.OnSelect((s, a) => GameTask.Enqueue(Orders.FoundCity(this)));
 
 		private MenuItem<int> MenuBuildRoad() => MenuItem<int>
-			.Create((Map[X, Y].Road) ? "Build RailRoad" : "Build Road")
+			.Create((Map[X, Y].Road) ? Translate("Build RailRoad") : Translate("Build Road"))
 			.SetShortcut("r")
 			.OnSelect((s, a) => BuildRoad());
 
 		private MenuItem<int> MenuBuildIrrigation() => MenuItem<int>
-			.Create((Map[X, Y] is Forest) ? "Change to Plains" :
-					((Map[X, Y] is Jungle) || (Map[X, Y] is Swamp)) ? "Change to Grassland" :
-					"Build Irrigation")
+			.Create((Map[X, Y] is Forest) ? Translate("Change to Plains") :
+					((Map[X, Y] is Jungle) || (Map[X, Y] is Swamp)) ? Translate("Change to Grassland") :
+					Translate("Build Irrigation"))
 			.SetShortcut("i")
 			.SetEnabled(Map[X, Y].AllowIrrigation() || Map[X, Y].IrrigationChangesTerrain())
 			.OnSelect((s, a) => GameTask.Enqueue(Orders.BuildIrrigation(this)));
 
 		private MenuItem<int> MenuBuildMines() => MenuItem<int>
 			.Create(((Map[X, Y] is Jungle) || (Map[X, Y] is Grassland) || (Map[X, Y] is Plains) || (Map[X, Y] is Swamp)) ?
-					"Change to Forest" : "Build Mines")
+					Translate("Change to Forest") : Translate("Build Mines"))
 			.SetShortcut("m")
 			.OnSelect((s, a) => GameTask.Enqueue(Orders.BuildMines(this)));
 
 		private MenuItem<int> MenuBuildFortress() => MenuItem<int>
-			.Create("Build fortress")
+			.Create(Translate("Build fortress"))
 			.SetShortcut("f")
 			.SetEnabled(Game.CurrentPlayer.HasAdvance<Construction>())
 			.OnSelect((s, a) => GameTask.Enqueue(Orders.BuildFortress(this)));
 
 		private MenuItem<int> MenuClearPollution() => MenuItem<int>
-			.Create("Clear Pollution")
+			.Create(Translate("Clear Pollution"))
 			.SetShortcut("p")
 			.SetEnabled(Map[X, Y].Pollution)
 			.OnSelect((s, a) => GameTask.Enqueue(Orders.ClearPollution(this)));
@@ -430,6 +430,7 @@ namespace CivOne.Units
 		{
 			Type = UnitType.Settlers;
 			Name = "Settlers";
+			TranslatedName = Translate("Settlers");
 			RequiredTech = null;
 			ObsoleteTech = null;
 			SetIcon('D', 1, 1);

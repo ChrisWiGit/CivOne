@@ -31,6 +31,7 @@ namespace CivOne.Units
 		{
 			Type = UnitType.Nuclear;
 			Name = "Nuclear";
+			TranslatedName = Translate("Nuclear");
 			RequiredTech = new Rocketry();
 			RequiredWonder = new ManhattanProject();
 			ObsoleteTech = null;

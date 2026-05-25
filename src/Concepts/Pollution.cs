@@ -14,6 +14,8 @@ namespace CivOne.Concepts
 		public Pollution()
 		{
 			Name = "Pollution";
+			Name = "Pollution";
+			TranslatedName = Translate("Pollution");
 		}
 	}
 }

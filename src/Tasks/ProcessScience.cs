@@ -87,7 +87,9 @@ namespace CivOne.Tasks
 			}
 			else
 			{
-				discovery = new Newspaper(null, new string[] { $"{_player.TribeName} wise men", "discover the secret", $"of {_player.CurrentResearch.Name}!" }, showGovernment: false);
+				discovery = new Newspaper(null, 
+					TranslateFormattedArray("{0} wise men\ndiscover the secret\nof {1}!", _player.TribeName, _player.CurrentResearch.TranslatedName),
+					showGovernment: false);
 			}
 			discovery.Closed += ClosedDiscovery;
 			Common.AddScreen(discovery);

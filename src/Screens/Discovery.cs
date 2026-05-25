@@ -13,6 +13,7 @@ using CivOne.Graphics;
 
 namespace CivOne.Screens
 {
+	// NO [ScreenResizeable] - it auto-resizes and redraws itself on each update, so no need to handle resize events separately
 	internal class Discovery : BaseScreen
 	{
 		private const float FADE_STEP = 0.025f;
@@ -65,19 +66,14 @@ namespace CivOne.Screens
 		{
             _advance = advance;
 			var modern = Human.HasAdvance<Electricity>() && advance.Not<Electricity>();
-			string scientistName = Human.HasAdvance<Invention>() && (advance.Not<Invention>()) ? "scientists" : "wise men";
+			string scientistName = Human.HasAdvance<Invention>() && (advance.Not<Invention>()) ? Translate("scientists") : Translate("wise men");
 
 			Picture background = Resources[$"DISCOVR{(modern ? 2 : 1)}"];
 			
 			Palette = background.Palette;
 			this.Clear(32).AddLayer(background);
 
-			string[] text = 
-            {
-				$"{Human.Civilization.Name} {scientistName}",
-				"discover the secret",
-				$"of {advance.Name}!"
-			};
+			string[] text = TranslateFormattedArray("{0} {1}\ndiscover the secret\nof {2}!", Human.Civilization.Name, scientistName, advance.TranslatedName);
 
 			
 			for (int i = 0; i < text.Length; i++)

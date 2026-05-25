@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public SteamEngine() : base(6, 1, 2, Advance.Physics, Advance.Invention)
 		{
 			Name = "Steam Engine";
+			TranslatedName = Translate("Steam Engine");
 			Type = Advance.SteamEngine;
 		}
 	}

@@ -19,6 +19,7 @@ namespace CivOne.Units
 		{
 			Type = UnitType.Militia;
 			Name = "Militia";
+			TranslatedName = Translate("Militia");
 			RequiredTech = null;
 			ObsoleteTech = new Gunpowder();
 			SetIcon('C', 0, 2);

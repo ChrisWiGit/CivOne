@@ -31,6 +31,7 @@ namespace CivOne.Units
 		{
 			Type = UnitType.Frigate;
 			Name = "Frigate";
+			TranslatedName = Translate("Frigate");
 			RequiredTech = new Magnetism();
 			ObsoleteTech = null;
 			SetIcon('B', 1, 0);

@@ -17,6 +17,7 @@ namespace CivOne.Buildings
 		public Barracks() : base(4)
 		{
 			Name = "Barracks";
+			TranslatedName = Translate("Barracks");
 			RequiredTech = null;
 			ObsoleteTechs = [new Gunpowder(), new Combustion()];
 			SetIcon(0, 0, true);

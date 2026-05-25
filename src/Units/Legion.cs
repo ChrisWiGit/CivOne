@@ -18,6 +18,7 @@ namespace CivOne.Units
 		{
 			Type = UnitType.Legion;
 			Name = "Legion";
+			TranslatedName = Translate("Legion");
 			RequiredTech = new IronWorking();
 			ObsoleteTech = new Conscription();
 			SetIcon('E', 1, 0);

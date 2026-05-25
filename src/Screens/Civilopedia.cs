@@ -25,12 +25,12 @@ namespace CivOne.Screens
 	[ScreenResizeable]
 	internal class Civilopedia : BaseScreen
 	{
-		internal static ICivilopedia[] Advances = Reflect.GetCivilopediaAdvances().OrderBy(x => x.Name).ToArray();
-		internal static ICivilopedia[] Improvements = Reflect.GetCivilopediaCityImprovements().OrderBy(x => x.Name).ToArray();
-		internal static ICivilopedia[] Units = Reflect.GetCivilopediaUnits().OrderBy(x => x.Name).ToArray();
-		internal static ICivilopedia[] TerrainType = Reflect.GetCivilopediaTerrainTypes().OrderBy(x => x.Name).ToArray();
-		internal static ICivilopedia[] Misc = Reflect.GetConcepts().OrderBy(x => x.Name).ToArray();
-		internal static ICivilopedia[] Complete = Reflect.GetCivilopediaAll().OrderBy(x => x.Name).ToArray();
+		internal static ICivilopedia[] Advances = Reflect.GetCivilopediaAdvances().OrderBy(x => x.TranslatedName).ToArray();
+		internal static ICivilopedia[] Improvements = Reflect.GetCivilopediaCityImprovements().OrderBy(x => x.TranslatedName).ToArray();
+		internal static ICivilopedia[] Units = Reflect.GetCivilopediaUnits().OrderBy(x => x.TranslatedName).ToArray();
+		internal static ICivilopedia[] TerrainType = Reflect.GetCivilopediaTerrainTypes().OrderBy(x => x.TranslatedName).ToArray();
+		internal static ICivilopedia[] Misc = Reflect.GetConcepts().OrderBy(x => x.TranslatedName).ToArray();
+		internal static ICivilopedia[] Complete = Reflect.GetCivilopediaAll().OrderBy(x => x.TranslatedName).ToArray();
 		
 		private readonly ICivilopedia[] _pages;
 		private readonly ICivilopedia _singlePage;
@@ -55,20 +55,20 @@ namespace CivOne.Screens
 					.FillRectangle(60 + OffsetX, 2 + OffsetY, 200, 9, 15)
 					.FillRectangle(2 + OffsetX, 14 + OffsetY, 316, 184, 15);
 
-				this.DrawText("ENCYCLOPEDIA of CIVILIZATION", 0, 5, 67 + OffsetX, 4 + OffsetY)
-					.DrawText("ENCYCLOPEDIA of CIVILIZATION", 0, 10, 66 + OffsetX, 3 + OffsetY);
+				this.DrawText(Translate("ENCYCLOPEDIA of CIVILIZATION"), 0, 5, 67 + OffsetX, 4 + OffsetY)
+					.DrawText(Translate("ENCYCLOPEDIA of CIVILIZATION"), 0, 10, 66 + OffsetX, 3 + OffsetY);
 
 				if (_pages.Length > 78)
 				{
-					this.DrawText("MORE", 0, 12, 8 + OffsetX, 4 + OffsetY);
+					this.DrawText(Translate("MORE"), 0, 12, 8 + OffsetX, 4 + OffsetY);
 				}
-				this.DrawText("EXIT", 0, 12, 286 + OffsetX, 4 + OffsetY);
+				this.DrawText(Translate("EXIT"), 0, 12, 286 + OffsetX, 4 + OffsetY);
 
 				int xx = 10 + OffsetX, yy = 16 + OffsetY;
 				int columns = (int)Math.Ceiling((float)_pages.Length / 26);
 				for (int i = _startIndex; i < _pages.Length; i++)
 				{
-					string name = _pages[i].Name;
+					string name = _pages[i].TranslatedName;
 					if (columns >= 3 && name.Length >= 18) name = $"{name.Substring(0, 17)}.";
 					this.DrawText(name, 0, 5, xx, yy);
 
@@ -103,24 +103,24 @@ namespace CivOne.Screens
 			if (_singlePage == null) return;
 			
 			int titleX = 204, iconX = 8, iconY = 8;
-			string category = "(unknown)";
-			if (typeof(ITile).GetTypeInfo().IsAssignableFrom(_singlePage.GetType().GetTypeInfo())) { category = "Terrain Type"; iconX = 23; iconY = 4; }
-			else if (typeof(IBuilding).GetTypeInfo().IsAssignableFrom(_singlePage.GetType().GetTypeInfo())) { category = "City Improvement"; iconX = 36; iconY = 16; }
-			else if (typeof(IWonder).GetTypeInfo().IsAssignableFrom(_singlePage.GetType().GetTypeInfo())) { category = "Wonder of the World"; titleX = 160; }
-			else if (typeof(IUnit).GetTypeInfo().IsAssignableFrom(_singlePage.GetType().GetTypeInfo())) { category = "Military Units"; titleX = 224; }
-			else if (typeof(IAdvance).GetTypeInfo().IsAssignableFrom(_singlePage.GetType().GetTypeInfo())) { category = "Civilization Advance"; }
-			else if (typeof(IConcept).GetTypeInfo().IsAssignableFrom(_singlePage.GetType().GetTypeInfo())) { category = "Game Concepts"; titleX = 160; }
+			string category = Translate("(unknown)");
+			if (typeof(ITile).GetTypeInfo().IsAssignableFrom(_singlePage.GetType().GetTypeInfo())) { category = Translate("Terrain Type"); iconX = 23; iconY = 4; }
+			else if (typeof(IBuilding).GetTypeInfo().IsAssignableFrom(_singlePage.GetType().GetTypeInfo())) { category = Translate("City Improvement"); iconX = 36; iconY = 16; }
+			else if (typeof(IWonder).GetTypeInfo().IsAssignableFrom(_singlePage.GetType().GetTypeInfo())) { category = Translate("Wonder of the World"); titleX = 160; }
+			else if (typeof(IUnit).GetTypeInfo().IsAssignableFrom(_singlePage.GetType().GetTypeInfo())) { category = Translate("Military Units"); titleX = 224; }
+			else if (typeof(IAdvance).GetTypeInfo().IsAssignableFrom(_singlePage.GetType().GetTypeInfo())) { category = Translate("Civilization Advance"); }
+			else if (typeof(IConcept).GetTypeInfo().IsAssignableFrom(_singlePage.GetType().GetTypeInfo())) { category = Translate("Game Concepts"); titleX = 160; }
 			
 			if (!_icon) titleX = 160;
 			if (_singlePage.Icon != null && _icon)
 			{
 				this.AddLayer(_singlePage.Icon, iconX + OffsetX, iconY + OffsetY);
 			}
-			this.DrawText(_singlePage.Name.ToUpper(), 5, 5, titleX + OffsetX, 20 + OffsetY, TextAlign.Center)
+			this.DrawText(_singlePage.TranslatedName.ToUpper(), 5, 5, titleX + OffsetX, 20 + OffsetY, TextAlign.Center)
 				.DrawText(category, 6, 7, titleX + OffsetX, 36 + OffsetY, TextAlign.Center);
 			if (_pageNumber == 2 && _discovered)
 			{
-				this.DrawText("(Discovered)", 6, 7, titleX + OffsetX, 48 + OffsetY, TextAlign.Center);
+				this.DrawText(Translate("(Discovered)"), 6, 7, titleX + OffsetX, 48 + OffsetY, TextAlign.Center);
 			}
 		}
 		
@@ -213,7 +213,7 @@ namespace CivOne.Screens
 				if (args.X > xx + columnWidth) { i += 25; xx += columnWidth; continue; }
 				if (args.Y >= yy && args.Y <= yy + 7)
 				{
-					Log("Opening Civilopedia page: {0}", _pages[i].Name);
+					Log("Opening Civilopedia page: {0}", _pages[i].TranslatedName);
 					Common.AddScreen(new Civilopedia(_pages[i]));
 					return true;
 				}
@@ -227,39 +227,68 @@ namespace CivOne.Screens
 			}
 			return false;
 		}
+
+		private string TranslateTerrainName(string name)
+		{
+			return name switch
+			{
+				"Arctic" => Translate("Arctic"),
+				"Seals" => Translate("Seals"),
+				"Desert" => Translate("Desert"),
+				"Oasis" => Translate("Oasis"),
+				"Forest" => Translate("Forest"),
+				"Game" => Translate("Game"),
+				"Grassland" => Translate("Grassland"),
+				"Hills" => Translate("Hills"),
+				"Coal" => Translate("Coal"),
+				"Jungle" => Translate("Jungle"),
+				"Gems" => Translate("Gems"),
+				"Mountains" => Translate("Mountains"),
+				"Gold" => Translate("Gold"),
+				"Ocean" => Translate("Ocean"),
+				"Fish" => Translate("Fish"),
+				"Plains" => Translate("Plains"),
+				"Horses" => Translate("Horses"),
+				"River" => Translate("River"),
+				"Swamp" => Translate("Swamp"),
+				"Oil" => Translate("Oil"),
+				"Tundra" => Translate("Tundra"),
+				_ => name
+			};
+		}
 		
 		private void DrawTerrainTextValues(ref int y, string name, string food = null, string production = null, string trade = null, string foodIrrigation = null, string productionMining = null, string tradeRoads = null)
 		{
-			string foodFormat = "Food: {0} units.";
-			string productionFormat = "Production: {0} units.";
-			string tradeFormat = "Trade: {0}";
+			string foodFormat = Translate("Food: {0} units.");
+			string productionFormat = Translate("Production: {0} units.");
+			string tradeFormat = Translate("Trade: {0}");
 			
-			this.DrawText(name, 6, 1, 12 + OffsetX, y + OffsetY);
+			this.DrawText(TranslateTerrainName(name), 6, 1, 12 + OffsetX, y + OffsetY);
 			y += 8;
 			if (food != null)
 			{
 				if (foodIrrigation != null)
-					food = string.Format("{0} ({1} with Irrigation)", food, foodIrrigation);
+					food = TranslateFormatted("{0} ({1} with Irrigation)", food, foodIrrigation);
 				this.DrawText(string.Format(foodFormat, food), 6, 9, 16 + OffsetX, y + OffsetY);
 				y += 8;
 			}
 			if (production != null)
 			{
 				if (productionMining != null)
-					production = string.Format("{0} ({1} with Mining)", production, productionMining);
+					production = TranslateFormatted("{0} ({1} with Mining)", production, productionMining);
 				this.DrawText(string.Format(productionFormat, production), 6, 9, 16 + OffsetX, y + OffsetY);
 				y += 8;
 			}
 			if (trade != null)
 			{
 				if (tradeRoads != null)
-					trade = string.Format("{0} ({1} with Roads)", trade, tradeRoads);
+					trade = TranslateFormatted("{0} ({1} with Roads)", trade, tradeRoads);
 				this.DrawText(string.Format(tradeFormat, trade), 6, 9, 16 + OffsetX, y + OffsetY);
 				y += 8;
 			}			
 			if (food == null && production == null && trade == null)
 			{
-				this.DrawText("nothing", 6, 9, 16 + OffsetX, y + OffsetY);
+				this.DrawText(Translate("nothing"), 6, 9, 16 + OffsetX, y + OffsetY);
 				y += 8;
 			}
 			y += 4;
@@ -337,11 +366,11 @@ namespace CivOne.Screens
 					break;
 			}
 			
-			this.DrawText("*  -1 if government is Despotism/Anarchy.", 6, 9, 16 + OffsetX, yy + OffsetY); yy += 8;
-			this.DrawText("%  +1 if government is Republic/Democracy.", 6, 9, 16 + OffsetX, yy + OffsetY); yy += 12;
+			this.DrawText(Translate("*  -1 if government is Despotism/Anarchy."), 6, 9, 16 + OffsetX, yy + OffsetY); yy += 8;
+			this.DrawText(Translate("%  +1 if government is Republic/Democracy."), 6, 9, 16 + OffsetX, yy + OffsetY); yy += 12;
 			
-			this.DrawText($"Movement cost: {move} MP", 6, 12, 12 + OffsetX, yy + OffsetY); yy += 8;
-			this.DrawText($"Defense bonus: +{defense}%", 6, 12, 12 + OffsetX, yy + OffsetY);
+			this.DrawText(TranslateFormatted("Movement cost: {0} MP", move), 6, 12, 12 + OffsetX, yy + OffsetY); yy += 8;
+			this.DrawText(TranslateFormatted("Defense bonus: +{0}%", defense), 6, 12, 12 + OffsetX, yy + OffsetY);
 		}
 
 		private void Close()

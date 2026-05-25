@@ -14,6 +14,8 @@ namespace CivOne.Concepts
 		public Roads()
 		{
 			Name = "Roads";
+			Name = "Roads";
+			TranslatedName = Translate("Roads");
 		}
 	}
 }

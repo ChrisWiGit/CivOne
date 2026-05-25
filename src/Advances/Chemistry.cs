@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public Chemistry() : base(1, 2, 1, Advance.University, Advance.Medicine)
 		{
 			Name = "Chemistry";
+			TranslatedName = Translate("Chemistry");
 			Type = Advance.Chemistry;
 		}
 	}

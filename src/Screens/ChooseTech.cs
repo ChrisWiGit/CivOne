@@ -18,6 +18,7 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens
 {
+	[ScreenResizeable]
 	internal class ChooseTech : BaseScreen
 	{
 		private readonly Picture _menuGfx;
@@ -26,19 +27,28 @@ namespace CivOne.Screens
 		
 		private bool _update = true;
 
+		private int OffsetX => Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => Math.Max(0, (Height - 200) / 2);
+
 		private void AdvanceChoice(object sender, MenuItemEventArgs<IAdvance> args)
 		{
 			Human.CurrentResearch = args.Value;
 			Destroy();
 		}
 
-		private void AdvanceContext(object sender, MenuItemEventArgs<IAdvance> args)
+		private static void AdvanceContext(object sender, MenuItemEventArgs<IAdvance> args)
 		{
 			Common.AddScreen(new Civilopedia(args.Value));
 		}
 
 		protected override bool HasUpdate(uint gameTick)
 		{
+			bool needsRefresh = RefreshNeeded();
+			if (!_update && !needsRefresh)
+			{
+				return false;
+			}
+
 			if (_update)
 			{
 				_update = false;
@@ -52,19 +62,23 @@ namespace CivOne.Screens
 					MenuWidth = 156,
 					ActiveColour = 11,
 					TextColour = 5,
-					FontId = 0
+					FontId = 0,
+					CenterTo320Coordinates = true
 				};
 
 				foreach (IAdvance advance in _availableAdvances)
 				{
-					menu.Items.Add(advance.Name, advance)
+					menu.Items.Add(advance.TranslatedName, advance)
 						.OnSelect(AdvanceChoice)
 						.OnContext(AdvanceContext)
 						.OnHelp(AdvanceContext);
 				}
 				AddMenu(menu);
-				return true;
 			}
+
+			this.Clear();
+			this.DrawRectangle(38 + OffsetX, 56 + OffsetY, 204, _menuGfx.Height + 2)
+				.AddLayer(_menuGfx, 39 + OffsetX, 57 + OffsetY);
 			return true;
 		}
 
@@ -91,16 +105,15 @@ namespace CivOne.Screens
 					.Tile(Pattern.PanelGrey)
 					.AddLayer(governmentPortrait, 1, dialogHeight - 61)
 					.DrawRectangle3D()
-					.DrawText("Science Advisor:", 46, 3, DialogText)
+					.DrawText(Translate("Science Advisor:"), 46, 3, DialogText)
 					.FillRectangle(46, 10, 89, 1, 11)
-					.DrawText("Which discovery should our", 46, 12, DialogText)
-					.DrawText("wise men be pursuing, sire?", 46, 20, DialogText)
-					.DrawText("Pick one...", 46, 28, DialogText)
-					.DrawText($"(Help available)", 202, dialogHeight, HelpText)
+					.DrawText(Translate("Which discovery should our"), 46, 12, DialogText)
+					.DrawText(Translate("wise men be pursuing, sire?"), 46, 20, DialogText)
+					.DrawText(Translate("Pick one..."), 46, 28, DialogText)
+					.DrawText(Translate("(Help available)"), 202, dialogHeight, HelpText)
 					.As<Picture>();
 
-			this.DrawRectangle(38, 56, 204, dialogHeight + 2)
-				.AddLayer(_menuGfx, 39, 57);
+			Refresh();
 		}
 
 		public override void Dispose()

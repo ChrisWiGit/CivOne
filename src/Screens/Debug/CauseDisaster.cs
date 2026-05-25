@@ -58,7 +58,7 @@ namespace CivOne.Screens.Debug
 			this.Clear();
 			this.FillRectangle(xx - 1, yy - 1, ww + 2, hh + 2, 5)
 				.AddLayer(menuGfx, xx, yy)
-				.DrawText("Cause disaster...", 0, 15, xx + 8, yy + 3);
+				.DrawText(Translate("Cause disaster..."), 0, 15, xx + 8, yy + 3);
 
 			_citySelect = new Menu(Palette, menuBackground)
 			{
@@ -79,7 +79,7 @@ namespace CivOne.Screens.Debug
 
 			if (more)
 			{
-				_citySelect.Items.Add($" ---MORE---").OnSelect(CauseDisaster_More);
+				_citySelect.Items.Add($" {Translate("---MORE---")}").OnSelect(CauseDisaster_More);
 			}
 
 			_citySelect.Cancel += CauseDisaster_Cancel;
@@ -139,7 +139,7 @@ namespace CivOne.Screens.Debug
 		{
 			if (_cities.Length == 0)
 			{
-				GameTask.Enqueue(Message.General($"There are no cities yet."));
+				GameTask.Enqueue(Message.General(Translate("There are no cities yet.")));
 				return;
 			}
 

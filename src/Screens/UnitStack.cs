@@ -56,8 +56,8 @@ namespace CivOne.Screens
 				{
 					IUnit unit = _units[i];
 					dialog.AddLayer(unit.ToBitmap(), 4, (i * 16) + 3)
-						.DrawText(unit.Name + (unit.Veteran ? " (V)" : ""), 0, 15, 27, (i * 16) + 4)
-						.DrawText(unit.Home == null ? "NONE" : unit.Home.Name, 0, 14, 27, (i * 16) + 12);
+						.DrawText(unit.TranslatedName + (unit.Veteran ? Translate(" (V)") : ""), 0, 15, 27, (i * 16) + 4)
+						.DrawText(unit.Home == null ? Translate("NONE") : unit.Home.Name, 0, 14, 27, (i * 16) + 12);
 				}
 
 				this.FillRectangle(left - 1, top - 1, WIDTH + 2, height + 2, 5)

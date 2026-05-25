@@ -30,6 +30,7 @@ namespace CivOne.Tiles
 		{
 			Type = Terrain.Swamp;
 			Name = "Swamp";
+			TranslatedName = Translate("Swamp");
 		}
 		public Swamp() : this(-1, -1, false)
 		{

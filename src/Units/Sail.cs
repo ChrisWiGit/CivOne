@@ -26,6 +26,7 @@ namespace CivOne.Units
 		{
 			Type = UnitType.Sail;
 			Name = "Sail";
+			TranslatedName = Translate("Sail");
 			RequiredTech = new Navigation();
 			ObsoleteTech = new Magnetism();
 			SetIcon('B', 1, 1);

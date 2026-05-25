@@ -132,6 +132,16 @@ namespace CivOne.UnitTests
 		{
 			public string SavesDirectory { get; } = savesDirectory;
 			public string CosSavesDirectory { get; } = cosSavesDirectory;
+
+			public string StorageDirectory => throw new NotImplementedException();
+
+			public string CaptureDirectory => throw new NotImplementedException();
+
+			public string DataDirectory => throw new NotImplementedException();
+
+			public string PluginsDirectory => throw new NotImplementedException();
+
+			public string SoundsDirectory => throw new NotImplementedException();
 		}
 
 		private sealed class FakeRuntime : IRuntime

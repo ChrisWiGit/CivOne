@@ -21,6 +21,42 @@ namespace CivOne.Buildings
 		
 		public virtual IBitmap Icon { get; protected set; }
 		public virtual IBitmap SmallIcon { get; protected set; }
+		/// <summary>
+		/// Gets the localized display name shown to the player.
+		/// </summary>
+		/// <remarks>
+		/// Derived building classes must set this from <c>Translate("...")</c>.
+		/// <para>
+		/// The value of <see cref="Name"/> is also used as the invariant Civilopedia key,
+		/// so it must be set to the English base value, for example <c>"Barracks"</c>.
+		/// </para>
+		/// <para>
+		/// For buildings that do not exist in the original game, use a unique
+		/// <see cref="Name"/> value and use the same value as the Civilopedia text key,
+		/// for example <c>"MySpecialBuilding"</c>.
+		/// </para>
+		/// <para>
+		/// The test <c>RegisteredCivilopediaNamesTests</c>
+		/// (<c>xunit/src/RegisteredCivilopediaNamesTests.cs</c>) verifies that all items
+		/// have a non-empty translated name.
+		/// </para>
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// Name = "Barracks";
+		/// TranslatedName = Translate("Barracks");
+		/// </code>
+		/// </example>
+		public string TranslatedName { get; protected set; }
+		/// <summary>
+		/// Gets the invariant civilopedia key name.
+		/// </summary>
+		/// <example>
+		/// <code>
+		/// Name = "Barracks";
+		/// TranslatedName = Translate("Barracks");
+		/// </code>
+		/// </example>
 		public string Name { get; protected set; }
 		public byte PageCount => 2;
 		public Picture DrawPage(byte pageNumber)
@@ -53,7 +89,7 @@ namespace CivOne.Buildings
 			{
 				yy += 8;
 				string requiredTech = "";
-				if (RequiredTech != null) requiredTech = RequiredTech.Name;
+				if (RequiredTech != null) requiredTech = RequiredTech.TranslatedName;
 				output.DrawText(string.Format("Requires {0}", requiredTech), 6, 9, 12, yy); yy += 8;
 				output.DrawText(string.Format("Cost: {0}0 shields.", Price), 6, 9, 12, yy); yy += 8;
 				output.DrawText(string.Format("Maintenance: ${0}", Maintenance), 6, 12, 12, yy);

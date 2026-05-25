@@ -17,6 +17,7 @@ namespace CivOne.Wonders
 		public ShakespearesTheatre() : base(40)
 		{
 			Name = "Shakespeare's Theatre";
+			TranslatedName = Translate("Shakespeare's Theatre");
 			RequiredTech = new Medicine();
 			ObsoleteTech = new Electronics();
 			SetSmallIcon(6, 1);

@@ -100,7 +100,7 @@ namespace CivOne.Screens.Debug
         {
             _selectedCity = city;
 
-            _buildings = [.. Reflect.GetBuildings().Where(b => b is not Palace).OrderBy(b => b.Name)];
+            _buildings = [.. Reflect.GetBuildings().Where(b => b is not Palace).OrderBy(b => b.TranslatedName)];
             _buildingSelect = null;
 
             Refresh();
@@ -110,7 +110,7 @@ namespace CivOne.Screens.Debug
         {
             Palette = Common.Screens[Common.Screens.Length - 1].OriginalColours;
 
-            string[] labels = [.. _buildings.Select(x => x.Name)];
+            string[] labels = [.. _buildings.Select(x => x.TranslatedName)];
             _buildingSelect = new GridMenuDelegate(
                 labels,
                 GridMenuDelegate.SelectionMode.CheckUncheck,
@@ -277,7 +277,7 @@ namespace CivOne.Screens.Debug
 
             if (_cities.Length == 0)
             {
-                GameTask.Enqueue(Message.General($"There are no cities yet."));
+                GameTask.Enqueue(Message.General(Translate("There are no cities yet.")));
                 return;
             }
 

@@ -15,8 +15,10 @@ namespace CivOne.Leaders
 	{
 		protected override Leader Leader => Leader.Ramesses;
 
-		public Ramesses() : base("Ramesses", "KING01", 49, 29)
+		public Ramesses() : base("KING01", 49, 29)
 		{
+			Name = Translate("Ramesses");
+			DefaultName = Name;
 			Militarism = MilitarismLevel.Civilized;
 		}
 	}

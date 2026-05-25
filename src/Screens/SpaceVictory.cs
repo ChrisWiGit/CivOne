@@ -52,8 +52,8 @@ namespace CivOne.Screens
 			_update = false;
 			this.Clear(OpaqueBlackColour)
 				.AddLayer(_background, OffsetX, OffsetY)
-				.DrawText($"{_tribeName} reaches Alpha Centauri!", 5, 22, 160 + OffsetX, 174 + OffsetY, TextAlign.Center)
-				.DrawText("Press any key to continue", 5, 15, 160 + OffsetX, 188 + OffsetY, TextAlign.Center);
+				.DrawText(TranslateFormatted("{0} reaches Alpha Centauri!", _tribeName), 5, 22, 160 + OffsetX, 174 + OffsetY, TextAlign.Center)
+				.DrawText(Translate("Press any key to continue"), 5, 15, 160 + OffsetX, 188 + OffsetY, TextAlign.Center);
 			return true;
 		}
 

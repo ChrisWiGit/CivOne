@@ -18,8 +18,6 @@ namespace CivOne.Screens.Dialogs
 {
 	internal class AdvisorMessage : BaseDialog
 	{
-		private readonly Picture[] _textLines;
-
 		private static Picture[] TextBitmaps(string[] message)
 		{
 			Picture[] output = new Picture[message.Length];
@@ -31,12 +29,16 @@ namespace CivOne.Screens.Dialogs
 		private static int PORTRAIT_SIZE = 52;
 		private static int MINIMUM = 94;
 
-		private static string[] advisorNames = ["Defense Minister", "Domestic Advisor", "Foreign Minister", "Science Advisor"];
-
 		private static string[] LocalizedAdvisorNames()
 		{
 			ITranslationService translation = TranslationServiceFactory.GetCurrent();
-			return advisorNames.Select(x => translation.Translate(x)).ToArray();
+			return
+			[
+				translation.Translate("Defense Minister"),
+				translation.Translate("Domestic Advisor"),
+				translation.Translate("Foreign Minister"),
+				translation.Translate("Science Advisor")
+			];
 		}
 
 		private static int DialogWidth(string[] message)
@@ -57,13 +59,13 @@ namespace CivOne.Screens.Dialogs
 				.Merge(governmentPortrait.Palette, portraitPaletteStart, 256 - portraitPaletteStart);
 			SetPalette(palette);
 			
-			_textLines = TextBitmaps(message);
+			Picture[] textLines = TextBitmaps(message);
 			DialogBox.AddLayer(governmentPortrait, 2, 2);
 			string advisorLabel = TranslateFormatted("{0}:", LocalizedAdvisorNames()[(int)advisor]);
 			DialogBox.DrawText(advisorLabel, 0, 15, 47, 4);
 			DialogBox.FillRectangle(47, 11, Resources.GetText(advisorLabel, 0, 15).Width + 1, 1, 11);
-			for (int i = 0; i < _textLines.Length; i++)
-				DialogBox.AddLayer(_textLines[i], 47, (_textLines[i].Height * i) + 13);
+			for (int i = 0; i < textLines.Length; i++)
+				DialogBox.AddLayer(textLines[i], 47, (textLines[i].Height * i) + 13);
 		}
 	}
 }

@@ -52,7 +52,44 @@ namespace CivOne.Advances
 
 		public Palette OriginalColours { get; private set; }
 		
+		/// <summary>
+		/// Gets the localized display name shown to the player.
+		/// </summary>
+		/// <remarks>
+		/// Derived advance classes must set this from <c>Translate("...")</c>.
+		/// <para>
+		/// The value of <see cref="Name"/> is also used as the invariant Civilopedia key,
+		/// so it must be set to the English base value, for example <c>"Alphabet"</c>.
+		/// </para>
+		/// <para>
+		/// For advances that do not exist in the original game, use a unique
+		/// <see cref="Name"/> value and use the same value as the Civilopedia text key,
+		/// for example <c>"MySpecialAdvance"</c>.
+		/// </para>
+		/// <para>
+		/// The test <c>RegisteredCivilopediaNamesTests</c>
+		/// (<c>xunit/src/RegisteredCivilopediaNamesTests.cs</c>) verifies that all items
+		/// have a non-empty translated name.
+		/// </para>
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// Name = "Alphabet";
+		/// TranslatedName = Translate("Alphabet");
+		/// </code>
+		/// </example>
+		public string TranslatedName { get; protected set; }
+		/// <summary>
+		/// Gets the invariant civilopedia key name.
+		/// </summary>
+		/// <example>
+		/// <code>
+		/// Name = "Alphabet";
+		/// TranslatedName = Translate("Alphabet");
+		/// </code>
+		/// </example>
 		public string Name { get; protected set; }
+
 		public byte PageCount => 2;
 		public Picture DrawPage(byte pageNumber)
 		{
@@ -84,36 +121,36 @@ namespace CivOne.Advances
 							{
 								if (requiredTech.Length > 0)
 									requiredTech.Append(" and ");
-								requiredTech.Append(tech.Name);
+								requiredTech.Append(tech.TranslatedName);
 							}
-							output.DrawText(string.Format("Requires {0}", requiredTech), 6, 1, 32, yy); yy += 8;
+							output.DrawText(TranslateFormatted("Requires {0}", requiredTech), 6, 1, 32, yy); yy += 8;
 						}
 						yy += 16;
-						output.DrawText("Allows:", 6, 1, 32, yy); yy += 8;
+						output.DrawText(Translate("Allows:"), 6, 1, 32, yy); yy += 8;
 						foreach (IAdvance tech in Common.Advances.Where(a => a.Requires(Id)))
 						{
-							string allows = tech.Name;
+							string allows = tech.TranslatedName;
 							foreach (IAdvance at in tech.RequiredTechs.Where(a => a.Id != Id))
-								allows += string.Format(" (with {0})", at.Name);
+								allows += TranslateFormatted(" (with {0})", at.TranslatedName);
 							output.DrawText(allows, 6, 9, 40, yy); yy += 8;
 						}
 						yy += 4;
 						foreach (IUnit unit in Reflect.GetUnits().Where(u => u.RequiredTech != null && u.RequiredTech.Id == Id))
 						{
 							output.AddLayer(unit.ToBitmap(Game.PlayerNumber(Human)), 40, yy - 5);
-							output.DrawText(string.Format("{0} unit", unit.Name), 6, 12, 60, yy); yy += 12;
+							output.DrawText(TranslateFormatted("{0} unit", unit.TranslatedName), 6, 12, 60, yy); yy += 12;
 						}
 						foreach (IBuilding building in Reflect.GetBuildings().Where(b => b.RequiredTech != null && b.RequiredTech.Id == Id))
 						{
 							if (building.SmallIcon != null)
 								output.AddLayer(building.SmallIcon, 39, yy - 2);
-							output.DrawText(string.Format("{0} improvement", building.Name), 6, 2, 60, yy); yy += 12;
+							output.DrawText(TranslateFormatted("{0} improvement", building.TranslatedName), 6, 2, 60, yy); yy += 12;
 						}
 						foreach (IWonder wonder in Reflect.GetWonders().Where(w => w.RequiredTech != null && w.RequiredTech.Id == Id))
 						{
 							if (wonder.SmallIcon != null)
 								output.AddLayer(wonder.SmallIcon, 39, yy - 2);
-							output.DrawText(string.Format("{0} Wonder", wonder.Name), 6, 2, 60, yy); yy += 12;
+							output.DrawText(TranslateFormatted("{0} Wonder", wonder.TranslatedName), 6, 2, 60, yy); yy += 12;
 						}
 					}
 					break;

@@ -95,13 +95,12 @@ namespace CivOne.Screens
 			SelectedGame = -1;
 			_gameId = -1;
 			const string extension = ".cos";
-			const string filter = "CivOne Save Game (*.cos)|*.cos";
 
 			string selectedFile = RuntimeHandler.Runtime.FileChooser(
 				true,
-				"Save Game As...",
+				Translate("Save Game As..."),
 				BuildDialogInitialFileName(SaveFileName, extension),
-				filter
+				Translate("CivOne Save Game (*.cos)|*.cos")
 			);
 			if (string.IsNullOrEmpty(selectedFile))
 			{
@@ -123,12 +122,12 @@ namespace CivOne.Screens
 			this.Clear(15);
 			DrawBorder(_border);
 
-			this.DrawText("Which drive contains your", 0, 5, OffsetX + 92, OffsetY + 72, TextAlign.Left)
-				.DrawText("Save Game disk?", 0, 5, OffsetX + 104, OffsetY + 80, TextAlign.Left)
-				.DrawText(string.Format("{0}:", _driveLetter), 0, 5, OffsetX + 146, OffsetY + 96, TextAlign.Left)
-				.DrawText("Press drive letter and", 0, 5, OffsetX + 104, OffsetY + 112, TextAlign.Left)
-				.DrawText("Return when disk is inserted", 0, 5, OffsetX + 80, OffsetY + 120, TextAlign.Left)
-				.DrawText("Press Escape to cancel", 0, 5, OffsetX + 104, OffsetY + 128, TextAlign.Left);
+			this.DrawText(Translate("Which drive contains your"), 0, 5, OffsetX + 92, OffsetY + 72, TextAlign.Left)
+				.DrawText(Translate("Save Game disk?"), 0, 5, OffsetX + 104, OffsetY + 80, TextAlign.Left)
+				.DrawText(TranslateFormatted("{0}:", _driveLetter), 0, 5, OffsetX + 146, OffsetY + 96, TextAlign.Left)
+				.DrawText(Translate("Press drive letter and"), 0, 5, OffsetX + 104, OffsetY + 112, TextAlign.Left)
+				.DrawText(Translate("Return when disk is inserted"), 0, 5, OffsetX + 80, OffsetY + 120, TextAlign.Left)
+				.DrawText(Translate("Press Escape to cancel"), 0, 5, OffsetX + 104, OffsetY + 128, TextAlign.Left);
 		}
 
 		protected override void Resize(int width, int height)
@@ -167,10 +166,10 @@ namespace CivOne.Screens
 
 				this.DrawText($"{Common.DifficultyName(Game.Difficulty)} {Game.HumanPlayer.LeaderName}", 0, 5, OffsetX + 75, OffsetY + 99)
 					.DrawText($"{Game.HumanPlayer.TribeNamePlural}/{Game.GameYear}", 0, 5, OffsetX + 75, OffsetY + 107)
-					.DrawText("... save in progress.", 0, 5, OffsetX + 75, OffsetY + 115);
+					.DrawText(Translate("... save in progress."), 0, 5, OffsetX + 75, OffsetY + 115);
 
-				this.DrawText("Game has been saved.", 0, 5, OffsetX + 75, OffsetY + 132)
-					.DrawText("Press key to continue.", 0, 5, OffsetX + 75, OffsetY + 140);
+				this.DrawText(Translate("Game has been saved."), 0, 5, OffsetX + 75, OffsetY + 132)
+					.DrawText(Translate("Press key to continue."), 0, 5, OffsetX + 75, OffsetY + 140);
 				return true;
 			}
 			else if (_menu != null)
@@ -256,7 +255,7 @@ namespace CivOne.Screens
 
 				_menu = new Menu(Palette)
 				{
-					Title = "Select Save File...",
+					Title = Translate("Select Save File..."),
 					X = 51,
 					Y = 38,
 					MenuWidth = 217,
@@ -270,10 +269,10 @@ namespace CivOne.Screens
 
 				_sveUnavailableReason = currentSveCompatibility.CanSaveAsSve ? string.Empty : currentSveCompatibility.Reason;
 
-				_menu.Items.Add("Save with file dialog...", -1).OnSelect(SaveFileDialog);
+				_menu.Items.Add(Translate("Save with file dialog..."), -1).OnSelect(SaveFileDialog);
 				if (!currentSveCompatibility.CanSaveAsSve)
 				{
-					_menu.Items.Add($"SVE unavailable: {_sveUnavailableReason}", -2).SetEnabled(false);
+					_menu.Items.Add(TranslateFormatted("SVE unavailable: {0}", _sveUnavailableReason), -2).SetEnabled(false);
 				}
 
 				int i = 0;

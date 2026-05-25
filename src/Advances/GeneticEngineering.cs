@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public GeneticEngineering() : base(1, 1, 2, Advance.Medicine, Advance.TheCorporation)
 		{
 			Name = "Genetic Engineering";
+			TranslatedName = Translate("Genetic Engineering");
 			Type = Advance.GeneticEngineering;
 		}
 	}

@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public Rocketry() : base(8, 0, 1, Advance.AdvancedFlight, Advance.Electronics)
 		{
 			Name = "Rocketry";
+			TranslatedName = Translate("Rocketry");
 			Type = Advance.Rocketry;
 		}
 	}

@@ -50,7 +50,7 @@ namespace CivOne.Screens.CityManagerPanels
 			else
 				this.AddLayer(wonder.SmallIcon, xx, yy);
 
-			string name = wonder.Name;
+			string name = wonder.TranslatedName;
 			while (Resources.GetTextSize(1, name).Width > 62)
 			{
 				name = $"{name.Substring(0, name.Length - 2)}.";
@@ -67,7 +67,7 @@ namespace CivOne.Screens.CityManagerPanels
 			else
 				this.AddLayer(building.SmallIcon, xx, yy);
 
-			string name = building.Name;
+			string name = building.TranslatedName;
 			while (Resources.GetTextSize(1, name).Width > 54)
 			{
 				name = $"{name.Substring(0, name.Length - 1)}";
@@ -201,8 +201,7 @@ namespace CivOne.Screens.CityManagerPanels
 		{
 			// CW: Not like in original game but made more user friendly.
 			GameTask.Enqueue(Message.General(
-				"You have to wait until next turn",
-				"to sell another building."));
+				CivOne.Services.TranslationServiceFactory.GetCurrent().TranslateArray("You have to wait until next turn\nto sell another building.")));
 		}
 		
 		protected int FirstBuildingIndex => Array.FindIndex(_improvements, x => x is IBuilding);

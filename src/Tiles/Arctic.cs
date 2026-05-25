@@ -31,6 +31,7 @@ namespace CivOne.Tiles
 		{
 			Type = Terrain.Arctic;
 			Name = "Arctic";
+			TranslatedName = Translate("Arctic");
 		}
 		public Arctic() : this(-1, -1, false)
 		{

@@ -17,6 +17,7 @@ namespace CivOne.Buildings
 		public Cathedral() : base(16, 3)
 		{
 			Name = "Cathedral";
+			TranslatedName = Translate("Cathedral");
 			RequiredTech = new Religion();
 			SetIcon(2, 1, true);
 			SetSmallIcon(2, 0);

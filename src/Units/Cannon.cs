@@ -18,6 +18,7 @@ namespace CivOne.Units
 		{
 			Type = UnitType.Cannon;
 			Name = "Cannon";
+			TranslatedName = Translate("Cannon");
 			RequiredTech = new Metallurgy();
 			ObsoleteTech = new Robotics();
 			SetIcon('B', 1, 2);

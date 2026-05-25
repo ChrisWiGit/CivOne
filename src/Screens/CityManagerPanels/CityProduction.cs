@@ -22,12 +22,20 @@ namespace CivOne.Screens.CityManagerPanels
 	internal class CityProduction : BaseScreen
 	{
 		private const int SHIELD_HEIGHT = 8;
+		private const int BUTTON_TOP = 7;
+		private const int BUTTON_BOTTOM = 15;
+		private const int CHANGE_BUTTON_X = 1;
+		private const int CHANGE_BUTTON_WIDTH = 33;
+		private const int BUY_BUTTON_X = 50;
+		private const int BUY_BUTTON_RIGHT_MARGIN = 1;
 
 		private readonly City _city;
 		private readonly bool _viewCity;
 		
 		private int _shieldPrice, _totalShields, _shieldsPerLine;
 		private double _shieldWidth;
+
+		private int BuyButtonWidth => Math.Max(3, Width - BUY_BUTTON_X - BUY_BUTTON_RIGHT_MARGIN);
 
 		private void ForceUpdate(object sender, EventArgs args)
 		{
@@ -70,6 +78,8 @@ namespace CivOne.Screens.CityManagerPanels
 		{
 			if (RefreshNeeded() || ProductionInvalid)
 			{
+				int maxShieldDisplayWidth = Width - 2;
+
 				_shieldsPerLine = 10;
 				_shieldPrice = (int)_city.CurrentProduction.Price * 10;
 				_totalShields = _shieldPrice;
@@ -79,30 +89,18 @@ namespace CivOne.Screens.CityManagerPanels
 				if (_totalShields > 100)
 				{
 					_shieldsPerLine = (int)Math.Ceiling((double)_totalShields / 10);
-					_shieldWidth = ((double)80 / _shieldsPerLine);
+					_shieldWidth = (double)maxShieldDisplayWidth / _shieldsPerLine;
 				}
-
-				int width = (int)(_shieldWidth * (_shieldsPerLine - 1)) + 11;
-				int height = SHIELD_HEIGHT * ((_shieldPrice - (_shieldPrice % _shieldsPerLine)) / _shieldsPerLine);
-				if (height < SHIELD_HEIGHT) height = SHIELD_HEIGHT;
 
 				this.Tile(Pattern.PanelBlue)
-					.DrawRectangle(0, 0, width, 19 + height, 1)
-					.FillRectangle(1, 1, (width - 2), 16, 1);
-				if (width < 88)
-				{
-					this.FillRectangle(width, 0, 88 - width, 99, 5);
-				}
-				if (height < 80)
-				{
-					this.FillRectangle(0, 19 + height, width, 80 - height, 5);
-				}
+					.DrawRectangle(0, 0, Width, Height, 1)
+					.FillRectangle(1, 1, (Width - 2), 16, 1);
 				bool blink = ProductionInvalid && (gameTick % 4 > 1);
 				if (Common.TopScreen is not CityManager) blink = ProductionInvalid;
 				if (!_viewCity)
 				{
-					DrawButton(_city.AutoBuild ? "AUTO." : "Change", (byte)(blink ? 14 : 9), 1, 1, 7, 33);
-					DrawButton("Buy", 9, 1, 64, 7, 18);
+					DrawButton(_city.AutoBuild ? Translate("AUTO.") : Translate("Change"), (byte)(blink ? 14 : 9), 1, CHANGE_BUTTON_X, BUTTON_TOP, CHANGE_BUTTON_WIDTH);
+					DrawButton(Translate("Buy"), 9, 1, BUY_BUTTON_X, BUTTON_TOP, BuyButtonWidth);
 				}
 
 				DrawShields();
@@ -114,12 +112,12 @@ namespace CivOne.Screens.CityManagerPanels
 				}
 				else
 				{
-					string name = (_city.CurrentProduction as ICivilopedia).Name;
-					while (Resources.GetTextSize(1, name).Width > 86)
+					string name = (_city.CurrentProduction as ICivilopedia).TranslatedName;
+					while (Resources.GetTextSize(1, name).Width > Width - 2)
 					{
 						name = $"{name.Substring(0, name.Length - 2)}.";
 					}
-					this.DrawText(name, 1, 15, 44, 1, TextAlign.Center);
+					this.DrawText(name, 1, 15, Width / 2, 1, TextAlign.Center);
 				}
 				
 				Refresh();
@@ -145,19 +143,25 @@ namespace CivOne.Screens.CityManagerPanels
 
 		private bool Buy()
 		{
-			string name = (_city.CurrentProduction as ICivilopedia).Name;
+			string name = (_city.CurrentProduction as ICivilopedia).TranslatedName;
 			short playerGold = Game.CurrentPlayer.Gold;
 			short buyPrice = _city.BuyPrice;
 			if (_city.IsRiot && _city.CurrentProduction is IBuilding)
 			{
-				Common.AddScreen(new MessageBox("Civil Disorder", $"{_city.Name} cannot buy", "city improvements now."));
+				Common.AddScreen(new MessageBox(
+					Translate("Civil Disorder"),
+					TranslateFormatted("{0} cannot buy", _city.Name),
+					Translate("city improvements now.")));
 				return true;
 			}
 			if (buyPrice <= 0)
 				return true;
 			if (playerGold < buyPrice)
 			{
-				Common.AddScreen(new MessageBox("Cost to complete", $"{name}: ${buyPrice}", $"Treasury: ${playerGold}"));
+				Common.AddScreen(new MessageBox(
+					Translate("Cost to complete"),
+					TranslateFormatted("{0}: ${1}", name, buyPrice),
+					TranslateFormatted("Treasury: ${0}", playerGold)));
 				return true;
 			}
 
@@ -191,21 +195,21 @@ namespace CivOne.Screens.CityManagerPanels
 
 		public override bool MouseDown(ScreenEventArgs args)
 		{
-			if (args.Y < 7 || args.Y > 15) return false;
-			if (args.X < 34) return true;
-			if (args.X > 63 && args.X < 82) return true;
+			if (args.Y < BUTTON_TOP || args.Y > BUTTON_BOTTOM) return false;
+			if (args.X >= CHANGE_BUTTON_X && args.X < CHANGE_BUTTON_X + CHANGE_BUTTON_WIDTH) return true;
+			if (args.X >= BUY_BUTTON_X && args.X < BUY_BUTTON_X + BuyButtonWidth) return true;
 			return false;
 		}
 
 		public override bool MouseUp(ScreenEventArgs args)
 		{
-			if (args.Y < 7 || args.Y > 15) return false;
-			if (args.X < 34) return Change();
-			if (args.X > 63 && args.X < 82) return Buy();
+			if (args.Y < BUTTON_TOP || args.Y > BUTTON_BOTTOM) return false;
+			if (args.X >= CHANGE_BUTTON_X && args.X < CHANGE_BUTTON_X + CHANGE_BUTTON_WIDTH) return Change();
+			if (args.X >= BUY_BUTTON_X && args.X < BUY_BUTTON_X + BuyButtonWidth) return Buy();
 			return false;
 		}
 
-		public CityProduction(City city, bool viewCity) : base(88, 99)
+		public CityProduction(City city, bool viewCity) : base(90, 99)
 		{
 			_city = city;
 			_viewCity = viewCity;

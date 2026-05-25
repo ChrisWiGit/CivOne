@@ -442,7 +442,7 @@ namespace CivOne.Persistence.Model
 		private class MockUnitFactoryForTesting : IUnitFactory
 		{
 			public IUnitRestorable Create(string className, byte player, Guid? HomeCityGuid)
-				=> new MockedIUnit { Owner = player, Name = className };
+				=> new MockedIUnit { Owner = player, TranslatedName = className, Name = className };
 		}
 
 		private class FixedPlayerOwnerResolver : IPlayerOwnerResolver

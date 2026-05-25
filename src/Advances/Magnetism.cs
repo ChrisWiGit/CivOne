@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public Magnetism() : base(6, 0, 1, Advance.Navigation, Advance.Physics)
 		{
 			Name = "Magnetism";
+			TranslatedName = Translate("Magnetism");
 			Type = Advance.Magnetism;
 		}
 	}

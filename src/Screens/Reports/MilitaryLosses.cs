@@ -48,7 +48,7 @@ namespace CivOne.Screens.Reports
 				int y = OffsetY + 32 + (row * 11);
 
 				this.AddLayer(unit.ToBitmap(player, false), x, y)
-					.DrawText(unit.Name, 0, 15, x + 16, y + 1)
+					.DrawText(unit.TranslatedName, 0, 15, x + 16, y + 1)
 					.DrawText(count.ToString(), 0, 11, x + 138, y + 1, TextAlign.Right);
 			}
 		}

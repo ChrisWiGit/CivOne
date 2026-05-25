@@ -17,6 +17,7 @@ namespace CivOne.Wonders
 		public HangingGardens() : base(30)
 		{
 			Name = "Hanging Gardens";
+			TranslatedName = Translate("Hanging Gardens");
 			RequiredTech = new Pottery();
 			ObsoleteTech = new Invention();
 			SetSmallIcon(4, 2);

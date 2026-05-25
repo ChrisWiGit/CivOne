@@ -74,7 +74,7 @@ namespace CivOne.Screens
 
 			this.FillRectangle(64, 78, 225, 25, 5)
 				.FillRectangle(65, 79, 223, 23, 15)
-				.DrawText("Set window title...", 0, 5, 66, 80)
+				.DrawText(Translate("Set window title..."), 0, 5, 66, 80)
 				.FillRectangle(66, 88, 221, 14, 5)
 				.FillRectangle(67, 89, 219, 12, 15);
 

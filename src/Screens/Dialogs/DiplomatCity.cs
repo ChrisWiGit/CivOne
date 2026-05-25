@@ -224,7 +224,7 @@ namespace CivOne.Screens.Dialogs
 				Game.Instance.DisbandUnit(_diplomat);
 				if (_diplomat.Player == Human || _enemyCity.Player == Human)
 					GameTask.Insert(Message.Spy(
-						_t.TranslateFormattedArray("Spies report:\n{0} steal\n{1}", _diplomat.Player.TribeName, advance.Name)));
+						_t.TranslateFormattedArray("Spies report:\n{0} steal\n{1}", _diplomat.Player.TribeName, advance.TranslatedName)));
 			};
 			GameTask.Enqueue(task);
 		}

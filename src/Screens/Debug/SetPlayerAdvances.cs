@@ -49,7 +49,7 @@ namespace CivOne.Screens.Debug
 		private void CreateGridDelegate()
 		{
 			_advances = _advanceService.GetAllAdvances();
-			string[] labels = [.. _advances.Select(a => a.Name)];
+			string[] labels = [.. _advances.Select(a => a.TranslatedName)];
 			_gridDelegate = new GridMenuDelegate(
 				labels,
 				GridMenuDelegate.SelectionMode.CheckUncheck,

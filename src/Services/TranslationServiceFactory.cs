@@ -22,9 +22,25 @@ namespace CivOne.Services
 	public static class TranslationServiceFactory
 	{
 		private static readonly Lock _sync = new();
+		private static readonly List<ITranslationLanguageObserver> _languageObservers = [];
 		private static ITranslationFileRepository _translationFileRepository = new TranslationFileRepositoryImpl();
 		private static ITranslationService _instance;
 		private static string _activeLanguagePostfix;
+
+		// This is only a list of translation keys for the language names
+		// It is used to display the available languages in the settings menu, 
+		// and also to translate the language names in the settings menu.
+		//LanguageNameKeys = [
+		// 	Translate("English"),
+		// 	Translate("German"),
+		// 	Translate("French"),
+		// 	Translate("Italian"),
+		// 	Translate("Spanish"),
+		// 	Translate("Portuguese"),
+		// 	Translate("Russian"),
+		// 	Translate("Chinese"),
+		// 	Translate("Japanese"),
+		// 	Translate("Korean")
 
 		/// <summary>
 		/// Returns the active translation service.
@@ -89,6 +105,42 @@ namespace CivOne.Services
 		}
 
 		/// <summary>
+		/// Registers an observer that is notified whenever the active language changes.
+		/// </summary>
+		public static void RegisterLanguageObserver(ITranslationLanguageObserver observer)
+		{
+			if (observer == null)
+			{
+				// dont't care
+				return;
+			}
+
+			lock (_sync)
+			{
+				if (!_languageObservers.Contains(observer))
+				{
+					_languageObservers.Add(observer);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Removes a previously registered language observer.
+		/// </summary>
+		public static void UnregisterLanguageObserver(ITranslationLanguageObserver observer)
+		{
+			if (observer == null)
+			{
+				throw new ArgumentNullException(nameof(observer));
+			}
+
+			lock (_sync)
+			{
+				_languageObservers.Remove(observer);
+			}
+		}
+
+		/// <summary>
 		/// Returns all valid language files for the given storage directory.
 		/// </summary>
 		public static IReadOnlyList<TranslationLanguageInfo> GetAvailableLanguages(string storageDirectory, Action<string> log = null)
@@ -104,11 +156,15 @@ namespace CivOne.Services
 		/// </summary>
 		public static void UseIdentity()
 		{
+			ITranslationLanguageObserver[] observers;
 			lock (_sync)
 			{
 				_instance = new TranslationIdentityServiceImpl();
 				_activeLanguagePostfix = null;
+				observers = [.. _languageObservers];
 			}
+
+			NotifyLanguageChanged(observers, _activeLanguagePostfix);
 		}
 
 		/// <summary>
@@ -123,6 +179,8 @@ namespace CivOne.Services
 		public static bool TryUseLanguage(string storageDirectory, string postfix, out string error, Action<string> log = null)
 		{
 			error = null;
+			ITranslationLanguageObserver[] observers;
+			string activeLanguagePostfix;
 
 			if (string.IsNullOrEmpty(postfix))
 			{
@@ -149,7 +207,19 @@ namespace CivOne.Services
 
 				_instance = new FileTranslationServiceImpl(translations);
 				_activeLanguagePostfix = languageInfo.Postfix;
-				return true;
+				observers = [.. _languageObservers];
+				activeLanguagePostfix = _activeLanguagePostfix;
+			}
+
+			NotifyLanguageChanged(observers, activeLanguagePostfix);
+			return true;
+		}
+
+		private static void NotifyLanguageChanged(IReadOnlyList<ITranslationLanguageObserver> observers, string activeLanguagePostfix)
+		{
+			foreach (ITranslationLanguageObserver observer in observers)
+			{
+				observer.OnLanguageChanged(activeLanguagePostfix);
 			}
 		}
 	}

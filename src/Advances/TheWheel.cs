@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public TheWheel() : base(3, 2, 2)
 		{
 			Name = "The Wheel";
+			TranslatedName = Translate("The Wheel");
 			Type = Advance.TheWheel;
 		}
 	}

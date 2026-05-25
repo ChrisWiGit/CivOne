@@ -94,6 +94,43 @@ namespace CivOne.Tiles
 		}
 
 		public Terrain Type { get; protected set; }
+		/// <summary>
+		/// Gets the localized display name shown to the player.
+		/// </summary>
+		/// <remarks>
+		/// Derived tile classes must set this from <c>Translate("...")</c>.
+		/// <para>
+		/// The value of <see cref="Name"/> is also used as the invariant Civilopedia key,
+		/// so it must be set to the English base value, for example <c>"Arctic"</c>.
+		/// </para>
+		/// <para>
+		/// For tile types that do not exist in the original game, use a unique
+		/// <see cref="Name"/> value and use the same value as the Civilopedia text key,
+		/// for example <c>"MySpecialTile"</c>.
+		/// </para>
+		/// <para>
+		/// The test <c>RegisteredCivilopediaNamesTests</c>
+		/// (<c>src/xunit/RegisteredCivilopediaNamesTests.cs</c>) verifies that all items
+		/// have a non-empty translated name.
+		/// </para>
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// Name = "Arctic";
+		/// TranslatedName = Translate("Arctic");
+		/// </code>
+		/// </example>
+		public string TranslatedName { get; protected set; }
+		/// <summary>
+		/// Gets the invariant civilopedia key name.
+		/// Derived tile classes must assign this to the English base value.
+		/// </summary>
+		/// <example>
+		/// <code>
+		/// Name = "Arctic";
+		/// TranslatedName = Translate("Arctic");
+		/// </code>
+		/// </example>
 		public string Name { get; protected set; }
 		public byte PageCount => 1;
 		public Picture DrawPage(byte pageNumber) => new Picture(320, 200);

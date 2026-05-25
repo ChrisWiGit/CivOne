@@ -19,6 +19,7 @@ namespace CivOne.Units
 		{
 			Type = UnitType.Musketeers;
 			Name = "Musketeers";
+			TranslatedName = Translate("Musketeers");
 			RequiredTech = new Gunpowder();
 			ObsoleteTech = new Conscription();
 			SetIcon('A', 0, 0);

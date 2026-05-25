@@ -42,9 +42,10 @@ namespace CivOne.Screens
 		{	
 			Palette = Common.TopScreen.Palette.Copy();
 
+			string title = Translate("CIVILIZATION POWERGraph");
 			this.Clear(8)
-				.DrawText("CIVILIZATION POWERGraph", 0, 5, 100, 3)
-				.DrawText("CIVILIZATION POWERGraph", 0, 15, 100, 2)
+				.DrawText(title, 0, 5, 100, 3)
+				.DrawText(title, 0, 15, 100, 2)
 				.DrawRectangle(4, 9, 312, 184);
 			
 			for (int i = 0; i < 13; i++)

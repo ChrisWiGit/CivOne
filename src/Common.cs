@@ -18,6 +18,7 @@ using CivOne.Buildings;
 using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.Graphics;
+using CivOne.Services;
 using CivOne.Screens;
 using CivOne.Wonders;
 
@@ -220,21 +221,22 @@ namespace CivOne
 			int year = TurnToYear(turn);
 			if (zeroAd && year == 1) year = 0;
 			if (year < 0)
-				return $"{-year} BC";
-			return $"{year} AD";
+				return $"{-year} " + TranslationServiceFactory.GetCurrent().Translate("BC");
+			return $"{year} " + TranslationServiceFactory.GetCurrent().Translate("AD");
 		}
 
 		public static string DifficultyName(int difficuly)
 		{
-			switch (difficuly)
+			ITranslationService translation = TranslationServiceFactory.GetCurrent();
+			return difficuly switch
 			{
-				case 1: return "Lord";
-				case 2: return "Prince";
-				case 3: return "King";
-				case 4: return "Emperor";
-				case 5: return "Deity";
-				default: return "Chief";
-			}
+				1 => translation.Translate("Warlord"),
+				2 => translation.Translate("Prince"),
+				3 => translation.Translate("King"),
+				4 => translation.Translate("Emperor"),
+				5 => translation.Translate("Deity"),
+				_ => translation.Translate("Chieftain"),
+			};
 		}
 
 		internal static int CitizenGroup(Citizen citizen)

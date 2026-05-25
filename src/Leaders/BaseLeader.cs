@@ -17,7 +17,7 @@ namespace CivOne.Leaders
 	public abstract class BaseLeader : BaseInstance, ILeader
 	{
 		private string _defaultName;
-		private string DefaultName
+		protected string DefaultName
 		{
 			get
 			{
@@ -165,10 +165,8 @@ namespace CivOne.Leaders
 		}
 		public IEnumerable<LeaderModification> Modifications => _modifications.ContainsKey(Leader) ? _modifications[Leader].ToArray() : new LeaderModification[0];
 
-		protected BaseLeader(string name, string picFile, int overlayX, int overlayY)
+		protected BaseLeader(string picFile, int overlayX, int overlayY)
 		{
-			DefaultName = name;
-			Name = DefaultName;
 			_picFile = picFile;
 			_overlayX = overlayX;
 			_overlayY = overlayY;
@@ -191,10 +189,8 @@ namespace CivOne.Leaders
 			Militarism = MilitarismLevel.Normal;
 		}
 
-		protected BaseLeader(string name)
+		protected BaseLeader()
 		{
-			DefaultName = name;
-			Name = DefaultName;
 			_portraitSmall = new Picture(27, 33, Common.GetPalette256);
 		}
 	}

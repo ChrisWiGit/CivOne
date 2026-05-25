@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public Plastics() : base(4, 0, 0, Advance.Refining, Advance.SpaceFlight)
 		{
 			Name = "Plastics";
+			TranslatedName = Translate("Plastics");
 			Type = Advance.Plastics;
 		}
 	}

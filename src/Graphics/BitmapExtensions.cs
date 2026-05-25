@@ -211,8 +211,8 @@ namespace CivOne.Graphics
 			if (string.IsNullOrWhiteSpace(text)) return bitmap;
 			if (settings == null)
 			{
-				if (bitmap is IDefaultTextSettings)
-					settings = (bitmap as IDefaultTextSettings).DefaultTextSettings;
+				if (bitmap is IDefaultTextSettings defaultTextSettings)
+					settings = defaultTextSettings.DefaultTextSettings;
 				else
 					settings = new TextSettings();
 			}
@@ -221,7 +221,7 @@ namespace CivOne.Graphics
 			Bytemap textLayer;
 			if (settings.FirstLetterColour != 0)
 			{
-				textLayer = Resources.GetText(text, settings.FontId, settings.FirstLetterColour, settings.Colour).Bitmap;
+				textLayer = Resources.GetText(text, settings.FontId, settings.FirstLetterColour, settings.Colour, settings.HighlightedCharacterIndex).Bitmap;
 			}
 			else if (settings.TopColour != 0 && settings.BottomColour != 0)
 			{

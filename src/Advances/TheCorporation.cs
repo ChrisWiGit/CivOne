@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public TheCorporation() : base(7, 2, 2, Advance.Banking, Advance.Industrialization)
 		{
 			Name = "The Corporation";
+			TranslatedName = Translate("The Corporation");
 			Type = Advance.TheCorporation;
 		}
 	}

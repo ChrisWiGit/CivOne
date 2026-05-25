@@ -41,7 +41,7 @@ namespace CivOne.Screens.Debug
 			this.Clear();
 			this.FillRectangle(80 + ox, 80 + oy, 161, 33, 11)
 				.FillRectangle(81 + ox, 81 + oy, 159, 31, 15)
-				.DrawText("Set Player Gold...", 0, 5, 88 + ox, 82 + oy)
+				.DrawText(Translate("Set Player Gold..."), 0, 5, 88 + ox, 82 + oy)
 				.FillRectangle(88 + ox, 95 + oy, 105, 14, 5)
 				.FillRectangle(89 + ox, 96 + oy, 103, 12, 15);
 
@@ -76,12 +76,12 @@ namespace CivOne.Screens.Debug
 			short playerGold;
 			if (!short.TryParse(Value, out playerGold) || playerGold < 0 || playerGold > 30000)
 			{
-				GameTask.Enqueue(Message.Error("-- DEBUG: Set Player Gold --", $"The value {Value} is invalid or out of range.", "Please enter a value between 0 and", "30000."));
+				GameTask.Enqueue(Message.Error(Translate("-- DEBUG: Set Player Gold --"), TranslateFormattedArray("The value {0} is invalid or out of range.\nPlease enter a value between 0 and\n30000.", Value)));
 			}
 			else
 			{
 				_selectedPlayer.Gold = playerGold;
-				GameTask.Enqueue(Message.General($"{_selectedPlayer.TribeName} gold set to {playerGold}$."));
+				GameTask.Enqueue(Message.General(TranslateFormatted("{0} gold set to {1}$.", _selectedPlayer.TribeName, playerGold)));
 			}
 
 			if (Accept != null)
@@ -125,7 +125,7 @@ namespace CivOne.Screens.Debug
 		public SetPlayerGold() : base(MouseCursor.Pointer)
 		{
 			Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
-			_civSelectDelegate = new CivSelectMenuDelegate(Palette, "Set Player Gold...");
+			_civSelectDelegate = new CivSelectMenuDelegate(Palette, Translate("Set Player Gold..."));
 			_civSelectDelegate.PlayerSelected += OnPlayerSelected;
 			_civSelectDelegate.Cancelled += PlayerGold_Cancel;
 

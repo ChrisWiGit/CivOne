@@ -74,6 +74,11 @@ namespace CivOne.Screens
 			Update();
 		}
 
+		private void MenuChangeLanguage(object sender, EventArgs args)
+		{
+			Common.AddScreen(new LanguageScreen());
+		}
+
 		private void Update()
 		{
 			CloseMenus();
@@ -89,12 +94,12 @@ namespace CivOne.Screens
 			}
 
 			int menuBoxWidth = 103;
-			int menuBoxHeight = 79;
+			int menuBoxHeight = 88;
 
-			Picture menuGfx = new Picture(103, 79)
+			Picture menuGfx = new Picture(menuBoxWidth, menuBoxHeight)
 				.Tile(Pattern.PanelGrey)
 				.DrawRectangle3D()
-				.DrawText("Options:", 0, 15, 4, 4)
+				.DrawText(Translate("Options:"), 0, 15, 4, 4)
 				.As<Picture>();
 
 			IBitmap menuBackground = menuGfx[2, 11, menuBoxWidth, menuBoxHeight]
@@ -130,14 +135,15 @@ namespace CivOne.Screens
 			_menu.MissClick += MenuCancel;
 			_menu.Cancel += MenuCancel;
 
-			_menu.Items.Add($"{(Game.InstantAdvice ? '^' : ' ')}Instant Advice").OnSelect(MenuInstantAdvice);
-			_menu.Items.Add($"{(Game.AutoSave ? '^' : ' ')}AutoSave").SetEnabled(Common.AllowSaveGame).OnSelect(MenuAutoSave);
-			_menu.Items.Add($"{(Game.EndOfTurn ? '^' : ' ')}End of Turn").OnSelect(MenuEndOfTurn);
-			_menu.Items.Add($"{(Game.Animations ? '^' : ' ')}Animations").OnSelect(MenuAnimations);
-			_menu.Items.Add($"{(Game.Sound ? '^' : ' ')}Sound").OnSelect(MenuSound);
-			_menu.Items.Add($"{(Game.EnemyMoves ? '^' : ' ')}Enemy Moves").OnSelect(MenuEnemyMoves);
-			_menu.Items.Add($"{(Game.CivilopediaText ? '^' : ' ')}Civilopedia Text").OnSelect(MenuCivilopediaText);
-			_menu.Items.Add($"{(Game.Palace ? '^' : ' ')}Palace").OnSelect(MenuPalace);
+			_menu.Items.Add($"{(Game.InstantAdvice ? '^' : ' ')}{Translate("Instant Advice")}").OnSelect(MenuInstantAdvice);
+			_menu.Items.Add($"{(Game.AutoSave ? '^' : ' ')}{Translate("AutoSave")}").SetEnabled(Common.AllowSaveGame).OnSelect(MenuAutoSave);
+			_menu.Items.Add($"{(Game.EndOfTurn ? '^' : ' ')}{Translate("End of Turn")}").OnSelect(MenuEndOfTurn);
+			_menu.Items.Add($"{(Game.Animations ? '^' : ' ')}{Translate("Animations")}").OnSelect(MenuAnimations);
+			_menu.Items.Add($"{(Game.Sound ? '^' : ' ')}{Translate("Sound")}").OnSelect(MenuSound);
+			_menu.Items.Add($"{(Game.EnemyMoves ? '^' : ' ')}{Translate("Enemy Moves")}").OnSelect(MenuEnemyMoves);
+			_menu.Items.Add($"{(Game.CivilopediaText ? '^' : ' ')}{Translate("Civilopedia Text")}").OnSelect(MenuCivilopediaText);
+			_menu.Items.Add($"{(Game.Palace ? '^' : ' ')}{Translate("Palace")}").OnSelect(MenuPalace);
+			_menu.Items.Add($" {Translate("Change language...")}").OnSelect(MenuChangeLanguage);
 
 			AddMenu(_menu);
 		}
@@ -148,7 +154,7 @@ namespace CivOne.Screens
 			Palette = defaultPalette;
 
 			this.AddLayer(Common.LastScreen, 0, 0)
-				.FillRectangle(24, 16, 105, 81, 5);
+				.FillRectangle(24, 16, 105, 90, 5);
 		}
 	}
 }

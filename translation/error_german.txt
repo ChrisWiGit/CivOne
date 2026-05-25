@@ -1,0 +1,59 @@
+# CivOne Translation File
+# CC-BY-SA 4.0
+# This file contains the German translation
+*ZOC
+Eine Einheit darf sich nicht von einem Feld^
+neben einer feindlichen Einheit zu einem anderen^
+Feld bewegen, das ebenfalls neben einer feindlichen Einheit liegt.^
+Ausnahme: Diplomaten, Karawanen, Marine- und^
+Lufteinheiten; Betreten und Verlassen einer Stadt.^
+Siehe S. 34 im Handbuch für weitere Details.^
+
+*TRIREME
+Ihre Trireme ist auf See verloren gegangen.^
+Eine Trireme kann verloren gehen, wenn sie^
+ihre Runde nicht in der Nähe von Land beendet.^
+
+*FUEL
+Ihre Lufteinheit hat keinen Treibstoff mehr.^
+Jagdflugzeuge/Atomwaffeneinheiten müssen^
+am Ende jeder Runde zu einer Stadt oder einem Träger zurückkehren.^
+Bomber müssen am Ende ihrer zweiten Runde zurückkehren.
+
+*AMPHIB
+Bodeneinheiten müssen an Land gebracht werden, bevor^
+sie in den Kampf ziehen können.^
+
+*FIGHTER
+Nur JAGDFLUGZEUGE dürfen LUFT-Einheiten angreifen.^
+
+*OCCUPY
+Nur BODEN-Einheiten dürfen eine feindliche Stadt besetzen.^
+
+*PILLAGE
+Stadtfelder dürfen nicht geplündert werden.^
+Diplomat, Karawane, Jäger und^
+Marineeinheiten dürfen nicht plündern.^
+
+*SETTLERS
+Diese Funktion kann nur von Siedlereinheiten^
+ausgeführt werden.^
+
+*NOWATER
+Dieses Feld hat keinen Zugang zu Wasser.^
+Ein bewässertes Feld muss an einen Fluss-^
+oder Ozeanfeld angrenzen oder an ein^
+zuvor bewässertes Nicht-Stadt-Feld.^
+
+*NOMINE
+Dieser Geländetyp kann nicht abgebaut werden.^
+
+*NOIRR
+Dieser Geländetyp kann nicht bewässert werden.^
+
+*ADDCITY
+Siedler dürfen nicht zu Städten ^
+hinzugefügt werden mit einer^
+Größe von 10 oder mehr.^
+
+*END

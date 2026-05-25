@@ -11,6 +11,7 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
+using CivOne.IO.Text;
 
 namespace CivOne.Screens
 {
@@ -18,7 +19,6 @@ namespace CivOne.Screens
 	internal class Intro : BaseScreen
 	{
 		private const float FADE_STEP = 0.0625F;
-		private const string INTRO_HINT_TEXT = "Shift+Left/Right Forward/Backward";
 		
 		private readonly string[] _introText;
 		private readonly Picture[] _pictures;
@@ -169,7 +169,7 @@ namespace CivOne.Screens
 		{
 			if (_introLine == 1)
 			{
-				this.DrawText(INTRO_HINT_TEXT, 1, 15, x + 160, y + 190, TextAlign.Center);
+				this.DrawText(Translate("Shift+Left/Right Forward/Backward"), 1, 15, x + 160, y + 190, TextAlign.Center);
 			}
 		}
 
@@ -237,13 +237,13 @@ namespace CivOne.Screens
 			OnResize += Resize;
 			FadeStep = 0.0F;
 			
-			_introText = TextFile.Instance.LoadArray("STORY");
+			_introText = TextFileFactory.LoadTextFile("STORY");
 			if (_introText.Length == 0)
 			{
 				_introText = new string[16];
 				for (int i = 0; i < 16; i++)
 				{
-					_introText[i] = (i % 2) == 0 ? "MISSING TEXT" : "_";
+					_introText[i] = (i % 2) == 0 ? Translate("MISSING TEXT") : "_";
 				}
 			}
 			_pictures = new Picture[8];

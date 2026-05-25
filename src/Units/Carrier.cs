@@ -58,6 +58,7 @@ namespace CivOne.Units
 		{
 			Type = UnitType.Carrier;
 			Name = "Carrier";
+			TranslatedName = Translate("Carrier");
 			RequiredTech = new AdvancedFlight();
 			ObsoleteTech = null;
 			SetIcon('D', 1, 0);

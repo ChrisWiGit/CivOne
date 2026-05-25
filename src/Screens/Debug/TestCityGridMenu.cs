@@ -48,7 +48,7 @@ namespace CivOne.Screens.Debug
 
 		private void OnCitySelected(int index)
 		{
-			GameTask.Enqueue(Message.General($"Selected city at index {index}: {1000000000 + index}"));
+			GameTask.Enqueue(Message.General(TranslateFormatted("Selected city at index {0}: {1}", index, 1000000000 + index)));
 			Destroy();
 		}
 

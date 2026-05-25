@@ -15,7 +15,9 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
+using CivOne.IO.Text;
 using CivOne.Screens.Reports;
+using CivOne.Services;
 using CivOne.Tasks;
 using CivOne.UserInterface;
 
@@ -28,7 +30,7 @@ namespace CivOne.Screens
 	/// Shows the intro animation, handles skipping, and exposes the main menu.
 	/// </remarks>
 	[ScreenResizeable]
-	internal class Credits : BaseScreen
+	internal class Credits : BaseScreen, ITranslationLanguageObserver
 	{
 		private const int NOISE_COUNT = 40;
 		
@@ -62,6 +64,27 @@ namespace CivOne.Screens
 
 		private Dictionary<char, Action<object, EventArgs>> _shortKeyMapping;
 		private Action<object, EventArgs> _shortCutAction;
+
+		private void RebuildShortcutMapping()
+		{
+			var menuItems = GetMenuItems();
+			_shortKeyMapping = new Dictionary<char, Action<object, EventArgs>>
+			{
+				{ menuItems[0].ToUpper()[0], StartNewGame },
+				{ menuItems[1].ToUpper()[0], LoadSavedGame },
+				{ menuItems[2].ToUpper()[0], Earth },
+				{ menuItems[3].ToUpper()[0], CustomizeWorld },
+				{ menuItems[4].ToUpper()[0], ViewHallOfFame }
+			};
+		}
+
+		public void OnLanguageChanged(string activeLanguagePostfix)
+		{
+			RebuildShortcutMapping();
+			CloseMenus();
+			_forceRedraw = true;
+			Refresh();
+		}
 		
 		private void HandleIntroText()
 		{
@@ -191,11 +214,11 @@ namespace CivOne.Screens
 				}
 				
 				// Draw menu background
-				int mx = ((Width - 120) / 2), my = Height - 59;
-				this.FillRectangle(mx, my, 122, 49, 5)
-					.FillRectangle(mx + 1, my + 1, 120, 47, _menuColours[0])
-					.FillRectangle(mx + 1, my + 2, 119, 46, _menuColours[1])
-					.FillRectangle(mx + 2, my + 2, 118, 45, _menuColours[2]);
+				int mx = ((Width - 120) / 2), my = Height - 67;
+				this.FillRectangle(mx, my, 122, 57, 5)
+					.FillRectangle(mx + 1, my + 1, 120, 55, _menuColours[0])
+					.FillRectangle(mx + 1, my + 2, 119, 54, _menuColours[1])
+					.FillRectangle(mx + 2, my + 2, 118, 53, _menuColours[2]);
 				
 				CreateMenu();
 			}
@@ -248,7 +271,7 @@ namespace CivOne.Screens
 			Menu menu = new Menu("MainMenu", Palette)
 			{
 				X = ((Width - 120) / 2) + 3,
-				Y = Height - 55,
+				Y = Height - 63,
 				MenuWidth = 116,
 				ActiveColour = 11,
 				TextColour = 5,
@@ -269,6 +292,7 @@ namespace CivOne.Screens
 			menu.Items.Add(items[2]).OnSelect(Earth);
 			menu.Items.Add(items[3]).OnSelect(CustomizeWorld);
 			menu.Items.Add(items[4]).OnSelect(ViewHallOfFame);
+			menu.Items.Add(Translate("Change language...")).OnSelect(ChangeLanguage);
 
 			AddMenu(menu);
 
@@ -320,9 +344,8 @@ namespace CivOne.Screens
 
 					var savegameName = Path.GetFileName(Runtime.Settings.LoadCosFile);
 					GameTask.Enqueue(Message.Error(
-						"-- Civilization Note --",
-						"Could not load save game from --load-cos.",
-						$"File: {savegameName}"));
+						Translate("-- Civilization Note --"),
+						TranslateFormattedArray("Could not load save game from --load-cos.\nFile: {0}", savegameName)));
 					return;
 				}
 				Common.DestroyScreen(Common.Screens.FirstOrDefault(s => s is GamePlay, null));
@@ -361,6 +384,12 @@ namespace CivOne.Screens
 		{
 			Log("Main Menu: View Hall of Fame");
 			Common.AddScreen(HallOfFameScreenFactory.ViewScore());
+		}
+
+		private static void ChangeLanguage(object sender, EventArgs args)
+		{
+			Log("Main Menu: Change language");
+			Common.AddScreen(new LanguageScreen());
 		}
 
 		public override bool KeyDown(KeyboardEventArgs args)
@@ -422,7 +451,7 @@ namespace CivOne.Screens
 			foreach (Menu menu in Common.Screens.Where(x => x is Menu && (x as Menu).Id == "MainMenu"))
 			{
 				menu.X = ((Width - 120) / 2) + 3;
-				menu.Y = Height - 55;
+				menu.Y = Height - 63;
 				menu.ForceUpdate();
 			}
 		}
@@ -432,9 +461,14 @@ namespace CivOne.Screens
 			Runtime.WindowTitle = $"{Settings.WindowTitle} (press SHIFT+F1 to enter Setup)";
 
 			OnResize += Resize;
-			Closed += (s, a) => Runtime.WindowTitle = Settings.WindowTitle;
+			Closed += (s, a) =>
+			{
+				TranslationServiceFactory.UnregisterLanguageObserver(this);
+				Runtime.WindowTitle = Settings.WindowTitle;
+			};
+			TranslationServiceFactory.RegisterLanguageObserver(this);
 
-			_introText = TextFile.Instance.LoadArray("CREDITS");
+			_introText = TextFileFactory.LoadTextFile("CREDITS");
 			if (_introText.Length == 0) _introText = new string[25];
 			_pictures = new Picture[3];
 			for (int i = 0; i < 2; i++)
@@ -474,15 +508,7 @@ namespace CivOne.Screens
 				_loadSavedGame = true;
 			}
 
-			var menuItems = GetMenuItems();
-			_shortKeyMapping = new Dictionary<char, Action<object, EventArgs>>
-			{
-				{ menuItems[0].ToUpper()[0], StartNewGame },
-				{ menuItems[1].ToUpper()[0], LoadSavedGame },
-				{ menuItems[2].ToUpper()[0], Earth },
-				{ menuItems[3].ToUpper()[0], CustomizeWorld },
-				{ menuItems[4].ToUpper()[0], ViewHallOfFame }
-			};
+			RebuildShortcutMapping();
 		}
 	}
 }

@@ -24,6 +24,7 @@ using CivOne.Screens.Dialogs;
 using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Civilizations;
+using CivOne.Services;
 
 namespace CivOne.Screens
 {
@@ -64,6 +65,12 @@ namespace CivOne.Screens
 		private void MenuSetPlayerAdvances(object sender, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<SetPlayerAdvances>());
+			Destroy();
+		}
+
+		private void MenuSetPlayerGovernment(object sender, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen<DebugChangeGovernment>());
 			Destroy();
 		}
 
@@ -139,7 +146,7 @@ namespace CivOne.Screens
 			});
 
 			GameTask conquest;
-			GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has cheated", "the entire planet!"));
+			GameTask.Enqueue(Message.Newspaper(null, TranslateArray("Your civilization\nhas cheated\nthe entire planet!")));
 			conquest = Show.Screen<Conquest>();
 			GameTask.Enqueue(conquest);
 			conquest.Done += (s, a) => RuntimeHandler.EndGame();
@@ -160,7 +167,7 @@ namespace CivOne.Screens
 			PolluteTiles(false);
 			Game.GlobalWarmingService.RefreshPollutionState();
 			Common.GamePlay.RefreshMap();
-			GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has caused", "instant global warming!"));
+			GameTask.Enqueue(Message.Newspaper(null, TranslateArray("Your civilization\nhas caused\ninstant global warming!")));
 			Destroy();
 		}
 
@@ -289,7 +296,7 @@ namespace CivOne.Screens
 			var city = Game.Cities.FirstOrDefault(c => c.Owner == humanOwner);
 			if (city == null)
 			{
-				GameTask.Enqueue(Message.General("No human city available for DisbandUnit test."));
+				GameTask.Enqueue(Message.General(Translate("No human city available for DisbandUnit test.")));
 				Destroy();
 				return;
 			}
@@ -297,7 +304,7 @@ namespace CivOne.Screens
 			var unit = Game.GetUnits().FirstOrDefault(u => u.Owner == humanOwner);
 			if (unit == null)
 			{
-				GameTask.Enqueue(Message.General("No human unit available for DisbandUnit test."));
+				GameTask.Enqueue(Message.General(Translate("No human unit available for DisbandUnit test.")));
 				Destroy();
 				return;
 			}
@@ -311,7 +318,7 @@ namespace CivOne.Screens
 			var enemy = Game.Players.FirstOrDefault(p => p != Human && p.Civilization.Id != 0);
 			if (enemy == null)
 			{
-				GameTask.Enqueue(Message.General("No enemy player available for advance capture test."));
+				GameTask.Enqueue(Message.General(Translate("No enemy player available for advance capture test.")));
 				Destroy();
 				return;
 			}
@@ -336,7 +343,7 @@ namespace CivOne.Screens
 			var baseUnit = Game.GetUnits().OfType<BaseUnit>().FirstOrDefault(u => u.Owner == humanOwner);
 			if (baseUnit == null)
 			{
-				GameTask.Enqueue(Message.General("No human base unit available for WeakAttack test."));
+				GameTask.Enqueue(Message.General(Translate("No human base unit available for WeakAttack test.")));
 				Destroy();
 				return;
 			}
@@ -359,7 +366,7 @@ namespace CivOne.Screens
 				.FirstOrDefault(u => u.Owner == humanOwner);
 			if (diplomat == null)
 			{
-				GameTask.Enqueue(Message.General("No human Diplomat/Spy available."));
+				GameTask.Enqueue(Message.General(Translate("No human Diplomat/Spy available.")));
 				Destroy();
 				return;
 			}
@@ -367,7 +374,7 @@ namespace CivOne.Screens
 			var enemyCity = Game.Cities.FirstOrDefault(c => c.Owner != humanOwner);
 			if (enemyCity == null)
 			{
-				GameTask.Enqueue(Message.General("No enemy city available for incite test."));
+				GameTask.Enqueue(Message.General(Translate("No enemy city available for incite test.")));
 				Destroy();
 				return;
 			}
@@ -384,7 +391,7 @@ namespace CivOne.Screens
 				.FirstOrDefault(u => u.Owner == humanOwner);
 			if (caravan == null)
 			{
-				GameTask.Enqueue(Message.General("No human Caravan available."));
+				GameTask.Enqueue(Message.General(Translate("No human Caravan available.")));
 				Destroy();
 				return;
 			}
@@ -392,7 +399,7 @@ namespace CivOne.Screens
 			var city = Game.Cities.FirstOrDefault(c => c.Owner == humanOwner);
 			if (city == null)
 			{
-				GameTask.Enqueue(Message.General("No human city available for caravan choice test."));
+				GameTask.Enqueue(Message.General(Translate("No human city available for caravan choice test.")));
 				Destroy();
 				return;
 			}
@@ -410,7 +417,7 @@ namespace CivOne.Screens
 
 			if (enemyCities.Length == 0)
 			{
-				GameTask.Enqueue(Message.General("No enemy city available for DiplomatCity test."));
+				GameTask.Enqueue(Message.General(Translate("No enemy city available for DiplomatCity test.")));
 				Destroy();
 				return;
 			}
@@ -425,6 +432,51 @@ namespace CivOne.Screens
 				"plugin-source.dll",
 				"plugin-destination.dll",
 				new StubPluginOverwriteService())));
+			Destroy();
+		}
+
+		private void MenuRunChooseTech(object sender, EventArgs args)
+		{
+			if (Human == null)
+			{
+				GameTask.Enqueue(Message.General(Translate("No human player available for ChooseTech test.")));
+				Destroy();
+				return;
+			}
+
+			var availableAdvances = Human.AvailableResearch.ToList();
+			if (availableAdvances.Count == 0)
+			{
+				GameTask.Enqueue(Message.General(Translate("No available advances for ChooseTech test.")));
+				Destroy();
+				return;
+			}
+
+			GameTask.Enqueue(Show.Screen<ChooseTech>());
+			Destroy();
+		}
+
+		private void MenuRunDiscovery(object sender, EventArgs args)
+		{
+			if (Human == null)
+			{
+				GameTask.Enqueue(Message.General(Translate("No human player available for Discovery test.")));
+				Destroy();
+				return;
+			}
+
+			IAdvance advance = Human.AvailableResearch.FirstOrDefault()
+				?? Common.Advances.FirstOrDefault(a => !Human.HasAdvance(a))
+				?? Common.Advances.FirstOrDefault();
+
+			if (advance == null)
+			{
+				GameTask.Enqueue(Message.General(Translate("No advance available for Discovery test.")));
+				Destroy();
+				return;
+			}
+
+			GameTask.Enqueue(Show.Screen(new Discovery(advance)));
 			Destroy();
 		}
 
@@ -445,7 +497,7 @@ namespace CivOne.Screens
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (!RefreshNeeded()) return false;
-			_gridMenu.Draw(this, "Debug Options (F12):", CanvasHeight);
+			_gridMenu.Draw(this, Translate("Debug Options (F12):"), CanvasHeight);
 			return true;
 		}
 
@@ -461,48 +513,50 @@ namespace CivOne.Screens
 
 			_menuEntries =
 			[
-				new("Load a Game", () => LoadGame(null, EventArgs.Empty)),
-				new("Set Game Year", () => MenuSetGameYear(null, EventArgs.Empty)),
-				new("Set Player Gold", () => MenuSetPlayerGold(null, EventArgs.Empty)),
-				new("Set Player Science", () => MenuSetPlayerScience(null, EventArgs.Empty)),
-				new("Set Player Advances", () => MenuSetPlayerAdvances(null, EventArgs.Empty)),
-				new("Set City Size", () => MenuSetCitySize(null, EventArgs.Empty)),
-				new("Cause City Disaster", () => MenuCityDisaster(null, EventArgs.Empty)),
-				new("Add building to city", () => MenuAddBuilding(null, EventArgs.Empty)),
-				new("Test Dialog: ConfirmBuy", () => MenuRunConfirmBuy(null, EventArgs.Empty)),
-				new("Test Dialog: ConfirmSell", () => MenuRunConfirmSell(null, EventArgs.Empty)),
-				new("Test Dialog: ConfirmQuit", () => MenuRunConfirmQuit(null, EventArgs.Empty)),
-				new("Test Dialog: ConfirmRetire", () => MenuRunConfirmRetire(null, EventArgs.Empty)),
-				new("Test Dialog: Revolution", () => MenuRunRevolution(null, EventArgs.Empty)),
-				new("Test Dialog: SetRate Taxes", () => MenuRunSetRateTaxes(null, EventArgs.Empty)),
-				new("Test Dialog: SetRate Luxuries", () => MenuRunSetRateLuxuries(null, EventArgs.Empty)),
-				new("Test Dialog: DisbandUnit", () => MenuRunDisbandUnitDialog(null, EventArgs.Empty)),
-				new("Test Dialog: SelectAdvanceAfterCapture", () => MenuRunSelectAdvanceAfterCityCapture(null, EventArgs.Empty)),
-				new("Test Dialog: WeakAttack", () => MenuRunWeakAttack(null, EventArgs.Empty)),
-				new("Test Dialog: DiplomatBribe", () => MenuRunDiplomatBribe(null, EventArgs.Empty)),
-				new("Test Dialog: DiplomatIncite", () => MenuRunDiplomatIncite(null, EventArgs.Empty)),
-				new("Test Dialog: CaravanChoice", () => MenuRunCaravanChoice(null, EventArgs.Empty)),
-				new("Test Dialog: DiplomatCity", () => MenuRunDiplomatCity(null, EventArgs.Empty)),
-				new("Test Dialog: OverwritePlugin", () => MenuRunOverwritePlugin(null, EventArgs.Empty)),
-
-				new("Change Human Player", () => MenuChangeHumanPlayer(null, EventArgs.Empty)),
-				new("Spawn Unit", () => MenuSpawnUnit(null, EventArgs.Empty)),
-				new("Meet With King", () => MenuMeetWithKing(null, EventArgs.Empty)),
-				new("Toggle Reveal World", () => MenuRevealWorld(null, EventArgs.Empty)),
-				new("Build Palace", () => MenuBuildPalace(null, EventArgs.Empty)),
-				new("City Menu Grid (Test)", () => MenuCityGridTest(null, EventArgs.Empty)),
-				new("Ranking (Random)", () => MenuShowCivilizationRanking(null, EventArgs.Empty)),
-				new("Top Leader Screen",  () => MenuShowTopLeaderScreen(null, EventArgs.Empty)),
-				new("Hall Of Fame Screen", () => MenuShowHallOfFameScreen(null, EventArgs.Empty)),
-				new("Show Power Graph", () => MenuShowPowerGraph(null, EventArgs.Empty)),
-				new("Instant Conquest", () => InstantConquest(null, EventArgs.Empty)),
-				new("Instant Global Warming", () => InstantGlobalWarming(null, EventArgs.Empty)),
-				new("Palette Viewer", () => MenuPaletteViewer(null, EventArgs.Empty)),
-				new("Settings", () => ShowSettings(null, EventArgs.Empty)),
-				new("End Game: Conquest",  () => EndGameConquest(null, EventArgs.Empty)),
-				new("End Game: Defeat", () => EndGameDefeat(null, EventArgs.Empty)),
-				new("End Game: Alpha Centauri", () => EndGameAlphaCentauri(null, EventArgs.Empty)),
-				new("Build SpaceShip", () => MenuBuildSpaceShip(null, EventArgs.Empty))
+				new(Translate("Load a Game"), () => LoadGame(null, EventArgs.Empty)),
+				new(Translate("Set Game Year"), () => MenuSetGameYear(null, EventArgs.Empty)),
+				new(Translate("Set Player Gold"), () => MenuSetPlayerGold(null, EventArgs.Empty)),
+				new(Translate("Set Player Science"), () => MenuSetPlayerScience(null, EventArgs.Empty)),
+				new(Translate("Set Player Advances"), () => MenuSetPlayerAdvances(null, EventArgs.Empty)),
+				new(Translate("Set Player Government"), () => MenuSetPlayerGovernment(null, EventArgs.Empty)),
+				new(Translate("Set City Size"), () => MenuSetCitySize(null, EventArgs.Empty)),
+				new(Translate("Cause City Disaster"), () => MenuCityDisaster(null, EventArgs.Empty)),
+				new(Translate("Add building to city"), () => MenuAddBuilding(null, EventArgs.Empty)),
+				new(Translate("Test Dialog: ConfirmBuy"), () => MenuRunConfirmBuy(null, EventArgs.Empty)),
+				new(Translate("Test Dialog: ConfirmSell"), () => MenuRunConfirmSell(null, EventArgs.Empty)),
+				new(Translate("Test Dialog: ConfirmQuit"), () => MenuRunConfirmQuit(null, EventArgs.Empty)),
+				new(Translate("Test Dialog: ConfirmRetire"), () => MenuRunConfirmRetire(null, EventArgs.Empty)),
+				new(Translate("Test Dialog: Revolution"), () => MenuRunRevolution(null, EventArgs.Empty)),
+				new(Translate("Test Dialog: SetRate Taxes"), () => MenuRunSetRateTaxes(null, EventArgs.Empty)),
+				new(Translate("Test Dialog: SetRate Luxuries"), () => MenuRunSetRateLuxuries(null, EventArgs.Empty)),
+				new(Translate("Test Dialog: DisbandUnit"), () => MenuRunDisbandUnitDialog(null, EventArgs.Empty)),
+				new(Translate("Test Dialog: SelectAdvanceAfterCapture"), () => MenuRunSelectAdvanceAfterCityCapture(null, EventArgs.Empty)),
+				new(Translate("Test Dialog: WeakAttack"), () => MenuRunWeakAttack(null, EventArgs.Empty)),
+				new(Translate("Test Dialog: DiplomatBribe"), () => MenuRunDiplomatBribe(null, EventArgs.Empty)),
+				new(Translate("Test Dialog: DiplomatIncite"), () => MenuRunDiplomatIncite(null, EventArgs.Empty)),
+				new(Translate("Test Dialog: CaravanChoice"), () => MenuRunCaravanChoice(null, EventArgs.Empty)),
+				new(Translate("Test Dialog: DiplomatCity"), () => MenuRunDiplomatCity(null, EventArgs.Empty)),
+				new(Translate("Test Dialog: OverwritePlugin"), () => MenuRunOverwritePlugin(null, EventArgs.Empty)),
+				new(Translate("Test Dialog: ChooseTech"), () => MenuRunChooseTech(null, EventArgs.Empty)),
+				new(Translate("Test Dialog: Discovery"), () => MenuRunDiscovery(null, EventArgs.Empty)),
+				new(Translate("Change Human Player"), () => MenuChangeHumanPlayer(null, EventArgs.Empty)),
+				new(Translate("Spawn Unit"), () => MenuSpawnUnit(null, EventArgs.Empty)),
+				new(Translate("Meet With King"), () => MenuMeetWithKing(null, EventArgs.Empty)),
+				new(Translate("Toggle Reveal World"), () => MenuRevealWorld(null, EventArgs.Empty)),
+				new(Translate("Build Palace"), () => MenuBuildPalace(null, EventArgs.Empty)),
+				new(Translate("City Menu Grid (Test)"), () => MenuCityGridTest(null, EventArgs.Empty)),
+				new(Translate("Ranking (Random)"), () => MenuShowCivilizationRanking(null, EventArgs.Empty)),
+				new(Translate("Top Leader Screen"),  () => MenuShowTopLeaderScreen(null, EventArgs.Empty)),
+				new(Translate("Hall Of Fame Screen"), () => MenuShowHallOfFameScreen(null, EventArgs.Empty)),
+				new(Translate("Show Power Graph"), () => MenuShowPowerGraph(null, EventArgs.Empty)),
+				new(Translate("Instant Conquest"), () => InstantConquest(null, EventArgs.Empty)),
+				new(Translate("Instant Global Warming"), () => InstantGlobalWarming(null, EventArgs.Empty)),
+				new(Translate("Palette Viewer"), () => MenuPaletteViewer(null, EventArgs.Empty)),
+				new(Translate("Settings"), () => ShowSettings(null, EventArgs.Empty)),
+				new(Translate("End Game: Conquest"),  () => EndGameConquest(null, EventArgs.Empty)),
+				new(Translate("End Game: Defeat"), () => EndGameDefeat(null, EventArgs.Empty)),
+				new(Translate("End Game: Alpha Centauri"), () => EndGameAlphaCentauri(null, EventArgs.Empty)),
+				new(Translate("Build SpaceShip"), () => MenuBuildSpaceShip(null, EventArgs.Empty))
 			];
 
 			string[] labels = [.. _menuEntries.Select(e => e.Text)];
@@ -524,9 +578,9 @@ namespace CivOne.Screens
 
 			public void BribeUnit()
 			{
+				ITranslationService translation = TranslationServiceFactory.GetCurrent();
 				GameTask.Enqueue(Message.General(
-					$"[STUB] Bribing {UnitName}",
-					$"for {Gold} gold"));
+					translation.TranslateFormattedArray("[STUB] Bribing {0}\nfor {1} gold", UnitName, Gold)));
 			}
 
 			public int CalculateBribeCost()
@@ -544,9 +598,9 @@ namespace CivOne.Screens
 		{
 			public void InciteRevolt(City cityToIncite, Diplomat diplomat)
 			{
+				ITranslationService translation = TranslationServiceFactory.GetCurrent();
 				GameTask.Enqueue(Message.General(
-					$"[STUB] Inciting revolt",
-					$"in {cityToIncite.Name}"));
+					translation.TranslateFormattedArray("[STUB] Inciting revolt\nin {0}", cityToIncite.Name)));
 			}
 		}
 
@@ -554,21 +608,19 @@ namespace CivOne.Screens
 		{
 			public void KeepMoving(Caravan unit, City city)
 			{
-				GameTask.Enqueue(Message.General("[STUB] Caravan keeps moving"));
+				GameTask.Enqueue(Message.General(TranslationServiceFactory.GetCurrent().Translate("[STUB] Caravan keeps moving")));
 			}
 
 			public void EstablishTradeRoute(Caravan unit, City city)
 			{
+				ITranslationService translation = TranslationServiceFactory.GetCurrent();
 				GameTask.Enqueue(Message.General(
-					$"[STUB] Trade route established",
-					$"to {city.Name}"));
+					translation.TranslateFormattedArray("[STUB] Trade route established\nto {0}", city.Name)));
 			}
 
 			public void HelpBuildWonder(Caravan unit, City city)
 			{
-				GameTask.Enqueue(Message.General(
-					"[STUB] Caravan helps",
-					"build wonder"));
+				GameTask.Enqueue(Message.General(TranslationServiceFactory.GetCurrent().TranslateArray("[STUB] Caravan helps\nbuild wonder")));
 			}
 
 			public bool CanEstablishTradeRoute(Caravan unit, City city)
@@ -581,10 +633,9 @@ namespace CivOne.Screens
 		{
 			public void ConfirmOverwrite(string source, string destination, string filename)
 			{
+				ITranslationService translation = TranslationServiceFactory.GetCurrent();
 				GameTask.Enqueue(Message.General(
-					"[STUB] Overwrite plugin",
-					$"{filename}",
-					$"{source} -> {destination}"));
+					translation.TranslateFormattedArray("[STUB] Overwrite plugin\n{0}\n{1} -> {2}", filename, source, destination)));
 			}
 		}
 
@@ -607,7 +658,7 @@ namespace CivOne.Screens
 					_citySelect.Cancelled += CitySelection_Cancel;
 				}
 
-				_citySelect.Draw(this, "DiplomatCity Test - Select City", CanvasHeight);
+				_citySelect.Draw(this, Translate("DiplomatCity Test - Select City"), CanvasHeight);
 			}
 
 			private void OnCitySelected(City enemyCity)

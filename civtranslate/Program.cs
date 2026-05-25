@@ -164,10 +164,24 @@ static IEnumerable<InvocationCandidate> EnumerateInvocationCandidates(string con
 {
 	for (int index = 0; index < content.Length; index++)
 	{
-		if (TryMatchInvocation(content, index, ".TranslateFormatted", out int openParen1))
+		if (TryMatchInvocation(content, index, "TranslateFormattedArray", out int openParen0))
 		{
-			yield return new InvocationCandidate(".TranslateFormatted", openParen1);
+			yield return new InvocationCandidate("TranslateFormattedArray", openParen0);
+			index = openParen0;
+			continue;
+		}
+
+		if (TryMatchInvocation(content, index, "TranslateFormatted", out int openParen1))
+		{
+			yield return new InvocationCandidate("TranslateFormatted", openParen1);
 			index = openParen1;
+			continue;
+		}
+
+		if (TryMatchInvocation(content, index, "TranslateArray", out int openParen12))
+		{
+			yield return new InvocationCandidate("TranslateArray", openParen12);
+			index = openParen12;
 			continue;
 		}
 
@@ -259,49 +273,108 @@ static bool TryExtractFirstStringArgument(string content, int openParenIndex, ou
 		cursor++;
 	}
 
-	bool hasDollar = false;
-	bool isVerbatim = false;
-
-	bool consumedPrefix = true;
-	while (consumedPrefix && cursor < content.Length)
-	{
-		consumedPrefix = false;
-		if (content[cursor] == '$')
-		{
-			hasDollar = true;
-			cursor++;
-			consumedPrefix = true;
-		}
-		else if (content[cursor] == '@')
-		{
-			isVerbatim = true;
-			cursor++;
-			consumedPrefix = true;
-		}
-	}
-
-	if (cursor >= content.Length || content[cursor] != '"')
+	if (!TryParseConcatenatedStringExpression(content, cursor, out string text, out bool isInterpolated, out int firstQuoteIndex))
 	{
 		return false;
 	}
 
-	int line = GetLineNumber(content, cursor);
-	bool success = isVerbatim
-		? TryParseVerbatimString(content, cursor, out string text)
-		: TryParseRegularString(content, cursor, out text);
+	int line = GetLineNumber(content, firstQuoteIndex);
 
-	if (!success)
-	{
-		return false;
-	}
+	text = EscapeControlCharacters(text);
 
-	argument = new ExtractedArgument(text, hasDollar, line);
+	argument = new ExtractedArgument(text, isInterpolated, line);
 	return true;
 }
 
-static bool TryParseRegularString(string content, int startQuoteIndex, out string text)
+static bool TryParseConcatenatedStringExpression(string content, int startIndex, out string text, out bool isInterpolated, out int firstQuoteIndex)
 {
 	text = string.Empty;
+	isInterpolated = false;
+	firstQuoteIndex = -1;
+
+	StringBuilder builder = new();
+	int cursor = startIndex;
+	bool parsedAny = false;
+
+	while (cursor < content.Length)
+	{
+		while (cursor < content.Length && char.IsWhiteSpace(content[cursor]))
+		{
+			cursor++;
+		}
+
+		bool hasDollar = false;
+		bool isVerbatim = false;
+
+		bool consumedPrefix = true;
+		while (consumedPrefix && cursor < content.Length)
+		{
+			consumedPrefix = false;
+			if (content[cursor] == '$')
+			{
+				hasDollar = true;
+				cursor++;
+				consumedPrefix = true;
+			}
+			else if (content[cursor] == '@')
+			{
+				isVerbatim = true;
+				cursor++;
+				consumedPrefix = true;
+			}
+		}
+
+		if (cursor >= content.Length || content[cursor] != '"')
+		{
+			return false;
+		}
+
+		if (firstQuoteIndex < 0)
+		{
+			firstQuoteIndex = cursor;
+		}
+
+		bool parsed = isVerbatim
+			? TryParseVerbatimString(content, cursor, out string segment, out int nextIndex)
+			: TryParseRegularString(content, cursor, out segment, out nextIndex);
+
+		if (!parsed)
+		{
+			return false;
+		}
+
+		parsedAny = true;
+		builder.Append(segment);
+		isInterpolated |= hasDollar;
+		cursor = nextIndex;
+
+		while (cursor < content.Length && char.IsWhiteSpace(content[cursor]))
+		{
+			cursor++;
+		}
+
+		if (cursor < content.Length && content[cursor] == '+')
+		{
+			cursor++;
+			continue;
+		}
+
+		break;
+	}
+
+	if (!parsedAny)
+	{
+		return false;
+	}
+
+	text = builder.ToString();
+	return true;
+}
+
+static bool TryParseRegularString(string content, int startQuoteIndex, out string text, out int nextIndex)
+{
+	text = string.Empty;
+	nextIndex = -1;
 	StringBuilder builder = new();
 
 	int cursor = startQuoteIndex + 1;
@@ -311,6 +384,7 @@ static bool TryParseRegularString(string content, int startQuoteIndex, out strin
 		if (ch == '"')
 		{
 			text = builder.ToString();
+			nextIndex = cursor + 1;
 			return true;
 		}
 
@@ -342,9 +416,10 @@ static bool TryParseRegularString(string content, int startQuoteIndex, out strin
 	return false;
 }
 
-static bool TryParseVerbatimString(string content, int startQuoteIndex, out string text)
+static bool TryParseVerbatimString(string content, int startQuoteIndex, out string text, out int nextIndex)
 {
 	text = string.Empty;
+	nextIndex = -1;
 	StringBuilder builder = new();
 
 	int cursor = startQuoteIndex + 1;
@@ -361,6 +436,7 @@ static bool TryParseVerbatimString(string content, int startQuoteIndex, out stri
 			}
 
 			text = builder.ToString();
+			nextIndex = cursor + 1;
 			return true;
 		}
 
@@ -440,6 +516,7 @@ static TranslationFile ReadTranslationFileIfExists(string outputFile)
 static MergeReport Merge(ScanReport scanReport, TranslationFile existingFile)
 {
 	List<TranslationEntry> finalEntries = [];
+	List<TranslationEntry> newEntries = [];
 	HashSet<string> usedKeys = new(StringComparer.OrdinalIgnoreCase);
 	List<OverwrittenEntry> overwrittenEntries = [];
 	int reused = 0;
@@ -465,7 +542,7 @@ static MergeReport Merge(ScanReport scanReport, TranslationFile existingFile)
 		}
 		else
 		{
-			finalEntries.Add(new TranslationEntry(found.NormalizedKey, found.OriginalText));
+			newEntries.Add(new TranslationEntry(found.NormalizedKey, found.OriginalText));
 			added++;
 		}
 
@@ -483,6 +560,7 @@ static MergeReport Merge(ScanReport scanReport, TranslationFile existingFile)
 		obsoleteEntries.Add(existing);
 	}
 
+	finalEntries.AddRange(newEntries);
 	finalEntries.AddRange(obsoleteEntries);
 
 	return new MergeReport(finalEntries, added, reused, obsoleteEntries, overwrittenEntries, comments);
@@ -596,6 +674,12 @@ static string EscapeEquals(string value) => value.Replace("=", EqualsPlaceholder
 
 static string UnescapeEquals(string value) => value.Replace(EqualsPlaceholder, "=", StringComparison.Ordinal);
 
+static string EscapeControlCharacters(string value) => value
+	.Replace("\r\n", "\\n", StringComparison.Ordinal)
+	.Replace("\n", "\\n", StringComparison.Ordinal)
+	.Replace("\r", "\\r", StringComparison.Ordinal)
+	.Replace("\t", "\\t", StringComparison.Ordinal);
+
 static void PrintHelp()
 {
 	Console.WriteLine("civtranslate");
@@ -621,6 +705,7 @@ static void PrintHelp()
 	Console.WriteLine("Behavior:");
 	Console.WriteLine("  Keys are normalized to uppercase before lookup and output.");
 	Console.WriteLine("  New keys are written with value equal to key.");
+	Console.WriteLine("  Control characters are written as escaped text (e.g. \\n, \\r, \\t).");
 	Console.WriteLine("  Interpolated strings ($\"...\") are ignored with warnings.");
 	Console.WriteLine("  Existing keys not found in the current scan are kept and warned.");
 }

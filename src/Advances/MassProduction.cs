@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public MassProduction() : base(5, 1, 0, Advance.Automobile, Advance.TheCorporation)
 		{
 			Name = "Mass Production";
+			TranslatedName = Translate("Mass Production");
 			Type = Advance.MassProduction;
 		}
 	}

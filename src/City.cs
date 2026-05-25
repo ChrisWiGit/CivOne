@@ -1114,7 +1114,7 @@ namespace CivOne
 			if (partType != SpaceShipComponentType.Empty && canShowInstallScreen)
 			{
 				Shields = 0;
-				Message message = Message.Newspaper(this, $"{this.Name} builds", $"{(CurrentProduction as ICivilopedia).Name}.");
+				Message message = Message.Newspaper(this, TranslateFormattedArray("{0} builds\n{1}.", this.Name, (CurrentProduction as ICivilopedia).TranslatedName));
 				message.Done += (s, a) =>
 				{
 					Show showSpaceShip = Show.SpaceShipWithInstall(partType);
@@ -1146,7 +1146,7 @@ namespace CivOne
 			}
 			_buildings.Add(CurrentProduction as IBuilding);
 
-			Message message = Message.Newspaper(this, $"{this.Name} builds", $"{(CurrentProduction as ICivilopedia).Name}.");
+			Message message = Message.Newspaper(this, TranslateFormattedArray("{0} builds\n{1}.", this.Name, (CurrentProduction as ICivilopedia).TranslatedName));
 			message.Done += (s, a) =>
 			{
 				GameTask advisorMessage = Message.Advisor(Advisor.Foreign, true, $"{Player.TribeName} capital", $"moved to {Name}.");
@@ -1180,7 +1180,7 @@ namespace CivOne
 				return;
 			}
 
-			GameTask.Enqueue(Message.Newspaper(this, "Pollution in", $"{this.Name}!", "Health problems feared."));
+			GameTask.Enqueue(Message.Newspaper(this, TranslateFormattedArray("Pollution in\n{0}!\nHealth problems feared.", this.Name)));
 		}
 
 		public void NewTurn()
@@ -1258,7 +1258,7 @@ namespace CivOne
 				Size--;
 				if (Human == Owner)
 				{
-					GameTask.Enqueue(Message.Newspaper(this, "Food storage exhausted", $"in {Name}!", "Famine feared."));
+					GameTask.Enqueue(Message.Newspaper(this, TranslateFormattedArray("Food storage exhausted\nin {0}!\nFamine feared.", Name)));
 				}
 				if (Size == 0) return;
 			}
@@ -1330,7 +1330,7 @@ namespace CivOne
 					}
 					if (Human == Owner && (unit is Settlers || unit is Diplomat || unit is Caravan))
 					{
-						GameTask advisorMessage = Message.Advisor(Advisor.Defense, true, $"{this.Name} builds {unit.Name}.");
+						GameTask advisorMessage = Message.Advisor(Advisor.Defense, true, $"{this.Name} builds {unit.TranslatedName}.");
 						advisorMessage.Done += (s, a) => GameTask.Insert(Show.CityManager(this));
 						GameTask.Enqueue(advisorMessage);
 					}
@@ -1391,8 +1391,8 @@ namespace CivOne
 					IBuilding buildingToDestroy = buildingsOtherThanPalace[Common.Random.Next(0, buildingsOtherThanPalace.Count - 1)];
 					RemoveBuilding(buildingToDestroy);
 
-					message.Add($"Earthquake in {Name}!");
-					message.Add($"{buildingToDestroy.Name} destroyed!");
+					message.Add(TranslateFormatted("Earthquake in {0}!", Name));
+					message.Add(TranslateFormatted("{0} destroyed!", buildingToDestroy.TranslatedName));
 
 					break;
 				}
@@ -1407,9 +1407,9 @@ namespace CivOne
 					{
 						Size = (byte)(Size - Size / 4);
 
-						message.Add($"Plague in {Name}!");
-						message.Add($"Citizens killed!");
-						message.Add($"Citizens demand AQUEDUCT.");
+						message.Add(TranslateFormatted("Plague in {0}!", Name));
+						message.Add(Translate("Citizens killed!"));
+						message.Add(Translate("Citizens demand AQUEDUCT."));
 					}
 
 					break;
@@ -1425,9 +1425,9 @@ namespace CivOne
 					{
 						Size = (byte)(Size - Size / 4);
 
-						message.Add($"Flooding in {Name}!");
-						message.Add($"Citizens killed!");
-						message.Add($"Citizens demand CITY WALLS.");
+						message.Add(TranslateFormatted("Flooding in {0}!", Name));
+						message.Add(Translate("Citizens killed!"));
+						message.Add(Translate("Citizens demand CITY WALLS."));
 					}
 					break;
 				}
@@ -1442,9 +1442,9 @@ namespace CivOne
 					{
 						Size = (byte)(Size - Size / 3);
 
-						message.Add($"Volcano erupts near {Name}!");
-						message.Add($"Citizens killed!");
-						message.Add($"Citizens demand TEMPLE.");
+						message.Add(TranslateFormatted("Volcano erupts near {0}!", Name));
+						message.Add(Translate("Citizens killed!"));
+						message.Add(Translate("Citizens demand TEMPLE."));
 					}
 
 					break;
@@ -1459,9 +1459,9 @@ namespace CivOne
 					{
 						Size = (byte)(Size - Size / 3);
 
-						message.Add($"Famine in {Name}!");
-						message.Add($"Citizens killed!");
-						message.Add($"Citizens demand GRANARY.");
+						message.Add(TranslateFormatted("Famine in {0}!", Name));
+						message.Add(Translate("Citizens killed!"));
+						message.Add(Translate("Citizens demand GRANARY."));
 					}
 
 					break;
@@ -1478,9 +1478,9 @@ namespace CivOne
 						IBuilding buildingToDestroy = buildingsOtherThanPalace[Common.Random.Next(0, buildingsOtherThanPalace.Count - 1)];
 						RemoveBuilding(buildingToDestroy);
 
-						message.Add($"Fire in {Name}!");
-						message.Add($"{buildingToDestroy.Name} destroyed!");
-						message.Add($"Citizens demand AQUEDUCT.");
+						message.Add(TranslateFormatted("Fire in {0}!", Name));
+						message.Add(TranslateFormatted("{0} destroyed!", buildingToDestroy.TranslatedName));
+						message.Add(Translate("Citizens demand AQUEDUCT."));
 					}
 
 					break;
@@ -1495,9 +1495,9 @@ namespace CivOne
 						Food = 0;
 						Shields = 0;
 
-						message.Add($"Pirates plunder {Name}!");
-						message.Add($"Production halted, Food Stolen.!");
-						message.Add($"Citizens demand BARRACKS.");
+						message.Add(TranslateFormatted("Pirates plunder {0}!", Name));
+						message.Add(Translate("Production halted, Food Stolen.!"));
+						message.Add(Translate("Citizens demand BARRACKS."));
 					}
 
 					break;
@@ -1529,8 +1529,8 @@ namespace CivOne
 					Food = 0;
 					Shields = 0;
 
-					message.Add($"{disasterType} in {Name}");
-					message.Add($"Citizens demand {buildingDemanded}");
+					message.Add(TranslateFormatted("{0} in {1}", disasterType, Name));
+					message.Add(TranslateFormatted("Citizens demand {0}", buildingDemanded));
 
 					if (HasBuilding<Palace>())
 						return;
@@ -1566,8 +1566,8 @@ namespace CivOne
 					if (admired != null && admired.Owner != this.Owner)
 					{
 						message.Clear();
-						message.Add($"Residents of {Name} admire the prosperity of {admired.Name}");
-						message.Add($"{admired.Name} capture {Name}");
+						message.Add(TranslateFormatted("Residents of {0} admire the prosperity of {1}", Name, admired.Name));
+						message.Add(TranslateFormatted("{0} capture {1}", admired.Name, Name));
 
 						Player previousOwner = Game.GetPlayer(this.Owner);
 

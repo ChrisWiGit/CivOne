@@ -220,7 +220,7 @@ namespace CivOne.Screens
 			else
 			{
 				DrawLocalizedText("Can Launch:", 0, textColour, ox + 236, oy + 148, TextAlign.Left)
-				.DrawText(canLaunch ? "YES" : "NO", 0, canLaunch ? (byte)2 : (byte)4, ox + 236, oy + 156, TextAlign.Left);
+				.DrawText(canLaunch ? Translate("YES") : Translate("NO"), 0, canLaunch ? (byte)2 : (byte)4, ox + 236, oy + 156, TextAlign.Left);
 
 				if (canLaunch && !_viewOnly)
 				{
@@ -234,10 +234,10 @@ namespace CivOne.Screens
 
 				int fontHeight = _resources.GetFontHeight(0);
 				int yy = oy + 184 - 3 * fontHeight;
-				this.DrawText("(L)aunch (B)ackground (C)ivs", 0, 15, ox + 16, yy, TextAlign.Left);
-				this.DrawText("1 Struct. 2/F3 Compts.  3/F4 Modules", 0, 15, ox + 16, yy + fontHeight, TextAlign.Left);
-				string ruleMode = _useDebugRules ? "Debug" : "Real";
-				this.DrawText($"F5:{ruleMode}  (V)ictory", 0, 15, ox + 16, yy + 2 * fontHeight, TextAlign.Left);
+				this.DrawText(Translate("(L)aunch (B)ackground (C)ivs"), 0, 15, ox + 16, yy, TextAlign.Left);
+				this.DrawText(Translate("1 Struct. 2/F3 Compts.  3/F4 Modules"), 0, 15, ox + 16, yy + fontHeight, TextAlign.Left);
+				string ruleMode = _useDebugRules ? Translate("Debug") : Translate("Real");
+				this.DrawText(TranslateFormatted($"F5:{0}  (V)ictory", ruleMode), 0, 15, ox + 16, yy + 2 * fontHeight, TextAlign.Left);
 			}
 		}
 
@@ -529,7 +529,7 @@ namespace CivOne.Screens
 
 				_player.SpaceShipLaunchYear = (short)_calendarService.TurnToYear(Game.GameTurn);
 				RefreshData();
-				GameTask.Enqueue(Message.Newspaper(null, $"{_player.TribeName} {T("space ship")}", T("launches for"), T("Alpha Centauri!")));
+				GameTask.Enqueue(Message.Newspaper(null, TranslateFormattedArray("{0} space ship\nlaunches for\nAlpha Centauri!", _player.TribeName)));
 				return true;
 			}
 

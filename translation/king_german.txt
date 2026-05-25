@@ -1,0 +1,368 @@
+# CivOne Translation File
+# CC-BY-SA 4.0
+# This file contains the German translation
+*NEWSA
+Lions besiegen Gladiators mit 7:0!
+
+*NEWSB
+Bürgermeister spielt Geige, während die Stadt brennt!
+
+*NEWSC
+Die Erde ist rund, behauptet Kolumbus!
+
+*NEWSD
+Aktuelle Ergebnisse der Olympischen Spiele!
+
+*NEWSE
+Attila entschuldigt sich für das Missverständnis.
+
+*NEWSF
+Kleopatras Schönheitsgeheimnisse! Abschnitt B.
+
+*NEWSG
+Die Ilias führt die Bestsellerliste an, siehe BÜCHER.
+
+*NEWSH
+Kreuzzug endet in einer Katastrophe, Presse wird beschuldigt.
+
+*NEWSI
+Renaissance steht bevor, behaupten Gelehrte.
+
+*NEWSJ
+Wir lieben King? Neueste Umfrageergebnisse.
+
+*NEWSK
+Regen, Regen, noch mehr Regen! Noah sagt voraus.
+
+*NEWSL
+Große Mauer beschädigt, Vandalen vermutet.
+
+*NEWSM
+Nostradamus sagt die Zukunft voraus: Ärger in Sicht!
+
+*NEWSN
+Marie Antoinettes Diätgeheimnis: Kuchen!
+
+*EXCHANGE
+„Wir stellen fest, dass eure primitive Zivilisation
+noch nicht einmal $RPLC1 entdeckt hat.
+Möchtet ihr
+Wissen mit uns austauschen?“
+_„Nein, wir brauchen $RPLC1 nicht.“
+_„OK, lasst uns Wissen austauschen.“
+
+*CANCEL
+Ihr habt Frieden mit unseren bösen^
+Nachbarn geschlossen: den $THEM.^
+Wir $RPLC1, dass ihr diesen Vertrag^
+sofort aufhebt!^
+_„Niemals, die $THEM sind unsere Freunde.“^
+_Vertrag mit den $THEM aufheben.
+
+*TRIBUTE
+„Ihr seid es nicht wert, Frieden^
+mit uns zu schließen. Wir werden jedoch zustimmen,^
+, eure mickrige Zivilisation nicht zu vernichten^
+im Austausch gegen $BUCKS$ als Tribut.“^
+_„Wir lachen über eure leeren Drohungen“^
+_Zahlt $BUCKS als Tribut^
+
+*TAKECIV
+„Eure Zivilisation bringt uns zum Lachen.^
+Wir werden zustimmen, eure^
+wertlose Zivilisation nicht zu vernichten im Austausch^
+für das Geheimnis von $RPLC1.“^
+_„Wir ignorieren eure hohlen Drohungen“^
+_Gib das Geheimnis von $RPLC1
+
+*PEACE
+„Ihr seid vielleicht würdig, Frieden^
+mit uns zu schließen. Wir haben einen Vertrag^
+für eure Unterschrift vorbereitet.“^
+_Ablehnen^
+_Annehmen^
+
+*ATTITUDE
+Trotz eurer respektlosen^
+Haltung werden wir euch vor^
+dem Zorn unserer mächtigen Armeen verschonen.^
+
+*PROVOKE
+'Unsere Geduld ist am Ende. Wir^
+können eure abscheulichen^
+Provokationen nicht länger tolerieren. Bereitet euch auf den KRIEG vor!'
+
+*REJECT
+'Ihr lehnt unser großzügiges Angebot ab?^
+Eure Unverschämtheit muss bestraft werden.^
+Bereitet euch auf den KRIEG vor!'
+
+*BERIDSEITIGEN
+'Wir haben beschlossen, die Welt^
+von eurer wertlosen Zivilisation zu befreien.^
+Bereitet euch auf den KRIEG vor!'
+
+*MOBILIZE
+„Nun gut, wir werden unsere^
+Armeen für den KRIEG mobilisieren! Ihr werdet für^
+euren törichten Stolz bezahlen!“
+
+*THREAT
+Du antwortest: „Wir...^
+_begrüßen den Frieden mit den $RPLC1.“^
+_„Haben einen militärischen Vorschlag für euch.“^
+_„Verlangen Tribut für unsere Geduld.“^
+
+*NOCONTACT
+Wir haben keinen Kontakt zu den $RPLC1.^
+
+*ATWAR
+Wir befinden uns bereits im Krieg mit dem^
+wertlosen $RPLC1.^
+
+*MERCENARY
+Wir werden den bösen^
+$RPLC1 gnadenlos vernichten, im Austausch für^
+$BUCKS, um unsere Ausgaben zu decken.^
+_Macht nichts.^
+_Ja, wir zahlen gerne.^
+
+*UNFORTUNATE
+Leider verfügt eure Staatskasse^
+nicht über ausreichende Mittel, um^
+deine extravaganten Versprechen zu erfüllen.^
+
+*PALACE
+Das Volk beschließt spontan, deine^
+langjährige, aufgeklärte Führung anzuerkennen.^
+Handwerker, Maurer, Arbeiter und Kunsthandwerker versammeln sich,^
+um einen prächtigen Anbau an deinen Palast zu errichten.^
+
+*HELPME
+Unsere Zivilisation wird von den^
+bösen $THEM bedroht. Wirst du uns helfen,^
+ihre unprovozierte Aggression abzuwehren? Wir werden^
+Ihnen $BUCKS$ schicken, um Ihre Ausgaben zu decken.^
+_Nein, tut mir leid, Pech gehabt.^
+_Ja, Vertrag mit $THEM kündigen.
+
+*CRUSADE
+Wir laden Sie ein, sich unserem Kreuzzug anzuschließen, um^
+die Welt von den bösen $THEM zu befreien.^
+Wir werden einen $RPLC1-Friedensvertrag^
+für die Dauer der Feindseligkeiten schließen.^
+_Nein, kein Interesse.^
+_Ja, Vertrag mit $THEM kündigen.
+
+*GIVECIV
+Im Austausch für Frieden werden wir^
+Ihnen das Geheimnis von $RPLC1 offenbaren.^
+_Angebot ablehnen^
+_Frieden schließen^
+
+*GIVECASH
+Im Austausch für Frieden bieten wir^
+Ihnen $BUCKS$ als Tribut für Ihre^
+offensichtliche Großartigkeit an.^
+_Angebot ablehnen^
+_Frieden schließen^
+
+*GIVEMORE
+Wir überreichen euch ein Geschenk von $BUCKS$^
+als Hommage an eure friedliche Natur.^
+
+*GROVEL
+Habt Erbarmen mit unserer bescheidenen und friedliebenden^
+Zivilisation. Wir werden euch^
+all unser Gold ($BUCKS$) und^
+unser Wissen geben, wenn ihr uns in Frieden leben lasst.^
+_Angebot ablehnen^
+_Frieden schließen^
+
+*TREATY
+Wir bekräftigen diesen Vertrag über ewige^
+Freundschaft und guten Willen zwischen^
+den Völkern der $RPLC1-^
+und $US-Zivilisationen.
+
+*GAPE
+Ihr seid eingeladen, mit^
+Ehrfurcht und Staunen zu staunen, während die^
+$US die Wunder^
+von $RPLC1 demonstrieren. WARNUNG: Es sind absolut^
+keine Schreiber erlaubt.
+
+*LEADER
+Barbarenführer gefangen genommen!^
+100 $ Lösegeld gezahlt.
+
+*ESCHISM
+Das $US-Reich wird von einem^
+Bürgerkrieg heimgesucht, ausgelöst durch den Fall^
+seiner Hauptstadt! Wenn sich der Staub^
+gelegt hat, ist das Reich gespalten^
+in loyale ($US) und^
+rebellische ($THEM) Fraktionen.
+
+*QUIZ
+Ein Usurpator behauptet, dass du nicht der^
+rechtmäßige König bist! Um zu beweisen, dass du königlicher^
+Geburt bist, musst du diese Frage beantworten:^
+
+*QUIZ2
+Das Volk lacht über deine schwache Antwort.^
+Du hast eine letzte Chance, deine^
+königliche Geburt zu beweisen. Schau sorgfältig in deinem Handbuch nach.^
+
+*CORRECT
+Herzlichen Glückwunsch, du hast deine^
+Würdigkeit bewiesen. Mögest du eine lange und^
+glorreiche Regierungszeit als Herrscher genießen.^
+
+*INCORRECT
+Die Nachricht von deinem Mangel an Wissen verbreitet sich^
+von Stadt zu Stadt. Im ganzen^
+Reich kehren Soldaten in ihre Heimat zurück.^
+
+*INIT
+$RPLC1, du bist aufgestiegen^
+und zum Anführer der^
+$US geworden. Möge deine Regierungszeit^
+lang und erfolgreich sein.^
+Die $US verfügen über Kenntnisse^
+in den Bereichen Bewässerung, Bergbau,^
+
+*TAXES
+Warnung: Die Mittel gehen zur Neige.^
+Vielleicht sollten wir unseren Steuersatz^
+erhöhen oder einige Steuereintreiber einstellen.^
+
+*SPACE
+^
+Im Jahr $RPLC1^
+brachen Reisende vom Planeten Erde^
+zu einer Reise^
+der Weltraumforschung auf.^
+Ein Raumschiff mit^
+$BUCKS0,000 $THEM Kolonisten^
+überbrückte erfolgreich die^
+unermesslichen Entfernungen zwischen den Sternen.^
+Als sie im Jahr $RPLC2^
+im Sternensystem^
+Alpha Centauri ankamen,^
+begannen diese unerschrockenen Pioniere^
+mit der Kolonisierung^
+einer neuen Welt.^
+$US, euer Volk^
+hat den Traum^
+unzähliger Generationen erfüllt.^
+Euer Name wird für immer^
+in den Annalen der ZIVILISATION weiterleben!^
+
+*SPACE2
+^
+Im Jahr $RPLC1^
+brachen Reisende vom Planeten Erde^
+zu einer Reise^
+der Weltraumerkundung auf.^
+Ein Raumschiff mit^
+$BUCKS0,000 $THEM Kolonisten^
+überbrückte erfolgreich die^
+unermesslichen Entfernungen zwischen den Sternen.^
+Als sie im Jahr $RPLC2^
+im Sternensystem^
+Alpha Centauri ankamen,^
+begannen diese unerschrockenen Pioniere^
+mit der Kolonisierung^
+einer neuen Welt.^
+$US, dein Volk^
+hat eine lange und ruhmreiche Geschichte.^
+Vielleicht wird eines Tages auch dein Name^
+in die Annalen der ZIVILISATION^
+eingetragen werden.^
+
+*ARCH
+Jahrhunderte später^
+entdecken Archäologen die Überreste^
+deiner alten Zivilisation.^
+Zeugnisse blühender Städte,^
+$RPLC1, Straßen^
+und einer zentralisierten Regierung^
+versetzen die verblüfften Wissenschaftler in Staunen.^
+Schließlich stoßen sie auf^
+eine Steintafel, die^
+nur einen einzigen geheimnisvollen Satz enthält:^
+$US WIRD ZURÜCKKEHREN!^
+
+*FAME
+Deine Endpunktzahl wurde^
+in die Hall of Fame eingetragen.^
+Möchtest du weiterspielen?^
+(Es wird keine weitere Punktzahl aufgezeichnet)^
+_Nein, ich bin fertig.^
+_Ja, weiterspielen.^
+
+*LOMEM
+Es scheint nicht genügend ^
+Speicherplatz auf diesem Computer^
+für die von dir gewählten Optionen zu geben.^
+Dies kann zu Problemen bei der Anzeige^
+von Animationen und beim Speichern von Spielen führen.^
+Um den Speicherbedarf zu reduzieren:^
+1) Entferne alle TSR- oder andere speicherresidente^
+Programme von deinem Computer.^
+2) Wähle die IBM- oder No-Sound-^
+Treiber anstelle von Roland oder AdLib,^
+3) Wähle EGA anstelle von VGA/MCGA.^
+.^
+VERFÜGBARER SPEICHER=$RPLC1, BENÖTIGTER SPEICHER=8000^
+Fahre auf eigene Gefahr fort!^
+
+*D1
+Pest in $RPLC1!^
+Zahlreiche Menschen sterben!^
+Die Bürger fordern einen AQUÄDUKT.^
+
+*D2
+Überschwemmungen treffen $RPLC1!^
+Häuser werden weggespült.^
+Bürger fordern STADTMauern.^
+
+*D3
+Vulkan bricht in der Nähe von $RPLC1 aus!^
+Bürger fliehen in Panik.^
+Bürger fordern TEMPEL.^
+
+*D4
+Hungersnot trifft $RPLC1!^
+Zahlreiche Menschen kommen ums Leben.^
+
+*D5
+Feuer wütet in $RPLC1!^
+$US zerstört.^
+Bürger fordern AQUÄDUKT.^
+
+*D6
+Piraten plündern $RPLC1!^
+Produktion eingestellt, Lebensmittel gestohlen.^
+Bürger fordern KASERNEN.^
+
+*REV
+Bist du sicher, dass du eine REVOLUTION willst?^
+_Nein, danke.^
+_Ja, wir brauchen eine neue Regierung.^
+
+*UMAX
+Sire, unsere Bevölkerung kann nicht^
+so viele Militäreinheiten versorgen.^
+Wir müssen einige unserer alten^
+Einheiten beseitigen, bevor wir neue bauen.
+
+*PMAX
+Sire, unsere Bürokraten können nicht^
+so viele Städte verwalten.^
+Wir müssen einige unserer alten^
+Städte beseitigen, bevor wir neue bauen.
+
+*END
+*END

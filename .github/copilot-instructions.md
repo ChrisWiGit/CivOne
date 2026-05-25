@@ -4,18 +4,14 @@
 
 * Use Caveman Compression whenever possible.
 * Do not narrate progress.
-* Keep status updates minimal and short.
+* If progress updates are necessary, keep them very short.
 
 ## Documentation
 
 * Always write documentation in English.
-* Keep wording concise and easy to understand.
+* Use concise and clear language.
 * Avoid jargon unless necessary.
-* Explain technical terms briefly when used.
-
-## C# Guidelines
-
-### Architecture
+* Briefly explain technical terms when used.
 
 * Use dependency injection only.
 * Never instantiate services manually with `new`.
@@ -24,21 +20,40 @@
 * Follow SOLID.
 * Prefer interfaces and services.
 
+### Architecture
+
+* Always use dependency injection.
+* Never instantiate services manually with `new`.
+* Avoid Service Locator pattern.
+* Use constructor injection.
+* Follow SOLID principles.
+* Prefer interfaces and services.
+
 ### Factories
 
-* Prefer factories over direct service creation.
+* Prefer Factory pattern over direct service instantiation.
 * Prefer one factory handling multiple related services.
+  * Example: `MyServiceFactory` for `MyCommandService` and `MyQueryService`
 * Delegate classes are not services and may be instantiated directly with `new()`.
 
 ### Code Style
 
 * Keep methods small and focused.
-* Prefer `new()` over explicit type construction.
+* Prefer `new()` expressions over fully qualified construction syntax.
 * Prefer collection expressions:
-
-  * `[ "a", "b" ]` instead of `new string[] { ... }`
+  * `[ "a", "b", "c" ]` instead of `new string[] { ... }`
 * Prefer `[ ..collection ]` over `.ToArray()`.
-* Use `.Length` instead of `.Any()` for arrays.
+* Prefer `.Length` instead of `.Any()` when working with arrays.
+
+### Resizable Screens
+
+* If a screen must react to window size changes, add `[ScreenResizeable]` to the screen class.
+* Problem: without `[ScreenResizeable]`, the screen does not receive resize handling from `BaseScreen` and keeps stale 320x200-era drawing state.
+* Problem: with `[ScreenResizeable]` but without redraw handling, the bitmap is recreated on resize but static content and menus may stay at old coordinates or not be redrawn correctly.
+* Required fix: make the screen redraw itself after resize.
+* Required fix: if the screen uses an `_update` flag or cached UI state, set it so the UI is rebuilt after resize.
+* Required fix: if the screen is centered in 320x200 space, apply resize-safe offsets or use menu/dialog centering support so content stays aligned.
+* Required fix: preserve menu selection where possible; do not recreate menus on every refresh unless necessary.
 
 ## Build
 
@@ -58,6 +73,19 @@ dotnet build Project.csproj -v q 2>&1 | tail -n 15
 
 ## Documentation Comments
 
+* Use XML documentation comments for all public types and members.
+* Include:
+  * summaries
+  * parameter descriptions
+  * return descriptions
+* Add examples when useful.
+* Add line breaks after sentences for readability.
+* Avoid comments that explain obvious logic.
+
+## Tests
+
+* Run tests only when necessary.
+* Run only tests relevant to the current change.
 * Add XML docs to all public types and members.
 * Include summaries, params, and return descriptions.
 * Add examples when useful.
@@ -71,6 +99,46 @@ dotnet build Project.csproj -v q 2>&1 | tail -n 15
 * Run tests without console logs from CivOne-Code when possible to reduce noise (` -p:SuppressConsoleLogs=true`).
 
 Example:
+
+```sh
+dotnet test xunit/CivOne.UnitTests.csproj --filter "FullyQualifiedName~TranslationFileRepositoryImplTests|FullyQualifiedName~TranslationServiceFactoryTests"
+```
+
+## Existing Useful Code
+
+Reuse existing systems before creating new implementations.
+
+Available utilities:
+
+* `DebounceServiceFactory` with `IDebounceService`
+* `RandomNumberGeneratorFactory` with `IRandomNumberGenerator`
+
+## Delegate Pattern
+
+Use the Delegate Pattern when behavior should be replaceable, injectable, or separated.
+
+Apply when:
+
+* behavior must be passed dynamically
+* responsibilities should be decoupled
+* multiple behavior implementations may exist
+* callbacks, handlers, commands, or strategies are needed
+* the user explicitly requests delegate-based refactoring
+
+### Rules
+
+* Keep the calling class focused on orchestration.
+* Move executable behavior into dedicated delegate classes.
+* Make behaviors testable and replaceable.
+* Use native delegate/function types where appropriate.
+
+### Implementation
+
+* Create classes ending with `Delegate`.
+* Store delegate functions inside those classes.
+* Instantiate delegate classes directly with `new()` in the calling class.
+
+## Translation
 
 ```sh
 dotnet test Tests.csproj --filter "FullyQualifiedName~MyTest" -p:SuppressConsoleLogs=true
@@ -109,6 +177,16 @@ Rules:
 * Use `ITranslationService` and `TranslationServiceFactory`.
 * Prefer existing protected translation properties when available.
 * Otherwise inject `ITranslationService`.
+
+### Translation Rules
+
+* Translation keys are the English text itself.
+* Never use string interpolation for translations, e.g. `Translate($"Attack at {cityName}")` is not allowed.
+* Never use concatenation for translations, e.g. `Translate("Attack at " + cityName)` is not allowed.
+* Never use ternary operators for translations, e.g. `Translate(isAttack ? "Attack at {cityName}" : "Defend {cityName}")` is not allowed.
+* Never use other method calls inside translation calls, e.g. `Translate(GetAttackMessage(cityName))` is not allowed.
+* Never use variables inside translation calls, e.g. `Translate(messageKey)` is not allowed.
+* If static or constant fields are used in a translation call, copy the string itself into the translation key, e.g. `Translate(fieldOrConstValue)` is not allowed, but `Translate("Population:")`. Move the `fieldOrConstValue` into the value of the translation entry instead.
 
 ### Rules
 
@@ -156,7 +234,7 @@ This updates:
 translation/all.txt
 ```
 
-Then manually move entries into language files like:
+Then manually move entries into language-specific files such as:
 
 ```txt
 civ_german.txt

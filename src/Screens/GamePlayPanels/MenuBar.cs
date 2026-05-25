@@ -17,7 +17,14 @@ namespace CivOne.Screens.GamePlayPanels
 {
 	internal class MenuBar : BaseScreen
 	{
-		private const int FONT_ID = 0;
+		private static readonly int[] MenuXPositions =
+		[
+			8,
+			64,
+			128,
+			192,
+			240
+		];
 		
 		public event EventHandler GameSelected;
 		public event EventHandler OrdersSelected;
@@ -28,20 +35,84 @@ namespace CivOne.Screens.GamePlayPanels
 		public bool MenuDrag { get; private set; }
 		
 		private readonly Rectangle[] _rectMenus;
+		private readonly MenuBarHotkeyDelegate _menuBarHotkeyDelegate;
 		
-		private bool _update = true;
+		private MenuBarTitle[] _menuTitles;
+		private bool _update;
 		private int _mouseX, _mouseY;
+
+		private void RebuildMenuTitles()
+		{
+			_menuTitles =
+			[
+				// it is necessary to provide the translation key as well as the translated text
+				// because the translated text may not contain the marker character '~' to indicate the hotkey position
+				// Futhermore the civtranslate cli will parse Translate(" to extract the translation keys.
+				_menuBarHotkeyDelegate.Create(translationKey: "GAME", translatedText: Translate("GAME")),
+				_menuBarHotkeyDelegate.Create(translationKey: "ORDERS", translatedText: Translate("ORDERS")),
+				_menuBarHotkeyDelegate.Create(translationKey: "ADVISORS", translatedText: Translate("ADVISORS")),
+				_menuBarHotkeyDelegate.Create(translationKey: "WORLD", translatedText: Translate("WORLD")),
+				_menuBarHotkeyDelegate.Create(translationKey: "CIVILOPEDIA", translatedText: Translate("CIVILOPEDIA"))
+			];
+		}
+
+		private void EnsureMenuTitles()
+		{
+			if (_update || _menuTitles == null)
+			{
+				RebuildMenuTitles();
+			}
+		}
+
+		private bool TryGetMenuIndex(char keyChar, out int menuIndex)
+		{
+			EnsureMenuTitles();
+			char normalizedKey = char.ToUpperInvariant(keyChar);
+			for (int i = 0; i < _menuTitles.Length; i++)
+			{
+				if (_menuTitles[i].Hotkey == normalizedKey)
+				{
+					menuIndex = i;
+					return true;
+				}
+			}
+
+			menuIndex = -1;
+			return false;
+		}
+
+		private void SelectMenu(int menuIndex)
+		{
+			switch (menuIndex)
+			{
+				case 0:
+					GameSelected?.Invoke(this, EventArgs.Empty);
+					break;
+				case 1:
+					OrdersSelected?.Invoke(this, EventArgs.Empty);
+					break;
+				case 2:
+					AdvisorsSelected?.Invoke(this, EventArgs.Empty);
+					break;
+				case 3:
+					WorldSelected?.Invoke(this, EventArgs.Empty);
+					break;
+				case 4:
+					CivilopediaSelected?.Invoke(this, EventArgs.Empty);
+					break;
+			}
+		}
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (_update)
 			{
-				this.Clear(5)
-					.DrawText("GAME", 8, 1)
-					.DrawText("ORDERS", 64, 1)
-					.DrawText("ADVISORS", 128, 1)
-					.DrawText("WORLD", 192, 1)
-					.DrawText("CIVILOPEDIA", 240, 1);
+				RebuildMenuTitles();
+				this.Clear(5);
+				for (int i = 0; i < MenuXPositions.Length; i++)
+				{
+					this.DrawText(_menuTitles[i].VisibleText, MenuXPositions[i], 1, TextSettings.DifferentCharacter(15, 7, _menuTitles[i].HighlightedCharacterIndex));
+				}
 
 				_update = false;
 				return true;
@@ -52,27 +123,9 @@ namespace CivOne.Screens.GamePlayPanels
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
 			if (!args.Alt) return false;
-			
-			switch (args.KeyChar)
-			{
-				case 'G':
-					GameSelected?.Invoke(this, null);
-					break;
-				case 'O':
-					OrdersSelected?.Invoke(this, null);
-					break;
-				case 'A':
-					AdvisorsSelected?.Invoke(this, null);
-					break;
-				case 'W':
-					WorldSelected?.Invoke(this, null);
-					break;
-				case 'C':
-					CivilopediaSelected?.Invoke(this, null);
-					break;
-				default:
-					return false;
-			}
+
+			if (!TryGetMenuIndex(args.KeyChar, out int menuIndex)) return false;
+			SelectMenu(menuIndex);
 			MenuDrag = false;
 			return true;
 		}
@@ -82,11 +135,13 @@ namespace CivOne.Screens.GamePlayPanels
 			_mouseX = args.X;
 			_mouseY = args.Y;
 
-			if (_rectMenus[0].Contains(args.Location) && GameSelected != null) GameSelected(this, null);
-			if (_rectMenus[1].Contains(args.Location) && OrdersSelected != null) OrdersSelected(this, null);
-			if (_rectMenus[2].Contains(args.Location) && AdvisorsSelected != null) AdvisorsSelected(this, null);
-			if (_rectMenus[3].Contains(args.Location) && WorldSelected != null) WorldSelected(this, null);
-			if (_rectMenus[4].Contains(args.Location) && CivilopediaSelected != null) CivilopediaSelected(this, null);
+			for (int i = 0; i < _rectMenus.Length; i++)
+			{
+				if (_rectMenus[i].Contains(args.Location))
+				{
+					SelectMenu(i);
+				}
+			}
 			
 			return false;
 		}
@@ -105,11 +160,12 @@ namespace CivOne.Screens.GamePlayPanels
 		
 		public MenuBar(Palette palette) : base(320, 8)
 		{
+			_menuBarHotkeyDelegate = new();
 			Palette = palette.Copy();
 			this.Clear(5);
 			_update = true;
 
-			DefaultTextSettings = TextSettings.DifferentFirstLetter(15, 7);
+			DefaultTextSettings = TextSettings.DifferentCharacter(15, 7, 0);
 			
 			_rectMenus = new Rectangle[5];
 			_rectMenus[0] = new Rectangle(0, 0, 56, 8);

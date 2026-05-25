@@ -77,14 +77,14 @@ namespace CivOne.Persistence.Yaml
 			PlayerDto.AllAdvances = [
 				.. Common.Advances
 					.OrderBy(a => a.Id)
-					.Select(a => $"{a.Id}({a.Name})")];
+					.Select(a => $"{a.Id}({a.TranslatedName})")];
 
-			PlayerDto.AllAdvancesInfo = Common.Advances.ToDictionary(a => (uint)a.Id, a => a.Name);
+			PlayerDto.AllAdvancesInfo = Common.Advances.ToDictionary(a => (uint)a.Id, a => a.TranslatedName);
 
 			PlayerDto.AllGovernments = [
 				.. Reflect.GetGovernments()
 					.OrderBy(g => g.Id)
-					.Select(g => $"{g.Id}({g.Name})")];
+					.Select(g => $"{g.Id}({g.TranslatedName})")];
 		}
 
 		// RuntimeAdvanceResolver wraps Common.Advances to isolate the Common static dependency.

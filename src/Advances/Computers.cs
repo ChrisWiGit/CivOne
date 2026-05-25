@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public Computers() : base(3, 0, 2, Advance.Mathematics, Advance.Electronics)
 		{
 			Name = "Computers";
+			TranslatedName = Translate("Computers");
 			Type = Advance.Computers;
 		}
 	}

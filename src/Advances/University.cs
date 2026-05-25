@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public University() : base(1, 0, 2, Advance.Mathematics, Advance.Philosophy)
 		{
 			Name = "University";
+			TranslatedName = Translate("University");
 			Type = Advance.University;
 		}
 	}

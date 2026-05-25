@@ -78,7 +78,7 @@ namespace CivOne
 
 			try
 			{
-				 return (T)this[customSetting];
+				return (T)this[customSetting];
 			}
 			catch
 			{

@@ -80,15 +80,15 @@ namespace CivOne.Screens
 				int activePointY = mapOffsetY + (activeRelY * 16) + 8;
 				if (Settings.RightSideBar)
 				{
-					yield return new HelpLabel("Map Window", 148 + labelShiftX, 24, mapWindowPointX, mapWindowPointY);
-					yield return new HelpLabel("Menu Bar", 61 + labelShiftX, 16, 160 + labelShiftX, 6);
-					yield return new HelpLabel("Active Unit", 158 + labelShiftX, 170, activePointX, activePointY);
+					yield return new HelpLabel(Translate("Map Window"), 148 + labelShiftX, 24, mapWindowPointX, mapWindowPointY);
+					yield return new HelpLabel(Translate("Menu Bar"), 61 + labelShiftX, 16, 160 + labelShiftX, 6);
+					yield return new HelpLabel(Translate("Active Unit"), 158 + labelShiftX, 170, activePointX, activePointY);
 				}
 				else
 				{
-					yield return new HelpLabel("Map Window", 88 + labelShiftX, 24, mapWindowPointX, mapWindowPointY);
-					yield return new HelpLabel("Menu Bar", 201 + labelShiftX, 16, 160 + labelShiftX, 6);
-					yield return new HelpLabel("Active Unit", 88 + labelShiftX, 170, activePointX, activePointY);
+					yield return new HelpLabel(Translate("Map Window"), 88 + labelShiftX, 24, mapWindowPointX, mapWindowPointY);
+					yield return new HelpLabel(Translate("Menu Bar"), 201 + labelShiftX, 16, 160 + labelShiftX, 6);
+					yield return new HelpLabel(Translate("Active Unit"), 88 + labelShiftX, 170, activePointX, activePointY);
 				}
 
 				int labelCenterBaseX = mapCenterX - 30;
@@ -101,21 +101,21 @@ namespace CivOne.Screens
 					ITile tile = focusUnit.Tile[xx, yy];
 					switch (tile.Type)
 					{
-						case Terrain.Desert: text = (tile.Special ? "Oasis" : "Desert"); break;
-						case Terrain.Plains: text = (tile.Special ? "Horses" : "Plains"); break;
-						case Terrain.Forest: text = (tile.Special ? "Game" : "Desert"); break;
-						case Terrain.Hills: text = (tile.Special ? "Coal" : "Hills"); break;
-						case Terrain.Mountains: text = (tile.Special ? "Gold" : "Mountains"); break;
-						case Terrain.Tundra: text = (tile.Special ? "Game" : "Tundra"); break;
-						case Terrain.Arctic: text = (tile.Special ? "Seals" : "Arctic"); break;
-						case Terrain.Swamp: text = (tile.Special ? "Oil" : "Swamp"); break;
-						case Terrain.Jungle: text = (tile.Special ? "Gems" : "Jungle"); break;
-						case Terrain.Ocean: text = (tile.Special ? "Fish" : "Ocean"); break;
-						case Terrain.River: text = "River"; break;
+						case Terrain.Desert: text = (tile.Special ? Translate("Oasis") : Translate("Desert")); break;
+						case Terrain.Plains: text = (tile.Special ? Translate("Horses") : Translate("Plains")); break;
+						case Terrain.Forest: text = (tile.Special ? Translate("Game") : Translate("Desert")); break;
+						case Terrain.Hills: text = (tile.Special ? Translate("Coal") : Translate("Hills")); break;
+						case Terrain.Mountains: text = (tile.Special ? Translate("Gold") : Translate("Mountains")); break;
+						case Terrain.Tundra: text = (tile.Special ? Translate("Game") : Translate("Tundra")); break;
+						case Terrain.Arctic: text = (tile.Special ? Translate("Seals") : Translate("Arctic")); break;
+						case Terrain.Swamp: text = (tile.Special ? Translate("Oil") : Translate("Swamp")); break;
+						case Terrain.Jungle: text = (tile.Special ? Translate("Gems") : Translate("Jungle")); break;
+						case Terrain.Ocean: text = (tile.Special ? Translate("Fish") : Translate("Ocean")); break;
+						case Terrain.River: text = Translate("River"); break;
 						case Terrain.Grassland1:
-						case Terrain.Grassland2: text = "Grassland"; break;
+						case Terrain.Grassland2: text = Translate("Grassland"); break;
 					}
-					if (tile.Hut) text = "Village";
+					if (tile.Hut) text = Translate("Village");
 
 					int relX = tile.X - mapX;
 					while (relX < 0) relX += Map.WIDTH;

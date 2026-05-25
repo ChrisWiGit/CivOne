@@ -17,6 +17,7 @@ namespace CivOne.Wonders
 		public MagellansExpedition() : base(40)
 		{
 			Name = "Magellan's Expedition";
+			TranslatedName = Translate("Magellan's Expedition");
 			RequiredTech = new Navigation();
 			ObsoleteTech = null;
 			SetSmallIcon(5, 3);

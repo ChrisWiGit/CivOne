@@ -19,6 +19,7 @@ namespace CivOne.Units
 		{
 			Type = UnitType.Riflemen;
 			Name = "Riflemen";
+			TranslatedName = Translate("Riflemen");
 			RequiredTech = new Conscription();
 			ObsoleteTech = null;
 			SetIcon('D', 1, 2);

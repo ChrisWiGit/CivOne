@@ -53,12 +53,12 @@ namespace CivOne.Services
 		/// </summary>
 		public string DifficultyName(int difficulty) => difficulty switch
 		{
-			1 => _translation.Translate("Lord"),
+			1 => _translation.Translate("Warlord"),
 			2 => _translation.Translate("Prince"),
 			3 => _translation.Translate("King"),
 			4 => _translation.Translate("Emperor"),
 			5 => _translation.Translate("Deity"),
-			_ => _translation.Translate("Chief"),
+			_ => _translation.Translate("Chieftain"),
 		};
 
 		public string BuildDisplayName(int difficulty, Player humanPlayer, ushort gameTurn)

@@ -8,6 +8,8 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 * Fix: Intro text are shown again.
   * Additional the text "Shift+Left/Right Forward/Backward" is shown at the beginning of the intro, to hint the user that they can fast forward the intro text.
+* Debug Option:
+  * Added a debug option to trigger an instant government change.
 * Consolidated fixes ([PR #38](https://github.com/ChrisWiGit/CivOne/pull/38))
   * [Issue #31](https://github.com/ChrisWiGit/CivOne/issues/31): Fixed Democracy war declaration flow so Senate blocking is handled correctly.
   * [Issue #34](https://github.com/ChrisWiGit/CivOne/issues/34): Extended `CityEconomyBreakdown` performance work to include food and shield tile sums.
@@ -52,9 +54,11 @@ I did not browse all issues on github at first, so I did not recognize that some
 * Top Leader screen now shows a percentage-based rating bar for each leader, with the player's leader highlighted. The rating is calculated based on the player's score relative to the top leader's score, and is displayed as a horizontal bar with a percentage label.
   * TODO: Currently, only available through debug menu. Future integration into the original ranking screen trigger conditions is planned once they are identified.
 * Feature: Translation system with multi-language support
+  * Fully translated texts in German.
   * In-game translation is now active.
   * Language can be changed in the setup menu via `Shift+F1` -> `Game Options` -> `Language`.
   * The selected language is applied through `TranslationServiceFactory` and reused by gameplay and UI services.
+  * Top gameplay menu hotkeys can now be defined per translation with a `~` marker, so translated labels can choose their own highlighted Alt shortcut.
   * `civtranslate` CLI tool scans `*.cs` files for translation calls and creates/updates translation key-value files.
     * Scans for `.Translate("...")`, `.TranslateFormatted("...", ...)`, and `T("...")` patterns.
     * Normalizes keys to uppercase while keeping values as source text.

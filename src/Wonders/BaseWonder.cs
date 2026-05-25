@@ -16,6 +16,42 @@ namespace CivOne.Wonders
 {
 	internal abstract class BaseWonder : BaseInstance, IWonder
 	{
+		/// <summary>
+		/// Gets the localized display name shown to the player.
+		/// </summary>
+		/// <remarks>
+		/// Derived wonder classes must set this from <c>Translate("...")</c>.
+		/// <para>
+		/// The value of <see cref="Name"/> is also used as the invariant Civilopedia key,
+		/// so it must be set to the English base value, for example <c>"Colossus"</c>.
+		/// </para>
+		/// <para>
+		/// For wonders that do not exist in the original game, use a unique
+		/// <see cref="Name"/> value and use the same value as the Civilopedia text key,
+		/// for example <c>"MySpecialWonder"</c>.
+		/// </para>
+		/// <para>
+		/// The test <c>RegisteredCivilopediaNamesTests</c>
+		/// (<c>xunit/src/RegisteredCivilopediaNamesTests.cs</c>) verifies that all items
+		/// have a non-empty translated name.
+		/// </para>
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// Name = "Colossus";
+		/// TranslatedName = Translate("Colossus");
+		/// </code>
+		/// </example>
+		public string TranslatedName { get; protected set; }
+		/// <summary>
+		/// Gets the invariant civilopedia key name.
+		/// </summary>
+		/// <example>
+		/// <code>
+		/// Name = "Colossus";
+		/// TranslatedName = Translate("Colossus");
+		/// </code>
+		/// </example>
 		public string Name { get; protected set; }
 		public virtual IBitmap Icon => null;
 		public virtual IBitmap SmallIcon { get; protected set; }
@@ -50,7 +86,7 @@ namespace CivOne.Wonders
 			{
 				yy += 8;
 				string requiredTech = "";
-				if (RequiredTech != null) requiredTech = RequiredTech.Name;
+				if (RequiredTech != null) requiredTech = RequiredTech.TranslatedName;
 				output.DrawText(string.Format("Requires {0}", requiredTech), 6, 9, 12, yy); yy += 8;
 				output.DrawText(string.Format("Cost: {0}0 shields.", Price), 6, 9, 12, yy); yy += 8;
 				output.DrawText(string.Format("Maintenance: ${0}", 0), 6, 12, 12, yy);
@@ -84,7 +120,7 @@ namespace CivOne.Wonders
 
 		public string FormatWorldWonder(City city)
 		{
-			string name = Id < 8 ? $"The {Name}" : Name;
+			string name = Id < 8 ? $"The {TranslatedName}" : TranslatedName;
 			string preposition = Id < 7 ? "of" : "in";
 			if (city != null && city.Size > 0)
 				return $"{name} {preposition} {city.Name}. ({Game.Instance.GetPlayer(city.Owner).Civilization.NamePlural})";

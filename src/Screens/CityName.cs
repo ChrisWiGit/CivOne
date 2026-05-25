@@ -28,7 +28,7 @@ namespace CivOne.Screens
 			this.Clear();
 			this.FillRectangle(80 + ox, 80 + oy, 161, 33, 11)
 				.FillRectangle(81 + ox, 81 + oy, 159, 31, 15)
-				.DrawText("City Name...", 0, 5, 88 + ox, 82 + oy)
+				.DrawText(Translate("City Name..."), 0, 5, 88 + ox, 82 + oy)
 				.FillRectangle(88 + ox, 95 + oy, 105, 14, 5)
 				.FillRectangle(89 + ox, 96 + oy, 103, 12, 15);
 

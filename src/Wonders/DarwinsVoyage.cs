@@ -17,6 +17,7 @@ namespace CivOne.Wonders
 		public DarwinsVoyage() : base(30)
 		{
 			Name = "Darwin's Voyage";
+			TranslatedName = Translate("Darwin's Voyage");
 			RequiredTech = new RailRoad();
 			ObsoleteTech = null;
 			SetSmallIcon(6, 4);

@@ -14,6 +14,8 @@ namespace CivOne.Concepts
 		public Fortress()
 		{
 			Name = "Fortress";
+			Name = "Fortress";
+			TranslatedName = Translate("Fortress");
 		}
 	}
 }

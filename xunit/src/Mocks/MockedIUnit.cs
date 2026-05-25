@@ -56,7 +56,8 @@ namespace CivOne.UnitTests
             Modifications = [];
             NearestCity = 0;
             Player = null;
-            Name = "Mocked Unit";
+            TranslatedName = "Mocked Unit";
+			Name = "Mocked Unit";
             Icon = null;
             PageCount = 0;
             Price = 0;
@@ -134,6 +135,7 @@ namespace CivOne.UnitTests
 		public Player Player { get; set; }
 
 		public string Name { get; set; }
+		public string TranslatedName { get; set; }
 
 		public IBitmap Icon { get; set; }
 
