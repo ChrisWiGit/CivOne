@@ -123,6 +123,29 @@ Example:
 dotnet run --project ./civtranslate/civtranslate.csproj -- ./src --output ./translation/civ_german.txt
 ```
 
+### Game menu hotkeys
+
+The top gameplay menu supports translator-defined hotkeys.
+Use `~` directly before the character that should be highlighted and used for the `Alt+<key>` shortcut.
+The `~` marker is not shown in the UI.
+The marked character is highlighted in the menu bar.
+If no valid marker exists, the first visible character is used as fallback.
+The translation keys in code must still be written as explicit `Translate("...")` calls so the translation tools can find them.
+
+Example entries in a translation file:
+
+```txt
+GAME=~SPIEL
+ORDERS=~BEFEHLE
+ADVISORS=BE~RATER
+WORLD=~WELT
+CIVILOPEDIA=~CIVILOPEDIA
+```
+
+In this example, `Alt+S` opens `SPIEL`, `Alt+B` opens `BEFEHLE`, and `Alt+R` opens `BERATER`.
+
+If no `~` marker is present, the first character is used as fallback.
+
 ### MCP savegame tools
 
 When MCP is enabled, savegame automation tools can read and write `.cos` files in the configured MCP saves folder.
