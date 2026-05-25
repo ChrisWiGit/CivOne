@@ -62,12 +62,25 @@ There are some command line parameters that can be used to modify the behavior o
 | `--no-data-check` | Skips the data integrity check at startup. |
 | `--console-log` | Enables console log output. This is the default. |
 | `--no-console-log` | Disables console log output on the console. The log file is still written. |
+| `--language <postfix>` | Loads `translations/civ_<postfix>.txt` at startup. Use `identity` for original text without translation. Language files must exist in the active CivOne profile. |
 | `--load-slot <drive><slot>` | Loads a saved game from the specified drive and slot. Replace `<drive>` with a letter (a-z) and `<slot>` with a number (0-15) as if you were in the game |
 | `--load-cos <path>` | Loads a savegame file directly from a file path. |
 | `--mcp` | Enables the MCP server. See [MCP.md](MCP.md) for setup and usage. |
 | `--mcp-no-auth` | Disables MCP session-token authentication. Useful for direct VS Code MCP client usage. |
 | `--mcp-artifacts <path>` | Sets the directory where MCP screenshot artifacts are saved. Defaults to `temp/mcp-runs/` inside the storage directory. |
 | `--mcp-saves <path>` | Sets the directory where MCP save tools read and write `.cos` files (`game_list_saves`, `game_load`, `game_save`). |
+
+```sh
+dotnet run --project ./runtime/sdl/CivOne.SDL.csproj -- --seed 12345 --language german
+```
+
+```powershell
+dotnet run --project ./runtime/sdl/CivOne.SDL.csproj -- --seed 12345 --language german
+```
+
+```sh
+dotnet run --project ./runtime/sdl/CivOne.SDL.csproj -- --seed 12345 --language identity
+```
 
 ### Translation workflow
 
@@ -90,10 +103,20 @@ You can also use the helper scripts from repository root and pass only file name
 ./translate-mergekeys.sh all civ_german
 ```
 
-Use `translate-interactive.ps1` or `translate-interactive.sh` to run the values-only translation roundtrip for a language file.
+Use `translate-interactive.ps1` or `translate-interactive.sh` to run the values-only translation roundtrip for a language postfix.
 Use `copy-translations.ps1` or `copy-translations.sh` to copy final language files to the active CivOne profile.
 For the full translation workflow and naming rules, see [civtranslate/README.md](civtranslate/README.md).
 For merge helper details, see [civtranslate-mergekeys/README.md](civtranslate-mergekeys/README.md).
+
+Examples:
+
+```powershell
+.\translate-interactive.ps1 -Language german
+```
+
+```sh
+./translate-interactive.sh --language german
+```
 
 ### Use translation in game
 

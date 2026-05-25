@@ -320,6 +320,7 @@ namespace CivOne
 		private static void ConfigureTranslation(IRuntime runtime)
 		{
 			string languagePostfix = runtime.Settings.LanguagePostfix;
+
 			if (string.IsNullOrEmpty(languagePostfix))
 			{
 				// During registration RuntimeHandler.Runtime is not assigned yet,
@@ -327,7 +328,8 @@ namespace CivOne
 				languagePostfix = runtime.GetSetting("LanguagePostfix");
 			}
 
-			if (string.IsNullOrEmpty(languagePostfix))
+			if (string.IsNullOrEmpty(languagePostfix)
+				|| string.Equals(languagePostfix, "identity", StringComparison.OrdinalIgnoreCase))
 			{
 				TranslationServiceFactory.UseIdentity();
 				return;

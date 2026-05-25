@@ -8,11 +8,12 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.IO;
 using System.Text.RegularExpressions;
 using CivOne.Enums;
+using CivOne.Services;
 
 namespace CivOne
 {
@@ -70,12 +71,13 @@ Try 'civone-sdl --help' for more information.
 			settings["mcp-artifacts"] = null;
 			settings["mcp-saves"] = null;
 			settings.ConsoleLogging = true;
+			string languagePostfix = null;
 			for (int i = 0; i < args.Length; i++)
 			{
 				string cmd = args[i].TrimStart('-');
 				if (i == 0 && args.Length == 1)
 				{
-					switch(cmd)
+					switch (cmd)
 					{
 						case "help":
 						case "h":
@@ -97,7 +99,7 @@ Try 'civone-sdl --help' for more information.
 					}
 				}
 
-				switch(cmd)
+				switch (cmd)
 				{
 					case "demo": settings.Demo = true; continue;
 					case "setup": settings.Setup = true; continue;
@@ -176,7 +178,7 @@ Try 'civone-sdl --help' for more information.
 							Console.WriteLine("Missing profile name argument");
 							return;
 						}
-						
+
 						settings["profile-name"] = args[++i];
 						Console.WriteLine($@"Using profile ""{settings["profile-name"]}""");
 						break;
@@ -187,14 +189,13 @@ Try 'civone-sdl --help' for more information.
 							return;
 						}
 
-						string languagePostfix = args[++i];
+						languagePostfix = args[++i];
 						if (string.IsNullOrEmpty(languagePostfix))
 						{
 							Console.WriteLine("Invalid language postfix.");
 							return;
 						}
 
-						settings.LanguagePostfix = languagePostfix;
 						break;
 					case "load-slot":
 						// --load-slot [a-z1..10] (default no options defaults to null)
@@ -204,7 +205,7 @@ Try 'civone-sdl --help' for more information.
 							settings.LoadSaveGameSlot = RuntimeSettings.UseLoadingScreen;
 							break;
 						}
-						
+
 						// use regex to parse the drive letter and slot number
 						string slot = args[++i];
 						Regex regex = new Regex(@"^([a-z])([0-9]|1[0-5])$", RegexOptions.IgnoreCase);
@@ -213,7 +214,7 @@ Try 'civone-sdl --help' for more information.
 						{
 							Console.WriteLine("Invalid load slot format. Use: --load-slot [a-z1..10] to specify a drive letter and slot number for the game file.");
 							return;
-						}					
+						}
 
 						char driveLetter = char.ToUpper(match.Groups[1].Value[0]);
 						int slotId = int.Parse(match.Groups[2].Value);
@@ -232,9 +233,9 @@ Try 'civone-sdl --help' for more information.
 					case "skip-credits": settings.ShowCredits = false; continue;
 					case "skip-intro": settings.ShowIntro = false; continue;
 					case "software-render": settings["software-render"] = true; continue;
-                    case "seed":
-                        settings.InitialSeed = ushort.Parse(args[++i]);
-                        break;
+					case "seed":
+						settings.InitialSeed = ushort.Parse(args[++i]);
+						break;
 					default: Console.WriteLine(ErrorText); return;
 				}
 			}
@@ -244,14 +245,53 @@ Try 'civone-sdl --help' for more information.
 				settings["no-sound"] = true;
 			}
 
+			bool isLanguageParameterApplied = ApplyLanguageParameter(settings, languagePostfix);
+			if (!isLanguageParameterApplied)
+			{
+				return;
+			}
+
 			using Runtime runtime = new(settings);
 			IUtcClock clock = new SystemUtcClock();
 			IDebounceService debounceService = DebounceServiceFactory.Create(message => runtime.Log(message), clock);
-			
+
 			using GameWindow window = new(runtime, (bool)settings["software-render"], debounceService);
 			runtime.Log("Game started");
 			window.Run();
 			runtime.Log("Game stopped");
+		}
+
+		private static bool ApplyLanguageParameter(RuntimeSettings settings, string languagePostfix)
+		{
+			if (string.IsNullOrEmpty(languagePostfix))
+			{
+				return true;
+			}
+			if (string.Equals(languagePostfix, "identity", StringComparison.OrdinalIgnoreCase))
+			{
+				settings.LanguagePostfix = "identity";
+			}
+			else
+			{
+				string storageDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CivOne");
+				string translationFilePath = Path.Combine(storageDirectory, "translations", $"civ_{languagePostfix}.txt");
+				if (!File.Exists(translationFilePath))
+				{
+					Console.WriteLine($"Language file not found: {translationFilePath}");
+					Console.WriteLine("Expected file pattern: translations/civ_<postfix>.txt");
+					return false;
+				}
+
+				if (!TranslationServiceFactory.TryUseLanguage(storageDirectory, languagePostfix, out string error, message => Console.WriteLine(message)))
+				{
+					Console.WriteLine($"Could not activate translation language '{languagePostfix}': {error}");
+					return false;
+				}
+
+				settings.LanguagePostfix = languagePostfix;
+			}
+
+			return true;
 		}
 	}
 }
