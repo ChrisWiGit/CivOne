@@ -27,6 +27,7 @@ using CivOne.Wonders;
 using CivOne.Units;
 using CivOne.Governments;
 using System.Diagnostics;
+using CivOne.Services;
 
 namespace CivOne.Units
 {
@@ -495,7 +496,7 @@ namespace CivOne.Units
 
 		private static string[] CreateCityCaptureNewsLines(City capturedCity, int captureGold)
 		{
-			return [$"{Game.CurrentPlayer.TribeNamePlural} capture", $"{capturedCity.Name}. {captureGold} gold", "pieces plundered."];
+			return TranslationServiceFactory.GetCurrent().TranslateFormattedArray("{0} capture\n{1}. {2} gold\npieces plundered.", Game.CurrentPlayer.TribeNamePlural, capturedCity.Name, captureGold);
 		}
 
 		private EventHandler CreateCityCaptureDoneHandler(City capturedCity, IList<IAdvance> advancesToSteal, Action changeOwner)
