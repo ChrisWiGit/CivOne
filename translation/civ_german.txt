@@ -1083,3 +1083,5 @@ GOTO=Gehe zu
 HOME CITY=Heimatstadt
 DISBAND UNIT=Einheit auflösen
 SHIFT+D=Umsch.+D
+# Veteran
+(V)= (V)
