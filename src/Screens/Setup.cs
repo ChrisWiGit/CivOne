@@ -59,7 +59,7 @@ namespace CivOne.Screens
 
 			// 4K / UHD
 			(Translate("3840x2160 (4K UHD)"), 3840, 2160),
-			(TranslateFormatted("{0} (Warning: may be slow)"), 4096, 2160),
+			(TranslateFormatted("{0} (Warning: may be slow)", "4096x2160 (DCI 4K)"), 4096, 2160),
 
 			// Higher resolutions
 			(TranslateFormatted("{0} (Warning: may be slow)", "5120x2880 (5K)"), 5120, 2880),
@@ -280,14 +280,14 @@ namespace CivOne.Screens
 			];
 
 		private void ExpandCanvasSizeMenu() => CreateMenu(
-			"Expand Size (only if Aspect Ratio is set to Expand)",
+			Translate("Expand Size (only if Aspect Ratio is set to Expand)"),
 			GotoMenu(SettingsMenu, 4),
 			BuildSizeMenuItems(
 				ExpandSizeOptions(),
 				(width, height) => IsActiveSize(Settings.ExpandWidth, Settings.ExpandHeight, width, height),
 				SetExpandSize));
 
-		private void FullScreenMenu() => CreateMenu("Full Screen", GotoMenu(SettingsMenu, 5),
+		private void FullScreenMenu() => CreateMenu(Translate("Full Screen"), GotoMenu(SettingsMenu, 5),
 			MenuItem.Create(TranslateFormatted("{0} (default)", false.YesNo())).OnSelect((s, a) => Settings.FullScreen = false).SetActive(() => !Settings.FullScreen),
 			MenuItem.Create(true.YesNo()).OnSelect((s, a) => Settings.FullScreen = true).SetActive(() => Settings.FullScreen),
 			MenuItem.Create(Translate("Back"))
@@ -302,14 +302,14 @@ namespace CivOne.Screens
 		}
 
 		private void WindowSizeMenu() => CreateMenu(
-			"Window Size",
+			Translate("Window Size"),
 			GotoMenu(SettingsMenu, 6),
 			BuildSizeMenuItems(
 				WindowSizeOptions(),
 				(width, height) => IsActiveSize(Settings.WindowWidth, Settings.WindowHeight, width, height),
 				SetWindowSizePreset));
 
-		private void WindowScaleMenu() => CreateMenu("Window Scale", GotoMenu(SettingsMenu, 7),
+		private void WindowScaleMenu() => CreateMenu(Translate("Window Scale"), GotoMenu(SettingsMenu, 7),
 			MenuItem.Create(Translate("1x")).OnSelect((s, a) => Settings.Scale = 1).SetActive(() => Settings.Scale == 1),
 			MenuItem.Create(Translate("2x (default)")).OnSelect((s, a) => Settings.Scale = 2).SetActive(() => Settings.Scale == 2),
 			MenuItem.Create(Translate("3x")).OnSelect((s, a) => Settings.Scale = 3).SetActive(() => Settings.Scale == 3),
@@ -321,7 +321,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void SoundMenu() => CreateMenu("In-game sound", GotoMenu(SettingsMenu, 8),
+		private void SoundMenu() => CreateMenu(Translate("In-game sound"), GotoMenu(SettingsMenu, 8),
 			MenuItem.Create(Translate("Browse for files...")).OnSelect(BrowseForSoundFiles).SetEnabled(!FileSystem.SoundFilesExist()).SetEnabled(!Game.Started),
 			MenuItem.Create(Translate("Back"))
 		);
@@ -336,7 +336,7 @@ namespace CivOne.Screens
 				Settings.GlobalWarmingFeatureFlags != Settings.GlobalWarmingFeatureFlag.None
 			}.Count(static enabled => enabled);
 
-		private void PatchesMenu(int activeItem = 0) => CreateMenu("Patches", activeItem,
+		private void PatchesMenu(int activeItem = 0) => CreateMenu(Translate("Patches"), activeItem,
 			MenuItem.Create(TranslateFormatted("Reveal world: {0}", Settings.RevealWorld.YesNo()))
 				.WithDescription(
 					Translate("Show map tiles, cities, and units for all players."),
@@ -390,7 +390,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(MainMenu, 1))
 		);
 
-		private void RevealWorldMenu() => CreateMenu("Reveal world", GotoMenu(PatchesMenu, 0),
+		private void RevealWorldMenu() => CreateMenu(Translate("Reveal world"), GotoMenu(PatchesMenu, 0),
 			MenuItem.Create(TranslateFormatted("{0} (default)", false.YesNo()))
 				.WithDescription(Translate("Keep normal fog of war behavior."))
 				.OnSelect((s, a) => Settings.RevealWorld = false).SetActive(() => !Settings.RevealWorld),
@@ -400,7 +400,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void SideBarMenu() => CreateMenu("Side bar location", GotoMenu(PatchesMenu, 1),
+		private void SideBarMenu() => CreateMenu(Translate("Side bar location"), GotoMenu(PatchesMenu, 1),
 			MenuItem.Create(Translate("Left (default)"))
 				.WithDescription(Translate("Place sidebar on the left side."))
 				.OnSelect((s, a) => Settings.RightSideBar = false).SetActive(() => !Settings.RightSideBar),
@@ -410,7 +410,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void DebugMenuMenu() => CreateMenu("Show debug menu", GotoMenu(PatchesMenu, 2),
+		private void DebugMenuMenu() => CreateMenu(Translate("Show debug menu"), GotoMenu(PatchesMenu, 2),
 			MenuItem.Create(TranslateFormatted("{0} (default)", false.YesNo()))
 				.WithDescription(Translate("Hide debug menu entries."))
 				.OnSelect((s, a) => Settings.DebugMenu = false || Game.Started).SetActive(() => !Settings.DebugMenu || Game.Started),
@@ -420,7 +420,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void CursorTypeMenu() => CreateMenu("Mouse cursor type", GotoMenu(PatchesMenu, 3),
+		private void CursorTypeMenu() => CreateMenu(Translate("Mouse cursor type"), GotoMenu(PatchesMenu, 3),
 			MenuItem.Create(Default.ToText())
 				.WithDescription(Translate("Use original cursor assets from game files."))
 				.OnSelect((s, a) => Settings.CursorType = Default).SetActive(() => Settings.CursorType == Default && FileSystem.DataFilesExist(FileSystem.MouseCursorFiles)).SetEnabled(FileSystem.DataFilesExist(FileSystem.MouseCursorFiles)),
@@ -433,7 +433,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void DestroyAnimationMenu() => CreateMenu("Destroy animation", GotoMenu(PatchesMenu, 4),
+		private void DestroyAnimationMenu() => CreateMenu(Translate("Destroy animation"), GotoMenu(PatchesMenu, 4),
 			MenuItem.Create(Sprites.ToText())
 				.WithDescription(Translate("Use sprite animation for destruction effects."))
 				.OnSelect((s, a) => Settings.DestroyAnimation = Sprites).SetActive(() => Settings.DestroyAnimation == Sprites),
@@ -443,7 +443,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void DeityEnabledMenu() => CreateMenu("Enable Deity difficulty", GotoMenu(PatchesMenu, 5),
+		private void DeityEnabledMenu() => CreateMenu(Translate("Enable Deity difficulty"), GotoMenu(PatchesMenu, 5),
 			MenuItem.Create(TranslateFormatted("{0} (default)", false.YesNo()))
 				.WithDescription(Translate("Hide Deity from difficulty selection."))
 				.OnSelect((s, a) => Settings.DeityEnabled = false).SetActive(() => !Settings.DeityEnabled),
@@ -453,7 +453,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void ArrowHelperMenu() => CreateMenu("Enable (no keypad) arrow helper", GotoMenu(PatchesMenu, 6),
+		private void ArrowHelperMenu() => CreateMenu(Translate("Enable (no keypad) arrow helper"), GotoMenu(PatchesMenu, 6),
 			MenuItem.Create(TranslateFormatted("{0} (default)", false.YesNo()))
 				.WithDescription(Translate("Disable movement helper hints."))
 				.OnSelect((s, a) => Settings.ArrowHelper = false).SetActive(() => !Settings.ArrowHelper),
@@ -463,7 +463,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void CustomMapSizeMenu() => CreateMenu("Custom map sizes (experimental)", GotoMenu(PatchesMenu, 7),
+		private void CustomMapSizeMenu() => CreateMenu(Translate("Custom map sizes (experimental)"), GotoMenu(PatchesMenu, 7),
 			MenuItem.Create(TranslateFormatted("{0} (default)", false.YesNo()))
 				.WithDescription(Translate("Use classic map size presets only."))
 				.OnSelect((s, a) => Settings.CustomMapSize = false).SetActive(() => !Settings.CustomMapSize),
@@ -474,7 +474,7 @@ namespace CivOne.Screens
 		);
 
 
-		private void PathFindingMenu() => CreateMenu("Use smart PathFinding for \"goto\"", GotoMenu(BehaviorMenu, 0),
+		private void PathFindingMenu() => CreateMenu(Translate("Use smart PathFinding for goto"), GotoMenu(BehaviorMenu, 0),
 			MenuItem.Create(TranslateFormatted("{0} (default)", false.YesNo()))
 				.WithDescription(Translate("Use classic goto route behavior."))
 				.OnSelect((s, a) => Settings.PathFinding = false).SetActive(() => !Settings.PathFinding),
@@ -484,7 +484,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void ComputerPlayerPathFindingMenu() => CreateMenu("Use smart pathfinding for computer players", GotoMenu(BehaviorMenu, 1),
+		private void ComputerPlayerPathFindingMenu() => CreateMenu(Translate("Use smart pathfinding for computer players"), GotoMenu(BehaviorMenu, 1),
 			MenuItem.Create(TranslateFormatted("{0}", false.YesNo()))
 				.WithDescription(Translate("Use classic pathfinding for computer players."))
 				.OnSelect((s, a) => Settings.ComputerPlayerPathFinding = false).SetActive(() => !Settings.ComputerPlayerPathFinding),
@@ -494,7 +494,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void AutoSettlersMenu() => CreateMenu("Use auto settlers cheat", GotoMenu(BehaviorMenu, 2),
+		private void AutoSettlersMenu() => CreateMenu(Translate("Use auto settlers cheat"), GotoMenu(BehaviorMenu, 2),
 			MenuItem.Create(TranslateFormatted("{0} (default)", false.YesNo()))
 				.WithDescription(Translate("Settlers remain under normal player control."))
 				.OnSelect((s, a) => Settings.AutoSettlers = false).SetActive(() => !Settings.AutoSettlers),
@@ -504,7 +504,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void FastRiverMovementMenu() => CreateMenu("Movements on river like roads", GotoMenu(BehaviorMenu, 3),
+		private void FastRiverMovementMenu() => CreateMenu(Translate("Movements on river like roads"), GotoMenu(BehaviorMenu, 3),
 			MenuItem.Create(TranslateFormatted("{0} (default)", false.YesNo()))
 				.WithDescription(Translate("Keep normal movement costs on rivers."))
 				.OnSelect((s, a) => Settings.RiverFastMovement = false).SetActive(() => !Settings.RiverFastMovement),
@@ -514,7 +514,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void CanalCity() => CreateMenu("No movement penalty for sea units in city", GotoMenu(BehaviorMenu, 4),
+		private void CanalCity() => CreateMenu(Translate("No movement penalty for sea units in city"), GotoMenu(BehaviorMenu, 4),
 			MenuItem.Create(TranslateFormatted("{0} (default)", false.YesNo()))
 				.WithDescription(Translate("Apply normal movement penalty in city tiles."))
 				.OnSelect((s, a) => Settings.CanalCity = false).SetActive(() => !Settings.CanalCity),
@@ -524,7 +524,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void RemoveObsoleteBuildingsMenu() => CreateMenu("Remove obsolete buildings", GotoMenu(BehaviorMenu, 5),
+		private void RemoveObsoleteBuildingsMenu() => CreateMenu(Translate("Remove obsolete buildings"), GotoMenu(BehaviorMenu, 5),
 			MenuItem.Create(false.YesNo())
 				.WithDescription(
 					Translate("Leave obsolete buildings in cities when"),
@@ -542,7 +542,7 @@ namespace CivOne.Screens
 			Description.Create(Translate("Return to the game behavior menu."))
 		);
 
-		private void SaveFormatMenu() => CreateMenu("AutoSave format", GotoMenu(PatchesMenu, 9),
+		private void SaveFormatMenu() => CreateMenu(Translate("AutoSave format"), GotoMenu(PatchesMenu, 9),
 			MenuItem.Create(Translate("SVE with COS fallback (default)"))
 				.WithDescription(
 					Translate("Prefer SVE save files."),
@@ -554,7 +554,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void SaveCastBehaviorMenu() => CreateMenu("Save cast behavior", GotoMenu(PatchesMenu, 10),
+		private void SaveCastBehaviorMenu() => CreateMenu(Translate("Save cast behavior"), GotoMenu(PatchesMenu, 10),
 			MenuItem.Create(Translate("Checked (default)"))
 				.WithDescription(Translate("Use checked casts for safer save handling."))
 				.OnSelect((s, a) => Settings.UseUncheckedCastSanitizer = false).SetActive(() => !Settings.UseUncheckedCastSanitizer),
@@ -564,7 +564,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void SeaLevelRise() => CreateMenu("Tiles replace with ocean", GotoMenu(ExtendedGlobalWarmingMenu, 0),
+		private void SeaLevelRise() => CreateMenu(Translate("Tiles replace with ocean"), GotoMenu(ExtendedGlobalWarmingMenu, 0),
 			MenuItem.Create(TranslateFormatted("{0} (default)", false.YesNo()))
 				.WithDescription(Translate("Keep global warming behavior without sea rise."))
 				.OnSelect((s, a) =>  Settings.SetGlobalWarmingFlag(Settings.GlobalWarmingFeatureFlag.SeaLevelRise, false)
@@ -576,15 +576,15 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void ExtendedGlobalWarmingMenu(int activeItem = 0) => CreateMenu("Extended global warming (needs savegame load)", activeItem,
+		private void ExtendedGlobalWarmingMenu(int activeItem = 0) => CreateMenu(Translate("Extended global warming (needs savegame load)"), activeItem,
 			MenuItem.Create(TranslateFormatted("Sea level rise: {0}", Settings.IsGlobalWarmingFlagSet(Settings.GlobalWarmingFeatureFlag.SeaLevelRise).YesNo()))
 				.OnSelect(GotoMenu(SeaLevelRise))
 				.WithDescription(Translate("Allow coastal tiles to turn into ocean.")),
 			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(BehaviorMenu, 6))
 		);
 
-		private void BehaviorMenu(int activeItem = 0) => CreateMenu("Game behavior menu", activeItem,
-			MenuItem.Create(TranslateFormatted("Use smart PathFinding for \"goto\": {0}", Settings.PathFinding.YesNo()))
+		private void BehaviorMenu(int activeItem = 0) => CreateMenu(Translate("Game behavior menu"), activeItem,
+			MenuItem.Create(TranslateFormatted("Use smart PathFinding for goto: {0}", Settings.PathFinding.YesNo()))
 				.WithDescription(
 					Translate("Improve goto route selection for player units."))
 				.OnSelect(GotoMenu(PathFindingMenu)),
@@ -615,7 +615,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(PatchesMenu, 8))
 		);
 
-		private void PluginsMenu(int activeItem = 0) => CreateMenu("Plugins", activeItem,
+		private void PluginsMenu(int activeItem = 0) => CreateMenu(Translate("Plugins"), activeItem,
 			new MenuItem<int>[0]
 				.Concat(
 					Reflect.Plugins().Any() ?
@@ -649,15 +649,15 @@ namespace CivOne.Screens
 			MenuItem.Create(true.YesNo()).OnSelect((s, a) => plugin.Delete()).OnSelect(GotoMenu(PluginsMenu, item))
 		);
 
-		private void GameOptionsMenu(int activeItem = 0) => CreateMenu("Game Options", activeItem,
-			MenuItem.Create(TranslateFormatted("Instant Advice: {0}", Settings.InstantAdvice.ToText())).OnSelect(GotoMenu(GameOptionMenu(0, "Instant Advice", () => Settings.InstantAdvice, (GameOption option) => Settings.InstantAdvice = option))),
-			MenuItem.Create(TranslateFormatted("AutoSave: {0}", Settings.AutoSave.ToText())).OnSelect(GotoMenu(GameOptionMenu(1, "AutoSave", () => Settings.AutoSave, (GameOption option) => Settings.AutoSave = option))),
-			MenuItem.Create(TranslateFormatted("End of Turn: {0}", Settings.EndOfTurn.ToText())).OnSelect(GotoMenu(GameOptionMenu(2, "End of Turn", () => Settings.EndOfTurn, (GameOption option) => Settings.EndOfTurn = option))),
-			MenuItem.Create(TranslateFormatted("Animations: {0}", Settings.Animations.ToText())).OnSelect(GotoMenu(GameOptionMenu(3, "Animations", () => Settings.Animations, (GameOption option) => Settings.Animations = option))),
-			MenuItem.Create(TranslateFormatted("Sound: {0}", Settings.Sound.ToText())).OnSelect(GotoMenu(GameOptionMenu(4, "Sound", () => Settings.Sound, (GameOption option) => Settings.Sound = option))),
-			MenuItem.Create(TranslateFormatted("Enemy Moves: {0}", Settings.EnemyMoves.ToText())).OnSelect(GotoMenu(GameOptionMenu(5, "Enemy Moves", () => Settings.EnemyMoves, (GameOption option) => Settings.EnemyMoves = option))),
-			MenuItem.Create(TranslateFormatted("Civilopedia Text: {0}", Settings.CivilopediaText.ToText())).OnSelect(GotoMenu(GameOptionMenu(6, "Civilopedia Text", () => Settings.CivilopediaText, (GameOption option) => Settings.CivilopediaText = option))),
-			MenuItem.Create(TranslateFormatted("Palace: {0}", Settings.Palace.ToText())).OnSelect(GotoMenu(GameOptionMenu(7, "Palace", () => Settings.Palace, (GameOption option) => Settings.Palace = option))),
+		private void GameOptionsMenu(int activeItem = 0) => CreateMenu(Translate("Game Options"), activeItem,
+			MenuItem.Create(TranslateFormatted("Instant Advice: {0}", Settings.InstantAdvice.ToText())).OnSelect(GotoMenu(GameOptionMenu(0, Translate("Instant Advice"), () => Settings.InstantAdvice, (GameOption option) => Settings.InstantAdvice = option))),
+			MenuItem.Create(TranslateFormatted("AutoSave: {0}", Settings.AutoSave.ToText())).OnSelect(GotoMenu(GameOptionMenu(1, Translate("AutoSave"), () => Settings.AutoSave, (GameOption option) => Settings.AutoSave = option))),
+			MenuItem.Create(TranslateFormatted("End of Turn: {0}", Settings.EndOfTurn.ToText())).OnSelect(GotoMenu(GameOptionMenu(2, Translate("End of Turn"), () => Settings.EndOfTurn, (GameOption option) => Settings.EndOfTurn = option))),
+			MenuItem.Create(TranslateFormatted("Animations: {0}", Settings.Animations.ToText())).OnSelect(GotoMenu(GameOptionMenu(3, Translate("Animations"), () => Settings.Animations, (GameOption option) => Settings.Animations = option))),
+			MenuItem.Create(TranslateFormatted("Sound: {0}", Settings.Sound.ToText())).OnSelect(GotoMenu(GameOptionMenu(4, Translate("Sound"), () => Settings.Sound, (GameOption option) => Settings.Sound = option))),
+			MenuItem.Create(TranslateFormatted("Enemy Moves: {0}", Settings.EnemyMoves.ToText())).OnSelect(GotoMenu(GameOptionMenu(5, Translate("Enemy Moves"), () => Settings.EnemyMoves, (GameOption option) => Settings.EnemyMoves = option))),
+			MenuItem.Create(TranslateFormatted("Civilopedia Text: {0}", Settings.CivilopediaText.ToText())).OnSelect(GotoMenu(GameOptionMenu(6, Translate("Civilopedia Text"), () => Settings.CivilopediaText, (GameOption option) => Settings.CivilopediaText = option))),
+			MenuItem.Create(TranslateFormatted("Palace: {0}", Settings.Palace.ToText())).OnSelect(GotoMenu(GameOptionMenu(7, Translate("Palace"), () => Settings.Palace, (GameOption option) => Settings.Palace = option))),
 			MenuItem.Create(TranslateFormatted("Tax Rate: {0}%", Settings.TaxRate * 10)).OnSelect(GotoMenu(TaxRateMenu)),
 			MenuItem.Create(TranslateFormatted("Language: {0}", CurrentLanguageText())).OnSelect(GotoMenu(LanguageMenu)),
 			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(MainMenu, 3))
@@ -670,7 +670,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void TaxRateMenu() => CreateMenu("Window Scale", GotoMenu(GameOptionsMenu, 8),
+		private void TaxRateMenu() => CreateMenu(Translate("Window Scale"), GotoMenu(GameOptionsMenu, 8),
 			MenuItem.Create(Translate(" 0% Tax, 100% Science")).OnSelect((s, a) => Settings.TaxRate = 0).SetActive(() => Settings.TaxRate == 0),
 			MenuItem.Create(Translate("10% Tax,  90% Science")).OnSelect((s, a) => Settings.TaxRate = 1).SetActive(() => Settings.TaxRate == 1),
 			MenuItem.Create(Translate("20% Tax,  80% Science")).OnSelect((s, a) => Settings.TaxRate = 2).SetActive(() => Settings.TaxRate == 2),
@@ -706,14 +706,14 @@ namespace CivOne.Screens
 			}
 			else
 			{
-				menuItems.AddRange(availableLanguages.Select(language => language.Postfix)
+				menuItems.AddRange(availableLanguages.Select(language => Translate(language.Postfix)) // only way of translating a language name.
 					.Select(postfix => MenuItem.Create(postfix)
 						.OnSelect((s, a) => SelectLanguage(postfix))
 						.SetActive(() => string.Equals(TranslationServiceFactory.ActiveLanguagePostfix, postfix, StringComparison.Ordinal))));
 			}
 
 			menuItems.Add(MenuItem.Create(Translate("Back")));
-			CreateMenu("Language", GotoMenu(GameOptionsMenu, 9), [.. menuItems]);
+			CreateMenu(Translate("Language"), GotoMenu(GameOptionsMenu, 9), [.. menuItems]);
 		}
 
 		private void SelectLanguage(string postfix)

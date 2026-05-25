@@ -13,7 +13,7 @@ namespace CivOne.Concepts
 	{
 		public Mining()
 		{
-			Name = "Mining";
+			Name = Translate("Mining");
 		}
 	}
 }

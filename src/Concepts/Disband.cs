@@ -13,7 +13,7 @@ namespace CivOne.Concepts
 	{
 		public Disband()
 		{
-			Name = "Disband";
+			Name = Translate(Translate("Disband"));
 		}
 	}
 }

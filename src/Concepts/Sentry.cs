@@ -13,7 +13,7 @@ namespace CivOne.Concepts
 	{
 		public Sentry()
 		{
-			Name = "Sentry";
+			Name = Translate("Sentry");
 		}
 	}
 }

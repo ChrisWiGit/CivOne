@@ -20,6 +20,7 @@ using CivOne.IO;
 using CivOne.Leaders;
 using CivOne.Persistence.Factories;
 using CivOne.Persistence.Model;
+using CivOne.Services;
 using CivOne.Units;
 
 namespace CivOne
@@ -29,6 +30,9 @@ namespace CivOne
 		private static Settings Settings => Settings.Instance;
 		// CVS = Checked Value Sanitizer. Used for all conversions. Shorthand to clarify intent and reduce verbosity in this save/load specific code.
 		private static ICheckedValueSanitizer CVS => ValueSanitizerFactory.GetCheckedValueSanitizer();
+
+		private static string T(this string input) => TranslationServiceFactory.GetCurrent().Translate(input);
+		
 
 		public static string GetSoundFile(this string input)
 		{
@@ -271,19 +275,19 @@ namespace CivOne
 			return units;
 		}
 
-		public static string YesNo(this bool value) => value ? "Yes" : "No";
-		public static string OnOff(this bool value) => value ? "On" : "Off";
-		public static string EnabledDisabled(this bool value) => value ? "Enabled" : "Disabled";
+		public static string YesNo(this bool value) => value ?  T("Yes") : T("No");
+		public static string OnOff(this bool value) => value ? T("On") : T("Off");
+		public static string EnabledDisabled(this bool value) => value ? T("Enabled") : T("Disabled");
 
 		public static string ToText(this AspectRatio aspectRatio)
 		{
 			switch (aspectRatio)
 			{
-				case AspectRatio.Auto: return "Automatic";
-				case AspectRatio.Fixed: return "Fixed";
-				case AspectRatio.Scaled: return "Scaled (blurry)";
-				case AspectRatio.ScaledFixed: return "Scaled and fixed (blurry)";
-				case AspectRatio.Expand: return "Expand (experimental)";
+				case AspectRatio.Auto: return T("Automatic");
+				case AspectRatio.Fixed: return T("Fixed");
+				case AspectRatio.Scaled: return T("Scaled (blurry)");
+				case AspectRatio.ScaledFixed: return T("Scaled and fixed (blurry)");
+				case AspectRatio.Expand: return T("Expand (experimental)");
 				default: return null;
 			}
 		}
@@ -292,8 +296,8 @@ namespace CivOne
 		{
 			switch (graphicsMode)
 			{
-				case GraphicsMode.Graphics256: return "256 colors";
-				case GraphicsMode.Graphics16: return "16 colors";
+				case GraphicsMode.Graphics256: return T("256 colors");
+				case GraphicsMode.Graphics16: return T("16 colors");
 				default: return null;
 			}
 		}
@@ -302,9 +306,9 @@ namespace CivOne
 		{
 			switch (simulateInternationalFont)
 			{
-				case SimulateInternationalFont.Auto: return "Auto";
-				case SimulateInternationalFont.Yes: return "Yes";
-				case SimulateInternationalFont.No: return "No";
+				case SimulateInternationalFont.Auto: return T("Auto");
+				case SimulateInternationalFont.Yes: return T("Yes");
+				case SimulateInternationalFont.No: return T("No");
 				default: return null;
 			}
 		}
@@ -313,9 +317,9 @@ namespace CivOne
 		{
 			switch (cursorType)
 			{
-				case CursorType.Default: return "Default";
-				case CursorType.Builtin: return "Built-in";
-				case CursorType.Native: return "Native";
+				case CursorType.Default: return T("Default");
+				case CursorType.Builtin: return T("Built-in");
+				case CursorType.Native: return T("Native");
 				default: return null;
 			}
 		}
@@ -324,8 +328,8 @@ namespace CivOne
 		{
 			switch (destroyAnimation)
 			{
-				case DestroyAnimation.Sprites: return "Sprites (original)";
-				case DestroyAnimation.Noise: return "Noise";
+				case DestroyAnimation.Sprites: return T("Sprites (original)");
+				case DestroyAnimation.Noise: return T("Noise");
 				default: return null;
 			}
 		}
@@ -334,9 +338,9 @@ namespace CivOne
 		{
 			switch (gameOption)
 			{
-				case GameOption.Default: return "Default";
-				case GameOption.On: return "On";
-				case GameOption.Off: return "Off";
+				case GameOption.Default: return T("Default");
+				case GameOption.On: return T("On");
+				case GameOption.Off: return T("Off");
 				default: return null;
 			}
 		}
@@ -345,9 +349,9 @@ namespace CivOne
 		{
 			switch (aggression)
 			{
-				case AggressionLevel.Friendly: return "Friendly";
-				case AggressionLevel.Normal: return "Normal";
-				case AggressionLevel.Aggressive: return "Aggressive";
+				case AggressionLevel.Friendly: return T("Friendly");
+				case AggressionLevel.Normal: return T("Normal");
+				case AggressionLevel.Aggressive: return T("Aggressive");
 				default: return null;
 			}
 		}
@@ -356,9 +360,9 @@ namespace CivOne
 		{
 			switch (development)
 			{
-				case DevelopmentLevel.Perfectionist: return "Perfectionist";
-				case DevelopmentLevel.Normal: return "Normal";
-				case DevelopmentLevel.Expansionistic: return "Expansionistic";
+				case DevelopmentLevel.Perfectionist: return T("Perfectionist");
+				case DevelopmentLevel.Normal: return T("Normal");
+				case DevelopmentLevel.Expansionistic: return T("Expansionistic");
 				default: return null;
 			}
 		}
@@ -367,9 +371,9 @@ namespace CivOne
 		{
 			switch (militarism)
 			{
-				case MilitarismLevel.Civilized: return "Civilized";
-				case MilitarismLevel.Normal: return "Normal";
-				case MilitarismLevel.Militaristic: return "Militaristic";
+				case MilitarismLevel.Civilized: return T("Civilized");
+				case MilitarismLevel.Normal: return T("Normal");
+				case MilitarismLevel.Militaristic: return T("Militaristic");
 				default: return null;
 			}
 		}

@@ -13,7 +13,7 @@ namespace CivOne.Concepts
 	{
 		public RailRoads()
 		{
-			Name = "RailRoads";
+			Name = Translate("RailRoads");
 		}
 	}
 }

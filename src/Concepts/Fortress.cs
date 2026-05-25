@@ -13,7 +13,7 @@ namespace CivOne.Concepts
 	{
 		public Fortress()
 		{
-			Name = "Fortress";
+			Name = Translate("Fortress");
 		}
 	}
 }
