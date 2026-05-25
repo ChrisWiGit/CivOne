@@ -1139,21 +1139,21 @@ namespace CivOne.Units
 			Icon = _iconCache[(int)Type];
 		}
 
-		protected MenuItem<int> MenuNoOrders() => MenuItem<int>.Create("No Orders").SetShortcut("space").OnSelect((s, a) => SkipTurn());
+		protected MenuItem<int> MenuNoOrders() => MenuItem<int>.Create(Translate("No Orders")).SetShortcut(Translate("space")).OnSelect((s, a) => SkipTurn());
 
-		protected MenuItem<int> MenuFortify() => MenuItem<int>.Create("Fortify").SetShortcut("f").OnSelect((s, a) => Fortify = true);
+		protected MenuItem<int> MenuFortify() => MenuItem<int>.Create(Translate("Fortify")).SetShortcut("f").OnSelect((s, a) => Fortify = true);
 
-		protected MenuItem<int> MenuWait() => MenuItem<int>.Create("Wait").SetShortcut("w").OnSelect((s, a) => Game.UnitWait());
+		protected MenuItem<int> MenuWait() => MenuItem<int>.Create(Translate("Wait")).SetShortcut("w").OnSelect((s, a) => Game.UnitWait());
 
-		protected MenuItem<int> MenuSentry() => MenuItem<int>.Create("Sentry").SetShortcut("s").OnSelect((s, a) => Sentry = true);
+		protected MenuItem<int> MenuSentry() => MenuItem<int>.Create(Translate("Sentry")).SetShortcut("s").OnSelect((s, a) => Sentry = true);
 
-		protected MenuItem<int> MenuGoTo() => MenuItem<int>.Create("GoTo").SetShortcut("g").OnSelect((s, a) => GameTask.Enqueue(Show.Goto));
+		protected MenuItem<int> MenuGoTo() => MenuItem<int>.Create(Translate("GoTo")).SetShortcut("g").OnSelect((s, a) => GameTask.Enqueue(Show.Goto));
 
-		protected MenuItem<int> MenuPillage() => MenuItem<int>.Create("Pillage").SetShortcut("P").OnSelect((s, a) => Pillage());
+		protected MenuItem<int> MenuPillage() => MenuItem<int>.Create(Translate("Pillage")).SetShortcut("P").OnSelect((s, a) => Pillage());
 
-		protected MenuItem<int> MenuHomeCity() => MenuItem<int>.Create("Home City").SetShortcut("h").OnSelect((s, a) => SetHome());
+		protected MenuItem<int> MenuHomeCity() => MenuItem<int>.Create(Translate("Home City")).SetShortcut("h").OnSelect((s, a) => SetHome());
 
-		protected MenuItem<int> MenuDisbandUnit() => MenuItem<int>.Create("Disband Unit").SetShortcut("D").OnSelect((s, a) => Game.DisbandUnit(this));
+		protected MenuItem<int> MenuDisbandUnit() => MenuItem<int>.Create(Translate("Disband Unit")).SetShortcut(Translate("Shift+D")).OnSelect((s, a) => Game.DisbandUnit(this));
 
 		public abstract IEnumerable<MenuItem<int>> MenuItems { get; }
 
