@@ -842,22 +842,27 @@ namespace CivOne.Units
 		private static readonly IBitmap[] _iconCache = new IBitmap[28];
 		public virtual IBitmap Icon { get; private set; }
 		private string _name;
+		public string TranslatedName { get; protected set; }
+		
 		public string Name
 		{
+			// Plugin modifications can change the name of a unit, so check for modifications first before returning the default name.
 			get => Modifications.LastOrDefault(x => x.Name.HasValue)?.Name.Value ?? _name;
 			protected set => _name = value;
 		}
 		public byte PageCount => 2;
 		public Picture DrawPage(byte pageNumber)
 		{
-			string[] text = new string[0];
+			string[] text = [];
+			// keep the original name for looking up the text, even if modifications change the name of the unit
+			string originalName = _name;
 			switch (pageNumber)
 			{
 				case 1:
-					text = Resources.GetCivilopediaText("BLURB2/" + _name.ToUpper());
+					text = Resources.GetCivilopediaText("BLURB2/" + originalName.ToUpper());
 					break;
 				case 2:
-					text = Resources.GetCivilopediaText("BLURB2/" + _name.ToUpper() + "2");
+					text = Resources.GetCivilopediaText("BLURB2/" + originalName.ToUpper() + "2");
 					break;
 				default:
 					Log("Invalid page number: {0}", pageNumber);
@@ -880,7 +885,7 @@ namespace CivOne.Units
 			{
 				yy += 8;
 				string requiredTech = "";
-				if (RequiredTech != null) requiredTech = RequiredTech.Name;
+				if (RequiredTech != null) requiredTech = RequiredTech.TranslatedName;
 				output.DrawText(string.Format("Requires {0}", requiredTech), 6, 9, 100, yy); yy += 8;
 				output.DrawText(string.Format("Cost: {0}0 resources.", Price), 6, 9, 100, yy); yy += 8;
 				output.DrawText(string.Format("Attack Strength: {0}", Attack), 6, 12, 100, yy); yy += 8;

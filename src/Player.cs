@@ -198,7 +198,7 @@ namespace CivOne
 			{
 				if (_advances.Count == 0)
 					return "Irrigation";
-				return Reflect.GetAdvances().First(a => a.Id == _advances.Last()).Name;
+				return Reflect.GetAdvances().First(a => a.Id == _advances.Last()).TranslatedName;
 			}
 		}
 

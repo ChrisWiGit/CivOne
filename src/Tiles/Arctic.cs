@@ -30,7 +30,7 @@ namespace CivOne.Tiles
 		public Arctic(int x, int y, bool special) : base(x, y, special)
 		{
 			Type = Terrain.Arctic;
-			Name = Translate("Arctic");
+			TranslatedName = Translate("Arctic");
 		}
 		public Arctic() : this(-1, -1, false)
 		{

@@ -13,7 +13,8 @@ namespace CivOne.Governments
 	{
 		public Monarchy() : base(2, new Advances.Monarchy())
 		{
-			Name = Translate("Monarchy");
+			Name = "Monarchy";
+			TranslatedName = Translate("Monarchy");
 			NameAdjective = Translate("Monarchic");
 			CorruptionMultiplier = 16;
 		}

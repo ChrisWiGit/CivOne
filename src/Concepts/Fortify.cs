@@ -13,7 +13,9 @@ namespace CivOne.Concepts
 	{
 		public Fortify()
 		{
-			Name = Translate("Fortify");
+			Name = "Fortify";
+			Name = "Fortify";
+			TranslatedName = Translate("Fortify");
 		}
 	}
 }

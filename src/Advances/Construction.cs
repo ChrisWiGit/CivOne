@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public Construction() : base(4, 0, 1, Advance.Masonry, Advance.Currency)
 		{
-			Name = Translate("Construction");
+			Name = "Construction";
+			TranslatedName = Translate("Construction");
 			Type = Advance.Construction;
 		}
 	}

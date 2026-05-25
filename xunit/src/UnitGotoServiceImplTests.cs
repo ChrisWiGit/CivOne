@@ -368,11 +368,13 @@ namespace CivOne.UnitTests
 			public bool HasCity => false;
 			public IUnit[] Units => [];
 			public ITile this[int relativeX, int relativeY] => null;
-			public string Name => "StubTile";
+			public string TranslatedName => "StubTile";
 
 			IBitmap ICivilopedia.Icon => throw new System.NotImplementedException();
 
 			byte ICivilopedia.PageCount => throw new System.NotImplementedException();
+
+			public string Name { get; set; } = "Mocked Tile";
 
 			public StubTile(int x, int y)
 			{

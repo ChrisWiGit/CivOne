@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public Philosophy() : base(8, 1, 0, Advance.Mysticism, Advance.Literacy)
 		{
-			Name = Translate("Philosophy");
+			Name = "Philosophy";
+			TranslatedName = Translate("Philosophy");
 			Type = Advance.Philosophy;
 		}
 	}

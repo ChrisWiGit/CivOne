@@ -16,7 +16,8 @@ namespace CivOne.Wonders
 	{
 		public CopernicusObservatory() : base(30)
 		{
-			Name = Translate("Copernicus' Observatory");
+			Name = "Copernicus' Observatory";
+			TranslatedName = Translate("Copernicus' Observatory");
 			RequiredTech = new Astronomy();
 			ObsoleteTech = new Automobile();
 			SetSmallIcon(6, 0);

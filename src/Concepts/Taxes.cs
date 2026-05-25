@@ -13,7 +13,9 @@ namespace CivOne.Concepts
 	{
 		public Taxes()
 		{
-			Name = Translate("Taxes");
+			Name = "Taxes";
+			Name = "Taxes";
+			TranslatedName = Translate("Taxes");
 		}
 	}
 }

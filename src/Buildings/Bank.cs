@@ -16,7 +16,8 @@ namespace CivOne.Buildings
 	{
 		public Bank() : base(12, 3)
 		{
-			Name = Translate("Bank");
+			Name = "Bank";
+			TranslatedName = Translate("Bank");
 			RequiredTech = new Banking();
 			SetIcon(2, 0, true);
 			SetSmallIcon(1, 4);

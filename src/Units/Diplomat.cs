@@ -63,14 +63,14 @@ namespace CivOne.Units
 			if (random == buildings.Count)
 			{
 				city.Shields = (ushort)0;
-				string production = (city.CurrentProduction as ICivilopedia).Name;
+				string production = (city.CurrentProduction as ICivilopedia).TranslatedName;
 				return $"{production} production sabotaged";
 			}
 			else
 			{
 				// sabotage a building
 				city.RemoveBuilding(buildings[random]);
-				return $"{buildings[random].Name} sabotaged";
+				return $"{buildings[random].TranslatedName} sabotaged";
 			}
 		}
 
@@ -113,7 +113,8 @@ namespace CivOne.Units
 		public Diplomat() : base(3, 0, 0, 2)
 		{
 			Type = UnitType.Diplomat;
-			Name = Translate("Diplomat");
+			Name = "Diplomat";
+			TranslatedName = Translate("Diplomat");
 			RequiredTech = new Writing();
 			ObsoleteTech = null;
 			SetIcon('C', 1, 0);

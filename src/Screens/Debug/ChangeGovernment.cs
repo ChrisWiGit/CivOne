@@ -49,7 +49,7 @@ namespace CivOne.Screens.Debug
 			_selectedPlayer.Government = args.Value;
 			GameTask.Enqueue(Message.NewGoverment(null,
 				$"{_selectedPlayer.TribeName} government",
-				$"changed to {args.Value.Name}!"));
+				$"changed to {args.Value.TranslatedName}!"));
 			Cancel();
 		}
 
@@ -119,7 +119,7 @@ namespace CivOne.Screens.Debug
 			{
 				bool isCurrentGovernment = government.Id == _selectedPlayer.Government.Id;
 				_governmentMenu.Items
-					.Add(government.Name, government)
+					.Add(government.TranslatedName, government)
 					.SetEnabled(!isCurrentGovernment)
 					.OnSelect(GovernmentChoice);
 			}

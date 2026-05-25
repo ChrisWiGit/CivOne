@@ -16,6 +16,7 @@ namespace CivOne.Wonders
 {
 	internal abstract class BaseWonder : BaseInstance, IWonder
 	{
+		public string TranslatedName { get; protected set; }
 		public string Name { get; protected set; }
 		public virtual IBitmap Icon => null;
 		public virtual IBitmap SmallIcon { get; protected set; }
@@ -50,7 +51,7 @@ namespace CivOne.Wonders
 			{
 				yy += 8;
 				string requiredTech = "";
-				if (RequiredTech != null) requiredTech = RequiredTech.Name;
+				if (RequiredTech != null) requiredTech = RequiredTech.TranslatedName;
 				output.DrawText(string.Format("Requires {0}", requiredTech), 6, 9, 12, yy); yy += 8;
 				output.DrawText(string.Format("Cost: {0}0 shields.", Price), 6, 9, 12, yy); yy += 8;
 				output.DrawText(string.Format("Maintenance: ${0}", 0), 6, 12, 12, yy);
@@ -84,7 +85,7 @@ namespace CivOne.Wonders
 
 		public string FormatWorldWonder(City city)
 		{
-			string name = Id < 8 ? $"The {Name}" : Name;
+			string name = Id < 8 ? $"The {TranslatedName}" : TranslatedName;
 			string preposition = Id < 7 ? "of" : "in";
 			if (city != null && city.Size > 0)
 				return $"{name} {preposition} {city.Name}. ({Game.Instance.GetPlayer(city.Owner).Civilization.NamePlural})";

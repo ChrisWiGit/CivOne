@@ -25,12 +25,12 @@ namespace CivOne.Screens
 	[ScreenResizeable]
 	internal class Civilopedia : BaseScreen
 	{
-		internal static ICivilopedia[] Advances = Reflect.GetCivilopediaAdvances().OrderBy(x => x.Name).ToArray();
-		internal static ICivilopedia[] Improvements = Reflect.GetCivilopediaCityImprovements().OrderBy(x => x.Name).ToArray();
-		internal static ICivilopedia[] Units = Reflect.GetCivilopediaUnits().OrderBy(x => x.Name).ToArray();
-		internal static ICivilopedia[] TerrainType = Reflect.GetCivilopediaTerrainTypes().OrderBy(x => x.Name).ToArray();
-		internal static ICivilopedia[] Misc = Reflect.GetConcepts().OrderBy(x => x.Name).ToArray();
-		internal static ICivilopedia[] Complete = Reflect.GetCivilopediaAll().OrderBy(x => x.Name).ToArray();
+		internal static ICivilopedia[] Advances = Reflect.GetCivilopediaAdvances().OrderBy(x => x.TranslatedName).ToArray();
+		internal static ICivilopedia[] Improvements = Reflect.GetCivilopediaCityImprovements().OrderBy(x => x.TranslatedName).ToArray();
+		internal static ICivilopedia[] Units = Reflect.GetCivilopediaUnits().OrderBy(x => x.TranslatedName).ToArray();
+		internal static ICivilopedia[] TerrainType = Reflect.GetCivilopediaTerrainTypes().OrderBy(x => x.TranslatedName).ToArray();
+		internal static ICivilopedia[] Misc = Reflect.GetConcepts().OrderBy(x => x.TranslatedName).ToArray();
+		internal static ICivilopedia[] Complete = Reflect.GetCivilopediaAll().OrderBy(x => x.TranslatedName).ToArray();
 		
 		private readonly ICivilopedia[] _pages;
 		private readonly ICivilopedia _singlePage;
@@ -68,7 +68,7 @@ namespace CivOne.Screens
 				int columns = (int)Math.Ceiling((float)_pages.Length / 26);
 				for (int i = _startIndex; i < _pages.Length; i++)
 				{
-					string name = _pages[i].Name;
+					string name = _pages[i].TranslatedName;
 					if (columns >= 3 && name.Length >= 18) name = $"{name.Substring(0, 17)}.";
 					this.DrawText(name, 0, 5, xx, yy);
 
@@ -116,7 +116,7 @@ namespace CivOne.Screens
 			{
 				this.AddLayer(_singlePage.Icon, iconX + OffsetX, iconY + OffsetY);
 			}
-			this.DrawText(_singlePage.Name.ToUpper(), 5, 5, titleX + OffsetX, 20 + OffsetY, TextAlign.Center)
+			this.DrawText(_singlePage.TranslatedName.ToUpper(), 5, 5, titleX + OffsetX, 20 + OffsetY, TextAlign.Center)
 				.DrawText(category, 6, 7, titleX + OffsetX, 36 + OffsetY, TextAlign.Center);
 			if (_pageNumber == 2 && _discovered)
 			{
@@ -213,7 +213,7 @@ namespace CivOne.Screens
 				if (args.X > xx + columnWidth) { i += 25; xx += columnWidth; continue; }
 				if (args.Y >= yy && args.Y <= yy + 7)
 				{
-					Log("Opening Civilopedia page: {0}", _pages[i].Name);
+					Log("Opening Civilopedia page: {0}", _pages[i].TranslatedName);
 					Common.AddScreen(new Civilopedia(_pages[i]));
 					return true;
 				}

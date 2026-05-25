@@ -156,7 +156,7 @@ namespace CivOne.Screens.GamePlayPanels
 			{
 				int yy = 2;
 				_gameInfo.DrawText(Human.TribeName, 0, 5, 4, 2, TextAlign.Left);
-				_gameInfo.DrawText(unit.Name, 0, 5, 4, (yy += 8), TextAlign.Left);
+				_gameInfo.DrawText(unit.TranslatedName, 0, 5, 4, (yy += 8), TextAlign.Left);
 				
 				if (unit.Veteran)
 				{
@@ -176,7 +176,7 @@ namespace CivOne.Screens.GamePlayPanels
 					_gameInfo.DrawText(TranslateFormatted("Moves: {0}", unit.MovesLeft), 0, 5, 4, (yy += 8), TextAlign.Left);
 				}
 				_gameInfo.DrawText((unit.Home == null ? Translate("NONE") : unit.Home.Name), 0, 5, 4, (yy += 8), TextAlign.Left);
-				_gameInfo.DrawText($"({Map[unit.X, unit.Y].Name})", 0, 5, 4, (yy += 8), TextAlign.Left);
+				_gameInfo.DrawText($"({Map[unit.X, unit.Y].TranslatedName})", 0, 5, 4, (yy += 8), TextAlign.Left);
 				
 				if (Map[unit.X, unit.Y].RailRoad)
 					_gameInfo.DrawText(Translate("(RailRoad)"), 0, 5, 4, (yy += 8), TextAlign.Left);

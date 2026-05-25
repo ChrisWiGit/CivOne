@@ -40,7 +40,7 @@ namespace CivOne.Screens.Reports
 			{
 				City city = _cities[i];
 
-				string production = (city.CurrentProduction as ICivilopedia).Name;
+				string production = (city.CurrentProduction as ICivilopedia).TranslatedName;
 				// fire-eggs 20190721 in microprose, longer wonder names are abbreviated
 				if (production.Length > 16)
 					production = production.Substring(1, 16) + ".";

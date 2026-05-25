@@ -18,7 +18,8 @@ namespace CivOne.Units
 		public Riflemen() : base(3, 3, 5, 1)
 		{
 			Type = UnitType.Riflemen;
-			Name = Translate("Riflemen");
+			Name = "Riflemen";
+			TranslatedName = Translate("Riflemen");
 			RequiredTech = new Conscription();
 			ObsoleteTech = null;
 			SetIcon('D', 1, 2);

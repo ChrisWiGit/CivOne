@@ -15,6 +15,7 @@ namespace CivOne.UnitTests
 		public MockedIWonder()
 		{
 			Id = 1;
+			TranslatedName = "Mocked Wonder";
 			Name = "Mocked Wonder";
 			Type = Wonder.Pyramids;
 			Price = 100;
@@ -37,7 +38,7 @@ namespace CivOne.UnitTests
 
 		public Wonder Type { get; set; }
 
-		public string Name { get; set; }
+		public string TranslatedName { get; set; }
 
 		public IBitmap Icon { get; set; }
 
@@ -48,6 +49,8 @@ namespace CivOne.UnitTests
 		public short BuyPrice { get; set; }
 
 		public byte ProductionId { get; set; }
+
+		public string Name { get; set; } = "Mocked Wonder";
 
 		public Picture DrawPage(byte pageNumber)
 		{

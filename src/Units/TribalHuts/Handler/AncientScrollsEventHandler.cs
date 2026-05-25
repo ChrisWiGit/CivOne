@@ -56,7 +56,7 @@ namespace CivOne.Units.TribalHuts
 				if (foundAdvance != null)
 				{
 					logger.Log("Found advance: {0} (ID: {1}) in {2} attempts with starting ID: {3}",
-						foundAdvance.Name, foundAdvance.Id, i, advanceId);
+						foundAdvance.TranslatedName, foundAdvance.Id, i, advanceId);
 					GameTask.Enqueue(new GetAdvance(player, foundAdvance));
 					break;
 				}

@@ -16,7 +16,8 @@ namespace CivOne.Wonders
 	{
 		public Oracle() : base(30)
 		{
-			Name = Translate("Oracle");
+			Name = "Oracle";
+			TranslatedName = Translate("Oracle");
 			RequiredTech = new Mysticism();
 			ObsoleteTech = new Religion();
 			SetSmallIcon(5, 1);

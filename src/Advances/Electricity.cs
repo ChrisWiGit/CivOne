@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public Electricity() : base(8, 0, 0, Advance.Magnetism, Advance.Metallurgy)
 		{
-			Name = Translate("Electricity");
+			Name = "Electricity";
+			TranslatedName = Translate("Electricity");
 			Type = Advance.Electricity;
 		}
 	}

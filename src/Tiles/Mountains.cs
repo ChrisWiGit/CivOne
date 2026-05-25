@@ -29,7 +29,7 @@ namespace CivOne.Tiles
 		public Mountains(int x, int y, bool special) : base(x, y, special)
 		{
 			Type = Terrain.Mountains;
-			Name = Translate("Mountains");
+			TranslatedName = Translate("Mountains");
 		}
 		public Mountains() : this(-1, -1, false)
 		{

@@ -98,14 +98,14 @@ namespace CivOne.Persistence.Factories
 
 			PlayerDto.AllAdvances = [.. RuntimeFactory.Advances
 				.OrderBy(a => a.Id)
-				.Select(a => $"{a.Id}({a.Name})")];
+				.Select(a => $"{a.Id}({a.TranslatedName})")];
 
 			PlayerDto.AllAdvancesInfo = RuntimeFactory.Advances
-				.ToDictionary(a => (uint)a.Id, a => a.Name);
+				.ToDictionary(a => (uint)a.Id, a => a.TranslatedName);
 
 			PlayerDto.AllGovernments = [.. RuntimeFactory.Governments
 				.OrderBy(g => g.Id)
-				.Select(g => $"{g.Id}({g.Name})")];
+				.Select(g => $"{g.Id}({g.TranslatedName})")];
 		}
 
 		private sealed class NotSupportedPlayerFactory : IPlayerFactory

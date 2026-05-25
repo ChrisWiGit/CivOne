@@ -13,6 +13,7 @@ namespace CivOne.Concepts
 {
 	internal abstract class BaseConcept : BaseInstance, IConcept
 	{
+		public string TranslatedName { get; protected set; }
 		public string Name { get; protected set; }
 		public IBitmap Icon => null;
 		public byte PageCount => 2;

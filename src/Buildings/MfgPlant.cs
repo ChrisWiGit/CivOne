@@ -16,7 +16,8 @@ namespace CivOne.Buildings
 	{
 		public MfgPlant() : base(32, 6)
 		{
-			Name = Translate("Mfg. Plant");
+			Name = "Mfg. Plant";
+			TranslatedName = Translate("Mfg. Plant");
 			RequiredTech = new Robotics();
 			SetIcon(3, 2, true);
 			SetSmallIcon(3, 0);

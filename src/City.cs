@@ -1114,7 +1114,7 @@ namespace CivOne
 			if (partType != SpaceShipComponentType.Empty && canShowInstallScreen)
 			{
 				Shields = 0;
-				Message message = Message.Newspaper(this, TranslateFormattedArray("{0} builds\n{1}.", this.Name, (CurrentProduction as ICivilopedia).Name));
+				Message message = Message.Newspaper(this, TranslateFormattedArray("{0} builds\n{1}.", this.Name, (CurrentProduction as ICivilopedia).TranslatedName));
 				message.Done += (s, a) =>
 				{
 					Show showSpaceShip = Show.SpaceShipWithInstall(partType);
@@ -1146,7 +1146,7 @@ namespace CivOne
 			}
 			_buildings.Add(CurrentProduction as IBuilding);
 
-			Message message = Message.Newspaper(this, TranslateFormattedArray("{0} builds\n{1}.", this.Name, (CurrentProduction as ICivilopedia).Name));
+			Message message = Message.Newspaper(this, TranslateFormattedArray("{0} builds\n{1}.", this.Name, (CurrentProduction as ICivilopedia).TranslatedName));
 			message.Done += (s, a) =>
 			{
 				GameTask advisorMessage = Message.Advisor(Advisor.Foreign, true, $"{Player.TribeName} capital", $"moved to {Name}.");
@@ -1330,7 +1330,7 @@ namespace CivOne
 					}
 					if (Human == Owner && (unit is Settlers || unit is Diplomat || unit is Caravan))
 					{
-						GameTask advisorMessage = Message.Advisor(Advisor.Defense, true, $"{this.Name} builds {unit.Name}.");
+						GameTask advisorMessage = Message.Advisor(Advisor.Defense, true, $"{this.Name} builds {unit.TranslatedName}.");
 						advisorMessage.Done += (s, a) => GameTask.Insert(Show.CityManager(this));
 						GameTask.Enqueue(advisorMessage);
 					}
@@ -1392,7 +1392,7 @@ namespace CivOne
 					RemoveBuilding(buildingToDestroy);
 
 					message.Add(TranslateFormatted("Earthquake in {0}!", Name));
-					message.Add(TranslateFormatted("{0} destroyed!", buildingToDestroy.Name));
+					message.Add(TranslateFormatted("{0} destroyed!", buildingToDestroy.TranslatedName));
 
 					break;
 				}
@@ -1479,7 +1479,7 @@ namespace CivOne
 						RemoveBuilding(buildingToDestroy);
 
 						message.Add(TranslateFormatted("Fire in {0}!", Name));
-						message.Add(TranslateFormatted("{0} destroyed!", buildingToDestroy.Name));
+						message.Add(TranslateFormatted("{0} destroyed!", buildingToDestroy.TranslatedName));
 						message.Add(Translate("Citizens demand AQUEDUCT."));
 					}
 

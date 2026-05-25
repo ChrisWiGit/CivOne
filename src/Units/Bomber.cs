@@ -50,7 +50,8 @@ namespace CivOne.Units
 		public Bomber() : base(12, 12, 1, MAX_MOVES)
 		{
 			Type = UnitType.Bomber;
-			Name = Translate("Bomber");
+			Name = "Bomber";
+			TranslatedName = Translate("Bomber");
 			RequiredTech = new AdvancedFlight();
 			ObsoleteTech = null;
 			SetIcon('A', 1, 2);

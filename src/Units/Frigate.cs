@@ -30,7 +30,8 @@ namespace CivOne.Units
 		public Frigate() : base(4, 2, 2, 3)
 		{
 			Type = UnitType.Frigate;
-			Name = Translate("Frigate");
+			Name = "Frigate";
+			TranslatedName = Translate("Frigate");
 			RequiredTech = new Magnetism();
 			ObsoleteTech = null;
 			SetIcon('B', 1, 0);

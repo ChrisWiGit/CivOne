@@ -16,7 +16,8 @@ namespace CivOne.Buildings
 	{
 		public Temple() : base(4, 1)
 		{
-			Name = Translate("Temple");
+			Name = "Temple";
+			TranslatedName = Translate("Temple");
 			RequiredTech = new CeremonialBurial();
 			SetIcon(0, 2, true);
 			SetSmallIcon(0, 3);

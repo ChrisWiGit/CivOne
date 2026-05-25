@@ -16,7 +16,8 @@ namespace CivOne.Wonders
 	{
 		public UnitedNations() : base(60)
 		{
-			Name = Translate("United Nations");
+			Name = "United Nations";
+			TranslatedName = Translate("United Nations");
 			RequiredTech = new Communism();
 			ObsoleteTech = null;
 			SetSmallIcon(7, 3);

@@ -54,7 +54,7 @@ namespace CivOne.Screens.Dialogs
 
 		private static Picture[] TextPictures(City city, IUnit unit)
 		{
-			string[] message = TranslationServiceFactory.GetCurrent().TranslateFormattedArray("{0} can't support\n{1}.", city.Name, unit.Name);
+			string[] message = TranslationServiceFactory.GetCurrent().TranslateFormattedArray("{0} can't support\n{1}.", city.Name, unit.TranslatedName);
 			Picture[] output = new Picture[message.Length];
 			for (int i = 0; i < message.Length; i++)
 				output[i] = Resources.GetText(message[i], 0, 15);

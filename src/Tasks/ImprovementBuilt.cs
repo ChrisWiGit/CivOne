@@ -32,7 +32,7 @@ namespace CivOne.Tasks
 		{
 			if (Human != _city.Owner)
 			{
-				Log($"{_city.Name} builds {(_improvement as ICivilopedia).Name}.");
+				Log($"{_city.Name} builds {(_improvement as ICivilopedia).TranslatedName}.");
 				EndTask();
 				return;
 			}
@@ -40,7 +40,7 @@ namespace CivOne.Tasks
 			IScreen cityView;
 			if (!Game.Animations)
 			{
-				cityView = new Newspaper(_city, new string[] { $"{_city.Name} builds", $"{(_improvement as ICivilopedia).Name}." }, showGovernment: false);
+				cityView = new Newspaper(_city, new string[] { $"{_city.Name} builds", $"{(_improvement as ICivilopedia).TranslatedName}." }, showGovernment: false);
 			}
 			else if (_improvement is IBuilding)
 			{

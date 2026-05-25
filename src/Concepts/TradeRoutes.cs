@@ -13,7 +13,9 @@ namespace CivOne.Concepts
 	{
 		public TradeRoutes()
 		{
-			Name = Translate("Trade Routes");
+			Name = "Trade Routes";
+			Name = "Trade Routes";
+			TranslatedName = Translate("Trade Routes");
 		}
 	}
 }

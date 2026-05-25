@@ -38,7 +38,7 @@ namespace CivOne.Screens.Reports
 
 			if (Human.CurrentResearch != null)
 			{
-				string researching = TranslateFormatted("Researching {0}", Human.CurrentResearch.Name);
+				string researching = TranslateFormatted("Researching {0}", Human.CurrentResearch.TranslatedName);
 				this.DrawText(researching, 0, 5, OffsetX + 160, OffsetY + 26, TextAlign.Center)
 					.DrawText(researching, 0, 15, OffsetX + 159, OffsetY + 26, TextAlign.Center);
 
@@ -57,7 +57,7 @@ namespace CivOne.Screens.Reports
 				bool first = Game.GetAdvanceOrigin(advance, Human);
 				int xx = OffsetX + 8 + ((c % 3) * 100);
 				int yy = OffsetY + 42 + (((c - (c % 3)) / 3) * 7);
-				this.DrawText(advance.Name, 0, (byte)(first ? 15 : 11), xx, yy);
+				this.DrawText(advance.TranslatedName, 0, (byte)(first ? 15 : 11), xx, yy);
 				c++;
 			}
 

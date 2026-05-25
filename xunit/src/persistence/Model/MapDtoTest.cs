@@ -474,6 +474,7 @@ namespace CivOne.Persistence.Model
 			public IUnit[] Units => throw new NotImplementedException();
 
 			public string Name => throw new NotImplementedException();
+			public string TranslatedName => throw new NotImplementedException();
 
 			public IBitmap Icon => throw new NotImplementedException();
 

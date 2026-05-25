@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public Monarchy() : base(2, 2, 0, Advance.CeremonialBurial, Advance.CodeOfLaws)
 		{
-			Name = Translate("Monarchy");
+			Name = "Monarchy";
+			TranslatedName = Translate("Monarchy");
 			Type = Advance.Monarchy;
 		}
 	}

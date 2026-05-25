@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public Engineering() : base(4, 1, 1, Advance.TheWheel, Advance.Construction)
 		{
-			Name = Translate("Engineering");
+			Name = "Engineering";
+			TranslatedName = Translate("Engineering");
 			Type = Advance.Engineering;
 		}
 	}

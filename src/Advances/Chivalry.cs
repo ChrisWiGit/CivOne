@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public Chivalry() : base(6, 1, 1, Advance.Feudalism, Advance.HorsebackRiding)
 		{
-			Name = Translate("Chivalry");
+			Name = "Chivalry";
+			TranslatedName = Translate("Chivalry");
 			Type = Advance.Chivalry;
 		}
 	}

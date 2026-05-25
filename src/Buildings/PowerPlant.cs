@@ -19,7 +19,8 @@ namespace CivOne.Buildings
 		
 		public PowerPlant() : base(16, 4)
 		{
-			Name = Translate("Power Plant");
+			Name = "Power Plant";
+			TranslatedName = Translate("Power Plant");
 			RequiredTech = new Refining();
 			if (_iconCache == null)
 			{

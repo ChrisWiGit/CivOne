@@ -68,7 +68,7 @@ namespace CivOne.Screens
 
 				foreach (IAdvance advance in _availableAdvances)
 				{
-					menu.Items.Add(advance.Name, advance)
+					menu.Items.Add(advance.TranslatedName, advance)
 						.OnSelect(AdvanceChoice)
 						.OnContext(AdvanceContext)
 						.OnHelp(AdvanceContext);

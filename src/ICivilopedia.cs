@@ -13,6 +13,7 @@ namespace CivOne
 {
 	public interface ICivilopedia
 	{
+		string TranslatedName { get; }
 		string Name { get; }
 		IBitmap Icon { get; }
 		byte PageCount { get; }

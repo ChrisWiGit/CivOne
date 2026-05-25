@@ -16,7 +16,8 @@ namespace CivOne.Buildings
 	{
 		public MarketPlace() : base(8, 1)
 		{
-			Name = Translate("MarketPlace");
+			Name = "MarketPlace";
+			TranslatedName = Translate("MarketPlace");
 			RequiredTech = new Currency();
 			SetIcon(0, 3, true);
 			SetSmallIcon(0, 4);

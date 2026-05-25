@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public Metallurgy() : base(7, 2, 1, Advance.Gunpowder, Advance.University)
 		{
-			Name = Translate("Metallurgy");
+			Name = "Metallurgy";
+			TranslatedName = Translate("Metallurgy");
 			Type = Advance.Metallurgy;
 		}
 	}

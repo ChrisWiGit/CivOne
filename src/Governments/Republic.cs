@@ -15,7 +15,8 @@ namespace CivOne.Governments
 	{
 		public Republic() : base(4, new TheRepublic())
 		{
-			Name = Translate("Republic");
+			Name = "Republic";
+			TranslatedName = Translate("Republic");
 			NameAdjective = Translate("Republican");
 			CorruptionMultiplier = 24;
 		}

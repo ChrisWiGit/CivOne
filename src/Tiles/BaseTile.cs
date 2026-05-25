@@ -94,6 +94,7 @@ namespace CivOne.Tiles
 		}
 
 		public Terrain Type { get; protected set; }
+		public string TranslatedName { get; protected set; }
 		public string Name { get; protected set; }
 		public byte PageCount => 1;
 		public Picture DrawPage(byte pageNumber) => new Picture(320, 200);

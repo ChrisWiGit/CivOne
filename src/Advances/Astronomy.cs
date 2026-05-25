@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public Astronomy() : base(6, 0, 0, Advance.Mysticism, Advance.Mathematics)
 		{
-			Name = Translate("Astronomy");
+			Name = "Astronomy";
+			TranslatedName = Translate("Astronomy");
 			Type = Advance.Astronomy;
 		}
 	}

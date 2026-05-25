@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public MapMaking() : base(7, 1, 2, Advance.Alphabet)
 		{
-			Name = Translate("MapMaking");
+			Name = "MapMaking";
+			TranslatedName = Translate("MapMaking");
 			Type = Advance.MapMaking;
 		}
 	}

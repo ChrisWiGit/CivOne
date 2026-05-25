@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public Flight() : base(3, 1, 0, Advance.Combustion, Advance.Physics)
 		{
-			Name = Translate("Flight");
+			Name = "Flight";
+			TranslatedName = Translate("Flight");
 			Type = Advance.Flight;
 		}
 	}

@@ -115,7 +115,7 @@ namespace CivOne.Screens.Dialogs
 
 	internal class DiplomatBribeService(BaseUnitLand _unitToBribe, Diplomat _diplomat) : IDiplomatBribeService
 	{
-		public string UnitName => _unitToBribe.Name;
+		public string UnitName => _unitToBribe.TranslatedName;
 
 		public string TribeName => _unitToBribe.Player.TribeName;
 

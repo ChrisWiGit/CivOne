@@ -13,7 +13,8 @@ namespace CivOne.Governments
 	{
 		public Anarchy() : base(0)
 		{
-			Name = Translate("Anarchy");
+			Name = "Anarchy";
+			TranslatedName = Translate("Anarchy");
 			CorruptionMultiplier = 12;
 		}
 	}

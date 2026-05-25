@@ -16,7 +16,8 @@ namespace CivOne.Wonders
 	{
 		public ManhattanProject() : base(60)
 		{
-			Name = Translate("Manhattan Project");
+			Name = "Manhattan Project";
+			TranslatedName = Translate("Manhattan Project");
 			RequiredTech = new NuclearFission();
 			ObsoleteTech = null;
 			SetSmallIcon(7, 2);

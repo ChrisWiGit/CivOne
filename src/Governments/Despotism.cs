@@ -13,7 +13,8 @@ namespace CivOne.Governments
 	{
 		public Despotism() : base(1)
 		{
-			Name = Translate("Despotism");
+			Name = "Despotism";
+			TranslatedName = Translate("Despotism");
 			NameAdjective = Translate("Despotic");
 			CorruptionMultiplier = 8;
 		}

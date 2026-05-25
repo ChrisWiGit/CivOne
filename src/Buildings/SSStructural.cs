@@ -16,7 +16,8 @@ namespace CivOne.Buildings
 	{
 		public SSStructural() : base(8)
 		{
-			Name = Translate("SS Structural");
+			Name = "SS Structural";
+			TranslatedName = Translate("SS Structural");
 			RequiredTech = new SpaceFlight();
 			Type = Building.SSStructural;
 		}

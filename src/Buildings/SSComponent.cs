@@ -16,7 +16,8 @@ namespace CivOne.Buildings
 	{
 		public SSComponent() : base(16)
 		{
-			Name = Translate("SS Component");
+			Name = "SS Component";
+			TranslatedName = Translate("SS Component");
 			RequiredTech = new Plastics();
 			Type = Building.SSComponent;
 		}

@@ -26,6 +26,7 @@ namespace CivOne.UnitTests
 
 		public int CorruptionMultiplier => throw new NotImplementedException();
 
+		public string TranslatedName { get; set; } = "Mock Government";
 		public string Name { get; set; } = "Mock Government";
 
 		public IBitmap Icon => throw new NotImplementedException();

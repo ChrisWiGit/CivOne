@@ -69,7 +69,7 @@ namespace CivOne.Screens.Dialogs
 		private static string[] MessageLines(IBuilding building)
 		{
 			return TranslationServiceFactory.GetCurrent()
-				.TranslateFormattedArray("Do you want to sell\nyour {0} for {1}$?", building.Name, building.SellPrice);
+				.TranslateFormattedArray("Do you want to sell\nyour {0} for {1}$?", building.TranslatedName, building.SellPrice);
 		}
 
 		public ConfirmSell(IBuilding building) : base(128, 80, 9, 23, MessageLines(building))

@@ -17,7 +17,8 @@ namespace CivOne.Units
 		public MechInf() : base(5, 6, 6, 3)
 		{
 			Type = UnitType.MechInf;
-			Name = Translate("Mech. Inf.");
+			Name = "Mech. Inf.";
+			TranslatedName = Translate("Mech. Inf.");
 			RequiredTech = new LaborUnion();
 			ObsoleteTech = null;
 			SetIcon('C', 0, 0);

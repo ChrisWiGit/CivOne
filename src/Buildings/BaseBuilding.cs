@@ -21,6 +21,7 @@ namespace CivOne.Buildings
 		
 		public virtual IBitmap Icon { get; protected set; }
 		public virtual IBitmap SmallIcon { get; protected set; }
+		public string TranslatedName { get; protected set; }
 		public string Name { get; protected set; }
 		public byte PageCount => 2;
 		public Picture DrawPage(byte pageNumber)
@@ -53,7 +54,7 @@ namespace CivOne.Buildings
 			{
 				yy += 8;
 				string requiredTech = "";
-				if (RequiredTech != null) requiredTech = RequiredTech.Name;
+				if (RequiredTech != null) requiredTech = RequiredTech.TranslatedName;
 				output.DrawText(string.Format("Requires {0}", requiredTech), 6, 9, 12, yy); yy += 8;
 				output.DrawText(string.Format("Cost: {0}0 shields.", Price), 6, 9, 12, yy); yy += 8;
 				output.DrawText(string.Format("Maintenance: ${0}", Maintenance), 6, 12, 12, yy);

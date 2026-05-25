@@ -16,7 +16,8 @@ namespace CivOne.Wonders
 	{
 		public MichelangelosChapel() : base(30)
 		{
-			Name = Translate("Michelangelo's Chapel");
+			Name = "Michelangelo's Chapel";
+			TranslatedName = Translate("Michelangelo's Chapel");
 			RequiredTech = new Religion();
 			ObsoleteTech = new Communism();
 			SetSmallIcon(5, 4);

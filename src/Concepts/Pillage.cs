@@ -13,7 +13,9 @@ namespace CivOne.Concepts
 	{
 		public Pillage()
 		{
-			Name = Translate("Pillage");
+			Name = "Pillage";
+			Name = "Pillage";
+			TranslatedName = Translate("Pillage");
 		}
 	}
 }

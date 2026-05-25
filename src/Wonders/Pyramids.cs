@@ -16,7 +16,8 @@ namespace CivOne.Wonders
 	{
 		public Pyramids() : base(30)
 		{
-			Name = Translate("Pyramids");
+			Name = "Pyramids";
+			TranslatedName = Translate("Pyramids");
 			RequiredTech = new Masonry();
 			ObsoleteTech = new Communism();
 			SetSmallIcon(4, 1);

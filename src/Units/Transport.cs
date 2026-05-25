@@ -25,7 +25,8 @@ namespace CivOne.Units
 		public Transport() : base(5, 0, 3, 4)
 		{
 			Type = UnitType.Transport;
-			Name = Translate("Transport");
+			Name = "Transport";
+			TranslatedName = Translate("Transport");
 			RequiredTech = new Industrialization();
 			ObsoleteTech = null;
 			SetIcon('A', 0, 2);

@@ -13,7 +13,8 @@ namespace CivOne.Governments
 	{
 		public Democracy() : base(5, new Advances.Democracy())
 		{
-			Name = Translate("Democracy");
+			Name = "Democracy";
+			TranslatedName = Translate("Democracy");
 			NameAdjective = Translate("Democratic");
 			CorruptionMultiplier = 0;
 		}

@@ -13,7 +13,9 @@ namespace CivOne.Concepts
 	{
 		public Irrigation()
 		{
-			Name = Translate("Irrigation");
+			Name = "Irrigation";
+			Name = "Irrigation";
+			TranslatedName = Translate("Irrigation");
 		}
 	}
 }

@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public Feudalism() : base(1, 1, 0, Advance.Masonry, Advance.Monarchy)
 		{
-			Name = Translate("Feudalism");
+			Name = "Feudalism";
+			TranslatedName = Translate("Feudalism");
 			Type = Advance.Feudalism;
 		}
 	}

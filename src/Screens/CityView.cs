@@ -1024,7 +1024,7 @@ namespace CivOne.Screens
 						_noiseMap[x, y] = (byte)Common.Random.Next(1, NOISE_COUNT);
 					}
 
-				string[] lines = TranslateFormattedArray("{0} builds\n{1}.", _city.Name, (production as ICivilopedia).Name);
+				string[] lines = TranslateFormattedArray("{0} builds\n{1}.", _city.Name, (production as ICivilopedia).TranslatedName);
 				int width = lines.Max(l => Resources.GetTextSize(5, l).Width) + 12;
 				Picture dialog = new Picture(width, 39)
 					.Tile(Pattern.PanelGrey, 1, 1)

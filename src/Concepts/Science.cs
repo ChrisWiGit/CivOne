@@ -13,7 +13,9 @@ namespace CivOne.Concepts
 	{
 		public Science()
 		{
-			Name = Translate("Science");
+			Name = "Science";
+			Name = "Science";
+			TranslatedName = Translate("Science");
 		}
 	}
 }

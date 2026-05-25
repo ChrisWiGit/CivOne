@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public SuperConductor() : base(5, 2, 2, Advance.Plastics, Advance.MassProduction)
 		{
-			Name = Translate("SuperConductor");
+			Name = "SuperConductor";
+			TranslatedName = Translate("SuperConductor");
 			Type = Advance.SuperConductor;
 		}
 	}

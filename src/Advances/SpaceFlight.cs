@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public SpaceFlight() : base(4, 2, 2, Advance.Computers, Advance.Rocketry)
 		{
-			Name = Translate("Space Flight");
+			Name = "Space Flight";
+			TranslatedName = Translate("Space Flight");
 			Type = Advance.SpaceFlight;
 		}
 	}

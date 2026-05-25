@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public TheoryOfGravity() : base(2, 1, 1, Advance.Astronomy, Advance.University)
 		{
-			Name = Translate("Theory of Gravity");
+			Name = "Theory of Gravity";
+			TranslatedName = Translate("Theory of Gravity");
 			Type = Advance.TheoryOfGravity;
 		}
 	}

@@ -21,7 +21,7 @@ namespace CivOne.Screens.Debug
 	[ScreenResizeable]
 	internal class SpawnUnit : BaseScreen
     {
-		private readonly IUnit[] _units = [.. Reflect.GetUnits().OrderBy(x => x.Name)];
+		private readonly IUnit[] _units = [.. Reflect.GetUnits().OrderBy(x => x.TranslatedName)];
 
 		private readonly CivSelectMenuDelegate _civSelect;
 		private GridMenuDelegate _unitSelect;
@@ -71,7 +71,7 @@ namespace CivOne.Screens.Debug
 		{
 			Palette = Common.LastScreen.OriginalColours;
 
-			string[] labels = [.. _units.Select(x => x.Name)];
+			string[] labels = [.. _units.Select(x => x.TranslatedName)];
 			_unitSelect = new GridMenuDelegate(labels, GridMenuDelegate.SelectionMode.Select, fontId: 0);
 			_unitSelect.ItemSelected += UnitSelected;
 			_unitSelect.Cancelled += SpawnUnit_Cancel;

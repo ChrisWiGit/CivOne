@@ -252,7 +252,7 @@ namespace CivOne.Screens
 						if (_city.ShieldIncome > 1)
 							turns = (int)Math.Ceiling((double)turns / _city.ShieldIncome);
 						if (turns < 1) turns = 1;
-						menuText = TranslateFormatted("{0} ({1} turns, ADM:{2}/{3}/{4})", unit.Name, turns, unit.Attack, unit.Defense, unit.Move);
+						menuText = TranslateFormatted("{0} ({1} turns, ADM:{2}/{3}/{4})", unit.TranslatedName, turns, unit.Attack, unit.Defense, unit.Move);
 						if (Resources.GetTextSize(_fontId, menuText).Width > itemWidth) itemWidth = Resources.GetTextSize(_fontId, menuText).Width;
 					}
 					else if (production is IBuilding)
@@ -262,7 +262,7 @@ namespace CivOne.Screens
 						if (_city.ShieldIncome > 1)
 							turns = (int)Math.Ceiling((double)turns / _city.ShieldIncome);
 						if (turns < 1) turns = 1;
-						menuText = TranslateFormatted("{0} ({1} turns)", building.Name, turns);
+						menuText = TranslateFormatted("{0} ({1} turns)", building.TranslatedName, turns);
 						if (Resources.GetTextSize(_fontId, menuText).Width > itemWidth) itemWidth = Resources.GetTextSize(_fontId, menuText).Width;
 					}
 					else if (production is IWonder)
@@ -272,7 +272,7 @@ namespace CivOne.Screens
 						if (_city.ShieldIncome > 1)
 							turns = (int)Math.Ceiling((double)turns / _city.ShieldIncome);
 						if (turns < 1) turns = 1;
-						menuText = TranslateFormatted("{0} ({1} turns)", wonder.Name, turns);
+						menuText = TranslateFormatted("{0} ({1} turns)", wonder.TranslatedName, turns);
 						if (Game.WonderObsolete(wonder)) menuText = $"*{menuText}";
 						if (Resources.GetTextSize(_fontId, menuText).Width > itemWidth) itemWidth = Resources.GetTextSize(_fontId, menuText).Width;
 					}

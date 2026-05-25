@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public Invention() : base(6, 2, 1, Advance.Engineering, Advance.Literacy)
 		{
-			Name = Translate("Invention");
+			Name = "Invention";
+			TranslatedName = Translate("Invention");
 			Type = Advance.Invention;
 		}
 	}

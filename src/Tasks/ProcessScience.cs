@@ -88,7 +88,7 @@ namespace CivOne.Tasks
 			else
 			{
 				discovery = new Newspaper(null, 
-					TranslateFormattedArray("{0} wise men\ndiscover the secret\nof {1}!", _player.TribeName, _player.CurrentResearch.Name),
+					TranslateFormattedArray("{0} wise men\ndiscover the secret\nof {1}!", _player.TribeName, _player.CurrentResearch.TranslatedName),
 					showGovernment: false);
 			}
 			discovery.Closed += ClosedDiscovery;

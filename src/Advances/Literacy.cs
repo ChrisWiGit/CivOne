@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public Literacy() : base(4, 1, 2, Advance.Writing, Advance.CodeOfLaws)
 		{
-			Name = Translate("Literacy");
+			Name = "Literacy";
+			TranslatedName = Translate("Literacy");
 			Type = Advance.Literacy;
 		}
 	}

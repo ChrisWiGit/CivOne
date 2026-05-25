@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public Alphabet() : base(3, 2, 1)
 		{
-			Name = Translate("Alphabet");
+			Name = "Alphabet";
+			TranslatedName = Translate("Alphabet");
 			Type = Advance.Alphabet;
 		}
 	}

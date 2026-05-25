@@ -73,7 +73,7 @@ namespace CivOne.Screens
 			Palette = background.Palette;
 			this.Clear(32).AddLayer(background);
 
-			string[] text = TranslateFormattedArray("{0} {1}\ndiscover the secret\nof {2}!", Human.Civilization.Name, scientistName, advance.Name);
+			string[] text = TranslateFormattedArray("{0} {1}\ndiscover the secret\nof {2}!", Human.Civilization.Name, scientistName, advance.TranslatedName);
 
 			
 			for (int i = 0; i < text.Length; i++)

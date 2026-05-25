@@ -215,11 +215,11 @@ namespace CivOne.Screens
 				int i = 0;
 				foreach (IAdvance advance in Human.Advances.OrderBy(a => a.Id))
 				{
-					sb.Append($"{advance.Name}, ");
+					sb.Append($"{advance.TranslatedName}, ");
 					i++;
 					if (i % 2 == 0) sb.Append("|");
 				}
-				sb.Append("and Roads.");
+				sb.Append(Translate("and Roads."));
 
 				foreach (string line in sb.ToString().Split('|'))
 				{

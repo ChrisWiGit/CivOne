@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public Navigation() : base(6, 2, 2, Advance.MapMaking, Advance.Astronomy)
 		{
-			Name = Translate("Navigation");
+			Name = "Navigation";
+			TranslatedName = Translate("Navigation");
 			Type = Advance.Navigation;
 		}
 	}

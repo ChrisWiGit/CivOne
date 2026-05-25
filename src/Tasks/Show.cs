@@ -107,7 +107,7 @@ namespace CivOne.Tasks
 				chooseGovernment.Closed += (s, a) => {
 					Human.Government = (s as ChooseGovernment).Result;
 					GameTask.Insert(Message.NewGoverment(null, 
-					TranslationServiceFactory.GetCurrent().TranslateFormattedArray("{0} government\nchanged to {1}!", Human.TribeName, Human.Government.Name)));
+					TranslationServiceFactory.GetCurrent().TranslateFormattedArray("{0} government\nchanged to {1}!", Human.TribeName, Human.Government.TranslatedName)));
 				};
 				return new Show(chooseGovernment);
 			}

@@ -13,7 +13,8 @@ namespace CivOne.Governments
 	{
 		public Communism() : base(3, new Advances.Communism())
 		{
-			Name = Translate("Communism");
+			Name = "Communism";
+			TranslatedName = Translate("Communism");
 			NameAdjective = Translate("Communist");
 			CorruptionMultiplier = 20;
 		}

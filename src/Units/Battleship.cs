@@ -17,7 +17,8 @@ namespace CivOne.Units
 		public Battleship() : base(16, 18, 12, 4, 2)
 		{
 			Type = UnitType.Battleship;
-			Name = Translate("Battleship");
+			Name = "Battleship";
+			TranslatedName = Translate("Battleship");
 			RequiredTech = new Steel();
 			ObsoleteTech = null;
 			SetIcon('A', 1, 0);

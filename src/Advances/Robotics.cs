@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public Robotics() : base(7, 2, 0, Advance.Plastics, Advance.Computers)
 		{
-			Name = Translate("Robotics");
+			Name = "Robotics";
+			TranslatedName = Translate("Robotics");
 			Type = Advance.Robotics;
 		}
 	}

@@ -112,7 +112,7 @@ namespace CivOne.Screens.CityManagerPanels
 				}
 				else
 				{
-					string name = (_city.CurrentProduction as ICivilopedia).Name;
+					string name = (_city.CurrentProduction as ICivilopedia).TranslatedName;
 					while (Resources.GetTextSize(1, name).Width > Width - 2)
 					{
 						name = $"{name.Substring(0, name.Length - 2)}.";
@@ -143,7 +143,7 @@ namespace CivOne.Screens.CityManagerPanels
 
 		private bool Buy()
 		{
-			string name = (_city.CurrentProduction as ICivilopedia).Name;
+			string name = (_city.CurrentProduction as ICivilopedia).TranslatedName;
 			short playerGold = Game.CurrentPlayer.Gold;
 			short buyPrice = _city.BuyPrice;
 			if (_city.IsRiot && _city.CurrentProduction is IBuilding)

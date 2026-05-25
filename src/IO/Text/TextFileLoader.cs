@@ -32,7 +32,7 @@ namespace CivOne.IO.Text
 		/// Used by <see cref="CleanLine"/> to remove unsupported characters from input files.
 		/// </summary>
 		private readonly Regex _invalidCharsRegex = new(
-			@"[^\p{L}\p{N} _*\$,\^-]",
+			@"[^\p{L}\p{N} _*\$' .,\^-]",
 			RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
 		/// <summary>

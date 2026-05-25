@@ -15,7 +15,8 @@ namespace CivOne.Advances
 	{
 		public AtomicTheory() : base(5, 2, 1, Advance.TheoryOfGravity, Advance.Physics)
 		{
-			Name = Translate("Atomic Theory");
+			Name = "Atomic Theory";
+			TranslatedName = Translate("Atomic Theory");
 			Type = Advance.AtomicTheory;
 		}
 	}

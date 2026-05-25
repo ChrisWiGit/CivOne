@@ -16,7 +16,8 @@ namespace CivOne.Buildings
 	{
 		public SdiDefense() : base(20, 4)
 		{
-			Name = Translate("SDI Defense");
+			Name = "SDI Defense";
+			TranslatedName = Translate("SDI Defense");
 			RequiredTech = new SuperConductor();
 			SetIcon(3, 3, true);
 			SetSmallIcon(3, 1);

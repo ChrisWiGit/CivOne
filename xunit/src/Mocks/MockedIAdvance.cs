@@ -18,11 +18,13 @@ namespace CivOne.UnitTests
 
 		public Palette OriginalColours => throw new NotImplementedException();
 
-		public string Name { get; set; } = "Mock Advance";
+		public string TranslatedName { get; set; } = "Mock Advance";
 
 		public IBitmap Icon => throw new NotImplementedException();
 
 		public byte PageCount => throw new NotImplementedException();
+
+		public string Name { get; set; } = "Mock Advance";
 
 		public Picture DrawPage(byte pageNumber)
 		{

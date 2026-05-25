@@ -13,7 +13,9 @@ namespace CivOne.Concepts
 	{
 		public Luxuries()
 		{
-			Name = Translate("Luxuries");
+			Name = "Luxuries";
+			Name = "Luxuries";
+			TranslatedName = Translate("Luxuries");
 		}
 	}
 }

@@ -16,7 +16,8 @@ namespace CivOne.Wonders
 	{
 		public GreatWall() : base(30)
 		{
-			Name = Translate("Great Wall");
+			Name = "Great Wall";
+			TranslatedName = Translate("Great Wall");
 			RequiredTech = new Masonry();
 			ObsoleteTech = new Gunpowder();
 			SetSmallIcon(5, 2);
