@@ -1,16 +1,42 @@
 using CivTranslateInteractive;
 
-if (args.Length == 0 || args.Any(arg => arg.Equals("--help", StringComparison.OrdinalIgnoreCase) || arg.Equals("-h", StringComparison.OrdinalIgnoreCase)))
+if (args.Length == 0 || HasHelpSwitch(args))
 {
 	PrintHelp();
 	return args.Length == 0 ? 1 : 0;
 }
 
-if (args.Length != 1)
+if (!TryParseArguments(args, out string languagePostfix, out string parseError))
 {
-	Console.WriteLine("Error: Exactly one translation file path is required.");
+	Console.WriteLine($"Error: {parseError}");
 	Console.WriteLine();
 	PrintHelp();
+	return 2;
+}
+
+string trimmedPostfix = languagePostfix.Trim();
+if (trimmedPostfix.Length == 0)
+{
+	Console.WriteLine("Error: --language value must not be empty.");
+	Console.WriteLine();
+	PrintHelp();
+	return 2;
+}
+
+if (trimmedPostfix.Contains('/') || trimmedPostfix.Contains('\\'))
+{
+	Console.WriteLine("Error: --language must be a postfix only, not a path.");
+	Console.WriteLine();
+	PrintHelp();
+	return 2;
+}
+
+string translationFileName = $"civ_{trimmedPostfix}.txt";
+string translationFilePath = Path.GetFullPath(Path.Combine("translation", translationFileName));
+if (!File.Exists(translationFilePath))
+{
+	Console.WriteLine($"Error: Language file not found: {translationFilePath}");
+	Console.WriteLine("Expected file pattern: translation/civ_<postfix>.txt");
 	return 2;
 }
 
@@ -19,8 +45,54 @@ ITranslationDocumentRepository translationDocumentRepository = new TranslationDo
 IValuesFileRepository valuesFileRepository = new ValuesFileRepository();
 TranslationRoundtripWorkflow workflow = new(interactiveConsole, translationDocumentRepository, valuesFileRepository);
 
-string translationFilePath = Path.GetFullPath(args[0]);
 return workflow.Run(translationFilePath);
+
+static bool HasHelpSwitch(string[] args) => args.Any(arg => arg.Equals("--help", StringComparison.OrdinalIgnoreCase) || arg.Equals("-h", StringComparison.OrdinalIgnoreCase));
+
+static bool TryParseArguments(string[] args, out string languagePostfix, out string error)
+{
+	languagePostfix = string.Empty;
+	error = string.Empty;
+
+	for (int i = 0; i < args.Length; i++)
+	{
+		string arg = args[i];
+		if (arg.Equals("--language", StringComparison.OrdinalIgnoreCase) || arg.Equals("-l", StringComparison.OrdinalIgnoreCase))
+		{
+			if (i + 1 >= args.Length)
+			{
+				error = "--language requires a postfix value.";
+				return false;
+			}
+
+			if (languagePostfix.Length != 0)
+			{
+				error = "--language may only be provided once.";
+				return false;
+			}
+
+			languagePostfix = args[++i];
+			continue;
+		}
+
+		if (arg.StartsWith("-", StringComparison.Ordinal))
+		{
+			error = $"Unknown option: {arg}";
+			return false;
+		}
+
+		error = "Positional arguments are not supported. Use --language <postfix>.";
+		return false;
+	}
+
+	if (languagePostfix.Length == 0)
+	{
+		error = "Missing required option: --language <postfix>.";
+		return false;
+	}
+
+	return true;
+}
 
 static void PrintHelp()
 {
@@ -29,8 +101,8 @@ static void PrintHelp()
 	Console.WriteLine("wait for manual translation, and write translated values back.");
 	Console.WriteLine();
 	Console.WriteLine("Usage:");
-	Console.WriteLine("  civtranslate-interactive <translation-file>");
+	Console.WriteLine("  civtranslate-interactive --language <postfix>");
 	Console.WriteLine();
 	Console.WriteLine("Example:");
-	Console.WriteLine("  civtranslate-interactive ./translation/civ_german.txt");
+	Console.WriteLine("  civtranslate-interactive --language german");
 }

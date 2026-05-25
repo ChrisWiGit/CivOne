@@ -107,24 +107,23 @@ For example, rename `story.txt` to `story_<mylang>.txt`.
 Use `civtranslate-interactive` with your language file.
 
 ```sh
-dotnet run --project ./civtranslate-interactive/civtranslate-interactive.csproj -- ./translation/civ_german.txt
+dotnet run --project ./civtranslate-interactive/civtranslate-interactive.csproj -- --language german
 ```
 
 Or use helper scripts from repository root.
 
 ```powershell
 .\translate-interactive.ps1
-.\translate-interactive.ps1 civ_german.txt
-.\translate-interactive.ps1 translation\civ_german.txt
+.\translate-interactive.ps1 -Language german
 ```
 
 ```sh
 ./translate-interactive.sh
-./translate-interactive.sh civ_german.txt
-./translate-interactive.sh translation/civ_german.txt
+./translate-interactive.sh --language german
 ```
 
-Passing only a file name (for example `civ_german.txt`) resolves it from the repository `translation` folder.
+The language postfix resolves to `translation/civ_<postfix>.txt`.
+For example, `--language german` resolves to `translation/civ_german.txt`.
 
 Roundtrip behavior:
 

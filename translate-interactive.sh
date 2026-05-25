@@ -4,47 +4,43 @@ set -eu
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PROJECT_PATH="$SCRIPT_DIR/civtranslate-interactive/civtranslate-interactive.csproj"
 
-if [ "$#" -lt 1 ] || [ -z "$1" ]; then
-	echo "Error: A translation file name is required (example: story_german or civ_german)." >&2
+if [ "$#" -ne 2 ] || [ "$1" != "--language" ]; then
+	echo "Usage: ./translate-interactive.sh --language <postfix>" >&2
 	exit 1
 fi
 
-TRANSLATION_INPUT="$1"
+POSTFIX="$2"
+if [ -z "$POSTFIX" ]; then
+	echo "Error: --language requires a postfix value." >&2
+	exit 1
+fi
 
-case "$TRANSLATION_INPUT" in
+case "$POSTFIX" in
 	*"/"*|*"\\"*)
-		echo "Error: Please pass only a file name from the translation folder, not a path." >&2
+		echo "Error: Please pass only a language postfix, not a path." >&2
 		exit 1
 		;;
 esac
 
-BASE_NAME="${TRANSLATION_INPUT%.txt}"
-TRANSLATION_FILE="$BASE_NAME.txt"
+TRANSLATION_FILE="civ_$POSTFIX.txt"
 TRANSLATION_PATH="$SCRIPT_DIR/translation/$TRANSLATION_FILE"
 
 echo "Step 1/3: Check whether translation/all.txt must be generated."
-case "$BASE_NAME" in
-	civ*)
-		echo "Detected civ* file: $TRANSLATION_FILE"
-		echo "Running translate.sh to generate translation/all.txt ..."
-		"$SCRIPT_DIR/translate.sh"
-		echo "translation/all.txt has been written."
-		echo "You can now copy or adjust a civ_xy.txt file in the translation folder."
-		printf "Press Enter to continue with interactive translation"
-		read -r _
-		;;
-	*)
-		echo "Skipped. The provided file name does not start with civ."
-		;;
-esac
+echo "Detected language file: $TRANSLATION_FILE"
+echo "Running translate.sh to generate translation/all.txt ..."
+"$SCRIPT_DIR/translate.sh"
+echo "translation/all.txt has been written."
+echo "Ensure $TRANSLATION_FILE exists (for example by copying all.txt once)."
+printf "Press Enter to continue with interactive translation"
+read -r _
 
 echo "Step 2/3: Run translate-interactive roundtrip."
 if [ ! -f "$TRANSLATION_PATH" ]; then
-	echo "Error: Translation file not found: $TRANSLATION_PATH" >&2
+	echo "Error: Language file not found: $TRANSLATION_PATH" >&2
 	exit 1
 fi
 
-if dotnet run --project "$PROJECT_PATH" -- "$TRANSLATION_PATH"; then
+if dotnet run --project "$PROJECT_PATH" -- --language "$POSTFIX"; then
 	:
 else
 	step2_exit=$?
