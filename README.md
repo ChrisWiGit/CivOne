@@ -73,9 +73,27 @@ There are some command line parameters that can be used to modify the behavior o
 
 The repository includes translation helper tools in the repository root.
 Use `translate.ps1` or `translate.sh` to generate or update `translation/all.txt`.
+If you already have an existing language file with manual translations, it is often better to merge missing keys instead of generating the whole file again.
+Use `civtranslate-mergekeys` to append keys from `translation/all.txt` that are missing in your `civ_<postfix>.txt` file without changing existing translated values.
+
+```sh
+dotnet run --project ./civtranslate-mergekeys/civtranslate-mergekeys.csproj -- ./translation/all.txt ./translation/civ_german.txt
+```
+
+You can also use the helper scripts from repository root and pass only file names.
+
+```powershell
+.\translate-mergekeys.ps1 all civ_german
+```
+
+```sh
+./translate-mergekeys.sh all civ_german
+```
+
 Use `translate-interactive.ps1` or `translate-interactive.sh` to run the values-only translation roundtrip for a language file.
 Use `copy-translations.ps1` or `copy-translations.sh` to copy final language files to the active CivOne profile.
 For the full translation workflow and naming rules, see [civtranslate/README.md](civtranslate/README.md).
+For merge helper details, see [civtranslate-mergekeys/README.md](civtranslate-mergekeys/README.md).
 
 ### Use translation in game
 
