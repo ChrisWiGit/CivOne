@@ -11,9 +11,7 @@
 * Replay recording
    * Replay menu at the end
    * Replay screen
-* Space victory
-   * Data model for spaceship construction state
-   * Victory screen
+
 
 ## Specific TODOs from Code
 
