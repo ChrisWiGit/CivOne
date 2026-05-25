@@ -76,14 +76,23 @@ namespace CivOne.Screens
 				DrawLayer(_cityFoodStorage, 2, 106);
 				DrawLayer(_cityInfo, 95 + ExtraLeft, 106);
 				DrawLayer(_cityProduction, 230 + ExtraLeft, 99);
-
-				DrawButton("Rename", 9, 1, 231 + ExtraLeft, (Height - 10), 42);
-				DrawButton("Exit", 12, 4, (Width - 36), (Height - 10), 33);
+				DrawCityButtons();
 
 				_update = false;
 				return true;
 			}
 			return false;
+		}
+
+		private void DrawCityButtons()
+		{
+			var renameText = Translate("Rename");
+			var renameTextWidth = Resources.GetTextSize(1, renameText).Width + 2;
+			var exitText = Translate("Exit");
+			var exitTextWidth = Resources.GetTextSize(1, exitText).Width + 2;
+
+			DrawButton(renameText, 9, 1, 231 + ExtraLeft, (Height - 10), renameTextWidth + 2);
+			DrawButton(exitText, 12, 4, Width - exitTextWidth - 2, (Height - 10), exitTextWidth + 2);
 		}
 
 		private void CityRename(object sender, EventArgs args)
