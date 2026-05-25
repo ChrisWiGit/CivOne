@@ -11,7 +11,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using CivOne.Services;
 
 namespace CivOne.IO.Text
@@ -22,19 +21,6 @@ namespace CivOne.IO.Text
 	/// </summary>
 	internal class TextFileLoader : ITextFileLoader
 	{
-		/// <summary>
-		/// Matches every character that is not allowed in a loaded text line.
-		/// Allowed characters are letters, digits, space, underscore, asterisk, dollar sign,
-		/// comma, caret and hyphen.
-		/// This includes accented letters as single Unicode letters, for example in French words
-		/// such as français, école, crème brûlée and cœur.
-		/// Combining mark characters are removed, so decomposed accents are not preserved.
-		/// Used by <see cref="CleanLine"/> to remove unsupported characters from input files.
-		/// </summary>
-		private readonly Regex _invalidCharsRegex = new(
-			@"[^\p{L}\p{N} _~*\$' .,\^-]",
-			RegexOptions.Compiled | RegexOptions.CultureInvariant);
-
 		/// <summary>
 		/// Loads and sanitizes a text file by logical name.
 		/// </summary>
@@ -86,8 +72,7 @@ namespace CivOne.IO.Text
 
 			return [.. File
 				.ReadLines(path, Encoding.UTF8)
-				.Where(line => !IsCommentLine(line))
-				.Select(CleanLine)];
+			.Where(line => !IsCommentLine(line))];
 		}
 
 		/// <summary>
@@ -130,22 +115,6 @@ namespace CivOne.IO.Text
 		private static bool IsEndMarker(string line)
 		{
 			return line == "*END";
-		}
-
-		/// <summary>
-		/// Removes unsupported characters so legacy text data stays readable on modern runtimes.
-		/// </summary>
-		/// <param name="line">
-		/// Raw input line.
-		/// </param>
-		/// <returns>
-		/// Sanitized line.
-		/// </returns>
-		private string CleanLine(string line)
-		{
-			return _invalidCharsRegex
-				.Replace(line, string.Empty)
-				.Trim();
 		}
 
 		/// <summary>
