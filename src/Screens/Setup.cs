@@ -688,7 +688,7 @@ namespace CivOne.Screens
 		private string CurrentLanguageText()
 		{
 			string activePostfix = TranslationServiceFactory.ActiveLanguagePostfix;
-			return string.IsNullOrEmpty(activePostfix) ? Translate("Identity") : activePostfix;
+			return string.IsNullOrEmpty(activePostfix) ? Translate("Identity") : Translate(activePostfix);
 		}
 
 		private void LanguageMenu()
@@ -696,7 +696,9 @@ namespace CivOne.Screens
 			IReadOnlyList<TranslationLanguageInfo> availableLanguages = TranslationServiceFactory.GetAvailableLanguages(Runtime.StorageDirectory, message => Log(message));
 			List<MenuItem<int>> menuItems =
 			[
-				MenuItem.Create(Translate("Identity (default)")).OnSelect((s, a) => SelectLanguage(string.Empty)).SetActive(() => string.IsNullOrEmpty(TranslationServiceFactory.ActiveLanguagePostfix))
+				MenuItem.Create(Translate("Identity (default)"))
+				.WithDescription(Translate("Use original text from game files without translation."))
+				.OnSelect((s, a) => SelectLanguage(string.Empty)).SetActive(() => string.IsNullOrEmpty(TranslationServiceFactory.ActiveLanguagePostfix))
 			];
 
 			if (availableLanguages.Count == 0)

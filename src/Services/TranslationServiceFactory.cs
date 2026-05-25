@@ -27,6 +27,21 @@ namespace CivOne.Services
 		private static ITranslationService _instance;
 		private static string _activeLanguagePostfix;
 
+		// This is only a list of translation keys for the language names
+		// It is used to display the available languages in the settings menu, 
+		// and also to translate the language names in the settings menu.
+		//LanguageNameKeys = [
+		// 	Translate("English"),
+		// 	Translate("German"),
+		// 	Translate("French"),
+		// 	Translate("Italian"),
+		// 	Translate("Spanish"),
+		// 	Translate("Portuguese"),
+		// 	Translate("Russian"),
+		// 	Translate("Chinese"),
+		// 	Translate("Japanese"),
+		// 	Translate("Korean")
+
 		/// <summary>
 		/// Returns the active translation service.
 		/// If none is configured yet, initializes and returns <see cref="TranslationIdentityServiceImpl"/>.
