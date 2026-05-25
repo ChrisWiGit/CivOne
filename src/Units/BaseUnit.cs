@@ -842,8 +842,47 @@ namespace CivOne.Units
 		private static readonly IBitmap[] _iconCache = new IBitmap[28];
 		public virtual IBitmap Icon { get; private set; }
 		private string _name;
+		/// <summary>
+		/// Gets the localized display name shown to the player.
+		/// </summary>
+		/// <remarks>
+		/// Derived unit classes must set this from <c>Translate("...")</c>.
+		/// <para>
+		/// The value assigned to <see cref="Name"/> is also used as the invariant Civilopedia key,
+		/// so it must be set to the English base value, for example <c>"Legion"</c>.
+		/// </para>
+		/// <para>
+		/// For units that do not exist in the original game, use a unique
+		/// <see cref="Name"/> value and use the same value as the Civilopedia text key,
+		/// for example <c>"MySpecialUnit"</c>.
+		/// </para>
+		/// <para>
+		/// The test <c>RegisteredCivilopediaNamesTests</c>
+		/// (<c>xunit/src/RegisteredCivilopediaNamesTests.cs</c>) verifies that all items
+		/// have a non-empty translated name.
+		/// </para>
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// Name = "Legion";
+		/// TranslatedName = Translate("Legion");
+		/// </code>
+		/// </example>
 		public string TranslatedName { get; protected set; }
 		
+		/// <summary>
+		/// Gets the invariant civilopedia key name.
+		/// </summary>
+		/// <remarks>
+		/// Runtime plugin modifications can override the returned display value.
+		/// The assigned base value should still remain the English Civilopedia key.
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// Name = "Legion";
+		/// TranslatedName = Translate("Legion");
+		/// </code>
+		/// </example>
 		public string Name
 		{
 			// Plugin modifications can change the name of a unit, so check for modifications first before returning the default name.

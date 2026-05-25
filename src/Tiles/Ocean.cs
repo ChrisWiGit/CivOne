@@ -30,6 +30,7 @@ namespace CivOne.Tiles
 		public Ocean(int x, int y, bool special) : base(x, y, special)
 		{
 			Type = Terrain.Ocean;
+			Name = "Ocean";
 			TranslatedName = Translate("Ocean");
 		}
 		public Ocean() : this(-1, -1, false)

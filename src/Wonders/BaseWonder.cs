@@ -16,7 +16,42 @@ namespace CivOne.Wonders
 {
 	internal abstract class BaseWonder : BaseInstance, IWonder
 	{
+		/// <summary>
+		/// Gets the localized display name shown to the player.
+		/// </summary>
+		/// <remarks>
+		/// Derived wonder classes must set this from <c>Translate("...")</c>.
+		/// <para>
+		/// The value of <see cref="Name"/> is also used as the invariant Civilopedia key,
+		/// so it must be set to the English base value, for example <c>"Colossus"</c>.
+		/// </para>
+		/// <para>
+		/// For wonders that do not exist in the original game, use a unique
+		/// <see cref="Name"/> value and use the same value as the Civilopedia text key,
+		/// for example <c>"MySpecialWonder"</c>.
+		/// </para>
+		/// <para>
+		/// The test <c>RegisteredCivilopediaNamesTests</c>
+		/// (<c>xunit/src/RegisteredCivilopediaNamesTests.cs</c>) verifies that all items
+		/// have a non-empty translated name.
+		/// </para>
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// Name = "Colossus";
+		/// TranslatedName = Translate("Colossus");
+		/// </code>
+		/// </example>
 		public string TranslatedName { get; protected set; }
+		/// <summary>
+		/// Gets the invariant civilopedia key name.
+		/// </summary>
+		/// <example>
+		/// <code>
+		/// Name = "Colossus";
+		/// TranslatedName = Translate("Colossus");
+		/// </code>
+		/// </example>
 		public string Name { get; protected set; }
 		public virtual IBitmap Icon => null;
 		public virtual IBitmap SmallIcon { get; protected set; }

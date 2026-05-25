@@ -52,7 +52,42 @@ namespace CivOne.Advances
 
 		public Palette OriginalColours { get; private set; }
 		
+		/// <summary>
+		/// Gets the localized display name shown to the player.
+		/// </summary>
+		/// <remarks>
+		/// Derived advance classes must set this from <c>Translate("...")</c>.
+		/// <para>
+		/// The value of <see cref="Name"/> is also used as the invariant Civilopedia key,
+		/// so it must be set to the English base value, for example <c>"Alphabet"</c>.
+		/// </para>
+		/// <para>
+		/// For advances that do not exist in the original game, use a unique
+		/// <see cref="Name"/> value and use the same value as the Civilopedia text key,
+		/// for example <c>"MySpecialAdvance"</c>.
+		/// </para>
+		/// <para>
+		/// The test <c>RegisteredCivilopediaNamesTests</c>
+		/// (<c>xunit/src/RegisteredCivilopediaNamesTests.cs</c>) verifies that all items
+		/// have a non-empty translated name.
+		/// </para>
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// Name = "Alphabet";
+		/// TranslatedName = Translate("Alphabet");
+		/// </code>
+		/// </example>
 		public string TranslatedName { get; protected set; }
+		/// <summary>
+		/// Gets the invariant civilopedia key name.
+		/// </summary>
+		/// <example>
+		/// <code>
+		/// Name = "Alphabet";
+		/// TranslatedName = Translate("Alphabet");
+		/// </code>
+		/// </example>
 		public string Name { get; protected set; }
 
 		public byte PageCount => 2;
