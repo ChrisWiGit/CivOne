@@ -115,15 +115,19 @@ namespace CivOne.Graphics
 		
 		public Picture GetText(string text, int font, byte colourFirstLetter, byte colour)
 		{
-			if (text == null) text = "[MISSING STRING]";
+			return GetText(text, font, colourFirstLetter, colour, 0);
+		}
+
+		public Picture GetText(string text, int font, byte colourFirstLetter, byte colour, int highlightedCharacterIndex)
+		{
+			text ??= "[MISSING STRING]";
 			text = text.Normalize(NormalizationForm.FormC);
 
 			List<Bytemap> letters = new List<Bytemap>();
-			bool isFirstLetter = true;
-			foreach (char c in text)
+			for (int i = 0; i < text.Length; i++)
 			{
-				letters.Add(GetLetter(isFirstLetter ? colourFirstLetter : colour, font, c));
-				isFirstLetter = false;
+				char current = text[i];
+				letters.Add(GetLetter(i == highlightedCharacterIndex ? colourFirstLetter : colour, font, current));
 			}
 			
 			int width = 0, height = 0;
