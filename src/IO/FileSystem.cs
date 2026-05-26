@@ -33,9 +33,14 @@ namespace CivOne.IO
 		{
 			Log("Checking data files in {0}...", Settings.Instance.DataDirectory);
 			if (files.Length == 0) files = DATA_FILES;
+			if (!Directory.Exists(Settings.Instance.DataDirectory))
+			{
+				Log("Target data directory does not exist: {0}", Settings.Instance.DataDirectory);
+				return false;
+			}
 			foreach (string filename in files)
 			{
-				if (Directory.GetFiles(Settings.Instance.DataDirectory, filename).Length > 0) continue;
+				if (File.Exists(Path.Combine(Settings.Instance.DataDirectory, filename))) continue;
 				
 				Log("Target resource file does not exist: {0}", filename);
 				return false;
@@ -68,9 +73,14 @@ namespace CivOne.IO
 		{
 			Log("Checking sound files...");
 			if (files.Length == 0) files = SOUND_FILES;
+			if (!Directory.Exists(Settings.Instance.SoundsDirectory))
+			{
+				Log("Target sound directory does not exist: {0}", Settings.Instance.SoundsDirectory);
+				return false;
+			}
 			foreach (string filename in files)
 			{
-				if (Directory.GetFiles(Settings.Instance.SoundsDirectory, filename).Length > 0) continue;
+				if (File.Exists(Path.Combine(Settings.Instance.SoundsDirectory, filename))) continue;
 				
 				Log("- File not found: {0}", filename);
 				return false;

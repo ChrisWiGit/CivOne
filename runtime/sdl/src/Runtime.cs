@@ -119,6 +119,8 @@ namespace CivOne
 		void IRuntime.SetSetting(string key, string value) => Profile.SetSetting(key, value);
 		int IRuntime.CanvasWidth => CanvasSize.Width;
 		int IRuntime.CanvasHeight => CanvasSize.Height;
+		int IRuntime.WindowWidth => WindowSize.Width;
+		int IRuntime.WindowHeight => WindowSize.Height;
 		
 		string IRuntime.BrowseFolder(string caption) => Native.FolderBrowser(caption);
 		string IRuntime.FileChooser(bool save, string title, string initialFileName, string filter) => Native.FileChooser(save, title, initialFileName, filter);
@@ -128,6 +130,8 @@ namespace CivOne
 		}
 		void IRuntime.PlaySound(string filename) => PlaySound?.Invoke(filename);
 		void IRuntime.StopSound() => StopSound?.Invoke();
+		bool IRuntime.TryOpenUrl(string url, out string errorMessage) => Native.TryOpenUrl(url, out errorMessage);
+		bool IRuntime.TryCopyToClipboard(string text, out string errorMessage) => Native.TryCopyToClipboard(text, out errorMessage);
 		void IRuntime.Quit() => SignalQuit = true;
 
 		public Runtime(RuntimeSettings runtimeSettings)
