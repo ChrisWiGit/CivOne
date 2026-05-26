@@ -90,7 +90,9 @@ From repository root, generate the source translation file.
 
 This writes or updates `translation/all.txt`.
 
-### 2. Create your language file from `all.txt`
+### 2a. Create your language file from `all.txt`
+
+> only if you intend to create a new language file or want to reset an existing one with all keys from `all.txt`.
 
 Copy or rename `translation/all.txt` to `translation/civ_<mylang>.txt`.
 
@@ -102,9 +104,33 @@ Examples:
 If your language also uses other text files, rename them with the same language suffix pattern.
 For example, rename `story.txt` to `story_<mylang>.txt`.
 
+> Case sensitive file systems: The game does not care about case sensitivity in file names.
+
+### 2b. Manual updating
+
+1. Call `.\translate.ps1` or `./translate.sh` to update `all.txt`
+2. Merge new keys from `all.txt` into your language file using `.\translate-mergekeys.ps1 all.txt civ_<mylang>` or `./translate-mergekeys.sh all.txt civ_<mylang>` (no folder `translation/` needed in arguments)
+3. Edit your language file and translate values manually in a text editor.
+4. Copy the final language file to the active CivOne profile translations folder with `.\copy-translations.ps1` or `./copy-translations.sh`
+5. Test with CivOne and repeat from step 1 until you are satisfied.
+
 ### 3. Translate values using the interactive roundtrip
 
 Use `civtranslate-interactive` with your language file.
+
+**In short this does:**
+
+Roundtrip behavior:
+
+1. Creates a values work file next to your language file, for example `civ_german.values.txt`.
+2. Waits for Enter so you can translate values in that work file.
+3. Reads translated values back and writes them into the original `key=value` language file.
+4. Preserves key order and comment lines.
+
+Safety behavior:
+
+- The values work file must not exist before start.
+- If it already exists, the tool fails and leaves the language file unchanged.
 
 ```sh
 dotnet run --project ./civtranslate-interactive/civtranslate-interactive.csproj -- --language german
@@ -125,18 +151,6 @@ Or use helper scripts from repository root.
 The language postfix resolves to `translation/civ_<postfix>.txt`.
 For example, `--language german` resolves to `translation/civ_german.txt`.
 
-Roundtrip behavior:
-
-1. Creates a values work file next to your language file, for example `civ_german.values.txt`.
-2. Waits for Enter so you can translate values in that work file.
-3. Reads translated values back and writes them into the original `key=value` language file.
-4. Preserves key order and comment lines.
-
-Safety behavior:
-
-- The values work file must not exist before start.
-- If it already exists, the tool fails and leaves the language file unchanged.
-
 ### 4. Copy final files to the active CivOne profile
 
 Copy generated translation `.txt` files from repository `translation` to the active CivOne translations folder.
@@ -150,6 +164,14 @@ Copy generated translation `.txt` files from repository `translation` to the act
 ```
 
 `copy-translations` excludes `all.txt` and copies all other `.txt` files.
+
+### All the other files like KING, BLURB, CREDITS
+
+The original source text for these is not in the C# code but in the existing translation files.
+
+1. To update these, simply edit the existing language file and translate values manually in a text editor.
+2. Remove the binary part at the top and end of the file.
+3. Rename the file with the same language suffix pattern if needed, for example `KING_<mylang>.txt`.
 
 ## Example output
 
