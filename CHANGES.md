@@ -6,6 +6,9 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Screens marked `[ScreenResizeable]` (e.g. Credits) now react to host-window resizes even when the canvas size stays fixed (e.g. `AspectRatio=Auto`).
+  * `BaseScreen.Update` tracks the window size and fires `OnResize` plus a refresh when only the window changes.
+  * SDL runtime now raises an `OnWindowResize` event on `SDL_WINDOWEVENT_RESIZED` / `SDL_WINDOWEVENT_SIZE_CHANGED` and `GameWindow` forces a redraw, eliminating the 1–2 s frozen frame after a drag-resize.
 * Fix: Intro text are shown again.
   * Additional the text "Shift+Left/Right Forward/Backward" is shown at the beginning of the intro, to hint the user that they can fast forward the intro text.
 * Debug Option:

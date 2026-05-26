@@ -436,6 +436,7 @@ namespace CivOne
 			OnLoad += Load;
 			OnUpdate += Update;
 			OnDraw += Draw;
+			OnWindowResize += (s, a) => _hasUpdate = true;
 			OnKeyDown += KeyDown;
 			OnKeyUp += KeyUp;
 			OnMouseMove += MouseMove;

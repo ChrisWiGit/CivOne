@@ -29,6 +29,11 @@ namespace CivOne.Screens
 		private bool CanExpand => Common.HasAttribute<ScreenResizeable>(this);
 		private bool SizeChanged => (this.Width() != CanvasWidth || this.Height() != CanvasHeight);
 
+		// Last window size observed by Update; used to detect host-window resizes
+		// even when the canvas size stays fixed (e.g. AspectRatio != Expand).
+		private Size _lastWindowSize = WindowSize;
+		private bool WindowSizeChanged => _lastWindowSize != WindowSize;
+
 		protected event ResizeEventHandler OnResize;
 
 		protected void MouseArgsOffset(ref ScreenEventArgs args, int offsetX, int offsetY)
@@ -75,9 +80,23 @@ namespace CivOne.Screens
 				// Use capped canvas size here to match SizeChanged checks.
 				// Using Runtime.CanvasWidth can trigger perpetual resize/redraw loops in Expand mode.
 				Resize(CanvasWidth, CanvasHeight);
+				_lastWindowSize = WindowSize;
 				HasUpdate(gameTick);
 				return true;
 			}
+
+			// Notify resize-aware screens when the host window changed size even though
+			// the canvas dimensions stayed the same (e.g. AspectRatio != Expand).
+			// This lets screens rebuild layout / force a redraw after a window drag.
+			if (CanExpand && WindowSizeChanged)
+			{
+				_lastWindowSize = WindowSize;
+				Refresh();
+				OnResize?.Invoke(this, new ResizeEventArgs(this.Width(), this.Height()));
+				HasUpdate(gameTick);
+				return true;
+			}
+
 			return HasUpdate(gameTick);
 		}
 		public virtual bool KeyDown(KeyboardEventArgs args) => false;
