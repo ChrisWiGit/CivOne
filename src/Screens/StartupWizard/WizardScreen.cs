@@ -154,7 +154,12 @@ namespace CivOne.Screens.StartupWizard
 		{
 			if (args[Key.Escape])
 			{
-				// ESC intentionally disabled in startup wizard.
+				if (Settings.Instance.FullScreen)
+				{
+					Settings.Instance.FullScreen = false;
+					_state.FullScreenEnabled = false;
+					Refresh();
+				}
 				return true;
 			}
 
