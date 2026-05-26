@@ -2,6 +2,7 @@
 # License CC-BY-SA-4.0 : https://creativecommons.org/licenses/by-sa/4.0/
 # This file contains the German translation
 # Generated from the original English text file using translate-interactive.ps1
+__LANGUAGE_DISPLAYNAME__=Deutsch
 REQUIRES {0}=Erfordert {0}
 ALLOWS:=Ermöglicht:
 (WITH {0})= (mit {0})
@@ -1151,3 +1152,4 @@ DEBUG-MENU - HIT ^F12^ TO SHOW DEBUG MENU IN GAME=Debug-Menü - Drücke ^F12^, u
 DEBUG-MENU - ^OFF=Debug-Menü - ^aus
 OPEN FULL SETTINGS SCREEN FOR MORE OPTIONS, THEN RETURN HERE.=Bildschirm für weitere Optionen öffnen, dann hier zurückkehren.
 SETTINGS SCREEN CAN ALSO ACCESSED BY SHIFT+F1 AT START OR FROM DEBUG MENU.=Einstellungen können über Shift+F1 beim Start & im Debugmenü aufgerufen werden.
+ORIGINAL (ENGLISH)=Original (Englisch)

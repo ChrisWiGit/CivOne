@@ -53,7 +53,7 @@ namespace CivOne.Screens
 			{
 				Settings.LanguagePostfix = string.Empty;
 				TranslationServiceFactory.UseIdentity();
-				NotifyIfInGame(Translate("Identity"));
+				NotifyIfInGame(Translate("Original (English)"));
 				return;
 			}
 
@@ -136,7 +136,7 @@ namespace CivOne.Screens
 			string active = TranslationServiceFactory.ActiveLanguagePostfix ?? string.Empty;
 
 			var postfixes = new List<string> { string.Empty };
-			var labels = new List<string> { translate("Identity (default)") };
+			var labels = new List<string> { translate("Original (default)") };
 
 			foreach (TranslationLanguageInfo language in languages)
 			{
