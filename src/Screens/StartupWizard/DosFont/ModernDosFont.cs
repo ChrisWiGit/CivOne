@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DosFont
+namespace CivOne.Screens.StartupWizard.DosFont
 {
     // Each glyph is 8 pixels wide and 16 pixels high.
     // FontData[cp437Code, y] contains one horizontal row.

@@ -12,10 +12,9 @@ using System.Drawing;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
-using CivOne.Graphics;
+using CivOne.Screens.StartupWizard.DosFont;
 using CivOne.Services;
 using CivOne.Services.Browser;
-using DosFont;
 
 namespace CivOne.Screens.StartupWizard
 {

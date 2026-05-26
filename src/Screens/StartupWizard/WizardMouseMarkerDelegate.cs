@@ -11,8 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using CivOne.Graphics;
-using DosFont;
+using CivOne.Screens.StartupWizard.DosFont;
 
 namespace CivOne.Screens.StartupWizard
 {

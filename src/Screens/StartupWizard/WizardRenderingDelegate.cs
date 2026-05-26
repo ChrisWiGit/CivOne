@@ -8,11 +8,9 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using CivOne.Graphics;
-using CivOne.Services;
-using DosFont;
+using CivOne.Screens.StartupWizard.DosFont;
 
 namespace CivOne.Screens.StartupWizard
 {

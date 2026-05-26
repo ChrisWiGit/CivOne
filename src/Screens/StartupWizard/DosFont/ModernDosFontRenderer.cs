@@ -1,6 +1,6 @@
 using System;
 
-namespace DosFont
+namespace CivOne.Screens.StartupWizard.DosFont
 {
     /// <summary>
     /// Renders ModernDos 8x16 glyphs onto any pixel target via a delegate.
