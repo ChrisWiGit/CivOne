@@ -200,7 +200,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Plugins")).OnSelect(GotoMenu(PluginsMenu)),
 			MenuItem.Create(Translate("Game Options")).OnSelect(GotoMenu(GameOptionsMenu)),
 			MenuItem.Create(GetReturnTargetString()).OnSelect(CloseScreen()),
-			IsAllowedToQuit() ? null : MenuItem.Create(Translate("Quit")).OnSelect(CloseScreen(Runtime.Quit))
+			IsAllowedToQuit() ?  MenuItem.Create(Translate("Quit")).OnSelect(CloseScreen(Runtime.Quit)) : null
 		);
 
 		private string GetReturnTargetString()
