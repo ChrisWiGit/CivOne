@@ -131,7 +131,7 @@ namespace CivOne.Services
 		{
 			if (observer == null)
 			{
-				throw new ArgumentNullException(nameof(observer));
+				return;
 			}
 
 			lock (_sync)

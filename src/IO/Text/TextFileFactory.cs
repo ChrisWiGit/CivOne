@@ -91,7 +91,10 @@ namespace CivOne.IO.Text
 		/// </summary>
 		public static void ClearInstance()
 		{
-			TranslationServiceFactory.UnregisterLanguageObserver(_gameTexts);
+			if (_gameTexts != null)
+			{
+				TranslationServiceFactory.UnregisterLanguageObserver(_gameTexts);
+			}
 			_gameTexts = null;
 			_loader = null;
 		}

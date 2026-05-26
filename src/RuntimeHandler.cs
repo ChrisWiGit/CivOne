@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CivOne.Enums;
 using CivOne.Events;
@@ -22,6 +23,7 @@ using CivOne.Graphics.ImageFormats;
 using CivOne.Mcp;
 using CivOne.Mcp.Contracts;
 using CivOne.Screens;
+using CivOne.Screens.StartupWizard;
 using CivOne.Screens.Reports;
 using CivOne.Graphics.Sprites;
 using CivOne.Services;
@@ -36,6 +38,7 @@ namespace CivOne
 		internal static RuntimeHandler Instance => _instance;
 		internal static IRuntime Runtime { get; private set; }
 		internal static uint CurrentGameTick => _instance?._gameTick ?? 0;
+		public static bool IsFullWindowCanvasRequested => _instance?.TopScreen?.UseFullWindowCanvas ?? false;
 		
 		private Settings Settings => Settings.Instance;
 		private IScreen TopScreen => Common.TopScreen;
@@ -43,8 +46,14 @@ namespace CivOne
 		private CursorType _cursorType = CursorType.Native;
 		private readonly IQuickSaveLoadHotkeyService _quickSaveLoadHotkeyService;
 
-		internal int CanvasWidth => Math.Max(Settings.MinWidth, Math.Min(Settings.MaxScreenWidth, Runtime.CanvasWidth));
-		internal int CanvasHeight => Math.Max(Settings.MinHeight, Math.Min(Settings.MaxScreenHeight, Runtime.CanvasHeight));
+		internal int CanvasWidth => IsFullWindowCanvasRequested
+			? Math.Max(Settings.MinWidth, Runtime.CanvasWidth)
+			: Math.Max(Settings.MinWidth, Math.Min(Settings.MaxScreenWidth, Runtime.CanvasWidth));
+		internal int CanvasHeight => IsFullWindowCanvasRequested
+			? Math.Max(Settings.MinHeight, Runtime.CanvasHeight)
+			: Math.Max(Settings.MinHeight, Math.Min(Settings.MaxScreenHeight, Runtime.CanvasHeight));
+		internal static int WindowWidth => Runtime.WindowWidth;
+		internal static int WindowHeight => Runtime.WindowHeight;
 
 		private Stopwatch _tickWatch = new Stopwatch();
 
@@ -87,9 +96,20 @@ namespace CivOne
 		{
 			get
 			{
-				if (Runtime.Settings.DataCheck && !FileSystem.DataFilesExist()) yield return typeof(MissingFiles);
+				bool dataMissing = Runtime.Settings.DataCheck && !FileSystem.DataFilesExist();
+				bool showWizard = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && (dataMissing || Runtime.Settings.Setup);
+
+				if (showWizard)
+				{
+					yield return typeof(WizardScreen);
+				}
+				else if (dataMissing)
+				{
+					yield return typeof(MissingFiles);
+				}
+
 				if (Runtime.Settings.Demo) yield return typeof(Demo);
-				if (Runtime.Settings.Setup) yield return typeof(Setup);
+				if (Runtime.Settings.Setup && !showWizard) yield return typeof(Setup);
 				yield return typeof(Credits);
 			}
 		}
@@ -296,6 +316,7 @@ namespace CivOne
 				throw new Exception("Only one runtime can be registered.");
 			}
 
+			EnsureTranslationFilesAvailable(runtime);
 			ConfigureTranslation(runtime);
 			_instance = new RuntimeHandler(runtime, CreateQuickSaveLoadHotkeyService(runtime));
 		}
@@ -315,6 +336,58 @@ namespace CivOne
 			ITranslationService translationService = TranslationServiceFactory.GetCurrent();
 			IYamlSaveGameServiceFactory yamlSaveGameServiceFactory = new YamlSaveGameServiceFactory();
 			return new QuickSaveLoadHotkeyService(runtime, translationService, yamlSaveGameServiceFactory);
+		}
+
+		private static void EnsureTranslationFilesAvailable(IRuntime runtime)
+		{
+			string sourceDirectory = FindTranslationSourceDirectory();
+			if (string.IsNullOrEmpty(sourceDirectory))
+			{
+				runtime.Log("Translation source directory not found. Skipping translation file copy.");
+				return;
+			}
+
+			string targetDirectory = Path.Combine(runtime.StorageDirectory, "translations");
+			Directory.CreateDirectory(targetDirectory);
+
+			string[] files = Directory.GetFiles(sourceDirectory, "*.txt", SearchOption.TopDirectoryOnly)
+				.Where(path => !string.Equals(Path.GetFileName(path), "all.txt", StringComparison.OrdinalIgnoreCase))
+				.ToArray();
+
+			foreach (string filePath in files)
+			{
+				string fileName = Path.GetFileName(filePath);
+				string targetPath = Path.Combine(targetDirectory, fileName);
+				File.Copy(filePath, targetPath, true);
+			}
+
+			runtime.Log("Copied {0} translation file(s) to {1}", files.Length, targetDirectory);
+		}
+
+		private static string FindTranslationSourceDirectory()
+		{
+			string[] roots =
+			[
+				AppContext.BaseDirectory,
+				Environment.CurrentDirectory
+			];
+
+			foreach (string root in roots.Where(path => !string.IsNullOrWhiteSpace(path)).Distinct(StringComparer.OrdinalIgnoreCase))
+			{
+				DirectoryInfo directory = new(root);
+				while (directory != null)
+				{
+					string candidate = Path.Combine(directory.FullName, "translation");
+					if (Directory.Exists(candidate))
+					{
+						return candidate;
+					}
+
+					directory = directory.Parent;
+				}
+			}
+
+			return null;
 		}
 
 		private static void ConfigureTranslation(IRuntime runtime)
