@@ -223,7 +223,11 @@ namespace CivOne
 				};
 				using (var process = System.Diagnostics.Process.Start(psi))
 				{
-					process?.WaitForExit(5000);
+					if (process == null || !process.WaitForExit(5000) || process.ExitCode != 0)
+					{
+						errorMessage = $"Command failed with exit code {process?.ExitCode ?? -1}";
+						return false;
+					}
 					errorMessage = string.Empty;
 					return true;
 				}
