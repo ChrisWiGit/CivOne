@@ -221,7 +221,7 @@ namespace CivOne.Screens
 
 		private static bool IsAllowedToQuit()
 		{
-			return Game.Started || Common.HasScreenType<StartupWizard.WizardScreen>();
+			return Game.Started || !Common.HasScreenType<StartupWizard.WizardScreen>();
 		}
 
 		private void SettingsMenu(int activeItem = 0) => CreateMenu("Settings", activeItem,
