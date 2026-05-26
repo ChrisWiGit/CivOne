@@ -20,7 +20,7 @@ namespace CivOne.Screens.StartupWizard
 	/// </remarks>
 	internal sealed class WizardState(string selectedLanguagePostfix)
 	{
-		private const int LastPageIndex = 5;
+		private const int LastPageIndex = 6;
 
 		/// <summary>
 		/// Gets the zero-based index of the currently active wizard page.
@@ -59,6 +59,16 @@ namespace CivOne.Screens.StartupWizard
 		/// Initialised from <see cref="Settings.Instance"/> and persisted back when toggled.
 		/// </remarks>
 		public bool SoundEnabled { get; set; } = Settings.Instance.Sound != GameOption.Off;
+
+		/// <summary>
+		/// Gets or sets whether the in-game debug menu is enabled.
+		/// </summary>
+		public bool DebugMenuEnabled { get; set; } = Settings.Instance.DebugMenu;
+
+		/// <summary>
+		/// Gets or sets whether fullscreen mode is enabled.
+		/// </summary>
+		public bool FullScreenEnabled { get; set; } = Settings.Instance.FullScreen;
 
 		/// <summary>
 		/// Gets or sets the screen aspect ratio selected in the startup wizard.

@@ -25,19 +25,20 @@ namespace CivOne.Screens.StartupWizard
 		private readonly Func<ITranslationService> _translationServiceAccessor = translationServiceAccessor ?? throw new ArgumentNullException(nameof(translationServiceAccessor));
 		private readonly IReadOnlyList<TranslationLanguageInfo> _availableLanguages = availableLanguages ?? throw new ArgumentNullException(nameof(availableLanguages));
 
-		public WizardPage Build(WizardState engine)
+		public WizardPage Build(WizardState state)
 		{
-			ArgumentNullException.ThrowIfNull(engine);
+			ArgumentNullException.ThrowIfNull(state);
 
-			return engine.PageIndex switch
+			return state.PageIndex switch
 			{
-				0 => BuildLanguagePage(engine),
+				0 => BuildLanguagePage(state),
 				1 => BuildWelcomePage(),
-				2 => BuildDataFolderPage(engine),
-				3 => BuildAspectRatioPage(engine),
-				4 => BuildSoundPage(engine),
-				5 => BuildFinalPage(),
-				_ => BuildLanguagePage(engine)
+				2 => BuildDataFolderPage(state),
+				3 => BuildAspectRatioPage(state),
+				4 => BuildSoundPage(state),
+				5 => BuildMoreSettingsPage(state),
+				6 => BuildFinalPage(),
+				_ => BuildLanguagePage(state)
 			};
 		}
 
@@ -87,7 +88,7 @@ namespace CivOne.Screens.StartupWizard
 			};
 		}
 
-		private WizardPage BuildLanguagePage(WizardState engine)
+		private WizardPage BuildLanguagePage(WizardState state)
 		{
 			List<WizardEntry> entries = [];
 			int number = 1;
@@ -119,7 +120,7 @@ namespace CivOne.Screens.StartupWizard
 				Hotkey = 'c'
 			});
 
-			if (engine.PageIndex > 0)
+			if (state.PageIndex > 0)
 			{
 				entries.Add(new WizardEntry
 				{
@@ -130,9 +131,9 @@ namespace CivOne.Screens.StartupWizard
 				});
 			}
 
-			string activeLanguage = string.IsNullOrEmpty(engine.SelectedLanguagePostfix)
+			string activeLanguage = string.IsNullOrEmpty(state.SelectedLanguagePostfix)
 				? T("Identity")
-				: T(engine.SelectedLanguagePostfix);
+				: T(state.SelectedLanguagePostfix);
 
 			return new WizardPage
 			{
@@ -146,7 +147,7 @@ namespace CivOne.Screens.StartupWizard
 			};
 		}
 
-		private WizardPage BuildDataFolderPage(WizardState engine)
+		private WizardPage BuildDataFolderPage(WizardState state)
 		{
 			bool hasDataFiles = FileSystem.DataFilesExist();
 			string dataState = hasDataFiles
@@ -158,9 +159,9 @@ namespace CivOne.Screens.StartupWizard
 			{
 				selectedPath = Settings.Instance.DataDirectory;
 			}
-			else if (!string.IsNullOrWhiteSpace(engine.DataFolder))
+			else if (!string.IsNullOrWhiteSpace(state.DataFolder))
 			{
-				selectedPath = engine.DataFolder;
+				selectedPath = state.DataFolder;
 			}
 
 			return new WizardPage
@@ -183,9 +184,9 @@ namespace CivOne.Screens.StartupWizard
 			};
 		}
 
-		private WizardPage BuildSoundPage(WizardState engine)
+		private WizardPage BuildSoundPage(WizardState state)
 		{
-			string soundState = engine.SoundEnabled ? T("On") : T("Off");
+			string soundState = state.SoundEnabled ? T("On") : T("Off");
 			return new WizardPage
 			{
 				Title = T("Startup Wizard: Sound"),
@@ -203,17 +204,40 @@ namespace CivOne.Screens.StartupWizard
 			};
 		}
 
-		private WizardPage BuildAspectRatioPage(WizardState engine)
+		private WizardPage BuildMoreSettingsPage(WizardState state)
+		{
+			return new WizardPage
+			{
+				Title = T("Startup Wizard: More Settings"),
+				Lines =
+				[
+					TF("Debug menu: {0}", state.DebugMenuEnabled.YesNo()),
+					T("Enable debugging, then press F12 in game to open debug menu."),
+					T("Open full setup screen for more options, then return here.")
+				],
+				Entries =
+				[
+					new WizardEntry { Number = 1, Text = T("Debugging - Hit F12 to show debug menu in game"), Action = WizardEntryAction.ToggleDebugMenu },
+					new WizardEntry { Number = 2, Text = T("Show more settings"), Action = WizardEntryAction.OpenSetupScreen },
+					new WizardEntry { Number = 3, Text = ContinueText(), Action = WizardEntryAction.Continue, Hotkey = HotkeyContinue },
+					new WizardEntry { Number = 4, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
+				],
+				EntriesYOffset = 1
+			};
+		}
+
+		private WizardPage BuildAspectRatioPage(WizardState state)
 		{
 			List<WizardEntry> entries =
 			[
-				CreateAspectRatioEntry(1, AspectRatio.Auto, T("Auto - stretch image, may distort")),
-				CreateAspectRatioEntry(2, AspectRatio.Fixed, T("Fixed - keep ratio, may add black borders")),
-				CreateAspectRatioEntry(3, AspectRatio.Scaled, T("Scaled - fit resolution, may look blurry")),
-				CreateAspectRatioEntry(4, AspectRatio.ScaledFixed, T("ScaledFixed - keep ratio, blur and borders possible")),
-				CreateAspectRatioEntry(5, AspectRatio.Expand, T("Expand (default) - fill screen, borders possible")),
-				new WizardEntry { Number = 6, Text = ContinueText(), Action = WizardEntryAction.Continue, Hotkey = HotkeyContinue },
-				new WizardEntry { Number = 7, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
+				CreateFullScreenEntry(1, !state.FullScreenEnabled, TF("Fullscreen: {0}", state.FullScreenEnabled.YesNo())),
+				CreateAspectRatioEntry(2, AspectRatio.Auto, T("Auto - stretch image, may distort")),
+				CreateAspectRatioEntry(3, AspectRatio.Fixed, T("Fixed - keep ratio, may add black borders")),
+				CreateAspectRatioEntry(4, AspectRatio.Scaled, T("Scaled - fit resolution, may look blurry")),
+				CreateAspectRatioEntry(5, AspectRatio.ScaledFixed, T("ScaledFixed - keep ratio, blur and borders possible")),
+				CreateAspectRatioEntry(6, AspectRatio.Expand, T("Expand (default) - fill screen, borders possible")),
+				new WizardEntry { Number = 7, Text = ContinueText(), Action = WizardEntryAction.Continue, Hotkey = HotkeyContinue },
+				new WizardEntry { Number = 8, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
 			];
 
 
@@ -222,11 +246,10 @@ namespace CivOne.Screens.StartupWizard
 				Title = T("Startup Wizard: Screen Aspect Ratio"),
 				Lines =
 				[
-					T("Choose screen aspect ratio."),
-					TF("Current: {0}", engine.ScreenAspectRatio.ToText())
+					TF("Current: {0}", state.ScreenAspectRatio.ToText())
 				],
 				Entries = entries,
-				EntriesYOffset = 3
+				EntriesYOffset = 2
 			};
 			
 		}
@@ -238,6 +261,15 @@ namespace CivOne.Screens.StartupWizard
 			Action = WizardEntryAction.SelectAspectRatio,
 			Value = aspectRatio.ToString(),
 			Hotkey = null
+		};
+
+		private WizardEntry CreateFullScreenEntry(int number, bool enabled, string text) => new()
+		{
+			Number = number,
+			Text = text,
+			Action = WizardEntryAction.SelectFullScreen,
+			Value = enabled.ToString(),
+			Hotkey = 'f'
 		};
 
 		private string ContinueText() => T("Continue");

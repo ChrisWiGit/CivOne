@@ -16,7 +16,7 @@ namespace CivOne.Screens.StartupWizard
 		/// <summary>
 		/// Builds and returns the <see cref="WizardPage"/> for the current wizard state.
 		/// </summary>
-		/// <param name="engine">
+		/// <param name="state">
 		/// The <see cref="WizardState"/> whose <see cref="WizardState.PageIndex"/> and
 		/// other state properties determine which page is constructed.
 		/// </param>
@@ -24,6 +24,6 @@ namespace CivOne.Screens.StartupWizard
 		/// A <see cref="WizardPage"/> populated with the title, body lines, selectable
 		/// entries and optional footer links appropriate for the current page.
 		/// </returns>
-		WizardPage Build(WizardState engine);
+		WizardPage Build(WizardState state);
 	}
 }

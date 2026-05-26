@@ -15,6 +15,7 @@ using CivOne.Events;
 using CivOne.Screens.StartupWizard.DosFont;
 using CivOne.Services;
 using CivOne.Services.Browser;
+using CivOne.Services.Screen;
 
 namespace CivOne.Screens.StartupWizard
 {
@@ -45,18 +46,34 @@ namespace CivOne.Screens.StartupWizard
 		/// <summary>
 		/// Initializes the startup wizard screen with default dependencies.
 		/// </summary>
-		public WizardScreen() : this(
-			new WizardState(TranslationServiceFactory.ActiveLanguagePostfix),
-			new WizardPageBuilder(
+		public WizardScreen() : base(MouseCursor.None)
+		{
+			Palette = Common.GetPalette256;
+			_state = new WizardState(TranslationServiceFactory.ActiveLanguagePostfix);
+			if (!Settings.Instance.FullScreen)
+			{
+				Settings.Instance.FullScreen = true;
+			}
+			_state.FullScreenEnabled = Settings.Instance.FullScreen;
+			_pageBuilder = new WizardPageBuilder(
 				translationServiceAccessor: TranslationServiceFactory.GetCurrent,
-				availableLanguages: TranslationServiceFactory.GetAvailableLanguages(Runtime.StorageDirectory, message => Log(message))),
-			new WizardActionHandler(
+				availableLanguages: TranslationServiceFactory.GetAvailableLanguages(Runtime.StorageDirectory, message => Log(message)));
+			_actionHandler = new WizardActionHandler(
 				translationServiceAccessor: TranslationServiceFactory.GetCurrent,
 				browserService: BrowserServiceFactory.Instance,
 				storageDirectory: Runtime.StorageDirectory,
 				browseFolder: Runtime.BrowseFolder,
-				log: message => Log(message)))
-		{
+				log: message => Log(message),
+				showSetupScreen: () =>
+				{
+					Setup setup = new();
+					setup.Closed += (sender, args) => Refresh();
+					ScreenServiceFactory.CreateCommandService().AddScreen(setup);
+				});
+			_renderingDelegate = new WizardRenderingDelegate(this, Translate);
+			_mouseMarkerDelegate = new WizardMouseMarkerDelegate(this);
+			_renderingContext = new WizardRenderingContext();
+			Refresh();
 		}
 
 		/// <summary>
@@ -95,15 +112,7 @@ namespace CivOne.Screens.StartupWizard
 		{
 			if (args[Key.Escape])
 			{
-				if (_state.PageIndex == 0)
-				{
-					Destroy();
-				}
-				else
-				{
-					_state.MoveBack();
-					Refresh();
-				}
+				// ESC intentionally disabled in startup wizard.
 				return true;
 			}
 

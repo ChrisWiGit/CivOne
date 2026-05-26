@@ -31,6 +31,22 @@ namespace CivOne.Screens.StartupWizard
 		SelectAspectRatio,
 
 		/// <summary>
+		/// Toggles whether the in-game debug menu is enabled.
+		/// </summary>
+		ToggleDebugMenu,
+
+		/// <summary>
+		/// Opens the full setup screen with additional settings.
+		/// </summary>
+		OpenSetupScreen,
+
+		/// <summary>
+		/// Selects whether fullscreen mode is enabled.
+		/// The chosen value is stored in <see cref="WizardEntry.Value"/>.
+		/// </summary>
+		SelectFullScreen,
+
+		/// <summary>
 		/// Advances the wizard to the next page.
 		/// </summary>
 		Continue,

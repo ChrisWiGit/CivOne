@@ -22,18 +22,20 @@ namespace CivOne.Screens.StartupWizard
 		IBrowserService browserService,
 		string storageDirectory,
 		Func<string, string> browseFolder,
-		Action<string> log) : IWizardActionHandler
+		Action<string> log,
+		Action showSetupScreen) : IWizardActionHandler
 	{
 		private readonly Func<ITranslationService> _translationServiceAccessor = translationServiceAccessor ?? throw new ArgumentNullException(nameof(translationServiceAccessor));
 		private readonly IBrowserService _browserService = browserService ?? throw new ArgumentNullException(nameof(browserService));
 		private readonly string _storageDirectory = storageDirectory ?? string.Empty;
 		private readonly Func<string, string> _browseFolder = browseFolder ?? throw new ArgumentNullException(nameof(browseFolder));
 		private readonly Action<string> _log = log ?? (_ => { });
+		private readonly Action _showSetupScreen = showSetupScreen ?? (() => { });
 
-		public WizardActionResult Execute(WizardEntry entry, WizardState state)
+		public WizardActionResult Execute(WizardEntry entry, WizardState engine)
 		{
 			ArgumentNullException.ThrowIfNull(entry);
-			ArgumentNullException.ThrowIfNull(state);
+			ArgumentNullException.ThrowIfNull(engine);
 
 			if (!entry.Enabled)
 			{
@@ -43,30 +45,39 @@ namespace CivOne.Screens.StartupWizard
 			switch (entry.Action)
 			{
 				case WizardEntryAction.SelectLanguage:
-					ApplyLanguage(entry.Value ?? string.Empty, state);
+						ApplyLanguage(entry.Value ?? string.Empty, engine);
 					return new WizardActionResult(ShouldRefresh: true);
 					case WizardEntryAction.SelectAspectRatio:
-						ApplyAspectRatio(entry.Value, state);
+						ApplyAspectRatio(entry.Value, engine);
+						return new WizardActionResult(ShouldRefresh: true);
+					case WizardEntryAction.ToggleDebugMenu:
+						ToggleDebugMenu(engine);
+						return new WizardActionResult(ShouldRefresh: true);
+					case WizardEntryAction.OpenSetupScreen:
+						_showSetupScreen();
+						return new WizardActionResult(ShouldRefresh: false);
+					case WizardEntryAction.SelectFullScreen:
+						ApplyFullScreen(entry.Value, engine);
 						return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.BrowseDataFolder:
-					HandleBrowseDataFolder(state);
+						HandleBrowseDataFolder(engine);
 					return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.Continue:
-						if (state.PageIndex == 3)
+						if (engine.PageIndex == 3)
 						{
-							Settings.Instance.AspectRatio = state.ScreenAspectRatio;
+							Settings.Instance.AspectRatio = engine.ScreenAspectRatio;
 						}
-					state.MoveNext();
-					state.StatusMessage = string.Empty;
+						engine.MoveNext();
+						engine.StatusMessage = string.Empty;
 					return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.Back:
-					state.MoveBack();
-					state.StatusMessage = string.Empty;
+						engine.MoveBack();
+						engine.StatusMessage = string.Empty;
 					return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.ToggleSound:
-					state.SoundEnabled = !state.SoundEnabled;
-					Settings.Instance.Sound = state.SoundEnabled ? GameOption.On : GameOption.Off;
-					state.StatusMessage = state.SoundEnabled
+						engine.SoundEnabled = !engine.SoundEnabled;
+						Settings.Instance.Sound = engine.SoundEnabled ? GameOption.On : GameOption.Off;
+						engine.StatusMessage = engine.SoundEnabled
 						? T("Sound enabled.")
 						: T("Sound disabled.");
 					return new WizardActionResult(ShouldRefresh: true);
@@ -77,9 +88,9 @@ namespace CivOne.Screens.StartupWizard
 			}
 		}
 
-		public WizardActionResult OpenUrl(string url, WizardState state)
+		public WizardActionResult OpenUrl(string url, WizardState engine)
 		{
-			ArgumentNullException.ThrowIfNull(state);
+			ArgumentNullException.ThrowIfNull(engine);
 
 			if (string.IsNullOrWhiteSpace(url))
 			{
@@ -88,13 +99,13 @@ namespace CivOne.Screens.StartupWizard
 
 			if (!_browserService.TryOpenUrl(url, out _))
 			{
-				state.StatusMessage = _browserService.TryCopyToClipboard(url, out _)
+				engine.StatusMessage = _browserService.TryCopyToClipboard(url, out _)
 					? T("Link copied to clipboard.")
 					: T("Could not open URL.");
 			}
 			else
 			{
-				state.StatusMessage = T("Opened URL in browser.");
+				engine.StatusMessage = T("Opened URL in browser.");
 			}
 
 			return new WizardActionResult(ShouldRefresh: true);
@@ -153,6 +164,29 @@ namespace CivOne.Screens.StartupWizard
 			state.ScreenAspectRatio = aspectRatio;
 			Settings.Instance.AspectRatio = aspectRatio;
 			state.StatusMessage = TF("Aspect ratio set to {0}.", aspectRatio.ToText());
+		}
+
+		private void ToggleDebugMenu(WizardState state)
+		{
+			state.DebugMenuEnabled = !state.DebugMenuEnabled;
+			Settings.Instance.DebugMenu = state.DebugMenuEnabled;
+			state.StatusMessage = state.DebugMenuEnabled
+				? T("Debug menu enabled. Press F12 in game to open it.")
+				: T("Debug menu disabled.");
+		}
+
+		private void ApplyFullScreen(string value, WizardState state)
+		{
+			if (!bool.TryParse(value, out bool fullScreen))
+			{
+				return;
+			}
+
+			state.FullScreenEnabled = fullScreen;
+			Settings.Instance.FullScreen = fullScreen;
+			state.StatusMessage = fullScreen
+				? T("Fullscreen enabled.")
+				: T("Fullscreen disabled.");
 		}
 
 		private string T(string key) => _translationServiceAccessor().Translate(key);
