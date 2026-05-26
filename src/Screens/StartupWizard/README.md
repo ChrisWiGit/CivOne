@@ -62,6 +62,7 @@ See: [WizardEngine.cs](WizardEngine.cs)
 - selectable entries
 - optional links
 - optional entry Y offset
+- optional `HasContextChanged` callback for external state sync
 
 See: [WizardPage.cs](WizardPage.cs)
 
@@ -120,6 +121,41 @@ Flow rule today:
 - page order is controlled by `PageIndex`
 - `MoveNext`/`MoveBack` changes page
 - page content is rebuilt from current state every refresh
+
+## 6.1) External Context Sync: `HasContextChanged`
+
+`WizardPage.HasContextChanged` is an optional callback used to detect changes that happened outside the current wizard page logic.
+
+Typical case:
+
+- user opens full setup screen from wizard
+- setup screen changes values in `Settings.Instance`
+- user returns to wizard
+- active wizard page must sync `WizardState` from `Settings.Instance`
+
+How it works:
+
+1. [WizardScreen.cs](WizardScreen.cs) calls `HasContextChanged` during update while page is active.
+2. If callback returns `true`, wizard triggers a page rebuild/refresh.
+3. Callback should update relevant `WizardState` fields before returning `true`.
+
+When to use it:
+
+- use when page displays values that can be changed by another screen/dialog
+- use when global runtime state can change while wizard stays open
+- do not use for normal in-page actions (those already refresh through action results)
+
+Design guideline:
+
+- keep callback small and deterministic
+- compare old/new values first
+- return `true` only when data actually changed
+- avoid expensive work inside callback
+
+Current startup wizard usage:
+
+- aspect ratio/fullscreen synchronization on aspect-ratio page
+- more-settings page synchronization after returning from setup screen
 
 ## 7) Validation: How Data Validity Is Checked
 

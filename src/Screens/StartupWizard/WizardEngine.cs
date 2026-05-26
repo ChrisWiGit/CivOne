@@ -74,9 +74,9 @@ namespace CivOne.Screens.StartupWizard
 		/// Gets or sets the screen aspect ratio selected in the startup wizard.
 		/// </summary>
 		/// <remarks>
-		/// Defaults to <see cref="AspectRatio.Expand"/> for first-run setup.
+		/// Initialised from <see cref="Settings.Instance"/> and kept in sync by page context checks.
 		/// </remarks>
-		public AspectRatio ScreenAspectRatio { get; set; } = AspectRatio.Expand;
+		public AspectRatio ScreenAspectRatio { get; set; } = Settings.Instance.AspectRatio;
 
 		/// <summary>
 		/// Advances to the next wizard page, up to the last page.

@@ -10,7 +10,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.PortableExecutable;
 using CivOne.Enums;
 using CivOne.IO;
 using CivOne.Services;
@@ -221,7 +220,8 @@ namespace CivOne.Screens.StartupWizard
 					new WizardEntry { Number = 3, Text = ContinueText(), Action = WizardEntryAction.Continue, Hotkey = HotkeyContinue },
 					new WizardEntry { Number = 4, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
 				],
-				EntriesYOffset = 1
+				EntriesYOffset = 1,
+				HasContextChanged = () => SyncMoreSettingsState(state)
 			};
 		}
 
@@ -249,9 +249,42 @@ namespace CivOne.Screens.StartupWizard
 				],
 				Entries = entries,
 				EntriesYOffset = 2,
-				HasContextChanged = () => SyncFullScreenState(state)
+				HasContextChanged = () => SyncAspectRatioSettingsState(state)
 			};
 			
+		}
+
+		private static bool SyncAspectRatioSettingsState(WizardState state)
+		{
+			bool hasChanged = SyncFullScreenState(state);
+
+			AspectRatio aspectRatio = Settings.Instance.AspectRatio;
+			if (state.ScreenAspectRatio == aspectRatio)
+			{
+				return hasChanged;
+			}
+
+			state.ScreenAspectRatio = aspectRatio;
+			return true;
+		}
+
+		private static bool SyncMoreSettingsState(WizardState state)
+		{
+			bool hasChanged = false;
+
+			bool debugMenuEnabled = Settings.Instance.DebugMenu;
+			if (state.DebugMenuEnabled != debugMenuEnabled)
+			{
+				state.DebugMenuEnabled = debugMenuEnabled;
+				hasChanged = true;
+			}
+
+			if (SyncAspectRatioSettingsState(state))
+			{
+				hasChanged = true;
+			}
+
+			return hasChanged;
 		}
 
 		private static bool SyncFullScreenState(WizardState state)
