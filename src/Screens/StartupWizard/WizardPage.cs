@@ -17,5 +17,6 @@ namespace CivOne.Screens.StartupWizard
 		public string[] Lines { get; init; } = [];
 		public IReadOnlyList<WizardEntry> Entries { get; init; } = [];
 		public int EntriesYOffset { get; init; }
+		public IReadOnlyList<(string Label, string Url)> Links { get; init; } = [];
 	}
 }
