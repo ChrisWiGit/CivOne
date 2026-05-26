@@ -377,7 +377,7 @@ namespace CivOne.Screens.StartupWizard
 			_renderingContext.StatusMessage = _state.StatusMessage;
 
 			_renderingDelegate.Render(_state, page, _renderingContext);
-			_renderingDelegate.DrawPageContent(page, _renderingContext);
+
 			// Marker is intentionally not drawn here; HasUpdate draws it after snapshotting
 			// the marker-free page so cursor moves can restore the page from the snapshot.
 		}
