@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using CivOne.Services.Translation;
@@ -148,6 +149,21 @@ namespace CivOne.Services
 			lock (_sync)
 			{
 				return _translationFileRepository.GetAvailableLanguages(storageDirectory, log);
+			}
+		}
+
+		/// <summary>
+		/// Copies translation files from <paramref name="sourceDirectory"/> into the translations
+		/// sub-folder of <paramref name="storageDirectory"/>, normalizing filenames to lowercase.
+		/// Case-conflicting files are skipped and reported via <paramref name="log"/>.
+		/// </summary>
+		/// <returns>Number of files successfully copied.</returns>
+		public static int SyncTranslationFiles(string sourceDirectory, string storageDirectory, Action<string> log = null)
+		{
+			string targetDirectory = Path.Combine(storageDirectory, "translations");
+			lock (_sync)
+			{
+				return _translationFileRepository.SyncFiles(sourceDirectory, targetDirectory, log);
 			}
 		}
 

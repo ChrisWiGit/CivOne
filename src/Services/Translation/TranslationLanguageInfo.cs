@@ -15,6 +15,6 @@ namespace CivOne.Services.Translation
 		/// <summary>
 		/// Returns <see langword="true"/> when <paramref name="postfix"/> matches this language postfix exactly.
 		/// </summary>
-		public bool MatchesPostfix(string postfix) => string.Equals(Postfix, postfix, StringComparison.Ordinal);
+		public bool MatchesPostfix(string postfix) => string.Equals(Postfix, postfix, StringComparison.OrdinalIgnoreCase);
 	}
 }

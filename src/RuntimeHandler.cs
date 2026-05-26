@@ -348,20 +348,8 @@ namespace CivOne
 			}
 
 			string targetDirectory = Path.Combine(runtime.StorageDirectory, "translations");
-			Directory.CreateDirectory(targetDirectory);
-
-			string[] files = Directory.GetFiles(sourceDirectory, "*.txt", SearchOption.TopDirectoryOnly)
-				.Where(path => !string.Equals(Path.GetFileName(path), "all.txt", StringComparison.OrdinalIgnoreCase))
-				.ToArray();
-
-			foreach (string filePath in files)
-			{
-				string fileName = Path.GetFileName(filePath);
-				string targetPath = Path.Combine(targetDirectory, fileName);
-				File.Copy(filePath, targetPath, true);
-			}
-
-			runtime.Log("Copied {0} translation file(s) to {1}", files.Length, targetDirectory);
+			int copiedCount = TranslationServiceFactory.SyncTranslationFiles(sourceDirectory, runtime.StorageDirectory, message => runtime.Log(message));
+			runtime.Log("Copied {0} translation file(s) to {1}", copiedCount, targetDirectory);
 		}
 
 		private static string FindTranslationSourceDirectory()

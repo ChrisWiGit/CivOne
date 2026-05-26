@@ -35,6 +35,17 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
+		public void TryUseLanguage_WhenTranslationFileHasUppercaseName_IsIgnored()
+		{
+			File.WriteAllText(Path.Combine(_translationDirectory, "CIV_GERMAN.TXT"), "HELLO=Hallo");
+
+			bool success = TranslationServiceFactory.TryUseLanguage(_storageDirectory, "german", out var error);
+
+			Assert.False(success);
+			Assert.NotNull(error);
+		}
+
+		[Fact]
 		public void TryUseLanguage_WhenSelectedAgain_ReloadsFileFromDisk()
 		{
 			string filePath = Path.Combine(_translationDirectory, "civ_neutraltest.txt");

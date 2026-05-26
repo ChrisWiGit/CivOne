@@ -85,6 +85,53 @@ namespace CivOne.UnitTests
 			Assert.Contains("Malformed line", error, StringComparison.Ordinal);
 		}
 
+		[Fact]
+		public void SyncFiles_WhenSourceFileUsesUppercaseName_SkipsIt()
+		{
+			string sourceDirectory = Path.Combine(_storageDirectory, "source");
+			string targetDirectory = Path.Combine(_storageDirectory, "target");
+			Directory.CreateDirectory(sourceDirectory);
+			File.WriteAllText(Path.Combine(sourceDirectory, "CIV_GERMAN.TXT"), "HELLO=Hallo");
+
+			int actual = _testee.SyncFiles(sourceDirectory, targetDirectory);
+
+			Assert.Equal(0, actual);
+			Assert.False(File.Exists(Path.Combine(targetDirectory, "civ_german.txt")));
+			Assert.False(File.Exists(Path.Combine(targetDirectory, "CIV_GERMAN.TXT")));
+		}
+
+		[Fact]
+		public void SyncFiles_WhenSourceContainsLowercaseFile_CopiesIt()
+		{
+			string sourceDirectory = Path.Combine(_storageDirectory, "source");
+			string targetDirectory = Path.Combine(_storageDirectory, "target");
+			Directory.CreateDirectory(sourceDirectory);
+			File.WriteAllText(Path.Combine(sourceDirectory, "civ_german.txt"), "HELLO=Hallo");
+
+			int actual = _testee.SyncFiles(sourceDirectory, targetDirectory);
+
+			Assert.Equal(1, actual);
+			Assert.Equal("HELLO=Hallo", File.ReadAllText(Path.Combine(targetDirectory, "civ_german.txt")));
+		}
+
+		[Fact]
+		public void SyncFiles_SkipsObsoleteKeysAndAllTxt()
+		{
+			string sourceDirectory = Path.Combine(_storageDirectory, "source");
+			string targetDirectory = Path.Combine(_storageDirectory, "target");
+			Directory.CreateDirectory(sourceDirectory);
+			File.WriteAllText(Path.Combine(sourceDirectory, "civ_german.txt"), "HELLO=Hallo");
+			File.WriteAllText(Path.Combine(sourceDirectory, "all.txt"), "X=Y");
+			File.WriteAllText(Path.Combine(sourceDirectory, "obsoletekeys.txt"), "OLD=Y");
+
+			int actual = _testee.SyncFiles(sourceDirectory, targetDirectory);
+
+			Assert.Equal(1, actual);
+			Assert.True(File.Exists(Path.Combine(targetDirectory, "civ_german.txt")));
+			Assert.False(File.Exists(Path.Combine(targetDirectory, "all.txt")));
+			Assert.False(File.Exists(Path.Combine(targetDirectory, "obsoletekeys.txt")));
+		}
+
 		public void Dispose()
 		{
 			if (Directory.Exists(_storageDirectory))

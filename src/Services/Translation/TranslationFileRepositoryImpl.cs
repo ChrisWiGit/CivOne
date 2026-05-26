@@ -13,6 +13,61 @@ namespace CivOne.Services.Translation
 	{
 		private const string EqualsPlaceholder = "[EQ]";
 
+		private static readonly HashSet<string> ExcludedFileNames = new(StringComparer.Ordinal)
+		{
+			"all.txt",
+			"obsoletekeys.txt"
+		};
+
+		/// <inheritdoc/>
+		public int SyncFiles(string sourceDirectory, string targetDirectory, Action<string> log = null)
+		{
+			Directory.CreateDirectory(targetDirectory);
+
+			IEnumerable<string> candidates = Directory.GetFiles(sourceDirectory, "*.txt", SearchOption.TopDirectoryOnly)
+				.Where(path =>
+				{
+					string fileName = Path.GetFileName(path);
+
+					// Only accept files that are already lowercase on disk so the runtime
+					// translations folder stays consistent across Windows/Linux/macOS without
+					// platform-specific handling. Files with any uppercase letter (e.g. authoring
+					// artifacts from case-insensitive systems) are skipped.
+					if (!string.Equals(fileName, fileName.ToLowerInvariant(), StringComparison.Ordinal))
+					{
+						log?.Invoke($"Skipping translation file with non-lowercase name: {fileName}");
+						return false;
+					}
+
+					if (ExcludedFileNames.Contains(fileName))
+					{
+						log?.Invoke($"Skipping non-translation file: {fileName}");
+						return false;
+					}
+
+					return true;
+				});
+
+			var groups = candidates.GroupBy(path => Path.GetFileName(path)).ToList();
+
+			int copiedCount = 0;
+			foreach (var group in groups)
+			{
+				string[] groupFiles = [.. group];
+				if (groupFiles.Length > 1)
+				{
+					log?.Invoke($"Translation file conflict (name clash): '{group.Key}' — skipping all: {string.Join(", ", groupFiles.Select(Path.GetFileName))}");
+					continue;
+				}
+
+				string targetPath = Path.Combine(targetDirectory, group.Key);
+				File.Copy(groupFiles[0], targetPath, true);
+				copiedCount++;
+			}
+
+			return copiedCount;
+		}
+
 		/// <inheritdoc/>
 		public IReadOnlyList<TranslationLanguageInfo> GetAvailableLanguages(string storageDirectory, Action<string> log = null)
 		{
@@ -28,7 +83,8 @@ namespace CivOne.Services.Translation
 			}
 
 			List<TranslationLanguageInfo> output = [];
-			foreach (string filePath in Directory.EnumerateFiles(translationDirectory, "*.txt", SearchOption.TopDirectoryOnly)
+			foreach (string filePath in Directory.EnumerateFiles(translationDirectory, "*", SearchOption.TopDirectoryOnly)
+				.Where(path => string.Equals(Path.GetExtension(path), ".txt", StringComparison.OrdinalIgnoreCase))
 				.OrderBy(path => path, StringComparer.OrdinalIgnoreCase))
 			{
 				string fileName = Path.GetFileName(filePath);
