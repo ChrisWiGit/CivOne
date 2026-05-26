@@ -743,10 +743,9 @@ namespace CivOne.Screens
 			}
 			else
 			{
-				menuItems.AddRange(availableLanguages.Select(language => Translate(language.Postfix)) // only way of translating a language name.
-					.Select(postfix => MenuItem.Create(postfix)
-						.OnSelect((s, a) => SelectLanguage(postfix))
-						.SetActive(() => string.Equals(TranslationServiceFactory.ActiveLanguagePostfix, postfix, StringComparison.Ordinal))));
+				menuItems.AddRange(availableLanguages.Select(language => MenuItem.Create(TranslationServiceFactory.GetLanguageDisplayName(language, Translate))
+					.OnSelect((s, a) => SelectLanguage(language.Postfix))
+					.SetActive(() => string.Equals(TranslationServiceFactory.ActiveLanguagePostfix, language.Postfix, StringComparison.OrdinalIgnoreCase))));
 			}
 
 			menuItems.Add(MenuItem.Create(Translate("Back")));

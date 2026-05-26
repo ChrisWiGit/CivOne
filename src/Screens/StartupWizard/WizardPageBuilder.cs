@@ -87,15 +87,6 @@ namespace CivOne.Screens.StartupWizard
 			};
 		}
 
-		private String UpperCaseFirstLetter(String s)
-		{
-			if (string.IsNullOrEmpty(s))
-			{
-				return string.Empty;
-			}
-			return char.ToUpper(s[0]) + s.Substring(1);
-		}
-
 		private WizardPage BuildLanguagePage(WizardState state)
 		{
 			List<WizardEntry> entries = [];
@@ -109,14 +100,14 @@ namespace CivOne.Screens.StartupWizard
 				Value = string.Empty
 			});
 
-			foreach (string languagePostfix in _availableLanguages.Select(language => language.Postfix))
+			foreach (TranslationLanguageInfo language in _availableLanguages)
 			{
 				entries.Add(new WizardEntry
 				{
 					Number = number++,
-					Text = UpperCaseFirstLetter(T(languagePostfix)),
+					Text = TranslationServiceFactory.GetLanguageDisplayName(language, T),
 					Action = WizardEntryAction.SelectLanguage,
-					Value = languagePostfix
+					Value = language.Postfix
 				});
 			}
 
@@ -140,8 +131,8 @@ namespace CivOne.Screens.StartupWizard
 			}
 
 			string activeLanguage = string.IsNullOrEmpty(state.SelectedLanguagePostfix)
-				? T("Identity")
-				: T(state.SelectedLanguagePostfix);
+				? T("Original (English)")
+				: TranslationServiceFactory.GetLanguageDisplayName(state.SelectedLanguagePostfix, _availableLanguages, T);
 
 			return new WizardPage
 			{

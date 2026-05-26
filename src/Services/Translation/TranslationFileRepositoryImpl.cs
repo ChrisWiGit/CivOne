@@ -12,6 +12,7 @@ namespace CivOne.Services.Translation
 	public class TranslationFileRepositoryImpl : ITranslationFileRepository
 	{
 		private const string EqualsPlaceholder = "[EQ]";
+		private const string LanguageDisplayNameKey = "__LANGUAGE_DISPLAYNAME__";
 
 		private static readonly HashSet<string> ExcludedFileNames = new(StringComparer.Ordinal)
 		{
@@ -93,13 +94,14 @@ namespace CivOne.Services.Translation
 					continue;
 				}
 
-				if (!TryLoadTranslations(filePath, out _, out string error))
+				if (!TryLoadTranslations(filePath, out IReadOnlyDictionary<string, string> translations, out string error))
 				{
 					log?.Invoke($"Skipping translation file '{fileName}': {error}");
 					continue;
 				}
 
-				output.Add(new TranslationLanguageInfo(postfix, filePath));
+				string displayName = TryGetDisplayName(postfix, translations);
+				output.Add(new TranslationLanguageInfo(postfix, filePath, displayName));
 			}
 
 			return output;
@@ -183,6 +185,44 @@ namespace CivOne.Services.Translation
 		}
 
 		private static string GetTranslationDirectory(string storageDirectory) => Path.Combine(storageDirectory, "translations");
+
+		private static string TryGetDisplayName(string postfix, IReadOnlyDictionary<string, string> translations)
+		{
+			if (translations is null)
+			{
+				return null;
+			}
+
+			if (TryGetNonEmptyValue(translations, LanguageDisplayNameKey, out string displayName))
+			{
+				return displayName;
+			}
+
+			string legacyKey = NormalizeKey(postfix);
+			if (TryGetNonEmptyValue(translations, legacyKey, out displayName))
+			{
+				return displayName;
+			}
+
+			return null;
+		}
+
+		private static bool TryGetNonEmptyValue(IReadOnlyDictionary<string, string> translations, string key, out string value)
+		{
+			value = null;
+			if (!translations.TryGetValue(key, out string rawValue))
+			{
+				return false;
+			}
+
+			if (string.IsNullOrWhiteSpace(rawValue))
+			{
+				return false;
+			}
+
+			value = rawValue.Trim();
+			return true;
+		}
 
 		private static string NormalizeKey(string key) => key?.Trim().ToUpperInvariant() ?? string.Empty;
 

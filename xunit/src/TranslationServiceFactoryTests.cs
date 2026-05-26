@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using CivOne.Services;
+using CivOne.Services.Translation;
 using Xunit;
 
 namespace CivOne.UnitTests
@@ -109,6 +110,36 @@ namespace CivOne.UnitTests
 			Assert.True(firstSuccess);
 			Assert.Single(observer.Notifications);
 			Assert.Equal("neutraltest", observer.Notifications[0]);
+		}
+
+		[Fact]
+		public void GetLanguageDisplayName_PrefersDisplayNameFromLanguageFile()
+		{
+			TranslationLanguageInfo language = new("german", "civ_german.txt", "Deutsch");
+
+			string actual = TranslationServiceFactory.GetLanguageDisplayName(language, _ => "German");
+
+			Assert.Equal("Deutsch", actual);
+		}
+
+		[Fact]
+		public void GetLanguageDisplayName_UsesTranslatorWhenDisplayNameMissing()
+		{
+			TranslationLanguageInfo language = new("german", "civ_german.txt");
+
+			string actual = TranslationServiceFactory.GetLanguageDisplayName(language, _ => "German");
+
+			Assert.Equal("German", actual);
+		}
+
+		[Fact]
+		public void GetLanguageDisplayName_WhenTranslatorReturnsEmpty_UsesPostfix()
+		{
+			TranslationLanguageInfo language = new("german", "civ_german.txt");
+
+			string actual = TranslationServiceFactory.GetLanguageDisplayName(language, _ => string.Empty);
+
+			Assert.Equal("german", actual);
 		}
 
 		protected virtual void Dispose(bool disposing)

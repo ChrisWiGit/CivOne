@@ -138,10 +138,10 @@ namespace CivOne.Screens
 			var postfixes = new List<string> { string.Empty };
 			var labels = new List<string> { translate("Identity (default)") };
 
-			foreach (var lang in languages.Select(lang => lang.Postfix))
+			foreach (TranslationLanguageInfo language in languages)
 			{
-				postfixes.Add(lang);
-				labels.Add(translate(lang));
+				postfixes.Add(language.Postfix);
+				labels.Add(TranslationServiceFactory.GetLanguageDisplayName(language, translate));
 			}
 
 			int defaultIndex = postfixes.FindIndex(p =>
