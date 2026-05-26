@@ -87,6 +87,13 @@ namespace CivOne
 		private static extern void SDL_DestroyWindow(IntPtr handle);
 
 		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
+		private static extern int SDL_SetClipboardText(byte[] text);
+
+		private static int SDL_SetClipboardText(string text) => SDL_SetClipboardText((text ?? string.Empty).ToBytes());
+
+		public static bool TrySetClipboardText(string text) => SDL_SetClipboardText(text) == 0;
+
+		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void SDL_ShowCursor(int toggle);
 
 		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]

@@ -40,6 +40,8 @@ namespace CivOne
 		string WindowTitle { set; }
 		void PlaySound(string file);
 		void StopSound();
+		bool TryOpenUrl(string url, out string errorMessage);
+		bool TryCopyToClipboard(string text, out string errorMessage);
 		void Quit();
 	}
 }

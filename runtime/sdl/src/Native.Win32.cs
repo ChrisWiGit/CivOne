@@ -250,5 +250,36 @@ namespace CivOne
 					Marshal.FreeHGlobal(fileBuffer);
 			}
 		}
+
+		private static bool Win32TryOpenUrl(string url, out string errorMessage)
+		{
+			try
+			{
+				System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+				{
+					FileName = url,
+					UseShellExecute = true
+				});
+				errorMessage = string.Empty;
+				return true;
+			}
+			catch (Exception ex)
+			{
+				errorMessage = ex.Message;
+				return false;
+			}
+		}
+
+		private static bool Win32TryCopyToClipboard(string text, out string errorMessage)
+		{
+			if (SDL.TrySetClipboardText(text))
+			{
+				errorMessage = string.Empty;
+				return true;
+			}
+
+			errorMessage = SDL.GetSdlErrorMessage();
+			return false;
+		}
 	}
 }
