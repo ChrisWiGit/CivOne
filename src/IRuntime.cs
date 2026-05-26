@@ -32,6 +32,8 @@ namespace CivOne
 		IBitmap Cursor { set; }
 		int CanvasWidth { get; }
 		int CanvasHeight { get; }
+		int WindowWidth { get; }
+		int WindowHeight { get; }
 		void Log(string text, params object[] parameters);
 		string BrowseFolder(string caption = "");
 		string FileChooser(bool save, string title, string initialFileName, string filter);

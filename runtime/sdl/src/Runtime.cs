@@ -22,6 +22,7 @@ namespace CivOne
 		public Profile Profile { get; }
 		
 		internal static Size CanvasSize { get; set; }
+		internal static Size WindowSize { get; set; }
 
 		internal bool SignalQuit { get; private set; }
 

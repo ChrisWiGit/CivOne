@@ -74,6 +74,11 @@ namespace CivOne
 
 		private Size SetCanvasSize()
 		{
+			if (RuntimeHandler.IsFullWindowCanvasRequested)
+			{
+				return new Size(Width, Height);
+			}
+
 			if (Settings.AspectRatio != AspectRatio.Expand)
 			{
 				return DefaultCanvasSize;

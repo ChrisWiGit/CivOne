@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Drawing;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -23,6 +24,8 @@ namespace CivOne.Screens
 		
 		protected int CanvasWidth => RuntimeHandler.Instance.CanvasWidth;
 		protected int CanvasHeight => RuntimeHandler.Instance.CanvasHeight;
+		protected static Size WindowSize => new(RuntimeHandler.WindowWidth, RuntimeHandler.WindowHeight);
+		public virtual bool UseFullWindowCanvas => false;
 		private bool CanExpand => Common.HasAttribute<ScreenResizeable>(this);
 		private bool SizeChanged => (this.Width() != CanvasWidth || this.Height() != CanvasHeight);
 

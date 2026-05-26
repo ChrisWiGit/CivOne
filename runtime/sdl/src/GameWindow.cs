@@ -54,6 +54,7 @@ namespace CivOne
 		private void Load(object sender, EventArgs args)
 		{
 			Runtime.CanvasSize = SetCanvasSize();
+			Runtime.WindowSize = ClientRectangle;
 			_runtime.InvokeInitialize();
 		}
 
@@ -69,6 +70,7 @@ namespace CivOne
 			_debounceService.ExecuteDueCallbacks();
 			
 			Runtime.CanvasSize = SetCanvasSize();
+			Runtime.WindowSize = ClientRectangle;
 			if (_runtime.SignalQuit)
 			{
 				_debounceService.FlushPendingCallbacks();
