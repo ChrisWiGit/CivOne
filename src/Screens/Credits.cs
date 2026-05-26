@@ -33,6 +33,7 @@ namespace CivOne.Screens
 	internal class Credits : BaseScreen, ITranslationLanguageObserver
 	{
 		private const int NOISE_COUNT = 40;
+		private const int MENU_Y_OFFSET = 58;
 		
 		private readonly int[] SHOW_INTRO_LINE = { 312, 279, 254, 221, 196, 171, 146, 121, 96, 71, 46, 21, -4, -37, -62, -95, -120, -145, -170, -195, -220, -245, -270, -295 };
 		private readonly int[] HIDE_INTRO_LINE = { 287, 229, -29, -87, -315 };
@@ -214,7 +215,7 @@ namespace CivOne.Screens
 				}
 				
 				// Draw menu background
-				int mx = ((Width - 120) / 2), my = Height - 62;
+				int mx = ((Width - 120) / 2), my = Height - (MENU_Y_OFFSET + 4);
 				this.FillRectangle(mx, my, 122, 57, 5)
 					.FillRectangle(mx + 1, my + 1, 120, 55, _menuColours[0])
 					.FillRectangle(mx + 1, my + 2, 119, 54, _menuColours[1])
@@ -271,7 +272,7 @@ namespace CivOne.Screens
 			Menu menu = new Menu("MainMenu", Palette)
 			{
 					X = ((Width - 120) / 2) + 3,
-				Y = Height - 58,
+				Y = Height - MENU_Y_OFFSET,
 				MenuWidth = 116,
 				ActiveColour = 11,
 				TextColour = 5,
@@ -451,7 +452,7 @@ namespace CivOne.Screens
 			foreach (Menu menu in Common.Screens.Where(x => x is Menu && (x as Menu).Id == "MainMenu"))
 			{
 				menu.X = ((Width - 120) / 2) + 3;
-				menu.Y = Height - 63;
+				menu.Y = Height - MENU_Y_OFFSET;
 				menu.ForceUpdate();
 			}
 		}
