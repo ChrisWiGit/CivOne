@@ -159,6 +159,24 @@
 			"internalConsoleOptions": "openOnSessionStart"
 		},
 		{
+			"name": "Test Startup Wizard (forced)",
+			"type": "coreclr",
+			"request": "launch",
+			"preLaunchTask": "build",
+			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
+			"args": [
+				"setup",
+				"--skip-credits",
+				"--skip-intro",
+				"--no-sound",
+				"--no-data-check"
+			],
+			"cwd": "${workspaceRoot}",
+			"stopAtEntry": false,
+			"console": "internalConsole",
+			"internalConsoleOptions": "openOnSessionStart"
+		},
+		{
 			"name": "Launch Demo",
 			"type": "coreclr",
 			"request": "launch",
