@@ -318,8 +318,8 @@ namespace CivOne.Screens.StartupWizard
 
 		private void RecordLinkArea(string url, int row, int startCol)
 		{
-			int glyphWidth = (int)(ModernDos8x16.GlyphWidth * _scale);
-			int glyphHeight = (int)(ModernDos8x16.GlyphHeight * _scale);
+			int glyphWidth = (int)(ModernDos8X16.GlyphWidth * _scale);
+			int glyphHeight = (int)(ModernDos8X16.GlyphHeight * _scale);
 			if (glyphWidth <= 0 || glyphHeight <= 0)
 			{
 				return;
@@ -532,8 +532,8 @@ namespace CivOne.Screens.StartupWizard
 			_linkAreas.Clear();
 			_glyphAreas.Clear();
 			WizardPage page = BuildPage();
-			int baseWidth = TargetCols * ModernDos8x16.GlyphWidth;
-			int baseHeight = TargetRows * ModernDos8x16.GlyphHeight;
+			int baseWidth = TargetCols * ModernDos8X16.GlyphWidth;
+			int baseHeight = TargetRows * ModernDos8X16.GlyphHeight;
 
 			_cols = TargetCols;
 			_rows = TargetRows;
@@ -646,8 +646,8 @@ namespace CivOne.Screens.StartupWizard
 		/// </summary>
 		private void DrawMenuEntries(WizardPage page)
 		{
-			int gh = (int)(ModernDos8x16.GlyphHeight * _scale);
-			int gw = (int)(ModernDos8x16.GlyphWidth * _scale);
+			int gh = (int)(ModernDos8X16.GlyphHeight * _scale);
+			int gw = (int)(ModernDos8X16.GlyphWidth * _scale);
 			int menuRow = _rows - page.Entries.Count - 4 + page.EntriesYOffset;
 			
 			// Calculate max width needed for all entries ("N. Text").
@@ -694,8 +694,8 @@ namespace CivOne.Screens.StartupWizard
 		/// </summary>
 		private void CharPut(string text, int col, int row, byte colour)
 		{
-			int glyphW = (int)(ModernDos8x16.GlyphWidth * _scale);
-			int glyphH = (int)(ModernDos8x16.GlyphHeight * _scale);
+			int glyphW = (int)(ModernDos8X16.GlyphWidth * _scale);
+			int glyphH = (int)(ModernDos8X16.GlyphHeight * _scale);
 			DrawDosText(text, _box.X + col * glyphW, _box.Y + row * glyphH, colour);
 		}
 		/// <summary>
@@ -728,8 +728,8 @@ namespace CivOne.Screens.StartupWizard
 				return;
 			}
 
-			int glyphWidth = (int)(ModernDos8x16.GlyphWidth * _scale);
-			int glyphHeight = (int)(ModernDos8x16.GlyphHeight * _scale);
+			int glyphWidth = (int)(ModernDos8X16.GlyphWidth * _scale);
+			int glyphHeight = (int)(ModernDos8X16.GlyphHeight * _scale);
 			if (glyphWidth <= 0 || glyphHeight <= 0)
 			{
 				return;
@@ -810,8 +810,8 @@ namespace CivOne.Screens.StartupWizard
 		private void DrawDosText(string text, int x, int y, byte colour)
 		{
 			string output = text ?? string.Empty;
-			int glyphWidth = (int)(ModernDos8x16.GlyphWidth * _scale);
-			int glyphHeight = (int)(ModernDos8x16.GlyphHeight * _scale);
+			int glyphWidth = (int)(ModernDos8X16.GlyphWidth * _scale);
+			int glyphHeight = (int)(ModernDos8X16.GlyphHeight * _scale);
 
 			for (int i = 0; i < output.Length; i++)
 			{
