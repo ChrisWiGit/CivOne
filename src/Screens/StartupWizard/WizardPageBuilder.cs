@@ -20,8 +20,8 @@ namespace CivOne.Screens.StartupWizard
 {
 	internal sealed class WizardPageBuilder(Func<ITranslationService> translationServiceAccessor, IReadOnlyList<TranslationLanguageInfo> availableLanguages) : IWizardPageBuilder
 	{
-		private static char HotkeyContinue = 'c';
-		private static char HotkeyBack = 'b';
+		private static readonly char HotkeyContinue = 'c';
+		private static readonly char HotkeyBack = 'b';
 		private readonly Func<ITranslationService> _translationServiceAccessor = translationServiceAccessor ?? throw new ArgumentNullException(nameof(translationServiceAccessor));
 		private readonly IReadOnlyList<TranslationLanguageInfo> _availableLanguages = availableLanguages ?? throw new ArgumentNullException(nameof(availableLanguages));
 
@@ -229,7 +229,7 @@ namespace CivOne.Screens.StartupWizard
 		{
 			List<WizardEntry> entries =
 			[
-				CreateFullScreenEntry(1, !state.FullScreenEnabled, TF("Fullscreen: ^{0}^", state.FullScreenEnabled.YesNo())),
+				CreateFullScreenEntry(1, true, !state.FullScreenEnabled, TF("Fullscreen: ^{0}^", state.FullScreenEnabled.YesNo())),
 				CreateAspectRatioEntry(2, AspectRatio.Auto, T("Auto - stretch image, may distort")),
 				CreateAspectRatioEntry(3, AspectRatio.Fixed, T("Fixed - keep ratio, may add black borders")),
 				CreateAspectRatioEntry(4, AspectRatio.Scaled, T("Scaled - fit resolution, may look blurry")),
@@ -262,12 +262,13 @@ namespace CivOne.Screens.StartupWizard
 			Hotkey = null
 		};
 
-		private WizardEntry CreateFullScreenEntry(int number, bool enabled, string text) => new()
+		private WizardEntry CreateFullScreenEntry(int number, bool entryEnabled, bool targetValue, string text) => new()
 		{
 			Number = number,
 			Text = text,
 			Action = WizardEntryAction.SelectFullScreen,
-			Value = enabled.ToString(),
+			Value = targetValue.ToString(),
+			Enabled = entryEnabled,
 			Hotkey = 'f'
 		};
 
