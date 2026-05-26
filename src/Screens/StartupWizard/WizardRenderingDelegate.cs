@@ -8,7 +8,9 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Text;
 using CivOne.Graphics;
 using CivOne.Screens.StartupWizard.DosFont;
 
@@ -276,21 +278,79 @@ namespace CivOne.Screens.StartupWizard
 			string output = text ?? string.Empty;
 			int glyphWidth = (int)(ModernDos8X16.GlyphWidth * context.Scale);
 			int glyphHeight = (int)(ModernDos8X16.GlyphHeight * context.Scale);
+			byte highlightColour = colour == ColourMuted ? colour : ColourStatus;
+			var segments = ParseColourSegments(output, colour, highlightColour);
 
-			for (int i = 0; i < output.Length; i++)
+			int visibleLength = 0;
+			foreach ((string segmentText, _) in segments)
+			{
+				visibleLength += segmentText.Length;
+			}
+
+			for (int i = 0; i < visibleLength; i++)
 			{
 				context.GlyphAreas.Add(new Rectangle(x + (i * glyphWidth), y, glyphWidth, glyphHeight));
 			}
 
-			ModernDosFontRenderer.DrawString(output, x, y, context.Scale, (px, py) =>
+			int drawX = x;
+			foreach ((string segmentText, byte segmentColour) in segments)
 			{
-				if (px < 0 || py < 0 || px >= _screen.Bitmap.Width || py >= _screen.Bitmap.Height)
+				if (segmentText.Length == 0)
+				{
+					continue;
+				}
+
+				ModernDosFontRenderer.DrawString(segmentText, drawX, y, context.Scale, (px, py) =>
+				{
+					if (px < 0 || py < 0 || px >= _screen.Bitmap.Width || py >= _screen.Bitmap.Height)
+					{
+						return;
+					}
+
+					_screen.Bitmap[px, py] = segmentColour;
+				});
+
+				drawX += segmentText.Length * glyphWidth;
+			}
+		}
+
+		private static (string Text, byte Colour)[] ParseColourSegments(string text, byte baseColour, byte highlightColour)
+		{
+			if (string.IsNullOrEmpty(text))
+			{
+				return [];
+			}
+
+			bool highlighted = false;
+			StringBuilder segment = new();
+			var result = new List<(string Text, byte Colour)>();
+
+			void FlushSegment()
+			{
+				if (segment.Length == 0)
 				{
 					return;
 				}
 
-				_screen.Bitmap[px, py] = colour;
-			});
+				byte segmentColour = highlighted ? highlightColour : baseColour;
+				result.Add((segment.ToString(), segmentColour));
+				segment.Clear();
+			}
+
+			foreach (char c in text)
+			{
+				if (c == '^')
+				{
+					FlushSegment();
+					highlighted = !highlighted;
+					continue;
+				}
+
+				segment.Append(c);
+			}
+
+			FlushSegment();
+			return [.. result];
 		}
 	}
 }

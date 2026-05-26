@@ -288,6 +288,27 @@ Important details:
 - links are clickable and can open browser
 - resize handling is enabled on [WizardScreen.cs](WizardScreen.cs)
 
+### Inline text highlight markers
+
+The wizard renderer supports inline highlight markers with `^`.
+
+- `^` toggles highlight on/off inside one string
+- marker characters are not drawn
+- highlighted text uses the status/highlight color
+- disabled menu rows keep muted color (no bright highlight)
+
+Examples:
+
+- `Fullscreen: ^{0}^`
+- `Expand ^(default)^ - fill screen, borders possible`
+
+Translation note:
+
+- Keep markers in translated values too, for example: `Vollbild: ^{0}^`
+- Markers can wrap translated words directly, for example: `Expand ^(Standard)^ ...`
+
+Implementation reference: [WizardRenderingDelegate.cs](WizardRenderingDelegate.cs)
+
 ## 12) Dependency Injection and Testability
 
 The wizard uses constructor-injected interfaces for core behavior:
