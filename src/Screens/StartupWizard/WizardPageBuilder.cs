@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.PortableExecutable;
+using CivOne.Enums;
 using CivOne.IO;
 using CivOne.Services;
 using CivOne.Services.Translation;
@@ -33,8 +34,9 @@ namespace CivOne.Screens.StartupWizard
 				0 => BuildLanguagePage(engine),
 				1 => BuildWelcomePage(),
 				2 => BuildDataFolderPage(engine),
-				3 => BuildSoundPage(engine),
-				4 => BuildFinalPage(),
+				3 => BuildAspectRatioPage(engine),
+				4 => BuildSoundPage(engine),
+				5 => BuildFinalPage(),
 				_ => BuildLanguagePage(engine)
 			};
 		}
@@ -200,6 +202,43 @@ namespace CivOne.Screens.StartupWizard
 				]
 			};
 		}
+
+		private WizardPage BuildAspectRatioPage(WizardState engine)
+		{
+			List<WizardEntry> entries =
+			[
+				CreateAspectRatioEntry(1, AspectRatio.Auto, T("Auto - stretch image, may distort")),
+				CreateAspectRatioEntry(2, AspectRatio.Fixed, T("Fixed - keep ratio, may add black borders")),
+				CreateAspectRatioEntry(3, AspectRatio.Scaled, T("Scaled - fit resolution, may look blurry")),
+				CreateAspectRatioEntry(4, AspectRatio.ScaledFixed, T("ScaledFixed - keep ratio, blur and borders possible")),
+				CreateAspectRatioEntry(5, AspectRatio.Expand, T("Expand (default) - fill screen, borders possible")),
+				new WizardEntry { Number = 6, Text = ContinueText(), Action = WizardEntryAction.Continue, Hotkey = HotkeyContinue },
+				new WizardEntry { Number = 7, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
+			];
+
+
+			return new WizardPage
+			{
+				Title = T("Startup Wizard: Screen Aspect Ratio"),
+				Lines =
+				[
+					T("Choose screen aspect ratio."),
+					TF("Current: {0}", engine.ScreenAspectRatio.ToText())
+				],
+				Entries = entries,
+				EntriesYOffset = 3
+			};
+			
+		}
+
+		private WizardEntry CreateAspectRatioEntry(int number, AspectRatio aspectRatio, string explanation) => new()
+		{
+			Number = number,
+			Text = explanation,
+			Action = WizardEntryAction.SelectAspectRatio,
+			Value = aspectRatio.ToString(),
+			Hotkey = null
+		};
 
 		private string ContinueText() => T("Continue");
 		private string BackText() => T("Back");

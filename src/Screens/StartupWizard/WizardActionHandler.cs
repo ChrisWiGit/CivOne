@@ -45,10 +45,17 @@ namespace CivOne.Screens.StartupWizard
 				case WizardEntryAction.SelectLanguage:
 					ApplyLanguage(entry.Value ?? string.Empty, state);
 					return new WizardActionResult(ShouldRefresh: true);
+					case WizardEntryAction.SelectAspectRatio:
+						ApplyAspectRatio(entry.Value, state);
+						return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.BrowseDataFolder:
 					HandleBrowseDataFolder(state);
 					return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.Continue:
+						if (state.PageIndex == 3)
+						{
+							Settings.Instance.AspectRatio = state.ScreenAspectRatio;
+						}
 					state.MoveNext();
 					state.StatusMessage = string.Empty;
 					return new WizardActionResult(ShouldRefresh: true);
@@ -134,6 +141,18 @@ namespace CivOne.Screens.StartupWizard
 
 			Resources.ClearInstance();
 			engine.StatusMessage = T("Data files copied successfully.");
+		}
+
+		private void ApplyAspectRatio(string value, WizardState state)
+		{
+			if (!Enum.TryParse(value, ignoreCase: true, out AspectRatio aspectRatio))
+			{
+				return;
+			}
+
+			state.ScreenAspectRatio = aspectRatio;
+			Settings.Instance.AspectRatio = aspectRatio;
+			state.StatusMessage = TF("Aspect ratio set to {0}.", aspectRatio.ToText());
 		}
 
 		private string T(string key) => _translationServiceAccessor().Translate(key);

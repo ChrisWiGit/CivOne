@@ -211,8 +211,12 @@ namespace CivOne.Screens
 					Translate("Override international font simulation behavior."),
 					Translate("Auto detects, Yes forces simulation, No disables it."))
 				.OnSelect(GotoMenu(SimulateInternationalFontMenu)),
-			MenuItem.Create(TranslateFormatted("Aspect Ratio: {0}", Settings.AspectRatio.ToText())).OnSelect(GotoMenu(AspectRatioMenu)),
-			MenuItem.Create(TranslateFormatted("Expand Size: {0}", ExpandSizeText())).OnSelect(GotoMenu(ExpandCanvasSizeMenu)),
+			MenuItem.Create(TranslateFormatted("Aspect Ratio: {0}", Settings.AspectRatio.ToText()))
+					.WithDescription(Translate("Use different aspect ratios."))
+					.OnSelect(GotoMenu(AspectRatioMenu)),
+			MenuItem.Create(TranslateFormatted("Expand Size: {0}", ExpandSizeText()))
+					.WithDescription(Translate("Resolution when using Expand ratio."))
+					.OnSelect(GotoMenu(ExpandCanvasSizeMenu)),
 			MenuItem.Create(TranslateFormatted("Full Screen: {0}", Settings.FullScreen.YesNo())).OnSelect(GotoMenu(FullScreenMenu)),
 			MenuItem.Create(TranslateFormatted("Window Size: {0}", WindowSizeText())).OnSelect(GotoMenu(WindowSizeMenu)),
 			MenuItem.Create(TranslateFormatted("Window Scale: {0}x", Settings.Scale)).OnSelect(GotoMenu(WindowScaleMenu)),
@@ -240,11 +244,21 @@ namespace CivOne.Screens
 		);
 
 		private void AspectRatioMenu() => CreateMenu("Aspect Ratio", GotoMenu(SettingsMenu, 3),
-			MenuItem.Create(TranslateFormatted("{0} (default)", Auto.ToText())).OnSelect((s, a) => Settings.AspectRatio = Auto).SetActive(() => Settings.AspectRatio == Auto),
-			MenuItem.Create(Fixed.ToText()).OnSelect((s, a) => Settings.AspectRatio = Fixed).SetActive(() => Settings.AspectRatio == Fixed),
-			MenuItem.Create(Scaled.ToText()).OnSelect((s, a) => Settings.AspectRatio = Scaled).SetActive(() => Settings.AspectRatio == Scaled),
-			MenuItem.Create(ScaledFixed.ToText()).OnSelect((s, a) => Settings.AspectRatio = ScaledFixed).SetActive(() => Settings.AspectRatio == ScaledFixed),
-			MenuItem.Create(AspectRatio.Expand.ToText()).OnSelect((s, a) => Settings.AspectRatio = AspectRatio.Expand).SetActive(() => Settings.AspectRatio == AspectRatio.Expand),
+			MenuItem.Create(TranslateFormatted("{0} (default)", Auto.ToText())).OnSelect((s, a) => Settings.AspectRatio = Auto)
+				.WithDescription(TranslateArray("Scale without correct aspect ratio\nThis may cause distortion."))
+				.SetActive(() => Settings.AspectRatio == Auto),
+			MenuItem.Create(Fixed.ToText()).OnSelect((s, a) => Settings.AspectRatio = Fixed)
+				.WithDescription(TranslateArray("Scale with correct aspect ratio\nThis may cause black borders."))
+				.SetActive(() => Settings.AspectRatio == Fixed),
+			MenuItem.Create(Scaled.ToText()).OnSelect((s, a) => Settings.AspectRatio = Scaled)
+				.WithDescription(TranslateArray("Scale to resolution\nThis may cause blurry image."))
+				.SetActive(() => Settings.AspectRatio == Scaled),
+			MenuItem.Create(ScaledFixed.ToText()).OnSelect((s, a) => Settings.AspectRatio = ScaledFixed)
+				.WithDescription(TranslateArray("Scale with correct aspect ratio\nThis may cause blurry\n and black borders."))
+				.SetActive(() => Settings.AspectRatio == ScaledFixed),
+			MenuItem.Create(AspectRatio.Expand.ToText()).OnSelect((s, a) => Settings.AspectRatio = AspectRatio.Expand)
+				.WithDescription(TranslateArray("Expand image to fit the screen.\nSome screens may show borders."))
+				.SetActive(() => Settings.AspectRatio == AspectRatio.Expand),
 			MenuItem.Create(Translate("Back"))
 		);
 

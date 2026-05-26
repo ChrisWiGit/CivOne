@@ -20,7 +20,7 @@ namespace CivOne.Screens.StartupWizard
 	/// </remarks>
 	internal sealed class WizardState(string selectedLanguagePostfix)
 	{
-		private const int LastPageIndex = 4;
+		private const int LastPageIndex = 5;
 
 		/// <summary>
 		/// Gets the zero-based index of the currently active wizard page.
@@ -59,6 +59,14 @@ namespace CivOne.Screens.StartupWizard
 		/// Initialised from <see cref="Settings.Instance"/> and persisted back when toggled.
 		/// </remarks>
 		public bool SoundEnabled { get; set; } = Settings.Instance.Sound != GameOption.Off;
+
+		/// <summary>
+		/// Gets or sets the screen aspect ratio selected in the startup wizard.
+		/// </summary>
+		/// <remarks>
+		/// Defaults to <see cref="AspectRatio.Expand"/> for first-run setup.
+		/// </remarks>
+		public AspectRatio ScreenAspectRatio { get; set; } = AspectRatio.Expand;
 
 		/// <summary>
 		/// Advances to the next wizard page, up to the last page.

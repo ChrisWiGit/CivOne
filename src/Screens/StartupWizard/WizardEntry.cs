@@ -25,6 +25,12 @@ namespace CivOne.Screens.StartupWizard
 		BrowseDataFolder,
 
 		/// <summary>
+		/// Selects the screen aspect ratio used by the game renderer.
+		/// The chosen value is stored in <see cref="WizardEntry.Value"/>.
+		/// </summary>
+		SelectAspectRatio,
+
+		/// <summary>
 		/// Advances the wizard to the next page.
 		/// </summary>
 		Continue,
@@ -98,6 +104,8 @@ namespace CivOne.Screens.StartupWizard
 		/// <remarks>
 		/// Used by <see cref="WizardEntryAction.SelectLanguage"/> entries to carry the
 		/// language postfix (e.g. <c>"german"</c>) that identifies the chosen translation.
+		/// Also used by <see cref="WizardEntryAction.SelectAspectRatio"/> entries to carry
+		/// the selected aspect ratio name.
 		/// For all other actions this property is <see langword="null"/>.
 		/// </remarks>
 		public string Value { get; init; }
