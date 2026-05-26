@@ -18,6 +18,55 @@ namespace CivOne
 	{
 		private SDL.Texture CursorTexture = null;
 
+		/// <summary>
+		/// Cached SDL textures for each layer of the most recent <see cref="Runtime.InvokeDraw"/> result.
+		/// Re-uploading large bytemaps to GPU memory on every frame is the dominant cost when the
+		/// canvas is at full display resolution (e.g. fullscreen wizard). The cache is invalidated
+		/// whenever layer content actually changes; pure cursor moves reuse the existing textures.
+		/// </summary>
+		private SDL.Texture[] _cachedLayerTextures = null;
+		private bool _layerTexturesDirty = true;
+
+		/// <summary>
+		/// Marks the cached layer textures as needing a rebuild on the next render.
+		/// Called whenever <see cref="Runtime.InvokeDraw"/> has run and may have mutated layer bitmaps.
+		/// </summary>
+		private void InvalidateLayerTextureCache() => _layerTexturesDirty = true;
+
+		private void DisposeCachedLayerTextures()
+		{
+			if (_cachedLayerTextures == null) return;
+			foreach (SDL.Texture texture in _cachedLayerTextures)
+			{
+				texture?.Dispose();
+			}
+			_cachedLayerTextures = null;
+		}
+
+		private void RebuildLayerTextureCacheIfNeeded()
+		{
+			if (!_layerTexturesDirty && _cachedLayerTextures != null
+				&& _runtime.Layers != null
+				&& _cachedLayerTextures.Length == _runtime.Layers.Length)
+			{
+				return;
+			}
+
+			DisposeCachedLayerTextures();
+			if (_runtime.Layers == null)
+			{
+				_layerTexturesDirty = false;
+				return;
+			}
+
+			_cachedLayerTextures = new SDL.Texture[_runtime.Layers.Length];
+			for (int i = 0; i < _runtime.Layers.Length; i++)
+			{
+				_cachedLayerTextures[i] = CreateTexture(_runtime.Palette, _runtime.Layers[i]);
+			}
+			_layerTexturesDirty = false;
+		}
+
 		private static Size DefaultCanvasSize
 		{
 			get
@@ -46,8 +95,9 @@ namespace CivOne
 			Clear(Color.Black);
 			GetBorders(out int x1, out int y1, out int x2, out int y2);
 			if (_runtime.Layers == null) return;
-			foreach (Bytemap bytemap in _runtime.Layers)
-			using (SDL.Texture canvas = CreateTexture(_runtime.Palette, bytemap))
+			RebuildLayerTextureCacheIfNeeded();
+			if (_cachedLayerTextures == null) return;
+			foreach (SDL.Texture canvas in _cachedLayerTextures)
 			{
 				canvas.Draw(x1, y1, (x2 - x1), (y2 - y1));
 				
