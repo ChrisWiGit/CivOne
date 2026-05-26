@@ -50,9 +50,9 @@ namespace CivOne.Screens.StartupWizard
 		/// <summary>
 		/// Renders complete page with header, content, and menu.
 		/// </summary>
-		public void Render(WizardEngine engine, WizardPage page, WizardRenderingContext context)
+		public void Render(WizardState state, WizardPage page, WizardRenderingContext context)
 		{
-			ArgumentNullException.ThrowIfNull(engine);
+			ArgumentNullException.ThrowIfNull(state);
 			ArgumentNullException.ThrowIfNull(page);
 			ArgumentNullException.ThrowIfNull(context);
 
@@ -141,11 +141,6 @@ namespace CivOne.Screens.StartupWizard
 		{
 			row++; // blank line before links
 			DrawPageLinks(page, row, context);
-		}
-
-		if (page.EntriesYOffset > 0)
-		{
-			row += page.EntriesYOffset;
 		}
 
 		DrawMenuEntries(page, context);

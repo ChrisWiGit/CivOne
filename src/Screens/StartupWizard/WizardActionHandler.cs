@@ -30,10 +30,10 @@ namespace CivOne.Screens.StartupWizard
 		private readonly Func<string, string> _browseFolder = browseFolder ?? throw new ArgumentNullException(nameof(browseFolder));
 		private readonly Action<string> _log = log ?? (_ => { });
 
-		public WizardActionResult Execute(WizardEntry entry, WizardEngine engine)
+		public WizardActionResult Execute(WizardEntry entry, WizardState state)
 		{
 			ArgumentNullException.ThrowIfNull(entry);
-			ArgumentNullException.ThrowIfNull(engine);
+			ArgumentNullException.ThrowIfNull(state);
 
 			if (!entry.Enabled)
 			{
@@ -43,23 +43,23 @@ namespace CivOne.Screens.StartupWizard
 			switch (entry.Action)
 			{
 				case WizardEntryAction.SelectLanguage:
-					ApplyLanguage(entry.Value ?? string.Empty, engine);
+					ApplyLanguage(entry.Value ?? string.Empty, state);
 					return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.BrowseDataFolder:
-					HandleBrowseDataFolder(engine);
+					HandleBrowseDataFolder(state);
 					return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.Continue:
-					engine.MoveNext();
-					engine.StatusMessage = string.Empty;
+					state.MoveNext();
+					state.StatusMessage = string.Empty;
 					return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.Back:
-					engine.MoveBack();
-					engine.StatusMessage = string.Empty;
+					state.MoveBack();
+					state.StatusMessage = string.Empty;
 					return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.ToggleSound:
-					engine.SoundEnabled = !engine.SoundEnabled;
-					Settings.Instance.Sound = engine.SoundEnabled ? GameOption.On : GameOption.Off;
-					engine.StatusMessage = engine.SoundEnabled
+					state.SoundEnabled = !state.SoundEnabled;
+					Settings.Instance.Sound = state.SoundEnabled ? GameOption.On : GameOption.Off;
+					state.StatusMessage = state.SoundEnabled
 						? T("Sound enabled.")
 						: T("Sound disabled.");
 					return new WizardActionResult(ShouldRefresh: true);
@@ -70,9 +70,9 @@ namespace CivOne.Screens.StartupWizard
 			}
 		}
 
-		public WizardActionResult OpenUrl(string url, WizardEngine engine)
+		public WizardActionResult OpenUrl(string url, WizardState state)
 		{
-			ArgumentNullException.ThrowIfNull(engine);
+			ArgumentNullException.ThrowIfNull(state);
 
 			if (string.IsNullOrWhiteSpace(url))
 			{
@@ -81,42 +81,42 @@ namespace CivOne.Screens.StartupWizard
 
 			if (!_browserService.TryOpenUrl(url, out _))
 			{
-				engine.StatusMessage = _browserService.TryCopyToClipboard(url, out _)
+				state.StatusMessage = _browserService.TryCopyToClipboard(url, out _)
 					? T("Link copied to clipboard.")
 					: T("Could not open URL.");
 			}
 			else
 			{
-				engine.StatusMessage = T("Opened URL in browser.");
+				state.StatusMessage = T("Opened URL in browser.");
 			}
 
 			return new WizardActionResult(ShouldRefresh: true);
 		}
 
-		private void ApplyLanguage(string postfix, WizardEngine engine)
+		private void ApplyLanguage(string postfix, WizardState state)
 		{
 			if (string.IsNullOrEmpty(postfix))
 			{
 				Settings.Instance.LanguagePostfix = string.Empty;
 				TranslationServiceFactory.UseIdentity();
-				engine.SelectedLanguagePostfix = string.Empty;
-				engine.StatusMessage = T("Language switched to Identity.");
+				state.SelectedLanguagePostfix = string.Empty;
+				state.StatusMessage = T("Language switched to Identity.");
 				return;
 			}
 
 			if (!TranslationServiceFactory.TryUseLanguage(_storageDirectory, postfix, out string error, _log))
 			{
-				engine.StatusMessage = TF("Could not load language '{0}'.", postfix);
+				state.StatusMessage = TF("Could not load language '{0}'.", postfix);
 				_log($"Could not activate language '{postfix}': {error}");
 				return;
 			}
 
 			Settings.Instance.LanguagePostfix = postfix;
-			engine.SelectedLanguagePostfix = postfix;
-			engine.StatusMessage = T(postfix);
+			state.SelectedLanguagePostfix = postfix;
+			state.StatusMessage = T(postfix);
 		}
 
-		private void HandleBrowseDataFolder(WizardEngine engine)
+		private void HandleBrowseDataFolder(WizardState engine)
 		{
 			string path = _browseFolder(T("Location of Civilization data files"));
 			if (path == null)

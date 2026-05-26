@@ -24,7 +24,7 @@ namespace CivOne.Screens.StartupWizard
 		private readonly Func<ITranslationService> _translationServiceAccessor = translationServiceAccessor ?? throw new ArgumentNullException(nameof(translationServiceAccessor));
 		private readonly IReadOnlyList<TranslationLanguageInfo> _availableLanguages = availableLanguages ?? throw new ArgumentNullException(nameof(availableLanguages));
 
-		public WizardPage Build(WizardEngine engine)
+		public WizardPage Build(WizardState engine)
 		{
 			ArgumentNullException.ThrowIfNull(engine);
 
@@ -85,7 +85,7 @@ namespace CivOne.Screens.StartupWizard
 			};
 		}
 
-		private WizardPage BuildLanguagePage(WizardEngine engine)
+		private WizardPage BuildLanguagePage(WizardState engine)
 		{
 			List<WizardEntry> entries = [];
 			int number = 1;
@@ -144,7 +144,7 @@ namespace CivOne.Screens.StartupWizard
 			};
 		}
 
-		private WizardPage BuildDataFolderPage(WizardEngine engine)
+		private WizardPage BuildDataFolderPage(WizardState engine)
 		{
 			bool hasDataFiles = FileSystem.DataFilesExist();
 			string dataState = hasDataFiles
@@ -181,7 +181,7 @@ namespace CivOne.Screens.StartupWizard
 			};
 		}
 
-		private WizardPage BuildSoundPage(WizardEngine engine)
+		private WizardPage BuildSoundPage(WizardState engine)
 		{
 			string soundState = engine.SoundEnabled ? T("On") : T("Off");
 			return new WizardPage

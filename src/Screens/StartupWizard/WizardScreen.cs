@@ -30,7 +30,7 @@ namespace CivOne.Screens.StartupWizard
 		private const int TargetRows = 25;
 		private const int TargetCols = 80;
 
-		private readonly WizardEngine _engine;
+		private readonly WizardState _state;
 		private readonly IWizardPageBuilder _pageBuilder;
 		private readonly IWizardActionHandler _actionHandler;
 		private readonly WizardRenderingDelegate _renderingDelegate;
@@ -47,7 +47,7 @@ namespace CivOne.Screens.StartupWizard
 		/// Initializes the startup wizard screen with default dependencies.
 		/// </summary>
 		public WizardScreen() : this(
-			new WizardEngine(TranslationServiceFactory.ActiveLanguagePostfix),
+			new WizardState(TranslationServiceFactory.ActiveLanguagePostfix),
 			new WizardPageBuilder(
 				translationServiceAccessor: TranslationServiceFactory.GetCurrent,
 				availableLanguages: TranslationServiceFactory.GetAvailableLanguages(Runtime.StorageDirectory, message => Log(message))),
@@ -55,7 +55,7 @@ namespace CivOne.Screens.StartupWizard
 				translationServiceAccessor: TranslationServiceFactory.GetCurrent,
 				browserService: BrowserServiceFactory.Instance,
 				storageDirectory: Runtime.StorageDirectory,
-				browseFolder: title => Runtime.BrowseFolder(title),
+				browseFolder: Runtime.BrowseFolder,
 				log: message => Log(message)))
 		{
 		}
@@ -63,10 +63,10 @@ namespace CivOne.Screens.StartupWizard
 		/// <summary>
 		/// Internal constructor for testing and dependency injection.
 		/// </summary>
-		internal WizardScreen(WizardEngine engine, IWizardPageBuilder pageBuilder, IWizardActionHandler actionHandler) : base(MouseCursor.None)
+		internal WizardScreen(WizardState engine, IWizardPageBuilder pageBuilder, IWizardActionHandler actionHandler) : base(MouseCursor.None)
 		{
 			Palette = Common.GetPalette256;
-			_engine = engine;
+			_state = engine;
 			_pageBuilder = pageBuilder;
 			_actionHandler = actionHandler;
 			_renderingDelegate = new WizardRenderingDelegate(this, Translate);
@@ -96,13 +96,13 @@ namespace CivOne.Screens.StartupWizard
 		{
 			if (args[Key.Escape])
 			{
-				if (_engine.PageIndex == 0)
+				if (_state.PageIndex == 0)
 				{
 					Destroy();
 				}
 				else
 				{
-					_engine.MoveBack();
+					_state.MoveBack();
 					Refresh();
 				}
 				return true;
@@ -145,7 +145,7 @@ namespace CivOne.Screens.StartupWizard
 		private bool TryActivateHotkey(char keyChar)
 		{
 			char normalizedKey = char.ToLowerInvariant(keyChar);
-			WizardEntry entry = _pageBuilder.Build(_engine).Entries.FirstOrDefault(x => x.Enabled && x.Hotkey.HasValue && char.ToLowerInvariant(x.Hotkey.Value) == normalizedKey);
+			WizardEntry entry = _pageBuilder.Build(_state).Entries.FirstOrDefault(x => x.Enabled && x.Hotkey.HasValue && char.ToLowerInvariant(x.Hotkey.Value) == normalizedKey);
 			if (entry == null)
 			{
 				return false;
@@ -173,7 +173,7 @@ namespace CivOne.Screens.StartupWizard
 					continue;
 				}
 
-				ApplyActionResult(_actionHandler.OpenUrl(url, _engine));
+				ApplyActionResult(_actionHandler.OpenUrl(url, _state));
 				return true;
 			}
 
@@ -210,14 +210,14 @@ namespace CivOne.Screens.StartupWizard
 
 		private void ActivateEntry(int number)
 		{
-			WizardPage page = _pageBuilder.Build(_engine);
+			WizardPage page = _pageBuilder.Build(_state);
 			WizardEntry entry = page.Entries.FirstOrDefault(x => x.Number == number);
 			if (entry == null || !entry.Enabled)
 			{
 				return;
 			}
 
-			ApplyActionResult(_actionHandler.Execute(entry, _engine));
+			ApplyActionResult(_actionHandler.Execute(entry, _state));
 		}
 
 		private void ApplyActionResult(WizardActionResult actionResult)
@@ -240,7 +240,7 @@ namespace CivOne.Screens.StartupWizard
 			_renderingContext.LinkAreas.Clear();
 			_renderingContext.GlyphAreas.Clear();
 
-			WizardPage page = _pageBuilder.Build(_engine);
+			WizardPage page = _pageBuilder.Build(_state);
 			int baseWidth = TargetCols * ModernDos8X16.GlyphWidth;
 			int baseHeight = TargetRows * ModernDos8X16.GlyphHeight;
 
@@ -257,9 +257,9 @@ namespace CivOne.Screens.StartupWizard
 			_renderingContext.Cols = TargetCols;
 			_renderingContext.Rows = TargetRows;
 			_renderingContext.Scale = scale;
-			_renderingContext.StatusMessage = _engine.StatusMessage;
+			_renderingContext.StatusMessage = _state.StatusMessage;
 
-			_renderingDelegate.Render(_engine, page, _renderingContext);
+			_renderingDelegate.Render(_state, page, _renderingContext);
 			_renderingDelegate.DrawPageContent(page, _renderingContext);
 			_mouseMarkerDelegate.DrawMarker(_mouseX, _mouseY, _renderingContext);
 		}

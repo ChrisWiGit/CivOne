@@ -11,24 +11,58 @@ using CivOne.Enums;
 
 namespace CivOne.Screens.StartupWizard
 {
-	internal sealed class WizardEngine
+	/// <summary>
+	/// Holds all mutable state for the startup wizard.
+	/// </summary>
+	/// <remarks>
+	/// State is shared between <see cref="IWizardPageBuilder"/> and <see cref="IWizardActionHandler"/>.
+	/// Page navigation is controlled via <see cref="MoveNext"/> and <see cref="MoveBack"/>.
+	/// </remarks>
+	internal sealed class WizardState(string selectedLanguagePostfix)
 	{
 		private const int LastPageIndex = 4;
 
-		public int PageIndex { get; private set; }
-		public string StatusMessage { get; set; }
-		public string SelectedLanguagePostfix { get; set; }
+		/// <summary>
+		/// Gets the zero-based index of the currently active wizard page.
+		/// </summary>
+		public int PageIndex { get; private set; } = 0;
+
+		/// <summary>
+		/// Gets or sets the status message shown at the bottom of the wizard screen.
+		/// </summary>
+		/// <remarks>
+		/// Set by action handlers to provide user feedback (e.g. "Data files copied successfully.").
+		/// Cleared on page navigation.
+		/// </remarks>
+		public string StatusMessage { get; set; } = string.Empty;
+
+		/// <summary>
+		/// Gets or sets the language postfix selected by the user (e.g. <c>"german"</c>).
+		/// </summary>
+		/// <remarks>
+		/// Empty string means the default/identity translation is active.
+		/// </remarks>
+		public string SelectedLanguagePostfix { get; set; } = selectedLanguagePostfix ?? string.Empty;
+
+		/// <summary>
+		/// Gets or sets the data folder path selected by the user via the folder browser.
+		/// </summary>
+		/// <remarks>
+		/// <see langword="null"/> or empty when no folder has been selected yet.
+		/// </remarks>
 		public string DataFolder { get; set; }
-		public bool SoundEnabled { get; set; }
 
-		public WizardEngine(string selectedLanguagePostfix)
-		{
-			PageIndex = 0;
-			StatusMessage = string.Empty;
-			SelectedLanguagePostfix = selectedLanguagePostfix ?? string.Empty;
-			SoundEnabled = Settings.Instance.Sound != GameOption.Off;
-		}
+		/// <summary>
+		/// Gets or sets whether sound is enabled.
+		/// </summary>
+		/// <remarks>
+		/// Initialised from <see cref="Settings.Instance"/> and persisted back when toggled.
+		/// </remarks>
+		public bool SoundEnabled { get; set; } = Settings.Instance.Sound != GameOption.Off;
 
+		/// <summary>
+		/// Advances to the next wizard page, up to the last page.
+		/// </summary>
 		public void MoveNext()
 		{
 			if (PageIndex < LastPageIndex)
@@ -37,6 +71,9 @@ namespace CivOne.Screens.StartupWizard
 			}
 		}
 
+		/// <summary>
+		/// Returns to the previous wizard page, down to page zero.
+		/// </summary>
 		public void MoveBack()
 		{
 			if (PageIndex > 0)
