@@ -165,11 +165,7 @@
 			"preLaunchTask": "build",
 			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
 			"args": [
-				"setup",
-				"--skip-credits",
-				"--skip-intro",
-				"--no-sound",
-				"--no-data-check"
+				"setup"
 			],
 			"cwd": "${workspaceRoot}",
 			"stopAtEntry": false,
