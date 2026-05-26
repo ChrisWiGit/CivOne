@@ -248,9 +248,22 @@ namespace CivOne.Screens.StartupWizard
 					TF("Current: {0}", state.ScreenAspectRatio.ToText())
 				],
 				Entries = entries,
-				EntriesYOffset = 2
+				EntriesYOffset = 2,
+				HasContextChanged = () => SyncFullScreenState(state)
 			};
 			
+		}
+
+		private static bool SyncFullScreenState(WizardState state)
+		{
+			bool fullScreenEnabled = Settings.Instance.FullScreen;
+			if (state.FullScreenEnabled == fullScreenEnabled)
+			{
+				return false;
+			}
+
+			state.FullScreenEnabled = fullScreenEnabled;
+			return true;
 		}
 
 		private WizardEntry CreateAspectRatioEntry(int number, AspectRatio aspectRatio, string explanation) => new()

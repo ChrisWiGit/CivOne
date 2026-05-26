@@ -37,6 +37,7 @@ namespace CivOne.Screens.StartupWizard
 		private readonly WizardRenderingDelegate _renderingDelegate;
 		private readonly WizardMouseMarkerDelegate _mouseMarkerDelegate;
 		private readonly WizardRenderingContext _renderingContext;
+		private WizardPage _currentPage;
 
 		private int _mouseX = -1;
 		private int _mouseY = -1;
@@ -119,6 +120,12 @@ namespace CivOne.Screens.StartupWizard
 		/// </summary>
 		protected override bool HasUpdate(uint gameTick)
 		{
+			if (_currentPage?.HasContextChanged?.Invoke() == true)
+			{
+				_markerOnlyRefresh = false;
+				Refresh();
+			}
+
 			if (!RefreshNeeded())
 			{
 				return false;
@@ -357,7 +364,8 @@ namespace CivOne.Screens.StartupWizard
 			_renderingContext.LinkAreas.Clear();
 			_renderingContext.GlyphAreas.Clear();
 
-			WizardPage page = _pageBuilder.Build(_state);
+			_currentPage = _pageBuilder.Build(_state);
+			WizardPage page = _currentPage;
 			int baseWidth = TargetCols * ModernDos8X16.GlyphWidth;
 			int baseHeight = TargetRows * ModernDos8X16.GlyphHeight;
 
