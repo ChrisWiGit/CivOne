@@ -1147,3 +1147,7 @@ OPEN FULL SETUP SCREEN FOR MORE OPTIONS, THEN RETURN HERE.=Vollständigen Setup-
 DEBUGGING - HIT F12 TO SHOW DEBUG MENU IN GAME=Debugging - Drücke F12, um das Debugmenü im Spiel anzuzeigen
 SHOW MORE SETTINGS=Weitere Einstellungen anzeigen
 EXPAND (DEFAULT) - FILL SCREEN, BORDERS POSSIBLE=Erweitern (Standard) - Bildschirm ausfüllend, Ränder möglich
+DEBUG-MENU - HIT ^F12^ TO SHOW DEBUG MENU IN GAME=Debug-Menü - Drücke ^F12^, um das Debug-Menü im Spiel anzuzeigen
+DEBUG-MENU - ^OFF=Debug-Menü - ^aus
+OPEN FULL SETTINGS SCREEN FOR MORE OPTIONS, THEN RETURN HERE.=Bildschirm für weitere Optionen öffnen, dann hier zurückkehren.
+SETTINGS SCREEN CAN ALSO ACCESSED BY SHIFT+F1 AT START OR FROM DEBUG MENU.=Einstellungen können über Shift+F1 beim Start & im Debugmenü aufgerufen werden.

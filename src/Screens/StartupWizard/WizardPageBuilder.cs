@@ -87,6 +87,15 @@ namespace CivOne.Screens.StartupWizard
 			};
 		}
 
+		private String UpperCaseFirstLetter(String s)
+		{
+			if (string.IsNullOrEmpty(s))
+			{
+				return string.Empty;
+			}
+			return char.ToUpper(s[0]) + s.Substring(1);
+		}
+
 		private WizardPage BuildLanguagePage(WizardState state)
 		{
 			List<WizardEntry> entries = [];
@@ -105,7 +114,7 @@ namespace CivOne.Screens.StartupWizard
 				entries.Add(new WizardEntry
 				{
 					Number = number++,
-					Text = T(languagePostfix),
+					Text = UpperCaseFirstLetter(T(languagePostfix)),
 					Action = WizardEntryAction.SelectLanguage,
 					Value = languagePostfix
 				});
@@ -204,18 +213,22 @@ namespace CivOne.Screens.StartupWizard
 
 		private WizardPage BuildMoreSettingsPage(WizardState state)
 		{
+			string debugMenuEntryText = state.DebugMenuEnabled
+				? T("Debug-Menu - Hit ^F12^ to show debug menu in game")
+				: T("Debug-Menu - ^off");
+
 			return new WizardPage
 			{
 				Title = T("Startup Wizard: More Settings"),
 				Lines =
 				[
-					TF("Debug menu: {0}", state.DebugMenuEnabled.YesNo()),
 					T("Enable debugging, then press F12 in game to open debug menu."),
-					T("Open full setup screen for more options, then return here.")
+					T("Open full settings screen for more options, then return here."),
+					T("Settings screen can also accessed by Shift+F1 at start or from debug menu.")
 				],
 				Entries =
 				[
-					new WizardEntry { Number = 1, Text = T("Debugging - Hit F12 to show debug menu in game"), Action = WizardEntryAction.ToggleDebugMenu },
+					new WizardEntry { Number = 1, Text = debugMenuEntryText, Action = WizardEntryAction.ToggleDebugMenu },
 					new WizardEntry { Number = 2, Text = T("Show more settings"), Action = WizardEntryAction.OpenSetupScreen },
 					new WizardEntry { Number = 3, Text = ContinueText(), Action = WizardEntryAction.Continue, Hotkey = HotkeyContinue },
 					new WizardEntry { Number = 4, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
