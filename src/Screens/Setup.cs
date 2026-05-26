@@ -199,9 +199,30 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Patches")).OnSelect(GotoMenu(PatchesMenu)),
 			MenuItem.Create(Translate("Plugins")).OnSelect(GotoMenu(PluginsMenu)),
 			MenuItem.Create(Translate("Game Options")).OnSelect(GotoMenu(GameOptionsMenu)),
-			MenuItem.Create(Game.Started ? Translate("Return to game") : Translate("Launch Game")).OnSelect(CloseScreen()),
-			Game.Started ? null : MenuItem.Create(Translate("Quit")).OnSelect(CloseScreen(Runtime.Quit))
+			MenuItem.Create(GetReturnTargetString()).OnSelect(CloseScreen()),
+			IsAllowedToQuit() ? null : MenuItem.Create(Translate("Quit")).OnSelect(CloseScreen(Runtime.Quit))
 		);
+
+		private string GetReturnTargetString()
+		{
+			if (Game.Started)
+			{
+				return Translate("Return to game");
+			}
+			else if (Common.HasScreenType<StartupWizard.WizardScreen>())
+			{
+				return Translate("Return to startup wizard");
+			}
+			else
+			{
+				return Translate("Launch Game");
+			}
+		}
+
+		private static bool IsAllowedToQuit()
+		{
+			return Game.Started || Common.HasScreenType<StartupWizard.WizardScreen>();
+		}
 
 		private void SettingsMenu(int activeItem = 0) => CreateMenu("Settings", activeItem,
 			MenuItem.Create(TranslateFormatted("Window Title: {0}", Settings.WindowTitle)).OnSelect(GotoScreen<WindowTitle>(ChangeWindowTitle)),
@@ -581,7 +602,7 @@ namespace CivOne.Screens
 		private void SeaLevelRise() => CreateMenu(Translate("Tiles replace with ocean"), GotoMenu(ExtendedGlobalWarmingMenu, 0),
 			MenuItem.Create(TranslateFormatted("{0} (default)", false.YesNo()))
 				.WithDescription(Translate("Keep global warming behavior without sea rise."))
-				.OnSelect((s, a) =>  Settings.SetGlobalWarmingFlag(Settings.GlobalWarmingFeatureFlag.SeaLevelRise, false)
+				.OnSelect((s, a) => Settings.SetGlobalWarmingFlag(Settings.GlobalWarmingFeatureFlag.SeaLevelRise, false)
 				).SetActive(() => !Settings.IsGlobalWarmingFlagSet(Settings.GlobalWarmingFeatureFlag.SeaLevelRise)),
 			MenuItem.Create(true.YesNo())
 				.WithDescription(Translate("Allow coastal tiles to turn into ocean."))

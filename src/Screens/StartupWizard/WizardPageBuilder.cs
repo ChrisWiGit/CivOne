@@ -192,8 +192,7 @@ namespace CivOne.Screens.StartupWizard
 				Title = T("Startup Wizard: Sound"),
 				Lines =
 				[
-					TF("Sound: {0}", soundState),
-					T("Save choice and start game.")
+					TF("Sound: {0}", soundState)
 				],
 				Entries =
 				[
@@ -230,12 +229,12 @@ namespace CivOne.Screens.StartupWizard
 		{
 			List<WizardEntry> entries =
 			[
-				CreateFullScreenEntry(1, !state.FullScreenEnabled, TF("Fullscreen: {0}", state.FullScreenEnabled.YesNo())),
+				CreateFullScreenEntry(1, !state.FullScreenEnabled, TF("Fullscreen: ^{0}^", state.FullScreenEnabled.YesNo())),
 				CreateAspectRatioEntry(2, AspectRatio.Auto, T("Auto - stretch image, may distort")),
 				CreateAspectRatioEntry(3, AspectRatio.Fixed, T("Fixed - keep ratio, may add black borders")),
 				CreateAspectRatioEntry(4, AspectRatio.Scaled, T("Scaled - fit resolution, may look blurry")),
 				CreateAspectRatioEntry(5, AspectRatio.ScaledFixed, T("ScaledFixed - keep ratio, blur and borders possible")),
-				CreateAspectRatioEntry(6, AspectRatio.Expand, T("Expand (default) - fill screen, borders possible")),
+				CreateAspectRatioEntry(6, AspectRatio.Expand, T("Expand ^(default)^ - fill screen, borders possible")),
 				new WizardEntry { Number = 7, Text = ContinueText(), Action = WizardEntryAction.Continue, Hotkey = HotkeyContinue },
 				new WizardEntry { Number = 8, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
 			];
