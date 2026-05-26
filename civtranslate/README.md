@@ -104,7 +104,7 @@ Examples:
 If your language also uses other text files, rename them with the same language suffix pattern.
 For example, rename `story.txt` to `story_<mylang>.txt`.
 
-> Case sensitive file systems: The game does not care about case sensitivity in file names.
+> **Use lowercase file names** that follow the documented pattern, for example `civ_german.txt` and generally `civ_<mylang>.txt`. Files with uppercase letters may be skipped by language discovery and tests. When copying translations into place, prefer `.\ copy-translations.ps1` or `./copy-translations.sh`.
 
 ### 2b. Manual updating
 
@@ -173,9 +173,11 @@ The original source text for these is not in the C# code but in the existing tra
 2. Remove the binary part at the top and end of the file.
 3. Rename the file with the same language suffix pattern if needed, for example `KING_<mylang>.txt`.
 
+> **Use lowercase file names** that follow the documented pattern, for example `KING_german.txt`. Files with uppercase letters may be skipped by language discovery and tests. When copying translations into place, prefer `.\ copy-translations.ps1` or `./copy-translations.sh`.
+
 ## Example output
 
-```
+```txt
 Keys reused: 14
 Keys added: 0
 Keys overwritten: 0
