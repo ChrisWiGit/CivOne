@@ -214,7 +214,7 @@ namespace CivOne.Screens
 				}
 				
 				// Draw menu background
-				int mx = ((Width - 120) / 2), my = Height - 67;
+				int mx = ((Width - 120) / 2), my = Height - 62;
 				this.FillRectangle(mx, my, 122, 57, 5)
 					.FillRectangle(mx + 1, my + 1, 120, 55, _menuColours[0])
 					.FillRectangle(mx + 1, my + 2, 119, 54, _menuColours[1])
@@ -270,8 +270,8 @@ namespace CivOne.Screens
 			if (HasMenu) return;
 			Menu menu = new Menu("MainMenu", Palette)
 			{
-				X = ((Width - 120) / 2) + 3,
-				Y = Height - 63,
+					X = ((Width - 120) / 2) + 3,
+				Y = Height - 58,
 				MenuWidth = 116,
 				ActiveColour = 11,
 				TextColour = 5,
