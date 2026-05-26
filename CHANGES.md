@@ -6,6 +6,10 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Added setup wizard to guide users through initial configuration and data file setup.
+  * The wizard is triggered on first launch when no valid data files are found, or can be accessed later from command line with `--setup` or from the main menu.
+  * It provides a step-by-step interface to select data files, configure graphics settings (fullscreen, aspect ratio), and adjust sound settings.
+  * The wizard's state is persisted across sessions, so users can complete it at their own pace without losing progress.
 * Fix: Screens marked `[ScreenResizeable]` (e.g. Credits) now react to host-window resizes even when the canvas size stays fixed (e.g. `AspectRatio=Auto`).
   * `BaseScreen.Update` tracks the window size and fires `OnResize` plus a refresh when only the window changes.
   * SDL runtime now raises an `OnWindowResize` event on `SDL_WINDOWEVENT_RESIZED` / `SDL_WINDOWEVENT_SIZE_CHANGED` and `GameWindow` forces a redraw, eliminating the 1–2 s frozen frame after a drag-resize.

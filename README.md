@@ -60,6 +60,7 @@ There are some command line parameters that can be used to modify the behavior o
 | `--skip-intro` | Skips the intro cinematic at the start of the game. |
 | `--no-sound` | Disables sound in the game. |
 | `--no-data-check` | Skips the data integrity check at startup. |
+| `--setup` | Opens the setup wizard to configure data files, graphics, and sound settings. |
 | `--console-log` | Enables console log output. This is the default. |
 | `--no-console-log` | Disables console log output on the console. The log file is still written. |
 | `--language <postfix>` | Loads `translations/civ_<postfix>.txt` at startup. Use `identity` for original text without translation. Language files must exist in the active CivOne profile. |
@@ -81,6 +82,13 @@ dotnet run --project ./runtime/sdl/CivOne.SDL.csproj -- --seed 12345 --language 
 ```sh
 dotnet run --project ./runtime/sdl/CivOne.SDL.csproj -- --seed 12345 --language identity
 ```
+
+### Wizard Setup
+
+The setup wizard will show up on first launch if no valid data files are found, or can be accessed later from command line with `--setup` or from the main menu.
+The wizard provides a step-by-step interface to select language, data files, configure graphics settings (fullscreen, aspect ratio), and adjust sound settings.
+
+> For programmers see [README.md](src/Screens/StartupWizard/README.md) in the `src/Screens/StartupWizard` folder for details on the implementation and how to add new steps.
 
 ### Translation workflow
 
