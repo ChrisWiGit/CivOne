@@ -47,24 +47,6 @@ namespace DosFont
 			}
 		}
 
-		private static void DrawGlyphRow(int destX, int scale, Action<int, int> setPixel, byte mask, int baseY)
-		{
-			for (int col = 0; col < ModernDos8X16.GlyphWidth; col++)
-			{
-				if ((mask & (0x80 >> col)) == 0) continue;
-
-				int baseX = destX + col * scale;
-
-				for (int sy = 0; sy < scale; sy++)
-				{
-					for (int sx = 0; sx < scale; sx++)
-					{
-						setPixel(baseX + sx, baseY + sy);
-					}
-				}
-			}
-		}
-
 		/// <summary>
 		/// Float-scale overload.
 		/// Each source pixel maps to dest rect [floor(col*scale), floor((col+1)*scale)) × [floor(row*scale), floor((row+1)*scale)).
@@ -90,6 +72,24 @@ namespace DosFont
                         destX + (int)(col * scale), destX + (int)((col + 1) * scale),
                         baseY, nextY,
                         setPixel);
+                }
+            }
+        }
+
+        private static void DrawGlyphRow(int destX, int scale, Action<int, int> setPixel, byte mask, int baseY)
+        {
+            for (int col = 0; col < ModernDos8X16.GlyphWidth; col++)
+            {
+                if ((mask & (0x80 >> col)) == 0) continue;
+
+                int baseX = destX + col * scale;
+
+                for (int sy = 0; sy < scale; sy++)
+                {
+                    for (int sx = 0; sx < scale; sx++)
+                    {
+                        setPixel(baseX + sx, baseY + sy);
+                    }
                 }
             }
         }
