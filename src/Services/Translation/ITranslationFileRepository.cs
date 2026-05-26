@@ -20,11 +20,11 @@ namespace CivOne.Services.Translation
 		bool TryLoadTranslations(string filePath, out IReadOnlyDictionary<string, string> translations, out string error);
 
 		/// <summary>
-		/// Copies translation files from <paramref name="sourceDirectory"/> into <paramref name="targetDirectory"/>,
-		/// normalizing filenames to lowercase.
+		/// Copies translation files from <paramref name="sourceDirectory"/> into <paramref name="targetDirectory"/>.
 		/// <para>
-		/// Files that differ only in casing (e.g. <c>civ_German.txt</c> vs <c>civ_german.txt</c>) are treated
-		/// as a conflict: all conflicting files are skipped and a warning is written via <paramref name="log"/>.
+		/// Only files with lowercase filenames on disk are copied to ensure consistency across platforms.
+		/// Files with any uppercase letters are skipped with a log message.
+		/// Files with identical names are treated as a conflict: all conflicting files are skipped and a warning is written via <paramref name="log"/>.
 		/// </para>
 		/// </summary>
 		/// <param name="sourceDirectory">Directory containing source translation files.</param>

@@ -154,8 +154,9 @@ namespace CivOne.Services
 
 		/// <summary>
 		/// Copies translation files from <paramref name="sourceDirectory"/> into the translations
-		/// sub-folder of <paramref name="storageDirectory"/>, normalizing filenames to lowercase.
-		/// Case-conflicting files are skipped and reported via <paramref name="log"/>.
+		/// sub-folder of <paramref name="storageDirectory"/>.
+		/// Only files with lowercase filenames on disk are copied to ensure platform consistency.
+		/// Case-conflicting files and files with uppercase letters are skipped and reported via <paramref name="log"/>.
 		/// </summary>
 		/// <returns>Number of files successfully copied.</returns>
 		public static int SyncTranslationFiles(string sourceDirectory, string storageDirectory, Action<string> log = null)
