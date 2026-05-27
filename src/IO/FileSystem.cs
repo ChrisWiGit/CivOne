@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using CivOne.Screens.Dialogs;
 
 namespace CivOne.IO
@@ -33,10 +34,16 @@ namespace CivOne.IO
 		{
 			Log("Checking data files in {0}...", Settings.Instance.DataDirectory);
 			if (files.Length == 0) files = DATA_FILES;
+			if (!Directory.Exists(Settings.Instance.DataDirectory))
+			{
+				Log("Target data directory does not exist: {0}", Settings.Instance.DataDirectory);
+				return false;
+			}
+			HashSet<string> existingFiles = EnumerateFileNames(Settings.Instance.DataDirectory);
 			foreach (string filename in files)
 			{
-				if (Directory.GetFiles(Settings.Instance.DataDirectory, filename).Length > 0) continue;
-				
+				if (existingFiles.Contains(filename)) continue;
+
 				Log("Target resource file does not exist: {0}", filename);
 				return false;
 			}
@@ -47,17 +54,9 @@ namespace CivOne.IO
 		public static bool CopyDataFiles(string folder)
 		{
 			Log("Copying data files to {0}...", Settings.Instance.DataDirectory);
-			foreach (string filename in DATA_FILES)
+			if (!CopyFiles(folder, Settings.Instance.DataDirectory, DATA_FILES, out string missingFile))
 			{
-				string[] files;
-				if (File.Exists(Path.Combine(Settings.Instance.DataDirectory, filename))) continue;
-				files = Directory.GetFiles(folder, filename);
-				if (files.Length > 0)
-				{
-					File.Copy(Path.Combine(folder, files[0]), Path.Combine(Settings.Instance.DataDirectory, filename));
-					continue;
-				}
-				Log("- File not found: {0}", filename);
+				Log("- File not found: {0}", missingFile);
 				return false;
 			}
 			Log("- Done, all copied");
@@ -68,10 +67,16 @@ namespace CivOne.IO
 		{
 			Log("Checking sound files...");
 			if (files.Length == 0) files = SOUND_FILES;
+			if (!Directory.Exists(Settings.Instance.SoundsDirectory))
+			{
+				Log("Target sound directory does not exist: {0}", Settings.Instance.SoundsDirectory);
+				return false;
+			}
+			HashSet<string> existingFiles = EnumerateFileNames(Settings.Instance.SoundsDirectory);
 			foreach (string filename in files)
 			{
-				if (Directory.GetFiles(Settings.Instance.SoundsDirectory, filename).Length > 0) continue;
-				
+				if (existingFiles.Contains(filename)) continue;
+
 				Log("- File not found: {0}", filename);
 				return false;
 			}
@@ -82,21 +87,113 @@ namespace CivOne.IO
 		public static bool CopySoundFiles(string folder)
 		{
 			Log("Copying sound files...");
-			foreach (string filename in SOUND_FILES)
+			if (!CopyFiles(folder, Settings.Instance.SoundsDirectory, SOUND_FILES, out string missingFile))
 			{
-				string[] files;
-				if (File.Exists(Path.Combine(Settings.Instance.SoundsDirectory, filename))) continue;
-				files = Directory.GetFiles(folder, filename);
-				if (files.Length > 0)
-				{
-					File.Copy(Path.Combine(folder, files[0]), Path.Combine(Settings.Instance.SoundsDirectory, filename));
-					continue;
-				}
-				Log("- File not found: {0}", filename);
+				Log("- File not found: {0}", missingFile);
 				return false;
 			}
 			Log("- Done, all copied");
 			return true;
+		}
+
+		internal static bool CopyFiles(string sourceDirectory, string targetDirectory, IReadOnlyList<string> fileNames, out string missingFile)
+		{
+			Directory.CreateDirectory(targetDirectory);
+			foreach (string filename in fileNames)
+			{
+				string targetPath = Path.Combine(targetDirectory, filename);
+
+				// Linux: a previous install may have left the file under a different
+				// casing. Normalize it to the canonical name so subsequent lookups via
+				// the exact path succeed.
+				string existingTarget = FindFileIgnoreCase(targetDirectory, filename);
+				if (existingTarget != null)
+				{
+					if (!string.Equals(existingTarget, targetPath, StringComparison.Ordinal))
+					{
+						Log("- Normalizing target file casing: {0} -> {1}", Path.GetFileName(existingTarget), filename);
+						MoveFileToCanonicalCasing(existingTarget, targetPath);
+					}
+					continue;
+				}
+
+				string sourcePath = FindFileIgnoreCase(sourceDirectory, filename);
+				if (sourcePath != null)
+				{
+					File.Copy(sourcePath, targetPath);
+					continue;
+				}
+
+				missingFile = filename;
+				return false;
+			}
+
+			missingFile = null;
+			return true;
+		}
+
+		/// <summary>
+		/// Moves <paramref name="sourcePath"/> to <paramref name="targetPath"/> and enforces
+		/// the exact target casing.
+		/// </summary>
+		/// <remarks>
+		/// A direct case-only rename can fail on case-insensitive file systems because source and
+		/// destination may be treated as the same path.
+		/// To keep behavior consistent across platforms, this method uses a temporary intermediate
+		/// name when only casing differs.
+		/// </remarks>
+		/// <param name="sourcePath">Current path of the file.</param>
+		/// <param name="targetPath">Destination path with canonical casing.</param>
+		private static void MoveFileToCanonicalCasing(string sourcePath, string targetPath)
+		{
+			if (string.Equals(sourcePath, targetPath, StringComparison.OrdinalIgnoreCase)
+				&& !string.Equals(sourcePath, targetPath, StringComparison.Ordinal))
+			{
+				// Refactoring note: a direct case-only rename can fail on case-insensitive
+				// file systems because source and destination are treated as the same path.
+				// Rename via a temporary file first to make the casing normalization reliable.
+				string directory = Path.GetDirectoryName(targetPath) ?? string.Empty;
+				string temporaryPath = Path.Combine(directory, $"{Path.GetFileName(targetPath)}.{Guid.NewGuid():N}.tmp");
+				File.Move(sourcePath, temporaryPath);
+				File.Move(temporaryPath, targetPath);
+				return;
+			}
+
+			File.Move(sourcePath, targetPath);
+		}
+
+		/// <summary>
+		/// Returns the on-disk file path that matches <paramref name="filename"/> in the given folder,
+		/// using case-insensitive name comparison. Returns <see langword="null"/> when no match exists.
+		/// </summary>
+		/// <remarks>
+		/// Required for Linux/macOS where the file system is case-sensitive but the original DOS game
+		/// data uses UPPERCASE names that users may have renamed.
+		/// </remarks>
+		internal static string FindFileIgnoreCase(string folder, string filename)
+		{
+			if (!Directory.Exists(folder))
+			{
+				return null;
+			}
+
+			return Directory.EnumerateFiles(folder, "*", SearchOption.TopDirectoryOnly)
+				.FirstOrDefault(path => string.Equals(Path.GetFileName(path), filename, StringComparison.OrdinalIgnoreCase));
+		}
+
+		private static HashSet<string> EnumerateFileNames(string folder)
+		{
+			HashSet<string> output = new(StringComparer.OrdinalIgnoreCase);
+			if (!Directory.Exists(folder))
+			{
+				return output;
+			}
+
+			foreach (string path in Directory.EnumerateFiles(folder, "*", SearchOption.TopDirectoryOnly))
+			{
+				output.Add(Path.GetFileName(path));
+			}
+			return output;
 		}
 
 		public static bool CopyPlugins(string folder)

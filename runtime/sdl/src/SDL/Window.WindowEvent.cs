@@ -17,6 +17,15 @@ namespace CivOne
 		{
 			protected event EventHandler OnLoad, OnDraw, OnUpdate;
 
+			/// <summary>
+			/// Raised when the SDL window has been resized by the user or the system.
+			/// </summary>
+			/// <remarks>
+			/// Fires for both SDL_WINDOWEVENT_RESIZED and SDL_WINDOWEVENT_SIZE_CHANGED so
+			/// hosts can force a redraw after a drag-resize completes.
+			/// </remarks>
+			protected event EventHandler OnWindowResize;
+
 			public event EventHandler OnClose;
 
 			private bool _fullscreen;
@@ -54,8 +63,12 @@ namespace CivOne
 					case SDL_WindowEventID.SDL_WINDOWEVENT_MOVED:
 						break;
 					case SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED:
+						_redraw = true;
+						OnWindowResize?.Invoke(this, EventArgs.Empty);
 						break;
 					case SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED:
+						_redraw = true;
+						OnWindowResize?.Invoke(this, EventArgs.Empty);
 						break;
 					case SDL_WindowEventID.SDL_WINDOWEVENT_MINIMIZED:
 						Paused = true;

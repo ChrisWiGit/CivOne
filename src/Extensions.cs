@@ -287,7 +287,7 @@ namespace CivOne
 				case AspectRatio.Fixed: return T("Fixed");
 				case AspectRatio.Scaled: return T("Scaled (blurry)");
 				case AspectRatio.ScaledFixed: return T("Scaled and fixed (blurry)");
-				case AspectRatio.Expand: return T("Expand (experimental)");
+				case AspectRatio.Expand: return T("Expand");
 				default: return null;
 			}
 		}

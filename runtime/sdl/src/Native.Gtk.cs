@@ -176,5 +176,119 @@ namespace CivOne
 				gtk_main_iteration();
 			return output;
 		}
+
+		private static bool LinuxTryOpenUrl(string url, out string errorMessage)
+		{
+			// Try xdg-open first
+			if (TryExecuteCommand("xdg-open", url, out errorMessage))
+				return true;
+
+			// Fallback: try gio open
+			if (TryExecuteCommand("gio", $"open {url}", out errorMessage))
+				return true;
+
+			// Last resort: gnome-open
+			if (TryExecuteCommand("gnome-open", url, out errorMessage))
+				return true;
+
+			errorMessage = "Could not open URL: xdg-open, gio, and gnome-open not available.";
+			return false;
+		}
+
+		private static bool LinuxTryCopyToClipboard(string text, out string errorMessage)
+		{
+			// Try xclip first
+			if (TryExecuteCommandWithInput("xclip", "-selection", "clipboard", text, out errorMessage))
+				return true;
+
+			// Fallback: try xsel
+			if (TryExecuteCommandWithInput("xsel", "--clipboard", "--input", text, out errorMessage))
+				return true;
+
+			errorMessage = "Could not copy to clipboard: xclip and xsel not available.";
+			return false;
+		}
+
+		private static bool TryExecuteCommand(string command, string argument, out string errorMessage)
+		{
+			try
+			{
+				var psi = new System.Diagnostics.ProcessStartInfo
+				{
+					FileName = command,
+					Arguments = argument,
+					UseShellExecute = false,
+					RedirectStandardError = true,
+					CreateNoWindow = true
+				};
+				using (var process = System.Diagnostics.Process.Start(psi))
+				{
+					if (process == null || !process.WaitForExit(5000) || process.ExitCode != 0)
+					{
+						errorMessage = $"Command failed with exit code {process?.ExitCode ?? -1}";
+						return false;
+					}
+					errorMessage = string.Empty;
+					return true;
+				}
+			}
+			catch (Exception ex)
+			{
+				errorMessage = ex.Message;
+				return false;
+			}
+		}
+
+		private static bool TryExecuteCommandWithInput(string command, string arg1, string arg2, string input, out string errorMessage)
+		{
+			try
+			{
+				var psi = new System.Diagnostics.ProcessStartInfo
+				{
+					FileName = command,
+					Arguments = $"{arg1} {arg2}",
+					UseShellExecute = false,
+					RedirectStandardInput = true,
+					RedirectStandardError = true,
+					CreateNoWindow = true
+				};
+				using (var process = System.Diagnostics.Process.Start(psi))
+				{
+					if (process == null)
+					{
+						errorMessage = "Command process could not be started.";
+						return false;
+					}
+
+					using (var writer = process.StandardInput)
+					{
+						writer.Write(input);
+					}
+
+					if (!process.WaitForExit(5000))
+					{
+						errorMessage = "Command execution timed out.";
+						return false;
+					}
+
+					if (process.ExitCode != 0)
+					{
+						string standardError = process.StandardError.ReadToEnd();
+						errorMessage = !string.IsNullOrWhiteSpace(standardError)
+							? standardError.Trim()
+							: $"Command failed with exit code {process.ExitCode}";
+						return false;
+					}
+
+					errorMessage = string.Empty;
+					return true;
+				}
+			}
+			catch (Exception ex)
+			{
+				errorMessage = ex.Message;
+				return false;
+			}
+		}
 	}
 }

@@ -40,6 +40,20 @@ namespace CivOne.UnitTests
         public IBitmap Cursor { get; set; }
         public int CanvasWidth { get; }
         public int CanvasHeight { get; }
+        public int WindowWidth { get; }
+        public int WindowHeight { get; }
+
+        public bool TryOpenUrl(string url, out string errorMessage)
+        {
+            errorMessage = null;
+            return false;
+        }
+
+        public bool TryCopyToClipboard(string text, out string errorMessage)
+        {
+            errorMessage = null;
+            return false;
+        }
 
         //private static Mutex _mutex = new Mutex();
 

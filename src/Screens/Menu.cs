@@ -31,8 +31,25 @@ namespace CivOne.Screens
 
 		private readonly Picture _background;
 		
+		/// <summary>
+		/// Raised when the menu is cancelled (for example via Escape).
+		/// </summary>
 		public event EventHandler Cancel;
+
+		/// <summary>
+		/// Raised when the user clicks outside all menu entries.
+		/// </summary>
 		public event EventHandler MissClick;
+
+		/// <summary>
+		/// Raised when the user clicks outside all menu entries, including mouse coordinates.
+		/// </summary>
+		public event EventHandler<ScreenEventArgs> MissClickAt;
+
+		/// <summary>
+		/// Raised on mouse movement over the menu surface, including mouse coordinates.
+		/// </summary>
+		public event EventHandler<ScreenEventArgs> MouseMoveAt;
 		
 		public readonly MenuItemCollection<T> Items;
 
@@ -63,6 +80,7 @@ namespace CivOne.Screens
 		
 		private bool _mouseDown = false;
 		private bool _change = true;
+		private const int NoMenuItemIndex = -1;
 		private int _activeItem = 0;
 		public int ActiveItem
 		{
@@ -267,15 +285,35 @@ namespace CivOne.Screens
 			_mouseDown = true;
 
 			int index = MouseOverItem(args);
-			if (index < 0 && MissClick != null)
+			if (IsOutsideMenu(index))
 			{
-				MissClick(this, null);
-				return true;
+				return HandleMissClick(args);
 			}
-			if (index < 0 || index == _activeItem) return false;
+
+			if (index == _activeItem) return false;
 			ActiveItem = index;
 			_change = true;
 			return true;
+		}
+
+		private static bool IsOutsideMenu(int index) => index == NoMenuItemIndex;
+
+		private bool HandleMissClick(ScreenEventArgs args)
+		{
+			if (MissClick != null)
+			{
+				MissClick(this, EventArgs.Empty);
+				MissClickAt?.Invoke(this, args);
+				return true;
+			}
+
+			if (MissClickAt != null)
+			{
+				MissClickAt.Invoke(this, args);
+				return true;
+			}
+
+			return false;
 		}
 		
 		public override bool MouseUp(ScreenEventArgs args)
@@ -308,6 +346,12 @@ namespace CivOne.Screens
 			ActiveItem = index;
 			_change = true;
 			return true;
+		}
+
+		public override bool MouseMove(ScreenEventArgs args)
+		{
+			MouseMoveAt?.Invoke(this, args);
+			return false;
 		}
 
 		public void ForceUpdate()

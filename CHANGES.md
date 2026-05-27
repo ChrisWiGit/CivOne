@@ -6,6 +6,16 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Change default aspect ratio to "Expand" (formerly only experimental) for better support of modern displays and improved UI layout.
+  * The "Expand" aspect ratio mode stretches the game canvas to fill the entire window, allowing for more flexible window sizes and better use of screen real estate on modern displays.
+  * The original "Auto" aspect ratio mode is still available as an option in the setup menu for users who prefer the original behavior or are using older displays.
+* Feature: Added setup wizard to guide users through initial configuration and data file setup.
+  * The wizard is triggered on first launch when no valid data files are found, or can be accessed later from command line with `--setup`.
+  * It provides a step-by-step interface to select data files, configure graphics settings (fullscreen, aspect ratio), and adjust sound settings.
+  * The wizard applies selected settings and copied data files to the normal runtime configuration.
+* Fix: Screens marked `[ScreenResizeable]` (e.g. Credits) now react to host-window resizes even when the canvas size stays fixed (e.g. `AspectRatio=Auto`).
+  * `BaseScreen.Update` tracks the window size and fires `OnResize` plus a refresh when only the window changes.
+  * SDL runtime now raises an `OnWindowResize` event on `SDL_WINDOWEVENT_RESIZED` / `SDL_WINDOWEVENT_SIZE_CHANGED` and `GameWindow` forces a redraw, eliminating the 1–2 s frozen frame after a drag-resize.
 * Fix: Intro text are shown again.
   * Additional the text "Shift+Left/Right Forward/Backward" is shown at the beginning of the intro, to hint the user that they can fast forward the intro text.
 * Debug Option:

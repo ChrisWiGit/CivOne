@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using CivOne.Services.Translation;
@@ -131,7 +132,7 @@ namespace CivOne.Services
 		{
 			if (observer == null)
 			{
-				throw new ArgumentNullException(nameof(observer));
+				return;
 			}
 
 			lock (_sync)
@@ -148,6 +149,76 @@ namespace CivOne.Services
 			lock (_sync)
 			{
 				return _translationFileRepository.GetAvailableLanguages(storageDirectory, log);
+			}
+		}
+
+		/// <summary>
+		/// Resolves a language label for UI lists.
+		/// Prefers self-name from file metadata, then translated postfix, then raw postfix.
+		/// </summary>
+		public static string GetLanguageDisplayName(TranslationLanguageInfo language, Func<string, string> translate)
+		{
+			if (!string.IsNullOrWhiteSpace(language.DisplayName))
+			{
+				return language.DisplayName;
+			}
+
+			if (translate != null)
+			{
+				string translated = translate(language.Postfix);
+				if (!string.IsNullOrWhiteSpace(translated))
+				{
+					return translated;
+				}
+			}
+
+			return language.Postfix;
+		}
+
+		/// <summary>
+		/// Resolves a language label for a postfix and current language list.
+		/// </summary>
+		public static string GetLanguageDisplayName(string postfix, IReadOnlyList<TranslationLanguageInfo> languages, Func<string, string> translate)
+		{
+			if (string.IsNullOrWhiteSpace(postfix))
+			{
+				return string.Empty;
+			}
+
+			if (languages != null)
+			{
+				TranslationLanguageInfo language = languages.FirstOrDefault(x => x.MatchesPostfix(postfix));
+				if (!string.IsNullOrEmpty(language.Postfix))
+				{
+					return GetLanguageDisplayName(language, translate);
+				}
+			}
+
+			if (translate != null)
+			{
+				string translated = translate(postfix);
+				if (!string.IsNullOrWhiteSpace(translated))
+				{
+					return translated;
+				}
+			}
+
+			return postfix;
+		}
+
+		/// <summary>
+		/// Copies translation files from <paramref name="sourceDirectory"/> into the translations
+		/// sub-folder of <paramref name="storageDirectory"/>.
+		/// Only files with lowercase filenames on disk are copied to ensure platform consistency.
+		/// Case-conflicting files and files with uppercase letters are skipped and reported via <paramref name="log"/>.
+		/// </summary>
+		/// <returns>Number of files successfully copied.</returns>
+		public static int SyncTranslationFiles(string sourceDirectory, string storageDirectory, Action<string> log = null)
+		{
+			string targetDirectory = Path.Combine(storageDirectory, "translations");
+			lock (_sync)
+			{
+				return _translationFileRepository.SyncFiles(sourceDirectory, targetDirectory, log);
 			}
 		}
 

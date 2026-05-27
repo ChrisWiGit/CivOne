@@ -165,7 +165,12 @@ namespace CivOne.UnitTests
 			public IBitmap Cursor { set { } }
 			public int CanvasWidth => 320;
 			public int CanvasHeight => 200;
+			public int WindowWidth => 320;
+			public int WindowHeight => 200;
 			public string WindowTitle { set { } }
+
+			public bool TryOpenUrl(string url, out string errorMessage) { errorMessage = null; return false; }
+			public bool TryCopyToClipboard(string text, out string errorMessage) { errorMessage = null; return false; }
 
 			public string GetSetting(string key)
 				=> _storedSettings.TryGetValue(key, out string value) ? value : null;

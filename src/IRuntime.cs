@@ -32,12 +32,16 @@ namespace CivOne
 		IBitmap Cursor { set; }
 		int CanvasWidth { get; }
 		int CanvasHeight { get; }
+		int WindowWidth { get; }
+		int WindowHeight { get; }
 		void Log(string text, params object[] parameters);
 		string BrowseFolder(string caption = "");
 		string FileChooser(bool save, string title, string initialFileName, string filter);
 		string WindowTitle { set; }
 		void PlaySound(string file);
 		void StopSound();
+		bool TryOpenUrl(string url, out string errorMessage);
+		bool TryCopyToClipboard(string text, out string errorMessage);
 		void Quit();
 	}
 }

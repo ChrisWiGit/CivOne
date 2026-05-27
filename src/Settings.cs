@@ -59,7 +59,7 @@ namespace CivOne
 		private bool _windowMaximized = false;
 		private bool _rightSideBar = false;
 		private int _scale = 2;
-		private AspectRatio _aspectRatio = AspectRatio.Auto;
+		private AspectRatio _aspectRatio = AspectRatio.Expand;
 		private int _expandWidth, _expandHeight;
 		private bool _revealWorld = false;
 		private bool _debugMenu = false;

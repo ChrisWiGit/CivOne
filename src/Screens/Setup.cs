@@ -199,9 +199,30 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Patches")).OnSelect(GotoMenu(PatchesMenu)),
 			MenuItem.Create(Translate("Plugins")).OnSelect(GotoMenu(PluginsMenu)),
 			MenuItem.Create(Translate("Game Options")).OnSelect(GotoMenu(GameOptionsMenu)),
-			MenuItem.Create(Game.Started ? Translate("Return to game") : Translate("Launch Game")).OnSelect(CloseScreen()),
-			Game.Started ? null : MenuItem.Create(Translate("Quit")).OnSelect(CloseScreen(Runtime.Quit))
+			MenuItem.Create(GetReturnTargetString()).OnSelect(CloseScreen()),
+			IsAllowedToQuit() ?  MenuItem.Create(Translate("Quit")).OnSelect(CloseScreen(Runtime.Quit)) : null
 		);
+
+		private string GetReturnTargetString()
+		{
+			if (Game.Started)
+			{
+				return Translate("Return to game");
+			}
+			else if (Common.HasScreenType<StartupWizard.WizardScreen>())
+			{
+				return Translate("Return to startup wizard");
+			}
+			else
+			{
+				return Translate("Launch Game");
+			}
+		}
+
+		private static bool IsAllowedToQuit()
+		{
+			return Game.Started || !Common.HasScreenType<StartupWizard.WizardScreen>();
+		}
 
 		private void SettingsMenu(int activeItem = 0) => CreateMenu("Settings", activeItem,
 			MenuItem.Create(TranslateFormatted("Window Title: {0}", Settings.WindowTitle)).OnSelect(GotoScreen<WindowTitle>(ChangeWindowTitle)),
@@ -211,8 +232,12 @@ namespace CivOne.Screens
 					Translate("Override international font simulation behavior."),
 					Translate("Auto detects, Yes forces simulation, No disables it."))
 				.OnSelect(GotoMenu(SimulateInternationalFontMenu)),
-			MenuItem.Create(TranslateFormatted("Aspect Ratio: {0}", Settings.AspectRatio.ToText())).OnSelect(GotoMenu(AspectRatioMenu)),
-			MenuItem.Create(TranslateFormatted("Expand Size: {0}", ExpandSizeText())).OnSelect(GotoMenu(ExpandCanvasSizeMenu)),
+			MenuItem.Create(TranslateFormatted("Aspect Ratio: {0}", Settings.AspectRatio.ToText()))
+					.WithDescription(Translate("Use different aspect ratios."))
+					.OnSelect(GotoMenu(AspectRatioMenu)),
+			MenuItem.Create(TranslateFormatted("Expand Size: {0}", ExpandSizeText()))
+					.WithDescription(Translate("Resolution when using Expand ratio."))
+					.OnSelect(GotoMenu(ExpandCanvasSizeMenu)),
 			MenuItem.Create(TranslateFormatted("Full Screen: {0}", Settings.FullScreen.YesNo())).OnSelect(GotoMenu(FullScreenMenu)),
 			MenuItem.Create(TranslateFormatted("Window Size: {0}", WindowSizeText())).OnSelect(GotoMenu(WindowSizeMenu)),
 			MenuItem.Create(TranslateFormatted("Window Scale: {0}x", Settings.Scale)).OnSelect(GotoMenu(WindowScaleMenu)),
@@ -240,11 +265,21 @@ namespace CivOne.Screens
 		);
 
 		private void AspectRatioMenu() => CreateMenu("Aspect Ratio", GotoMenu(SettingsMenu, 3),
-			MenuItem.Create(TranslateFormatted("{0} (default)", Auto.ToText())).OnSelect((s, a) => Settings.AspectRatio = Auto).SetActive(() => Settings.AspectRatio == Auto),
-			MenuItem.Create(Fixed.ToText()).OnSelect((s, a) => Settings.AspectRatio = Fixed).SetActive(() => Settings.AspectRatio == Fixed),
-			MenuItem.Create(Scaled.ToText()).OnSelect((s, a) => Settings.AspectRatio = Scaled).SetActive(() => Settings.AspectRatio == Scaled),
-			MenuItem.Create(ScaledFixed.ToText()).OnSelect((s, a) => Settings.AspectRatio = ScaledFixed).SetActive(() => Settings.AspectRatio == ScaledFixed),
-			MenuItem.Create(AspectRatio.Expand.ToText()).OnSelect((s, a) => Settings.AspectRatio = AspectRatio.Expand).SetActive(() => Settings.AspectRatio == AspectRatio.Expand),
+			MenuItem.Create(TranslateFormatted("{0} (default)", Auto.ToText())).OnSelect((s, a) => Settings.AspectRatio = Auto)
+				.WithDescription(TranslateArray("Scale without correct aspect ratio\nThis may cause distortion."))
+				.SetActive(() => Settings.AspectRatio == Auto),
+			MenuItem.Create(Fixed.ToText()).OnSelect((s, a) => Settings.AspectRatio = Fixed)
+				.WithDescription(TranslateArray("Scale with correct aspect ratio\nThis may cause black borders."))
+				.SetActive(() => Settings.AspectRatio == Fixed),
+			MenuItem.Create(Scaled.ToText()).OnSelect((s, a) => Settings.AspectRatio = Scaled)
+				.WithDescription(TranslateArray("Scale to resolution\nThis may cause blurry image."))
+				.SetActive(() => Settings.AspectRatio == Scaled),
+			MenuItem.Create(ScaledFixed.ToText()).OnSelect((s, a) => Settings.AspectRatio = ScaledFixed)
+				.WithDescription(TranslateArray("Scale with correct aspect ratio\nThis may cause blurry\n and black borders."))
+				.SetActive(() => Settings.AspectRatio == ScaledFixed),
+			MenuItem.Create(AspectRatio.Expand.ToText()).OnSelect((s, a) => Settings.AspectRatio = AspectRatio.Expand)
+				.WithDescription(TranslateArray("Expand image to fit the screen.\nSome screens may show borders."))
+				.SetActive(() => Settings.AspectRatio == AspectRatio.Expand),
 			MenuItem.Create(Translate("Back"))
 		);
 
@@ -567,7 +602,7 @@ namespace CivOne.Screens
 		private void SeaLevelRise() => CreateMenu(Translate("Tiles replace with ocean"), GotoMenu(ExtendedGlobalWarmingMenu, 0),
 			MenuItem.Create(TranslateFormatted("{0} (default)", false.YesNo()))
 				.WithDescription(Translate("Keep global warming behavior without sea rise."))
-				.OnSelect((s, a) =>  Settings.SetGlobalWarmingFlag(Settings.GlobalWarmingFeatureFlag.SeaLevelRise, false)
+				.OnSelect((s, a) => Settings.SetGlobalWarmingFlag(Settings.GlobalWarmingFeatureFlag.SeaLevelRise, false)
 				).SetActive(() => !Settings.IsGlobalWarmingFlagSet(Settings.GlobalWarmingFeatureFlag.SeaLevelRise)),
 			MenuItem.Create(true.YesNo())
 				.WithDescription(Translate("Allow coastal tiles to turn into ocean."))
@@ -687,8 +722,11 @@ namespace CivOne.Screens
 
 		private string CurrentLanguageText()
 		{
+			IReadOnlyList<TranslationLanguageInfo> availableLanguages = TranslationServiceFactory.GetAvailableLanguages(Runtime.StorageDirectory, message => Log(message));
 			string activePostfix = TranslationServiceFactory.ActiveLanguagePostfix;
-			return string.IsNullOrEmpty(activePostfix) ? Translate("Identity") : Translate(activePostfix);
+			return string.IsNullOrEmpty(activePostfix)
+				? Translate("Original (English)")
+				: TranslationServiceFactory.GetLanguageDisplayName(activePostfix, availableLanguages, Translate);
 		}
 
 		private void LanguageMenu()
@@ -696,7 +734,7 @@ namespace CivOne.Screens
 			IReadOnlyList<TranslationLanguageInfo> availableLanguages = TranslationServiceFactory.GetAvailableLanguages(Runtime.StorageDirectory, message => Log(message));
 			List<MenuItem<int>> menuItems =
 			[
-				MenuItem.Create(Translate("Identity (default)"))
+				MenuItem.Create(Translate("Original (default)"))
 				.WithDescription(Translate("Use original text from game files without translation."))
 				.OnSelect((s, a) => SelectLanguage(string.Empty)).SetActive(() => string.IsNullOrEmpty(TranslationServiceFactory.ActiveLanguagePostfix))
 			];
@@ -708,10 +746,9 @@ namespace CivOne.Screens
 			}
 			else
 			{
-				menuItems.AddRange(availableLanguages.Select(language => Translate(language.Postfix)) // only way of translating a language name.
-					.Select(postfix => MenuItem.Create(postfix)
-						.OnSelect((s, a) => SelectLanguage(postfix))
-						.SetActive(() => string.Equals(TranslationServiceFactory.ActiveLanguagePostfix, postfix, StringComparison.Ordinal))));
+				menuItems.AddRange(availableLanguages.Select(language => MenuItem.Create(TranslationServiceFactory.GetLanguageDisplayName(language, Translate))
+					.OnSelect((s, a) => SelectLanguage(language.Postfix))
+					.SetActive(() => string.Equals(TranslationServiceFactory.ActiveLanguagePostfix, language.Postfix, StringComparison.OrdinalIgnoreCase))));
 			}
 
 			menuItems.Add(MenuItem.Create(Translate("Back")));
@@ -724,7 +761,7 @@ namespace CivOne.Screens
 			{
 				Settings.LanguagePostfix = string.Empty;
 				TranslationServiceFactory.UseIdentity();
-				NotifyLanguageSelection(Translate("Identity"));
+				NotifyLanguageSelection(Translate("Original (English)"));
 				GameOptionsMenu(9);
 				return;
 			}
@@ -741,7 +778,8 @@ namespace CivOne.Screens
 			}
 
 			Settings.LanguagePostfix = postfix;
-			NotifyLanguageSelection(postfix);
+			IReadOnlyList<TranslationLanguageInfo> availableLanguages = TranslationServiceFactory.GetAvailableLanguages(Runtime.StorageDirectory, message => Log(message));
+			NotifyLanguageSelection(TranslationServiceFactory.GetLanguageDisplayName(postfix, availableLanguages, Translate));
 			GameOptionsMenu(9);
 		}
 
