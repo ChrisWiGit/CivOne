@@ -112,7 +112,7 @@ namespace CivOne.IO
 					if (!string.Equals(existingTarget, targetPath, StringComparison.Ordinal))
 					{
 						Log("- Normalizing target file casing: {0} -> {1}", Path.GetFileName(existingTarget), filename);
-						File.Move(existingTarget, targetPath);
+						MoveFileToCanonicalCasing(existingTarget, targetPath);
 					}
 					continue;
 				}
@@ -130,6 +130,36 @@ namespace CivOne.IO
 
 			missingFile = null;
 			return true;
+		}
+
+		/// <summary>
+		/// Moves <paramref name="sourcePath"/> to <paramref name="targetPath"/> and enforces
+		/// the exact target casing.
+		/// </summary>
+		/// <remarks>
+		/// A direct case-only rename can fail on case-insensitive file systems because source and
+		/// destination may be treated as the same path.
+		/// To keep behavior consistent across platforms, this method uses a temporary intermediate
+		/// name when only casing differs.
+		/// </remarks>
+		/// <param name="sourcePath">Current path of the file.</param>
+		/// <param name="targetPath">Destination path with canonical casing.</param>
+		private static void MoveFileToCanonicalCasing(string sourcePath, string targetPath)
+		{
+			if (string.Equals(sourcePath, targetPath, StringComparison.OrdinalIgnoreCase)
+				&& !string.Equals(sourcePath, targetPath, StringComparison.Ordinal))
+			{
+				// Refactoring note: a direct case-only rename can fail on case-insensitive
+				// file systems because source and destination are treated as the same path.
+				// Rename via a temporary file first to make the casing normalization reliable.
+				string directory = Path.GetDirectoryName(targetPath) ?? string.Empty;
+				string temporaryPath = Path.Combine(directory, $"{Path.GetFileName(targetPath)}.{Guid.NewGuid():N}.tmp");
+				File.Move(sourcePath, temporaryPath);
+				File.Move(temporaryPath, targetPath);
+				return;
+			}
+
+			File.Move(sourcePath, targetPath);
 		}
 
 		/// <summary>
