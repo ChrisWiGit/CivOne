@@ -84,19 +84,25 @@ namespace CivOne.Graphics
 		{
 			if (width < 0) width = bitmap.Width() - left;
 			if (height < 0) height = bitmap.Height() - top;
-			int ww = (left + width - 1), hh = (top + height - 1);
-			for (int yy = top; yy <= hh; yy++)
+
+			// Logical edges of the requested rectangle (may extend past the bitmap).
+			int rightEdge = left + width - 1;
+			int bottomEdge = top + height - 1;
+
+			// Visible area clamped to bitmap bounds (end-exclusive).
+			int startX = Math.Max(0, left);
+			int startY = Math.Max(0, top);
+			int endX = Math.Min(left + width, bitmap.Width());
+			int endY = Math.Min(top + height, bitmap.Height());
+
+			for (int y = startY; y < endY; y++)
 			{
-				if (yy >= bitmap.Height()) break;
-				if (bitmap.OutBoundY(yy)) continue;
-				for (int xx = left; xx <= ww; xx++)
+				for (int x = startX; x < endX; x++)
 				{
-					if (xx >= bitmap.Width()) break;
-					if (bitmap.OutBoundX(xx)) continue;
-					if (yy == top || xx == ww)
-						bitmap.Bitmap[xx, yy] = colourDark;
-					else if (yy == hh || xx == left)
-						bitmap.Bitmap[xx, yy] = colourLight;
+					if (y == top || x == rightEdge)
+						bitmap.Bitmap[x, y] = colourDark;
+					else if (y == bottomEdge || x == left)
+						bitmap.Bitmap[x, y] = colourLight;
 				}
 			}
 			return bitmap;

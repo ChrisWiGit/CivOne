@@ -205,33 +205,70 @@ namespace CivOne.Graphics
 		/// </summary>
 		internal void ClearExistsCache() => _existsCache.Clear();
 		
+		private const int CivilopediaFont = 6;
+		private const int CivilopediaLineWidth = 294;
+
 		internal string[] GetCivilopediaText(string name)
 		{
-			List<string> textLines = [];
-			string text = string.Join(" ", TextFileFactory.Get().GetGameText(name));
-			string t = "";
-			while (text.Length > 0)
+			try
 			{
-				if (text.IndexOf(' ') == -1)
-				{
-					if (t.Length > 0 && GetTextSize(6, string.Join(" ", t, text)).Width < 294)
-						text = string.Join(" ", t, text);
-					else if (t.Length > 0)
-						textLines.Add(t);
-					t = text;
-					text = "";
-				}
-				else if (GetTextSize(6, t + text.Substring(0, text.IndexOf(' '))).Width < 294)
-				{
-					if (t.Length > 0) t += " ";
-					t += text.Substring(0, text.IndexOf(' '));
-					text = text.Substring(text.IndexOf(' ')).Trim();
-					continue;
-				}
-				textLines.Add(t);
-				t = "";
+				string text = LoadCivilopediaText(name);
+				if (string.IsNullOrEmpty(text))
+					return [];
+
+				return WrapText(text, CivilopediaFont, CivilopediaLineWidth);
 			}
-			return textLines.ToArray();
+			catch (Exception ex)
+			{
+				Log("Error in GetCivilopediaText({0}): {1}", name, ex.Message);
+				return [];
+			}
+		}
+
+		private static string LoadCivilopediaText(string name)
+		{
+			var factory = TextFileFactory.Get();
+			if (factory == null)
+			{
+				Log("TextFileFactory returned null for: {0}", name);
+				return string.Empty;
+			}
+
+			var gameText = factory.GetGameText(name);
+			if (gameText == null) return string.Empty;
+
+			return string.Join(" ", gameText);
+		}
+
+		private string[] WrapText(string text, int font, int maxWidth)
+		{
+			List<string> lines = [];
+			StringBuilder current = new();
+
+			foreach (string word in text.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+			{
+				AppendWord(word, current, lines, font, maxWidth);
+			}
+
+			if (current.Length > 0)
+				lines.Add(current.ToString());
+
+			return [.. lines];
+		}
+
+		private void AppendWord(string word, StringBuilder current, List<string> lines, int font, int maxWidth)
+		{
+			string candidate = current.Length == 0 ? word : current + " " + word;
+			if (GetTextSize(font, candidate).Width < maxWidth)
+			{
+				if (current.Length > 0) current.Append(' ');
+				current.Append(word);
+				return;
+			}
+
+			if (current.Length > 0)
+				lines.Add(current.ToString());
+			current.Clear().Append(word);
 		}
 		
 		private static Picture _worldMapTiles;

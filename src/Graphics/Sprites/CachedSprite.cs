@@ -12,18 +12,19 @@ using CivOne.IO;
 
 namespace CivOne.Graphics.Sprites
 {
-	internal class CachedSprite : BaseInstance, ISprite, ICached
+	internal class CachedSprite(Func<Bytemap> getSprite) : BaseInstance, ISprite, ICached, IDisposable
 	{
-		private readonly Func<Bytemap> GetSprite;
+		private readonly Func<Bytemap> GetSprite = getSprite;
 
 		private Bytemap _bitmap;
+		private bool _disposed;
+
 		public Bytemap Bitmap
 		{
 			get
 			{
-				if (_bitmap == null)
-					_bitmap = GetSprite();
-				return _bitmap;
+				ObjectDisposedException.ThrowIf(_disposed, this);
+				return _bitmap ??= GetSprite();
 			}
 		}
 
@@ -33,15 +34,22 @@ namespace CivOne.Graphics.Sprites
 			_bitmap = null;
 		}
 
-		public CachedSprite(Func<Bytemap> getSprite)
+		public void Dispose()
 		{
-			GetSprite = getSprite;
+			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 
-		~CachedSprite()
+		protected virtual void Dispose(bool disposing)
 		{
-			_bitmap?.Dispose();
-			_bitmap = null;
+			if (_disposed) return;
+			if (disposing)
+			{
+				Clear();
+			}
+			_disposed = true;
 		}
+
+		~CachedSprite() => Dispose(false);
 	}
 }
