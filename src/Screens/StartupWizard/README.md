@@ -31,7 +31,7 @@ Current startup behavior:
 Think of the wizard as 4 small parts:
 
 1. **State**: current step + user choices  
-   File: [WizardEngine.cs](WizardEngine.cs)
+    File: [WizardState.cs](WizardState.cs)
 2. **Page Builder**: creates page content from state  
    File: [WizardPageBuilder.cs](WizardPageBuilder.cs)
 3. **Action Handler**: executes user actions (next, back, browse folder, finish)  
@@ -51,7 +51,7 @@ Think of the wizard as 4 small parts:
 - `DataFolder`
 - `SoundEnabled`
 
-See: [WizardEngine.cs](WizardEngine.cs)
+See: [WizardState.cs](WizardState.cs)
 
 ### Page model
 
@@ -94,7 +94,7 @@ Current features already implemented:
 | **Toggle behavior** | Switch options on/off (e.g. sound) and persist choice | [WizardEntryAction.cs](WizardEntry.cs) enum value `ToggleSound`; [WizardActionHandler.cs](WizardActionHandler.cs) `Execute()` toggles `engine.SoundEnabled` and calls `Settings.Instance.Sound = ...`; [WizardPageBuilder.cs](WizardPageBuilder.cs) displays current state |
 | **Open URL links** | Clickable hyperlinks with browser fallback and clipboard copy | [WizardPage.cs](WizardPage.cs) field `Links` of type `(string Label, string Url)`; [WizardRenderingDelegate.cs](WizardRenderingDelegate.cs) renders links in blue color and tracks hit areas; [WizardScreen.cs](WizardScreen.cs) calls `_actionHandler.OpenUrl()` on click; [WizardActionHandler.cs](WizardActionHandler.cs) uses injected `IBrowserService` |
 | **Mouse hit-testing** | Click entries and links with accurate rectangular hit areas | [WizardRenderingContext.cs](WizardRenderingContext.cs) collections `EntryHitAreas` and `LinkAreas`; [WizardRenderingDelegate.cs](WizardRenderingDelegate.cs) records rectangles during render; [WizardScreen.cs](WizardScreen.cs) checks clicks against areas in `MouseDown()` |
-| **Status line** | Bottom-of-screen feedback messages for user actions | [WizardState](WizardEngine.cs) property `StatusMessage`; [WizardActionHandler.cs](WizardActionHandler.cs) assigns messages like `"Data files copied successfully."`; [WizardRenderingDelegate.cs](WizardRenderingDelegate.cs) renders at bottom row |
+| **Status line** | Bottom-of-screen feedback messages for user actions | [WizardState](WizardState.cs) property `StatusMessage`; [WizardActionHandler.cs](WizardActionHandler.cs) assigns messages like `"Data files copied successfully."`; [WizardRenderingDelegate.cs](WizardRenderingDelegate.cs) renders at bottom row |
 | **Resize-aware DOS rendering** | Scales 80x25 DOS grid to fill window, keeps aspect ratio | [WizardScreen.cs](WizardScreen.cs) attribute `[ScreenResizeable]`; method `RenderCurrentPage()` calculates scale and box; [WizardRenderingContext.cs](WizardRenderingContext.cs) stores `Scale`, `Box`, `Cols`, `Rows` |
 | **Dependency injection** | Constructor injection of page builder and action handler for testability | [WizardScreen.cs](WizardScreen.cs) public constructor uses defaults, internal constructor accepts `IWizardPageBuilder` and `IWizardActionHandler`; [IWizardPageBuilder.cs](IWizardPageBuilder.cs) and [IWizardActionHandler.cs](IWizardActionHandler.cs) define contracts |
 
@@ -210,7 +210,7 @@ Example: add a new page "Gameplay Preset" between Sound and Final page.
 
 ### Step 1: Extend state
 
-Add new state fields in [WizardEngine.cs](WizardEngine.cs), for example:
+Add new state fields in [WizardState.cs](WizardState.cs), for example:
 
 ```csharp
 public string GameplayPreset { get; set; } = "Normal";
@@ -366,7 +366,7 @@ Suggested order:
 
 If you only want to add a new setup step, you usually need changes in:
 
-- [WizardEngine.cs](WizardEngine.cs)
+- [WizardState.cs](WizardState.cs)
 - [WizardEntry.cs](WizardEntry.cs) (optional)
 - [WizardPageBuilder.cs](WizardPageBuilder.cs)
 - [WizardActionHandler.cs](WizardActionHandler.cs)
