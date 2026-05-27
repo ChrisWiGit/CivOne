@@ -27,7 +27,7 @@ namespace CivOne.Graphics
 				{
 					if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists("SP257"))
 					{
-						_food = new Picture(Free.Instance.Food, Common.GetPalette256);
+						_food = new Picture(Free.Food, Common.GetPalette256);
 					}
 					else
 					{
@@ -64,7 +64,7 @@ namespace CivOne.Graphics
 				{
 					if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists("SP257"))
 					{
-						_shield = new Picture(Free.Instance.Shield, Common.GetPalette256);
+						_shield = new Picture(Free.Shield, Common.GetPalette256);
 					}
 					else
 					{
@@ -84,7 +84,7 @@ namespace CivOne.Graphics
 				{
 					if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists("SP257"))
 					{
-						_smokeStack = new Picture(Free.Instance.Shield, Common.GetPalette256);
+						_smokeStack = new Picture(Free.Shield, Common.GetPalette256);
 					}
 					else
 					{
@@ -117,7 +117,7 @@ namespace CivOne.Graphics
 				{
 					if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists("SP257"))
 					{
-						_trade = new Picture(Free.Instance.Trade, Common.GetPalette256);
+						_trade = new Picture(Free.Trade, Common.GetPalette256);
 					}
 					else
 					{
@@ -163,7 +163,7 @@ namespace CivOne.Graphics
 				{
 					if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists("SP257"))
 					{
-						_luxuries = new Picture(Free.Instance.Luxuries, Common.GetPalette256);
+						_luxuries = new Picture(Free.Luxuries, Common.GetPalette256);
 					}
 					else
 					{
@@ -183,7 +183,7 @@ namespace CivOne.Graphics
 				{
 					if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists("SP257"))
 					{
-						_taxes = new Picture(Free.Instance.Taxes, Common.GetPalette256);
+						_taxes = new Picture(Free.Taxes, Common.GetPalette256);
 					}
 					else
 					{
@@ -203,7 +203,7 @@ namespace CivOne.Graphics
 				{
 					if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists("SP257"))
 					{
-						_science = new Picture(Free.Instance.Science, Common.GetPalette256);
+						_science = new Picture(Free.Science, Common.GetPalette256);
 					}
 					else
 					{

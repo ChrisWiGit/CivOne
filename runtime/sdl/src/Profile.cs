@@ -59,19 +59,20 @@ namespace CivOne
 		{
 			if (!File.Exists(_filename)) CreateProfile();
 
-			using (FileStream fs = new FileStream(_filename, FileMode.Open, FileAccess.Read))
+			using FileStream fs = new(_filename, FileMode.Open, FileAccess.Read, FileShare.Read);
+			XDocument xDoc = XDocument.Load(fs);
+			XElement xRoot;
+			if ((xRoot = xDoc.Element(ROOT_ELEMENT)) == null)
 			{
-				XDocument xDoc = XDocument.Load(fs);
-				XElement xRoot;
-				if ((xRoot = xDoc.Element(ROOT_ELEMENT)) == null)
-				{
-					Log($"Profile {_name} error: Root element missing");
-					CreateProfile();
-					return null;
-				}
-
-				return xRoot.Element(key)?.Value;
+				Log($"Profile {_name} error: Root element missing");
+				CreateProfile();
+				// Re-read after recreation to return the value instead of null
+				using FileStream fs2 = new(_filename, FileMode.Open, FileAccess.Read, FileShare.Read);
+				XDocument xDoc2 = XDocument.Load(fs2);
+				xRoot = xDoc2.Element(ROOT_ELEMENT);
 			}
+
+			return xRoot?.Element(key)?.Value;
 		}
 
 		private readonly AtomicFileReplacementService _atomicFileReplacementService = new ();
@@ -82,7 +83,7 @@ namespace CivOne
 
 			XDocument xDoc;
 			XElement xRoot, xElement;
-			using (FileStream fs = new FileStream(_filename, FileMode.Open, FileAccess.Read))
+			using (FileStream fs = new(_filename, FileMode.Open, FileAccess.Read, FileShare.Read))
 			{
 				xDoc = XDocument.Load(fs);
 				if ((xRoot = xDoc.Element(ROOT_ELEMENT)) == null)
@@ -95,9 +96,11 @@ namespace CivOne
 				}
 			}
 
-			if ((xElement = xRoot.Element(key)) == null)
+			xElement = xRoot.Element(key);
+			if (xElement == null)
 			{
-				xRoot.Add(xElement = new XElement(key));
+				xElement = new XElement(key);
+				xRoot.Add(xElement);
 			}
 			xElement.Value = value;
 
@@ -112,6 +115,7 @@ namespace CivOne
 		// Thread-safe profile cache: prevents double-add ArgumentException under concurrent Get()
 		// from MCP/render threads, and uses OrdinalIgnoreCase to avoid culture-dependent ToLower (ü, türk. I, ...).
 		private static readonly ConcurrentDictionary<string, Profile> _profiles = new(StringComparer.OrdinalIgnoreCase);
+		
 		public static Profile Get(Runtime runtime, string name = "default") =>
 			_profiles.GetOrAdd(name, n => new Profile(runtime, n));
 

@@ -46,7 +46,19 @@ namespace CivOne
 		public RuntimeSettings Settings { get; private set; }
 		public MouseCursor CurrentCursor { internal get; set; }
 		public Bytemap[] Layers { get; set; }
-		public Palette Palette { get; set; }
+		private Palette _palette;
+		public Palette Palette
+		{
+			get => _palette;
+			set
+			{
+				if (_palette == value) return;
+				// Refactor note: dispose the previous palette when swapping instances so unmanaged
+				// buffers are released immediately instead of waiting for GC/finalizer.
+				(_palette as IDisposable)?.Dispose();
+				_palette = value;
+			}
+		}
 		private IBitmap _cursor;
 		public IBitmap Cursor
 		{
@@ -151,7 +163,11 @@ namespace CivOne
 
 		public void Dispose()
 		{
+			if (_disposed) return;
+			_disposed = true;
 			RuntimeHandler.Shutdown();
 		}
+
+		private bool _disposed;
 	}
 }
