@@ -45,6 +45,12 @@ namespace CivOne
 				File.Delete(_filename);
 			}
 
+			string profileDirectory = Path.GetDirectoryName(_filename);
+			if (!string.IsNullOrEmpty(profileDirectory))
+			{
+				Directory.CreateDirectory(profileDirectory);
+			}
+
 			using (FileStream fs = new FileStream(_filename, FileMode.Create, FileAccess.Write))
 			using (XmlWriter xw = CreateXmlWriter(fs))
 			{
@@ -97,6 +103,12 @@ namespace CivOne
 				xRoot.Add(xElement = new XElement(key));
 			}
 			xElement.Value = value;
+
+			string profileDirectory = Path.GetDirectoryName(_filename);
+			if (!string.IsNullOrEmpty(profileDirectory))
+			{
+				Directory.CreateDirectory(profileDirectory);
+			}
 
 			using (FileStream fs = new FileStream(_filename, FileMode.Create, FileAccess.Write))
 			using (XmlWriter xw = CreateXmlWriter(fs))

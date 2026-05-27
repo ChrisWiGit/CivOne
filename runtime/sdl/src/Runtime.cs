@@ -137,6 +137,7 @@ namespace CivOne
 		public Runtime(RuntimeSettings runtimeSettings)
 		{	
 			Settings = runtimeSettings;
+			Directory.CreateDirectory(((IRuntime)this).StorageDirectory);
 			Profile = Profile.Get(this, runtimeSettings.Get<string>("profile-name"));
 			RuntimeHandler.Register(this);
 		}
