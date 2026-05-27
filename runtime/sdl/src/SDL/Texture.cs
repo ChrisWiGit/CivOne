@@ -17,6 +17,7 @@ using CivOne.IO;
 
 namespace CivOne
 {
+	#pragma warning disable S101 // Types should be named in PascalCase - but these are named to match SDL as a name.
 	internal static partial class SDL
 	{
 		internal class Texture : IDisposable
@@ -71,6 +72,8 @@ namespace CivOne
 			}
 
 			private SDL_Rect _rect;
+
+			~Texture() => Dispose(disposing: false);
 
 			internal Texture(IntPtr renderer, Palette palette, Bytemap bytemap)
 			{
@@ -182,9 +185,23 @@ namespace CivOne
 
 			public void Dispose()
 			{
+				Dispose(disposing: true);
+				GC.SuppressFinalize(this);
+			}
+
+			protected virtual void Dispose(bool disposing)
+			{
 				if (_disposed) return;
-				_disposed = true;
+
+				if (disposing)
+				{
+					_paletteCache = null;
+					_colourBuffer = null;
+					_byteBuffer = null;
+				}
+
 				DestroyTextureHandle();
+				_disposed = true;
 			}
 		}
 	}

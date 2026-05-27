@@ -5,11 +5,12 @@ using Xunit;
 
 namespace CivOne.UnitTests
 {
-	public class TranslationFileRepositoryImplTests : IDisposable
+	public sealed class TranslationFileRepositoryImplTests : IDisposable
 	{
 		private readonly string _storageDirectory;
 		private readonly string _translationDirectory;
 		private readonly TranslationFileRepositoryImpl _testee;
+		private bool _disposed;
 
 		public TranslationFileRepositoryImplTests()
 		{
@@ -87,10 +88,21 @@ namespace CivOne.UnitTests
 
 		public void Dispose()
 		{
-			if (Directory.Exists(_storageDirectory))
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		private void Dispose(bool disposing)
+		{
+			if (_disposed) return;
+			_disposed = true;
+
+			if (disposing && Directory.Exists(_storageDirectory))
 			{
 				Directory.Delete(_storageDirectory, true);
 			}
 		}
+
+		~TranslationFileRepositoryImplTests() => Dispose(false);
 	}
 }

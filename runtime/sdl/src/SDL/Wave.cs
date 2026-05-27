@@ -13,14 +13,15 @@ using System.Runtime.InteropServices;
 
 namespace CivOne
 {
+	#pragma warning disable S101 // Types should be named in PascalCase - but these are named to match SDL as a name.
 	internal static partial class SDL
 	{
 		internal unsafe class Wave : IDisposable
 		{
 			private uint deviceId = uint.MaxValue;
+			private bool _disposed;
 
 			private SDL_AudioSpec _waveSpec;
-			private uint _length;
 			private IntPtr _buffer = IntPtr.Zero;
 			private DateTime _expectedPlaybackEndUtc = DateTime.MinValue;
 
@@ -48,7 +49,7 @@ namespace CivOne
 				Log($"Sound start: {Path.GetFileName(Filename)}");
 
 				const int FREE_SOURCE = 1;
-				if (SDL_LoadWAV_RW(Filename, FREE_SOURCE, ref _waveSpec, out _buffer, out _length) == IntPtr.Zero)
+				if (SDL_LoadWAV_RW(Filename, FREE_SOURCE, ref _waveSpec, out _buffer, out length) == IntPtr.Zero)
 				{
 					_buffer = IntPtr.Zero;
 					Log($"Could not load sound: {Path.GetFileName(Filename)}: {GetSdlErrorMessage()}");
@@ -63,7 +64,9 @@ namespace CivOne
 					return;
 				}
 
-				if (SDL_QueueAudio(deviceId, _buffer, _length) < 0)
+				uint length;
+
+				if (SDL_QueueAudio(deviceId, _buffer, length) < 0)
 				{
 					Log("Could not queue audio");
 					return;
@@ -73,7 +76,7 @@ namespace CivOne
 				// Keep a conservative time-based tail window based on the queued byte length.
 				double bytesPerSample = (_waveSpec.Format & 0xFF) / 8.0;
 				double bytesPerSecond = Math.Max(1, _waveSpec.Frequency) * Math.Max(1, (int)_waveSpec.Channels) * Math.Max(1.0, bytesPerSample);
-				double durationSeconds = _length / bytesPerSecond;
+				double durationSeconds = length / bytesPerSecond;
 				_expectedPlaybackEndUtc = DateTime.UtcNow.AddSeconds(durationSeconds + 0.05);
 
 				SDL_PauseAudioDevice(deviceId, 0);
@@ -87,7 +90,7 @@ namespace CivOne
 			// Safety net: if a Wave reference is lost (e.g. on a Window crash) without explicit Dispose,
 			// the finalizer still releases the SDL audio device + WAV buffer. Without this, SDL can
 			// exhaust its limited number of simultaneous audio devices over the program lifetime.
-			~Wave() => Dispose();
+			~Wave() => Dispose(disposing: false);
 
 			public bool IsPlaying()
 			{
@@ -98,10 +101,19 @@ namespace CivOne
 
 			public void Dispose()
 			{
-				// Idempotent: avoid double Log/double-free when called twice.
-				if (deviceId == uint.MaxValue && _buffer == IntPtr.Zero) return;
+				Dispose(disposing: true);
+				GC.SuppressFinalize(this);
+			}
 
-				Log($"Sound stop: {Path.GetFileName(Filename)}");
+			protected virtual void Dispose(bool disposing)
+			{
+				if (_disposed) return;
+
+				if (disposing)
+				{
+					Log($"Sound stop: {Path.GetFileName(Filename)}");
+					OnLog = null;
+				}
 
 				if (deviceId != uint.MaxValue)
 				{
@@ -116,7 +128,7 @@ namespace CivOne
 					_buffer = IntPtr.Zero;
 				}
 
-				GC.SuppressFinalize(this);
+				_disposed = true;
 			}
 		}
 	}

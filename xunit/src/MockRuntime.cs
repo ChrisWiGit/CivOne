@@ -7,16 +7,16 @@ using CivOne.IO;
 
 namespace CivOne.UnitTests
 {
-    public class MockRuntime : IRuntime, IDisposable
+    public sealed class MockRuntime : IRuntime
     {
-        public event EventHandler Initialize { add { } remove { } }
-        public event EventHandler Draw { add { } remove { } }
-        public event UpdateEventHandler Update { add { } remove { } }
-        public event KeyboardEventHandler KeyboardUp { add { } remove { } }
-        public event KeyboardEventHandler KeyboardDown { add { } remove { } }
-        public event ScreenEventHandler MouseUp { add { } remove { } }
-        public event ScreenEventHandler MouseDown { add { } remove { } }
-        public event ScreenEventHandler MouseMove { add { } remove { } }
+        public event EventHandler Initialize;
+        public event EventHandler Draw;
+        public event UpdateEventHandler Update;
+        public event KeyboardEventHandler KeyboardUp;
+        public event KeyboardEventHandler KeyboardDown;
+        public event ScreenEventHandler MouseUp;
+        public event ScreenEventHandler MouseDown;
+        public event ScreenEventHandler MouseMove;
         public Platform CurrentPlatform { get; }
 
         public string StorageDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CivOne");
@@ -40,8 +40,6 @@ namespace CivOne.UnitTests
         public IBitmap Cursor { get; set; }
         public int CanvasWidth { get; }
         public int CanvasHeight { get; }
-
-        //private static Mutex _mutex = new Mutex();
 
         public void Log(string text, params object[] parameters)
         {
@@ -72,6 +70,7 @@ namespace CivOne.UnitTests
 
         public void Dispose()
         {
+			// No resources to release in this test double.
         }
 
 		public string FileChooser(bool save, string title, string initialFileName, string filter)
@@ -82,7 +81,6 @@ namespace CivOne.UnitTests
 		public MockRuntime(RuntimeSettings settings)
         {
             Settings = settings;
-            // TODO fire-eggs this needs to be false if you want to use Earth! and must have a pointer to the Civ data files!
             settings.Free = false;
             RuntimeHandler.Wipe(); // Ensure any previous runtime is cleared out otherwise exceptions occur
             RuntimeHandler.RegisterForTest(this);
