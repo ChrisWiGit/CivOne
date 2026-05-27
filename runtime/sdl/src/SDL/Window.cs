@@ -133,7 +133,9 @@ namespace CivOne
 			{
 				while (SDL_PollEvent(out SDL_Event sdlEvent) == 1)
 				{
-					if (HandleDebuggingEvents(sdlEvent) || TrapDebugger(sdlEvent))
+					// Split debug hotkeys from normal events: F10/F9 may swallow input,
+					// but F12 still runs after HandleEvent to preserve original flow.
+					if (HandleDebuggingEvents(sdlEvent))
 					{
 						continue;
 					}
@@ -144,6 +146,8 @@ namespace CivOne
 					{
 						return false;
 					}
+
+					TrapDebugger(sdlEvent);
 				}
 
 				return true;
