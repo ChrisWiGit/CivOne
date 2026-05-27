@@ -125,8 +125,9 @@ namespace CivOne
 
 				cached.UpdateFrom(_runtime.Palette, bytemap);
 				cached.Draw(x1, y1, (x2 - x1), (y2 - y1));
-				DrawCursorOverlay(x1, y1);
 			}
+
+			DrawCursorOverlay(x1, y1);
 		}
 
 		private Size SetCanvasSize()
