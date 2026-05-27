@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -26,8 +27,10 @@ namespace CivOne.Graphics
 
 		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
 
-		private readonly Dictionary<string, Picture> _cache = new Dictionary<string, Picture>();
-		private readonly Dictionary<string, Bytemap> _textCache = new Dictionary<string, Bytemap>();
+		// Concurrent dictionaries: PreloadCivilopedia (RuntimeHandler) can populate caches from a
+		// background task while the render loop reads them. Plain Dictionary<,> is not safe here.
+		private readonly ConcurrentDictionary<string, Picture> _cache = new();
+		private readonly ConcurrentDictionary<(byte Colour, int Font, char Letter), Bytemap> _textCache = new();
 		private readonly IFont _defaultFont = new DefaultFont();
 		private readonly List<IFont> _fonts = [];
 		private readonly Dictionary<Direction, IBitmap> _fog = new Dictionary<Direction, IBitmap>();
@@ -60,12 +63,24 @@ namespace CivOne.Graphics
 				file = new byte[fs.Length];
 				fs.ReadExactly(file, 0, file.Length);
 			}
-			
+
+			if (file.Length < 2)
+			{
+				Log("Font file too short, fallback to default font");
+				return;
+			}
+
 			List<ushort> fontOffsets = [];
 			int index = 0;
 			uint fontCount = BitConverter.ToUInt16(file, index);
 			index += 2;
-			
+
+			if (index + (fontCount * 2) > file.Length)
+			{
+				Log("Font file corrupted: insufficient data for {0} font offsets", fontCount);
+				return;
+			}
+
 			for (int i = 0; i < fontCount; i++)
 			{
 				fontOffsets.Add(BitConverter.ToUInt16(file, index));
@@ -121,7 +136,9 @@ namespace CivOne.Graphics
 		public Picture GetText(string text, int font, byte colourFirstLetter, byte colour, int highlightedCharacterIndex)
 		{
 			text ??= "[MISSING STRING]";
-			text = text.Normalize(NormalizationForm.FormC);
+			// Fast path: pure ASCII text doesn't need Unicode normalization.
+			if (!IsAscii(text))
+				text = text.Normalize(NormalizationForm.FormC);
 
 			List<Bytemap> letters = new List<Bytemap>();
 			for (int i = 0; i < text.Length; i++)
@@ -165,12 +182,17 @@ namespace CivOne.Graphics
 		
 		private Bytemap GetLetter(byte colour, int font, char letter)
 		{
-			string key = string.Format("letter{0}|{1}|{2}", colour, font, letter);
-			if (!_textCache.ContainsKey(key))
-			{
-				_textCache.Add(key, Font(font).GetLetter(letter, colour));
-			}
-			return _textCache[key];
+			var key = (colour, font, letter);
+			if (_textCache.TryGetValue(key, out Bytemap cached))
+				return cached;
+			return _textCache.GetOrAdd(key, k => Font(k.Font).GetLetter(k.Letter, k.Colour));
+		}
+
+		private static bool IsAscii(string text)
+		{
+			for (int i = 0; i < text.Length; i++)
+				if (text[i] > 0x7F) return false;
+			return true;
 		}
 
 		public bool Exists(string filename)
@@ -228,12 +250,12 @@ namespace CivOne.Graphics
 			get
 			{
 				string key = filename.ToUpper();
-				if (_cache.ContainsKey(key))
+				if (_cache.TryGetValue(key, out Picture cached))
 				{
-					return new Picture(_cache[key].Bitmap, _cache[key].Palette);
+					return new Picture(cached.Bitmap, cached.Palette);
 				}
-				
-				Picture output = null;
+
+				Picture output;
 				PicFile picFile = new PicFile(filename);
 				if ((Settings.GraphicsMode == GraphicsMode.Graphics256 && picFile.GetPicture256 != null) || picFile.GetPicture16 == null)
 				{
@@ -243,9 +265,9 @@ namespace CivOne.Graphics
 				{
 					output = new Picture(picFile.GetPicture16, picFile.GetPalette16);
 				}
-				
-				if (!_cache.ContainsKey(key)) _cache.Add(key, output);
-				return new Picture(_cache[key].Bitmap, _cache[key].Palette);
+
+				Picture stored = _cache.GetOrAdd(key, output);
+				return new Picture(stored.Bitmap, stored.Palette);
 			}
 		}
 

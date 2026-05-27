@@ -36,6 +36,11 @@ namespace CivOne.Graphics
 		/// <returns>An <see cref="IFont"/> implementation appropriate for the current language setting.</returns>
 		internal static IFont Create(byte[] bytes, ushort offset)
 		{
+			ArgumentNullException.ThrowIfNull(bytes);
+			if (offset < 8 || offset >= bytes.Length)
+				throw new ArgumentOutOfRangeException(nameof(offset),
+					$"Offset {offset} out of bounds for FONTS.CV data of length {bytes?.Length ?? 0}.");
+
 			byte firstChar = bytes[offset - 8];
 
 			return Settings.Instance.SimulateInternationalFont switch
