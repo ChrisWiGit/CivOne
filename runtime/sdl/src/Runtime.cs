@@ -71,13 +71,26 @@ namespace CivOne
 				{
 					return new StreamWriter(new FileStream(path, FileMode.Append, FileAccess.Write, FileShare.ReadWrite));
 				}
-				catch (IOException)
+				catch (IOException ex) when (IsSharingViolation(ex))
 				{
-					Console.Error.WriteLine($"Failed to open log file for writing (attempt {i + 1}/3): {path}");
-					System.Threading.Thread.Sleep(1000);
+					// Retry only when the file is temporarily locked by another process/handle.
+					Console.Error.WriteLine($"Failed to open log file for writing (attempt {i + 1}/3, sharing violation): {path}");
+					System.Threading.Thread.Sleep(TimeSpan.FromMilliseconds(250));
+				}
+				catch (IOException ex)
+				{
+					Console.Error.WriteLine($"Failed to open log file for writing: {path} ({ex.Message})");
+					return null;
 				}
 			}
 			return null;
+		}
+
+		private static bool IsSharingViolation(IOException ex)
+		{
+			// HRESULT 0x80070020 = ERROR_SHARING_VIOLATION, 0x80070021 = ERROR_LOCK_VIOLATION
+			int code = ex.HResult & 0xFFFF;
+			return code == 32 || code == 33;
 		}
 
         public void Log(string text, params object[] parameters)
