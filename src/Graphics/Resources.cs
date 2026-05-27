@@ -31,9 +31,9 @@ namespace CivOne.Graphics
 		// background task while the render loop reads them. Plain Dictionary<,> is not safe here.
 		private readonly ConcurrentDictionary<string, Picture> _cache = new();
 		private readonly ConcurrentDictionary<(byte Colour, int Font, char Letter), Bytemap> _textCache = new();
+		private readonly ConcurrentDictionary<string, bool> _existsCache = new(StringComparer.OrdinalIgnoreCase);
 		private readonly IFont _defaultFont = new DefaultFont();
 		private readonly List<IFont> _fonts = [];
-		private readonly Dictionary<Direction, IBitmap> _fog = new Dictionary<Direction, IBitmap>();
 		private readonly PalaceResourcesDelegate _palaceResources;
 		internal void ClearTextCache() => _textCache.Clear();
 		
@@ -140,29 +140,28 @@ namespace CivOne.Graphics
 			if (!IsAscii(text))
 				text = text.Normalize(NormalizationForm.FormC);
 
-			List<Bytemap> letters = new List<Bytemap>();
-			for (int i = 0; i < text.Length; i++)
+			int length = text.Length;
+			Bytemap[] letters = new Bytemap[length];
+			int width = 0, height = 0;
+			for (int i = 0; i < length; i++)
 			{
 				char current = text[i];
-				letters.Add(GetLetter(i == highlightedCharacterIndex ? colourFirstLetter : colour, font, current));
-			}
-			
-			int width = 0, height = 0;
-			foreach (Bytemap letter in letters)
-			{
+				Bytemap letter = GetLetter(i == highlightedCharacterIndex ? colourFirstLetter : colour, font, current);
+				letters[i] = letter;
 				width += letter.Width + 1;
 				if (height < letter.Height) height = letter.Height;
 			}
-			
-			Picture output = new Picture(width, height);
-			
+
+			Picture output = new(width, height);
+
 			int xx = 0;
-			foreach (Bytemap letter in letters)
+			for (int i = 0; i < length; i++)
 			{
+				Bytemap letter = letters[i];
 				output.AddLayer(letter, xx, 0);
 				xx += letter.Width + 1;
 			}
-			
+
 			return output;
 		}
 		
@@ -198,8 +197,13 @@ namespace CivOne.Graphics
 		public bool Exists(string filename)
 		{
 			if (RuntimeHandler.Runtime.Settings.Free) return false;
-			return PicFile.Exists(filename);
+			return _existsCache.GetOrAdd(filename, PicFile.Exists);
 		}
+
+		/// <summary>
+		/// Clears the existence cache. Call this when the data directory contents may have changed.
+		/// </summary>
+		internal void ClearExistsCache() => _existsCache.Clear();
 		
 		internal string[] GetCivilopediaText(string name)
 		{

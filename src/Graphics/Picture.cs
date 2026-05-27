@@ -51,7 +51,7 @@ namespace CivOne.Graphics
 			}
 		}
 		
-		private static Colour[] EmptyPalette = Enumerable.Range(0, 256).Select(_ => new Colour()).ToArray();
+		private static readonly Colour[] EmptyPalette = new Colour[256];
 		
 		public byte this[int x, int y]
 		{

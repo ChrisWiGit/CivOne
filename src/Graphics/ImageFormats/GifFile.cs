@@ -203,16 +203,20 @@ namespace CivOne.Graphics.ImageFormats
 						break;
 					default:
 						int minCode = buffer[index++];
-						List<byte> lzwData = new List<byte>();
-						foreach (byte[] data in InputBlock(buffer, index))
+						byte[] lzwData;
+						using (MemoryStream lzwStream = new())
 						{
-							index += (data.Length + 2);
-							lzwData.AddRange(data);
+							foreach (byte[] data in InputBlock(buffer, index))
+							{
+								index += data.Length + 2;
+								lzwStream.Write(data, 0, data.Length);
+							}
+							lzwData = lzwStream.ToArray();
 						}
 
 						try
 						{
-							byte[] pixels = LZW.Decode(lzwData.ToArray(), true, false, minCode, 12);
+							byte[] pixels = LZW.Decode(lzwData, true, false, minCode, 12);
 							_pixels = new Bytemap(width, height).FromByteArray(pixels);
 							_palette = palette;
 						}
