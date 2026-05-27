@@ -31,7 +31,8 @@ The starting point for this project was the [CivFanatics forum thread](https://f
 
 ### Requirements
 
-* This program requires the .NET 9 Runtime to be installed on your system.
+* This program requires the .NET 9 Runtime to be installed on your system.(see [DotNet Runtime 9](#dotnet-runtime-9)).
+  * Check `dotnet --list-runtimes` to see if it's installed.
 * Also SDL2 is required for graphics and sound support see [SDL2 Installation](#sdl2-installation-linux-windows-macos) for instructions.
 
 ### Running the Program
@@ -461,13 +462,49 @@ This behavior applies only on macOS.
 
 ### Prerequisites
 
-* .NET 9 SDK
+* .NET 9 SDK (see [DotNet Runtime 9](#dotnet-runtime-9))
 * SDL2 runtime installed (see [SDL2 Installation](#sdl2-installation-linux-windows-macos))
 
 ### Using Visual Studio Code
 
 The project provides a `launch.json` file for Visual Studio Code, which can be used to run and debug the project.
 To use it, open the project in Visual Studio Code, go to the Run and Debug view and use one
+
+### DotNet Runtime 9
+
+This project currently targets **.NET 9**.
+Even if you already have the **.NET 10 SDK** installed, the application still requires the **.NET 9 Runtime** to run.
+
+This is because .NET applications do not automatically roll forward between major runtime versions (for example from 9 → 10).
+
+You can check the currently installed runtimes with:
+
+```bash
+dotnet --list-runtimes
+```
+
+If `.NET 9` is missing, install it manually:
+
+#### Install .NET 9 Runtime
+
+```bash
+curl -sSL https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh
+chmod +x dotnet-install.sh
+
+./dotnet-install.sh --runtime dotnet --channel 9.0
+```
+
+For ASP.NET Core applications, also install:
+
+```bash
+./dotnet-install.sh --runtime aspnetcore --channel 9.0
+```
+
+After installation, verify again:
+
+```bash
+dotnet --list-runtimes
+```
 
 ### Tests
 
