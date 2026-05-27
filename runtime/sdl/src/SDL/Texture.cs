@@ -37,7 +37,7 @@ namespace CivOne
 			public int Width { get; private set; }
 			public int Height { get; private set; }
 
-			private int[] PaletteArray(Palette palette)
+			private static int[] PaletteArray(Palette palette)
 			{
 				// Direct managed-buffer fill: removes per-call AllocHGlobal/FreeHGlobal roundtrip
 				// and eliminates the leak risk if WriteInt32 throws.
@@ -50,9 +50,17 @@ namespace CivOne
 				return output;
 			}
 
-			private bool HasAlpha(Palette palette) => palette.Entries.Any(x => x.A != 255);
+			private static bool HasAlpha(Palette palette) => palette.Entries.Any(x => x.A != 255);
 
 			public bool IsEmpty => (_handle == IntPtr.Zero);
+
+			private void DestroyTextureHandle()
+			{
+				if (_handle == IntPtr.Zero) return;
+				IntPtr handle = _handle;
+				_handle = IntPtr.Zero;
+				SDL_DestroyTexture(handle);
+			}
 
 			public void Draw(int x, int y, int width, int height)
 			{
@@ -62,11 +70,11 @@ namespace CivOne
 				SDL_RenderCopy(_renderer, _handle, ref _rect, ref dst);
 			}
 
-            private SDL_Rect _rect;
+			private SDL_Rect _rect;
 
 			internal Texture(IntPtr renderer, Palette palette, Bytemap bytemap)
 			{
-				if (palette == null || bytemap == null)
+				if (renderer == IntPtr.Zero || palette == null || bytemap == null)
 				{
 					// Do not load empty bitmap
 					_handle = IntPtr.Zero;
@@ -76,9 +84,14 @@ namespace CivOne
 				Width = bytemap.Width;
 				Height = bytemap.Height;
 
-                _rect = new SDL_Rect {X = 0, Y = 0, W = Width, H = Height};
+				_rect = new SDL_Rect { X = 0, Y = 0, W = Width, H = Height };
 				_renderer = renderer;
 				_handle = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TextureAccess.SDL_TEXTUREACCESS_STREAMING, Width, Height);
+				if (_handle == IntPtr.Zero)
+				{
+					return;
+				}
+
 				SDL_Rect rect = new SDL_Rect() { X = 0, Y = 0, W = Width, H = Height };
 				int[] paletteData = PaletteArray(palette);
 				if (HasAlpha(palette) && SDL_SetTextureBlendMode(_handle, SDL_BlendMode.SDL_BLENDMODE_BLEND) == 0)
@@ -93,6 +106,11 @@ namespace CivOne
 					Marshal.Copy(src, 0, pixels, Width * Height);
 					SDL_UnlockTexture(_handle);
 				}
+				else
+				{
+					// Constructor failed to initialize the texture payload; release native handle.
+					DestroyTextureHandle();
+				}
 			}
 
 			/// <summary>
@@ -104,7 +122,7 @@ namespace CivOne
 			/// </summary>
 			internal Texture(IntPtr renderer, int width, int height)
 			{
-				if (width <= 0 || height <= 0)
+				if (renderer == IntPtr.Zero || width <= 0 || height <= 0)
 				{
 					_handle = IntPtr.Zero;
 					return;
@@ -166,10 +184,7 @@ namespace CivOne
 			{
 				if (_disposed) return;
 				_disposed = true;
-				if (_handle == IntPtr.Zero) return;
-				IntPtr handle = _handle;
-				_handle = IntPtr.Zero;
-				SDL_DestroyTexture(handle);
+				DestroyTextureHandle();
 			}
 		}
 	}
