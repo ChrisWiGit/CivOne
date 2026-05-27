@@ -75,13 +75,15 @@ namespace CivOne
 
 		private static string Win32FolderBrowser(string caption)
 		{
-			ShowCursor();
 			// MAX_PATH = 260 Unicode characters = 520 bytes. The old 256-byte buffer
 			// was only 128 chars and caused heap corruption for longer paths.
-			IntPtr bufferAddress = Marshal.AllocHGlobal(MAX_PATH * 2);
+			IntPtr bufferAddress = IntPtr.Zero;
 			IntPtr pidl = IntPtr.Zero;
 			try
 			{
+				ShowCursor();
+				bufferAddress = Marshal.AllocHGlobal(MAX_PATH * 2);
+
 				BROWSEINFO browseInfo = new BROWSEINFO()
 				{
 					hwndOwner = IntPtr.Zero,
@@ -103,7 +105,8 @@ namespace CivOne
 			finally
 			{
 				HideCursor();
-				Marshal.FreeHGlobal(bufferAddress);
+				if (bufferAddress != IntPtr.Zero)
+					Marshal.FreeHGlobal(bufferAddress);
 				if (pidl != IntPtr.Zero)
 					Marshal.FreeCoTaskMem(pidl);
 			}
