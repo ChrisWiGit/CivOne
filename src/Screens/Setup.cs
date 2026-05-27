@@ -761,7 +761,7 @@ namespace CivOne.Screens
 			{
 				Settings.LanguagePostfix = string.Empty;
 				TranslationServiceFactory.UseIdentity();
-				NotifyLanguageSelection(Translate("Identity"));
+				NotifyLanguageSelection(Translate("Original (English)"));
 				GameOptionsMenu(9);
 				return;
 			}

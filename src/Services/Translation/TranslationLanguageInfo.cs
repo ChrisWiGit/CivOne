@@ -14,7 +14,8 @@ namespace CivOne.Services.Translation
 	public readonly record struct TranslationLanguageInfo(string Postfix, string FilePath, string DisplayName = null)
 	{
 		/// <summary>
-		/// Returns <see langword="true"/> when <paramref name="postfix"/> matches this language postfix exactly.
+		/// Returns <see langword="true"/> when <paramref name="postfix"/> matches this language postfix
+		/// using case-insensitive ordinal comparison.
 		/// </summary>
 		public bool MatchesPostfix(string postfix) => string.Equals(Postfix, postfix, StringComparison.OrdinalIgnoreCase);
 	}

@@ -80,7 +80,7 @@ namespace CivOne.Screens
 
 			string discordText = "Discord";
 			string separator = "  ";
-			string githubText = "Github";
+			string githubText = "GitHub";
 
 			int linksWidth = Resources.GetTextSize(fontId, discordText + separator + githubText).Width;
 			int bottomY = Height - margin - fontHeight;
