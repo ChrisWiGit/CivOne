@@ -30,6 +30,11 @@ namespace CivOne.Graphics
 		private Bytemap _landBase, _seaBase, _city, _fortify;
 		private Bytemap _plains, _arctic, _tundra, _desert, _forest, _hills, _mountains;
 
+		#pragma warning disable S2190
+		/// <summary>
+		/// This will generate an infinite stream of noise values based on the provided byte values.
+		/// Infinite recursion is intentional.
+		/// </summary>
 		private static IEnumerable<byte> GenerateNoise(params byte[] values)
 		{
 			Random r = new(0x4701);
