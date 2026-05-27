@@ -15,7 +15,7 @@ namespace CivOne
 	internal static partial class SDL
 	{
 		[Flags]
-		#pragma warning disable S2342 // Keep case sensitive to match SDL as a name.
+		#pragma warning disable S2342,S2344
 		private enum SDL_RENDERER_FLAGS : uint
 		{
 			SDL_RENDERER_SOFTWARE = 0x1,

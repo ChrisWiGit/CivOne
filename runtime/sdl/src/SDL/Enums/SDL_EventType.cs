@@ -37,7 +37,6 @@ namespace CivOne
 			SDL_MOUSEBUTTONUP,
 			SDL_MOUSEWHEEL,
 
-			//
 			SDL_MAX = 0xFFFF
 		}
 	}

@@ -18,6 +18,8 @@ namespace CivOne
 		#pragma warning disable S2342 // Keep case sensitive to match SDL as a name.
 		private enum SDL_KMOD : ushort
 		{
+			#pragma warning disable S2346 // Keep case sensitive to match SDL
+
 			KMOD_NONE = 0x0000,
 			KMOD_LSHIFT = 0x0001,
 			KMOD_RSHIFT = 0x0002,
