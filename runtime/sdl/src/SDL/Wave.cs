@@ -22,6 +22,7 @@ namespace CivOne
 			private SDL_AudioSpec _waveSpec;
 			private uint _length;
 			private IntPtr _buffer = IntPtr.Zero;
+			private DateTime _expectedPlaybackEndUtc = DateTime.MinValue;
 
 			private void Log(string message) => OnLog?.Invoke(message);
 
@@ -38,6 +39,11 @@ namespace CivOne
 				}
 
 				Playing = true;
+				if (!File.Exists(Filename))
+				{
+					Log($"Could not load sound: {Path.GetFileName(Filename)}: file not found");
+					return;
+				}
 
 				Log($"Sound start: {Path.GetFileName(Filename)}");
 
@@ -63,6 +69,13 @@ namespace CivOne
 					return;
 				}
 
+				// Queue-size can become zero slightly before audible playback fully ends.
+				// Keep a conservative time-based tail window based on the queued byte length.
+				double bytesPerSample = (_waveSpec.Format & 0xFF) / 8.0;
+				double bytesPerSecond = Math.Max(1, _waveSpec.Frequency) * Math.Max(1, (int)_waveSpec.Channels) * Math.Max(1.0, bytesPerSample);
+				double durationSeconds = _length / bytesPerSecond;
+				_expectedPlaybackEndUtc = DateTime.UtcNow.AddSeconds(durationSeconds + 0.05);
+
 				SDL_PauseAudioDevice(deviceId, 0);
 			}
 
@@ -78,7 +91,9 @@ namespace CivOne
 
 			public bool IsPlaying()
 			{
-				return deviceId != uint.MaxValue && SDL_GetQueuedAudioSize(deviceId) > 0;
+				if (deviceId == uint.MaxValue) return false;
+				if (SDL_GetQueuedAudioSize(deviceId) > 0) return true;
+				return DateTime.UtcNow < _expectedPlaybackEndUtc;
 			}
 
 			public void Dispose()

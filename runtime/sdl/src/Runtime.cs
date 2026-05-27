@@ -45,7 +45,17 @@ namespace CivOne
 		
 		public RuntimeSettings Settings { get; private set; }
 		public MouseCursor CurrentCursor { internal get; set; }
-		public Bytemap[] Layers { get; set; }
+		private Bytemap[] _layers = [];
+		public Bytemap[] Layers
+		{
+			get => _layers;
+			set
+			{
+				// Snapshot incoming array and normalize null to empty, so render loop
+				// doesn't race against external callers mutating the same instance.
+				_layers = value is null ? [] : [..value];
+			}
+		}
 		private Palette _palette;
 		public Palette Palette
 		{
@@ -150,7 +160,7 @@ namespace CivOne
 		{
 			set => SetWindowTitle?.Invoke(value);
 		}
-		void IRuntime.PlaySound(string filename) => PlaySound?.Invoke(filename);
+		void IRuntime.PlaySound(string file) => PlaySound?.Invoke(file);
 		void IRuntime.StopSound() => StopSound?.Invoke();
 		void IRuntime.Quit() => SignalQuit = true;
 
