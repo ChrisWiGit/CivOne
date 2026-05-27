@@ -71,6 +71,11 @@ namespace CivOne
 				Filename = filename;
 			}
 
+			// Safety net: if a Wave reference is lost (e.g. on a Window crash) without explicit Dispose,
+			// the finalizer still releases the SDL audio device + WAV buffer. Without this, SDL can
+			// exhaust its limited number of simultaneous audio devices over the program lifetime.
+			~Wave() => Dispose();
+
 			public bool IsPlaying()
 			{
 				return deviceId != uint.MaxValue && SDL_GetQueuedAudioSize(deviceId) > 0;
@@ -95,6 +100,8 @@ namespace CivOne
 					SDL_FreeWAV(_buffer);
 					_buffer = IntPtr.Zero;
 				}
+
+				GC.SuppressFinalize(this);
 			}
 		}
 	}

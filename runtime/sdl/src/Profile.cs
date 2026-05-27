@@ -8,11 +8,12 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+using CivOne.Services;
 
 namespace CivOne
 {
@@ -73,6 +74,8 @@ namespace CivOne
 			}
 		}
 
+		private readonly AtomicFileReplacementService _atomicFileReplacementService = new ();
+
 		public void SetSetting(string key, string value)
 		{
 			if (!File.Exists(_filename)) CreateProfile();
@@ -98,20 +101,19 @@ namespace CivOne
 			}
 			xElement.Value = value;
 
-			using (FileStream fs = new FileStream(_filename, FileMode.Create, FileAccess.Write))
-			using (XmlWriter xw = CreateXmlWriter(fs))
+			// Atomic write: prevents profile corruption on crash/power-loss mid-write.
+			_atomicFileReplacementService.ReplaceFile(_filename, stream =>
 			{
+				using XmlWriter xw = CreateXmlWriter(stream);
 				xDoc.Save(xw);
-			}
+			});
 		}
 
-		private static Dictionary<string, Profile> _profiles;
-		public static Profile Get(Runtime runtime, string name = "default")
-		{
-			if (_profiles == null) _profiles = new Dictionary<string, Profile>();
-			if (!_profiles.ContainsKey(name.ToLower())) _profiles.Add(name.ToLower(), new Profile(runtime, name.ToLower()));
-			return _profiles[name.ToLower()];
-		}
+		// Thread-safe profile cache: prevents double-add ArgumentException under concurrent Get()
+		// from MCP/render threads, and uses OrdinalIgnoreCase to avoid culture-dependent ToLower (ü, türk. I, ...).
+		private static readonly ConcurrentDictionary<string, Profile> _profiles = new(StringComparer.OrdinalIgnoreCase);
+		public static Profile Get(Runtime runtime, string name = "default") =>
+			_profiles.GetOrAdd(name, n => new Profile(runtime, n));
 
 		private Profile(IRuntime runtime, string name)
 		{

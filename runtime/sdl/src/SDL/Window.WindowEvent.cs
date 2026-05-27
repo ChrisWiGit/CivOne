@@ -33,7 +33,7 @@ namespace CivOne
 
 			private void Close()
 			{
-				if (OnClose != null) OnClose(this, EventArgs.Empty);
+				OnClose?.Invoke(this, EventArgs.Empty);
 				_running = false;
 			}
 

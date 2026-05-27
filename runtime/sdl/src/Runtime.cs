@@ -63,8 +63,6 @@ namespace CivOne
 
 		private StreamWriter TryOpenWrite(string path)
 		{
-			// 3 mal versuchen mit 1 sekunde pause dazwischen, 
-			// share mode auf readwrite
 			for (int i = 0; i < 3; i++)
 			{
 				try				
@@ -109,12 +107,14 @@ namespace CivOne
 					tw.Close();
 				}
 			}
-			if (Settings?.ConsoleLogging != true)
+			// Re-read once to avoid TOCTOU NPE if Settings is disposed between checks (shutdown race).
+			RuntimeSettings settings = Settings;
+			if (settings?.ConsoleLogging != true)
 			{
 				return;
 			}
 
-			if (Settings.McpEnabled)
+			if (settings.McpEnabled)
 			{
 				Console.Error.WriteLine(text, parameters);
 				Console.Error.Flush();

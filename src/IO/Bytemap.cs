@@ -31,15 +31,21 @@ namespace CivOne.IO
 		{
 			get
 			{
-				int dx = 0, dy = 0;
+				// Reject pathological inputs early: a negative width/height previously propagated all the way
+				// to `new byte[sx2 - sx1]` (OverflowException) or `new Bytemap(negative, h)` (undefined AllocHGlobal size).
+				if (width <= 0 || height <= 0) return new Bytemap(Math.Max(1, width), Math.Max(1, height));
+
+				int dx = 0;
 				int sx1 = left, sy1 = top, sx2 = left + width, sy2 = top + height;
 				if (sx1 < 0) { dx -= sx1; sx1 = 0; }
-				if (sy1 < 0) { dy -= sy1; sy1 = 0; }
+				if (sy1 < 0) { sy1 = 0; }
 				if (sx2 > Width) sx2 = Width;
 				if (sy2 > Height) sy2 = Height;
 
-				byte[] buffer = new byte[sx2 - sx1];
 				Bytemap output = new(width, height);
+				if (sx2 <= sx1 || sy2 <= sy1) return output;
+
+				byte[] buffer = new byte[sx2 - sx1];
 				for (int yy = sy1; yy < sy2; yy++)
 				{
 					Marshal.Copy(IntPtr.Add(_handle, (Width * yy) + sx1), buffer, 0, buffer.Length);

@@ -419,6 +419,40 @@ namespace CivOne
 			_settingsWindowMaximized = Settings.WindowMaximized;
 		}
 
+		// Stored delegate references so they can be removed in Dispose(). Without this, the
+		// previous inline-lambda subscriptions kept the entire GameWindow (and its SDL handles,
+		// cursor texture, ...) alive forever if the Runtime outlived the window (e.g. on settings
+		// changes that recreated the window).
+		private readonly Action<string> _setWindowTitleHandler;
+		private readonly Action<string> _onLogHandler;
+
+		public override void Dispose()
+		{
+			// Unsubscribe from runtime events first so a late event firing during teardown
+			// cannot reach a half-disposed GameWindow.
+			if (_runtime != null)
+			{
+				_runtime.CursorChanged -= CursorChanged;
+				if (_setWindowTitleHandler != null) _runtime.SetWindowTitle -= _setWindowTitleHandler;
+				_runtime.PlaySound -= PlaySound;
+				_runtime.StopSound -= StopSound;
+			}
+			if (_onLogHandler != null) OnLog -= _onLogHandler;
+			OnLoad -= Load;
+			OnUpdate -= Update;
+			OnDraw -= Draw;
+			OnKeyDown -= KeyDown;
+			OnKeyUp -= KeyUp;
+			OnMouseMove -= MouseMove;
+			OnMouseDown -= MouseDown;
+			OnMouseUp -= MouseUp;
+
+			CursorTexture?.Dispose();
+			CursorTexture = null;
+
+			base.Dispose();
+		}
+
 		public GameWindow(Runtime runtime, bool softwareRender, IDebounceService debounceService) : base(ApplyMcpTitleState(runtime, "CivOne"), InitialWidth, InitialHeight, Settings.FullScreen, softwareRender)
 		{
 			_runtime = runtime;
@@ -427,10 +461,13 @@ namespace CivOne
 			Icon = Resources.GetWindowIcon();
 			RestoreWindowPlacement();
 
-			_runtime.CursorChanged += CursorChanged;
-			_runtime.SetWindowTitle += (string title) => Title = ApplyMcpTitleState(_runtime, title);
+			_setWindowTitleHandler = title => Title = ApplyMcpTitleState(_runtime, title);
+			_onLogHandler = (message) => _runtime.Log(message);
 
-			OnLog += (message) => _runtime.Log(message);
+			_runtime.CursorChanged += CursorChanged;
+			_runtime.SetWindowTitle += _setWindowTitleHandler;
+
+			OnLog += _onLogHandler;
 			OnLoad += Load;
 			OnUpdate += Update;
 			OnDraw += Draw;

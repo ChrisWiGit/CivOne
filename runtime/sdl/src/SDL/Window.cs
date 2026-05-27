@@ -396,7 +396,7 @@ namespace CivOne
 
 			private bool _disposed;
 
-			public void Dispose()
+			public virtual void Dispose()
 			{
 				if (_disposed) return;
 				_disposed = true;
