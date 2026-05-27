@@ -24,7 +24,9 @@ namespace CivOne.Screens.StartupWizard
 		string storageDirectory,
 		Func<string, string> browseFolder,
 		Action<string> log,
-		Action showSetupScreen) : IWizardActionHandler
+		Action showSetupScreen,
+		Action<Action> dispatchToMainThread,
+		Action requestRefresh) : IWizardActionHandler
 	{
 		private readonly Func<ITranslationService> _translationServiceAccessor = translationServiceAccessor ?? throw new ArgumentNullException(nameof(translationServiceAccessor));
 		private readonly IBrowserService _browserService = browserService ?? throw new ArgumentNullException(nameof(browserService));
@@ -32,6 +34,8 @@ namespace CivOne.Screens.StartupWizard
 		private readonly Func<string, string> _browseFolder = browseFolder ?? throw new ArgumentNullException(nameof(browseFolder));
 		private readonly Action<string> _log = log ?? (_ => { });
 		private readonly Action _showSetupScreen = showSetupScreen ?? (() => { });
+		private readonly Action<Action> _dispatchToMainThread = dispatchToMainThread ?? throw new ArgumentNullException(nameof(dispatchToMainThread));
+		private readonly Action _requestRefresh = requestRefresh ?? (() => { });
 
 		public WizardActionResult Execute(WizardEntry entry, WizardState engine)
 		{
@@ -170,21 +174,37 @@ namespace CivOne.Screens.StartupWizard
 
 				if (!FileSystem.CopyDataFiles(path) || !FileSystem.DataFilesExist())
 				{
-					engine.StatusMessage = copyFailedMessage;
+					_dispatchToMainThread(() =>
+					{
+						engine.StatusMessage = copyFailedMessage;
+						_requestRefresh();
+					});
 					return;
 				}
 
-				Resources.ClearInstance();
-				engine.StatusMessage = copySucceededMessage;
+				_dispatchToMainThread(() =>
+				{
+					Resources.ClearInstance();
+					engine.StatusMessage = copySucceededMessage;
+					_requestRefresh();
+				});
 			}
 			catch (Exception exception)
 			{
 				_log($"Copying data files failed for '{path}': {exception.Message}");
-				engine.StatusMessage = copyFailedMessage;
+				_dispatchToMainThread(() =>
+				{
+					engine.StatusMessage = copyFailedMessage;
+					_requestRefresh();
+				});
 			}
 			finally
 			{
-				engine.IsDataFilesCopyInProgress = false;
+				_dispatchToMainThread(() =>
+				{
+					engine.IsDataFilesCopyInProgress = false;
+					_requestRefresh();
+				});
 			}
 		}
 

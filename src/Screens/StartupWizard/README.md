@@ -157,6 +157,36 @@ Current startup wizard usage:
 - aspect ratio/fullscreen synchronization on aspect-ratio page
 - more-settings page synchronization after returning from setup screen
 
+## 6.2) Threading: Background Work and Main-Thread Dispatch
+
+The wizard keeps threading intentionally small.
+
+Rule of thumb:
+
+- do slow file work in a background task when needed
+- do not touch screen state, rendering caches, or `Resources` from that task
+- marshal the final UI update back to the main thread
+
+Current implementation pattern:
+
+1. [WizardActionHandler.cs](WizardActionHandler.cs) runs the copy operation in a background task.
+2. When the task finishes, it enqueues a main-thread action.
+3. [WizardScreen.cs](WizardScreen.cs) drains that queue at the start of `HasUpdate(...)`.
+4. The queued action updates `StatusMessage`, `IsDataFilesCopyInProgress`, calls `Resources.ClearInstance()`, and requests a refresh.
+
+Minimal usage example:
+
+```csharp
+_dispatchToMainThread(() =>
+{
+    Resources.ClearInstance();
+    engine.StatusMessage = T("Data files copied successfully.");
+    _requestRefresh();
+});
+```
+
+Use this pattern when you need background I/O but still want the wizard to stay SDL-safe.
+
 ## 7) Validation: How Data Validity Is Checked
 
 Validation is done in two layers.

@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Drawing;
 using System.Linq;
 using CivOne.Enums;
@@ -37,6 +38,7 @@ namespace CivOne.Screens.StartupWizard
 		private readonly WizardRenderingDelegate _renderingDelegate;
 		private readonly WizardMouseMarkerDelegate _mouseMarkerDelegate;
 		private readonly WizardRenderingContext _renderingContext;
+		private readonly ConcurrentQueue<Action> _pendingMainThreadActions = new();
 		private WizardPage _currentPage;
 
 		private int _mouseX = -1;
@@ -91,7 +93,9 @@ namespace CivOne.Screens.StartupWizard
 					Setup setup = new();
 					setup.Closed += (sender, args) => Refresh();
 					ScreenServiceFactory.CreateCommandService().AddScreen(setup);
-				});
+				},
+				dispatchToMainThread: _pendingMainThreadActions.Enqueue,
+				requestRefresh: Refresh);
 			_renderingDelegate = new WizardRenderingDelegate(this, Translate);
 			_mouseMarkerDelegate = new WizardMouseMarkerDelegate(this);
 			_renderingContext = new WizardRenderingContext();
@@ -120,6 +124,16 @@ namespace CivOne.Screens.StartupWizard
 		/// </summary>
 		protected override bool HasUpdate(uint gameTick)
 		{
+			while (_pendingMainThreadActions.TryDequeue(out Action action))
+			{
+				// Execute pending actions that need to run on the main thread, 
+				// such as those triggered by page interactions.
+				// This is not really the right way to marshal actions back to the main thread, 
+				// but it works for our simple use case and avoids adding a dependency 
+				// on a more robust threading/synchronization library.
+				action();
+			}
+
 			if (_currentPage?.HasContextChanged?.Invoke() == true)
 			{
 				_markerOnlyRefresh = false;
