@@ -10,9 +10,9 @@ I did not browse all issues on github at first, so I did not recognize that some
   * The "Expand" aspect ratio mode stretches the game canvas to fill the entire window, allowing for more flexible window sizes and better use of screen real estate on modern displays.
   * The original "Auto" aspect ratio mode is still available as an option in the setup menu for users who prefer the original behavior or are using older displays.
 * Feature: Added setup wizard to guide users through initial configuration and data file setup.
-  * The wizard is triggered on first launch when no valid data files are found, or can be accessed later from command line with `--setup` or from the main menu.
+  * The wizard is triggered on first launch when no valid data files are found, or can be accessed later from command line with `--setup`.
   * It provides a step-by-step interface to select data files, configure graphics settings (fullscreen, aspect ratio), and adjust sound settings.
-  * The wizard's state is persisted across sessions, so users can complete it at their own pace without losing progress.
+  * The wizard applies selected settings and copied data files to the normal runtime configuration.
 * Fix: Screens marked `[ScreenResizeable]` (e.g. Credits) now react to host-window resizes even when the canvas size stays fixed (e.g. `AspectRatio=Auto`).
   * `BaseScreen.Update` tracks the window size and fires `OnResize` plus a refresh when only the window changes.
   * SDL runtime now raises an `OnWindowResize` event on `SDL_WINDOWEVENT_RESIZED` / `SDL_WINDOWEVENT_SIZE_CHANGED` and `GameWindow` forces a redraw, eliminating the 1–2 s frozen frame after a drag-resize.

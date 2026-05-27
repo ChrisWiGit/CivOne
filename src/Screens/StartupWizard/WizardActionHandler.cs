@@ -150,7 +150,7 @@ namespace CivOne.Screens.StartupWizard
 				return;
 			}
 
-			string copyRunningMessage = T("Copying data files in background...");
+			string copyRunningMessage = T("Copying data files...");
 			string copyFailedMessage = T("Copying data files failed.");
 			string copySucceededMessage = T("Data files copied successfully.");
 
