@@ -254,15 +254,32 @@ namespace CivOne
 				};
 				using (var process = System.Diagnostics.Process.Start(psi))
 				{
-					if (process != null)
+					if (process == null)
 					{
-						using (var writer = process.StandardInput)
-						{
-							writer.Write(input);
-							writer.Close();
-						}
-						process.WaitForExit(5000);
+						errorMessage = "Command process could not be started.";
+						return false;
 					}
+
+					using (var writer = process.StandardInput)
+					{
+						writer.Write(input);
+					}
+
+					if (!process.WaitForExit(5000))
+					{
+						errorMessage = "Command execution timed out.";
+						return false;
+					}
+
+					if (process.ExitCode != 0)
+					{
+						string standardError = process.StandardError.ReadToEnd();
+						errorMessage = !string.IsNullOrWhiteSpace(standardError)
+							? standardError.Trim()
+							: $"Command failed with exit code {process.ExitCode}";
+						return false;
+					}
+
 					errorMessage = string.Empty;
 					return true;
 				}
