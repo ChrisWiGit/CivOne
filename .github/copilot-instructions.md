@@ -6,6 +6,46 @@
 * Do not narrate progress.
 * If progress updates are necessary, keep them very short.
 
+## Code Review: Side-Effect Preservation
+
+Before removing or rewriting any statement, check whether it carries side effects beyond its visible result. A statement that looks "unused" may still mutate shared state.
+
+### High-risk patterns
+
+* `var x = expr; index += 2;` — value unused, but index advancement on the **same line** must be preserved.
+* `var x = reader.ReadXxx();` — the read advances a stream/index even if `x` is discarded.
+* Post/pre-increment in expressions: `arr[i++]`, `_bytes[index++]`, `c++` inside a discarded expression.
+* `out`/`ref` parameters on an "unused" call.
+* Property getters or method calls with hidden mutation (logging, lazy init, caching, position advance).
+* `Interlocked.*`, `Volatile.*`, `Dispose()`, event subscriptions hidden in initializers.
+
+### Required checks when removing or simplifying
+
+* If the right-hand side reads from a stream, buffer, or `ref`/index variable, it almost certainly advances state. **Keep the advancement explicitly** (e.g. replace `uint length = BitConverter.ToUInt16(_bytes, index); index += 2;` with `index += 2;`, never with nothing).
+* When acting on an "unused variable" warning (CS0219, IDE0059, RCS1118, etc.), separate the side effect from the assignment instead of deleting the whole statement.
+* When changing a `for`-loop that mutates the loop variable inside the body (e.g. `arr[x++] = ...`), confirm the new form writes to the **same indices in the same order** and advances by the **same step**.
+* When removing a local that is passed to an `out`/`ref` parameter, verify the callee has no observable effect.
+
+### Concrete example (do not regress)
+
+```csharp
+// BAD: removing the line drops the index advance that the next reader depends on.
+uint length = BitConverter.ToUInt16(_bytes, index); index += 2;
+// GOOD: side effect kept, dead value removed.
+index += 2; // skip 2-byte length header
+```
+
+```csharp
+// BAD: removing `byte bits = _bytes[index++];` because `bits` is unused
+//      silently shifts every subsequent read by one byte.
+// GOOD:
+index++; // skip 1-byte bits header
+```
+
+### Review trigger
+
+Whenever a diff deletes a line that contains any of `index++`, `++index`, `i++` (in subscripts), `ref `, `out `, `Read…(`, `Write…(`, `Dispose(`, `+=`, `-=`, treat it as suspicious and re-verify behaviour before accepting.
+
 ## Documentation
 
 * Always write documentation in English.
