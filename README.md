@@ -2,7 +2,7 @@
 use sh or cmd blocks for commands.
 Do not use en-dash or em-dash, use simple sentences only.
  -->
-# CivOne# (Civ One Sharp)
+# CivOne# (Civ One Sharp or just CivOne)
 
 ## Introduction
 
@@ -10,6 +10,22 @@ A civilization game clone of Civilization (1991) written in C#.
 It was originally developed several years ago by other authors, and then abandoned.
 This project is a continuation of that work, with the goal of completing the game and making it fully playable, but with some tweaks and improvements that
 make it more enjoyable for modern players.
+
+## Original Sources
+
+This [CivOne project](https://github.com/ChrisWiGit/CivOne) is a fork of [FireEggs CivOne project](https://github.com/fire-eggs/CivOne/) which itself was a fork of [Solen1985 CivOne project](https://github.com/Solen1985/CivOne/).
+
+The former projects have been abandoned for more than ten years, but their source code is still available and has been used as the starting point for this continuation project.
+
+Many issues have been fixed and features have been added since the original codebase.
+
+## Contact
+
+You can reach out to the project maintainers via [Discord](https://discord.gg/kfaFcTnCX)
+
+## Forum
+
+The starting point for this project was the [CivFanatics forum thread](https://forums.civfanatics.com/threads/civone-an-open-source-remake-of-civilization-1.535036/) where the original project was announced and discussed.
 
 ## First Steps
 
