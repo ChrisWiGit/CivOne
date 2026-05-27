@@ -472,7 +472,7 @@ namespace CivOne
 			_runtime = runtime;
 			_debounceService = debounceService ?? throw new ArgumentNullException(nameof(debounceService));
 
-			Icon = Resources.GetWindowIcon();
+			SetIcon(Resources.GetWindowIcon());
 			RestoreWindowPlacement();
 
 			_setWindowTitleHandler = title => Title = ApplyMcpTitleState(_runtime, title);
