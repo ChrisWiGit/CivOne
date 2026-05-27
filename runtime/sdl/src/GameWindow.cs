@@ -450,6 +450,8 @@ namespace CivOne
 			CursorTexture?.Dispose();
 			CursorTexture = null;
 
+			DisposeLayerTextureCache();
+
 			base.Dispose();
 		}
 

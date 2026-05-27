@@ -18,6 +18,27 @@ namespace CivOne
 	{
 		private SDL.Texture CursorTexture = null;
 
+		// Persistent per-layer streaming-texture cache. Reuses GPU textures + managed
+		// pixel/palette buffers across frames; was previously recreated 60 FPS × layer-count
+		// times per second (see P0.6 in code.review.md).
+		private SDL.Texture[] _layerTextures;
+
+		/// <summary>
+		/// Disposes the layer texture cache. 
+		/// Should be called whenever the layer count changes (e.g. new game, load game) to avoid keeping around stale textures.
+		/// Also called from Dispose() to clean up GPU resources on shutdown.
+		/// </summary>
+		private void DisposeLayerTextureCache()
+		{
+			if (_layerTextures == null) return;
+			for (int i = 0; i < _layerTextures.Length; i++)
+			{
+				_layerTextures[i]?.Dispose();
+				_layerTextures[i] = null;
+			}
+			_layerTextures = null;
+		}
+
 		private static Size DefaultCanvasSize
 		{
 			get
@@ -27,6 +48,37 @@ namespace CivOne
 				if (Settings.ExpandWidth > 0 && Settings.ExpandHeight > 0)
 					return new Size(Settings.ExpandWidth, Settings.ExpandHeight);
 				return new Size(320, 200);
+			}
+		}
+
+		/// <summary>
+		/// Draws the cursor overlay on top of the rendered layers, if a cursor is set.
+		///
+		/// Accounts for the current aspect ratio mode and scale settings to position and size the cursor correctly.
+		/// Both <see cref="AspectRatio.Scaled"/> and <see cref="AspectRatio.ScaledFixed"/> use the same
+		/// scaled-mouse calculation via <c>GetScaleF()</c>.
+		///
+		/// Refactoring note: <c>ScaledFixed</c> previously had a separate branch with commented-out offset
+		/// additions (<c>_mouseX + x1</c>, <c>_mouseY + y1</c>) that were never active.
+		/// After confirming both branches produced identical results, they were merged into one case.
+		/// </summary>
+		/// <param name="x1">The x-coordinate of the top-left corner of the drawing area.</param>
+		/// <param name="y1">The y-coordinate of the top-left corner of the drawing area.</param>
+		private void DrawCursorOverlay(int x1, int y1)
+		{
+			if (CursorTexture == null) return;
+			switch (Settings.AspectRatio)
+			{
+				case AspectRatio.Scaled:
+				case AspectRatio.ScaledFixed:
+					{
+						PointF scaleF = GetScaleF();
+						CursorTexture.Draw((int)(_mouseX * scaleF.X), (int)(_mouseY * scaleF.Y), (int)(CursorTexture.Width * scaleF.X), (int)(CursorTexture.Height * scaleF.Y));
+					}
+					break;
+				default:
+					CursorTexture.Draw(x1 + (_mouseX * ScaleX), y1 + (_mouseY * ScaleY), CursorTexture.Width * ScaleX, CursorTexture.Height * ScaleY);
+					break;
 			}
 		}
 
@@ -45,30 +97,35 @@ namespace CivOne
 
 			Clear(Color.Black);
 			GetBorders(out int x1, out int y1, out int x2, out int y2);
-			if (_runtime.Layers == null) return;
-			foreach (Bytemap bytemap in _runtime.Layers)
-			using (SDL.Texture canvas = CreateTexture(_runtime.Palette, bytemap))
+
+			// Snapshot the layer reference: Runtime.Layers may be reassigned from another thread
+			// (MCP / game loop), and iterating the array directly without a snapshot risks a
+			// torn read between the null-check and the for-loop.
+			Bytemap[] layers = _runtime.Layers;
+			if (layers == null) return;
+
+			if (_layerTextures == null || _layerTextures.Length != layers.Length)
 			{
-				canvas.Draw(x1, y1, (x2 - x1), (y2 - y1));
-				
-				switch (Settings.AspectRatio)
+				DisposeLayerTextureCache();
+				_layerTextures = new SDL.Texture[layers.Length];
+			}
+
+			for (int i = 0; i < layers.Length; i++)
+			{
+				Bytemap bytemap = layers[i];
+				if (bytemap == null) continue;
+
+				SDL.Texture cached = _layerTextures[i];
+				if (cached == null || cached.IsEmpty || cached.Width != bytemap.Width || cached.Height != bytemap.Height)
 				{
-					case AspectRatio.Scaled:
-						{
-							PointF scaleF = GetScaleF();
-							CursorTexture?.Draw((int)(_mouseX * scaleF.X), (int)(_mouseY * scaleF.Y), (int)(CursorTexture.Width * scaleF.X), (int)(CursorTexture.Height * scaleF.Y));
-						}
-						break;
-					case AspectRatio.ScaledFixed:
-						{
-							PointF scaleF = GetScaleF();
-							CursorTexture?.Draw((int)((_mouseX /*+ x1*/) * scaleF.X), (int)((_mouseY/* + y1*/) * scaleF.Y), (int)(CursorTexture.Width * scaleF.X), (int)(CursorTexture.Height * scaleF.Y));
-						}
-						break;
-					default:
-						CursorTexture?.Draw(x1 + (_mouseX * ScaleX), y1 + (_mouseY * ScaleY), CursorTexture.Width * ScaleX, CursorTexture.Height * ScaleY);
-						break;
+					cached?.Dispose();
+					cached = CreateLayerTexture(bytemap.Width, bytemap.Height);
+					_layerTextures[i] = cached;
 				}
+
+				cached.UpdateFrom(_runtime.Palette, bytemap);
+				cached.Draw(x1, y1, (x2 - x1), (y2 - y1));
+				DrawCursorOverlay(x1, y1);
 			}
 		}
 

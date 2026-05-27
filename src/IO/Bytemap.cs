@@ -113,6 +113,22 @@ namespace CivOne.IO
 
 		public new byte[] ToByteArray() => base.ToByteArray();
 
+		/// <summary>
+		/// Bulk-copies the unmanaged pixel buffer into the provided destination array.
+		///
+		/// Used by the SDL render loop to avoid the per-frame <c>byte[Width*Height]</c>
+		/// allocation that <see cref="ToByteArray"/> would otherwise produce.
+		/// </summary>
+		/// <param name="destination">Buffer that receives the pixel bytes.
+		/// Must be at least <see cref="Length"/> bytes long.</param>
+		public void CopyTo(byte[] destination)
+		{
+			ArgumentNullException.ThrowIfNull(destination);
+			if (destination.Length < Length) throw new ArgumentException("Destination buffer too small.", nameof(destination));
+			if (_handle == IntPtr.Zero) return;
+			Marshal.Copy(_handle, destination, 0, Length);
+		}
+
 		public static Bytemap Copy(Bytemap source) => new Bytemap(source);
 
 		private Bytemap(Bytemap source) : base(source)

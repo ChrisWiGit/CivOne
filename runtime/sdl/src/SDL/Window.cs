@@ -36,6 +36,12 @@ namespace CivOne
 			protected Texture CreateTexture(IBitmap bitmap) => new Texture(_renderer, bitmap?.Palette, bitmap?.Bitmap);
 			protected Texture CreateTexture(Palette palette, Bytemap bytemap) => new Texture(_renderer, palette, bytemap);
 
+			/// <summary>
+			/// Creates an empty streaming texture for the render-loop layer cache.
+			/// Caller is responsible for refilling it via <see cref="Texture.UpdateFrom"/>.
+			/// </summary>
+			protected Texture CreateLayerTexture(int width, int height) => new(_renderer, width, height);
+
 			protected void Clear(Color color)
 			{
 				_redraw = true;
