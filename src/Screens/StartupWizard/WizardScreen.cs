@@ -467,5 +467,13 @@ namespace CivOne.Screens.StartupWizard
 			int row = (_mouseY - box.Y) / gh;
 			return new Rectangle(box.X + (col * gw), box.Y + (row * gh), gw, gh);
 		}
+
+		/// <inheritdoc />
+		public override void Dispose()
+		{
+			_pageSnapshot?.Dispose();
+			_pageSnapshot = null;
+			base.Dispose();
+		}
 	}
 }
