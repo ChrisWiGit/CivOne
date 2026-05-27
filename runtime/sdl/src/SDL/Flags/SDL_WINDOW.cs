@@ -16,7 +16,6 @@ namespace CivOne
 	#pragma warning disable S101 // Types should be named in PascalCase - but these are named to match SDL as a name.
 	internal static partial class SDL
 	{
-		[Flags]
 		#pragma warning disable S2342 // Keep case sensitive to match SDL as a name.
         private enum SDL_WINDOW : uint
 		{

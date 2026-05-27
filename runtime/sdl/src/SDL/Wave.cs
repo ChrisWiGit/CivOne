@@ -16,7 +16,7 @@ namespace CivOne
 	#pragma warning disable S101 // Types should be named in PascalCase - but these are named to match SDL as a name.
 	internal static partial class SDL
 	{
-		internal unsafe class Wave : IDisposable
+		internal unsafe class Wave(string filename) : IDisposable
 		{
 			private uint deviceId = uint.MaxValue;
 			private bool _disposed;
@@ -29,7 +29,7 @@ namespace CivOne
 
 			public event Action<string> OnLog;
 
-			public string Filename { get; }
+			public string Filename { get; } = filename;
 			public bool Playing { get; private set; }
 
 			public void Play()
@@ -49,7 +49,7 @@ namespace CivOne
 				Log($"Sound start: {Path.GetFileName(Filename)}");
 
 				const int FREE_SOURCE = 1;
-				if (SDL_LoadWAV_RW(Filename, FREE_SOURCE, ref _waveSpec, out _buffer, out length) == IntPtr.Zero)
+				if (SDL_LoadWAV_RW(Filename, FREE_SOURCE, ref _waveSpec, out _buffer, out uint length) == IntPtr.Zero)
 				{
 					_buffer = IntPtr.Zero;
 					Log($"Could not load sound: {Path.GetFileName(Filename)}: {GetSdlErrorMessage()}");
@@ -63,8 +63,6 @@ namespace CivOne
 					Log($"Could not open audio device {GetSdlErrorMessage()} error: {SDL_GetError()}");
 					return;
 				}
-
-				uint length;
 
 				if (SDL_QueueAudio(deviceId, _buffer, length) < 0)
 				{
@@ -80,11 +78,6 @@ namespace CivOne
 				_expectedPlaybackEndUtc = DateTime.UtcNow.AddSeconds(durationSeconds + 0.05);
 
 				SDL_PauseAudioDevice(deviceId, 0);
-			}
-
-			public Wave(string filename)
-			{
-				Filename = filename;
 			}
 
 			// Safety net: if a Wave reference is lost (e.g. on a Window crash) without explicit Dispose,
