@@ -332,10 +332,7 @@ namespace CivOne
 				_title = title;
 
 				if (SDL_Init(SDL_INIT.VIDEO | SDL_INIT.AUDIO) < 0)
-				{
-					Log("Could not initialize SDL");
-					return;
-				}
+					throw new InvalidOperationException($"SDL_Init failed: {GetSdlErrorMessage()}");
 
 				SDL_WINDOW flags = SDL_WINDOW.RESIZABLE;
 
@@ -345,10 +342,7 @@ namespace CivOne
 
 				_handle = SDL_CreateWindow(title, 100, 100, width, height, flags);
 				if (_handle == IntPtr.Zero)
-				{
-					Log("Something is wrong");
-					return;
-				}
+					throw new InvalidOperationException($"SDL_CreateWindow failed: {GetSdlErrorMessage()}");
 
 				_renderer = softwareRender ? IntPtr.Zero : SDL_CreateRenderer(_handle, -1, SDL_RENDERER_FLAGS.SDL_RENDERER_ACCELERATED);
 				if (_renderer == IntPtr.Zero)

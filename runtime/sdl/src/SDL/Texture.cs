@@ -52,7 +52,7 @@ namespace CivOne
 
 			private static bool HasAlpha(Palette palette) => palette.Entries.Any(x => x.A != 255);
 
-			public bool IsEmpty => (_handle == IntPtr.Zero);
+			public bool IsEmpty => _handle == IntPtr.Zero;
 
 			private void DestroyTextureHandle()
 			{
