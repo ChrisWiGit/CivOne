@@ -204,25 +204,25 @@ namespace CivOne.UnitTests
 
 		private sealed class FakeRuntime(string storageDirectory) : IRuntime
 		{
-			public event EventHandler Initialize { add { } remove { } }
-			public event EventHandler Draw { add { } remove { } }
-			public event UpdateEventHandler Update { add { } remove { } }
-			public event KeyboardEventHandler KeyboardUp { add { } remove { } }
-			public event KeyboardEventHandler KeyboardDown { add { } remove { } }
-			public event ScreenEventHandler MouseUp { add { } remove { } }
-			public event ScreenEventHandler MouseDown { add { } remove { } }
-			public event ScreenEventHandler MouseMove { add { } remove { } }
+			public event EventHandler Initialize { add { _ = value; } remove { _ = value; } }
+			public event EventHandler Draw { add { _ = value; } remove { _ = value; } }
+			public event UpdateEventHandler Update { add { _ = value; } remove { _ = value; } }
+			public event KeyboardEventHandler KeyboardUp { add { _ = value; } remove { _ = value; } }
+			public event KeyboardEventHandler KeyboardDown { add { _ = value; } remove { _ = value; } }
+			public event ScreenEventHandler MouseUp { add { _ = value; } remove { _ = value; } }
+			public event ScreenEventHandler MouseDown { add { _ = value; } remove { _ = value; } }
+			public event ScreenEventHandler MouseMove { add { _ = value; } remove { _ = value; } }
 
 			public Platform CurrentPlatform => Platform.Windows;
 			public string StorageDirectory { get; } = storageDirectory;
 			public RuntimeSettings Settings { get; } = new RuntimeSettings();
-			public MouseCursor CurrentCursor { set { } }
+			public MouseCursor CurrentCursor { get; set; }
 			public Bytemap[] Layers { get; set; }
 			public Palette Palette { get; set; }
-			public IBitmap Cursor { set { } }
+			public IBitmap Cursor { get; set; }
 			public int CanvasWidth => 320;
 			public int CanvasHeight => 200;
-			public string WindowTitle { set { } }
+			public string WindowTitle { get; set; }
 
 			public string GetSetting(string key) => null;
 			public void SetSetting(string key, string value) { }

@@ -435,33 +435,36 @@ namespace CivOne
 		private readonly Action<string> _setWindowTitleHandler;
 		private readonly Action<string> _onLogHandler;
 
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
-			// Unsubscribe from runtime events first so a late event firing during teardown
-			// cannot reach a half-disposed GameWindow.
-			if (_runtime != null)
+			if (disposing)
 			{
-				_runtime.CursorChanged -= CursorChanged;
-				if (_setWindowTitleHandler != null) _runtime.SetWindowTitle -= _setWindowTitleHandler;
-				_runtime.PlaySound -= PlaySound;
-				_runtime.StopSound -= StopSound;
+				// Unsubscribe from runtime events first so a late event firing during teardown
+				// cannot reach a half-disposed GameWindow.
+				if (_runtime != null)
+				{
+					_runtime.CursorChanged -= CursorChanged;
+					if (_setWindowTitleHandler != null) _runtime.SetWindowTitle -= _setWindowTitleHandler;
+					_runtime.PlaySound -= PlaySound;
+					_runtime.StopSound -= StopSound;
+				}
+				if (_onLogHandler != null) OnLog -= _onLogHandler;
+				OnLoad -= Load;
+				OnUpdate -= Update;
+				OnDraw -= Draw;
+				OnKeyDown -= KeyDown;
+				OnKeyUp -= KeyUp;
+				OnMouseMove -= MouseMove;
+				OnMouseDown -= MouseDown;
+				OnMouseUp -= MouseUp;
+
+				CursorTexture?.Dispose();
+				CursorTexture = null;
+
+				DisposeLayerTextureCache();
 			}
-			if (_onLogHandler != null) OnLog -= _onLogHandler;
-			OnLoad -= Load;
-			OnUpdate -= Update;
-			OnDraw -= Draw;
-			OnKeyDown -= KeyDown;
-			OnKeyUp -= KeyUp;
-			OnMouseMove -= MouseMove;
-			OnMouseDown -= MouseDown;
-			OnMouseUp -= MouseUp;
 
-			CursorTexture?.Dispose();
-			CursorTexture = null;
-
-			DisposeLayerTextureCache();
-
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 
 		public GameWindow(Runtime runtime, bool softwareRender, IDebounceService debounceService) : base(ApplyMcpTitleState(runtime, "CivOne"), InitialWidth, InitialHeight, Settings.FullScreen, softwareRender)

@@ -153,16 +153,12 @@ namespace CivOne
 				return true;
 			}
 
-			private static bool TrapDebugger(SDL_Event sdlEvent)
+			private static void TrapDebugger(SDL_Event sdlEvent)
 			{
 #if DEBUG
 				if (HitDebugKeys(sdlEvent, SDL_Scancode.SDL_SCANCODE_F12))
-				{
 					System.Diagnostics.Debugger.Break();
-					return true;
-				}
 #endif
-				return false;
 			}
 
 			private int _eventLoopWaitCounter;
@@ -228,7 +224,7 @@ namespace CivOne
 				}
 			}
 
-			public void Wait(uint time)
+			public static void Wait(uint time)
 			{
 				SDL_Delay(time);
 			}
@@ -410,18 +406,28 @@ namespace CivOne
 
 			private bool _disposed;
 
-			public virtual void Dispose()
+			public void Dispose()
+			{
+				Dispose(true);
+				GC.SuppressFinalize(this);
+			}
+
+			~Window() => Dispose(false);
+
+			protected virtual void Dispose(bool disposing)
 			{
 				if (_disposed) return;
 				_disposed = true;
 
-				// Ensure active sound is released before SDL audio is shut down.
-				StopSound();
+				if (disposing)
+				{
+					// Ensure active sound is released before SDL audio is shut down.
+					StopSound();
+				}
 
 				if (_renderer != IntPtr.Zero) SDL_DestroyRenderer(_renderer);
 				if (_handle != IntPtr.Zero) SDL_DestroyWindow(_handle);
 				SDL_Quit();
-				GC.SuppressFinalize(this);
 			}
 		}
 	}
