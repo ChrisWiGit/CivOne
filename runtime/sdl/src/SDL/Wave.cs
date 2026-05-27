@@ -17,7 +17,7 @@ namespace CivOne
 	{
 		internal unsafe class Wave : IDisposable
 		{
-			private uint deviceId = UInt32.MaxValue;
+			private uint deviceId = uint.MaxValue;
 
 			private SDL_AudioSpec _waveSpec;
 			private uint _length;
@@ -52,7 +52,7 @@ namespace CivOne
 				deviceId = SDL_OpenAudioDevice(null, 0, ref _waveSpec, out _, 0);
 				if (deviceId == 0 && SDL_GetError() != 0)
 				{
-					deviceId = UInt32.MaxValue;
+					deviceId = uint.MaxValue;
 					Log($"Could not open audio device {GetSdlErrorMessage()} error: {SDL_GetError()}");
 					return;
 				}
@@ -71,20 +71,23 @@ namespace CivOne
 				Filename = filename;
 			}
 
-			public Boolean IsPlaying()
+			public bool IsPlaying()
 			{
-				return deviceId != UInt32.MaxValue && SDL_GetQueuedAudioSize(deviceId) > 0;
+				return deviceId != uint.MaxValue && SDL_GetQueuedAudioSize(deviceId) > 0;
 			}
 
 			public void Dispose()
 			{
+				// Idempotent: avoid double Log/double-free when called twice.
+				if (deviceId == uint.MaxValue && _buffer == IntPtr.Zero) return;
+
 				Log($"Sound stop: {Path.GetFileName(Filename)}");
 
-				if (deviceId != UInt32.MaxValue)
+				if (deviceId != uint.MaxValue)
 				{
 					SDL_PauseAudioDevice(deviceId, 1);
 					SDL_CloseAudioDevice(deviceId);
-					deviceId = UInt32.MaxValue;
+					deviceId = uint.MaxValue;
 				}
 
 				if (_buffer != IntPtr.Zero)

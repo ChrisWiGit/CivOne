@@ -278,6 +278,8 @@ namespace CivOne
 			{
 				set
 				{
+					ArgumentNullException.ThrowIfNull(value);
+
 					int width = value.Width(), height = value.Height();
 					byte[] bytes = new byte[width * height * 4];
 
@@ -293,15 +295,21 @@ namespace CivOne
 						}
 
 					IntPtr pixels = Marshal.AllocHGlobal(bytes.Length);
-					Marshal.Copy(bytes, 0, pixels, bytes.Length);
-
-					IntPtr surface = SDL_CreateRGBSurfaceFrom(pixels, width, height, 32, width * 4, 0x0000ff00, 0x00ff0000, 0xff000000, 0x000000ff);
-
-					SDL_SetWindowIcon(_handle, surface);
-
-					SDL_FreeSurface(surface);
-
-					Marshal.FreeHGlobal(pixels);
+					IntPtr surface = IntPtr.Zero;
+					try
+					{
+						Marshal.Copy(bytes, 0, pixels, bytes.Length);
+						surface = SDL_CreateRGBSurfaceFrom(pixels, width, height, 32, width * 4, 0x0000ff00, 0x00ff0000, 0xff000000, 0x000000ff);
+						if (surface != IntPtr.Zero)
+						{
+							SDL_SetWindowIcon(_handle, surface);
+						}
+					}
+					finally
+					{
+						if (surface != IntPtr.Zero) SDL_FreeSurface(surface);
+						Marshal.FreeHGlobal(pixels);
+					}
 				}
 			}
 
@@ -386,11 +394,20 @@ namespace CivOne
 				return false;
 			}
 
+			private bool _disposed;
+
 			public void Dispose()
 			{
-				SDL_DestroyRenderer(_renderer);
-				SDL_DestroyWindow(_handle);
+				if (_disposed) return;
+				_disposed = true;
+
+				// Ensure active sound is released before SDL audio is shut down.
+				StopSound();
+
+				if (_renderer != IntPtr.Zero) SDL_DestroyRenderer(_renderer);
+				if (_handle != IntPtr.Zero) SDL_DestroyWindow(_handle);
 				SDL_Quit();
+				GC.SuppressFinalize(this);
 			}
 		}
 	}

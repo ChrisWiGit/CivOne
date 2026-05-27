@@ -54,10 +54,15 @@ namespace CivOne.IO
 
 		internal void Fill(int left, int top, int width, int height, byte colour)
 		{
-			if (left < 0) { width -= left; left = 0; }
-			if (top < 0) { height -= top; top = 0; }
+			// Correct clipping: negative left/top must SHRINK width/height by the overflow,
+			// not enlarge them (the previous "width -= left" with negative left increased width
+			// and could lead to out-of-bounds Marshal.Copy on a sufficiently large bitmap).
+			if (left < 0) { width += left; left = 0; }
+			if (top < 0) { height += top; top = 0; }
+			if (width <= 0 || height <= 0) return;
 			if (left + width > Width) width = Width - left;
 			if (top + height > Height) height = Height - top;
+			if (width <= 0 || height <= 0) return;
 
 			byte[] buffer = new byte[width].Clear(colour);
 			for (int yy = top; yy < (top + height); yy++)
@@ -70,15 +75,31 @@ namespace CivOne.IO
 
 		public int[] ToColourMap(int[] palette, bool rightToLeft = false, bool bottomToTop = false)
 		{
+			// Bulk-copy unmanaged pixel buffer once, then index in managed memory.
+			// Replaces Width*Height per-pixel Marshal.ReadByte + EnsureHandle + EnsureRange P/Invokes,
+			// reducing render hot-path cost by roughly an order of magnitude.
+			byte[] src = ToByteArray();
 			int[] output = new int[Length];
-			int i = 0;
-			for (int yy = 0; yy < Height; yy++)
+
+			if (!rightToLeft && !bottomToTop)
 			{
-				int y = (bottomToTop ? (Height - yy - 1) : yy);
-				for (int xx = 0; xx < Width; xx++)
+				for (int idx = 0; idx < Length; idx++)
 				{
-					int x = (rightToLeft ? (Width - xx - 1) : xx);
-					output[i++] = palette[this[x, y]];
+					output[idx] = palette[src[idx]];
+				}
+				return output;
+			}
+
+			int w = Width, h = Height;
+			int o = 0;
+			for (int yy = 0; yy < h; yy++)
+			{
+				int y = bottomToTop ? (h - yy - 1) : yy;
+				int rowOffset = y * w;
+				for (int xx = 0; xx < w; xx++)
+				{
+					int x = rightToLeft ? (w - xx - 1) : xx;
+					output[o++] = palette[src[rowOffset + x]];
 				}
 			}
 			return output;
@@ -102,11 +123,18 @@ namespace CivOne.IO
 
 		public Bytemap(byte[,] bytes) : this(bytes.GetLength(0), bytes.GetLength(1))
 		{
-			for (int y = bytes.GetUpperBound(1); y >= 0; y--)
-			for (int x = bytes.GetUpperBound(0); x >= 0; x--)
+			// Flatten into a row-major managed buffer, then bulk-copy to unmanaged memory once.
+			// Replaces Width*Height per-pixel Marshal.WriteByte + EnsureHandle + EnsureRange calls.
+			int w = Width, h = Height;
+			byte[] flat = new byte[w * h];
+			for (int y = 0; y < h; y++)
 			{
-				this[x, y] = bytes[x, y];
+				for (int x = 0; x < w; x++)
+				{
+					flat[(y * w) + x] = bytes[x, y];
+				}
 			}
+			Marshal.Copy(flat, 0, _handle, flat.Length);
 		}
 	}
 }

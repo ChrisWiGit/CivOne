@@ -30,15 +30,14 @@ namespace CivOne
 
 			private int[] PaletteArray(Palette palette)
 			{
+				// Direct managed-buffer fill: removes per-call AllocHGlobal/FreeHGlobal roundtrip
+				// and eliminates the leak risk if WriteInt32 throws.
 				int[] output = new int[palette.Length];
-				IntPtr ptr = Marshal.AllocHGlobal(palette.Length * 4);
 				for (int i = 0; i < output.Length; i++)
 				{
-					Colour colour = palette[i];
-					Marshal.WriteInt32(ptr, (i * 4), ((int)colour.A << 24) + ((int)colour.B << 16) + ((int)colour.G << 8) + ((int)colour.R));
+					Colour c = palette[i];
+					output[i] = (c.A << 24) | (c.B << 16) | (c.G << 8) | c.R;
 				}
-				Marshal.Copy(ptr, output, 0, output.Length);
-				Marshal.FreeHGlobal(ptr);
 				return output;
 			}
 
@@ -50,9 +49,7 @@ namespace CivOne
 			{
 				if (IsEmpty) return;
 
-				SDL_Rect src = new SDL_Rect() { X = 0, Y = 0, W = Width, H = Height };
-				SDL_Rect dst = new SDL_Rect() { X = x, Y = y, W = width, H = height };
-
+				SDL_Rect dst = new() { X = x, Y = y, W = width, H = height };
 				SDL_RenderCopy(_renderer, _handle, ref _rect, ref dst);
 			}
 
