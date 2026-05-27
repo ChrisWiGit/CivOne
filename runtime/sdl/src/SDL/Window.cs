@@ -55,7 +55,7 @@ namespace CivOne
 				_running = false;
 			}
 
-			private T CastToStruct<T>(object source) where T : struct
+			private static T CastToStruct<T>(object source) where T : struct
 			{
 				IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf(source.GetType()));
 				Marshal.StructureToPtr(source, ptr, false);
@@ -113,7 +113,7 @@ namespace CivOne
 				SDL_SetWindowTitle(_handle, _sdlTitle);
 			}
 
-			private bool HitDebugKeys(SDL_Event sdlEvent, SDL_Scancode scancode)
+			private static bool HitDebugKeys(SDL_Event sdlEvent, SDL_Scancode scancode)
 			{
 				if (sdlEvent.SDL_EventType != SDL_EventType.SDL_KEYDOWN) return false;
 
@@ -122,44 +122,61 @@ namespace CivOne
 					(keyboardEvent.KeySym.Modifier & (SDL_KMOD.KMOD_LSHIFT | SDL_KMOD.KMOD_RSHIFT)) != 0 &&
 					(keyboardEvent.KeySym.Modifier & (SDL_KMOD.KMOD_LCTRL | SDL_KMOD.KMOD_RCTRL)) != 0)
 				{
-					sdlEvent.SDL_EventType = SDL_EventType.SDL_MIN;
 					return true;
 				}
 				return false;
 			}
 
-			private void TrapDebbugger(SDL_Event sdlEvent)
+			private bool ProcessPendingEvents()
+			{
+				while (SDL_PollEvent(out SDL_Event sdlEvent) == 1)
+				{
+					if (HandleDebuggingEvents(sdlEvent) || TrapDebugger(sdlEvent))
+					{
+						continue;
+					}
+
+					HandleEvent(sdlEvent);
+
+					if (!_running)
+					{
+						return false;
+					}
+				}
+
+				return true;
+			}
+
+			private static bool TrapDebugger(SDL_Event sdlEvent)
 			{
 #if DEBUG
 				if (HitDebugKeys(sdlEvent, SDL_Scancode.SDL_SCANCODE_F12))
 				{
-					sdlEvent.SDL_EventType = SDL_EventType.SDL_MIN;
-
 					System.Diagnostics.Debugger.Break();
+					return true;
 				}
 #endif
+				return false;
 			}
 
-			private int _eventLoopWaitCounter = 0;
+			private int _eventLoopWaitCounter;
 
 
-			private void HandleDebuggingEvents(SDL_Event sdlEvent)
+			private bool HandleDebuggingEvents(SDL_Event sdlEvent)
 			{
 #if DEBUG
 				if (HitDebugKeys(sdlEvent, SDL_Scancode.SDL_SCANCODE_F10))
 				{
 					_eventLoopWaitCounter += 1;
 					Log($"Increased event loop wait counter to {_eventLoopWaitCounter} ms");
-
-					sdlEvent.SDL_EventType = SDL_EventType.SDL_MIN;
+					return true;
 				}
 				else if (_eventLoopWaitCounter > 0 && HitDebugKeys(sdlEvent, SDL_Scancode.SDL_SCANCODE_F9))
 				{
 					_eventLoopWaitCounter -= 1;
 					_eventLoopWaitCounter = Math.Max(0, _eventLoopWaitCounter);
 					Log($"Decreased event loop wait counter to {_eventLoopWaitCounter} ms");
-
-					sdlEvent.SDL_EventType = SDL_EventType.SDL_MIN;
+					return true;
 				}
 
 				if (_eventLoopWaitCounter > 0)
@@ -167,6 +184,7 @@ namespace CivOne
 					Wait((uint)_eventLoopWaitCounter);
 				}
 #endif
+				return false;
 			}
 
 			public void Run()
@@ -175,19 +193,9 @@ namespace CivOne
 
 				while (_running)
 				{
-					if (SDL_PollEvent(out SDL_Event sdlEvent) == 1)
+					if (!ProcessPendingEvents())
 					{
-						HandleDebuggingEvents(sdlEvent);
-
-						HandleEvent(sdlEvent);
-
-						if (!_running)
-						{
-							// fast exit, if the window was closed
-							break;
-						}
-
-						TrapDebbugger(sdlEvent);
+						break;
 					}
 
 					if (_paused)
@@ -232,8 +240,8 @@ namespace CivOne
 			{
 				get
 				{
-					SDL_GetWindowSize(_handle, out _, out int width);
-					return width;
+					SDL_GetWindowSize(_handle, out _, out int height);
+					return height;
 				}
 			}
 
@@ -331,8 +339,8 @@ namespace CivOne
 
 				SDL_WINDOW flags = SDL_WINDOW.RESIZABLE;
 
-				// ReSharper disable once AssignmentInConditionalExpression
-				if (_fullscreen = fullscreen)
+				_fullscreen = fullscreen;
+				if (fullscreen)
 					flags |= SDL_WINDOW.FULLSCREEN_DESKTOP;
 
 				_handle = SDL_CreateWindow(title, 100, 100, width, height, flags);
@@ -376,7 +384,7 @@ namespace CivOne
 				return new Size(r.w, r.h);
 			}
 
-			protected bool IsPointInAnyDisplay(int x, int y)
+			protected static bool IsPointInAnyDisplay(int x, int y)
 			{
 				int displays = SDL_GetNumVideoDisplays();
 				if (displays <= 0)
