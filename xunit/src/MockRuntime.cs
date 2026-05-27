@@ -35,12 +35,15 @@ namespace CivOne.UnitTests
         }
 
         public RuntimeSettings Settings { get; }
-        public MouseCursor CurrentCursor { get; set; }
+        public MouseCursor CurrentCursor { get; private set; }
         public Bytemap[] Layers { get; set; }
         public Palette Palette { get; set; }
-        public IBitmap Cursor { get; set; }
+        public IBitmap Cursor { get; private set; }
         public int CanvasWidth { get; }
         public int CanvasHeight { get; }
+
+        public void SetCurrentCursor(MouseCursor cursor) => CurrentCursor = cursor;
+        public void SetCursor(IBitmap cursor) => Cursor = cursor;
 
         public void Log(string text, params object[] parameters)
         {
@@ -53,7 +56,8 @@ namespace CivOne.UnitTests
             throw new NotImplementedException();
         }
 
-        public string WindowTitle { get; set; }
+        public string WindowTitle { get; private set; }
+        public void SetWindowTitle(string title) => WindowTitle = title;
         public void PlaySound(string file)
         {
             // ignore

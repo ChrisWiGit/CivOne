@@ -190,7 +190,7 @@ namespace CivOne.Screens
 
 		private void ChangeWindowTitle()
 		{
-			RuntimeHandler.Runtime.WindowTitle = Settings.WindowTitle;
+			RuntimeHandler.Runtime.SetWindowTitle(Settings.WindowTitle);
 			SettingsMenu(0);
 		}
 

@@ -159,13 +159,19 @@ namespace CivOne.UnitTests
 			public Platform CurrentPlatform => Platform.Linux;
 			public string StorageDirectory => Path.Combine(Path.GetTempPath(), "CivOneTests", Guid.NewGuid().ToString("N"));
 			public RuntimeSettings Settings { get; } = new RuntimeSettings();
-			public MouseCursor CurrentCursor { set { } }
 			public Bytemap[] Layers { get; set; }
 			public Palette Palette { get; set; }
-			public IBitmap Cursor { set { } }
 			public int CanvasWidth => 320;
 			public int CanvasHeight => 200;
-			public string WindowTitle { set { } }
+			public void SetCurrentCursor(MouseCursor cursor)
+			{
+			}
+			public void SetCursor(IBitmap cursor)
+			{
+			}
+			public void SetWindowTitle(string title)
+			{
+			}
 
 			public string GetSetting(string key)
 				=> _storedSettings.TryGetValue(key, out string value) ? value : null;

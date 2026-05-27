@@ -216,19 +216,22 @@ namespace CivOne.UnitTests
 			public Platform CurrentPlatform => Platform.Windows;
 			public string StorageDirectory { get; } = storageDirectory;
 			public RuntimeSettings Settings { get; } = new RuntimeSettings();
-			public MouseCursor CurrentCursor { get; set; }
+			public MouseCursor CurrentCursor { get; private set; }
 			public Bytemap[] Layers { get; set; }
 			public Palette Palette { get; set; }
-			public IBitmap Cursor { get; set; }
+			public IBitmap Cursor { get; private set; }
 			public int CanvasWidth => 320;
 			public int CanvasHeight => 200;
-			public string WindowTitle { get; set; }
+			public string WindowTitle { get; private set; }
 
 			public string GetSetting(string key) => null;
 			public void SetSetting(string key, string value) { }
+			public void SetCurrentCursor(MouseCursor cursor) => CurrentCursor = cursor;
+			public void SetCursor(IBitmap cursor) => Cursor = cursor;
 			public void Log(string text, params object[] parameters) { }
 			public string BrowseFolder(string caption = "") => string.Empty;
 			public string FileChooser(bool save, string title, string initialFileName, string filter) => string.Empty;
+			public void SetWindowTitle(string title) => WindowTitle = title;
 			public void PlaySound(string file) { }
 			public void StopSound() { }
 			public void Quit() { }

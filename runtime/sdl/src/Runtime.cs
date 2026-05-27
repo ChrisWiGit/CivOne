@@ -151,15 +151,14 @@ namespace CivOne
 		string IRuntime.StorageDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CivOne");
 		string IRuntime.GetSetting(string key) => Profile.GetSetting(key);
 		void IRuntime.SetSetting(string key, string value) => Profile.SetSetting(key, value);
+		void IRuntime.SetCurrentCursor(MouseCursor cursor) => CurrentCursor = cursor;
+		void IRuntime.SetCursor(IBitmap cursor) => Cursor = cursor;
 		int IRuntime.CanvasWidth => CanvasSize.Width;
 		int IRuntime.CanvasHeight => CanvasSize.Height;
 		
 		string IRuntime.BrowseFolder(string caption) => Native.FolderBrowser(caption);
 		string IRuntime.FileChooser(bool save, string title, string initialFileName, string filter) => Native.FileChooser(save, title, initialFileName, filter);
-		string IRuntime.WindowTitle
-		{
-			set => SetWindowTitle?.Invoke(value);
-		}
+		void IRuntime.SetWindowTitle(string title) => SetWindowTitle?.Invoke(title);
 		void IRuntime.PlaySound(string file) => PlaySound?.Invoke(file);
 		void IRuntime.StopSound() => StopSound?.Invoke();
 		void IRuntime.Quit() => SignalQuit = true;
