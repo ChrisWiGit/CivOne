@@ -53,6 +53,11 @@ namespace CivOne.Screens.StartupWizard
 		public string DataFolder { get; set; }
 
 		/// <summary>
+		/// Gets or sets whether data-file copy is currently running in the background.
+		/// </summary>
+		public bool IsDataFilesCopyInProgress { get; set; }
+
+		/// <summary>
 		/// Gets or sets whether sound is enabled.
 		/// </summary>
 		/// <remarks>

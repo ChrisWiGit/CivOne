@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Threading.Tasks;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.IO;
@@ -136,6 +137,12 @@ namespace CivOne.Screens.StartupWizard
 
 		private void HandleBrowseDataFolder(WizardState engine)
 		{
+			if (engine.IsDataFilesCopyInProgress)
+			{
+				engine.StatusMessage = T("Data file copy is already running.");
+				return;
+			}
+
 			string path = _browseFolder(T("Location of Civilization data files"));
 			if (path == null)
 			{
@@ -143,15 +150,42 @@ namespace CivOne.Screens.StartupWizard
 				return;
 			}
 
-			engine.DataFolder = path;
-			if (!FileSystem.CopyDataFiles(path) || !FileSystem.DataFilesExist())
-			{
-				engine.StatusMessage = T("Copying data files failed.");
-				return;
-			}
+			string copyRunningMessage = T("Copying data files in background...");
+			string copyFailedMessage = T("Copying data files failed.");
+			string copySucceededMessage = T("Data files copied successfully.");
 
-			Resources.ClearInstance();
-			engine.StatusMessage = T("Data files copied successfully.");
+			engine.DataFolder = path;
+			engine.IsDataFilesCopyInProgress = true;
+			engine.StatusMessage = copyRunningMessage;
+
+			_ = Task.Run(() => CopyDataFilesInBackgroundAsync(engine, path, copyFailedMessage, copySucceededMessage));
+		}
+
+		private async Task CopyDataFilesInBackgroundAsync(WizardState engine, string path, string copyFailedMessage, string copySucceededMessage)
+		{
+			try
+			{
+				// Show output even if copying is done in an instant.
+				await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+
+				if (!FileSystem.CopyDataFiles(path) || !FileSystem.DataFilesExist())
+				{
+					engine.StatusMessage = copyFailedMessage;
+					return;
+				}
+
+				Resources.ClearInstance();
+				engine.StatusMessage = copySucceededMessage;
+			}
+			catch (Exception exception)
+			{
+				_log($"Copying data files failed for '{path}': {exception.Message}");
+				engine.StatusMessage = copyFailedMessage;
+			}
+			finally
+			{
+				engine.IsDataFilesCopyInProgress = false;
+			}
 		}
 
 		private void ApplyAspectRatio(string value, WizardState state)

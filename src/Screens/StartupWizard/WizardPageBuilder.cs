@@ -149,9 +149,11 @@ namespace CivOne.Screens.StartupWizard
 		private WizardPage BuildDataFolderPage(WizardState state)
 		{
 			bool hasDataFiles = FileSystem.DataFilesExist();
-			string dataState = hasDataFiles
-				? T("Data files available.")
-				: T("Data files still missing.");
+			string dataState = state.IsDataFilesCopyInProgress
+				? T("Copying data files in background...")
+				: hasDataFiles
+					? T("Data files available.")
+					: T("Data files still missing.");
 
 			string selectedPath = T("No folder selected.");
 			if (hasDataFiles)
@@ -174,12 +176,43 @@ namespace CivOne.Screens.StartupWizard
 				],
 				Entries =
 				[
-					new WizardEntry { Number = 1, Text = T("Browse data folder"), Action = WizardEntryAction.BrowseDataFolder },
+					new WizardEntry { Number = 1, Text = T("Browse data folder"), Action = WizardEntryAction.BrowseDataFolder, Enabled = !state.IsDataFilesCopyInProgress },
 					new WizardEntry { Number = 2, Text = ContinueText(), Action = WizardEntryAction.Continue, 
 							// disable continue if data files are not available.
 							Enabled = hasDataFiles, Hotkey = HotkeyContinue },
 					new WizardEntry { Number = 3, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
-				]
+				],
+				HasContextChanged = CreateDataFolderContextChanged(state)
+			};
+		}
+
+		private static Func<bool> CreateDataFolderContextChanged(WizardState state)
+		{
+			bool previousHasDataFiles = FileSystem.DataFilesExist();
+			bool previousCopyInProgress = state.IsDataFilesCopyInProgress;
+			string previousDataFolder = state.DataFolder;
+			string previousStatusMessage = state.StatusMessage;
+
+			return () =>
+			{
+				bool currentHasDataFiles = FileSystem.DataFilesExist();
+				bool currentCopyInProgress = state.IsDataFilesCopyInProgress;
+				string currentDataFolder = state.DataFolder;
+				string currentStatusMessage = state.StatusMessage;
+
+				if (previousHasDataFiles == currentHasDataFiles
+					&& previousCopyInProgress == currentCopyInProgress
+					&& string.Equals(previousDataFolder, currentDataFolder, StringComparison.Ordinal)
+					&& string.Equals(previousStatusMessage, currentStatusMessage, StringComparison.Ordinal))
+				{
+					return false;
+				}
+
+				previousHasDataFiles = currentHasDataFiles;
+				previousCopyInProgress = currentCopyInProgress;
+				previousDataFolder = currentDataFolder;
+				previousStatusMessage = currentStatusMessage;
+				return true;
 			};
 		}
 
