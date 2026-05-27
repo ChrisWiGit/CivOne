@@ -13,7 +13,7 @@ namespace CivOne
 	internal static partial class SDL
 	{
 		#pragma warning disable S2342 // Keep case sensitive to match SDL as a name.
-		private enum SDL_Keycode : int
+		private enum SDL_Keycode
 		{
 			SDLK_UNKNOWN = 0,
 		}

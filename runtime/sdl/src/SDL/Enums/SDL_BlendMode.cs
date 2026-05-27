@@ -13,7 +13,7 @@ namespace CivOne
 	internal static partial class SDL
 	{
 		#pragma warning disable S2342 // Keep case sensitive to match SDL as a name.
-		private enum SDL_BlendMode : int
+		private enum SDL_BlendMode
 		{
 			SDL_BLENDMODE_NONE =	0x00000000,
 			SDL_BLENDMODE_BLEND =	0x00000001,

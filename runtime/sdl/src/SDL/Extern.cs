@@ -152,7 +152,6 @@ namespace CivOne
 
 		private static IntPtr SDL_LoadWAV_RW(string filename, int freeSource, ref SDL_AudioSpec specs, out IntPtr buffer, out uint length) => SDL_LoadWAV_RW(SDL_RWFromFile(filename.ToBytes(), "rb".ToBytes()), freeSource, ref specs, out buffer, out length);
 
-		// const char* SDL_GetError(void);
 		[DllImportAttribute(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern IntPtr SDL_GetError();
 
@@ -216,6 +215,7 @@ namespace CivOne
 			public byte patch;
 		}
 
+		#pragma warning disable S2342 // Keep case sensitive to match SDL as a name.
 		enum SDL_SYSWM_TYPE
 		{
 			SDL_SYSWM_UNKNOWN,
