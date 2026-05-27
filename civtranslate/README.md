@@ -153,7 +153,7 @@ Copy generated translation `.txt` files from repository `translation` to the act
 
 ## Example output
 
-```
+```text
 Keys reused: 14
 Keys added: 0
 Keys overwritten: 0

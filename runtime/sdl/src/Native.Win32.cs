@@ -49,7 +49,7 @@ namespace CivOne
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
-		private struct BROWSEINFO 
+		private struct BrowseInfo 
 		{
 			public IntPtr hwndOwner;
 			public IntPtr pidlRoot;
@@ -65,7 +65,7 @@ namespace CivOne
 		private delegate int BrowseCallbackProc(IntPtr hwnd, int uMsg, IntPtr lParam, IntPtr lpData);
 
 		[DllImport("shell32.dll")]
-		private static extern IntPtr SHBrowseForFolder(ref BROWSEINFO lpbi);
+		private static extern IntPtr SHBrowseForFolder(ref BrowseInfo lpbi);
 
 		[DllImport("shell32.dll", CharSet=CharSet.Unicode)]
 		private static extern bool SHGetPathFromIDList(IntPtr pidl, IntPtr pszPath);
@@ -84,7 +84,7 @@ namespace CivOne
 				ShowCursor();
 				bufferAddress = Marshal.AllocHGlobal(MAX_PATH * 2);
 
-				BROWSEINFO browseInfo = new BROWSEINFO()
+				BrowseInfo browseInfo = new()
 				{
 					hwndOwner = IntPtr.Zero,
 					pidlRoot = IntPtr.Zero,
@@ -138,7 +138,7 @@ namespace CivOne
 		private const int OFN_NOCHANGEDIR = 0x00000008;
 
 		[ StructLayout( LayoutKind.Sequential, CharSet=CharSet.Unicode )]  
-		internal struct OPENFILENAME
+		internal struct OpenFilename
 		{
 			public int lStructSize;
 			public IntPtr hwndOwner;
@@ -173,10 +173,10 @@ namespace CivOne
 		}
 
 		[DllImport("comdlg32.dll", CharSet = CharSet.Unicode)]
-		private static extern bool GetOpenFileName(ref OPENFILENAME ofn);
+		private static extern bool GetOpenFileName(ref OpenFilename ofn);
 
 		[DllImport("comdlg32.dll", CharSet = CharSet.Unicode)]
-		private static extern bool GetSaveFileName(ref OPENFILENAME ofn);
+		private static extern bool GetSaveFileName(ref OpenFilename ofn);
 
 		// CommDlgExtendedError
 		[DllImport("comdlg32.dll", CharSet = CharSet.Unicode)]
@@ -217,9 +217,9 @@ namespace CivOne
 
 				string nativeFilter = BuildNativeFilter(filter);
 
-				OPENFILENAME ofn = new OPENFILENAME
+				OpenFilename ofn = new()
 				{
-					lStructSize = Marshal.SizeOf(typeof(OPENFILENAME)),
+					lStructSize = Marshal.SizeOf(typeof(OpenFilename)),
 					hwndOwner = ownerHwnd,
 					hInstance = IntPtr.Zero,
 					lpstrInitialDir = null,
