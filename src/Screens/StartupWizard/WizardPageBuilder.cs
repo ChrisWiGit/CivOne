@@ -59,9 +59,9 @@ namespace CivOne.Screens.StartupWizard
 				],
 				Links =
 				[
-					(T("Changes:"), "https://github.com/ChrisWiGit/CivOne/blob/master/CHANGES.md"),
-					(T("Forum:"), "https://forums.civfanatics.com"),
-					(T("Discord:"), "https://discord.gg/kfaFcTnCX")
+					(T("Changes:"), ProjectPublicLinks.Changes),
+					(T("Forum:"), ProjectPublicLinks.Forum),
+					(T("Discord:"), ProjectPublicLinks.Discord)
 				],
 				EntriesYOffset = 3
 			};

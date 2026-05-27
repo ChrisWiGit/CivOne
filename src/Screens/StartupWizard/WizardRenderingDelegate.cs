@@ -96,7 +96,7 @@ namespace CivOne.Screens.StartupWizard
 
 			// Row 6: Origin line with two links
 			string line6prefix = "Origin: ";
-			string line6link1 = "https://github.com/Solen1985/CivOne";
+			string line6link1 = ProjectPublicLinks.OriginRepository;
 			string line6suffix = "  AND";
 			int col6start = Math.Max(1, (context.Cols - (line6prefix.Length + line6link1.Length + line6suffix.Length)) / 2);
 			BoxPut(line6prefix, col6start, 6, ColourMuted, context);
@@ -106,7 +106,7 @@ namespace CivOne.Screens.StartupWizard
 
 			// Row 7: Second link
 			string line7prefix = "        ";
-			string line7link = "https://github.com/fire-eggs/CivOne/";
+			string line7link = ProjectPublicLinks.FireEggsRepository;
 			int col7start = Math.Max(1, (context.Cols - (line7prefix.Length + line7link.Length)) / 2);
 			BoxPut(line7prefix, col7start, 7, ColourMuted, context);
 			BoxPut(line7link, col7start + line7prefix.Length, 7, ColourLink, context);
@@ -114,7 +114,7 @@ namespace CivOne.Screens.StartupWizard
 
 			// Row 8: Third link
 			string line8prefix = "Current Version: ";
-			string line8link = "https://github.com/ChrisWiGit";
+			string line8link = ProjectPublicLinks.CurrentGitRepository;
 			int col8start = Math.Max(1, (context.Cols - (line8prefix.Length + line8link.Length)) / 2);
 			BoxPut(line8prefix, col8start, 8, ColourMuted, context);
 			BoxPut(line8link, col8start + line8prefix.Length, 8, ColourLink, context);
