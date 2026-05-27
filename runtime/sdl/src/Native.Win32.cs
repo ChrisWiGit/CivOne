@@ -98,11 +98,11 @@ namespace CivOne
 					return null;
 				}
 
-				HideCursor();
 				return Marshal.PtrToStringUni(bufferAddress);
 			}
 			finally
 			{
+				HideCursor();
 				Marshal.FreeHGlobal(bufferAddress);
 				if (pidl != IntPtr.Zero)
 					Marshal.FreeCoTaskMem(pidl);

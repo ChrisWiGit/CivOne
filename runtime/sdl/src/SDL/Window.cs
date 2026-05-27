@@ -282,7 +282,7 @@ namespace CivOne
 					byte[] bytes = new byte[width * height * 4];
 
 					int i = 0;
-					for (int yy = 0; yy < width; yy++)
+					for (int yy = 0; yy < height; yy++)
 						for (int xx = 0; xx < width; xx++)
 						{
 							Colour colour = value.Palette[value.Bitmap[xx, yy]];
@@ -322,16 +322,16 @@ namespace CivOne
 					flags |= SDL_WINDOW.FULLSCREEN_DESKTOP;
 
 				_handle = SDL_CreateWindow(title, 100, 100, width, height, flags);
-				_renderer = softwareRender ? IntPtr.Zero : SDL_CreateRenderer(_handle, -1, SDL_RENDERER_FLAGS.SDL_RENDERER_ACCELERATED);
-				if (_renderer == IntPtr.Zero)
-				{
-					_renderer = SDL_CreateRenderer(_handle, -1, SDL_RENDERER_FLAGS.SDL_RENDERER_SOFTWARE);
-				}
-
 				if (_handle == IntPtr.Zero)
 				{
 					Log("Something is wrong");
 					return;
+				}
+
+				_renderer = softwareRender ? IntPtr.Zero : SDL_CreateRenderer(_handle, -1, SDL_RENDERER_FLAGS.SDL_RENDERER_ACCELERATED);
+				if (_renderer == IntPtr.Zero)
+				{
+					_renderer = SDL_CreateRenderer(_handle, -1, SDL_RENDERER_FLAGS.SDL_RENDERER_SOFTWARE);
 				}
 
 				// Should be default, just to be sure

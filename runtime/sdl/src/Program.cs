@@ -208,7 +208,7 @@ Try 'civone-sdl --help' for more information.
 
 						// use regex to parse the drive letter and slot number
 						string slot = args[++i];
-						Regex regex = new Regex(@"^([a-z])([0-9]|1[0-5])$", RegexOptions.IgnoreCase);
+						Regex regex = new Regex(@"^([a-z])([1-9]|10)$", RegexOptions.IgnoreCase);
 						Match match = regex.Match(slot);
 						if (!match.Success)
 						{
@@ -234,7 +234,17 @@ Try 'civone-sdl --help' for more information.
 					case "skip-intro": settings.ShowIntro = false; continue;
 					case "software-render": settings["software-render"] = true; continue;
 					case "seed":
-						settings.InitialSeed = ushort.Parse(args[++i]);
+						if (args.GetUpperBound(0) == i)
+						{
+							Console.WriteLine("Missing seed value argument for --seed");
+							return;
+						}
+						if (!ushort.TryParse(args[++i], out ushort seed))
+						{
+							Console.WriteLine("Invalid seed value. Use an integer between 0 and 65535.");
+							return;
+						}
+						settings.InitialSeed = seed;
 						break;
 					default: Console.WriteLine(ErrorText); return;
 				}
