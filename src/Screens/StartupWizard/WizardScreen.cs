@@ -154,12 +154,11 @@ namespace CivOne.Screens.StartupWizard
 		{
 			if (args[Key.Escape])
 			{
-				if (Settings.Instance.FullScreen)
-				{
-					Settings.Instance.FullScreen = false;
-					_state.FullScreenEnabled = false;
-					Refresh();
-				}
+				// The wizard has no visible fullscreen/exit entry, so allow ESC to toggle fullscreen.
+				bool nextFullScreen = !Settings.Instance.FullScreen;
+				Settings.Instance.FullScreen = nextFullScreen;
+				_state.FullScreenEnabled = nextFullScreen;
+				Refresh();
 				return true;
 			}
 
