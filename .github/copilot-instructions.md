@@ -44,6 +44,7 @@
   * `[ "a", "b", "c" ]` instead of `new string[] { ... }`
 * Prefer `[ ..collection ]` over `.ToArray()`.
 * Prefer `.Length` instead of `.Any()` when working with arrays.
+* Instead of `if (bytes == null) throw new ArgumentNullException(nameof(bytes));`, use `ArgumentNullException.ThrowIfNull(bytes);`.
 
 ### Resizable Screens
 
