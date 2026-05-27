@@ -7,6 +7,7 @@ using CivOne.IO;
 
 namespace CivOne.UnitTests
 {
+    #pragma warning disable CS0067 // Events are never used - but required to implement IRuntime
     public sealed class MockRuntime : IRuntime
     {
         public event EventHandler Initialize;

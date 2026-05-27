@@ -13,7 +13,7 @@ namespace CivOne
 	internal static partial class SDL
 	{
 		#pragma warning disable S2342 // Keep case sensitive to match SDL as a name.
-		public enum SDL_TextureAccess : int
+		public enum SDL_TextureAccess
 		{
 			SDL_TEXTUREACCESS_STATIC,
 			SDL_TEXTUREACCESS_STREAMING,
