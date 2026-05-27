@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 using CivOne.Graphics;
+using CivOne.IO;
 using CivOne.Screens.StartupWizard.DosFont;
 
 namespace CivOne.Screens.StartupWizard
@@ -37,6 +38,7 @@ namespace CivOne.Screens.StartupWizard
 
 		// Color constants
 		private const byte ColourBackground = 0;
+		private const byte ColourHeaderBackground = 1;
 		private const byte ColourBorder = 15;
 		private const byte ColourText = 15;
 		private const byte ColourTitle = 14;
@@ -69,6 +71,7 @@ namespace CivOne.Screens.StartupWizard
 			int frameWidth = Math.Min(HeaderFrameWidth, context.Cols);
 			int left = 0;
 			int inner = Math.Max(0, frameWidth - 2);
+			DrawBlueBackground(context, frameWidth, left);
 
 			CharPut(BoxTopLeft + new string(BoxHorizontal, inner) + BoxTopRight, left, 0, ColourBorder, context);
 			CharPut(BoxBottomLeft + new string(BoxHorizontal, inner) + BoxBottomRight, left, HeaderRows - 1, ColourBorder, context);
@@ -80,6 +83,29 @@ namespace CivOne.Screens.StartupWizard
 			}
 
 			DrawBoxContent(context);
+		}
+
+		private void DrawBlueBackground(WizardRenderingContext context, int frameWidth, int left)
+		{
+			if (frameWidth <= 0 || HeaderRows <= 0)
+			{
+				return;
+			}
+			
+			int glyphW = (int)(ModernDos8X16.GlyphWidth * context.Scale);
+			int glyphH = (int)(ModernDos8X16.GlyphHeight * context.Scale);
+
+			if (glyphW <= 0 || glyphH <= 0)
+			{
+				return;
+			}
+
+			_screen.Bitmap.FillRectangle(
+				context.Box.X + (left * glyphW),
+				context.Box.Y,
+				frameWidth * glyphW,
+				HeaderRows * glyphH,
+				ColourHeaderBackground);
 		}
 
 		/// <summary>
