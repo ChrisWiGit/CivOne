@@ -69,6 +69,7 @@ namespace CivOne
 					case SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_GAINED:
 						break;
 					case SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_LOST:
+						ResetMouseButtonState();
 						break;
 					case SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE:
 						Close();

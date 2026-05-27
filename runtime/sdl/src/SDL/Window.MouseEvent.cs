@@ -34,6 +34,23 @@ namespace CivOne
 				}
 			}
 
+			/// <summary>
+			/// Resets all tracked mouse button states and fires MouseUp events for any held buttons.
+			/// Called when the window loses focus (FOCUS_LOST event) to prevent stuck button state
+			/// (e.g., user holds mouse button, then alt-tabs away).
+			/// Without this, game logic may think the button is still held until it's released inside the window again.
+			/// </summary>
+			internal void ResetMouseButtonState()
+			{
+				MouseButton[] buttons = [ MouseButton.Left, MouseButton.Right ];
+				for (int i = 0; i < buttons.Length; i++)
+				{
+					if (!_mouseButtonState[(int)buttons[i]]) continue;
+					_mouseButtonState[(int)buttons[i]] = false;
+					OnMouseUp?.Invoke(this, new ScreenEventArgs(MouseX, MouseY, buttons[i]));
+				}
+			}
+
 			private void CheckMouseButton(MouseButton button, uint buttonMask, int mask)
 			{
 				bool state = (buttonMask & mask) > 0;

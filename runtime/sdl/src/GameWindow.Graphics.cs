@@ -18,6 +18,9 @@ namespace CivOne
 	{
 		private SDL.Texture CursorTexture = null;
 
+		// Set from any thread when the cursor changes; consumed on the render thread in Draw().
+		private volatile bool _cursorDirty;
+
 		// Persistent per-layer streaming-texture cache. Reuses GPU textures + managed
 		// pixel/palette buffers across frames; was previously recreated 60 FPS × layer-count
 		// times per second (see P0.6 in code.review.md).

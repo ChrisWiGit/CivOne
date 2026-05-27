@@ -262,6 +262,11 @@ namespace CivOne
 
 		private void Draw(object sender, EventArgs args)
 		{
+			if (_cursorDirty)
+			{
+				_cursorDirty = false;
+				ApplyCursorUpdate();
+			}
 			if (!_hasUpdate) return;
 			_runtime.InvokeDraw();
 			_hasUpdate = false;
@@ -269,7 +274,11 @@ namespace CivOne
 			Render();
 		}
 
-		private void CursorChanged(object sender, EventArgs args)
+		// Called from the game thread via Runtime.Cursor setter — must not touch SDL here.
+		private void CursorChanged(object sender, EventArgs args) => _cursorDirty = true;
+
+		// Called on the render thread (from Draw) to apply the pending cursor update.
+		private void ApplyCursorUpdate()
 		{
 			CursorVisible = !(Settings.CursorType != CursorType.Native || _runtime.CurrentCursor == MouseCursor.None);
 			CursorTexture?.Dispose();

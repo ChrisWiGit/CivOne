@@ -11,6 +11,7 @@ using CivOne.Graphics;
 using CivOne.IO;
 using System;
 using System.Drawing;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -55,14 +56,15 @@ namespace CivOne
 				_running = false;
 			}
 
-			private static T CastToStruct<T>(object source) where T : struct
-			{
-				IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf(source.GetType()));
-				Marshal.StructureToPtr(source, ptr, false);
-				T output = Marshal.PtrToStructure<T>(ptr);
-				Marshal.FreeHGlobal(ptr);
-				return output;
-			}
+			/// <summary>
+			/// Reinterprets SDL_Event as the requested sub-struct type (e.g., SDL_WindowEvent, SDL_KeyboardEvent).
+			/// Uses Unsafe.As for zero-allocation casting instead of AllocHGlobal + StructureToPtr + FreeHGlobal roundtrip.
+			/// Safe because SDL_Event is an unsafe struct union with LayoutKind.Sequential,
+			/// and all sub-types have compatible field layouts (EventType/Type at offset 0).
+			/// Performance note: eliminates allocation per SDL event; prior version allocated ~64 bytes on heap per event.
+			/// </summary>
+			private static T CastToStruct<T>(SDL_Event source) where T : struct
+				=> Unsafe.As<SDL_Event, T>(ref source);
 
 			private void HandleEvent(SDL_Event sdlEvent)
 			{
