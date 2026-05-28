@@ -5,7 +5,12 @@
 I did not browse all issues on github at first, so I did not recognize that some of my fixes have an issue.
 
 ## History
-
+* Refactoring
+  * Runtime/SDL hardening: input/audio/runtime safety fixes, stronger dispose patterns, safer native interop (DllImport search paths, nullable folder-browser APIs, enum/warning cleanup), and resource/lifecycle fixes in Window/Wave.
+  * Startup wizard improvements: background data-file copy flow with status updates, canonical file-casing handling, action-handler/main-thread refresh updates, and UX refinements (fullscreen/aspect/default rendering updates).
+  * Graphics/rendering updates: cache/thread-safety hardening, deterministic sprite disposal, reduced allocations, and new header rendering helper (DrawBlueBackground).
+  * Gameplay/performance/logic fixes: A* heuristic correction, city shield-cost enumeration optimization, and map query/iteration refactors.
+  * Quality and tooling updates: analyzers enabled/configured across projects, targeted unit-test updates/fixes, plus README/docs/translation cleanup and updates.
 * Feature: Change default aspect ratio to "Expand" (formerly only experimental) for better support of modern displays and improved UI layout.
   * The "Expand" aspect ratio mode stretches the game canvas to fill the entire window, allowing for more flexible window sizes and better use of screen real estate on modern displays.
   * The original "Auto" aspect ratio mode is still available as an option in the setup menu for users who prefer the original behavior or are using older displays.
