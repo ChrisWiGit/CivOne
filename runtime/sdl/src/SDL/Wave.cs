@@ -56,7 +56,7 @@ namespace CivOne
 					return;
 				}
 
-				deviceId = SDL_OpenAudioDevice(null, 0, ref _waveSpec, out _, 0);
+				deviceId = SDL_OpenAudioDevice(IntPtr.Zero, 0, ref _waveSpec, out _, 0);
 				if (deviceId == 0 && SDL_GetError() != 0)
 				{
 					deviceId = uint.MaxValue;
