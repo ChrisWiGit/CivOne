@@ -8,7 +8,12 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 * Refactor: Hardened the `Map` partial singleton with 38 new tests and decoupled it from four global singletons (`Common.Random`, `Resources`, `Settings`, file IO) via constructor-injected services under `src/Services/Maps/` (`IRandomService`, `IMapResourceProvider`, `IMapGenerationSettings`, `IMapPersistenceService`). Defaults forward to the originals, so `Map.Instance`, RNG order and save-file compatibility stay unchanged. Added Save→Load roundtrip integration test through the real `PicFile` encoder/decoder.
 * Cleanup: Explicit braces around outer `for`-loop bodies in `Map.LoadSave.cs`, XML doc comments on `Map.cs` fields, documented `_tiles = null!` for CS8618, and `[SuppressMessage(CA1708)]` on `Map` for the intentional `WIDTH`/`Width` (static vs. IMap) coexistence.
-
+* Refactoring
+  * Runtime/SDL hardening: input/audio/runtime safety fixes, stronger dispose patterns, safer native interop (DllImport search paths, nullable folder-browser APIs, enum/warning cleanup), and resource/lifecycle fixes in Window/Wave.
+  * Startup wizard improvements: background data-file copy flow with status updates, canonical file-casing handling, action-handler/main-thread refresh updates, and UX refinements (fullscreen/aspect/default rendering updates).
+  * Graphics/rendering updates: cache/thread-safety hardening, deterministic sprite disposal, reduced allocations, and new header rendering helper (DrawBlueBackground).
+  * Gameplay/performance/logic fixes: A* heuristic correction, city shield-cost enumeration optimization, and map query/iteration refactors.
+  * Quality and tooling updates: analyzers enabled/configured across projects, targeted unit-test updates/fixes, plus README/docs/translation cleanup and updates.
 * Feature: Change default aspect ratio to "Expand" (formerly only experimental) for better support of modern displays and improved UI layout.
   * The "Expand" aspect ratio mode stretches the game canvas to fill the entire window, allowing for more flexible window sizes and better use of screen real estate on modern displays.
   * The original "Auto" aspect ratio mode is still available as an option in the setup menu for users who prefer the original behavior or are using older displays.
