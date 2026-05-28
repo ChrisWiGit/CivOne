@@ -183,7 +183,7 @@ namespace CivOne.UnitTests
 			{
 			}
 
-			public string BrowseFolder(string caption = "") => string.Empty;
+			public string? BrowseFolder(string caption = "") => string.Empty;
 
 			public string FileChooser(bool save, string title, string initialFileName, string filter) => string.Empty;
 

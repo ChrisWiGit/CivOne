@@ -15,10 +15,13 @@ namespace CivOne
 {
 	internal partial class Native
 	{
-		private static string MacFolderBrowser(string caption)
+		private static string? MacFolderBrowser(string caption)
 		{
-			string scriptPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "OpenFolder.sh");
-			using (StreamWriter sw = new StreamWriter(scriptPath, false))
+			string? dirName = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+			if (dirName == null) return null;
+
+			string scriptPath = Path.Combine(dirName, "OpenFolder.sh");
+			using (StreamWriter sw = new(scriptPath, false))
 			{
 				sw.WriteLine("!#/bin/bash");
 				sw.WriteLine($@"osascript -e 'set getPath to choose folder with prompt ""{caption}""' -e 'set output to POSIX path of getPath'");

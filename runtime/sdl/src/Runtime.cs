@@ -156,7 +156,7 @@ namespace CivOne
 		int IRuntime.CanvasWidth => CanvasSize.Width;
 		int IRuntime.CanvasHeight => CanvasSize.Height;
 		
-		string IRuntime.BrowseFolder(string caption) => Native.FolderBrowser(caption);
+		string? IRuntime.BrowseFolder(string caption) => Native.FolderBrowser(caption);
 		string IRuntime.FileChooser(bool save, string title, string initialFileName, string filter) => Native.FileChooser(save, title, initialFileName, filter);
 		void IRuntime.SetWindowTitle(string title) => SetWindowTitle?.Invoke(title);
 		void IRuntime.PlaySound(string file) => PlaySound?.Invoke(file);

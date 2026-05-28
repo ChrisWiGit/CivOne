@@ -19,51 +19,67 @@ namespace CivOne
 		private const string LIBGTK3 = "libgtk-3.so.0";
 		private const string GLIB2 = "libglib-2.0.so.0";
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 		[DllImport(LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
 		private static extern IntPtr gtk_file_chooser_dialog_new(IntPtr title, IntPtr parent, int action, IntPtr nil);
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 		[DllImport(LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
 		private static extern IntPtr gtk_file_chooser_get_filename(IntPtr raw);
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 		[DllImport(LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void gtk_file_chooser_set_current_name(IntPtr raw, IntPtr name);
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 		[DllImport(LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
 		private static extern IntPtr gtk_file_filter_new();
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 		[DllImport(LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void gtk_file_filter_set_name(IntPtr filter, IntPtr name);
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 		[DllImport(LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void gtk_file_filter_add_pattern(IntPtr filter, IntPtr pattern);
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 		[DllImport(LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void gtk_file_chooser_add_filter(IntPtr chooser, IntPtr filter);
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 		[DllImport(LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
 		private static extern IntPtr gtk_dialog_add_button(IntPtr raw, IntPtr button_text, int response_id);
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 		[DllImport (LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void gtk_init (ref int argc, ref IntPtr argv);
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 		[DllImport (LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void gtk_main_iteration();
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 		[DllImport (LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
 		private static extern bool gtk_events_pending();
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 		[DllImport(LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
 		private static extern int gtk_dialog_run(IntPtr handle);
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 		[DllImport (LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void gtk_widget_destroy (IntPtr handle);
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 		[DllImport (GLIB2, CallingConvention = CallingConvention.Cdecl)]
 		private static extern IntPtr g_filename_to_utf8 (IntPtr mem, int len, IntPtr read, out IntPtr written, out IntPtr error);
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 		[DllImport (GLIB2, CallingConvention = CallingConvention.Cdecl)]
 		private static extern IntPtr g_malloc(UIntPtr size);
 		
+		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 		[DllImport (GLIB2, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void g_free (IntPtr mem);
 
@@ -79,7 +95,7 @@ namespace CivOne
 			return output;
 		}
 
-		public static string GetFileName(IntPtr input) 
+		public static string? GetFileName(IntPtr input) 
 		{
 			if (input == IntPtr.Zero) return null;
 
@@ -98,15 +114,19 @@ namespace CivOne
 			return Encoding.UTF8.GetString(bytes.Take(bytes.Length - 1).ToArray());
 		}
 
-		private static IntPtr AddButton(IntPtr handle, string text, int responseId)
+		private static void AddButton(IntPtr handle, string text, int responseId)
 		{
 			IntPtr native_button_text = StringToIntPtr(text);
 			IntPtr raw_ret = gtk_dialog_add_button(handle, native_button_text, responseId);
+			if (raw_ret == IntPtr.Zero)
+			{
+				g_free(native_button_text);
+				throw new InvalidOperationException("Failed to add button to GTK dialog");
+			}
 			g_free(native_button_text);
-			return raw_ret;
 		}
 
-		private static string GtkFolderBrowser(string caption)
+		private static string? GtkFolderBrowser(string caption)
 		{
 			IntPtr title = StringToIntPtr(caption);
 			IntPtr test = gtk_file_chooser_dialog_new(title, IntPtr.Zero, 2, IntPtr.Zero);
@@ -115,13 +135,13 @@ namespace CivOne
 			AddButton(test, "Cancel", -6);
 			AddButton(test, "OK", -5);
 
-			string output = null;
+			string? output = null;
 			if (gtk_dialog_run(test) == -5)
 			{
 				IntPtr response = gtk_file_chooser_get_filename(test);
-				string test2 = GetFileName(response);
+				string? filename = GetFileName(response);
 				g_free(response);
-				output = test2;
+				output = filename;
 			}
 			gtk_widget_destroy(test);
 			while (gtk_events_pending())
@@ -129,7 +149,7 @@ namespace CivOne
 			return output;
 		}
 
-		private static string GtkFileDialog(bool save, string title, string initialFileName, string filter)
+		private static string? GtkFileDialog(bool save, string title, string initialFileName, string filter)
 		{
 			// action: 0 = GTK_FILE_CHOOSER_ACTION_OPEN, 1 = GTK_FILE_CHOOSER_ACTION_SAVE
 			int action = save ? 1 : 0;
@@ -164,7 +184,7 @@ namespace CivOne
 			AddButton(dialog, "Cancel", -6);
 			AddButton(dialog, save ? "Save" : "Open", -5);
 
-			string output = null;
+			string? output = null;
 			if (gtk_dialog_run(dialog) == -5)
 			{
 				IntPtr response = gtk_file_chooser_get_filename(dialog);

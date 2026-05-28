@@ -21,12 +21,15 @@ namespace CivOne
 		private static IntPtr _handle = IntPtr.Zero;
 
 		internal static Platform Platform =>
-			RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Platform.Windows :
-			RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Platform.Linux :
-			RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? Platform.macOS :
-			Platform.Unknown;
+			true switch
+			{
+				_ when RuntimeInformation.IsOSPlatform(OSPlatform.Windows) => Platform.Windows,
+				_ when RuntimeInformation.IsOSPlatform(OSPlatform.Linux)   => Platform.Linux,
+				_ when RuntimeInformation.IsOSPlatform(OSPlatform.OSX)     => Platform.macOS,
+				_ => throw new PlatformNotSupportedException("Unsupported platform")
+			};
 
-		internal static string FolderBrowser(string caption = "")
+		internal static string? FolderBrowser(string caption = "")
 		{
 			switch (Platform)
 			{

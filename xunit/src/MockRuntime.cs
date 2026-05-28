@@ -51,7 +51,7 @@ namespace CivOne.UnitTests
             Console.WriteLine(text, parameters);
         }
 
-        public string BrowseFolder(string caption = "")
+        public string? BrowseFolder(string caption = "")
         {
             throw new NotImplementedException();
         }

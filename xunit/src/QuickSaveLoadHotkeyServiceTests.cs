@@ -229,7 +229,7 @@ namespace CivOne.UnitTests
 			public void SetCurrentCursor(MouseCursor cursor) => CurrentCursor = cursor;
 			public void SetCursor(IBitmap cursor) => Cursor = cursor;
 			public void Log(string text, params object[] parameters) { }
-			public string BrowseFolder(string caption = "") => string.Empty;
+			public string? BrowseFolder(string caption = "") => string.Empty;
 			public string FileChooser(bool save, string title, string initialFileName, string filter) => string.Empty;
 			public void SetWindowTitle(string title) => WindowTitle = title;
 			public void PlaySound(string file) { }
