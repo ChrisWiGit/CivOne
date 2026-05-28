@@ -25,7 +25,7 @@ namespace CivOne.Screens.StartupWizard
 	/// DOS style startup wizard shown before normal startup when setup is required.
 	/// Orchestrates input handling, page building, action execution, and rendering.
 	/// </summary>
-	[BreakAttribute]
+	[Break]
 	[ScreenResizeable]
 	public sealed class WizardScreen : BaseScreen
 	{
