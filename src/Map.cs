@@ -32,6 +32,9 @@ namespace CivOne
 		private int _terrainMasterWord;
 		public int TerrainMasterWord { get { return _terrainMasterWord; } }
 		private int _landMass, _temperature, _climate, _age;
+		
+		
+		#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional - but performance impact may be too low
 		private ITile[,] _tiles;
 
 		public ITile[,] Tiles { get { return _tiles; } }
