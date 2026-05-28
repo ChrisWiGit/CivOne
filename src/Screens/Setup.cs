@@ -213,11 +213,16 @@ namespace CivOne.Screens
 		{
 			List<MenuItem<int>> items =
 			[
-				MenuItem.Create(Translate("Settings")).OnSelect(GotoMenu(SettingsMenu)),
-				MenuItem.Create(Translate("Patches")).OnSelect(GotoMenu(PatchesMenu)),
-				MenuItem.Create(Translate("Plugins")).OnSelect(GotoMenu(PluginsMenu)),
-				MenuItem.Create(Translate("Game Options")).OnSelect(GotoMenu(GameOptionsMenu)),
-				MenuItem.Create(Translate("Open CivOne Profile folder...")).OnSelect(OpenProfileFolder),
+				MenuItem.Create(Translate("Settings")).OnSelect(GotoMenu(SettingsMenu))
+					.WithDescription(Translate("Configure graphics, sound, and other options.")),
+				MenuItem.Create(Translate("Patches")).OnSelect(GotoMenu(PatchesMenu))
+					.WithDescription(Translate("Enable or disable various game behavior patches.")),
+				MenuItem.Create(Translate("Plugins")).OnSelect(GotoMenu(PluginsMenu))
+					.WithDescription(TranslateArray("Browse for and install optional third-party plugins.\nThis feauture is not really implemented.")).SetEnabled(!Game.Started),
+				MenuItem.Create(Translate("Game Options")).OnSelect(GotoMenu(GameOptionsMenu))
+					.WithDescription(Translate("Configure game rules and difficulty settings.")),
+				MenuItem.Create(Translate("Open CivOne Profile folder...")).OnSelect(OpenProfileFolder)
+					.WithDescription(Translate("Open the folder where CivOne stores profiles, save games, and settings.")),
 				MenuItem.Create(GetReturnTargetString()).OnSelect(CloseScreen())
 			];
 
