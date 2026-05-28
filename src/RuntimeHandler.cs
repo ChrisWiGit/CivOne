@@ -39,6 +39,7 @@ namespace CivOne
 		internal static IRuntime Runtime { get; private set; }
 		internal static uint CurrentGameTick => _instance?._gameTick ?? 0;
 		public static bool IsFullWindowCanvasRequested => _instance?.TopScreen?.UseFullWindowCanvas ?? false;
+		public static bool IsFpsOverlayRequested => Settings.Instance.FpsCorner != FpsCorner.Off;
 		
 		private Settings Settings => Settings.Instance;
 		private IScreen? TopScreen => Common.TopScreen;

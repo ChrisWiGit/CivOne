@@ -404,13 +404,15 @@ namespace CivOne
 
 		private void Draw(object sender, EventArgs args)
 		{
+			bool isFpsOverlayEnabled = RuntimeHandler.IsFpsOverlayRequested;
+
 			if (_cursorDirty)
 			{
 				_cursorDirty = false;
 				ApplyCursorUpdate();
 			}
-			if (!_hasUpdate && !_cursorMoved) return;
-			if (_hasUpdate)
+			if (!_hasUpdate && !_cursorMoved && !isFpsOverlayEnabled) return;
+			if (_hasUpdate || isFpsOverlayEnabled)
 			{
 				_runtime.InvokeDraw();
 				_hasUpdate = false;
