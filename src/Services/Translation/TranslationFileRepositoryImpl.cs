@@ -12,6 +12,62 @@ namespace CivOne.Services.Translation
 	public class TranslationFileRepositoryImpl : ITranslationFileRepository
 	{
 		private const string EqualsPlaceholder = "[EQ]";
+		private const string LanguageDisplayNameKey = "__LANGUAGE_DISPLAYNAME__";
+
+		private static readonly HashSet<string> ExcludedFileNames = new(StringComparer.Ordinal)
+		{
+			"all.txt",
+			"obsoletekeys.txt"
+		};
+
+		/// <inheritdoc/>
+		public int SyncFiles(string sourceDirectory, string targetDirectory, Action<string> log = null)
+		{
+			Directory.CreateDirectory(targetDirectory);
+
+			IEnumerable<string> candidates = Directory.GetFiles(sourceDirectory, "*.txt", SearchOption.TopDirectoryOnly)
+				.Where(path =>
+				{
+					string fileName = Path.GetFileName(path);
+
+					// Only accept files that are already lowercase on disk so the runtime
+					// translations folder stays consistent across Windows/Linux/macOS without
+					// platform-specific handling. Files with any uppercase letter (e.g. authoring
+					// artifacts from case-insensitive systems) are skipped.
+					if (!string.Equals(fileName, fileName.ToLowerInvariant(), StringComparison.Ordinal))
+					{
+						log?.Invoke($"Skipping translation file with non-lowercase name: {fileName}");
+						return false;
+					}
+
+					if (ExcludedFileNames.Contains(fileName))
+					{
+						log?.Invoke($"Skipping non-translation file: {fileName}");
+						return false;
+					}
+
+					return true;
+				});
+
+			var groups = candidates.GroupBy(path => Path.GetFileName(path)).ToList();
+
+			int copiedCount = 0;
+			foreach (var group in groups)
+			{
+				string[] groupFiles = [.. group];
+				if (groupFiles.Length > 1)
+				{
+					log?.Invoke($"Translation file conflict (name clash): '{group.Key}' — skipping all: {string.Join(", ", groupFiles.Select(Path.GetFileName))}");
+					continue;
+				}
+
+				string targetPath = Path.Combine(targetDirectory, group.Key);
+				File.Copy(groupFiles[0], targetPath, true);
+				copiedCount++;
+			}
+
+			return copiedCount;
+		}
 
 		/// <inheritdoc/>
 		public IReadOnlyList<TranslationLanguageInfo> GetAvailableLanguages(string storageDirectory, Action<string> log = null)
@@ -28,7 +84,8 @@ namespace CivOne.Services.Translation
 			}
 
 			List<TranslationLanguageInfo> output = [];
-			foreach (string filePath in Directory.EnumerateFiles(translationDirectory, "*.txt", SearchOption.TopDirectoryOnly)
+			foreach (string filePath in Directory.EnumerateFiles(translationDirectory, "*", SearchOption.TopDirectoryOnly)
+				.Where(path => string.Equals(Path.GetExtension(path), ".txt", StringComparison.OrdinalIgnoreCase))
 				.OrderBy(path => path, StringComparer.OrdinalIgnoreCase))
 			{
 				string fileName = Path.GetFileName(filePath);
@@ -37,13 +94,14 @@ namespace CivOne.Services.Translation
 					continue;
 				}
 
-				if (!TryLoadTranslations(filePath, out _, out string error))
+				if (!TryLoadTranslations(filePath, out IReadOnlyDictionary<string, string> translations, out string error))
 				{
 					log?.Invoke($"Skipping translation file '{fileName}': {error}");
 					continue;
 				}
 
-				output.Add(new TranslationLanguageInfo(postfix, filePath));
+				string displayName = TryGetDisplayName(postfix, translations);
+				output.Add(new TranslationLanguageInfo(postfix, filePath, displayName));
 			}
 
 			return output;
@@ -127,6 +185,44 @@ namespace CivOne.Services.Translation
 		}
 
 		private static string GetTranslationDirectory(string storageDirectory) => Path.Combine(storageDirectory, "translations");
+
+		private static string TryGetDisplayName(string postfix, IReadOnlyDictionary<string, string> translations)
+		{
+			if (translations is null)
+			{
+				return null;
+			}
+
+			if (TryGetNonEmptyValue(translations, LanguageDisplayNameKey, out string displayName))
+			{
+				return displayName;
+			}
+
+			string legacyKey = NormalizeKey(postfix);
+			if (TryGetNonEmptyValue(translations, legacyKey, out displayName))
+			{
+				return displayName;
+			}
+
+			return null;
+		}
+
+		private static bool TryGetNonEmptyValue(IReadOnlyDictionary<string, string> translations, string key, out string value)
+		{
+			value = null;
+			if (!translations.TryGetValue(key, out string rawValue))
+			{
+				return false;
+			}
+
+			if (string.IsNullOrWhiteSpace(rawValue))
+			{
+				return false;
+			}
+
+			value = rawValue.Trim();
+			return true;
+		}
 
 		private static string NormalizeKey(string key) => key?.Trim().ToUpperInvariant() ?? string.Empty;
 

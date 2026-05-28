@@ -21,9 +21,10 @@ namespace CivOne.Graphics
 	/// <list type="bullet">
 	///   <item><description><b>Yes</b> — always use the simulating font set.</description></item>
 	///   <item><description><b>No</b> — always use the plain font set.</description></item>
-	///   <item><description><b>Auto</b> — use the simulating font set only when the file's first
-	///   character is the ASCII space (32), which indicates a standard English-only
-	///   <c>FONTS.CV</c> that lacks non-ASCII glyphs.</description></item>
+	///   <item><description><b>Auto</b> — always use the simulating font set. It handles both
+	///   <c>FONTS.CV</c> files that already contain international glyphs in the control-character
+	///   range (mapped via Unicode → low-code lookup) and English-only files (synthesised by
+	///   composing base letter + combining diacritic).</description></item>
 	/// </list>
 	/// </summary>
 	internal static class FontSetFactory
@@ -39,28 +40,24 @@ namespace CivOne.Graphics
 			ArgumentNullException.ThrowIfNull(bytes);
 			if (offset < 8 || offset >= bytes.Length)
 				throw new ArgumentOutOfRangeException(nameof(offset),
-					$"Offset {offset} out of bounds for FONTS.CV data of length {bytes?.Length ?? 0}.");
+					$"Offset {offset} out of bounds for FONTS.CV data of length {bytes.Length}.");
 
-			byte firstChar = bytes[offset - 8];
 
 			return Settings.Instance.SimulateInternationalFont switch
 			{
-				SimulateInternationalFont.Yes => new InternationalSimulatedFontSet(bytes, offset),
 				SimulateInternationalFont.No => new Fontset(bytes, offset),
-				_ => firstChar == 32
-										? new InternationalSimulatedFontSet(bytes, offset)
-										: new Fontset(bytes, offset),
+				_ => new InternationalSimulatedFontSet(bytes, offset),
 			};
 		}
 
 		/// <summary>
 		/// Returns <see langword="true"/> when <paramref name="font"/> is an
-		/// <see cref="InternationalSimulatedFontSet"/>, identified by its first character
-		/// being in the control-character range (ASCII &lt; 32).
+		/// <see cref="InternationalSimulatedFontSet"/> capable of rendering Unicode characters
+		/// beyond the file's stored ASCII range.
 		/// </summary>
 		internal static bool IsInternationalFontSet(IFont font)
 		{
-			return font.FirstChar < 32;
+			return font is InternationalSimulatedFontSet;
 		}
 	}
 }

@@ -18,6 +18,7 @@ namespace CivOne.Screens
 	{
 		event EventHandler Closed;
 		MouseCursor Cursor { get; }
+		bool UseFullWindowCanvas { get; }
 		bool Update(uint gameTick);
 		bool KeyDown(KeyboardEventArgs args);
 		bool MouseDown(ScreenEventArgs args);

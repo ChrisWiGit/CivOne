@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using CivOne.Enums;
@@ -33,6 +34,7 @@ namespace CivOne.Screens
 	internal class Credits : BaseScreen, ITranslationLanguageObserver
 	{
 		private const int NOISE_COUNT = 40;
+		private const int MENU_Y_OFFSET = 58;
 		
 		private readonly int[] SHOW_INTRO_LINE = { 312, 279, 254, 221, 196, 171, 146, 121, 96, 71, 46, 21, -4, -37, -62, -95, -120, -145, -170, -195, -220, -245, -270, -295 };
 		private readonly int[] HIDE_INTRO_LINE = { 287, 229, -29, -87, -315 };
@@ -41,6 +43,7 @@ namespace CivOne.Screens
 		private readonly string[] _introText;
 		private readonly Picture[] _pictures;
 		private readonly byte[,] _noiseMap;
+		private readonly List<(string Url, Rectangle Area)> _footerLinkAreas = [];
 		
 		private int _introLeft = 320;
         private int _logoSwipe;
@@ -64,6 +67,93 @@ namespace CivOne.Screens
 
 		private Dictionary<char, Action<object, EventArgs>> _shortKeyMapping;
 		private Action<object, EventArgs> _shortCutAction;
+		private int _mouseX = -1;
+		private int _mouseY = -1;
+
+		private void DrawFooterLinks()
+		{
+			_footerLinkAreas.Clear();
+
+			const int margin = 6;
+			const int fontId = 1;
+			int fontHeight = Resources.GetFontHeight(fontId);
+
+			string discordText = "Discord";
+			string separator = "  ";
+			string githubText = "GitHub";
+
+			int linksWidth = Resources.GetTextSize(fontId, discordText + separator + githubText).Width;
+			int bottomY = Height - margin - fontHeight;
+			int linksX = Math.Max(0, Width - margin - linksWidth);
+			int discordWidth = Resources.GetTextSize(fontId, discordText).Width;
+			int separatorWidth = Resources.GetTextSize(fontId, separator).Width;
+			int githubX = linksX + discordWidth + separatorWidth;
+			int githubWidth = Resources.GetTextSize(fontId, githubText).Width;
+
+			Rectangle discordArea = new(linksX, bottomY, discordWidth, fontHeight);
+			Rectangle githubArea = new(githubX, bottomY, githubWidth, fontHeight);
+			_footerLinkAreas.Add((ProjectPublicLinks.Discord, discordArea));
+			_footerLinkAreas.Add((ProjectPublicLinks.CurrentGitRepository, githubArea));
+
+			byte discordColour = discordArea.Contains(_mouseX, _mouseY) ? (byte)15 : (byte)9;
+			byte githubColour = githubArea.Contains(_mouseX, _mouseY) ? (byte)15 : (byte)9;
+
+			this.DrawText(discordText, fontId, discordColour, linksX, bottomY, TextAlign.Left);
+			this.DrawText(separator, fontId, 5, linksX + discordWidth, bottomY, TextAlign.Left);
+			this.DrawText(githubText, fontId, githubColour, githubX, bottomY, TextAlign.Left);
+		}
+
+		private int GetHoveredFooterLinkIndex(int x, int y)
+		{
+			for (int i = 0; i < _footerLinkAreas.Count; i++)
+			{
+				if (_footerLinkAreas[i].Area.Contains(x, y))
+				{
+					return i;
+				}
+			}
+
+			return -1;
+		}
+
+		private bool UpdateFooterLinkHover(int x, int y)
+		{
+			int previousHoveredLink = GetHoveredFooterLinkIndex(_mouseX, _mouseY);
+			_mouseX = x;
+			_mouseY = y;
+			int hoveredLink = GetHoveredFooterLinkIndex(_mouseX, _mouseY);
+
+			if (previousHoveredLink == hoveredLink)
+			{
+				return false;
+			}
+
+			_forceRedraw = true;
+			Refresh();
+			return true;
+		}
+
+		private void HandleFooterLinkClick(ScreenEventArgs args)
+		{
+			if (args.Buttons != MouseButton.Left)
+			{
+				return;
+			}
+
+			foreach ((string url, Rectangle area) in _footerLinkAreas)
+			{
+				if (!area.Contains(args.Location))
+				{
+					continue;
+				}
+
+				if (!Runtime.TryOpenUrl(url, out string errorMessage))
+				{
+					Log("Could not open URL {0}: {1}", url, errorMessage);
+				}
+				return;
+			}
+		}
 
 		private void RebuildShortcutMapping()
 		{
@@ -202,6 +292,7 @@ namespace CivOne.Screens
 				this.AddLayer(_pictures[2], cx, cy);
 				this.ResetPalette();
 				_done = true;
+				DrawFooterLinks();
 				
 				if (_overlay != null)
 				{
@@ -214,7 +305,7 @@ namespace CivOne.Screens
 				}
 				
 				// Draw menu background
-				int mx = ((Width - 120) / 2), my = Height - 67;
+				int mx = ((Width - 120) / 2), my = Height - (MENU_Y_OFFSET + 4);
 				this.FillRectangle(mx, my, 122, 57, 5)
 					.FillRectangle(mx + 1, my + 1, 120, 55, _menuColours[0])
 					.FillRectangle(mx + 1, my + 2, 119, 54, _menuColours[1])
@@ -270,8 +361,8 @@ namespace CivOne.Screens
 			if (HasMenu) return;
 			Menu menu = new Menu("MainMenu", Palette)
 			{
-				X = ((Width - 120) / 2) + 3,
-				Y = Height - 63,
+					X = ((Width - 120) / 2) + 3,
+				Y = Height - MENU_Y_OFFSET,
 				MenuWidth = 116,
 				ActiveColour = 11,
 				TextColour = 5,
@@ -285,6 +376,8 @@ namespace CivOne.Screens
 					Destroy();
 				}
 			};
+			menu.MissClickAt += (_, args) => HandleFooterLinkClick(args);
+			menu.MouseMoveAt += (_, args) => UpdateFooterLinkHover(args.X, args.Y);
 
 			var items = GetMenuItems();
 			menu.Items.Add(items[0]).OnSelect(StartNewGame);
@@ -434,6 +527,16 @@ namespace CivOne.Screens
 				return _overlay.MouseDrag(args);
 			return false;
 		}
+
+		public override bool MouseMove(ScreenEventArgs args)
+		{
+			if (_done && _overlay != null)
+			{
+				return _overlay.MouseMove(args);
+			}
+
+			return UpdateFooterLinkHover(args.X, args.Y);
+		}
 		
 		public override MouseCursor Cursor
 		{
@@ -448,10 +551,14 @@ namespace CivOne.Screens
 		private void Resize(object sender, ResizeEventArgs args)
 		{
 			_forceRedraw = true;
+			if (_done)
+			{
+				DrawFooterLinks();
+			}
 			foreach (Menu menu in Common.Screens.Where(x => x is Menu && (x as Menu).Id == "MainMenu"))
 			{
 				menu.X = ((Width - 120) / 2) + 3;
-				menu.Y = Height - 63;
+				menu.Y = Height - MENU_Y_OFFSET;
 				menu.ForceUpdate();
 			}
 		}

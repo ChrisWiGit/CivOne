@@ -22,6 +22,7 @@ namespace CivOne
 		public Profile Profile { get; }
 		
 		internal static Size CanvasSize { get; set; }
+		internal static Size WindowSize { get; set; }
 
 		internal bool SignalQuit { get; private set; }
 
@@ -155,17 +156,22 @@ namespace CivOne
 		void IRuntime.SetCursor(IBitmap cursor) => Cursor = cursor;
 		int IRuntime.CanvasWidth => CanvasSize.Width;
 		int IRuntime.CanvasHeight => CanvasSize.Height;
+		int IRuntime.WindowWidth => WindowSize.Width;
+		int IRuntime.WindowHeight => WindowSize.Height;
 		
 		string? IRuntime.BrowseFolder(string caption) => Native.FolderBrowser(caption);
 		string IRuntime.FileChooser(bool save, string title, string initialFileName, string filter) => Native.FileChooser(save, title, initialFileName, filter);
 		void IRuntime.SetWindowTitle(string title) => SetWindowTitle?.Invoke(title);
 		void IRuntime.PlaySound(string file) => PlaySound?.Invoke(file);
 		void IRuntime.StopSound() => StopSound?.Invoke();
+		bool IRuntime.TryOpenUrl(string url, out string errorMessage) => Native.TryOpenUrl(url, out errorMessage);
+		bool IRuntime.TryCopyToClipboard(string text, out string errorMessage) => Native.TryCopyToClipboard(text, out errorMessage);
 		void IRuntime.Quit() => SignalQuit = true;
 
 		public Runtime(RuntimeSettings runtimeSettings)
 		{	
 			Settings = runtimeSettings;
+			Directory.CreateDirectory(((IRuntime)this).StorageDirectory);
 			Profile = Profile.Get(this, runtimeSettings.Get<string>("profile-name"));
 			RuntimeHandler.Register(this);
 		}

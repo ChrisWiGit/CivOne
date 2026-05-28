@@ -163,15 +163,14 @@ namespace CivOne.UnitTests
 			public Palette Palette { get; set; }
 			public int CanvasWidth => 320;
 			public int CanvasHeight => 200;
-			public void SetCurrentCursor(MouseCursor cursor)
-			{
-			}
-			public void SetCursor(IBitmap cursor)
-			{
-			}
-			public void SetWindowTitle(string title)
-			{
-			}
+			public int WindowWidth => 320;
+			public int WindowHeight => 200;
+			public void SetCurrentCursor(MouseCursor cursor) { }
+			public void SetCursor(IBitmap cursor) { }
+			public void SetWindowTitle(string title) { }
+
+			public bool TryOpenUrl(string url, out string errorMessage) { errorMessage = null; return false; }
+			public bool TryCopyToClipboard(string text, out string errorMessage) { errorMessage = null; return false; }
 
 			public string GetSetting(string key)
 				=> _storedSettings.TryGetValue(key, out string value) ? value : null;

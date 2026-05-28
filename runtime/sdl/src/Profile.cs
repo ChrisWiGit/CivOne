@@ -46,6 +46,12 @@ namespace CivOne
 				File.Delete(_filename);
 			}
 
+			string profileDirectory = Path.GetDirectoryName(_filename);
+			if (!string.IsNullOrEmpty(profileDirectory))
+			{
+				Directory.CreateDirectory(profileDirectory);
+			}
+
 			using (FileStream fs = new FileStream(_filename, FileMode.Create, FileAccess.Write))
 			using (XmlWriter xw = CreateXmlWriter(fs))
 			{
@@ -82,7 +88,7 @@ namespace CivOne
 			if (!File.Exists(_filename)) CreateProfile();
 
 			XDocument xDoc;
-			XElement xRoot, xElement;
+			XElement? xRoot, xElement;
 			using (FileStream fs = new(_filename, FileMode.Open, FileAccess.Read, FileShare.Read))
 			{
 				xDoc = XDocument.Load(fs);
@@ -103,6 +109,12 @@ namespace CivOne
 				xRoot.Add(xElement);
 			}
 			xElement.Value = value;
+
+			string? profileDirectory = Path.GetDirectoryName(_filename);
+			if (!string.IsNullOrEmpty(profileDirectory))
+			{
+				Directory.CreateDirectory(profileDirectory);
+			}
 
 			// Atomic write: prevents profile corruption on crash/power-loss mid-write.
 			_atomicFileReplacementService.ReplaceFile(_filename, stream =>

@@ -39,7 +39,19 @@ namespace CivOne
 
 		private int _mouseX = -1, _mouseY = -1;
 
+		/// <summary>
+		/// True when layer bitmaps may have changed and need to be re-uploaded as SDL textures.
+		/// Set by layer-changing events (runtime updates, screen refreshes, window resize); cleared
+		/// after <see cref="Runtime.InvokeDraw"/> has been called and the texture cache rebuilt.
+		/// </summary>
 		private bool _hasUpdate = true;
+
+		/// <summary>
+		/// True when only the cursor position changed and no layer rebuild is required. Allows
+		/// re-rendering using the cached layer textures so cursor motion is not bottlenecked by
+		/// per-frame bytemap uploads (critical for fullscreen at high display resolutions).
+		/// </summary>
+		private bool _cursorMoved = true;
 		private bool _settingsFullscreen = Settings.FullScreen;
 
 		private int _settingsScale = Settings.Scale;
@@ -54,6 +66,7 @@ namespace CivOne
 		private void Load(object sender, EventArgs args)
 		{
 			Runtime.CanvasSize = SetCanvasSize();
+			Runtime.WindowSize = ClientRectangle;
 			_runtime.InvokeInitialize();
 		}
 
@@ -69,6 +82,7 @@ namespace CivOne
 			_debounceService.ExecuteDueCallbacks();
 			
 			Runtime.CanvasSize = SetCanvasSize();
+			Runtime.WindowSize = ClientRectangle;
 			if (_runtime.SignalQuit)
 			{
 				_debounceService.FlushPendingCallbacks();
@@ -267,10 +281,15 @@ namespace CivOne
 				_cursorDirty = false;
 				ApplyCursorUpdate();
 			}
-			if (!_hasUpdate) return;
-			_runtime.InvokeDraw();
-			_hasUpdate = false;
-			
+			if (!_hasUpdate && !_cursorMoved) return;
+			if (_hasUpdate)
+			{
+				_runtime.InvokeDraw();
+				_hasUpdate = false;
+				InvalidateLayerTextureCache();
+			}
+			_cursorMoved = false;
+
 			Render();
 		}
 
@@ -372,7 +391,10 @@ namespace CivOne
 			if (!IsInsideDrawArea(args)) return;
 			args = Transform(args);
 			if (args.X == _mouseX && args.Y == _mouseY) return;
-			_hasUpdate = true;
+			// Cursor-only redraw: reuse cached layer textures. If the screen needs a full refresh
+			// in response to this move, it will call Refresh() during InvokeMouseMove and the next
+			// Update tick will promote this to _hasUpdate.
+			_cursorMoved = true;
 			_mouseX = args.X;
 			_mouseY = args.Y;
 			_runtime.InvokeMouseMove(args);
@@ -461,7 +483,7 @@ namespace CivOne
 				CursorTexture?.Dispose();
 				CursorTexture = null;
 
-				DisposeLayerTextureCache();
+				DisposeCachedLayerTextures();
 			}
 
 			base.Dispose(disposing);
@@ -485,6 +507,7 @@ namespace CivOne
 			OnLoad += Load;
 			OnUpdate += Update;
 			OnDraw += Draw;
+			OnWindowResize += (s, a) => _hasUpdate = true;
 			OnKeyDown += KeyDown;
 			OnKeyUp += KeyUp;
 			OnMouseMove += MouseMove;

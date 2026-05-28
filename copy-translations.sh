@@ -2,6 +2,7 @@
 # Copies generated translation .txt files from the repository translation folder
 # into the active CivOne translations directory.
 # Excludes all.txt and overwrites existing target files.
+# Normalizes target file names to lowercase.
 
 set -eu
 
@@ -20,11 +21,12 @@ count=0
 for file in "$SOURCE_DIR"/*.txt; do
 	[ -e "$file" ] || continue
 	name=$(basename "$file")
-	if [ "$name" = "all.txt" ]; then
+	lower_name=$(printf '%s' "$name" | tr '[:upper:]' '[:lower:]')
+	if [ "$lower_name" = "all.txt" ]; then
 		continue
 	fi
-	cp "$file" "$TARGET_DIR/$name"
-	echo "Copied $name"
+	cp "$file" "$TARGET_DIR/$lower_name"
+	echo "Copied $name -> $lower_name"
 	count=$((count + 1))
 done
 

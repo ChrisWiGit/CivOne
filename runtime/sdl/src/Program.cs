@@ -284,14 +284,6 @@ Try 'civone-sdl --help' for more information.
 			else
 			{
 				string storageDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CivOne");
-				string translationFilePath = Path.Combine(storageDirectory, "translations", $"civ_{languagePostfix}.txt");
-				if (!File.Exists(translationFilePath))
-				{
-					Console.WriteLine($"Language file not found: {translationFilePath}");
-					Console.WriteLine("Expected file pattern: translations/civ_<postfix>.txt");
-					return false;
-				}
-
 				if (!TranslationServiceFactory.TryUseLanguage(storageDirectory, languagePostfix, out string error, message => Console.WriteLine(message)))
 				{
 					Console.WriteLine($"Could not activate translation language '{languagePostfix}': {error}");

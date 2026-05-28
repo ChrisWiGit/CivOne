@@ -222,7 +222,12 @@ namespace CivOne.UnitTests
 			public IBitmap Cursor { get; private set; }
 			public int CanvasWidth => 320;
 			public int CanvasHeight => 200;
+			public int WindowWidth => 320;
+			public int WindowHeight => 200;
 			public string WindowTitle { get; private set; }
+
+			public bool TryOpenUrl(string url, out string errorMessage) { errorMessage = null; return false; }
+			public bool TryCopyToClipboard(string text, out string errorMessage) { errorMessage = null; return false; }
 
 			public string GetSetting(string key) => null;
 			public void SetSetting(string key, string value) { }

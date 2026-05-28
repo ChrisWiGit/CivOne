@@ -41,6 +41,20 @@ namespace CivOne.UnitTests
         public IBitmap Cursor { get; private set; }
         public int CanvasWidth { get; }
         public int CanvasHeight { get; }
+        public int WindowWidth { get; }
+        public int WindowHeight { get; }
+
+        public bool TryOpenUrl(string url, out string errorMessage)
+        {
+            errorMessage = null;
+            return false;
+        }
+
+        public bool TryCopyToClipboard(string text, out string errorMessage)
+        {
+            errorMessage = null;
+            return false;
+        }
 
         public void SetCurrentCursor(MouseCursor cursor) => CurrentCursor = cursor;
         public void SetCursor(IBitmap cursor) => Cursor = cursor;

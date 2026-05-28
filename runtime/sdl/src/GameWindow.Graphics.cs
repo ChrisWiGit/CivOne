@@ -21,25 +21,53 @@ namespace CivOne
 		// Set from any thread when the cursor changes; consumed on the render thread in Draw().
 		private volatile bool _cursorDirty;
 
-		// Persistent per-layer streaming-texture cache. Reuses GPU textures + managed
-		// pixel/palette buffers across frames; was previously recreated 60 FPS × layer-count
-		// times per second (see P0.6 in code.review.md).
-		private SDL.Texture[] _layerTextures;
+		/// <summary>
+		/// Cached SDL textures for each layer of the most recent <see cref="Runtime.InvokeDraw"/> result.
+		/// Re-uploading large bytemaps to GPU memory on every frame is the dominant cost when the
+		/// canvas is at full display resolution (e.g. fullscreen wizard). The cache is invalidated
+		/// whenever layer content actually changes; pure cursor moves reuse the existing textures.
+		/// </summary>
+		private SDL.Texture[] _cachedLayerTextures = null;
+		private bool _layerTexturesDirty = true;
 
 		/// <summary>
-		/// Disposes the layer texture cache. 
-		/// Should be called whenever the layer count changes (e.g. new game, load game) to avoid keeping around stale textures.
-		/// Also called from Dispose() to clean up GPU resources on shutdown.
+		/// Marks the cached layer textures as needing a rebuild on the next render.
+		/// Called whenever <see cref="Runtime.InvokeDraw"/> has run and may have mutated layer bitmaps.
 		/// </summary>
-		private void DisposeLayerTextureCache()
+		private void InvalidateLayerTextureCache() => _layerTexturesDirty = true;
+
+		private void DisposeCachedLayerTextures()
 		{
-			if (_layerTextures == null) return;
-			for (int i = 0; i < _layerTextures.Length; i++)
+			if (_cachedLayerTextures == null) return;
+			foreach (SDL.Texture texture in _cachedLayerTextures)
 			{
-				_layerTextures[i]?.Dispose();
-				_layerTextures[i] = null;
+				texture?.Dispose();
 			}
-			_layerTextures = null;
+			_cachedLayerTextures = null;
+		}
+
+		private void RebuildLayerTextureCacheIfNeeded()
+		{
+			if (!_layerTexturesDirty && _cachedLayerTextures != null
+				&& _runtime.Layers != null
+				&& _cachedLayerTextures.Length == _runtime.Layers.Length)
+			{
+				return;
+			}
+
+			DisposeCachedLayerTextures();
+			if (_runtime.Layers == null)
+			{
+				_layerTexturesDirty = false;
+				return;
+			}
+
+			_cachedLayerTextures = new SDL.Texture[_runtime.Layers.Length];
+			for (int i = 0; i < _runtime.Layers.Length; i++)
+			{
+				_cachedLayerTextures[i] = CreateTexture(_runtime.Palette, _runtime.Layers[i]);
+			}
+			_layerTexturesDirty = false;
 		}
 
 		private static Size DefaultCanvasSize
@@ -100,34 +128,12 @@ namespace CivOne
 
 			Clear(Color.Black);
 			GetBorders(out int x1, out int y1, out int x2, out int y2);
-
-			// Snapshot the layer reference: Runtime.Layers may be reassigned from another thread
-			// (MCP / game loop), and iterating the array directly without a snapshot risks a
-			// torn read between the null-check and the for-loop.
-			Bytemap[] layers = _runtime.Layers;
-			if (layers == null) return;
-
-			if (_layerTextures == null || _layerTextures.Length != layers.Length)
+			if (_runtime.Layers == null) return;
+			RebuildLayerTextureCacheIfNeeded();
+			if (_cachedLayerTextures == null) return;
+			foreach (SDL.Texture canvas in _cachedLayerTextures)
 			{
-				DisposeLayerTextureCache();
-				_layerTextures = new SDL.Texture[layers.Length];
-			}
-
-			for (int i = 0; i < layers.Length; i++)
-			{
-				Bytemap bytemap = layers[i];
-				if (bytemap == null) continue;
-
-				SDL.Texture cached = _layerTextures[i];
-				if (cached == null || cached.IsEmpty || cached.Width != bytemap.Width || cached.Height != bytemap.Height)
-				{
-					cached?.Dispose();
-					cached = CreateLayerTexture(bytemap.Width, bytemap.Height);
-					_layerTextures[i] = cached;
-				}
-
-				cached.UpdateFrom(_runtime.Palette, bytemap);
-				cached.Draw(x1, y1, (x2 - x1), (y2 - y1));
+				canvas.Draw(x1, y1, (x2 - x1), (y2 - y1));
 			}
 
 			DrawCursorOverlay(x1, y1);
@@ -135,6 +141,11 @@ namespace CivOne
 
 		private Size SetCanvasSize()
 		{
+			if (RuntimeHandler.IsFullWindowCanvasRequested)
+			{
+				return new Size(Width, Height);
+			}
+
 			if (Settings.AspectRatio != AspectRatio.Expand)
 			{
 				return DefaultCanvasSize;

@@ -1,6 +1,7 @@
 # Copies generated translation .txt files from the repository translation folder
 # into the active CivOne translations directory.
 # Excludes all.txt and overwrites existing target files.
+# Normalizes target file names to lowercase.
 
 $ErrorActionPreference = 'Stop'
 
@@ -22,8 +23,9 @@ New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
 $files = Get-ChildItem -Path $sourceDir -Filter '*.txt' -File | Where-Object { $_.Name -ine 'all.txt' }
 
 foreach ($file in $files) {
-	Copy-Item -Path $file.FullName -Destination (Join-Path $targetDir $file.Name) -Force
-	Write-Host "Copied $($file.Name)" to $targetDir
+	$targetName = $file.Name.ToLowerInvariant()
+	Copy-Item -Path $file.FullName -Destination (Join-Path $targetDir $targetName) -Force
+	Write-Host "Copied $($file.Name) -> $targetName to $targetDir"
 }
 
 Write-Host "Done: $($files.Count) file(s) copied to $targetDir"

@@ -94,5 +94,43 @@ namespace CivOne
 
 		private static string BuildOpenScript(string title) =>
 			$"osascript -e 'set result to choose file with prompt \"{title}\"' -e 'set output to POSIX path of result' -e 'return output'";
+	private static bool MacTryOpenUrl(string url, out string errorMessage)
+	{
+		try
+		{
+			Process.Start("open", url);
+			errorMessage = string.Empty;
+			return true;
+		}
+		catch (System.Exception ex)
+		{
+			errorMessage = ex.Message;
+			return false;
+		}
 	}
+
+	private static bool MacTryCopyToClipboard(string text, out string errorMessage)
+	{
+		try
+		{
+			var process = new Process();
+			process.StartInfo = new ProcessStartInfo()
+			{
+				FileName = "pbcopy",
+				UseShellExecute = false,
+				RedirectStandardInput = true
+			};
+			process.Start();
+			process.StandardInput.Write(text);
+			process.StandardInput.Close();
+			process.WaitForExit();
+			errorMessage = string.Empty;
+			return true;
+		}
+		catch (System.Exception ex)
+		{
+			errorMessage = ex.Message;
+			return false;
+		}
+	}	}
 }

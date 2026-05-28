@@ -47,5 +47,6 @@
 		<Compile Include="shared/**" />
 		<Compile Include="src/**" />
 		<Compile Remove="src/**/*.7z" />
+		<Compile Remove="src/**/*.md" />
 	</ItemGroup>
 </Project>

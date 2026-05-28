@@ -51,8 +51,8 @@ namespace CivOne.Graphics
 		private void LoadFonts()
 		{
 			byte[] file;
-			string filename = Path.Combine(Settings.DataDirectory, "FONTS.CV");
-			if (!File.Exists(filename))
+			string filename = FileSystem.FindFileIgnoreCase(Settings.DataDirectory, "FONTS.CV");
+			if (filename == null)
 			{
 				Log("Font file not found, fallback to default font");
 				return;
