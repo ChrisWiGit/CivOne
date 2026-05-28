@@ -102,6 +102,7 @@ Try 'civone-sdl --help' for more information.
 				switch (cmd)
 				{
 					case "demo": settings.Demo = true; continue;
+					case "debug": settings["debug"] = true; continue;
 					case "setup": settings.Setup = true; continue;
 					case "free": settings.Free = true; continue;
 					case "mcp": settings.McpEnabled = true; continue;

@@ -334,6 +334,19 @@ namespace CivOne
 			}
 		}
 
+		public static string ToText(this FpsCorner fpsCorner)
+		{
+			return fpsCorner switch
+			{
+				FpsCorner.Off => T("Off"),
+				FpsCorner.TopLeft => T("Top Left"),
+				FpsCorner.TopRight => T("Top Right"),
+				FpsCorner.BottomLeft => T("Bottom Left"),
+				FpsCorner.BottomRight => T("Bottom Right"),
+				_ => throw new InvalidOperationException($"Unexpected FpsCorner value {fpsCorner} in Extensions.ToText")
+			};
+		}
+
 		public static string ToText(this GameOption gameOption)
 		{
 			switch (gameOption)

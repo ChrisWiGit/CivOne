@@ -10,6 +10,23 @@
 
 Before removing or rewriting any statement, check whether it carries side effects beyond its visible result. A statement that looks "unused" may still mutate shared state.
 
+## Reviews
+
+### Powershell and Shell scripts
+
+If a powershell script is written in a way that is not cross-platform, also provide a bash version of the script that achieves the same result.
+
+In launch.json, if a command is provided for Windows, also provide a command for non-Windows platforms that achieves the same result.
+
+```json
+{
+  "command": "dotnet '${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll' --debug & game_pid=$!; dotnet trace collect --process-id \"$game_pid\" --output '${workspaceFolder}/profiling/civone-profile-'\"$game_pid\"'.nettrace'; dotnet trace convert --format Speedscope '${workspaceFolder}/profiling/civone-profile-'\"$game_pid\"'.nettrace'",
+			"windows": {
+				"command": "$gameProcess = Start-Process dotnet -ArgumentList '${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll','--debug' -WorkingDirectory '${workspaceRoot}' -PassThru; dotnet trace collect --process-id $gameProcess.Id --output ${workspaceFolder}/profiling/civone-profile-$($gameProcess.Id).nettrace; dotnet trace convert --format Speedscope ${workspaceFolder}/profiling/civone-profile-$($gameProcess.Id).nettrace"
+			}
+}
+```
+
 ### High-risk patterns
 
 * `var x = expr; index += 2;` — value unused, but index advancement on the **same line** must be preserved.
@@ -114,6 +131,7 @@ dotnet build Project.csproj -v q 2>&1 | tail -n 15
 
 ## Documentation Comments
 
+* Always use English for XML documentation, comments in code, commit messages, and also in README and other markdown files, unless the user explicitly requests otherwise.
 * Use XML documentation comments for all public types and members.
 * Include:
   * summaries

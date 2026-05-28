@@ -38,6 +38,7 @@ namespace CivOne.Screens
 		private bool _update = true;
 		private bool _redraw = false;
 		private bool _rightSideBar;
+		private static bool DebugMenuEnabled => Settings.DebugMenu || RuntimeHandler.Runtime?.Settings.Get<bool>("debug") == true;
 
 		private bool _shift5 = false;
 
@@ -63,7 +64,7 @@ namespace CivOne.Screens
 			_gameMenu.Items.Add(Translate("Save Game")).SetEnabled(Game.GameTurn > 0 && Common.AllowSaveGame).OnSelect((s, a) => GameTask.Enqueue(Show.Screen<SaveGame>()));
 			_gameMenu.Items.Add(Translate("REVOLUTION!")).OnSelect((s, a) => GameTask.Enqueue(Show.Screen<Revolution>()));
 			_gameMenu.Items.Add(null);
-			if (Settings.DebugMenu)
+			if (DebugMenuEnabled)
 			{
 				_gameMenu.Items.Add(Translate("Debug Options")).OnSelect((s, a) => GameTask.Enqueue(Show.Screen<DebugOptions>()));
 				_gameMenu.Items.Add(null);
@@ -291,7 +292,7 @@ namespace CivOne.Screens
 					Common.AddScreen(new WorldMap());
 					return true;
 				case Key.F12:
-					if (Settings.DebugMenu)
+					if (DebugMenuEnabled)
 					{
 						GameTask.Enqueue(Show.Screen<DebugOptions>());
 					}

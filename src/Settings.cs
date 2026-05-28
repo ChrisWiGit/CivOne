@@ -78,6 +78,7 @@ namespace CivOne
 		private GlobalWarmingFeatureFlag _globalWarmingFeatureFlags = GlobalWarmingFeatureFlag.None;
         private bool _autoSettlers;
 		private CursorType _cursorType = CursorType.Default;
+		private FpsCorner _fpsCorner = FpsCorner.Off;
 		private DestroyAnimation _destroyAnimation = DestroyAnimation.Sprites;
 		private GameOption _instantAdvice, _autoSave, _endOfTurn, _animations, _sound, _enemyMoves, _civilopediaText, _palace;
         private int _taxRate = 5;
@@ -480,6 +481,18 @@ namespace CivOne
 			}
 		}
 
+		internal FpsCorner FpsCorner
+		{
+			get => _fpsCorner;
+			set
+			{
+				_fpsCorner = value;
+				string saveValue = ((int)_fpsCorner).ToString();
+				SetSetting("FpsCorner", saveValue);
+				Common.ReloadSettings = true;
+			}
+		}
+
 		internal DestroyAnimation DestroyAnimation
 		{
 			get => _destroyAnimation;
@@ -731,6 +744,7 @@ namespace CivOne
 			GetSetting<SimulateInternationalFont>("SimulateInternationalFont", ref _simulateInternationalFont);
 			GetSetting("UseUncheckedCastSanitizer", ref _useUncheckedCastSanitizer);
 			GetSetting<CursorType>("CursorType", ref _cursorType);
+			GetSetting<FpsCorner>("FpsCorner", ref _fpsCorner);
 			GetSetting<DestroyAnimation>("DestroyAnimation", ref _destroyAnimation);
 			GetSetting<GameOption>("GameInstantAdvice", ref _instantAdvice);
 			GetSetting<GameOption>("GameAutoSave", ref _autoSave);
