@@ -13,14 +13,51 @@ using System.Diagnostics;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Graphics;
+using CivOne.Services.Maps;
+using CivOne.Services.Random;
 using CivOne.Tiles;
 
 namespace CivOne
 {
+	// CA1708: the static SHOUTCASE accessors (WIDTH/HEIGHT) intentionally coexist with the
+	// PascalCase instance properties (Width/Height) from IMap. The static form is the
+	// project-wide constant-style accessor used in ~40 call sites; the instance form
+	// fulfils the IMap contract used by persistence/pathfinding. Renaming either side
+	// would either break the interface or churn every call site, so the casing-only
+	// collision is accepted here.
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1708:Identifiers should differ by more than case", Justification = "Static SHOUTCASE accessors WIDTH/HEIGHT coexist with IMap PascalCase Width/Height; see comment.")]
 	public partial class Map : IMap
 	{
-		private static Resources Resources = Resources.Instance;
 		protected static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
+
+		/// <summary>
+		/// Random source for map construction and generation. Injected via constructor for tests;
+		/// production code falls back to the cached <see cref="RandomServiceFactory"/> instance,
+		/// which delegates to <c>Common.Random</c> and therefore preserves the legacy RNG
+		/// consumption order required for save-file compatibility.
+		/// </summary>
+		private readonly IRandomService _randomService;
+
+		/// <summary>
+		/// Picture-resource source for LoadMap/SaveMap/RunEarthMapThread. Injected via
+		/// constructor for tests; production code uses <see cref="DefaultMapResourceProvider"/>
+		/// which forwards to the global <see cref="Resources"/> singleton.
+		/// </summary>
+		private readonly IMapResourceProvider _mapResourceProvider;
+
+		/// <summary>
+		/// Generation-settings source for <see cref="Generate(int, int, int, int)"/>. Injected via
+		/// constructor for tests; production code uses <see cref="DefaultMapGenerationSettings"/>
+		/// which forwards to the global <see cref="Settings"/> singleton.
+		/// </summary>
+		private readonly IMapGenerationSettings _mapGenerationSettings;
+
+		/// <summary>
+		/// Persistence sink for <see cref="SaveMap(string)"/>. Injected via constructor for tests;
+		/// production code uses <see cref="DefaultMapPersistenceService"/> which writes to disk via
+		/// <see cref="System.IO.File"/> + <see cref="System.IO.BinaryWriter"/>.
+		/// </summary>
+		private readonly IMapPersistenceService _mapPersistenceService;
 
 		private static int _width = 80, _height = 50;
 		public static int WIDTH => _width;
@@ -35,7 +72,12 @@ namespace CivOne
 		
 		
 		#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional - but performance impact may be too low
-		private ITile[,] _tiles;
+		/// <summary>
+		/// Lazily populated by LoadMap / InitializeForYamlLoad / generation pipeline.
+		/// Marked null-forgiving so the constructor doesn't need to allocate an unusable placeholder grid;
+		/// callers must guard via <see cref="Ready"/> or the explicit null check in <see cref="LoadEarthMapInThread"/>.
+		/// </summary>
+		private ITile[,] _tiles = null!;
 
 		public ITile[,] Tiles { get { return _tiles; } }
 
@@ -126,7 +168,6 @@ namespace CivOne
 		{
 			get
 			{
-				Debug.Assert(x >= 0 && x < WIDTH, $"X coordinate out of bounds: {x}");
 				if (y < 0 || y >= HEIGHT) return null;
 				
 				while (x < 0) x += WIDTH;
@@ -176,11 +217,52 @@ namespace CivOne
 			}
 		}
 		
-		internal Map()
+		internal Map() : this(null, null, null, null)
 		{
-			_terrainMasterWord = Common.Random.Next(16);
+		}
+
+		/// <summary>
+		/// Test-friendly constructor that allows injecting a custom <see cref="IRandomService"/>.
+		/// Pass <c>null</c> to use the shared instance from <see cref="RandomServiceFactory"/>.
+		/// </summary>
+		internal Map(IRandomService randomService) : this(randomService, null, null, null)
+		{
+		}
+
+		/// <summary>
+		/// Test-friendly constructor that allows injecting both a custom <see cref="IRandomService"/>
+		/// and a custom <see cref="IMapResourceProvider"/>. Pass <c>null</c> for either parameter
+		/// to fall back to the production default.
+		/// </summary>
+		internal Map(IRandomService randomService, IMapResourceProvider mapResourceProvider) : this(randomService, mapResourceProvider, null, null)
+		{
+		}
+
+		/// <summary>
+		/// Test-friendly constructor that allows injecting every external collaborator
+		/// (<see cref="IRandomService"/>, <see cref="IMapResourceProvider"/>,
+		/// <see cref="IMapGenerationSettings"/>). Pass <c>null</c> for any parameter to
+		/// fall back to the production default.
+		/// </summary>
+		internal Map(IRandomService? randomService, IMapResourceProvider? mapResourceProvider, IMapGenerationSettings? mapGenerationSettings) : this(randomService, mapResourceProvider, mapGenerationSettings, null)
+		{
+		}
+
+		/// <summary>
+		/// Test-friendly constructor that allows injecting every external collaborator
+		/// (<see cref="IRandomService"/>, <see cref="IMapResourceProvider"/>,
+		/// <see cref="IMapGenerationSettings"/>, <see cref="IMapPersistenceService"/>).
+		/// Pass <c>null</c> for any parameter to fall back to the production default.
+		/// </summary>
+		internal Map(IRandomService? randomService, IMapResourceProvider? mapResourceProvider, IMapGenerationSettings? mapGenerationSettings, IMapPersistenceService? mapPersistenceService)
+		{
+			_randomService = randomService ?? RandomServiceFactory.Create();
+			_mapResourceProvider = mapResourceProvider ?? new DefaultMapResourceProvider();
+			_mapGenerationSettings = mapGenerationSettings ?? new DefaultMapGenerationSettings();
+			_mapPersistenceService = mapPersistenceService ?? new DefaultMapPersistenceService();
+			_terrainMasterWord = _randomService.Next(16);
 			Ready = false;
-			
+
 			Log("Map instance created");
 		}
 

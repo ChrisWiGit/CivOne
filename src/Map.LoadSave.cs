@@ -21,29 +21,32 @@ namespace CivOne
 	{
 		private void LoadMap(Bytemap bitmap)
 		{
+			#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 			_tiles = new ITile[WIDTH, HEIGHT];
 			
 			for (int x = 0; x < WIDTH; x++)
-			for (int y = 0; y < HEIGHT; y++)
 			{
-				ITile tile;
-				bool special = TileIsSpecial(x, y);
-				switch (bitmap[x, y])
+				for (int y = 0; y < HEIGHT; y++)
 				{
-					case 2: tile = new Forest(x, y, special); break;
-					case 3: tile = new Swamp(x, y, special); break;
-					case 6: tile = new Plains(x, y, special); break;
-					case 7: tile = new Tundra(x, y, special); break;
-					case 9: tile = new River(x, y); break;
-					case 10: tile = new Grassland(x, y); break;
-					case 11: tile = new Jungle(x, y, special); break;
-					case 12: tile = new Hills(x, y, special); break;
-					case 13: tile = new Mountains(x, y, special); break;
-					case 14: tile = new Desert(x, y, special); break;
-					case 15: tile = new Arctic(x, y, special); break;
-					default: tile = new Ocean(x, y, special); break;
+					ITile tile;
+					bool special = TileIsSpecial(x, y);
+					switch (bitmap[x, y])
+					{
+						case 2: tile = new Forest(x, y, special); break;
+						case 3: tile = new Swamp(x, y, special); break;
+						case 6: tile = new Plains(x, y, special); break;
+						case 7: tile = new Tundra(x, y, special); break;
+						case 9: tile = new River(x, y); break;
+						case 10: tile = new Grassland(x, y); break;
+						case 11: tile = new Jungle(x, y, special); break;
+						case 12: tile = new Hills(x, y, special); break;
+						case 13: tile = new Mountains(x, y, special); break;
+						case 14: tile = new Desert(x, y, special); break;
+						case 15: tile = new Arctic(x, y, special); break;
+						default: tile = new Ocean(x, y, special); break;
+					}
+					_tiles[x, y] = tile;
 				}
-				_tiles[x, y] = tile;
 			}
 		}
 		
@@ -52,7 +55,7 @@ namespace CivOne
 			Log("Map: Loading {0} - Random seed: {1}", filename, randomSeed);
 			_terrainMasterWord = randomSeed;
 			
-			using (Bytemap bitmap = Resources[filename].Bitmap)
+			using (Bytemap bitmap = _mapResourceProvider.GetPicture(filename).Bitmap)
 			{
 				_tiles = new ITile[WIDTH, HEIGHT];
 				
@@ -62,30 +65,36 @@ namespace CivOne
 				
 				// Load improvement layer
 				for (int x = 0; x < WIDTH; x++)
-				for (int y = 0; y < HEIGHT; y++)
 				{
-					byte b = bitmap[x, y + (HEIGHT * 2)];
-					// 0x01 = CITY ?
-					_tiles[x, y].Irrigation = (b & 0x02) > 0;
-					_tiles[x, y].Mine = (b & 0x04) > 0;
-					_tiles[x, y].Road = (b & 0x08) > 0;
+					for (int y = 0; y < HEIGHT; y++)
+					{
+						byte b = bitmap[x, y + (HEIGHT * 2)];
+						// 0x01 = CITY ?
+						_tiles[x, y].Irrigation = (b & 0x02) > 0;
+						_tiles[x, y].Mine = (b & 0x04) > 0;
+						_tiles[x, y].Road = (b & 0x08) > 0;
+					}
 				}
 				
 				// Load improvement layer 2
 				for (int x = 0; x < WIDTH; x++)
-				for (int y = 0; y < HEIGHT; y++)
 				{
-					byte b = bitmap[x, y + (HEIGHT * 3)];
-					_tiles[x, y].RailRoad = (b & 0x01) > 0;
+					for (int y = 0; y < HEIGHT; y++)
+					{
+						byte b = bitmap[x, y + (HEIGHT * 3)];
+						_tiles[x, y].RailRoad = (b & 0x01) > 0;
+					}
 				}
 				
 				// Remove huts
 				for (int x = 0; x < WIDTH; x++)
-				for (int y = 0; y < HEIGHT; y++)
 				{
-					if (!_tiles[x, y].Hut) continue;
-					byte b = bitmap[x + (WIDTH * 2), y];
-					_tiles[x, y].Hut = (b == 0);
+					for (int y = 0; y < HEIGHT; y++)
+					{
+						if (!_tiles[x, y].Hut) continue;
+						byte b = bitmap[x + (WIDTH * 2), y];
+						_tiles[x, y].Hut = (b == 0);
+					}
 				}
 			}
 			
@@ -97,83 +106,91 @@ namespace CivOne
 		{
 			Log($"Map: Saving {filename} - Random seed: {_terrainMasterWord}");
 
-			using (Bytemap bitmap = Resources["SP299"].Bitmap)
+			Picture sp299 = _mapResourceProvider.GetPicture("SP299");
+			using (Bytemap bitmap = sp299.Bitmap)
 			{
 				// Save terrainlayer
 				for (int x = 0; x < WIDTH; x++)
-				for (int y = 0; y < HEIGHT; y++)
 				{
-					byte b;
-					switch (_tiles[x, y].Type)
+					for (int y = 0; y < HEIGHT; y++)
 					{
-						case Terrain.Forest: b = 2; break;
-						case Terrain.Swamp: b = 3; break;
-						case Terrain.Plains: b = 6; break;
-						case Terrain.Tundra: b = 7; break;
-						case Terrain.River: b = 9; break;
-						case Terrain.Grassland1:
-						case Terrain.Grassland2: b = 10; break;
-						case Terrain.Jungle: b = 11; break;
-						case Terrain.Hills: b = 12; break;
-						case Terrain.Mountains: b = 13; break;
-						case Terrain.Desert: b = 14; break;
-						case Terrain.Arctic: b = 15; break;
-						default: b = 1; break; // Ocean
+						byte b;
+						switch (_tiles[x, y].Type)
+						{
+							case Terrain.Forest: b = 2; break;
+							case Terrain.Swamp: b = 3; break;
+							case Terrain.Plains: b = 6; break;
+							case Terrain.Tundra: b = 7; break;
+							case Terrain.River: b = 9; break;
+							case Terrain.Grassland1:
+							case Terrain.Grassland2: b = 10; break;
+							case Terrain.Jungle: b = 11; break;
+							case Terrain.Hills: b = 12; break;
+							case Terrain.Mountains: b = 13; break;
+							case Terrain.Desert: b = 14; break;
+							case Terrain.Arctic: b = 15; break;
+							default: b = 1; break; // Ocean
+						}
+						bitmap[x, y] = b;
 					}
-					bitmap[x, y] = b;
 				}
 
 				// Save improvement layer
 				for (int x = 0; x < WIDTH; x++)
-				for (int y = 0; y < HEIGHT; y++)
 				{
-					byte b = 0;
-					if (_tiles[x, y].City != null) b |= 0x01;
-					if (_tiles[x, y].Irrigation) b |= 0x02;
-					if (_tiles[x, y].Mine) b |= 0x04;
-					if (_tiles[x, y].Road) b |= 0x08;
+					for (int y = 0; y < HEIGHT; y++)
+					{
+						byte b = 0;
+						if (_tiles[x, y].City != null) b |= 0x01;
+						if (_tiles[x, y].Irrigation) b |= 0x02;
+						if (_tiles[x, y].Mine) b |= 0x04;
+						if (_tiles[x, y].Road) b |= 0x08;
 
-					bitmap[x, y + (HEIGHT * 2)] = b;
-					bitmap[x + (WIDTH * 1), y + (HEIGHT * 2)] = b; // Visibility layer
+						bitmap[x, y + (HEIGHT * 2)] = b;
+						bitmap[x + (WIDTH * 1), y + (HEIGHT * 2)] = b; // Visibility layer
+					}
 				}
 
 				// Save improvement layer 2
 				for (int x = 0; x < WIDTH; x++)
-				for (int y = 0; y < HEIGHT; y++)
 				{
-					byte b = 0;
-					if (_tiles[x, y].RailRoad) b |= 0x01;
+					for (int y = 0; y < HEIGHT; y++)
+					{
+						byte b = 0;
+						if (_tiles[x, y].RailRoad) b |= 0x01;
 
-					bitmap[x, y + (HEIGHT * 3)] = b;
-					bitmap[x + (WIDTH * 1), y + (HEIGHT * 3)] = b; // Visibility layer
+						bitmap[x, y + (HEIGHT * 3)] = b;
+						bitmap[x + (WIDTH * 1), y + (HEIGHT * 3)] = b; // Visibility layer
+					}
 				}
 
 				// Save explored layer
 				for (int x = 0; x < WIDTH; x++)
-				for (int y = 0; y < HEIGHT; y++)
 				{
-					bitmap[x + (WIDTH * 2), y] = _tiles[x, y].Visited;
+					for (int y = 0; y < HEIGHT; y++)
+					{
+						bitmap[x + (WIDTH * 2), y] = _tiles[x, y].Visited;
+					}
 				}
 
-                // Layer 2: area segmentation
-                for (int x = 0; x < WIDTH; x++)
-                for (int y = 0; y < HEIGHT; y++)
-                {
-                    bitmap[x, y + HEIGHT] = _tiles[x, y].ContinentId;
-                    bitmap[x + WIDTH, y + HEIGHT] = 0;
-                }
+				// Layer 2: area segmentation
+				for (int x = 0; x < WIDTH; x++)
+				{
+					for (int y = 0; y < HEIGHT; y++)
+					{
+						bitmap[x, y + HEIGHT] = _tiles[x, y].ContinentId;
+						bitmap[x + WIDTH, y + HEIGHT] = 0;
+					}
+				}
 
-                using (Picture picture = new Picture(bitmap, Resources["SP299"].Palette))
+                using (Picture picture = new Picture(bitmap, sp299.Palette))
                 {
                     PicFile picFile = new PicFile(picture);
                     // fire-eggs 20190710 removing this allows JCivEd to load the .MAP file as a .PIC
 					//{
 					//	HasPalette256 = false
 					//};
-					using (BinaryWriter bw = new BinaryWriter(File.Open(filename, FileMode.Create)))
-					{
-						bw.Write(picFile.GetBytes());
-					}
+					_mapPersistenceService.WriteAllBytes(filename, picFile.GetBytes());
 					return (ushort)_terrainMasterWord;
 				}
 			}
@@ -183,7 +200,7 @@ namespace CivOne
 		{
 			Log("Map: Loading MAP.PIC");
 			
-			using (Bytemap bitmap = Resources["MAP"].Bitmap)
+			using (Bytemap bitmap = _mapResourceProvider.GetPicture("MAP").Bitmap)
 			{
 				LoadMap(bitmap);
 			}
