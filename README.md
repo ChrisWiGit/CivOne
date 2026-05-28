@@ -72,6 +72,7 @@ There are some command line parameters that can be used to modify the behavior o
 
 | Parameter | Description |
 | --------- | ----------- |
+| `--debug` | Enables the in-game debug menu and adds the process id to the window title. |
 | `--seed <number>` | Sets the random seed for the game. Replace `<number>` with an integer value. |
 | `--skip-credits` | Skips the credits sequence at the start of the game. |
 | `--skip-intro` | Skips the intro cinematic at the start of the game. |
@@ -98,6 +99,10 @@ dotnet run --project ./runtime/sdl/CivOne.SDL.csproj -- --seed 12345 --language 
 
 ```sh
 dotnet run --project ./runtime/sdl/CivOne.SDL.csproj -- --seed 12345 --language identity
+```
+
+```sh
+dotnet run --project ./runtime/sdl/CivOne.SDL.csproj -- --debug --skip-intro --skip-credits
 ```
 
 ### Wizard Setup

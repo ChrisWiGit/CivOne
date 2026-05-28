@@ -32,8 +32,16 @@ namespace CivOne
 				: " [MCP is running]";
 		}
 
+		private static string GetDebugTitleSuffix(Runtime runtime)
+		{
+			if (runtime?.Settings == null || !runtime.Settings.Get<bool>("debug"))
+				return string.Empty;
+
+			return $" [PID {Environment.ProcessId}]";
+		}
+
 		private static string ApplyMcpTitleState(Runtime runtime, string title)
-			=> $"{title}{GetMcpTitleSuffix(runtime)}";
+			=> $"{title}{GetMcpTitleSuffix(runtime)}{GetDebugTitleSuffix(runtime)}";
 
 		private static Settings Settings => Settings.Instance;
 
