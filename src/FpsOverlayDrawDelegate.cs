@@ -37,6 +37,12 @@ namespace CivOne
 		private int _lastPotentialFps;
 		private Bytemap? _fpsOverlay;
 
+		private static string FormatMilliseconds(double milliseconds)
+		{
+			string format = milliseconds < 1 ? "{0:0.000}" : "{0:0.00}";
+			return string.Format(CultureInfo.InvariantCulture, format, milliseconds).Replace('.', ',');
+		}
+
 		internal void Draw(FpsCorner fpsCorner, int canvasWidth, int canvasHeight, Bytemap[] runtimeLayers, double lastFrameMs)
 		{
 			if (fpsCorner == FpsCorner.Off)
@@ -76,13 +82,15 @@ namespace CivOne
 			(int x, int y) = GetCornerPosition(fpsCorner, canvasWidth, canvasHeight);
 			string potential = _lastPotentialFps.ToString("N0", NumberFormat);
 			string actual = _currentFps.ToString("N0", NumberFormat);
-			string avgMs = string.Format(CultureInfo.InvariantCulture, "{0:0.0}", _lastAvgDrawMs).Replace('.', ',');
-			string text = $"{potential}fps/{actual}fps/{avgMs}ms";
-			using (var shadowText = CivOne.Graphics.Resources.Instance.GetText(text, 1, ShadowColour))
+			string avgMs = FormatMilliseconds(_lastAvgDrawMs);
+			string text = $"{potential}/{actual}fps/{avgMs}ms";
+
+			const byte FontId = 0;
+			using (var shadowText = CivOne.Graphics.Resources.Instance.GetText(text, FontId, ShadowColour))
 			{
 				_fpsOverlay.AddLayer(shadowText.Bitmap, x + 1, y + 1);
 			}
-			using (var fpsText = CivOne.Graphics.Resources.Instance.GetText(text, 1, OverlayColour))
+			using (var fpsText = CivOne.Graphics.Resources.Instance.GetText(text, FontId, OverlayColour))
 			{
 				_fpsOverlay.AddLayer(fpsText.Bitmap, x, y);
 			}

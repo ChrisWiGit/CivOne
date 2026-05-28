@@ -363,14 +363,15 @@ This screen allows to change additional modification options for the game.
 When **FPS display** is enabled, the chosen corner shows three values in yellow, in the form:
 
 ```text
-1.250fps/16fps/2,1ms
+1.250/16fps/2,1ms
 ```
 
 Numbers use the German format: dot (`.`) as thousands separator and comma (`,`) as decimal separator.
+The first value is also FPS, but the `fps` suffix was removed to save space in the overlay.
 
 | Value | Meaning |
 | ----- | ------- |
-| `1.250fps` (potential FPS) | Theoretical maximum frame rate based on the average draw duration of the last second (`1000 / avg ms`). Indicates how fast the renderer *could* run if it were not limited by the game loop. |
+| `1.250` (potential FPS) | Theoretical maximum frame rate based on the average draw duration of the last second (`1000 / avg ms`). This value is FPS even without an explicit `fps` suffix, which is omitted to reduce overlay width. |
 | `16fps` (actual FPS) | Number of times the draw routine was actually called in the last second. CivOne's game loop ticks at a fixed low rate (similar to the original engine), so this value is normally well below the potential FPS. It does not mean that the game is running slowly; it reflects the fixed update rate of the game loop. |
 | `2,1ms` (avg draw time) | Average wall-clock time spent inside the draw routine, measured over the last second. Lower is better; a sudden increase points to a rendering bottleneck. |
 
