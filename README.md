@@ -342,6 +342,7 @@ This screen allows to change additional modification options for the game.
 | Enable Deity difficulty | Enable the Deity difficulty option. |
 | Enable (no keypad) arrow helper | Toggle an arrow helper for users without a numeric keypad. |
 | Custom map sizes (experimental) | Enable experimental custom map sizes. |
+| FPS display | Show frames per second in a screen corner (Off, Top Left, Top Right, Bottom Left, Bottom Right). When enabled, the FPS counter updates every second. |
 | Game behavior menu | Open the behavior submenu to change gameplay-related toggles and cheats. |
 | AutoSave format | Choose whether autosaves prefer legacy `SVE` output with automatic `COS` fallback or always write `COS`. |
 | Save cast behavior | Select whether save/load casts use checked conversion or the legacy unchecked mode. |

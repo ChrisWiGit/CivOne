@@ -6,6 +6,11 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Added FPS display overlay
+  * Shows frames per second in a configurable screen corner (Top Left, Top Right, Bottom Left, Bottom Right, or Off).
+  * FPS counter updates every second and is rendered with white text in the selected corner.
+  * Setting is persistent across game restarts and accessible via `Shift+F1 → Patches → FPS display`.
+  * When disabled (Off), the overlay is not rendered and no performance impact is incurred.
 * Feature: Change default aspect ratio to "Expand" (formerly only experimental) for better support of modern displays and improved UI layout.
   * The "Expand" aspect ratio mode stretches the game canvas to fill the entire window, allowing for more flexible window sizes and better use of screen real estate on modern displays.
   * The original "Auto" aspect ratio mode is still available as an option in the setup menu for users who prefer the original behavior or are using older displays.
