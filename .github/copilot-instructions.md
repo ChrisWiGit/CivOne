@@ -10,6 +10,8 @@
 
 Before removing or rewriting any statement, check whether it carries side effects beyond its visible result. A statement that looks "unused" may still mutate shared state.
 
+## Reviews
+
 ### High-risk patterns
 
 * `var x = expr; index += 2;` — value unused, but index advancement on the **same line** must be preserved.
@@ -114,6 +116,7 @@ dotnet build Project.csproj -v q 2>&1 | tail -n 15
 
 ## Documentation Comments
 
+* Always use English for XML documentation, comments in code, commit messages, and also in README and other markdown files, unless the user explicitly requests otherwise.
 * Use XML documentation comments for all public types and members.
 * Include:
   * summaries
