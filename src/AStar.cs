@@ -312,7 +312,7 @@ public class AStar
 
                 // Calculate A* values
                 float g = currentNode.G + cost;
-                float h = Heuristic(currentNode.Position);
+                float h = Heuristic(NeighborNode.Position);
                 // Update or create new node at position
                 if (NodeInList != null)
                 {
