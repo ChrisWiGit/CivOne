@@ -16,3 +16,4 @@
 **/*.java*
 **/civ_orig/**
 temp/
+profiling/

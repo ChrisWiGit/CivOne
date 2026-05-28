@@ -6,6 +6,7 @@ arguments:
   -D|--desktop-icon     Create an icon on the desktop (windows only)
 
 runtime-options:
+  --debug               Enable in-game debug menu and show process id in window title
   --demo                Show the Demo screen before launching the game
   --setup               Show the Setup screen before launching the game
   --free                Launch the game with free assets. Does not load assets,

@@ -6,8 +6,18 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
-* Refactor: Hardened the `Map` partial singleton with 38 new tests and decoupled it from four global singletons (`Common.Random`, `Resources`, `Settings`, file IO) via constructor-injected services under `src/Services/Maps/` (`IRandomService`, `IMapResourceProvider`, `IMapGenerationSettings`, `IMapPersistenceService`). Defaults forward to the originals, so `Map.Instance`, RNG order and save-file compatibility stay unchanged. Added Save→Load roundtrip integration test through the real `PicFile` encoder/decoder.
-* Cleanup: Explicit braces around outer `for`-loop bodies in `Map.LoadSave.cs`, XML doc comments on `Map.cs` fields, documented `_tiles = null!` for CS8618, and `[SuppressMessage(CA1708)]` on `Map` for the intentional `WIDTH`/`Width` (static vs. IMap) coexistence.
+* Refactor: Hardened the `Map` partial singleton and decoupled it from four global singletons (`Common.Random`, `Resources`, `Settings`, file IO) to improve testability and maintainability.
+  * Added unit tests for `Map` covering map generation and continent counting logic in `MapTests`, using a new `TestMap` subclass that injects deterministic random, resource, settings, and file IO dependencies.
+  * This allows for better separation of concerns, easier testing of map generation logic in isolation, and future flexibility to have multiple map instances if needed.
+* Refactoring: Performance/Stability: Reduced per-frame rendering and CPU overhead in game.
+  * Refactors runtime update/draw and SDL window handling to avoid hot-path LINQ/allocation patterns and to react to SDL events instead of per-frame polling.
+  * Optimizes gameplay panel redraw logic (sidebar signature-based redraw, map viewport O(1) visibility check).
+* Feature: Added FPS display overlay
+  * Shows frames per second in a configurable screen corner (Top Left, Top Right, Bottom Left, Bottom Right, or Off).
+  * FPS counter updates every second and is rendered with yellow text in the selected corner.
+  * Setting is persistent across game restarts and accessible via `Shift+F1 → Patches → FPS display`.
+  * When disabled (Off), the overlay is not rendered and no performance impact is incurred.
+* Feature: Introduces a --debug runtime option that also enables the in-game debug menu and add process id in window caption.
 * Refactoring
   * Runtime/SDL hardening: input/audio/runtime safety fixes, stronger dispose patterns, safer native interop (DllImport search paths, nullable folder-browser APIs, enum/warning cleanup), and resource/lifecycle fixes in Window/Wave.
   * Startup wizard improvements: background data-file copy flow with status updates, canonical file-casing handling, action-handler/main-thread refresh updates, and UX refinements (fullscreen/aspect/default rendering updates).

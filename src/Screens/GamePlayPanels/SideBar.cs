@@ -27,6 +27,8 @@ namespace CivOne.Screens.GamePlayPanels
 	internal class SideBar : BaseScreen
 	{
 		private bool _update = true;
+		private int _lastDemographicsSignature;
+		private int _lastGameInfoSignature;
 		
 		private readonly Picture _miniMap, _demographics;
 		private Picture _gameInfo;
@@ -139,6 +141,28 @@ namespace CivOne.Screens.GamePlayPanels
 			_demographics.AddLayer(Icons.Sun((int)_globalWarmingService.WarmingIndicator - 1), 4 + 10 + width, 24);
 		}
 
+		private int GetDemographicsSignature()
+		{
+			HashCode hash = new();
+			hash.Add(Human.Population);
+			hash.Add(Game.GameYear);
+			hash.Add(Human.Gold);
+			hash.Add(Human.LuxuriesRate);
+			hash.Add(Human.TaxesRate);
+			hash.Add(Human.ScienceRate);
+			hash.Add(Human.Science);
+			hash.Add(Human.ScienceCost);
+			hash.Add((int)_globalWarmingService.WarmingIndicator);
+
+			for (int i = 0; i < 7; i++)
+			{
+				hash.Add(Human.Palace.GetPalaceLevel(i));
+				hash.Add((int)Human.Palace.GetPalaceStyle(i));
+			}
+
+			return hash.ToHashCode();
+		}
+
 		private void DrawGameInfo(uint gameTick = 0)
 		{
 			IUnit unit = Game.ActiveUnit;
@@ -205,28 +229,55 @@ namespace CivOne.Screens.GamePlayPanels
 				_gameInfo.DrawText(Translate("to continue"), 0, 5, 4, 50, TextAlign.Left);
 			}
 		}
+
+		private int GetGameInfoSignature(uint gameTick)
+		{
+			IUnit unit = Game.ActiveUnit;
+			bool hasBlockingTask = GameTask.Any() && !GameTask.Is<Show>() && !GameTask.Is<Message>();
+			int blinkPhase = (unit == null || hasBlockingTask) ? (int)(gameTick % 4) : -1;
+
+			return HashCode.Combine(
+				Game.CurrentPlayer,
+				unit,
+				unit == null ? -1 : unit.MovesLeft,
+				unit == null ? -1 : unit.PartMoves,
+				hasBlockingTask,
+				blinkPhase);
+		}
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_update || (gameTick % 2 == 0))
+			if (!_update && gameTick % 2 != 0)
 			{
-				if (!(Common.TopScreen is GamePlay))
-					gameTick = 0;
-
-				DrawMiniMap(gameTick);
-				DrawDemographics();
-				DrawGameInfo(gameTick);
-				
-				this.AddLayer(_miniMap, 0, 0)
-					.AddLayer(_demographics, 0, 50)
-					.AddLayer(_gameInfo, 0, 89);
-				
-				_update = false;
-				return true;
+				return false;
 			}
-			return false;
+			if (!(Common.TopScreen is GamePlay))
+				gameTick = 0;
+
+			DrawMiniMap(gameTick);
+
+			int demographicsSignature = GetDemographicsSignature();
+			if (_update || demographicsSignature != _lastDemographicsSignature)
+			{
+				DrawDemographics();
+				_lastDemographicsSignature = demographicsSignature;
+			}
+
+			int gameInfoSignature = GetGameInfoSignature(gameTick);
+			if (_update || gameInfoSignature != _lastGameInfoSignature)
+			{
+				DrawGameInfo(gameTick);
+				_lastGameInfoSignature = gameInfoSignature;
+			}
+
+			this.AddLayer(_miniMap, 0, 0)
+				.AddLayer(_demographics, 0, 50)
+				.AddLayer(_gameInfo, 0, 89);
+
+			_update = false;
+			return true;
 		}
-		
+
 		public override bool MouseDown(ScreenEventArgs args)
 		{
 			if (args.Y <= 50)
@@ -269,6 +320,8 @@ namespace CivOne.Screens.GamePlayPanels
 			Bitmap = new Bytemap(80, height);
 			_gameInfo?.Dispose();
 			_gameInfo = new Picture(80, (height - 89), Palette);
+			_lastDemographicsSignature = int.MinValue;
+			_lastGameInfoSignature = int.MinValue;
 			_update = true;
 		}
 
@@ -278,6 +331,8 @@ namespace CivOne.Screens.GamePlayPanels
 		public SideBar(Palette palette, IGlobalWarmingService globalWarmingService) : base(80, 192)
 		{
 			_globalWarmingService = globalWarmingService;
+			_lastDemographicsSignature = int.MinValue;
+			_lastGameInfoSignature = int.MinValue;
 
 			_miniMap = new Picture(80, 50, palette);
 			_demographics = new Picture(80, 39, palette);
@@ -285,7 +340,9 @@ namespace CivOne.Screens.GamePlayPanels
 
 			DrawMiniMap();
 			DrawDemographics();
+			_lastDemographicsSignature = GetDemographicsSignature();
 			DrawGameInfo();
+			_lastGameInfoSignature = GetGameInfoSignature(0);
 
 			Palette = palette.Copy();
 			this.AddLayer(_miniMap, 0, 0)

@@ -32,7 +32,7 @@ using CivOne.Tiles;
 
 namespace CivOne
 {
-	public class RuntimeHandler
+	public sealed class RuntimeHandler : IDisposable
 	{
 		private static RuntimeHandler _instance;
 		internal static RuntimeHandler Instance => _instance;
@@ -41,10 +41,12 @@ namespace CivOne
 		public static bool IsFullWindowCanvasRequested => _instance?.TopScreen?.UseFullWindowCanvas ?? false;
 		
 		private Settings Settings => Settings.Instance;
-		private IScreen TopScreen => Common.TopScreen;
+		private IScreen? TopScreen => Common.TopScreen;
 		private MouseCursor _currentCursor = MouseCursor.None;
 		private CursorType _cursorType = CursorType.Native;
 		private readonly IQuickSaveLoadHotkeyService _quickSaveLoadHotkeyService;
+
+		private readonly FpsOverlayDrawDelegate _fpsOverlayDrawDelegate = new();
 
 		internal int CanvasWidth => IsFullWindowCanvasRequested
 			? Math.Max(Settings.MinWidth, Runtime.CanvasWidth)
@@ -55,7 +57,7 @@ namespace CivOne
 		internal static int WindowWidth => Runtime.WindowWidth;
 		internal static int WindowHeight => Runtime.WindowHeight;
 
-		private Stopwatch _tickWatch = new Stopwatch();
+		private Stopwatch _tickWatch = new();
 
 		private uint _tickWatchOffset = 0;
 		private uint TickWatch
@@ -71,23 +73,35 @@ namespace CivOne
 		}
 		private uint _gameTick = 0;
 		private readonly IMcpService _mcpService;
+		private bool _disposed;
 
 		private bool Update()
 		{
 			if (!GameTask.Update() && (!GameTask.Fast && (_gameTick % 4) > 0)) return false;
-			if (Common.Screens.Any(x => Common.HasAttribute<Modal>(x)))
-				return Common.Screens.Last(x => Common.HasAttribute<Modal>(x)).Update(_gameTick / 4);
+
+			IScreen[] currentScreens = Common.Screens;
+			for (int i = currentScreens.Length - 1; i >= 0; i--)
+			{
+				if (Common.HasAttribute<Modal>(currentScreens[i]))
+				{
+					return currentScreens[i].Update(_gameTick / 4);
+				}
+			}
 			
 			bool update = false;
-			IScreen[] screens = Common.Screens.Reverse().ToArray();
-			foreach (IScreen screen in screens)
+			for (int i = currentScreens.Length - 1; i >= 0; i--)
 			{
+				IScreen screen = currentScreens[i];
 				// A previous screen update may destroy screens during this loop.
 				// Skip stale instances to avoid updating disposed bytemaps.
 				if (!Common.Screens.Contains(screen)) continue;
 				if (screen.Update(_gameTick / 4)) update = true;
 				if (!Common.Screens.Contains(screen)) continue;
-				if (Common.HasAttribute<Break>(screen)) return update;
+
+				if (Common.HasAttribute<BreakAttribute>(screen))
+				{
+					return update;
+				}
 			}
 			return update;
 		}
@@ -154,9 +168,26 @@ namespace CivOne
 			}
 		}
 
+		private readonly Stopwatch _onDrawWatch = new();
+		private double _lastOnDrawMs;
+
 		private void OnDraw(object sender, EventArgs args)
 		{
-			IScreen topScreen = TopScreen;
+			_onDrawWatch.Restart();
+			try
+			{
+				OnDrawCore();
+			}
+			finally
+			{
+				_onDrawWatch.Stop();
+				_lastOnDrawMs = _onDrawWatch.Elapsed.TotalMilliseconds;
+			}
+		}
+
+		private void OnDrawCore()
+		{
+			IScreen? topScreen = TopScreen;
 			if (topScreen == null)
 			{
 				Runtime.Layers = null;
@@ -211,6 +242,9 @@ namespace CivOne
 					Cursor.ClearCache();
 				}
 			}
+
+			Bytemap[] layers = Runtime.Layers;
+			_fpsOverlayDrawDelegate.Draw(Settings.FpsCorner, CanvasWidth, CanvasHeight, layers, _lastOnDrawMs);
 		}
 
 		private void OnKeyboardUp(object sender, KeyboardEventArgs args)
@@ -228,20 +262,24 @@ namespace CivOne
 			{
 				string filename = Common.CaptureFilename;
 				if (Runtime.Layers == null) return;
-				using (IBitmap bitmap = new Picture(CanvasWidth, CanvasHeight, Common.TopScreen.Palette.Copy()))
+				IScreen? topScreen = TopScreen;
+				if (topScreen == null) return;
+				using Palette screenshotPalette = topScreen.Palette.Copy();
+
+				using (Picture bitmap = new(CanvasWidth, CanvasHeight, screenshotPalette))
 				{
 					bitmap.Palette[0] = Colour.Black;
-					if (Common.HasAttribute<Modal>(TopScreen))
+					if (Common.HasAttribute<Modal>(topScreen))
 					{
-						bitmap.AddLayer(TopScreen);
+						bitmap.AddLayer(topScreen);
 					}
 					else
 					{
 						Runtime.Layers.ToList().ForEach(x => bitmap.AddLayer(x));
 					}
 
-					using (GifFile file = new GifFile(bitmap))
-					using (FileStream fs = new FileStream(filename, FileMode.Create, FileAccess.Write))
+					using (GifFile file = new(bitmap))
+					using (FileStream fs = new(filename, FileMode.Create, FileAccess.Write))
 					{
 						byte[] output = file.GetBytes();
 						fs.Write(output, 0, output.Length);
@@ -255,8 +293,8 @@ namespace CivOne
 			{
 				string filename = Common.CaptureFilename;
 				using (IBitmap tilesPicture = Map.Instance[0, 0, Map.WIDTH, Map.HEIGHT].ToBitmap())
-				using (GifFile file = new GifFile(tilesPicture))
-				using (FileStream fs = new FileStream(filename, FileMode.Create, FileAccess.Write))
+				using (GifFile file = new(tilesPicture))
+				using (FileStream fs = new(filename, FileMode.Create, FileAccess.Write))
 				{
 					byte[] output = file.GetBytes();
 					fs.Write(output, 0, output.Length);
@@ -290,7 +328,7 @@ namespace CivOne
 				Common.DestroyScreen(screen);
 			}
 
-			CivilizationScore civScore = new CivilizationScore();
+			CivilizationScore civScore = new();
 			civScore.Closed += (s, a) => ReturnToCredits();
 			Common.AddScreen(civScore);
 		}
@@ -460,10 +498,27 @@ namespace CivOne
 			_instance?.Dispose();
 		}
 
-		private void Dispose()
+		public void Dispose()
 		{
-			_mcpService.Stop();
-			_mcpService.Dispose();
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		private void Dispose(bool disposing)
+		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			if (disposing)
+			{
+				_fpsOverlayDrawDelegate.Dispose();
+				_mcpService.Stop();
+				_mcpService.Dispose();
+			}
+
+			_disposed = true;
 		}
 	}
 }

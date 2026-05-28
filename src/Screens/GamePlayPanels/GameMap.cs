@@ -59,20 +59,41 @@ namespace CivOne.Screens.GamePlayPanels
 			return -1;
 		}
 
-		private IEnumerable<ITile> TileList
+		/// <summary>
+		/// Checks whether a world tile coordinate is currently visible inside the map viewport.
+		/// </summary>
+		/// <param name="x">The world X coordinate of the tile.</param>
+		/// <param name="y">The world Y coordinate of the tile.</param>
+		/// <returns>
+		/// <c>true</c> when the tile is inside the viewport bounds and visible to the human player,
+		/// or when reveal-world mode is enabled; otherwise <c>false</c>.
+		/// </returns>
+		/// <remarks>
+		/// This replaces the previous viewport scan (<c>TileList.Any(...)</c>) used in the update path.
+		/// The old version iterated over the visible tile collection each tick and created avoidable
+		/// overhead in a hot path.
+		/// This implementation performs direct boundary checks with X-wrap handling and runs in O(1),
+		/// reducing CPU work and avoiding temporary enumeration costs during unit blink/move updates.
+		/// </remarks>
+		private bool IsTileVisibleInViewport(int x, int y)
 		{
-			get
+			if (y < _y || y >= _y + _tilesY)
 			{
-				ITile[,] tiles = Tiles;
-				for (int yy = 0; yy < tiles.GetLength(1); yy++)
-				for (int xx = 0; xx < tiles.GetLength(0); xx++)
-				{
-					ITile tile = tiles[xx, yy];
-					if (tile == null) continue;
-					if (!Settings.RevealWorld && !Human.Visible(tile)) continue;
-					yield return tile;
-				}
+				return false;
 			}
+
+			int deltaX = x - _x;
+			if (deltaX < 0)
+			{
+				deltaX += Map.WIDTH;
+			}
+
+			if (deltaX >= _tilesX)
+			{
+				return false;
+			}
+
+			return Settings.RevealWorld || Human.Visible(x, y);
 		}
 
 		private void DrawHelperArrows(int x, int y)
@@ -134,7 +155,8 @@ namespace CivOne.Screens.GamePlayPanels
 				return false;
 			}
 
-			if (TileList.Any(t => t != null && t.X == unit.X && t.Y == unit.Y) && (gameTick % 2) == 0)
+			// O(1) viewport check replaces previous TileList scan in this hot tick path.
+			if (IsTileVisibleInViewport(unit.X, unit.Y) && (gameTick % 2) == 0)
 			{
 				_update = true;
 			}

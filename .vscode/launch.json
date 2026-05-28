@@ -16,12 +16,22 @@
 			"request": "launch",
 			"preLaunchTask": "build",
 			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
-			"args": [],
+			"args": ["--debug"],
 			"cwd": "${workspaceRoot}",
 			"stopAtEntry": false,
 			"console": "internalConsole",
 			"internalConsoleOptions": "openOnSessionStart",
 			"justMyCode": false
+		},
+		{
+			"name": "Launch Game (dotnet trace profiling)",
+			"type": "node-terminal",
+			"request": "launch",
+			"preLaunchTask": "build",
+			"command": "dotnet '${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll' --debug & game_pid=$!; dotnet trace collect --process-id \"$game_pid\" --output '${workspaceFolder}/profiling/civone-profile-'\"$game_pid\"'.nettrace'; dotnet trace convert --format Speedscope '${workspaceFolder}/profiling/civone-profile-'\"$game_pid\"'.nettrace'",
+			"windows": {
+				"command": "$gameProcess = Start-Process dotnet -ArgumentList '${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll','--debug' -WorkingDirectory '${workspaceRoot}' -PassThru; dotnet trace collect --process-id $gameProcess.Id --output ${workspaceFolder}/profiling/civone-profile-$($gameProcess.Id).nettrace; dotnet trace convert --format Speedscope ${workspaceFolder}/profiling/civone-profile-$($gameProcess.Id).nettrace"
+			}
 		},
 		{
 			"name": "Quick Launch Game (seed +32768)",
