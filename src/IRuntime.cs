@@ -26,18 +26,18 @@ namespace CivOne
 		string GetSetting(string key);
 		void SetSetting(string key, string value);
 		RuntimeSettings Settings { get; }
-		MouseCursor CurrentCursor { set; }
+		void SetCurrentCursor(MouseCursor cursor);
 		Bytemap[] Layers { get; set; }
 		Palette Palette { get; set; }
-		IBitmap Cursor { set; }
+		void SetCursor(IBitmap cursor);
 		int CanvasWidth { get; }
 		int CanvasHeight { get; }
 		int WindowWidth { get; }
 		int WindowHeight { get; }
 		void Log(string text, params object[] parameters);
-		string BrowseFolder(string caption = "");
+		string? BrowseFolder(string caption = "");
 		string FileChooser(bool save, string title, string initialFileName, string filter);
-		string WindowTitle { set; }
+		void SetWindowTitle(string title);
 		void PlaySound(string file);
 		void StopSound();
 		bool TryOpenUrl(string url, out string errorMessage);

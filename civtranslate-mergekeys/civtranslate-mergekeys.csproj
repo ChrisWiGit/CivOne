@@ -8,4 +8,11 @@
     <AssemblyName>civtranslate-mergekeys</AssemblyName>
     <RootNamespace>civtranslate_mergekeys</RootNamespace>
   </PropertyGroup>
+  <PropertyGroup>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-all</AnalysisLevel>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <NoWarn></NoWarn>
+  </PropertyGroup>
 </Project>

@@ -12,6 +12,7 @@ using CivOne.Events;
 
 namespace CivOne
 {
+	#pragma warning disable S101 // Types should be named in PascalCase - but these are named to match SDL as a name.
 	internal static partial class SDL
 	{
 		internal abstract partial class Window
@@ -31,6 +32,23 @@ namespace CivOne
 					if (value == _cursorVisible) return;
 					_cursorVisible = value;
 					SDL_ShowCursor(_cursorVisible ? 1 : 0);
+				}
+			}
+
+			/// <summary>
+			/// Resets all tracked mouse button states and fires MouseUp events for any held buttons.
+			/// Called when the window loses focus (FOCUS_LOST event) to prevent stuck button state
+			/// (e.g., user holds mouse button, then alt-tabs away).
+			/// Without this, game logic may think the button is still held until it's released inside the window again.
+			/// </summary>
+			internal void ResetMouseButtonState()
+			{
+				MouseButton[] buttons = [ MouseButton.Left, MouseButton.Right ];
+				for (int i = 0; i < buttons.Length; i++)
+				{
+					if (!_mouseButtonState[(int)buttons[i]]) continue;
+					_mouseButtonState[(int)buttons[i]] = false;
+					OnMouseUp?.Invoke(this, new ScreenEventArgs(MouseX, MouseY, buttons[i]));
 				}
 			}
 

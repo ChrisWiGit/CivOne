@@ -19,6 +19,13 @@
 		<LangVersion>13.0</LangVersion>
 		<PackageId>CivOne.Api</PackageId>
 	</PropertyGroup>
+	<PropertyGroup>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<AnalysisLevel>latest-all</AnalysisLevel>
+		<Nullable>enable</Nullable>
+		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+		<NoWarn></NoWarn>
+	</PropertyGroup>
 	<PropertyGroup Condition="$(Configuration.StartsWith('Debug'))">
 		<DebugSymbols>true</DebugSymbols>
 		<DebugType>portable</DebugType>

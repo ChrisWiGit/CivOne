@@ -126,7 +126,6 @@ namespace CivOne.Screens.Dialogs
 			var newPlayer = Game.Instance.GetPlayer(newOwner);
 
 			var msg = Message.General(_t.TranslateFormattedArray("{0} rebel!\nCivil War in\n{1}.\n{2} influence\nsuspected.", previousOwner.TribeNamePlural, cityToIncite.Name, newPlayer.TribeName));
-			GameTask.Insert(msg);
 
 			int plundered = 0;
 			string[] lines = _t.TranslateFormattedArray("{0} capture\n{1}. {2} gold\npieces plundered.", newPlayer.TribeNamePlural, cityToIncite.Name, plundered);
@@ -151,6 +150,8 @@ namespace CivOne.Screens.Dialogs
 				newPlayer.Gold -= (short)Diplomat.InciteCost(cityToIncite);
 				newPlayer.Gold += (short)plundered;
 				previousOwner.HandleExtinction();
+				// Fix #181 When inciting an enemy's last city, the messages are in the wrong order #181
+				GameTask.Insert(msg);
 
 				if (Human == cityToIncite.Owner || Human == newOwner)
 				{

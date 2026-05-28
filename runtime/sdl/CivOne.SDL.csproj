@@ -17,7 +17,13 @@
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<LangVersion>13.0</LangVersion>
-		<!--<RuntimeIdentifiers>win-x86;win-x64;osx-x64;linux-x64</RuntimeIdentifiers>-->
+	</PropertyGroup>
+	<PropertyGroup>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<AnalysisLevel>latest-all</AnalysisLevel>
+		<Nullable>enable</Nullable>
+		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+		<NoWarn></NoWarn>
 	</PropertyGroup>
 	<PropertyGroup Condition="$(Configuration.StartsWith('Debug'))">
 		<DebugSymbols>true</DebugSymbols>

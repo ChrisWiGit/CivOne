@@ -134,10 +134,12 @@ namespace CivOne.IO
 			Marshal.WriteInt64(_handle, offset, value);
 		}
 
-		protected void Clear()
+		protected unsafe void Clear()
 		{
 			EnsureHandle();
-			Marshal.Copy(new byte[Size], 0, _handle, Size);
+			// Avoid the per-call managed byte[Size] allocation that the previous Marshal.Copy(new byte[Size], ...)
+			// pattern produced. For typical 320x200 bitmaps this saved ~64 KB of Gen0 pressure per Clear().
+			System.Runtime.CompilerServices.Unsafe.InitBlockUnaligned((void*)_handle, 0, (uint)Size);
 		}
 
 		protected byte[] ToByteArray()
@@ -165,16 +167,17 @@ namespace CivOne.IO
 
 		~BaseUnmanaged()
 		{
-			if (_handle == IntPtr.Zero) return;
-			Marshal.FreeHGlobal(_handle);
-			_handle = IntPtr.Zero;
+			// Use atomic swap so finalizer and an explicit Dispose() on another thread
+			// cannot both reach Marshal.FreeHGlobal with the same pointer (double-free / heap corruption).
+			IntPtr h = System.Threading.Interlocked.Exchange(ref _handle, IntPtr.Zero);
+			if (h != IntPtr.Zero) Marshal.FreeHGlobal(h);
 		}
 
 		public void Dispose()
 		{
-			if (_handle == IntPtr.Zero) return;
-			Marshal.FreeHGlobal(_handle);
-			_handle = IntPtr.Zero;
+			IntPtr h = System.Threading.Interlocked.Exchange(ref _handle, IntPtr.Zero);
+			if (h == IntPtr.Zero) return;
+			Marshal.FreeHGlobal(h);
 			GC.SuppressFinalize(this);
 		}
 	}

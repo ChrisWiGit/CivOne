@@ -196,7 +196,7 @@ namespace CivOne.Graphics.Sprites
 				foreach (Direction direction in Cross)
 				{
 					if (((int)directions & (int)direction) == 0) continue;
-					output.AddLayer(Free.Instance.Fog(direction));
+					output.AddLayer(Free.Fog(direction));
 				}
 			}
 			else

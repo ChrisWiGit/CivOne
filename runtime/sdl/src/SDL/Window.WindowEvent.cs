@@ -11,6 +11,7 @@ using System;
 
 namespace CivOne
 {
+	#pragma warning disable S101 // Types should be named in PascalCase - but these are named to match SDL as a name.
 	internal static partial class SDL
 	{
 		internal abstract partial class Window
@@ -42,7 +43,7 @@ namespace CivOne
 
 			private void Close()
 			{
-				if (OnClose != null) OnClose(this, EventArgs.Empty);
+				OnClose?.Invoke(this, EventArgs.Empty);
 				_running = false;
 			}
 
@@ -82,6 +83,7 @@ namespace CivOne
 					case SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_GAINED:
 						break;
 					case SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_LOST:
+						ResetMouseButtonState();
 						break;
 					case SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE:
 						Close();

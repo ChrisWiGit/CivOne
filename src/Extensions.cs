@@ -413,10 +413,15 @@ namespace CivOne
 
 		public static IBitmap GifToBitmap(this byte[] buffer)
 		{
-			using (GifFile gifFile = new GifFile(buffer))
-			{
-				return gifFile.GetBitmap();
-			}
+			// Anti-Refactor-Notice:
+			// Safe despite returning from inside a using-block: GifFile.GetBitmap() returns
+			// a new Picture(_pixels, _palette), and that Picture constructor performs a deep
+			// copy of both the Bytemap (Bytemap.Copy) and the Palette (Palette.Copy).
+			// The returned IBitmap therefore does not share buffers with the GifFile instance
+			// and stays valid after Dispose(). Additionally GifFile.Dispose() is currently a
+			// no-op, so disposal does not invalidate any state either way.
+			using GifFile gifFile = new(buffer);
+			return gifFile.GetBitmap();
 		}
 
 		/// <summary>

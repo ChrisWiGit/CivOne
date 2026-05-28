@@ -116,7 +116,7 @@ namespace CivOne
 
 		private void OnInitialize(object sender, EventArgs args)
 		{
-			Runtime.WindowTitle = Settings.WindowTitle;
+			Runtime.SetWindowTitle(Settings.WindowTitle);
 			_mcpService.Start();
 			GameTask.Enqueue(Show.Screens(StartupScreens));
 		}
@@ -197,17 +197,17 @@ namespace CivOne
 			{
 				_currentCursor = Common.MouseCursor;
 				_cursorType = Settings.Instance.CursorType;
-				Runtime.CurrentCursor = _currentCursor;
+				Runtime.SetCurrentCursor(_currentCursor);
 
 				if (_cursorType != CursorType.Native && _currentCursor != MouseCursor.None && Cursor.Current?.Bitmap != null)
 				{
-					Runtime.Cursor = Cursor.Current.ToBitmap();
+					Runtime.SetCursor(Cursor.Current.ToBitmap());
 				}
 				else
 				{
 					// Explicitly clear software cursor texture when using native cursor,
 					// when cursor is hidden, or when no bitmap is available.
-					Runtime.Cursor = null;
+					Runtime.SetCursor(null);
 					Cursor.ClearCache();
 				}
 			}

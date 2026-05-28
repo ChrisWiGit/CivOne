@@ -9,6 +9,7 @@
 
 namespace CivOne
 {
+	#pragma warning disable S101 // Types should be named in PascalCase - but these are named to match SDL as a name.
 	internal static partial class SDL
 	{
 		private static uint DefinePixelformat(SDL_PixelType type, SDL_PixelOrder order, SDL_PixelLayout layout, byte bits, byte bytes)

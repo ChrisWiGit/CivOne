@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace CivOne
 {
+	#pragma warning disable S101 // Types should be named in PascalCase - but these are named to match SDL as a name.
 	internal static partial class SDL
 	{
 		[StructLayout(LayoutKind.Sequential)]
@@ -23,6 +24,7 @@ namespace CivOne
 		[StructLayout(LayoutKind.Sequential)]
 		private unsafe struct SDL_WindowEvent
 		{
+			#pragma warning disable S4487 //keep unused field to match SDL structure
 			public SDL_EventType SDL_EventType;
 			public uint Timestamp;
 			public uint WindowId;

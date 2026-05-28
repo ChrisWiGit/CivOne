@@ -13,13 +13,14 @@ using CivOne.Events;
 
 namespace CivOne
 {
+	#pragma warning disable S101 // Types should be named in PascalCase - but these are named to match SDL as a name.
 	internal static partial class SDL
 	{
 		internal abstract partial class Window
 		{
 			protected event KeyboardEventHandler OnKeyDown, OnKeyUp;
 
-			private KeyModifier ConvertModifier(SDL_KMOD kmod)
+			private static KeyModifier ConvertModifier(SDL_KMOD kmod)
 			{
 				KeyModifier output = KeyModifier.None;
 				if ((kmod & SDL_KMOD.KMOD_CTRL) > 0) output |= KeyModifier.Control;
@@ -28,7 +29,7 @@ namespace CivOne
 				return output;
 			}
 
-			private Key ConvertKey(SDL_Scancode scanCode)
+			private static Key ConvertKey(SDL_Scancode scanCode)
 			{
 				switch (scanCode)
 				{
@@ -125,7 +126,7 @@ namespace CivOne
 			/// This is required because keycode values depend on keyboard layout and Shift state,
 			/// while scancodes identify the physical key reliably.
 			/// </summary>
-			private KeyboardEventArgs ConvertTopRowDigitByScancode(SDL_Scancode scanCode, KeyModifier modifier)
+			private static KeyboardEventArgs ConvertTopRowDigitByScancode(SDL_Scancode scanCode, KeyModifier modifier)
 			{
 				// Top-row digits by scancode are stable across keyboard layouts:
 				// 30..38 => 1..9 and 39 => 0.
@@ -141,7 +142,7 @@ namespace CivOne
 			/// This is needed for certain layout/OS combinations where Ctrl+digit arrives as a symbol
 			/// and would otherwise be filtered out as non-digit input.
 			/// </summary>
-			private KeyboardEventArgs ConvertControlDigitSymbolToDigit(char keyChar, KeyModifier modifier)
+			private static KeyboardEventArgs ConvertControlDigitSymbolToDigit(char keyChar, KeyModifier modifier)
 			{
 				if ((modifier & KeyModifier.Control) == 0) return null;
 
@@ -164,7 +165,7 @@ namespace CivOne
 				}
 			}
 
-			private string BuildKeyboardDebugMessage(SDL_KeyboardEvent keyboardEvent, KeyboardEventArgs args)
+			private static string BuildKeyboardDebugMessage(SDL_KeyboardEvent keyboardEvent, KeyboardEventArgs args)
 			{
 				char rawChar = (char)keyboardEvent.KeySym.Keycode;
 				string rawCharText = char.IsControl(rawChar)
@@ -193,7 +194,7 @@ namespace CivOne
 			/// The conversion order intentionally prefers explicit key mappings, then layout-independent
 			/// digit recovery, and finally character fallback.
 			/// </summary>
-			private KeyboardEventArgs ConvertKeyEvent(SDL_KeyboardEvent keyboardEvent)
+			private static KeyboardEventArgs ConvertKeyEvent(SDL_KeyboardEvent keyboardEvent)
 			{
 				KeyModifier modifier = ConvertModifier(keyboardEvent.KeySym.Modifier);
 				Key key = ConvertKey(keyboardEvent.KeySym.Scancode);
@@ -205,7 +206,14 @@ namespace CivOne
 				KeyboardEventArgs topRowDigit = ConvertTopRowDigitByScancode(keyboardEvent.KeySym.Scancode, modifier);
 				if (topRowDigit != null) return topRowDigit;
 
-				char keyChar = (char)keyboardEvent.KeySym.Keycode;
+				int keycode = (int)keyboardEvent.KeySym.Keycode;
+				if (keycode < char.MinValue || keycode > char.MaxValue)
+				{
+					// Keycode outside of char range cannot be converted to a character, so discard the event.
+					return null;
+				}
+
+				char keyChar = (char)keycode;
 				KeyboardEventArgs controlDigit = ConvertControlDigitSymbolToDigit(keyChar, modifier);
 				if (controlDigit != null) return controlDigit;
 				if (keyChar != '.' && keyChar != ',' && (char.ToLower(keyChar) < 'a' || (int)char.ToLower(keyChar) > 'z') && (keyChar < '0' || keyChar > '9')) return null;

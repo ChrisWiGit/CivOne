@@ -13,10 +13,11 @@ using CivOne.IO;
 
 namespace CivOne.Graphics.Sprites
 {
-	internal class CachedSpriteCollection<T> : ISpriteCollection<T>, ICached
+	internal class CachedSpriteCollection<T>(Func<T, Bytemap> getSprite) : ISpriteCollection<T>, ICached, IDisposable
 	{
-		private class Sprite : ISprite
+		private class Sprite : ISprite, IDisposable
 		{
+			private bool _disposed;
 			public Bytemap Bitmap { get; private set; }
 
 			internal Sprite(Bytemap bitmap)
@@ -24,16 +25,31 @@ namespace CivOne.Graphics.Sprites
 				Bitmap = bitmap;
 			}
 
-			~Sprite()
+			public void Dispose()
 			{
-				Bitmap?.Dispose();
-				Bitmap = null;
+				Dispose(true);
+				GC.SuppressFinalize(this);
 			}
+
+			protected virtual void Dispose(bool disposing)
+			{
+				if (_disposed) return;
+				if (disposing)
+				{
+					Bitmap?.Dispose();
+					Bitmap = null;
+				}
+				_disposed = true;
+			}
+
+			~Sprite() => Dispose(false);
 		}
 
-		private readonly Func<T, Bytemap> GetSprite;
+		private readonly Func<T, Bytemap> GetSprite = getSprite;
 
 		private readonly Dictionary<T, ISprite> _sprites = new Dictionary<T, ISprite>();
+
+		private bool _disposed;
 
 		public ISprite this[T index]
 		{
@@ -49,17 +65,27 @@ namespace CivOne.Graphics.Sprites
 
 		public void Clear()
 		{
+			foreach (ISprite sprite in _sprites.Values)
+				(sprite as IDisposable)?.Dispose();
 			_sprites.Clear();
 		}
 
-		public CachedSpriteCollection(Func<T, Bytemap> getSprite)
+		public void Dispose()
 		{
-			GetSprite = getSprite;
+			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 
-		~CachedSpriteCollection()
+		protected virtual void Dispose(bool disposing)
 		{
-			_sprites.Clear();
+			if (_disposed) return;
+			if (disposing)
+			{
+				Clear();
+			}
+			_disposed = true;
 		}
+
+		~CachedSpriteCollection() => Dispose(false);
 	}
 }

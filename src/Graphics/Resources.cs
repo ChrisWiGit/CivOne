@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -26,11 +27,13 @@ namespace CivOne.Graphics
 
 		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
 
-		private readonly Dictionary<string, Picture> _cache = new Dictionary<string, Picture>();
-		private readonly Dictionary<string, Bytemap> _textCache = new Dictionary<string, Bytemap>();
+		// Concurrent dictionaries: PreloadCivilopedia (RuntimeHandler) can populate caches from a
+		// background task while the render loop reads them. Plain Dictionary<,> is not safe here.
+		private readonly ConcurrentDictionary<string, Picture> _cache = new();
+		private readonly ConcurrentDictionary<(byte Colour, int Font, char Letter), Bytemap> _textCache = new();
+		private readonly ConcurrentDictionary<string, bool> _existsCache = new(StringComparer.OrdinalIgnoreCase);
 		private readonly IFont _defaultFont = new DefaultFont();
 		private readonly List<IFont> _fonts = [];
-		private readonly Dictionary<Direction, IBitmap> _fog = new Dictionary<Direction, IBitmap>();
 		private readonly PalaceResourcesDelegate _palaceResources;
 		internal void ClearTextCache() => _textCache.Clear();
 		
@@ -60,12 +63,24 @@ namespace CivOne.Graphics
 				file = new byte[fs.Length];
 				fs.ReadExactly(file, 0, file.Length);
 			}
-			
+
+			if (file.Length < 2)
+			{
+				Log("Font file too short, fallback to default font");
+				return;
+			}
+
 			List<ushort> fontOffsets = [];
 			int index = 0;
 			uint fontCount = BitConverter.ToUInt16(file, index);
 			index += 2;
-			
+
+			if (index + (fontCount * 2) > file.Length)
+			{
+				Log("Font file corrupted: insufficient data for {0} font offsets", fontCount);
+				return;
+			}
+
 			for (int i = 0; i < fontCount; i++)
 			{
 				fontOffsets.Add(BitConverter.ToUInt16(file, index));
@@ -121,31 +136,32 @@ namespace CivOne.Graphics
 		public Picture GetText(string text, int font, byte colourFirstLetter, byte colour, int highlightedCharacterIndex)
 		{
 			text ??= "[MISSING STRING]";
-			text = text.Normalize(NormalizationForm.FormC);
+			// Fast path: pure ASCII text doesn't need Unicode normalization.
+			if (!IsAscii(text))
+				text = text.Normalize(NormalizationForm.FormC);
 
-			List<Bytemap> letters = new List<Bytemap>();
-			for (int i = 0; i < text.Length; i++)
+			int length = text.Length;
+			Bytemap[] letters = new Bytemap[length];
+			int width = 0, height = 0;
+			for (int i = 0; i < length; i++)
 			{
 				char current = text[i];
-				letters.Add(GetLetter(i == highlightedCharacterIndex ? colourFirstLetter : colour, font, current));
-			}
-			
-			int width = 0, height = 0;
-			foreach (Bytemap letter in letters)
-			{
+				Bytemap letter = GetLetter(i == highlightedCharacterIndex ? colourFirstLetter : colour, font, current);
+				letters[i] = letter;
 				width += letter.Width + 1;
 				if (height < letter.Height) height = letter.Height;
 			}
-			
-			Picture output = new Picture(width, height);
-			
+
+			Picture output = new(width, height);
+
 			int xx = 0;
-			foreach (Bytemap letter in letters)
+			for (int i = 0; i < length; i++)
 			{
+				Bytemap letter = letters[i];
 				output.AddLayer(letter, xx, 0);
 				xx += letter.Width + 1;
 			}
-			
+
 			return output;
 		}
 		
@@ -165,47 +181,94 @@ namespace CivOne.Graphics
 		
 		private Bytemap GetLetter(byte colour, int font, char letter)
 		{
-			string key = string.Format("letter{0}|{1}|{2}", colour, font, letter);
-			if (!_textCache.ContainsKey(key))
-			{
-				_textCache.Add(key, Font(font).GetLetter(letter, colour));
-			}
-			return _textCache[key];
+			var key = (colour, font, letter);
+			if (_textCache.TryGetValue(key, out Bytemap cached))
+				return cached;
+			return _textCache.GetOrAdd(key, k => Font(k.Font).GetLetter(k.Letter, k.Colour));
+		}
+
+		private static bool IsAscii(string text)
+		{
+			for (int i = 0; i < text.Length; i++)
+				if (text[i] > 0x7F) return false;
+			return true;
 		}
 
 		public bool Exists(string filename)
 		{
 			if (RuntimeHandler.Runtime.Settings.Free) return false;
-			return PicFile.Exists(filename);
+			return _existsCache.GetOrAdd(filename, PicFile.Exists);
 		}
+
+		/// <summary>
+		/// Clears the existence cache. Call this when the data directory contents may have changed.
+		/// </summary>
+		internal void ClearExistsCache() => _existsCache.Clear();
 		
+		private const int CivilopediaFont = 6;
+		private const int CivilopediaLineWidth = 294;
+
 		internal string[] GetCivilopediaText(string name)
 		{
-			List<string> textLines = [];
-			string text = string.Join(" ", TextFileFactory.Get().GetGameText(name));
-			string t = "";
-			while (text.Length > 0)
+			try
 			{
-				if (text.IndexOf(' ') == -1)
-				{
-					if (t.Length > 0 && GetTextSize(6, string.Join(" ", t, text)).Width < 294)
-						text = string.Join(" ", t, text);
-					else if (t.Length > 0)
-						textLines.Add(t);
-					t = text;
-					text = "";
-				}
-				else if (GetTextSize(6, t + text.Substring(0, text.IndexOf(' '))).Width < 294)
-				{
-					if (t.Length > 0) t += " ";
-					t += text.Substring(0, text.IndexOf(' '));
-					text = text.Substring(text.IndexOf(' ')).Trim();
-					continue;
-				}
-				textLines.Add(t);
-				t = "";
+				string text = LoadCivilopediaText(name);
+				if (string.IsNullOrEmpty(text))
+					return [];
+
+				return WrapText(text, CivilopediaFont, CivilopediaLineWidth);
 			}
-			return textLines.ToArray();
+			catch (Exception ex)
+			{
+				Log("Error in GetCivilopediaText({0}): {1}", name, ex.Message);
+				return [];
+			}
+		}
+
+		private static string LoadCivilopediaText(string name)
+		{
+			var factory = TextFileFactory.Get();
+			if (factory == null)
+			{
+				Log("TextFileFactory returned null for: {0}", name);
+				return string.Empty;
+			}
+
+			var gameText = factory.GetGameText(name);
+			if (gameText == null) return string.Empty;
+
+			return string.Join(" ", gameText);
+		}
+
+		private string[] WrapText(string text, int font, int maxWidth)
+		{
+			List<string> lines = [];
+			StringBuilder current = new();
+
+			foreach (string word in text.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+			{
+				AppendWord(word, current, lines, font, maxWidth);
+			}
+
+			if (current.Length > 0)
+				lines.Add(current.ToString());
+
+			return [.. lines];
+		}
+
+		private void AppendWord(string word, StringBuilder current, List<string> lines, int font, int maxWidth)
+		{
+			string candidate = current.Length == 0 ? word : current + " " + word;
+			if (GetTextSize(font, candidate).Width < maxWidth)
+			{
+				if (current.Length > 0) current.Append(' ');
+				current.Append(word);
+				return;
+			}
+
+			if (current.Length > 0)
+				lines.Add(current.ToString());
+			current.Clear().Append(word);
 		}
 		
 		private static Picture _worldMapTiles;
@@ -228,12 +291,12 @@ namespace CivOne.Graphics
 			get
 			{
 				string key = filename.ToUpper();
-				if (_cache.ContainsKey(key))
+				if (_cache.TryGetValue(key, out Picture cached))
 				{
-					return new Picture(_cache[key].Bitmap, _cache[key].Palette);
+					return new Picture(cached.Bitmap, cached.Palette);
 				}
-				
-				Picture output = null;
+
+				Picture output;
 				PicFile picFile = new PicFile(filename);
 				if ((Settings.GraphicsMode == GraphicsMode.Graphics256 && picFile.GetPicture256 != null) || picFile.GetPicture16 == null)
 				{
@@ -243,9 +306,9 @@ namespace CivOne.Graphics
 				{
 					output = new Picture(picFile.GetPicture16, picFile.GetPalette16);
 				}
-				
-				if (!_cache.ContainsKey(key)) _cache.Add(key, output);
-				return new Picture(_cache[key].Bitmap, _cache[key].Palette);
+
+				Picture stored = _cache.GetOrAdd(key, output);
+				return new Picture(stored.Bitmap, stored.Palette);
 			}
 		}
 
