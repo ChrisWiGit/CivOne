@@ -46,6 +46,11 @@ namespace CivOne
 		private CursorType _cursorType = CursorType.Native;
 		private readonly IQuickSaveLoadHotkeyService _quickSaveLoadHotkeyService;
 
+		private readonly Stopwatch _fpsWatch = Stopwatch.StartNew();
+		private int _fpsFrameCount = 0;
+		private int _currentFps = 0;
+		private Bytemap _fpsOverlay = null;
+
 		internal int CanvasWidth => IsFullWindowCanvasRequested
 			? Math.Max(Settings.MinWidth, Runtime.CanvasWidth)
 			: Math.Max(Settings.MinWidth, Math.Min(Settings.MaxScreenWidth, Runtime.CanvasWidth));
@@ -210,6 +215,49 @@ namespace CivOne
 					Runtime.Cursor = null;
 					Cursor.ClearCache();
 				}
+			}
+
+			FpsCorner fpsCorner = Settings.FpsCorner;
+			if (fpsCorner != FpsCorner.Off)
+			{
+				_fpsFrameCount++;
+				if (_fpsWatch.ElapsedMilliseconds >= 1000)
+				{
+					_currentFps = _fpsFrameCount;
+					_fpsFrameCount = 0;
+					_fpsWatch.Restart();
+				}
+
+				int cw = CanvasWidth;
+				int ch = CanvasHeight;
+				if (_fpsOverlay == null || _fpsOverlay.Width != cw || _fpsOverlay.Height != ch)
+				{
+					_fpsOverlay?.Dispose();
+					_fpsOverlay = new Bytemap(cw, ch);
+				}
+				else
+				{
+					_fpsOverlay.Clear();
+				}
+
+				int x, y;
+				switch (fpsCorner)
+				{
+					case FpsCorner.TopRight:    x = cw - 34;  y = 2;        break;
+					case FpsCorner.BottomLeft:  x = 2;        y = ch - 10;  break;
+					case FpsCorner.BottomRight: x = cw - 34;  y = ch - 10;  break;
+					//FpsCorner.TopLeft:     
+					default: 
+						x = 2; y = 2; break;
+				}
+
+				_fpsOverlay.AddLayer(Resources.Instance.GetText($"{_currentFps} FPS", 1, 15).Bitmap, x, y);
+				Runtime.Layers = [ ..Runtime.Layers, _fpsOverlay ];
+			}
+			else
+			{
+				_fpsOverlay?.Dispose();
+				_fpsOverlay = null;
 			}
 		}
 

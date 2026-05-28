@@ -422,6 +422,10 @@ namespace CivOne.Screens
 					Translate("Choose checked or unchecked cast handling."),
 					Translate("Unchecked keeps legacy behavior."))
 				.OnSelect(GotoMenu(SaveCastBehaviorMenu)),
+			MenuItem.Create(TranslateFormatted("FPS display: {0}", Settings.FpsCorner.ToText()))
+				.WithDescription(
+					Translate("Show frames per second in a screen corner."))
+				.OnSelect(GotoMenu(FpsCornerMenu)),
 			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(MainMenu, 1))
 		);
 
@@ -596,6 +600,25 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Unchecked (legacy)"))
 				.WithDescription(Translate("Use unchecked casts for legacy compatibility."))
 				.OnSelect((s, a) => Settings.UseUncheckedCastSanitizer = true).SetActive(() => Settings.UseUncheckedCastSanitizer),
+			MenuItem.Create(Translate("Back"))
+		);
+
+		private void FpsCornerMenu() => CreateMenu(Translate("FPS display"), GotoMenu(PatchesMenu, 11),
+			MenuItem.Create(FpsCorner.Off.ToText())
+				.WithDescription(Translate("Disable FPS display."))
+				.OnSelect((s, a) => Settings.FpsCorner = FpsCorner.Off).SetActive(() => Settings.FpsCorner == FpsCorner.Off),
+			MenuItem.Create(FpsCorner.TopLeft.ToText())
+				.WithDescription(Translate("Show FPS in the top-left corner."))
+				.OnSelect((s, a) => Settings.FpsCorner = FpsCorner.TopLeft).SetActive(() => Settings.FpsCorner == FpsCorner.TopLeft),
+			MenuItem.Create(FpsCorner.TopRight.ToText())
+				.WithDescription(Translate("Show FPS in the top-right corner."))
+				.OnSelect((s, a) => Settings.FpsCorner = FpsCorner.TopRight).SetActive(() => Settings.FpsCorner == FpsCorner.TopRight),
+			MenuItem.Create(FpsCorner.BottomLeft.ToText())
+				.WithDescription(Translate("Show FPS in the bottom-left corner."))
+				.OnSelect((s, a) => Settings.FpsCorner = FpsCorner.BottomLeft).SetActive(() => Settings.FpsCorner == FpsCorner.BottomLeft),
+			MenuItem.Create(FpsCorner.BottomRight.ToText())
+				.WithDescription(Translate("Show FPS in the bottom-right corner."))
+				.OnSelect((s, a) => Settings.FpsCorner = FpsCorner.BottomRight).SetActive(() => Settings.FpsCorner == FpsCorner.BottomRight),
 			MenuItem.Create(Translate("Back"))
 		);
 
