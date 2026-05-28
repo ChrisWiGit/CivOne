@@ -9,7 +9,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace CivOne
 {
@@ -80,18 +79,28 @@ namespace CivOne
 		public void ExecuteDueCallbacks()
 		{
 			DateTime now = _clock.UtcNow;
-			List<KeyValuePair<string, PendingCallback>> dueEntries;
+			List<KeyValuePair<string, PendingCallback>> dueEntries = [];
+			List<string> dueKeys = [];
 
 			lock (_sync)
 			{
-				dueEntries = _pending.Where(entry => entry.Value.DueAtUtc <= now).ToList();
-				foreach (var entry in dueEntries)
+				foreach (KeyValuePair<string, PendingCallback> entry in _pending)
 				{
-					_pending.Remove(entry.Key);
+					bool isCallbackDue = entry.Value.DueAtUtc <= now;
+					if (isCallbackDue)
+					{
+						dueEntries.Add(entry);
+						dueKeys.Add(entry.Key);
+					}
+				}
+
+				foreach (string key in dueKeys)
+				{
+					_pending.Remove(key);
 				}
 			}
 
-			foreach (var entry in dueEntries)
+			foreach (KeyValuePair<string, PendingCallback> entry in dueEntries)
 			{
 				Execute(entry.Key, entry.Value.Callback);
 			}
@@ -99,15 +108,18 @@ namespace CivOne
 
 		public void FlushPendingCallbacks()
 		{
-			List<KeyValuePair<string, PendingCallback>> allEntries;
+			List<KeyValuePair<string, PendingCallback>> allEntries = [];
 
 			lock (_sync)
 			{
-				allEntries = _pending.ToList();
+				foreach (KeyValuePair<string, PendingCallback> entry in _pending)
+				{
+					allEntries.Add(entry);
+				}
 				_pending.Clear();
 			}
 
-			foreach (var entry in allEntries)
+			foreach (KeyValuePair<string, PendingCallback> entry in allEntries)
 			{
 				Execute(entry.Key, entry.Value.Callback);
 			}

@@ -21,6 +21,7 @@ using CivOne.Graphics;
 using CivOne.Services;
 using CivOne.Screens;
 using CivOne.Wonders;
+using System.Threading;
 
 namespace CivOne
 {
@@ -41,6 +42,8 @@ namespace CivOne
 		internal static IEnumerable<string> AllCityNames => Civilizations.Select(x => x.CityNames).SelectMany(x => x);
 
 		private static List<IScreen> _screens = new List<IScreen>();
+		private static readonly Lock _attributeCacheSync = new();
+		private static readonly Dictionary<(Type ObjectType, Type AttributeType), bool> _attributeCache = [];
 		/// <summary>
 		/// Returns a snapshot of all currently active screens in stack order (bottom to top).
 		/// </summary>
@@ -57,13 +60,31 @@ namespace CivOne
 		/// For new code, prefer IScreenQueryService.LastScreen obtained from ScreenServiceFactory.CreateQueryService().
 		/// This provides better testability and loose coupling.
 		/// </remarks>
-		internal static IScreen LastScreen => _screens.LastOrDefault();
+		internal static IScreen? LastScreen => _screens.LastOrDefault();
 
 		internal static bool HasAttribute<T>(object checkObject) where T : Attribute
 		{
 			if (checkObject == null)
 				return false;
-			return Attribute.IsDefined(checkObject.GetType(), typeof(T));
+
+			Type objectType = checkObject.GetType();
+			Type attributeType = typeof(T);
+			return HasAttribute(objectType, attributeType);
+		}
+
+		private static bool HasAttribute(Type objectType, Type attributeType)
+		{
+			lock (_attributeCacheSync)
+			{
+				if (_attributeCache.TryGetValue((objectType, attributeType), out bool isDefined))
+				{
+					return isDefined;
+				}
+
+				isDefined = Attribute.IsDefined(objectType, attributeType);
+				_attributeCache[(objectType, attributeType)] = isDefined;
+				return isDefined;
+			}
 		}
 
 		/// <summary>
@@ -74,13 +95,20 @@ namespace CivOne
 		/// For new code, prefer IScreenQueryService.TopScreen obtained from ScreenServiceFactory.CreateQueryService().
 		/// This provides better testability and loose coupling.
 		/// </remarks>
-		public static IScreen TopScreen
+		public static IScreen? TopScreen
 		{
 			get
 			{
-				if (_screens.Any(HasAttribute<Modal>))
-					return _screens.Last(HasAttribute<Modal>);
-				return _screens.LastOrDefault();
+				IScreen[] screens = [.. _screens];
+				for (int i = screens.Length - 1; i >= 0; i--)
+				{
+					if (HasAttribute<Modal>(screens[i]))
+					{
+						return screens[i];
+					}
+				}
+
+				return screens.LastOrDefault();
 			}
 		}
 
@@ -88,9 +116,11 @@ namespace CivOne
 		{
 			get
 			{
-				if (TopScreen == null)
+				IScreen? topScreen = TopScreen;
+				if (topScreen == null)
 					return MouseCursor.None;
-				return TopScreen.Cursor;
+
+				return topScreen.Cursor;
 			}
 		}
 

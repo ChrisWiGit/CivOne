@@ -60,21 +60,39 @@ namespace CivOne
 		/// per-frame bytemap uploads (critical for fullscreen at high display resolutions).
 		/// </summary>
 		private bool _cursorMoved = true;
-		private bool _settingsFullscreen = Settings.FullScreen;
+		/// <summary>
+		/// Cached rendering/window settings and corresponding dirty flags used to avoid
+		/// expensive per-frame synchronization work in the update loop.
+		/// </summary>
+		/// <remarks>
+		/// These fields are necessary because window/canvas state changes can originate from
+		/// multiple sources (settings updates, SDL window events, fullscreen transitions, and
+		/// active-screen canvas mode changes).
+		/// By keeping the last observed values and explicit dirty flags, the window only
+		/// recalculates canvas size and publishes window state when a relevant input changed,
+		/// which reduces unnecessary work and prevents redundant resize/sync churn.
+		/// </remarks>
+		private bool _lastFullscreen = Settings.FullScreen;
 
-		private int _settingsScale = Settings.Scale;
-		private int _settingsWindowWidth = Settings.WindowWidth;
-		private int _settingsWindowHeight = Settings.WindowHeight;
+		private int _lastScale = Settings.Scale;
+		private int _lastWindowWidth = Settings.WindowWidth;
+		private int _lastWindowHeight = Settings.WindowHeight;
 		private Size? _pendingWindowSizeCandidate;
-		private Point _settingsWindowPosition = Settings.WindowPosition;
+		private Point _lastWindowPosition = Settings.WindowPosition;
 		private Point? _pendingWindowPositionCandidate;
-		private bool _settingsWindowMaximized = Settings.WindowMaximized;
+		private bool _lastWindowMaximized = Settings.WindowMaximized;
+		private AspectRatio _lastAspectRatio = Settings.AspectRatio;
+		private int _lastExpandWidth = Settings.ExpandWidth;
+		private int _lastExpandHeight = Settings.ExpandHeight;
+		private bool _windowStateDirty = true;
+		private bool _canvasSizeDirty = true;
+		private bool _lastFullWindowCanvasRequested = RuntimeHandler.IsFullWindowCanvasRequested;
 		private static readonly TimeSpan WindowPersistDebounce = TimeSpan.FromSeconds(1);
 
 		private void Load(object sender, EventArgs args)
 		{
-			Runtime.CanvasSize = SetCanvasSize();
-			Runtime.WindowSize = ClientRectangle;
+			UpdateCanvasSizeIfNeeded();
+			UpdateWindowSizeState();
 			_runtime.InvokeInitialize();
 		}
 
@@ -86,11 +104,22 @@ namespace CivOne
 
 			ApplyFullscreenSettingChanges();
 			ApplyScaleSettingChanges();
-			SyncWindowedStateWithSettings();
+			ApplyCanvasSettingChanges();
+			TrackFullWindowCanvasModeChanges();
+
+			if (_windowStateDirty || HasWindowedSettingsChanges())
+			{
+				SyncWindowedStateWithSettings();
+			}
+
+			UpdateCanvasSizeIfNeeded();
+			if (_windowStateDirty || _canvasSizeDirty)
+			{
+				UpdateWindowSizeState();
+			}
+
 			_debounceService.ExecuteDueCallbacks();
-			
-			Runtime.CanvasSize = SetCanvasSize();
-			Runtime.WindowSize = ClientRectangle;
+
 			if (_runtime.SignalQuit)
 			{
 				_debounceService.FlushPendingCallbacks();
@@ -100,18 +129,21 @@ namespace CivOne
 
 		private void ApplyFullscreenSettingChanges()
 		{
-			if (_settingsFullscreen == Settings.FullScreen)
+			if (_lastFullscreen == Settings.FullScreen)
 			{
 				return;
 			}
 
-			_settingsFullscreen = Settings.FullScreen;
-			if (_settingsFullscreen)
+			_lastFullscreen = Settings.FullScreen;
+			if (_lastFullscreen)
 			{
 				PersistDisplayResolutionAsWindowSize();
 			}
 
-			Fullscreen = _settingsFullscreen;
+			Fullscreen = _lastFullscreen;
+			_windowStateDirty = true;
+			_canvasSizeDirty = true;
+			_hasUpdate = true;
 		}
 
 		private void PersistDisplayResolutionAsWindowSize()
@@ -122,8 +154,8 @@ namespace CivOne
 				return;
 			}
 
-			_settingsWindowWidth = displaySize.Width;
-			_settingsWindowHeight = displaySize.Height;
+			_lastWindowWidth = displaySize.Width;
+			_lastWindowHeight = displaySize.Height;
 			_pendingWindowSizeCandidate = null;
 			Settings.WindowWidth = displaySize.Width;
 			Settings.WindowHeight = displaySize.Height;
@@ -131,24 +163,87 @@ namespace CivOne
 
 		private void ApplyScaleSettingChanges()
 		{
-			if (_settingsScale == Settings.Scale)
+			if (_lastScale == Settings.Scale)
 			{
 				return;
 			}
 
 			ResetWindowScale();
-			_settingsScale = Settings.Scale;
+			_lastScale = Settings.Scale;
+			_windowStateDirty = true;
+			_canvasSizeDirty = true;
+			_hasUpdate = true;
+		}
+
+		private void ApplyCanvasSettingChanges()
+		{
+			if (_lastAspectRatio == Settings.AspectRatio
+				&& _lastExpandWidth == Settings.ExpandWidth
+				&& _lastExpandHeight == Settings.ExpandHeight)
+			{
+				return;
+			}
+
+			_lastAspectRatio = Settings.AspectRatio;
+			_lastExpandWidth = Settings.ExpandWidth;
+			_lastExpandHeight = Settings.ExpandHeight;
+			_canvasSizeDirty = true;
+			_hasUpdate = true;
+		}
+
+		private void TrackFullWindowCanvasModeChanges()
+		{
+			bool isFullWindowCanvasRequested = RuntimeHandler.IsFullWindowCanvasRequested;
+			if (_lastFullWindowCanvasRequested == isFullWindowCanvasRequested)
+			{
+				return;
+			}
+
+			_lastFullWindowCanvasRequested = isFullWindowCanvasRequested;
+			_canvasSizeDirty = true;
+			_hasUpdate = true;
+		}
+
+		private bool HasWindowedSettingsChanges()
+		{
+			if (Settings.FullScreen)
+			{
+				return false;
+			}
+
+			return Settings.WindowMaximized != _lastWindowMaximized
+				|| Settings.WindowWidth != _lastWindowWidth
+				|| Settings.WindowHeight != _lastWindowHeight
+				|| Settings.WindowPosition != _lastWindowPosition;
+		}
+
+		private void UpdateCanvasSizeIfNeeded()
+		{
+			if (!_canvasSizeDirty)
+			{
+				return;
+			}
+
+			Runtime.CanvasSize = SetCanvasSize();
+			_canvasSizeDirty = false;
+		}
+
+		private void UpdateWindowSizeState()
+		{
+			Runtime.WindowSize = ClientRectangle;
+			_windowStateDirty = false;
 		}
 
 		private void SyncWindowedStateWithSettings()
 		{
 			if (Settings.FullScreen)
 			{
+				_windowStateDirty = false;
 				return;
 			}
 
 			SyncMaximizedState();
-			if (_settingsWindowMaximized)
+			if (_lastWindowMaximized)
 			{
 				return;
 			}
@@ -159,19 +254,19 @@ namespace CivOne
 
 		private void SyncMaximizedState()
 		{
-			if (_settingsWindowMaximized != Settings.WindowMaximized)
+			if (_lastWindowMaximized != Settings.WindowMaximized)
 			{
-				_settingsWindowMaximized = Settings.WindowMaximized;
-				Maximized = _settingsWindowMaximized;
+				_lastWindowMaximized = Settings.WindowMaximized;
+				Maximized = _lastWindowMaximized;
 			}
 
 			bool isWindowMaximized = Maximized;
-			if (isWindowMaximized == _settingsWindowMaximized)
+			if (isWindowMaximized == _lastWindowMaximized)
 			{
 				return;
 			}
 
-			_settingsWindowMaximized = isWindowMaximized;
+			_lastWindowMaximized = isWindowMaximized;
 			Settings.WindowMaximized = isWindowMaximized;
 		}
 
@@ -198,7 +293,7 @@ namespace CivOne
 				return false;
 			}
 
-			bool configuredSizeChanged = configuredWidth != _settingsWindowWidth || configuredHeight != _settingsWindowHeight;
+			bool configuredSizeChanged = configuredWidth != _lastWindowWidth || configuredHeight != _lastWindowHeight;
 			bool windowAlreadyHasConfiguredSize = configuredWidth == currentWidth && configuredHeight == currentHeight;
 			return configuredSizeChanged && !windowAlreadyHasConfiguredSize;
 		}
@@ -206,15 +301,17 @@ namespace CivOne
 		private void ApplyConfiguredWindowSize(int configuredWidth, int configuredHeight)
 		{
 			SetWindowSize(configuredWidth, configuredHeight);
-			_settingsWindowWidth = configuredWidth;
-			_settingsWindowHeight = configuredHeight;
+			_lastWindowWidth = configuredWidth;
+			_lastWindowHeight = configuredHeight;
 			_pendingWindowSizeCandidate = null;
 			_debounceService.Cancel(GameDebounceKeys.WindowSize);
+			_canvasSizeDirty = true;
+			_hasUpdate = true;
 		}
 
 		private void PersistCurrentWindowSize(int currentWidth, int currentHeight)
 		{
-			if (currentWidth == _settingsWindowWidth && currentHeight == _settingsWindowHeight)
+			if (currentWidth == _lastWindowWidth && currentHeight == _lastWindowHeight)
 			{
 				_pendingWindowSizeCandidate = null;
 				return;
@@ -227,18 +324,19 @@ namespace CivOne
 			}
 
 			_pendingWindowSizeCandidate = currentSize;
+			_canvasSizeDirty = true;
 			_debounceService.Debounce(GameDebounceKeys.WindowSize, WindowPersistDebounce, () => PersistWindowSize(currentSize));
 		}
 
 		private void PersistWindowSize(Size size)
 		{
-			if (size.Width == _settingsWindowWidth && size.Height == _settingsWindowHeight)
+			if (size.Width == _lastWindowWidth && size.Height == _lastWindowHeight)
 			{
 				return;
 			}
 
-			_settingsWindowWidth = size.Width;
-			_settingsWindowHeight = size.Height;
+			_lastWindowWidth = size.Width;
+			_lastWindowHeight = size.Height;
 			_pendingWindowSizeCandidate = null;
 			Settings.WindowWidth = size.Width;
 			Settings.WindowHeight = size.Height;
@@ -251,7 +349,7 @@ namespace CivOne
 		private void PersistWindowPosition()
 		{
 			Point currentPosition = new Point(PositionX, PositionY);
-			if (currentPosition == _settingsWindowPosition)
+			if (currentPosition == _lastWindowPosition)
 			{
 				_pendingWindowPositionCandidate = null;
 				return;
@@ -268,18 +366,39 @@ namespace CivOne
 
 		private void PersistWindowPositionValue(Point position)
 		{
-			if (position == _settingsWindowPosition)
+			if (position == _lastWindowPosition)
 			{
 				return;
 			}
 
-			_settingsWindowPosition = position;
+			_lastWindowPosition = position;
 			_pendingWindowPositionCandidate = null;
 			Settings.WindowPosition = position;
 
 #if DEBUG
 			_runtime.Log($"[Debounce] Persisted window position: X={position.X}, Y={position.Y}");
 #endif
+		}
+
+		private void WindowResize(object sender, EventArgs args)
+		{
+			_windowStateDirty = true;
+			_canvasSizeDirty = true;
+			_hasUpdate = true;
+		}
+
+		private void WindowMoved(object sender, EventArgs args)
+		{
+			_windowStateDirty = true;
+		}
+
+		private void WindowStateChanged(object sender, EventArgs args)
+		{
+			_windowStateDirty = true;
+			_canvasSizeDirty = true;
+			_hasUpdate = true;
+			_debounceService.Cancel(GameDebounceKeys.WindowPosition);
+			_debounceService.Cancel(GameDebounceKeys.WindowSize);
 		}
 
 		private void Draw(object sender, EventArgs args)
@@ -450,12 +569,14 @@ namespace CivOne
 			}
 
 			SetWindowPosition(x, y);
-			_settingsWindowPosition = new Point(x, y);
+			_lastWindowPosition = new Point(x, y);
 			_pendingWindowPositionCandidate = null;
-			Settings.WindowPosition = _settingsWindowPosition;
+			Settings.WindowPosition = _lastWindowPosition;
 
 			Maximized = Settings.WindowMaximized;
-			_settingsWindowMaximized = Settings.WindowMaximized;
+			_lastWindowMaximized = Settings.WindowMaximized;
+			_windowStateDirty = true;
+			_canvasSizeDirty = true;
 		}
 
 		// Stored delegate references so they can be removed in Dispose(). Without this, the
@@ -482,6 +603,9 @@ namespace CivOne
 				OnLoad -= Load;
 				OnUpdate -= Update;
 				OnDraw -= Draw;
+				OnWindowResize -= WindowResize;
+				OnWindowMove -= WindowMoved;
+				OnWindowStateChanged -= WindowStateChanged;
 				OnKeyDown -= KeyDown;
 				OnKeyUp -= KeyUp;
 				OnMouseMove -= MouseMove;
@@ -515,7 +639,9 @@ namespace CivOne
 			OnLoad += Load;
 			OnUpdate += Update;
 			OnDraw += Draw;
-			OnWindowResize += (s, a) => _hasUpdate = true;
+			OnWindowResize += WindowResize;
+			OnWindowMove += WindowMoved;
+			OnWindowStateChanged += WindowStateChanged;
 			OnKeyDown += KeyDown;
 			OnKeyUp += KeyUp;
 			OnMouseMove += MouseMove;
