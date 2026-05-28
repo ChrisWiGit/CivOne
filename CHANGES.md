@@ -6,17 +6,7 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
-* Performance/Stability: Reduced per-frame rendering and window-sync overhead in runtime and gameplay panels.
-  * `GameWindow` now tracks last observed settings and uses dirty flags/events for canvas/window synchronization instead of unconditional per-frame sync work.
-  * Added dedicated SDL window events (`OnWindowMove`, `OnWindowStateChanged`) to react to move/state transitions without polling.
-  * `RuntimeHandler.Update(...)` no longer allocates with `Reverse().ToArray()` in the screen update loop.
-  * `DebounceService.ExecuteDueCallbacks()` removed LINQ hot-path allocations and now uses explicit iteration.
-  * `GameMap.MustUpdate(...)` now uses an O(1) viewport visibility check (`IsTileVisibleInViewport`) instead of scanning visible tiles.
-  * Sidebar rendering was stabilized after regression and reintroduced conservatively:
-    * demographics redraw is signature-based,
-    * game info redraw is signature-based,
-    * minimap/full layer composition path remains stable.
-  * Added XML documentation for key runtime/window/performance refactor points (viewport check and SDL window events).
+* Performance/Stability: Reduced per-frame rendering and CPU overhead in game.
 * Feature: Added FPS display overlay
   * Shows frames per second in a configurable screen corner (Top Left, Top Right, Bottom Left, Bottom Right, or Off).
   * FPS counter updates every second and is rendered with white text in the selected corner.
