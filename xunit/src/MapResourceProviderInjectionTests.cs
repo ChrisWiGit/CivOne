@@ -28,21 +28,21 @@ namespace CivOne.UnitTests
 	/// </summary>
 	public class MapResourceProviderInjectionTests : src.TestsBase
 	{
-		private CapturingMapResourceProvider testee;
+		private CapturingMapResourceProvider testee = null!;
 
 		[Fact]
-		public void Constructor_WithProvider_DoesNotInvokeIt()
+		public void ConstructorWithProviderDoesNotInvokeIt()
 		{
 			testee = new CapturingMapResourceProvider();
 
-			Map actual = new Map(null, testee);
+			Map actual = new(null, testee);
 
 			Assert.Empty(testee.RequestedFilenames);
 			Assert.NotNull(actual);
 		}
 
 		[Fact]
-		public void LoadMap_FetchesPictureFromInjectedProvider()
+		public void LoadMapFetchesPictureFromInjectedProvider()
 		{
 			const string expected = "TEST.MAP";
 			testee = new CapturingMapResourceProvider();
@@ -54,7 +54,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void LoadMap_WithEmptyBitmap_ProducesAllOceanTiles()
+		public void LoadMapWithEmptyBitmapProducesAllOceanTiles()
 		{
 			testee = new CapturingMapResourceProvider();
 			Map.Reset(new Map(null, testee));
@@ -65,7 +65,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void LoadMap_SetsTerrainMasterWordToProvidedSeed()
+		public void LoadMapSetsTerrainMasterWordToProvidedSeed()
 		{
 			const int expected = 9;
 			testee = new CapturingMapResourceProvider();

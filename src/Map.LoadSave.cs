@@ -23,6 +23,7 @@ namespace CivOne
 		{
 			#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 			_tiles = new ITile[WIDTH, HEIGHT];
+			#pragma warning restore CA1814 // Prefer jagged arrays over multidimensional
 			
 			for (int x = 0; x < WIDTH; x++)
 			{
@@ -57,7 +58,9 @@ namespace CivOne
 			
 			using (Bytemap bitmap = _mapResourceProvider.GetPicture(filename).Bitmap)
 			{
+				#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 				_tiles = new ITile[WIDTH, HEIGHT];
+				#pragma warning restore CA1814 // Prefer jagged arrays over multidimensional
 				
 				LoadMap(bitmap);
 				PlaceHuts();

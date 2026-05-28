@@ -227,7 +227,7 @@ namespace CivOne
 		/// Test-friendly constructor that allows injecting a custom <see cref="IRandomService"/>.
 		/// Pass <c>null</c> to use the shared instance from <see cref="RandomServiceFactory"/>.
 		/// </summary>
-		internal Map(IRandomService randomService) : this(randomService, null, null, null)
+		internal Map(IRandomService? randomService) : this(randomService, null, null, null)
 		{
 		}
 
@@ -236,7 +236,7 @@ namespace CivOne
 		/// and a custom <see cref="IMapResourceProvider"/>. Pass <c>null</c> for either parameter
 		/// to fall back to the production default.
 		/// </summary>
-		internal Map(IRandomService randomService, IMapResourceProvider mapResourceProvider) : this(randomService, mapResourceProvider, null, null)
+		internal Map(IRandomService? randomService, IMapResourceProvider? mapResourceProvider) : this(randomService, mapResourceProvider, null, null)
 		{
 		}
 

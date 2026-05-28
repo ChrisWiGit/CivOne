@@ -20,9 +20,8 @@ namespace CivOne.UnitTests
 	/// Loaded fixture: Earth map via <c>earth.yml</c> (provided by <see cref="src.TestsBase"/>).
 	///
 	/// These tests intentionally only exercise documented, in-range behavior.
-	/// Out-of-range X coordinates are NOT tested through the single-tile indexer because
-	/// the indexer contains a <c>Debug.Assert</c> on <c>x &gt;= 0 &amp;&amp; x &lt; WIDTH</c>
-	/// which would fail in Debug builds.
+	/// Out-of-range X coordinates are intentionally not covered here; the indexer
+	/// wraps X via modulo, but these tests focus on the normal in-range access patterns.
 	/// </summary>
 	public class MapTileAccessorTests : src.TestsBase
 	{

@@ -22,7 +22,7 @@ namespace CivOne.UnitTests
 	/// </summary>
 	public class MapPersistenceServiceInjectionTests : src.TestsBase
 	{
-		private CapturingMapPersistenceService testee;
+		private CapturingMapPersistenceService testee = null!;
 
 		[Fact]
 		public void SaveMapRoutesBytesThroughInjectedPersistenceService()

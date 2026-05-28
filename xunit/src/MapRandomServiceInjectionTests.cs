@@ -52,7 +52,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TwoInstancesWithEquivalenttesteesHaveSameTerrainMasterWord()
+		public void TwoInstancesWithEquivalentTesteesHaveSameTerrainMasterWord()
 		{
 			Map first = new(new FixedRandomService(5));
 			Map second = new(new FixedRandomService(5));
