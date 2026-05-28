@@ -204,6 +204,7 @@ namespace CivOne.Screens
 			{
 				_shift5 = false;
 				Settings.RevealWorldCheat();
+				RefreshMap();
 				return true;
 			}
 			else if (_shift5)

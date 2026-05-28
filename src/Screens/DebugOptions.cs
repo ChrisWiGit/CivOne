@@ -107,6 +107,7 @@ namespace CivOne.Screens
 		private void MenuRevealWorld(object sender, EventArgs args)
 		{
 			Settings.Instance.RevealWorldCheat();
+			Common.GamePlay?.RefreshMap();
 			Destroy();
 		}
 
