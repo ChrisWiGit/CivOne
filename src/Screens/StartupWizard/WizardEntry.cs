@@ -46,6 +46,11 @@ namespace CivOne.Screens.StartupWizard
 		OpenSetupScreen,
 
 		/// <summary>
+		/// Opens the CivOne profile folder in the file manager.
+		/// </summary>
+		OpenProfileFolder,
+
+		/// <summary>
 		/// Selects whether fullscreen mode is enabled.
 		/// The chosen value is stored in <see cref="WizardEntry.Value"/>.
 		/// </summary>
@@ -129,6 +134,8 @@ namespace CivOne.Screens.StartupWizard
 		/// the selected aspect ratio name.
 		/// Also used by <see cref="WizardEntryAction.BrowseSoundFolder"/> entries to carry
 		/// the selected source directory for sound-file copying.
+		/// Also used by <see cref="WizardEntryAction.OpenProfileFolder"/> entries to open
+		/// the CivOne profile folder from the file manager.
 		/// For all other actions this property is <see langword="null"/>.
 		/// </remarks>
 		public string Value { get; init; }

@@ -334,11 +334,12 @@ namespace CivOne.Screens.StartupWizard
 				Entries =
 				[
 					new WizardEntry { Number = 1, Text = debugMenuEntryText, Action = WizardEntryAction.ToggleDebugMenu },
-					new WizardEntry { Number = 2, Text = T("Show more settings"), Action = WizardEntryAction.OpenSetupScreen },
-					new WizardEntry { Number = 3, Text = ContinueText(), Action = WizardEntryAction.Continue, Hotkey = HotkeyContinue },
-					new WizardEntry { Number = 4, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
+					new WizardEntry { Number = 2, Text = T("Open CivOne Profile folder..."), Action = WizardEntryAction.OpenProfileFolder },
+					new WizardEntry { Number = 3, Text = T("Show more settings"), Action = WizardEntryAction.OpenSetupScreen },
+					new WizardEntry { Number = 4, Text = ContinueText(), Action = WizardEntryAction.Continue, Hotkey = HotkeyContinue },
+					new WizardEntry { Number = 5, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
 				],
-				EntriesYOffset = 1,
+				EntriesYOffset = 2,
 				HasContextChanged = () => SyncMoreSettingsState(state)
 			};
 		}

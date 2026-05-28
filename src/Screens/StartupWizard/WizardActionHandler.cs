@@ -8,6 +8,8 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using CivOne.Enums;
 using CivOne.Graphics;
@@ -61,6 +63,9 @@ namespace CivOne.Screens.StartupWizard
 					case WizardEntryAction.OpenSetupScreen:
 						_showSetupScreen();
 						return new WizardActionResult(ShouldRefresh: false);
+					case WizardEntryAction.OpenProfileFolder:
+						HandleOpenProfileFolder(engine);
+						return new WizardActionResult(ShouldRefresh: true);
 					case WizardEntryAction.SelectFullScreen:
 						ApplyFullScreen(entry.Value, engine);
 						return new WizardActionResult(ShouldRefresh: true);
@@ -196,7 +201,7 @@ namespace CivOne.Screens.StartupWizard
 					_requestRefresh();
 				});
 			}
-			catch (Exception exception)
+			catch (IOException exception)
 			{
 				_log($"Copying data files failed for '{path}': {exception.Message}");
 				_dispatchToMainThread(() =>
@@ -232,9 +237,44 @@ namespace CivOne.Screens.StartupWizard
 			}
 
 			RefreshSoundAvailability(state);
+			if (state.SoundFilesAvailable == true)
+			{
+				state.SoundEnabled = true;
+				Settings.Instance.Sound = GameOption.On;
+			}
 			state.StatusMessage = missingFiles.Length == 0
 				? T("Sound files copied successfully.")
 				: TF("Sound files copied with missing files: {0}", FormatMissingList(missingFiles));
+		}
+
+		private void HandleOpenProfileFolder(WizardState state)
+		{
+			if (string.IsNullOrWhiteSpace(_storageDirectory))
+			{
+				state.StatusMessage = T("Profile folder unavailable.");
+				return;
+			}
+
+			try
+			{
+				Directory.CreateDirectory(_storageDirectory);
+				Process.Start(new ProcessStartInfo
+				{
+					FileName = _storageDirectory,
+					UseShellExecute = true
+				});
+				state.StatusMessage = T("Opened CivOne profile folder.");
+			}
+			catch (IOException exception)
+			{
+				_log($"Could not open profile folder '{_storageDirectory}': {exception.Message}");
+				state.StatusMessage = T("Could not open profile folder.");
+			}
+			catch (System.ComponentModel.Win32Exception exception)
+			{
+				_log($"Could not open profile folder '{_storageDirectory}': {exception.Message}");
+				state.StatusMessage = T("Could not open profile folder.");
+			}
 		}
 
 		private bool CanEnableSound(WizardState state)
@@ -281,7 +321,7 @@ namespace CivOne.Screens.StartupWizard
 			string shownFiles = string.Join(", ", missingFiles[..shownCount]);
 			int remainingCount = missingFiles.Length - shownCount;
 			return remainingCount > 0
-				? $"{shownFiles} (+{remainingCount} more)"
+				? $"{shownFiles} (+{remainingCount})"
 				: shownFiles;
 		}
 
