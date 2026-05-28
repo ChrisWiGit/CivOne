@@ -126,8 +126,9 @@ namespace CivOne
 		{
 			get
 			{
-				Debug.Assert(x >= 0 && x < WIDTH, $"X coordinate out of bounds: {x}");
-				if (y < 0 || y >= HEIGHT) return null;
+				// CW: this if-case happens a lot! So a lot of code is dealing with null, althouth property is not nullable. 
+				// Possible code smell but to large to refactor right now. 
+				if (y < 0 || y >= HEIGHT) return null; 
 				
 				while (x < 0) x += WIDTH;
 				x %= WIDTH;
