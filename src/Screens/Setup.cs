@@ -118,7 +118,7 @@ namespace CivOne.Screens
 
 		private void BrowseForSoundFiles(object sender, MenuItemEventArgs<int> args)
 		{
-			string path = Runtime.BrowseFolder(Translate("Location of Civilization for Windows sound files"));
+			string? path = Runtime.BrowseFolder(Translate("Location of Civilization for Windows sound files"));
 			if (path == null)
 			{
 				// User pressed cancel
@@ -130,7 +130,7 @@ namespace CivOne.Screens
 
 		private void BrowseForPlugins(object sender, MenuItemEventArgs<int> args)
 		{
-			string path = Runtime.BrowseFolder(Translate("Location of CivOne plugin(s)"));
+			string? path = Runtime.BrowseFolder(Translate("Location of CivOne plugin(s)"));
 			if (path == null)
 			{
 				// User pressed cancel
