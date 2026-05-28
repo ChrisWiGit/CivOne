@@ -9,7 +9,7 @@ I did not browse all issues on github at first, so I did not recognize that some
 * Performance/Stability: Reduced per-frame rendering and CPU overhead in game.
 * Feature: Added FPS display overlay
   * Shows frames per second in a configurable screen corner (Top Left, Top Right, Bottom Left, Bottom Right, or Off).
-  * FPS counter updates every second and is rendered with white text in the selected corner.
+  * FPS counter updates every second and is rendered with yellow text in the selected corner.
   * Setting is persistent across game restarts and accessible via `Shift+F1 → Patches → FPS display`.
   * When disabled (Off), the overlay is not rendered and no performance impact is incurred.
 * Refactoring

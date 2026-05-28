@@ -112,8 +112,8 @@ namespace CivOne
 				SyncWindowedStateWithSettings();
 			}
 
-			UpdateCanvasSizeIfNeeded();
-			if (_windowStateDirty || _canvasSizeDirty)
+			bool canvasSizeUpdated = UpdateCanvasSizeIfNeeded();
+			if (_windowStateDirty || canvasSizeUpdated)
 			{
 				UpdateWindowSizeState();
 			}
@@ -217,15 +217,16 @@ namespace CivOne
 				|| Settings.WindowPosition != _lastWindowPosition;
 		}
 
-		private void UpdateCanvasSizeIfNeeded()
+		private bool UpdateCanvasSizeIfNeeded()
 		{
 			if (!_canvasSizeDirty)
 			{
-				return;
+				return false;
 			}
 
 			Runtime.CanvasSize = SetCanvasSize();
 			_canvasSizeDirty = false;
+			return true;
 		}
 
 		private void UpdateWindowSizeState()
