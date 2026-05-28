@@ -145,17 +145,19 @@ namespace CivOne
 			get
 			{
 				IGovernment government = Game.GetPlayer(_owner).Government;
+				// store unitCount once to avoid multiple enumeration.
+				int unitCount = Units.Count(u => u is not Diplomat && u is not Caravan);
 				if (government is Anarchy || government is Despotism)
 				{
 					int costs = 0;
-					for (int i = 0; i < Units.Count(u => (!(u is Diplomat) && !(u is Caravan))); i++)
+					for (int i = 0; i < unitCount; i++)
 					{
 						if (i < _size) continue;
 						costs++;
 					}
 					return costs;
 				}
-				return Units.Count(u => (!(u is Diplomat) && !(u is Caravan)));
+				return unitCount;
 			}
 		}
 
