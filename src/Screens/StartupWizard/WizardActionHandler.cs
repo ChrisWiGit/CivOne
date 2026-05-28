@@ -8,7 +8,6 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using CivOne.Enums;
@@ -255,26 +254,14 @@ namespace CivOne.Screens.StartupWizard
 				return;
 			}
 
-			try
+			if (RuntimeHandler.Runtime.TryOpenUrl(_storageDirectory, out string errorMessage))
 			{
-				Directory.CreateDirectory(_storageDirectory);
-				Process.Start(new ProcessStartInfo
-				{
-					FileName = _storageDirectory,
-					UseShellExecute = true
-				});
 				state.StatusMessage = T("Opened CivOne profile folder.");
+				return;
 			}
-			catch (IOException exception)
-			{
-				_log($"Could not open profile folder '{_storageDirectory}': {exception.Message}");
-				state.StatusMessage = T("Could not open profile folder.");
-			}
-			catch (System.ComponentModel.Win32Exception exception)
-			{
-				_log($"Could not open profile folder '{_storageDirectory}': {exception.Message}");
-				state.StatusMessage = T("Could not open profile folder.");
-			}
+
+			_log($"Could not open profile folder '{_storageDirectory}': {errorMessage}");
+			state.StatusMessage = T("Could not open profile folder.");
 		}
 
 		private bool CanEnableSound(WizardState state)
