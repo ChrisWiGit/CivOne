@@ -6,12 +6,15 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
-* Performance/Stability: Reduced per-frame rendering and CPU overhead in game.
+* Refactoring: Performance/Stability: Reduced per-frame rendering and CPU overhead in game.
+ * Refactors runtime update/draw and SDL window handling to avoid hot-path LINQ/allocation patterns and to react to SDL events instead of per-frame polling.
+ * Optimizes gameplay panel redraw logic (sidebar signature-based redraw, map viewport O(1) visibility check).
 * Feature: Added FPS display overlay
   * Shows frames per second in a configurable screen corner (Top Left, Top Right, Bottom Left, Bottom Right, or Off).
   * FPS counter updates every second and is rendered with yellow text in the selected corner.
   * Setting is persistent across game restarts and accessible via `Shift+F1 → Patches → FPS display`.
   * When disabled (Off), the overlay is not rendered and no performance impact is incurred.
+* Feature: Introduces a --debug runtime option that also enables the in-game debug menu and add process id in window caption.
 * Refactoring
   * Runtime/SDL hardening: input/audio/runtime safety fixes, stronger dispose patterns, safer native interop (DllImport search paths, nullable folder-browser APIs, enum/warning cleanup), and resource/lifecycle fixes in Window/Wave.
   * Startup wizard improvements: background data-file copy flow with status updates, canonical file-casing handling, action-handler/main-thread refresh updates, and UX refinements (fullscreen/aspect/default rendering updates).
