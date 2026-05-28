@@ -6,9 +6,12 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Refactor: Hardened the `Map` partial singleton and decoupled it from four global singletons (`Common.Random`, `Resources`, `Settings`, file IO) to improve testability and maintainability.
+  * Added unit tests for `Map` covering map generation and continent counting logic in `MapTests`, using a new `TestMap` subclass that injects deterministic random, resource, settings, and file IO dependencies.
+  * This allows for better separation of concerns, easier testing of map generation logic in isolation, and future flexibility to have multiple map instances if needed.
 * Refactoring: Performance/Stability: Reduced per-frame rendering and CPU overhead in game.
- * Refactors runtime update/draw and SDL window handling to avoid hot-path LINQ/allocation patterns and to react to SDL events instead of per-frame polling.
- * Optimizes gameplay panel redraw logic (sidebar signature-based redraw, map viewport O(1) visibility check).
+  * Refactors runtime update/draw and SDL window handling to avoid hot-path LINQ/allocation patterns and to react to SDL events instead of per-frame polling.
+  * Optimizes gameplay panel redraw logic (sidebar signature-based redraw, map viewport O(1) visibility check).
 * Feature: Added FPS display overlay
   * Shows frames per second in a configurable screen corner (Top Left, Top Right, Bottom Left, Bottom Right, or Off).
   * FPS counter updates every second and is rendered with yellow text in the selected corner.
