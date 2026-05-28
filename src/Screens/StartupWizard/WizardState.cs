@@ -66,6 +66,24 @@ namespace CivOne.Screens.StartupWizard
 		public bool SoundEnabled { get; set; } = Settings.Instance.Sound != GameOption.Off;
 
 		/// <summary>
+		/// Gets or sets whether at least one usable sound file is available.
+		/// </summary>
+		/// <remarks>
+		/// <see langword="null"/> means not evaluated yet.
+		/// Value is refreshed when opening the sound page and after browsing for sound files.
+		/// </remarks>
+		public bool? SoundFilesAvailable { get; set; }
+
+		/// <summary>
+		/// Gets or sets the currently missing sound files.
+		/// </summary>
+		/// <remarks>
+		/// Empty when all sound files are available.
+		/// Refreshed together with <see cref="SoundFilesAvailable"/>.
+		/// </remarks>
+		public string[] MissingSoundFiles { get; set; } = [];
+
+		/// <summary>
 		/// Gets or sets whether the in-game debug menu is enabled.
 		/// </summary>
 		public bool DebugMenuEnabled { get; set; } = Settings.Instance.DebugMenu;

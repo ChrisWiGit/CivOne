@@ -67,6 +67,9 @@ namespace CivOne.Screens.StartupWizard
 				case WizardEntryAction.BrowseDataFolder:
 						HandleBrowseDataFolder(engine);
 					return new WizardActionResult(ShouldRefresh: true);
+				case WizardEntryAction.BrowseSoundFolder:
+						HandleBrowseSoundFolder(engine);
+					return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.Continue:
 						if (engine.PageIndex == 3)
 						{
@@ -80,6 +83,10 @@ namespace CivOne.Screens.StartupWizard
 						engine.StatusMessage = string.Empty;
 					return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.ToggleSound:
+						if (!CanEnableSound(engine))
+						{
+							return new WizardActionResult(ShouldRefresh: true);
+						}
 						engine.SoundEnabled = !engine.SoundEnabled;
 						Settings.Instance.Sound = engine.SoundEnabled ? GameOption.On : GameOption.Off;
 						engine.StatusMessage = engine.SoundEnabled
@@ -206,6 +213,76 @@ namespace CivOne.Screens.StartupWizard
 					_requestRefresh();
 				});
 			}
+		}
+
+		private void HandleBrowseSoundFolder(WizardState state)
+		{
+			string path = _browseFolder(T("Location of Civilization for Windows sound files"));
+			if (path == null)
+			{
+				state.StatusMessage = T("Folder selection cancelled.");
+				return;
+			}
+
+			if (!FileSystem.CopySoundFiles(path, out string[] missingFiles))
+			{
+				RefreshSoundAvailability(state);
+				state.StatusMessage = T("No usable sound files found in selected folder.");
+				return;
+			}
+
+			RefreshSoundAvailability(state);
+			state.StatusMessage = missingFiles.Length == 0
+				? T("Sound files copied successfully.")
+				: TF("Sound files copied with missing files: {0}", FormatMissingList(missingFiles));
+		}
+
+		private bool CanEnableSound(WizardState state)
+		{
+			if (state.SoundEnabled)
+			{
+				return true;
+			}
+
+			RefreshSoundAvailability(state);
+			if (state.SoundFilesAvailable == true)
+			{
+				return true;
+			}
+
+			state.SoundEnabled = false;
+			Settings.Instance.Sound = GameOption.Off;
+			state.StatusMessage = T("Sound files missing. Select sound folder first.");
+			return false;
+		}
+
+		private static void RefreshSoundAvailability(WizardState state)
+		{
+			state.MissingSoundFiles = FileSystem.GetMissingSoundFiles();
+			bool hasAnySoundFiles = FileSystem.HasAnySoundFiles();
+			state.SoundFilesAvailable = hasAnySoundFiles;
+			if (hasAnySoundFiles)
+			{
+				return;
+			}
+
+			state.SoundEnabled = false;
+			Settings.Instance.Sound = GameOption.Off;
+		}
+
+		private static string FormatMissingList(string[] missingFiles)
+		{
+			if (missingFiles == null || missingFiles.Length == 0)
+			{
+				return string.Empty;
+			}
+
+			int shownCount = Math.Min(3, missingFiles.Length);
+			string shownFiles = string.Join(", ", missingFiles[..shownCount]);
+			int remainingCount = missingFiles.Length - shownCount;
+			return remainingCount > 0
+				? $"{shownFiles} (+{remainingCount} more)"
+				: shownFiles;
 		}
 
 		private void ApplyAspectRatio(string value, WizardState state)

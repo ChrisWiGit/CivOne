@@ -25,6 +25,11 @@ namespace CivOne.Screens.StartupWizard
 		BrowseDataFolder,
 
 		/// <summary>
+		/// Opens a folder-browser dialog so the user can locate the Civilization for Windows sound files.
+		/// </summary>
+		BrowseSoundFolder,
+
+		/// <summary>
 		/// Selects the screen aspect ratio used by the game renderer.
 		/// The chosen value is stored in <see cref="WizardEntry.Value"/>.
 		/// </summary>
@@ -122,6 +127,8 @@ namespace CivOne.Screens.StartupWizard
 		/// language postfix (e.g. <c>"german"</c>) that identifies the chosen translation.
 		/// Also used by <see cref="WizardEntryAction.SelectAspectRatio"/> entries to carry
 		/// the selected aspect ratio name.
+		/// Also used by <see cref="WizardEntryAction.BrowseSoundFolder"/> entries to carry
+		/// the selected source directory for sound-file copying.
 		/// For all other actions this property is <see langword="null"/>.
 		/// </remarks>
 		public string Value { get; init; }

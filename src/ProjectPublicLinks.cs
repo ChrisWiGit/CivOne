@@ -43,5 +43,10 @@ namespace CivOne
 		/// Gets the Discord invite URL.
 		/// </summary>
 		public const string Discord = "https://discord.gg/kfaFcTnCX";
+
+		/// <summary>
+		/// Gets the download page for CivWin sound files.
+		/// </summary>
+		public const string CivWinSoundtrackMod = "https://www.moddb.com/mods/civwin-complete-soundtrack-overhaul-mod";
 	}
 }

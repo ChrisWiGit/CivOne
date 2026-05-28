@@ -19,14 +19,26 @@ namespace CivOne.Screens.StartupWizard
 {
 	internal sealed class WizardPageBuilder(Func<ITranslationService> translationServiceAccessor, IReadOnlyList<TranslationLanguageInfo> availableLanguages) : IWizardPageBuilder
 	{
-		private static readonly char HotkeyContinue = 'c';
-		private static readonly char HotkeyBack = 'b';
+		private const char HotkeyContinue = 'c';
+		private const char HotkeyBack = 'b';
+		private const int SoundPageIndex = 4;
+		private int _lastBuiltPageIndex = -1;
 		private readonly Func<ITranslationService> _translationServiceAccessor = translationServiceAccessor ?? throw new ArgumentNullException(nameof(translationServiceAccessor));
 		private readonly IReadOnlyList<TranslationLanguageInfo> _availableLanguages = availableLanguages ?? throw new ArgumentNullException(nameof(availableLanguages));
 
 		public WizardPage Build(WizardState state)
 		{
 			ArgumentNullException.ThrowIfNull(state);
+
+			if (_lastBuiltPageIndex != state.PageIndex)
+			{
+				if (state.PageIndex == SoundPageIndex)
+				{
+					RefreshSoundAvailability(state);
+				}
+
+				_lastBuiltPageIndex = state.PageIndex;
+			}
 
 			return state.PageIndex switch
 			{
@@ -219,20 +231,89 @@ namespace CivOne.Screens.StartupWizard
 		private WizardPage BuildSoundPage(WizardState state)
 		{
 			string soundState = state.SoundEnabled ? T("On") : T("Off");
+			bool hasAnySoundFiles = state.SoundFilesAvailable == true;
+			bool hasMissingSoundFiles = state.MissingSoundFiles.Length > 0;
+			(string Label, string Url)[] links = hasMissingSoundFiles
+				? [(T("Download sounds:"), ProjectPublicLinks.CivWinSoundtrackMod)]
+				: [];
+			string soundFilesState;
+			if (!hasAnySoundFiles)
+			{
+				soundFilesState = T("You can download free sound files from the link below.");
+			}
+			else if (hasMissingSoundFiles)
+			{
+				soundFilesState = T("Some sound files are missing.");
+			}
+			else
+			{
+				soundFilesState = T("Sound files available.");
+			}
+
+			List<string> lines =
+			[
+				soundFilesState
+			];
+
+			string missingSummary = FormatMissingSoundFiles(state.MissingSoundFiles);
+			if (hasAnySoundFiles && hasMissingSoundFiles && !string.IsNullOrEmpty(missingSummary))
+			{
+				lines.Add(missingSummary);
+				lines.Add(T("You can still play with sound."));
+			}
+
 			return new WizardPage
 			{
 				Title = T("Startup Wizard: Sound"),
-				Lines =
-				[
-					TF("Sound: {0}", soundState)
-				],
+				Lines = [.. lines],
 				Entries =
 				[
-					new WizardEntry { Number = 1, Text = T("Toggle sound"), Action = WizardEntryAction.ToggleSound },
-					new WizardEntry { Number = 2, Text = ContinueText(), Action = WizardEntryAction.Continue, Hotkey = HotkeyContinue },
-					new WizardEntry { Number = 3, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
-				]
+					new WizardEntry { Number = 1, Text = TF("Toggle sound: {0}", soundState), Action = WizardEntryAction.ToggleSound, Enabled = hasAnySoundFiles || state.SoundEnabled },
+					new WizardEntry { Number = 2, Text = T("Browse sound folder"), Action = WizardEntryAction.BrowseSoundFolder },
+					new WizardEntry { Number = 3, Text = ContinueText(), Action = WizardEntryAction.Continue, Hotkey = HotkeyContinue },
+					new WizardEntry { Number = 4, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
+				],
+				Links = links,
+				EntriesYOffset = 2
 			};
+		}
+
+		private void RefreshSoundAvailability(WizardState state)
+		{
+			state.MissingSoundFiles = FileSystem.GetMissingSoundFiles();
+			bool hasAnySoundFiles = FileSystem.HasAnySoundFiles();
+			state.SoundFilesAvailable = hasAnySoundFiles;
+			if (hasAnySoundFiles)
+			{
+				return;
+			}
+
+			if (!state.SoundEnabled)
+			{
+				return;
+			}
+
+			state.SoundEnabled = false;
+			Settings.Instance.Sound = GameOption.Off;
+			if (string.IsNullOrEmpty(state.StatusMessage))
+			{
+				state.StatusMessage = T("Sound files missing. Sound disabled.");
+			}
+		}
+
+		private string FormatMissingSoundFiles(string[] missingFiles)
+		{
+			if (missingFiles == null || missingFiles.Length == 0)
+			{
+				return string.Empty;
+			}
+
+			int shownCount = Math.Min(3, missingFiles.Length);
+			string shownFiles = string.Join(", ", missingFiles[..shownCount]);
+			int remainingCount = missingFiles.Length - shownCount;
+			return remainingCount > 0
+				? TF("Missing sound files: {0} (+{1} more)", shownFiles, remainingCount)
+				: TF("Missing sound files: {0}", shownFiles);
 		}
 
 		private WizardPage BuildMoreSettingsPage(WizardState state)
