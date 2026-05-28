@@ -177,9 +177,20 @@ namespace CivOne.UnitTests
 
 		public void Dispose()
 		{
-			if (Directory.Exists(_storageDirectory))
+			try
 			{
-				Directory.Delete(_storageDirectory, true);
+				if (Directory.Exists(_storageDirectory))
+				{
+					Directory.Delete(_storageDirectory, true);
+				}
+			}
+			catch (IOException)
+			{
+				// best-effort cleanup
+			}
+			catch (UnauthorizedAccessException)
+			{
+				// best-effort cleanup
 			}
 		}
 
@@ -204,36 +215,39 @@ namespace CivOne.UnitTests
 
 		private sealed class FakeRuntime(string storageDirectory) : IRuntime
 		{
-			public event EventHandler Initialize { add { } remove { } }
-			public event EventHandler Draw { add { } remove { } }
-			public event UpdateEventHandler Update { add { } remove { } }
-			public event KeyboardEventHandler KeyboardUp { add { } remove { } }
-			public event KeyboardEventHandler KeyboardDown { add { } remove { } }
-			public event ScreenEventHandler MouseUp { add { } remove { } }
-			public event ScreenEventHandler MouseDown { add { } remove { } }
-			public event ScreenEventHandler MouseMove { add { } remove { } }
+			public event EventHandler Initialize { add { _ = value; } remove { _ = value; } }
+			public event EventHandler Draw { add { _ = value; } remove { _ = value; } }
+			public event UpdateEventHandler Update { add { _ = value; } remove { _ = value; } }
+			public event KeyboardEventHandler KeyboardUp { add { _ = value; } remove { _ = value; } }
+			public event KeyboardEventHandler KeyboardDown { add { _ = value; } remove { _ = value; } }
+			public event ScreenEventHandler MouseUp { add { _ = value; } remove { _ = value; } }
+			public event ScreenEventHandler MouseDown { add { _ = value; } remove { _ = value; } }
+			public event ScreenEventHandler MouseMove { add { _ = value; } remove { _ = value; } }
 
 			public Platform CurrentPlatform => Platform.Windows;
 			public string StorageDirectory { get; } = storageDirectory;
 			public RuntimeSettings Settings { get; } = new RuntimeSettings();
-			public MouseCursor CurrentCursor { set { } }
+			public MouseCursor CurrentCursor { get; private set; }
 			public Bytemap[] Layers { get; set; }
 			public Palette Palette { get; set; }
-			public IBitmap Cursor { set { } }
+			public IBitmap Cursor { get; private set; }
 			public int CanvasWidth => 320;
 			public int CanvasHeight => 200;
 			public int WindowWidth => 320;
 			public int WindowHeight => 200;
-			public string WindowTitle { set { } }
+			public string WindowTitle { get; private set; }
 
 			public bool TryOpenUrl(string url, out string errorMessage) { errorMessage = null; return false; }
 			public bool TryCopyToClipboard(string text, out string errorMessage) { errorMessage = null; return false; }
 
 			public string GetSetting(string key) => null;
 			public void SetSetting(string key, string value) { }
+			public void SetCurrentCursor(MouseCursor cursor) => CurrentCursor = cursor;
+			public void SetCursor(IBitmap cursor) => Cursor = cursor;
 			public void Log(string text, params object[] parameters) { }
-			public string BrowseFolder(string caption = "") => string.Empty;
+			public string? BrowseFolder(string caption = "") => string.Empty;
 			public string FileChooser(bool save, string title, string initialFileName, string filter) => string.Empty;
+			public void SetWindowTitle(string title) => WindowTitle = title;
 			public void PlaySound(string file) { }
 			public void StopSound() { }
 			public void Quit() { }

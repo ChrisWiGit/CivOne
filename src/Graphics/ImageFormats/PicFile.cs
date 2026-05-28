@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CivOne.IO;
-using CivOne.Graphics;
 
 namespace CivOne.Graphics.ImageFormats
 {
@@ -50,7 +49,8 @@ namespace CivOne.Graphics.ImageFormats
 			// that are painted in a chessboard-pattern, so one 8-bit colour can
 			// be replaced by two different 4-bit colours
 			byte[,] colourTable = new byte[256, 2];
-			uint length = BitConverter.ToUInt16(_bytes, index); index += 2;
+			// Skip 2-byte length header; we always read the fixed 256-entry table.
+			index += 2;
 			byte firstIndex = _bytes[index++];
 			byte lastIndex = _bytes[index++];
 			
@@ -88,7 +88,8 @@ namespace CivOne.Graphics.ImageFormats
 		/// <param name="index">Current file reading index.</param>
 		private void ReadColourPalette(ref int index)
 		{
-			uint length = BitConverter.ToUInt16(_bytes, index); index += 2;
+			// Skip 2-byte length header; we always read the fixed 256-entry palette.
+			index += 2;
 			byte firstIndex = _bytes[index++];
 			byte lastIndex = _bytes[index++];
 			for (int i = 0; i < 256; i++)
@@ -117,7 +118,8 @@ namespace CivOne.Graphics.ImageFormats
 		/// <returns></returns>
 		private byte[] DecodePicture(ref int index, uint length)
 		{
-			byte bits = _bytes[index++];
+			// Skip the 1-byte LZW initial-bits header; the decoder uses its default 9..12 bit range.
+			index++;
 			byte[] img = new byte[length - 5];
 			Array.Copy(_bytes, index, img, 0, (int)(length - 5));
 			index += (int)(length - 5);
@@ -170,10 +172,11 @@ namespace CivOne.Graphics.ImageFormats
 			int c = 0;
 			for (int y = 0; y < height; y++)
 			{
-				for (int x = 0; x < width; x++)
+				// Each source byte packs two 4-bit pixels (low nibble first, high nibble second).
+				for (int x = 0; x < width; x += 2)
 				{
-					_picture16[x++, y] = (byte)(image[c] & 0x0F);
-					_picture16[x, y] = (byte)((image[c++] & 0xF0) >> 4);
+					_picture16[x, y] = (byte)(image[c] & 0x0F);
+					_picture16[x + 1, y] = (byte)((image[c++] & 0xF0) >> 4);
 				}
 			}
 		}
@@ -193,10 +196,12 @@ namespace CivOne.Graphics.ImageFormats
 			_picture16 = new Bytemap(width, height);
 			
 			for (int y = 0; y < height; y++)
-			for (int x = 0; x < width; x++)
 			{
-				byte col256 = _picture256[x, y];
-				_picture16[x, y] = colourTable[col256, (y + x) % 2];
+				for (int x = 0; x < width; x++)
+				{
+					byte col256 = _picture256[x, y];
+					_picture16[x, y] = colourTable[col256, (y + x) % 2];
+				}
 			}
 		}
 		
@@ -252,17 +257,48 @@ namespace CivOne.Graphics.ImageFormats
 			}
 		}
 
+		// Cache: lowercase-with-extension -> actual full path. Built lazily, invalidated
+		// when the data directory changes. Avoids an O(N) Directory.GetFiles scan per lookup.
+		private static Dictionary<string, string> _filenameCache;
+		private static string _filenameCacheDirectory;
+		private static readonly object _filenameCacheLock = new object();
+
+		private static Dictionary<string, string> GetFilenameCache(string dataDirectory)
+		{
+			lock (_filenameCacheLock)
+			{
+				if (_filenameCache != null && string.Equals(_filenameCacheDirectory, dataDirectory, StringComparison.OrdinalIgnoreCase))
+					return _filenameCache;
+
+				Dictionary<string, string> map = new(StringComparer.OrdinalIgnoreCase);
+				if (Directory.Exists(dataDirectory))
+				{
+					foreach (string fileEntry in Directory.GetFiles(dataDirectory))
+						map[Path.GetFileName(fileEntry)] = fileEntry;
+				}
+				_filenameCache = map;
+				_filenameCacheDirectory = dataDirectory;
+				return map;
+			}
+		}
+
+		internal static void ClearFilenameCache()
+		{
+			lock (_filenameCacheLock)
+			{
+				_filenameCache = null;
+				_filenameCacheDirectory = null;
+			}
+		}
+
 		private static string GetFilename(string filename)
 		{
-			if (!filename.ToLower().EndsWith(".map"))
-			{
-				// fix for case sensitive file systems
-				foreach (string fileEntry in Directory.GetFiles(Settings.Instance.DataDirectory))
-				{
-					if (Path.GetFileName(fileEntry).ToLower() != $"{filename.ToLower()}.pic") continue;
-					return fileEntry;
-				}
-			}
+			if (filename.EndsWith(".map", StringComparison.OrdinalIgnoreCase))
+				return filename;
+
+			Dictionary<string, string> cache = GetFilenameCache(Settings.Instance.DataDirectory);
+			if (cache.TryGetValue($"{filename}.pic", out string fullPath))
+				return fullPath;
 			return filename;
 		}
 
@@ -270,6 +306,7 @@ namespace CivOne.Graphics.ImageFormats
 		{
 			return File.Exists(GetFilename(filename));
 		}
+		internal static void ClearCache() => _cache.Clear();
 
 		public PicFile(Picture picture)
 		{
@@ -283,7 +320,6 @@ namespace CivOne.Graphics.ImageFormats
 			HasPicture256 = true;
 		}
 
-		internal static void ClearCache() => _cache.Clear();
 		
 		public PicFile(string filename)
 		{
@@ -301,10 +337,12 @@ namespace CivOne.Graphics.ImageFormats
 				_picture16 = new Bytemap(320, 200);
 				_picture256 = new Bytemap(320, 200);
 				for (int yy = 0; yy < 200; yy++)
-				for (int xx = 0; xx < 320; xx++)
 				{
-					_picture16[xx, yy] = 1;
-					_picture256[xx, yy] = 1;
+					for (int xx = 0; xx < 320; xx++)
+					{
+						_picture16[xx, yy] = 1;
+						_picture256[xx, yy] = 1;
+					}
 				}
 				return;
 			}

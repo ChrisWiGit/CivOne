@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Graphics;
@@ -31,6 +32,9 @@ namespace CivOne
 		private int _terrainMasterWord;
 		public int TerrainMasterWord { get { return _terrainMasterWord; } }
 		private int _landMass, _temperature, _climate, _age;
+		
+		
+		#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional - but performance impact may be too low
 		private ITile[,] _tiles;
 
 		public ITile[,] Tiles { get { return _tiles; } }
@@ -42,28 +46,34 @@ namespace CivOne
 		{
 			ITile[,] area = this[x, y, width, height];
 			for (int yy = 0; yy < height; yy++)
-			for (int xx = 0; xx < width; xx++)
 			{
-				yield return area[xx, yy];
+				for (int xx = 0; xx < width; xx++)
+				{
+					yield return area[xx, yy];
+				}
 			}
 		}
 		
 		public IEnumerable<ITile> AllTiles()
 		{
 			for (int y = 0; y < HEIGHT; y++)
-			for (int x = 0; x < WIDTH; x++)
 			{
-				yield return this[x, y];
+				for (int x = 0; x < WIDTH; x++)
+				{
+					yield return this[x, y];
+				}
 			}
 		}
 		
 		private bool NearOcean(int x, int y)
 		{
 			for (int relY = -1; relY <= 1; relY++)
-			for (int relX = -1; relX <= 1; relX++)
 			{
-				if (Math.Abs(relX) == Math.Abs(relY)) continue;
-				if (_tiles[x + relX, y + relY] is Ocean) return true;
+				for (int relX = -1; relX <= 1; relX++)
+				{
+					if (Math.Abs(relX) == Math.Abs(relY)) continue;
+					if (_tiles[x + relX, y + relY] is Ocean) return true;
+				}
 			}
 			return false;
 		}
@@ -116,21 +126,14 @@ namespace CivOne
 		{
 			get
 			{
-				if (y < 0 || y >= HEIGHT) return null;
+				// CW: this if-case happens a lot! So a lot of code is dealing with null, althouth property is not nullable. 
+				// Possible code smell but to large to refactor right now. 
+				if (y < 0 || y >= HEIGHT) return null; 
 				
 				while (x < 0) x += WIDTH;
-				x = (x % WIDTH);
+				x %= WIDTH;
 				
 				return _tiles[x, y];
-			}
-			private set
-			{
-				while (x < 0) x += WIDTH;
-				while (y < 0) y += HEIGHT;
-				x = (x % WIDTH);
-				y = (y % HEIGHT);
-				
-				_tiles[x, y] = value;
 			}
 		}
 		
@@ -152,9 +155,11 @@ namespace CivOne
 				ITile[,] output = new ITile[width, height];
 				
 				for (int yy = y; yy < y + height; yy++)
-				for (int xx = x; xx < x + width; xx++)
 				{
-					output[xx - x, yy - y] = this[xx, yy];
+					for (int xx = x; xx < x + width; xx++)
+					{
+						output[xx - x, yy - y] = this[xx, yy];
+					}
 				}
 				
 				return output;

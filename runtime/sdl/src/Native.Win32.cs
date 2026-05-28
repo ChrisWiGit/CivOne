@@ -49,7 +49,7 @@ namespace CivOne
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
-		private struct BROWSEINFO 
+		private struct BrowseInfo 
 		{
 			public IntPtr hwndOwner;
 			public IntPtr pidlRoot;
@@ -64,25 +64,30 @@ namespace CivOne
 
 		private delegate int BrowseCallbackProc(IntPtr hwnd, int uMsg, IntPtr lParam, IntPtr lpData);
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
 		[DllImport("shell32.dll")]
-		private static extern IntPtr SHBrowseForFolder(ref BROWSEINFO lpbi);
+		private static extern IntPtr SHBrowseForFolder(ref BrowseInfo lpbi);
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
 		[DllImport("shell32.dll", CharSet=CharSet.Unicode)]
 		private static extern bool SHGetPathFromIDList(IntPtr pidl, IntPtr pszPath);
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
 		[DllImport("user32.dll")]
 		public static extern int ShowCursor(bool bShow);
 
-		private static string Win32FolderBrowser(string caption)
+		private static string? Win32FolderBrowser(string caption)
 		{
-			ShowCursor();
 			// MAX_PATH = 260 Unicode characters = 520 bytes. The old 256-byte buffer
 			// was only 128 chars and caused heap corruption for longer paths.
-			IntPtr bufferAddress = Marshal.AllocHGlobal(MAX_PATH * 2);
+			IntPtr bufferAddress = IntPtr.Zero;
 			IntPtr pidl = IntPtr.Zero;
 			try
 			{
-				BROWSEINFO browseInfo = new BROWSEINFO()
+				ShowCursor();
+				bufferAddress = Marshal.AllocHGlobal(MAX_PATH * 2);
+
+				BrowseInfo browseInfo = new()
 				{
 					hwndOwner = IntPtr.Zero,
 					pidlRoot = IntPtr.Zero,
@@ -98,12 +103,13 @@ namespace CivOne
 					return null;
 				}
 
-				HideCursor();
 				return Marshal.PtrToStringUni(bufferAddress);
 			}
 			finally
 			{
-				Marshal.FreeHGlobal(bufferAddress);
+				HideCursor();
+				if (bufferAddress != IntPtr.Zero)
+					Marshal.FreeHGlobal(bufferAddress);
 				if (pidl != IntPtr.Zero)
 					Marshal.FreeCoTaskMem(pidl);
 			}
@@ -119,7 +125,7 @@ namespace CivOne
 			shortcut.SetIconLocation(icon, 0);
 
 			string filename = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"{name}.lnk");
-			(shortcut as IPersistFile).Save(filename, false);
+			((IPersistFile)shortcut).Save(filename, false);
 			return File.Exists(filename);
 		}
 
@@ -135,7 +141,7 @@ namespace CivOne
 		private const int OFN_NOCHANGEDIR = 0x00000008;
 
 		[ StructLayout( LayoutKind.Sequential, CharSet=CharSet.Unicode )]  
-		internal struct OPENFILENAME
+		internal struct OpenFilename
 		{
 			public int lStructSize;
 			public IntPtr hwndOwner;
@@ -169,13 +175,16 @@ namespace CivOne
 			public int FlagsEx;
 		}
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
 		[DllImport("comdlg32.dll", CharSet = CharSet.Unicode)]
-		private static extern bool GetOpenFileName(ref OPENFILENAME ofn);
+		private static extern bool GetOpenFileName(ref OpenFilename ofn);
 
+		[DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
 		[DllImport("comdlg32.dll", CharSet = CharSet.Unicode)]
-		private static extern bool GetSaveFileName(ref OPENFILENAME ofn);
+		private static extern bool GetSaveFileName(ref OpenFilename ofn);
 
 		// CommDlgExtendedError
+		[DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
 		[DllImport("comdlg32.dll", CharSet = CharSet.Unicode)]
 		private static extern int CommDlgExtendedError();
 
@@ -185,7 +194,7 @@ namespace CivOne
 			if (string.IsNullOrWhiteSpace(filter))
 				return "All Files (*.*)\0*.*\0\0";
 
-			string normalized = filter.Replace("|", "\0").TrimEnd('\0');
+			string normalized = filter.Replace("|", "\0", StringComparison.Ordinal).TrimEnd('\0');
 			return normalized + "\0\0";
 		}
 
@@ -214,9 +223,9 @@ namespace CivOne
 
 				string nativeFilter = BuildNativeFilter(filter);
 
-				OPENFILENAME ofn = new OPENFILENAME
+				OpenFilename ofn = new()
 				{
-					lStructSize = Marshal.SizeOf(typeof(OPENFILENAME)),
+					lStructSize = Marshal.SizeOf(typeof(OpenFilename)),
 					hwndOwner = ownerHwnd,
 					hInstance = IntPtr.Zero,
 					lpstrInitialDir = null,

@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System.Threading;
 using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Graphics.Sprites;
@@ -18,264 +19,123 @@ namespace CivOne.Graphics
 	internal class Icons
 	{
 		private static Resources Resources => Resources.Instance;
+
+		private const string Filename = "SP257";
 		private static IBitmap _food;
-		public static IBitmap Food
+		public static IBitmap Food => LazyInitializer.EnsureInitialized(ref _food, () =>
 		{
-			get
-			{
-				if (_food == null)
-				{
-					if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists("SP257"))
-					{
-						_food = new Picture(Free.Instance.Food, Common.GetPalette256);
-					}
-					else
-					{
-						_food = Resources["SP257"][128, 32, 8, 8]
-							.ColourReplace(3, 0)
-							.FillRectangle(0, 0, 1, 8, 0);
-					}
-				}
-				return _food;
-			}
-		}
+			if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists(Filename))
+				return new Picture(Free.Food, Common.GetPalette256);
+			return Resources[Filename][128, 32, 8, 8]
+				.ColourReplace(3, 0)
+				.FillRectangle(0, 0, 1, 8, 0);
+		});
 
 		private static IBitmap _foodLoss;
-		public static IBitmap FoodLoss
-		{
-			get
-			{
-				if (_foodLoss == null)
-				{
-					_foodLoss = Resources["SP257"][128, 32, 8, 8]
-						.ColourReplace((3, 0), (15, 5))
-						.FillRectangle(0, 0, 1, 8, 0);
-				}
-				return _foodLoss;
-			}
-		}
+		public static IBitmap FoodLoss => LazyInitializer.EnsureInitialized(ref _foodLoss, () =>
+			Resources[Filename][128, 32, 8, 8]
+				.ColourReplace((3, 0), (15, 5))
+				.FillRectangle(0, 0, 1, 8, 0));
 		
 		private static IBitmap _shield;
-		public static IBitmap Shield
+		public static IBitmap Shield => LazyInitializer.EnsureInitialized(ref _shield, () =>
 		{
-			get
-			{
-				if (_shield == null)
-				{
-					if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists("SP257"))
-					{
-						_shield = new Picture(Free.Instance.Shield, Common.GetPalette256);
-					}
-					else
-					{
-						_shield = Resources["SP257"][136, 32, 8, 8].ColourReplace(3, 0);
-					}
-				}
-				return _shield;
-			}
-		}
+			if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists(Filename))
+				return new Picture(Free.Shield, Common.GetPalette256);
+			return Resources[Filename][136, 32, 8, 8].ColourReplace(3, 0);
+		});
 
 		private static IBitmap _smokeStack;
-		public static IBitmap SmokeStack
+		public static IBitmap SmokeStack => LazyInitializer.EnsureInitialized(ref _smokeStack, () =>
 		{
-			get
-			{
-				if (_smokeStack == null)
-				{
-					if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists("SP257"))
-					{
-						_smokeStack = new Picture(Free.Instance.Shield, Common.GetPalette256);
-					}
-					else
-					{
-						_smokeStack = Resources["SP257"][50, 32, 62-50, 46-32].ColourReplace(3, 0);
-					}
-				}
-				return _smokeStack;
-			}
-		}
+			if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists(Filename))
+				return new Picture(Free.Shield, Common.GetPalette256);
+			return Resources[Filename][50, 32, 62-50, 46-32].ColourReplace(3, 0);
+		});
 		
 		private static IBitmap _shieldLoss;
-		public static IBitmap ShieldLoss
-		{
-			get
-			{
-				if (_shieldLoss == null)
-				{
-					_shieldLoss = Resources["SP257"][136, 32, 8, 8].ColourReplace((3, 0), (15, 5));
-				}
-				return _shieldLoss;
-			}
-		}
+		public static IBitmap ShieldLoss => LazyInitializer.EnsureInitialized(ref _shieldLoss, () =>
+			Resources[Filename][136, 32, 8, 8].ColourReplace((3, 0), (15, 5)));
 		
 		private static IBitmap _trade;
-		public static IBitmap Trade
+		public static IBitmap Trade => LazyInitializer.EnsureInitialized(ref _trade, () =>
 		{
-			get
-			{
-				if (_trade == null)
-				{
-					if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists("SP257"))
-					{
-						_trade = new Picture(Free.Instance.Trade, Common.GetPalette256);
-					}
-					else
-					{
-						_trade = Resources["SP257"][144, 32, 8, 8].ColourReplace(3, 0);
-					}
-				}
-				return _trade;
-			}
-		}
+			if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists(Filename))
+				return new Picture(Free.Trade, Common.GetPalette256);
+			return Resources[Filename][144, 32, 8, 8].ColourReplace(3, 0);
+		});
 
 		private static IBitmap _corruption;
-		public static IBitmap Corruption
-		{
-			get
-			{
-				if (_corruption == null)
-				{
-					_corruption = Resources["SP257"][144, 32, 8, 8].ColourReplace((3, 0), (15, 5));
-				}
-				return _corruption;
-			}
-		}
+		public static IBitmap Corruption => LazyInitializer.EnsureInitialized(ref _corruption, () =>
+			Resources[Filename][144, 32, 8, 8].ColourReplace((3, 0), (15, 5)));
 		
 		private static IBitmap _unhappy;
-		public static IBitmap Unhappy
-		{
-			get
-			{
-				if (_unhappy == null)
-				{
-					_unhappy = Resources["SP257"][136, 40, 8, 8].ColourReplace(3, 0);
-				}
-				return _unhappy;
-			}
-		}
+		public static IBitmap Unhappy => LazyInitializer.EnsureInitialized(ref _unhappy, () =>
+			Resources[Filename][136, 40, 8, 8].ColourReplace(3, 0));
 		
 		private static IBitmap _luxuries;
-		public static IBitmap Luxuries
+		public static IBitmap Luxuries => LazyInitializer.EnsureInitialized(ref _luxuries, () =>
 		{
-			get
-			{
-				if (_luxuries == null)
-				{
-					if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists("SP257"))
-					{
-						_luxuries = new Picture(Free.Instance.Luxuries, Common.GetPalette256);
-					}
-					else
-					{
-						_luxuries = Resources["SP257"][144, 40, 8, 8].ColourReplace(3, 0);
-					}
-				}
-				return _luxuries;
-			}
-		}
+			if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists(Filename))
+				return new Picture(Free.Luxuries, Common.GetPalette256);
+			return Resources[Filename][144, 40, 8, 8].ColourReplace(3, 0);
+		});
 		
 		private static IBitmap _taxes;
-		public static IBitmap Taxes
+		public static IBitmap Taxes => LazyInitializer.EnsureInitialized(ref _taxes, () =>
 		{
-			get
-			{
-				if (_taxes == null)
-				{
-					if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists("SP257"))
-					{
-						_taxes = new Picture(Free.Instance.Taxes, Common.GetPalette256);
-					}
-					else
-					{
-						_taxes = Resources["SP257"][152, 32, 8, 8].ColourReplace(3, 0);
-					}
-				}
-				return _taxes;
-			}
-		}
+			if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists(Filename))
+				return new Picture(Free.Taxes, Common.GetPalette256);
+			return Resources[Filename][152, 32, 8, 8].ColourReplace(3, 0);
+		});
 		
 		private static IBitmap _science;
-		public static IBitmap Science
+		public static IBitmap Science => LazyInitializer.EnsureInitialized(ref _science, () =>
 		{
-			get
-			{
-				if (_science == null)
-				{
-					if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists("SP257"))
-					{
-						_science = new Picture(Free.Instance.Science, Common.GetPalette256);
-					}
-					else
-					{
-						_science = Resources["SP257"][128, 40, 8, 8].ColourReplace(3, 0);
-					}
-				}
-				return _science;
-			}
-		}
+			if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists(Filename))
+				return new Picture(Free.Science, Common.GetPalette256);
+			return Resources[Filename][128, 40, 8, 8].ColourReplace(3, 0);
+		});
 		
 		private static IBitmap _spy;
-		public static IBitmap Spy
+		public static IBitmap Spy => LazyInitializer.EnsureInitialized(ref _spy, () =>
 		{
-			get
-			{
-				if (_spy == null)
-				{
-					if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists("SP299"))
-					{
-						_spy = new Picture(Free.Instance.PanelGrey, Common.GetPalette256);
-					}
-					else
-					{
-						_spy = Resources["SP299"][160, 142, 40, 52].ColourReplace(3, 0);
-					}
-				}
-				return _spy;
-			}
-		}
+			if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists("SP299"))
+				return new Picture(Free.Instance.PanelGrey, Common.GetPalette256);
+			return Resources["SP299"][160, 142, 40, 52].ColourReplace(3, 0);
+		});
 		
 		private static IBitmap _newspaper;
-		public static IBitmap Newspaper
-		{
-			get
-			{
-				if (_newspaper == null)
-				{
-					_newspaper = Resources["SP257"][176, 128, 32, 16];
-				}
-				return _newspaper;
-			}
-		}
+		public static IBitmap Newspaper => LazyInitializer.EnsureInitialized(ref _newspaper, () =>
+			Resources[Filename][176, 128, 32, 16]);
 
 		private static IBitmap _sellButton;
-		public static IBitmap SellButton
+		public static IBitmap SellButton => LazyInitializer.EnsureInitialized(ref _sellButton, () =>
 		{
-			get
-			{
-				if (_sellButton == null)
-				{
-					byte[] bytemap = new byte[] {
-						0,  0,  5,  5,  5,  0,  0,  0,
-						0,  5, 15, 15, 15,  5,  0,  0,
-						5, 15, 12, 12, 12, 15,  5,  0,
-						5, 15, 12, 12, 12, 15,  5,  0,
-						5, 15, 12, 12, 12, 15,  5,  0,
-						0,  5, 15, 15, 15,  5,  0,  0,
-						0,  0,  5,  5,  5,  0,  0,  0
-					};
-					_sellButton = new Picture(8, 7, bytemap, Food.Palette);
-				}
-				return _sellButton;
-			}
-		}
+			byte[] bytemap = new byte[] {
+				0,  0,  5,  5,  5,  0,  0,  0,
+				0,  5, 15, 15, 15,  5,  0,  0,
+				5, 15, 12, 12, 12, 15,  5,  0,
+				5, 15, 12, 12, 12, 15,  5,  0,
+				5, 15, 12, 12, 12, 15,  5,  0,
+				0,  5, 15, 15, 15,  5,  0,  0,
+				0,  0,  5,  5,  5,  0,  0,  0
+			};
+			return new Picture(8, 7, bytemap, Food.Palette);
+		});
 
+		private static readonly object _helperArrowLock = new object();
 		private static IBitmap[] _helperArrow;
 		public static IBitmap HelperArrow(Direction direction)
 		{
 			if (_helperArrow == null)
 			{
-				_helperArrow = new IBitmap[4];
-				_helperArrow[0] = new Picture(16, 16, new byte[] {
+				lock (_helperArrowLock)
+				{
+					if (_helperArrow == null)
+					{
+						IBitmap[] arrows = new IBitmap[4];
+						arrows[0] = new Picture(16, 16, new byte[] {
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,
@@ -292,8 +152,8 @@ namespace CivOne.Graphics
 					0,  0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-				}, Food.Palette);
-				_helperArrow[1] = new Picture(16, 16, new byte[] {
+						}, Food.Palette);
+						arrows[1] = new Picture(16, 16, new byte[] {
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,  0,  0,
@@ -310,8 +170,8 @@ namespace CivOne.Graphics
 					0,  0,  0,  0,  0,  0,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-				}, Food.Palette);
-				_helperArrow[2] = new Picture(16, 16, new byte[] {
+						}, Food.Palette);
+						arrows[2] = new Picture(16, 16, new byte[] {
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  5,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -328,8 +188,8 @@ namespace CivOne.Graphics
 					0,  0,  0,  0,  0,  0,  0,  5,  0,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-				}, Food.Palette);
-				_helperArrow[3] = new Picture(16, 16, new byte[] {
+						}, Food.Palette);
+						arrows[3] = new Picture(16, 16, new byte[] {
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  0,  5,  0,  0,  0,  0,  0,  0,  0,
@@ -346,7 +206,10 @@ namespace CivOne.Graphics
 					0,  0,  0,  0,  0,  0,  0,  0,  5,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-				}, Food.Palette);
+						}, Food.Palette);
+						_helperArrow = arrows;
+					}
+				}
 			}
 
 			switch (direction)
@@ -359,42 +222,50 @@ namespace CivOne.Graphics
 			return null;
 		}
 
+		private static readonly object _citizenLock = new object();
 		private static IBitmap[] _citizen = new Picture[9];
 		public static IBitmap Citizen(Citizen citizen)
 		{
-			if (_citizen[(int)citizen] == null)
+			int idx = (int)citizen;
+			if (_citizen[idx] != null) return _citizen[idx];
+			lock (_citizenLock)
 			{
-				_citizen[(int)citizen] = Resources["SP257"][(8 * (int)citizen), 128, 8, 16];
+				_citizen[idx] ??= Resources[Filename][(8 * idx), 128, 8, 16];
 			}
-			return _citizen[(int)citizen];
+			return _citizen[idx];
 		}
 
+		private static readonly object _lampLock = new object();
 		private static IBitmap[] _lamp = new Picture[4];
 		public static IBitmap Lamp(int stage)
 		{
 			if (stage < 0 || stage > 3)
 				return null;
-			
-			if (_lamp[stage] == null)
+
+			if (_lamp[stage] != null) return _lamp[stage];
+			lock (_lampLock)
 			{
-				_lamp[stage] = Resources["SP257"][128 + (8 * stage), 48, 8, 8];
+				_lamp[stage] ??= Resources[Filename][128 + (8 * stage), 48, 8, 8];
 			}
 			return _lamp[stage];
 		}
 
+		private static readonly object _sunLock = new object();
 		private static IBitmap[] _sun = new Picture[4];
 		public static IBitmap Sun(int stage)
 		{
 			if (stage < 0 || stage > 3)
 				return null;
-			
-			if (_sun[stage] == null)
+
+			if (_sun[stage] != null) return _sun[stage];
+			lock (_sunLock)
 			{
-				_sun[stage] = Resources["SP257"][130 + (8 * stage), 58, 6, 6];
+				_sun[stage] ??= Resources[Filename][130 + (8 * stage), 58, 6, 6];
 			}
 			return _sun[stage];
 		}
 
+		private static readonly object _governmentPortraitLock = new object();
 		private static IBitmap[,] _governmentPortrait = new Picture[7, 4];
 		public static IBitmap GovernmentPortrait(IGovernment government, Advisor advisor, bool modern)
 		{
@@ -420,9 +291,14 @@ namespace CivOne.Graphics
 				governmentId = (modern ? 1 : 0);
 				filename = "GOVT0" + (modern ? "M" : "A");
 			}
-			if (_governmentPortrait[governmentId, (int)advisor] == null)
-				_governmentPortrait[governmentId, (int)advisor] = Resources[filename][(40 * (int)advisor), 0, 40, 60];
-			return _governmentPortrait[governmentId, (int)advisor];
+			int advisorId = (int)advisor;
+			if (_governmentPortrait[governmentId, advisorId] != null)
+				return _governmentPortrait[governmentId, advisorId];
+			lock (_governmentPortraitLock)
+			{
+				_governmentPortrait[governmentId, advisorId] ??= Resources[filename][(40 * advisorId), 0, 40, 60];
+			}
+			return _governmentPortrait[governmentId, advisorId];
 		}
 
 		public static IBitmap City(City city, bool smallFont = false)
@@ -441,9 +317,9 @@ namespace CivOne.Graphics
 				.FillRectangle(2, 2, 12, 12, Common.ColourLight[city.Owner]);
 			
 			IBitmap resource;
-			if (Resources.Exists("SP257"))
+			if (Resources.Exists(Filename))
 			{
-				resource = Resources["SP257"][192, 112, 16, 16];
+				resource = Resources[Filename][192, 112, 16, 16];
 			}
 			else
 			{

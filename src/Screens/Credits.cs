@@ -356,7 +356,7 @@ namespace CivOne.Screens
 		private void CreateMenu()
 		{
 			_allowEnterSetup = false;
-			Runtime.WindowTitle = Settings.WindowTitle;
+			Runtime.SetWindowTitle(Settings.WindowTitle);
 
 			if (HasMenu) return;
 			Menu menu = new Menu("MainMenu", Palette)
@@ -565,13 +565,13 @@ namespace CivOne.Screens
 
 		public Credits()
 		{
-			Runtime.WindowTitle = $"{Settings.WindowTitle} (press SHIFT+F1 to enter Setup)";
+			Runtime.SetWindowTitle($"{Settings.WindowTitle} (press SHIFT+F1 to enter Setup)");
 
 			OnResize += Resize;
 			Closed += (s, a) =>
 			{
 				TranslationServiceFactory.UnregisterLanguageObserver(this);
-				Runtime.WindowTitle = Settings.WindowTitle;
+				Runtime.SetWindowTitle(Settings.WindowTitle);
 			};
 			TranslationServiceFactory.RegisterLanguageObserver(this);
 

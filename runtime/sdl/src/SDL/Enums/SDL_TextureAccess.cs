@@ -9,9 +9,11 @@
 
 namespace CivOne
 {
+	#pragma warning disable S101 // Types should be named in PascalCase - but these are named to match SDL as a name.
 	internal static partial class SDL
 	{
-		public enum SDL_TextureAccess : int
+		#pragma warning disable S2342 // Keep case sensitive to match SDL as a name.
+		public enum SDL_TextureAccess
 		{
 			SDL_TEXTUREACCESS_STATIC,
 			SDL_TEXTUREACCESS_STREAMING,

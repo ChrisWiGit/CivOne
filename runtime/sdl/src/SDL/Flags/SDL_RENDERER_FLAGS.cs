@@ -11,9 +11,11 @@ using System;
 
 namespace CivOne
 {
+	#pragma warning disable S101 // Types should be named in PascalCase - but these are named to match SDL as a name.
 	internal static partial class SDL
 	{
 		[Flags]
+		#pragma warning disable S2342,S2344
 		private enum SDL_RENDERER_FLAGS : uint
 		{
 			SDL_RENDERER_SOFTWARE = 0x1,

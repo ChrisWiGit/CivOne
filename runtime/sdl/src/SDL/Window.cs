@@ -11,6 +11,7 @@ using CivOne.Graphics;
 using CivOne.IO;
 using System;
 using System.Drawing;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -18,6 +19,7 @@ using System.Threading;
 
 namespace CivOne
 {
+	#pragma warning disable S101 // Types should be named in PascalCase - but these are named to match SDL as a name.
 	internal static partial class SDL
 	{
 		internal abstract partial class Window : IDisposable
@@ -36,6 +38,12 @@ namespace CivOne
 			protected Texture CreateTexture(IBitmap bitmap) => new Texture(_renderer, bitmap?.Palette, bitmap?.Bitmap);
 			protected Texture CreateTexture(Palette palette, Bytemap bytemap) => new Texture(_renderer, palette, bytemap);
 
+			/// <summary>
+			/// Creates an empty streaming texture for the render-loop layer cache.
+			/// Caller is responsible for refilling it via <see cref="Texture.UpdateFrom"/>.
+			/// </summary>
+			protected Texture CreateLayerTexture(int width, int height) => new(_renderer, width, height);
+
 			protected void Clear(Color color)
 			{
 				_redraw = true;
@@ -49,14 +57,15 @@ namespace CivOne
 				_running = false;
 			}
 
-			private T CastToStruct<T>(object source) where T : struct
-			{
-				IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf(source.GetType()));
-				Marshal.StructureToPtr(source, ptr, false);
-				T output = Marshal.PtrToStructure<T>(ptr);
-				Marshal.FreeHGlobal(ptr);
-				return output;
-			}
+			/// <summary>
+			/// Reinterprets SDL_Event as the requested sub-struct type (e.g., SDL_WindowEvent, SDL_KeyboardEvent).
+			/// Uses Unsafe.As for zero-allocation casting instead of AllocHGlobal + StructureToPtr + FreeHGlobal roundtrip.
+			/// Safe because SDL_Event is an unsafe struct union with LayoutKind.Sequential,
+			/// and all sub-types have compatible field layouts (EventType/Type at offset 0).
+			/// Performance note: eliminates allocation per SDL event; prior version allocated ~64 bytes on heap per event.
+			/// </summary>
+			private static T CastToStruct<T>(SDL_Event source) where T : struct
+				=> Unsafe.As<SDL_Event, T>(ref source);
 
 			private void HandleEvent(SDL_Event sdlEvent)
 			{
@@ -107,7 +116,7 @@ namespace CivOne
 				SDL_SetWindowTitle(_handle, _sdlTitle);
 			}
 
-			private bool HitDebugKeys(SDL_Event sdlEvent, SDL_Scancode scancode)
+			private static bool HitDebugKeys(SDL_Event sdlEvent, SDL_Scancode scancode)
 			{
 				if (sdlEvent.SDL_EventType != SDL_EventType.SDL_KEYDOWN) return false;
 
@@ -116,44 +125,61 @@ namespace CivOne
 					(keyboardEvent.KeySym.Modifier & (SDL_KMOD.KMOD_LSHIFT | SDL_KMOD.KMOD_RSHIFT)) != 0 &&
 					(keyboardEvent.KeySym.Modifier & (SDL_KMOD.KMOD_LCTRL | SDL_KMOD.KMOD_RCTRL)) != 0)
 				{
-					sdlEvent.SDL_EventType = SDL_EventType.SDL_MIN;
 					return true;
 				}
 				return false;
 			}
 
-			private void TrapDebbugger(SDL_Event sdlEvent)
+			private bool ProcessPendingEvents()
+			{
+				while (SDL_PollEvent(out SDL_Event sdlEvent) == 1)
+				{
+					// Split debug hotkeys from normal events: F10/F9 may swallow input,
+					// but F12 still runs after HandleEvent to preserve original flow.
+					if (HandleDebuggingEvents(sdlEvent))
+					{
+						continue;
+					}
+
+					HandleEvent(sdlEvent);
+
+					if (!_running)
+					{
+						return false;
+					}
+
+					TrapDebugger(sdlEvent);
+				}
+
+				return true;
+			}
+
+			private static void TrapDebugger(SDL_Event sdlEvent)
 			{
 #if DEBUG
 				if (HitDebugKeys(sdlEvent, SDL_Scancode.SDL_SCANCODE_F12))
-				{
-					sdlEvent.SDL_EventType = SDL_EventType.SDL_MIN;
-
 					System.Diagnostics.Debugger.Break();
-				}
 #endif
 			}
 
-			private int _eventLoopWaitCounter = 0;
+			private int _eventLoopWaitCounter;
 
 
-			private void HandleDebuggingEvents(SDL_Event sdlEvent)
+			private bool HandleDebuggingEvents(SDL_Event sdlEvent)
 			{
 #if DEBUG
 				if (HitDebugKeys(sdlEvent, SDL_Scancode.SDL_SCANCODE_F10))
 				{
 					_eventLoopWaitCounter += 1;
 					Log($"Increased event loop wait counter to {_eventLoopWaitCounter} ms");
-
-					sdlEvent.SDL_EventType = SDL_EventType.SDL_MIN;
+					return true;
 				}
 				else if (_eventLoopWaitCounter > 0 && HitDebugKeys(sdlEvent, SDL_Scancode.SDL_SCANCODE_F9))
 				{
 					_eventLoopWaitCounter -= 1;
 					_eventLoopWaitCounter = Math.Max(0, _eventLoopWaitCounter);
 					Log($"Decreased event loop wait counter to {_eventLoopWaitCounter} ms");
-
-					sdlEvent.SDL_EventType = SDL_EventType.SDL_MIN;
+					return true;
 				}
 
 				if (_eventLoopWaitCounter > 0)
@@ -161,6 +187,7 @@ namespace CivOne
 					Wait((uint)_eventLoopWaitCounter);
 				}
 #endif
+				return false;
 			}
 
 			public void Run()
@@ -169,19 +196,9 @@ namespace CivOne
 
 				while (_running)
 				{
-					if (SDL_PollEvent(out SDL_Event sdlEvent) == 1)
+					if (!ProcessPendingEvents())
 					{
-						HandleDebuggingEvents(sdlEvent);
-
-						HandleEvent(sdlEvent);
-
-						if (!_running)
-						{
-							// fast exit, if the window was closed
-							break;
-						}
-
-						TrapDebbugger(sdlEvent);
+						break;
 					}
 
 					if (_paused)
@@ -208,7 +225,7 @@ namespace CivOne
 				}
 			}
 
-			public void Wait(uint time)
+			public static void Wait(uint time)
 			{
 				SDL_Delay(time);
 			}
@@ -226,8 +243,8 @@ namespace CivOne
 			{
 				get
 				{
-					SDL_GetWindowSize(_handle, out _, out int width);
-					return width;
+					SDL_GetWindowSize(_handle, out _, out int height);
+					return height;
 				}
 			}
 
@@ -274,33 +291,39 @@ namespace CivOne
 				}
 			}
 
-			public IBitmap Icon
+			public void SetIcon(IBitmap value)
 			{
-				set
+				ArgumentNullException.ThrowIfNull(value);
+
+				int width = value.Width(), height = value.Height();
+				byte[] bytes = new byte[width * height * 4];
+
+				int i = 0;
+				for (int yy = 0; yy < height; yy++)
 				{
-					int width = value.Width(), height = value.Height();
-					byte[] bytes = new byte[width * height * 4];
-
-					int i = 0;
-					for (int yy = 0; yy < width; yy++)
-						for (int xx = 0; xx < width; xx++)
-						{
-							Colour colour = value.Palette[value.Bitmap[xx, yy]];
-							bytes[i++] = colour.A;
-							bytes[i++] = colour.R;
-							bytes[i++] = colour.G;
-							bytes[i++] = colour.B;
-						}
-
-					IntPtr pixels = Marshal.AllocHGlobal(bytes.Length);
+					for (int xx = 0; xx < width; xx++)
+					{
+						Colour colour = value.Palette[value.Bitmap[xx, yy]];
+						bytes[i++] = colour.A;
+						bytes[i++] = colour.R;
+						bytes[i++] = colour.G;
+						bytes[i++] = colour.B;
+					}
+				}
+				IntPtr pixels = Marshal.AllocHGlobal(bytes.Length);
+				IntPtr surface = IntPtr.Zero;
+				try
+				{
 					Marshal.Copy(bytes, 0, pixels, bytes.Length);
-
-					IntPtr surface = SDL_CreateRGBSurfaceFrom(pixels, width, height, 32, width * 4, 0x0000ff00, 0x00ff0000, 0xff000000, 0x000000ff);
-
-					SDL_SetWindowIcon(_handle, surface);
-
-					SDL_FreeSurface(surface);
-
+					surface = SDL_CreateRGBSurfaceFrom(pixels, width, height, 32, width * 4, 0x0000ff00, 0x00ff0000, 0xff000000, 0x000000ff);
+					if (surface != IntPtr.Zero)
+					{
+						SDL_SetWindowIcon(_handle, surface);
+					}
+				}
+				finally
+				{
+					if (surface != IntPtr.Zero) SDL_FreeSurface(surface);
 					Marshal.FreeHGlobal(pixels);
 				}
 			}
@@ -310,28 +333,22 @@ namespace CivOne
 				_title = title;
 
 				if (SDL_Init(SDL_INIT.VIDEO | SDL_INIT.AUDIO) < 0)
-				{
-					Log("Could not initialize SDL");
-					return;
-				}
+					throw new InvalidOperationException($"SDL_Init failed: {GetSdlErrorMessage()}");
 
 				SDL_WINDOW flags = SDL_WINDOW.RESIZABLE;
 
-				// ReSharper disable once AssignmentInConditionalExpression
-				if (_fullscreen = fullscreen)
+				_fullscreen = fullscreen;
+				if (fullscreen)
 					flags |= SDL_WINDOW.FULLSCREEN_DESKTOP;
 
 				_handle = SDL_CreateWindow(title, 100, 100, width, height, flags);
+				if (_handle == IntPtr.Zero)
+					throw new InvalidOperationException($"SDL_CreateWindow failed: {GetSdlErrorMessage()}");
+
 				_renderer = softwareRender ? IntPtr.Zero : SDL_CreateRenderer(_handle, -1, SDL_RENDERER_FLAGS.SDL_RENDERER_ACCELERATED);
 				if (_renderer == IntPtr.Zero)
 				{
 					_renderer = SDL_CreateRenderer(_handle, -1, SDL_RENDERER_FLAGS.SDL_RENDERER_SOFTWARE);
-				}
-
-				if (_handle == IntPtr.Zero)
-				{
-					Log("Something is wrong");
-					return;
 				}
 
 				// Should be default, just to be sure
@@ -362,7 +379,7 @@ namespace CivOne
 				return new Size(r.w, r.h);
 			}
 
-			protected bool IsPointInAnyDisplay(int x, int y)
+			protected static bool IsPointInAnyDisplay(int x, int y)
 			{
 				int displays = SDL_GetNumVideoDisplays();
 				if (displays <= 0)
@@ -386,10 +403,29 @@ namespace CivOne
 				return false;
 			}
 
+			private bool _disposed;
+
 			public void Dispose()
 			{
-				SDL_DestroyRenderer(_renderer);
-				SDL_DestroyWindow(_handle);
+				Dispose(true);
+				GC.SuppressFinalize(this);
+			}
+
+			~Window() => Dispose(false);
+
+			protected virtual void Dispose(bool disposing)
+			{
+				if (_disposed) return;
+				_disposed = true;
+
+				if (disposing)
+				{
+					// Ensure active sound is released before SDL audio is shut down.
+					StopSound();
+				}
+
+				if (_renderer != IntPtr.Zero) SDL_DestroyRenderer(_renderer);
+				if (_handle != IntPtr.Zero) SDL_DestroyWindow(_handle);
 				SDL_Quit();
 			}
 		}

@@ -159,15 +159,15 @@ namespace CivOne.UnitTests
 			public Platform CurrentPlatform => Platform.Linux;
 			public string StorageDirectory => Path.Combine(Path.GetTempPath(), "CivOneTests", Guid.NewGuid().ToString("N"));
 			public RuntimeSettings Settings { get; } = new RuntimeSettings();
-			public MouseCursor CurrentCursor { set { } }
 			public Bytemap[] Layers { get; set; }
 			public Palette Palette { get; set; }
-			public IBitmap Cursor { set { } }
 			public int CanvasWidth => 320;
 			public int CanvasHeight => 200;
 			public int WindowWidth => 320;
 			public int WindowHeight => 200;
-			public string WindowTitle { set { } }
+			public void SetCurrentCursor(MouseCursor cursor) { }
+			public void SetCursor(IBitmap cursor) { }
+			public void SetWindowTitle(string title) { }
 
 			public bool TryOpenUrl(string url, out string errorMessage) { errorMessage = null; return false; }
 			public bool TryCopyToClipboard(string text, out string errorMessage) { errorMessage = null; return false; }
@@ -182,7 +182,7 @@ namespace CivOne.UnitTests
 			{
 			}
 
-			public string BrowseFolder(string caption = "") => string.Empty;
+			public string? BrowseFolder(string caption = "") => string.Empty;
 
 			public string FileChooser(bool save, string title, string initialFileName, string filter) => string.Empty;
 

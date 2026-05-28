@@ -362,7 +362,7 @@ namespace CivOne.Screens
 			
 			if (Runtime.Settings.Free || !Resources.Exists("DIFFS"))
 			{
-				_background = new Picture(Free.Instance.Difficulties, Common.GetPalette256);
+				_background = new Picture(Free.Difficulties, Common.GetPalette256);
 			}
 			else
 			{

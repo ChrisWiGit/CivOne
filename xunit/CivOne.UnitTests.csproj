@@ -20,6 +20,13 @@
 		<LangVersion>latest</LangVersion>
 		<RuntimeIdentifiers>win-x86;win-x64;osx-x64;linux-x64</RuntimeIdentifiers>
 	</PropertyGroup>
+	<PropertyGroup>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<AnalysisLevel>latest-all</AnalysisLevel>
+		<Nullable>enable</Nullable>
+		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+		<NoWarn></NoWarn>
+	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(SuppressConsoleLogs)' == 'true'">
 		<DefineConstants>$(DefineConstants);SUPPRESS_CONSOLE_LOGS</DefineConstants>

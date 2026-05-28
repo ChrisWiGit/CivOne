@@ -18,6 +18,9 @@ namespace CivOne
 	{
 		private SDL.Texture CursorTexture = null;
 
+		// Set from any thread when the cursor changes; consumed on the render thread in Draw().
+		private volatile bool _cursorDirty;
+
 		/// <summary>
 		/// Cached SDL textures for each layer of the most recent <see cref="Runtime.InvokeDraw"/> result.
 		/// Re-uploading large bytemaps to GPU memory on every frame is the dominant cost when the
@@ -79,6 +82,37 @@ namespace CivOne
 			}
 		}
 
+		/// <summary>
+		/// Draws the cursor overlay on top of the rendered layers, if a cursor is set.
+		///
+		/// Accounts for the current aspect ratio mode and scale settings to position and size the cursor correctly.
+		/// Both <see cref="AspectRatio.Scaled"/> and <see cref="AspectRatio.ScaledFixed"/> use the same
+		/// scaled-mouse calculation via <c>GetScaleF()</c>.
+		///
+		/// Refactoring note: <c>ScaledFixed</c> previously had a separate branch with commented-out offset
+		/// additions (<c>_mouseX + x1</c>, <c>_mouseY + y1</c>) that were never active.
+		/// After confirming both branches produced identical results, they were merged into one case.
+		/// </summary>
+		/// <param name="x1">The x-coordinate of the top-left corner of the drawing area.</param>
+		/// <param name="y1">The y-coordinate of the top-left corner of the drawing area.</param>
+		private void DrawCursorOverlay(int x1, int y1)
+		{
+			if (CursorTexture == null) return;
+			switch (Settings.AspectRatio)
+			{
+				case AspectRatio.Scaled:
+				case AspectRatio.ScaledFixed:
+					{
+						PointF scaleF = GetScaleF();
+						CursorTexture.Draw((int)(_mouseX * scaleF.X), (int)(_mouseY * scaleF.Y), (int)(CursorTexture.Width * scaleF.X), (int)(CursorTexture.Height * scaleF.Y));
+					}
+					break;
+				default:
+					CursorTexture.Draw(x1 + (_mouseX * ScaleX), y1 + (_mouseY * ScaleY), CursorTexture.Width * ScaleX, CursorTexture.Height * ScaleY);
+					break;
+			}
+		}
+
 		private void Render()
 		{
 			switch(Settings.AspectRatio)
@@ -100,26 +134,9 @@ namespace CivOne
 			foreach (SDL.Texture canvas in _cachedLayerTextures)
 			{
 				canvas.Draw(x1, y1, (x2 - x1), (y2 - y1));
-				
-				switch (Settings.AspectRatio)
-				{
-					case AspectRatio.Scaled:
-						{
-							PointF scaleF = GetScaleF();
-							CursorTexture?.Draw((int)(_mouseX * scaleF.X), (int)(_mouseY * scaleF.Y), (int)(CursorTexture.Width * scaleF.X), (int)(CursorTexture.Height * scaleF.Y));
-						}
-						break;
-					case AspectRatio.ScaledFixed:
-						{
-							PointF scaleF = GetScaleF();
-							CursorTexture?.Draw((int)((_mouseX /*+ x1*/) * scaleF.X), (int)((_mouseY/* + y1*/) * scaleF.Y), (int)(CursorTexture.Width * scaleF.X), (int)(CursorTexture.Height * scaleF.Y));
-						}
-						break;
-					default:
-						CursorTexture?.Draw(x1 + (_mouseX * ScaleX), y1 + (_mouseY * ScaleY), CursorTexture.Width * ScaleX, CursorTexture.Height * ScaleY);
-						break;
-				}
 			}
+
+			DrawCursorOverlay(x1, y1);
 		}
 
 		private Size SetCanvasSize()

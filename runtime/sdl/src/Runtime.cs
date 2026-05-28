@@ -46,8 +46,30 @@ namespace CivOne
 		
 		public RuntimeSettings Settings { get; private set; }
 		public MouseCursor CurrentCursor { internal get; set; }
-		public Bytemap[] Layers { get; set; }
-		public Palette Palette { get; set; }
+		private Bytemap[] _layers = [];
+		public Bytemap[] Layers
+		{
+			get => _layers;
+			set
+			{
+				// Snapshot incoming array and normalize null to empty, so render loop
+				// doesn't race against external callers mutating the same instance.
+				_layers = value is null ? [] : [..value];
+			}
+		}
+		private Palette _palette;
+		public Palette Palette
+		{
+			get => _palette;
+			set
+			{
+				if (_palette == value) return;
+				// Refactor note: dispose the previous palette when swapping instances so unmanaged
+				// buffers are released immediately instead of waiting for GC/finalizer.
+				(_palette as IDisposable)?.Dispose();
+				_palette = value;
+			}
+		}
 		private IBitmap _cursor;
 		public IBitmap Cursor
 		{
@@ -64,21 +86,32 @@ namespace CivOne
 
 		private StreamWriter TryOpenWrite(string path)
 		{
-			// 3 mal versuchen mit 1 sekunde pause dazwischen, 
-			// share mode auf readwrite
 			for (int i = 0; i < 3; i++)
 			{
 				try				
 				{
 					return new StreamWriter(new FileStream(path, FileMode.Append, FileAccess.Write, FileShare.ReadWrite));
 				}
-				catch (IOException)
+				catch (IOException ex) when (IsSharingViolation(ex))
 				{
-					Console.Error.WriteLine($"Failed to open log file for writing (attempt {i + 1}/3): {path}");
-					System.Threading.Thread.Sleep(1000);
+					// Retry only when the file is temporarily locked by another process/handle.
+					Console.Error.WriteLine($"Failed to open log file for writing (attempt {i + 1}/3, sharing violation): {path}");
+					System.Threading.Thread.Sleep(TimeSpan.FromMilliseconds(250));
+				}
+				catch (IOException ex)
+				{
+					Console.Error.WriteLine($"Failed to open log file for writing: {path} ({ex.Message})");
+					return null;
 				}
 			}
 			return null;
+		}
+
+		private static bool IsSharingViolation(IOException ex)
+		{
+			// HRESULT 0x80070020 = ERROR_SHARING_VIOLATION, 0x80070021 = ERROR_LOCK_VIOLATION
+			int code = ex.HResult & 0xFFFF;
+			return code == 32 || code == 33;
 		}
 
         public void Log(string text, params object[] parameters)
@@ -97,12 +130,14 @@ namespace CivOne
 					tw.Close();
 				}
 			}
-			if (Settings?.ConsoleLogging != true)
+			// Re-read once to avoid TOCTOU NPE if Settings is disposed between checks (shutdown race).
+			RuntimeSettings settings = Settings;
+			if (settings?.ConsoleLogging != true)
 			{
 				return;
 			}
 
-			if (Settings.McpEnabled)
+			if (settings.McpEnabled)
 			{
 				Console.Error.WriteLine(text, parameters);
 				Console.Error.Flush();
@@ -117,18 +152,17 @@ namespace CivOne
 		string IRuntime.StorageDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CivOne");
 		string IRuntime.GetSetting(string key) => Profile.GetSetting(key);
 		void IRuntime.SetSetting(string key, string value) => Profile.SetSetting(key, value);
+		void IRuntime.SetCurrentCursor(MouseCursor cursor) => CurrentCursor = cursor;
+		void IRuntime.SetCursor(IBitmap cursor) => Cursor = cursor;
 		int IRuntime.CanvasWidth => CanvasSize.Width;
 		int IRuntime.CanvasHeight => CanvasSize.Height;
 		int IRuntime.WindowWidth => WindowSize.Width;
 		int IRuntime.WindowHeight => WindowSize.Height;
 		
-		string IRuntime.BrowseFolder(string caption) => Native.FolderBrowser(caption);
+		string? IRuntime.BrowseFolder(string caption) => Native.FolderBrowser(caption);
 		string IRuntime.FileChooser(bool save, string title, string initialFileName, string filter) => Native.FileChooser(save, title, initialFileName, filter);
-		string IRuntime.WindowTitle
-		{
-			set => SetWindowTitle?.Invoke(value);
-		}
-		void IRuntime.PlaySound(string filename) => PlaySound?.Invoke(filename);
+		void IRuntime.SetWindowTitle(string title) => SetWindowTitle?.Invoke(title);
+		void IRuntime.PlaySound(string file) => PlaySound?.Invoke(file);
 		void IRuntime.StopSound() => StopSound?.Invoke();
 		bool IRuntime.TryOpenUrl(string url, out string errorMessage) => Native.TryOpenUrl(url, out errorMessage);
 		bool IRuntime.TryCopyToClipboard(string text, out string errorMessage) => Native.TryCopyToClipboard(text, out errorMessage);
@@ -144,7 +178,11 @@ namespace CivOne
 
 		public void Dispose()
 		{
+			if (_disposed) return;
+			_disposed = true;
 			RuntimeHandler.Shutdown();
 		}
+
+		private bool _disposed;
 	}
 }
