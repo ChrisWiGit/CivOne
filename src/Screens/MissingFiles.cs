@@ -35,7 +35,7 @@ namespace CivOne.Screens
 
 		private void Menu_Copy(object sender, EventArgs args)
 		{
-			string path = Runtime.BrowseFolder(Translate("Location of Civilization data files"));
+			string? path = Runtime.BrowseFolder(Translate("Location of Civilization data files"));
 			if (path == null)
 			{
 				// User pressed cancel
