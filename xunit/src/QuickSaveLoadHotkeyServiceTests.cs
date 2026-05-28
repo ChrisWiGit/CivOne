@@ -177,9 +177,20 @@ namespace CivOne.UnitTests
 
 		public void Dispose()
 		{
-			if (Directory.Exists(_storageDirectory))
+			try
 			{
-				Directory.Delete(_storageDirectory, true);
+				if (Directory.Exists(_storageDirectory))
+				{
+					Directory.Delete(_storageDirectory, true);
+				}
+			}
+			catch (IOException)
+			{
+				// best-effort cleanup
+			}
+			catch (UnauthorizedAccessException)
+			{
+				// best-effort cleanup
 			}
 		}
 

@@ -21,18 +21,21 @@ namespace CivOne.Services
 		private readonly Action<string> _showUserErrorAction;
 		private readonly Action<IReadOnlyList<int>, Action<int>> _showQuickLoadMenuAction;
 
+		// Too many parameter.
+		#pragma warning disable S107 
 		public QuickSaveLoadHotkeyService(
 			IRuntime runtime,
 			ITranslationService translationService,
-			IYamlSaveGameServiceFactory yamlSaveGameServiceFactory = null,
-			Action<string, object[]> log = null,
-			Action<string> saveCosAction = null,
-			Func<string, bool> loadCosAction = null,
-			Action rebuildGamePlayAction = null,
-			Func<bool> canQuickSave = null,
-			Action<string> showUserErrorAction = null,
-			Action<IReadOnlyList<int>, Action<int>> showQuickLoadMenuAction = null)
+			IYamlSaveGameServiceFactory? yamlSaveGameServiceFactory = null,
+			Action<string, object[]>? log = null,
+			Action<string>? saveCosAction = null,
+			Func<string, bool>? loadCosAction = null,
+			Action? rebuildGamePlayAction = null,
+			Func<bool>? canQuickSave = null,
+			Action<string>? showUserErrorAction = null,
+			Action<IReadOnlyList<int>, Action<int>>? showQuickLoadMenuAction = null)
 		{
+			yamlSaveGameServiceFactory ??= new YamlSaveGameServiceFactory();
 			_runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
 			_translation = translationService ?? throw new ArgumentNullException(nameof(translationService));
 			if (saveCosAction == null && yamlSaveGameServiceFactory == null)
@@ -157,7 +160,7 @@ namespace CivOne.Services
 
 		private void TryQuickLoad(int slot)
 		{
-			var filePath = GetSlotFilePath(slot);
+			var filePath = GetSlotFilePath(slot, ensureDirectory: false);
 			if (!File.Exists(filePath))
 			{
 				_showUserErrorAction(_translation.Translate("Fast save slot is empty."));
@@ -183,8 +186,21 @@ namespace CivOne.Services
 				_log("Fast load failed for slot F{0} ({1}): {2}", [slot, filePath, ex]);
 			}
 		}
-
-		private void RebuildGamePlay()
+		// ANTI-REFACTORING NOTICE:
+		// Do NOT defer this work via GameTask.Enqueue / a DeferredActionTask.
+		// It looks tempting ("don't destroy screens during event dispatch"), but it
+		// breaks quick load from the Credits screen (Alt+F1..F10 silently does nothing):
+		//   - RuntimeHandler.OnKeyboardDown returns immediately after TryHandle, so
+		//     there is no further screen access on the call stack that could touch a
+		//     disposed reference. Synchronous destroy is safe here.
+		//   - A DeferredActionTask whose Run() calls GameTask.ClearAll() nulls out
+		//     _currentTask while the task itself is executing, which interacts badly
+		//     with GameTask's Done/Finish bookkeeping.
+		//   - On the Credits screen the task pump conditions differ from in-game, so
+		//     the deferred rebuild can be dropped entirely.
+		// Keep this method synchronous. See commit 1bdbe94e (fix: allow fast load
+		// gamesave in credit screen) and the regression introduced by 7c624f81.		
+		private static void RebuildGamePlay()
 		{
 			GameTask.ClearAll();
 
