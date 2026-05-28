@@ -90,7 +90,11 @@ namespace CivOne
 				if (!Common.Screens.Contains(screen)) continue;
 				if (screen.Update(_gameTick / 4)) update = true;
 				if (!Common.Screens.Contains(screen)) continue;
-				if (Common.HasAttribute<Break>(screen)) return update;
+
+				if (Common.HasAttribute<BreakAttribute>(screen))
+				{
+					return update;
+				}
 			}
 			return update;
 		}

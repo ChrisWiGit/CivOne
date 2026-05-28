@@ -17,7 +17,7 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens
 {
-	[Break]
+	[BreakAttribute]
 	public class MissingFiles : BaseScreen
 	{
 		private bool _update = true;
