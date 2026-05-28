@@ -168,7 +168,24 @@ namespace CivOne
 			}
 		}
 
+		private readonly Stopwatch _onDrawWatch = new();
+		private double _lastOnDrawMs;
+
 		private void OnDraw(object sender, EventArgs args)
+		{
+			_onDrawWatch.Restart();
+			try
+			{
+				OnDrawCore();
+			}
+			finally
+			{
+				_onDrawWatch.Stop();
+				_lastOnDrawMs = _onDrawWatch.Elapsed.TotalMilliseconds;
+			}
+		}
+
+		private void OnDrawCore()
 		{
 			IScreen? topScreen = TopScreen;
 			if (topScreen == null)
@@ -227,7 +244,7 @@ namespace CivOne
 			}
 
 			Bytemap[] layers = Runtime.Layers;
-			_fpsOverlayDrawDelegate.Draw(Settings.FpsCorner, CanvasWidth, CanvasHeight, layers);
+			_fpsOverlayDrawDelegate.Draw(Settings.FpsCorner, CanvasWidth, CanvasHeight, layers, _lastOnDrawMs);
 		}
 
 		private void OnKeyboardUp(object sender, KeyboardEventArgs args)

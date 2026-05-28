@@ -282,10 +282,9 @@ Behavior notes:
 * Slots with invalid `.cos` content are shown as `Invalid savegame`, are disabled, and cannot be selected.
 * If no quick save exists, the dialog shows `No fast savegames available. Use Ctrl+F1-F10 to save.` as a disabled entry.
 * Report shortcuts are now plain `F1` to `F12` only.
-   * Modified combinations (`Shift`, `Ctrl`, `Alt`) no longer open report screens.
+  * Modified combinations (`Shift`, `Ctrl`, `Alt`) no longer open report screens.
 
-
-### The debug menu (in game)
+## The debug menu (in game)
 
 You can activate the debug menu in-game by hitting `Shift + F1` and in the menu choosing `Patches`, then enabling `Debug Menu` by hitting `Enter` and selecting `Yes`.
 
@@ -315,12 +314,12 @@ The menu provides multiple options for testing and debugging the game, including
 
 The debug menu visible flag is stored in `default.profile` in the CivOne directory in your user folder.
 
-### Settings screen (CivOne Setup)
+## Settings screen (CivOne Setup)
 
 You can access the settings screen by hitting `Shift + F1` when starting the game or in-game through the debug menu (see [The debug menu (in game)](#the-debug-menu-in-game)).
 The settings contains multiple options to configure the game, including:
 
-#### Settings
+### Settings
 
 These settings affect the overall game behavior and used graphics/sound options.
 
@@ -333,7 +332,7 @@ These settings affect the overall game behavior and used graphics/sound options.
 | Window Scale | Set the UI scale multiplier (1x to 8x) for window size. |
 | In-game sound | Browse for and enable in-game sound files. |
 
-#### Patches
+### Patches
 
 This screen allows to change additional modification options for the game.
 
@@ -347,7 +346,7 @@ This screen allows to change additional modification options for the game.
 | Enable Deity difficulty | Enable the Deity difficulty option. |
 | Enable (no keypad) arrow helper | Toggle an arrow helper for users without a numeric keypad. |
 | Custom map sizes (experimental) | Enable experimental custom map sizes. |
-| FPS display | Show frames per second in a screen corner (Off, Top Left, Top Right, Bottom Left, Bottom Right). When enabled, the FPS counter updates every second. |
+| FPS display | Show performance counters in a screen corner (Off, Top Left, Top Right, Bottom Left, Bottom Right). See [FPS overlay](#fps-overlay) below for the meaning of the three numbers. |
 | Game behavior menu | Open the behavior submenu to change gameplay-related toggles and cheats. |
 | AutoSave format | Choose whether autosaves prefer legacy `SVE` output with automatic `COS` fallback or always write `COS`. |
 | Save cast behavior | Select whether save/load casts use checked conversion or the legacy unchecked mode. |
@@ -359,11 +358,29 @@ This screen allows to change additional modification options for the game.
 | (Gbm) Extended global warming | Open extended global warming options (needs savegame load). |
 | (Gbm+Egw) Sea level rise | Extended game play with sea level rise instead of only land changing. |
 
-#### Plugins
+### FPS overlay
+
+When **FPS display** is enabled, the chosen corner shows three values in yellow, in the form:
+
+```text
+1.250fps/16fps/2,1ms
+```
+
+Numbers use the German format: dot (`.`) as thousands separator and comma (`,`) as decimal separator.
+
+| Value | Meaning |
+| ----- | ------- |
+| `1.250fps` (potential FPS) | Theoretical maximum frame rate based on the average draw duration of the last second (`1000 / avg ms`). Indicates how fast the renderer *could* run if it were not limited by the game loop. |
+| `16fps` (actual FPS) | Number of times the draw routine was actually called in the last second. CivOne's game loop ticks at a fixed low rate (similar to the original engine), so this value is normally well below the potential FPS. It does not mean that the game is running slowly; it reflects the fixed update rate of the game loop. |
+| `2,1ms` (avg draw time) | Average wall-clock time spent inside the draw routine, measured over the last second. Lower is better; a sudden increase points to a rendering bottleneck. |
+
+Rule of thumb: if **actual FPS** is low but **avg draw time** is also low, the limit is the game loop, not the renderer. If **avg draw time** grows large, the renderer itself is the bottleneck.
+
+### Plugins
 
 This screen allows you to manage plugins for the game.
 
-#### Game Options
+### Game Options
 
 These options affect the gameplay mechanics and rules and can also be changed in-game via the options menu.
 
@@ -380,8 +397,7 @@ These options affect the gameplay mechanics and rules and can also be changed in
 | Tax Rate | Set the tax rate which splits commerce between gold and science (0%–100%). |
 | Language | Select active translation language (`Identity` or any valid `civ_<postfix>.txt` file from the profile translation folder). |
 
-
-#### Launch Game / Return to Game
+### Launch Game / Return to Game
 
 Closes the settings screen and launches or returns to the game.
 
@@ -512,7 +528,7 @@ After installation, verify again:
 dotnet --list-runtimes
 ```
 
-### Tests
+## Tests
 
 To run the tests, you can use the following command:
 
@@ -602,7 +618,7 @@ This task runs tests with coverage, generates HTML, and prints the text summary 
 A workflow is available at [.github/workflows/coverage.yml](.github/workflows/coverage.yml).
 It runs on push and pull request, prints the coverage summary in the job logs, writes the summary into the GitHub job summary, and uploads the HTML report as an artifact.
 
-### Cleaning up
+## Cleaning up
 
 To clean build artifacts and coverage files:
 
@@ -619,6 +635,87 @@ Alternatively, run individual cleanup tasks in VS Code:
 * `clean` – Runs `dotnet clean`
 * `clean-coverage-folders` – Removes `TestResults/` and `CoverageReport/` directories
 
+## Profiling
+
+Profiling helps identify performance issues and bottlenecks in the game.
+
+### Automated Profiling via Launch Configuration
+
+The project includes a ready-made launch configuration for VS Code that starts the game with comprehensive profiling data.
+
+### In VS Code
+
+1. Open the Run and Debug view (Ctrl+Shift+D).
+2. Select "Launch Game (dotnet trace profiling)" from the dropdown.
+3. Press F5 or click "Start Debugging".
+
+The game will start and a `.nettrace` file will be automatically created in the `profiling/` folder and converted to JSON format.
+The file will have a name like `civone-profile-<PID>.nettrace`.
+
+### In the shell (manual approach)
+
+If the launch configuration is not available or not working, you can use the following PowerShell commands:
+
+Windows PowerShell:
+
+```powershell
+dotnet trace collect --process-name CivOne.SDL --output ${workspaceFolder}/profiling/civone-profile.nettrace
+dotnet trace convert --format Speedscope ${workspaceFolder}/profiling/civone-profile.nettrace
+```
+
+or using the process id:
+
+```powershell
+$gameProcess = Start-Process dotnet -ArgumentList '${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll','--debug' -WorkingDirectory '${workspaceRoot}' -PassThru
+dotnet trace collect --process-id $gameProcess.Id --output ${workspaceFolder}/profiling/civone-profile-$($gameProcess.Id).nettrace
+dotnet trace convert --format Speedscope ${workspaceFolder}/profiling/civone-profile-$($gameProcess.Id).nettrace
+```
+
+Linux / macOS:
+
+```sh
+dotnet trace collect --process-name CivOne.SDL --output ./profiling/civone-profile.nettrace
+dotnet trace convert --format Speedscope ./profiling/civone-profile.nettrace
+```
+
+or using the process id:
+
+```sh
+./runtime/sdl/bin/Debug/net9.0/CivOne.SDL --debug &
+GAME_PID=$!
+dotnet trace collect --process-id $GAME_PID --output ./profiling/civone-profile-$GAME_PID.nettrace
+dotnet trace convert --format Speedscope ./profiling/civone-profile-$GAME_PID.nettrace
+```
+
+### Lighter-weight manual profiling
+
+The automated approach is comprehensive but resource-intensive.
+If you want to quickly investigate a performance bottleneck, there are simpler alternatives:
+
+* **Enable FPS overlay**: Use the "FPS display" option in Settings (Shift+F1) to see performance metrics directly in the game.
+* **Check debug output**: Use debug mode (--debug) and check the logs for suspicious values.
+* **Targeted profiling**: Start the game with `--seed <number>` to reproduce scenarios and investigate them specifically.
+
+#### Analyzing profiling data
+
+The resulting `.json` file (converted from `.nettrace`) can be analyzed in two ways:
+
+**1. Speedscope (web-based):**
+
+1. Open [https://www.speedscope.app/](https://www.speedscope.app/).
+2. Drag the JSON file onto the website or import it.
+3. Examine the flame graphs and call trees.
+
+**2. AI-assisted analysis:**
+
+The JSON file can also be analyzed by AI tools like GitHub Copilot or ChatGPT:
+
+1. Open the `.json` file in VS Code or an editor.
+2. Provide the contents to an AI tool and ask about performance bottlenecks.
+3. The AI can identify issues and suggest optimizations.
+
+The profiling data shows where the CPU spends the most time and helps identify performance-critical code sections.
+
 ## FAQ
 
 ### The screen content is cut off after resizing the window
@@ -631,7 +728,6 @@ To fix this, resize the window to match the size the game was configured for, or
 Those modes always scale or letterbox the fixed 320x200 game surface to fit any window size.
 
 If you want to use `Expand` mode, make sure to use `Auto` for the Expand size in the settings, which allows the game to automatically adjust the rendered area to fit the window size.
-
 
 ## Changes (Log)
 

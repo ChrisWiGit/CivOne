@@ -9,6 +9,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using CivOne.Enums;
 using CivOne.IO;
 
@@ -16,12 +17,27 @@ namespace CivOne
 {
 	internal sealed class FpsOverlayDrawDelegate : IDisposable
 	{
+		private const int OverlayWidth = 110;
+		private const byte OverlayColour = 11; // Civ palette: yellow
+		private const byte ShadowColour = 5;   // Civ palette: dark / black
+
+		private static readonly NumberFormatInfo NumberFormat = new()
+		{
+			NumberGroupSeparator = ".",
+			NumberDecimalSeparator = ",",
+			NumberDecimalDigits = 0,
+		};
+
 		private readonly Stopwatch _fpsWatch = Stopwatch.StartNew();
 		private int _fpsFrameCount;
 		private int _currentFps;
+		private double _drawMsAccum;
+		private int _drawMsSamples;
+		private double _lastAvgDrawMs;
+		private int _lastPotentialFps;
 		private Bytemap? _fpsOverlay;
 
-		internal void Draw(FpsCorner fpsCorner, int canvasWidth, int canvasHeight, Bytemap[] runtimeLayers)
+		internal void Draw(FpsCorner fpsCorner, int canvasWidth, int canvasHeight, Bytemap[] runtimeLayers, double lastFrameMs)
 		{
 			if (fpsCorner == FpsCorner.Off)
 			{
@@ -31,10 +47,19 @@ namespace CivOne
 			}
 
 			_fpsFrameCount++;
+			if (lastFrameMs > 0)
+			{
+				_drawMsAccum += lastFrameMs;
+				_drawMsSamples++;
+			}
 			if (_fpsWatch.ElapsedMilliseconds >= 1000)
 			{
 				_currentFps = _fpsFrameCount;
+				_lastAvgDrawMs = _drawMsSamples > 0 ? _drawMsAccum / _drawMsSamples : 0;
+				_lastPotentialFps = _lastAvgDrawMs > 0 ? (int)Math.Round(1000.0 / _lastAvgDrawMs) : 0;
 				_fpsFrameCount = 0;
+				_drawMsAccum = 0;
+				_drawMsSamples = 0;
 				_fpsWatch.Restart();
 			}
 
@@ -49,7 +74,15 @@ namespace CivOne
 			}
 
 			(int x, int y) = GetCornerPosition(fpsCorner, canvasWidth, canvasHeight);
-			using (var fpsText = CivOne.Graphics.Resources.Instance.GetText($"{_currentFps} FPS", 1, 15))
+			string potential = _lastPotentialFps.ToString("N0", NumberFormat);
+			string actual = _currentFps.ToString("N0", NumberFormat);
+			string avgMs = string.Format(CultureInfo.InvariantCulture, "{0:0.0}", _lastAvgDrawMs).Replace('.', ',');
+			string text = $"{potential}fps/{actual}fps/{avgMs}ms";
+			using (var shadowText = CivOne.Graphics.Resources.Instance.GetText(text, 1, ShadowColour))
+			{
+				_fpsOverlay.AddLayer(shadowText.Bitmap, x + 1, y + 1);
+			}
+			using (var fpsText = CivOne.Graphics.Resources.Instance.GetText(text, 1, OverlayColour))
 			{
 				_fpsOverlay.AddLayer(fpsText.Bitmap, x, y);
 			}
@@ -60,9 +93,9 @@ namespace CivOne
 		{
 			return fpsCorner switch
 			{
-				FpsCorner.TopRight => (canvasWidth - 34, 2),
+				FpsCorner.TopRight => (canvasWidth - OverlayWidth, 2),
 				FpsCorner.BottomLeft => (2, canvasHeight - 10),
-				FpsCorner.BottomRight => (canvasWidth - 34, canvasHeight - 10),
+				FpsCorner.BottomRight => (canvasWidth - OverlayWidth, canvasHeight - 10),
 				_ => (2, 2),
 			};
 		}
