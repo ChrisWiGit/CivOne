@@ -668,47 +668,24 @@ cat CoverageReport/Summary.txt
 On Windows Command Prompt you can use.
 
 ```cmd
-### Map panning and camera control
+type CoverageReport\Summary.txt
+```
 
-Explore the entire map at your own pace with map panning and camera positioning.
+Open the HTML report at [CoverageReport/index.html](CoverageReport/index.html).
 
-#### Basic map panning
+If you use Visual Studio Code, run the task `test-coverage`.
+This task runs tests with coverage, generates HTML, and prints the text summary in the terminal.
 
-Press `Tab` to enter or exit **map pan mode**.
-In this mode, the selected unit remains highlighted and does not blink, so you always know which unit you will control when returning to normal mode.
-Navigate the map using:
+### Coverage in GitHub Actions
 
-* **Arrow keys** — scroll the map in cardinal directions
-* **Mouse click** — click on the map to instantly jump the camera to that location (as without map pan mode)
-* **Center on selection** — press `c` to instantly center the camera on your selected unit or city
+A workflow is available at [.github/workflows/coverage.yml](.github/workflows/coverage.yml).
+It runs on push and pull request, prints the coverage summary in the job logs, writes the summary into the GitHub job summary, and uploads the HTML report as an artifact.
 
-#### Saving and loading camera positions
+## Cleaning up
 
-Save up to 9 named camera positions for quick navigation across the map.
+To clean build artifacts and coverage files:
 
-| Hotkey | Action |
-| ------ | ------ |
-| `Tab` | Toggle map pan mode (explore map without moving units) |
-| `Ctrl+1` to `Ctrl+9` | Save current camera position to slot 1–9 |
-| `Alt+1` to `Alt+9` | Jump to saved camera position slot 1–9 |
-| `Alt+0` | Open the list of all saved map position slots |
-| `c` | Center camera on selected unit or city (works in both modes) |
-
-#### Saving position details
-
-* When you save a map position with `Ctrl+1` to `Ctrl+9`, a sidebar message appears in the lower left corner: `Map position X saved`.
-* If the slot already contains a saved position, a rename dialog opens with the text `Keep name or change it?` and the current name as the default value.
-* You can keep the existing name or type a new one; pressing `Cancel` keeps the old name but still updates the map position to the current location.
-* The `Alt+0` slot list only appears when at least one position is saved.
-* In the slot list dialog (titled `Map position. Select a number...`), you can press `1` through `9` to jump directly to that slot, or use arrow keys to navigate and press `Enter` to confirm.
-
-#### Camera position on load
-
-When a saved game is loaded, the map viewport is restored to the position that was active when the game was saved.
-If an active unit is waiting for orders, the camera centers on that unit instead — so you always land on something actionable.
-
-To suppress unit centering and restore the saved viewport position instead, enable **CapsLock** before loading the game.
-The CapsLock state is checked the moment the game resumes; as long as CapsLock is on, the camera stays at the saved map position.
+Run `dotnet clean` to remove `bin/` and `obj/` directories.
 
 ```sh
 dotnet clean
@@ -844,3 +821,47 @@ That token must be included in every request.
 
 For activation, request examples, available tools, response format, and Visual Studio Code integration, see [MCP.md](MCP.md).
 For internal architecture and implementation notes, see [docs/MCP.md](docs/MCP.md).
+
+## New or changed Game Mechanics
+
+### Map panning and camera control
+
+Explore the entire map at your own pace with map panning and camera positioning.
+
+#### Basic map panning
+
+Press `Tab` to enter or exit **map pan mode**.
+In this mode, the selected unit remains highlighted and does not blink, so you always know which unit you will control when returning to normal mode.
+Navigate the map using:
+
+* **Arrow keys** — scroll the map in cardinal directions
+* **Mouse click** — click on the map to instantly jump the camera to that location (as without map pan mode)
+* **Center on selection** — press `c` to instantly center the camera on your selected unit or city
+
+#### Saving and loading camera positions
+
+Save up to 9 named camera positions for quick navigation across the map.
+
+| Hotkey | Action |
+| ------ | ------ |
+| `Tab` | Toggle map pan mode (explore map without moving units) |
+| `Ctrl+1` to `Ctrl+9` | Save current camera position to slot 1–9 |
+| `Alt+1` to `Alt+9` | Jump to saved camera position slot 1–9 |
+| `Alt+0` | Open the list of all saved map position slots |
+| `c` | Center camera on selected unit or city (works in both modes) |
+
+#### Saving position details
+
+* When you save a map position with `Ctrl+1` to `Ctrl+9`, a sidebar message appears in the lower left corner: `Map position X saved`.
+* If the slot already contains a saved position, a rename dialog opens with the text `Keep name or change it?` and the current name as the default value.
+* You can keep the existing name or type a new one; pressing `Cancel` keeps the old name but still updates the map position to the current location.
+* The `Alt+0` slot list only appears when at least one position is saved.
+* In the slot list dialog (titled `Map position. Select a number...`), you can press `1` through `9` to jump directly to that slot, or use arrow keys to navigate and press `Enter` to confirm.
+
+#### Camera position on load
+
+When a saved game is loaded, the map viewport is restored to the position that was active when the game was saved.
+If an active unit is waiting for orders, the camera centers on that unit instead — so you always land on something actionable.
+
+To suppress unit centering and restore the saved viewport position instead, enable **CapsLock** before loading the game.
+The CapsLock state is checked the moment the game resumes; as long as CapsLock is on, the camera stays at the saved map position.

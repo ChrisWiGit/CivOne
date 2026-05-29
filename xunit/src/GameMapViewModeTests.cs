@@ -1,7 +1,6 @@
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
-using CivOne.Screens.GamePlayPanels;
 using Xunit;
 
 namespace CivOne.UnitTests
