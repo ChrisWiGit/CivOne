@@ -232,10 +232,12 @@ namespace CivOne
 
 		private void OnKeyboardUp(object sender, KeyboardEventArgs args)
 		{
+			Common.CapsLockActive = args.CapsLock;
 		}
 
 		private void OnKeyboardDown(object sender, KeyboardEventArgs args)
 		{
+			Common.CapsLockActive = args.CapsLock;
 			if (_quickSaveLoadHotkeyService.TryHandle(args))
 			{
 				return;

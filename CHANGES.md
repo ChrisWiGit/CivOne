@@ -6,6 +6,20 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Map viewport restore on load with CapsLock override.
+  * When a saved game is loaded, the map viewport is restored to the position saved with the game.
+  * If an active unit is waiting for orders, the camera centers on that unit instead.
+  * Enable **CapsLock** before loading to suppress unit centering and keep the restored map position. Don't forget to disable CapsLock again after loading if you dont want to shout ;-)
+  * CapsLock state is also checked on every unit change during normal gameplay; while CapsLock is on, the camera never auto-centers on the new active unit.
+  * Press `Tab` to enter/exit map pan mode, which allows you to explore the entire map without moving units.
+  * In pan mode, navigate with arrow keys to scroll in any direction or use mouse click to change the center of the map (as without map pan mode).
+  * Press `c` to quickly center the camera on your currently selected unit or city (pan mode or normal mode).
+  * The selected unit does not blink while panning, so your unit selection remains stable.
+* Feature: Added map position UX improvements in gameplay map view mode.
+  * Saving a map position with `Ctrl+1` to `Ctrl+9` now shows a short sidebar message (`Map position X saved`) in the lower-left game info area.
+  * Added `Alt+0` map position slot list dialog titled `Map position. Select a number...`.
+  * The dialog lists only saved slots, prefixes each item with its number, supports direct number key selection, and does not open when no slots are saved.
+  * If a slot with a name is selected with `Ctrl+1` to `Ctrl+9`, a rename dialog is shown with the text `Keep name or change it?` and the current name as default input, allowing the user to keep or change the name of the map position. Not changing the name or hit cancel will keep the existing name but the slot still updates to the new position.
 * Refactor: Hardened the `Map` partial singleton and decoupled it from four global singletons (`Common.Random`, `Resources`, `Settings`, file IO) to improve testability and maintainability.
   * Added unit tests for `Map` covering map generation and continent counting logic in `MapTests`, using a new `TestMap` subclass that injects deterministic random, resource, settings, and file IO dependencies.
   * This allows for better separation of concerns, easier testing of map generation logic in isolation, and future flexibility to have multiple map instances if needed.

@@ -56,6 +56,7 @@ namespace CivOne
 		private ushort _playerFutureTech = 0;
 		private bool _hostileActionOccurred = false;
 		private bool _loadedFromYamlSaveSource;
+		private (short X, short Y) _pendingMapPositionRestore = (-1, -1);
 
 		/// <summary>
 		/// The metadata for the current save file, which is initialized when starting a new game or loading an existing game, and updated when saving a game.
@@ -139,6 +140,22 @@ namespace CivOne
 		internal string GameYear => Common.YearString(GameTurn);
 
 		internal bool IsYamlSaveSource => _loadedFromYamlSaveSource;
+
+		internal bool TryConsumePendingMapPositionRestore(out int x, out int y)
+		{
+			x = -1;
+			y = -1;
+
+			if (_pendingMapPositionRestore.X < 0 || _pendingMapPositionRestore.Y < 0)
+			{
+				return false;
+			}
+
+			x = _pendingMapPositionRestore.X;
+			y = _pendingMapPositionRestore.Y;
+			_pendingMapPositionRestore = (-1, -1);
+			return true;
+		}
 
 		internal void MarkAsYamlSaveSource()
 		{

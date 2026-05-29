@@ -121,6 +121,11 @@ namespace CivOne
 			HumanPlayer = state.HumanPlayer as Player
 				?? throw new InvalidOperationException("YAML load requires HumanPlayer to be a Player instance.");
 
+			if (HumanPlayer.LastMapPosition.X >= 0 && HumanPlayer.LastMapPosition.Y >= 0)
+			{
+				_pendingMapPositionRestore = HumanPlayer.LastMapPosition;
+			}
+
 			_currentPlayer = Array.IndexOf(_players, state.CurrentPlayer as Player);
 			if (_currentPlayer < 0)
 				_currentPlayer = Array.IndexOf(_players, HumanPlayer);

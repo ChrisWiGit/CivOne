@@ -29,6 +29,8 @@ namespace CivOne.Screens.GamePlayPanels
 		private bool _update = true;
 		private int _lastDemographicsSignature;
 		private int _lastGameInfoSignature;
+		private string _statusInfoText;
+		private int _statusInfoFrames;
 		
 		private readonly Picture _miniMap, _demographics;
 		private Picture _gameInfo;
@@ -48,7 +50,7 @@ namespace CivOne.Screens.GamePlayPanels
 					if (tile == null) continue;
 
 					// Flash active unit
-					if (activeUnit != null && Human == activeUnit.Owner && (tile.X == activeUnit.X && tile.Y == activeUnit.Y))
+					if (activeUnit != null && Human == activeUnit.Owner && (tile.X == activeUnit.X && tile.Y == activeUnit.Y) && GamePlay?.IsMapViewEnabled != true)
 					{
 						if (gameTick % 4 <= 1)
 						{
@@ -242,11 +244,26 @@ namespace CivOne.Screens.GamePlayPanels
 				unit == null ? -1 : unit.MovesLeft,
 				unit == null ? -1 : unit.PartMoves,
 				hasBlockingTask,
-				blinkPhase);
+				blinkPhase,
+				_statusInfoText,
+				_statusInfoFrames);
+		}
+
+		internal void ShowMapPositionSavedInfo(int slot)
+		{
+			_statusInfoText = TranslateFormatted("Map position {0} saved", slot);
+			_statusInfoFrames = 20;
+			_update = true;
 		}
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
+			if (_statusInfoFrames > 0)
+			{
+				_statusInfoFrames--;
+				_update = true;
+			}
+
 			if (!_update && gameTick % 2 != 0)
 			{
 				return false;
@@ -267,6 +284,10 @@ namespace CivOne.Screens.GamePlayPanels
 			if (_update || gameInfoSignature != _lastGameInfoSignature)
 			{
 				DrawGameInfo(gameTick);
+				if (_statusInfoFrames > 0 && !string.IsNullOrWhiteSpace(_statusInfoText))
+				{
+					_gameInfo.DrawText(_statusInfoText, 0, 5, 2, _gameInfo.Height - 8, TextAlign.Left);
+				}
 				_lastGameInfoSignature = gameInfoSignature;
 			}
 

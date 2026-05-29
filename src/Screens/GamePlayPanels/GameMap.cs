@@ -21,21 +21,27 @@ using CivOne.Units;
 
 namespace CivOne.Screens.GamePlayPanels
 {
-	internal class GameMap : BaseScreen
+	internal partial class GameMap : BaseScreen
 	{
 		private IUnit ActiveUnit => Game.Started ? Game.ActiveUnit : null;
 		
 		private Point _helperDirection = new Point(0, 0);
 		private bool _update = true;
 		private bool _fullRedraw = false;
+		private bool _mapViewEnabled = false;
 		private int _x, _y;
 		private IUnit _lastUnit;
 		private ushort _lastTurn;
 
 		private int _tilesX = 15, _tilesY = 12;
+		public event EventHandler<int> MapPositionSaved;
+
+		protected GameMapPositionDelegate _mapPositionDelegate;
+		private GamePanMapDelegate _panMapDelegate;
 
 		internal int X => _x;
 		internal int Y => _y;
+		internal bool MapViewEnabled => _mapViewEnabled;
 
 		private ITile[,] Tiles => Map[_x, _y, _tilesX, _tilesY];
 
@@ -138,7 +144,7 @@ namespace CivOne.Screens.GamePlayPanels
 
 			if ((gameTick % 2) == 0 && (_lastTurn != Game.GameTurn || _lastUnit != unit))
 			{
-				if (_lastUnit != unit && unit != null && Game.Human == unit.Owner && ShouldCenter())
+				if (_lastUnit != unit && unit != null && Game.Human == unit.Owner && !_mapViewEnabled && ShouldCenter() && !Common.CapsLockActive)
 				{
 					CenterOnUnit();
 				}
@@ -164,7 +170,7 @@ namespace CivOne.Screens.GamePlayPanels
 			{
 				_update = true;
 			}
-			else if (unit != _lastUnit && ShouldCenter() && Human == unit.Owner)
+			else if (unit != _lastUnit && !_mapViewEnabled && ShouldCenter() && Human == unit.Owner && !Common.CapsLockActive)
 			{
 				CenterOnUnit();
 				_update = true;
@@ -179,14 +185,16 @@ namespace CivOne.Screens.GamePlayPanels
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
+			bool renameDialogActive = _mapPositionDelegate.HasRenameDialog;
+
 			if (!Game.Started)
 			{
 				_update = false;
 				return false;
 			}
 
-			if (!(_update || _fullRedraw)) return false;
-			if (Game.MovingUnit == null && (gameTick % 2 == 1)) return false;
+			if (!(_update || _fullRedraw || renameDialogActive)) return false;
+			if (!renameDialogActive && Game.MovingUnit == null && (gameTick % 2 == 1)) return false;
 
 			Player renderPlayer = Settings.RevealWorld ? null : Human;
 
@@ -209,6 +217,11 @@ namespace CivOne.Screens.GamePlayPanels
 
 					DrawFullCargoUnitWhileMoving(movingUnit, tile, dx, dy, movement, unitPicture);
 
+					if (renameDialogActive)
+					{
+						_mapPositionDelegate.DrawRenameDialog(this, gameTick, Width, Height);
+					}
+
 					return true;
 				}
 			}
@@ -219,7 +232,7 @@ namespace CivOne.Screens.GamePlayPanels
 					.AddLayer(Tiles.ToBitmap(player: renderPlayer), dispose: true);
 			}
 
-			if (activeUnit != null && Game.CurrentPlayer == Human && !GameTask.Any())
+			if (activeUnit != null && Game.CurrentPlayer == Human && !GameTask.Any() && !_mapViewEnabled)
 			{
 				ITile tile = activeUnit.Tile;
 				int dx = GetX(tile);
@@ -234,10 +247,20 @@ namespace CivOne.Screens.GamePlayPanels
 
 					DrawHelperArrows(dx, dy);
 				}
+
+				if (renameDialogActive)
+				{
+					_mapPositionDelegate.DrawRenameDialog(this, gameTick, Width, Height);
+				}
 				return true;
 			}
 			
 			_update = false;
+			if (renameDialogActive)
+			{
+				_mapPositionDelegate.DrawRenameDialog(this, gameTick, Width, Height);
+				return true;
+			}
 			return true;
 		}
 
@@ -253,18 +276,40 @@ namespace CivOne.Screens.GamePlayPanels
 		{
 			_fullRedraw = true;
 		}
-		
-		internal void CenterOnPoint(int x, int y)
-		{
-			_x = x - (_tilesX / 2);
-			while (_x < 0) _x += Map.WIDTH;
-			while (_x >= Map.WIDTH) _x -= Map.WIDTH;
 
-			_y = y - (_tilesY / 2);
-			if (_y < 0) _y = 0;
+		///<summary>
+		/// Sets the map viewport origin to the specified world tile coordinates, 
+		/// adjusting for map wrapping and ensuring the viewport remains within map bounds.
+		/// In contrast to <a href="CenterOnPoint"> this method does not attempt to center on the coordinates 
+		/// but uses them as the top-left corner of the viewport.
+		/// </summary>
+		internal void SetViewOrigin(int x, int y)
+		{
+			_x = x;
+			while (_x < 0)
+			{
+				_x += Map.WIDTH;
+			}
+
+			while (_x >= Map.WIDTH)
+			{
+				_x -= Map.WIDTH;
+			}
+
+			_y = y;
+			if (_y < 0)
+			{
+				_y = 0;
+			}
+
 			_y = Math.Min(_y, Math.Max(0, Map.HEIGHT - _tilesY));
 			_update = true;
 			_fullRedraw = true;
+		}
+		
+		internal void CenterOnPoint(int x, int y)
+		{
+			SetViewOrigin(x - (_tilesX / 2), y - (_tilesY / 2));
 		}
 		
 		private void CenterOnUnit()
@@ -312,12 +357,31 @@ namespace CivOne.Screens.GamePlayPanels
 						args.Abort();
 						return;
 					}
-					if (ShouldCenter(moveUnit.RelX, moveUnit.RelY))
+					if (!_mapViewEnabled && ShouldCenter(moveUnit.RelX, moveUnit.RelY))
 					{
 						CenterOnUnit();
 					}
 					return;
 			}
+		}
+
+		internal bool ToggleMapView()
+		{
+			_mapViewEnabled = !_mapViewEnabled;
+			_helperDirection = new Point(0, 0);
+			_update = true;
+			return _mapViewEnabled;
+		}
+
+		internal bool CenterOnActiveUnit()
+		{
+			if (Game.ActiveUnit == null)
+			{
+				return false;
+			}
+
+			CenterOnUnit();
+			return true;
 		}
 
 		private bool KeyDownActiveUnit(KeyboardEventArgs args)
@@ -489,12 +553,32 @@ namespace CivOne.Screens.GamePlayPanels
 		
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
+			if (_mapPositionDelegate.KeyDownRenameDialog(args))
+			{
+				return true;
+			}
+
 			if (Game.CurrentPlayer != Human)
 			{
 				// Ignore all keypresses if the current player is not human
 				return false;
 			}
+
+			if (args.Modifier == KeyModifier.Alt && GameMapPositionDelegate.IsZeroKey(args))
+			{
+				return _mapPositionDelegate.TryOpenMapPositionSlotList();
+			}
 			
+			if (_mapPositionDelegate.TryHandleMapPositionHotkey(args))
+			{
+				return true;
+			}
+
+			if (_mapViewEnabled && _panMapDelegate.KeyDownMapView(args))
+			{
+				return true;
+			}
+
 			switch (args.KeyChar)
 			{
 				case 'G':
@@ -522,6 +606,11 @@ namespace CivOne.Screens.GamePlayPanels
 		
 		public override bool MouseDown(ScreenEventArgs args)
 		{
+			if (_mapPositionDelegate.MouseDownRenameDialog(args))
+			{
+				return true;
+			}
+
 			int x = (int)Math.Floor((float)args.X / 16);
 			int y = (int)Math.Floor((float)args.Y / 16);
 			
@@ -602,6 +691,9 @@ namespace CivOne.Screens.GamePlayPanels
 
 			_x = 0;
 			_y = 0;
+
+			_mapPositionDelegate = new(this);
+			_panMapDelegate = new(this);
 			
 			Palette = Resources["SP257"].Palette.Copy();
 		}

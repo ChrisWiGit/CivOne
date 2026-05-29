@@ -31,6 +31,9 @@ namespace CivOne.UnitTests
 			FutureTechCount = 0;
 			HumanContactTurn = 0;
 			StartX = 0;
+			MapPositions = [.. Enumerable.Repeat(((short)-1, (short)-1), 9)];
+			MapPositionNames = [.. Enumerable.Repeat(string.Empty, 9)];
+			LastMapPosition = (-1, -1);
 			UnitsLost = new ushort[28];
 			UnitsDestroyedBy = new ushort[8];
 			EpicRanking = 0;
@@ -78,6 +81,12 @@ namespace CivOne.UnitTests
 		public ushort HumanContactTurn { get; set; }
 
 		public short StartX { get; set; }
+
+		public (short X, short Y)[] MapPositions { get; set; }
+
+		public string[] MapPositionNames { get; set; }
+
+		public (short X, short Y) LastMapPosition { get; set; }
 
 		public ushort[] UnitsLost { get; set; }
 

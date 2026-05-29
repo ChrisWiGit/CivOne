@@ -53,6 +53,8 @@ namespace CivOne
 
 		int? GameRandomSeed { get; }
 
+		(short X, short Y)? GetHumanLastMapPosition();
+
 		int TerrainMasterWord { get; }
 
 		IGlobalWarmingService GlobalWarmingService { get; }
@@ -62,6 +64,13 @@ namespace CivOne
 	{
 		public GameState Create(IGameSnapshotSource game)
 		{
+			ArgumentNullException.ThrowIfNull(game);
+
+			if (game.HumanPlayer != null && game.GetHumanLastMapPosition() is { } humanLastMapPosition)
+			{
+				game.HumanPlayer.LastMapPosition = humanLastMapPosition;
+			}
+
 			List<bool> options =
 				[
 					// order must be same as in GameOptionEnum

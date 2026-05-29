@@ -13,6 +13,7 @@ using System;
 using System.Linq;
 using CivOne.Persistence.Factories;
 using CivOne.Persistence.Model;
+using CivOne.Services;
 using CivOne.src;
 
 namespace CivOne.UnitTests
@@ -35,6 +36,7 @@ namespace CivOne.UnitTests
         /// </summary>
         protected TestsBase2()
         {
+            TranslationServiceFactory.ResetForTests();
             _checkedSanitizerScope = ValueSanitizerFactory.UseCheckedValueSanitizer(new UncheckedCastValueSanitizer());
 
             rs = new RuntimeSettings();

@@ -96,12 +96,15 @@ Whenever a diff deletes a line that contains any of `index++`, `++index`, `i++` 
 ### Code Style
 
 * Keep methods small and focused.
+* Always use brackets for control flow, even for single statements.
 * Prefer `new()` expressions over fully qualified construction syntax.
 * Prefer collection expressions:
   * `[ "a", "b", "c" ]` instead of `new string[] { ... }`
 * Prefer `[ ..collection ]` over `.ToArray()`.
 * Prefer `.Length` instead of `.Any()` when working with arrays.
 * Instead of `if (bytes == null) throw new ArgumentNullException(nameof(bytes));`, use `ArgumentNullException.ThrowIfNull(bytes);`.
+* Use nullable type if a variable can be null, e.g. `string? name` instead of `string name` if `name` can be null. Use `?` on these fields to access them safely, e.g. `name?.Length` instead of `name.Length` if `name` can be null.
+* If a parameter can be null (nullable) make sure to check for null and throw an appropriate exception, e.g. `ArgumentNullException.ThrowIfNull(name);` or provide a default value, e.g. `name = name ?? "default";`. Some services may also have dependency injection parameters that may be null, if so, make sure to use a factory to provide a default service if the injected service is null, e.g. `public MyService(IMyDependency? dependency) { _dependency = dependency ?? MyFactory.Create(); }`.
 
 ### Resizable Screens
 
@@ -156,11 +159,12 @@ dotnet build Project.csproj -v q 2>&1 | tail -n 15
 * Run tests only when needed.
 * Run only relevant tests.
 * Run tests without console logs from CivOne-Code when possible to reduce noise (` -p:SuppressConsoleLogs=true`).
+* Run tests with quiet output (`-v q`) and no warnings (`-p:NoWarn=*`) to focus on test results.
 
 Example:
 
 ```sh
-dotnet test xunit/CivOne.UnitTests.csproj --filter "FullyQualifiedName~TranslationFileRepositoryImplTests|FullyQualifiedName~TranslationServiceFactoryTests"
+dotnet test "xunit/CivOne.UnitTests.csproj" --filter "FullyQualifiedName~GameMapViewModeTests" -p:SuppressConsoleLogs=true -p:NoWarn="*" -v q 2>&1 | Select-Object -Last 20
 ```
 
 ## Existing Useful Code
@@ -200,7 +204,7 @@ Apply when:
 ## Translation
 
 ```sh
-dotnet test Tests.csproj --filter "FullyQualifiedName~MyTest" -p:SuppressConsoleLogs=true
+dotnet test "xunit/CivOne.UnitTests.csproj" --filter "FullyQualifiedName~GameMapViewModeTests" -p:SuppressConsoleLogs=true -p:NoWarn="*" -v q 2>&1 | Select-Object -Last 20
 ```
 
 ## Existing Utilities

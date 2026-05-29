@@ -46,6 +46,7 @@ namespace CivOne.Screens
 
 		internal int X => _gameMap.X;
 		internal int Y => _gameMap.Y;
+		internal bool IsMapViewEnabled => _gameMap.MapViewEnabled;
 
 		internal void CenterOnPoint(int x, int y) => _gameMap.CenterOnPoint(x, y);
 
@@ -218,6 +219,13 @@ namespace CivOne.Screens
 		{
 			if (GameTask.Any()) return true;
 
+			if (args.Key == Key.Tab)
+			{
+				_gameMap.ToggleMapView();
+				_update = true;
+				return true;
+			}
+
 			if (args[KeyModifier.Control | KeyModifier.Alt, Key.F11] && Game.Started)
 			{
 				RuntimeHandler.ReturnToCredits();
@@ -308,6 +316,13 @@ namespace CivOne.Screens
 					GameTask.Enqueue(Show.Search);
 					return true;
 			}
+
+			if (args.KeyChar == 'C' && args.Modifier == KeyModifier.None && _gameMap.CenterOnActiveUnit())
+			{
+				_update = true;
+				return true;
+			}
+
 			return _gameMap.KeyDown(args);
 		}
 
@@ -443,6 +458,11 @@ namespace CivOne.Screens
 
 		private void CenterMapOnActiveHumanPlayerAsset()
 		{
+			if (_gameMap.MapViewEnabled)
+			{
+				return;
+			}
+
 			foreach (IUnit unit in Game.GetUnits().OrderByDescending(u => u.MovesLeft))
 			{
 				if (unit.Owner == Game.PlayerNumber(Game.HumanPlayer))
@@ -463,6 +483,17 @@ namespace CivOne.Screens
 			}
 		}
 
+		private bool TryRestoreLastLoadedMapPosition()
+		{
+			if (!Game.TryConsumePendingMapPositionRestore(out int x, out int y))
+			{
+				return false;
+			}
+
+			_gameMap.SetViewOrigin(x, y);
+			return true;
+		}
+
 		public GamePlay()
 		{
 			OnResize += Resize;
@@ -474,8 +505,12 @@ namespace CivOne.Screens
 			_menuBar = new MenuBar(Palette);
 			_sideBar = new SideBar(Palette, Game.GlobalWarmingService);
 			_gameMap = new GameMap();
+			_gameMap.MapPositionSaved += GameMapMapPositionSaved;
 
-			CenterMapOnActiveHumanPlayerAsset();
+			if (!TryRestoreLastLoadedMapPosition())
+			{
+				CenterMapOnActiveHumanPlayerAsset();
+			}
 
 			if (Width != 320 || Height != 200)
 			{
@@ -503,6 +538,11 @@ namespace CivOne.Screens
 				GameTask.Insert(Message.General(TranslateArray("The save game format\nis not compatible with the\nselected map size.\nThe game can not be saved!")));
 				Game.AutoSave = false;
 			}
+		}
+
+		private void GameMapMapPositionSaved(object sender, int slot)
+		{
+			_sideBar.ShowMapPositionSavedInfo(slot);
 		}
 	}
 }

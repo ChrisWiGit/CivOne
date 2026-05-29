@@ -30,6 +30,9 @@ namespace CivOne.Persistence.Game
 		new ushort FutureTechCount { get; set; }
 		new ushort HumanContactTurn { get; set; }
 		new short StartX { get; set; }
+		new (short X, short Y)[] MapPositions { get; set; }
+		new string[] MapPositionNames { get; set; }
+		(short X, short Y) LastMapPosition { get; set; }
 		new ushort[] UnitsLost { get; set; }
 		new ushort[] UnitsDestroyedBy { get; set; }
 		new ushort EpicRanking { get; set; }

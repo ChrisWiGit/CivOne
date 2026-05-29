@@ -54,6 +54,9 @@ namespace CivOne
 		private readonly ushort[] _diplomacy = new ushort[8];
 		private readonly ushort[] _unitsLost = new ushort[28];
 		private readonly ushort[] _unitsDestroyedBy = new ushort[8];
+		internal readonly (short X, short Y)[] MapPositions = new (short X, short Y)[9];
+		internal readonly string[] MapPositionNames = new string[9];
+		internal (short X, short Y) LastMapPosition = (-1, -1);
 		
 		private short _anarchy = 0;
 		private ushort _epicRanking;
@@ -704,6 +707,12 @@ namespace CivOne
 
 		short IPlayer.StartX => StartX;
 
+		(short X, short Y)[] IPlayer.MapPositions => MapPositions;
+
+		string[] IPlayer.MapPositionNames => MapPositionNames;
+
+		(short X, short Y) IPlayer.LastMapPosition => LastMapPosition;
+
 		ushort[] IPlayer.UnitsLost => _unitsLost;
 
 		ushort[] IPlayer.UnitsDestroyedBy => _unitsDestroyedBy;
@@ -744,16 +753,29 @@ namespace CivOne
 					_explored[xx, yy] = false;
 					_visible[xx, yy] = false;
 				}
+
+			InitializeMapPositions();
 		}
 		internal Player()
 		{
 			// for MockPlayer
+			InitializeMapPositions();
 		}
 
 		internal Player(ICivilization civilization)
 		{
 			// for MockPlayer. Do not access Map here
 			_civilization = civilization;
+			InitializeMapPositions();
+		}
+
+		private void InitializeMapPositions()
+		{
+			for (var i = 0; i < MapPositions.Length; i++)
+			{
+				MapPositions[i] = (-1, -1);
+				MapPositionNames[i] = string.Empty;
+			}
 		}
 	}
 }

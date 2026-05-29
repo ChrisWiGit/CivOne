@@ -86,10 +86,13 @@ namespace CivOne.UnitTests.Persistence
             public bool EnemyMoves { get; set; }
             public bool Palace { get; set; }
             public int? GameRandomSeed { get; set; }
+            public (short X, short Y)? HumanLastMapPosition { get; set; }
             public int TerrainMasterWord { get; set; }
 
             // Must be null: real GlobalWarmingService would require a live Game/Map context.
             public IGlobalWarmingService GlobalWarmingService { get; set; } = null;
+
+            public (short X, short Y)? GetHumanLastMapPosition() => HumanLastMapPosition;
 
             public byte PlayerNumber(Player player) => 0;
         }
