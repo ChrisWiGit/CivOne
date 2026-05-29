@@ -169,6 +169,12 @@
 			"internalConsoleOptions": "openOnSessionStart"
 		},
 		{
+			"name": "Run Unit Tests",
+			"type": "node-terminal",
+			"request": "launch",
+			"command": "dotnet test \"${workspaceRoot}/xunit/CivOne.UnitTests.csproj\" -p:SuppressConsoleLogs=true -p:NoWarn=*"
+		},
+		{
 			"name": "Test Startup Wizard (forced)",
 			"type": "coreclr",
 			"request": "launch",
