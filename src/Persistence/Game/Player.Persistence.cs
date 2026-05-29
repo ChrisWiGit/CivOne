@@ -137,6 +137,32 @@ namespace CivOne
 			set => StartX = value;
 		}
 
+		(short X, short Y)[] IPlayerRestorable.MapPositions
+		{
+			get => MapPositions;
+			set
+			{
+				var input = value ?? [];
+				for (var i = 0; i < MapPositions.Length; i++)
+				{
+					MapPositions[i] = i < input.Length ? input[i] : ((short)-1, (short)-1);
+				}
+			}
+		}
+
+		string[] IPlayerRestorable.MapPositionNames
+		{
+			get => MapPositionNames;
+			set
+			{
+				var input = value ?? [];
+				for (var i = 0; i < MapPositionNames.Length; i++)
+				{
+					MapPositionNames[i] = i < input.Length ? (input[i] ?? string.Empty) : string.Empty;
+				}
+			}
+		}
+
 		ushort[] IPlayerRestorable.UnitsLost
 		{
 			get => _unitsLost;

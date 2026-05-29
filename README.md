@@ -284,6 +284,25 @@ Behavior notes:
 * Report shortcuts are now plain `F1` to `F12` only.
   * Modified combinations (`Shift`, `Ctrl`, `Alt`) no longer open report screens.
 
+### Map position hotkeys in gameplay
+
+Map view mode supports saved camera positions for fast navigation.
+
+| Hotkey | Action |
+| ------ | ------ |
+| `Tab` | Toggle map view mode |
+| `Ctrl+1` to `Ctrl+9` | Save current camera position to slot 1 to 9 |
+| `Alt+1` to `Alt+9` | Jump to saved camera position slot 1 to 9 |
+| `Alt+0` | Open list of saved map position slots |
+
+Behavior notes:
+
+* Saving a map position shows a short sidebar message in the lower left corner: `Map position X saved`.
+* The `Alt+0` slot list only opens when at least one slot is saved.
+* The slot list title is `Map position. Select a number...`.
+* Slot entries are prefixed with their slot number and support direct number key selection.
+* If a slot with a name is selected with `Ctrl+1` to `Ctrl+9`, a rename dialog is shown with the text `Keep name or change it?` and the current name as default input, allowing the user to keep or change the name of the map position. Not changing the name or hit cancel will keep the existing name but the slot still updates to the new position.
+
 ## The debug menu (in game)
 
 You can activate the debug menu in-game by hitting `Shift + F1` and in the menu choosing `Patches`, then enabling `Debug Menu` by hitting `Enter` and selecting `Yes`.
@@ -641,24 +660,39 @@ cat CoverageReport/Summary.txt
 On Windows Command Prompt you can use.
 
 ```cmd
-type CoverageReport\Summary.txt
-```
+### Map panning and camera control
 
-Open the HTML report at [CoverageReport/index.html](CoverageReport/index.html).
+Explore the entire map at your own pace with map panning and camera positioning.
 
-If you use Visual Studio Code, run the task `test-coverage`.
-This task runs tests with coverage, generates HTML, and prints the text summary in the terminal.
+#### Basic map panning
 
-### Coverage in GitHub Actions
+Press `Tab` to enter or exit **map pan mode**.
+In this mode, the selected unit remains highlighted and does not blink, so you always know which unit you will control when returning to normal mode.
+Navigate the map using:
 
-A workflow is available at [.github/workflows/coverage.yml](.github/workflows/coverage.yml).
-It runs on push and pull request, prints the coverage summary in the job logs, writes the summary into the GitHub job summary, and uploads the HTML report as an artifact.
+* **Arrow keys** — scroll the map in cardinal directions
+* **Mouse click** — click on the map to instantly jump the camera to that location (as without map pan mode)
+* **Center on selection** — press `c` to instantly center the camera on your selected unit or city
 
-## Cleaning up
+#### Saving and loading camera positions
 
-To clean build artifacts and coverage files:
+Save up to 9 named camera positions for quick navigation across the map.
 
-Run `dotnet clean` to remove `bin/` and `obj/` directories.
+| Hotkey | Action |
+| ------ | ------ |
+| `Tab` | Toggle map pan mode (explore map without moving units) |
+| `Ctrl+1` to `Ctrl+9` | Save current camera position to slot 1–9 |
+| `Alt+1` to `Alt+9` | Jump to saved camera position slot 1–9 |
+| `Alt+0` | Open the list of all saved map position slots |
+| `c` | Center camera on selected unit or city (works in both modes) |
+
+#### Saving position details
+
+* When you save a map position with `Ctrl+1` to `Ctrl+9`, a sidebar message appears in the lower left corner: `Map position X saved`.
+* If the slot already contains a saved position, a rename dialog opens with the text `Keep name or change it?` and the current name as the default value.
+* You can keep the existing name or type a new one; pressing `Cancel` keeps the old name but still updates the map position to the current location.
+* The `Alt+0` slot list only appears when at least one position is saved.
+* In the slot list dialog (titled `Map position. Select a number...`), you can press `1` through `9` to jump directly to that slot, or use arrow keys to navigate and press `Enter` to confirm.
 
 ```sh
 dotnet clean

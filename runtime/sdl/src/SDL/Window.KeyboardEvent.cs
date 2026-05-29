@@ -216,8 +216,11 @@ namespace CivOne
 				char keyChar = (char)keycode;
 				KeyboardEventArgs controlDigit = ConvertControlDigitSymbolToDigit(keyChar, modifier);
 				if (controlDigit != null) return controlDigit;
-				if (keyChar != '.' && keyChar != ',' && (char.ToLower(keyChar) < 'a' || (int)char.ToLower(keyChar) > 'z') && (keyChar < '0' || keyChar > '9')) return null;
-				return new KeyboardEventArgs(char.ToUpper(keyChar), modifier);
+				if (char.IsControl(keyChar)) 
+				{
+					return null;
+				}
+			return new KeyboardEventArgs(char.ToUpper(keyChar, System.Globalization.CultureInfo.InvariantCulture), modifier);
 			}
 
 			private void HandleEventKeyboard(SDL_KeyboardEvent keyboardEvent)

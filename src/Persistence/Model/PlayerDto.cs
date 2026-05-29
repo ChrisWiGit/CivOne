@@ -12,6 +12,7 @@ namespace CivOne.Persistence.Model
     using GovernmentId = System.Byte;
 	using CityId = System.UInt16;
 
+	#pragma warning disable CA2227, CA1002 // Since this is a DTO we need setters and mutable collections.
     public class PlayerDto
     {
 		[Doc("The civilization of the player.")]
@@ -58,6 +59,9 @@ namespace CivOne.Persistence.Model
 
 		[Doc("The player's initial X-position used as world map focus anchor.")]
 		public short StartX { get; set; }
+
+		[Doc("Saved map camera slots (1-9 in UI, 0-8 in storage). Use -1/-1 for empty slots. Can be null.")]
+		public List<MapPositionDto>? MapPositions { get; set; }
 
 		[Doc("Units lost per unit type (28 entries). YAML allows long values; mapper clamps to ushort range.")]
 		public List<long> UnitsLost { get; set; }

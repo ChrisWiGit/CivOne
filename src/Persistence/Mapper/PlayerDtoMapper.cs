@@ -29,6 +29,7 @@ namespace CivOne.Persistence.Model
 		IGovernment ResolveById(byte id);
 	}
 
+	#pragma warning disable CA1707 // ignore too many parameters in constructor, as this is a pure mapping class and all dependencies are required
     public class PlayerDtoMapper(
 		IPlayerGame gameInstance,
 		IPlayerOwnerResolver ownerResolver,
@@ -43,6 +44,8 @@ namespace CivOne.Persistence.Model
 		) : DtoMapper<PlayerDto, IPlayer>
 	{
 		private const long AllAdvancesSentinel = -1;
+		private const int MapPositionSlotCount = 9;
+		private const int MapPositionNameMaxLength = 70;
 
 		public IPlayer FromDto(PlayerDto dto)
 		{
@@ -70,6 +73,8 @@ namespace CivOne.Persistence.Model
 			player.FutureTechCount = _valueSanitizer.ClampToUInt16(dto.FutureTechCount, nameof(PlayerDtoMapper), nameof(PlayerDto.FutureTechCount));
 			player.HumanContactTurn = _valueSanitizer.ClampToUInt16(dto.HumanContactTurn, nameof(PlayerDtoMapper), nameof(PlayerDto.HumanContactTurn));
 			player.StartX = _valueSanitizer.ClampToInt16(dto.StartX, nameof(PlayerDtoMapper), nameof(PlayerDto.StartX));
+			player.MapPositions = BuildMapPositions(dto.MapPositions);
+			player.MapPositionNames = BuildMapPositionNames(dto.MapPositions);
 			player.UnitsLost = BuildUnitsLostArray(dto.UnitsLost);
 			player.UnitsDestroyedBy = BuildUnitsDestroyedByArray(dto.UnitsDestroyedBy);
 			player.EpicRanking = _valueSanitizer.ClampToUInt16(dto.EpicRanking, nameof(PlayerDtoMapper), nameof(PlayerDto.EpicRanking));
@@ -106,8 +111,11 @@ namespace CivOne.Persistence.Model
 		}
         public PlayerDto ToDto(IPlayer player)
 		{
+			ArgumentNullException.ThrowIfNull(player);
+
 			var hasOwnerId = ownerResolver.TryResolveOwnerId(player, out var ownerId);
 			var playersByIndex = TryGetPlayersByIndex();
+			var mapPositionNames = NormalizeMapPositionNames(player.MapPositionNames);
 
 			return new PlayerDto
 			{
@@ -141,6 +149,7 @@ namespace CivOne.Persistence.Model
 				FutureTechCount = player.FutureTechCount,
 				HumanContactTurn = player.HumanContactTurn,
 				StartX = player.StartX,
+				MapPositions = MapPositions(player, mapPositionNames),
 				UnitsLost = [.. player.UnitsLost],
 				UnitsDestroyedBy = [.. player.UnitsDestroyedBy],
 				EpicRanking = player.EpicRanking,
@@ -159,11 +168,31 @@ namespace CivOne.Persistence.Model
 			};
 		}
 
+		private static List<MapPositionDto>? MapPositions(IPlayer player, string[] mapPositionNames)
+		{
+			List<MapPositionDto> positions = [.. (player.MapPositions ?? [])
+					.Take(MapPositionSlotCount)
+					.Select((position, index) => new MapPositionDto
+					{
+						X = position.X,
+						Y = position.Y,
+						Name = index < mapPositionNames.Length ? mapPositionNames[index] : string.Empty
+					})];
+
+			if (positions.Count > 0 && positions.All(p => p.X == -1 && p.Y == -1))
+			{
+				// ignore fully empty positions list to save space.
+				return null;
+			}
+
+			return positions.Count > 0 ? positions : null;
+		}
+
 		private Player[] TryGetPlayersByIndex()
 		{
 			try
 			{
-				return (gameInstance.Players ?? []).ToArray();
+				return [.. gameInstance.Players ?? []];
 			}
 			catch
 			{
@@ -277,6 +306,111 @@ namespace CivOne.Persistence.Model
 			}
 
 			return output;
+		}
+
+		private (short X, short Y)[] BuildMapPositions(List<MapPositionDto>? mapPositions)
+		{
+			var output = new (short X, short Y)[MapPositionSlotCount];
+			for (var i = 0; i < output.Length; i++)
+			{
+				output[i] = (-1, -1);
+			}
+
+			if (mapPositions == null)
+			{
+				return output;
+			}
+
+			for (var i = 0; i < output.Length && i < mapPositions.Count; i++)
+			{
+				var position = mapPositions[i];
+				if (position == null)
+				{
+					continue;
+				}
+
+				var x = _valueSanitizer.ClampToInt16(
+					position.X,
+					mapperName: nameof(PlayerDtoMapper),
+					fieldName: $"{nameof(PlayerDto.MapPositions)}[{i}].{nameof(MapPositionDto.X)}",
+					min: -1,
+					max: (short)(Map.WIDTH - 1));
+
+				var y = _valueSanitizer.ClampToInt16(
+					position.Y,
+					mapperName: nameof(PlayerDtoMapper),
+					fieldName: $"{nameof(PlayerDto.MapPositions)}[{i}].{nameof(MapPositionDto.Y)}",
+					min: -1,
+					max: (short)(Map.HEIGHT - 1));
+
+				output[i] = (x, y);
+			}
+
+			return output;
+		}
+
+		private string[] BuildMapPositionNames(List<MapPositionDto>? mapPositions)
+		{
+			var output = new string[MapPositionSlotCount];
+			for (var i = 0; i < output.Length; i++)
+			{
+				output[i] = string.Empty;
+			}
+
+			if (mapPositions == null)
+			{
+				return output;
+			}
+
+			for (var i = 0; i < output.Length && i < mapPositions.Count; i++)
+			{
+				var position = mapPositions[i];
+				if (position == null)
+				{
+					continue;
+				}
+
+				output[i] = TruncateMapPositionName(position.Name);
+			}
+
+			return output;
+		}
+
+		private static string[] NormalizeMapPositionNames(string[] names)
+		{
+			var output = new string[MapPositionSlotCount];
+			for (var i = 0; i < output.Length; i++)
+			{
+				output[i] = string.Empty;
+			}
+
+			if (names == null)
+			{
+				return output;
+			}
+
+			for (var i = 0; i < output.Length && i < names.Length; i++)
+			{
+				output[i] = TruncateMapPositionName(names[i]);
+			}
+
+			return output;
+		}
+
+		private static string TruncateMapPositionName(string? name)
+		{
+			if (string.IsNullOrWhiteSpace(name))
+			{
+				return string.Empty;
+			}
+
+			var trimmed = name.Trim();
+			if (trimmed.Length <= MapPositionNameMaxLength)
+			{
+				return trimmed;
+			}
+
+			return trimmed[..MapPositionNameMaxLength];
 		}
 
 		private ushort[] BuildUnitsDestroyedByArray(List<long> values)

@@ -74,6 +74,8 @@ namespace CivOne.Persistence.Model
 				CurrentResearch = new MockedIAdvance() { Id = 1 },
 				FutureTechCount = 6,
 				HumanContactTurn = 12,
+				MapPositions = [(11, 22), (33, 44), (-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1)],
+				MapPositionNames = ["Capital", "Front", "", "", "", "", "", "", ""],
 				UnitsLost = [.. Enumerable.Range(0, 28).Select(i => (ushort)i)],
 				UnitsDestroyedBy = [.. Enumerable.Range(0, 8).Select(i => (ushort)i)],
 				EpicRanking = 11,
@@ -149,6 +151,18 @@ namespace CivOne.Persistence.Model
 				FutureTechCount = 6,
 				HumanContactTurn = 12,
 				StartX = 33,
+				MapPositions =
+				[
+					new MapPositionDto { X = 11, Y = 22, Name = "Capital" },
+					new MapPositionDto { X = 33, Y = 44, Name = "Front" },
+					new MapPositionDto { X = -1, Y = -1, Name = "" },
+					new MapPositionDto { X = -1, Y = -1, Name = "" },
+					new MapPositionDto { X = -1, Y = -1, Name = "" },
+					new MapPositionDto { X = -1, Y = -1, Name = "" },
+					new MapPositionDto { X = -1, Y = -1, Name = "" },
+					new MapPositionDto { X = -1, Y = -1, Name = "" },
+					new MapPositionDto { X = -1, Y = -1, Name = "" }
+				],
 				SpaceShip = new SpaceShipDto
 				{
 					Grid = new SpaceShipGridMap2D(new SpaceShipComponentType[SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight]),
@@ -259,6 +273,17 @@ namespace CivOne.Persistence.Model
 				[nameof(PlayerDto.FutureTechCount)] = () => Assert.Equal(expected.FutureTechCount, actual.FutureTechCount),
 				[nameof(PlayerDto.HumanContactTurn)] = () => Assert.Equal(expected.HumanContactTurn, actual.HumanContactTurn),
 				[nameof(PlayerDto.StartX)] = () => Assert.Equal(expected.StartX, actual.StartX),
+				[nameof(PlayerDto.MapPositions)] = () =>
+				{
+					Assert.NotNull(actual.MapPositions);
+					Assert.Equal(expected.MapPositions.Count, actual.MapPositions.Count);
+					for (var i = 0; i < expected.MapPositions.Count; i++)
+					{
+						Assert.Equal(expected.MapPositions[i].X, actual.MapPositions[i].X);
+						Assert.Equal(expected.MapPositions[i].Y, actual.MapPositions[i].Y);
+						Assert.Equal(expected.MapPositions[i].Name, actual.MapPositions[i].Name);
+					}
+				},
 				[nameof(PlayerDto.UnitsLost)] = () => Assert.Equal(expected.UnitsLost, actual.UnitsLost),
 				[nameof(PlayerDto.UnitsDestroyedBy)] = () => Assert.Equal(expected.UnitsDestroyedBy, actual.UnitsDestroyedBy),
 				[nameof(PlayerDto.EpicRanking)] = () => Assert.Equal(expected.EpicRanking, actual.EpicRanking),
