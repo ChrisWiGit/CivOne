@@ -6,6 +6,12 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Zoom level persistence
+  * The map can be zoomed in or out with `Ctrl+MouseWheel` in gameplay map view mode.
+  * Scroll up to zoom in (larger tiles, fewer tiles visible); scroll down to zoom out (smaller tiles, more of the map visible).
+  * There are 10 fixed zoom levels ranging from 100 % (default) down to 12.5 %.
+  * The zoom is cursor-focused: the map stays anchored to the mouse pointer position while zooming.
+  * The current map zoom level is saved in the player's profile and restored on game load.
 * Feature: Map viewport restore on load with CapsLock override.
   * When a saved game is loaded, the map viewport is restored to the position saved with the game.
   * If an active unit is waiting for orders, the camera centers on that unit instead.

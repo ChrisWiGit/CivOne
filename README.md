@@ -865,3 +865,22 @@ If an active unit is waiting for orders, the camera centers on that unit instead
 
 To suppress unit centering and restore the saved viewport position instead, enable **CapsLock** before loading the game.
 The CapsLock state is checked the moment the game resumes; as long as CapsLock is on, the camera stays at the saved map position.
+
+#### Zooming
+
+Use `Ctrl+MouseWheel` while hovering over the gameplay map to zoom in or out.
+
+* **Scroll up** — zoom in (larger tiles, fewer tiles visible)
+* **Scroll down** — zoom out (smaller tiles, more of the map visible)
+
+There are 10 fixed zoom levels ranging from 100 % down to 12.5 %.
+The zoom level steps through these presets automatically; you cannot set an arbitrary value between steps.
+
+| Level | Scale | Tiles visible (approx.) |
+| ----- | ----- | ----------------------- |
+| 1 (default) | 100 % | smallest area |
+| 5 | 50 % | medium overview |
+| 10 | 12.5 % | largest area |
+
+The zoom level is saved with the game and restored when you reload the save.
+If the field `MapZoomBasisPoints` is absent in an older save file, the game falls back to 100 %.
