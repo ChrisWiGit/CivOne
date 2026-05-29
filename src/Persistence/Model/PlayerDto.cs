@@ -63,6 +63,9 @@ namespace CivOne.Persistence.Model
 		[Doc("Saved map camera slots (1-9 in UI, 0-8 in storage). Use -1/-1 for empty slots. Can be null.")]
 		public List<MapPositionDto>? MapPositions { get; set; }
 
+		[Doc("Last opened map camera position for the human player. Null means no remembered position for backward compatibility.")]
+		public MapPositionDto? LastMapPosition { get; set; }
+
 		[Doc("Units lost per unit type (28 entries). YAML allows long values; mapper clamps to ushort range.")]
 		public List<long> UnitsLost { get; set; }
 

@@ -145,26 +145,7 @@ namespace CivOne.Screens.GamePlayPanels
 					return true;
 				}
 
-				_gameMap._x = x;
-				while (_gameMap._x < 0)
-				{
-					_gameMap._x += Map.WIDTH;
-				}
-
-				while (_gameMap._x >= Map.WIDTH)
-				{
-					_gameMap._x -= Map.WIDTH;
-				}
-
-				_gameMap._y = y;
-				if (_gameMap._y < 0)
-				{
-					_gameMap._y = 0;
-				}
-
-				_gameMap._y = Math.Min(_gameMap._y, Math.Max(0, Map.HEIGHT - _gameMap._tilesY));
-				_gameMap._update = true;
-				_gameMap._fullRedraw = true;
+				_gameMap.SetViewOrigin(x, y);
 				return true;
 			}
 

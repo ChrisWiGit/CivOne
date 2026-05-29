@@ -6,7 +6,11 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
-* Feature: Map panning and camera control
+* Feature: Map viewport restore on load with CapsLock override.
+  * When a saved game is loaded, the map viewport is restored to the position saved with the game.
+  * If an active unit is waiting for orders, the camera centers on that unit instead.
+  * Enable **CapsLock** before loading to suppress unit centering and keep the restored map position. Don't forget to disable CapsLock again after loading if you dont want to shout ;-)
+  * CapsLock state is also checked on every unit change during normal gameplay; while CapsLock is on, the camera never auto-centers on the new active unit.
   * Press `Tab` to enter/exit map pan mode, which allows you to explore the entire map without moving units.
   * In pan mode, navigate with arrow keys to scroll in any direction or use mouse click to change the center of the map (as without map pan mode).
   * Press `c` to quickly center the camera on your currently selected unit or city (pan mode or normal mode).

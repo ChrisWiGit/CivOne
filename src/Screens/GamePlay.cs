@@ -483,6 +483,17 @@ namespace CivOne.Screens
 			}
 		}
 
+		private bool TryRestoreLastLoadedMapPosition()
+		{
+			if (!Game.TryConsumePendingMapPositionRestore(out int x, out int y))
+			{
+				return false;
+			}
+
+			_gameMap.SetViewOrigin(x, y);
+			return true;
+		}
+
 		public GamePlay()
 		{
 			OnResize += Resize;
@@ -496,7 +507,10 @@ namespace CivOne.Screens
 			_gameMap = new GameMap();
 			_gameMap.MapPositionSaved += GameMapMapPositionSaved;
 
-			CenterMapOnActiveHumanPlayerAsset();
+			if (!TryRestoreLastLoadedMapPosition())
+			{
+				CenterMapOnActiveHumanPlayerAsset();
+			}
 
 			if (Width != 320 || Height != 200)
 			{

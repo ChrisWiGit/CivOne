@@ -303,6 +303,14 @@ Behavior notes:
 * Slot entries are prefixed with their slot number and support direct number key selection.
 * If a slot with a name is selected with `Ctrl+1` to `Ctrl+9`, a rename dialog is shown with the text `Keep name or change it?` and the current name as default input, allowing the user to keep or change the name of the map position. Not changing the name or hit cancel will keep the existing name but the slot still updates to the new position.
 
+### Map position restore on load
+
+When a saved game is loaded, the map viewport is restored to the position that was active when the game was saved.
+If an active unit is waiting for orders at that moment, the camera centers on that unit instead — so you always land on something actionable.
+
+To suppress the unit centering and restore the saved viewport position instead, enable **CapsLock** before loading the game.
+The CapsLock state is checked the moment the game resumes; as long as CapsLock is on, the camera stays at the saved position regardless of whether a unit is active.
+
 ## The debug menu (in game)
 
 You can activate the debug menu in-game by hitting `Shift + F1` and in the menu choosing `Patches`, then enabling `Debug Menu` by hitting `Enter` and selecting `Yes`.
@@ -693,6 +701,14 @@ Save up to 9 named camera positions for quick navigation across the map.
 * You can keep the existing name or type a new one; pressing `Cancel` keeps the old name but still updates the map position to the current location.
 * The `Alt+0` slot list only appears when at least one position is saved.
 * In the slot list dialog (titled `Map position. Select a number...`), you can press `1` through `9` to jump directly to that slot, or use arrow keys to navigate and press `Enter` to confirm.
+
+#### Camera position on load
+
+When a saved game is loaded, the map viewport is restored to the position that was active when the game was saved.
+If an active unit is waiting for orders, the camera centers on that unit instead — so you always land on something actionable.
+
+To suppress unit centering and restore the saved viewport position instead, enable **CapsLock** before loading the game.
+The CapsLock state is checked the moment the game resumes; as long as CapsLock is on, the camera stays at the saved map position.
 
 ```sh
 dotnet clean

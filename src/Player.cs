@@ -56,6 +56,7 @@ namespace CivOne
 		private readonly ushort[] _unitsDestroyedBy = new ushort[8];
 		internal readonly (short X, short Y)[] MapPositions = new (short X, short Y)[9];
 		internal readonly string[] MapPositionNames = new string[9];
+		internal (short X, short Y) LastMapPosition = (-1, -1);
 		
 		private short _anarchy = 0;
 		private ushort _epicRanking;
@@ -709,6 +710,8 @@ namespace CivOne
 		(short X, short Y)[] IPlayer.MapPositions => MapPositions;
 
 		string[] IPlayer.MapPositionNames => MapPositionNames;
+
+		(short X, short Y) IPlayer.LastMapPosition => LastMapPosition;
 
 		ushort[] IPlayer.UnitsLost => _unitsLost;
 

@@ -144,7 +144,7 @@ namespace CivOne.Screens.GamePlayPanels
 
 			if ((gameTick % 2) == 0 && (_lastTurn != Game.GameTurn || _lastUnit != unit))
 			{
-				if (_lastUnit != unit && unit != null && Game.Human == unit.Owner && !_mapViewEnabled && ShouldCenter())
+				if (_lastUnit != unit && unit != null && Game.Human == unit.Owner && !_mapViewEnabled && ShouldCenter() && !Common.CapsLockActive)
 				{
 					CenterOnUnit();
 				}
@@ -170,7 +170,7 @@ namespace CivOne.Screens.GamePlayPanels
 			{
 				_update = true;
 			}
-			else if (unit != _lastUnit && !_mapViewEnabled && ShouldCenter() && Human == unit.Owner)
+			else if (unit != _lastUnit && !_mapViewEnabled && ShouldCenter() && Human == unit.Owner && !Common.CapsLockActive)
 			{
 				CenterOnUnit();
 				_update = true;
@@ -276,18 +276,40 @@ namespace CivOne.Screens.GamePlayPanels
 		{
 			_fullRedraw = true;
 		}
-		
-		internal void CenterOnPoint(int x, int y)
-		{
-			_x = x - (_tilesX / 2);
-			while (_x < 0) _x += Map.WIDTH;
-			while (_x >= Map.WIDTH) _x -= Map.WIDTH;
 
-			_y = y - (_tilesY / 2);
-			if (_y < 0) _y = 0;
+		///<summary>
+		/// Sets the map viewport origin to the specified world tile coordinates, 
+		/// adjusting for map wrapping and ensuring the viewport remains within map bounds.
+		/// In contrast to <a href="CenterOnPoint"> this method does not attempt to center on the coordinates 
+		/// but uses them as the top-left corner of the viewport.
+		/// </summary>
+		internal void SetViewOrigin(int x, int y)
+		{
+			_x = x;
+			while (_x < 0)
+			{
+				_x += Map.WIDTH;
+			}
+
+			while (_x >= Map.WIDTH)
+			{
+				_x -= Map.WIDTH;
+			}
+
+			_y = y;
+			if (_y < 0)
+			{
+				_y = 0;
+			}
+
 			_y = Math.Min(_y, Math.Max(0, Map.HEIGHT - _tilesY));
 			_update = true;
 			_fullRedraw = true;
+		}
+		
+		internal void CenterOnPoint(int x, int y)
+		{
+			SetViewOrigin(x - (_tilesX / 2), y - (_tilesY / 2));
 		}
 		
 		private void CenterOnUnit()

@@ -31,7 +31,14 @@ namespace CivOne
 		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
 
 		public static Random Random; // = new Random((int)DateTime.Now.Ticks);
-		
+
+		/// <summary>
+		/// True if Caps Lock is currently active. 
+		/// It does not track the state of the Shift key, as Shift is properly tracked via KeyboardEventArgs.Modifier, 
+		/// but Caps Lock is not a modifier in the same sense and thus requires separate tracking.
+		/// </summary>
+		internal static bool CapsLockActive;
+
 		public static IAdvance[] Advances = Reflect.GetAdvances().ToArray();
 		public static IBuilding[] Buildings = Reflect.GetBuildings().ToArray();
 		public static IWonder[] Wonders = Reflect.GetWonders().ToArray();

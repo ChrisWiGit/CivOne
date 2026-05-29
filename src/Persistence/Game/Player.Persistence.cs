@@ -163,6 +163,12 @@ namespace CivOne
 			}
 		}
 
+		(short X, short Y) IPlayerRestorable.LastMapPosition
+		{
+			get => LastMapPosition;
+			set => LastMapPosition = value;
+		}
+
 		ushort[] IPlayerRestorable.UnitsLost
 		{
 			get => _unitsLost;

@@ -232,6 +232,10 @@ namespace CivOne
 				}
 
 				KeyboardEventArgs args = ConvertKeyEvent(keyboardEvent);
+				if (args != null)
+				{
+					args.CapsLock = (keyboardEvent.KeySym.Modifier & SDL_KMOD.KMOD_CAPS) > 0;
+				}
 
 #if DEBUG
 				Log(BuildKeyboardDebugMessage(keyboardEvent, args));

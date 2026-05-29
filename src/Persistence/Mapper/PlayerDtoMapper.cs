@@ -75,6 +75,7 @@ namespace CivOne.Persistence.Model
 			player.StartX = _valueSanitizer.ClampToInt16(dto.StartX, nameof(PlayerDtoMapper), nameof(PlayerDto.StartX));
 			player.MapPositions = BuildMapPositions(dto.MapPositions);
 			player.MapPositionNames = BuildMapPositionNames(dto.MapPositions);
+			player.LastMapPosition = BuildLastMapPosition(dto.LastMapPosition);
 			player.UnitsLost = BuildUnitsLostArray(dto.UnitsLost);
 			player.UnitsDestroyedBy = BuildUnitsDestroyedByArray(dto.UnitsDestroyedBy);
 			player.EpicRanking = _valueSanitizer.ClampToUInt16(dto.EpicRanking, nameof(PlayerDtoMapper), nameof(PlayerDto.EpicRanking));
@@ -150,6 +151,7 @@ namespace CivOne.Persistence.Model
 				HumanContactTurn = player.HumanContactTurn,
 				StartX = player.StartX,
 				MapPositions = MapPositions(player, mapPositionNames),
+				LastMapPosition = LastMapPosition(player),
 				UnitsLost = [.. player.UnitsLost],
 				UnitsDestroyedBy = [.. player.UnitsDestroyedBy],
 				EpicRanking = player.EpicRanking,
@@ -186,6 +188,27 @@ namespace CivOne.Persistence.Model
 			}
 
 			return positions.Count > 0 ? positions : null;
+		}
+
+		private static MapPositionDto? LastMapPosition(IPlayer player)
+		{
+			if (player == null)
+			{
+				return null;
+			}
+
+			var lastMapPosition = player.LastMapPosition;
+			if (lastMapPosition.X < 0 || lastMapPosition.Y < 0)
+			{
+				return null;
+			}
+
+			return new MapPositionDto
+			{
+				X = lastMapPosition.X,
+				Y = lastMapPosition.Y,
+				Name = string.Empty
+			};
 		}
 
 		private Player[] TryGetPlayersByIndex()
@@ -374,6 +397,35 @@ namespace CivOne.Persistence.Model
 			}
 
 			return output;
+		}
+
+		private (short X, short Y) BuildLastMapPosition(MapPositionDto? mapPosition)
+		{
+			if (mapPosition == null)
+			{
+				return (-1, -1);
+			}
+
+			var x = _valueSanitizer.ClampToInt16(
+				mapPosition.X,
+				mapperName: nameof(PlayerDtoMapper),
+				fieldName: $"{nameof(PlayerDto.LastMapPosition)}.{nameof(MapPositionDto.X)}",
+				min: -1,
+				max: (short)(Map.WIDTH - 1));
+
+			var y = _valueSanitizer.ClampToInt16(
+				mapPosition.Y,
+				mapperName: nameof(PlayerDtoMapper),
+				fieldName: $"{nameof(PlayerDto.LastMapPosition)}.{nameof(MapPositionDto.Y)}",
+				min: -1,
+				max: (short)(Map.HEIGHT - 1));
+
+			if (x < 0 || y < 0)
+			{
+				return (-1, -1);
+			}
+
+			return (x, y);
 		}
 
 		private static string[] NormalizeMapPositionNames(string[] names)

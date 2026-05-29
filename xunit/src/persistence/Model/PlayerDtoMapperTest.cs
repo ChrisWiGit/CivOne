@@ -76,6 +76,7 @@ namespace CivOne.Persistence.Model
 				HumanContactTurn = 12,
 				MapPositions = [(11, 22), (33, 44), (-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1)],
 				MapPositionNames = ["Capital", "Front", "", "", "", "", "", "", ""],
+				LastMapPosition = (22, 18),
 				UnitsLost = [.. Enumerable.Range(0, 28).Select(i => (ushort)i)],
 				UnitsDestroyedBy = [.. Enumerable.Range(0, 8).Select(i => (ushort)i)],
 				EpicRanking = 11,
@@ -163,6 +164,7 @@ namespace CivOne.Persistence.Model
 					new MapPositionDto { X = -1, Y = -1, Name = "" },
 					new MapPositionDto { X = -1, Y = -1, Name = "" }
 				],
+				LastMapPosition = new MapPositionDto { X = 22, Y = 18, Name = string.Empty },
 				SpaceShip = new SpaceShipDto
 				{
 					Grid = new SpaceShipGridMap2D(new SpaceShipComponentType[SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight]),
@@ -255,6 +257,29 @@ namespace CivOne.Persistence.Model
 			Assert.Equal([0, 1, 2, 3], actual.Advances);
 		}
 
+		[Fact]
+		public void TestPlayerDtoMapper_FromDto_WithoutLastMapPosition_UsesDefaultEmptyPosition()
+		{
+			var dto = new PlayerDto
+			{
+				Civilization = originalDto.Civilization,
+				Advances = [1],
+				Embassies = [],
+				Diplomacy = [],
+				CurrentResearch = 1,
+				Government = 1,
+				Cities = [],
+				Units = [],
+				Explored = new Bool2dMap(5, 5),
+				Visible = new Bool2dMap(5, 5),
+				LastMapPosition = null
+			};
+
+			var actual = _testee.FromDto(dto);
+
+			Assert.Equal((-1, -1), actual.LastMapPosition);
+		}
+
 		private static Dictionary<string, Action> GetPlayerDtoRoundTripAssertionMap(PlayerDto expected, PlayerDto actual)
 			=> new()
 			{
@@ -283,6 +308,13 @@ namespace CivOne.Persistence.Model
 						Assert.Equal(expected.MapPositions[i].Y, actual.MapPositions[i].Y);
 						Assert.Equal(expected.MapPositions[i].Name, actual.MapPositions[i].Name);
 					}
+				},
+				[nameof(PlayerDto.LastMapPosition)] = () =>
+				{
+					Assert.NotNull(expected.LastMapPosition);
+					Assert.NotNull(actual.LastMapPosition);
+					Assert.Equal(expected.LastMapPosition.X, actual.LastMapPosition.X);
+					Assert.Equal(expected.LastMapPosition.Y, actual.LastMapPosition.Y);
 				},
 				[nameof(PlayerDto.UnitsLost)] = () => Assert.Equal(expected.UnitsLost, actual.UnitsLost),
 				[nameof(PlayerDto.UnitsDestroyedBy)] = () => Assert.Equal(expected.UnitsDestroyedBy, actual.UnitsDestroyedBy),
