@@ -882,5 +882,5 @@ The zoom level steps through these presets automatically; you cannot set an arbi
 | 5 | 50 % | medium overview |
 | 10 | 12.5 % | largest area |
 
-The zoom level is saved with the game and restored when you reload the save.
+The zoom level is saved in the savegame and restored when you reload the save.
 If the field `MapZoomBasisPoints` is absent in an older save file, the game falls back to 100 %.
