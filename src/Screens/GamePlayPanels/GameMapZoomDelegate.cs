@@ -67,8 +67,7 @@ namespace CivOne.Screens.GamePlayPanels
 						_gameMap._y,
 						_gameMap._tilesX,
 						_gameMap._tilesY,
-						_gameMap.Bitmap.Width,
-						_gameMap.Bitmap.Height);
+						_gameMap._tilePixelSize);
 				}
 
 				_gameMap._zoomBasisPoints = basisPoints;
@@ -170,16 +169,14 @@ namespace CivOne.Screens.GamePlayPanels
 				int originY,
 				int visibleTilesX,
 				int visibleTilesY,
-				int viewportWidth,
-				int viewportHeight)
+				int tilePixelSize)
 			{
 				int safeTilesX = Math.Max(1, visibleTilesX);
 				int safeTilesY = Math.Max(1, visibleTilesY);
-				int safeViewportWidth = Math.Max(1, viewportWidth);
-				int safeViewportHeight = Math.Max(1, viewportHeight);
+				int safeTilePixelSize = Math.Max(1, tilePixelSize);
 
-				int localTileX = Math.Clamp((Math.Max(0, pixel.X) * safeTilesX) / safeViewportWidth, 0, safeTilesX - 1);
-				int localTileY = Math.Clamp((Math.Max(0, pixel.Y) * safeTilesY) / safeViewportHeight, 0, safeTilesY - 1);
+				int localTileX = Math.Clamp(Math.Max(0, pixel.X) / safeTilePixelSize, 0, safeTilesX - 1);
+				int localTileY = Math.Clamp(Math.Max(0, pixel.Y) / safeTilePixelSize, 0, safeTilesY - 1);
 				int worldX = originX + localTileX;
 				while (worldX < 0)
 				{
