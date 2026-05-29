@@ -63,6 +63,24 @@ namespace CivOne.Services
 		}
 
 		/// <summary>
+		/// Resets the factory to a clean state with identity translation and no active language.
+		/// Intended for use in tests to ensure a consistent starting point and avoid test pollution.
+		/// The repository is reset to a new <see cref="TranslationFileRepositoryImpl"/> instance.
+		/// Tests that require a pure unit-test setup should call <see cref="ConfigureRepository"/> afterwards
+		/// to inject a mock or in-memory repository.
+		/// </summary>
+		public static void ResetForTests()
+		{
+			lock (_sync)
+			{
+				_instance = new TranslationIdentityServiceImpl();
+				_activeLanguagePostfix = "identity";
+				_languageObservers.Clear();
+				_translationFileRepository = new TranslationFileRepositoryImpl();
+			}
+		}
+
+		/// <summary>
 		/// Returns the currently active translation service instance.
 		/// If no service is active yet, initializes identity translation.
 		/// </summary>

@@ -164,7 +164,7 @@ dotnet build Project.csproj -v q 2>&1 | tail -n 15
 Example:
 
 ```sh
-dotnet test "C:\Users\Christian\Documents\Projekte\CivOne-Chris-2\xunit\CivOne.UnitTests.csproj" --filter "FullyQualifiedName~GameMapViewModeTests" -p:SuppressConsoleLogs=true -p:NoWarn="*" -v q 2>&1 | Select-Object -Last 20
+dotnet test "xunit/CivOne.UnitTests.csproj" --filter "FullyQualifiedName~GameMapViewModeTests" -p:SuppressConsoleLogs=true -p:NoWarn="*" -v q 2>&1 | Select-Object -Last 20
 ```
 
 ## Existing Useful Code
@@ -204,7 +204,7 @@ Apply when:
 ## Translation
 
 ```sh
-dotnet test "C:\Users\Christian\Documents\Projekte\CivOne-Chris-2\xunit\CivOne.UnitTests.csproj" --filter "FullyQualifiedName~GameMapViewModeTests" -p:SuppressConsoleLogs=true -p:NoWarn="*" -v q 2>&1 | Select-Object -Last 20
+dotnet test "xunit/CivOne.UnitTests.csproj" --filter "FullyQualifiedName~GameMapViewModeTests" -p:SuppressConsoleLogs=true -p:NoWarn="*" -v q 2>&1 | Select-Object -Last 20
 ```
 
 ## Existing Utilities

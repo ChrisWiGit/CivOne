@@ -101,18 +101,24 @@ namespace CivOne.Screens.GamePlayPanels
 			{
 				string currentName = Human.MapPositionNames[slot] ?? string.Empty;
 				_renameDialogTitle = string.IsNullOrWhiteSpace(currentName)
-					? $"Rename map position {slot + 1}"
-					: "Keep name or change it?";
-				_renameDialog = new InputDialogDelegate(_renameDialogTitle, MapPositionNameMaxLength);
-				_renameDialog.Accepted += value => ApplyRename(slot, value);
-				_renameDialog.Cancelled += (_, _) => CloseRenameDialog();
-				_renameDialog.Open(currentName);
+					? _gameMap.TranslateFormatted("Rename map position {0}", slot + 1)
+					: _gameMap.Translate("Keep name or change it?");
+				var renameDialog = new InputDialogDelegate(_renameDialogTitle, MapPositionNameMaxLength);
+				renameDialog.Accepted += value => ApplyRename(renameDialog, slot, value);
+				renameDialog.Cancelled += (_, _) => CloseRenameDialog(renameDialog);
+				_renameDialog = renameDialog;
+				renameDialog.Open(currentName);
 				_gameMap._update = true;
 				_gameMap._fullRedraw = true;
 			}
 
-			private void ApplyRename(int slot, string value)
+			private void ApplyRename(InputDialogDelegate dialog, int slot, string value)
 			{
+				if (!ReferenceEquals(_renameDialog, dialog))
+				{
+					return;
+				}
+
 				string newName = (value ?? string.Empty).Trim();
 				if (newName.Length > MapPositionNameMaxLength)
 				{
@@ -120,11 +126,16 @@ namespace CivOne.Screens.GamePlayPanels
 				}
 
 				Human.MapPositionNames[slot] = newName;
-				CloseRenameDialog();
+				CloseRenameDialog(dialog);
 			}
 
-			private void CloseRenameDialog()
+			private void CloseRenameDialog(InputDialogDelegate? dialog = null)
 			{
+				if (dialog != null && !ReferenceEquals(_renameDialog, dialog))
+				{
+					return;
+				}
+
 				_renameDialog?.Close();
 				_renameDialog = null;
 				_renameDialogTitle = string.Empty;

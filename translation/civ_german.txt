@@ -1198,3 +1198,4 @@ INPUT=Eingabe
 MAP POSITION {0}=Position {0}
 RENAME MAP POSITION {0}=Position {0} umbenennen
 MAP POSITION. SELECT A NUMBER...=Position. Wähle eine Nummer...
+KEEP NAME OR CHANGE IT?=Name behalten oder ändern?
