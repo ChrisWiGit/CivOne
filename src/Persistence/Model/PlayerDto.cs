@@ -66,6 +66,9 @@ namespace CivOne.Persistence.Model
 		[Doc("Last opened map camera position for the human player. Null means no remembered position for backward compatibility.")]
 		public MapPositionDto? LastMapPosition { get; set; }
 
+		[Doc("Map zoom in basis points (1000 = 100%, 125 = 12.5%). Values <= 0 are treated as default 1000 during restore.", (long)MapZoomSettings.MinBasisPoints, (long)MapZoomSettings.MaxBasisPoints)]
+		public int MapZoomBasisPoints { get; set; }
+
 		[Doc("Units lost per unit type (28 entries). YAML allows long values; mapper clamps to ushort range.")]
 		public List<long> UnitsLost { get; set; }
 

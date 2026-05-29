@@ -33,6 +33,7 @@ namespace CivOne.Persistence.Game
 		new (short X, short Y)[] MapPositions { get; set; }
 		new string[] MapPositionNames { get; set; }
 		(short X, short Y) LastMapPosition { get; set; }
+		new int MapZoomBasisPoints { get; set; }
 		new ushort[] UnitsLost { get; set; }
 		new ushort[] UnitsDestroyedBy { get; set; }
 		new ushort EpicRanking { get; set; }

@@ -23,6 +23,7 @@ namespace CivOne.Screens
 		bool KeyDown(KeyboardEventArgs args);
 		bool MouseDown(ScreenEventArgs args);
 		bool MouseUp(ScreenEventArgs args);
+		bool MouseWheel(ScreenEventArgs args);
 		bool MouseDrag(ScreenEventArgs args);
 		bool MouseMove(ScreenEventArgs args);
 		Palette OriginalColours { get; }

@@ -45,5 +45,17 @@ namespace CivOne
 			private fixed byte _nil[2];
 			internal SDL_Keysym KeySym;
 		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		private unsafe struct SDL_MouseWheelEvent
+		{
+			public SDL_EventType Type;
+			public uint Timestamp;
+			public uint WindowId;
+			public uint Which;
+			public int X;
+			public int Y;
+			public uint Direction;
+		}
 	}
 }

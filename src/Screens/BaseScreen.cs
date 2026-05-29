@@ -38,7 +38,7 @@ namespace CivOne.Screens
 
 		protected void MouseArgsOffset(ref ScreenEventArgs args, int offsetX, int offsetY)
 		{
-			args = new ScreenEventArgs(args.X - offsetX, args.Y - offsetY, args.Buttons);
+			args = new ScreenEventArgs(args.X - offsetX, args.Y - offsetY, args.Buttons, args.Modifier, args.WheelDelta);
 		}
 
 		public event EventHandler Closed;
@@ -102,6 +102,7 @@ namespace CivOne.Screens
 		public virtual bool KeyDown(KeyboardEventArgs args) => false;
 		public virtual bool MouseDown(ScreenEventArgs args) => false;
 		public virtual bool MouseUp(ScreenEventArgs args) => false;
+		public virtual bool MouseWheel(ScreenEventArgs args) => false;
 		public virtual bool MouseDrag(ScreenEventArgs args) => false;
 		public virtual bool MouseMove(ScreenEventArgs args) => false;
 

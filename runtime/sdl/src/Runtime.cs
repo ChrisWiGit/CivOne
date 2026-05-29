@@ -34,11 +34,12 @@ namespace CivOne
 		internal void InvokeMouseUp(ScreenEventArgs args) => MouseUp?.Invoke(this, args);
 		internal void InvokeMouseDown(ScreenEventArgs args) => MouseDown?.Invoke(this, args);
 		internal void InvokeMouseMove(ScreenEventArgs args) => MouseMove?.Invoke(this, args);
+		internal void InvokeMouseWheel(ScreenEventArgs args) => MouseWheel?.Invoke(this, args);
 
 		public event EventHandler Initialize, Draw;
 		public event UpdateEventHandler Update;
 		public event KeyboardEventHandler KeyboardUp, KeyboardDown;
-		public event ScreenEventHandler MouseUp, MouseDown, MouseMove;
+		public event ScreenEventHandler MouseUp, MouseDown, MouseMove, MouseWheel;
 		internal event EventHandler CursorChanged;
 		internal event Action<string> PlaySound;
 		internal event Action StopSound;

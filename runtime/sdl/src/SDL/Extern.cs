@@ -126,6 +126,10 @@ namespace CivOne
 
 		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
+		private static extern SDL_KMOD SDL_GetModState();
+
+		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
+		[DllImport(DLL_SDL, CallingConvention = CallingConvention.Cdecl)]
 		private static extern IntPtr SDL_Init(SDL_INIT flags);
 
 		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]

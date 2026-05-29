@@ -443,6 +443,43 @@ namespace CivOne.Screens
 			_update |= _gameMenu.MouseDrag(args);
 			return _update;
 		}
+
+		public override bool MouseWheel(ScreenEventArgs args)
+		{
+			if (Cursor == MouseCursor.None)
+			{
+				return true;
+			}
+
+			if (args.Y < 8)
+			{
+				// Mouse wheel events on the menu bar are ignored to prevent conflicts with scrollable submenus.
+				return false;
+			}
+
+			if (_rightSideBar)
+			{
+				if (args.X > (Width - 80))
+				{
+					// Mouse wheel events on the sidebar are ignored to prevent conflicts with scrollable content in the sidebar.
+					return false;
+				}
+
+				MouseArgsOffset(ref args, 0, 8);
+			}
+			else
+			{
+				if (args.X < 80)
+				{
+					// Mouse wheel events on the sidebar are ignored to prevent conflicts with scrollable content in the sidebar.
+					return false;
+				}
+
+				MouseArgsOffset(ref args, 80, 8);
+			}
+
+			return _update = _gameMap.MouseWheel(args);
+		}
 		
 		private void Resize(object sender, ResizeEventArgs args)
 		{

@@ -57,6 +57,7 @@ namespace CivOne
 		internal readonly (short X, short Y)[] MapPositions = new (short X, short Y)[9];
 		internal readonly string[] MapPositionNames = new string[9];
 		internal (short X, short Y) LastMapPosition = (-1, -1);
+		private int _mapZoomBasisPoints = MapZoomSettings.DefaultBasisPoints;
 		
 		private short _anarchy = 0;
 		private ushort _epicRanking;
@@ -109,6 +110,12 @@ namespace CivOne
 		}
 
 		private int _luxuriesRate = 0, _taxesRate = 5, _scienceRate = 5;
+		internal int MapZoomBasisPoints
+		{
+			get => _mapZoomBasisPoints;
+			set => _mapZoomBasisPoints = MapZoomSettings.NormalizeBasisPoints(value);
+		}
+
 		public int LuxuriesRate
 		{
 			get => _luxuriesRate;
@@ -713,6 +720,8 @@ namespace CivOne
 
 		(short X, short Y) IPlayer.LastMapPosition => LastMapPosition;
 
+		int IPlayer.MapZoomBasisPoints => _mapZoomBasisPoints;
+
 		ushort[] IPlayer.UnitsLost => _unitsLost;
 
 		ushort[] IPlayer.UnitsDestroyedBy => _unitsDestroyedBy;
@@ -776,6 +785,10 @@ namespace CivOne
 				MapPositions[i] = (-1, -1);
 				MapPositionNames[i] = string.Empty;
 			}
+
+			_mapZoomBasisPoints = MapZoomSettings.DefaultBasisPoints;
 		}
+
+		internal static int NormalizeMapZoomBasisPoints(int basisPoints) => MapZoomSettings.NormalizeBasisPoints(basisPoints);
 	}
 }

@@ -223,6 +223,7 @@ namespace CivOne.UnitTests
 			public event ScreenEventHandler MouseUp { add { _ = value; } remove { _ = value; } }
 			public event ScreenEventHandler MouseDown { add { _ = value; } remove { _ = value; } }
 			public event ScreenEventHandler MouseMove { add { _ = value; } remove { _ = value; } }
+			public event ScreenEventHandler MouseWheel { add { _ = value; } remove { _ = value; } }
 
 			public Platform CurrentPlatform => Platform.Windows;
 			public string StorageDirectory { get; } = storageDirectory;
