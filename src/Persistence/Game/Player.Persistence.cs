@@ -169,6 +169,12 @@ namespace CivOne
 			set => LastMapPosition = value;
 		}
 
+		int IPlayerRestorable.MapZoomBasisPoints
+		{
+			get => MapZoomBasisPoints;
+			set => MapZoomBasisPoints = NormalizeMapZoomBasisPoints(value);
+		}
+
 		ushort[] IPlayerRestorable.UnitsLost
 		{
 			get => _unitsLost;

@@ -506,8 +506,8 @@ namespace CivOne
 			}
 		}
 
-		private static ScreenEventArgs CreateScreenEventArgs(int x, int y, MouseButton buttons)
-			=> buttons == MouseButton.None ? new ScreenEventArgs(x, y) : new ScreenEventArgs(x, y, buttons);
+		private static ScreenEventArgs CreateScreenEventArgs(int x, int y, MouseButton buttons, KeyModifier modifier, int wheelDelta)
+			=> new(x, y, buttons, modifier, wheelDelta);
 
 		private static int ScaleToRange(int value, int sourceSize, int targetSize)
 			=> (int)((float)value * targetSize / sourceSize);
@@ -529,13 +529,13 @@ namespace CivOne
 			int localY = args.Y - offsetY;
 			if (drawWidth <= 0 || drawHeight <= 0)
 			{
-				return CreateScreenEventArgs(0, 0, args.Buttons);
+				return CreateScreenEventArgs(0, 0, args.Buttons, args.Modifier, args.WheelDelta);
 			}
 
 			int x = Clamp(ScaleToRange(localX, drawWidth, inputSize.Width), 0, inputSize.Width - 1);
 			int y = Clamp(ScaleToRange(localY, drawHeight, inputSize.Height), 0, inputSize.Height - 1);
 
-			return CreateScreenEventArgs(x, y, args.Buttons);
+			return CreateScreenEventArgs(x, y, args.Buttons, args.Modifier, args.WheelDelta);
 		}
 
 		private void KeyDown(object sender, KeyboardEventArgs args)
@@ -582,6 +582,13 @@ namespace CivOne
             args = Transform(args);
             _runtime.InvokeMouseDown(args);
         }
+
+		private void MouseWheel(object sender, ScreenEventArgs args)
+		{
+			if (!IsInsideDrawArea(args)) return;
+			args = Transform(args);
+			_runtime.InvokeMouseWheel(args);
+		}
 
 		/// <summary>
 		/// Checks if the given mouse event is within the current draw area (i.e. not in letterbox borders).
@@ -660,6 +667,7 @@ namespace CivOne
 				OnMouseMove -= MouseMove;
 				OnMouseDown -= MouseDown;
 				OnMouseUp -= MouseUp;
+				OnMouseWheel -= MouseWheel;
 
 				CursorTexture?.Dispose();
 				CursorTexture = null;
@@ -698,6 +706,7 @@ namespace CivOne
 			OnMouseMove += MouseMove;
 			OnMouseDown += MouseDown;
 			OnMouseUp += MouseUp;
+			OnMouseWheel += MouseWheel;
 
 			if (!_runtime.Settings.Get<bool>("no-sound"))
 			{

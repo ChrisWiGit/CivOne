@@ -78,6 +78,9 @@ namespace CivOne
 					case SDL_EventType.SDL_KEYUP:
 						HandleEventKeyboard(CastToStruct<SDL_KeyboardEvent>(sdlEvent));
 						break;
+					case SDL_EventType.SDL_MOUSEWHEEL:
+						HandleMouseWheel(CastToStruct<SDL_MouseWheelEvent>(sdlEvent));
+						break;
 				}
 			}
 

@@ -18,6 +18,7 @@ namespace CivOne.UnitTests
         public event ScreenEventHandler MouseUp;
         public event ScreenEventHandler MouseDown;
         public event ScreenEventHandler MouseMove;
+        public event ScreenEventHandler MouseWheel;
         public Platform CurrentPlatform { get; }
 
         public string StorageDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CivOne");

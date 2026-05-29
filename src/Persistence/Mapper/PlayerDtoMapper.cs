@@ -76,6 +76,7 @@ namespace CivOne.Persistence.Model
 			player.MapPositions = BuildMapPositions(dto.MapPositions);
 			player.MapPositionNames = BuildMapPositionNames(dto.MapPositions);
 			player.LastMapPosition = BuildLastMapPosition(dto.LastMapPosition);
+			player.MapZoomBasisPoints = BuildMapZoomBasisPoints(dto.MapZoomBasisPoints);
 			player.UnitsLost = BuildUnitsLostArray(dto.UnitsLost);
 			player.UnitsDestroyedBy = BuildUnitsDestroyedByArray(dto.UnitsDestroyedBy);
 			player.EpicRanking = _valueSanitizer.ClampToUInt16(dto.EpicRanking, nameof(PlayerDtoMapper), nameof(PlayerDto.EpicRanking));
@@ -116,7 +117,7 @@ namespace CivOne.Persistence.Model
 
 			var hasOwnerId = ownerResolver.TryResolveOwnerId(player, out var ownerId);
 			var playersByIndex = TryGetPlayersByIndex();
-			var mapPositionNames = NormalizeMapPositionNames(player.MapPositionNames);
+			var mapProjection = BuildMapProjectionDto(player);
 
 			return new PlayerDto
 			{
@@ -150,8 +151,9 @@ namespace CivOne.Persistence.Model
 				FutureTechCount = player.FutureTechCount,
 				HumanContactTurn = player.HumanContactTurn,
 				StartX = player.StartX,
-				MapPositions = MapPositions(player, mapPositionNames),
-				LastMapPosition = LastMapPosition(player),
+				MapPositions = mapProjection.MapPositions,
+				LastMapPosition = mapProjection.LastMapPosition,
+				MapZoomBasisPoints = BuildMapZoomBasisPoints(player.MapZoomBasisPoints),
 				UnitsLost = [.. player.UnitsLost],
 				UnitsDestroyedBy = [.. player.UnitsDestroyedBy],
 				EpicRanking = player.EpicRanking,
@@ -170,8 +172,12 @@ namespace CivOne.Persistence.Model
 			};
 		}
 
-		private static List<MapPositionDto>? MapPositions(IPlayer player, string[] mapPositionNames)
+		private static (List<MapPositionDto>? MapPositions, MapPositionDto? LastMapPosition) BuildMapProjectionDto(IPlayer player)
+			=> (BuildMapPositionsDto(player), BuildLastMapPositionDto(player));
+
+		private static List<MapPositionDto>? BuildMapPositionsDto(IPlayer player)
 		{
+			var mapPositionNames = NormalizeMapPositionNames(player.MapPositionNames);
 			List<MapPositionDto> positions = [.. (player.MapPositions ?? [])
 					.Take(MapPositionSlotCount)
 					.Select((position, index) => new MapPositionDto
@@ -190,7 +196,7 @@ namespace CivOne.Persistence.Model
 			return positions.Count > 0 ? positions : null;
 		}
 
-		private static MapPositionDto? LastMapPosition(IPlayer player)
+		private static MapPositionDto? BuildLastMapPositionDto(IPlayer player)
 		{
 			if (player == null)
 			{
@@ -426,6 +432,11 @@ namespace CivOne.Persistence.Model
 			}
 
 			return (x, y);
+		}
+
+		private int BuildMapZoomBasisPoints(int value)
+		{
+			return MapZoomSettings.NormalizeBasisPoints(value);
 		}
 
 		private static string[] NormalizeMapPositionNames(string[] names)

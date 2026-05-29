@@ -21,6 +21,8 @@ namespace CivOne.Events
 		public int X { get; private set; }
 		public int Y { get; private set; }
 		public MouseButton Buttons { get; private set; }
+		public KeyModifier Modifier { get; private set; }
+		public int WheelDelta { get; private set; }
 		
 		public Point Location
 		{
@@ -35,6 +37,8 @@ namespace CivOne.Events
 			X = x;
 			Y = y;
 			Buttons = MouseButton.None;
+			Modifier = KeyModifier.None;
+			WheelDelta = 0;
 		}
 		
 		public ScreenEventArgs(int x, int y, MouseButton buttons)
@@ -42,6 +46,17 @@ namespace CivOne.Events
 			X = x;
 			Y = y;
 			Buttons = buttons;
+			Modifier = KeyModifier.None;
+			WheelDelta = 0;
+		}
+
+		public ScreenEventArgs(int x, int y, MouseButton buttons, KeyModifier modifier, int wheelDelta)
+		{
+			X = x;
+			Y = y;
+			Buttons = buttons;
+			Modifier = modifier;
+			WheelDelta = wheelDelta;
 		}
 	}
 }

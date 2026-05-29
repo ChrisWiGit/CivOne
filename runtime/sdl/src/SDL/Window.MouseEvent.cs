@@ -17,7 +17,11 @@ namespace CivOne
 	{
 		internal abstract partial class Window
 		{
-			protected ScreenEventHandler OnMouseMove, OnMouseUp, OnMouseDown;
+			// May be refactored to SDL in future if other SDL event handlers need it, 
+			// but for now it's only relevant to mouse wheel events in the window, so it's nested here.
+			private const uint SDL_MOUSEWHEEL_FLIPPED = 1;
+
+			protected ScreenEventHandler OnMouseMove, OnMouseUp, OnMouseDown, OnMouseWheel;
 
 			private readonly bool[] _mouseButtonState = new bool[3];
 			protected int MouseX { get; private set; }
@@ -82,6 +86,22 @@ namespace CivOne
 				
 				CheckMouseButton(MouseButton.Left, buttonMask, 1);
 				CheckMouseButton(MouseButton.Right, buttonMask, 4);
+			}
+
+			private void HandleMouseWheel(SDL_MouseWheelEvent mouseWheelEvent)
+			{
+				_ = SDL_GetMouseState(out int x, out int y);
+				MouseX = x;
+				MouseY = y;
+
+				int wheelDelta = mouseWheelEvent.Y;
+				if (mouseWheelEvent.Direction == SDL_MOUSEWHEEL_FLIPPED)
+				{
+					wheelDelta = -wheelDelta;
+				}
+
+				KeyModifier modifier = ConvertModifier(SDL_GetModState());
+				OnMouseWheel?.Invoke(this, new ScreenEventArgs(x, y, MouseButton.None, modifier, wheelDelta));
 			}
 		}
 	}

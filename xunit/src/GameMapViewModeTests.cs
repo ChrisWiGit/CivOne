@@ -134,5 +134,110 @@ namespace CivOne.UnitTests
 			Assert.False(gameMap.HasMapPositionRenameDialog);
 			Assert.Equal(string.Empty, Game.Instance.HumanPlayer.MapPositionNames[0]);
 		}
+
+		/// <summary>
+		/// Ensures Ctrl+mouse wheel down zooms out, updates viewport tile size, and keeps focus near the cursor.
+		/// </summary>
+		[Fact]
+		public void CtrlWheelDownZoomsOutAndKeepsCursorFocus()
+		{
+			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+			Game.Instance.CurrentPlayer.MapZoomBasisPoints = 1000;
+
+			using var gameMap = new GameMapForTesting();
+			gameMap.ResizeMap(160, 120);
+			gameMap.SetViewOrigin(10, 10);
+
+			var handled = gameMap.MouseWheel(new ScreenEventArgs(40, 40, MouseButton.None, KeyModifier.Control, -1));
+
+			Assert.True(handled);
+			Assert.Equal(900, Game.Instance.CurrentPlayer.MapZoomBasisPoints);
+			Assert.Equal(14, gameMap.TilePixelSize);
+			Assert.Equal(12, gameMap.VisibleTilesX);
+			Assert.Equal(9, gameMap.VisibleTilesY);
+			Assert.Equal(10, gameMap.X);
+			Assert.Equal(10, gameMap.Y);
+		}
+
+		/// <summary>
+		/// Ensures Ctrl+mouse wheel up zooms in to the next preset.
+		/// </summary>
+		[Fact]
+		public void CtrlWheelUpZoomsInToNextPreset()
+		{
+			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+			Game.Instance.CurrentPlayer.MapZoomBasisPoints = 750;
+
+			using var gameMap = new GameMapForTesting();
+			gameMap.ResizeMap(160, 120);
+
+			var handled = gameMap.MouseWheel(new ScreenEventArgs(40, 40, MouseButton.None, KeyModifier.Control, 1));
+
+			Assert.True(handled);
+			Assert.Equal(900, Game.Instance.CurrentPlayer.MapZoomBasisPoints);
+			Assert.Equal(14, gameMap.TilePixelSize);
+			Assert.Equal(12, gameMap.VisibleTilesX);
+		}
+
+		/// <summary>
+		/// Ensures wheel input without Ctrl remains ignored by the map screen.
+		/// </summary>
+		[Fact]
+		public void WheelWithoutCtrlIsIgnored()
+		{
+			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+			Game.Instance.CurrentPlayer.MapZoomBasisPoints = 1000;
+
+			using var gameMap = new GameMapForTesting();
+			gameMap.ResizeMap(160, 120);
+
+			var handled = gameMap.MouseWheel(new ScreenEventArgs(40, 40, MouseButton.None, KeyModifier.None, -1));
+
+			Assert.False(handled);
+			Assert.Equal(1000, Game.Instance.CurrentPlayer.MapZoomBasisPoints);
+			Assert.Equal(16, gameMap.TilePixelSize);
+		}
+
+		/// <summary>
+		/// Ensures zooming out on an expanded logical canvas increases the visible tile span.
+		/// </summary>
+		[Fact]
+		public void CtrlWheelDownOnExpandedCanvasIncreasesVisibleTileSpan()
+		{
+			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+			Game.Instance.CurrentPlayer.MapZoomBasisPoints = 1000;
+
+			using var gameMap = new GameMapForTesting();
+			gameMap.ResizeMap(320, 200);
+			var visibleTilesXBefore = gameMap.VisibleTilesX;
+			var visibleTilesYBefore = gameMap.VisibleTilesY;
+
+			var handled = gameMap.MouseWheel(new ScreenEventArgs(160, 100, MouseButton.None, KeyModifier.Control, -1));
+
+			Assert.True(handled);
+			Assert.Equal(900, Game.Instance.CurrentPlayer.MapZoomBasisPoints);
+			Assert.True(gameMap.VisibleTilesX > visibleTilesXBefore);
+			Assert.True(gameMap.VisibleTilesY > visibleTilesYBefore);
+		}
+
+		/// <summary>
+		/// Ensures zoom-out focus near the lower edge keeps the viewport inside Y bounds.
+		/// </summary>
+		[Fact]
+		public void CtrlWheelDownNearBottomEdgeKeepsViewportInYBounds()
+		{
+			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+			Game.Instance.CurrentPlayer.MapZoomBasisPoints = 1000;
+
+			using var gameMap = new GameMapForTesting();
+			gameMap.ResizeMap(160, 120);
+			gameMap.SetViewOrigin(10, Map.HEIGHT - gameMap.VisibleTilesY);
+
+			var handled = gameMap.MouseWheel(new ScreenEventArgs(80, 118, MouseButton.None, KeyModifier.Control, -1));
+
+			Assert.True(handled);
+			Assert.True(gameMap.Y >= 0);
+			Assert.True(gameMap.Y <= Map.HEIGHT - gameMap.VisibleTilesY);
+		}
 	}
 }

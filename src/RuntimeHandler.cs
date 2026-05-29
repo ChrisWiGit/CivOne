@@ -295,6 +295,8 @@ namespace CivOne
 
 		private void OnMouseDown(object sender, ScreenEventArgs args) => TopScreen?.MouseDown(args);
 
+		private void OnMouseWheel(object sender, ScreenEventArgs args) => TopScreen?.MouseWheel(args);
+
 		private void OnMouseMove(object sender, ScreenEventArgs args)
 		{
 			if (args.Buttons != MouseButton.None)
@@ -460,6 +462,7 @@ namespace CivOne
 			runtime.MouseUp += OnMouseUp;
 			runtime.MouseDown += OnMouseDown;
 			runtime.MouseMove += OnMouseMove;
+			runtime.MouseWheel += OnMouseWheel;
 
 			foreach (Plugin plugin in Reflect.Plugins())
 			{

@@ -20,7 +20,7 @@ namespace CivOne
 		event EventHandler Initialize, Draw;
 		event UpdateEventHandler Update;
 		event KeyboardEventHandler KeyboardUp, KeyboardDown;
-		event ScreenEventHandler MouseUp, MouseDown, MouseMove;
+		event ScreenEventHandler MouseUp, MouseDown, MouseMove, MouseWheel;
 		Platform CurrentPlatform { get; }
 		string StorageDirectory { get; }
 		string GetSetting(string key);

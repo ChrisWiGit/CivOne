@@ -156,6 +156,7 @@ namespace CivOne.UnitTests
 			public event ScreenEventHandler MouseUp { add { } remove { } }
 			public event ScreenEventHandler MouseDown { add { } remove { } }
 			public event ScreenEventHandler MouseMove { add { } remove { } }
+			public event ScreenEventHandler MouseWheel { add { } remove { } }
 			public Platform CurrentPlatform => Platform.Linux;
 			public string StorageDirectory => Path.Combine(Path.GetTempPath(), "CivOneTests", Guid.NewGuid().ToString("N"));
 			public RuntimeSettings Settings { get; } = new RuntimeSettings();
