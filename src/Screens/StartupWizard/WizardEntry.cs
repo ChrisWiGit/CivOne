@@ -132,10 +132,6 @@ namespace CivOne.Screens.StartupWizard
 		/// language postfix (e.g. <c>"german"</c>) that identifies the chosen translation.
 		/// Also used by <see cref="WizardEntryAction.SelectAspectRatio"/> entries to carry
 		/// the selected aspect ratio name.
-		/// Also used by <see cref="WizardEntryAction.BrowseSoundFolder"/> entries to carry
-		/// the selected source directory for sound-file copying.
-		/// Also used by <see cref="WizardEntryAction.OpenProfileFolder"/> entries to open
-		/// the CivOne profile folder from the file manager.
 		/// For all other actions this property is <see langword="null"/>.
 		/// </remarks>
 		public string Value { get; init; }

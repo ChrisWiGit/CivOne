@@ -228,22 +228,31 @@ namespace CivOne.Screens.StartupWizard
 				return;
 			}
 
-			if (!FileSystem.CopySoundFiles(path, out string[] missingFiles))
+			try
 			{
+				if (!FileSystem.CopySoundFiles(path, out string[] missingFiles))
+				{
+					RefreshSoundAvailability(state);
+					state.StatusMessage = T("No usable sound files found in selected folder.");
+					return;
+				}
+
+				RefreshSoundAvailability(state);
+				if (state.SoundFilesAvailable == true)
+				{
+					state.SoundEnabled = true;
+					Settings.Instance.Sound = GameOption.On;
+				}
+				state.StatusMessage = missingFiles.Length == 0
+					? T("Sound files copied successfully.")
+					: TF("Sound files copied with missing files: {0}", FormatMissingList(missingFiles));
+			}
+			catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+			{
+				_log($"Copying sound files failed for '{path}': {ex.Message}");
 				RefreshSoundAvailability(state);
 				state.StatusMessage = T("No usable sound files found in selected folder.");
-				return;
 			}
-
-			RefreshSoundAvailability(state);
-			if (state.SoundFilesAvailable == true)
-			{
-				state.SoundEnabled = true;
-				Settings.Instance.Sound = GameOption.On;
-			}
-			state.StatusMessage = missingFiles.Length == 0
-				? T("Sound files copied successfully.")
-				: TF("Sound files copied with missing files: {0}", FormatMissingList(missingFiles));
 		}
 
 		private void HandleOpenProfileFolder(WizardState state)

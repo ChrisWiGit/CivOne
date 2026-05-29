@@ -1189,6 +1189,6 @@ MISSING SOUND FILES: {0} (+{1} MORE)=Fehlende Sounddateien: {0} (+{1} mehr)
 MISSING SOUND FILES: {0}=Fehlende Sounddateien: {0}
 CONFIGURE GRAPHICS, SOUND, AND OTHER OPTIONS.=Grafik, Sound und andere Optionen konfigurieren.
 ENABLE OR DISABLE VARIOUS GAME BEHAVIOR PATCHES.=Verschiedene Spielverhaltens-Patches aktivieren oder deaktivieren.
-BROWSE FOR AND INSTALL OPTIONAL THIRD-PARTY PLUGINS.\NTHIS FEAUTURE IS NOT REALLY IMPLEMENTED.=Durchsuchen und Installieren optionaler Drittanbieter-Plugins.\nDiese Funktion ist noch nicht richtig implementiert.
+BROWSE FOR AND INSTALL OPTIONAL THIRD-PARTY PLUGINS.\NTHIS FEATURE IS NOT REALLY IMPLEMENTED.=Durchsuchen und Installieren optionaler Drittanbieter-Plugins.\nDiese Funktion ist noch nicht richtig implementiert.
 CONFIGURE GAME RULES AND DIFFICULTY SETTINGS.=Spielregeln und Schwierigkeitsgrad einstellen.
 OPEN THE FOLDER WHERE CIVONE STORES PROFILES, SAVE GAMES, AND SETTINGS.=Ordner öffnen, in dem CivOne Profile, Speicherstände und Einstellungen speichert.

@@ -218,7 +218,7 @@ namespace CivOne.Screens
 				MenuItem.Create(Translate("Patches")).OnSelect(GotoMenu(PatchesMenu))
 					.WithDescription(Translate("Enable or disable various game behavior patches.")),
 				MenuItem.Create(Translate("Plugins")).OnSelect(GotoMenu(PluginsMenu))
-					.WithDescription(TranslateArray("Browse for and install optional third-party plugins.\nThis feauture is not really implemented.")).SetEnabled(!Game.Started),
+					.WithDescription(TranslateArray("Browse for and install optional third-party plugins.\nThis feature is not really implemented.")).SetEnabled(!Game.Started),
 				MenuItem.Create(Translate("Game Options")).OnSelect(GotoMenu(GameOptionsMenu))
 					.WithDescription(Translate("Configure game rules and difficulty settings.")),
 				MenuItem.Create(Translate("Open CivOne Profile folder...")).OnSelect(OpenProfileFolder)

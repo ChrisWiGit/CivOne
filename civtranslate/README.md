@@ -12,7 +12,6 @@ It extracts keys from these call patterns:
 - `.TranslateFormatted("...", ...)`
 - `TranslateFormattedArray("...", ...)`
 - `TranslateArray("...", ...)`
-- `.TranslateFormatted("...", ...)`
 - `TF("...", ...)`
 - `T("...")`
 

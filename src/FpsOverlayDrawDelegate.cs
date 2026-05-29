@@ -18,7 +18,7 @@ namespace CivOne
 	/// <summary>
 	/// Helper for building and tracking the FPS overlay bitmap and text.
 	/// The overlay shows both the actual FPS (based on frame counts) and the potential FPS (based on average draw time).
-	/// See <see cref="README.md"/> for details on interpreting the overlay metrics.
+	/// See README.md for details on interpreting the overlay metrics.
 	/// </summary>
 	internal sealed class FpsOverlayDrawDelegate : IDisposable
 	{
