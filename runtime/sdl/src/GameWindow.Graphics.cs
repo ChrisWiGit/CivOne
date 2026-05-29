@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Drawing;
 using System.Linq;
 using CivOne.Enums;
@@ -16,7 +17,11 @@ namespace CivOne
 {
 	internal partial class GameWindow
 	{
-		private SDL.Texture CursorTexture = null;
+		private SDL.Texture? CursorTexture;
+		private SDL.Texture? _fpsOverlayTexture;
+		private readonly FpsOverlayDrawDelegate _fpsOverlayDrawDelegate = new();
+		private double _lastGameDrawMs;
+		private double _lastFrameRenderMs;
 
 		// Set from any thread when the cursor changes; consumed on the render thread in Draw().
 		private volatile bool _cursorDirty;
@@ -27,7 +32,7 @@ namespace CivOne
 		/// canvas is at full display resolution (e.g. fullscreen wizard). The cache is invalidated
 		/// whenever layer content actually changes; pure cursor moves reuse the existing textures.
 		/// </summary>
-		private SDL.Texture[] _cachedLayerTextures = null;
+		private SDL.Texture[]? _cachedLayerTextures;
 		private bool _layerTexturesDirty = true;
 
 		/// <summary>
@@ -44,6 +49,33 @@ namespace CivOne
 				texture?.Dispose();
 			}
 			_cachedLayerTextures = null;
+		}
+
+		private void ReleaseFpsOverlayTexture()
+		{
+			_fpsOverlayTexture?.Dispose();
+			_fpsOverlayTexture = null;
+		}
+
+		private void RenderFpsOverlay(int x1, int y1, int x2, int y2)
+		{
+			if (_fpsOverlayTexture == null || RuntimeHandler.CurrentFpsCorner == FpsCorner.Off) return;
+
+			int drawWidth = x2 - x1;
+			int drawHeight = y2 - y1;
+			(int targetX, int targetY, int targetWidth, int targetHeight) = FpsOverlayDrawDelegate.GetOverlayTargetRect(
+				RuntimeHandler.CurrentFpsCorner,
+				CanvasWidth,
+				CanvasHeight,
+				drawWidth,
+				drawHeight,
+				x1,
+				y1,
+				_fpsOverlayTexture.Width,
+				_fpsOverlayTexture.Height);
+			if (targetWidth <= 0 || targetHeight <= 0) return;
+
+			_fpsOverlayTexture.Draw(targetX, targetY, targetWidth, targetHeight);
 		}
 
 		private void RebuildLayerTextureCacheIfNeeded()
@@ -137,6 +169,7 @@ namespace CivOne
 			}
 
 			DrawCursorOverlay(x1, y1);
+			RenderFpsOverlay(x1, y1, x2, y2);
 		}
 
 		private Size SetCanvasSize()

@@ -346,7 +346,7 @@ This screen allows to change additional modification options for the game.
 | Enable Deity difficulty | Enable the Deity difficulty option. |
 | Enable (no keypad) arrow helper | Toggle an arrow helper for users without a numeric keypad. |
 | Custom map sizes (experimental) | Enable experimental custom map sizes. |
-| FPS display | Show performance counters in a screen corner (Off, Top Left, Top Right, Bottom Left, Bottom Right). See [FPS overlay](#fps-overlay) below for the meaning of the three numbers. |
+| FPS display | Show performance counters in a screen corner (Off, Top Left, Top Right, Bottom Left, Bottom Right). See [FPS overlay](#fps-overlay) below for the meaning of all values. |
 | Game behavior menu | Open the behavior submenu to change gameplay-related toggles and cheats. |
 | AutoSave format | Choose whether autosaves prefer legacy `SVE` output with automatic `COS` fallback or always write `COS`. |
 | Save cast behavior | Select whether save/load casts use checked conversion or the legacy unchecked mode. |
@@ -360,22 +360,57 @@ This screen allows to change additional modification options for the game.
 
 ### FPS overlay
 
-When **FPS display** is enabled, the chosen corner shows three values in yellow, in the form:
+When **FPS display** is enabled, the chosen corner shows two lines in yellow.
+Both lines use the same value format.
+
+```text
+Game: 74019/10fps/0,014ms
+Render: 38345/540fps/0,026ms
+```
+
+Each line has three values:
 
 ```text
 1.250/16fps/2,1ms
 ```
 
 Numbers use the German format: dot (`.`) as thousands separator and comma (`,`) as decimal separator.
-The first value is also FPS, but the `fps` suffix was removed to save space in the overlay.
+The first value is also FPS.
 
 | Value | Meaning |
 | ----- | ------- |
-| `1.250` (potential FPS) | Theoretical maximum frame rate based on the average draw duration of the last second (`1000 / avg ms`). This value is FPS even without an explicit `fps` suffix, which is omitted to reduce overlay width. |
-| `16fps` (actual FPS) | Number of times the draw routine was actually called in the last second. CivOne's game loop ticks at a fixed low rate (similar to the original engine), so this value is normally well below the potential FPS. It does not mean that the game is running slowly; it reflects the fixed update rate of the game loop. |
-| `2,1ms` (avg draw time) | Average wall-clock time spent inside the draw routine, measured over the last second. Lower is better; a sudden increase points to a rendering bottleneck. |
+| `1.250` (potential FPS) | Theoretical maximum rate based on the average measured duration of that line in the last second (`1000 / avg ms`). |
+| `16fps` (actual FPS) | Number of measured events per second for that line. |
+| `2,1ms` (avg duration) | Average wall-clock time per measured event in the last second. |
 
-Rule of thumb: if **actual FPS** is low but **avg draw time** is also low, the limit is the game loop, not the renderer. If **avg draw time** grows large, the renderer itself is the bottleneck.
+Line semantics:
+
+* `Game` measures only update draws when game state changed and `_hasUpdate` triggered a runtime draw.
+* `Render` measures the full SDL render pass for each displayed frame.
+
+Why `Game ms` is often lower than `Render ms`:
+
+* `Game ms` times only the update-draw section that builds or updates runtime layers.
+* `Render ms` times the complete SDL pass, including drawing all cached layers, cursor overlay, FPS overlay, scaling, and presentation work.
+* In calm scenes, game updates are often small and short, so `Game ms` can stay very low.
+* Even when no game state changes, render still performs full frame composition, so `Render ms` usually stays higher.
+* Therefore `Game ms < Render ms` is expected in many situations and does not indicate a bug.
+
+Why `Game` potential FPS can be much higher than `Render` potential FPS:
+
+* Game updates can be rare in static situations.
+* When updates happen, the measured game draw section can be very short.
+* A very small average duration makes `1000 / ms` very large.
+* This high value is theoretical throughput for one update call, not real update frequency.
+
+> On static screens where no game updates occur, the `Game` line may show `0` for the actual FPS (middle value), but retains the previous `potential FPS` and `avg ms` (first and third values) from the last measurement. This is expected and not a bug. The `actual FPS` correctly reflects that no updates happened. Moving the mouse cursor if available can trigger updates and refresh all values.
+
+Rule of thumb:
+
+* Compare `actual FPS` between Game and Render for real rates.
+* Treat potential FPS as a capacity hint, not an observed rate.
+* If Game actual is low but Game ms is low, the game loop or update cadence is the limiter.
+* If Render ms grows, rendering is the limiter.
 
 ### Plugins
 
@@ -693,9 +728,16 @@ dotnet trace convert --format Speedscope ./profiling/civone-profile-$GAME_PID.ne
 The automated approach is comprehensive but resource-intensive.
 If you want to quickly investigate a performance bottleneck, there are simpler alternatives:
 
-* **Enable FPS overlay**: Use the "FPS display" option in Settings (Shift+F1) to see performance metrics directly in the game.
+* **Enable FPS overlay**: Use the "FPS display" option in Settings (Shift+F1) to see `Game` and `Render` metrics directly in the game.
 * **Check debug output**: Use debug mode (--debug) and check the logs for suspicious values.
 * **Targeted profiling**: Start the game with `--seed <number>` to reproduce scenarios and investigate them specifically.
+
+Interpretation hint:
+
+* A very large `Game` potential value with a low `Game` actual value is normal when little state changes happen per second.
+* `Game ms` can be lower than `Render ms` because both lines measure different scopes.
+* `Game ms` measures update work only, while `Render ms` includes full frame composition and presentation.
+* In that case, focus on `actual FPS` and `ms` instead of potential FPS.
 
 #### Analyzing profiling data
 

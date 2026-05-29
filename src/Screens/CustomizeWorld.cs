@@ -15,12 +15,23 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens
 {
+	[ScreenResizeable]
 	internal class CustomizeWorld : BaseScreen
 	{
 		private int _landMass = -1, _temperature = -1, _climate = -1, _age = -1;
 		private bool _hasUpdate = true;
 
 		private bool _closing = false;
+		private readonly Picture _background;
+
+		private int OffsetX => ((Width - 320) / 2);
+		private int OffsetY => ((Height - 200) / 2);
+
+		private void DrawBackground()
+		{
+			this.Clear();
+			this.AddLayer(_background, OffsetX, OffsetY);
+		}
 		
 		private int GetMenuWidth(string title, string[] items)
 		{
@@ -44,7 +55,8 @@ namespace CivOne.Screens
 				ActiveColour = 11,
 				TextColour = 79,
 				DisabledColour = 8,
-				FontId = 0
+				FontId = 0,
+				CenterTo320Coordinates = true
 			};
 			
 			for (int i = 0; i < menuTexts.Length; i++)
@@ -121,13 +133,18 @@ namespace CivOne.Screens
 			_hasUpdate = false;
 			return true;
 		}
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			DrawBackground();
+		}
 		
 		public CustomizeWorld()
 		{
-			Picture background = Resources["CUSTOM"];
-			
-			Palette = background.Palette;
-			this.AddLayer(background, 0, 0);
+			_background = Resources["CUSTOM"];
+			Palette = _background.Palette;
+			DrawBackground();
 		}
 	}
 }

@@ -25,6 +25,11 @@ namespace CivOne.Screens.StartupWizard
 		BrowseDataFolder,
 
 		/// <summary>
+		/// Opens a folder-browser dialog so the user can locate the Civilization for Windows sound files.
+		/// </summary>
+		BrowseSoundFolder,
+
+		/// <summary>
 		/// Selects the screen aspect ratio used by the game renderer.
 		/// The chosen value is stored in <see cref="WizardEntry.Value"/>.
 		/// </summary>
@@ -39,6 +44,11 @@ namespace CivOne.Screens.StartupWizard
 		/// Opens the full setup screen with additional settings.
 		/// </summary>
 		OpenSetupScreen,
+
+		/// <summary>
+		/// Opens the CivOne profile folder in the file manager.
+		/// </summary>
+		OpenProfileFolder,
 
 		/// <summary>
 		/// Selects whether fullscreen mode is enabled.

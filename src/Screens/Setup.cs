@@ -142,6 +142,21 @@ namespace CivOne.Screens
 			FileSystem.CopyPlugins(path);
 		}
 
+		private void OpenProfileFolder(object sender, MenuItemEventArgs<int> args)
+		{
+			string storageDirectory = Runtime.StorageDirectory;
+			if (string.IsNullOrWhiteSpace(storageDirectory))
+			{
+				Log("Profile folder unavailable.");
+				return;
+			}
+
+			if (!Runtime.TryOpenUrl(storageDirectory, out string errorMessage))
+			{
+				Log("Could not open profile folder '{0}': {1}", storageDirectory, errorMessage);
+			}
+		}
+
 		private void CreateMenu(string title, int activeItem, MenuItemEventHandler<int> always, params MenuItem<int>[] items) =>
 			AddMenu(new Menu("Setup", Palette)
 			{
@@ -194,14 +209,30 @@ namespace CivOne.Screens
 			SettingsMenu(0);
 		}
 
-		private void MainMenu(int activeItem = 0) => CreateMenu(Translate("CivOne Setup"), activeItem,
-			MenuItem.Create(Translate("Settings")).OnSelect(GotoMenu(SettingsMenu)),
-			MenuItem.Create(Translate("Patches")).OnSelect(GotoMenu(PatchesMenu)),
-			MenuItem.Create(Translate("Plugins")).OnSelect(GotoMenu(PluginsMenu)),
-			MenuItem.Create(Translate("Game Options")).OnSelect(GotoMenu(GameOptionsMenu)),
-			MenuItem.Create(GetReturnTargetString()).OnSelect(CloseScreen()),
-			IsAllowedToQuit() ?  MenuItem.Create(Translate("Quit")).OnSelect(CloseScreen(Runtime.Quit)) : null
-		);
+		private void MainMenu(int activeItem = 0)
+		{
+			List<MenuItem<int>> items =
+			[
+				MenuItem.Create(Translate("Settings")).OnSelect(GotoMenu(SettingsMenu))
+					.WithDescription(Translate("Configure graphics, sound, and other options.")),
+				MenuItem.Create(Translate("Patches")).OnSelect(GotoMenu(PatchesMenu))
+					.WithDescription(Translate("Enable or disable various game behavior patches.")),
+				MenuItem.Create(Translate("Plugins")).OnSelect(GotoMenu(PluginsMenu))
+					.WithDescription(TranslateArray("Browse for and install optional third-party plugins.\nThis feature is not really implemented.")).SetEnabled(!Game.Started),
+				MenuItem.Create(Translate("Game Options")).OnSelect(GotoMenu(GameOptionsMenu))
+					.WithDescription(Translate("Configure game rules and difficulty settings.")),
+				MenuItem.Create(Translate("Open CivOne Profile folder...")).OnSelect(OpenProfileFolder)
+					.WithDescription(Translate("Open the folder where CivOne stores profiles, save games, and settings.")),
+				MenuItem.Create(GetReturnTargetString()).OnSelect(CloseScreen())
+			];
+
+			if (IsAllowedToQuit())
+			{
+				items.Add(MenuItem.Create(Translate("Quit")).OnSelect(CloseScreen(Runtime.Quit)));
+			}
+
+			CreateMenu(Translate("CivOne Setup"), activeItem, [.. items]);
+		}
 
 		private string GetReturnTargetString()
 		{

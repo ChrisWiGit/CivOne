@@ -13,3 +13,4 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyProduct("CivOne")]
 
 [assembly:InternalsVisibleTo("CivOne.UnitTests")]
+[assembly:InternalsVisibleTo("CivOne.SDL")]

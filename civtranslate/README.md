@@ -10,9 +10,32 @@ It extracts keys from these call patterns:
 
 - `.Translate("...")`
 - `.TranslateFormatted("...", ...)`
+- `TranslateFormattedArray("...", ...)`
+- `TranslateArray("...", ...)`
+- `TF("...", ...)`
 - `T("...")`
 
 It supports multiple matches in one line.
+
+### Adding new translation function names
+
+To scan for additional translation function names:
+
+1. Open `civtranslate/Program.cs` and find the `EnumerateInvocationCandidates` function.
+2. Add a new `if` block following the existing pattern:
+
+```csharp
+if (TryMatchInvocation(content, index, "YourFunctionName", out int openParenX))
+{
+    yield return new InvocationCandidate("YourFunctionName", openParenX);
+    index = openParenX;
+    continue;
+}
+```
+
+3. Rebuild civtranslate and re-run the scan.
+
+**Note:** The scanner extracts the **first string argument** from the function call. For functions with multiple string arguments, only the first one is used as the translation key.
 
 ## Interpolation behavior
 

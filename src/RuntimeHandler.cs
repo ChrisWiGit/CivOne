@@ -39,14 +39,13 @@ namespace CivOne
 		internal static IRuntime Runtime { get; private set; }
 		internal static uint CurrentGameTick => _instance?._gameTick ?? 0;
 		public static bool IsFullWindowCanvasRequested => _instance?.TopScreen?.UseFullWindowCanvas ?? false;
+		public static FpsCorner CurrentFpsCorner => Settings.Instance.FpsCorner;
 		
 		private Settings Settings => Settings.Instance;
 		private IScreen? TopScreen => Common.TopScreen;
 		private MouseCursor _currentCursor = MouseCursor.None;
 		private CursorType _cursorType = CursorType.Native;
 		private readonly IQuickSaveLoadHotkeyService _quickSaveLoadHotkeyService;
-
-		private readonly FpsOverlayDrawDelegate _fpsOverlayDrawDelegate = new();
 
 		internal int CanvasWidth => IsFullWindowCanvasRequested
 			? Math.Max(Settings.MinWidth, Runtime.CanvasWidth)
@@ -168,22 +167,8 @@ namespace CivOne
 			}
 		}
 
-		private readonly Stopwatch _onDrawWatch = new();
-		private double _lastOnDrawMs;
-
 		private void OnDraw(object sender, EventArgs args)
-		{
-			_onDrawWatch.Restart();
-			try
-			{
-				OnDrawCore();
-			}
-			finally
-			{
-				_onDrawWatch.Stop();
-				_lastOnDrawMs = _onDrawWatch.Elapsed.TotalMilliseconds;
-			}
-		}
+			=> OnDrawCore();
 
 		private void OnDrawCore()
 		{
@@ -243,8 +228,6 @@ namespace CivOne
 				}
 			}
 
-			Bytemap[] layers = Runtime.Layers;
-			_fpsOverlayDrawDelegate.Draw(Settings.FpsCorner, CanvasWidth, CanvasHeight, layers, _lastOnDrawMs);
 		}
 
 		private void OnKeyboardUp(object sender, KeyboardEventArgs args)
@@ -513,7 +496,6 @@ namespace CivOne
 
 			if (disposing)
 			{
-				_fpsOverlayDrawDelegate.Dispose();
 				_mcpService.Stop();
 				_mcpService.Dispose();
 			}

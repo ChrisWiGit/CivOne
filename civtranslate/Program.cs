@@ -185,6 +185,13 @@ static IEnumerable<InvocationCandidate> EnumerateInvocationCandidates(string con
 			continue;
 		}
 
+		if (TryMatchInvocation(content, index, "TF", out int openParen13))
+		{
+			yield return new InvocationCandidate("TF", openParen13);
+			index = openParen13;
+			continue;
+		}
+
 		if (TryMatchInvocation(content, index, ".Translate", out int openParen2))
 		{
 			yield return new InvocationCandidate(".Translate", openParen2);
@@ -696,6 +703,7 @@ static void PrintHelp()
 	Console.WriteLine("  .Translate(\"...\")");
 	Console.WriteLine("  Translate(\"...\")");
 	Console.WriteLine("  .TranslateFormatted(\"...\", ...)");
+	Console.WriteLine("  TF(\"...\", ...)");
 	Console.WriteLine("  T(\"...\")");
 	Console.WriteLine();
 	Console.WriteLine($"Escaping:");

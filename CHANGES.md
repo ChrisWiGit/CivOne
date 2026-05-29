@@ -29,7 +29,8 @@ I did not browse all issues on github at first, so I did not recognize that some
   * The original "Auto" aspect ratio mode is still available as an option in the setup menu for users who prefer the original behavior or are using older displays.
 * Feature: Added setup wizard to guide users through initial configuration and data file setup.
   * The wizard is triggered on first launch when no valid data files are found, or can be accessed later from command line with `--setup`.
-  * It provides a step-by-step interface to select data files, configure graphics settings (fullscreen, aspect ratio), and adjust sound settings.
+  * It provides a step-by-step interface to select data files, configure graphics settings (fullscreen, aspect ratio).
+  * It provides copying of sound files provided by third-party contributors into the profile folder, with status updates and error handling.
   * The wizard applies selected settings and copied data files to the normal runtime configuration.
 * Fix: Screens marked `[ScreenResizeable]` (e.g. Credits) now react to host-window resizes even when the canvas size stays fixed (e.g. `AspectRatio=Auto`).
   * `BaseScreen.Update` tracks the window size and fires `OnResize` plus a refresh when only the window changes.

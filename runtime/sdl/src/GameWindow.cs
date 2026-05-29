@@ -8,11 +8,11 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
-using CivOne.Graphics;
 using CivOne.IO;
 
 namespace CivOne
@@ -404,21 +404,69 @@ namespace CivOne
 
 		private void Draw(object sender, EventArgs args)
 		{
+			bool isFpsOverlayEnabled = RuntimeHandler.CurrentFpsCorner != FpsCorner.Off;
+
 			if (_cursorDirty)
 			{
 				_cursorDirty = false;
 				ApplyCursorUpdate();
 			}
-			if (!_hasUpdate && !_cursorMoved) return;
-			if (_hasUpdate)
+			if (!_hasUpdate && !_cursorMoved && !isFpsOverlayEnabled) return;
+			bool gameFrameUpdated = _hasUpdate;
+			if (gameFrameUpdated)
 			{
+				// measure game draw time separately so the FPS overlay can show it without including the overhead of texture uploads and rendering, 
+				// which is especially important for accurately reflecting performance when running with vsync enabled
+				Stopwatch gameWatch = Stopwatch.StartNew();
 				_runtime.InvokeDraw();
+				gameWatch.Stop();
+				_lastGameDrawMs = gameWatch.Elapsed.TotalMilliseconds;
 				_hasUpdate = false;
 				InvalidateLayerTextureCache();
 			}
 			_cursorMoved = false;
 
+			// Refresh overlay texture BEFORE render measurement so bitmap building doesn't inflate metrics.
+			DrawFpsOverlay(isFpsOverlayEnabled, gameFrameUpdated);
+
+			Stopwatch renderWatch = Stopwatch.StartNew();
+			// measure total render time including texture uploads and FPS overlay rendering, 
+			// which reflects the actual frame time and is relevant for performance analysis when running with vsync enabled
 			Render();
+			renderWatch.Stop();
+			_lastFrameRenderMs = renderWatch.Elapsed.TotalMilliseconds;
+		}
+
+		private void DrawFpsOverlay(bool isFpsOverlayEnabled, bool gameFrameUpdated)
+		{
+			// clean up old overlay texture if FPS overlay is disabled or was just turned off, to free GPU memory used by the texture
+			FpsCorner fpsCorner = isFpsOverlayEnabled ? RuntimeHandler.CurrentFpsCorner : FpsCorner.Off;
+			
+			if (_fpsOverlayDrawDelegate.TryBuildOverlayBitmap(
+				fpsCorner,
+				gameFrameUpdated,
+				_lastGameDrawMs,
+				_lastFrameRenderMs,
+				out Bytemap? overlayBitmap,
+				out bool shouldClearTexture))
+			{
+				try
+				{
+					ReleaseFpsOverlayTexture();
+					if (overlayBitmap != null)
+					{
+						_fpsOverlayTexture = CreateTexture(_runtime.Palette, overlayBitmap);
+					}
+				}
+				finally
+				{
+					overlayBitmap?.Dispose();
+				}
+			}
+			else if (shouldClearTexture)
+			{
+				ReleaseFpsOverlayTexture();
+			}
 		}
 
 		// Called from the game thread via Runtime.Cursor setter — must not touch SDL here.
@@ -615,6 +663,8 @@ namespace CivOne
 
 				CursorTexture?.Dispose();
 				CursorTexture = null;
+				ReleaseFpsOverlayTexture();
+				_fpsOverlayDrawDelegate.Dispose();
 
 				DisposeCachedLayerTextures();
 			}

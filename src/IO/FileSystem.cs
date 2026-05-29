@@ -86,14 +86,39 @@ namespace CivOne.IO
 
 		public static bool CopySoundFiles(string folder)
 		{
+			return CopySoundFiles(folder, out _);
+		}
+
+		public static bool CopySoundFiles(string folder, out string[] missingFiles)
+		{
 			Log("Copying sound files...");
-			if (!CopyFiles(folder, Settings.Instance.SoundsDirectory, SOUND_FILES, out string missingFile))
+			CopyOptionalFiles(folder, Settings.Instance.SoundsDirectory, SOUND_FILES, out missingFiles);
+
+			if (missingFiles.Length > 0)
 			{
-				Log("- File not found: {0}", missingFile);
+				Log("- Missing sound files: {0}", string.Join(", ", missingFiles));
+			}
+
+			if (!HasAnySoundFiles())
+			{
+				Log("- No usable sound files available.");
 				return false;
 			}
-			Log("- Done, all copied");
+
+			Log(missingFiles.Length == 0
+				? "- Done, all copied"
+				: "- Done, copied available files");
 			return true;
+		}
+
+		public static bool HasAnySoundFiles()
+		{
+			return CountExistingFiles(Settings.Instance.SoundsDirectory, SOUND_FILES) > 0;
+		}
+
+		public static string[] GetMissingSoundFiles()
+		{
+			return GetMissingFiles(Settings.Instance.SoundsDirectory, SOUND_FILES);
 		}
 
 		internal static bool CopyFiles(string sourceDirectory, string targetDirectory, IReadOnlyList<string> fileNames, out string missingFile)
@@ -130,6 +155,38 @@ namespace CivOne.IO
 
 			missingFile = null;
 			return true;
+		}
+
+		private static void CopyOptionalFiles(string sourceDirectory, string targetDirectory, IReadOnlyList<string> fileNames, out string[] missingFiles)
+		{
+			List<string> missing = [];
+			Directory.CreateDirectory(targetDirectory);
+			foreach (string filename in fileNames)
+			{
+				string targetPath = Path.Combine(targetDirectory, filename);
+
+				string existingTarget = FindFileIgnoreCase(targetDirectory, filename);
+				if (existingTarget != null)
+				{
+					if (!string.Equals(existingTarget, targetPath, StringComparison.Ordinal))
+					{
+						Log("- Normalizing target file casing: {0} -> {1}", Path.GetFileName(existingTarget), filename);
+						MoveFileToCanonicalCasing(existingTarget, targetPath);
+					}
+					continue;
+				}
+
+				string sourcePath = FindFileIgnoreCase(sourceDirectory, filename);
+				if (sourcePath != null)
+				{
+					File.Copy(sourcePath, targetPath);
+					continue;
+				}
+
+				missing.Add(filename);
+			}
+
+			missingFiles = [.. missing];
 		}
 
 		/// <summary>
@@ -194,6 +251,36 @@ namespace CivOne.IO
 				output.Add(Path.GetFileName(path));
 			}
 			return output;
+		}
+
+		private static int CountExistingFiles(string folder, IReadOnlyList<string> fileNames)
+		{
+			HashSet<string> existingFiles = EnumerateFileNames(folder);
+			int count = 0;
+			foreach (string filename in fileNames)
+			{
+				if (existingFiles.Contains(filename))
+				{
+					count++;
+				}
+			}
+
+			return count;
+		}
+
+		private static string[] GetMissingFiles(string folder, IReadOnlyList<string> fileNames)
+		{
+			HashSet<string> existingFiles = EnumerateFileNames(folder);
+			List<string> missingFiles = [];
+			foreach (string filename in fileNames)
+			{
+				if (!existingFiles.Contains(filename))
+				{
+					missingFiles.Add(filename);
+				}
+			}
+
+			return [.. missingFiles];
 		}
 
 		public static bool CopyPlugins(string folder)
