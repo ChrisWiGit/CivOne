@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Services.Maps;
@@ -46,7 +47,7 @@ namespace CivOne
 		private readonly IMapResourceProvider _mapResourceProvider;
 
 		/// <summary>
-		/// Generation-settings source for <see cref="Generate(int, int, int, int)"/>. Injected via
+		/// Generation-settings source for <see cref="Generate(LandMass, Temperature, Climate, EarthAge)"/>. Injected via
 		/// constructor for tests; production code uses <see cref="DefaultMapGenerationSettings"/>
 		/// which forwards to the global <see cref="Settings"/> singleton.
 		/// </summary>
@@ -59,16 +60,47 @@ namespace CivOne
 		/// </summary>
 		private readonly IMapPersistenceService _mapPersistenceService;
 
-		private static int _width = 80, _height = 50;
+		/// <summary>
+		/// Default map size constants from the original game. These are the only supported sizes for map loading from bitmap resources, 
+		/// and are used as the default size for map generation and YAML loading.
+		/// </summary>
+		internal const int DefaultMapWidth = 80;
+		internal const int DefaultMapHeight = 50;
+		private const int DefaultMapArea = DefaultMapWidth * DefaultMapHeight;
+
+		private static int _width = DefaultMapWidth, _height = DefaultMapHeight;
 		public static int WIDTH => _width;
 		public static int HEIGHT => _height;
 
 		public int Width => WIDTH;
 		public int Height => HEIGHT;
+
+		internal static void SetMapSize(int width, int height)
+		{
+			ArgumentOutOfRangeException.ThrowIfLessThan(width, 1);
+			ArgumentOutOfRangeException.ThrowIfLessThan(height, 1);
+			_width = width;
+			_height = height;
+		}
+
+		/// <summary>
+		/// Use the default map size constants 80x50.
+		/// </summary>
+		internal static void UseDefaultMapSize()
+		{
+			SetMapSize(DefaultMapWidth, DefaultMapHeight);
+		}
 		
 		private int _terrainMasterWord;
 		public int TerrainMasterWord { get { return _terrainMasterWord; } }
-		private int _landMass, _temperature, _climate, _age;
+		private LandMass? _landMass;
+		private int _landMassValue;
+		private Temperature? _temperature;
+		private int _temperatureValue;
+		private Climate? _climate;
+		private int _climateValue;
+		private EarthAge? _age;
+		private int _ageValue;
 		
 		
 		#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional - but performance impact may be too low
@@ -81,7 +113,33 @@ namespace CivOne
 
 		public ITile[,] Tiles { get { return _tiles; } }
 
-		public bool Ready { get; private set; }
+		private int _readyState;
+
+		/// <summary>
+		/// Thread- and state-safe accessor for whether the map is ready for use. Before <see cref="Ready"/> is true, the map is in an incomplete state and most operations will fail or return invalid data; after <see cref="Ready"/> is true, the map is fully initialized and safe to query.
+		/// </summary>
+		public bool Ready => Volatile.Read(ref _readyState) != 0;
+
+		private int _generationStageCurrent;
+		private int _generationStageTotal;
+		private int _generationStageCode;
+
+		public int GenerationStageCurrent => Volatile.Read(ref _generationStageCurrent);
+		public int GenerationStageTotal => Volatile.Read(ref _generationStageTotal);
+		public int GenerationStageCode => Volatile.Read(ref _generationStageCode);
+
+		private void SetReady(bool ready)
+		{
+			Volatile.Write(ref _readyState, ready ? 1 : 0);
+		}
+
+		private void SetGenerationProgress(int stageCurrent, int stageTotal, int stageCode)
+		{
+			Volatile.Write(ref _generationStageCurrent, stageCurrent);
+			Volatile.Write(ref _generationStageTotal, stageTotal);
+			Volatile.Write(ref _generationStageCode, stageCode);
+		}
+
 		public bool FixedStartPositions { get; private set; }
 
 		public IEnumerable<ITile> QueryMapPart(int x, int y, int width, int height)
@@ -148,7 +206,7 @@ namespace CivOne
 			_tiles[x, y].RailRoad = railRoad;
 		}
 		
-		private int ModGrid(int x, int y) => (x % 4) * 4 + (y % 4);
+		private static int ModGrid(int x, int y) => (x % 4) * 4 + (y % 4);
 		
 		private bool TileIsSpecial(int x, int y)
 		{
@@ -170,7 +228,7 @@ namespace CivOne
 			{
 				// CW: this if-case happens a lot! So a lot of code is dealing with null, althouth property is not nullable. 
 				// Possible code smell but to large to refactor right now. 
-				if (y < 0 || y >= HEIGHT) return null; 
+				if (y < 0 || y >= HEIGHT) return null!; 
 				
 				while (x < 0) x += WIDTH;
 				x %= WIDTH;
@@ -208,7 +266,7 @@ namespace CivOne
 			}
 		}
 		
-		private static Map _instance;
+		private static Map? _instance;
 		public static Map Instance
 		{
 			get
@@ -263,7 +321,7 @@ namespace CivOne
 			_mapGenerationSettings = mapGenerationSettings ?? new DefaultMapGenerationSettings();
 			_mapPersistenceService = mapPersistenceService ?? new DefaultMapPersistenceService();
 			_terrainMasterWord = _randomService.Next(16);
-			Ready = false;
+			SetReady(false);
 
 			Log("Map instance created");
 		}
@@ -271,9 +329,10 @@ namespace CivOne
         /// <summary>
         /// Fire-eggs 20190704: for unit testing, reset
         /// </summary>
-        internal static void Reset(Map newInstance = null)
+		internal static void Reset(Map? newInstance = null)
         {
             _instance = newInstance;
+			UseDefaultMapSize();
         }
 	}
 }
