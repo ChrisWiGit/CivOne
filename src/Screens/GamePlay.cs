@@ -575,12 +575,6 @@ namespace CivOne.Screens
 				Game.Instance.Update();
 				while (GameTask.Update());
 			}
-			
-			if (!Common.AllowSaveGame)
-			{
-				GameTask.Insert(Message.General(TranslateArray("The save game format\nis not compatible with the\nselected map size.\nThe game can not be saved!")));
-				Game.AutoSave = false;
-			}
 		}
 
 		private void GameMapMapPositionSaved(object sender, int slot)

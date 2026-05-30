@@ -16,7 +16,8 @@
 					"build",
 					"${workspaceRoot}/runtime/sdl/CivOne.SDL.csproj",
 					"-c",
-					"DebugWindows"
+					"DebugWindows",
+					"-p:RunAnalyzersDuringBuild=false"
 				]
 			},
 			"linux": {
@@ -24,7 +25,8 @@
 					"build",
 					"${workspaceRoot}/runtime/sdl/CivOne.SDL.csproj",
 					"-c",
-					"DebugLinux"
+					"DebugLinux",
+					"-p:RunAnalyzersDuringBuild=false"
 				]
 			},
 			"osx": {
@@ -32,7 +34,91 @@
 					"build",
 					"${workspaceRoot}/runtime/sdl/CivOne.SDL.csproj",
 					"-c",
-					"DebugMacOS"
+					"DebugMacOS",
+					"-p:RunAnalyzersDuringBuild=false"
+				]
+			},
+			"presentation": {
+				"focus": true,
+				"panel": "dedicated"
+			}
+		},
+		{
+			"label": "build-strict",
+			"type": "shell",
+			"group": "build",
+			"command": "dotnet",
+			"windows": {
+				"args": [
+					"build",
+					"${workspaceRoot}/runtime/sdl/CivOne.SDL.csproj",
+					"-c",
+					"DebugWindows",
+					"-p:RunAnalyzersDuringBuild=true",
+					"-p:AnalysisLevel=latest-all"
+				]
+			},
+			"linux": {
+				"args": [
+					"build",
+					"${workspaceRoot}/runtime/sdl/CivOne.SDL.csproj",
+					"-c",
+					"DebugLinux",
+					"-p:RunAnalyzersDuringBuild=true",
+					"-p:AnalysisLevel=latest-all"
+				]
+			},
+			"osx": {
+				"args": [
+					"build",
+					"${workspaceRoot}/runtime/sdl/CivOne.SDL.csproj",
+					"-c",
+					"DebugMacOS",
+					"-p:RunAnalyzersDuringBuild=true",
+					"-p:AnalysisLevel=latest-all"
+				]
+			},
+			"presentation": {
+				"focus": true,
+				"panel": "dedicated"
+			}
+		},
+		{
+			"label": "build-strict-errors",
+			"type": "shell",
+			"group": "build",
+			"command": "dotnet",
+			"windows": {
+				"args": [
+					"build",
+					"${workspaceRoot}/runtime/sdl/CivOne.SDL.csproj",
+					"-c",
+					"DebugWindows",
+					"-p:RunAnalyzersDuringBuild=true",
+					"-p:AnalysisLevel=latest-all",
+					"-p:TreatWarningsAsErrors=true"
+				]
+			},
+			"linux": {
+				"args": [
+					"build",
+					"${workspaceRoot}/runtime/sdl/CivOne.SDL.csproj",
+					"-c",
+					"DebugLinux",
+					"-p:RunAnalyzersDuringBuild=true",
+					"-p:AnalysisLevel=latest-all",
+					"-p:TreatWarningsAsErrors=true"
+				]
+			},
+			"osx": {
+				"args": [
+					"build",
+					"${workspaceRoot}/runtime/sdl/CivOne.SDL.csproj",
+					"-c",
+					"DebugMacOS",
+					"-p:RunAnalyzersDuringBuild=true",
+					"-p:AnalysisLevel=latest-all",
+					"-p:TreatWarningsAsErrors=true"
 				]
 			},
 			"presentation": {

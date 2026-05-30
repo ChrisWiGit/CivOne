@@ -22,9 +22,10 @@ namespace CivOne
 		/// </summary>
 		internal void InitializeForYamlLoad(int width, int height, int terrainSeed)
 		{
+			SetMapSize(width, height);
 			_terrainMasterWord = terrainSeed;
 			_tiles = new ITile[width, height];
-			Ready = false;
+			SetReady(false);
 		}
 
 		/// <summary>
@@ -34,7 +35,7 @@ namespace CivOne
 		/// </summary>
 		internal void FinalizeYamlLoad()
 		{
-			Ready = true;
+			SetReady(true);
 			Log("Map: Ready (loaded from YAML)");
 		}
 

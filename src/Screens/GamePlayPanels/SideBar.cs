@@ -26,6 +26,21 @@ namespace CivOne.Screens.GamePlayPanels
 {
 	internal class SideBar : BaseScreen
 	{
+		private const int SideBarWidth = 80;
+		private const int MiniMapHeight = 50;
+		private const int DemographicsHeight = 39;
+		private const int GameInfoOffsetY = MiniMapHeight + DemographicsHeight;
+		private const int MiniMapBorder = 1;
+		private const int MiniMapTileWidth = SideBarWidth - (MiniMapBorder * 2);
+		private const int MiniMapTileHeight = MiniMapHeight - (MiniMapBorder * 2);
+		private const int MiniMapViewOffsetX = 30;
+		private const int MiniMapViewOffsetY = 18;
+		private const int MiniMapViewX = 31;
+		private const int MiniMapViewY = 18;
+		private const int MiniMapViewWidth = 18;
+		private const int MiniMapViewHeight = 11;
+		private const int PalaceHotspotBottomY = 62;
+
 		private bool _update = true;
 		private int _lastDemographicsSignature;
 		private int _lastGameInfoSignature;
@@ -42,9 +57,9 @@ namespace CivOne.Screens.GamePlayPanels
 			if (GamePlay != null)
 			{
 				IUnit activeUnit = Game.ActiveUnit;
-				ITile[,] tiles = Map[GamePlay.X - 30, GamePlay.Y - 18, 78, 48];
-				for (int yy = 0; yy < 48; yy++)
-				for (int xx = 0; xx < 78; xx++)
+				ITile[,] tiles = Map[GamePlay.X - MiniMapViewOffsetX, GamePlay.Y - MiniMapViewOffsetY, MiniMapTileWidth, MiniMapTileHeight];
+				for (int yy = 0; yy < MiniMapTileHeight; yy++)
+				for (int xx = 0; xx < MiniMapTileWidth; xx++)
 				{
 					ITile tile = tiles[xx, yy];
 					if (tile == null) continue;
@@ -54,11 +69,11 @@ namespace CivOne.Screens.GamePlayPanels
 					{
 						if (gameTick % 4 <= 1)
 						{
-							_miniMap[xx + 1, yy + 1] = 15;
+							_miniMap[xx + MiniMapBorder, yy + MiniMapBorder] = 15;
 						}
 						else
 						{
-							_miniMap[xx + 1, yy + 1] = (byte)(tile.IsOcean ? 1 : 2);
+							_miniMap[xx + MiniMapBorder, yy + MiniMapBorder] = (byte)(tile.IsOcean ? 1 : 2);
 						}
 						continue;
 					}
@@ -82,23 +97,23 @@ namespace CivOne.Screens.GamePlayPanels
 							case Terrain.Desert: colour = 14; break;
 							case Terrain.Arctic: colour = 15; break;
 						}
-						_miniMap[xx + 1, yy + 1] = colour;
+						_miniMap[xx + MiniMapBorder, yy + MiniMapBorder] = colour;
 					}
 					else if (Human.Visible(tile.X, tile.Y))
 					{
 						if (tile.City != null)
 						{
-							_miniMap[xx + 1, yy + 1] = Common.ColourLight[tile.City.Owner];
+							_miniMap[xx + MiniMapBorder, yy + MiniMapBorder] = Common.ColourLight[tile.City.Owner];
 						}
 						else
 						{
-							if (tile.IsOcean) _miniMap[xx + 1, yy + 1] = 1;
-							else _miniMap[xx + 1, yy + 1] = 2;
+							if (tile.IsOcean) _miniMap[xx + MiniMapBorder, yy + MiniMapBorder] = 1;
+							else _miniMap[xx + MiniMapBorder, yy + MiniMapBorder] = 2;
 						}
 					}
 				}
 			}
-			_miniMap.DrawRectangle(31, 18, 18, 11, 15)
+			_miniMap.DrawRectangle(MiniMapViewX, MiniMapViewY, MiniMapViewWidth, MiniMapViewHeight, 15)
 				.DrawRectangle3D();
 		}
 
@@ -130,7 +145,7 @@ namespace CivOne.Screens.GamePlayPanels
 		private void DrawPreviewPalace(IBitmap targetLayer)
 		{
 			IBitmap palacePreview = _palaceRenderer.RenderPalace(Human.Palace);
-			int palacePreviewX = (80 - palacePreview.Width()) / 2;
+			int palacePreviewX = (SideBarWidth - palacePreview.Width()) / 2;
 			targetLayer.AddLayer(palacePreview, palacePreviewX, 1);
 		}
 
@@ -292,8 +307,8 @@ namespace CivOne.Screens.GamePlayPanels
 			}
 
 			this.AddLayer(_miniMap, 0, 0)
-				.AddLayer(_demographics, 0, 50)
-				.AddLayer(_gameInfo, 0, 89);
+				.AddLayer(_demographics, 0, MiniMapHeight)
+				.AddLayer(_gameInfo, 0, GameInfoOffsetY);
 
 			_update = false;
 			return true;
@@ -301,21 +316,21 @@ namespace CivOne.Screens.GamePlayPanels
 
 		public override bool MouseDown(ScreenEventArgs args)
 		{
-			if (args.Y <= 50)
+			if (args.Y <= MiniMapHeight)
 			{
-				if (args.X < 1 || args.Y < 1 || args.X > 79 || args.Y > 49) return true;
+				if (args.X < MiniMapBorder || args.Y < MiniMapBorder || args.X > (SideBarWidth - MiniMapBorder) || args.Y > (MiniMapHeight - MiniMapBorder)) return true;
 				
-				int xx = (args.X - 1) + GamePlay.X - 30;
-				int yy = (args.Y - 1) + GamePlay.Y - 18;
+				int xx = (args.X - MiniMapBorder) + GamePlay.X - MiniMapViewOffsetX;
+				int yy = (args.Y - MiniMapBorder) + GamePlay.Y - MiniMapViewOffsetY;
 
 				GamePlay.CenterOnPoint(xx, yy);
 			}
-			if (args.Y > 50 && args.Y < 62)
+			if (args.Y > MiniMapHeight && args.Y < PalaceHotspotBottomY)
 			{
 				Log("Sidebar: Palace View");
 				Common.AddScreen(new PalaceView(false, PalaceSpriteProviderFactory.GetInstance()));
 			}
-			else if (args.Y >= 62)
+			else if (args.Y >= PalaceHotspotBottomY)
 			{
 				if (Game.CurrentPlayer == Human && Game.ActiveUnit == null)
 				{
@@ -338,9 +353,9 @@ namespace CivOne.Screens.GamePlayPanels
 		
 		public void Resize(int height)
 		{
-			Bitmap = new Bytemap(80, height);
+			Bitmap = new Bytemap(SideBarWidth, height);
 			_gameInfo?.Dispose();
-			_gameInfo = new Picture(80, (height - 89), Palette);
+			_gameInfo = new Picture(SideBarWidth, (height - GameInfoOffsetY), Palette);
 			_lastDemographicsSignature = int.MinValue;
 			_lastGameInfoSignature = int.MinValue;
 			_update = true;
@@ -349,15 +364,15 @@ namespace CivOne.Screens.GamePlayPanels
 		private readonly IGlobalWarmingService _globalWarmingService;
 		private readonly IPreviewPalaceRenderer _palaceRenderer = PreviewPalaceRendererFactory.GetInstance();
 
-		public SideBar(Palette palette, IGlobalWarmingService globalWarmingService) : base(80, 192)
+		public SideBar(Palette palette, IGlobalWarmingService globalWarmingService) : base(SideBarWidth, 192)
 		{
 			_globalWarmingService = globalWarmingService;
 			_lastDemographicsSignature = int.MinValue;
 			_lastGameInfoSignature = int.MinValue;
 
-			_miniMap = new Picture(80, 50, palette);
-			_demographics = new Picture(80, 39, palette);
-			_gameInfo = new Picture(80, 103, palette);
+			_miniMap = new Picture(SideBarWidth, MiniMapHeight, palette);
+			_demographics = new Picture(SideBarWidth, DemographicsHeight, palette);
+			_gameInfo = new Picture(SideBarWidth, (192 - GameInfoOffsetY), palette);
 
 			DrawMiniMap();
 			DrawDemographics();
@@ -367,8 +382,8 @@ namespace CivOne.Screens.GamePlayPanels
 
 			Palette = palette.Copy();
 			this.AddLayer(_miniMap, 0, 0)
-				.AddLayer(_demographics, 0, 50)
-				.AddLayer(_gameInfo, 0, 89);
+				.AddLayer(_demographics, 0, MiniMapHeight)
+				.AddLayer(_gameInfo, 0, GameInfoOffsetY);
 		}
 
 		public override void Dispose()

@@ -16,7 +16,7 @@ namespace CivOne.UnitTests
         private readonly int[,] _aiRelPos = { { -1, 0 }, { 0, -1 }, { 0, 1 }, { 1, 0 } };
 
         [Fact]
-        public void CountContinent_WrapsHorizontallyAcrossMapEdge()
+        public void CountContinentWrapsHorizontallyAcrossMapEdge()
         {
             // Arrange
             const int width = 5;
@@ -45,7 +45,7 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void CountContinent_DoesNotWrapVertically()
+        public void CountContinentDoesNotWrapVertically()
         {
             // Arrange
             const int width = 5;
@@ -74,7 +74,7 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void CountContinent_SkipsAlreadyAssignedTiles()
+        public void CountContinentSkipsAlreadyAssignedTiles()
         {
             // Arrange
             const int width = 4;
@@ -105,7 +105,7 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void CountContinent_ReturnsZeroForMismatchingStartTileType()
+        public void CountContinentReturnsZeroForMismatchingStartTileType()
         {
             // Arrange
             const int width = 3;
@@ -135,6 +135,8 @@ namespace CivOne.UnitTests
                 _aiRelPos,
                 (x, y) => ocean[x, y],
                 (x, y) => continentIds[x, y],
-                (x, y, continentId) => continentIds[x, y] = continentId);
+                // this cast is safe because continent IDs are always between 0 and 255 for our test
+                // Large continent IDs are not expected for a width and height of 3 like here.
+                (x, y, continentId) => continentIds[x, y] = (byte)continentId);
     }
 }

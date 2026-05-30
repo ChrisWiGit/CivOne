@@ -7,13 +7,26 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-namespace CivOne.Services.Maps
+namespace CivOne.Enums
 {
 	/// <summary>
-	/// Marker interface used as an injection seam for map generation settings.
-	/// Implementations can provide test-specific behavior without coupling callers to global state.
+	/// Climate presets used by world generation.
 	/// </summary>
-	public interface IMapGenerationSettings
+	public enum Climate
 	{
+		/// <summary>
+		/// Dry climate.
+		/// </summary>
+		Arid = 0,
+
+		/// <summary>
+		/// Balanced climate.
+		/// </summary>
+		Normal = 1,
+
+		/// <summary>
+		/// Wet climate.
+		/// </summary>
+		Wet = 2,
 	}
 }

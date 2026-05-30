@@ -434,11 +434,6 @@ namespace CivOne.Screens
 				.WithDescription(
 					Translate("Show movement helper for keyboards without keypad."))
 				.OnSelect(GotoMenu(ArrowHelperMenu)),
-			MenuItem.Create(TranslateFormatted("Custom map sizes (experimental): {0}", Settings.CustomMapSize.YesNo()))
-				.WithDescription(
-					Translate("Enable experimental map dimensions."),
-					Translate("May affect game balance and compatibility."))
-				.OnSelect(GotoMenu(CustomMapSizeMenu)),
 			MenuItem.Create(TranslateFormatted("Game behavior menu: {0} active", ActiveBehaviorPatchCount()))
 				.WithDescription(
 					Translate("Configure optional rule tweaks and AI behavior."))
@@ -533,16 +528,6 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void CustomMapSizeMenu() => CreateMenu(Translate("Custom map sizes (experimental)"), GotoMenu(PatchesMenu, 7),
-			MenuItem.Create(TranslateFormatted("{0} (default)", false.YesNo()))
-				.WithDescription(Translate("Use classic map size presets only."))
-				.OnSelect((s, a) => Settings.CustomMapSize = false).SetActive(() => !Settings.CustomMapSize),
-			MenuItem.Create(true.YesNo())
-				.WithDescription(Translate("Allow additional experimental map sizes."))
-				.OnSelect((s, a) => Settings.CustomMapSize = true).SetActive(() => Settings.CustomMapSize),
-			MenuItem.Create(Translate("Back"))
-		);
-
 
 		private void PathFindingMenu() => CreateMenu(Translate("Use smart PathFinding for goto"), GotoMenu(BehaviorMenu, 0),
 			MenuItem.Create(TranslateFormatted("{0} (default)", false.YesNo()))
@@ -612,7 +597,7 @@ namespace CivOne.Screens
 			Description.Create(Translate("Return to the game behavior menu."))
 		);
 
-		private void SaveFormatMenu() => CreateMenu(Translate("AutoSave format"), GotoMenu(PatchesMenu, 9),
+		private void SaveFormatMenu() => CreateMenu(Translate("AutoSave format"), GotoMenu(PatchesMenu, 8),
 			MenuItem.Create(Translate("SVE with COS fallback (default)"))
 				.WithDescription(
 					Translate("Prefer SVE save files."),
@@ -624,7 +609,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void SaveCastBehaviorMenu() => CreateMenu(Translate("Save cast behavior"), GotoMenu(PatchesMenu, 10),
+		private void SaveCastBehaviorMenu() => CreateMenu(Translate("Save cast behavior"), GotoMenu(PatchesMenu, 9),
 			MenuItem.Create(Translate("Checked (default)"))
 				.WithDescription(Translate("Use checked casts for safer save handling."))
 				.OnSelect((s, a) => Settings.UseUncheckedCastSanitizer = false).SetActive(() => !Settings.UseUncheckedCastSanitizer),
@@ -634,7 +619,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void FpsCornerMenu() => CreateMenu(Translate("FPS display"), GotoMenu(PatchesMenu, 11),
+		private void FpsCornerMenu() => CreateMenu(Translate("FPS display"), GotoMenu(PatchesMenu, 10),
 			MenuItem.Create(FpsCorner.Off.ToText())
 				.WithDescription(Translate("Disable FPS display."))
 				.OnSelect((s, a) => Settings.FpsCorner = FpsCorner.Off).SetActive(() => Settings.FpsCorner == FpsCorner.Off),
@@ -701,7 +686,7 @@ namespace CivOne.Screens
 				.WithDescription(
 					Translate("Enable extra global warming gameplay effects."))
 				.OnSelect(GotoMenu(ExtendedGlobalWarmingMenu)),
-			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(PatchesMenu, 8))
+			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(PatchesMenu, 7))
 		);
 
 		private void PluginsMenu(int activeItem = 0) => CreateMenu(Translate("Plugins"), activeItem,

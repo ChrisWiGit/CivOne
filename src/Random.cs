@@ -14,6 +14,8 @@ namespace CivOne
 {
 	/// <remarks>
 	/// This code is based on JCivED[r23] source code by darkpanda. <http://sourceforge.net/p/jcived/code/HEAD/tree/branches/dev/src/dd/civ/logic/CivRandom.java>
+	/// CW refactoring: Removed lists of observers and listeners, as well as all related methods. 
+	/// These were a major source of performance and out of memory issues and not really necessary.
 	/// </remarks>
 	internal class Random
 	{
@@ -25,11 +27,10 @@ namespace CivOne
 		private bool _zf, _cf, _of;
 		
 		private Stack<short> _stack;
+		private readonly object _syncRoot = new();
 		
-		private List<short> _seeds1 = new List<short>();
-		private List<short> _seeds2 = new List<short>();
-		private List<int> _inputs = new List<int>();
-		private List<int> _outputs = new List<int>();
+		private short _lastSeed1, _lastSeed2;
+		private int _lastInput, _lastOutput;
 		
 		private short _ds5BDA, _ds5BDC;
 		
@@ -171,7 +172,7 @@ namespace CivOne
 			set
 			{
 				_ds5BDA = value;
-				_seeds1.Add(_ds5BDA);
+				_lastSeed1 = _ds5BDA;
 			}
 		}
 		
@@ -184,7 +185,7 @@ namespace CivOne
 			set
 			{
 				_ds5BDC = value;
-				_seeds1.Add(_ds5BDC);
+				_lastSeed2 = _ds5BDC;
 			}
 		}
 		
@@ -203,10 +204,10 @@ namespace CivOne
 			equal &= (_ds5BDC == tr2._ds5BDC);
 			equal &= (_stack.Equals(tr2._stack));
 			
-			equal &= (_seeds1.Equals(tr2._seeds1));
-			equal &= (_seeds2.Equals(tr2._seeds2));
-			equal &= (_inputs.Equals(tr2._inputs));
-			equal &= (_outputs.Equals(tr2._outputs));
+			equal &= (_lastSeed1 == tr2._lastSeed1);
+			equal &= (_lastSeed2 == tr2._lastSeed2);
+			equal &= (_lastInput == tr2._lastInput);
+			equal &= (_lastOutput == tr2._lastOutput);
 			
 			return equal;
 		}
@@ -219,20 +220,16 @@ namespace CivOne
 		public int[] GetStatus(int i)
 		{
 			int[] status = new int[4];
-			if (i < 0 | i >= _inputs.Count)
-			{
-				i = _inputs.Count;
-			}
-			status[0] = _seeds1[i];
-			status[1] = _seeds2[i];
-			status[2] = _inputs[i];
-			status[3] = _outputs[i];
+			status[0] = _lastSeed1;
+			status[1] = _lastSeed2;
+			status[2] = _lastInput;
+			status[3] = _lastOutput;
 			
 			return status;
 		}
 		public int[] GetStatus()
 		{
-			return GetStatus((int)_counter - 1);
+			return GetStatus(0);
 		}
 		
 		/// <summary>
@@ -242,20 +239,26 @@ namespace CivOne
 		/// <returns>A 32-bit signed integer greater than or equal to zero and less than <paramref name="max"/>.</returns>
 		public int Next(int max)
 		{
-			_inputs.Add(max);
-			DoRandom(Convert.ToInt16(max));
-			_counter++;
-			_outputs.Add((int)_ax);
-			return _ax;
+			lock (_syncRoot)
+			{
+				_lastInput = max;
+				DoRandom(Convert.ToInt16(max));
+				_counter++;
+				_lastOutput = (int)_ax;
+				return _ax;
+			}
 		}
 		
 		public int Next(int min, int max)
 		{
-			_inputs.Add(max - min);
-			DoRandom(Convert.ToInt16(max - min));
-			_counter++;
-			_outputs.Add((int)_ax);
-			return _ax + min;
+			lock (_syncRoot)
+			{
+				_lastInput = max - min;
+				DoRandom(Convert.ToInt16(max - min));
+				_counter++;
+				_lastOutput = (int)_ax;
+				return _ax + min;
+			}
 		}
 
 		/// <summary>

@@ -431,7 +431,7 @@ namespace CivOne.Persistence.Model
 
 			public bool Special => throw new NotImplementedException();
 
-			public byte ContinentId { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+			public int ContinentId { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
 			public byte LandScore => throw new NotImplementedException();
 

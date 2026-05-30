@@ -18,16 +18,16 @@ namespace CivOne
         private readonly int _height;
         private readonly int[,] _relativePositions;
         private readonly Func<int, int, bool> _isOceanAt;
-        private readonly Func<int, int, byte> _getContinentIdAt;
-        private readonly Action<int, int, byte> _setContinentIdAt;
+        private readonly Func<int, int, int> _getContinentIdAt;
+        private readonly Action<int, int, int> _setContinentIdAt;
 
         internal ContinentTraversalDelegate(
             int width,
             int height,
             int[,] relativePositions,
             Func<int, int, bool> isOceanAt,
-            Func<int, int, byte> getContinentIdAt,
-            Action<int, int, byte> setContinentIdAt)
+            Func<int, int, int> getContinentIdAt,
+            Action<int, int, int> setContinentIdAt)
         {
             _width = width;
             _height = height;
@@ -37,7 +37,7 @@ namespace CivOne
             _setContinentIdAt = setContinentIdAt;
         }
 
-        internal ulong CountContinent(int x, int y, bool ocean, byte continentId)
+        internal ulong CountContinent(int x, int y, bool ocean, int continentId)
         {
             if (_height <= 0 || _width <= 0)
             {

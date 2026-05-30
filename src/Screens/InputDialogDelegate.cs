@@ -18,6 +18,24 @@ namespace CivOne.Screens
 	/// <item>
 	/// <description><paramref name="maxLength"/> limits the accepted text length and is optional. The default value is <c>80</c>.</description>
 	/// </item>
+	/// <item>
+	/// <description><paramref name="acceptValidator"/> can block acceptance and keep the dialog open when the input is invalid.</description>
+	/// </item>
+	/// <item>
+	/// <description><paramref name="validationFailedAction"/> can be used to show an error dialog or status message when validation fails.</description>
+	/// </item>
+	/// <item>
+	/// <description><paramref name="textColour"/> controls caption, field text, and button label color (palette color id).</description>
+	/// </item>
+	/// <item>
+	/// <description><paramref name="frameColour"/> controls outlines and cursor color (palette color id).</description>
+	/// </item>
+	/// <item>
+	/// <description><paramref name="dialogInnerColour"/> controls the dialog and button inner fill color (palette color id).</description>
+	/// </item>
+	/// <item>
+	/// <description><paramref name="fieldInnerColour"/> controls the input field background fill color (palette color id).</description>
+	/// </item>
 	/// </list>
 	/// Runtime input values:
 	/// <list type="bullet">
@@ -32,9 +50,41 @@ namespace CivOne.Screens
 	/// <see cref="MouseDown(ScreenEventArgs)"/> and <see cref="KeyDown(KeyboardEventArgs)"/>, and call
 	/// <see cref="Draw(IBitmap, uint, int, int)"/> during the screen render pass while <see cref="Active"/> is <see langword="true"/>.
 	/// Subscribe to <see cref="Accepted"/> to receive the trimmed input value and to <see cref="Cancelled"/> to react to dismissal.
+	/// Validation pipeline:
+	/// <list type="number">
+	/// <item>
+	/// <description>User confirms with Enter or the OK button.</description>
+	/// </item>
+	/// <item>
+	/// <description><paramref name="acceptValidator"/> is evaluated with trimmed input when provided.</description>
+	/// </item>
+	/// <item>
+	/// <description>If validation returns <see langword="false"/>, the dialog remains open and <paramref name="validationFailedAction"/> is invoked.</description>
+	/// </item>
+	/// <item>
+	/// <description>If validation passes, <see cref="Accepted"/> is raised and the dialog closes.</description>
+	/// </item>
+	/// </list>
+	/// Visual color model:
+	/// <list type="bullet">
+	/// <item>
+	/// <description><c>dialogInnerColour</c> is the large interior fill behind title, input field, and buttons.</description>
+	/// </item>
+	/// <item>
+	/// <description><c>fieldInnerColour</c> is only the edit box interior where text is typed.</description>
+	/// </item>
+	/// </list>
 	/// <example>
 	/// <code>
-	/// var inputDialog = new InputDialogDelegate("City name", maxLength: 32);
+	/// var inputDialog = new InputDialogDelegate(
+	///     "Map size",
+	///     maxLength: 9,
+	///     acceptValidator: value =&gt; value.Contains("x"),
+	///     validationFailedAction: _ => ShowValidationError(),
+	///     textColour: 5,
+	///     frameColour: 5,
+	///     dialogInnerColour: 15,
+	///     fieldInnerColour: 15);
 	/// inputDialog.Accepted += cityName =&gt; RenameCity(cityName);
 	/// inputDialog.Cancelled += (_, _) =&gt; CloseCityRenameMode();
 	///
@@ -52,16 +102,17 @@ namespace CivOne.Screens
 	internal sealed class InputDialogDelegate : BaseInstance
 	{
 		private const int FontId = 0;
-		private const int TextColour = 5;
-		private const int DialogBorderColour = 11;
-		private const int DialogInnerColour = 15;
-		private const int FieldBorderColour = 5;
-		private const int FieldInnerColour = 15;
 		private const int ButtonWidth = 52;
 		private const int ButtonHeight = 10;
 
 		private readonly string _title;
 		private readonly int _maxLength;
+		private readonly Func<string, bool>? _acceptValidator;
+		private readonly Action<string>? _validationFailedAction;
+		private readonly byte _textColour;
+		private readonly byte _frameColour;
+		private readonly byte _dialogInnerColour;
+		private readonly byte _fieldInnerColour;
 
 		private bool _active;
 		private string _text = string.Empty;
@@ -268,8 +319,15 @@ namespace CivOne.Screens
 
 		private void Accept()
 		{
+			string value = _text.Trim();
+			if (_acceptValidator != null && !_acceptValidator(value))
+			{
+				_validationFailedAction?.Invoke(value);
+				return;
+			}
+
 			_active = false;
-			Accepted?.Invoke(_text.Trim());
+			Accepted?.Invoke(value);
 		}
 
 		private void Cancel()
@@ -395,11 +453,11 @@ namespace CivOne.Screens
 			}
 		}
 
-		private static void DrawButton(IBitmap target, Rectangle rect, string text)
+		private void DrawButton(IBitmap target, Rectangle rect, string text)
 		{
-			target.FillRectangle(rect.X, rect.Y, rect.Width, rect.Height, 11)
-				.FillRectangle(rect.X + 1, rect.Y + 1, rect.Width - 2, rect.Height - 2, 15)
-				.DrawText(text, FontId, TextColour, rect.X + (rect.Width / 2), rect.Y + 2, TextAlign.Center);
+			target.FillRectangle(rect.X, rect.Y, rect.Width, rect.Height, _frameColour)
+				.FillRectangle(rect.X + 1, rect.Y + 1, rect.Width - 2, rect.Height - 2, _dialogInnerColour)
+				.DrawText(text, FontId, _textColour, rect.X + (rect.Width / 2), rect.Y + 2, TextAlign.Center);
 		}
 
 		public void Draw(IBitmap target, uint gameTick, int width, int height)
@@ -422,23 +480,23 @@ namespace CivOne.Screens
 			_okRect = new Rectangle(dialogX + 28, dialogY + 36, ButtonWidth, ButtonHeight);
 			_cancelRect = new Rectangle(dialogX + dialogWidth - 28 - ButtonWidth, dialogY + 36, ButtonWidth, ButtonHeight);
 
-			target.FillRectangle(dialogX - 1, dialogY - 1, dialogWidth + 2, dialogHeight + 2, FieldBorderColour)
-				.FillRectangle(dialogX, dialogY, dialogWidth, dialogHeight, DialogBorderColour)
-				.FillRectangle(dialogX + 1, dialogY + 1, dialogWidth - 2, dialogHeight - 2, DialogInnerColour)
-				.DrawText(_title, FontId, TextColour, dialogX + 8, dialogY + 3)
-				.FillRectangle(_fieldRect.X, _fieldRect.Y, _fieldRect.Width, _fieldRect.Height, FieldBorderColour)
-				.FillRectangle(_fieldRect.X + 1, _fieldRect.Y + 1, _fieldRect.Width - 2, _fieldRect.Height - 2, FieldInnerColour);
+			target.FillRectangle(dialogX - 1, dialogY - 1, dialogWidth + 2, dialogHeight + 2, _frameColour)
+				.FillRectangle(dialogX, dialogY, dialogWidth, dialogHeight, _frameColour)
+				.FillRectangle(dialogX + 1, dialogY + 1, dialogWidth - 2, dialogHeight - 2, _dialogInnerColour)
+				.DrawText(_title, FontId, _textColour, dialogX + 8, dialogY + 3)
+				.FillRectangle(_fieldRect.X, _fieldRect.Y, _fieldRect.Width, _fieldRect.Height, _frameColour)
+				.FillRectangle(_fieldRect.X + 1, _fieldRect.Y + 1, _fieldRect.Width - 2, _fieldRect.Height - 2, _fieldInnerColour);
 
 			EnsureCursorVisible();
 			int visibleEnd = GetVisibleEndIndex();
 			if (visibleEnd > _viewStart)
 			{
 				string visibleText = _text[_viewStart..visibleEnd];
-				target.DrawText(visibleText, FontId, TextColour, _fieldRect.X + 2, _fieldRect.Y + 3);
+				target.DrawText(visibleText, FontId, _textColour, _fieldRect.X + 2, _fieldRect.Y + 3);
 			}
 
 			int cursorX = Math.Clamp(GetCursorX(), _fieldRect.X + 2, _fieldRect.Right - 2);
-			target.FillRectangle(cursorX, GetCursorY(), 1, GetCursorHeight(), 11);
+			target.FillRectangle(cursorX, GetCursorY(), 1, GetCursorHeight(), _frameColour);
 
 			DrawButton(target, _okRect, Translate("OK"));
 			DrawButton(target, _cancelRect, Translate("Cancel"));
@@ -456,10 +514,46 @@ namespace CivOne.Screens
 		/// This parameter is optional.
 		/// The default value is <c>80</c>.
 		/// </param>
-		public InputDialogDelegate(string title, int maxLength = 80)
+		/// <param name="acceptValidator">
+		/// Optional callback invoked when the user confirms the dialog.
+		/// Return <see langword="true"/> to accept and close the dialog.
+		/// Return <see langword="false"/> to keep the dialog open.
+		/// </param>
+		/// <param name="validationFailedAction">
+		/// Optional callback invoked when <paramref name="acceptValidator"/> returns <see langword="false"/>.
+		/// </param>
+		/// <param name="textColour">
+		/// Palette color id used for dialog text.
+		/// </param>
+		/// <param name="frameColour">
+		/// Palette color id used for borders, cursor, and button outlines.
+		/// </param>
+		/// <param name="dialogInnerColour">
+		/// Palette color id used for dialog and button inner background.
+		/// This color fills the main body of the dialog.
+		/// </param>
+		/// <param name="fieldInnerColour">
+		/// Palette color id used for input field background.
+		/// This color only fills the editable text area.
+		/// </param>
+		public InputDialogDelegate(
+			string title,
+			int maxLength = 80,
+			Func<string, bool>? acceptValidator = null,
+			Action<string>? validationFailedAction = null,
+			byte textColour = 5,
+			byte frameColour = 11,
+			byte dialogInnerColour = 15,
+			byte fieldInnerColour = 15)
 		{
 			_title = string.IsNullOrWhiteSpace(title) ? Translate("Input") : title;
 			_maxLength = Math.Max(1, maxLength);
+			_acceptValidator = acceptValidator;
+			_validationFailedAction = validationFailedAction;
+			_textColour = textColour;
+			_frameColour = frameColour;
+			_dialogInnerColour = dialogInnerColour;
+			_fieldInnerColour = fieldInnerColour;
 		}
 	}
 }

@@ -7,13 +7,26 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-namespace CivOne.Services.Maps
+namespace CivOne.Enums
 {
 	/// <summary>
-	/// Marker interface used as an injection seam for map generation settings.
-	/// Implementations can provide test-specific behavior without coupling callers to global state.
+	/// Land mass presets used by world generation.
 	/// </summary>
-	public interface IMapGenerationSettings
+	public enum LandMass
 	{
+		/// <summary>
+		/// Small land mass.
+		/// </summary>
+		Small = 0,
+
+		/// <summary>
+		/// Normal land mass.
+		/// </summary>
+		Normal = 1,
+
+		/// <summary>
+		/// Large land mass.
+		/// </summary>
+		Large = 2,
 	}
 }

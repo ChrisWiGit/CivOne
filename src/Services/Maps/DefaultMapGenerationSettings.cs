@@ -10,12 +10,10 @@
 namespace CivOne.Services.Maps
 {
 	/// <summary>
-	/// Default <see cref="IMapGenerationSettings"/> that forwards every
-	/// property to <see cref="Settings.Instance"/>. Used by <see cref="CivOne.Map"/>
-	/// when no test settings are injected.
+	/// Default marker implementation of <see cref="IMapGenerationSettings"/>.
+	/// Used by <see cref="CivOne.Map"/> when no test-specific settings seam is injected.
 	/// </summary>
 	internal sealed class DefaultMapGenerationSettings : IMapGenerationSettings
 	{
-		public bool CustomMapSize => Settings.Instance.CustomMapSize;
 	}
 }

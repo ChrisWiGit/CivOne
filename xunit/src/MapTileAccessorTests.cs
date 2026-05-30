@@ -168,7 +168,7 @@ namespace CivOne.UnitTests
 			// data to iterate. The Earth YAML fixture does not pre-number continents,
 			// so this may be id 0.
 			int continentId = Map.Instance.AllTiles()
-				.GroupBy(t => (int)t.ContinentId)
+				.GroupBy(t => t.ContinentId)
 				.OrderByDescending(g => g.Count())
 				.First()
 				.Key;
@@ -183,7 +183,7 @@ namespace CivOne.UnitTests
 		public void ContinentTilesAcrossAllContinentsCoverFullMap()
 		{
 			IEnumerable<int> distinctIds = Map.Instance.AllTiles()
-				.Select(t => (int)t.ContinentId)
+				.Select(t => t.ContinentId)
 				.Distinct();
 
 			int expected = Map.WIDTH * Map.HEIGHT;

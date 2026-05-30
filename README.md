@@ -884,3 +884,46 @@ The zoom level steps through these presets automatically; you cannot set an arbi
 
 The zoom level is saved in the savegame and restored when you reload the save.
 If the field `MapZoomBasisPoints` is absent in an older save file, the game falls back to 100 %.
+
+> Note: The minimap currently only shows the upper-left area of the displayed (zoomed) map.
+> This means the minimap display can be misleading when zoomed, as it does not reflect the actual visible map area.
+> This is a known limitation and will be improved in future updates to correctly align the minimap with the current zoom level and displayed map area.
+
+### Customize World screen help
+
+Use `Customize World` from the main menu if you want to generate a custom map.
+You can select predefined map size presets or enter a custom map size.
+
+Available presets are Tiny `40x25`, Small `60x40`, Normal `80x50`, Large `120x75`, and Huge `160x100`.
+
+For custom size input, two formats are supported.
+You can enter `WidthxHeight`, for example `160x100`.
+You can also enter a single number, and the game uses it for both axes.
+Example: `200` means `200x200`.
+
+The allowed range is `20x20` up to `1000x1000`.
+Values outside that range are rejected.
+
+The normal `Start a New Game` menu item still uses the default map size `80x50`.
+
+### Some changed map generation mechanics
+
+1. Large maps can contain more water tiles than expected.
+This happens because land generation uses hard stop limits and a clamped land target to prevent endless generation loops.
+2. Larger maps can produce more hills and mountains.
+This happens because chunk size and age adjustment passes scale with map area.
+3. World age has a strong effect on mountain and hill balance.
+Younger worlds tend to keep or create more mountains.
+Older worlds tend to erode more mountains into hills.
+4. Wet world settings can create more tundra and swamp tiles.
+Wet worlds can also create many rivers when enough land start tiles are available.
+This effect is especially visible on wet and young worlds (3 billion years).
+5. River generation is climate weighted.
+Wet climate uses a much higher river target and stronger fallback start behavior than arid climate.
+6. Arctic pole regions can be larger than in the original game.
+Top and bottom map rows are forced to arctic and extra tundra can appear in the two outer rows near each pole.
+7. Continent and ocean IDs are sorted by size.
+The continent ID on tiles is stored as `int` with no artificial upper limit.
+The binary `.MAP` save format stores the ID as a byte for compatibility with the original game.
+8. Goody hut placement is deterministic and not fully random.
+Huts are not placed in the top two or bottom two rows.

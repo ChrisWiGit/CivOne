@@ -7,11 +7,14 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
+using System.Collections.Generic;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
 using CivOne.IO.Text;
+using CivOne.Screens.Dialogs;
 
 namespace CivOne.Screens
 {
@@ -19,6 +22,8 @@ namespace CivOne.Screens
 	internal class Intro : BaseScreen
 	{
 		private const float FADE_STEP = 0.0625F;
+		private const uint MAP_NOT_READY_MESSAGE_TICKS = 60;
+		private const string INTRO_END_MARKER = "\0";
 		
 		private readonly string[] _introText;
 		private readonly Picture[] _pictures;
@@ -28,6 +33,8 @@ namespace CivOne.Screens
 		
 		private int _introPicture;
 		private int _introPictureNext;
+		private uint _mapNotReadyMessageUntil;
+		private bool _errorDialogShown;
         
 		private int IntroPicture
 		{
@@ -37,6 +44,19 @@ namespace CivOne.Screens
 			}
 			set
 			{
+				if (value < 0)
+				{
+					_introPictureNext = 0;
+					return;
+				}
+
+				int maxPictureIndex = _pictures.Length - 1;
+				if (value > maxPictureIndex)
+				{
+					_introPictureNext = maxPictureIndex;
+					return;
+				}
+
 				_introPictureNext = value;
 			}
 		}
@@ -94,14 +114,62 @@ namespace CivOne.Screens
 		{
 			get
 			{
-				if (_introTicks % 30 > 1 && _introTicks % 30 < 29 || ((_introLine + 1) < _introText.Length && _introText[_introLine + 1] == string.Empty)) return 11;
-				if (_introTicks % 30 == 1 || _introTicks % 30 == 29) return 3;
+				bool mapReady = Map.Ready;
+				if (_introTicks % 30 > 1 && _introTicks % 30 < 29 || ((_introLine + 1) < _introText.Length && _introText[_introLine + 1] == string.Empty)) return mapReady ? (byte)10 : (byte)11;
+				if (_introTicks % 30 == 1 || _introTicks % 30 == 29) return mapReady ? (byte)2 : (byte)3;
 				return 0;
 			}
+		}
+
+		private void ShowMapNotReadyMessage()
+		{
+			_mapNotReadyMessageUntil = (RuntimeHandler.CurrentGameTick / 4) + MAP_NOT_READY_MESSAGE_TICKS;
+		}
+
+		private string GetGenerationStageLabel(int stageCode)
+		{
+			return stageCode switch
+			{
+				1 => Translate("Merging terrain and latitude"),
+				2 => Translate("Applying climate adjustments"),
+				3 => Translate("Applying age adjustments"),
+				4 => Translate("Creating rivers"),
+				5 => Translate("Calculating continent sizes"),
+				6 => Translate("Creating poles"),
+				7 => Translate("Placing goody huts"),
+				8 => Translate("Calculating land value"),
+				_ => Translate("Preparing map generation"),
+			};
+		}
+
+		private string GetGenerationProgressText()
+		{
+			int stageCurrent = Math.Max(0, Map.GenerationStageCurrent);
+			int stageTotal = Math.Max(1, Map.GenerationStageTotal);
+			int stageCode = Map.GenerationStageCode;
+			string stageLabel = GetGenerationStageLabel(stageCode);
+			int stageDisplay = Math.Clamp(stageCurrent, 1, stageTotal);
+			return TranslateFormatted("{0} of {1}: {2}...", stageDisplay, stageTotal, stageLabel);
+		}
+
+		private bool TryOpenNewGame()
+		{
+			if (!Map.Ready)
+			{
+				ShowMapNotReadyMessage();
+				return false;
+			}
+
+			Destroy();
+			Common.AddScreen(new NewGame());
+			return true;
 		}
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
+			HandleMapGenerationError();
+			HandleMapGenerationRetry();
+
 			bool update = HandleScreenFade();
 			if (!update && gameTick % 2 == 0)
 			{
@@ -111,9 +179,12 @@ namespace CivOne.Screens
 					_introLine++;
 					if (_introLine >= _introText.Length)
 					{
-						Destroy();
-						Common.AddScreen(new NewGame());
-						return true;
+						if (TryOpenNewGame())
+						{
+							return true;
+						}
+						_introLine = _introText.Length - 1;
+						_introTicks = 1;
 					}
 					if (_introText[_introLine] == "_")
 					{
@@ -159,10 +230,51 @@ namespace CivOne.Screens
 			while (introLine == string.Empty)
 				introLine = _introText[_introLine - (++previousText)];
 			ShowHintText(x, y);
+			if (_mapNotReadyMessageUntil > gameTick)
+			{
+				this.DrawText(Translate("Map generation is still running. Please wait..."), 1, 15, x + 160, y + 8, TextAlign.Center);
+				this.DrawText(GetGenerationProgressText(), 1, 15, x + 160, y + 18, TextAlign.Center);
+			}
+
+			if (introLine == INTRO_END_MARKER)
+			{
+				introLine = Translate("Press Space, Enter, or Escape to continue...");
+			}
 			this.DrawText(introLine, 6, TextColour, x + 160, y + 160, TextAlign.Center);
 
 			if (_introTicks % 30 == 1) LogIntroText();
 			return true;
+		}
+
+		private void HandleMapGenerationRetry()
+		{
+			// Check if error dialog was closed and retry generation
+			if (!_errorDialogShown || Common.HasScreenType<MessageBox>())
+			{
+				return;
+			}
+			Map.ResetForGenerationRetry();
+			Map.Generate();
+			_introTicks = 0;
+			_introLine = 1;
+			_introPicture = 0;
+			_introPictureNext = 0;
+			FadeStep = 0.0F;
+			_errorDialogShown = false;
+		}
+
+		private void HandleMapGenerationError()
+		{
+			// Handle map generation error
+			if (!Map.Error || _errorDialogShown)
+			{
+				return;
+			}
+			Common.AddScreen(new MessageBox(
+				Translate("Error generating map"),
+				Translate("See logs for more information."),
+				Translate("Retrying...")));
+			_errorDialogShown = true;
 		}
 
 		private void ShowHintText(int x, int y)
@@ -171,6 +283,27 @@ namespace CivOne.Screens
 			{
 				this.DrawText(Translate("Shift+Left/Right Forward/Backward"), 1, 15, x + 160, y + 190, TextAlign.Center);
 			}
+		}
+
+		private static string[] NormalizeIntroText(string[] lines)
+		{
+			List<string> normalized = [.. lines];
+
+			if (normalized.Count > 0)
+			{
+				string lastLine = normalized[^1];
+				if (string.Equals(lastLine?.Trim(), "\u001A", StringComparison.Ordinal))
+				{
+					normalized[^1] = INTRO_END_MARKER;
+				}
+			}
+
+			if (normalized.Count == 0 || normalized[^1] != INTRO_END_MARKER)
+			{
+				normalized.Add(INTRO_END_MARKER);
+			}
+
+			return [.. normalized];
 		}
 
 		public override bool KeyDown(KeyboardEventArgs args)
@@ -219,8 +352,7 @@ namespace CivOne.Screens
 			}
 			if (args.Key == Key.Space || args.Key == Key.Enter || args.Key == Key.Escape)
 			{
-				Destroy();
-				Common.AddScreen(new NewGame());
+				TryOpenNewGame();
 				return true;
 			}
 			return false;
@@ -237,7 +369,7 @@ namespace CivOne.Screens
 			OnResize += Resize;
 			FadeStep = 0.0F;
 			
-			_introText = TextFileFactory.LoadTextFile("STORY");
+			_introText = NormalizeIntroText(TextFileFactory.LoadTextFile("STORY"));
 			if (_introText.Length == 0)
 			{
 				_introText = new string[16];

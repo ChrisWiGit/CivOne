@@ -411,6 +411,7 @@ namespace CivOne.Screens
 		private void StartNewGame(object sender, EventArgs args)
 		{
 			Log("Main Menu: Start a New Game");
+			Map.UseDefaultMapSize();
 			Map.Generate();
 			StartIntro();
 		}
