@@ -919,7 +919,7 @@ Wet climate uses a much higher river target and stronger fallback start behavior
 6. Arctic pole regions can be larger than in the original game.
 Top and bottom map rows are forced to arctic and extra tundra can appear in the two outer rows near each pole.
 7. Continent and ocean IDs are sorted by size.
-The continent ID on tiles is stored as `int` and no longer capped at 15.
-The binary `.MAP` save format still stores the ID as a byte (clamped to 255) for compatibility with the original game.
+The continent ID on tiles is stored as `int` with no artificial upper limit.
+The binary `.MAP` save format stores the ID as a byte for compatibility with the original game.
 8. Goody hut placement is deterministic and not fully random.
 Huts are not placed in the top two or bottom two rows.

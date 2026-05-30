@@ -394,7 +394,7 @@ namespace CivOne
                         if( this[ x, y ].IsOcean != oOcean ) 
                             continue;
                         int continentId = traversalContinentIds[ ( y * WIDTH ) + x ];
-                        this[ x, y ].ContinentId = (byte)( Math.Min( _iConvTbl[ continentId ], 15 ) );
+                        this[ x, y ].ContinentId = _iConvTbl[ continentId ];
                         nTiles++;       // Just a check
 
                     }

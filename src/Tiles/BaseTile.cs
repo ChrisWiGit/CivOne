@@ -138,7 +138,7 @@ namespace CivOne.Tiles
 		public int X { get; private set; }
 		public int Y { get; private set; }
 		public bool Special { get; protected set; }
-		public byte ContinentId { get; set; }
+		public int ContinentId { get; set; }
 		public byte LandValue { get; set; }
 		public byte LandScore
 		{

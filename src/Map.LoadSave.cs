@@ -202,7 +202,9 @@ namespace CivOne
 			{
 				for (int y = 0; y < HEIGHT; y++)
 				{
-					bitmap[x, y + HEIGHT] = _tiles[x, y].ContinentId;
+					// ContinentId is int internally; the original Civ1 MAP format stores it as a byte.
+					// IDs above 255 are truncated — continent IDs are always recalculated on load anyway.
+					bitmap[x, y + HEIGHT] = (byte)_tiles[x, y].ContinentId;
 					bitmap[x + WIDTH, y + HEIGHT] = 0;
 				}
 			}

@@ -335,7 +335,7 @@ namespace CivOne.UnitTests
 
 			// unused ITile members – minimal stubs
 			public bool Special => false;
-			public byte ContinentId { get; set; }
+			public int ContinentId { get; set; }
 			public byte LandValue { get; set; }
 			public byte LandScore => 0;
 			public byte Defense => 1;

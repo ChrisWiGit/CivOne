@@ -18,7 +18,7 @@ namespace CivOne.Tiles
 		int Y { get; }
 		Terrain Type { get; }
 		bool Special { get; }
-		byte ContinentId { get; set; }
+		int ContinentId { get; set; }
 		byte LandValue { get; set; }
 		byte LandScore { get; }
 		byte Movement { get; }

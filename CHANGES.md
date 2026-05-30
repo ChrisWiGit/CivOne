@@ -20,7 +20,7 @@ I did not browse all issues on github at first, so I did not recognize that some
   * If generation fails (for example due to an exception), the intro screen shows an error message and then retries map generation automatically.
     Logs still contain the technical details for troubleshooting.
   * Generation logs now include stage timings, making it easier to understand runtime and spot bottlenecks.
-  * Number of continents up to max integer (2147483647) is supported instead of being limited to 256.
+  * Number of continents is only limited by `int` range (2 147 483 647); the previous cap of 15 (from the original 4-bit nibble format) is removed.
 * Feature: Zoom map
   * The map can be zoomed in or out with `Ctrl+MouseWheel` in gameplay map view mode.
   * Scroll up to zoom in (larger tiles, fewer tiles visible); scroll down to zoom out (smaller tiles, more of the map visible).
