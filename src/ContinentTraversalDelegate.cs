@@ -57,12 +57,6 @@ namespace CivOne
 
             ulong continentSize = 1;
             Queue<(int X, int Y)> queue = new Queue<(int X, int Y)>();
-
-            // introduce a visited array to avoid the possibility of an infinite loop 
-            // in cases where the continent size exceeds the maximum value of ushort, 
-            // which would cause the continent ID to wrap around and potentially be mistaken for an unvisited tile.
-            bool[] visited = new bool[_width * _height];
-            visited[(y * _width) + x] = true;
             _setContinentIdAt(x, y, continentId);
             queue.Enqueue((x, y));
 
@@ -79,12 +73,6 @@ namespace CivOne
                         continue;
                     }
 
-                    int tileIndex = (ny * _width) + nx;
-                    if (visited[tileIndex])
-                    {
-                        continue;
-                    }
-
                     if (_isOceanAt(nx, ny) != ocean)
                     {
                         continue;
@@ -95,7 +83,6 @@ namespace CivOne
                         continue;
                     }
 
-                    visited[tileIndex] = true;
                     _setContinentIdAt(nx, ny, continentId);
                     continentSize++;
                     queue.Enqueue((nx, ny));

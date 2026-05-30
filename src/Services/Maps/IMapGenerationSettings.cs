@@ -10,10 +10,8 @@
 namespace CivOne.Services.Maps
 {
 	/// <summary>
-	/// Exposes the subset of <see cref="Settings"/> consumed by
-	/// <see cref="CivOne.Map"/> during procedural generation.
-	/// Abstracted from the global <see cref="Settings"/> singleton so tests
-	/// can inject stubs without mutating user configuration files.
+	/// Marker interface used as an injection seam for map generation settings.
+	/// Implementations can provide test-specific behavior without coupling callers to global state.
 	/// </summary>
 	public interface IMapGenerationSettings
 	{

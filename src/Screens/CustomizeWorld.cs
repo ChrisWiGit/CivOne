@@ -88,7 +88,8 @@ namespace CivOne.Screens
 				menu.Items.Add(menuTexts[i], i).OnSelect(setChoice);
 			}
 			menu.Cancel += CancelCustomizeWorld;
-			menu.ActiveItem = 1;
+			// default to "Normal" for presets
+			menu.ActiveItem = menuId == MenuIdMapSize ? 2 : 1;
 			return menu;
 		}
 

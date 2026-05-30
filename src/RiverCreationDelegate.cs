@@ -198,9 +198,10 @@ namespace CivOne
 					riverStartCandidates.RemoveAt(hillIndex);
 					int x = tileIndex % _width;
 					int y = tileIndex / _width;
-					if (_tiles[x, y].Type == Terrain.Hills || _tiles[x, y].Type == Terrain.Mountains)
+					ITile candidate = _tiles[x, y];
+					if (usingLandFallbackThisAttempt || candidate.Type == Terrain.Hills || candidate.Type == Terrain.Mountains)
 					{
-						tile = _tiles[x, y];
+						tile = candidate;
 						selectedStartTileIndex = tileIndex;
 						break;
 					}
@@ -316,7 +317,7 @@ namespace CivOne
 
 							if (_tiles[mapX, mapY].Type == Terrain.Forest)
 							{
-								_tiles[mapX, mapY] = new Jungle(mapX, mapY, _tileIsSpecial(localX, localY));
+								_tiles[mapX, mapY] = new Jungle(mapX, mapY, _tileIsSpecial(mapX, mapY));
 							}
 						}
 					}
@@ -353,8 +354,7 @@ namespace CivOne
 					return false;
 				}
 
-				hillTileIndices = landTileIndices;
-				Log("Map: Stage 6 - No hills tiles or mountains available; using land fallback chance {0}% with {1} tiles.", _fallbackChance, hillTileIndices.Count);
+				Log("Map: Stage 6 - No hills tiles or mountains available; using land fallback chance {0}% with {1} tiles.", _fallbackChance, landTileIndices.Count);
 			}
 
 			return true;

@@ -80,9 +80,9 @@ namespace CivOne.Screens
 	///     "Map size",
 	///     maxLength: 9,
 	///     acceptValidator: value =&gt; value.Contains("x"),
-	///     validationFailedAction: _ =&gt; ShowValidationError(),
+	///     validationFailedAction: _ => ShowValidationError(),
 	///     textColour: 5,
-	///     accentColour: 5,
+	///     frameColour: 5,
 	///     dialogInnerColour: 15,
 	///     fieldInnerColour: 15);
 	/// inputDialog.Accepted += cityName =&gt; RenameCity(cityName);
