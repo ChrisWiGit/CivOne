@@ -21,6 +21,50 @@ namespace CivOne
 		private const int RiverWalkStepFactor = 2;
 		private const int RiverMinimumSuccessfulLength = 3;
 
+		/// <summary>
+		/// Minimum number of candidate-start scans for one river attempt, indexed by climate.
+		/// Higher values make river creation more persistent when start tiles are scarce.
+		/// </summary>
+		internal static readonly int[] RiverStartSearchMinimumAttemptsByClimate = [1024, 2048, 4096];
+
+		/// <summary>
+		/// Scales river-start scans with map size.
+		/// Higher values increase search effort on larger maps.
+		/// </summary>
+		internal static readonly int[] RiverStartSearchFactorByClimate = [3, 4, 5];
+
+		/// <summary>
+		/// River target multiplier by climate, indexed by arid, normal, wet.
+		/// Higher values create more rivers in wetter worlds.
+		/// </summary>
+		internal static readonly int[] RiverPercentByClimate = [500, 2000, 10000];
+
+		/// <summary>
+		/// Chance for a river to start on non-hill land by climate, indexed by arid, normal, wet.
+		/// Higher values increase fallback river starts on plains or grassland.
+		/// </summary>
+		internal static readonly int[] RiverFallbackChanceByClimate = [0, 25, 50];
+
+		internal static int ComputeClimateRiverPercent( Climate climate )
+		{
+			return RiverPercentByClimate[ Math.Clamp( (int)climate, 0, RiverPercentByClimate.Length - 1 ) ];
+		}
+
+		internal static int ComputeClimateRiverFallbackChancePercent( Climate climate )
+		{
+			return RiverFallbackChanceByClimate[ Math.Clamp( (int)climate, 0, RiverFallbackChanceByClimate.Length - 1 ) ];
+		}
+
+		internal static int ComputeClimateRiverStartSearchMinimumAttempts( Climate climate )
+		{
+			return RiverStartSearchMinimumAttemptsByClimate[ Math.Clamp( (int)climate, 0, RiverStartSearchMinimumAttemptsByClimate.Length - 1 ) ];
+		}
+
+		internal static int ComputeClimateRiverStartSearchFactor( Climate climate )
+		{
+			return RiverStartSearchFactorByClimate[ Math.Clamp( (int)climate, 0, RiverStartSearchFactorByClimate.Length - 1 ) ];
+		}
+
 		private readonly int _width;
 		private readonly int _height;
 		private readonly ITile[,] _tiles;
@@ -43,12 +87,8 @@ namespace CivOne
 			Func<int, int, bool> nearOcean,
 			Func<int, int, bool> tileIsSpecial,
 			Action<string, object[]> log,
-			int climateValue,
-			int landMass,
-			int climateRiverPercent,
-			int fallbackChance,
-			int minStartSearchAttempts,
-			int startSearchFactor)
+			Climate climate,
+			int landMass)
 		{
 			ArgumentNullException.ThrowIfNull( tiles );
 			ArgumentNullException.ThrowIfNull( randomService );
@@ -63,12 +103,12 @@ namespace CivOne
 			_nearOcean = nearOcean;
 			_tileIsSpecial = tileIsSpecial;
 			_log = log;
-			_climateValue = climateValue;
+			_climateValue = (int)climate;
 			_landMass = landMass;
-			_climateRiverPercent = climateRiverPercent;
-			_fallbackChance = fallbackChance;
-			_minStartSearchAttempts = minStartSearchAttempts;
-			_startSearchFactor = startSearchFactor;
+			_climateRiverPercent = ComputeClimateRiverPercent( climate );
+			_fallbackChance = ComputeClimateRiverFallbackChancePercent( climate );
+			_minStartSearchAttempts = ComputeClimateRiverStartSearchMinimumAttempts( climate );
+			_startSearchFactor = ComputeClimateRiverStartSearchFactor( climate );
 		}
 
 		internal void CreateRivers()

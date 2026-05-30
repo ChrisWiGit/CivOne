@@ -124,8 +124,27 @@ namespace CivOne
 		private int _generationStageTotal;
 		private int _generationStageCode;
 
+		/// <summary>
+		/// Gets the index of the current map generation stage.
+		/// Thread-safe via <see cref="Volatile.Read(ref int)"/>.
+		/// Before <see cref="Ready"/> is <c>true</c>, reflects the current progress of the generation process;
+		/// after <see cref="Ready"/> is <c>true</c>, equals <see cref="GenerationStageTotal"/>.
+		/// </summary>
 		public int GenerationStageCurrent => Volatile.Read(ref _generationStageCurrent);
+
+		/// <summary>
+		/// Gets the total number of map generation stages.
+		/// Thread-safe via <see cref="Volatile.Read(ref int)"/>.
+		/// Use together with <see cref="GenerationStageCurrent"/> to display a progress indicator during generation.
+		/// </summary>
 		public int GenerationStageTotal => Volatile.Read(ref _generationStageTotal);
+
+		/// <summary>
+		/// Gets the stage code of the current map generation stage.
+		/// Thread-safe via <see cref="Volatile.Read(ref int)"/>.
+		/// The stage code identifies which part of the generation pipeline is currently active
+		/// and can be used by the UI to display a human-readable status message.
+		/// </summary>
 		public int GenerationStageCode => Volatile.Read(ref _generationStageCode);
 
 		private void SetReady(bool ready)

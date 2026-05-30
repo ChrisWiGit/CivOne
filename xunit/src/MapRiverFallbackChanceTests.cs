@@ -11,7 +11,7 @@ namespace CivOne.UnitTests
 		[InlineData(Climate.Wet, 50)]
 		public void ClimateMapsToRiverFallbackChance(Climate climate, int expectedChance)
 		{
-			Assert.Equal(expectedChance, Map.ComputeClimateRiverFallbackChancePercent(climate));
+			Assert.Equal(expectedChance, RiverCreationDelegate.ComputeClimateRiverFallbackChancePercent(climate));
 		}
 
 		[Theory]
@@ -20,7 +20,7 @@ namespace CivOne.UnitTests
 		[InlineData(Climate.Wet, 4096)]
 		public void ClimateMapsToRiverStartSearchMinimumAttempts(Climate climate, int expectedAttempts)
 		{
-			Assert.Equal(expectedAttempts, Map.ComputeClimateRiverStartSearchMinimumAttempts(climate));
+			Assert.Equal(expectedAttempts, RiverCreationDelegate.ComputeClimateRiverStartSearchMinimumAttempts(climate));
 		}
 
 		[Theory]
@@ -29,7 +29,7 @@ namespace CivOne.UnitTests
 		[InlineData(Climate.Wet, 5)]
 		public void ClimateMapsToRiverStartSearchFactor(Climate climate, int expectedFactor)
 		{
-			Assert.Equal(expectedFactor, Map.ComputeClimateRiverStartSearchFactor(climate));
+			Assert.Equal(expectedFactor, RiverCreationDelegate.ComputeClimateRiverStartSearchFactor(climate));
 		}
 
 		[Theory]
