@@ -257,7 +257,8 @@ namespace CivOne.Screens.GamePlayPanels
 					using Bytemap scaledMovingArea = ScaleBitmap(movingArea.Bitmap, 3 * _tilePixelSize, 3 * _tilePixelSize);
 					this.FillRectangle(dx - _tilePixelSize, dy - _tilePixelSize, 3 * _tilePixelSize, 3 * _tilePixelSize, 5)
 						.AddLayer(scaledMovingArea, dx - _tilePixelSize, dy - _tilePixelSize);
-					using Bytemap unitPicture = ScaleBitmap(movingUnit.ToBitmap(), _tilePixelSize, _tilePixelSize);
+					using Bytemap unitSource = movingUnit.ToBitmap();
+					using Bytemap unitPicture = ScaleBitmap(unitSource, _tilePixelSize, _tilePixelSize);
 					this.AddLayer(unitPicture, dx + ((movement.X * _tilePixelSize) / BaseTilePixelSize), dy + ((movement.Y * _tilePixelSize) / BaseTilePixelSize));
 
 					DrawFullCargoUnitWhileMoving(movingUnit, tile, dx, dy, movement, unitPicture);
@@ -663,10 +664,8 @@ namespace CivOne.Screens.GamePlayPanels
 				return true;
 			}
 
-			int width = Math.Max(1, Bitmap.Width);
-			int height = Math.Max(1, Bitmap.Height);
-			int x = Math.Clamp(Math.Max(0, args.X) * _tilesX / width, 0, _tilesX - 1);
-			int y = Math.Clamp(Math.Max(0, args.Y) * _tilesY / height, 0, _tilesY - 1);
+			int x = Math.Clamp(Math.Max(0, args.X) / _tilePixelSize, 0, _tilesX - 1);
+			int y = Math.Clamp(Math.Max(0, args.Y) / _tilePixelSize, 0, _tilesY - 1);
 			
 			int xx = _x + x;
 			int yy = _y + y;

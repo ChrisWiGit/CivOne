@@ -451,6 +451,11 @@ namespace CivOne.Screens
 				return true;
 			}
 
+			if (_gameMenu != null)
+			{
+				return false;
+			}
+
 			if (args.Y < 8)
 			{
 				// Mouse wheel events on the menu bar are ignored to prevent conflicts with scrollable submenus.
@@ -478,7 +483,8 @@ namespace CivOne.Screens
 				MouseArgsOffset(ref args, 80, 8);
 			}
 
-			return _update = _gameMap.MouseWheel(args);
+			_update |= _gameMap.MouseWheel(args);
+			return _update;
 		}
 		
 		private void Resize(object sender, ResizeEventArgs args)

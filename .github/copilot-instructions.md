@@ -105,6 +105,7 @@ Whenever a diff deletes a line that contains any of `index++`, `++index`, `i++` 
 * Instead of `if (bytes == null) throw new ArgumentNullException(nameof(bytes));`, use `ArgumentNullException.ThrowIfNull(bytes);`.
 * Use nullable type if a variable can be null, e.g. `string? name` instead of `string name` if `name` can be null. Use `?` on these fields to access them safely, e.g. `name?.Length` instead of `name.Length` if `name` can be null.
 * If a parameter can be null (nullable) make sure to check for null and throw an appropriate exception, e.g. `ArgumentNullException.ThrowIfNull(name);` or provide a default value, e.g. `name = name ?? "default";`. Some services may also have dependency injection parameters that may be null, if so, make sure to use a factory to provide a default service if the injected service is null, e.g. `public MyService(IMyDependency? dependency) { _dependency = dependency ?? MyFactory.Create(); }`.
+* When calling method that returns IDisposeable, use `using`. Don't do `using Bytemap unitPicture = ScaleBitmap(movingUnit.ToBitmap(), _tilePixelSize, _tilePixelSize);` but instead `using Bytemap unitSource = movingUnit.ToBitmap(); using Bytemap unitPicture = ScaleBitmap(unitSource, _tilePixelSize, _tilePixelSize);` to immediately dispose the original bitmap after scaling.
 
 ### Resizable Screens
 
