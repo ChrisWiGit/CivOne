@@ -885,6 +885,10 @@ The zoom level steps through these presets automatically; you cannot set an arbi
 The zoom level is saved in the savegame and restored when you reload the save.
 If the field `MapZoomBasisPoints` is absent in an older save file, the game falls back to 100 %.
 
+> Note: The minimap currently only shows the upper-left area of the displayed (zoomed) map.
+> This means the minimap display can be misleading when zoomed, as it does not reflect the actual visible map area.
+> This is a known limitation and will be improved in future updates to correctly align the minimap with the current zoom level and displayed map area.
+
 ### Customize World screen help
 
 Use `Customize World` from the main menu if you want to generate a custom map.
