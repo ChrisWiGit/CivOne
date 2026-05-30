@@ -16,6 +16,5 @@ namespace CivOne.Services.Maps
 	/// </summary>
 	internal sealed class DefaultMapGenerationSettings : IMapGenerationSettings
 	{
-		public bool CustomMapSize => Settings.Instance.CustomMapSize;
 	}
 }

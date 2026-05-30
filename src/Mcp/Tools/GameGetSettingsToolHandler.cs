@@ -115,7 +115,6 @@ namespace CivOne.Mcp.Tools
 			AddSetting(patches, flatSettings, "patches", "debugMenu", BuildBooleanValue(settings.DebugMenu));
 			AddSetting(patches, flatSettings, "patches", "deityEnabled", BuildBooleanValue(settings.DeityEnabled));
 			AddSetting(patches, flatSettings, "patches", "arrowHelper", BuildBooleanValue(settings.ArrowHelper));
-			AddSetting(patches, flatSettings, "patches", "customMapSize", BuildBooleanValue(settings.CustomMapSize));
 			AddSetting(patches, flatSettings, "patches", "pathFinding", BuildBooleanValue(settings.PathFinding));
 			AddSetting(patches, flatSettings, "patches", "autoSettlers", BuildBooleanValue(settings.AutoSettlers));
 			AddSetting(patches, flatSettings, "patches", "riverFastMovement", BuildBooleanValue(settings.RiverFastMovement));

@@ -65,7 +65,6 @@ namespace CivOne
 		private bool _debugMenu = false;
 		private bool _deityEnabled = false;
 		private bool _arrowHelper = false;
-		private bool _customMapSize = false;
 		private bool _pathFinding = false;
 		private bool _computerPlayerPathFinding = true;
 		private bool _riverFastMovement = false;
@@ -324,17 +323,6 @@ namespace CivOne
 			{
 				_arrowHelper = value;
 				SetSetting("ArrowHelper", _arrowHelper ? "1" : "0");
-				Common.ReloadSettings = true;
-			}
-		}
-
-		internal bool CustomMapSize
-		{
-			get => _customMapSize;
-			set
-			{
-				_customMapSize = value;
-				SetSetting("CustomMapSize", _customMapSize ? "1" : "0");
 				Common.ReloadSettings = true;
 			}
 		}
@@ -732,7 +720,6 @@ namespace CivOne
 			GetSetting("DebugMenu", ref _debugMenu);
 			GetSetting("DeityEnabled", ref _deityEnabled);
 			GetSetting("ArrowHelper", ref _arrowHelper);
-			GetSetting("CustomMapSize", ref _customMapSize);
 			GetSetting("PathFindingAlgorithm", ref _pathFinding);
 			GetSetting("ComputerPlayerPathFindingAlgorithm", ref _computerPlayerPathFinding);
 			GetSetting("AutoSettlers", ref _autoSettlers);

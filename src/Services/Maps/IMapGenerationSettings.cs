@@ -13,15 +13,9 @@ namespace CivOne.Services.Maps
 	/// Exposes the subset of <see cref="Settings"/> consumed by
 	/// <see cref="CivOne.Map"/> during procedural generation.
 	/// Abstracted from the global <see cref="Settings"/> singleton so tests
-	/// can flip generation branches without mutating user configuration files.
+	/// can inject stubs without mutating user configuration files.
 	/// </summary>
 	public interface IMapGenerationSettings
 	{
-		/// <summary>
-		/// True when the user requested a non-default map size, in which case
-		/// <see cref="CivOne.Map.Generate(int,int,int,int)"/> prompts the
-		/// <c>CustomMapSize</c> screen before launching the generation thread.
-		/// </summary>
-		bool CustomMapSize { get; }
 	}
 }
