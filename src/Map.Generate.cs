@@ -529,10 +529,6 @@ namespace CivOne
 
 				SetGenerationProgress(0, IntroVisibleGenerationStageCount, 0);
 
-                // Simulate a long generation time for testing the intro progress UI and error handling. Remove or comment out in production.
-                // Wait some time: Thread.Sleep(5 * 60*1000);
-                // Don't commit this! throw new Exception("Simulated map generation failure for testing error handling.");
-
 				_tiles = new ITile[WIDTH, HEIGHT];
 
 				int[,] elevation = GenerateLandMass();
@@ -568,7 +564,9 @@ namespace CivOne
             {
                 totalGenerationTimer.Stop();
                 TimeSpan totalElapsed = totalGenerationTimer.Elapsed;
-                Log( "Map: Total generation duration {0:0.00} min {1:0.00} s ({2} ms)", totalElapsed.TotalMinutes, totalElapsed.TotalSeconds, totalGenerationTimer.ElapsedMilliseconds );
+                int elapsedMinutes = (int)totalElapsed.TotalMinutes;
+                int elapsedSeconds = totalElapsed.Seconds;
+                Log( "Map: Total generation duration {0}:{1:00} min ({2:0.000} s, {3} ms)", elapsedMinutes, elapsedSeconds, totalElapsed.TotalSeconds, totalGenerationTimer.ElapsedMilliseconds );
             }
 		}
 
