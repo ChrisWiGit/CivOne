@@ -526,10 +526,12 @@ namespace CivOne
             try
 			{
 				Log("Generating map (Land Mass: {0}, Temperature: {1}, Climate: {2}, Age: {3})", _landMassValue, _temperatureValue, _climateValue, _ageValue);
+
 				SetGenerationProgress(0, IntroVisibleGenerationStageCount, 0);
 
-                Thread.Sleep(5 * 60*1000);
-                throw new Exception("Simulated map generation failure for testing error handling.");
+                // Simulate a long generation time for testing the intro progress UI and error handling. Remove or comment out in production.
+                // Wait some time: Thread.Sleep(5 * 60*1000);
+                // Don't commit this! throw new Exception("Simulated map generation failure for testing error handling.");
 
 				_tiles = new ITile[WIDTH, HEIGHT];
 
@@ -577,7 +579,7 @@ namespace CivOne
 								HEIGHT,
 								_landMassValue,
 								_randomService,
-								(format, parameters) => Log(format, parameters)).GenerateLandMass();
+								Log).GenerateLandMass();
 		}
 
 
