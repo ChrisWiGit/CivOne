@@ -24,6 +24,51 @@ namespace CivOne
 {
 	public partial class Game
 	{
+		private bool HasUnitAt(int x, int y)
+		{
+			return _units.Any(u => u.X == x && u.Y == y);
+		}
+
+		/// <summary>
+		/// Make sure the starting settlers can be placed at the given location, 
+		/// and if so, place them and set the player's starting location. 
+		/// </summary>
+		/// <param name="player">The player index.</param>
+		/// <param name="x">The x-coordinate of the starting location.</param>
+		/// <param name="y">The y-coordinate of the starting location.</param>
+		/// <param name="allowHut">Whether to allow starting on a hut.</param>
+		/// <returns>True if the settlers were successfully placed; otherwise, false.</returns>
+		private bool TryPlaceStartingSettlers(byte player, int x, int y, bool allowHut)
+		{
+			ITile tile = Map[x, y];
+			if (tile == null || tile.IsOcean)
+			{
+				return false;
+			}
+
+			if (HasUnitAt(x, y))
+			{
+				return false;
+			}
+
+			if (!allowHut && tile.Hut)
+			{
+				return false;
+			}
+
+			if (tile.Hut)
+			{
+				tile.Hut = false;
+			}
+
+			IUnit unit = CreateUnit(UnitType.Settlers, x, y);
+			unit.Owner = player;
+			_units.Add(unit);
+
+			_players[player].StartX = (short)x;
+			return true;
+		}
+
 		private void AddStartingUnits(byte player)
 		{
 			// Translated from this post by darkpanda, might contain errors:
@@ -39,15 +84,19 @@ namespace CivOne
 					// Map position is fixed, don't check anything
 					x = _players[player].Civilization.StartX;
 					y = _players[player].Civilization.StartY;
-					if (Map[x, y].Hut) Map[x, y].Hut = false;
+					if (TryPlaceStartingSettlers(player, x, y, true))
+					{
+						return;
+					}
 				}
 				else
 				{
 					ITile tile = Map[x, y];
+					if (tile == null) continue;
 
 					if (tile.IsOcean) continue; // Is it an ocean tile?
 					if (tile.Hut) continue; // Is there a hut on this tile?
-					if (_units.Any(u => u.X == x || u.Y == y)) continue; // Is there already a unit on this tile?
+					if (HasUnitAt(x, y)) continue; // Is there already a unit on this tile?
 					if (tile.LandValue < (12 - (loopCounter / 32))) continue; // Is the land value high enough?
 					if (_cities.Any(c => Common.DistanceToTile(x, y, c.X, c.Y) < (10 - (loopCounter / 64)))) continue; // Distance to other cities
 					if (_units.Any(u => (u is Settlers) && Common.DistanceToTile(x, y, u.X, u.Y) < (10 - (loopCounter / 64)))) continue; // Distance to other settlers
@@ -56,18 +105,41 @@ namespace CivOne
 					// CW: Civs are only spawned until 0 AD. So what is the point of this?
 					// After 0 AD, don't spawn a Civilization on a continent that already contains cities.
 					if (Common.TurnToYear(GameTurn) >= 0 && Map.ContinentTiles(tile.ContinentId).Any(t => t.City != null)) continue;
-
-					Log(loopCounter.ToString());
 				}
 
 				// Starting position found, add Settlers
-				IUnit unit = CreateUnit(UnitType.Settlers, x, y);
-				unit.Owner = player;
-				_units.Add(unit);
-
-				_players[player].StartX = (short)x;
-				return;
+				if (TryPlaceStartingSettlers(player, x, y, false))
+				{
+					return;
+				}
 			}
+
+			Log("AddStartingUnits: strict placement failed for player {0}; trying relaxed fallback placement.", player);
+			for (int y = 2; y < (Map.HEIGHT - 2); y++)
+			{
+				for (int x = 0; x < Map.WIDTH; x++)
+				{
+					ITile tile = Map[x, y];
+					if (tile == null || tile.IsOcean)
+					{
+						continue;
+					}
+
+					if (HasUnitAt(x, y))
+					{
+						continue;
+					}
+
+					if (TryPlaceStartingSettlers(player, x, y, true))
+					{
+						Log("AddStartingUnits: fallback placement succeeded for player {0} at {1},{2}.", player, x, y);
+						return;
+					}
+				}
+			}
+
+			Log("AddStartingUnits: no valid fallback tile found for player {0}.", player);
+			throw new InvalidOperationException($"Unable to place starting settlers for player {player}.");
 		}
 
 		private void CalculateHandicap(byte player)
@@ -163,6 +235,12 @@ namespace CivOne
 
 		public static void CreateGame(int difficulty, int competition, ICivilization tribe, string leaderName = null, string tribeName = null, string tribeNamePlural = null, bool replaceExisting = false)
 		{
+			if (!Map.Ready)
+			{
+				BaseInstance.Log("ERROR: Game creation requested before map generation finished");
+				throw new InvalidOperationException("Game creation requested before map generation finished.");
+			}
+
 			if (_instance != null)
 			{
 				if (!replaceExisting)
@@ -174,7 +252,15 @@ namespace CivOne
 				BaseInstance.Log("Replacing existing game instance with a new game");
 				_instance = null;
 			}
-			_instance = new Game(difficulty, competition, tribe, leaderName, tribeName, tribeNamePlural);
+			try
+			{
+				_instance = new Game(difficulty, competition, tribe, leaderName, tribeName, tribeNamePlural);
+			}
+			catch
+			{
+				_instance = null;
+				throw;
+			}
 
 			foreach (IUnit unit in _instance._units)
 			{
