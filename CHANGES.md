@@ -6,6 +6,11 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Introduced V-sync toggle in setup menu
+  * Added "V-Sync" setting in the setup menu with options "On" (default) and "Off".
+  * When V-Sync is enabled, the game synchronizes its frame rate with the display's refresh rate to prevent screen tearing.
+  * When V-Sync is disabled, the game runs at the maximum possible frame rate, which can reduce input latency but may cause screen tearing on some displays.
+  * The selected V-Sync setting is saved in the profile and applied on game startup.
 * Feature: Large maps with improved map generation
   * Map generation now supports sizes up to 1000x1000 tiles.
     Very large maps can take a long time to generate and may reduce performance.

@@ -61,6 +61,7 @@ namespace CivOne
 		private int _scale = 2;
 		private AspectRatio _aspectRatio = AspectRatio.Expand;
 		private int _expandWidth, _expandHeight;
+		private bool _vSync = true;
 		private bool _revealWorld = false;
 		private bool _debugMenu = false;
 		private bool _deityEnabled = false;
@@ -266,6 +267,17 @@ namespace CivOne
 				_expandHeight = value;
 				string saveValue = ((int)_expandHeight).ToString();
 				SetSetting("ExpandHeight", saveValue);
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal bool VSync
+		{
+			get => _vSync;
+			set
+			{
+				_vSync = value;
+				SetSetting("VSync", _vSync ? "1" : "0");
 				Common.ReloadSettings = true;
 			}
 		}
@@ -715,6 +727,15 @@ namespace CivOne
 			{
 				_expandWidth = -1;
 				_expandHeight = -1;
+			}
+			string vSyncSetting = GetSetting("VSync");
+			if (vSyncSetting == null)
+			{
+				SetSetting("VSync", "1");
+			}
+			else
+			{
+				_vSync = (vSyncSetting == "1");
 			}
 			GetSetting("RevealWorld", ref _revealWorld);
 			GetSetting("DebugMenu", ref _debugMenu);

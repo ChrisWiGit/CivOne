@@ -356,6 +356,7 @@ These settings affect the overall game behavior and used graphics/sound options.
 | Graphics Mode | Choose the graphics rendering mode (e.g. 256-colour or 16-colour). |
 | Aspect Ratio | Select how the game handles aspect ratio (Auto, Fixed, Scaled, ScaledFixed, Expand). |
 | Full Screen | Toggle fullscreen mode on or off (`Alt+Enter`). |
+| VSync | Synchronize rendering to the display refresh rate. This is enabled by default. It helps prevent the GPU from running at full load. Changing this setting requires a restart. |
 | Window Scale | Set the UI scale multiplier (1x to 8x) for window size. |
 | In-game sound | Browse for and enable in-game sound files. |
 

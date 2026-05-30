@@ -348,7 +348,18 @@ namespace CivOne
 				if (_handle == IntPtr.Zero)
 					throw new InvalidOperationException($"SDL_CreateWindow failed: {GetSdlErrorMessage()}");
 
-				_renderer = softwareRender ? IntPtr.Zero : SDL_CreateRenderer(_handle, -1, SDL_RENDERER_FLAGS.SDL_RENDERER_ACCELERATED);
+				bool vSyncEnabled = Settings.Instance.VSync;
+				SDL_RENDERER_FLAGS rendererFlags = SDL_RENDERER_FLAGS.SDL_RENDERER_ACCELERATED;
+				if (vSyncEnabled)
+				{
+					rendererFlags |= SDL_RENDERER_FLAGS.SDL_RENDERER_PRESENTVSYNC;
+				}
+
+				_renderer = softwareRender ? IntPtr.Zero : SDL_CreateRenderer(_handle, -1, rendererFlags);
+				if (_renderer == IntPtr.Zero && !softwareRender && vSyncEnabled)
+				{
+					_renderer = SDL_CreateRenderer(_handle, -1, SDL_RENDERER_FLAGS.SDL_RENDERER_ACCELERATED);
+				}
 				if (_renderer == IntPtr.Zero)
 				{
 					_renderer = SDL_CreateRenderer(_handle, -1, SDL_RENDERER_FLAGS.SDL_RENDERER_SOFTWARE);

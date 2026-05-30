@@ -270,6 +270,11 @@ namespace CivOne.Screens
 					.WithDescription(Translate("Resolution when using Expand ratio."))
 					.OnSelect(GotoMenu(ExpandCanvasSizeMenu)),
 			MenuItem.Create(TranslateFormatted("Full Screen: {0}", Settings.FullScreen.YesNo())).OnSelect(GotoMenu(FullScreenMenu)),
+			MenuItem.Create(TranslateFormatted("VSync: {0}", Settings.VSync.YesNo()))
+				.WithDescription(
+					Translate("Synchronize rendering to the display refresh rate."),
+					Translate("Restart the game after changing this setting."))
+				.OnSelect(GotoMenu(VSyncMenu)),
 			MenuItem.Create(TranslateFormatted("Window Size: {0}", WindowSizeText())).OnSelect(GotoMenu(WindowSizeMenu)),
 			MenuItem.Create(TranslateFormatted("Window Scale: {0}x", Settings.Scale)).OnSelect(GotoMenu(WindowScaleMenu)),
 			MenuItem.Create(Translate("In-game sound")).OnSelect(GotoMenu(SoundMenu)),
@@ -359,6 +364,20 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
+		private void VSyncMenu() => CreateMenu(Translate("VSync"), GotoMenu(SettingsMenu, 6),
+			MenuItem.Create(TranslateFormatted("{0} (default)", true.YesNo()))
+				.WithDescription(
+					Translate("Synchronize rendering to the display refresh rate."),
+					Translate("Requires a restart to take effect."))
+				.OnSelect((s, a) => Settings.VSync = true).SetActive(() => Settings.VSync),
+			MenuItem.Create(false.YesNo())
+				.WithDescription(
+					Translate("Render without display synchronization."),
+					Translate("Requires a restart to take effect."))
+				.OnSelect((s, a) => Settings.VSync = false).SetActive(() => !Settings.VSync),
+			MenuItem.Create(Translate("Back"))
+		);
+
 		private string WindowSizeText() => SizeText(Settings.WindowWidth, Settings.WindowHeight, Translate("Auto"));
 
 		private void SetWindowSizePreset(int width, int height)
@@ -369,13 +388,13 @@ namespace CivOne.Screens
 
 		private void WindowSizeMenu() => CreateMenu(
 			Translate("Window Size"),
-			GotoMenu(SettingsMenu, 6),
+			GotoMenu(SettingsMenu, 7),
 			BuildSizeMenuItems(
 				WindowSizeOptions(),
 				(width, height) => IsActiveSize(Settings.WindowWidth, Settings.WindowHeight, width, height),
 				SetWindowSizePreset));
 
-		private void WindowScaleMenu() => CreateMenu(Translate("Window Scale"), GotoMenu(SettingsMenu, 7),
+		private void WindowScaleMenu() => CreateMenu(Translate("Window Scale"), GotoMenu(SettingsMenu, 8),
 			MenuItem.Create(Translate("1x")).OnSelect((s, a) => Settings.Scale = 1).SetActive(() => Settings.Scale == 1),
 			MenuItem.Create(Translate("2x (default)")).OnSelect((s, a) => Settings.Scale = 2).SetActive(() => Settings.Scale == 2),
 			MenuItem.Create(Translate("3x")).OnSelect((s, a) => Settings.Scale = 3).SetActive(() => Settings.Scale == 3),
@@ -387,7 +406,7 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void SoundMenu() => CreateMenu(Translate("In-game sound"), GotoMenu(SettingsMenu, 8),
+		private void SoundMenu() => CreateMenu(Translate("In-game sound"), GotoMenu(SettingsMenu, 9),
 			MenuItem.Create(Translate("Browse for files...")).OnSelect(BrowseForSoundFiles).SetEnabled(!FileSystem.SoundFilesExist()).SetEnabled(!Game.Started),
 			MenuItem.Create(Translate("Back"))
 		);
