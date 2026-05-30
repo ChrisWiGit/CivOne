@@ -451,12 +451,9 @@ namespace CivOne
 		{
 			get
 			{
-				if (!Map.Instance.Ready) return false;
-				
-				using (IGameData gameData = new SaveDataAdapter())
-				{
-					return gameData.ValidMapSize(Map.WIDTH, Map.HEIGHT);
-				}
+				// SaveGame supports COS/YAML for all map sizes.
+				// The save game compatibility service will determine if the current game is compatible with SaveGame based on the map size and other factors, and provide appropriate messaging to the user if it is not compatible.
+				return Map.Instance.Ready;
 			}
 		}
 	}
