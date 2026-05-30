@@ -6,7 +6,22 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
-* Feature: Zoom level persistence
+* Feature: Large maps with improved map generation
+  * Map generation now supports sizes up to 1000x1000 tiles.
+    Very large maps can take a long time to generate and may reduce performance.
+  * Maps that differ from the original 80x50 size require the new savegame format.
+    Older savegames are not compatible with non-80x50 map sizes, because the legacy format assumes fixed map dimensions.
+  * The "Customize World" screen now includes larger size presets up to 160x100 (Huge):
+    * Tiny (40x25), Small (60x40), Normal (80x50), Large (120x75), Huge (160x100)
+    * You can also enter a custom size between 20x20 and 1000x1000.
+    * The standard "New Game" menu still starts a normal 80x50 map for quick play.
+  * If generation is still running and the intro is skipped, the intro screen shows a progress message.
+  * When generation is complete, the intro text turns green.
+  * If generation fails (for example due to an exception), the intro screen shows an error message and then retries map generation automatically.
+    Logs still contain the technical details for troubleshooting.
+  * Generation logs now include stage timings, making it easier to understand runtime and spot bottlenecks.
+  * Number of continents up to max integer (2147483647) is supported instead of being limited to 256.
+* Feature: Zoom map
   * The map can be zoomed in or out with `Ctrl+MouseWheel` in gameplay map view mode.
   * Scroll up to zoom in (larger tiles, fewer tiles visible); scroll down to zoom out (smaller tiles, more of the map visible).
   * There are 10 fixed zoom levels ranging from 100 % (default) down to 12.5 %.
