@@ -13,16 +13,16 @@ using Xunit;
 namespace CivOne.UnitTests
 {
 	/// <summary>
-	/// Locks down the constructor seam introduced in Phase C2 that lets tests
-	/// supply a stub <see cref="IMapGenerationSettings"/> instead of reading
-	/// from the global <see cref="Settings"/> singleton.
+	/// Locks down the constructor seam that lets tests supply a stub
+	/// <see cref="IMapGenerationSettings"/> instead of reading from the
+	/// global <see cref="Settings"/> singleton.
 	/// </summary>
 	public class MapGenerationSettingsInjectionTests : src.TestsBase
 	{
 		[Fact]
 		public void ConstructorAcceptsInjectedGenerationSettings()
 		{
-			FixedGenerationSettings testee = new() { CustomMapSize = false };
+			IMapGenerationSettings testee = new StubGenerationSettings();
 
 			Map actual = new(null, null, testee);
 
@@ -37,20 +37,6 @@ namespace CivOne.UnitTests
 			Assert.NotNull(actual);
 		}
 
-		[Fact]
-		public void DefaultMapGenerationSettingsForwardsCustomMapSizeFromSettingsInstance()
-		{
-			DefaultMapGenerationSettings testee = new();
-
-			bool actual = testee.CustomMapSize;
-			bool expected = Settings.Instance.CustomMapSize;
-
-			Assert.Equal(expected, actual);
-		}
-
-		private sealed class FixedGenerationSettings : IMapGenerationSettings
-		{
-			public bool CustomMapSize { get; set; }
-		}
+		private sealed class StubGenerationSettings : IMapGenerationSettings { }
 	}
 }

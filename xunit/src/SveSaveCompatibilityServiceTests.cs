@@ -51,7 +51,7 @@ namespace CivOne.src
 		}
 
 		[Fact]
-		public void Evaluate_WhenYamlLoaded_ReturnsIncompatible()
+		public void EvaluateWhenYamlLoadedReturnsIncompatible()
 		{
 			var testee = new SveSaveCompatibilityService();
 			var snapshot = CreateSnapshot(isLoadedFromYaml: true);
@@ -63,7 +63,7 @@ namespace CivOne.src
 		}
 
 		[Fact]
-		public void Evaluate_WhenMoreThanEightPlayers_ReturnsIncompatible()
+		public void EvaluateWhenMoreThanEightPlayersReturnsIncompatible()
 		{
 			var testee = new SveSaveCompatibilityService();
 			var snapshot = CreateSnapshot(playerCount: 9);
@@ -74,11 +74,14 @@ namespace CivOne.src
 			Assert.Contains("at most 8 players", actual.Reason, StringComparison.OrdinalIgnoreCase);
 		}
 
-		[Fact]
-		public void Evaluate_WhenMapIsNot80x50_ReturnsIncompatible()
+		[Theory]
+		[InlineData(81, 50)]
+		[InlineData(80, 49)]
+		[InlineData(160, 100)]
+		public void EvaluateWhenMapIsNot80x50ReturnsIncompatible(int mapWidth, int mapHeight)
 		{
 			var testee = new SveSaveCompatibilityService();
-			var snapshot = CreateSnapshot(mapWidth: 81, mapHeight: 50);
+			var snapshot = CreateSnapshot(mapWidth: mapWidth, mapHeight: mapHeight);
 
 			var actual = testee.Evaluate(snapshot);
 
@@ -87,7 +90,7 @@ namespace CivOne.src
 		}
 
 		[Fact]
-		public void Evaluate_WhenCityHasMoreThanThreeTradeCities_ReturnsIncompatible()
+		public void EvaluateWhenCityHasMoreThanThreeTradeCitiesReturnsIncompatible()
 		{
 			var testee = new SveSaveCompatibilityService();
 			var snapshot = CreateSnapshot(tradeCityCountsPerCity: [4]);
@@ -99,7 +102,7 @@ namespace CivOne.src
 		}
 
 		[Fact]
-		public void Evaluate_WhenReplayDataExceeds4096Bytes_ReturnsIncompatible()
+		public void EvaluateWhenReplayDataExceeds4096BytesReturnsIncompatible()
 		{
 			var testee = new SveSaveCompatibilityService();
 			var snapshot = CreateSnapshot(replayDataLengthBytes: 4097);
@@ -111,7 +114,7 @@ namespace CivOne.src
 		}
 
 		[Fact]
-		public void Evaluate_WhenUnitHomeCityReferenceIsInvalid_ReturnsIncompatible()
+		public void EvaluateWhenUnitHomeCityReferenceIsInvalidReturnsIncompatible()
 		{
 			var testee = new SveSaveCompatibilityService();
 			var snapshot = CreateSnapshot(hasInvalidUnitHomeCityReferences: true);
@@ -123,7 +126,7 @@ namespace CivOne.src
 		}
 
 		[Fact]
-		public void Evaluate_WhenTradeCityReferenceIsInvalid_ReturnsIncompatible()
+		public void EvaluateWhenTradeCityReferenceIsInvalidReturnsIncompatible()
 		{
 			var testee = new SveSaveCompatibilityService();
 			var snapshot = CreateSnapshot(hasInvalidTradeCityReferences: true);
@@ -135,7 +138,7 @@ namespace CivOne.src
 		}
 
 		[Fact]
-		public void Evaluate_WhenUnitCoordinatesAreOutOfBounds_ReturnsIncompatible()
+		public void EvaluateWhenUnitCoordinatesAreOutOfBoundsReturnsIncompatible()
 		{
 			var testee = new SveSaveCompatibilityService();
 			var snapshot = CreateSnapshot(hasOutOfBoundsUnitCoordinates: true);
@@ -147,7 +150,7 @@ namespace CivOne.src
 		}
 
 		[Fact]
-		public void Evaluate_WhenStateFitsSveLimits_ReturnsCompatible()
+		public void EvaluateWhenStateFitsSveLimitsReturnsCompatible()
 		{
 			var testee = new SveSaveCompatibilityService();
 			var snapshot = CreateSnapshot(
@@ -166,7 +169,7 @@ namespace CivOne.src
 		}
 
 		[Fact]
-		public void Evaluate_WhenUnitsCountDiffersFromUnitOwnersCount_ReturnsIncompatible()
+		public void EvaluateWhenUnitsCountDiffersFromUnitOwnersCountReturnsIncompatible()
 		{
 			var testee = new SveSaveCompatibilityService();
 			var snapshot = CreateSnapshot(unitOwners: [0, 0], unitsCount: 1);
