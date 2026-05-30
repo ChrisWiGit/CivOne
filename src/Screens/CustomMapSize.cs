@@ -54,6 +54,7 @@ namespace CivOne.Screens
 				Indent = 8
 			};
 
+			// Keep Translate with string to allow translator cli to recognize and parse the text.
 			_sizeSelect.Items.Add(Translate("Tiny (40x25)"), new Size(40, 25));
 			_sizeSelect.Items.Add(Translate("Small (60x40)"), new Size(60, 40));
 			_sizeSelect.Items.Add(Translate("Normal (80x50)"), new Size(80, 50));
