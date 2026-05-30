@@ -53,6 +53,7 @@ namespace CivOne
 		
 		public void LoadMap(string filename, int randomSeed)
 		{
+			UseDefaultMapSize();
 			Log("Map: Loading {0} - Random seed: {1}", filename, randomSeed);
 			_terrainMasterWord = randomSeed;
 			
@@ -101,7 +102,7 @@ namespace CivOne
 				}
 			}
 			
-			Ready = true;
+			SetReady(true);
 			Log("Map: Ready");
 		}
 
@@ -220,7 +221,7 @@ namespace CivOne
 			PlaceHuts();
 			CalculateLandValue();
 			
-			Ready = true;
+			SetReady(true);
 			Log("Map: Ready");
 		}
 
@@ -232,10 +233,16 @@ namespace CivOne
 				return;
 			}
 
-			_landMass = -1;
-			_temperature = -1;
-			_climate = -1;
-			_age = -1;
+			UseDefaultMapSize();
+
+			_landMass = null;
+			_landMassValue = -1;
+			_temperature = null;
+			_temperatureValue = -1;
+			_climate = null;
+			_climateValue = -1;
+			_age = null;
+			_ageValue = -1;
 			FixedStartPositions = true;
 
 			TaskRunEarthMapGeneration();
