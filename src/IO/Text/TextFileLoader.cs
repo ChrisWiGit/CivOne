@@ -42,7 +42,15 @@ namespace CivOne.IO.Text
 				return ReadArray(defaultPath);
 			}
 
-			string[] localizedLines = StripEndMarker(ReadArray(localizedPath));
+			string[] localizedRawLines = ReadArray(localizedPath);
+			bool hasEndMarker = HasEndMarker(localizedRawLines);
+			string[] localizedLines = hasEndMarker ? StripEndMarker(localizedRawLines) : localizedRawLines;
+
+			if (!hasEndMarker)
+			{
+				return localizedLines;
+			}
+
 			string[] defaultLines = ReadArray(defaultPath);
 
 			if (defaultLines.Length == 0)
@@ -62,7 +70,7 @@ namespace CivOne.IO.Text
 		/// <returns>
 		/// Cleaned file lines, or an empty array when the file is missing.
 		/// </returns>
-		private string[] ReadArray(string path)
+		private static string[] ReadArray(string path)
 		{
 			if (!File.Exists(path))
 			{
@@ -90,6 +98,20 @@ namespace CivOne.IO.Text
 		}
 
 		/// <summary>
+		/// Checks whether a localized text file explicitly requests fallback merge using <c>*END</c>.
+		/// </summary>
+		/// <param name="lines">
+		/// Raw localized lines.
+		/// </param>
+		/// <returns>
+		/// <see langword="true"/> when any line equals <c>*END</c>.
+		/// </returns>
+		private static bool HasEndMarker(string[] lines)
+		{
+			return lines.Any(IsEndMarker);
+		}
+
+		/// <summary>
 		/// Detects comment lines in text files.
 		/// </summary>
 		/// <param name="line">
@@ -114,7 +136,7 @@ namespace CivOne.IO.Text
 		/// </returns>
 		private static bool IsEndMarker(string line)
 		{
-			return line == "*END";
+			return string.Equals(line.Trim(), "*END", StringComparison.Ordinal);
 		}
 
 		/// <summary>

@@ -8,11 +8,13 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Collections.Generic;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
 using CivOne.IO.Text;
+using CivOne.Screens.Dialogs;
 
 namespace CivOne.Screens
 {
@@ -21,6 +23,7 @@ namespace CivOne.Screens
 	{
 		private const float FADE_STEP = 0.0625F;
 		private const uint MAP_NOT_READY_MESSAGE_TICKS = 60;
+		private const string INTRO_END_MARKER = "\0";
 		
 		private readonly string[] _introText;
 		private readonly Picture[] _pictures;
@@ -31,6 +34,7 @@ namespace CivOne.Screens
 		private int _introPicture;
 		private int _introPictureNext;
 		private uint _mapNotReadyMessageUntil;
+		private bool _errorDialogShown;
         
 		private int IntroPicture
 		{
@@ -163,6 +167,9 @@ namespace CivOne.Screens
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
+			HandleMapGenerationError();
+			HandleMapGenerationRetry();
+
 			bool update = HandleScreenFade();
 			if (!update && gameTick % 2 == 0)
 			{
@@ -228,10 +235,46 @@ namespace CivOne.Screens
 				this.DrawText(Translate("Map generation is still running. Please wait..."), 1, 15, x + 160, y + 8, TextAlign.Center);
 				this.DrawText(GetGenerationProgressText(), 1, 15, x + 160, y + 18, TextAlign.Center);
 			}
+
+			if (introLine == INTRO_END_MARKER)
+			{
+				introLine = Translate("Press Space, Enter, or Escape to continue...");
+			}
 			this.DrawText(introLine, 6, TextColour, x + 160, y + 160, TextAlign.Center);
 
 			if (_introTicks % 30 == 1) LogIntroText();
 			return true;
+		}
+
+		private void HandleMapGenerationRetry()
+		{
+			// Check if error dialog was closed and retry generation
+			if (!_errorDialogShown || Common.HasScreenType<MessageBox>())
+			{
+				return;
+			}
+			Map.ResetForGenerationRetry();
+			Map.Generate();
+			_introTicks = 0;
+			_introLine = 1;
+			_introPicture = 0;
+			_introPictureNext = 0;
+			FadeStep = 0.0F;
+			_errorDialogShown = false;
+		}
+
+		private void HandleMapGenerationError()
+		{
+			// Handle map generation error
+			if (!Map.Error || _errorDialogShown)
+			{
+				return;
+			}
+			Common.AddScreen(new MessageBox(
+				Translate("Error generating map"),
+				Translate("See logs for more information."),
+				Translate("Retrying...")));
+			_errorDialogShown = true;
 		}
 
 		private void ShowHintText(int x, int y)
@@ -240,6 +283,27 @@ namespace CivOne.Screens
 			{
 				this.DrawText(Translate("Shift+Left/Right Forward/Backward"), 1, 15, x + 160, y + 190, TextAlign.Center);
 			}
+		}
+
+		private static string[] NormalizeIntroText(string[] lines)
+		{
+			List<string> normalized = [.. lines];
+
+			if (normalized.Count > 0)
+			{
+				string lastLine = normalized[^1];
+				if (string.Equals(lastLine?.Trim(), "\u001A", StringComparison.Ordinal))
+				{
+					normalized[^1] = INTRO_END_MARKER;
+				}
+			}
+
+			if (normalized.Count == 0 || normalized[^1] != INTRO_END_MARKER)
+			{
+				normalized.Add(INTRO_END_MARKER);
+			}
+
+			return [.. normalized];
 		}
 
 		public override bool KeyDown(KeyboardEventArgs args)
@@ -305,7 +369,7 @@ namespace CivOne.Screens
 			OnResize += Resize;
 			FadeStep = 0.0F;
 			
-			_introText = TextFileFactory.LoadTextFile("STORY");
+			_introText = NormalizeIntroText(TextFileFactory.LoadTextFile("STORY"));
 			if (_introText.Length == 0)
 			{
 				_introText = new string[16];
