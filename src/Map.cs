@@ -120,6 +120,19 @@ namespace CivOne
 		/// </summary>
 		public bool Ready => Volatile.Read(ref _readyState) != 0;
 
+		private int _errorState;
+		private string _errorMessage = string.Empty;
+
+		/// <summary>
+		/// Thread- and state-safe accessor for whether an error occurred during map generation.
+		/// </summary>
+		public bool Error => Volatile.Read(ref _errorState) != 0;
+
+		/// <summary>
+		/// Gets the error message if an error occurred during map generation.
+		/// </summary>
+		public string ErrorMessage => _errorMessage;
+
 		private int _generationStageCurrent;
 		private int _generationStageTotal;
 		private int _generationStageCode;
@@ -152,11 +165,29 @@ namespace CivOne
 			Volatile.Write(ref _readyState, ready ? 1 : 0);
 		}
 
+		private void SetError(bool error, string message = "")
+		{
+			Volatile.Write(ref _errorState, error ? 1 : 0);
+			_errorMessage = message;
+		}
+
 		private void SetGenerationProgress(int stageCurrent, int stageTotal, int stageCode)
 		{
 			Volatile.Write(ref _generationStageCurrent, stageCurrent);
 			Volatile.Write(ref _generationStageTotal, stageTotal);
 			Volatile.Write(ref _generationStageCode, stageCode);
+		}
+
+		/// <summary>
+		/// Resets the map state to allow retrying generation after an error.
+		/// Clears the tiles, resets Ready/Error flags, and generation progress.
+		/// </summary>
+		public void ResetForGenerationRetry()
+		{
+			_tiles = null!;
+			SetReady(false);
+			SetError(false);
+			SetGenerationProgress(0, 0, 0);
 		}
 
 		public bool FixedStartPositions { get; private set; }

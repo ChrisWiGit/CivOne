@@ -15,6 +15,7 @@ using System.Diagnostics;
 using CivOne.Enums;
 using CivOne.Tiles;
 using System.Collections;
+using System.Threading;
 
 namespace CivOne
 {
@@ -527,6 +528,9 @@ namespace CivOne
 				Log("Generating map (Land Mass: {0}, Temperature: {1}, Climate: {2}, Age: {3})", _landMassValue, _temperatureValue, _climateValue, _ageValue);
 				SetGenerationProgress(0, IntroVisibleGenerationStageCount, 0);
 
+                Thread.Sleep(5 * 60*1000);
+                throw new Exception("Simulated map generation failure for testing error handling.");
+
 				_tiles = new ITile[WIDTH, HEIGHT];
 
 				int[,] elevation = GenerateLandMass();
@@ -556,7 +560,7 @@ namespace CivOne
 			catch (Exception ex) 
             {
                 Log("Map generation failed: {0}", ex);
-                // SetError(true);
+                SetError(true, "Error generating map. See logs for more information.");
             }
             finally
             {
