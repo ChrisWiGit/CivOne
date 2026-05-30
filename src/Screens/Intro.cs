@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -19,6 +20,7 @@ namespace CivOne.Screens
 	internal class Intro : BaseScreen
 	{
 		private const float FADE_STEP = 0.0625F;
+		private const uint MAP_NOT_READY_MESSAGE_TICKS = 60;
 		
 		private readonly string[] _introText;
 		private readonly Picture[] _pictures;
@@ -28,6 +30,7 @@ namespace CivOne.Screens
 		
 		private int _introPicture;
 		private int _introPictureNext;
+		private uint _mapNotReadyMessageUntil;
         
 		private int IntroPicture
 		{
@@ -37,6 +40,19 @@ namespace CivOne.Screens
 			}
 			set
 			{
+				if (value < 0)
+				{
+					_introPictureNext = 0;
+					return;
+				}
+
+				int maxPictureIndex = _pictures.Length - 1;
+				if (value > maxPictureIndex)
+				{
+					_introPictureNext = maxPictureIndex;
+					return;
+				}
+
 				_introPictureNext = value;
 			}
 		}
@@ -94,10 +110,55 @@ namespace CivOne.Screens
 		{
 			get
 			{
-				if (_introTicks % 30 > 1 && _introTicks % 30 < 29 || ((_introLine + 1) < _introText.Length && _introText[_introLine + 1] == string.Empty)) return 11;
-				if (_introTicks % 30 == 1 || _introTicks % 30 == 29) return 3;
+				bool mapReady = Map.Ready;
+				if (_introTicks % 30 > 1 && _introTicks % 30 < 29 || ((_introLine + 1) < _introText.Length && _introText[_introLine + 1] == string.Empty)) return mapReady ? (byte)10 : (byte)11;
+				if (_introTicks % 30 == 1 || _introTicks % 30 == 29) return mapReady ? (byte)2 : (byte)3;
 				return 0;
 			}
+		}
+
+		private void ShowMapNotReadyMessage()
+		{
+			_mapNotReadyMessageUntil = (RuntimeHandler.CurrentGameTick / 4) + MAP_NOT_READY_MESSAGE_TICKS;
+		}
+
+		private string GetGenerationStageLabel(int stageCode)
+		{
+			return stageCode switch
+			{
+				1 => Translate("Merging terrain and latitude"),
+				2 => Translate("Applying climate adjustments"),
+				3 => Translate("Applying age adjustments"),
+				4 => Translate("Creating rivers"),
+				5 => Translate("Calculating continent sizes"),
+				6 => Translate("Creating poles"),
+				7 => Translate("Placing goody huts"),
+				8 => Translate("Calculating land value"),
+				_ => Translate("Preparing map generation"),
+			};
+		}
+
+		private string GetGenerationProgressText()
+		{
+			int stageCurrent = Math.Max(0, Map.GenerationStageCurrent);
+			int stageTotal = Math.Max(1, Map.GenerationStageTotal);
+			int stageCode = Map.GenerationStageCode;
+			string stageLabel = GetGenerationStageLabel(stageCode);
+			int stageDisplay = Math.Clamp(stageCurrent, 1, stageTotal);
+			return TranslateFormatted("{0} of {1}: {2}...", stageDisplay, stageTotal, stageLabel);
+		}
+
+		private bool TryOpenNewGame()
+		{
+			if (!Map.Ready)
+			{
+				ShowMapNotReadyMessage();
+				return false;
+			}
+
+			Destroy();
+			Common.AddScreen(new NewGame());
+			return true;
 		}
 		
 		protected override bool HasUpdate(uint gameTick)
@@ -111,9 +172,12 @@ namespace CivOne.Screens
 					_introLine++;
 					if (_introLine >= _introText.Length)
 					{
-						Destroy();
-						Common.AddScreen(new NewGame());
-						return true;
+						if (TryOpenNewGame())
+						{
+							return true;
+						}
+						_introLine = _introText.Length - 1;
+						_introTicks = 1;
 					}
 					if (_introText[_introLine] == "_")
 					{
@@ -159,6 +223,11 @@ namespace CivOne.Screens
 			while (introLine == string.Empty)
 				introLine = _introText[_introLine - (++previousText)];
 			ShowHintText(x, y);
+			if (_mapNotReadyMessageUntil > gameTick)
+			{
+				this.DrawText(Translate("Map generation is still running. Please wait..."), 1, 15, x + 160, y + 8, TextAlign.Center);
+				this.DrawText(GetGenerationProgressText(), 1, 15, x + 160, y + 18, TextAlign.Center);
+			}
 			this.DrawText(introLine, 6, TextColour, x + 160, y + 160, TextAlign.Center);
 
 			if (_introTicks % 30 == 1) LogIntroText();
@@ -219,8 +288,7 @@ namespace CivOne.Screens
 			}
 			if (args.Key == Key.Space || args.Key == Key.Enter || args.Key == Key.Escape)
 			{
-				Destroy();
-				Common.AddScreen(new NewGame());
+				TryOpenNewGame();
 				return true;
 			}
 			return false;

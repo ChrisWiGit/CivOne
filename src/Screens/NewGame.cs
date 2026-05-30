@@ -17,6 +17,7 @@ using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
 using CivOne.Tasks;
+using CivOne.Tiles;
 using CivOne.Units;
 using CivOne.UserInterface;
 
@@ -176,6 +177,17 @@ namespace CivOne.Screens
 				.FillRectangle(OffsetX + 166, OffsetY + 103, 113, 14, 5)
 				.FillRectangle(OffsetX + 167, OffsetY + 104, 111, 12, 15);
 		}
+
+		private bool IsMapGenerationComplete()
+		{
+			if (!Map.Ready)
+			{
+				Log("Map not ready yet. Waiting for generation to finish.");
+				return false;
+			}
+
+			return true;
+		}
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
@@ -189,8 +201,22 @@ namespace CivOne.Screens
 			{
 				if (!_gameCreated)
 				{
+					if (!IsMapGenerationComplete())
+					{
+						return false;
+					}
+
 					ICivilization civ = _tribesAvailable[_tribe];
-					Game.CreateGame(_difficulty, _competition, civ, _leaderName, _tribeName, _tribeNamePlural, replaceExisting: true);
+					try
+					{
+						Game.CreateGame(_difficulty, _competition, civ, _leaderName, _tribeName, _tribeNamePlural, replaceExisting: true);
+					}
+					catch (Exception ex)
+					{
+						Log("NewGame: game creation failed - {0}", ex.Message);
+						return false;
+					}
+
 					_gameCreated = true;
 					_introBorderStyle = Common.Random.Next(2);
 					_introDirty = true;
@@ -240,12 +266,26 @@ namespace CivOne.Screens
 			}
 			else
 			{
+				if (!_gameCreated)
+				{
+					_done = false;
+					return false;
+				}
+
 				Destroy();
 
 				GamePlay gamePlay = new GamePlay();
 				Common.AddScreen(gamePlay);
-				IUnit startUnit = Game.GetUnits().First(x => Game.Human == x.Owner);
-				gamePlay.CenterOnPoint(startUnit.X, startUnit.Y);
+				IUnit? startUnit = Game.GetUnits().FirstOrDefault(x => Game.Human == x.Owner);
+				if (startUnit != null)
+				{
+					gamePlay.CenterOnPoint(startUnit.X, startUnit.Y);
+				}
+				else
+				{
+					Log("NewGame: No human start unit found. Falling back to map center.");
+					gamePlay.CenterOnPoint(Map.WIDTH / 2, Map.HEIGHT / 2);
+				}
 				
 				if (Game.InstantAdvice)
 				{
@@ -299,14 +339,14 @@ namespace CivOne.Screens
 				}
 				return false;
 			}
-			if (_difficulty > -1 && _competition > -1 && _tribe > -1 && !_done)
+			if (_difficulty > -1 && _competition > -1 && _tribe > -1 && _gameCreated && !_done)
 				_done = true;
 			return _done;
 		}
 		
 		public override bool MouseDown(ScreenEventArgs args)
 		{
-			if (_difficulty > -1 && _competition > -1 && _tribe > -1 && !_done)
+			if (_difficulty > -1 && _competition > -1 && _tribe > -1 && _gameCreated && !_done)
 				_done = true;
 			return _done;
 		}
