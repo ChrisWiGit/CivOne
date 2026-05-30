@@ -9,12 +9,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using CivOne.Enums;
-using CivOne.Screens;
-using CivOne.Tasks;
 using CivOne.Tiles;
 using System.Collections;
 
@@ -22,102 +20,99 @@ namespace CivOne
 {
     public partial class Map
     {
-        private bool[,] GenerateLandChunk()
-        {
-            bool[,] stencil = new bool[ WIDTH, HEIGHT ];
-
-            int x = _randomService.Next( 4, WIDTH - 4 );
-            int y = _randomService.Next( 8, HEIGHT - 8 );
-            int pathLength = _randomService.Next( 1, 64 );
-
-            for( int i = 0; i < pathLength; i++ )
-            {
-                stencil[ x, y ] = true;
-                stencil[ x + 1, y ] = true;
-                stencil[ x, y + 1 ] = true;
-                switch( _randomService.Next( 4 ) )
-                {
-                    case 0: y--; break;
-                    case 1: x++; break;
-                    case 2: y++; break;
-                    default: x--; break;
-                }
-
-                if( x < 3 || y < 3 || x > ( WIDTH - 4 ) || y > ( HEIGHT - 5 ) ) break;
-            }
-
-            return stencil;
-        }
-
         private bool TileHasHut( int x, int y )
         {
             if( y < 2 || y > ( HEIGHT - 3 ) ) return false;
             return ModGrid( x, y ) == ( ( x / 4 ) * 13 + ( y / 4 ) * 11 + _terrainMasterWord + 8 ) % 32;
         }
 
-        private int[,] GenerateLandMass()
+        /// <summary>
+        /// Number of generation stages shown in the intro progress UI.
+        /// </summary>
+        private const int IntroVisibleGenerationStageCount = 8;
+
+        private enum Stages
         {
-            Log( "Map: Stage 1 - Generate land mass" );
+            MergeElevationAndLatitude = 1,
+            ClimateAdjustments = 2,
+            AgeAdjustments = 3,
+            CreateRivers = 4,
+            CalculateContinentSize = 5,
+            CreatePoles = 6,
+            PlaceHuts = 7,
+            CalculateLandValue = 8
+        }
 
-            int[,] elevation = new int[ WIDTH, HEIGHT ];
-            int landMassSize = (int)( ( WIDTH * HEIGHT ) / 12.5 ) * ( _landMass + 2 );
+		private Climate ClimateValue => _climate ?? Climate.Normal;
 
-            // Generate the landmass
-            while( ( from int tile in elevation where tile > 0 select 1 ).Sum() < landMassSize )
-            {
-                bool[,] chunk = GenerateLandChunk();
-                for( int y = 0; y < HEIGHT; y++ )
-                    for( int x = 0; x < WIDTH; x++ )
-                    {
-                        if( chunk[ x, y ] ) elevation[ x, y ]++;
-                    }
-            }
+        /// <summary>
+        /// Reduces mountain generation so more hills remain available for rivers, indexed by age.
+        /// Higher values produce fewer mountains and more hills.
+        /// </summary>
+        private static readonly int[] MountainGenerationReductionPercentByAge = [50, 70, 85];
 
-            // remove narrow passages
-            for( int y = 0; y < ( HEIGHT - 1 ); y++ )
-                for( int x = 0; x < ( WIDTH - 1 ); x++ )
-                {
-                    if( ( elevation[ x, y ] > 0 && elevation[ x + 1, y + 1 ] > 0 ) && ( elevation[ x + 1, y ] == 0 && elevation[ x, y + 1 ] == 0 ) )
-                    {
-                        elevation[ x + 1, y ]++;
-                        elevation[ x, y + 1 ]++;
-                    }
-                    else if( ( elevation[ x, y ] == 0 && elevation[ x + 1, y + 1 ] == 0 ) && ( elevation[ x + 1, y ] > 0 && elevation[ x, y + 1 ] > 0 ) )
-                    {
-                        elevation[ x + 1, y + 1 ]++;
-                    }
-                }
+        internal static int ComputeMountainGenerationReductionPercent( EarthAge age )
+        {
+            return ComputeMountainGenerationReductionPercent( (int)age );
+        }
 
-            return elevation;
+        internal static int ComputeMountainGenerationReductionPercent( int age )
+        {
+            int ageIndex = Math.Clamp( age, 0, MountainGenerationReductionPercentByAge.Length - 1 );
+            return MountainGenerationReductionPercentByAge[ ageIndex ];
+        }
+
+        private int ComputeMountainGenerationReductionPercent()
+        {
+            return ComputeMountainGenerationReductionPercent( _ageValue );
+        }
+
+        private int ComputeMountainUpliftChancePercent()
+        {
+            int baseChance = Math.Clamp( 65 - ( _ageValue * 20 ), 10, 75 );
+            int reducedChance = ( baseChance * ( 100 - ComputeMountainGenerationReductionPercent() ) ) / 100;
+            return Math.Clamp( reducedChance, 5, 75 );
+        }
+
+        private int ComputeMountainErosionChancePercent()
+        {
+            int baseChance = Math.Clamp( ( _ageValue * 12 ) - 4, 0, 40 );
+            int increasedChance = ( baseChance * ( 100 + ComputeMountainGenerationReductionPercent() ) ) / 100;
+            return Math.Clamp( increasedChance, 0, 60 );
         }
 
         private int[,] TemperatureAdjustments()
         {
+            // Normalized distance from equator: 0 = equator, 1 = pole.
+            const float DesertLimit = 0.20F;
+            // Up to 20% from equator stays in the hottest band.
+            const float PlainsLimit = 0.78F;
+            // Up to 78% from equator stays temperate/plains.
+            const float TundraLimit = 0.94F;
+            // Beyond 94% from equator becomes arctic.
             Log( "Map: Stage 2 - Temperature adjustments" );
 
             int[,] latitude = new int[ WIDTH, HEIGHT ];
+            float equator = ( HEIGHT - 1 ) / 2F;
+            float maxDistanceFromEquator = Math.Max( 1F, equator );
+            float randomDrift = Math.Max( 0.01F, 1F / maxDistanceFromEquator );
+            float temperatureShift = ( 1 - _temperatureValue ) * 0.04F;
 
             for( int y = 0; y < HEIGHT; y++ )
                 for( int x = 0; x < WIDTH; x++ )
                 {
-                    int l = (int)( ( (float)y / HEIGHT ) * 50 ) - 29;
-                    l += _randomService.Next( 7 );
-                    if( l < 0 ) l = -l;
-                    l += 1 - _temperature;
+                    float latitudePosition = Math.Abs( y - equator ) / maxDistanceFromEquator;
+                    latitudePosition += ( _randomService.Next( 3 ) - 1 ) * randomDrift;
+                    latitudePosition += temperatureShift;
+                    latitudePosition = Math.Clamp( latitudePosition, 0F, 1F );
 
-                    l = ( l / 6 ) + 1;
-
-                    switch( l )
+                    latitude[ x, y ] = latitudePosition switch
                     {
-                        case 0:
-                        case 1: latitude[ x, y ] = 0; break;
-                        case 2:
-                        case 3: latitude[ x, y ] = 1; break;
-                        case 4:
-                        case 5: latitude[ x, y ] = 2; break;
-                        case 6:
-                        default: latitude[ x, y ] = 3; break;
-                    }
+                        <= DesertLimit => 0,
+                        <= PlainsLimit => 1,
+                        <= TundraLimit => 2,
+                        _ => 3,
+                    };
                 }
 
             return latitude;
@@ -146,8 +141,13 @@ namespace CivOne
                                 }
                             }
                             break;
-                        case 2: _tiles[ x, y ] = new Hills( x, y, special ); break;
-                        default: _tiles[ x, y ] = new Mountains( x, y, special ); break;
+                        case 2:
+                        case 3: _tiles[ x, y ] = new Hills( x, y, special ); break;
+                        default:
+                            _tiles[ x, y ] = _randomService.Next( 100 ) < ComputeMountainGenerationReductionPercent()
+                                ? new Hills( x, y, special )
+                                : new Mountains( x, y, special );
+                            break;
                     }
                 }
         }
@@ -157,29 +157,31 @@ namespace CivOne
             Log( "Map: Stage 4 - Climate adjustments" );
 
             int wetness, latitude;
+            int equator = HEIGHT / 2;
+            int wetnessLatitudeOffset = (int)Math.Round((HEIGHT * 12F) / 50F);
 
             for( int y = 0; y < HEIGHT; y++ )
             {
-                int yy = (int)( ( (float)y / HEIGHT ) * 50 );
+                int yy = y;
 
                 wetness = 0;
-                latitude = Math.Abs( 25 - yy );
+                latitude = Math.Abs( equator - yy );
 
                 for( int x = 0; x < WIDTH; x++ )
                 {
                     if( _tiles[ x, y ].Type == Terrain.Ocean )
                     {
                         // wetness yield
-                        int wy = latitude - 12;
+                        int wy = latitude - wetnessLatitudeOffset;
                         if( wy < 0 ) wy = -wy;
-                        wy += ( _climate * 4 );
+                        wy += ( (int)ClimateValue * 4 );
 
                         if( wy > wetness ) wetness++;
                     }
                     else if( wetness > 0 )
                     {
                         bool special = TileIsSpecial( x, y );
-                        int rainfall = _randomService.Next( 7 - ( _climate * 2 ) );
+                        int rainfall = _randomService.Next( 7 - ( (int)ClimateValue * 2 ) );
                         wetness -= rainfall;
 
                         switch( _tiles[ x, y ].Type )
@@ -194,7 +196,7 @@ namespace CivOne
                 }
 
                 wetness = 0;
-                latitude = Math.Abs( 25 - yy );
+                latitude = Math.Abs( equator - yy );
 
                 // reset row wetness to 0
                 for( int x = WIDTH - 1; x >= 0; x-- )
@@ -202,13 +204,13 @@ namespace CivOne
                     if( _tiles[ x, y ].Type == Terrain.Ocean )
                     {
                         // wetness yield
-                        int wy = ( latitude / 2 ) + _climate;
+                        int wy = ( latitude / 2 ) + (int)ClimateValue;
                         if( wy > wetness ) wetness++;
                     }
                     else if( wetness > 0 )
                     {
                         bool special = TileIsSpecial( x, y );
-                        int rainfall = _randomService.Next( 7 - ( _climate * 2 ) );
+                        int rainfall = _randomService.Next( 7 - ( (int)ClimateValue * 2 ) );
                         wetness -= rainfall;
 
                         switch( _tiles[ x, y ].Type )
@@ -232,7 +234,9 @@ namespace CivOne
 
             int x = 0;
             int y = 0;
-            int ageRepeat = (int)( ( (float)800 * ( 1 + _age ) / ( 80 * 50 ) ) * ( WIDTH * HEIGHT ) );
+            int mountainUpliftChancePercent = ComputeMountainUpliftChancePercent();
+            int mountainErosionChancePercent = ComputeMountainErosionChancePercent();
+            int ageRepeat = (int)( ( (float)800 * ( 1 + _ageValue ) / DefaultMapArea ) * ( WIDTH * HEIGHT ) );
             for( int i = 0; i < ageRepeat; i++ )
             {
                 if( i % 2 == 0 )
@@ -270,81 +274,44 @@ namespace CivOne
                     case Terrain.Grassland1:
                     case Terrain.Grassland2: _tiles[ x, y ] = new Forest( x, y, special ); break;
                     case Terrain.Jungle: _tiles[ x, y ] = new Swamp( x, y, special ); break;
-                    case Terrain.Hills: _tiles[ x, y ] = new Mountains( x, y, special ); break;
+                    case Terrain.Hills:
+                        if( _randomService.Next( 100 ) < mountainUpliftChancePercent )
+                        {
+                            _tiles[ x, y ] = new Mountains( x, y, special );
+                        }
+                        break;
                     case Terrain.Mountains:
                         if( ( x == 0 || _tiles[ x - 1, y - 1 ].Type != Terrain.Ocean ) &&
                             ( y == 0 || _tiles[ x + 1, y - 1 ].Type != Terrain.Ocean ) &&
                             ( x == ( WIDTH - 1 ) || _tiles[ x + 1, y + 1 ].Type != Terrain.Ocean ) &&
                             ( y == ( HEIGHT - 1 ) || _tiles[ x - 1, y + 1 ].Type != Terrain.Ocean ) )
                             _tiles[ x, y ] = new Ocean( x, y, special );
+                        else if( _randomService.Next( 100 ) < mountainErosionChancePercent )
+                            _tiles[ x, y ] = new Hills( x, y, special );
                         break;
                     case Terrain.Desert: _tiles[ x, y ] = new Plains( x, y, special ); break;
-                    case Terrain.Arctic: _tiles[ x, y ] = new Mountains( x, y, special ); break;
+                    case Terrain.Arctic:
+                        if( _randomService.Next( 100 ) < ( mountainUpliftChancePercent / 2 ) )
+                        {
+                            _tiles[ x, y ] = new Mountains( x, y, special );
+                        }
+                        break;
                 }
             }
         }
 
         private void CreateRivers()
         {
-            Log( "Map: Stage 6 - Create rivers" );
-
-            int rivers = 0;
-            for( int i = 0; i < 256 && rivers < ( ( _climate + _landMass ) * 2 ) + 6; i++ )
-            {
-                ITile[,] tilesBackup = (ITile[,])_tiles.Clone();
-
-                int riverLength = 0;
-                int varA = _randomService.Next( 4 ) * 2;
-                bool nearOcean = false;
-
-                ITile? tile = null;
-                while( tile == null )
-                {
-                    int x = _randomService.Next( WIDTH );
-                    int y = _randomService.Next( HEIGHT );
-                    if( _tiles[ x, y ].Type == Terrain.Hills ) tile = _tiles[ x, y ];
-                }
-                do
-                {
-                    _tiles[ tile.X, tile.Y ] = new River( tile.X, tile.Y );
-                    int varC = _randomService.Next( 2 );
-                    varA = ( ( ( varC - riverLength % 2 ) * 2 + varA ) & 0x07 );
-
-                    riverLength++;
-
-                    nearOcean = NearOcean( tile.X, tile.Y );
-                    switch( varA )
-                    {
-                        case 0:
-                        case 1: tile = _tiles[ tile.X, tile.Y - 1 ]; break;
-                        case 2:
-                        case 3: tile = _tiles[ tile.X + 1, tile.Y ]; break;
-                        case 4:
-                        case 5: tile = _tiles[ tile.X, tile.Y + 1 ]; break;
-                        case 6:
-                        case 7: tile = _tiles[ tile.X - 1, tile.Y ]; break;
-                    }
-                }
-                while( !nearOcean && ( tile.GetType() != typeof( Ocean ) && tile.GetType() != typeof( River ) && tile.GetType() != typeof( Mountains ) ) );
-
-                if( ( nearOcean || tile.Type == Terrain.River ) && riverLength > 5 )
-                {
-                    rivers++;
-                    ITile[,] mapPart = this[ tile.X - 3, tile.Y - 3, 7, 7 ];
-                    for( int x = 0; x < 7; x++ )
-                        for( int y = 0; y < 7; y++ )
-                        {
-                            if( mapPart[ x, y ] == null ) continue;
-                            int xx = mapPart[ x, y ].X, yy = mapPart[ x, y ].Y;
-                            if( _tiles[ xx, yy ].Type == Terrain.Forest )
-                                _tiles[ xx, yy ] = new Jungle( xx, yy, TileIsSpecial( x, y ) );
-                        }
-                }
-                else
-                {
-                    _tiles = (ITile[,])tilesBackup.Clone(); ;
-                }
-            }
+            new RiverCreationDelegate(
+                WIDTH,
+                HEIGHT,
+                _tiles,
+                _randomService,
+                ( x, y ) => NearOcean( x, y ),
+                ( x, y ) => TileIsSpecial( x, y ),
+                ( format, parameters ) => Log( format, parameters ),
+                ClimateValue,
+                _landMassValue ).CreateRivers();
         }
 
         // This is a recursive function used to mark all tiles in a continent with a continent/ocean number. That
@@ -352,14 +319,14 @@ namespace CivOne
 
         readonly int[,] aiRelPos = { { -1, 0 }, { 0, -1 }, { 0, 1 }, { 1, 0 } };  // Check "Manhattan" conections only
 
-        private byte ContinentId;
+        private int ContinentId;
         private ulong ContinetSize;
 
         /* ***********************************************************************************************************/
 
         private struct Continent
         {
-            public byte ContinentId;
+            public int ContinentId;
             public ulong ContinetSize;
         };
 
@@ -370,17 +337,11 @@ namespace CivOne
         {
             Log( "Map: Calculate continent/ocean sizes and give continents a number in size order" );
 
-            ContinentTraversalDelegate continentTraversal = new ContinentTraversalDelegate(
-                WIDTH,
-                HEIGHT,
-                aiRelPos,
-                (x, y) => this[ x, y ].IsOcean,
-                (x, y) => this[ x, y ].ContinentId,
-                (x, y, continentId) => this[ x, y ].ContinentId = continentId);
-
             for( int y = 0; y < HEIGHT; y++ )       // todo  remove JR
                 for( int x = 0; x < WIDTH; x++ )
                     this[ x, y ].ContinentId = 0;
+
+            int[] traversalContinentIds = new int[ WIDTH * HEIGHT ];
 
             int nTiles = 0;
             bool oOcean = false;
@@ -388,9 +349,20 @@ namespace CivOne
             {
                 Continents.Clear();
                 ContinentId = 0;
+
+                Array.Clear( traversalContinentIds, 0, traversalContinentIds.Length );
+
+                ContinentTraversalDelegate continentTraversal = new ContinentTraversalDelegate(
+                    WIDTH,
+                    HEIGHT,
+                    aiRelPos,
+                    (x, y) => this[ x, y ].IsOcean,
+                    (x, y) => traversalContinentIds[ ( y * WIDTH ) + x ],
+                    (x, y, continentId) => traversalContinentIds[ ( y * WIDTH ) + x ] = continentId);
+
                 for( int y = 0; y < HEIGHT; y++ )
                     for( int x = 0; x < WIDTH; x++ )
-                        if( this[ x, y ].ContinentId == 0 && ( this[ x, y ].IsOcean == oOcean ))
+                        if( traversalContinentIds[ ( y * WIDTH ) + x ] == 0 && ( this[ x, y ].IsOcean == oOcean ))
                         {  // Found a "new" continent/ocean
                             ContinentId++;
                             ContinetSize = continentTraversal.CountContinent( x, y, oOcean, ContinentId );
@@ -401,9 +373,9 @@ namespace CivOne
 
                         }
                 ContinentsSorted = Continents.OrderByDescending( x => x.ContinetSize ).ToList();
-                int[] _iConvTbl = new int[ ContinentsSorted.LongCount() + 1 ];
+                int[] _iConvTbl = new int[ ContinentsSorted.Count + 1 ];
 
-                for( int i = 0; i < ContinentsSorted.LongCount(); i++ )
+                for( int i = 0; i < ContinentsSorted.Count; i++ )
                 {
                     if( oOcean ) 
                         Log( "Map: ocean Nr = {0}, Size {1}", 
@@ -420,7 +392,8 @@ namespace CivOne
                     {
                         if( this[ x, y ].IsOcean != oOcean ) 
                             continue;
-                        this[ x, y ].ContinentId = (byte)( Math.Min( _iConvTbl[ this[ x, y ].ContinentId ], 15 ) );
+                        int continentId = traversalContinentIds[ ( y * WIDTH ) + x ];
+                        this[ x, y ].ContinentId = (byte)( Math.Min( _iConvTbl[ continentId ], 15 ) );
                         nTiles++;       // Just a check
 
                     }
@@ -548,61 +521,87 @@ namespace CivOne
 		
 		private void GenerateThread()
 		{
-			Log("Generating map (Land Mass: {0}, Temperature: {1}, Climate: {2}, Age: {3})", _landMass, _temperature, _climate, _age);
-			
-			_tiles = new ITile[WIDTH, HEIGHT];
-			
-			int[,] elevation = GenerateLandMass();
-			int[,] latitude = TemperatureAdjustments();
-			MergeElevationAndLatitude(elevation, latitude);
-			ClimateAdjustments();
-			AgeAdjustments();
-			CreateRivers();
-			
-			CalculateContinentSize();
-			CreatePoles();
-			PlaceHuts();
-			CalculateLandValue();
-			
-			Ready = true;
-			Log("Map: Ready");
+            Stopwatch totalGenerationTimer = Stopwatch.StartNew();
+            try
+			{
+				Log("Generating map (Land Mass: {0}, Temperature: {1}, Climate: {2}, Age: {3})", _landMassValue, _temperatureValue, _climateValue, _ageValue);
+				SetGenerationProgress(0, IntroVisibleGenerationStageCount, 0);
+
+				_tiles = new ITile[WIDTH, HEIGHT];
+
+				int[,] elevation = GenerateLandMass();
+				int[,] latitude = TemperatureAdjustments();
+				SetGenerationProgress((int)Stages.MergeElevationAndLatitude, IntroVisibleGenerationStageCount, (int)Stages.MergeElevationAndLatitude);
+				MergeElevationAndLatitude(elevation, latitude);
+				SetGenerationProgress((int)Stages.ClimateAdjustments, IntroVisibleGenerationStageCount, (int)Stages.ClimateAdjustments);
+				ClimateAdjustments();
+				SetGenerationProgress((int)Stages.AgeAdjustments, IntroVisibleGenerationStageCount, (int)Stages.AgeAdjustments);
+				AgeAdjustments();
+				SetGenerationProgress((int)Stages.CreateRivers, IntroVisibleGenerationStageCount, (int)Stages.CreateRivers);
+				CreateRivers();
+
+				SetGenerationProgress((int)Stages.CalculateContinentSize, IntroVisibleGenerationStageCount, (int)Stages.CalculateContinentSize);
+				CalculateContinentSize();
+				SetGenerationProgress((int)Stages.CreatePoles, IntroVisibleGenerationStageCount, (int)Stages.CreatePoles);
+				CreatePoles();
+				SetGenerationProgress((int)Stages.PlaceHuts, IntroVisibleGenerationStageCount, (int)Stages.PlaceHuts);
+				PlaceHuts();
+				SetGenerationProgress((int)Stages.CalculateLandValue, IntroVisibleGenerationStageCount, (int)Stages.CalculateLandValue);
+				CalculateLandValue();
+
+				SetReady(true);
+				SetGenerationProgress(IntroVisibleGenerationStageCount, IntroVisibleGenerationStageCount, (int)Stages.CalculateLandValue);
+				Log("Map: Ready");
+			}
+			catch (Exception ex) 
+            {
+                Log("Map generation failed: {0}", ex);
+                // SetError(true);
+            }
+            finally
+            {
+                totalGenerationTimer.Stop();
+                TimeSpan totalElapsed = totalGenerationTimer.Elapsed;
+                Log( "Map: Total generation duration {0:0.00} min {1:0.00} s ({2} ms)", totalElapsed.TotalMinutes, totalElapsed.TotalSeconds, totalGenerationTimer.ElapsedMilliseconds );
+            }
 		}
-		
-		public void Generate(int landMass = 1, int temperature = 1, int climate = 1, int age = 1)
+
+		private int[,] GenerateLandMass()
 		{
-			if (Ready || _tiles != null)
-			{
-				Log("ERROR: Map is already load{0}/generat{0}", (Ready ? "ed" : "ing"));
-				return;
-			}
-			
-			if (_mapGenerationSettings.CustomMapSize)
-			{
-				CustomMapSize customMapSize = new CustomMapSize();
-				customMapSize.Closed += (s, a) =>
-				{
-					Size mapSize = (s as CustomMapSize).MapSize;
-					_width = mapSize.Width;
-					_height = mapSize.Height;
-
-					_landMass = landMass;
-					_temperature = temperature;
-					_climate = climate;
-					_age = age;
-					
-					Task.Run(() => GenerateThread());
-				};
-
-				GameTask.Insert(Show.Screen(customMapSize));
-				return;
-			}
-			
-			_landMass = landMass;
-			_temperature = temperature;
-			_climate = climate;
-			_age = age;
-			
-			Task.Run(() => GenerateThread());
+			return new LandElevationGeneratorDelegate(
+								WIDTH,
+								HEIGHT,
+								_landMassValue,
+								_randomService,
+								(format, parameters) => Log(format, parameters)).GenerateLandMass();
 		}
+
+
+		/// <summary>
+		/// Generates a map using typed world-generation presets.
+		/// </summary>
+		/// <param name="landMass">Land mass preset.</param>
+		/// <param name="temperature">Temperature preset.</param>
+		/// <param name="climate">Climate preset.</param>
+		/// <param name="age">Earth age preset.</param>
+		public void Generate( LandMass landMass = LandMass.Normal, Temperature temperature = Temperature.Temperate, Climate climate = Climate.Normal, EarthAge age = EarthAge.FourBillionYears )
+        {
+            if (Ready || _tiles != null)
+            {
+                Log("ERROR: Map is already load{0}/generat{0}", (Ready ? "ed" : "ing"));
+                return;
+            }
+			
+            _landMass = landMass;
+            _landMassValue = (int)landMass;
+            _temperature = temperature;
+            _temperatureValue = (int)temperature;
+            _climate = climate;
+            _climateValue = (int)climate;
+            _age = age;
+            _ageValue = (int)age;
+			
+            Task.Run(() => GenerateThread());
+        }
 	}
 }
