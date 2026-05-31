@@ -68,7 +68,21 @@ namespace CivOne.Screens.GamePlayPanels
 			});
 		}
 
-		internal void ToggleRoad(int centerX, int centerY, int brushIndex)
+		internal void RemoveIrrigation(int centerX, int centerY, int brushIndex)
+		{
+			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
+			{
+				ITile tile = Map.Instance[x, y];
+				if (tile == null)
+				{
+					return;
+				}
+
+				tile.Irrigation = false;
+			});
+		}
+
+		internal void AddRoad(int centerX, int centerY, int brushIndex)
 		{
 			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
 			{
@@ -89,6 +103,27 @@ namespace CivOne.Screens.GamePlayPanels
 			});
 		}
 
+		internal void RemoveRoad(int centerX, int centerY, int brushIndex)
+		{
+			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
+			{
+				ITile tile = Map.Instance[x, y];
+				if (tile == null)
+				{
+					return;
+				}
+
+				if (tile.RailRoad)
+				{
+					tile.RailRoad = false;
+				}
+				else
+				{
+					tile.Road = false;
+				}
+			});
+		}
+
 		internal void SetMine(int centerX, int centerY, int brushIndex)
 		{
 			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
@@ -104,7 +139,7 @@ namespace CivOne.Screens.GamePlayPanels
 			});
 		}
 
-		internal void SetFortress(int centerX, int centerY, int brushIndex)
+		internal void RemoveMine(int centerX, int centerY, int brushIndex)
 		{
 			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
 			{
@@ -114,11 +149,11 @@ namespace CivOne.Screens.GamePlayPanels
 					return;
 				}
 
-				tile.Fortress = !tile.Fortress;
+				tile.Mine = false;
 			});
 		}
 
-		internal void SetPollution(int centerX, int centerY, int brushIndex)
+		internal void SetFortress(int centerX, int centerY, int brushIndex, bool enabled)
 		{
 			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
 			{
@@ -128,13 +163,36 @@ namespace CivOne.Screens.GamePlayPanels
 					return;
 				}
 
-				tile.Pollution = !tile.Pollution;
+				tile.Fortress = enabled;
 			});
 		}
 
-		internal void ToggleHut(int centerX, int centerY, int brushIndex)
+		internal void SetPollution(int centerX, int centerY, int brushIndex, bool enabled)
 		{
-			ApplyToBrush(centerX, centerY, brushIndex, (x, y) => Map.Instance.EditorToggleHut(x, y));
+			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
+			{
+				ITile tile = Map.Instance[x, y];
+				if (tile == null)
+				{
+					return;
+				}
+
+				tile.Pollution = enabled;
+			});
+		}
+
+		internal void SetHut(int centerX, int centerY, int brushIndex, bool enabled)
+		{
+			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
+			{
+				ITile tile = Map.Instance[x, y];
+				if (tile == null)
+				{
+					return;
+				}
+
+				tile.Hut = enabled;
+			});
 		}
 
 		internal void ClearImprovements(int centerX, int centerY, int brushIndex)

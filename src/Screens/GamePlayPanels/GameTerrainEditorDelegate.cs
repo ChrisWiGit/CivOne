@@ -95,8 +95,7 @@ namespace CivOne.Screens.GamePlayPanels
 					return true;
 				}
 
-				if (args.Key == Key.Backspace
-					&& (_gameMap._editorState.CurrentMode == EditorMode.FoundCity || _gameMap._editorState.CurrentMode == EditorMode.SpawnUnit))
+				if (args.Key == Key.Backspace && SupportsSecondaryEditorAction())
 				{
 					ApplyEditorAt(_gameMap._hoveredTileX, _gameMap._hoveredTileY, rightButton: true);
 					_gameMap._update = true;
@@ -183,9 +182,7 @@ namespace CivOne.Screens.GamePlayPanels
 
 				if ((args.Buttons & MouseButton.Right) > 0)
 				{
-					if (_gameMap._editorState.ShowLandValues
-						|| _gameMap._editorState.CurrentMode == EditorMode.FoundCity
-						|| _gameMap._editorState.CurrentMode == EditorMode.SpawnUnit)
+					if (SupportsSecondaryEditorAction())
 					{
 						ApplyEditorAt(x, y, rightButton: true);
 					}
@@ -217,8 +214,7 @@ namespace CivOne.Screens.GamePlayPanels
 					return true;
 				}
 
-				if ((args.Buttons & MouseButton.Right) > 0
-					&& (_gameMap._editorState.ShowLandValues || _gameMap._editorState.CurrentMode == EditorMode.FoundCity))
+				if ((args.Buttons & MouseButton.Right) > 0 && SupportsSecondaryEditorAction())
 				{
 					ApplyEditorAt(x, y, rightButton: true);
 					return true;
@@ -256,6 +252,28 @@ namespace CivOne.Screens.GamePlayPanels
 			{
 				int count = _gameMap._terrainEditorDelegate.BrushSizeCount;
 				_gameMap._editorState.PencilSizeIndex = (_gameMap._editorState.PencilSizeIndex + delta + count) % count;
+			}
+
+			private bool SupportsSecondaryEditorAction()
+			{
+				if (_gameMap._editorState.ShowLandValues)
+				{
+					return true;
+				}
+
+				return _gameMap._editorState.CurrentMode switch
+				{
+					EditorMode.FoundCity => true,
+					EditorMode.SpawnUnit => true,
+					EditorMode.Irrigation => true,
+					EditorMode.Road => true,
+					EditorMode.Mine => true,
+					EditorMode.Fortress => true,
+					EditorMode.Pollution => true,
+					EditorMode.Hut => true,
+					EditorMode.Clear => true,
+					_ => false
+				};
 			}
 
 			private void OpenTerrainSelector()
@@ -337,22 +355,43 @@ namespace CivOne.Screens.GamePlayPanels
 							}
 							break;
 						case EditorMode.Irrigation:
-							_gameMap._terrainEditorDelegate.SetIrrigation(x, y, _gameMap._editorState.PencilSizeIndex);
+								if (rightButton)
+								{
+									_gameMap._terrainEditorDelegate.RemoveIrrigation(x, y, _gameMap._editorState.PencilSizeIndex);
+								}
+								else
+								{
+									_gameMap._terrainEditorDelegate.SetIrrigation(x, y, _gameMap._editorState.PencilSizeIndex);
+								}
 							break;
 						case EditorMode.Road:
-							_gameMap._terrainEditorDelegate.ToggleRoad(x, y, _gameMap._editorState.PencilSizeIndex);
+								if (rightButton)
+								{
+									_gameMap._terrainEditorDelegate.RemoveRoad(x, y, _gameMap._editorState.PencilSizeIndex);
+								}
+								else
+								{
+									_gameMap._terrainEditorDelegate.AddRoad(x, y, _gameMap._editorState.PencilSizeIndex);
+								}
 							break;
 						case EditorMode.Mine:
-							_gameMap._terrainEditorDelegate.SetMine(x, y, _gameMap._editorState.PencilSizeIndex);
+								if (rightButton)
+								{
+									_gameMap._terrainEditorDelegate.RemoveMine(x, y, _gameMap._editorState.PencilSizeIndex);
+								}
+								else
+								{
+									_gameMap._terrainEditorDelegate.SetMine(x, y, _gameMap._editorState.PencilSizeIndex);
+								}
 							break;
 						case EditorMode.Fortress:
-							_gameMap._terrainEditorDelegate.SetFortress(x, y, _gameMap._editorState.PencilSizeIndex);
+								_gameMap._terrainEditorDelegate.SetFortress(x, y, _gameMap._editorState.PencilSizeIndex, enabled: !rightButton);
 							break;
 						case EditorMode.Pollution:
-							_gameMap._terrainEditorDelegate.SetPollution(x, y, _gameMap._editorState.PencilSizeIndex);
+								_gameMap._terrainEditorDelegate.SetPollution(x, y, _gameMap._editorState.PencilSizeIndex, enabled: !rightButton);
 							break;
 						case EditorMode.Hut:
-							_gameMap._terrainEditorDelegate.ToggleHut(x, y, _gameMap._editorState.PencilSizeIndex);
+								_gameMap._terrainEditorDelegate.SetHut(x, y, _gameMap._editorState.PencilSizeIndex, enabled: !rightButton);
 							break;
 						case EditorMode.Clear:
 							_gameMap._terrainEditorDelegate.ClearImprovements(x, y, _gameMap._editorState.PencilSizeIndex);

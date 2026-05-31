@@ -957,11 +957,17 @@ This menu lets you paint terrain, add or remove tile improvements, edit land val
 | `L` | Toggle land value editing mode. |
 | `+` or `]` | Increase brush size. |
 | `-` or `[` | Decrease brush size. |
+| `Return` | Apply the current action to all tiles under the brush. |
+| `Backspace` | Clear all improvements under the brush (only in clear improvements mode) or reduce city size (only in found city mode). |
+| Left click | Apply the current action to the clicked tile. |
+| Right click | Apply the alternate action to the clicked tile (e.g. decrease land value, remove units, etc.). |
 
 #### Terrain editor behavior
 
 Brush sizes cycle through odd values from `1` to `15`.
 Larger brush sizes apply the selected action to a wider area.
+The white selection square shows where the brush is currently applied.
+You can use the mouse to click on the map or the cursor keys to move the selection square and apply changes with the keyboard by pressing `Return`. This changes the terrain under the selection square, applying the current brush size.
 
 In land value mode, left click increases land value and right click decreases land value.
 This helps inspect and adjust city site quality directly on the map.
@@ -971,6 +977,7 @@ The alternate action reduces the size of an existing city on the target tile.
 
 In unit spawn mode, left click places the selected unit for the selected owner.
 The alternate action removes matching units from the target tile.
+You can also use `Return` or `Backspace` to add or remove units without clicking, which applies the action to all tiles under the brush.
 
 Terrain editor changes are written into normal save files.
 Edited terrain, improvements, and land values remain after save and reload.
