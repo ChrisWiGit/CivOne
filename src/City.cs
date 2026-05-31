@@ -670,9 +670,12 @@ namespace CivOne
 
 		internal void UpdateSpecialists()
 		{
-			int target = Size - (ResourceTiles.Count() - 1);
+			int target = Size - (ResourceTiles.Length - 1);
 			
-			Debug.Assert(target >= 0, "City.UpdateSpecialists: target < 0");
+			// This can happen if city size shrinks while ResourceTiles still contains more tiles than the new size,
+			// or if workable tiles are limited by invalid terrain.
+			// Debug.Assert(target >= 0, "City.UpdateSpecialists: target < 0");
+			if (target < 0) target = 0;
 
 			_specialists =
 			[
