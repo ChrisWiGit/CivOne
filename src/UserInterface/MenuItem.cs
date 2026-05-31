@@ -26,6 +26,7 @@ namespace CivOne.UserInterface
 		public string Text { get; set; }
 		public string[] Description { get; private set; }
 		public string Shortcut { get; set; }
+		public string[] Shortcuts { get; set; }
 		public Func<bool> SelectedCondition { get; set; }
 
 		internal void Select()
