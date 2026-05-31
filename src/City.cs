@@ -670,9 +670,11 @@ namespace CivOne
 
 		internal void UpdateSpecialists()
 		{
-			int target = Size - (ResourceTiles.Count() - 1);
+			int target = Size - ResourceTiles.Length - 1;
 			
-			Debug.Assert(target >= 0, "City.UpdateSpecialists: target < 0");
+			// This only happens if the city is placed on ocean because ocean cannot have any resource tiles.
+			// Debug.Assert(target >= 0, "City.UpdateSpecialists: target < 0");
+			if (target < 0) target = 0;
 
 			_specialists =
 			[
