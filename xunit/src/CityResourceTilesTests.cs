@@ -141,17 +141,5 @@ namespace CivOne.src
 
 			method.Invoke(city, null);
 		}
-
-		private static void RunAllQueuedTasks()
-		{
-			const int maxTaskUpdates = 20;
-			int updates = 0;
-
-			while (GameTask.Update())
-			{
-				updates++;
-				Assert.True(updates <= maxTaskUpdates, $"Exceeded max queued task updates ({maxTaskUpdates}).");
-			}
-		}
 	}
 }

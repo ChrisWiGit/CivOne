@@ -270,8 +270,8 @@ namespace CivOne.Screens.GamePlayPanels
 			bool spawnMode = GamePlay.IsTerrainEditorSpawnMode;
 			ITile hoveredTile = Map[GamePlay.HoveredTileX, GamePlay.HoveredTileY];
 			IUnit[] hoveredUnits = hoveredTile?.Units ?? [];
-			string hoveredUnitOwnerText = null;
-			string hoveredUnitStackText = null;
+			string? hoveredUnitOwnerText = null;
+			string? hoveredUnitStackText = null;
 
 			if (spawnMode && hoveredUnits.Length > 0)
 			{

@@ -542,6 +542,11 @@ namespace CivOne.Screens
 				return true;
 			}
 
+			if (!IsTerrainEditorEnabled)
+			{
+				return false;
+			}
+
 			_gameMap.MouseMove(args);
 			_update = true;
 			return true;
