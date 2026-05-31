@@ -4,6 +4,7 @@ using System.Reflection;
 using CivOne.Enums;
 using CivOne.Tasks;
 using CivOne.Tiles;
+using CivOne.Civilizations;
 using CivOne.Units;
 using Xunit;
 
@@ -80,18 +81,19 @@ namespace CivOne.src
 		[Fact]
 		public void FoundCityOrderForComputerOwnerKeepsWorkedTilesAndNoSpecialistsAtSizeOne()
 		{
-			Player computerPlayer = Game.Instance.Players.First(player => !player.IsHuman);
+			Player computerPlayer = Game.Instance.Players.First(player => player != null && !player.IsHuman && player.Civilization is not Barbarian);
 			byte computerPlayerId = Game.Instance.PlayerNumber(computerPlayer);
 
 			var humanSettler = (Settlers)Game.Instance.GetUnits().First(unit => unit.Owner == playa.Civilization.Id && unit is Settlers);
-			int targetX = humanSettler.X;
-			int targetY = humanSettler.Y;
+			ITile? targetTile = FindFoundCityTargetTile(humanSettler.Tile);
+			Assert.NotNull(targetTile);
+			int targetX = targetTile.X;
+			int targetY = targetTile.Y;
 
 			IUnit? computerSettler = Game.Instance.CreateUnit(UnitType.Settlers, targetX, targetY, computerPlayerId);
 			Assert.NotNull(computerSettler);
 
-			GameTask.Enqueue(Orders.FoundCity(computerSettler));
-			RunAllQueuedTasks();
+			Orders.FoundCity(computerSettler).Run();
 
 			City? city = Game.Instance.GetCities().FirstOrDefault(existingCity => existingCity.X == targetX && existingCity.Y == targetY);
 			Assert.NotNull(city);
@@ -100,6 +102,28 @@ namespace CivOne.src
 			Assert.Contains(city.ResourceTiles, tile => tile.X == city.X && tile.Y == city.Y);
 			Assert.True(city.ResourceTiles.Length >= 2);
 			Assert.Empty(city.Specialists);
+		}
+
+		private static ITile? FindFoundCityTargetTile(ITile origin)
+		{
+			for (int radius = 0; radius <= 4; radius++)
+			{
+				for (int relY = -radius; relY <= radius; relY++)
+				{
+					for (int relX = -radius; relX <= radius; relX++)
+					{
+						ITile tile = origin[relX, relY];
+						if (tile == null || tile.IsOcean || tile.City != null)
+						{
+							continue;
+						}
+
+						return tile;
+					}
+				}
+			}
+
+			return null;
 		}
 
 		private static void SetResourceTiles(City city, List<ITile> resourceTiles)
