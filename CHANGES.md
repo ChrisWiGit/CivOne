@@ -6,6 +6,9 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Corrected city resource tile save/load mapping and growth allocation.
+  * Fixed the savegame bit mapping so the inner northeast tile `(1,-1)` no longer collides with the outer northeast tile `(2,-1)` (only for sve savegames).
+  * `SetResourceTiles()` now keeps adding tiles until the city reaches its full size, preventing missing worked tiles from being turned into entertainers.
 * Feature: Introduced V-sync toggle in setup menu
   * Added "V-Sync" setting in the setup menu with options "On" (default) and "Off".
   * When V-Sync is enabled, the game synchronizes its frame rate with the display's refresh rate to prevent screen tearing.
