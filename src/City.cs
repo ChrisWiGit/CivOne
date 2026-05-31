@@ -768,7 +768,7 @@ namespace CivOne
 				_resourceTiles.RemoveRange(Size, _resourceTiles.Count - Size);
 			}
 
-			while (_resourceTiles.Count < Size)
+			for (int index = _resourceTiles.Count; index < Size; index++)
 			{
 				// CW: must recalculate due to tile removal
 				var resourceTiles = ResourceTiles;
@@ -779,8 +779,14 @@ namespace CivOne
 					.ThenByDescending(TradeValue)
 					.FirstOrDefault();
 
-				if (bestTile != null)
-					_resourceTiles.Add(bestTile);
+				if (bestTile == null)
+				{
+					// No free worked tile left; stop here to avoid an infinite loop.
+					// A city may stay underfilled in this edge case, but that is safer than hanging.
+					break;
+				}
+
+				_resourceTiles.Add(bestTile);
 			}
 
 			UpdateSpecialists();
