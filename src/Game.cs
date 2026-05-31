@@ -656,9 +656,14 @@ namespace CivOne
 			{
 				X = (byte)x,
 				Y = (byte)y,
-				NameId = nameId,
-				Size = 1
+				NameId = nameId
 			};
+			// Order is important here -
+			// first explore the tile to reveal it to the player, 
+			// then add the city so that the city tile is properly initialized with the explored tile!
+			player.Explore(x, y);
+			city.Size = 1;
+			
 			if (!_cities.Any(c => c.Size > 0 && c.Owner == city.Owner))
 			{
 				Palace palace = new Palace();
