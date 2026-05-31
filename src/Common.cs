@@ -38,6 +38,7 @@ namespace CivOne
 		/// but Caps Lock is not a modifier in the same sense and thus requires separate tracking.
 		/// </summary>
 		internal static bool CapsLockActive;
+		internal static bool ShiftKeyHeld;
 
 		public static IAdvance[] Advances = Reflect.GetAdvances().ToArray();
 		public static IBuilding[] Buildings = Reflect.GetBuildings().ToArray();
