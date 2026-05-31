@@ -958,7 +958,7 @@ This menu lets you paint terrain, add or remove tile improvements, edit land val
 | `+` or `]` | Increase brush size. |
 | `-` or `[` | Decrease brush size. |
 | `Return` | Apply the current action to all tiles under the brush. |
-| `Backspace` | Clear all improvements under the brush (only in clear improvements mode) or reduce city size (only in found city mode). |
+| `Backspace` | Apply the alternate action to all tiles under the brush (e.g. remove improvements, shrink a city, remove units, or decrease land value). |
 | Left click | Apply the current action to the clicked tile. |
 | Right click | Apply the alternate action to the clicked tile (e.g. decrease land value, remove units, etc.). |
 

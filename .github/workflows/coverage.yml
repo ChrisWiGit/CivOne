@@ -33,7 +33,6 @@ jobs:
           --filter "FullyQualifiedName!~CivOne.UnitTests.CityCitizenServiceImplPerformanceTests.Measure&Category!=IntegrationLocalData&TestCategory!=IntegrationLocalData"
           --property:SuppressConsoleLogs=true
           --property:WarningLevel=0
-          -p:NoWarn="*"
           -v q
 
       - name: Generate coverage report

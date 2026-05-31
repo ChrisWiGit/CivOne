@@ -672,7 +672,8 @@ namespace CivOne
 		{
 			int target = Size - (ResourceTiles.Length - 1);
 			
-			// This only happens if the city is placed on ocean because ocean cannot have any resource tiles.
+			// This can happen if city size shrinks while ResourceTiles still contains more tiles than the new size,
+			// or if workable tiles are limited by invalid terrain.
 			// Debug.Assert(target >= 0, "City.UpdateSpecialists: target < 0");
 			if (target < 0) target = 0;
 

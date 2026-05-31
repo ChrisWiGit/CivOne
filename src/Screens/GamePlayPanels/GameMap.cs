@@ -302,7 +302,7 @@ namespace CivOne.Screens.GamePlayPanels
 			if (!(_update || _fullRedraw || renameDialogActive)) return false;
 			if (!renameDialogActive && Game.MovingUnit == null && (gameTick % 2 == 1)) return false;
 
-			Player renderPlayer = (Settings.RevealWorld || TerrainEditorEnabled) ? null : Human;
+			Player? renderPlayer = (Settings.RevealWorld || TerrainEditorEnabled) ? null : Human;
 
 			IUnit activeUnit = ActiveUnit;
 			if (Game.MovingUnit != null && !_fullRedraw)
@@ -328,14 +328,14 @@ namespace CivOne.Screens.GamePlayPanels
 
 					DrawFullCargoUnitWhileMoving(movingUnit, tile, dx, dy, movement, unitPicture);
 
+					_terrainEditorRenderDelegate.DrawLandValuesOverlay();
+					_terrainEditorRenderDelegate.DrawSpawnUnitPreview();
+					_terrainEditorRenderDelegate.DrawBrushPreview();
+
 					if (renameDialogActive)
 					{
 						_mapPositionDelegate.DrawRenameDialog(this, gameTick, Width, Height);
 					}
-
-					_terrainEditorRenderDelegate.DrawLandValuesOverlay();
-					_terrainEditorRenderDelegate.DrawSpawnUnitPreview();
-					_terrainEditorRenderDelegate.DrawBrushPreview();
 
 					return true;
 				}
@@ -370,26 +370,28 @@ namespace CivOne.Screens.GamePlayPanels
 					DrawHelperArrows(dx, dy);
 				}
 
+				_terrainEditorRenderDelegate.DrawLandValuesOverlay();
+				_terrainEditorRenderDelegate.DrawSpawnUnitPreview();
+				_terrainEditorRenderDelegate.DrawBrushPreview();
+
 				if (renameDialogActive)
 				{
 					_mapPositionDelegate.DrawRenameDialog(this, gameTick, Width, Height);
 				}
 
-				_terrainEditorRenderDelegate.DrawLandValuesOverlay();
-				_terrainEditorRenderDelegate.DrawSpawnUnitPreview();
-				_terrainEditorRenderDelegate.DrawBrushPreview();
 				return true;
 			}
 			
 			_update = false;
+			_terrainEditorRenderDelegate.DrawLandValuesOverlay();
+			_terrainEditorRenderDelegate.DrawSpawnUnitPreview();
+			_terrainEditorRenderDelegate.DrawBrushPreview();
+
 			if (renameDialogActive)
 			{
 				_mapPositionDelegate.DrawRenameDialog(this, gameTick, Width, Height);
 			}
 
-			_terrainEditorRenderDelegate.DrawLandValuesOverlay();
-			_terrainEditorRenderDelegate.DrawSpawnUnitPreview();
-			_terrainEditorRenderDelegate.DrawBrushPreview();
 			return true;
 		}
 
