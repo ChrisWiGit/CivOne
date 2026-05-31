@@ -48,8 +48,8 @@ namespace CivOne.Screens.Dialogs
 			[
 				new() { Terrain = Terrain.Desert, Label = translate("Desert"), Hotkey = '1' },
 				new() { Terrain = Terrain.Plains, Label = translate("Plains"), Hotkey = '2' },
-				new() { Terrain = Terrain.Grassland1, Label = "Grassland 1", Hotkey = '3' },
-				new() { Terrain = Terrain.Grassland2, Label = "Grassland 2", Hotkey = '4' },
+				new() { Terrain = Terrain.Grassland1, Label = translate("Grassland 1"), Hotkey = '3' },
+				new() { Terrain = Terrain.Grassland2, Label = translate("Grassland 2"), Hotkey = '4' },
 				new() { Terrain = Terrain.Forest, Label = translate("Forest"), Hotkey = '5' },
 				new() { Terrain = Terrain.Hills, Label = translate("Hills"), Hotkey = '6' },
 				new() { Terrain = Terrain.Mountains, Label = translate("Mountains"), Hotkey = '7' },

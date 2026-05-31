@@ -114,6 +114,12 @@ namespace CivOne
 			}
 
 			_tiles[x, y] = newTile;
+
+			// If the tile changed between ocean and land, we need to recalculate continent sizes for all tiles.
+			if (oldTile.IsOcean != newTile.IsOcean)
+			{
+				CalculateContinentSize();
+			}
 		}
 
 		internal void EditorToggleHut(int x, int y)

@@ -37,6 +37,10 @@ namespace CivOne.Screens.GamePlayPanels
 		private bool _update;
 		private int _mouseX, _mouseY;
 
+		private static int ExpectedMenuCount => DebugMenuEnabled ? 6 : 5;
+
+		private bool MenuTitlesOutOfDate() => _menuTitles.Length != ExpectedMenuCount;
+
 		private void BuildMenuLayout()
 		{
 			if (_menuTitles.Length == 0)
@@ -112,7 +116,7 @@ namespace CivOne.Screens.GamePlayPanels
 
 		private void EnsureMenuTitles()
 		{
-			if (_update || _menuTitles == null)
+			if (_update || MenuTitlesOutOfDate())
 			{
 				RebuildMenuTitles();
 			}
@@ -162,6 +166,13 @@ namespace CivOne.Screens.GamePlayPanels
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
+			if (MenuTitlesOutOfDate())
+			{
+				// if the menu titles change due to a language change or debug mode toggle, we need to rebuild the menu layout to update the 
+				// title positions and menu rectangles.
+				_update = true;
+			}
+
 			if (_update)
 			{
 				RebuildMenuTitles();
