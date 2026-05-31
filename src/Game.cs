@@ -652,7 +652,7 @@ namespace CivOne
 				return null;
 			}
 
-			City city = new City(PlayerNumber(player))
+			City city = new(PlayerNumber(player))
 			{
 				X = (byte)x,
 				Y = (byte)y,
@@ -663,10 +663,10 @@ namespace CivOne
 			// then add the city so that the city tile is properly initialized with the explored tile!
 			player.Explore(x, y);
 			city.Size = 1;
-			
+
 			if (!_cities.Any(c => c.Size > 0 && c.Owner == city.Owner))
 			{
-				Palace palace = new Palace();
+				Palace palace = new();
 				palace.SetFree();
 				city.AddBuilding(palace);
 			}
