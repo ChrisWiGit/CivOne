@@ -64,7 +64,7 @@ namespace CivOne.Screens.Debug
 		}
 
 		private const int RowPadding = 1;
-		private const int HeaderHeight = 16;
+		private const int HeaderHeight = 28;
 		private const int BottomPadding = 4;
 		private const int VerticalDialogMargin = 4;
 		private const int MaxGridColumns = 4;
@@ -524,10 +524,22 @@ namespace CivOne.Screens.Debug
 		{
 			ComputeLayout(canvasHeight, target.Bitmap.Width, target.Bitmap.Height);
 
-			int minTitleContentWidth = Resources.GetTextSize(0, title).Width + 16;
-			if (_gridContentWidth < minTitleContentWidth)
+			string headerText = title;
+			if (_pageCount > 1)
 			{
-				_gridContentWidth = minTitleContentWidth;
+				int currentPage = GetCurrentPageNumber();
+				headerText = $"{title} [{currentPage}/{_pageCount}]";
+			}
+
+			string selectedText = GetSelectedDisplayText();
+			int minTitleContentWidth = Resources.GetTextSize(0, headerText).Width + 16;
+			int minSelectedContentWidth = string.IsNullOrEmpty(selectedText)
+				? 0
+				: Resources.GetTextSize(_fontId, selectedText).Width + 16;
+			int minHeaderContentWidth = Math.Max(minTitleContentWidth, minSelectedContentWidth);
+			if (_gridContentWidth < minHeaderContentWidth)
+			{
+				_gridContentWidth = minHeaderContentWidth;
 				_gridX = Math.Max(0, (target.Bitmap.Width - _gridContentWidth) / 2);
 				_gridCellStartX = _gridX + 4;
 			}
@@ -541,14 +553,13 @@ namespace CivOne.Screens.Debug
 			target.FillRectangle(_gridX - 1, _gridY - 1, _gridContentWidth + 2, _gridContentHeight + 2, 5)
 				.AddLayer(gridGfx, _gridX, _gridY);
 
-			// Draw title and optional page indicator
-			string headerText = title;
-			if (_pageCount > 1)
-			{
-				int currentPage = GetCurrentPageNumber();
-				headerText = $"{title} [{currentPage}/{_pageCount}]";
-			}
+			// Draw title/page indicator and full selected entry text (never abbreviated).
 			target.DrawText(headerText, 0, 15, _gridX + 8, _gridY + 3);
+			if (!string.IsNullOrEmpty(selectedText))
+			{
+				int selectedTextY = _gridY + 4 + Resources.GetFontHeight(0);
+				target.DrawText(selectedText, _fontId, 15, _gridX + 8, selectedTextY);
+			}
 
 			DrawGrid(target);
 		}
@@ -582,6 +593,23 @@ namespace CivOne.Screens.Debug
 
 		private string GetGridCellText(int globalIdx)
 		{
+			string raw = GetDisplayText(globalIdx);
+			return TruncateTextToWidth(_fontId, raw, _gridCellWidth - 2);
+		}
+
+		private string GetSelectedDisplayText()
+		{
+			int selectedIndex = SelectedIndex;
+			if (selectedIndex < 0)
+			{
+				return string.Empty;
+			}
+
+			return GetDisplayText(selectedIndex);
+		}
+
+		private string GetDisplayText(int globalIdx)
+		{
 			string raw = _items[globalIdx];
 
 			if (_isChecked != null)
@@ -596,7 +624,7 @@ namespace CivOne.Screens.Debug
 				raw = $"{hk}. {raw}";
 			}
 
-			return TruncateTextToWidth(_fontId, raw, _gridCellWidth - 2);
+			return raw;
 		}
 
 		private void DrawSelectionRectangle(IBitmap target, int row, int col, int x, int y)
