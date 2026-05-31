@@ -19,6 +19,12 @@ namespace CivOne.Graphics.Sprites
 		private Bytemap _bitmap;
 		private bool _disposed;
 
+		/// <summary>
+		/// Gets the shared cached bitmap instance.
+		///
+		/// Ownership stays in <see cref="CachedSprite"/>.
+		/// Callers must not wrap this value in <c>using</c> and must not call <c>Dispose()</c> on it.
+		/// </summary>
 		public Bytemap Bitmap
 		{
 			get
