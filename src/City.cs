@@ -716,7 +716,7 @@ namespace CivOne
 						continue;
 					case 1:
 						if (y == -2) output[1] |= (byte)(0x01 << 5);
-						if (y == -1) output[1] |= (byte)(0x01 << 6);
+						if (y == -1) output[0] |= (byte)(0x01 << 4);
 						if (y == 0) output[0] |= (byte)(0x01 << 1);
 						if (y == 1) output[0] |= (byte)(0x01 << 5);
 						if (y == 2) output[2] |= (byte)(0x01 << 0);
@@ -768,7 +768,7 @@ namespace CivOne
 				_resourceTiles.RemoveRange(Size, _resourceTiles.Count - Size);
 			}
 
-			if (_resourceTiles.Count < Size)
+			while (_resourceTiles.Count < Size)
 			{
 				// CW: must recalculate due to tile removal
 				var resourceTiles = ResourceTiles;
