@@ -6,6 +6,16 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Added terrain, tile improvements, land value, found city and unit editor
+  * Editor menu shown if debug mode is enabled (`Shift+F1 -> Patches -> Debug menu enabled` or `--debug` when starting the game).
+  * Added a `Terrain` top menu in gameplay map view with editor actions for terrain painting, found city, unit spawn, irrigation, road/railroad, mine, fortress, pollution, hut/village, clearing improvements, land values, and brush size changes.
+  * Terrain painting uses a selectable terrain picker (`T`) and supports direct map editing with the currently selected terrain type.
+  * Added terrain editor hotkeys: `T` select terrain, `Y` found city, `Shift+Y` select city owner, `U` spawn selected unit, `Shift+U` select unit owner, `I` irrigation, `R` road/railroad, `M` mine, `F` fortress, `P` pollution, `H` hut/village, `C` clear improvements, `L` toggle land value mode.
+  * Added brush size controls with menu shortcuts `+` and `-`; editor brush sizes cycle through odd sizes from 1 to 15 tiles.
+  * In land value mode, left click increases and right click decreases tile land values.
+  * Found city mode can create cities for the selected owner; using the alternate action on an existing city reduces its size.
+  * Unit spawn mode can place the selected unit type for the selected owner; using the alternate action removes matching units from the target tile.
+  * Terrain editor changes are applied directly on the gameplay map and persist through normal save/load.
 * Feature: Introduced V-sync toggle in setup menu
   * Added "V-Sync" setting in the setup menu with options "On" (default) and "Off".
   * When V-Sync is enabled, the game synchronizes its frame rate with the display's refresh rate to prevent screen tearing.

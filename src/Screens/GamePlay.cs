@@ -13,21 +13,28 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Screens.Dialogs;
+using CivOne.Screens.Debug;
 using CivOne.Screens.GamePlayPanels;
 using CivOne.Screens.Reports;
 using CivOne.Tasks;
 using CivOne.Units;
 using CivOne.Services.EndGame;
+using CivOne.Services;
 using CivOne.UserInterface;
 
 namespace CivOne.Screens
 {
 	[ScreenResizeable]
-	internal class GamePlay : BaseScreen
+		internal partial class GamePlay : BaseScreen
 	{
+		private const int MenuBarHeight = 8;
+		private const int SideBarWidth = 80;
+
 		private readonly MenuBar _menuBar;
 		private readonly SideBar _sideBar;
 		private readonly GameMap _gameMap;
+		private readonly ITranslationService _translationService;
+		private readonly GamePlayTerrainEditorDelegate _terrainEditorDelegate;
 
 		private bool Busy => (Game.MovingUnit != null || Human != Game.CurrentPlayer || GameTask.Any());
 		
@@ -47,6 +54,25 @@ namespace CivOne.Screens
 		internal int X => _gameMap.X;
 		internal int Y => _gameMap.Y;
 		internal bool IsMapViewEnabled => _gameMap.MapViewEnabled;
+		internal bool IsTerrainEditorEnabled => _gameMap.IsTerrainEditorEnabled;
+		internal bool IsTerrainEditorSpawnMode => _gameMap.EditorState.CurrentMode == EditorMode.SpawnUnit;
+		internal string TerrainEditorModeText => _gameMap.TerrainModeText;
+		internal string TerrainEditorCityOwnerText => _gameMap.TerrainCityOwnerText;
+		internal int TerrainEditorBrushSize => _gameMap.TerrainBrushSize;
+		internal int HoveredTileX => _gameMap.HoveredTileX;
+		internal int HoveredTileY => _gameMap.HoveredTileY;
+
+		private void OpenOwnerSelectorOverlay(string menuName, EditorMode targetMode)
+			=> _terrainEditorDelegate.OpenOwnerSelectorOverlay(menuName, targetMode);
+
+		private void OpenCityOwnerSelector() => _terrainEditorDelegate.OpenCityOwnerSelector();
+
+		private void OpenUnitOwnerSelector() => _terrainEditorDelegate.OpenUnitOwnerSelector();
+
+		private void OpenUnitSelector() => _terrainEditorDelegate.OpenUnitSelector();
+
+		private void OnUnitSpawnMenuAction(object sender, MenuItemEventArgs<int> args)
+			=> _terrainEditorDelegate.OnUnitSpawnMenuAction(sender, args);
 
 		internal void CenterOnPoint(int x, int y) => _gameMap.CenterOnPoint(x, y);
 
@@ -146,11 +172,23 @@ namespace CivOne.Screens
 			_gameMenu.Items.Add(Translate("Terrain Types")).OnSelect((s, a) => Common.AddScreen(new Civilopedia(Civilopedia.TerrainType)));
 			_gameMenu.Items.Add(Translate("Miscellaneous")).OnSelect((s, a) => Common.AddScreen(new Civilopedia(Civilopedia.Misc)));
 			
-			_menuX = 182;
+			_menuX = DebugMenuEnabled ? 80 : 182;
 			_menuY = 8;
 			
 			_update = true;
 		}
+
+		private void OnTerrainMenuAction(object sender, MenuItemEventArgs<int> args)
+			=> _terrainEditorDelegate.OnTerrainMenuAction(sender, args);
+
+
+		private void MenuBarTerrain(object sender, EventArgs args)
+			=> _terrainEditorDelegate.MenuBarTerrain(sender, args);
+
+		private bool HandleTerrainMenuHotkeys(KeyboardEventArgs args)
+			=> _terrainEditorDelegate.HandleTerrainMenuHotkeys(args);
+
+		private static bool IsShiftKeyPressed => Common.ShiftKeyHeld;
 		
 		private void DrawLayer(IScreen layer, uint gameTick, int x, int y)
 		{
@@ -243,6 +281,11 @@ namespace CivOne.Screens
 			
 			if (_gameMenu != null)
 			{
+				if (HandleTerrainMenuHotkeys(args))
+				{
+					return true;
+				}
+
 				if (args.Key == Key.Left || args.Key == Key.Right)
 				{
 					int delta = (args.Key == Key.Left) ? -1 : 1;
@@ -255,6 +298,11 @@ namespace CivOne.Screens
 					_gameMenu = null;
 					_redraw = true;
 				}
+				return true;
+			}
+
+			if (_terrainEditorDelegate.HandleTerrainEditorKeyDown(args))
+			{
 				return true;
 			}
 
@@ -333,13 +381,14 @@ namespace CivOne.Screens
 				return;
 			}
 
+			int menuCount = DebugMenuEnabled ? 6 : 5;
 			int nextIndex = _menuIndex;
-			for (int attempts = 0; attempts < 5; attempts++)
+			for (int attempts = 0; attempts < menuCount; attempts++)
 			{
 				GameMenu previousMenu = _gameMenu;
 				int previousIndex = _menuIndex;
 
-				nextIndex = (nextIndex + delta + 5) % 5;
+				nextIndex = (nextIndex + delta + menuCount) % menuCount;
 				switch (nextIndex)
 				{
 					case 0:
@@ -356,6 +405,9 @@ namespace CivOne.Screens
 						break;
 					case 4:
 						MenuBarCivilopedia(this, EventArgs.Empty);
+						break;
+					case 5:
+						MenuBarTerrain(this, EventArgs.Empty);
 						break;
 				}
 
@@ -380,33 +432,33 @@ namespace CivOne.Screens
 				return _update;
 			}
 
-			if (args.Y < 8)
+			if (args.Y < MenuBarHeight)
 			{
 				return _menuBar.MouseDown(args);
 			}
 			if (_rightSideBar)
 			{
-				if (args.X > (Width - 80))
+				if (args.X > (Width - SideBarWidth))
 				{
-					MouseArgsOffset(ref args, (Width - 80), 8);
+					MouseArgsOffset(ref args, (Width - SideBarWidth), MenuBarHeight);
 					return _sideBar.MouseDown(args);
 				}
 				else
 				{
-					MouseArgsOffset(ref args, 0, 8);
+					MouseArgsOffset(ref args, 0, MenuBarHeight);
 					return (_update = _gameMap.MouseDown(args));
 				}
 			}
 			else
 			{
-				if (args.X < 80)
+				if (args.X < SideBarWidth)
 				{
-					MouseArgsOffset(ref args, 0, 8);
+					MouseArgsOffset(ref args, 0, MenuBarHeight);
 					return _sideBar.MouseDown(args);
 				}
 				else
 				{
-					MouseArgsOffset(ref args, 80, 8);
+					MouseArgsOffset(ref args, SideBarWidth, MenuBarHeight);
 					return (_update = _gameMap.MouseDown(args));
 				}
 			}
@@ -416,7 +468,7 @@ namespace CivOne.Screens
 		{
 			if (Cursor == MouseCursor.None) return true;
 			if (_gameMenu == null) return false;
-			if (args.Y < 8)
+			if (args.Y < MenuBarHeight)
 			{
 				_menuBar.MouseDown(args);
 				if (!_menuBar.MenuDrag)
@@ -437,11 +489,62 @@ namespace CivOne.Screens
 		public override bool MouseDrag(ScreenEventArgs args)
 		{
 			if (Cursor == MouseCursor.None) return true;
-			if (_gameMenu == null) return false;
+			if (_gameMenu == null)
+			{
+				return HandleMouseDragWithoutMenu(ref args);
+			}
 			
 			MouseArgsOffset(ref args, _menuX, _menuY);
 			_update |= _gameMenu.MouseDrag(args);
 			return _update;
+		}
+
+		public override bool MouseMove(ScreenEventArgs args)
+		{
+			if (Cursor == MouseCursor.None)
+			{
+				return true;
+			}
+
+			if (_gameMenu != null)
+			{
+				return false;
+			}
+
+			bool isOnMenuBar = args.Y < MenuBarHeight;
+			if (isOnMenuBar)
+			{
+				return false;
+			}
+
+			if (_rightSideBar)
+			{
+				if (args.X > (Width - SideBarWidth))
+				{
+					return false;
+				}
+
+				MouseArgsOffset(ref args, 0, MenuBarHeight);
+			}
+			else
+			{
+				bool isOnSideBar = args.X < SideBarWidth;
+				if (isOnSideBar)
+				{
+					return false;
+				}
+
+				MouseArgsOffset(ref args, SideBarWidth, MenuBarHeight);
+			}
+
+			if (_terrainEditorDelegate.HandleTerrainEditorMouseMove(args))
+			{
+				return true;
+			}
+
+			_gameMap.MouseMove(args);
+			_update = true;
+			return true;
 		}
 
 		public override bool MouseWheel(ScreenEventArgs args)
@@ -456,7 +559,7 @@ namespace CivOne.Screens
 				return false;
 			}
 
-			if (args.Y < 8)
+			if (args.Y < MenuBarHeight)
 			{
 				// Mouse wheel events on the menu bar are ignored to prevent conflicts with scrollable submenus.
 				return false;
@@ -464,23 +567,23 @@ namespace CivOne.Screens
 
 			if (_rightSideBar)
 			{
-				if (args.X > (Width - 80))
+				if (args.X > (Width - SideBarWidth))
 				{
 					// Mouse wheel events on the sidebar are ignored to prevent conflicts with scrollable content in the sidebar.
 					return false;
 				}
 
-				MouseArgsOffset(ref args, 0, 8);
+				MouseArgsOffset(ref args, 0, MenuBarHeight);
 			}
 			else
 			{
-				if (args.X < 80)
+				if (args.X < SideBarWidth)
 				{
 					// Mouse wheel events on the sidebar are ignored to prevent conflicts with scrollable content in the sidebar.
 					return false;
 				}
 
-				MouseArgsOffset(ref args, 80, 8);
+				MouseArgsOffset(ref args, SideBarWidth, MenuBarHeight);
 			}
 
 			_update |= _gameMap.MouseWheel(args);
@@ -492,8 +595,8 @@ namespace CivOne.Screens
 			this.Clear(5);
 
 			_menuBar.Resize();
-			_sideBar.Resize(args.Height - 8);
-			_gameMap.ResizeMap(args.Width - 80, args.Height - 8);
+			_sideBar.Resize(args.Height - MenuBarHeight);
+			_gameMap.ResizeMap(args.Width - SideBarWidth, args.Height - MenuBarHeight);
 
 			_update = true;
 			HasUpdate(0);
@@ -548,6 +651,8 @@ namespace CivOne.Screens
 			_menuBar = new MenuBar(Palette);
 			_sideBar = new SideBar(Palette, Game.GlobalWarmingService);
 			_gameMap = new GameMap();
+			_translationService = TranslationServiceFactory.GetCurrent();
+			_terrainEditorDelegate = new(this, _translationService);
 			_gameMap.MapPositionSaved += GameMapMapPositionSaved;
 
 			if (!TryRestoreLastLoadedMapPosition())
@@ -569,6 +674,7 @@ namespace CivOne.Screens
 			_menuBar.AdvisorsSelected += MenuBarAdvisors;
 			_menuBar.WorldSelected += MenuBarWorld;
 			_menuBar.CivilopediaSelected += MenuBarCivilopedia;
+			_menuBar.TerrainSelected += MenuBarTerrain;
 
 			while (Game.CurrentPlayer != Game.HumanPlayer)
 			{
@@ -580,6 +686,33 @@ namespace CivOne.Screens
 		private void GameMapMapPositionSaved(object sender, int slot)
 		{
 			_sideBar.ShowMapPositionSavedInfo(slot);
+		}
+
+		private bool HandleMouseDragWithoutMenu(ref ScreenEventArgs args)
+		{
+			if (_rightSideBar)
+			{
+				bool isOnSideBar = args.X > (Width - SideBarWidth);
+				if (isOnSideBar)
+				{
+					return false;
+				}
+
+				MouseArgsOffset(ref args, 0, MenuBarHeight);
+			}
+			else
+			{
+				bool isOnSideBar = args.X < SideBarWidth;
+				if (isOnSideBar)
+				{
+					return false;
+				}
+
+				MouseArgsOffset(ref args, SideBarWidth, MenuBarHeight);
+			}
+
+			_update |= _gameMap.MouseDrag(args);
+			return _update;
 		}
 	}
 }

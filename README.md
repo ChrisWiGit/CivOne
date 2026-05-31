@@ -928,3 +928,49 @@ The continent ID on tiles is stored as `int` with no artificial upper limit.
 The binary `.MAP` save format stores the ID as a byte for compatibility with the original game.
 8. Goody hut placement is deterministic and not fully random.
 Huts are not placed in the top two or bottom two rows.
+
+### Terrain editor
+
+The gameplay map now includes a terrain editor for debugging and scenario style map changes.
+The editor is available only when the debug menu is enabled.
+Enable it with `Shift + F1`, open `Patches`, then set `Debug menu` to `Yes`, or start the game with `--debug`.
+
+When debug mode is active, a new `Terrain` menu appears in the top gameplay menu bar.
+This menu lets you paint terrain, add or remove tile improvements, edit land values, found cities, and spawn units.
+
+#### Main terrain editor hotkeys
+
+| Hotkey | Action |
+| ------ | ------ |
+| `T` | Open terrain selection and choose the terrain type used for painting. |
+| `Y` | Switch to found city mode. |
+| `Shift+Y` | Select the owner used by found city mode. |
+| `U` | Open unit selection and switch to unit spawn mode. |
+| `Shift+U` | Select the owner used by unit spawn mode. |
+| `I` | Switch to irrigation mode. |
+| `R` | Switch to road and railroad mode. |
+| `M` | Switch to mine mode. |
+| `F` | Switch to fortress mode. |
+| `P` | Switch to pollution mode. |
+| `H` | Switch to hut and village mode. |
+| `C` | Switch to clear improvements mode. |
+| `L` | Toggle land value editing mode. |
+| `+` or `]` | Increase brush size. |
+| `-` or `[` | Decrease brush size. |
+
+#### Terrain editor behavior
+
+Brush sizes cycle through odd values from `1` to `15`.
+Larger brush sizes apply the selected action to a wider area.
+
+In land value mode, left click increases land value and right click decreases land value.
+This helps inspect and adjust city site quality directly on the map.
+
+In found city mode, left click creates a city for the selected owner.
+The alternate action reduces the size of an existing city on the target tile.
+
+In unit spawn mode, left click places the selected unit for the selected owner.
+The alternate action removes matching units from the target tile.
+
+Terrain editor changes are written into normal save files.
+Edited terrain, improvements, and land values remain after save and reload.

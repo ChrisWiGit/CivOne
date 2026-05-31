@@ -56,6 +56,8 @@ namespace CivOne.Screens.GamePlayPanels
 			
 			if (GamePlay != null)
 			{
+				bool editorEnabled = GamePlay.IsTerrainEditorEnabled;
+				bool revealWorld = Settings.RevealWorld || editorEnabled;
 				IUnit activeUnit = Game.ActiveUnit;
 				ITile[,] tiles = Map[GamePlay.X - MiniMapViewOffsetX, GamePlay.Y - MiniMapViewOffsetY, MiniMapTileWidth, MiniMapTileHeight];
 				for (int yy = 0; yy < MiniMapTileHeight; yy++)
@@ -65,7 +67,7 @@ namespace CivOne.Screens.GamePlayPanels
 					if (tile == null) continue;
 
 					// Flash active unit
-					if (activeUnit != null && Human == activeUnit.Owner && (tile.X == activeUnit.X && tile.Y == activeUnit.Y) && GamePlay?.IsMapViewEnabled != true)
+					if (!editorEnabled && activeUnit != null && Human == activeUnit.Owner && (tile.X == activeUnit.X && tile.Y == activeUnit.Y) && GamePlay?.IsMapViewEnabled != true)
 					{
 						if (gameTick % 4 <= 1)
 						{
@@ -78,7 +80,7 @@ namespace CivOne.Screens.GamePlayPanels
 						continue;
 					}
 
-					if (Settings.RevealWorld)
+					if (revealWorld)
 					{
 						byte colour = 5;
 						switch (tile.Type)
@@ -183,10 +185,16 @@ namespace CivOne.Screens.GamePlayPanels
 		private void DrawGameInfo(uint gameTick = 0)
 		{
 			IUnit unit = Game.ActiveUnit;
-			
+
 			_gameInfo.Tile(Pattern.PanelGrey)
 				.DrawRectangle3D();
-			
+
+			bool isInEditorMode = DrawTerrainEditorInfo();
+			if (isInEditorMode)
+			{
+				return;
+			}
+
 			if (Game.CurrentPlayer != Human || (unit != null && Human != unit.Owner) || (GameTask.Any() && !GameTask.Is<Show>() && !GameTask.Is<Message>()))
 			{
 				_gameInfo.FillRectangle(2, _gameInfo.Height - 8, 6, 6, (byte)((gameTick % 4 < 2) ? 15 : 8));
@@ -198,7 +206,7 @@ namespace CivOne.Screens.GamePlayPanels
 				int yy = 2;
 				_gameInfo.DrawText(Human.TribeName, 0, 5, 4, 2, TextAlign.Left);
 				_gameInfo.DrawText(unit.TranslatedName, 0, 5, 4, (yy += 8), TextAlign.Left);
-				
+
 				if (unit.Veteran)
 				{
 					_gameInfo.DrawText(Translate("Veteran"), 0, 5, 8, (yy += 8), TextAlign.Left);
@@ -218,7 +226,7 @@ namespace CivOne.Screens.GamePlayPanels
 				}
 				_gameInfo.DrawText((unit.Home == null ? Translate("NONE") : unit.Home.Name), 0, 5, 4, (yy += 8), TextAlign.Left);
 				_gameInfo.DrawText($"({Map[unit.X, unit.Y].TranslatedName})", 0, 5, 4, (yy += 8), TextAlign.Left);
-				
+
 				if (Map[unit.X, unit.Y].RailRoad)
 					_gameInfo.DrawText(Translate("(RailRoad)"), 0, 5, 4, (yy += 8), TextAlign.Left);
 				else if (Map[unit.X, unit.Y].Road)
@@ -227,7 +235,7 @@ namespace CivOne.Screens.GamePlayPanels
 					_gameInfo.DrawText(Translate("(Irrigation)"), 0, 5, 4, (yy += 8), TextAlign.Left);
 				else if (Map[unit.X, unit.Y].Mine)
 					_gameInfo.DrawText(Translate("(Mining)"), 0, 5, 4, (yy += 8), TextAlign.Left);
-				
+
 				yy += 11;
 
 				IUnit[] units = Map[unit.X, unit.Y].Units.Where(u => u != unit).Take(8).ToArray();
@@ -247,21 +255,94 @@ namespace CivOne.Screens.GamePlayPanels
 			}
 		}
 
+		private bool DrawTerrainEditorInfo()
+		{
+			if ((GamePlay?.IsTerrainEditorEnabled) != true)
+			{
+				return false;
+			}
+
+			const int fontId = 1;
+			const byte colorId = 5;
+			const int yStart = 2;
+			int brushSize = GamePlay.TerrainEditorBrushSize;
+			int fontHeight = Resources.GetFontHeight(fontId) + 1;
+			bool spawnMode = GamePlay.IsTerrainEditorSpawnMode;
+			ITile hoveredTile = Map[GamePlay.HoveredTileX, GamePlay.HoveredTileY];
+			IUnit[] hoveredUnits = hoveredTile?.Units ?? [];
+			string hoveredUnitOwnerText = null;
+			string hoveredUnitStackText = null;
+
+			if (spawnMode && hoveredUnits.Length > 0)
+			{
+				IUnit firstUnit = hoveredUnits[0];
+				Player owner = Game.GetPlayer(firstUnit.Owner);
+				if (owner != null)
+				{
+					hoveredUnitOwnerText = owner.Civilization is CivOne.Civilizations.Barbarian
+						? Translate("Barbarians")
+						: owner.TribeNamePlural;
+				}
+
+				hoveredUnitStackText = $"{firstUnit.TranslatedName} : {hoveredUnits.Length}";
+			}
+
+			_gameInfo.DrawText(Translate("Editor active"), fontId, colorId, 2, yStart, TextAlign.Left);
+			_gameInfo.DrawText(GamePlay.TerrainEditorModeText, fontId, colorId, 2, yStart + fontHeight, TextAlign.Left);
+			_gameInfo.DrawText(TranslateFormatted("Brush {0}x{0}", brushSize), fontId, colorId, 2, yStart + 2 * fontHeight, TextAlign.Left);
+
+			if (spawnMode)
+			{
+				if (!string.IsNullOrEmpty(hoveredUnitOwnerText))
+				{
+					_gameInfo.DrawText(hoveredUnitOwnerText, fontId, colorId, 2, yStart + 3 * fontHeight, TextAlign.Left);
+				}
+
+				if (!string.IsNullOrEmpty(hoveredUnitStackText))
+				{
+					_gameInfo.DrawText(hoveredUnitStackText, fontId, colorId, 2, yStart + 4 * fontHeight, TextAlign.Left);
+				}
+			}
+			else if (!string.IsNullOrEmpty(GamePlay.TerrainEditorCityOwnerText))
+			{
+				_gameInfo.DrawText(GamePlay.TerrainEditorCityOwnerText, fontId, colorId, 2, yStart + 3 * fontHeight, TextAlign.Left);
+			}
+			_gameInfo.DrawText($"{GamePlay.HoveredTileX},{GamePlay.HoveredTileY}", fontId, colorId, 2, yStart + 5 * fontHeight, TextAlign.Left);
+			
+			return true;
+		}
+
 		private int GetGameInfoSignature(uint gameTick)
 		{
 			IUnit unit = Game.ActiveUnit;
 			bool hasBlockingTask = GameTask.Any() && !GameTask.Is<Show>() && !GameTask.Is<Message>();
 			int blinkPhase = (unit == null || hasBlockingTask) ? (int)(gameTick % 4) : -1;
+			bool editorEnabled = GamePlay?.IsTerrainEditorEnabled == true;
+			bool spawnMode = editorEnabled && GamePlay!.IsTerrainEditorSpawnMode;
+			string editorMode = editorEnabled ? GamePlay!.TerrainEditorModeText : string.Empty;
+			int editorBrush = editorEnabled ? GamePlay!.TerrainEditorBrushSize : -1;
+			string editorOwner = editorEnabled ? GamePlay!.TerrainEditorCityOwnerText : string.Empty;
+			int hoveredTileX = editorEnabled ? GamePlay!.HoveredTileX : -1;
+			int hoveredTileY = editorEnabled ? GamePlay!.HoveredTileY : -1;
+			ITile hoveredTile = editorEnabled ? Map[hoveredTileX, hoveredTileY] : null;
+			IUnit[] hoveredUnits = hoveredTile?.Units ?? [];
+			byte hoveredOwner = hoveredUnits.Length > 0 ? hoveredUnits[0].Owner : byte.MaxValue;
+			UnitType hoveredType = hoveredUnits.Length > 0 ? hoveredUnits[0].Type : (UnitType)(-1);
+			int hoveredCount = hoveredUnits.Length;
 
 			return HashCode.Combine(
-				Game.CurrentPlayer,
-				unit,
-				unit == null ? -1 : unit.MovesLeft,
-				unit == null ? -1 : unit.PartMoves,
-				hasBlockingTask,
-				blinkPhase,
-				_statusInfoText,
-				_statusInfoFrames);
+				HashCode.Combine(
+					Game.CurrentPlayer,
+					unit,
+					unit == null ? -1 : unit.MovesLeft,
+					unit == null ? -1 : unit.PartMoves,
+					hasBlockingTask,
+					blinkPhase,
+					_statusInfoText,
+					_statusInfoFrames),
+				HashCode.Combine(
+					HashCode.Combine(editorEnabled, spawnMode, editorMode, editorBrush, editorOwner),
+					HashCode.Combine(hoveredTileX, hoveredTileY, hoveredOwner, hoveredType, hoveredCount)));
 		}
 
 		internal void ShowMapPositionSavedInfo(int slot)
