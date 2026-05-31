@@ -48,8 +48,9 @@ namespace CivOne.UserInterface
 		
 		public static MenuItem<T> SetShortcuts<T>(this MenuItem<T> menuItem, params string[] shortcuts)
 		{
+			shortcuts ??= Array.Empty<string>();
 			menuItem.Shortcuts = shortcuts;
-			menuItem.Shortcut = shortcuts.Length > 0 ? shortcuts[0] : null;
+			menuItem.Shortcut = shortcuts.Length > 0 ? shortcuts[0] ?? string.Empty : string.Empty;
 			return menuItem;
 		}
 

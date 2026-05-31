@@ -11,7 +11,8 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Added a `Terrain` top menu in gameplay map view with editor actions for terrain painting, found city, unit spawn, irrigation, road/railroad, mine, fortress, pollution, hut/village, clearing improvements, land values, and brush size changes.
   * Terrain painting uses a selectable terrain picker (`T`) and supports direct map editing with the currently selected terrain type.
   * Added terrain editor hotkeys: `T` select terrain, `Y` found city, `Shift+Y` select city owner, `U` spawn selected unit, `Shift+U` select unit owner, `I` irrigation, `R` road/railroad, `M` mine, `F` fortress, `P` pollution, `H` hut/village, `C` clear improvements, `L` toggle land value mode.
-  * Added brush size controls with menu shortcuts `+` and `-`; editor brush sizes cycle through odd sizes from 1 to 15 tiles.
+  * Added brush size controls with menu shortcuts `+` and `-`; editor brush sizes cycle through 1,2,3,5,7,9,11,13,15 tiles.
+  * Requirement: brush size `2` is intentionally supported for 2x2 edits, even though it is not centered like odd brush sizes.
   * In land value mode, left click increases and right click decreases tile land values.
   * Found city mode can create cities for the selected owner; using the alternate action on an existing city reduces its size.
   * Unit spawn mode can place the selected unit type for the selected owner; using the alternate action removes matching units from the target tile.

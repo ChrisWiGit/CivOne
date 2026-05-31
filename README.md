@@ -964,7 +964,9 @@ This menu lets you paint terrain, add or remove tile improvements, edit land val
 
 #### Terrain editor behavior
 
-Brush sizes cycle through odd values from `1` to `15`.
+Brush sizes cycle through `1`, `2`, `3`, `5`, `7`, `9`, `11`, `13`, and `15`.
+This is an explicit terrain editor requirement: brush size `2` must stay available for small-area edits.
+Brush size `2` uses a 2x2 footprint and is intentionally not centered like odd brush sizes.
 Larger brush sizes apply the selected action to a wider area.
 The white selection square shows where the brush is currently applied.
 You can use the mouse to click on the map or the cursor keys to move the selection square and apply changes with the keyboard by pressing `Return`. This changes the terrain under the selection square, applying the current brush size.

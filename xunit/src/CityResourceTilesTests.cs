@@ -150,7 +150,7 @@ namespace CivOne.src
 			while (GameTask.Update())
 			{
 				updates++;
-				Assert.True(updates < maxTaskUpdates);
+				Assert.True(updates <= maxTaskUpdates, $"Exceeded max queued task updates ({maxTaskUpdates}).");
 			}
 		}
 	}

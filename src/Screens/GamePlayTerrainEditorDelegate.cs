@@ -256,12 +256,24 @@ namespace CivOne.Screens
 
 			public bool HandleTerrainMenuHotkeys(KeyboardEventArgs args)
 			{
-				if (_gamePlay._menuIndex != 5 || args.Key != Key.Character)
+				if (_gamePlay._menuIndex != 5)
 				{
 					return false;
 				}
 
-				char key = char.ToUpperInvariant(args.KeyChar);
+				char key = args.Key switch
+				{
+					Key.Character => char.ToUpperInvariant(args.KeyChar),
+					Key.Plus => '+',
+					Key.Minus => '-',
+					_ => '\0'
+				};
+
+				if (key == '\0')
+				{
+					return false;
+				}
+
 				foreach (MenuItem<int> item in _gamePlay._gameMenu.Items)
 				{
 					if (item?.Enabled != true || string.IsNullOrEmpty(item.Shortcut))
@@ -269,7 +281,7 @@ namespace CivOne.Screens
 						continue;
 					}
 
-					if (char.ToUpperInvariant(item.Shortcut[0]) != key)
+					if (char.ToUpperInvariant(item.Shortcut[0]) != char.ToUpperInvariant(key))
 					{
 						continue;
 					}
