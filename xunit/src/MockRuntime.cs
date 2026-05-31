@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using CivOne.Enums;
 using CivOne.Events;
@@ -10,6 +11,8 @@ namespace CivOne.UnitTests
     #pragma warning disable CS0067 // Events are never used - but required to implement IRuntime
     public sealed class MockRuntime : IRuntime
     {
+        private readonly Dictionary<string, string> _settings = new(StringComparer.OrdinalIgnoreCase);
+
         public event EventHandler Initialize;
         public event EventHandler Draw;
         public event UpdateEventHandler Update;
@@ -25,14 +28,12 @@ namespace CivOne.UnitTests
 
         public string GetSetting(string key)
         {
-            if (key == "GraphicsMode")
-                return GraphicsMode.Graphics256.ToString();
-            return null;
+            return _settings.TryGetValue(key, out string value) ? value : null;
         }
 
         public void SetSetting(string key, string value)
         {
-            throw new NotImplementedException();
+            _settings[key] = value;
         }
 
         public RuntimeSettings Settings { get; }
@@ -101,6 +102,7 @@ namespace CivOne.UnitTests
 		public MockRuntime(RuntimeSettings settings)
         {
             Settings = settings;
+            _settings["GraphicsMode"] = GraphicsMode.Graphics256.ToString();
             settings.Free = false;
             RuntimeHandler.Wipe(); // Ensure any previous runtime is cleared out otherwise exceptions occur
             RuntimeHandler.RegisterForTest(this);

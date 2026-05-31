@@ -16,6 +16,9 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Found city mode can create cities for the selected owner; using the alternate action on an existing city reduces its size.
   * Unit spawn mode can place the selected unit type for the selected owner; using the alternate action removes matching units from the target tile.
   * Terrain editor changes are applied directly on the gameplay map and persist through normal save/load.
+* Fix: Corrected city resource tile save/load mapping and growth allocation.
+  * Fixed the savegame bit mapping so the inner northeast tile `(1,-1)` no longer collides with the outer northeast tile `(2,-1)` (only for sve savegames).
+  * `SetResourceTiles()` now keeps adding tiles until the city reaches its full size, preventing missing worked tiles from being turned into entertainers.
 * Feature: Introduced V-sync toggle in setup menu
   * Added "V-Sync" setting in the setup menu with options "On" (default) and "Off".
   * When V-Sync is enabled, the game synchronizes its frame rate with the display's refresh rate to prevent screen tearing.
