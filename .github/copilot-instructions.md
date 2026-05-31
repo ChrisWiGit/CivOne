@@ -93,6 +93,13 @@ Whenever a diff deletes a line that contains any of `index++`, `++index`, `i++` 
   * Example: `MyServiceFactory` for `MyCommandService` and `MyQueryService`
 * Delegate classes are not services and may be instantiated directly with `new()`.
 
+### Code Smells
+
+* Treat helper classes and pure static utility classes as a code smell.
+* Prefer a service when behavior represents a reusable domain capability.
+* If a full service is overkill, prefer a dedicated delegate class instead of a helper/static class. See [Delegate chapter](#delegate-pattern).
+* Keep behavior behind clear abstractions and keep calling classes focused on orchestration.
+
 ### Code Style
 
 * Keep methods small and focused.
