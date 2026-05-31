@@ -50,28 +50,72 @@ namespace CivOne.Screens
 			if (menuItem != null)
 			{
 				if (menuItem.Text != null) width += Resources.GetTextSize(0, menuItem.Text).Width;
-				if (menuItem.Shortcut != null) width += Resources.GetTextSize(0, menuItem.Shortcut).Width + 8;
+				string shortcutText = GetShortcutText(menuItem);
+				if (!string.IsNullOrWhiteSpace(shortcutText)) width += Resources.GetTextSize(0, shortcutText).Width + 8;
 			}
 			return width;
 		}
 
 		private int MaxItemWidth => Items.Select(x => ItemWidth(x)).Max();
+		internal int PixelWidth => MaxItemWidth + 17;
+		internal int PixelHeight => (Resources.GetFontHeight(0) * Items.Count) + 9;
+
+		private string FormatShortcutToken(string shortcut)
+		{
+			if (string.IsNullOrWhiteSpace(shortcut))
+			{
+				return string.Empty;
+			}
+
+			string token = shortcut.Trim();
+			if (!token.StartsWith('^'))
+			{
+				return token;
+			}
+
+			string keyPart = token[1..].Trim();
+			return keyPart.Length == 0 ? Translate("shift") : $"{Translate("shift")}+{keyPart}";
+		}
+
+		private string GetShortcutText(MenuItem<int> menuItem)
+		{
+			if (menuItem == null)
+			{
+				return null;
+			}
+
+			if (menuItem.Shortcuts != null && menuItem.Shortcuts.Length > 0)
+			{
+				string[] formatted = menuItem.Shortcuts
+					.Where(x => !string.IsNullOrWhiteSpace(x))
+					.Select(FormatShortcutToken)
+					.Where(x => !string.IsNullOrWhiteSpace(x))
+					.ToArray();
+				if (formatted.Length > 0)
+				{
+					return string.Join("/", formatted);
+				}
+			}
+
+			return string.IsNullOrWhiteSpace(menuItem.Shortcut) ? null : FormatShortcutToken(menuItem.Shortcut);
+		}
 
 		private void MenuItemDraw(MenuItem<int> menuItem, int x, int y)
 		{
 			if (menuItem == null || menuItem.Text == null) return;
 			this.DrawText(menuItem.Text, 0, (byte)(menuItem.Enabled ? 5 : 3), x, y, TextAlign.Left);
-			if (menuItem.Shortcut == null) return;
+			string shortcutText = GetShortcutText(menuItem);
+			if (string.IsNullOrWhiteSpace(shortcutText)) return;
 			int textWidth = Resources.GetTextSize(0, menuItem.Text).Width;
-			this.DrawText(menuItem.Shortcut, 0, 15, x + textWidth + 8, y, TextAlign.Left);
+			this.DrawText(shortcutText, 0, 15, x + textWidth + 8, y, TextAlign.Left);
 		}
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (!_update) return true;
 			
-			int ww = MaxItemWidth + 17;
-			int hh = (Resources.GetFontHeight(0) * Items.Count) + 9;
+			int ww = PixelWidth;
+			int hh = PixelHeight;
 			
 			Bitmap = new Bytemap(ww, hh);
 			this.Tile(Pattern.PanelGrey, 1, 1)
