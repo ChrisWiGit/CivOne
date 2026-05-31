@@ -106,6 +106,7 @@ Whenever a diff deletes a line that contains any of `index++`, `++index`, `i++` 
 * Use nullable type if a variable can be null, e.g. `string? name` instead of `string name` if `name` can be null. Use `?` on these fields to access them safely, e.g. `name?.Length` instead of `name.Length` if `name` can be null.
 * If a parameter can be null (nullable) make sure to check for null and throw an appropriate exception, e.g. `ArgumentNullException.ThrowIfNull(name);` or provide a default value, e.g. `name = name ?? "default";`. Some services may also have dependency injection parameters that may be null, if so, make sure to use a factory to provide a default service if the injected service is null, e.g. `public MyService(IMyDependency? dependency) { _dependency = dependency ?? MyFactory.Create(); }`.
 * When calling method that returns IDisposeable, use `using`. Don't do `using Bytemap unitPicture = ScaleBitmap(movingUnit.ToBitmap(), _tilePixelSize, _tilePixelSize);` but instead `using Bytemap unitSource = movingUnit.ToBitmap(); using Bytemap unitPicture = ScaleBitmap(unitSource, _tilePixelSize, _tilePixelSize);` to immediately dispose the original bitmap after scaling.
+* Exception for cached/shared bitmaps: do not use `using` or call `Dispose()` on values returned from sprite caches (`ISprite.Bitmap`, `CachedSpriteCollection` entries, and `UnitExtensions.ToBitmap(...)`). These buffers are owned by the cache and are disposed only by cache clear/dispose.
 
 ### Resizable Screens
 
@@ -124,13 +125,13 @@ Use quiet build output and only show final lines.
 ### PowerShell
 
 ```powershell
-dotnet build Project.csproj -v q 2>&1 | Select-Object -Last 15
+dotnet build Project.csproj --property WarningLevel=0 -v q 2>&1 | Select-Object -Last 15
 ```
 
 ### Bash
 
 ```sh
-dotnet build Project.csproj -v q 2>&1 | tail -n 15
+dotnet build Project.csproj --property WarningLevel=0 -v q 2>&1 | tail -n 15
 ```
 
 ## Documentation Comments
@@ -160,12 +161,12 @@ dotnet build Project.csproj -v q 2>&1 | tail -n 15
 * Run tests only when needed.
 * Run only relevant tests.
 * Run tests without console logs from CivOne-Code when possible to reduce noise (` -p:SuppressConsoleLogs=true`).
-* Run tests with quiet output (`-v q`) and no warnings (`-p:NoWarn=*`) to focus on test results.
+* Run tests with quiet output (`-v q`) and no warnings (`--property WarningLevel=0`) to focus on test results.
 
 Example:
 
 ```sh
-dotnet test "xunit/CivOne.UnitTests.csproj" --filter "FullyQualifiedName~GameMapViewModeTests" -p:SuppressConsoleLogs=true -p:NoWarn="*" -v q 2>&1 | Select-Object -Last 20
+dotnet test "xunit/CivOne.UnitTests.csproj" --filter "FullyQualifiedName~GameMapViewModeTests" -p:SuppressConsoleLogs=true --property WarningLevel=0 -v q 2>&1 | Select-Object -Last 20
 ```
 
 ## Existing Useful Code
