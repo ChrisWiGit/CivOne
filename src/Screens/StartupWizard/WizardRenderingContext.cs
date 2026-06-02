@@ -18,10 +18,14 @@ namespace CivOne.Screens.StartupWizard
 	/// </summary>
 	internal sealed class WizardRenderingContext
 	{
+		public const int ScrollUpHitAreaNumber = -1;
+		public const int ScrollDownHitAreaNumber = -2;
+
 		public Rectangle Box { get; set; }
 		public int Cols { get; set; }
 		public int Rows { get; set; }
 		public float Scale { get; set; }
+		public int EntryScrollOffset { get; set; }
 		public string StatusMessage { get; set; } = string.Empty;
 		public List<(int Number, Rectangle Area)> EntryHitAreas { get; } = [];
 		public List<(string Url, Rectangle Area)> LinkAreas { get; } = [];

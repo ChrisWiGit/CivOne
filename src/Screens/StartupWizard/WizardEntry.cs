@@ -135,5 +135,14 @@ namespace CivOne.Screens.StartupWizard
 		/// For all other actions this property is <see langword="null"/>.
 		/// </remarks>
 		public string Value { get; init; }
+
+		/// <summary>
+		/// Gets a value indicating whether this entry should always be kept as the last visible entry in the list, 
+		/// even when the number of entries exceeds the maximum visible count and scrolling is necessary.
+		/// This will decrease <see cref="WizardPage.EntriesMaxCount"/> by one to ensure that there is always room to display this entry at the end of the list.
+		/// There can be multiple entries with this property set to <see langword="true"/>; they will be kept at the end of the list in the order they are defined.
+		/// </summary>
+		public bool KeepAlwaysLastPosition { get; init; }
+
 	}
 }

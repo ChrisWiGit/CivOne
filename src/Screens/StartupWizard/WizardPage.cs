@@ -18,6 +18,11 @@ namespace CivOne.Screens.StartupWizard
 		public string[] Lines { get; init; } = [];
 		public IReadOnlyList<WizardEntry> Entries { get; init; } = [];
 		public int EntriesYOffset { get; init; }
+		
+		/// <summary>
+		/// If set, limits the number of entries shown at once and enables scrolling if there are more entries than the specified count.
+		/// </summary>
+		public int EntriesMaxCount { get; init; }
 		public IReadOnlyList<(string Label, string Url)> Links { get; init; } = [];
 
 		/// <summary>

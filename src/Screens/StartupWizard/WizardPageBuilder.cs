@@ -99,18 +99,53 @@ namespace CivOne.Screens.StartupWizard
 			};
 		}
 
+		// hotkeygenerator, yield 1-9, a-z excluding c and b
+		private IEnumerable<char> GenerateHotkeys(string excludedChars = "cb")
+		{
+			for (char c = '1'; c <= '9'; c++)
+			{
+				yield return c;
+			}
+
+			for (char c = 'a'; c <= 'z'; c++)
+			{
+				if (excludedChars.Contains(c))
+				{
+					continue;
+				}
+
+				yield return c;
+			}
+		}
+
 		private WizardPage BuildLanguagePage(WizardState state)
 		{
 			List<WizardEntry> entries = [];
 			int number = 1;
+			const char NEXT_HOTKEY = 'c';
+			const char BACK_HOTKEY = 'b';
+			bool hasBackButton = state.PageIndex > 0;
+			var hotkeys = GenerateHotkeys($"{NEXT_HOTKEY}{(hasBackButton ? BACK_HOTKEY.ToString() : string.Empty)}").GetEnumerator();
 
 			entries.Add(new WizardEntry
 			{
 				Number = number++,
 				Text = T("Original (default)"),
 				Action = WizardEntryAction.SelectLanguage,
-				Value = string.Empty
+				Value = string.Empty,
+				Hotkey = hotkeys.MoveNext() ? hotkeys.Current : null
 			});
+
+			// generiere 10 test entries
+			Enumerable.Range(0, 10).ToList().ForEach(i =>
+				entries.Add(new WizardEntry
+				{
+					Number = number++,
+					Text = _availableLanguages[0].DisplayName + $" ({number})",
+					Action = WizardEntryAction.SelectLanguage,
+					Value = _availableLanguages[0].Postfix,
+					Hotkey = hotkeys.MoveNext() ? hotkeys.Current : null
+				}));
 
 			foreach (TranslationLanguageInfo language in _availableLanguages)
 			{
@@ -119,7 +154,8 @@ namespace CivOne.Screens.StartupWizard
 					Number = number++,
 					Text = TranslationServiceFactory.GetLanguageDisplayName(language, T),
 					Action = WizardEntryAction.SelectLanguage,
-					Value = language.Postfix
+					Value = language.Postfix,
+					Hotkey = hotkeys.MoveNext() ? hotkeys.Current : null
 				});
 			}
 
@@ -128,17 +164,18 @@ namespace CivOne.Screens.StartupWizard
 				Number = number,
 				Text = ContinueText(),
 				Action = WizardEntryAction.Continue,
-				Hotkey = 'c'
+				Hotkey = NEXT_HOTKEY,
+				KeepAlwaysLastPosition = true
 			});
 
-			if (state.PageIndex > 0)
+			if (hasBackButton)
 			{
 				entries.Add(new WizardEntry
 				{
 					Number = number + 1,
 					Text = BackText(),
 					Action = WizardEntryAction.Back,
-					Hotkey = 'b'
+					Hotkey = BACK_HOTKEY,
 				});
 			}
 
@@ -151,10 +188,11 @@ namespace CivOne.Screens.StartupWizard
 				Title = T("Startup Wizard: Language"),
 				Lines =
 				[
-					T("Select startup language."),
-					TF("Current: {0}", activeLanguage)
+					$"Language,Sprache,Idioma,Langue,Linguagem: {activeLanguage}"
 				],
-				Entries = entries
+				Entries = entries,
+				EntriesMaxCount = 8,
+				EntriesYOffset = 3
 			};
 		}
 
