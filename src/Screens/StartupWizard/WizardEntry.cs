@@ -15,6 +15,10 @@ namespace CivOne.Screens.StartupWizard
 	internal enum WizardEntryAction
 	{
 		/// <summary>
+		/// No action; the entry is just informational and cannot be activated by the user.
+		/// </summary>
+		None,
+		/// <summary>
 		/// Selects a language. The chosen language postfix is stored in <see cref="WizardEntry.Value"/>.
 		/// </summary>
 		SelectLanguage,
@@ -88,9 +92,13 @@ namespace CivOne.Screens.StartupWizard
 	internal sealed class WizardEntry
 	{
 		/// <summary>
-		/// Gets the 1-based display number shown next to the entry in the wizard UI.
+		/// Gets the 1-based display number shown next to the entry in the wizard UI for the user to select it by pressing the corresponding number key.
+		/// The numbering will start at 1 and end at number 9 and then continue with letters (A, B, C, etc.) for any additional entries without hotkeys.
+		/// If a hotkey is defined for the entry, it will be shown instead of the number in the UI.
+		/// There maybe collisions between entry numbers and hotkeys of other entries. 
+		/// In such a case you should define all Hotkeys explicitly to ensure a consistent user experience.
 		/// </summary>
-		public int Number { get; init; }
+		public required int Number { get; init; }
 
 		/// <summary>
 		/// Gets the optional single-character keyboard shortcut that activates this entry.
@@ -104,12 +112,12 @@ namespace CivOne.Screens.StartupWizard
 		/// <summary>
 		/// Gets the localised label displayed for this entry in the wizard UI.
 		/// </summary>
-		public string Text { get; init; }
+		public required string Text { get; init; }
 
 		/// <summary>
 		/// Gets the action performed when this entry is activated.
 		/// </summary>
-		public WizardEntryAction Action { get; init; }
+		public required WizardEntryAction Action { get; init; }
 
 		/// <summary>
 		/// Gets a value indicating whether this entry can be activated by the user.
@@ -134,6 +142,14 @@ namespace CivOne.Screens.StartupWizard
 		/// the selected aspect ratio name.
 		/// For all other actions this property is <see langword="null"/>.
 		/// </remarks>
-		public string Value { get; init; }
+		public string? Value { get; init; }
+
+		/// <summary>
+		/// Gets a value indicating whether this entry should always be kept as the last visible entry in the list, 
+		/// even when the number of entries exceeds the maximum visible count and scrolling is necessary.
+		/// This will decrease <see cref="WizardPage.EntriesMaxCount"/> by one to ensure that there is always room to display this entry at the end of the list.
+		/// There can be multiple entries with this property set to <see langword="true"/>; they will be kept at the end of the list in the order they are defined.
+		/// </summary>
+		public bool KeepAlwaysLastPosition { get; init; }
 	}
 }

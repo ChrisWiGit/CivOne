@@ -23,7 +23,7 @@ namespace CivOne.Screens.StartupWizard
 		Func<ITranslationService> translationServiceAccessor,
 		IBrowserService browserService,
 		string storageDirectory,
-		Func<string, string> browseFolder,
+		Func<string, string?> browseFolder,
 		Action<string> log,
 		Action showSetupScreen,
 		Action<Action> dispatchToMainThread,
@@ -32,7 +32,7 @@ namespace CivOne.Screens.StartupWizard
 		private readonly Func<ITranslationService> _translationServiceAccessor = translationServiceAccessor ?? throw new ArgumentNullException(nameof(translationServiceAccessor));
 		private readonly IBrowserService _browserService = browserService ?? throw new ArgumentNullException(nameof(browserService));
 		private readonly string _storageDirectory = storageDirectory ?? string.Empty;
-		private readonly Func<string, string> _browseFolder = browseFolder ?? throw new ArgumentNullException(nameof(browseFolder));
+		private readonly Func<string, string?> _browseFolder = browseFolder ?? throw new ArgumentNullException(nameof(browseFolder));
 		private readonly Action<string> _log = log ?? (_ => { });
 		private readonly Action _showSetupScreen = showSetupScreen ?? (() => { });
 		private readonly Action<Action> _dispatchToMainThread = dispatchToMainThread ?? throw new ArgumentNullException(nameof(dispatchToMainThread));

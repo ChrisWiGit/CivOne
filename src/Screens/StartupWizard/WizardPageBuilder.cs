@@ -75,7 +75,7 @@ namespace CivOne.Screens.StartupWizard
 					(T("Forum:"), ProjectPublicLinks.Forum),
 					(T("Discord:"), ProjectPublicLinks.Discord)
 				],
-				EntriesYOffset = 3
+				EntriesYOffset = 0
 			};
 		}
 
@@ -99,17 +99,68 @@ namespace CivOne.Screens.StartupWizard
 			};
 		}
 
+		// hotkeygenerator, yield 1-9, a-z excluding c and b
+		private static IEnumerable<char> GenerateHotkeys(string excludedChars = "cb")
+		{
+			for (char c = '1'; c <= '9'; c++)
+			{
+				yield return c;
+			}
+
+			for (char c = 'a'; c <= 'z'; c++)
+			{
+				if (excludedChars.Contains(c))
+				{
+					continue;
+				}
+
+				yield return c;
+			}
+		}
+
+		private bool _shouldShowDebugLanguages;
 		private WizardPage BuildLanguagePage(WizardState state)
 		{
-			List<WizardEntry> entries = [];
+			InitLanguagePageEntries(state, out List<WizardEntry> entries, out string activeLanguage, _shouldShowDebugLanguages);
+
+			return new WizardPage
+			{
+				Title = T("Startup Wizard: Language"),
+				Lines =
+				[
+					$"Language,Sprache,Idioma,Langue,Linguagem: {activeLanguage}"
+				],
+				Entries = entries,
+				EntriesMaxCount = 8,
+				EntriesYOffset = 0,
+				OnKeyPress = (args, page) =>
+				{
+					if (args.Key == Key.F12)
+					{
+						_shouldShowDebugLanguages = !_shouldShowDebugLanguages;
+						return true;
+					}
+					return false;
+				}
+			};
+		}
+
+		private void InitLanguagePageEntries(WizardState state, out List<WizardEntry> entries, out string activeLanguage, bool addDebugLanguages = false)
+		{
+			entries = [];
 			int number = 1;
+			const char NEXT_HOTKEY = 'c';
+			const char BACK_HOTKEY = 'b';
+			bool hasBackButton = state.PageIndex > 0;
+			var hotkeys = GenerateHotkeys($"{NEXT_HOTKEY}{(hasBackButton ? BACK_HOTKEY.ToString() : string.Empty)}").GetEnumerator();
 
 			entries.Add(new WizardEntry
 			{
 				Number = number++,
 				Text = T("Original (default)"),
 				Action = WizardEntryAction.SelectLanguage,
-				Value = string.Empty
+				Value = string.Empty,
+				Hotkey = hotkeys.MoveNext() ? hotkeys.Current : null
 			});
 
 			foreach (TranslationLanguageInfo language in _availableLanguages)
@@ -119,8 +170,14 @@ namespace CivOne.Screens.StartupWizard
 					Number = number++,
 					Text = TranslationServiceFactory.GetLanguageDisplayName(language, T),
 					Action = WizardEntryAction.SelectLanguage,
-					Value = language.Postfix
+					Value = language.Postfix,
+					Hotkey = hotkeys.MoveNext() ? hotkeys.Current : null
 				});
+			}
+
+			if (addDebugLanguages)
+			{
+				number = AddDebugLanguages(entries, number, hotkeys);
 			}
 
 			entries.Add(new WizardEntry
@@ -128,34 +185,56 @@ namespace CivOne.Screens.StartupWizard
 				Number = number,
 				Text = ContinueText(),
 				Action = WizardEntryAction.Continue,
-				Hotkey = 'c'
+				Hotkey = NEXT_HOTKEY,
+				KeepAlwaysLastPosition = true
 			});
 
-			if (state.PageIndex > 0)
+			if (hasBackButton)
 			{
 				entries.Add(new WizardEntry
 				{
 					Number = number + 1,
 					Text = BackText(),
 					Action = WizardEntryAction.Back,
-					Hotkey = 'b'
+					Hotkey = BACK_HOTKEY,
 				});
 			}
 
-			string activeLanguage = string.IsNullOrEmpty(state.SelectedLanguagePostfix)
+			activeLanguage = string.IsNullOrEmpty(state.SelectedLanguagePostfix)
 				? T("Original (English)")
 				: TranslationServiceFactory.GetLanguageDisplayName(state.SelectedLanguagePostfix, _availableLanguages, T);
+		}
 
-			return new WizardPage
+		private static int AddDebugLanguages(List<WizardEntry> entries, int number, IEnumerator<char> hotkeys)
+		{
+			var LanguageNames = new[]
 			{
-				Title = T("Startup Wizard: Language"),
-				Lines =
-				[
-					T("Select startup language."),
-					TF("Current: {0}", activeLanguage)
-				],
-				Entries = entries
+				// Fantasy Names
+				"Elvish",
+				"Dwarvish",
+				"Orcish",
+				"Draconic",
+				"Celestial",
+				"Undercommon",
+				"Primordial",
+				"High Speech",
+				"Ancient Tongue",
+				"Fey Speech",
+				"Giantish",
+				"Lulabese",
+				"Zanzibarian",
+				"Qwertyish"
 			};
+
+			Enumerable.Range(0, LanguageNames.Length).ToList().ForEach(i =>
+				entries.Add(new WizardEntry
+				{
+					Number = number++,
+					Text = $"{LanguageNames[i]} ({number - 1})",
+					Action = WizardEntryAction.None,
+					Hotkey = hotkeys.MoveNext() ? hotkeys.Current : null
+				}));
+			return number;
 		}
 
 		private WizardPage BuildDataFolderPage(WizardState state)
@@ -182,7 +261,7 @@ namespace CivOne.Screens.StartupWizard
 				Title = T("Startup Wizard: Data Files"),
 				Lines =
 				[
-					T("Pick DOS Civilization data folder."),
+					T("Pick DOS Civilization data folder to copy data from."),
 					selectedPath,
 					dataState
 				],
@@ -274,7 +353,7 @@ namespace CivOne.Screens.StartupWizard
 					new WizardEntry { Number = 4, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
 				],
 				Links = links,
-				EntriesYOffset = 2
+				EntriesYOffset = 0
 			};
 		}
 
@@ -339,7 +418,7 @@ namespace CivOne.Screens.StartupWizard
 					new WizardEntry { Number = 4, Text = ContinueText(), Action = WizardEntryAction.Continue, Hotkey = HotkeyContinue },
 					new WizardEntry { Number = 5, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
 				],
-				EntriesYOffset = 2,
+				EntriesYOffset = 0,
 				HasContextChanged = () => SyncMoreSettingsState(state)
 			};
 		}
@@ -367,7 +446,7 @@ namespace CivOne.Screens.StartupWizard
 					TF("Current: {0}", state.ScreenAspectRatio.ToText())
 				],
 				Entries = entries,
-				EntriesYOffset = 2,
+				EntriesYOffset = 0,
 				HasContextChanged = () => SyncAspectRatioSettingsState(state)
 			};
 			

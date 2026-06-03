@@ -3,6 +3,20 @@ using System.Collections.Generic;
 
 namespace CivOne.Screens.StartupWizard.DosFont
 {
+    public static class KnownCp437Chars
+    {
+        // DOS box drawing characters
+        // These unicode characters can be found in https://de.wikipedia.org/wiki/Codepage_437
+		public const char BoxDoubleTopLeft = '\u2554';
+		public const char BoxDoubleTopRight = '\u2557';
+		public const char BoxDoubleBottomLeft = '\u255A';
+		public const char BoxDoubleBottomRight = '\u255D';
+		public const char BoxDoubleHorizontal = '\u2550';
+		public const char BoxDoubleVertical = '\u2551';
+		public const char ScrollLightUpArrow =   '\u2191';
+		public const char ScrollLightDownArrow = '\u2193';
+    }
+
     // Each glyph is 8 pixels wide and 16 pixels high.
     // FontData[cp437Code, y] contains one horizontal row.
     // Bit 7 is the leftmost pixel, bit 0 is the rightmost pixel.
@@ -575,8 +589,7 @@ namespace CivOne.Screens.StartupWizard.DosFont
         {
             return Cp437ByUnicode.TryGetValue(ch, out cp437Code);
         }
-
-        private static IReadOnlyDictionary<char, byte> CreateCp437Lookup()
+        private static Dictionary<char, byte> CreateCp437Lookup()
         {
             var map = new Dictionary<char, byte>(GlyphCount);
 

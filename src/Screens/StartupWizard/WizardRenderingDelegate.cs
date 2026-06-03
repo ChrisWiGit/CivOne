@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Text;
 using CivOne.Graphics;
 using CivOne.IO;
@@ -26,15 +27,7 @@ namespace CivOne.Screens.StartupWizard
 		Func<string, string> translate)
 	{
 		private readonly BaseScreen _screen = screen ?? throw new ArgumentNullException(nameof(screen));
-		private readonly Func<string, string> _translate = translate ?? throw new ArgumentNullException(nameof(translate));
-
-		// DOS box drawing characters
-		private const char BoxTopLeft = '\u2554';
-		private const char BoxTopRight = '\u2557';
-		private const char BoxBottomLeft = '\u255A';
-		private const char BoxBottomRight = '\u255D';
-		private const char BoxHorizontal = '\u2550';
-		private const char BoxVertical = '\u2551';
+		private readonly Func<string, string> Translate = translate ?? throw new ArgumentNullException(nameof(translate));
 
 		// Color constants
 		private const byte ColourBackground = 0;
@@ -48,6 +41,7 @@ namespace CivOne.Screens.StartupWizard
 		private const byte ColourNumber = 9;
 		private const int HeaderRows = 11;
 		private const int HeaderFrameWidth = 80;
+
 
 		/// <summary>
 		/// Renders complete page with header, content, and menu.
@@ -73,13 +67,13 @@ namespace CivOne.Screens.StartupWizard
 			int inner = Math.Max(0, frameWidth - 2);
 			DrawBlueBackground(context, frameWidth, left);
 
-			CharPut(BoxTopLeft + new string(BoxHorizontal, inner) + BoxTopRight, left, 0, ColourBorder, context);
-			CharPut(BoxBottomLeft + new string(BoxHorizontal, inner) + BoxBottomRight, left, HeaderRows - 1, ColourBorder, context);
+			CharPut(KnownCp437Chars.BoxDoubleTopLeft + new string(KnownCp437Chars.BoxDoubleHorizontal, inner) + KnownCp437Chars.BoxDoubleTopRight, left, 0, ColourBorder, context);
+			CharPut(KnownCp437Chars.BoxDoubleBottomLeft + new string(KnownCp437Chars.BoxDoubleHorizontal, inner) + KnownCp437Chars.BoxDoubleBottomRight, left, HeaderRows - 1, ColourBorder, context);
 
 			for (int row = 1; row < HeaderRows - 1; row++)
 			{
-				CharPut(BoxVertical.ToString(), left, row, ColourBorder, context);
-				CharPut(BoxVertical.ToString(), left + frameWidth - 1, row, ColourBorder, context);
+				CharPut(KnownCp437Chars.BoxDoubleVertical.ToString(), left, row, ColourBorder, context);
+				CharPut(KnownCp437Chars.BoxDoubleVertical.ToString(), left + frameWidth - 1, row, ColourBorder, context);
 			}
 
 			DrawBoxContent(context);
@@ -115,15 +109,15 @@ namespace CivOne.Screens.StartupWizard
 		{
 			string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "?";
 			string title = $"CIVONE (OSS) - Version {version}";
-			string subtitle = "From those open source guys at LEISURE TIME.";
+			string subtitle = Translate("From those open source guys at LEISURE TIME.");
 			BoxPutMiddle(title, 1, ColourTitle, context);
 			BoxPutMiddle(subtitle, 3, ColourText, context);
-			BoxPutMiddle(_translate("This game comes without any warranty, obligations, or guarantees."), 4, ColourText, context);
+			BoxPutMiddle(Translate("This game comes without any warranty, obligations, or guarantees."), 4, ColourText, context);
 
 			// Row 6: Origin line with two links
-			string line6prefix = "Origin: ";
+			string line6prefix = Translate("Origin: ");
 			string line6link1 = ProjectPublicLinks.OriginRepository;
-			string line6suffix = "  AND";
+			string line6suffix = Translate("  AND");
 			int col6start = Math.Max(1, (context.Cols - (line6prefix.Length + line6link1.Length + line6suffix.Length)) / 2);
 			BoxPut(line6prefix, col6start, 6, ColourMuted, context);
 			BoxPut(line6link1, col6start + line6prefix.Length, 6, ColourLink, context);
@@ -139,7 +133,7 @@ namespace CivOne.Screens.StartupWizard
 			RecordLinkArea(line7link, 7, col7start + line7prefix.Length, context);
 
 			// Row 8: Third link
-			string line8prefix = "Current Version: ";
+			string line8prefix = Translate("Current Version: ");
 			string line8link = ProjectPublicLinks.CurrentGitRepository;
 			int col8start = Math.Max(1, (context.Cols - (line8prefix.Length + line8link.Length)) / 2);
 			BoxPut(line8prefix, col8start, 8, ColourMuted, context);
@@ -167,7 +161,10 @@ namespace CivOne.Screens.StartupWizard
 		{
 			row++; // blank line before links
 			DrawPageLinks(page, row, context);
+			row += page.Links.Count;
 		}
+
+		context.ContentEndRow = row + 1;
 
 		DrawMenuEntries(page, context);
 
@@ -206,54 +203,152 @@ namespace CivOne.Screens.StartupWizard
 	/// <summary>
 	/// Draws menu entries centered with left alignment.
 	/// </summary>
-	public void DrawMenuEntries(WizardPage page, WizardRenderingContext context)
+		public void DrawMenuEntries(WizardPage page, WizardRenderingContext context)
 		{
 			int gh = (int)(ModernDos8X16.GlyphHeight * context.Scale);
 			int gw = (int)(ModernDos8X16.GlyphWidth * context.Scale);
-			int menuRow = context.Rows - page.Entries.Count - 4 + page.EntriesYOffset;
+			IReadOnlyList<WizardEntry> fixedEntries = [.. page.Entries.Where(entry => entry.KeepAlwaysLastPosition)];
+			IReadOnlyList<WizardEntry> scrollableEntries = [.. page.Entries.Where(entry => !entry.KeepAlwaysLastPosition)];
+			int maxVisibleEntries = page.EntriesMaxCount > 0 ? page.EntriesMaxCount : page.Entries.Count;
+			int fixedVisibleCount = Math.Min(fixedEntries.Count, maxVisibleEntries);
+			int scrollableVisibleCount = Math.Min(scrollableEntries.Count, Math.Max(0, maxVisibleEntries - fixedVisibleCount));
+			int totalVisibleCount = fixedVisibleCount + scrollableVisibleCount;
+			int scrollOffset = GetClampedScrollOffset(page, scrollableEntries, scrollableVisibleCount, context);
+			bool canScrollUp = scrollOffset > 0;
+			bool canScrollDown = scrollOffset + scrollableVisibleCount < scrollableEntries.Count;
+			bool needsScrolling = scrollableEntries.Count > scrollableVisibleCount;
+			int menuRow = needsScrolling
+				? context.Rows - totalVisibleCount - 1 + page.EntriesYOffset
+				: context.ContentEndRow + page.EntriesYOffset;
 
-			// Calculate max width needed for all entries.
+			IReadOnlyList<WizardEntry> visibleScrollableEntries = [.. scrollableEntries.Skip(scrollOffset).Take(scrollableVisibleCount)];
+			IReadOnlyList<WizardEntry> visibleEntries = [.. visibleScrollableEntries, .. fixedEntries.Take(fixedVisibleCount)];
+
 			int maxWidth = 0;
-			foreach (WizardEntry entry in page.Entries)
+			foreach (WizardEntry entry in visibleEntries)
 			{
-				string entryText = $"{entry.Number}. {entry.Text}";
-				maxWidth = Math.Max(maxWidth, entryText.Length);
+				string entryPrefix = GetDisplayPrefix(entry);
+				maxWidth = Math.Max(maxWidth, $"{entryPrefix} {entry.Text}".Length);
 			}
 
-			// Center menu block while keeping a shared left edge.
 			int startCol = Math.Max(1, (context.Cols - maxWidth) / 2);
+			int arrowCol = Math.Max(1, startCol - 2);
+			int firstVisibleRow = menuRow;
+			int lastScrollableRow = menuRow + Math.Max(0, visibleScrollableEntries.Count - 1);
 
-			foreach (WizardEntry entry in page.Entries)
+			int currentRow = menuRow;
+			foreach (WizardEntry entry in visibleScrollableEntries)
 			{
-				if (menuRow >= context.Rows - 1) break;
-				byte textColour = entry.Enabled ? ColourText : ColourMuted;
-				string entryPrefix = entry.Hotkey.HasValue
-					? $"{char.ToLowerInvariant(entry.Hotkey.Value)}."
-					: $"{entry.Number}.";
-
-				// Draw hotkey or number prefix in blue.
-				CharPut(entryPrefix, startCol, menuRow, ColourNumber, context);
-
-				// Draw menu text in normal or muted colour.
-				CharPut($" {entry.Text}", startCol + entryPrefix.Length, menuRow, textColour, context);
-
-				// Only enabled rows are clickable/hoverable.
-				if (entry.Enabled)
-				{
-					int entryWidth = (entryPrefix.Length + 1 + entry.Text.Length) * gw;
-					int entryX = context.Box.X + startCol * gw;
-					int entryY = context.Box.Y + menuRow * gh;
-					context.EntryHitAreas.Add((entry.Number, new Rectangle(entryX, entryY, entryWidth, gh)));
-				}
-
-				menuRow++;
+				DrawMenuEntry(entry, startCol, currentRow, gh, gw, context);
+				currentRow++;
 			}
+
+			foreach (WizardEntry entry in fixedEntries.Take(fixedVisibleCount))
+			{
+				DrawMenuEntry(entry, startCol, currentRow, gh, gw, context);
+				currentRow++;
+			}
+
+			if (canScrollUp && visibleScrollableEntries.Count > 0)
+			{
+				CharPut(KnownCp437Chars.ScrollLightUpArrow.ToString(), arrowCol, firstVisibleRow, ColourNumber, context);
+				context.EntryHitAreas.Add((
+					WizardRenderingContext.ScrollUpHitAreaNumber,
+					new Rectangle(
+						0, // allow multiple columns to be clickable for easier use
+						context.Box.Y + (firstVisibleRow * gh),
+						context.Box.X + ((arrowCol + 1) * gw),
+						gh)));
+			}
+
+			if (canScrollDown && visibleScrollableEntries.Count > 0)
+			{
+				CharPut(KnownCp437Chars.ScrollLightDownArrow.ToString(), arrowCol, lastScrollableRow, ColourNumber, context);
+				context.EntryHitAreas.Add((
+					WizardRenderingContext.ScrollDownHitAreaNumber,
+					new Rectangle(
+						0, // allow multiple columns to be clickable for easier use
+						context.Box.Y + (lastScrollableRow * gh),
+						context.Box.X + ((arrowCol + 1) * gw),
+						gh)));
+			}
+		}
+
+		private void DrawMenuEntry(WizardEntry entry, int startCol, int menuRow, int gh, int gw, WizardRenderingContext context)
+		{
+			if (menuRow >= context.Rows - 1)
+			{
+				return;
+			}
+
+			byte textColour = entry.Enabled ? ColourText : ColourMuted;
+			string entryPrefix = GetDisplayPrefix(entry);
+
+			CharPut(entryPrefix, startCol, menuRow, ColourNumber, context);
+			CharPut($" {entry.Text}", startCol + entryPrefix.Length, menuRow, textColour, context);
+
+			if (entry.Enabled)
+			{
+				int entryWidth = (entryPrefix.Length + 1 + entry.Text.Length) * gw;
+				int entryX = context.Box.X + startCol * gw;
+				int entryY = context.Box.Y + menuRow * gh;
+				context.EntryHitAreas.Add((entry.Number, new Rectangle(entryX, entryY, entryWidth, gh)));
+			}
+		}
+
+		private static int GetClampedScrollOffset(WizardPage page, IReadOnlyList<WizardEntry> scrollableEntries, int scrollableVisibleCount, WizardRenderingContext context)
+		{
+			if (scrollableVisibleCount <= 0)
+			{
+				return 0;
+			}
+
+			int maxOffset = Math.Max(0, scrollableEntries.Count - scrollableVisibleCount);
+			return Math.Clamp(context.EntryScrollOffset, 0, maxOffset);
+		}
+
+		private static string GetDisplayPrefix(WizardEntry entry)
+		{
+			char? hotkey = entry.Hotkey.HasValue ? char.ToUpperInvariant(entry.Hotkey.Value) : GetAutoDisplayHotkey(entry.Number);
+			return hotkey.HasValue ? $"{hotkey.Value}." : $"{entry.Number}.";
+		}
+
+		private static char? GetAutoDisplayHotkey(int entryNumber)
+		{
+			if (entryNumber >= 1 && entryNumber <= 9)
+			{
+				return (char)('0' + entryNumber);
+			}
+
+			int letterIndex = entryNumber - 10;
+			if (letterIndex < 0 || letterIndex >= 26)
+			{
+				return null;
+			}
+
+			return (char)('A' + letterIndex);
+		}
+
+		private static char? GetAutoActivationHotkey(int entryNumber)
+		{
+			if (entryNumber >= 1 && entryNumber <= 9)
+			{
+				return (char)('0' + entryNumber);
+			}
+
+			int letterIndex = entryNumber - 10;
+			if (letterIndex < 0 || letterIndex >= 26)
+			{
+				return null;
+			}
+
+			return (char)('a' + letterIndex);
 		}
 
 		/// <summary>
 		/// Records a clickable link area for hit testing.
 		/// </summary>
-		public void RecordLinkArea(string url, int row, int startCol, WizardRenderingContext context)
+		public static void RecordLinkArea(string url, int row, int startCol, WizardRenderingContext context)
 		{
 			int glyphWidth = (int)(ModernDos8X16.GlyphWidth * context.Scale);
 			int glyphHeight = (int)(ModernDos8X16.GlyphHeight * context.Scale);
