@@ -219,7 +219,12 @@ namespace CivOne.Screens.StartupWizard
 				return true;
 			}
 
-			_currentPage?.OnKeyPress?.Invoke(args, _currentPage);
+			if (_currentPage is { } currentPage && currentPage.OnKeyPress != null)
+			{
+				currentPage.OnKeyPress(args, currentPage);
+				Refresh();
+				return true;
+			}
 
 			return false;
 		}

@@ -118,10 +118,10 @@ namespace CivOne.Screens.StartupWizard
 			}
 		}
 
-		private bool shouldShowDebugLanguages;
+		private bool _shouldShowDebugLanguages;
 		private WizardPage BuildLanguagePage(WizardState state)
 		{
-			InitLanguagePageEntries(state, out List<WizardEntry> entries, out string activeLanguage, shouldShowDebugLanguages);
+			InitLanguagePageEntries(state, out List<WizardEntry> entries, out string activeLanguage, _shouldShowDebugLanguages);
 
 			return new WizardPage
 			{
@@ -137,8 +137,10 @@ namespace CivOne.Screens.StartupWizard
 				{
 					if (args.Key == Key.F12)
 					{
-						shouldShowDebugLanguages = !shouldShowDebugLanguages;
+						_shouldShowDebugLanguages = !_shouldShowDebugLanguages;
+						return true;
 					}
+					return false;
 				}
 			};
 		}
@@ -228,7 +230,7 @@ namespace CivOne.Screens.StartupWizard
 				entries.Add(new WizardEntry
 				{
 					Number = number++,
-					Text = $"{LanguageNames[i]} ({number})",
+					Text = $"{LanguageNames[i]} ({number - 1})",
 					Action = WizardEntryAction.None,
 					Hotkey = hotkeys.MoveNext() ? hotkeys.Current : null
 				}));
