@@ -220,7 +220,7 @@ namespace CivOne.Screens.StartupWizard
 				Title = T("Startup Wizard: Data Files"),
 				Lines =
 				[
-					T("Pick DOS Civilization data folder."),
+					T("Pick DOS Civilization data folder to copy data from."),
 					selectedPath,
 					dataState
 				],

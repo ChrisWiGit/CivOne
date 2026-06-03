@@ -89,6 +89,9 @@ namespace CivOne.Screens.StartupWizard
 	{
 		/// <summary>
 		/// Gets the 1-based display number shown next to the entry in the wizard UI.
+		/// This number will only be visible if there is no hotkey assigned to the entry, since hotkeys take precedence over display numbers in the UI.
+		/// The numbering will end at number 9 and then continue with letters (A, B, C, etc.) for any additional entries without hotkeys.
+		/// Letters that are already used as hotkeys for other entries will be skipped in the display numbering.
 		/// </summary>
 		public int Number { get; init; }
 
@@ -104,7 +107,7 @@ namespace CivOne.Screens.StartupWizard
 		/// <summary>
 		/// Gets the localised label displayed for this entry in the wizard UI.
 		/// </summary>
-		public string Text { get; init; }
+		public string Text { get; init; } = "invalid";
 
 		/// <summary>
 		/// Gets the action performed when this entry is activated.

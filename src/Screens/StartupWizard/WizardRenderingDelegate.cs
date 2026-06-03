@@ -29,14 +29,6 @@ namespace CivOne.Screens.StartupWizard
 		private readonly BaseScreen _screen = screen ?? throw new ArgumentNullException(nameof(screen));
 		private readonly Func<string, string> _translate = translate ?? throw new ArgumentNullException(nameof(translate));
 
-		// DOS box drawing characters
-		private const char BoxTopLeft = '\u2554';
-		private const char BoxTopRight = '\u2557';
-		private const char BoxBottomLeft = '\u255A';
-		private const char BoxBottomRight = '\u255D';
-		private const char BoxHorizontal = '\u2550';
-		private const char BoxVertical = '\u2551';
-
 		// Color constants
 		private const byte ColourBackground = 0;
 		private const byte ColourHeaderBackground = 1;
@@ -49,8 +41,7 @@ namespace CivOne.Screens.StartupWizard
 		private const byte ColourNumber = 9;
 		private const int HeaderRows = 11;
 		private const int HeaderFrameWidth = 80;
-		private const char ScrollUpArrow = '\u2191';
-		private const char ScrollDownArrow = '\u2193';
+
 
 		/// <summary>
 		/// Renders complete page with header, content, and menu.
@@ -76,13 +67,13 @@ namespace CivOne.Screens.StartupWizard
 			int inner = Math.Max(0, frameWidth - 2);
 			DrawBlueBackground(context, frameWidth, left);
 
-			CharPut(BoxTopLeft + new string(BoxHorizontal, inner) + BoxTopRight, left, 0, ColourBorder, context);
-			CharPut(BoxBottomLeft + new string(BoxHorizontal, inner) + BoxBottomRight, left, HeaderRows - 1, ColourBorder, context);
+			CharPut(KnownCp437Chars.BoxDoubleTopLeft + new string(KnownCp437Chars.BoxDoubleHorizontal, inner) + KnownCp437Chars.BoxDoubleTopRight, left, 0, ColourBorder, context);
+			CharPut(KnownCp437Chars.BoxDoubleBottomLeft + new string(KnownCp437Chars.BoxDoubleHorizontal, inner) + KnownCp437Chars.BoxDoubleBottomRight, left, HeaderRows - 1, ColourBorder, context);
 
 			for (int row = 1; row < HeaderRows - 1; row++)
 			{
-				CharPut(BoxVertical.ToString(), left, row, ColourBorder, context);
-				CharPut(BoxVertical.ToString(), left + frameWidth - 1, row, ColourBorder, context);
+				CharPut(KnownCp437Chars.BoxDoubleVertical.ToString(), left, row, ColourBorder, context);
+				CharPut(KnownCp437Chars.BoxDoubleVertical.ToString(), left + frameWidth - 1, row, ColourBorder, context);
 			}
 
 			DrawBoxContent(context);
@@ -254,7 +245,7 @@ namespace CivOne.Screens.StartupWizard
 
 			if (canScrollUp && visibleScrollableEntries.Count > 0)
 			{
-				CharPut(ScrollUpArrow.ToString(), arrowCol, firstVisibleRow, ColourNumber, context);
+				CharPut(KnownCp437Chars.ScrollLightUpArrow.ToString(), arrowCol, firstVisibleRow, ColourNumber, context);
 				context.EntryHitAreas.Add((
 					WizardRenderingContext.ScrollUpHitAreaNumber,
 					new Rectangle(
@@ -266,7 +257,7 @@ namespace CivOne.Screens.StartupWizard
 
 			if (canScrollDown && visibleScrollableEntries.Count > 0)
 			{
-				CharPut(ScrollDownArrow.ToString(), arrowCol, lastScrollableRow, ColourNumber, context);
+				CharPut(KnownCp437Chars.ScrollLightDownArrow.ToString(), arrowCol, lastScrollableRow, ColourNumber, context);
 				context.EntryHitAreas.Add((
 					WizardRenderingContext.ScrollDownHitAreaNumber,
 					new Rectangle(
