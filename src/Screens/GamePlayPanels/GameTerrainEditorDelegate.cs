@@ -29,19 +29,18 @@ namespace CivOne.Screens.GamePlayPanels
 				int x = Math.Clamp(Math.Max(0, args.X) / _gameMap._tilePixelSize, 0, _gameMap._tilesX - 1);
 				int y = Math.Clamp(Math.Max(0, args.Y) / _gameMap._tilePixelSize, 0, _gameMap._tilesY - 1);
 
-				tileX = _gameMap._x + x;
-				tileY = _gameMap._y + y;
-				while (tileX < 0)
+				ITile[,] visibleTiles = _gameMap.Tiles;
+				ITile tile = visibleTiles[x, y];
+				if (tile == null)
 				{
-					tileX += Map.WIDTH;
-				}
-				while (tileX >= Map.WIDTH)
-				{
-					tileX -= Map.WIDTH;
+					tileX = 0;
+					tileY = 0;
+					return false;
 				}
 
-				ITile tile = Map[tileX, tileY];
-				return tile != null;
+				tileX = tile.X;
+				tileY = tile.Y;
+				return true;
 			}
 
 			public bool KeyDown(KeyboardEventArgs args)

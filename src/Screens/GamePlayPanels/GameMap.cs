@@ -811,14 +811,7 @@ namespace CivOne.Screens.GamePlayPanels
 				}
 				else
 				{
-					int localX = Math.Clamp(Math.Max(0, args.X) / _tilePixelSize, 0, _tilesX - 1);
-					int localY = Math.Clamp(Math.Max(0, args.Y) / _tilePixelSize, 0, _tilesY - 1);
-					_x += localX - (_tilesX / 2);
-					_y += localY - (_tilesY / 2);
-					while (_x < 0) _x += Map.WIDTH;
-					while (_x >= Map.WIDTH) _x -= Map.WIDTH;
-					if (_y < 0) _y = 0;
-					_y = Math.Min(_y, Math.Max(0, Map.HEIGHT - _tilesY));
+					SetViewOrigin(xx - (_tilesX / 2), yy - (_tilesY / 2));
 					_update = true;
 					_fullRedraw = true;
 				}
