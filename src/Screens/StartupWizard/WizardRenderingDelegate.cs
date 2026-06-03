@@ -27,7 +27,7 @@ namespace CivOne.Screens.StartupWizard
 		Func<string, string> translate)
 	{
 		private readonly BaseScreen _screen = screen ?? throw new ArgumentNullException(nameof(screen));
-		private readonly Func<string, string> _translate = translate ?? throw new ArgumentNullException(nameof(translate));
+		private readonly Func<string, string> Translate = translate ?? throw new ArgumentNullException(nameof(translate));
 
 		// Color constants
 		private const byte ColourBackground = 0;
@@ -109,15 +109,15 @@ namespace CivOne.Screens.StartupWizard
 		{
 			string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "?";
 			string title = $"CIVONE (OSS) - Version {version}";
-			string subtitle = "From those open source guys at LEISURE TIME.";
+			string subtitle = Translate("From those open source guys at LEISURE TIME.");
 			BoxPutMiddle(title, 1, ColourTitle, context);
 			BoxPutMiddle(subtitle, 3, ColourText, context);
-			BoxPutMiddle(_translate("This game comes without any warranty, obligations, or guarantees."), 4, ColourText, context);
+			BoxPutMiddle(Translate("This game comes without any warranty, obligations, or guarantees."), 4, ColourText, context);
 
 			// Row 6: Origin line with two links
-			string line6prefix = "Origin: ";
+			string line6prefix = Translate("Origin: ");
 			string line6link1 = ProjectPublicLinks.OriginRepository;
-			string line6suffix = "  AND";
+			string line6suffix = Translate("  AND");
 			int col6start = Math.Max(1, (context.Cols - (line6prefix.Length + line6link1.Length + line6suffix.Length)) / 2);
 			BoxPut(line6prefix, col6start, 6, ColourMuted, context);
 			BoxPut(line6link1, col6start + line6prefix.Length, 6, ColourLink, context);
@@ -133,7 +133,7 @@ namespace CivOne.Screens.StartupWizard
 			RecordLinkArea(line7link, 7, col7start + line7prefix.Length, context);
 
 			// Row 8: Third link
-			string line8prefix = "Current Version: ";
+			string line8prefix = Translate("Current Version: ");
 			string line8link = ProjectPublicLinks.CurrentGitRepository;
 			int col8start = Math.Max(1, (context.Cols - (line8prefix.Length + line8link.Length)) / 2);
 			BoxPut(line8prefix, col8start, 8, ColourMuted, context);
@@ -161,7 +161,10 @@ namespace CivOne.Screens.StartupWizard
 		{
 			row++; // blank line before links
 			DrawPageLinks(page, row, context);
+			row += page.Links.Count;
 		}
+
+		context.ContentEndRow = row + 1;
 
 		DrawMenuEntries(page, context);
 
@@ -213,7 +216,10 @@ namespace CivOne.Screens.StartupWizard
 			int scrollOffset = GetClampedScrollOffset(page, scrollableEntries, scrollableVisibleCount, context);
 			bool canScrollUp = scrollOffset > 0;
 			bool canScrollDown = scrollOffset + scrollableVisibleCount < scrollableEntries.Count;
-			int menuRow = context.Rows - totalVisibleCount - 4 + page.EntriesYOffset;
+			bool needsScrolling = scrollableEntries.Count > scrollableVisibleCount;
+			int menuRow = needsScrolling
+				? context.Rows - totalVisibleCount - 1 + page.EntriesYOffset
+				: context.ContentEndRow + page.EntriesYOffset;
 
 			IReadOnlyList<WizardEntry> visibleScrollableEntries = [.. scrollableEntries.Skip(scrollOffset).Take(scrollableVisibleCount)];
 			IReadOnlyList<WizardEntry> visibleEntries = [.. visibleScrollableEntries, .. fixedEntries.Take(fixedVisibleCount)];

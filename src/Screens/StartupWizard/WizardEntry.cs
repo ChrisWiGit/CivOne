@@ -15,6 +15,10 @@ namespace CivOne.Screens.StartupWizard
 	internal enum WizardEntryAction
 	{
 		/// <summary>
+		/// No action; the entry is just informational and cannot be activated by the user.
+		/// </summary>
+		None,
+		/// <summary>
 		/// Selects a language. The chosen language postfix is stored in <see cref="WizardEntry.Value"/>.
 		/// </summary>
 		SelectLanguage,
@@ -137,7 +141,7 @@ namespace CivOne.Screens.StartupWizard
 		/// the selected aspect ratio name.
 		/// For all other actions this property is <see langword="null"/>.
 		/// </remarks>
-		public string Value { get; init; }
+		public string Value { get; init; } = "";
 
 		/// <summary>
 		/// Gets a value indicating whether this entry should always be kept as the last visible entry in the list, 

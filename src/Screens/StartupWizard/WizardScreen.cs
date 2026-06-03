@@ -219,6 +219,8 @@ namespace CivOne.Screens.StartupWizard
 				return true;
 			}
 
+			_currentPage?.OnKeyPress?.Invoke(args, _currentPage);
+
 			return false;
 		}
 

@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using CivOne.Events;
 
 namespace CivOne.Screens.StartupWizard
 {
@@ -16,8 +17,8 @@ namespace CivOne.Screens.StartupWizard
 	{
 		public string Title { get; init; }
 		public string[] Lines { get; init; } = [];
-		public IReadOnlyList<WizardEntry> Entries { get; init; } = [];
-		public int EntriesYOffset { get; init; }
+		public List<WizardEntry> Entries { get; set; } = [];
+		public int EntriesYOffset { get; set; }
 		
 		/// <summary>
 		/// If set, limits the number of entries shown at once and enables scrolling if there are more entries than the specified count.
@@ -30,5 +31,8 @@ namespace CivOne.Screens.StartupWizard
 		/// Return <see langword="true"/> to request a page rebuild/refresh.
 		/// </summary>
 		public Func<bool> HasContextChanged { get; init; }
+
+		// keypressed: KeyboardEventArgs + current page -> void
+		public Action<KeyboardEventArgs, WizardPage> OnKeyPress { get; init; }
 	}
 }
