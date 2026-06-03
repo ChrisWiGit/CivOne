@@ -107,7 +107,7 @@ namespace CivOne
 			set => _gold = value;
 		}
 
-		IAdvance IPlayerRestorable.CurrentResearch
+		IAdvance? IPlayerRestorable.CurrentResearch
 		{
 			get => _currentResearch;
 			set => _currentResearch = value;

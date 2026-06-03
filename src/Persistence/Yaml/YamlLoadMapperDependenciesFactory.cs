@@ -140,7 +140,7 @@ namespace CivOne.Persistence.Yaml
 
 			public City[] GetCities() => [];
 			public Units.IUnit[] GetUnits() => [];
-			public void DisbandUnit(Units.IUnit unit) { }
+			public void DisbandUnit(Units.IUnit? unit) { }
 
 			public bool WonderObsolete<T>() where T : Wonders.IWonder, new() => false;
 			public bool WonderBuilt<T>() where T : Wonders.IWonder => false;

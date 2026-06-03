@@ -415,7 +415,7 @@ namespace CivOne.Persistence.Model
 			public Player GetPlayer(byte number) => throw new NotImplementedException();
 			public City[] GetCities() => [];
 			public IUnit[] GetUnits() => [];
-			public void DisbandUnit(IUnit unit) => throw new NotImplementedException();
+			public void DisbandUnit(IUnit? unit) => throw new NotImplementedException();
 			public bool WonderObsolete<T>() where T : IWonder, new() => false;
 			public bool WonderBuilt<T>() where T : IWonder => false;
 			public IWonder[] BuiltWonders => [];

@@ -48,13 +48,13 @@ namespace CivOne
 
 		internal readonly string[] CityNames = [.. Common.AllCityNames];
 
-		public int _currentPlayer = 0; // public for unit testing
+		public int _currentPlayer; // public for unit testing
 		private int _activeUnit;
 
-		private ushort _anthologyTurn = 0;
-		private ushort _peaceTurns = 0;
-		private ushort _playerFutureTech = 0;
-		private bool _hostileActionOccurred = false;
+		private ushort _anthologyTurn;
+		private ushort _peaceTurns;
+		private ushort _playerFutureTech;
+		private bool _hostileActionOccurred;
 		private bool _loadedFromYamlSaveSource;
 		private (short X, short Y) _pendingMapPositionRestore = (-1, -1);
 
@@ -513,7 +513,7 @@ namespace CivOne
 		}
 
 		// store last active player unit to check if a previous player move happened or a game was loaded.
-		IUnit LastActivePlayerUnit = null;
+		IUnit LastActivePlayerUnit;
 
 		public void Update()
 		{
@@ -818,7 +818,7 @@ namespace CivOne
 
 		public bool WonderObsolete(IWonder wonder) => (wonder.ObsoleteTech != null && _players.Any(x => x.HasAdvance(wonder.ObsoleteTech)));
 
-		public void DisbandUnit(IUnit unit)
+		public void DisbandUnit(IUnit? unit)
 		{
 			if (unit == null)
 			{

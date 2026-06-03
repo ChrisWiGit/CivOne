@@ -25,7 +25,7 @@ namespace CivOne.Persistence.Stubs
         public Player GetPlayer(byte number) => null;
         public City[] GetCities() => [];
         public IUnit[] GetUnits() => [];
-        public void DisbandUnit(IUnit unit) { }
+        public void DisbandUnit(IUnit? unit) { }
         public bool WonderObsolete<T>() where T : IWonder, new() => false;
         public bool WonderBuilt<T>() where T : IWonder => false;
         public void SetAdvanceOrigin(IAdvance advance, Player player) { }

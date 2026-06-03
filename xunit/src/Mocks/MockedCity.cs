@@ -22,12 +22,12 @@ namespace CivOne.UnitTests
         public byte Owner { get; set; } = 0;
 
 
-        public ITile Tile { get; set; } = null;
+        public ITile Tile { get; set; }
 
         public int ContinentId { get; set; } = 0;
-        public IPlayer Player => _player;
-        private Player _player = null;
-        public Player MockPlayer
+        public IPlayer Player => _player!;
+        private Player? _player;
+        public Player? MockPlayer
         {
             get => _player;
             set => _player = value;

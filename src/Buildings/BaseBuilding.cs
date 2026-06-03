@@ -65,10 +65,10 @@ namespace CivOne.Buildings
 			switch (pageNumber)
 			{
 				case 1:
-					text = Resources.GetCivilopediaText("BLURB1/" + Name.ToUpper());
+					text = Resources.GetCivilopediaText("BLURB1/" + Name.ToUpperInvariant());
 					break;
 				case 2:
-					text = Resources.GetCivilopediaText("BLURB1/" + Name.ToUpper() + "2");
+					text = Resources.GetCivilopediaText("BLURB1/" + Name.ToUpperInvariant() + "2");
 					break;
 				default:
 					Log("Invalid page number: {0}", pageNumber);

@@ -33,7 +33,7 @@ namespace CivOne
 
 		City[] GetCities();
 		IUnit[] GetUnits();
-		void DisbandUnit(IUnit unit);
+		void DisbandUnit(IUnit? unit);
 
 		bool WonderObsolete<T>() where T : IWonder, new();
 		bool WonderBuilt<T>() where T : IWonder;

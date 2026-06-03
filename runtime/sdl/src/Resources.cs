@@ -17,7 +17,7 @@ using CivOne.Graphics.ImageFormats;
 
 namespace CivOne
 {
-	internal class Resources
+	internal sealed class Resources
 	{
 		private static Assembly CurrentAssembly { get; } = AppDomain.CurrentDomain.GetAssemblies().First(x => x.FullName.StartsWith("CivOne.SDL,"));
 

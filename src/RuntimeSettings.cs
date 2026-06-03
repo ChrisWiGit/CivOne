@@ -25,9 +25,9 @@ namespace CivOne
 		public bool McpNoAuth { get; set; }
 		public bool ConsoleLogging { get; set; }
 
-		public Tuple<char, int> LoadSaveGameSlot { get; set; } = null;
-		public string LoadCosFile { get; set; } = null;
-		public string LanguagePostfix { get; set; } = null;
+		public Tuple<char, int>? LoadSaveGameSlot { get; set; }
+		public string? LoadCosFile { get; set; }
+		public string? LanguagePostfix { get; set; }
 		public static Tuple<char, int> UseLoadingScreen => new Tuple<char, int>('0', -1);
 
         // fire-eggs 20190711 allow specifying the initial RNG seed for game repeatability/debugging
@@ -52,7 +52,7 @@ namespace CivOne
 		public bool ShowCredits { get; set; }
 		public bool ShowIntro { get; set; }
 
-		public object this[string customSetting]
+		public object? this[string customSetting]
 		{
 			get
 			{

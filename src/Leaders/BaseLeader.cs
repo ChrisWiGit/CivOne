@@ -33,7 +33,7 @@ namespace CivOne.Leaders
 		
 		public string Name { get; set; }
 
-		private readonly string _picFile = null;
+		private readonly string? _picFile;
 		private readonly int _overlayX;
 		private readonly int _overlayY;
 		private Picture _picture, _portraitSmall;

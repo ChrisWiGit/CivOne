@@ -9,23 +9,28 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using CivOne.IO;
 
 namespace CivOne.Graphics.ImageFormats
 {
-	internal class PicFile : IImageFormat
+	internal class PicFile : IImageFormat, IDisposable
 	{
 		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
 
 		private static Dictionary<string, PicFile> _cache = new Dictionary<string, PicFile>();
 		private readonly byte[] _bytes;
-		private readonly byte[,] _colourTable = null;
+		private readonly byte[,]? _colourTable;
 		private readonly Palette _palette16 = Common.GetPalette16;
 		private readonly Palette _palette256 = new Palette(256);
-		private Bytemap _picture16;
-		private Bytemap _picture256;
+		private Bytemap? _picture16;
+		private Bytemap? _picture256;
+		private bool _ownsPalette256 = true;
+		private bool _ownsPicture16;
+		private bool _ownsPicture256;
+		private bool _disposed;
 
 		public bool HasPalette16 { get; internal set; }
 		public bool HasPalette256 { get; internal set; }
@@ -35,8 +40,28 @@ namespace CivOne.Graphics.ImageFormats
 		public Palette GetPalette16 => _palette16.Copy();
 		public Palette GetPalette256 => _palette256.Copy();
 
-		public Bytemap GetPicture16 => _picture16;
-		public Bytemap GetPicture256 => _picture256;
+		public Bytemap? GetPicture16 => _picture16;
+		public Bytemap? GetPicture256 => _picture256;
+
+		private void SetPicture16(Bytemap? value, bool owns)
+		{
+			if (_ownsPicture16)
+			{
+				_picture16?.Dispose();
+			}
+			_picture16 = value;
+			_ownsPicture16 = owns;
+		}
+
+		private void SetPicture256(Bytemap? value, bool owns)
+		{
+			if (_ownsPicture256)
+			{
+				_picture256?.Dispose();
+			}
+			_picture256 = value;
+			_ownsPicture256 = owns;
+		}
 
 		/// <summary>
 		/// Read the E0 colour replacement table from the PIC file.
@@ -135,9 +160,9 @@ namespace CivOne.Graphics.ImageFormats
 			uint length = BitConverter.ToUInt16(_bytes, index); index += 2;
 			int width = BitConverter.ToUInt16(_bytes, index); index += 2;
 			int height = BitConverter.ToUInt16(_bytes, index); index += 2;
-			
-			_picture256?.Dispose();
-			_picture256 = new Bytemap(width, height);
+
+			SetPicture256(new Bytemap(width, height), owns: true);
+			Bytemap picture256 = _picture256 ?? throw new InvalidOperationException("8-bit picture buffer was not initialized.");
 			
 			byte[] image = DecodePicture(ref index, length);
 			int c = 0;
@@ -147,10 +172,10 @@ namespace CivOne.Graphics.ImageFormats
 				{
 					if (image.Length <= c)
 					{
-						_picture256[x, y] = 0;
+						picture256[x, y] = 0;
 						continue;
 					}
-					_picture256[x, y] = image[c++];
+					picture256[x, y] = image[c++];
 				}
 			}
 		}
@@ -164,9 +189,9 @@ namespace CivOne.Graphics.ImageFormats
 			uint length = BitConverter.ToUInt16(_bytes, index); index += 2;
 			int width = BitConverter.ToUInt16(_bytes, index); index += 2;
 			int height = BitConverter.ToUInt16(_bytes, index); index += 2;
-			
-			_picture16?.Dispose();
-			_picture16 = new Bytemap(width, height);
+
+			SetPicture16(new Bytemap(width, height), owns: true);
+			Bytemap picture16 = _picture16 ?? throw new InvalidOperationException("4-bit picture buffer was not initialized.");
 
 			byte[] image = DecodePicture(ref index, length);
 			int c = 0;
@@ -175,8 +200,8 @@ namespace CivOne.Graphics.ImageFormats
 				// Each source byte packs two 4-bit pixels (low nibble first, high nibble second).
 				for (int x = 0; x < width; x += 2)
 				{
-					_picture16[x, y] = (byte)(image[c] & 0x0F);
-					_picture16[x + 1, y] = (byte)((image[c++] & 0xF0) >> 4);
+					picture16[x, y] = (byte)(image[c] & 0x0F);
+					picture16[x + 1, y] = (byte)((image[c++] & 0xF0) >> 4);
 				}
 			}
 		}
@@ -185,22 +210,24 @@ namespace CivOne.Graphics.ImageFormats
 		/// Generate a 4-bit image from the 8-bit image and colourtable.
 		/// </summary>
 		/// <param name="colourTable">Colour table that was generated</param>
-		private void ConvertPictureX0(byte[,] colourTable)
+		private void ConvertPictureX0(byte[,]? colourTable)
 		{
 			if (colourTable == null) return;
+			if (_picture256 == null) return;
+			Bytemap picture256 = _picture256;
 			
-			int width = _picture256.Width;
-			int height = _picture256.Height;
-			
-			_picture16?.Dispose();
-			_picture16 = new Bytemap(width, height);
+			int width = picture256.Width;
+			int height = picture256.Height;
+
+			SetPicture16(new Bytemap(width, height), owns: true);
+			Bytemap picture16 = _picture16 ?? throw new InvalidOperationException("4-bit picture buffer was not initialized.");
 			
 			for (int y = 0; y < height; y++)
 			{
 				for (int x = 0; x < width; x++)
 				{
-					byte col256 = _picture256[x, y];
-					_picture16[x, y] = colourTable[col256, (y + x) % 2];
+					byte col256 = picture256[x, y];
+					picture16[x, y] = colourTable[col256, (y + x) % 2];
 				}
 			}
 		}
@@ -222,6 +249,9 @@ namespace CivOne.Graphics.ImageFormats
 
 		public byte[] GetBytes()
 		{
+			ArgumentNullException.ThrowIfNull(_picture256);
+			Bytemap picture256 = _picture256;
+
 			using (MemoryStream ms = new MemoryStream())
 			using (BinaryWriter br = new BinaryWriter(ms))
 			{
@@ -239,12 +269,12 @@ namespace CivOne.Graphics.ImageFormats
 				{
 					br.Write((ushort)0x3058);
 
-					byte[] encoded = RLE.Encode(_picture256.ToByteArray());
+					byte[] encoded = RLE.Encode(picture256.ToByteArray());
 					encoded = LZW.Encode(encoded);
 					
 					br.Write((ushort)(encoded.Length + 5));
-					br.Write((ushort)_picture256.Width);
-					br.Write((ushort)_picture256.Height);
+					br.Write((ushort)picture256.Width);
+					br.Write((ushort)picture256.Height);
 					br.Write((byte)11);
 					br.Write(encoded);
 				}
@@ -311,8 +341,9 @@ namespace CivOne.Graphics.ImageFormats
 		public PicFile(Picture picture)
 		{
 			_palette256 = picture.Palette;
-			_picture16 = picture.Bitmap;
-			_picture256 = picture.Bitmap;
+			_ownsPalette256 = false;
+			SetPicture16(picture.Bitmap, owns: false);
+			SetPicture256(picture.Bitmap, owns: false);
 
 			HasPalette16 = false;
 			HasPicture16 = false;
@@ -329,19 +360,22 @@ namespace CivOne.Graphics.ImageFormats
 			if (RuntimeHandler.Runtime.Settings.Free || !File.Exists(filename))
 			{
 				if (!File.Exists(filename))  {
-					Log($"File not found: {filename.ToUpper()}.PIC");
+					Log($"File not found: {filename.ToUpper(CultureInfo.InvariantCulture)}.PIC");
 				}
 				HasPalette16 = true;
 				HasPalette256 = true;
 				_palette256 = Common.GetPalette256;
-				_picture16 = new Bytemap(320, 200);
-				_picture256 = new Bytemap(320, 200);
+				_ownsPalette256 = false;
+				SetPicture16(new Bytemap(320, 200), owns: true);
+				SetPicture256(new Bytemap(320, 200), owns: true);
+				Bytemap picture16 = _picture16 ?? throw new InvalidOperationException("4-bit fallback picture buffer was not initialized.");
+				Bytemap picture256 = _picture256 ?? throw new InvalidOperationException("8-bit fallback picture buffer was not initialized.");
 				for (int yy = 0; yy < 200; yy++)
 				{
 					for (int xx = 0; xx < 320; xx++)
 					{
-						_picture16[xx, yy] = 1;
-						_picture256[xx, yy] = 1;
+						picture16[xx, yy] = 1;
+						picture256[xx, yy] = 1;
 					}
 				}
 				return;
@@ -381,6 +415,34 @@ namespace CivOne.Graphics.ImageFormats
 			}
 
 			Log($"Loaded {filename}");
+		}
+
+		public void Dispose()
+		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			if (_ownsPicture16)
+			{
+				_picture16?.Dispose();
+			}
+			if (_ownsPicture256)
+			{
+				_picture256?.Dispose();
+			}
+			if (_ownsPalette256)
+			{
+				_palette256?.Dispose();
+			}
+
+			_picture16 = null;
+			_picture256 = null;
+			_ownsPicture16 = false;
+			_ownsPicture256 = false;
+			_ownsPalette256 = false;
+			_disposed = true;
 		}
 	}
 }

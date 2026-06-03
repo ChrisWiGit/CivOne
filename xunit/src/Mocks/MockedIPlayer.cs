@@ -73,7 +73,7 @@ namespace CivOne.UnitTests
 
 		public short Gold { get; set; }
 
-		public IAdvance CurrentResearch { get; set; }
+		public IAdvance? CurrentResearch { get; set; }
 
 		public int CityNamesSkipped { get; set; }
 

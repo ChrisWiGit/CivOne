@@ -41,7 +41,7 @@ namespace CivOne.Screens
 
 		private List<IScreen> _subScreens = new List<IScreen>();
 
-		private IScreen _activeScreen = null;
+		private IScreen? _activeScreen;
 
 		private void CloseScreen()
 		{

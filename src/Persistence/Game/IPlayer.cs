@@ -26,7 +26,7 @@ namespace CivOne.Persistence.Game
 		ushort[] Diplomacy { get; }
 		short Anarchy { get; }
 		short Gold { get; }
-		IAdvance CurrentResearch { get; }
+		IAdvance? CurrentResearch { get; }
 		int CityNamesSkipped { get; }
 		ushort FutureTechCount { get; }
 		ushort HumanContactTurn { get; }

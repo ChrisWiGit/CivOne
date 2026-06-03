@@ -99,7 +99,7 @@ namespace CivOne.Advances
 			switch (pageNumber)
 			{
 				case 1:
-					string [] text = Resources.GetCivilopediaText("BLURB0/" + Name.ToUpper());
+					string [] text = Resources.GetCivilopediaText("BLURB0/" + Name.ToUpperInvariant());
 					
 					yy = 76;
 					foreach (string line in text)

@@ -17,7 +17,7 @@ using CivOne.Services;
 
 namespace CivOne
 {
-	internal class Program
+	internal sealed class Program
 	{
 		private static readonly string[] MacSdlLibraryCandidates =
 		[

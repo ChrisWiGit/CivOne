@@ -61,7 +61,7 @@ namespace CivOne.Screens
 		// Used only once, and then reset to null to avoid re-loading when coming back to the credits screen.
 		private static bool? _loadSavedGame = false; 
 
-		private IScreen _overlay = null; // TODO fire-eggs: with fix for issue #34, this logic may no longer be required
+		private IScreen? _overlay; // TODO fire-eggs: with fix for issue #34, this logic may no longer be required
 
 		private IScreen _nextScreen;
 

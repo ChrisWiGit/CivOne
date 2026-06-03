@@ -17,15 +17,15 @@ namespace CivOne.Tasks
 	{
 		private const int TURN_TIME = 10;
 
-		private ITurn _turnObject = null;
-		private IUnit _unit = null;
+		private ITurn? _turnObject;
+		private IUnit? _unit;
 		private bool _endTurn = false;
 
-		private Player _gameOver = null;
+		private Player? _gameOver;
 
 		private int _step = 0;
 
-		protected override bool Step()
+		protected override bool NextStep()
 		{
 			if (_unit != null)
 			{

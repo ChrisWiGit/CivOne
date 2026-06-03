@@ -17,7 +17,7 @@ using CivOne.IO;
 
 namespace CivOne
 {
-	internal partial class GameWindow : SDL.Window
+	internal sealed partial class GameWindow : SDL.Window
 	{
 		private readonly Runtime _runtime;
 		private readonly IDebounceService _debounceService;

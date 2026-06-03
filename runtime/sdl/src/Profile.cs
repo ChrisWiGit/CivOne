@@ -17,7 +17,7 @@ using CivOne.Services;
 
 namespace CivOne
 {
-	internal class Profile
+	internal sealed class Profile
 	{
 		private const string ROOT_ELEMENT = "CivOneProfile";
 

@@ -29,7 +29,7 @@ namespace CivOne.Screens.Debug
 
 		private Input _input;
 
-		private City _selectedCity = null;
+		private City? _selectedCity;
 
 		public string Value { get; private set; }
 

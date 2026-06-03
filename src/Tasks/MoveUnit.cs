@@ -26,7 +26,7 @@ namespace CivOne.Tasks
 
 		public IUnit ActiveUnit { get; private set; }
 
-		protected override bool Step()
+		protected override bool NextStep()
 		{
 			X = (RelX * _step);
 			Y = (RelY * _step);

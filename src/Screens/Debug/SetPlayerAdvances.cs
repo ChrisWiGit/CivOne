@@ -28,7 +28,7 @@ namespace CivOne.Screens.Debug
 		private GridMenuDelegate _gridDelegate;
 		private IAdvance[] _advances;
 
-		private Player _selectedPlayer = null;
+		private Player? _selectedPlayer;
 
 		public string Value { get; }
 

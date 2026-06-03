@@ -27,7 +27,7 @@ namespace CivOne.Screens.CityManagerPanels
 
 		public event EventHandler MapUpdate;
 
-		private Point? _selectedTile = null;
+		private Point? _selectedTile;
 		private int MAX_TILES = 5;
 
 		private void DrawResources(ITile tile, int x, int y)

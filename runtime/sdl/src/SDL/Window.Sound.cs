@@ -14,7 +14,7 @@ namespace CivOne
 	{
 		internal abstract partial class Window
 		{
-			private Wave _currentSound = null;
+			private Wave? _currentSound;
 
 			private void HandleSound()
 			{
@@ -33,6 +33,7 @@ namespace CivOne
 
 			protected void StopSound()
 			{
+				if (_currentSound == null) return;
 				// Atomic swap: protects against concurrent StopSound/PlaySound and against
 				// callers invoking StopSound when no sound is active (NullReferenceException).
 				Wave sound = System.Threading.Interlocked.Exchange(ref _currentSound, null);

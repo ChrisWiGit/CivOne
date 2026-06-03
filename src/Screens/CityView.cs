@@ -60,7 +60,7 @@ namespace CivOne.Screens
 		private float _fadeStep = 1.0f;
 		private bool _skip = false;
 
-		private string _buildingFile = null;
+		private string? _buildingFile;
 
 		public event EventHandler Skipped;
 

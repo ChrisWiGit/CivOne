@@ -31,7 +31,7 @@ namespace CivOne
 	public partial class Player : BaseInstance, ITurn, IPlayer, IPlayerSpaceRace
     {
 		// Dependency injection via IPlayerGame; set by Game on load/new game.
-		internal static new IPlayerGame Game = null;
+		internal static new IPlayerGame Game;
 		private readonly ICivilization _civilization;
 		private Guid _playerGuid = Guid.NewGuid();
 		private string _tribeName, _tribeNamePlural;
@@ -59,16 +59,16 @@ namespace CivOne
 		internal (short X, short Y) LastMapPosition = (-1, -1);
 		private int _mapZoomBasisPoints = MapZoomSettings.DefaultBasisPoints;
 		
-		private short _anarchy = 0;
+		private short _anarchy;
 		private ushort _epicRanking;
 		private ushort _militaryPower;
 		private ushort _civilizationScore;
 		private short _gold;
-		private IAdvance _currentResearch = null;
+		private IAdvance? _currentResearch;
 
-		public event EventHandler Destroyed;
+		public event EventHandler? Destroyed;
 
-		internal int CityNamesSkipped = 0;
+		internal int CityNamesSkipped;
 		internal ushort FutureTechCount { get; set; }
 		internal ushort HumanContactTurn { get; set; }
 
@@ -88,15 +88,15 @@ namespace CivOne
 		public Guid PlayerGuid => _playerGuid;
 		
 		public string LeaderName => _civilization.Leader.Name;
-		public string TribeName => _tribeName ?? _civilization?.Name;
-		public string TribeNamePlural => _tribeNamePlural ?? _civilization?.NamePlural;
+		public string TribeName => _tribeName ?? _civilization?.Name ?? "Unknown";
+		public string TribeNamePlural => _tribeNamePlural ?? _civilization?.NamePlural ?? "Unknown";
 
 		public byte Handicap { get; internal set; }
 
-		private PalaceData _palace = new PalaceData();
+		private PalaceData _palace = new();
 		public PalaceData Palace => _palace;
 
-		internal AI AI => !IsHuman ? AI.Instance(this) : null;
+		internal AI? AI => IsHuman ? null : AI.Instance(this);
 		
 		private IGovernment _government = new Despotism();
 		public IGovernment Government
@@ -109,7 +109,7 @@ namespace CivOne
 			}
 		}
 
-		private int _luxuriesRate = 0, _taxesRate = 5, _scienceRate = 5;
+		private int _luxuriesRate, _taxesRate = 5, _scienceRate = 5;
 		internal int MapZoomBasisPoints
 		{
 			get => _mapZoomBasisPoints;
@@ -182,7 +182,7 @@ namespace CivOne
 		{
 			get
 			{
-				short cost = (short)((Game.Difficulty + 3) * 2 * (_advances.Count() + 1) * (Common.TurnToYear(Game.GameTurn) > 0 ? 2 : 1));
+				short cost = (short)((Game.Difficulty + 3) * 2 * (_advances.Count + 1) * (Common.TurnToYear(Game.GameTurn) > 0 ? 2 : 1));
 				if (cost < 12)
 					return 12;
 				return cost;
@@ -244,7 +244,7 @@ namespace CivOne
 
 		bool IPlayerSpaceRace.HasApolloProgram() => HasWonder<ApolloProgram>();
 
-		public Player[] Embassies => _embassies.Select(e => Game.Players.FirstOrDefault(p => e == Game.PlayerNumber(p))).Where(p => p != null).ToArray();
+		public Player[] Embassies => [.._embassies.Select(e => Game.Players.FirstOrDefault(p => e == Game.PlayerNumber(p))).Where(p => p != null)];
 
 		public bool HasEmbassy(Player player) => _embassies.Any(e => e == Game.PlayerNumber(player));
 
@@ -400,7 +400,7 @@ namespace CivOne
 			}
 		}
 
-		public IAdvance CurrentResearch
+		public IAdvance? CurrentResearch
 		{
 			get => _currentResearch;
 			set => _currentResearch = value;
@@ -492,12 +492,15 @@ namespace CivOne
 
 		public bool ProductionAvailable(IProduction production)
 		{
-			if (production is IUnit)
-				return UnitAvailable(production as IUnit);
-			if (production is IBuilding)
-				return BuildingAvailable(production as IBuilding);
-			if (production is IWonder)
-				return WonderAvailable(production as IWonder);
+			if (production is IUnit unit)
+				return UnitAvailable(unit);
+
+			if (production is IBuilding building)
+				return BuildingAvailable(building);
+
+			if (production is IWonder wonder)
+				return WonderAvailable(wonder);
+
 			return true;
 		}
 
@@ -514,7 +517,7 @@ namespace CivOne
 			}
 		}
 
-		public bool _destroyed = false; // fire-eggs: hack fix for Issue #68: need to be able set destroyed state on game load
+		private bool _destroyed; // fire-eggs: hack fix for Issue #68: need to be able set destroyed state on game load
 
 
 		public bool HandleExtinction(bool invokeDestroyedEvent = true)
@@ -529,7 +532,7 @@ namespace CivOne
 			}
 
 
-			IUnit unit;
+			IUnit? unit;
 			do
 			{
 				unit = Game.GetUnits().FirstOrDefault(x => this == x.Owner);
@@ -603,7 +606,7 @@ namespace CivOne
 			return true;
 		}
 
-		private bool CanSeeHumanAssetsInExploreArea(int x, int y, int range, bool sea, byte humanPlayerId)
+		private static bool CanSeeHumanAssetsInExploreArea(int x, int y, int range, bool sea, byte humanPlayerId)
 		{
 			for (int relX = -range; relX <= range; relX++)
 			for (int relY = -range; relY <= range; relY++)
@@ -685,12 +688,12 @@ namespace CivOne
 			if (_anarchy > 0) _anarchy--;
 		}
 
-		public override bool Equals (object obj)
+		public override bool Equals (object? obj)
 		{
-			if (obj is byte)
-				return Game.PlayerNumber(this) == (byte)obj;
-			if (obj is Player)
-				return Game.PlayerNumber(this) == Game.PlayerNumber(obj as Player);
+			if (obj is byte v)
+				return Game.PlayerNumber(this) == v;
+			if (obj is Player p)
+				return Game.PlayerNumber(this) == Game.PlayerNumber(p);
 			return false;
 		}
 
@@ -748,7 +751,7 @@ namespace CivOne
 		public static bool operator ==(Player p1, byte p2) => Game.PlayerNumber(p1) == p2;
 		public static bool operator !=(Player p1, byte p2) => Game.PlayerNumber(p1) != p2;
 
-		public Player(ICivilization civilization, string customLeaderName = null, string customTribeName = null, string customTribeNamePlural = null)
+		public Player(ICivilization civilization, string? customLeaderName = null, string? customTribeName = null, string? customTribeNamePlural = null)
 		{
 			_civilization = civilization;
 			if (!string.IsNullOrEmpty(customLeaderName)) _civilization.Leader.Name = customLeaderName;
@@ -765,6 +768,8 @@ namespace CivOne
 
 			InitializeMapPositions();
 		}
+
+		#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Only used for MockPlayer in tests.
 		internal Player()
 		{
 			// for MockPlayer
@@ -777,6 +782,7 @@ namespace CivOne
 			_civilization = civilization;
 			InitializeMapPositions();
 		}
+		#pragma warning restore CS8618
 
 		private void InitializeMapPositions()
 		{

@@ -36,7 +36,7 @@ namespace CivOne.Screens
 
 		private IBitmap _gameMap;
 
-		private Picture[] _sprites = null;
+		private Picture[]? _sprites;
 		
 		protected override bool HasUpdate(uint gameTick)
 		{

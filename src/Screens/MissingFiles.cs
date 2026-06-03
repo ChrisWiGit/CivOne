@@ -26,7 +26,7 @@ namespace CivOne.Screens
 
 		private int _y;
 
-		private Menu _menu = null;
+		private Menu? _menu;
 
 		private void Menu_Continue(object sender, EventArgs args)
 		{

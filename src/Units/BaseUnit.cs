@@ -899,10 +899,10 @@ namespace CivOne.Units
 			switch (pageNumber)
 			{
 				case 1:
-					text = Resources.GetCivilopediaText("BLURB2/" + originalName.ToUpper());
+					text = Resources.GetCivilopediaText("BLURB2/" + originalName.ToUpperInvariant());
 					break;
 				case 2:
-					text = Resources.GetCivilopediaText("BLURB2/" + originalName.ToUpper() + "2");
+					text = Resources.GetCivilopediaText("BLURB2/" + originalName.ToUpperInvariant() + "2");
 					break;
 				default:
 					Log("Invalid page number: {0}", pageNumber);

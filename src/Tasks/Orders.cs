@@ -22,7 +22,7 @@ namespace CivOne.Tasks
 	{
 		private City _city;
 		private Player _player;
-		private IUnit _unit = null;
+		private IUnit? _unit;
 		private int _x, _y;
 		private Order _order;
 
@@ -63,7 +63,7 @@ namespace CivOne.Tasks
 		private void CityNameCancel(object sender, EventArgs args)
 		{
 			Human.CityNamesSkipped++;
-			_unit.MovesLeft--;
+			_unit!.MovesLeft--;
 			EndTask();
 		}
 

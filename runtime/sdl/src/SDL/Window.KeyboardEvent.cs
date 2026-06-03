@@ -7,7 +7,6 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-using System;
 using CivOne.Enums;
 using CivOne.Events;
 
@@ -131,7 +130,7 @@ namespace CivOne
 				// Top-row digits by scancode are stable across keyboard layouts:
 				// 30..38 => 1..9 and 39 => 0.
 				int scancode = (int)scanCode;
-				if (scancode < 30 || scancode > 39) return null;
+				if (scancode < 30 || scancode > 39) return KeyboardEventArgs.Empty;
 
 				char digit = (scancode == 39) ? '0' : (char)('1' + (scancode - 30));
 				return new KeyboardEventArgs(digit, modifier);
@@ -144,7 +143,7 @@ namespace CivOne
 			/// </summary>
 			private static KeyboardEventArgs ConvertControlDigitSymbolToDigit(char keyChar, KeyModifier modifier)
 			{
-				if ((modifier & KeyModifier.Control) == 0) return null;
+				if ((modifier & KeyModifier.Control) == 0) return KeyboardEventArgs.Empty;
 
 				switch (keyChar)
 				{
@@ -161,7 +160,7 @@ namespace CivOne
 					case '(': return new KeyboardEventArgs('8', modifier);
 					case ')': return new KeyboardEventArgs('9', modifier);
 					case '=': return new KeyboardEventArgs('0', modifier);
-					default: return null;
+					default: return KeyboardEventArgs.Empty;
 				}
 			}
 
@@ -183,7 +182,7 @@ namespace CivOne
 				}
 				else
 				{
-					convertedText = $"Key={args.Key}, KeyChar=0x{((int)args.KeyChar):X2}, Modifier={args.Modifier}";
+					convertedText = $"Key={args.Key}, KeyChar=0x{(int)args.KeyChar:X2}, Modifier={args.Modifier}";
 				}
 
 				return $"[Keyboard] State={keyboardEvent.State}, Scancode={keyboardEvent.KeySym.Scancode} ({(int)keyboardEvent.KeySym.Scancode}), Keycode={(int)keyboardEvent.KeySym.Keycode} ({rawCharText}), RawModifier={keyboardEvent.KeySym.Modifier}, Converted={convertedText}";
@@ -204,21 +203,21 @@ namespace CivOne
 				}
 
 				KeyboardEventArgs topRowDigit = ConvertTopRowDigitByScancode(keyboardEvent.KeySym.Scancode, modifier);
-				if (topRowDigit != null) return topRowDigit;
+				if (topRowDigit != KeyboardEventArgs.Empty) return topRowDigit;
 
 				int keycode = (int)keyboardEvent.KeySym.Keycode;
 				if (keycode < char.MinValue || keycode > char.MaxValue)
 				{
 					// Keycode outside of char range cannot be converted to a character, so discard the event.
-					return null;
+					return KeyboardEventArgs.Empty;
 				}
 
 				char keyChar = (char)keycode;
 				KeyboardEventArgs controlDigit = ConvertControlDigitSymbolToDigit(keyChar, modifier);
-				if (controlDigit != null) return controlDigit;
+				if (controlDigit != KeyboardEventArgs.Empty) return controlDigit;
 				if (char.IsControl(keyChar)) 
 				{
-					return null;
+					return KeyboardEventArgs.Empty;
 				}
 			return new KeyboardEventArgs(char.ToUpper(keyChar, System.Globalization.CultureInfo.InvariantCulture), modifier);
 			}
@@ -232,7 +231,7 @@ namespace CivOne
 				}
 
 				KeyboardEventArgs args = ConvertKeyEvent(keyboardEvent);
-				if (args != null)
+				if (args != KeyboardEventArgs.Empty)
 				{
 					args.CapsLock = (keyboardEvent.KeySym.Modifier & SDL_KMOD.KMOD_CAPS) > 0;
 				}

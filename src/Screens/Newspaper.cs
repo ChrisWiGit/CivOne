@@ -15,6 +15,7 @@ using CivOne.IO;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.src;
+using System.Globalization;
 
 namespace CivOne.Screens
 {
@@ -56,7 +57,7 @@ namespace CivOne.Screens
 
 			for (int i = 0; i < 4; i++)
 			{
-				governmentPortraits[i] = Icons.GovernmentPortrait(Human.Government, (Advisor)Enum.Parse(typeof(Advisor), i.ToString()), _modernGovernment);
+				governmentPortraits[i] = Icons.GovernmentPortrait(Human.Government, Enum.Parse<Advisor>(i.ToString(CultureInfo.InvariantCulture)), _modernGovernment);
 			}
 
 			for (int i = 144; i < 256; i++)
@@ -176,7 +177,7 @@ namespace CivOne.Screens
 		}
 
 		//public Newspaper(bool showGovernment, City city = null, params string[] message)
-		public Newspaper(City city, string[] message, bool showGovernment = false)
+		public Newspaper(City? city, string[] message, bool showGovernment = false)
 		{
 			_message = message;
 			_showGovernment = showGovernment;

@@ -45,9 +45,10 @@ namespace CivOne.Screens
 		private int _noiseCounter = NOISE_COUNT + 2;
 		private readonly byte[,] _noiseMap;
 
-		private Picture _gameMap, _overlay = null;
+		private Picture _gameMap;
+		private Picture? _overlay;
 
-		private IBitmap[] _destroySprites = null;
+		private IBitmap[]? _destroySprites;
 		
 		private IEnumerable<RenderTile> RenderTiles
 		{

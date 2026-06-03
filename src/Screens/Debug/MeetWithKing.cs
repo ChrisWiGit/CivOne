@@ -27,7 +27,7 @@ namespace CivOne.Screens.Debug
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
-		private Player _selectedPlayer = null;
+		private Player? _selectedPlayer;
 
 		public event EventHandler Accept, Cancel;
 

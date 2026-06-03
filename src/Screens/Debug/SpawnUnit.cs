@@ -26,9 +26,9 @@ namespace CivOne.Screens.Debug
 		private readonly CivSelectMenuDelegate _civSelect;
 		private GridMenuDelegate _unitSelect;
 
-		private Player _selectedPlayer = null;
+		private Player? _selectedPlayer;
 
-		private IUnit _selectedUnit = null;
+		private IUnit? _selectedUnit;
 
 		public string Value { get; }
 

@@ -16,7 +16,7 @@ using CivOne.Enums;
 
 namespace CivOne
 {
-	internal partial class Native
+	internal sealed partial class Native
 	{
 		private static IntPtr _handle = IntPtr.Zero;
 

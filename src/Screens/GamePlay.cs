@@ -38,7 +38,7 @@ namespace CivOne.Screens
 
 		private bool Busy => (Game.MovingUnit != null || Human != Game.CurrentPlayer || GameTask.Any());
 		
-		private GameMenu _gameMenu = null;
+		private GameMenu? _gameMenu;
 		private int _menuX, _menuY;
 		private int _menuIndex = -1;
 		private uint _lastGameTick;

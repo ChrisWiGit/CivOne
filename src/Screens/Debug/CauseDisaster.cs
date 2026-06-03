@@ -28,7 +28,7 @@ namespace CivOne.Screens.Debug
 
 		private int _index = 0;
 
-		private City _selectedCity = null;
+		private City? _selectedCity;
 
 		public string Value { get; private set; }
 

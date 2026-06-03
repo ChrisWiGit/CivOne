@@ -17,7 +17,7 @@ using CivOne.Graphics;
 
 namespace CivOne
 {
-	internal class Runtime : IRuntime, IDisposable
+	internal sealed class Runtime : IRuntime, IDisposable
 	{
 		public Profile Profile { get; }
 		

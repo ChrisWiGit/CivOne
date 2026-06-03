@@ -32,8 +32,8 @@ namespace CivOne.Persistence.Factories
 			new(() => new ValueSanitizer(new RuntimeLogger()));
 		private static readonly ICheckedValueSanitizer _uncheckedInstance = new UncheckedCastValueSanitizer();
 		private static readonly object _sync = new();
-		private static ICheckedValueSanitizer _runtimeCheckedValueSanitizer = null;
-		private static ICheckedValueSanitizer _scopedCheckedValueSanitizer = null;
+		private static ICheckedValueSanitizer? _runtimeCheckedValueSanitizer;
+		private static ICheckedValueSanitizer? _scopedCheckedValueSanitizer;
 
 		/// <summary>
 		/// Returns the default value sanitizer instance used by persistence and YAML mapping code.
@@ -96,9 +96,9 @@ namespace CivOne.Persistence.Factories
 			}
 		}
 
-		private sealed class CheckedValueSanitizerScope(ICheckedValueSanitizer previous) : IDisposable
+		private sealed class CheckedValueSanitizerScope(ICheckedValueSanitizer? previous) : IDisposable
 		{
-			private readonly ICheckedValueSanitizer _previous = previous;
+			private readonly ICheckedValueSanitizer? _previous = previous;
 			private bool _disposed;
 
 			public void Dispose()

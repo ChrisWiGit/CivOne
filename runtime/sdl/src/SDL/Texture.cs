@@ -8,10 +8,9 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
-using System.Drawing;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using CivOne.Graphics;
 using CivOne.IO;
 
@@ -20,7 +19,7 @@ namespace CivOne
 	#pragma warning disable S101 // Types should be named in PascalCase - but these are named to match SDL as a name.
 	internal static partial class SDL
 	{
-		internal class Texture : IDisposable
+		internal sealed class Texture : IDisposable
 		{
 			private static uint SDL_PIXELFORMAT_ABGR8888 => DefinePixelformat(SDL_PixelType.SDL_PIXELTYPE_PACKED32, SDL_PixelOrder.SDL_PACKEDORDER_ABGR, SDL_PixelLayout.SDL_PACKEDLAYOUT_8888, 32, 4);
 
@@ -30,9 +29,9 @@ namespace CivOne
 
 			// Reusable buffers — keep them alive for the lifetime of the texture so the render
 			// hot-path (60 FPS × ~3 layers) does not allocate ~256 KB / frame / layer.
-			private int[] _paletteCache;
-			private int[] _colourBuffer;
-			private byte[] _byteBuffer;
+			private int[]? _paletteCache;
+			private int[]? _colourBuffer;
+			private byte[]? _byteBuffer;
 			private bool _alphaBlendApplied;
 
 			public int Width { get; private set; }
@@ -68,7 +67,13 @@ namespace CivOne
 				if (IsEmpty) return;
 
 				SDL_Rect dst = new() { X = x, Y = y, W = width, H = height };
-				SDL_RenderCopy(_renderer, _handle, ref _rect, ref dst);
+				int result = SDL_RenderCopy(_renderer, _handle, ref _rect, ref dst);
+				if (result != 0)
+				{
+					var error = GetSdlErrorMessage();
+					Debug.Assert(false, $"SDL_RenderCopy failed: {error}");
+					Console.Error.WriteLine($"SDL_RenderCopy failed: {error}");
+				}
 			}
 
 			private SDL_Rect _rect;
@@ -95,7 +100,7 @@ namespace CivOne
 					return;
 				}
 
-				SDL_Rect rect = new SDL_Rect() { X = 0, Y = 0, W = Width, H = Height };
+				SDL_Rect rect = new() { X = 0, Y = 0, W = Width, H = Height };
 				int[] paletteData = PaletteArray(palette);
 				if (HasAlpha(palette) && SDL_SetTextureBlendMode(_handle, SDL_BlendMode.SDL_BLENDMODE_BLEND) == 0)
 				{
@@ -189,7 +194,7 @@ namespace CivOne
 				GC.SuppressFinalize(this);
 			}
 
-			protected virtual void Dispose(bool disposing)
+			public void Dispose(bool disposing)
 			{
 				if (_disposed) return;
 

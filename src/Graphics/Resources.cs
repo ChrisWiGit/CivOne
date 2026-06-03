@@ -290,14 +290,14 @@ namespace CivOne.Graphics
 		{
 			get
 			{
-				string key = filename.ToUpper();
+				string key = filename.ToUpperInvariant();
 				if (_cache.TryGetValue(key, out Picture cached))
 				{
 					return new Picture(cached.Bitmap, cached.Palette);
 				}
 
 				Picture output;
-				PicFile picFile = new PicFile(filename);
+				using PicFile picFile = new PicFile(filename);
 				if ((Settings.GraphicsMode == GraphicsMode.Graphics256 && picFile.GetPicture256 != null) || picFile.GetPicture16 == null)
 				{
 					output = new Picture(picFile.GetPicture256, picFile.GetPalette256);

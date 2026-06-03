@@ -9,7 +9,7 @@ namespace CivOne.Services.GlobalWarming.Impl
 {
 	public class GlobalWarmingCountServiceImpl : IGlobalWarmingService
 	{
-		private IEnumerable<ITile> _tiles = null;
+		private IEnumerable<ITile> _tiles = [];
 		int _pollutedSquaresCount = 0;
 		short _globalWarmingCount = 0;
 		WarmingIndicator _warmingIndicator = WarmingIndicator.None;
@@ -106,6 +106,7 @@ namespace CivOne.Services.GlobalWarming.Impl
 
 		public void SetReadonlyTiles(IEnumerable<ITile> tiles)
 		{
+			ArgumentNullException.ThrowIfNull(tiles);
 			_tiles = tiles;
 		}
 	}

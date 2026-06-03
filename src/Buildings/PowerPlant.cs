@@ -15,7 +15,7 @@ namespace CivOne.Buildings
 {
 	internal class PowerPlant : BaseBuilding
 	{
-		private static Picture _iconCache = null;
+		private static Picture? _iconCache;
 		
 		public PowerPlant() : base(16, 4)
 		{

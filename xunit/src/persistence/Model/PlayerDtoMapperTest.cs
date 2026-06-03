@@ -450,7 +450,7 @@ namespace CivOne.Persistence.Model
 			public Player GetPlayer(byte number) => (_player as Player) ?? throw new InvalidOperationException("Player must be a Player instance");
 			public City[] GetCities() => [];
 			public IUnit[] GetUnits() => _units;
-			public void DisbandUnit(IUnit unit) => throw new NotImplementedException();
+			public void DisbandUnit(IUnit? unit) => throw new NotImplementedException();
 			public bool WonderObsolete<T>() where T : IWonder, new() => false;
 			public bool WonderBuilt<T>() where T : IWonder => false;
 			public IWonder[] BuiltWonders => [];

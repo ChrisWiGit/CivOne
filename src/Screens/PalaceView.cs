@@ -61,7 +61,7 @@ namespace CivOne.Screens
 			}
 		}
 
-		private Picture _palaceMorph = null;
+		private Picture? _palaceMorph;
 		private int _noiseCounter = NOISE_COUNT + 5;
 
 		private Stage _currentStage = Stage.View;

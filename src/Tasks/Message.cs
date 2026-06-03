@@ -34,19 +34,19 @@ namespace CivOne.Tasks
 			Common.AddScreen(_screen);
 		}
 
-		public static Message Advisor(Advisor advisor, bool leftAlign, params string[] message) => new Message(new AdvisorMessage(advisor, message, leftAlign));
+		public static Message Advisor(Advisor advisor, bool leftAlign, params string[] message) => new(new AdvisorMessage(advisor, message, leftAlign));
 
-		public static Message Spy(params string[] message) => new Message(new SpyMessage(message));
+		public static Message Spy(params string[] message) => new(new SpyMessage(message));
 
-		public static Message DisbandUnit(City city, IUnit unit) => new Message(new DisbandUnit(city, unit));
+		public static Message DisbandUnit(City city, IUnit unit) => new(new DisbandUnit(city, unit));
 
-		public static Message NewGoverment(City city, params string[] message) => new Message(new Newspaper(city, message, showGovernment: true));
+		public static Message NewGoverment(City? city, params string[] message) => new(new Newspaper(city, message, showGovernment: true));
 
-		public static Message Newspaper(City city, params string[] message) => new Message(new Newspaper(city, message, showGovernment: false));
+		public static Message Newspaper(City? city, params string[] message) => new(new Newspaper(city, message, showGovernment: false));
 
-		public static Message General(params string[] message) => new Message(new MessageBox(message));
+		public static Message General(params string[] message) => new(new MessageBox(message));
 
-		public static Message Help(string title, params string[] message) => new Message(new PopupMessage(2, title, message));
+		public static Message Help(string title, params string[] message) => new(new PopupMessage(2, title, message));
 
 		public static Message Error(string title, params string[] message)
 		{
