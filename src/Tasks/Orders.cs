@@ -15,6 +15,7 @@ using CivOne.Screens;
 using CivOne.Services;
 using CivOne.Units;
 using CivOne.Enums;
+using System.Diagnostics;
 
 namespace CivOne.Tasks
 {
@@ -52,19 +53,44 @@ namespace CivOne.Tasks
 			Common.AddScreen(cityView);
 		}
 
-		private void CityNameAccept(object sender, EventArgs args)
+		private void CityNameAccept(object? sender, EventArgs args)
 		{
-			int nameId = (sender as CityName).NameId;
-			Game.CityNames[nameId] = (sender as CityName).Value;
-			CreateCity(nameId);
+			if (sender == null) 
+			{
+				Debug.Assert(false, "Error: sender is null in CityNameAccept");
+				EndTask(); //not sure, but we may want to end the task here to avoid to get stuck anyhow.
+				return;
+			}
+			
+			if (sender is CityName cityName)
+			{
+				int nameId = cityName.NameId;
+				Game.CityNames[nameId] = cityName.Value;
+				CreateCity(nameId);
+			} 
+			else
+			{
+				Debug.Assert(false, $"Expected sender to be of type CityName, but got {sender.GetType().FullName ?? "unknown"}");
+				Runtime.Log("Error: Expected sender to be of type CityName, but got {0}", sender.GetType().FullName ?? "unknown");
+			}
 			EndTask();
 		}
 
 		private void CityNameCancel(object sender, EventArgs args)
 		{
 			Human.CityNamesSkipped++;
-			_unit!.MovesLeft--;
+			DecreaseUnitsMovesLeft();
 			EndTask();
+		}
+
+		private void DecreaseUnitsMovesLeft()
+		{
+			if (_unit == null) 
+			{
+				// This happens if a unit is moving into a hut that founds a city, but the unit is not a settler.
+				return;
+			}
+			_unit.MovesLeft--;
 		}
 
 		private void CreateCity(int nameId)
