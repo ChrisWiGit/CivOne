@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Diagnostics;
 
 namespace CivOne
 {
@@ -15,11 +16,17 @@ namespace CivOne
 	{
 		private readonly object _value;
 
-		internal T GetValue<T>() => Valid ? (T)_value : default(T);
+		internal T? GetValue<T>() {
+			if (!Valid)
+			{
+				Debug.WriteLine($"Invalid attribute value: {_value} (type: {_value.GetType()})");
+			}
+			return Valid ? (T)_value : default;
+		}
 
 		public bool Valid { get; }
 
-		internal BaseAttribute(Type type, object value, Func<object, bool> checkValue = null)
+		internal BaseAttribute(Type type, object value, Func<object, bool>? checkValue = null)
 		{
 			_value = value;
 			Valid = (value.GetType() == type) && (checkValue == null || checkValue(value));
