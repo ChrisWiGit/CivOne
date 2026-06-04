@@ -172,7 +172,7 @@ namespace CivOne.Screens
 			_gameMenu.Items.Add(Translate("Terrain Types")).OnSelect((s, a) => Common.AddScreen(new Civilopedia(Civilopedia.TerrainType)));
 			_gameMenu.Items.Add(Translate("Miscellaneous")).OnSelect((s, a) => Common.AddScreen(new Civilopedia(Civilopedia.Misc)));
 			
-			_menuX = DebugMenuEnabled ? 80 : 182;
+			_menuX = 182;
 			_menuY = 8;
 			
 			_update = true;
