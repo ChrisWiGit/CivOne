@@ -9,6 +9,7 @@
 
 using System;
 using System.Linq;
+using CivOne.Agents;
 using CivOne.Screens;
 
 namespace CivOne.Tasks
@@ -55,7 +56,7 @@ namespace CivOne.Tasks
 
 				if (_human)
 					GameTask.Enqueue(new TechSelect(_player));
-				else
+				else if (!TurnBasedAgentHost.ShouldHandlePlayer(_player))
 					_player.AI.ChooseResearch();
 				EndTask();
 				return;
@@ -75,7 +76,10 @@ namespace CivOne.Tasks
 			{
 				// This is an AI player, handle everything in the background.
 				_player.CurrentResearch = null;
-				_player.AI.ChooseResearch();
+				if (!TurnBasedAgentHost.ShouldHandlePlayer(_player))
+				{
+					_player.AI.ChooseResearch();
+				}
 				EndTask();
 				return;
 			}

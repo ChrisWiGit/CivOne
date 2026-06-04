@@ -35,6 +35,13 @@ namespace CivOne.Units
 	{
 		protected int _x, _y;
 		private readonly ConfrontDelegate _confrontDelegate;
+		private Guid _id = Guid.NewGuid();
+
+		public Guid Id
+		{
+			get => _id;
+			set => _id = value;
+		}
 
 		protected Order _order;
 		public Order order

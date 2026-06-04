@@ -30,6 +30,7 @@ namespace CivOne.Persistence.Model
 
 			_originalDto = new UnitDto
 			{
+				Id = Guid.NewGuid(),
 				ClassName = "MockedIUnit",
 				Location = new MapLocation(10, 20),
 				Goto = new MapLocation(5, 8),
@@ -144,6 +145,7 @@ namespace CivOne.Persistence.Model
 		private static Dictionary<string, Action> GetUnitDtoRoundTripAssertionMap(UnitDto expected, UnitDto actual)
 			=> new()
 			{
+				[nameof(UnitDto.Id)] = () => Assert.Equal(expected.Id, actual.Id),
 				[nameof(UnitDto.ClassName)] = () => Assert.Equal(expected.ClassName, actual.ClassName),
 				[nameof(UnitDto.Location)] = () => Assert.Equal(expected.Location, actual.Location),
 				[nameof(UnitDto.Goto)] = () => Assert.Equal(expected.Goto, actual.Goto),

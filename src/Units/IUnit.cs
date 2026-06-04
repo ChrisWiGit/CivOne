@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using CivOne.Advances;
@@ -22,6 +23,7 @@ namespace CivOne.Units
 {
 	public interface IUnit : ICivilopedia, IProduction, ITurn
 	{
+		Guid Id { get; set; }
 		IAdvance RequiredTech { get; }
 		IWonder RequiredWonder { get; }
 		IAdvance ObsoleteTech { get; }

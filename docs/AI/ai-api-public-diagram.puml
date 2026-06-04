@@ -1,0 +1,159 @@
+@startuml
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+
+package "Public API (api/src/Agents)" {
+  interface IAgentInformation {
+    +GetName() : string
+    +GetAuthor() : string
+    +GetVersion() : (int Major, int Minor, int Patch)
+    +GetDescription() : string
+    +GetUuid() : Guid
+  }
+
+  interface IAgentMemory {
+    +SetMemory(yaml: string) : void
+    +GetMemory() : string
+  }
+
+  interface IAgentRegistration {
+    +GetInformation() : IAgentInformation
+    +GetMemory() : IAgentMemory
+    +GetTurnBasedController() : ITurnBasedController
+  }
+
+  interface ITurnBasedController {
+    +OnTurn(session: ITurnSession) : void
+  }
+
+  interface ITurnSession {
+    +Context : ITurnContext
+    +Events : IEventJournal
+    +Commands : ITurnCommandGateway
+    +EndTurn() : void
+  }
+
+  interface ITurnContext {
+    +GameTurn : int
+    +CurrentCivilization : ICivilizationView
+    +Map : IMapView
+    +OwnUnits : IReadOnlyList<IUnitView>
+    +OwnCities : IReadOnlyList<ICityView>
+    +AvailableResearchNames : IReadOnlyList<string>
+    +CurrentResearchName : string?
+  }
+
+  interface ITurnCommandGateway {
+    +Units : IUnitCommandGateway
+    +Cities : ICityCommandGateway
+    +Research : IResearchCommandGateway
+  }
+
+  interface IUnitCommandGateway {
+    +Move(unitId: Guid, dx: int, dy: int) : ICommandResult
+    +Fortify(unitId: Guid) : ICommandResult
+    +Wake(unitId: Guid) : ICommandResult
+    +SetGoto(unitId: Guid, x: int, y: int) : ICommandResult
+    +ClearGoto(unitId: Guid) : ICommandResult
+    +Disband(unitId: Guid) : ICommandResult
+    +FoundCity(unitId: Guid) : ICommandResult
+    +BuildRoad(unitId: Guid) : ICommandResult
+    +BuildIrrigation(unitId: Guid) : ICommandResult
+    +BuildMine(unitId: Guid) : ICommandResult
+  }
+
+  interface ICityCommandGateway {
+    +ChooseProduction(cityId: Guid, productionName: string) : ICommandResult
+  }
+
+  interface IResearchCommandGateway {
+    +ChooseResearch(researchName: string) : ICommandResult
+  }
+
+  interface ICommandResult {
+    +Success : bool
+    +ErrorCode : string
+    +ErrorMessage : string?
+    +SequenceBefore : ulong
+    +SequenceAfter : ulong
+  }
+
+  class CommandResult {
+    +Success : bool
+    +ErrorCode : string
+    +ErrorMessage : string?
+    +SequenceBefore : ulong
+    +SequenceAfter : ulong
+  }
+
+  interface IEventJournal {
+    +ReadSince(sequence: ulong) : EventReadResult
+    +CurrentSequence : ulong
+  }
+
+  class AgentEvent {
+    +Sequence : ulong
+    +Kind : AgentEventKind
+    +EntityId : Guid?
+    +Name : string?
+    +Message : string?
+  }
+
+  class EventReadResult {
+    +CursorExpired : bool
+    +RequiresFullResync : bool
+    +FromSequence : ulong
+    +ToSequence : ulong
+    +Events : IReadOnlyList<AgentEvent>
+  }
+
+  enum AgentEventKind {
+    Unknown
+    TurnStarted
+    UnitMoved
+    TilesExplored
+    CityProductionCompleted
+    CityProductionChanged
+    ResearchCompleted
+    ResearchChanged
+    UnitDestroyed
+    CityLost
+    UnitDisbanded
+  }
+
+  interface ICivilizationView
+  interface IUnitView
+  interface ICityView
+  interface ITileView
+  interface IMapView
+}
+
+IAgentRegistration --> IAgentInformation : GetInformation()
+IAgentRegistration --> IAgentMemory : GetMemory()
+IAgentRegistration --> ITurnBasedController : GetTurnBasedController()
+
+ITurnSession --> ITurnContext : Context
+ITurnSession --> IEventJournal : Events
+ITurnSession --> ITurnCommandGateway : Commands
+
+ITurnCommandGateway --> IUnitCommandGateway : Units
+ITurnCommandGateway --> ICityCommandGateway : Cities
+ITurnCommandGateway --> IResearchCommandGateway : Research
+
+IUnitCommandGateway --> ICommandResult
+ICityCommandGateway --> ICommandResult
+IResearchCommandGateway --> ICommandResult
+ICommandResult <|.. CommandResult
+
+IEventJournal --> EventReadResult
+EventReadResult --> AgentEvent
+AgentEvent --> AgentEventKind
+
+ITurnContext --> ICivilizationView
+ITurnContext --> IMapView
+ITurnContext --> IUnitView
+ITurnContext --> ICityView
+IMapView --> ITileView
+
+@enduml

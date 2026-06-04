@@ -6,6 +6,9 @@ namespace CivOne.Persistence.Model
 {
     public class UnitDto
     {
+		[Doc("Stable Unit Guid. Optional for legacy saves. If empty, a new Guid is generated at load time.")]
+		public Guid Id { get; set; }
+
         [Doc("ClassName of the Unit.", nameof(AllUnitsClassNames))]
         public string ClassName { get; set; }
         // This property is used by DocAttribute to provide list of all available Unit class names. Must be initialized outside.

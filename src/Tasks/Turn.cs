@@ -9,6 +9,7 @@
 
 using CivOne.Services.EndGame;
 using CivOne.Units;
+using CivOne.Agents;
 
 namespace CivOne.Tasks
 {
@@ -29,7 +30,14 @@ namespace CivOne.Tasks
 		{
 			if (_unit != null)
 			{
-				Game.CurrentPlayer.AI.Move(_unit);
+				if (TurnBasedAgentHost.ShouldHandlePlayer(Game.CurrentPlayer))
+				{
+					TurnBasedAgentHost.Instance.RunForCurrentPlayerIfNeeded();
+				}
+				else
+				{
+					Game.CurrentPlayer.AI.Move(_unit);
+				}
 				EndTask();
 			}
 			if (_endTurn && _step-- <= 0)
@@ -98,6 +106,11 @@ namespace CivOne.Tasks
 			if (!_endTurn || Game.CurrentPlayer.IsHuman)
 			{
 				return false;
+			}
+
+			if (TurnBasedAgentHost.ShouldHandlePlayer(Game.CurrentPlayer))
+			{
+				TurnBasedAgentHost.Instance.RunForCurrentPlayerIfNeeded();
 			}
 
 			Game.EndTurn(1);

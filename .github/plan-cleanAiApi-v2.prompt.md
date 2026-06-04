@@ -1,390 +1,644 @@
-# Plan: Clean AI-API v2 — Action Sink + Realtime-Ready
+# Plan: Clean AI-API v2 — Turn Session + Dynamic Context + Command Gateway
 
-## Ziel
+## Goal
 
-Aufbau einer sauberen, testbaren AI-API im `api/`-Projekt, die vollständig unabhängig von den internen Singletons (`Game.Instance`, `Map.Instance`, `Settings.Instance`) ist. Externe oder alternative KI-Implementierungen sollen nur diese Interfaces sehen — kein Zugriff auf interne CivOne-Typen.
+Build a clean, testable AI API in `api/` that stays fully independent from internal singletons such as `Game.Instance`, `Map.Instance`, and `Settings.Instance`.
+External or alternative AI implementations must only see API interfaces and stable DTOs.
+They must never depend on internal CivOne runtime types.
 
-**Kerneigenschaft gegenüber v1:** Aktionen werden nicht als Return-Wert zurückgegeben, sondern über einen **Action Sink** eingereicht. Das hält die API offen für zukünftige asynchrone oder Realtime-KI, ohne das Interface zu brechen.
+Compared to the previous plan, this version removes the action sink model completely.
+Turn-based AI gets exactly one entry point per turn.
+The AI reads the current allowed game state through a dynamic readonly context view and executes validated commands through a command gateway.
 
-Die interne `AI`-Klasse wird zum Adapter. Default-KI-Verhalten bleibt erhalten (Regressionsschutz).
-
----
-
-## Kontext
-
-### Problem: BaseInstance koppelt AI an Singletons
-
-```
-AI : BaseInstance
-  └── Game.Instance   (Singleton)
-  └── Map.Instance    (Singleton)
-  └── Settings.Instance (Singleton)
-```
-
-Jede externe KI würde diese Kopplung erben — oder direkt gegen interne Typen kompilieren.
-
-### Bestehende Grundlagen
-
-- `api/src/IPlugin.cs` — Stil-Referenz für API-Interfaces
-- `api/src/IGameData.cs` — Granularität der Spieldaten
-- `api/src/IModification.cs` — leer, Ausgangspunkt
-- `src/IGame.cs` — `IGame`, `IGameUnitsQuery`, `IGamePlayerQuery` etc.
-- `src/Services/Pathfinding/IAiGotoExecutor.cs` — bereits sauberes Interface-Muster
-- `src/BaseInstance.cs` — Singleton-Hub, darf von AI-API **nicht** genutzt werden
-
-### Current runtime entry points
-
-1. **Unit turn** — `Tasks/Turn.Step()` ruft `Game.CurrentPlayer.AI.Move(_unit)`
-2. **City production** — `City.NewTurn()` ruft `Player.AI.CityProduction(this)` nach Rundenabrechnung
-3. **Research choice** — `Tasks/ProcessScience.Run()` ruft `_player.AI.ChooseResearch()`
-4. **Player turn hook (optional)** — `Game.EndTurn()` → `Turn.New(CurrentPlayer)` → `Player.NewTurn()` — Kandidat für `OnTurnStart`
-
-### Warum Action Sink statt Return-Wert
-
-| Ansatz | Turn-based | Realtime | Async/LLM |
-|---|---|---|---|
-| `IReadOnlyList<Action> OnUnitTurn(ctx)` | ✅ | ❌ | ❌ |
-| `void OnUnitTurn(ctx, IAiActionSink sink)` | ✅ | ✅ | ✅ (später mit CancellationToken) |
-
-Der Sink entkoppelt **wann** die KI entscheidet von **wann** die Engine ausführt. Für Turn-based wird der Sink am Ende des Calls ausgewertet. Für Realtime läuft er kontinuierlich.
+Default AI behavior must stay unchanged from a gameplay perspective.
 
 ---
 
-## Phase 1 — Read-only Context-Views + Events (`api/src/AI/`)
+## Core idea
 
-### Daten-Interfaces (readonly, keine internen Typen)
+Human players already operate through one turn flow:
+they inspect visible state, decide actions, execute actions immediately, and stop when they end their turn.
 
-| Interface | Inhalt |
+Turn-based AI should follow the same model.
+
+New contract:
+
+1. Host starts one AI turn session for one civilization.
+2. AI receives one turn entry point.
+3. AI reads live readonly state through the session context.
+4. AI executes commands through validated gateways.
+5. Engine applies valid commands immediately.
+6. Engine exposes resulting state changes through an event journal.
+7. AI ends its turn explicitly, or host ends it automatically when the call returns.
+
+This removes scattered AI hooks such as unit-turn, city-turn, and research-turn callbacks from the public AI contract.
+
+---
+
+## Context
+
+### Problem: current AI shape couples behavior to internal runtime flow
+
+Current runtime AI behavior depends on internal engine entry points and singleton access.
+That creates several problems:
+
+- External AI would inherit singleton coupling.
+- AI behavior splits across multiple entry points.
+- Snapshot reuse and consistency become hard to reason about.
+- Future plugin AI registration stays unclear.
+- Runtime validation spreads across several dispatch paths.
+
+### Existing foundations
+
+- `api/src/IPlugin.cs` provides style reference for public API interfaces.
+- `api/src/IGameData.cs` shows existing public data granularity.
+- `src/IGame.cs` contains query-oriented patterns already used inside runtime.
+- `src/Services/Pathfinding/IAiGotoExecutor.cs` shows clean interface-driven separation.
+- `src/BaseInstance.cs` stays internal and must not become part of the new AI contract.
+
+### Important architectural shift
+
+Old model:
+
+- multiple runtime-driven hooks
+- immutable turn snapshots
+- action sink output
+
+New model:
+
+- one turn entry point
+- dynamic readonly context view
+- direct validated command execution
+- event journal for incremental resync
+
+---
+
+## Public API shape (`api/src/AI/`)
+
+### Main turn-based controller
+
+```csharp
+public interface ITurnBasedController
+{
+  void OnTurn(ITurnSession session);
+}
+```
+
+This is the only turn-based gameplay entry point for AI.
+No separate `OnUnitTurn`, `OnCityTurn`, or `OnResearch` public methods remain.
+
+### Turn session
+
+```csharp
+public interface ITurnSession
+{
+  ITurnContext Context { get; }
+  IEventJournal Events { get; }
+  ITurnCommandGateway Commands { get; }
+  void EndTurn();
+}
+```
+
+Responsibilities:
+
+- `Context` contains live readonly truth.
+- `Events` exposes journal-based change tracking.
+- `Commands` executes validated actions immediately.
+- `EndTurn()` ends the current AI turn explicitly.
+
+If `OnTurn(...)` returns without calling `EndTurn()`, host ends the turn automatically and logs a diagnostic note.
+
+### Context is live readonly truth
+
+`ITurnContext` is not a snapshot.
+It is a readonly live view against the current engine state.
+Repeated reads may return different results if previous commands changed the game state.
+
+Rules:
+
+- AI can read current allowed state at any time during its turn.
+- AI can never mutate runtime state through the context.
+- Context only exposes information the current player is allowed to know.
+- Context remains turn-based only in this phase.
+
+### Event journal is hint system, not truth
+
+`IEventJournal` exists to tell AI what changed.
+It is not the source of truth.
+Source of truth always stays `ITurnContext`.
+
+Rules:
+
+- Events describe state or visibility changes.
+- Events never replace context reads.
+- Command failures do not enter the journal.
+- Events are read in ascending sequence order.
+
+### Command gateway
+
+```csharp
+public interface ITurnCommandGateway
+{
+  IUnitCommandGateway Units { get; }
+  ICityCommandGateway Cities { get; }
+  IResearchCommandGateway Research { get; }
+}
+```
+
+Diplomacy commands are intentionally out of first implementation scope.
+Phase 2 will add dedicated diplomacy interfaces without changing the turn-session model.
+
+Commands work on stable runtime IDs.
+They return result objects instead of throwing for normal gameplay failure.
+
+---
+
+## Data model
+
+### Stable runtime IDs
+
+All important runtime entities used by AI get stable IDs stored in runtime and persisted in save data.
+
+Included:
+
+- units
+- cities
+- civilizations
+- turn-based AI implementations
+
+Rules:
+
+- IDs are globally unique.
+- IDs are never reused.
+- IDs survive save/load.
+- AI may only act on its own controllable entities, even if foreign visible entities also expose IDs.
+
+### View interfaces
+
+Public DTO/view interfaces stay readonly and independent from runtime types.
+Expected views include at least:
+
+- `IUnitView`
+- `ICityView`
+- `ITileView`
+- `IMapView`
+- `ICivilizationView`
+
+Each view uses stable IDs plus public enums or public data contracts.
+
+### Visibility model
+
+Turn-based AI follows player fog-of-war rules.
+
+- `visible` data shows current full information.
+- `explored` data shows last known terrain-level information.
+- unseen tiles return no information.
+- foreign units and cities only appear when currently visible.
+- last known city state may expose explicitly tracked fields such as previously seen city size where runtime already supports it.
+
+If a command reveals new map information, AI can observe that by re-reading context and by reading new journal events.
+
+---
+
+## Event journal (`api/src/AI/Events/`)
+
+### Journal contract
+
+```csharp
+public interface IEventJournal
+{
+  EventReadResult ReadSince(ulong sequence);
+  ulong CurrentSequence { get; }
+}
+```
+
+```csharp
+public readonly record struct EventReadResult(
+  bool CursorExpired,
+  bool RequiresFullResync,
+  ulong FromSequence,
+  ulong ToSequence,
+  IReadOnlyList<AgentEvent> Events);
+```
+
+Rules:
+
+- Journal is append-only from AI perspective.
+- Events are never popped or destructively consumed.
+- Each event has monotonically increasing `ulong` sequence number.
+- `ReadSince(sequence)` returns newer events in ascending order.
+- Journal uses bounded retention internally.
+- If requested sequence is too old, result sets `CursorExpired = true` and `RequiresFullResync = true`.
+
+AI reaction to expired cursor:
+
+1. discard incremental assumptions
+2. re-read full context
+3. move local cursor to current valid journal position
+
+### What belongs in journal
+
+Journal contains only real engine changes or visibility changes relevant to AI.
+
+Examples:
+
+- unit moved into newly visible area
+- new tiles became visible
+- city production completed
+- research completed
+- own unit destroyed
+- own city lost
+- wonder completed and became known
+
+Journal does not contain command validation errors.
+Those stay in command results.
+
+### Command-to-journal bridge
+
+Every command result exposes sequence boundaries so AI can read exactly the journal slice that followed the command.
+
+```csharp
+public interface ICommandResult
+{
+  bool Success { get; }
+  string ErrorCode { get; }
+  string? ErrorMessage { get; }
+  ulong SequenceBefore { get; }
+  ulong SequenceAfter { get; }
+}
+```
+
+Typical AI pattern:
+
+1. execute command
+2. inspect `Success`
+3. if needed call `ReadSince(result.SequenceBefore)`
+4. process returned events
+5. re-read affected context data
+
+This solves the “what changed after move/attack/build” problem without destructive event handling.
+
+---
+
+## Command model (`api/src/AI/Commands/`)
+
+### General rules
+
+- Commands apply immediately when valid.
+- Commands never mutate state silently.
+- Gameplay-invalid commands return error codes.
+- Host does not expect AI to catch gameplay errors via exceptions.
+- Exceptions remain reserved for severe technical failures.
+
+### Example command groups
+
+Unit commands:
+
+- move own unit by ID
+- fortify own unit
+- wake own unit
+- clear goto
+- set goto
+- found city
+- build road
+- build irrigation
+- build mine
+- disband
+
+City commands:
+
+- choose production for city by ID
+
+Research commands:
+
+- choose current research
+
+### Command failure behavior
+
+Examples:
+
+- invalid destination
+- blocked move
+- wrong unit type for build action
+- city not owned by current player
+- per-type action limit exceeded
+- total action limit exceeded
+
+Command returns failure result.
+AI may continue unless host policy ends the turn because a hard limit was reached.
+
+### Host-side action limits
+
+Limits belong to host policy, not AI API semantics.
+
+Rules:
+
+- configurable per action type
+- configurable global per-turn limit
+- failed commands still count toward limits
+- when a hard limit is reached, further commands return failure and host ends the turn
+
+This protects runtime from endless AI loops such as repeated rail movement.
+
+---
+
+## AI registration and metadata (`api/src/AI/Registration/`)
+
+### Public registration contract
+
+```csharp
+public interface IAgentInformation
+{
+  string GetName();
+  string GetAuthor();
+  (int Major, int Minor, int Patch) GetVersion();
+  string GetDescription();
+  Guid GetUuid();
+}
+```
+
+```csharp
+public interface IAgentMemory
+{
+  void SetMemory(string yaml);
+  string GetMemory();
+}
+```
+
+```csharp
+public interface IAgentRegistration
+{
+  IAgentInformation GetInformation();
+  IAgentMemory GetMemory();
+  ITurnBasedController GetTurnBasedController();
+}
+```
+
+Purpose:
+
+- identify AI implementation
+- expose stable AI UUID
+- support YAML-based persistent AI memory
+- expose turn-based controller implementation
+
+### Memory rules
+
+AI memory is host-owned only at save/load boundaries.
+
+Rules:
+
+- host loads savegame
+- host finds AI by UUID
+- host calls `SetMemory(yaml)` with saved content
+- AI keeps memory internally while game runs
+- host calls `GetMemory()` only when saving game
+- on AI exception, host may call `GetMemory()` for logging/debugging
+
+There is no periodic write-back after each turn.
+That avoids persisting state that no longer matches current savegame timeline.
+
+Memory storage format:
+
+- intended format is YAML for readability and debugging
+- actual persisted file naming can be savegame-based and UUID-based
+- storage details stay host implementation detail
+
+### Host infrastructure stays internal
+
+Public API includes registration interfaces.
+Internal registry, loader, plugin scanning, player binding, and runtime mapping stay inside host implementation.
+
+Examples internal only:
+
+- agent registry
+- DLL loader
+- savegame to agent binding
+- player to agent mapping
+
+---
+
+## Runtime model in game core (`src/`)
+
+### Core host classes
+
+| Class | Responsibility |
 |---|---|
-| `IAiUnitView` | Position, UnitType, Owner, MovesLeft, PartMoves, Goto, UnitClass, Role, Fortify, HasAction, Veteran |
-| `IAiCityView` | Position, Owner, Size, CurrentProduction, Buildings, Food, Shields, Trade |
-| `IAiTileView` | TerrainType, IsVisible, Road, Railroad, Irrigation, Mine, Pollution, Hut, SpecialResource (enum), ContinentId, Units (als `IAiUnitView`), City (als `IAiCityView`) |
-| `IAiMapView` | `IAiTileView GetTile(int x, int y)`, Width, Height |
-| `IAiPlayerView` | PlayerId, CivilizationId, Gold, ScienceRate, TaxRate, LuxuryRate, Government, KnownAdvances, Cities, Units |
+| `TurnBasedAgentHost` | Starts turn session, calls controller, catches exceptions, enforces limits, auto-ends turns |
+| `TurnSession` | Concrete runtime implementation of `ITurnSession` |
+| `TurnContext` | Concrete live readonly context implementation |
+| `EventJournal` | Per-player journal storage with bounded retention and monotonic sequence numbers |
+| `TurnCommandGateway` | Root command gateway implementation |
+| `UnitCommandGateway` | Unit command validation and execution |
+| `CityCommandGateway` | City production command validation and execution |
+| `ResearchCommandGateway` | Research command validation and execution |
+| `AgentBindingResolver` | Resolves which registered agent controls which player |
+| `DefaultTurnBasedAgent` | New adapter around current built-in AI behavior |
 
-### Context-Interfaces (Snapshots — immer immutable, nie live-Referenz)
+### Exception policy
 
-| Interface | Zweck |
-|---|---|
-| `IAiTurnContext` | Player-Snapshot für den gesamten KI-Zug: `OwnPlayer`, `MovableUnits`, `OwnCities`, `Map`, `GameTurn`, `Events`, `FogOfWar` |
-| `IAiUnitTurnContext : IAiTurnContext` | Zusätzlich: `Unit` (die zu bewegende Einheit) |
-| `IAiCityTurnContext : IAiTurnContext` | Zusätzlich: `City` (die entscheidende Stadt) |
-| `IAiResearchContext : IAiTurnContext` | Zusätzlich: `AvailableAdvances` (wählbare Technologien) |
+Host catches exceptions thrown by AI code during `OnTurn(...)`.
 
-`MovableUnits` ist ein Convenience-Filter auf `OwnPlayer.Units` — enthält nur Einheiten mit `HasAction == false` und `MovesLeft > 0`. Fortifizierte Einheiten (Fortify oder Sentry) tauchen hier nicht auf, es sei denn, die KI wählt sie explizit via `WakeUpAction` über den Sink.
+Rules:
 
-**Performance-Strategie: materialisierte Turn-Snapshots** — Context-Objekte bleiben echte, immutable Snapshots. `AiContextFactory` baut pro KI-Spieler und Zug einen Snapshot-Root, den `IAiUnitTurnContext`, `IAiCityTurnContext` und `IAiResearchContext` wiederverwenden. Es gibt keine Live-Adapter über Engine-Objekte.
+- gameplay-invalid command: return error code, AI may continue
+- AI exception: log error, capture AI memory for diagnostics, end current AI turn immediately
+- game must not crash because plugin AI failed
 
-### Events
+### Scheduling policy
 
-Events werden einmal pro KI-Zug im `IAiTurnContext` gesammelt. Die KI empfängt sie beim ersten Einstiegspunkt des Zugs.
+Initial implementation uses sequential civilization turns.
+One civilization acts at a time, in normal game turn order.
 
-```csharp
-// api/src/AI/Events/
-public abstract record AiEvent;
+Scheduling strategy must be abstracted so future strategies can exist, for example:
 
-// Eigene Ereignisse
-public sealed record CityProductionCompletedEvent(int X, int Y, AiProductionChoice Completed) : AiEvent;
-public sealed record ResearchCompletedEvent(ushort AdvanceId) : AiEvent;
-public sealed record UnitCreatedEvent(ushort UnitType, int X, int Y) : AiEvent;
+- after all human input
+- regular turn order
+- future parallel/experimental scheduling
 
-// Feindliche / neutrale Ereignisse (nur sichtbare)
-public sealed record WonderCompletedEvent(ushort WonderId, byte ByPlayer) : AiEvent;
-public sealed record EnemyCityFoundEvent(int X, int Y, byte ByPlayer) : AiEvent;
-
-// Verluste
-public sealed record OwnUnitDestroyedEvent(ushort UnitType, int X, int Y, byte ByPlayer) : AiEvent;
-public sealed record OwnCityLostEvent(int X, int Y, byte ToPlayer) : AiEvent;
-```
-
-Der `AiContextFactory` sammelt diese Events pro Spieler zwischen den Zügen. Engine-seitig werden sie in einem `AiEventAccumulator` gepuffert, der bei bekannten Engine-Ereignissen (Stadtproduktion fertig, Einheit zerstört etc.) befüllt wird.
+Turn-based API does not implement realtime behavior.
+Realtime support will use separate interfaces later.
 
 ---
 
-## Phase 2 — Action Sink + Action-Modell (`api/src/AI/`)
+## Runtime integration plan
 
-### IAiActionSink
+### Single gameplay hook
 
-```csharp
-// api/src/AI/
-public interface IAiActionSink
-{
-    void Submit(AiUnitAction action);
-}
+Runtime should converge to one public AI turn entry point per controlled civilization turn.
+Engine remains authoritative for legality and execution.
 
-public interface IAiCityActionSink
-{
-    void Submit(AiCityAction action);
-}
+High-level flow:
 
-public interface IAiResearchActionSink
-{
-    void Submit(AiResearchAction action);
-}
+```text
+Host selects current AI-controlled civilization
+  -> build turn session
+  -> call ITurnBasedController.OnTurn(session)
+    -> AI reads session.Context
+    -> AI reads session.Events
+    -> AI executes session.Commands.*
+    -> engine applies valid commands immediately
+    -> engine appends resulting journal events
+    -> AI ends with session.EndTurn()
+  -> if AI returned without EndTurn(), host ends turn automatically
 ```
 
-Der Sink ist das einzige Kommunikationskanal von der KI zur Engine. Die KI schreibt nie direkt in Engine-Objekte.
+### Legacy bridge strategy
 
-### Action-Hierarchie
+Current `AI` implementation remains gameplay reference.
+During migration, a new built-in turn-based agent adapts old AI behavior into the new session/command model.
 
-```csharp
-// api/src/AI/Actions/
+Target state:
 
-// Unit actions
-public abstract record AiUnitAction;
-public sealed record MoveAction(int Dx, int Dy) : AiUnitAction;
-public sealed record SetGotoAction(int X, int Y) : AiUnitAction;
-public sealed record ClearGotoAction : AiUnitAction;
-public sealed record FortifyAction : AiUnitAction;
-public sealed record WakeUpAction : AiUnitAction;         // reaktiviert Fortify UND Sentry — setzt beide Flags auf false
-public sealed record DisbandAction : AiUnitAction;
-public sealed record SkipTurnAction : AiUnitAction;
-// Settler-spezifisch:
-public sealed record FoundCityAction : AiUnitAction;
-public sealed record BuildRoadAction : AiUnitAction;
-public sealed record BuildIrrigationAction : AiUnitAction;
-public sealed record BuildMineAction : AiUnitAction;
+- old `Player.AI` field stops being public execution contract
+- old unit/city/research hook calls stop being primary AI API surface
+- built-in AI runs through same turn-based host path as future external agents
 
-// City actions
-public abstract record AiCityAction;
-public sealed record ChooseProductionAction(AiProductionChoice Production) : AiCityAction;
+### Internal runtime rewiring
 
-// Research actions
-public abstract record AiResearchAction;
-public sealed record ChooseResearchAction(AiResearchChoice Research) : AiResearchAction;
-```
+Expected runtime changes:
 
-`AiActionApplier` verarbeitet alle Sinks nach dem KI-Call. Unbekannte oder für die Einheitenklasse ungültige Aktionstypen machen den kompletten Call invalid; der Call wird verworfen und der Grund geloggt (z.B. `BuildRoadAction` für einen Krieger).
-
-Der Sink bleibt auf Interface-Ebene bei `0..n` Actions pro Call. Die Runtime-Semantik ist trotzdem streng: jeder Call wird vor Ausführung vollständig validiert. Enthält ein Unit-Call widersprüchliche oder im aktuellen Zustand ungültige Aktionen (z.B. `MoveAction` + `FortifyAction`, `SetGotoAction` + `ClearGotoAction`, `FoundCityAction` + `BuildRoadAction`), verwirft `AiActionApplier` den kompletten Call atomar und loggt den Grund. Für City- und Research-Sinks ist mehr als eine Action pro Call immer invalid.
-
-### Produktions- und Forschungs-Identifier
-
-```csharp
-// api/src/AI/
-public readonly record struct AiProductionChoice(AiProductionKind Kind, ushort Id);
-public enum AiProductionKind { Unit, Building, Wonder }
-
-public readonly record struct AiResearchChoice(ushort AdvanceId);
-```
-
-Stabile numerische IDs, keine internen Typen, kein raw string. `AiActionApplier` mapped auf konkrete Engine-Typen intern.
-
----
-
-## Phase 3 — AI-Haupt-Interface (`api/src/AI/`)
-
-```csharp
-// api/src/AI/
-public interface IAiPlayer
-{
-    /// Called once per turn before any unit or city decisions.
-    /// Informational — sink is available but optional here.
-    void OnTurnStart(IAiTurnContext context, IAiActionSink sink);
-
-    /// Called for each unit that needs a decision this turn.
-    void OnUnitTurn(IAiUnitTurnContext context, IAiActionSink sink);
-
-    /// Called when a city has completed production and needs a new choice.
-    void OnCityTurn(IAiCityTurnContext context, IAiCityActionSink sink);
-
-    /// Called when research is completed and a new technology must be chosen.
-    void OnResearch(IAiResearchContext context, IAiResearchActionSink sink);
-}
-```
-
-**Regeln:**
-- Alle Methoden sind synchron in Phase 1
-- Der Sink kann 0..n Aktionen entgegennehmen, aber `AiActionApplier` validiert jeden Call atomar; bei Konflikt wird nichts angewendet
-- Kein `GameTask`, `IUnit`, `City`, `Player`, `Game` im public API
-- Context-Objekte sind immer echte Snapshots — immutable DTOs, nie live Engine-Referenzen
-
-### Upgrade-Pfad zu Async (Phase 5, nicht jetzt)
-
-```csharp
-// Später — ohne Interface-Break:
-public interface IAiPlayerAsync : IAiPlayer
-{
-    Task OnUnitTurnAsync(IAiUnitTurnContext context, IAiActionSink sink, CancellationToken ct);
-}
-```
-
-`AiPlayerAdapter` prüft zur Laufzeit ob `IAiPlayerAsync` implementiert ist und verwendet den async Pfad wenn verfügbar.
-
----
-
-## Phase 4 — Adapter im Spielkern (`src/`)
-
-| Klasse | Aufgabe |
-|---|---|
-| `AiEventAccumulator` | Wird von Engine-Ereignissen befüllt (Stadtproduktion, Einheit zerstört etc.); wird pro Spieler beim nächsten Zug geleert und in `IAiTurnContext.Events` übergeben |
-| `AiContextFactory` | Einzige Klasse, die Singletons kennt; baut immutable Turn-Snapshots aus `Game.Instance` / `Map.Instance`; konsultiert `AiEventAccumulator` |
-| `AiPlayerProfileResolver` | Löst `IAiPlayerView` auf Civilization-/Profil-Key auf; entkoppelt KI-Auswahl von `playerId` |
-| `AiActionSinkImpl` | Interne Implementierung von `IAiActionSink` — puffert Actions bis der Applier läuft |
-| `AiPlayerAdapter` | Nutzt Resolver + Factory, baut Context via Factory, ruft korrekten Entry Point, übergibt Sink |
-| `AiActionApplier` | Validiert Sink-Inhalt atomar, übersetzt gültige Actions in `MoveTo`, `SetProduction`, `CurrentResearch`, `Orders.*`, `GameTask` |
-| `DefaultAiPlayer` | Implementiert `IAiPlayer` mit bestehendem Verhalten aus `AI.cs` — submits Actions über Sink |
-| `AI.cs` (refactor) | Kompatibilitätshim innerhalb des Big-Bang-Umbaus; delegiert direkt an `DefaultAiPlayer` und bleibt kein dauerhafter Parallelpfad |
-
-### Pflicht-Verdrahtung im Runtime
-
-| Datei | Änderung |
-|---|---|
-| `src/Tasks/Turn.cs` | `AI.Move(_unit)` → `AiPlayerAdapter.DispatchUnitTurn(unit)` |
-| `src/City.cs` | `AI.CityProduction(this)` → `AiPlayerAdapter.DispatchCityTurn(city)` |
-| `src/Tasks/ProcessScience.cs` | `AI.ChooseResearch()` → `AiPlayerAdapter.DispatchResearch(player)` |
-| `src/Player.cs` | `Player.NewTurn()` bleibt Hook-Kandidat für `OnTurnStart`; KI-Auswahl läuft über Resolver statt `Player.AI` / `playerId` |
-| `src/Game.cs` (neu) | Engine-Ereignisse → `AiEventAccumulator.Record(...)` |
-
-### Event-Accumulator Verdrahtung (Beispiele)
-
-```csharp
-// Wo heute Einheit zerstört wird:
-_aiEventAccumulator.Record(owner, new OwnUnitDestroyedEvent(unit.Type, unit.X, unit.Y, attackerOwner));
-
-// Wo heute Stadtproduktion fertig wird (City.NewTurn):
-_aiEventAccumulator.Record(owner, new CityProductionCompletedEvent(city.X, city.Y, completed));
-
-// Wo heute Weltwunder fertiggestellt wird:
-foreach (Player p in _players)
-    _aiEventAccumulator.Record(p.Id, new WonderCompletedEvent(wonderId, builderOwner));
-```
+- `Player` binds to resolved registered agent instead of calling legacy AI directly
+- turn orchestration creates one turn session per AI player turn
+- command gateways internally call existing movement, production, research, and order systems
+- event journal receives entries from engine state changes and visibility changes
+- built-in AI no longer depends on public sink interfaces because sink model is removed
 
 ---
 
 ## Scope
 
-**Eingeschlossen (Phase 1-4):**
-- Unit-Movement (inkl. Settlers, Goto-Logik, Fortify/WakeUp)
-- City-Production-Entscheidung
-- Tech-Research-Entscheidung
-- Event-Accumulation für die häufigsten Spielereignisse
+### Included in first implementation
 
-**Ausgeschlossen vorerst:**
-- Diplomatie / Kriegserklärung
-- Barbaren-Logik (bleibt in `AI.Barbarians.cs`)
-- Government-Wechsel
-- Async/Realtime-Ausführung (Interface ist vorbereitet, wird nicht implementiert)
+- one turn-based entry point
+- live readonly turn context
+- event journal with sequence cursor model
+- unit commands
+- city production commands
+- research commands
+- stable runtime IDs persisted in save data
+- YAML-based AI memory save/load contract
+- host-side limit enforcement
+- built-in AI adapter through new contract
 
-Barbarian-AI bleibt intern bis der normale Spieler-AI-Vertrag stabil ist.
+### Explicitly out of scope for first implementation
 
----
+- full diplomacy runtime behavior
+- out-of-turn negotiation responders
+- realtime AI interfaces
+- asynchronous AI host execution
+- Barbarian AI migration
+- human city autobuild changes
+- plugin loading polish beyond minimal registration plumbing
 
-## Execution model
-
-Die Engine besitzt die Zugsequenz und schiebt State in die AI-Handler.
-
-```
-Game.EndTurn()
-  └─ AiEventAccumulator befüllt (aus diesem Zug)
-  └─ Turn.New(unit) für jede Einheit
-       └─ Turn.Step()
-                └─ AiPlayerAdapter.DispatchUnitTurn(unit)
-                  ├─ turnSnapshot = AiContextFactory.BuildTurnSnapshot(player)
-                  ├─ profile = AiPlayerProfileResolver.ResolveProfile(turnSnapshot.OwnPlayer)
-                  ├─ ai = IAiPlayerFactory.CreateFor(profile)
-                  ├─ ctx = turnSnapshot.CreateUnitContext(unit)
-                  ├─ AiActionSinkImpl sink = new()
-                  ├─ IAiPlayer.OnUnitTurn(ctx, sink)
-                  └─ AiActionApplier.Apply(unit, sink)
-                    ├─ validate whole call atomically
-                    ├─ MoveAction        → unit.MoveTo(dx, dy)
-                    ├─ FortifyAction     → unit.Fortify = true
-                    ├─ WakeUpAction      → unit.Fortify = false; unit.Sentry = false
-                    ├─ FoundCityAction   → GameTask.Enqueue(Orders.FoundCity(...))
-                    └─ ...
-```
-
-City- und Research-Pfad analog. Der `AiEventAccumulator` wird nach `OnTurnStart` geleert.
+Human autobuild stays unchanged.
+Barbarian AI stays internal until normal AI contract stabilizes.
+Diplomacy becomes Phase 2.
 
 ---
 
-## Verifikationskriterien
+## Phase 2 — Diplomacy extension
 
-1. `IAiPlayer`-Implementierung hat **kein** `using CivOne;` auf interne Typen
-2. `AiContextFactory` ist die **einzige** Klasse mit Singleton-Zugriff
-3. Alle Context-Objekte sind materialisierte, immutable Snapshots — keine Live-Referenzen auf Engine-Objekte
-4. Ein Turn-Snapshot wird pro KI-Spieler einmal gebaut und von Unit-/City-/Research-Contexts desselben Zugs wiederverwendet
-5. `IAiActionSink` ist der einzige Ausgabekanal der KI — kein direktes Schreiben in Engine-Objekte
-6. `AiActionApplier` validiert jeden Call atomar; Konflikte oder ungültige Kombinationen verwerfen den kompletten Call
-7. Unit-turn flow: `Turn.Step()` → `AiPlayerAdapter` → Sink → `AiActionApplier`
-8. City production: nur nach `City.NewTurn()` Abrechnung
-9. Research: nur aus `ProcessScience`, Timing bleibt erhalten
-10. KI-Auswahl läuft über Civilization-/Profil-Resolver, nicht hart über `playerId`
-11. `DefaultAiPlayer` verhält sich wie die aktuelle Implementierung (Tests grün)
-12. `WakeUpAction` ist im Action-Modell vorhanden — KI kann Fortify- und Sentry-Einheiten reaktivieren
-13. `AiEventAccumulator` ist verdrahtet für: Einheit zerstört, Stadtproduktion fertig, Weltwunder fertig, Forschung abgeschlossen
+Diplomacy is intentionally prepared, not implemented, in first pass.
 
----
+Planned later:
 
-## Designentscheidungen (festgelegt)
+- diplomacy command gateway
+- negotiation state model
+- human response flow
+- out-of-turn AI response path
+- stable negotiation IDs
 
-### Action Sink statt Return-Wert
-`void OnUnitTurn(ctx, IAiActionSink sink)` statt `IReadOnlyList<AiUnitAction> OnUnitTurn(ctx)`. Der Sink entkoppelt Entscheidungszeitpunkt von Ausführungszeitpunkt. Phase 1 bleibt trotzdem synchron. `0..n` gilt nur auf Interface-Ebene; die Engine akzeptiert pro Call nur vollständig validierte, nicht widersprüchliche Action-Sets. Wenn später echte Mehrschritt-Sequenzen nötig werden, kommen dafür explizite Composite-Actions hinzu statt impliziter Konfliktkombinationen.
-
-### Performance: materialisierte Turn-Snapshots
-Context-Objekte sind **echte Snapshots**. Sie halten keine internen Referenzen und lesen nie live aus Engine-Objekten:
-
-| Datenkategorie | Strategie |
-|---|---|
-| Skalare (GameTurn, Gold, MovesLeft) | Direkt kopiert — billig |
-| Einheitenliste (`OwnPlayer.Units`) | Einmal pro Turn als kompakte Snapshot-Arrays materialisiert |
-| Karte (`IAiMapView.GetTile(x,y)`) | Einmal pro Turn als immutable Tile-Snapshot-Buffer materialisiert; nicht sichtbare Felder werden redaktiert |
-| Events | Aus `AiEventAccumulator` kopiert und danach vom Accumulator getrennt |
-| `MovableUnits` | Aus Snapshot-Daten abgeleiteter Filter, keine Live-Query |
-
-```csharp
-// Intern — ein Snapshot-Root pro KI-Spieler und Zug:
-internal sealed class AiTurnSnapshot
-{
-  public required AiPlayerSnapshot OwnPlayer { get; init; }
-  public required AiMapSnapshot Map { get; init; }
-  public required ImmutableArray<AiUnitSnapshot> Units { get; init; }
-  public required ImmutableArray<AiCitySnapshot> Cities { get; init; }
-}
-```
-
-**Konsequenz für Realtime/Async:** Weil die Contexts bereits echte Snapshots sind, bleibt derselbe Datenvertrag auch für spätere Async-Hosts gültig. Zusätzliche Async-Arbeit betrifft dann Scheduling und Cancellation, nicht Datenkonsistenz.
-
-### Events als Context-Property
-`IAiTurnContext.Events` enthält alle für diesen Spieler relevanten Ereignisse seit dem letzten Zug. Die KI empfängt sie beim ersten Entry Point des Zugs (`OnTurnStart` oder erstem `OnUnitTurn`). Der `AiEventAccumulator` wird danach geleert.
-
-### MovableUnits als Convenience
-`IAiTurnContext.MovableUnits` ist ein vorgefilterte Liste: Einheiten mit `HasAction == false && MovesLeft > 0`. Fortifizierte Einheiten sind nicht drin — sie müssen explizit via `WakeUpAction` reaktiviert werden.
-
-### Kartensichtbarkeit
-`IAiTurnContext.FogOfWar : bool`. Default `true`. Die `AiContextFactory` filtert Tiles entsprechend. Für Debug oder starke KI kann `false` gesetzt werden.
-
-### SpecialResource als Enum
-`IAiTileView.SpecialResource` wird als Enum modelliert, nicht als rohe numerische ID. Das hält das API für externe KI stabiler und lesbarer.
-
-### Settler-Aktionen
-`BuildRoadAction`, `BuildIrrigationAction`, `BuildMineAction`, `FoundCityAction` sind normale `AiUnitAction`-Typen. `AiActionApplier` verwirft den kompletten Call und loggt den Grund, wenn die Einheit kein Settler ist.
-
-### Registrierung externer KI
-```csharp
-// api/src/AI/
-public interface IAiPlayerProfileResolver
-{
-  string ResolveProfile(IAiPlayerView player);
-}
-
-public interface IAiPlayerFactory
-{
-    string Name { get; }
-  IAiPlayer CreateFor(string profileKey);
-}
-```
-Resolver vor Factory. Default-Resolver mappt `CivilizationId` oder explizite Profil-Konfiguration auf einen stabilen `profileKey`. `AiPlayerAdapter` fragt danach pro AI-Spieler die passende Factory an. `playerId` bleibt Identität, aber nicht Auswahlkriterium.
-
-### Migrations-Strategie
-Big Bang im Runtime-Pfad, nicht als lang laufender Mischbetrieb: Phase 1-4 bleiben Architekturschnitte, aber der Umschaltpunkt in `Turn.cs`, `City.cs` und `ProcessScience.cs` passiert gemeinsam in einer Branch/PR. Innerhalb dieser Branch wird zuerst Snapshot-/Resolver-Infrastruktur gebaut, dann `DefaultAiPlayer` fertiggestellt, dann werden die drei Einstiegspunkte gemeinsam umgelegt. `AI.Barbarians.cs` bleibt unberührt. Tests müssen vor und nach dem Umschaltpunkt grün sein.
+Turn session model stays valid.
+Diplomacy will plug into that model rather than replace it.
 
 ---
 
-## Offene Fragen
+## Verification criteria
 
-- Soll `OnTurnStart` ebenfalls einen `IAiActionSink` bekommen oder nur informational sein?
-  - Aktuell: Sink vorhanden aber optional — KI muss keine Aktionen hier einreichen
-- Soll `AiEventAccumulator` auch Ereignisse für Barbaren-Spieler akkumulieren?
-  - Nein — Barbaren bleiben vollständig intern
+1. Public turn-based AI contract exposes one gameplay entry point: `ITurnBasedController.OnTurn(ITurnSession)`.
+2. Public API contains no action sink interfaces.
+3. Public turn context is live readonly view, not immutable snapshot.
+4. `ITurnSession` cleanly separates truth (`Context`), hints (`Events`), and mutations (`Commands`).
+5. Event journal uses monotonic `ulong` sequence numbers and ascending reads.
+6. Journal expiry signals full resync requirement explicitly.
+7. Command failures stay in `ICommandResult`, not in journal.
+8. Command results expose `SequenceBefore` and `SequenceAfter`.
+9. Stable runtime IDs exist for AI-relevant entities and survive save/load.
+10. AI memory roundtrip uses `SetMemory(string)` on load and `GetMemory()` on save.
+11. AI exception ends only current AI turn, not whole game.
+12. Host can log AI memory on exception for debugging.
+13. Human autobuild behavior remains unchanged.
+14. Diplomacy remains out of first implementation scope.
+15. Built-in AI runs through same turn host path as future external agents.
+
+---
+
+## Migration strategy
+
+### Step 1
+
+Define new public interfaces in `api/`:
+
+- registration
+- metadata
+- memory
+- turn session
+- turn context
+- event journal
+- command gateways
+- command results
+- readonly views
+
+### Step 2
+
+Add stable runtime IDs and save/load support where missing.
+
+### Step 3
+
+Implement host runtime pieces in `src/`:
+
+- session
+- context
+- journal
+- command gateways
+- agent binding resolver
+- turn host
+
+### Step 4
+
+Wrap current built-in AI in `DefaultTurnBasedAgent` using new contract.
+
+### Step 5
+
+Switch normal AI player execution from legacy scattered calls to turn-session host.
+
+### Step 6
+
+Add focused tests for:
+
+- turn entry and auto-end behavior
+- live context after command execution
+- journal read ordering
+- `CursorExpired` full resync signal
+- command result sequence range
+- invalid command result handling
+- save/load memory roundtrip
+- AI exception containment
+- regression against built-in AI behavior
+
+---
+
+## Final design summary
+
+Turn-based AI no longer submits actions into a sink.
+It runs inside one host-controlled turn session.
+
+`Context` is truth.
+`Events` is hint journal.
+`Commands` mutate state immediately or return failure.
+
+This keeps engine authority inside runtime, keeps public AI contracts clean, and gives external AI implementations one stable mental model that matches how a human plays a turn.
+
+## Additional
+
+noch info: reasearch, production von units, buildings, wonders sollen über die internen namen gehen (keine uuid). also barracks (so glaub heißt das) baut man dann in der city.

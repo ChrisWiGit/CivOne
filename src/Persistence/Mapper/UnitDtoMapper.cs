@@ -20,6 +20,10 @@ namespace CivOne.Persistence.Model
 		public IUnit FromDto(UnitDto dto)
 		{
 			var unit = _unitFactory.Create(dto.ClassName, dto.PlayerId, dto.HomeCityGuid);
+			if (dto.Id != Guid.Empty)
+			{
+				unit.Id = dto.Id;
+			}
 			unit.Owner = dto.PlayerId;
 			unit.PendingHomeCityGuid = dto.HomeCityGuid;
 			var locationX = yamlReadValueSanitizer.ClampToInt32(dto.Location.X, nameof(UnitDtoMapper), nameof(UnitDto.Location));
@@ -51,6 +55,7 @@ namespace CivOne.Persistence.Model
 
 			return new UnitDto
 			{
+				Id = domain.Id,
 				ClassName = domain.GetType().Name,
 				PlayerId = domain.Owner,
 				Location = new MapLocation((uint)domain.X, (uint)domain.Y),

@@ -14,6 +14,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using CivOne.Agents;
 using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Civilizations;
@@ -819,6 +820,8 @@ namespace CivOne
 			{
 				return;
 			}
+
+			TurnBasedAgentHost.NotifyUnitRemoved(unit);
 
 			IUnit activeUnit = ActiveUnit;
 
