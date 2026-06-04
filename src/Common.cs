@@ -22,6 +22,7 @@ using CivOne.Services;
 using CivOne.Screens;
 using CivOne.Wonders;
 using System.Threading;
+using System.Globalization;
 
 namespace CivOne
 {
@@ -30,7 +31,7 @@ namespace CivOne
 		private static Resources Resources => Resources.Instance;
 		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
 
-		public static Random Random; // = new Random((int)DateTime.Now.Ticks);
+		public static Random? Random; // = new Random((int)DateTime.Now.Ticks);
 
 		/// <summary>
 		/// True if Caps Lock is currently active. 
@@ -148,14 +149,14 @@ namespace CivOne
 		{
 			get
 			{
-				GamePlay gamePlay = GamePlay;
+				GamePlay? gamePlay = GamePlay;
 				if (gamePlay != null)
 					return gamePlay.MainPalette.Copy();
 				return Resources["SP257"].Palette.Copy();
 			}
 		}
 
-		public static GamePlay GamePlay => (GamePlay)_screens.FirstOrDefault(x => x is GamePlay);
+		public static GamePlay? GamePlay => (GamePlay?)_screens.FirstOrDefault(x => x is GamePlay);
 
         internal static void SetRandomSeed(ushort seed) => Random = new Random(seed == ushort.MaxValue ? -1 : seed);
         internal static void SetRandomSeed() => SetRandomSeed(ushort.MaxValue);
@@ -181,12 +182,16 @@ namespace CivOne
 		internal static void DestroyScreen(IScreen screen)
 		{
 			screen?.Dispose();
-			_screens.Remove(screen);
+
+			if (screen != null)
+			{
+				_screens.Remove(screen);
+			}
 		}
 		
 		internal static bool HasScreenType<T>() where T : IScreen => _screens.Any(x => x is T);
 		
-		internal static string CaptureFilename
+		internal static string? CaptureFilename
 		{
 			get
 			{
@@ -222,7 +227,7 @@ namespace CivOne
 
 		internal static string NumberSeperator(int number)
 		{
-			string input = number.ToString();
+			string input = number.ToString(CultureInfo.InvariantCulture);
 			input = input.PadLeft(3 - (input.Length % 3) + input.Length, '0');
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < input.Length; i++)
@@ -357,14 +362,14 @@ namespace CivOne
 			return BytesToArray(reader.ReadBytes(length), itemLength);
 		}
 		
-		private static Palette _palette16;
+		private static Palette? _palette16;
 		public static Palette GetPalette16
 		{
 			get
 			{
 				if (_palette16 == null)
 				{
-					byte[] shades = new byte[] { 0, 104, 183, 255 };
+					byte[] shades = [0, 104, 183, 255];
 					_palette16 = new[]
 					{
 						Colour.Transparent,
@@ -389,7 +394,7 @@ namespace CivOne
 			}
 		}
 
-		private static Palette _palette256;
+		private static Palette? _palette256;
 		public static Palette GetPalette256
 		{
 			get
