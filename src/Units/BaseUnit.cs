@@ -377,7 +377,7 @@ namespace CivOne.Units
 			}
 
 			City capturedCity = moveTarget.City;
-			Movement.Done += (s, a) => CompleteCityCapture(capturedCity, s, a);
+			Movement.Done += (_, __) => CompleteCityCapture(capturedCity, null, EventArgs.Empty);
 			return true;
 		}
 
@@ -392,7 +392,7 @@ namespace CivOne.Units
 			Movement = null;
 		}
 
-		private void CompleteCityCapture(City capturedCity, object sender, EventArgs args)
+		private void CompleteCityCapture(City capturedCity, object? sender, EventArgs args)
 		{
 			IList<IAdvance> advancesToSteal = GetAdvancesToSteal(capturedCity.Player);
 			Action changeOwner = () => ChangeCapturedCityOwner(capturedCity);
@@ -572,7 +572,7 @@ namespace CivOne.Units
 
 		private void HandleAttackWin(ITile moveTarget)
 		{
-			Movement.Done += (s, a) =>
+			Movement.Done += (_, __) =>
 			{
 				PlayAttackSound(attackerWon: true);
 				IUnit[] attackedUnits = moveTarget.Units;
@@ -587,7 +587,7 @@ namespace CivOne.Units
 
 		private void HandleAttackLoss()
 		{
-			Movement.Done += (s, a) =>
+			Movement.Done += (_, __) =>
 			{
 				PlayAttackSound(attackerWon: false);
 				GameTask.Insert(Show.DestroyUnit(this, false));
@@ -646,7 +646,7 @@ namespace CivOne.Units
 
 				// fire-eggs 20190729 when destroying last city, check for civ destruction ASAP
 				if (unit.Owner != 0)
-					task.Done += (s1, a1) => { Game.GetPlayer(unit.Owner).HandleExtinction(); };
+					task.Done += (_, __) => { Game.GetPlayer(unit.Owner).HandleExtinction(); };
 
 				GameTask.Insert(task);
 			}
@@ -801,7 +801,7 @@ namespace CivOne.Units
 				moveTarget.Units.Any(u => u is not BaseUnitAir);
 		}
 
-		private void MoveEnd(object sender, EventArgs args)
+		private void MoveEnd(object? _, EventArgs __)
 		{
 			ITile previousTile = Map[_x, _y];
 			X += Movement.RelX;

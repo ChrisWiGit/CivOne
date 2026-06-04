@@ -150,7 +150,7 @@ namespace CivOne.Screens
 			GameTask.Enqueue(Message.Newspaper(null, TranslateArray("Your civilization\nhas cheated\nthe entire planet!")));
 			conquest = Show.Screen<Conquest>();
 			GameTask.Enqueue(conquest);
-			conquest.Done += (s, a) => RuntimeHandler.EndGame();
+			conquest.Done += (_, __) => RuntimeHandler.EndGame();
 			Destroy();
 		}
 

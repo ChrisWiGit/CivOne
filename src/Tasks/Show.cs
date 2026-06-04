@@ -162,7 +162,7 @@ namespace CivOne.Tasks
 			{
 				if (screenTypeQueue.Count == 0) return null;
 				Show showScreen = Show.Screen(screenTypeQueue.Dequeue());
-				showScreen.Done += (s, a) => GameTask.Insert(nextTask());
+				showScreen.Done += (_, __) => GameTask.Insert(nextTask());
 				return showScreen;
 			};
 			return nextTask();

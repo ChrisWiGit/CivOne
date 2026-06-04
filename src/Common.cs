@@ -71,7 +71,7 @@ namespace CivOne
 		/// </remarks>
 		internal static IScreen? LastScreen => _screens.LastOrDefault();
 
-		internal static bool HasAttribute<T>(object checkObject) where T : Attribute
+		internal static bool HasAttribute<T>(object? checkObject) where T : Attribute
 		{
 			if (checkObject == null)
 				return false;

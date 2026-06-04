@@ -218,7 +218,7 @@ namespace CivOne.Screens.Dialogs
 			}
 
 			GameTask task = new GetAdvance(_diplomat.Player, advance);
-			task.Done += (s, a) =>
+			task.Done += (_, __) =>
 			{
 				_enemyCity.TechStolen = true;
 				Game.Instance.DisbandUnit(_diplomat);

@@ -1126,10 +1126,10 @@ namespace CivOne
 			{
 				Shields = 0;
 				Message message = Message.Newspaper(this, TranslateFormattedArray("{0} builds\n{1}.", this.Name, (CurrentProduction as ICivilopedia).TranslatedName));
-				message.Done += (s, a) =>
+				message.Done += (_, __) =>
 				{
 					Show showSpaceShip = Show.SpaceShipWithInstall(partType);
-					showSpaceShip.Done += (s1, a1) => GameTask.Insert(Show.CityManager(this));
+					showSpaceShip.Done += (_, __) => GameTask.Insert(Show.CityManager(this));
 					GameTask.Enqueue(showSpaceShip);
 				};
 				GameTask.Enqueue(message);
@@ -1158,10 +1158,10 @@ namespace CivOne
 			_buildings.Add(CurrentProduction as IBuilding);
 
 			Message message = Message.Newspaper(this, TranslateFormattedArray("{0} builds\n{1}.", this.Name, (CurrentProduction as ICivilopedia).TranslatedName));
-			message.Done += (s, a) =>
+			message.Done += (_, __) =>
 			{
 				GameTask advisorMessage = Message.Advisor(Advisor.Foreign, true, $"{Player.TribeName} capital", $"moved to {Name}.");
-				advisorMessage.Done += (s1, a1) => GameTask.Insert(Show.CityManager(this));
+				advisorMessage.Done += (_, __) => GameTask.Insert(Show.CityManager(this));
 				GameTask.Enqueue(advisorMessage);
 			};
 			GameTask.Enqueue(message);
@@ -1302,7 +1302,7 @@ namespace CivOne
 				if (Human == Owner)
 				{
 					Message message = Message.DisbandUnit(this, unit);
-					message.Done += (s, a) =>
+					message.Done += (_, __) =>
 					{
 						Game.DisbandUnit(unit);
 					};
@@ -1342,7 +1342,7 @@ namespace CivOne
 					if (Human == Owner && (unit is Settlers || unit is Diplomat || unit is Caravan))
 					{
 						GameTask advisorMessage = Message.Advisor(Advisor.Defense, true, $"{this.Name} builds {unit.TranslatedName}.");
-						advisorMessage.Done += (s, a) => GameTask.Insert(Show.CityManager(this));
+						advisorMessage.Done += (_, __) => GameTask.Insert(Show.CityManager(this));
 						GameTask.Enqueue(advisorMessage);
 					}
 				}
@@ -1586,7 +1586,7 @@ namespace CivOne
                         // TODO fire-eggs captured advance?
                         // TODO fire-eggs all owned units convert?
 						Show captureCity = Show.CaptureCity(this, null);
-						captureCity.Done += (s1, a1) =>
+						captureCity.Done += (_, __) =>
 						{
 							this.Owner = admired.Owner;
 							this.TechStolen = false;

@@ -16,7 +16,7 @@ namespace CivOne.Units.TribalHuts
 
 			Message msgBox = Message.General(tribalHutEvent.GetEventMessage());
 
-			msgBox.Done += (sender, e) =>
+			msgBox.Done += (_, __) =>
 			{
 				tribalHutEvent.PostExecute();
 			};
