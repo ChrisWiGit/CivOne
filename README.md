@@ -983,3 +983,101 @@ You can also use `Return` or `Backspace` to add or remove units without clicking
 
 Terrain editor changes are written into normal save files.
 Edited terrain, improvements, and land values remain after save and reload.
+
+## Analyzing Build Warnings
+
+When working with large .NET solutions, it is often useful to identify the most frequent warnings first and address them in descending order of impact.
+
+### Using MSBuild Structured Log Viewer
+
+A convenient way to analyze warnings is by generating an MSBuild binary log and opening it with the MSBuild Structured Log Viewer.
+
+Project website: [MSBuild Structured Log Viewer](https://msbuildlog.com)
+
+Install the viewer:
+
+```powershell
+winget install KirillOsenkov.MSBuildStructuredLogViewer
+````
+
+Generate a binary build log:
+
+```powershell
+dotnet build -bl
+```
+
+This creates a file named `msbuild.binlog`.
+
+Open the file in MSBuild Structured Log Viewer to:
+
+* Browse all warnings and errors
+* Filter by warning code
+* Identify which projects generate the most warnings
+* Inspect detailed warning information
+* Navigate directly to the affected source files
+
+This approach is recommended for interactive analysis of large solutions.
+
+### Counting Warnings from Build Logs
+
+For a quick overview, build output can be redirected to a log file and analyzed using PowerShell.
+
+Generate the log file:
+
+```powershell
+dotnet build --no-incremental > build.log 2>&1
+
+# Alternatively, to ensure UTF-8 encoding and capture all output:
+dotnet build --no-incremental 2>&1 | Out-File build.log -Encoding utf8
+```
+
+The following script groups warnings by warning code and includes the warning description and writes a summary to `warning-summary.txt`:
+
+```powershell
+$inputFile = "build.log"
+$outputFile = "warning-summary.txt"
+
+$warnings =
+    Get-Content $inputFile -Encoding UTF8 |
+    ForEach-Object {
+        if ($_ -match ':\s*warning\s+([A-Z]+\d+)\s*:\s*(.+?)(?:\s+\[[^\]]+\])?$') {
+            [PSCustomObject]@{
+                Code        = $matches[1]
+                Description = $matches[2].Trim()
+            }
+        }
+    }
+
+$result =
+    $warnings |
+    Group-Object Code, Description |
+    Sort-Object Count -Descending |
+    Select-Object Count,
+                  @{Name='Warning';Expression={$_.Group[0].Code}},
+                  @{Name='Description';Expression={$_.Group[0].Description}}
+
+$result |
+    Format-Table -AutoSize |
+    Out-String -Width 1000 |
+    Set-Content $outputFile -Encoding UTF8
+
+Write-Host "Written to $outputFile"
+```
+
+You may need to ensure Utf-8 encoding for the current powershell session:
+
+```powershell
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
+$OutputEncoding = [System.Text.UTF8Encoding]::new()
+```
+
+Example output:
+
+```text
+Count Warning Description
+----- ------- ---------------------------------------------------------------
+  523 CS8618  Non-nullable property must contain a non-null value when exiting constructor.
+  317 CS8602  Dereference of a possibly null reference.
+  144 CS8604  Possible null reference argument.
+   87 CS8625  Cannot convert null literal to non-nullable reference type.
+```
