@@ -17,6 +17,12 @@ namespace CivOne.Units
 	{
 		private static Player Human => Game.Instance.HumanPlayer;
 
+		/// <summary>
+		/// Returns the shared cached bitmap for the unit sprite.
+		///
+		/// The returned <see cref="Bytemap"/> is owned by the sprite cache.
+		/// Callers must not wrap it in <c>using</c> or dispose it.
+		/// </summary>
 		public static Bytemap ToBitmap(this IUnit unit, bool showState = true) => ToBitmap(unit, unit.Owner, showState);
 		public static Bytemap ToBitmap(this IUnit unit, byte colour, bool showState = true)
 		{

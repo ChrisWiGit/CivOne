@@ -51,6 +51,12 @@ namespace CivOne.Graphics.Sprites
 
 		private bool _disposed;
 
+		/// <summary>
+		/// Gets a shared sprite entry for the given key.
+		///
+		/// The returned sprite and its bitmap are cache-owned.
+		/// Consumers must not dispose the returned objects.
+		/// </summary>
 		public ISprite this[T index]
 		{
 			get

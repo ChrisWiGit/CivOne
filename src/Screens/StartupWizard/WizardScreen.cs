@@ -39,7 +39,9 @@ namespace CivOne.Screens.StartupWizard
 		private readonly WizardMouseMarkerDelegate _mouseMarkerDelegate;
 		private readonly WizardRenderingContext _renderingContext;
 		private readonly ConcurrentQueue<Action> _pendingMainThreadActions = new();
-		private WizardPage _currentPage;
+		private WizardPage? _currentPage;
+		private int _entryScrollOffset;
+		private int _entryScrollPageIndex = -1;
 
 		private int _mouseX = -1;
 		private int _mouseY = -1;
@@ -50,7 +52,7 @@ namespace CivOne.Screens.StartupWizard
 		/// can be updated without re-rendering the entire page bitmap (which is expensive at
 		/// full-window canvas sizes in fullscreen mode).
 		/// </summary>
-		private Bytemap _pageSnapshot;
+		private Bytemap? _pageSnapshot;
 
 		/// <summary>
 		/// Pixel rectangle of the glyph cell where the marker was last drawn, used to restore
@@ -62,7 +64,7 @@ namespace CivOne.Screens.StartupWizard
 		/// When true, the next refresh will only restore and redraw the marker rather than
 		/// re-rendering the entire page. Set by mouse moves that only require marker updates.
 		/// </summary>
-		private bool _markerOnlyRefresh = false;
+		private bool _markerOnlyRefresh;
 
 		/// <inheritdoc />
 		public override bool UseFullWindowCanvas => true;
@@ -86,7 +88,7 @@ namespace CivOne.Screens.StartupWizard
 				translationServiceAccessor: TranslationServiceFactory.GetCurrent,
 				browserService: BrowserServiceFactory.Instance,
 				storageDirectory: Runtime.StorageDirectory,
-				browseFolder: Runtime.BrowseFolder,
+				browseFolder: caption => Runtime.BrowseFolder(caption),
 				log: message => Log(message),
 				showSetupScreen: () =>
 				{
@@ -124,7 +126,7 @@ namespace CivOne.Screens.StartupWizard
 		/// </summary>
 		protected override bool HasUpdate(uint gameTick)
 		{
-			while (_pendingMainThreadActions.TryDequeue(out Action action))
+			while (_pendingMainThreadActions.TryDequeue(out Action? action))
 			{
 				// Execute pending actions that need to run on the main thread, 
 				// such as those triggered by page interactions.
@@ -176,6 +178,16 @@ namespace CivOne.Screens.StartupWizard
 				return true;
 			}
 
+			if (args[Key.Up])
+			{
+				return ScrollEntries(-1);
+			}
+
+			if (args[Key.Down])
+			{
+				return ScrollEntries(1);
+			}
+
 			if (args[Key.Character] && TryActivateHotkey(args.KeyChar))
 			{
 				return true;
@@ -207,13 +219,22 @@ namespace CivOne.Screens.StartupWizard
 				return true;
 			}
 
+			if (_currentPage is { } currentPage && currentPage.OnKeyPress != null)
+			{
+				currentPage.OnKeyPress(args, currentPage);
+				Refresh();
+				return true;
+			}
+
 			return false;
 		}
 
 		private bool TryActivateHotkey(char keyChar)
 		{
-			char normalizedKey = char.ToLowerInvariant(keyChar);
-			WizardEntry entry = _pageBuilder.Build(_state).Entries.FirstOrDefault(x => x.Enabled && x.Hotkey.HasValue && char.ToLowerInvariant(x.Hotkey.Value) == normalizedKey);
+			WizardEntry? entry = _pageBuilder
+				.Build(_state)
+				.Entries
+				.FirstOrDefault(x => x.Enabled && IsEntryHotkeyMatch(x, keyChar));
 			if (entry == null)
 			{
 				return false;
@@ -350,10 +371,47 @@ namespace CivOne.Screens.StartupWizard
 		private static bool HitAreaContains(System.Collections.Generic.IEnumerable<Rectangle> areas, int x, int y)
 			=> areas.Any(area => area.Contains(x, y));
 
-		private void ActivateEntry(int number)
+		private bool ScrollEntries(int delta)
 		{
 			WizardPage page = _pageBuilder.Build(_state);
-			WizardEntry entry = page.Entries.FirstOrDefault(x => x.Number == number);
+			WizardEntry[] fixedEntries = [.. page.Entries.Where(entry => entry.KeepAlwaysLastPosition)];
+			WizardEntry[] scrollableEntries = [.. page.Entries.Where(entry => !entry.KeepAlwaysLastPosition)];
+			int maxVisibleEntries = page.EntriesMaxCount > 0 ? page.EntriesMaxCount : page.Entries.Count;
+			int scrollableVisibleCount = Math.Min(scrollableEntries.Length, Math.Max(0, maxVisibleEntries - fixedEntries.Length));
+			if (scrollableVisibleCount <= 0 || scrollableEntries.Length <= scrollableVisibleCount)
+			{
+				return false;
+			}
+
+			ResetEntryScrollOffsetIfPageChanged();
+			int maxOffset = Math.Max(0, scrollableEntries.Length - scrollableVisibleCount);
+			int nextOffset = Math.Clamp(_entryScrollOffset + delta, 0, maxOffset);
+			if (nextOffset == _entryScrollOffset)
+			{
+				return false;
+			}
+
+			_entryScrollOffset = nextOffset;
+			Refresh();
+			return true;
+		}
+
+		private void ActivateEntry(int number)
+		{
+			if (number == WizardRenderingContext.ScrollUpHitAreaNumber)
+			{
+				ScrollEntries(-1);
+				return;
+			}
+
+			if (number == WizardRenderingContext.ScrollDownHitAreaNumber)
+			{
+				ScrollEntries(1);
+				return;
+			}
+
+			WizardPage page = _pageBuilder.Build(_state);
+			WizardEntry? entry = page.Entries.FirstOrDefault(x => x.Number == number);
 			if (entry == null || !entry.Enabled)
 			{
 				return;
@@ -383,6 +441,8 @@ namespace CivOne.Screens.StartupWizard
 			_renderingContext.GlyphAreas.Clear();
 
 			_currentPage = _pageBuilder.Build(_state);
+			ResetEntryScrollOffsetIfPageChanged();
+			ClampEntryScrollOffset(_currentPage);
 			WizardPage page = _currentPage;
 			int baseWidth = TargetCols * ModernDos8X16.GlyphWidth;
 			int baseHeight = TargetRows * ModernDos8X16.GlyphHeight;
@@ -400,12 +460,69 @@ namespace CivOne.Screens.StartupWizard
 			_renderingContext.Cols = TargetCols;
 			_renderingContext.Rows = TargetRows;
 			_renderingContext.Scale = scale;
+			_renderingContext.EntryScrollOffset = _entryScrollOffset;
 			_renderingContext.StatusMessage = _state.StatusMessage;
 
 			_renderingDelegate.Render(_state, page, _renderingContext);
 
 			// Marker is intentionally not drawn here; HasUpdate draws it after snapshotting
 			// the marker-free page so cursor moves can restore the page from the snapshot.
+		}
+
+		private void ResetEntryScrollOffsetIfPageChanged()
+		{
+			if (_entryScrollPageIndex == _state.PageIndex)
+			{
+				return;
+			}
+
+			_entryScrollPageIndex = _state.PageIndex;
+			_entryScrollOffset = 0;
+		}
+
+		private void ClampEntryScrollOffset(WizardPage page)
+		{
+			WizardEntry[] fixedEntries = [.. page.Entries.Where(entry => entry.KeepAlwaysLastPosition)];
+			WizardEntry[] scrollableEntries = [.. page.Entries.Where(entry => !entry.KeepAlwaysLastPosition)];
+			int maxVisibleEntries = page.EntriesMaxCount > 0 ? page.EntriesMaxCount : page.Entries.Count;
+			int scrollableVisibleCount = Math.Min(scrollableEntries.Length, Math.Max(0, maxVisibleEntries - fixedEntries.Length));
+			if (scrollableVisibleCount <= 0)
+			{
+				_entryScrollOffset = 0;
+				return;
+			}
+
+			int maxOffset = Math.Max(0, scrollableEntries.Length - scrollableVisibleCount);
+			_entryScrollOffset = Math.Clamp(_entryScrollOffset, 0, maxOffset);
+		}
+
+		private static bool IsEntryHotkeyMatch(WizardEntry entry, char pressedKey)
+		{
+			char? expectedHotkey = entry.Hotkey.HasValue
+				? char.ToLowerInvariant(entry.Hotkey.Value)
+				: GetAutoActivationHotkey(entry.Number);
+			if (!expectedHotkey.HasValue)
+			{
+				return false;
+			}
+
+			return char.ToLowerInvariant(pressedKey) == expectedHotkey.Value;
+		}
+
+		private static char? GetAutoActivationHotkey(int entryNumber)
+		{
+			if (entryNumber >= 1 && entryNumber <= 9)
+			{
+				return (char)('0' + entryNumber);
+			}
+
+			int letterIndex = entryNumber - 10;
+			if (letterIndex < 0 || letterIndex >= 26)
+			{
+				return null;
+			}
+
+			return (char)('a' + letterIndex);
 		}
 
 		/// <summary>

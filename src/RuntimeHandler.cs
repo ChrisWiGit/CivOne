@@ -233,11 +233,13 @@ namespace CivOne
 		private void OnKeyboardUp(object sender, KeyboardEventArgs args)
 		{
 			Common.CapsLockActive = args.CapsLock;
+			Common.ShiftKeyHeld = args.Shift;
 		}
 
 		private void OnKeyboardDown(object sender, KeyboardEventArgs args)
 		{
 			Common.CapsLockActive = args.CapsLock;
+			Common.ShiftKeyHeld = args.Shift;
 			if (_quickSaveLoadHotkeyService.TryHandle(args))
 			{
 				return;

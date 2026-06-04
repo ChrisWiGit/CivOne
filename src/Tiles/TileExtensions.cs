@@ -220,7 +220,7 @@ namespace CivOne.Tiles
             return tile.Type == Terrain.Forest || tile.Type == Terrain.Jungle || tile.Type == Terrain.Swamp;
         }
 
-		public static IBitmap ToBitmap(this ITile[,] tiles, TileSettings settings = null, Player player = null)
+		public static IBitmap ToBitmap(this ITile[,] tiles, TileSettings? settings = null, Player? player = null)
 		{
 			if (settings == null) settings = TileSettings.Default;
 
@@ -253,7 +253,7 @@ namespace CivOne.Tiles
 			return output;
 		}
 
-		public static IBitmap ToBitmap(this ITile tile, TileSettings settings = null, Player player = null)
+		public static IBitmap ToBitmap(this ITile tile, TileSettings? settings = null, Player? player = null)
 		{
 			if (settings == null) settings = TileSettings.Default;
 
