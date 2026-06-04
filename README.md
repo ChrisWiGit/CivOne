@@ -1081,3 +1081,41 @@ Count Warning Description
   144 CS8604  Possible null reference argument.
    87 CS8625  Cannot convert null literal to non-nullable reference type.
 ```
+
+
+```shell
+#!/usr/bin/env bash
+
+INPUT_FILE="build.log"
+OUTPUT_FILE="warning-summary.txt"
+
+awk '
+match($0, /warning [A-Z]+[0-9]+:/) {
+    code = substr($0, RSTART + 8, RLENGTH - 9)
+
+    desc = substr($0, RSTART + RLENGTH + 1)
+
+    sub(/ \[[^]]+\]$/, "", desc)
+
+    key = code "|" desc
+
+    count[key]++
+}
+
+END {
+    for (k in count)
+        print count[k] "|" k
+}
+' "$INPUT_FILE" |
+sort -t'|' -k1,1nr |
+awk -F'|' '
+BEGIN {
+    printf "%-8s %-10s %s\n", "Count", "Warning", "Description"
+}
+{
+    printf "%-8s %-10s %s\n", $1, $2, $3
+}
+' > "$OUTPUT_FILE"
+
+echo "Written to $OUTPUT_FILE"
+```
