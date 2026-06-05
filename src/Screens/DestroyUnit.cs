@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -15,8 +15,10 @@ using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.IO;
+using CivOne.Services.Random;
 using CivOne.Tiles;
 using CivOne.Units;
+using static System.Diagnostics.Debug;
 
 using static CivOne.Enums.Direction;
 
@@ -30,25 +32,29 @@ namespace CivOne.Screens
 			public bool Visible;
 			public int X, Y;
 			public ITile Tile;
-			public IBitmap Image => Tile.ToBitmap();
-			public Point Position => new Point(X * 16, Y * 16);
+			public readonly IBitmap Image => Tile.ToBitmap();
+			public readonly Point Position => new(X * 16, Y * 16);
 		}
 
 		private readonly DestroyAnimation _animation;
 
 		private const int NOISE_COUNT = 8;
+		private const int SPRITE_DELAY_FRAMES = 2;
 
 		private readonly IUnit _unit;
 		private readonly bool _stack;
 		private int _x, _y;
 		
-		private int _noiseCounter = NOISE_COUNT + 2;
-		private readonly byte[,] _noiseMap;
+		private int _noiseCounter = NOISE_COUNT + SPRITE_DELAY_FRAMES;
+		private readonly byte[,]? _noiseMap;
 
-		private Picture _gameMap;
+		private readonly Picture _gameMap;
 		private Picture? _overlay;
 
-		private IBitmap[]? _destroySprites;
+		private readonly IBitmap[]? _destroySprites; // for _animation == DestroyAnimation.Sprites
+
+		private readonly GamePlay _gamePlayDI;
+		private readonly IRandomService _random;
 		
 		private IEnumerable<RenderTile> RenderTiles
 		{
@@ -78,7 +84,46 @@ namespace CivOne.Screens
 		{
 			int cx = Settings.RightSideBar ? 0 : 80;
 			int cy = 8;
+			AnimateNoise(cx, cy);
+			DrawDestructionResult(gameTick);
 
+			return true;
+		}
+
+		private void DrawDestructionResult(uint gameTick)
+		{
+			if (_noiseCounter != 0)
+			{
+				return;
+			}
+			IUnit[] units;
+			if (_unit.Tile.Units.Length > 1 && _unit.Tile.City == null && !_unit.Tile.Fortress && _stack)
+			{
+				units = _unit.Tile.Units;
+			}
+			else
+			{
+				units = [_unit];
+			}
+			foreach (IUnit unit in units)
+				Game.DisbandUnit(unit);
+
+			_gamePlayDI.RefreshMap();
+			// CW: Okay, this is wild.
+			// If a city/unit is attacked and destroyed, its icon is displayed right after the destruction animation.
+			// When a city defended itself successfully it looks like as if the unit is within the city.
+			// I think this is a race condition, when drawing the unit icon another time right after the destruction animation.
+			// It helped to increase the gameTick by 1, so that inner workings work differently.
+			// It may break again in the future.
+			uint doNotDrawUnitAfterDestruction = gameTick + 1;
+
+			_gamePlayDI.Update(doNotDrawUnitAfterDestruction);
+
+			Destroy();
+		}
+
+		private void AnimateNoise(int cx, int cy)
+		{
 			if (_overlay == null || _animation == DestroyAnimation.Sprites)
 			{
 				_overlay = new Picture(Bitmap, Palette);
@@ -91,53 +136,31 @@ namespace CivOne.Screens
 				_overlay.AddLayer(_unit.ToBitmap(), cx + (xx * 16), cy + (yy * 16));
 				if (_unit.Tile.Units.Length > 1 && !_unit.Tile.Fortress && _unit.Tile.City == null)
 					_overlay.AddLayer(_unit.ToBitmap(), cx + (xx * 16) - 1, cy + (yy * 16) - 1);
-				
+
 				if (_animation == DestroyAnimation.Sprites)
 				{
-					int step = 8 - _noiseCounter--;
-					if (step >= 0 && step < 8)
+					int frameIndex = NOISE_COUNT + SPRITE_DELAY_FRAMES - _noiseCounter;
+					if (frameIndex >= SPRITE_DELAY_FRAMES)
 					{
-						_overlay.AddLayer(_destroySprites[step], cx + (xx * 16), cy + (yy * 16));
+						int spriteIndex = frameIndex - SPRITE_DELAY_FRAMES;
+						if (spriteIndex < NOISE_COUNT)
+						{
+							_overlay.AddLayer(_destroySprites![spriteIndex], cx + (xx * 16), cy + (yy * 16));
+						}
 					}
+					_noiseCounter--;
 				}
 			}
 
-			if (_animation == DestroyAnimation.Noise)
+			if (_animation == DestroyAnimation.Noise && _noiseMap != null)
 			{
 				_overlay.ApplyNoise(_noiseMap, --_noiseCounter);
 			}
 
 			this.AddLayer(_gameMap, cx, cy)
 				.AddLayer(_overlay, 0, 0);
-
-			if (_noiseCounter == 0)
-			{
-				IUnit[] units;
-				if (_unit.Tile.Units.Length > 1 && _unit.Tile.City == null && !_unit.Tile.Fortress && _stack)
-				{
-					units = _unit.Tile.Units;
-				}
-				else
-				{
-					units = new IUnit[] { _unit };
-				}
-				foreach (IUnit unit in units)
-					Game.DisbandUnit(unit);
-				Common.GamePlay.RefreshMap();
-				// CW: Okay, this is wild.
-				// If a city/unit is attacked and destroyed, its icon is displayed right after the destruction animation.
-				// When a city defended itself successfully it looks like as if the unit is within the city.
-				// I think this is a race condition, when drawing the unit icon another time right after the destruction animation.
-				// It helped to increase the gameTick by 1, so that inner workings work differently.
-				// It may break again in the future.
-				uint doNotDrawUnitAfterDestruction = gameTick + 1;
-				Common.GamePlay.Update(doNotDrawUnitAfterDestruction);
-				Destroy();
-			}
-
-			return true;
 		}
-		
+
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
 			return false;
@@ -152,7 +175,7 @@ namespace CivOne.Screens
 		{
 			get
 			{
-				Picture output = new Picture(240, 192);
+				Picture output = new(240, 192);
 
 				RenderTile[] renderTiles = RenderTiles.ToArray();
 				foreach (RenderTile t in renderTiles)
@@ -187,12 +210,12 @@ namespace CivOne.Screens
 					if (t.Tile.Type == Terrain.Ocean)
 					{
 						// Always show naval units first at sea
-						units = units.OrderBy(u => (u.Class == UnitClass.Water) ? 1 : 0).ToArray();
+						units = [.. units.OrderBy(u => (u.Class == UnitClass.Water) ? 1 : 0)];
 					}
+
 					if (units.Length == 0) continue;
 					
-					IUnit drawUnit = units.FirstOrDefault(u => u == _unit);
-					drawUnit = units[0];
+					IUnit? drawUnit = units[0];
 
 					if (t.Tile.IsOcean && drawUnit.Class != UnitClass.Water && drawUnit.Sentry)
 					{
@@ -227,11 +250,16 @@ namespace CivOne.Screens
 
 		internal DestroyUnit(IUnit unit, bool stack)
 		{
+			Assert(Common.GamePlay != null, "GamePlay is null in DestroyUnit constructor");
+			_gamePlayDI = Common.GamePlay!;
+
+			_random = RandomServiceFactory.Create();
+
 			_unit = unit;
 			_stack = stack;
 
-			_x = Common.GamePlay.X;
-			_y = Common.GamePlay.Y;
+			_x = _gamePlayDI.X;
+			_y = _gamePlayDI.Y;
 
 			using var defaultPalette = Common.DefaultPalette;
 			Palette = defaultPalette;
@@ -255,10 +283,15 @@ namespace CivOne.Screens
 					for (int x = 0; x < 320; x++)
 					for (int y = 0; y < 200; y++)
 					{
-						_noiseMap[x, y] = (byte)Common.Random.Next(1, NOISE_COUNT);
+						_noiseMap[x, y] = (byte)_random.Next(1, NOISE_COUNT + 1);
 					}
 					break;
 			}
+		}
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
 		}
 	}
 }
