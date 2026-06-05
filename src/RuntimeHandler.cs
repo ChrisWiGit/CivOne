@@ -32,11 +32,12 @@ using CivOne.Tiles;
 
 namespace CivOne
 {
+	#pragma warning disable CA1822 // Mark members as static
 	public sealed class RuntimeHandler : IDisposable
 	{
-		private static RuntimeHandler _instance;
-		internal static RuntimeHandler Instance => _instance;
-		internal static IRuntime Runtime { get; private set; }
+		private static RuntimeHandler? _instance;
+		internal static RuntimeHandler? Instance => _instance;
+		internal static IRuntime? Runtime { get; private set; }
 		internal static uint CurrentGameTick => _instance?._gameTick ?? 0;
 		public static bool IsFullWindowCanvasRequested => _instance?.TopScreen?.UseFullWindowCanvas ?? false;
 		public static FpsCorner CurrentFpsCorner => Settings.Instance.FpsCorner;
@@ -48,17 +49,17 @@ namespace CivOne
 		private readonly IQuickSaveLoadHotkeyService _quickSaveLoadHotkeyService;
 
 		internal int CanvasWidth => IsFullWindowCanvasRequested
-			? Math.Max(Settings.MinWidth, Runtime.CanvasWidth)
-			: Math.Max(Settings.MinWidth, Math.Min(Settings.MaxScreenWidth, Runtime.CanvasWidth));
+			? Math.Max(Settings.MinWidth, Runtime!.CanvasWidth)
+			: Math.Max(Settings.MinWidth, Math.Min(Settings.MaxScreenWidth, Runtime!.CanvasWidth));
 		internal int CanvasHeight => IsFullWindowCanvasRequested
-			? Math.Max(Settings.MinHeight, Runtime.CanvasHeight)
-			: Math.Max(Settings.MinHeight, Math.Min(Settings.MaxScreenHeight, Runtime.CanvasHeight));
-		internal static int WindowWidth => Runtime.WindowWidth;
-		internal static int WindowHeight => Runtime.WindowHeight;
+			? Math.Max(Settings.MinHeight, Runtime!.CanvasHeight)
+			: Math.Max(Settings.MinHeight, Math.Min(Settings.MaxScreenHeight, Runtime!.CanvasHeight));
+		internal static int WindowWidth => Runtime!.WindowWidth;
+		internal static int WindowHeight => Runtime!.WindowHeight;
 
 		private Stopwatch _tickWatch = new();
 
-		private uint _tickWatchOffset = 0;
+		private uint _tickWatchOffset;
 		private uint TickWatch
 		{
 			get
@@ -70,7 +71,7 @@ namespace CivOne
 				return _tickWatchOffset + Convert.ToUInt32(((double)_tickWatch.ElapsedMilliseconds / 1000) * 60);
 			}
 		}
-		private uint _gameTick = 0;
+		private uint _gameTick;
 		private readonly IMcpService _mcpService;
 		private bool _disposed;
 
@@ -109,7 +110,7 @@ namespace CivOne
 		{
 			get
 			{
-				bool dataMissing = Runtime.Settings.DataCheck && !FileSystem.DataFilesExist();
+				bool dataMissing = Runtime!.Settings.DataCheck && !FileSystem.DataFilesExist();
 				bool showWizard = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && (dataMissing || Runtime.Settings.Setup);
 
 				if (showWizard)
@@ -127,14 +128,14 @@ namespace CivOne
 			}
 		}
 
-		private void OnInitialize(object sender, EventArgs args)
+		private void OnInitialize(object? _, EventArgs args)
 		{
-			Runtime.SetWindowTitle(Settings.WindowTitle);
+			Runtime!.SetWindowTitle(Settings.WindowTitle);
 			_mcpService.Start();
 			GameTask.Enqueue(Show.Screens(StartupScreens));
 		}
 
-		private void OnUpdate(object sender, UpdateEventArgs args)
+		private void OnUpdate(object? _, UpdateEventArgs args)
 		{
 			_mcpService.Process();
 
@@ -167,7 +168,7 @@ namespace CivOne
 			}
 		}
 
-		private void OnDraw(object sender, EventArgs args)
+		private void OnDraw(object? _, EventArgs args)
 			=> OnDrawCore();
 
 		private void OnDrawCore()
@@ -175,7 +176,7 @@ namespace CivOne
 			IScreen? topScreen = TopScreen;
 			if (topScreen == null)
 			{
-				Runtime.Layers = null;
+				Runtime!.Layers = null;
 				return;
 			}
 
@@ -185,16 +186,16 @@ namespace CivOne
 			{
 				try
 				{
-					Runtime.Palette = topScreen.Palette.Copy();
+					Runtime!.Palette = topScreen.Palette.Copy();
 				}
 				catch (ObjectDisposedException)
 				{
-					Runtime.Palette = Common.DefaultPalette;
+					Runtime!.Palette = Common.DefaultPalette;
 				}
 			}
 			else
 			{
-				Runtime.Palette = Common.DefaultPalette;
+				Runtime!.Palette = Common.DefaultPalette;
 			}
 			
 			if (Common.HasAttribute<Modal>(topScreen))
@@ -227,13 +228,13 @@ namespace CivOne
 
 		}
 
-		private void OnKeyboardUp(object sender, KeyboardEventArgs args)
+		private void OnKeyboardUp(object? _, KeyboardEventArgs args)
 		{
 			Common.CapsLockActive = args.CapsLock;
 			Common.ShiftKeyHeld = args.Shift;
 		}
 
-		private void OnKeyboardDown(object sender, KeyboardEventArgs args)
+		private void OnKeyboardDown(object? _, KeyboardEventArgs args)
 		{
 			Common.CapsLockActive = args.CapsLock;
 			Common.ShiftKeyHeld = args.Shift;
@@ -246,7 +247,7 @@ namespace CivOne
 			{
 				string? filename = Common.CaptureFilename;
 				if (filename == null) return;
-				if (Runtime.Layers == null) return;
+				if (Runtime!.Layers == null) return;
 				
 				IScreen? topScreen = TopScreen;
 				if (topScreen == null) return;
@@ -277,28 +278,29 @@ namespace CivOne
 
 			if (args[KeyModifier.Control, Key.F6] && Game.Started)
 			{
-				string filename = Common.CaptureFilename;
-				using (IBitmap tilesPicture = Map.Instance[0, 0, Map.WIDTH, Map.HEIGHT].ToBitmap())
-				using (GifFile file = new(tilesPicture))
-				using (FileStream fs = new(filename, FileMode.Create, FileAccess.Write))
-				{
-					byte[] output = file.GetBytes();
-					fs.Write(output, 0, output.Length);
-					Runtime.Log($"Screenshot saved: {filename}");
-				}
+				string? filename = Common.CaptureFilename;
+				if (filename == null) return;
+				
+				using IBitmap tilesPicture = Map.Instance[0, 0, Map.WIDTH, Map.HEIGHT].ToBitmap();
+				using GifFile file = new(tilesPicture);
+				using FileStream fs = new(filename, FileMode.Create, FileAccess.Write);
+				byte[] output = file.GetBytes();
+				fs.Write(output, 0, output.Length);
+				Runtime!.Log($"Screenshot saved: {filename}");
+
 				return;
 			}
 
 			TopScreen?.KeyDown(args);
 		}
 
-		private void OnMouseUp(object sender, ScreenEventArgs args) => TopScreen?.MouseUp(args);
+		private void OnMouseUp(object? _, ScreenEventArgs args) => TopScreen?.MouseUp(args);
 
-		private void OnMouseDown(object sender, ScreenEventArgs args) => TopScreen?.MouseDown(args);
+		private void OnMouseDown(object? _, ScreenEventArgs args) => TopScreen?.MouseDown(args);
 
-		private void OnMouseWheel(object sender, ScreenEventArgs args) => TopScreen?.MouseWheel(args);
+		private void OnMouseWheel(object? _, ScreenEventArgs args) => TopScreen?.MouseWheel(args);
 
-		private void OnMouseMove(object sender, ScreenEventArgs args)
+		private void OnMouseMove(object? _, ScreenEventArgs args)
 		{
 			if (args.Buttons != MouseButton.None)
 			{
@@ -339,7 +341,7 @@ namespace CivOne
 		{
 			if (_instance != null)
 			{
-				throw new Exception("Only one runtime can be registered.");
+				ArgumentNullException.ThrowIfNull(runtime, nameof(runtime));
 			}
 
 			EnsureTranslationFilesAvailable(runtime);
@@ -350,14 +352,14 @@ namespace CivOne
 		{
 			if (_instance != null)
 			{
-				throw new Exception("Only one runtime can be registered.");
+				ArgumentNullException.ThrowIfNull(runtime, nameof(runtime));
 			}
 
 			ConfigureTranslation(runtime);
 			_instance = new RuntimeHandler(runtime, CreateQuickSaveLoadHotkeyService(runtime), false);
 		}
 
-		private static IQuickSaveLoadHotkeyService CreateQuickSaveLoadHotkeyService(IRuntime runtime)
+		private static QuickSaveLoadHotkeyService CreateQuickSaveLoadHotkeyService(IRuntime runtime)
 		{
 			ITranslationService translationService = TranslationServiceFactory.GetCurrent();
 			IYamlSaveGameServiceFactory yamlSaveGameServiceFactory = new YamlSaveGameServiceFactory();
@@ -366,7 +368,7 @@ namespace CivOne
 
 		private static void EnsureTranslationFilesAvailable(IRuntime runtime)
 		{
-			string sourceDirectory = FindTranslationSourceDirectory();
+			string? sourceDirectory = FindTranslationSourceDirectory();
 			if (string.IsNullOrEmpty(sourceDirectory))
 			{
 				runtime.Log("Translation source directory not found. Skipping translation file copy.");
@@ -378,7 +380,7 @@ namespace CivOne
 			runtime.Log("Copied {0} translation file(s) to {1}", copiedCount, targetDirectory);
 		}
 
-		private static string FindTranslationSourceDirectory()
+		private static string? FindTranslationSourceDirectory()
 		{
 			string[] roots =
 			[
@@ -388,7 +390,7 @@ namespace CivOne
 
 			foreach (string root in roots.Where(path => !string.IsNullOrWhiteSpace(path)).Distinct(StringComparer.OrdinalIgnoreCase))
 			{
-				DirectoryInfo directory = new(root);
+				DirectoryInfo? directory = new(root);
 				while (directory != null)
 				{
 					string candidate = Path.Combine(directory.FullName, "translation");
@@ -406,7 +408,7 @@ namespace CivOne
 
 		private static void ConfigureTranslation(IRuntime runtime)
 		{
-			string languagePostfix = runtime.Settings.LanguagePostfix;
+			string? languagePostfix = runtime.Settings.LanguagePostfix;
 
 			if (string.IsNullOrEmpty(languagePostfix))
 			{

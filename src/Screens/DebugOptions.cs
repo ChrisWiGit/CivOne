@@ -649,7 +649,7 @@ namespace CivOne.Screens
 		{
 			private readonly City[] _enemyCities;
 			private readonly byte _humanOwner;
-			private CityGridMenuDelegate _citySelect;
+			private CityGridMenuDelegate? _citySelect;
 
 			private void DrawCityMenuDialog()
 			{

@@ -33,7 +33,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void EnsureCurrentSaveDirectory_CreatesAndReturnsCosDirectory()
+		public void EnsureCurrentSaveDirectoryCreatesAndReturnsCosDirectory()
 		{
 			List<string> createdPaths = [];
 			var provider = CreateProvider(
@@ -47,7 +47,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void GetInitialSaveFilePath_UsesLastUsedPathAndEnsuresDirectory()
+		public void GetInitialSaveFilePathUsesLastUsedPathAndEnsuresDirectory()
 		{
 			List<string> createdPaths = [];
 			string lastUsedPath = Path.Combine(Path.GetDirectoryName(_settings.CosSavesDirectory), "custom");
@@ -64,7 +64,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void GetInitialSaveFilePath_FallsBackToCosDirectoryWhenLastUsedMissing()
+		public void GetInitialSaveFilePathFallsBackToCosDirectoryWhenLastUsedMissing()
 		{
 			List<string> createdPaths = [];
 			var provider = CreateProvider(
@@ -78,7 +78,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void SetLastUsedSaveGamePath_PersistsDirectoryPartInRuntimeSetting()
+		public void SetLastUsedSaveGamePathPersistsDirectoryPartInRuntimeSetting()
 		{
 			var provider = CreateProvider(
 				createDirectory: _ => { },
@@ -91,7 +91,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void EnsureAutoSaveDirectory_UsesLastUsedPathWhenAvailable()
+		public void EnsureAutoSaveDirectoryUsesLastUsedPathWhenAvailable()
 		{
 			List<string> createdPaths = [];
 			string lastUsedPath = Path.Combine(_settings.SavesDirectory, "custom");
@@ -108,7 +108,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void EnsureAutoSaveDirectory_FallsBackToProfileSavesDirectory()
+		public void EnsureAutoSaveDirectoryFallsBackToProfileSavesDirectory()
 		{
 			List<string> createdPaths = [];
 			var provider = CreateProvider(
@@ -160,8 +160,8 @@ namespace CivOne.UnitTests
 			public Platform CurrentPlatform => Platform.Linux;
 			public string StorageDirectory => Path.Combine(Path.GetTempPath(), "CivOneTests", Guid.NewGuid().ToString("N"));
 			public RuntimeSettings Settings { get; } = new RuntimeSettings();
-			public Bytemap[] Layers { get; set; }
-			public Palette Palette { get; set; }
+			public Bytemap[]? Layers { get; set; }
+			public Palette? Palette { get; set; }
 			public int CanvasWidth => 320;
 			public int CanvasHeight => 200;
 			public int WindowWidth => 320;
@@ -170,11 +170,11 @@ namespace CivOne.UnitTests
 			public void SetCursor(IBitmap? _) { }
 			public void SetWindowTitle(string title) { }
 
-			public bool TryOpenUrl(string url, out string errorMessage) { errorMessage = null; return false; }
-			public bool TryCopyToClipboard(string text, out string errorMessage) { errorMessage = null; return false; }
+			public bool TryOpenUrl(string url, out string? errorMessage) { errorMessage = null; return false; }
+			public bool TryCopyToClipboard(string text, out string? errorMessage) { errorMessage = null; return false; }
 
-			public string GetSetting(string key)
-				=> _storedSettings.TryGetValue(key, out string value) ? value : null;
+			public string? GetSetting(string key)
+				=> _storedSettings.TryGetValue(key, out string? value) ? value : null;
 
 			public void SetSetting(string key, string value)
 				=> _storedSettings[key] = value;
