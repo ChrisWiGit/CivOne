@@ -9,7 +9,6 @@
 
 using System;
 using CivOne.Advances;
-using CivOne.IO;
 using CivOne.IO.Text;
 using CivOne.Screens;
 using CivOne.Services;
@@ -21,34 +20,34 @@ namespace CivOne.Tasks
 {
 	internal class Orders : GameTask
 	{
-		private City _city;
-		private Player _player;
+		private City? _city;
+		private Player? _player;
 		private IUnit? _unit;
 		private int _x, _y;
 		private Order _order;
 
-		private void Error(string error)
+		private static void Error(string error)
 		{
 			GameTask.Enqueue(Message.Error(TranslationServiceFactory.GetCurrent().Translate("-- Civilization Note --"), TextFileFactory.Get().GetGameText($"ERROR/{error}")));
 		}
 
-		private void CityManagerClosed(object sender, EventArgs args)
+		private void CityManagerClosed(object? _, EventArgs args)
 		{
 			EndTask();
 		}
 
-		private void CityViewed(object sender, EventArgs args)
+		private void CityViewed(object? _, EventArgs args)
 		{
 			if (Common.HasScreenType<CityManager>()) return;
 
-			CityManager cityManager = new CityManager(_city);
+			CityManager cityManager = new(_city!);
 			cityManager.Closed += CityManagerClosed;
 			Common.AddScreen(cityManager);
 		}
 
-		private void CityFounded(object sender, EventArgs args)
+		private void CityFounded(object? _, EventArgs args)
 		{
-			CityView cityView = new CityView(_city, firstView: true);
+			CityView cityView = new(_city!, firstView: true);
 			cityView.Closed += CityViewed;
 			Common.AddScreen(cityView);
 		}
@@ -66,7 +65,7 @@ namespace CivOne.Tasks
 			{
 				int nameId = cityName.NameId;
 				Game.CityNames[nameId] = cityName.Value;
-				CreateCity(nameId);
+				FoundCity(_player, nameId);
 			} 
 			else
 			{
@@ -76,7 +75,7 @@ namespace CivOne.Tasks
 			EndTask();
 		}
 
-		private void CityNameCancel(object sender, EventArgs args)
+		private void CityNameCancel(object? _, EventArgs args)
 		{
 			Human.CityNamesSkipped++;
 			DecreaseUnitsMovesLeft();
@@ -93,26 +92,34 @@ namespace CivOne.Tasks
 			_unit.MovesLeft--;
 		}
 
-		private void CreateCity(int nameId)
+		private void FoundCity(Player? player, int nameId)
 		{
-			_city = Game.AddCity(_player, nameId, _x, _y);
+			if (player == null)
+			{
+				Debug.Assert(false, "Error: player is null in FoundCity");
+				EndTask(); //not sure, but we may want to end the task here to avoid to get stuck anyhow.
+				return;
+			}
+			_city = Game.AddCity(player, nameId, _x, _y);
 
 			if (_city == null)
 			{
 				// should not happen because an existing city will just be joined and
 				// this code will not be reached
-				Game.UpdateResources(_city.Tile);
+				Game.UpdateResources(Map[_x, _y]);
 				EndTask();
 
-				Runtime.Log($"Error: Code should not be reached when founding a city at ({_x}, {_y}) for player {_player.Civilization.Name} with nameId {nameId}");
+				Runtime.Log($"Error: Code should not be reached when founding a city at ({_x}, {_y}) for player {player.Civilization.Name} with nameId {nameId}");
 				return;
 			}
 
 			// Settlers are consumed when a city is founded.
 			if (_unit is Settlers)
+			{
 				Game.DisbandUnit(_unit);
+			}
 
-			if (!_player.IsHuman)
+			if (!player.IsHuman)
 			{
 				Game.UpdateResources(_city.Tile);
 				EndTask();
@@ -132,32 +139,16 @@ namespace CivOne.Tasks
 			Common.AddScreen(cityScreen);
 		}
 
-		private void CreateCity(Player player, int x, int y)
+		private void OrderNewCity()
 		{
-			int nameId = Game.CityNameId(player);
-			if (player.IsHuman)
-			{
-				CityName cityName = new CityName(nameId, Game.CityNames[nameId]);
-				cityName.Accept += CityNameAccept;
-				cityName.Cancel += CityNameCancel;
-				Common.AddScreen(cityName);
-				return;
-			}
-
-			CreateCity(nameId);
-		}
-
-		private void CreateCity()
-		{
-			if (_unit != null && !(_unit is Settlers))
+			if (_unit != null && _unit is not Settlers)
 			{
 				Error("SETTLERS");
 				EndTask();
 				return;
 			}
 
-			Settlers settlers = (_unit as Settlers);
-			if (settlers != null)
+			if (_unit is Settlers settlers)
 			{
 				_player = settlers.Player;
 				_x = settlers.X;
@@ -189,68 +180,101 @@ namespace CivOne.Tasks
 				return;
 			}
 
-			CreateCity(_player, _x, _y);
+			if (_player == null)
+			{
+				EndTask();
+				return;
+			}
+
+			int nameId = Game.CityNameId(_player);
+			if (!ShowCityNamePromptScreenForHuman(_player, nameId))
+			{
+				FoundCity(_player, nameId);
+			}
+		}
+
+		private bool ShowCityNamePromptScreenForHuman(Player player, int nameId)
+		{
+			if (!player.IsHuman) return false;
+
+			CityName cityName = new(nameId, Game.CityNames[nameId]);
+			cityName.Accept += CityNameAccept;
+			cityName.Cancel += CityNameCancel;
+			Common.AddScreen(cityName);
+
+			return true;
 		}
 
 		private void Irrigate()
 		{
-			if (!(_unit is Settlers))
+			if (_unit is Settlers settlers)
 			{
-				Error("SETTLERS");
+				settlers.BuildIrrigation();
 				EndTask();
+
 				return;
 			}
-			(_unit as Settlers).BuildIrrigation();
+
+			Error("SETTLERS");
 			EndTask();
 		}
 
 		private void Mines()
 		{
-			if (!(_unit is Settlers))
+			if (_unit is Settlers settlers)
 			{
-				Error("SETTLERS");
+				settlers.BuildMines();
 				EndTask();
+
 				return;
 			}
-			(_unit as Settlers).BuildMines();
+
+			Error("SETTLERS");
 			EndTask();
 		}
 
 		private void Fortress()
 		{
-			if (!(_unit is Settlers))
+			if (_unit is Settlers settlers)
 			{
-				Error("SETTLERS");
+				Player? player = Game.GetPlayer(settlers.Owner);
+				if (player?.HasAdvance<Construction>() == true)
+				{
+					settlers.BuildFortress();
+				}
 				EndTask();
+
 				return;
 			}
-			if (Game.GetPlayer(_unit.Owner).HasAdvance<Construction>())
-			{
-				(_unit as Settlers).BuildFortress();
-			}
+
+			Error("SETTLERS");
 			EndTask();
 		}
 
 		private void Road()
 		{
-			if (!(_unit is Settlers))
+			if (_unit is Settlers settlers)
 			{
-				Error("SETTLERS");
+				settlers.BuildRoad();
 				EndTask();
+
 				return;
 			}
-			(_unit as Settlers).BuildRoad();
+
+			Error("SETTLERS");
 			EndTask();
 		}
 		private void ClearPollution()
 		{
-			if (_unit is not Settlers)
+			if (_unit is Settlers settlers)
 			{
-				Error("SETTLERS");
+				settlers.ClearPollution();
 				EndTask();
+
 				return;
 			}
-			(_unit as Settlers).ClearPollution();
+
+			Error("SETTLERS");
 			EndTask();
 		}
 
@@ -265,7 +289,7 @@ namespace CivOne.Tasks
 			switch (_order)
 			{
 				case Order.NewCity:
-					CreateCity();
+					OrderNewCity();
 					break;
 				case Order.Irrigate:
 					Irrigate();
@@ -291,7 +315,7 @@ namespace CivOne.Tasks
 			}
 		}
 
-		public static Orders FoundCity(IUnit unit = null)
+		public static Orders FoundCity(IUnit? unit = null)
 		{
 			return new Orders()
 			{
