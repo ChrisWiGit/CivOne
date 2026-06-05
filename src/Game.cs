@@ -278,6 +278,13 @@ namespace CivOne
 				TranslateFormattedArray("{0}\ncivilization\ndestroyed\nby {1}!", destroyed.Name, destroyedBy.NamePlural)));
 		}
 
+		/// <summary>
+		/// Returns the player number for the given player, or 0 if the player is not found. 
+		/// This method is used for serialization and should not be used in game logic, as it may return 0 for a valid player if the player is not found, which can lead to bugs.
+		/// If null is passed as player, 0 is returned, which is also a valid player number, so this method should be used with caution and only for serialization purposes.
+		/// </summary>
+		/// <param name="player">The player for which to get the player number.</param>
+		/// <returns>The player number, or 0 if the player is not found or if null is passed.</returns>
 		internal byte PlayerNumber(Player player)
 		{
 			byte i = 0;

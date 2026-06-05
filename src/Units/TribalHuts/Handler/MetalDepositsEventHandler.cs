@@ -1,3 +1,5 @@
+using CivOne.Services;
+
 namespace CivOne.Units.TribalHuts
 {
 	public class MetalDepositsEventHandler : ITribalHutEventHandler
@@ -11,12 +13,7 @@ namespace CivOne.Units.TribalHuts
 
 		public string[] GetEventMessage()
 		{
-			return
-			[
-				"You have discovered",
-				"valuable metal deposits",
-				"worth 50$"
-			];
+			return TranslationServiceFactory.GetCurrent().TranslateFormattedArray("You have discovered\nvaluable metal deposits\nworth 50$");
 		}
 
 		public void PreExecute()

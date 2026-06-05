@@ -27,75 +27,185 @@ namespace CivOne.Screens
 	[ScreenResizeable]
 	internal class DestroyUnit : BaseScreen
 	{
-		private struct RenderTile
+		private interface IAnimation
 		{
-			public bool Visible;
-			public int X, Y;
-			public ITile Tile;
-			public readonly IBitmap Image => Tile.ToBitmap();
-			public readonly Point Position => new(X * 16, Y * 16);
+			bool IsFinished { get; }
+			bool RebuildOverlayEachFrame { get; }
+			void DrawAnimation(Picture overlay, int cx, int cy);
 		}
 
-		private readonly DestroyAnimation _animation;
+		private sealed class SpriteAnimation : IAnimation
+		{
+			private readonly IUnit _unit;
+			private readonly int _x;
+			private readonly int _y;
+			private readonly IBitmap[] _destroySprites;
+			private int _frameCounter = NOISE_COUNT + SPRITE_DELAY_FRAMES;
+
+			public bool IsFinished => _frameCounter == 0;
+			public bool RebuildOverlayEachFrame => true;
+
+			internal SpriteAnimation(IUnit unit, int x, int y, IBitmap[] destroySprites)
+			{
+				_unit = unit;
+				_x = x;
+				_y = y;
+				_destroySprites = destroySprites;
+			}
+
+			public void DrawAnimation(Picture overlay, int cx, int cy)
+			{
+				(int xx, int yy) = GetUnitOffset(_unit, _x, _y);
+				overlay.AddLayer(_unit.ToBitmap(), cx + (xx * 16), cy + (yy * 16));
+				if (_unit.Tile.Units.Length > 1 && !_unit.Tile.Fortress && _unit.Tile.City == null)
+				{
+					overlay.AddLayer(_unit.ToBitmap(), cx + (xx * 16) - 1, cy + (yy * 16) - 1);
+				}
+
+				if (IsFinished)
+				{
+					return;
+				}
+
+				int frameIndex = NOISE_COUNT + SPRITE_DELAY_FRAMES - _frameCounter;
+				if (frameIndex >= SPRITE_DELAY_FRAMES)
+				{
+					int spriteIndex = frameIndex - SPRITE_DELAY_FRAMES;
+					if (spriteIndex < NOISE_COUNT)
+					{
+						overlay.AddLayer(_destroySprites[spriteIndex], cx + (xx * 16), cy + (yy * 16));
+					}
+				}
+
+				_frameCounter--;
+			}
+		}
+
+		private sealed class NoiseAnimation : IAnimation
+		{
+			private readonly IUnit _unit;
+			private readonly int _x;
+			private readonly int _y;
+			private readonly byte[,] _noiseMap;
+			private int _frameCounter = NOISE_COUNT + SPRITE_DELAY_FRAMES;
+
+			public bool IsFinished => _frameCounter == 0;
+			public bool RebuildOverlayEachFrame => false;
+
+			internal NoiseAnimation(IUnit unit, int x, int y, IRandomService random)
+			{
+				_unit = unit;
+				_x = x;
+				_y = y;
+				_noiseMap = new byte[320, 200];
+				for (int nx = 0; nx < 320; nx++)
+					for (int ny = 0; ny < 200; ny++)
+					{
+						_noiseMap[nx, ny] = (byte)random.NextInt(1, NOISE_COUNT + 1);
+					}
+			}
+
+			public void DrawAnimation(Picture overlay, int cx, int cy)
+			{
+				if (_frameCounter == NOISE_COUNT + SPRITE_DELAY_FRAMES)
+				{
+					(int xx, int yy) = GetUnitOffset(_unit, _x, _y);
+					overlay.AddLayer(_unit.ToBitmap(), cx + (xx * 16), cy + (yy * 16));
+					if (_unit.Tile.Units.Length > 1 && !_unit.Tile.Fortress && _unit.Tile.City == null)
+					{
+						overlay.AddLayer(_unit.ToBitmap(), cx + (xx * 16) - 1, cy + (yy * 16) - 1);
+					}
+				}
+
+				if (IsFinished)
+				{
+					return;
+				}
+
+				overlay.ApplyNoise(_noiseMap, --_frameCounter);
+			}
+		}
+
+		private readonly struct RenderTile
+		{
+			public bool Visible { get; }
+			public int X { get; }
+			public int Y { get; }
+			public ITile Tile { get; }
+
+			public IBitmap Image => Tile.ToBitmap();
+			public Point Position => new(X * 16, Y * 16);
+
+			public RenderTile(bool visible, int x, int y, ITile tile)
+			{
+				Visible = visible;
+				X = x;
+				Y = y;
+				Tile = tile;
+			}
+		}
+
+		private readonly IAnimation _animation;
 
 		private const int NOISE_COUNT = 8;
 		private const int SPRITE_DELAY_FRAMES = 2;
 
 		private readonly IUnit _unit;
 		private readonly bool _stack;
-		private int _x, _y;
-		
-		private int _noiseCounter = NOISE_COUNT + SPRITE_DELAY_FRAMES;
-		private readonly byte[,]? _noiseMap;
+		private readonly int _x, _y;
 
 		private readonly Picture _gameMap;
 		private Picture? _overlay;
 
-		private readonly IBitmap[]? _destroySprites; // for _animation == DestroyAnimation.Sprites
-
 		private readonly GamePlay _gamePlayDI;
-		private readonly IRandomService _random;
-		
+
 		private IEnumerable<RenderTile> RenderTiles
 		{
 			get
 			{
 				for (int x = 0; x < 15; x++)
-				for (int y = 0; y < 12; y++)
-				{
-					int tx = _x + x;
-					int ty = _y + y;
-					while (tx >= Map.WIDTH) tx -= Map.WIDTH;
-					
-					if (ty < 0 || ty >= Map.HEIGHT) continue;
-
-					yield return new RenderTile
+					for (int y = 0; y < 12; y++)
 					{
-						Visible = Human.Visible(tx, ty),
-						X = x,
-						Y = y,
-						Tile = Map[tx, ty]
-					};
-				}
+						int tx = _x + x;
+						int ty = _y + y;
+						while (tx >= Map.WIDTH) tx -= Map.WIDTH;
+
+						if (ty < 0 || ty >= Map.HEIGHT) continue;
+
+						yield return new RenderTile(
+							visible: Human.Visible(tx, ty),
+							x,
+							y,
+							tile: Map[tx, ty]);
+					}
 			}
 		}
-		
+
 		protected override bool HasUpdate(uint gameTick)
 		{
 			int cx = Settings.RightSideBar ? 0 : 80;
 			int cy = 8;
-			AnimateNoise(cx, cy);
-			DrawDestructionResult(gameTick);
+
+			if (_overlay == null || _animation.RebuildOverlayEachFrame)
+			{
+				_overlay = new Picture(Bitmap, Palette);
+			}
+
+			_animation.DrawAnimation(_overlay, cx, cy);
+
+			this.AddLayer(_gameMap, cx, cy)
+				.AddLayer(_overlay, 0, 0);
+
+			if (_animation.IsFinished)
+			{
+				DrawDestructionResult(gameTick);
+			}
 
 			return true;
 		}
 
 		private void DrawDestructionResult(uint gameTick)
 		{
-			if (_noiseCounter != 0)
-			{
-				return;
-			}
 			IUnit[] units;
 			if (_unit.Tile.Units.Length > 1 && _unit.Tile.City == null && !_unit.Tile.Fortress && _stack)
 			{
@@ -122,50 +232,11 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
-		private void AnimateNoise(int cx, int cy)
-		{
-			if (_overlay == null || _animation == DestroyAnimation.Sprites)
-			{
-				_overlay = new Picture(Bitmap, Palette);
-
-				int xx = _unit.X - _x;
-				int yy = _unit.Y - _y;
-				while (xx < 0) xx += Map.WIDTH;
-				while (xx >= Map.WIDTH) xx -= Map.WIDTH;
-
-				_overlay.AddLayer(_unit.ToBitmap(), cx + (xx * 16), cy + (yy * 16));
-				if (_unit.Tile.Units.Length > 1 && !_unit.Tile.Fortress && _unit.Tile.City == null)
-					_overlay.AddLayer(_unit.ToBitmap(), cx + (xx * 16) - 1, cy + (yy * 16) - 1);
-
-				if (_animation == DestroyAnimation.Sprites)
-				{
-					int frameIndex = NOISE_COUNT + SPRITE_DELAY_FRAMES - _noiseCounter;
-					if (frameIndex >= SPRITE_DELAY_FRAMES)
-					{
-						int spriteIndex = frameIndex - SPRITE_DELAY_FRAMES;
-						if (spriteIndex < NOISE_COUNT)
-						{
-							_overlay.AddLayer(_destroySprites![spriteIndex], cx + (xx * 16), cy + (yy * 16));
-						}
-					}
-					_noiseCounter--;
-				}
-			}
-
-			if (_animation == DestroyAnimation.Noise && _noiseMap != null)
-			{
-				_overlay.ApplyNoise(_noiseMap, --_noiseCounter);
-			}
-
-			this.AddLayer(_gameMap, cx, cy)
-				.AddLayer(_overlay, 0, 0);
-		}
-
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
 			return false;
 		}
-		
+
 		public override bool MouseDown(ScreenEventArgs args)
 		{
 			return false;
@@ -187,7 +258,7 @@ namespace CivOne.Screens
 					}
 					output.AddLayer(t.Image, t.Position);
 					if (Settings.RevealWorld) continue;
-					
+
 					if (!Human.Visible(t.Tile, West)) output.AddLayer(MapTile.Fog[West], t.Position);
 					if (!Human.Visible(t.Tile, North)) output.AddLayer(MapTile.Fog[North], t.Position);
 					if (!Human.Visible(t.Tile, East)) output.AddLayer(MapTile.Fog[East], t.Position);
@@ -199,7 +270,7 @@ namespace CivOne.Screens
 					if (!Settings.RevealWorld && !t.Visible) continue;
 
 					if (t.Tile.City != null) continue;
-					
+
 					if (_unit != Game.ActiveUnit && t.Tile.Units.Any(x => x == _unit))
 					{
 						// Unit is attacked, it is not in a city or fortress, destroy them all
@@ -214,15 +285,15 @@ namespace CivOne.Screens
 					}
 
 					if (units.Length == 0) continue;
-					
-					IUnit? drawUnit = units[0];
+
+					IUnit drawUnit = units[0];
 
 					if (t.Tile.IsOcean && drawUnit.Class != UnitClass.Water && drawUnit.Sentry)
 					{
 						// Do not draw sentried land units at sea
 						continue;
 					}
-					
+
 					output.AddLayer(drawUnit.ToBitmap(), t.Position);
 					if (units.Length == 1) continue;
 					output.AddLayer(drawUnit.ToBitmap(), t.Position.X - 1, t.Position.Y - 1);
@@ -234,9 +305,9 @@ namespace CivOne.Screens
 
 					City city = t.Tile.City;
 					if (city == null) continue;
-					
+
 					output.AddLayer(Icons.City(city), t.Position);
-					
+
 					if (t.Y == 11) continue;
 					int labelX = (t.X == 0) ? t.Position.X : t.Position.X - 8;
 					int labelY = t.Position.Y + 16;
@@ -253,7 +324,7 @@ namespace CivOne.Screens
 			Assert(Common.GamePlay != null, "GamePlay is null in DestroyUnit constructor");
 			_gamePlayDI = Common.GamePlay!;
 
-			_random = RandomServiceFactory.Create();
+			IRandomService random = RandomServiceFactory.Create();
 
 			_unit = unit;
 			_stack = stack;
@@ -263,35 +334,42 @@ namespace CivOne.Screens
 
 			using var defaultPalette = Common.DefaultPalette;
 			Palette = defaultPalette;
-			
-			_gameMap = GameMap;
-			_animation = Settings.DestroyAnimation;
-			if (!Resources.Exists("SP257"))
-				_animation = DestroyAnimation.Noise;
 
-			switch (_animation)
+			_gameMap = GameMap;
+			DestroyAnimation animationType = Settings.DestroyAnimation;
+			if (!Resources.Exists("SP257"))
+			{
+				animationType = DestroyAnimation.Noise;
+			}
+
+			switch (animationType)
 			{
 				case DestroyAnimation.Sprites:
-					_destroySprites = new IBitmap[8];
+					IBitmap[] destroySprites = new IBitmap[8];
 					for (int i = 0; i < 8; i++)
 					{
-						_destroySprites[i] = Resources["SP257"][16 * i, 96, 16, 16] .ColourReplace(9, 0);
+						destroySprites[i] = Resources["SP257"][16 * i, 96, 16, 16].ColourReplace(9, 0);
 					}
+					_animation = new SpriteAnimation(_unit, _x, _y, destroySprites);
 					break;
 				case DestroyAnimation.Noise:
-					_noiseMap = new byte[320, 200];
-					for (int x = 0; x < 320; x++)
-					for (int y = 0; y < 200; y++)
-					{
-						_noiseMap[x, y] = _random.NextByte(1, NOISE_COUNT + 1);
-					}
+					_animation = new NoiseAnimation(_unit, _x, _y, random);
+					break;
+				default:
+					_animation = new NoiseAnimation(_unit, _x, _y, random);
 					break;
 			}
 		}
 
-		protected override void Resize(int width, int height)
+		private static (int X, int Y) GetUnitOffset(IUnit unit, int x, int y)
 		{
-			base.Resize(width, height);
+			int xx = unit.X - x;
+			int yy = unit.Y - y;
+
+			while (xx < 0) xx += Map.WIDTH;
+			while (xx >= Map.WIDTH) xx -= Map.WIDTH;
+
+			return (xx, yy);
 		}
 	}
 }

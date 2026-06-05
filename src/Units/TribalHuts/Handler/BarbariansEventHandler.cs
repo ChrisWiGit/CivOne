@@ -1,4 +1,5 @@
 using CivOne.Enums;
+using CivOne.Services;
 using CivOne.Tiles;
 
 namespace CivOne.Units.TribalHuts
@@ -24,11 +25,7 @@ namespace CivOne.Units.TribalHuts
 
 		public string[] GetEventMessage()
 		{
-			return
-			[
-				"You have unleashed",
-				"a horde of barbarians!"
-			];
+			return TranslationServiceFactory.GetCurrent().TranslateFormattedArray("You have unleashed\na horde of barbarians!");
 		}
 
 		public void PreExecute()

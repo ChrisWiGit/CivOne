@@ -2,6 +2,7 @@
 using System.Linq;
 using CivOne.Advances;
 using CivOne.Enums;
+using CivOne.Services;
 using CivOne.Tasks;
 
 namespace CivOne.Units.TribalHuts
@@ -26,11 +27,7 @@ namespace CivOne.Units.TribalHuts
 
 		public string[] GetEventMessage()
 		{
-			return
-			[
-				"You have discovered",
-				"scrolls of ancient wisdom."
-			];
+			return TranslationServiceFactory.GetCurrent().TranslateFormattedArray("You have discovered\nscrolls of ancient wisdom.");
 		}
 
 		public void PreExecute()

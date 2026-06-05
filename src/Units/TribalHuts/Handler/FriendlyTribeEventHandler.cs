@@ -1,4 +1,5 @@
 using CivOne.Enums;
+using CivOne.Services;
 
 namespace CivOne.Units.TribalHuts
 {
@@ -17,12 +18,7 @@ namespace CivOne.Units.TribalHuts
 
 		public string[] GetEventMessage()
 		{
-			return
-			[
-				"You have discovered",
-				"a friendly tribe of",
-				"skilled mercenaries."
-			];
+			return TranslationServiceFactory.GetCurrent().TranslateFormattedArray("You have discovered\na friendly tribe of\nskilled mercenaries.");
 		}
 
 		public void PostExecute()
