@@ -366,8 +366,8 @@ namespace CivOne.Screens
 			int xx = unit.X - x;
 			int yy = unit.Y - y;
 
-			while (xx < 0) xx += Map.WIDTH;
-			while (xx >= Map.WIDTH) xx -= Map.WIDTH;
+			while (xx < 0) { xx += Map.WIDTH; }
+			while (xx >= Map.WIDTH) { xx -= Map.WIDTH; }
 
 			return (xx, yy);
 		}
