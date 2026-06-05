@@ -69,7 +69,7 @@ namespace CivOne.Civilizations
 				ITile[] tiles = Map.AllTiles().Where(t => t != null && t.IsOcean).ToArray();
 				for (int i = 0; i < 1000; i++)
 				{
-					ITile tile = tiles[random.Next(tiles.Length)];
+					ITile tile = tiles[random.NextInt(tiles.Length)];
 					if (tile == null || !tile.IsOcean || tile.GetBorderTiles().Any(t => t == null || !t.IsOcean)) continue;
 					return tile;
 				}
@@ -85,7 +85,7 @@ namespace CivOne.Civilizations
 				ITile[] tiles = Map.AllTiles().Where(t => t != null && !t.IsOcean && t.Visited != 0).ToArray();
 				for (int i = 0; i < 1000; i++)
 				{
-					ITile tile = tiles[random.Next(tiles.Length)];
+					ITile tile = tiles[random.NextInt(tiles.Length)];
 					if (tile == null || Game.GetCities().Any(c => c.CityTiles.Any(t => t == tile))) continue;
 					return tile;
 				}

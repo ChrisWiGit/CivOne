@@ -283,7 +283,7 @@ namespace CivOne.Screens
 					for (int x = 0; x < 320; x++)
 					for (int y = 0; y < 200; y++)
 					{
-						_noiseMap[x, y] = (byte)_random.Next(1, NOISE_COUNT + 1);
+						_noiseMap[x, y] = _random.NextByte(1, NOISE_COUNT + 1);
 					}
 					break;
 			}

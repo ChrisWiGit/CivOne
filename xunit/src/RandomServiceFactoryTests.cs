@@ -47,7 +47,7 @@ namespace CivOne.UnitTests
 			int expected = random.Next(0, 100);
 			random = new Random(1234);
 			testee = new CommonRandomService(() => random);
-			int actual = testee.Next(0, 100);
+			int actual = testee.NextInt(0, 100);
 
 			// Assert
 			Assert.Equal(expected, actual);
@@ -69,11 +69,15 @@ namespace CivOne.UnitTests
 
 		private sealed class StubRandomService : IRandomService
 		{
-			public int Next(int max) => 0;
+			public int NextInt(int max) => 0;
 
-			public int Next(int min, int max) => min;
+			public int NextInt(int min, int max) => min;
 
 			public bool Hit(int percent) => percent > 0;
+
+			public byte NextByte(byte min, byte maxExclusive) => (byte)NextInt(min, maxExclusive);
+
+			public byte NextByte(byte maxExclusive) => (byte)NextInt(maxExclusive);
 		}
 	}
 }

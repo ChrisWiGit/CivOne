@@ -82,11 +82,11 @@ namespace CivOne.Screens.Reports
 			IRandomService effectiveRandomService = randomService ?? RandomServiceFactory.Create();
 
 			_historian = randomSelection || historian == null
-				? Historians[effectiveRandomService.Next(Historians.Length)]
+				? Historians[effectiveRandomService.NextInt(Historians.Length)]
 				: historian.Value;
 
 			_category = randomSelection || category == null
-				? CategoryCycle[effectiveRandomService.Next(CategoryCycle.Length)]
+				? CategoryCycle[effectiveRandomService.NextInt(CategoryCycle.Length)]
 				: category.Value;
 			_showAllCivilizations = false;
 			_debugMode = debugMode;

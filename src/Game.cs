@@ -138,7 +138,7 @@ namespace CivOne
 				if (_anthologyTurn >= _gameTurn)
 				{
 					//TODO: Show anthology
-					_anthologyTurn = (ushort)(_gameTurn + 20 + _randomService.Next(40));
+					_anthologyTurn = (ushort)(_gameTurn + 20 + _randomService.NextInt(40));
 				}
 			}
 		}
@@ -364,7 +364,7 @@ namespace CivOne
 					}
 				}
 
-				IEnumerable<City> disasterCities = _cities.OrderBy(o => _randomService.Next(0, 1000)).Take(2).AsEnumerable();
+				IEnumerable<City> disasterCities = _cities.OrderBy(o => _randomService.NextInt(0, 1000)).Take(2).AsEnumerable();
 				foreach (City city in disasterCities)
 					city.Disaster();
 
@@ -373,7 +373,7 @@ namespace CivOne
 					// KBR 20200927 use cdonges land spawn code
 					// https://github.com/cdonges/CivOne/commit/e54fe9377030de625c51b674c0ecf29a335e0556
 					// TODO land spawning and sea spawning as separate timing / acts
-					if (_randomService.Next(100) > 50)
+					if (_randomService.NextInt(100) > 50)
 					{
 						ITile? tile = Barbarian.LandSpawnPosition;
 						if (tile != null)
@@ -572,7 +572,7 @@ namespace CivOne
 						else if (tiles[0].DistanceTo(unit.Goto) == distance)
 						{
 							// Distance is unchanged, 50% chance to cancel goto
-							if (_randomService.Next(0, 100) < 50)
+							if (_randomService.NextInt(0, 100) < 50)
 							{
 								unit.Goto = Point.Empty;
 								return;

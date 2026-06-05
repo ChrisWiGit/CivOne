@@ -208,11 +208,15 @@ namespace CivOne.UnitTests
 
 		private sealed class StubRandomService : IRandomService
 		{
-			public int Next(int max) => 0;
+			public int NextInt(int max) => 0;
 
-			public int Next(int min, int max) => min;
+			public int NextInt(int min, int max) => min;
 
 			public bool Hit(int percent) => percent > 0;
+
+			public byte NextByte(byte min, byte maxExclusive) => min;
+
+			public byte NextByte(byte maxExclusive) => 0;
 		}
 
 		private sealed class TestUnit : MockedIUnit, IUnit

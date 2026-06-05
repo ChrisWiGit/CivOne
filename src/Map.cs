@@ -370,7 +370,7 @@ namespace CivOne
 			_mapResourceProvider = mapResourceProvider ?? new DefaultMapResourceProvider();
 			_mapGenerationSettings = mapGenerationSettings ?? new DefaultMapGenerationSettings();
 			_mapPersistenceService = mapPersistenceService ?? new DefaultMapPersistenceService();
-			_terrainMasterWord = _randomService.Next(16);
+			_terrainMasterWord = _randomService.NextInt(16);
 			SetReady(false);
 
 			Log("Map instance created");

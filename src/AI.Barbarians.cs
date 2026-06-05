@@ -14,6 +14,7 @@ using CivOne.Services.Random;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
+using System;
 using System.Drawing;
 using System.Linq;
 
@@ -79,7 +80,7 @@ namespace CivOne
 					foreach (IUnit landUnit in unit.Tile.Units.Where(x => x.Class == UnitClass.Land).ToList())
 					{
 						landUnit.Sentry = false;
-						ITile dest = landingZones[_randomService.Next(landingZones.Length)];
+						ITile dest = landingZones[_randomService.NextInt(landingZones.Length)];
 						landUnit.MoveTo(dest.X - landUnit.X, dest.Y - landUnit.Y);
 					}
 					unit.SkipTurn();
@@ -149,7 +150,7 @@ namespace CivOne
 					ITile[] landTiles = [.. unit.Tile.GetBorderTiles().Where(x => !x.IsOcean && !IsPolarTile(x) && x.Units.Any(u => u.Owner != 0))];
 					if (landTiles.Length > 0)
 					{
-						ITile tile = landTiles[_randomService.Next(landTiles.Length)];
+						ITile tile = landTiles[_randomService.NextInt(landTiles.Length)];
 						if (!ship.MoveTo(tile.X - unit.X, tile.Y - unit.Y))
 							unit.SkipTurn();
 						return;
@@ -173,11 +174,11 @@ namespace CivOne
 				ITile[] friendlyTiles = [.. unit.Tile.GetBorderTiles().Where(x => !x.IsOcean && !IsPolarTile(x) && x.Units.Length != 0 && x.Units[0].Owner == 0)];
 				if (friendlyTiles.Length > 0)
 				{
-					ITile moveTo = friendlyTiles[_randomService.Next(friendlyTiles.Length)];
+					ITile moveTo = friendlyTiles[_randomService.NextInt(friendlyTiles.Length)];
 					int relX = moveTo.X - unit.X;
 					int relY = moveTo.Y - unit.Y;
 					unit.MoveTo(relX, relY);
-					unit.WorkProgress = (byte)(10 + _randomService.Next(0, 20));
+					unit.WorkProgress = (byte)(10 + _randomService.NextByte(0, 20));
 					return;
 				}
 
@@ -196,7 +197,7 @@ namespace CivOne
 				ITile[] unfriend = [.. unit.Tile.GetBorderTiles().Where(z => !z.IsOcean && !IsPolarTile(z) && z.Units.Length == 0)];
 				if (unfriend.Length > 0)
 				{
-					ITile moveTo = unfriend[_randomService.Next(unfriend.Length)];
+					ITile moveTo = unfriend[_randomService.NextInt(unfriend.Length)];
 					int relX = moveTo.X - unit.X;
 					int relY = moveTo.Y - unit.Y;
 					unit.MoveTo(relX, relY);
@@ -219,7 +220,7 @@ namespace CivOne
 			}
 			else
 			{
-				ITile moveTo = tiles[_randomService.Next(tiles.Length)];
+				ITile moveTo = tiles[_randomService.NextInt(tiles.Length)];
 				int relX = moveTo.X - unit.X;
 				int relY = moveTo.Y - unit.Y;
 				while (relX < -1) relX += Map.WIDTH;
@@ -240,12 +241,12 @@ namespace CivOne
 		{
 			IRandomService randomService = RandomServiceFactory.Create();
 
-			if (randomService.Next(100) < 95)
+			if (randomService.NextInt(100) < 95)
 			{
 				for (int i = 0; i < 1000; i++)
 				{
-					int relX = randomService.Next(-1, 2);
-					int relY = randomService.Next(-1, 2);
+					int relX = randomService.NextInt(-1, 2);
+					int relY = randomService.NextInt(-1, 2);
 					if (relX == 0 && relY == 0) continue;
 					if (unit.Tile[relX, relY] is Ocean || IsPolarTile(unit.Tile[relX, relY])) continue;
 					if (unit is Diplomat && unit.Tile[relX, relY].City != null) continue;

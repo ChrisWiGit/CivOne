@@ -96,7 +96,7 @@ namespace CivOne.Screens
 					while (x >= _starFieldWidth)
 					{
 						x -= _starFieldWidth;
-						y = _randomService.Next(_starFieldHeight);
+						y = _randomService.NextInt(_starFieldHeight);
 					}
 
 					_starfieldPoints[index] = (x, y, starLayer);
@@ -119,7 +119,7 @@ namespace CivOne.Screens
 			for (int i = 0; i < points.Length; i++)
 			{
 				int layer = i / StarsPerLayer;
-				points[i] = (_randomService.Next(starFieldWidth), _randomService.Next(starFieldHeight), layer);
+				points[i] = (_randomService.NextInt(starFieldWidth), _randomService.NextInt(starFieldHeight), layer);
 			}
 
 			_starfieldPoints = points;

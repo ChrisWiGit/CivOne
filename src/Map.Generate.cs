@@ -103,7 +103,7 @@ namespace CivOne
                 for( int x = 0; x < WIDTH; x++ )
                 {
                     float latitudePosition = Math.Abs( y - equator ) / maxDistanceFromEquator;
-                    latitudePosition += ( _randomService.Next( 3 ) - 1 ) * randomDrift;
+                    latitudePosition += ( _randomService.NextInt( 3 ) - 1 ) * randomDrift;
                     latitudePosition += temperatureShift;
                     latitudePosition = Math.Clamp( latitudePosition, 0F, 1F );
 
@@ -145,7 +145,7 @@ namespace CivOne
                         case 2:
                         case 3: _tiles[ x, y ] = new Hills( x, y, special ); break;
                         default:
-                            _tiles[ x, y ] = _randomService.Next( 100 ) < ComputeMountainGenerationReductionPercent()
+                            _tiles[ x, y ] = _randomService.NextInt( 100 ) < ComputeMountainGenerationReductionPercent()
                                 ? new Hills( x, y, special )
                                 : new Mountains( x, y, special );
                             break;
@@ -182,7 +182,7 @@ namespace CivOne
                     else if( wetness > 0 )
                     {
                         bool special = TileIsSpecial( x, y );
-                        int rainfall = _randomService.Next( 7 - ( (int)ClimateValue * 2 ) );
+                        int rainfall = _randomService.NextInt( 7 - ( (int)ClimateValue * 2 ) );
                         wetness -= rainfall;
 
                         switch( _tiles[ x, y ].Type )
@@ -211,7 +211,7 @@ namespace CivOne
                     else if( wetness > 0 )
                     {
                         bool special = TileIsSpecial( x, y );
-                        int rainfall = _randomService.Next( 7 - ( (int)ClimateValue * 2 ) );
+                        int rainfall = _randomService.NextInt( 7 - ( (int)ClimateValue * 2 ) );
                         wetness -= rainfall;
 
                         switch( _tiles[ x, y ].Type )
@@ -242,12 +242,12 @@ namespace CivOne
             {
                 if( i % 2 == 0 )
                 {
-                    x = _randomService.Next( WIDTH );
-                    y = _randomService.Next( HEIGHT );
+                    x = _randomService.NextInt( WIDTH );
+                    y = _randomService.NextInt( HEIGHT );
                 }
                 else
                 {
-                    switch( _randomService.Next( 8 ) )
+                    switch( _randomService.NextInt( 8 ) )
                     {
                         case 0: { x--; y--; break; }
                         case 1: { y--; break; }
@@ -276,7 +276,7 @@ namespace CivOne
                     case Terrain.Grassland2: _tiles[ x, y ] = new Forest( x, y, special ); break;
                     case Terrain.Jungle: _tiles[ x, y ] = new Swamp( x, y, special ); break;
                     case Terrain.Hills:
-                        if( _randomService.Next( 100 ) < mountainUpliftChancePercent )
+                        if( _randomService.NextInt( 100 ) < mountainUpliftChancePercent )
                         {
                             _tiles[ x, y ] = new Mountains( x, y, special );
                         }
@@ -287,12 +287,12 @@ namespace CivOne
                             ( x == ( WIDTH - 1 ) || _tiles[ x + 1, y + 1 ].Type != Terrain.Ocean ) &&
                             ( y == ( HEIGHT - 1 ) || _tiles[ x - 1, y + 1 ].Type != Terrain.Ocean ) )
                             _tiles[ x, y ] = new Ocean( x, y, special );
-                        else if( _randomService.Next( 100 ) < mountainErosionChancePercent )
+                        else if( _randomService.NextInt( 100 ) < mountainErosionChancePercent )
                             _tiles[ x, y ] = new Hills( x, y, special );
                         break;
                     case Terrain.Desert: _tiles[ x, y ] = new Plains( x, y, special ); break;
                     case Terrain.Arctic:
-                        if( _randomService.Next( 100 ) < ( mountainUpliftChancePercent / 2 ) )
+                        if( _randomService.NextInt( 100 ) < ( mountainUpliftChancePercent / 2 ) )
                         {
                             _tiles[ x, y ] = new Mountains( x, y, special );
                         }
@@ -419,7 +419,7 @@ namespace CivOne
             {
                 foreach (int y in new[] { 0, 1, (HEIGHT - 2), (HEIGHT - 1) })
                 {
-                    int x = _randomService.Next(WIDTH);
+                    int x = _randomService.NextInt(WIDTH);
                     _tiles[x, y] = new Tundra(x, y, false);
                 }
             }

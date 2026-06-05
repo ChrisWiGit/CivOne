@@ -73,7 +73,7 @@ namespace CivOne.Services
 
 		private int GetIntervalYears()
 		{
-			return _randomService.Next(MinIntervalYears, MaxIntervalYears + 1);
+			return _randomService.NextInt(MinIntervalYears, MaxIntervalYears + 1);
 		}
 	}
 }

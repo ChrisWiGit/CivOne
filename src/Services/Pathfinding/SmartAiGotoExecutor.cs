@@ -74,12 +74,12 @@ namespace CivOne.Services.Pathfinding
 				return true;
 			}
 
-			if (unit.Role == UnitRole.Transport && _randomService.Next(0, 100) < 67)
+			if (unit.Role == UnitRole.Transport && _randomService.NextInt(0, 100) < 67)
 			{
 				return true;
 			}
 
-			if (unit.Attack < nextTile.Units.Max(x => x.Defense) && _randomService.Next(0, 100) < 50)
+			if (unit.Attack < nextTile.Units.Max(x => x.Defense) && _randomService.NextInt(0, 100) < 50)
 			{
 				return true;
 			}
@@ -99,12 +99,12 @@ namespace CivOne.Services.Pathfinding
 
 		private AiGotoExecutionResult HandleMoveFailure(IUnit unit)
 		{
-			if (_randomService.Next(0, 100) < 67)
+			if (_randomService.NextInt(0, 100) < 67)
 			{
 				return ResetGotoAndContinue(unit);
 			}
 
-			if (_randomService.Next(0, 100) < 67)
+			if (_randomService.NextInt(0, 100) < 67)
 			{
 				unit.SkipTurn();
 				return AiGotoExecutionResult.TurnComplete;

@@ -173,7 +173,7 @@ namespace CivOne
 				{
 					// If there are no valid hills or mountains tiles to start a river, 
 					// and the fallback chance is greater than zero, use land tiles as potential river start points.
-					if (!useLandFallback || _randomService.Next(100) >= _fallbackChance)
+					if (!useLandFallback || _randomService.NextInt(100) >= _fallbackChance)
 					{
 						continue;
 					}
@@ -193,7 +193,7 @@ namespace CivOne
 				// If it cannot find a valid starting tile within the allowed attempts, it logs a message and skips the river creation attempt.
 				for (int startSearchAttempts = 0; startSearchAttempts < maxRiverStartSearchAttempts && riverStartCandidates.Count > 0; startSearchAttempts++)
 				{
-					int hillIndex = _randomService.Next(riverStartCandidates.Count);
+					int hillIndex = _randomService.NextInt(riverStartCandidates.Count);
 					int tileIndex = riverStartCandidates[hillIndex];
 					riverStartCandidates.RemoveAt(hillIndex);
 					int x = tileIndex % _width;
@@ -217,7 +217,7 @@ namespace CivOne
 
 				// directionIndex is used to determine the direction of the river walk. 
 				// It is initialized to a random value and then updated in each step of the walk to create a somewhat natural river path.
-				int directionIndex = _randomService.Next(4) * 2;
+				int directionIndex = _randomService.NextInt(4) * 2;
 				bool nearOcean = false;
 				bool riverWalkFailed = false;
 				Dictionary<int, ITile> changedTiles = [];
@@ -234,7 +234,7 @@ namespace CivOne
 
 					_tiles[tile.X, tile.Y] = new River(tile.X, tile.Y);
 					
-					int riverWalkStepCount = _randomService.Next(2);
+					int riverWalkStepCount = _randomService.NextInt(2);
 					directionIndex = ((riverWalkStepCount - riverLength % 2) * 2 + directionIndex) & 0x07;
 					riverLength++;
 
