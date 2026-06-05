@@ -1,3 +1,4 @@
+using CivOne.Services;
 using CivOne.Tasks;
 
 namespace CivOne.Units.TribalHuts
@@ -18,11 +19,7 @@ namespace CivOne.Units.TribalHuts
 
 		public string[] GetEventMessage()
 		{
-			return
-			[
-				"You have discovered",
-				"an advanced tribe."
-			];
+			return TranslationServiceFactory.GetCurrent().TranslateFormattedArray("You have discovered\nan advanced tribe.");
 		}
 
 		public void PostExecute()
