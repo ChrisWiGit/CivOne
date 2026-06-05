@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -71,7 +72,7 @@ Try 'civone-sdl --help' for more information.
 			settings["mcp-artifacts"] = null;
 			settings["mcp-saves"] = null;
 			settings.ConsoleLogging = true;
-			string languagePostfix = null;
+			string? languagePostfix = null;
 			for (int i = 0; i < args.Length; i++)
 			{
 				string cmd = args[i].TrimStart('-');
@@ -217,8 +218,8 @@ Try 'civone-sdl --help' for more information.
 							return;
 						}
 
-						char driveLetter = char.ToUpper(match.Groups[1].Value[0]);
-						int slotId = int.Parse(match.Groups[2].Value);
+						char driveLetter = char.ToUpper(match.Groups[1].Value[0], CultureInfo.InvariantCulture);
+						int slotId = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
 
 						settings.LoadSaveGameSlot = new Tuple<char, int>(driveLetter, slotId);
 						break;
@@ -266,13 +267,13 @@ Try 'civone-sdl --help' for more information.
 			IUtcClock clock = new SystemUtcClock();
 			IDebounceService debounceService = DebounceServiceFactory.Create(message => runtime.Log(message), clock);
 
-			using GameWindow window = new(runtime, (bool)settings["software-render"], debounceService);
+			using GameWindow window = new(runtime, (bool)(settings["software-render"] ?? false), debounceService);
 			runtime.Log("Game started");
 			window.Run();
 			runtime.Log("Game stopped");
 		}
 
-		private static bool ApplyLanguageParameter(RuntimeSettings settings, string languagePostfix)
+		private static bool ApplyLanguageParameter(RuntimeSettings settings, string? languagePostfix)
 		{
 			if (string.IsNullOrEmpty(languagePostfix))
 			{

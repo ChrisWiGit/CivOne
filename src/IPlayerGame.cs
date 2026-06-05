@@ -29,7 +29,7 @@ namespace CivOne
 		IEnumerable<Player> Players { get; }
 
 		byte PlayerNumber(Player player);
-		Player GetPlayer(byte number);
+		Player? GetPlayer(byte number);
 
 		City[] GetCities();
 		IUnit[] GetUnits();

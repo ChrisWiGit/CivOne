@@ -66,27 +66,29 @@ namespace CivOne.Tiles
 			return borderTile.Type;
 		}
 
-		public static ITile GetBorderTile(this ITile tile, Direction direction)
+		public static ITile GetBorderTile(this ITile? tile, Direction direction)
 		{
 			if (tile == null)
 			{
 				Debug.Assert(false, "TileExtensions.GetBorderTile: tile was null");
 				LogNullTile(nameof(GetBorderTile));
+
 				return null;
 			}
 
-			switch (direction)
+			return direction switch
 			{
-				case North: return tile[0, -1];
-				case East: return tile[1, 0];
-				case South: return tile[0, 1];
-				case West: return tile[-1, 0];
-				case NorthWest: return tile[-1, -1];
-				case NorthEast: return tile[1, -1];
-				case SouthWest: return tile[-1, 1];
-				case SouthEast: return tile[1, 1];
-			}
-			return null;
+				North => tile[0, -1],
+				East => tile[1, 0],
+				South => tile[0, 1],
+				West => tile[-1, 0],
+				NorthWest => tile[-1, -1],
+				NorthEast => tile[1, -1],
+				SouthWest => tile[-1, 1],
+				SouthEast => tile[1, 1],
+				None => tile,
+				_ => throw new ArgumentException($"Invalid direction {direction} in GetBorderTile"),
+			};
 		}
 		
         /// <summary>
@@ -266,9 +268,11 @@ namespace CivOne.Tiles
 
 
             // fire-eggs mine drawing goes under coal
-            var special = MapTile.TileSpecial(tile);
-            if (special != MapTile.Coal)
-			    output.AddLayer(special);
+            ISprite? special = MapTile.TileSpecial(tile);
+            if (special != null && special != MapTile.Coal)
+			{
+				output.AddLayer(special);
+			}
 			
 			// Add tile improvements
 			if (tile.Type != Terrain.River && settings.Improvements)
@@ -318,9 +322,10 @@ namespace CivOne.Tiles
 			{
 				output.AddLayer(Icons.City(tile.City, smallFont: settings.CitySmallFonts));
 				if (settings.ActiveUnit && 
+					player != null && // make sure we have a player to compare visibility against. 
 					tile.Units.Any(u => u == Game.ActiveUnit && u.Owner != Game.PlayerNumber(player)))
 				{
-					output.AddLayer(tile.UnitsToPicture(), -1, -1, dispose: true);
+					output.AddLayer(tile.UnitsToPicture()!, -1, -1, dispose: true);
 				}
 			}
 			
@@ -329,16 +334,16 @@ namespace CivOne.Tiles
 				int unitCount = tile.Units.Count(u => settings.Units || player == null || u.Owner != Game.PlayerNumber(player));
 				if (unitCount > 0)
 				{
-					output.AddLayer(tile.UnitsToPicture(), dispose: true);
+					output.AddLayer(tile.UnitsToPicture()!, dispose: true);
 				}
 			}
 
 			return output;
 		}
 
-		public static IBitmap UnitsToPicture(this ITile tile)
+		public static IBitmap? UnitsToPicture(this ITile? tile)
 		{
-			if (tile?.Units.Length == 0)
+			if (tile == null || tile.Units.Length == 0)
 			{
 				return null;
 			}
@@ -357,7 +362,7 @@ namespace CivOne.Tiles
 				return null;
 			}
 
-			IUnit firstUnitToDraw = units.First();
+			IUnit? firstUnitToDraw = units.First();
 
 			
 
@@ -369,11 +374,11 @@ namespace CivOne.Tiles
 
 			if (isActiveUnitOnCurrentTile)
 			{
-				firstUnitToDraw = Game.ActiveUnit;
+				firstUnitToDraw = Game.ActiveUnit!;
 			}
 			else if (tile.IsOcean)
 			{
-				IUnit firstWaterUnit = units.FirstOrDefault(x => x.Class == UnitClass.Water);
+				IUnit? firstWaterUnit = units.FirstOrDefault(x => x.Class == UnitClass.Water);
 				firstUnitToDraw = firstWaterUnit ?? units.FirstOrDefault(findFirstAvailableUnit => !findFirstAvailableUnit.Sentry);
 			}
 

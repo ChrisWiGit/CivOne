@@ -12,7 +12,7 @@ using CivOne.Tasks;
 
 namespace CivOne.Events
 {
-	public delegate void TaskEventHandler(object sender, TaskEventArgs args);
+	public delegate void TaskEventAction(object sender, TaskEventArgs args);
 
 	public class TaskEventArgs : EventArgs
 	{

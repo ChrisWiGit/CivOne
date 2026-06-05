@@ -80,9 +80,9 @@ namespace CivOne
 
 			~Texture() => Dispose(disposing: false);
 
-			internal Texture(IntPtr renderer, Palette palette, Bytemap bytemap)
+			internal Texture(IntPtr? renderer, Palette? palette, Bytemap? bytemap)
 			{
-				if (renderer == IntPtr.Zero || palette == null || bytemap == null)
+				if (renderer == null || renderer == IntPtr.Zero || palette == null || palette == Palette.Empty || palette.Length == 0 || bytemap == null)
 				{
 					// Do not load empty bitmap
 					_handle = IntPtr.Zero;
@@ -93,8 +93,8 @@ namespace CivOne
 				Height = bytemap.Height;
 
 				_rect = new SDL_Rect { X = 0, Y = 0, W = Width, H = Height };
-				_renderer = renderer;
-				_handle = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TextureAccess.SDL_TEXTUREACCESS_STREAMING, Width, Height);
+				_renderer = renderer.Value;
+				_handle = SDL_CreateTexture(renderer.Value, SDL_PIXELFORMAT_ABGR8888, SDL_TextureAccess.SDL_TEXTUREACCESS_STREAMING, Width, Height);
 				if (_handle == IntPtr.Zero)
 				{
 					return;

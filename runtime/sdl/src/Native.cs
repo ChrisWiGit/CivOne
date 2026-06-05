@@ -44,7 +44,7 @@ namespace CivOne
 			}
 		}
 		
-		internal static string FileChooser(
+		internal static string? FileChooser(
 			bool save,
 			string title,
 			string initialFileName,

@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -27,6 +28,7 @@ using CivOne.Services;
 using CivOne.Services.EndGame;
 using CivOne.Services.GlobalWarming;
 using CivOne.Services.Palace;
+using CivOne.Services.Random;
 using CivOne.Services.SpaceShip;
 using CivOne.Tasks;
 using CivOne.Tiles;
@@ -38,6 +40,7 @@ namespace CivOne
 	public partial class Game : BaseInstance, IGame, ILogger, IGameCitizenDependency, ISveSaveCompatibilityProvider
 	{
 		private static readonly string GameVersion = GetGameVersion();
+		private readonly IRandomService _randomService = RandomServiceFactory.Create();
 
 		private readonly int _difficulty, _competition;
 		private readonly Player[] _players;
@@ -48,7 +51,10 @@ namespace CivOne
 
 		internal readonly string[] CityNames = [.. Common.AllCityNames];
 
-		public int _currentPlayer; // public for unit testing
+		private int _currentPlayer;
+
+		public void SetCurrentPlayerForTesting(int currentPlayer) => _currentPlayer = currentPlayer;
+		
 		private int _activeUnit;
 
 		private ushort _anthologyTurn;
@@ -97,8 +103,8 @@ namespace CivOne
 		}
 		public bool GetAdvanceOrigin(IAdvance advance, Player player)
 		{
-			if (_advanceOrigin.ContainsKey(advance.Id))
-				return _advanceOrigin[advance.Id] == PlayerNumber(player);
+			if (_advanceOrigin.TryGetValue(advance.Id, out byte value))
+				return value == PlayerNumber(player);
 			return false;
 		}
 
@@ -116,7 +122,7 @@ namespace CivOne
 			get { return Settings.Instance.DeityEnabled ? 5 : 4; }
 		}
 
-		public bool HasUpdate => false;
+		public static bool HasUpdate => false;
 
 		private ushort _gameTurn;
 		public ushort GameTurn
@@ -132,7 +138,7 @@ namespace CivOne
 				if (_anthologyTurn >= _gameTurn)
 				{
 					//TODO: Show anthology
-					_anthologyTurn = (ushort)(_gameTurn + 20 + Common.Random.Next(40));
+					_anthologyTurn = (ushort)(_gameTurn + 20 + _randomService.Next(40));
 				}
 			}
 		}
@@ -219,8 +225,7 @@ namespace CivOne
 
 		internal Player CurrentPlayer => _players[_currentPlayer];
 
-		internal ReplayData[] GetReplayData() => _replayData.ToArray();
-		internal T[] GetReplayData<T>() where T : ReplayData => _replayData.Where(x => x is T).Select(x => (x as T)).ToArray();
+		internal T[] GetReplayData<T>() where T : ReplayData => [.. _replayData.OfType<T>()];
 
 		internal void RegisterFutureTech(Player player)
 		{
@@ -238,13 +243,13 @@ namespace CivOne
 			_hostileActionOccurred = true;
 		}
 
-		private void PlayerDestroyed(object sender, EventArgs args)
+		private void PlayerDestroyed(object? sender, EventArgs args)
 		{
-			Player player = (sender as Player);
+			if (sender is not Player player) throw new ArgumentException("Sender is not a Player.", nameof(sender));
 
 			ICivilization destroyed = player.Civilization;
 			ICivilization destroyedBy = Game.CurrentPlayer.Civilization;
-			if (destroyedBy == destroyed) destroyedBy = Game.GetPlayer(0).Civilization;
+			if (destroyedBy == destroyed) destroyedBy = Game.GetPlayer(0)!.Civilization;
 
 			_replayData.Add(new ReplayData.CivilizationDestroyed(_gameTurn, destroyed.PreferredPlayerNumber, destroyedBy.PreferredPlayerNumber));
 
@@ -285,20 +290,23 @@ namespace CivOne
 			return 0;
 		}
 
-		public Player GetPlayer(byte number)
+		public Player? GetPlayer(byte number)
 		{
-			if (_players.Length < number)
+			if (number >= _players.Length)
+			{
+				Debug.Assert(false, $"Player number {number} is out of bounds. Returning null.");
 				return null;
+			}
 			return _players[number];
 		}
 
 		internal IEnumerable<Player> Players => _players;
 
 
-		internal IGlobalWarmingService globalWarmingService;
+		internal IGlobalWarmingService _globalWarmingService;
 
-		public IGlobalWarmingService GlobalWarmingService => globalWarmingService;
-		internal IGlobalWarmingScourgeService globalWarmingScourgeService;
+		public IGlobalWarmingService GlobalWarmingService => _globalWarmingService;
+		internal IGlobalWarmingScourgeService _globalWarmingScourgeService;
 
 		internal readonly IPalaceUpgradeService _palaceUpgradeService;
 		internal readonly ICivilizationRankingTriggerService _civilizationRankingTriggerService;
@@ -356,7 +364,7 @@ namespace CivOne
 					}
 				}
 
-				IEnumerable<City> disasterCities = _cities.OrderBy(o => Common.Random.Next(0, 1000)).Take(2).AsEnumerable();
+				IEnumerable<City> disasterCities = _cities.OrderBy(o => _randomService.Next(0, 1000)).Take(2).AsEnumerable();
 				foreach (City city in disasterCities)
 					city.Disaster();
 
@@ -365,9 +373,9 @@ namespace CivOne
 					// KBR 20200927 use cdonges land spawn code
 					// https://github.com/cdonges/CivOne/commit/e54fe9377030de625c51b674c0ecf29a335e0556
 					// TODO land spawning and sea spawning as separate timing / acts
-					if (Common.Random.Next(100) > 50)
+					if (_randomService.Next(100) > 50)
 					{
-						ITile tile = Barbarian.LandSpawnPosition;
+						ITile? tile = Barbarian.LandSpawnPosition;
 						if (tile != null)
 						{
 							foreach (UnitType unitType in Barbarian.LandSpawnUnits)
@@ -376,7 +384,7 @@ namespace CivOne
 					}
 					else
 					{
-						ITile tile = Barbarian.SeaSpawnPosition;
+						ITile? tile = Barbarian.SeaSpawnPosition;
 						if (tile != null)
 						{
 							foreach (UnitType unitType in Barbarian.SeaSpawnUnits)
@@ -478,13 +486,13 @@ namespace CivOne
 
 		protected void HandleGlobalWarming()
 		{
-			if (!globalWarmingService.IsGlobalWarmingOnNewTurn())
+			if (!_globalWarmingService.IsGlobalWarmingOnNewTurn())
 			{
 				return;
 			}
 			
-			globalWarmingScourgeService.UnleashScourgeOfPollution();
-			globalWarmingService.RefreshPollutionState();
+			_globalWarmingScourgeService.UnleashScourgeOfPollution();
+			_globalWarmingService.RefreshPollutionState();
 
 			GameTask.Enqueue(Message.Newspaper(null, TranslateArray("Global temperature\nrises! Icecaps melt.\nSevere Drought.")));
 		}
@@ -506,7 +514,7 @@ namespace CivOne
 
 		private void SaveCosAutoSave()
 		{
-			ISaveGamePathProvider pathProvider = new SaveGamePathProvider(RuntimeHandler.Runtime, Settings.Instance);
+			SaveGamePathProvider pathProvider = new(RuntimeHandler.Runtime, Settings.Instance);
 			string saveDirectory = pathProvider.EnsureAutoSaveDirectory();
 			string autoSaveFile = Path.Combine(saveDirectory, "autosave.cos");
 			new YamlSaveGameService(this).SaveCos(autoSaveFile);
@@ -517,14 +525,14 @@ namespace CivOne
 
 		public void Update()
 		{
-			IUnit unit = ActiveUnit;
+			IUnit? unit = ActiveUnit;
 			if (CurrentPlayer == HumanPlayer)
 			{
 				LastActivePlayerUnit = unit ?? LastActivePlayerUnit;
 
 				if (unit != null && !unit.Goto.IsEmpty)
 				{
-					ITile[] tiles = (unit as BaseUnit).MoveTargets.OrderBy(x => x.DistanceTo(unit.Goto)).ThenBy(x => x.Movement).ToArray();
+					ITile[] tiles = [.. (unit as BaseUnit)!.MoveTargets.OrderBy(x => x.DistanceTo(unit.Goto)).ThenBy(x => x.Movement)];
 
 					if (Settings.Instance.PathFinding)
 					{
@@ -564,7 +572,7 @@ namespace CivOne
 						else if (tiles[0].DistanceTo(unit.Goto) == distance)
 						{
 							// Distance is unchanged, 50% chance to cancel goto
-							if (Common.Random.Next(0, 100) < 50)
+							if (_randomService.Next(0, 100) < 50)
 							{
 								unit.Goto = Point.Empty;
 								return;
@@ -629,13 +637,12 @@ namespace CivOne
 			ICivilization[] civilizations = Common.Civilizations;
 			int startIndex = Enumerable.Range(1, civilization.Id - 1).Sum(i => civilizations[i].CityNames.Length);
 			int spareIndex = Enumerable.Range(1, Common.Civilizations.Length - 1).Sum(i => civilizations[i].CityNames.Length);
-			int[] used = _cities.Select(c => c.NameId).ToArray();
-			int[] available = Enumerable.Range(0, CityNames.Length)
+			int[] used = [.. _cities.Select(c => c.NameId)];
+			int[] available = [.. Enumerable.Range(0, CityNames.Length)
 				.Where(i => !used.Contains(i))
 				.OrderBy(i => (i >= startIndex && i < startIndex + civilization.CityNames.Length) ? 0 : 1)
 				.ThenBy(i => (i >= spareIndex) ? 0 : 1)
-				.ThenBy(i => i)
-				.ToArray();
+				.ThenBy(i => i)];
 			if (player.CityNamesSkipped >= available.Length)
 				return 0;
 
@@ -644,7 +651,7 @@ namespace CivOne
 			return nameId;
 		}
 
-		internal City AddCity(Player player, int nameId, int x, int y)
+		internal City? AddCity(Player player, int nameId, int x, int y)
 		{
 			bool hasCity = _cities.Any(c => c.X == x && c.Y == y);
 			if (hasCity)
@@ -695,97 +702,104 @@ namespace CivOne
 			city.Owner = 0;
 		}
 
-		internal City GetCity(int x, int y)
+		internal City? GetCity(int x, int y)
 		{
 			while (x < 0) x += Map.WIDTH;
 			while (x >= Map.WIDTH) x -= Map.WIDTH;
 			if (y < 0) return null;
 			if (y >= Map.HEIGHT) return null;
-			return _cities.Where(c => c.X == x && c.Y == y && c.Size > 0).FirstOrDefault();
+			return _cities.FirstOrDefault(c => c.X == x && c.Y == y && c.Size > 0);
 		}
 
-		private static IUnit CreateUnit(UnitType type, int x, int y)
+		private static IUnit? CreateUnit(UnitType type, int x, int y)
 		{
-			IUnit unit = CreateUnit(type);
+			IUnit? unit = CreateUnit(type);
+			if (unit == null) return null;
 			unit.X = x;
 			unit.Y = y;
 			unit.MovesLeft = unit.Move;
 			return unit;
 		}
 
-		public static IUnit CreateUnit(UnitType type)
+		public static IUnit? CreateUnit(UnitType type)
 		{
-			IUnit unit;
-			switch (type)
+			IUnit? unit = type switch
 			{
-				case UnitType.Settlers: unit = new Settlers(); break;
-				case UnitType.Militia: unit = new Militia(); break;
-				case UnitType.Phalanx: unit = new Phalanx(); break;
-				case UnitType.Legion: unit = new Legion(); break;
-				case UnitType.Musketeers: unit = new Musketeers(); break;
-				case UnitType.Riflemen: unit = new Riflemen(); break;
-				case UnitType.Cavalry: unit = new Cavalry(); break;
-				case UnitType.Knights: unit = new Knights(); break;
-				case UnitType.Catapult: unit = new Catapult(); break;
-				case UnitType.Cannon: unit = new Cannon(); break;
-				case UnitType.Chariot: unit = new Chariot(); break;
-				case UnitType.Armor: unit = new Armor(); break;
-				case UnitType.MechInf: unit = new MechInf(); break;
-				case UnitType.Artillery: unit = new Artillery(); break;
-				case UnitType.Fighter: unit = new Fighter(); break;
-				case UnitType.Bomber: unit = new Bomber(); break;
-				case UnitType.Trireme: unit = new Trireme(); break;
-				case UnitType.Sail: unit = new Sail(); break;
-				case UnitType.Frigate: unit = new Frigate(); break;
-				case UnitType.Ironclad: unit = new Ironclad(); break;
-				case UnitType.Cruiser: unit = new Cruiser(); break;
-				case UnitType.Battleship: unit = new Battleship(); break;
-				case UnitType.Submarine: unit = new Submarine(); break;
-				case UnitType.Carrier: unit = new Carrier(); break;
-				case UnitType.Transport: unit = new Transport(); break;
-				case UnitType.Nuclear: unit = new Nuclear(); break;
-				case UnitType.Diplomat: unit = new Diplomat(); break;
-				case UnitType.Caravan: unit = new Caravan(); break;
-				default: return null;
+				UnitType.Settlers => new Settlers(),
+				UnitType.Militia => new Militia(),
+				UnitType.Phalanx => new Phalanx(),
+				UnitType.Legion => new Legion(),
+				UnitType.Musketeers => new Musketeers(),
+				UnitType.Riflemen => new Riflemen(),
+				UnitType.Cavalry => new Cavalry(),
+				UnitType.Knights => new Knights(),
+				UnitType.Catapult => new Catapult(),
+				UnitType.Cannon => new Cannon(),
+				UnitType.Chariot => new Chariot(),
+				UnitType.Armor => new Armor(),
+				UnitType.MechInf => new MechInf(),
+				UnitType.Artillery => new Artillery(),
+				UnitType.Fighter => new Fighter(),
+				UnitType.Bomber => new Bomber(),
+				UnitType.Trireme => new Trireme(),
+				UnitType.Sail => new Sail(),
+				UnitType.Frigate => new Frigate(),
+				UnitType.Ironclad => new Ironclad(),
+				UnitType.Cruiser => new Cruiser(),
+				UnitType.Battleship => new Battleship(),
+				UnitType.Submarine => new Submarine(),
+				UnitType.Carrier => new Carrier(),
+				UnitType.Transport => new Transport(),
+				UnitType.Nuclear => new Nuclear(),
+				UnitType.Diplomat => new Diplomat(),
+				UnitType.Caravan => new Caravan(),
+				_ => null
+			};
+			if (unit == null)
+			{
+				Debug.Assert(false, $"Unknown unit type: {type}");
 			}
 			return unit;
 		}
 
-		public IUnit CreateUnit(UnitType type, int x, int y, byte owner, bool endTurn = false)
+		public IUnit? CreateUnit(UnitType type, int x, int y, byte owner, bool endTurn = false)
 		{
-			IUnit unit = CreateUnit((UnitType)type, x, y);
+			IUnit? unit = CreateUnit(type, x, y);
 			if (unit == null) return null;
 
 			unit.Owner = owner;
 			if (unit.Class == UnitClass.Water)
 			{
-				Player player = GetPlayer(owner);
-				if ((player.HasWonder<Lighthouse>() && !WonderObsolete<Lighthouse>()) ||
-					(player.HasWonder<MagellansExpedition>() && !WonderObsolete<MagellansExpedition>()))
+				Player? player = GetPlayer(owner);
+				if (player != null && ((player.HasWonder<Lighthouse>() && !WonderObsolete<Lighthouse>()) ||
+					(player.HasWonder<MagellansExpedition>() && !WonderObsolete<MagellansExpedition>())))
 				{
 					unit.MovesLeft++;
 				}
 			}
 			if (endTurn)
+			{
 				unit.SkipTurn();
-			_instance._units.Add(unit);
+			}
+			Instance._units.Add(unit);
 			return unit;
 		}
 
-		public IUnit[] GetUnits(int x, int y)
+		public IUnit[]? GetUnits(int x, int y)
 		{
 			while (x < 0) x += Map.WIDTH;
 			while (x >= Map.WIDTH) x -= Map.WIDTH;
 			if (y < 0) return null;
 			if (y >= Map.HEIGHT) return null;
-			return _units.Where(u => u.X == x && u.Y == y).OrderBy(u => (u == ActiveUnit) ? 0 : (u.Fortify || u.FortifyActive ? 1 : 2)).ToArray();
+			return [.. _units.Where(u => u.X == x && u.Y == y).OrderBy(u => (u == ActiveUnit) ? 0 : (u.Fortify || u.FortifyActive ? 1 : 2))];
 		}
 
-		public IUnit[] GetUnits() => _units.ToArray();
+		public IUnit[] GetUnits() => [.. _units];
 
 		internal void UpdateResources(ITile tile, bool ownerCities = true)
 		{
 			for (int relY = -3; relY <= 3; relY++)
+			{
 				for (int relX = -3; relX <= 3; relX++)
 				{
 					if (tile[relX, relY] == null) continue;
@@ -794,9 +808,10 @@ namespace CivOne
 					if (!ownerCities && CurrentPlayer == city.Owner) continue;
 					city.UpdateResources();
 				}
+			}
 		}
 
-		public City[] GetCities() => _cities.ToArray();
+		public City[] GetCities() => [.. _cities];
 
 		public ReadOnlyCollection<City> Cities { get { return _cities.AsReadOnly(); } }
 		
@@ -808,7 +823,7 @@ namespace CivOne
 		public ReadOnlyCollection<ICity> CitiesInterface { get { 
 			return _cities.Cast<ICity>().ToList().AsReadOnly(); } }
 
-		public IWonder[] BuiltWonders => _cities.SelectMany(c => c.Wonders).ToArray();
+		public IWonder[] BuiltWonders => [.. _cities.SelectMany(c => c.Wonders)];
 
 		public bool WonderBuilt<T>() where T : IWonder => BuiltWonders.Any(w => w is T);
 
@@ -825,12 +840,17 @@ namespace CivOne
 				return;
 			}
 
-			IUnit activeUnit = ActiveUnit;
+			IUnit? activeUnit = ActiveUnit;
+
+			if (unit == activeUnit)
+			{
+				activeUnit = null;
+			}
 
 			if (!_units.Contains(unit)) return;
-			if (unit.Tile is Ocean && unit is IBoardable)
+			if (unit.Tile is Ocean && unit is IBoardable boardable)
 			{
-				int totalCargo = unit.Tile.Units.Where(u => u is IBoardable).Sum(u => (u as IBoardable).Cargo) - (unit as IBoardable).Cargo;
+				int totalCargo = unit.Tile.Units.OfType<IBoardable>().Sum(u => u.Cargo) - boardable.Cargo;
 				while (unit.Tile.Units.Count(u => u.Class != UnitClass.Water) > totalCargo)
 				{
 					IUnit subUnit = unit.Tile.Units.First(u => u.Class != UnitClass.Water);
@@ -845,9 +865,9 @@ namespace CivOne
 			unit.Y = 255;
 			_units.Remove(unit);
 
-			GetPlayer(unit.Owner).HandleExtinction();
+			GetPlayer(unit.Owner)?.HandleExtinction();
 
-			if (_units.Contains(activeUnit))
+			if (activeUnit != null && _units.Contains(activeUnit))
 			{
 				_activeUnit = _units.IndexOf(activeUnit);
 			}
@@ -864,11 +884,11 @@ namespace CivOne
 		/// 
 		/// Returns: null if the current players units are all busy
 		/// </summary>
-		public IUnit ActiveUnit
+		public IUnit? ActiveUnit
 		{
 			get
 			{
-				if (_units.Count(u => u.Owner == _currentPlayer && !u.Busy) == 0)
+				if (!_units.Any(u => u.Owner == _currentPlayer && !u.Busy))
 					return null;
 
 				// If the unit counter is too high, return to 0
@@ -883,7 +903,7 @@ namespace CivOne
 				if (GameTask.Any())
 					return _units[_activeUnit];
 
-				IUnit anyActive = _units.Find(u => u.Owner == _currentPlayer && !u.Busy);
+				IUnit? anyActive = _units.Find(u => u.Owner == _currentPlayer && !u.Busy);
 				// Check if any units are still available for this player; used to start "end of turn" for the human
 				if (anyActive == null)
 				{
@@ -909,7 +929,7 @@ namespace CivOne
 			}
 			internal set
 			{
-				IUnit toActivateUnit = value;
+				IUnit? toActivateUnit = value;
 
 				if (toActivateUnit == null)
 				{
@@ -921,15 +941,13 @@ namespace CivOne
 				// - If the unit has no moves left, it will not be set as active
 				// - If the unit is has an action (e.g. building a road, fortify, sentry, goto), it will not be set as active
 
-				bool isSettlers = toActivateUnit is Settlers;
 				bool isAlreadyMoved = toActivateUnit.MovesLeft == 0 && toActivateUnit.PartMoves == 0;
 				bool isSentryOrFortify = toActivateUnit.Sentry || toActivateUnit.Fortify || toActivateUnit.FortifyActive;
 
-				if (isSettlers)
+				if (toActivateUnit is Settlers settlers)
 				{
 					// Cancel order if settler is set active
-					var settler = toActivateUnit as Settlers;
-					settler.ResetOrder();
+					settlers.ResetOrder();
 				}
 
 				if (isSentryOrFortify && isAlreadyMoved)
@@ -951,9 +969,9 @@ namespace CivOne
 			}
 		}
 
-		public IUnit MovingUnit => _units.FirstOrDefault(u => u.Moving);
+		public IUnit? MovingUnit => _units.FirstOrDefault(u => u.Moving);
 
-		public static bool Started => (_instance != null);
+		public static bool Started => _instance != null;
 
 
 		/**
@@ -968,7 +986,7 @@ namespace CivOne
 			BaseInstance.Log(text, parameters);
 		}
 
-		private static Game _instance;
+		private static Game? _instance;
 		public static Game Instance
 		{
 			get
@@ -976,8 +994,9 @@ namespace CivOne
 				if (_instance == null)
 				{
 					BaseInstance.Log("ERROR: Game instance does not exist");
+					Debug.Assert(false, "Game instance does not exist. This is a precondition to execute playing the game!");
 				}
-				return _instance;
+				return _instance!; // This is a precondition to execute playing the game!
 			}
 		}
 

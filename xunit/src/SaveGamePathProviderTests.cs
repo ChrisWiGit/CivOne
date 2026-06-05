@@ -150,13 +150,13 @@ namespace CivOne.UnitTests
 
 			public event EventHandler Initialize { add { } remove { } }
 			public event EventHandler Draw { add { } remove { } }
-			public event UpdateEventHandler Update { add { } remove { } }
-			public event KeyboardEventHandler KeyboardUp { add { } remove { } }
-			public event KeyboardEventHandler KeyboardDown { add { } remove { } }
-			public event ScreenEventHandler MouseUp { add { } remove { } }
-			public event ScreenEventHandler MouseDown { add { } remove { } }
-			public event ScreenEventHandler MouseMove { add { } remove { } }
-			public event ScreenEventHandler MouseWheel { add { } remove { } }
+			public event EventHandler<UpdateEventArgs> Update { add { } remove { } }
+			public event EventHandler<KeyboardEventArgs> KeyboardUp { add { } remove { } }
+			public event EventHandler<KeyboardEventArgs> KeyboardDown { add { } remove { } }
+			public event EventHandler<ScreenEventArgs> MouseUp { add { } remove { } }
+			public event EventHandler<ScreenEventArgs> MouseDown { add { } remove { } }
+			public event EventHandler<ScreenEventArgs> MouseMove { add { } remove { } }
+			public event EventHandler<ScreenEventArgs> MouseWheel { add { } remove { } }
 			public Platform CurrentPlatform => Platform.Linux;
 			public string StorageDirectory => Path.Combine(Path.GetTempPath(), "CivOneTests", Guid.NewGuid().ToString("N"));
 			public RuntimeSettings Settings { get; } = new RuntimeSettings();
@@ -166,8 +166,8 @@ namespace CivOne.UnitTests
 			public int CanvasHeight => 200;
 			public int WindowWidth => 320;
 			public int WindowHeight => 200;
-			public void SetCurrentCursor(MouseCursor cursor) { }
-			public void SetCursor(IBitmap cursor) { }
+			public void SetCurrentCursor(MouseCursor? _) { }
+			public void SetCursor(IBitmap? _) { }
 			public void SetWindowTitle(string title) { }
 
 			public bool TryOpenUrl(string url, out string errorMessage) { errorMessage = null; return false; }

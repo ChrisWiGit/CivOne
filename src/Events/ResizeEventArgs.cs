@@ -13,7 +13,7 @@ using CivOne.Enums;
 
 namespace CivOne.Events
 {
-	public delegate void ResizeEventHandler(object sender, ResizeEventArgs args);
+	public delegate void ResizeEventAction(object sender, ResizeEventArgs args);
 
 	public class ResizeEventArgs : EventArgs
 	{

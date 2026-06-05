@@ -13,6 +13,6 @@ namespace CivOne.Graphics.Sprites
 {
 	public interface ISprite
 	{
-		Bytemap Bitmap { get; }
+		Bytemap? Bitmap { get; }
 	}
 }

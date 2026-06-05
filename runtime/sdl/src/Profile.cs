@@ -27,7 +27,7 @@ namespace CivOne
 
 		private void Log(string text, params object[] parameters) => _runtime.Log(text, parameters);
 
-		private XmlWriter CreateXmlWriter(Stream stream)
+		private static XmlWriter CreateXmlWriter(Stream stream)
 		{
 			XmlWriter xw = XmlWriter.Create(stream, new XmlWriterSettings()
 			{
@@ -46,28 +46,27 @@ namespace CivOne
 				File.Delete(_filename);
 			}
 
-			string profileDirectory = Path.GetDirectoryName(_filename);
+			string? profileDirectory = Path.GetDirectoryName(_filename);
 			if (!string.IsNullOrEmpty(profileDirectory))
 			{
 				Directory.CreateDirectory(profileDirectory);
 			}
 
-			using (FileStream fs = new FileStream(_filename, FileMode.Create, FileAccess.Write))
-			using (XmlWriter xw = CreateXmlWriter(fs))
-			{
-				XDocument xDoc = new XDocument();
-				xDoc.Add(new XElement(ROOT_ELEMENT));
-				xDoc.Save(xw);
-			}
+			using FileStream fs = new(_filename, FileMode.Create, FileAccess.Write);
+			using XmlWriter xw = CreateXmlWriter(fs);
+
+			XDocument xDoc = new();
+			xDoc.Add(new XElement(ROOT_ELEMENT));
+			xDoc.Save(xw);
 		}
 
-		public string GetSetting(string key)
+		public string? GetSetting(string key)
 		{
 			if (!File.Exists(_filename)) CreateProfile();
 
 			using FileStream fs = new(_filename, FileMode.Open, FileAccess.Read, FileShare.Read);
 			XDocument xDoc = XDocument.Load(fs);
-			XElement xRoot;
+			XElement? xRoot;
 			if ((xRoot = xDoc.Element(ROOT_ELEMENT)) == null)
 			{
 				Log($"Profile {_name} error: Root element missing");

@@ -44,7 +44,7 @@ namespace CivOne.UnitTests
 
             // try to move the human unit up and left
             var gm = new CivOne.Screens.GamePlayPanels.GameMap();
-            Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+            Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
             Game.Instance.ActiveUnit = chariot;
             return gm.MoveTo(-1, -1);
         }
@@ -87,7 +87,7 @@ namespace CivOne.UnitTests
 
             // try to move the human unit down and left to own unit
             var gm = new CivOne.Screens.GamePlayPanels.GameMap();
-            Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+            Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
             Game.Instance.ActiveUnit = chariot1;
             Assert.True(gm.MoveTo(-1, +1));
         }
@@ -122,7 +122,7 @@ namespace CivOne.UnitTests
 
             // try to move the human unit down to own city
             var gm = new CivOne.Screens.GamePlayPanels.GameMap();
-            Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+            Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
             Game.Instance.ActiveUnit = chariot1;
             Assert.True(gm.MoveTo(0, +1));
         }
@@ -143,7 +143,7 @@ namespace CivOne.UnitTests
             var chariot1 = Game.Instance.CreateUnit(UnitType.Chariot, 52, 13, Game.Instance.PlayerNumber(playa));
 
             // try to move the human unit down to enemy city
-            Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+            Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
             Game.Instance.ActiveUnit = chariot1;
             Assert.True(((BaseUnit)chariot1).CanMoveTo(0, +1));
         }
@@ -178,7 +178,7 @@ namespace CivOne.UnitTests
             var enemyShip = Game.Instance.CreateUnit(UnitType.Trireme, unit.X + 1, unit.Y, Game.Instance.PlayerNumber(otherP));
             var enemyChariot = Game.Instance.CreateUnit(UnitType.Chariot, unit.X + 1, unit.Y, Game.Instance.PlayerNumber(otherP));
 
-            Game.Instance._currentPlayer = Game.Instance.PlayerNumber(otherP);
+            Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(otherP));
             Game.Instance.ActiveUnit = enemyChariot;
 
             return enemyChariot;

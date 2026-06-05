@@ -24,17 +24,17 @@ namespace CivOne
 
 	public interface IGameUnitsCommand
 	{
-		IUnit CreateUnit(UnitType type, int x, int y, byte owner, bool endTurn = false);
+		IUnit? CreateUnit(UnitType type, int x, int y, byte owner, bool endTurn = false);
 	}
 	public interface IGameUnitsQuery
 	{
 		IUnit[] GetUnits();
-		IUnit[] GetUnits(int x, int y);
+		IUnit[]? GetUnits(int x, int y);
 	}
 
 	public interface IGamePlayerQuery
 	{
-		Player GetPlayer(byte playerId);
+		Player? GetPlayer(byte playerId);
 	}
 
 	public interface IGameWonderQuery

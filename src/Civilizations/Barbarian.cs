@@ -13,6 +13,7 @@ using CivOne.Advances;
 using CivOne.Enums;
 using CivOne.Leaders;
 using CivOne.Services;
+using CivOne.Services.Random;
 using CivOne.Tiles;
 
 // KBR 20200927 integrate cdonges land spawn code
@@ -21,7 +22,7 @@ namespace CivOne.Civilizations
 {
 	internal class Barbarian : BaseCivilization<Atilla>
 	{
-		internal static readonly byte Owner = 0;
+		internal static readonly byte Owner;
 
 		internal static bool IsSeaSpawnTurn => Game.Started && (Game.GameTurn % 8 == 0) && (Game.GameTurn > 150 || Game.GameTurn >= (5 - Game.Difficulty) * 32) && !Game.Players.Any(x => x.HasAdvance<Combustion>());
 
@@ -60,14 +61,15 @@ namespace CivOne.Civilizations
 			}
 		}
 
-		internal static ITile SeaSpawnPosition
+		internal static ITile? SeaSpawnPosition
 		{
 			get
 			{
+				IRandomService random = RandomServiceFactory.Create();
 				ITile[] tiles = Map.AllTiles().Where(t => t != null && t.IsOcean).ToArray();
 				for (int i = 0; i < 1000; i++)
 				{
-					ITile tile = tiles[Common.Random.Next(tiles.Length)];
+					ITile tile = tiles[random.Next(tiles.Length)];
 					if (tile == null || !tile.IsOcean || tile.GetBorderTiles().Any(t => t == null || !t.IsOcean)) continue;
 					return tile;
 				}
@@ -75,14 +77,15 @@ namespace CivOne.Civilizations
 			}
 		}
 
-		internal static ITile LandSpawnPosition
+		internal static ITile? LandSpawnPosition
 		{
 			get
 			{
+				IRandomService random = RandomServiceFactory.Create();
 				ITile[] tiles = Map.AllTiles().Where(t => t != null && !t.IsOcean && t.Visited != 0).ToArray();
 				for (int i = 0; i < 1000; i++)
 				{
-					ITile tile = tiles[Common.Random.Next(tiles.Length)];
+					ITile tile = tiles[random.Next(tiles.Length)];
 					if (tile == null || Game.GetCities().Any(c => c.CityTiles.Any(t => t == tile))) continue;
 					return tile;
 				}

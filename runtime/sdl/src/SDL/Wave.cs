@@ -27,7 +27,7 @@ namespace CivOne
 
 			private void Log(string message) => OnLog?.Invoke(message);
 
-			public event Action<string> OnLog;
+			public event Action<string>? OnLog;
 
 			public string Filename { get; } = filename;
 			public bool Playing { get; private set; }

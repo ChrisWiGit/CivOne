@@ -22,7 +22,7 @@ namespace CivOne.Screens.Reports
 
 		protected readonly IBitmap[] Portrait = new Picture[4];
 
-		protected event ScreenEventHandler OnMouseDown;
+		protected event EventHandler<ScreenEventArgs> OnMouseDown;
 		
 		protected byte BackgroundColour { get; }
 		protected int OffsetX => Math.Max(0, (Width - 320) / 2);

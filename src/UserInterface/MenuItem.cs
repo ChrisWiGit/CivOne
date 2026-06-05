@@ -18,9 +18,9 @@ namespace CivOne.UserInterface
 		private MenuItemEventArgs<T> _args => new MenuItemEventArgs<T>(Value);
 		private const int MaxDescriptionLines = 3;
 
-		public event MenuItemEventHandler<T> Selected;
-		public event MenuItemEventHandler<T> RightClick;
-		public event MenuItemEventHandler<T> GetHelp;
+		public event MenuItemEventAction<T> Selected;
+		public event MenuItemEventAction<T> RightClick;
+		public event MenuItemEventAction<T> GetHelp;
 		public T Value { get; private set; }
 		public bool Enabled { get; set; }
 		public string Text { get; set; }

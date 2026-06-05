@@ -84,10 +84,10 @@ namespace CivOne.Graphics.Sprites
 				.Bitmap;
 		}
 
-		private static ISpriteCollection<(UnitType, byte)> BaseUnit = new CachedSpriteCollection<(UnitType, byte)>(GetUnit);
-		private static ISpriteCollection<(UnitType, byte)> SentryUnit = new CachedSpriteCollection<(UnitType, byte)>(GetUnitSentry);
-		private static ISpriteCollection<(UnitType, byte)> FortifyUnit = new CachedSpriteCollection<(UnitType, byte)>(GetUnitFortify);
-		private static ISpriteCollection<(UnitType, char, byte)> LetterUnit = new CachedSpriteCollection<(UnitType, char, byte)>(GetUnitLetter);
+		private static ISprites<(UnitType, byte)> BaseUnit = new CachedSpriteCollection<(UnitType, byte)>(GetUnit);
+		private static ISprites<(UnitType, byte)> SentryUnit = new CachedSpriteCollection<(UnitType, byte)>(GetUnitSentry);
+		private static ISprites<(UnitType, byte)> FortifyUnit = new CachedSpriteCollection<(UnitType, byte)>(GetUnitFortify);
+		private static ISprites<(UnitType, char, byte)> LetterUnit = new CachedSpriteCollection<(UnitType, char, byte)>(GetUnitLetter);
 		public static ISprite Base<T>(byte playerNumber) where T : IUnit, new() => BaseUnit[(new T().Type, playerNumber)];
 		public static ISprite Base(UnitType type, byte playerNumber) => BaseUnit[(type, playerNumber)];
 		public static ISprite Sentry<T>(byte playerNumber) where T : IUnit, new() => SentryUnit[(new T().Type, playerNumber)];

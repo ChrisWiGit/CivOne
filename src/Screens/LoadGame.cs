@@ -110,7 +110,7 @@ namespace CivOne.Screens
 			BackToCredits();
 		}
 
-		private MenuItemEventHandler<int> LoadFileHandler(SaveGameFile file)
+		private MenuItemEventAction<int> LoadFileHandler(SaveGameFile file)
 		{
 			if (file.ValidFile)
 				return LoadSaveFile;

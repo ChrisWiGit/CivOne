@@ -55,7 +55,7 @@ namespace CivOne.Screens.Dialogs
 			}
 		}
 
-		private MenuItemEventHandler<int> ChoiceMethod
+		private MenuItemEventAction<int> ChoiceMethod
 		{
 			get
 			{

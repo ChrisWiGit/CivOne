@@ -39,7 +39,7 @@ namespace CivOne.Screens
 		private bool _done = false, _showIntroText = false, _gameCreated = false, _introDirty = false;
 		private int _introBorderStyle = -1;
 		
-		private Menu CreateMenu(string title, MenuItemEventHandler<int> setChoice, params string[] menuTexts)
+		private Menu CreateMenu(string title, MenuItemEventAction<int> setChoice, params string[] menuTexts)
 		{
 			Menu menu = new Menu("NewGameMenu", Palette)
 			{

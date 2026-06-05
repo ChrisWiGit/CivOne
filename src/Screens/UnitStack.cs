@@ -36,7 +36,7 @@ namespace CivOne.Screens
 		{
 			if (_update)
 			{
-				if (!_units.Any())
+				if (_units.Length == 0)
 				{
 					// No units, close the dialog
 					Destroy();
@@ -47,10 +47,9 @@ namespace CivOne.Screens
 				int top = DialogTop;
 				int height = DialogHeight;
 
-				Picture dialog = new Picture(WIDTH, height)
+				IBitmap dialog = new Picture(WIDTH, height)
 					.FillRectangle(1, 1, WIDTH - 2, height - 2, 3)
-					.DrawRectangle3D()
-					.As<Picture>();
+					.DrawRectangle3D();
 
 				for (int i = 0; i < _units.Length; i++)
 				{
@@ -150,7 +149,7 @@ namespace CivOne.Screens
 		{
 			_units = Map[x, y].Units.Take(12).ToArray();
 
-			Palette = Common.TopScreen.Palette;
+			Palette = Common.TopScreen!.Palette;
 		}
 	}
 }

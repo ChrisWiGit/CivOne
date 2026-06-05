@@ -954,8 +954,8 @@ namespace CivOne.Units
 
 		public UnitClass Class { get; protected set; }
 		public UnitType Type { get; protected set; }
-		private City _home;
-		public City Home
+		private City? _home;
+		public City? Home
 		{
 			get => _home;
 			private set
@@ -1103,7 +1103,7 @@ namespace CivOne.Units
 			Home = Map[X, Y].City;
 		}
 
-		public void SetHome(City city) => Home = city;
+		public void SetHome(City? city) => Home = city;
 
 		public void Pillage()
 		{

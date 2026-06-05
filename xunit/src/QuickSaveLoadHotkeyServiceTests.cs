@@ -217,18 +217,18 @@ namespace CivOne.UnitTests
 		{
 			public event EventHandler Initialize { add { _ = value; } remove { _ = value; } }
 			public event EventHandler Draw { add { _ = value; } remove { _ = value; } }
-			public event UpdateEventHandler Update { add { _ = value; } remove { _ = value; } }
-			public event KeyboardEventHandler KeyboardUp { add { _ = value; } remove { _ = value; } }
-			public event KeyboardEventHandler KeyboardDown { add { _ = value; } remove { _ = value; } }
-			public event ScreenEventHandler MouseUp { add { _ = value; } remove { _ = value; } }
-			public event ScreenEventHandler MouseDown { add { _ = value; } remove { _ = value; } }
-			public event ScreenEventHandler MouseMove { add { _ = value; } remove { _ = value; } }
-			public event ScreenEventHandler MouseWheel { add { _ = value; } remove { _ = value; } }
+			public event EventHandler<UpdateEventArgs> Update { add { _ = value; } remove { _ = value; } }
+			public event EventHandler<KeyboardEventArgs> KeyboardUp { add { _ = value; } remove { _ = value; } }
+			public event EventHandler<KeyboardEventArgs> KeyboardDown { add { _ = value; } remove { _ = value; } }
+			public event EventHandler<ScreenEventArgs> MouseUp { add { _ = value; } remove { _ = value; } }
+			public event EventHandler<ScreenEventArgs> MouseDown { add { _ = value; } remove { _ = value; } }
+			public event EventHandler<ScreenEventArgs> MouseMove { add { _ = value; } remove { _ = value; } }
+			public event EventHandler<ScreenEventArgs> MouseWheel { add { _ = value; } remove { _ = value; } }
 
 			public Platform CurrentPlatform => Platform.Windows;
 			public string StorageDirectory { get; } = storageDirectory;
 			public RuntimeSettings Settings { get; } = new RuntimeSettings();
-			public MouseCursor CurrentCursor { get; private set; }
+			public MouseCursor? CurrentCursor { get; private set; }
 			public Bytemap[] Layers { get; set; }
 			public Palette Palette { get; set; }
 			public IBitmap Cursor { get; private set; }
@@ -243,8 +243,8 @@ namespace CivOne.UnitTests
 
 			public string GetSetting(string key) => null;
 			public void SetSetting(string key, string value) { }
-			public void SetCurrentCursor(MouseCursor cursor) => CurrentCursor = cursor;
-			public void SetCursor(IBitmap cursor) => Cursor = cursor;
+			public void SetCurrentCursor(MouseCursor? cursor) => CurrentCursor = cursor;
+			public void SetCursor(IBitmap? cursor) => Cursor = cursor;
 			public void Log(string text, params object[] parameters) { }
 			public string? BrowseFolder(string caption = "") => string.Empty;
 			public string FileChooser(bool save, string title, string initialFileName, string filter) => string.Empty;

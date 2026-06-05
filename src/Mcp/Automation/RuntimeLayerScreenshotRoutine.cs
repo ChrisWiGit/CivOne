@@ -20,25 +20,27 @@ namespace CivOne.Mcp.Automation
 
 		public McpScreenshotResult CaptureRegion(string sessionId, int x, int y, int width, int height, bool includeCursor)
 		{
-			using IBitmap fullFrame = BuildFullFrame(includeCursor);
+			using Picture fullFrame = BuildFullFrame(includeCursor);
 			ClampRectangle(fullFrame.Bitmap.Width, fullFrame.Bitmap.Height, ref x, ref y, ref width, ref height);
 
 			if (width <= 0 || height <= 0)
+			{
 				throw new InvalidOperationException("Region has no visible area after clamping.");
+			}
 
 			using Bytemap cropped = fullFrame.Crop(x, y, width, height);
 			using IBitmap region = new Picture(cropped, fullFrame.Palette.Copy());
 			return SaveResult(sessionId, region);
 		}
 
-		private IBitmap BuildFullFrame(bool includeCursor)
+		private Picture BuildFullFrame(bool includeCursor)
 		{
-			if (_runtime.Layers == null || _runtime.Palette == null)
+			if (_runtime.Layers == null || _runtime.Palette == Palette.Empty)
 				throw new InvalidOperationException("Runtime frame is not available.");
 
 			int width = Math.Max(1, _runtime.CanvasWidth);
 			int height = Math.Max(1, _runtime.CanvasHeight);
-			IBitmap output = new Picture(width, height, _runtime.Palette.Copy());
+			Picture output = new(width, height, _runtime.Palette.Copy());
 			output.Palette[0] = Colour.Black;
 
 			foreach (Bytemap bytemap in _runtime.Layers)

@@ -40,7 +40,7 @@ namespace CivOne
 			};
 			
 			process.Start();
-			string output = process.StandardOutput.ReadToEnd().Trim(new [] { '\n', '"' });
+			string output = process.StandardOutput.ReadToEnd().Trim(['\n', '"']);
 			process.WaitForExit();
 
 			if (output.Length == 0 || !Directory.Exists(output)) return null;
@@ -48,9 +48,12 @@ namespace CivOne
 			return output;
 		}
 
-		private static string MacFileChooser(bool save, string title, string initialFileName, string filter)
+		private static string? MacFileChooser(bool save, string title, string initialFileName, string filter)
 		{
-			string scriptPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "FileChooser.sh");
+			string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+			if (path == null) return null;
+
+			string scriptPath = Path.Combine(path, "FileChooser.sh");
 
 			string appleScript = save
 				? BuildSaveScript(title, initialFileName)
@@ -75,7 +78,7 @@ namespace CivOne
 			};
 
 			process.Start();
-			string output = process.StandardOutput.ReadToEnd().Trim(new[] { '\n', '"' });
+			string output = process.StandardOutput.ReadToEnd().Trim(['\n', '"']);
 			process.WaitForExit();
 
 			if (output.Length == 0) return null;

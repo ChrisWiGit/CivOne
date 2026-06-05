@@ -35,7 +35,7 @@ namespace CivOne.Units
 		/// Deprecated: use IsHome(ICityBasic city) method instead
 		/// to check if unit's home is the given city
 		/// </summary>
-		City Home { get; }
+		City? Home { get; }
 
 		virtual bool IsHome(ICityBasic city) => HasHome && Home == city;
 		bool HasHome => Home != null;
@@ -142,7 +142,7 @@ namespace CivOne.Units
 		/// <summary>
 		/// Establishes the unit's home (supporting) city.
 		/// </summary>
-		void SetHome(City city);
+		void SetHome(City? city);
 		IEnumerable<MenuItem<int>> MenuItems { get; }
 		IEnumerable<UnitModification> Modifications { get; }
 		/// <summary>

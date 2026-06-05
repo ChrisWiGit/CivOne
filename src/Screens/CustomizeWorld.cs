@@ -67,7 +67,7 @@ namespace CivOne.Screens
 			return (texts.Select(t => t.Width).Max()) + 6;
 		}
 		
-		private Menu CreateMenu(string menuId, int y, string title, MenuItemEventHandler<int> setChoice, params string[] menuTexts)
+		private Menu CreateMenu(string menuId, int y, string title, MenuItemEventAction<int> setChoice, params string[] menuTexts)
 		{
 			Menu menu = new Menu(menuId, Palette)
 			{

@@ -15,6 +15,7 @@ using CivOne.Graphics.Sprites;
 
 using static CivOne.Enums.TextAlign;
 using static CivOne.Enums.VerticalAlign;
+using System.Diagnostics;
 
 namespace CivOne.Graphics
 {
@@ -30,7 +31,7 @@ namespace CivOne.Graphics
 		public static int Height(this IBitmap bitmap) => bitmap.Bitmap.Height;
 		public static int Width(this IBitmap bitmap) => bitmap.Bitmap.Width;
 
-		public static T As<T>(this IBitmap bitmap) where T : class, IBitmap => (bitmap as T);
+		public static T? As<T>(this IBitmap bitmap) where T : class, IBitmap => bitmap as T;
 
 		/// <summary>
 		/// Clears the entire bitmap to the specified colour.
@@ -153,9 +154,13 @@ namespace CivOne.Graphics
 			return bitmap;
 		}
 		public static IBitmap AddLayer(this IBitmap bitmap, Bytemap layer, Point point, bool dispose = false) => AddLayer(bitmap, layer, point.X, point.Y, dispose);
-		public static IBitmap AddLayer(this IBitmap bitmap, Bytemap layer, int left = 0, int top = 0, bool dispose = false)
+		public static IBitmap AddLayer(this IBitmap bitmap, Bytemap? layer, int left = 0, int top = 0, bool dispose = false)
 		{
-			if (layer == null) return bitmap;
+			if (layer == null)
+			{
+				Debug.Assert(false, "Layer is null", "AddLayer was called with a null layer. This may indicate a missing resource or an error in the code.");
+				return bitmap;
+			}
 			for (int yy = 0; yy < layer.Height; yy++)
 			{
 				if (top + yy >= bitmap.Height()) break;

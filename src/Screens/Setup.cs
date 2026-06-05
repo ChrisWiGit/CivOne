@@ -157,7 +157,7 @@ namespace CivOne.Screens
 			}
 		}
 
-		private void CreateMenu(string title, int activeItem, MenuItemEventHandler<int> always, params MenuItem<int>[] items) =>
+		private void CreateMenu(string title, int activeItem, MenuItemEventAction<int> always, params MenuItem<int>[] items) =>
 			AddMenu(new Menu("Setup", Palette)
 			{
 				Title = $"{title.ToUpper()}:",
@@ -173,23 +173,23 @@ namespace CivOne.Screens
 			.Center(this)
 			.SetActiveItem(activeItem)
 		);
-		private void CreateMenu(string title, MenuItemEventHandler<int> always, params MenuItem<int>[] items) => CreateMenu(title, -1, always, items);
+		private void CreateMenu(string title, MenuItemEventAction<int> always, params MenuItem<int>[] items) => CreateMenu(title, -1, always, items);
 		private void CreateMenu(string title, int activeItem, params MenuItem<int>[] items) => CreateMenu(title, activeItem, null, items);
 		private void CreateMenu(string title, params MenuItem<int>[] items) => CreateMenu(title, -1, null, items);
 
-		private MenuItemEventHandler<int> GotoMenu(Action<int> action, int selectedItem = 0) => (s, a) =>
+		private MenuItemEventAction<int> GotoMenu(Action<int> action, int selectedItem = 0) => (s, a) =>
 		{
 			CloseMenus();
 			action(selectedItem);
 		};
 
-		private MenuItemEventHandler<int> GotoMenu(Action action) => (s, a) =>
+		private MenuItemEventAction<int> GotoMenu(Action action) => (s, a) =>
 		{
 			CloseMenus();
 			action();
 		};
 
-		private MenuItemEventHandler<int> GotoScreen<T>(Action doneAction) where T : IScreen, new() => (s, a) =>
+		private MenuItemEventAction<int> GotoScreen<T>(Action doneAction) where T : IScreen, new() => (s, a) =>
 		{
 			CloseMenus();
 			T screen = new T();
@@ -197,7 +197,7 @@ namespace CivOne.Screens
 			Common.AddScreen(screen);
 		};
 
-		private MenuItemEventHandler<int> CloseScreen(Action action = null) => (s, a) =>
+		private MenuItemEventAction<int> CloseScreen(Action action = null) => (s, a) =>
 		{
 			Destroy();
 			if (action != null) action();

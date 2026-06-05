@@ -12,8 +12,6 @@ using CivOne.Enums;
 
 namespace CivOne.Events
 {
-	public delegate void KeyboardEventHandler(object sender, KeyboardEventArgs args);
-
 	public class KeyboardEventArgs : EventArgs
 	{
 		public new static readonly KeyboardEventArgs Empty = new(Key.None);

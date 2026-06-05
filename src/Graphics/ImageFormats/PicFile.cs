@@ -289,9 +289,9 @@ namespace CivOne.Graphics.ImageFormats
 
 		// Cache: lowercase-with-extension -> actual full path. Built lazily, invalidated
 		// when the data directory changes. Avoids an O(N) Directory.GetFiles scan per lookup.
-		private static Dictionary<string, string> _filenameCache;
-		private static string _filenameCacheDirectory;
-		private static readonly object _filenameCacheLock = new object();
+		private static Dictionary<string, string>? _filenameCache;
+		private static string? _filenameCacheDirectory;
+		private static readonly object _filenameCacheLock = new();
 
 		private static Dictionary<string, string> GetFilenameCache(string dataDirectory)
 		{
@@ -321,13 +321,13 @@ namespace CivOne.Graphics.ImageFormats
 			}
 		}
 
-		private static string GetFilename(string filename)
+		private static string? GetFilename(string filename)
 		{
 			if (filename.EndsWith(".map", StringComparison.OrdinalIgnoreCase))
 				return filename;
 
 			Dictionary<string, string> cache = GetFilenameCache(Settings.Instance.DataDirectory);
-			if (cache.TryGetValue($"{filename}.pic", out string fullPath))
+			if (cache.TryGetValue($"{filename}.pic", out string? fullPath))
 				return fullPath;
 			return filename;
 		}
@@ -349,18 +349,21 @@ namespace CivOne.Graphics.ImageFormats
 			HasPicture16 = false;
 			HasPalette256 = true;
 			HasPicture256 = true;
+
+			// never used, but initialize to avoid warnings about uninitialized readonly field
+			_bytes = [];
 		}
 
 		
-		public PicFile(string filename)
+		public PicFile(string inputFileName)
 		{
-			filename = GetFilename(filename);
+			string? fileName = GetFilename(inputFileName);
 
 			// generate an exception if the file is not found
-			if (RuntimeHandler.Runtime.Settings.Free || !File.Exists(filename))
+			if (RuntimeHandler.Runtime.Settings.Free || !File.Exists(fileName))
 			{
-				if (!File.Exists(filename))  {
-					Log($"File not found: {filename.ToUpper(CultureInfo.InvariantCulture)}.PIC");
+				if (!File.Exists(fileName))  {
+					Log($"File not found: {fileName?.ToUpper(CultureInfo.InvariantCulture)}.PIC");
 				}
 				HasPalette16 = true;
 				HasPalette256 = true;
@@ -378,11 +381,13 @@ namespace CivOne.Graphics.ImageFormats
 						picture256[xx, yy] = 1;
 					}
 				}
+				// never used, but initialize to avoid warnings about uninitialized readonly field
+				_bytes = [];
 				return;
 			}
 
 			// read all bytes into a byte array
-			using (FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
+			using (FileStream fs = new(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
 			{
 				_bytes = new byte[fs.Length];
 				fs.ReadExactly(_bytes, 0, _bytes.Length);
@@ -414,7 +419,7 @@ namespace CivOne.Graphics.ImageFormats
 				}
 			}
 
-			Log($"Loaded {filename}");
+			Log($"Loaded {fileName?.ToUpper(CultureInfo.InvariantCulture)}.PIC");
 		}
 
 		public void Dispose()

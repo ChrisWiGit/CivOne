@@ -7,6 +7,8 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
+using System.Linq;
 using CivOne.Enums;
 using CivOne.IO;
 
@@ -19,89 +21,83 @@ namespace CivOne.Graphics.Sprites
 		private static Resources Resources => Resources.Instance;
 		private static Settings Settings => Settings.Instance;
 
-		private static CursorType CursorType => (Settings.CursorType == CursorType.Default && !Resources.Exists("SP257")) ? CursorType.Builtin : Settings.CursorType;
+		private static CursorType CursorType => (Settings.CursorType == CursorType.Default && !Resources.Exists("SP257")) ? Builtin : Settings.CursorType;
 
-		private static Bytemap CursorPointer()
+		private static Bytemap? CursorPointer()
 		{
-			switch(CursorType)
+			return CursorType switch
 			{
-				case Default:
-					return Resources["SP257"][113, 33, 15, 15].Bitmap;
-				case Builtin:
-					return new Bytemap(11, 16).FromByteArray(new byte[] {
-						 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-						 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-						 5,15, 5, 0, 0, 0, 0, 0, 0, 0, 0,
-						 5,15,15, 5, 0, 0, 0, 0, 0, 0, 0,
-						 5,15,15,15, 5, 0, 0, 0, 0, 0, 0,
-						 5,15,15,15,15, 5, 0, 0, 0, 0, 0,
-						 5,15,15,15,15,15, 5, 0, 0, 0, 0,
-						 5,15,15,15,15,15,15, 5, 0, 0, 0,
-						 5,15,15,15,15,15,15,15, 5, 0, 0,
-						 5,15,15,15,15,15,15,15,15, 5, 0,
-						 5, 5, 5, 5,15,15, 5, 5, 5, 5, 5,
-						 0, 0, 0, 0, 5,15,15, 5, 0, 0, 0,
-						 0, 0, 0, 0, 5,15,15, 5, 0, 0, 0,
-						 0, 0, 0, 0, 0, 5,15,15, 5, 0, 0,
-						 0, 0, 0, 0, 0, 5,15,15, 5, 0, 0,
-						 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0
-					});
-				default:
-					return null;
-			}
+				Default => Resources["SP257"][113, 33, 15, 15].Bitmap,
+				Builtin => new Bytemap(11, 16).FromByteArray([
+						5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+						5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+						5,15, 5, 0, 0, 0, 0, 0, 0, 0, 0,
+						5,15,15, 5, 0, 0, 0, 0, 0, 0, 0,
+						5,15,15,15, 5, 0, 0, 0, 0, 0, 0,
+						5,15,15,15,15, 5, 0, 0, 0, 0, 0,
+						5,15,15,15,15,15, 5, 0, 0, 0, 0,
+						5,15,15,15,15,15,15, 5, 0, 0, 0,
+						5,15,15,15,15,15,15,15, 5, 0, 0,
+						5,15,15,15,15,15,15,15,15, 5, 0,
+						5, 5, 5, 5,15,15, 5, 5, 5, 5, 5,
+						0, 0, 0, 0, 5,15,15, 5, 0, 0, 0,
+						0, 0, 0, 0, 5,15,15, 5, 0, 0, 0,
+						0, 0, 0, 0, 0, 5,15,15, 5, 0, 0,
+						0, 0, 0, 0, 0, 5,15,15, 5, 0, 0,
+						0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0
+						]),
+				Native => null,
+				_ => throw new NotSupportedException($"Unsupported cursor type: {CursorType}"),
+			};
 		}
 
-		private static Bytemap CursorGoto()
+		private static Bytemap? CursorGoto()
 		{
-			switch(CursorType)
+			return CursorType switch
 			{
-				case Default:
-					return Resources["SP257"][33, 33, 15, 15].Bitmap;
-				case Builtin:
-					return new Bytemap(13, 16).FromByteArray(new byte[] {
-						 5, 0, 0, 0, 0,15,15, 0, 0, 0,15,15, 0,
-						 5, 5, 0, 0,15, 0, 0, 0, 0,15, 0, 0,15,
-						 5,15, 5, 0,15, 0,15,15, 0,15, 0, 0,15,
-						 5,15,15, 5,15, 0, 0,15, 0,15, 0, 0,15,
-						 5,15,15,15, 5,15,15, 0, 0, 0,15,15, 0,
-						 5,15,15,15,15, 5, 0, 0, 0, 0, 0, 0, 0,
-						 5,15,15,15,15,15, 5, 0, 0, 0, 0, 0, 0,
-						 5,15,15,15,15,15,15, 5, 0, 0, 0, 0, 0,
-						 5,15,15,15,15,15,15,15, 5, 0, 0, 0, 0,
-						 5,15,15,15,15,15,15,15,15, 5, 0, 0, 0,
-						 5, 5, 5, 5,15,15, 5, 5, 5, 5, 5, 0, 0,
-						 0, 0, 0, 0, 5,15,15, 5, 0, 0, 0, 0, 0,
-						 0, 0, 0, 0, 5,15,15, 5, 0, 0, 0, 0, 0,
-						 0, 0, 0, 0, 0, 5,15,15, 5, 0, 0, 0, 0,
-						 0, 0, 0, 0, 0, 5,15,15, 5, 0, 0, 0, 0,
-						 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0
-					});
-				default:
-					return null;
-			}
+				Default => Resources["SP257"][33, 33, 15, 15].Bitmap,
+				Builtin => new Bytemap(13, 16).FromByteArray([
+						5, 0, 0, 0, 0,15,15, 0, 0, 0,15,15, 0,
+						5, 5, 0, 0,15, 0, 0, 0, 0,15, 0, 0,15,
+						5,15, 5, 0,15, 0,15,15, 0,15, 0, 0,15,
+						5,15,15, 5,15, 0, 0,15, 0,15, 0, 0,15,
+						5,15,15,15, 5,15,15, 0, 0, 0,15,15, 0,
+						5,15,15,15,15, 5, 0, 0, 0, 0, 0, 0, 0,
+						5,15,15,15,15,15, 5, 0, 0, 0, 0, 0, 0,
+						5,15,15,15,15,15,15, 5, 0, 0, 0, 0, 0,
+						5,15,15,15,15,15,15,15, 5, 0, 0, 0, 0,
+						5,15,15,15,15,15,15,15,15, 5, 0, 0, 0,
+						5, 5, 5, 5,15,15, 5, 5, 5, 5, 5, 0, 0,
+						0, 0, 0, 0, 5,15,15, 5, 0, 0, 0, 0, 0,
+						0, 0, 0, 0, 5,15,15, 5, 0, 0, 0, 0, 0,
+						0, 0, 0, 0, 0, 5,15,15, 5, 0, 0, 0, 0,
+						0, 0, 0, 0, 0, 5,15,15, 5, 0, 0, 0, 0,
+						0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0
+						]),
+				Native => null,
+				_ => throw new NotSupportedException($"Unsupported cursor type: {CursorType}"),
+			};
 		}
 
-		public readonly static ISprite Pointer = new CachedSprite(CursorPointer);
+		public readonly static ISprite MousePointer = new CachedSprite(CursorPointer);
 		public readonly static ISprite Goto = new CachedSprite(CursorGoto);
-		public static ISprite Current
+		public static ISprite? Current
 		{
 			get
 			{
-				switch (Common.TopScreen?.Cursor)
+				return (Common.TopScreen?.Cursor) switch
 				{
-					case MouseCursor.Pointer:
-						return Pointer;
-					case MouseCursor.Goto:
-						return Goto;
-					default:
-						return null;
-				}
+					MouseCursor.Pointer => MousePointer,
+					MouseCursor.Goto => Goto,
+					MouseCursor.None => null,
+					_ => throw new NotSupportedException($"Unsupported cursor type: {Common.TopScreen?.Cursor}")
+				};
 			}
 		}
 
 		public static void ClearCache()
 		{
-			foreach (ICached cached in new[] { Pointer, Goto })
+			foreach (ICached cached in (new[] { MousePointer, Goto }).Cast<ICached>())
 			{
 				cached.Clear();
 			}

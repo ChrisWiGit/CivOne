@@ -89,14 +89,14 @@ namespace CivOne
 		private bool _lastFullWindowCanvasRequested = RuntimeHandler.IsFullWindowCanvasRequested;
 		private static readonly TimeSpan WindowPersistDebounce = TimeSpan.FromSeconds(1);
 
-		private void Load(object sender, EventArgs args)
+		private void Load(object? _, EventArgs __)
 		{
 			UpdateCanvasSizeIfNeeded();
 			UpdateWindowSizeState();
 			_runtime.InvokeInitialize();
 		}
 
-		private void Update(object sender, EventArgs args)
+		private void Update(object? _, EventArgs __)
 		{
 			UpdateEventArgs updateArgs = UpdateEventArgs.Empty;
 			_runtime.InvokeUpdate(ref updateArgs);
@@ -381,19 +381,19 @@ namespace CivOne
 #endif
 		}
 
-		private void WindowResize(object sender, EventArgs args)
+		private void WindowResize(object? _, EventArgs __)
 		{
 			_windowStateDirty = true;
 			_canvasSizeDirty = true;
 			_hasUpdate = true;
 		}
 
-		private void WindowMoved(object sender, EventArgs args)
+		private void WindowMoved(object? _, EventArgs __)
 		{
 			_windowStateDirty = true;
 		}
 
-		private void WindowStateChanged(object sender, EventArgs args)
+		private void WindowStateChanged(object? _, EventArgs __)
 		{
 			_windowStateDirty = true;
 			_canvasSizeDirty = true;
@@ -402,7 +402,7 @@ namespace CivOne
 			_debounceService.Cancel(GameDebounceKeys.WindowSize);
 		}
 
-		private void Draw(object sender, EventArgs args)
+		private void Draw(object? _, EventArgs __)
 		{
 			bool isFpsOverlayEnabled = RuntimeHandler.CurrentFpsCorner != FpsCorner.Off;
 
@@ -470,7 +470,7 @@ namespace CivOne
 		}
 
 		// Called from the game thread via Runtime.Cursor setter — must not touch SDL here.
-		private void CursorChanged(object sender, EventArgs args) => _cursorDirty = true;
+		private void CursorChanged(object? _, EventArgs __) => _cursorDirty = true;
 
 		// Called on the render thread (from Draw) to apply the pending cursor update.
 		private void ApplyCursorUpdate()
@@ -497,7 +497,7 @@ namespace CivOne
 		{
 			get
 			{
-				Bytemap topLayer = _runtime.Layers?.LastOrDefault();
+				Bytemap? topLayer = _runtime.Layers?.LastOrDefault();
 				if (topLayer != null && topLayer.Width > 0 && topLayer.Height > 0)
 				{
 					return new Size(topLayer.Width, topLayer.Height);
@@ -538,7 +538,7 @@ namespace CivOne
 			return CreateScreenEventArgs(x, y, args.Buttons, args.Modifier, args.WheelDelta);
 		}
 
-		private void KeyDown(object sender, KeyboardEventArgs args)
+		private void KeyDown(object? _, KeyboardEventArgs args)
 		{
 			if (args.Key == Key.None) return;
 			if (args.Modifier == KeyModifier.Alt && args.Key == Key.Enter)
@@ -550,7 +550,7 @@ namespace CivOne
 			_runtime.InvokeKeyboardDown(args);
 		}
 
-		private void KeyUp(object sender, KeyboardEventArgs args)
+		private void KeyUp(object? _, KeyboardEventArgs args)
 		{
 			if (args.Key == Key.None) return;
 			if (args.Key == Key.Pause)
@@ -562,7 +562,7 @@ namespace CivOne
 
 		}			
 
-			private void MouseMove(object sender, ScreenEventArgs args)
+			private void MouseMove(object? _, ScreenEventArgs args)
 		{
 			if (!IsInsideDrawArea(args)) return;
 			args = Transform(args);
@@ -576,14 +576,14 @@ namespace CivOne
 			_runtime.InvokeMouseMove(args);
 		}
 
-		private void MouseDown(object sender, ScreenEventArgs args)
+		private void MouseDown(object? _, ScreenEventArgs args)
         {
 			if (!IsInsideDrawArea(args)) return;
             args = Transform(args);
             _runtime.InvokeMouseDown(args);
         }
 
-		private void MouseWheel(object sender, ScreenEventArgs args)
+		private void MouseWheel(object? _, ScreenEventArgs args)
 		{
 			if (!IsInsideDrawArea(args)) return;
 			args = Transform(args);
@@ -601,7 +601,7 @@ namespace CivOne
 			return args.X >= x1 && args.X < x2 && args.Y >= y1 && args.Y < y2;
 		}
 
-        private void MouseUp(object sender, ScreenEventArgs args)
+        private void MouseUp(object? _, ScreenEventArgs args)
 		{
             if (!IsInsideDrawArea(args)) return;
             args = Transform(args);
@@ -685,7 +685,11 @@ namespace CivOne
 			_runtime = runtime;
 			_debounceService = debounceService ?? throw new ArgumentNullException(nameof(debounceService));
 
-			SetIcon(Resources.GetWindowIcon());
+			var icon = Resources.GetWindowIcon();
+			if (icon != null)
+			{
+				SetIcon(icon);
+			}
 			RestoreWindowPlacement();
 
 			_setWindowTitleHandler = title => Title = ApplyMcpTitleState(_runtime, title);

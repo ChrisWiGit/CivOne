@@ -93,7 +93,7 @@ namespace CivOne
 			NextTask();
 		}
 
-		public static event TaskEventHandler? Started;
+		public static event TaskEventAction? Started;
 		public event EventHandler? Done;
 
 		protected virtual bool NextStep() => false;

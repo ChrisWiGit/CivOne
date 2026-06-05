@@ -39,97 +39,97 @@ namespace CivOne.Screens
 	{
 		private readonly GridMenuDelegate _gridMenu;
 
-		private void MenuCancel(object sender, EventArgs args)
+		private void MenuCancel(object? _, EventArgs args)
 		{
 			Destroy();
 		}
 
-		private void MenuSetGameYear(object sender, EventArgs args)
+		private void MenuSetGameYear(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<SetGameYear>());
 			Destroy();
 		}
 
-		private void MenuSetPlayerGold(object sender, EventArgs args)
+		private void MenuSetPlayerGold(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<SetPlayerGold>());
 			Destroy();
 		}
 
-		private void MenuSetPlayerScience(object sender, EventArgs args)
+		private void MenuSetPlayerScience(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<SetPlayerScience>());
 			Destroy();
 		}
 
-		private void MenuSetPlayerAdvances(object sender, EventArgs args)
+		private void MenuSetPlayerAdvances(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<SetPlayerAdvances>());
 			Destroy();
 		}
 
-		private void MenuSetPlayerGovernment(object sender, EventArgs args)
+		private void MenuSetPlayerGovernment(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<DebugChangeGovernment>());
 			Destroy();
 		}
 
-		private void MenuSetCitySize(object sender, EventArgs args)
+		private void MenuSetCitySize(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<SetCitySize>());
 			Destroy();
 		}
 
-		private void MenuCityDisaster(object sender, EventArgs args)
+		private void MenuCityDisaster(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<CauseDisaster>());
 			Destroy();
 		}
 
-		private void MenuChangeHumanPlayer(object sender, EventArgs args)
+		private void MenuChangeHumanPlayer(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<ChangeHumanPlayer>());
 			Destroy();
 		}
 
-		private void MenuSpawnUnit(object sender, EventArgs args)
+		private void MenuSpawnUnit(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<SpawnUnit>());
 			Destroy();
 		}
 
-		private void MenuMeetWithKing(object sender, EventArgs args)
+		private void MenuMeetWithKing(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<MeetWithKing>());
 			Destroy();
 		}
 
-		private void MenuRevealWorld(object sender, EventArgs args)
+		private void MenuRevealWorld(object? _, EventArgs args)
 		{
 			Settings.Instance.RevealWorldCheat();
 			Common.GamePlay?.RefreshMap();
 			Destroy();
 		}
 
-		private void MenuBuildPalace(object sender, EventArgs args)
+		private void MenuBuildPalace(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.BuildPalace(keepOpenUntilEscape: true));
 			Destroy();
 		}
 
-		private void MenuBuildSpaceShip(object sender, EventArgs args)
+		private void MenuBuildSpaceShip(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen(new SpaceShipView(Human, true, SpaceShipViewServicesFactory.CreateDefault(Translation))));
 			Destroy();
 		}
 
-		private void MenuPaletteViewer(object sender, EventArgs args)
+		private void MenuPaletteViewer(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<PaletteViewerScreen>());
 			Destroy();
 		}
 
-		private void InstantConquest(object sender, EventArgs args)
+		private void InstantConquest(object? _, EventArgs args)
 		{
 			Game.Players.ToList().ForEach(p =>
 			{
@@ -158,51 +158,51 @@ namespace CivOne.Screens
 		{
 			Map.AllTiles().ToList().ForEach(t => t.Pollution = pollution);
 		}
-		private void InstantGlobalWarming(object sender, EventArgs args)
+		private void InstantGlobalWarming(object? _, EventArgs args)
 		{
 			PolluteTiles(true);
 			if (Game.GlobalWarmingService.IsGlobalWarmingOnNewTurn())
 			{
-				Game.globalWarmingScourgeService.UnleashScourgeOfPollution();
+				Game._globalWarmingScourgeService.UnleashScourgeOfPollution();
 			}
 			PolluteTiles(false);
 			Game.GlobalWarmingService.RefreshPollutionState();
-			Common.GamePlay.RefreshMap();
+			Common.GamePlay!.RefreshMap();
 			GameTask.Enqueue(Message.Newspaper(null, TranslateArray("Your civilization\nhas caused\ninstant global warming!")));
 			Destroy();
 		}
 
-		private void MenuShowPowerGraph(object sender, EventArgs args)
+		private void MenuShowPowerGraph(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<PowerGraph>());
 			Destroy();
 		}
 
-		private void MenuShowCivilizationRanking(object sender, EventArgs args)
+		private void MenuShowCivilizationRanking(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen(CivilizationRankingScreenFactory.CreateDebug()));
 			Destroy();
 		}
 
-		private void MenuShowTopLeaderScreen(object sender, EventArgs args)
+		private void MenuShowTopLeaderScreen(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen(TopLeaderScreenFactory.CreateDebug()));
 			Destroy();
 		}
 
-		private void MenuShowHallOfFameScreen(object sender, EventArgs args)
+		private void MenuShowHallOfFameScreen(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen(HallOfFameScreenFactory.ViewScore()));
 			Destroy();
 		}
 
-		private void ShowSettings(object sender, EventArgs args)
+		private void ShowSettings(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screens(typeof(Setup)));
 			Destroy();
 		}
 
-		private void MenuAddBuilding(object sender, EventArgs args)
+		private void MenuAddBuilding(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<AddBuilding>());
 			Destroy();
@@ -210,50 +210,55 @@ namespace CivOne.Screens
 
 
 
-		private void EndGameConquest(object sender, EventArgs args)
+		private void EndGameConquest(object? _, EventArgs args)
 		{
 			_ = EndGameServiceFactory.CreateForHuman().HandleConquestAsync();
 			Destroy();
 		}
 
-		private void EndGameDefeat(object sender, EventArgs args)
+		private void EndGameDefeat(object? _, EventArgs args)
 		{
 			_ = EndGameServiceFactory.CreateForHuman().HandleDefeatAsync();
 			Destroy();
 		}
 
-		private void EndGameAlphaCentauri(object sender, EventArgs args)
+		private void EndGameAlphaCentauri(object? _, EventArgs args)
 		{
 			_ = EndGameServiceFactory.CreateForHuman().HandleAlphaCentauriAsync();
 			Destroy();
 		}
 
-		private void LoadGame(object sender, EventArgs args)
+		private void LoadGame(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<LoadGame>());
 			Destroy();
 		}
 
-		private void MenuCityGridTest(object sender, EventArgs args)
+		private void MenuCityGridTest(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<TestCityGridMenu>());
 			Destroy();
 		}
 
-		private void MenuRunConfirmBuy(object sender, EventArgs args)
+		private void MenuRunConfirmBuy(object? _, EventArgs args)
 		{
 			short treasury = Human?.Gold ?? 0;
 			GameTask.Enqueue(Show.Screen(new ConfirmBuy("Debug Building", 80, treasury)));
 			Destroy();
 		}
 
-		private void MenuRunConfirmSell(object sender, EventArgs args)
+		private void MenuRunConfirmSell(object? _, EventArgs args)
 		{
 			byte humanOwner = Game.PlayerNumber(Human);
-			IBuilding building = Game.Cities
+			IBuilding? building = Game.Cities
 				.Where(c => c.Owner == humanOwner)
 				.SelectMany(c => c.Buildings)
 				.FirstOrDefault();
+
+			if (building == null)
+			{
+				return;
+			}
 
 			building ??= new Barracks();
 
@@ -261,37 +266,37 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
-		private void MenuRunConfirmQuit(object sender, EventArgs args)
+		private void MenuRunConfirmQuit(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<ConfirmQuit>());
 			Destroy();
 		}
 
-		private void MenuRunConfirmRetire(object sender, EventArgs args)
+		private void MenuRunConfirmRetire(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<ConfirmRetire>());
 			Destroy();
 		}
 
-		private void MenuRunRevolution(object sender, EventArgs args)
+		private void MenuRunRevolution(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<Revolution>());
 			Destroy();
 		}
 
-		private void MenuRunSetRateTaxes(object sender, EventArgs args)
+		private void MenuRunSetRateTaxes(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen(SetRate.Taxes));
 			Destroy();
 		}
 
-		private void MenuRunSetRateLuxuries(object sender, EventArgs args)
+		private void MenuRunSetRateLuxuries(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen(SetRate.Luxuries));
 			Destroy();
 		}
 
-		private void MenuRunDisbandUnitDialog(object sender, EventArgs args)
+		private void MenuRunDisbandUnitDialog(object? _, EventArgs args)
 		{
 			byte humanOwner = Game.PlayerNumber(Human);
 			var city = Game.Cities.FirstOrDefault(c => c.Owner == humanOwner);
@@ -314,7 +319,7 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
-		private void MenuRunSelectAdvanceAfterCityCapture(object sender, EventArgs args)
+		private void MenuRunSelectAdvanceAfterCityCapture(object? _, EventArgs args)
 		{
 			var enemy = Game.Players.FirstOrDefault(p => p != Human && p.Civilization.Id != 0);
 			if (enemy == null)
@@ -324,21 +329,20 @@ namespace CivOne.Screens
 				return;
 			}
 
-			IList<IAdvance> advances = Common.Advances
+			List<IAdvance>? advances = [.. Common.Advances
 				.Where(a => enemy.HasAdvance(a) && !Human.HasAdvance(a))
-				.Take(5)
-				.ToList();
+				.Take(5)];
 
-			if (advances.Count == 0)
+			if (advances == null || advances.Count == 0)
 			{
-				advances = Common.Advances.Take(5).ToList();
+				advances = [.. Common.Advances.Take(5)];
 			}
 
 			GameTask.Enqueue(Show.SelectAdvanceAfterCityCapture(Human, advances));
 			Destroy();
 		}
 
-		private void MenuRunWeakAttack(object sender, EventArgs args)
+		private void MenuRunWeakAttack(object? _, EventArgs args)
 		{
 			byte humanOwner = Game.PlayerNumber(Human);
 			var baseUnit = Game.GetUnits().OfType<BaseUnit>().FirstOrDefault(u => u.Owner == humanOwner);
@@ -353,13 +357,13 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
-		private void MenuRunDiplomatBribe(object sender, EventArgs args)
+		private void MenuRunDiplomatBribe(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen(new DiplomatBribe(new StubDiplomatBribeService(), true)));
 			Destroy();
 		}
 
-		private void MenuRunDiplomatIncite(object sender, EventArgs args)
+		private void MenuRunDiplomatIncite(object? _, EventArgs args)
 		{
 			byte humanOwner = Game.PlayerNumber(Human);
 			var diplomat = Game.GetUnits()
@@ -384,7 +388,7 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
-		private void MenuRunCaravanChoice(object sender, EventArgs args)
+		private void MenuRunCaravanChoice(object? _, EventArgs args)
 		{
 			byte humanOwner = Game.PlayerNumber(Human);
 			var caravan = Game.GetUnits()
@@ -409,7 +413,7 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
-		private void MenuRunDiplomatCity(object sender, EventArgs args)
+		private void MenuRunDiplomatCity(object? _, EventArgs args)
 		{
 			byte humanOwner = Game.PlayerNumber(Human);
 			City[] enemyCities = [.. Game.Cities
@@ -427,7 +431,7 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
-		private void MenuRunOverwritePlugin(object sender, EventArgs args)
+		private void MenuRunOverwritePlugin(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen(new OverwritePlugin(
 				"plugin-source.dll",
@@ -436,7 +440,7 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
-		private void MenuRunChooseTech(object sender, EventArgs args)
+		private void MenuRunChooseTech(object? _, EventArgs args)
 		{
 			if (Human == null)
 			{
@@ -457,7 +461,7 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
-		private void MenuRunDiscovery(object sender, EventArgs args)
+		private void MenuRunDiscovery(object? _, EventArgs args)
 		{
 			if (Human == null)
 			{
@@ -466,7 +470,7 @@ namespace CivOne.Screens
 				return;
 			}
 
-			IAdvance advance = Human.AvailableResearch.FirstOrDefault()
+			IAdvance? advance = Human.AvailableResearch.FirstOrDefault()
 				?? Common.Advances.FirstOrDefault(a => !Human.HasAdvance(a))
 				?? Common.Advances.FirstOrDefault();
 
@@ -565,7 +569,7 @@ namespace CivOne.Screens
 			_gridMenu.ItemSelected += index => _menuEntries[index].Handler();
 			_gridMenu.Cancelled += (_, _) => Destroy();
 
-			this.AddLayer(Common.LastScreen, 0, 0);
+			this.AddLayer(Common.LastScreen!, 0, 0);
 			Refresh();
 		}
 
@@ -651,10 +655,10 @@ namespace CivOne.Screens
 			{
 				if (_citySelect == null)
 				{
-					Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
+					Palette = Common.Screens[^1].OriginalColours;
 					_citySelect = new CityGridMenuDelegate(
 						_enemyCities,
-						city => $"{city.Name} ({Game.GetPlayer(city.Owner).TribeName})");
+						city => $"{city.Name} ({Game.GetPlayer(city.Owner)?.TribeName ?? "Unknown"})");
 					_citySelect.CitySelected += OnCitySelected;
 					_citySelect.Cancelled += CitySelection_Cancel;
 				}
@@ -664,7 +668,7 @@ namespace CivOne.Screens
 
 			private void OnCitySelected(City enemyCity)
 			{
-				var diplomat = (Diplomat)Game.CreateUnit(UnitType.Diplomat);
+				var diplomat = (Diplomat)Game.CreateUnit(UnitType.Diplomat)!;
 				diplomat.Owner = _humanOwner;
 
 				var service = DiplomatCityDialogFactory.CreateService(enemyCity, diplomat, Translation);
@@ -678,7 +682,7 @@ namespace CivOne.Screens
 				Destroy();
 			}
 
-			private void CitySelection_Cancel(object sender, EventArgs args)
+			private void CitySelection_Cancel(object? _, EventArgs args)
 			{
 				Destroy();
 			}

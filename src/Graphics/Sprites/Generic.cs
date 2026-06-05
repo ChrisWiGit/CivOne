@@ -24,6 +24,6 @@ namespace CivOne.Graphics.Sprites
 				.ColourReplace(3, 0);
 		}
 
-		public static ISprite Fortify = new CachedSprite(GetFortify);
+		public static readonly ISprite Fortify = new CachedSprite(GetFortify);
 	}
 }

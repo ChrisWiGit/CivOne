@@ -6,7 +6,7 @@ namespace CivOne.UnitTests
 	public class RandomServiceFactoryTests
 	{
 		[Fact]
-		public void Create_WhenServiceWasOverridden_ReturnsSameCachedInstance()
+		public void CreateWhenServiceWasOverriddenReturnsSameCachedInstance()
 		{
 			// Arrange
 			IRandomService expected = new StubRandomService();
@@ -20,7 +20,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Override_WhenCalledTwice_ReplacesCachedInstance()
+		public void OverrideWhenCalledTwiceReplacesCachedInstance()
 		{
 			// Arrange
 			IRandomService oldService = new StubRandomService();
@@ -37,7 +37,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Next_WhenCalled_ReturnsValueFromWrappedRandomInstance()
+		public void NextWhenCalledReturnsValueFromWrappedRandomInstance()
 		{
 			// Arrange
 			var random = new Random(1234);
@@ -52,9 +52,9 @@ namespace CivOne.UnitTests
 			// Assert
 			Assert.Equal(expected, actual);
 		}
-
+		
 		[Fact]
-		public void Hit_WhenPercentIsZero_ReturnsFalse()
+		public void HitWhenPercentIsZeroReturnsFalse()
 		{
 			// Arrange
 			var random = new Random(23905);

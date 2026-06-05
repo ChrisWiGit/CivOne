@@ -39,7 +39,7 @@ namespace CivOne.Concepts
 		/// TranslatedName = Translate("Tax Rate");
 		/// </code>
 		/// </example>
-		public string TranslatedName { get; protected set; }
+		public string TranslatedName { get; protected set; } = "";
 		/// <summary>
 		/// Gets the invariant civilopedia key name.
 		/// </summary>
@@ -49,12 +49,12 @@ namespace CivOne.Concepts
 		/// TranslatedName = Translate("Tax Rate");
 		/// </code>
 		/// </example>
-		public string Name { get; protected set; }
-		public IBitmap Icon => null;
+		public string Name { get; protected set; } = "";
+		public IBitmap? Icon => null;
 		public byte PageCount => 2;
 		public Picture DrawPage(byte pageNumber)
 		{
-			string[] text = new string[0];
+			string[] text = [];
 			switch (pageNumber)
 			{
 				case 1:

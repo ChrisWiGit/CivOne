@@ -275,8 +275,8 @@ namespace CivOne
 			}
 		}
 
-		private int CanvasWidth => Runtime.CanvasSize.Width;
-		private int CanvasHeight => Runtime.CanvasSize.Height;
+		private static int CanvasWidth => Runtime.CanvasSize.Width;
+		private static int CanvasHeight => Runtime.CanvasSize.Height;
 
 		private int DrawWidth => CanvasWidth * ScaleX;
 		private int DrawHeight => CanvasHeight * ScaleY;

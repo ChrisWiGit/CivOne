@@ -60,19 +60,19 @@ namespace CivOne.UserInterface
 			return menuItem;
 		}
 
-		public static MenuItem<T> OnSelect<T>(this MenuItem<T> menuItem, MenuItemEventHandler<T> eventMethod)
+		public static MenuItem<T> OnSelect<T>(this MenuItem<T> menuItem, MenuItemEventAction<T> eventMethod)
 		{
 			menuItem.Selected += eventMethod;
 			return menuItem;
 		}
 
-		public static MenuItem<T> OnContext<T>(this MenuItem<T> menuItem, MenuItemEventHandler<T> eventMethod)
+		public static MenuItem<T> OnContext<T>(this MenuItem<T> menuItem, MenuItemEventAction<T> eventMethod)
 		{
 			menuItem.RightClick += eventMethod;
 			return menuItem;
 		}
 
-		public static MenuItem<T> OnHelp<T>(this MenuItem<T> menuItem, MenuItemEventHandler<T> eventMethod)
+		public static MenuItem<T> OnHelp<T>(this MenuItem<T> menuItem, MenuItemEventAction<T> eventMethod)
 		{
 			menuItem.GetHelp += eventMethod;
 			return menuItem;

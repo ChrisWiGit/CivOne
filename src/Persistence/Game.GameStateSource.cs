@@ -26,7 +26,7 @@ namespace CivOne
 
 		public int TerrainMasterWord => Map.Instance.TerrainMasterWord;
 
-		IGlobalWarmingService IGameSnapshotSource.GlobalWarmingService => globalWarmingService;
+		IGlobalWarmingService IGameSnapshotSource.GlobalWarmingService => _globalWarmingService;
 
 		public ITile[,] MapTiles => Map.Instance.Tiles;
 

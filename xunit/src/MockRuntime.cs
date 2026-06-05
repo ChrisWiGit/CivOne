@@ -15,20 +15,20 @@ namespace CivOne.UnitTests
 
         public event EventHandler Initialize;
         public event EventHandler Draw;
-        public event UpdateEventHandler Update;
-        public event KeyboardEventHandler KeyboardUp;
-        public event KeyboardEventHandler KeyboardDown;
-        public event ScreenEventHandler MouseUp;
-        public event ScreenEventHandler MouseDown;
-        public event ScreenEventHandler MouseMove;
-        public event ScreenEventHandler MouseWheel;
+        public event EventHandler<UpdateEventArgs> Update;
+        public event EventHandler<KeyboardEventArgs> KeyboardUp;
+        public event EventHandler<KeyboardEventArgs> KeyboardDown;
+        public event EventHandler<ScreenEventArgs> MouseUp;
+        public event EventHandler<ScreenEventArgs> MouseDown;
+        public event EventHandler<ScreenEventArgs> MouseMove;
+        public event EventHandler<ScreenEventArgs> MouseWheel;
         public Platform CurrentPlatform { get; }
 
         public string StorageDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CivOne");
 
-        public string GetSetting(string key)
+        public string? GetSetting(string key)
         {
-            return _settings.TryGetValue(key, out string value) ? value : null;
+            return _settings.TryGetValue(key, out string? value) ? value : null;
         }
 
         public void SetSetting(string key, string value)
@@ -37,29 +37,29 @@ namespace CivOne.UnitTests
         }
 
         public RuntimeSettings Settings { get; }
-        public MouseCursor CurrentCursor { get; private set; }
+        public MouseCursor? CurrentCursor { get; private set; }
         public Bytemap[] Layers { get; set; }
         public Palette Palette { get; set; }
-        public IBitmap Cursor { get; private set; }
+        public IBitmap? Cursor { get; private set; }
         public int CanvasWidth { get; }
         public int CanvasHeight { get; }
         public int WindowWidth { get; }
         public int WindowHeight { get; }
 
-        public bool TryOpenUrl(string url, out string errorMessage)
+        public bool TryOpenUrl(string url, out string? errorMessage)
         {
             errorMessage = null;
             return false;
         }
 
-        public bool TryCopyToClipboard(string text, out string errorMessage)
+        public bool TryCopyToClipboard(string text, out string? errorMessage)
         {
             errorMessage = null;
             return false;
         }
 
-        public void SetCurrentCursor(MouseCursor cursor) => CurrentCursor = cursor;
-        public void SetCursor(IBitmap cursor) => Cursor = cursor;
+        public void SetCurrentCursor(MouseCursor? cursor) => CurrentCursor = cursor;
+        public void SetCursor(IBitmap? cursor) => Cursor = cursor;
 
         public void Log(string text, params object[] parameters)
         {

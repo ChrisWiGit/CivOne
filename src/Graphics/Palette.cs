@@ -98,5 +98,7 @@ namespace CivOne.Graphics
 		public Palette(int length = 256) : base(length * 4)
 		{
 		}
+
+		public static readonly Palette Empty = new(0);
 	}
 }

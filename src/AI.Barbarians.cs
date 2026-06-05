@@ -10,6 +10,7 @@
 using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Services.Pathfinding;
+using CivOne.Services.Random;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -27,6 +28,7 @@ namespace CivOne
     internal partial class AI
 	{
 		private readonly IUnitGotoService _unitGotoService = UnitGotoServiceFactory.Create();
+		private readonly IRandomService _randomService = RandomServiceFactory.Create();
 
 		private static bool IsPolarTile(ITile tile) => tile.Type == Terrain.Arctic;
 
@@ -77,7 +79,7 @@ namespace CivOne
 					foreach (IUnit landUnit in unit.Tile.Units.Where(x => x.Class == UnitClass.Land).ToList())
 					{
 						landUnit.Sentry = false;
-						ITile dest = landingZones[Common.Random.Next(landingZones.Length)];
+						ITile dest = landingZones[_randomService.Next(landingZones.Length)];
 						landUnit.MoveTo(dest.X - landUnit.X, dest.Y - landUnit.Y);
 					}
 					unit.SkipTurn();
@@ -89,7 +91,7 @@ namespace CivOne
 					// Target a coastal ocean tile adjacent to the nearest palace city.
 					// Targeting the city tile itself would make GotoStep fail (water→land),
 					// causing an infinite re-targeting loop.
-					City nearestCity = Game.GetCities()
+					City? nearestCity = Game.GetCities()
 						.Where(x => x.Owner != 0 && x.HasBuilding<Palace>()
 								&& x.Tile.GetBorderTiles().Any(t => t.IsOcean && !IsPolarTile(t)))
 						.OrderBy(x => Common.DistanceToTile(x.X, x.Y, unit.X, unit.Y))
@@ -141,13 +143,13 @@ namespace CivOne
 		{
 			if (unit.Tile.IsOcean && unit.Tile.GetBorderTiles().Where(x => !x.IsOcean && !IsPolarTile(x)).All(x => x.Units.Any(u => u.Owner != 0)))
 			{
-				IUnit ship = unit.Tile.Units.FirstOrDefault(u => u.Class == UnitClass.Water && u.MovesLeft > 0);
+				IUnit? ship = unit.Tile.Units.FirstOrDefault(u => u.Class == UnitClass.Water && u.MovesLeft > 0);
 				if (ship != null)
 				{
 					ITile[] landTiles = [.. unit.Tile.GetBorderTiles().Where(x => !x.IsOcean && !IsPolarTile(x) && x.Units.Any(u => u.Owner != 0))];
 					if (landTiles.Length > 0)
 					{
-						ITile tile = landTiles[Common.Random.Next(landTiles.Length)];
+						ITile tile = landTiles[_randomService.Next(landTiles.Length)];
 						if (!ship.MoveTo(tile.X - unit.X, tile.Y - unit.Y))
 							unit.SkipTurn();
 						return;
@@ -171,21 +173,21 @@ namespace CivOne
 				ITile[] friendlyTiles = [.. unit.Tile.GetBorderTiles().Where(x => !x.IsOcean && !IsPolarTile(x) && x.Units.Length != 0 && x.Units[0].Owner == 0)];
 				if (friendlyTiles.Length > 0)
 				{
-					ITile moveTo = friendlyTiles[Common.Random.Next(friendlyTiles.Length)];
+					ITile moveTo = friendlyTiles[_randomService.Next(friendlyTiles.Length)];
 					int relX = moveTo.X - unit.X;
 					int relY = moveTo.Y - unit.Y;
 					unit.MoveTo(relX, relY);
-					unit.WorkProgress = (byte)(10 + Common.Random.Next(0, 20));
+					unit.WorkProgress = (byte)(10 + _randomService.Next(0, 20));
 					return;
 				}
 
-				if (unit.Tile.Units.Any(x => !(x is Diplomat) && x.MovesLeft > 0))
+				if (unit.Tile.Units.Any(x => x is not Diplomat && x.MovesLeft > 0))
 				{
 					unit.SkipTurn();
 					return;
 				}
 
-				if (unit.Tile.Units.Any(x => !(x is Diplomat)))
+				if (unit.Tile.Units.Any(x => x is not Diplomat))
 				{
 					unit.SkipTurn();
 					return;
@@ -194,7 +196,7 @@ namespace CivOne
 				ITile[] unfriend = [.. unit.Tile.GetBorderTiles().Where(z => !z.IsOcean && !IsPolarTile(z) && z.Units.Length == 0)];
 				if (unfriend.Length > 0)
 				{
-					ITile moveTo = unfriend[Common.Random.Next(unfriend.Length)];
+					ITile moveTo = unfriend[_randomService.Next(unfriend.Length)];
 					int relX = moveTo.X - unit.X;
 					int relY = moveTo.Y - unit.Y;
 					unit.MoveTo(relX, relY);
@@ -208,34 +210,53 @@ namespace CivOne
 			ITile[] tiles = unit.Tile.GetBorderTiles().Where(t => !((unit.Tile.IsOcean || unit is Diplomat) && t.City != null) && !t.IsOcean && !IsPolarTile(t) && t.Units.Any(u => u.Owner != 0)).ToArray();
 			if (tiles.Length == 0)
 			{
-				// No adjecent units found
-				if (Common.Random.Next(100) < 95)
+				// No adjacent units found
+				bool moved = MoveAwayOrDisband(unit);
+				if (!moved)
 				{
-					for (int i = 0; i < 1000; i++)
-					{
-						int relX = Common.Random.Next(-1, 2);
-						int relY = Common.Random.Next(-1, 2);
-						if (relX == 0 && relY == 0) continue;
-						if (unit.Tile[relX, relY] is Ocean || IsPolarTile(unit.Tile[relX, relY])) continue;
-						if (unit is Diplomat && unit.Tile[relX, relY].City != null) continue;
-						if (unit.Tile.IsOcean && unit.Tile[relX, relY].City != null) continue;
-						unit.MoveTo(relX, relY);
-						return;
-					}
+					return;
 				}
-				Game.DisbandUnit(unit);
 			}
 			else
 			{
-				ITile moveTo = tiles[Common.Random.Next(tiles.Length)];
+				ITile moveTo = tiles[_randomService.Next(tiles.Length)];
 				int relX = moveTo.X - unit.X;
 				int relY = moveTo.Y - unit.Y;
 				while (relX < -1) relX += Map.WIDTH;
 				while (relX > 1) relX -= Map.WIDTH;
 				if (unit is Diplomat && unit.Tile.City != null) return;
+				if (unit.Attack == 0) 
+				{
+					// Units that cannot attack will try to move away from enemies instead of towards them.
+					MoveAwayOrDisband(unit);
+					return;
+				}
 
 				unit.MoveTo(relX, relY);
 			}
+		}
+
+		private static bool MoveAwayOrDisband(IUnit unit)
+		{
+			IRandomService randomService = RandomServiceFactory.Create();
+
+			if (randomService.Next(100) < 95)
+			{
+				for (int i = 0; i < 1000; i++)
+				{
+					int relX = randomService.Next(-1, 2);
+					int relY = randomService.Next(-1, 2);
+					if (relX == 0 && relY == 0) continue;
+					if (unit.Tile[relX, relY] is Ocean || IsPolarTile(unit.Tile[relX, relY])) continue;
+					if (unit is Diplomat && unit.Tile[relX, relY].City != null) continue;
+					if (unit.Tile.IsOcean && unit.Tile[relX, relY].City != null) continue;
+					if (unit.Attack == 0) continue; // Units that cannot attack will try to move away from enemies instead of towards them.
+					unit.MoveTo(relX, relY);
+					return false;
+				}
+			}
+			Game.DisbandUnit(unit);
+			return true;
 		}
 	}
 }

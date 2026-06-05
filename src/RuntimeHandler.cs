@@ -185,24 +185,21 @@ namespace CivOne
 			{
 				try
 				{
-					Runtime.Palette?.Dispose();
 					Runtime.Palette = topScreen.Palette.Copy();
 				}
 				catch (ObjectDisposedException)
 				{
-					Runtime.Palette?.Dispose();
 					Runtime.Palette = Common.DefaultPalette;
 				}
 			}
 			else
 			{
-				Runtime.Palette?.Dispose();
 				Runtime.Palette = Common.DefaultPalette;
 			}
 			
 			if (Common.HasAttribute<Modal>(topScreen))
 			{
-				Runtime.Layers = new[] { topScreen.Bitmap };
+				Runtime.Layers = [topScreen.Bitmap];
 			}
 			else
 			{
@@ -217,7 +214,7 @@ namespace CivOne
 
 				if (_cursorType != CursorType.Native && _currentCursor != MouseCursor.None && Cursor.Current?.Bitmap != null)
 				{
-					Runtime.SetCursor(Cursor.Current.ToBitmap());
+					Runtime.SetCursor(Cursor.Current.ToBitmap()!);
 				}
 				else
 				{
@@ -247,8 +244,10 @@ namespace CivOne
 
 			if (args[KeyModifier.Control, Key.F5])
 			{
-				string filename = Common.CaptureFilename;
+				string? filename = Common.CaptureFilename;
+				if (filename == null) return;
 				if (Runtime.Layers == null) return;
+				
 				IScreen? topScreen = TopScreen;
 				if (topScreen == null) return;
 				using Palette screenshotPalette = topScreen.Palette.Copy();

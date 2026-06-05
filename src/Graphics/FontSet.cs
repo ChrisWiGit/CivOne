@@ -37,18 +37,18 @@ namespace CivOne.Graphics
 
 		public virtual Bytemap GetLetter(char character, byte colour)
 		{
-			if (!TryGetCharacterData(character, out int width, out byte[] characterData))
+			if (!TryGetCharacterData(character, out int width, out byte[]? characterData))
 			{
 				return new Bytemap(8, 8);
 			}
 
-			return new Bytemap(width, FontHeight).FromByteArray(BuildPixels(characterData, width, colour));
+			return new Bytemap(width, FontHeight).FromByteArray(BuildPixels(characterData!, width, colour));
 		}
 
 		protected bool HasCharacter(char character)
 		=> _charWidths.ContainsKey(character) && _characters.ContainsKey(character);
 
-		private bool TryGetCharacterData(char character, out int width, out byte[] characterData)
+		private bool TryGetCharacterData(char character, out int width, out byte[]? characterData)
 		{
 			width = 0;
 			characterData = null;

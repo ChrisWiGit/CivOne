@@ -179,10 +179,10 @@ namespace CivOne
 
 		private void InitializeGlobalWarmingServices(GameState state)
 		{
-			globalWarmingService = GlobalWarmingServiceFactory.CreateGlobalWarmingService(
+			_globalWarmingService = GlobalWarmingServiceFactory.CreateGlobalWarmingService(
 				state.GlobalWarmingCount, state.PollutedSquaresCount, state.WarmingIndicator, Map.AllTiles());
-			globalWarmingScourgeService = GlobalWarmingServiceFactory.CreateGlobalWarmingScourgeService(
-				globalWarmingService,
+			_globalWarmingScourgeService = GlobalWarmingServiceFactory.CreateGlobalWarmingScourgeService(
+				_globalWarmingService,
 				Map.Tiles,
 				(tile, newTerrainType) => Map.ChangeTileType(tile.X, tile.Y, newTerrainType),
 				DisbandUnit,

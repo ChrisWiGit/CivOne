@@ -34,7 +34,7 @@ namespace CivOne.Screens
 		private Size _lastWindowSize = WindowSize;
 		private bool WindowSizeChanged => _lastWindowSize != WindowSize;
 
-		protected event ResizeEventHandler OnResize;
+		protected event ResizeEventAction OnResize;
 
 		protected void MouseArgsOffset(ref ScreenEventArgs args, int offsetX, int offsetY)
 		{

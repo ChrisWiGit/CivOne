@@ -341,7 +341,7 @@ namespace CivOne.Screens.GamePlayPanels
 							_gameMap._terrainEditorDelegate.ApplyBrush(x, y, _gameMap._editorState.PencilSizeIndex, _gameMap._editorState.SelectedTerrain);
 							break;
 						case EditorMode.FoundCity:
-							_gameMap._terrainEditorDelegate.EditCitySingleTile(x, y, _gameMap._editorState.CityOwner, shrink: rightButton);
+							TerrainEditorDelegate.EditCitySingleTile(x, y, _gameMap._editorState.CityOwner, shrink: rightButton);
 							break;
 						case EditorMode.SpawnUnit:
 							if (rightButton)
@@ -350,7 +350,7 @@ namespace CivOne.Screens.GamePlayPanels
 							}
 							else
 							{
-								_gameMap._terrainEditorDelegate.SpawnUnit(x, y, _gameMap._editorState.CityOwner, _gameMap._editorState.SelectedUnitType);
+								TerrainEditorDelegate.SpawnUnit(x, y, _gameMap._editorState.CityOwner, _gameMap._editorState.SelectedUnitType);
 							}
 							break;
 						case EditorMode.Irrigation:

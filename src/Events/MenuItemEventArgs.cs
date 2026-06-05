@@ -12,7 +12,7 @@ using CivOne.Enums;
 
 namespace CivOne.Events
 {
-	public delegate void MenuItemEventHandler<T>(object sender, MenuItemEventArgs<T> args);
+	public delegate void MenuItemEventAction<T>(object sender, MenuItemEventArgs<T> args);
 
 	public class MenuItemEventArgs<T> : EventArgs
 	{
