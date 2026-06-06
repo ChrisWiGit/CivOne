@@ -12,18 +12,14 @@ using CivOne.Enums;
 
 namespace CivOne.Leaders
 {
-	public class Aggression : BaseAttribute
+	/// <summary>
+	/// Modify the leader aggression level.
+	/// </summary>
+	/// <param name="value">The new agression level for the leader.</param>
+	public class Aggression(AggressionLevel value) : BaseAttribute(typeof(AggressionLevel), value, InRange)
 	{
 		private static bool InRange(object value) => Enum.IsDefined(typeof(AggressionLevel), value);
 
-		public string Value => GetValue<string>();
-
-		/// <summary>
-		/// Modify the leader aggression level.
-		/// </summary>
-		/// <param name="value">The new agression level for the leader.</param>
-		public Aggression(AggressionLevel value) : base(typeof(AggressionLevel), value, InRange)
-		{
-		}
+		public AggressionLevel Value => GetRequiredValue<AggressionLevel>();
 	}
 }

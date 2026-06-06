@@ -12,28 +12,23 @@ using CivOne.Enums;
 
 namespace CivOne.Leaders
 {
-	public abstract class LeaderModification : IModification
+	/// <summary>
+	/// Modify an existing leader.
+	/// </summary>
+	/// <param name="leaderId">The leader to override.</param>
+	public abstract class LeaderModification(Leader leaderId) : IModification
 	{
-		public Leader Leader { get; }
+		public Leader Leader { get; } = leaderId;
 
 		public AttributeValue<string> Name => AttributeValue<string>.Set(this.GetAttribute<Name>());
 		public AttributeValue<AggressionLevel> Aggression => AttributeValue<AggressionLevel>.Set(this.GetAttribute<Aggression>());
 		public AttributeValue<DevelopmentLevel> Development => AttributeValue<DevelopmentLevel>.Set(this.GetAttribute<Development>());
 		public AttributeValue<MilitarismLevel> Militarism => AttributeValue<MilitarismLevel>.Set(this.GetAttribute<Militarism>());
 		
-		public byte[] Portrait { get; private set; }
-		public byte[] PortraitSmall { get; private set; }
+		public byte[]? Portrait { get; private set; }
+		public byte[]? PortraitSmall { get; private set; }
 
 		public void SetPortrait(string assemblyName) => Portrait = Resources.GetInternalResourceBytes(Assembly.GetCallingAssembly(), assemblyName);
 		public void SetPortraitSmall(string assemblyName) => PortraitSmall = Resources.GetInternalResourceBytes(Assembly.GetCallingAssembly(), assemblyName);
-
-		/// <summary>
-		/// Modify an existing leader.
-		/// </summary>
-		/// <param name="leaderId">The leader to override.</param>
-		public LeaderModification(Leader leaderId)
-		{
-			Leader = leaderId;
-		}
 	}
 }

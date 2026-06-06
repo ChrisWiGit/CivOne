@@ -11,18 +11,14 @@ using System;
 
 namespace CivOne.Units
 {
-	public class Name : BaseAttribute
+	/// <summary>
+	/// Modify the unit name.
+	/// </summary>
+	/// <param name="value">The new name for the unit. Must be between 1 and 12 characters long.</param>
+	public class Name(string value) : BaseAttribute(typeof(string), value, InRange)
 	{
-		private static bool InRange(object value) => (value as string).Length > 0 && (value as string).Length <= 12;
+		private static bool InRange(object value) => value is string str && str.Length > 0 && str.Length <= 12;
 
-		public string Value => GetValue<string>();
-
-		/// <summary>
-		/// Modify the unit name.
-		/// </summary>
-		/// <param name="value">The new name for the unit. Must be between 1 and 12 characters long.</param>
-		public Name(string value) : base(typeof(string), value, InRange)
-		{
-		}
+		public string Value => GetRequiredValue<string>();
 	}
 }

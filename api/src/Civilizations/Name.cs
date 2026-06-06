@@ -11,19 +11,15 @@ using System;
 
 namespace CivOne.Civilizations
 {
-	public class Name : BaseAttribute
+	/// <summary>
+	/// Modifiy the civilization name.
+	/// </summary>
+	/// <param name="name">The new name for the civilization. (example: Roman)</param>
+	/// <param name="namePlural">The new plural name for the civilization. (example: Romans)</param>
+	public class Name(string name, string namePlural) : BaseAttribute(typeof(CivilizationName), new CivilizationName(name, namePlural), InRange)
 	{
 		public static bool InRange(object value) => ((CivilizationName)value).Valid;
 
-		public CivilizationName Value => GetValue<CivilizationName>();
-
-		/// <summary>
-		/// Modifiy the civilization name.
-		/// </summary>
-		/// <param name="name">The new name for the civilization. (example: Roman)</param>
-		/// <param name="namePlural">The new plural name for the civilization. (example: Romans)</param>
-		public Name(string name, string namePlural) : base(typeof(CivilizationName), new CivilizationName(name, namePlural), InRange)
-		{
-		}
+		public CivilizationName Value => GetRequiredValue<CivilizationName>();
 	}
 }

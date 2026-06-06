@@ -12,18 +12,14 @@ using System.Linq;
 
 namespace CivOne.Civilizations
 {
-	public class CityNames : BaseAttribute
+	/// <summary>
+	/// Modify the city names.
+	/// </summary>
+	/// <param name="value">A new list of city names. Must be an array of 16 strings, each between 1 and 13 characters long.</param>
+	public class CityNames(params string[] value) : BaseAttribute(typeof(string[]), value, InRange)
 	{
-		private static bool InRange(object value) => (value as string[]).Length == 16 && (value as string[]).All(x => x != null && x.Length >= 1 && x.Length <= 13);
+		private static bool InRange(object value) => (value is string[] arr) && arr.Length == 16 && arr.All(x => x != null && x.Length >= 1 && x.Length <= 13);
 
-		public string[] Value => GetValue<string[]>();
-
-		/// <summary>
-		/// Modify the city names.
-		/// </summary>
-		/// <param name="value">A new list of city names. Must be an array of 16 strings, each between 1 and 13 characters long.</param>
-		public CityNames(params string[] value) : base(typeof(string[]), value, InRange)
-		{
-		}
+		public string[] Value => GetRequiredValue<string[]>();
 	}
 }

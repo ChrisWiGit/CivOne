@@ -11,18 +11,14 @@ using System;
 
 namespace CivOne.Units
 {
-	public class Attack : BaseAttribute
+	/// <summary>
+	/// Modify the unit attack strength.
+	/// </summary>
+	/// <param name="value">The new attack strength for the unit. (valid range: 0 to 99)</param>
+	public class Attack(byte value) : BaseAttribute(typeof(byte), value, InRange)
 	{
 		private static bool InRange(object value) => (byte)value >= 0 && (byte)value <= 99;
 
-		public byte Value => GetValue<byte>();
-
-		/// <summary>
-		/// Modify the unit attack strength.
-		/// </summary>
-		/// <param name="value">The new attack strength for the unit. (valid range: 0 to 99)</param>
-		public Attack(byte value) : base(typeof(byte), value, InRange)
-		{
-		}
+		public byte Value => GetRequiredValue<byte>();
 	}
 }

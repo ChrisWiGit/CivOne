@@ -12,16 +12,12 @@ using CivOne.Enums;
 
 namespace CivOne.Units
 {
-	public class Obsolete : BaseAttribute
+	/// <summary>
+	/// Modify the advance with which the unit becomes obsolete.
+	/// </summary>
+	/// <param name="value">The new obsolete advance for the unit.</param>
+	public class Obsolete(Advance value) : BaseAttribute(typeof(Advance), value)
 	{
-		public Advance Value => GetValue<Advance>();
-
-		/// <summary>
-		/// Modify the advance with which the unit becomes obsolete.
-		/// </summary>
-		/// <param name="value">The new obsolete advance for the unit.</param>
-		public Obsolete(Advance value) : base(typeof(Advance), value)
-		{
-		}
+		public Advance Value => GetRequiredValue<Advance>();
 	}
 }
