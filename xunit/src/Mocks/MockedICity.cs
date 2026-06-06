@@ -26,7 +26,7 @@ namespace CivOne.UnitTests
 			Size = 5;
 			Luxuries = 4;
 			EntertainerLuxuries = 0;
-			Owner = 1;
+			CityOwnerPlayerIndex = 1;
 			Name = "TestCity";
 			ResourceTiles = [.. _cityTile.Tiles.Cast<ITile>()];
 			Specialists = [Citizen.Entertainer, Citizen.Scientist, Citizen.Taxman];
@@ -42,8 +42,8 @@ namespace CivOne.UnitTests
 			Wonders = [new MockedIWonder()];
 			
 			Status = 0;
-			Status = _bits.SetFlag(Status, City.CityStatus.AUTO_BUILD);
-			Status = _bits.SetFlag(Status, City.CityStatus.RIOT);
+			Status = _bits.SetFlag(Status, City.CityStatus.AutoBuild);
+			Status = _bits.SetFlag(Status, City.CityStatus.Riot);
 
 			WasInDisorder = false;
 			TradingCities = [];
@@ -72,7 +72,7 @@ namespace CivOne.UnitTests
 
 		public int EntertainerLuxuries { get; set; }
 
-		public byte Owner { get; set; }
+		public byte CityOwnerPlayerIndex { get; set; }
 
 		public string Name { get; set; }
 

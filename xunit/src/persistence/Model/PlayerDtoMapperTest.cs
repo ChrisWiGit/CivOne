@@ -47,7 +47,7 @@ namespace CivOne.Persistence.Model
 			_city = new MockedICity(1)
 			{
 				Name = "Rome",
-				Owner = 0,
+				CityOwnerPlayerIndex = 0,
 				Size = 7
 			};
 

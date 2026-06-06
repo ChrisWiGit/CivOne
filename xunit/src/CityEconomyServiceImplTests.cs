@@ -201,8 +201,8 @@ namespace CivOne.UnitTests
             short expectedLuxuries = service.CalculateLuxuries(expectedTradeLuxuries, hasMarketPlace: true, hasBank: true, city.EntertainerLuxuries);
             short expectedTaxes = service.CalculateTaxes(expectedTradeTaxes, hasMarketPlace: true, hasBank: true, city.Taxmen);
 
-            bool hasSeti = city.Player.HasWonder<SETIProgram>();
-            bool hasNewton = !Game.Instance.WonderObsolete<IsaacNewtonsCollege>() && city.Player.HasWonder<IsaacNewtonsCollege>() && !hasSeti;
+            bool hasSeti = city.CityOwnerPlayer.HasWonder<SETIProgram>();
+            bool hasNewton = !Game.Instance.WonderObsolete<IsaacNewtonsCollege>() && city.CityOwnerPlayer.HasWonder<IsaacNewtonsCollege>() && !hasSeti;
             bool hasCopernicus = !Game.Instance.WonderObsolete<CopernicusObservatory>() && city.HasWonder<CopernicusObservatory>();
 
             short expectedScience = service.CalculateScience(

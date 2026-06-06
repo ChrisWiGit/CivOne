@@ -99,7 +99,7 @@ namespace CivOne.Screens.Reports
 
 		public CityStatus() : base(8)
 		{
-			_cities = Game.GetCities().Where(c => Human == c.Owner && c.Size > 0).ToArray();
+			_cities = Game.GetCities().Where(c => Human == c.CityOwnerPlayerIndex && c.Size > 0).ToArray();
 			Render();
 		}
 	}

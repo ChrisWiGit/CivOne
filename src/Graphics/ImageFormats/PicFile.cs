@@ -18,7 +18,7 @@ namespace CivOne.Graphics.ImageFormats
 {
 	internal class PicFile : IImageFormat, IDisposable
 	{
-		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
+		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters); // never null because Runtime exists before any PicFile can be created
 
 		private static Dictionary<string, PicFile> _cache = new Dictionary<string, PicFile>();
 		private readonly byte[] _bytes;

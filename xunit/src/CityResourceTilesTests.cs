@@ -97,7 +97,7 @@ namespace CivOne.src
 
 			City? city = Game.Instance.GetCities().FirstOrDefault(existingCity => existingCity.X == targetX && existingCity.Y == targetY);
 			Assert.NotNull(city);
-			Assert.Equal(computerPlayerId, city.Owner);
+			Assert.Equal(computerPlayerId, city.CityOwnerPlayerIndex);
 			Assert.Equal(1, city.Size);
 			Assert.Contains(city.ResourceTiles, tile => tile.X == city.X && tile.Y == city.Y);
 			Assert.True(city.ResourceTiles.Length >= 2);

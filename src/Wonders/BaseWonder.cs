@@ -123,7 +123,7 @@ namespace CivOne.Wonders
 			string name = Id < 8 ? $"The {TranslatedName}" : TranslatedName;
 			string preposition = Id < 7 ? "of" : "in";
 			if (city != null && city.Size > 0)
-				return $"{name} {preposition} {city.Name}. ({Game.Instance.GetPlayer(city.Owner).Civilization.NamePlural})";
+				return $"{name} {preposition} {city.Name}. ({Game.Instance.GetPlayer(city.CityOwnerPlayerIndex).Civilization.NamePlural})";
 			return $"{name} (Destroyed)";
 		}
 		

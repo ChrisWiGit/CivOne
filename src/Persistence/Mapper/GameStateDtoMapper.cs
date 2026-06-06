@@ -177,7 +177,7 @@ namespace CivOne.Persistence.Mapper
                 ? mappedNameId
                 : AddCityName(cityNames, cityNameIndexByName, cityName);
 
-            return new City(sourceCity.Owner)
+            return new City(sourceCity.CityOwnerPlayerIndex)
             {
                 Id = sourceCity.Id,
                 X = (byte)locationX,

@@ -247,7 +247,7 @@ namespace CivOne.Screens.GamePlayPanels
 				return;
 			}
 
-			if (city.Owner != cityOwner)
+			if (city.CityOwnerPlayerIndex != cityOwner)
 			{
 				return;
 			}
@@ -304,7 +304,7 @@ namespace CivOne.Screens.GamePlayPanels
 
 			if (selectedUnit.Class == UnitClass.Land && tile.City != null)
 			{
-				return ownerId == tile.City.Owner;
+				return ownerId == tile.City.CityOwnerPlayerIndex;
 			}
 
 			if (selectedUnit.Class == UnitClass.Land && tile.Type == Terrain.Ocean)
@@ -322,7 +322,7 @@ namespace CivOne.Screens.GamePlayPanels
 
 			if (selectedUnit.Class == UnitClass.Water && tile.Type != Terrain.Ocean)
 			{
-				return tile.City != null && ownerId == tile.City.Owner;
+				return tile.City != null && ownerId == tile.City.CityOwnerPlayerIndex;
 			}
 
 			return true;

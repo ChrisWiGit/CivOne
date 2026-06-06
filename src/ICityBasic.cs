@@ -21,7 +21,7 @@ namespace CivOne
 		byte Size { get; }
 		short Luxuries { get; }
 		public int EntertainerLuxuries { get; }
-		byte Owner { get; set; }
+		byte CityOwnerPlayerIndex { get; set; }
 		string Name { get; }
 
 		ITile[] ResourceTiles { get; }

@@ -74,7 +74,7 @@ namespace CivOne.Screens.Debug
 
 			foreach (City city in cities)
 			{
-				_citySelect.Items.Add($"{city.Name} ({Game.GetPlayer(city.Owner).TribeName})").OnSelect(CauseDisaster_Accept);
+				_citySelect.Items.Add($"{city.Name} ({Game.GetPlayer(city.CityOwnerPlayerIndex).TribeName})").OnSelect(CauseDisaster_Accept);
 			}
 
 			if (more)

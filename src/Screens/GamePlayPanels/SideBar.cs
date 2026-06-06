@@ -105,7 +105,7 @@ namespace CivOne.Screens.GamePlayPanels
 					{
 						if (tile.City != null)
 						{
-							_miniMap[xx + MiniMapBorder, yy + MiniMapBorder] = Common.ColourLight[tile.City.Owner];
+							_miniMap[xx + MiniMapBorder, yy + MiniMapBorder] = Common.ColourLight[tile.City.CityOwnerPlayerIndex];
 						}
 						else
 						{

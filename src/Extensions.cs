@@ -114,7 +114,7 @@ namespace CivOne
 				ActualSize = city.Size,
 				VisibleSize = visibleSize,
 				CurrentProduction = city.CurrentProduction.ProductionId,
-				Owner = city.Owner,
+				Owner = city.CityOwnerPlayerIndex,
 				Food = food,
 				Shields = shields,
 				// BaseTrade is written solely for compatibility with original CIV1 DOS saves.

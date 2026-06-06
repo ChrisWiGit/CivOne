@@ -34,7 +34,7 @@ namespace CivOne.Screens
 		private readonly TextSettings _dialogText;
 
 		private readonly City _city;
-		private readonly IProduction _production;
+		private readonly IProduction? _production;
 		private readonly Picture _background;
 		private readonly bool _showFoundedScreen;
 		private readonly bool _firstView;
@@ -96,7 +96,7 @@ namespace CivOne.Screens
 				int frame = (_x % 30) / 3;
 				if (frame < 0)
 				{
-					Log($"Warning: Invaders/Revolters frame is negative: {frame} for x={_x} and player={_city.Owner}");
+					Log($"Warning: Invaders/Revolters frame is negative: {frame} for x={_x} and player={_city.CityOwnerPlayerIndex}");
 					frame = 0;
 				}
 				for (int i = 7; i >= 0; i--)
@@ -115,7 +115,7 @@ namespace CivOne.Screens
 				int frame = ((_x + 600) % 30) / 3;
 				if (frame < 0)
 				{
-					Log($"Warning: We love the president day frame is negative: {frame} for x={_x} and player={_city.Owner}");
+					Log($"Warning: We love the president day frame is negative: {frame} for x={_x} and player={_city.CityOwnerPlayerIndex}");
 					//CW: Reset to first frame and set _x to right side of screen as in construction of class.
 					frame = 0; // =(240 + 600) % 30 / 3;
 					_x = 240;
@@ -262,7 +262,7 @@ namespace CivOne.Screens
 		{
 			if (_buildingFile == null)
 			{
-				_buildingFile = Game.GetPlayer(_city.Owner).HasAdvance<Invention>() ? "CITYPIX3" : "CITYPIX2";
+				_buildingFile = Game.GetPlayer(_city.CityOwnerPlayerIndex).HasAdvance<Invention>() ? "CITYPIX3" : "CITYPIX2";
 			}
 
 			if (picture == null) picture = _background;
@@ -653,7 +653,7 @@ namespace CivOne.Screens
 					DrawBuilding<Aqueduct>(_overlay);
 			}
 
-			int stage = (int)Math.Floor((double)(Game.GetPlayer(_city.Owner).Advances.Count() - 9) / 2);
+			int stage = (int)Math.Floor((double)(Game.GetPlayer(_city.CityOwnerPlayerIndex).Advances.Count() - 9) / 2);
 			for (int xx = 0; xx < 18; xx++)
 			for (int yy = 10; yy >= 0; yy--)
 			{
@@ -800,7 +800,7 @@ namespace CivOne.Screens
 						if (sx == 0) continue;
 						if (sx > 7) sy += 8;
 						sx = (sx % 8) * 24;
-						if (Game.GetPlayer(_city.Owner).HasAdvance<Automobile>()) sy += 16;
+						if (Game.GetPlayer(_city.CityOwnerPlayerIndex).HasAdvance<Automobile>()) sy += 16;
 						building = Resources["CITYPIX1"][sx, sy, 24, 8];
 						dx -= 5;
 						dy += 24;
@@ -877,7 +877,7 @@ namespace CivOne.Screens
 			}
 		}
 
-		public static CityView Capture(City city, string [] message)
+		public static CityView Capture(City city, string []? message)
 		{
 			return new CityView(city, message, captured: true);
 		}
@@ -902,7 +902,7 @@ namespace CivOne.Screens
 			return new CityView(city);
 		}
 
-		public CityView(City city, string[] message = null, bool showFoundedScreen = false, bool firstView = false, IProduction production = null, bool captured = false, bool disorder = false, bool weLovePresidentDay = false)
+		public CityView(City city, string[]? message = null, bool showFoundedScreen = false, bool firstView = false, IProduction? production = null, bool captured = false, bool disorder = false, bool weLovePresidentDay = false)
 		{
 			_dialogText = TextSettings.ShadowText(15, 5);
 			_dialogText.FontId = 5;

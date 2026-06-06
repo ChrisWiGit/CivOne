@@ -67,7 +67,7 @@ namespace CivOne.Screens.Reports
 				translationService: translationService);
 		}
 
-		private static string GetStorageDirectory() => RuntimeHandler.Runtime?.StorageDirectory ?? string.Empty;
+		private static string GetStorageDirectory() => RuntimeHandler.Runtime.StorageDirectory ?? string.Empty;
 
 		private static void LogInfo(string message)
 		{

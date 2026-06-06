@@ -13,7 +13,6 @@ namespace CivOne.Graphics.Sprites
 {
 	public static class Generic
 	{
-		private static Free Free => Free.Instance;
 		private static Resources Resources => Resources.Instance;
 
 		private static Bytemap GetFortify()

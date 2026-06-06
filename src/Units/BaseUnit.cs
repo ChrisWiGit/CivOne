@@ -366,7 +366,7 @@ namespace CivOne.Units
 		}
 
 		private bool IsCapturingEnemyCity(ITile moveTarget)
-			=> moveTarget.Units.Length == 0 && moveTarget.City != null && moveTarget.City.Owner != Owner;
+			=> moveTarget.Units.Length == 0 && moveTarget.City != null && moveTarget.City.CityOwnerPlayerIndex != Owner;
 
 		private bool TryHandleCityCapture(ITile moveTarget)
 		{
@@ -394,7 +394,7 @@ namespace CivOne.Units
 
 		private void CompleteCityCapture(City capturedCity, object? sender, EventArgs args)
 		{
-			IList<IAdvance> advancesToSteal = GetAdvancesToSteal(capturedCity.Player);
+			IList<IAdvance> advancesToSteal = GetAdvancesToSteal(capturedCity.CityOwnerPlayer);
 			Action changeOwner = () => ChangeCapturedCityOwner(capturedCity);
 
 			if (IsHumanInvolvedInCityCapture(capturedCity))
@@ -411,12 +411,12 @@ namespace CivOne.Units
 
 		private bool IsHumanInvolvedInCityCapture(City capturedCity)
 		{
-			return Human == capturedCity.Owner || Human == Owner;
+			return Human == capturedCity.CityOwnerPlayerIndex || Human == Owner;
 		}
 
 		private void ChangeCapturedCityOwner(City capturedCity)
 		{
-			Player previousOwner = Game.GetPlayer(capturedCity.Owner);
+			Player previousOwner = Game.GetPlayer(capturedCity.CityOwnerPlayerIndex);
 
 			RemovePalaceFromCapturedCity(capturedCity);
 			ResetCapturedCityProduction(capturedCity);
@@ -450,7 +450,7 @@ namespace CivOne.Units
 
 		private void TransferCapturedCity(City capturedCity)
 		{
-			capturedCity.Owner = Owner;
+			capturedCity.CityOwnerPlayerIndex = Owner;
 			capturedCity.TechStolen = false;
 
 			if (!capturedCity.HasBuilding<CityWalls>())
@@ -484,7 +484,7 @@ namespace CivOne.Units
 
 		private int PlunderCapturedCityGold(City capturedCity)
 		{
-			Player cityOwner = Game.GetPlayer(capturedCity.Owner);
+			Player cityOwner = Game.GetPlayer(capturedCity.CityOwnerPlayerIndex);
 			float totalSize = cityOwner.Cities.Sum(x => x.Size);
 			int captureGold = (int)(cityOwner.Gold * ((float)capturedCity.Size / totalSize));
 
@@ -756,7 +756,7 @@ namespace CivOne.Units
 		{
 			// fire-eggs Caravan needs to be able to move into owner city
 			bool hasTargetCity = moveTarget.City != null;
-			bool belongsTargetCityOwner = moveTarget.City?.Owner == Owner;
+			bool belongsTargetCityOwner = moveTarget.City?.CityOwnerPlayerIndex == Owner;
 
 			// if (moveTarget.City != null && (moveTarget.City.Owner != Owner || this is Caravan))
 			if (hasTargetCity && !belongsTargetCityOwner)

@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 namespace CivOne
 {
 	/// <summary>
@@ -33,6 +34,7 @@ namespace CivOne
 	/// flags = bitFlags.ToggleFlag(flags, CityStatus.AUTO_BUILD);
 	/// </code>
 	/// </remarks>
+	#pragma warning disable CA1822 // Mark members as static
 	public class BitFlagExtensions
 	{
 		/// <summary>
@@ -47,8 +49,8 @@ namespace CivOne
 			where TFlags : struct, IConvertible
 			where TEnum : struct, Enum
 		{
-			long flagVal = Convert.ToInt64(flags);
-			long mask = 1L << Convert.ToInt32(value);
+			long flagVal = Convert.ToInt64(flags, CultureInfo.InvariantCulture);
+			long mask = 1L << Convert.ToInt32(value, CultureInfo.InvariantCulture);
 			return (flagVal & mask) != 0;
 		}
 
@@ -64,10 +66,10 @@ namespace CivOne
 			where TFlags : struct, IConvertible
 			where TEnum : struct, Enum
 		{
-			long flagVal = Convert.ToInt64(flags);
-			long mask = 1L << Convert.ToInt32(value);
+			long flagVal = Convert.ToInt64(flags, CultureInfo.InvariantCulture);
+			long mask = 1L << Convert.ToInt32(value, CultureInfo.InvariantCulture);
 			long result = flagVal | mask;
-			return (TFlags)Convert.ChangeType(result, typeof(TFlags));
+			return (TFlags)Convert.ChangeType(result, typeof(TFlags), CultureInfo.InvariantCulture);
 		}
 
 		/// <summary>
@@ -82,10 +84,10 @@ namespace CivOne
 			where TFlags : struct, IConvertible
 			where TEnum : struct, Enum
 		{
-			long flagVal = Convert.ToInt64(flags);
-			long mask = 1L << Convert.ToInt32(value);
+			long flagVal = Convert.ToInt64(flags, CultureInfo.InvariantCulture);
+			long mask = 1L << Convert.ToInt32(value, CultureInfo.InvariantCulture);
 			long result = flagVal & ~mask;
-			return (TFlags)Convert.ChangeType(result, typeof(TFlags));
+			return (TFlags)Convert.ChangeType(result, typeof(TFlags), CultureInfo.InvariantCulture);
 		}
 
 		/// <summary>
@@ -100,10 +102,10 @@ namespace CivOne
 			where TFlags : struct, IConvertible
 			where TEnum : struct, Enum
 		{
-			long flagVal = Convert.ToInt64(flags);
-			long mask = 1L << Convert.ToInt32(value);
+			long flagVal = Convert.ToInt64(flags, CultureInfo.InvariantCulture);
+			long mask = 1L << Convert.ToInt32(value, CultureInfo.InvariantCulture);
 			long result = flagVal ^ mask;
-			return (TFlags)Convert.ChangeType(result, typeof(TFlags));
+			return (TFlags)Convert.ChangeType(result, typeof(TFlags), CultureInfo.InvariantCulture);
 		}
 	}
 }

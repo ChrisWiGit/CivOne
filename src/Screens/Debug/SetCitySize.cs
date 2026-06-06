@@ -61,7 +61,7 @@ namespace CivOne.Screens.Debug
 				Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
 				_citySelect = new CityGridMenuDelegate(
 					_cities,
-					city => $"{city.Name} ({Game.GetPlayer(city.Owner).TribeName})");
+					city => $"{city.Name} ({Game.GetPlayer(city.CityOwnerPlayerIndex).TribeName})");
 				_citySelect.CitySelected += OnCitySelected;
 				_citySelect.Cancelled += CitySize_Cancel;
 			}

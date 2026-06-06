@@ -264,7 +264,7 @@ namespace CivOne.Screens.Services
 				return;
 			}
 
-			int totalCities = _game.GetPlayer(_city.Owner).Cities.Count();
+			int totalCities = _game.GetPlayer(_city.CityOwnerPlayerIndex).Cities.Count();
 
 			if (totalCities < MinEmperorCityCount)
 			{
@@ -451,7 +451,7 @@ namespace CivOne.Screens.Services
 			// https://civilization.fandom.com/wiki/Michelangelo%27s_Chapel_(Civ1)
 			bool isObsolete = _game.WonderObsolete<MichelangelosChapel>();
 			bool hasChapelOnSameContinent = !isObsolete &&
-						_game.GetPlayer(_city.Owner)
+						_game.GetPlayer(_city.CityOwnerPlayerIndex)
 							.CitiesInterface.Any(c => c.HasWonder<MichelangelosChapel>()
 					&& c.ContinentId == _city.ContinentId);
 			int chapelBonus = !isObsolete && hasChapelOnSameContinent ? 6 : 4;
@@ -466,7 +466,7 @@ namespace CivOne.Screens.Services
 			DebugService.Assert(_city.Tile != null, "City has no tile assigned.");
 			return _map
 					.ContinentCities(_city.ContinentId)
-					.Any(city => city.Owner == _city.Owner &&
+					.Any(city => city.CityOwnerPlayerIndex == _city.CityOwnerPlayerIndex &&
 							city.HasWonder<JSBachsCathedral>());
 		}
 

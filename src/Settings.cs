@@ -22,7 +22,6 @@ namespace CivOne
 	public class Settings : ISettings
 	{
 		private static IRuntime Runtime => RuntimeHandler.Runtime;
-		//private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
 
 		// ── Window / OS canvas ────────────────────────────────────────────────
 		// Hard limits for the physical OS window size and the raw SDL canvas.

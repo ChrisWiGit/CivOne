@@ -52,9 +52,9 @@ namespace CivOne.Units
 
 			float multiplier = 1;
 			if (Home != null && Home.Tile.ContinentId == targetCity.Tile.ContinentId) multiplier *= 0.5F;
-			if (Owner == targetCity.Owner) multiplier *= 0.5F;
-			if (Game.GetPlayer(Owner).HasAdvance<RailRoad>() && Game.GetPlayer(targetCity.Owner).HasAdvance<RailRoad>()) multiplier *= 0.66F;
-			if (Game.GetPlayer(Owner).HasAdvance<Flight>() && Game.GetPlayer(targetCity.Owner).HasAdvance<Flight>()) multiplier *= 0.66F;
+			if (Owner == targetCity.CityOwnerPlayerIndex) multiplier *= 0.5F;
+			if (Game.GetPlayer(Owner).HasAdvance<RailRoad>() && Game.GetPlayer(targetCity.CityOwnerPlayerIndex).HasAdvance<RailRoad>()) multiplier *= 0.66F;
+			if (Game.GetPlayer(Owner).HasAdvance<Flight>() && Game.GetPlayer(targetCity.CityOwnerPlayerIndex).HasAdvance<Flight>()) multiplier *= 0.66F;
 
 			return (int)(multiplier * (float)((distance + 10) * (tradeHome + tradeTarget) / 24));
 		}
@@ -94,7 +94,7 @@ namespace CivOne.Units
 			City city = moveTarget.City;
 			
 			bool hasTargetCity = city != null;
-			bool isCityOwner = hasTargetCity && city.Owner == Owner;
+			bool isCityOwner = hasTargetCity && city.CityOwnerPlayerIndex == Owner;
 
 			if (isCityOwner && Human == Owner)
 			{

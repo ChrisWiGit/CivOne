@@ -38,14 +38,14 @@ namespace CivOne.Screens.Reports
 				City city = _cities[i];
 
 				if (city == null || city.Size == 0) continue;
-				byte colour = Common.ColourLight[city.Owner];
+				byte colour = Common.ColourLight[city.CityOwnerPlayerIndex];
 
 				int xx = offsetX + 8;
 				int yy = offsetY + 32 + (32 * i);
 				int ww = 304;
 				int hh = 26;
 
-				Player owner = Game.GetPlayer(city.Owner);
+				Player owner = Game.GetPlayer(city.CityOwnerPlayerIndex);
 
 				this.FillRectangle(xx, yy, ww, hh, colour)
 					.FillRectangle(xx + 1, yy + 1, ww - 2, hh - 2, 3);

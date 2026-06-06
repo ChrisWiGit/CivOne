@@ -191,7 +191,7 @@ namespace CivOne
 				.WithOutOfBoundsUnitCoordinates(_units.Any(unit => unit.X < 0 || unit.Y < 0 || unit.X >= Map.WIDTH || unit.Y >= Map.HEIGHT))
 				.WithOutOfBoundsUnitGotoCoordinates(_units.Any(unit => !unit.Goto.IsEmpty && (unit.Goto.X < 0 || unit.Goto.Y < 0 || unit.Goto.X >= Map.WIDTH || unit.Goto.Y >= Map.HEIGHT)))
 				.WithTradeCityCountsPerCity([.. _cities.Select(city => city.TradingCities?.Length ?? 0)])
-				.WithCityOwners([.. _cities.Select(city => city.Owner)])
+				.WithCityOwners([.. _cities.Select(city => city.CityOwnerPlayerIndex)])
 				.WithUnitOwners(sveUnitOwners)
 				.WithUnitsCount(sveUnitOwners.Length)
 				.WithFortifiedUnitCountsPerCity(fortifiedUnitCountsPerCity)
@@ -446,7 +446,7 @@ namespace CivOne
 			{
 				GameTask.Enqueue(Turn.New(unit));
 			}
-			foreach (City city in _cities.Where(c => c.Owner == _currentPlayer).ToArray())
+			foreach (City city in _cities.Where(c => c.CityOwnerPlayerIndex == _currentPlayer).ToArray())
 			{
 				GameTask.Enqueue(Turn.New(city));
 			}
@@ -525,11 +525,6 @@ namespace CivOne
 
 		private void SaveCosAutoSave()
 		{
-			if (RuntimeHandler.Runtime == null)
-			{
-				Log("Runtime is null, cannot perform autosave.");
-				return;
-			}
 			SaveGamePathProvider pathProvider = new(RuntimeHandler.Runtime, Settings.Instance);
 			string saveDirectory = pathProvider.EnsureAutoSaveDirectory();
 			string autoSaveFile = Path.Combine(saveDirectory, "autosave.cos");
@@ -687,7 +682,7 @@ namespace CivOne
 			player.Explore(x, y);
 			city.Size = 1;
 
-			if (!_cities.Any(c => c.Size > 0 && c.Owner == city.Owner))
+			if (!_cities.Any(c => c.Size > 0 && c.CityOwnerPlayerIndex == city.CityOwnerPlayerIndex))
 			{
 				Palace palace = new();
 				palace.SetFree();
@@ -715,7 +710,7 @@ namespace CivOne
 			}
 			city.X = 255;
 			city.Y = 255;
-			city.Owner = 0;
+			city.CityOwnerPlayerIndex = 0;
 		}
 
 		internal City? GetCity(int x, int y)
@@ -821,7 +816,7 @@ namespace CivOne
 					if (tile[relX, relY] == null) continue;
 					City city = tile[relX, relY].City;
 					if (city == null) continue;
-					if (!ownerCities && CurrentPlayer == city.Owner) continue;
+					if (!ownerCities && CurrentPlayer == city.CityOwnerPlayerIndex) continue;
 					city.UpdateResources();
 				}
 			}

@@ -59,7 +59,7 @@ internal class ConfrontDelegate(IConfrontGameServices gameServices)
 
         var targetCity = moveTarget?.City;
         if (targetCity != null)
-            return _gameServices.GetPlayer(targetCity.Owner);
+            return _gameServices.GetPlayer(targetCity.CityOwnerPlayerIndex);
 
         return null;
     }

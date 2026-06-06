@@ -13,10 +13,12 @@ using CivOne.Graphics;
 using CivOne.IO;
 using CivOne.IO.Text;
 using CivOne.Services;
+using CivOne.Services.Random;
 using CivOne.UserInterface;
 
 namespace CivOne
 {
+	#pragma warning disable CA1822 // Mark members as static
 	public abstract class BaseInstance
 	{
 		protected static Game Game => Game.Instance;
@@ -28,15 +30,20 @@ namespace CivOne
 		protected static MenuCollection Menus => MenuCollection.Instance;
 
 		protected static ITranslationService Translation => TranslationServiceFactory.GetCurrent();
+		protected static IRandomService RandomService => RandomServiceFactory.Create();
 
 		protected internal static void Log(string text, params object[] parameters) => Runtime.Log(text, parameters);
-		protected static void PlaySound(string filename)
+		protected static void PlaySound(string? filename)
 		{
-			if (!(Game.Started && Game.Sound) || Settings.Sound == GameOption.Off || !File.Exists(filename = filename.GetSoundFile())) return;
+			if (string.IsNullOrEmpty(filename)) return;
+			if (!Game.Started || !Game.Sound) return;
+			if (Settings.Sound == GameOption.Off) return;
+			if (!File.Exists(filename = filename.GetSoundFile())) return;
+
 			Runtime.PlaySound(filename);
 		}
 
-		protected bool GFX256 => (Settings.GraphicsMode == GraphicsMode.Graphics256);
+		protected bool GFX256 => Settings.GraphicsMode == GraphicsMode.Graphics256;
 
 
 		protected string Translate(string key)

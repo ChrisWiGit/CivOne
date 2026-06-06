@@ -586,19 +586,19 @@ namespace CivOne.UnitTests
                 [
                     new MockedCity()
                     {
-                        Owner = mockedCity.Owner,
+                        CityOwnerPlayerIndex = mockedCity.CityOwnerPlayerIndex,
                         ContinentId = 1
                     }
                     .ReturnHasWonderValues(false, false, false, false),
                     new MockedCity()
                     {
-                        Owner = mockedCity.Owner,
+                        CityOwnerPlayerIndex = mockedCity.CityOwnerPlayerIndex,
                         ContinentId = 2
                     }
                     .ReturnHasWonderValues(true, true, true, true),
                     new MockedCity()
                     {
-                        Owner = 255,
+                        CityOwnerPlayerIndex = 255,
                         ContinentId = 3
                     }
                     .ReturnHasWonderValues(true, true, true, true)

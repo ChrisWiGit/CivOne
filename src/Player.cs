@@ -148,14 +148,14 @@ namespace CivOne
 
 		public bool IsHuman => (Game.HumanPlayer == this);
 
-		public virtual City[] Cities => Game.GetCities().Where(c => this == c.Owner && c.Size > 0).ToArray();
+		public virtual City[] Cities => Game.GetCities().Where(c => this == c.CityOwnerPlayerIndex && c.Size > 0).ToArray();
 		
 		/** <summary>
 		 * Interface for City collection.
 		 * This new property is to avoid exposing the City class directly,
 		 * and will be used to refactor code to use ICity instead of City.
 		 * </summary> */
-		public virtual ICity[] CitiesInterface => Game.GetCities().Where(c => this == c.Owner && c.Size > 0).ToArray();
+		public virtual ICity[] CitiesInterface => Game.GetCities().Where(c => this == c.CityOwnerPlayerIndex && c.Size > 0).ToArray();
 
 		public int Population => Cities.Sum(c => c.Population);
 		
@@ -394,7 +394,7 @@ namespace CivOne
 				city.RemoveTradingCitiesOwnedBy(enemyPlayerNumber);
 			}
 
-			foreach (City city in Game.GetCities().Where(city => city.Owner == enemyPlayerNumber && city.Size > 0))
+			foreach (City city in Game.GetCities().Where(city => city.CityOwnerPlayerIndex == enemyPlayerNumber && city.Size > 0))
 			{
 				city.RemoveTradingCitiesOwnedBy(ownPlayerNumber);
 			}
@@ -620,7 +620,7 @@ namespace CivOne
 					continue;
 
 				ITile visibleTile = Map[xx, yy];
-				if ((visibleTile.City != null && visibleTile.City.Owner == humanPlayerId) ||
+				if ((visibleTile.City != null && visibleTile.City.CityOwnerPlayerIndex == humanPlayerId) ||
 					visibleTile.Units.Any(unit => unit.Owner == humanPlayerId))
 				{
 					return true;
@@ -641,7 +641,7 @@ namespace CivOne
 			foreach (City city in Game.GetCities())
 			{
 				if (city.Size == 0) continue; // destroyed city
-				if (city.Owner == playerId) continue;
+				if (city.CityOwnerPlayerIndex == playerId) continue;
 				if (_visible[city.X, city.Y])
 					city.VisibleSizes[playerId] = city.Size;
 			}
@@ -669,7 +669,7 @@ namespace CivOne
 
 		public void NewTurn()
 		{
-			if (!Game.GetCities().Any(x => this == x.Owner) && !Game.GetUnits().Any(x => this == x.Owner))
+			if (!Game.GetCities().Any(x => this == x.CityOwnerPlayerIndex) && !Game.GetUnits().Any(x => this == x.Owner))
 			{
 				GameTask.Enqueue(Turn.GameOver(this));
 			}

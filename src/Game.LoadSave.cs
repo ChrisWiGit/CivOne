@@ -268,7 +268,7 @@ namespace CivOne
 
 					unit.Status = CVS.CheckedByte(fortified ? 8 : 0 + (veteran ? 32 : 0), nameof(Game), "Load.FortifiedUnitStatus");
 
-					unit.Owner = city.Owner;
+					unit.Owner = city.CityOwnerPlayerIndex;
 					unit.SetHome(city);
 					_units.Add(unit);
 				}

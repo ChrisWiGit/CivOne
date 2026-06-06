@@ -321,8 +321,7 @@ namespace CivOne
 		{
 			get
 			{
-				if (_instance == null)
-					_instance = new Map();
+				_instance ??= new Map();
 				return _instance;
 			}
 		}

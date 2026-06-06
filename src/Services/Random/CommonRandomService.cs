@@ -2,14 +2,9 @@ using System;
 
 namespace CivOne.Services.Random
 {
-	internal sealed class CommonRandomService : IRandomService
+	internal sealed class CommonRandomService(Func<CivOne.Random> randomAccessor) : IRandomService
 	{
-		private readonly Func<CivOne.Random> _randomAccessor;
-
-		public CommonRandomService(Func<CivOne.Random> randomAccessor)
-		{
-			_randomAccessor = randomAccessor ?? throw new ArgumentNullException(nameof(randomAccessor));
-		}
+		private readonly Func<CivOne.Random> _randomAccessor = randomAccessor ?? throw new ArgumentNullException(nameof(randomAccessor));
 
 		public int NextInt(int max) => _randomAccessor().Next(max);
 

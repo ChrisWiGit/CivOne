@@ -19,7 +19,7 @@ namespace CivOne.UnitTests
         public Point Location => new Point(0, 0);
         public byte Size { get; set; } = 5;
         public short Luxuries { get; set; } = 0;
-        public byte Owner { get; set; } = 0;
+        public byte CityOwnerPlayerIndex { get; set; } = 0;
 
 
         public ITile Tile { get; set; }

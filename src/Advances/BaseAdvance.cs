@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,16 +19,19 @@ using CivOne.Wonders;
 
 namespace CivOne.Advances
 {
-	internal abstract class BaseAdvance : BaseInstance, IAdvance
+	internal abstract class BaseAdvance(byte page, byte column, byte row, params Advance[] requiredTechs) : BaseInstance, IAdvance
 	{
-		private readonly byte _page, _column, _row;
+		private readonly byte _page = page, _column = column, _row = row;
 
-		private Advance[] _requiredTechs;
+		private readonly Advance[] _requiredTechs = requiredTechs;
+		
 		private IEnumerable<IAdvance> GetRequiredTechs()
 		{
 			foreach (Advance advance in _requiredTechs)
 			{
-				yield return Common.Advances.Where(x => x.Id == (byte)advance).FirstOrDefault();
+				IAdvance requiredTech = Common.Advances.FirstOrDefault(x => x.Id == (byte)advance)
+					?? throw new InvalidOperationException($"Required tech '{advance}' (Id {(byte)advance}) is not registered.");
+				yield return requiredTech;
 			}
 		}
 		
@@ -39,19 +43,18 @@ namespace CivOne.Advances
 				int yy = 1 + (69 * _row);
 				int ww = _column < 2 ? 112 : 96;
 				int hh = _row < 2 ? 68 : 60;
+
+				using Picture icon = Resources[$"ICONPG{_page}"][xx, yy, ww, hh];
 				
-				using (IBitmap icon = Resources[$"ICONPG{_page}"][xx, yy, ww, hh])
-				{
-					OriginalColours = icon.Palette.Copy();
-					return new Picture(112, 68, icon.Palette)
-						.AddLayer(icon, _column < 2 ? 0 : 7, _row < 2 ? 0 : 4)
-						.FillRectangle(110, 0, 2, 68, 0);
-				}
+				OriginalColours = icon.Palette.Copy();
+				return new Picture(112, 68, icon.Palette)
+					.AddLayer(icon, _column < 2 ? 0 : 7, _row < 2 ? 0 : 4)
+					.FillRectangle(110, 0, 2, 68, 0);
 			}
 		}
 
-		public Palette OriginalColours { get; private set; }
-		
+		public Palette OriginalColours { get; private set; } = new Palette();
+
 		/// <summary>
 		/// Gets the localized display name shown to the player.
 		/// </summary>
@@ -78,7 +81,7 @@ namespace CivOne.Advances
 		/// TranslatedName = Translate("Alphabet");
 		/// </code>
 		/// </example>
-		public string TranslatedName { get; protected set; }
+		public string TranslatedName { get; protected set; } = "Invalid translated advance name";
 		/// <summary>
 		/// Gets the invariant civilopedia key name.
 		/// </summary>
@@ -88,7 +91,7 @@ namespace CivOne.Advances
 		/// TranslatedName = Translate("Alphabet");
 		/// </code>
 		/// </example>
-		public string Name { get; protected set; }
+		public string Name { get; protected set; } = "Invalid advance name";
 
 		public byte PageCount => 2;
 		public Picture DrawPage(byte pageNumber)
@@ -164,7 +167,7 @@ namespace CivOne.Advances
 		
 		protected Advance Type { get; set; }
 		
-		public IAdvance[] RequiredTechs => GetRequiredTechs().ToArray();
+		public IAdvance[] RequiredTechs => [.. GetRequiredTechs()];
 		
 		public byte Id => (byte)Type;
 		
@@ -178,13 +181,5 @@ namespace CivOne.Advances
 		public bool Is<T>() where T : IAdvance => (this is T);
 
 		public bool Not<T>() where T : IAdvance => !(this is T);
-		
-		protected BaseAdvance(byte page, byte column, byte row, params Advance[] requiredTechs)
-		{
-			_page = page;
-			_column = column;
-			_row = row;
-			_requiredTechs = requiredTechs;
-		}
 	}
 }

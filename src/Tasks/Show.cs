@@ -33,9 +33,9 @@ namespace CivOne.Tasks
 			Common.AddScreen(_screen);
 		}
 
-		public static Show Empty => new Show(Overlay.Empty);
+		public static Show Empty => new(Overlay.Empty);
 
-		public static Show InterfaceHelp => new Show(Overlay.InterfaceHelp);
+		public static Show InterfaceHelp => new(Overlay.InterfaceHelp);
 
 		public static Show Terrain
 		{
@@ -51,7 +51,7 @@ namespace CivOne.Tasks
 			get
 			{
 				GamePlay gamePlay = (GamePlay)Common.Screens.First(s => (s is GamePlay));
-				Goto gotoScreen = new Goto(gamePlay.X, gamePlay.Y);
+				Goto gotoScreen = new(gamePlay.X, gamePlay.Y);
 				gotoScreen.Closed += (s, a) =>
 				{
 					if (Human != Game.CurrentPlayer) return;
@@ -63,9 +63,9 @@ namespace CivOne.Tasks
 			}
 		}
 
-		public static Show TaxRate => new Show(SetRate.Taxes);
+		public static Show TaxRate => new(SetRate.Taxes);
 
-		public static Show LuxuryRate => new Show(SetRate.Luxuries);
+		public static Show LuxuryRate => new(SetRate.Luxuries);
 
 		public static Show AutoSave
 		{
@@ -77,17 +77,17 @@ namespace CivOne.Tasks
 			}
 		}
 
-		public static Show CityManager(City city) => new Show(new CityManager(city));
+		public static Show CityManager(City city) => new(new CityManager(city));
 
-		public static Show ViewCity(City city) => new Show(new CityManager(city, true));
+		public static Show ViewCity(City city) => new(new CityManager(city, true));
 
-		public static Show UnitStack(int x, int y) => new Show(new UnitStack(x, y));
+		public static Show UnitStack(int x, int y) => new(new UnitStack(x, y));
 
 		public static Show Search
 		{
 			get
 			{
-				Search search = new Search();
+				Search search = new();
 				search.Accept += (s, a) =>
 				{
 					City city = (s as Search).City;
@@ -103,7 +103,7 @@ namespace CivOne.Tasks
 		{
 			get
 			{
-				ChooseGovernment chooseGovernment = new ChooseGovernment();
+				ChooseGovernment chooseGovernment = new();
 				chooseGovernment.Closed += (s, a) => {
 					Human.Government = (s as ChooseGovernment).Result;
 					GameTask.Insert(Message.NewGoverment(null, 
@@ -113,15 +113,15 @@ namespace CivOne.Tasks
 			}
 		}
 
-		public static Show Nuke(int x, int y) => new Show(new Nuke(x, y));
+		public static Show Nuke(int x, int y) => new(new Nuke(x, y));
 
-		public static Show DestroyUnit(IUnit unit, bool stack) => new Show(new DestroyUnit(unit, stack));
+		public static Show DestroyUnit(IUnit unit, bool stack) => new(new DestroyUnit(unit, stack));
 
-		public static Show CaptureCity(City city, string [] message) => new Show(CityView.Capture(city, message));
+		public static Show CaptureCity(City city, string []? message = null) => new(CityView.Capture(city, message));
 
-		public static Show DisorderCity(City city) => new Show(CityView.Disorder(city));
+		public static Show DisorderCity(City city) => new(CityView.Disorder(city));
 
- 		public static Show WeLovePresidentDayCity(City city) => new Show(CityView.WeLovePresidentDay(city));
+		public static Show WeLovePresidentDayCity(City city) => new(CityView.WeLovePresidentDay(city));
 
 		public static Show BuildPalace(bool keepOpenUntilEscape = false) => new(new PalaceView(true, PalaceSpriteProviderFactory.GetInstance(), keepOpenUntilEscape));
 
@@ -129,21 +129,21 @@ namespace CivOne.Tasks
 
 		public static Show SpaceShipWithInstall(SpaceShipComponentType partType) => new(new SpaceShipView(Human, pendingInstall: partType));
 
-		public static Show CaravanChoice(Caravan unit, City city) => new Show(CaravanChoiceDialogFactory.CreateDialog(unit, city));
+		public static Show CaravanChoice(Caravan unit, City city) => new(CaravanChoiceDialogFactory.CreateDialog(unit, city));
 
-        public static Show WeakAttack(BaseUnit unit, int relx, int rely) => new Show(new WeakAttack(unit, relx, rely));
+        public static Show WeakAttack(BaseUnit unit, int relx, int rely) => new(new WeakAttack(unit, relx, rely));
 
 		public static Show DiplomatBribe(BaseUnitLand unitToBribe, Diplomat diplomat) => new(DiplomatBribeDialogFactory.CreateDialog(unitToBribe, diplomat));
 
 		public static Show DiplomatCity(City enemyCity, Diplomat diplomat) => new(DiplomatCityDialogFactory.CreateDialog(enemyCity, diplomat));
 
-		public static Show DiplomatIncite(City enemyCity, Diplomat diplomat) => new Show(DiplomatInciteDialogFactory.CreateDialog(enemyCity, diplomat));
+		public static Show DiplomatIncite(City enemyCity, Diplomat diplomat) => new(DiplomatInciteDialogFactory.CreateDialog(enemyCity, diplomat));
 
-		public static Show SelectAdvanceAfterCityCapture(Player player, IList<IAdvance> advances) => new Show(new SelectAdvanceAfterCityCapture(player, advances));
+		public static Show SelectAdvanceAfterCityCapture(Player player, IList<IAdvance> advances) => new(new SelectAdvanceAfterCityCapture(player, advances));
 
-		public static Show MeetKing(Player player) => new Show(new King(player));
+		public static Show MeetKing(Player player) => new(new King(player));
 
-		public static Show Screen<T>() where T : IScreen, new() => new Show(new T());
+		public static Show Screen<T>() where T : IScreen, new() => new(new T());
 
         private static Show Screen(Type type)
 		{
@@ -151,11 +151,11 @@ namespace CivOne.Tasks
 			return new Show((IScreen)Activator.CreateInstance(type));
 		}
 
-		public static Show Screen(IScreen screen) => new Show(screen);
+		public static Show Screen(IScreen screen) => new(screen);
 
 		public static Show Screens(IEnumerable<Type> types)
 		{
-			Queue<Type> screenTypeQueue = new Queue<Type>(types.Where(x => typeof(IScreen).IsAssignableFrom(x)));
+			Queue<Type> screenTypeQueue = new(types.Where(x => typeof(IScreen).IsAssignableFrom(x)));
 			if (screenTypeQueue.Count == 0) return null;
 			Func<Show> nextTask = null;
 			nextTask = () =>

@@ -186,7 +186,7 @@ namespace CivOne.Graphics
 
 		public static IBitmap Tile(this IBitmap bitmap, Bytemap layer, Rectangle rectangle) => Tile(bitmap, layer, rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
 		public static IBitmap Tile(this IBitmap bitmap, Bytemap layer, Point point, Size size) => Tile(bitmap, layer, point.X, point.Y, size.Width, size.Height);
-		public static IBitmap Tile(this IBitmap bitmap, Bytemap layer, int left = 0, int top = 0, int width = -1, int height = -1)
+		public static IBitmap Tile(this IBitmap bitmap, Bytemap? layer, int left = 0, int top = 0, int width = -1, int height = -1)
 		{
 			if (layer == null) return bitmap;
 			if (width == -1) width = bitmap.Width() - left;
@@ -217,7 +217,7 @@ namespace CivOne.Graphics
 			AddLayer(bitmap, textLayer, x, y, dispose: true);
 			return bitmap;
 		}
-		public static IBitmap DrawText(this IBitmap bitmap, string text, int x = 0, int y = 0, TextSettings settings = null)
+		public static IBitmap DrawText(this IBitmap bitmap, string text, int x = 0, int y = 0, TextSettings? settings = null)
 		{
 			if (string.IsNullOrWhiteSpace(text)) return bitmap;
 			if (settings == null)

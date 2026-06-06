@@ -239,7 +239,7 @@ namespace CivOne.Screens.CityManagerPanels
 
                 foreach (var unit in unis)
                 {
-                    Draw2by2(unit.X, unit.Y, Common.ColourLight[_city.Owner]);
+                    Draw2by2(unit.X, unit.Y, Common.ColourLight[_city.CityOwnerPlayerIndex]);
                 }
                 Draw2by2(_city.X, _city.Y, 15);
 

@@ -121,7 +121,7 @@ namespace CivOne.Screens.Dialogs
 
 		public void InciteRevolt(City cityToIncite, Diplomat diplomat)
 		{
-			Player previousOwner = Game.Instance.GetPlayer(cityToIncite.Owner);
+			Player previousOwner = Game.Instance.GetPlayer(cityToIncite.CityOwnerPlayerIndex);
 			var newOwner = diplomat.Owner;
 			var newPlayer = Game.Instance.GetPlayer(newOwner);
 
@@ -134,7 +134,7 @@ namespace CivOne.Screens.Dialogs
 			EventHandler capture_done = (s1, a1) =>
 			{
 				Game.Instance.DisbandUnit(diplomat);
-				cityToIncite.Owner = newOwner;
+				cityToIncite.CityOwnerPlayerIndex = newOwner;
 				cityToIncite.TechStolen = false;
 
 				foreach (var unit in cityToIncite.Units)
@@ -153,14 +153,14 @@ namespace CivOne.Screens.Dialogs
 				// Fix #181 When inciting an enemy's last city, the messages are in the wrong order #181
 				GameTask.Insert(msg);
 
-				if (Human == cityToIncite.Owner || Human == newOwner)
+				if (Human == cityToIncite.CityOwnerPlayerIndex || Human == newOwner)
 				{
 					GameTask.Insert(Tasks.Show.CityManager(cityToIncite));
 				}
 			};
 			captureCity.Done += capture_done;
 
-			if (Human == cityToIncite.Owner || Human == diplomat.Owner)
+			if (Human == cityToIncite.CityOwnerPlayerIndex || Human == diplomat.Owner)
 			{
 				GameTask.Insert(captureCity);
 			}

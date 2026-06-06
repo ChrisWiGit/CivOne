@@ -427,7 +427,7 @@ public class AStar
 
         else if (_unit.Class == UnitClass.Water)
         {
-            bool IsMyCity = _tile.City != null && _tile.City.Owner == _unit.Owner;
+            bool IsMyCity = _tile.City != null && _tile.City.CityOwnerPlayerIndex == _unit.Owner;
 
             if (_tile.Type != Terrain.Ocean && !IsMyCity) return float.PositiveInfinity;
 
@@ -617,7 +617,7 @@ public class AStar
                 _CarrierDistance = Distance(_nearestCarrierToGoal, GoalPosition);
             }
 
-            _OwnCities = Game.GetCities().Where(c => _unit.Owner == c.Owner && c.Size > 0).ToArray();
+            _OwnCities = Game.GetCities().Where(c => _unit.Owner == c.CityOwnerPlayerIndex && c.Size > 0).ToArray();
             // Just in case
             if (_OwnCities.GetLength(0) == 0)
                 return NoPath;

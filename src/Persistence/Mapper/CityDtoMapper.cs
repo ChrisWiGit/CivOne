@@ -28,7 +28,7 @@ namespace CivOne.Persistence.Model
             var restored = new RestorableCity
             {
                 Id = dto.Id,
-                Owner = dto.Owner,
+                CityOwnerPlayerIndex = dto.Owner,
                 Name = dto.Name ?? string.Empty,
                 Size = valueSanitizer.ClampToByte(dto.Size, nameof(CityDtoMapper), nameof(CityDto.Size)),
                 Food = valueSanitizer.ClampToInt32(dto.Food, nameof(CityDtoMapper), nameof(CityDto.Food), min: 0, max: 65535),
@@ -111,7 +111,7 @@ namespace CivOne.Persistence.Model
             return new CityDto
             {
                 Id = domain.Id,
-                Owner = domain.Owner,
+                Owner = domain.CityOwnerPlayerIndex,
                 Size = domain.Size,
                 Food = domain.Food,
                 Shields = domain.Shields,
@@ -176,7 +176,7 @@ namespace CivOne.Persistence.Model
             public byte Size { get; set; }
             public short Luxuries { get; set; }
             public int EntertainerLuxuries { get; set; }
-            public byte Owner { get; set; }
+            public byte CityOwnerPlayerIndex { get; set; }
             public string Name { get; set; }
             public ITile[] ResourceTiles { get; set; }
             public Citizen[] Specialists { get; set; }

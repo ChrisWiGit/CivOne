@@ -37,7 +37,21 @@ namespace CivOne
 	{
 		private static RuntimeHandler? _instance;
 		internal static RuntimeHandler? Instance => _instance;
-		internal static IRuntime? Runtime { get; private set; }
+		
+		private static IRuntime? _runtime;
+		internal static IRuntime Runtime { 
+			get 
+			{
+				// The previous implementation of Runtime assumed that Runtime.Register is always called before any access to RuntimeHandler.Runtime.
+				// To enforce this assumption, we throw an exception when Runtime is accessed before registration.
+				if (_runtime == null)
+				{
+					throw new InvalidOperationException("RuntimeHandler is not initialized. Ensure RuntimeHandler.Register or RuntimeHandler.RegisterForTest is called before accessing the Runtime.");
+				}
+				return _runtime;
+			}
+			private set => _runtime = value;
+		}
 		internal static uint CurrentGameTick => _instance?._gameTick ?? 0;
 		public static bool IsFullWindowCanvasRequested => _instance?.TopScreen?.UseFullWindowCanvas ?? false;
 		public static FpsCorner CurrentFpsCorner => Settings.Instance.FpsCorner;
@@ -49,13 +63,13 @@ namespace CivOne
 		private readonly IQuickSaveLoadHotkeyService _quickSaveLoadHotkeyService;
 
 		internal int CanvasWidth => IsFullWindowCanvasRequested
-			? Math.Max(Settings.MinWidth, Runtime!.CanvasWidth)
-			: Math.Max(Settings.MinWidth, Math.Min(Settings.MaxScreenWidth, Runtime!.CanvasWidth));
+			? Math.Max(Settings.MinWidth, Runtime.CanvasWidth)
+			: Math.Max(Settings.MinWidth, Math.Min(Settings.MaxScreenWidth, Runtime.CanvasWidth));
 		internal int CanvasHeight => IsFullWindowCanvasRequested
-			? Math.Max(Settings.MinHeight, Runtime!.CanvasHeight)
-			: Math.Max(Settings.MinHeight, Math.Min(Settings.MaxScreenHeight, Runtime!.CanvasHeight));
-		internal static int WindowWidth => Runtime!.WindowWidth;
-		internal static int WindowHeight => Runtime!.WindowHeight;
+			? Math.Max(Settings.MinHeight, Runtime.CanvasHeight)
+			: Math.Max(Settings.MinHeight, Math.Min(Settings.MaxScreenHeight, Runtime.CanvasHeight));
+		internal static int WindowWidth => Runtime.WindowWidth;
+		internal static int WindowHeight => Runtime.WindowHeight;
 
 		private Stopwatch _tickWatch = new();
 
@@ -110,7 +124,7 @@ namespace CivOne
 		{
 			get
 			{
-				bool dataMissing = Runtime!.Settings.DataCheck && !FileSystem.DataFilesExist();
+				bool dataMissing = Runtime.Settings.DataCheck && !FileSystem.DataFilesExist();
 				bool showWizard = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && (dataMissing || Runtime.Settings.Setup);
 
 				if (showWizard)
@@ -130,7 +144,7 @@ namespace CivOne
 
 		private void OnInitialize(object? _, EventArgs args)
 		{
-			Runtime!.SetWindowTitle(Settings.WindowTitle);
+			Runtime.SetWindowTitle(Settings.WindowTitle);
 			_mcpService.Start();
 			GameTask.Enqueue(Show.Screens(StartupScreens));
 		}
@@ -176,7 +190,7 @@ namespace CivOne
 			IScreen? topScreen = TopScreen;
 			if (topScreen == null)
 			{
-				Runtime!.Layers = null;
+				Runtime.Layers = null;
 				return;
 			}
 
@@ -186,16 +200,16 @@ namespace CivOne
 			{
 				try
 				{
-					Runtime!.Palette = topScreen.Palette.Copy();
+					Runtime.Palette = topScreen.Palette.Copy();
 				}
 				catch (ObjectDisposedException)
 				{
-					Runtime!.Palette = Common.DefaultPalette;
+					Runtime.Palette = Common.DefaultPalette;
 				}
 			}
 			else
 			{
-				Runtime!.Palette = Common.DefaultPalette;
+				Runtime.Palette = Common.DefaultPalette;
 			}
 			
 			if (Common.HasAttribute<Modal>(topScreen))
@@ -215,7 +229,7 @@ namespace CivOne
 
 				if (_cursorType != CursorType.Native && _currentCursor != MouseCursor.None && Cursor.Current?.Bitmap != null)
 				{
-					Runtime.SetCursor(Cursor.Current.ToBitmap()!);
+					Runtime.SetCursor(Cursor.Current.ToBitmap());
 				}
 				else
 				{
@@ -247,7 +261,7 @@ namespace CivOne
 			{
 				string? filename = Common.CaptureFilename;
 				if (filename == null) return;
-				if (Runtime!.Layers == null) return;
+				if (Runtime.Layers == null) return;
 				
 				IScreen? topScreen = TopScreen;
 				if (topScreen == null) return;
@@ -286,7 +300,7 @@ namespace CivOne
 				using FileStream fs = new(filename, FileMode.Create, FileAccess.Write);
 				byte[] output = file.GetBytes();
 				fs.Write(output, 0, output.Length);
-				Runtime!.Log($"Screenshot saved: {filename}");
+				Runtime.Log($"Screenshot saved: {filename}");
 
 				return;
 			}

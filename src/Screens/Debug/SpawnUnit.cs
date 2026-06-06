@@ -116,7 +116,7 @@ namespace CivOne.Screens.Debug
 				if (tile.Units.Any(x => _selectedPlayer != x.Owner)) return false;
 				if (_selectedUnit.Class == UnitClass.Land && tile.City != null)
 				{
-					return (_selectedPlayer == tile.City.Owner);
+					return (_selectedPlayer == tile.City.CityOwnerPlayerIndex);
 				}
 				if (_selectedUnit.Class == UnitClass.Land && tile.Type == Terrain.Ocean)
 				{
@@ -128,7 +128,7 @@ namespace CivOne.Screens.Debug
 				}
 				if (_selectedUnit.Class == UnitClass.Water && tile.Type != Terrain.Ocean)
 				{
-					return (tile.City != null && _selectedPlayer == tile.City.Owner);
+					return (tile.City != null && _selectedPlayer == tile.City.CityOwnerPlayerIndex);
 				}
 				return true;
 			}

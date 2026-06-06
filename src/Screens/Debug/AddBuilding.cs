@@ -64,7 +64,7 @@ namespace CivOne.Screens.Debug
         private void OnPlayerSelected(Player player)
         {
             _selectedPlayer = player;
-            _playerCities = [.. _cities.Where(c => c.Owner == Game.PlayerNumber(player))];
+            _playerCities = [.. _cities.Where(c => c.CityOwnerPlayerIndex == Game.PlayerNumber(player))];
 
             if (_playerCities.Length == 0)
             {

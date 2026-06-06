@@ -30,7 +30,7 @@ namespace CivOne.Tasks
 
 		public override void Run()
 		{
-			if (Human != _city.Owner)
+			if (Human != _city.CityOwnerPlayerIndex)
 			{
 				Log($"{_city.Name} builds {(_improvement as ICivilopedia).TranslatedName}.");
 				EndTask();

@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using CivOne.Advances;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -20,7 +21,7 @@ namespace CivOne.Screens
 
 		private readonly IAdvance _advance;
 
-        private float _fadeStep = 0.0f;
+        private float _fadeStep;
 		
 		private void FadeColours()
 		{
@@ -29,9 +30,12 @@ namespace CivOne.Screens
             FadeStep = _fadeStep;
 
 			Palette palette = Palette;
-			for (int i = 86; i < 256; i++)
+			int max = Math.Min(OriginalColours.Length, _advance.OriginalColours.Length);
+			for (int i = 86; i < max; i++)
+			{
 				palette[i] = FadeColour(OriginalColours[i], _advance.OriginalColours[i]);
-			this.SetPalette(palette);
+			}			
+			SetPalette(palette);
 		}
 		
 		protected override bool HasUpdate(uint gameTick)
@@ -89,7 +93,10 @@ namespace CivOne.Screens
 				}
 			}
 
-			this.AddLayer(advance.Icon, 119, modern ? 53 : 61);
+			if (advance.Icon != null)
+			{
+				this.AddLayer(advance.Icon, 119, modern ? 53 : 61);
+			}
 
 			PlaySound(Human.Civilization.Tune);
 		}

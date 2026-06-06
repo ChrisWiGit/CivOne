@@ -139,7 +139,7 @@ namespace CivOne.Screens
 				{
 					Game.DisbandUnit(u);
 				});
-				Game.Cities.Where(c => c.Player == p).ToList().ForEach(c =>
+				Game.Cities.Where(c => c.CityOwnerPlayer == p).ToList().ForEach(c =>
 				{
 					Game.DestroyCity(c);
 				});
@@ -251,7 +251,7 @@ namespace CivOne.Screens
 		{
 			byte humanOwner = Game.PlayerNumber(Human);
 			IBuilding? building = Game.Cities
-				.Where(c => c.Owner == humanOwner)
+				.Where(c => c.CityOwnerPlayerIndex == humanOwner)
 				.SelectMany(c => c.Buildings)
 				.FirstOrDefault();
 
@@ -299,7 +299,7 @@ namespace CivOne.Screens
 		private void MenuRunDisbandUnitDialog(object? _, EventArgs args)
 		{
 			byte humanOwner = Game.PlayerNumber(Human);
-			var city = Game.Cities.FirstOrDefault(c => c.Owner == humanOwner);
+			var city = Game.Cities.FirstOrDefault(c => c.CityOwnerPlayerIndex == humanOwner);
 			if (city == null)
 			{
 				GameTask.Enqueue(Message.General(Translate("No human city available for DisbandUnit test.")));
@@ -376,7 +376,7 @@ namespace CivOne.Screens
 				return;
 			}
 
-			var enemyCity = Game.Cities.FirstOrDefault(c => c.Owner != humanOwner);
+			var enemyCity = Game.Cities.FirstOrDefault(c => c.CityOwnerPlayerIndex != humanOwner);
 			if (enemyCity == null)
 			{
 				GameTask.Enqueue(Message.General(Translate("No enemy city available for incite test.")));
@@ -401,7 +401,7 @@ namespace CivOne.Screens
 				return;
 			}
 
-			var city = Game.Cities.FirstOrDefault(c => c.Owner == humanOwner);
+			var city = Game.Cities.FirstOrDefault(c => c.CityOwnerPlayerIndex == humanOwner);
 			if (city == null)
 			{
 				GameTask.Enqueue(Message.General(Translate("No human city available for caravan choice test.")));
@@ -417,7 +417,7 @@ namespace CivOne.Screens
 		{
 			byte humanOwner = Game.PlayerNumber(Human);
 			City[] enemyCities = [.. Game.Cities
-				.Where(c => c.Owner != humanOwner)
+				.Where(c => c.CityOwnerPlayerIndex != humanOwner)
 				.OrderBy(c => c.Name)];
 
 			if (enemyCities.Length == 0)
@@ -658,7 +658,7 @@ namespace CivOne.Screens
 					Palette = Common.Screens[^1].OriginalColours;
 					_citySelect = new CityGridMenuDelegate(
 						_enemyCities,
-						city => $"{city.Name} ({Game.GetPlayer(city.Owner)?.TribeName ?? "Unknown"})");
+						city => $"{city.Name} ({Game.GetPlayer(city.CityOwnerPlayerIndex)?.TribeName ?? "Unknown"})");
 					_citySelect.CitySelected += OnCitySelected;
 					_citySelect.Cancelled += CitySelection_Cancel;
 				}

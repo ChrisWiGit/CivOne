@@ -65,10 +65,10 @@ namespace CivOne
 				ITile[] landingZones = [.. unit.Tile.GetBorderTiles().Where(x => !x.IsOcean && !IsPolarTile(x) && !x.Units.Any(u => u.Owner != 0))];
 				if (landingZones.Length > 0)
 				{
-					if (Game.GetCities().Any(x => x.Owner != 0))
+					if (Game.GetCities().Any(x => x.CityOwnerPlayerIndex != 0))
 					{
-						City nearestCity = Game.GetCities().Where(x => x.Owner != 0).OrderBy(x => Common.DistanceToTile(x.X, x.Y, unit.X, unit.Y)).ThenBy(x => x.Player == Human ? 0 : 1).First();
-						if (nearestCity.Player == Human && Human.Visible(unit.Tile))
+						City nearestCity = Game.GetCities().Where(x => x.CityOwnerPlayerIndex != 0).OrderBy(x => Common.DistanceToTile(x.X, x.Y, unit.X, unit.Y)).ThenBy(x => x.CityOwnerPlayer == Human ? 0 : 1).First();
+						if (nearestCity.CityOwnerPlayer == Human && Human.Visible(unit.Tile))
 						{
 							GameTask.Insert(Message.Advisor(Advisor.Defense, false,
 								TranslateFormattedArray("Barbarian raiding party\nlands near {0}!\nCitizens are alarmed.", nearestCity.Name)));
@@ -93,7 +93,7 @@ namespace CivOne
 					// Targeting the city tile itself would make GotoStep fail (water→land),
 					// causing an infinite re-targeting loop.
 					City? nearestCity = Game.GetCities()
-						.Where(x => x.Owner != 0 && x.HasBuilding<Palace>()
+						.Where(x => x.CityOwnerPlayerIndex != 0 && x.HasBuilding<Palace>()
 								&& x.Tile.GetBorderTiles().Any(t => t.IsOcean && !IsPolarTile(t)))
 						.OrderBy(x => Common.DistanceToTile(x.X, x.Y, unit.X, unit.Y))
 						.FirstOrDefault();

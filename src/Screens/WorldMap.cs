@@ -101,7 +101,7 @@ namespace CivOne.Screens
 				
 				if ((city = tile.City) != null && city.Size > 0)
 				{
-					this.FillRectangle(dx, dy, 4, 4, Common.ColourLight[city.Owner]);
+					this.FillRectangle(dx, dy, 4, 4, Common.ColourLight[city.CityOwnerPlayerIndex]);
 				}
 				else if ((units = tile.Units).Length > 0)
 				{

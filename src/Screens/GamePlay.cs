@@ -43,11 +43,11 @@ namespace CivOne.Screens
 		private int _menuIndex = -1;
 		private uint _lastGameTick;
 		private bool _update = true;
-		private bool _redraw = false;
+		private bool _redraw;
 		private bool _rightSideBar;
-		private static bool DebugMenuEnabled => Settings.DebugMenu || RuntimeHandler.Runtime?.Settings.Get<bool>("debug") == true;
+		private static bool DebugMenuEnabled => Settings.DebugMenu || RuntimeHandler.Runtime.Settings.Get<bool>("debug") == true;
 
-		private bool _shift5 = false;
+		private bool _shift5;
 
 		public override MouseCursor Cursor => Busy ? MouseCursor.None : MouseCursor.Pointer;
 
@@ -626,7 +626,7 @@ namespace CivOne.Screens
 			// if there is no active unit center on random human player city
 			foreach (City city in Game.GetCities())
 			{
-				if (city.Owner == Game.PlayerNumber(Game.HumanPlayer))
+				if (city.CityOwnerPlayerIndex == Game.PlayerNumber(Game.HumanPlayer))
 				{
 					_gameMap.CenterOnPoint(city.X, city.Y);
 					return;

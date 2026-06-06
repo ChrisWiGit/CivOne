@@ -28,11 +28,11 @@ namespace CivOne.Units
 
 		public static int InciteCost(City cityToIncite)
 		{
-			City capital = cityToIncite.Player.GetCapital();
+			City capital = cityToIncite.CityOwnerPlayer.GetCapital();
 
 			int distance = capital == null ? 16 : cityToIncite.Tile.DistanceTo(capital);
 			
-			int cost = (cityToIncite.Player.Gold + 1000) / (distance + 3);
+			int cost = (cityToIncite.CityOwnerPlayer.Gold + 1000) / (distance + 3);
 
 			// if city is in disorder need to halve the cost
 			CitizenTypes citizenTypes = cityToIncite.GetCitizenTypes();
@@ -85,7 +85,7 @@ namespace CivOne.Units
 				{
 					GameTask.Enqueue(Show.DiplomatCity(targetCity, this));
 				}
-                else if (Human == targetCity.Player)
+                else if (Human == targetCity.CityOwnerPlayer)
                 {
                     GameTask.Enqueue(Message.Spy("Spies report:", $"{Sabotage(targetCity)}", $"in {targetCity.Name}"));
                 }

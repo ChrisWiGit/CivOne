@@ -57,7 +57,7 @@ namespace CivOne
 				int nearestCity = 255;
 				int nearestOwnCity = 255;
 				City[] cities = Game.GetCities();
-				City[] ownCities = [.. cities.Where(x => x.Owner == unit.Owner)];
+				City[] ownCities = [.. cities.Where(x => x.CityOwnerPlayerIndex == unit.Owner)];
 				if (cities.Length != 0) nearestCity = cities.Min(x => Common.DistanceToTile(x.X, x.Y, tile.X, tile.Y));
 				if (ownCities.Length != 0) nearestOwnCity = ownCities.Min(x => Common.DistanceToTile(x.X, x.Y, tile.X, tile.Y));
 				
@@ -241,7 +241,7 @@ namespace CivOne
 
 		internal void CityProduction(City city)
 		{
-			if (city == null || city.Size == 0 || city.Tile == null || Player != city.Owner) return;
+			if (city == null || city.Size == 0 || city.Tile == null || Player != city.CityOwnerPlayerIndex) return;
 
 			IProduction? production = null;
 
