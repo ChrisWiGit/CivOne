@@ -165,13 +165,15 @@ namespace CivOne.Screens
 					KeepOpen = false;
 					return false;
 				case Key.Enter:
-					if (Items[_activeItem]?.Enabled == false)
+					if (_activeItem < 0 || _activeItem >= Items.Count)
 					{
-						KeepOpen = true;
 						return true;
 					}
-					if (_activeItem >= 0)
-						Items[_activeItem]?.Select();
+					if (Items[_activeItem]?.Enabled == false)
+					{
+						return true;
+					}
+					Items[_activeItem]?.Select();
 					return false;
 			}
 			return true;
