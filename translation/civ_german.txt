@@ -1258,3 +1258,7 @@ YOU HAVE DISCOVERED\NVALUABLE METAL DEPOSITS\NWORTH 50$=Sie haben wertvolle Meta
 SELECT STARTUP LANGUAGE.=Startsprache auswählen.
 COST: {0}0 SHIELDS.=Kosten: {0}0 Schilde.
 MAINTENANCE: ${0}=Wartung: ${0}
+COST: {0}0 RESOURCES.=Kosten: {0}0 Ressourcen.
+ATTACK STRENGTH: {0}=Angriffsstärke: {0}
+DEFENSE STRENGTH: {0}=Verteidigungsstärke: {0}
+MOVEMENT RATE: {0}=Bewegungsrate: {0}
