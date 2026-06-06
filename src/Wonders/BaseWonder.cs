@@ -14,7 +14,7 @@ using CivOne.Graphics;
 
 namespace CivOne.Wonders
 {
-	internal abstract class BaseWonder : BaseInstance, IWonder
+	internal abstract class BaseWonder(byte price = 1) : BaseInstance, IWonder
 	{
 		/// <summary>
 		/// Gets the localized display name shown to the player.
@@ -42,7 +42,7 @@ namespace CivOne.Wonders
 		/// TranslatedName = Translate("Colossus");
 		/// </code>
 		/// </example>
-		public string TranslatedName { get; protected set; }
+		public string TranslatedName { get; protected set; } = "Invalid wonder name"; // This value should never be shown because sub classes must set this.
 		/// <summary>
 		/// Gets the invariant civilopedia key name.
 		/// </summary>
@@ -52,27 +52,27 @@ namespace CivOne.Wonders
 		/// TranslatedName = Translate("Colossus");
 		/// </code>
 		/// </example>
-		public string Name { get; protected set; }
-		public virtual IBitmap Icon => null;
-		public virtual IBitmap SmallIcon { get; protected set; }
+		public string Name { get; protected set; } = "Invalid wonder name"; // This value should never be shown because sub classes must set this.
+		public virtual IBitmap? Icon => null;
+		public virtual IBitmap? SmallIcon { get; protected set; }
 		public byte PageCount => 2;
 		public Picture DrawPage(byte pageNumber)
 		{
-			string[] text = new string[0];
+			string[] text = [];
 			switch (pageNumber)
 			{
 				case 1:
-					text = Resources.GetCivilopediaText("BLURB1/" + Name.ToUpperInvariant());
+					text = Resources.GetCivilopediaText($"BLURB1/{Name.ToUpperInvariant()}");
 					break;
 				case 2:
-					text = Resources.GetCivilopediaText("BLURB1/" + Name.ToUpperInvariant() + "2");
+					text = Resources.GetCivilopediaText($"BLURB1/{Name.ToUpperInvariant()}2");
 					break;
 				default:
 					Log("Invalid page number: {0}", pageNumber);
 					break;
 			}
 			
-			Picture output = new Picture(320, 200);
+			Picture output = new(320, 200);
 			
 			int yy = 76;
 			foreach (string line in text)
@@ -96,13 +96,13 @@ namespace CivOne.Wonders
 		}
 		
 		public Wonder Type { get; set; }
-		
-		public IAdvance RequiredTech { get; protected set; }
-		public IAdvance ObsoleteTech { get; protected set; }
-		public short BuyPrice { get; private set; }
-		public byte ProductionId => (byte)(Math.Abs((int)Type - 232));
-		public byte Price { get; protected set; }
-		
+
+		public IAdvance? RequiredTech { get; protected set; } = null;
+		public IAdvance? ObsoleteTech { get; protected set; } = null;
+		public short BuyPrice { get; private set; } = (short)(80 * price);
+		public byte ProductionId => (byte)Math.Abs((int)Type - 232);
+		public byte Price { get; protected set; } = price;
+
 		protected void SetSmallIcon(int col, int row)
 		{
 			SmallIcon = Resources[GFX256 ? "SP299" : "SPRITES"][160 + (19 * col), 50 + (10 * row), 20, 10]
@@ -123,14 +123,8 @@ namespace CivOne.Wonders
 			string name = Id < 8 ? $"The {TranslatedName}" : TranslatedName;
 			string preposition = Id < 7 ? "of" : "in";
 			if (city != null && city.Size > 0)
-				return $"{name} {preposition} {city.Name}. ({Game.Instance.GetPlayer(city.CityOwnerPlayerIndex).Civilization.NamePlural})";
+				return $"{name} {preposition} {city.Name}. ({Game.Instance.GetPlayer(city.CityOwnerPlayerIndex)!.Civilization.NamePlural})";
 			return $"{name} (Destroyed)";
-		}
-		
-		protected BaseWonder(byte price = 1)
-		{
-			Price = price;
-			BuyPrice = (short)(80 * price);
 		}
 	}
 }
