@@ -30,7 +30,7 @@ namespace CivOne.UserInterface
 			}
 		}
 
-		internal string Id { get; private set; }
+		internal string? Id { get; private set; }
 
 		public event EventHandler? ItemsChanged;
 
@@ -110,10 +110,9 @@ namespace CivOne.UserInterface
 		/// <summary>
 		/// Initializes a new instance of the MenuItemCollection class with the specified identifier.
 		/// </summary>
-		/// <param name="id">The identifier for the menu item collection. It must be a non-empty string.</param>
-		public MenuItemCollection(string id)
+		/// <param name="id">The identifier for the menu item collection.</param>
+		public MenuItemCollection(string? id)
 		{
-			ArgumentException.ThrowIfNullOrEmpty(id, nameof(id));
 			Id = id;
 
 			ItemsChanged += HandlePluginActions;

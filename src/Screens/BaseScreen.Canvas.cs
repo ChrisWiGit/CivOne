@@ -135,6 +135,8 @@ namespace CivOne.Screens
 			Bitmap?.Dispose();
 			Palette?.Dispose();
 			OriginalColours?.Dispose();
+
+			GC.SuppressFinalize(this);
 		}
 	}
 }
