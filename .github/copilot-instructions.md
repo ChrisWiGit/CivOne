@@ -115,6 +115,15 @@ Whenever a diff deletes a line that contains any of `index++`, `++index`, `i++` 
 * When calling method that returns IDisposeable, use `using`. Don't do `using Bytemap unitPicture = ScaleBitmap(movingUnit.ToBitmap(), _tilePixelSize, _tilePixelSize);` but instead `using Bytemap unitSource = movingUnit.ToBitmap(); using Bytemap unitPicture = ScaleBitmap(unitSource, _tilePixelSize, _tilePixelSize);` to immediately dispose the original bitmap after scaling.
 * Exception for cached/shared bitmaps: do not use `using` or call `Dispose()` on values returned from sprite caches (`ISprite.Bitmap`, `CachedSpriteCollection` entries, and `UnitExtensions.ToBitmap(...)`). These buffers are owned by the cache and are disposed only by cache clear/dispose.
 
+* Culture rule:
+  * Use `CultureInfo.InvariantCulture` for stable, culture-insensitive behavior.
+  * Use it for serialization, logs, config files, protocol values, IDs, and tests.
+  * Examples: `ToLower(..., CultureInfo.InvariantCulture)`, `ToUpper(..., CultureInfo.InvariantCulture)`, `value.ToString(CultureInfo.InvariantCulture)`, `Convert.ToString(value, CultureInfo.InvariantCulture)`, `double.Parse(text, CultureInfo.InvariantCulture)`, `int.Parse(text, NumberStyles.Integer, CultureInfo.InvariantCulture)`, `int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out int value)`.
+  * Do not use `InvariantCulture` for user-facing text, localized UI, or user input that should follow current locale.
+  * For UI text/input, use `CultureInfo.CurrentCulture`.
+
+
+
 ### Resizable Screens
 
 * If a screen must react to window size changes, add `[ScreenResizeable]` to the screen class.
