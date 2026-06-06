@@ -24,13 +24,12 @@ using CivOne.Tiles;
 using CivOne.UserInterface;
 
 using CivOne.Wonders;
-using CivOne.Units;
-using CivOne.Governments;
 using System.Diagnostics;
 using CivOne.Services;
 
 namespace CivOne.Units
 {
+	#pragma warning disable CA1822 // Mark members as static
 	internal abstract class BaseUnit : BaseInstance, IUnitRestorable
 	{
 		protected int _x, _y;
@@ -118,12 +117,12 @@ namespace CivOne.Units
 
 			Status = status;
 		}
-		private bool _fortify = false;
+		private bool _fortify;
 		public bool Fortify
 		{
 			get
 			{
-				return (_fortify || FortifyActive);
+				return _fortify || FortifyActive;
 			}
 			set
 			{
@@ -165,19 +164,19 @@ namespace CivOne.Units
 		}
 
 		public bool Moving => Movement != null;
-		public MoveUnit Movement { get; protected set; }
+		public MoveUnit? Movement { get; protected set; }
 
 		private int AttackStrength(IUnit defendUnit)
 		{
 			// Step 1: Determine the nominal attack value of the attacking unit and multiply it by 8.
-			int attackStrength = ((int)Attack * 8);
+			int attackStrength = (int)Attack * 8;
 
 			if (Owner == 0)
 			{
 				// Step 2: If the attacking unit is a Barbarian unit and the defending unit is player-controlled, multiply the attack strength by the Difficulty Modifier, then divide it by 4.
 				if (Human == defendUnit.Owner)
 				{
-					attackStrength *= (Game.Difficulty + 1);
+					attackStrength *= Game.Difficulty + 1;
 					attackStrength /= 4;
 				}
 
@@ -189,7 +188,7 @@ namespace CivOne.Units
 
 				// Step 4: If the attacking unit is a Barbarian unit and the defending unit is inside a city and the defending civilization does not control any other cities, set the attack strength to zero.
 				// This actually makes the defending unit invincible in this special case. Might well save you from being obliterated by that unlucky hut at 3600BC.
-				if (defendUnit.Tile.City != null && Game.GetPlayer(defendUnit.Owner).Cities.Length == 1)
+				if (defendUnit.Tile.City != null && Game.GetPlayer(defendUnit.Owner)?.Cities.Length == 1)
 				{
 					attackStrength = 0;
 				}
@@ -204,7 +203,7 @@ namespace CivOne.Units
 			// Step 6: If the attacking unit is a veteran unit, increase the attack strength by 50%.
 			if (Veteran)
 			{
-				attackStrength += (attackStrength / 2);
+				attackStrength += attackStrength / 2;
 			}
 
 			// Step 7: If the attacking unit has only 0.2 movement points left, multiply the attack strength by 2, then divide it by 3. If the attacking unit has only 0.1 movement points left, then just divide by 3 instead.
@@ -233,10 +232,10 @@ namespace CivOne.Units
 			return attackStrength;
 		}
 
-		private int DefendStrength(IUnit defendUnit, IUnit attackUnit)
+		private int DefendStrength(IUnit defendUnit, BaseUnit attackUnit)
 		{
 			// Check City Walls for step 5
-			bool cityWalls = (defendUnit.Tile.City != null && defendUnit.Tile.City.HasBuilding<CityWalls>());
+			bool cityWalls = defendUnit.Tile.City != null && defendUnit.Tile.City.HasBuilding<CityWalls>();
 
 			// Step 1: Determine the nominal defense value of defending unit.
 			int defendStrength = (int)defendUnit.Defense;
@@ -290,20 +289,20 @@ namespace CivOne.Units
 
 			int attackStrength = AttackStrength(defendUnit);
 			int defenseStrength = DefendStrength(defendUnit, attackUnit);
-			int randomAttack = Common.Random.Next(attackStrength);
-			int randomDefense = Common.Random.Next(defenseStrength);
+			int randomAttack = RandomService.NextInt(attackStrength);
+			int randomDefense = RandomService.NextInt(defenseStrength);
 			bool win = randomAttack > randomDefense;
 			if (win && attackUnit.Owner == 0 && defendUnit.Tile.City != null)
 			{
 				// If the attacking unit is a Barbarian unit and the defending unit is inside a city, then, if the attacking unit won, the procedure will be repeated once
 				// This time, the attacking unit wins on a tie.
-				randomAttack = Common.Random.Next(attackStrength);
-				randomDefense = Common.Random.Next(defenseStrength);
+				randomAttack = RandomService.NextInt(attackStrength);
+				randomDefense = RandomService.NextInt(defenseStrength);
 				win = randomAttack >= randomDefense;
 			}
 
 			// 50% chance to award veteran status to the winner
-			if (Common.Random.Next(100) < 50)
+			if (RandomService.Hit(50))
 			{
 				if (win && !attackUnit.Veteran) attackUnit.Veteran = true;
 				if (!win && !defendUnit.Veteran) defendUnit.Veteran = true;
@@ -377,7 +376,10 @@ namespace CivOne.Units
 			}
 
 			City capturedCity = moveTarget.City;
-			Movement.Done += (_, __) => CompleteCityCapture(capturedCity, null, EventArgs.Empty);
+			if (Movement != null)
+			{
+				Movement.Done += (_, __) => CompleteCityCapture(capturedCity, null, EventArgs.Empty);
+			}
 			return true;
 		}
 
@@ -416,7 +418,13 @@ namespace CivOne.Units
 
 		private void ChangeCapturedCityOwner(City capturedCity)
 		{
-			Player previousOwner = Game.GetPlayer(capturedCity.CityOwnerPlayerIndex);
+			Player? previousOwner = Game.GetPlayer(capturedCity.CityOwnerPlayerIndex);
+
+			if (previousOwner == null)
+			{
+				Debug.Assert(false, $"Could not find previous owner of captured city {capturedCity.Name} (owner index {capturedCity.CityOwnerPlayerIndex}). City capture will proceed without handling previous owner's extinction.");
+				return;
+			}
 
 			RemovePalaceFromCapturedCity(capturedCity);
 			ResetCapturedCityProduction(capturedCity);
@@ -484,7 +492,13 @@ namespace CivOne.Units
 
 		private int PlunderCapturedCityGold(City capturedCity)
 		{
-			Player cityOwner = Game.GetPlayer(capturedCity.CityOwnerPlayerIndex);
+			Player? cityOwner = Game.GetPlayer(capturedCity.CityOwnerPlayerIndex);
+			if (cityOwner == null)
+			{
+				Debug.Assert(false, $"Could not find owner of captured city {capturedCity.Name} (owner index {capturedCity.CityOwnerPlayerIndex}). City capture will proceed without plundering gold.");
+				return 0;
+			}
+
 			float totalSize = cityOwner.Cities.Sum(x => x.Size);
 			int captureGold = (int)(cityOwner.Gold * ((float)capturedCity.Size / totalSize));
 
@@ -554,8 +568,8 @@ namespace CivOne.Units
 
 		private Show CreateNukeAnimation(int relX, int relY)
 		{
-			int xx = (X - Common.GamePlay.X + relX) * 16;
-			int yy = (Y - Common.GamePlay.Y + relY) * 16;
+			int xx = (X - Common.GamePlay!.X + relX) * 16;
+			int yy = (Y - Common.GamePlay!.Y + relY) * 16;
 			return Show.Nuke(xx, yy);
 		}
 
@@ -572,6 +586,11 @@ namespace CivOne.Units
 
 		private void HandleAttackWin(ITile moveTarget)
 		{
+			if (Movement == null)
+			{
+				Debug.Assert(false, "HandleAttackWin called but Movement is null. This should not happen.");
+				return;
+			}
 			Movement.Done += (_, __) =>
 			{
 				PlayAttackSound(attackerWon: true);
@@ -587,6 +606,10 @@ namespace CivOne.Units
 
 		private void HandleAttackLoss()
 		{
+			if (Movement == null)
+			{
+				return;
+			}
 			Movement.Done += (_, __) =>
 			{
 				PlayAttackSound(attackerWon: false);
@@ -638,18 +661,20 @@ namespace CivOne.Units
 			}
 		}
 
-		private static void DestroyAttackedUnit(IUnit unit)
+		private static void DestroyAttackedUnit(IUnit? unit)
 		{
-			if (unit != null)
+			if (unit == null)
 			{
-				var task = Show.DestroyUnit(unit, true);
-
-				// fire-eggs 20190729 when destroying last city, check for civ destruction ASAP
-				if (unit.Owner != 0)
-					task.Done += (_, __) => { Game.GetPlayer(unit.Owner).HandleExtinction(); };
-
-				GameTask.Insert(task);
+				Debug.Assert(false, "No unit to destroy after winning attack. This should not happen.");
+				return;
 			}
+			var task = Show.DestroyUnit(unit, true);
+
+			// fire-eggs 20190729 when destroying last city, check for civ destruction ASAP
+			if (unit.Owner != 0)
+				task.Done += (_, __) => { Game.GetPlayer(unit.Owner)?.HandleExtinction(); };
+
+			GameTask.Insert(task);
 		}
 
 		private void CaptureBarbarianLeader(IUnit[] attackedUnits)
@@ -680,11 +705,10 @@ namespace CivOne.Units
 
 		private IList<IAdvance> GetAdvancesToSteal(Player victim)
 		{
-			return victim.Advances
+			return [.. victim.Advances
 			.Where(p => Player.Advances.All(p2 => p2.Id != p.Id))
-			.OrderBy(a => Common.Random.Next(0, 1000))
-			.Take(3)
-			.ToList();
+			.OrderBy(a => RandomService.NextInt(0, 1000))
+			.Take(3)];
 		}
 
 		public bool CanMoveTo(int relX, int relY)
@@ -803,6 +827,12 @@ namespace CivOne.Units
 
 		private void MoveEnd(object? _, EventArgs __)
 		{
+			if (Movement == null) 
+			{
+				Debug.Assert(false, "MoveEnd called but Movement is null. This should not happen.");
+				return;
+			}
+
 			ITile previousTile = Map[_x, _y];
 			X += Movement.RelX;
 			Y += Movement.RelY;
@@ -841,7 +871,7 @@ namespace CivOne.Units
 		}
 
 		private static readonly IBitmap[] _iconCache = new IBitmap[28];
-		public virtual IBitmap Icon { get; private set; }
+		public virtual IBitmap? Icon { get; private set; }
 		private string _name;
 		/// <summary>
 		/// Gets the localized display name shown to the player.
@@ -899,10 +929,10 @@ namespace CivOne.Units
 			switch (pageNumber)
 			{
 				case 1:
-					text = Resources.GetCivilopediaText("BLURB2/" + originalName.ToUpperInvariant());
+					text = Resources.GetCivilopediaText($"BLURB2/{originalName.ToUpperInvariant()}");
 					break;
 				case 2:
-					text = Resources.GetCivilopediaText("BLURB2/" + originalName.ToUpperInvariant() + "2");
+					text = Resources.GetCivilopediaText($"BLURB2/{originalName.ToUpperInvariant()}2");
 					break;
 				default:
 					Log("Invalid page number: {0}", pageNumber);
@@ -926,7 +956,7 @@ namespace CivOne.Units
 				yy += 8;
 				string requiredTech = "";
 				if (RequiredTech != null) requiredTech = RequiredTech.TranslatedName;
-				output.DrawText(string.Format("Requires {0}", requiredTech), 6, 9, 100, yy); yy += 8;
+				output.DrawText(TranslateFormatted("Requires {0}", requiredTech), 6, 9, 100, yy); yy += 8;
 				output.DrawText(string.Format("Cost: {0}0 resources.", Price), 6, 9, 100, yy); yy += 8;
 				output.DrawText(string.Format("Attack Strength: {0}", Attack), 6, 12, 100, yy); yy += 8;
 				output.DrawText(string.Format("Defense Strength: {0}", Defense), 6, 12, 100, yy); yy += 8;
@@ -936,17 +966,17 @@ namespace CivOne.Units
 			return output;
 		}
 
-		private IAdvance _requiredTech;
-		public IAdvance RequiredTech
+		private IAdvance? _requiredTech;
+		public IAdvance? RequiredTech
 		{
 			get => Modifications.LastOrDefault(x => x.Requires.HasValue)?.Requires.Value.ToInstance() ?? _requiredTech;
 			protected set => _requiredTech = value;
 		}
 
-		public IWonder RequiredWonder { get; protected set; }
+		public IWonder? RequiredWonder { get; protected set; }
 
-		private IAdvance _obsoleteTech;
-		public IAdvance ObsoleteTech
+		private IAdvance? _obsoleteTech;
+		public IAdvance? ObsoleteTech
 		{
 			get => Modifications.LastOrDefault(x => x.Obsolete.HasValue)?.Obsolete.Value.ToInstance() ?? _obsoleteTech;
 			protected set => _obsoleteTech = value;
@@ -1054,7 +1084,7 @@ namespace CivOne.Units
 			}
 		}
 
-		public Player Player => Game.GetPlayer(Owner);
+		public Player Player => Game.GetPlayer(Owner)!;
 
 		public byte Status
 		{
@@ -1062,14 +1092,14 @@ namespace CivOne.Units
 			{
 				bool[] bits = new bool[8];
 				for (int i = 0; i < 8; i++)
-					bits[i] = (((value >> i) & 1) > 0);
+					bits[i] = ((value >> i) & 1) > 0;
 				if (bits[0]) Sentry = true;
 				else if (bits[2]) FortifyActive = true;
 				else if (bits[3]) _fortify = true;
 
-				if (this is Settlers)
+				if (this is Settlers settlers)
 				{
-					(this as Settlers).SetStatus(bits);
+					settlers.SetStatus(bits);
 				}
 
 				Veteran = bits[5];
@@ -1165,26 +1195,26 @@ namespace CivOne.Units
 		protected void Explore(int range, bool sea = false)
 		{
 			if (Game == null) return;
-			Player player = Game.GetPlayer(Owner);
-			if (player == null) return;
-			player.Explore(X, Y, range, sea);
-			if (player.IsHuman) Common.GamePlay?.RefreshMap();
+			if (Player == null) return;
+			Player.Explore(X, Y, range, sea);
+			if (Player.IsHuman) Common.GamePlay?.RefreshMap();
 		}
 
 		public virtual void Explore() => Explore(1);
 
-		internal static IBitmap GetBaseSprite(UnitType type)
+		internal static IBitmap? GetBaseSprite(UnitType type)
 		{
-			if (!_modifications.ContainsKey(type)) return null;
-			return _modifications[type].LastOrDefault(x => x.Sprite != null && x.Sprite.GifToBitmap() != null)?.Sprite.GifToBitmap();
+			if (!_modifications.TryGetValue(type, out List<UnitModification>? value)) return null;
+
+			return value.LastOrDefault(x => x.Sprite != null && x.Sprite.GifToBitmap() != null)?.Sprite?.GifToBitmap();
 		}
 
-		private static Dictionary<UnitType, List<UnitModification>> _modifications = new Dictionary<UnitType, List<UnitModification>>();
+		private static Dictionary<UnitType, List<UnitModification>> _modifications = [];
 		internal static void LoadModifications()
 		{
 			_modifications.Clear();
 
-			UnitModification[] unitModifications = Reflect.GetModifications<UnitModification>().ToArray();
+			UnitModification[] unitModifications = [.. Reflect.GetModifications<UnitModification>()];
 			if (unitModifications.Length == 0) return;
 
 			Log("Applying unit modifications");
@@ -1192,13 +1222,13 @@ namespace CivOne.Units
 			foreach (UnitModification modification in Reflect.GetModifications<UnitModification>())
 			{
 				if (!_modifications.ContainsKey(modification.UnitType))
-					_modifications.Add(modification.UnitType, new List<UnitModification>());
+					_modifications.Add(modification.UnitType, []);
 				_modifications[modification.UnitType].Add(modification);
 			}
 
 			Log("Finished applying unit modifications");
 		}
-		public IEnumerable<UnitModification> Modifications => _modifications.ContainsKey(Type) ? _modifications[Type].ToArray() : new UnitModification[0];
+		public IEnumerable<UnitModification> Modifications => _modifications.TryGetValue(Type, out List<UnitModification>? value) ? [.. value] : Array.Empty<UnitModification>();
 
 		public byte FuelOrProgress { get; set; }
 		public byte Fuel { get => FuelOrProgress; set => FuelOrProgress = value; }
@@ -1212,7 +1242,7 @@ namespace CivOne.Units
 				{
 					return 0;
 				}
-				return Game.Instance.GetCities().Select(c => Common.DistanceToTile(_x, _y, c.X, c.Y)).Min();
+				return Game.Instance.GetCities().Min(c => Common.DistanceToTile(_x, _y, c.X, c.Y));
 			}
 		}
 
@@ -1232,6 +1262,8 @@ namespace CivOne.Units
 			MovesSkip = 0;
 			RequiredWonder = null;
 			FuelOrProgress = 0;
+			TranslatedName = "";
+			_name = "";
 		}
 	}
 }

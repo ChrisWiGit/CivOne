@@ -29,17 +29,16 @@ namespace CivOne.Screens.Debug
 
 		private Player? _selectedPlayer;
 
-		public event EventHandler Accept, Cancel;
+		public event EventHandler? Accept, Cancel;
 
 		private void DrawDialog()
 		{
 			int xx = OffsetX + ((320 - _menuWidth) / 2);
 			int yy = OffsetY + ((200 - _menuHeight) / 2);
 
-			Picture menuGfx = new Picture(_menuWidth, _menuHeight)
+			IBitmap menuGfx = new Picture(_menuWidth, _menuHeight)
 				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D()
-				.As<Picture>();
+				.DrawRectangle3D();
 
 			this.Clear();
 			this.FillRectangle(xx - 1, yy - 1, _menuWidth + 2, _menuHeight + 2, 5)
@@ -51,7 +50,7 @@ namespace CivOne.Screens.Debug
 			_civSelect.ForceUpdate();
 		}
 
-		private void MeetKing_Accept(object sender, EventArgs args)
+		private void MeetKingAccept(object? _, EventArgs args)
 		{
 			_selectedPlayer = _players[_civSelect.ActiveItem];
 
@@ -60,17 +59,17 @@ namespace CivOne.Screens.Debug
 				Common.AddScreen(new King(_selectedPlayer));
 			}
 
-			if (Accept != null)
-				Accept(this, EventArgs.Empty);
+			Accept?.Invoke(this, EventArgs.Empty);
 			Destroy();
 		}
 
-		private void MeetKing_Cancel(object sender, EventArgs args)
+		private void MeetKingCancel(object? sender, EventArgs args)
 		{
-			if (Cancel != null)
-				Cancel(this, EventArgs.Empty);
+			Cancel?.Invoke(this, EventArgs.Empty);
 			if (sender is Input input)
+			{
 				input.Close();
+			}
 			Destroy();
 		}
 
@@ -81,7 +80,7 @@ namespace CivOne.Screens.Debug
 				DrawDialog();
 			}
 
-			if (_selectedPlayer == null && Common.TopScreen.GetType() != typeof(Menu))
+			if (_selectedPlayer == null && Common.TopScreen!.GetType() != typeof(Menu))
 			{
 				AddMenu(_civSelect);
 				return false;
@@ -91,17 +90,16 @@ namespace CivOne.Screens.Debug
 
 		public MeetWithKing() : base(MouseCursor.Pointer)
 		{
-			Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
+			Palette = Common.Screens[^1].OriginalColours;
 			_players = Game.Players.Where(p => p != 0 && p != Human).ToArray();
 
 			int fontHeight = Resources.GetFontHeight(0);
 			_menuHeight = (fontHeight * (_players.Length + 1)) + 5;
 			_menuWidth = 144;
 
-			Picture menuGfx = new Picture(_menuWidth, _menuHeight)
-				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D()
-				.As<Picture>();
+			Picture menuGfx = new(_menuWidth, _menuHeight);
+			menuGfx.Tile(Pattern.PanelGrey)
+				.DrawRectangle3D();
 			IBitmap menuBackground = menuGfx[2, 11, _menuWidth - 4, _menuHeight - 11].ColourReplace((7, 11), (22, 3));
 
 			_civSelect = new Menu(Palette, menuBackground)
@@ -118,11 +116,11 @@ namespace CivOne.Screens.Debug
 
 			foreach (Player player in _players)
 			{
-				_civSelect.Items.Add($"{player.LeaderName} ({player.TribeName})").OnSelect(MeetKing_Accept);
+				_civSelect.Items.Add($"{player.LeaderName} ({player.TribeName})").OnSelect(MeetKingAccept);
 			}
 
-			_civSelect.Cancel += MeetKing_Cancel;
-			_civSelect.MissClick += MeetKing_Cancel;
+			_civSelect.Cancel += MeetKingCancel;
+			_civSelect.MissClick += MeetKingCancel;
 			if (_players.Length > 0)
 			{
 				_civSelect.ActiveItem = 0;

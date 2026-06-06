@@ -22,9 +22,9 @@ namespace CivOne.Units
 {
 	public interface IUnit : ICivilopedia, IProduction, ITurn
 	{
-		IAdvance RequiredTech { get; }
-		IWonder RequiredWonder { get; }
-		IAdvance ObsoleteTech { get; }
+		IAdvance? RequiredTech { get; }
+		IWonder? RequiredWonder { get; }
+		IAdvance? ObsoleteTech { get; }
 		UnitClass Class { get; }
 		/// <summary>
 		/// Defines type of the unit
@@ -99,7 +99,7 @@ namespace CivOne.Units
 		/// Unit is Moving now
 		/// </summary>
 		bool Moving { get; }
-		MoveUnit Movement { get; }
+		MoveUnit? Movement { get; }
 		bool MoveTo(int relX, int relY);
 		/// <summary>
 		/// Tells who is owner [player/civilization/barbarian] for this Unit
@@ -143,7 +143,7 @@ namespace CivOne.Units
 		/// Establishes the unit's home (supporting) city.
 		/// </summary>
 		void SetHome(City? city);
-		IEnumerable<MenuItem<int>> MenuItems { get; }
+		IEnumerable<MenuItem<int>?> MenuItems { get; }
 		IEnumerable<UnitModification> Modifications { get; }
 		/// <summary>
 		/// Perform pillaging activity
