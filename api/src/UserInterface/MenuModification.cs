@@ -9,18 +9,13 @@
 
 namespace CivOne.UserInterface
 {
-	public abstract class MenuModification : IModification
+	public abstract class MenuModification(string menuId) : IModification
 	{
-		public string MenuId { get; }
+		public string MenuId { get; } = menuId;
 
-		public virtual (string MenuText, string ShortcutText) ChangeMenuItemText(string menuText, string shortcutText)
+		public virtual (string? MenuText, string? ShortcutText) ChangeMenuItemText(string? menuText, string? shortcutText)
 		{
 			return (menuText, shortcutText);
-		}
-
-		public MenuModification(string menuId)
-		{
-			MenuId = menuId;
 		}
 	}
 }
