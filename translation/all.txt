@@ -1229,4 +1229,6 @@ SETI PROGRAM=SETI Program
 SHAKESPEARE'S THEATRE=Shakespeare's Theatre
 UNITED NATIONS=United Nations
 WOMEN'S SUFFRAGE=Women's Suffrage
+COST: {0}0 SHIELDS.=Cost: {0}0 shields.
+MAINTENANCE: ${0}=Maintenance: ${0}
 SELECT STARTUP LANGUAGE.=Select startup language.

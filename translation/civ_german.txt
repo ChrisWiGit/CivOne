@@ -1256,3 +1256,5 @@ YOU HAVE UNLEASHED\NA HORDE OF BARBARIANS!=Sie haben eine Horde\nBarbaren entfes
 YOU HAVE DISCOVERED\NA FRIENDLY TRIBE OF\NSKILLED MERCENARIES.=Sie haben einen freundlichen Stamm\ngeschickter Söldner entdeckt.
 YOU HAVE DISCOVERED\NVALUABLE METAL DEPOSITS\NWORTH 50$=Sie haben wertvolle Metallvorkommen\nim Wert von 50$ entdeckt.
 SELECT STARTUP LANGUAGE.=Startsprache auswählen.
+COST: {0}0 SHIELDS.=Kosten: {0}0 Schilde.
+MAINTENANCE: ${0}=Wartung: ${0}
