@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using CivOne.Enums;
@@ -19,6 +20,7 @@ using CivOne.IO;
 using CivOne.IO.Text;
 using CivOne.Screens.Reports;
 using CivOne.Services;
+using CivOne.Services.Random;
 using CivOne.Tasks;
 using CivOne.UserInterface;
 
@@ -36,8 +38,8 @@ namespace CivOne.Screens
 		private const int NOISE_COUNT = 40;
 		private const int MENU_Y_OFFSET = 58;
 		
-		private readonly int[] SHOW_INTRO_LINE = { 312, 279, 254, 221, 196, 171, 146, 121, 96, 71, 46, 21, -4, -37, -62, -95, -120, -145, -170, -195, -220, -245, -270, -295 };
-		private readonly int[] HIDE_INTRO_LINE = { 287, 229, -29, -87, -315 };
+		private readonly int[] SHOW_INTRO_LINE = [312, 279, 254, 221, 196, 171, 146, 121, 96, 71, 46, 21, -4, -37, -62, -95, -120, -145, -170, -195, -220, -245, -270, -295];
+		private readonly int[] HIDE_INTRO_LINE = [287, 229, -29, -87, -315];
 		
 		private readonly byte[] _menuColours;
 		private readonly string[] _introText;
@@ -63,10 +65,10 @@ namespace CivOne.Screens
 
 		private IScreen? _overlay; // TODO fire-eggs: with fix for issue #34, this logic may no longer be required
 
-		private IScreen _nextScreen;
+		private IScreen? _nextScreen;
 
-		private Dictionary<char, Action<object, EventArgs>> _shortKeyMapping;
-		private Action<object, EventArgs> _shortCutAction;
+		private Dictionary<char, Action<object, EventArgs>>? _shortKeyMapping;
+		private Action<object, EventArgs>? _shortCutAction;
 		private int _mouseX = -1;
 		private int _mouseY = -1;
 
@@ -147,9 +149,9 @@ namespace CivOne.Screens
 					continue;
 				}
 
-				if (!Runtime.TryOpenUrl(url, out string errorMessage))
+				if (!Runtime.TryOpenUrl(url, out string? errorMessage))
 				{
-					Log("Could not open URL {0}: {1}", url, errorMessage);
+					Log("Could not open URL {0}: {1}", url, errorMessage ?? "unknown error");
 				}
 				return;
 			}
@@ -160,15 +162,15 @@ namespace CivOne.Screens
 			var menuItems = GetMenuItems();
 			_shortKeyMapping = new Dictionary<char, Action<object, EventArgs>>
 			{
-				{ menuItems[0].ToUpper()[0], StartNewGame },
-				{ menuItems[1].ToUpper()[0], LoadSavedGame },
-				{ menuItems[2].ToUpper()[0], Earth },
-				{ menuItems[3].ToUpper()[0], CustomizeWorld },
-				{ menuItems[4].ToUpper()[0], ViewHallOfFame }
+				{ menuItems[0].ToUpper(CultureInfo.CurrentCulture)[0], StartNewGame },
+				{ menuItems[1].ToUpper(CultureInfo.CurrentCulture)[0], LoadSavedGame },
+				{ menuItems[2].ToUpper(CultureInfo.CurrentCulture)[0], Earth },
+				{ menuItems[3].ToUpper(CultureInfo.CurrentCulture)[0], CustomizeWorld },
+				{ menuItems[4].ToUpper(CultureInfo.CurrentCulture)[0], ViewHallOfFame }
 			};
 		}
 
-		public void OnLanguageChanged(string activeLanguagePostfix)
+		public void OnLanguageChanged(string? _)
 		{
 			RebuildShortcutMapping();
 			CloseMenus();
@@ -395,7 +397,7 @@ namespace CivOne.Screens
 
 		private void StartIntro()
 		{
-			foreach (IMenu menu in _menus)
+			foreach (IMenu menu in Menus)
 				this.AddLayer(menu);
 			CloseMenus();
 			if (!Runtime.Settings.ShowIntro)
@@ -448,9 +450,18 @@ namespace CivOne.Screens
 			}
 
 			var slot = Runtime.Settings.LoadSaveGameSlot;
+
+			if (slot == null)
+			{
+				Log("Main Menu: Load Saved Game requested but no slot specified");
+				StartIntro();
+				return;
+			}
+
+
 			if (slot.Equals(RuntimeSettings.UseLoadingScreen))
 			{
-				LoadSavedGame(this, null);
+				LoadSavedGame(this, EventArgs.Empty);
 				return;
 			}
 
@@ -499,7 +510,7 @@ namespace CivOne.Screens
 				return _overlay.KeyDown(args);
 
 
-			if (_shortKeyMapping.TryGetValue(char.ToUpper(args.KeyChar), out var action))
+			if (_shortKeyMapping!.TryGetValue(char.ToUpper(args.KeyChar, CultureInfo.CurrentCulture), out var action))
 			{
 				_shortCutAction = action;
 				// invoke in CreateMenu to show title first and then execute action
@@ -549,14 +560,14 @@ namespace CivOne.Screens
 			}
 		}
 
-		private void Resize(object sender, ResizeEventArgs args)
+		private void Resize(object? _, ResizeEventArgs args)
 		{
 			_forceRedraw = true;
 			if (_done)
 			{
 				DrawFooterLinks();
 			}
-			foreach (Menu menu in Common.Screens.Where(x => x is Menu && (x as Menu).Id == "MainMenu"))
+			foreach (Menu menu in Common.Screens.OfType<Menu>().Where(menu => menu.Id == "MainMenu"))
 			{
 				menu.X = ((Width - 120) / 2) + 3;
 				menu.Y = Height - MENU_Y_OFFSET;
@@ -580,27 +591,29 @@ namespace CivOne.Screens
 			if (_introText.Length == 0) _introText = new string[25];
 			_pictures = new Picture[3];
 			for (int i = 0; i < 2; i++)
+			{
 				_pictures[i] = Resources[$"BIRTH{i}"];
+			}
 			_pictures[2] = Resources["LOGO"];
 			_noiseMap = new byte[320, 200];
+			byte noiseMaxExclusive = (byte)Math.Clamp(_noiseCounter, 2, byte.MaxValue);
 			for (int x = 0; x < 320; x++)
+			{
 				for (int y = 0; y < 200; y++)
 				{
-					_noiseMap[x, y] = (byte)Common.Random.Next(1, _noiseCounter);
+					_noiseMap[x, y] = RandomServiceFactory.Create().NextByte(1, noiseMaxExclusive);
 				}
-			switch (Settings.GraphicsMode)
-			{
-				case GraphicsMode.Graphics256:
-					DefaultTextSettings = TextSettings.ThreeLayers(244, 248, 242);
-					break;
-				case GraphicsMode.Graphics16:
-					DefaultTextSettings = TextSettings.ThreeLayers(15, 15, 7);
-					break;
 			}
+			DefaultTextSettings = Settings.GraphicsMode switch
+			{
+				GraphicsMode.Graphics256 => TextSettings.ThreeLayers(244, 248, 242),
+				GraphicsMode.Graphics16 => TextSettings.ThreeLayers(15, 15, 7),
+				_ => throw new InvalidOperationException($"Unsupported graphics mode: {Settings.GraphicsMode}"),
+			};
 			DefaultTextSettings.Alignment = TextAlign.Center;
 			DefaultTextSettings.FontId = 4;
 
-			_menuColours = new byte[] { 8, 15, 7 };
+			_menuColours = [8, 15, 7];
 
 			Palette = _pictures[2].Palette;
 
@@ -611,7 +624,11 @@ namespace CivOne.Screens
 			}
 
 			if (!Runtime.Settings.ShowCredits) SkipIntro();
-			if ((Runtime.Settings.LoadSaveGameSlot != null || !string.IsNullOrEmpty(Runtime.Settings.LoadCosFile)) && _loadSavedGame.HasValue)
+			
+			bool loadedSavedGameSlot = Runtime.Settings.LoadSaveGameSlot != null;
+			bool loadedCosFile = !string.IsNullOrEmpty(Runtime.Settings.LoadCosFile);
+
+			if ((loadedSavedGameSlot || loadedCosFile) && _loadSavedGame.HasValue)
 			{
 				_loadSavedGame = true;
 			}

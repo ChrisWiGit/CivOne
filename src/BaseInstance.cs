@@ -10,7 +10,6 @@
 using System.IO;
 using CivOne.Enums;
 using CivOne.Graphics;
-using CivOne.IO;
 using CivOne.IO.Text;
 using CivOne.Services;
 using CivOne.Services.Random;
@@ -27,7 +26,7 @@ namespace CivOne
 		protected static Resources Resources => Resources.Instance;
 		protected static IRuntime Runtime => RuntimeHandler.Runtime;
 		protected static Settings Settings => Settings.Instance;
-		protected static MenuCollection Menus => MenuCollection.Instance;
+		protected static MenuCollection GlobalMenus => MenuCollection.Instance;
 
 		protected static ITranslationService Translation => TranslationServiceFactory.GetCurrent();
 		protected static IRandomService RandomService => RandomServiceFactory.Create();

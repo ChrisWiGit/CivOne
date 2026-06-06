@@ -27,26 +27,26 @@ namespace CivOne.Screens.Debug
         private int OffsetX => Math.Max(0, (Width - 320) / 2);
         private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
-        private CivSelectMenuDelegate _playerSelect;
+        private CivSelectMenuDelegate? _playerSelectDelegate;
 
         private City[] _playerCities = [];
-        private IBuilding[] _buildings;
-        private CityGridMenuDelegate _citySelect;
-        private GridMenuDelegate _buildingSelect;
+        private IBuilding[]? _buildings;
+        private CityGridMenuDelegate? _citySelect;
+        private GridMenuDelegate? _buildingSelect;
 
-        private Player _selectedPlayer;
-        private City _selectedCity;
+        private Player? _selectedPlayer;
+        private City? _selectedCity;
 
         private void EnsurePlayerSelectDelegate()
         {
-            if (_playerSelect != null && _menus.Contains(_playerSelect.Menu)) return;
-            _playerSelect = CreatePlayerSelectDelegate();
+            if (_playerSelectDelegate != null && Menus.Contains(_playerSelectDelegate.Menu)) return;
+            _playerSelectDelegate = CreatePlayerSelectDelegate();
         }
 
         private void DrawPlayerMenuDialog()
         {
             EnsurePlayerSelectDelegate();
-            _playerSelect.DrawDialog(this, OffsetX, OffsetY);
+            _playerSelectDelegate!.DrawDialog(this, OffsetX, OffsetY);
         }
 
         private CivSelectMenuDelegate CreatePlayerSelectDelegate()
@@ -80,7 +80,7 @@ namespace CivOne.Screens.Debug
 
         private void CreateCityGrid()
         {
-            Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
+            Palette = Common.Screens[^1].OriginalColours;
             _citySelect = new CityGridMenuDelegate(_playerCities);
             _citySelect.CitySelected += OnCitySelected;
             _citySelect.Cancelled += Cancel;
@@ -93,7 +93,7 @@ namespace CivOne.Screens.Debug
                 CreateCityGrid();
             }
 
-            _citySelect.Draw(this, "Select city...", CanvasHeight);
+            _citySelect!.Draw(this, "Select city...", CanvasHeight);
         }
 
         private void OnCitySelected(City city)
@@ -108,19 +108,19 @@ namespace CivOne.Screens.Debug
 
         private void CreateBuildingGrid()
         {
-            Palette = Common.Screens[Common.Screens.Length - 1].OriginalColours;
+            Palette = Common.Screens[^1].OriginalColours;
 
-            string[] labels = [.. _buildings.Select(x => x.TranslatedName)];
+            string[] labels = [.. _buildings!.Select(x => x.TranslatedName)];
             _buildingSelect = new GridMenuDelegate(
                 labels,
                 GridMenuDelegate.SelectionMode.CheckUncheck,
-                i => _selectedCity.HasBuilding(_buildings[i]),
+                i => _selectedCity!.HasBuilding(_buildings![i]),
                 fontId: 0);
             _buildingSelect.ItemChecked += OnBuildingToggled;
             _buildingSelect.Cancelled += OnBuildingSelectionCancelled;
         }
 
-        private void OnBuildingSelectionCancelled(object sender, EventArgs args)
+        private void OnBuildingSelectionCancelled(object? _, EventArgs args)
         {
             _selectedCity = null;
             _buildingSelect = null;
@@ -133,12 +133,13 @@ namespace CivOne.Screens.Debug
             {
                 CreateBuildingGrid();
             }
-            _buildingSelect.Draw(this, "Toggle buildings...", CanvasHeight);
+            _buildingSelect!.Draw(this, "Toggle buildings...", CanvasHeight);
         }
 
         private void OnBuildingToggled(int index)
         {
-            if (index < 0 || index >= _buildings.Length) return;
+            if (index < 0 || index >= _buildings!.Length) return;
+            if (_selectedCity == null) return;
 
             IBuilding building = _buildings[index];
             if (_selectedCity.HasBuilding(building))
@@ -153,7 +154,7 @@ namespace CivOne.Screens.Debug
             Refresh();
         }
 
-        private void Cancel(object sender, EventArgs args)
+        private void Cancel(object? sender, EventArgs args)
         {
             if (sender is Input input)
                 input.Close();
@@ -167,9 +168,9 @@ namespace CivOne.Screens.Debug
             if (_selectedPlayer == null)
             {
                 DrawPlayerMenuDialog();
-                if (!_menus.Contains(_playerSelect.Menu))
+                if (!Menus.Contains(_playerSelectDelegate!.Menu))
                 {
-                    AddMenu(_playerSelect.Menu);
+                    AddMenu(_playerSelectDelegate.Menu);
                 }
                 return;
             }
@@ -204,10 +205,10 @@ namespace CivOne.Screens.Debug
 
             if (_selectedPlayer == null)
             {
-                if (!_menus.Contains(_playerSelect.Menu))
+                if (!Menus.Contains(_playerSelectDelegate!.Menu))
                 {
                     DrawPlayerMenuDialog();
-                    AddMenu(_playerSelect.Menu);
+                    AddMenu(_playerSelectDelegate!.Menu);
                 }
                 return false;
             }
@@ -281,7 +282,7 @@ namespace CivOne.Screens.Debug
                 return;
             }
 
-            _playerSelect = CreatePlayerSelectDelegate();
+            _playerSelectDelegate = CreatePlayerSelectDelegate();
             DrawPlayerMenuDialog();
         }
 

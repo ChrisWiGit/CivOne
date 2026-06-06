@@ -97,8 +97,8 @@ namespace CivOne.Wonders
 		
 		public Wonder Type { get; set; }
 
-		public IAdvance? RequiredTech { get; protected set; } = null;
-		public IAdvance? ObsoleteTech { get; protected set; } = null;
+		public IAdvance? RequiredTech { get; protected set; }
+		public IAdvance? ObsoleteTech { get; protected set; }
 		public short BuyPrice { get; private set; } = (short)(80 * price);
 		public byte ProductionId => (byte)Math.Abs((int)Type - 232);
 		public byte Price { get; protected set; } = price;

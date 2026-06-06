@@ -13,19 +13,11 @@ using CivOne.Enums;
 
 namespace CivOne.Events
 {
-	public delegate void ResizeEventAction(object sender, ResizeEventArgs args);
-
-	public class ResizeEventArgs : EventArgs
+	public class ResizeEventArgs(int width, int height) : EventArgs
 	{
-		public int Width { get; private set; }
-		public int Height { get; private set; }
-		
+		public int Width { get; private set; } = width;
+		public int Height { get; private set; } = height;
+
 		public Size Size => new Size(Width, Height);
-		
-		public ResizeEventArgs(int width, int height)
-		{
-			Width = width;
-			Height = height;
-		}
 	}
 }

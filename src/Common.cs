@@ -179,7 +179,7 @@ namespace CivOne
 		/// For new code, prefer IScreenCommandService.DestroyScreen obtained from ScreenServiceFactory.CreateCommandService().
 		/// This provides better testability and loose coupling.
 		/// </remarks>
-		internal static void DestroyScreen(IScreen screen)
+		internal static void DestroyScreen(IScreen? screen)
 		{
 			screen?.Dispose();
 
@@ -256,7 +256,7 @@ namespace CivOne
 			else if (turn < 300) return ((turn - 250) * 10) + 1000;
 			else if (turn < 350) return ((turn - 300) * 5) + 1500;
 			else if (turn < 400) return ((turn - 350) * 2) + 1750;
-			return (turn - 400) + 1850;
+			return turn - 400 + 1850;
 		}
 		
 		public static string YearString(ushort turn, bool zeroAd = false)
@@ -406,43 +406,45 @@ namespace CivOne
 					{
 						if (i >= 16 && i < 32)
 						{
-							int ii = (i % 16);
+							int ii = i % 16;
 							_palette256[i] = new Colour(254 - (ii * 16), 253 - (ii * 16), 252 - (ii * 16));
 							continue;
 						}
 						if (i >= 32 && i < 40)
 						{
 							// Greens
-							int ii = (i % 8);
+							int ii = i % 8;
 							_palette256[i] = new Colour(0, 197 - (ii * 11), 80 - (ii * 7));
 							continue;
 						}
 						if (i >= 40 && i < 42)
 						{
 							// Browns
-							int ii = (i % 2);
+							int ii = i % 2;
 							_palette256[i] = new Colour(128 + (ii * 16), 64 + (ii * 8), 0);
 							continue;
 						}
 						if (i >= 42 && i < 48)
 						{
 							// Yellows
-							int ii = (i + 2 % 6);
+							int ii = i + 2 % 6;
 							_palette256[i] = new Colour(254 - (ii * 6), 245 - (ii * 6), 0);
 							continue;
 						}
 						if (i >= 48 && i < 64)
 						{
-							int r = Convert.ToInt32((float)_palette16[i % 16].R * 0.7F);
-							int g = Convert.ToInt32((float)_palette16[i % 16].G * 0.7F);
-							int b = Convert.ToInt32((float)_palette16[i % 16].B * 0.7F);
+							_palette16 ??= GetPalette16;
+
+							int r = Convert.ToInt32(_palette16[i % 16].R * 0.7F);
+							int g = Convert.ToInt32(_palette16[i % 16].G * 0.7F);
+							int b = Convert.ToInt32(_palette16[i % 16].B * 0.7F);
 							_palette256[i] = new Colour(r, g, b);
 							continue;
 						}
 						if (i >= 64 && i < 80)
 						{
 							// Blues
-							int ii = (i % 8);
+							int ii = i % 8;
 							_palette256[i] = new Colour(0, 67 - (ii * 5), 211 - (ii * 9));
 							continue;
 						}

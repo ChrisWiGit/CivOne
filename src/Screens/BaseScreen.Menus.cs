@@ -14,24 +14,26 @@ namespace CivOne.Screens
 {
 	public abstract partial class BaseScreen
 	{
-		protected readonly List<IMenu> _menus = new List<IMenu>();
+		private readonly List<IMenu> _menus = [];
 
-		protected bool HasMenu => _menus.Any();
+		protected List<IMenu> Menus => _menus;
+
+		protected bool HasMenu => Menus.Count != 0;
 		
 		protected void AddMenu(IMenu menu)
 		{
-			_menus.Add(menu);
+			Menus.Add(menu);
 			Common.AddScreen(menu);
 		}
 
-		protected void CloseMenus(string menuId = null)
+		protected void CloseMenus(string? menuId = null)
 		{
-			foreach (IMenu menu in _menus)
+			foreach (IMenu menu in Menus)
 			{
 				if (menuId != null && menu.Id != menuId) continue;
 				menu.Close();
 			}
-			_menus.RemoveAll(x => menuId == null || x.Id == menuId);
+			Menus.RemoveAll(x => menuId == null || x.Id == menuId);
 		}
 	}
 }

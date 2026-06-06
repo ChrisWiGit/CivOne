@@ -16,38 +16,39 @@ using CivOne.IO;
 
 namespace CivOne.Screens
 {
+	#pragma warning disable CA1822 // Mark members as static
 	public abstract partial class BaseScreen : BaseInstance, IScreen
 	{
 		private readonly MouseCursor _cursor;
 
-		protected bool _doRefresh = true;
+		private bool _doRefresh = true;
 		
-		protected int CanvasWidth => RuntimeHandler.Instance.CanvasWidth;
-		protected int CanvasHeight => RuntimeHandler.Instance.CanvasHeight;
+		protected int CanvasWidth => RuntimeHandler.Instance!.CanvasWidth;
+		protected int CanvasHeight => RuntimeHandler.Instance!.CanvasHeight;
 		protected static Size WindowSize => new(RuntimeHandler.WindowWidth, RuntimeHandler.WindowHeight);
 		public virtual bool UseFullWindowCanvas => false;
 		private bool CanExpand => Common.HasAttribute<ScreenResizeable>(this);
-		private bool SizeChanged => (this.Width() != CanvasWidth || this.Height() != CanvasHeight);
+		private bool SizeChanged => this.Width() != CanvasWidth || this.Height() != CanvasHeight;
 
 		// Last window size observed by Update; used to detect host-window resizes
 		// even when the canvas size stays fixed (e.g. AspectRatio != Expand).
 		private Size _lastWindowSize = WindowSize;
 		private bool WindowSizeChanged => _lastWindowSize != WindowSize;
 
-		protected event ResizeEventAction OnResize;
+		protected event EventHandler<ResizeEventArgs>? OnResize;
 
 		protected void MouseArgsOffset(ref ScreenEventArgs args, int offsetX, int offsetY)
 		{
 			args = new ScreenEventArgs(args.X - offsetX, args.Y - offsetY, args.Buttons, args.Modifier, args.WheelDelta);
 		}
 
-		public event EventHandler Closed;
+		public event EventHandler? Closed;
 
 		protected void HandleClose()
 		{
 			if (Closed == null)
 				return;
-			Closed(this, null);
+			Closed(this, EventArgs.Empty);
 		}
 
 		protected abstract bool HasUpdate(uint gameTick);

@@ -19,18 +19,18 @@ namespace CivOne.Screens
 	{
 		private readonly BorderDrawDelegate _borderDrawDelegate = new();
 
-		public TextSettings DefaultTextSettings { get; set; }
+		public TextSettings? DefaultTextSettings { get; set; }
 
 		protected int Width => Bitmap.Width;
 		protected int Height => Bitmap.Height;
 		protected int BorderTileSize => _borderDrawDelegate.BorderTileSize;
 
-		private Bytemap _bitmap;
+		private Bytemap? _bitmap;
 		public Bytemap Bitmap
 		{
 			get
 			{
-				return _bitmap;
+				return _bitmap ?? throw new InvalidOperationException("Bitmap is not initialized.");
 			}
 			protected set
 			{
@@ -38,7 +38,7 @@ namespace CivOne.Screens
 				_bitmap = value;
 			}
 		}
-		private Palette _palette, _originalColours;
+		private Palette? _palette, _originalColours;
 		/// <summary>
 		/// Gets or sets the active screen palette.
 		///
@@ -54,17 +54,16 @@ namespace CivOne.Screens
 		{
 			get
 			{
-				return _palette;
+				return _palette ?? throw new InvalidOperationException("Palette is not initialized.");
 			}
 			set
 			{
-				_palette = value.Copy();
-				if (_originalColours == null)
-					_originalColours = value.Copy();
+				_palette = value?.Copy();
+				_originalColours ??= value?.Copy();
 			}
 		}
-		public Palette OriginalColours => _originalColours;
-		public void SetOriginalColours() => _originalColours.Merge(_palette);
+		public Palette OriginalColours => _originalColours ?? throw new InvalidOperationException("OriginalColours is not initialized.");
+		public void SetOriginalColours() => _originalColours?.Merge(_palette ?? throw new InvalidOperationException("Palette is not initialized."));
 
 		protected void DrawPanel(int x, int y, int width, int height, bool border = true)
 		{
@@ -131,9 +130,9 @@ namespace CivOne.Screens
 
 		public virtual void Dispose()
 		{
-			Bitmap?.Dispose();
-			Palette?.Dispose();
-			OriginalColours?.Dispose();
+			_bitmap?.Dispose();
+			_palette?.Dispose();
+			_originalColours?.Dispose();
 
 			GC.SuppressFinalize(this);
 		}

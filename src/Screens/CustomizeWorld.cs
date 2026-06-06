@@ -148,7 +148,7 @@ namespace CivOne.Screens
 
 		private bool HasMenuById(string menuId)
 		{
-			return _menus.Any(x => x.Id == menuId);
+			return Menus.Any(x => x.Id == menuId);
 		}
 
 		private void SetMapSize(object sender, MenuItemEventArgs<int> args)
@@ -406,7 +406,7 @@ namespace CivOne.Screens
 				else
 				{
 					_closing = true;
-					foreach (IScreen menu in _menus)
+					foreach (IScreen menu in Menus)
 					{
 						this.AddLayer(menu);
 					}
