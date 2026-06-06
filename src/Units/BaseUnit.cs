@@ -925,12 +925,20 @@ namespace CivOne.Units
 			{
 				yy += 8;
 				string requiredTech = "";
-				if (RequiredTech != null) requiredTech = RequiredTech.TranslatedName;
-				output.DrawText(string.Format("Requires {0}", requiredTech), 6, 9, 100, yy); yy += 8;
-				output.DrawText(string.Format("Cost: {0}0 resources.", Price), 6, 9, 100, yy); yy += 8;
-				output.DrawText(string.Format("Attack Strength: {0}", Attack), 6, 12, 100, yy); yy += 8;
-				output.DrawText(string.Format("Defense Strength: {0}", Defense), 6, 12, 100, yy); yy += 8;
-				output.DrawText(string.Format("Movement Rate: {0}", Move), 6, 5, 100, yy);
+				if (RequiredTech != null)
+				{
+					requiredTech = RequiredTech.TranslatedName;
+				}
+
+				output.DrawText(TranslateFormatted("Requires {0}", requiredTech), 6, 9, 100, yy); 
+				yy += 8;
+				output.DrawText(TranslateFormatted("Cost: {0}0 resources.", Price), 6, 9, 100, yy); 
+				yy += 8;
+				output.DrawText(TranslateFormatted("Attack Strength: {0}", Attack), 6, 12, 100, yy); 
+				yy += 8;
+				output.DrawText(TranslateFormatted("Defense Strength: {0}", Defense), 6, 12, 100, yy); 
+				yy += 8;
+				output.DrawText(TranslateFormatted("Movement Rate: {0}", Move), 6, 5, 100, yy);
 			}
 
 			return output;
