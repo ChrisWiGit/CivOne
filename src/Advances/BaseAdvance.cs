@@ -96,13 +96,13 @@ namespace CivOne.Advances
 		public byte PageCount => 2;
 		public Picture DrawPage(byte pageNumber)
 		{
-			Picture output = new Picture(320, 200);
+			Picture output = new(320, 200);
 			
 			int yy;
 			switch (pageNumber)
 			{
 				case 1:
-					string [] text = Resources.GetCivilopediaText("BLURB0/" + Name.ToUpperInvariant());
+					string [] text = Resources.GetCivilopediaText($"BLURB0/{Name.ToUpperInvariant()}");
 					
 					yy = 76;
 					foreach (string line in text)
@@ -119,7 +119,7 @@ namespace CivOne.Advances
 					{
 						if (RequiredTechs.Length > 0)
 						{
-							StringBuilder requiredTech = new StringBuilder();
+							StringBuilder requiredTech = new();
 							foreach (IAdvance tech in RequiredTechs)
 							{
 								if (requiredTech.Length > 0)
@@ -138,18 +138,18 @@ namespace CivOne.Advances
 							output.DrawText(allows, 6, 9, 40, yy); yy += 8;
 						}
 						yy += 4;
-						foreach (IUnit unit in Reflect.GetUnits().Where(u => u.RequiredTech != null && u.RequiredTech.Id == Id))
+						foreach (IUnit unit in Reflect.GetUnits().Where(u => u.RequiredTech?.Id == Id))
 						{
 							output.AddLayer(unit.ToBitmap(Game.PlayerNumber(Human)), 40, yy - 5);
 							output.DrawText(TranslateFormatted("{0} unit", unit.TranslatedName), 6, 12, 60, yy); yy += 12;
 						}
-						foreach (IBuilding building in Reflect.GetBuildings().Where(b => b.RequiredTech != null && b.RequiredTech.Id == Id))
+						foreach (IBuilding building in Reflect.GetBuildings().Where(b => b.RequiredTech?.Id == Id))
 						{
 							if (building.SmallIcon != null)
 								output.AddLayer(building.SmallIcon, 39, yy - 2);
 							output.DrawText(TranslateFormatted("{0} improvement", building.TranslatedName), 6, 2, 60, yy); yy += 12;
 						}
-						foreach (IWonder wonder in Reflect.GetWonders().Where(w => w.RequiredTech != null && w.RequiredTech.Id == Id))
+						foreach (IWonder wonder in Reflect.GetWonders().Where(w => w.RequiredTech?.Id == Id))
 						{
 							if (wonder.SmallIcon != null)
 								output.AddLayer(wonder.SmallIcon, 39, yy - 2);
@@ -178,8 +178,8 @@ namespace CivOne.Advances
 			return false;
 		}
 
-		public bool Is<T>() where T : IAdvance => (this is T);
+		public bool Is<T>() where T : IAdvance => this is T;
 
-		public bool Not<T>() where T : IAdvance => !(this is T);
+		public bool Not<T>() where T : IAdvance => this is not T;
 	}
 }

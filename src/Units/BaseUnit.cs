@@ -1214,7 +1214,7 @@ namespace CivOne.Units
 		{
 			if (!_modifications.TryGetValue(type, out List<UnitModification>? value)) return null;
 
-			return value.LastOrDefault(x => x.Sprite != null && x.Sprite.GifToBitmap() != null)?.Sprite?.GifToBitmap();
+			return value.LastOrDefault(x => x.Sprite?.GifToBitmap() != null)?.Sprite?.GifToBitmap();
 		}
 
 		private static Dictionary<UnitType, List<UnitModification>> _modifications = [];
