@@ -36,7 +36,7 @@ namespace CivOne
 			protected event Action<string>? OnLog;
 
 			protected Texture CreateTexture(IBitmap? bitmap) => new(_renderer, bitmap?.Palette, bitmap?.Bitmap);
-			protected Texture CreateTexture(Palette palette, Bytemap bytemap) => new(_renderer, palette, bytemap);
+			protected Texture CreateTexture(Palette? palette, Bytemap? bytemap) => new(_renderer, palette, bytemap);
 
 			/// <summary>
 			/// Creates an empty streaming texture for the render-loop layer cache.

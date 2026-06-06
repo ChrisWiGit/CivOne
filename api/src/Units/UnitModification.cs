@@ -12,9 +12,13 @@ using CivOne.Enums;
 
 namespace CivOne.Units
 {
-	public abstract class UnitModification : IModification
+	/// <summary>
+	/// Modify an existing unit.
+	/// </summary>
+	/// <param name="unitType">The unit to modify.</param>
+	public abstract class UnitModification(UnitType unitType) : IModification
 	{
-		public UnitType UnitType { get; }
+		public UnitType UnitType { get; } = unitType;
 
 		public AttributeValue<string> Name => AttributeValue<string>.Set(this.GetAttribute<Name>());
 		public AttributeValue<byte> Price => AttributeValue<byte>.Set(this.GetAttribute<Price>());
@@ -25,17 +29,8 @@ namespace CivOne.Units
 		public AttributeValue<Advance> Requires => AttributeValue<Advance>.Set(this.GetAttribute<Requires>());
 		public AttributeValue<Advance> Obsolete => AttributeValue<Advance>.Set(this.GetAttribute<Obsolete>());
 
-		public byte[] Sprite { get; private set; }
+		public byte[]? Sprite { get; private set; }
 
 		public void SetSprite(string assemblyName) => Sprite = Resources.GetInternalResourceBytes(Assembly.GetCallingAssembly(), assemblyName);
-
-		/// <summary>
-		/// Modify an existing unit.
-		/// </summary>
-		/// <param name="unitType">The unit to modify.</param>
-		public UnitModification(UnitType unitType)
-		{
-			UnitType = unitType;
-		}
 	}
 }

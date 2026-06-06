@@ -14,7 +14,7 @@ namespace CivOne
 {
 	public class RuntimeSettings
 	{
-		private readonly Dictionary<string, object> _customSettings = new Dictionary<string, object>();
+		private readonly Dictionary<string, object?> _customSettings = [];
 
 		private bool _free;
 
@@ -56,33 +56,33 @@ namespace CivOne
 		{
 			get
 			{
-				if (_customSettings.ContainsKey(customSetting.ToLower()))
-					return _customSettings[customSetting.ToLower()];
+				if (_customSettings.ContainsKey(customSetting.ToLowerInvariant()))
+					return _customSettings[customSetting.ToLowerInvariant()];
 				return null;
 			}
 			set
 			{
-				if (_customSettings.ContainsKey(customSetting.ToLower()))
+				if (_customSettings.ContainsKey(customSetting.ToLowerInvariant()))
 				{
-					_customSettings[customSetting.ToLower()] = value;
+					_customSettings[customSetting.ToLowerInvariant()] = value;
 					return;
 				}
-				_customSettings.Add(customSetting.ToLower(), value);
+				_customSettings.Add(customSetting.ToLowerInvariant(), value);
 			}
 		}
 
-		public T Get<T>(string customSetting)
+		public T? Get<T>(string customSetting)
 		{
             if (this[customSetting] == null)
-                return default(T);
+                return default;
 
 			try
 			{
-				return (T)this[customSetting];
+				return (T?)this[customSetting];
 			}
 			catch
 			{
-				return default(T);
+				return default;
 			}
 		}
 

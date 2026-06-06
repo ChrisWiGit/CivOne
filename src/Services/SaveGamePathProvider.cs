@@ -17,8 +17,8 @@ namespace CivOne.Services
 
         public SaveGamePathProvider(
                 IRuntime runtime, ISettings settings,
-				Action<string> createDirectoryAction = null,
-				Func<string, bool> directoryExistsFunc = null
+				Action<string>? createDirectoryAction = null,
+				Func<string, bool>? directoryExistsFunc = null
 				)
         {
             _runtime = runtime;
@@ -45,7 +45,7 @@ namespace CivOne.Services
 
         public string EnsureInitialSaveFilePath()
         {
-            string lastUsed = EnsureLastUsedSaveGamePath();
+            string? lastUsed = EnsureLastUsedSaveGamePath();
             if (!string.IsNullOrWhiteSpace(lastUsed))
             {
                 return Path.Combine(EnsurePathExists(lastUsed), CosDefaultFileName);
@@ -54,9 +54,9 @@ namespace CivOne.Services
             return Path.Combine(EnsurePathExists(EnsureCurrentSaveDirectory()), CosDefaultFileName);
         }
 
-        public string EnsureLastUsedSaveGamePath()
+        public string? EnsureLastUsedSaveGamePath()
         {
-            string path = _runtime.GetSetting(LastUsedSaveGameDialogPathKey);
+            string? path = _runtime.GetSetting(LastUsedSaveGameDialogPathKey);
             if (string.IsNullOrWhiteSpace(path) || !_directoryExistsFunc(path))
                 return null;
 
@@ -65,7 +65,7 @@ namespace CivOne.Services
 
         public string EnsureAutoSaveDirectory()
         {
-            string lastUsed = EnsureLastUsedSaveGamePath();
+            string? lastUsed = EnsureLastUsedSaveGamePath();
             if (!string.IsNullOrWhiteSpace(lastUsed))
             {
                 return EnsurePathExists(lastUsed);
@@ -74,11 +74,11 @@ namespace CivOne.Services
             return EnsurePathExists(_settings.SavesDirectory);
         }
 
-        public void SetLastUsedSaveGamePath(string filePath)
+        public void SetLastUsedSaveGamePath(string path)
         {
-            if (string.IsNullOrWhiteSpace(filePath)) return;
+            if (string.IsNullOrWhiteSpace(path)) return;
 
-            string dir = Path.GetDirectoryName(filePath);
+            string? dir = Path.GetDirectoryName(path);
             if (string.IsNullOrWhiteSpace(dir)) return;
 
             _runtime.SetSetting(LastUsedSaveGameDialogPathKey, dir);

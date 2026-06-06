@@ -65,10 +65,10 @@ Try 'civone-sdl --help' for more information.
 		{
 			RegisterNativeResolver();
 
-			RuntimeSettings settings = new RuntimeSettings();
+			RuntimeSettings settings = new();
 			settings["software-render"] = false;
 			settings["no-sound"] = false;
-			settings["profile-name"] = "default";
+			settings[Runtime.DEFAULT_PROFILE_NAME_KEY] = Runtime.DEFAULT_PROFILE_NAME_VALUE;
 			settings["mcp-artifacts"] = null;
 			settings["mcp-saves"] = null;
 			settings.ConsoleLogging = true;
@@ -210,7 +210,7 @@ Try 'civone-sdl --help' for more information.
 
 						// use regex to parse the drive letter and slot number
 						string slot = args[++i];
-						Regex regex = new Regex(@"^([a-z])([1-9]|10)$", RegexOptions.IgnoreCase);
+						Regex regex = new(@"^([a-z])([1-9]|10)$", RegexOptions.IgnoreCase);
 						Match match = regex.Match(slot);
 						if (!match.Success)
 						{

@@ -49,7 +49,7 @@ namespace CivOne
 		public RuntimeSettings Settings { get; private set; }
 		public MouseCursor? CurrentCursor { internal get; set; }
 		private Bytemap[] _layers = [];
-		public Bytemap[] Layers
+		public Bytemap[]? Layers
 		{
 			get => _layers;
 			set
@@ -59,7 +59,7 @@ namespace CivOne
 				_layers = value is null ? [] : [..value];
 			}
 		}
-		private Palette _palette;
+		private Palette? _palette;
 
 		/// <summary>
 		/// When setting a new palette, dispose the previous one if it implements IDisposable so unmanaged buffers are released immediately instead of waiting for GC/finalizer.
@@ -73,7 +73,7 @@ namespace CivOne
 		/// </code>
 		/// </example>
 		/// </summary>
-		public Palette Palette
+		public Palette? Palette
 		{
 			get => _palette;
 			set
@@ -183,13 +183,16 @@ namespace CivOne
 		bool IRuntime.TryCopyToClipboard(string text, out string errorMessage) => Native.TryCopyToClipboard(text, out errorMessage);
 		void IRuntime.Quit() => SignalQuit = true;
 
+		public static readonly string DEFAULT_PROFILE_NAME_VALUE = "default";
+		public static readonly string DEFAULT_PROFILE_NAME_KEY = "profile-name";
+
 		public Runtime(RuntimeSettings runtimeSettings)
 		{	
 			_palette = Palette.Empty;
 
 			Settings = runtimeSettings;
 			Directory.CreateDirectory(((IRuntime)this).StorageDirectory);
-			Profile = Profile.Get(this, runtimeSettings.Get<string>("profile-name"));
+			Profile = Profile.Get(this, runtimeSettings.Get<string>(DEFAULT_PROFILE_NAME_KEY) ?? DEFAULT_PROFILE_NAME_VALUE);
 			RuntimeHandler.Register(this);
 		}
 

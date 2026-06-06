@@ -10,7 +10,7 @@ namespace CivOne.Services
 
 	internal static class CivilizationRankingTriggerServiceFactory
 	{
-		private static ICivilizationRankingTriggerService _instance;
+		private static ICivilizationRankingTriggerService? _instance;
 
 		public static ICivilizationRankingTriggerService GetInstance()
 		{
@@ -40,7 +40,7 @@ namespace CivOne.Services
 		private readonly IRandomService _randomService;
 		private int? _nextRankingYear;
 
-		public CivilizationRankingTriggerService(IRandomService randomService = null)
+		public CivilizationRankingTriggerService(IRandomService? randomService = null)
 		{
 			_randomService = randomService ?? RandomServiceFactory.Create();
 		}

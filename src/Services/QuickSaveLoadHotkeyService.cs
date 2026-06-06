@@ -110,7 +110,7 @@ namespace CivOne.Services
 			return Path.Combine(GetFastSavesDirectory(), $"fastsave_f{slot}.cos");
 		}
 
-		private IReadOnlyList<int> GetExistingSlots()
+		private List<int> GetExistingSlots()
 		{
 			List<int> slots = [];
 			for (int slot = 1; slot <= 10; slot++)
@@ -131,8 +131,8 @@ namespace CivOne.Services
 
 		private void ShowQuickLoadMenu(IReadOnlyList<int> slots, Action<int> onSelect)
 		{
-			if (slots == null) throw new ArgumentNullException(nameof(slots));
-			if (onSelect == null) throw new ArgumentNullException(nameof(onSelect));
+			ArgumentNullException.ThrowIfNull(slots);
+			ArgumentNullException.ThrowIfNull(onSelect);
 
 			Common.AddScreen(new QuickLoadSlotsDialog(slots, onSelect));
 		}
