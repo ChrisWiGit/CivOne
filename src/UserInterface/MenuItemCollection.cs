@@ -16,25 +16,25 @@ namespace CivOne.UserInterface
 {
 	public class MenuItemCollection<T> : IEnumerable<MenuItem<T>>
 	{
-		private readonly List<MenuItem<T>> _menuItems = new List<MenuItem<T>>();
+		private readonly List<MenuItem<T>> _menuItems = [];
 
-		private void HandlePluginActions(object sender, EventArgs args)
+		private void HandlePluginActions(object? _, EventArgs args)
 		{
 			if (Id == null) return;
 			foreach (MenuModification mod in Reflect.GetModifications<MenuModification>().Where(x => x.MenuId == Id))
 			foreach(MenuItem<T> item in _menuItems.Where(x => x != null))
 			{
-				(string Text, string Shortcut) change = mod.ChangeMenuItemText(item.Text, item.Shortcut);
-				item.Text = change.Text;
-				item.Shortcut = change.Shortcut;
+				(string? Text, string? Shortcut) = mod.ChangeMenuItemText(item.Text, item.Shortcut);
+				item.Text = Text;
+				item.Shortcut = Shortcut;
 			}
 		}
 
 		internal string Id { get; private set; }
 
-		public event EventHandler ItemsChanged;
+		public event EventHandler? ItemsChanged;
 
-		public int Count => _menuItems.Count();
+		public int Count => _menuItems.Count;
 
 		public void Add(MenuItem<T> menuItem)
 		{
@@ -42,7 +42,7 @@ namespace CivOne.UserInterface
 			ItemsChanged?.Invoke(this, EventArgs.Empty);
 		}
 
-		public MenuItem<T> Add(string text, T value = default(T))
+		public MenuItem<T> Add(string text, T? value = default)
 		{
 			MenuItem<T> menuItem = MenuItem<T>.Create(text, value);
 			_menuItems.Add(menuItem);
@@ -61,7 +61,7 @@ namespace CivOne.UserInterface
 		public MenuItem<T> InsertAt(int index, string text, T value)
 		{
 			if (index < 0) index = 0;
-			if (_menuItems.Count() >= index) index = _menuItems.Count();
+			if (_menuItems.Count <= index) index = _menuItems.Count;
 			
 			MenuItem<T> menuItem = MenuItem<T>.Create(text, value);
 			_menuItems.Insert(index, menuItem);
@@ -72,14 +72,16 @@ namespace CivOne.UserInterface
 		public void Remove(int index)
 		{
 			if (index < 0) return;
-			if (_menuItems.Count() >= index) return;
+			if (_menuItems.Count <= index) return;
 			_menuItems.RemoveAt(index);
 			ItemsChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		public void Remove(T value)
 		{
-			IEnumerable<MenuItem<T>> items = _menuItems.Where(x => x.Value.Equals(value));
+			IEnumerable<MenuItem<T>> items = _menuItems
+					.Where(x => x.Value != null)
+					.Where(x => x.Value!.Equals(value));
 			if (!items.Any()) return;
 			_menuItems.RemoveAll(x => items.Contains(x));
 			ItemsChanged?.Invoke(this, EventArgs.Empty);
@@ -99,14 +101,19 @@ namespace CivOne.UserInterface
 		{
 			get
 			{
-				if (index < 0 || index >= _menuItems.Count())
-					throw new IndexOutOfRangeException();
+				if (index < 0 || index >= _menuItems.Count)
+					throw new ArgumentOutOfRangeException(nameof(index), "Index must be within the bounds of the menu item collection.");
 				return _menuItems[index];
 			}
 		}
 
-		public MenuItemCollection(string id = null)
+		/// <summary>
+		/// Initializes a new instance of the MenuItemCollection class with the specified identifier.
+		/// </summary>
+		/// <param name="id">The identifier for the menu item collection. It must be a non-empty string.</param>
+		public MenuItemCollection(string id)
 		{
+			ArgumentException.ThrowIfNullOrEmpty(id, nameof(id));
 			Id = id;
 
 			ItemsChanged += HandlePluginActions;

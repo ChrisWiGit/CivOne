@@ -1156,7 +1156,7 @@ namespace CivOne.Units
 
 		protected MenuItem<int> MenuDisbandUnit() => MenuItem<int>.Create(Translate("Disband Unit")).SetShortcut(Translate("Shift+D")).OnSelect((s, a) => Game.DisbandUnit(this));
 
-		public abstract IEnumerable<MenuItem<int>> MenuItems { get; }
+		public abstract IEnumerable<MenuItem<int>?> MenuItems { get; }
 
 		protected abstract bool ValidMoveTarget(ITile tile);
 

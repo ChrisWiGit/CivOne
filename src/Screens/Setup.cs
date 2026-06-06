@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
@@ -151,16 +152,16 @@ namespace CivOne.Screens
 				return;
 			}
 
-			if (!Runtime.TryOpenUrl(storageDirectory, out string errorMessage))
+			if (!Runtime.TryOpenUrl(storageDirectory, out string? errorMessage))
 			{
-				Log("Could not open profile folder '{0}': {1}", storageDirectory, errorMessage);
+				Log("Could not open profile folder '{0}': {1}", storageDirectory, errorMessage ?? "unknown error");
 			}
 		}
 
 		private void CreateMenu(string title, int activeItem, MenuItemEventAction<int> always, params MenuItem<int>[] items) =>
 			AddMenu(new Menu("Setup", Palette)
 			{
-				Title = $"{title.ToUpper()}:",
+				Title = $"{title.ToUpper(CultureInfo.InvariantCulture)}:",
 				TitleColour = 15,
 				ActiveColour = 11,
 				TextColour = 5,
@@ -709,18 +710,18 @@ namespace CivOne.Screens
 		);
 
 		private void PluginsMenu(int activeItem = 0) => CreateMenu(Translate("Plugins"), activeItem,
-			new MenuItem<int>[0]
+			Array.Empty<MenuItem<int>>()
 				.Concat(
 					Reflect.Plugins().Any() ?
 						Reflect.Plugins().Select(x => MenuItem.Create(x.ToString()).SetEnabled(!x.Deleted).OnSelect(GotoMenu(PluginMenu(x.Id, x)))) :
-						new[] { MenuItem.Create(Translate("No plugins installed")).Disable() }
+						[MenuItem.Create(Translate("No plugins installed")).Disable()]
 				)
-				.Concat(new[]
-				{
-					MenuItem.Create(null).Disable(),
+				.Concat(
+				[
+					MenuItem.CreateSeparator(),
 					MenuItem.Create(Translate("Add plugins")).OnSelect(BrowseForPlugins),
 					MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(MainMenu, 2))
-				}).ToArray()
+				]).ToArray()
 		);
 
 		private Action PluginMenu(int item, Plugin plugin) => () => CreateMenu(plugin.Name, 0,
