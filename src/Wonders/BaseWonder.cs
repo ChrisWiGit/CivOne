@@ -87,9 +87,11 @@ namespace CivOne.Wonders
 				yy += 8;
 				string requiredTech = "";
 				if (RequiredTech != null) requiredTech = RequiredTech.TranslatedName;
-				output.DrawText(string.Format("Requires {0}", requiredTech), 6, 9, 12, yy); yy += 8;
-				output.DrawText(string.Format("Cost: {0}0 shields.", Price), 6, 9, 12, yy); yy += 8;
-				output.DrawText(string.Format("Maintenance: ${0}", 0), 6, 12, 12, yy);
+				output.DrawText(TranslateFormatted("Requires {0}", requiredTech), 6, 9, 12, yy); 
+				yy += 8;
+				output.DrawText(TranslateFormatted("Cost: {0}0 shields.", Price), 6, 9, 12, yy); 
+				yy += 8;
+				output.DrawText(TranslateFormatted("Maintenance: ${0}", 0), 6, 12, 12, yy);
 			}
 			
 			return output;
