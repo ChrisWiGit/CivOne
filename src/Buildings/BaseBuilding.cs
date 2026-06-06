@@ -13,10 +13,12 @@ using CivOne.Graphics;
 
 namespace CivOne.Buildings
 {
+	#pragma warning disable CA1822 // Mark members as static
 	internal abstract class BaseBuilding : BaseInstance, IBuilding
 	{
-		private static IBitmap[,] _iconsCache = new IBitmap[6, 4], _iconsCacheGrass = new IBitmap[6, 4];
-		
+		private static readonly IBitmap[,] _iconsCache = new IBitmap[6, 4];
+		private static readonly IBitmap[,] _iconsCacheGrass = new IBitmap[6, 4];
+
 		private IBitmap GrassIcon => Resources["CITYPIX2"][250, 0, 50, 50].ColourReplace(1, 0);
 		
 		public virtual IBitmap Icon { get; protected set; }
@@ -61,7 +63,7 @@ namespace CivOne.Buildings
 		public byte PageCount => 2;
 		public Picture DrawPage(byte pageNumber)
 		{
-			string[] text = new string[0];
+			string[] text = [];
 			switch (pageNumber)
 			{
 				case 1:
@@ -75,7 +77,7 @@ namespace CivOne.Buildings
 					break;
 			}
 			
-			Picture output = new Picture(320, 200);
+			Picture output = new(320, 200);
 			
 			int yy = 76;
 			foreach (string line in text)

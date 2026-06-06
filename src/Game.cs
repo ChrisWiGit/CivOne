@@ -245,7 +245,11 @@ namespace CivOne
 
 		private void PlayerDestroyed(object? sender, EventArgs args)
 		{
-			if (sender is not Player player) throw new ArgumentException("Sender is not a Player.", nameof(sender));
+			if (sender is not Player player) 
+			{
+				Log($"PlayerDestroyed event triggered with invalid sender. Player: {sender ?? "null"}");
+				return;
+			}
 
 			ICivilization destroyed = player.Civilization;
 			ICivilization destroyedBy = Game.CurrentPlayer.Civilization;
@@ -521,6 +525,11 @@ namespace CivOne
 
 		private void SaveCosAutoSave()
 		{
+			if (RuntimeHandler.Runtime == null)
+			{
+				Log("Runtime is null, cannot perform autosave.");
+				return;
+			}
 			SaveGamePathProvider pathProvider = new(RuntimeHandler.Runtime, Settings.Instance);
 			string saveDirectory = pathProvider.EnsureAutoSaveDirectory();
 			string autoSaveFile = Path.Combine(saveDirectory, "autosave.cos");
