@@ -15,9 +15,9 @@ using CivOne.IO;
 
 namespace CivOne.Screens.CityManagerPanels
 {
-	internal class CityResources : BaseScreen
+	internal class CityResources(City city) : BaseScreen(123, 43)
 	{
-		private readonly City _city;
+		private readonly City _city = city;
 		
 		private bool _update = true;
 
@@ -79,12 +79,22 @@ namespace CivOne.Screens.CityManagerPanels
 
 		private void DrawTrade()
 		{
+		 /*
+		 Klar, hier ein kurzer manueller Test:
+
+Spiel laden und eine Stadt öffnen, die Handel plus Korruption hat.
+City-Manager öffnen und Bereich City Resources ansehen (Zeile mit Trade/Corruption-Symbolen).
+Fensterbreite kleiner und größer ziehen.
+Prüfen: Trade plus Corruption bleiben vollständig innerhalb der Panel-Breite, keine abgeschnittenen oder überlaufenden Symbole.
+Gegencheck: Stadt mit 0 Korruption öffnen, Darstellung bleibt unverändert korrekt.
+Bestanden, wenn beide Fälle (mit/ohne Korruption) bei unterschiedlichen Breiten sauber dargestellt werden.
+		*/
 			int width = 8;
 			for (int i = 0; i < 7; i++)
 			{
-				int measureWidth = (_city.TradeTotal * width);
-				if ((_city.Corruption > 0)) measureWidth += (2 + (_city.Corruption * width));
-				if ((_city.TradeTotal * width) <= (Width - 7)) break;
+				int measureWidth = _city.TradeTotal * width;
+				if (_city.Corruption > 0) measureWidth += 2 + (_city.Corruption * width);
+				if (measureWidth <= (Width - 7)) break;
 				width--;
 			}
 			
@@ -131,7 +141,7 @@ namespace CivOne.Screens.CityManagerPanels
 			{
 				this.Tile(Pattern.PanelBlue)
 					.DrawRectangle(colour: 1)
-					.FillRectangle(1, 1, (Width - 2), 8, 1)
+					.FillRectangle(1, 1, Width - 2, 8, 1)
 					.DrawText(Translate("City Resources"), 1, 17, 6, 2, TextAlign.Left);
 
 				DrawFood();
@@ -153,11 +163,6 @@ namespace CivOne.Screens.CityManagerPanels
 		{
 			Bitmap = new Bytemap(width, 43);
 			_update = true;
-		}
-
-		public CityResources(City city) : base(123, 43)
-		{
-			_city = city;
 		}
 	}
 }
