@@ -9,7 +9,7 @@ namespace CivOne.UnitTests
 	{
 		private readonly string _storageDirectory;
 		private readonly string _translationDirectory;
-		private readonly TranslationFileRepositoryImpl _testee;
+		private readonly TranslationFileRepository _testee;
 		private bool _disposed;
 
 		public TranslationFileRepositoryImplTests()
@@ -17,7 +17,7 @@ namespace CivOne.UnitTests
 			_storageDirectory = Path.Combine(Path.GetTempPath(), "CivOneTests", Guid.NewGuid().ToString("N"));
 			_translationDirectory = Path.Combine(_storageDirectory, "translations");
 			Directory.CreateDirectory(_translationDirectory);
-			_testee = new TranslationFileRepositoryImpl();
+			_testee = new TranslationFileRepository();
 		}
 
 		[Fact]

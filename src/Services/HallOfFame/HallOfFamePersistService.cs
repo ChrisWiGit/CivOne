@@ -12,7 +12,7 @@ namespace CivOne.Services.HallOfFame
 		private const int MaxEntries = 5;
 		private readonly IHallOfFameFileRepository _repository = repository;
 
-		public IReadOnlyList<HallOfFameEntry> ViewEntries(string storageDirectory, Action<string> log = null)
+		public IReadOnlyList<HallOfFameEntry> ViewEntries(string storageDirectory, Action<string>? log = null)
 		{
 			if (_repository.TryLoad(storageDirectory, out IReadOnlyList<HallOfFameEntry> entries, out string error))
 			{
@@ -29,12 +29,9 @@ namespace CivOne.Services.HallOfFame
 			return [];
 		}
 
-		public IReadOnlyList<HallOfFameEntry> AddEntry(string storageDirectory, HallOfFameEntry entry, Action<string> log = null)
+		public IReadOnlyList<HallOfFameEntry> AddEntry(string storageDirectory, HallOfFameEntry? entry, Action<string>? log = null)
 		{
-			if (entry == null)
-			{
-				throw new ArgumentNullException(nameof(entry));
-			}
+			ArgumentNullException.ThrowIfNull(entry);
 
 			IReadOnlyList<HallOfFameEntry> loadedEntries = LoadForAdd(storageDirectory, log);
 			List<HallOfFameEntry> mergedEntries = [entry, .. loadedEntries];
@@ -48,7 +45,7 @@ namespace CivOne.Services.HallOfFame
 			return normalizedEntries;
 		}
 
-		private IReadOnlyList<HallOfFameEntry> LoadForAdd(string storageDirectory, Action<string> log)
+		private IReadOnlyList<HallOfFameEntry> LoadForAdd(string storageDirectory, Action<string>? log)
 		{
 			if (_repository.TryLoad(storageDirectory, out IReadOnlyList<HallOfFameEntry> entries, out string error))
 			{

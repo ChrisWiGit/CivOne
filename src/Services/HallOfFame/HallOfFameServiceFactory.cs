@@ -22,7 +22,7 @@ namespace CivOne.Services.HallOfFame
 			string storageDirectory,
 			IHallOfFamePersistService persistService,
 			IHallOfFameEntryComposerService entryComposerService,
-			Action<string> log = null)
+			Action<string>? log = null)
 		{
 			ArgumentNullException.ThrowIfNull(persistService);
 			ArgumentNullException.ThrowIfNull(entryComposerService);

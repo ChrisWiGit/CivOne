@@ -5,9 +5,9 @@ using CivOne.Persistence.Model;
 
 namespace CivOne.Services
 {
-	public sealed class YamlSaveGameServiceFactory(IAtomicFileReplacementService atomicFileReplacementService = null) : IYamlSaveGameServiceFactory
+	public sealed class YamlSaveGameServiceFactory(IAtomicFileReplacementService? atomicFileReplacementService = null) : IYamlSaveGameServiceFactory
 	{
-		private readonly IAtomicFileReplacementService _atomicFileReplacementService = atomicFileReplacementService;
+		private readonly IAtomicFileReplacementService? _atomicFileReplacementService = atomicFileReplacementService;
 
 		public IYamlSaveGameService Create(Game game)
 		{
@@ -15,16 +15,10 @@ namespace CivOne.Services
 		}
 	}
 
-	public class YamlSaveGameService : IYamlSaveGameService
+	public class YamlSaveGameService(Game game, IAtomicFileReplacementService? atomicFileReplacementService = null) : IYamlSaveGameService
 	{
-		private readonly Game _game;
-		private readonly IAtomicFileReplacementService _atomicFileReplacementService;
-
-		public YamlSaveGameService(Game game, IAtomicFileReplacementService atomicFileReplacementService = null)
-		{
-			_game = game ?? throw new ArgumentNullException(nameof(game));
-			_atomicFileReplacementService = atomicFileReplacementService ?? new AtomicFileReplacementService();
-		}
+		private readonly Game _game = game ?? throw new ArgumentNullException(nameof(game));
+		private readonly IAtomicFileReplacementService _atomicFileReplacementService = atomicFileReplacementService ?? new AtomicFileReplacementService();
 
 		public void SaveCos(string filePath)
 		{

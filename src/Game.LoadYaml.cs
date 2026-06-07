@@ -41,15 +41,15 @@ namespace CivOne
 			}
 		}
 
-		private static IValueSanitizer CreateValueSanitizer()
+		private static ValueSanitizer CreateValueSanitizer()
 		{
 			return new ValueSanitizer(new RuntimeLogger());
 		}
 
 		private Game(
 			IValueSanitizer valueSanitizer,
-			IPalaceUpgradeService palaceUpgradeService = null,
-			ICivilizationRankingTriggerService civilizationRankingTriggerService = null)
+			IPalaceUpgradeService? palaceUpgradeService = null,
+			ICivilizationRankingTriggerService? civilizationRankingTriggerService = null)
 		{
 			_valueSanitizer = valueSanitizer ?? throw new ArgumentNullException(nameof(valueSanitizer));
 			_palaceUpgradeService = palaceUpgradeService ?? PalaceUpgradeServiceFactory.GetInstance();
@@ -228,7 +228,7 @@ namespace CivOne
 
 				// Reset static player context only for the hydration window,
 				// then Game(state) will set Player.Game to the new game instance.
-				Player.Game = null;
+				Player.Game = null!;
 				var state = mapper.FromDto(dto);
 				_instance = new Game(state);
 
@@ -293,7 +293,7 @@ namespace CivOne
 				throw new InvalidOperationException("GameState is required in save file.");
 
 			Guid saveGuid = saveFile.Meta?.SaveGuid ?? Guid.NewGuid();
-			return new VersionedSaveFile(saveFile.GameState, saveFile.Meta, saveGuid);
+			return new VersionedSaveFile(saveFile.GameState, saveFile.Meta!, saveGuid);
 		}
 
 		private static uint ReadFormatVersion(string yaml)

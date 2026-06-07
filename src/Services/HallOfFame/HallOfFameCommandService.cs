@@ -14,13 +14,13 @@ namespace CivOne.Services.HallOfFame
 		IHallOfFamePersistService persistService,
 		IHallOfFameFileRepository fileRepository,
 		IHallOfFameEntryComposerService entryComposerService,
-		Action<string> log = null) : IHallOfFameCommandService
+		Action<string>? log = null) : IHallOfFameCommandService
 	{
 		private readonly string _storageDirectory = storageDirectory;
 		private readonly IHallOfFamePersistService _persistService = persistService;
 		private readonly IHallOfFameFileRepository _fileRepository = fileRepository;
 		private readonly IHallOfFameEntryComposerService _entryComposerService = entryComposerService;
-		private readonly Action<string> _log = log;
+		private readonly Action<string>? _log = log;
 
 		public IReadOnlyList<HallOfFameEntry> Clear()
 		{

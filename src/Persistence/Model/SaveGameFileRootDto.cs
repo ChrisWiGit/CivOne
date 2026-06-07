@@ -13,8 +13,8 @@ namespace CivOne.Persistence.Model
 
 		public uint FormatVersion { get; set; } = CurrentFormatVersion;
 
-		public SaveGameMetaDataDto Meta { get; set; }
+		public SaveGameMetaDataDto? Meta { get; set; }
 
-		public GameStateDto GameState { get; set; }
+		public GameStateDto? GameState { get; set; }
 	}
 }

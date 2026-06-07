@@ -92,7 +92,7 @@ namespace CivOne
 		public bool EnemyMoves { get; set; }
 		public bool Palace { get; set; }
 
-		public void SetAdvanceOrigin(IAdvance advance, Player player)
+		public void SetAdvanceOrigin(IAdvance advance, Player? player)
 		{
 			if (_advanceOrigin.ContainsKey(advance.Id))
 				return;

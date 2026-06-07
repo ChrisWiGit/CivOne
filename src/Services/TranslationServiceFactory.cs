@@ -24,7 +24,7 @@ namespace CivOne.Services
 	{
 		private static readonly Lock _sync = new();
 		private static readonly List<ITranslationLanguageObserver> _languageObservers = [];
-		private static ITranslationFileRepository _translationFileRepository = new TranslationFileRepositoryImpl();
+		private static ITranslationFileRepository _translationFileRepository = new TranslationFileRepository();
 		private static ITranslationService? _instance;
 		private static string? _activeLanguagePostfix;
 
@@ -65,7 +65,7 @@ namespace CivOne.Services
 		/// <summary>
 		/// Resets the factory to a clean state with identity translation and no active language.
 		/// Intended for use in tests to ensure a consistent starting point and avoid test pollution.
-		/// The repository is reset to a new <see cref="TranslationFileRepositoryImpl"/> instance.
+		/// The repository is reset to a new <see cref="TranslationFileRepository"/> instance.
 		/// Tests that require a pure unit-test setup should call <see cref="ConfigureRepository"/> afterwards
 		/// to inject a mock or in-memory repository.
 		/// </summary>
@@ -76,7 +76,7 @@ namespace CivOne.Services
 				_instance = new TranslationIdentityService();
 				_activeLanguagePostfix = "identity";
 				_languageObservers.Clear();
-				_translationFileRepository = new TranslationFileRepositoryImpl();
+				_translationFileRepository = new TranslationFileRepository();
 			}
 		}
 
@@ -285,13 +285,13 @@ namespace CivOne.Services
 
 				TranslationLanguageInfo languageInfo = languages.First(language => language.MatchesPostfix(postfix));
 
-				if (!_translationFileRepository.TryLoadTranslations(languageInfo.FilePath, out IReadOnlyDictionary<string, string> translations, out string fileError))
+				if (!_translationFileRepository.TryLoadTranslations(languageInfo.FilePath, out IReadOnlyDictionary<string, string>? translations, out string? fileError))
 				{
 					errorMessage = fileError;
 					return false;
 				}
 
-				_instance = new FileTranslationService(translations);
+				_instance = new FileTranslationService(translations!);
 				_activeLanguagePostfix = languageInfo.Postfix;
 				observers = [.. _languageObservers];
 				activeLanguagePostfix = _activeLanguagePostfix;

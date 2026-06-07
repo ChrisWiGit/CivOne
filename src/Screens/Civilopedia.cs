@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using CivOne.Advances;
@@ -16,6 +17,7 @@ using CivOne.Concepts;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
+using CivOne.Services.Random;
 using CivOne.Tiles;
 using CivOne.Units;
 using CivOne.Wonders;
@@ -32,16 +34,16 @@ namespace CivOne.Screens
 		internal static ICivilopedia[] Misc = Reflect.GetConcepts().OrderBy(x => x.TranslatedName).ToArray();
 		internal static ICivilopedia[] Complete = Reflect.GetCivilopediaAll().OrderBy(x => x.TranslatedName).ToArray();
 		
-		private readonly ICivilopedia[] _pages;
-		private readonly ICivilopedia _singlePage;
+		private readonly ICivilopedia[]? _pages;
+		private readonly ICivilopedia? _singlePage;
 		private readonly bool _discovered;
 		private readonly bool _icon;
 		
 		private bool _update = true;
-		private int _startIndex = 0;
+		private int _startIndex;
 		private byte _pageNumber = 1;
 
-		private bool _closing = false;
+		private bool _closing;
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
@@ -49,6 +51,12 @@ namespace CivOne.Screens
 		{
 			if (_singlePage == null)
 			{
+				System.Diagnostics.Debug.Assert(_pages != null, "Civilopedia list mode requires _pages to be set.");
+				if (_pages == null)
+				{
+					return;
+				}
+
 				Palette = Resources.WorldMapTiles.Palette.Copy();
 
 				this.Clear(14)
@@ -92,7 +100,7 @@ namespace CivOne.Screens
 			}
 
 			this.Clear(15);
-			DrawBorder(Common.Random.Next(2));
+			DrawBorder(RandomServiceFactory.Create().NextInt(2));
 
 			DrawPageTitle();
 			DrawPage(_pageNumber);
@@ -116,7 +124,7 @@ namespace CivOne.Screens
 			{
 				this.AddLayer(_singlePage.Icon, iconX + OffsetX, iconY + OffsetY);
 			}
-			this.DrawText(_singlePage.TranslatedName.ToUpper(), 5, 5, titleX + OffsetX, 20 + OffsetY, TextAlign.Center)
+			this.DrawText(_singlePage.TranslatedName.ToUpper(CultureInfo.CurrentCulture), 5, 5, titleX + OffsetX, 20 + OffsetY, TextAlign.Center)
 				.DrawText(category, 6, 7, titleX + OffsetX, 36 + OffsetY, TextAlign.Center);
 			if (_pageNumber == 2 && _discovered)
 			{
@@ -185,6 +193,12 @@ namespace CivOne.Screens
 				if (!NextPage()) 
 					_closing = true;
 				return true;
+			}
+
+			System.Diagnostics.Debug.Assert(_pages != null, "Civilopedia list mode requires _pages to be set.");
+			if (_pages == null)
+			{
+				return false;
 			}
 			
 			if (args.Y < 16 + OffsetY)
@@ -257,7 +271,7 @@ namespace CivOne.Screens
 			};
 		}
 		
-		private void DrawTerrainTextValues(ref int y, string name, string food = null, string production = null, string trade = null, string foodIrrigation = null, string productionMining = null, string tradeRoads = null)
+		private void DrawTerrainTextValues(ref int y, string name, string? food = null, string? production = null, string? trade = null, string? foodIrrigation = null, string? productionMining = null, string? tradeRoads = null)
 		{
 			string foodFormat = Translate("Food: {0} units.");
 			string productionFormat = Translate("Production: {0} units.");
@@ -269,21 +283,21 @@ namespace CivOne.Screens
 			{
 				if (foodIrrigation != null)
 					food = TranslateFormatted("{0} ({1} with Irrigation)", food, foodIrrigation);
-				this.DrawText(string.Format(foodFormat, food), 6, 9, 16 + OffsetX, y + OffsetY);
+				this.DrawText(string.Format(CultureInfo.CurrentCulture, foodFormat, food), 6, 9, 16 + OffsetX, y + OffsetY);
 				y += 8;
 			}
 			if (production != null)
 			{
 				if (productionMining != null)
 					production = TranslateFormatted("{0} ({1} with Mining)", production, productionMining);
-				this.DrawText(string.Format(productionFormat, production), 6, 9, 16 + OffsetX, y + OffsetY);
+				this.DrawText(string.Format(CultureInfo.CurrentCulture, productionFormat, production), 6, 9, 16 + OffsetX, y + OffsetY);
 				y += 8;
 			}
 			if (trade != null)
 			{
 				if (tradeRoads != null)
 					trade = TranslateFormatted("{0} ({1} with Roads)", trade, tradeRoads);
-				this.DrawText(string.Format(tradeFormat, trade), 6, 9, 16 + OffsetX, y + OffsetY);
+				this.DrawText(string.Format(CultureInfo.CurrentCulture, tradeFormat, trade), 6, 9, 16 + OffsetX, y + OffsetY);
 				y += 8;
 			}			
 			if (food == null && production == null && trade == null)
@@ -296,15 +310,18 @@ namespace CivOne.Screens
 		
 		private void DrawTerrainText()
 		{
+			if (_singlePage is not ITile tile) return;
+
 			if (!typeof(ITile).GetTypeInfo().IsAssignableFrom(_singlePage.GetType().GetTypeInfo())) return;
 			
-			ITile tile = (ITile)_singlePage;
 			int move = 1, defense = 0;
 			
 			int yy = 84;
 			
 			switch (tile.Type)
 			{
+				// DO NOT translate these strings ince they are already translated elsewhere
+				// and will automatically be translated in the DrawTerrainTextValues method.
 				case Terrain.Arctic:
 					DrawTerrainTextValues(ref yy, "Arctic");
 					DrawTerrainTextValues(ref yy, "Seals", "2");
@@ -382,6 +399,7 @@ namespace CivOne.Screens
 		{
 			_pages = pages;
 			_update = true;
+			_singlePage = null!;
 		}
 		
 		public Civilopedia(ICivilopedia page, bool discovered = false, bool icon = true)
