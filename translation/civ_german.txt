@@ -1263,3 +1263,4 @@ ATTACK STRENGTH: {0}=Angriffsstärke: {0}
 DEFENSE STRENGTH: {0}=Verteidigungsstärke: {0}
 MOVEMENT RATE: {0}=Bewegungsrate: {0}
 {0} (POP:{1})={0} (Pop:{1})
+NON.=NON.
