@@ -33,9 +33,9 @@ namespace CivOne.Screens.CityManagerPanels
 		private readonly City _city;
 		private IProduction[] _improvements;
 
-		public event EventHandler BuildingUpdate;
+		public event EventHandler? BuildingUpdate;
 
-		private int _page = 0;
+		private int _page;
 
 		private int _selectedBuilding = -1;
 
@@ -45,32 +45,43 @@ namespace CivOne.Screens.CityManagerPanels
 		{
 			int xx = (offset % 2 == 0) ? 21 : 1;
 			int yy = -1 + (6 * offset);
-			if (yy < 0)
-				this.AddLayer(wonder.SmallIcon.Crop(0, Math.Abs(yy), wonder.SmallIcon.Width(), wonder.SmallIcon.Height() + yy), xx, 0);
-			else
-				this.AddLayer(wonder.SmallIcon, xx, yy);
+			AddSmallIcon(wonder.SmallIcon, xx, yy);
 
 			string name = wonder.TranslatedName;
 			while (Resources.GetTextSize(1, name).Width > 62)
 			{
-				name = $"{name.Substring(0, name.Length - 2)}.";
+				name = $"{name[..^2]}.";
 			}
 			this.DrawText(name, 1, 15, 42, 3 + (6 * offset));
 		}
 
-		private void DrawBuilding(IBuilding building, int offset, int currentPage)
+		private void AddSmallIcon(IBitmap? bitmap, int xx, int yy)
 		{
+			if (bitmap == null)
+			{
+				return;
+			}
+			if (yy < 0)
+				this.AddLayer(bitmap.Crop(0, Math.Abs(yy), bitmap.Width(), bitmap.Height() + yy), xx, 0);
+			else
+				this.AddLayer(bitmap, xx, yy);
+		}
+
+		private void DrawBuilding(IBuilding? building, int offset, int currentPage)
+		{
+			if (building == null)
+			{
+				return;
+			}
+
 			int xx = (offset % 2 == 0) ? 21 : 1;
 			int yy = -1 + (6 * offset);
-			if (yy < 0)
-				this.AddLayer(building.SmallIcon.Crop(0, Math.Abs(yy), building.SmallIcon.Width(), building.SmallIcon.Height() + yy), xx, 0);
-			else
-				this.AddLayer(building.SmallIcon, xx, yy);
+			AddSmallIcon(building.SmallIcon, xx, yy);
 
 			string name = building.TranslatedName;
 			while (Resources.GetTextSize(1, name).Width > 54)
 			{
-				name = $"{name.Substring(0, name.Length - 1)}";
+				name = $"{name[..^1]}";
 			}
 			this.DrawText(name, 1, 15, 42, 3 + (6 * offset))
 				.AddLayer(Icons.SellButton, Width - 10, 2 + (6 * offset));
@@ -100,15 +111,15 @@ namespace CivOne.Screens.CityManagerPanels
 			
 			this.Tile(Pattern.PanelBlue);
 
-			_buildingButtons = new();
+			_buildingButtons = [];
 
 			int currentPage = _page;
 
 			for (int i = _page * MAX_BUILDINGS; i < _improvements.Length && i < ((_page + 1) * MAX_BUILDINGS); i++)
 			{
-				if (_improvements[i] is IWonder)
+				if (_improvements[i] is IWonder wonder)
 				{
-					DrawWonder(_improvements[i] as IWonder, i % MAX_BUILDINGS);
+					DrawWonder(wonder, i % MAX_BUILDINGS);
 					continue;
 				}
 
@@ -141,9 +152,13 @@ namespace CivOne.Screens.CityManagerPanels
 			return true;
 		}
 
-		private void SellBuilding(object sender, EventArgs args)
+		private void SellBuilding(object? sender, EventArgs args)
 		{
-			_city.SellBuilding((sender as ConfirmSell).Building);
+			if (sender is not ConfirmSell confirmSell)
+			{
+				return;
+			}
+			_city.SellBuilding(confirmSell.Building);
 			_page = 0;
 			_improvements = GetImprovements.ToArray();
 
@@ -152,7 +167,7 @@ namespace CivOne.Screens.CityManagerPanels
 
 			Refresh();
 
-			BuildingUpdate?.Invoke(this, null);
+			BuildingUpdate?.Invoke(this, EventArgs.Empty);
 		}
 
 		public override bool MouseDown(ScreenEventArgs args)
@@ -283,12 +298,12 @@ namespace CivOne.Screens.CityManagerPanels
 
 		protected void ShowSellConfirmation(int buildingIndex)
 		{
-			if (_improvements[buildingIndex] is not IBuilding)
+			if (_improvements[buildingIndex] is not IBuilding building)
 			{
 				return;
 			}
 
-			ShowSellConfirmation(_improvements[buildingIndex] as IBuilding);
+			ShowSellConfirmation(building);
 		}
 
 		protected void ShowSellConfirmation(IBuilding building)

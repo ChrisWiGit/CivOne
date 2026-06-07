@@ -16,9 +16,9 @@ using CivOne.Units;
 
 namespace CivOne.Screens.CityManagerPanels
 {
-	internal class CityUnits : BaseScreen
+	internal class CityUnits(City city) : BaseScreen(123, 38)
 	{
-		private readonly City _city;
+		private readonly City _city = city;
 		
 		private bool _update = true;
 		
@@ -32,36 +32,37 @@ namespace CivOne.Screens.CityManagerPanels
 				IUnit[] units = _city.Units.Take(14).ToArray();
 				for (int i = 0; i < units.Length; i++)
 				{
-					int xx = 5 + ((i % 7) * 16);
-					int yy = 1 + (((i - (i % 7)) / 7) * 16);
+					int xx = 5 + (i % 7 * 16);
+					int yy = 1 + ((i - (i % 7)) / 7 * 16);
 
 					// Diplomat and Caravan units cost nothing.
-					if (!(units[i] is Diplomat) && !(units[i] is Caravan))
+					if (units[i] is not Diplomat and not Caravan)
 					{
-						int shields = 0, food = 0;
-						IGovernment government = Game.GetPlayer(_city.CityOwnerPlayerIndex).Government;
-						if (government is Anarchy || government is Despotism)
-						{
-							if (i >= _city.Size)
-								shields++;
-							if (units[i] is Settlers)
-								food++;
-						}
-						else
-						{
+						continue;
+					}
+					int shields = 0, food = 0;
+					IGovernment government = Game.GetPlayer(_city.CityOwnerPlayerIndex)!.Government;
+					if (government is Anarchy || government is Despotism)
+					{
+						if (i >= _city.Size)
 							shields++;
-							if (units[i] is Settlers)
-								food += 2;
-						}
-						if (food > 0)
-						{
-							for (int ix = 0; ix < food; ix++)
-								this.AddLayer(Icons.Food, xx + (4 * ix), yy + 12);
-						}
-						if (shields > 0)
-						{
-							this.AddLayer(Icons.Shield, xx + 8, yy + 12);
-						}
+						if (units[i] is Settlers)
+							food++;
+					}
+					else
+					{
+						shields++;
+						if (units[i] is Settlers)
+							food += 2;
+					}
+					if (food > 0)
+					{
+						for (int ix = 0; ix < food; ix++)
+							this.AddLayer(Icons.Food, xx + (4 * ix), yy + 12);
+					}
+					if (shields > 0)
+					{
+						this.AddLayer(Icons.Shield, xx + 8, yy + 12);
 					}
 
 					this.AddLayer(units[i].ToBitmap(false), xx, yy);
@@ -77,11 +78,6 @@ namespace CivOne.Screens.CityManagerPanels
 		{
 			Bitmap = new Bytemap(width, 38);
 			_update = true;
-		}
-
-		public CityUnits(City city) : base(123, 38)
-		{
-			_city = city;
 		}
 	}
 }

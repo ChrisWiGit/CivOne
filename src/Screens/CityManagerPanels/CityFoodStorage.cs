@@ -16,9 +16,9 @@ using CivOne.IO;
 
 namespace CivOne.Screens.CityManagerPanels
 {
-	internal class CityFoodStorage : BaseScreen
+	internal class CityFoodStorage(City city) : BaseScreen(91, 92)
 	{
-		private readonly City _city;
+		private readonly City _city = city;
 		
 		private bool _update = true;
 		
@@ -28,13 +28,13 @@ namespace CivOne.Screens.CityManagerPanels
 			{
 				this.Tile(Pattern.PanelBlue)
 					.DrawRectangle(colour: 1)
-					.FillRectangle(1, 1, (Width - 2), 8, 1)
+					.FillRectangle(1, 1, Width - 2, 8, 1)
 					.DrawText(Translate("Food Storage"), 1, 17, 6, 2, TextAlign.Left);
 
-				int foodPerLine = (_city.Size + 1);
+				int foodPerLine = _city.Size + 1;
 				int foodWidth = 8;
 				int foodHeight = 8;
-				// if (_city.Size > 10) foodWidth /= 4;
+				
 				for (int i = 0; i < 7; i++)
 				{
 					if ((_city.Size * foodWidth) <= (Width - 11)) break;
@@ -42,9 +42,9 @@ namespace CivOne.Screens.CityManagerPanels
 				}
 				int width = 8 + (_city.Size * foodWidth);
 				if (width < (Width - 3))
-					this.FillRectangle(2 + width, 9, (Width - 3) - width, 82, 1);
+					this.FillRectangle(2 + width, 9, Width - 3 - width, 82, 1);
 				
-				if (_city.Buildings.Any(b => (b is Granary)))
+				if (_city.Buildings.Any(b => b is Granary))
 				{
 					this.FillRectangle(3, 49, width - 3, 1, 1);
 				}
@@ -52,7 +52,7 @@ namespace CivOne.Screens.CityManagerPanels
 				for (int i = 0; i < _city.Food; i++)
 				{
 					int x = 1 + (foodWidth * (i % foodPerLine));
-					int y = 9 + (((i - (i % foodPerLine)) / foodPerLine) * foodHeight);
+					int y = 9 + ((i - (i % foodPerLine)) / foodPerLine * foodHeight);
 					this.AddLayer(Icons.Food, x, y);
 				}
 				
@@ -71,11 +71,6 @@ namespace CivOne.Screens.CityManagerPanels
 		{
 			Bitmap = new Bytemap(width, 92);
 			_update = true;
-		}
-
-		public CityFoodStorage(City city) : base(91, 92)
-		{
-			_city = city;
 		}
 	}
 }

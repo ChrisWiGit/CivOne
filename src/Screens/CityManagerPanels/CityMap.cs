@@ -10,7 +10,6 @@
 using System;
 using System.Drawing;
 using System.Linq;
-using System.Net;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -19,9 +18,9 @@ using CivOne.Tiles;
 
 namespace CivOne.Screens.CityManagerPanels
 {
-	internal class CityMap : BaseScreen
+	internal class CityMap(City city, ICityManager cityManager) : BaseScreen(82, 82)
 	{
-		private readonly City _city;
+		private readonly City _city = city;
 
 		private bool _update = true;
 
@@ -56,8 +55,8 @@ namespace CivOne.Screens.CityManagerPanels
 				else if (i >= food) icon = Icons.Shield;
 				else icon = Icons.Food;
 
-				int xx = (x + ((i % iconsPerLine) * iconWidth));
-				int yy = (y + (((i - (i % iconsPerLine)) / iconsPerLine) * 8));
+				int xx = x + (i % iconsPerLine * iconWidth);
+				int yy = y + ((i - (i % iconsPerLine)) / iconsPerLine * 8);
 
 				this.AddLayer(icon, xx, yy);
 			}
@@ -207,13 +206,6 @@ namespace CivOne.Screens.CityManagerPanels
 			return new Point(newX, newY);
 		}
 
-
-		public CityMap(City city, ICityManager cityManager) : base(82, 82)
-		{
-			_city = city;
-			_cityManager = cityManager;
-		}
-		
-		private ICityManager _cityManager;
+		private readonly ICityManager _cityManager = cityManager;
 	}
 }
