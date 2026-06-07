@@ -9,8 +9,6 @@
 
 using System;
 using System.Drawing;
-using System.Linq;
-using CivOne.Enums;
 using CivOne.IO;
 
 namespace CivOne.Graphics
@@ -113,7 +111,10 @@ namespace CivOne.Graphics
 
 		public void Dispose()
 		{
-			_bitmap.Dispose();
+			_bitmap?.Dispose();
+			_palette?.Dispose();
+			_originalColours?.Dispose();
+			GC.SuppressFinalize(this);
 		}
 	}
 }

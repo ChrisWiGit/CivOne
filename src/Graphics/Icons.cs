@@ -21,7 +21,7 @@ namespace CivOne.Graphics
 		private static Resources Resources => Resources.Instance;
 
 		private const string Filename = "SP257";
-		private static IBitmap _food;
+		private static IBitmap? _food;
 		public static IBitmap Food => LazyInitializer.EnsureInitialized(ref _food, () =>
 		{
 			if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists(Filename))
@@ -31,13 +31,13 @@ namespace CivOne.Graphics
 				.FillRectangle(0, 0, 1, 8, 0);
 		});
 
-		private static IBitmap _foodLoss;
+		private static IBitmap? _foodLoss;
 		public static IBitmap FoodLoss => LazyInitializer.EnsureInitialized(ref _foodLoss, () =>
 			Resources[Filename][128, 32, 8, 8]
 				.ColourReplace((3, 0), (15, 5))
 				.FillRectangle(0, 0, 1, 8, 0));
 		
-		private static IBitmap _shield;
+		private static IBitmap? _shield;
 		public static IBitmap Shield => LazyInitializer.EnsureInitialized(ref _shield, () =>
 		{
 			if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists(Filename))
@@ -45,7 +45,7 @@ namespace CivOne.Graphics
 			return Resources[Filename][136, 32, 8, 8].ColourReplace(3, 0);
 		});
 
-		private static IBitmap _smokeStack;
+		private static IBitmap? _smokeStack;
 		public static IBitmap SmokeStack => LazyInitializer.EnsureInitialized(ref _smokeStack, () =>
 		{
 			if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists(Filename))
@@ -53,11 +53,11 @@ namespace CivOne.Graphics
 			return Resources[Filename][50, 32, 62-50, 46-32].ColourReplace(3, 0);
 		});
 		
-		private static IBitmap _shieldLoss;
+		private static IBitmap? _shieldLoss;
 		public static IBitmap ShieldLoss => LazyInitializer.EnsureInitialized(ref _shieldLoss, () =>
 			Resources[Filename][136, 32, 8, 8].ColourReplace((3, 0), (15, 5)));
 		
-		private static IBitmap _trade;
+		private static IBitmap? _trade;
 		public static IBitmap Trade => LazyInitializer.EnsureInitialized(ref _trade, () =>
 		{
 			if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists(Filename))
@@ -65,15 +65,15 @@ namespace CivOne.Graphics
 			return Resources[Filename][144, 32, 8, 8].ColourReplace(3, 0);
 		});
 
-		private static IBitmap _corruption;
+		private static IBitmap? _corruption;
 		public static IBitmap Corruption => LazyInitializer.EnsureInitialized(ref _corruption, () =>
 			Resources[Filename][144, 32, 8, 8].ColourReplace((3, 0), (15, 5)));
 		
-		private static IBitmap _unhappy;
+		private static IBitmap? _unhappy;
 		public static IBitmap Unhappy => LazyInitializer.EnsureInitialized(ref _unhappy, () =>
 			Resources[Filename][136, 40, 8, 8].ColourReplace(3, 0));
 		
-		private static IBitmap _luxuries;
+		private static IBitmap? _luxuries;
 		public static IBitmap Luxuries => LazyInitializer.EnsureInitialized(ref _luxuries, () =>
 		{
 			if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists(Filename))
@@ -81,7 +81,7 @@ namespace CivOne.Graphics
 			return Resources[Filename][144, 40, 8, 8].ColourReplace(3, 0);
 		});
 		
-		private static IBitmap _taxes;
+		private static IBitmap? _taxes;
 		public static IBitmap Taxes => LazyInitializer.EnsureInitialized(ref _taxes, () =>
 		{
 			if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists(Filename))
@@ -89,7 +89,7 @@ namespace CivOne.Graphics
 			return Resources[Filename][152, 32, 8, 8].ColourReplace(3, 0);
 		});
 		
-		private static IBitmap _science;
+		private static IBitmap? _science;
 		public static IBitmap Science => LazyInitializer.EnsureInitialized(ref _science, () =>
 		{
 			if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists(Filename))
@@ -97,7 +97,7 @@ namespace CivOne.Graphics
 			return Resources[Filename][128, 40, 8, 8].ColourReplace(3, 0);
 		});
 		
-		private static IBitmap _spy;
+		private static IBitmap? _spy;
 		public static IBitmap Spy => LazyInitializer.EnsureInitialized(ref _spy, () =>
 		{
 			if (RuntimeHandler.Runtime.Settings.Free || !Resources.Exists("SP299"))
@@ -105,14 +105,14 @@ namespace CivOne.Graphics
 			return Resources["SP299"][160, 142, 40, 52].ColourReplace(3, 0);
 		});
 		
-		private static IBitmap _newspaper;
+		private static IBitmap? _newspaper;
 		public static IBitmap Newspaper => LazyInitializer.EnsureInitialized(ref _newspaper, () =>
 			Resources[Filename][176, 128, 32, 16]);
 
-		private static IBitmap _sellButton;
+		private static IBitmap? _sellButton;
 		public static IBitmap SellButton => LazyInitializer.EnsureInitialized(ref _sellButton, () =>
 		{
-			byte[] bytemap = new byte[] {
+			byte[] bytemap = [
 				0,  0,  5,  5,  5,  0,  0,  0,
 				0,  5, 15, 15, 15,  5,  0,  0,
 				5, 15, 12, 12, 12, 15,  5,  0,
@@ -120,13 +120,13 @@ namespace CivOne.Graphics
 				5, 15, 12, 12, 12, 15,  5,  0,
 				0,  5, 15, 15, 15,  5,  0,  0,
 				0,  0,  5,  5,  5,  0,  0,  0
-			};
+			];
 			return new Picture(8, 7, bytemap, Food.Palette);
 		});
 
-		private static readonly object _helperArrowLock = new object();
-		private static IBitmap[] _helperArrow;
-		public static IBitmap HelperArrow(Direction direction)
+		private static readonly Lock _helperArrowLock = new();
+		private static IBitmap[]? _helperArrow;
+		public static IBitmap? HelperArrow(Direction direction)
 		{
 			if (_helperArrow == null)
 			{
@@ -134,96 +134,98 @@ namespace CivOne.Graphics
 				{
 					if (_helperArrow == null)
 					{
-						IBitmap[] arrows = new IBitmap[4];
-						arrows[0] = new Picture(16, 16, new byte[] {
-					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
-					0,  0,  5,  5,  5,  5,  5, 15, 15,  5,  5,  5,  5,  5,  0,  0,
-					0,  0,  0,  5, 15, 15, 15, 15, 15, 15, 15, 15,  5,  0,  0,  0,
-					0,  0,  0,  0,  5, 15, 15, 15, 15, 15, 15,  5,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  5, 15, 15, 15, 15,  5,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-						}, Food.Palette);
-						arrows[1] = new Picture(16, 16, new byte[] {
-					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  5, 15, 15, 15, 15,  5,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  5, 15, 15, 15, 15, 15, 15,  5,  0,  0,  0,  0,
-					0,  0,  0,  5, 15, 15, 15, 15, 15, 15, 15, 15,  5,  0,  0,  0,
-					0,  0,  5,  5,  5,  5,  5, 15, 15,  5,  5,  5,  5,  5,  0,  0,
-					0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-						}, Food.Palette);
-						arrows[2] = new Picture(16, 16, new byte[] {
-					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  5,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  5, 15,  5,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  5, 15, 15, 15,  5,  5,  5,  5,  5,  5,  5,  0,  0,
-					0,  0,  5, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,  5,  0,  0,
-					0,  0,  5, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,  5,  0,  0,
-					0,  0,  0,  5, 15, 15, 15,  5,  5,  5,  5,  5,  5,  5,  0,  0,
-					0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  5, 15,  5,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  5,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-						}, Food.Palette);
-						arrows[3] = new Picture(16, 16, new byte[] {
-					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  5,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  5, 15,  5,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,
-					0,  0,  5,  5,  5,  5,  5,  5,  5, 15, 15, 15,  5,  0,  0,  0,
-					0,  0,  5, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,  5,  0,  0,
-					0,  0,  5, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,  5,  0,  0,
-					0,  0,  5,  5,  5,  5,  5,  5,  5, 15, 15, 15,  5,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  5, 15,  5,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  5,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-						}, Food.Palette);
+						IBitmap[] arrows =
+						[
+							new Picture(16, 16, [
+							0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
+							0,  0,  5,  5,  5,  5,  5, 15, 15,  5,  5,  5,  5,  5,  0,  0,
+							0,  0,  0,  5, 15, 15, 15, 15, 15, 15, 15, 15,  5,  0,  0,  0,
+							0,  0,  0,  0,  5, 15, 15, 15, 15, 15, 15,  5,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  5, 15, 15, 15, 15,  5,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+							], Food.Palette),
+							new Picture(16, 16, [
+							0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  5, 15, 15, 15, 15,  5,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  5, 15, 15, 15, 15, 15, 15,  5,  0,  0,  0,  0,
+							0,  0,  0,  5, 15, 15, 15, 15, 15, 15, 15, 15,  5,  0,  0,  0,
+							0,  0,  5,  5,  5,  5,  5, 15, 15,  5,  5,  5,  5,  5,  0,  0,
+							0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+							], Food.Palette),
+							new Picture(16, 16, [
+							0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  5,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  5, 15,  5,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  5, 15, 15, 15,  5,  5,  5,  5,  5,  5,  5,  0,  0,
+							0,  0,  5, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,  5,  0,  0,
+							0,  0,  5, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,  5,  0,  0,
+							0,  0,  0,  5, 15, 15, 15,  5,  5,  5,  5,  5,  5,  5,  0,  0,
+							0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  5, 15,  5,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  5,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+							], Food.Palette),
+							new Picture(16, 16, [
+							0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  5,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  5, 15,  5,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,
+							0,  0,  5,  5,  5,  5,  5,  5,  5, 15, 15, 15,  5,  0,  0,  0,
+							0,  0,  5, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,  5,  0,  0,
+							0,  0,  5, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,  5,  0,  0,
+							0,  0,  5,  5,  5,  5,  5,  5,  5, 15, 15, 15,  5,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  5, 15, 15,  5,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  5, 15,  5,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  5,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+							0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+							], Food.Palette),
+						];
 						_helperArrow = arrows;
 					}
 				}
 			}
 
-			switch (direction)
+			return direction switch
 			{
-				case Direction.South: return _helperArrow[0];
-				case Direction.North: return _helperArrow[1];
-				case Direction.West: return _helperArrow[2];
-				case Direction.East: return _helperArrow[3];
-			}
-			return null;
+				Direction.South => _helperArrow[0],
+				Direction.North => _helperArrow[1],
+				Direction.West => _helperArrow[2],
+				Direction.East => _helperArrow[3],
+				_ => null,
+			};
 		}
 
-		private static readonly object _citizenLock = new object();
-		private static IBitmap[] _citizen = new Picture[9];
+		private static readonly Lock _citizenLock = new();
+		private static readonly IBitmap[] _citizen = new Picture[9];
 		public static IBitmap Citizen(Citizen citizen)
 		{
 			int idx = (int)citizen;
@@ -235,9 +237,9 @@ namespace CivOne.Graphics
 			return _citizen[idx];
 		}
 
-		private static readonly object _lampLock = new object();
-		private static IBitmap[] _lamp = new Picture[4];
-		public static IBitmap Lamp(int stage)
+		private static readonly Lock _lampLock = new();
+		private static readonly IBitmap[] _lamp = new Picture[4];
+		public static IBitmap? Lamp(int stage)
 		{
 			if (stage < 0 || stage > 3)
 				return null;
@@ -250,9 +252,9 @@ namespace CivOne.Graphics
 			return _lamp[stage];
 		}
 
-		private static readonly object _sunLock = new object();
-		private static IBitmap[] _sun = new Picture[4];
-		public static IBitmap Sun(int stage)
+		private static readonly Lock _sunLock = new();
+		private static readonly IBitmap[] _sun = new Picture[4];
+		public static IBitmap? Sun(int stage)
 		{
 			if (stage < 0 || stage > 3)
 				return null;
@@ -265,8 +267,8 @@ namespace CivOne.Graphics
 			return _sun[stage];
 		}
 
-		private static readonly object _governmentPortraitLock = new object();
-		private static IBitmap[,] _governmentPortrait = new Picture[7, 4];
+		private static readonly Lock _governmentPortraitLock = new();
+		private static readonly IBitmap[,] _governmentPortrait = new Picture[7, 4];
 		public static IBitmap GovernmentPortrait(IGovernment government, Advisor advisor, bool modern)
 		{
 			string filename;
@@ -304,7 +306,7 @@ namespace CivOne.Graphics
 		public static IBitmap City(City city, bool smallFont = false)
 		{
 			IBitmap output = new Picture(16, 16);
-			TextSettings settings = new TextSettings()
+			TextSettings settings = new()
 			{
 				FontId = smallFont ? 1 : 0,
 				Alignment = TextAlign.Center
@@ -316,7 +318,7 @@ namespace CivOne.Graphics
 				.FillRectangle(2, 1, 13, 13, Common.ColourDark[city.CityOwnerPlayerIndex])
 				.FillRectangle(2, 2, 12, 12, Common.ColourLight[city.CityOwnerPlayerIndex]);
 			
-			IBitmap resource;
+			Picture resource;
 			if (Resources.Exists(Filename))
 			{
 				resource = Resources[Filename][192, 112, 16, 16];

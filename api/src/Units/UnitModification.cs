@@ -20,14 +20,14 @@ namespace CivOne.Units
 	{
 		public UnitType UnitType { get; } = unitType;
 
-		public AttributeValue<string> Name => AttributeValue<string>.Set(this.GetAttribute<Name>());
-		public AttributeValue<byte> Price => AttributeValue<byte>.Set(this.GetAttribute<Price>());
-		public AttributeValue<short> BuyPrice => AttributeValue<short>.Set(this.GetAttribute<GoldPrice>());
-		public AttributeValue<byte> Attack => AttributeValue<byte>.Set(this.GetAttribute<Attack>());
-		public AttributeValue<byte> Defense => AttributeValue<byte>.Set(this.GetAttribute<Defense>());
-		public AttributeValue<byte> Moves => AttributeValue<byte>.Set(this.GetAttribute<Moves>());
-		public AttributeValue<Advance> Requires => AttributeValue<Advance>.Set(this.GetAttribute<Requires>());
-		public AttributeValue<Advance> Obsolete => AttributeValue<Advance>.Set(this.GetAttribute<Obsolete>());
+		public AttributeValue<string> Name => AttributeValue<string>.Set(this.GetAttribute<Name>()!);
+		public AttributeValue<byte> Price => AttributeValue<byte>.Set(this.GetAttribute<Price>()!);
+		public AttributeValue<short> BuyPrice => AttributeValue<short>.Set(this.GetAttribute<GoldPrice>()!);
+		public AttributeValue<byte> Attack => AttributeValue<byte>.Set(this.GetAttribute<Attack>()!);
+		public AttributeValue<byte> Defense => AttributeValue<byte>.Set(this.GetAttribute<Defense>()!);
+		public AttributeValue<byte> Moves => AttributeValue<byte>.Set(this.GetAttribute<Moves>()!);
+		public AttributeValue<Advance> Requires => AttributeValue<Advance>.Set(this.GetAttribute<Requires>()!);
+		public AttributeValue<Advance> Obsolete => AttributeValue<Advance>.Set(this.GetAttribute<Obsolete>()!);
 
 		public byte[]? Sprite { get; private set; }
 

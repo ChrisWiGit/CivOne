@@ -19,7 +19,7 @@ namespace CivOne.Screens.PalaceAssets
 		{
 			if (_instance != null) return _instance;
 
-			var resourcesDelegate = new PreviewPalaceResourcesDelegate(name => Resources.Instance[name]);
+			var resourcesDelegate = new PreviewPalaceResourcesWrapper(name => Resources.Instance[name]);
 			_instance = new PreviewPalaceRenderer(resourcesDelegate);
 			return _instance;
 		}

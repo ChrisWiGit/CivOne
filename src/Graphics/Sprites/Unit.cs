@@ -15,7 +15,7 @@ namespace CivOne.Graphics.Sprites
 {
 	public static class Unit
 	{
-		private static IBitmap BaseSprite(UnitType type) => CivOne.Units.BaseUnit.GetBaseSprite(type);
+		private static IBitmap? BaseSprite(UnitType type) => Units.BaseUnit.GetBaseSprite(type);
 		private static Resources Resources => Resources.Instance;
 		private static Settings Settings => Settings.Instance;
 
@@ -27,7 +27,7 @@ namespace CivOne.Graphics.Sprites
 			byte colourLight = Common.ColourLight[unit.PlayerNumber];
 			int unitId = (int)unit.Type;
 
-			IBitmap baseSprite = BaseSprite(unit.Type);
+			IBitmap? baseSprite = BaseSprite(unit.Type);
 			Bytemap output;
 			if (baseSprite != null)
 			{
@@ -37,7 +37,7 @@ namespace CivOne.Graphics.Sprites
 			else
 			{
 				string resFile = GFX256 ? "SP257" : "SPRITES";
-				int xx = (unitId % 20) * 16;
+				int xx = unitId % 20 * 16;
 				int yy = unitId < 20 ? 160 : 176;
 
 				if (Resources.Exists(resFile))

@@ -20,10 +20,10 @@ namespace CivOne.Leaders
 	{
 		public Leader Leader { get; } = leaderId;
 
-		public AttributeValue<string> Name => AttributeValue<string>.Set(this.GetAttribute<Name>());
-		public AttributeValue<AggressionLevel> Aggression => AttributeValue<AggressionLevel>.Set(this.GetAttribute<Aggression>());
-		public AttributeValue<DevelopmentLevel> Development => AttributeValue<DevelopmentLevel>.Set(this.GetAttribute<Development>());
-		public AttributeValue<MilitarismLevel> Militarism => AttributeValue<MilitarismLevel>.Set(this.GetAttribute<Militarism>());
+		public AttributeValue<string> Name => AttributeValue<string>.Set(this.GetAttribute<Name>()!);
+		public AttributeValue<AggressionLevel> Aggression => AttributeValue<AggressionLevel>.Set(this.GetAttribute<Aggression>()!);
+		public AttributeValue<DevelopmentLevel> Development => AttributeValue<DevelopmentLevel>.Set(this.GetAttribute<Development>()!);
+		public AttributeValue<MilitarismLevel> Militarism => AttributeValue<MilitarismLevel>.Set(this.GetAttribute<Militarism>()!);
 		
 		public byte[]? Portrait { get; private set; }
 		public byte[]? PortraitSmall { get; private set; }

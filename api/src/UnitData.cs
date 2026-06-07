@@ -11,18 +11,18 @@ namespace CivOne
 {
 	public struct UnitData
 	{
-		public byte Id;
-		public byte Status;
-		public byte X;
-        public byte Y;
-		public byte TypeId;
-		public byte RemainingMoves;
+		public byte Id { get; set; }
+		public byte Status { get; set; }
+		public byte X { get; set; }
+        public byte Y { get; set; }
+		public byte TypeId { get; set; }
+		public byte RemainingMoves { get; set; }
 		/// Remaining fuel (flight unit), Task progress (settlers). Others, always 0.
-        public byte SpecialMoves;
-		public byte GotoX; 
-        public byte GotoY;
-		public byte Visibility;
-		public byte NextUnitId;
-		public byte HomeCityId;
+        public byte SpecialMoves { get; set; }
+		public byte GotoX { get; set; } 
+        public byte GotoY { get; set; }
+		public byte Visibility { get; set; }
+		public byte NextUnitId { get; set; }
+		public byte HomeCityId { get; set; }
 	}
 }

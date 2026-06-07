@@ -17,8 +17,11 @@ namespace CivOne
 	{
 		public class CityBuilt : ReplayData
 		{
-			public readonly byte OwnerId;
-			public readonly int CityId, CityNameId, X, Y;
+			public byte OwnerId { get; private set; }
+			public int CityId { get; private set; }
+			public int CityNameId { get; private set; }
+			public int X { get; private set; }
+			public int Y { get; private set; }
 
 			public CityBuilt(int turn, byte ownerId, int cityId, int cityNameId, int x, int y) : base(turn)
 			{
@@ -32,8 +35,11 @@ namespace CivOne
 
 		public class CityDestroyed : ReplayData
 		{
-			public readonly int CityId, CityNameId, X, Y;
-			
+			public int CityId { get; private set; }
+			public int CityNameId { get; private set; }
+			public int X { get; private set; }
+			public int Y { get; private set; }
+
 			public CityDestroyed(int turn, int cityId, int cityNameId, int x, int y) : base(turn)
 			{
 				CityId = cityId;
@@ -45,7 +51,8 @@ namespace CivOne
 
 		public class CivilizationDestroyed : ReplayData
 		{
-			public readonly int DestroyedId, DestroyedById;
+			public int DestroyedId { get; private set; }
+			public int DestroyedById { get; private set; }
 
 			public CivilizationDestroyed(int turn, byte destroyedId, byte destroyedById) : base(turn)
 			{

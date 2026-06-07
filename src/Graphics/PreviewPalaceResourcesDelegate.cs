@@ -13,7 +13,7 @@ using CivOne.Enums;
 
 namespace CivOne.Graphics
 {
-	public sealed class PreviewPalaceResourcesDelegate(Func<string, Picture> getPictureByName)
+	public sealed class PreviewPalaceResourcesWrapper(Func<string, Picture> getPictureByName)
 	{
 		private const int BASE_X = 160;
 		private const int LEVEL_STRIDE = 35;  // 5 parts × 7px
@@ -36,7 +36,7 @@ namespace CivOne.Graphics
 		internal Picture GetPreviewPart(PreviewPalacePart part, int level, PalaceStyle style)
 		{
 			int key = (int)style * 1000 + level * 10 + (int)part;
-			if (_cache.TryGetValue(key, out Picture cached))
+			if (_cache.TryGetValue(key, out Picture? cached))
 				return cached;
 
 			int x = BASE_X + ((level - 1) * LEVEL_STRIDE) + ((int)part * PART_WIDTH);

@@ -12,7 +12,7 @@ namespace CivOne.UnitTests
 		{
 			// Arrange
 			Picture sp257 = CreateSp257WithPreviewMarkers();
-			var testee = new PreviewPalaceResourcesDelegate(name => name == "SP257" ? sp257 : null);
+			var testee = new PreviewPalaceResourcesWrapper(name => name == "SP257" ? sp257 : null);
 
 			// Act
 			Picture actual = testee.GetPreviewPart(PreviewPalacePart.WallRight, level: 3, PalaceStyle.Medieval);
@@ -28,7 +28,7 @@ namespace CivOne.UnitTests
 		{
 			// Arrange
 			Picture sp257 = CreateSp257WithPreviewMarkers();
-			var testee = new PreviewPalaceResourcesDelegate(name => name == "SP257" ? sp257 : null);
+			var testee = new PreviewPalaceResourcesWrapper(name => name == "SP257" ? sp257 : null);
 
 			// Act
 			Picture first = testee.GetPreviewPart(PreviewPalacePart.Center, level: 2, PalaceStyle.Medieval);
@@ -83,7 +83,7 @@ namespace CivOne.UnitTests
 		{
 			// Arrange
 			Picture sp257 = CreateSp257WithPreviewMarkers();
-			var resources = new PreviewPalaceResourcesDelegate(name => name == "SP257" ? sp257 : null);
+			var resources = new PreviewPalaceResourcesWrapper(name => name == "SP257" ? sp257 : null);
 			var testee = new PreviewPalaceRenderer(resources);
 			var palace = new PalaceData();
 
@@ -100,7 +100,7 @@ namespace CivOne.UnitTests
 		{
 			// Arrange
 			Picture sp257 = CreateSp257WithPreviewMarkers();
-			var resources = new PreviewPalaceResourcesDelegate(name => name == "SP257" ? sp257 : null);
+			var resources = new PreviewPalaceResourcesWrapper(name => name == "SP257" ? sp257 : null);
 			var testee = new PreviewPalaceRenderer(resources);
 			var palace = new PalaceData();
 			palace.SetPalace(0, style: 1, level: 1);
@@ -120,7 +120,7 @@ namespace CivOne.UnitTests
 		{
 			// Arrange
 			Picture sp257 = CreateSp257WithPreviewMarkers();
-			var resources = new PreviewPalaceResourcesDelegate(name => name == "SP257" ? sp257 : null);
+			var resources = new PreviewPalaceResourcesWrapper(name => name == "SP257" ? sp257 : null);
 			var testee = new PreviewPalaceRenderer(resources);
 			var palace = new PalaceData();
 			// Only center and one wall on each side — outer towers (0, 6) remain at level 0
@@ -144,7 +144,7 @@ namespace CivOne.UnitTests
 		{
 			// Arrange
 			Picture sp257 = CreateSp257WithPreviewMarkers();
-			var resources = new PreviewPalaceResourcesDelegate(name => name == "SP257" ? sp257 : null);
+			var resources = new PreviewPalaceResourcesWrapper(name => name == "SP257" ? sp257 : null);
 			var testee = new PreviewPalaceRenderer(resources);
 			var palace = new PalaceData();
 			palace.SetPalace(1, style: 1, level: 2); // WallLeft → also forces Left tower at index 0

@@ -26,9 +26,9 @@ namespace CivOne.Graphics
 	// descriptive like "TerrainBitmaps" or "TileBitmaps". However, without more context on how this class is used, it's hard to say for sure.
 	internal class Free
 	{
-		private Bytemap _panelGrey, _panelBlue;
-		private Bytemap _landBase, _seaBase, _city, _fortify;
-		private Bytemap _plains, _arctic, _tundra, _desert, _forest, _hills, _mountains;
+		private Bytemap? _panelGrey, _panelBlue;
+		private Bytemap? _landBase, _seaBase, _city, _fortify;
+		private Bytemap? _plains, _arctic, _tundra, _desert, _forest, _hills, _mountains;
 
 		#pragma warning disable S2190
 		/// <summary>
@@ -637,13 +637,12 @@ namespace CivOne.Graphics
 			}
 		}
 
-		private static Free _instance;
+		private static Free? _instance;
 		public static Free Instance
 		{
 			get
 			{
-				if (_instance == null)
-					_instance = new Free();
+				_instance ??= new Free();
 				return _instance;
 			}
 		}

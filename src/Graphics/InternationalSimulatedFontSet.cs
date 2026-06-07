@@ -71,9 +71,9 @@ namespace CivOne.Graphics
 				return base.GetLetter(character, colour);
 			}
 
-			if (TryComposeFromUnicode(character, colour, out Bytemap compositeGlyph))
+			if (TryComposeFromUnicode(character, colour, out Bytemap? compositeGlyph))
 			{
-				return compositeGlyph;
+				return compositeGlyph!; //always non-null if TryComposeFromUnicode returns true
 			}
 
 			if (TryGetBaseCharacter(character, out char baseCharacter) && HasCharacter(baseCharacter))
@@ -114,7 +114,7 @@ namespace CivOne.Graphics
 			return false;
 		}
 
-		private bool TryComposeFromUnicode(char character, byte colour, out Bytemap compositeGlyph)
+		private bool TryComposeFromUnicode(char character, byte colour, out Bytemap? compositeGlyph)
 		{
 			compositeGlyph = null;
 			string decomposed = character.ToString().Normalize(NormalizationForm.FormD);

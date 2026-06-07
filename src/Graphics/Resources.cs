@@ -34,7 +34,7 @@ namespace CivOne.Graphics
 		private readonly ConcurrentDictionary<string, bool> _existsCache = new(StringComparer.OrdinalIgnoreCase);
 		private readonly IFont _defaultFont = new DefaultFont();
 		private readonly List<IFont> _fonts = [];
-		private readonly PalaceResourcesDelegate _palaceResources;
+		private readonly PalaceResourcesWrapper _palaceResources;
 		internal void ClearTextCache() => _textCache.Clear();
 		
 		/// <summary>
@@ -345,7 +345,7 @@ namespace CivOne.Graphics
 		
 		private Resources()
 		{
-			_palaceResources = new PalaceResourcesDelegate(name => this[name]);
+			_palaceResources = new PalaceResourcesWrapper(name => this[name]);
 			if (!RuntimeHandler.Runtime.Settings.Free) LoadFonts();
 		}
 	}

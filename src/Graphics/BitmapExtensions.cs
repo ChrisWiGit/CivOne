@@ -228,7 +228,7 @@ namespace CivOne.Graphics
 					settings = new TextSettings();
 			}
 			
-			Size textSize = Resources.GetTextSize(settings.FontId, text);
+			Size textSize = Resources.GetTextSize(settings!.FontId, text);
 			Bytemap textLayer;
 			if (settings.FirstLetterColour != 0)
 			{

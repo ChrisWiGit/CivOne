@@ -13,7 +13,7 @@ using CivOne.Enums;
 
 namespace CivOne.Graphics
 {
-	public sealed class PalaceResourcesDelegate(Func<string, Picture> getPictureByName, IPalaceSpriteLayout palaceSpriteLayout = null)
+	public sealed class PalaceResourcesWrapper(Func<string, Picture> getPictureByName, IPalaceSpriteLayout? palaceSpriteLayout = null)
 	{
 		private const int TOWER_WIDTH = 35;
 		private const int WALL_WIDTH = 48;
@@ -161,12 +161,12 @@ namespace CivOne.Graphics
 			}
 
 			int combine = HashKey(level, style, part);
-			if (_cache.TryGetValue(combine, out Picture value))
+			if (_cache.TryGetValue(combine, out Picture? value))
 			{
 				return value;
 			}
 
-			Picture picture = null;
+			Picture? picture;
 			PalacePictureLayout layout = _palaceSpriteLayout.GetLayout(level);
 			PalacePartSourceSelection sourceLocation = _palaceSpriteLayout.GetSpriteCoordinatesForPart(style, part, layout);
 
@@ -198,6 +198,8 @@ namespace CivOne.Graphics
 						picture = GetCastleSourcePartImage(level, part, style, layout, offsetX);
 						break;
 					}
+				default:
+					throw new ArgumentException($"Unknown palace part: {part}");
 			}
 
 			_cache[combine] = picture;
