@@ -22,7 +22,7 @@ namespace CivOne.src
 		/// All advances, buildings and wonders from <see cref="Common"/> must have non-empty names.
 		/// </summary>
 		[Fact]
-		public void CommonRegistries_AllItems_HaveNonEmptyNames()
+		public void CommonRegistriesAllItemsHaveNonEmptyNames()
 		{
 			var entries = new List<(string Registry, ICivilopedia Item)>();
 			foreach (var item in Common.Advances.ToArray())
@@ -39,7 +39,7 @@ namespace CivOne.src
 		/// All units, governments, concepts and terrain types from <see cref="Reflect"/> must have non-empty names.
 		/// </summary>
 		[Fact]
-		public void ReflectRegistries_AllItems_HaveNonEmptyNames()
+		public void ReflectRegistriesAllItemsHaveNonEmptyNames()
 		{
 			var entries = new List<(string Registry, ICivilopedia Item)>();
 			foreach (var item in Reflect.GetUnits().ToArray())

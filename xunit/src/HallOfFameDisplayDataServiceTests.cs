@@ -18,7 +18,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void BuildRows_WhenEntriesEmpty_ReturnsOnlyPlaceholderRows()
+		public void BuildRowsWhenEntriesEmptyReturnsOnlyPlaceholderRows()
 		{
 			// Arrange
 			
@@ -34,7 +34,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void BuildRows_WhenEntryProvided_FillsRemainingWithPlaceholders()
+		public void BuildRowsWhenEntryProvidedFillsRemainingWithPlaceholders()
 		{
 			// Arrange
 			HallOfFameEntry input = new(

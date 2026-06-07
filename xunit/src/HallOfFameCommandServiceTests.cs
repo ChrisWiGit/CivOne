@@ -23,7 +23,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Clear_WhenEntriesExist_ReplacesWithCurrentHumanEntryOnly()
+		public void ClearWhenEntriesExistReplacesWithCurrentHumanEntryOnly()
 		{
 			// Arrange
 			_persistService.AddEntry(_storageDirectory, CreateEntry("Old Leader", score: 999));
@@ -45,7 +45,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Clear_PersistsCurrentHumanEntryToFile()
+		public void ClearPersistsCurrentHumanEntryToFile()
 		{
 			// Arrange
 			HallOfFameEntry currentHumanEntry = CreateEntry("Composer Human", score: 321);
@@ -67,7 +67,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Clear_WhenComposerThrowsInvalidOperation_ClearsToEmptyList()
+		public void ClearWhenComposerThrowsInvalidOperationClearsToEmptyList()
 		{
 			// Arrange
 			_persistService.AddEntry(_storageDirectory, CreateEntry("Old Leader", score: 999));

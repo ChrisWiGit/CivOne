@@ -6,7 +6,7 @@ namespace CivOne.Persistence.Model
 	public class SpaceShipGridMap2dTest
 	{
 		[Fact]
-		public void ConstructorFromRows_PreservesRowColumnOrientation()
+		public void ConstructorFromRowsPreservesRowColumnOrientation()
 		{
 			string[] rows =
 			[

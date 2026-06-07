@@ -11,7 +11,7 @@ namespace CivOne.UnitTests
 	public sealed class GameGetMapWindowToolHandlerTests
 	{
 		[Fact]
-		public void Handle_EncodedFormat_IncludesMetaDocPathAndEncodedRows()
+		public void HandleEncodedFormatIncludesMetaDocPathAndEncodedRows()
 		{
 			// Arrange
 			GameGetMapWindowToolHandler testee = CreateTestee();
@@ -41,7 +41,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Handle_EncodedFormat_IncludeMetaFalse_StillReturnsMeta()
+		public void HandleEncodedFormatIncludeMetaFalseStillReturnsMeta()
 		{
 			// Arrange
 			GameGetMapWindowToolHandler testee = CreateTestee();
@@ -63,7 +63,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Handle_DecodedFormat_WithIncludeMetaTrue_ReturnsDecodedMeta()
+		public void HandleDecodedFormatWithIncludeMetaTrueReturnsDecodedMeta()
 		{
 			// Arrange
 			GameGetMapWindowToolHandler testee = CreateTestee();
@@ -89,7 +89,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Handle_InvalidBounds_ReturnsInvalidBoundsError()
+		public void HandleInvalidBoundsReturnsInvalidBoundsError()
 		{
 			// Arrange
 			GameGetMapWindowToolHandler testee = CreateTestee();
@@ -110,7 +110,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Handle_InvalidFormat_ReturnsInvalidFormatError()
+		public void HandleInvalidFormatReturnsInvalidFormatError()
 		{
 			// Arrange
 			GameGetMapWindowToolHandler testee = CreateTestee();

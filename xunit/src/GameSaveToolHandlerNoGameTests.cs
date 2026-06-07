@@ -27,7 +27,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Handle_InvalidParams_ReturnsInvalidParamsError()
+		public void HandleInvalidParamsReturnsInvalidParamsError()
 		{
 			using JsonDocument args = JsonDocument.Parse("[]");
 			McpRequest request = new("2.0", "save-nogame-1", "game_save", args.RootElement.Clone(), null);
@@ -41,7 +41,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Handle_GameNotStarted_ReturnsGameNotStartedError()
+		public void HandleGameNotStartedReturnsGameNotStartedError()
 		{
 			using JsonDocument args = JsonDocument.Parse("{}");
 			McpRequest request = new("2.0", "save-nogame-2", "game_save", args.RootElement.Clone(), null);

@@ -8,7 +8,7 @@ namespace CivOne.UnitTests
 	public class PlayerWarTests : TestsBase
 	{
 		[Fact]
-		public void IsAtWar_WhenSetAtWarWasNeverCalled_ReturnsFalse()
+		public void IsAtWarWhenSetAtWarWasNeverCalledReturnsFalse()
 		{
 			// Arrange
 			var players = GetNonBarbarianPlayers(Game.Instance, 2);
@@ -23,7 +23,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void SetAtWar_WhenCalledTwiceWithTrue_RemainsAtWar()
+		public void SetAtWarWhenCalledTwiceWithTrueRemainsAtWar()
 		{
 			// Arrange
 			var players = GetNonBarbarianPlayers(Game.Instance, 2);
@@ -41,7 +41,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void DeclareWar_WhenCalled_SetsSymmetricWarState()
+		public void DeclareWarWhenCalledSetsSymmetricWarState()
 		{
 			// Arrange
 			var players = GetNonBarbarianPlayers(Game.Instance, 2);
@@ -59,7 +59,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void MakePeace_AfterDeclareWar_ClearsSymmetricWarState()
+		public void MakePeaceAfterDeclareWarClearsSymmetricWarState()
 		{
 			// Arrange
 			var players = GetNonBarbarianPlayers(Game.Instance, 2);
@@ -78,7 +78,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void DeclareWar_WhenEnemyIsBarbarian_DoesNotCreateFormalWarState()
+		public void DeclareWarWhenEnemyIsBarbarianDoesNotCreateFormalWarState()
 		{
 			// Arrange
 			var player = GetNonBarbarianPlayers(Game.Instance, 1).Single();
@@ -93,7 +93,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void DeclareWar_WhenTradingCitiesExistBetweenParties_PurgesThemOnBothSides()
+		public void DeclareWarWhenTradingCitiesExistBetweenPartiesPurgesThemOnBothSides()
 		{
 			// Arrange
 			var players = GetNonBarbarianPlayers(Game.Instance, 2);
@@ -114,7 +114,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void DeclareWar_WhenThirdPartyTradingCitiesExist_LeavesThoseUntouched()
+		public void DeclareWarWhenThirdPartyTradingCitiesExistLeavesThoseUntouched()
 		{
 			// Arrange
 			var players = GetNonBarbarianPlayers(Game.Instance, 2);

@@ -10,7 +10,7 @@ namespace CivOne.Persistence.Model
 		// ── ToDto ────────────────────────────────────────────────────────────────
 
 		[Fact]
-		public void ToDto_CityBuilt_MapsAllFields()
+		public void ToDtoCityBuiltMapsAllFields()
 		{
 			var domain = new ReplayData.CityBuilt(turn: 10, ownerId: 2, cityId: 5, cityNameId: 3, x: 12, y: 7);
 
@@ -29,7 +29,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void ToDto_CityDestroyed_MapsAllFields()
+		public void ToDtoCityDestroyedMapsAllFields()
 		{
 			var domain = new ReplayData.CityDestroyed(turn: 20, cityId: 8, cityNameId: 4, x: 30, y: 15);
 
@@ -47,7 +47,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void ToDto_CivilizationDestroyed_MapsAllFields()
+		public void ToDtoCivilizationDestroyedMapsAllFields()
 		{
 			var domain = new ReplayData.CivilizationDestroyed(turn: 42, destroyedId: 3, destroyedById: 1);
 
@@ -65,7 +65,7 @@ namespace CivOne.Persistence.Model
 		// ── FromDto ──────────────────────────────────────────────────────────────
 
 		[Fact]
-		public void FromDto_CityBuilt_MapsAllFields()
+		public void FromDtoCityBuiltMapsAllFields()
 		{
 			var dto = new ReplayDataDto
 			{
@@ -85,7 +85,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void FromDto_CityDestroyed_MapsAllFields()
+		public void FromDtoCityDestroyedMapsAllFields()
 		{
 			var dto = new ReplayDataDto
 			{
@@ -104,7 +104,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void FromDto_CivilizationDestroyed_MapsAllFields()
+		public void FromDtoCivilizationDestroyedMapsAllFields()
 		{
 			var dto = new ReplayDataDto
 			{
@@ -123,7 +123,7 @@ namespace CivOne.Persistence.Model
 		// ── Roundtrip ────────────────────────────────────────────────────────────
 
 		[Fact]
-		public void RoundTrip_CityBuilt_PreservesAllFields()
+		public void RoundTripCityBuiltPreservesAllFields()
 		{
 			var original = new ReplayData.CityBuilt(turn: 10, ownerId: 2, cityId: 5, cityNameId: 3, x: 12, y: 7);
 
@@ -138,7 +138,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void RoundTrip_CityDestroyed_PreservesAllFields()
+		public void RoundTripCityDestroyedPreservesAllFields()
 		{
 			var original = new ReplayData.CityDestroyed(turn: 20, cityId: 8, cityNameId: 4, x: 30, y: 15);
 
@@ -152,7 +152,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void RoundTrip_CivilizationDestroyed_PreservesAllFields()
+		public void RoundTripCivilizationDestroyedPreservesAllFields()
 		{
 			var original = new ReplayData.CivilizationDestroyed(turn: 42, destroyedId: 3, destroyedById: 1);
 
@@ -166,7 +166,7 @@ namespace CivOne.Persistence.Model
 		// ── Multi-set guard ──────────────────────────────────────────────────────
 
 		[Fact]
-		public void FromDto_MultiplePropertiesSet_Throws()
+		public void FromDtoMultiplePropertiesSetThrows()
 		{
 			var dto = new ReplayDataDto
 			{
@@ -181,7 +181,7 @@ namespace CivOne.Persistence.Model
 		// ── List helpers ─────────────────────────────────────────────────────────
 
 		[Fact]
-		public void ToDtoList_NullInput_ReturnsEmptyList()
+		public void ToDtoListNullInputReturnsEmptyList()
 		{
 			var result = _testee.ToDtoList(null);
 
@@ -189,7 +189,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void FromDtoList_NullInput_ReturnsEmptyList()
+		public void FromDtoListNullInputReturnsEmptyList()
 		{
 			var result = _testee.FromDtoList(null);
 
@@ -197,7 +197,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void ToDtoList_PreservesOrder()
+		public void ToDtoListPreservesOrder()
 		{
 			var items = new ReplayData[]
 			{

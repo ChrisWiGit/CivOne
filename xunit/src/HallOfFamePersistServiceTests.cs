@@ -26,7 +26,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void ViewEntries_WhenFileMissing_LogsInfoAndDoesNotCreateFile()
+		public void ViewEntriesWhenFileMissingLogsInfoAndDoesNotCreateFile()
 		{
 			// Arrange
 			string logged = null;
@@ -41,7 +41,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void AddEntry_WhenFileMissing_CreatesFileAndPersistsEntry()
+		public void AddEntryWhenFileMissingCreatesFileAndPersistsEntry()
 		{
 			// Arrange
 			HallOfFameEntry expectedEntry = CreateEntry("Leader A", score: 100);
@@ -57,7 +57,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void AddEntry_WhenMoreThanFiveEntries_KeepsTopFiveByScore()
+		public void AddEntryWhenMoreThanFiveEntriesKeepsTopFiveByScore()
 		{
 			// Arrange
 			for (int i = 0; i < 6; i++)
@@ -77,7 +77,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void AddEntry_SerializesCreatedAtUtcAsScalar()
+		public void AddEntrySerializesCreatedAtUtcAsScalar()
 		{
 			// Arrange
 			HallOfFameEntry expectedEntry = CreateEntry("Leader A", score: 100);

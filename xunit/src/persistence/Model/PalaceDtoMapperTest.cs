@@ -31,7 +31,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestPalaceDtoMapper_ContractCheck()
+		public void TestPalaceDtoMapperContractCheck()
 		{
 			var dto = _testee.ToDto(_palaceData);
 			var dtoProperties = GetWritablePropertyNames<PalaceDto>();
@@ -69,7 +69,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestPalaceDtoMapper_RoundTrip()
+		public void TestPalaceDtoMapperRoundTrip()
 		{
 			var expected = _testee.ToDto(_palaceData);
 			var roundTripDto = _testee.ToDto(_testee.FromDto(expected));

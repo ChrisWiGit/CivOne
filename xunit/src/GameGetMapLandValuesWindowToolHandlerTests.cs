@@ -10,7 +10,7 @@ namespace CivOne.UnitTests
 	public sealed class GameGetMapLandValuesWindowToolHandlerTests
 	{
 		[Fact]
-		public void Handle_ValidWindow_ReturnsHexLandValueRows()
+		public void HandleValidWindowReturnsHexLandValueRows()
 		{
 			// Arrange
 			GameStateDto snapshot = new()

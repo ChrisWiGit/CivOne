@@ -26,7 +26,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestGlobalWarmingDtoMapper_ContractCheck()
+		public void TestGlobalWarmingDtoMapperContractCheck()
 		{
 			var dtoProperties = GetWritablePropertyNames<GlobalWarmingDto>();
 			var expectedProperties = GetGlobalWarmingDtoRoundTripAssertionMap(_dto, _dto).Keys.ToHashSet();
@@ -35,7 +35,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestGlobalWarmingDtoMapper_RoundTrip()
+		public void TestGlobalWarmingDtoMapperRoundTrip()
 		{
 			// Arrange
 			var expected = _dto;

@@ -12,7 +12,7 @@ namespace CivOne.UnitTests
 	public class AiGotoExecutorTests
 	{
 		[Fact]
-		public void CreateFor_WhenComputerPathfindingEnabled_ReturnsSmartExecutor()
+		public void CreateForWhenComputerPathfindingEnabledReturnsSmartExecutor()
 		{
 			// Arrange
 			IAiGotoExecutor expected = new StubExecutor(AiGotoExecutionResult.NotHandled);
@@ -28,7 +28,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void CreateFor_WhenComputerPathfindingDisabled_ReturnsNoOpExecutor()
+		public void CreateForWhenComputerPathfindingDisabledReturnsNoOpExecutor()
 		{
 			// Arrange
 			IAiGotoExecutor smart = new StubExecutor(AiGotoExecutionResult.NotHandled);
@@ -44,7 +44,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryExecute_WhenUnitIsNull_ReturnsNotHandled()
+		public void TryExecuteWhenUnitIsNullReturnsNotHandled()
 		{
 			// Arrange
 			var testee = CreateSmartExecutor(PathStepResult.Disabled());
@@ -57,7 +57,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryExecute_WhenUnitGotoIsEmpty_ReturnsNotHandled()
+		public void TryExecuteWhenUnitGotoIsEmptyReturnsNotHandled()
 		{
 			// Arrange
 			TestUnit unit = new() { Goto = Point.Empty };
@@ -71,7 +71,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryExecute_WhenPathfinderDisabled_ReturnsNotHandled()
+		public void TryExecuteWhenPathfinderDisabledReturnsNotHandled()
 		{
 			// Arrange
 			TestUnit unit = new() { Goto = new Point(12, 10) };
@@ -85,7 +85,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryExecute_WhenNoPath_ClearsGotoAndReturnsContinue()
+		public void TryExecuteWhenNoPathClearsGotoAndReturnsContinue()
 		{
 			// Arrange
 			TestUnit unit = new() { Goto = new Point(12, 10) };
@@ -100,7 +100,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryExecute_WhenPathStepTileNotReachable_ClearsGotoAndReturnsContinue()
+		public void TryExecuteWhenPathStepTileNotReachableClearsGotoAndReturnsContinue()
 		{
 			// Arrange
 			TestUnit unit = new() { Goto = new Point(12, 10), MoveTargets = [] };
@@ -115,7 +115,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryExecute_WhenCivilianWouldAttack_ClearsGotoAndReturnsContinue()
+		public void TryExecuteWhenCivilianWouldAttackClearsGotoAndReturnsContinue()
 		{
 			// Arrange
 			var enemy = new MockedIUnit { Owner = 2 };
@@ -138,7 +138,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryExecute_WhenMoveSucceeds_ReturnsTurnComplete()
+		public void TryExecuteWhenMoveSucceedsReturnsTurnComplete()
 		{
 			// Arrange
 			ITile targetTile = new MockedGrassland(11, 10);

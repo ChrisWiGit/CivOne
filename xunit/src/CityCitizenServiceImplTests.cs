@@ -331,7 +331,7 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void UnhappyToContentTests_ZeroCount()
+        public void UnhappyToContentTestsZeroCount()
         {
             var target = new Citizen[5];
             target[0] = Citizen.UnhappyMale;
@@ -710,7 +710,7 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void ApplyBuildingEffectsTests_Cathedrals()
+        public void ApplyBuildingEffectsTestsCathedrals()
         {
             mockedCity.Size = 5;
             mockedCity.ReturnHasWonderValues(false);
@@ -743,7 +743,7 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void ApplyBuildingEffectsTests_Colosseum()
+        public void ApplyBuildingEffectsTestsColosseum()
         {
             mockedCity.Size = 5;
             mockedCity.ReturnHasWonderValues(false);
@@ -773,7 +773,7 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void ApplyBuildingEffectsTests_NoEffects()
+        public void ApplyBuildingEffectsTestsNoEffects()
         {
             mockedCity.Size = 5;
             mockedCity.ReturnHasWonderValues(false);
@@ -1068,7 +1068,7 @@ namespace CivOne.UnitTests
         [InlineData(4, 3, 3, 0, 0)]  // all Specialists -> no Workers, everything 0
         [InlineData(3, 5, 1, 2, 2)]  // medium Difficulty, mixed Case
         [InlineData(5, 4, 3, 0, 1)]  // negative contentLimit -> content=0
-        public void CalculateCityStats_AllCases(
+        public void CalculateCityStatsAllCases(
             byte difficulty,
             byte citySize,
             int specialists,

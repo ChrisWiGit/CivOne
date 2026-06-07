@@ -7,7 +7,7 @@ namespace CivOne.src
 	public class PeaceTurnsTests : TestsBase
 	{
 		[Fact]
-		public void EndTurn_WhenNoHostileActionOccurred_IncrementsOncePerNewTurn()
+		public void EndTurnWhenNoHostileActionOccurredIncrementsOncePerNewTurn()
 		{
 			// Arrange
 			var game = Game.Instance;
@@ -23,7 +23,7 @@ namespace CivOne.src
 		}
 
 		[Fact]
-		public void EndTurn_WhenHostileActionOccurred_ResetsToZero()
+		public void EndTurnWhenHostileActionOccurredResetsToZero()
 		{
 			// Arrange
 			var game = Game.Instance;

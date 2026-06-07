@@ -24,7 +24,7 @@ namespace CivOne.UnitTests
         [InlineData(1, 9, 0)]
         [InlineData(19, 5, 9)]
         [InlineData(19, 9, 17)]
-        public void CalculateTradeTaxes_TruncatesTowardsZero(int totalTrade, int taxesRate, short expectedTaxes)
+        public void CalculateTradeTaxesTruncatesTowardsZero(int totalTrade, int taxesRate, short expectedTaxes)
         {
             short taxes = _service.CalculateTradeTaxes(totalTrade, taxesRate);
 
@@ -32,35 +32,35 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void CalculateTradeLuxuries_ReturnsZero_WhenTaxesRateIsMax()
+        public void CalculateTradeLuxuriesReturnsZeroWhenTaxesRateIsMax()
         {
             short luxuries = _service.CalculateTradeLuxuries(20, 10, 10, 5);
             Assert.Equal(0, luxuries);
         }
 
         [Fact]
-        public void CalculateTradeScience_DoesNotGoNegative()
+        public void CalculateTradeScienceDoesNotGoNegative()
         {
             short science = _service.CalculateTradeScience(3, 2, 3);
             Assert.Equal(0, science);
         }
 
         [Fact]
-        public void CalculateLuxuries_AppliesBuildingAndEntertainerBonuses()
+        public void CalculateLuxuriesAppliesBuildingAndEntertainerBonuses()
         {
             short luxuries = _service.CalculateLuxuries(4, hasMarketPlace: true, hasBank: true, entertainerLuxuries: 3);
             Assert.Equal(12, luxuries);
         }
 
         [Fact]
-        public void CalculateTaxes_AppliesBuildingAndTaxmanBonuses()
+        public void CalculateTaxesAppliesBuildingAndTaxmanBonuses()
         {
             short taxes = _service.CalculateTaxes(4, hasMarketPlace: true, hasBank: true, taxmen: 2);
             Assert.Equal(13, taxes);
         }
 
         [Fact]
-        public void CalculateScience_AppliesScienceMultipliersInExpectedOrder()
+        public void CalculateScienceAppliesScienceMultipliersInExpectedOrder()
         {
             short science = _service.CalculateScience(
                 tradeScience: 10,
@@ -75,7 +75,7 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void CalculateScience_CapsAtShortMaxValue()
+        public void CalculateScienceCapsAtShortMaxValue()
         {
             short science = _service.CalculateScience(
                 tradeScience: 30000,
@@ -93,7 +93,7 @@ namespace CivOne.UnitTests
     public class CityEconomyServiceImplCalculateBreakdownTests : TestsBase
     {
         [Fact]
-        public void FoodTotal_Recomputes_WhenWorkedTileFoodChangesWithinSameTurn()
+        public void FoodTotalRecomputesWhenWorkedTileFoodChangesWithinSameTurn()
         {
             var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
             City city = Game.Instance.AddCity(playa, 0, unit.X, unit.Y);
@@ -126,7 +126,7 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void ShieldTotal_Recomputes_WhenWorkedTileShieldChangesWithinSameTurn()
+        public void ShieldTotalRecomputesWhenWorkedTileShieldChangesWithinSameTurn()
         {
             var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
             City city = Game.Instance.AddCity(playa, 0, unit.X, unit.Y);
@@ -171,7 +171,7 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void CalculateBreakdown_IncludesTradingRoutesAndWonderRules()
+        public void CalculateBreakdownIncludesTradingRoutesAndWonderRules()
         {
             Player player = playa;
             City city = Game.Instance.AddCity(player, 0, 40, 30);

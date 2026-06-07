@@ -13,7 +13,7 @@ namespace CivOne.UnitTests
 	{
 		[Fact]
 		[Trait("Category", "IntegrationEarthYaml")]
-		public void Handle_FullMapViaMapSizeTool_EncodedFormat_IsNotTruncated()
+		public void HandleFullMapViaMapSizeToolEncodedFormatIsNotTruncated()
 		{
 			// Arrange
 			IGameStateDtoSnapshotProvider snapshotProvider = new GameStateDtoSnapshotProvider(
@@ -63,7 +63,7 @@ namespace CivOne.UnitTests
 
 		[Fact]
 		[Trait("Category", "IntegrationEarthYaml")]
-		public void Handle_EncodedFormat_WithEarthYamlSnapshot_ReturnsWindowRows()
+		public void HandleEncodedFormatWithEarthYamlSnapshotReturnsWindowRows()
 		{
 			// Arrange
 			IGameStateDtoSnapshotProvider snapshotProvider = new GameStateDtoSnapshotProvider(

@@ -24,7 +24,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryHandle_ControlF1_SavesToSlotFile()
+		public void TryHandleControlF1SavesToSlotFile()
 		{
 			string savedPath = null;
 			var service = CreateService(
@@ -41,7 +41,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryHandle_AltF2_LoadsSlotAndRebuildsGameplay()
+		public void TryHandleAltF2LoadsSlotAndRebuildsGameplay()
 		{
 			string slotPath = Path.Combine(_fastSavesDirectory, "fastsave_f2.cos");
 			Directory.CreateDirectory(_fastSavesDirectory);
@@ -68,7 +68,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryHandle_AltSlotWithoutFile_DoesNotInvokeLoader()
+		public void TryHandleAltSlotWithoutFileDoesNotInvokeLoader()
 		{
 			int loadCalls = 0;
 			var service = CreateService(
@@ -89,7 +89,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryHandle_UnmodifiedOrShiftFunctionKey_IsNotHandled()
+		public void TryHandleUnmodifiedOrShiftFunctionKeyIsNotHandled()
 		{
 			var service = CreateService(
 				canQuickSave: () => true,
@@ -106,7 +106,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryHandle_AltF11_OpensQuickLoadMenuWithExistingSlots()
+		public void TryHandleAltF11OpensQuickLoadMenuWithExistingSlots()
 		{
 			Directory.CreateDirectory(_fastSavesDirectory);
 			File.WriteAllText(Path.Combine(_fastSavesDirectory, "fastsave_f2.cos"), "test");
@@ -129,7 +129,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryHandle_AltF11_SelectionLoadsChosenSlot()
+		public void TryHandleAltF11SelectionLoadsChosenSlot()
 		{
 			Directory.CreateDirectory(_fastSavesDirectory);
 			string slotPath = Path.Combine(_fastSavesDirectory, "fastsave_f4.cos");
@@ -157,7 +157,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryHandle_AltF11_WhenNoSlots_PassesEmptySlotListToMenu()
+		public void TryHandleAltF11WhenNoSlotsPassesEmptySlotListToMenu()
 		{
 			IReadOnlyList<int> listedSlots = null;
 			var service = CreateService(

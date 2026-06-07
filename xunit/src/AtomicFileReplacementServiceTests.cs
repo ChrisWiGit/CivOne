@@ -19,7 +19,7 @@ namespace CivOne.UnitTests
 	public class AtomicFileReplacementServiceTests
 	{
 		[Fact]
-		public void ReplaceFile_WhenDestinationExists_DeletesOldFileAndMovesTempFile()
+		public void ReplaceFileWhenDestinationExistsDeletesOldFileAndMovesTempFile()
 		{
 			string destinationPath = Path.Combine("saves", "cos", "savegame.cos");
 			var fileOps = new FakeAtomicFileOperations();
@@ -44,7 +44,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void ReplaceFile_WhenWriteThrows_DeletesTempFileAndRethrows()
+		public void ReplaceFileWhenWriteThrowsDeletesTempFileAndRethrows()
 		{
 			string destinationPath = Path.Combine("saves", "cos", "savegame.cos");
 			var fileOps = new FakeAtomicFileOperations();

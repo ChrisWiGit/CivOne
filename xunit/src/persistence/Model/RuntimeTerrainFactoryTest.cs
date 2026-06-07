@@ -30,7 +30,7 @@ namespace CivOne.Persistence.Factories.Tests
 		[InlineData(Terrain.Desert,     typeof(Desert))]
 		[InlineData(Terrain.Arctic,     typeof(Arctic))]
 		[InlineData(Terrain.Ocean,      typeof(Ocean))]
-		public void CreateTile_KnownTerrain_ReturnsCorrectTileType(Terrain terrain, Type expectedType)
+		public void CreateTileKnownTerrainReturnsCorrectTileType(Terrain terrain, Type expectedType)
 		{
 			// Act
 			ITile tile = _testee.CreateTile(terrain, 0, 0, false);
@@ -41,7 +41,7 @@ namespace CivOne.Persistence.Factories.Tests
 		}
 
 		[Fact]
-		public void CreateTile_AllDefinedTerrainValues_AreHandledWithoutException()
+		public void CreateTileAllDefinedTerrainValuesAreHandledWithoutException()
 		{
 			// Arrange
 			var terrains = Enum.GetValues<Terrain>()
@@ -58,14 +58,14 @@ namespace CivOne.Persistence.Factories.Tests
 		}
 
 		[Fact]
-		public void CreateTile_NoneTerrain_ThrowsArgumentOutOfRangeException()
+		public void CreateTileNoneTerrainThrowsArgumentOutOfRangeException()
 		{
 			// Act & Assert
 			Assert.Throws<ArgumentOutOfRangeException>(() => _testee.CreateTile(Terrain.None, 0, 0, false));
 		}
 
 		[Fact]
-		public void CreateTile_UnknownTerrain_ThrowsArgumentOutOfRangeException()
+		public void CreateTileUnknownTerrainThrowsArgumentOutOfRangeException()
 		{
 			// Act & Assert
 			Assert.Throws<ArgumentOutOfRangeException>(() => _testee.CreateTile((Terrain)999, 0, 0, false));

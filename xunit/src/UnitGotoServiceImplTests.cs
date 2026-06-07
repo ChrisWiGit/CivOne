@@ -18,7 +18,7 @@ namespace CivOne.UnitTests
 
 		[Theory]
 		[MemberData(nameof(ImplementationModes))]
-		public void GotoStep_WhenAlreadyAtGoal_ReturnsNull(bool useNewImpl)
+		public void GotoStepWhenAlreadyAtGoalReturnsNull(bool useNewImpl)
 		{
 			// Arrange
 			var (map, _) = MakeLandMap(10, 10);
@@ -34,7 +34,7 @@ namespace CivOne.UnitTests
 
 		[Theory]
 		[MemberData(nameof(ImplementationModes))]
-		public void GotoStep_WhenGoalIsDirectNeighbour_ReturnsTileAtGoal(bool useNewImpl)
+		public void GotoStepWhenGoalIsDirectNeighbourReturnsTileAtGoal(bool useNewImpl)
 		{
 			// Arrange
 			var (map, _) = MakeLandMap(10, 10);
@@ -52,7 +52,7 @@ namespace CivOne.UnitTests
 
 		[Theory]
 		[MemberData(nameof(ImplementationModes))]
-		public void GotoStep_WhenMultipleStepsAway_ReturnsFirstStepNotGoal(bool useNewImpl)
+		public void GotoStepWhenMultipleStepsAwayReturnsFirstStepNotGoal(bool useNewImpl)
 		{
 			// Arrange
 			// 10-wide map, unit at (0,5) wants to reach (4,5).
@@ -71,7 +71,7 @@ namespace CivOne.UnitTests
 
 		[Theory]
 		[MemberData(nameof(ImplementationModes))]
-		public void GotoStep_LandUnit_DoesNotEnterOceanTile(bool useNewImpl)
+		public void GotoStepLandUnitDoesNotEnterOceanTile(bool useNewImpl)
 		{
 			// Arrange
 			// Horizontal ocean wall: all x at y=1..8 are ocean.
@@ -95,7 +95,7 @@ namespace CivOne.UnitTests
 
 		[Theory]
 		[MemberData(nameof(ImplementationModes))]
-		public void GotoStep_LandUnit_DoesNotEnterArcticTile(bool useNewImpl)
+		public void GotoStepLandUnitDoesNotEnterArcticTile(bool useNewImpl)
 		{
 			// Arrange
 			// Horizontal arctic wall: all x at y=1..3 are arctic.
@@ -116,7 +116,7 @@ namespace CivOne.UnitTests
 
 		[Theory]
 		[MemberData(nameof(ImplementationModes))]
-		public void GotoStep_WaterUnit_DoesNotEnterLandTile(bool useNewImpl)
+		public void GotoStepWaterUnitDoesNotEnterLandTile(bool useNewImpl)
 		{
 			// Arrange
 			// All-ocean 10×10 map. Tile (6,5) is land, blocking the direct path.
@@ -143,7 +143,7 @@ namespace CivOne.UnitTests
 
 		[Theory]
 		[MemberData(nameof(ImplementationModes))]
-		public void GotoStep_WaterUnit_CanLandOnGoalTileEvenIfNotOcean(bool useNewImpl)
+		public void GotoStepWaterUnitCanLandOnGoalTileEvenIfNotOcean(bool useNewImpl)
 		{
 			// Arrange
 			// All-ocean map. Goal tile at (4,5) is a land tile (isGoal bypass).
@@ -170,7 +170,7 @@ namespace CivOne.UnitTests
 
 		[Theory]
 		[MemberData(nameof(ImplementationModes))]
-		public void GotoStep_WhenFullyBlocked_ReturnsNull(bool useNewImpl)
+		public void GotoStepWhenFullyBlockedReturnsNull(bool useNewImpl)
 		{
 			// Arrange
 			// 3×3 map. Unit at (0,0), goal at (2,2).
@@ -195,7 +195,7 @@ namespace CivOne.UnitTests
 
 		[Theory]
 		[MemberData(nameof(ImplementationModes))]
-		public void GotoStep_PrefersRailroadOverRoadOverTerrain(bool useNewImpl)
+		public void GotoStepPrefersRailroadOverRoadOverTerrain(bool useNewImpl)
 		{
 			// Arrange
 			// 5-wide map (y=2 only usable row). Two paths from (0,2) to (4,2):
@@ -220,7 +220,7 @@ namespace CivOne.UnitTests
 
 		[Theory]
 		[MemberData(nameof(ImplementationModes))]
-		public void GotoStep_HorizontalWrap_FindsPathAroundMapEdge(bool useNewImpl)
+		public void GotoStepHorizontalWrapFindsPathAroundMapEdge(bool useNewImpl)
 		{
 			// Arrange
 			// 10-wide, 5-tall map. Unit at x=1, goal at x=9.
@@ -247,7 +247,7 @@ namespace CivOne.UnitTests
 
 
 		[Fact]
-		public void GotoStep_WithRiverFastMovement_PrefersRiverOverPlainTerrain()
+		public void GotoStepWithRiverFastMovementPrefersRiverOverPlainTerrain()
 		{
 			// Arrange
 			// 10-wide, 5-tall map. Unit at (2,2), goal at (7,2).
@@ -271,7 +271,7 @@ namespace CivOne.UnitTests
 
 		[Theory]
 		[MemberData(nameof(ImplementationModes))]
-		public void GotoStep_WithoutRiverFastMovement_PrefersRoadOverRiver(bool useNewImpl)
+		public void GotoStepWithoutRiverFastMovementPrefersRoadOverRiver(bool useNewImpl)
 		{
 			// Arrange
 			// 10-wide, 5-tall map. Unit at (2,2), goal at (7,2).

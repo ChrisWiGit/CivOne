@@ -51,7 +51,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestUnitDtoMapper_ContractCheck()
+		public void TestUnitDtoMapperContractCheck()
 		{
 			var dtoProperties = GetWritablePropertyNames<UnitDto>();
 			var expectedProperties = GetUnitDtoRoundTripAssertionMap(_originalDto, _originalDto).Keys.ToHashSet();
@@ -98,7 +98,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestUnitDtoMapper_RoundTrip()
+		public void TestUnitDtoMapperRoundTrip()
 		{
 			var unit = _testee.FromDto(_originalDto);
 			var roundTripDto = _testee.ToDto(unit);
@@ -115,7 +115,7 @@ namespace CivOne.Persistence.Model
 		[Theory]
 		[InlineData(false, true, true, false)]
 		[InlineData(false, false, false, true)]
-		public void FromDto_UsesRestorableStatusMapping(
+		public void FromDtoUsesRestorableStatusMapping(
 			bool expectedSentry,
 			bool expectedFortifyActive,
 			bool expectedFortify,

@@ -10,7 +10,7 @@ namespace CivOne.UnitTests.Persistence
 	public sealed class YamlSaveGameStateWriterSaveGuidTests
 	{
 		[Fact]
-		public void Write_WithSaveMetaData_WritesRootSaveGuid()
+		public void WriteWithSaveMetaDataWritesRootSaveGuid()
 		{
 			GameState snapshot = new()
 			{

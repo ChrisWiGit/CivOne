@@ -206,7 +206,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestPlayerDtoMapper_ContractCheck()
+		public void TestPlayerDtoMapperContractCheck()
 		{
 			var dtoProperties = GetWritablePropertyNames<PlayerDto>();
 			// This guards mapping completeness: when a new writable PlayerDto property is added,
@@ -219,7 +219,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestPlayerDtoMapper_RoundTrip()
+		public void TestPlayerDtoMapperRoundTrip()
 		{
 			var player = _testee.FromDto(originalDto);
 			var roundTripDto = _testee.ToDto(player);
@@ -236,7 +236,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestPlayerDtoMapper_FromDto_ExpandsAllAdvancesSentinel()
+		public void TestPlayerDtoMapperFromDtoExpandsAllAdvancesSentinel()
 		{
 			var dto = new PlayerDto
 			{

@@ -13,7 +13,7 @@ namespace CivOne.UnitTests.Persistence
 	public class YamlLoadGameStateReaderTest
 	{
 		[Fact]
-		public void GameStateDtoYamlRead_MapsCoreSections()
+		public void GameStateDtoYamlReadMapsCoreSections()
 		{
 			// Arrange
 			const string yaml =
@@ -66,7 +66,7 @@ namespace CivOne.UnitTests.Persistence
 		}
 
 		[Fact]
-		public void GameStateDtoYamlRead_PreservesNegativeAdvanceSentinel()
+		public void GameStateDtoYamlReadPreservesNegativeAdvanceSentinel()
 		{
 			const string yaml =
 				"Players:\n" +
@@ -92,7 +92,7 @@ namespace CivOne.UnitTests.Persistence
 		private readonly IValueSanitizer _sanitizer = new ValueSanitizer(new TestLogger());
 
 		[Fact]
-		public void FromDto_MapsPlayersUnitsCitiesAndMapTiles()
+		public void FromDtoMapsPlayersUnitsCitiesAndMapTiles()
 		{
 			// Arrange
 			var dto = YamlLoadGameStateReaderTestData.BuildSampleGameStateDto();
@@ -119,7 +119,7 @@ namespace CivOne.UnitTests.Persistence
 		}
 
 		[Fact]
-		public void FromDto_TransfersHutAndLandValue()
+		public void FromDtoTransfersHutAndLandValue()
 		{
 			// Arrange
 			var dto = YamlLoadGameStateReaderTestData.BuildSampleGameStateDto();
@@ -137,7 +137,7 @@ namespace CivOne.UnitTests.Persistence
 		}
 
 		[Fact]
-		public void FromDto_PreservesCityStatusFlags()
+		public void FromDtoPreservesCityStatusFlags()
 		{
 			// Arrange
 			var dto = YamlLoadGameStateReaderTestData.BuildSampleGameStateDto();

@@ -25,7 +25,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Handle_WithActiveGame_CreatesNewCosFileAndReturnsFileNameAndGuid()
+		public void HandleWithActiveGameCreatesNewCosFileAndReturnsFileNameAndGuid()
 		{
 			DateTimeOffset fixedNow = new(2026, 4, 30, 18, 45, 12, 123, TimeSpan.Zero);
 			GameSaveToolHandler testee = new(_runtime, new JsonSaveGameStateWriter(), 32000, () => fixedNow);
@@ -46,7 +46,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Handle_WhenTimestampFileAlreadyExists_ReturnsFileExistsError()
+		public void HandleWhenTimestampFileAlreadyExistsReturnsFileExistsError()
 		{
 			DateTimeOffset fixedNow = new(2026, 4, 30, 18, 45, 12, 123, TimeSpan.Zero);
 			string existingFile = Path.Combine(_tempFolder, "savegame_mcp_20260430184512123.cos");

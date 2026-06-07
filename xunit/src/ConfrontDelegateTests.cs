@@ -23,7 +23,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void AllowedToConfrontInDemocracy_ReturnsFalse_ForHumanDemocracyAttackingPeacefulUnit()
+		public void AllowedToConfrontInDemocracyReturnsFalseForHumanDemocracyAttackingPeacefulUnit()
 		{
 			// Arrange
 			_humanPlayer.Government = new Democracy();
@@ -38,7 +38,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void AllowedToConfrontInDemocracy_ReturnsTrue_ForHumanNonDemocracyAttacker()
+		public void AllowedToConfrontInDemocracyReturnsTrueForHumanNonDemocracyAttacker()
 		{
 			// Arrange
 			_humanPlayer.Government = new Monarchy();
@@ -53,7 +53,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void AllowedToConfrontInDemocracy_ReturnsTrue_ForAiDemocracyAttacker()
+		public void AllowedToConfrontInDemocracyReturnsTrueForAiDemocracyAttacker()
 		{
 			// Arrange
 			_enemyPlayer.Government = new Democracy();
@@ -68,7 +68,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void AllowedToConfrontInDemocracy_ReturnsTrue_ForBarbarianTarget()
+		public void AllowedToConfrontInDemocracyReturnsTrueForBarbarianTarget()
 		{
 			// Arrange
 			_humanPlayer.Government = new Democracy();
@@ -83,7 +83,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void AllowedToConfrontInDemocracy_ReturnsTrue_ForAtWarTarget()
+		public void AllowedToConfrontInDemocracyReturnsTrueForAtWarTarget()
 		{
 			// Arrange
 			_humanPlayer.Government = new Democracy();
@@ -99,7 +99,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void AllowedToConfrontInDemocracy_ReturnsFalse_ForPeacefulEnemyCity()
+		public void AllowedToConfrontInDemocracyReturnsFalseForPeacefulEnemyCity()
 		{
 			// Arrange
 			_humanPlayer.Government = new Democracy();
@@ -114,7 +114,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void AllowedToConfrontInDemocracy_ReturnsTrue_WhenTargetHasNoOwner()
+		public void AllowedToConfrontInDemocracyReturnsTrueWhenTargetHasNoOwner()
 		{
 			// Arrange
 			_humanPlayer.Government = new Democracy();

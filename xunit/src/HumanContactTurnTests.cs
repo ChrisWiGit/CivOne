@@ -7,7 +7,7 @@ namespace CivOne.src
 	public class HumanContactTurnTests : TestsBase
 	{
 		[Fact]
-		public void Explore_AiSeeingHumanUnit_SetsHumanContactTurnToCurrentTurn()
+		public void ExploreAiSeeingHumanUnitSetsHumanContactTurnToCurrentTurn()
 		{
 			var game = Game.Instance;
 			var aiPlayer = game.Players.First(player => player != playa && !(player.Civilization is Barbarian));
@@ -20,7 +20,7 @@ namespace CivOne.src
 		}
 
 		[Fact]
-		public void Explore_HumanSeeingAiUnit_DoesNotSetAiHumanContactTurn()
+		public void ExploreHumanSeeingAiUnitDoesNotSetAiHumanContactTurn()
 		{
 			var game = Game.Instance;
 			var aiPlayer = game.Players.First(player => player != playa && !(player.Civilization is Barbarian));

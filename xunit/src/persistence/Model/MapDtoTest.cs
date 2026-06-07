@@ -51,7 +51,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestMapDtoMapper_ContractCheck()
+		public void TestMapDtoMapperContractCheck()
 		{
 			var dtoProperties = GetWritablePropertyNames<MapDto>();
 			var expectedProperties = GetMapDtoRoundTripAssertionMap(

@@ -12,7 +12,7 @@ namespace CivOne.Persistence.Model
 		/// Ensures that values above <see cref="byte.MaxValue"/> are clamped and produce an overflow log entry.
 		/// </summary>
 		[Fact]
-		public void ClampToByte_LogsOverflow_WhenValueExceedsMaximum()
+		public void ClampToByteLogsOverflowWhenValueExceedsMaximum()
 		{
 			var logger = new CapturingLogger();
 			var testee = new ValueSanitizer(logger);
@@ -29,7 +29,7 @@ namespace CivOne.Persistence.Model
 		/// Ensures that negative values are clamped to <see cref="ushort.MinValue"/> and produce an underflow log entry.
 		/// </summary>
 		[Fact]
-		public void ClampToUInt16_LogsUnderflow_WhenValueFallsBelowMinimum()
+		public void ClampToUInt16LogsUnderflowWhenValueFallsBelowMinimum()
 		{
 			var logger = new CapturingLogger();
 			var testee = new ValueSanitizer(logger);
@@ -46,7 +46,7 @@ namespace CivOne.Persistence.Model
 		/// Ensures that in-range values are returned unchanged and do not produce log entries.
 		/// </summary>
 		[Fact]
-		public void ClampToInt32_DoesNotLog_WhenValueIsInRange()
+		public void ClampToInt32DoesNotLogWhenValueIsInRange()
 		{
 			var logger = new CapturingLogger();
 			var testee = new ValueSanitizer(logger);
@@ -61,7 +61,7 @@ namespace CivOne.Persistence.Model
 		/// Ensures checked conversion for unsigned target logs underflow and clamps negative values.
 		/// </summary>
 		[Fact]
-		public void CheckedToUInt16OrClamp_LogsUnderflow_WhenValueIsNegative()
+		public void CheckedToUInt16OrClampLogsUnderflowWhenValueIsNegative()
 		{
 			var logger = new CapturingLogger();
 			var testee = new ValueSanitizer(logger);
@@ -78,7 +78,7 @@ namespace CivOne.Persistence.Model
 		/// Ensures checked conversion for signed target logs overflow and clamps large values.
 		/// </summary>
 		[Fact]
-		public void CheckedToInt16OrClamp_LogsOverflow_WhenValueExceedsMaximum()
+		public void CheckedToInt16OrClampLogsOverflowWhenValueExceedsMaximum()
 		{
 			var logger = new CapturingLogger();
 			var testee = new ValueSanitizer(logger);

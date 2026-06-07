@@ -29,7 +29,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Handle_InvalidCosFiles_AreOmittedFromResponse()
+		public void HandleInvalidCosFilesAreOmittedFromResponse()
 		{
 			CreateValidCos(Path.Combine(_tempFolder, "valid.cos"));
 			File.WriteAllText(Path.Combine(_tempFolder, "broken.cos"), "not: yaml: save");

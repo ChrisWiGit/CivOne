@@ -71,7 +71,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestCityDtoMapper_ContractCheck()
+		public void TestCityDtoMapperContractCheck()
 		{
 			var dtoProperties = GetWritablePropertyNames<CityDto>();
 			var expectedProperties = GetCityDtoRoundTripAssertionMap(_originalDto, _originalDto).Keys.ToHashSet();
@@ -80,7 +80,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestCityDtoMapper_RoundTrip()
+		public void TestCityDtoMapperRoundTrip()
 		{
 			var city = _testee.FromDto(_originalDto);
 			var roundTripDto = _testee.ToDto(city);
@@ -109,7 +109,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestMapResourceTiles_OutOfBounds()
+		public void TestMapResourceTilesOutOfBounds()
 		{
 			resourceTiles[0] = new Grassland(-3, -3);
 
@@ -144,7 +144,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestMapMapToTiles_Empty()
+		public void TestMapMapToTilesEmpty()
 		{
 			Bool2dMap map = new(5, 5);
 			var tiles = _testee.MapMapToTiles(_cityTile, map);
@@ -152,7 +152,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestMapResourceTiles_MapMapToTiles()
+		public void TestMapResourceTilesMapMapToTiles()
 		{
 			var map = _testee.MapResourceTiles([.. resourceTiles], _cityTile.Tile);
 			var tiles = _testee.MapMapToTiles(_cityTile, map);

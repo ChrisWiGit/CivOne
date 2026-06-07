@@ -260,7 +260,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestGameStateDtoMapper_ContractCheck()
+		public void TestGameStateDtoMapperContractCheck()
 		{
 			var dtoProperties = GetWritablePropertyNames<GameStateDto>();
 			// This prevents silent mapper drift: every writable GameStateDto property must
@@ -271,7 +271,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestGameStateDtoMapper_RoundTrip()
+		public void TestGameStateDtoMapperRoundTrip()
 		{
 			var gameState = _testee.FromDto(_dto);
 			var roundTripDto = _testee.ToDto(gameState);

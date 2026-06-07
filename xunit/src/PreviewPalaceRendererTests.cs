@@ -8,7 +8,7 @@ namespace CivOne.UnitTests
 	public class PreviewPalaceResourcesDelegateTests
 	{
 		[Fact]
-		public void GetPreviewPart_WhenLevelAndPartProvided_ReturnsExpectedSpriteSlice()
+		public void GetPreviewPartWhenLevelAndPartProvidedReturnsExpectedSpriteSlice()
 		{
 			// Arrange
 			Picture sp257 = CreateSp257WithPreviewMarkers();
@@ -24,7 +24,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void GetPreviewPart_WhenCalledTwice_ReturnsCachedInstance()
+		public void GetPreviewPartWhenCalledTwiceReturnsCachedInstance()
 		{
 			// Arrange
 			Picture sp257 = CreateSp257WithPreviewMarkers();
@@ -79,7 +79,7 @@ namespace CivOne.UnitTests
 	public class PreviewPalaceRendererTests
 	{
 		[Fact]
-		public void RenderPalace_WhenNoPalacePartsActive_ReturnsOneByOneBitmap()
+		public void RenderPalaceWhenNoPalacePartsActiveReturnsOneByOneBitmap()
 		{
 			// Arrange
 			Picture sp257 = CreateSp257WithPreviewMarkers();
@@ -96,7 +96,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void RenderPalace_WhenSomePartsActive_ReturnsBitmapWithExpectedSize()
+		public void RenderPalaceWhenSomePartsActiveReturnsBitmapWithExpectedSize()
 		{
 			// Arrange
 			Picture sp257 = CreateSp257WithPreviewMarkers();
@@ -116,7 +116,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void RenderPalace_WhenWallBuilt_AlwaysRendersAdjacentTower()
+		public void RenderPalaceWhenWallBuiltAlwaysRendersAdjacentTower()
 		{
 			// Arrange
 			Picture sp257 = CreateSp257WithPreviewMarkers();
@@ -140,7 +140,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void RenderPalace_WhenRenderingWallsAndCenter_UsesExpectedPartMapping()
+		public void RenderPalaceWhenRenderingWallsAndCenterUsesExpectedPartMapping()
 		{
 			// Arrange
 			Picture sp257 = CreateSp257WithPreviewMarkers();

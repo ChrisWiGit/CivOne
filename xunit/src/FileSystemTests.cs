@@ -20,7 +20,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void CopyFiles_WhenSourceFileUsesDifferentCasing_CopiesUsingCanonicalTargetName()
+		public void CopyFilesWhenSourceFileUsesDifferentCasingCopiesUsingCanonicalTargetName()
 		{
 			File.WriteAllText(Path.Combine(_sourceDirectory, "fonts.cv"), "font-data");
 
@@ -32,7 +32,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void CopyFiles_WhenFileIsMissing_ReturnsMissingCanonicalFileName()
+		public void CopyFilesWhenFileIsMissingReturnsMissingCanonicalFileName()
 		{
 			bool actual = FileSystem.CopyFiles(_sourceDirectory, _targetDirectory, ["FONTS.CV"], out string missingFile);
 

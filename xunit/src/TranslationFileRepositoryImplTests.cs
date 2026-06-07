@@ -21,7 +21,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void GetAvailableLanguages_ReturnsOnlyValidCivFiles()
+		public void GetAvailableLanguagesReturnsOnlyValidCivFiles()
 		{
 			File.WriteAllText(Path.Combine(_translationDirectory, "civ_german.txt"), "__LANGUAGE_DISPLAYNAME__=Deutsch\nGERMAN=GermanLegacy\nHELLO=Hallo");
 			File.WriteAllText(Path.Combine(_translationDirectory, "civ_invalid.txt"), "malformed-line");
@@ -36,7 +36,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void GetAvailableLanguages_WhenMetaDisplayNameMissing_FallsBackToLegacyPostfixKey()
+		public void GetAvailableLanguagesWhenMetaDisplayNameMissingFallsBackToLegacyPostfixKey()
 		{
 			File.WriteAllText(Path.Combine(_translationDirectory, "civ_german.txt"), "GERMAN=DeutschLegacy");
 
@@ -48,7 +48,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void GetAvailableLanguages_WhenSelfNameKeyMissing_LeavesDisplayNameEmpty()
+		public void GetAvailableLanguagesWhenSelfNameKeyMissingLeavesDisplayNameEmpty()
 		{
 			File.WriteAllText(Path.Combine(_translationDirectory, "civ_french.txt"), "HELLO=Bonjour");
 
@@ -60,7 +60,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void GetAvailableLanguages_WhenSelfNameKeyWhitespace_LeavesDisplayNameEmpty()
+		public void GetAvailableLanguagesWhenSelfNameKeyWhitespaceLeavesDisplayNameEmpty()
 		{
 			File.WriteAllText(Path.Combine(_translationDirectory, "civ_french.txt"), "FRENCH=   \nHELLO=Bonjour");
 
@@ -72,7 +72,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryLoadTranslations_NormalizesKeyAndUnescapesEqualsPlaceholder()
+		public void TryLoadTranslationsNormalizesKeyAndUnescapesEqualsPlaceholder()
 		{
 			string filePath = Path.Combine(_translationDirectory, "civ_german.txt");
 			File.WriteAllText(filePath, "quick save/load=Quick Save/Load\nA[EQ]B=X[EQ]Y\n");
@@ -86,7 +86,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryLoadTranslations_UnescapesControlCharactersInKeyAndValue()
+		public void TryLoadTranslationsUnescapesControlCharactersInKeyAndValue()
 		{
 			string filePath = Path.Combine(_translationDirectory, "civ_german.txt");
 			File.WriteAllText(filePath, "FOO\\nBAR=Line1\\nLine2\n");
@@ -99,7 +99,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryLoadTranslations_UnescapesUppercaseControlCharactersInKeyAndValue()
+		public void TryLoadTranslationsUnescapesUppercaseControlCharactersInKeyAndValue()
 		{
 			string filePath = Path.Combine(_translationDirectory, "civ_german.txt");
 			File.WriteAllText(filePath, "ROME\\NCAESAREA=Rom\\NCaesarea\n");
@@ -112,7 +112,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryLoadTranslations_WithMalformedLine_ReturnsFalse()
+		public void TryLoadTranslationsWithMalformedLineReturnsFalse()
 		{
 			string filePath = Path.Combine(_translationDirectory, "civ_german.txt");
 			File.WriteAllText(filePath, "HELLO=Hallo\nmalformed\n");
@@ -124,7 +124,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void SyncFiles_WhenSourceFileUsesUppercaseName_SkipsIt()
+		public void SyncFilesWhenSourceFileUsesUppercaseNameSkipsIt()
 		{
 			string sourceDirectory = Path.Combine(_storageDirectory, "source");
 			string targetDirectory = Path.Combine(_storageDirectory, "target");
@@ -139,7 +139,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void SyncFiles_WhenSourceContainsLowercaseFile_CopiesIt()
+		public void SyncFilesWhenSourceContainsLowercaseFileCopiesIt()
 		{
 			string sourceDirectory = Path.Combine(_storageDirectory, "source");
 			string targetDirectory = Path.Combine(_storageDirectory, "target");
@@ -153,7 +153,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void SyncFiles_SkipsObsoleteKeysAndAllTxt()
+		public void SyncFilesSkipsObsoleteKeysAndAllTxt()
 		{
 			string sourceDirectory = Path.Combine(_storageDirectory, "source");
 			string targetDirectory = Path.Combine(_storageDirectory, "target");

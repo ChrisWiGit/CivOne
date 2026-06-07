@@ -26,7 +26,7 @@ namespace CivOne.Persistence.Model
 		/// Tests that null players array is handled gracefully without throwing.
 		/// </summary>
 		[Fact]
-		public void TestUnitsDestroyedByResolver_NullPlayers_DoesNotThrow()
+		public void TestUnitsDestroyedByResolverNullPlayersDoesNotThrow()
 		{
 			var playerDtos = new List<PlayerDto>
 			{
@@ -41,7 +41,7 @@ namespace CivOne.Persistence.Model
 		/// Tests that empty players array is handled gracefully.
 		/// </summary>
 		[Fact]
-		public void TestUnitsDestroyedByResolver_EmptyPlayers_DoesNotThrow()
+		public void TestUnitsDestroyedByResolverEmptyPlayersDoesNotThrow()
 		{
 			var playerDtos = new List<PlayerDto>
 			{
@@ -57,7 +57,7 @@ namespace CivOne.Persistence.Model
 		/// Tests that null player DTOs list is handled gracefully.
 		/// </summary>
 		[Fact]
-		public void TestUnitsDestroyedByResolver_NullPlayerDtos_DoesNotThrow()
+		public void TestUnitsDestroyedByResolverNullPlayerDtosDoesNotThrow()
 		{
 			var players = new[] { CreateMockPlayer(Guid.NewGuid()) };
 
@@ -69,7 +69,7 @@ namespace CivOne.Persistence.Model
 		/// Tests that empty player DTOs list is handled gracefully.
 		/// </summary>
 		[Fact]
-		public void TestUnitsDestroyedByResolver_EmptyPlayerDtos_DoesNotThrow()
+		public void TestUnitsDestroyedByResolverEmptyPlayerDtosDoesNotThrow()
 		{
 			var players = new[] { CreateMockPlayer(Guid.NewGuid()) };
 
@@ -82,7 +82,7 @@ namespace CivOne.Persistence.Model
 		/// Tests basic resolution of a single destruction count mapping.
 		/// </summary>
 		[Fact]
-		public void TestUnitsDestroyedByResolver_SingleMapping_ResolvesCorrectly()
+		public void TestUnitsDestroyedByResolverSingleMappingResolvesCorrectly()
 		{
 			var player0Guid = Guid.NewGuid();
 			var player1Guid = Guid.NewGuid();
@@ -113,7 +113,7 @@ namespace CivOne.Persistence.Model
 		/// Tests resolution of multiple destruction count mappings for a single player.
 		/// </summary>
 		[Fact]
-		public void TestUnitsDestroyedByResolver_MultipleMappings_ResolvesAll()
+		public void TestUnitsDestroyedByResolverMultipleMappingsResolvesAll()
 		{
 			var player0Guid = Guid.NewGuid();
 			var player1Guid = Guid.NewGuid();
@@ -148,7 +148,7 @@ namespace CivOne.Persistence.Model
 		/// Tests that multiple players' destruction counts are resolved independently.
 		/// </summary>
 		[Fact]
-		public void TestUnitsDestroyedByResolver_MultiplePlayers_ResolvesIndependently()
+		public void TestUnitsDestroyedByResolverMultiplePlayersResolvesIndependently()
 		{
 			var player0Guid = Guid.NewGuid();
 			var player1Guid = Guid.NewGuid();
@@ -192,7 +192,7 @@ namespace CivOne.Persistence.Model
 		/// Tests that empty GUID in mapping is skipped safely.
 		/// </summary>
 		[Fact]
-		public void TestUnitsDestroyedByResolver_EmptyGuid_IsSkipped()
+		public void TestUnitsDestroyedByResolverEmptyGuidIsSkipped()
 		{
 			var player0Guid = Guid.NewGuid();
 			var player1Guid = Guid.NewGuid();
@@ -227,7 +227,7 @@ namespace CivOne.Persistence.Model
 		/// Tests that GUIDs not found in players array are skipped.
 		/// </summary>
 		[Fact]
-		public void TestUnitsDestroyedByResolver_UnknownGuid_IsSkipped()
+		public void TestUnitsDestroyedByResolverUnknownGuidIsSkipped()
 		{
 			var player0Guid = Guid.NewGuid();
 			var unknownGuid = Guid.NewGuid();
@@ -259,7 +259,7 @@ namespace CivOne.Persistence.Model
 		/// Tests that values exceeding ushort.MaxValue are clamped correctly.
 		/// </summary>
 		[Fact]
-		public void TestUnitsDestroyedByResolver_ValueExceedsMax_IsClamped()
+		public void TestUnitsDestroyedByResolverValueExceedsMaxIsClamped()
 		{
 			var player0Guid = Guid.NewGuid();
 			var player1Guid = Guid.NewGuid();
@@ -290,7 +290,7 @@ namespace CivOne.Persistence.Model
 		/// Tests that negative values are clamped to zero.
 		/// </summary>
 		[Fact]
-		public void TestUnitsDestroyedByResolver_NegativeValue_IsClampedToZero()
+		public void TestUnitsDestroyedByResolverNegativeValueIsClampedToZero()
 		{
 			var player0Guid = Guid.NewGuid();
 			var player1Guid = Guid.NewGuid();
@@ -321,7 +321,7 @@ namespace CivOne.Persistence.Model
 		/// Tests that existing destruction counts are preserved when not overwritten.
 		/// </summary>
 		[Fact]
-		public void TestUnitsDestroyedByResolver_PreservesExistingCounts()
+		public void TestUnitsDestroyedByResolverPreservesExistingCounts()
 		{
 			var player0Guid = Guid.NewGuid();
 			var player1Guid = Guid.NewGuid();
@@ -362,7 +362,7 @@ namespace CivOne.Persistence.Model
 		/// Tests that non-restorable players are skipped without error.
 		/// </summary>
 		[Fact]
-		public void TestUnitsDestroyedByResolver_NonRestorablePlayer_IsSkipped()
+		public void TestUnitsDestroyedByResolverNonRestorablePlayerIsSkipped()
 		{
 			var player0Guid = Guid.NewGuid();
 
@@ -388,7 +388,7 @@ namespace CivOne.Persistence.Model
 		/// Tests that null UnitsDestroyedByByPlayerGuid in DTO is handled.
 		/// </summary>
 		[Fact]
-		public void TestUnitsDestroyedByResolver_NullGuidMapping_IsSkipped()
+		public void TestUnitsDestroyedByResolverNullGuidMappingIsSkipped()
 		{
 			var player0Guid = Guid.NewGuid();
 
@@ -412,7 +412,7 @@ namespace CivOne.Persistence.Model
 		/// Tests that empty UnitsDestroyedByByPlayerGuid in DTO is handled.
 		/// </summary>
 		[Fact]
-		public void TestUnitsDestroyedByResolver_EmptyGuidMapping_IsSkipped()
+		public void TestUnitsDestroyedByResolverEmptyGuidMappingIsSkipped()
 		{
 			var player0Guid = Guid.NewGuid();
 
@@ -436,7 +436,7 @@ namespace CivOne.Persistence.Model
 		/// Tests that resolved array size is at least 8 (standard player slots).
 		/// </summary>
 		[Fact]
-		public void TestUnitsDestroyedByResolver_MinimumArraySize_IsEight()
+		public void TestUnitsDestroyedByResolverMinimumArraySizeIsEight()
 		{
 			var player0Guid = Guid.NewGuid();
 
@@ -465,7 +465,7 @@ namespace CivOne.Persistence.Model
 		/// Tests that resolved array size equals player count when exceeding 8.
 		/// </summary>
 		[Fact]
-		public void TestUnitsDestroyedByResolver_ExceedingMinimum_UsesPlayerCount()
+		public void TestUnitsDestroyedByResolverExceedingMinimumUsesPlayerCount()
 		{
 			var playerGuids = new Guid[16];
 			for (var i = 0; i < 16; i++)
@@ -507,7 +507,7 @@ namespace CivOne.Persistence.Model
 		/// Tests mixed scenarios with valid and invalid mappings.
 		/// </summary>
 		[Fact]
-		public void TestUnitsDestroyedByResolver_MixedScenario_HandlesCorrectly()
+		public void TestUnitsDestroyedByResolverMixedScenarioHandlesCorrectly()
 		{
 			var player0Guid = Guid.NewGuid();
 			var player1Guid = Guid.NewGuid();

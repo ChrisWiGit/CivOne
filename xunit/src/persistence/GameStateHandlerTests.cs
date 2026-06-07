@@ -23,7 +23,7 @@ namespace CivOne.UnitTests.Persistence
         }
 
         [Fact]
-        public void Create_UsesExplicitGameRandomSeed_WhenAvailable()
+        public void CreateUsesExplicitGameRandomSeedWhenAvailable()
         {
             // Arrange
             const int gameRandomSeed = 1337;
@@ -43,7 +43,7 @@ namespace CivOne.UnitTests.Persistence
         }
 
         [Fact]
-        public void Create_FallsBackToTerrainMasterWord_WhenGameRandomSeedMissing()
+        public void CreateFallsBackToTerrainMasterWordWhenGameRandomSeedMissing()
         {
             // Arrange
             const int terrainMasterWord = 9001;

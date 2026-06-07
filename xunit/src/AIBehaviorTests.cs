@@ -24,7 +24,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void CityProduction_WhenTradeAndLessThanThreeRoutes_ChoosesCaravanAfterUnitThreshold()
+		public void CityProductionWhenTradeAndLessThanThreeRoutesChoosesCaravanAfterUnitThreshold()
 		{
 			// Arrange
 			var game = Game.Instance;
