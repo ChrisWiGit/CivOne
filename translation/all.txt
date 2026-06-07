@@ -1235,4 +1235,5 @@ SETI PROGRAM=SETI Program
 SHAKESPEARE'S THEATRE=Shakespeare's Theatre
 UNITED NATIONS=United Nations
 WOMEN'S SUFFRAGE=Women's Suffrage
+{0} (POP:{1})={0} (Pop:{1})
 SELECT STARTUP LANGUAGE.=Select startup language.

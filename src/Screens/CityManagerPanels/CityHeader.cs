@@ -43,7 +43,7 @@ namespace CivOne.Screens.CityManagerPanels
 
 			this.Tile(Pattern.PanelBlue)
 				.DrawRectangle(colour: 1)
-				.DrawText($"{_city.Name} (Pop:{population})", 1, 17, (int)Math.Ceiling((float)Width / 2), 1, TextAlign.Center);
+				.DrawText(TranslateFormatted("{0} (Pop:{1})", _city.Name, population), 1, 17, (int)Math.Ceiling((float)Width / 2), 1, TextAlign.Center);
 
 			foreach (var info in _citizenLayoutService.EnumerateCitizens())
 			{
