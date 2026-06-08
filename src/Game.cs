@@ -548,11 +548,17 @@ namespace CivOne
 					if (Settings.Instance.PathFinding)
 					{
 						/*  Use AStar  */
-						AStar.sPosition Destination, Pos;
-						Destination.iX = unit.Goto.X;
-						Destination.iY = unit.Goto.Y;
-						Pos.iX = unit.X;
-						Pos.iY = unit.Y;
+						AStar.SPosition Destination = new()
+						{
+							iX = unit.Goto.X,
+							iY = unit.Goto.Y
+						};
+						
+						AStar.SPosition Pos = new()
+						{
+							iX = unit.X,
+							iY = unit.Y
+						};
 
 						if (Destination.iX == Pos.iX && Destination.iY == Pos.iY)
 						{
@@ -560,7 +566,7 @@ namespace CivOne
 							return;
 						}
 						AStar AStar = new AStar();
-						AStar.sPosition NextPosition = AStar.FindPath(Destination, unit);
+						AStar.SPosition NextPosition = AStar.FindPath(Destination, unit);
 						if (NextPosition.iX < 0)
 						{         // if no path found
 							unit.Goto = Point.Empty;

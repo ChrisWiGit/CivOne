@@ -13,14 +13,14 @@ namespace CivOne.Services.Pathfinding
 				return PathStepResult.InvalidRequest();
 			}
 
-			AStar.sPosition goal = new()
+			AStar.SPosition goal = new()
 			{
 				iX = destination.X,
 				iY = destination.Y
 			};
 
 			AStar astar = new();
-			AStar.sPosition nextPosition = astar.FindPath(goal, unit);
+			AStar.SPosition nextPosition = astar.FindPath(goal, unit);
 
 			if (nextPosition.iX < 0 || nextPosition.iY < 0)
 			{
