@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -34,9 +35,11 @@ namespace CivOne
 		private static string T(this string input) => TranslationServiceFactory.GetCurrent().Translate(input);
 		
 
-		public static string GetSoundFile(this string input)
+		public static string? GetSoundFile(this string input)
 		{
-			return Directory.GetFiles(Settings.SoundsDirectory).Where(x => Path.GetFileName(x).ToLower() == $"{input.ToLower()}.wav").FirstOrDefault();
+			return Directory.GetFiles(Settings.SoundsDirectory).
+				FirstOrDefault(
+					x => Path.GetFileName(x).Equals($"{input.ToLowerInvariant()}.wav", StringComparison.OrdinalIgnoreCase));
 		}
 
 		public static byte[] Clear(this byte[] byteArray, byte value = 0)
@@ -48,7 +51,7 @@ namespace CivOne
 
 		public static string ToString(this byte[] bytes, int startIndex, int length)
 		{
-			StringBuilder output = new StringBuilder();
+			StringBuilder output = new();
 			for (int i = startIndex; i < startIndex + length; i++)
 			{
 				if (bytes[i] == 0) break;
@@ -96,7 +99,9 @@ namespace CivOne
 		private static CityData GetCityData(this City city, byte id)
 		{
             // TODO fire-eggs fails to take 'fortifyING' into account?
-            IUnit[] units = city.Tile?.Units.Where(x => x.Home == city && x.Fortify).Take(2).ToArray();
+            IUnit[]? units = city.Tile?.Units.Where(x => x.Home == city && x.Fortify)
+				.Take(2)
+				.ToArray();
 			var cityNameId = CVS.CheckedByte(city.NameId, nameof(Extensions), "CityData.NameId");
 			var visibleSize = CVS.CheckedByte(city.VisibleSizeToHumanPlayer, nameof(Extensions), "CityData.VisibleSize");
 			var food = CVS.CheckedUInt16(city.Food, nameof(Extensions), "CityData.Food");
@@ -124,7 +129,7 @@ namespace CivOne
 				BaseTrade = baseTrade,
 				ResourceTiles = city.GetResourceTiles(),
 				// fire-eggs 20190622 make sure to save fortify/veteran status as per Microprose
-				FortifiedUnits = units?.Select(x => (byte)((int)x.Type | 0x40 | (x.Veteran ? 0x80 : 0))).ToArray(),
+				FortifiedUnits = [.. units?.Select(x => (byte)((int)x.Type | 0x40 | (x.Veteran ? 0x80 : 0))) ?? []],
 				TradingCities = [.. city.TradingCitiesAsCity.Select(c => c.GetId())]
 			};
 		}
@@ -236,11 +241,11 @@ namespace CivOne
 				GotoY = gotoY,
 				Visibility = 0xFF,
 				NextUnitId = 0xFF,
-				HomeCityId = unit.Home.GetId()
+				HomeCityId = unit.Home?.GetId() ?? 0xFF
 			};
 		}
 
-		private static IEnumerable<IUnit> FilterUnits(this List<IUnit> unitList)
+		private static List<IUnit> FilterUnits(this List<IUnit> unitList)
 		{
 			unitList.RemoveAll(unit =>
 				unit.Home != null &&
@@ -260,7 +265,7 @@ namespace CivOne
 			IEnumerable<IUnit> filteredUnits = unitList.ToList().FilterUnits();
 
 			byte index = 0;
-			List<UnitData> unitDataList = new List<UnitData>();
+			List<UnitData> unitDataList = [];
 			foreach (IUnit unit in filteredUnits)
 			{
 				unitDataList.Add(unit.GetUnitData(index++));
@@ -281,61 +286,67 @@ namespace CivOne
 
 		public static string ToText(this AspectRatio aspectRatio)
 		{
-			switch (aspectRatio)
+			Debug.Assert(Enum.IsDefined(aspectRatio), $"Unexpected AspectRatio value {aspectRatio} in Extensions.ToText");
+			return aspectRatio switch
 			{
-				case AspectRatio.Auto: return T("Automatic");
-				case AspectRatio.Fixed: return T("Fixed");
-				case AspectRatio.Scaled: return T("Scaled (blurry)");
-				case AspectRatio.ScaledFixed: return T("Scaled and fixed (blurry)");
-				case AspectRatio.Expand: return T("Expand");
-				default: return null;
-			}
+				AspectRatio.Auto => T("Automatic"),
+				AspectRatio.Fixed => T("Fixed"),
+				AspectRatio.Scaled => T("Scaled (blurry)"),
+				AspectRatio.ScaledFixed => T("Scaled and fixed (blurry)"),
+				AspectRatio.Expand => T("Expand"),
+				_ => T("(unknown)"),
+			};
 		}
 
 		public static string ToText(this GraphicsMode graphicsMode)
 		{
-			switch (graphicsMode)
+			Debug.Assert(Enum.IsDefined(graphicsMode), $"Unexpected GraphicsMode value {graphicsMode} in Extensions.ToText");
+			return graphicsMode switch
 			{
-				case GraphicsMode.Graphics256: return T("256 colors");
-				case GraphicsMode.Graphics16: return T("16 colors");
-				default: return null;
-			}
+				GraphicsMode.Graphics16 => T("16 colors"),
+				GraphicsMode.Graphics256 => T("256 colors"),
+				_ => T("(unknown)"),
+			};
 		}
 
 		public static string ToText(this SimulateInternationalFont simulateInternationalFont)
 		{
-			switch (simulateInternationalFont)
+			Debug.Assert(Enum.IsDefined(simulateInternationalFont), $"Unexpected SimulateInternationalFont value {simulateInternationalFont} in Extensions.ToText");
+			return simulateInternationalFont switch
 			{
-				case SimulateInternationalFont.Auto: return T("Auto");
-				case SimulateInternationalFont.Yes: return T("Yes");
-				case SimulateInternationalFont.No: return T("No");
-				default: return null;
-			}
+				SimulateInternationalFont.Yes => T("Yes"),
+				SimulateInternationalFont.No => T("No"),
+				SimulateInternationalFont.Auto => T("Auto"),
+				_ => T("(unknown)"),
+			};
 		}
 
 		public static string ToText(this CursorType cursorType)
 		{
-			switch (cursorType)
+			Debug.Assert(Enum.IsDefined(cursorType), $"Unexpected CursorType value {cursorType} in Extensions.ToText");
+			return cursorType switch
 			{
-				case CursorType.Default: return T("Default");
-				case CursorType.Builtin: return T("Built-in");
-				case CursorType.Native: return T("Native");
-				default: return null;
-			}
+				CursorType.Builtin => T("Built-in"),
+				CursorType.Native => T("Native"),
+				CursorType.Default => T("Default"),
+				_ => T("(unknown)"),
+			};
 		}
 
 		public static string ToText(this DestroyAnimation destroyAnimation)
 		{
-			switch (destroyAnimation)
+			Debug.Assert(Enum.IsDefined(destroyAnimation), $"Unexpected DestroyAnimation value {destroyAnimation} in Extensions.ToText");
+			return destroyAnimation switch
 			{
-				case DestroyAnimation.Sprites: return T("Sprites (original)");
-				case DestroyAnimation.Noise: return T("Noise");
-				default: return null;
-			}
+				DestroyAnimation.Noise => T("Noise"),
+				DestroyAnimation.Sprites => T("Sprites (original)"),
+				_ => T("(unknown)"),
+			};
 		}
 
 		public static string ToText(this FpsCorner fpsCorner)
 		{
+			Debug.Assert(Enum.IsDefined(fpsCorner), $"Unexpected FpsCorner value {fpsCorner} in Extensions.ToText");
 			return fpsCorner switch
 			{
 				FpsCorner.Off => T("Off"),
@@ -343,85 +354,88 @@ namespace CivOne
 				FpsCorner.TopRight => T("Top Right"),
 				FpsCorner.BottomLeft => T("Bottom Left"),
 				FpsCorner.BottomRight => T("Bottom Right"),
-				_ => throw new InvalidOperationException($"Unexpected FpsCorner value {fpsCorner} in Extensions.ToText")
+				_ => T("(unknown)"),
 			};
 		}
 
 		public static string ToText(this GameOption gameOption)
 		{
-			switch (gameOption)
+			Debug.Assert(Enum.IsDefined(gameOption), $"Unexpected GameOption value {gameOption} in Extensions.ToText");
+			return gameOption switch
 			{
-				case GameOption.Default: return T("Default");
-				case GameOption.On: return T("On");
-				case GameOption.Off: return T("Off");
-				default: return null;
-			}
+				GameOption.Default => T("Default"),
+				GameOption.On => T("On"),
+				GameOption.Off => T("Off"),
+				_ => T("(unknown)")
+			};
 		}
 
 		public static string ToText(this AggressionLevel aggression)
 		{
-			switch (aggression)
+			Debug.Assert(Enum.IsDefined(aggression), $"Unexpected AggressionLevel value {aggression} in Extensions.ToText");
+			return aggression switch
 			{
-				case AggressionLevel.Friendly: return T("Friendly");
-				case AggressionLevel.Normal: return T("Normal");
-				case AggressionLevel.Aggressive: return T("Aggressive");
-				default: return null;
-			}
+				AggressionLevel.Friendly => T("Friendly"),
+				AggressionLevel.Normal => T("Normal"),
+				AggressionLevel.Aggressive => T("Aggressive"),
+				_ => T("(unknown)"),
+			};
 		}
 
 		public static string ToText(this DevelopmentLevel development)
 		{
-			switch (development)
+			Debug.Assert(Enum.IsDefined(development), $"Unexpected DevelopmentLevel value {development} in Extensions.ToText");
+			return development switch
 			{
-				case DevelopmentLevel.Perfectionist: return T("Perfectionist");
-				case DevelopmentLevel.Normal: return T("Normal");
-				case DevelopmentLevel.Expansionistic: return T("Expansionistic");
-				default: return null;
-			}
+				DevelopmentLevel.Perfectionist => T("Perfectionist"),
+				DevelopmentLevel.Normal => T("Normal"),
+				DevelopmentLevel.Expansionistic => T("Expansionistic"),
+				_ => T("(unknown)"),
+			};
 		}
 
 		public static string ToText(this MilitarismLevel militarism)
 		{
-			switch (militarism)
+			return militarism switch
 			{
-				case MilitarismLevel.Civilized: return T("Civilized");
-				case MilitarismLevel.Normal: return T("Normal");
-				case MilitarismLevel.Militaristic: return T("Militaristic");
-				default: return null;
-			}
+				MilitarismLevel.Civilized => T("Civilized"),
+				MilitarismLevel.Normal => T("Normal"),
+				MilitarismLevel.Militaristic => T("Militaristic"),
+				_ => T("(unknown)"),
+			};
 		}
 
 		public static string[] Traits(this ILeader leader)
 		{
-			List<string> output = new List<string>();
+			List<string> output = [];
 			if (leader.Aggression != AggressionLevel.Normal) output.Add(leader.Aggression.ToText());
-			if (leader.Development != DevelopmentLevel.Normal) output.Add(leader.Development.ToString());
-			if (leader.Militarism != MilitarismLevel.Normal) output.Add(leader.Militarism.ToString());
-			return output.ToArray();
+			if (leader.Development != DevelopmentLevel.Normal) output.Add(leader.Development.ToText());
+			if (leader.Militarism != MilitarismLevel.Normal) output.Add(leader.Militarism.ToText());
+			return [.. output];
 		}
 
-		public static IAdvance ToInstance(this Advance advance) => Common.Advances.FirstOrDefault(x => x.Id == (byte)advance);
+		public static IAdvance? ToInstance(this Advance advance) => Common.Advances.FirstOrDefault(x => x.Id == (byte)advance);
 		public static ILeader ToInstance(this Leader leader)
 		{
-			switch (leader)
+			return leader switch
 			{
-				case Leader.Atilla: return new Atilla();
-				case Leader.Caesar: return new Caesar();
-				case Leader.Hammurabi: return new Hammurabi();
-				case Leader.Frederick: return new Frederick();
-				case Leader.Ramesses: return new Ramesses();
-				case Leader.Lincoln: return new Lincoln();
-				case Leader.Alexander: return new Alexander();
-				case Leader.Gandhi: return new Gandhi();
-				case Leader.Stalin: return new Stalin();
-				case Leader.Shaka: return new Shaka();
-				case Leader.Napoleon: return new Napoleon();
-				case Leader.Montezuma: return new Montezuma();
-				case Leader.Mao: return new Mao();
-				case Leader.Elizabeth: return new Elizabeth();
-				case Leader.Genghis: return new Genghis();
-				default: return null;
-			}
+				Leader.Atilla => new Atilla(),
+				Leader.Caesar => new Caesar(),
+				Leader.Hammurabi => new Hammurabi(),
+				Leader.Frederick => new Frederick(),
+				Leader.Ramesses => new Ramesses(),
+				Leader.Lincoln => new Lincoln(),
+				Leader.Alexander => new Alexander(),
+				Leader.Gandhi => new Gandhi(),
+				Leader.Stalin => new Stalin(),
+				Leader.Shaka => new Shaka(),
+				Leader.Napoleon => new Napoleon(),
+				Leader.Montezuma => new Montezuma(),
+				Leader.Mao => new Mao(),
+				Leader.Elizabeth => new Elizabeth(),
+				Leader.Genghis => new Genghis(),
+				_ => throw new InvalidOperationException($"Unexpected Leader value {leader} in Extensions.ToInstance"),
+			};
 		}
 
 		public static IBitmap GifToBitmap(this byte[] buffer)
@@ -434,7 +448,7 @@ namespace CivOne
 			// and stays valid after Dispose(). Additionally GifFile.Dispose() is currently a
 			// no-op, so disposal does not invalidate any state either way.
 			using GifFile gifFile = new(buffer);
-			return gifFile.GetBitmap();
+			return gifFile.GetBitmap()!;
 		}
 
 		/// <summary>
