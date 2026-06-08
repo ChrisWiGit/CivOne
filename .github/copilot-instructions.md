@@ -115,12 +115,26 @@ Whenever a diff deletes a line that contains any of `index++`, `++index`, `i++` 
 * When calling method that returns IDisposeable, use `using`. Don't do `using Bytemap unitPicture = ScaleBitmap(movingUnit.ToBitmap(), _tilePixelSize, _tilePixelSize);` but instead `using Bytemap unitSource = movingUnit.ToBitmap(); using Bytemap unitPicture = ScaleBitmap(unitSource, _tilePixelSize, _tilePixelSize);` to immediately dispose the original bitmap after scaling.
 * Exception for cached/shared bitmaps: do not use `using` or call `Dispose()` on values returned from sprite caches (`ISprite.Bitmap`, `CachedSpriteCollection` entries, and `UnitExtensions.ToBitmap(...)`). These buffers are owned by the cache and are disposed only by cache clear/dispose.
 
-* Culture rule:
-  * Use `CultureInfo.InvariantCulture` for stable, culture-insensitive behavior.
-  * Use it for serialization, logs, config files, protocol values, IDs, and tests.
-  * Examples: `ToLower(..., CultureInfo.InvariantCulture)`, `ToUpper(..., CultureInfo.InvariantCulture)`, `value.ToString(CultureInfo.InvariantCulture)`, `Convert.ToString(value, CultureInfo.InvariantCulture)`, `double.Parse(text, CultureInfo.InvariantCulture)`, `int.Parse(text, NumberStyles.Integer, CultureInfo.InvariantCulture)`, `int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out int value)`.
-  * Do not use `InvariantCulture` for user-facing text, localized UI, or user input that should follow current locale.
-  * For UI text/input, use `CultureInfo.CurrentCulture`.
+### Culture-invariant formatting and parsing
+
+Use culture-invariant APIs for non-user-facing text, such as identifiers, protocol values, serialization, persistence, logging, and machine-readable data.
+
+Prefer the dedicated invariant casing methods where available:
+
+- `text.ToLowerInvariant()`
+- `text.ToUpperInvariant()`
+
+For formatting and parsing, pass `CultureInfo.InvariantCulture` explicitly:
+
+- `value.ToString(CultureInfo.InvariantCulture)`
+- `Convert.ToString(value, CultureInfo.InvariantCulture)`
+- `double.Parse(text, CultureInfo.InvariantCulture)`
+- `int.Parse(text, NumberStyles.Integer, CultureInfo.InvariantCulture)`
+- `int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out int value)`
+
+There is no general `ToStringInvariant()` method in .NET 9. Use `ToString(CultureInfo.InvariantCulture)` instead.
+
+Do not use `InvariantCulture` for user-facing text, localized UI, or user input that should follow the current locale. For these cases, use `CultureInfo.CurrentCulture`.
 
 
 
@@ -133,6 +147,36 @@ Whenever a diff deletes a line that contains any of `index++`, `++index`, `i++` 
 * Required fix: if the screen uses an `_update` flag or cached UI state, set it so the UI is rebuilt after resize.
 * Required fix: if the screen is centered in 320x200 space, apply resize-safe offsets or use menu/dialog centering support so content stays aligned.
 * Required fix: preserve menu selection where possible; do not recreate menus on every refresh unless necessary.
+
+## Git
+
+When reviewing staged changes, prefer a single combined diff to minimize token overhead:
+
+```bash
+git diff --cached
+```
+
+For large staged changes, first request a compact overview:
+
+```bash
+git diff --cached --stat
+git diff --cached --name-status
+```
+
+Then inspect only relevant files or chunks:
+
+```bash
+git diff --cached -- path/to/file
+```
+
+Prefer compact diffs when full context is unnecessary:
+
+```bash
+git diff --cached --unified=1 --find-renames
+```
+
+Use `--unified=0` only when the exact changed lines are sufficient. Avoid running separate full diffs for every staged file unless the combined diff is too large or specific files need focused review.
+
 
 ## Build
 
