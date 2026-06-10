@@ -31,21 +31,21 @@ namespace CivOne
 	public partial class Player : BaseInstance, ITurn, IPlayer, IPlayerSpaceRace
     {
 		// Dependency injection via IPlayerGame; set by Game on load/new game.
-		internal static new IPlayerGame Game;
+		internal static new IPlayerGame Game = null!; //For Player this is never expected to be null at runtime.
 		private readonly ICivilization _civilization;
 		private Guid _playerGuid = Guid.NewGuid();
 		private string _tribeName, _tribeNamePlural;
 
 		private readonly bool[,] _explored = new bool[Map.WIDTH, Map.HEIGHT];
 		private readonly bool[,] _visible = new bool[Map.WIDTH, Map.HEIGHT];
-		private readonly List<byte> _advances = new List<byte>();
-		private readonly List<byte> _embassies = new List<byte>();
+		private readonly List<byte> _advances = [];
+		private readonly List<byte> _embassies = [];
 		/// <summary>
 		/// Runtime-only bilateral war state used by the new diplomacy API.
 		/// This state is currently not serialized to, loaded from, or reconstructed from
 		/// legacy SVE diplomacy flags.
 		/// </summary>
-		private readonly HashSet<byte> _warWith = new HashSet<byte>();
+		private readonly HashSet<byte> _warWith = [];
 		/// <summary>
 		/// Raw legacy diplomacy bitmask storage (8 targets).
 		/// The bit semantics are not fully documented; gameplay war logic does not currently
@@ -146,9 +146,9 @@ namespace CivOne
 			GameTask.Enqueue(Message.Newspaper(null, TranslateFormattedArray("The {0} are\nrevolting! Citizens\ndemand new govt.", Game.HumanPlayer.TribeNamePlural)));
 		}
 
-		public bool IsHuman => (Game.HumanPlayer == this);
+		public bool IsHuman => Game.HumanPlayer == this;
 
-		public virtual City[] Cities => Game.GetCities().Where(c => this == c.CityOwnerPlayerIndex && c.Size > 0).ToArray();
+		public virtual City[] Cities => [.. Game.GetCities().Where(c => this == c.CityOwnerPlayerIndex && c.Size > 0)];
 		
 		/** <summary>
 		 * Interface for City collection.
@@ -212,11 +212,16 @@ namespace CivOne
 			}
 		}
 
-		public IAdvance[] Advances => _advances.Select(a => Common.Advances.First(x => x.Id == a)).ToArray();
+		public IAdvance[] Advances => [.. _advances.Select(a => Common.Advances.First(x => x.Id == a))];
 		
 		public virtual bool HasAdvance<T>() where T : IAdvance => Advances.Any(a => a is T);
 
-		public virtual bool HasAdvance(IAdvance advance) => (advance == null || Advances.Any(a => a.Id == advance.Id));
+		/// <summary>
+		/// Returns whether the player has the specified advance, or if the advance is null.
+		/// </summary>
+		/// <param name="advance">The advance to check.</param>
+		/// <returns>True if the player has the advance or if the advance is null; otherwise, false.</returns>
+		public virtual bool HasAdvance(IAdvance? advance) => advance == null || Advances.Any(a => a.Id == advance.Id);
 
 		SpaceShipComponentType[,] IPlayerSpaceRace.SpaceShipGrid
 		{
@@ -244,7 +249,7 @@ namespace CivOne
 
 		bool IPlayerSpaceRace.HasApolloProgram() => HasWonder<ApolloProgram>();
 
-		public Player[] Embassies => [.._embassies.Select(e => Game.Players.FirstOrDefault(p => e == Game.PlayerNumber(p))).Where(p => p != null)];
+		public Player[] Embassies => [.._embassies.Select(e => Game.Players.FirstOrDefault(p => e == Game.PlayerNumber(p))).OfType<Player>()];
 
 		public bool HasEmbassy(Player player) => _embassies.Any(e => e == Game.PlayerNumber(player));
 
@@ -738,14 +743,14 @@ namespace CivOne
 		PalaceData IPlayer.Palace => _palace;
 
 		List<ICity> IPlayer.Cities => (Game != null && Game.Started)
-			? Cities.Cast<ICity>().ToList()
+			? [.. Cities.Cast<ICity>()]
 			: (RestoredCities?.ToList() ?? []);
 
 		
 		public override int GetHashCode() => Game.PlayerNumber(this);
 
 		
-		public static explicit operator Player(byte playerNumber) => Game.GetPlayer(playerNumber);
+		public static explicit operator Player?(byte playerNumber) => Game.GetPlayer(playerNumber);
 		public static explicit operator byte(Player player) => Game.PlayerNumber(player);
 		
 		public static bool operator ==(Player p1, byte p2) => Game.PlayerNumber(p1) == p2;

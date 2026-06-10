@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Text;
@@ -182,7 +183,7 @@ namespace CivOne.Graphics
 		private Bytemap GetLetter(byte colour, int font, char letter)
 		{
 			var key = (colour, font, letter);
-			if (_textCache.TryGetValue(key, out Bytemap cached))
+			if (_textCache.TryGetValue(key, out Bytemap? cached))
 				return cached;
 			return _textCache.GetOrAdd(key, k => Font(k.Font).GetLetter(k.Letter, k.Colour));
 		}
@@ -271,7 +272,7 @@ namespace CivOne.Graphics
 			current.Clear().Append(word);
 		}
 		
-		private static Picture _worldMapTiles;
+		private static Picture? _worldMapTiles;
 		public static Picture WorldMapTiles
 		{
 			get
@@ -286,20 +287,35 @@ namespace CivOne.Graphics
 			}
 		}
 
+		/// <summary>
+		/// Gets a picture by resource filename.
+		/// </summary>
+		/// <param name="filename">
+		/// The resource filename.
+		/// </param>
+		/// <returns>
+		/// A new <see cref="Picture"/> instance containing the requested bitmap data.
+		/// </returns>
+		/// <remarks>
+		/// This indexer does not return the internal cache instance.
+		/// Even on cache hits, it returns a newly constructed copy.
+		/// Callers own the returned instance and may dispose it safely.
+		/// </remarks>
 		public Picture this[string filename]
 		{
 			get
 			{
 				string key = filename.ToUpperInvariant();
-				if (_cache.TryGetValue(key, out Picture cached))
+				if (_cache.TryGetValue(key, out Picture? cached))
 				{
 					return new Picture(cached.Bitmap, cached.Palette);
 				}
 
 				Picture output;
-				using PicFile picFile = new PicFile(filename);
+				using PicFile picFile = new(filename);
 				if ((Settings.GraphicsMode == GraphicsMode.Graphics256 && picFile.GetPicture256 != null) || picFile.GetPicture16 == null)
 				{
+					Debug.Assert(picFile.GetPicture256 != null, $"Expected 256-color version of {filename} to be available.");
 					output = new Picture(picFile.GetPicture256, picFile.GetPalette256);
 				}
 				else
@@ -321,7 +337,7 @@ namespace CivOne.Graphics
 		public Picture GetPalace(PalaceStyle style, PalacePart part, int level)
 			=> _palaceResources.GetPalacePart(style, part, level);
 		
-		private static Resources _instance;
+		private static Resources? _instance;
 		public static Resources Instance
 		{
 			get

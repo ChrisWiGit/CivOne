@@ -16,6 +16,8 @@ namespace CivOne.Screens.Services
 		IGameTurnQuery, IGameSettings
 	{
 	}
+
+	#pragma warning disable CA1822 // Mark members as static
 	public class CityCitizenServiceImpl(
 		ICityBasic city,
 		ICityBuildings cityBuildings,
@@ -23,11 +25,11 @@ namespace CivOne.Screens.Services
 		List<Citizen> specialists,
 		IMap map) : ICityCitizenService
 	{
-		protected readonly ICityBasic _city = city;
-		protected readonly ICityBuildings _cityBuildings = cityBuildings;
-		protected readonly IGameCitizenDependency _game = game;
-		protected readonly List<Citizen> _specialists = specialists;
-		protected readonly IMap _map = map;
+		readonly ICityBasic _city = city;
+		readonly ICityBuildings _cityBuildings = cityBuildings;
+		readonly IGameCitizenDependency _game = game;
+		readonly List<Citizen> _specialists = specialists;
+		readonly IMap _map = map;
 
 
 		public IEnumerable<CitizenTypes> EnumerateCitizens()
@@ -264,7 +266,7 @@ namespace CivOne.Screens.Services
 				return;
 			}
 
-			int totalCities = _game.GetPlayer(_city.CityOwnerPlayerIndex).Cities.Count();
+			int totalCities = _game.GetPlayer(_city.CityOwnerPlayerIndex)!.Cities.Length;
 
 			if (totalCities < MinEmperorCityCount)
 			{
@@ -451,8 +453,8 @@ namespace CivOne.Screens.Services
 			// https://civilization.fandom.com/wiki/Michelangelo%27s_Chapel_(Civ1)
 			bool isObsolete = _game.WonderObsolete<MichelangelosChapel>();
 			bool hasChapelOnSameContinent = !isObsolete &&
-						_game.GetPlayer(_city.CityOwnerPlayerIndex)
-							.CitiesInterface.Any(c => c.HasWonder<MichelangelosChapel>()
+							_city.PlayerIntf
+								.CitiesInterface.Any(c => c.HasWonder<MichelangelosChapel>()
 					&& c.ContinentId == _city.ContinentId);
 			int chapelBonus = !isObsolete && hasChapelOnSameContinent ? 6 : 4;
 

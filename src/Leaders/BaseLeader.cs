@@ -11,11 +11,15 @@ using CivOne.Enums;
 using CivOne.Graphics;
 using System.Collections.Generic;
 using System.Linq;
+using System;
+using System.Globalization;
+using System.Diagnostics;
 
 namespace CivOne.Leaders
 {
 	public abstract class BaseLeader : BaseInstance, ILeader
 	{
+		private bool _disposed;
 		private string _defaultName;
 		protected string DefaultName
 		{
@@ -24,31 +28,30 @@ namespace CivOne.Leaders
 				foreach (LeaderModification modification in Modifications)
 				{
 					if (!modification.Name.HasValue) continue;
-					_defaultName = modification.Name.Value;
+					_defaultName = modification.Name.Value ?? _defaultName;
 				}
 				return _defaultName;
 			}
 			set => _defaultName = value;
 		}
-		
+
 		public string Name { get; set; }
 
 		private readonly string? _picFile;
 		private readonly int _overlayX;
 		private readonly int _overlayY;
-		private Picture _picture, _portraitSmall;
+		private Picture? _picture;
+		private readonly Picture? _portraitSmall;
 
 		protected abstract Leader Leader { get; }
 
-		private IBitmap _modifiedPicture, _modifiedPortraitSmall;
+		private IBitmap? _modifiedPicture, _modifiedPortraitSmall;
 		public IBitmap GetPortrait(FaceState state = FaceState.Neutral)
 		{
-			if (_modifications.ContainsKey(Leader))
+			if (_modifications.TryGetValue(Leader, out List<LeaderModification>? value))
 			{
-				if (_modifiedPicture == null)
-				{
-					_modifiedPicture = _modifications[Leader].LastOrDefault(x => x.Portrait != null && x.Portrait.GifToBitmap() != null)?.Portrait.GifToBitmap();
-				}
+				_modifiedPicture ??= value.LastOrDefault(x => x.Portrait != null && x.Portrait.GifToBitmap() != null)?
+						.Portrait?.GifToBitmap();
 
 				if (_modifiedPicture != null && _modifiedPicture.Width() == 139 && _modifiedPicture.Height() == 133)
 				{
@@ -58,10 +61,7 @@ namespace CivOne.Leaders
 
 			if (_picFile == null) return new Picture(139, 133, Common.GetPalette256);
 
-			if (_picture == null)
-			{
-				_picture = Resources[_picFile];
-			}
+			_picture ??= Resources[_picFile];
 
 			Picture output = _picture[181, 67, 139, 133];
 			switch (state)
@@ -83,22 +83,25 @@ namespace CivOne.Leaders
 		{
 			get
 			{
-				if (_modifications.ContainsKey(Leader))
+				if (_modifications.TryGetValue(Leader, out List<LeaderModification>? value))
 				{
-					if (_modifiedPortraitSmall == null)
-					{
-						_modifiedPortraitSmall = _modifications[Leader].LastOrDefault(x => x.PortraitSmall != null && x.PortraitSmall.GifToBitmap() != null)?.PortraitSmall.GifToBitmap();
-					}
+					_modifiedPortraitSmall ??= value.LastOrDefault(x => x.PortraitSmall != null && x.PortraitSmall.GifToBitmap() != null)
+						?.PortraitSmall?.GifToBitmap();
 
 					if (_modifiedPortraitSmall != null && _modifiedPortraitSmall.Width() == 27 && _modifiedPortraitSmall.Height() == 33)
 					{
 						return new Picture(_modifiedPortraitSmall.MatchColours(Resources["SLAM2"].Palette, 1, 255), Resources["SLAM2"].Palette);
 					}
 				}
+				if (_portraitSmall == null)
+				{
+					Debug.Assert(false, $"Leader {Leader} does not have a small portrait.");
+					return new Picture(27, 33, Common.GetPalette256);
+				}
 				return _portraitSmall;
 			}
 		}
-		
+
 		private AggressionLevel _aggression = AggressionLevel.Normal;
 		public AggressionLevel Aggression
 		{
@@ -143,7 +146,7 @@ namespace CivOne.Leaders
 			}
 			set => _militarism = value;
 		}
-		
+
 		private static Dictionary<Leader, List<LeaderModification>> _modifications = new Dictionary<Leader, List<LeaderModification>>();
 		internal static void LoadModifications()
 		{
@@ -163,19 +166,18 @@ namespace CivOne.Leaders
 
 			Log("Finished applying leader modifications");
 		}
-		public IEnumerable<LeaderModification> Modifications => _modifications.ContainsKey(Leader) ? _modifications[Leader].ToArray() : new LeaderModification[0];
+		public IEnumerable<LeaderModification> Modifications => _modifications.TryGetValue(Leader, out List<LeaderModification>? value) ? value.ToArray() : [];
 
-		protected BaseLeader(string picFile, int overlayX, int overlayY)
+		protected BaseLeader(string picFile, int overlayX, int overlayY) : this()
 		{
 			_picFile = picFile;
 			_overlayX = overlayX;
 			_overlayY = overlayY;
-			if (picFile.StartsWith("KING"))
+			if (picFile.StartsWith("KING", StringComparison.InvariantCulture))
 			{
-				int id;
-				if (int.TryParse(picFile.Substring(4), out id) && id >= 0 && id <= 13)
+				if (int.TryParse(picFile.AsSpan(4), out int id) && id >= 0 && id <= 13)
 				{
-					int col = (id % 7);
+					int col = id % 7;
 					int row = (id - col) / 7;
 					_portraitSmall = Resources["SLAM2"][(28 * col) + 1, 34 * row, 27, 33];
 					_portraitSmall.ColourReplace(0, 191, 0, 0, 27, 33);
@@ -192,6 +194,31 @@ namespace CivOne.Leaders
 		protected BaseLeader()
 		{
 			_portraitSmall = new Picture(27, 33, Common.GetPalette256);
+
+			_defaultName = "Unknown";
+			Aggression = AggressionLevel.Normal;
+			Name = DefaultName;
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (_disposed || !disposing)
+			{
+				return;
+			}
+
+			_modifiedPortraitSmall?.Dispose();
+			_modifiedPicture?.Dispose();
+			_picture?.Dispose();
+			_portraitSmall?.Dispose();
+
+			_disposed = true;
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 	}
 }

@@ -9,10 +9,11 @@
 
 using CivOne.Enums;
 using CivOne.Graphics;
+using System;
 
 namespace CivOne.Leaders
 {
-	public interface ILeader
+	public interface ILeader : IDisposable
 	{
 		string Name { get; set; }
 		IBitmap GetPortrait(FaceState state = FaceState.Neutral);

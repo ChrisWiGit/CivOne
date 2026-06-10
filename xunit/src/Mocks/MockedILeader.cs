@@ -24,6 +24,12 @@ namespace CivOne.UnitTests
 		public MilitarismLevel Militarism { get; set; } = MilitarismLevel.Normal;
 
 		public IBitmap PortraitSmall => new MockedIBitmap([Colour.Black], new byte[,] { { 0 } });
+
+		public void Dispose()
+		{
+			GC.SuppressFinalize(this);
+		}
+
 		public IBitmap GetPortrait(FaceState state = FaceState.Neutral)
 		{
 			return new MockedIBitmap([Colour.Black], new byte[,] { { 0,0 } });

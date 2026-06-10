@@ -51,5 +51,7 @@ namespace CivOne.Persistence.Game
 		short Science { get; }
 		PalaceData Palace { get; }
 		List<ICity> Cities { get; }
+
+		ICity[] CitiesInterface { get; }
 	}
 }

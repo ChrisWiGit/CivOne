@@ -124,6 +124,8 @@ namespace CivOne.UnitTests
 		public ushort SpaceShipPopulation { get; set; }
 		public short SpaceShipLaunchYear { get; set; }
 
+		public ICity[] CitiesInterface => Cities?.ToArray() ?? [];
+
 		public bool HasAdvance<T>() where T : IAdvance
 		{
 			return false;

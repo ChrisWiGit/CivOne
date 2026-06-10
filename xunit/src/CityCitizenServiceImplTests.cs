@@ -626,20 +626,22 @@ namespace CivOne.UnitTests
             mockedCity.ReturnHasBuildingValues(
                 hasCathedral);
 
+            var player = new MockedPlayer();
+            player
+                .withCitiesInterface([
+                    new MockedCity()
+                    .ReturnHasWonderValues(
+                            hasMichelangelosChapel)
+                    .WithContinentId(mockedCity.ContinentId),
+                    new MockedCity()
+                    .ReturnHasWonderValues(
+                            true)
+                    .WithContinentId(mockedCity.ContinentId+1)
+                ]);
+            mockedCity.MockPlayer = player;
+
             mockedIGame.OnGetPlayer = (owner) =>
             {
-                var player = new MockedPlayer();
-                player
-                    .withCitiesInterface([
-                        new MockedCity()
-                        .ReturnHasWonderValues(
-                                hasMichelangelosChapel)
-                        .WithContinentId(mockedCity.ContinentId),
-                        new MockedCity()
-                        .ReturnHasWonderValues(
-                                true)
-                        .WithContinentId(mockedCity.ContinentId+1)
-                    ]);
                 return player;
             };
 
