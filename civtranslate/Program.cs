@@ -95,7 +95,7 @@ static bool TryParseArguments(string[] args, out string inputFolder, out string 
 			return false;
 		}
 
-		if (arg.StartsWith("-", StringComparison.Ordinal) && !arg.Equals("-h", StringComparison.OrdinalIgnoreCase))
+		if (arg.StartsWith('-') && !arg.Equals("-h", StringComparison.OrdinalIgnoreCase))
 		{
 			error = $"Unknown option: {arg}";
 			return false;

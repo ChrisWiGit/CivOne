@@ -32,7 +32,7 @@ public sealed class TranslationDocumentRepository : ITranslationDocumentReposito
 				continue;
 			}
 
-			if (line.StartsWith("#", StringComparison.Ordinal))
+			if (line.StartsWith('#'))
 			{
 				parsedLines.Add(new TranslationCommentLine(line));
 				continue;

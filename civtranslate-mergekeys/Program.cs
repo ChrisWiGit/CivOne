@@ -14,7 +14,7 @@ if (!TryParseArguments(args, out string sourceFilePath, out string targetFilePat
 	return 2;
 }
 
-IKeyValueMergeWorkflow workflow = new KeyValueMergeWorkflow();
+KeyValueMergeWorkflow workflow = new();
 return workflow.Run(sourceFilePath, targetFilePath);
 
 static bool HasHelpSwitch(string[] args) => args.Any(arg => arg.Equals("--help", StringComparison.OrdinalIgnoreCase) || arg.Equals("-h", StringComparison.OrdinalIgnoreCase));
