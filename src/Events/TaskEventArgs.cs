@@ -12,8 +12,6 @@ using CivOne.Tasks;
 
 namespace CivOne.Events
 {
-	public delegate void TaskEventAction(object sender, TaskEventArgs args);
-
 	public class TaskEventArgs : EventArgs
 	{
 		public bool Aborted { get; private set; }

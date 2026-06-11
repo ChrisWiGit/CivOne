@@ -57,14 +57,14 @@ namespace CivOne
 			return true;
 		}
 
-		public static void Enqueue(GameTask task)
+		public static void Enqueue(GameTask? task)
 		{
 			if (task == null) return;
 			task.Done += Finish;
 			_tasks.Add(task);
 		}
 
-		public static void Insert(GameTask task)
+		public static void Insert(GameTask? task)
 		{
 			if (task == null) return;
 			task.Done += Finish;
@@ -93,7 +93,7 @@ namespace CivOne
 			NextTask();
 		}
 
-		public static event TaskEventAction? Started;
+		public static event EventHandler<TaskEventArgs>? Started;
 		public event EventHandler? Done;
 
 		protected virtual bool NextStep() => false;

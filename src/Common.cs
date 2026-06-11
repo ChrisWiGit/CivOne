@@ -169,7 +169,15 @@ namespace CivOne
 		/// For new code, prefer IScreenCommandService.AddScreen obtained from ScreenServiceFactory.CreateCommandService().
 		/// This provides better testability and loose coupling.
 		/// </remarks>
-		internal static void AddScreen(IScreen screen) => _screens.Add(screen);
+		internal static void AddScreen(IScreen screen)
+		{
+			if (_screens.Contains(screen))
+			{
+				return;
+			}
+
+			_screens.Add(screen);
+		}
 		
 		/// <summary>
 		/// Removes a screen from the screen stack and disposes it.
@@ -181,12 +189,18 @@ namespace CivOne
 		/// </remarks>
 		internal static void DestroyScreen(IScreen? screen)
 		{
-			screen?.Dispose();
-
-			if (screen != null)
+			if (screen == null)
 			{
-				_screens.Remove(screen);
+				return;
 			}
+
+			// Remove all references first, then dispose once.
+			// This avoids disposed instances remaining in the stack when a screen was added more than once.
+			while (_screens.Remove(screen))
+			{
+			}
+
+			screen.Dispose();
 		}
 		
 		internal static bool HasScreenType<T>() where T : IScreen => _screens.Any(x => x is T);
