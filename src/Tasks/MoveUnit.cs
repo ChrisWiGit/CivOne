@@ -13,23 +13,24 @@ using CivOne.Units;
 namespace CivOne.Tasks
 {
 	[Fast]
-	public class MoveUnit : GameTask
+	public class MoveUnit(int relX, int relY) : GameTask
 	{
 		private const int STEP_SIZE = 1;
 
-		public readonly int RelX, RelY;
+		public int RelX { get; } = relX;
+		public int RelY { get; } = relY;
 
 		private int _step = 1;
 
 		public int X { get; private set; }
 		public int Y { get; private set; }
 
-		public IUnit ActiveUnit { get; private set; }
+		public IUnit? ActiveUnit { get; private set; } = Game.ActiveUnit;
 
 		protected override bool NextStep()
 		{
-			X = (RelX * _step);
-			Y = (RelY * _step);
+			X = RelX * _step;
+			Y = RelY * _step;
             _step += STEP_SIZE;
 			if (_step <= 16)
 				return true;
@@ -41,13 +42,6 @@ namespace CivOne.Tasks
 		{
 		}
 
-		internal ITile TargetTile => ActiveUnit.Tile[RelX, RelY];
-
-		public MoveUnit(int relX, int relY)
-		{
-			RelX = relX;
-			RelY = relY;
-			ActiveUnit = Game.ActiveUnit;
-		}
+		internal ITile? TargetTile => ActiveUnit?.Tile[RelX, RelY];
 	}
 }

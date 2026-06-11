@@ -143,10 +143,10 @@ namespace CivOne.UnitTests.Persistence
 			var dto = YamlLoadGameStateReaderTestData.BuildSampleGameStateDto();
 			dto.Players[0].Cities[0].Status =
 			[
-				CityStatusEnum.Riot,
-				CityStatusEnum.CelebrationCancelled,
-				CityStatusEnum.AutoBuild,
-				CityStatusEnum.ImprovementSold
+				CityStatus.Riot,
+				CityStatus.CelebrationCancelled,
+				CityStatus.AutoBuild,
+				CityStatus.ImprovementSold
 			];
 
 			Player.Game = null;
@@ -165,10 +165,10 @@ namespace CivOne.UnitTests.Persistence
 			Assert.True(city.BuildingSold);
 
 			var roundTripStatus = roundTrip.Players[0].Cities[0].Status;
-			Assert.Contains(CityStatusEnum.Riot, roundTripStatus);
-			Assert.Contains(CityStatusEnum.CelebrationCancelled, roundTripStatus);
-			Assert.Contains(CityStatusEnum.AutoBuild, roundTripStatus);
-			Assert.Contains(CityStatusEnum.ImprovementSold, roundTripStatus);
+			Assert.Contains(CityStatus.Riot, roundTripStatus);
+			Assert.Contains(CityStatus.CelebrationCancelled, roundTripStatus);
+			Assert.Contains(CityStatus.AutoBuild, roundTripStatus);
+			Assert.Contains(CityStatus.ImprovementSold, roundTripStatus);
 		}
 
 		private sealed class TestLogger : ILogger

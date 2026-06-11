@@ -195,27 +195,27 @@ namespace CivOne.Screens.GamePlayPanels
 			
 			if (_helperDirection.X < 0)
 			{
-				DrawScaledBitmap(Icons.HelperArrow(Direction.North), x - _tilePixelSize, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
-				DrawScaledBitmap(Icons.HelperArrow(Direction.West), x - _tilePixelSize, y, _tilePixelSize, _tilePixelSize);
-				DrawScaledBitmap(Icons.HelperArrow(Direction.South), x - _tilePixelSize, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.North)!, x - _tilePixelSize, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.West)!, x - _tilePixelSize, y, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.South)!, x - _tilePixelSize, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
 			}
 			if (_helperDirection.X > 0)
 			{
-				DrawScaledBitmap(Icons.HelperArrow(Direction.North), x + _tilePixelSize, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
-				DrawScaledBitmap(Icons.HelperArrow(Direction.East), x + _tilePixelSize, y, _tilePixelSize, _tilePixelSize);
-				DrawScaledBitmap(Icons.HelperArrow(Direction.South), x + _tilePixelSize, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.North)!, x + _tilePixelSize, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.East)!, x + _tilePixelSize, y, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.South)!, x + _tilePixelSize, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
 			}
 			if (_helperDirection.Y < 0)
 			{
-				DrawScaledBitmap(Icons.HelperArrow(Direction.West), x - _tilePixelSize, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
-				DrawScaledBitmap(Icons.HelperArrow(Direction.North), x, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
-				DrawScaledBitmap(Icons.HelperArrow(Direction.East), x + _tilePixelSize, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.West)!, x - _tilePixelSize, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.North)!, x, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.East)!, x + _tilePixelSize, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
 			}
 			if (_helperDirection.Y > 0)
 			{
-				DrawScaledBitmap(Icons.HelperArrow(Direction.West), x - _tilePixelSize, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
-				DrawScaledBitmap(Icons.HelperArrow(Direction.South), x, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
-				DrawScaledBitmap(Icons.HelperArrow(Direction.East), x + _tilePixelSize, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.West)!, x - _tilePixelSize, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.South)!, x, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.East)!, x + _tilePixelSize, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
 			}
 		}
 
@@ -316,7 +316,8 @@ namespace CivOne.Screens.GamePlayPanels
 				{
 					dx *= _tilePixelSize; dy *= _tilePixelSize;
 
-					MoveUnit movement = movingUnit.Movement;
+					MoveUnit movement = movingUnit.Movement!; // Movement is guaranteed to be non-null when Moving is true.
+					
 					using IBitmap movingArea = Map[movingUnit.X - 1, movingUnit.Y - 1, 3, 3].ToBitmap(player: renderPlayer);
 					using Bytemap scaledMovingArea = ScaleBitmap(movingArea.Bitmap, 3 * _tilePixelSize, 3 * _tilePixelSize);
 					this.FillRectangle(dx - _tilePixelSize, dy - _tilePixelSize, 3 * _tilePixelSize, 3 * _tilePixelSize, 5)
@@ -479,23 +480,31 @@ namespace CivOne.Screens.GamePlayPanels
 			return Game.ActiveUnit.MoveTo(relX, relY);
 		}
 
-		private void TaskStarted(object sender, TaskEventArgs args)
+		private void TaskStarted(object? sender, TaskEventArgs args)
 		{
-			if (!(sender is GameTask)) return;
-			switch (sender)
+			if (sender is not MoveUnit moveUnit)
+				return;
+
+			IUnit? unit = moveUnit.ActiveUnit;
+
+			if (unit == null)
 			{
-				case MoveUnit moveUnit:
-					IUnit unit = moveUnit.ActiveUnit;
-					if (unit == null || (Human != unit.Owner && !Game.EnemyMoves) || (!Settings.RevealWorld && Human != unit.Owner && !Human.Visible(unit.X, unit.Y)))
-					{
-						args.Abort();
-						return;
-					}
-					if (!_mapViewEnabled && ShouldCenter(moveUnit.RelX, moveUnit.RelY))
-					{
-						CenterOnUnit();
-					}
-					return;
+				args.Abort();
+				return;
+			}
+
+			bool isHumanUnit = Human == unit.Owner;
+
+			if ((!isHumanUnit && !Game.EnemyMoves) ||
+				(!Settings.RevealWorld && !isHumanUnit && !Human.Visible(unit.X, unit.Y)))
+			{
+				args.Abort();
+				return;
+			}
+
+			if (!_mapViewEnabled && ShouldCenter(moveUnit.RelX, moveUnit.RelY))
+			{
+				CenterOnUnit();
 			}
 		}
 

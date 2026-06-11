@@ -38,7 +38,7 @@ namespace CivOne
 		int Scientists { get; }
 		int Taxmen { get; }
 
-		IProduction CurrentProduction { get; }
+		IProduction? CurrentProduction { get; }
 
 		IBuilding[] Buildings { get; }
 

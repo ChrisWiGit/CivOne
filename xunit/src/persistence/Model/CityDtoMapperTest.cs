@@ -59,7 +59,7 @@ namespace CivOne.Persistence.Model
 				Specialists = [Citizen.Entertainer, Citizen.Taxman],
 				Buildings = [Building.Barracks],
 				Wonders = [Wonder.Pyramids],
-				Status = [CityStatusEnum.Riot, CityStatusEnum.AutoBuild],
+				Status = [CityStatus.Riot, CityStatus.AutoBuild],
 				WasInDisorder = true,
 				TradingCities = [tradeCityId],
 				ContinentId = 3
@@ -194,14 +194,14 @@ namespace CivOne.Persistence.Model
 
 			var flags = _testee.MapStatusFlags(status);
 
-			Assert.Equal(isRiot, flags.Contains(CityStatusEnum.Riot));
-			Assert.Equal(isCoastal, flags.Contains(CityStatusEnum.Coastal));
-			Assert.Equal(celebrationCancelled, flags.Contains(CityStatusEnum.CelebrationCancelled));
-			Assert.Equal(hydroAvailable, flags.Contains(CityStatusEnum.HydroAvailable));
-			Assert.Equal(autoBuild, flags.Contains(CityStatusEnum.AutoBuild));
-			Assert.Equal(techStolen, flags.Contains(CityStatusEnum.TechStolen));
-			Assert.Equal(celebrationOrRapture, flags.Contains(CityStatusEnum.CelebrationRapture));
-			Assert.Equal(buildingSold, flags.Contains(CityStatusEnum.ImprovementSold));
+			Assert.Equal(isRiot, flags.Contains(CityStatus.Riot));
+			Assert.Equal(isCoastal, flags.Contains(CityStatus.Coastal));
+			Assert.Equal(celebrationCancelled, flags.Contains(CityStatus.CelebrationCancelled));
+			Assert.Equal(hydroAvailable, flags.Contains(CityStatus.HydroAvailable));
+			Assert.Equal(autoBuild, flags.Contains(CityStatus.AutoBuild));
+			Assert.Equal(techStolen, flags.Contains(CityStatus.TechStolen));
+			Assert.Equal(celebrationOrRapture, flags.Contains(CityStatus.CelebrationRapture));
+			Assert.Equal(buildingSold, flags.Contains(CityStatus.ImprovementSold));
 
 			var status2 = new MockedCityStatus();
 			_testee.MapStatusFlags(status2, flags);

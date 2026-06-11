@@ -7,7 +7,7 @@ namespace CivOne.Persistence.Model
 	using CityId = System.UInt32;
     using PlayerId = System.Byte;
 
-    public enum CityStatusEnum
+    public enum CityStatus
     {
         // RIOT = 1 << 0,
         // COASTAL = 1 << 1,
@@ -33,13 +33,13 @@ namespace CivOne.Persistence.Model
         public Guid Id { get; set; }
 
         [Doc("City location on the map.")]
-        public MapLocation Location { get; set; }
+        public MapLocation Location { get; set; } = new();
 
         [Doc("Identifier of the player who owns the city starting from 0")]
         public PlayerId Owner { get; set; }
 
         [Doc("Name of the city.")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [Doc("Size of the city.")]
         public uint Size { get; set; }
@@ -51,10 +51,10 @@ namespace CivOne.Persistence.Model
         public int Shields { get; set; }
 
         [Doc("Visible sizes of the city for other players. Index corresponds to player ID.")]
-        public uint[] VisibleSizes { get; set; }
+        public uint[] VisibleSizes { get; set; } =  [];
 
         [Doc("Current production of the city.")]
-        public ProductionDto CurrentProduction { get; set; }
+        public ProductionDto? CurrentProduction { get; set; }
 
         /// <summary>
         /// 5x5 bitmask of active resource tiles relative to the city center.
@@ -62,29 +62,29 @@ namespace CivOne.Persistence.Model
         /// The center tile [2,2] is always implicitly used and not stored here.
         /// </summary>
         [Doc("5x5 bitmask of active resource tiles relative to the city center. Center will be ignored.")]
-        public Bool2dMap ResourceTiles { get; set; }
+        public Bool2dMap ResourceTiles { get; set; } = new();
 
         [Doc("Specialists in the city.", nameof(AllSpecialists))]
-        public List<Citizen> Specialists { get; set; }
+        public List<Citizen> Specialists { get; set; } = new();
         public static readonly Citizen[] AllSpecialists = [Citizen.Entertainer, Citizen.Scientist, Citizen.Taxman];
 
         [Doc("Buildings present in the city.", nameof(AllBuildings))]
-        public List<Building> Buildings { get; set; }
+        public List<Building> Buildings { get; set; } = [];
         public static readonly Building[] AllBuildings = Enum.GetValues<Building>();
 
         [Doc("Wonders present in the city.", nameof(AllWonders))]
-        public List<Wonder> Wonders { get; set; }
+        public List<Wonder> Wonders { get; set; } = [];
         public static readonly Wonder[] AllWonders = Enum.GetValues<Wonder>();
 
         [Doc("Status flags of the city.", nameof(CityStatusEnumAll))]
-        public List<CityStatusEnum> Status { get; set; }
-        public static readonly CityStatusEnum[] CityStatusEnumAll = Enum.GetValues<CityStatusEnum>();
+        public List<CityStatus> Status { get; set; } = [];
+        public static readonly CityStatus[] CityStatusEnumAll = Enum.GetValues<CityStatus>();
 
         [Doc("Indicates if the city was in disorder.")]
         public bool WasInDisorder { get; set; }
 
         [Doc("IDs of cities that this city is trading with. Current maximum is 3.")]
-        public Guid[] TradingCities { get; set; }
+        public Guid[] TradingCities { get; set; } = [];
 
         [Doc("Continent ID the city is located on.")]
         public int ContinentId { get; set; }

@@ -128,15 +128,25 @@ namespace CivOne.Graphics
 		private static IBitmap[]? _helperArrow;
 		public static IBitmap? HelperArrow(Direction direction)
 		{
-			if (_helperArrow == null)
+			if (_helperArrow != null)
 			{
-				lock (_helperArrowLock)
+				return direction switch
 				{
-					if (_helperArrow == null)
-					{
-						IBitmap[] arrows =
-						[
-							new Picture(16, 16, [
+					Direction.South => _helperArrow[0],
+					Direction.North => _helperArrow[1],
+					Direction.West => _helperArrow[2],
+					Direction.East => _helperArrow[3],
+					_ => null,
+				};
+			}
+			
+			lock (_helperArrowLock)
+			{
+				if (_helperArrow == null)
+				{
+					IBitmap[] arrows =
+					[
+						new Picture(16, 16, [
 							0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 							0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 							0,  0,  0,  0,  0,  0,  5,  5,  5,  5,  0,  0,  0,  0,  0,  0,
@@ -209,8 +219,7 @@ namespace CivOne.Graphics
 							0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 							], Food.Palette),
 						];
-						_helperArrow = arrows;
-					}
+					_helperArrow = arrows;
 				}
 			}
 

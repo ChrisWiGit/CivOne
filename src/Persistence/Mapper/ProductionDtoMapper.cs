@@ -1,16 +1,17 @@
 namespace CivOne.Persistence.Model
 {
+	using System;
 	using System.Linq;
 	using CivOne.Persistence.Mapper;
 
-    public class ProductionDtoMapper(IReflect _reflect) : DtoMapper<ProductionDto, IProduction>
+    public class ProductionDtoMapper(IReflect reflect) : DtoMapper<ProductionDto, IProduction>
 	{
 		public IProduction FromDto(ProductionDto dto)
 		{
 			return 
-				_reflect.GetProduction()
+				reflect.GetProduction()
 				.FirstOrDefault(p => p.ProductionId == dto.ProductionId)
-				?? throw new System.Exception(
+				?? throw new InvalidOperationException(
 					$"Production with id {dto.ProductionId} not found. DTO details: Price={dto.Price}, BuyPrice={dto.BuyPrice}");
 		}
 

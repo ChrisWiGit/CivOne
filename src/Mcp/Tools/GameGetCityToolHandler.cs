@@ -178,9 +178,9 @@ namespace CivOne.Mcp.Tools
 
 		private static object BuildUnrestView(CityDto city)
 		{
-			bool isRiot = HasStatus(city, CityStatusEnum.Riot);
-			bool isCelebrating = HasStatus(city, CityStatusEnum.CelebrationRapture);
-			bool celebrationCancelled = HasStatus(city, CityStatusEnum.CelebrationCancelled);
+			bool isRiot = HasStatus(city, CityStatus.Riot);
+			bool isCelebrating = HasStatus(city, CityStatus.CelebrationRapture);
+			bool celebrationCancelled = HasStatus(city, CityStatus.CelebrationCancelled);
 			return new
 			{
 				isRiot,
@@ -196,9 +196,9 @@ namespace CivOne.Mcp.Tools
 			int specialistCount = city.Specialists?.Count ?? 0;
 
 			string mood = "Stable";
-			if (HasStatus(city, CityStatusEnum.Riot))
+			if (HasStatus(city, CityStatus.Riot))
 				mood = "Riot";
-			else if (HasStatus(city, CityStatusEnum.CelebrationRapture) && !HasStatus(city, CityStatusEnum.CelebrationCancelled))
+			else if (HasStatus(city, CityStatus.CelebrationRapture) && !HasStatus(city, CityStatus.CelebrationCancelled))
 				mood = "Celebration";
 			else if (city.WasInDisorder)
 				mood = "Recovering";
@@ -212,7 +212,7 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private static bool HasStatus(CityDto city, CityStatusEnum status)
+		private static bool HasStatus(CityDto city, CityStatus status)
 			=> (city.Status ?? []).Contains(status);
 
 		private Dictionary<string, object> ProjectByKeys(object source, string[] keys, HashSet<string> invalidKeys)

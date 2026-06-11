@@ -15,6 +15,7 @@ using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.IO;
 using CivOne.Screens.PalaceAssets;
+using CivOne.Services.Random;
 
 namespace CivOne.Screens
 {
@@ -42,7 +43,7 @@ namespace CivOne.Screens
 		private readonly byte[,] _noiseMap;
 		private readonly bool _build;
 		private readonly bool _debug;
-		private bool _disableNoise = false;
+		private bool _disableNoise;
 		private int _pendingPartIndex = -1;
 		private int OffsetX => System.Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => System.Math.Max(0, (Height - 200) / 2);
@@ -280,7 +281,7 @@ namespace CivOne.Screens
 		/// <param name="sprites">Optional palace sprite provider.</param>
 		/// <param name="palaceData">Optional palace data.</param>
 		/// <returns>The rendered palace image.</returns>
-		public static Picture CreatePicture(IPalaceSpriteProvider sprites = null, PalaceData palaceData = null)
+		public static Picture CreatePicture(IPalaceSpriteProvider? sprites = null, PalaceData? palaceData = null)
 		{
 			using PalaceView palaceView = new(false, sprites ?? PalaceSpriteProviderFactory.GetInstance(), false, palaceData);
 			return palaceView.DrawPalace();
@@ -316,10 +317,11 @@ namespace CivOne.Screens
 			{
 				case Stage.Message:
 					{
-						Picture message = new Picture(269, 39)
+						Picture message = new(269, 39);
+
+						message
 							.Tile(Pattern.PanelGrey)
-							.DrawRectangle3D()
-							.As<Picture>();
+							.DrawRectangle3D();
 						int yy = 4;
 						foreach (string line in GetGameText("KING/PALACE"))
 						{
@@ -332,11 +334,13 @@ namespace CivOne.Screens
 					break;
 				case Stage.SelectPart:
 					{
-						Picture message = new Picture(180, 15)
+						Picture message = new(180, 15);
+
+						message
 							.Tile(Pattern.PanelGrey)
 							.DrawRectangle3D()
-							.DrawText(Translate("Which section shall we improve?"), 0, 15, 4, 4)
-							.As<Picture>();
+							.DrawText(Translate("Which section shall we improve?"), 0, 15, 4, 4);
+
 						this.FillRectangle(40 + ox, 16 + oy, 182, 17, 5)
 							.AddLayer(message, 41 + ox, 17 + oy);
 
@@ -360,11 +364,12 @@ namespace CivOne.Screens
 					break;
 				case Stage.SelectStyle:
 					{
-						Picture message = new Picture(280, 118)
+						Picture message = new(280, 118);
+
+						message
 							.Tile(Pattern.PanelGrey)
 							.DrawRectangle3D()
-							.DrawText(Translate("Which style shall we use?"), 0, 15, 4, 4)
-							.As<Picture>();
+							.DrawText(Translate("Which style shall we use?"), 0, 15, 4, 4);
 
 						if (_pendingPartIndex >= 0)
 						{
@@ -390,7 +395,7 @@ namespace CivOne.Screens
 					}
 					break;
 				case Stage.Morph:
-					if (_noiseCounter > 0)
+					if (_noiseCounter > 0 && _palaceMorph != null)
 					{
 						_palaceMorph.ApplyNoise(_noiseMap, _noiseCounter--);
 						this.Clear(OpaqueBlackColour)
@@ -506,7 +511,7 @@ namespace CivOne.Screens
 			return true;
 		}
 
-		public PalaceView(bool buildMode = false, IPalaceSpriteProvider sprites = null, bool debug = false, PalaceData palaceData = null)
+		public PalaceView(bool buildMode = false, IPalaceSpriteProvider? sprites = null, bool debug = false, PalaceData? palaceData = null)
 		{
 			_build = buildMode;
 			_debug = debug;
@@ -518,7 +523,7 @@ namespace CivOne.Screens
 			{
 				for (int y = 0; y < 200; y++)
 				{
-					_noiseMap[x, y] = (byte)Common.Random.Next(1, NOISE_COUNT);
+					_noiseMap[x, y] = RandomServiceFactory.Create().NextByte(1, NOISE_COUNT);
 				}
 			}
 
