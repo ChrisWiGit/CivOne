@@ -153,11 +153,18 @@ namespace CivOne.Tasks
 		private static Show? Screen(Type type)
 		{
 			if (!typeof(IScreen).IsAssignableFrom(type))
+			{
+				Debug.Assert(false, $"Type {type.FullName} does not implement IScreen and cannot be shown.");
 				return null;
+			}
 
-			return Activator.CreateInstance(type) is IScreen screen
-				? new Show(screen)
-				: null;
+			if (Activator.CreateInstance(type) is IScreen screen)
+			{
+				return new Show(screen);
+			}
+		
+			Debug.Assert(false, $"Failed to create instance of type {type.FullName}.");
+			return null;
 		}
 
 		public static Show Screen(IScreen screen) => new(screen);
@@ -165,7 +172,11 @@ namespace CivOne.Tasks
 		public static Show? Screens(IEnumerable<Type> types)
 		{
 			Queue<Type> screenTypeQueue = new(types.Where(x => typeof(IScreen).IsAssignableFrom(x)));
-			if (screenTypeQueue.Count == 0) return null;
+			if (screenTypeQueue.Count == 0) 
+			{
+				Debug.Assert(false, "No valid screen types provided to Show.Screens");
+				return null;
+			}
 			Show? nextTask()
 			{
 				if (screenTypeQueue.Count == 0) 

@@ -513,6 +513,7 @@ namespace CivOne.Screens
 
 		public PalaceView(bool buildMode = false, IPalaceSpriteProvider? sprites = null, bool debug = false, PalaceData? palaceData = null)
 		{
+			var random = RandomServiceFactory.Create();
 			_build = buildMode;
 			_debug = debug;
 			_sprites = sprites ?? PalaceSpriteProviderFactory.GetInstance();
@@ -523,7 +524,7 @@ namespace CivOne.Screens
 			{
 				for (int y = 0; y < 200; y++)
 				{
-					_noiseMap[x, y] = RandomServiceFactory.Create().NextByte(1, NOISE_COUNT);
+					_noiseMap[x, y] = random.NextByte(1, NOISE_COUNT);
 				}
 			}
 
