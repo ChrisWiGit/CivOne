@@ -12,11 +12,10 @@ namespace CivOne.Persistence.Model
     using GovernmentId = System.Byte;
 	using CityId = System.UInt16;
 
-	#pragma warning disable CA2227, CA1002 // Since this is a DTO we need setters and mutable collections.
     public class PlayerDto
     {
 		[Doc("The civilization of the player.")]
-        public CivilizationDto Civilization { get; set; }
+		public CivilizationDto Civilization { get; set; } = new() { LeaderClassName = string.Empty };
 
 		[Doc("The unique id of the player. This may be the index of a player list, but it is not guaranteed to be stable across game sessions.")]
         public PlayerId Id { get; set; }
@@ -26,15 +25,15 @@ namespace CivOne.Persistence.Model
         
 		[Doc("A list of explored advances. Use -1 to indicate all advances.", null, nameof(AllAdvancesInfo))]
 		// We use long to allow YAML to read/write the values without overflow issues, but the mapper will clamp to the valid range of advances.
-		public List<long> Advances { get; set; }
+		public List<long> Advances { get; set; } = [];
         
 		[Doc("A list of player ids with which this player has an embassy.")]
-		public List<PlayerId> Embassies { get; set; }
+		public List<PlayerId> Embassies { get; set; } = [];
 
 		[Doc("Per-target diplomacy state entries. RawFlags are persisted 1:1 from legacy diplomacy bitmasks.")]
-		public List<DiplomacyEntryDto> Diplomacy { get; set; }
+		public List<DiplomacyEntryDto> Diplomacy { get; set; } = [];
 
-		public static Dictionary<AdvanceId, string> AllAdvancesInfo = [];
+		public static Dictionary<AdvanceId, string> AllAdvancesInfo { get; set; } = [];
 
         [Doc("The number of turns the player is in anarchy.")]
         public short Anarchy { get; set; }
@@ -46,7 +45,7 @@ namespace CivOne.Persistence.Model
         public AdvanceId CurrentResearch { get; set; }
 
 		// Must be initialized outside of this class, so it is not coupled to the actual advances in the game. 
-		public static string[] AllAdvances = [];
+		public static string[] AllAdvances { get; set; } = [];
 
         [Doc("The current index of the city name list for this player, and to be shown next time a city name is needed for a new city.")]
         public int CityNamesSkipped { get; set; }
@@ -70,13 +69,13 @@ namespace CivOne.Persistence.Model
 		public int MapZoomBasisPoints { get; set; }
 
 		[Doc("Units lost per unit type (28 entries). YAML allows long values; mapper clamps to ushort range.")]
-		public List<long> UnitsLost { get; set; }
+		public List<long> UnitsLost { get; set; } = [];
 
 		[Doc("Units destroyed by this player indexed by current player list order. YAML allows long values; mapper clamps to ushort range.")]
-		public List<long> UnitsDestroyedBy { get; set; }
+		public List<long> UnitsDestroyedBy { get; set; } = [];
 
 		[Doc("Units destroyed by this player keyed by target PlayerGuid. Preferred over index-based UnitsDestroyedBy for durable cross-references.")]
-		public Dictionary<Guid, long> UnitsDestroyedByByPlayerGuid { get; set; }
+		public Dictionary<Guid, long> UnitsDestroyedByByPlayerGuid { get; set; } = [];
 
 		[Doc("Legacy epic ranking value for this player. YAML allows long values; mapper clamps to ushort range.")]
 		public long EpicRanking { get; set; }
@@ -88,27 +87,27 @@ namespace CivOne.Persistence.Model
 		public long CivilizationScore { get; set; }
 
 		[Doc("A list of the player's cities")]
-        public List<CityDto> Cities { get; set; }
+		public List<CityDto> Cities { get; set; } = [];
 
 		[Doc("A list of the player's units")]
-        public List<UnitDto> Units { get; set; }
+		public List<UnitDto> Units { get; set; } = [];
 
 		[Doc("A 2D array indicating which tiles have been explored by the player (1) or not (0). This only accounts for the city tiles to be shown (4x4). Center tile is always 1.", 0,4)]
-        public Bool2dMap Explored { get; set; }
+		public Bool2dMap Explored { get; set; } = new();
 
         [Doc("A 2D array indicating which tiles are visible to the player (1) or not (0). This only accounts for the city tiles to be shown (4x4). Center tile is always 1.", 0,4)]
-        public Bool2dMap Visible { get; set; }
+		public Bool2dMap Visible { get; set; } = new();
 
 		[Doc("The name of the player's tribe, e.g. 'Romans'.")]
-        public string TribeName { get; set; }
+		public string TribeName { get; set; } = string.Empty;
         
 		[Doc("The plural form of the player's tribe name, e.g. 'Romans'.")]
-        public string TribeNamePlural { get; set; }
+		public string TribeNamePlural { get; set; } = string.Empty;
 
 		[Doc("The id of the government type of the player.", nameof(AllGovernments))]
         public GovernmentId Government { get; set; }
 
-		public static string[] AllGovernments = [];
+		public static string[] AllGovernments { get; set; } = [];
 
 		[Doc("The percentage of luxuries rate, from 0 to 10, where 0 means 0% and 10 means 100%." +
 			"Must be in increments of 10%. If the value is out of range, it will be set to the closest valid value."+
@@ -130,9 +129,9 @@ namespace CivOne.Persistence.Model
         public int Science { get; set; }
 
 		[Doc("The player's palace. This may be null if the player has no palace.")]
-        public PalaceDto Palace { get; set; }
+        public PalaceDto? Palace { get; set; }
 
 		[Doc("The player's spaceship state. Null if no Apollo Program or not started.")]
-		public SpaceShipDto SpaceShip { get; set; }
+		public SpaceShipDto? SpaceShip { get; set; }
     }
 }

@@ -381,7 +381,8 @@ namespace CivOne.Persistence.Model
 		private static HashSet<string> GetExcludedPlayerDtoProperties() =>
 			[nameof(PlayerDto.Id), nameof(PlayerDto.UnitsDestroyedByByPlayerGuid)];
 
-		private static HashSet<string> GetWritablePropertyNames<T>() => typeof(T).GetProperties()
+		private static HashSet<string> GetWritablePropertyNames<T>() => typeof(T)
+			.GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)
 			.Where(p => p.CanRead && p.CanWrite)
 			.Select(p => p.Name)
 			.ToHashSet();

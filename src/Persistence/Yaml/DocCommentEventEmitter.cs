@@ -1,9 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using CivOne.Persistence.Model;
 using CivOne.Persistence.Model.Attributes;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
@@ -46,21 +46,21 @@ namespace CivOne.Persistence.Yaml
     /// - 2
     /// </code>
     /// </example>
-    public class DocCommentEventEmitter : ChainedEventEmitter
+    
+    #pragma warning disable CA1822 // ignore "Mark members as static" 
+    public class DocCommentEventEmitter(IEventEmitter next) : ChainedEventEmitter(next)
     {
         private readonly Stack<Type> typeStack = new();
 
-        private Dictionary<string, bool> commentForProperties = new();
+        private readonly Dictionary<string, bool> commentForProperties = [];
 
-        private Dictionary<int, string> activeCommentValues;
-        private bool nextSequenceHasComments = false;
-        private bool inCommentedSequence = false;
+        private Dictionary<int, string>? activeCommentValues;
+        private bool nextSequenceHasComments;
+		private bool inCommentedSequence;
 
-        private Type CurrentType => typeStack.Count > 0 ? typeStack.Peek() : null;
+		private Type? CurrentType => typeStack.Count > 0 ? typeStack.Peek() : null;
 
-        public DocCommentEventEmitter(IEventEmitter next) : base(next) { }
-
-        public override void Emit(MappingStartEventInfo eventInfo, IEmitter emitter)
+		public override void Emit(MappingStartEventInfo eventInfo, IEmitter emitter)
         {
             var type = eventInfo.Source?.Type;
 
@@ -110,26 +110,27 @@ namespace CivOne.Persistence.Yaml
             base.Emit(eventInfo, emitter);
         }
 
-        private void EmitSequenceElementComment(string propName, IEmitter emitter)
+        private void EmitSequenceElementComment(string? propName, IEmitter emitter)
         {
             if (activeCommentValues == null || propName == null)
             {
                 return;
             }
-            if (int.TryParse(propName, out int intValue) && activeCommentValues.TryGetValue(intValue, out string comment))
+            if (int.TryParse(propName, out int intValue) && activeCommentValues.TryGetValue(intValue, out string? comment))
             {
                 emitter.Emit(new Comment(comment, false));
             }
         }
 
-        private void TryEmitPropertyDocComment(ScalarEventInfo eventInfo, IEmitter emitter, string propName)
+        private void TryEmitPropertyDocComment(ScalarEventInfo eventInfo, IEmitter emitter, string? propName)
         {
-            if (propName == null || CurrentType == null || commentForProperties.ContainsKey(propName))
+            var currentType = CurrentType;
+            if (propName == null || currentType == null || commentForProperties.ContainsKey(propName))
             {
                 return;
             }
 
-            var docAttribute = CurrentType.GetProperty(propName)?.GetCustomAttribute<DocAttribute>();
+            var docAttribute = currentType.GetProperty(propName)?.GetCustomAttribute<DocAttribute>();
             if (docAttribute == null)
             {
                 return;
@@ -137,15 +138,15 @@ namespace CivOne.Persistence.Yaml
 
             DoNotCreateCommentForPropertyNextTime(propName);
             emitter.Emit(new Comment(docAttribute.Description, false));
-            EmitAllowedValuesComment(eventInfo, emitter, docAttribute);
-            PrepareSequenceElementComments(eventInfo, docAttribute, propName);
+            EmitAllowedValuesComment(eventInfo, emitter, docAttribute, currentType);
+            PrepareSequenceElementComments(eventInfo, docAttribute, propName, currentType);
         }
 
-        private void EmitAllowedValuesComment(ScalarEventInfo eventInfo, IEmitter emitter, DocAttribute docAttribute)
+        private void EmitAllowedValuesComment(ScalarEventInfo eventInfo, IEmitter emitter, DocAttribute docAttribute, Type currentType)
         {
             if (docAttribute.AllowedValuesPropertyName != null)
             {
-                var valuesSource = TryGetMemberValue(CurrentType, docAttribute.AllowedValuesPropertyName, eventInfo.Source?.Value);
+                var valuesSource = TryGetMemberValue(currentType, docAttribute.AllowedValuesPropertyName, eventInfo.Source?.Value);
                 if (valuesSource is string valueString)
                 {
                     emitter.Emit(new Comment($"Allowed values: {valueString}", false));
@@ -162,14 +163,14 @@ namespace CivOne.Persistence.Yaml
             }
         }
 
-        private void PrepareSequenceElementComments(ScalarEventInfo eventInfo, DocAttribute docAttribute, string propName)
+        private void PrepareSequenceElementComments(ScalarEventInfo eventInfo, DocAttribute docAttribute, string propName, Type currentType)
         {
             if (docAttribute.CommentValuesPropertyName == null) return;
 
             // Allow re-commenting each time this property is serialized, since comments depend on instance data
             DoNotCreateCommentForPropertyNextTime(propName, ignore: false);
 
-            object dictValue = TryGetMemberValue(CurrentType, docAttribute.CommentValuesPropertyName, eventInfo.Source?.Value);
+            object? dictValue = TryGetMemberValue(currentType, docAttribute.CommentValuesPropertyName, eventInfo.Source?.Value);
             activeCommentValues = ConvertToDictionaryIntString(dictValue);
             if (activeCommentValues != null)
             {
@@ -177,7 +178,7 @@ namespace CivOne.Persistence.Yaml
             }
         }
 
-        private static object TryGetMemberValue(Type type, string memberName, object instance)
+        private static object? TryGetMemberValue(Type type, string memberName, object? instance)
         {
             const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
 
@@ -203,7 +204,7 @@ namespace CivOne.Persistence.Yaml
             commentForProperties[propName] = ignore;
         }
 
-        private static Dictionary<int, string> ConvertToDictionaryIntString(object value)
+        private static Dictionary<int, string>? ConvertToDictionaryIntString(object? value)
         {
             if (value is Dictionary<int, string> dict)
                 return dict;
@@ -215,8 +216,13 @@ namespace CivOne.Persistence.Yaml
                 {
                     try
                     {
-                        int key = Convert.ToInt32(entry.Key);
-                        result[key] = entry.Value?.ToString();
+                        int key = Convert.ToInt32(entry.Key, CultureInfo.InvariantCulture);
+                        string? comment = entry.Value?.ToString();
+                        if (comment == null)
+                        {
+                            continue;
+                        }
+                        result[key] = comment;
                     }
                     catch { /* skip unconvertible keys */ }
                 }

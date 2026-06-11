@@ -19,13 +19,13 @@ namespace CivOne.Persistence.Model.Attributes
 	[AttributeUsage(AttributeTargets.Property)]
 	public sealed class DocAttribute(
 		string description,
-		string allowedValuesPropertyName = null,
-		string commentValuesPropertyName = null) : Attribute
+		string? allowedValuesPropertyName = null,
+		string? commentValuesPropertyName = null) : Attribute
 	{
 		public string Description { get; } = description;
-		public string AllowedValuesPropertyName { get; } = allowedValuesPropertyName;
-		public string CommentValuesPropertyName { get; } = commentValuesPropertyName;
-		public string AllowedValues { get; }
+		public string? AllowedValuesPropertyName { get; } = allowedValuesPropertyName;
+		public string? CommentValuesPropertyName { get; } = commentValuesPropertyName;
+		public string? AllowedValues { get; }
 
 		public DocAttribute(string description, string[] allowedValues) : this(description)
 		{

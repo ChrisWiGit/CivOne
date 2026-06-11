@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
-using CivOne.Enums;
 using CivOne.Mcp.Contracts;
 using CivOne.Persistence;
 
@@ -42,13 +42,13 @@ namespace CivOne.Mcp.Tools
 
 		public McpResponse Handle(McpRequest request)
 		{
-			if (request == null) throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 
-			if (!ValidateParamsObject(request, out McpResponse validationError))
-				return validationError;
+			if (!ValidateParamsObject(request, out McpResponse? validationError))
+				return validationError!;
 
-			if (!TryReadKeys(request.Params, out string[] keys, out string keysError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", keysError, "keys"));
+			if (!TryReadKeys(request.Params, out string[] keys, out string? keysError))
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", keysError!, "keys"));
 
 			Dictionary<string, object> flatSettings = new(StringComparer.OrdinalIgnoreCase);
 			Dictionary<string, object> groupedSettings = BuildSettingsPayload(flatSettings);
@@ -60,7 +60,7 @@ namespace CivOne.Mcp.Tools
 			Dictionary<string, object> selected = new(StringComparer.OrdinalIgnoreCase);
 			foreach (string key in keys.Distinct(StringComparer.OrdinalIgnoreCase))
 			{
-				if (!flatSettings.TryGetValue(key, out object value))
+				if (!flatSettings.TryGetValue(key, out object? value))
 				{
 					invalidKeys.Add(key);
 					continue;
@@ -144,14 +144,14 @@ namespace CivOne.Mcp.Tools
 			AddSetting(runtime, flatSettings, "runtime", "free", BuildBooleanValue(_runtime.Settings.Free, "Enabled", "Disabled"));
 			AddSetting(runtime, flatSettings, "runtime", "showCredits", BuildBooleanValue(_runtime.Settings.ShowCredits, "Enabled", "Disabled"));
 			AddSetting(runtime, flatSettings, "runtime", "showIntro", BuildBooleanValue(_runtime.Settings.ShowIntro, "Enabled", "Disabled"));
-			AddSetting(runtime, flatSettings, "runtime", "loadSaveGameSlot", BuildLoadSaveGameSlotValue(_runtime.Settings.LoadSaveGameSlot));
-			AddSetting(runtime, flatSettings, "runtime", "loadCosFile", _runtime.Settings.LoadCosFile);
+			AddSetting(runtime, flatSettings, "runtime", "loadSaveGameSlot", BuildLoadSaveGameSlotValue(_runtime.Settings.LoadSaveGameSlot) ?? new { drive = string.Empty, slot = -1, usesLoadingScreen = true, text = "Loading screen" });
+			AddSetting(runtime, flatSettings, "runtime", "loadCosFile", _runtime.Settings.LoadCosFile ?? string.Empty);
 			AddSetting(runtime, flatSettings, "runtime", "initialSeed", _runtime.Settings.InitialSeed);
-			AddSetting(runtime, flatSettings, "runtime", "profileName", _runtime.Settings.Get<string>("profile-name"));
+			AddSetting(runtime, flatSettings, "runtime", "profileName", _runtime.Settings.Get<string>("profile-name") ?? string.Empty);
 			AddSetting(runtime, flatSettings, "runtime", "noSound", BuildBooleanValue(_runtime.Settings.Get<bool>("no-sound")));
 			AddSetting(runtime, flatSettings, "runtime", "softwareRender", BuildBooleanValue(_runtime.Settings.Get<bool>("software-render")));
-			AddSetting(runtime, flatSettings, "runtime", "mcpArtifacts", _runtime.Settings.Get<string>("mcp-artifacts"));
-			AddSetting(runtime, flatSettings, "runtime", "mcpSaves", _runtime.Settings.Get<string>("mcp-saves"));
+			AddSetting(runtime, flatSettings, "runtime", "mcpArtifacts", _runtime.Settings.Get<string>("mcp-artifacts") ?? string.Empty);
+			AddSetting(runtime, flatSettings, "runtime", "mcpSaves", _runtime.Settings.Get<string>("mcp-saves") ?? string.Empty);
 			AddSetting(runtime, flatSettings, "runtime", "mcpMaxJsonChars", _runtime.Settings.Get<int>("mcp-max-json-chars"));
 			AddSetting(runtime, flatSettings, "runtime", "mcpHttp", BuildBooleanValue(_runtime.Settings.Get<bool>("mcp-http"), "Enabled", "Disabled"));
 			AddSetting(runtime, flatSettings, "runtime", "mcpHttpPort", _runtime.Settings.Get<int>("mcp-http-port"));
@@ -167,7 +167,7 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private static void AddSetting(IDictionary<string, object> category, IDictionary<string, object> flatSettings, string categoryName, string key, object value)
+		private static void AddSetting(Dictionary<string, object> category, IDictionary<string, object> flatSettings, string categoryName, string key, object value)
 		{
 			category[key] = value;
 			flatSettings[$"{categoryName}.{key}"] = value;
@@ -176,23 +176,23 @@ namespace CivOne.Mcp.Tools
 		private static object BuildEnumValue<TEnum>(TEnum value, string text) where TEnum : struct, Enum
 			=> new
 			{
-				value = Convert.ToInt32(value),
+				value = Convert.ToInt32(value, CultureInfo.InvariantCulture),
 				name = value.ToString(),
 				text = text ?? value.ToString()
 			};
 
 		private static object BuildFlagsValue<TEnum>(TEnum value) where TEnum : struct, Enum
 		{
-			IEnumerable<string> names = Enum.GetValues(typeof(TEnum))
+			IEnumerable<string> names = Enum.GetValues<TEnum>()
 				.Cast<object>()
 				.Select(x => (Enum)x)
-				.Where(x => Convert.ToInt32(x) != 0 && ((Enum)(object)value).HasFlag(x))
+				.Where(x => Convert.ToInt32(x, CultureInfo.InvariantCulture) != 0 && ((Enum)(object)value).HasFlag(x))
 				.Select(x => x.ToString());
 
 			string[] activeNames = [.. names];
 			return new
 			{
-				value = Convert.ToInt32(value),
+				value = Convert.ToInt32(value, CultureInfo.InvariantCulture),
 				names = activeNames,
 				text = activeNames.Length > 0 ? string.Join(", ", activeNames) : "None"
 			};
@@ -201,7 +201,7 @@ namespace CivOne.Mcp.Tools
 		private static object BuildBooleanValue(bool value, string trueText = "On", string falseText = "Off")
 			=> new { value, text = value ? trueText : falseText };
 
-		private static object BuildLoadSaveGameSlotValue(Tuple<char, int> loadSaveGameSlot)
+		private static object? BuildLoadSaveGameSlotValue(Tuple<char, int>? loadSaveGameSlot)
 		{
 			if (loadSaveGameSlot == null)
 				return null;
@@ -231,7 +231,7 @@ namespace CivOne.Mcp.Tools
 		{
 			const int reserveChars = 512;
 			int previewChars = Math.Max(0, Math.Min(sourceJson.Length, _maxJsonChars - reserveChars));
-			string preview = sourceJson.Substring(0, previewChars);
+			string preview = sourceJson[..previewChars];
 
 			while (preview.Length > 0)
 			{
@@ -250,7 +250,7 @@ namespace CivOne.Mcp.Tools
 				if (candidate.Length <= _maxJsonChars)
 					return candidate;
 
-				preview = preview.Substring(0, Math.Max(0, preview.Length - Math.Min(256, preview.Length)));
+				preview = preview[..Math.Max(0, preview.Length - Math.Min(256, preview.Length))];
 			}
 
 			return _jsonWriter.AsString(new
@@ -270,7 +270,7 @@ namespace CivOne.Mcp.Tools
 			return new
 			{
 				ok = true,
-				path = (string)null,
+				path = (string)null!,
 				truncated = false,
 				maxChars = _maxJsonChars,
 				returnedChars = payloadJson.Length,
@@ -283,7 +283,7 @@ namespace CivOne.Mcp.Tools
 			return new
 			{
 				ok = false,
-				path = (string)null,
+				path = (string)null!,
 				truncated = false,
 				maxChars = _maxJsonChars,
 				returnedChars = 0,
@@ -291,13 +291,13 @@ namespace CivOne.Mcp.Tools
 				{
 					code,
 					message,
-					path = (string)null,
+					path = (string)null!,
 					failedSegment
 				}
 			};
 		}
 
-		private static bool ValidateParamsObject(McpRequest request, out McpResponse response)
+		private static bool ValidateParamsObject(McpRequest request, out McpResponse? response)
 		{
 			response = null;
 			if (request.Params.ValueKind == JsonValueKind.Undefined || request.Params.ValueKind == JsonValueKind.Null)
@@ -314,7 +314,7 @@ namespace CivOne.Mcp.Tools
 			return false;
 		}
 
-		private static bool TryReadKeys(JsonElement value, out string[] keys, out string error)
+		private static bool TryReadKeys(JsonElement value, out string[] keys, out string? error)
 		{
 			keys = [];
 			error = null;
@@ -340,7 +340,7 @@ namespace CivOne.Mcp.Tools
 					return false;
 				}
 
-				string text = item.GetString();
+				string? text = item.GetString();
 				if (!string.IsNullOrWhiteSpace(text))
 					parsed.Add(text.Trim());
 			}

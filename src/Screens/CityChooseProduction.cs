@@ -46,14 +46,14 @@ namespace CivOne.Screens
 		private readonly City _city;
 
 		private readonly IProduction[] _availableProduction;
-		private readonly int _fontId = 0;
-		private readonly List<IProduction[]> _pages = new List<IProduction[]>();
+		private readonly int _fontId;
+		private readonly List<IProduction[]> _pages = [];
 
 		private bool _update = true;
 		private int _menuHeight;
-		private int _page = 0;
+		private int _page;
 
-		private ProductionFilterMenu _menu;
+		private ProductionFilterMenu? _menu;
 		private ProductionFilterMode _filterMode = ProductionFilterMode.All;
 
 		private static void SetLastUsedFilterMode(ProductionFilterMode filterMode)
@@ -70,7 +70,7 @@ namespace CivOne.Screens
 			}
 		}
 
-		private void MenuCancel(object sender, EventArgs args)
+		private void MenuCancel(object? _, EventArgs __)
 		{
 			CloseCurrentMenu();
 			Destroy();
@@ -186,9 +186,14 @@ namespace CivOne.Screens
 			}
 		}
 
-		private void ProductionChoice(object sender, EventArgs args)
+		private void ProductionChoice(object? sender, EventArgs args)
 		{
-			if (_pages.Count > 1 && ((sender as MenuItem<int>).Value == _pages[_page].Length))
+			if (sender is not MenuItem<int> menuItem)
+			{
+				System.Diagnostics.Debug.Assert(false, "ProductionChoice called with invalid sender");
+				return;
+			}
+			if (_pages.Count > 1 && (menuItem.Value == _pages[_page].Length))
 			{
 				CloseCurrentMenu();
 				_page++;
@@ -197,25 +202,29 @@ namespace CivOne.Screens
 				_update = true;
 				return;
 			}
-			var selectedProduction = _pages[_page][(sender as MenuItem<int>).Value];
-			if (selectedProduction != null && !(selectedProduction is ProductionSeparator))
+			var selectedProduction = _pages[_page][menuItem.Value];
+			if (selectedProduction != null && selectedProduction is not ProductionSeparator)
 			{
 				_city.SetProduction(selectedProduction);
 				MenuCancel(sender, args);
 			}
 		}
 
-		private void ProductionContext(object sender, EventArgs args)
+		private void ProductionContext(object? sender, EventArgs args)
 		{
-			if (_pages.Count > 1 && ((sender as MenuItem<int>).Value == _pages[_page].Length))
+			if (sender is not MenuItem<int> menuItem)
+			{
+				System.Diagnostics.Debug.Assert(false, "ProductionContext called with invalid sender");
+				return;
+			}
+			if (_pages.Count > 1 && (menuItem.Value == _pages[_page].Length))
 			{
 				ProductionChoice(sender, args);
 				return;
 			}
-			var selectedProduction = _pages[_page][(sender as MenuItem<int>).Value];
-			if (selectedProduction != null && !(selectedProduction is ProductionSeparator))
+			var selectedProduction = _pages[_page][menuItem.Value];
+			if (selectedProduction is ICivilopedia page && selectedProduction is not ProductionSeparator)
 			{
-				ICivilopedia page = selectedProduction as ICivilopedia;
 				Common.AddScreen(new Civilopedia(page, icon: false));
 			}
 		}
@@ -241,13 +250,12 @@ namespace CivOne.Screens
 				foreach (IProduction production in _pages[_page])
 				{
 					string menuText = string.Empty;
-					if (production is ProductionSeparator)
+					if (production is ProductionSeparator separator)
 					{
-						menuText = (production as ProductionSeparator).Text;
+						menuText = separator.Text;
 					}
-					else if (production is IUnit)
+					else if (production is IUnit unit)
 					{
-						IUnit unit = (production as IUnit);
 						int turns = ((int)unit.Price * 10) - _city.Shields;
 						if (_city.ShieldIncome > 1)
 							turns = (int)Math.Ceiling((double)turns / _city.ShieldIncome);
@@ -255,9 +263,8 @@ namespace CivOne.Screens
 						menuText = TranslateFormatted("{0} ({1} turns, ADM:{2}/{3}/{4})", unit.TranslatedName, turns, unit.Attack, unit.Defense, unit.Move);
 						if (Resources.GetTextSize(_fontId, menuText).Width > itemWidth) itemWidth = Resources.GetTextSize(_fontId, menuText).Width;
 					}
-					else if (production is IBuilding)
+					else if (production is IBuilding building)
 					{
-						IBuilding building = (production as IBuilding);
 						int turns = ((int)building.Price * 10) - _city.Shields;
 						if (_city.ShieldIncome > 1)
 							turns = (int)Math.Ceiling((double)turns / _city.ShieldIncome);
@@ -265,9 +272,8 @@ namespace CivOne.Screens
 						menuText = TranslateFormatted("{0} ({1} turns)", building.TranslatedName, turns);
 						if (Resources.GetTextSize(_fontId, menuText).Width > itemWidth) itemWidth = Resources.GetTextSize(_fontId, menuText).Width;
 					}
-					else if (production is IWonder)
+					else if (production is IWonder wonder)
 					{
-						IWonder wonder = (production as IWonder);
 						int turns = ((int)wonder.Price * 10) - _city.Shields;
 						if (_city.ShieldIncome > 1)
 							turns = (int)Math.Ceiling((double)turns / _city.ShieldIncome);

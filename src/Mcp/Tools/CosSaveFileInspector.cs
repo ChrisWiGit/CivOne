@@ -10,13 +10,13 @@ namespace CivOne.Mcp.Tools
 	{
 		public uint? FormatVersion { get; init; }
 		public Guid? SaveGuid { get; init; }
-		public SaveGameMetaDataDto Meta { get; init; }
-		public GameStateDto GameState { get; init; }
+		public SaveGameMetaDataDto? Meta { get; init; } = new();
+		public GameStateDto? GameState { get; init; } = new();
 	}
 
 	internal static class CosSaveFileInspector
 	{
-		public static bool TryInspect(string cosFilePath, out CosSaveFileInspection inspection)
+		public static bool TryInspect(string? cosFilePath, out CosSaveFileInspection? inspection)
 		{
 			inspection = null;
 			if (string.IsNullOrWhiteSpace(cosFilePath) || !File.Exists(cosFilePath))
