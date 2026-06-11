@@ -18,6 +18,7 @@ using CivOne.Screens.PalaceAssets;
 using CivOne.Screens.Dialogs;
 using CivOne.Units;
 using CivOne.Services;
+using System.Diagnostics;
 
 namespace CivOne.Tasks
 {
@@ -25,7 +26,7 @@ namespace CivOne.Tasks
 	{
 		private readonly IScreen _screen;
 
-		public void Closed(object sender, EventArgs args) => EndTask();
+		public void Closed(object? _, EventArgs __) => EndTask();
 
 		public override void Run()
 		{
@@ -41,7 +42,7 @@ namespace CivOne.Tasks
 		{
 			get
 			{
-				GamePlay gamePlay = (GamePlay)Common.Screens.First(s => (s is GamePlay));
+				GamePlay gamePlay = (GamePlay)Common.Screens.First(s => s is GamePlay);
 				return new Show(Overlay.TerrainView(gamePlay.X, gamePlay.Y));
 			}
 		}
@@ -50,7 +51,7 @@ namespace CivOne.Tasks
 		{
 			get
 			{
-				GamePlay gamePlay = (GamePlay)Common.Screens.First(s => (s is GamePlay));
+				GamePlay gamePlay = (GamePlay)Common.Screens.First(s => s is GamePlay);
 				Goto gotoScreen = new(gamePlay.X, gamePlay.Y);
 				gotoScreen.Closed += (s, a) =>
 				{
@@ -67,12 +68,12 @@ namespace CivOne.Tasks
 
 		public static Show LuxuryRate => new(SetRate.Luxuries);
 
-		public static Show AutoSave
+		public static Show? AutoSave
 		{
 			get
 			{
 				if (Game.GameTurn % 50 != 0) return null;
-				int gameId = ((Game.GameTurn / 50) % 6) + 4;
+				int gameId = (Game.GameTurn / 50 % 6) + 4;
 				return new Show(new SaveGame(gameId));
 			}
 		}
@@ -90,8 +91,10 @@ namespace CivOne.Tasks
 				Search search = new();
 				search.Accept += (s, a) =>
 				{
-					City city = (s as Search).City;
+					if (s is not Search searchScreen) return;
+					City city = searchScreen.City;
 					if (city == null) return;
+					
 					GamePlay gamePlay = (GamePlay)Common.Screens.First(x => x.GetType() == typeof(GamePlay));
 					gamePlay.CenterOnPoint(city.X, city.Y);
 				};
@@ -105,8 +108,10 @@ namespace CivOne.Tasks
 			{
 				ChooseGovernment chooseGovernment = new();
 				chooseGovernment.Closed += (s, a) => {
-					Human.Government = (s as ChooseGovernment).Result;
-					GameTask.Insert(Message.NewGoverment(null, 
+					if (s is not ChooseGovernment chooseGovernmentScreen) return;
+
+					Human.Government = chooseGovernment.Result;
+					Insert(Message.NewGoverment(null,
 					TranslationServiceFactory.GetCurrent().TranslateFormattedArray("{0} government\nchanged to {1}!", Human.TribeName, Human.Government.TranslatedName)));
 				};
 				return new Show(chooseGovernment);
@@ -145,30 +150,48 @@ namespace CivOne.Tasks
 
 		public static Show Screen<T>() where T : IScreen, new() => new(new T());
 
-        private static Show Screen(Type type)
+		private static Show? Screen(Type type)
 		{
-			if (!typeof(IScreen).IsAssignableFrom(type)) return null;
-			return new Show((IScreen)Activator.CreateInstance(type));
+			if (!typeof(IScreen).IsAssignableFrom(type))
+				return null;
+
+			return Activator.CreateInstance(type) is IScreen screen
+				? new Show(screen)
+				: null;
 		}
 
 		public static Show Screen(IScreen screen) => new(screen);
 
-		public static Show Screens(IEnumerable<Type> types)
+		public static Show? Screens(IEnumerable<Type> types)
 		{
 			Queue<Type> screenTypeQueue = new(types.Where(x => typeof(IScreen).IsAssignableFrom(x)));
 			if (screenTypeQueue.Count == 0) return null;
-			Func<Show> nextTask = null;
-			nextTask = () =>
+			Show? nextTask()
 			{
-				if (screenTypeQueue.Count == 0) return null;
-				Show showScreen = Show.Screen(screenTypeQueue.Dequeue());
-				showScreen.Done += (_, __) => GameTask.Insert(nextTask());
+				if (screenTypeQueue.Count == 0) 
+				{
+					Debug.Assert(false, "No more screens in queue, but nextTask was called.");
+					return null;
+				}
+				
+				Type type = screenTypeQueue.Dequeue();
+				Show? showScreen = Screen(type);
+
+				if (showScreen == null)
+				{
+					Debug.Assert(false, $"Failed to create screen of type {type.FullName}");
+					return null;
+				}
+
+
+				showScreen.Done += (_, __) => Insert(nextTask());
 				return showScreen;
-			};
+			}
+
 			return nextTask();
 		}
 
-		public static Show Screens(params Type[] types) => Screens(types.ToList());
+		public static Show? Screens(params Type[] types) => Screens(types.ToList());
 
 		private Show(IScreen screen)
 		{

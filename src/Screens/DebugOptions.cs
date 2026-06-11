@@ -25,6 +25,7 @@ using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Civilizations;
 using CivOne.Services;
+using CivOne.Services.Screen;
 
 namespace CivOne.Screens
 {
@@ -76,7 +77,7 @@ namespace CivOne.Screens
 
 		private void MenuSetCitySize(object? _, EventArgs args)
 		{
-			GameTask.Enqueue(Show.Screen<SetCitySize>());
+			GameTask.Enqueue(Show.Screen(new SetCitySize(ScreenServiceFactory.CreateQueryService())));
 			Destroy();
 		}
 
