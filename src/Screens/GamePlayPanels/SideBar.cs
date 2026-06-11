@@ -44,7 +44,7 @@ namespace CivOne.Screens.GamePlayPanels
 		private bool _update = true;
 		private int _lastDemographicsSignature;
 		private int _lastGameInfoSignature;
-		private string _statusInfoText;
+		private string _statusInfoText = string.Empty;
 		private int _statusInfoFrames;
 		
 		private readonly Picture _miniMap, _demographics;
@@ -58,7 +58,7 @@ namespace CivOne.Screens.GamePlayPanels
 			{
 				bool editorEnabled = GamePlay.IsTerrainEditorEnabled;
 				bool revealWorld = Settings.RevealWorld || editorEnabled;
-				IUnit activeUnit = Game.ActiveUnit;
+				IUnit? activeUnit = Game.ActiveUnit;
 				ITile[,] tiles = Map[GamePlay.X - MiniMapViewOffsetX, GamePlay.Y - MiniMapViewOffsetY, MiniMapTileWidth, MiniMapTileHeight];
 				for (int yy = 0; yy < MiniMapTileHeight; yy++)
 				for (int xx = 0; xx < MiniMapTileWidth; xx++)
@@ -67,7 +67,7 @@ namespace CivOne.Screens.GamePlayPanels
 					if (tile == null) continue;
 
 					// Flash active unit
-					if (!editorEnabled && activeUnit != null && Human == activeUnit.Owner && (tile.X == activeUnit.X && tile.Y == activeUnit.Y) && GamePlay?.IsMapViewEnabled != true)
+					if (!editorEnabled && activeUnit != null && Human == activeUnit.Owner && tile.X == activeUnit.X && tile.Y == activeUnit.Y && GamePlay?.IsMapViewEnabled != true)
 					{
 						if (gameTick % 4 <= 1)
 						{
@@ -134,8 +134,8 @@ namespace CivOne.Screens.GamePlayPanels
 
 
 			int width = Resources.GetTextSize(0, Game.GameYear).Width;
-			int stage = (int)Math.Floor(((double)Human.Science / Human.ScienceCost) * 4);
-			_demographics.AddLayer(Icons.Lamp(stage), 4 + width, 22);
+			int stage = (int)Math.Floor((double)Human.Science / Human.ScienceCost * 4);
+			_demographics.AddLayer(Icons.Lamp(stage)!, 4 + width, 22);
 
 			DrawPollutionSun(width);
 
@@ -157,7 +157,7 @@ namespace CivOne.Screens.GamePlayPanels
 			{
 				return;
 			}
-			_demographics.AddLayer(Icons.Sun((int)_globalWarmingService.WarmingIndicator - 1), 4 + 10 + width, 24);
+			_demographics.AddLayer(Icons.Sun((int)_globalWarmingService.WarmingIndicator - 1)!, 4 + 10 + width, 24);
 		}
 
 		private int GetDemographicsSignature()
@@ -184,7 +184,7 @@ namespace CivOne.Screens.GamePlayPanels
 
 		private void DrawGameInfo(uint gameTick = 0)
 		{
-			IUnit unit = Game.ActiveUnit;
+			IUnit? unit = Game.ActiveUnit;
 
 			_gameInfo.Tile(Pattern.PanelGrey)
 				.DrawRectangle3D();
@@ -205,44 +205,44 @@ namespace CivOne.Screens.GamePlayPanels
 			{
 				int yy = 2;
 				_gameInfo.DrawText(Human.TribeName, 0, 5, 4, 2, TextAlign.Left);
-				_gameInfo.DrawText(unit.TranslatedName, 0, 5, 4, (yy += 8), TextAlign.Left);
+				_gameInfo.DrawText(unit.TranslatedName, 0, 5, 4, yy += 8, TextAlign.Left);
 
 				if (unit.Veteran)
 				{
-					_gameInfo.DrawText(Translate("Veteran"), 0, 5, 8, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(Translate("Veteran"), 0, 5, 8, yy += 8, TextAlign.Left);
 				}
 
-				if (unit is BaseUnitAir)
+				if (unit is BaseUnitAir airUnit)
 				{
-					_gameInfo.DrawText(TranslateFormatted("Moves: {0}({1})", unit.MovesLeft, (unit as BaseUnitAir).FuelLeft), 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(TranslateFormatted("Moves: {0}({1})", unit.MovesLeft, airUnit.FuelLeft), 0, 5, 4, yy += 8, TextAlign.Left);
 				}
 				else if (unit.PartMoves > 0)
 				{
-					_gameInfo.DrawText(TranslateFormatted("Moves: {0}.{1}", unit.MovesLeft, unit.PartMoves), 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(TranslateFormatted("Moves: {0}.{1}", unit.MovesLeft, unit.PartMoves), 0, 5, 4, yy += 8, TextAlign.Left);
 				}
 				else
 				{
-					_gameInfo.DrawText(TranslateFormatted("Moves: {0}", unit.MovesLeft), 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(TranslateFormatted("Moves: {0}", unit.MovesLeft), 0, 5, 4, yy += 8, TextAlign.Left);
 				}
-				_gameInfo.DrawText((unit.Home == null ? Translate("NONE") : unit.Home.Name), 0, 5, 4, (yy += 8), TextAlign.Left);
-				_gameInfo.DrawText($"({Map[unit.X, unit.Y].TranslatedName})", 0, 5, 4, (yy += 8), TextAlign.Left);
+				_gameInfo.DrawText(unit.Home == null ? Translate("NONE") : unit.Home.Name, 0, 5, 4, yy += 8, TextAlign.Left);
+				_gameInfo.DrawText($"({Map[unit.X, unit.Y].TranslatedName})", 0, 5, 4, yy += 8, TextAlign.Left);
 
 				if (Map[unit.X, unit.Y].RailRoad)
-					_gameInfo.DrawText(Translate("(RailRoad)"), 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(Translate("(RailRoad)"), 0, 5, 4, yy += 8, TextAlign.Left);
 				else if (Map[unit.X, unit.Y].Road)
-					_gameInfo.DrawText(Translate("(Road)"), 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(Translate("(Road)"), 0, 5, 4, yy += 8, TextAlign.Left);
 				if (Map[unit.X, unit.Y].Irrigation)
-					_gameInfo.DrawText(Translate("(Irrigation)"), 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(Translate("(Irrigation)"), 0, 5, 4, yy += 8, TextAlign.Left);
 				else if (Map[unit.X, unit.Y].Mine)
-					_gameInfo.DrawText(Translate("(Mining)"), 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(Translate("(Mining)"), 0, 5, 4, yy += 8, TextAlign.Left);
 
 				yy += 11;
 
 				IUnit[] units = Map[unit.X, unit.Y].Units.Where(u => u != unit).Take(8).ToArray();
 				for (int i = 0; i < units.Length; i++)
 				{
-					int ix = 7 + ((i % 4) * 16);
-					int iy = yy + (((i - (i % 4)) / 4) * 16);
+					int ix = 7 + (i % 4 * 16);
+					int iy = yy + ((i - (i % 4)) / 4 * 16);
 					_gameInfo.AddLayer(units[i].ToBitmap(), ix, iy);
 				}
 			}
@@ -276,7 +276,7 @@ namespace CivOne.Screens.GamePlayPanels
 			if (spawnMode && hoveredUnits.Length > 0)
 			{
 				IUnit firstUnit = hoveredUnits[0];
-				Player owner = Game.GetPlayer(firstUnit.Owner);
+				Player? owner = Game.GetPlayer(firstUnit.Owner);
 				if (owner != null)
 				{
 					hoveredUnitOwnerText = owner.Civilization is CivOne.Civilizations.Barbarian
@@ -314,17 +314,17 @@ namespace CivOne.Screens.GamePlayPanels
 
 		private int GetGameInfoSignature(uint gameTick)
 		{
-			IUnit unit = Game.ActiveUnit;
+			IUnit? unit = Game.ActiveUnit;
 			bool hasBlockingTask = GameTask.Any() && !GameTask.Is<Show>() && !GameTask.Is<Message>();
 			int blinkPhase = (unit == null || hasBlockingTask) ? (int)(gameTick % 4) : -1;
 			bool editorEnabled = GamePlay?.IsTerrainEditorEnabled == true;
 			bool spawnMode = editorEnabled && GamePlay!.IsTerrainEditorSpawnMode;
 			string editorMode = editorEnabled ? GamePlay!.TerrainEditorModeText : string.Empty;
 			int editorBrush = editorEnabled ? GamePlay!.TerrainEditorBrushSize : -1;
-			string editorOwner = editorEnabled ? GamePlay!.TerrainEditorCityOwnerText : string.Empty;
+			string editorOwner = editorEnabled ? GamePlay!.TerrainEditorCityOwnerText ?? string.Empty : string.Empty;
 			int hoveredTileX = editorEnabled ? GamePlay!.HoveredTileX : -1;
 			int hoveredTileY = editorEnabled ? GamePlay!.HoveredTileY : -1;
-			ITile hoveredTile = editorEnabled ? Map[hoveredTileX, hoveredTileY] : null;
+			ITile? hoveredTile = editorEnabled ? Map[hoveredTileX, hoveredTileY] : null;
 			IUnit[] hoveredUnits = hoveredTile?.Units ?? [];
 			byte hoveredOwner = hoveredUnits.Length > 0 ? hoveredUnits[0].Owner : byte.MaxValue;
 			UnitType hoveredType = hoveredUnits.Length > 0 ? hoveredUnits[0].Type : (UnitType)(-1);
@@ -401,8 +401,8 @@ namespace CivOne.Screens.GamePlayPanels
 			{
 				if (args.X < MiniMapBorder || args.Y < MiniMapBorder || args.X > (SideBarWidth - MiniMapBorder) || args.Y > (MiniMapHeight - MiniMapBorder)) return true;
 				
-				int xx = (args.X - MiniMapBorder) + GamePlay.X - MiniMapViewOffsetX;
-				int yy = (args.Y - MiniMapBorder) + GamePlay.Y - MiniMapViewOffsetY;
+				int xx = args.X - MiniMapBorder + GamePlay!.X - MiniMapViewOffsetX;
+				int yy = args.Y - MiniMapBorder + GamePlay!.Y - MiniMapViewOffsetY;
 
 				GamePlay.CenterOnPoint(xx, yy);
 			}
@@ -421,22 +421,26 @@ namespace CivOne.Screens.GamePlayPanels
 			return true;
 		}
 
-		private GamePlay GamePlay
+		#pragma warning disable CA1822 // This method may be static
+		private GamePlay? GamePlay
 		{
 			get
 			{
-				IScreen mapScreen = Common.Screens.FirstOrDefault(s => (s is GamePlay));
-				if (mapScreen != null)
-					return (mapScreen as GamePlay);
+				IScreen? mapScreen = Common.Screens.FirstOrDefault(s => s is GamePlay);
+				if (mapScreen is GamePlay gamePlay)
+					return gamePlay;
+
+				System.Diagnostics.Debug.Assert(false, "SideBar: GamePlay screen not found");
 				return null;
 			}
 		}
+		#pragma warning restore CA1822
 		
 		public void Resize(int height)
 		{
 			Bitmap = new Bytemap(SideBarWidth, height);
 			_gameInfo?.Dispose();
-			_gameInfo = new Picture(SideBarWidth, (height - GameInfoOffsetY), Palette);
+			_gameInfo = new Picture(SideBarWidth, height - GameInfoOffsetY, Palette);
 			_lastDemographicsSignature = int.MinValue;
 			_lastGameInfoSignature = int.MinValue;
 			_update = true;
@@ -453,7 +457,7 @@ namespace CivOne.Screens.GamePlayPanels
 
 			_miniMap = new Picture(SideBarWidth, MiniMapHeight, palette);
 			_demographics = new Picture(SideBarWidth, DemographicsHeight, palette);
-			_gameInfo = new Picture(SideBarWidth, (192 - GameInfoOffsetY), palette);
+			_gameInfo = new Picture(SideBarWidth, 192 - GameInfoOffsetY, palette);
 
 			DrawMiniMap();
 			DrawDemographics();
