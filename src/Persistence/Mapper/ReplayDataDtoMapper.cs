@@ -129,7 +129,7 @@ namespace CivOne.Persistence.Model
 		}
 
 
-		bool ThrowIfMultipleNotNull(params object[] properties)
+		private static bool ThrowIfMultipleNotNull(params object?[] properties)
 		{
 			if (properties.Count(p => p != null) > 1)
 				throw new InvalidDataException(
@@ -206,7 +206,7 @@ namespace CivOne.Persistence.Model
 
 		private static NotImplementedException NotYetImplemented(string typeName)
 			=> new($"ReplayData type '{typeName}' is not yet implemented as a domain class. "
-				 + $"Add a matching subclass to ReplayData in api/src/ReplayData.cs.");
+					+ $"Add a matching subclass to ReplayData in api/src/ReplayData.cs.");
 
 		// ── Convenience list helpers ───────────────────────────────────────────────
 

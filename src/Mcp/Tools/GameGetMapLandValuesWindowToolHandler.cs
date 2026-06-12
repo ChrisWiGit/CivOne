@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Text.Json;
 using CivOne.Mcp.Contracts;
 using CivOne.Persistence;
@@ -41,35 +42,35 @@ namespace CivOne.Mcp.Tools
 
 		public McpResponse Handle(McpRequest request)
 		{
-			if (request == null) throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 
-			if (!ValidateParamsObject(request, out McpResponse validationError))
-				return validationError;
+			if (!ValidateParamsObject(request, out McpResponse? validationError))
+				return validationError!;
 
-			if (!TryReadRequiredInt(request.Params, "x", out int x, out string xError))
+			if (!TryReadRequiredInt(request.Params, "x", out int x, out string? xError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", xError, "x"));
 
-			if (!TryReadRequiredInt(request.Params, "y", out int y, out string yError))
+			if (!TryReadRequiredInt(request.Params, "y", out int y, out string? yError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", yError, "y"));
 
-			if (!TryReadRequiredInt(request.Params, "width", out int width, out string widthError))
+			if (!TryReadRequiredInt(request.Params, "width", out int width, out string? widthError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", widthError, "width"));
 
-			if (!TryReadRequiredInt(request.Params, "height", out int height, out string heightError))
+			if (!TryReadRequiredInt(request.Params, "height", out int height, out string? heightError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", heightError, "height"));
 
-			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string errorMessage))
-				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage, null));
+			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string? errorMessage))
+				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage!, null));
 
-			Map2d<TileDto> mapTiles = snapshot.Map?.Tiles;
+			Map2d<TileDto>? mapTiles = snapshot.Map?.Tiles;
 			if (mapTiles == null)
 				return JsonResponse(request.Id, BuildErrorPayload("NO_MAP", "No map data available.", null));
 
 			int mapWidth = mapTiles.Width();
 			int mapHeight = mapTiles.Height();
 
-			if (!ValidateBounds(x, y, width, height, mapWidth, mapHeight, out string boundsError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_BOUNDS", boundsError, "x|y|width|height"));
+			if (!ValidateBounds(x, y, width, height, mapWidth, mapHeight, out string? boundsError))
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_BOUNDS", boundsError!, "x|y|width|height"));
 
 			string[] rows = new string[height];
 			for (int row = 0; row < height; row++)
@@ -78,7 +79,7 @@ namespace CivOne.Mcp.Tools
 				for (int col = 0; col < width; col++)
 				{
 					byte landValue = mapTiles[x + col, y + row].LandValue;
-					values[col] = landValue.ToString("X2");
+					values[col] = landValue.ToString("X2", CultureInfo.InvariantCulture);
 				}
 
 				rows[row] = string.Join(',', values);
@@ -93,7 +94,7 @@ namespace CivOne.Mcp.Tools
 			}));
 		}
 
-		private McpResponse JsonResponse(object id, object payload)
+		private McpResponse JsonResponse(object? id, object payload)
 			=> McpJsonToolResponse.JsonResponse(id, payload, _jsonWriter, _maxJsonChars);
 
 		private object BuildSuccessPayload(object data)
@@ -109,7 +110,7 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private object BuildErrorPayload(string code, string message, string failedSegment)
+		private object BuildErrorPayload(string code, string? message, string? failedSegment)
 		{
 			return new
 			{
@@ -121,13 +122,13 @@ namespace CivOne.Mcp.Tools
 				{
 					code,
 					message,
-					path = (string)null,
+					path = (string)null!,
 					failedSegment
 				}
 			};
 		}
 
-		private static bool ValidateBounds(int x, int y, int width, int height, int mapWidth, int mapHeight, out string error)
+		private static bool ValidateBounds(int x, int y, int width, int height, int mapWidth, int mapHeight, out string? error)
 		{
 			error = null;
 			if (x < 0 || y < 0)
@@ -151,7 +152,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool ValidateParamsObject(McpRequest request, out McpResponse response)
+		private static bool ValidateParamsObject(McpRequest request, out McpResponse? response)
 		{
 			response = null;
 			if (request.Params.ValueKind == JsonValueKind.Object)
@@ -165,7 +166,7 @@ namespace CivOne.Mcp.Tools
 			return false;
 		}
 
-		private static bool TryReadRequiredInt(JsonElement value, string propertyName, out int result, out string error)
+		private static bool TryReadRequiredInt(JsonElement value, string propertyName, out int result, out string? error)
 		{
 			result = 0;
 			error = null;
