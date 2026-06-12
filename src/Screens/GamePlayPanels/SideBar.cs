@@ -430,7 +430,6 @@ namespace CivOne.Screens.GamePlayPanels
 				if (mapScreen is GamePlay gamePlay)
 					return gamePlay;
 
-				System.Diagnostics.Debug.Assert(false, "SideBar: GamePlay screen not found");
 				return null;
 			}
 		}

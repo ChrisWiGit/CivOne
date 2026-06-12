@@ -6,7 +6,7 @@ namespace CivOne.Mcp.Transport
 {
 	public sealed class JsonRpcProtocolSerializer : IMcpProtocolSerializer
 	{
-		public bool TryParse(string raw, out McpRequest request, out McpResponse parseErrorResponse)
+		public bool TryParse(string raw, out McpRequest? request, out McpResponse? parseErrorResponse)
 		{
 			request = null;
 			parseErrorResponse = null;
@@ -21,10 +21,10 @@ namespace CivOne.Mcp.Transport
 			{
 				using JsonDocument document = JsonDocument.Parse(raw);
 				JsonElement root = document.RootElement;
-				string jsonRpc = root.TryGetProperty("jsonrpc", out JsonElement jsonRpcValue)
+				string? jsonRpc = root.TryGetProperty("jsonrpc", out JsonElement jsonRpcValue)
 					? jsonRpcValue.GetString()
 					: "2.0";
-				object id = root.TryGetProperty("id", out JsonElement idValue)
+				object? id = root.TryGetProperty("id", out JsonElement idValue)
 					? idValue.Clone()
 					: null;
 				if (id is JsonElement jsonId && !IsValidRequestId(jsonId))
@@ -32,13 +32,13 @@ namespace CivOne.Mcp.Transport
 					parseErrorResponse = McpResponse.Failure(null, -32600, "Invalid request", "Property 'id' must be a JSON scalar.");
 					return false;
 				}
-				string method = root.TryGetProperty("method", out JsonElement methodValue)
+				string? method = root.TryGetProperty("method", out JsonElement methodValue)
 					? methodValue.GetString()
 					: null;
 				JsonElement parameters = root.TryGetProperty("params", out JsonElement paramsValue)
 					? paramsValue.Clone()
 					: default;
-				string sessionToken = root.TryGetProperty("sessionToken", out JsonElement tokenValue)
+				string? sessionToken = root.TryGetProperty("sessionToken", out JsonElement tokenValue)
 					? tokenValue.GetString()
 					: null;
 
@@ -60,7 +60,7 @@ namespace CivOne.Mcp.Transport
 
 		public string Serialize(McpResponse response)
 		{
-			if (response == null) throw new ArgumentNullException(nameof(response));
+			ArgumentNullException.ThrowIfNull(response);
 			return JsonSerializer.Serialize(response);
 		}
 

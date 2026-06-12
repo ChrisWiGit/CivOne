@@ -8,10 +8,12 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
+using CivOne.Services.Screen;
 using CivOne.Tasks;
 using CivOne.UserInterface;
 
@@ -22,7 +24,7 @@ namespace CivOne.Screens.Debug
 	{
 		private readonly CivSelectMenuDelegate _civSelectDelegate;
 
-		private Input _input;
+		private Input? _input;
 
 		private Player? _selectedPlayer;
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
@@ -52,17 +54,23 @@ namespace CivOne.Screens.Debug
 			}
 		}
 
-		public string Value { get; private set; }
+		public string? Value { get; private set; }
 
-		public event EventHandler Accept, Cancel;
+		public event EventHandler? Accept, Cancel;
 
 		private void OnPlayerSelected(Player player)
 		{
-			Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
+			Palette = Common.Screens[^1].OriginalColours;
 
 			_selectedPlayer = player;
 
-			_input = new Input(Palette, _selectedPlayer.Science.ToString(), 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 5);
+			if (_selectedPlayer == null)
+			{
+				System.Diagnostics.Debug.Assert(false, "Selected player is null in OnPlayerSelected.");
+				return;
+			}
+
+			_input = new Input(Palette, _selectedPlayer.Science.ToString(CultureInfo.CurrentCulture), 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 5);
 			_input.Accept += PlayerScience_Accept;
 			_input.Cancel += PlayerScience_Cancel;
 
@@ -71,35 +79,39 @@ namespace CivOne.Screens.Debug
 			CloseMenus();
 		}
 
-		private void PlayerScience_Accept(object sender, EventArgs args)
+		private void PlayerScience_Accept(object? sender, EventArgs args)
 		{
-			Value = (sender as Input).Text;
-			
-			short playerScience;
-			if (!short.TryParse(Value, out playerScience) || playerScience < 0 || playerScience > 30000)
+			if (sender is not Input input) return;
+			Value = input.Text;
+
+			if (!short.TryParse(Value, out short playerScience) || playerScience < 0 || playerScience > 30000)
 			{
 				GameTask.Enqueue(Message.Error(Translate("-- DEBUG: Set Player Science --"), TranslateFormattedArray("The value {0} is invalid or out of range.\nPlease enter a value between 0 and\n30000.", Value)));
 			}
 			else
 			{
+				if (_selectedPlayer == null)
+				{
+					System.Diagnostics.Debug.Assert(false, "Selected player is null in PlayerScience_Accept.");
+					return;
+				}
 				if (playerScience > _selectedPlayer.ScienceCost) playerScience = _selectedPlayer.ScienceCost;
 				_selectedPlayer.Science = playerScience;
 				GameTask.Enqueue(Message.General(TranslateFormatted("{0} science set to {1}~.", _selectedPlayer.TribeName, playerScience)));
 			}
 
-			if (Accept != null)
-				Accept(this, EventArgs.Empty);
-			if (sender is Input input)
-				input.Close();
+			Accept?.Invoke(this, EventArgs.Empty);
+			input.Close();
 			Destroy();
 		}
 
-		private void PlayerScience_Cancel(object sender, EventArgs args)
+		private void PlayerScience_Cancel(object? sender, EventArgs args)
 		{
-			if (Cancel != null)
-				Cancel(this, EventArgs.Empty);
+			Cancel?.Invoke(this, EventArgs.Empty);
 			if (sender is Input input)
+			{
 				input.Close();
+			}
 			Destroy();
 		}
 
@@ -113,21 +125,26 @@ namespace CivOne.Screens.Debug
 					DrawInputDialog();
 			}
 
-			if (_selectedPlayer == null && Common.TopScreen.GetType() != typeof(Menu))
+			if (_selectedPlayer == null && !_screenQueryService.HasTopScreen<Menu>())
 			{
 				AddMenu(_civSelectDelegate.Menu);
 				return false;
 			}
-			else if (_selectedPlayer != null && !Common.HasScreenType<Input>())
+			
+			if (_selectedPlayer != null && !_screenQueryService.HasScreenType<Input>())
 			{
 				Common.AddScreen(_input);
 			}
 			return false;
 		}
 
+		private readonly IScreenQueryService _screenQueryService;
+
 		public SetPlayerScience() : base(MouseCursor.Pointer)
 		{
-			Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
+			_screenQueryService = ScreenServiceFactory.CreateQueryService();			
+			
+			Palette = Common.Screens[^1].OriginalColours;
 			_civSelectDelegate = new CivSelectMenuDelegate(Palette, Translate("Set Player Science..."));
 			_civSelectDelegate.PlayerSelected += OnPlayerSelected;
 			_civSelectDelegate.Cancelled += PlayerScience_Cancel;

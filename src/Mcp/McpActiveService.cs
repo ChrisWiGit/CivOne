@@ -45,7 +45,7 @@ namespace CivOne.Mcp
 			{
 				if (!_transport.TryRead(out McpRequest request)) return;
 
-				McpResponse response = null;
+				McpResponse? response = null;
 				try
 				{
 					if (string.Equals(request.Method, "initialize", StringComparison.Ordinal))
@@ -103,7 +103,7 @@ namespace CivOne.Mcp
 			}
 		}
 
-		private static bool ShouldRespond(McpRequest request)
+		private static bool ShouldRespond(McpRequest? request)
 		{
 			if (request?.Id == null)
 				return false;

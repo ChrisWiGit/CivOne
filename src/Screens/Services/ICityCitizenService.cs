@@ -9,31 +9,31 @@ namespace CivOne.Screens.Services
 {
 	public struct CitizenTypes
 	{
-		public int happy;
-		public int content;
-		public int unhappy;
+		public int happy { get; set; }
+		public int content { get; set; }
+		public int unhappy { get; set; }
 
-		public int redShirt;
-		public int elvis;
-		public int einstein;
-		public int taxman;
+		public int redShirt { get; set; }
+		public int elvis { get; set; }
+		public int einstein { get; set; }
+		public int taxman { get; set; }
 
 		public readonly bool InDisorder => unhappy + redShirt > happy;
 
-		public Citizen[] Citizens;
+		public Citizen[] Citizens { get; set; }
 
-		public List<IBuilding> Buildings;
-		public List<IWonder> Wonders;
+		public List<IBuilding> Buildings { get; set; }
+		public List<IWonder> Wonders { get; set; }
 
-		public List<IUnit> MarshallLawUnits;
+		public List<IUnit> MarshallLawUnits { get; set; }
 
 
-		public int Sum()
+		public readonly int Sum()
 		{
 			return happy + content + unhappy + redShirt + elvis + einstein + taxman;
 		}
 
-		public bool Valid()
+		public readonly bool Valid()
 		{
 			return happy >= 0 && content >= 0 && unhappy >= 0 && redShirt >= 0 && elvis >= 0 && einstein >= 0 && taxman >= 0;
 		}

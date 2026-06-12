@@ -23,6 +23,7 @@ using CivOne.Screens;
 using CivOne.Wonders;
 using System.Threading;
 using System.Globalization;
+using System.Diagnostics;
 
 namespace CivOne
 {
@@ -168,9 +169,15 @@ namespace CivOne
 		/// <remarks>
 		/// For new code, prefer IScreenCommandService.AddScreen obtained from ScreenServiceFactory.CreateCommandService().
 		/// This provides better testability and loose coupling.
+		/// If null is passed, this method does nothing.
 		/// </remarks>
-		internal static void AddScreen(IScreen screen)
+		internal static void AddScreen(IScreen? screen)
 		{
+			if (screen == null)
+			{
+				Debug.Assert(false, "Attempted to add null screen.");
+				return;
+			}
 			if (_screens.Contains(screen))
 			{
 				return;
