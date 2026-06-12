@@ -1262,3 +1262,6 @@ COST: {0}0 RESOURCES.=Kosten: {0}0 Ressourcen.
 ATTACK STRENGTH: {0}=Angriffsstärke: {0}
 DEFENSE STRENGTH: {0}=Verteidigungsstärke: {0}
 MOVEMENT RATE: {0}=Bewegungsrate: {0}
+{0} (POP:{1})={0} (Pop:{1})
+SET ADVANCES: {0} (HELP: ALT+H)=Setze Fortschritte: {0} (Hilfe: Alt+H)
+SET PLAYER ADVANCES...=Setze Spieler-Fortschritte...
