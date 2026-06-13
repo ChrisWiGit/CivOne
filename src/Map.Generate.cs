@@ -567,6 +567,7 @@ namespace CivOne
                 int elapsedMinutes = (int)totalElapsed.TotalMinutes;
                 int elapsedSeconds = totalElapsed.Seconds;
                 Log( "Map: Total generation duration {0}:{1:00} min ({2:0.000} s, {3} ms)", elapsedMinutes, elapsedSeconds, totalElapsed.TotalSeconds, totalGenerationTimer.ElapsedMilliseconds );
+				Volatile.Write(ref _generationInProgress, 0);
             }
 		}
 
@@ -590,9 +591,16 @@ namespace CivOne
 		/// <param name="age">Earth age preset.</param>
 		public void Generate( LandMass landMass = LandMass.Normal, Temperature temperature = Temperature.Temperate, Climate climate = Climate.Normal, EarthAge age = EarthAge.FourBillionYears )
         {
+			if (Interlocked.CompareExchange(ref _generationInProgress, 1, 0) != 0)
+			{
+				Log("ERROR: Map generation is already running");
+				return;
+			}
+
             if (Ready || _tiles != null)
             {
                 Log("ERROR: Map is already load{0}/generat{0}", (Ready ? "ed" : "ing"));
+				Volatile.Write(ref _generationInProgress, 0);
                 return;
             }
 			
@@ -604,6 +612,7 @@ namespace CivOne
             _climateValue = (int)climate;
             _age = age;
             _ageValue = (int)age;
+			SetError(false);
 			
             Task.Run(() => GenerateThread());
         }

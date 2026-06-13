@@ -136,6 +136,7 @@ namespace CivOne
 		private int _generationStageCurrent;
 		private int _generationStageTotal;
 		private int _generationStageCode;
+		private int _generationInProgress;
 
 		/// <summary>
 		/// Gets the index of the current map generation stage.
@@ -159,6 +160,11 @@ namespace CivOne
 		/// and can be used by the UI to display a human-readable status message.
 		/// </summary>
 		public int GenerationStageCode => Volatile.Read(ref _generationStageCode);
+
+		/// <summary>
+		/// Gets whether map generation is currently running.
+		/// </summary>
+		public bool GenerationInProgress => Volatile.Read(ref _generationInProgress) != 0;
 
 		private void SetReady(bool ready)
 		{
@@ -188,6 +194,7 @@ namespace CivOne
 			SetReady(false);
 			SetError(false);
 			SetGenerationProgress(0, 0, 0);
+			Volatile.Write(ref _generationInProgress, 0);
 		}
 
 		public bool FixedStartPositions { get; private set; }

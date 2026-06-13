@@ -145,8 +145,18 @@ namespace CivOne.Screens
 		private string GetGenerationProgressText()
 		{
 			int stageCurrent = Math.Max(0, Map.GenerationStageCurrent);
-			int stageTotal = Math.Max(1, Map.GenerationStageTotal);
+			int stageTotal = Map.GenerationStageTotal;
 			int stageCode = Map.GenerationStageCode;
+			if (stageTotal <= 0)
+			{
+				if (Map.GenerationInProgress)
+				{
+					return Translate("Preparing map generation...");
+				}
+
+				return Translate("Waiting for map generation to start...");
+			}
+
 			string stageLabel = GetGenerationStageLabel(stageCode);
 			int stageDisplay = Math.Clamp(stageCurrent, 1, stageTotal);
 			return TranslateFormatted("{0} of {1}: {2}...", stageDisplay, stageTotal, stageLabel);
