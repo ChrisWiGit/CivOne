@@ -1,4 +1,5 @@
 using CivOne.Services.Random;
+using System;
 using Xunit;
 
 namespace CivOne.UnitTests
@@ -67,6 +68,65 @@ namespace CivOne.UnitTests
 			Assert.False(actual);
 		}
 
+		[Fact]
+		public void HitFractionWhenCalledReturnsValueFromWrappedRandomInstance()
+		{
+			// Arrange
+			var random = new Random(1234);
+			var testee = new CommonRandomService(() => random);
+
+			// Act
+			bool expected = random.Hit(1, 3);
+			random = new Random(1234);
+			testee = new CommonRandomService(() => random);
+			bool actual = testee.Hit(1, 3);
+
+			// Assert
+			Assert.Equal(expected, actual);
+		}
+
+		[Fact]
+		public void HitFractionWhenNumeratorIsZeroReturnsFalse()
+		{
+			// Arrange
+			var random = new Random(23905);
+			var testee = new CommonRandomService(() => random);
+
+			// Act
+			bool actual = testee.Hit(0, 3);
+
+			// Assert
+			Assert.False(actual);
+		}
+
+		[Fact]
+		public void HitFractionWhenNumeratorEqualsDenominatorReturnsTrue()
+		{
+			// Arrange
+			var random = new Random(23905);
+			var testee = new CommonRandomService(() => random);
+
+			// Act
+			bool actual = testee.Hit(3, 3);
+
+			// Assert
+			Assert.True(actual);
+		}
+
+		[Fact]
+		public void HitFractionWhenDenominatorIsZeroThrowsArgumentOutOfRangeException()
+		{
+			// Arrange
+			var random = new Random(23905);
+			var testee = new CommonRandomService(() => random);
+
+			// Act
+			Action action = () => testee.Hit(1, 0);
+
+			// Assert
+			Assert.Throws<ArgumentOutOfRangeException>(action);
+		}
+
 		private sealed class StubRandomService : IRandomService
 		{
 			public int NextInt(int max) => 0;
@@ -78,6 +138,21 @@ namespace CivOne.UnitTests
 			public byte NextByte(byte min, byte maxExclusive) => (byte)NextInt(min, maxExclusive);
 
 			public byte NextByte(byte maxExclusive) => (byte)NextInt(maxExclusive);
+
+			public bool Hit(int numerator, int denominator)
+			{
+				if (denominator <= 0)
+				{
+					throw new ArgumentOutOfRangeException(nameof(denominator));
+				}
+
+				if (numerator <= 0)
+				{
+					return false;
+				}
+
+				return numerator >= denominator;
+			}
 		}
 	}
 }

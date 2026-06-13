@@ -79,15 +79,14 @@ namespace CivOne.Screens.Debug
 
 		private void PlayerGold_Accept(object? sender, EventArgs args)
 		{
-			// Value = (sender as Input).Text;
 			if (sender is not Input input)
 			{
 				System.Diagnostics.Debug.Assert(false, "Sender is not Input in PlayerGold_Accept");
 				return;
 			}
-			
-			short playerGold;
-			if (!short.TryParse(input.Text, out playerGold) || playerGold < 0 || playerGold > 30000)
+			Value = input.Text;
+
+			if (!short.TryParse(input.Text, out short playerGold) || playerGold < 0 || playerGold > 30000)
 			{
 				GameTask.Enqueue(Message.Error(Translate("-- DEBUG: Set Player Gold --"), TranslateFormattedArray("The value {0} is invalid or out of range.\nPlease enter a value between 0 and\n30000.", Value ?? "(null)")));
 			}

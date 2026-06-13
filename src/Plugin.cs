@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -19,7 +20,7 @@ namespace CivOne
 	{
 		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
 		private static Settings Settings => Settings.Instance;
-		private static int _seed = 0;
+		private static int _seed;
 		
 		private readonly IPlugin _plugin;
 		private readonly string _filePath;
@@ -34,9 +35,9 @@ namespace CivOne
 			{
 				if (Deleted) return;
 				if (value)
-					Settings.DisabledPlugins = Settings.DisabledPlugins.Where(x => x != _fileName).ToArray();
+					Settings.DisabledPlugins = [.. Settings.DisabledPlugins.Where(x => x != _fileName)];
 				else
-					Settings.DisabledPlugins = Settings.DisabledPlugins.Concat(new [] { _fileName }).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToArray();
+					Settings.DisabledPlugins = [.. Settings.DisabledPlugins.Concat([_fileName]).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct()];
 
 				Reflect.ApplyPlugins();
 			}
@@ -51,30 +52,26 @@ namespace CivOne
 
 		public static bool Validate(string filePath)
 		{
-			using (MemoryStream ms = new MemoryStream(File.ReadAllBytes(filePath)))
-			{
-				Assembly assembly = Assembly.Load(ms.ToArray());
-				Type[] types = assembly.GetTypes().Where(x => x.Namespace == "CivOne" && x.Name == "Plugin" && x.GetInterfaces().Contains(typeof(IPlugin))).ToArray();
-				return (types.Count() == 1);
-			}
+			using MemoryStream ms = new(File.ReadAllBytes(filePath));
+			Assembly assembly = Assembly.Load(ms.ToArray());
+			Type[] types = [.. assembly.GetTypes().Where(x => x.Namespace == "CivOne" && x.Name == "Plugin" && x.GetInterfaces().Contains(typeof(IPlugin)))];
+			return types.Length == 1;
 		}
 
-		public static Plugin Load(string filePath)
+		public static Plugin? Load(string filePath)
 		{
-			using (MemoryStream ms = new MemoryStream(File.ReadAllBytes(filePath)))
+			using MemoryStream ms = new(File.ReadAllBytes(filePath));
+			Assembly assembly = Assembly.Load(ms.ToArray());
+			Type[] types = [.. assembly.GetTypes().Where(x => x.Namespace == "CivOne" && x.Name == "Plugin" && x.GetInterfaces().Contains(typeof(IPlugin)))];
+			if (types.Length != 1)
 			{
-				Assembly assembly = Assembly.Load(ms.ToArray());
-				Type[] types = assembly.GetTypes().Where(x => x.Namespace == "CivOne" && x.Name == "Plugin" && x.GetInterfaces().Contains(typeof(IPlugin))).ToArray();
-				if (types.Count() != 1)
-				{
-					Log($" - Invalid plugin format: {filePath}");
-					return null;
-				}
-				
-				IPlugin plugin = (IPlugin)Activator.CreateInstance(types[0]);
-
-				return new Plugin(filePath, plugin, assembly);
+				Log($" - Invalid plugin format: {filePath}");
+				return null;
 			}
+
+			IPlugin plugin = Reflect.SafeCreateInstance<IPlugin>(types[0]);
+
+			return new Plugin(filePath, plugin, assembly);
 		}
 
 		public void Delete()
@@ -85,11 +82,15 @@ namespace CivOne
 
 		public override string ToString()
 		{
-			StringBuilder output = new StringBuilder(Name);
+			StringBuilder output = new(Name);
 			if (Deleted)
-				output.Append(" (deleted)");
+			{
+				output.Append(" (deleted)"); // do not translate
+			}
 			else if (!Enabled)
-				output.Append($" ({false.EnabledDisabled().ToLower()})");
+			{
+				output.Append(CultureInfo.InvariantCulture, $" ({false.EnabledDisabled().ToLowerInvariant()})");
+			}
 			return output.ToString();
 		}
 

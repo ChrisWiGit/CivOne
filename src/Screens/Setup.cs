@@ -202,7 +202,7 @@ namespace CivOne.Screens
 		private MenuItemEventAction<int> CloseScreen(Action? action = null) => (s, a) =>
 		{
 			Destroy();
-			if (action != null) action();
+			action?.Invoke();
 		};
 
 		private void ChangeWindowTitle()

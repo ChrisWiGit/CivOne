@@ -6,6 +6,7 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Click on menu separator will no longer close the menu.
 * Feature: Added terrain, tile improvements, land value, found city and unit editor
   * Editor menu shown if debug mode is enabled (`Shift+F1 -> Patches -> Debug menu enabled` or `--debug` when starting the game).
   * Added a `Terrain` top menu in gameplay map view with editor actions for terrain painting, found city, unit spawn, irrigation, road/railroad, mine, fortress, pollution, hut/village, clearing improvements, land values, and brush size changes.

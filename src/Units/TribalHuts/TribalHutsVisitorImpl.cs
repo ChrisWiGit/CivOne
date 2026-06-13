@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using CivOne.Services.Random;
 
 namespace CivOne.Units.TribalHuts
 {
@@ -10,7 +11,7 @@ namespace CivOne.Units.TribalHuts
 		private readonly IGame gameInstance;
 		private readonly Player player;
 		private readonly ILogger logger;
-		private readonly Random random;
+		private readonly IRandomService random;
 
 		private readonly Action[] events;
 
@@ -20,7 +21,7 @@ namespace CivOne.Units.TribalHuts
 			IUnit currentUnit,
 			IGame gameInstance,
 			ILogger logger,
-			Random random)
+			IRandomService random)
 
 		{
 			this.player = player;
@@ -42,7 +43,7 @@ namespace CivOne.Units.TribalHuts
 
 		public void ExecuteRandomTribalHutEvent()
 		{
-			int eventIndex = random.Next(0, events.Length);
+			int eventIndex = random.NextInt(0, events.Length);
 
 			Debug.Assert(eventIndex >= 0 && eventIndex < events.Length, "Invalid event index");
 
@@ -55,30 +56,30 @@ namespace CivOne.Units.TribalHuts
 			tribalHutEvent.PostExecute();
 		}
 
-		private ITribalHutEventHandler CreateFriendlyTribeEvent()
+		private FriendlyTribeEventHandler CreateFriendlyTribeEvent()
 		{
 			return new FriendlyTribeEventHandler(
 				currentUnit.X, currentUnit.Y, currentUnit.Owner);
 		}
 
-		private ITribalHutEventHandler CreateAncientScrollsEvent()
+		private AncientScrollsEventHandler CreateAncientScrollsEvent()
 		{
 			return new AncientScrollsEventHandler(
 				currentUnit.X, currentUnit.Y, player, logger);
 		}
 
-		private ITribalHutEventHandler CreateBarbariansEvent()
+		private BarbariansEventHandler CreateBarbariansEvent()
 		{
 			return new BarbariansEventHandler(
 				currentUnit.X, currentUnit.Y, gameInstance, map, random);
 		}
 
-		private ITribalHutEventHandler CreateMetalDepositsEvent()
+		private MetalDepositsEventHandler CreateMetalDepositsEvent()
 		{
 			return new MetalDepositsEventHandler(player);
 		}
 
-		private ITribalHutEventHandler CreateAdvancedTribeEvent()
+		private AdvancedTribeEventHandler CreateAdvancedTribeEvent()
 		{
 			return new AdvancedTribeEventHandler(currentUnit.X, currentUnit.Y, player);
 		}

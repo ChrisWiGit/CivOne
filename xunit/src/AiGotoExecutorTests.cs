@@ -214,6 +214,8 @@ namespace CivOne.UnitTests
 
 			public bool Hit(int percent) => percent > 0;
 
+			public bool Hit(int numerator, int denominator) => numerator > 0 && denominator > 0;
+
 			public byte NextByte(byte min, byte maxExclusive) => min;
 
 			public byte NextByte(byte maxExclusive) => 0;

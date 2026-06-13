@@ -1,3 +1,4 @@
+using CivOne.Services.Random;
 using CivOne.Tasks;
 
 namespace CivOne.Units.TribalHuts
@@ -8,7 +9,7 @@ namespace CivOne.Units.TribalHuts
 		IUnit currentUnit,
 		IGame gameInstance,
 		ILogger logger,
-		Random random) : TribalHutsVisitorImpl(player, map, currentUnit, gameInstance, logger, random)
+		IRandomService random) : TribalHutsVisitorImpl(player, map, currentUnit, gameInstance, logger, random)
 	{
 		protected override void Execute(ITribalHutEventHandler tribalHutEvent)
 		{

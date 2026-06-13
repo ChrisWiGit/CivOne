@@ -185,7 +185,7 @@ namespace CivOne.Mcp.Tools
 			return fileName.Contains('/') || fileName.Contains('\\');
 		}
 
-		private McpResponse JsonResponse(object id, object payload)
+		private McpResponse JsonResponse(object? id, object payload)
 			=> McpJsonToolResponse.JsonResponse(id, payload, _jsonWriter, _maxJsonChars);
 
 		private object BuildSuccessPayload(object data)

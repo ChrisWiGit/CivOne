@@ -596,11 +596,11 @@ namespace CivOne.Screens
 			}
 			_pictures[2] = Resources["LOGO"];
 			_noiseMap = new byte[320, 200];
-			byte noiseMaxExclusive = (byte)Math.Clamp(_noiseCounter, 2, byte.MaxValue);
 			for (int x = 0; x < 320; x++)
 			{
 				for (int y = 0; y < 200; y++)
 				{
+					byte noiseMaxExclusive = (byte)Math.Clamp(_noiseCounter, 2, byte.MaxValue);
 					_noiseMap[x, y] = RandomServiceFactory.Create().NextByte(1, noiseMaxExclusive);
 				}
 			}

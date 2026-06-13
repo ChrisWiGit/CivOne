@@ -14,6 +14,8 @@ namespace CivOne.Services.Random
 
 		public byte NextByte(byte min, byte maxExclusive) => (byte)_randomAccessor().Next(min, maxExclusive);
 
+		public bool Hit(int numerator, int denominator) => _randomAccessor().Hit(numerator, denominator);
+
 		public byte NextByte(byte maxExclusive) => (byte)_randomAccessor().Next(maxExclusive);
 	}
 }

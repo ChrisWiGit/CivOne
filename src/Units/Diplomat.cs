@@ -16,6 +16,7 @@ using CivOne.Buildings;
 using System.Collections.Generic;
 using CivOne.src;
 using CivOne.Screens.Services;
+using CivOne.Services.Random;
 
 namespace CivOne.Units
 {
@@ -42,28 +43,28 @@ namespace CivOne.Units
 			return cost;
 		}
 
-		public IAdvance GetAdvanceToSteal(Player victim)
+		public IAdvance? GetAdvanceToSteal(Player victim)
 		{
-			IList<IAdvance> possible = victim.Advances.Where(p => !Player.Advances.Any(p2 => p2.Id == p.Id)).ToList();
+			IList<IAdvance> possible = [.. victim.Advances.Where(p => !Player.Advances.Any(p2 => p2.Id == p.Id))];
 
 			if (!possible.Any())
 				return null;
 
-			return possible[Common.Random.Next(0, possible.Count - 1)];
+			return possible[_randomService.NextInt(0, possible.Count - 1)];
 		}
 
 		public string Sabotage(City city)
 		{
 			Game.DisbandUnit(this);
 
-			IList<IBuilding> buildings = city.Buildings.Where(b => (b.GetType() != typeof(Buildings.Palace))).ToList();
+			IList<IBuilding> buildings = [.. city.Buildings.Where(b => (b.GetType() != typeof(Buildings.Palace)))];
 
-			int random = Common.Random.Next(0, buildings.Count);
+			int random = _randomService.NextInt(0, buildings.Count);
 
 			if (random == buildings.Count)
 			{
-				city.Shields = (ushort)0;
-				string production = (city.CurrentProduction as ICivilopedia).TranslatedName;
+				city.Shields = 0;
+				string production = (city.CurrentProduction as ICivilopedia)!.TranslatedName ?? "???";
 				return $"{production} production sabotaged";
 			}
 			else
@@ -95,12 +96,12 @@ namespace CivOne.Units
 				return true;
 			}
 
-			IUnit[] enemies = moveTarget.Units.Where(u => u.Owner != Owner).ToArray();
+			IUnit[] enemies = [.. moveTarget.Units.Where(u => u.Owner != Owner)];
 
 			if (enemies.Length > 0)
 			{
-				if (Human == Owner && enemies.Length == 1 && enemies[0] is BaseUnitLand)
-					GameTask.Enqueue(Show.DiplomatBribe(enemies[0] as BaseUnitLand, this));
+				if (Human == Owner && enemies.Length == 1 && enemies[0] is BaseUnitLand unitLand)
+					GameTask.Enqueue(Show.DiplomatBribe(unitLand, this));
 				return false;
 			}
 
@@ -110,8 +111,11 @@ namespace CivOne.Units
 
 		internal void KeepMoving(IUnit unit) => MovementTo(unit.X - X, unit.Y - Y);
 
+		private readonly IRandomService _randomService;
+
 		public Diplomat() : base(3, 0, 0, 2)
 		{
+			_randomService = RandomServiceFactory.Create();
 			Type = UnitType.Diplomat;
 			Name = "Diplomat";
 			TranslatedName = Translate("Diplomat");
@@ -125,7 +129,7 @@ namespace CivOne.Units
 			// Resets if friendly unit found.
 			// Duplicate code in AI.Barbarians.cs
 			// WARNING: This is not from the original code!
-			WorkProgress = (byte)(10 + Common.Random.Next(0, 20));
+			WorkProgress = (byte)(10 + _randomService.NextByte(20));
         }
 	}
 }

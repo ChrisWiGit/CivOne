@@ -194,8 +194,12 @@ namespace CivOne.Tasks
 					return null;
 				}
 
-
-				showScreen.Done += (_, __) => Insert(nextTask());
+				// Chain only when there are remaining screens.
+				// The last screen should end naturally without calling nextTask() again.
+				if (screenTypeQueue.Count > 0)
+				{
+					showScreen.Done += (_, __) => Insert(nextTask());
+				}
 				return showScreen;
 			}
 

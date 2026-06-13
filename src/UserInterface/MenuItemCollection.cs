@@ -36,9 +36,19 @@ namespace CivOne.UserInterface
 
 		public int Count => _menuItems.Count;
 
-		public void Add(MenuItem<T> menuItem)
+		/// <summary>
+		/// Adds a menu item to the collection. If the provided menu item is null, a separator item will be added to the collection instead.
+		/// </summary> 
+		/// <param name="menuItem">The menu item to add to the collection. If null, a separator item will be added instead.</param>
+		/// <remarks>
+		/// Adding a null menu item is allowed and will result in a separator item being added to the collection. 
+		/// Previous versions of this method used null to add a separator but this behaved like a menu item with an
+		/// empty text and no action, but the menu closed when it was clicked. Now, null values are explicitly converted
+		/// to separator items, which will no more close the menu when clicked.
+		/// </remarks>
+		public void Add(MenuItem<T>? menuItem)
 		{
-			_menuItems.Add(menuItem);
+			_menuItems.Add(menuItem ?? MenuItem<T>.CreateSeparator());
 			ItemsChanged?.Invoke(this, EventArgs.Empty);
 		}
 
@@ -50,9 +60,20 @@ namespace CivOne.UserInterface
 			return menuItem;
 		}
 
-		public void AddRange(IEnumerable<MenuItem<T>> menuItems)
+		/// <summary>
+		/// Adds a range of menu items to the collection. If any of the provided menu items are null, they will be replaced with a separator item.
+		/// </summary>
+		/// <param name="menuItems">The menu items to add to the collection.</param>
+		/// <remarks>
+		/// Adding null menu items is allowed and will result in separator items being added to the collection. 
+		/// Previous versions of this method used null to add a separator but this behaved like a menu item with an empty text and no action,
+		/// but the menu closed when it was clicked. Now, null values are explicitly converted to separator items, 
+		/// which will no more close the menu when clicked.
+		/// </remarks>
+		public void AddRange(IEnumerable<MenuItem<T>?> menuItems)
 		{
-			_menuItems.AddRange(menuItems);
+			ArgumentNullException.ThrowIfNull(menuItems);
+			_menuItems.AddRange(menuItems.Select(item => item ?? MenuItem<T>.CreateSeparator()));
 			ItemsChanged?.Invoke(this, EventArgs.Empty);
 		}
 

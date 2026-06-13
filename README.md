@@ -1082,7 +1082,6 @@ Count Warning Description
    87 CS8625  Cannot convert null literal to non-nullable reference type.
 ```
 
-
 ```shell
 #!/usr/bin/env bash
 
@@ -1119,3 +1118,33 @@ BEGIN {
 
 echo "Written to $OUTPUT_FILE"
 ```
+
+## Services
+
+Most services have a factory.
+
+### IRandomService
+
+```cs
+private readonly IRandomService _randomService;
+_randomService = RandomServiceFactory.Create();
+_randomService.NextByte(20)
+_randomService.NextInt(1, 100)
+```
+
+### ITranslationService
+
+```cs
+ITranslationService translationService = TranslationServiceFactory.GetCurrent();
+string translatedText = translationService.Translate("HELLO_WORLD");
+```
+
+> `BaseScreen` has a `Translate` method that uses the current translation service:
+
+There are multipe overloads for translation and formatting.
+`Translate` is the simplest one that just translates a key to a string.
+`TranslateFormatted` allows you to pass arguments for string formatting (e.g. placeholders like `{0}` in the translation value).
+`TranslateArray` splits the translated string on `\n` and returns an array of lines, which is useful for multi-line messages stored as a single key.
+`TranslateFormattedArray` combines both features: it formats the string with arguments and then splits it into an array.
+
+> Use the array versions when the translation value contains multiple lines separated by `\n`, instead of calling `Translate` and then splitting the result manually. This would create multiple lines/keys in the translation files, which is less convenient to manage and maintain.

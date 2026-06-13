@@ -18,8 +18,8 @@ namespace CivOne.Persistence.Mapper
         DtoMapper<MapDto, IMapTiles> mapMapper,
         DtoMapper<GlobalWarmingDto, GameState> globalWarmingMapper,
         IValueSanitizer yamlReadValueSanitizer,
-        ICityNameCatalog cityNameCatalog = null,
-        UnitsDestroyedByResolver unitsDestroyedByResolver = null
+        ICityNameCatalog? cityNameCatalog = null,
+        UnitsDestroyedByResolver? unitsDestroyedByResolver = null
     ) : DtoMapper<GameStateDto, GameState>
     {
         private readonly ICityNameCatalog _cityNameCatalog = cityNameCatalog ?? new RuntimeCityNameCatalog();
@@ -35,8 +35,8 @@ namespace CivOne.Persistence.Mapper
             var players = MapPlayers(dto);
             ResolveUnitsDestroyedByByPlayerGuid(dto, players);
             ApplyLegacyFutureTech(dto, players);
-            ValidateHumanPlayerIndex(dto, players);
-            ValidateCurrentPlayerIndex(dto, players);
+			ValidateHumanPlayerIndex(dto, players);
+			ValidateCurrentPlayerIndex(dto, players);
             ResolveTradingCities(dto, players);
 
             var units = MapUnits(dto);
@@ -71,7 +71,7 @@ namespace CivOne.Persistence.Mapper
             _unitsDestroyedByResolver.ResolveAndApply(players, dto.Players);
         }
 
-        private void ValidateHumanPlayerIndex(GameStateDto dto, IPlayer[] players)
+        private static void ValidateHumanPlayerIndex(GameStateDto dto, IPlayer[] players)
         {
             if (dto.HumanPlayer >= players.Length)
             {
@@ -79,7 +79,7 @@ namespace CivOne.Persistence.Mapper
             }
         }
 
-        private void ValidateCurrentPlayerIndex(GameStateDto dto, IPlayer[] players)
+        private static void ValidateCurrentPlayerIndex(GameStateDto dto, IPlayer[] players)
         {
             if (dto.CurrentPlayer >= players.Length)
             {
@@ -120,7 +120,7 @@ namespace CivOne.Persistence.Mapper
             List<ICity> sourceCities = [.. players.SelectMany(p => p.Cities ?? [])];
             var (cityNames, cityNameIndexByName) = BuildCityNameCatalog(sourceCities);
             var (mappedCities, _) = MaterializeCities(sourceCities, cityNames, cityNameIndexByName);
-            ApplyTradingLinks(sourceCities, mappedCities);
+			ApplyTradingLinks(sourceCities, mappedCities);
             return (mappedCities, [.. cityNames]);
         }
 
@@ -154,9 +154,9 @@ namespace CivOne.Persistence.Mapper
             {
                 var sourceCity = sourceCities[i];
                 var city = CreateCity(sourceCity, cityNames, cityNameIndexByName);
-                ApplyStatusFlags(city, sourceCity);
-                ApplyProductionAndCollections(city, sourceCity);
-                ApplySize(city, sourceCity);
+				ApplyStatusFlags(city, sourceCity);
+				ApplyProductionAndCollections(city, sourceCity);
+				ApplySize(city, sourceCity);
                 
                 mappedCities.Add(city);
                 if (!cityIndexById.ContainsKey(city.Id))
@@ -190,12 +190,12 @@ namespace CivOne.Persistence.Mapper
             };
         }
 
-        private void ApplySize(City city, ICity sourceCity)
+        private static void ApplySize(City city, ICity sourceCity)
         {
             city.Size = sourceCity.Size;
         }
 
-        private void ApplyStatusFlags(City city, ICity sourceCity)
+        private static void ApplyStatusFlags(City city, ICity sourceCity)
         {
             city.SetupStatus(sourceCity.Status);
             city.IsRiot = sourceCity.IsRiot;
@@ -208,7 +208,7 @@ namespace CivOne.Persistence.Mapper
             city.BuildingSold = sourceCity.BuildingSold;
         }
 
-        private void ApplyProductionAndCollections(City city, ICity sourceCity)
+        private static void ApplyProductionAndCollections(City city, ICity sourceCity)
         {
             if (sourceCity.CurrentProduction != null)
             {
@@ -230,7 +230,7 @@ namespace CivOne.Persistence.Mapper
             }
         }
 
-        private void ApplyTradingLinks(List<ICity> sourceCities, List<City> mappedCities)
+        private static void ApplyTradingLinks(List<ICity> sourceCities, List<City> mappedCities)
         {
             for (var i = 0; i < sourceCities.Count; i++)
             {
@@ -354,7 +354,7 @@ namespace CivOne.Persistence.Mapper
                 }
             }
 
-            throw new Exception($"{playerKind} player not found in players array");
+            throw new InvalidOperationException($"{playerKind} player not found in players array");
         }
 
         public GameStateDto ToDto(GameState gameState)

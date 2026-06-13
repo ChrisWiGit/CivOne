@@ -83,4 +83,16 @@ namespace CivOne.Services
 			return _translation.Translate("AD");
 		}
 	}
+
+	public static class GameCalendarServiceFactory
+	{
+		private static IGameCalendarService? _current;
+
+		public static IGameCalendarService GetCurrent() => _current ??= new GameCalendarService();
+
+		public static void SetCurrent(IGameCalendarService service)
+		{
+			_current = service;
+		}
+	}
 }
