@@ -157,10 +157,11 @@ namespace CivOne.Screens
 			}
 		}
 
-		private void CreateMenu(string title, int activeItem, MenuItemEventHandler<int> always, params MenuItem<int>[] items) =>
-			AddMenu(new Menu("Setup", Palette)
+		private void CreateMenu(string title, int activeItem, MenuItemEventHandler<int> always, params MenuItem<int>[] items)
+		{
+			Menu<int> menu = new Menu("Setup", Palette)
 			{
-				Title = $"{title.ToUpper()}:",
+				Title = $"{title?.ToUpperInvariant()}:",
 				TitleColour = 15,
 				ActiveColour = 11,
 				TextColour = 5,
@@ -171,8 +172,43 @@ namespace CivOne.Screens
 			.Items([.. items.Where(item => item != null)])
 			.Always(always)
 			.Center(this)
-			.SetActiveItem(activeItem)
-		);
+			.SetActiveItem(activeItem);
+
+			menu.Cancel += SetupMenuCancel;
+			AddMenu(menu);
+		}
+
+		private void SetupMenuCancel(object? sender, EventArgs args)
+		{
+			if (sender is not Menu<int> menu)
+			{
+				return;
+			}
+
+			for (int i = menu.Items.Count - 1; i >= 0; i--)
+			{
+				MenuItem<int> item = menu.Items[i];
+				if (!item.Enabled || string.IsNullOrEmpty(item.Text))
+				{
+					continue;
+				}
+
+				if (!IsEscapeTarget(item.Text))
+				{
+					continue;
+				}
+
+				menu.ActiveItem = i;
+				item.Select();
+				return;
+			}
+		}
+
+		private bool IsEscapeTarget(string text)
+			=> string.Equals(text, Translate("Back"), StringComparison.OrdinalIgnoreCase)
+				|| string.Equals(text, Translate("Return to game"), StringComparison.OrdinalIgnoreCase)
+				|| string.Equals(text, Translate("Return to startup wizard"), StringComparison.OrdinalIgnoreCase)
+				|| string.Equals(text, Translate("Launch Game"), StringComparison.OrdinalIgnoreCase);
 		private void CreateMenu(string title, MenuItemEventHandler<int> always, params MenuItem<int>[] items) => CreateMenu(title, -1, always, items);
 		private void CreateMenu(string title, int activeItem, params MenuItem<int>[] items) => CreateMenu(title, activeItem, null, items);
 		private void CreateMenu(string title, params MenuItem<int>[] items) => CreateMenu(title, -1, null, items);
@@ -421,6 +457,9 @@ namespace CivOne.Screens
 				Settings.GlobalWarmingFeatureFlags != Settings.GlobalWarmingFeatureFlag.None
 			}.Count(static enabled => enabled);
 
+		private string LzwCodecModeText()
+			=> Settings.LzwCodecMode == Settings.LzwCodecType.Corrected ? Translate("Corrected") : Translate("Original");
+
 		private void PatchesMenu(int activeItem = 0) => CreateMenu(Translate("Patches"), activeItem,
 			MenuItem.Create(TranslateFormatted("Reveal world: {0}", Settings.RevealWorld.YesNo()))
 				.WithDescription(
@@ -467,6 +506,11 @@ namespace CivOne.Screens
 					Translate("Choose checked or unchecked cast handling."),
 					Translate("Unchecked keeps legacy behavior."))
 				.OnSelect(GotoMenu(SaveCastBehaviorMenu)),
+			MenuItem.Create(TranslateFormatted("LZW implementation: {0}", LzwCodecModeText()))
+				.WithDescription(
+					Translate("Choose which LZW codec GIF and PIC loading/saving uses."),
+					Translate("Applies immediately."))
+				.OnSelect(GotoMenu(LzwCodecModeMenu)),
 			MenuItem.Create(TranslateFormatted("FPS display: {0}", Settings.FpsCorner.ToText()))
 				.WithDescription(
 					Translate("Show frames per second in a screen corner."))
@@ -638,7 +682,19 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void FpsCornerMenu() => CreateMenu(Translate("FPS display"), GotoMenu(PatchesMenu, 10),
+		private void LzwCodecModeMenu() => CreateMenu(Translate("LZW implementation"), GotoMenu(PatchesMenu, 10),
+			MenuItem.Create(Translate("Original (default)"))
+				.WithDescription(
+					TranslateArray("Use original LZW codec implementation. This works with original game files.\nApplies immediately."))
+				.OnSelect((s, a) => Settings.LzwCodecMode = Settings.LzwCodecType.Original).SetActive(() => Settings.LzwCodecMode == Settings.LzwCodecType.Original),
+			MenuItem.Create(Translate("Corrected"))
+				.WithDescription(
+					TranslateArray("Use corrected LZW codec implementation. Only for use if you have\n modified game files with LZW-compressed images that don't work with the original codec.\nApplies immediately."))
+				.OnSelect((s, a) => Settings.LzwCodecMode = Settings.LzwCodecType.Corrected).SetActive(() => Settings.LzwCodecMode == Settings.LzwCodecType.Corrected),
+			MenuItem.Create(Translate("Back"))
+		);
+
+		private void FpsCornerMenu() => CreateMenu(Translate("FPS display"), GotoMenu(PatchesMenu, 11),
 			MenuItem.Create(FpsCorner.Off.ToText())
 				.WithDescription(Translate("Disable FPS display."))
 				.OnSelect((s, a) => Settings.FpsCorner = FpsCorner.Off).SetActive(() => Settings.FpsCorner == FpsCorner.Off),

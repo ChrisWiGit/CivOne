@@ -72,6 +72,7 @@ namespace CivOne
 		private bool _canalCity = false;
 		private bool _removeObsoleteBuildings = true;
 		private bool _preferSveSaveFormat = true;
+		private LzwCodecType _lzwCodecMode = LzwCodecType.Original;
 		private string _languagePostfix = string.Empty;
 		private SimulateInternationalFont _simulateInternationalFont = SimulateInternationalFont.Auto;
 		private bool _useUncheckedCastSanitizer = false;
@@ -401,6 +402,24 @@ namespace CivOne
 			{
 				_preferSveSaveFormat = value;
 				SetSetting("PreferSveSaveFormat", _preferSveSaveFormat ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal enum LzwCodecType
+		{
+			Original = 0,
+			Corrected = 1
+		}
+
+		internal LzwCodecType LzwCodecMode
+		{
+			get => _lzwCodecMode;
+			set
+			{
+				_lzwCodecMode = value;
+				SetSetting("LzwCodecMode", ((int)_lzwCodecMode).ToString());
+				Resources.ClearInstance();
 				Common.ReloadSettings = true;
 			}
 		}
@@ -748,6 +767,7 @@ namespace CivOne
 			GetSetting("CanalCity", ref _canalCity);
 			GetSetting("RemoveObsoleteBuildings", ref _removeObsoleteBuildings);
 			GetSetting("PreferSveSaveFormat", ref _preferSveSaveFormat);
+			GetSetting<LzwCodecType>("LzwCodecMode", ref _lzwCodecMode);
 			GetSetting("LanguagePostfix", ref _languagePostfix);
 			GetSetting<SimulateInternationalFont>("SimulateInternationalFont", ref _simulateInternationalFont);
 			GetSetting("UseUncheckedCastSanitizer", ref _useUncheckedCastSanitizer);

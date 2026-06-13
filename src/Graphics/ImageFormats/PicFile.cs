@@ -19,6 +19,8 @@ namespace CivOne.Graphics.ImageFormats
 	{
 		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
 
+		private static ILzwCodec LzwCodec => LzwServiceFactory.GetCodec();
+
 		private static Dictionary<string, PicFile> _cache = new Dictionary<string, PicFile>();
 		private readonly byte[] _bytes;
 		private readonly byte[,] _colourTable = null;
@@ -123,7 +125,7 @@ namespace CivOne.Graphics.ImageFormats
 			byte[] img = new byte[length - 5];
 			Array.Copy(_bytes, index, img, 0, (int)(length - 5));
 			index += (int)(length - 5);
-			return RLE.Decode(LZW.Decode(img));
+			return RLE.Decode(LzwCodec.Decode(img));
 		}
 		
 		/// <summary>
@@ -240,7 +242,7 @@ namespace CivOne.Graphics.ImageFormats
 					br.Write((ushort)0x3058);
 
 					byte[] encoded = RLE.Encode(_picture256.ToByteArray());
-					encoded = LZW.Encode(encoded);
+					encoded = LzwCodec.Encode(encoded);
 					
 					br.Write((ushort)(encoded.Length + 5));
 					br.Write((ushort)_picture256.Width);
