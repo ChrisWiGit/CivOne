@@ -17,6 +17,7 @@ using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.Tiles;
 using CivOne.Units;
+using CivOne.Services.Screen;
 
 namespace CivOne.Screens
 {
@@ -39,19 +40,19 @@ namespace CivOne.Screens
 		}
 
 		private bool _update = true;
-		private bool _interfaceHelp = false;
-		private bool _showTerrain = false;
+		private bool _interfaceHelp;
+		private bool _showTerrain;
 
 		private int _x, _y;
 
-		private bool _closing = false;
+		private bool _closing;
 
 		private IEnumerable<HelpLabel> HelpLabels
 		{
 			get
 			{
 				IUnit startUnit = Game.GetUnits().First(x => Game.Human == x.Owner);
-				IUnit activeUnit = Game.ActiveUnit;
+				IUnit? activeUnit = Game.ActiveUnit;
 				GamePlay gamePlay = (GamePlay)Common.Screens.First(x => x is GamePlay);
 				gamePlay.Update(0);
 
@@ -153,12 +154,12 @@ namespace CivOne.Screens
 						Size textSize = Resources.GetTextSize(0, helpLabel.Text);
 
 						int ww = textSize.Width + 11, hh = textSize.Height + 9;
-						Picture label = new Picture(textSize.Width + 11, textSize.Height + 9)
+						Picture label = new Picture(textSize.Width + 11, textSize.Height + 9);
+						label
 							.Tile(Pattern.PanelGrey)
 							.DrawRectangle()
 							.DrawRectangle3D(1, 1, ww - 2, hh - 2)
-							.DrawText(helpLabel.Text, 0, 15, 5, 5)
-							.As<Picture>();
+							.DrawText(helpLabel.Text, 0, 15, 5, 5);
 
 						this.DrawLine(helpLabel.PointX, helpLabel.PointY, helpLabel.X + 5, helpLabel.Y + 6, 15)
 							.AddLayer(label, helpLabel.X, helpLabel.Y);
@@ -238,7 +239,7 @@ namespace CivOne.Screens
 
 		private Overlay() : base(MouseCursor.Pointer)
 		{	
-			Palette = Common.TopScreen.Palette.Copy();
+			Palette = ScreenServiceFactory.CreateQueryService().TopScreen!.Palette.Copy();
 		}
 	}
 }

@@ -103,7 +103,7 @@ namespace CivOne.Mcp.Tools
 			using JsonDocument jsonDocument = JsonDocument.Parse(rootJson);
 			JsonElement root = jsonDocument.RootElement;
 
-			if (!_pathResolver.TryResolve(root, normalizedPath, out JsonElement resolved, out string failedSegment, out string pathErrorMessage))
+			if (!McpGameStatePathResolver.TryResolve(root, normalizedPath, out JsonElement resolved, out string failedSegment, out string pathErrorMessage))
 			{
 				return JsonResponse(request.Id, BuildErrorPayload(
 					"INVALID_PATH",

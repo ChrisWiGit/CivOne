@@ -30,12 +30,12 @@ namespace CivOne.Screens.Debug
 		private readonly Player[] _livingPlayers;
 		private readonly IGovernment[] _governments;
 		private SelectionStep _step = SelectionStep.SelectPlayer;
-		private Player _selectedPlayer;
+		private Player? _selectedPlayer;
 
-		private Menu<Player> _playerMenu;
-		private Menu<IGovernment> _governmentMenu;
+		private Menu<Player>? _playerMenu;
+		private Menu<IGovernment>? _governmentMenu;
 
-		private void PlayerChoice(object sender, MenuItemEventArgs<Player> args)
+		private void PlayerChoice(object? _, MenuItemEventArgs<Player> args)
 		{
 			_selectedPlayer = args.Value;
 			_step = SelectionStep.SelectGovernment;
@@ -44,8 +44,14 @@ namespace CivOne.Screens.Debug
 			Refresh();
 		}
 
-		private void GovernmentChoice(object sender, MenuItemEventArgs<IGovernment> args)
+		private void GovernmentChoice(object? _, MenuItemEventArgs<IGovernment> args)
 		{
+			if (_selectedPlayer == null)
+			{
+				System.Diagnostics.Debug.Assert(false, "Selected player is null when choosing government.");
+				return;
+			}
+
 			_selectedPlayer.Government = args.Value;
 			GameTask.Enqueue(Message.NewGoverment(null,
 				$"{_selectedPlayer.TribeName} government",
@@ -96,6 +102,11 @@ namespace CivOne.Screens.Debug
 		{
 			if (_governmentMenu != null)
 			{
+				return;
+			}
+			if (_selectedPlayer == null)
+			{
+				System.Diagnostics.Debug.Assert(false, "Selected player is null when creating government menu.");
 				return;
 			}
 

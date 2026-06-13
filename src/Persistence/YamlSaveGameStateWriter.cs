@@ -89,11 +89,11 @@ namespace CivOne.Persistence
 			ArgumentNullException.ThrowIfNull(snapshot);
 
 			var mapper = new GameStateDtoMapper(
-				_playerMapper,
-				_unitMapper,
-				_mapMapper,
-				_globalWarmingMapper,
-				_sanitizer);
+				_playerMapper!,
+				_unitMapper!,
+				_mapMapper!,
+				_globalWarmingMapper!,
+				_sanitizer!);
 			return mapper.ToDto(snapshot);
 		}
 	}

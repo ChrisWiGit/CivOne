@@ -42,7 +42,7 @@ namespace CivOne.Mcp.Tools
 
 		public McpResponse Handle(McpRequest request)
 		{
-			if (request == null) throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 
 			if (request.Params.ValueKind != JsonValueKind.Undefined &&
 				request.Params.ValueKind != JsonValueKind.Null &&
@@ -51,7 +51,7 @@ namespace CivOne.Mcp.Tools
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", "'params' must be an object."));
 			}
 
-			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string errorMessage))
+			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string? errorMessage))
 				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage));
 
 			List<PlayerDto> players = snapshot.Players ?? [];
@@ -88,7 +88,7 @@ namespace CivOne.Mcp.Tools
 			}));
 		}
 
-		private McpResponse JsonResponse(object id, object payload)
+		private McpResponse JsonResponse(object? id, object payload)
 			=> McpJsonToolResponse.JsonResponse(id, payload, _jsonWriter, _maxJsonChars);
 
 		private object BuildSuccessPayload(object data)
@@ -104,7 +104,7 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private object BuildErrorPayload(string code, string message)
+		private object BuildErrorPayload(string code, string? message)
 		{
 			return new
 			{

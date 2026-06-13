@@ -25,7 +25,7 @@ namespace CivOne.Screens.Dialogs
 
 		protected Picture DialogBox { get; private set; }
 
-		protected Picture[] TextLines { get; private set; }
+		protected Picture[] TextLines { get; private set; } = [];
 
 		protected int TextWidth
 		{
@@ -45,10 +45,10 @@ namespace CivOne.Screens.Dialogs
 
 		protected IBitmap Selection(int left, int top, int width, int height)
 		{
-			return DialogBox[left, top, width, height].ColourReplace((7, 11), (22, 3));
+			return DialogBox![left, top, width, height].ColourReplace((7, 11), (22, 3));
 		}
 
-		protected virtual void Cancel(object sender = null, EventArgs args = null)
+		protected virtual void Cancel(object? sender = null, EventArgs? args = null)
 		{
 			Destroy();
 		}
@@ -62,7 +62,7 @@ namespace CivOne.Screens.Dialogs
 
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (RefreshNeeded())
+			if (RefreshNeeded() && DialogBox != null)
 			{
 				this.Clear();
 
@@ -87,7 +87,7 @@ namespace CivOne.Screens.Dialogs
 			return true;
 		}
 
-		private void Initialize(int left, int top, int width, int height)
+		private Picture Initialize(int left, int top, int width, int height)
 		{
 			using var defaultPalette = Common.DefaultPalette;
 			Palette = defaultPalette;
@@ -98,11 +98,12 @@ namespace CivOne.Screens.Dialogs
 			width += 2;
 			height += 2;
 
-			DialogBox = new Picture(width, height)
+			var dialogBox = new Picture(width, height);
+			dialogBox
 				.Tile(Pattern.PanelGrey, 1, 1)
 				.DrawRectangle3D(1, 1, width - 2, height - 2)
-				.DrawRectangle()
-				.As<Picture>();
+				.DrawRectangle();
+			return dialogBox;
 		}
 
 		public BaseDialog(int left, int top, int marginWidth, int marginHeight, string[] message) : base(MouseCursor.Pointer)
@@ -113,7 +114,7 @@ namespace CivOne.Screens.Dialogs
 			for (int i = 0; i < message.Length; i++)
 				TextLines[i] = Resources.GetText(message[i], 0, 15);
 
-			Initialize(left, top, TextWidth + marginWidth, TextHeight + marginHeight);
+			DialogBox = Initialize(left, top, TextWidth + marginWidth, TextHeight + marginHeight);
 		}
 
 		public BaseDialog(int left, int top, int width, int height) : base(MouseCursor.Pointer)
@@ -121,7 +122,7 @@ namespace CivOne.Screens.Dialogs
 			_left = left;
 			_top = top;
 
-			Initialize(left, top, width, height);
+			DialogBox = Initialize(left, top, width, height);
 		}
 	}
 }

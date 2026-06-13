@@ -22,6 +22,7 @@ using CivOne.Services.Palace;
 using CivOne.Services.Random;
 using CivOne.Services;
 using CivOne.Units;
+using CivOne.Tasks;
 
 namespace CivOne
 {
@@ -46,6 +47,7 @@ namespace CivOne
 			return new ValueSanitizer(new RuntimeLogger());
 		}
 
+		#pragma warning disable CS8618 //ignore uninitialized non-nullable fields
 		private Game(
 			IValueSanitizer valueSanitizer,
 			IPalaceUpgradeService? palaceUpgradeService = null,
@@ -54,7 +56,19 @@ namespace CivOne
 			_valueSanitizer = valueSanitizer ?? throw new ArgumentNullException(nameof(valueSanitizer));
 			_palaceUpgradeService = palaceUpgradeService ?? PalaceUpgradeServiceFactory.GetInstance();
 			_civilizationRankingTriggerService = civilizationRankingTriggerService ?? CivilizationRankingTriggerServiceFactory.GetInstance();
+			
+			// Initialize collections and other fields to default values. 
+			// This only remedies the warning about uninitialized non-nullable fields.
+			// This constructor is not expected to be used directly; 
+			// but only as base for the Game(GameState) constructor, which will properly initialize these fields.
+			_players = [];
+			_cities = [];
+			_units = [];
+			CityNames = [.. Common.AllCityNames];
+			_advanceOrigin = [];
+			_replayData = [];
 		}
+		#pragma warning restore CS8618
 
 		private Game(GameState state) : this(CreateValueSanitizer())
 		{

@@ -13,19 +13,18 @@ namespace CivOne.Mcp.Tools
 			Index
 		}
 
-		private readonly struct PathSegment(SegmentKind kind, string propertyName, int index)
+		private readonly struct PathSegment(SegmentKind kind, string? propertyName, int index)
 		{
 			public SegmentKind Kind { get; } = kind;
-			public string PropertyName { get; } = propertyName;
+			public string? PropertyName { get; } = propertyName;
 			public int Index { get; } = index;
-			public string DisplayText => Kind == SegmentKind.Property ? PropertyName : $"[{Index}]";
+			public string DisplayText => Kind == SegmentKind.Property ? PropertyName ?? string.Empty : $"[{Index}]";
 		}
 
-		public bool TryResolve(JsonElement root, string path, out JsonElement resolved, out string failedSegment, out string errorMessage)
+		public static bool TryResolve(JsonElement root, string path, out JsonElement resolved, out string? failedSegment, out string? errorMessage)
 		{
 			resolved = default;
 			failedSegment = null;
-			errorMessage = null;
 
 			if (string.IsNullOrWhiteSpace(path))
 			{
@@ -80,9 +79,9 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryParsePath(string path, out IReadOnlyList<PathSegment> segments, out string failedSegment, out string errorMessage)
+		private static bool TryParsePath(string path, out IReadOnlyList<PathSegment> segments, out string? failedSegment, out string? errorMessage)
 		{
-			segments = null;
+			segments = [];
 			failedSegment = null;
 			errorMessage = null;
 
@@ -148,8 +147,13 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryGetPropertyIgnoreCase(JsonElement element, string propertyName, out JsonElement propertyValue)
+		private static bool TryGetPropertyIgnoreCase(JsonElement element, string? propertyName, out JsonElement propertyValue)
 		{
+			if (propertyName == null)
+			{
+				propertyValue = default;
+				return false;
+			}
 			foreach (JsonProperty property in element.EnumerateObject())
 			{
 				if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))

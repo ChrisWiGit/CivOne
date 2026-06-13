@@ -21,7 +21,7 @@ namespace CivOne.Screens
 	[Modal, ScreenResizeable]
 	internal class LoadGame : BaseScreen
 	{
-		private static ISaveGamePathProvider PathProvider =>
+		private static SaveGamePathProvider PathProvider =>
 			new SaveGamePathProvider(RuntimeHandler.Runtime, Settings.Instance);
 
 
@@ -30,7 +30,7 @@ namespace CivOne.Screens
 
 		private char _driveLetter = 'C';
 		private bool _update = true;
-		private Menu _menu;
+		private Menu? _menu;
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
@@ -117,13 +117,13 @@ namespace CivOne.Screens
 			return LoadEmptyFile;
 		}
 
-		private void LoadYamlFromBrowser(object sender, EventArgs args)
+		private void LoadYamlFromBrowser(object? sender, EventArgs args)
 		{
-			_menu.Close();
+			_menu?.Close();
 			_menu = null;
 			_update = true;
 
-			string cosFile = RuntimeHandler.Runtime.FileChooser(
+			string? cosFile = RuntimeHandler.Runtime.FileChooser(
 				false,
 				Translate("Load Game..."),
 				BuildDialogInitialFileName(),
@@ -216,7 +216,7 @@ namespace CivOne.Screens
 		{
 			if (Cancel) return false;
 
-			char c = Char.ToUpper(args.KeyChar);
+			char c = char.ToUpperInvariant(args.KeyChar);
 			if (args.Key == Key.Escape)
 			{
 				Log("Cancel");

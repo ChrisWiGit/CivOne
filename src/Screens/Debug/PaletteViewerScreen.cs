@@ -29,7 +29,7 @@ namespace CivOne.Screens.Debug
 		private static readonly string[] PaletteResourceNames = ["Standard Palette", "DOCKER", "SP257"];
 
 		private readonly List<string> _paletteNames = [.. PaletteResourceNames];
-		private Menu _menu;
+		private Menu? _menu;
 		private Palette _selectedPalette;
 		private string _selectedPaletteName;
 		private bool _viewerMode;
@@ -46,7 +46,7 @@ namespace CivOne.Screens.Debug
 		private int GridStartX => OffsetX + ((320 - GridWidth) / 2);
 		private int GridStartY => OffsetY + 14;
 
-		private void MenuCancel(object sender, EventArgs args)
+		private void MenuCancel(object? _, EventArgs __)
 		{
 			Destroy();
 		}
@@ -264,6 +264,8 @@ namespace CivOne.Screens.Debug
 		public PaletteViewerScreen() : base(MouseCursor.Pointer)
 		{
 			Palette = Common.DefaultPalette;
+			_selectedPalette = null!;
+			_selectedPaletteName = "Standard Palette";
 		}
 	}
 }

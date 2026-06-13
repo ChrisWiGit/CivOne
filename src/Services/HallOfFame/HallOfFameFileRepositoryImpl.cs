@@ -17,7 +17,7 @@ namespace CivOne.Services.HallOfFame
 		private const string FileName = "HallOfFame.yaml";
 		private readonly IAtomicFileReplacementService _atomicFileReplacementService = atomicFileReplacementService;
 
-		public bool TryLoad(string storageDirectory, out IReadOnlyList<HallOfFameEntry> entries, out string error)
+		public bool TryLoad(string? storageDirectory, out IReadOnlyList<HallOfFameEntry> entries, out string? error)
 		{
 			entries = [];
 			error = null;
@@ -54,7 +54,7 @@ namespace CivOne.Services.HallOfFame
 			}
 		}
 
-		public bool TrySave(string storageDirectory, IReadOnlyList<HallOfFameEntry> entries, out string error)
+		public bool TrySave(string? storageDirectory, IReadOnlyList<HallOfFameEntry> entries, out string? error)
 		{
 			error = null;
 
@@ -158,14 +158,14 @@ namespace CivOne.Services.HallOfFame
 	/// </summary>
 	public sealed class HallOfFameEntryModel
 	{
-		public string LeaderName { get; set; }
-		public string LeaderTitle { get; set; }
-		public string CivilizationNamePlural { get; set; }
-		public string YearLabel { get; set; }
+		public string LeaderName { get; set; } = string.Empty;
+		public string LeaderTitle { get; set; } = string.Empty;
+		public string CivilizationNamePlural { get; set; } = string.Empty;
+		public string YearLabel { get; set; } = string.Empty;
 		public int Population { get; set; }
 		public int Score { get; set; }
-		public string RatingRankLabel { get; set; }
+		public string RatingRankLabel { get; set; } = string.Empty;
 		public int RatingPercent { get; set; }
-		public string CreatedAtUtc { get; set; }
+		public string CreatedAtUtc { get; set; } = string.Empty;
 	}
 }

@@ -12,17 +12,17 @@ namespace CivOne.Mcp.Tools
 	/// </summary>
 	public sealed class ToolsCallHandler : IMcpToolHandler
 	{
-		private readonly IReadOnlyDictionary<string, IMcpToolHandler> _lookup;
-		private readonly Action<string> _logger;
+		private readonly Dictionary<string, IMcpToolHandler> _lookup;
+		private readonly Action<string>? _logger;
 
 		public string Method => "tools/call";
 
 		// Not itself exposed in tools/list
-		public ToolDefinition Definition => null;
+		public ToolDefinition? Definition => null;
 
 		public McpResponse Handle(McpRequest request)
 		{
-			if (request == null) throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 
 			if (request.Params.ValueKind != JsonValueKind.Object)
 				return McpResponse.Failure(request.Id, -32602, "Invalid params", "'params' must be an object with 'name' and 'arguments'.");
@@ -30,11 +30,11 @@ namespace CivOne.Mcp.Tools
 			if (!request.Params.TryGetProperty("name", out JsonElement nameElement))
 				return McpResponse.Failure(request.Id, -32602, "Invalid params", "Property 'name' is required.");
 
-			string toolName = nameElement.GetString();
+			string? toolName = nameElement.GetString();
 			if (string.IsNullOrWhiteSpace(toolName))
 				return McpResponse.Failure(request.Id, -32602, "Invalid params", "Property 'name' must be a non-empty string.");
 
-			if (!_lookup.TryGetValue(toolName, out IMcpToolHandler handler))
+			if (!_lookup.TryGetValue(toolName, out IMcpToolHandler? handler))
 				return McpResponse.Failure(request.Id, -32601, "Method not found", toolName);
 
 			JsonElement arguments = request.Params.TryGetProperty("arguments", out JsonElement argsElement)
@@ -47,9 +47,9 @@ namespace CivOne.Mcp.Tools
 			return handler.Handle(innerRequest);
 		}
 
-		public ToolsCallHandler(IEnumerable<IMcpToolHandler> realHandlers, Action<string> logger = null)
+		public ToolsCallHandler(IEnumerable<IMcpToolHandler> realHandlers, Action<string>? logger = null)
 		{
-			if (realHandlers == null) throw new ArgumentNullException(nameof(realHandlers));
+			ArgumentNullException.ThrowIfNull(realHandlers);
 			_lookup = realHandlers
 				.Where(h => h.Definition != null)
 				.ToDictionary(h => h.Method, h => h, StringComparer.OrdinalIgnoreCase);
