@@ -32,8 +32,8 @@ namespace CivOne.Persistence.Mapper
                 min: 0,
                 max: int.MaxValue);
 
-            var warmingIndicator = Enum.IsDefined(typeof(WarmingIndicator), dto.WarmingIndicator)
-                ? dto.WarmingIndicator
+            var warmingIndicator = Enum.IsDefined(dto.WarmingIndicator)
+				? dto.WarmingIndicator
                 : WarmingIndicator.None;
 
             return new GameState
@@ -62,8 +62,8 @@ namespace CivOne.Persistence.Mapper
                 min: 0,
                 max: int.MaxValue);
 
-            var warmingIndicator = Enum.IsDefined(typeof(WarmingIndicator), domain.WarmingIndicator)
-                ? domain.WarmingIndicator
+            var warmingIndicator = Enum.IsDefined(domain.WarmingIndicator)
+				? domain.WarmingIndicator
                 : WarmingIndicator.None;
 
             return new GlobalWarmingDto

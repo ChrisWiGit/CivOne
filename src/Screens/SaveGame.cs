@@ -11,6 +11,7 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Services;
+using CivOne.Services.Random;
 using CivOne.UserInterface;
 using System;
 using System.IO;
@@ -23,27 +24,27 @@ namespace CivOne.Screens
 	{
 		internal static int SelectedGame = -1;
 
-		private static ISaveGamePathProvider PathProvider =>
-			new SaveGamePathProvider(RuntimeHandler.Runtime, Settings.Instance);
+		private static SaveGamePathProvider PathProvider =>
+			new(RuntimeHandler.Runtime, Settings.Instance);
 
 		private static IAtomicFileReplacementService AtomicFileReplacementService =>
 			new AtomicFileReplacementService();
 
-		private IYamlSaveGameService YamlSaveGameService =>
-			new YamlSaveGameService(Game, AtomicFileReplacementService);
+		private static YamlSaveGameService YamlSaveGameService =>
+			new(Game, AtomicFileReplacementService);
 
 		// CW: This is a bit of a hack to allow the SaveGame screen to access the compatibility provider without Dependency Injection or a service locator. Since the SaveGame screen is only used during the save process, it should be safe to assume that Game is available and can serve as the provider.
 		private static ISveSaveCompatibilityProvider SveSaveCompatibilityProvider => Game;
 
 		private char _driveLetter = 'C';
-		private readonly int _border = Common.Random.Next(2);
+		private readonly int _border = RandomServiceFactory.Create().NextInt(2);
 		private int _gameId;
 
 		internal static string SaveFileName = "";
 		private bool _update = true;
-		private bool _saving = false;
+		private bool _saving;
 		private bool _attemptedInitialDirectSaveDialog;
-		private Menu _menu;
+		private Menu? _menu;
 		private string _sveUnavailableReason = string.Empty;
 
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
@@ -77,13 +78,18 @@ namespace CivOne.Screens
 				return;
 			}
 
-			int item = (sender as MenuItem<int>).Value;
-			_gameId = item;
-			SelectedGame = item;
+			// int item = (sender as MenuItem<int>).Value;
+			if (sender is not MenuItem<int> menuItem)
+			{
+				System.Diagnostics.Debug.Assert(false, "Sender is not MenuItem<int> in SaveFile");
+				return;
+			}
+			_gameId = menuItem.Value;
+			SelectedGame = menuItem.Value;
 			_saving = true;
 			_update = true;
 
-			SaveGameFile file = SaveGameFile.GetSaveGames(_driveLetter).ToArray()[item];
+			SaveGameFile file = SaveGameFile.GetSaveGames(_driveLetter).ToArray()[menuItem.Value];
 			Game.Save(file.SveFile, file.MapFile);
 		}
 
@@ -96,7 +102,7 @@ namespace CivOne.Screens
 			_gameId = -1;
 			const string extension = ".cos";
 
-			string selectedFile = RuntimeHandler.Runtime.FileChooser(
+			string? selectedFile = RuntimeHandler.Runtime.FileChooser(
 				true,
 				Translate("Save Game As..."),
 				BuildDialogInitialFileName(SaveFileName, extension),
@@ -157,7 +163,7 @@ namespace CivOne.Screens
 
 				if (_gameId >= 0)
 				{
-					this.DrawText($"{char.ToLower(_driveLetter)}:CIVIL{_gameId}.SVE", 0, 5, OffsetX + 75, OffsetY + 91);
+					this.DrawText($"{char.ToLowerInvariant(_driveLetter)}:CIVIL{_gameId}.SVE", 0, 5, OffsetX + 75, OffsetY + 91);
 				}
 				else
 				{
@@ -213,7 +219,7 @@ namespace CivOne.Screens
 				return true;
 			}
 
-			char c = Char.ToUpper(args.KeyChar);
+			char c = char.ToUpperInvariant(args.KeyChar);
 			if (args.Key == Key.Escape)
 			{
 				Log("Cancel");

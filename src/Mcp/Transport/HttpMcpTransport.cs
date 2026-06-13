@@ -19,23 +19,23 @@ namespace CivOne.Mcp.Transport
 		private readonly HttpListener _listener = new();
 		private readonly string _prefix;
 
-		private Thread _readThread;
+		private Thread? _readThread;
 		private bool _running;
 
 		public bool StdinClosed => false;
 
-		public bool TryRead(out McpRequest request) => _queue.TryDequeue(out request);
+		public bool TryRead(out McpRequest? request) => _queue.TryDequeue(out request);
 
 		public void Write(McpResponse response)
 		{
 			if (response == null)
 				return;
 
-			string key = BuildRequestIdKey(response.Id);
+			string? key = BuildRequestIdKey(response.Id);
 			if (string.IsNullOrEmpty(key))
 				return;
 
-			if (_pendingById.TryGetValue(key, out BlockingCollection<McpResponse> waiter))
+			if (_pendingById.TryGetValue(key, out BlockingCollection<McpResponse>? waiter))
 			{
 				waiter.TryAdd(response);
 				return;
@@ -125,13 +125,13 @@ namespace CivOne.Mcp.Transport
 					payload = reader.ReadToEnd();
 				}
 
-				if (!_serializer.TryParse(payload, out McpRequest request, out McpResponse parseError))
+				if (!_serializer.TryParse(payload, out McpRequest? request, out McpResponse? parseError))
 				{
 					WriteJson(context.Response, parseError ?? McpResponse.Failure(null, -32700, "Parse error", "Invalid JSON."));
 					return;
 				}
 
-				if (request.Id == null)
+				if (request!.Id == null)
 				{
 					_queue.Enqueue(request);
 					context.Response.StatusCode = 202;
@@ -139,7 +139,7 @@ namespace CivOne.Mcp.Transport
 					return;
 				}
 
-				string key = BuildRequestIdKey(request.Id);
+				string? key = BuildRequestIdKey(request.Id);
 				if (string.IsNullOrEmpty(key))
 				{
 					WriteJson(context.Response, McpResponse.Failure(request.Id, -32600, "Invalid request", "Property 'id' must be a JSON scalar."));
@@ -156,7 +156,7 @@ namespace CivOne.Mcp.Transport
 				try
 				{
 					_queue.Enqueue(request);
-					if (waiter.TryTake(out McpResponse response, _requestTimeoutMs))
+					if (waiter.TryTake(out McpResponse? response, _requestTimeoutMs))
 					{
 						WriteJson(context.Response, response);
 					}
@@ -209,7 +209,7 @@ namespace CivOne.Mcp.Transport
 			response.Close();
 		}
 
-		private static string BuildRequestIdKey(object id)
+		private static string? BuildRequestIdKey(object? id)
 		{
 			if (id == null)
 				return null;

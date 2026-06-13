@@ -13,13 +13,13 @@ namespace CivOne.Mcp.Transport
 		private readonly Action<string> _log;
 		private readonly ConcurrentQueue<McpRequest> _queue = new();
 		private readonly object _writeLock = new();
-		private Thread _readThread;
+		private Thread? _readThread;
 		private bool _running;
 
 		/// <summary>True when stdin reached EOF — the host process closed the pipe.</summary>
 		public bool StdinClosed { get; private set; }
 
-		public bool TryRead(out McpRequest request) => _queue.TryDequeue(out request);
+		public bool TryRead(out McpRequest? request) => _queue.TryDequeue(out request);
 
 		public void Write(McpResponse response)
 		{
@@ -56,7 +56,7 @@ namespace CivOne.Mcp.Transport
 
 			while (_running)
 			{
-				string payload = ReadMessage(reader);
+				string? payload = ReadMessage(reader);
 				if (payload == null)
 				{
 					if (reader.EndOfStream)
@@ -70,9 +70,12 @@ namespace CivOne.Mcp.Transport
 					continue;
 				}
 
-				if (_serializer.TryParse(payload, out McpRequest request, out McpResponse error))
+				if (_serializer.TryParse(payload, out McpRequest? request, out McpResponse? error))
 				{
-					_queue.Enqueue(request);
+					if (request != null)
+					{
+						_queue.Enqueue(request);
+					}
 					continue;
 				}
 
@@ -87,17 +90,17 @@ namespace CivOne.Mcp.Transport
 			}
 		}
 
-		private static string ReadMessage(StreamReader reader)
+		private static string? ReadMessage(StreamReader reader)
 		{
 			// MCP stdio framing (Content-Length) with fallback for single-line JSON payloads.
-			string firstLine = reader.ReadLine();
+			string? firstLine = reader.ReadLine();
 			if (firstLine == null) return null;
 
-			if (firstLine.StartsWith("{", StringComparison.Ordinal))
+			if (firstLine.StartsWith('{'))
 				return firstLine;
 
 			int contentLength = 0;
-			string line = firstLine;
+			string? line = firstLine;
 
 			do
 			{

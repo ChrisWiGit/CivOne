@@ -61,6 +61,7 @@ namespace CivOne.UnitTests
             runtime?.Dispose();
             RuntimeHandler.Wipe();
             GC.Collect();
+            GC.SuppressFinalize(this);
         }
     }
 }

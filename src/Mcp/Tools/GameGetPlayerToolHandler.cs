@@ -52,14 +52,14 @@ namespace CivOne.Mcp.Tools
 			if (!ValidateParamsObject(request, out McpResponse? validationError))
 				return validationError!;
 
-			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string errorMessage))
+			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string? errorMessage))
 				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage, null));
 
 			if (!TryReadOptionalInt(request.Params, "playerId", out int? playerId, out string? playerIdError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", playerIdError!, "playerId"));
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", playerIdError, "playerId"));
 
 			if (!TryReadOptionalGuid(request.Params, "playerGuid", out Guid? playerGuid, out string? playerGuidError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", playerGuidError!, "playerGuid"));
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", playerGuidError, "playerGuid"));
 
 			if (!TryReadKeys(request.Params, out string[] keys, out string? keysError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", keysError!, "keys"));
@@ -121,7 +121,7 @@ namespace CivOne.Mcp.Tools
 			return output;
 		}
 
-		private McpResponse JsonResponse(object id, object payload)
+		private McpResponse JsonResponse(object? id, object payload)
 			=> McpJsonToolResponse.JsonResponse(id, payload, _jsonWriter, _maxJsonChars);
 
 		private object BuildSuccessPayload(object data)
@@ -138,7 +138,7 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private object BuildErrorPayload(string code, string message, string? failedSegment)
+		private object BuildErrorPayload(string code, string? message, string? failedSegment)
 		{
 			return new
 			{
