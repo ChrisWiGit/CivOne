@@ -10,6 +10,7 @@ MOST_WARNINGS_FILE="warning-most-summary.txt"
 HISTORY_FILE="warning-history.csv"
 
 echo "Running dotnet build..."
+export DOTNET_CLI_UI_LANGUAGE=en
 
 rm -f "$BUILD_LOG"
 
