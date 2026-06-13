@@ -21,6 +21,8 @@ namespace CivOne.Graphics.ImageFormats
 		private Palette _palette;
 		private Bytemap _pixels;
 
+		private static ILzwCodec LzwCodec => LzwServiceFactory.GetCodec();
+
 		private IEnumerable<byte[]> OutputBlock(byte[] buffer)
 		{
 			for (int offset = 0; offset < buffer.Length; offset += 255)
@@ -91,7 +93,7 @@ namespace CivOne.Graphics.ImageFormats
 				// No local colour table
 				writer.Write((byte)0x00);
 
-				byte[] encoded = LZW.Encode(_pixels.ToByteArray(), true, false, 12);
+				byte[] encoded = LzwCodec.Encode(_pixels.ToByteArray(), true, false, 12);
 				
 				// Code length
 				writer.Write((byte)0x08);
@@ -216,7 +218,7 @@ namespace CivOne.Graphics.ImageFormats
 
 						try
 						{
-							byte[] pixels = LZW.Decode(lzwData, true, false, minCode, 12);
+							byte[] pixels = LzwCodec.Decode(lzwData, true, false, minCode, 12);
 							_pixels = new Bytemap(width, height).FromByteArray(pixels);
 							_palette = palette;
 						}
