@@ -138,7 +138,7 @@ namespace CivOne.Screens.StartupWizard
 				return;
 			}
 
-			if (!TranslationServiceFactory.TryUseLanguage(_storageDirectory, postfix, out string error, _log))
+			if (!TranslationServiceFactory.TryUseLanguage(_storageDirectory, postfix, out string? error, _log))
 			{
 				state.StatusMessage = TF("Could not load language '{0}'.", postfix);
 				_log($"Could not activate language '{postfix}': {error}");
@@ -158,7 +158,7 @@ namespace CivOne.Screens.StartupWizard
 				return;
 			}
 
-			string path = _browseFolder(T("Location of Civilization data files"));
+			string? path = _browseFolder(T("Location of Civilization data files"));
 			if (path == null)
 			{
 				engine.StatusMessage = T("Folder selection cancelled.");
@@ -221,8 +221,8 @@ namespace CivOne.Screens.StartupWizard
 
 		private void HandleBrowseSoundFolder(WizardState state)
 		{
-			string path = _browseFolder(T("Location of Civilization for Windows sound files"));
-			if (path == null)
+			string? path = _browseFolder(T("Location of Civilization for Windows sound files"));
+			if (string.IsNullOrWhiteSpace(path))
 			{
 				state.StatusMessage = T("Folder selection cancelled.");
 				return;
@@ -263,7 +263,7 @@ namespace CivOne.Screens.StartupWizard
 				return;
 			}
 
-			if (RuntimeHandler.Runtime.TryOpenUrl(_storageDirectory, out string errorMessage))
+			if (RuntimeHandler.Runtime.TryOpenUrl(_storageDirectory, out string? errorMessage))
 			{
 				state.StatusMessage = T("Opened CivOne profile folder.");
 				return;
@@ -321,7 +321,7 @@ namespace CivOne.Screens.StartupWizard
 				: shownFiles;
 		}
 
-		private void ApplyAspectRatio(string value, WizardState state)
+		private void ApplyAspectRatio(string? value, WizardState state)
 		{
 			if (!Enum.TryParse(value, ignoreCase: true, out AspectRatio aspectRatio))
 			{
@@ -342,7 +342,7 @@ namespace CivOne.Screens.StartupWizard
 				: T("Debug menu disabled.");
 		}
 
-		private void ApplyFullScreen(string value, WizardState state)
+		private void ApplyFullScreen(string? value, WizardState state)
 		{
 			if (!bool.TryParse(value, out bool fullScreen))
 			{

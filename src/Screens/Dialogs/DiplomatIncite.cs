@@ -12,6 +12,7 @@ using System.Linq;
 using CivOne.Buildings;
 using CivOne.Graphics;
 using CivOne.Services;
+using CivOne.Services.Random;
 using CivOne.Tasks;
 using CivOne.Units;
 using CivOne.UserInterface;
@@ -27,14 +28,14 @@ namespace CivOne.Screens.Dialogs
 		private readonly IDiplomatInciteService _service;
 
 		private readonly bool _canIncite;
-		private Menu _menu;
+		private Menu? _menu;
 
-		private void DontIncite(object sender, EventArgs args)
+		private void DontIncite(object? _, EventArgs __)
 		{
 			Cancel();
 		}
 
-		private void Incite(object sender, EventArgs args)
+		private void Incite(object? _, EventArgs __)
 		{
 			_service.InciteRevolt(_cityToIncite, _diplomat);
 			Cancel();
@@ -54,7 +55,7 @@ namespace CivOne.Screens.Dialogs
 			}
 
 			int choices = 2;
-			_menu = new Menu(Palette, Selection(45, 5 + (3 * Resources.GetFontHeight(FONT_ID)), 130, ((2 * Resources.GetFontHeight(FONT_ID)) + (choices * Resources.GetFontHeight(FONT_ID)) + 9)))
+			_menu = new Menu(Palette, Selection(45, 5 + (3 * Resources.GetFontHeight(FONT_ID)), 130, (2 * Resources.GetFontHeight(FONT_ID)) + (choices * Resources.GetFontHeight(FONT_ID)) + 9))
 			{
 				X = 143,
 				Y = 110,
@@ -121,17 +122,18 @@ namespace CivOne.Screens.Dialogs
 
 		public void InciteRevolt(City cityToIncite, Diplomat diplomat)
 		{
-			Player previousOwner = Game.Instance.GetPlayer(cityToIncite.CityOwnerPlayerIndex);
-			var newOwner = diplomat.Owner;
-			var newPlayer = Game.Instance.GetPlayer(newOwner);
+			Player previousOwner = cityToIncite.CityOwnerPlayer;
+			byte newOwner = diplomat.Owner;
+			Player newOwnerPlayer = diplomat.Player;
 
-			var msg = Message.General(_t.TranslateFormattedArray("{0} rebel!\nCivil War in\n{1}.\n{2} influence\nsuspected.", previousOwner.TribeNamePlural, cityToIncite.Name, newPlayer.TribeName));
+			var msg = Message.General(_t.TranslateFormattedArray("{0} rebel!\nCivil War in\n{1}.\n{2} influence\nsuspected.", 
+						previousOwner.TribeNamePlural, cityToIncite.Name, newOwnerPlayer.TribeName));
 
 			int plundered = 0;
-			string[] lines = _t.TranslateFormattedArray("{0} capture\n{1}. {2} gold\npieces plundered.", newPlayer.TribeNamePlural, cityToIncite.Name, plundered);
+			string[] lines = _t.TranslateFormattedArray("{0} capture\n{1}. {2} gold\npieces plundered.", newOwnerPlayer.TribeNamePlural, cityToIncite.Name, plundered);
 
 			Show captureCity = Show.CaptureCity(cityToIncite, lines);
-			EventHandler capture_done = (s1, a1) =>
+			void capture_done(object? _, EventArgs __)
 			{
 				Game.Instance.DisbandUnit(diplomat);
 				cityToIncite.CityOwnerPlayerIndex = newOwner;
@@ -142,13 +144,14 @@ namespace CivOne.Screens.Dialogs
 					unit.Owner = newOwner;
 				}
 
-				foreach (IBuilding building in cityToIncite.Buildings.Where(b => Common.Random.Next(0, 2) == 1).ToList())
+				var random = RandomServiceFactory.Create();
+				foreach (IBuilding building in cityToIncite.Buildings.Where(b => random.Hit(50)).ToList())
 				{
 					cityToIncite.RemoveBuilding(building);
 				}
 
-				newPlayer.Gold -= (short)Diplomat.InciteCost(cityToIncite);
-				newPlayer.Gold += (short)plundered;
+				newOwnerPlayer.Gold -= (short)Diplomat.InciteCost(cityToIncite);
+				newOwnerPlayer.Gold += (short)plundered;
 				previousOwner.HandleExtinction();
 				// Fix #181 When inciting an enemy's last city, the messages are in the wrong order #181
 				GameTask.Insert(msg);
@@ -157,7 +160,7 @@ namespace CivOne.Screens.Dialogs
 				{
 					GameTask.Insert(Tasks.Show.CityManager(cityToIncite));
 				}
-			};
+			}
 			captureCity.Done += capture_done;
 
 			if (Human == cityToIncite.CityOwnerPlayerIndex || Human == diplomat.Owner)

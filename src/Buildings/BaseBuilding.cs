@@ -131,7 +131,7 @@ namespace CivOne.Buildings
 				if (grassTile) _iconsCacheGrass[col, row] = Icon;
 				else _iconsCache[col, row] = Icon;
 			}
-			Icon = (grassTile ? _iconsCacheGrass[col, row] : _iconsCache[col, row]);
+			Icon = grassTile ? _iconsCacheGrass[col, row] : _iconsCache[col, row];
 		}
 		
 		protected void SetSmallIcon(int col, int row)

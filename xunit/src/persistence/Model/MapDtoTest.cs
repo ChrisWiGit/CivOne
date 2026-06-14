@@ -27,7 +27,7 @@ namespace CivOne.Persistence.Model
 		{
 			_mockedMapFactory = new MockedIMapFactory();
 			_mockedTileDtoMapper = new MockedITileDtoMapper(() => _mockedMapFactory.CurrentMapTiles);
-			_testee = new MapDtoMapper(_mockedMapFactory, _mockedTileDtoMapper, _terrainSeed: _terrainSeed);
+			_testee = new MapDtoMapper(_mockedMapFactory, _mockedTileDtoMapper, TerrainSeed: _terrainSeed);
 
 			_tileDtos = new TileDto[expectedWidth, expectedHeight];
 			for (int x = 0; x < expectedWidth; x++)

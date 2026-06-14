@@ -81,7 +81,7 @@ namespace CivOne.Screens
 
 		internal Palette MainPalette => OriginalColours.Copy();
 		
-		private void MenuBarGame(object? _, EventArgs args)
+		private void MenuBarGame(object? _, EventArgs __)
 		{
 			_menuIndex = 0;
 			_gameMenu = new GameMenu("MenuBarGame", Palette.Copy());
@@ -106,7 +106,7 @@ namespace CivOne.Screens
 			_update = true;
 		}
 		
-		private void MenuBarOrders(object sender, EventArgs args)
+		private void MenuBarOrders(object? _, EventArgs __)
 		{
 			if (Game.ActiveUnit == null) return;
 
@@ -121,7 +121,7 @@ namespace CivOne.Screens
 			_update = true;
 		}
 		
-		private void MenuBarAdvisors(object sender, EventArgs args)
+		private void MenuBarAdvisors(object? _, EventArgs __)
 		{
 			_menuIndex = 2;
 			_gameMenu = new GameMenu("MenuBarAdvisors", Palette);
@@ -138,7 +138,7 @@ namespace CivOne.Screens
 			_update = true;
 		}
 		
-		private void MenuBarWorld(object sender, EventArgs args)
+		private void MenuBarWorld(object? _, EventArgs __)
 		{
 			_menuIndex = 3;
 			_gameMenu = new GameMenu("MenuBarWorld", Palette);
@@ -162,7 +162,7 @@ namespace CivOne.Screens
 			_update = true;
 		}
 		
-		private void MenuBarCivilopedia(object sender, EventArgs args)
+		private void MenuBarCivilopedia(object? _, EventArgs __)
 		{
 			_menuIndex = 4;
 			_gameMenu = new GameMenu("MenuBarCivilopedia", Palette);
@@ -179,11 +179,11 @@ namespace CivOne.Screens
 			_update = true;
 		}
 
-		private void OnTerrainMenuAction(object sender, MenuItemEventArgs<int> args)
+		private void OnTerrainMenuAction(object? sender, MenuItemEventArgs<int> args)
 			=> _terrainEditorDelegate.OnTerrainMenuAction(sender, args);
 
 
-		private void MenuBarTerrain(object sender, EventArgs args)
+		private void MenuBarTerrain(object? sender, EventArgs args)
 			=> _terrainEditorDelegate.MenuBarTerrain(sender, args);
 
 		private bool HandleTerrainMenuHotkeys(KeyboardEventArgs args)

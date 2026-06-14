@@ -14,9 +14,9 @@ namespace CivOne.Mcp.Tools
 		private readonly IYamlMapperDependenciesFactory _mapperDependenciesFactory;
 
 		private uint _cachedTick = uint.MaxValue;
-		private GameStateDto _cachedSnapshot;
+		private GameStateDto? _cachedSnapshot;
 
-		public bool TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string errorMessage)
+		public bool TryGetSnapshot(out GameStateDto? snapshot, out string? errorCode, out string? errorMessage)
 		{
 			snapshot = null;
 			errorCode = null;

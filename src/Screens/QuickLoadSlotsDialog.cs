@@ -14,9 +14,9 @@ namespace CivOne.Screens
 	[Modal, ScreenResizeable]
 	internal sealed class QuickLoadSlotsDialog : BaseScreen
 	{
-		private readonly IReadOnlyList<int> _slots;
+		private readonly int[] _slots;
 		private readonly Action<int> _onSelect;
-		private readonly Picture _capturedBackground;
+		private readonly Picture? _capturedBackground;
 		private readonly Picture _menuBackground;
 		private readonly Menu<int> _menu;
 		private readonly HashSet<int> _validSlots = [];
@@ -42,13 +42,13 @@ namespace CivOne.Screens
 			}
 
 			int rowHeight = Resources.GetFontHeight(0);
-			int rows = Math.Max(1, _slots.Count);
+			int rows = Math.Max(1, _slots.Length);
 			int menuHeight = rows * rowHeight;
 
-			_menuBackground = new Picture(MenuInnerWidth, menuHeight)
+			_menuBackground = new Picture(MenuInnerWidth, menuHeight);
+			_menuBackground
 				.Tile(Pattern.PanelGrey)
-				.As<Picture>();
-			_menuBackground.ColourReplace((7, 11), (22, 3));
+				.ColourReplace((7, 11), (22, 3));
 
 			_menu = new("QuickSaveLoadSlots", Palette, _menuBackground)
 			{
@@ -64,7 +64,7 @@ namespace CivOne.Screens
 			_menu.Cancel += (_, _) => Destroy();
 			_menu.MissClick += (_, _) => Destroy();
 
-			if (_slots.Count == 0)
+			if (_slots.Length == 0)
 			{
 				_menu.Items
 					.Add(Translate("No fast savegames available. Use Ctrl+F1-F10 to save."), 0)
@@ -111,7 +111,7 @@ namespace CivOne.Screens
 			string filePath = GetSlotFilePath(slot);
 			string fileName = Path.GetFileName(filePath);
 
-			if (!CosSaveFileInspector.TryInspect(filePath, out CosSaveFileInspection inspection))
+			if (!CosSaveFileInspector.TryInspect(filePath, out CosSaveFileInspection? inspection))
 			{
 				return ($"F{slot} - Invalid savegame", false);
 			}

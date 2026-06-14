@@ -336,7 +336,7 @@ namespace CivOne.Persistence.Model
 					{
 						var expectedPlayer = expected.Players[i];
 						var actualPlayer = actual.Players.FirstOrDefault(p => p.Id == expectedPlayer.Id)
-							?? throw new Exception($"Player with ID {expectedPlayer.Id} not found in actual players");
+							?? throw new InvalidOperationException($"Player with ID {expectedPlayer.Id} not found in actual players");
 						Assert.Equal(expectedPlayer.Gold, actualPlayer.Gold);
 						Assert.Equal(expectedPlayer.Anarchy, actualPlayer.Anarchy);
 						Assert.Equal(expectedPlayer.PlayerGuid, actualPlayer.PlayerGuid);
@@ -434,7 +434,7 @@ namespace CivOne.Persistence.Model
 			public IPlayerRestorable Create(ICivilization civilization, PlayerDto dto)
 			{
 				var result = _players.FirstOrDefault(p => p.Civilization.Name == civilization.Name)
-					?? throw new Exception("No matching player found for civilization " + civilization.Name);
+					?? throw new InvalidOperationException("No matching player found for civilization " + civilization.Name);
 				return result;
 			}
 		}

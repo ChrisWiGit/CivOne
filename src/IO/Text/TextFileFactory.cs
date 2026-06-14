@@ -19,8 +19,8 @@ namespace CivOne.IO.Text
 	/// </example>
 	internal static class TextFileFactory
 	{
-		private static ITextFileLoader _loader;
-		private static TextFile _gameTexts;
+		private static ITextFileLoader? _loader;
+		private static TextFile? _gameTexts;
 
 		/// <summary>
 		/// Returns the shared game text instance.
@@ -83,7 +83,7 @@ namespace CivOne.IO.Text
 		/// <returns>
 		/// Shared concrete instance.
 		/// </returns>
-		public static TextFile GetInstance(bool reload = false) => _ = Get(reload) as TextFile;
+		public static TextFile? GetInstance(bool reload = false) => Get(reload) as TextFile;
 
 		/// <summary>
 		/// Clears cached instances and unregisters language observer.

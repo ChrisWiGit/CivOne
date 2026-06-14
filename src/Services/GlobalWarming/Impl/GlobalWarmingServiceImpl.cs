@@ -10,11 +10,11 @@ namespace CivOne.Services.GlobalWarming.Impl
 	public class GlobalWarmingCountServiceImpl : IGlobalWarmingService
 	{
 		private IEnumerable<ITile> _tiles = [];
-		int _pollutedSquaresCount = 0;
-		short _globalWarmingCount = 0;
-		WarmingIndicator _warmingIndicator = WarmingIndicator.None;
+		int _pollutedSquaresCount;
+		short _globalWarmingCount;
+		WarmingIndicator _warmingIndicator;
 
-		public GlobalWarmingCountServiceImpl(IGameData gameData,
+		public GlobalWarmingCountServiceImpl(IGameData? gameData,
 				IEnumerable<ITile> tiles)
 		{
 			if (gameData != null)
@@ -77,7 +77,7 @@ namespace CivOne.Services.GlobalWarming.Impl
 			return 8 + (_globalWarmingCount * 2);
 		}
 
-		protected WarmingIndicator GetWarmingIndicator(int pollutedSquares)
+		protected static WarmingIndicator GetWarmingIndicator(int pollutedSquares)
 		{
 			foreach (var range in IndicatorRanges())
 			{
@@ -89,7 +89,7 @@ namespace CivOne.Services.GlobalWarming.Impl
 			return WarmingIndicator.None;
 		}
 
-		protected IndicatorRange[] IndicatorRanges() =>
+		protected static IndicatorRange[] IndicatorRanges() =>
 		[
 			new IndicatorRange(WarmingIndicator.None, 0, 0),
 			new IndicatorRange(WarmingIndicator.DarkRed, 1, 1),

@@ -218,7 +218,7 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private McpResponse JsonResponse(object id, object payload)
+		private McpResponse JsonResponse(object? id, object payload)
 		{
 			string json = _jsonWriter.AsString(payload);
 			if (json.Length > _maxJsonChars)

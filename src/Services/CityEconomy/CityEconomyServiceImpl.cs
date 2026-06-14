@@ -5,6 +5,7 @@ using UniversityBuilding = CivOne.Buildings.University;
 
 namespace CivOne
 {
+	#pragma warning disable CA1822 // Mark members as static
 	/// <summary>
 	/// Service implementation for calculating city economy breakdowns.
 	/// Tight coupling to City because this service is an internal implementation detail of City and relies on City internals for its calculations. 

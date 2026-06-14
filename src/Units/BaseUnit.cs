@@ -1092,6 +1092,9 @@ namespace CivOne.Units
 			}
 		}
 
+		/// <summary>
+		/// Gets the <see cref="Player"/> instance that owns this unit.
+		/// </summary>
 		public Player Player => Game.GetPlayer(Owner)!;
 
 		public byte Status

@@ -28,7 +28,7 @@ namespace CivOne.Screens
 		private readonly Action _onPartPlaced;
 		private readonly bool _debug;
 		private readonly Menu<SpaceShipComponentType> _menu;
-		private readonly Picture _capturedBackground;
+		private readonly Picture? _capturedBackground;
 		private readonly SpaceShipComponentType[] _options;
 
 		private int _lastWidth;
@@ -152,10 +152,10 @@ namespace CivOne.Screens
 			}
 
 			_options = SpaceShipPartOptions.GetOptions(genericType);
-			Picture menuBackground = new Picture(DialogWidth - 4, Resources.GetFontHeight(0) * _options.Length)
+			Picture menuBackground = new Picture(DialogWidth - 4, Resources.GetFontHeight(0) * _options.Length);
+			menuBackground
 				.Tile(Pattern.PanelGrey)
-				.As<Picture>();
-			menuBackground.ColourReplace((7, 11), (22, 3));
+				.ColourReplace((7, 11), (22, 3));
 
 			_menu = new("SpaceShipPartSelector", Palette, menuBackground)
 			{
@@ -227,10 +227,10 @@ namespace CivOne.Screens
 			int x = OffsetX + ((320 - DialogWidth) / 2);
 			int y = OffsetY + ((200 - dialogHeight) / 2);
 
-			Picture panel = new Picture(DialogWidth, dialogHeight)
+			Picture panel = new Picture(DialogWidth, dialogHeight);
+			panel
 				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D()
-				.As<Picture>();
+				.DrawRectangle3D();
 
 			this.FillRectangle(x - 1, y - 1, DialogWidth + 2, dialogHeight + 2, 5)
 				.AddLayer(panel, x, y)

@@ -208,7 +208,7 @@ namespace CivOne.Screens
 			}
 
 
-			public void MenuBarTerrain(object sender, EventArgs args)
+			public void MenuBarTerrain(object? _, EventArgs __)
 			{
 				if (!DebugMenuEnabled)
 				{
@@ -270,6 +270,11 @@ namespace CivOne.Screens
 				};
 
 				if (key == '\0')
+				{
+					return false;
+				}
+
+				if (_gamePlay._gameMenu == null)
 				{
 					return false;
 				}

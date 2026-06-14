@@ -14,7 +14,7 @@ namespace CivOne.Services.HallOfFame
 
 		public IReadOnlyList<HallOfFameEntry> ViewEntries(string storageDirectory, Action<string>? log = null)
 		{
-			if (_repository.TryLoad(storageDirectory, out IReadOnlyList<HallOfFameEntry> entries, out string error))
+			if (_repository.TryLoad(storageDirectory, out IReadOnlyList<HallOfFameEntry> entries, out string? error))
 			{
 				return Normalize(entries);
 			}
@@ -37,7 +37,7 @@ namespace CivOne.Services.HallOfFame
 			List<HallOfFameEntry> mergedEntries = [entry, .. loadedEntries];
 			IReadOnlyList<HallOfFameEntry> normalizedEntries = Normalize(mergedEntries);
 
-			if (!_repository.TrySave(storageDirectory, normalizedEntries, out string saveError))
+			if (!_repository.TrySave(storageDirectory, normalizedEntries, out string? saveError))
 			{
 				log?.Invoke($"Could not save Hall of Fame entries: {saveError}");
 			}
@@ -47,7 +47,7 @@ namespace CivOne.Services.HallOfFame
 
 		private IReadOnlyList<HallOfFameEntry> LoadForAdd(string storageDirectory, Action<string>? log)
 		{
-			if (_repository.TryLoad(storageDirectory, out IReadOnlyList<HallOfFameEntry> entries, out string error))
+			if (_repository.TryLoad(storageDirectory, out IReadOnlyList<HallOfFameEntry> entries, out string? error))
 			{
 				return entries;
 			}
@@ -69,7 +69,7 @@ namespace CivOne.Services.HallOfFame
 				.Take(MaxEntries)];
 		}
 
-		private static bool IsMissingFileError(string error)
+		private static bool IsMissingFileError(string? error)
 			=> !string.IsNullOrWhiteSpace(error)
 			&& error.StartsWith("File not found:", StringComparison.OrdinalIgnoreCase);
 	}

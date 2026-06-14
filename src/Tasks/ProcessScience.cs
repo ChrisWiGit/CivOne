@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using CivOne.Screens;
 
@@ -18,16 +19,22 @@ namespace CivOne.Tasks
 		private readonly Player _player;
 		private readonly bool _human;
 		
-		private void CivilopediaClosed(object sender, EventArgs args)
+		private void CivilopediaClosed(object? _, EventArgs __)
 		{
 			_player.CurrentResearch = null;
-			GameTask.Insert(new TechSelect(_player));
+			Insert(new TechSelect(_player));
 			EndTask();
 		}
 
-		private void ClosedDiscovery(object sender, EventArgs args)
+		private void ClosedDiscovery(object? _, EventArgs __)
 		{
-			Screens.Civilopedia civilopedia = new Screens.Civilopedia(_player.CurrentResearch, discovered: true);
+			if (_player.CurrentResearch == null)
+			{
+				Log($"ProcessScience: No current research after discovery screen closed. For player {_player.TribeName}.");
+				EndTask();
+				return;
+			}
+			Civilopedia civilopedia = new(_player.CurrentResearch, discovered: true);
 			civilopedia.Closed += CivilopediaClosed;
 			Common.AddScreen(civilopedia);
 		}
@@ -54,9 +61,15 @@ namespace CivOne.Tasks
 				}
 
 				if (_human)
-					GameTask.Enqueue(new TechSelect(_player));
+				{
+					Enqueue(new TechSelect(_player));
+				}
 				else
-					_player.AI.ChooseResearch();
+				{
+					Debug.Assert(_player.AI != null, "AI player has no AI implementation");
+					Log($"Warning: The player {_player.TribeName} is not human but has no field AI. Skipping research selection.");
+					_player.AI?.ChooseResearch();
+				}
 				EndTask();
 				return;
 			}
@@ -75,7 +88,8 @@ namespace CivOne.Tasks
 			{
 				// This is an AI player, handle everything in the background.
 				_player.CurrentResearch = null;
-				_player.AI.ChooseResearch();
+				Debug.Assert(_player.AI != null, "AI player has no AI implementation");
+				_player.AI?.ChooseResearch();
 				EndTask();
 				return;
 			}

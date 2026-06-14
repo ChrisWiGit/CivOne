@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Enums;
@@ -25,9 +26,9 @@ namespace CivOne.Screens.Reports
 			public string Value;
 			public int Place;
 
-			public string BetterCiv;
+			public string? BetterCiv;
 
-			public TableRow(string title, string value, int place, string betterCiv)
+			public TableRow(string title, string value, int place, string? betterCiv)
 			{
 				Title = title;
 				Value = value;
@@ -72,18 +73,19 @@ namespace CivOne.Screens.Reports
 				.Count(p => p.Pollution < Human.Pollution) + 1;
 
 			// Player outRanked = Human.Embassies.Length > 0
-			Player outRanked = Game.Players.Count() > 0
+			Player? outRanked = Game.Players.Any()
 				? players
 					.Where(p => p != Human)
 					.Where(p => p.Pollution < Human.Pollution)
 					.OrderByDescending(p => p.Pollution)
-					.ThenBy(p => Game.PlayerNumber(p))
+					.ThenBy(Game.PlayerNumber)
 					.FirstOrDefault()
 				: null;
-			string betterCiv = null;
+			string? betterCiv = null;
 			if (outRanked != null)
 			{
-				betterCiv = TranslateFormatted("({0}: {1} tons)", outRanked.TribeName, outRanked.Pollution == 0 ? "00" : outRanked.Pollution.ToString());
+				var pollution = outRanked.Pollution == 0 ? "00" : outRanked.Pollution.ToString(CultureInfo.InvariantCulture);
+				betterCiv = TranslateFormatted("({0}: {1} tons)", outRanked.TribeName, pollution);
 			}
 
 			return new TableRow(Translate("Pollution"), value, rank, betterCiv);
