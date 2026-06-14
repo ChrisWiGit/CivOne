@@ -934,10 +934,10 @@ namespace CivOne
 			int buyPrice = BuyPrice;
 			if (buyPrice <= 0) return false;
 			if (IsRiot && CurrentProduction is IBuilding) return false;
-			if (Game.CurrentPlayer.Gold < buyPrice) return false;
+			if (CityOwnerPlayer.Gold < buyPrice) return false;
 
-			Game.CurrentPlayer.Gold -= (short)buyPrice;
-			Shields = (int)CurrentProduction.Price * 10;
+			CityOwnerPlayer.Gold -= (short)buyPrice;
+			Shields = CurrentProduction.Price * 10;
 			return true;
 		}
 
@@ -1067,7 +1067,7 @@ namespace CivOne
 		public void SellBuilding(IBuilding building)
 		{
 			RemoveBuilding(building);
-			Game.CurrentPlayer.Gold += building.SellPrice;
+			CityOwnerPlayer.Gold += building.SellPrice;
 			BuildingSold = true;
 		}
 
