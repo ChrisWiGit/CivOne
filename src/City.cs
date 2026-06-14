@@ -18,7 +18,6 @@ using CivOne.Enums;
 using CivOne.Governments;
 using CivOne.Persistence.Game;
 using CivOne.Screens.Services;
-using CivOne.Services.Random;
 using CivOne.Services.SpaceShip;
 using CivOne.src;
 using CivOne.Tasks;
@@ -1421,7 +1420,7 @@ namespace CivOne
 					if (!hillsNearby || !buildingsOtherThanPalace.Any())
 						return;
 
-					IBuilding buildingToDestroy = buildingsOtherThanPalace[RandomService.NextInt(0, buildingsOtherThanPalace.Count - 1)];
+					IBuilding buildingToDestroy = buildingsOtherThanPalace[RandomService.NextInt(0, buildingsOtherThanPalace.Count)];
 					RemoveBuilding(buildingToDestroy);
 
 					message.Add(TranslateFormatted("Earthquake in {0}!", Name));
@@ -1508,7 +1507,7 @@ namespace CivOne
 
 					if (buildingsOtherThanPalace.Any() && !hasAqueduct && hasConstruction)
 					{
-						IBuilding buildingToDestroy = buildingsOtherThanPalace[RandomService.NextInt(0, buildingsOtherThanPalace.Count - 1)];
+						IBuilding buildingToDestroy = buildingsOtherThanPalace[RandomService.NextInt(0, buildingsOtherThanPalace.Count)];
 						RemoveBuilding(buildingToDestroy);
 
 						message.Add(TranslateFormatted("Fire in {0}!", Name));
@@ -1541,7 +1540,7 @@ namespace CivOne
 					// Riot, scandal, corruption
 
 					string[] disasterTypes = { "Scandal", "Riot", "Corruption" };
-					string disasterType = disasterTypes[RandomService.NextInt(0, disasterTypes.Length - 1)];
+					string disasterType = disasterTypes[RandomService.NextInt(0, disasterTypes.Length)];
 					string buildingDemanded = "";
 					CitizenTypes citizenTypes = GetCitizenTypes();
 

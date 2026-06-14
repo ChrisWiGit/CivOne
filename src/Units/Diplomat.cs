@@ -50,14 +50,14 @@ namespace CivOne.Units
 			if (!possible.Any())
 				return null;
 
-			return possible[_randomService.NextInt(0, possible.Count - 1)];
+			return possible[_randomService.NextInt(0, possible.Count)];
 		}
 
 		public string Sabotage(City city)
 		{
 			Game.DisbandUnit(this);
 
-			IList<IBuilding> buildings = [.. city.Buildings.Where(b => (b.GetType() != typeof(Buildings.Palace)))];
+			IList<IBuilding> buildings = [.. city.Buildings.Where(b => b.GetType() != typeof(Buildings.Palace))];
 
 			int random = _randomService.NextInt(0, buildings.Count);
 
