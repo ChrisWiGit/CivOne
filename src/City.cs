@@ -1125,7 +1125,7 @@ namespace CivOne
 			if (partType != SpaceShipComponentType.Empty && canShowInstallScreen)
 			{
 				Shields = 0;
-				Message message = Message.Newspaper(this, TranslateFormattedArray("{0} builds\n{1}.", this.Name, (CurrentProduction as ICivilopedia).TranslatedName));
+				Message message = Message.Newspaper(this, TranslateFormattedArray("{0} builds\n{1}.", this.Name, (CurrentProduction as ICivilopedia)?.TranslatedName));
 				message.Done += (s, a) =>
 				{
 					Show showSpaceShip = Show.SpaceShipWithInstall(partType);
@@ -1157,7 +1157,7 @@ namespace CivOne
 			}
 			_buildings.Add(CurrentProduction as IBuilding);
 
-			Message message = Message.Newspaper(this, TranslateFormattedArray("{0} builds\n{1}.", this.Name, (CurrentProduction as ICivilopedia).TranslatedName));
+			Message message = Message.Newspaper(this, TranslateFormattedArray("{0} builds\n{1}.", this.Name, (CurrentProduction as ICivilopedia)?.TranslatedName));
 			message.Done += (s, a) =>
 			{
 				GameTask advisorMessage = Message.Advisor(Advisor.Foreign, true, $"{Player.TribeName} capital", $"moved to {Name}.");
@@ -1324,10 +1324,10 @@ namespace CivOne
 				{
 					// On Chieftain level, it's not possible to create a Settlers in a city of size 1
 				}
-				else if (CurrentProduction is IUnit)
+				else if (CurrentProduction is IUnit currentUnit)
 				{
 					Shields = 0;
-					IUnit unit = Game.Instance.CreateUnit((CurrentProduction as IUnit).Type, X, Y, Owner);
+					IUnit unit = Game.Instance.CreateUnit(currentUnit.Type, X, Y, Owner);
 					unit.SetHome();
 					unit.Veteran = _buildings.Any(b => b is Barracks);
 					if (CurrentProduction is Settlers)
@@ -1346,17 +1346,17 @@ namespace CivOne
 						GameTask.Enqueue(advisorMessage);
 					}
 				}
-				if (CurrentProduction is IBuilding && !_buildings.Any(b => b.Id == (CurrentProduction as IBuilding).Id) && !HandleSpaceShipProduction() && !HandlePalaceBuilding())
+				if (CurrentProduction is IBuilding currentBuilding && !_buildings.Any(b => b.Id == currentBuilding.Id) && !HandleSpaceShipProduction() && !HandlePalaceBuilding())
 				{
 					Shields = 0;
-					_buildings.Add(CurrentProduction as IBuilding);
-					GameTask.Enqueue(new ImprovementBuilt(this, CurrentProduction as IBuilding));
+					_buildings.Add(currentBuilding);
+					GameTask.Enqueue(new ImprovementBuilt(this, currentBuilding));
 				}
-				if (CurrentProduction is IWonder && !Game.Instance.BuiltWonders.Any(w => w.Id == (CurrentProduction as IWonder).Id))
+				if (CurrentProduction is IWonder currentWonder && !Game.Instance.BuiltWonders.Any(w => w.Id == currentWonder.Id))
 				{
 					Shields = 0;
-					AddWonder(CurrentProduction as IWonder);
-					GameTask.Enqueue(new ImprovementBuilt(this, CurrentProduction as IWonder));
+					AddWonder(currentWonder);
+					GameTask.Enqueue(new ImprovementBuilt(this, currentWonder));
 				}
 			}
 

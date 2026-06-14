@@ -241,6 +241,7 @@ namespace CivOne
 		private void PlayerDestroyed(object sender, EventArgs args)
 		{
 			Player player = (sender as Player);
+			if (player is null) return;
 
 			ICivilization destroyed = player.Civilization;
 			ICivilization destroyedBy = Game.CurrentPlayer.Civilization;
@@ -935,8 +936,8 @@ namespace CivOne
 				if (isSettlers)
 				{
 					// Cancel order if settler is set active
-					var settler = toActivateUnit as Settlers;
-					settler.ResetOrder();
+					if (toActivateUnit is Settlers settler)
+						settler.ResetOrder();
 				}
 
 				if (isSentryOrFortify && isAlreadyMoved)
