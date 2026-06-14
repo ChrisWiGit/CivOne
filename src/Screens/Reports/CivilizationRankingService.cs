@@ -46,7 +46,7 @@ namespace CivOne.Screens.Reports
 
 	public static class CivilizationRankingServiceFactory
 	{
-		private static ICivilizationRankingService _instance;
+		private static ICivilizationRankingService? _instance;
 
 		public static ICivilizationRankingService GetInstance()
 		{
@@ -78,17 +78,17 @@ namespace CivOne.Screens.Reports
 
 		public IReadOnlyList<CivilizationRankingRow> GetLargest(bool includeAllCivilizations = false) => RankBy(player => player.Population, includeAllCivilizations);
 
-		private static IReadOnlyList<CivilizationRankingRow> RankBy(Func<Player, double> scoreSelector, bool includeAllCivilizations)
+		private static List<CivilizationRankingRow> RankBy(Func<Player, double> scoreSelector, bool includeAllCivilizations)
 		{
 			Game game = Game.Instance;
 			Player[] allPlayers = [.. GetPlayers(includeAllCivilizations: true)];
 			Player[] rankedPlayers = [.. allPlayers
 				.OrderByDescending(scoreSelector)
-				.ThenBy(player => game.PlayerNumber(player))];
+				.ThenBy(game.PlayerNumber)];
 
-			IReadOnlySet<byte> visiblePlayerIds = includeAllCivilizations
-				? new HashSet<byte>(allPlayers.Select(game.PlayerNumber))
-				: new HashSet<byte>(GetPlayers(includeAllCivilizations: false).Select(game.PlayerNumber));
+			List<byte>? visiblePlayerIds = includeAllCivilizations
+				? [.. allPlayers.Select(game.PlayerNumber)]
+				: [.. GetPlayers(includeAllCivilizations: false).Select(game.PlayerNumber)];
 
 			List<CivilizationRankingRow> rows = [];
 			for (int i = 0; i < rankedPlayers.Length; i++)
