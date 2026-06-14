@@ -140,12 +140,13 @@ namespace CivOne.UnitTests
             Game.Instance.CreateUnit(UnitType.Militia, 51, 13, Game.Instance.PlayerNumber(otherP));
 
             // give human a unit
-            var chariot1 = Game.Instance.CreateUnit(UnitType.Chariot, 52, 13, Game.Instance.PlayerNumber(playa));
+            var chariot1 = Game.Instance.CreateUnit(UnitType.Chariot, 52, 13, Game.Instance.PlayerNumber(playa)) as BaseUnit;
+            Assert.NotNull(chariot1);
 
             // try to move the human unit down to enemy city
             Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
             Game.Instance.ActiveUnit = chariot1;
-            Assert.True(((BaseUnit)chariot1).CanMoveTo(0, +1));
+            Assert.True(chariot1.CanMoveTo(0, +1));
         }
 
         /// <summary>
@@ -165,7 +166,8 @@ namespace CivOne.UnitTests
 
             // Establish initial city
             var unit = Game.Instance.GetUnits().First(x => playa == x.Owner);
-            City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            Assert.NotNull(acity);
 
 
             // Confirm it was set up properly
@@ -176,7 +178,8 @@ namespace CivOne.UnitTests
             // find another player
             var otherP = Game.Instance.Players.First(p => p.Civilization.Name != "Chinese");
             var enemyShip = Game.Instance.CreateUnit(UnitType.Trireme, unit.X + 1, unit.Y, Game.Instance.PlayerNumber(otherP));
-            var enemyChariot = Game.Instance.CreateUnit(UnitType.Chariot, unit.X + 1, unit.Y, Game.Instance.PlayerNumber(otherP));
+            var enemyChariot = Game.Instance.CreateUnit(UnitType.Chariot, unit.X + 1, unit.Y, Game.Instance.PlayerNumber(otherP)) as BaseUnit;
+            Assert.NotNull(enemyChariot);
 
             Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(otherP));
             Game.Instance.ActiveUnit = enemyChariot;

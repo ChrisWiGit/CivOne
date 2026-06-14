@@ -19,11 +19,11 @@ namespace CivOne.src
 			bool hasOutOfBoundsCityCoordinates = false,
 			bool hasOutOfBoundsUnitCoordinates = false,
 			bool hasOutOfBoundsUnitGotoCoordinates = false,
-			int[] tradeCityCountsPerCity = null,
-			byte[] cityOwners = null,
-			byte[] unitOwners = null,
+			int[]? tradeCityCountsPerCity = null,
+			byte[]? cityOwners = null,
+			byte[]? unitOwners = null,
 			int? unitsCount = null,
-			int[] fortifiedUnitCountsPerCity = null,
+			int[]? fortifiedUnitCountsPerCity = null,
 			int? fortifiedUnitsCount = null)
 		{
 			var actualCityOwners = cityOwners ?? [1];

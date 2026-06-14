@@ -474,19 +474,19 @@ namespace CivOne.Persistence.Model
 			}
 		}
 
-		private class MockUnitDtoMapperForTesting : DtoMapper<UnitDto, IUnit>
+		private sealed class MockUnitDtoMapperForTesting : DtoMapper<UnitDto, IUnit>
 		{
 			public IUnit FromDto(UnitDto dto) => throw new NotImplementedException();
 			public UnitDto ToDto(IUnit domain) => throw new NotImplementedException();
 		}
 
-		private class MockUnitFactoryForTesting : IUnitFactory
+		private sealed class MockUnitFactoryForTesting : IUnitFactory
 		{
 			public IUnitRestorable Create(string className, byte player, Guid? HomeCityGuid)
 				=> throw new NotImplementedException();
 		}
 
-		private class FixedPlayerOwnerResolver : IPlayerOwnerResolver
+		private sealed class FixedPlayerOwnerResolver : IPlayerOwnerResolver
 		{
 			private readonly byte _ownerId;
 

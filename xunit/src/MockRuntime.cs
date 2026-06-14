@@ -8,21 +8,20 @@ using CivOne.IO;
 
 namespace CivOne.UnitTests
 {
-    #pragma warning disable CS0067 // Events are never used - but required to implement IRuntime
     public sealed class MockRuntime : IRuntime
     {
         private readonly Dictionary<string, string> _settings = new(StringComparer.OrdinalIgnoreCase);
 
-        public event EventHandler Initialize;
-        public event EventHandler Draw;
-        public event EventHandler<UpdateEventArgs> Update;
-        public event EventHandler<KeyboardEventArgs> KeyboardUp;
-        public event EventHandler<KeyboardEventArgs> KeyboardDown;
-        public event EventHandler<ScreenEventArgs> MouseUp;
-        public event EventHandler<ScreenEventArgs> MouseDown;
-        public event EventHandler<ScreenEventArgs> MouseMove;
-        public event EventHandler<ScreenEventArgs> MouseWheel;
-        public Platform CurrentPlatform { get; }
+        public event EventHandler Initialize { add { } remove { } }
+        public event EventHandler Draw { add { } remove { } }
+        public event EventHandler<UpdateEventArgs> Update { add { } remove { } }
+        public event EventHandler<KeyboardEventArgs> KeyboardUp { add { } remove { } }
+        public event EventHandler<KeyboardEventArgs> KeyboardDown { add { } remove { } }
+        public event EventHandler<ScreenEventArgs> MouseUp { add { } remove { } }
+        public event EventHandler<ScreenEventArgs> MouseDown { add { } remove { } }
+        public event EventHandler<ScreenEventArgs> MouseMove { add { } remove { } }
+        public event EventHandler<ScreenEventArgs> MouseWheel { add { } remove { } }
+        public Platform CurrentPlatform { get; } = Platform.Unknown;
 
         public string StorageDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CivOne");
 
@@ -72,7 +71,7 @@ namespace CivOne.UnitTests
             throw new NotImplementedException();
         }
 
-        public string WindowTitle { get; private set; }
+        public string WindowTitle { get; private set; } = "Test Window";
         public void SetWindowTitle(string title) => WindowTitle = title;
         public void PlaySound(string file)
         {
@@ -116,17 +115,7 @@ namespace CivOne.UnitTests
             WindowWidth = 320;
             WindowHeight = 200;
 
-            // This will hopefully cause exceptions in tests.
-            Initialize = null!;
-            Draw = null!;
-            Update = null!;
-            KeyboardUp = null!;
-            KeyboardDown = null!;
-            MouseUp = null!;
-            MouseDown = null!;
-            MouseMove = null!;
-            MouseWheel = null!;
-            WindowTitle = string.Empty;
+            // This will hopefully cause exceptions in tests.            
         }
     }
 }

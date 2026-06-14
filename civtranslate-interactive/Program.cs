@@ -75,7 +75,7 @@ static bool TryParseArguments(string[] args, out string languagePostfix, out str
 			continue;
 		}
 
-		if (arg.StartsWith("-", StringComparison.Ordinal))
+		if (arg.StartsWith('-'))
 		{
 			error = $"Unknown option: {arg}";
 			return false;
