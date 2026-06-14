@@ -53,7 +53,7 @@ namespace CivOne
 			switch (Platform)
 			{
 				case Platform.Windows:
-					return Native.Win32FileDialog(
+					return Win32FileDialog(
 						SDL.GetSDLWindowHandle(_handle),
 						save,
 						title,

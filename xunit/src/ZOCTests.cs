@@ -142,7 +142,6 @@ namespace CivOne.UnitTests
             // give human a unit
             var chariot1 = Game.Instance.CreateUnit(UnitType.Chariot, 52, 13, Game.Instance.PlayerNumber(playa)) as BaseUnit;
             Assert.NotNull(chariot1);
-
             // try to move the human unit down to enemy city
             Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
             Game.Instance.ActiveUnit = chariot1;
@@ -153,7 +152,7 @@ namespace CivOne.UnitTests
         /// Common setup for MarineAttackTests.
         /// </summary>
         /// <returns>the chariot onboard a ship</returns>
-        private IUnit SetupMarineAttackTest()
+        private BaseUnit SetupMarineAttackTest()
         {
             // Issue #116: in MicroproseCiv, can move from ship to any unoccupied land space. Broken after 
             // changes for issue #93 [see above]
@@ -169,6 +168,7 @@ namespace CivOne.UnitTests
             City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
             Assert.NotNull(acity);
 
+            Assert.NotNull(acity);
 
             // Confirm it was set up properly
             ITile tile = Map.Instance[unit.X, unit.Y];
@@ -184,6 +184,8 @@ namespace CivOne.UnitTests
             Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(otherP));
             Game.Instance.ActiveUnit = enemyChariot;
 
+            Assert.NotNull(enemyShip);
+            Assert.NotNull(enemyChariot);
             return enemyChariot;
         }
 
@@ -193,6 +195,7 @@ namespace CivOne.UnitTests
             // Test a shipborne unit can land on an location next to an enemy city
             // Location '1', see setup routine above
             BaseUnit enemyChariot = (BaseUnit)SetupMarineAttackTest();
+            Assert.NotNull(enemyChariot);
             Assert.True(enemyChariot.CanMoveTo(-1, -1));
         }
 

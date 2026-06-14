@@ -5,6 +5,7 @@ using CivOne.Tiles;
 
 namespace CivOne
 {
+	#pragma warning disable CA1822 // Mark members as static
 	public class CityLoadGame
 	{
 		public List<ITile> GetResourceTilesFromGameData(City city, byte[] gameData)

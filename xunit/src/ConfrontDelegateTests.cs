@@ -73,7 +73,7 @@ namespace CivOne.UnitTests
 			// Arrange
 			_humanPlayer.Government = new Democracy();
 			BaseUnit attackingUnit = CreateUnit(UnitType.Chariot, 46, 30, _humanPlayer);
-			ITile moveTarget = CreateUnit(UnitType.Militia, 47, 30, Game.Instance.GetPlayer(0)).Tile;
+			ITile moveTarget = CreateUnit(UnitType.Militia, 47, 30, Game.Instance.GetPlayer(0)!).Tile;
 
 			// Act
 			bool actual = _testee.AllowedToConfrontInDemocracy(attackingUnit, moveTarget);
@@ -104,7 +104,7 @@ namespace CivOne.UnitTests
 			// Arrange
 			_humanPlayer.Government = new Democracy();
 			BaseUnit attackingUnit = CreateUnit(UnitType.Chariot, 50, 30, _humanPlayer);
-			ITile moveTarget = Game.Instance.AddCity(_enemyPlayer, 0, 51, 30).Tile;
+			ITile moveTarget = Game.Instance.AddCity(_enemyPlayer, 0, 51, 30)!.Tile;
 
 			// Act
 			bool actual = _testee.AllowedToConfrontInDemocracy(attackingUnit, moveTarget);
@@ -132,6 +132,6 @@ namespace CivOne.UnitTests
 			=> Game.Instance.Players.Where(player => player != null && !player.IsHuman && player.Civilization is not Barbarian).Take(count).ToArray();
 
 		private static BaseUnit CreateUnit(UnitType unitType, int x, int y, Player owner)
-			=> (BaseUnit)Game.Instance.CreateUnit(unitType, x, y, Game.Instance.PlayerNumber(owner));
+			=> (BaseUnit)Game.Instance.CreateUnit(unitType, x, y, Game.Instance.PlayerNumber(owner))!;
 	}
 }

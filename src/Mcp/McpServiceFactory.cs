@@ -15,11 +15,11 @@ namespace CivOne.Mcp
 	{
 		public static IMcpService Create(IRuntime runtime)
 		{
-			if (runtime == null) throw new ArgumentNullException(nameof(runtime));
+			ArgumentNullException.ThrowIfNull(runtime);
 			if (!runtime.Settings.McpEnabled)
 				return new McpNoopService();
 
-			string artifactRootFolder = runtime.Settings.Get<string>("mcp-artifacts");
+			string? artifactRootFolder = runtime.Settings.Get<string>("mcp-artifacts");
 			if (string.IsNullOrWhiteSpace(artifactRootFolder))
 				artifactRootFolder = Path.Combine(runtime.StorageDirectory, "temp", "mcp-runs");
 
@@ -57,10 +57,9 @@ namespace CivOne.Mcp
 				new GameGetCitiesToolHandler(snapshotProvider, jsonSaveGameStateWriter, maxJsonChars)
 			];
 
-			IReadOnlyList<ToolDefinition> definitions = realHandlers
+			IReadOnlyList<ToolDefinition> definitions = [.. realHandlers
 				.Select(h => h.Definition)
-				.Where(d => d != null)
-				.ToList();
+				.OfType<ToolDefinition>()];
 
 			// Standard MCP meta-handlers
 			IMcpToolHandler[] metaHandlers =

@@ -12,10 +12,10 @@ namespace CivOne.UnitTests
         public int Difficulty { get; set; }
         public int MaxDifficulty { get; set; }
 
-        public Func<byte, Player> OnGetPlayer { get; set; }
-        public Func<int, int, IUnit[]> OnGetUnits { get; set; }
-        public Func<Type, bool> OnWonderObsoleteByType { get; set; }
-        public Func<IWonder, bool> OnWonderObsolete { get; set; }
+        public Func<byte, Player>? OnGetPlayer { get; set; }
+        public Func<int, int, IUnit[]>? OnGetUnits { get; set; }
+        public Func<Type, bool>? OnWonderObsoleteByType { get; set; }
+        public Func<IWonder, bool>? OnWonderObsolete { get; set; }
 
         public Player GetPlayer(byte playerId)
             => OnGetPlayer?.Invoke(playerId)

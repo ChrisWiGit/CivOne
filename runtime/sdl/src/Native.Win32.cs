@@ -158,7 +158,7 @@ namespace CivOne
 			public string lpstrFileTitle;
 			public int nMaxFileTitle;
 			[MarshalAs(UnmanagedType.LPWStr)]
-			public string lpstrInitialDir;
+			public string? lpstrInitialDir;
 			[MarshalAs(UnmanagedType.LPWStr)]
 			public string lpstrTitle;
 			public int Flags;
@@ -198,7 +198,7 @@ namespace CivOne
 			return normalized + "\0\0";
 		}
 
-		internal static string Win32FileDialog(
+		internal static string? Win32FileDialog(
 			IntPtr ownerHwnd,
 			bool save,
 			string title,
@@ -225,7 +225,7 @@ namespace CivOne
 
 				OpenFilename ofn = new()
 				{
-					lStructSize = Marshal.SizeOf(typeof(OpenFilename)),
+					lStructSize = Marshal.SizeOf<OpenFilename>(),
 					hwndOwner = ownerHwnd,
 					hInstance = IntPtr.Zero,
 					lpstrInitialDir = null,

@@ -393,7 +393,7 @@ namespace CivOne.Persistence.Model
 
 
 		// Mock implementations for testing
-		private class MockGameInstanceForTesting : IPlayerGame
+		private sealed class MockGameInstanceForTesting : IPlayerGame
 		{
 			private readonly List<IPlayer> _players;
 
@@ -422,7 +422,7 @@ namespace CivOne.Persistence.Model
 			public void SetAdvanceOrigin(IAdvance advance, Player player) => throw new NotImplementedException();
 		}
 
-		private class MockPlayerFactoryForTesting : IPlayerFactory
+		private sealed class MockPlayerFactoryForTesting : IPlayerFactory
 		{
 			private readonly List<IPlayerRestorable> _players;
 
@@ -439,13 +439,13 @@ namespace CivOne.Persistence.Model
 			}
 		}
 
-		private class MockUnitFactoryForTesting : IUnitFactory
+		private sealed class MockUnitFactoryForTesting : IUnitFactory
 		{
 			public IUnitRestorable Create(string className, byte player, Guid? HomeCityGuid)
 				=> new MockedIUnit { Owner = player, TranslatedName = className, Name = className };
 		}
 
-		private class FixedPlayerOwnerResolver : IPlayerOwnerResolver
+		private sealed class FixedPlayerOwnerResolver : IPlayerOwnerResolver
 		{
 			public bool TryResolveOwnerId(IPlayer player, out byte ownerId)
 			{

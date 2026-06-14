@@ -18,9 +18,10 @@ namespace CivOne.UnitTests
 				.Where(player => player != null && !player.IsHuman && player.Civilization is not Barbarian)
 				.Take(count)
 				.ToArray();
+			Assert.NotNull(players);
 
 			Assert.True(players.Length >= count, $"Expected at least {count} non-human, non-barbarian players in test setup.");
-			return players;
+			return players!;
 		}
 
 		[Fact]
@@ -29,7 +30,7 @@ namespace CivOne.UnitTests
 			// Arrange
 			var game = Game.Instance;
 			var player = GetAiPlayersExcludingBarbarians(game, 1).Single();
-			City city = game.AddCity(player, 0, 40, 30);
+			City? city = game.AddCity(player, 0, 40, 30);
 			Assert.NotNull(city);
 
 			player.AddAdvance(new Trade());
@@ -41,8 +42,9 @@ namespace CivOne.UnitTests
 
 			for (int i = 0; i < 4; i++)
 			{
-				var unit = game.CreateUnit(UnitType.Militia, city.X, city.Y, game.PlayerNumber(player));
-				((BaseUnit)unit).SetHome(city);
+				var unit = game.CreateUnit(UnitType.Militia, city.X, city.Y, game.PlayerNumber(player)) as BaseUnit;
+				Assert.NotNull(unit);
+				unit.SetHome(city);
 			}
 
 			// Act

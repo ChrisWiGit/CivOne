@@ -13,7 +13,7 @@ namespace CivOne.UnitTests
 	{
 		private readonly string _storageDirectory;
 		private readonly IHallOfFameFileRepository _repository;
-		private readonly IHallOfFamePersistService _persistService;
+		private readonly HallOfFamePersistService _persistService;
 
 		public HallOfFameCommandServiceTests()
 		{
@@ -29,7 +29,7 @@ namespace CivOne.UnitTests
 			_persistService.AddEntry(_storageDirectory, CreateEntry("Old Leader", score: 999));
 			HallOfFameEntry currentHumanEntry = CreateEntry("Current Human", score: 123);
 			IHallOfFameEntryComposerService composer = new StubComposer(currentHumanEntry);
-			IHallOfFameCommandService testee = new HallOfFameCommandService(
+			HallOfFameCommandService testee = new(
 				storageDirectory: _storageDirectory,
 				persistService: _persistService,
 				fileRepository: _repository,
@@ -50,7 +50,7 @@ namespace CivOne.UnitTests
 			// Arrange
 			HallOfFameEntry currentHumanEntry = CreateEntry("Composer Human", score: 321);
 			IHallOfFameEntryComposerService composer = new StubComposer(currentHumanEntry);
-			IHallOfFameCommandService testee = new HallOfFameCommandService(
+			HallOfFameCommandService testee = new(
 				storageDirectory: _storageDirectory,
 				persistService: _persistService,
 				fileRepository: _repository,
@@ -72,7 +72,7 @@ namespace CivOne.UnitTests
 			// Arrange
 			_persistService.AddEntry(_storageDirectory, CreateEntry("Old Leader", score: 999));
 			IHallOfFameEntryComposerService composer = new ThrowingComposer();
-			IHallOfFameCommandService testee = new HallOfFameCommandService(
+			HallOfFameCommandService testee = new(
 				storageDirectory: _storageDirectory,
 				persistService: _persistService,
 				fileRepository: _repository,

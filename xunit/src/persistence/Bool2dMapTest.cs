@@ -114,5 +114,47 @@ namespace CivOne.Persistence.Model
             var deserialized = deserializer.Deserialize<Bool2dMap>(yaml);
             Assert.Equal(_testee.Rows, deserialized.Rows);
         }
+
+        [Fact]
+        public void TestYamlWriteNullThrowsArgumentNullException()
+        {
+            var converter = new Bool2dMapYamlTypeConverter();
+
+            Assert.Throws<ArgumentNullException>(() => converter.WriteYaml(null!, null, typeof(Bool2dMap), null!));
+        }
+
+        [Fact]
+        public void TestYamlWriteWrongTypeThrowsArgumentException()
+        {
+            var converter = new Bool2dMapYamlTypeConverter();
+
+            Assert.Throws<ArgumentException>(() => converter.WriteYaml(null!, new object(), typeof(object), null!));
+        }
+
+        [Fact]
+        public void TestYamlReadNullReturnsEmptyMap()
+        {
+            var deserializer = new DeserializerBuilder()
+                .WithTypeConverter(new Bool2dMapYamlTypeConverter()).Build();
+
+            var deserialized = deserializer.Deserialize<Bool2dMap>("null");
+
+            Assert.Equal(0, deserialized.Width());
+            Assert.Equal(0, deserialized.Height());
+            Assert.Empty(deserialized.Rows);
+        }
+
+        [Fact]
+        public void TestYamlReadEmptyArrayReturnsEmptyMap()
+        {
+            var deserializer = new DeserializerBuilder()
+                .WithTypeConverter(new Bool2dMapYamlTypeConverter()).Build();
+
+            var deserialized = deserializer.Deserialize<Bool2dMap>("[]");
+
+            Assert.Equal(0, deserialized.Width());
+            Assert.Equal(0, deserialized.Height());
+            Assert.Empty(deserialized.Rows);
+        }
     }
 }

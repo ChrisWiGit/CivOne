@@ -7,11 +7,11 @@ using CivOne.Advances;
 
 namespace CivOne.UnitTests
 {
-    partial class MockedPlayer : Player
+    sealed partial class MockedPlayer : Player
     {
         private int citiesCount;
-        private City[] _cities;
-        private ICity[] _citiesInterface;
+        private City[] _cities = [];
+        private ICity[] _citiesInterface = [];
 
         public MockedPlayer() : base()
         {
@@ -67,9 +67,9 @@ namespace CivOne.UnitTests
         public override bool HasAdvance<T>()
              => _advances.Any(a => a.GetType() == typeof(T));
 
-        public override bool HasAdvance(IAdvance advance)
+        public override bool HasAdvance(IAdvance? advance)
         {
-            return _advances.Any(a => a.GetType() == advance.GetType());
+            return _advances.Any(a => a.GetType() == advance?.GetType());
         }
 
         private HashSet<Type> _wonderEffects = new HashSet<Type>();

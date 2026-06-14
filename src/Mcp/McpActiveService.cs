@@ -43,12 +43,12 @@ namespace CivOne.Mcp
 			const int maxRequestsPerTick = 4;
 			for (int i = 0; i < maxRequestsPerTick; i++)
 			{
-				if (!_transport.TryRead(out McpRequest request)) return;
+				if (!_transport.TryRead(out McpRequest? request)) return;
 
 				McpResponse? response = null;
 				try
 				{
-					if (string.Equals(request.Method, "initialize", StringComparison.Ordinal))
+					if (string.Equals(request!.Method, "initialize", StringComparison.Ordinal))
 					{
 						response = HandleInitialize(request);
 					}
@@ -75,13 +75,13 @@ namespace CivOne.Mcp
 					{
 						response = McpResponse.Failure(request.Id, -32601, "Method not found", request.Method);
 					}
-					else if (!_registry.TryGet(request.Method, out IMcpToolHandler handler))
+					else if (!_registry.TryGet(request.Method, out IMcpToolHandler? handler))
 					{
 						response = McpResponse.Failure(request.Id, -32601, "Method not found", request.Method);
 					}
 					else
 					{
-						response = handler.Handle(request);
+						response = handler!.Handle(request);
 					}
 				}
 				catch (Exception ex)

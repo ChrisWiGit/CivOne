@@ -64,8 +64,8 @@ namespace CivOne.UnitTests.Persistence
         private sealed class MockedGameSnapshotSource : IGameSnapshotSource
         {
             public int Difficulty { get; set; } = 3;
-            public Player CurrentPlayer { get; set; }
-            public Player HumanPlayer { get; set; }
+            public Player CurrentPlayer { get; set; } = null!;
+            public Player HumanPlayer { get; set; } = null!;
             public Player[] Players { get; set; } = [];
             public List<City> Cities { get; set; } = [];
             public List<IUnit> Units { get; set; } = [];
@@ -90,7 +90,7 @@ namespace CivOne.UnitTests.Persistence
             public int TerrainMasterWord { get; set; }
 
             // Must be null: real GlobalWarmingService would require a live Game/Map context.
-            public IGlobalWarmingService GlobalWarmingService { get; set; } = null;
+            public IGlobalWarmingService GlobalWarmingService { get; set; } = null!;
 
             public (short X, short Y)? GetHumanLastMapPosition() => HumanLastMapPosition;
 

@@ -8,10 +8,10 @@ namespace CivOne.Persistence.Model
     public class MapLocation
     {
         // [Doc("The X coordinate of the location.")]
-        public readonly uint X;
+        public uint X { get; }
 
         // [Doc("The Y coordinate of the location.")]
-        public readonly uint Y;
+        public uint Y { get; }
 
         public MapLocation() : this(0, 0)
 		{

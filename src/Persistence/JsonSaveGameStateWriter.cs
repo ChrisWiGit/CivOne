@@ -17,7 +17,7 @@ namespace CivOne.Persistence
 			return JsonSerializer.Serialize(value, _jsonOptions);
 		}
 
-		public JsonSaveGameStateWriter(JsonSerializerOptions jsonOptions = null)
+		public JsonSaveGameStateWriter(JsonSerializerOptions? jsonOptions = null)
 		{
 			_jsonOptions = jsonOptions ?? new JsonSerializerOptions
 			{
