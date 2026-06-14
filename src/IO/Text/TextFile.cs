@@ -44,7 +44,7 @@ namespace CivOne.IO.Text
 		/// </returns>
 		public string[] GetGameText(string key)
 		{
-			if (_gameTexts.TryGetValue(key, out string[] value))
+			if (_gameTexts.TryGetValue(key, out string[]? value))
 			{
 				return value;
 			}
@@ -69,7 +69,7 @@ namespace CivOne.IO.Text
 		/// Active language postfix.
 		/// Not used directly because full cache reload is required.
 		/// </param>
-		public void OnLanguageChanged(string activeLanguagePostfix)
+		public void OnLanguageChanged(string? _activeLanguagePostfix)
 		{
 			Reset();
 		}

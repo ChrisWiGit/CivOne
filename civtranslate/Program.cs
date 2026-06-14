@@ -488,7 +488,7 @@ static TranslationFile ReadTranslationFileIfExists(string outputFile)
 			continue;
 		}
 
-		if (line.StartsWith("#"))
+		if (line.StartsWith('#'))
 		{
 			comments.Add(line);
 			continue;

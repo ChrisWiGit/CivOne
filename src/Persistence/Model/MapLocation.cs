@@ -45,7 +45,7 @@ namespace CivOne.Persistence.Model
         public static MapLocation operator +(MapLocation left, MapLocation right) => new(left.X + right.X, left.Y + right.Y);
         public static MapLocation operator -(MapLocation left, MapLocation right) => new(left.X - right.X, left.Y - right.Y);
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is not MapLocation other) return false;
             return X == other.X && Y == other.Y;

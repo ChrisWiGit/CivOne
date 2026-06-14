@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 
 namespace CivTranslateMergeKeys;
@@ -65,7 +66,7 @@ internal sealed class KeyValueMergeWorkflow : IKeyValueMergeWorkflow
 		for (int i = 0; i < lines.Length; i++)
 		{
 			string line = lines[i];
-			if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#", StringComparison.Ordinal))
+			if (string.IsNullOrWhiteSpace(line) || line.StartsWith('#'))
 			{
 				continue;
 			}
@@ -115,7 +116,7 @@ internal sealed class KeyValueMergeWorkflow : IKeyValueMergeWorkflow
 
 		foreach (KeyValueEntry entry in missingEntries)
 		{
-			builder.AppendLine($"{EscapeEquals(entry.NormalizedKey)}={EscapeEquals(entry.Value)}");
+			builder.AppendLine(CultureInfo.InvariantCulture, $"{EscapeEquals(entry.NormalizedKey)}={EscapeEquals(entry.Value)}");
 		}
 
 		File.WriteAllText(targetPath, builder.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
