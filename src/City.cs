@@ -1420,7 +1420,7 @@ namespace CivOne
 					if (!hillsNearby || !buildingsOtherThanPalace.Any())
 						return;
 
-					IBuilding buildingToDestroy = buildingsOtherThanPalace[RandomService.NextInt(0, buildingsOtherThanPalace.Count)];
+					IBuilding buildingToDestroy = RandomService.NextElement(buildingsOtherThanPalace);
 					RemoveBuilding(buildingToDestroy);
 
 					message.Add(TranslateFormatted("Earthquake in {0}!", Name));
@@ -1507,7 +1507,7 @@ namespace CivOne
 
 					if (buildingsOtherThanPalace.Any() && !hasAqueduct && hasConstruction)
 					{
-						IBuilding buildingToDestroy = buildingsOtherThanPalace[RandomService.NextInt(0, buildingsOtherThanPalace.Count)];
+						IBuilding buildingToDestroy = RandomService.NextElement(buildingsOtherThanPalace);
 						RemoveBuilding(buildingToDestroy);
 
 						message.Add(TranslateFormatted("Fire in {0}!", Name));
@@ -1539,8 +1539,8 @@ namespace CivOne
 				case 9:
 					// Riot, scandal, corruption
 
-					string[] disasterTypes = { "Scandal", "Riot", "Corruption" };
-					string disasterType = disasterTypes[RandomService.NextInt(0, disasterTypes.Length)];
+					string[] disasterTypes = ["Scandal", "Riot", "Corruption"];
+					string disasterType = RandomService.NextElement(disasterTypes);
 					string buildingDemanded = "";
 					CitizenTypes citizenTypes = GetCitizenTypes();
 

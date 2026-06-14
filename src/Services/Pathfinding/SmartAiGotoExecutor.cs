@@ -37,7 +37,7 @@ namespace CivOne.Services.Pathfinding
 				return ResetGotoAndContinue(unit);
 			}
 
-			ITile nextTile = ResolveNextTile(unit, pathStep);
+			ITile? nextTile = ResolveNextTile(unit, pathStep);
 			if (nextTile == null)
 			{
 				return ResetGotoAndContinue(unit);
@@ -57,7 +57,7 @@ namespace CivOne.Services.Pathfinding
 			return pathfinder.GetNextStep(unit, unit.Goto);
 		}
 
-		private static ITile ResolveNextTile(IUnit unit, PathStepResult pathStep) =>
+		private static ITile? ResolveNextTile(IUnit unit, PathStepResult pathStep) =>
 			unit.MoveTargets.FirstOrDefault(x => x.X == pathStep.NextX && x.Y == pathStep.NextY);
 
 		private static bool CanHandle(IUnit unit) => unit != null && !unit.Goto.IsEmpty;
@@ -74,12 +74,12 @@ namespace CivOne.Services.Pathfinding
 				return true;
 			}
 
-			if (unit.Role == UnitRole.Transport && _randomService.NextInt(0, 100) < 67)
+			if (unit.Role == UnitRole.Transport && _randomService.Hit(67))
 			{
 				return true;
 			}
 
-			if (unit.Attack < nextTile.Units.Max(x => x.Defense) && _randomService.NextInt(0, 100) < 50)
+			if (unit.Attack < nextTile.Units.Max(x => x.Defense) && _randomService.Hit(50))
 			{
 				return true;
 			}
@@ -99,12 +99,12 @@ namespace CivOne.Services.Pathfinding
 
 		private AiGotoExecutionResult HandleMoveFailure(IUnit unit)
 		{
-			if (_randomService.NextInt(0, 100) < 67)
+			if (_randomService.Hit(67))
 			{
 				return ResetGotoAndContinue(unit);
 			}
 
-			if (_randomService.NextInt(0, 100) < 67)
+			if (_randomService.Hit(67))
 			{
 				unit.SkipTurn();
 				return AiGotoExecutionResult.TurnComplete;

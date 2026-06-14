@@ -50,7 +50,7 @@ namespace CivOne.Units
 			if (!possible.Any())
 				return null;
 
-			return possible[_randomService.NextInt(0, possible.Count)];
+			return _randomService.NextElement(possible);
 		}
 
 		public string Sabotage(City city)
@@ -59,20 +59,19 @@ namespace CivOne.Units
 
 			IList<IBuilding> buildings = [.. city.Buildings.Where(b => b.GetType() != typeof(Buildings.Palace))];
 
-			int random = _randomService.NextInt(0, buildings.Count);
+			int random = _randomService.NextInt(buildings.Count + 1); // +1 to allow for the possibility of sabotaging production instead of a building
 
 			if (random == buildings.Count)
 			{
 				city.Shields = 0;
-				string production = (city.CurrentProduction as ICivilopedia)!.TranslatedName ?? "???";
-				return $"{production} production sabotaged";
+				string? production = (city.CurrentProduction as ICivilopedia)?.TranslatedName;
+				
+				if (string.IsNullOrEmpty(production)) return Translate("City production sabotaged");
+				return TranslateFormatted("City production sabotaged: {0}", production);
 			}
-			else
-			{
-				// sabotage a building
-				city.RemoveBuilding(buildings[random]);
-				return $"{buildings[random].TranslatedName} sabotaged";
-			}
+		
+			city.RemoveBuilding(buildings[random]);
+			return TranslateFormatted("{0} sabotaged", buildings[random].TranslatedName);
 		}
 
 		internal override bool Confront(int relX, int relY)
@@ -88,7 +87,7 @@ namespace CivOne.Units
 				}
                 else if (Human == targetCity.CityOwnerPlayer)
                 {
-                    GameTask.Enqueue(Message.Spy("Spies report:", $"{Sabotage(targetCity)}", $"in {targetCity.Name}"));
+                    GameTask.Enqueue(Message.Spy(TranslateFormatted("Spies report: {0} in {1}", Sabotage(targetCity), targetCity.Name)));
                 }
 				else
 					Sabotage(targetCity);

@@ -72,14 +72,15 @@ namespace CivOne
 
 		private void AddStartingUnits(byte player)
 		{
+			var randomService = RandomServiceFactory.Create();
 			// Translated from this post by darkpanda, might contain errors:
 			// http://forums.civfanatics.com/showthread.php?p=12895306&highlight=starting+position#post12895306
 			int loopCounter = 0;
 			while (loopCounter++ < 2000)
 			{
 				// Choose a map square randomly
-				int x = RandomServiceFactory.Create().NextInt(0, Map.WIDTH);
-				int y = RandomServiceFactory.Create().NextInt(2, Map.HEIGHT - 2);
+				int x = randomService.NextInt(0, Map.WIDTH);
+				int y = randomService.NextInt(2, Map.HEIGHT - 2);
 				if (Map.FixedStartPositions && GameTurn == 0)
 				{
 					// Map position is fixed, don't check anything
@@ -217,11 +218,12 @@ namespace CivOne
 				bonus -= 3;
 			}
 
+			var randomService = RandomServiceFactory.Create();
 			// If the Bonus value is (still) greater than zero, then the civ gains a number of technologies equal to the Bonus value.
 			while (bonus > 0)
 			{
-				IAdvance[] available = _players[player].AvailableResearch.ToArray();
-				int advanceId = RandomServiceFactory.Create().NextInt(0, 72);
+				IAdvance[] available = [.. _players[player].AvailableResearch];
+				int advanceId = randomService.NextInt(0, 72);
 				for (int i = 0; i < 1000; i++)
 				{
 					if (!available.Any(a => a.Id == (advanceId + i) % 72)) continue;

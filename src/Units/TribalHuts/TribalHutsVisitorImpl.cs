@@ -43,7 +43,7 @@ namespace CivOne.Units.TribalHuts
 
 		public void ExecuteRandomTribalHutEvent()
 		{
-			int eventIndex = random.NextInt(0, events.Length);
+			int eventIndex = random.NextIndex(events);
 
 			Debug.Assert(eventIndex >= 0 && eventIndex < events.Length, "Invalid event index");
 

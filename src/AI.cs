@@ -167,7 +167,7 @@ namespace CivOne
 						else if (tiles[0].DistanceTo(unit.Goto) == distance)
 						{
 							// Distance is unchanged, 50% chance to cancel goto
-							if (_randomService.NextInt(0, 100) < 50)
+							if (_randomService.Hit(50))
 							{
 								unit.Goto = Point.Empty;
 								continue;
@@ -183,14 +183,14 @@ namespace CivOne
 								continue;
 							}
 
-							if (unit.Role == UnitRole.Transport && _randomService.NextInt(0, 100) < 67)
+							if (unit.Role == UnitRole.Transport && _randomService.Hit(67))
 							{
 								// 67% chance of cancelling attack with transport unit
 								unit.Goto = Point.Empty;
 								continue;
 							}
 
-							if (unit.Attack < tiles[0].Units.Max(x => x.Defense) && _randomService.NextInt(0, 100) < 50)
+							if (unit.Attack < tiles[0].Units.Max(x => x.Defense) && _randomService.Hit(50))
 							{
 								// 50% of attacking cancelling attack of stronger unit
 								unit.Goto = Point.Empty;
@@ -201,12 +201,12 @@ namespace CivOne
 						if (!unit.MoveTo(tiles[0].X - unit.X, tiles[0].Y - unit.Y))
 						{
 							// The code below is to prevent the game from becoming stuck...
-							if (_randomService.NextInt(0, 100) < 67)
+							if (_randomService.Hit(67))
 							{
 								unit.Goto = Point.Empty;
 								continue;
 							}
-							else if (_randomService.NextInt(0, 100) < 67)
+							else if (_randomService.Hit(67))
 							{
 								unit.SkipTurn();
 								return;
@@ -234,7 +234,7 @@ namespace CivOne
 			// No further research possible
 			if (advances.Length == 0) return;
 
-			Player.CurrentResearch = advances[_randomService.NextInt(0, advances.Length)];
+			Player.CurrentResearch = _randomService.NextElement(advances);
 
 			Log($"AI: {Player.LeaderName} of the {Player.TribeNamePlural} starts researching {Player.CurrentResearch.TranslatedName}.");
 		}

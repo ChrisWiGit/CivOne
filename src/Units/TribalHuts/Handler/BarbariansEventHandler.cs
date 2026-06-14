@@ -45,7 +45,7 @@ namespace CivOne.Units.TribalHuts
 
 					if (hasCity || hasUnits || isOcean || isPolar) continue;
 
-					if (random.NextInt(0, 10) < 6) continue;
+					if (random.Hit(6,10)) continue;
 
 					gameInstance.CreateUnit(GetRandomBarbarianUnitType(), tile.X, tile.Y, 0, true);
 
@@ -58,7 +58,7 @@ namespace CivOne.Units.TribalHuts
 
 		private UnitType GetRandomBarbarianUnitType()
 		{
-			return random.NextInt(0, 100) < 50 ? UnitType.Cavalry : UnitType.Legion;
+			return random.Hit(50) ? UnitType.Cavalry : UnitType.Legion;
 		}
 
 		public void PostExecute()
