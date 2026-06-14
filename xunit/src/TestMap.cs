@@ -1,6 +1,6 @@
 namespace CivOne.src
 {
-	class MapGenerationWithoutThread : Map
+	sealed class MapGenerationWithoutThread : Map
 	{
 		protected override void TaskRunEarthMapGeneration()
 		{

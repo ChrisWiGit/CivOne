@@ -19,7 +19,8 @@ namespace CivOne.UnitTests
             //  M P P
 
             var unit = Game.Instance.GetUnits().First(x => playa == x.Owner);
-            City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            City? city = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            Assert.NotNull(city);
 
             ITile tile = Map.Instance[unit.X, unit.Y];
             Assert.True(tile.HasCity);

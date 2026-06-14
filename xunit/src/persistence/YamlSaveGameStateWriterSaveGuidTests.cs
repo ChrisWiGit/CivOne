@@ -50,7 +50,10 @@ namespace CivOne.UnitTests.Persistence
 					Difficulty = DifficultyLevel.Chieftain,
 					GameTurn = 1,
 					Players = [],
-					Map = null
+					Map = new MapDto
+					{
+						Tiles = new Map2d<TileDto>(0, 0)
+					}
 				};
 		}
 	}

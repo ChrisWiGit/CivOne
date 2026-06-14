@@ -19,9 +19,9 @@ namespace CivOne.Services.Pathfinding
 			_randomService = randomService ?? throw new ArgumentNullException(nameof(randomService));
 		}
 
-		public AiGotoExecutionResult TryExecute(IUnit unit)
+		public AiGotoExecutionResult TryExecute(IUnit? unit)
 		{
-			if (!CanHandle(unit))
+			if (!CanHandle(unit) || unit == null)
 			{
 				return AiGotoExecutionResult.NotHandled;
 			}
@@ -60,7 +60,7 @@ namespace CivOne.Services.Pathfinding
 		private static ITile? ResolveNextTile(IUnit unit, PathStepResult pathStep) =>
 			unit.MoveTargets.FirstOrDefault(x => x.X == pathStep.NextX && x.Y == pathStep.NextY);
 
-		private static bool CanHandle(IUnit unit) => unit != null && !unit.Goto.IsEmpty;
+		private static bool CanHandle(IUnit? unit) => unit != null && !unit.Goto.IsEmpty;
 
 		private bool ShouldCancelAttack(IUnit unit, ITile nextTile)
 		{

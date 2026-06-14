@@ -141,10 +141,7 @@ namespace CivOne.UnitTests
 
 			public bool Hit(int numerator, int denominator)
 			{
-				if (denominator <= 0)
-				{
-					throw new ArgumentOutOfRangeException(nameof(denominator));
-				}
+				ArgumentOutOfRangeException.ThrowIfNegativeOrZero(denominator);
 
 				if (numerator <= 0)
 				{

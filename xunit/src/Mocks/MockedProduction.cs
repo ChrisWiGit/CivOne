@@ -7,7 +7,7 @@ using CivOne.UserInterface;
 namespace CivOne.UnitTests
 {
 
-	class MockedProduction : IProduction
+	sealed class MockedProduction : IProduction
 	{
         public MockedProduction()
         {

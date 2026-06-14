@@ -67,7 +67,10 @@ namespace CivOne.UnitTests
 					HumanPlayer = 0,
 					CurrentPlayer = 0,
 					Players = [],
-					Map = null
+					Map = new MapDto
+					{
+						Tiles = new Map2d<TileDto>(0, 0)
+					}
 				}
 			};
 

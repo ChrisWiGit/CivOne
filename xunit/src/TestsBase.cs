@@ -71,6 +71,7 @@ namespace CivOne.src
             Game.Wipe();
             runtime?.Dispose();
             RuntimeHandler.Wipe();
+            GC.SuppressFinalize(this);
             GC.Collect();
         }
     }

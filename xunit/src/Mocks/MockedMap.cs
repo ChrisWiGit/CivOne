@@ -5,7 +5,7 @@ using CivOne.Tiles;
 namespace CivOne.UnitTests
 {
 
-    class MockedMap : IMap
+    sealed class MockedMap : IMap
     {
         private readonly List<ICityOnContinent> _continentCities = new();
 

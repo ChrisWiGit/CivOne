@@ -8,7 +8,7 @@ namespace CivOne.Persistence.Model
 {
 	public class ProductionDtoMapperTest
 	{
-		private readonly IReflect _reflect = new MockedReflect();
+		private readonly MockedReflect _reflect = new();
 		private readonly ProductionDtoMapper _testee;
 		private readonly ProductionDto _originalDto;
 

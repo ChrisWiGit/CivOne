@@ -95,7 +95,7 @@ namespace CivOne.UnitTests
 				CreatedDirectories.Add(path);
 			}
 
-			public string GetDirectoryName(string path) => Path.GetDirectoryName(path);
+			public string GetDirectoryName(string path) => Path.GetDirectoryName(path) ?? string.Empty;
 
 			public string GetFileName(string path) => Path.GetFileName(path);
 

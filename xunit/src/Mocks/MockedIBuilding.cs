@@ -10,7 +10,7 @@ using CivOne.Enums;
 
 namespace CivOne.UnitTests
 {
-	partial class MockedIBuilding : IBuilding
+	sealed partial class MockedIBuilding : IBuilding
 	{
         public MockedIBuilding()
         {

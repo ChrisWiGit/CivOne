@@ -1,6 +1,7 @@
 namespace CivOne.Persistence.Model
 {
 	using System.Collections.Generic;
+	using System.Globalization;
 	using Xunit;
 
 	/// <summary>
@@ -108,7 +109,7 @@ namespace CivOne.Persistence.Model
 			/// <param name="parameters">Template parameters.</param>
 			public void Log(string text, params object[] parameters)
 			{
-				Messages.Add(string.Format(text, parameters));
+				Messages.Add(string.Format(CultureInfo.InvariantCulture, text, parameters));
 			}
 		}
 	}

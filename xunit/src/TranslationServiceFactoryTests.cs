@@ -176,9 +176,12 @@ namespace CivOne.UnitTests
 		{
 			public List<string> Notifications { get; } = [];
 
-			public void OnLanguageChanged(string activeLanguagePostfix)
+			public void OnLanguageChanged(string? activeLanguagePostfix)
 			{
-				Notifications.Add(activeLanguagePostfix);
+				if (activeLanguagePostfix is not null)
+				{
+					Notifications.Add(activeLanguagePostfix);
+				}
 			}
 		}
 	}

@@ -10,7 +10,7 @@ namespace CivOne.UnitTests
 	/// </summary>
 	public sealed class HallOfFameDisplayDataServiceTests
 	{
-		private readonly IHallOfFameDisplayDataService _testee;
+		private readonly HallOfFameDisplayDataService _testee;
 
 		public HallOfFameDisplayDataServiceTests()
 		{

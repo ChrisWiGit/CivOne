@@ -22,7 +22,7 @@ namespace CivOne.UnitTests
 		public byte CityOwnerPlayerIndex { get; set; }
 
 
-		public ITile Tile { get; set; }
+        public ITile Tile { get; set; } = new MockedGrassland(0, 0);
 
 		public int ContinentId { get; set; }
 		public IPlayer Player => _player!;

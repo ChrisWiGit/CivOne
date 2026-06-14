@@ -229,6 +229,7 @@ namespace CivOne.Persistence.Model
 				[nameof(CityDto.VisibleSizes)] = () => Assert.Equal(expected.VisibleSizes, actual.VisibleSizes),
 				[nameof(CityDto.CurrentProduction)] = () =>
 				{
+					Assert.NotNull(expected.CurrentProduction);
 					Assert.NotNull(actual.CurrentProduction);
 					Assert.Equal(expected.CurrentProduction.ProductionId, actual.CurrentProduction.ProductionId);
 				},

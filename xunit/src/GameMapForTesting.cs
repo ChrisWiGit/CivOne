@@ -5,7 +5,7 @@ namespace CivOne.UnitTests
 	/// <summary>
 	/// Test subclass of GameMap that exposes protected delegate members for unit testing.
 	/// </summary>
-	internal class GameMapForTesting : GameMap
+	internal sealed class GameMapForTesting : GameMap
 	{
 		/// <summary>
 		/// Gets whether the rename dialog is currently active.
