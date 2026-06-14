@@ -25,7 +25,7 @@ namespace CivOne.UnitTests
             ObsoleteTech = null;
             Class = UnitClass.Land;
             Type = UnitType.Settlers;
-            Home = null;
+            Home = null!;
             Role = UnitRole.Settler;
             Attack = 0;
             Defense = 1;
@@ -33,7 +33,7 @@ namespace CivOne.UnitTests
             X = 2;
             Y = 3;
             Goto = new Point(1, 2);
-            Tile = null;
+            Tile = null!;
             Busy = false;
             HasAction = false;
             HasMovesLeft = true;
@@ -44,7 +44,7 @@ namespace CivOne.UnitTests
             Fuel = 0;
             WorkProgress = 0;
             Moving = false;
-            Movement = null;
+            Movement = null!;
             Owner = 0;
             Status = 0;
             order = Order.None;
@@ -55,10 +55,10 @@ namespace CivOne.UnitTests
             MenuItems = [];
             Modifications = [];
             NearestCity = 0;
-            Player = null;
+            Player = null!;
             TranslatedName = "Mocked Unit";
 			Name = "Mocked Unit";
-            Icon = null;
+            Icon = null!;
             PageCount = 0;
             Price = 0;
             BuyPrice = 0;
@@ -74,11 +74,11 @@ namespace CivOne.UnitTests
 			Veteran = veteran;
 		}
 
-		public IAdvance RequiredTech { get; set; }
+		public IAdvance? RequiredTech { get; set; }
 
-		public IWonder RequiredWonder { get; set; }
+		public IWonder? RequiredWonder { get; set; }
 
-		public IAdvance ObsoleteTech { get; set; }
+		public IAdvance? ObsoleteTech { get; set; }
 
 		public UnitClass Class { get; set; }
 
@@ -182,7 +182,7 @@ namespace CivOne.UnitTests
 			throw new NotImplementedException();
 		}
 
-		public void SetHome(City city)
+		public void SetHome(City? city)
 		{
 			throw new NotImplementedException();
 		}

@@ -16,7 +16,7 @@ namespace CivOne.UnitTests
     {
         // The public helper methods are pure calculations (value-in, value-out),
         // so no City/IGame setup is needed; null is safe here.
-        private readonly CityEconomyServiceImpl _service = new(null, null);
+        private readonly CityEconomyServiceImpl _service = new(null!, null!);
 
         [Theory]
         [InlineData(1, 5, 0)]
@@ -96,7 +96,8 @@ namespace CivOne.UnitTests
         public void FoodTotalRecomputesWhenWorkedTileFoodChangesWithinSameTurn()
         {
             var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City city = Game.Instance.AddCity(playa, 0, unit.X, unit.Y);
+            City? city = Game.Instance.AddCity(playa, 0, unit.X, unit.Y);
+            Assert.NotNull(city);
             city.Size = 4;
             city.ResetResourceTiles();
             playa.Government = new Monarchy();
@@ -129,7 +130,8 @@ namespace CivOne.UnitTests
         public void ShieldTotalRecomputesWhenWorkedTileShieldChangesWithinSameTurn()
         {
             var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City city = Game.Instance.AddCity(playa, 0, unit.X, unit.Y);
+            City? city = Game.Instance.AddCity(playa, 0, unit.X, unit.Y);
+            Assert.NotNull(city);
             city.Size = 4;
             city.ResetResourceTiles();
             playa.Government = new Monarchy();
@@ -164,7 +166,7 @@ namespace CivOne.UnitTests
             var field = typeof(City).GetField("_cachedShieldRawStateHash", BindingFlags.Instance | BindingFlags.NonPublic);
             Assert.NotNull(field);
 
-            object rawValue = field.GetValue(city);
+            object? rawValue = field.GetValue(city);
             Assert.NotNull(rawValue);
 
             return (ulong)rawValue;
@@ -174,8 +176,10 @@ namespace CivOne.UnitTests
         public void CalculateBreakdownIncludesTradingRoutesAndWonderRules()
         {
             Player player = playa;
-            City city = Game.Instance.AddCity(player, 0, 40, 30);
-            City tradingCity = Game.Instance.AddCity(player, 1, 42, 30);
+            City? city = Game.Instance.AddCity(player, 0, 40, 30);
+            City? tradingCity = Game.Instance.AddCity(player, 1, 42, 30);
+            Assert.NotNull(city);
+            Assert.NotNull(tradingCity);
 
             city.AddTradingCity(tradingCity);
             city.AddBuilding(new MarketPlace());

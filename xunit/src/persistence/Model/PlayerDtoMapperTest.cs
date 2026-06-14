@@ -401,7 +401,7 @@ namespace CivOne.Persistence.Model
 			}
 		}
 
-		private static void AssertSpaceShipEqual(SpaceShipDto expected, SpaceShipDto actual)
+		private static void AssertSpaceShipEqual(SpaceShipDto? expected, SpaceShipDto? actual)
 		{
 			if (expected == null)
 			{
@@ -434,7 +434,7 @@ namespace CivOne.Persistence.Model
 			private readonly IPlayer _player;
 			private readonly IUnit[] _units;
 
-			public MockPlayerGameForTesting(IPlayer player, IUnit[] units = null)
+			public MockPlayerGameForTesting(IPlayer player, IUnit[]? units = null)
 			{
 				_player = player;
 				_units = units ?? [];

@@ -85,8 +85,8 @@ namespace CivOne.Mcp.Tools
 					"path"));
 			}
 
-			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string? errorMessage))
-				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage, null, null));
+			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto? snapshot, out string? errorCode, out string? errorMessage))
+				return JsonResponse(request.Id, BuildErrorPayload(errorCode!, errorMessage, null, null));
 
 			string normalizedPath = path.Trim();
 			string rootSegment = normalizedPath.Split('.')[0];
@@ -103,7 +103,7 @@ namespace CivOne.Mcp.Tools
 			using JsonDocument jsonDocument = JsonDocument.Parse(rootJson);
 			JsonElement root = jsonDocument.RootElement;
 
-			if (!McpGameStatePathResolver.TryResolve(root, normalizedPath, out JsonElement resolved, out string failedSegment, out string pathErrorMessage))
+			if (!McpGameStatePathResolver.TryResolve(root, normalizedPath, out JsonElement resolved, out string? failedSegment, out string? pathErrorMessage))
 			{
 				return JsonResponse(request.Id, BuildErrorPayload(
 					"INVALID_PATH",

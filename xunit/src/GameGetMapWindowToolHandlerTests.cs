@@ -37,7 +37,8 @@ namespace CivOne.UnitTests
 
 			JsonElement rows = root.GetProperty("data").GetProperty("window").GetProperty("rows");
 			Assert.Equal(1, rows.GetArrayLength());
-			Assert.Equal(4, rows[0].GetString().Length); // 2 tiles * 2 chars per tile
+			Assert.NotNull(rows[0].GetString());
+			Assert.Equal(4, rows[0].GetString()!.Length); // 2 tiles * 2 chars per tile
 		}
 
 		[Fact]
@@ -151,7 +152,7 @@ namespace CivOne.UnitTests
 
 		private sealed class StaticSnapshotProvider(GameStateDto snapshot) : IGameStateDtoSnapshotProvider
 		{
-			public bool TryGetSnapshot(out GameStateDto output, out string errorCode, out string errorMessage)
+			public bool TryGetSnapshot(out GameStateDto? output, out string? errorCode, out string? errorMessage)
 			{
 				output = snapshot;
 				errorCode = null;

@@ -23,7 +23,7 @@ namespace CivOne.Screens.PalaceAssets
 
 		public Picture GetBackground() => _resources["CBACK"];
 
-		public Picture GetGardenBackdrop(byte gardenLevel)
+		public Picture? GetGardenBackdrop(byte gardenLevel)
 		{
 			return gardenLevel switch
 			{
@@ -34,7 +34,7 @@ namespace CivOne.Screens.PalaceAssets
 			};
 		}
 
-		public Picture GetGardenBrush(int gardenIndex, byte gardenLevel)
+		public Picture? GetGardenBrush(int gardenIndex, byte gardenLevel)
 		{
 			if (gardenIndex == 0)
 			{

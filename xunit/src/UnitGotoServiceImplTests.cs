@@ -328,9 +328,9 @@ namespace CivOne.UnitTests
 			public int X { get; }
 			public int Y { get; }
 			public Terrain Type { get; set; } = Terrain.Grassland1;
-			public bool IsOcean { get; set; } = false;
-			public bool Road { get; set; } = false;
-			public bool RailRoad { get; set; } = false;
+			public bool IsOcean { get; set; }
+			public bool Road { get; set; }
+			public bool RailRoad { get; set; }
 			public byte Movement { get; set; } = 2;
 
 			// unused ITile members – minimal stubs
@@ -364,10 +364,10 @@ namespace CivOne.UnitTests
 				throw new System.NotImplementedException();
 			}
 
-			public City City => null;
+			public City City => null!;
 			public bool HasCity => false;
 			public IUnit[] Units => [];
-			public ITile this[int relativeX, int relativeY] => null;
+			public ITile this[int relativeX, int relativeY] => null!;
 			public string TranslatedName => "StubTile";
 
 			IBitmap ICivilopedia.Icon => throw new System.NotImplementedException();

@@ -22,15 +22,15 @@ namespace CivOne.UnitTests
     /// </summary>
     public partial class CityCitizenServiceImplTests : TestsBase
     {
-        CityCitizenServiceImplShim testee;
-        List<Citizen> mockedSpecialists;
+        CityCitizenServiceImplShim testee = null!;
+        List<Citizen>? mockedSpecialists;
 
-        MockedGame mockedIGame;
-        MockedCity mockedCity;
+        MockedGame mockedIGame = null!;
+        MockedCity mockedCity = null!;
 
-        MockedMap mockedIMap;
+        MockedMap mockedIMap = null!;
 
-        MockedGrassland mockedGrassland;
+        MockedGrassland mockedGrassland = null!;
         protected override void BeforeEach()
         {
             mockedSpecialists = [];
@@ -61,7 +61,7 @@ namespace CivOne.UnitTests
 
         protected override void AfterEach()
         {
-            testee = null;
+            testee = null!;
         }
 
         [Fact]
@@ -77,7 +77,7 @@ namespace CivOne.UnitTests
             mockedCity.Taxmen = 1;
             mockedCity.Luxuries = 5; // 2 + 3 from entertainer
 
-            mockedSpecialists.AddRange([Citizen.Entertainer, Citizen.Scientist, Citizen.Taxman]);
+            mockedSpecialists!.AddRange([Citizen.Entertainer, Citizen.Scientist, Citizen.Taxman]);
 
             mockedCity.MockPlayer = new MockedPlayer()
                 .WithGovernmentType(typeof(Anarchy))
@@ -118,7 +118,7 @@ namespace CivOne.UnitTests
             mockedCity.Taxmen = 1;
             mockedCity.Luxuries = 4 + 3; // 4 lux + entertainer effect
 
-            mockedSpecialists.AddRange([Citizen.Entertainer, Citizen.Scientist, Citizen.Taxman]);
+            mockedSpecialists!.AddRange([Citizen.Entertainer, Citizen.Scientist, Citizen.Taxman]);
 
             mockedCity.MockPlayer = new MockedPlayer()
                 .WithGovernmentType(typeof(Anarchy))
@@ -364,7 +364,7 @@ namespace CivOne.UnitTests
         public void UnhappyToContentTests(
             int conversionCount, int expectedContentCount)
         {
-            mockedSpecialists.Clear();
+            mockedSpecialists!.Clear();
             var target = new Citizen[8];
             target[0] = Citizen.UnhappyMale; // count necessary: 1, content: 2
             target[1] = Citizen.UnhappyFemale; // count necessary: 2, content: 4
@@ -396,7 +396,7 @@ namespace CivOne.UnitTests
         public void ContentToHappyTests(
             int conversionCount, int expectedHappyCount)
         {
-            mockedSpecialists.Clear();
+            mockedSpecialists!.Clear();
             var target = new Citizen[8];
             target[0] = Citizen.ContentMale; // count: 1, happy: 1
             target[1] = Citizen.ContentFemale; // count: 2, happy: 2
@@ -439,7 +439,7 @@ namespace CivOne.UnitTests
             int contentCount, int unhappyCount)
         {
             mockedCity.Size = 6;
-            mockedSpecialists.Clear();
+            mockedSpecialists!.Clear();
 
             mockedSpecialists.AddRange([.. Enumerable.Repeat(Citizen.HappyMale, mockedCity.Size - contentCount - unhappyCount)]);
 
@@ -479,7 +479,7 @@ namespace CivOne.UnitTests
             int expectedContentCount,
             int expectedHappyCount)
         {
-            mockedSpecialists.Clear();
+            mockedSpecialists!.Clear();
             var target = new Citizen[8];
 
             target[0] = Citizen.RedShirtMale;

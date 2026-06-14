@@ -52,8 +52,8 @@ namespace CivOne.Mcp.Tools
 			if (!ValidateParamsObject(request, out McpResponse? validationError))
 				return validationError!;
 
-			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string? errorMessage))
-				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage, null));
+			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto? snapshot, out string? errorCode, out string? errorMessage))
+				return JsonResponse(request.Id, BuildErrorPayload(errorCode!, errorMessage, null));
 
 			if (!TryReadOptionalInt(request.Params, "playerId", out int? playerId, out string? playerIdError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", playerIdError, "playerId"));
@@ -70,7 +70,7 @@ namespace CivOne.Mcp.Tools
 			if (playerId.HasValue && playerGuid.HasValue)
 				return JsonResponse(request.Id, BuildErrorPayload("AMBIGUOUS_SELECTOR", "Provide only one selector: 'playerId' or 'playerGuid'.", "playerId|playerGuid"));
 
-			List<PlayerDto> players = snapshot.Players ?? [];
+			List<PlayerDto> players = snapshot!.Players ?? [];
 			PlayerDto? player = null;
 
 			if (playerId.HasValue)

@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Globalization;
 using CivOne.Advances;
 using CivOne.Enums;
 using CivOne.Graphics;
@@ -87,9 +88,9 @@ namespace CivOne.Wonders
 				yy += 8;
 				string requiredTech = "";
 				if (RequiredTech != null) requiredTech = RequiredTech.TranslatedName;
-				output.DrawText(string.Format("Requires {0}", requiredTech), 6, 9, 12, yy); yy += 8;
-				output.DrawText(string.Format("Cost: {0}0 shields.", Price), 6, 9, 12, yy); yy += 8;
-				output.DrawText(string.Format("Maintenance: ${0}", 0), 6, 12, 12, yy);
+				output.DrawText(string.Format(CultureInfo.CurrentCulture,"Requires {0}", requiredTech), 6, 9, 12, yy); yy += 8;
+				output.DrawText(string.Format(CultureInfo.CurrentCulture,"Cost: {0}0 shields.", Price), 6, 9, 12, yy); yy += 8;
+				output.DrawText(string.Format(CultureInfo.CurrentCulture,"Maintenance: ${0}", 0), 6, 12, 12, yy);
 			}
 			
 			return output;

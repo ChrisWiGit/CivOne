@@ -54,8 +54,8 @@ namespace CivOne.Mcp.Tools
 			if (!ValidateParamsObject(request, out McpResponse? validationError))
 				return validationError!;
 
-			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string? errorMessage))
-				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage, null));
+			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto? snapshot, out string? errorCode, out string? errorMessage))
+				return JsonResponse(request.Id, BuildErrorPayload(errorCode!, errorMessage, null));
 
 			if (!TryReadOptionalGuid(request.Params, "cityId", out Guid? cityId, out string? cityIdError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", cityIdError!, "cityId"));
@@ -76,7 +76,7 @@ namespace CivOne.Mcp.Tools
 			if (selectorCount > 1)
 				return JsonResponse(request.Id, BuildErrorPayload("AMBIGUOUS_SELECTOR", "Provide only one selector: cityId, cityName, or cityNameStartsWith.", "cityId|cityName|cityNameStartsWith"));
 
-			List<(CityDto City, PlayerDto Owner)> allCities = GetAllCities(snapshot);
+			List<(CityDto City, PlayerDto Owner)> allCities = GetAllCities(snapshot!);
 			List<(CityDto City, PlayerDto Owner)> matches = FindMatches(allCities, cityId, cityName, cityNameStartsWith!);
 
 			if (matches.Count == 0)

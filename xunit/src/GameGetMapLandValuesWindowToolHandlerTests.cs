@@ -51,7 +51,7 @@ namespace CivOne.UnitTests
 
 		private sealed class StaticSnapshotProvider(GameStateDto snapshot) : IGameStateDtoSnapshotProvider
 		{
-			public bool TryGetSnapshot(out GameStateDto output, out string errorCode, out string errorMessage)
+			public bool TryGetSnapshot(out GameStateDto? output, out string? errorCode, out string? errorMessage)
 			{
 				output = snapshot;
 				errorCode = null;

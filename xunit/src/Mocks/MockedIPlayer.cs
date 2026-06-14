@@ -40,7 +40,7 @@ namespace CivOne.UnitTests
 			EpicRanking = 0;
 			MilitaryPower = 0;
 			CivilizationScore = 0;
-			Government = null;
+			Government = null!;
 			RepublicDemocratic = false;
 			AnarchyDespotism = false;
 			MonarchyCommunist = false;
@@ -48,8 +48,11 @@ namespace CivOne.UnitTests
 			TaxesRate = 0;
 			ScienceRate = 0;
 			Science = 0;
-			Palace = null;
+			Palace = null!;
 			Cities = [];
+			SpaceShipGrid = new SpaceShipComponentType[0,0];
+			SpaceShipPopulation = 0;
+			SpaceShipLaunchYear = 0;
 		}
 		public ICivilization Civilization { get; set; }
 

@@ -62,7 +62,7 @@ namespace CivOne.Persistence.Model
 		{
 			var dto = new ProductionDto { ProductionId = uint.MaxValue };
 
-			Assert.Throws<Exception>(() => _testee.FromDto(dto));
+			Assert.Throws<InvalidOperationException>(() => _testee.FromDto(dto));
 		}
 
 		[Fact]

@@ -51,10 +51,10 @@ namespace CivOne.Mcp.Tools
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", "'params' must be an object."));
 			}
 
-			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string? errorMessage))
-				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage));
+			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto? snapshot, out string? errorCode, out string? errorMessage))
+				return JsonResponse(request.Id, BuildErrorPayload(errorCode!, errorMessage));
 
-			List<PlayerDto> players = snapshot.Players ?? [];
+			List<PlayerDto> players = snapshot!.Players ?? [];
 			List<object> playerEntries = [];
 			List<object> cityEntries = [];
 

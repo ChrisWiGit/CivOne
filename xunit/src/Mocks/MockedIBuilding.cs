@@ -31,13 +31,13 @@ namespace CivOne.UnitTests
         
 		public byte Id { get; set; }
 
-		public IAdvance RequiredTech { get; set; }
+		public IAdvance? RequiredTech { get; set; }
 
 		public IAdvance[] ObsoleteTechs { get; set; }
 
 		public byte Maintenance { get; set; }
 
-		public IBitmap SmallIcon { get; set; }
+		public IBitmap? SmallIcon { get; set; }
 
 		public short SellPrice { get; set; }
 
@@ -46,7 +46,7 @@ namespace CivOne.UnitTests
 		public string TranslatedName { get; set; }
 		public string Name { get; set; }
 
-		public IBitmap Icon { get; set; }
+		public IBitmap? Icon { get; set; }
 
 		public byte PageCount { get; set; }
 

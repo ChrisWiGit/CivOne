@@ -21,8 +21,8 @@ namespace CivOne.Buildings
 
 		private IBitmap GrassIcon => Resources["CITYPIX2"][250, 0, 50, 50].ColourReplace(1, 0);
 		
-		public virtual IBitmap Icon { get; protected set; }
-		public virtual IBitmap SmallIcon { get; protected set; }
+		public virtual IBitmap? Icon { get; protected set; }
+		public virtual IBitmap? SmallIcon { get; protected set; }
 		/// <summary>
 		/// Gets the localized display name shown to the player.
 		/// </summary>
@@ -49,7 +49,7 @@ namespace CivOne.Buildings
 		/// TranslatedName = Translate("Barracks");
 		/// </code>
 		/// </example>
-		public string TranslatedName { get; protected set; }
+		public string TranslatedName { get; protected set; } = "Invalid building name"; // This value should never be shown because sub classes must set this.
 		/// <summary>
 		/// Gets the invariant civilopedia key name.
 		/// </summary>
@@ -59,7 +59,7 @@ namespace CivOne.Buildings
 		/// TranslatedName = Translate("Barracks");
 		/// </code>
 		/// </example>
-		public string Name { get; protected set; }
+		public string Name { get; protected set; } = "Invalid building name"; // This value should never be shown because sub classes must set this.
 		public byte PageCount => 2;
 		public Picture DrawPage(byte pageNumber)
 		{
@@ -108,7 +108,7 @@ namespace CivOne.Buildings
 		
 		public Building Type { get; set; }
 		
-		public IAdvance RequiredTech { get; protected set; }
+		public IAdvance? RequiredTech { get; protected set; }
 		public IAdvance[] ObsoleteTechs { get; protected set; } = System.Array.Empty<IAdvance>();
 		public short SellPrice { get; private set; }
 		public short BuyPrice { get; private set; }

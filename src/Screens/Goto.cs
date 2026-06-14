@@ -41,7 +41,7 @@ namespace CivOne.Screens
 			return true;
 		}
 
-		ITile fromCanvas(int x, int y)
+		ITile? fromCanvas(int x, int y)
 		{
 			int offsetX = 80;
 			if (Settings.RightSideBar) offsetX = 0;
@@ -57,7 +57,7 @@ namespace CivOne.Screens
 
 			return Map[_x + xx, _y + yy];
 		}
-		ITile fromMinimap(int x, int y)
+		static ITile? fromMinimap(int x, int y)
 		{
 			int offsetX = 1;
 			if (Settings.RightSideBar) offsetX = 241;
@@ -76,7 +76,7 @@ namespace CivOne.Screens
 		public override bool MouseDown(ScreenEventArgs args)
 		{
 
-			ITile tile = fromCanvas(args.X, args.Y);
+			ITile? tile = fromCanvas(args.X, args.Y);
 			if (tile != null)
 			{
 				X = tile.X;
@@ -107,7 +107,7 @@ namespace CivOne.Screens
 			X = -1;
 			Y = -1;
 
-			Palette = Common.TopScreen.Palette;
+			Palette = Common.TopScreen!.Palette;
 		}
 	}
 }

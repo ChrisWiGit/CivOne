@@ -83,6 +83,7 @@ namespace CivOne.UnitTests
 			// Arrange
 			var player = GetNonBarbarianPlayers(Game.Instance, 1).Single();
 			var barbarian = Game.Instance.GetPlayer(0);
+			Assert.NotNull(barbarian);
 
 			// Act
 			player.DeclareWar(barbarian);
@@ -99,8 +100,10 @@ namespace CivOne.UnitTests
 			var players = GetNonBarbarianPlayers(Game.Instance, 2);
 			var attacker = players[0];
 			var defender = players[1];
-			City attackerCity = Game.Instance.AddCity(attacker, 0, 40, 30);
-			City defenderCity = Game.Instance.AddCity(defender, 1, 42, 30);
+			City? attackerCity = Game.Instance.AddCity(attacker, 0, 40, 30);
+			City? defenderCity = Game.Instance.AddCity(defender, 1, 42, 30);
+			Assert.NotNull(attackerCity);
+			Assert.NotNull(defenderCity);
 
 			attackerCity.AddTradingCity(defenderCity);
 			defenderCity.AddTradingCity(attackerCity);
@@ -121,9 +124,13 @@ namespace CivOne.UnitTests
 			var attacker = players[0];
 			var defender = players[1];
 			var thirdParty = Game.Instance.GetPlayer(0);
-			City attackerCity = Game.Instance.AddCity(attacker, 2, 44, 30);
-			City defenderCity = Game.Instance.AddCity(defender, 3, 46, 30);
-			City thirdPartyCity = Game.Instance.AddCity(thirdParty, 4, 48, 30);
+			Assert.NotNull(thirdParty);
+			City? attackerCity = Game.Instance.AddCity(attacker, 2, 44, 30);
+			City? defenderCity = Game.Instance.AddCity(defender, 3, 46, 30);
+			City? thirdPartyCity = Game.Instance.AddCity(thirdParty, 4, 48, 30);
+			Assert.NotNull(attackerCity);
+			Assert.NotNull(defenderCity);
+			Assert.NotNull(thirdPartyCity);
 
 			attackerCity.AddTradingCity(defenderCity);
 			attackerCity.AddTradingCity(thirdPartyCity);
@@ -149,7 +156,7 @@ namespace CivOne.UnitTests
 				.ToArray();
 
 			Assert.True(players.Length >= count, $"Expected at least {count} non-barbarian players in test setup.");
-			return players;
+			return players!;
 		}
 	}
 }

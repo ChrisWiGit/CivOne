@@ -38,8 +38,8 @@ namespace CivOne.UnitTests
 
         public RuntimeSettings Settings { get; }
         public MouseCursor? CurrentCursor { get; private set; }
-        public Bytemap[] Layers { get; set; }
-        public Palette Palette { get; set; }
+        public Bytemap[]? Layers { get; set; }
+        public Palette? Palette { get; set; }
         public IBitmap? Cursor { get; private set; }
         public int CanvasWidth { get; }
         public int CanvasHeight { get; }
@@ -89,10 +89,13 @@ namespace CivOne.UnitTests
             // ignore
         }
 
+    
+        #pragma warning disable CA1822
         public void Dispose()
         {
 			// No resources to release in this test double.
         }
+        #pragma warning restore CA1822 // Mark members as static - but these are required to implement IRuntime
 
 		public string FileChooser(bool save, string title, string initialFileName, string filter)
 		{
@@ -106,6 +109,24 @@ namespace CivOne.UnitTests
             settings.Free = false;
             RuntimeHandler.Wipe(); // Ensure any previous runtime is cleared out otherwise exceptions occur
             RuntimeHandler.RegisterForTest(this);
+
+            CurrentPlatform = Platform.Windows;
+            CanvasWidth = 320;
+            CanvasHeight = 200;
+            WindowWidth = 320;
+            WindowHeight = 200;
+
+            // This will hopefully cause exceptions in tests.
+            Initialize = null!;
+            Draw = null!;
+            Update = null!;
+            KeyboardUp = null!;
+            KeyboardDown = null!;
+            MouseUp = null!;
+            MouseDown = null!;
+            MouseMove = null!;
+            MouseWheel = null!;
+            WindowTitle = string.Empty;
         }
     }
 }

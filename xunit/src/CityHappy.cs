@@ -43,8 +43,9 @@ namespace CivOne.UnitTests
         public void CityHappyBasic()
         {
             var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
 
+            Assert.NotNull(acity);
             foreach (var citizenTypes in acity.Residents)
             {
                 Assert.Equal(1, citizenTypes.content);
@@ -94,9 +95,10 @@ namespace CivOne.UnitTests
         public void CityHappy1Entertainer()
         {
             var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            Assert.NotNull(acity);
 
-            MakeOneEntertainer(acity);
+			MakeOneEntertainer(acity);
 
             using var enumerator = acity.Residents.GetEnumerator();
 
@@ -114,7 +116,7 @@ namespace CivOne.UnitTests
         /// the City Manager map].
         /// </summary>
         /// <param name="acity"></param>
-        private void MakeOneEntertainer(City acity)
+        private static void MakeOneEntertainer(City acity)
         {
             var tiles = acity.ResourceTiles.ToArray();
             foreach (var tile in tiles)
@@ -136,11 +138,12 @@ namespace CivOne.UnitTests
         public void CityHappy2With1Entertainer()
         {
             var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            Assert.NotNull(acity);
             acity.Size = 2;
             acity.ResetResourceTiles();
 
-            MakeOneEntertainer(acity);
+			MakeOneEntertainer(acity);
 
             using var foo = acity.Residents.GetEnumerator();
             foo.MoveNext();
@@ -161,11 +164,12 @@ namespace CivOne.UnitTests
         public void CityHappy2With2Entertainers()
         {
             var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            Assert.NotNull(acity);
             acity.Size = 2;
 
-            MakeOneEntertainer(acity);
-            MakeOneEntertainer(acity);
+			MakeOneEntertainer(acity);
+			MakeOneEntertainer(acity);
 
             using (var foo = acity.Residents.GetEnumerator())
             {
@@ -190,10 +194,11 @@ namespace CivOne.UnitTests
         public void CityHappy4With1Entertainers()
         {
             var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            Assert.NotNull(acity);
             acity.Size = 4;
             acity.ResetResourceTiles();
-            MakeOneEntertainer(acity);
+			MakeOneEntertainer(acity);
 
             using (var foo = acity.Residents.GetEnumerator())
             {
@@ -221,12 +226,13 @@ namespace CivOne.UnitTests
         public void CityHappy4With2Entertainers()
         {
             var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            Assert.NotNull(acity);
             acity.Size = 4;
             acity.ResetResourceTiles(); // setting city size doesn't allocate all resources
 
-            MakeOneEntertainer(acity);
-            MakeOneEntertainer(acity);
+			MakeOneEntertainer(acity);
+			MakeOneEntertainer(acity);
 
             using (var foo = acity.Residents.GetEnumerator())
             {
@@ -257,13 +263,14 @@ namespace CivOne.UnitTests
         public void CityHappy4With3Entertainers()
         {
             var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            Assert.NotNull(acity);
             acity.Size = 4;
             acity.ResetResourceTiles(); // setting city size doesn't allocate all resources
 
-            MakeOneEntertainer(acity);
-            MakeOneEntertainer(acity);
-            MakeOneEntertainer(acity);
+			MakeOneEntertainer(acity);
+			MakeOneEntertainer(acity);
+			MakeOneEntertainer(acity);
 
             using (var foo = acity.Residents.GetEnumerator())
             {
@@ -290,7 +297,8 @@ namespace CivOne.UnitTests
         public void City4Temple()
         {
             var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            Assert.NotNull(acity);
             acity.Size = 4;
             acity.ResetResourceTiles(); // setting city size doesn't allocate all resources
 
@@ -338,13 +346,14 @@ namespace CivOne.UnitTests
         public void City6With3EntertainersAndTemple()
         {
             var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            Assert.NotNull(acity);
             acity.Size = 6;
             acity.ResetResourceTiles(); // setting city size doesn't allocate all resources
 
-            MakeOneEntertainer(acity);
-            MakeOneEntertainer(acity);
-            MakeOneEntertainer(acity);
+			MakeOneEntertainer(acity);
+			MakeOneEntertainer(acity);
+			MakeOneEntertainer(acity);
             acity.AddBuilding(Reflect.GetBuildings().First(b => b is Temple));
 
             using (var foo = acity.Residents.GetEnumerator())
@@ -380,11 +389,12 @@ namespace CivOne.UnitTests
         public void City5With1EntAndTemple()
         {
             var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            Assert.NotNull(acity);
             acity.Size = 5;
             acity.ResetResourceTiles(); // setting city size doesn't allocate all resources
 
-            MakeOneEntertainer(acity);
+			MakeOneEntertainer(acity);
             acity.AddBuilding(Reflect.GetBuildings().First(b => b is Temple));
 
             using (var foo = acity.Residents.GetEnumerator())
@@ -421,7 +431,8 @@ namespace CivOne.UnitTests
         public void City5Colosseum()
         {
             var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            Assert.NotNull(acity);
             acity.Size = 5;
             acity.ResetResourceTiles(); // setting city size doesn't allocate all resources
 

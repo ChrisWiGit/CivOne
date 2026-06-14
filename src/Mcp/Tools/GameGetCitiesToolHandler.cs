@@ -42,8 +42,8 @@ namespace CivOne.Mcp.Tools
 			if (!ValidateParamsObject(request, out McpResponse? validationError))
 				return validationError!;
 
-			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string errorMessage))
-				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage, null));
+			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto? snapshot, out string? errorCode, out string? errorMessage))
+				return JsonResponse(request.Id, BuildErrorPayload(errorCode!, errorMessage, null));
 
 			if (!TryReadOptionalInt(request.Params, "playerId", out int? playerId, out string? playerIdError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", playerIdError, "playerId"));
@@ -54,7 +54,7 @@ namespace CivOne.Mcp.Tools
 			if (!TryReadKeys(request.Params, out string[] keys, out string? keysError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", keysError, "keys"));
 
-			List<PlayerDto> players = snapshot.Players ?? [];
+			List<PlayerDto> players = snapshot!.Players ?? [];
 			if (playerId.HasValue && (playerId.Value < 0 || playerId.Value >= players.Count))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PLAYER_ID", "Player id is out of range.", "playerId"));
 

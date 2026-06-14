@@ -66,16 +66,16 @@ namespace CivOne.Screens.Reports
 		private bool _showAllCivilizations;
 		private bool _update = true;
 
-		private readonly bool _debugMode = false;
+		private readonly bool _debugMode;
 
 		public CivilizationRankingScreen(
 			CivilizationRankingHistorian? historian = null,
 			CivilizationRankingCategory? category = null,
 			bool randomSelection = true,
 			bool debugMode = false,
-			ICivilizationRankingService rankingService = null,
-			IPreviewPalaceRenderer palaceRenderer = null,
-			IRandomService randomService = null) : base(MouseCursor.None)
+			ICivilizationRankingService? rankingService = null,
+			IPreviewPalaceRenderer? palaceRenderer = null,
+			IRandomService? randomService = null) : base(MouseCursor.None)
 		{
 			_rankingService = rankingService ?? CivilizationRankingServiceFactory.GetInstance();
 			_palaceRenderer = palaceRenderer ?? PreviewPalaceRendererFactory.GetInstance();

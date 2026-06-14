@@ -68,10 +68,10 @@ namespace CivOne.Mcp.Tools
 			if (anyBoundsProvided && !(x.HasValue && y.HasValue && width.HasValue && height.HasValue))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", "If any bounding-box field is provided, x, y, width, and height are all required.", "x|y|width|height"));
 
-			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string? errorMessage))
-				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage, null));
+			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto? snapshot, out string? errorCode, out string? errorMessage))
+				return JsonResponse(request.Id, BuildErrorPayload(errorCode!, errorMessage, null));
 
-			List<PlayerDto> players = snapshot.Players ?? [];
+			List<PlayerDto> players = snapshot!.Players ?? [];
 			if (playerId < 0 || playerId >= players.Count)
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PLAYER_ID", "Player id is out of range.", "playerId"));
 

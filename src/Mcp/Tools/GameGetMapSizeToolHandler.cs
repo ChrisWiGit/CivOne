@@ -40,10 +40,10 @@ namespace CivOne.Mcp.Tools
 			if (!ValidateParamsObject(request, out McpResponse? validationError))
 				return validationError!;
 
-			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string? errorMessage))
-				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage, null));
+			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto? snapshot, out string? errorCode, out string? errorMessage))
+				return JsonResponse(request.Id, BuildErrorPayload(errorCode!, errorMessage, null));
 
-			Map2d<TileDto>? tiles = snapshot.Map?.Tiles;
+			Map2d<TileDto>? tiles = snapshot?.Map?.Tiles;
 			if (tiles == null)
 				return JsonResponse(request.Id, BuildErrorPayload("NO_MAP", "No map data available.", null));
 

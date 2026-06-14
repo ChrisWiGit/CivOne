@@ -21,8 +21,8 @@ namespace CivOne.Screens
 	{
 		private readonly Picture _background;
 		private readonly string[] _textLines;
-		private int _currentLine = 0;
-		private int _lineTick = 0;
+		private int _currentLine;
+		private int _lineTick;
 		private bool _showFirstFrame = true;
 
 		/// <summary>
@@ -93,7 +93,8 @@ namespace CivOne.Screens
 			// Load defeat text
 			_textLines = GetGameText("KING/ARCH");
 			for (int i = 0; i < _textLines.Length; i++)
-				_textLines[i] = _textLines[i].Replace("$RPLC1", Human.LatestAdvance).Replace("$US", Human.LeaderName.ToUpper()).Replace("^", "");
+				_textLines[i] = _textLines[i].Replace("$RPLC1", Human.LatestAdvance).
+					Replace("$US", Human.LeaderName.ToUpperInvariant()).Replace("^", "");
 		}
 	}
 }

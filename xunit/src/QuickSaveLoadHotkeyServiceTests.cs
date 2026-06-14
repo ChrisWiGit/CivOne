@@ -26,7 +26,7 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void TryHandleControlF1SavesToSlotFile()
 		{
-			string savedPath = null;
+			string? savedPath = null;
 			var service = CreateService(
 				canQuickSave: () => true,
 				save: path => savedPath = path,
@@ -47,7 +47,7 @@ namespace CivOne.UnitTests
 			Directory.CreateDirectory(_fastSavesDirectory);
 			File.WriteAllText(slotPath, "test");
 
-			string loadedPath = null;
+			string? loadedPath = null;
 			int rebuildCalls = 0;
 			var service = CreateService(
 				canQuickSave: () => true,
@@ -112,7 +112,7 @@ namespace CivOne.UnitTests
 			File.WriteAllText(Path.Combine(_fastSavesDirectory, "fastsave_f2.cos"), "test");
 			File.WriteAllText(Path.Combine(_fastSavesDirectory, "fastsave_f7.cos"), "test");
 
-			IReadOnlyList<int> listedSlots = null;
+			IReadOnlyList<int>? listedSlots = null;
 			var service = CreateService(
 				canQuickSave: () => true,
 				save: _ => { },
@@ -135,7 +135,7 @@ namespace CivOne.UnitTests
 			string slotPath = Path.Combine(_fastSavesDirectory, "fastsave_f4.cos");
 			File.WriteAllText(slotPath, "test");
 
-			string loadedPath = null;
+			string? loadedPath = null;
 			int rebuildCalls = 0;
 			var service = CreateService(
 				canQuickSave: () => true,
@@ -159,7 +159,7 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void TryHandleAltF11WhenNoSlotsPassesEmptySlotListToMenu()
 		{
-			IReadOnlyList<int> listedSlots = null;
+			IReadOnlyList<int>? listedSlots = null;
 			var service = CreateService(
 				canQuickSave: () => true,
 				save: _ => { },
@@ -200,7 +200,7 @@ namespace CivOne.UnitTests
 			Func<string, bool> load,
 			Action rebuild,
 			Action<string> onError,
-			Action<IReadOnlyList<int>, Action<int>> showQuickLoadMenu = null)
+			Action<IReadOnlyList<int>, Action<int>>? showQuickLoadMenu = null)
 			=> new(
 				_runtime,
 				TranslationServiceFactory.GetCurrent(),
@@ -229,19 +229,19 @@ namespace CivOne.UnitTests
 			public string StorageDirectory { get; } = storageDirectory;
 			public RuntimeSettings Settings { get; } = new RuntimeSettings();
 			public MouseCursor? CurrentCursor { get; private set; }
-			public Bytemap[] Layers { get; set; }
-			public Palette Palette { get; set; }
-			public IBitmap Cursor { get; private set; }
+			public Bytemap[]? Layers { get; set; }
+			public Palette? Palette { get; set; }
+			public IBitmap? Cursor { get; private set; }
 			public int CanvasWidth => 320;
 			public int CanvasHeight => 200;
 			public int WindowWidth => 320;
 			public int WindowHeight => 200;
-			public string WindowTitle { get; private set; }
+			public string? WindowTitle { get; private set; }
 
-			public bool TryOpenUrl(string url, out string errorMessage) { errorMessage = null; return false; }
-			public bool TryCopyToClipboard(string text, out string errorMessage) { errorMessage = null; return false; }
+			public bool TryOpenUrl(string url, out string? errorMessage) { errorMessage = null; return false; }
+			public bool TryCopyToClipboard(string text, out string? errorMessage) { errorMessage = null; return false; }
 
-			public string GetSetting(string key) => null;
+			public string? GetSetting(string key) => null;
 			public void SetSetting(string key, string value) { }
 			public void SetCurrentCursor(MouseCursor? cursor) => CurrentCursor = cursor;
 			public void SetCursor(IBitmap? cursor) => Cursor = cursor;

@@ -28,7 +28,7 @@ namespace CivOne.Screens
 	{
 		private const int FRAME_COUNT = 28;
 
-		private int _x, _y, _dx, _dy;
+		private readonly int _x, _y, _dx, _dy;
 
 		private int _tilesX = 15, _tilesY = 12;
 		
@@ -36,7 +36,7 @@ namespace CivOne.Screens
 
 		private IBitmap _gameMap;
 
-		private Picture[]? _sprites;
+		private readonly Picture[]? _sprites;
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
@@ -57,7 +57,7 @@ namespace CivOne.Screens
 			this.AddLayer(_gameMap, cx, cy);
 			if (step >= 0 && step < 28)
 			{
-				this.AddLayer(_sprites[step], xx, yy);
+				this.AddLayer(_sprites![step], xx, yy);
 			}
 
 			return true;
@@ -74,14 +74,14 @@ namespace CivOne.Screens
 
 			Bitmap = new Bytemap(width, height);
 			
-			Player renderPlayer = Settings.RevealWorld ? null : Human;
+			Player? renderPlayer = Settings.RevealWorld ? null : Human;
 			_gameMap = Map[_x, _y, _tilesX, _tilesY].ToBitmap(TileSettings.BlinkOff, renderPlayer);
 		}
 
 		internal Nuke(int x, int y)
 		{
-			_x = Common.GamePlay.X;
-			_y = Common.GamePlay.Y;
+			_x = Common.GamePlay!.X;
+			_y = Common.GamePlay!.Y;
 
 			_dx = x - 14;
 			_dy = y - 14;
@@ -94,7 +94,7 @@ namespace CivOne.Screens
 				}
 				Palette = palette;
 			}
-			Player renderPlayer = Settings.RevealWorld ? null : Human;
+			Player? renderPlayer = Settings.RevealWorld ? null : Human;
 			_gameMap = Map[_x, _y, 15, 12].ToBitmap(TileSettings.BlinkOff, renderPlayer);
 
 			_sprites = new Picture[28];

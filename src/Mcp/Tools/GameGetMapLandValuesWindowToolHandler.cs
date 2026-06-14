@@ -59,10 +59,10 @@ namespace CivOne.Mcp.Tools
 			if (!TryReadRequiredInt(request.Params, "height", out int height, out string? heightError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", heightError, "height"));
 
-			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string? errorMessage))
-				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage!, null));
+			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto? snapshot, out string? errorCode, out string? errorMessage))
+				return JsonResponse(request.Id, BuildErrorPayload(errorCode!, errorMessage, null));
 
-			Map2d<TileDto>? mapTiles = snapshot.Map?.Tiles;
+			Map2d<TileDto>? mapTiles = snapshot!.Map?.Tiles;
 			if (mapTiles == null)
 				return JsonResponse(request.Id, BuildErrorPayload("NO_MAP", "No map data available.", null));
 
