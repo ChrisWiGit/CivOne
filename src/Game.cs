@@ -294,7 +294,7 @@ namespace CivOne
 
 		public Player GetPlayer(byte number)
 		{
-			if (_players.Length < number)
+			if (number >= _players.Length)
 				return null;
 			return _players[number];
 		}
