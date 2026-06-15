@@ -918,6 +918,7 @@ namespace CivOne.Screens
 		{
 			_dialogText = TextSettings.ShadowText(15, 5);
 			_dialogText.FontId = 5;
+			_skip = false;
 
 			_city = city;
 			_production = production;

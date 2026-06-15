@@ -22,6 +22,6 @@ namespace CivOne.Persistence.Model
 		public ushort RawFlags { get; set; }
 
 		[Doc("Optional decoded view of RawFlags. Currently placeholder for future semantics.")]
-		public DiplomacyDecodedDto Decoded { get; set; }
+		public DiplomacyDecodedDto? Decoded { get; set; }
 	}
 }

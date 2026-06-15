@@ -66,7 +66,7 @@ namespace CivOne.Screens.GovernmentPortraits
 			AdvisorPortraitSize size = AdvisorPortraitSize.Small)
 		{
 			(AdvisorType Type, AdvisorFace Face, AdvisorGovernment Government, AdvisorEra Era, AdvisorPortraitSize Size) cacheKey = (portraitType, face, government, era, size);
-			if (_cache.TryGetValue(cacheKey, out IBitmap cachedPortrait))
+			if (_cache.TryGetValue(cacheKey, out IBitmap? cachedPortrait))
 			{
 				return cachedPortrait;
 			}

@@ -30,15 +30,17 @@ namespace CivOne
 
 			Process.Start("chmod", $@"+x ""{scriptPath}""");
 
-			Process process = new Process();
-			process.StartInfo = new ProcessStartInfo()
+			Process process = new()
 			{
-				FileName = "/bin/sh",
-				Arguments = scriptPath,
-				RedirectStandardOutput = true,
-				UseShellExecute = false
+				StartInfo = new ProcessStartInfo()
+				{
+					FileName = "/bin/sh",
+					Arguments = scriptPath,
+					RedirectStandardOutput = true,
+					UseShellExecute = false
+				}
 			};
-			
+
 			process.Start();
 			string output = process.StandardOutput.ReadToEnd().Trim(['\n', '"']);
 			process.WaitForExit();

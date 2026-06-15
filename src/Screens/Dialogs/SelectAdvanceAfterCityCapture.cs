@@ -25,7 +25,7 @@ namespace CivOne.Screens.Dialogs
 
 		private readonly Player _player;
 		private readonly IList<IAdvance> _advances;
-		private Menu _menu;
+		private Menu? _menu;
 
 		private void Steal(IAdvance advance)
 		{

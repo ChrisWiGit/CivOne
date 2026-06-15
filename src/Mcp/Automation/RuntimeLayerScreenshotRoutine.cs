@@ -35,12 +35,17 @@ namespace CivOne.Mcp.Automation
 
 		private Picture BuildFullFrame(bool includeCursor)
 		{
-			if (_runtime.Layers == null || _runtime.Palette == Palette.Empty)
+			Palette? runtimePalette = _runtime.Palette;
+			if (_runtime.Layers == null || runtimePalette == null || runtimePalette == Palette.Empty)
 				throw new InvalidOperationException("Runtime frame is not available.");
 
 			int width = Math.Max(1, _runtime.CanvasWidth);
 			int height = Math.Max(1, _runtime.CanvasHeight);
-			Picture output = new(width, height, _runtime.Palette.Copy());
+			Picture output = new(width, height, runtimePalette.Copy());
+			if (output.Palette == null)
+			{
+				throw new InvalidOperationException("Runtime palette is not available.");
+			}
 			output.Palette[0] = Colour.Black;
 
 			foreach (Bytemap bytemap in _runtime.Layers)

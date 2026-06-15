@@ -23,7 +23,7 @@ namespace CivOne.Screens.Dialogs
         private readonly int _dX;
         private readonly int _dY;
         private readonly BaseUnit _unit;
-        private Menu _menu;
+        private Menu? _menu;
 
         private void Continue(object sender, EventArgs args)
         {

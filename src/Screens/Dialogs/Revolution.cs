@@ -15,7 +15,7 @@ namespace CivOne.Screens.Dialogs
 {
 	internal class Revolution : BaseDialog
 	{
-		private Menu _menu;
+		private Menu? _menu;
 
 		private void MenuRevolution(object sender, EventArgs args)
 		{

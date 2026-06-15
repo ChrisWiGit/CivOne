@@ -23,7 +23,7 @@ namespace CivOne.Screens.Dialogs
 		private readonly Caravan _unit;
 		private readonly City _city;
 		private readonly ICaravanChoiceService _service;
-		private Menu _menu;
+		private Menu? _menu;
 
 		private void KeepMoving(object sender, EventArgs args)
 		{

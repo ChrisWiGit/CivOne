@@ -28,6 +28,7 @@ namespace CivOne.Persistence.Model
 	/// </summary>
 	public class SpaceShipGridMap2D : Map2d<SpaceShipComponentType>
 	{
+		public static new readonly SpaceShipGridMap2D Uninitialized = new();
 		public SpaceShipGridMap2D() : base(SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight)
 		{
 		}

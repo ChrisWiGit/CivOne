@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Persistence.Model;
 
 namespace CivOne.Mcp.Tools
@@ -17,6 +18,6 @@ namespace CivOne.Mcp.Tools
 		/// <param name="errorCode">The error code if the snapshot could not be retrieved, or null if successful.</param>
 		/// <param name="errorMessage">The error message if the snapshot could not be retrieved, or null if successful.</param>
 		/// <returns>True if the snapshot was successfully retrieved; otherwise, false.</returns>
-		bool TryGetSnapshot(out GameStateDto? snapshot, out string? errorCode, out string? errorMessage);
+		bool TryGetSnapshot( [NotNullWhen(true)] out GameStateDto? snapshot, [NotNullWhen(false)] out string? errorCode, [NotNullWhen(false)] out string? errorMessage);
 	}
 }

@@ -20,7 +20,7 @@ namespace CivOne.Screens.Dialogs
 	{
 		private readonly IGovernment[] _availableGovernments;
 
-		public IGovernment Result { get; private set; }
+		public IGovernment? Result { get; private set; }
 
 		private void GovernmentChoice(object sender, MenuItemEventArgs<IGovernment> args)
 		{

@@ -14,7 +14,7 @@ namespace CivOne.Screens.Dialogs
 {
 	internal class ConfirmQuit : BaseDialog
 	{
-		private Menu _menu;
+		private Menu? _menu;
 
 		private void MenuQuit(object sender, EventArgs args)
 		{

@@ -4,6 +4,8 @@ namespace CivOne.Persistence.Model
 
     public class Map2d<T>
     {
+        public static readonly Map2d<T> Uninitialized = new();
+
         public Map2d()
         {
             Data = new T[0, 0];

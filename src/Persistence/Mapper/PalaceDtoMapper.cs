@@ -49,7 +49,7 @@ namespace CivOne.Persistence.Model
 
 		public PalaceDto ToDto(PalaceData palace)
 		{
-			if (palace == null) return null;
+			ArgumentNullException.ThrowIfNull(palace);
 			
 			var dto = new PalaceDto();
 			for (int i = 0; i < _sectionSetters.Length; i++)

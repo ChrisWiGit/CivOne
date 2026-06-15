@@ -131,7 +131,7 @@ namespace CivOne.Screens
 				};
 			}
 
-			public void OnTerrainMenuAction(object sender, MenuItemEventArgs<int> args)
+			public void OnTerrainMenuAction(object? _, MenuItemEventArgs<int> args)
 			{
 				TerrainEditorState state = _gamePlay._gameMap.EditorState;
 				int brushCount = _gamePlay._gameMap.TerrainBrushSizeCount;

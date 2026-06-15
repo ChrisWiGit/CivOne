@@ -20,7 +20,7 @@ namespace CivOne.Screens.Dialogs
 	internal class DisbandUnit : BaseDialog
 	{
 		private readonly Picture[] _textLines;
-		private Menu _menu;
+		private Menu? _menu;
 
 		protected override void FirstUpdate()
 		{

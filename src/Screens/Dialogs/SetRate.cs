@@ -23,7 +23,7 @@ namespace CivOne.Screens.Dialogs
 
 		private readonly bool _luxuries;
 		private readonly string[] _menuItems;
-		private Menu _menu;
+		private Menu? _menu;
 
 		private void TaxesChoice(object sender, MenuItemEventArgs<int> args)
 		{

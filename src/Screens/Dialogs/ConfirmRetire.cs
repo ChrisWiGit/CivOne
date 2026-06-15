@@ -15,7 +15,7 @@ namespace CivOne.Screens.Dialogs
 {
 	internal class ConfirmRetire : BaseDialog
 	{
-		private Menu _menu;
+		private Menu? _menu;
 
 		private static void MenuRetire(object sender, EventArgs args)
 		{

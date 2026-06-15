@@ -49,7 +49,7 @@ namespace CivOne.Persistence.Model
     {
         public IMapTiles FromDto(MapDto dto)
         {
-            var tiles = dto.Tiles;
+            var tiles = dto.Tiles ?? throw new InvalidOperationException("MapDto.Tiles must be set before mapping.");
             int width = tiles.Width();
             int height = tiles.Height();
             var map = mapFactory.CreateMap(width, height, dto.TerrainSeed);
