@@ -24,7 +24,7 @@ namespace CivOne.UnitTests
 		{
 			File.WriteAllText(Path.Combine(_sourceDirectory, "fonts.cv"), "font-data");
 
-			bool actual = FileSystem.CopyFiles(_sourceDirectory, _targetDirectory, ["FONTS.CV"], out string missingFile);
+			bool actual = FileSystem.CopyFiles(_sourceDirectory, _targetDirectory, ["FONTS.CV"], out string? missingFile);
 
 			Assert.True(actual);
 			Assert.Null(missingFile);
@@ -34,7 +34,7 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void CopyFilesWhenFileIsMissingReturnsMissingCanonicalFileName()
 		{
-			bool actual = FileSystem.CopyFiles(_sourceDirectory, _targetDirectory, ["FONTS.CV"], out string missingFile);
+			bool actual = FileSystem.CopyFiles(_sourceDirectory, _targetDirectory, ["FONTS.CV"], out string? missingFile);
 
 			Assert.False(actual);
 			Assert.Equal("FONTS.CV", missingFile);

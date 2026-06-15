@@ -96,7 +96,7 @@ namespace CivOne.UnitTests.Persistence
 		{
 			// Arrange
 			var dto = YamlLoadGameStateReaderTestData.BuildSampleGameStateDto();
-			Player.Game = null;
+			Player.Game = null!;
 			var deps = YamlLoadMapperDependenciesFactory.Create(_sanitizer);
 			var mapper = new GameStateDtoMapper(deps.PlayerMapper, deps.UnitMapper, deps.MapMapper, deps.GlobalWarmingMapper, deps.Sanitizer);
 
@@ -123,7 +123,7 @@ namespace CivOne.UnitTests.Persistence
 		{
 			// Arrange
 			var dto = YamlLoadGameStateReaderTestData.BuildSampleGameStateDto();
-			Player.Game = null;
+			Player.Game = null!;
 			var deps = YamlLoadMapperDependenciesFactory.Create(_sanitizer);
 			var mapper = new GameStateDtoMapper(deps.PlayerMapper, deps.UnitMapper, deps.MapMapper, deps.GlobalWarmingMapper, deps.Sanitizer);
 
@@ -149,7 +149,7 @@ namespace CivOne.UnitTests.Persistence
 				CityStatus.ImprovementSold
 			];
 
-			Player.Game = null;
+			Player.Game = null!;
 			var deps = YamlLoadMapperDependenciesFactory.Create(_sanitizer);
 			var mapper = new GameStateDtoMapper(deps.PlayerMapper, deps.UnitMapper, deps.MapMapper, deps.GlobalWarmingMapper, deps.Sanitizer);
 

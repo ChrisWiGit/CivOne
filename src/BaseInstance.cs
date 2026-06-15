@@ -11,6 +11,7 @@ using System.IO;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.IO.Text;
+using CivOne.Persistence.Factories;
 using CivOne.Services;
 using CivOne.Services.Random;
 using CivOne.UserInterface;
@@ -30,6 +31,8 @@ namespace CivOne
 
 		protected static ITranslationService Translation => TranslationServiceFactory.GetCurrent();
 		protected static IRandomService RandomService => RandomServiceFactory.Create();
+
+		protected static ILogger Logger => new RuntimeLogger();
 
 		protected internal static void Log(string text, params object[] parameters) => Runtime.Log(text, parameters);
 		protected static void PlaySound(string? filename)

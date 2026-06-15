@@ -20,14 +20,14 @@ namespace CivOne.Persistence.Resolver
 		/// </summary>
 		/// <param name="players">Array of mapped players to apply resolved destruction counts to.</param>
 		/// <param name="playerDtos">List of player DTOs containing the GUID-based destruction mappings.</param>
-		public void ResolveAndApply(IPlayer[] players, List<PlayerDto> playerDtos)
+		public void ResolveAndApply(IPlayer[]? players, List<PlayerDto>? playerDtos)
 		{
 			if (!ValidateInput(players, playerDtos))
 			{
 				return;
 			}
 
-			for (var ownerIndex = 0; ownerIndex < playerDtos.Count && ownerIndex < players.Length; ownerIndex++)
+			for (var ownerIndex = 0; ownerIndex < playerDtos!.Count && ownerIndex < players!.Length; ownerIndex++)
 			{
 				ResolvePlayerUnitsDestroyedBy(players, playerDtos[ownerIndex], ownerIndex);
 			}
@@ -57,7 +57,7 @@ namespace CivOne.Persistence.Resolver
 		/// <summary>
 		/// Validates input parameters before processing.
 		/// </summary>
-		private static bool ValidateInput(IPlayer[] players, List<PlayerDto> playerDtos)
+		private static bool ValidateInput(IPlayer[]? players, List<PlayerDto>? playerDtos)
 		{
 			return players != null
 				&& players.Length > 0
@@ -68,14 +68,14 @@ namespace CivOne.Persistence.Resolver
 		/// <summary>
 		/// Checks if a player can be resolved (has valid data and is restorable).
 		/// </summary>
-		private static bool IsResolvablePlayer(PlayerDto playerDto, IPlayer[] players, int ownerIndex)
+		private static bool IsResolvablePlayer(PlayerDto playerDto, IPlayer[]? players, int ownerIndex)
 		{
 			if (playerDto?.UnitsDestroyedByByPlayerGuid == null || playerDto.UnitsDestroyedByByPlayerGuid.Count == 0)
 			{
 				return false;
 			}
 
-			if (players[ownerIndex] is not IPlayerRestorable)
+			if (players == null || players[ownerIndex] is not IPlayerRestorable)
 			{
 				return false;
 			}

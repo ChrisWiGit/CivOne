@@ -38,8 +38,11 @@ namespace CivOne.UnitTests
 
 			Assert.True(payload.RootElement.GetProperty("ok").GetBoolean());
 			JsonElement data = payload.RootElement.GetProperty("data");
-			string fileName = data.GetProperty("fileName").GetString();
-			string saveGuidText = data.GetProperty("saveGuid").GetString();
+			string? fileName = data.GetProperty("fileName").GetString();
+			string? saveGuidText = data.GetProperty("saveGuid").GetString();
+
+			Assert.NotNull(fileName);
+			Assert.NotNull(saveGuidText);
 			Assert.Equal("savegame_mcp_20260430184512123.cos", fileName);
 			Assert.True(Guid.TryParse(saveGuidText, out Guid _));
 			Assert.True(File.Exists(Path.Combine(_tempFolder, fileName)));

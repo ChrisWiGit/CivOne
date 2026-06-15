@@ -19,17 +19,22 @@ namespace CivOne.Tasks
 
 		private ITurn? _turnObject;
 		private IUnit? _unit;
-		private bool _endTurn = false;
+		private bool _endTurn;
 
 		private Player? _gameOver;
 
-		private int _step = 0;
+		private int _step;
 
 		protected override bool NextStep()
 		{
 			if (_unit != null)
 			{
-				Game.CurrentPlayer.AI.Move(_unit);
+				if (Game.CurrentPlayer.AI == null)
+				{
+					Log("Warning: Attempting to move unit {0} for player {1}, but the player has no AI assigned. Ending turn instead.",
+						_unit.GetType().Name, Game.CurrentPlayer.TribeName);
+				}
+				Game.CurrentPlayer.AI?.Move(_unit);
 				EndTask();
 			}
 			if (_endTurn && _step-- <= 0)

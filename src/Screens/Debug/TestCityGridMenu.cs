@@ -23,8 +23,8 @@ namespace CivOne.Screens.Debug
 	[ScreenResizeable]
 	internal class TestCityGridMenu : BaseScreen
 	{
-		private GridMenuDelegate _gridMenu;
-		private bool _menuCreated = false;
+		private GridMenuDelegate? _gridMenu;
+		private bool _menuCreated;
 
 		private void CreateTestMenu()
 		{
@@ -52,7 +52,7 @@ namespace CivOne.Screens.Debug
 			Destroy();
 		}
 
-		private void OnCancelled(object sender, EventArgs args)
+		private void OnCancelled(object? _, EventArgs __)
 		{
 			Destroy();
 		}
@@ -95,7 +95,7 @@ namespace CivOne.Screens.Debug
 			}
 
 			this.Clear();
-			_gridMenu.Draw(this, "Test City Grid (300 cities)", CanvasHeight);
+			_gridMenu?.Draw(this, "Test City Grid (300 cities)", CanvasHeight);
 			return true;
 		}
 

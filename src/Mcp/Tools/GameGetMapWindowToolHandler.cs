@@ -85,10 +85,10 @@ namespace CivOne.Mcp.Tools
 			if (encoded)
 				includeMeta = true;
 
-			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string? errorMessage))
-				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage!, null));
+			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto? snapshot, out string? errorCode, out string? errorMessage))
+				return JsonResponse(request.Id, BuildErrorPayload(errorCode!, errorMessage!, null));
 
-			Map2d<TileDto>? mapTiles = snapshot.Map?.Tiles;
+			Map2d<TileDto>? mapTiles = snapshot!.Map?.Tiles;
 			if (mapTiles == null)
 				return JsonResponse(request.Id, BuildErrorPayload("NO_MAP", "No map data available.", null));
 

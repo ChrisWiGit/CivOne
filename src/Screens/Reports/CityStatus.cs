@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Linq;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -24,7 +25,7 @@ namespace CivOne.Screens.Reports
 		private readonly City[] _cities;
 
 		private bool _update = true;
-		private int _page = 0;
+		private int _page;
 
 		private void Render()
 		{
@@ -40,10 +41,10 @@ namespace CivOne.Screens.Reports
 			{
 				City city = _cities[i];
 
-				string production = (city.CurrentProduction as ICivilopedia).TranslatedName;
+				string production = (city.CurrentProduction as ICivilopedia)?.TranslatedName ?? "??";
 				// fire-eggs 20190721 in microprose, longer wonder names are abbreviated
 				if (production.Length > 16)
-					production = production.Substring(1, 16) + ".";
+					production = string.Concat(production.AsSpan(1, 16), ".");
 
 				int productionWidth = Resources.GetTextSize(1, production).Width;
 

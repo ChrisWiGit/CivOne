@@ -263,7 +263,7 @@ namespace CivOne.Persistence.Model
 				advances.Select(x => _valueSanitizer.ClampToByte(x, nameof(PlayerDtoMapper), nameof(PlayerDto.Advances)))];
 		}
 
-		private SpaceShipDto BuildSpaceShipDto(IPlayer player)
+		private static SpaceShipDto BuildSpaceShipDto(IPlayer player)
 		{
 			if (player is not IPlayerRestorable restorablePlayer)
 			{
@@ -378,7 +378,7 @@ namespace CivOne.Persistence.Model
 			return output;
 		}
 
-		private string[] BuildMapPositionNames(List<MapPositionDto>? mapPositions)
+		private static string[] BuildMapPositionNames(List<MapPositionDto>? mapPositions)
 		{
 			var output = new string[MapPositionSlotCount];
 			for (var i = 0; i < output.Length; i++)
@@ -434,7 +434,7 @@ namespace CivOne.Persistence.Model
 			return (x, y);
 		}
 
-		private int BuildMapZoomBasisPoints(int value)
+		private static int BuildMapZoomBasisPoints(int value)
 		{
 			return MapZoomSettings.NormalizeBasisPoints(value);
 		}

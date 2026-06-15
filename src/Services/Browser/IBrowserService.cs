@@ -11,7 +11,7 @@ namespace CivOne.Services.Browser
 		/// <param name="url">The URL to open (must be http/https).</param>
 		/// <param name="errorMessage">Error message if open failed; empty string on success.</param>
 		/// <returns>True if URL was opened; false otherwise.</returns>
-		bool TryOpenUrl(string url, out string errorMessage);
+		bool TryOpenUrl(string url, out string? errorMessage);
 
 		/// <summary>
 		/// Attempts to copy a URL to the system clipboard.
@@ -19,6 +19,6 @@ namespace CivOne.Services.Browser
 		/// <param name="url">The URL to copy.</param>
 		/// <param name="errorMessage">Error message if copy failed; empty string on success.</param>
 		/// <returns>True if URL was copied; false otherwise.</returns>
-		bool TryCopyToClipboard(string url, out string errorMessage);
+		bool TryCopyToClipboard(string url, out string? errorMessage);
 	}
 }

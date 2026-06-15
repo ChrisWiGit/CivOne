@@ -14,6 +14,7 @@ using CivOne.Units;
 using CivOne.UserInterface;
 using CivOne.Civilizations;
 using CivOne.src;
+using CivOne.Persistence.Factories;
 
 namespace CivOne.Screens.Dialogs
 {
@@ -24,7 +25,7 @@ namespace CivOne.Screens.Dialogs
 		private readonly IDiplomatBribeService _service;
 
 		private readonly bool _canBribe;
-		private Menu _menu;
+		private Menu? _menu;
 
 		private void DontBribe(object sender, EventArgs args)
 		{
@@ -102,18 +103,18 @@ namespace CivOne.Screens.Dialogs
 
 	internal static class DiplomatBribeDialogFactory
 	{
-		public static IDiplomatBribeService CreateService(BaseUnitLand unitToBribe, Diplomat diplomat)
+		public static IDiplomatBribeService CreateService(BaseUnitLand unitToBribe, Diplomat diplomat, ILogger logger)
 		{
-			return new DiplomatBribeService(unitToBribe, diplomat);
+			return new DiplomatBribeService(unitToBribe, diplomat, logger);
 		}
-		public static IScreen CreateDialog(BaseUnitLand unitToBribe, Diplomat diplomat)
+		public static IScreen CreateDialog(BaseUnitLand unitToBribe, Diplomat diplomat, ILogger logger)
 		{
-			IDiplomatBribeService service = CreateService(unitToBribe, diplomat);
+			IDiplomatBribeService service = CreateService(unitToBribe, diplomat, logger);
 			return new DiplomatBribe(service, service.CanBribe());
 		}
 	}
 
-	internal class DiplomatBribeService(BaseUnitLand _unitToBribe, Diplomat _diplomat) : IDiplomatBribeService
+	internal class DiplomatBribeService(BaseUnitLand _unitToBribe, Diplomat _diplomat, ILogger logger) : IDiplomatBribeService
 	{
 		public string UnitName => _unitToBribe.TranslatedName;
 
@@ -141,7 +142,13 @@ namespace CivOne.Screens.Dialogs
 			int cost = (_unitToBribe.Player.Gold + 750) / (distance + 2) * _unitToBribe.Price;
 			int bribeCost = (_unitToBribe.Player.Civilization is Barbarian) ? cost / 2 : cost;
 
-			IUnit newUnit = Game.Instance.CreateUnit(_unitToBribe.Type, _unitToBribe.X, _unitToBribe.Y, _diplomat.Owner);
+			IUnit? newUnit = Game.Instance.CreateUnit(_unitToBribe.Type, _unitToBribe.X, _unitToBribe.Y, _diplomat.Owner);
+			if (newUnit == null) 
+			{
+				logger.Log($"Failed to create unit of type {_unitToBribe.Type} at ({_unitToBribe.X}, {_unitToBribe.Y}) for player {_diplomat.Owner}");
+				return;
+			}
+
 			Game.Instance.DisbandUnit(_unitToBribe);
 			_diplomat.KeepMoving(newUnit);
 			_diplomat.Player.Gold -= (short)bribeCost;

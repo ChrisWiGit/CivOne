@@ -171,7 +171,7 @@ namespace CivOne.Persistence.Model
 
 		public class UnitFactory : IUnitFactory
 		{
-			public string LastClassName { get; private set; }
+			public string LastClassName { get; private set; } = string.Empty;
 			public byte LastPlayerId { get; private set; }
 			public Guid? LastHomeCityGuid { get; private set; }
 
@@ -185,7 +185,8 @@ namespace CivOne.Persistence.Model
 				// * 	Owner = player //just for testing, do not do this in real code because index of player it game list may not be the same as player id in save file.
 				// * };
 				// Just for fun, let's use reflection to create the instance instead of hardcoding it. This way we can test that the className is used correctly.
-				var result = (IUnitRestorable)Activator.CreateInstance(Type.GetType($"CivOne.UnitTests.{className}"));
+				var result = Activator.CreateInstance(Type.GetType($"CivOne.UnitTests.{className}")!) as IUnitRestorable
+					?? throw new InvalidOperationException($"Failed to create instance of class '{className}' for unit restoration. Ensure that the class name is correct and that it implements IUnitRestorable.");
 				result.Owner = player;
 				// production code: add unit to Player
 

@@ -249,7 +249,7 @@ namespace CivOne.Screens
 			Picture picture = new(320, 200, _background.Palette);
 			picture.AddLayer(_background);
 
-			Picture backdrop = _sprites.GetGardenBackdrop(palace.GetGardenLevel(1));
+			Picture? backdrop = _sprites.GetGardenBackdrop(palace.GetGardenLevel(1));
 			if (backdrop != null)
 			{
 				picture.AddLayer(backdrop, 0, 135);
@@ -261,13 +261,13 @@ namespace CivOne.Screens
 			// Draw palace middle
 			picture.AddLayer(_sprites.GetPalacePart(palace.GetPalaceStyle(3), PalacePart.Center, palace.GetPalaceLevel(3)), 135, palace.GetPalaceLevel(3) == 0 ? 37 : 38);
 
-			Picture leftGarden = _sprites.GetGardenBrush(0, palace.GetGardenLevel(0));
+			Picture? leftGarden = _sprites.GetGardenBrush(0, palace.GetGardenLevel(0));
 			if (leftGarden != null)
 			{
 				picture.AddLayer(leftGarden, 0, palace.GetGardenLevel(0) == 1 ? 105 : 94);
 			}
 
-			Picture rightGarden = _sprites.GetGardenBrush(2, palace.GetGardenLevel(2));
+			Picture? rightGarden = _sprites.GetGardenBrush(2, palace.GetGardenLevel(2));
 			if (rightGarden != null)
 			{
 				picture.AddLayer(rightGarden, 184, palace.GetGardenLevel(2) == 1 ? 105 : 94);

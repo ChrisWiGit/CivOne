@@ -7,7 +7,7 @@ namespace CivOne.Services.Browser
 	/// </summary>
 	internal sealed class BrowserServiceImpl : IBrowserService
 	{
-		public bool TryOpenUrl(string url, out string errorMessage)
+		public bool TryOpenUrl(string url, out string? errorMessage)
 		{
 			if (string.IsNullOrWhiteSpace(url))
 			{
@@ -32,7 +32,7 @@ namespace CivOne.Services.Browser
 			}
 		}
 
-		public bool TryCopyToClipboard(string url, out string errorMessage)
+		public bool TryCopyToClipboard(string url, out string? errorMessage)
 		{
 			if (string.IsNullOrWhiteSpace(url))
 			{
@@ -53,7 +53,7 @@ namespace CivOne.Services.Browser
 
 		private static bool IsValidHttpUrl(string url)
 		{
-			if (!Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+			if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? uri))
 				return false;
 			return uri.Scheme == "http" || uri.Scheme == "https";
 		}

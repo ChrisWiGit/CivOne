@@ -19,6 +19,7 @@ using CivOne.Screens.Dialogs;
 using CivOne.Units;
 using CivOne.Services;
 using System.Diagnostics;
+using CivOne.Persistence.Factories;
 
 namespace CivOne.Tasks
 {
@@ -92,7 +93,7 @@ namespace CivOne.Tasks
 				search.Accept += (s, a) =>
 				{
 					if (s is not Search searchScreen) return;
-					City city = searchScreen.City;
+					City? city = searchScreen.City;
 					if (city == null) return;
 					
 					GamePlay gamePlay = (GamePlay)Common.Screens.First(x => x.GetType() == typeof(GamePlay));
@@ -138,7 +139,7 @@ namespace CivOne.Tasks
 
         public static Show WeakAttack(BaseUnit unit, int relx, int rely) => new(new WeakAttack(unit, relx, rely));
 
-		public static Show DiplomatBribe(BaseUnitLand unitToBribe, Diplomat diplomat) => new(DiplomatBribeDialogFactory.CreateDialog(unitToBribe, diplomat));
+		public static Show DiplomatBribe(BaseUnitLand unitToBribe, Diplomat diplomat) => new(DiplomatBribeDialogFactory.CreateDialog(unitToBribe, diplomat, Logger));
 
 		public static Show DiplomatCity(City enemyCity, Diplomat diplomat) => new(DiplomatCityDialogFactory.CreateDialog(enemyCity, diplomat));
 

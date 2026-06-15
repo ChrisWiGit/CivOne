@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CivOne.Enums;
+using CivOne.Services.Random;
 using CivOne.Tiles;
 using CivOne.Units;
 
@@ -27,7 +28,8 @@ namespace CivOne.Services.GlobalWarming.Impl
 		RemoveUnit removeUnit,
 		int MapWidth,
 		int MapHeight,
-		Settings.GlobalWarmingFeatureFlag featureFlags
+		Settings.GlobalWarmingFeatureFlag featureFlags,
+		IRandomService randomService
 			) : GlobalWarmingScourgeServiceImpl(globalWarmingService, mapTiles, tileChangeRequestCallback, MapWidth, MapHeight)
 	{
 		private readonly TileChangeRequestCallback tileChangeRequestCallback = tileChangeRequestCallback;
@@ -52,9 +54,9 @@ namespace CivOne.Services.GlobalWarming.Impl
 		private bool RiseSeaLevelOnRiverTile(ITile tile, int totalWarmings)
 		{
 			bool isArctic = (tile.Type is Terrain.Arctic or Terrain.Tundra || IsPoles(tile)) &&
-				Common.Random.Hit(Math.Min(totalWarmings * 20, 100));
+				randomService.Hit(Math.Min(totalWarmings * 20, 100));
 			bool Otherwise = !isArctic &&
-				Common.Random.Hit(Math.Min(totalWarmings * 10, 100));
+				randomService.Hit(Math.Min(totalWarmings * 10, 100));
 
 			if (isArctic || Otherwise)
 			{

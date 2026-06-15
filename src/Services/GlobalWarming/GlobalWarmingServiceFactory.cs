@@ -6,6 +6,7 @@ using System.Linq;
 using CivOne.Enums;
 using CivOne.Persistence.Model;
 using CivOne.Services.GlobalWarming.Impl;
+using CivOne.Services.Random;
 using CivOne.Tiles;
 
 namespace CivOne.Services.GlobalWarming
@@ -51,7 +52,8 @@ namespace CivOne.Services.GlobalWarming
 						removeUnit,
 						mapWidth,
 						mapHeight,
-						Settings.Instance.GlobalWarmingFeatureFlags
+						Settings.Instance.GlobalWarmingFeatureFlags,
+						RandomServiceFactory.Create()
 					);
 			}
 

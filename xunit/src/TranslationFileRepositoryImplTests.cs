@@ -81,7 +81,7 @@ namespace CivOne.UnitTests
 
 			Assert.True(success);
 			Assert.Null(error);
-			Assert.Equal("Quick Save/Load", translations["QUICK SAVE/LOAD"]);
+			Assert.Equal("Quick Save/Load", translations!["QUICK SAVE/LOAD"]);
 			Assert.Equal("X=Y", translations["A=B"]);
 		}
 
@@ -95,6 +95,7 @@ namespace CivOne.UnitTests
 
 			Assert.True(success);
 			Assert.Null(error);
+			Assert.NotNull(translations);
 			Assert.Equal("Line1\nLine2", translations["FOO\nBAR"]);
 		}
 
@@ -108,6 +109,7 @@ namespace CivOne.UnitTests
 
 			Assert.True(success);
 			Assert.Null(error);
+			Assert.NotNull(translations);
 			Assert.Equal("Rom\nCaesarea", translations["ROME\nCAESAREA"]);
 		}
 

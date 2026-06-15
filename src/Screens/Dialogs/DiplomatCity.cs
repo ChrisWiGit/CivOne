@@ -24,7 +24,7 @@ namespace CivOne.Screens.Dialogs
 		private const int FONT_ID = 0;
 
 		private readonly IDiplomatCityService _service;
-		private Menu _menu;
+		private Menu? _menu;
 
 		private void EstablishEmbassy(object sender, EventArgs args)
 		{
@@ -124,7 +124,7 @@ namespace CivOne.Screens.Dialogs
 			return new DiplomatCityService(enemyCity, diplomat, translationService);
 		}
 
-		public static IScreen CreateDialog(City enemyCity, Diplomat diplomat, ITranslationService translationService = null)
+		public static IScreen CreateDialog(City enemyCity, Diplomat diplomat, ITranslationService? translationService = null)
 		{
 			translationService ??= TranslationServiceFactory.GetCurrent();
 			IDiplomatCityService service = CreateService(enemyCity, diplomat, translationService);
@@ -210,7 +210,7 @@ namespace CivOne.Screens.Dialogs
 				return;
 			}
 
-			IAdvance advance = _diplomat.GetAdvanceToSteal(_enemyCity.CityOwnerPlayer);
+			IAdvance? advance = _diplomat.GetAdvanceToSteal(_enemyCity.CityOwnerPlayer);
 			if (advance == null)
 			{
 				GameTask.Insert(Message.General(_t.Translate("No new technology found")));

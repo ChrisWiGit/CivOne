@@ -86,14 +86,14 @@ namespace CivOne.Services.EndGame
 			ReturnToCredits();
 		}
 
-		private Task<object> ShowScreenAsync(IScreen screen)
+		private Task<bool> ShowScreenAsync(IScreen screen)
 		{
-			TaskCompletionSource<object> tcs = new();
+			TaskCompletionSource<bool> tcs = new();
 
-			void OnClosed(object sender, EventArgs args)
+			void OnClosed(object? _, EventArgs __)
 			{
 				screen.Closed -= OnClosed;
-				tcs.TrySetResult(null);
+				tcs.TrySetResult(true);
 			}
 
 			screen.Closed += OnClosed;

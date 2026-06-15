@@ -400,7 +400,7 @@ namespace CivOne.Persistence.Model
 			var playerDtos = new List<PlayerDto>
 			{
 				new() {
-					UnitsDestroyedByByPlayerGuid = null  // Null mapping
+					UnitsDestroyedByByPlayerGuid = null!  // Null mapping
 				}
 			};
 
@@ -550,7 +550,7 @@ namespace CivOne.Persistence.Model
 		/// <summary>
 		/// Creates a mock player for testing purposes.
 		/// </summary>
-		private static IPlayer CreateMockPlayer(Guid playerGuid)
+		private static MockedIPlayer CreateMockPlayer(Guid playerGuid)
 		{
 			return new MockedIPlayer
 			{

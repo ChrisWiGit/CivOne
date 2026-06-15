@@ -38,11 +38,11 @@ namespace CivOne.Screens
 			return true;
 		}
 
-		private int VisibleTop
+		private static int VisibleTop
 		{
 			get
 			{
-				Player player = Game.Human;
+				Player player = Human;
 				for(int yy = 0; yy < Map.HEIGHT; yy++)
 				for(int xx = 0; xx < Map.WIDTH; xx++)
 				{
@@ -52,11 +52,11 @@ namespace CivOne.Screens
 			}
 		}
 
-		private int VisibleBottom
+		private static int VisibleBottom
 		{
 			get
 			{
-				Player player = Game.Human;
+				Player player = Human;
 				for(int yy = Map.HEIGHT - 1; yy >= 0; yy--)
 				for(int xx = 0; xx < Map.WIDTH; xx++)
 				{
@@ -71,7 +71,7 @@ namespace CivOne.Screens
 			Palette = Resources.WorldMapTiles.Palette;
 			this.Clear(5);
 
-			int startX = Game.Human.StartX - 40;
+			int startX = Human.StartX - 40;
 			int startY = ((Map.HEIGHT - (VisibleBottom - VisibleTop)) / 2) - VisibleTop;
 			if (Settings.RevealWorld) startX = 0;
 			if (Settings.RevealWorld || VisibleTop == 0 || VisibleBottom == Map.HEIGHT) startY = 0;
@@ -81,13 +81,12 @@ namespace CivOne.Screens
 			{
 				if (!Settings.RevealWorld && !Human.Visible(x, y)) continue;
 
-				City city = null;
-				IUnit[] units;
 				ITile tile = Map[x, y];
+				City? city = tile.City;
 				Terrain type = tile.Type;
 				if (type == Terrain.Grassland2) type = Terrain.Grassland1;
-				bool altTile = ((x + y) % 2 == 1);
-				int xx = (((int)type) * 4);
+				bool altTile = (x + y) % 2 == 1;
+				int xx = ((int)type) * 4;
 				int yy = altTile ? 4 : 0;
 				
 				int dx = (x - startX) * 4;
@@ -99,11 +98,11 @@ namespace CivOne.Screens
 
 				this.AddLayer(Resources.WorldMapTiles[xx, yy, 4, 4], dx, dy);
 				
-				if ((city = tile.City) != null && city.Size > 0)
+				if (city is { Size: > 0 })
 				{
 					this.FillRectangle(dx, dy, 4, 4, Common.ColourLight[city.CityOwnerPlayerIndex]);
 				}
-				else if ((units = tile.Units).Length > 0)
+				else if (tile.Units is { Length: > 0 } units)
 				{
 					this.FillRectangle(dx + 1, dy + 1, 3, 3, 5)
 						.FillRectangle(dx, dy, 3, 3, Common.ColourLight[units[0].Owner]);

@@ -8,9 +8,11 @@ namespace CivOne.Persistence.Model
 {
     public class Bool2DMapTest
     {
-        private Bool2dMap _testee;
+        private Bool2dMap? _testee;
+		private static readonly bool[] expected = new bool[] { false, false, false, false, false };
+		private static readonly bool[] expectedArray = new bool[] { true, false, false, true, false };
 
-        public Bool2DMapTest()
+		public Bool2DMapTest()
         {
         }
 
@@ -96,8 +98,8 @@ namespace CivOne.Persistence.Model
             _testee = new Bool2dMap(5, 2);
             _testee[1] = [true, false, false, true, false];
 
-            Assert.Equal(new bool[] { false, false, false, false, false }, _testee[0]);
-            Assert.Equal(new bool[] { true, false, false, true, false }, _testee[1]);
+            Assert.Equal(expected, _testee[0]);
+            Assert.Equal(expectedArray, _testee[1]);
         }
 
         [Fact]
