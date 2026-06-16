@@ -31,9 +31,9 @@ namespace CivOne.Units
 
 		protected virtual IEnumerable<IUnit> MoveUnits(ITile previousTile)
 		{
-			if (this is not IBoardable boardable || !previousTile.Units.Any(u => u.Class == UnitClass.Land)) yield break;
+			if (this is not IBoardable boardable || !previousTile.Units.Any(u => u.UnitCategory == UnitClass.Land)) yield break;
 
-			IUnit[] moveUnits = [.. previousTile.Units.Where(u => u.Class == UnitClass.Land)];
+			IUnit[] moveUnits = [.. previousTile.Units.Where(u => u.UnitCategory == UnitClass.Land)];
 			if (previousTile.City != null)
 				moveUnits = [.. moveUnits.Where(u => u.Sentry)];
 			moveUnits = [.. moveUnits.Take(boardable.Cargo)];
@@ -83,7 +83,7 @@ namespace CivOne.Units
 			if (this is not IBoardable boardable)
 				return false;
 
-			units = [.. Map[X, Y].Units.Where(u => u.Class is UnitClass.Air or UnitClass.Land).Take(boardable.Cargo)];
+			units = [.. Map[X, Y].Units.Where(u => u.UnitCategory is UnitClass.Air or UnitClass.Land).Take(boardable.Cargo)];
 			if (units.Length == 0)
 				return false;
 
@@ -117,7 +117,7 @@ namespace CivOne.Units
 					yield return MenuHomeCity();
 				}
 
-				if (Role == UnitRole.Transport && Map[X, Y].Units.Any(u => u.Class is UnitClass.Land or UnitClass.Air))
+				if (Role == UnitRole.Transport && Map[X, Y].Units.Any(u => u.UnitCategory is UnitClass.Land or UnitClass.Air))
 				{
 					yield return MenuUnload();
 				}
@@ -143,7 +143,7 @@ namespace CivOne.Units
 
 		protected BaseUnitSea(byte price = 1, byte attack = 1, byte defense = 1, byte move = 1, int range = 1) : base(price, attack, defense, move)
 		{
-			Class = UnitClass.Water;
+			UnitCategory = UnitClass.Water;
 			_range = range;
 			Role = UnitRole.SeaAttack;
 		}

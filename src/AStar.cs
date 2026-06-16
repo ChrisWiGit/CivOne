@@ -413,12 +413,12 @@ namespace CivOne
             ITile _tile = Map[NextPosition.iX, NextPosition.iY];
 
             // Try Avoide nmys by doing a detour if close to goal
-            if (iDistance <= 9 && (_unit.Class == UnitClass.Land || _unit.Class == UnitClass.Water))
+            if (iDistance <= 9 && (_unit.UnitCategory == UnitClass.Land || _unit.UnitCategory == UnitClass.Water))
             {
                 if (CheckNmeNighbors(NextPosition)) _cost = 5.0f;// increase cost if close to nmy Land/sea unit
             }
 
-            if (_unit.Class == UnitClass.Land)
+            if (_unit.UnitCategory == UnitClass.Land)
             {
                 float fNextCost = GetMoveCost(NextPosition.iX, NextPosition.iY);
                 float fCost = GetMoveCost(Positition.iX, Positition.iY);
@@ -430,7 +430,7 @@ namespace CivOne
                 else return Math.Max(Math.Max(fNextCost, fCost), _cost);               // if moving from terrain to road/railroad   (  dont know if this is correct  )
             }
 
-            else if (_unit.Class == UnitClass.Water)
+            else if (_unit.UnitCategory == UnitClass.Water)
             {
                 bool IsMyCity = _tile.City != null && _tile.City.CityOwnerPlayerIndex == _unit.Owner;
 

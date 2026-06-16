@@ -302,25 +302,25 @@ namespace CivOne.Screens.GamePlayPanels
 				return false;
 			}
 
-			if (selectedUnit.Class == UnitClass.Land && tile.City != null)
+			if (selectedUnit.UnitCategory == UnitClass.Land && tile.City != null)
 			{
 				return ownerId == tile.City.CityOwnerPlayerIndex;
 			}
 
-			if (selectedUnit.Class == UnitClass.Land && tile.Type == Terrain.Ocean)
+			if (selectedUnit.UnitCategory == UnitClass.Land && tile.Type == Terrain.Ocean)
 			{
-				if (!tile.Units.Any(x => x.Class == UnitClass.Water && x is IBoardable))
+				if (!tile.Units.Any(x => x.UnitCategory == UnitClass.Water && x is IBoardable))
 				{
 					return false;
 				}
 
-				int capacity = tile.Units.Where(x => x.Class == UnitClass.Water).OfType<IBoardable>()
+				int capacity = tile.Units.Where(x => x.UnitCategory == UnitClass.Water).OfType<IBoardable>()
 									.Sum(x => x.Cargo);
-				int unitCount = tile.Units.Count(x => x.Class == UnitClass.Land);
+				int unitCount = tile.Units.Count(x => x.UnitCategory == UnitClass.Land);
 				return unitCount < capacity;
 			}
 
-			if (selectedUnit.Class == UnitClass.Water && tile.Type != Terrain.Ocean)
+			if (selectedUnit.UnitCategory == UnitClass.Water && tile.Type != Terrain.Ocean)
 			{
 				return tile.City != null && ownerId == tile.City.CityOwnerPlayerIndex;
 			}
@@ -354,7 +354,7 @@ namespace CivOne.Screens.GamePlayPanels
 				return false;
 			}
 
-			if (unit.Class == UnitClass.Land && tile.Type == Terrain.Ocean)
+			if (unit.UnitCategory == UnitClass.Land && tile.Type == Terrain.Ocean)
 			{
 				unit.Sentry = true;
 			}
@@ -364,7 +364,7 @@ namespace CivOne.Screens.GamePlayPanels
 				unit.MovesLeft = 0;
 			}
 
-			if (unit.Class == UnitClass.Land && tile.Hut)
+			if (unit.UnitCategory == UnitClass.Land && tile.Hut)
 			{
 				tile.Hut = false;
 			}

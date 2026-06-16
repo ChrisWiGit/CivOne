@@ -23,7 +23,7 @@ namespace CivOne.UnitTests
             RequiredTech = null;
             RequiredWonder = null;
             ObsoleteTech = null;
-            Class = UnitClass.Land;
+            UnitCategory = UnitClass.Land;
             Type = UnitType.Settlers;
             Home = null!;
             Role = UnitRole.Settler;
@@ -32,7 +32,7 @@ namespace CivOne.UnitTests
             Move = 1;
             X = 2;
             Y = 3;
-            Goto = new Point(1, 2);
+            GotoDestination = new Point(1, 2);
             Tile = null!;
             Busy = false;
             HasAction = false;
@@ -80,7 +80,7 @@ namespace CivOne.UnitTests
 
 		public IAdvance? ObsoleteTech { get; set; }
 
-		public UnitClass Class { get; set; }
+		public UnitClass UnitCategory { get; set; }
 
 		public UnitType Type { get; set; }
 
@@ -96,7 +96,7 @@ namespace CivOne.UnitTests
 
 		public int X { get; set; }
 		public int Y { get; set; }
-		public Point Goto { get; set; }
+		public Point GotoDestination { get; set; }
 
 		public ITile Tile { get; set; }
 

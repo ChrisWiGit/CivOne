@@ -400,15 +400,15 @@ namespace CivOne.UnitTests
 			{
 				X = sx,
 				Y = sy,
-				Goto = new Point(gx, gy),
-				Class = unitClass,
+				GotoDestination = new Point(gx, gy),
+				UnitCategory = unitClass,
 			};
 		}
 
 
 
 		private static IUnitGotoService CreateTestee(IMapTiles map, bool useNewImpl, bool riverFastMovement = false)
-			=> useNewImpl ? new UnitGotoServiceImpl2(map, riverFastMovement) :
+			=> useNewImpl ? new UnitGotoService2(map, riverFastMovement) :
 							new UnitGotoServiceImpl(map);
 	}
 }

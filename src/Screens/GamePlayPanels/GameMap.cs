@@ -399,7 +399,7 @@ namespace CivOne.Screens.GamePlayPanels
 
 		private void DrawFullCargoUnitWhileMoving(IUnit movingUnit, ITile tile, int dx, int dy, MoveUnit movement, Bytemap unitPicture)
 		{
-			if (movingUnit is IBoardable && tile.Units.Any(u => u.Class is UnitClass.Land or UnitClass.Air && (tile.City == null || (tile.City != null && u.Sentry))))
+			if (movingUnit is IBoardable && tile.Units.Any(u => u.UnitCategory is UnitClass.Land or UnitClass.Air && (tile.City == null || (tile.City != null && u.Sentry))))
 			{
 				this.AddLayer(unitPicture, dx + (movement.X * _tilePixelSize / BaseTilePixelSize) - 1, dy + (movement.Y * _tilePixelSize / BaseTilePixelSize) - 1);
 			}
@@ -458,11 +458,11 @@ namespace CivOne.Screens.GamePlayPanels
 			
 			int viewRange = 1;
 			
-			if (unit.Class == UnitClass.Water && unit is BaseUnitSea seaUnit)
+			if (unit.UnitCategory == UnitClass.Water && unit is BaseUnitSea seaUnit)
 			{
 				viewRange = seaUnit.Range;
 			}
-			if (unit.Class == UnitClass.Air)
+			if (unit.UnitCategory == UnitClass.Air)
 			{
 				viewRange = 2;
 			}

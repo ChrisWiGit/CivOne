@@ -88,7 +88,7 @@ namespace CivOne.Screens
 
 			if (args.X >= left && args.X < (left + WIDTH) && args.Y >= top && args.Y < (top + height))
 			{
-				int y = (args.Y - top - VerticalPadding);
+				int y = args.Y - top - VerticalPadding;
 				int uid = (y - (y % UnitRowHeight)) / UnitRowHeight;
 				if (uid < 0 || uid >= _units.Length)
 				{
@@ -98,7 +98,7 @@ namespace CivOne.Screens
 				
 				Game.ActiveUnit = _units[uid];
 				_units[uid].Busy = false;
-                    _units[uid].Goto = System.Drawing.Point.Empty; // fire-eggs 20190612 clear Goto
+                    _units[uid].GotoDestination = Point.Empty; // fire-eggs 20190612 clear Goto
 				_update = true;
 				return true;
 			}
@@ -141,7 +141,7 @@ namespace CivOne.Screens
 				// already moved would be able to move again after being selected from the stack
 			}
 
-			unit.Goto = Point.Empty;
+			unit.GotoDestination = Point.Empty;
 			Game.ActiveUnit = unit;
 		}
 

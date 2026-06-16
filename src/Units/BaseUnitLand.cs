@@ -92,7 +92,7 @@ namespace CivOne.Units
 
 		private void MoveOnYourOwn()
 		{
-			Debug.Assert(Class == UnitClass.Land);
+			Debug.Assert(UnitCategory == UnitClass.Land);
 
 			PartMoves = 0; // fire-eggs 20190806 we've moved off-road: all partial moves always lost
 			if (MovesLeft == 0)
@@ -154,7 +154,7 @@ namespace CivOne.Units
 		public override bool MoveTo(int relX, int relY)
 		{
 			// no base.MoveTo. We handle everything on our own.
-			Debug.Assert(Class == UnitClass.Land);
+			Debug.Assert(UnitCategory == UnitClass.Land);
 
 			if (Movement != null) return false;
 
@@ -190,7 +190,7 @@ namespace CivOne.Units
 				{
 					if (Human == Owner)
 					{
-						Goto = Point.Empty;             // Cancel any goto mode ( maybe for AI too ?? )
+						GotoDestination = Point.Empty;             // Cancel any goto mode ( maybe for AI too ?? )
 						GameTask.Enqueue(Message.Error(Translate("-- Civilization Note --"), GetGameText($"ERROR/ZOC")));
 					}
 					return false;
@@ -310,14 +310,14 @@ namespace CivOne.Units
 
 			bool isOwner = tile.Units.Any(u => u.Owner == Owner);
 			bool allowedToBoard = tile.Units.OfType<IBoardable>().Any(u => u.AllowedToBoard(this));
-			bool hasFreeSlots = tile.Units.OfType<IBoardable>().Sum(u => u.Cargo) > tile.Units.Count(u => u.Class == UnitClass.Land);
+			bool hasFreeSlots = tile.Units.OfType<IBoardable>().Sum(u => u.Cargo) > tile.Units.Count(u => u.UnitCategory == UnitClass.Land);
 
 			return isOwner && allowedToBoard && hasFreeSlots;
 		}
 
 		protected BaseUnitLand(byte price = 1, byte attack = 1, byte defense = 1, byte move = 1) : base(price, attack, defense, move)
 		{
-			Class = UnitClass.Land;
+			UnitCategory = UnitClass.Land;
 			Role = UnitRole.LandAttack;
 		}
 	}

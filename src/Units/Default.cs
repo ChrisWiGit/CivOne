@@ -11,7 +11,15 @@ using System;
 
 namespace CivOne.Units
 {
-	public class Default : Attribute
+	/// <summary>
+	/// Marks a unit type as the default unit choice for generic unit handling.
+	/// </summary>
+	/// <remarks>
+	/// This attribute is used as metadata so game logic can discover a fallback or
+	/// preferred unit type without hard-coding concrete class names.
+	/// </remarks>
+	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+	public class DefaultUnitProductionAttribute : Attribute
 	{
 	}
 }

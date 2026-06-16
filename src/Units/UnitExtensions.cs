@@ -65,7 +65,7 @@ namespace CivOne.Units
 				{
 					return Unit.Fortify(unit.Type, colour).Bitmap!;
 				}
-				else if (Human == unit.Owner && unit.Goto != Point.Empty)
+				else if (Human == unit.Owner && unit.GotoDestination != Point.Empty)
 				{
 					return Unit.Letter(unit.Type, 'G', colour).Bitmap!;
 				}

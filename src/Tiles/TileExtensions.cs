@@ -378,7 +378,7 @@ namespace CivOne.Tiles
 			}
 			else if (tile.IsOcean)
 			{
-				IUnit? firstWaterUnit = units.FirstOrDefault(x => x.Class == UnitClass.Water);
+				IUnit? firstWaterUnit = units.FirstOrDefault(x => x.UnitCategory == UnitClass.Water);
 				firstUnitToDraw = firstWaterUnit ?? units.FirstOrDefault(findFirstAvailableUnit => !findFirstAvailableUnit.Sentry);
 			}
 
@@ -409,7 +409,7 @@ namespace CivOne.Tiles
 
 		static System.Func<IUnit, int> WaterUnitsFirst(ITile tile)
 		{
-			return unit => (tile.IsOcean && unit.Class == UnitClass.Water) ? 1 : 0;
+			return unit => (tile.IsOcean && unit.UnitCategory == UnitClass.Water) ? 1 : 0;
 		}
 
 		static System.Func<IUnit, bool> OrMovingUnitFirst()

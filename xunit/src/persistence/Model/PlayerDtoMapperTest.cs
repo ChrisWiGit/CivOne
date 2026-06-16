@@ -56,7 +56,7 @@ namespace CivOne.Persistence.Model
 				Owner = 0,
 				X = 10,
 				Y = 20,
-				Goto = new Point(5, 8),
+				GotoDestination = new Point(5, 8),
 				Veteran = true,
 				MovesLeft = 2,
 				PartMoves = 1,

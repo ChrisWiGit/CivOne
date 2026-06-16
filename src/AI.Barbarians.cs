@@ -24,7 +24,7 @@ namespace CivOne
 	/// AI logic for barbarian units. 
 	/// This version was updated from 
 	/// <a href="https://github.com/mwerneburg/CivOne/commit/eec2410b583cd3c119cd3889fecc579bcffa4374">mwerneburg/CivOne</a> to use the new A* pathfinding implementation 
-	/// in <see cref="UnitGotoServiceImpl2"/>, while preserving the same behaviour and logic for barbarian movement. 
+	/// in <see cref="UnitGotoService2"/>, while preserving the same behaviour and logic for barbarian movement. 
 	/// </summary>
     internal partial class AI
 	{
@@ -35,7 +35,7 @@ namespace CivOne
 
 		private void BarbarianMove(IUnit unit)
 		{
-			switch (unit.Class)
+			switch (unit.UnitCategory)
 			{
 				case UnitClass.Water:
 					BarbarianMoveWater(unit);
@@ -51,7 +51,7 @@ namespace CivOne
 
 		private void BarbarianMoveWater(IUnit unit)
 		{
-			if (!unit.Tile.Units.Any(x => x.Class == UnitClass.Land))
+			if (!unit.Tile.Units.Any(x => x.UnitCategory == UnitClass.Land))
 			{
 				Game.DisbandUnit(unit);
 				return;
@@ -77,7 +77,7 @@ namespace CivOne
 
 					// Aboard units are invisible to ActiveUnit so UnitWait can never unblock.
 					// Move each land unit directly to a landing tile instead.
-					foreach (IUnit landUnit in unit.Tile.Units.Where(x => x.Class == UnitClass.Land).ToList())
+					foreach (IUnit landUnit in unit.Tile.Units.Where(x => x.UnitCategory == UnitClass.Land).ToList())
 					{
 						landUnit.Sentry = false;
 						ITile dest = landingZones[_randomService.NextInt(landingZones.Length)];
@@ -87,7 +87,7 @@ namespace CivOne
 					return;
 				}
 
-				if (unit.Goto.IsEmpty)
+				if (unit.GotoDestination.IsEmpty)
 				{
 					// Target a coastal ocean tile adjacent to the nearest palace city.
 					// Targeting the city tile itself would make GotoStep fail (water→land),
@@ -110,23 +110,23 @@ namespace CivOne
 						.OrderBy(t => Common.DistanceToTile(unit.X, unit.Y, t.X, t.Y))
 						.First();
 
-					unit.Goto = new Point(approach.X, approach.Y);
+					unit.GotoDestination = new Point(approach.X, approach.Y);
 					continue;
 				}
 
-				if (!unit.Goto.IsEmpty)
+				if (!unit.GotoDestination.IsEmpty)
 				{
 					ITile? next = _unitGotoService.GotoStep(unit);
 					if (next == null)
 					{
 						// No path to current target — give up for this turn.
-						unit.Goto = Point.Empty;
+						unit.GotoDestination = Point.Empty;
 						unit.SkipTurn();
 						return;
 					}
 					if (!unit.MoveTo(next.X - unit.X, next.Y - unit.Y))
 					{
-						unit.Goto = Point.Empty;
+						unit.GotoDestination = Point.Empty;
 						unit.SkipTurn();
 					}
 					return;
@@ -144,7 +144,7 @@ namespace CivOne
 		{
 			if (unit.Tile.IsOcean && unit.Tile.GetBorderTiles().Where(x => !x.IsOcean && !IsPolarTile(x)).All(x => x.Units.Any(u => u.Owner != 0)))
 			{
-				IUnit? ship = unit.Tile.Units.FirstOrDefault(u => u.Class == UnitClass.Water && u.MovesLeft > 0);
+				IUnit? ship = unit.Tile.Units.FirstOrDefault(u => u.UnitCategory == UnitClass.Water && u.MovesLeft > 0);
 				if (ship != null)
 				{
 					ITile[] landTiles = [.. unit.Tile.GetBorderTiles().Where(x => !x.IsOcean && !IsPolarTile(x) && x.Units.Any(u => u.Owner != 0))];

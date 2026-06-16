@@ -16,7 +16,7 @@ namespace CivOne.Services.Pathfinding
 	/// </summary>
 	/// <param name="_mapTiles">Required map tiles service to access tile information for pathfinding.</param>
 	/// <param name="_riverFastMovement">Configuration flag to determine if river tiles should be treated as roads for movement cost calculation.</param>
-	internal sealed class UnitGotoServiceImpl2(IMapTiles _mapTiles, bool _riverFastMovement) : IUnitGotoService
+	internal sealed class UnitGotoService2(IMapTiles _mapTiles, bool _riverFastMovement) : IUnitGotoService
 	{
 		private sealed record AStarState(
 			Dictionary<int, int> GCostMap,
@@ -28,7 +28,7 @@ namespace CivOne.Services.Pathfinding
 		// Cost units: railroad=1, road=3, terrain=Movement*9 (max 18 for hills/forest).
 		public ITile? GotoStep(IUnit unit)
 		{
-			int goalX = unit.Goto.X, goalY = unit.Goto.Y;
+			int goalX = unit.GotoDestination.X, goalY = unit.GotoDestination.Y;
 			int startX = unit.X, startY = unit.Y;
 
 			bool isAlreadyAtGoal = startX == goalX && startY == goalY;
@@ -162,7 +162,7 @@ namespace CivOne.Services.Pathfinding
 
 		private static bool IsUnitCanPassTile(IUnit unit, ITile tile, bool isGoalTile)
 		{
-			if (unit.Class == UnitClass.Water)
+			if (unit.UnitCategory == UnitClass.Water)
 			{
 				return tile.IsOcean || isGoalTile;
 			}

@@ -118,19 +118,19 @@ namespace CivOne.Screens.Debug
 				
 				if (tile.Units.Any(x => _selectedPlayer != x.Owner)) return false;
 
-				if (_selectedUnit.Class == UnitClass.Land && tile.City != null)
+				if (_selectedUnit.UnitCategory == UnitClass.Land && tile.City != null)
 				{
 					return _selectedPlayer == tile.City.CityOwnerPlayerIndex;
 				}
-				if (_selectedUnit.Class == UnitClass.Land && tile.Type == Terrain.Ocean)
+				if (_selectedUnit.UnitCategory == UnitClass.Land && tile.Type == Terrain.Ocean)
 				{
-					if (!tile.Units.Any(x => x.Class == UnitClass.Water && x is IBoardable)) return false;
+					if (!tile.Units.Any(x => x.UnitCategory == UnitClass.Water && x is IBoardable)) return false;
 					
-					int capacity = tile.Units.Where(x => x.Class == UnitClass.Water).OfType<IBoardable>().Sum(x => x.Cargo);
-					int unitCount = tile.Units.Count(x => x.Class == UnitClass.Land);
+					int capacity = tile.Units.Where(x => x.UnitCategory == UnitClass.Water).OfType<IBoardable>().Sum(x => x.Cargo);
+					int unitCount = tile.Units.Count(x => x.UnitCategory == UnitClass.Land);
 					return unitCount < capacity;
 				}
-				if (_selectedUnit.Class == UnitClass.Water && tile.Type != Terrain.Ocean)
+				if (_selectedUnit.UnitCategory == UnitClass.Water && tile.Type != Terrain.Ocean)
 				{
 					return tile.City != null && _selectedPlayer == tile.City.CityOwnerPlayerIndex;
 				}
@@ -212,7 +212,7 @@ namespace CivOne.Screens.Debug
 
 		private void ApplySpawnRules(IUnit unit)
 		{
-			if (unit.Class == UnitClass.Land && Map[UnitX, UnitY].Type == Terrain.Ocean)
+			if (unit.UnitCategory == UnitClass.Land && Map[UnitX, UnitY].Type == Terrain.Ocean)
 			{
 				unit.Sentry = true;
 			}
@@ -222,12 +222,12 @@ namespace CivOne.Screens.Debug
 				unit.MovesLeft = 0;
 			}
 
-			if (unit.Class == UnitClass.Land && Map[UnitX, UnitY].Hut)
+			if (unit.UnitCategory == UnitClass.Land && Map[UnitX, UnitY].Hut)
 			{
 				Map[UnitX, UnitY].Hut = false;
 			}
 
-			if (unit.Class == UnitClass.Air && unit is BaseUnitAir airUnit)
+			if (unit.UnitCategory == UnitClass.Air && unit is BaseUnitAir airUnit)
 			{
 				airUnit.FuelLeft = airUnit.TotalFuel;
 			}

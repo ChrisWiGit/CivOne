@@ -73,7 +73,7 @@ namespace CivOne.Units
 		{
 			get
 			{
-				return order != Order.None || Sentry || Fortify || FortifyActive || !Goto.IsEmpty;
+				return order != Order.None || Sentry || Fortify || FortifyActive || !GotoDestination.IsEmpty;
 			}
 		}
 		public virtual bool HasMovesLeft
@@ -126,7 +126,7 @@ namespace CivOne.Units
 			}
 			set
 			{
-				if (Class != UnitClass.Land) return;
+				if (UnitCategory != UnitClass.Land) return;
 				if (this is Settlers) return;
 				if (!value)
 					_fortify = false;
@@ -240,7 +240,7 @@ namespace CivOne.Units
 			// Step 1: Determine the nominal defense value of defending unit.
 			int defendStrength = (int)defendUnit.Defense;
 
-			if (defendUnit.Class == UnitClass.Land || (defendUnit.Class == UnitClass.Water && cityWalls && attackUnit.Attack != 12))
+			if (defendUnit.UnitCategory == UnitClass.Land || (defendUnit.UnitCategory == UnitClass.Water && cityWalls && attackUnit.Attack != 12))
 			{
 				int fortificationModifier = 4;
 				if (defendUnit.Tile.Fortress)
@@ -262,7 +262,7 @@ namespace CivOne.Units
 
 			// Step 4: If the defending unit is a sea or air unit, multiply the defense strength by 8.
 			// This effectively treats the Terrain Modifier as 2, regardless of the actual terrain type. It also means that these units will never benefit from the Fortification Modifier.
-			if (defendUnit.Class != UnitClass.Land && (!cityWalls || attackUnit.Attack == 12))
+			if (defendUnit.UnitCategory != UnitClass.Land && (!cityWalls || attackUnit.Attack == 12))
 			{
 				defendStrength *= 8;
 			}
@@ -313,7 +313,7 @@ namespace CivOne.Units
 
 		internal virtual bool Confront(int relX, int relY)
 		{
-			Goto = Point.Empty;             // Cancel any goto mode when Confronting
+			GotoDestination = Point.Empty;             // Cancel any goto mode when Confronting
 
 			Debug.Assert(this is not Diplomat && this is not Caravan, "Confront should not be called for Diplomat or Caravan units, as they have their own special handling.");
 
@@ -385,7 +385,7 @@ namespace CivOne.Units
 
 		private bool CanOccupyEnemyCity()
 		{
-			return Class == UnitClass.Land;
+			return UnitCategory == UnitClass.Land;
 		}
 
 		private void RejectCityCapture()
@@ -679,7 +679,7 @@ namespace CivOne.Units
 
 		private void CaptureBarbarianLeader(IUnit[] attackedUnits)
 		{
-			bool isAirUnit = this.Class == UnitClass.Air;
+			bool isAirUnit = this.UnitCategory == UnitClass.Air;
 			if (isAirUnit)
 			{
 				// CW: air units cannot capture barbarian leader
@@ -799,7 +799,7 @@ namespace CivOne.Units
 
 		protected virtual bool ConfrontEnemy(ITile moveTarget, int relX, int relY)
 		{
-			Goto = Point.Empty;             // Cancel any goto mode
+			GotoDestination = Point.Empty;             // Cancel any goto mode
 
 			if (!CanAttackEnemy(moveTarget))
 			{
@@ -821,7 +821,7 @@ namespace CivOne.Units
 		protected virtual bool CanAttackEnemy(ITile moveTarget)
 		{
 			// Cannot attack not air units. Only if on a Carrier.
-			return moveTarget.Units.Any(u => u.Class != UnitClass.Air) ||
+			return moveTarget.Units.Any(u => u.UnitCategory != UnitClass.Air) ||
 				moveTarget.Units.Any(u => u is not BaseUnitAir);
 		}
 
@@ -836,9 +836,9 @@ namespace CivOne.Units
 			ITile previousTile = Map[_x, _y];
 			X += Movement.RelX;
 			Y += Movement.RelY;
-			if (X == Goto.X && Y == Goto.Y)
+			if (X == GotoDestination.X && Y == GotoDestination.Y)
 			{
-				Goto = Point.Empty;
+				GotoDestination = Point.Empty;
 			}
 			Movement = null;
 
@@ -990,7 +990,7 @@ namespace CivOne.Units
 			protected set => _obsoleteTech = value;
 		}
 
-		public UnitClass Class { get; protected set; }
+		public UnitClass UnitCategory { get; protected set; }
 		public UnitType Type { get; protected set; }
 		private City? _home;
 		public City? Home
@@ -1072,7 +1072,7 @@ namespace CivOne.Units
 			}
 		}
 
-		public Point Goto { get; set; }
+		public Point GotoDestination { get; set; }
 
 		public ITile Tile => Map[_x, _y];
 
@@ -1267,7 +1267,7 @@ namespace CivOne.Units
 			Move = move;
 			X = -1;
 			Y = -1;
-			Goto = Point.Empty;
+			GotoDestination = Point.Empty;
 			Owner = 0;
 			Status = 0;
 			MovesSkip = 0;

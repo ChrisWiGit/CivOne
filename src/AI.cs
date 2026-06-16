@@ -126,22 +126,22 @@ namespace CivOne
 			}
 			else
 			{
-				if (unit.Class != UnitClass.Land) Game.DisbandUnit(unit);
+				if (unit.UnitCategory != UnitClass.Land) Game.DisbandUnit(unit);
 
 				for (int i = 0; i < 1000; i++)
 				{
-					if (unit.Goto.IsEmpty)
+					if (unit.GotoDestination.IsEmpty)
 					{
 						int gotoX = _randomService.NextInt(-5, 6);
 						int gotoY = _randomService.NextInt(-5, 6);
 						if (gotoX == 0 && gotoY == 0) continue;
 						if (!Player.Visible(unit.X + gotoX, unit.Y + gotoY)) continue;
 
-						unit.Goto = new Point(unit.X + gotoX, unit.Y + gotoY);
+						unit.GotoDestination = new Point(unit.X + gotoX, unit.Y + gotoY);
 						continue;
 					}
 
-					if (!unit.Goto.IsEmpty)
+					if (!unit.GotoDestination.IsEmpty)
 					{
 						IAiGotoExecutor gotoExecutor = _gotoExecutorFactory.CreateFor(unit);
 						AiGotoExecutionResult gotoExecutionResult = gotoExecutor.TryExecute(unit);
@@ -156,20 +156,20 @@ namespace CivOne
 							return;
 						}
 
-						int distance = unit.Tile.DistanceTo(unit.Goto);
-						ITile[] tiles = [.. unit.MoveTargets.OrderBy(x => x.DistanceTo(unit.Goto)).ThenBy(x => x.Movement)];
-						if (tiles.Length == 0 || tiles[0].DistanceTo(unit.Goto) > distance)
+						int distance = unit.Tile.DistanceTo(unit.GotoDestination);
+						ITile[] tiles = [.. unit.MoveTargets.OrderBy(x => x.DistanceTo(unit.GotoDestination)).ThenBy(x => x.Movement)];
+						if (tiles.Length == 0 || tiles[0].DistanceTo(unit.GotoDestination) > distance)
 						{
 							// No valid tile to move to, cancel goto
-							unit.Goto = Point.Empty;
+							unit.GotoDestination = Point.Empty;
 							continue;
 						}
-						else if (tiles[0].DistanceTo(unit.Goto) == distance)
+						else if (tiles[0].DistanceTo(unit.GotoDestination) == distance)
 						{
 							// Distance is unchanged, 50% chance to cancel goto
 							if (_randomService.Hit(50))
 							{
-								unit.Goto = Point.Empty;
+								unit.GotoDestination = Point.Empty;
 								continue;
 							}
 						}
@@ -179,21 +179,21 @@ namespace CivOne
 							if (unit.Role == UnitRole.Civilian || unit.Role == UnitRole.Settler || unit is Carrier)
 							{
 								// do not attack with civilian or settler units or carrier
-								unit.Goto = Point.Empty;
+								unit.GotoDestination = Point.Empty;
 								continue;
 							}
 
 							if (unit.Role == UnitRole.Transport && _randomService.Hit(67))
 							{
 								// 67% chance of cancelling attack with transport unit
-								unit.Goto = Point.Empty;
+								unit.GotoDestination = Point.Empty;
 								continue;
 							}
 
 							if (unit.Attack < tiles[0].Units.Max(x => x.Defense) && _randomService.Hit(50))
 							{
 								// 50% of attacking cancelling attack of stronger unit
-								unit.Goto = Point.Empty;
+								unit.GotoDestination = Point.Empty;
 								continue;
 							}
 						}
@@ -203,7 +203,7 @@ namespace CivOne
 							// The code below is to prevent the game from becoming stuck...
 							if (_randomService.Hit(67))
 							{
-								unit.Goto = Point.Empty;
+								unit.GotoDestination = Point.Empty;
 								continue;
 							}
 							else if (_randomService.Hit(67))

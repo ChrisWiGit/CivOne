@@ -281,14 +281,14 @@ namespace CivOne.Screens
 					if (t.Tile.Type == Terrain.Ocean)
 					{
 						// Always show naval units first at sea
-						units = [.. units.OrderBy(u => (u.Class == UnitClass.Water) ? 1 : 0)];
+						units = [.. units.OrderBy(u => (u.UnitCategory == UnitClass.Water) ? 1 : 0)];
 					}
 
 					if (units.Length == 0) continue;
 
 					IUnit drawUnit = units[0];
 
-					if (t.Tile.IsOcean && drawUnit.Class != UnitClass.Water && drawUnit.Sentry)
+					if (t.Tile.IsOcean && drawUnit.UnitCategory != UnitClass.Water && drawUnit.Sentry)
 					{
 						// Do not draw sentried land units at sea
 						continue;

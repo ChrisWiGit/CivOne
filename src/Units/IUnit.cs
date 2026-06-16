@@ -23,7 +23,7 @@ namespace CivOne.Units
 		IAdvance? RequiredTech { get; }
 		IWonder? RequiredWonder { get; }
 		IAdvance? ObsoleteTech { get; }
-		UnitClass Class { get; }
+		UnitClass UnitCategory { get; }
 		/// <summary>
 		/// Defines type of the unit
 		/// </summary>
@@ -43,7 +43,7 @@ namespace CivOne.Units
 		byte Move { get; }
 		int X { get; set; }
 		int Y { get; set; }
-		Point Goto { get; set; }
+		Point GotoDestination { get; set; }
 		/// <summary>
 		/// Current tile of `Map` that Unit sit on
 		/// </summary>

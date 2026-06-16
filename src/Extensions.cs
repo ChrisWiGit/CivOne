@@ -216,10 +216,10 @@ namespace CivOne
 		private static UnitData GetUnitData(this IUnit unit, byte id)
 		{
 			byte gotoX = 0xFF, gotoY = 0;
-			if (!unit.Goto.IsEmpty)
+			if (!unit.GotoDestination.IsEmpty)
 			{
-				gotoX = CVS.CheckedByte(unit.Goto.X, nameof(Extensions), "UnitData.GotoX");
-				gotoY = CVS.CheckedByte(unit.Goto.Y, nameof(Extensions), "UnitData.GotoY");
+				gotoX = CVS.CheckedByte(unit.GotoDestination.X, nameof(Extensions), "UnitData.GotoX");
+				gotoY = CVS.CheckedByte(unit.GotoDestination.Y, nameof(Extensions), "UnitData.GotoY");
 			}
 
 			var remainingMoves = (unit.MovesLeft * 3) + unit.PartMoves;

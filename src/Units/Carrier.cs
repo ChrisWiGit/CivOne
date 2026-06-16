@@ -23,12 +23,12 @@ namespace CivOne.Units
 
 		protected override IEnumerable<IUnit> MoveUnits(ITile previousTile)
 		{
-			if (this is not IBoardable || !previousTile.Units.Any(u => u.Class == UnitClass.Air))
+			if (this is not IBoardable || !previousTile.Units.Any(u => u.UnitCategory == UnitClass.Air))
 			{
 				yield break;
 			}
 
-			IUnit[] moveUnits = [.. previousTile.Units.Where(u => u.Class == UnitClass.Air)];
+			IUnit[] moveUnits = [.. previousTile.Units.Where(u => u.UnitCategory == UnitClass.Air)];
 
 			if (previousTile.City != null)
 			{
@@ -43,13 +43,13 @@ namespace CivOne.Units
 
 		public override bool AllowedToBoard(IUnit unit)
 		{
-			if (unit.Class != UnitClass.Air || unit.Owner != Owner)
+			if (unit.UnitCategory != UnitClass.Air || unit.Owner != Owner)
 			{
 				return false;
 			}
 
 			int availableCargo = Tile.Units.Where(u => u is IBoardable).Sum(u => (u as IBoardable).Cargo);
-			int usedCargo = Tile.Units.Count(u => u.Class == UnitClass.Air);
+			int usedCargo = Tile.Units.Count(u => u.UnitCategory == UnitClass.Air);
 
 			return availableCargo >= usedCargo;
 		}

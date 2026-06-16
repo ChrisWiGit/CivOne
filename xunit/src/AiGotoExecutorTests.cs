@@ -60,7 +60,7 @@ namespace CivOne.UnitTests
 		public void TryExecuteWhenUnitGotoIsEmptyReturnsNotHandled()
 		{
 			// Arrange
-			TestUnit unit = new() { Goto = Point.Empty };
+			TestUnit unit = new() { GotoDestination = Point.Empty };
 			var testee = CreateSmartExecutor(PathStepResult.Disabled());
 
 			// Act
@@ -74,7 +74,7 @@ namespace CivOne.UnitTests
 		public void TryExecuteWhenPathfinderDisabledReturnsNotHandled()
 		{
 			// Arrange
-			TestUnit unit = new() { Goto = new Point(12, 10) };
+			TestUnit unit = new() { GotoDestination = new Point(12, 10) };
 			var testee = CreateSmartExecutor(PathStepResult.Disabled());
 
 			// Act
@@ -88,7 +88,7 @@ namespace CivOne.UnitTests
 		public void TryExecuteWhenNoPathClearsGotoAndReturnsContinue()
 		{
 			// Arrange
-			TestUnit unit = new() { Goto = new Point(12, 10) };
+			TestUnit unit = new() { GotoDestination = new Point(12, 10) };
 			var testee = CreateSmartExecutor(PathStepResult.NoPath());
 
 			// Act
@@ -96,14 +96,14 @@ namespace CivOne.UnitTests
 
 			// Assert
 			Assert.Equal(AiGotoExecutionResult.Continue, actual);
-			Assert.Equal(Point.Empty, unit.Goto);
+			Assert.Equal(Point.Empty, unit.GotoDestination);
 		}
 
 		[Fact]
 		public void TryExecuteWhenPathStepTileNotReachableClearsGotoAndReturnsContinue()
 		{
 			// Arrange
-			TestUnit unit = new() { Goto = new Point(12, 10), MoveTargets = [] };
+			TestUnit unit = new() { GotoDestination = new Point(12, 10), MoveTargets = [] };
 			var testee = CreateSmartExecutor(PathStepResult.Success(12, 10));
 
 			// Act
@@ -111,7 +111,7 @@ namespace CivOne.UnitTests
 
 			// Assert
 			Assert.Equal(AiGotoExecutionResult.Continue, actual);
-			Assert.Equal(Point.Empty, unit.Goto);
+			Assert.Equal(Point.Empty, unit.GotoDestination);
 		}
 
 		[Fact]
@@ -124,7 +124,7 @@ namespace CivOne.UnitTests
 			{
 				Owner = 1,
 				Role = CivOne.Enums.UnitRole.Civilian,
-				Goto = new Point(11, 10),
+				GotoDestination = new Point(11, 10),
 				MoveTargets = [targetTile]
 			};
 			var testee = CreateSmartExecutor(PathStepResult.Success(11, 10));
@@ -134,7 +134,7 @@ namespace CivOne.UnitTests
 
 			// Assert
 			Assert.Equal(AiGotoExecutionResult.Continue, actual);
-			Assert.Equal(Point.Empty, unit.Goto);
+			Assert.Equal(Point.Empty, unit.GotoDestination);
 		}
 
 		[Fact]
@@ -147,7 +147,7 @@ namespace CivOne.UnitTests
 				Owner = 1,
 				X = 10,
 				Y = 10,
-				Goto = new Point(11, 10),
+				GotoDestination = new Point(11, 10),
 				MoveTargets = [targetTile],
 				MoveToHandler = (_, _) => true
 			};

@@ -301,7 +301,7 @@ namespace CivOne
 					unit.Owner = p;
 					unit.PartMoves = CVS.CheckedByte(data.RemainingMoves % 3, nameof(Game), "Load.UnitPartMoves");
 					unit.MovesLeft = CVS.CheckedByte((data.RemainingMoves - unit.PartMoves) / 3, nameof(Game), "Load.UnitMovesLeft");
-					if (data.GotoX != 0xFF) unit.Goto = new Point(data.GotoX, data.GotoY);
+					if (data.GotoX != 0xFF) unit.GotoDestination = new Point(data.GotoX, data.GotoY);
 					if (cityList.TryGetValue(data.HomeCityId, out City? value))
 					{
 						unit.SetHome(value);

@@ -472,7 +472,7 @@ namespace CivOne
 					default:
 						if (HasBuilding<Palace>())
 							return 0;
-						City capital = CityOwnerPlayer.GetCapital();
+						City? capital = CityOwnerPlayer.GetCapital();
 						distance = capital == null ? 32 : Common.DistanceToTile(X, Y, capital.X, capital.Y);
 						break;
 				}
@@ -865,7 +865,7 @@ namespace CivOne
 			{
 				foreach (IUnit unit in Reflect.GetUnits().Where(u => CityOwnerPlayer.ProductionAvailable(u)))
 				{
-					if (unit.Class == UnitClass.Water && !Map[X, Y].GetBorderTiles().Any(t => t.IsOcean)) continue;
+					if (unit.UnitCategory == UnitClass.Water && !Map[X, Y].GetBorderTiles().Any(t => t.IsOcean)) continue;
 					if (unit is Nuclear && !Game.WonderBuilt<ManhattanProject>()) continue;
 					yield return unit;
 				}
@@ -1086,7 +1086,7 @@ namespace CivOne
 					(wonder is MagellansExpedition && !Game.WonderObsolete<MagellansExpedition>()))
 				{
 					// Apply Lighthouse/Magellan's Expedition wonder effects in the first turn
-					foreach (IUnit unit in Game.GetUnits().Where(x => x.Owner == CityOwnerPlayerIndex && x.Class ==  UnitClass.Water && x.MovesLeft == x.Move))
+					foreach (IUnit unit in Game.GetUnits().Where(x => x.Owner == CityOwnerPlayerIndex && x.UnitCategory ==  UnitClass.Water && x.MovesLeft == x.Move))
 					{
 						unit.MovesLeft++;
 					}
@@ -1758,7 +1758,7 @@ namespace CivOne
 			
 			CurrentProduction = Reflect.GetUnits()
 				.Where(CityOwnerPlayer.ProductionAvailable)
-				.OrderBy(u => Common.HasAttribute<Default>(u) ? -1 : (int)u.Type)
+				.OrderBy(u => Common.HasAttribute<DefaultUnitProductionAttribute>(u) ? -1 : (int)u.Type)
 				.FirstOrDefault() ?? new Settlers(); // Default to Settlers, should never happen that no production is available at city founding, but just in case.
 			SetResourceTiles();
 		}

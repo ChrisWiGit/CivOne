@@ -189,7 +189,7 @@ namespace CivOne
 				.WithInvalidUnitHomeCityReferences(_units.Any(unit => unit.Home != null && !cityLookup.Contains(unit.Home)))
 				.WithOutOfBoundsCityCoordinates(_cities.Any(city => city.X >= Map.WIDTH || city.Y >= Map.HEIGHT))
 				.WithOutOfBoundsUnitCoordinates(_units.Any(unit => unit.X < 0 || unit.Y < 0 || unit.X >= Map.WIDTH || unit.Y >= Map.HEIGHT))
-				.WithOutOfBoundsUnitGotoCoordinates(_units.Any(unit => !unit.Goto.IsEmpty && (unit.Goto.X < 0 || unit.Goto.Y < 0 || unit.Goto.X >= Map.WIDTH || unit.Goto.Y >= Map.HEIGHT)))
+				.WithOutOfBoundsUnitGotoCoordinates(_units.Any(unit => !unit.GotoDestination.IsEmpty && (unit.GotoDestination.X < 0 || unit.GotoDestination.Y < 0 || unit.GotoDestination.X >= Map.WIDTH || unit.GotoDestination.Y >= Map.HEIGHT)))
 				.WithTradeCityCountsPerCity([.. _cities.Select(city => city.TradingCities?.Length ?? 0)])
 				.WithCityOwners([.. _cities.Select(city => city.CityOwnerPlayerIndex)])
 				.WithUnitOwners(sveUnitOwners)
@@ -541,17 +541,17 @@ namespace CivOne
 			{
 				LastActivePlayerUnit = unit ?? LastActivePlayerUnit;
 
-				if (unit != null && !unit.Goto.IsEmpty)
+				if (unit != null && !unit.GotoDestination.IsEmpty)
 				{
-					ITile[] tiles = [.. (unit as BaseUnit)!.MoveTargets.OrderBy(x => x.DistanceTo(unit.Goto)).ThenBy(x => x.Movement)];
+					ITile[] tiles = [.. (unit as BaseUnit)!.MoveTargets.OrderBy(x => x.DistanceTo(unit.GotoDestination)).ThenBy(x => x.Movement)];
 
 					if (Settings.Instance.PathFinding)
 					{
 						/*  Use AStar  */
 						AStar.SPosition Destination = new()
 						{
-							iX = unit.Goto.X,
-							iY = unit.Goto.Y
+							iX = unit.GotoDestination.X,
+							iY = unit.GotoDestination.Y
 						};
 						
 						AStar.SPosition Pos = new()
@@ -562,14 +562,14 @@ namespace CivOne
 
 						if (Destination.iX == Pos.iX && Destination.iY == Pos.iY)
 						{
-							unit.Goto = Point.Empty;   // eh... never mind
+							unit.GotoDestination = Point.Empty;   // eh... never mind
 							return;
 						}
 						AStar AStar = new AStar();
 						AStar.SPosition NextPosition = AStar.FindPath(Destination, unit);
 						if (NextPosition.iX < 0)
 						{         // if no path found
-							unit.Goto = Point.Empty;
+							unit.GotoDestination = Point.Empty;
 							return;
 						}
 						unit.MoveTo(NextPosition.iX - Pos.iX, NextPosition.iY - Pos.iY);
@@ -579,19 +579,19 @@ namespace CivOne
 					else
 					{
 
-						int distance = unit.Tile.DistanceTo(unit.Goto);
-						if (tiles.Length == 0 || tiles[0].DistanceTo(unit.Goto) > distance)
+						int distance = unit.Tile.DistanceTo(unit.GotoDestination);
+						if (tiles.Length == 0 || tiles[0].DistanceTo(unit.GotoDestination) > distance)
 						{
 							// No valid tile to move to, cancel goto
-							unit.Goto = Point.Empty;
+							unit.GotoDestination = Point.Empty;
 							return;
 						}
-						else if (tiles[0].DistanceTo(unit.Goto) == distance)
+						else if (tiles[0].DistanceTo(unit.GotoDestination) == distance)
 						{
 							// Distance is unchanged, 50% chance to cancel goto
 							if (_randomService.NextInt(0, 100) < 50)
 							{
-								unit.Goto = Point.Empty;
+								unit.GotoDestination = Point.Empty;
 								return;
 							}
 						}
@@ -785,7 +785,7 @@ namespace CivOne
 			if (unit == null) return null;
 
 			unit.Owner = owner;
-			if (unit.Class == UnitClass.Water)
+			if (unit.UnitCategory == UnitClass.Water)
 			{
 				Player? player = GetPlayer(owner);
 				if (player != null && ((player.HasWonder<Lighthouse>() && !WonderObsolete<Lighthouse>()) ||
@@ -868,9 +868,9 @@ namespace CivOne
 			if (unit.Tile is Ocean && unit is IBoardable boardable)
 			{
 				int totalCargo = unit.Tile.Units.OfType<IBoardable>().Sum(u => u.Cargo) - boardable.Cargo;
-				while (unit.Tile.Units.Count(u => u.Class != UnitClass.Water) > totalCargo)
+				while (unit.Tile.Units.Count(u => u.UnitCategory != UnitClass.Water) > totalCargo)
 				{
-					IUnit subUnit = unit.Tile.Units.First(u => u.Class != UnitClass.Water);
+					IUnit subUnit = unit.Tile.Units.First(u => u.UnitCategory != UnitClass.Water);
 					subUnit.SetHome(null);
 					subUnit.X = 255;
 					subUnit.Y = 255;

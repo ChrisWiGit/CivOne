@@ -54,13 +54,13 @@ namespace CivOne.Services.Pathfinding
 		private PathStepResult GetPathStep(IUnit unit)
 		{
 			IPathfinder pathfinder = _pathfinderFactory.CreateFor(unit);
-			return pathfinder.GetNextStep(unit, unit.Goto);
+			return pathfinder.GetNextStep(unit, unit.GotoDestination);
 		}
 
 		private static ITile? ResolveNextTile(IUnit unit, PathStepResult pathStep) =>
 			unit.MoveTargets.FirstOrDefault(x => x.X == pathStep.NextX && x.Y == pathStep.NextY);
 
-		private static bool CanHandle(IUnit? unit) => unit != null && !unit.Goto.IsEmpty;
+		private static bool CanHandle(IUnit? unit) => unit != null && !unit.GotoDestination.IsEmpty;
 
 		private bool ShouldCancelAttack(IUnit unit, ITile nextTile)
 		{
@@ -116,7 +116,7 @@ namespace CivOne.Services.Pathfinding
 
 		private static AiGotoExecutionResult ResetGotoAndContinue(IUnit unit)
 		{
-			unit.Goto = Point.Empty;
+			unit.GotoDestination = Point.Empty;
 			return AiGotoExecutionResult.Continue;
 		}
 	}
