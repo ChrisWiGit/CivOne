@@ -15,7 +15,6 @@
 		<AssemblyName>CivOne.UnitTests</AssemblyName>
 		<RootNamespace>CivOne</RootNamespace>
 		<OutputType>Library</OutputType>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<AllowUnsafeBlocks>false</AllowUnsafeBlocks>
 		<LangVersion>latest</LangVersion>
 		<RuntimeIdentifiers>win-x86;win-x64;osx-x64;linux-x64</RuntimeIdentifiers>

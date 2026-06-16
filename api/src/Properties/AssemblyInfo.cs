@@ -10,3 +10,5 @@
 using System.Reflection;
 
 [assembly: AssemblyProduct("CivOne API")]
+[assembly: AssemblyVersion("0.1.0.1417")]
+[assembly: AssemblyCopyright("CC0 - Creative Commons")]

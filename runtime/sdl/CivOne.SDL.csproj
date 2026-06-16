@@ -14,7 +14,6 @@
 		<AssemblyName>CivOne.SDL</AssemblyName>
 		<RootNamespace>CivOne</RootNamespace>
 		<OutputType>Exe</OutputType>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<LangVersion>13.0</LangVersion>
 	</PropertyGroup>
@@ -59,6 +58,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<Compile Remove="**" />
+		<Compile Include="Properties/**" />
 		<Compile Include="src/**" />
 	</ItemGroup>
 	<ItemGroup>

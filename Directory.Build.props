@@ -1,0 +1,11 @@
+<Project>
+	<!-- Central assembly versioning and metadata for all projects -->
+	<PropertyGroup>
+		<AssemblyVersion>0.1.0.1417</AssemblyVersion>
+		<FileVersion>0.1.0.1417</FileVersion>
+		<InformationalVersion>0.1.0</InformationalVersion>
+		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+		<AssemblyProduct>CivOne</AssemblyProduct>
+		<AssemblyCopyright>CC0 - Creative Commons</AssemblyCopyright>
+	</PropertyGroup>
+</Project>
