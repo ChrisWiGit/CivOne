@@ -8,7 +8,7 @@ using CivOne.Tasks;
 
 namespace CivOne.Units.TribalHuts
 {
-	public class AncientScrollsEventHandler : ITribalHutEventHandler
+	public class AncientScrollsHandler : ITribalHutEventHandler
 	{
 		private readonly int x;
 		private readonly int y;
@@ -18,7 +18,7 @@ namespace CivOne.Units.TribalHuts
 
 		private readonly Player player;
 
-		public AncientScrollsEventHandler(int x, int y, Player player, ILogger logger)
+		public AncientScrollsHandler(int x, int y, Player player, ILogger logger)
 		{
 			this.logger = logger;
 			this.player = player;

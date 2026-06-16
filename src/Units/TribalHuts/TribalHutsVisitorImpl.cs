@@ -56,15 +56,15 @@ namespace CivOne.Units.TribalHuts
 			tribalHutEvent.PostExecute();
 		}
 
-		private FriendlyTribeEventHandler CreateFriendlyTribeEvent()
+		private FriendlyTribeHandler CreateFriendlyTribeEvent()
 		{
-			return new FriendlyTribeEventHandler(
+			return new FriendlyTribeHandler(
 				currentUnit.X, currentUnit.Y, currentUnit.Owner);
 		}
 
-		private AncientScrollsEventHandler CreateAncientScrollsEvent()
+		private AncientScrollsHandler CreateAncientScrollsEvent()
 		{
-			return new AncientScrollsEventHandler(
+			return new AncientScrollsHandler(
 				currentUnit.X, currentUnit.Y, player, logger);
 		}
 
@@ -74,14 +74,14 @@ namespace CivOne.Units.TribalHuts
 				currentUnit.X, currentUnit.Y, gameInstance, map, random);
 		}
 
-		private MetalDepositsEventHandler CreateMetalDepositsEvent()
+		private MetalDepositsHandler CreateMetalDepositsEvent()
 		{
-			return new MetalDepositsEventHandler(player);
+			return new MetalDepositsHandler(player);
 		}
 
-		private AdvancedTribeEventHandler CreateAdvancedTribeEvent()
+		private AdvancedTribeHandler CreateAdvancedTribeEvent()
 		{
-			return new AdvancedTribeEventHandler(currentUnit.X, currentUnit.Y, player);
+			return new AdvancedTribeHandler(currentUnit.X, currentUnit.Y, player);
 		}
 
 		private void FriendlyEvent()

@@ -3,14 +3,14 @@ using CivOne.Tasks;
 
 namespace CivOne.Units.TribalHuts
 {
-	public class AdvancedTribeEventHandler : ITribalHutEventHandler
+	public class AdvancedTribeHandler : ITribalHutEventHandler
 	{
 		private readonly int X;
 		private readonly int Y;
 
 		private readonly Player player;
 
-		public AdvancedTribeEventHandler(int x, int y, Player player)
+		public AdvancedTribeHandler(int x, int y, Player player)
 		{
 			this.player = player;
 			X = x;

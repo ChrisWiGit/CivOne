@@ -4,7 +4,7 @@ using CivOne.Services.Random;
 
 namespace CivOne.Units.TribalHuts
 {
-	public class FriendlyTribeEventHandler(int x, int y, byte owner) : ITribalHutEventHandler
+	public class FriendlyTribeHandler(int x, int y, byte owner) : ITribalHutEventHandler
 	{
 		private readonly int X = x;
 		private readonly int Y = y;
