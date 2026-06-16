@@ -26,7 +26,8 @@ namespace CivOne.IO
 	/// </summary>
 	public abstract class BaseUnmanaged : IDisposable
 	{
-		protected IntPtr _handle;
+		private IntPtr _handle;
+		protected IntPtr Handle => _handle;
 		protected int Size { get; private set; }
 		public bool IsDisposed => _handle == IntPtr.Zero;
 
@@ -36,10 +37,7 @@ namespace CivOne.IO
 		/// </summary>
 		private void EnsureHandle()
 		{
-			if (_handle == IntPtr.Zero)
-			{
-				throw new ObjectDisposedException(GetType().Name);
-			}
+			ObjectDisposedException.ThrowIf(_handle == IntPtr.Zero, this);
 		}
 
 		/// <summary>

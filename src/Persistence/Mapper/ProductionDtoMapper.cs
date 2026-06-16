@@ -4,7 +4,7 @@ namespace CivOne.Persistence.Model
 	using System.Linq;
 	using CivOne.Persistence.Mapper;
 
-    public class ProductionDtoMapper(IReflect reflect) : DtoMapper<ProductionDto, IProduction>
+    public class ProductionDtoMapper(IReflect reflect) : IDtoMapper<ProductionDto, IProduction>
 	{
 		public IProduction FromDto(ProductionDto dto)
 		{

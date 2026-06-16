@@ -15,8 +15,7 @@ using CivOne.Wonders;
 
 namespace CivOne.Screens.Reports
 {
-	[ScreenResizeable]
-	[Modal]
+	[Modal, ScreenResizeable]
 	internal class WorldWonders : BaseScreen
 	{
 		private struct CityWonders

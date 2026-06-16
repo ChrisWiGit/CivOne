@@ -16,7 +16,7 @@ namespace CivOne.Screens.SpaceShipAssets
 	/// </summary>
 	public static class SpaceShipSpriteProviderFactory
 	{
-		private static ISpaceShipSpriteProvider _instance;
+		private static ISpaceShipSpriteProvider? _instance;
 
 		public static ISpaceShipSpriteProvider GetInstance()
 		{

@@ -18,7 +18,7 @@ namespace CivOne.Screens.Services
 	}
 
 	#pragma warning disable CA1822 // Mark members as static
-	public class CityCitizenServiceImpl(
+	public class CityCitizenService(
 		ICityBasic city,
 		ICityBuildings cityBuildings,
 		IGameCitizenDependency game,

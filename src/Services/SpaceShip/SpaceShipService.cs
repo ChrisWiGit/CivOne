@@ -44,7 +44,7 @@ namespace CivOne.Services.SpaceShip
 
 		public bool CanAddAnyPart()
 		{
-			foreach (SpaceShipComponentType partType in System.Enum.GetValues(typeof(SpaceShipComponentType)))
+			foreach (SpaceShipComponentType partType in System.Enum.GetValues<SpaceShipComponentType>())
 			{
 				if (partType == SpaceShipComponentType.Empty)
 				{

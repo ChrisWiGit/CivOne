@@ -44,7 +44,7 @@ namespace CivOne.Mcp.Transport
 			_readThread.Start();
 		}
 
-		public void Stop()
+		public void StopService()
 		{
 			_running = false;
 		}
@@ -130,7 +130,7 @@ namespace CivOne.Mcp.Transport
 			return read == contentLength ? new string(buffer) : null;
 		}
 
-		public void Dispose() => Stop();
+		public void Dispose() => StopService();
 
 		public StdioMcpTransport(IMcpProtocolSerializer serializer, Action<string> log)
 		{

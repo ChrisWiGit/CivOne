@@ -96,7 +96,7 @@ namespace CivOne
 			IScreen[] currentScreens = Common.Screens;
 			for (int i = currentScreens.Length - 1; i >= 0; i--)
 			{
-				if (Common.HasAttribute<Modal>(currentScreens[i]))
+				if (Common.HasAttribute<ModalAttribute>(currentScreens[i]))
 				{
 					return currentScreens[i].Update(_gameTick / 4);
 				}
@@ -212,7 +212,7 @@ namespace CivOne
 				Runtime.Palette = Common.DefaultPalette;
 			}
 			
-			if (Common.HasAttribute<Modal>(topScreen))
+			if (Common.HasAttribute<ModalAttribute>(topScreen))
 			{
 				Runtime.Layers = [topScreen.Bitmap];
 			}
@@ -270,7 +270,7 @@ namespace CivOne
 				using (Picture bitmap = new(CanvasWidth, CanvasHeight, screenshotPalette))
 				{
 					bitmap.Palette[0] = Colour.Black;
-					if (Common.HasAttribute<Modal>(topScreen))
+					if (Common.HasAttribute<ModalAttribute>(topScreen))
 					{
 						bitmap.AddLayer(topScreen);
 					}
@@ -518,7 +518,7 @@ namespace CivOne
 
 			if (disposing)
 			{
-				_mcpService.Stop();
+				_mcpService.StopService();
 				_mcpService.Dispose();
 			}
 

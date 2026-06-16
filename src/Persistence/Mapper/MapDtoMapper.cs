@@ -28,7 +28,7 @@ namespace CivOne.Persistence.Model
         IMapTiles CreateMap(int width, int height, uint terrainSeed);
     }
 
-    public interface ITileDtoMapper : DtoMapper<TileDto, ITile>
+    public interface ITileDtoMapper : IDtoMapper<TileDto, ITile>
     {
         /// <summary>
         /// Sets the properties of an existing tile based on the provided TileDto. This method modifies the tile in place rather than returning a new tile instance. The x and y parameters indicate the position of the tile being set, which may be useful for certain mapping logic that depends on tile coordinates.
@@ -45,7 +45,7 @@ namespace CivOne.Persistence.Model
         IMapFactory mapFactory,
         ITileDtoMapper TileDtoMapper,
         uint TerrainSeed = 0
-    ) : DtoMapper<MapDto, IMapTiles>
+    ) : IDtoMapper<MapDto, IMapTiles>
     {
         public IMapTiles FromDto(MapDto dto)
         {

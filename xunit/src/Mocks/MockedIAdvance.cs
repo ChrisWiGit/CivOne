@@ -31,12 +31,12 @@ namespace CivOne.UnitTests
 			throw new NotImplementedException();
 		}
 
-		public bool Is<T>() where T : IAdvance
+		public bool IsOf<T>() where T : IAdvance
 		{
 			throw new NotImplementedException();
 		}
 
-		public bool Not<T>() where T : IAdvance
+		public bool NotOf<T>() where T : IAdvance
 		{
 			throw new NotImplementedException();
 		}

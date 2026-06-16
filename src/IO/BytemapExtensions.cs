@@ -31,7 +31,7 @@ namespace CivOne.IO
 		public static Bytemap AddLayer(this Bytemap bytemap, ISprite layer, Point point) => AddLayer(bytemap, layer.Bitmap, point.X, point.Y);
 		public static Bytemap AddLayer(this Bytemap bytemap, ISprite layer, int left = 0, int top = 0) => AddLayer(bytemap, layer.Bitmap, left, top);
 		public static Bytemap AddLayer(this Bytemap bytemap, Bytemap layer, Point point) => AddLayer(bytemap, layer, point.X, point.Y);
-		public static Bytemap AddLayer(this Bytemap bytemap, Bytemap layer, int left = 0, int top = 0)
+		public static Bytemap AddLayer(this Bytemap bytemap, Bytemap? layer, int left = 0, int top = 0)
 		{
 			if (layer == null) return bytemap;
 
@@ -55,10 +55,10 @@ namespace CivOne.IO
 
 			for (int yy = 0; yy < bytemap.Height; yy++)
 			for (int xx = 0; xx < bytemap.Width; xx++)
-			foreach ((byte From, byte To) colour in fromToColours)
+			foreach ((byte From, byte To) in fromToColours)
 			{
-				if (bytemap[xx, yy] != colour.From) continue;
-				bytemap[xx, yy] = colour.To;
+				if (bytemap[xx, yy] != From) continue;
+				bytemap[xx, yy] = To;
 			}
 			return bytemap;
 		}

@@ -5,7 +5,7 @@ using System;
 namespace CivOne.UnitTests
 {
 
-    class MockedGrassland : Grassland, ITile
+    sealed class MockedGrassland : Grassland, ITile
     {
         private IUnit[] _units = [];
 

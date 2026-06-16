@@ -12,7 +12,7 @@ namespace CivOne.Mcp
 		{
 		}
 
-		public void Stop()
+		public void StopService()
 		{
 		}
 

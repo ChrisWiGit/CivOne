@@ -16,7 +16,7 @@ namespace CivOne.Persistence.Model
 	public class CityDtoMapper(
         ProductionDtoMapper productionMapper,
 		ICityDefinitionResolver cityDefinitionResolver,
-		IValueSanitizer valueSanitizer) : DtoMapper<CityDto, ICityMapper>
+		IValueSanitizer valueSanitizer) : IDtoMapper<CityDto, ICityMapper>
     {
         public ICityMapper FromDto(CityDto dto)
         {

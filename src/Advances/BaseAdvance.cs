@@ -178,8 +178,8 @@ namespace CivOne.Advances
 			return false;
 		}
 
-		public bool Is<T>() where T : IAdvance => this is T;
+		public bool IsOf<T>() where T : IAdvance => this is T;
 
-		public bool Not<T>() where T : IAdvance => this is not T;
+		public bool NotOf<T>() where T : IAdvance => this is not T;
 	}
 }

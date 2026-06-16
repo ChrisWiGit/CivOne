@@ -112,7 +112,7 @@ namespace CivOne
 				IScreen[] screens = [.. _screens];
 				for (int i = screens.Length - 1; i >= 0; i--)
 				{
-					if (HasAttribute<Modal>(screens[i]))
+					if (HasAttribute<ModalAttribute>(screens[i]))
 					{
 						return screens[i];
 					}

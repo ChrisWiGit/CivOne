@@ -7,7 +7,7 @@ using CivOne.Units;
 
 namespace CivOne.Persistence
 {
-    public enum GameOptionEnum
+    public enum GameSetting
     {
         // order must be same as in GameStateHandler
         Animations,
@@ -67,7 +67,7 @@ namespace CivOne.Persistence
 
         public string[] CityNames { get; set; } = [];
 
-        public List<GameOptionEnum> GameOptions { get; set; } = [];
+        public List<GameSetting> GameOptions { get; set; } = [];
 
         /// <summary>Replay events recorded during the game session.</summary>
         public List<ReplayData> ReplayData { get; set; } = [];

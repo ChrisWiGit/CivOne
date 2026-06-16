@@ -232,7 +232,7 @@ namespace CivOne.Persistence.Model
 				Difficulty = DifficultyLevel.Chieftain,
 				Players = [playerDto0, playerDto1],
 				AnthologyTurn = 0,
-				GameOptions = [GameOptionEnum.Sound],
+				GameOptions = [GameSetting.Sound],
 				AdvanceOrigin = new Dictionary<byte, byte> { [3] = 1, [7] = 0 },
 				ReplayData = [new ReplayDataDto { Turn = 5, CivilizationDestroyed = new() { DestroyedId = 1, DestroyedById = 2 } }],
 				GlobalWarming = new GlobalWarmingDto
@@ -286,7 +286,7 @@ namespace CivOne.Persistence.Model
 			Assert.Equal(99999, gameState.RandomSeed);
 			Assert.Equal(0, gameState.Difficulty); // Chieftain = 0
 			Assert.Equal(2, gameState.Players.Length);
-			Assert.Contains(GameOptionEnum.Sound, gameState.GameOptions);
+			Assert.Contains(GameSetting.Sound, gameState.GameOptions);
 			Assert.Equal(4242, gameState.TerrainSeed);
 			Assert.Equal(2, gameState.MapWidth);
 			Assert.Equal(2, gameState.MapHeight);

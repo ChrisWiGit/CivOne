@@ -22,7 +22,7 @@ namespace CivOne.Screens
 	{
 		private bool _update = true;
 
-		private bool _success = false;
+		private bool _success;
 
 		private int _y;
 

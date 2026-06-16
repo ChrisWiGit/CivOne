@@ -36,7 +36,7 @@ namespace CivOne.Mcp
 			// VS Code closes stdin when stopping the server — treat as implicit exit.
 			if (_transport.StdinClosed)
 			{
-				Stop();
+				StopService();
 				return;
 			}
 
@@ -97,7 +97,7 @@ namespace CivOne.Mcp
 
 				if (_exitRequested)
 				{
-					Stop();
+					StopService();
 					return;
 				}
 			}
@@ -142,16 +142,16 @@ namespace CivOne.Mcp
 			});
 		}
 
-		public void Stop()
+		public void StopService()
 		{
 			if (!_started) return;
-			_transport.Stop();
+			_transport.StopService();
 			_started = false;
 		}
 
 		public void Dispose()
 		{
-			Stop();
+			StopService();
 			_transport.Dispose();
 		}
 

@@ -46,6 +46,7 @@ namespace CivOne.UnitTests
 			{
 				Directory.Delete(_tempDirectory, true);
 			}
+			GC.SuppressFinalize(this);
 		}
 	}
 }

@@ -11,11 +11,11 @@ namespace CivOne.Persistence.Model
 
 	public interface IUnitFactory
 	{
-		IUnitRestorable Create(string className, PlayerId player, Guid? HomeCityGuid);
+		IUnitRestorable Create(string className, PlayerId player, Guid? homeCityGuid);
 	}
 
 
-	public class UnitDtoMapper(IUnitFactory UnitFactory, IValueSanitizer yamlReadValueSanitizer) : DtoMapper<UnitDto, IUnit>
+	public class UnitDtoMapper(IUnitFactory UnitFactory, IValueSanitizer yamlReadValueSanitizer) : IDtoMapper<UnitDto, IUnit>
 	{
 		public IUnit FromDto(UnitDto dto)
 		{

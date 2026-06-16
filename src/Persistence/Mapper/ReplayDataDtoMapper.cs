@@ -16,7 +16,7 @@ namespace CivOne.Persistence.Model
 	/// but <see cref="FromDto"/> will throw for them until domain classes are added.
 	/// </para>
 	/// </summary>
-	public class ReplayDataDtoMapper : DtoMapper<ReplayDataDto, ReplayData>
+	public class ReplayDataDtoMapper : IDtoMapper<ReplayDataDto, ReplayData>
 	{
 		public ReplayDataDto ToDto(ReplayData domain)
 		{

@@ -67,7 +67,7 @@ namespace CivOne.UnitTests
                 .WithWonderEffect<Oracle>(true)
                 .WithWonderEffect<CureForCancer>(true)
                 .withCitiesInterface([mockedCity])
-                .withCitiesCount(CityCitizenServiceImpl.MinRedShirtCityCount);
+                .withCitiesCount(CityCitizenService.MinRedShirtCityCount);
 
             mockedIGame = new MockedGame()
             {

@@ -45,7 +45,7 @@ namespace CivOne.Persistence.Model
         [Doc("The game options that are enabled in the game.",
             nameof(GameOptionsAll))]
         [YamlDotNet.Serialization.YamlMember(typeof(List<string>))]
-        public List<GameOptionEnum> GameOptions { get; set; } = [];
+        public List<GameSetting> GameOptions { get; set; } = [];
 
         [Doc("Maps each advance ID to the player number who first discovered it.")]
         public Dictionary<byte, byte> AdvanceOrigin { get; set; } = [];
@@ -63,6 +63,6 @@ namespace CivOne.Persistence.Model
 		public GlobalWarmingDto GlobalWarming { get; set; } = new GlobalWarmingDto();
 
         private static string DifficultyAll { get => string.Join(", ", Enum.GetNames<DifficultyLevel>()); }
-        private static string GameOptionsAll { get => string.Join(", ", Enum.GetNames<GameOptionEnum>()); }
+        private static string GameOptionsAll { get => string.Join(", ", Enum.GetNames<GameSetting>()); }
     }
 }

@@ -34,14 +34,14 @@ namespace CivOne.Persistence.Model
 		IPlayerGame gameInstance,
 		IPlayerOwnerResolver ownerResolver,
 		IPlayerFactory _playerFactory,
-		DtoMapper<CivilizationDto, ICivilization> _civilizationMapper,
+		IDtoMapper<CivilizationDto, ICivilization> _civilizationMapper,
 		PalaceDtoMapper _palaceMapper,
 		CityDtoMapper _cityMapper,
 		UnitDtoMapper _unitMapper,
 		IAdvanceResolver _advanceResolver,
 		IGovernmentResolver _governmentResolver,
 		IValueSanitizer _valueSanitizer
-		) : DtoMapper<PlayerDto, IPlayer>
+		) : IDtoMapper<PlayerDto, IPlayer>
 	{
 		private const long AllAdvancesSentinel = -1;
 		private const int MapPositionSlotCount = 9;

@@ -4,7 +4,7 @@ using CivOne.Services.GlobalWarming;
 
 namespace CivOne.Persistence.Mapper
 {
-    public class GlobalWarmingDtoMapper(IValueSanitizer valueSanitizer) : DtoMapper<GlobalWarmingDto, GameState>
+    public class GlobalWarmingDtoMapper(IValueSanitizer valueSanitizer) : IDtoMapper<GlobalWarmingDto, GameState>
     {
         public GameState FromDto(GlobalWarmingDto dto)
         {

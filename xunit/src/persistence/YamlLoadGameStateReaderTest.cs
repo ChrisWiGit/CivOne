@@ -313,7 +313,7 @@ namespace CivOne.UnitTests.Persistence
 				GameRandomSeed = 1234,
 				AnthologyTurn = 75,
 				Map = map,
-				GameOptions = [GameOptionEnum.EndOfTurn, GameOptionEnum.Sound]
+				GameOptions = [GameSetting.EndOfTurn, GameSetting.Sound]
 			};
 		}
 

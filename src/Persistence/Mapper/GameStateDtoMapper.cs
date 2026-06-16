@@ -15,12 +15,12 @@ namespace CivOne.Persistence.Mapper
     public class GameStateDtoMapper(
         PlayerDtoMapper playerMapper,
         UnitDtoMapper unitMapper,
-        DtoMapper<MapDto, IMapTiles> mapMapper,
-        DtoMapper<GlobalWarmingDto, GameState> globalWarmingMapper,
+        IDtoMapper<MapDto, IMapTiles> mapMapper,
+        IDtoMapper<GlobalWarmingDto, GameState> globalWarmingMapper,
         IValueSanitizer yamlReadValueSanitizer,
         ICityNameCatalog? cityNameCatalog = null,
         UnitsDestroyedByResolver? unitsDestroyedByResolver = null
-    ) : DtoMapper<GameStateDto, GameState>
+    ) : IDtoMapper<GameStateDto, GameState>
     {
         private readonly ICityNameCatalog _cityNameCatalog = cityNameCatalog ?? new RuntimeCityNameCatalog();
         private readonly UnitsDestroyedByResolver _unitsDestroyedByResolver = unitsDestroyedByResolver ?? new UnitsDestroyedByResolver(yamlReadValueSanitizer);

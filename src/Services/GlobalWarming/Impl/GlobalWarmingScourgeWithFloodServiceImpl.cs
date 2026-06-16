@@ -21,7 +21,7 @@ namespace CivOne.Services.GlobalWarming.Impl
 	/// <param name="tileChangeRequestCallback"></param>
 	/// <param name="MapWidth"></param>
 	/// <param name="MapHeight"></param>
-	public class GlobalWarmingScourgeWithFloodServiceImpl(
+	public class GlobalWarmingScourgeWithFloodService(
 		IGlobalWarmingService globalWarmingService,
 		ITile[,] mapTiles,
 		TileChangeRequestCallback tileChangeRequestCallback,
@@ -30,7 +30,7 @@ namespace CivOne.Services.GlobalWarming.Impl
 		int MapHeight,
 		Settings.GlobalWarmingFeatureFlag featureFlags,
 		IRandomService randomService
-			) : GlobalWarmingScourgeServiceImpl(globalWarmingService, mapTiles, tileChangeRequestCallback, MapWidth, MapHeight)
+			) : GlobalWarmingScourgeService(globalWarmingService, mapTiles, tileChangeRequestCallback, MapWidth, MapHeight)
 	{
 		private readonly TileChangeRequestCallback tileChangeRequestCallback = tileChangeRequestCallback;
 		private readonly RemoveUnit removeUnit = removeUnit;

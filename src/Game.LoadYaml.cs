@@ -169,7 +169,7 @@ namespace CivOne
 			RandomServiceFactory.Reset(_valueSanitizer.ClampToUInt16(state.RandomSeed, nameof(Game), nameof(state.RandomSeed)));
 		}
 
-		private void ApplyGameOptions(IEnumerable<GameOptionEnum> options)
+		private void ApplyGameOptions(IEnumerable<GameSetting> options)
 		{
 			InstantAdvice = Settings.InstantAdvice == GameOption.On;
 			AutoSave = Settings.AutoSave != GameOption.Off;
@@ -180,15 +180,15 @@ namespace CivOne
 			CivilopediaText = Settings.CivilopediaText != GameOption.Off;
 			Palace = Settings.Palace != GameOption.Off;
 
-			var optionList = options as IList<GameOptionEnum> ?? [.. options];
-			if (Settings.InstantAdvice == GameOption.Default) InstantAdvice = optionList.Contains(GameOptionEnum.InstantAdvice);
-			if (Settings.AutoSave == GameOption.Default) AutoSave = optionList.Contains(GameOptionEnum.AutoSave);
-			if (Settings.EndOfTurn == GameOption.Default) EndOfTurn = optionList.Contains(GameOptionEnum.EndOfTurn);
-			if (Settings.Animations == GameOption.Default) Animations = optionList.Contains(GameOptionEnum.Animations);
-			if (Settings.Sound == GameOption.Default) Sound = optionList.Contains(GameOptionEnum.Sound);
-			if (Settings.EnemyMoves == GameOption.Default) EnemyMoves = optionList.Contains(GameOptionEnum.EnemyMoves);
-			if (Settings.CivilopediaText == GameOption.Default) CivilopediaText = optionList.Contains(GameOptionEnum.CivilopediaText);
-			if (Settings.Palace == GameOption.Default) Palace = optionList.Contains(GameOptionEnum.Palace);
+			var optionList = options as IList<GameSetting> ?? [.. options];
+			if (Settings.InstantAdvice == GameOption.Default) InstantAdvice = optionList.Contains(GameSetting.InstantAdvice);
+			if (Settings.AutoSave == GameOption.Default) AutoSave = optionList.Contains(GameSetting.AutoSave);
+			if (Settings.EndOfTurn == GameOption.Default) EndOfTurn = optionList.Contains(GameSetting.EndOfTurn);
+			if (Settings.Animations == GameOption.Default) Animations = optionList.Contains(GameSetting.Animations);
+			if (Settings.Sound == GameOption.Default) Sound = optionList.Contains(GameSetting.Sound);
+			if (Settings.EnemyMoves == GameOption.Default) EnemyMoves = optionList.Contains(GameSetting.EnemyMoves);
+			if (Settings.CivilopediaText == GameOption.Default) CivilopediaText = optionList.Contains(GameSetting.CivilopediaText);
+			if (Settings.Palace == GameOption.Default) Palace = optionList.Contains(GameSetting.Palace);
 		}
 
 		private void InitializeGlobalWarmingServices(GameState state)

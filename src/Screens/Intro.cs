@@ -368,7 +368,7 @@ namespace CivOne.Screens
 			return false;
 		}
 
-		public void Resize(object sender, ResizeEventArgs args)
+		public void Resize(object? _, ResizeEventArgs __)
 		{
 			Bitmap.Clear();
 			HasUpdate(0);

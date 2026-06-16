@@ -41,7 +41,7 @@ namespace CivOne.Persistence.Model
 			string[] classes = [.. this.GetType().Assembly.GetTypes()
 				.Where(t => typeof(ILeader).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
 				.Select(t => t.Name)];
-			
+
 			CivilizationDto.AllLeaderClassNames = classes;
 
 			_city = new MockedICity(1)
@@ -181,7 +181,7 @@ namespace CivOne.Persistence.Model
 			// Setup game instance mock
 			var gameInstance = new MockPlayerGameForTesting(_player, [_unit]);
 			var yamlReadValueSanitizer = new ValueSanitizer(new NoOpLogger());
-			
+
 			_testee = new PlayerDtoMapper(
 				gameInstance,
 				new FixedPlayerOwnerResolver(0),
@@ -193,7 +193,7 @@ namespace CivOne.Persistence.Model
 				new TestAdvanceResolver(),
 				new TestGovernmentResolver(),
 				yamlReadValueSanitizer);
-			
+
 			PlayerDto.AllAdvances = ["0(Advance0)", "1(Advance1)", "2(Advance2)", "3(Advance3)"];
 			PlayerDto.AllAdvancesInfo = new Dictionary<AdvanceId, string>
 							{   { 0, "Advance0" },
@@ -429,7 +429,7 @@ namespace CivOne.Persistence.Model
 			}
 		}
 
-		private class MockPlayerGameForTesting : IPlayerGame
+		private sealed class MockPlayerGameForTesting : IPlayerGame
 		{
 			private readonly IPlayer _player;
 			private readonly IUnit[] _units;
@@ -458,7 +458,7 @@ namespace CivOne.Persistence.Model
 			public void SetAdvanceOrigin(IAdvance advance, Player player) => throw new NotImplementedException();
 		}
 
-		private class MockPlayerFactoryForTesting : IPlayerFactory
+		private sealed class MockPlayerFactoryForTesting : IPlayerFactory
 		{
 			private readonly MockedIPlayer _mockPlayer;
 
@@ -474,7 +474,7 @@ namespace CivOne.Persistence.Model
 			}
 		}
 
-		private sealed class MockUnitDtoMapperForTesting : DtoMapper<UnitDto, IUnit>
+		private sealed class MockUnitDtoMapperForTesting : IDtoMapper<UnitDto, IUnit>
 		{
 			public IUnit FromDto(UnitDto dto) => throw new NotImplementedException();
 			public UnitDto ToDto(IUnit domain) => throw new NotImplementedException();
@@ -529,5 +529,6 @@ namespace CivOne.Persistence.Model
 			{
 				return new MockedIGovernment { Id = id };
 			}
-		}	}
+		}
+	}
 }

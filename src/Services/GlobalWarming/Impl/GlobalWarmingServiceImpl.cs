@@ -7,14 +7,14 @@ using CivOne.Tiles;
 
 namespace CivOne.Services.GlobalWarming.Impl
 {
-	public class GlobalWarmingCountServiceImpl : IGlobalWarmingService
+	public class GlobalWarmingCountService : IGlobalWarmingService
 	{
 		private IEnumerable<ITile> _tiles = [];
 		int _pollutedSquaresCount;
 		short _globalWarmingCount;
 		WarmingIndicator _warmingIndicator;
 
-		public GlobalWarmingCountServiceImpl(IGameData? gameData,
+		public GlobalWarmingCountService(IGameData? gameData,
 				IEnumerable<ITile> tiles)
 		{
 			if (gameData != null)
@@ -29,7 +29,7 @@ namespace CivOne.Services.GlobalWarming.Impl
 			SetReadonlyTiles(tiles);
 		}
 
-		public GlobalWarmingCountServiceImpl(int globalWarmingCount, int pollutedSquaresCount, WarmingIndicator warmingIndicator,
+		public GlobalWarmingCountService(int globalWarmingCount, int pollutedSquaresCount, WarmingIndicator warmingIndicator,
 				IEnumerable<ITile> tiles)
 		{
 			_globalWarmingCount = (short)Math.Clamp(globalWarmingCount, short.MinValue, short.MaxValue);
@@ -39,7 +39,7 @@ namespace CivOne.Services.GlobalWarming.Impl
 			SetReadonlyTiles(tiles);
 		}
 
-		public GlobalWarmingCountServiceImpl(IEnumerable<ITile> tiles) : this(null, tiles)
+		public GlobalWarmingCountService(IEnumerable<ITile> tiles) : this(null, tiles)
 		{
 		}
 

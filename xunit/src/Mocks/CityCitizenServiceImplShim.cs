@@ -1,11 +1,11 @@
-using CivOne.Screens.Services;
 using CivOne.Enums;
+using CivOne.Screens.Services;
 using System.Collections.Generic;
 
 namespace CivOne.UnitTests
 {
 
-    class CityCitizenServiceImplShim : CityCitizenServiceImpl
+    sealed class CityCitizenServiceImplShim : CityCitizenService
     {
         public CityCitizenServiceImplShim(ICityBasic city,
                 ICityBuildings cityBuildings,

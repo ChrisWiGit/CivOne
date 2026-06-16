@@ -175,11 +175,11 @@ namespace CivOne.Persistence.Model
 			public byte LastPlayerId { get; private set; }
 			public Guid? LastHomeCityGuid { get; private set; }
 
-			public IUnitRestorable Create(string className, byte player, Guid? HomeCityGuid)
+			public IUnitRestorable Create(string className, byte player, Guid? homeCityGuid)
 			{
 				LastClassName = className;
 				LastPlayerId = player;
-				LastHomeCityGuid = HomeCityGuid;
+				LastHomeCityGuid = homeCityGuid;
 				// * var result = new MockedIUnit
 				// * {
 				// * 	Owner = player //just for testing, do not do this in real code because index of player it game list may not be the same as player id in save file.

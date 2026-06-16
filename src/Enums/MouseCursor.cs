@@ -9,6 +9,7 @@
 
 namespace CivOne.Enums
 {
+	#pragma warning disable CA1720 // Identifier contains type name pointer
 	public enum MouseCursor
 	{
 		None,

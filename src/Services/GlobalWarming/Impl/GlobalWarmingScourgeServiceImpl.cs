@@ -10,7 +10,7 @@ namespace CivOne.Services.GlobalWarming.Impl
 {
 	public delegate void TileChangeRequestCallback(ITile tile, Terrain newTerrainType);
 
-	public class GlobalWarmingScourgeServiceImpl(
+	public class GlobalWarmingScourgeService(
 		IGlobalWarmingService globalWarmingService,
 		ITile[,] mapTiles,
 		TileChangeRequestCallback tileChangeRequestCallback,

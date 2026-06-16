@@ -27,7 +27,7 @@ namespace CivOne.Screens
 		protected int CanvasHeight => RuntimeHandler.Instance!.CanvasHeight;
 		protected static Size WindowSize => new(RuntimeHandler.WindowWidth, RuntimeHandler.WindowHeight);
 		public virtual bool UseFullWindowCanvas => false;
-		private bool CanExpand => Common.HasAttribute<ScreenResizeable>(this);
+		private bool CanExpand => Common.HasAttribute<ScreenResizeableAttribute>(this);
 		private bool SizeChanged => this.Width() != CanvasWidth || this.Height() != CanvasHeight;
 
 		// Last window size observed by Update; used to detect host-window resizes

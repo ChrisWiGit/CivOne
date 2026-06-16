@@ -60,7 +60,7 @@ namespace CivOne.Mcp.Transport
 			_readThread.Start();
 		}
 
-		public void Stop()
+		public void StopService()
 		{
 			if (!_running)
 				return;
@@ -229,7 +229,7 @@ namespace CivOne.Mcp.Transport
 			return $"o:{JsonSerializer.Serialize(id)}";
 		}
 
-		public void Dispose() => Stop();
+		public void Dispose() => StopService();
 
 		public HttpMcpTransport(IMcpProtocolSerializer serializer, int port, int requestTimeoutMs, Action<string> log)
 		{

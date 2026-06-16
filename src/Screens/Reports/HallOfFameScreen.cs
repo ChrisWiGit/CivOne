@@ -43,7 +43,7 @@ namespace CivOne.Screens.Reports
 			ITranslationService translationService = TranslationServiceFactory.CreateDefault();
 			IHallOfFameDisplayDataService displayDataService = new HallOfFameDisplayDataService();
 			IHallOfFamePersistService persistService = HallOfFameServiceFactory.CreatePersistService();
-			IHallOfFameEntryComposerService entryComposerService = CreateEntryComposerService(translationService);
+			HallOfFameEntryComposerService entryComposerService = CreateEntryComposerService(translationService);
 			IHallOfFameCommandService commandService = HallOfFameServiceFactory.CreateCommandService(
 				storageDirectory: GetStorageDirectory(),
 				persistService: persistService,
@@ -58,7 +58,7 @@ namespace CivOne.Screens.Reports
 			return new HallOfFameScreen(entries, displayDataService, commandService, allowClear: true);
 		}
 
-		private static IHallOfFameEntryComposerService CreateEntryComposerService(ITranslationService translationService)
+		private static HallOfFameEntryComposerService CreateEntryComposerService(ITranslationService translationService)
 		{
 			return new HallOfFameEntryComposerService(
 				civilizationScoreService: CivilizationScoreServiceFactory.CreateDefault(),

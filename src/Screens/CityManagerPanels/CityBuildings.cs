@@ -26,7 +26,7 @@ namespace CivOne.Screens.CityManagerPanels
 {
 	internal class CityBuildings : BaseScreen
 	{
-		IInteractiveButton _moreButton = InteractiveButtonImpl.Empty;
+		IInteractiveButton _moreButton = InteractiveButton.Empty;
 
 		List<Tuple<IInteractiveButton, IBuilding>> _buildingButtons = new();
 
@@ -87,7 +87,7 @@ namespace CivOne.Screens.CityManagerPanels
 				.AddLayer(Icons.SellButton, Width - 10, 2 + (6 * offset));
 
 
-			_buildingButtons.Add(new(InteractiveButtonImpl.Build(this, this,
+			_buildingButtons.Add(new(InteractiveButton.Build(this, this,
 				new Rectangle(0, 2 + (6 * offset), Width, Resources.GetFontHeight(1) + 1)), building));
 		}
 
@@ -134,7 +134,7 @@ namespace CivOne.Screens.CityManagerPanels
 			{
 				int buttonHeight = Resources.GetFontHeight(1) + 3;
 				const int buttonWidth = 28;
-				_moreButton = InteractiveButtonImpl.Build(this, this,
+				_moreButton = InteractiveButton.Build(this, this,
 					new Rectangle(
 							Width - buttonWidth - 1,
 							Height - buttonHeight - 1,

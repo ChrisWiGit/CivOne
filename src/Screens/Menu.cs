@@ -372,7 +372,7 @@ namespace CivOne.Screens
 			HasUpdate(0);
 		}
 
-		private void Resize(object sender, ResizeEventArgs args) => ForceUpdate();
+		private void Resize(object? _, ResizeEventArgs __) => ForceUpdate();
 
 		public void Close()
 		{
