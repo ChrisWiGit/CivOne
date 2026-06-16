@@ -18,7 +18,7 @@ namespace CivOne.Tasks
 		private readonly Player _player;
 		private readonly bool _human;
 
-		private void ClosedChooseTech(object sender, EventArgs args)
+		private void ClosedChooseTech(object? _, EventArgs __)
 		{
 			EndTask();
 		}
@@ -54,7 +54,7 @@ namespace CivOne.Tasks
 				return;
 			}
 			
-			ChooseTech chooseTech = new ChooseTech();
+			ChooseTech chooseTech = new();
 			chooseTech.Closed += ClosedChooseTech;
 			Common.AddScreen(chooseTech);
 		}

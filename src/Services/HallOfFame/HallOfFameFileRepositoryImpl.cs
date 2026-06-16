@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace CivOne.Services.HallOfFame
 		private const string FileName = "HallOfFame.yaml";
 		private readonly IAtomicFileReplacementService _atomicFileReplacementService = atomicFileReplacementService;
 
-		public bool TryLoad(string? storageDirectory, out IReadOnlyList<HallOfFameEntry> entries, out string? error)
+		public bool TryLoad(string? storageDirectory, out IReadOnlyList<HallOfFameEntry> entries, [NotNullWhen(false)] out string? error)
 		{
 			entries = [];
 			error = null;
@@ -54,7 +55,7 @@ namespace CivOne.Services.HallOfFame
 			}
 		}
 
-		public bool TrySave(string? storageDirectory, IReadOnlyList<HallOfFameEntry> entries, out string? error)
+		public bool TrySave(string? storageDirectory, IReadOnlyList<HallOfFameEntry> entries, [NotNullWhen(false)] out string? error)
 		{
 			error = null;
 

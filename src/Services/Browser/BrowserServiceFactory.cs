@@ -5,7 +5,7 @@ namespace CivOne.Services.Browser
 	/// </summary>
 	public static class BrowserServiceFactory
 	{
-		private static IBrowserService _instance;
+		private static IBrowserService? _instance;
 
 		/// <summary>
 		/// Gets the singleton browser service instance.

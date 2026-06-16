@@ -29,7 +29,7 @@ namespace CivOne.Units
 
 		public static int InciteCost(City cityToIncite)
 		{
-			City capital = cityToIncite.CityOwnerPlayer.GetCapital();
+			City? capital = cityToIncite.CityOwnerPlayer.GetCapital();
 
 			int distance = capital == null ? 16 : cityToIncite.Tile.DistanceTo(capital);
 			

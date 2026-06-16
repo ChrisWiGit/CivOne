@@ -276,7 +276,7 @@ namespace CivOne.Services.SpaceShip
 		/// </summary>
 		public const int CanonicalGridHeight = 12;
 
-		private static ISpaceShipSlotBlueprintFactory _instance;
+		private static ISpaceShipSlotBlueprintFactory? _instance;
 
 		public static ISpaceShipSlotBlueprintFactory GetInstance()
 		{

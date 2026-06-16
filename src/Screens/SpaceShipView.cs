@@ -299,7 +299,7 @@ namespace CivOne.Screens
 				int cx = left + overlay.PixelX(GridCellSize);
 				int cy = top + overlay.PixelY(GridCellSize);
 
-				if (_sprites.TryGetPartSprite(overlay.SpriteType, out Picture sprite))
+				if (_sprites.TryGetPartSprite(overlay.SpriteType, out Picture? sprite))
 				{
 					target.AddLayer(sprite, cx, cy);
 				}
@@ -318,7 +318,7 @@ namespace CivOne.Screens
 			int cx = left + col * GridCellSize;
 			int cy = top + row * GridCellSize;
 
-			if (_sprites.TryGetPartSprite(cell, out Picture sprite))
+			if (_sprites.TryGetPartSprite(cell, out Picture? sprite))
 			{
 				target.AddLayer(sprite, cx, cy);
 			}

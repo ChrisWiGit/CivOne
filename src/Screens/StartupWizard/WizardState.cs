@@ -18,7 +18,7 @@ namespace CivOne.Screens.StartupWizard
 	/// State is shared between <see cref="IWizardPageBuilder"/> and <see cref="IWizardActionHandler"/>.
 	/// Page navigation is controlled via <see cref="MoveNext"/> and <see cref="MoveBack"/>.
 	/// </remarks>
-	internal sealed class WizardState(string selectedLanguagePostfix)
+	internal sealed class WizardState(string? selectedLanguagePostfix)
 	{
 		private const int LastPageIndex = 6;
 

@@ -12,6 +12,7 @@ using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
+using CivOne.Services.Screen;
 
 namespace CivOne.Screens
 {
@@ -40,7 +41,7 @@ namespace CivOne.Screens
 
 		public PowerGraph() : base(MouseCursor.None)
 		{	
-			Palette = Common.TopScreen.Palette.Copy();
+			Palette = ScreenServiceFactory.CreateQueryService().TopScreen!.Palette.Copy();
 
 			string title = Translate("CIVILIZATION POWERGraph");
 			this.Clear(8)

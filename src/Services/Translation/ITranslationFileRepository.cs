@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne.Services.Translation
 {
@@ -17,7 +18,7 @@ namespace CivOne.Services.Translation
 		/// <summary>
 		/// Tries to load translation entries from a language file.
 		/// </summary>
-		bool TryLoadTranslations(string filePath, out IReadOnlyDictionary<string, string>? translations, out string? errorMessage);
+		bool TryLoadTranslations(string filePath, out IReadOnlyDictionary<string, string>? translations, [NotNullWhen(false)] out string? errorMessage);
 
 		/// <summary>
 		/// Copies translation files from <paramref name="sourceDirectory"/> into <paramref name="targetDirectory"/>.

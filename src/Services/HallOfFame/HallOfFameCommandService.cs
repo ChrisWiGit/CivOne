@@ -26,7 +26,7 @@ namespace CivOne.Services.HallOfFame
 		{
 			IReadOnlyList<HallOfFameEntry> clearedEntries = BuildClearedEntries();
 
-			if (!_fileRepository.TrySave(_storageDirectory, clearedEntries, out string saveError))
+			if (!_fileRepository.TrySave(_storageDirectory, clearedEntries, out string? saveError))
 			{
 				_log?.Invoke($"Could not clear Hall of Fame entries: {saveError}");
 				return _persistService.ViewEntries(_storageDirectory, _log);

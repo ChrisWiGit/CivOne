@@ -36,7 +36,7 @@ namespace CivOne.Screens.Reports
 		/// <remarks>
 		/// Use <see cref="Calculate(int)"/> to obtain a <see cref="LeaderOrderResult"/> for a rating percent.
 		/// </remarks>
-		internal sealed class LeaderOrderDelegate(ITranslationService translationService = null)
+		internal sealed class LeaderOrderDelegate(ITranslationService? translationService = null)
 	{
 		private readonly ITranslationService _translationService = translationService ?? TranslationServiceFactory.CreateDefault();
 

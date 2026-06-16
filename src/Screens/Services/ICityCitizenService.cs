@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using CivOne.Buildings;
@@ -45,8 +46,17 @@ namespace CivOne.Screens.Services
 
 		Citizen[] GetCitizens();
 
-		static ICityCitizenService Create(City city, IGame game, List<Citizen> specialists, Map map) =>
-			new CityCitizenService(city, city, game as IGameCitizenDependency, specialists, map);
+		static ICityCitizenService Create(City city, IGame game, List<Citizen> specialists, Map map)
+		{
+			ArgumentNullException.ThrowIfNull(game);
+
+			if (game is not IGameCitizenDependency dependency)
+			{
+				throw new ArgumentException("The provided game does not implement IGameCitizenDependency.", nameof(game));
+			}
+
+			return new CityCitizenService(city, city, dependency, specialists, map);
+		}
 	}
 
 }

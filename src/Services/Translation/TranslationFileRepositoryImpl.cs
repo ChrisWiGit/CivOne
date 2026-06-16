@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 
@@ -108,7 +109,7 @@ namespace CivOne.Services.Translation
 		}
 
 		/// <inheritdoc/>
-		public bool TryLoadTranslations(string filePath, out IReadOnlyDictionary<string, string>? translations, out string? errorMessage)
+		public bool TryLoadTranslations(string filePath, out IReadOnlyDictionary<string, string>? translations, [NotNullWhen(false)] out string? errorMessage)
 		{
 			translations = null;
 			errorMessage = null;

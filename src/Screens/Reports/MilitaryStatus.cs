@@ -25,8 +25,8 @@ namespace CivOne.Screens.Reports
 			DrawReportHeader();
 
 			byte player = Game.PlayerNumber(Human);
-			IUnit[] units = Game.GetUnits().Where(u => u.Owner == player && u.Home != null).ToArray();
-			IUnit[] production = Game.GetCities().Where(c => c.CityOwnerPlayerIndex == player).Where(c => (c.CurrentProduction is IUnit)).Select(c => (c.CurrentProduction as IUnit)).ToArray();
+			IUnit[] units = [.. Game.GetUnits().Where(u => u.Owner == player && u.Home != null)];
+			IUnit[] production = [.. Game.GetCities().Where(c => c.CityOwnerPlayerIndex == player).Select(c => c.CurrentProduction).OfType<IUnit>()];
 
 			int i = 0;
 			foreach (IUnit unit in Reflect.GetUnits())

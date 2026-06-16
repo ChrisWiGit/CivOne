@@ -19,7 +19,7 @@ namespace CivOne.Tasks
 	{
 		private readonly IScreen _screen;
 
-		private void ClosedMessage(object sender, EventArgs args) => EndTask();
+		private void ClosedMessage(object? _, EventArgs __) => EndTask();
 
 		public override void Run()
 		{

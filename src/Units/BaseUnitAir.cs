@@ -133,7 +133,7 @@ namespace CivOne.Units
 			TryToLandOnCarrier();
 		}
 
-		public override IEnumerable<MenuItem<int>> MenuItems
+		public override IEnumerable<MenuItem<int>?> MenuItems
 		{
 			get
 			{

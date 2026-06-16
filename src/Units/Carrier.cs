@@ -48,7 +48,7 @@ namespace CivOne.Units
 				return false;
 			}
 
-			int availableCargo = Tile.Units.Where(u => u is IBoardable).Sum(u => (u as IBoardable).Cargo);
+			int availableCargo = Tile.Units.OfType<IBoardable>().Sum(u => u.Cargo);
 			int usedCargo = Tile.Units.Count(u => u.UnitCategory == UnitClass.Air);
 
 			return availableCargo >= usedCargo;
