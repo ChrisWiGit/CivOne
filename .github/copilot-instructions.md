@@ -364,3 +364,22 @@ Then manually move entries into language-specific files such as:
 ```txt
 civ_german.txt
 ```
+
+## rg
+
+The `rg` (ripgrep) command is not available in this environment.
+
+When searching for files or text, use these alternatives instead:
+
+- Find files:
+  - `find . -type f`
+  - `fd` (if available)
+
+- Search file contents:
+  - `grep -R "pattern" .`
+  - `grep -rn "pattern" .`
+
+- List directories:
+  - `find . -type d`
+
+Do not use `rg` in commands, scripts, or examples unless explicitly confirmed to be installed.
