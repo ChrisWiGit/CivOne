@@ -35,7 +35,7 @@ namespace CivOne.UnitTests.Persistence
             };
 
             // Act
-            var actual = _testee.Create(snapshot);
+            var actual = GameStateHandler.Create(snapshot);
 
             // Assert
             Assert.Equal(gameRandomSeed, actual.RandomSeed);
@@ -54,7 +54,7 @@ namespace CivOne.UnitTests.Persistence
             };
 
             // Act
-            var actual = _testee.Create(snapshot);
+            var actual = GameStateHandler.Create(snapshot);
 
             // Assert
             Assert.Equal(terrainMasterWord, actual.RandomSeed);

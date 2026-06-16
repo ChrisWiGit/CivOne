@@ -1,30 +1,19 @@
+using System.Collections.Generic;
+using System.Linq;
+using CivOne.Buildings;
+using CivOne.Enums;
+using CivOne.Persistence.Resolver;
+using CivOne.Persistence.Yaml;
+using CivOne.UnitTests;
+using CivOne.Wonders;
+using Xunit;
+
 namespace CivOne.Persistence.Model
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Drawing;
-    using System.Linq;
-    using System.Reflection;
-    using CivOne;
-    using CivOne.Buildings;
-    using CivOne.Enums;
-    using CivOne.Persistence.Model.Attributes;
-	using CivOne.Persistence.Resolver;
-	using CivOne.Persistence.Yaml;
-    using CivOne.UnitTests;
-    using CivOne.Wonders;
-    using Xunit;
-    using YamlDotNet.Core;
-    using YamlDotNet.Core.Events;
-    using YamlDotNet.Serialization;
-    using YamlDotNet.Serialization.EventEmitters;
-    using YamlDotNet.Serialization.NamingConventions;
-    using CityId = System.UInt32;
-
     public class CityDtoToDtoMapperTest
     {
         private readonly CityDtoMapper _testee;
-        public List<ICity> _cities = [];
+        List<ICity> _cities = [];
 
         public CityDtoToDtoMapperTest()
         {
@@ -47,21 +36,18 @@ namespace CivOne.Persistence.Model
                 }
             };
             _cities.Add(city);
-
-
         }
 
         [Fact]
         public void TestToDto()
         {
             var dto = _testee.ToDto(_cities.Last());
-            // testee.ToDto	
             Assert.NotNull(dto);
 
-            WriteToFile("citydto.yaml", dto);
+			WriteToFile("citydto.yaml", dto);
         }
 
-        private void WriteToFile(string filename, CityDto dto)
+        private static void WriteToFile(string filename, CityDto dto)
         {
             var serializer = new YamlDotNet.Serialization.SerializerBuilder()
                 // .WithNamingConvention(PascalCaseNamingConvention.Instance)

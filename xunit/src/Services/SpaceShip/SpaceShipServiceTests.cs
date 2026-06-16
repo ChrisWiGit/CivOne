@@ -185,7 +185,7 @@ namespace CivOne.UnitTests.Services.SpaceShip
 			Assert.Equal(expected.SuccessProbabilityPercent, data.SuccessProbabilityPercent);
 		}
 
-		private static IPlayerSpaceRace CreatePlayer()
+		private static FakePlayerSpaceRace CreatePlayer()
 		{
 			return new FakePlayerSpaceRace
 			{
@@ -228,7 +228,7 @@ namespace CivOne.UnitTests.Services.SpaceShip
 
 		private sealed class FakePlayerSpaceRace : IPlayerSpaceRace
 		{
-			public SpaceShipComponentType[,] SpaceShipGrid { get; set; }
+			public SpaceShipComponentType[,] SpaceShipGrid { get; set; } = null!;
 
 			public ushort SpaceShipPopulation { get; set; }
 

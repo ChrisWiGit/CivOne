@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using CivOne.Persistence;
 using CivOne.Persistence.Model;
@@ -18,7 +19,7 @@ namespace CivOne
 	{
 		int Difficulty { get; }
 		Player CurrentPlayer { get; }
-		Player HumanPlayer { get; }
+		Player? HumanPlayer { get; }
 
 		Player[] Players { get; }
 
@@ -62,10 +63,12 @@ namespace CivOne
 
 	public class GameStateHandler
 	{
-		public GameState Create(IGameSnapshotSource game)
+		public static GameState Create(IGameSnapshotSource game)
 		{
 			ArgumentNullException.ThrowIfNull(game);
 
+			Debug.Assert(game.HumanPlayer == null || game.Players.Contains(game.HumanPlayer), "Human player must be in the list of players.");
+			
 			if (game.HumanPlayer != null && game.GetHumanLastMapPosition() is { } humanLastMapPosition)
 			{
 				game.HumanPlayer.LastMapPosition = humanLastMapPosition;

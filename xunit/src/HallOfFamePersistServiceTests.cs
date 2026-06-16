@@ -15,7 +15,7 @@ namespace CivOne.UnitTests
 	{
 		private readonly string _storageDirectory;
 		private readonly string _hallOfFameFile;
-		private readonly IHallOfFamePersistService _testee;
+		private readonly HallOfFamePersistService? _testee;
 
 		public HallOfFamePersistServiceTests()
 		{
@@ -28,8 +28,9 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void ViewEntriesWhenFileMissingLogsInfoAndDoesNotCreateFile()
 		{
+			Assert.NotNull(_testee); // to satisfy nullable reference type analysis
 			// Arrange
-			string logged = null;
+			string? logged = null;
 
 			// Act
 			var actual = _testee.ViewEntries(_storageDirectory, message => logged = message);
@@ -43,6 +44,8 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void AddEntryWhenFileMissingCreatesFileAndPersistsEntry()
 		{
+			Assert.NotNull(_testee); // to satisfy nullable reference type analysis
+
 			// Arrange
 			HallOfFameEntry expectedEntry = CreateEntry("Leader A", score: 100);
 
@@ -59,6 +62,8 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void AddEntryWhenMoreThanFiveEntriesKeepsTopFiveByScore()
 		{
+			Assert.NotNull(_testee); // to satisfy nullable reference type analysis
+
 			// Arrange
 			for (int i = 0; i < 6; i++)
 			{
@@ -79,6 +84,8 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void AddEntrySerializesCreatedAtUtcAsScalar()
 		{
+			Assert.NotNull(_testee); // to satisfy nullable reference type analysis
+
 			// Arrange
 			HallOfFameEntry expectedEntry = CreateEntry("Leader A", score: 100);
 

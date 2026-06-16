@@ -137,9 +137,11 @@ namespace CivOne.Screens.CityManagerPanels
 			
 							foreach (var building in group.Buildings)
 							{
-								background.AddLayer(building.SmallIcon,
-									left: background.Width - building.SmallIcon.Width() 
-											- 15 - (building.SmallIcon.Width() + 1 - leftStartPackedForBigCities) * deltaX++,
+								if (building.SmallIcon is not IBitmap smallIcon)
+									continue;
+								background.AddLayer(smallIcon,
+									left: background.Width - smallIcon.Width() 
+											- 15 - (smallIcon.Width() + 1 - leftStartPackedForBigCities) * deltaX++,
 									top: yy + heightOffset);
 							}
 

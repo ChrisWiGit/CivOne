@@ -1,20 +1,14 @@
 using CivOne.Enums;
 using CivOne.Services;
+using CivOne.Services.Random;
 
 namespace CivOne.Units.TribalHuts
 {
-	public class FriendlyTribeEventHandler : ITribalHutEventHandler
+	public class FriendlyTribeEventHandler(int x, int y, byte owner) : ITribalHutEventHandler
 	{
-		private readonly int X;
-		private readonly int Y;
-		private readonly byte Owner;
-
-		public FriendlyTribeEventHandler(int x, int y, byte owner)
-		{
-			X = x;
-			Y = y;
-			Owner = owner;
-		}
+		private readonly int X = x;
+		private readonly int Y = y;
+		private readonly byte Owner = owner;
 
 		public string[] GetEventMessage()
 		{
@@ -23,9 +17,9 @@ namespace CivOne.Units.TribalHuts
 
 		public void PostExecute()
 		{
-			Game.Instance.CreateUnit(Common.Random.Next(0, 100) < 50 ?
-												UnitType.Cavalry : UnitType.Legion,
-												X, Y, Owner, true);
+			Game.Instance.CreateUnit(RandomServiceFactory.Create().Hit(50) ?
+										UnitType.Cavalry : UnitType.Legion,
+										X, Y, Owner, true);
 		}
 
 		public void PreExecute()

@@ -77,8 +77,8 @@ namespace CivOne.UnitTests
 
 		public IPlayer PlayerIntf => Player;
 
-		private readonly SupplyMockedValues<bool> _hasBuilding = new SupplyMockedValues<bool>();
-        private readonly SupplyMockedValues<bool> _hasWonder = new SupplyMockedValues<bool>();
+		private readonly SupplyMockedValues<bool> _hasBuilding = new();
+        private readonly SupplyMockedValues<bool> _hasWonder = new();
 
         private readonly HashSet<IWonder> _wonders = [];
         private readonly HashSet<IBuilding> _buildings = [];

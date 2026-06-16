@@ -25,7 +25,7 @@ namespace CivOne.Screens.StartupWizard
 		/// <summary>
 		/// Gets the zero-based index of the currently active wizard page.
 		/// </summary>
-		public int PageIndex { get; private set; } = 0;
+		public int PageIndex { get; private set; }
 
 		/// <summary>
 		/// Gets or sets the status message shown at the bottom of the wizard screen.
@@ -50,7 +50,7 @@ namespace CivOne.Screens.StartupWizard
 		/// <remarks>
 		/// <see langword="null"/> or empty when no folder has been selected yet.
 		/// </remarks>
-		public string DataFolder { get; set; }
+		public string? DataFolder { get; set; }
 
 		/// <summary>
 		/// Gets or sets whether data-file copy is currently running in the background.

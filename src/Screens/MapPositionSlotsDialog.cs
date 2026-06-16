@@ -58,9 +58,9 @@ namespace CivOne.Screens
 			int rows = Math.Max(1, _slots.Length);
 			int menuHeight = rows * rowHeight;
 
-			_menuBackground = new Picture(MenuInnerWidth, menuHeight)
-				.Tile(Pattern.PanelGrey)
-				.As<Picture>();
+			_menuBackground = new Picture(MenuInnerWidth, menuHeight);
+			_menuBackground
+				.Tile(Pattern.PanelGrey);
 			_menuBackground.ColourReplace((7, 11), (22, 3));
 
 			_menu = new("MapPositionSlots", Palette, _menuBackground)

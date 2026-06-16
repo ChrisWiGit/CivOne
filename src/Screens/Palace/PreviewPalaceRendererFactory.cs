@@ -13,7 +13,7 @@ namespace CivOne.Screens.PalaceAssets
 {
 	internal static class PreviewPalaceRendererFactory
 	{
-		private static IPreviewPalaceRenderer _instance;
+		private static IPreviewPalaceRenderer? _instance;
 
 		public static IPreviewPalaceRenderer GetInstance()
 		{

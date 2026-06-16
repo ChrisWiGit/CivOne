@@ -73,7 +73,11 @@ namespace CivOne.Screens.GamePlayPanels
 
 				dx *= _gameMap._tilePixelSize;
 				dy *= _gameMap._tilePixelSize;
-				Bytemap unitSource = CivOne.Graphics.Sprites.Unit.Base(_gameMap._editorState.SelectedUnitType, _gameMap._editorState.CityOwner).Bitmap;
+				Bytemap? unitSource = Graphics.Sprites.Unit.Base(_gameMap._editorState.SelectedUnitType, _gameMap._editorState.CityOwner).Bitmap;
+				if (unitSource == null)
+				{
+					return;
+				}
 				using Bytemap unitPicture = ScaleBitmap(unitSource, _gameMap._tilePixelSize, _gameMap._tilePixelSize);
 				_gameMap.AddLayer(unitPicture, dx, dy);
 			}

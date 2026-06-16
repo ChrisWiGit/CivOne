@@ -19,7 +19,7 @@ namespace CivOne.Screens.Dialogs
 		private readonly string _source, _destination, _filename;
 
 		private readonly IPluginOverwriteService _overwriteService;
-		private Menu _menu;
+		private Menu? _menu;
 
 		private void ConfirmOverwrite(object sender, EventArgs args)
 		{
@@ -102,7 +102,7 @@ namespace CivOne.Screens.Dialogs
 	{
 		public void ConfirmOverwrite(string source, string destination, string filename)
 		{
-			Plugin plugin = Reflect.Plugins().FirstOrDefault(x => x.Filename == filename && !x.Deleted);
+			Plugin? plugin = Reflect.Plugins().FirstOrDefault(x => x.Filename == filename && !x.Deleted);
 			plugin?.Delete();
 			File.Copy(source, destination);
 			Reflect.LoadPlugin(destination);

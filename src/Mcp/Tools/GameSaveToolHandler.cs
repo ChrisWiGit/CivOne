@@ -76,7 +76,6 @@ namespace CivOne.Mcp.Tools
 
 			try
 			{
-				GameStateHandler gameState = new();
 				var mapperDependencies = YamlMapperDependenciesFactory
 					.CreateDefault()
 					.Create(game);
@@ -89,7 +88,7 @@ namespace CivOne.Mcp.Tools
 
 				using (FileStream stream = new(fullPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
 				{
-					writer.Write(stream, gameState.Create(game), game.SaveMetaData);
+					writer.Write(stream, GameStateHandler.Create(game), game.SaveMetaData);
 					stream.Flush();
 				}
 

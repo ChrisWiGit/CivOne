@@ -26,7 +26,7 @@ namespace CivOne.UnitTests
 			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
-			ITile actual = testee.GotoStep(unit);
+			ITile? actual = testee.GotoStep(unit);
 
 			// Assert
 			Assert.Null(actual);
@@ -42,7 +42,7 @@ namespace CivOne.UnitTests
 			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
-			ITile actual = testee.GotoStep(unit);
+			ITile? actual = testee.GotoStep(unit);
 
 			// Assert
 			Assert.NotNull(actual);
@@ -62,7 +62,7 @@ namespace CivOne.UnitTests
 			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
-			ITile actual = testee.GotoStep(unit);
+			ITile? actual = testee.GotoStep(unit);
 
 			// Assert
 			Assert.NotNull(actual);
@@ -87,7 +87,7 @@ namespace CivOne.UnitTests
 			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
-			ITile actual = testee.GotoStep(unit);
+			ITile? actual = testee.GotoStep(unit);
 
 			// Assert
 			Assert.Null(actual);
@@ -108,7 +108,7 @@ namespace CivOne.UnitTests
 			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
-			ITile actual = testee.GotoStep(unit);
+			ITile? actual = testee.GotoStep(unit);
 
 			// Assert
 			Assert.Null(actual);
@@ -134,7 +134,7 @@ namespace CivOne.UnitTests
 			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
-			ITile actual = testee.GotoStep(unit);
+			ITile? actual = testee.GotoStep(unit);
 
 			// Assert: path exists, but first step is NOT the land tile
 			Assert.NotNull(actual);
@@ -162,7 +162,7 @@ namespace CivOne.UnitTests
 			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
-			ITile actual = testee.GotoStep(unit);
+			ITile? actual = testee.GotoStep(unit);
 
 			// Assert – a path must be found (the goal bypass is in effect)
 			Assert.NotNull(actual);
@@ -187,7 +187,7 @@ namespace CivOne.UnitTests
 			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
-			ITile actual = testee.GotoStep(unit);
+			ITile? actual = testee.GotoStep(unit);
 
 			// Assert
 			Assert.Null(actual);
@@ -211,7 +211,7 @@ namespace CivOne.UnitTests
 			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
-			ITile actual = testee.GotoStep(unit);
+			ITile? actual = testee.GotoStep(unit);
 
 			// Assert: first step stays on y=2 (railroad row), not y=1
 			Assert.NotNull(actual);
@@ -238,7 +238,7 @@ namespace CivOne.UnitTests
 			var testee = CreateTestee(map, useNewImpl);
 
 			// Act
-			ITile actual = testee.GotoStep(unit);
+			ITile? actual = testee.GotoStep(unit);
 
 			// Assert: first step must wrap left to x=0, not try to cross ocean
 			Assert.NotNull(actual);
@@ -262,7 +262,7 @@ namespace CivOne.UnitTests
 			var testee = CreateTestee(map, useNewImpl: true, riverFastMovement: true);
 
 			// Act
-			ITile actual = testee.GotoStep(unit);
+			ITile? actual = testee.GotoStep(unit);
 
 			// Assert: first step stays on y=2 (river row)
 			Assert.NotNull(actual);
@@ -289,7 +289,7 @@ namespace CivOne.UnitTests
 			var testee = CreateTestee(map, useNewImpl, riverFastMovement: false);
 
 			// Act
-			ITile actual = testee.GotoStep(unit);
+			ITile? actual = testee.GotoStep(unit);
 
 			// Assert: first step moves to the road row (y=1)
 			Assert.NotNull(actual);

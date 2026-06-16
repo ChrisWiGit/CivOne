@@ -367,7 +367,7 @@ namespace CivOne.Persistence.Mapper
                 Difficulty = (DifficultyLevel)gameState.Difficulty,
                 GameTurn = gameState.GameTurn,
                 Players = [.. gameState.Players.Select(playerMapper.ToDto)],
-                HumanPlayer = FindPlayerIndex(gameState.Players, gameState.HumanPlayer, "Human"),
+                HumanPlayer = FindPlayerIndex(gameState.Players, gameState.HumanPlayer ?? throw new InvalidOperationException("Human player not found"), "Human"),
                 CurrentPlayer = FindPlayerIndex(gameState.Players, gameState.CurrentPlayer ?? gameState.HumanPlayer, "Current"),
 
                 GameRandomSeed = (uint)gameState.RandomSeed,

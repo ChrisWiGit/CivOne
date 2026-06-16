@@ -26,7 +26,7 @@ namespace CivOne.Services.Pathfinding
 
 		// A* pathfinder for GoTo orders. Returns the next tile to move into, or null if unreachable.
 		// Cost units: railroad=1, road=3, terrain=Movement*9 (max 18 for hills/forest).
-		public ITile GotoStep(IUnit unit)
+		public ITile? GotoStep(IUnit unit)
 		{
 			int goalX = unit.Goto.X, goalY = unit.Goto.Y;
 			int startX = unit.X, startY = unit.Y;

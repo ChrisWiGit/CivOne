@@ -17,7 +17,7 @@ namespace CivOne.UnitTests
             Attack = attack;
         }
 
-        private ICityBasic _city;
+        private ICityBasic? _city;
 
         public MockedUnit WithHome(ICityBasic city)
         {

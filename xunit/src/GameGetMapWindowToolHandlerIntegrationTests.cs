@@ -18,7 +18,6 @@ namespace CivOne.UnitTests
 			// Arrange
 			IGameStateDtoSnapshotProvider snapshotProvider = new GameStateDtoSnapshotProvider(
 				new RuntimeHandlerGameTickProvider(),
-				new GameStateHandler(),
 				YamlMapperDependenciesFactory.CreateDefault());
 
 			GameGetMapSizeToolHandler mapSizeTool = new(snapshotProvider, new JsonSaveGameStateWriter(), 32000);
@@ -69,7 +68,6 @@ namespace CivOne.UnitTests
 			// Arrange
 			IGameStateDtoSnapshotProvider snapshotProvider = new GameStateDtoSnapshotProvider(
 				new RuntimeHandlerGameTickProvider(),
-				new GameStateHandler(),
 				YamlMapperDependenciesFactory.CreateDefault());
 
 			GameGetMapWindowToolHandler testee = new(snapshotProvider, new JsonSaveGameStateWriter(), 32000);

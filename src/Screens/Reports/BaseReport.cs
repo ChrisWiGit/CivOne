@@ -22,7 +22,7 @@ namespace CivOne.Screens.Reports
 
 		protected readonly IBitmap[] Portrait = new Picture[4];
 
-		protected event EventHandler<ScreenEventArgs> OnMouseDown;
+		protected event EventHandler<ScreenEventArgs>? OnMouseDown;
 		
 		protected byte BackgroundColour { get; }
 		protected int OffsetX => Math.Max(0, (Width - 320) / 2);
@@ -77,7 +77,7 @@ namespace CivOne.Screens.Reports
 			bool modernGovernment = Human.HasAdvance<Invention>();
 			for (int i = 0; i < 4; i++)
 			{
-				Portrait[i] = Icons.GovernmentPortrait(Human.Government, (Advisor)Enum.Parse(typeof(Advisor), $"{i}"), modernGovernment); 
+				Portrait[i] = Icons.GovernmentPortrait(Human.Government, Enum.Parse<Advisor>($"{i}"), modernGovernment); 
 			}
 
 			using Palette palette = Common.DefaultPalette.Merge(Portrait[0].Palette, 144);

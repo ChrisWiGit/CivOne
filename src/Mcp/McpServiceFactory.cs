@@ -28,8 +28,7 @@ namespace CivOne.Mcp
 			IMcpScreenshotRoutine screenshotRoutine = new RuntimeLayerScreenshotRoutine(runtime, artifactWriter, gameTickProvider);
 			IYamlMapperDependenciesFactory mapperDependenciesFactory = YamlMapperDependenciesFactory.CreateDefault();
 			JsonSaveGameStateWriter jsonSaveGameStateWriter = new();
-			GameStateHandler gameStateHandler = new();
-			IGameStateDtoSnapshotProvider snapshotProvider = new GameStateDtoSnapshotProvider(gameTickProvider, gameStateHandler, mapperDependenciesFactory);
+			IGameStateDtoSnapshotProvider snapshotProvider = new GameStateDtoSnapshotProvider(gameTickProvider, mapperDependenciesFactory);
 			int maxJsonChars = runtime.Settings.Get<int>("mcp-max-json-chars");
 			if (maxJsonChars <= 0)
 				maxJsonChars = GameGetStateToolHandler.MaxJsonCharsDefault;

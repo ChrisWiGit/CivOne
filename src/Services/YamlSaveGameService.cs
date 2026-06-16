@@ -26,7 +26,6 @@ namespace CivOne.Services
 
 			_game.SaveMetaData.DisplayName = _game.SaveMetaDataService.BuildDisplayName(_game.Difficulty, _game.HumanPlayer, _game.GameTurn);
 
-			GameStateHandler gameState = new();
 			var mapperDependencies = YamlMapperDependenciesFactory
 				.CreateDefault()
 				.Create(_game);
@@ -39,7 +38,7 @@ namespace CivOne.Services
 
 			_atomicFileReplacementService.ReplaceFile(
 				filePath,
-				stream => writer.Write(stream, gameState.Create(_game), _game.SaveMetaData));
+				stream => writer.Write(stream, GameStateHandler.Create(_game), _game.SaveMetaData));
 
 			_game.MarkAsYamlSaveSource();
 		}

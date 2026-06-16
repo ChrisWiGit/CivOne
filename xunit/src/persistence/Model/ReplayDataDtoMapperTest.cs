@@ -183,7 +183,8 @@ namespace CivOne.Persistence.Model
 		[Fact]
 		public void ToDtoListNullInputReturnsEmptyList()
 		{
-			var result = _testee.ToDtoList(null);
+			// At compile time the DTO does not allow nulls, but we want to be defensive in case of future changes or incorrect usage at runtime.
+			var result = _testee.ToDtoList(null!);
 
 			Assert.Empty(result);
 		}
@@ -191,7 +192,8 @@ namespace CivOne.Persistence.Model
 		[Fact]
 		public void FromDtoListNullInputReturnsEmptyList()
 		{
-			var result = _testee.FromDtoList(null);
+			// At compile time the DTO does not allow nulls, but we want to be defensive in case of future changes or incorrect usage at runtime.
+			var result = _testee.FromDtoList(null!);
 
 			Assert.Empty(result);
 		}

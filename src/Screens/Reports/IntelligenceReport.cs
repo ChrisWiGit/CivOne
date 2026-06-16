@@ -22,7 +22,7 @@ namespace CivOne.Screens.Reports
 	{
 		private readonly Dictionary<Player, Rectangle> _infoButtons = new Dictionary<Player, Rectangle>();
 		private bool _showDetails;
-		private Player _selectedPlayer;
+		private Player? _selectedPlayer;
 
 		private void RenderOverview()
 		{
@@ -86,7 +86,7 @@ namespace CivOne.Screens.Reports
 				.DrawText(Translate("Technologies:"), 0, 9, OffsetX + 16, (y += fontHeight + 4));
 		}
 
-		private void MouseDown(object sender, ScreenEventArgs args)
+		private void MouseDown(object? _, ScreenEventArgs args)
 		{
 			if (_infoButtons.Count == 0) return;
 

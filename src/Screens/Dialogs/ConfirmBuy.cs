@@ -15,9 +15,9 @@ namespace CivOne.Screens.Dialogs
 {
 	internal class ConfirmBuy : BaseDialog
 	{
-		public event EventHandler Buy;
+		public event EventHandler? Buy;
 
-		private Menu _menu;
+		private Menu? _menu;
 
 		private static string[] MessageLines(string name, short price, short treasury)
 		{

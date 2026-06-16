@@ -342,7 +342,7 @@ namespace CivOne.Persistence.Model
 
 		public class MockedIMapFactory : IMapFactory
 		{
-			private IMapTilesCommand _currentMapTiles;
+			private IMapTilesCommand _currentMapTiles = null!;
 
 			internal IMapTilesCommand CurrentMapTiles => _currentMapTiles;
 
@@ -380,9 +380,9 @@ namespace CivOne.Persistence.Model
 		/// <summary>
 		/// Mock implementation of ITileDtoMapper for testing purposes.
 		/// </summary>
-		public class MockedITileDtoMapper(Func<IMapTilesCommand> getMapTiles = null) : ITileDtoMapper
+		public class MockedITileDtoMapper(Func<IMapTilesCommand>? getMapTiles = null) : ITileDtoMapper
 		{
-			private readonly Func<IMapTilesCommand> _getMapTiles = getMapTiles;
+			private readonly Func<IMapTilesCommand>? _getMapTiles = getMapTiles;
 
 			public void SetTileFromDto(TileDto dto, int x, int y)
 			{

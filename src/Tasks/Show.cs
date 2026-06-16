@@ -111,7 +111,7 @@ namespace CivOne.Tasks
 				chooseGovernment.Closed += (s, a) => {
 					if (s is not ChooseGovernment chooseGovernmentScreen) return;
 
-					Human.Government = chooseGovernment.Result;
+					Human.Government = chooseGovernment.Result ?? Human.Government; // If Result is null, keep current government
 					Insert(Message.NewGoverment(null,
 					TranslationServiceFactory.GetCurrent().TranslateFormattedArray("{0} government\nchanged to {1}!", Human.TribeName, Human.Government.TranslatedName)));
 				};

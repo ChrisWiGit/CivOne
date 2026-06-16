@@ -27,8 +27,9 @@ namespace CivOne.Persistence
         /// The player controlled by the human user.
         /// In most situations this is equal to <see cref="CurrentPlayer"/>,
         /// but it can differ when a snapshot is taken during AI turns.
+        /// During loading, this is initially null and set to the correct player after all players are loaded, based on the player number stored in the save file. 
         /// </summary>
-		public IPlayer HumanPlayer { get; set; } = null!;
+		public IPlayer? HumanPlayer { get; set; }
 
         /// <summary>
         /// The game-level random seed (global RNG state source for gameplay logic).

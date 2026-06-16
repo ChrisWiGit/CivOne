@@ -116,7 +116,7 @@ namespace CivOne
 
 				if (!unit.Goto.IsEmpty)
 				{
-					ITile next = _unitGotoService.GotoStep(unit);
+					ITile? next = _unitGotoService.GotoStep(unit);
 					if (next == null)
 					{
 						// No path to current target — give up for this turn.

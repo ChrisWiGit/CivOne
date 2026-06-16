@@ -49,8 +49,11 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void GetInitialSaveFilePathUsesLastUsedPathAndEnsuresDirectory()
 		{
+			var cosSave = Path.GetDirectoryName(_settings.CosSavesDirectory);
+			Assert.NotNull(cosSave);
+
 			List<string> createdPaths = [];
-			string lastUsedPath = Path.Combine(Path.GetDirectoryName(_settings.CosSavesDirectory), "custom");
+			string lastUsedPath = Path.Combine(cosSave, "custom");
 			_runtime.SetSetting(LastUsedSaveGameDialogPathKey, lastUsedPath);
 
 			var provider = CreateProvider(
@@ -123,6 +126,7 @@ namespace CivOne.UnitTests
 
 		public void Dispose()
 		{
+			GC.SuppressFinalize(this);
 		}
 
 		private SaveGamePathProvider CreateProvider(Action<string> createDirectory, Func<string, bool> directoryExists)

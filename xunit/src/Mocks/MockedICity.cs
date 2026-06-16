@@ -15,10 +15,11 @@ namespace CivOne.UnitTests
 {
 	public class MockedICity : ICity
 	{
-		private BitFlagExtensions _bits = new();
+		private readonly BitFlagExtensions _bits = new();
 		private MockedCityTile _cityTile;
 		public MockedICity(byte id = 1)
 		{
+			Player = null!;
 			_cityTile = new MockedCityTile();
 			Tile = _cityTile.Tile;
 			Id = Guid.Parse($"00000000-0000-0000-0000-00000000000{id}");
@@ -33,7 +34,6 @@ namespace CivOne.UnitTests
 			Shields = 1;
 			Food = 2;
 			ContinentId = 3;
-			Player = null;
 			Entertainers = 4;
 			Scientists = 5;
 			Taxmen = 6;

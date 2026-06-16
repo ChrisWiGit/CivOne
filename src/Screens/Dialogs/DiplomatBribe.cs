@@ -137,7 +137,7 @@ namespace CivOne.Screens.Dialogs
 
 		public void BribeUnit()
 		{
-			City capital = _unitToBribe.Player.GetCapital();
+			City? capital = _unitToBribe.Player.GetCapital();
 			int distance = capital == null ? 16 : _unitToBribe.Tile.DistanceTo(capital);
 			int cost = (_unitToBribe.Player.Gold + 750) / (distance + 2) * _unitToBribe.Price;
 			int bribeCost = (_unitToBribe.Player.Civilization is Barbarian) ? cost / 2 : cost;

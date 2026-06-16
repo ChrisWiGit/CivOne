@@ -619,8 +619,12 @@ namespace CivOne.Screens
 
 			if (Settings.Sound != GameOption.Off)
 			{
+				var opening = Extensions.GetSoundFile("OPENING");
 				// In this stage using Game.PlaySound() is not possible, as the Game instance is not yet created.
-				Runtime.PlaySound(Extensions.GetSoundFile("OPENING"));
+				if (opening != null)
+				{
+					Runtime.PlaySound(opening);
+				}
 			}
 
 			if (!Runtime.Settings.ShowCredits) SkipIntro();

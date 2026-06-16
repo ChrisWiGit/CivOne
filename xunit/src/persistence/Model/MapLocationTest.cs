@@ -41,7 +41,8 @@ namespace CivOne.Persistence.Model
         [Fact]
         public void CopyConstructorWithNullThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => new MapLocation((MapLocation)null));
+            // At compile time the constructor does not allow nulls, but we want to be defensive in case of future changes or incorrect usage at runtime.
+            Assert.Throws<ArgumentNullException>(() => new MapLocation(null!));
         }
 
         [Fact]

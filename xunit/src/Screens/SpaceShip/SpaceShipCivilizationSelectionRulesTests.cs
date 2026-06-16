@@ -50,7 +50,7 @@ namespace CivOne.UnitTests.Screens.SpaceShip
 		public void HasAnySpaceShipPartNullGridReturnsFalse()
 		{
 			// Arrange
-			SpaceShipComponentType[,] grid = null;
+			SpaceShipComponentType[,] grid = null!;
 
 			// Act
 			bool actual = SpaceShipCivilizationSelectionRules.HasAnySpaceShipPart(grid);

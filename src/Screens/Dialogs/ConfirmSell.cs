@@ -18,14 +18,13 @@ namespace CivOne.Screens.Dialogs
 	{
 		public IBuilding Building { get; private set; }
 
-		public event EventHandler Sell;
+		public event EventHandler? Sell;
 
-		private Menu _menu;
+		private Menu? _menu;
 
 		private void MenuYes(object sender, EventArgs args)
 		{
-			if (Sell != null)
-				Sell(this, args);
+			Sell?.Invoke(this, args);
 			Cancel();
 		}
 

@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -262,7 +263,7 @@ namespace CivOne.Services
 		/// <param name="postfix">Language postfix from file name pattern <c>civ_&lt;postfix&gt;.txt</c>.</param>
 		/// <param name="errorMessage">Error text on failure; otherwise <see langword="null"/>.</param>
 		/// <param name="log">Optional logger used during language discovery/loading.</param>
-		public static bool TryUseLanguage(string storageDirectory, string postfix, out string? errorMessage, Action<string>? log = null)
+		public static bool TryUseLanguage(string storageDirectory, string postfix, [NotNullWhen(false)] out string? errorMessage, Action<string>? log = null)
 		{
 			errorMessage = null;
 			ITranslationLanguageObserver[] observers;

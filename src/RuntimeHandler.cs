@@ -438,7 +438,7 @@ namespace CivOne
 				return;
 			}
 
-			if (TranslationServiceFactory.TryUseLanguage(runtime.StorageDirectory, languagePostfix, out string error, message => runtime.Log(message)))
+			if (TranslationServiceFactory.TryUseLanguage(runtime.StorageDirectory, languagePostfix, out string? error, message => runtime.Log(message)))
 			{
 				runtime.Log("Translation language activated: {0}", languagePostfix);
 				return;
