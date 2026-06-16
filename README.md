@@ -713,12 +713,12 @@ It is defined in a single location: [Directory.Build.props](Directory.Build.prop
 
 The `Directory.Build.props` file contains:
 
-* `AssemblyVersion` – Main version number (e.g. `0.1.0.1417`)
-* `FileVersion` – File version (same as AssemblyVersion)
-* `InformationalVersion` – Semantic version (e.g. `0.1.0`)
-* `GenerateAssemblyInfo` – Enabled for SDL and UnitTests projects
-* `AssemblyProduct` – Product name (e.g. `CivOne`)
-* `AssemblyCopyright` – Copyright info
+* `AssemblyVersion` - Main version number (e.g. `0.1.0.1417`)
+* `FileVersion` - File version (same as AssemblyVersion)
+* `InformationalVersion` - Semantic version (e.g. `0.1.0`)
+* `GenerateAssemblyInfo` - Enables SDK generated assembly metadata
+* `AssemblyProduct` - Default product name (e.g. `CivOne`)
+* `AssemblyCopyright` - Copyright info
 
 Every project inherits these properties automatically.
 Project-specific metadata (like different `AssemblyProduct` values) can override these defaults.
@@ -729,7 +729,7 @@ To update the version for all assemblies:
 
 1. Open [Directory.Build.props](Directory.Build.props).
 2. Update `AssemblyVersion`, `FileVersion`, and `InformationalVersion`.
-3. If a project has custom `AssemblyInfo.cs` metadata that needs custom values, update those files as well (e.g. [api/src/Properties/AssemblyInfo.cs](api/src/Properties/AssemblyInfo.cs) for API-specific product names).
+3. Do not add version attributes to `AssemblyInfo.cs` files.
 
 Example:
 
@@ -739,15 +739,18 @@ Example:
 <InformationalVersion>0.1.0</InformationalVersion>
 ```
 
-### Project-specific Assembly Info
+### Project-specific metadata
 
-Some projects use custom `AssemblyInfo.cs` files:
+Project-specific SDK metadata belongs in the project file.
+For example, [api/CivOne.API.csproj](api/CivOne.API.csproj) sets `AssemblyProduct` to `CivOne API`.
 
-* [api/src/Properties/AssemblyInfo.cs](api/src/Properties/AssemblyInfo.cs) – Defines custom `AssemblyProduct("CivOne API")` and includes version metadata
-* [xunit/properties/AssemblyInfo.cs](xunit/properties/AssemblyInfo.cs) – Contains test-specific attributes like `CollectionBehavior`
+Some projects still use custom `AssemblyInfo.cs` files for attributes that MSBuild cannot generate:
 
-These files inherit version numbers from `Directory.Build.props` automatically if the project has `GenerateAssemblyInfo=false`.
-If you need custom metadata, add it to these files without duplicating version numbers.
+* [src/Properties/AssemblyInfo.cs](src/Properties/AssemblyInfo.cs) - Contains `InternalsVisibleTo` attributes.
+* [xunit/properties/AssemblyInfo.cs](xunit/properties/AssemblyInfo.cs) - Contains the test-specific `CollectionBehavior` attribute.
+
+Do not add standard attributes like `AssemblyVersion`, `AssemblyProduct`, or `AssemblyCopyright` to these files.
+Those attributes are generated from MSBuild properties.
 
 ## Profiling
 

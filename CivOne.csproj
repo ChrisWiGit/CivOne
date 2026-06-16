@@ -14,7 +14,6 @@
 		<AssemblyName>CivOne</AssemblyName>
 		<RootNamespace>CivOne</RootNamespace>
 		<OutputType>Library</OutputType>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<LangVersion>13.0</LangVersion>
 		<PackageId>CivOne</PackageId>
