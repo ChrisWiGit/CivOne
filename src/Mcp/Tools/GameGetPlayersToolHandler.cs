@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using CivOne.Mcp.Contracts;
@@ -184,7 +185,7 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private static bool ValidateParamsObject(McpRequest request, out McpResponse? response)
+		private static bool ValidateParamsObject(McpRequest request, [NotNullWhen(false)] out McpResponse? response)
 		{
 			response = null;
 			if (request.Params.ValueKind == JsonValueKind.Undefined || request.Params.ValueKind == JsonValueKind.Null)
@@ -201,7 +202,7 @@ namespace CivOne.Mcp.Tools
 			return false;
 		}
 
-		private static bool TryReadOptionalInt(JsonElement value, string propertyName, out int? result, out string? error)
+		private static bool TryReadOptionalInt(JsonElement value, string propertyName, out int? result, [NotNullWhen(false)] out string? error)
 		{
 			result = null;
 			error = null;
@@ -221,7 +222,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryReadKeys(JsonElement value, out string[] keys, out string? error)
+		private static bool TryReadKeys(JsonElement value, out string[] keys, [NotNullWhen(false)] out string? error)
 		{
 			keys = [];
 			error = null;

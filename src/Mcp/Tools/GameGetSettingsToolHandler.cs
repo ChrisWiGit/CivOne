@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
@@ -48,7 +49,7 @@ namespace CivOne.Mcp.Tools
 				return validationError!;
 
 			if (!TryReadKeys(request.Params, out string[] keys, out string? keysError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", keysError!, "keys"));
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", keysError, "keys"));
 
 			Dictionary<string, object> flatSettings = new(StringComparer.OrdinalIgnoreCase);
 			Dictionary<string, object> groupedSettings = BuildSettingsPayload(flatSettings);
@@ -297,7 +298,7 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private static bool ValidateParamsObject(McpRequest request, out McpResponse? response)
+		private static bool ValidateParamsObject(McpRequest request, [NotNullWhen(false)] out McpResponse? response)
 		{
 			response = null;
 			if (request.Params.ValueKind == JsonValueKind.Undefined || request.Params.ValueKind == JsonValueKind.Null)
@@ -314,7 +315,7 @@ namespace CivOne.Mcp.Tools
 			return false;
 		}
 
-		private static bool TryReadKeys(JsonElement value, out string[] keys, out string? error)
+		private static bool TryReadKeys(JsonElement value, out string[] keys, [NotNullWhen(false)] out string? error)
 		{
 			keys = [];
 			error = null;

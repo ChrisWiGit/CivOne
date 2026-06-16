@@ -86,7 +86,7 @@ namespace CivOne.Mcp.Tools
 			}
 
 			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto? snapshot, out string? errorCode, out string? errorMessage))
-				return JsonResponse(request.Id, BuildErrorPayload(errorCode!, errorMessage, null, null));
+				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage, null, null));
 
 			string normalizedPath = path.Trim();
 			string rootSegment = normalizedPath.Split('.')[0];

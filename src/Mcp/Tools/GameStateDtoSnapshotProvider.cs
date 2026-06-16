@@ -1,6 +1,6 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Mcp.Automation;
-using CivOne.Persistence;
 using CivOne.Persistence.Factories;
 using CivOne.Persistence.Mapper;
 using CivOne.Persistence.Model;
@@ -16,7 +16,7 @@ namespace CivOne.Mcp.Tools
 		private uint _cachedTick = uint.MaxValue;
 		private GameStateDto? _cachedSnapshot;
 
-		public bool TryGetSnapshot(out GameStateDto? snapshot, out string? errorCode, out string? errorMessage)
+		public bool TryGetSnapshot([NotNullWhen(true)] out GameStateDto? snapshot, [NotNullWhen(false)] out string? errorCode, [NotNullWhen(false)] out string? errorMessage)
 		{
 			snapshot = null;
 			errorCode = null;

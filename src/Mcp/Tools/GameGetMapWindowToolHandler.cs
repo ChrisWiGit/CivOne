@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using CivOne.Mcp.Contracts;
@@ -235,7 +236,7 @@ namespace CivOne.Mcp.Tools
 			return rows;
 		}
 
-		private static bool ValidateBounds(int x, int y, int width, int height, int mapWidth, int mapHeight, out string? error)
+		private static bool ValidateBounds(int x, int y, int width, int height, int mapWidth, int mapHeight, [NotNullWhen(false)] out string? error)
 		{
 			error = null;
 			if (x < 0 || y < 0)
@@ -297,7 +298,7 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private static bool ValidateParamsObject(McpRequest request, out McpResponse? response)
+		private static bool ValidateParamsObject(McpRequest request, [NotNullWhen(false)] out McpResponse? response)
 		{
 			response = null;
 			if (request.Params.ValueKind == JsonValueKind.Object)
@@ -311,7 +312,7 @@ namespace CivOne.Mcp.Tools
 			return false;
 		}
 
-		private static bool TryReadRequiredInt(JsonElement value, string propertyName, out int result, out string? error)
+		private static bool TryReadRequiredInt(JsonElement value, string propertyName, out int result, [NotNullWhen(false)] out string? error)
 		{
 			result = 0;
 			error = null;
@@ -331,7 +332,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryReadOptionalInt(JsonElement value, string propertyName, out int? result, out string? error)
+		private static bool TryReadOptionalInt(JsonElement value, string propertyName, out int? result, [NotNullWhen(false)] out string? error)
 		{
 			result = null;
 			error = null;
@@ -351,7 +352,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryReadOptionalString(JsonElement value, string propertyName, out string? result, out string? error)
+		private static bool TryReadOptionalString(JsonElement value, string propertyName, out string? result, [NotNullWhen(false)] out string? error)
 		{
 			result = null;
 			error = null;
@@ -371,7 +372,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryReadOptionalBool(JsonElement value, string propertyName, out bool result, out string? error)
+		private static bool TryReadOptionalBool(JsonElement value, string propertyName, out bool result, [NotNullWhen(false)] out string? error)
 		{
 			result = false;
 			error = null;

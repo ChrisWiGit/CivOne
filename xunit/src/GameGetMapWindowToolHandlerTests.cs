@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using CivOne.Mcp.Contracts;
 using CivOne.Mcp.Tools;
@@ -152,7 +153,7 @@ namespace CivOne.UnitTests
 
 		private sealed class StaticSnapshotProvider(GameStateDto snapshot) : IGameStateDtoSnapshotProvider
 		{
-			public bool TryGetSnapshot(out GameStateDto? output, out string? errorCode, out string? errorMessage)
+			public bool TryGetSnapshot([NotNullWhen(true)] out GameStateDto? output, [NotNullWhen(false)] out string? errorCode, [NotNullWhen(false)] out string? errorMessage)
 			{
 				output = snapshot;
 				errorCode = null;

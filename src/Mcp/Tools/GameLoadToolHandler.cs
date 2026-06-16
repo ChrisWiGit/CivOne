@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -75,7 +76,7 @@ namespace CivOne.Mcp.Tools
 			else
 			{
 				if (!TryResolveSafeCosPath(saveFolder, fileName!, out fullPath, out string? pathError))
-					return JsonResponse(request.Id, BuildErrorPayload("INVALID_FILE_NAME", pathError!, "fileName"));
+					return JsonResponse(request.Id, BuildErrorPayload("INVALID_FILE_NAME", pathError, "fileName"));
 
 				if (!File.Exists(fullPath))
 					return JsonResponse(request.Id, BuildErrorPayload("FILE_NOT_FOUND", "Save file not found.", "fileName"));
@@ -141,7 +142,7 @@ namespace CivOne.Mcp.Tools
 			return false;
 		}
 
-		private static bool TryResolveSafeCosPath(string saveFolder, string fileName, out string? fullPath, out string? error)
+		private static bool TryResolveSafeCosPath(string saveFolder, string fileName, out string? fullPath, [NotNullWhen(false)] out string? error)
 		{
 			fullPath = null;
 			error = null;
@@ -221,7 +222,7 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private static bool ValidateParamsObject(McpRequest request, out McpResponse? response)
+		private static bool ValidateParamsObject(McpRequest request, [NotNullWhen(false)] out McpResponse? response)
 		{
 			response = null;
 			if (request.Params.ValueKind == JsonValueKind.Undefined || request.Params.ValueKind == JsonValueKind.Null)
@@ -257,7 +258,7 @@ namespace CivOne.Mcp.Tools
 		}
 
 		[Obsolete("Kept for reference only")]
-		private static bool TryReadRequiredFileName(JsonElement value, out string? fileName, out string? error)
+		private static bool TryReadRequiredFileName(JsonElement value, out string? fileName, [NotNullWhen(false)] out string? error)
 		{
 			fileName = null;
 			error = null;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using CivOne.Enums;
@@ -58,16 +59,16 @@ namespace CivOne.Mcp.Tools
 				return JsonResponse(request.Id, BuildErrorPayload(errorCode!, errorMessage, null));
 
 			if (!TryReadOptionalGuid(request.Params, "cityId", out Guid? cityId, out string? cityIdError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", cityIdError!, "cityId"));
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", cityIdError, "cityId"));
 	
 			if (!TryReadOptionalString(request.Params, "cityName", out string? cityName, out string? cityNameError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", cityNameError!, "cityName"));
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", cityNameError, "cityName"));
 
 			if (!TryReadOptionalString(request.Params, "cityNameStartsWith", out string? cityNameStartsWith, out string? cityNameStartsWithError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", cityNameStartsWithError!, "cityNameStartsWith"));
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", cityNameStartsWithError, "cityNameStartsWith"));
 
 			if (!TryReadKeys(request.Params, out string[] keys, out string? keysError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", keysError!, "keys"));
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", keysError, "keys"));
 
 			int selectorCount = CountSelectors(cityId, cityName, cityNameStartsWith!);
 			if (selectorCount == 0)
@@ -267,7 +268,7 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private static bool ValidateParamsObject(McpRequest request, out McpResponse? response)
+		private static bool ValidateParamsObject(McpRequest request, [NotNullWhen(false)] out McpResponse? response)
 		{
 			response = null;
 			if (request.Params.ValueKind == JsonValueKind.Undefined || request.Params.ValueKind == JsonValueKind.Null)
@@ -284,7 +285,7 @@ namespace CivOne.Mcp.Tools
 			return false;
 		}
 
-		private static bool TryReadOptionalGuid(JsonElement value, string propertyName, out Guid? result, out string? error)
+		private static bool TryReadOptionalGuid(JsonElement value, string propertyName, out Guid? result, [NotNullWhen(false)] out string? error)
 		{
 			result = null;
 			error = null;
@@ -304,7 +305,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryReadOptionalString(JsonElement value, string propertyName, out string? result, out string? error)
+		private static bool TryReadOptionalString(JsonElement value, string propertyName, out string? result, [NotNullWhen(false)] out string? error)
 		{
 			result = null;
 			error = null;
@@ -324,7 +325,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryReadKeys(JsonElement value, out string[] keys, out string? error)
+		private static bool TryReadKeys(JsonElement value, out string[] keys, [NotNullWhen(false)] out string? error)
 		{
 			keys = [];
 			error = null;

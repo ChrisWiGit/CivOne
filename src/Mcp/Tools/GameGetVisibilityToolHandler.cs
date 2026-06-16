@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using CivOne.Mcp.Contracts;
@@ -88,7 +89,7 @@ namespace CivOne.Mcp.Tools
 			int bh = height ?? mapHeight;
 
 			if (!ValidateBounds(bx, by, bw, bh, mapWidth, mapHeight, out string? boundsError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_BOUNDS", boundsError!, "x|y|width|height"));
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_BOUNDS", boundsError, "x|y|width|height"));
 
 			PlayerDto player = players[playerId];
 			Bool2dMap explored = player.Explored;
@@ -133,7 +134,7 @@ namespace CivOne.Mcp.Tools
 			return rows;
 		}
 
-		private static bool ValidateBounds(int x, int y, int width, int height, int mapWidth, int mapHeight, out string? error)
+		private static bool ValidateBounds(int x, int y, int width, int height, int mapWidth, int mapHeight, [NotNullWhen(false)] out string? error)
 		{
 			error = null;
 			if (x < 0 || y < 0)
@@ -191,7 +192,7 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private static bool ValidateParamsObject(McpRequest request, out McpResponse? response)
+		private static bool ValidateParamsObject(McpRequest request, [NotNullWhen(false)] out McpResponse? response)
 		{
 			response = null;
 			if (request.Params.ValueKind == JsonValueKind.Object)
@@ -205,7 +206,7 @@ namespace CivOne.Mcp.Tools
 			return false;
 		}
 
-		private static bool TryReadInt(JsonElement value, string propertyName, out int result, out string? error)
+		private static bool TryReadInt(JsonElement value, string propertyName, out int result, [NotNullWhen(false)] out string? error)
 		{
 			result = 0;
 			error = null;
@@ -225,7 +226,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryReadOptionalInt(JsonElement value, string propertyName, out int? result, out string? error)
+		private static bool TryReadOptionalInt(JsonElement value, string propertyName, out int? result, [NotNullWhen(false)] out string? error)
 		{
 			result = null;
 			error = null;
