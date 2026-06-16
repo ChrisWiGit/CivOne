@@ -64,7 +64,7 @@ namespace CivOne.Tasks
 			if (sender is CityName cityName)
 			{
 				int nameId = cityName.NameId;
-				Game.CityNames[nameId] = cityName.Value;
+				Game.CityNames[nameId] = cityName.Value ?? Game.CityNames[nameId]; // If the value is null, we keep the existing name.
 				FoundCity(_player, nameId);
 			} 
 			else

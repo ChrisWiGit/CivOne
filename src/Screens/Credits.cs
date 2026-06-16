@@ -63,8 +63,6 @@ namespace CivOne.Screens
 		// Used only once, and then reset to null to avoid re-loading when coming back to the credits screen.
 		private static bool? _loadSavedGame = false; 
 
-		private IScreen? _overlay; // TODO fire-eggs: with fix for issue #34, this logic may no longer be required
-
 		private IScreen? _nextScreen;
 
 		private Dictionary<char, Action<object, EventArgs>>? _shortKeyMapping;
@@ -194,14 +192,6 @@ namespace CivOne.Screens
 			}
 		}
 		
-		private bool LoadGameCancel
-		{
-			get
-			{
-				return _overlay != null && (_overlay.GetType() == typeof(LoadGame) && ((LoadGame)_overlay).Cancel);
-			}
-		}
-		
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (_loadSavedGame.GetValueOrDefault(false))
@@ -223,10 +213,7 @@ namespace CivOne.Screens
 				return true;
 			}
 
-			if (_done && !_forceRedraw && (_overlay == null || !_overlay.Update(gameTick))) return false;
-
-			if (!_forceRedraw && (gameTick % 3) == 0) return false;
-			
+		if (_done && !_forceRedraw) return false;
 			// Updates
 			if (_introLeft > -320)
 			{
@@ -248,13 +235,13 @@ namespace CivOne.Screens
 				_pictures[1].ApplyNoise(_noiseMap, --_noiseCounter);
 			}
 			
-			if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>() && (_overlay == null || LoadGameCancel))
+if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 			{
 				CreateMenu();
 			}
 			
 			// Drawing
-			int ox = (Width - 320), cx = (ox / 2), cy = (Height - 200) / 2;
+			int ox = Width - 320, cx = ox / 2, cy = (Height - 200) / 2;
 			this.Clear();
 			if (_introLeft > -320)
 			{
@@ -263,7 +250,7 @@ namespace CivOne.Screens
 			}
 			if (_introLeft > -320 && _showIntroLine)
 			{
-				this.DrawText(_introText[_introLine], (Width / 2), (Height / 2) - 16);
+				this.DrawText(_introText[_introLine], Width / 2, (Height / 2) - 16);
 			}
 			if (_introLeft == -320 && _noiseCounter > 0)
 			{
@@ -296,18 +283,8 @@ namespace CivOne.Screens
 				_done = true;
 				DrawFooterLinks();
 				
-				if (_overlay != null)
-				{
-					this.AddLayer(_overlay);
-					if (_overlay.GetType() == typeof(LoadGame) && ((LoadGame)_overlay).Cancel)
-					{
-						CreateMenu();
-					}
-					if (!HasMenu) return true;
-				}
-				
 				// Draw menu background
-				int mx = ((Width - 120) / 2), my = Height - (MENU_Y_OFFSET + 4);
+				int mx = (Width - 120) / 2, my = Height - (MENU_Y_OFFSET + 4);
 				this.FillRectangle(mx, my, 122, 57, 5)
 					.FillRectangle(mx + 1, my + 1, 120, 55, _menuColours[0])
 					.FillRectangle(mx + 1, my + 2, 119, 54, _menuColours[1])
@@ -506,9 +483,6 @@ namespace CivOne.Screens
 				return true;
 			}
 
-			if (_done && _overlay != null)
-				return _overlay.KeyDown(args);
-
 
 			if (_shortKeyMapping!.TryGetValue(char.ToUpper(args.KeyChar, CultureInfo.CurrentCulture), out var action))
 			{
@@ -521,44 +495,25 @@ namespace CivOne.Screens
 		
 		public override bool MouseDown(ScreenEventArgs args)
 		{
-			if (_done && _overlay != null)
-				return _overlay.MouseDown(args);
 			return SkipIntro();
 		}
 		
 		public override bool MouseUp(ScreenEventArgs args)
 		{
-			if (_done && _overlay != null)
-				return _overlay.MouseUp(args);
 			return false;
 		}
 		
 		public override bool MouseDrag(ScreenEventArgs args)
 		{
-			if (_done && _overlay != null)
-				return _overlay.MouseDrag(args);
 			return false;
 		}
 
 		public override bool MouseMove(ScreenEventArgs args)
 		{
-			if (_done && _overlay != null)
-			{
-				return _overlay.MouseMove(args);
-			}
-
 			return UpdateFooterLinkHover(args.X, args.Y);
 		}
 		
-		public override MouseCursor Cursor
-		{
-			get
-			{
-				if (_overlay != null && !LoadGameCancel)
-					return _overlay.Cursor;
-				return base.Cursor;
-			}
-		}
+		public override MouseCursor Cursor => base.Cursor;
 
 		private void Resize(object? _, ResizeEventArgs args)
 		{
