@@ -307,12 +307,6 @@ namespace CivOne.Screens
 				return true;
 			}
 
-			if (_menuBar.KeyDown(args) && _gameMenu != null)
-			{
-				_gameMenu.KeepOpen = true;
-				return true;
-			}
-
 			switch (args.Key)
 			{
 				case Key.F1:
@@ -719,6 +713,27 @@ namespace CivOne.Screens
 
 			_update |= _gameMap.MouseDrag(args);
 			return _update;
+		}
+
+		public override void Dispose()
+		{
+			OnResize -= Resize;
+
+			_menuBar.GameSelected -= MenuBarGame;
+			_menuBar.OrdersSelected -= MenuBarOrders;
+			_menuBar.AdvisorsSelected -= MenuBarAdvisors;
+			_menuBar.WorldSelected -= MenuBarWorld;
+			_menuBar.CivilopediaSelected -= MenuBarCivilopedia;
+			_menuBar.TerrainSelected -= MenuBarTerrain;
+
+			_gameMap.MapPositionSaved -= GameMapMapPositionSaved;
+
+			_gameMenu?.Dispose();
+			_menuBar.Dispose();
+			_sideBar.Dispose();
+			_gameMap.Dispose();
+
+			base.Dispose();
 		}
 	}
 }
