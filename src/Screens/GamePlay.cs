@@ -271,6 +271,11 @@ namespace CivOne.Screens
 				return true;
 			}
 
+			if (_menuBar.KeyDown(args))
+			{
+				return true;
+			}
+
 			if (args.Key >= Key.F1 && args.Key <= Key.F12 && args.Modifier != KeyModifier.None)
 			{
 				// Disallows F1-F12 with modifiers other than Shift (e.g. Ctrl+F1) to prevent conflicts with quick save/load hotkeys
@@ -715,8 +720,13 @@ namespace CivOne.Screens
 			return _update;
 		}
 
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
+			if (!disposing)
+			{
+				return;
+			}
+
 			OnResize -= Resize;
 
 			_menuBar.GameSelected -= MenuBarGame;
@@ -733,7 +743,7 @@ namespace CivOne.Screens
 			_sideBar.Dispose();
 			_gameMap.Dispose();
 
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }
