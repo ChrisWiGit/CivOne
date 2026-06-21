@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Advances;
 using CivOne.Civilizations;
 using CivOne.Governments;
@@ -12,6 +13,8 @@ namespace CivOne.Persistence.Model
     using GovernmentId = System.Byte;
 	using CityId = System.UInt16;
 
+	[SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "These collections need to be settable for deserialization and mapping.")]
+	[SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "The collections need to be List<T> for deserialization and mapping.")]
     public class PlayerDto
     {
 		[Doc("The civilization of the player.")]

@@ -43,10 +43,10 @@ namespace CivOne.Services.EndGame
 		public async Task HandleConquestAsync()
 		{
 			ClearScreensAndTasks();
-			await ShowScreenAsync(new VictoryScreen());
-			await ShowScreenAsync(new CivilizationScore());
-			await ShowScreenAsync(TopLeaderScreenFactory.Create());
-			await ShowScreenAsync(HallOfFameScreenFactory.AddScore());
+			await ShowScreenAsync(new VictoryScreen()).ConfigureAwait(continueOnCapturedContext: true);
+			await ShowScreenAsync(new CivilizationScore()).ConfigureAwait(continueOnCapturedContext: true);
+			await ShowScreenAsync(TopLeaderScreenFactory.Create()).ConfigureAwait(continueOnCapturedContext: true);
+			await ShowScreenAsync(HallOfFameScreenFactory.AddScore()).ConfigureAwait(continueOnCapturedContext: true);
 
 			ReturnToCredits();
 		}
@@ -55,9 +55,9 @@ namespace CivOne.Services.EndGame
 		public async Task HandleDefeatAsync() 
 		{
 			ClearScreensAndTasks();
-			await ShowScreenAsync(new DefeatScreen());
-			await ShowScreenAsync(new CivilizationScore());
-			await ShowScreenAsync(TopLeaderScreenFactory.Create());
+			await ShowScreenAsync(new DefeatScreen()).ConfigureAwait(continueOnCapturedContext: true);
+			await ShowScreenAsync(new CivilizationScore()).ConfigureAwait(continueOnCapturedContext: true);
+			await ShowScreenAsync(TopLeaderScreenFactory.Create()).ConfigureAwait(continueOnCapturedContext: true);
 			// No HallOfFame entry for defeat.
 
 			ReturnToCredits();
@@ -67,10 +67,10 @@ namespace CivOne.Services.EndGame
 		public async Task HandleAlphaCentauriAsync()
 		{
 			ClearScreensAndTasks();
-			await ShowScreenAsync(new SpaceVictory(_winner));
-			await ShowScreenAsync(new CivilizationScore());
-			await ShowScreenAsync(TopLeaderScreenFactory.Create());
-			await ShowScreenAsync(HallOfFameScreenFactory.AddScore());
+			await ShowScreenAsync(new SpaceVictory(_winner)).ConfigureAwait(continueOnCapturedContext: true);
+			await ShowScreenAsync(new CivilizationScore()).ConfigureAwait(continueOnCapturedContext: true);
+			await ShowScreenAsync(TopLeaderScreenFactory.Create()).ConfigureAwait(continueOnCapturedContext: true);
+			await ShowScreenAsync(HallOfFameScreenFactory.AddScore()).ConfigureAwait(continueOnCapturedContext: true);
 
 			ReturnToCredits();
 		}
@@ -80,8 +80,8 @@ namespace CivOne.Services.EndGame
 		{
 			ClearScreensAndTasks();
 			
-			await ShowScreenAsync(new CivilizationScore());
-			await ShowScreenAsync(HallOfFameScreenFactory.AddScore());
+			await ShowScreenAsync(new CivilizationScore()).ConfigureAwait(continueOnCapturedContext: true);
+			await ShowScreenAsync(HallOfFameScreenFactory.AddScore()).ConfigureAwait(continueOnCapturedContext: true);
 			
 			ReturnToCredits();
 		}

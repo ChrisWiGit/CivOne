@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Persistence.Game;
 using CivOne.Persistence.Model;
 using CivOne.Services.GlobalWarming;
@@ -20,6 +21,8 @@ namespace CivOne.Persistence
         Palace
     }
 
+    [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "This collection needs to be settable for deserialization and mapping.")]
+    [SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "The collection needs to be List<T> for deserialization and mapping.")]
     public class GameState
 	{
 		public uint GameTurn { get; set; }

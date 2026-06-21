@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Persistence.Model.Attributes;
 
 namespace CivOne.Persistence.Model
@@ -7,6 +8,7 @@ namespace CivOne.Persistence.Model
     /// DTO for a single replay event. Exactly one of the event-data properties must be
     /// non-null; the non-null property implicitly identifies the event type.
     /// </summary>
+    [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible", Justification = "The nested classes are only used as event data containers and are not intended for general use.")]
     public class ReplayDataDto
     {
         [Doc("Game turn on which the event occurred.", 0, 65535)]
@@ -124,6 +126,8 @@ namespace CivOne.Persistence.Model
             public int Population { get; set; }
         }
 
+        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "This collection needs to be settable for deserialization and mapping.")]
+        [SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "The collection needs to be List<T> for deserialization and mapping.")]
         public class CivRankingsData
         {
             [Doc("Ordered list of civilization IDs by rank (index 0 = rank 1).")]
