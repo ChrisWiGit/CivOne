@@ -21,10 +21,10 @@
 	</PropertyGroup>
 	<PropertyGroup>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
-		<AnalysisLevel>latest-recommended</AnalysisLevel>
+		<AnalysisLevel>latest</AnalysisLevel>
 		<Nullable>enable</Nullable>
 		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-		<NoWarn></NoWarn>
+		<NoWarn>$(NoWarn)</NoWarn>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(SuppressConsoleLogs)' == 'true'">

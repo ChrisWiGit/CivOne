@@ -19,10 +19,10 @@
 	</PropertyGroup>
 	<PropertyGroup>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
-		<AnalysisLevel>latest-recommended</AnalysisLevel>
+		<AnalysisLevel>latest-all</AnalysisLevel>
 		<Nullable>enable</Nullable>
 		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-		<NoWarn>CA1712</NoWarn>
+		<NoWarn>$(NoWarn),CA1712,CA1303,CA1515</NoWarn>
 	</PropertyGroup>
 	<PropertyGroup Condition="$(Configuration.StartsWith('Debug'))">
 		<DebugSymbols>true</DebugSymbols>
