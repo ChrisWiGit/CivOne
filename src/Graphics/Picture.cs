@@ -13,7 +13,7 @@ using CivOne.IO;
 
 namespace CivOne.Graphics
 {
-	public class Picture : IBitmap
+	public sealed class Picture : IBitmap
 	{
 		private readonly Palette _originalColours;
 		private readonly Palette _palette = new Palette();
@@ -32,31 +32,34 @@ namespace CivOne.Graphics
 			}
 			set
 			{
+				ArgumentNullException.ThrowIfNull(value);
 				for (int i = 0; i < _palette.Length && i < value.Length; i++)
 					_palette[i] = value[i];
 			}
 		}
-		
+
 		public Bytemap Bitmap => _bitmap;
-		
+
 		public void ApplyNoise(byte[,] noiseMap, int step)
 		{
+			ArgumentNullException.ThrowIfNull(noiseMap);
+
 			for (int y = 0; y < Height; y++)
-			for (int x = 0; x < Width; x++)
-			{
-				if (noiseMap[x, y] < step) continue;
-				_bitmap[x, y] = 0;
-			}
+				for (int x = 0; x < Width; x++)
+				{
+					if (noiseMap[x, y] < step) continue;
+					_bitmap[x, y] = 0;
+				}
 		}
-		
+
 		private static readonly Colour[] EmptyPalette = new Colour[256];
-		
+
 		public byte this[int x, int y]
 		{
 			get
 			{
 				if (x < 0 || x >= Width || y < 0 || y >= Height) return 0;
-				
+
 				return _bitmap[x, y];
 			}
 			internal set
@@ -68,42 +71,60 @@ namespace CivOne.Graphics
 		}
 
 		public Picture this[int left, int top, int width, int height] => new Picture(_bitmap[left, top, width, height], Palette.Copy());
-		
+
 		public Picture(byte[,] bytes, Palette palette)
 		{
+			ArgumentNullException.ThrowIfNull(bytes);
+			ArgumentNullException.ThrowIfNull(palette);
+
 			_originalColours = palette.Copy();
 			_palette = palette.Copy();
 			_bitmap = new Bytemap(bytes);
 		}
-		
+
 		public Picture(Bytemap bytemap, Palette palette)
 		{
+			ArgumentNullException.ThrowIfNull(bytemap);
+			ArgumentNullException.ThrowIfNull(palette);
+
 			_originalColours = palette.Copy();
 			_palette = palette.Copy();
 			_bitmap = Bytemap.Copy(bytemap);
 		}
-		
-		public Picture(IBitmap picture) : this(picture.Bitmap, picture.Palette)
+
+		public Picture(IBitmap picture)
 		{
+			ArgumentNullException.ThrowIfNull(picture);
+
+			_originalColours = picture.Palette.Copy();
+			_palette = picture.Palette.Copy();
+			_bitmap = Bytemap.Copy(picture.Bitmap);
 		}
-		
+
 		public Picture(int width, int height) : this(width, height, EmptyPalette)
 		{
 		}
-		
+
 		public Picture(int width, int height, byte[] bytes, Palette palette) : this(width, height, palette)
 		{
+			ArgumentNullException.ThrowIfNull(bytes);
+			ArgumentNullException.ThrowIfNull(palette);
+
 			for (int yy = 0; yy < height; yy++)
-			for (int xx = 0; xx < width; xx++)
 			{
-				int index = (yy * width) + xx;
-				if (index > bytes.Length) continue;
-				_bitmap[xx, yy] = bytes[index];
+				for (int xx = 0; xx < width; xx++)
+				{
+					int index = (yy * width) + xx;
+					if (index > bytes.Length) continue;
+					_bitmap[xx, yy] = bytes[index];
+				}
 			}
 		}
-		
+
 		public Picture(int width, int height, Palette palette)
 		{
+			ArgumentNullException.ThrowIfNull(palette);
+
 			_originalColours = palette.Copy();
 			_palette = palette.Copy();
 			_bitmap = new Bytemap(width, height);
