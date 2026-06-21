@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using CivOne.Enums;
@@ -129,6 +130,7 @@ namespace CivOne.Services
 			_showQuickLoadMenuAction(slots, TryQuickLoad);
 		}
 
+		[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Screen ownership is transferred to Common.AddScreen and released via Common.DestroyScreen.")]
 		private void ShowQuickLoadMenu(IReadOnlyList<int> slots, Action<int> onSelect)
 		{
 			ArgumentNullException.ThrowIfNull(slots);
@@ -137,6 +139,7 @@ namespace CivOne.Services
 			Common.AddScreen(new QuickLoadSlotsDialog(slots, onSelect));
 		}
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to save a fast save slot does not crash the application, and that any exceptions are logged appropriately.")]
 		private void TryQuickSave(int slot)
 		{
 			if (!_canQuickSave())
@@ -158,6 +161,7 @@ namespace CivOne.Services
 			}
 		}
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to load a fast save slot does not crash the application, and that any exceptions are logged appropriately.")]
 		private void TryQuickLoad(int slot)
 		{
 			var filePath = GetSlotFilePath(slot, ensureDirectory: false);

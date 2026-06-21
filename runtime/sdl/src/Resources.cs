@@ -17,7 +17,7 @@ using CivOne.Graphics.ImageFormats;
 
 namespace CivOne
 {
-	internal sealed class Resources
+	internal static class Resources
 	{
 		private static Assembly CurrentAssembly { get; } = AppDomain.CurrentDomain.GetAssemblies().First(x => x.FullName?.StartsWith("CivOne.SDL,", StringComparison.OrdinalIgnoreCase) ?? false);
 
@@ -45,7 +45,7 @@ namespace CivOne
 			resourceStream.CopyTo(ms);
 			using GifFile gifFile = new(ms.ToArray());
 			
-			return gifFile?.GetBitmap();
+			return gifFile.GetBitmap();
 		}
 		
 		public static string HelpText => GetResourceString(HelpTextTxt) ?? string.Empty;

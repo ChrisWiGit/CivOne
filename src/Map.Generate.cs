@@ -16,6 +16,7 @@ using CivOne.Enums;
 using CivOne.Tiles;
 using System.Collections;
 using System.Threading;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne
 {
@@ -520,6 +521,7 @@ namespace CivOne
 			}
 		}
 		
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure during map generation does not crash the application, and that any exceptions are logged appropriately.")]
 		private void GenerateThread()
 		{
             Stopwatch totalGenerationTimer = Stopwatch.StartNew();

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -62,6 +63,9 @@ namespace CivOne.Persistence.Yaml
 
 		public override void Emit(MappingStartEventInfo eventInfo, IEmitter emitter)
         {
+            ArgumentNullException.ThrowIfNull(eventInfo);
+            ArgumentNullException.ThrowIfNull(emitter);
+
             var type = eventInfo.Source?.Type;
 
             if (type != null)
@@ -100,6 +104,9 @@ namespace CivOne.Persistence.Yaml
 
         public override void Emit(ScalarEventInfo eventInfo, IEmitter emitter)
         {
+            ArgumentNullException.ThrowIfNull(eventInfo);
+            ArgumentNullException.ThrowIfNull(emitter);
+
             var propName = eventInfo.Source?.Value?.ToString();
 
             if (inCommentedSequence)
@@ -204,6 +211,7 @@ namespace CivOne.Persistence.Yaml
             commentForProperties[propName] = ignore;
         }
 
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to convert the comment values to a dictionary does not crash the application, and that any exceptions are logged appropriately.")]
         private static Dictionary<int, string>? ConvertToDictionaryIntString(object? value)
         {
             if (value is Dictionary<int, string> dict)

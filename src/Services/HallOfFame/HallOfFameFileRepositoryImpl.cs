@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -18,6 +19,7 @@ namespace CivOne.Services.HallOfFame
 		private const string FileName = "HallOfFame.yaml";
 		private readonly IAtomicFileReplacementService _atomicFileReplacementService = atomicFileReplacementService;
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to read or write the Hall of Fame file does not crash the application, and that any exceptions are logged appropriately.")]
 		public bool TryLoad(string? storageDirectory, out IReadOnlyList<HallOfFameEntry> entries, [NotNullWhen(false)] out string? error)
 		{
 			entries = [];
@@ -55,6 +57,7 @@ namespace CivOne.Services.HallOfFame
 			}
 		}
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to read or write the Hall of Fame file does not crash the application, and that any exceptions are logged appropriately.")]
 		public bool TrySave(string? storageDirectory, IReadOnlyList<HallOfFameEntry> entries, [NotNullWhen(false)] out string? error)
 		{
 			error = null;
@@ -151,7 +154,9 @@ namespace CivOne.Services.HallOfFame
 	public sealed class HallOfFameFileModel
 	{
 		public int Version { get; set; } = 1;
-		public List<HallOfFameEntryModel> Entries { get; set; } = [];
+		
+		[SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "The YAML deserializer requires a setter to populate the collection.")]
+		public Collection<HallOfFameEntryModel> Entries { get; set; } = [];
 	}
 
 	/// <summary>

@@ -153,6 +153,7 @@ namespace CivOne.Graphics
 
 		static int HashKey(int level, PalaceStyle style, PalacePart part) => (level * 100) + ((int)style * 10) + (int)part;
 
+		[SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Cache ownership is transferred to the caller and disposed when the cache is cleared.")]
 		internal Picture GetPalacePart(PalaceStyle style, PalacePart part, int level)
 		{
 			if (level == 0)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CivOne.Advances;
 using CivOne.Civilizations;
@@ -217,6 +218,7 @@ namespace CivOne.Persistence.Model
 			};
 		}
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to access the Players collection does not crash the application, and that any exceptions are logged appropriately.")]
 		private Player[] TryGetPlayersByIndex()
 		{
 			try

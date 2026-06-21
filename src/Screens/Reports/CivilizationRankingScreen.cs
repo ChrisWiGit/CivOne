@@ -109,6 +109,8 @@ namespace CivOne.Screens.Reports
 
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
+			ArgumentNullException.ThrowIfNull(args);
+			
 			if (_debugMode && args[Key.F1])
 			{
 				CycleCategory();

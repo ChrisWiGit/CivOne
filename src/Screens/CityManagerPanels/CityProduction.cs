@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Events;
@@ -129,6 +130,7 @@ namespace CivOne.Screens.CityManagerPanels
 			Refresh();
 		}
 
+		[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Screen ownership is transferred to Common.AddScreen and released via Common.DestroyScreen.")]
 		private bool Change()
 		{
 			_city.AutoBuild = false;
@@ -140,6 +142,7 @@ namespace CivOne.Screens.CityManagerPanels
 			return true;
 		}
 
+		[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Screen ownership is transferred to Common.AddScreen and released via Common.DestroyScreen.")]
 		private bool Buy()
 		{
 			if (_city.CurrentProduction is not ICivilopedia currentProduction)

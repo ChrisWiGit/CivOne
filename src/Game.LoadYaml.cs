@@ -23,6 +23,7 @@ using CivOne.Services.Random;
 using CivOne.Services;
 using CivOne.Units;
 using CivOne.Tasks;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne
 {
@@ -219,6 +220,7 @@ namespace CivOne
 			}
 		}
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to load a YAML save file does not crash the application, and that any exceptions are logged appropriately.")]
 		public static bool LoadYamlGame(string cosFile)
 		{
 			if (string.IsNullOrWhiteSpace(cosFile))

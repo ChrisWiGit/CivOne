@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using CivOne.Services;
@@ -45,6 +46,7 @@ namespace CivOne.Screens
         private static SaveGameFile FromCosFile(string cosFile) =>
             new(cosFile, Path.GetFileNameWithoutExtension(cosFile));
 
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to read the .SVE file does not crash the application, and that any exceptions are logged appropriately.")]
         public SaveGameFile(string filename)
         {
             _t = TranslationServiceFactory.CreateDefault();

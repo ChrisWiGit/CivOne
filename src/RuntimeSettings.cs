@@ -71,6 +71,7 @@ namespace CivOne
 			}
 		}
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to retrieve a custom setting does not crash the application, and that any exceptions are logged appropriately.")]
 		public T? Get<T>(string customSetting)
 		{
             if (this[customSetting] == null)
