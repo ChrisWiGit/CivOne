@@ -66,7 +66,7 @@ namespace CivOne.Civilizations
 
 		public string? Tune { get ; protected set; }
 
-		public BaseCivilization(Civilization civilization, string name, string namePlural, string? tune = null) : base(civilization)
+		protected BaseCivilization(Civilization civilization, string name, string namePlural, string? tune = null) : base(civilization)
 		{
 			Id = Civilization == Civilization.Barbarians ? 15 : (int)Civilization;
 			PreferredPlayerNumber = (byte)(Civilization == Civilization.Barbarians ? 0 : ((int)Civilization - 1) % 7 + 1);
@@ -78,9 +78,9 @@ namespace CivOne.Civilizations
 		}
 	}
 
-	public abstract partial class BaseCivilization : BaseInstance
+	public abstract partial class BaseCivilization(Civilization civilization) : BaseInstance
 	{
-		protected Civilization Civilization { get; }
+		protected Civilization Civilization { get; } = civilization;
 
 		private static Dictionary<Civilization, List<CivilizationModification>> _modifications = new Dictionary<Civilization, List<CivilizationModification>>();
 		internal static void LoadModifications()
@@ -102,10 +102,5 @@ namespace CivOne.Civilizations
 			Log("Finished applying civilization modifications");
 		}
 		public IEnumerable<CivilizationModification> Modifications => _modifications.TryGetValue(Civilization, out List<CivilizationModification>? value) ? value.ToArray() : [];
-
-		protected BaseCivilization(Civilization civilization)
-		{
-			Civilization = civilization;
-		}
 	}
 }

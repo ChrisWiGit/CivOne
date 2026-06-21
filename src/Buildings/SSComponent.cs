@@ -12,7 +12,7 @@ using CivOne.Enums;
 
 namespace CivOne.Buildings
 {
-	internal class SSComponent : BaseBuilding, SpaceShip
+	internal class SSComponent : BaseBuilding, ISpaceShip
 	{
 		public SSComponent() : base(16)
 		{

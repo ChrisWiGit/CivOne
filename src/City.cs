@@ -1104,7 +1104,7 @@ namespace CivOne
 
 		private bool HandleSpaceShipProduction()
 		{
-			if (CurrentProduction is not SpaceShip)
+			if (CurrentProduction is not ISpaceShip)
 			{
 				return false;
 			}
