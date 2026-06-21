@@ -16,7 +16,7 @@ namespace CivOne.Civilizations
 	/// Modify the city names.
 	/// </summary>
 	/// <param name="value">A new list of city names. Must be an array of 16 strings, each between 1 and 13 characters long.</param>
-	public class CityNames(params string[] value) : BaseAttribute(typeof(string[]), value, InRange)
+	public sealed class CityNames(params string[] value) : BaseAttribute(typeof(string[]), value, InRange)
 	{
 		private static bool InRange(object value) => (value is string[] arr) && arr.Length == 16 && arr.All(x => x != null && x.Length >= 1 && x.Length <= 13);
 

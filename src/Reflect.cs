@@ -182,7 +182,7 @@ namespace CivOne
 			{
 				if (_plugins == null) yield break;
 				foreach (Assembly assembly in _plugins.Where(x => x.Enabled).Select(x => x.Assembly))
-				foreach (Type type in assembly.GetTypes().Where(x => x.IsClass && !x.IsAbstract && x.GetInterfaces().Contains(typeof(IModification))))
+				foreach (Type type in assembly.GetTypes().Where(x => x.IsClass && !x.IsAbstract && x.GetInterfaces().Contains(typeof(Modification))))
 				{
 					yield return type;
 				}

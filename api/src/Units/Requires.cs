@@ -16,7 +16,7 @@ namespace CivOne.Units
 	/// Modify the advance with which the unit becomes available.
 	/// </summary>
 	/// <param name="value">The new required advance for the unit.</param>
-	public class Requires(Advance value) : BaseAttribute(typeof(Advance), value)
+	public sealed class Requires(Advance value) : BaseAttribute(typeof(Advance), value)
 	{
 		public Advance Value => GetRequiredValue<Advance>();
 	}

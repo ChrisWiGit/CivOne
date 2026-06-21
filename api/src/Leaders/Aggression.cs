@@ -16,7 +16,7 @@ namespace CivOne.Leaders
 	/// Modify the leader aggression level.
 	/// </summary>
 	/// <param name="value">The new agression level for the leader.</param>
-	public class Aggression(AggressionLevel value) : BaseAttribute(typeof(AggressionLevel), value, InRange)
+	public sealed class Aggression(AggressionLevel value) : BaseAttribute(typeof(AggressionLevel), value, InRange)
 	{
 		private static bool InRange(object value) => Enum.IsDefined(typeof(AggressionLevel), value);
 

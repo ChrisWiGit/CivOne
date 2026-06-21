@@ -9,10 +9,12 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace CivOne
 {
+	[SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible", Justification = "These types are only used for replay data and are closely related to the ReplayData class, so it makes sense to nest them.")]
 	public abstract class ReplayData
 	{
 		public class CityBuilt : ReplayData

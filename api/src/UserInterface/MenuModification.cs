@@ -9,7 +9,7 @@
 
 namespace CivOne.UserInterface
 {
-	public abstract class MenuModification(string menuId) : IModification
+	public abstract class MenuModification(string menuId) : Modification
 	{
 		public string MenuId { get; } = menuId;
 

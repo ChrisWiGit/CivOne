@@ -16,7 +16,7 @@ namespace CivOne.Leaders
 	/// Modify an existing leader.
 	/// </summary>
 	/// <param name="leaderId">The leader to override.</param>
-	public abstract class LeaderModification(Leader leaderId) : IModification
+	public abstract class LeaderModification(Leader leaderId) : Modification
 	{
 		public Leader Leader { get; } = leaderId;
 

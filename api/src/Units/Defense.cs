@@ -15,7 +15,7 @@ namespace CivOne.Units
 	/// Modify the unit defense strength.
 	/// </summary>
 	/// <param name="value">The new defense strength for the unit. (valid range: 0 to 99)</param>
-	public class Defense(byte value) : BaseAttribute(typeof(byte), value, InRange)
+	public sealed class Defense(byte value) : BaseAttribute(typeof(byte), value, InRange)
 	{
 		private static bool InRange(object value) => (byte)value >= 0 && (byte)value <= 99;
 

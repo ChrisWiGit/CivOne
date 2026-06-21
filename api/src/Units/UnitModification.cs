@@ -16,7 +16,7 @@ namespace CivOne.Units
 	/// Modify an existing unit.
 	/// </summary>
 	/// <param name="unitType">The unit to modify.</param>
-	public abstract class UnitModification(UnitType unitType) : IModification
+	public abstract class UnitModification(UnitType unitType) : Modification
 	{
 		public UnitType UnitType { get; } = unitType;
 

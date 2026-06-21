@@ -7,8 +7,11 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace CivOne
 {
+	[SuppressMessage("Microsoft.Usage", "CA1815:OverrideEqualsAndOperatorEqualsOnValueTypes", Justification = "This struct is only used for data storage and is never compared or used as a key in a dictionary.")]
 	public struct UnitData
 	{
 		public byte Id { get; set; }

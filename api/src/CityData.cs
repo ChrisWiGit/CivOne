@@ -7,8 +7,11 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace CivOne
 {
+	[SuppressMessage("Microsoft.ValueType", "CA1815:OverrideEqualsAndOperatorEqualsOnValueTypes", Justification = "This struct is only used for data transfer and is not intended to be compared for equality.")]
 	public struct CityData
 	{
 		public byte Id { get; set; }

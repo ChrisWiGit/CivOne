@@ -16,10 +16,12 @@ namespace CivOne.Civilizations
 	/// Modify the civilization leader.
 	/// </summary>
 	/// <param name="leader">The new leader for this civilization.</param>
-	public class CivilizationLeader(Leader leader) : BaseAttribute(typeof(Leader), leader, InRange)
+	public sealed class CivilizationLeader(Leader leader) : BaseAttribute(typeof(Leader), leader, InRange)
 	{
 		private static bool InRange(object value) => Enum.IsDefined(typeof(Leader), value) && ((Leader)value) != Leader.Atilla;
 
 		public Leader Value => GetRequiredValue<Leader>();
+
+		public Leader Leader => Value;
 	}
 }

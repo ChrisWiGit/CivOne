@@ -16,10 +16,13 @@ namespace CivOne.Civilizations
 	/// </summary>
 	/// <param name="name">The new name for the civilization. (example: Roman)</param>
 	/// <param name="namePlural">The new plural name for the civilization. (example: Romans)</param>
-	public class Name(string name, string namePlural) : BaseAttribute(typeof(CivilizationName), new CivilizationName(name, namePlural), InRange)
+	public sealed class Name(string name, string namePlural) : BaseAttribute(typeof(CivilizationName), new CivilizationName(name, namePlural), InRange)
 	{
 		public static bool InRange(object value) => ((CivilizationName)value).Valid;
 
 		public CivilizationName Value => GetRequiredValue<CivilizationName>();
+
+		public string NameValue => Value.Name;
+		public string NamePlural => Value.Plural;
 	}
 }

@@ -15,7 +15,7 @@ namespace CivOne.Units
 	/// Modify the unit initial gold price.
 	/// </summary>
 	/// <param name="value">The new gold price for the unit. (valid range: 1 to 8000)</param>
-	public class GoldPrice(short value) : BaseAttribute(typeof(short), value, InRange)
+	public sealed class GoldPrice(short value) : BaseAttribute(typeof(short), value, InRange)
 	{
 		private static bool InRange(object value) => (short)value >= 0 && (short)value <= 8000;
 

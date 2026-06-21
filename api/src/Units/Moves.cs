@@ -15,7 +15,7 @@ namespace CivOne.Units
 	/// Modify the number of moves a unit gets each turn.
 	/// </summary>
 	/// <param name="value">The new number of moves for the unit. (valid range: 1 to 16)</param>
-	public class Moves(byte value) : BaseAttribute(typeof(byte), value, InRange)
+	public sealed class Moves(byte value) : BaseAttribute(typeof(byte), value, InRange)
 	{
 		private static bool InRange(object value) => (byte)value > 0 && (byte)value <= 16;
 

@@ -16,7 +16,7 @@ namespace CivOne.Units
 	/// Modify the advance with which the unit becomes obsolete.
 	/// </summary>
 	/// <param name="value">The new obsolete advance for the unit.</param>
-	public class Obsolete(Advance value) : BaseAttribute(typeof(Advance), value)
+	public sealed class Obsolete(Advance value) : BaseAttribute(typeof(Advance), value)
 	{
 		public Advance Value => GetRequiredValue<Advance>();
 	}

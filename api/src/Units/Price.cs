@@ -15,7 +15,7 @@ namespace CivOne.Units
 	/// Modify the unit price.
 	/// </summary>
 	/// <param name="value">The new price for the unit. Must be multiplied by 10 for human player price in shields. (valid range: 1 to 40)</param>
-	public class Price(byte value) : BaseAttribute(typeof(byte), value, InRange)
+	public sealed class Price(byte value) : BaseAttribute(typeof(byte), value, InRange)
 	{
 		private static bool InRange(object value) => (byte)value > 0 && (byte)value <= 40;
 
