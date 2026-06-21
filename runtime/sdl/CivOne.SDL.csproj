@@ -22,7 +22,7 @@
 		<AnalysisLevel>latest-all</AnalysisLevel>
 		<Nullable>enable</Nullable>
 		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-		<NoWarn>$(NoWarn),CA1712,CA1303,CA1515</NoWarn>
+		<NoWarn>$(NoWarn),CA1712,CA1303,CA1515,CA1819,CA1814,CA1062</NoWarn>
 	</PropertyGroup>
 	<PropertyGroup Condition="$(Configuration.StartsWith('Debug'))">
 		<DebugSymbols>true</DebugSymbols>
