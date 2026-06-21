@@ -132,5 +132,37 @@ namespace CivOne.Screens
 			_cursor = cursor;
 			Bitmap = new Bytemap(width, height);
 		}
+
+		internal readonly static IScreen Empty = new EmptyScreen();
+
+		internal class EmptyScreen : BaseScreen
+		{
+			public EmptyScreen() : base(MouseCursor.None)
+			{
+			}
+
+			protected override bool HasUpdate(uint gameTick) => false;
+			public override bool KeyDown(KeyboardEventArgs args) => false;
+			public override bool MouseDown(ScreenEventArgs args) => false;
+			public override bool MouseUp(ScreenEventArgs args) => false;
+			public override bool MouseWheel(ScreenEventArgs args) => false;
+			public override bool MouseDrag(ScreenEventArgs args) => false;
+			public override bool MouseMove(ScreenEventArgs args) => false;
+			protected override void Dispose(bool disposing)
+			{
+				if (!disposing)
+				{
+					return;
+				}
+
+				// Don't dispose the shared empty screen's bitmap.
+				this.Bitmap = null!;
+				base.Dispose(disposing);
+				Common.DestroyScreen(this);
+				GC.KeepAlive(this);
+				// Don't allow the empty screen to be resurrected after disposal.
+				throw new ObjectDisposedException(nameof(EmptyScreen));
+			}
+		}
 	}
 }

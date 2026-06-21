@@ -11,6 +11,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
 using System.Text;
@@ -109,13 +110,13 @@ namespace CivOne.Graphics
 		public bool ValidCharacter(int fontId, char c)
 		{
 			byte asciiChar = (byte)c;
-			return (asciiChar >= Font(fontId).FirstChar && asciiChar <= Font(fontId).LastChar);
+			return asciiChar >= Font(fontId).FirstChar && asciiChar <= Font(fontId).LastChar;
 		}
 		
 		public Size GetTextSize(int font, string text)
 		{
 			int width = 0, height = 0;
-			foreach (char c in text)
+			foreach (char c in text ?? string.Empty)
 			{
 				Size size = GetLetterSize(font, c);
 				width += size.Width + 1;
@@ -209,6 +210,7 @@ namespace CivOne.Graphics
 		private const int CivilopediaFont = 6;
 		private const int CivilopediaLineWidth = 294;
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to load Civilopedia text does not crash the application, and that any exceptions are logged appropriately.")]
 		internal string[] GetCivilopediaText(string name)
 		{
 			try
@@ -305,6 +307,8 @@ namespace CivOne.Graphics
 		{
 			get
 			{
+				ArgumentNullException.ThrowIfNull(filename);
+
 				string key = filename.ToUpperInvariant();
 				if (_cache.TryGetValue(key, out Picture? cached))
 				{
@@ -342,16 +346,20 @@ namespace CivOne.Graphics
 		{
 			get
 			{
-				if (_instance == null)
-				{
-					_instance = new Resources();
-				}
+				_instance ??= new Resources();
 				return _instance;
 			}
 		}
 
 		public static void ClearInstance()
 		{
+			_instance?._palaceResources.ClearCache();
+			_instance?._cache.Clear();
+			_instance?._textCache.Clear();
+			_instance?._fonts.Clear();
+			_instance?.ClearExistsCache();
+			_instance?.ClearTextCache();
+			
 			_instance = null;
 			_worldMapTiles = null;
 			PicFile.ClearCache();

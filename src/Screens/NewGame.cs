@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -196,6 +197,7 @@ namespace CivOne.Screens
 			return true;
 		}
 		
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to create a game does not crash the application, and that any exceptions are logged appropriately.")]
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (HasMenu) return false;

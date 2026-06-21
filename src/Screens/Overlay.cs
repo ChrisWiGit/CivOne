@@ -154,7 +154,7 @@ namespace CivOne.Screens
 						Size textSize = Resources.GetTextSize(0, helpLabel.Text);
 
 						int ww = textSize.Width + 11, hh = textSize.Height + 9;
-						Picture label = new Picture(textSize.Width + 11, textSize.Height + 9);
+						using var label = new Picture(textSize.Width + 11, textSize.Height + 9);
 						label
 							.Tile(Pattern.PanelGrey)
 							.DrawRectangle()
@@ -171,7 +171,8 @@ namespace CivOne.Screens
 					int cx = Settings.RightSideBar ? 0 : 80;
 					int cy = 8;
 
-					this.AddLayer(Map[_x, _y, 15, 12].ToBitmap(TileSettings.Terrain, Human), cx, cy, dispose: true);
+					using var bit = Map[_x, _y, 15, 12].ToBitmap(TileSettings.Terrain, Human);
+					this.AddLayer(bit, cx, cy, dispose: true);
 				}
 
 				_update = false;
@@ -206,14 +207,6 @@ namespace CivOne.Screens
 			}
 			Destroy();
 			return true;
-		}
-
-		public static Overlay Empty
-		{
-			get
-			{
-				return new Overlay();
-			}
 		}
 
 		public static Overlay InterfaceHelp

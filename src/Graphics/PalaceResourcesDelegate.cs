@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Enums;
 
 namespace CivOne.Graphics
@@ -31,7 +32,15 @@ namespace CivOne.Graphics
 		private readonly IPalaceSpriteLayout _palaceSpriteLayout = palaceSpriteLayout ?? new PalaceSpriteLayout();
 		private readonly Dictionary<int, Picture> _cache = [];
 
-		internal void ClearCache() => _cache.Clear();
+		internal void ClearCache()
+		{
+			foreach (Picture picture in _cache.Values)
+			{
+				picture.Dispose();
+			}
+
+			_cache.Clear();
+		}
 
 		private Picture GetCastleSourceImage(int level) => _getPictureByName($"CASTLE{level}");
 
@@ -204,7 +213,7 @@ namespace CivOne.Graphics
 			}
 
 			_cache[combine] = picture;
-			return _cache[combine];
+			return picture;
 		}
 	}
 }
