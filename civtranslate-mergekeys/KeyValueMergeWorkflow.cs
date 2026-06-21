@@ -71,7 +71,7 @@ internal sealed class KeyValueMergeWorkflow : IKeyValueMergeWorkflow
 				continue;
 			}
 
-			int separatorIndex = line.IndexOf('=');
+			int separatorIndex = line.IndexOf('=', StringComparison.Ordinal);
 			if (separatorIndex < 0)
 			{
 				Console.WriteLine($"Warning: Ignoring malformed line ({filePath}:{i + 1}): {line}");

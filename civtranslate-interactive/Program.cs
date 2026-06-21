@@ -23,7 +23,7 @@ if (trimmedPostfix.Length == 0)
 	return 2;
 }
 
-if (trimmedPostfix.Contains('/') || trimmedPostfix.Contains('\\'))
+if (trimmedPostfix.Contains('/', StringComparison.Ordinal) || trimmedPostfix.Contains('\\', StringComparison.Ordinal))
 {
 	Console.WriteLine("Error: --language must be a postfix only, not a path.");
 	Console.WriteLine();

@@ -1,9 +1,11 @@
+using System.Collections.ObjectModel;
+
 namespace CivTranslateInteractive;
 
 public sealed class TranslationDocument
 {
-	public required List<ITranslationLine> Lines { get; init; }
-	public required List<TranslationEntryLine> Entries { get; init; }
+	public required Collection<ITranslationLine> Lines { get; init; }
+	public required Collection<TranslationEntryLine> Entries { get; init; }
 }
 
 public interface ITranslationLine;
