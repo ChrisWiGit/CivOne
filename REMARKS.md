@@ -417,3 +417,62 @@ The exact glyph shapes come from `FONTS.CV` (runtime data file, not in this repo
 | 14   | Light Yellow | Light yellow            |
 | 15   | White        | White                   |
 | 16   | White        | White                   |
+
+## Warnings suppressed
+
+### CivOne.csproj
+
+| Warning | Description | Why suppressed |
+| --- | --- | --- |
+| CA1303 | Do not pass literals as localized parameters | English texts are used as translation keys in the project; this intentionally generates many string literals. |
+| CA1814 | Prefer jagged arrays over multidimensional | Not really useful and used a lot in the project. |
+| CA1819 | Properties should not return arrays | Used a lot in project. |
+| CA2000 | Dispose objects before losing scope | Partial ownership transfer or caching of IDisposable objects can cause analyzer false positives. |
+| CA1515 | Consider making public types internal | Currently there is a mix of public and internal types for various reasons. |
+| CA1062 | Validate arguments of public methods | First CA1515 must be addressed before validating arguments. |
+
+### api/CivOne.API.csproj
+
+| Warning | Description | Why suppressed |
+| --- | --- | --- |
+| CA1303 | Do not pass literals as localized parameters | English texts are used as translation keys in the project; this intentionally generates many string literals. |
+| CA1515 | Consider making public types internal | Currently there is a mix of public and internal types for various reasons. |
+| CA1819 | Properties should not return arrays | Used a lot in project. |
+| CA1814 | Prefer jagged arrays over multidimensional | Not really useful and used a lot in the project. |
+| CA1062 | Validate arguments of public methods | First CA1515 must be addressed before validating arguments. |
+
+### runtime/sdl/CivOne.SDL.csproj
+
+| Warning | Description | Why suppressed |
+| --- | --- | --- |
+| CA1712 | Do not prefix enum values with type name | SDL enums follow a specific naming convention that includes the type name. |
+| CA1303 | Do not pass literals as localized parameters | English texts are used as translation keys in the project; this intentionally generates many string literals. |
+| CA1515 | Consider making public types internal | Currently there is a mix of public and internal types for various reasons. |
+| CA1819 | Properties should not return arrays | Used a lot in project. |
+| CA1814 | Prefer jagged arrays over multidimensional | Not really useful and used a lot in the project. |
+| CA1062 | Validate arguments of public methods | First CA1515 must be addressed before validating arguments. |
+
+### civtranslate/civtranslate.csproj
+
+| Warning | Description | Why suppressed |
+| --- | --- | --- |
+| CA1303 | Do not pass literals as localized parameters | The tool works with fixed text/key strings; string literals are often intentional here. |
+| CA1515 | Consider making public types internal | Currently there is a mix of public and internal types for various reasons. |
+
+### civtranslate-interactive/civtranslate-interactive.csproj
+
+| Warning | Description | Why suppressed |
+| --- | --- | --- |
+| CA1303 | Do not pass literals as localized parameters | The tool works with fixed text/key strings; string literals are often intentional here. |
+| CA1515 | Consider making public types internal | Currently there is a mix of public and internal types for various reasons. |
+
+### civtranslate-mergekeys/civtranslate-mergekeys.csproj
+
+| Warning | Description | Why suppressed |
+| --- | --- | --- |
+| CA1303 | Do not pass literals as localized parameters | The tool works with fixed text/key strings; string literals are often intentional here. |
+| CA1515 | Consider making public types internal | Currently there is a mix of public and internal types for various reasons. |
+
+### xunit/CivOne.UnitTests.csproj
+
+This project has no additional project-specific warning codes in `NoWarn` (only `$(NoWarn)` with no extension).
