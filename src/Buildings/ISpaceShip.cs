@@ -10,10 +10,10 @@
 namespace CivOne.Buildings
 {
 	/// <summary>
-	/// Marker interface for city production entries that contribute spaceship parts instead of normal buildings.
+	/// Marker class for city production entries that contribute spaceship parts instead of normal buildings.
 	/// Processed by spaceship construction flow in <see cref="CivOne.Services.SpaceShip.ISpaceShipService"/>.
 	/// </summary>
-	public interface ISpaceShip
+	public abstract class SpaceShip
 	{
 	}
 }
