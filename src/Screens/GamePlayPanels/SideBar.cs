@@ -470,12 +470,17 @@ namespace CivOne.Screens.GamePlayPanels
 				.AddLayer(_gameInfo, 0, GameInfoOffsetY);
 		}
 
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
+			if (!disposing)
+			{
+				return;
+			}
+
 			_miniMap.Dispose();
 			_demographics.Dispose();
 			_gameInfo.Dispose();
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }

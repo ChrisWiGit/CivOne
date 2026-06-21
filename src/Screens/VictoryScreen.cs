@@ -120,10 +120,15 @@ namespace CivOne.Screens
 					Replace("$US", Human.LeaderName.ToUpper(CultureInfo.CurrentCulture));
 		}
 
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
+			if (!disposing)
+			{
+				return;
+			}
+
 			_background?.Dispose();
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }

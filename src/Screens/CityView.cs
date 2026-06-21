@@ -889,6 +889,18 @@ namespace CivOne.Screens
 			}
 		}
 
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_background.Dispose();
+			_overlay.Dispose();
+			base.Dispose(disposing);
+		}
+
 		public static CityView Capture(City city, string []? message)
 		{
 			return new CityView(city, message, captured: true);
@@ -1041,7 +1053,7 @@ namespace CivOne.Screens
 
 				string[] lines = TranslateFormattedArray("{0} builds\n{1}.", _city.Name, civilopedia.TranslatedName);
 				int width = lines.Max(l => Resources.GetTextSize(5, l).Width) + 12;
-				Picture dialog = new(width, 39);
+				using Picture dialog = new(width, 39);
 				dialog
 					.Tile(Pattern.PanelGrey, 1, 1)
 					.DrawRectangle()
@@ -1088,7 +1100,7 @@ namespace CivOne.Screens
 			void drawMessage(string[] lines)
 			{
 				int width = lines.Max(l => Resources.GetTextSize(5, l).Width) + 12;
-				Picture dialog = new(width, 54);
+				using Picture dialog = new(width, 54);
 				dialog
 					.Tile(Pattern.PanelGrey, 1, 1)
 					.DrawRectangle()

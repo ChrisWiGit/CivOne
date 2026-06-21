@@ -864,11 +864,16 @@ namespace CivOne.Screens.GamePlayPanels
 			Palette = Resources["SP257"].Palette.Copy();
 		}
 
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
+			if (!disposing)
+			{
+				return;
+			}
+
 			GameTask.Started -= TaskStarted;
 			MapPositionSaved = null;
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }

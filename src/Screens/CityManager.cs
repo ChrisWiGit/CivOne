@@ -258,11 +258,16 @@ namespace CivOne.Screens
 			if (Width != 320 || Height != 200) Resize(null, new ResizeEventArgs(Width, Height));
 		}
 
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
+			if (!disposing)
+			{
+				return;
+			}
+
 			_subScreens.ForEach(x => x.Dispose());
 			_subScreens.Clear();
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 
 		public void SetActiveScreen(IScreen screen)

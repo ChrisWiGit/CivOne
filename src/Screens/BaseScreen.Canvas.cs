@@ -39,6 +39,7 @@ namespace CivOne.Screens
 			}
 		}
 		private Palette? _palette, _originalColours;
+		private bool _disposed;
 		/// <summary>
 		/// Gets or sets the active screen palette.
 		///
@@ -128,13 +129,27 @@ namespace CivOne.Screens
 			Palette[0] = indexZero;
 		}
 
-		public virtual void Dispose()
+		public void Dispose()
 		{
-			_bitmap?.Dispose();
-			_palette?.Dispose();
-			_originalColours?.Dispose();
-
+			Dispose(true);
 			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			if (disposing)
+			{
+				_bitmap?.Dispose();
+				_palette?.Dispose();
+				_originalColours?.Dispose();
+			}
+
+			_disposed = true;
 		}
 	}
 }

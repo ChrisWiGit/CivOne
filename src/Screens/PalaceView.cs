@@ -532,5 +532,16 @@ namespace CivOne.Screens
 			Palette = _background.Palette;
 			if (buildMode) _currentStage = Stage.Message;
 		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_background.Dispose();
+			base.Dispose(disposing);
+		}
 	}
 }

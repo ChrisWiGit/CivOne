@@ -397,11 +397,15 @@ namespace CivOne.Screens
 			Palette = palette.Copy();
 		}
 
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
+			if (!disposing)
+			{
+				return;
+			}
+
 			_background?.Dispose();
-			GC.SuppressFinalize(this);
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 

@@ -611,10 +611,15 @@ namespace CivOne.Screens
 			Refresh();
 		}
 
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
+			if (!disposing)
+			{
+				return;
+			}
+
 			SpaceShipPalette?.Dispose();
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }
