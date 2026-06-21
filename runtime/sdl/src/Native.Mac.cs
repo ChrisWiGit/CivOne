@@ -8,11 +8,13 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 
 namespace CivOne
 {
+	[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to open a file dialog does not crash the application, and that failure to open a URL or copy to clipboard does not crash the application or cause excessive logging.")]
 	internal partial class Native
 	{
 		private static string? MacFolderBrowser(string caption)
@@ -30,7 +32,7 @@ namespace CivOne
 
 			Process.Start("chmod", $@"+x ""{scriptPath}""");
 
-			Process process = new()
+			using Process process = new()
 			{
 				StartInfo = new ProcessStartInfo()
 				{
@@ -70,13 +72,15 @@ namespace CivOne
 
 			Process.Start("chmod", $@"+x ""{scriptPath}""");
 
-			Process process = new Process();
-			process.StartInfo = new ProcessStartInfo()
+			using Process process = new()
 			{
-				FileName = "/bin/sh",
-				Arguments = scriptPath,
-				RedirectStandardOutput = true,
-				UseShellExecute = false
+				StartInfo = new ProcessStartInfo()
+				{
+					FileName = "/bin/sh",
+					Arguments = scriptPath,
+					RedirectStandardOutput = true,
+					UseShellExecute = false
+				}
 			};
 
 			process.Start();
@@ -118,7 +122,7 @@ namespace CivOne
 	{
 		try
 		{
-			var process = new Process();
+			using var process = new Process();
 			process.StartInfo = new ProcessStartInfo()
 			{
 				FileName = "pbcopy",
