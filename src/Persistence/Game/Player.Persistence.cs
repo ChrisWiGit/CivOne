@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CivOne.Advances;
 using CivOne.Enums;
@@ -25,6 +26,7 @@ namespace CivOne
 	/// public Player API, and several bypass normal side-effect logic to allow clean
 	/// restoration of saved state (e.g. rate setters skip the rate-compensation logic).
 	/// </summary>
+	[SuppressMessage("Microsoft.Interoperability", "CA1033:InterfaceMethodsShouldBeCallableByChildTypes", Justification = "The IPlayerRestorable members are not intended to be called directly, and making them public would pollute the Player API.")]
 	public partial class Player : IPlayerRestorable
 	{
 		/// <summary>

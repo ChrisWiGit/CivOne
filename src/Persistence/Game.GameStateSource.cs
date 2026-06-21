@@ -1,22 +1,25 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Services.GlobalWarming;
 using CivOne.Tiles;
 using CivOne.Units;
 
 namespace CivOne
 {
+	[SuppressMessage("Microsoft.Interoperability", "CA1033:InterfaceMethodsShouldBeCallableByChildTypes", Justification = "The IGameSnapshotSource members are not intended to be called directly, and making them public would pollute the Game API.")]
 	public partial class Game : IGameSnapshotSource
 	{
-		public List<IUnit> Units => _units;
+		List<IUnit> IGameSnapshotSource.Units => _units;
 
-		public Dictionary<byte, byte> AdvanceOrigin => _advanceOrigin;
+		Dictionary<byte, byte> IGameSnapshotSource.AdvanceOrigin => _advanceOrigin;
 
-		public ushort AnthologyTurn => _anthologyTurn;
+		ushort IGameSnapshotSource.AnthologyTurn => _anthologyTurn;
 
-		public ushort PeaceTurns => _peaceTurns;
+		ushort IGameSnapshotSource.PeaceTurns => _peaceTurns;
 
 		public ushort PlayerFutureTech => HumanPlayer?.FutureTechCount ?? _playerFutureTech;
 
+		[SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "A list is suffice and changing it would require unnecessary changes to the GameState and related code.")]
 		public List<ReplayData> ReplayData => _replayData;
 
 		// No dedicated persisted game-RNG state is currently exposed here.

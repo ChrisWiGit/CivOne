@@ -15,13 +15,6 @@ namespace CivOne.UnitTests.Persistence
 	/// </summary>
     public class GameStateHandlerTests
     {
-        private readonly GameStateHandler _testee;
-
-        public GameStateHandlerTests()
-        {
-            _testee = new GameStateHandler();
-        }
-
         [Fact]
         public void CreateUsesExplicitGameRandomSeedWhenAvailable()
         {
