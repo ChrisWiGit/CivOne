@@ -21,7 +21,7 @@ public sealed class TranslationDocumentRepository : ITranslationDocumentReposito
 		}
 
 		string[] lines = File.ReadAllLines(filePath, Encoding.UTF8);
-		Collection<ITranslationLine> parsedLines = [];
+		Collection<TranslationLine> parsedLines = [];
 		Collection<TranslationEntryLine> entries = [];
 
 		for (int i = 0; i < lines.Length; i++)
@@ -70,7 +70,7 @@ public sealed class TranslationDocumentRepository : ITranslationDocumentReposito
 		}
 
 		using StreamWriter writer = new(filePath, false, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-		foreach (ITranslationLine line in document.Lines)
+		foreach (TranslationLine line in document.Lines)
 		{
 			switch (line)
 			{
