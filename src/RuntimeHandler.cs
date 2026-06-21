@@ -218,7 +218,7 @@ namespace CivOne
 			}
 			else
 			{
-				Runtime.Layers = Common.Screens.Select(x => x.Bitmap).ToArray();
+				Runtime.Layers = [.. Common.Screens.Select(x => x.Bitmap)];
 			}
 
 			if (_currentCursor != Common.MouseCursor || _cursorType != Settings.Instance.CursorType)

@@ -183,8 +183,8 @@ namespace CivOne
 		bool IRuntime.TryCopyToClipboard(string text, out string errorMessage) => Native.TryCopyToClipboard(text, out errorMessage);
 		void IRuntime.Quit() => SignalQuit = true;
 
-		public static readonly string DEFAULT_PROFILE_NAME_VALUE = "default";
-		public static readonly string DEFAULT_PROFILE_NAME_KEY = "profile-name";
+		public const string DEFAULT_PROFILE_NAME_VALUE = "default";
+		public const string DEFAULT_PROFILE_NAME_KEY = "profile-name";
 
 		public Runtime(RuntimeSettings runtimeSettings)
 		{	

@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne
 {
@@ -56,18 +57,22 @@ namespace CivOne
 		{
 			get
 			{
-				if (_customSettings.ContainsKey(customSetting.ToLowerInvariant()))
-					return _customSettings[customSetting.ToLowerInvariant()];
+				ArgumentNullException.ThrowIfNull(customSetting);
+
+				if (_customSettings.ContainsKey(customSetting.ToUpperInvariant()))
+					return _customSettings[customSetting.ToUpperInvariant()];
 				return null;
 			}
 			set
 			{
-				if (_customSettings.ContainsKey(customSetting.ToLowerInvariant()))
+				ArgumentNullException.ThrowIfNull(customSetting);
+
+				if (_customSettings.ContainsKey(customSetting.ToUpperInvariant()))
 				{
-					_customSettings[customSetting.ToLowerInvariant()] = value;
+					_customSettings[customSetting.ToUpperInvariant()] = value;
 					return;
 				}
-				_customSettings.Add(customSetting.ToLowerInvariant(), value);
+				_customSettings.Add(customSetting.ToUpperInvariant(), value);
 			}
 		}
 
