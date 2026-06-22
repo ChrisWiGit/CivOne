@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 using CivOne.Advances;
@@ -17,6 +18,7 @@ namespace CivOne.Screens.Services
 	{
 	}
 
+	[SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "The list is intended for internal use and is not exposed as a public API.")]
 	#pragma warning disable CA1822 // Mark members as static
 	public class CityCitizenService(
 		ICityBasic city,
@@ -100,6 +102,7 @@ namespace CivOne.Screens.Services
 			return ct;
 		}
 
+		[SuppressMessage("Design", "CA1033:Interface methods should be callable by child types", Justification = "The interface is only intended to be used via the static Create method and not directly implemented by external classes.")]
 		Citizen[] ICityCitizenService.GetCitizens()
 		{
 			return GetCitizenTypes().Citizens;
@@ -566,6 +569,7 @@ namespace CivOne.Screens.Services
 			}
 		}
 
+		[SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "The list is intended for internal use and is not exposed as a public API.")]
 		protected internal void InitSpecialists(List<Citizen> specialists, Citizen[] target)
 		{
 			DebugService.Assert(specialists.Count <= target.Length, "Too many specialists for city size.");

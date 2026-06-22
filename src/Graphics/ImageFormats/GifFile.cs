@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -110,14 +111,15 @@ namespace CivOne.Graphics.ImageFormats
 
 			return output.ToArray();
 		}
-
-		public IBitmap? GetBitmap()
+		[SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This method may perform non-trivial logic to create a new bitmap instance, so we prefer to keep it as a method for clarity and to avoid giving the impression that it is a simple property access.")]
+		public IBitmap? GetNewBitmap()
 		{
 			if (_pixels == null || _palette == null)
 				return null;
 			return new Picture(_pixels, _palette);
 		}
 
+		[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch all exceptions that may occur during GIF decoding and log them without crashing the application, as a failure to decode a GIF file should not be considered a critical error.")]
 		public GifFile(byte[] buffer)
 		{
 			// Check for valid GIF-file header
@@ -128,10 +130,7 @@ namespace CivOne.Graphics.ImageFormats
 
 			// GCT Descriptor
 			bool hasGct = ((buffer[10] >> 7) & 1) == 1;
-			byte colourResolution = (byte)(((buffer[10] >> 4) & 7) + 1);
-			bool sorted = ((buffer[10] >> 3) * 1) == 1;
 			int colourCount = (int)Math.Pow(2, (buffer[10] & 7) + 1);
-			byte backgroundIndex = buffer[11];
 			byte aspectRatio = buffer[12];
 
 			if (aspectRatio != 0) return; // Can not handle this file
@@ -172,7 +171,6 @@ namespace CivOne.Graphics.ImageFormats
 									if (size == 4)
 									{
 										byte packed = buffer[index++];
-										ushort delayTime = BitConverter.ToUInt16(buffer, index);
 										index += 2;
 										byte transparentColour = buffer[index++];
 										if ((packed & 1) == 1)

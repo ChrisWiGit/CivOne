@@ -494,7 +494,7 @@ static TranslationFile ReadTranslationFileIfExists(string outputFile)
 			continue;
 		}
 
-		int separatorIndex = line.IndexOf('=');
+		int separatorIndex = line.IndexOf('=', StringComparison.Ordinal);
 		if (separatorIndex < 0)
 		{
 			Console.WriteLine($"Warning: Ignoring malformed line in existing file ({outputFile}:{i + 1}): {line}");

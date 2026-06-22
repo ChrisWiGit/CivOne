@@ -377,7 +377,7 @@ namespace CivOne.Persistence.Mapper
                 AdvanceOrigin = gameState.AdvanceOrigin,
                 ReplayData = new ReplayDataDtoMapper().ToDtoList(gameState.ReplayData ?? []),
                 PeaceTurns = gameState.PeaceTurns,
-				PlayerFutureTech = gameState.HumanPlayer?.FutureTechCount ?? gameState.PlayerFutureTech,
+				PlayerFutureTech = gameState.HumanPlayer.FutureTechCount,
                 GlobalWarming = globalWarmingMapper.ToDto(gameState)
             };
 

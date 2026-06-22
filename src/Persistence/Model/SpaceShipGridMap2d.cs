@@ -54,6 +54,20 @@ namespace CivOne.Persistence.Model
 		public static implicit operator SpaceShipGridMap2D(SpaceShipComponentType[,] data) => new(data);
 		public static implicit operator SpaceShipComponentType[,](SpaceShipGridMap2D map) => map.Data;
 
+		/// <summary>
+		/// Conversion methods for YAML serialization. The ToSpaceShipGridMap2D and FromSpaceShipGridMap2D methods allow direct conversion between the 2D array representation and the SpaceShipGridMap2D class, 
+		/// facilitating straightforward YAML serialization and deserialization of spaceship component grids.	
+		/// </summary>
+		/// <param name="data">The 2D array of SpaceShipComponentType to convert.</param>
+		/// <returns>A SpaceShipGridMap2D instance corresponding to the 2D array.</returns>
+		public static SpaceShipGridMap2D ToSpaceShipGridMap2D(SpaceShipComponentType[,] data) => new(data);
+		/// <summary>
+		/// Converts a SpaceShipGridMap2D instance to a 2D array of SpaceShipComponentType.
+		/// </summary>
+		/// <param name="map">The SpaceShipGridMap2D instance to convert.</param>
+		/// <returns>A 2D array of SpaceShipComponentType corresponding to the SpaceShipGridMap2D instance.</returns>
+		public static SpaceShipComponentType[,] FromSpaceShipGridMap2D(SpaceShipGridMap2D map) => map.Data;
+
 		public string[] Rows
 		{
 			get => ToRows();

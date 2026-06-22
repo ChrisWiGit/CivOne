@@ -117,8 +117,8 @@ namespace CivOne.Screens
 			CloseMenus();
 			Log("Competition: {0} Civilizations", _competition);
 			
-			_tribesAvailable = Common.Civilizations.Where(c => c.PreferredPlayerNumber > 0 && c.PreferredPlayerNumber <= _competition).ToArray();
-			_menuItemsTribes = _tribesAvailable.Select(c => c.Name).ToArray();
+			_tribesAvailable = [.. Common.Civilizations.Where(c => c.PreferredPlayerNumber > 0 && c.PreferredPlayerNumber <= _competition)];
+			_menuItemsTribes = [.. _tribesAvailable.Select(c => c.Name)];
 		}
 		
 		private void SetTribe(object sender, MenuItemEventArgs<int> args)
@@ -241,7 +241,10 @@ namespace CivOne.Screens
 				int yy = OffsetY + 81;
 				foreach (string textLine in GetGameText("KING/INIT"))
 				{
-					string line = textLine.Replace("$RPLC1", Human.LeaderName).Replace("$US", Human.TribeNamePlural).Replace("^", "");
+					string line = textLine
+						.Replace("$RPLC1", Human.LeaderName, StringComparison.InvariantCulture)
+						.Replace("$US", Human.TribeNamePlural, StringComparison.InvariantCulture)
+						.Replace("^", "", StringComparison.InvariantCulture);
 					this.DrawText(line, 0, 5, OffsetX + 88, yy);
 					yy += 8;
 					Log(line);
@@ -422,7 +425,18 @@ namespace CivOne.Screens
 			this.AddLayer(_background);
 
 			_menuItemsDifficulty = BuildDifficultyMenuItems();
-			_menuItemsCompetition = Enumerable.Range(3, 5).Reverse().Select(i => TranslateFormatted("{0} Civilizations", i)).ToArray();
+			_menuItemsCompetition = [.. Enumerable.Range(3, 5).Reverse().Select(i => TranslateFormatted("{0} Civilizations", i))];
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_background?.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }

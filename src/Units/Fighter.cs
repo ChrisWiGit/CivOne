@@ -15,7 +15,7 @@ namespace CivOne.Units
 {
 	internal class Fighter : BaseUnitAir
 	{
-		private static readonly byte MAX_MOVES = 10;
+		private const byte MAX_MOVES = 10;
 
 		public override void Explore()
 		{

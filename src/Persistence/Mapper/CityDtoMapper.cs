@@ -11,8 +11,10 @@ namespace CivOne.Persistence.Model
 	using CivOne.Persistence.Game;
 	using CivOne.Persistence.Resolver;
 	using CivOne.Persistence.Mapper;
+	using System.Diagnostics.CodeAnalysis;
 
-    #pragma warning disable CA1822 // Mark members as static
+#pragma warning disable CA1822 // Mark members as static
+	[SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "We want to use List<T> for simplicity and performance in our DTOs.")]
 	public class CityDtoMapper(
         ProductionDtoMapper productionMapper,
 		ICityDefinitionResolver cityDefinitionResolver,

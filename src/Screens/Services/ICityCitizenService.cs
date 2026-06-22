@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Units;
@@ -8,6 +10,9 @@ using CivOne.Wonders;
 
 namespace CivOne.Screens.Services
 {
+	[SuppressMessage("Design", "CA2227:Collection properties should be read only", Justification = "The collections are initialized in the constructor and then modified by adding/removing items, but the property itself is not intended to be read-only.")]
+	[SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "This struct is not intended to be used in equality comparisons or as a key in hash-based collections.")]
+	[SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "The collections need to be List<T> for internal use and are not intended to be exposed as read-only interfaces.")]
 	public struct CitizenTypes
 	{
 		public int happy { get; set; }
@@ -46,6 +51,7 @@ namespace CivOne.Screens.Services
 
 		Citizen[] GetCitizens();
 
+		[SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "The list is intended for internal use and is not exposed as a public API.")]
 		static ICityCitizenService Create(City city, IGame game, List<Citizen> specialists, Map map)
 		{
 			ArgumentNullException.ThrowIfNull(game);

@@ -51,9 +51,9 @@ namespace CivOne.Screens
 		{
 			if (_singlePage == null)
 			{
-				System.Diagnostics.Debug.Assert(_pages != null, "Civilopedia list mode requires _pages to be set.");
 				if (_pages == null)
 				{
+					System.Diagnostics.Debug.Assert(false, "Civilopedia list mode requires _pages to be set.");
 					return;
 				}
 
@@ -195,9 +195,9 @@ namespace CivOne.Screens
 				return true;
 			}
 
-			System.Diagnostics.Debug.Assert(_pages != null, "Civilopedia list mode requires _pages to be set.");
 			if (_pages == null)
 			{
+				System.Diagnostics.Debug.Assert(false, "Civilopedia list mode requires _pages to be set.");
 				return false;
 			}
 			

@@ -265,7 +265,15 @@ namespace CivOne.Screens
 				return;
 			}
 
-			_subScreens.ForEach(x => x.Dispose());
+			_cityHeader?.Dispose();
+			_cityResources?.Dispose();
+			_cityUnits?.Dispose();
+			_cityMap?.Dispose();
+			_cityBuildings?.Dispose();
+			_cityFoodStorage?.Dispose();
+			_cityInfo?.Dispose();
+			_cityProduction?.Dispose();
+
 			_subScreens.Clear();
 			base.Dispose(disposing);
 		}

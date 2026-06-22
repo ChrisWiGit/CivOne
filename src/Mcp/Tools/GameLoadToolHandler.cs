@@ -183,7 +183,7 @@ namespace CivOne.Mcp.Tools
 
 		private static bool ContainsPathSeparators(string fileName)
 		{
-			return fileName.Contains('/') || fileName.Contains('\\');
+			return fileName.Contains('/', StringComparison.Ordinal) || fileName.Contains('\\', StringComparison.Ordinal);
 		}
 
 		private McpResponse JsonResponse(object? id, object payload)

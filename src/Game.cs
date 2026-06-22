@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -828,8 +829,28 @@ namespace CivOne
 			}
 		}
 
+		/// <summary>
+		/// Gets a snapshot array of all cities.
+		/// </summary>
+		/// <returns>
+		/// A new array containing the current cities.
+		/// </returns>
+		/// <remarks>
+		/// This method allocates a new array on every call.
+		/// For repeated read access, prefer <see cref="Cities"/>.
+		/// If an array is required, call this once and store the result in a local variable.
+		/// Avoid calling this method directly inside loops.
+		/// </remarks>
 		public City[] GetCities() => [.. _cities];
 
+		/// <summary>
+		/// Gets a read-only view of the city collection.
+		/// </summary>
+		/// <remarks>
+		/// Prefer this property for repeated read access.
+		/// It avoids creating a full city array on each call.
+		/// </remarks>
+		[SuppressMessage("Design", "CA1721:Property names should not match get methods", Justification = "This property is intended to provide a read-only view of the city collection, while the GetCities method provides a snapshot array. Both are useful in different scenarios.")]
 		public ReadOnlyCollection<City> Cities { get { return _cities.AsReadOnly(); } }
 		
 		/** <summary>

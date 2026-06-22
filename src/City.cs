@@ -1687,9 +1687,9 @@ namespace CivOne
 			get
 			{
 				Game game = Game.Instance;
-				Debug.Assert(game?.HumanPlayer != null, "City.VisibleSizeToHumanPlayer accessed before HumanPlayer was initialized.");
 				if (game?.HumanPlayer == null)
 				{
+					Debug.Assert(false, "City.VisibleSizeToHumanPlayer accessed before HumanPlayer was initialized.");
 					return 0;
 				}
 
@@ -1698,9 +1698,9 @@ namespace CivOne
 			set
 			{
 				Game game = Game.Instance;
-				Debug.Assert(game?.HumanPlayer != null, "City.VisibleSizeToHumanPlayer assigned before HumanPlayer was initialized.");
 				if (game?.HumanPlayer == null)
 				{
+					Debug.Assert(false, "City.VisibleSizeToHumanPlayer assigned before HumanPlayer was initialized.");
 					return;
 				}
 

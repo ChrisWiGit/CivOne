@@ -448,7 +448,7 @@ namespace CivOne
 			// and stays valid after Dispose(). Additionally GifFile.Dispose() is currently a
 			// no-op, so disposal does not invalidate any state either way.
 			using GifFile gifFile = new(buffer);
-			return gifFile.GetBitmap()!;
+			return gifFile.GetNewBitmap()!;
 		}
 
 		/// <summary>

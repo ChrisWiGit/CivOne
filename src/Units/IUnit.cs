@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using CivOne.Advances;
 using CivOne.Enums;
@@ -104,8 +105,9 @@ namespace CivOne.Units
 		/// </summary>
 		byte Owner { get; set; }
 		/// <summary>
-		/// The Status property is for saving/restoring state with the savefile
+		/// The Status property is for restoring state from the savefile bitfield.
 		/// </summary>
+		[SuppressMessage("Design", "CA1044:Properties should not be write only", Justification = "The property is a restore hook for savefile status bits. Loading writes the serialized bitfield into the unit, while saving derives the bitfield from the unit's actual state instead of reading this property.")]
 		byte Status { set; }
 		/// <summary>
 		/// Current Order for Unit.

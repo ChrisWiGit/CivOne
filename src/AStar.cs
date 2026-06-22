@@ -17,6 +17,7 @@ using CivOne.Enums;
 using CivOne.Tiles;
 using CivOne.Wonders;
 using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 
 // An algorithm using AStar for finding best route from start to finish when using "goto" command in CivOne.
 // "Stolen" from https://stackoverflow.com/questions/38387646/concise-universal-a-search-in-c-sharp by kaalus
@@ -27,6 +28,8 @@ namespace CivOne
 #pragma warning disable CA1822
     public sealed class AStar
     {
+        [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible", Justification = "SPosition is a simple struct used for internal calculations and is not intended to be used outside of the AStar class.")]
+        [SuppressMessage("Microsoft.Design", "CA1815:OverrideEqualsAndOperatorEqualsOnValueTypes", Justification = "SPosition is a simple struct used for internal calculations and is not intended to be used outside of the AStar class, and equality comparisons are not needed for its intended use.")]
         public struct SPosition { 
             public int iX { get; set; }
             public int iY { get; set; }
@@ -35,7 +38,7 @@ namespace CivOne
         private IUnit _unit = null!;
         static Map Map => Map.Instance;
         private static readonly Node[,] _nodes = new Node[Map.WIDTH, Map.HEIGHT];
-        public class Node
+        class Node
         {
             public SPosition Position { get; set; }
             public SPosition PreviousPosition { get; set; }

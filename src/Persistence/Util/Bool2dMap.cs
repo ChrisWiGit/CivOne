@@ -32,6 +32,21 @@ namespace CivOne.Persistence.Model
         public static implicit operator Bool2dMap(bool[,] data) => new(data);
         public static implicit operator bool[,](Bool2dMap map) => map.Data;
 
+        /// <summary>
+        /// Converts a 2D boolean array to a Bool2dMap, and vice versa.
+        /// This is an explicit version of the implicit conversions to allow for more explicit control over when conversions occur, and to avoid unintended conversions in complex expressions.
+        /// </summary>
+        /// <param name="data">The 2D boolean array to convert.</param>
+        /// <returns>A Bool2dMap instance corresponding to the 2D boolean array.</returns>
+        public static Bool2dMap ToBool2dMap(bool[,] data) => new(data);
+        /// <summary>
+        /// Converts a Bool2dMap to a 2D boolean array.
+        /// This is an explicit version of the implicit conversions to allow for more explicit control over when conversions occur, and to avoid unintended conversions in complex expressions.
+        /// </summary>
+        /// <param name="map">The Bool2dMap instance to convert.</param>
+        /// <returns>A 2D boolean array corresponding to the Bool2dMap instance.</returns>
+        public static bool[,] FromBool2dMap(Bool2dMap map) => map.Data;
+
         public string[] Rows
         {
             get => ToRows();

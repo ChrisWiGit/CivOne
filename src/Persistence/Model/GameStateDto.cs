@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Persistence.Model.Attributes;
 
 namespace CivOne.Persistence.Model
 {
+    [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "These collections need to be settable for deserialization and mapping.")]
+    [SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "The collections need to be List<T> for deserialization and mapping.")]
     public class GameStateDto
     {
         private uint _gameRandomSeed;

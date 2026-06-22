@@ -22,6 +22,7 @@ namespace CivOne.Services.Translation
 		};
 
 		/// <inheritdoc/>
+		[SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "We want to enforce lowercase file names for consistency across platforms.")]
 		public int SyncFiles(string sourceDirectory, string targetDirectory, Action<string>? log = null)
 		{
 			Directory.CreateDirectory(targetDirectory);
@@ -109,6 +110,7 @@ namespace CivOne.Services.Translation
 		}
 
 		/// <inheritdoc/>
+		[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch all exceptions during file loading to prevent a single malformed file from crashing the application.")]
 		public bool TryLoadTranslations(string filePath, out IReadOnlyDictionary<string, string>? translations, [NotNullWhen(false)] out string? errorMessage)
 		{
 			translations = null;
@@ -143,7 +145,7 @@ namespace CivOne.Services.Translation
 						continue;
 					}
 
-					int separatorIndex = line.IndexOf('=');
+					int separatorIndex = line.IndexOf('=', StringComparison.Ordinal);
 					if (separatorIndex < 0)
 					{
 						errorMessage = $"Malformed line {i + 1}: missing '=' separator.";

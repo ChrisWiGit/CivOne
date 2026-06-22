@@ -40,7 +40,6 @@ namespace CivOne.UserInterface
 
 		internal void Help()
 		{
-			if (GetHelp == null) return;
 			GetHelp?.Invoke(this, _args);
 		}
 

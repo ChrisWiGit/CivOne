@@ -19,7 +19,7 @@ namespace CivOne.Units
 	/// preferred unit type without hard-coding concrete class names.
 	/// </remarks>
 	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-	public class DefaultUnitProductionAttribute : Attribute
+	public sealed class DefaultUnitProductionAttribute : Attribute
 	{
 	}
 }

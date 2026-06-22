@@ -45,7 +45,7 @@ namespace CivOne
 			resourceStream.CopyTo(ms);
 			using GifFile gifFile = new(ms.ToArray());
 			
-			return gifFile.GetBitmap();
+			return gifFile.GetNewBitmap();
 		}
 		
 		public static string HelpText => GetResourceString(HelpTextTxt) ?? string.Empty;

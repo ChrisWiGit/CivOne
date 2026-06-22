@@ -68,7 +68,7 @@ namespace CivOne.Tasks
 				{
 					Debug.Assert(_player.AI != null, "AI player has no AI implementation");
 					Log($"Warning: The player {_player.TribeName} is not human but has no field AI. Skipping research selection.");
-					_player.AI?.ChooseResearch();
+					_player.AI.ChooseResearch();
 				}
 				EndTask();
 				return;
@@ -89,7 +89,7 @@ namespace CivOne.Tasks
 				// This is an AI player, handle everything in the background.
 				_player.CurrentResearch = null;
 				Debug.Assert(_player.AI != null, "AI player has no AI implementation");
-				_player.AI?.ChooseResearch();
+				_player.AI.ChooseResearch();
 				EndTask();
 				return;
 			}

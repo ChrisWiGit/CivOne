@@ -2,7 +2,8 @@ namespace CivOne.Persistence.Model
 {
 	using System;
 	using System.Collections.Generic;
-    using CivOne.Enums;
+	using System.Diagnostics.CodeAnalysis;
+	using CivOne.Enums;
 	using CivOne.Persistence.Model.Attributes;
 	using CityId = System.UInt32;
     using PlayerId = System.Byte;
@@ -27,6 +28,8 @@ namespace CivOne.Persistence.Model
         ImprovementSold
     }
 
+    [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "These collections need to be settable for deserialization and mapping.")]
+    [SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "The collections need to be List<T> for deserialization and mapping.")]
     public class CityDto
     {
         [Doc("Unique identifier for the city. Used for YAML references.")]

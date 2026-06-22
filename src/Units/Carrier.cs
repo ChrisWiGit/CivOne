@@ -18,7 +18,7 @@ namespace CivOne.Units
 {
 	internal class Carrier : AbstractTransport
 	{
-		public static readonly int MAX_CARGO = 8;
+		private const int MAX_CARGO = 8;
 		public override int Cargo => MAX_CARGO;
 
 		protected override IEnumerable<IUnit> MoveUnits(ITile previousTile)

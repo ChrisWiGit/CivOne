@@ -3,6 +3,7 @@ using System;
 using CivOne.Advances;
 using CivOne.Governments;
 using CivOne.Enums;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne.Persistence.Game
 {
@@ -13,6 +14,8 @@ namespace CivOne.Persistence.Game
 	/// allows for better encapsulation of the Player class while still enabling full restoration of player state from a DTO.
 	/// The properties in this interface should match the properties in PlayerDto that are needed to restore the player's state.
 	/// </summary>
+	[SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "These collections need to be settable for deserialization and mapping.")]
+    [SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "The collections need to be List<T> for deserialization and mapping.")]
 	public interface IPlayerRestorable : IPlayer
 	{
 		new string TribeName { get; set; }

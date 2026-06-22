@@ -753,6 +753,28 @@ namespace CivOne
 		public static explicit operator Player?(byte playerNumber) => Game.GetPlayer(playerNumber);
 		public static explicit operator byte(Player player) => Game.PlayerNumber(player);
 		
+		/// <summary>
+		/// Converts a player number to a Player instance. Returns null if the player number is invalid or if the Game reference is not set.
+		/// Use this instead of the explicit operator when you are not sure if the player number is valid or if the Game reference is set, to avoid exceptions.
+		/// </summary>
+		/// <param name="playerNumber">The player number to convert.</param>
+		/// <returns>A Player instance corresponding to the player number, or null if the player number is invalid or if the Game reference is not set.</returns>
+		/// <example>
+		/// Player? player = Player.ToPlayer(playerNumber);
+		/// if (player != null)	{
+		///     // Use player instance
+		/// }
+		/// </example>
+		public static Player? ToPlayer(byte playerNumber) => Game.GetPlayer(playerNumber);
+
+		/// <summary>
+		/// Converts a Player instance to a player number. Returns 0 if the player is null or if the Game reference is not set.
+		/// Use this instead of the explicit operator when you are not sure if the player instance is valid or if the Game reference is set, to avoid exceptions.
+		/// </summary>
+		/// <param name="player">The Player instance to convert.</param>
+		/// <returns>The player number corresponding to the Player instance, or 0 if the player is null or if the Game reference is not set.</returns>
+		public static byte FromPlayer(Player player) => Game.PlayerNumber(player);
+		
 		public static bool operator ==(Player p1, byte p2) => Game.PlayerNumber(p1) == p2;
 		public static bool operator !=(Player p1, byte p2) => Game.PlayerNumber(p1) != p2;
 

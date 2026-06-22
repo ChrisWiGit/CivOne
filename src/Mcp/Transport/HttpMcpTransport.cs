@@ -9,6 +9,7 @@ using CivOne.Mcp.Contracts;
 
 namespace CivOne.Mcp.Transport
 {
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch all exceptions in the request handling loop to prevent the server from crashing.")]
 	public sealed class HttpMcpTransport : IMcpTransport
 	{
 		private readonly IMcpProtocolSerializer _serializer;
