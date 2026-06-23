@@ -179,5 +179,18 @@ namespace CivOne.Screens.Debug
 			DialogBox.DrawText("Debug government change", 0, 15, 5, 5);
 			DialogBox.DrawText("Select entry below...", 0, 15, 5, 13);
 		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_playerMenu?.Dispose();
+			_governmentMenu?.Dispose();
+			
+			base.Dispose(disposing);
+		}
 	}
 }

@@ -13,7 +13,6 @@ using System.Linq;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Services;
-using CivOne.Services.Screen;
 using CivOne.Tasks;
 
 namespace CivOne.Screens.Debug
@@ -21,9 +20,9 @@ namespace CivOne.Screens.Debug
 	[ScreenResizeable]
 	internal class SetGameYear : BaseScreen
 	{
-		private readonly Input _input;
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => Math.Max(0, (Height - 200) / 2);
+		private Input? ActiveInput => Inputs.OfType<Input>().FirstOrDefault();
 
 		private void DrawDialog()
 		{
@@ -37,8 +36,11 @@ namespace CivOne.Screens.Debug
 				.FillRectangle(88 + ox, 95 + oy, 105, 14, 5)
 				.FillRectangle(89 + ox, 96 + oy, 103, 12, 15);
 
-			_input.X = 90 + ox;
-			_input.Y = 97 + oy;
+			if (ActiveInput is Input input)
+			{
+				input.X = 90 + ox;
+				input.Y = 97 + oy;
+			}
 		}
 
 		public string? Value { get; private set; }
@@ -73,6 +75,15 @@ namespace CivOne.Screens.Debug
 			Destroy();
 		}
 
+		protected override IScreen? CreateManagedInput()
+		{
+			string yearString = _gameCalendarService.TurnToYear(Game.GameTurn).ToString(CultureInfo.InvariantCulture);
+			Input input = new(Palette, yearString, 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 5);
+			input.Accept += GameYear_Accept;
+			input.Cancel += GameYear_Cancel;
+			return input;
+		}
+
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (RefreshNeeded())
@@ -80,29 +91,19 @@ namespace CivOne.Screens.Debug
 				DrawDialog();
 			}
 
-			if (!_screenQueryService.HasScreenType<Input>())
+			if (!HasInput)
 			{
-				_screenCommandService.AddScreen(_input);
+				EnsureManagedInput();
 			}
 			return false;
 		}
 
-		private readonly IScreenQueryService _screenQueryService;
-		private readonly IScreenCommandService _screenCommandService;
 		private readonly IGameCalendarService _gameCalendarService;
 		
 		public SetGameYear()
 		{
-			_screenQueryService = ScreenServiceFactory.CreateQueryService();
-			_screenCommandService = ScreenServiceFactory.CreateCommandService();
 			_gameCalendarService = GameCalendarServiceFactory.GetCurrent();
-
-			var yearString = _gameCalendarService.TurnToYear(Game.GameTurn).ToString(CultureInfo.InvariantCulture);
 			Palette = Common.Screens.Last().OriginalColours;
-
-			_input = new Input(Palette, yearString, 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 5);
-			_input.Accept += GameYear_Accept;
-			_input.Cancel += GameYear_Cancel;
 
 			DrawDialog();
 		}

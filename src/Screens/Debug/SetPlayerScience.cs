@@ -24,11 +24,11 @@ namespace CivOne.Screens.Debug
 	{
 		private readonly CivSelectMenuDelegate _civSelectDelegate;
 
-		private Input? _input;
-
 		private Player? _selectedPlayer;
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => Math.Max(0, (Height - 200) / 2);
+
+		private Input? ActiveInput => Inputs.OfType<Input>().FirstOrDefault();
 
 		private void DrawPlayerSelectDialog()
 		{
@@ -47,10 +47,10 @@ namespace CivOne.Screens.Debug
 				.FillRectangle(88 + ox, 95 + oy, 105, 14, 5)
 				.FillRectangle(89 + ox, 96 + oy, 103, 12, 15);
 
-			if (_input != null)
+			if (ActiveInput is Input input)
 			{
-				_input.X = 90 + ox;
-				_input.Y = 97 + oy;
+				input.X = 90 + ox;
+				input.Y = 97 + oy;
 			}
 		}
 
@@ -70,13 +70,23 @@ namespace CivOne.Screens.Debug
 				return;
 			}
 
-			_input = new Input(Palette, _selectedPlayer.Science.ToString(CultureInfo.CurrentCulture), 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 5);
-			_input.Accept += PlayerScience_Accept;
-			_input.Cancel += PlayerScience_Cancel;
-
 			DrawInputDialog();
 
 			CloseMenus();
+			EnsureManagedInput();
+		}
+
+		protected override IScreen? CreateManagedInput()
+		{
+			if (_selectedPlayer == null)
+			{
+				return null;
+			}
+
+			Input input = new(Palette, _selectedPlayer.Science.ToString(CultureInfo.CurrentCulture), 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 5);
+			input.Accept += PlayerScience_Accept;
+			input.Cancel += PlayerScience_Cancel;
+			return input;
 		}
 
 		private void PlayerScience_Accept(object? sender, EventArgs args)
@@ -131,9 +141,9 @@ namespace CivOne.Screens.Debug
 				return false;
 			}
 			
-			if (_selectedPlayer != null && !_screenQueryService.HasScreenType<Input>())
+			if (_selectedPlayer != null && !HasInput)
 			{
-				Common.AddScreen(_input);
+				EnsureManagedInput();
 			}
 			return false;
 		}

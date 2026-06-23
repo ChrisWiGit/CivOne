@@ -77,12 +77,14 @@ namespace CivOne.Screens
 
 		private readonly IScreenQueryService _screenQuery;
 		private readonly IScreenCommandService _screenCommands;
+
 		public CityName(int nameId, string cityName)
 		{
 			_screenQuery = ScreenServiceFactory.CreateQueryService();
 			_screenCommands = ScreenServiceFactory.CreateCommandService();
 
 			NameId = nameId;
+			Value = cityName;
 			using var defaultPalette = Common.DefaultPalette;
 			Palette = defaultPalette;
 
@@ -91,6 +93,17 @@ namespace CivOne.Screens
 			_input.Cancel += CityName_Cancel;
 
 			DrawDialog();
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_input.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }

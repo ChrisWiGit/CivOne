@@ -144,6 +144,8 @@ namespace CivOne.Screens
 
 			if (disposing)
 			{
+				DisposeMenus();
+				DisposeInputs();
 				_bitmap?.Dispose();
 				_palette?.Dispose();
 				_originalColours?.Dispose();

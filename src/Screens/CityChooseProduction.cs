@@ -52,8 +52,7 @@ namespace CivOne.Screens
 		private bool _update = true;
 		private int _menuHeight;
 		private int _page;
-
-		private ProductionFilterMenu? _menu;
+		private ProductionFilterMenu? CurrentMenu => GetMenu<ProductionFilterMenu>();
 		private ProductionFilterMode _filterMode = ProductionFilterMode.All;
 
 		private static void SetLastUsedFilterMode(ProductionFilterMode filterMode)
@@ -79,7 +78,6 @@ namespace CivOne.Screens
 		private void CloseCurrentMenu()
 		{
 			CloseMenus();
-			_menu = null;
 		}
 
 		private IProduction[] GetFilteredProduction()
@@ -313,11 +311,11 @@ namespace CivOne.Screens
 
 		private void AddMenu(List<string> menuItems, int itemWidth, Picture background)
 		{
-			if (_menu != null && HasMenu)
+			if (CurrentMenu != null && HasMenu)
 			{
 				return;
 			}
-			_menu = new ProductionFilterMenu(Palette, background)
+			ProductionFilterMenu menu = new ProductionFilterMenu(Palette, background)
 			{
 				X = 83,
 				Y = 12 + Resources.GetFontHeight(_fontId),
@@ -330,7 +328,7 @@ namespace CivOne.Screens
 
 			for (int i = 0; i < menuItems.Count; i++)
 			{
-				var menuItem = _menu.Items.Add(menuItems[i], i)
+				var menuItem = menu.Items.Add(menuItems[i], i)
 					.OnSelect(ProductionChoice)
 					.OnContext(ProductionContext)
 					.OnHelp(ProductionContext);
@@ -341,18 +339,18 @@ namespace CivOne.Screens
 					menuItem.Disable();
 				}
 			}
-			_menu.MenuWidth += 10;
-			_menu.TabPressed += (s, a) => CycleFilter();
-			_menu.MissClick += MenuCancel;
-			_menu.Cancel += MenuCancel;
+			menu.MenuWidth += 10;
+			menu.TabPressed += (s, a) => CycleFilter();
+			menu.MissClick += MenuCancel;
+			menu.Cancel += MenuCancel;
 
-			AddMenu(_menu);
+			AddMenu(menu);
 		}
 
 		protected override void Resize(int width, int height)
 		{
 			_update = true;
-			_menu?.Refresh();
+			CurrentMenu?.Refresh();
 			base.Resize(width, height);
 		}
 

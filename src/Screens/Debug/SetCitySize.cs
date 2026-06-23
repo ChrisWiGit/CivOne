@@ -29,9 +29,8 @@ namespace CivOne.Screens.Debug
 
 		private CityGridMenuDelegate? _citySelect;
 
-		private Input? _input;
-
 		private City? _selectedCity;
+		private Input? ActiveInput => Inputs.OfType<Input>().FirstOrDefault();
 
 		public string? Value { get; private set; }
 
@@ -49,10 +48,10 @@ namespace CivOne.Screens.Debug
 				.FillRectangle(88 + ox, 95 + oy, 105, 14, 5)
 				.FillRectangle(89 + ox, 96 + oy, 103, 12, 15);
 
-			if (_input != null)
+			if (ActiveInput is Input input)
 			{
-				_input.X = 90 + ox;
-				_input.Y = 97 + oy;
+				input.X = 90 + ox;
+				input.Y = 97 + oy;
 			}
 		}
 
@@ -98,11 +97,21 @@ namespace CivOne.Screens.Debug
 			Palette = Common.Screens[^1].OriginalColours;
 			_selectedCity = city;
 
-			_input = new Input(Palette, _selectedCity.Size.ToString(CultureInfo.InvariantCulture), 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 3);
-			_input.Accept += CitySizeSet_Accept;
-			_input.Cancel += CitySize_Cancel;
-
+			EnsureManagedInput();
 			Refresh();
+		}
+
+		protected override IScreen? CreateManagedInput()
+		{
+			if (_selectedCity == null)
+			{
+				return null;
+			}
+
+			Input input = new(Palette, _selectedCity.Size.ToString(CultureInfo.InvariantCulture), 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 3);
+			input.Accept += CitySizeSet_Accept;
+			input.Cancel += CitySize_Cancel;
+			return input;
 		}
 
 		private void CitySize_Cancel(object? sender, EventArgs args)
@@ -140,9 +149,9 @@ namespace CivOne.Screens.Debug
 				DrawCityMenuDialog();
 				return false;
 			}
-			else if (_selectedCity != null && _input != null && TopScreen.GetType() != typeof(Input))
+			else if (_selectedCity != null && !HasInput && TopScreen.GetType() != typeof(Input))
 			{
-				Common.AddScreen(_input);
+				EnsureManagedInput();
 			}
 			return false;
 		}

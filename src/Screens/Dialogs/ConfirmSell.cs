@@ -20,28 +20,15 @@ namespace CivOne.Screens.Dialogs
 
 		public event EventHandler? Sell;
 
-		private Menu? _menu;
-
 		private void MenuYes(object sender, EventArgs args)
 		{
 			Sell?.Invoke(this, args);
 			Cancel();
 		}
 
-		protected override void FirstUpdate()
+		protected override IMenu? CreateManagedMenu()
 		{
-			CreateMenu();
-			base.FirstUpdate();
-		}
-
-		private void CreateMenu()
-		{
-			if (_menu is not null)
-			{
-				return;
-			}
-
-			_menu = new Menu(Palette, Selection(3, 20, TextWidth + 5, 20))
+			Menu menu = new Menu(Palette, Selection(3, 20, TextWidth + 5, 20))
 			{
 				X = 131,
 				Y = 100,
@@ -55,14 +42,14 @@ namespace CivOne.Screens.Dialogs
 			string[] choices = [Translate("No."), Translate("Yes.")];
 			foreach (string choice in choices)
 			{
-				_menu.Items.Add(choice, i++);
+				menu.Items.Add(choice, i++);
 			}
-			_menu.Items[0].Selected += Cancel;
-			_menu.Items[1].Selected += MenuYes;
+			menu.Items[0].Selected += Cancel;
+			menu.Items[1].Selected += MenuYes;
 
-			_menu.MissClick += Cancel;
-			_menu.Cancel += Cancel;
-			AddMenu(_menu);
+			menu.MissClick += Cancel;
+			menu.Cancel += Cancel;
+			return menu;
 		}
 
 		private static string[] MessageLines(IBuilding building)

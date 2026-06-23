@@ -29,7 +29,7 @@ namespace CivOne.Screens.Debug
 		private static readonly string[] PaletteResourceNames = ["Standard Palette", "DOCKER", "SP257"];
 
 		private readonly List<string> _paletteNames = [.. PaletteResourceNames];
-		private Menu? _menu;
+		private Menu? CurrentMenu => GetMenu<Menu>();
 		private Palette _selectedPalette;
 		private string _selectedPaletteName;
 		private bool _viewerMode;
@@ -85,7 +85,7 @@ namespace CivOne.Screens.Debug
 
 		private void CreateSelectionMenu()
 		{
-			if (_menu != null)
+			if (CurrentMenu != null)
 			{
 				return;
 			}
@@ -96,7 +96,7 @@ namespace CivOne.Screens.Debug
 
 			using Picture background = new Picture(MenuWidth, menuHeight);
 			background.Tile(Pattern.PanelGrey).DrawRectangle3D();
-			_menu = new Menu(Palette, background)
+			Menu menu = new Menu(Palette, background)
 			{
 				X = OffsetX + ((320 - MenuWidth) / 2),
 				Y = OffsetY + 88,
@@ -110,16 +110,16 @@ namespace CivOne.Screens.Debug
 				CenterTo320Coordinates = false
 			};
 
-			_menu.Cancel += MenuCancel;
-			_menu.MissClick += MenuCancel;
+			menu.Cancel += MenuCancel;
+			menu.MissClick += MenuCancel;
 
 			for (int i = 0; i < _paletteNames.Count; i++)
 			{
 				int index = i;
-				_menu.Items.Add(_paletteNames[i]).OnSelect((s, a) => SelectPalette(s, index));
+				menu.Items.Add(_paletteNames[i]).OnSelect((s, a) => SelectPalette(s, index));
 			}
 
-			AddMenu(_menu);
+			AddMenu(menu);
 		}
 
 		private int GetHoverIndex(ScreenEventArgs args)
@@ -206,7 +206,6 @@ namespace CivOne.Screens.Debug
 			if (_viewerMode)
 			{
 				CloseMenus();
-				_menu = null;
 				DrawViewer();
 			}
 			else
@@ -266,6 +265,18 @@ namespace CivOne.Screens.Debug
 			Palette = Common.DefaultPalette;
 			_selectedPalette = null!;
 			_selectedPaletteName = "Standard Palette";
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_selectedPalette?.Dispose();
+			
+			base.Dispose(disposing);
 		}
 	}
 }

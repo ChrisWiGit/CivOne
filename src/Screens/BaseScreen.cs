@@ -110,6 +110,7 @@ namespace CivOne.Screens
 		protected void Destroy()
 		{
 			CloseMenus();
+			CloseInputs();
 			HandleClose();
 			Common.DestroyScreen(this);
 		}

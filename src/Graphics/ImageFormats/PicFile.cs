@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -23,6 +24,7 @@ namespace CivOne.Graphics.ImageFormats
 		private static Dictionary<string, PicFile> _cache = new Dictionary<string, PicFile>();
 		private readonly byte[] _bytes;
 		private readonly byte[,]? _colourTable;
+		[SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "_palette16 references a shared palette instance from Common.GetPalette16 and is not owned by PicFile.")]
 		private readonly Palette _palette16 = Common.GetPalette16;
 		private readonly Palette _palette256 = new Palette(256);
 		private Bytemap? _picture16;

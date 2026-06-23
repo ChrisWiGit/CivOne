@@ -58,6 +58,7 @@ namespace CivOne.Screens.Dialogs
 		/// </summary>
 		protected virtual void FirstUpdate()
 		{
+			EnsureManagedMenu();
 		}
 
 		protected override bool HasUpdate(uint gameTick)

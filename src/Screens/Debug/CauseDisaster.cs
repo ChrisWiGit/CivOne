@@ -107,7 +107,7 @@ namespace CivOne.Screens.Debug
 		{
 			Cancel?.Invoke(this, EventArgs.Empty);
 			if (sender is Input input)
-				input?.Close();
+				input.Close();
 			Destroy();
 		}
 
@@ -147,6 +147,18 @@ namespace CivOne.Screens.Debug
 			}
 
 			CitiesMenu();
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_citySelect?.Dispose();
+			
+			base.Dispose(disposing);
 		}
 	}
 }

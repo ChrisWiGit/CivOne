@@ -332,5 +332,17 @@ namespace CivOne.Screens
 			Palette = Resources["SP257"].Palette;
 			_gameId = gameId;
 		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_menu?.Dispose();
+			_menu = null;
+			base.Dispose(disposing);
+		}
 	}
 }

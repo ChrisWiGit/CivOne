@@ -14,28 +14,15 @@ namespace CivOne.Screens.Dialogs
 {
 	internal class ConfirmQuit : BaseDialog
 	{
-		private Menu? _menu;
-
 		private void MenuQuit(object sender, EventArgs args)
 		{
 			Runtime.Quit();
 			Cancel();
 		}
 
-		protected override void FirstUpdate()
+		protected override IMenu? CreateManagedMenu()
 		{
-			CreateMenu();
-			base.FirstUpdate();
-		}
-
-		private void CreateMenu()
-		{
-			if (_menu is not null)
-			{
-				return;
-			}
-
-			_menu = new Menu(Palette, Selection(3, 20, 100, 16))
+			Menu menu = new Menu(Palette, Selection(3, 20, 100, 16))
 			{
 				X = 103,
 				Y = 100,
@@ -48,14 +35,14 @@ namespace CivOne.Screens.Dialogs
 			string[] choices = [Translate("Keep Playing"), Translate("Yes, Quit")];
 			foreach (string choice in choices)
 			{
-				_menu.Items.Add(choice);
+				menu.Items.Add(choice);
 			}
-			_menu.Items[0].Selected += Cancel;
-			_menu.Items[1].Selected += MenuQuit;
+			menu.Items[0].Selected += Cancel;
+			menu.Items[1].Selected += MenuQuit;
 
-			_menu.MissClick += Cancel;
-			_menu.Cancel += Cancel;
-			AddMenu(_menu);
+			menu.MissClick += Cancel;
+			menu.Cancel += Cancel;
+			return menu;
 		}
 
 		public ConfirmQuit() : base(100, 80, 104, 39)

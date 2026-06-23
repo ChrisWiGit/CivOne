@@ -128,5 +128,16 @@ namespace CivOne.Screens.Debug
 
 			DrawDialog();
 		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_civSelect.Dispose();
+			base.Dispose(disposing);
+		}
 	}
 }

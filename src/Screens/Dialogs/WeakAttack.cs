@@ -23,7 +23,6 @@ namespace CivOne.Screens.Dialogs
         private readonly int _dX;
         private readonly int _dY;
         private readonly BaseUnit _unit;
-        private Menu? _menu;
 
         private void Continue(object sender, EventArgs args)
         {
@@ -31,20 +30,9 @@ namespace CivOne.Screens.Dialogs
             Cancel();
         }
 
-        protected override void FirstUpdate()
+        protected override IMenu? CreateManagedMenu()
         {
-            CreateMenu();
-            base.FirstUpdate();
-        }
-
-        private void CreateMenu()
-        {
-            if (_menu is not null)
-            {
-                return;
-            }
-
-            _menu = new Menu(Palette, Selection(3, 10 + 2*FontHigh, WIDE-8, (2 * FontHigh) + 4))
+            Menu menu = new Menu(Palette, Selection(3, 10 + 2*FontHigh, WIDE-8, (2 * FontHigh) + 4))
             {
                 X = 103,
                 Y = 85 + 2 * FontHigh,
@@ -55,13 +43,13 @@ namespace CivOne.Screens.Dialogs
                 FontId = 0
             };
 
-            _menu.Items.Add(Translate("Cancel")).OnSelect(Cancel);
-            _menu.Items.Add(Translate("Attack")).OnSelect(Continue);
+            menu.Items.Add(Translate("Cancel")).OnSelect(Cancel);
+            menu.Items.Add(Translate("Attack")).OnSelect(Continue);
 
-            _menu.MissClick += Cancel;
-            _menu.Cancel += Cancel;
+            menu.MissClick += Cancel;
+            menu.Cancel += Cancel;
 
-            AddMenu(_menu);
+            return menu;
         }
 
         private static int DialogHeight()

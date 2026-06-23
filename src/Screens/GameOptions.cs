@@ -20,8 +20,6 @@ namespace CivOne.Screens
 	[ScreenResizeable]
 	internal class GameOptions : BaseScreen
 	{
-		private Menu? _menu;
-
 		private void MenuCancel(object? _, EventArgs __)
 		{
 			Destroy();
@@ -83,7 +81,6 @@ namespace CivOne.Screens
 		private void Update()
 		{
 			CloseMenus();
-			_menu = null;
 			Refresh();
 		}
 
@@ -116,13 +113,14 @@ namespace CivOne.Screens
 
 		private void CreateMenu(IBitmap menuBackground)
 		{
-			if (_menu != null)
+			Menu? menu = GetMenu<Menu>();
+			if (menu != null)
 			{
 				// The menu does not have to be recreated if it already exists
 				// Otherwise Selection is lost when resizing the screen
 				return;
 			}
-			_menu = new Menu(Palette, menuBackground)
+			menu = new Menu(Palette, menuBackground)
 			{
 				X = 27,
 				Y = 28,
@@ -133,20 +131,20 @@ namespace CivOne.Screens
 				FontId = 0,
 				Indent = 2
 			};
-			_menu.MissClick += MenuCancel;
-			_menu.Cancel += MenuCancel;
+			menu.MissClick += MenuCancel;
+			menu.Cancel += MenuCancel;
 
-			_menu.Items.Add($"{(Game.InstantAdvice ? '^' : ' ')}{Translate("Instant Advice")}").OnSelect(MenuInstantAdvice);
-			_menu.Items.Add($"{(Game.AutoSave ? '^' : ' ')}{Translate("AutoSave")}").SetEnabled(Common.AllowSaveGame).OnSelect(MenuAutoSave);
-			_menu.Items.Add($"{(Game.EndOfTurn ? '^' : ' ')}{Translate("End of Turn")}").OnSelect(MenuEndOfTurn);
-			_menu.Items.Add($"{(Game.Animations ? '^' : ' ')}{Translate("Animations")}").OnSelect(MenuAnimations);
-			_menu.Items.Add($"{(Game.Sound ? '^' : ' ')}{Translate("Sound")}").OnSelect(MenuSound);
-			_menu.Items.Add($"{(Game.EnemyMoves ? '^' : ' ')}{Translate("Enemy Moves")}").OnSelect(MenuEnemyMoves);
-			_menu.Items.Add($"{(Game.CivilopediaText ? '^' : ' ')}{Translate("Civilopedia Text")}").OnSelect(MenuCivilopediaText);
-			_menu.Items.Add($"{(Game.Palace ? '^' : ' ')}{Translate("Palace")}").OnSelect(MenuPalace);
-			_menu.Items.Add($" {Translate("Change language...")}").OnSelect(MenuChangeLanguage);
+			menu.Items.Add($"{(Game.InstantAdvice ? '^' : ' ')}{Translate("Instant Advice")}").OnSelect(MenuInstantAdvice);
+			menu.Items.Add($"{(Game.AutoSave ? '^' : ' ')}{Translate("AutoSave")}").SetEnabled(Common.AllowSaveGame).OnSelect(MenuAutoSave);
+			menu.Items.Add($"{(Game.EndOfTurn ? '^' : ' ')}{Translate("End of Turn")}").OnSelect(MenuEndOfTurn);
+			menu.Items.Add($"{(Game.Animations ? '^' : ' ')}{Translate("Animations")}").OnSelect(MenuAnimations);
+			menu.Items.Add($"{(Game.Sound ? '^' : ' ')}{Translate("Sound")}").OnSelect(MenuSound);
+			menu.Items.Add($"{(Game.EnemyMoves ? '^' : ' ')}{Translate("Enemy Moves")}").OnSelect(MenuEnemyMoves);
+			menu.Items.Add($"{(Game.CivilopediaText ? '^' : ' ')}{Translate("Civilopedia Text")}").OnSelect(MenuCivilopediaText);
+			menu.Items.Add($"{(Game.Palace ? '^' : ' ')}{Translate("Palace")}").OnSelect(MenuPalace);
+			menu.Items.Add($" {Translate("Change language...")}").OnSelect(MenuChangeLanguage);
 
-			AddMenu(_menu);
+			AddMenu(menu);
 		}
 
 		public GameOptions() : base(MouseCursor.Pointer)

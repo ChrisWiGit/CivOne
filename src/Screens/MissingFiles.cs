@@ -26,8 +26,6 @@ namespace CivOne.Screens
 
 		private int _y;
 
-		private Menu? _menu;
-
 		private void Menu_Continue(object sender, EventArgs args)
 		{
 			Destroy();
@@ -86,9 +84,9 @@ namespace CivOne.Screens
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_menu == null)
+			if (GetMenu<Menu>() == null)
 			{
-				_menu = new Menu(Palette)
+				Menu menu = new Menu(Palette)
 				{
 					X = 44,
 					Y = _y,
@@ -99,13 +97,13 @@ namespace CivOne.Screens
 					Indent = 4
 				};
 
-				_menu.Items.AddRange(
+				menu.Items.AddRange(
 					MenuItem.Create(Translate("Continue without data files (not recommended)")).OnSelect(Menu_Continue),
 					MenuItem.Create(Translate("Browse for data files")).OnSelect(Menu_Copy),
 					MenuItem.Create(Translate("Quit")).OnSelect(Menu_Quit)
 				);
 				
-				AddMenu(_menu);
+				AddMenu(menu);
 				return true;
 			}
 

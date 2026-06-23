@@ -24,7 +24,6 @@ namespace CivOne.Screens.Dialogs
 		private const int FONT_ID = 0;
 
 		private readonly IDiplomatCityService _service;
-		private Menu? _menu;
 
 		private void EstablishEmbassy(object sender, EventArgs args)
 		{
@@ -62,22 +61,11 @@ namespace CivOne.Screens.Dialogs
 			Cancel();
 		}
 
-		protected override void FirstUpdate()
+		protected override IMenu? CreateManagedMenu()
 		{
-			CreateMenu();
-			base.FirstUpdate();
-		}
-
-		private void CreateMenu()
-		{
-			if (_menu is not null)
-			{
-				return;
-			}
-
 			int choices = 6;
 			int high = (2 * Resources.GetFontHeight(FONT_ID)) + (choices * Resources.GetFontHeight(FONT_ID)) + 8;
-			_menu = new Menu(Palette, Selection(3, 5 + (2 * Resources.GetFontHeight(FONT_ID)), 125, high))
+			Menu menu = new Menu(Palette, Selection(3, 5 + (2 * Resources.GetFontHeight(FONT_ID)), 125, high))
 			{
 				X = 103,
 				Y = 100,
@@ -89,17 +77,17 @@ namespace CivOne.Screens.Dialogs
 				FontId = FONT_ID
 			};
 
-			_menu.Items.Add(Translate("Establish Embassy")).OnSelect(EstablishEmbassy).SetEnabled(!_service.HasEmbassy);
-			_menu.Items.Add(Translate("Investigate City")).OnSelect(InvestigateCity);
-			_menu.Items.Add(Translate("Steal Technology")).OnSelect(StealTechnology).SetEnabled(!_service.TechStolen);
-			_menu.Items.Add(Translate("Industrial Sabotage")).OnSelect(IndustrialSabotage);
-			_menu.Items.Add(Translate("Incite a Revolt")).OnSelect(InciteRevolt).SetEnabled(!_service.HasPalace);
-			_menu.Items.Add(Translate("Meet with King")).OnSelect(MeetWithKing).SetEnabled(!_service.IsBarbarian);
+			menu.Items.Add(Translate("Establish Embassy")).OnSelect(EstablishEmbassy).SetEnabled(!_service.HasEmbassy);
+			menu.Items.Add(Translate("Investigate City")).OnSelect(InvestigateCity);
+			menu.Items.Add(Translate("Steal Technology")).OnSelect(StealTechnology).SetEnabled(!_service.TechStolen);
+			menu.Items.Add(Translate("Industrial Sabotage")).OnSelect(IndustrialSabotage);
+			menu.Items.Add(Translate("Incite a Revolt")).OnSelect(InciteRevolt).SetEnabled(!_service.HasPalace);
+			menu.Items.Add(Translate("Meet with King")).OnSelect(MeetWithKing).SetEnabled(!_service.IsBarbarian);
 
-			_menu.Cancel += Cancel;
-			_menu.MissClick += Cancel;
+			menu.Cancel += Cancel;
+			menu.MissClick += Cancel;
 
-			AddMenu(_menu);
+			return menu;
 		}
 
 		private static int DialogHeight()

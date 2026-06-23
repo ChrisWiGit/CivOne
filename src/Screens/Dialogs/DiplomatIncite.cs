@@ -28,7 +28,6 @@ namespace CivOne.Screens.Dialogs
 		private readonly IDiplomatInciteService _service;
 
 		private readonly bool _canIncite;
-		private Menu? _menu;
 
 		private void DontIncite(object? _, EventArgs __)
 		{
@@ -41,21 +40,15 @@ namespace CivOne.Screens.Dialogs
 			Cancel();
 		}
 
-		protected override void FirstUpdate()
+		protected override IMenu? CreateManagedMenu()
 		{
-			CreateMenu();
-			base.FirstUpdate();
-		}
-
-		private void CreateMenu()
-		{
-			if (_menu is not null || !_canIncite)
+			if (!_canIncite)
 			{
-				return;
+				return null;
 			}
 
 			int choices = 2;
-			_menu = new Menu(Palette, Selection(45, 5 + (3 * Resources.GetFontHeight(FONT_ID)), 130, (2 * Resources.GetFontHeight(FONT_ID)) + (choices * Resources.GetFontHeight(FONT_ID)) + 9))
+			Menu menu = new Menu(Palette, Selection(45, 5 + (3 * Resources.GetFontHeight(FONT_ID)), 130, (2 * Resources.GetFontHeight(FONT_ID)) + (choices * Resources.GetFontHeight(FONT_ID)) + 9))
 			{
 				X = 143,
 				Y = 110,
@@ -66,9 +59,9 @@ namespace CivOne.Screens.Dialogs
 				FontId = FONT_ID
 			};
 
-			_menu.Items.Add(Translate("Forget It.")).OnSelect(DontIncite);
-			_menu.Items.Add(Translate("Incite revolt")).OnSelect(Incite);
-			AddMenu(_menu);
+			menu.Items.Add(Translate("Forget It.")).OnSelect(DontIncite);
+			menu.Items.Add(Translate("Incite revolt")).OnSelect(Incite);
+			return menu;
 		}
 
 		internal DiplomatIncite(City cityToIncite, Diplomat diplomat, IDiplomatInciteService service) : base(100, 80, 180, 56)

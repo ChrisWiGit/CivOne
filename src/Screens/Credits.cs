@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -63,6 +64,7 @@ namespace CivOne.Screens
 		// Used only once, and then reset to null to avoid re-loading when coming back to the credits screen.
 		private static bool? _loadSavedGame = false; 
 
+		[SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "Ownership is transferred to the global screen stack via Common.AddScreen(_nextScreen). The receiving stack controls disposal through Common.DestroyScreen().")]
 		private IScreen? _nextScreen;
 
 		private Dictionary<char, Action<object, EventArgs>>? _shortKeyMapping;
