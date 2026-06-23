@@ -104,5 +104,16 @@ namespace CivOne.Screens
 				_sprites[(yy * 7) + xx] = Resources["NUKE1"][1 + (45 * xx), 1 + (45 * yy), 44, 44];
 			}
 		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_gameMap.Dispose();
+			base.Dispose(disposing);
+		}
 	}
 }

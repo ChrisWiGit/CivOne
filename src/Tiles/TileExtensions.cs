@@ -222,9 +222,16 @@ namespace CivOne.Tiles
             return tile.Type == Terrain.Forest || tile.Type == Terrain.Jungle || tile.Type == Terrain.Swamp;
         }
 
+		/// <summary>
+		/// Creates a bitmap representation of the provided tile array, including optional city labels.
+		/// </summary>
+		/// <param name="tiles">The array of tiles to convert to a bitmap.</param>
+		/// <param name="settings">Optional settings for rendering the tiles.</param>
+		/// <param name="player">Optional player context for visibility checks.</param>
+		/// <returns>A bitmap representation of the tile array. The caller must dispose of the returned bitmap when no longer needed.</returns>
 		public static IBitmap ToBitmap(this ITile[,] tiles, TileSettings? settings = null, Player? player = null)
 		{
-			if (settings == null) settings = TileSettings.Default;
+			settings ??= TileSettings.Default;
 
 			IBitmap output = new Picture(16 * tiles.GetLength(0), 16 * tiles.GetLength(1), Palette);
 

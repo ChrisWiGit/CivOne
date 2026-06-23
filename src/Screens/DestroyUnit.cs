@@ -371,5 +371,17 @@ namespace CivOne.Screens
 
 			return (xx, yy);
 		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_overlay?.Dispose();
+			_overlay = null;
+			base.Dispose(disposing);
+		}
 	}
 }

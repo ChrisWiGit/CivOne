@@ -407,5 +407,16 @@ namespace CivOne.Screens.CityManagerPanels
 			_update = true;
 			_cityInfoUnits.Update();
 		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_cityInfoUnits?.Dispose();
+			base.Dispose(disposing);
+		}
     }
 }

@@ -223,7 +223,7 @@ namespace CivOne.Screens
 				BaseCivilization.GetBuddyCivilizationSupplier(
 					Common.Random!.InitialSeed, Game.Competition, Game.HumanPlayer.Civilization.PreferredPlayerNumber);
 
-			_enemies = Game.GetReplayData<ReplayData.CivilizationDestroyed>()
+			_enemies = [.. Game.GetReplayData<ReplayData.CivilizationDestroyed>()
 				.Where(x => x.DestroyedById == Game.HumanPlayer.Civilization.Id)
 				.Select(x =>
 				{
@@ -236,9 +236,21 @@ namespace CivOne.Screens
 						Civilization = civ,
 					};
 				}
-			).ToArray();
+			)];
 
 			SetPalette();
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_overlay?.Dispose();
+			_overlay = null;
+			base.Dispose(disposing);
 		}
 	}
 }
