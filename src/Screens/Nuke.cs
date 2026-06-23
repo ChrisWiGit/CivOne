@@ -75,13 +75,17 @@ namespace CivOne.Screens
 			Bitmap = new Bytemap(width, height);
 			
 			Player? renderPlayer = Settings.RevealWorld ? null : Human;
-			_gameMap = Map[_x, _y, _tilesX, _tilesY].ToBitmap(TileSettings.BlinkOff, renderPlayer);
+			_gameMap.Dispose();
+			_gameMap = Map[_x, _y, _tilesX, _tilesY].ToBitmap(TileSettings.BlinkOn, renderPlayer);
 		}
 
 		internal Nuke(int x, int y)
 		{
 			_x = Common.GamePlay!.X;
 			_y = Common.GamePlay!.Y;
+
+			_tilesX = (int)Math.Ceiling((double)(Width - 80) / 16);
+			_tilesY = (int)Math.Ceiling((double)(Height - 8) / 16);
 
 			_dx = x - 14;
 			_dy = y - 14;
@@ -95,7 +99,7 @@ namespace CivOne.Screens
 				Palette = palette;
 			}
 			Player? renderPlayer = Settings.RevealWorld ? null : Human;
-			_gameMap = Map[_x, _y, 15, 12].ToBitmap(TileSettings.BlinkOff, renderPlayer);
+			_gameMap = Map[_x, _y, _tilesX, _tilesY].ToBitmap(TileSettings.BlinkOn, renderPlayer);
 
 			_sprites = new Picture[28];
 			for (int yy = 0; yy < 4; yy++)

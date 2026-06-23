@@ -6,6 +6,11 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Attack with nuke shows units on the map instead of hiding them.
+  * Attack of city or unit near city will reduce city size to half.
+  * All improvements on the target tile are removed.
+  * Pollution is added to the target tile and surrounding tiles with a chance of 25% for each surrounding tile.
+    * This is not like the original game.
 * Fix: Click on menu separator will no longer close the menu.
 * Feature: Added terrain, tile improvements, land value, found city and unit editor
   * Editor menu shown if debug mode is enabled (`Shift+F1 -> Patches -> Debug menu enabled` or `--debug` when starting the game).

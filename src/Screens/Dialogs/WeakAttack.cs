@@ -26,7 +26,7 @@ namespace CivOne.Screens.Dialogs
 
         private void Continue(object sender, EventArgs args)
         {
-            _unit.Confront(_dX, _dY);
+            _unit.PreConfront(_dX, _dY);
             Cancel();
         }
 

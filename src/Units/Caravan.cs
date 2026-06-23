@@ -90,7 +90,7 @@ namespace CivOne.Units
 			Game.DisbandUnit(this);
 		}
 
-		internal override bool Confront(int relX, int relY)
+		internal override bool PreConfront(int relX, int relY)
 		{
 			ITile moveTarget = Map[X, Y][relX, relY];
 
@@ -138,7 +138,7 @@ namespace CivOne.Units
 
 			if (hasTargetCity)
 			{
-				return Confront(relX, relY);
+				return PreConfront(relX, relY);
 			}
 
 			return null;

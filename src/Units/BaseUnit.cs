@@ -29,7 +29,7 @@ using CivOne.Services;
 
 namespace CivOne.Units
 {
-	#pragma warning disable CA1822 // Mark members as static
+#pragma warning disable CA1822 // Mark members as static
 	internal abstract class BaseUnit : BaseInstance, IUnitRestorable
 	{
 		protected int _x, _y;
@@ -311,11 +311,30 @@ namespace CivOne.Units
 			return win;
 		}
 
-		internal virtual bool Confront(int relX, int relY)
+		/// <summary>
+		/// Prepares a hostile move before combat resolution starts.
+		/// </summary>
+		/// <param name="relX">
+		/// Relative target X offset from the unit position.
+		/// </param>
+		/// <param name="relY">
+		/// Relative target Y offset from the unit position.
+		/// </param>
+		/// <returns>
+		/// <see langword="true"/> when the confront pipeline starts and queues work.
+		/// <see langword="false"/> when the attack is blocked or cannot start.
+		/// </returns>
+		/// <remarks>
+		/// Call order starts here.
+		/// This method resolves basic preconditions, creates the movement task, and then calls <see cref="HandleConfront(ITile, int, int, MoveUnit?)"/>.
+		/// Override this method when a unit needs custom pre-checks or a different movement setup before confrontation.
+		/// Keep the default flow to <see cref="HandleConfront(ITile, int, int, MoveUnit?)"/> unless the unit has a fully custom confront pipeline.
+		/// </remarks>
+		internal virtual bool PreConfront(int relX, int relY)
 		{
 			GotoDestination = Point.Empty;             // Cancel any goto mode when Confronting
 
-			Debug.Assert(this is not Diplomat && this is not Caravan, "Confront should not be called for Diplomat or Caravan units, as they have their own special handling.");
+			Debug.Assert(this is not Diplomat && this is not Caravan, "PreConfront should not be called for Diplomat or Caravan units, as they have their own special handling.");
 
 
 			ITile moveTarget = Map[X, Y][relX, relY];
@@ -328,17 +347,47 @@ namespace CivOne.Units
 
 			Movement = new MoveUnit(relX, relY);
 
+			return HandleConfront(moveTarget, relX, relY, Movement);
+		}
+
+		internal virtual void RegisterHostileAction()
+		{
 			Game.RegisterHostileAction();
+		}
+
+		/// <summary>
+		/// Resolves confront outcome after preconditions and movement initialization.
+		/// </summary>
+		/// <param name="moveTarget">
+		/// Target tile that contains the city or defending units.
+		/// </param>
+		/// <param name="relX">
+		/// Relative target X offset from the unit position.
+		/// </param>
+		/// <param name="relY">
+		/// Relative target Y offset from the unit position.
+		/// </param>
+		/// <param name="movement">
+		/// Movement task created by the caller.
+		/// </param>
+		/// <returns>
+		/// Returns the value returned by <see cref="PostConfront(ITile, int, int, MoveUnit?)"/>.
+		/// </returns>
+		/// <remarks>
+		/// Typical call chain: <see cref="PreConfront(int, int)"/> -> <see cref="HandleConfront(ITile, int, int, MoveUnit?)"/> -> <see cref="PostConfront(ITile, int, int, MoveUnit?)"/>.
+		/// This method is responsible for registering hostile state, deciding city capture versus combat, and wiring win or loss handlers.
+		/// Override this method when a unit needs custom confrontation logic.
+		/// If you override, call <see cref="RegisterHostileAction"/> and forward to <see cref="PostConfront(ITile, int, int, MoveUnit?)"/> unless you intentionally replace those behaviors.
+		/// </remarks>
+		internal virtual bool HandleConfront(ITile moveTarget, int relX, int relY, MoveUnit? movement)
+		{
+			RegisterHostileAction();
 			if (IsCapturingEnemyCity(moveTarget))
 			{
 				if (!TryHandleCityCapture(moveTarget))
 				{
 					return false;
 				}
-			}
-			else if (this is Nuclear)
-			{
-				HandleNuclear(moveTarget, relX, relY);
 			}
 			else if (AttackOutcome(this, moveTarget))
 			{
@@ -349,7 +398,35 @@ namespace CivOne.Units
 				HandleAttackLoss();
 			}
 
-			GameTask.Insert(Movement);
+			return PostConfront(moveTarget, relX, relY, movement);
+		}
+
+		/// <summary>
+		/// Finalizes confront setup by scheduling the prepared movement task.
+		/// </summary>
+		/// <param name="moveTarget">
+		/// Target tile that was confronted.
+		/// </param>
+		/// <param name="relX">
+		/// Relative target X offset from the unit position.
+		/// </param>
+		/// <param name="relY">
+		/// Relative target Y offset from the unit position.
+		/// </param>
+		/// <param name="movement">
+		/// Movement task to enqueue.
+		/// </param>
+		/// <returns>
+		/// Default implementation returns <see langword="false"/> because completion happens asynchronously via queued tasks.
+		/// </returns>
+		/// <remarks>
+		/// This is the last step of the default confront chain.
+		/// Override this method when task scheduling, animation sequencing, or return semantics differ for a specific unit type.
+		/// When overriding, preserve enqueue side effects unless the unit intentionally bypasses normal movement execution.
+		/// </remarks>
+		internal virtual bool PostConfront(ITile moveTarget, int relX, int relY, MoveUnit? movement)
+		{
+			GameTask.Insert(movement);
 			return false;
 		}
 
@@ -556,34 +633,6 @@ namespace CivOne.Units
 			Common.AddScreen(captureNews);
 		}
 
-		private void HandleNuclear(ITile moveTarget, int relX, int relY)
-		{
-			Show nuke = CreateNukeAnimation(relX, relY);
-
-			PlaySound(moveTarget.City != null ? "airnuke" : "s_nuke");
-			nuke.Done += (s, a) => DestroyUnitsInNuclearBlast(relX, relY);
-
-			GameTask.Enqueue(nuke);
-		}
-
-		private Show CreateNukeAnimation(int relX, int relY)
-		{
-			int xx = (X - Common.GamePlay!.X + relX) * 16;
-			int yy = (Y - Common.GamePlay!.Y + relY) * 16;
-			return Show.Nuke(xx, yy);
-		}
-
-		private void DestroyUnitsInNuclearBlast(int relX, int relY)
-		{
-			foreach (ITile tile in Map.QueryMapPart(X + relX - 1, Y + relY - 1, 3, 3)) // NOSONAR: tile.Units must be re-evaluated after each Game.DisbandUnit() call; selecting tile.Units would capture a stale array snapshot and can cause repeated processing or an endless loop.
-			{
-				while (tile.Units.Length > 0)
-				{
-					Game.DisbandUnit(tile.Units[0]);
-				}
-			}
-		}
-
 		private void HandleAttackWin(ITile moveTarget)
 		{
 			if (Movement == null)
@@ -785,7 +834,7 @@ namespace CivOne.Units
 			// if (moveTarget.City != null && (moveTarget.City.Owner != Owner || this is Caravan))
 			if (hasTargetCity && !belongsTargetCityOwner)
 			{
-				return Confront(relX, relY);
+				return PreConfront(relX, relY);
 			}
 
 			return null;
@@ -815,7 +864,7 @@ namespace CivOne.Units
 				return true;
 			}
 
-			return Confront(relX, relY);
+			return PreConfront(relX, relY);
 		}
 
 		protected virtual bool CanAttackEnemy(ITile moveTarget)
@@ -827,7 +876,7 @@ namespace CivOne.Units
 
 		private void MoveEnd(object? _, EventArgs __)
 		{
-			if (Movement == null) 
+			if (Movement == null)
 			{
 				Debug.Assert(false, "MoveEnd called but Movement is null. This should not happen.");
 				return;
@@ -900,7 +949,7 @@ namespace CivOne.Units
 		/// </code>
 		/// </example>
 		public string TranslatedName { get; protected set; }
-		
+
 		/// <summary>
 		/// Gets the invariant civilopedia key name.
 		/// </summary>
@@ -960,13 +1009,13 @@ namespace CivOne.Units
 					requiredTech = RequiredTech.TranslatedName;
 				}
 
-				output.DrawText(TranslateFormatted("Requires {0}", requiredTech), 6, 9, 100, yy); 
+				output.DrawText(TranslateFormatted("Requires {0}", requiredTech), 6, 9, 100, yy);
 				yy += 8;
-				output.DrawText(TranslateFormatted("Cost: {0}0 resources.", Price), 6, 9, 100, yy); 
+				output.DrawText(TranslateFormatted("Cost: {0}0 resources.", Price), 6, 9, 100, yy);
 				yy += 8;
-				output.DrawText(TranslateFormatted("Attack Strength: {0}", Attack), 6, 12, 100, yy); 
+				output.DrawText(TranslateFormatted("Attack Strength: {0}", Attack), 6, 12, 100, yy);
 				yy += 8;
-				output.DrawText(TranslateFormatted("Defense Strength: {0}", Defense), 6, 12, 100, yy); 
+				output.DrawText(TranslateFormatted("Defense Strength: {0}", Defense), 6, 12, 100, yy);
 				yy += 8;
 				output.DrawText(TranslateFormatted("Movement Rate: {0}", Move), 6, 5, 100, yy);
 			}

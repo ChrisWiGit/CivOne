@@ -74,7 +74,7 @@ namespace CivOne.Units
 			return TranslateFormatted("{0} sabotaged", buildings[random].TranslatedName);
 		}
 
-		internal override bool Confront(int relX, int relY)
+		internal override bool PreConfront(int relX, int relY)
 		{
 			ITile moveTarget = Map[X, Y][relX, relY];
 
