@@ -49,26 +49,34 @@ namespace CivOne.Units
 			GameTask.Enqueue(nuke);
 		}
 
-		private Show CreateNukeAnimation(ITile moveTarget)
+		private static Show CreateNukeAnimation(ITile moveTarget)
+		{
+			// because we center on moveTarget, we need to calculate the pixel position
+			// of the nuke animation relative to the center of the screen to ensure it appears in the correct location.
+			(int xx, int yy) = GetNukeAnimationPixelPosition(moveTarget);
+
+			return Show.Nuke(xx, yy);
+		}
+
+		private static (int X, int Y) GetNukeAnimationPixelPosition(ITile moveTarget)
 		{
 			int viewX = Common.GamePlay!.X;
 			int viewY = Common.GamePlay!.Y;
 
-			int xx = moveTarget.X - viewX;
-			while (xx < 0)
+			int tileX = moveTarget.X - viewX;
+			while (tileX < 0)
 			{
-				xx += Map.WIDTH;
+				tileX += Map.WIDTH;
 			}
-			while (xx >= Map.WIDTH)
+			while (tileX >= Map.WIDTH)
 			{
-				xx -= Map.WIDTH;
+				tileX -= Map.WIDTH;
 			}
 
-			int yy = moveTarget.Y - viewY;
+			int tileY = moveTarget.Y - viewY;
 
-			xx *= 16;
-			yy *= 16;
-			return Show.Nuke(xx, yy);
+			const int tileSize = 16;
+			return (tileX * tileSize, tileY * tileSize);
 		}
 
 		private void DestroyUnitsInNuclearBlast(int relX, int relY)
