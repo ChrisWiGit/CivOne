@@ -8,7 +8,6 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 * Refactoring: Addressed around 4,000 warnings
   * all projects have been compiled with `<AnalysisLevel>latest-all</AnalysisLevel>` and `<Nullable>enable</Nullable>` to enable the latest analyzers and nullable reference types.
-    * 
   * Fixed potential null-reference and nullability-related warnings across the codebase.
   * Improved dispose patterns to release resources immediately after use where appropriate.
   * Suppressed selected warnings with `#pragma warning disable` or `[SuppressMessage]` when they were not relevant or not reasonably fixable.
