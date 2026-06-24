@@ -26,7 +26,7 @@ namespace CivOne.Screens
 	/// </code>
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class)]
-	public class ScreenResizeableAttribute : Attribute
+	public sealed class ScreenResizeableAttribute : Attribute
 	{
 	}
 }

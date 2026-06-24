@@ -71,7 +71,7 @@ namespace CivOne.Graphics.Sprites
 		{
 			return new Picture(16, 16)
 				.AddLayer(BaseUnit[(unit.Type, unit.PlayerNumber)].Bitmap)
-				.AddLayer(Generic.Fortify)
+				.AddLayer(FortifySprite.Fortify)
 				.Bitmap;
 		}
 

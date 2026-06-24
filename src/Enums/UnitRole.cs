@@ -9,7 +9,7 @@
 
 namespace CivOne.Enums
 {
-	public enum UnitRole : short
+	public enum UnitRole
 	{
 		Settler = 0,
 		LandAttack = 1,

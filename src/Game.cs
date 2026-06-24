@@ -38,6 +38,7 @@ using CivOne.Wonders;
 
 namespace CivOne
 {
+	[SuppressMessage("Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces", Justification = "Game is the main class of the game, and it is appropriate to have the same name as the namespace.")]
 	public partial class Game : BaseInstance, IGame, ILogger, IGameCitizenDependency, ISveSaveCompatibilityProvider
 	{
 		private static readonly string GameVersion = GetGameVersion();

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Persistence.Game;
 using CivOne.Persistence.Model;
 
@@ -20,6 +21,7 @@ namespace CivOne.Persistence.Resolver
 		/// </summary>
 		/// <param name="players">Array of mapped players to apply resolved destruction counts to.</param>
 		/// <param name="playerDtos">List of player DTOs containing the GUID-based destruction mappings.</param>
+		[SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "We want to use List<T> for performance and simplicity.")]
 		public void ResolveAndApply(IPlayer[]? players, List<PlayerDto>? playerDtos)
 		{
 			if (!ValidateInput(players, playerDtos))

@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -80,6 +81,7 @@ namespace CivOne
 			Reflect.ApplyPlugins();
 		}
 
+		[SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "We want to return the value kind in lowercase for consistency.")]
 		public override string ToString()
 		{
 			StringBuilder output = new(Name);

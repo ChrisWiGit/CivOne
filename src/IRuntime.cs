@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -40,6 +41,7 @@ namespace CivOne
 		void SetWindowTitle(string title);
 		void PlaySound(string file);
 		void StopSound();
+		[SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", Justification = "Simplicity of use.")]
 		bool TryOpenUrl(string url, out string? errorMessage);
 		bool TryCopyToClipboard(string text, out string? errorMessage);
 		void Quit();

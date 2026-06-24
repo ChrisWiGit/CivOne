@@ -11,7 +11,7 @@ using CivOne.IO;
 
 namespace CivOne.Graphics.Sprites
 {
-	public static class Generic
+	public static class FortifySprite
 	{
 		private static Resources Resources => Resources.Instance;
 

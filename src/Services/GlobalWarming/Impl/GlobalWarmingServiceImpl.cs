@@ -48,7 +48,7 @@ namespace CivOne.Services.GlobalWarming.Impl
 			_pollutedSquaresCount = GetPollutedSquareCount();
 			_warmingIndicator = GetWarmingIndicator(_pollutedSquaresCount);
 
-			if (_pollutedSquaresCount >= GetCurrentPollutionLimit())
+			if (_pollutedSquaresCount >= CurrentPollutionLimit)
 			{
 				if (_globalWarmingCount < short.MaxValue)
 				{
@@ -72,10 +72,7 @@ namespace CivOne.Services.GlobalWarming.Impl
 			return _tiles.Count(t => t.Pollution);
 		}
 
-		protected int GetCurrentPollutionLimit()
-		{
-			return 8 + (_globalWarmingCount * 2);
-		}
+		protected int CurrentPollutionLimit { get => 8 + (_globalWarmingCount * 2); }
 
 		protected static WarmingIndicator GetWarmingIndicator(int pollutedSquares)
 		{

@@ -7,11 +7,12 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using CivOne.IO;
 
 namespace CivOne.Graphics
 {
-	public struct Colour(byte alpha, byte red, byte green, byte blue)
+	public struct Colour(byte alpha, byte red, byte green, byte blue) : IEquatable<Colour>
 	{
 		public byte A { get; private set; } = alpha;
 		public byte R { get; private set; } = red;
@@ -19,6 +20,7 @@ namespace CivOne.Graphics
 		public byte B { get; private set; } = blue;
 
 		public override readonly bool Equals(object? obj) => (obj is Colour) && obj.GetHashCode() == GetHashCode();
+		public readonly bool Equals(Colour other) => GetHashCode() == other.GetHashCode();
 		public override readonly int GetHashCode() => (R << 16) + (G << 8) + B;
 		public static bool operator ==(Colour a, Colour b) => a.Equals(b);
 		public static bool operator !=(Colour a, Colour b) => !a.Equals(b);

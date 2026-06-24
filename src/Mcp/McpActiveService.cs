@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Mcp.Contracts;
 using CivOne.Mcp.Tools;
 using CivOne.Mcp.Transport;
@@ -29,6 +30,7 @@ namespace CivOne.Mcp
 			}
 		}
 
+		[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch all exceptions and return a parse error response.")]
 		public void Process()
 		{
 			if (!_started) return;

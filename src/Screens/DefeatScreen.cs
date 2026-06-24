@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -93,8 +94,10 @@ namespace CivOne.Screens
 			// Load defeat text
 			_textLines = GetGameText("KING/ARCH");
 			for (int i = 0; i < _textLines.Length; i++)
-				_textLines[i] = _textLines[i].Replace("$RPLC1", Human.LatestAdvance).
-					Replace("$US", Human.LeaderName.ToUpperInvariant()).Replace("^", "");
+				_textLines[i] = _textLines[i]
+					.Replace("$RPLC1", Human.LatestAdvance, StringComparison.InvariantCulture)
+					.Replace("$US", Human.LeaderName.ToUpperInvariant(), StringComparison.InvariantCulture)
+					.Replace("^", "", StringComparison.InvariantCulture);
 		}
 	}
 }

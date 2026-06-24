@@ -12,7 +12,7 @@ using System;
 namespace CivOne.Tasks
 {
 	[AttributeUsage(AttributeTargets.Class)]
-	public class FastAttribute : Attribute
+	public sealed class FastAttribute : Attribute
 	{
 	}
 }

@@ -39,7 +39,7 @@ namespace CivOne
 		{
 			return Directory.GetFiles(Settings.SoundsDirectory).
 				FirstOrDefault(
-					x => Path.GetFileName(x).Equals($"{input.ToLowerInvariant()}.wav", StringComparison.OrdinalIgnoreCase));
+					x => Path.GetFileName(x).Equals($"{input}.wav", StringComparison.OrdinalIgnoreCase));
 		}
 
 		public static byte[] Clear(this byte[] byteArray, byte value = 0)

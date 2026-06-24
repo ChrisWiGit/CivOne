@@ -67,7 +67,7 @@ namespace CivOne.Screens.GamePlayPanels
 					if (tile == null) continue;
 
 					// Flash active unit
-					if (!editorEnabled && activeUnit != null && Human == activeUnit.Owner && tile.X == activeUnit.X && tile.Y == activeUnit.Y && GamePlay?.IsMapViewEnabled != true)
+					if (!editorEnabled && activeUnit != null && Human == activeUnit.Owner && tile.X == activeUnit.X && tile.Y == activeUnit.Y && GamePlay.IsMapViewEnabled != true)
 					{
 						if (gameTick % 4 <= 1)
 						{

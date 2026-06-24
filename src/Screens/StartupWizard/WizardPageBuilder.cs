@@ -109,7 +109,7 @@ namespace CivOne.Screens.StartupWizard
 
 			for (char c = 'a'; c <= 'z'; c++)
 			{
-				if (excludedChars.Contains(c))
+				if (excludedChars.Contains(c, StringComparison.OrdinalIgnoreCase))
 				{
 					continue;
 				}

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using CivOne.Mcp.Contracts;
 
@@ -6,6 +7,7 @@ namespace CivOne.Mcp.Transport
 {
 	public sealed class JsonRpcProtocolSerializer : IMcpProtocolSerializer
 	{
+		[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch all exceptions and return a parse error response.")]
 		public bool TryParse(string raw, out McpRequest? request, out McpResponse? parseErrorResponse)
 		{
 			request = null;

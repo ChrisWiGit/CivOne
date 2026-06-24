@@ -102,7 +102,7 @@ namespace CivOne.Screens.Debug
 		
 		public SetGameYear()
 		{
-			_gameCalendarService = GameCalendarServiceFactory.GetCurrent();
+			_gameCalendarService = GameCalendarServiceFactory.Current;
 			Palette = Common.Screens.Last().OriginalColours;
 
 			DrawDialog();

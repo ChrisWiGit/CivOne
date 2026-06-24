@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Enums;
@@ -44,18 +45,14 @@ namespace CivOne.Screens.Reports
 		IReadOnlyList<CivilizationRankingRow> GetLargest(bool includeAllCivilizations = false);
 	}
 
+	[SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This method may perform initialization and is not a simple property getter.")]
 	public static class CivilizationRankingServiceFactory
 	{
 		private static ICivilizationRankingService? _instance;
 
 		public static ICivilizationRankingService GetInstance()
 		{
-			if (_instance != null)
-			{
-				return _instance;
-			}
-
-			_instance = new CivilizationRankingService();
+			_instance ??= new CivilizationRankingService();
 			return _instance;
 		}
 

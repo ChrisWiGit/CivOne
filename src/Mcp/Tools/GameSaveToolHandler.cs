@@ -40,6 +40,7 @@ namespace CivOne.Mcp.Tools
 			_maxJsonChars = Math.Max(512, maxJsonChars);
 		}
 
+		[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch all exceptions and return a parse error response.")]
 		public McpResponse Handle(McpRequest request)
 		{
 			ArgumentNullException.ThrowIfNull(request);

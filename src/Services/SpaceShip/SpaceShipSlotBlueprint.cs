@@ -9,6 +9,7 @@
 
 using CivOne.Enums;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace CivOne.Services.SpaceShip
@@ -278,6 +279,7 @@ namespace CivOne.Services.SpaceShip
 
 		private static ISpaceShipSlotBlueprintFactory? _instance;
 
+		[SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This method may perform initialization and is not a simple property getter.")]
 		public static ISpaceShipSlotBlueprintFactory GetInstance()
 		{
 			_instance ??= new SpaceShipSlotBlueprintFactory();

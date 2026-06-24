@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using CivOne.Mcp.Contracts;
 using CivOne.Persistence;
@@ -52,6 +53,7 @@ namespace CivOne.Mcp.Tools
 			_maxJsonChars = Math.Max(512, maxJsonChars);
 		}
 
+		[SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "valueKind: We want to return the value kind in lowercase for consistency.")]
 		public McpResponse Handle(McpRequest request)
 		{
 			ArgumentNullException.ThrowIfNull(request);

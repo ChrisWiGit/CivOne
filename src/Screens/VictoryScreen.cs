@@ -116,8 +116,8 @@ namespace CivOne.Screens
 
 			for (int i = 0; i < _textLines.Length; i++)
 				_textLines[i] = _textLines[i].
-					Replace("$RPLC1", Human.LatestAdvance).
-					Replace("$US", Human.LeaderName.ToUpper(CultureInfo.CurrentCulture));
+					Replace("$RPLC1", Human.LatestAdvance, System.StringComparison.InvariantCulture).
+					Replace("$US", Human.LeaderName.ToUpper(CultureInfo.CurrentCulture), System.StringComparison.InvariantCulture);
 		}
 
 		protected override void Dispose(bool disposing)

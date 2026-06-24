@@ -7,11 +7,14 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
+using System.Globalization;
 using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
+using CivOne.Services;
 using CivOne.Services.Screen;
 
 namespace CivOne.Screens
@@ -48,6 +51,9 @@ namespace CivOne.Screens
 				.DrawText(title, 0, 5, 100, 3)
 				.DrawText(title, 0, 15, 100, 2)
 				.DrawRectangle(4, 9, 312, 184);
+
+			var gameCalendarService = GameCalendarServiceFactory.Current;
+				
 			
 			for (int i = 0; i < 13; i++)
 			{
@@ -56,10 +62,12 @@ namespace CivOne.Screens
 				if (turn > Game.GameTurn) break;
 				this.DrawLine(xx, 9, xx, 192);
 				if (turn % 100 != 0) continue;
-				this.DrawText(Common.YearString(turn).Replace(" ", ""), 1, 15, xx - 4, 194);
+
+				var year = gameCalendarService.FormatYear(turn).Replace(" ", "", StringComparison.InvariantCulture);
+				this.DrawText(year, 1, 15, xx - 4, 194);
 			}
 			
-			Player[] players = Game.Players.Where(x => !(x.Civilization is Barbarian)).ToArray();
+			Player[] players = Game.Players.Where(x => x.Civilization is not Barbarian).ToArray();
 			for (int i = 0; i < players.Length; i++)
 			{
 				this.DrawText(players[i].TribeName, 0, Common.ColourLight[Game.PlayerNumber(players[i])], 8, 12 + (i * 8));

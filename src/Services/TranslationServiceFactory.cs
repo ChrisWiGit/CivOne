@@ -85,6 +85,7 @@ namespace CivOne.Services
 		/// Returns the currently active translation service instance.
 		/// If no service is active yet, initializes identity translation.
 		/// </summary>
+		[SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This method may perform initialization and is not a simple property getter.")]
 		public static ITranslationService GetCurrent()
 		{
 			lock (_sync)

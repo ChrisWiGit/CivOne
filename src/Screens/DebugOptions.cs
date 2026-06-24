@@ -258,10 +258,9 @@ namespace CivOne.Screens
 
 			if (building == null)
 			{
+				Destroy();
 				return;
 			}
-
-			building ??= new Barracks();
 
 			GameTask.Enqueue(Show.Screen(new ConfirmSell(building)));
 			Destroy();

@@ -12,7 +12,7 @@ using System;
 namespace CivOne.Screens
 {
 	[AttributeUsage(AttributeTargets.Class)]
-	public class ModalAttribute : Attribute
+	public sealed class ModalAttribute : Attribute
 	{
 	}
 }

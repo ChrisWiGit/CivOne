@@ -88,7 +88,7 @@ namespace CivOne.Services
 	{
 		private static IGameCalendarService? _current;
 
-		public static IGameCalendarService GetCurrent() => _current ??= new GameCalendarService();
+		public static IGameCalendarService Current { get => _current ??= new GameCalendarService(); }
 
 		public static void SetCurrent(IGameCalendarService service)
 		{
