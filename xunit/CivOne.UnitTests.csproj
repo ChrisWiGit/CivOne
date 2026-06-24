@@ -23,7 +23,7 @@
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
 		<AnalysisLevel>latest-all</AnalysisLevel>
 		<Nullable>enable</Nullable>
-		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<NoWarn>$(NoWarn),CA1515,CA1819,CA1065,CA1814,CA1307,CA1002,CA1034</NoWarn>
 	</PropertyGroup>
 
