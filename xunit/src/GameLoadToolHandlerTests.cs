@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json;
 using CivOne.Mcp.Contracts;
@@ -56,6 +57,7 @@ namespace CivOne.UnitTests
 			Assert.Equal("FILE_NOT_FOUND", payload.RootElement.GetProperty("error").GetProperty("code").GetString());
 		}
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Test cleanup")]
 		public void Dispose()
 		{
 			try

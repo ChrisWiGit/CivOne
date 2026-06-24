@@ -392,6 +392,8 @@ namespace CivOne.Persistence.Model
 
 			public TileDto ToDto(ITile domain)
 			{
+				ArgumentNullException.ThrowIfNull(domain, nameof(domain));
+				
 				return new TileDto
 				{
 					Terrain = domain.Type,

@@ -126,7 +126,16 @@ namespace CivOne.UnitTests
 
 		public void Dispose()
 		{
+			Dispose(true);
 			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
 		}
 
 		private SaveGamePathProvider CreateProvider(Action<string> createDirectory, Func<string, bool> directoryExists)

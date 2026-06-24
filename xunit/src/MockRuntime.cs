@@ -103,6 +103,8 @@ namespace CivOne.UnitTests
 
 		public MockRuntime(RuntimeSettings settings)
         {
+            ArgumentNullException.ThrowIfNull(settings, nameof(settings));
+            
             Settings = settings;
             _settings["GraphicsMode"] = GraphicsMode.Graphics256.ToString();
             settings.Free = false;

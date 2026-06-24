@@ -22,8 +22,17 @@ namespace CivOne.UnitTests
 
 		public void Dispose()
 		{
-			Bitmap.Dispose();
+			Dispose(true);
 			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+			Bitmap.Dispose();
 		}
 	}
 }

@@ -20,7 +20,7 @@ namespace CivOne.UnitTests
 		public void BitmapLazyInitialisesOnce()
 		{
 			int factoryCalls = 0;
-			var sprite = new CachedSprite(() => { factoryCalls++; return new Bytemap(2, 2); });
+			using var sprite = new CachedSprite(() => { factoryCalls++; return new Bytemap(2, 2); });
 
 			Assert.Equal(0, factoryCalls);
 			_ = sprite.Bitmap;
@@ -67,7 +67,7 @@ namespace CivOne.UnitTests
 		public void IndexerLazyInitialisesPerKey()
 		{
 			int factoryCalls = 0;
-			var coll = new CachedSpriteCollection<int>(_ => { factoryCalls++; return new Bytemap(1, 1); });
+			using var coll = new CachedSpriteCollection<int>(_ => { factoryCalls++; return new Bytemap(1, 1); });
 
 			_ = coll[0];
 			_ = coll[0];
@@ -80,7 +80,7 @@ namespace CivOne.UnitTests
 		public void ClearDisposesAndAllowsReBuild()
 		{
 			int factoryCalls = 0;
-			var coll = new CachedSpriteCollection<int>(_ => { factoryCalls++; return new Bytemap(1, 1); });
+			using var coll = new CachedSpriteCollection<int>(_ => { factoryCalls++; return new Bytemap(1, 1); });
 			_ = coll[0];
 
 			coll.Clear();

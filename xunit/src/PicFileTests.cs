@@ -78,7 +78,7 @@ namespace CivOne.UnitTests
 		public void DisposeCanBeCalledTwiceWithoutThrowing()
 		{
 			using Picture picture = new(4, 4);
-			PicFile testee = new(picture);
+			using PicFile testee = new(picture);
 
 			Exception first = Record.Exception(() => testee.Dispose());
 			Exception second = Record.Exception(() => testee.Dispose());

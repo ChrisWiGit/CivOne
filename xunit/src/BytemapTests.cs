@@ -53,7 +53,7 @@ namespace CivOne.UnitTests
 		public void SubBitmapInBoundsPixelsMatchSource()
 		{
 			// Arrange
-			var source = CreateSource4x4();
+			using var source = CreateSource4x4();
 
 			// Act – request columns 1–2, all 4 rows (fully in-bounds)
 			var actual = source[1, 0, 2, 4];
@@ -76,7 +76,7 @@ namespace CivOne.UnitTests
 		{
 			// Arrange – left=-2 means buffer.Length (3) < output.Width (5)
 			// which is the condition that triggers the row-stride bug.
-			var source = CreateSource5x2();
+			using var source = CreateSource5x2();
 
 			// Act
 			var actual = source[-2, 0, 5, 2];
@@ -105,7 +105,7 @@ namespace CivOne.UnitTests
 		{
 			// Arrange – top=-1 and left=-1 so both dy=1 and dx=1.
 			// buffer.Length (3) < output.Width (4) triggers the row-stride bug.
-			var source = CreateSource4x4();
+			using var source = CreateSource4x4();
 
 			// Act
 			var actual = source[-1, -1, 4, 4];
@@ -145,7 +145,7 @@ namespace CivOne.UnitTests
 		public void DrawLineWhenEndpointsCrossBitmapBoundsDoesNotThrow()
 		{
 			// Arrange
-			var picture = new Picture(16, 16);
+			using var picture = new Picture(16, 16);
 
 			// Act
 			var exception = Record.Exception(() =>

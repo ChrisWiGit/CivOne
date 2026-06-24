@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json;
 using CivOne.Mcp.Contracts;
@@ -67,6 +68,7 @@ namespace CivOne.UnitTests
 			Assert.Contains("wait a second", payload.RootElement.GetProperty("error").GetProperty("message").GetString(), StringComparison.OrdinalIgnoreCase);
 		}
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Test cleanup should not throw exceptions")]
 		protected override void AfterEach()
 		{
 			try

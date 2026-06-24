@@ -42,11 +42,20 @@ namespace CivOne.UnitTests
 
 		public void Dispose()
 		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
 			if (Directory.Exists(_tempDirectory))
 			{
 				Directory.Delete(_tempDirectory, true);
 			}
-			GC.SuppressFinalize(this);
 		}
 	}
 }

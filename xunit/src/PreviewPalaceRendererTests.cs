@@ -11,7 +11,7 @@ namespace CivOne.UnitTests
 		public void GetPreviewPartWhenLevelAndPartProvidedReturnsExpectedSpriteSlice()
 		{
 			// Arrange
-			Picture sp257 = CreateSp257WithPreviewMarkers();
+			using Picture sp257 = CreateSp257WithPreviewMarkers();
 			var testee = new PreviewPalaceResourcesWrapper(
 					name => {
 						Assert.Equal("SP257", name);
@@ -31,7 +31,7 @@ namespace CivOne.UnitTests
 		public void GetPreviewPartWhenCalledTwiceReturnsCachedInstance()
 		{
 			// Arrange
-			Picture sp257 = CreateSp257WithPreviewMarkers();
+			using Picture sp257 = CreateSp257WithPreviewMarkers();
 			var testee = new PreviewPalaceResourcesWrapper(
 					name => {
 						Assert.Equal("SP257", name);
@@ -90,7 +90,7 @@ namespace CivOne.UnitTests
 		public void RenderPalaceWhenNoPalacePartsActiveReturnsOneByOneBitmap()
 		{
 			// Arrange
-			Picture sp257 = CreateSp257WithPreviewMarkers();
+			using Picture sp257 = CreateSp257WithPreviewMarkers();
 			var resources = new PreviewPalaceResourcesWrapper(
 					name => {
 						Assert.Equal("SP257", name);
@@ -111,7 +111,7 @@ namespace CivOne.UnitTests
 		public void RenderPalaceWhenSomePartsActiveReturnsBitmapWithExpectedSize()
 		{
 			// Arrange
-			Picture sp257 = CreateSp257WithPreviewMarkers();
+			using Picture sp257 = CreateSp257WithPreviewMarkers();
 			var resources = new PreviewPalaceResourcesWrapper(
 					name => {
 						Assert.Equal("SP257", name);
@@ -135,7 +135,7 @@ namespace CivOne.UnitTests
 		public void RenderPalaceWhenWallBuiltAlwaysRendersAdjacentTower()
 		{
 			// Arrange
-			Picture sp257 = CreateSp257WithPreviewMarkers();
+			using Picture sp257 = CreateSp257WithPreviewMarkers();
 			var resources = new PreviewPalaceResourcesWrapper(
 					name => {
 						Assert.Equal("SP257", name);
@@ -163,7 +163,7 @@ namespace CivOne.UnitTests
 		public void RenderPalaceWhenRenderingWallsAndCenterUsesExpectedPartMapping()
 		{
 			// Arrange
-			Picture sp257 = CreateSp257WithPreviewMarkers();
+			using Picture sp257 = CreateSp257WithPreviewMarkers();
 			var resources = new PreviewPalaceResourcesWrapper(
 					name => {
 						Assert.Equal("SP257", name);

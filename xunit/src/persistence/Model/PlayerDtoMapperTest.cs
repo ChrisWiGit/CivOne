@@ -474,12 +474,6 @@ namespace CivOne.Persistence.Model
 			}
 		}
 
-		private sealed class MockUnitDtoMapperForTesting : IDtoMapper<UnitDto, IUnit>
-		{
-			public IUnit FromDto(UnitDto dto) => throw new NotImplementedException();
-			public UnitDto ToDto(IUnit domain) => throw new NotImplementedException();
-		}
-
 		private sealed class MockUnitFactoryForTesting : IUnitFactory
 		{
 			public IUnitRestorable Create(string className, byte player, Guid? HomeCityGuid)

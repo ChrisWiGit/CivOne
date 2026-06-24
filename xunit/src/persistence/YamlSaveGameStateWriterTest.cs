@@ -63,11 +63,20 @@ namespace CivOne.UnitTests.Persistence
 
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposing)
+            {
+                return;
+            }
             // Tear everything down
             Map.Reset();
             runtime?.Dispose();
             RuntimeHandler.Wipe();
-            GC.SuppressFinalize(this);
         }
 
         private sealed class StubYamlSaveGameStateWriter : YamlSaveGameStateWriter
