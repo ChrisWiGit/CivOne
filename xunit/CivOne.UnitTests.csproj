@@ -21,10 +21,10 @@
 	</PropertyGroup>
 	<PropertyGroup>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
-		<AnalysisLevel>latest</AnalysisLevel>
+		<AnalysisLevel>latest-all</AnalysisLevel>
 		<Nullable>enable</Nullable>
 		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-		<NoWarn>$(NoWarn)</NoWarn>
+		<NoWarn>$(NoWarn),CA1515,CA1819,CA1065,CA1814,CA1307,CA1002,CA1034</NoWarn>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(SuppressConsoleLogs)' == 'true'">

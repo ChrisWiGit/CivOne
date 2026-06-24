@@ -475,4 +475,11 @@ The exact glyph shapes come from `FONTS.CV` (runtime data file, not in this repo
 
 ### xunit/CivOne.UnitTests.csproj
 
-This project has no additional project-specific warning codes in `NoWarn` (only `$(NoWarn)` with no extension).
+| Warning | Description | Why suppressed |
+| --- | --- | --- |
+| CA1515 | Consider making public types internal | Currently there is a mix of public and internal types for various reasons. |
+| CA1819 | Properties should not return arrays | Used a lot in project. |
+| CA1065 | Do not raise exceptions in unexpected locations | Unit tests often intentionally raise exceptions to test error handling. |
+| CA1814 | Prefer jagged arrays over multidimensional | Not really useful and used a lot in the project. |
+| CA1307 | Specify StringComparison for clarity | Unit tests often intentionally use default string comparison behavior. Tests will fail if it changes. |
+| CA1002 | Do not expose generic lists | Unit tests often intentionally use generic lists for simplicity. |
