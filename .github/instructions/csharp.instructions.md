@@ -59,6 +59,11 @@ applyTo: "**/*.cs"
 - Use primary constructors most of the time
 - Use records for immutable data structures
 
+## Warnings
+
+- Currently all warnings are treated as errors. If you need to suppress a warning, use `[SuppressMessage]` with a clear justification. Do not suppress warnings without a good reason.
+- It is a okay reason to suppress warnings if they would create a huge amount of work to fix.
+
 
 ## C# Nullable Reference Types & Nullability Attributes Guidelines
 

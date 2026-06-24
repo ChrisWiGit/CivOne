@@ -6,6 +6,13 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Refactoring: Addressed around 4,000 warnings
+  * all projects have been compiled with `<AnalysisLevel>latest-all</AnalysisLevel>` and `<Nullable>enable</Nullable>` to enable the latest analyzers and nullable reference types.
+    * 
+  * Fixed potential null-reference and nullability-related warnings across the codebase.
+  * Improved dispose patterns to release resources immediately after use where appropriate.
+  * Suppressed selected warnings with `#pragma warning disable` or `[SuppressMessage]` when they were not relevant or not reasonably fixable.
+  * Suppressed additional warnings at project level via `<NoWarn>` for the same reasons. See [REMARKS.md](REMARKS.md#warnings-suppressed) for the list and rationale.
 * Fix: Attack with nuke shows units on the map instead of hiding them.
   * Attack of city or unit near city will reduce city size to half.
   * All improvements on the target tile are removed.
