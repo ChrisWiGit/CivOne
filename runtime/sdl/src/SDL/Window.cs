@@ -141,13 +141,14 @@ namespace CivOne
 			{
 				while (SDL_PollEvent(out SDL_Event sdlEvent) == 1)
 				{
+#if DEBUG
 					// Split debug hotkeys from normal events: F10/F9 may swallow input,
 					// but F12 still runs after HandleEvent to preserve original flow.
 					if (HandleDebuggingEvents(sdlEvent))
 					{
 						continue;
 					}
-
+#endif
 					HandleEvent(sdlEvent);
 
 					if (!_running)
@@ -155,26 +156,25 @@ namespace CivOne
 						return false;
 					}
 
+#if DEBUG
 					TrapDebugger(sdlEvent);
+#endif
 				}
 
 				return true;
 			}
 
+#if DEBUG
 			private static void TrapDebugger(SDL_Event sdlEvent)
 			{
-#if DEBUG
 				if (HitDebugKeys(sdlEvent, SDL_Scancode.SDL_SCANCODE_F12))
 					System.Diagnostics.Debugger.Break();
-#endif
 			}
 
 			private int _eventLoopWaitCounter;
 
-
 			private bool HandleDebuggingEvents(SDL_Event sdlEvent)
 			{
-#if DEBUG
 				if (HitDebugKeys(sdlEvent, SDL_Scancode.SDL_SCANCODE_F10))
 				{
 					_eventLoopWaitCounter += 1;
@@ -193,9 +193,9 @@ namespace CivOne
 				{
 					Wait((uint)_eventLoopWaitCounter);
 				}
-#endif
 				return false;
 			}
+#endif
 
 			public void Run()
 			{

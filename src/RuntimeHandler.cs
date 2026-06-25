@@ -73,7 +73,9 @@ namespace CivOne
 
 		private Stopwatch _tickWatch = new();
 
+#if DEBUG
 		private uint _tickWatchOffset;
+#endif
 		private uint TickWatch
 		{
 			get
@@ -82,7 +84,13 @@ namespace CivOne
 				{
 					_tickWatch.Start();
 				}
-				return _tickWatchOffset + Convert.ToUInt32(((double)_tickWatch.ElapsedMilliseconds / 1000) * 60);
+
+				uint elapsedTicks = Convert.ToUInt32(((double)_tickWatch.ElapsedMilliseconds / 1000) * 60);
+#if DEBUG
+				return _tickWatchOffset + elapsedTicks;
+#else
+				return elapsedTicks;
+#endif
 			}
 		}
 		private uint _gameTick;
