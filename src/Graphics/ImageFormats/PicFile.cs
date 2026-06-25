@@ -21,7 +21,9 @@ namespace CivOne.Graphics.ImageFormats
 	{
 		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters); // never null because Runtime exists before any PicFile can be created
 
-		private static Dictionary<string, PicFile> _cache = new Dictionary<string, PicFile>();
+		private static ILzwCodec LzwCodec => LzwServiceFactory.Codec;
+
+		private static readonly Dictionary<string, PicFile> _cache = [];
 		private readonly byte[] _bytes;
 		private readonly byte[,]? _colourTable;
 		[SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "_palette16 references a shared palette instance from Common.GetPalette16 and is not owned by PicFile.")]
@@ -150,7 +152,7 @@ namespace CivOne.Graphics.ImageFormats
 			byte[] img = new byte[length - 5];
 			Array.Copy(_bytes, index, img, 0, (int)(length - 5));
 			index += (int)(length - 5);
-			return RLE.Decode(LZW.Decode(img));
+			return RLE.Decode(LzwCodec.Decode(img));
 		}
 		
 		/// <summary>
@@ -271,8 +273,8 @@ namespace CivOne.Graphics.ImageFormats
 				{
 					br.Write((ushort)0x3058);
 
-					byte[] encoded = RLE.Encode(picture256.ToByteArray());
-					encoded = LZW.Encode(encoded);
+					byte[] encoded = RLE.Encode(_picture256.ToByteArray());
+					encoded = LzwCodec.Encode(encoded);
 					
 					br.Write((ushort)(encoded.Length + 5));
 					br.Write((ushort)picture256.Width);

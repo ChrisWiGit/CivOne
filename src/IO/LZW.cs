@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -14,9 +15,9 @@ using System.Linq;
 
 namespace CivOne.IO
 {
-	public static class LZW
+	public sealed class LZW : ILzwCodec
 	{
-		private class ByteList
+		private sealed class ByteList
 		{
 			private readonly List<byte> _byteList = [];
 			private sbyte _byteNumber;
@@ -74,11 +75,12 @@ namespace CivOne.IO
 			{
 				dictionary.Add(dictionary.Count, []);
 			}
-			valueList = new List<string>(dictionary.Values.Select(x => string.Join(",", x)));
+			valueList = [.. dictionary.Values.Select(x => string.Join(",", x))];
 		}
 		
-		public static byte[] Decode(byte[] input, bool clearEnd = false, bool flushDictionary = true, int minBits = 8, int maxBits = 11)
+		public byte[] Decode(byte[] input, bool clearEnd = false, bool flushDictionary = true, int minBits = 8, int maxBits = 11)
 		{
+			ArgumentNullException.ThrowIfNull(input);
 			using MemoryStream ms = new();
 			using BinaryWriter bw = new(ms);
 
@@ -90,17 +92,23 @@ namespace CivOne.IO
 			for (int i = 0; i < input.Length; i++)
 			{
 				int codeLength = CodeLength(dictionary.Count);
-				if (codeLength > maxBits) codeLength = maxBits;
+				if (codeLength > maxBits)
+				{
+					codeLength = maxBits;
+				}
+
 				for (int bit = 0; bit < 8; bit++)
 				{
 					value |= ((input[i] >> bit) & 0x01) << counter++;
-					if (counter != codeLength) continue;
+					if (counter != codeLength)
+					{
+						continue;
+					}
 
 					if (clearEnd && value == (1 << minBits))
 					{
 						// Clear code
 						DecodeDictionary(clearEnd, minBits, out dictionary, out values);
-
 						value = 0;
 						counter = 0;
 						entry = [];
@@ -129,6 +137,7 @@ namespace CivOne.IO
 						dictionary.Add(dictionary.Count, newEntry);
 						values.Add(stringValue);
 					}
+
 					entry = outVal;
 					value = 0;
 					counter = 0;
@@ -155,8 +164,10 @@ namespace CivOne.IO
 			return output;
 		}
 
-		public static byte[] Encode(byte[] input, bool clearEnd = false, bool flushDictionary = true, int maxBits = 11)
+		public byte[] Encode(byte[] input, bool clearEnd = false, bool flushDictionary = true, int maxBits = 11, int minBits = 8)
 		{
+			ArgumentNullException.ThrowIfNull(input);
+			_ = minBits;
 			Dictionary<string, int> dictionary = EncodeDictionary(clearEnd);
 			ByteList byteList = new();
 

@@ -18,6 +18,11 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Pollution is added to the target tile and surrounding tiles with a chance of 25% for each surrounding tile.
     * This is not like the original game.
 * Fix: Click on menu separator will no longer close the menu.
+* Feature: Added corrected LZW (Lempel-Ziv-Welch) codec implementation as a new option in the setup menu for different compression compatibility.
+  * The original LZW codec implementation is still available as the default option and works with original game files.
+  * The corrected LZW codec implementation can be selected for use with modified game files that contain LZW-compressed images which do not work with the original codec.
+  * Both options are available in the setup menu under "Patches → LZW implementation" and apply immediately when selected.
+  * The selected LZW codec mode is saved in the profile and applied on game startup, allowing users to choose the appropriate codec for their game files without needing to modify settings each time.
 * Feature: Added terrain, tile improvements, land value, found city and unit editor
   * Editor menu shown if debug mode is enabled (`Shift+F1 -> Patches -> Debug menu enabled` or `--debug` when starting the game).
   * Added a `Terrain` top menu in gameplay map view with editor actions for terrain painting, found city, unit spawn, irrigation, road/railroad, mine, fortress, pollution, hut/village, clearing improvements, land values, and brush size changes.

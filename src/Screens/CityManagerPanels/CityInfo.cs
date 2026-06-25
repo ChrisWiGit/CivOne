@@ -44,7 +44,7 @@ namespace CivOne.Screens.CityManagerPanels
 					int yy = 0 + ((i - (i % 6)) / 6 * 16);
 
 					output.AddLayer(_units[i].ToBitmap(), xx, yy);
-					string homeCityName = "NON.";
+					string homeCityName = Translate("NON.");
 					if (_units[i].Home is {} home)
 					{
 						homeCityName = home.Name;
