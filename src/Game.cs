@@ -680,8 +680,8 @@ namespace CivOne
 
 			City city = new(PlayerNumber(player))
 			{
-				X = (byte)x,
-				Y = (byte)y,
+				X = x,
+				Y = y,
 				NameId = nameId
 			};
 			// Order is important here -
