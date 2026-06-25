@@ -543,9 +543,9 @@ namespace CivOne
 			{
 				LastActivePlayerUnit = unit ?? LastActivePlayerUnit;
 
-				if (unit != null && !unit.GotoDestination.IsEmpty)
+				if (unit is {} baseUnit && !unit.GotoDestination.IsEmpty)
 				{
-					ITile[] tiles = [.. (unit as BaseUnit)!.MoveTargets.OrderBy(x => x.DistanceTo(unit.GotoDestination)).ThenBy(x => x.Movement)];
+					ITile[] tiles = [.. baseUnit.MoveTargets.OrderBy(x => x.DistanceTo(unit.GotoDestination)).ThenBy(x => x.Movement)];
 
 					if (Settings.Instance.PathFinding)
 					{
