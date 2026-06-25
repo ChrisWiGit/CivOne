@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using CivOne.Mcp.Contracts;
@@ -37,24 +38,24 @@ namespace CivOne.Mcp.Tools
 
 		public McpResponse Handle(McpRequest request)
 		{
-			if (request == null) throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 
-			if (!ValidateParamsObject(request, out McpResponse validationError))
-				return validationError;
+			if (!ValidateParamsObject(request, out McpResponse? validationError))
+				return validationError!;
 
-			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string errorMessage))
+			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto? snapshot, out string? errorCode, out string? errorMessage))
 				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage, null));
 
-			if (!TryReadOptionalInt(request.Params, "playerId", out int? playerId, out string playerIdError))
+			if (!TryReadOptionalInt(request.Params, "playerId", out int? playerId, out string? playerIdError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", playerIdError, "playerId"));
 
-			if (!TryReadOptionalGuid(request.Params, "cityId", out Guid? cityId, out string cityIdError))
+			if (!TryReadOptionalGuid(request.Params, "cityId", out Guid? cityId, out string? cityIdError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", cityIdError, "cityId"));
 
-			if (!TryReadKeys(request.Params, out string[] keys, out string keysError))
+			if (!TryReadKeys(request.Params, out string[] keys, out string? keysError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", keysError, "keys"));
 
-			List<PlayerDto> players = snapshot.Players ?? [];
+			List<PlayerDto> players = snapshot!.Players ?? [];
 			if (playerId.HasValue && (playerId.Value < 0 || playerId.Value >= players.Count))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PLAYER_ID", "Player id is out of range.", "playerId"));
 
@@ -84,7 +85,7 @@ namespace CivOne.Mcp.Tools
 			return JsonResponse(request.Id, BuildSuccessPayload(projected));
 		}
 
-		private object ProjectByKeys(object source, string[] keys, ISet<string> invalidKeys)
+		private Dictionary<string, object> ProjectByKeys(object source, string[] keys, HashSet<string> invalidKeys)
 		{
 			using JsonDocument document = JsonDocument.Parse(_jsonWriter.AsString(source));
 			Dictionary<string, JsonElement> propertyMap = document.RootElement
@@ -100,13 +101,14 @@ namespace CivOne.Mcp.Tools
 					continue;
 				}
 
-				output[propertyMap.Keys.First(k => string.Equals(k, key, StringComparison.OrdinalIgnoreCase))] = JsonSerializer.Deserialize<object>(value.GetRawText());
+				output[propertyMap.Keys.First(k => string.Equals(k, key, StringComparison.OrdinalIgnoreCase))] = 
+						JsonSerializer.Deserialize<object>(value.GetRawText()) ?? null!;
 			}
 
 			return output;
 		}
 
-		private McpResponse JsonResponse(object id, object payload)
+		private McpResponse JsonResponse(object? id, object payload)
 		{
 			string json = _jsonWriter.AsString(payload);
 			if (json.Length > _maxJsonChars)
@@ -119,7 +121,7 @@ namespace CivOne.Mcp.Tools
 		{
 			const int reserveChars = 512;
 			int previewChars = Math.Max(0, Math.Min(sourceJson.Length, _maxJsonChars - reserveChars));
-			string preview = sourceJson.Substring(0, previewChars);
+			string preview = sourceJson[..previewChars];
 
 			while (preview.Length > 0)
 			{
@@ -158,7 +160,7 @@ namespace CivOne.Mcp.Tools
 			return new
 			{
 				ok = true,
-				path = (string)null,
+				path = (string)null!,
 				truncated = false,
 				maxChars = _maxJsonChars,
 				returnedChars = payloadJson.Length,
@@ -166,26 +168,26 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private object BuildErrorPayload(string code, string message, string failedSegment)
+		private object BuildErrorPayload(string code, string? message, string? failedSegment)
 		{
 			return new
 			{
 				ok = false,
-				path = (string)null,
+				path = (string)null!,
 				truncated = false,
 				maxChars = _maxJsonChars,
 				returnedChars = 0,
 				error = new
 				{
 					code,
-					message,
-					path = (string)null,
+					message = message ?? "No message provided.",
+					path = (string)null!,
 					failedSegment
 				}
 			};
 		}
 
-		private static bool ValidateParamsObject(McpRequest request, out McpResponse response)
+		private static bool ValidateParamsObject(McpRequest request, [NotNullWhen(false)] out McpResponse? response)
 		{
 			response = null;
 			if (request.Params.ValueKind == JsonValueKind.Undefined || request.Params.ValueKind == JsonValueKind.Null)
@@ -202,7 +204,7 @@ namespace CivOne.Mcp.Tools
 			return false;
 		}
 
-		private static bool TryReadOptionalInt(JsonElement value, string propertyName, out int? result, out string error)
+		private static bool TryReadOptionalInt(JsonElement value, string propertyName, out int? result, [NotNullWhen(false)] out string? error)
 		{
 			result = null;
 			error = null;
@@ -222,7 +224,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryReadOptionalGuid(JsonElement value, string propertyName, out Guid? result, out string error)
+		private static bool TryReadOptionalGuid(JsonElement value, string propertyName, out Guid? result, [NotNullWhen(false)] out string? error)
 		{
 			result = null;
 			error = null;
@@ -242,7 +244,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryReadKeys(JsonElement value, out string[] keys, out string error)
+		private static bool TryReadKeys(JsonElement value, out string[] keys, [NotNullWhen(false)] out string? error)
 		{
 			keys = [];
 			error = null;
@@ -268,7 +270,7 @@ namespace CivOne.Mcp.Tools
 					return false;
 				}
 
-				string text = item.GetString();
+				string? text = item.GetString();
 				if (!string.IsNullOrWhiteSpace(text))
 					parsed.Add(text.Trim());
 			}

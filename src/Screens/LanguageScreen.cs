@@ -33,7 +33,7 @@ namespace CivOne.Screens
 		private readonly string[] _labels;
 		private readonly int _defaultIndex;
 
-		private GridMenuDelegate _grid;
+		private GridMenuDelegate? _grid;
 
 		private void OnItemSelected(int index)
 		{
@@ -42,7 +42,7 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
-		private void OnCancelled(object sender, EventArgs args)
+		private void OnCancelled(object? _, EventArgs __)
 		{
 			Destroy();
 		}
@@ -57,15 +57,15 @@ namespace CivOne.Screens
 				return;
 			}
 
-			if (!TranslationServiceFactory.TryUseLanguage(Runtime.StorageDirectory, postfix, out string error, message => Log(message)))
+			if (!TranslationServiceFactory.TryUseLanguage(Runtime.StorageDirectory, postfix, out string? error, message => Log(message)))
 			{
-				Log("Could not activate language '{0}': {1}", postfix, error);
+				Log("Could not activate language '{0}': {1}", postfix, error!);
 				if (Game.Started)
 				{
 					GameTask.Insert(Message.Error(
 						Translate("Language"),
 						TranslateFormatted("Could not load language '{0}'.", postfix),
-						error));
+						error!));
 				}
 				return;
 			}

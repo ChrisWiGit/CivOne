@@ -7,30 +7,26 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using CivOne.IO;
 
 namespace CivOne.Graphics
 {
-	public struct Colour
+	public struct Colour(byte alpha, byte red, byte green, byte blue) : IEquatable<Colour>
 	{
-		public byte A { get; private set; }
-		public byte R, G, B;
+		public byte A { get; private set; } = alpha;
+		public byte R { get; private set; } = red;
+		public byte G { get; private set; } = green;
+		public byte B { get; private set; } = blue;
 
-		public override bool Equals(object obj) => (obj is Colour) && obj.GetHashCode() == GetHashCode();
-		public override int GetHashCode() => (R << 16) + (G << 8) + B;
+		public override readonly bool Equals(object? obj) => (obj is Colour) && obj.GetHashCode() == GetHashCode();
+		public readonly bool Equals(Colour other) => GetHashCode() == other.GetHashCode();
+		public override readonly int GetHashCode() => (R << 16) + (G << 8) + B;
 		public static bool operator ==(Colour a, Colour b) => a.Equals(b);
 		public static bool operator !=(Colour a, Colour b) => !a.Equals(b);
 
-		public static Colour Transparent => new Colour(0, 0, 0) { A = 0 };
-		public static Colour Black => new Colour(0, 0, 0);
-
-		public Colour(byte alpha, byte red, byte green, byte blue)
-		{
-			A = alpha;
-			R = red;
-			G = green;
-			B = blue;
-		}
+		public static Colour Transparent => new(0, 0, 0) { A = 0 };
+		public static Colour Black => new(0, 0, 0);
 
 		public Colour(byte red, byte green, byte blue) : this((byte)255, red, green, blue)
 		{

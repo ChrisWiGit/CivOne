@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using CivOne.Persistence;
 using CivOne.Persistence.Model;
@@ -10,13 +11,14 @@ namespace CivOne.Mcp.Tools
 	{
 		public uint? FormatVersion { get; init; }
 		public Guid? SaveGuid { get; init; }
-		public SaveGameMetaDataDto Meta { get; init; }
-		public GameStateDto GameState { get; init; }
+		public SaveGameMetaDataDto? Meta { get; init; } = new();
+		public GameStateDto? GameState { get; init; } = new();
 	}
 
 	internal static class CosSaveFileInspector
 	{
-		public static bool TryInspect(string cosFilePath, out CosSaveFileInspection inspection)
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to inspect a .COS file does not crash the application, and that any exceptions are logged appropriately.")]
+		public static bool TryInspect(string? cosFilePath, out CosSaveFileInspection? inspection)
 		{
 			inspection = null;
 			if (string.IsNullOrWhiteSpace(cosFilePath) || !File.Exists(cosFilePath))

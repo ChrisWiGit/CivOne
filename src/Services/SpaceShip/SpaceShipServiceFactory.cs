@@ -35,8 +35,8 @@ namespace CivOne.Services.SpaceShip
 	/// </summary>
 	public static class SpaceShipServiceFactoryProvider
 	{
-		private static ISpaceShipServiceFactory _instance;
-		private static ISpaceShipServiceFactory _debugInstance;
+		private static ISpaceShipServiceFactory? _instance;
+		private static ISpaceShipServiceFactory? _debugInstance;
 
 		public static ISpaceShipServiceFactory GetInstance()
 		{

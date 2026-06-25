@@ -9,29 +9,37 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using CivOne.IO;
 
 namespace CivOne
 {
+	#pragma warning disable CA1822 // Mark members as static
 	internal partial class SaveDataAdapter
 	{
 		private void GetByteArray<T>(T structure, string fieldName, ref byte[] bytes) where T : struct
 		{
 			IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
-			Marshal.StructureToPtr(structure, ptr, false);
-			IntPtr offset = IntPtr.Add(ptr, (int)Marshal.OffsetOf<T>(fieldName));
-			Marshal.Copy(offset, bytes, 0, bytes.Length);
-			Marshal.FreeHGlobal(ptr);
+			try
+			{
+				Marshal.StructureToPtr(structure, ptr, false);
+				IntPtr offset = IntPtr.Add(ptr, (int)Marshal.OffsetOf<T>(fieldName));
+				Marshal.Copy(offset, bytes, 0, bytes.Length);
+			}
+			finally
+			{
+				Marshal.FreeHGlobal(ptr);
+			}
 		}
 
-		private void GetByteArray(string fieldName, ref byte[] bytes) => GetByteArray<SaveData>(_saveData, fieldName, ref bytes);
+		private void GetByteArray(string fieldName, ref byte[] bytes) => GetByteArray(_saveData, fieldName, ref bytes);
 
 		private byte[] GetBytes<T>(T structure, string fieldName, int length) where T : struct
 		{
 			byte[] output = new byte[length];
-			GetByteArray<T>(structure, fieldName, ref output);
+			GetByteArray(structure, fieldName, ref output);
 			return output;
 		}
 
@@ -63,12 +71,18 @@ namespace CivOne
 					Buffer.BlockCopy(GetArray(fieldName, buffer.Length), 0, buffer, 0, buffer.Length);
 
 					IntPtr ptr = Marshal.AllocHGlobal(itemSize);
-					for (int i = 0; i < output.Length; i++)
+					try
 					{
-						Marshal.Copy(buffer, (i * itemSize), ptr, itemSize);
-						output[i] = Marshal.PtrToStructure<T>(ptr);
+						for (int i = 0; i < length; i++)
+						{
+							Marshal.Copy(buffer, i * itemSize, ptr, itemSize);
+							output[i] = Marshal.PtrToStructure<T>(ptr)!;
+						}
 					}
-					Marshal.FreeHGlobal(ptr);
+					finally
+					{
+						Marshal.FreeHGlobal(ptr);
+					}
 					break;
 				default:
 					Buffer.BlockCopy(GetArray(fieldName, length * itemSize), 0, output, 0, length * itemSize);
@@ -77,38 +91,38 @@ namespace CivOne
 			return output;
 		}
 
-		private unsafe byte[][] GetDiscoveredAdvanceIDs()
+		private byte[][] GetDiscoveredAdvanceIDs()
 		{
 			byte[] bytes = GetArray(nameof(SaveData.DiscoveredAdvances), 8 * 10);
 			byte[][] output = new byte[8][];
 			for (int i = 0; i < 8; i++)
-				output[i] = bytes.FromBitIds(i * 10, 10).ToArray();
+				output[i] = [.. bytes.FromBitIds(i * 10, 10)];
 			return output;
 		}
 
-		private unsafe string[] GetLeaderNames() => GetArray(nameof(SaveData.LeaderNames), 14, 8);
+		private string[] GetLeaderNames() => GetArray(nameof(SaveData.LeaderNames), 14, 8);
 
-		private unsafe string[] GetCivilizationNames() => GetArray(nameof(SaveData.CivilizationNames), 12, 8);
+		private string[] GetCivilizationNames() => GetArray(nameof(SaveData.CivilizationNames), 12, 8);
 
-		private unsafe string[] GetCitizenNames() => GetArray(nameof(SaveData.CitizensName), 11, 8);
+		private string[] GetCitizenNames() => GetArray(nameof(SaveData.CitizensName), 11, 8);
 
-		private unsafe string[] GetCityNames() => GetArray(nameof(SaveData.CityNames), 13, 256);
+		private string[] GetCityNames() => GetArray(nameof(SaveData.CityNames), 13, 256);
 
-		private unsafe short[] GetPlayerGold() => GetArray<short>(nameof(SaveData.PlayerGold), 8);
+		private short[] GetPlayerGold() => GetArray<short>(nameof(SaveData.PlayerGold), 8);
 
-		private unsafe short[] GetResearchProgress() => GetArray<short>(nameof(SaveData.ResearchProgress), 8);
+		private short[] GetResearchProgress() => GetArray<short>(nameof(SaveData.ResearchProgress), 8);
 
-		private unsafe ushort[] GetTaxRate() => GetArray<ushort>(nameof(SaveData.TaxRate), 8);
+		private ushort[] GetTaxRate() => GetArray<ushort>(nameof(SaveData.TaxRate), 8);
 
-		private unsafe ushort[] GetScienceRate() => GetArray<ushort>(nameof(SaveData.ScienceRate), 8);
+		private ushort[] GetScienceRate() => GetArray<ushort>(nameof(SaveData.ScienceRate), 8);
 
-		private unsafe ushort[] GetHumanContactTurns() => GetArray<ushort>(nameof(SaveData.HumanContactTurns), 8);
+		private ushort[] GetHumanContactTurns() => GetArray<ushort>(nameof(SaveData.HumanContactTurns), 8);
 		
-		private unsafe ushort[] GetStartingPositionX() => GetArray<ushort>(nameof(SaveData.StartingPositionX), 8);
+		private ushort[] GetStartingPositionX() => GetArray<ushort>(nameof(SaveData.StartingPositionX), 8);
 
-		private unsafe ushort[] GetGovernment() => GetArray<ushort>(nameof(SaveData.Government), 8);
+		private ushort[] GetGovernment() => GetArray<ushort>(nameof(SaveData.Government), 8);
 
-		private unsafe CityData[] GetCities()
+		private CityData[] GetCities()
 		{
 			SaveData.City[] cities = GetArray<SaveData.City>(nameof(SaveData.Cities), 128);
 
@@ -123,7 +137,7 @@ namespace CivOne
 				{
 					Id = c,
 					NameId = city.NameId,
-					Buildings = GetBytes<SaveData.City>(city, nameof(SaveData.City.Buildings), 4).FromBitIds(0, 4).ToArray(),
+					Buildings = [.. GetBytes(city, nameof(SaveData.City.Buildings), 4).FromBitIds(0, 4)],
 					X = city.X,
 					Y = city.Y,
 					Status = city.Status,
@@ -136,15 +150,15 @@ namespace CivOne
 					Owner = city.Owner,
 					Food = city.Food,
 					Shields = city.Shields,
-					ResourceTiles = GetBytes<SaveData.City>(city, nameof(SaveData.City.ResourceTiles), 6),
-					FortifiedUnits = GetBytes<SaveData.City>(city, nameof(SaveData.City.FortifiedUnits), 2).Where(x => x != 0xFF).ToArray(),
-					TradingCities = GetBytes<SaveData.City>(city, nameof(SaveData.City.TradingCities), 3).Where(x => x != 0xFF).ToArray()
+					ResourceTiles = GetBytes(city, nameof(SaveData.City.ResourceTiles), 6),
+					FortifiedUnits = [.. GetBytes(city, nameof(SaveData.City.FortifiedUnits), 2).Where(x => x != 0xFF)],
+					TradingCities = [.. GetBytes(city, nameof(SaveData.City.TradingCities), 3).Where(x => x != 0xFF)]
 				});
 			}
-			return output.ToArray();
+			return [.. output];
 		}
 
-		private unsafe UnitData[][] GetUnits()
+		private UnitData[][] GetUnits()
 		{
 			SaveData.Unit[] units = GetArray<SaveData.Unit>(nameof(SaveData.Units), 8 * 128);
 			UnitData[][] output = new UnitData[8][];
@@ -173,26 +187,26 @@ namespace CivOne
 						HomeCityId = unit.HomeCityId
 					});
 				}
-				output[p] = unitData.ToArray();
+				output[p] = [.. unitData];
 			}
 			return output;
 		}
 
-		private unsafe ushort[] GetWonders() => GetArray<ushort>(nameof(SaveData.Wonders), 22);
+		private ushort[] GetWonders() => GetArray<ushort>(nameof(SaveData.Wonders), 22);
 
-		private unsafe ushort[] GetAdvanceFirstDiscovery() => GetArray<ushort>(nameof(SaveData.AdvanceFirstDiscovery), 72);
+		private ushort[] GetAdvanceFirstDiscovery() => GetArray<ushort>(nameof(SaveData.AdvanceFirstDiscovery), 72);
 
-		private unsafe bool[][,] GetTileVisibility()
+		private bool[][,] GetTileVisibility()
 		{
-			byte[] bytes = GetArray(nameof(SaveData.MapVisibility), (80 * 50));
+			byte[] bytes = GetArray(nameof(SaveData.MapVisibility), 80 * 50);
 			bool[][,] output = new bool[8][,];
 			for (int p = 0; p < 8; p++)
 			{
 				output[p] = new bool[80, 50];
 				for (int i = 0; i < (80 * 50); i++)
 				{
-					int y = (i % 50), x = (i - y) / 50;
-					output[p][x, y] = ((bytes[i] & (1 << p)) > 0);
+					int y = i % 50, x = (i - y) / 50;
+					output[p][x, y] = (bytes[i] & (1 << p)) > 0;
 				}
 			}
 			return output;
@@ -215,7 +229,7 @@ namespace CivOne
 		/// - 0xC: Civilization Rankings (5 bytes) - Packed civilization rankings
 		/// - 0xD: Civilization Destroyed (3 bytes) - DestroyedCiv, DestroyerCiv
 		/// </summary>
-		private unsafe List<ReplayData> GetReplayData()
+		private List<ReplayData> GetReplayData()
 		{
 			ushort replayLength = _saveData.ReplayLength;
 			const int replayCapacity = 4096;
@@ -228,7 +242,7 @@ namespace CivOne
 			// Debug output: display complete bytes in hex format with 8 per line
 			for (int i = 0; i < replayLength; i += 8)
 			{
-				Console.WriteLine(string.Join(" ", bytes.Skip(i).Take(8).Select(b => b.ToString("X2"))));
+				Console.WriteLine(string.Join(" ", bytes.Skip(i).Take(8).Select(b => b.ToString("X2", CultureInfo.InvariantCulture))));
 			}
 
 			List<ReplayData> output = new List<ReplayData>();

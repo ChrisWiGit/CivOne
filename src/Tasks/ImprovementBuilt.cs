@@ -19,36 +19,39 @@ namespace CivOne.Tasks
 		private readonly City _city;
 		private readonly IProduction _improvement;
 
-		private void ClosedCityView(object sender, EventArgs args)
+		private void ClosedCityView(object? _, EventArgs __)
 		{
 			if (Common.HasScreenType<CityManager>()) return;
 			
-			CityManager cityManager = new CityManager(_city);
+			CityManager cityManager = new(_city);
 			cityManager.Closed += (s, a) => EndTask();
 			Common.AddScreen(cityManager);
 		}
 
 		public override void Run()
 		{
-			if (Human != _city.Owner)
+			if (Human != _city.CityOwnerPlayerIndex)
 			{
-				Log($"{_city.Name} builds {(_improvement as ICivilopedia).TranslatedName}.");
+				if (_improvement is ICivilopedia civilopedia)
+				{
+					Log($"{_city.Name} builds {civilopedia.TranslatedName}.");
+				}
 				EndTask();
 				return;
 			}
 
 			IScreen cityView;
-			if (!Game.Animations)
+			if (!Game.Animations && _improvement is ICivilopedia civilopedia2)
 			{
-				cityView = new Newspaper(_city, new string[] { $"{_city.Name} builds", $"{(_improvement as ICivilopedia).TranslatedName}." }, showGovernment: false);
+				cityView = new Newspaper(_city, new string[] { $"{_city.Name} builds", $"{civilopedia2.TranslatedName}." }, showGovernment: false);
 			}
-			else if (_improvement is IBuilding)
+			else if (_improvement is IBuilding building)
 			{
-				cityView = new CityView(_city, production: (_improvement as IBuilding));
+				cityView = new CityView(_city, production: building);
 			}
-			else if (_improvement is IWonder)
+			else if (_improvement is IWonder wonder)
 			{
-				cityView = new CityView(_city, production: (_improvement as IWonder));
+				cityView = new CityView(_city, production: wonder);
 			}
 			else
 			{

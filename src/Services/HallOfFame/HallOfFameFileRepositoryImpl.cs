@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -17,7 +19,8 @@ namespace CivOne.Services.HallOfFame
 		private const string FileName = "HallOfFame.yaml";
 		private readonly IAtomicFileReplacementService _atomicFileReplacementService = atomicFileReplacementService;
 
-		public bool TryLoad(string storageDirectory, out IReadOnlyList<HallOfFameEntry> entries, out string error)
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to read or write the Hall of Fame file does not crash the application, and that any exceptions are logged appropriately.")]
+		public bool TryLoad(string? storageDirectory, out IReadOnlyList<HallOfFameEntry> entries, [NotNullWhen(false)] out string? error)
 		{
 			entries = [];
 			error = null;
@@ -54,7 +57,8 @@ namespace CivOne.Services.HallOfFame
 			}
 		}
 
-		public bool TrySave(string storageDirectory, IReadOnlyList<HallOfFameEntry> entries, out string error)
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to read or write the Hall of Fame file does not crash the application, and that any exceptions are logged appropriately.")]
+		public bool TrySave(string? storageDirectory, IReadOnlyList<HallOfFameEntry> entries, [NotNullWhen(false)] out string? error)
 		{
 			error = null;
 
@@ -150,7 +154,9 @@ namespace CivOne.Services.HallOfFame
 	public sealed class HallOfFameFileModel
 	{
 		public int Version { get; set; } = 1;
-		public List<HallOfFameEntryModel> Entries { get; set; } = [];
+		
+		[SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "The YAML deserializer requires a setter to populate the collection.")]
+		public Collection<HallOfFameEntryModel> Entries { get; set; } = [];
 	}
 
 	/// <summary>
@@ -158,14 +164,14 @@ namespace CivOne.Services.HallOfFame
 	/// </summary>
 	public sealed class HallOfFameEntryModel
 	{
-		public string LeaderName { get; set; }
-		public string LeaderTitle { get; set; }
-		public string CivilizationNamePlural { get; set; }
-		public string YearLabel { get; set; }
+		public string LeaderName { get; set; } = string.Empty;
+		public string LeaderTitle { get; set; } = string.Empty;
+		public string CivilizationNamePlural { get; set; } = string.Empty;
+		public string YearLabel { get; set; } = string.Empty;
 		public int Population { get; set; }
 		public int Score { get; set; }
-		public string RatingRankLabel { get; set; }
+		public string RatingRankLabel { get; set; } = string.Empty;
 		public int RatingPercent { get; set; }
-		public string CreatedAtUtc { get; set; }
+		public string CreatedAtUtc { get; set; } = string.Empty;
 	}
 }

@@ -15,10 +15,10 @@ namespace CivOne.Services
 	/// Service for managing save game metadata initialization and display names.
 	/// Currently no interface because this service will stay alone and is not expected to have multiple implementations, but this could change in the future.
 	/// </summary>
-	public class SaveMetaDataService(string _gameVersion, ITranslationService _translationService = null)
+	public class SaveMetaDataService(string gameVersion, ITranslationService? translationService = null)
 	{
-		private readonly ITranslationService _translation = _translationService ?? TranslationServiceFactory.GetCurrent();
-		private readonly IGameCalendarService _calendar;
+		private readonly ITranslationService _translation = translationService ?? TranslationServiceFactory.GetCurrent();
+		private readonly IGameCalendarService? _calendar;
 
 		public SaveMetaDataService(string gameVersion, ITranslationService translationService, IGameCalendarService calendar)
 			: this(gameVersion, translationService)
@@ -31,7 +31,7 @@ namespace CivOne.Services
 		public SaveFileMetaData CreateForNewGame(int difficulty, Player humanPlayer)
 		{
 			var metadata = new SaveFileMetaData();
-			metadata.InitializeForNewGame(_gameVersion, DateTimeOffset.UtcNow);
+			metadata.InitializeForNewGame(gameVersion, DateTimeOffset.UtcNow);
 			metadata.DisplayName = BuildDisplayName(difficulty, humanPlayer, 0);
 			return metadata;
 		}

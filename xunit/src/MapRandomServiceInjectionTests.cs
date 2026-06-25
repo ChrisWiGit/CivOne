@@ -61,7 +61,7 @@ namespace CivOne.UnitTests
 		}
 
 		/// <summary>
-		/// Test double that returns a fixed value from every <see cref="Next(int)"/> call
+		/// Test double that returns a fixed value from every <see cref="NextInt(int)"/> call
 		/// and records the number of invocations. Sufficient to prove that <see cref="Map"/>
 		/// actually consults its <see cref="IRandomService"/> dependency.
 		/// </summary>
@@ -71,19 +71,25 @@ namespace CivOne.UnitTests
 
 			public int NextCallCount { get; private set; }
 
-			public int Next(int max)
+			public int NextInt(int max)
 			{
 				NextCallCount++;
 				return _value;
 			}
 
-			public int Next(int min, int max)
+			public int NextInt(int min, int max)
 			{
 				NextCallCount++;
 				return _value;
 			}
 
 			public bool Hit(int percent) => false;
+
+			public bool Hit(int numerator, int denominator) => false;
+
+			public byte NextByte(byte min, byte maxExclusive) => (byte)NextInt(min, maxExclusive);
+
+			public byte NextByte(byte maxExclusive) => (byte)NextInt(maxExclusive);
 		}
 	}
 }

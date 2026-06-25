@@ -14,7 +14,7 @@ namespace CivOne.Services
 
 		public void CreateDirectory(string path) => Directory.CreateDirectory(path);
 
-		public string GetDirectoryName(string path) => Path.GetDirectoryName(path);
+		public string? GetDirectoryName(string path) => Path.GetDirectoryName(path);
 
 		public string GetFileName(string path) => Path.GetFileName(path);
 

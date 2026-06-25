@@ -9,7 +9,7 @@ namespace CivOne.UnitTests.Persistence
 	public class SaveDataAdapterTests : TestsBase
 	{
 		[Fact]
-		public void CivilizationIdentity_SetterAndGetter_RoundtripFlagsWithoutBitShiftRegression()
+		public void CivilizationIdentitySetterAndGetterRoundtripFlagsWithoutBitShiftRegression()
 		{
 			// Arrange
 			using var _testee = new SaveDataAdapter();
@@ -25,7 +25,7 @@ namespace CivOne.UnitTests.Persistence
 		}
 
 		[Fact]
-		public void Cities_Setter_PreservesVisibleSizeInBinarySaveData()
+		public void CitiesSetterPreservesVisibleSizeInBinarySaveData()
 		{
 			// Arrange
 			using var _testee = new SaveDataAdapter();
@@ -61,7 +61,7 @@ namespace CivOne.UnitTests.Persistence
 		}
 
 		[Fact]
-		public void ReplayData_Setter_ThrowsWhenSerializedDataExceedsFixedBuffer()
+		public void ReplayDataSetterThrowsWhenSerializedDataExceedsFixedBuffer()
 		{
 			// Each CivilizationDestroyed entry serializes to 4 bytes.
 			// 1025 entries exceed the 4096-byte fixed replay buffer.

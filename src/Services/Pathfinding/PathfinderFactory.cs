@@ -10,9 +10,9 @@ namespace CivOne.Services.Pathfinding
 		private readonly IPathfinder _disabledPathfinder;
 
 		public PathfinderFactory(
-			Func<bool> isComputerPlayerPathfindingEnabled = null,
-			IPathfinder smartPathfinder = null,
-			IPathfinder disabledPathfinder = null)
+			Func<bool>? isComputerPlayerPathfindingEnabled = null,
+			IPathfinder? smartPathfinder = null,
+			IPathfinder? disabledPathfinder = null)
 		{
 			_isComputerPlayerPathfindingEnabled = isComputerPlayerPathfindingEnabled ?? (() => Settings.Instance.ComputerPlayerPathFinding);
 			_smartPathfinder = smartPathfinder ?? new AStarPathfinderAdapter();

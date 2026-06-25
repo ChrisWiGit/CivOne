@@ -7,7 +7,7 @@ namespace CivOne.Services.Random
 	/// </summary>
 	internal static class RandomServiceFactory
 	{
-		private static IRandomService _cached;
+		private static IRandomService? _cached;
 
 		public static IRandomService Create()
 		{
@@ -21,21 +21,21 @@ namespace CivOne.Services.Random
 				Common.SetRandomSeed();
 			}
 
-			_cached = new CommonRandomService(() => Common.Random);
+			_cached = new CommonRandomService(() => Common.Random!);
 			return _cached;
 		}
 
 		public static IRandomService Reset(ushort seed)
 		{
 			Common.SetRandomSeed(seed);
-			_cached = new CommonRandomService(() => Common.Random);
+			_cached = new CommonRandomService(() => Common.Random!);
 			return _cached;
 		}
 
 		public static IRandomService Reset()
 		{
 			Common.SetRandomSeed();
-			_cached = new CommonRandomService(() => Common.Random);
+			_cached = new CommonRandomService(() => Common.Random!);
 			return _cached;
 		}
 

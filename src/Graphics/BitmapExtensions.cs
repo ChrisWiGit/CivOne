@@ -15,6 +15,7 @@ using CivOne.Graphics.Sprites;
 
 using static CivOne.Enums.TextAlign;
 using static CivOne.Enums.VerticalAlign;
+using System.Diagnostics;
 
 namespace CivOne.Graphics
 {
@@ -30,7 +31,7 @@ namespace CivOne.Graphics
 		public static int Height(this IBitmap bitmap) => bitmap.Bitmap.Height;
 		public static int Width(this IBitmap bitmap) => bitmap.Bitmap.Width;
 
-		public static T As<T>(this IBitmap bitmap) where T : class, IBitmap => (bitmap as T);
+		public static T? As<T>(this IBitmap bitmap) where T : class, IBitmap => bitmap as T;
 
 		/// <summary>
 		/// Clears the entire bitmap to the specified colour.
@@ -153,9 +154,13 @@ namespace CivOne.Graphics
 			return bitmap;
 		}
 		public static IBitmap AddLayer(this IBitmap bitmap, Bytemap layer, Point point, bool dispose = false) => AddLayer(bitmap, layer, point.X, point.Y, dispose);
-		public static IBitmap AddLayer(this IBitmap bitmap, Bytemap layer, int left = 0, int top = 0, bool dispose = false)
+		public static IBitmap AddLayer(this IBitmap bitmap, Bytemap? layer, int left = 0, int top = 0, bool dispose = false)
 		{
-			if (layer == null) return bitmap;
+			if (layer == null)
+			{
+				Debug.Assert(false, "Layer is null", "AddLayer was called with a null layer. This may indicate a missing resource or an error in the code.");
+				return bitmap;
+			}
 			for (int yy = 0; yy < layer.Height; yy++)
 			{
 				if (top + yy >= bitmap.Height()) break;
@@ -181,7 +186,7 @@ namespace CivOne.Graphics
 
 		public static IBitmap Tile(this IBitmap bitmap, Bytemap layer, Rectangle rectangle) => Tile(bitmap, layer, rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
 		public static IBitmap Tile(this IBitmap bitmap, Bytemap layer, Point point, Size size) => Tile(bitmap, layer, point.X, point.Y, size.Width, size.Height);
-		public static IBitmap Tile(this IBitmap bitmap, Bytemap layer, int left = 0, int top = 0, int width = -1, int height = -1)
+		public static IBitmap Tile(this IBitmap bitmap, Bytemap? layer, int left = 0, int top = 0, int width = -1, int height = -1)
 		{
 			if (layer == null) return bitmap;
 			if (width == -1) width = bitmap.Width() - left;
@@ -212,7 +217,7 @@ namespace CivOne.Graphics
 			AddLayer(bitmap, textLayer, x, y, dispose: true);
 			return bitmap;
 		}
-		public static IBitmap DrawText(this IBitmap bitmap, string text, int x = 0, int y = 0, TextSettings settings = null)
+		public static IBitmap DrawText(this IBitmap bitmap, string text, int x = 0, int y = 0, TextSettings? settings = null)
 		{
 			if (string.IsNullOrWhiteSpace(text)) return bitmap;
 			if (settings == null)
@@ -223,7 +228,7 @@ namespace CivOne.Graphics
 					settings = new TextSettings();
 			}
 			
-			Size textSize = Resources.GetTextSize(settings.FontId, text);
+			Size textSize = Resources.GetTextSize(settings!.FontId, text);
 			Bytemap textLayer;
 			if (settings.FirstLetterColour != 0)
 			{

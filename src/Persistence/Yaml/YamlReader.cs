@@ -33,7 +33,7 @@ namespace CivOne.Persistence.Yaml
     class YamlReader
     {
         private readonly string _yaml;
-        private INamingConvention _namingConvention;
+        private INamingConvention? _namingConvention;
         private readonly List<IYamlTypeConverter> _typeConverters = new List<IYamlTypeConverter>();
         private readonly List<INodeDeserializer> _nodeDeserializerFactories = new List<INodeDeserializer>();
 

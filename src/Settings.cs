@@ -9,6 +9,7 @@
 
 using System;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using CivOne.Enums;
 using CivOne.Graphics;
@@ -17,10 +18,10 @@ using CivOne.Persistence.Factories;
 
 namespace CivOne
 {
+	#pragma warning disable CA1822,CA1711 // Mark members as static, Do not postfix enum type with "Flag"
 	public class Settings : ISettings
 	{
 		private static IRuntime Runtime => RuntimeHandler.Runtime;
-		//private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
 
 		// ── Window / OS canvas ────────────────────────────────────────────────
 		// Hard limits for the physical OS window size and the raw SDL canvas.
@@ -53,29 +54,29 @@ namespace CivOne
 		// Set default settings
 		private string _windowTitle = "CivOne";
 		private GraphicsMode _graphicsMode = GraphicsMode.Graphics256;
-		private bool _fullScreen = false;
+		private bool _fullScreen;
 		private int _windowWidth = -1, _windowHeight = -1;
 		private Point _windowPosition = new Point(-1, -1);
-		private bool _windowMaximized = false;
-		private bool _rightSideBar = false;
+		private bool _windowMaximized;
+		private bool _rightSideBar;
 		private int _scale = 2;
 		private AspectRatio _aspectRatio = AspectRatio.Expand;
 		private int _expandWidth, _expandHeight;
 		private bool _vSync = true;
-		private bool _revealWorld = false;
-		private bool _debugMenu = false;
-		private bool _deityEnabled = false;
-		private bool _arrowHelper = false;
-		private bool _pathFinding = false;
+		private bool _revealWorld;
+		private bool _debugMenu;
+		private bool _deityEnabled;
+		private bool _arrowHelper;
+		private bool _pathFinding;
 		private bool _computerPlayerPathFinding = true;
-		private bool _riverFastMovement = false;
-		private bool _canalCity = false;
+		private bool _riverFastMovement;
+		private bool _canalCity;
 		private bool _removeObsoleteBuildings = true;
 		private bool _preferSveSaveFormat = true;
 		private LzwCodecType _lzwCodecMode = LzwCodecType.Original;
 		private string _languagePostfix = string.Empty;
 		private SimulateInternationalFont _simulateInternationalFont = SimulateInternationalFont.Auto;
-		private bool _useUncheckedCastSanitizer = false;
+		private bool _useUncheckedCastSanitizer;
 		private GlobalWarmingFeatureFlag _globalWarmingFeatureFlags = GlobalWarmingFeatureFlag.None;
         private bool _autoSettlers;
 		private CursorType _cursorType = CursorType.Default;
@@ -189,7 +190,7 @@ namespace CivOne
 			set
 			{
 				_windowWidth = value;
-				SetSetting("WindowWidth", _windowWidth.ToString());
+				SetSetting("WindowWidth", _windowWidth.ToString(CultureInfo.InvariantCulture));
 			}
 		}
 
@@ -199,7 +200,7 @@ namespace CivOne
 			set
 			{
 				_windowHeight = value;
-				SetSetting("WindowHeight", _windowHeight.ToString());
+				SetSetting("WindowHeight", _windowHeight.ToString(CultureInfo.InvariantCulture));
 			}
 		}
 
@@ -209,8 +210,8 @@ namespace CivOne
 			set
 			{
 				_windowPosition = value;
-				SetSetting("WindowPosX", _windowPosition.X.ToString());
-				SetSetting("WindowPosY", _windowPosition.Y.ToString());
+				SetSetting("WindowPosX", _windowPosition.X.ToString(CultureInfo.InvariantCulture));
+				SetSetting("WindowPosY", _windowPosition.Y.ToString(CultureInfo.InvariantCulture));
 			}
 		}
 
@@ -231,7 +232,7 @@ namespace CivOne
 			{
 				if (value < 1 || value > 8) return;
 				_scale = value;
-				SetSetting("Scale", _scale.ToString());
+				SetSetting("Scale", _scale.ToString(CultureInfo.InvariantCulture));
 				Common.ReloadSettings = true;
 			}
 		}
@@ -242,7 +243,7 @@ namespace CivOne
 			set
 			{
 				_aspectRatio = value;
-				string saveValue = ((int)_aspectRatio).ToString();
+				string saveValue = ((int)_aspectRatio).ToString(CultureInfo.InvariantCulture);
 				SetSetting("AspectRatio", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -254,7 +255,7 @@ namespace CivOne
 			set
 			{
 				_expandWidth = value;
-				string saveValue = ((int)_expandWidth).ToString();
+				string saveValue = _expandWidth.ToString(CultureInfo.InvariantCulture);
 				SetSetting("ExpandWidth", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -266,7 +267,7 @@ namespace CivOne
 			set
 			{
 				_expandHeight = value;
-				string saveValue = ((int)_expandHeight).ToString();
+				string saveValue = _expandHeight.ToString(CultureInfo.InvariantCulture);
 				SetSetting("ExpandHeight", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -418,7 +419,7 @@ namespace CivOne
 			set
 			{
 				_lzwCodecMode = value;
-				SetSetting("LzwCodecMode", ((int)_lzwCodecMode).ToString());
+				SetSetting("LzwCodecMode", ((int)_lzwCodecMode).ToString(CultureInfo.InvariantCulture));
 				Resources.ClearInstance();
 				Common.ReloadSettings = true;
 			}
@@ -450,7 +451,7 @@ namespace CivOne
 			set
 			{
 				_globalWarmingFeatureFlags = value;
-				SetSetting("GlobalWarmingFeatureFlags", ((int)value).ToString());
+				SetSetting("GlobalWarmingFeatureFlags", ((int)value).ToString(CultureInfo.InvariantCulture));
 				Common.ReloadSettings = true;
 			}
 		}
@@ -467,7 +468,7 @@ namespace CivOne
 			else
 				_globalWarmingFeatureFlags &= ~flag;
 
-			SetSetting("GlobalWarmingFeatureFlags", ((int)_globalWarmingFeatureFlags).ToString());
+			SetSetting("GlobalWarmingFeatureFlags", ((int)_globalWarmingFeatureFlags).ToString(CultureInfo.InvariantCulture));
 			Common.ReloadSettings = true;
 		}
 
@@ -493,7 +494,7 @@ namespace CivOne
 			internal set
 			{
 				_cursorType = value;
-				string saveValue = ((int)_cursorType).ToString();
+				string saveValue = ((int)_cursorType).ToString(CultureInfo.InvariantCulture);
 				SetSetting("CursorType", saveValue);
 				Cursor.ClearCache();
 				Common.ReloadSettings = true;
@@ -506,7 +507,7 @@ namespace CivOne
 			set
 			{
 				_fpsCorner = value;
-				string saveValue = ((int)_fpsCorner).ToString();
+				string saveValue = ((int)_fpsCorner).ToString(CultureInfo.InvariantCulture);
 				SetSetting("FpsCorner", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -518,7 +519,7 @@ namespace CivOne
 			set
 			{
 				_destroyAnimation = value;
-				string saveValue = ((int)_destroyAnimation).ToString();
+				string saveValue = ((int)_destroyAnimation).ToString(CultureInfo.InvariantCulture);
 				SetSetting("DestroyAnimation", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -531,7 +532,7 @@ namespace CivOne
 			set
 			{
 				_instantAdvice = value;
-				string saveValue = ((int)_instantAdvice).ToString();
+				string saveValue = ((int)_instantAdvice).ToString(CultureInfo.InvariantCulture);
 				SetSetting("GameInstantAdvice", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -543,7 +544,7 @@ namespace CivOne
 			set
 			{
 				_autoSave = value;
-				string saveValue = ((int)_autoSave).ToString();
+				string saveValue = ((int)_autoSave).ToString(CultureInfo.InvariantCulture);
 				SetSetting("GameAutoSave", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -555,7 +556,7 @@ namespace CivOne
 			set
 			{
 				_endOfTurn = value;
-				string saveValue = ((int)_endOfTurn).ToString();
+				string saveValue = ((int)_endOfTurn).ToString(CultureInfo.InvariantCulture);
 				SetSetting("GameEndOfTurn", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -567,7 +568,7 @@ namespace CivOne
 			set
 			{
 				_animations = value;
-				string saveValue = ((int)_animations).ToString();
+				string saveValue = ((int)_animations).ToString(CultureInfo.InvariantCulture);
 				SetSetting("GameAnimations", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -579,7 +580,7 @@ namespace CivOne
 			set
 			{
 				_sound = value;
-				string saveValue = ((int)_sound).ToString();
+				string saveValue = ((int)_sound).ToString(CultureInfo.InvariantCulture);
 				SetSetting("GameSound", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -591,7 +592,7 @@ namespace CivOne
 			set
 			{
 				_enemyMoves = value;
-				string saveValue = ((int)_enemyMoves).ToString();
+				string saveValue = ((int)_enemyMoves).ToString(CultureInfo.InvariantCulture);
 				SetSetting("GameEnemyMoves", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -603,7 +604,7 @@ namespace CivOne
 			set
 			{
 				_civilopediaText = value;
-				string saveValue = ((int)_civilopediaText).ToString();
+				string saveValue = ((int)_civilopediaText).ToString(CultureInfo.InvariantCulture);
 				SetSetting("GameCivilopediaText", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -615,7 +616,7 @@ namespace CivOne
 			set
 			{
 				_palace = value;
-				string saveValue = ((int)_palace).ToString();
+				string saveValue = ((int)_palace).ToString(CultureInfo.InvariantCulture);
 				SetSetting("GamePalace", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -627,14 +628,14 @@ namespace CivOne
             set
             {
                 _taxRate = Math.Max(0,Math.Min(10,value));
-                SetSetting("TaxRate", _taxRate.ToString());
+                SetSetting("TaxRate", _taxRate.ToString(CultureInfo.InvariantCulture));
                 Common.ReloadSettings = true;
             }
         }
 
 		public string[] DisabledPlugins
 		{
-			get => GetSetting("DisabledPlugins")?.Split(';') ?? new string[0];
+			get => GetSetting("DisabledPlugins")?.Split(';') ?? [];
 			set => SetSetting("DisabledPlugins", string.Join(";", value));
 		}
 
@@ -655,7 +656,7 @@ namespace CivOne
 			set
 			{
 				_simulateInternationalFont = value;
-				SetSetting("SimulateInternationalFont", ((int)_simulateInternationalFont).ToString());
+				SetSetting("SimulateInternationalFont", ((int)_simulateInternationalFont).ToString(CultureInfo.InvariantCulture));
 				Common.ReloadSettings = true;
 				Resources.Instance.ReloadFonts();
 			}
@@ -666,19 +667,19 @@ namespace CivOne
 		//internal int ScaleX => _scale;
 		//internal int ScaleY => _scale;
 		
-		private string GetSetting(string settingName) => Runtime.GetSetting(settingName);
+		private string? GetSetting(string settingName) => Runtime.GetSetting(settingName);
 
 		private bool GetSetting<T>(string settingName, ref T output) where T: struct, IConvertible
 		{
 			if (!Int32.TryParse(GetSetting(settingName), out int value)) return false;
 			if (!Enum.IsDefined(typeof(T), value)) return false;
-			output = (T)Enum.Parse(typeof(T), value.ToString());
+			output = Enum.Parse<T>(value.ToString(CultureInfo.InvariantCulture));
 			return true;
 		}
 
 		private void GetSetting(string settingName, ref string output) => output = GetSetting(settingName) ?? output;
 
-		private void GetSetting(string settingName, ref bool output) => output = (GetSetting(settingName) == "1");
+		private void GetSetting(string settingName, ref bool output) => output = GetSetting(settingName) == "1";
 		
 		private bool GetSetting(string settingName, ref int output, int minValue = int.MinValue, int maxValue = int.MaxValue)
 		{
@@ -710,8 +711,8 @@ namespace CivOne
 			}
 		}
 		
-		private static Settings _instance;
-		public static Settings Instance => _instance ?? (_instance = new Settings());
+		private static Settings? _instance;
+		public static Settings Instance => _instance ??= new Settings();
 
 		private Settings()
 		{
@@ -719,7 +720,7 @@ namespace CivOne
 
 			// Read settings
 			GetSetting("WindowTitle", ref _windowTitle);
-			GetSetting<GraphicsMode>("GraphicsMode", ref _graphicsMode);
+			GetSetting("GraphicsMode", ref _graphicsMode);
 			GetSetting("FullScreen", ref _fullScreen);
 			GetSetting("SideBar", ref _rightSideBar);
 			GetSetting("Scale", ref _scale, 1, 8);
@@ -740,21 +741,21 @@ namespace CivOne
 				_windowPosition = new Point(windowPosX, windowPosY);
 			}
 			GetSetting("WindowMaximized", ref _windowMaximized);
-			GetSetting<AspectRatio>("AspectRatio", ref _aspectRatio);
+			GetSetting("AspectRatio", ref _aspectRatio);
 			GetSetting("Sound", ref _sound);
 			if (!GetSetting("ExpandWidth", ref _expandWidth, MinWidth, MaxExpandWidth) || !GetSetting("ExpandHeight", ref _expandHeight, MinHeight, MaxExpandHeight))
 			{
 				_expandWidth = -1;
 				_expandHeight = -1;
 			}
-			string vSyncSetting = GetSetting("VSync");
+			string? vSyncSetting = GetSetting("VSync");
 			if (vSyncSetting == null)
 			{
 				SetSetting("VSync", "1");
 			}
 			else
 			{
-				_vSync = (vSyncSetting == "1");
+				_vSync = vSyncSetting == "1";
 			}
 			GetSetting("RevealWorld", ref _revealWorld);
 			GetSetting("DebugMenu", ref _debugMenu);
@@ -769,19 +770,19 @@ namespace CivOne
 			GetSetting("PreferSveSaveFormat", ref _preferSveSaveFormat);
 			GetSetting<LzwCodecType>("LzwCodecMode", ref _lzwCodecMode);
 			GetSetting("LanguagePostfix", ref _languagePostfix);
-			GetSetting<SimulateInternationalFont>("SimulateInternationalFont", ref _simulateInternationalFont);
+			GetSetting("SimulateInternationalFont", ref _simulateInternationalFont);
 			GetSetting("UseUncheckedCastSanitizer", ref _useUncheckedCastSanitizer);
-			GetSetting<CursorType>("CursorType", ref _cursorType);
-			GetSetting<FpsCorner>("FpsCorner", ref _fpsCorner);
-			GetSetting<DestroyAnimation>("DestroyAnimation", ref _destroyAnimation);
-			GetSetting<GameOption>("GameInstantAdvice", ref _instantAdvice);
-			GetSetting<GameOption>("GameAutoSave", ref _autoSave);
-			GetSetting<GameOption>("GameEndOfTurn", ref _endOfTurn);
-			GetSetting<GameOption>("GameAnimations", ref _animations);
-			GetSetting<GameOption>("GameSound", ref _sound);
-			GetSetting<GameOption>("GameEnemyMoves", ref _enemyMoves);
-			GetSetting<GameOption>("GameCivilopediaText", ref _civilopediaText);
-			GetSetting<GameOption>("GamePalace", ref _palace);
+			GetSetting("CursorType", ref _cursorType);
+			GetSetting("FpsCorner", ref _fpsCorner);
+			GetSetting("DestroyAnimation", ref _destroyAnimation);
+			GetSetting("GameInstantAdvice", ref _instantAdvice);
+			GetSetting("GameAutoSave", ref _autoSave);
+			GetSetting("GameEndOfTurn", ref _endOfTurn);
+			GetSetting("GameAnimations", ref _animations);
+			GetSetting("GameSound", ref _sound);
+			GetSetting("GameEnemyMoves", ref _enemyMoves);
+			GetSetting("GameCivilopediaText", ref _civilopediaText);
+			GetSetting("GamePalace", ref _palace);
 			GetSetting("TaxRate", ref _taxRate, 0, 10);
 
 			string gwFlags = "";

@@ -14,10 +14,11 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.IO;
 using CivOne.Graphics;
+using System.Threading;
 
 namespace CivOne
 {
-	internal class Runtime : IRuntime, IDisposable
+	internal sealed class Runtime : IRuntime, IDisposable
 	{
 		public Profile Profile { get; }
 		
@@ -36,19 +37,19 @@ namespace CivOne
 		internal void InvokeMouseMove(ScreenEventArgs args) => MouseMove?.Invoke(this, args);
 		internal void InvokeMouseWheel(ScreenEventArgs args) => MouseWheel?.Invoke(this, args);
 
-		public event EventHandler Initialize, Draw;
-		public event UpdateEventHandler Update;
-		public event KeyboardEventHandler KeyboardUp, KeyboardDown;
-		public event ScreenEventHandler MouseUp, MouseDown, MouseMove, MouseWheel;
-		internal event EventHandler CursorChanged;
-		internal event Action<string> PlaySound;
-		internal event Action StopSound;
-		internal event Action<string> SetWindowTitle;
+		public event EventHandler? Initialize, Draw;
+		public event EventHandler<UpdateEventArgs>? Update;
+		public event EventHandler<KeyboardEventArgs>? KeyboardUp, KeyboardDown;
+		public event EventHandler<ScreenEventArgs>? MouseUp, MouseDown, MouseMove, MouseWheel;
+		internal event EventHandler? CursorChanged;
+		internal event Action<string>? PlaySound;
+		internal event Action? StopSound;
+		internal event Action<string>? SetWindowTitle;
 		
 		public RuntimeSettings Settings { get; private set; }
-		public MouseCursor CurrentCursor { internal get; set; }
+		public MouseCursor? CurrentCursor { internal get; set; }
 		private Bytemap[] _layers = [];
-		public Bytemap[] Layers
+		public Bytemap[]? Layers
 		{
 			get => _layers;
 			set
@@ -58,8 +59,21 @@ namespace CivOne
 				_layers = value is null ? [] : [..value];
 			}
 		}
-		private Palette _palette;
-		public Palette Palette
+		private Palette? _palette;
+
+		/// <summary>
+		/// When setting a new palette, dispose the previous one if it implements IDisposable so unmanaged buffers are released immediately instead of waiting for GC/finalizer.
+		/// This instance may be empty but never null. To check if a palette is present, compare against Palette.Empty.
+		/// <example>
+		/// <code>
+		/// if (runtime.Palette != Palette.Empty)
+		/// {
+		///     // palette is present
+		/// }
+		/// </code>
+		/// </example>
+		/// </summary>
+		public Palette? Palette
 		{
 			get => _palette;
 			set
@@ -71,8 +85,8 @@ namespace CivOne
 				_palette = value;
 			}
 		}
-		private IBitmap _cursor;
-		public IBitmap Cursor
+		private IBitmap? _cursor;
+		public IBitmap? Cursor
 		{
 			internal get => _cursor;
 			set
@@ -83,9 +97,9 @@ namespace CivOne
 		}
 
 
-		private readonly object _sync = new();
+		private readonly Lock _sync = new();
 
-		private StreamWriter TryOpenWrite(string path)
+		private static StreamWriter? TryOpenWrite(string path)
 		{
 			for (int i = 0; i < 3; i++)
 			{
@@ -123,7 +137,7 @@ namespace CivOne
 
 			lock (_sync)
 			{
-				using StreamWriter tw = TryOpenWrite(path);
+				using StreamWriter? tw = TryOpenWrite(path);
 				if (tw != null)
 				{
 					tw.WriteLine(text, parameters);
@@ -151,17 +165,17 @@ namespace CivOne
 
 		Platform IRuntime.CurrentPlatform => Platform.Windows;
 		string IRuntime.StorageDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CivOne");
-		string IRuntime.GetSetting(string key) => Profile.GetSetting(key);
+		string? IRuntime.GetSetting(string key) => Profile.GetSetting(key);
 		void IRuntime.SetSetting(string key, string value) => Profile.SetSetting(key, value);
-		void IRuntime.SetCurrentCursor(MouseCursor cursor) => CurrentCursor = cursor;
-		void IRuntime.SetCursor(IBitmap cursor) => Cursor = cursor;
+		void IRuntime.SetCurrentCursor(MouseCursor? cursor) => CurrentCursor = cursor;
+		void IRuntime.SetCursor(IBitmap? cursor) => Cursor = cursor;
 		int IRuntime.CanvasWidth => CanvasSize.Width;
 		int IRuntime.CanvasHeight => CanvasSize.Height;
 		int IRuntime.WindowWidth => WindowSize.Width;
 		int IRuntime.WindowHeight => WindowSize.Height;
 		
 		string? IRuntime.BrowseFolder(string caption) => Native.FolderBrowser(caption);
-		string IRuntime.FileChooser(bool save, string title, string initialFileName, string filter) => Native.FileChooser(save, title, initialFileName, filter);
+		string? IRuntime.FileChooser(bool save, string title, string initialFileName, string filter) => Native.FileChooser(save, title, initialFileName, filter);
 		void IRuntime.SetWindowTitle(string title) => SetWindowTitle?.Invoke(title);
 		void IRuntime.PlaySound(string file) => PlaySound?.Invoke(file);
 		void IRuntime.StopSound() => StopSound?.Invoke();
@@ -169,11 +183,16 @@ namespace CivOne
 		bool IRuntime.TryCopyToClipboard(string text, out string errorMessage) => Native.TryCopyToClipboard(text, out errorMessage);
 		void IRuntime.Quit() => SignalQuit = true;
 
+		public const string DEFAULT_PROFILE_NAME_VALUE = "default";
+		public const string DEFAULT_PROFILE_NAME_KEY = "profile-name";
+
 		public Runtime(RuntimeSettings runtimeSettings)
 		{	
+			_palette = Palette.Empty;
+
 			Settings = runtimeSettings;
 			Directory.CreateDirectory(((IRuntime)this).StorageDirectory);
-			Profile = Profile.Get(this, runtimeSettings.Get<string>("profile-name"));
+			Profile = Profile.Get(this, runtimeSettings.Get<string>(DEFAULT_PROFILE_NAME_KEY) ?? DEFAULT_PROFILE_NAME_VALUE);
 			RuntimeHandler.Register(this);
 		}
 

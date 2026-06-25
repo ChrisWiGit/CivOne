@@ -29,6 +29,7 @@ namespace CivOne.UnitTests
     {
         private readonly ITestOutputHelper output;
 
+        #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public CityCitizenServiceImplPerformanceTests(ITestOutputHelper output)
         {
             this.output = output;
@@ -66,7 +67,7 @@ namespace CivOne.UnitTests
                 .WithWonderEffect<Oracle>(true)
                 .WithWonderEffect<CureForCancer>(true)
                 .withCitiesInterface([mockedCity])
-                .withCitiesCount(CityCitizenServiceImpl.MinRedShirtCityCount);
+                .withCitiesCount(CityCitizenService.MinRedShirtCityCount);
 
             mockedIGame = new MockedGame()
             {
@@ -111,7 +112,12 @@ namespace CivOne.UnitTests
 
         protected override void AfterEach()
         {
-            testee = null;
+            testee = null!;
+            mockedSpecialists = null!;
+            mockedIGame = null!;
+            mockedCity = null!;
+            mockedIMap = null!;
+            mockedGrassland = null!;
         }
 
         [Fact]

@@ -51,7 +51,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestUnitDtoMapper_ContractCheck()
+		public void TestUnitDtoMapperContractCheck()
 		{
 			var dtoProperties = GetWritablePropertyNames<UnitDto>();
 			var expectedProperties = GetUnitDtoRoundTripAssertionMap(_originalDto, _originalDto).Keys.ToHashSet();
@@ -98,7 +98,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestUnitDtoMapper_RoundTrip()
+		public void TestUnitDtoMapperRoundTrip()
 		{
 			var unit = _testee.FromDto(_originalDto);
 			var roundTripDto = _testee.ToDto(unit);
@@ -115,7 +115,7 @@ namespace CivOne.Persistence.Model
 		[Theory]
 		[InlineData(false, true, true, false)]
 		[InlineData(false, false, false, true)]
-		public void FromDto_UsesRestorableStatusMapping(
+		public void FromDtoUsesRestorableStatusMapping(
 			bool expectedSentry,
 			bool expectedFortifyActive,
 			bool expectedFortify,
@@ -171,21 +171,22 @@ namespace CivOne.Persistence.Model
 
 		public class UnitFactory : IUnitFactory
 		{
-			public string LastClassName { get; private set; }
+			public string LastClassName { get; private set; } = string.Empty;
 			public byte LastPlayerId { get; private set; }
 			public Guid? LastHomeCityGuid { get; private set; }
 
-			public IUnitRestorable Create(string className, byte player, Guid? HomeCityGuid)
+			public IUnitRestorable Create(string className, byte player, Guid? homeCityGuid)
 			{
 				LastClassName = className;
 				LastPlayerId = player;
-				LastHomeCityGuid = HomeCityGuid;
+				LastHomeCityGuid = homeCityGuid;
 				// * var result = new MockedIUnit
 				// * {
 				// * 	Owner = player //just for testing, do not do this in real code because index of player it game list may not be the same as player id in save file.
 				// * };
 				// Just for fun, let's use reflection to create the instance instead of hardcoding it. This way we can test that the className is used correctly.
-				var result = (IUnitRestorable)Activator.CreateInstance(Type.GetType($"CivOne.UnitTests.{className}"));
+				var result = Activator.CreateInstance(Type.GetType($"CivOne.UnitTests.{className}")!) as IUnitRestorable
+					?? throw new InvalidOperationException($"Failed to create instance of class '{className}' for unit restoration. Ensure that the class name is correct and that it implements IUnitRestorable.");
 				result.Owner = player;
 				// production code: add unit to Player
 

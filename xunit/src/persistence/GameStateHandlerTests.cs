@@ -15,15 +15,8 @@ namespace CivOne.UnitTests.Persistence
 	/// </summary>
     public class GameStateHandlerTests
     {
-        private readonly GameStateHandler _testee;
-
-        public GameStateHandlerTests()
-        {
-            _testee = new GameStateHandler();
-        }
-
         [Fact]
-        public void Create_UsesExplicitGameRandomSeed_WhenAvailable()
+        public void CreateUsesExplicitGameRandomSeedWhenAvailable()
         {
             // Arrange
             const int gameRandomSeed = 1337;
@@ -35,7 +28,7 @@ namespace CivOne.UnitTests.Persistence
             };
 
             // Act
-            var actual = _testee.Create(snapshot);
+            var actual = GameStateHandler.Create(snapshot);
 
             // Assert
             Assert.Equal(gameRandomSeed, actual.RandomSeed);
@@ -43,7 +36,7 @@ namespace CivOne.UnitTests.Persistence
         }
 
         [Fact]
-        public void Create_FallsBackToTerrainMasterWord_WhenGameRandomSeedMissing()
+        public void CreateFallsBackToTerrainMasterWordWhenGameRandomSeedMissing()
         {
             // Arrange
             const int terrainMasterWord = 9001;
@@ -54,7 +47,7 @@ namespace CivOne.UnitTests.Persistence
             };
 
             // Act
-            var actual = _testee.Create(snapshot);
+            var actual = GameStateHandler.Create(snapshot);
 
             // Assert
             Assert.Equal(terrainMasterWord, actual.RandomSeed);
@@ -64,8 +57,8 @@ namespace CivOne.UnitTests.Persistence
         private sealed class MockedGameSnapshotSource : IGameSnapshotSource
         {
             public int Difficulty { get; set; } = 3;
-            public Player CurrentPlayer { get; set; }
-            public Player HumanPlayer { get; set; }
+            public Player CurrentPlayer { get; set; } = null!;
+            public Player HumanPlayer { get; set; } = null!;
             public Player[] Players { get; set; } = [];
             public List<City> Cities { get; set; } = [];
             public List<IUnit> Units { get; set; } = [];
@@ -90,7 +83,7 @@ namespace CivOne.UnitTests.Persistence
             public int TerrainMasterWord { get; set; }
 
             // Must be null: real GlobalWarmingService would require a live Game/Map context.
-            public IGlobalWarmingService GlobalWarmingService { get; set; } = null;
+            public IGlobalWarmingService GlobalWarmingService { get; set; } = null!;
 
             public (short X, short Y)? GetHumanLastMapPosition() => HumanLastMapPosition;
 

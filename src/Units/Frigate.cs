@@ -24,7 +24,7 @@ namespace CivOne.Units
 		
 		public bool AllowedToBoard(IUnit unit)
 		{
-			return unit.Class == UnitClass.Land && unit.Owner == Owner;
+			return unit.UnitCategory == UnitClass.Land && unit.Owner == Owner;
 		}
 
 		public Frigate() : base(4, 2, 2, 3)

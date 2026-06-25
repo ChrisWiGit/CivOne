@@ -6,7 +6,7 @@ namespace CivOne.Mcp.Tools
 {
 	internal static class McpJsonToolResponse
 	{
-		public static McpResponse JsonResponse(object id, object payload, JsonSaveGameStateWriter jsonWriter, int maxJsonChars)
+		public static McpResponse JsonResponse(object? id, object payload, JsonSaveGameStateWriter jsonWriter, int maxJsonChars)
 		{
 			string json = jsonWriter.AsString(payload);
 			if (json.Length > maxJsonChars)
@@ -19,7 +19,7 @@ namespace CivOne.Mcp.Tools
 		{
 			const int reserveChars = 512;
 			int previewChars = Math.Max(0, Math.Min(sourceJson.Length, maxJsonChars - reserveChars));
-			string preview = sourceJson.Substring(0, previewChars);
+			string preview = sourceJson[..previewChars];
 
 			while (preview.Length > 0)
 			{
@@ -38,7 +38,7 @@ namespace CivOne.Mcp.Tools
 				if (candidate.Length <= maxJsonChars)
 					return candidate;
 
-				preview = preview.Substring(0, Math.Max(0, preview.Length - Math.Min(256, preview.Length)));
+				preview = preview[..Math.Max(0, preview.Length - Math.Min(256, preview.Length))];
 			}
 
 			return jsonWriter.AsString(new

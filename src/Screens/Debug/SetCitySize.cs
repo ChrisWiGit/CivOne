@@ -8,11 +8,13 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
+using CivOne.Services.Screen;
 using CivOne.Tasks;
 using CivOne.UserInterface;
 
@@ -25,15 +27,14 @@ namespace CivOne.Screens.Debug
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
-		private CityGridMenuDelegate _citySelect;
+		private CityGridMenuDelegate? _citySelect;
 
-		private Input _input;
+		private City? _selectedCity;
+		private Input? ActiveInput => Inputs.OfType<Input>().FirstOrDefault();
 
-		private City _selectedCity = null;
+		public string? Value { get; private set; }
 
-		public string Value { get; private set; }
-
-		public event EventHandler Accept, Cancel;
+		public event EventHandler? Accept, Cancel;
 
 		private void DrawInputDialog()
 		{
@@ -47,10 +48,10 @@ namespace CivOne.Screens.Debug
 				.FillRectangle(88 + ox, 95 + oy, 105, 14, 5)
 				.FillRectangle(89 + ox, 96 + oy, 103, 12, 15);
 
-			if (_input != null)
+			if (ActiveInput is Input input)
 			{
-				_input.X = 90 + ox;
-				_input.Y = 97 + oy;
+				input.X = 90 + ox;
+				input.Y = 97 + oy;
 			}
 		}
 
@@ -58,10 +59,10 @@ namespace CivOne.Screens.Debug
 		{
 			if (_citySelect == null)
 			{
-				Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
+				Palette = Common.Screens[^1].OriginalColours;
 				_citySelect = new CityGridMenuDelegate(
 					_cities,
-					city => $"{city.Name} ({Game.GetPlayer(city.Owner).TribeName})");
+					city => $"{city.Name} ({city.CityOwnerPlayer.TribeName})");
 				_citySelect.CitySelected += OnCitySelected;
 				_citySelect.Cancelled += CitySize_Cancel;
 			}
@@ -69,41 +70,51 @@ namespace CivOne.Screens.Debug
 			_citySelect.Draw(this, Translate("Set City Size..."), CanvasHeight);
 		}
 
-		private void CitySizeSet_Accept(object sender, EventArgs args)
+		private void CitySizeSet_Accept(object? sender, EventArgs args)
 		{
-			Value = (sender as Input).Text;
-			
-			byte citySize;
-			if (!byte.TryParse(Value, out citySize) || citySize < 1 || citySize > 99)
+			if (sender is not Input input)
+				return;
+			Value = input.Text;
+
+			if (!byte.TryParse(Value, out byte citySize) || citySize < 1 || citySize > 99)
 			{
 				GameTask.Enqueue(Message.Error(Translate("-- DEBUG: Set City Size --"), TranslateFormattedArray("The value {0} is invalid or out of range.\nPlease enter a value between 1 and 99.", Value)));
 			}
-			else
+			else if (_selectedCity != null)
 			{
 				_selectedCity.Size = citySize;
 				GameTask.Enqueue(Message.General(TranslateFormatted("{0} size set to {1}.", _selectedCity.Name, citySize)));
 			}
 
-			if (Accept != null)
-				Accept(this, EventArgs.Empty);
-			if (sender is Input input)
-				input.Close();
+			Accept?.Invoke(this, EventArgs.Empty);
+
+			input.Close();
 			Destroy();
 		}
 
 		private void OnCitySelected(City city)
 		{
-			Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
+			Palette = Common.Screens[^1].OriginalColours;
 			_selectedCity = city;
 
-			_input = new Input(Palette, _selectedCity.Size.ToString(), 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 3);
-			_input.Accept += CitySizeSet_Accept;
-			_input.Cancel += CitySize_Cancel;
-
+			EnsureManagedInput();
 			Refresh();
 		}
 
-		private void CitySize_Cancel(object sender, EventArgs args)
+		protected override IScreen? CreateManagedInput()
+		{
+			if (_selectedCity == null)
+			{
+				return null;
+			}
+
+			Input input = new(Palette, _selectedCity.Size.ToString(CultureInfo.InvariantCulture), 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 3);
+			input.Accept += CitySizeSet_Accept;
+			input.Cancel += CitySize_Cancel;
+			return input;
+		}
+
+		private void CitySize_Cancel(object? sender, EventArgs args)
 		{
 			if (Cancel != null)
 				Cancel(this, EventArgs.Empty);
@@ -133,17 +144,19 @@ namespace CivOne.Screens.Debug
 				return false;
 			}
 
-			if (_selectedCity == null && Common.TopScreen.GetType() != typeof(Menu))
+			if (_selectedCity == null && TopScreen.GetType() != typeof(Menu))
 			{
 				DrawCityMenuDialog();
 				return false;
 			}
-			else if (_selectedCity != null && Common.TopScreen.GetType() != typeof(Input))
+			else if (_selectedCity != null && !HasInput && TopScreen.GetType() != typeof(Input))
 			{
-				Common.AddScreen(_input);
+				EnsureManagedInput();
 			}
 			return false;
 		}
+
+		private IScreen TopScreen => _screenQuery.TopScreen!;
 
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
@@ -175,8 +188,11 @@ namespace CivOne.Screens.Debug
 			return false;
 		}
 
-		public SetCitySize() : base(MouseCursor.Pointer)
+		private readonly IScreenQueryService _screenQuery;
+
+		public SetCitySize(IScreenQueryService screenQuery) : base(MouseCursor.Pointer)
 		{
+			_screenQuery = screenQuery;
 			if (_cities.Length == 0)
 			{
 				GameTask.Enqueue(Message.General(Translate("There are no cities yet.")));

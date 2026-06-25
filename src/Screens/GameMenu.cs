@@ -22,12 +22,13 @@ namespace CivOne.Screens
 {
 	public class GameMenu : BaseScreen
 	{
-		public readonly MenuItemCollection<int> Items;
+		private readonly MenuItemCollection<int> _items;
+		public MenuItemCollection<int> Items => _items;
 		
 		private int _activeItem = -1;
 		private bool _update = true;
 
-		private bool _keepOpen = false;
+		private bool _keepOpen;
 		public bool KeepOpen
 		{
 			get
@@ -50,13 +51,13 @@ namespace CivOne.Screens
 			if (menuItem != null)
 			{
 				if (menuItem.Text != null) width += Resources.GetTextSize(0, menuItem.Text).Width;
-				string shortcutText = GetShortcutText(menuItem);
+				string? shortcutText = GetShortcutText(menuItem);
 				if (!string.IsNullOrWhiteSpace(shortcutText)) width += Resources.GetTextSize(0, shortcutText).Width + 8;
 			}
 			return width;
 		}
 
-		private int MaxItemWidth => Items.Select(x => ItemWidth(x)).Max();
+		private int MaxItemWidth => Items.OfType<MenuItem<int>>().Select(ItemWidth).DefaultIfEmpty(0).Max();
 		internal int PixelWidth => MaxItemWidth + 17;
 		internal int PixelHeight => (Resources.GetFontHeight(0) * Items.Count) + 9;
 
@@ -77,7 +78,7 @@ namespace CivOne.Screens
 			return keyPart.Length == 0 ? Translate("shift") : $"{Translate("shift")}+{keyPart}";
 		}
 
-		private string GetShortcutText(MenuItem<int> menuItem)
+		private string? GetShortcutText(MenuItem<int> menuItem)
 		{
 			if (menuItem == null)
 			{
@@ -104,7 +105,7 @@ namespace CivOne.Screens
 		{
 			if (menuItem == null || menuItem.Text == null) return;
 			this.DrawText(menuItem.Text, 0, (byte)(menuItem.Enabled ? 5 : 3), x, y, TextAlign.Left);
-			string shortcutText = GetShortcutText(menuItem);
+			string? shortcutText = GetShortcutText(menuItem);
 			if (string.IsNullOrWhiteSpace(shortcutText)) return;
 			int textWidth = Resources.GetTextSize(0, menuItem.Text).Width;
 			this.DrawText(shortcutText, 0, 15, x + textWidth + 8, y, TextAlign.Left);
@@ -236,7 +237,7 @@ namespace CivOne.Screens
 		
 		public GameMenu(string menuId, Palette palette) : base(8, 8)
 		{
-			Items = new MenuItemCollection<int>(menuId);
+			_items = new MenuItemCollection<int>(menuId);
 			
 			Palette = palette.Copy();
 		}

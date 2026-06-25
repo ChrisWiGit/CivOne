@@ -5,6 +5,7 @@ using UniversityBuilding = CivOne.Buildings.University;
 
 namespace CivOne
 {
+	#pragma warning disable CA1822 // Mark members as static
 	/// <summary>
 	/// Service implementation for calculating city economy breakdowns.
 	/// Tight coupling to City because this service is an internal implementation detail of City and relies on City internals for its calculations. 
@@ -20,8 +21,8 @@ namespace CivOne
 			int tradeTotal = _city.RawTradeTotal;
 			int totalTrade = tradeTotal + _city.TradingCitiesSumValue;
 
-			short tradeTaxes = CalculateTradeTaxes(totalTrade, _city.Player.TaxesRate);
-			short tradeLuxuries = CalculateTradeLuxuries(totalTrade, tradeTaxes, _city.Player.TaxesRate, _city.Player.LuxuriesRate);
+			short tradeTaxes = CalculateTradeTaxes(totalTrade, _city.CityOwnerPlayer.TaxesRate);
+			short tradeLuxuries = CalculateTradeLuxuries(totalTrade, tradeTaxes, _city.CityOwnerPlayer.TaxesRate, _city.CityOwnerPlayer.LuxuriesRate);
 			short tradeScience = CalculateTradeScience(totalTrade, tradeLuxuries, tradeTaxes);
 
 			short luxuries = CalculateLuxuries(
@@ -36,8 +37,8 @@ namespace CivOne
 				_city.HasBuilding<Bank>(),
 				_city.Taxmen);
 
-			bool hasSeti = _city.Player.HasWonder<SETIProgram>();
-			bool hasNewton = !_game.WonderObsolete<IsaacNewtonsCollege>() && _city.Player.HasWonder<IsaacNewtonsCollege>() && !hasSeti;
+			bool hasSeti = _city.CityOwnerPlayer.HasWonder<SETIProgram>();
+			bool hasNewton = !_game.WonderObsolete<IsaacNewtonsCollege>() && _city.CityOwnerPlayer.HasWonder<IsaacNewtonsCollege>() && !hasSeti;
 			bool hasCopernicus = !_game.WonderObsolete<CopernicusObservatory>() && _city.HasWonder<CopernicusObservatory>();
 
 			short totalScience = CalculateScience(

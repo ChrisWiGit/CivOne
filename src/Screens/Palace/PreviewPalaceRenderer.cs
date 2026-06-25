@@ -13,7 +13,7 @@ using CivOne.Graphics;
 
 namespace CivOne.Screens.PalaceAssets
 {
-	public sealed class PreviewPalaceRenderer(PreviewPalaceResourcesDelegate resources) : IPreviewPalaceRenderer
+	public sealed class PreviewPalaceRenderer(PreviewPalaceResourcesWrapper resources) : IPreviewPalaceRenderer
 	{
 		private const int PART_WIDTH = 7;
 		private const int PART_HEIGHT = 13;

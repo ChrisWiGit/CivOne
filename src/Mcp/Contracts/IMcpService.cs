@@ -6,6 +6,6 @@ namespace CivOne.Mcp.Contracts
 	{
 		void Start();
 		void Process();
-		void Stop();
+		void StopService();
 	}
 }

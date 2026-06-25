@@ -7,6 +7,8 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
+using System.Diagnostics;
 using System.Drawing;
 using CivOne.Graphics.Sprites;
 
@@ -18,22 +20,29 @@ namespace CivOne.IO
 
 		public static Bytemap FromByteArray(this Bytemap bytemap, params byte[] bytes)
 		{
+			Debug.Assert(bytemap != null, "bytemap must not be null.");
+			Debug.Assert(bytes != null, "bytes must not be null.");
+
 			int i = 0;
 			for (int yy = 0; yy < bytemap.Height; yy++)
-			for (int xx = 0; xx < bytemap.Width; xx++)
 			{
-				bytemap[xx, yy] = bytes[i++];
-				if (i >= bytemap.Length) return bytemap;
+				for (int xx = 0; xx < bytemap.Width; xx++)
+				{
+					bytemap[xx, yy] = bytes[i++];
+					if (i >= bytemap.Length) return bytemap;
+				}
 			}
 			return bytemap;
 		}
 
-		public static Bytemap AddLayer(this Bytemap bytemap, ISprite layer, Point point) => AddLayer(bytemap, layer.Bitmap, point.X, point.Y);
-		public static Bytemap AddLayer(this Bytemap bytemap, ISprite layer, int left = 0, int top = 0) => AddLayer(bytemap, layer.Bitmap, left, top);
+		public static Bytemap AddLayer(this Bytemap bytemap, ISprite layer, Point point) => AddLayer(bytemap, layer?.Bitmap, point.X, point.Y);
+		public static Bytemap AddLayer(this Bytemap bytemap, ISprite layer, int left = 0, int top = 0) => AddLayer(bytemap, layer?.Bitmap, left, top);
 		public static Bytemap AddLayer(this Bytemap bytemap, Bytemap layer, Point point) => AddLayer(bytemap, layer, point.X, point.Y);
-		public static Bytemap AddLayer(this Bytemap bytemap, Bytemap layer, int left = 0, int top = 0)
+		public static Bytemap AddLayer(this Bytemap bytemap, Bytemap? layer, int left = 0, int top = 0)
 		{
 			if (layer == null) return bytemap;
+
+			Debug.Assert(bytemap != null, "bytemap must not be null.");
 
 			for (int yy = 0; yy < layer.Height; yy++)
 			{
@@ -47,18 +56,33 @@ namespace CivOne.IO
 			}
 			return bytemap;
 		}
+		
+		public static Bytemap AddLayerOwned(this Bytemap bytemap, Bytemap layer, int left = 0, int top = 0)
+		{
+			ArgumentNullException.ThrowIfNull(layer);
+			try
+			{
+				return AddLayer(bytemap, layer, left, top);
+			}
+			finally
+			{
+				layer.Dispose();
+			}
+		}
 
 		public static Bytemap ColourReplace(this Bytemap bytemap, byte from, byte to) => ColourReplace(bytemap, (from, to));
 		public static Bytemap ColourReplace(this Bytemap bytemap, params (byte From, byte To)[] fromToColours)
 		{
 			if (fromToColours == null) return bytemap;
 
+			Debug.Assert(bytemap != null, "bytemap must not be null.");
+
 			for (int yy = 0; yy < bytemap.Height; yy++)
 			for (int xx = 0; xx < bytemap.Width; xx++)
-			foreach ((byte From, byte To) colour in fromToColours)
+			foreach ((byte From, byte To) in fromToColours)
 			{
-				if (bytemap[xx, yy] != colour.From) continue;
-				bytemap[xx, yy] = colour.To;
+				if (bytemap[xx, yy] != From) continue;
+				bytemap[xx, yy] = To;
 			}
 			return bytemap;
 		}
@@ -67,7 +91,10 @@ namespace CivOne.IO
 		public static Bytemap FillRectangle(this Bytemap bytemap, Point point, Size size, byte colour) => FillRectangle(bytemap, point.X, point.Y, size.Width, size.Height, colour);
 		public static Bytemap FillRectangle(this Bytemap bytemap, int left, int top, int width, int height, byte colour)
 		{
+			Debug.Assert(bytemap != null, "bytemap must not be null.");
+
 			bytemap.Fill(left, top, width, height, colour);
+
 			return bytemap;
 		}
 	}

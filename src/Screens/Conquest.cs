@@ -8,7 +8,6 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using CivOne.Civilizations;
@@ -19,6 +18,7 @@ using CivOne.Leaders;
 
 namespace CivOne.Screens
 {
+	#pragma warning disable CA1822 // Mark members as static
 	[ScreenResizeable]
 	internal class Conquest : BaseScreen
 	{
@@ -36,12 +36,13 @@ namespace CivOne.Screens
 
 		private readonly Enemy[] _enemies;
 
-		private int _enemy = 0;
-		private int _step = 0;
+		private int _enemy;
+		private int _step;
 
-		private int _timer = 0;
+		private int _timer;
+		private readonly Picture _background;
+		private Picture? _overlay;
 
-		private Picture _background, _overlay;
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
@@ -158,11 +159,14 @@ namespace CivOne.Screens
 					DrawMessageLines();
 					break;
 				case 2:
-					_overlay.ApplyNoise(_noiseMap, --_noiseCounter);
-					if (_noiseCounter < -2) _timer = 90;
-					this.Clear(OpaqueBlackColour)
-						.AddLayer(_background, OffsetX, OffsetY)
-						.AddLayer(_overlay, OffsetX, OffsetY);
+					if (_overlay != null)
+					{
+						_overlay.ApplyNoise(_noiseMap, --_noiseCounter);
+						if (_noiseCounter < -2) _timer = 90;
+						this.Clear(OpaqueBlackColour)
+							.AddLayer(_background, OffsetX, OffsetY)
+							.AddLayer(_overlay, OffsetX, OffsetY);
+					}
 					DrawMessageLines();
 					break;
 				case 4:
@@ -212,20 +216,18 @@ namespace CivOne.Screens
 			for (int x = 0; x < 320; x++)
 				for (int y = 0; y < 200; y++)
 				{
-					_noiseMap[x, y] = (byte)Common.Random.Next(1, NOISE_COUNT);
+					_noiseMap[x, y] = RandomService.NextByte(1, NOISE_COUNT);
 				}
 
 			BaseCivilization.BuddyCivilization getBuddyCiv =
 				BaseCivilization.GetBuddyCivilizationSupplier(
-					Common.Random.InitialSeed, Game.Competition, Game.HumanPlayer.Civilization.PreferredPlayerNumber);
+					Common.Random!.InitialSeed, Game.Competition, Game.HumanPlayer.Civilization.PreferredPlayerNumber);
 
-			_enemies = Game.GetReplayData<ReplayData.CivilizationDestroyed>()
+			_enemies = [.. Game.GetReplayData<ReplayData.CivilizationDestroyed>()
 				.Where(x => x.DestroyedById == Game.HumanPlayer.Civilization.Id)
 				.Select(x =>
 				{
 					ICivilization civ = getBuddyCiv(x.DestroyedId);
-
-					// Console.WriteLine($"Civilization {civ.Name} ({civ.Id}) destroyed by {Game.HumanPlayer.Civilization.Name} ({Game.HumanPlayer.Civilization.Id}/{civ.PreferredPlayerNumber}) in year {Common.YearString((ushort)x.Turn)}");
 
 					return new Enemy
 					{
@@ -234,9 +236,21 @@ namespace CivOne.Screens
 						Civilization = civ,
 					};
 				}
-			).ToArray();
+			)];
 
 			SetPalette();
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_overlay?.Dispose();
+			_overlay = null;
+			base.Dispose(disposing);
 		}
 	}
 }

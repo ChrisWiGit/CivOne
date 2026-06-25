@@ -22,6 +22,8 @@ using CivOne.Services.Palace;
 using CivOne.Services.Random;
 using CivOne.Services;
 using CivOne.Units;
+using CivOne.Tasks;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne
 {
@@ -41,20 +43,33 @@ namespace CivOne
 			}
 		}
 
-		private static IValueSanitizer CreateValueSanitizer()
+		private static ValueSanitizer CreateValueSanitizer()
 		{
 			return new ValueSanitizer(new RuntimeLogger());
 		}
 
+		#pragma warning disable CS8618 //ignore uninitialized non-nullable fields
 		private Game(
 			IValueSanitizer valueSanitizer,
-			IPalaceUpgradeService palaceUpgradeService = null,
-			ICivilizationRankingTriggerService civilizationRankingTriggerService = null)
+			IPalaceUpgradeService? palaceUpgradeService = null,
+			ICivilizationRankingTriggerService? civilizationRankingTriggerService = null)
 		{
 			_valueSanitizer = valueSanitizer ?? throw new ArgumentNullException(nameof(valueSanitizer));
 			_palaceUpgradeService = palaceUpgradeService ?? PalaceUpgradeServiceFactory.GetInstance();
 			_civilizationRankingTriggerService = civilizationRankingTriggerService ?? CivilizationRankingTriggerServiceFactory.GetInstance();
+			
+			// Initialize collections and other fields to default values. 
+			// This only remedies the warning about uninitialized non-nullable fields.
+			// This constructor is not expected to be used directly; 
+			// but only as base for the Game(GameState) constructor, which will properly initialize these fields.
+			_players = [];
+			_cities = [];
+			_units = [];
+			CityNames = [.. Common.AllCityNames];
+			_advanceOrigin = [];
+			_replayData = [];
 		}
+		#pragma warning restore CS8618
 
 		private Game(GameState state) : this(CreateValueSanitizer())
 		{
@@ -155,7 +170,7 @@ namespace CivOne
 			RandomServiceFactory.Reset(_valueSanitizer.ClampToUInt16(state.RandomSeed, nameof(Game), nameof(state.RandomSeed)));
 		}
 
-		private void ApplyGameOptions(IEnumerable<GameOptionEnum> options)
+		private void ApplyGameOptions(IEnumerable<GameSetting> options)
 		{
 			InstantAdvice = Settings.InstantAdvice == GameOption.On;
 			AutoSave = Settings.AutoSave != GameOption.Off;
@@ -166,23 +181,23 @@ namespace CivOne
 			CivilopediaText = Settings.CivilopediaText != GameOption.Off;
 			Palace = Settings.Palace != GameOption.Off;
 
-			var optionList = options as IList<GameOptionEnum> ?? [.. options];
-			if (Settings.InstantAdvice == GameOption.Default) InstantAdvice = optionList.Contains(GameOptionEnum.InstantAdvice);
-			if (Settings.AutoSave == GameOption.Default) AutoSave = optionList.Contains(GameOptionEnum.AutoSave);
-			if (Settings.EndOfTurn == GameOption.Default) EndOfTurn = optionList.Contains(GameOptionEnum.EndOfTurn);
-			if (Settings.Animations == GameOption.Default) Animations = optionList.Contains(GameOptionEnum.Animations);
-			if (Settings.Sound == GameOption.Default) Sound = optionList.Contains(GameOptionEnum.Sound);
-			if (Settings.EnemyMoves == GameOption.Default) EnemyMoves = optionList.Contains(GameOptionEnum.EnemyMoves);
-			if (Settings.CivilopediaText == GameOption.Default) CivilopediaText = optionList.Contains(GameOptionEnum.CivilopediaText);
-			if (Settings.Palace == GameOption.Default) Palace = optionList.Contains(GameOptionEnum.Palace);
+			var optionList = options as IList<GameSetting> ?? [.. options];
+			if (Settings.InstantAdvice == GameOption.Default) InstantAdvice = optionList.Contains(GameSetting.InstantAdvice);
+			if (Settings.AutoSave == GameOption.Default) AutoSave = optionList.Contains(GameSetting.AutoSave);
+			if (Settings.EndOfTurn == GameOption.Default) EndOfTurn = optionList.Contains(GameSetting.EndOfTurn);
+			if (Settings.Animations == GameOption.Default) Animations = optionList.Contains(GameSetting.Animations);
+			if (Settings.Sound == GameOption.Default) Sound = optionList.Contains(GameSetting.Sound);
+			if (Settings.EnemyMoves == GameOption.Default) EnemyMoves = optionList.Contains(GameSetting.EnemyMoves);
+			if (Settings.CivilopediaText == GameOption.Default) CivilopediaText = optionList.Contains(GameSetting.CivilopediaText);
+			if (Settings.Palace == GameOption.Default) Palace = optionList.Contains(GameSetting.Palace);
 		}
 
 		private void InitializeGlobalWarmingServices(GameState state)
 		{
-			globalWarmingService = GlobalWarmingServiceFactory.CreateGlobalWarmingService(
+			_globalWarmingService = GlobalWarmingServiceFactory.CreateGlobalWarmingService(
 				state.GlobalWarmingCount, state.PollutedSquaresCount, state.WarmingIndicator, Map.AllTiles());
-			globalWarmingScourgeService = GlobalWarmingServiceFactory.CreateGlobalWarmingScourgeService(
-				globalWarmingService,
+			_globalWarmingScourgeService = GlobalWarmingServiceFactory.CreateGlobalWarmingScourgeService(
+				_globalWarmingService,
 				Map.Tiles,
 				(tile, newTerrainType) => Map.ChangeTileType(tile.X, tile.Y, newTerrainType),
 				DisbandUnit,
@@ -205,6 +220,7 @@ namespace CivOne
 			}
 		}
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to load a YAML save file does not crash the application, and that any exceptions are logged appropriately.")]
 		public static bool LoadYamlGame(string cosFile)
 		{
 			if (string.IsNullOrWhiteSpace(cosFile))
@@ -228,7 +244,7 @@ namespace CivOne
 
 				// Reset static player context only for the hydration window,
 				// then Game(state) will set Player.Game to the new game instance.
-				Player.Game = null;
+				Player.Game = null!;
 				var state = mapper.FromDto(dto);
 				_instance = new Game(state);
 
@@ -293,7 +309,7 @@ namespace CivOne
 				throw new InvalidOperationException("GameState is required in save file.");
 
 			Guid saveGuid = saveFile.Meta?.SaveGuid ?? Guid.NewGuid();
-			return new VersionedSaveFile(saveFile.GameState, saveFile.Meta, saveGuid);
+			return new VersionedSaveFile(saveFile.GameState, saveFile.Meta!, saveGuid);
 		}
 
 		private static uint ReadFormatVersion(string yaml)

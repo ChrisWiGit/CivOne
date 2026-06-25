@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -101,7 +101,7 @@ namespace CivOne.Screens
 				for (int nx = 0; nx < 320; nx++)
 					for (int ny = 0; ny < 200; ny++)
 					{
-						_noiseMap[nx, ny] = (byte)random.Next(1, NOISE_COUNT + 1);
+						_noiseMap[nx, ny] = (byte)random.NextInt(1, NOISE_COUNT + 1);
 					}
 			}
 
@@ -281,14 +281,14 @@ namespace CivOne.Screens
 					if (t.Tile.Type == Terrain.Ocean)
 					{
 						// Always show naval units first at sea
-						units = [.. units.OrderBy(u => (u.Class == UnitClass.Water) ? 1 : 0)];
+						units = [.. units.OrderBy(u => (u.UnitCategory == UnitClass.Water) ? 1 : 0)];
 					}
 
 					if (units.Length == 0) continue;
 
 					IUnit drawUnit = units[0];
 
-					if (t.Tile.IsOcean && drawUnit.Class != UnitClass.Water && drawUnit.Sentry)
+					if (t.Tile.IsOcean && drawUnit.UnitCategory != UnitClass.Water && drawUnit.Sentry)
 					{
 						// Do not draw sentried land units at sea
 						continue;
@@ -366,10 +366,22 @@ namespace CivOne.Screens
 			int xx = unit.X - x;
 			int yy = unit.Y - y;
 
-			while (xx < 0) xx += Map.WIDTH;
-			while (xx >= Map.WIDTH) xx -= Map.WIDTH;
+			while (xx < 0) { xx += Map.WIDTH; }
+			while (xx >= Map.WIDTH) { xx -= Map.WIDTH; }
 
 			return (xx, yy);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_overlay?.Dispose();
+			_overlay = null;
+			base.Dispose(disposing);
 		}
 	}
 }

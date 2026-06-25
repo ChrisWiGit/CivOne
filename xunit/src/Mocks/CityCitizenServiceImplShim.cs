@@ -1,11 +1,11 @@
-using CivOne.Screens.Services;
 using CivOne.Enums;
+using CivOne.Screens.Services;
 using System.Collections.Generic;
 
 namespace CivOne.UnitTests
 {
 
-    class CityCitizenServiceImplShim : CityCitizenServiceImpl
+    sealed class CityCitizenServiceImplShim : CityCitizenService
     {
         public CityCitizenServiceImplShim(ICityBasic city,
                 ICityBuildings cityBuildings,
@@ -15,9 +15,9 @@ namespace CivOne.UnitTests
         {
         }
 
-        public bool? BachsCathedral { get; set; } = null;
+		public bool? BachsCathedral { get; set; }
 
-        protected override internal bool HasBachsCathedral()
+		protected override internal bool HasBachsCathedral()
         {
             if (BachsCathedral.HasValue)
             {
@@ -26,8 +26,8 @@ namespace CivOne.UnitTests
             return base.HasBachsCathedral();
         }
 
-        public int? CathedralDeltaValue { get; set; } = null;
-        internal override int CathedralDelta()
+		public int? CathedralDeltaValue { get; set; }
+		internal override int CathedralDelta()
         {
             if (CathedralDeltaValue.HasValue)
             {

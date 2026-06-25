@@ -16,7 +16,8 @@ namespace CivOne.src
 		public void GetResourceTilesRoundTripsInnerAndOuterNorthEastTiles()
 		{
 			var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-			City city = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+			City? city = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+			Assert.NotNull(city);
 
 			SetResourceTiles(city, [city.Tile[1, -1], city.Tile[2, -1]]);
 
@@ -32,7 +33,8 @@ namespace CivOne.src
 		public void SizeIncreaseFillsAllMissingResourceTiles()
 		{
 			var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-			City city = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+			City? city = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+			Assert.NotNull(city);
 
 			city.Size = 4;
 
@@ -43,7 +45,8 @@ namespace CivOne.src
 		public void SizeIncreaseStopsWhenNoMoreTilesAvailable()
 		{
 			var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-			City city = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+			City? city = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+			Assert.NotNull(city);
 
 			city.Size = 30;
 
@@ -54,7 +57,8 @@ namespace CivOne.src
 		public void SetResourceTilesBreaksWhenNoBestTileExists()
 		{
 			var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-			City city = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+			City? city = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+			Assert.NotNull(city);
 
 			city.Size = 30;
 			SetResourceTiles(city, []);
@@ -70,8 +74,10 @@ namespace CivOne.src
 		public void BarbarianCityCreationKeepsWorkedTilesAndNoSpecialistsAtSizeOne()
 		{
 			var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-			Player barbarian = Game.Instance.GetPlayer(0);
-			City city = Game.Instance.AddCity(barbarian, 1, unit.X, unit.Y);
+			Player? barbarian = Game.Instance.GetPlayer(0);
+			Assert.NotNull(barbarian);
+			City? city = Game.Instance.AddCity(barbarian, 1, unit.X, unit.Y);
+			Assert.NotNull(city);
 
 			Assert.Contains(city.ResourceTiles, tile => tile.X == city.X && tile.Y == city.Y);
 			Assert.True(city.ResourceTiles.Length >= 2);
@@ -97,7 +103,7 @@ namespace CivOne.src
 
 			City? city = Game.Instance.GetCities().FirstOrDefault(existingCity => existingCity.X == targetX && existingCity.Y == targetY);
 			Assert.NotNull(city);
-			Assert.Equal(computerPlayerId, city.Owner);
+			Assert.Equal(computerPlayerId, city.CityOwnerPlayerIndex);
 			Assert.Equal(1, city.Size);
 			Assert.Contains(city.ResourceTiles, tile => tile.X == city.X && tile.Y == city.Y);
 			Assert.True(city.ResourceTiles.Length >= 2);

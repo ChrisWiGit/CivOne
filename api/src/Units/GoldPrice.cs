@@ -11,18 +11,14 @@ using System;
 
 namespace CivOne.Units
 {
-	public class GoldPrice : BaseAttribute
+	/// <summary>
+	/// Modify the unit initial gold price.
+	/// </summary>
+	/// <param name="value">The new gold price for the unit. (valid range: 1 to 8000)</param>
+	public sealed class GoldPrice(short value) : BaseAttribute(typeof(short), value, InRange)
 	{
 		private static bool InRange(object value) => (short)value >= 0 && (short)value <= 8000;
 
-		public short Value => GetValue<short>();
-
-		/// <summary>
-		/// Modify the unit initial gold price.
-		/// </summary>
-		/// <param name="value">The new gold price for the unit. (valid range: 1 to 8000)</param>
-		public GoldPrice(short value) : base(typeof(short), value, InRange)
-		{
-		}
+		public short Value => GetRequiredValue<short>();
 	}
 }

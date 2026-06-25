@@ -19,7 +19,7 @@ namespace CivOne.Persistence.Factories
 		PlayerDtoMapper PlayerMapper,
 		UnitDtoMapper UnitMapper,
 		MapDtoMapper MapMapper,
-		DtoMapper<GlobalWarmingDto, GameState> GlobalWarmingMapper,
+		IDtoMapper<GlobalWarmingDto, GameState> GlobalWarmingMapper,
 		IValueSanitizer Sanitizer);
 
 	public interface IYamlMapperDependenciesFactory
@@ -62,7 +62,7 @@ namespace CivOne.Persistence.Factories
 
 		public static IYamlMapperDependenciesFactory CreateDefault() => new YamlMapperDependenciesFactory(new GameReflect(), CreateValueSanitizer());
 
-		private static IValueSanitizer CreateValueSanitizer()
+		private static ValueSanitizer CreateValueSanitizer()
 		{
 			return new ValueSanitizer(new RuntimeLogger());
 		}

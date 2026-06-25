@@ -25,7 +25,6 @@ namespace CivOne.Screens.Dialogs
 
 		private readonly Player _player;
 		private readonly IList<IAdvance> _advances;
-		private Menu _menu;
 
 		private void Steal(IAdvance advance)
 		{
@@ -33,20 +32,9 @@ namespace CivOne.Screens.Dialogs
 			Cancel();
 		}
 
-		protected override void FirstUpdate()
+		protected override IMenu? CreateManagedMenu()
 		{
-			CreateMenu();
-			base.FirstUpdate();
-		}
-
-		private void CreateMenu()
-		{
-			if (_menu is not null)
-			{
-				return;
-			}
-
-			_menu = new Menu(Palette, Selection(3, 5 + (1 * Resources.GetFontHeight(FONT_ID)), 130, ((2 * Resources.GetFontHeight(FONT_ID)) + (_advances.Count * Resources.GetFontHeight(FONT_ID)) + 9)))
+			Menu menu = new Menu(Palette, Selection(3, 5 + (1 * Resources.GetFontHeight(FONT_ID)), 130, ((2 * Resources.GetFontHeight(FONT_ID)) + (_advances.Count * Resources.GetFontHeight(FONT_ID)) + 9)))
 			{
 				X = 103,
 				Y = 95,
@@ -59,10 +47,10 @@ namespace CivOne.Screens.Dialogs
 
 			foreach (IAdvance advance in _advances)
 			{
-				_menu.Items.Add(advance.TranslatedName).OnSelect((s, a) => Steal(advance));
+				menu.Items.Add(advance.TranslatedName).OnSelect((s, a) => Steal(advance));
 			}
 
-			AddMenu(_menu);
+			return menu;
 		}
 
 		private static int DialogHeight(int choices)

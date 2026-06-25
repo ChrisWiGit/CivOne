@@ -15,6 +15,8 @@ using CivOne.IO;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.src;
+using System.Globalization;
+using CivOne.Services.Random;
 
 namespace CivOne.Screens
 {
@@ -56,7 +58,7 @@ namespace CivOne.Screens
 
 			for (int i = 0; i < 4; i++)
 			{
-				governmentPortraits[i] = Icons.GovernmentPortrait(Human.Government, (Advisor)Enum.Parse(typeof(Advisor), i.ToString()), _modernGovernment);
+				governmentPortraits[i] = Icons.GovernmentPortrait(Human.Government, Enum.Parse<Advisor>(i.ToString(CultureInfo.InvariantCulture)), _modernGovernment);
 			}
 
 			for (int i = 144; i < 256; i++)
@@ -176,18 +178,20 @@ namespace CivOne.Screens
 		}
 
 		//public Newspaper(bool showGovernment, City city = null, params string[] message)
-		public Newspaper(City city, string[] message, bool showGovernment = false)
+		public Newspaper(City? city, string[] message, bool showGovernment = false)
 		{
 			_message = message;
 			_showGovernment = showGovernment;
 			_modernGovernment = Human.HasAdvance<Invention>();
 
-			_newsflash = GetGameText($"KING/NEWS{(char)Common.Random.Next((int)'A', (int)'O')}")[0];
-			_shout = (Common.Random.Next(0, 2) == 0) ? Translate("FLASH") : Translate("EXTRA!");
+			var random = RandomServiceFactory.Create();
+			var randomNewletter = random.NextInt('A', 'O');
+			_newsflash = GetGameText($"KING/NEWS{(char)randomNewletter}")[0];
+			_shout = random.Hit(50) ? Translate("FLASH") : Translate("EXTRA!");
 			_date = TranslateFormatted("January 1, {0}", Common.YearString(Game.GameTurn));
 			_name = city == null ? Human.GetCapitalName() : city.Name;
 
-			switch (Common.Random.Next(0, 3))
+			switch (random.NextInt(3))
 			{
 				case 0: _name = TranslateFormatted("The {0} Times", _name); break;
 				case 1: _name = TranslateFormatted("The {0} Tribune", _name); break;

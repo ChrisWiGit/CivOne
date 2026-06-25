@@ -15,18 +15,24 @@ using CivOne.IO;
 
 namespace CivOne.UnitTests
 {
-	public class MockedIBitmap : IBitmap	
+	public class MockedIBitmap(IEnumerable<Colour> palette, byte[,] bitmap) : IBitmap	
 	{
-		public MockedIBitmap(IEnumerable<Colour> palette, byte[,] bitmap)
-		{
-			Palette = palette.ToArray();
-			Bitmap = new Bytemap(bitmap);
-		}
-		public Palette Palette { get; set; }
-		public Bytemap Bitmap { get; set; }
+		public Palette Palette { get; set; } = palette.ToArray();
+		public Bytemap Bitmap { get; set; } = new Bytemap(bitmap);
 
 		public void Dispose()
 		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+			Bitmap.Dispose();
 		}
 	}
 }

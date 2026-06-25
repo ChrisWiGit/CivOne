@@ -1,10 +1,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Enums;
 using CivOne.Tiles;
 
 namespace CivOne
 {
+	#pragma warning disable CA1822 // Mark members as static
+	[SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "This class is intended to be used internally for loading game data, and using List<T> provides flexibility and ease of use for the operations it performs. We do not need to expose this class as part of a public API, so we can accept the use of List<T> here without concern for the usual guidelines that apply to public-facing code.")]
 	public class CityLoadGame
 	{
 		public List<ITile> GetResourceTilesFromGameData(City city, byte[] gameData)

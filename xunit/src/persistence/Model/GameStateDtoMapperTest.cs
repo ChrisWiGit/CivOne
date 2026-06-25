@@ -232,7 +232,7 @@ namespace CivOne.Persistence.Model
 				Difficulty = DifficultyLevel.Chieftain,
 				Players = [playerDto0, playerDto1],
 				AnthologyTurn = 0,
-				GameOptions = [GameOptionEnum.Sound],
+				GameOptions = [GameSetting.Sound],
 				AdvanceOrigin = new Dictionary<byte, byte> { [3] = 1, [7] = 0 },
 				ReplayData = [new ReplayDataDto { Turn = 5, CivilizationDestroyed = new() { DestroyedId = 1, DestroyedById = 2 } }],
 				GlobalWarming = new GlobalWarmingDto
@@ -260,7 +260,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestGameStateDtoMapper_ContractCheck()
+		public void TestGameStateDtoMapperContractCheck()
 		{
 			var dtoProperties = GetWritablePropertyNames<GameStateDto>();
 			// This prevents silent mapper drift: every writable GameStateDto property must
@@ -271,7 +271,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestGameStateDtoMapper_RoundTrip()
+		public void TestGameStateDtoMapperRoundTrip()
 		{
 			var gameState = _testee.FromDto(_dto);
 			var roundTripDto = _testee.ToDto(gameState);
@@ -286,7 +286,7 @@ namespace CivOne.Persistence.Model
 			Assert.Equal(99999, gameState.RandomSeed);
 			Assert.Equal(0, gameState.Difficulty); // Chieftain = 0
 			Assert.Equal(2, gameState.Players.Length);
-			Assert.Contains(GameOptionEnum.Sound, gameState.GameOptions);
+			Assert.Contains(GameSetting.Sound, gameState.GameOptions);
 			Assert.Equal(4242, gameState.TerrainSeed);
 			Assert.Equal(2, gameState.MapWidth);
 			Assert.Equal(2, gameState.MapHeight);
@@ -336,7 +336,7 @@ namespace CivOne.Persistence.Model
 					{
 						var expectedPlayer = expected.Players[i];
 						var actualPlayer = actual.Players.FirstOrDefault(p => p.Id == expectedPlayer.Id)
-							?? throw new Exception($"Player with ID {expectedPlayer.Id} not found in actual players");
+							?? throw new InvalidOperationException($"Player with ID {expectedPlayer.Id} not found in actual players");
 						Assert.Equal(expectedPlayer.Gold, actualPlayer.Gold);
 						Assert.Equal(expectedPlayer.Anarchy, actualPlayer.Anarchy);
 						Assert.Equal(expectedPlayer.PlayerGuid, actualPlayer.PlayerGuid);
@@ -393,7 +393,7 @@ namespace CivOne.Persistence.Model
 
 
 		// Mock implementations for testing
-		private class MockGameInstanceForTesting : IPlayerGame
+		private sealed class MockGameInstanceForTesting : IPlayerGame
 		{
 			private readonly List<IPlayer> _players;
 
@@ -415,14 +415,14 @@ namespace CivOne.Persistence.Model
 			public Player GetPlayer(byte number) => throw new NotImplementedException();
 			public City[] GetCities() => [];
 			public IUnit[] GetUnits() => [];
-			public void DisbandUnit(IUnit unit) => throw new NotImplementedException();
+			public void DisbandUnit(IUnit? unit) => throw new NotImplementedException();
 			public bool WonderObsolete<T>() where T : IWonder, new() => false;
 			public bool WonderBuilt<T>() where T : IWonder => false;
 			public IWonder[] BuiltWonders => [];
 			public void SetAdvanceOrigin(IAdvance advance, Player player) => throw new NotImplementedException();
 		}
 
-		private class MockPlayerFactoryForTesting : IPlayerFactory
+		private sealed class MockPlayerFactoryForTesting : IPlayerFactory
 		{
 			private readonly List<IPlayerRestorable> _players;
 
@@ -434,18 +434,18 @@ namespace CivOne.Persistence.Model
 			public IPlayerRestorable Create(ICivilization civilization, PlayerDto dto)
 			{
 				var result = _players.FirstOrDefault(p => p.Civilization.Name == civilization.Name)
-					?? throw new Exception("No matching player found for civilization " + civilization.Name);
+					?? throw new InvalidOperationException("No matching player found for civilization " + civilization.Name);
 				return result;
 			}
 		}
 
-		private class MockUnitFactoryForTesting : IUnitFactory
+		private sealed class MockUnitFactoryForTesting : IUnitFactory
 		{
 			public IUnitRestorable Create(string className, byte player, Guid? HomeCityGuid)
 				=> new MockedIUnit { Owner = player, TranslatedName = className, Name = className };
 		}
 
-		private class FixedPlayerOwnerResolver : IPlayerOwnerResolver
+		private sealed class FixedPlayerOwnerResolver : IPlayerOwnerResolver
 		{
 			public bool TryResolveOwnerId(IPlayer player, out byte ownerId)
 			{

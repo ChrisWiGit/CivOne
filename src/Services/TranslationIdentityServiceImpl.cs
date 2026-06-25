@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Globalization;
 
 namespace CivOne.Services
 {
@@ -17,7 +18,7 @@ namespace CivOne.Services
 	/// Returns keys unchanged and only applies string formatting for formatted calls.
 	/// Used as fallback when no language file is active.
 	/// </summary>
-	public class TranslationIdentityServiceImpl : ITranslationService
+	public class TranslationIdentityService : ITranslationService
 	{
 		/// <inheritdoc/>
 		public string Translate(string key)
@@ -28,7 +29,7 @@ namespace CivOne.Services
 		/// <inheritdoc/>
 		public string TranslateFormatted(string key, params object[] args)
 		{
-			return string.Format(key, args);
+			return string.Format(CultureInfo.CurrentCulture, key, args);
 		}
 
 		/// <inheritdoc/>

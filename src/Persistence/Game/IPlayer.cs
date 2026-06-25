@@ -4,6 +4,7 @@ using CivOne.Advances;
 using CivOne.Civilizations;
 using CivOne.Governments;
 using CivOne.Wonders;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne.Persistence.Game
 {
@@ -13,6 +14,7 @@ namespace CivOne.Persistence.Game
 		bool HasAdvance<T>() where T : IAdvance;
 	}
 
+	[SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "We want to use List<T> for simplicity and performance in our game model.")]
 	public interface IPlayer : IPlayerEffects
 	{
 		ICivilization Civilization { get; }
@@ -26,7 +28,7 @@ namespace CivOne.Persistence.Game
 		ushort[] Diplomacy { get; }
 		short Anarchy { get; }
 		short Gold { get; }
-		IAdvance CurrentResearch { get; }
+		IAdvance? CurrentResearch { get; }
 		int CityNamesSkipped { get; }
 		ushort FutureTechCount { get; }
 		ushort HumanContactTurn { get; }
@@ -51,5 +53,7 @@ namespace CivOne.Persistence.Game
 		short Science { get; }
 		PalaceData Palace { get; }
 		List<ICity> Cities { get; }
+
+		ICity[] CitiesInterface { get; }
 	}
 }

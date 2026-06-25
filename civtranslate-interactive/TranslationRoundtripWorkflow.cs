@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace CivTranslateInteractive;
 
 public sealed class TranslationRoundtripWorkflow(
@@ -9,6 +11,7 @@ public sealed class TranslationRoundtripWorkflow(
 	private readonly ITranslationDocumentRepository _translationDocumentRepository = translationDocumentRepository;
 	private readonly IValuesFileRepository _valuesFileRepository = valuesFileRepository;
 
+	[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure in the translation roundtrip workflow does not crash the application, and that any exceptions are logged appropriately.")]
 	public int Run(string translationFilePath)
 	{
 		try

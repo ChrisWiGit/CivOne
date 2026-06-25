@@ -14,6 +14,7 @@ using CivOne.Units;
 using CivOne.UserInterface;
 using CivOne.Civilizations;
 using CivOne.src;
+using CivOne.Persistence.Factories;
 
 namespace CivOne.Screens.Dialogs
 {
@@ -24,7 +25,6 @@ namespace CivOne.Screens.Dialogs
 		private readonly IDiplomatBribeService _service;
 
 		private readonly bool _canBribe;
-		private Menu _menu;
 
 		private void DontBribe(object sender, EventArgs args)
 		{
@@ -37,21 +37,15 @@ namespace CivOne.Screens.Dialogs
 			Cancel();
 		}
 
-		protected override void FirstUpdate()
+		protected override IMenu? CreateManagedMenu()
 		{
-			CreateMenu();
-			base.FirstUpdate();
-		}
-
-		private void CreateMenu()
-		{
-			if (_menu is not null || !_canBribe)
+			if (!_canBribe)
 			{
-				return;
+				return null;
 			}
 
 			int choices = 2;
-			_menu = new Menu(Palette, Selection(3, 5 + (3 * Resources.GetFontHeight(FONT_ID)), 130, ((2 * Resources.GetFontHeight(FONT_ID)) + (choices * Resources.GetFontHeight(FONT_ID)) + 9)))
+			Menu menu = new Menu(Palette, Selection(3, 5 + (3 * Resources.GetFontHeight(FONT_ID)), 130, ((2 * Resources.GetFontHeight(FONT_ID)) + (choices * Resources.GetFontHeight(FONT_ID)) + 9)))
 			{
 				X = 103,
 				Y = 110,
@@ -62,9 +56,9 @@ namespace CivOne.Screens.Dialogs
 				FontId = FONT_ID
 			};
 
-			_menu.Items.Add(Translate("Forget It.")).OnSelect(DontBribe);
-			_menu.Items.Add(Translate("Pay")).OnSelect(Bribe);
-			AddMenu(_menu);
+			menu.Items.Add(Translate("Forget It.")).OnSelect(DontBribe);
+			menu.Items.Add(Translate("Pay")).OnSelect(Bribe);
+			return menu;
 		}
 
 		private static int DialogHeight(bool canBribe)
@@ -102,18 +96,18 @@ namespace CivOne.Screens.Dialogs
 
 	internal static class DiplomatBribeDialogFactory
 	{
-		public static IDiplomatBribeService CreateService(BaseUnitLand unitToBribe, Diplomat diplomat)
+		public static IDiplomatBribeService CreateService(BaseUnitLand unitToBribe, Diplomat diplomat, ILogger logger)
 		{
-			return new DiplomatBribeService(unitToBribe, diplomat);
+			return new DiplomatBribeService(unitToBribe, diplomat, logger);
 		}
-		public static IScreen CreateDialog(BaseUnitLand unitToBribe, Diplomat diplomat)
+		public static IScreen CreateDialog(BaseUnitLand unitToBribe, Diplomat diplomat, ILogger logger)
 		{
-			IDiplomatBribeService service = CreateService(unitToBribe, diplomat);
+			IDiplomatBribeService service = CreateService(unitToBribe, diplomat, logger);
 			return new DiplomatBribe(service, service.CanBribe());
 		}
 	}
 
-	internal class DiplomatBribeService(BaseUnitLand _unitToBribe, Diplomat _diplomat) : IDiplomatBribeService
+	internal class DiplomatBribeService(BaseUnitLand _unitToBribe, Diplomat _diplomat, ILogger logger) : IDiplomatBribeService
 	{
 		public string UnitName => _unitToBribe.TranslatedName;
 
@@ -123,7 +117,7 @@ namespace CivOne.Screens.Dialogs
 
 		public int CalculateBribeCost()
 		{
-			City capital = _unitToBribe.Player.GetCapital();
+			City? capital = _unitToBribe.Player.GetCapital();
 			int distance = capital == null ? 16 : _unitToBribe.Tile.DistanceTo(capital);
 			int cost = (_unitToBribe.Player.Gold + 750) / (distance + 2) * _unitToBribe.Price;
 			return (_unitToBribe.Player.Civilization is Barbarian) ? cost / 2 : cost;
@@ -136,12 +130,18 @@ namespace CivOne.Screens.Dialogs
 
 		public void BribeUnit()
 		{
-			City capital = _unitToBribe.Player.GetCapital();
+			City? capital = _unitToBribe.Player.GetCapital();
 			int distance = capital == null ? 16 : _unitToBribe.Tile.DistanceTo(capital);
 			int cost = (_unitToBribe.Player.Gold + 750) / (distance + 2) * _unitToBribe.Price;
 			int bribeCost = (_unitToBribe.Player.Civilization is Barbarian) ? cost / 2 : cost;
 
-			IUnit newUnit = Game.Instance.CreateUnit(_unitToBribe.Type, _unitToBribe.X, _unitToBribe.Y, _diplomat.Owner);
+			IUnit? newUnit = Game.Instance.CreateUnit(_unitToBribe.Type, _unitToBribe.X, _unitToBribe.Y, _diplomat.Owner);
+			if (newUnit == null) 
+			{
+				logger.Log($"Failed to create unit of type {_unitToBribe.Type} at ({_unitToBribe.X}, {_unitToBribe.Y}) for player {_diplomat.Owner}");
+				return;
+			}
+
 			Game.Instance.DisbandUnit(_unitToBribe);
 			_diplomat.KeepMoving(newUnit);
 			_diplomat.Player.Gold -= (short)bribeCost;

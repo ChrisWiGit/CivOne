@@ -18,14 +18,14 @@ namespace CivOne.Screens.StartupWizard
 	/// State is shared between <see cref="IWizardPageBuilder"/> and <see cref="IWizardActionHandler"/>.
 	/// Page navigation is controlled via <see cref="MoveNext"/> and <see cref="MoveBack"/>.
 	/// </remarks>
-	internal sealed class WizardState(string selectedLanguagePostfix)
+	internal sealed class WizardState(string? selectedLanguagePostfix)
 	{
 		private const int LastPageIndex = 6;
 
 		/// <summary>
 		/// Gets the zero-based index of the currently active wizard page.
 		/// </summary>
-		public int PageIndex { get; private set; } = 0;
+		public int PageIndex { get; private set; }
 
 		/// <summary>
 		/// Gets or sets the status message shown at the bottom of the wizard screen.
@@ -50,7 +50,7 @@ namespace CivOne.Screens.StartupWizard
 		/// <remarks>
 		/// <see langword="null"/> or empty when no folder has been selected yet.
 		/// </remarks>
-		public string DataFolder { get; set; }
+		public string? DataFolder { get; set; }
 
 		/// <summary>
 		/// Gets or sets whether data-file copy is currently running in the background.

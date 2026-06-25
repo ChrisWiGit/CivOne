@@ -18,9 +18,9 @@ namespace CivOne.Screens
 	/// </summary>
 	internal class ProductionFilterMenu : Menu
 	{
-		public event System.EventHandler TabPressed;
+		public event System.EventHandler? TabPressed;
 
-		public ProductionFilterMenu(Palette palette, IBitmap background = null) 
+		public ProductionFilterMenu(Palette palette, IBitmap? background = null) 
 			: base(palette, background)
 		{
 		}

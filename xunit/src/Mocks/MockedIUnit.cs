@@ -23,17 +23,17 @@ namespace CivOne.UnitTests
             RequiredTech = null;
             RequiredWonder = null;
             ObsoleteTech = null;
-            Class = UnitClass.Land;
+            UnitCategory = UnitClass.Land;
             Type = UnitType.Settlers;
-            Home = null;
+            Home = null!;
             Role = UnitRole.Settler;
             Attack = 0;
             Defense = 1;
             Move = 1;
             X = 2;
             Y = 3;
-            Goto = new Point(1, 2);
-            Tile = null;
+            GotoDestination = new Point(1, 2);
+            Tile = null!;
             Busy = false;
             HasAction = false;
             HasMovesLeft = true;
@@ -44,7 +44,7 @@ namespace CivOne.UnitTests
             Fuel = 0;
             WorkProgress = 0;
             Moving = false;
-            Movement = null;
+            Movement = null!;
             Owner = 0;
             Status = 0;
             order = Order.None;
@@ -55,10 +55,10 @@ namespace CivOne.UnitTests
             MenuItems = [];
             Modifications = [];
             NearestCity = 0;
-            Player = null;
+            Player = null!;
             TranslatedName = "Mocked Unit";
 			Name = "Mocked Unit";
-            Icon = null;
+            Icon = null!;
             PageCount = 0;
             Price = 0;
             BuyPrice = 0;
@@ -74,13 +74,13 @@ namespace CivOne.UnitTests
 			Veteran = veteran;
 		}
 
-		public IAdvance RequiredTech { get; set; }
+		public IAdvance? RequiredTech { get; set; }
 
-		public IWonder RequiredWonder { get; set; }
+		public IWonder? RequiredWonder { get; set; }
 
-		public IAdvance ObsoleteTech { get; set; }
+		public IAdvance? ObsoleteTech { get; set; }
 
-		public UnitClass Class { get; set; }
+		public UnitClass UnitCategory { get; set; }
 
 		public UnitType Type { get; set; }
 
@@ -96,7 +96,7 @@ namespace CivOne.UnitTests
 
 		public int X { get; set; }
 		public int Y { get; set; }
-		public Point Goto { get; set; }
+		public Point GotoDestination { get; set; }
 
 		public ITile Tile { get; set; }
 
@@ -182,7 +182,7 @@ namespace CivOne.UnitTests
 			throw new NotImplementedException();
 		}
 
-		public void SetHome(City city)
+		public void SetHome(City? city)
 		{
 			throw new NotImplementedException();
 		}

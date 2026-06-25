@@ -31,21 +31,21 @@ namespace CivOne
 	public partial class Player : BaseInstance, ITurn, IPlayer, IPlayerSpaceRace
     {
 		// Dependency injection via IPlayerGame; set by Game on load/new game.
-		internal static new IPlayerGame Game = null;
+		internal static new IPlayerGame Game = null!; //For Player this is never expected to be null at runtime.
 		private readonly ICivilization _civilization;
 		private Guid _playerGuid = Guid.NewGuid();
 		private string _tribeName, _tribeNamePlural;
 
 		private readonly bool[,] _explored = new bool[Map.WIDTH, Map.HEIGHT];
 		private readonly bool[,] _visible = new bool[Map.WIDTH, Map.HEIGHT];
-		private readonly List<byte> _advances = new List<byte>();
-		private readonly List<byte> _embassies = new List<byte>();
+		private readonly List<byte> _advances = [];
+		private readonly List<byte> _embassies = [];
 		/// <summary>
 		/// Runtime-only bilateral war state used by the new diplomacy API.
 		/// This state is currently not serialized to, loaded from, or reconstructed from
 		/// legacy SVE diplomacy flags.
 		/// </summary>
-		private readonly HashSet<byte> _warWith = new HashSet<byte>();
+		private readonly HashSet<byte> _warWith = [];
 		/// <summary>
 		/// Raw legacy diplomacy bitmask storage (8 targets).
 		/// The bit semantics are not fully documented; gameplay war logic does not currently
@@ -59,16 +59,16 @@ namespace CivOne
 		internal (short X, short Y) LastMapPosition = (-1, -1);
 		private int _mapZoomBasisPoints = MapZoomSettings.DefaultBasisPoints;
 		
-		private short _anarchy = 0;
+		private short _anarchy;
 		private ushort _epicRanking;
 		private ushort _militaryPower;
 		private ushort _civilizationScore;
 		private short _gold;
-		private IAdvance _currentResearch = null;
+		private IAdvance? _currentResearch;
 
-		public event EventHandler Destroyed;
+		public event EventHandler? Destroyed;
 
-		internal int CityNamesSkipped = 0;
+		internal int CityNamesSkipped;
 		internal ushort FutureTechCount { get; set; }
 		internal ushort HumanContactTurn { get; set; }
 
@@ -88,15 +88,15 @@ namespace CivOne
 		public Guid PlayerGuid => _playerGuid;
 		
 		public string LeaderName => _civilization.Leader.Name;
-		public string TribeName => _tribeName ?? _civilization?.Name;
-		public string TribeNamePlural => _tribeNamePlural ?? _civilization?.NamePlural;
+		public string TribeName => _tribeName ?? _civilization?.Name ?? "Unknown";
+		public string TribeNamePlural => _tribeNamePlural ?? _civilization?.NamePlural ?? "Unknown";
 
 		public byte Handicap { get; internal set; }
 
-		private PalaceData _palace = new PalaceData();
+		private PalaceData _palace = new();
 		public PalaceData Palace => _palace;
 
-		internal AI AI => !IsHuman ? AI.Instance(this) : null;
+		internal AI? AI => IsHuman ? null : AI.Instance(this);
 		
 		private IGovernment _government = new Despotism();
 		public IGovernment Government
@@ -109,7 +109,7 @@ namespace CivOne
 			}
 		}
 
-		private int _luxuriesRate = 0, _taxesRate = 5, _scienceRate = 5;
+		private int _luxuriesRate, _taxesRate = 5, _scienceRate = 5;
 		internal int MapZoomBasisPoints
 		{
 			get => _mapZoomBasisPoints;
@@ -146,16 +146,16 @@ namespace CivOne
 			GameTask.Enqueue(Message.Newspaper(null, TranslateFormattedArray("The {0} are\nrevolting! Citizens\ndemand new govt.", Game.HumanPlayer.TribeNamePlural)));
 		}
 
-		public bool IsHuman => (Game.HumanPlayer == this);
+		public bool IsHuman => Game.HumanPlayer == this;
 
-		public virtual City[] Cities => Game.GetCities().Where(c => this == c.Owner && c.Size > 0).ToArray();
+		public virtual City[] Cities => [.. Game.GetCities().Where(c => this == c.CityOwnerPlayerIndex && c.Size > 0)];
 		
 		/** <summary>
 		 * Interface for City collection.
 		 * This new property is to avoid exposing the City class directly,
 		 * and will be used to refactor code to use ICity instead of City.
 		 * </summary> */
-		public virtual ICity[] CitiesInterface => Game.GetCities().Where(c => this == c.Owner && c.Size > 0).ToArray();
+		public virtual ICity[] CitiesInterface => Game.GetCities().Where(c => this == c.CityOwnerPlayerIndex && c.Size > 0).ToArray();
 
 		public int Population => Cities.Sum(c => c.Population);
 		
@@ -182,7 +182,7 @@ namespace CivOne
 		{
 			get
 			{
-				short cost = (short)((Game.Difficulty + 3) * 2 * (_advances.Count() + 1) * (Common.TurnToYear(Game.GameTurn) > 0 ? 2 : 1));
+				short cost = (short)((Game.Difficulty + 3) * 2 * (_advances.Count + 1) * (Common.TurnToYear(Game.GameTurn) > 0 ? 2 : 1));
 				if (cost < 12)
 					return 12;
 				return cost;
@@ -212,11 +212,16 @@ namespace CivOne
 			}
 		}
 
-		public IAdvance[] Advances => _advances.Select(a => Common.Advances.First(x => x.Id == a)).ToArray();
+		public IAdvance[] Advances => [.. _advances.Select(a => Common.Advances.First(x => x.Id == a))];
 		
 		public virtual bool HasAdvance<T>() where T : IAdvance => Advances.Any(a => a is T);
 
-		public virtual bool HasAdvance(IAdvance advance) => (advance == null || Advances.Any(a => a.Id == advance.Id));
+		/// <summary>
+		/// Returns whether the player has the specified advance, or if the advance is null.
+		/// </summary>
+		/// <param name="advance">The advance to check.</param>
+		/// <returns>True if the player has the advance or if the advance is null; otherwise, false.</returns>
+		public virtual bool HasAdvance(IAdvance? advance) => advance == null || Advances.Any(a => a.Id == advance.Id);
 
 		SpaceShipComponentType[,] IPlayerSpaceRace.SpaceShipGrid
 		{
@@ -244,7 +249,7 @@ namespace CivOne
 
 		bool IPlayerSpaceRace.HasApolloProgram() => HasWonder<ApolloProgram>();
 
-		public Player[] Embassies => _embassies.Select(e => Game.Players.FirstOrDefault(p => e == Game.PlayerNumber(p))).Where(p => p != null).ToArray();
+		public Player[] Embassies => [.._embassies.Select(e => Game.Players.FirstOrDefault(p => e == Game.PlayerNumber(p))).OfType<Player>()];
 
 		public bool HasEmbassy(Player player) => _embassies.Any(e => e == Game.PlayerNumber(player));
 
@@ -394,13 +399,13 @@ namespace CivOne
 				city.RemoveTradingCitiesOwnedBy(enemyPlayerNumber);
 			}
 
-			foreach (City city in Game.GetCities().Where(city => city.Owner == enemyPlayerNumber && city.Size > 0))
+			foreach (City city in Game.GetCities().Where(city => city.CityOwnerPlayerIndex == enemyPlayerNumber && city.Size > 0))
 			{
 				city.RemoveTradingCitiesOwnedBy(ownPlayerNumber);
 			}
 		}
 
-		public IAdvance CurrentResearch
+		public IAdvance? CurrentResearch
 		{
 			get => _currentResearch;
 			set => _currentResearch = value;
@@ -492,12 +497,15 @@ namespace CivOne
 
 		public bool ProductionAvailable(IProduction production)
 		{
-			if (production is IUnit)
-				return UnitAvailable(production as IUnit);
-			if (production is IBuilding)
-				return BuildingAvailable(production as IBuilding);
-			if (production is IWonder)
-				return WonderAvailable(production as IWonder);
+			if (production is IUnit unit)
+				return UnitAvailable(unit);
+
+			if (production is IBuilding building)
+				return BuildingAvailable(building);
+
+			if (production is IWonder wonder)
+				return WonderAvailable(wonder);
+
 			return true;
 		}
 
@@ -514,7 +522,7 @@ namespace CivOne
 			}
 		}
 
-		public bool _destroyed = false; // fire-eggs: hack fix for Issue #68: need to be able set destroyed state on game load
+		private bool _destroyed; // fire-eggs: hack fix for Issue #68: need to be able set destroyed state on game load
 
 
 		public bool HandleExtinction(bool invokeDestroyedEvent = true)
@@ -529,7 +537,7 @@ namespace CivOne
 			}
 
 
-			IUnit unit;
+			IUnit? unit;
 			do
 			{
 				unit = Game.GetUnits().FirstOrDefault(x => this == x.Owner);
@@ -603,7 +611,7 @@ namespace CivOne
 			return true;
 		}
 
-		private bool CanSeeHumanAssetsInExploreArea(int x, int y, int range, bool sea, byte humanPlayerId)
+		private static bool CanSeeHumanAssetsInExploreArea(int x, int y, int range, bool sea, byte humanPlayerId)
 		{
 			for (int relX = -range; relX <= range; relX++)
 			for (int relY = -range; relY <= range; relY++)
@@ -617,7 +625,7 @@ namespace CivOne
 					continue;
 
 				ITile visibleTile = Map[xx, yy];
-				if ((visibleTile.City != null && visibleTile.City.Owner == humanPlayerId) ||
+				if ((visibleTile.City != null && visibleTile.City.CityOwnerPlayerIndex == humanPlayerId) ||
 					visibleTile.Units.Any(unit => unit.Owner == humanPlayerId))
 				{
 					return true;
@@ -638,7 +646,7 @@ namespace CivOne
 			foreach (City city in Game.GetCities())
 			{
 				if (city.Size == 0) continue; // destroyed city
-				if (city.Owner == playerId) continue;
+				if (city.CityOwnerPlayerIndex == playerId) continue;
 				if (_visible[city.X, city.Y])
 					city.VisibleSizes[playerId] = city.Size;
 			}
@@ -666,7 +674,7 @@ namespace CivOne
 
 		public void NewTurn()
 		{
-			if (!Game.GetCities().Any(x => this == x.Owner) && !Game.GetUnits().Any(x => this == x.Owner))
+			if (!Game.GetCities().Any(x => this == x.CityOwnerPlayerIndex) && !Game.GetUnits().Any(x => this == x.Owner))
 			{
 				GameTask.Enqueue(Turn.GameOver(this));
 			}
@@ -685,12 +693,12 @@ namespace CivOne
 			if (_anarchy > 0) _anarchy--;
 		}
 
-		public override bool Equals (object obj)
+		public override bool Equals (object? obj)
 		{
-			if (obj is byte)
-				return Game.PlayerNumber(this) == (byte)obj;
-			if (obj is Player)
-				return Game.PlayerNumber(this) == Game.PlayerNumber(obj as Player);
+			if (obj is byte v)
+				return Game.PlayerNumber(this) == v;
+			if (obj is Player p)
+				return Game.PlayerNumber(this) == Game.PlayerNumber(p);
 			return false;
 		}
 
@@ -735,20 +743,42 @@ namespace CivOne
 		PalaceData IPlayer.Palace => _palace;
 
 		List<ICity> IPlayer.Cities => (Game != null && Game.Started)
-			? Cities.Cast<ICity>().ToList()
+			? [.. Cities.Cast<ICity>()]
 			: (RestoredCities?.ToList() ?? []);
 
 		
 		public override int GetHashCode() => Game.PlayerNumber(this);
 
 		
-		public static explicit operator Player(byte playerNumber) => Game.GetPlayer(playerNumber);
+		public static explicit operator Player?(byte playerNumber) => Game.GetPlayer(playerNumber);
 		public static explicit operator byte(Player player) => Game.PlayerNumber(player);
+		
+		/// <summary>
+		/// Converts a player number to a Player instance. Returns null if the player number is invalid or if the Game reference is not set.
+		/// Use this instead of the explicit operator when you are not sure if the player number is valid or if the Game reference is set, to avoid exceptions.
+		/// </summary>
+		/// <param name="playerNumber">The player number to convert.</param>
+		/// <returns>A Player instance corresponding to the player number, or null if the player number is invalid or if the Game reference is not set.</returns>
+		/// <example>
+		/// Player? player = Player.ToPlayer(playerNumber);
+		/// if (player != null)	{
+		///     // Use player instance
+		/// }
+		/// </example>
+		public static Player? ToPlayer(byte playerNumber) => Game.GetPlayer(playerNumber);
+
+		/// <summary>
+		/// Converts a Player instance to a player number. Returns 0 if the player is null or if the Game reference is not set.
+		/// Use this instead of the explicit operator when you are not sure if the player instance is valid or if the Game reference is set, to avoid exceptions.
+		/// </summary>
+		/// <param name="player">The Player instance to convert.</param>
+		/// <returns>The player number corresponding to the Player instance, or 0 if the player is null or if the Game reference is not set.</returns>
+		public static byte FromPlayer(Player player) => Game.PlayerNumber(player);
 		
 		public static bool operator ==(Player p1, byte p2) => Game.PlayerNumber(p1) == p2;
 		public static bool operator !=(Player p1, byte p2) => Game.PlayerNumber(p1) != p2;
 
-		public Player(ICivilization civilization, string customLeaderName = null, string customTribeName = null, string customTribeNamePlural = null)
+		public Player(ICivilization civilization, string? customLeaderName = null, string? customTribeName = null, string? customTribeNamePlural = null)
 		{
 			_civilization = civilization;
 			if (!string.IsNullOrEmpty(customLeaderName)) _civilization.Leader.Name = customLeaderName;
@@ -765,6 +795,8 @@ namespace CivOne
 
 			InitializeMapPositions();
 		}
+
+		#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Only used for MockPlayer in tests.
 		internal Player()
 		{
 			// for MockPlayer
@@ -777,6 +809,7 @@ namespace CivOne
 			_civilization = civilization;
 			InitializeMapPositions();
 		}
+		#pragma warning restore CS8618
 
 		private void InitializeMapPositions()
 		{

@@ -8,11 +8,13 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 
 namespace CivOne
 {
+	[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to open a file dialog does not crash the application, and that failure to open a URL or copy to clipboard does not crash the application or cause excessive logging.")]
 	internal partial class Native
 	{
 		private static string? MacFolderBrowser(string caption)
@@ -30,17 +32,19 @@ namespace CivOne
 
 			Process.Start("chmod", $@"+x ""{scriptPath}""");
 
-			Process process = new Process();
-			process.StartInfo = new ProcessStartInfo()
+			using Process process = new()
 			{
-				FileName = "/bin/sh",
-				Arguments = scriptPath,
-				RedirectStandardOutput = true,
-				UseShellExecute = false
+				StartInfo = new ProcessStartInfo()
+				{
+					FileName = "/bin/sh",
+					Arguments = scriptPath,
+					RedirectStandardOutput = true,
+					UseShellExecute = false
+				}
 			};
-			
+
 			process.Start();
-			string output = process.StandardOutput.ReadToEnd().Trim(new [] { '\n', '"' });
+			string output = process.StandardOutput.ReadToEnd().Trim(['\n', '"']);
 			process.WaitForExit();
 
 			if (output.Length == 0 || !Directory.Exists(output)) return null;
@@ -48,9 +52,12 @@ namespace CivOne
 			return output;
 		}
 
-		private static string MacFileChooser(bool save, string title, string initialFileName, string filter)
+		private static string? MacFileChooser(bool save, string title, string initialFileName, string filter)
 		{
-			string scriptPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "FileChooser.sh");
+			string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+			if (path == null) return null;
+
+			string scriptPath = Path.Combine(path, "FileChooser.sh");
 
 			string appleScript = save
 				? BuildSaveScript(title, initialFileName)
@@ -65,17 +72,19 @@ namespace CivOne
 
 			Process.Start("chmod", $@"+x ""{scriptPath}""");
 
-			Process process = new Process();
-			process.StartInfo = new ProcessStartInfo()
+			using Process process = new()
 			{
-				FileName = "/bin/sh",
-				Arguments = scriptPath,
-				RedirectStandardOutput = true,
-				UseShellExecute = false
+				StartInfo = new ProcessStartInfo()
+				{
+					FileName = "/bin/sh",
+					Arguments = scriptPath,
+					RedirectStandardOutput = true,
+					UseShellExecute = false
+				}
 			};
 
 			process.Start();
-			string output = process.StandardOutput.ReadToEnd().Trim(new[] { '\n', '"' });
+			string output = process.StandardOutput.ReadToEnd().Trim(['\n', '"']);
 			process.WaitForExit();
 
 			if (output.Length == 0) return null;
@@ -113,7 +122,7 @@ namespace CivOne
 	{
 		try
 		{
-			var process = new Process();
+			using var process = new Process();
 			process.StartInfo = new ProcessStartInfo()
 			{
 				FileName = "pbcopy",

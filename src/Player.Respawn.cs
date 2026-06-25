@@ -33,7 +33,7 @@ namespace CivOne
 			Debug.Assert(IsHuman == false, "Cannot respawn a human player!");
 			Debug.Assert(Civilization.Id != 0, "Cannot respawn barbarian player!");
 
-			var destroyed = this.Civilization;
+			var destroyed = Civilization;
 
 			var civId = destroyed.Id >= 8 ? destroyed.Id - 7 : destroyed.Id + 7;
 

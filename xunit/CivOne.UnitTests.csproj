@@ -15,17 +15,16 @@
 		<AssemblyName>CivOne.UnitTests</AssemblyName>
 		<RootNamespace>CivOne</RootNamespace>
 		<OutputType>Library</OutputType>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<AllowUnsafeBlocks>false</AllowUnsafeBlocks>
 		<LangVersion>latest</LangVersion>
 		<RuntimeIdentifiers>win-x86;win-x64;osx-x64;linux-x64</RuntimeIdentifiers>
 	</PropertyGroup>
 	<PropertyGroup>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
-		<AnalysisLevel>latest-recommended</AnalysisLevel>
+		<AnalysisLevel>latest-all</AnalysisLevel>
 		<Nullable>enable</Nullable>
-		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-		<NoWarn></NoWarn>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<NoWarn>$(NoWarn),CA1515,CA1819,CA1065,CA1814,CA1307,CA1002,CA1034</NoWarn>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(SuppressConsoleLogs)' == 'true'">

@@ -16,15 +16,15 @@ namespace CivOne.Screens.Debug
 	{
 		private readonly City[] _cities;
 
-		public event Action<City> CitySelected;
+		public event Action<City>? CitySelected;
 
-		private static string[] GetLabels(City[] cities, Func<City, string> labelSelector)
+		private static string[] GetLabels(City[] cities, Func<City, string>? labelSelector)
 		{
 			Func<City, string> selector = labelSelector ?? (city => city.Name);
 			return [.. cities.Select(selector)];
 		}
 
-			public CityGridMenuDelegate(City[] cities, Func<City, string> labelSelector = null)
+			public CityGridMenuDelegate(City[] cities, Func<City, string>? labelSelector = null)
 			: base(GetLabels(cities, labelSelector), SelectionMode.Select, fontId: 0)
 		{
 			_cities = cities;

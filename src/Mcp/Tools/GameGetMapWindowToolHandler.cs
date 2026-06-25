@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using CivOne.Mcp.Contracts;
@@ -8,6 +9,7 @@ using CivOne.Persistence.Model;
 
 namespace CivOne.Mcp.Tools
 {
+	#pragma warning disable CA1822 // Mark members as static
 	public sealed class GameGetMapWindowToolHandler : IMcpToolHandler
 	{
 		private readonly IGameStateDtoSnapshotProvider _snapshotProvider;
@@ -48,31 +50,31 @@ namespace CivOne.Mcp.Tools
 
 		public McpResponse Handle(McpRequest request)
 		{
-			if (request == null) throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 
-			if (!ValidateParamsObject(request, out McpResponse validationError))
-				return validationError;
+			if (!ValidateParamsObject(request, out McpResponse? validationError))
+				return validationError!;
 
-			if (!TryReadRequiredInt(request.Params, "x", out int x, out string xError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", xError, "x"));
+			if (!TryReadRequiredInt(request.Params, "x", out int x, out string? xError))
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", xError ?? "should not happen", "x"));
 
-			if (!TryReadRequiredInt(request.Params, "y", out int y, out string yError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", yError, "y"));
+			if (!TryReadRequiredInt(request.Params, "y", out int y, out string? yError))
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", yError ?? "should not happen", "y"));
 
-			if (!TryReadRequiredInt(request.Params, "width", out int width, out string widthError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", widthError, "width"));
+			if (!TryReadRequiredInt(request.Params, "width", out int width, out string? widthError))
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", widthError ?? "should not happen", "width"));
 
-			if (!TryReadRequiredInt(request.Params, "height", out int height, out string heightError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", heightError, "height"));
+			if (!TryReadRequiredInt(request.Params, "height", out int height, out string? heightError))
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", heightError ?? "should not happen", "height"));
 
-			if (!TryReadOptionalInt(request.Params, "visibilityForPlayerId", out int? visibilityForPlayerId, out string playerError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", playerError, "visibilityForPlayerId"));
+			if (!TryReadOptionalInt(request.Params, "visibilityForPlayerId", out int? visibilityForPlayerId, out string? playerError))
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", playerError ?? "should not happen", "visibilityForPlayerId"));
 
-			if (!TryReadOptionalString(request.Params, "format", out string format, out string formatError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", formatError, "format"));
+			if (!TryReadOptionalString(request.Params, "format", out string? format, out string? formatError))
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", formatError ?? "should not happen", "format"));
 
-			if (!TryReadOptionalBool(request.Params, "includeMeta", out bool includeMeta, out string includeMetaError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", includeMetaError, "includeMeta"));
+			if (!TryReadOptionalBool(request.Params, "includeMeta", out bool includeMeta, out string? includeMetaError))
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", includeMetaError ?? "should not happen", "includeMeta"));
 
 			if (string.IsNullOrWhiteSpace(format))
 				format = "decoded";
@@ -84,21 +86,21 @@ namespace CivOne.Mcp.Tools
 			if (encoded)
 				includeMeta = true;
 
-			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string errorMessage))
-				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage, null));
+			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto? snapshot, out string? errorCode, out string? errorMessage))
+				return JsonResponse(request.Id, BuildErrorPayload(errorCode!, errorMessage!, null));
 
-			Map2d<TileDto> mapTiles = snapshot.Map?.Tiles;
+			Map2d<TileDto>? mapTiles = snapshot!.Map?.Tiles;
 			if (mapTiles == null)
 				return JsonResponse(request.Id, BuildErrorPayload("NO_MAP", "No map data available.", null));
 
 			int mapWidth = mapTiles.Width();
 			int mapHeight = mapTiles.Height();
 
-			if (!ValidateBounds(x, y, width, height, mapWidth, mapHeight, out string boundsError))
-				return JsonResponse(request.Id, BuildErrorPayload("INVALID_BOUNDS", boundsError, "x|y|width|height"));
+			if (!ValidateBounds(x, y, width, height, mapWidth, mapHeight, out string? boundsError))
+				return JsonResponse(request.Id, BuildErrorPayload("INVALID_BOUNDS", boundsError ?? "should not happen", "x|y|width|height"));
 
-			Bool2dMap explored = null;
-			Bool2dMap visible = null;
+			Bool2dMap? explored = null;
+			Bool2dMap? visible = null;
 			if (visibilityForPlayerId.HasValue)
 			{
 				List<PlayerDto> players = snapshot.Players ?? [];
@@ -114,7 +116,7 @@ namespace CivOne.Mcp.Tools
 				? BuildEncodedRows(mapTiles, x, y, width, height)
 				: BuildDecodedRows(mapTiles, x, y, width, height, explored, visible);
 
-			object visibilityData = null;
+			object? visibilityData = null;
 			if (visibilityForPlayerId.HasValue && explored != null && visible != null)
 			{
 				visibilityData = new
@@ -136,7 +138,7 @@ namespace CivOne.Mcp.Tools
 			if (visibilityData != null)
 				responseData["visibility"] = visibilityData;
 
-			object meta = null;
+			object? meta = null;
 			if (includeMeta)
 			{
 				meta = encoded
@@ -180,7 +182,7 @@ namespace CivOne.Mcp.Tools
 			return new { rows };
 		}
 
-		private object BuildDecodedRows(Map2d<TileDto> mapTiles, int x, int y, int width, int height, Bool2dMap explored, Bool2dMap visible)
+		private object BuildDecodedRows(Map2d<TileDto> mapTiles, int x, int y, int width, int height, Bool2dMap? explored, Bool2dMap? visible)
 		{
 			List<object[]> rows = [];
 			for (int row = 0; row < height; row++)
@@ -192,8 +194,8 @@ namespace CivOne.Mcp.Tools
 					int ty = y + row;
 					TileDto tile = mapTiles[tx, ty];
 
-					bool? isExplored = explored == null ? null : explored[tx, ty];
-					bool? isVisible = visible == null ? null : visible[tx, ty];
+					bool? isExplored = explored?[tx, ty];
+					bool? isVisible = visible?[tx, ty];
 
 					outputRow[col] = new
 					{
@@ -234,7 +236,7 @@ namespace CivOne.Mcp.Tools
 			return rows;
 		}
 
-		private static bool ValidateBounds(int x, int y, int width, int height, int mapWidth, int mapHeight, out string error)
+		private static bool ValidateBounds(int x, int y, int width, int height, int mapWidth, int mapHeight, [NotNullWhen(false)] out string? error)
 		{
 			error = null;
 			if (x < 0 || y < 0)
@@ -258,10 +260,10 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private McpResponse JsonResponse(object id, object payload)
+		private McpResponse JsonResponse(object? id, object payload)
 			=> McpJsonToolResponse.JsonResponse(id, payload, _jsonWriter, _maxJsonChars);
 
-		private object BuildSuccessPayload(object data, object meta)
+		private Dictionary<string, object> BuildSuccessPayload(object data, object? meta)
 		{
 			Dictionary<string, object> payload = new(StringComparer.OrdinalIgnoreCase)
 			{
@@ -278,25 +280,25 @@ namespace CivOne.Mcp.Tools
 			return payload;
 		}
 
-		private object BuildErrorPayload(string code, string message, string failedSegment)
+		private Dictionary<string, object> BuildErrorPayload(string code, string? message, string? failedSegment)
 		{
-			return new
+			return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
 			{
-				ok = false,
-				truncated = false,
-				maxChars = _maxJsonChars,
-				returnedChars = 0,
-				error = new
+				["ok"] = false,
+				["truncated"] = false,
+				["maxChars"] = _maxJsonChars,
+				["returnedChars"] = 0,
+				["error"] = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
 				{
-					code,
-					message,
-					path = (string)null,
-					failedSegment
+					["code"] = code,
+					["message"] = message,
+					["path"] = null,
+					["failedSegment"] = failedSegment
 				}
 			};
 		}
 
-		private static bool ValidateParamsObject(McpRequest request, out McpResponse response)
+		private static bool ValidateParamsObject(McpRequest request, [NotNullWhen(false)] out McpResponse? response)
 		{
 			response = null;
 			if (request.Params.ValueKind == JsonValueKind.Object)
@@ -310,7 +312,7 @@ namespace CivOne.Mcp.Tools
 			return false;
 		}
 
-		private static bool TryReadRequiredInt(JsonElement value, string propertyName, out int result, out string error)
+		private static bool TryReadRequiredInt(JsonElement value, string propertyName, out int result, [NotNullWhen(false)] out string? error)
 		{
 			result = 0;
 			error = null;
@@ -330,7 +332,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryReadOptionalInt(JsonElement value, string propertyName, out int? result, out string error)
+		private static bool TryReadOptionalInt(JsonElement value, string propertyName, out int? result, [NotNullWhen(false)] out string? error)
 		{
 			result = null;
 			error = null;
@@ -350,7 +352,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryReadOptionalString(JsonElement value, string propertyName, out string result, out string error)
+		private static bool TryReadOptionalString(JsonElement value, string propertyName, out string? result, [NotNullWhen(false)] out string? error)
 		{
 			result = null;
 			error = null;
@@ -370,7 +372,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryReadOptionalBool(JsonElement value, string propertyName, out bool result, out string error)
+		private static bool TryReadOptionalBool(JsonElement value, string propertyName, out bool result, [NotNullWhen(false)] out string? error)
 		{
 			result = false;
 			error = null;

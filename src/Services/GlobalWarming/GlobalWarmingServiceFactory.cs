@@ -1,11 +1,7 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using CivOne.Enums;
 using CivOne.Persistence.Model;
 using CivOne.Services.GlobalWarming.Impl;
+using CivOne.Services.Random;
 using CivOne.Tiles;
 
 namespace CivOne.Services.GlobalWarming
@@ -16,23 +12,23 @@ namespace CivOne.Services.GlobalWarming
 		public static IGlobalWarmingService CreateGlobalWarmingService(IGameData gameData,
 				IEnumerable<ITile> tiles)
 		{
-			return new GlobalWarmingCountServiceImpl(gameData, tiles);
+			return new GlobalWarmingCountService(gameData, tiles);
 		}
 		public static IGlobalWarmingService CreateGlobalWarmingService(IEnumerable<ITile> tiles)
 		{
-			return new GlobalWarmingCountServiceImpl(tiles);
+			return new GlobalWarmingCountService(tiles);
 		}
 
 		public static IGlobalWarmingService CreateGlobalWarmingService(
 				int globalWarmingCount, int pollutedSquaresCount, WarmingIndicator warmingIndicator,
 				IEnumerable<ITile> tiles)
 		{
-			return new GlobalWarmingCountServiceImpl(globalWarmingCount, pollutedSquaresCount, warmingIndicator, tiles);
+			return new GlobalWarmingCountService(globalWarmingCount, pollutedSquaresCount, warmingIndicator, tiles);
 		}
 
 		public static IGlobalWarmingStoreService CreateGlobalWarmingStoreService(IGlobalWarmingService globalWarmingService, IValueSanitizer valueSanitizer)
 		{
-			return new GlobalWarmingStoreServiceImpl(globalWarmingService, valueSanitizer);
+			return new GlobalWarmingStoreService(globalWarmingService, valueSanitizer);
 		}
 
 		public static IGlobalWarmingScourgeService CreateGlobalWarmingScourgeService(IGlobalWarmingService globalWarmingService,
@@ -44,18 +40,19 @@ namespace CivOne.Services.GlobalWarming
 		{
 			if (Settings.Instance.GlobalWarmingFeatureFlags != 0)
 			{
-				return new GlobalWarmingScourgeWithFloodServiceImpl(
+				return new GlobalWarmingScourgeWithFloodService(
 						globalWarmingService,
 						tiles,
 						changeTileType,
 						removeUnit,
 						mapWidth,
 						mapHeight,
-						Settings.Instance.GlobalWarmingFeatureFlags
+						Settings.Instance.GlobalWarmingFeatureFlags,
+						RandomServiceFactory.Create()
 					);
 			}
 
-			return new GlobalWarmingScourgeServiceImpl(
+			return new GlobalWarmingScourgeService(
 					globalWarmingService,
 					tiles,
 					changeTileType,

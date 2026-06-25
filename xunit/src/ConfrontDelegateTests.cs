@@ -23,7 +23,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void AllowedToConfrontInDemocracy_ReturnsFalse_ForHumanDemocracyAttackingPeacefulUnit()
+		public void AllowedToConfrontInDemocracyReturnsFalseForHumanDemocracyAttackingPeacefulUnit()
 		{
 			// Arrange
 			_humanPlayer.Government = new Democracy();
@@ -38,7 +38,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void AllowedToConfrontInDemocracy_ReturnsTrue_ForHumanNonDemocracyAttacker()
+		public void AllowedToConfrontInDemocracyReturnsTrueForHumanNonDemocracyAttacker()
 		{
 			// Arrange
 			_humanPlayer.Government = new Monarchy();
@@ -53,7 +53,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void AllowedToConfrontInDemocracy_ReturnsTrue_ForAiDemocracyAttacker()
+		public void AllowedToConfrontInDemocracyReturnsTrueForAiDemocracyAttacker()
 		{
 			// Arrange
 			_enemyPlayer.Government = new Democracy();
@@ -68,12 +68,12 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void AllowedToConfrontInDemocracy_ReturnsTrue_ForBarbarianTarget()
+		public void AllowedToConfrontInDemocracyReturnsTrueForBarbarianTarget()
 		{
 			// Arrange
 			_humanPlayer.Government = new Democracy();
 			BaseUnit attackingUnit = CreateUnit(UnitType.Chariot, 46, 30, _humanPlayer);
-			ITile moveTarget = CreateUnit(UnitType.Militia, 47, 30, Game.Instance.GetPlayer(0)).Tile;
+			ITile moveTarget = CreateUnit(UnitType.Militia, 47, 30, Game.Instance.GetPlayer(0)!).Tile;
 
 			// Act
 			bool actual = _testee.AllowedToConfrontInDemocracy(attackingUnit, moveTarget);
@@ -83,7 +83,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void AllowedToConfrontInDemocracy_ReturnsTrue_ForAtWarTarget()
+		public void AllowedToConfrontInDemocracyReturnsTrueForAtWarTarget()
 		{
 			// Arrange
 			_humanPlayer.Government = new Democracy();
@@ -99,12 +99,12 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void AllowedToConfrontInDemocracy_ReturnsFalse_ForPeacefulEnemyCity()
+		public void AllowedToConfrontInDemocracyReturnsFalseForPeacefulEnemyCity()
 		{
 			// Arrange
 			_humanPlayer.Government = new Democracy();
 			BaseUnit attackingUnit = CreateUnit(UnitType.Chariot, 50, 30, _humanPlayer);
-			ITile moveTarget = Game.Instance.AddCity(_enemyPlayer, 0, 51, 30).Tile;
+			ITile moveTarget = Game.Instance.AddCity(_enemyPlayer, 0, 51, 30)!.Tile;
 
 			// Act
 			bool actual = _testee.AllowedToConfrontInDemocracy(attackingUnit, moveTarget);
@@ -114,7 +114,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void AllowedToConfrontInDemocracy_ReturnsTrue_WhenTargetHasNoOwner()
+		public void AllowedToConfrontInDemocracyReturnsTrueWhenTargetHasNoOwner()
 		{
 			// Arrange
 			_humanPlayer.Government = new Democracy();
@@ -132,6 +132,6 @@ namespace CivOne.UnitTests
 			=> Game.Instance.Players.Where(player => player != null && !player.IsHuman && player.Civilization is not Barbarian).Take(count).ToArray();
 
 		private static BaseUnit CreateUnit(UnitType unitType, int x, int y, Player owner)
-			=> (BaseUnit)Game.Instance.CreateUnit(unitType, x, y, Game.Instance.PlayerNumber(owner));
+			=> (BaseUnit)Game.Instance.CreateUnit(unitType, x, y, Game.Instance.PlayerNumber(owner))!;
 	}
 }

@@ -16,26 +16,26 @@ namespace CivOne.UnitTests
         // ICityBasic, ICityBuildings, ICityOnContinent
         ICity
     {
-        public Point Location => new Point(0, 0);
+        public Point Location => new(0, 0);
         public byte Size { get; set; } = 5;
-        public short Luxuries { get; set; } = 0;
-        public byte Owner { get; set; } = 0;
+		public short Luxuries { get; set; }
+		public byte CityOwnerPlayerIndex { get; set; }
 
 
-        public ITile Tile { get; set; } = null;
+        public ITile Tile { get; set; } = new MockedGrassland(0, 0);
 
-        public int ContinentId { get; set; } = 0;
-        public IPlayer Player => _player;
-        private Player _player = null;
-        public Player MockPlayer
+		public int ContinentId { get; set; }
+		public IPlayer Player => _player!;
+        private Player? _player;
+        public Player? MockPlayer
         {
             get => _player;
             set => _player = value;
         }
 
-        public int Entertainers { get; set; } = 0;
-        public int Scientists { get; set; } = 0;
-        public int Taxmen { get; set; } = 0;
+		public int Entertainers { get; set; }
+		public int Scientists { get; set; }
+		public int Taxmen { get; set; }
 
         public int EntertainerLuxuries => Entertainers * 3;
 
@@ -77,11 +77,11 @@ namespace CivOne.UnitTests
 
 		public IPlayer PlayerIntf => Player;
 
-		private readonly SupplyMockedValues<bool> _hasBuilding = new SupplyMockedValues<bool>();
-        private readonly SupplyMockedValues<bool> _hasWonder = new SupplyMockedValues<bool>();
+		private readonly SupplyMockedValues<bool> _hasBuilding = new();
+        private readonly SupplyMockedValues<bool> _hasWonder = new();
 
-        private readonly ISet<IWonder> _wonders = new HashSet<IWonder>();
-        private readonly ISet<IBuilding> _buildings = new HashSet<IBuilding>();
+        private readonly HashSet<IWonder> _wonders = [];
+        private readonly HashSet<IBuilding> _buildings = [];
 
         public MockedCity ReturnHasBuildingValues(params bool[] values)
         {

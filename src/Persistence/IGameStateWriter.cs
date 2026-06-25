@@ -4,6 +4,6 @@ namespace CivOne.Persistence
 {
     public interface IGameStateWriter
     {
-        void Write(Stream file, GameState snapshot);
+        void Write(Stream stream, GameState snapshot);
     }
 }

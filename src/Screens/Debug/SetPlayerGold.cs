@@ -8,10 +8,12 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
+using CivOne.Services.Screen;
 using CivOne.Tasks;
 using CivOne.UserInterface;
 
@@ -22,11 +24,11 @@ namespace CivOne.Screens.Debug
 	{
 		private readonly CivSelectMenuDelegate _civSelectDelegate;
 
-		private Input _input;
-
-		private Player _selectedPlayer = null;
+		private Player? _selectedPlayer;
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => Math.Max(0, (Height - 200) / 2);
+
+		private Input? ActiveInput => Inputs.OfType<Input>().FirstOrDefault();
 
 		private void DrawPlayerSelectDialog()
 		{
@@ -45,56 +47,73 @@ namespace CivOne.Screens.Debug
 				.FillRectangle(88 + ox, 95 + oy, 105, 14, 5)
 				.FillRectangle(89 + ox, 96 + oy, 103, 12, 15);
 
-			if (_input != null)
+			if (ActiveInput is Input input)
 			{
-				_input.X = 90 + ox;
-				_input.Y = 97 + oy;
+				input.X = 90 + ox;
+				input.Y = 97 + oy;
 			}
 		}
 
-		public string Value { get; private set; }
+		public string? Value { get; private set; }
 
-		public event EventHandler Accept, Cancel;
+		public event EventHandler? Accept, Cancel;
 
-		private void OnPlayerSelected(Player player)
+		private void OnPlayerSelected(Player? player)
 		{
 			_selectedPlayer = player;
 
-			_input = new Input(Palette, _selectedPlayer.Gold.ToString(), 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 5);
-			_input.Accept += PlayerGold_Accept;
-			_input.Cancel += PlayerGold_Cancel;
+			if (_selectedPlayer == null)
+			{
+				System.Diagnostics.Debug.Assert(false, "Player selection was cancelled or invalid in OnPlayerSelected");
+				return;
+			}
 
 			DrawInputDialog();
 
 			CloseMenus();
+			EnsureManagedInput();
 		}
 
-		private void PlayerGold_Accept(object sender, EventArgs args)
+		protected override IScreen? CreateManagedInput()
 		{
-			Value = (sender as Input).Text;
-			
-			short playerGold;
-			if (!short.TryParse(Value, out playerGold) || playerGold < 0 || playerGold > 30000)
+			if (_selectedPlayer == null)
 			{
-				GameTask.Enqueue(Message.Error(Translate("-- DEBUG: Set Player Gold --"), TranslateFormattedArray("The value {0} is invalid or out of range.\nPlease enter a value between 0 and\n30000.", Value)));
+				return null;
 			}
-			else
+
+			Input input = new(Palette, _selectedPlayer.Gold.ToString(CultureInfo.InvariantCulture), 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 5);
+			input.Accept += PlayerGold_Accept;
+			input.Cancel += PlayerGold_Cancel;
+			return input;
+		}
+
+		private void PlayerGold_Accept(object? sender, EventArgs args)
+		{
+			if (sender is not Input input)
+			{
+				System.Diagnostics.Debug.Assert(false, "Sender is not Input in PlayerGold_Accept");
+				return;
+			}
+			Value = input.Text;
+
+			if (!short.TryParse(input.Text, out short playerGold) || playerGold < 0 || playerGold > 30000)
+			{
+				GameTask.Enqueue(Message.Error(Translate("-- DEBUG: Set Player Gold --"), TranslateFormattedArray("The value {0} is invalid or out of range.\nPlease enter a value between 0 and\n30000.", Value ?? "(null)")));
+			}
+			else if (_selectedPlayer != null)
 			{
 				_selectedPlayer.Gold = playerGold;
 				GameTask.Enqueue(Message.General(TranslateFormatted("{0} gold set to {1}$.", _selectedPlayer.TribeName, playerGold)));
 			}
 
-			if (Accept != null)
-				Accept(this, EventArgs.Empty);
-			if (sender is Input input)
-				input.Close();
+			Accept?.Invoke(this, EventArgs.Empty);
+			input.Close();
 			Destroy();
 		}
 
-		private void PlayerGold_Cancel(object sender, EventArgs args)
+		private void PlayerGold_Cancel(object? sender, EventArgs args)
 		{
-			if (Cancel != null)
-				Cancel(this, EventArgs.Empty);
+			Cancel?.Invoke(this, EventArgs.Empty);
 			if (sender is Input input)
 				input.Close();
 			Destroy();
@@ -110,21 +129,24 @@ namespace CivOne.Screens.Debug
 					DrawInputDialog();
 			}
 
-			if (_selectedPlayer == null && Common.TopScreen.GetType() != typeof(Menu))
+			if (_selectedPlayer == null && !_screenQueryService.HasTopScreen<Menu>())
 			{
 				AddMenu(_civSelectDelegate.Menu);
 				return false;
 			}
-			else if (_selectedPlayer != null && !Common.HasScreenType<Input>())
+			else if (_selectedPlayer != null && !HasInput)
 			{
-				Common.AddScreen(_input);
+				EnsureManagedInput();
 			}
 			return false;
 		}
 
+		private readonly IScreenQueryService _screenQueryService;
+
 		public SetPlayerGold() : base(MouseCursor.Pointer)
 		{
-			Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
+			_screenQueryService = ScreenServiceFactory.CreateQueryService();
+			Palette = Common.Screens[^1].OriginalColours;
 			_civSelectDelegate = new CivSelectMenuDelegate(Palette, Translate("Set Player Gold..."));
 			_civSelectDelegate.PlayerSelected += OnPlayerSelected;
 			_civSelectDelegate.Cancelled += PlayerGold_Cancel;

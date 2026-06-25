@@ -12,16 +12,12 @@ using CivOne.Enums;
 
 namespace CivOne.Units
 {
-	public class Requires : BaseAttribute
+	/// <summary>
+	/// Modify the advance with which the unit becomes available.
+	/// </summary>
+	/// <param name="value">The new required advance for the unit.</param>
+	public sealed class Requires(Advance value) : BaseAttribute(typeof(Advance), value)
 	{
-		public Advance Value => GetValue<Advance>();
-
-		/// <summary>
-		/// Modify the advance with which the unit becomes available.
-		/// </summary>
-		/// <param name="value">The new required advance for the unit.</param>
-		public Requires(Advance value) : base(typeof(Advance), value)
-		{
-		}
+		public Advance Value => GetRequiredValue<Advance>();
 	}
 }

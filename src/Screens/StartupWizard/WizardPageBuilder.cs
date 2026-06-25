@@ -109,7 +109,7 @@ namespace CivOne.Screens.StartupWizard
 
 			for (char c = 'a'; c <= 'z'; c++)
 			{
-				if (excludedChars.Contains(c))
+				if (excludedChars.Contains(c, StringComparison.OrdinalIgnoreCase))
 				{
 					continue;
 				}
@@ -281,14 +281,14 @@ namespace CivOne.Screens.StartupWizard
 		{
 			bool previousHasDataFiles = FileSystem.DataFilesExist();
 			bool previousCopyInProgress = state.IsDataFilesCopyInProgress;
-			string previousDataFolder = state.DataFolder;
+			string? previousDataFolder = state.DataFolder;
 			string previousStatusMessage = state.StatusMessage;
 
 			return () =>
 			{
 				bool currentHasDataFiles = FileSystem.DataFilesExist();
 				bool currentCopyInProgress = state.IsDataFilesCopyInProgress;
-				string currentDataFolder = state.DataFolder;
+				string? currentDataFolder = state.DataFolder;
 				string currentStatusMessage = state.StatusMessage;
 
 				if (previousHasDataFiles == currentHasDataFiles
@@ -497,7 +497,7 @@ namespace CivOne.Screens.StartupWizard
 			return true;
 		}
 
-		private WizardEntry CreateAspectRatioEntry(int number, AspectRatio aspectRatio, string explanation) => new()
+		private static WizardEntry CreateAspectRatioEntry(int number, AspectRatio aspectRatio, string explanation) => new()
 		{
 			Number = number,
 			Text = explanation,
@@ -506,7 +506,7 @@ namespace CivOne.Screens.StartupWizard
 			Hotkey = null
 		};
 
-		private WizardEntry CreateFullScreenEntry(int number, bool entryEnabled, bool targetValue, string text) => new()
+		private static WizardEntry CreateFullScreenEntry(int number, bool entryEnabled, bool targetValue, string text) => new()
 		{
 			Number = number,
 			Text = text,

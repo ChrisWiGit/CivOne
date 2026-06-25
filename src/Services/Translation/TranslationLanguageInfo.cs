@@ -11,7 +11,7 @@ namespace CivOne.Services.Translation
 	/// <param name="Postfix">Language postfix extracted from file name pattern <c>civ_&lt;postfix&gt;.txt</c>.</param>
 	/// <param name="FilePath">Absolute path to the language file.</param>
 	/// <param name="DisplayName">Optional self-name from file content (e.g. key <c>GERMAN</c> with value <c>Deutsch</c>).</param>
-	public readonly record struct TranslationLanguageInfo(string Postfix, string FilePath, string DisplayName = null)
+	public readonly record struct TranslationLanguageInfo(string Postfix, string FilePath, string? DisplayName = null)
 	{
 		/// <summary>
 		/// Returns <see langword="true"/> when <paramref name="postfix"/> matches this language postfix

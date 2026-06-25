@@ -13,7 +13,7 @@ namespace CivOne.Screens.GovernmentPortraits
 {
 	internal static class AdvisorPortraitSpriteProviderFactory
 	{
-		private static IAdvisorPortraitSpriteProvider _instance;
+		private static IAdvisorPortraitSpriteProvider? _instance;
 
 		public static IAdvisorPortraitSpriteProvider GetInstance()
 		{

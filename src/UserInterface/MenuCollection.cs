@@ -13,13 +13,14 @@ using CivOne.Screens;
 
 namespace CivOne.UserInterface
 {
+	#pragma warning disable CA1822, CA1711 // Mark members as static
 	public class MenuCollection
 	{
 		public IEnumerable<Menu> All => Common.Screens.Where(x => (x is Menu)).Select(x => (Menu)x);
 
 		public IEnumerable<Menu> this[string id] => All.Where(x => x.Id == id);
 
-		private static MenuCollection _instance;
+		private static MenuCollection? _instance;
 		public static MenuCollection Instance
 		{
 			get

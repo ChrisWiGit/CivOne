@@ -15,8 +15,7 @@ using CivOne.Wonders;
 
 namespace CivOne.Screens.Reports
 {
-	[ScreenResizeable]
-	[Modal]
+	[Modal, ScreenResizeable]
 	internal class WorldWonders : BaseScreen
 	{
 		private struct CityWonders
@@ -27,7 +26,7 @@ namespace CivOne.Screens.Reports
 
 		private bool _update = true;
 
-		private int _page = 0;
+		private int _page;
 
 		private readonly CityWonders[] _wonders;
 
@@ -42,10 +41,12 @@ namespace CivOne.Screens.Reports
 
 			this.FillRectangle(OffsetX + 8, OffsetY + 32, 304, 160, 3);
 
-			for (int i = (_page * 7); i < _wonders.Length && i < ((_page + 1) * 7); i++)
+			for (int i = _page * 7; i < _wonders.Length && i < ((_page + 1) * 7); i++)
 			{
 				IWonder wonder = _wonders[i].Wonder;
 				City city = _wonders[i].City;
+
+				if (wonder?.SmallIcon == null) continue;
 
 				int xx = OffsetX + 8;
 				int yy = OffsetY + 32 + (24 * (i % 7));
@@ -53,8 +54,8 @@ namespace CivOne.Screens.Reports
 				int hh = 16;
 
 				byte colour = 12;
-				if (city != null && city.Size > 0)
-					colour = Common.ColourLight[city.Owner];
+				if (city.Size > 0)
+					colour = Common.ColourLight[city.CityOwnerPlayerIndex];
 				this.FillRectangle(xx, yy, ww, hh, colour)
 					.FillRectangle(xx + 1, yy + 1, ww - 2, hh - 2, 3)
 					.AddLayer(wonder.SmallIcon, xx + 8, yy + 3)

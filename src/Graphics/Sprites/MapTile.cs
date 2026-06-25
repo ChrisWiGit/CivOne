@@ -7,6 +7,8 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
+using System.Diagnostics;
 using CivOne.Enums;
 using CivOne.IO;
 using CivOne.Tiles;
@@ -17,17 +19,17 @@ namespace CivOne.Graphics.Sprites
 {
 	public static class MapTile
 	{
-		private static Direction[] Clockwise => new [] { North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest };
-		private static Direction[] Cross => new [] { North, East, South, West };
+		private static Direction[] Clockwise => [North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest];
+		private static Direction[] Cross => [North, East, South, West];
 		private static Free Free => Free.Instance;
 		private static Resources Resources => Resources.Instance;
 		private static Settings Settings => Settings.Instance;
 
-		private static bool GFX256 => (Settings.GraphicsMode == GraphicsMode.Graphics256);
+		private static bool GFX256 => Settings.GraphicsMode == GraphicsMode.Graphics256;
 
 		private static Bytemap GetLandBase()
 		{
-			string picFile = (GFX256 ? "SP257" : "SPRITES");
+			string picFile = GFX256 ? "SP257" : "SPRITES";
 			if (!Resources.Exists(picFile))
 				return Free.LandBase;
 			if (!GFX256)
@@ -35,9 +37,9 @@ namespace CivOne.Graphics.Sprites
 			return Resources[picFile].Bitmap[0, 64, 16, 16];
 		}
 
-		private static Bytemap GetOceanBase()
+		private static Bytemap? GetOceanBase()
 		{
-			string picFile = (GFX256 ? "TER257" : "SPRITES");
+			string picFile = GFX256 ? "TER257" : "SPRITES";
 			if (!Resources.Exists(picFile))
 				return Free.OceanBase;
 			if (!GFX256)
@@ -125,13 +127,13 @@ namespace CivOne.Graphics.Sprites
 
 		private static Bytemap GetOceanLayer((Direction Land, Direction Rivers) directions)
 		{
-			string picFile = (GFX256 ? "TER257" : "SPRITES");
+			string picFile = GFX256 ? "TER257" : "SPRITES";
 			if (!Resources.Exists(picFile))
-				return null;
+				throw new InvalidOperationException("Ocean layer sprites are not available in the current resource set");
 			if (!GFX256)
 				return Resources[picFile].Bitmap[((int)directions.Land & 0xF) * 16, 64, 16, 16];
 
-			Bytemap output = new Bytemap(16, 16);
+			Bytemap output = new(16, 16);
 			if (!DrawCoastCorners(ref output, directions.Land))
 				DrawCoastSegments(ref output, directions.Land);
 			DrawCoastDiagonal(ref output, directions.Land);
@@ -141,7 +143,7 @@ namespace CivOne.Graphics.Sprites
 		
 		private static Bytemap GetRiverLayer(Direction directions)
 		{
-			string picFile = (GFX256 ? "SP257" : "SPRITES");
+			string picFile = GFX256 ? "SP257" : "SPRITES";
 			if (!Resources.Exists(picFile))
 				return Free.River(directions);
 			return Resources[picFile].Bitmap[(int)directions * 16, 80, 16, 16];
@@ -150,34 +152,36 @@ namespace CivOne.Graphics.Sprites
 		private static Bytemap GetTileLayer<T>(Direction directions) where T : ITile, new()
 		{
 			int terrainId = (int)new T().Type;
-			string picFile = (GFX256 ? "TER257" : "SPRITES");
+			string picFile = GFX256 ? "TER257" : "SPRITES";
 			if (!Resources.Exists(picFile))
 			{
-				switch (new T().Type)
+				Bytemap? result = new T().Type switch
 				{
-					case Terrain.Arctic: return Free.Arctic;
-					case Terrain.Desert: return Free.Desert;
-					case Terrain.Forest: return Free.Forest;
-					case Terrain.Grassland1:
-					case Terrain.Grassland2: return Free.Grassland;
-					case Terrain.Jungle: return Free.Jungle;
-					case Terrain.Hills: return Free.Hills;
-					case Terrain.Mountains: return Free.Mountains;
-					case Terrain.Plains: return Free.Plains;
-					case Terrain.Swamp: return Free.Swamp;
-					case Terrain.Tundra: return Free.Tundra;
-				}
-				return null;
+					Terrain.Arctic => Free.Arctic,
+					Terrain.Desert => Free.Desert,
+					Terrain.Forest => Free.Forest,
+					Terrain.Grassland1 or Terrain.Grassland2 => Free.Grassland,
+					Terrain.Jungle => Free.Jungle,
+					Terrain.Hills => Free.Hills,
+					Terrain.Mountains => Free.Mountains,
+					Terrain.Plains => Free.Plains,
+					Terrain.Swamp => Free.Swamp,
+					Terrain.Tundra => Free.Tundra,
+					_ => throw new InvalidOperationException($"No tile sprite available for terrain type {(Terrain)terrainId}")
+				};
+
+				return result;
 			}
 			if (!GFX256)
 				return Resources[picFile].Bitmap[terrainId * 16, (directions == Alternating) ? 0 : 16, 16, 16];
+
 			return Resources[picFile].Bitmap[(int)directions * 16, terrainId * 16, 16, 16];
 		}
 
 		private static Bytemap GetSpecial<T>() where T : ITile, new()
 		{
 			int terrainId = (int)new T().Type;
-			string picFile = (GFX256 ? "SP257" : "SPRITES");
+			string picFile = GFX256 ? "SP257" : "SPRITES";
 			if (!Resources.Exists(picFile))
 				return Free.Special(new T().Type);
 			if (typeof(T) == typeof(Grassland))
@@ -188,7 +192,7 @@ namespace CivOne.Graphics.Sprites
 
 		private static Bytemap GetFog(Direction directions)
 		{
-			Bytemap output = new Bytemap(16, 16);
+			Bytemap output = new(16, 16);
 			if (directions == None) return output;
 
 			if (!Resources.Exists("SP257"))
@@ -203,7 +207,7 @@ namespace CivOne.Graphics.Sprites
 			{
 				for (int i = 0; i < Cross.Length; i++)
 				{
-					if (((int)directions & (int)(Cross[i])) == 0) continue;
+					if (((int)directions & (int)Cross[i]) == 0) continue;
 					output.AddLayer(Resources["SP257"].Bitmap[80 + (i * 16), 128, 16, 16]);
 				}
 			}
@@ -218,12 +222,12 @@ namespace CivOne.Graphics.Sprites
 				return new Bytemap(16, 16).FillRectangle(7, 7, 2, 2, 6);
 			}
 
-			string picFile = (GFX256 ? "SP257" : "SPRITES");
-			Bytemap output = new Bytemap(16, 16);
+			string picFile = GFX256 ? "SP257" : "SPRITES";
+			Bytemap output = new(16, 16);
 			for (int i = 0; i < Clockwise.Length; i++)
 			{
 				if (((int)directions & (int)Clockwise[i]) == 0) continue;
-				output.AddLayer(Resources[picFile].Bitmap[(i * 16), 48, 16, 16]);
+				output.AddLayer(Resources[picFile].Bitmap[i * 16, 48, 16, 16]);
 			}
 			return output;
 		}
@@ -235,8 +239,8 @@ namespace CivOne.Graphics.Sprites
 				return new Bytemap(16, 16).FillRectangle(7, 7, 2, 2, 5);
 			}
 
-			string picFile = (GFX256 ? "SP257" : "SPRITES");
-			Bytemap output = new Bytemap(16, 16);
+			string picFile = GFX256 ? "SP257" : "SPRITES";
+			Bytemap output = new(16, 16);
 			for (int i = 0; i < Clockwise.Length; i++)
 			{
 				if (((int)directions & (int)Clockwise[i]) == 0) continue;
@@ -245,15 +249,15 @@ namespace CivOne.Graphics.Sprites
 			return output;
 		}
 
-		private static Bytemap GetIrrigation()
+		private static Bytemap? GetIrrigation()
 		{
-			string picFile = (GFX256 ? "SP257" : "SPRITES");
+			string picFile = GFX256 ? "SP257" : "SPRITES";
 			if (!Resources.Exists(picFile))
 				return null;
 			return Resources[picFile].Bitmap[64, 32, 16, 16];
 		}
 
-		private static Bytemap GetPollution()
+		private static Bytemap? GetPollution()
 		{
 			string picFile = GFX256 ? "SP257" : "SPRITES";
 			if (!Resources.Exists(picFile))
@@ -261,26 +265,26 @@ namespace CivOne.Graphics.Sprites
 			return Resources[picFile].Bitmap[96, 32, 16, 16];
 		}
 
-		private static Bytemap GetMine()
+		private static Bytemap? GetMine()
 		{
-			string picFile = (GFX256 ? "SP257" : "SPRITES");
+			string picFile = GFX256 ? "SP257" : "SPRITES";
 			if (!Resources.Exists(picFile))
 				return null;
 			return Resources[picFile].Bitmap[80, 32, 16, 16];
 		}
 
-		private static Bytemap GetFortress()
+		private static Bytemap? GetFortress()
 		{
-			string picFile = (GFX256 ? "SP257" : "SPRITES");
+			string picFile = GFX256 ? "SP257" : "SPRITES";
 			if (!Resources.Exists(picFile))
 				return null;
 			return Resources[picFile].Bitmap[224, 112, 16, 16]
 				.ColourReplace(3, 0);
 		}
 
-		private static Bytemap GetHut()
+		private static Bytemap? GetHut()
 		{
-			string picFile = (GFX256 ? "SP257" : "SPRITES");
+			string picFile = GFX256 ? "SP257" : "SPRITES";
 			if (!Resources.Exists(picFile))
 				return null;
 			return Resources[picFile].Bitmap[240, 112, 16, 16]
@@ -289,21 +293,21 @@ namespace CivOne.Graphics.Sprites
 		
 		public static readonly ISprite LandBase = new CachedSprite(GetLandBase);
 		public static readonly ISprite OceanBase = new CachedSprite(GetOceanBase);
-		public static readonly ISpriteCollection<Direction> Arctic = new CachedSpriteCollection<Direction>(GetTileLayer<Arctic>);
-		public static readonly ISpriteCollection<Direction> Desert = new CachedSpriteCollection<Direction>(GetTileLayer<Desert>);
-		public static readonly ISpriteCollection<Direction> Forest = new CachedSpriteCollection<Direction>(GetTileLayer<Forest>);
-		public static readonly ISpriteCollection<Direction> Grassland = new CachedSpriteCollection<Direction>(GetTileLayer<Grassland>);
-		public static readonly ISpriteCollection<Direction> Hills = new CachedSpriteCollection<Direction>(GetTileLayer<Hills>);
-		public static readonly ISpriteCollection<Direction> Jungle = new CachedSpriteCollection<Direction>(GetTileLayer<Jungle>);
-		public static readonly ISpriteCollection<Direction> Mountains = new CachedSpriteCollection<Direction>(GetTileLayer<Mountains>);
-		public static readonly ISpriteCollection<(Direction, Direction)> Ocean = new CachedSpriteCollection<(Direction, Direction)>(GetOceanLayer);
-		public static readonly ISpriteCollection<Direction> Plains = new CachedSpriteCollection<Direction>(GetTileLayer<Plains>);
-		public static readonly ISpriteCollection<Direction> River = new CachedSpriteCollection<Direction>(GetRiverLayer);
-		public static readonly ISpriteCollection<Direction> Swamp = new CachedSpriteCollection<Direction>(GetTileLayer<Swamp>);
-		public static readonly ISpriteCollection<Direction> Tundra = new CachedSpriteCollection<Direction>(GetTileLayer<Tundra>);
-		public static readonly ISpriteCollection<Direction> Fog = new CachedSpriteCollection<Direction>(GetFog);
-		public static readonly ISpriteCollection<Direction> Road = new CachedSpriteCollection<Direction>(GetRoad);
-		public static readonly ISpriteCollection<Direction> RailRoad = new CachedSpriteCollection<Direction>(GetRailRoad);
+		public static readonly ISprites<Direction> Arctic = new CachedSpriteCollection<Direction>(GetTileLayer<Arctic>);
+		public static readonly ISprites<Direction> Desert = new CachedSpriteCollection<Direction>(GetTileLayer<Desert>);
+		public static readonly ISprites<Direction> Forest = new CachedSpriteCollection<Direction>(GetTileLayer<Forest>);
+		public static readonly ISprites<Direction> Grassland = new CachedSpriteCollection<Direction>(GetTileLayer<Grassland>);
+		public static readonly ISprites<Direction> Hills = new CachedSpriteCollection<Direction>(GetTileLayer<Hills>);
+		public static readonly ISprites<Direction> Jungle = new CachedSpriteCollection<Direction>(GetTileLayer<Jungle>);
+		public static readonly ISprites<Direction> Mountains = new CachedSpriteCollection<Direction>(GetTileLayer<Mountains>);
+		public static readonly ISprites<(Direction, Direction)> Ocean = new CachedSpriteCollection<(Direction, Direction)>(GetOceanLayer);
+		public static readonly ISprites<Direction> Plains = new CachedSpriteCollection<Direction>(GetTileLayer<Plains>);
+		public static readonly ISprites<Direction> River = new CachedSpriteCollection<Direction>(GetRiverLayer);
+		public static readonly ISprites<Direction> Swamp = new CachedSpriteCollection<Direction>(GetTileLayer<Swamp>);
+		public static readonly ISprites<Direction> Tundra = new CachedSpriteCollection<Direction>(GetTileLayer<Tundra>);
+		public static readonly ISprites<Direction> Fog = new CachedSpriteCollection<Direction>(GetFog);
+		public static readonly ISprites<Direction> Road = new CachedSpriteCollection<Direction>(GetRoad);
+		public static readonly ISprites<Direction> RailRoad = new CachedSpriteCollection<Direction>(GetRailRoad);
 		public static readonly ISprite Irrigation = new CachedSprite(GetIrrigation);
 		public static readonly ISprite Pollution = new CachedSprite(GetPollution);
 		public static readonly ISprite Mine = new CachedSprite(GetMine);
@@ -366,43 +370,42 @@ namespace CivOne.Graphics.Sprites
 			{
 				directions = ((tile.X + tile.Y) % 2 == 1) ? Alternating : Direction.None;
 			}
-			
-			switch (tile)
-			{
-				case Arctic _: return Arctic[directions];
-				case Desert _: return Desert[directions];
-				case Forest _: return Forest[directions];
-				case Grassland _: return Grassland[directions];
-				case Hills _: return Hills[directions];
-				case Jungle _: return Jungle[directions];
-				case Mountains _: return Mountains[directions];
-				case Ocean _: return Ocean[(directions, riverDirections)];
-				case Plains _: return Plains[directions];
-				case River _: return River[directions];
-				case Swamp _: return Swamp[directions];
-				case Tundra _: return Tundra[directions];
-			}
 
-			return null;
+			return tile switch
+			{
+				Arctic _ => Arctic[directions],
+				Desert _ => Desert[directions],
+				Forest _ => Forest[directions],
+				Grassland _ => Grassland[directions],
+				Hills _ => Hills[directions],
+				Jungle _ => Jungle[directions],
+				Mountains _ => Mountains[directions],
+				Ocean _ => Ocean[(directions, riverDirections)],
+				Plains _ => Plains[directions],
+				River _ => River[directions],
+				Swamp _ => Swamp[directions],
+				Tundra _ => Tundra[directions],
+				_ => throw new ArgumentException($"Unsupported terrain type {(Terrain)tile.Type} for tile layer"),
+			};
 		}
-		public static ISprite TileSpecial(ITile tile)
+		public static ISprite? TileSpecial(ITile tile)
 		{
 			if (tile is River || (!tile.Special && tile.Type != Terrain.Grassland2)) return null;
-			switch (tile)
+			return tile switch
 			{
-				case Arctic _: return Seals;
-				case Desert _: return Oasis;
-				case Forest _: return Game;
-				case Grassland _: return Shield;
-				case Hills _: return Coal;
-				case Jungle _: return Gems;
-				case Mountains _: return Gold;
-				case Ocean _: return Fish;
-				case Plains _: return Horses;
-				case Swamp _: return Oil;
-				case Tundra _: return TundraGame;
-			}
-			return null;
+				Arctic _ => Seals,
+				Desert _ => Oasis,
+				Forest _ => Game,
+				Grassland _ => Shield,
+				Hills _ => Coal,
+				Jungle _ => Gems,
+				Mountains _ => Gold,
+				Ocean _ => Fish,
+				Plains _ => Horses,
+				Swamp _ => Oil,
+				Tundra _ => TundraGame,
+				_ => throw new ArgumentException($"Unsupported terrain type {(Terrain)tile.Type} for tile special"),
+			};
 		}
 	}
 }

@@ -8,8 +8,6 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -19,6 +17,7 @@ using CivOne.Tasks;
 
 namespace CivOne.Screens.CityManagerPanels
 {
+	#pragma warning disable CA1822 // Mark members as static
 	/// <summary>
 	/// City Header Panel showing city name, population and citizens
 	/// </summary>
@@ -28,7 +27,7 @@ namespace CivOne.Screens.CityManagerPanels
 
 		private readonly ICityCitizenLayoutService _citizenLayoutService;
 
-		public event EventHandler HeaderUpdate;
+		public event EventHandler? HeaderUpdate;
 
 		protected static int MinCitizenSize => 5;
 
@@ -62,7 +61,7 @@ namespace CivOne.Screens.CityManagerPanels
 
 			if (_city.Size < MinCitizenSize)
 			{
-				CitySizeToSmall(this, null);
+				CitySizeToSmall(this, EventArgs.Empty);
 				return true;
 			}
 
@@ -138,7 +137,7 @@ namespace CivOne.Screens.CityManagerPanels
 
 			if (_city.Size < MinCitizenSize)
 			{
-				CitySizeToSmall(this, null);
+				CitySizeToSmall(this, EventArgs.Empty);
 				return true;
 			}
 
@@ -148,7 +147,7 @@ namespace CivOne.Screens.CityManagerPanels
 		}
 
 
-		private void CitySizeToSmall(object sender, EventArgs args)
+		private void CitySizeToSmall(object? _, EventArgs __)
 		{
 			// CW: dialog position is not as in original game, but easier to implement and results in same effect
 			GameTask.Enqueue(Message.General(
@@ -157,7 +156,7 @@ namespace CivOne.Screens.CityManagerPanels
 
 		public void Update()
 		{
-			HeaderUpdate?.Invoke(this, null);
+			HeaderUpdate?.Invoke(this, EventArgs.Empty);
 			Refresh();
 		}
 

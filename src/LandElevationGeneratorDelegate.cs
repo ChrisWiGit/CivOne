@@ -107,9 +107,9 @@ namespace CivOne
 		{
 			int chunkTileCount = 0;
 
-			int x = _randomService.Next( 4, _width - 4 );
-			int y = _randomService.Next( 8, _height - 8 );
-			int pathLength = _randomService.Next( 1, landChunkMaxPathLength + 1 );
+			int x = _randomService.NextInt( 4, _width - 4 );
+			int y = _randomService.NextInt( 8, _height - 8 );
+			int pathLength = _randomService.NextInt( 1, landChunkMaxPathLength + 1 );
 
 			for( int i = 0; i < pathLength; i++ )
 			{
@@ -134,7 +134,7 @@ namespace CivOne
 					chunkTiles[ chunkTileCount++ ] = index;
 				}
 
-				switch( _randomService.Next( 4 ) )
+				switch( _randomService.NextInt( 4 ) )
 				{
 					case 0: y--; break;
 					case 1: x++; break;

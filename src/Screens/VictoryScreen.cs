@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System.Globalization;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -21,8 +22,8 @@ namespace CivOne.Screens
 	{
 		private readonly Picture _background;
 		private readonly string[] _textLines;
-		private int _currentLine = 0;
-		private int _lineTick = 0;
+		private int _currentLine;
+		private int _lineTick;
 		private bool _showFirstFrame = true;
 
 		/// <summary>
@@ -114,13 +115,20 @@ namespace CivOne.Screens
 			];
 
 			for (int i = 0; i < _textLines.Length; i++)
-				_textLines[i] = _textLines[i].Replace("$RPLC1", Human.LatestAdvance).Replace("$US", Human.LeaderName.ToUpper());
+				_textLines[i] = _textLines[i].
+					Replace("$RPLC1", Human.LatestAdvance, System.StringComparison.InvariantCulture).
+					Replace("$US", Human.LeaderName.ToUpper(CultureInfo.CurrentCulture), System.StringComparison.InvariantCulture);
 		}
 
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
+			if (!disposing)
+			{
+				return;
+			}
+
 			_background?.Dispose();
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }

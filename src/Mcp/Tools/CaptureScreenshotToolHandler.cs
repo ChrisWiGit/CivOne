@@ -27,16 +27,20 @@ namespace CivOne.Mcp.Tools
 
 		public McpResponse Handle(McpRequest request)
 		{
-			if (request == null) throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 
 			string sessionId = ReadString(request.Params, "sessionId") ?? "default";
 			bool includeCursor = ReadBoolean(request.Params, "includeCursor");
 			McpScreenshotResult result = _screenshotRoutine.CaptureFull(sessionId, includeCursor);
-			string json = JsonSerializer.Serialize(result, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+			string json = JsonSerializer.Serialize(result, JsonOptions);
 			return McpResponse.Success(request.Id, McpToolCallResult.Text(json));
 		}
+		private static JsonSerializerOptions JsonOptions { get; } = new(JsonSerializerDefaults.Web)
+		{
+			PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+		};
 
-		private static string ReadString(JsonElement value, string propertyName)
+		private static string? ReadString(JsonElement value, string propertyName)
 			=> value.ValueKind == JsonValueKind.Object && value.TryGetProperty(propertyName, out JsonElement property)
 				? property.GetString()
 				: null;

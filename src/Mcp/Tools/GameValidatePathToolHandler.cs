@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using CivOne.Mcp.Contracts;
 using CivOne.Persistence;
@@ -28,7 +29,7 @@ namespace CivOne.Mcp.Tools
 			new
 			{
 				type = "object",
-				required = new[] { "path" },
+				required = InputSchema,
 				properties = new
 				{
 					path = new
@@ -38,6 +39,8 @@ namespace CivOne.Mcp.Tools
 					}
 				}
 			});
+
+		private static readonly string[] InputSchema = new[] { "path" };
 
 		public GameValidatePathToolHandler(
 			IGameStateDtoSnapshotProvider snapshotProvider,
@@ -50,9 +53,10 @@ namespace CivOne.Mcp.Tools
 			_maxJsonChars = Math.Max(512, maxJsonChars);
 		}
 
+		[SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "valueKind: We want to return the value kind in lowercase for consistency.")]
 		public McpResponse Handle(McpRequest request)
 		{
-			if (request == null) throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 
 			if (request.Params.ValueKind != JsonValueKind.Undefined &&
 				request.Params.ValueKind != JsonValueKind.Null &&
@@ -61,7 +65,7 @@ namespace CivOne.Mcp.Tools
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", "'params' must be an object.", null, null));
 			}
 
-			string path = ReadString(request.Params, "path");
+			string? path = ReadString(request.Params, "path");
 			if (string.IsNullOrWhiteSpace(path))
 			{
 				return JsonResponse(request.Id, BuildErrorPayload(
@@ -83,7 +87,7 @@ namespace CivOne.Mcp.Tools
 					"path"));
 			}
 
-			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string errorMessage))
+			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto? snapshot, out string? errorCode, out string? errorMessage))
 				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage, null, null));
 
 			string normalizedPath = path.Trim();
@@ -101,7 +105,7 @@ namespace CivOne.Mcp.Tools
 			using JsonDocument jsonDocument = JsonDocument.Parse(rootJson);
 			JsonElement root = jsonDocument.RootElement;
 
-			if (!_pathResolver.TryResolve(root, normalizedPath, out JsonElement resolved, out string failedSegment, out string pathErrorMessage))
+			if (!McpGameStatePathResolver.TryResolve(root, normalizedPath, out JsonElement resolved, out string? failedSegment, out string? pathErrorMessage))
 			{
 				return JsonResponse(request.Id, BuildErrorPayload(
 					"INVALID_PATH",
@@ -124,10 +128,10 @@ namespace CivOne.Mcp.Tools
 			});
 		}
 
-		private McpResponse JsonResponse(object id, object payload)
+		private McpResponse JsonResponse(object? id, object payload)
 			=> McpJsonToolResponse.JsonResponse(id, payload, _jsonWriter, _maxJsonChars);
 
-		private object BuildErrorPayload(string code, string message, string path, string failedSegment)
+		private object BuildErrorPayload(string code, string? message, string? path, string? failedSegment)
 		{
 			return new
 			{
@@ -141,7 +145,7 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private static string ReadString(JsonElement value, string propertyName)
+		private static string? ReadString(JsonElement value, string propertyName)
 			=> value.ValueKind == JsonValueKind.Object && value.TryGetProperty(propertyName, out JsonElement property)
 				? property.GetString()
 				: null;

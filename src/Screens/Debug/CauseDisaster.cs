@@ -12,6 +12,7 @@ using System.Linq;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
+using CivOne.Services.Screen;
 using CivOne.Tasks;
 using CivOne.UserInterface;
 
@@ -24,15 +25,15 @@ namespace CivOne.Screens.Debug
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
-		private Menu _citySelect;
+		private Menu? _citySelect;
 
-		private int _index = 0;
+		private int _index;
 
-		private City _selectedCity = null;
+		private City? _selectedCity;
 
-		public string Value { get; private set; }
+		public string? Value { get; private set; }
 
-		public event EventHandler Cancel;
+		public event EventHandler? Cancel;
 
 		private void CitiesMenu()
 		{
@@ -40,7 +41,7 @@ namespace CivOne.Screens.Debug
 
 			City[] cities = _cities.Skip(_index).Take(15).ToArray();
 
-			bool more = (cities.Length < _cities.Length);
+			bool more = cities.Length < _cities.Length;
 
 			int fontHeight = Resources.GetFontHeight(0);
 			int hh = (fontHeight * (cities.Length + (more ? 2 : 1))) + 5;
@@ -49,10 +50,11 @@ namespace CivOne.Screens.Debug
 			int xx = OffsetX + ((320 - ww) / 2);
 			int yy = OffsetY + ((200 - hh) / 2);
 
-			Picture menuGfx = new Picture(ww, hh)
+			Picture menuGfx = new Picture(ww, hh);
+			menuGfx
 				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D()
-				.As<Picture>();
+				.DrawRectangle3D();
+
 			IBitmap menuBackground = menuGfx[2, 11, ww - 4, hh - 11].ColourReplace((7, 11), (22, 3));
 
 			this.Clear();
@@ -74,7 +76,7 @@ namespace CivOne.Screens.Debug
 
 			foreach (City city in cities)
 			{
-				_citySelect.Items.Add($"{city.Name} ({Game.GetPlayer(city.Owner).TribeName})").OnSelect(CauseDisaster_Accept);
+				_citySelect.Items.Add($"{city.Name} ({Game.GetPlayer(city.CityOwnerPlayerIndex)!.TribeName})").OnSelect(CauseDisaster_Accept);
 			}
 
 			if (more)
@@ -84,35 +86,34 @@ namespace CivOne.Screens.Debug
 
 			_citySelect.Cancel += CauseDisaster_Cancel;
 			_citySelect.MissClick += CauseDisaster_Cancel;
-			_citySelect.ActiveItem = (_citySelect.Items.Count - 1);
+			_citySelect.ActiveItem = _citySelect.Items.Count - 1;
 		}
 
 		private void CauseDisaster_More(object sender, EventArgs args)
 		{
 			_index += 15;
-			if (_index > _cities.Count()) _index = 0;
+			if (_index > _cities.Length) _index = 0;
 			CloseMenus();
 		}
 
-		private void CauseDisaster_Accept(object sender, EventArgs args)
+		private void CauseDisaster_Accept(object? _, EventArgs args)
 		{
-			_selectedCity = _cities[_citySelect.ActiveItem + _index];
+			_selectedCity = _cities[_citySelect!.ActiveItem + _index];
 			_selectedCity.Disaster();
 			Destroy();
 		}
 
-		private void CauseDisaster_Cancel(object sender, EventArgs args)
+		private void CauseDisaster_Cancel(object? sender, EventArgs args)
 		{
-			if (Cancel != null)
-				Cancel(this, null);
-			if (sender is Input)
-				((Input)sender)?.Close();
+			Cancel?.Invoke(this, EventArgs.Empty);
+			if (sender is Input input)
+				input.Close();
 			Destroy();
 		}
 
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (RefreshNeeded() && _selectedCity == null)
+			if (RefreshNeeded() && _selectedCity == null && _citySelect != null)
 			{
 				CloseMenus();
 				CitiesMenu();
@@ -126,7 +127,7 @@ namespace CivOne.Screens.Debug
 				return false;
 			}
 
-			if (_selectedCity == null && Common.TopScreen.GetType() != typeof(Menu))
+			if (_selectedCity == null && !_screenQueryService.HasTopScreen<Menu>() && _citySelect != null)
 			{
 				AddMenu(_citySelect);
 				return false;
@@ -134,9 +135,11 @@ namespace CivOne.Screens.Debug
 
 			return false;
 		}
+		private readonly IScreenQueryService _screenQueryService;
 
 		public CauseDisaster() : base(MouseCursor.Pointer)
 		{
+			_screenQueryService = ScreenServiceFactory.CreateQueryService();
 			if (_cities.Length == 0)
 			{
 				GameTask.Enqueue(Message.General(Translate("There are no cities yet.")));
@@ -144,6 +147,18 @@ namespace CivOne.Screens.Debug
 			}
 
 			CitiesMenu();
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_citySelect?.Dispose();
+			
+			base.Dispose(disposing);
 		}
 	}
 }

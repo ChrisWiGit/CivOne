@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -19,8 +20,8 @@ namespace CivOne.IO
 		private sealed class ByteList
 		{
 			private readonly List<byte> _byteList = [];
-			private sbyte _byteNumber = 0;
-			private byte _byte = 0;
+			private sbyte _byteNumber;
+			private byte _byte;
 
 			public void Add(int entry, int dictionarySize)
 			{
@@ -80,78 +81,81 @@ namespace CivOne.IO
 		public byte[] Decode(byte[] input, bool clearEnd = false, bool flushDictionary = true, int minBits = 8, int maxBits = 11)
 		{
 			ArgumentNullException.ThrowIfNull(input);
-			using (MemoryStream ms = new MemoryStream())
-			using (BinaryWriter bw = new BinaryWriter(ms))
+			using MemoryStream ms = new();
+			using BinaryWriter bw = new(ms);
+
+			DecodeDictionary(clearEnd, minBits, out Dictionary<int, byte[]> dictionary, out List<string> values);
+
+			int value = 0;
+			int counter = 0;
+			byte[] entry = [];
+			for (int i = 0; i < input.Length; i++)
 			{
-				Dictionary<int, byte[]> dictionary;
-				List<string> values;
-
-				DecodeDictionary(clearEnd, minBits, out dictionary, out values);
-
-				int value = 0;
-				int counter = 0;
-				byte[] entry = [];
-				for (int i = 0; i < input.Length; i++)
+				int codeLength = CodeLength(dictionary.Count);
+				if (codeLength > maxBits)
 				{
-					int codeLength = CodeLength(dictionary.Count);
-					if (codeLength > maxBits) codeLength = maxBits;
-					for (int bit = 0; bit < 8; bit++)
-					{
-						value |= ((input[i] >> bit) & 0x01) << counter++;
-						if (counter != codeLength) continue;
-
-						if (clearEnd && value == (1 << minBits))
-						{
-							// Clear code
-							DecodeDictionary(clearEnd, minBits, out dictionary, out values);
-
-							value = 0;
-							counter = 0;
-							entry = [];
-							continue;
-						}
-
-						if ((!clearEnd && value == (1 << minBits)) || (clearEnd && value == (1 << minBits) + 1))
-						{
-							return ms.ToArray();
-						}
-						
-						if (!dictionary.ContainsKey(value) && (flushDictionary || dictionary.Count < ((0x01 << maxBits) - 1)))
-						{
-							byte[] bytes = Append(entry, entry[0]);
-							dictionary.Add(dictionary.Count, bytes);
-							values.Add(string.Join(",", bytes));
-						}
-						
-						byte[] outVal = dictionary[value];
-						byte[] newEntry = Append(entry, outVal[0]);
-						bw.Write(outVal);
-
-						string stringValue = string.Join(",", newEntry);
-						if (!values.Contains(stringValue) && (flushDictionary || dictionary.Count < ((0x01 << maxBits) - 1)))
-						{
-							dictionary.Add(dictionary.Count, newEntry);
-							values.Add(stringValue);
-						}
-						entry = outVal;
-						value = 0;
-						counter = 0;
-						
-						if (flushDictionary && CodeLength(dictionary.Count) > maxBits)
-						{
-							DecodeDictionary(clearEnd, minBits, out dictionary, out values);
-							entry = [];
-						}
-					}
+					codeLength = maxBits;
 				}
 
-				return ms.ToArray();
+				for (int bit = 0; bit < 8; bit++)
+				{
+					value |= ((input[i] >> bit) & 0x01) << counter++;
+					if (counter != codeLength)
+					{
+						continue;
+					}
+
+					if (clearEnd && value == (1 << minBits))
+					{
+						// Clear code
+						DecodeDictionary(clearEnd, minBits, out dictionary, out values);
+						value = 0;
+						counter = 0;
+						entry = [];
+						continue;
+					}
+
+					if ((!clearEnd && value == (1 << minBits)) || (clearEnd && value == (1 << minBits) + 1))
+					{
+						return ms.ToArray();
+					}
+
+					if (!dictionary.ContainsKey(value) && (flushDictionary || dictionary.Count < ((0x01 << maxBits) - 1)))
+					{
+						byte[] bytes = Append(entry, entry[0]);
+						dictionary.Add(dictionary.Count, bytes);
+						values.Add(string.Join(",", bytes));
+					}
+
+					byte[] outVal = dictionary[value];
+					byte[] newEntry = Append(entry, outVal[0]);
+					bw.Write(outVal);
+
+					string stringValue = string.Join(",", newEntry);
+					if (!values.Contains(stringValue) && (flushDictionary || dictionary.Count < ((0x01 << maxBits) - 1)))
+					{
+						dictionary.Add(dictionary.Count, newEntry);
+						values.Add(stringValue);
+					}
+
+					entry = outVal;
+					value = 0;
+					counter = 0;
+
+					if (flushDictionary && CodeLength(dictionary.Count) > maxBits)
+					{
+						DecodeDictionary(clearEnd, minBits, out dictionary, out values);
+						entry = [];
+					}
+				}
 			}
+
+			return ms.ToArray();
 		}
 
 		private static Dictionary<string, int> EncodeDictionary(bool clearEnd)
 		{
-			Dictionary<string, int> output = Enumerable.Range(0, 256).ToDictionary(x => x.ToString(), x => x);
+			Dictionary<string, int> output = Enumerable.Range(0, 256).ToDictionary(x => x.ToString(CultureInfo.InvariantCulture), x => x);
 			output.Add("CLR", output.Count);
 			if (clearEnd)
 			{

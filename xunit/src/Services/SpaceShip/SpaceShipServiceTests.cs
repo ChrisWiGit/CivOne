@@ -8,7 +8,7 @@ namespace CivOne.UnitTests.Services.SpaceShip
 	public class SpaceShipServiceTests
 	{
 		[Fact]
-		public void CanAddAnyPart_WithNoPartsAllowed_ReturnsFalse()
+		public void CanAddAnyPartWithNoPartsAllowedReturnsFalse()
 		{
 			// Arrange
 			var player = CreatePlayer();
@@ -25,7 +25,7 @@ namespace CivOne.UnitTests.Services.SpaceShip
 		}
 
 		[Fact]
-		public void CanAddAnyPart_WithApolloAndTech_ReturnsTrue()
+		public void CanAddAnyPartWithApolloAndTechReturnsTrue()
 		{
 			// Arrange
 			var player = CreatePlayer();
@@ -42,7 +42,7 @@ namespace CivOne.UnitTests.Services.SpaceShip
 		}
 
 		[Fact]
-		public void CanAddPart_Structural_WithApolloAndSpaceFlight_ReturnsTrue()
+		public void CanAddPartStructuralWithApolloAndSpaceFlightReturnsTrue()
 		{
 			// Arrange
 			var player = CreatePlayer();
@@ -59,7 +59,7 @@ namespace CivOne.UnitTests.Services.SpaceShip
 		}
 
 		[Fact]
-		public void CanAddPart_Component_WithoutPlastics_ReturnsFalse()
+		public void CanAddPartComponentWithoutPlasticsReturnsFalse()
 		{
 			// Arrange
 			var player = CreatePlayer();
@@ -76,7 +76,7 @@ namespace CivOne.UnitTests.Services.SpaceShip
 		}
 
 		[Fact]
-		public void TryAddPart_Structural_SuccessfullyAddsToGrid()
+		public void TryAddPartStructuralSuccessfullyAddsToGrid()
 		{
 			// Arrange
 			var player = CreatePlayer();
@@ -94,7 +94,7 @@ namespace CivOne.UnitTests.Services.SpaceShip
 		}
 
 		[Fact]
-		public void TryAddPart_Full_GridDoesNotAcceptMoreParts()
+		public void TryAddPartFullGridDoesNotAcceptMoreParts()
 		{
 			// Arrange
 			var player = CreatePlayer();
@@ -111,7 +111,7 @@ namespace CivOne.UnitTests.Services.SpaceShip
 		}
 
 		[Fact]
-		public void CanLaunch_WithInsufficientParts_ReturnsFalse()
+		public void CanLaunchWithInsufficientPartsReturnsFalse()
 		{
 			// Arrange
 			var player = CreatePlayer();
@@ -128,7 +128,7 @@ namespace CivOne.UnitTests.Services.SpaceShip
 		}
 
 		[Fact]
-		public void CanLaunch_WithSufficientParts_ReturnsTrue()
+		public void CanLaunchWithSufficientPartsReturnsTrue()
 		{
 			// Arrange
 			var player = CreatePlayer();
@@ -145,7 +145,7 @@ namespace CivOne.UnitTests.Services.SpaceShip
 		}
 
 		[Fact]
-		public void CanLaunch_AfterLaunched_ReturnsFalse()
+		public void CanLaunchAfterLaunchedReturnsFalse()
 		{
 			// Arrange
 			var player = CreatePlayer();
@@ -163,7 +163,7 @@ namespace CivOne.UnitTests.Services.SpaceShip
 		}
 
 		[Fact]
-		public void GetScreenData_ReturnsValidData()
+		public void GetScreenDataReturnsValidData()
 		{
 			// Arrange
 			var player = CreatePlayer();
@@ -185,7 +185,7 @@ namespace CivOne.UnitTests.Services.SpaceShip
 			Assert.Equal(expected.SuccessProbabilityPercent, data.SuccessProbabilityPercent);
 		}
 
-		private static IPlayerSpaceRace CreatePlayer()
+		private static FakePlayerSpaceRace CreatePlayer()
 		{
 			return new FakePlayerSpaceRace
 			{
@@ -228,7 +228,7 @@ namespace CivOne.UnitTests.Services.SpaceShip
 
 		private sealed class FakePlayerSpaceRace : IPlayerSpaceRace
 		{
-			public SpaceShipComponentType[,] SpaceShipGrid { get; set; }
+			public SpaceShipComponentType[,] SpaceShipGrid { get; set; } = null!;
 
 			public ushort SpaceShipPopulation { get; set; }
 

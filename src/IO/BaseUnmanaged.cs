@@ -26,7 +26,8 @@ namespace CivOne.IO
 	/// </summary>
 	public abstract class BaseUnmanaged : IDisposable
 	{
-		protected IntPtr _handle;
+		private IntPtr _handle;
+		protected IntPtr Handle => _handle;
 		protected int Size { get; private set; }
 		public bool IsDisposed => _handle == IntPtr.Zero;
 
@@ -36,10 +37,7 @@ namespace CivOne.IO
 		/// </summary>
 		private void EnsureHandle()
 		{
-			if (_handle == IntPtr.Zero)
-			{
-				throw new ObjectDisposedException(GetType().Name);
-			}
+			ObjectDisposedException.ThrowIf(_handle == IntPtr.Zero, this);
 		}
 
 		/// <summary>
@@ -167,17 +165,35 @@ namespace CivOne.IO
 
 		~BaseUnmanaged()
 		{
-			// Use atomic swap so finalizer and an explicit Dispose() on another thread
-			// cannot both reach Marshal.FreeHGlobal with the same pointer (double-free / heap corruption).
+			Dispose(false);
+		}
+
+		/// <summary>
+		/// Releases resources for this instance.
+		/// </summary>
+		/// <param name="disposing">
+		/// True when called from <see cref="Dispose()"/>.
+		/// False when called from the finalizer.
+		/// </param>
+		protected virtual void Dispose(bool disposing)
+		{
+			// Native memory must always be released, including finalizer path.
+			// Interlocked.Exchange prevents double free across Dispose/finalizer races.
 			IntPtr h = System.Threading.Interlocked.Exchange(ref _handle, IntPtr.Zero);
-			if (h != IntPtr.Zero) Marshal.FreeHGlobal(h);
+			if (h != IntPtr.Zero)
+			{
+				Marshal.FreeHGlobal(h);
+			}
+
+			if (disposing)
+			{
+				// Derived types can override and clean up managed resources here.
+			}
 		}
 
 		public void Dispose()
 		{
-			IntPtr h = System.Threading.Interlocked.Exchange(ref _handle, IntPtr.Zero);
-			if (h == IntPtr.Zero) return;
-			Marshal.FreeHGlobal(h);
+			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 	}

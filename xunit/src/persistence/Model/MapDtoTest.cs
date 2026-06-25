@@ -27,7 +27,7 @@ namespace CivOne.Persistence.Model
 		{
 			_mockedMapFactory = new MockedIMapFactory();
 			_mockedTileDtoMapper = new MockedITileDtoMapper(() => _mockedMapFactory.CurrentMapTiles);
-			_testee = new MapDtoMapper(_mockedMapFactory, _mockedTileDtoMapper, _terrainSeed: _terrainSeed);
+			_testee = new MapDtoMapper(_mockedMapFactory, _mockedTileDtoMapper, TerrainSeed: _terrainSeed);
 
 			_tileDtos = new TileDto[expectedWidth, expectedHeight];
 			for (int x = 0; x < expectedWidth; x++)
@@ -51,7 +51,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestMapDtoMapper_ContractCheck()
+		public void TestMapDtoMapperContractCheck()
 		{
 			var dtoProperties = GetWritablePropertyNames<MapDto>();
 			var expectedProperties = GetMapDtoRoundTripAssertionMap(
@@ -342,7 +342,7 @@ namespace CivOne.Persistence.Model
 
 		public class MockedIMapFactory : IMapFactory
 		{
-			private IMapTilesCommand _currentMapTiles;
+			private IMapTilesCommand _currentMapTiles = null!;
 
 			internal IMapTilesCommand CurrentMapTiles => _currentMapTiles;
 
@@ -380,9 +380,9 @@ namespace CivOne.Persistence.Model
 		/// <summary>
 		/// Mock implementation of ITileDtoMapper for testing purposes.
 		/// </summary>
-		public class MockedITileDtoMapper(Func<IMapTilesCommand> getMapTiles = null) : ITileDtoMapper
+		public class MockedITileDtoMapper(Func<IMapTilesCommand>? getMapTiles = null) : ITileDtoMapper
 		{
-			private readonly Func<IMapTilesCommand> _getMapTiles = getMapTiles;
+			private readonly Func<IMapTilesCommand>? _getMapTiles = getMapTiles;
 
 			public void SetTileFromDto(TileDto dto, int x, int y)
 			{
@@ -392,6 +392,8 @@ namespace CivOne.Persistence.Model
 
 			public TileDto ToDto(ITile domain)
 			{
+				ArgumentNullException.ThrowIfNull(domain, nameof(domain));
+				
 				return new TileDto
 				{
 					Terrain = domain.Type,

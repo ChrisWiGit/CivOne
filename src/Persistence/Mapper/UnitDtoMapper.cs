@@ -11,15 +11,15 @@ namespace CivOne.Persistence.Model
 
 	public interface IUnitFactory
 	{
-		IUnitRestorable Create(string className, PlayerId player, Guid? HomeCityGuid);
+		IUnitRestorable Create(string className, PlayerId player, Guid? homeCityGuid);
 	}
 
 
-	public class UnitDtoMapper(IUnitFactory _unitFactory, IValueSanitizer yamlReadValueSanitizer) : DtoMapper<UnitDto, IUnit>
+	public class UnitDtoMapper(IUnitFactory UnitFactory, IValueSanitizer yamlReadValueSanitizer) : IDtoMapper<UnitDto, IUnit>
 	{
 		public IUnit FromDto(UnitDto dto)
 		{
-			var unit = _unitFactory.Create(dto.ClassName, dto.PlayerId, dto.HomeCityGuid);
+			var unit = UnitFactory.Create(dto.ClassName, dto.PlayerId, dto.HomeCityGuid);
 			unit.Owner = dto.PlayerId;
 			unit.PendingHomeCityGuid = dto.HomeCityGuid;
 			var locationX = yamlReadValueSanitizer.ClampToInt32(dto.Location.X, nameof(UnitDtoMapper), nameof(UnitDto.Location));
@@ -29,7 +29,7 @@ namespace CivOne.Persistence.Model
 
 			unit.X = Math.Abs(locationX);
 			unit.Y = Math.Abs(locationY);
-			unit.Goto = new Point(Math.Abs(gotoX), Math.Abs(gotoY));
+			unit.GotoDestination = new Point(Math.Abs(gotoX), Math.Abs(gotoY));
 			unit.Busy = dto.Busy;
 			unit.ForceStatus(dto.Sentry, dto.FortifyActive, dto.Fortify, dto.Veteran);
 
@@ -54,7 +54,7 @@ namespace CivOne.Persistence.Model
 				ClassName = domain.GetType().Name,
 				PlayerId = domain.Owner,
 				Location = new MapLocation((uint)domain.X, (uint)domain.Y),
-				Goto = new MapLocation(domain.Goto),
+				Goto = new MapLocation(domain.GotoDestination),
 				HomeCityGuid = domain.Home?.Id,
 				Busy = domain.Busy,
 				Veteran = domain.Veteran,

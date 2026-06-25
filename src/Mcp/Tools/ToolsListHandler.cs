@@ -17,17 +17,17 @@ namespace CivOne.Mcp.Tools
 		public string Method => "tools/list";
 
 		// Not itself exposed in the listing
-		public ToolDefinition Definition => null;
+		public ToolDefinition? Definition => null;
 
 		public McpResponse Handle(McpRequest request)
 		{
-			if (request == null) throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 			return McpResponse.Success(request.Id, new { tools = _definitions });
 		}
 
 		public ToolsListHandler(IEnumerable<ToolDefinition> definitions)
 		{
-			if (definitions == null) throw new ArgumentNullException(nameof(definitions));
+			ArgumentNullException.ThrowIfNull(definitions);
 			_definitions = [.. definitions];
 		}
 	}

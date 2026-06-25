@@ -36,7 +36,7 @@ namespace CivOne.Screens
 		{
 			if (_update)
 			{
-				if (!_units.Any())
+				if (_units.Length == 0)
 				{
 					// No units, close the dialog
 					Destroy();
@@ -47,10 +47,9 @@ namespace CivOne.Screens
 				int top = DialogTop;
 				int height = DialogHeight;
 
-				Picture dialog = new Picture(WIDTH, height)
+				IBitmap dialog = new Picture(WIDTH, height)
 					.FillRectangle(1, 1, WIDTH - 2, height - 2, 3)
-					.DrawRectangle3D()
-					.As<Picture>();
+					.DrawRectangle3D();
 
 				for (int i = 0; i < _units.Length; i++)
 				{
@@ -89,7 +88,7 @@ namespace CivOne.Screens
 
 			if (args.X >= left && args.X < (left + WIDTH) && args.Y >= top && args.Y < (top + height))
 			{
-				int y = (args.Y - top - VerticalPadding);
+				int y = args.Y - top - VerticalPadding;
 				int uid = (y - (y % UnitRowHeight)) / UnitRowHeight;
 				if (uid < 0 || uid >= _units.Length)
 				{
@@ -99,7 +98,7 @@ namespace CivOne.Screens
 				
 				Game.ActiveUnit = _units[uid];
 				_units[uid].Busy = false;
-                    _units[uid].Goto = System.Drawing.Point.Empty; // fire-eggs 20190612 clear Goto
+                    _units[uid].GotoDestination = Point.Empty; // fire-eggs 20190612 clear Goto
 				_update = true;
 				return true;
 			}
@@ -142,7 +141,7 @@ namespace CivOne.Screens
 				// already moved would be able to move again after being selected from the stack
 			}
 
-			unit.Goto = Point.Empty;
+			unit.GotoDestination = Point.Empty;
 			Game.ActiveUnit = unit;
 		}
 
@@ -150,7 +149,7 @@ namespace CivOne.Screens
 		{
 			_units = Map[x, y].Units.Take(12).ToArray();
 
-			Palette = Common.TopScreen.Palette;
+			Palette = Common.TopScreen!.Palette;
 		}
 	}
 }

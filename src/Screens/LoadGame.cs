@@ -21,7 +21,7 @@ namespace CivOne.Screens
 	[Modal, ScreenResizeable]
 	internal class LoadGame : BaseScreen
 	{
-		private static ISaveGamePathProvider PathProvider =>
+		private static SaveGamePathProvider PathProvider =>
 			new SaveGamePathProvider(RuntimeHandler.Runtime, Settings.Instance);
 
 
@@ -30,9 +30,9 @@ namespace CivOne.Screens
 
 		private char _driveLetter = 'C';
 		private bool _update = true;
-		private Menu _menu;
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => Math.Max(0, (Height - 200) / 2);
+		private Menu? CurrentMenu => GetMenu<Menu>();
 
 		public bool Cancel { get; private set; }
 
@@ -110,20 +110,19 @@ namespace CivOne.Screens
 			BackToCredits();
 		}
 
-		private MenuItemEventHandler<int> LoadFileHandler(SaveGameFile file)
+		private MenuItemEventAction<int> LoadFileHandler(SaveGameFile file)
 		{
 			if (file.ValidFile)
 				return LoadSaveFile;
 			return LoadEmptyFile;
 		}
 
-		private void LoadYamlFromBrowser(object sender, EventArgs args)
+		private void LoadYamlFromBrowser(object? sender, EventArgs args)
 		{
-			_menu.Close();
-			_menu = null;
+			CloseMenus();
 			_update = true;
 
-			string cosFile = RuntimeHandler.Runtime.FileChooser(
+			string? cosFile = RuntimeHandler.Runtime.FileChooser(
 				false,
 				Translate("Load Game..."),
 				BuildDialogInitialFileName(),
@@ -173,13 +172,14 @@ namespace CivOne.Screens
 
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_menu != null)
+			Menu? menu = CurrentMenu;
+			if (menu != null)
 			{
-				if (_menu.Update(gameTick))
+				if (menu.Update(gameTick))
 				{
 					Bitmap.Clear();
 					this.Clear(15)
-						.AddLayer(_menu, OffsetX, OffsetY);
+						.AddLayer(menu, OffsetX, OffsetY);
 					return true;
 				}
 				return Cancel;
@@ -216,7 +216,7 @@ namespace CivOne.Screens
 		{
 			if (Cancel) return false;
 
-			char c = Char.ToUpper(args.KeyChar);
+			char c = char.ToUpperInvariant(args.KeyChar);
 			if (args.Key == Key.Escape)
 			{
 				Log("Cancel");
@@ -225,13 +225,13 @@ namespace CivOne.Screens
 				BackToCredits();
 				return true;
 			}
-			else if (_menu != null)
+			else if (CurrentMenu is Menu menu)
 			{
-				return _menu.KeyDown(args);
+				return menu.KeyDown(args);
 			}
 			else if (args.Key == Key.Enter)
 			{
-				_menu = new Menu(Palette)
+				Menu newMenu = new Menu(Palette)
 				{
 					Title = Translate("Select Load File..."),
 					X = 51,
@@ -249,12 +249,13 @@ namespace CivOne.Screens
 				int saveGameIndex = 0;
 
 				// Add "Load from new format..." option at the top
-				_menu.Items.Add(Translate("Load game from new format..."), menuValue).OnSelect(LoadYamlFromBrowser);
+				newMenu.Items.Add(Translate("Load game from new format..."), menuValue).OnSelect(LoadYamlFromBrowser);
 
 				foreach (SaveGameFile file in SaveGameFile.GetSaveGames(_driveLetter))
 				{
-					_menu.Items.Add(file.Name, saveGameIndex++).OnSelect(LoadFileHandler(file));
+					newMenu.Items.Add(file.Name, saveGameIndex++).OnSelect(LoadFileHandler(file));
 				}
+				AddMenu(newMenu);
 				_cursor = MouseCursor.Pointer;
 			}
 			else if (c >= 'A' && c <= 'Z')
@@ -268,33 +269,36 @@ namespace CivOne.Screens
 
 		public override bool MouseDown(ScreenEventArgs args)
 		{
-			if (_menu != null)
+			Menu? menu = CurrentMenu;
+			if (menu != null)
 			{
 				ScreenEventArgs menuArgs = args;
 				MouseArgsOffset(ref menuArgs, OffsetX, OffsetY);
-				return _menu.MouseDown(menuArgs);
+				return menu.MouseDown(menuArgs);
 			}
 			return false;
 		}
 
 		public override bool MouseUp(ScreenEventArgs args)
 		{
-			if (_menu != null)
+			Menu? menu = CurrentMenu;
+			if (menu != null)
 			{
 				ScreenEventArgs menuArgs = args;
 				MouseArgsOffset(ref menuArgs, OffsetX, OffsetY);
-				return _menu.MouseUp(menuArgs);
+				return menu.MouseUp(menuArgs);
 			}
 			return false;
 		}
 
 		public override bool MouseDrag(ScreenEventArgs args)
 		{
-			if (_menu != null)
+			Menu? menu = CurrentMenu;
+			if (menu != null)
 			{
 				ScreenEventArgs menuArgs = args;
 				MouseArgsOffset(ref menuArgs, OffsetX, OffsetY);
-				return _menu.MouseDrag(menuArgs);
+				return menu.MouseDrag(menuArgs);
 			}
 			return false;
 		}

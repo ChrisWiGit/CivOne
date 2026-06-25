@@ -14,14 +14,12 @@ namespace CivOne
 {
 	internal static class Resources
 	{
-		internal static Stream GetInternalResource(Assembly assembly, string assemblyName) => assembly.GetManifestResourceStream(assemblyName);
+		internal static Stream? GetInternalResource(Assembly assembly, string assemblyName) => assembly.GetManifestResourceStream(assemblyName);
 
 		internal static byte[] GetInternalResourceBytes(Assembly assembly, string assemblyName)
 		{
-			using (Stream stream = GetInternalResource(assembly, assemblyName))
-			{
-				return stream.GetBytes();
-			}
+			using Stream? stream = GetInternalResource(assembly, assemblyName) ?? throw new FileNotFoundException($"Resource '{assemblyName}' not found in assembly '{assembly.FullName}'.");
+			return stream.GetBytes();
 		}
 	}
 }

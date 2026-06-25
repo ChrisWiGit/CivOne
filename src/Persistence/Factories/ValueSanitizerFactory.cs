@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Persistence.Model;
 
 namespace CivOne.Persistence.Factories
@@ -32,8 +33,8 @@ namespace CivOne.Persistence.Factories
 			new(() => new ValueSanitizer(new RuntimeLogger()));
 		private static readonly ICheckedValueSanitizer _uncheckedInstance = new UncheckedCastValueSanitizer();
 		private static readonly object _sync = new();
-		private static ICheckedValueSanitizer _runtimeCheckedValueSanitizer = null;
-		private static ICheckedValueSanitizer _scopedCheckedValueSanitizer = null;
+		private static ICheckedValueSanitizer? _runtimeCheckedValueSanitizer;
+		private static ICheckedValueSanitizer? _scopedCheckedValueSanitizer;
 
 		/// <summary>
 		/// Returns the default value sanitizer instance used by persistence and YAML mapping code.
@@ -42,7 +43,7 @@ namespace CivOne.Persistence.Factories
 		/// This always returns the default runtime sanitizer and is not affected by
 		/// <see cref="UseCheckedValueSanitizer(ICheckedValueSanitizer)"/> overrides.
 		/// </remarks>
-		public static IValueSanitizer GetValueSanitizer() => _defaultInstance.Value;
+		public static IValueSanitizer ValueSanitizer { get => _defaultInstance.Value; }
 
 		/// <summary>
 		/// Returns the active checked sanitizer for cast-sensitive runtime paths.
@@ -51,6 +52,7 @@ namespace CivOne.Persistence.Factories
 		/// If no override is active, the default runtime sanitizer is returned.
 		/// If a test override is active, the overridden instance is returned until the scope is disposed.
 		/// </remarks>
+		[SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This method may perform non-trivial logic to determine the appropriate sanitizer instance, so we prefer to keep it as a method for clarity and to avoid giving the impression that it is a simple property access.")]
 		public static ICheckedValueSanitizer GetCheckedValueSanitizer()
 		{
 			lock (_sync)
@@ -96,9 +98,9 @@ namespace CivOne.Persistence.Factories
 			}
 		}
 
-		private sealed class CheckedValueSanitizerScope(ICheckedValueSanitizer previous) : IDisposable
+		private sealed class CheckedValueSanitizerScope(ICheckedValueSanitizer? previous) : IDisposable
 		{
-			private readonly ICheckedValueSanitizer _previous = previous;
+			private readonly ICheckedValueSanitizer? _previous = previous;
 			private bool _disposed;
 
 			public void Dispose()

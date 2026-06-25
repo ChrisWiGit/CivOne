@@ -38,14 +38,14 @@ namespace CivOne.Screens.Reports
 				City city = _cities[i];
 
 				if (city == null || city.Size == 0) continue;
-				byte colour = Common.ColourLight[city.Owner];
+				byte colour = Common.ColourLight[city.CityOwnerPlayerIndex];
 
 				int xx = offsetX + 8;
 				int yy = offsetY + 32 + (32 * i);
 				int ww = 304;
 				int hh = 26;
 
-				Player owner = Game.GetPlayer(city.Owner);
+				Player owner = city.CityOwnerPlayer;
 
 				this.FillRectangle(xx, yy, ww, hh, colour)
 					.FillRectangle(xx + 1, yy + 1, ww - 2, hh - 2, 3);
@@ -61,12 +61,12 @@ namespace CivOne.Screens.Reports
 				const int citizenIconWidth = 16;
 				int citizensWidth = citizenInfos.Length > 0 ? (citizensMaxX - citizensMinX + citizenIconWidth) : 0;
 
-				IBitmap[] wonderIcons = [.. city.Wonders.Select(w => w.SmallIcon)];
+				IBitmap?[] wonderIcons = [.. city.Wonders.Select(w => w.SmallIcon)];
 				int wondersWidth = 0;
 				for (int w = 0; w < wonderIcons.Length; w++)
 				{
 					if (w > 0) wondersWidth += 2;
-					wondersWidth += wonderIcons[w].Bitmap.Width;
+					wondersWidth += wonderIcons[w]?.Bitmap.Width ?? 0;
 				}
 
 				int spacing = (citizensWidth > 0 && wondersWidth > 0) ? 8 : 0;
@@ -102,7 +102,9 @@ namespace CivOne.Screens.Reports
 						break;
 					}
 
-					IBitmap wonderIcon = wonderIcons[w];
+					IBitmap? wonderIcon = wonderIcons[w];
+					if (wonderIcon == null) continue;
+					
 					int drawWidth = Math.Min(wonderIcon.Bitmap.Width, rowRight - dx);
 					if (drawWidth <= 0)
 					{

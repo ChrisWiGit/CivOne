@@ -14,6 +14,14 @@ using System.Text;
 
 namespace CivOne
 {
+	// CA5393: Suppressed intentionally. GTK3 and GLib2 may be deployed alongside the
+	// application on some Linux distributions, and SafeDirectories does not reliably
+	// resolve them across all supported environments. Loading from AssemblyDirectory
+	// is therefore required for compatibility.
+	// CA1031: Suppressed intentionally. Catching all exceptions is necessary to ensure 
+	// that failure to open a file dialog does not crash the application, and that failure
+	// to open a URL or copy to clipboard does not crash the application or cause excessive logging.
+	#pragma warning disable CA5393,CA1031
 	internal partial class Native
 	{
 		private const string LIBGTK3 = "libgtk-3.so.0";
@@ -311,4 +319,5 @@ namespace CivOne
 			}
 		}
 	}
+	#pragma warning restore CA5393,CA1031
 }

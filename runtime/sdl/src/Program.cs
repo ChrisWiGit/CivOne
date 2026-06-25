@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -17,7 +18,7 @@ using CivOne.Services;
 
 namespace CivOne
 {
-	internal class Program
+	internal sealed class Program
 	{
 		private static readonly string[] MacSdlLibraryCandidates =
 		[
@@ -64,14 +65,14 @@ Try 'civone-sdl --help' for more information.
 		{
 			RegisterNativeResolver();
 
-			RuntimeSettings settings = new RuntimeSettings();
+			RuntimeSettings settings = new();
 			settings["software-render"] = false;
 			settings["no-sound"] = false;
-			settings["profile-name"] = "default";
+			settings[Runtime.DEFAULT_PROFILE_NAME_KEY] = Runtime.DEFAULT_PROFILE_NAME_VALUE;
 			settings["mcp-artifacts"] = null;
 			settings["mcp-saves"] = null;
 			settings.ConsoleLogging = true;
-			string languagePostfix = null;
+			string? languagePostfix = null;
 			for (int i = 0; i < args.Length; i++)
 			{
 				string cmd = args[i].TrimStart('-');
@@ -209,7 +210,7 @@ Try 'civone-sdl --help' for more information.
 
 						// use regex to parse the drive letter and slot number
 						string slot = args[++i];
-						Regex regex = new Regex(@"^([a-z])([1-9]|10)$", RegexOptions.IgnoreCase);
+						Regex regex = new(@"^([a-z])([1-9]|10)$", RegexOptions.IgnoreCase);
 						Match match = regex.Match(slot);
 						if (!match.Success)
 						{
@@ -217,8 +218,8 @@ Try 'civone-sdl --help' for more information.
 							return;
 						}
 
-						char driveLetter = char.ToUpper(match.Groups[1].Value[0]);
-						int slotId = int.Parse(match.Groups[2].Value);
+						char driveLetter = char.ToUpper(match.Groups[1].Value[0], CultureInfo.InvariantCulture);
+						int slotId = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
 
 						settings.LoadSaveGameSlot = new Tuple<char, int>(driveLetter, slotId);
 						break;
@@ -266,13 +267,13 @@ Try 'civone-sdl --help' for more information.
 			IUtcClock clock = new SystemUtcClock();
 			IDebounceService debounceService = DebounceServiceFactory.Create(message => runtime.Log(message), clock);
 
-			using GameWindow window = new(runtime, (bool)settings["software-render"], debounceService);
+			using GameWindow window = new(runtime, (bool)(settings["software-render"] ?? false), debounceService);
 			runtime.Log("Game started");
 			window.Run();
 			runtime.Log("Game stopped");
 		}
 
-		private static bool ApplyLanguageParameter(RuntimeSettings settings, string languagePostfix)
+		private static bool ApplyLanguageParameter(RuntimeSettings settings, string? languagePostfix)
 		{
 			if (string.IsNullOrEmpty(languagePostfix))
 			{
@@ -285,9 +286,9 @@ Try 'civone-sdl --help' for more information.
 			else
 			{
 				string storageDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CivOne");
-				if (!TranslationServiceFactory.TryUseLanguage(storageDirectory, languagePostfix, out string error, message => Console.WriteLine(message)))
+				if (!TranslationServiceFactory.TryUseLanguage(storageDirectory, languagePostfix, out string? error, message => Console.WriteLine(message)))
 				{
-					Console.WriteLine($"Could not activate translation language '{languagePostfix}': {error}");
+					Console.WriteLine($"Could not activate translation language '{languagePostfix}': {error ?? "unknown error"}");
 					return false;
 				}
 

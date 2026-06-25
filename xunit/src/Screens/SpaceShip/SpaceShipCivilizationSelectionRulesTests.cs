@@ -7,7 +7,7 @@ namespace CivOne.UnitTests.Screens.SpaceShip
 	public class SpaceShipCivilizationSelectionRulesTests
 	{
 		[Fact]
-		public void IsEnabled_NoApolloAndNoParts_ReturnsFalse()
+		public void IsEnabledNoApolloAndNoPartsReturnsFalse()
 		{
 			// Arrange
 			SpaceShipComponentType[,] grid = new SpaceShipComponentType[12, 12];
@@ -20,7 +20,7 @@ namespace CivOne.UnitTests.Screens.SpaceShip
 		}
 
 		[Fact]
-		public void IsEnabled_HasApolloAndNoParts_ReturnsTrue()
+		public void IsEnabledHasApolloAndNoPartsReturnsTrue()
 		{
 			// Arrange
 			SpaceShipComponentType[,] grid = new SpaceShipComponentType[12, 12];
@@ -33,7 +33,7 @@ namespace CivOne.UnitTests.Screens.SpaceShip
 		}
 
 		[Fact]
-		public void IsEnabled_NoApolloAndHasPart_ReturnsTrue()
+		public void IsEnabledNoApolloAndHasPartReturnsTrue()
 		{
 			// Arrange
 			SpaceShipComponentType[,] grid = new SpaceShipComponentType[12, 12];
@@ -47,10 +47,10 @@ namespace CivOne.UnitTests.Screens.SpaceShip
 		}
 
 		[Fact]
-		public void HasAnySpaceShipPart_NullGrid_ReturnsFalse()
+		public void HasAnySpaceShipPartNullGridReturnsFalse()
 		{
 			// Arrange
-			SpaceShipComponentType[,] grid = null;
+			SpaceShipComponentType[,] grid = null!;
 
 			// Act
 			bool actual = SpaceShipCivilizationSelectionRules.HasAnySpaceShipPart(grid);

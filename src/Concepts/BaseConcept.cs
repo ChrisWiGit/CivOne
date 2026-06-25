@@ -39,7 +39,7 @@ namespace CivOne.Concepts
 		/// TranslatedName = Translate("Tax Rate");
 		/// </code>
 		/// </example>
-		public string TranslatedName { get; protected set; }
+		public string TranslatedName { get; protected set; } = "";
 		/// <summary>
 		/// Gets the invariant civilopedia key name.
 		/// </summary>
@@ -49,19 +49,19 @@ namespace CivOne.Concepts
 		/// TranslatedName = Translate("Tax Rate");
 		/// </code>
 		/// </example>
-		public string Name { get; protected set; }
-		public IBitmap Icon => null;
+		public string Name { get; protected set; } = "";
+		public IBitmap? Icon => null;
 		public byte PageCount => 2;
 		public Picture DrawPage(byte pageNumber)
 		{
-			string[] text = new string[0];
+			string[] text = [];
 			switch (pageNumber)
 			{
 				case 1:
-					text = Resources.GetCivilopediaText("BLURB4/" + Name.ToUpper());
+					text = Resources.GetCivilopediaText("BLURB4/" + Name.ToUpperInvariant());
 					break;
 				case 2:
-					text = Resources.GetCivilopediaText("BLURB4/" + Name.ToUpper() + "2");
+					text = Resources.GetCivilopediaText("BLURB4/" + Name.ToUpperInvariant() + "2");
 					break;
 				default:
 					Log("Invalid page number: {0}", pageNumber);

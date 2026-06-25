@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json;
 using CivOne.Mcp.Contracts;
@@ -27,7 +28,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Handle_InvalidParams_ReturnsInvalidParamsError()
+		public void HandleInvalidParamsReturnsInvalidParamsError()
 		{
 			using JsonDocument args = JsonDocument.Parse("[]");
 			McpRequest request = new("2.0", "save-nogame-1", "game_save", args.RootElement.Clone(), null);
@@ -41,7 +42,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Handle_GameNotStarted_ReturnsGameNotStartedError()
+		public void HandleGameNotStartedReturnsGameNotStartedError()
 		{
 			using JsonDocument args = JsonDocument.Parse("{}");
 			McpRequest request = new("2.0", "save-nogame-2", "game_save", args.RootElement.Clone(), null);
@@ -54,6 +55,7 @@ namespace CivOne.UnitTests
 			Assert.Equal("GAME_NOT_STARTED", payload.RootElement.GetProperty("error").GetProperty("code").GetString());
 		}
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Test cleanup")]
 		public void Dispose()
 		{
 			try

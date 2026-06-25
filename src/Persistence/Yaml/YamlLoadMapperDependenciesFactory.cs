@@ -131,16 +131,16 @@ namespace CivOne.Persistence.Yaml
 			public ushort GameTurn => 0;
 			public int Difficulty => 0;
 
-			public Player HumanPlayer => null;
-			public Player CurrentPlayer => null;
+			public Player HumanPlayer => null!;
+			public Player CurrentPlayer => null!;
 			public IEnumerable<Player> Players => [];
 
 			public byte PlayerNumber(Player player) => 0;
-			public Player GetPlayer(byte number) => null;
+			public Player GetPlayer(byte number) => null!;
 
 			public City[] GetCities() => [];
 			public Units.IUnit[] GetUnits() => [];
-			public void DisbandUnit(Units.IUnit unit) { }
+			public void DisbandUnit(Units.IUnit? unit) { }
 
 			public bool WonderObsolete<T>() where T : Wonders.IWonder, new() => false;
 			public bool WonderBuilt<T>() where T : Wonders.IWonder => false;

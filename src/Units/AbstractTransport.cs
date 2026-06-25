@@ -18,13 +18,13 @@ namespace CivOne.Units
 		public virtual int Cargo { get; }
 		public virtual bool AllowedToBoard(IUnit unit)
 		{
-			if (unit.Class != UnitClass.Land || unit.Owner != Owner)
+			if (unit.UnitCategory != UnitClass.Land || unit.Owner != Owner)
 			{
 				return false;
 			}
 
-			int availableCargo = Tile.Units.Where(u => u is IBoardable).Sum(u => (u as IBoardable).Cargo);
-			int usedCargo = Tile.Units.Count(u => u.Class == UnitClass.Land);
+			int availableCargo = Tile.Units.OfType<IBoardable>().Sum(u => u.Cargo);
+			int usedCargo = Tile.Units.Count(u => u.UnitCategory == UnitClass.Land);
 
 			return availableCargo > usedCargo;
 		}

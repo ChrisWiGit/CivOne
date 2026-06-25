@@ -21,7 +21,7 @@ namespace CivOne.src
     /// <see cref="Map.LoadEarthMapInThread"/> works synchronously in tests without any
     /// proprietary files present.
     /// </summary>
-    class MapGenerationFromYaml : Map
+    sealed class MapGenerationFromYaml : Map
     {
         protected override void TaskRunEarthMapGeneration()
         {

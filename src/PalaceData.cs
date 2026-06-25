@@ -28,9 +28,9 @@ namespace CivOne
 
 	public class PalaceData : IPalaceData
 	{
-		protected byte[] PalaceStyle = new byte[7];
-		protected byte[] PalaceLevel = new byte[7];
-		protected byte[] GardenLevel = new byte[3];
+		readonly byte[] PalaceStyle = new byte[7];
+		readonly byte[] PalaceLevel = new byte[7];
+		readonly byte[] GardenLevel = new byte[3];
 
 		public int PalaceLeft
 		{
@@ -58,19 +58,19 @@ namespace CivOne
 
 		public PalaceStyle GetPalaceStyle(int index)
 		{
-			if (index < 0 || index > 6) throw new Exception("Invalid palace index");
+			if (index < 0 || index > 6) throw new InvalidOperationException("Invalid palace index");
 			return (PalaceStyle)PalaceStyle[index];
 		}
 
 		public byte GetPalaceLevel(int index)
 		{
-			if (index < 0 || index > 6) throw new Exception("Invalid palace index");
+			if (index < 0 || index > 6) throw new InvalidOperationException("Invalid palace index");
 			return PalaceLevel[index];
 		}
 
 		public byte GetGardenLevel(int index)
 		{
-			if (index < 0 || index > 2) throw new Exception("Invalid garden index");
+			if (index < 0 || index > 2) throw new InvalidOperationException("Invalid garden index");
 			return GardenLevel[index];
 		}
 
@@ -128,8 +128,8 @@ namespace CivOne
 
 		public void SetGarden(int index, byte level)
 		{
-			if (index < 0 || index > 2) throw new Exception("Invalid garden index");
-			if (level < 0 || level > 3) throw new Exception("Invalid garden level");
+			if (index < 0 || index > 2) throw new InvalidOperationException("Invalid garden index");
+			if (level < 0 || level > 3) throw new InvalidOperationException("Invalid garden level");
 
 			GardenLevel[index] = level;
 		}

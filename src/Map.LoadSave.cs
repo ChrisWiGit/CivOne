@@ -119,8 +119,8 @@ namespace CivOne
 			SaveExploredLayer(bitmap);
 			SaveAreaSegmentationLayer(bitmap);
 
-			using Picture picture = new Picture(bitmap, sp299.Palette);
-			PicFile picFile = new PicFile(picture);
+			using Picture picture = new(bitmap, sp299.Palette);
+			using PicFile picFile = new(picture);
 			// fire-eggs 20190710 removing this allows JCivEd to load the .MAP file as a .PIC
 			//	HasPalette256 = false
 			_mapPersistenceService.WriteAllBytes(filename, picFile.GetBytes());
@@ -231,7 +231,7 @@ namespace CivOne
 		{
 			if (Ready || _tiles != null)
 			{
-				Log("ERROR: Map is already load{0}/generat{0}", (Ready ? "ed" : "ing"));
+				Log("ERROR: Map is already load{0}/generat{0}", Ready ? "ed" : "ing");
 				return;
 			}
 

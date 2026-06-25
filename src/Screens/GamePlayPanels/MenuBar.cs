@@ -18,7 +18,7 @@ namespace CivOne.Screens.GamePlayPanels
 {
 	internal class MenuBar : BaseScreen
 	{
-		private static bool DebugMenuEnabled => Settings.DebugMenu || RuntimeHandler.Runtime?.Settings.Get<bool>("debug") == true;
+		private static bool DebugMenuEnabled => Settings.DebugMenu || RuntimeHandler.Runtime.Settings.Get<bool>("debug") == true;
 		
 		public event EventHandler? GameSelected;
 		public event EventHandler? OrdersSelected;

@@ -15,7 +15,7 @@ namespace CivOne
 	{
 		string TranslatedName { get; }
 		string Name { get; }
-		IBitmap Icon { get; }
+		IBitmap? Icon { get; }
 		byte PageCount { get; }
 		Picture DrawPage(byte pageNumber);
 	}

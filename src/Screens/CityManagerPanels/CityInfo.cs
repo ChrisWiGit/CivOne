@@ -37,21 +37,21 @@ namespace CivOne.Screens.CityManagerPanels
 		{
 			get
 			{
-				Picture output = new Picture(144, 83);
+				Picture output = new(144, 83);
 				for (int i = 0; i < _units.Length; i++)
 				{
-					int xx = 4 + ((i % 6) * 18);
-					int yy = 0 + (((i - (i % 6)) / 6) * 16);
+					int xx = 4 + (i % 6 * 18);
+					int yy = 0 + ((i - (i % 6)) / 6 * 16);
 
 					output.AddLayer(_units[i].ToBitmap(), xx, yy);
-					string homeCity = Translate("NON.");
-					if (_units[i].Home != null)
+					string homeCityName = Translate("NON.");
+					if (_units[i].Home is {} home)
 					{
-						homeCity = _units[i].Home.Name;
-						if (homeCity.Length >= 3)
-							homeCity = $"{homeCity.Substring(0, 3)}.";
+						homeCityName = home.Name;
+						if (homeCityName.Length >= 3)
+							homeCityName = $"{homeCityName[..3]}.";
 					}
-					output.DrawText(homeCity, 1, 5, xx, yy + 16);
+					output.DrawText(homeCityName, 1, 5, xx, yy + 16);
 				}
 				return output;
 			}
@@ -93,8 +93,8 @@ namespace CivOne.Screens.CityManagerPanels
 				const int Width = 144;
 				const int Height = 83;	
 
-				Picture background = new Picture(Width, Height).As<Picture>();
-				Picture citizens = new Picture(Width - 17, Height).As<Picture>();
+				Picture background = new(Width, Height);
+				Picture citizens = new(Width - 17, Height);
 
                 using (var residents = _city.Residents.GetEnumerator())
                 {
@@ -137,9 +137,11 @@ namespace CivOne.Screens.CityManagerPanels
 			
 							foreach (var building in group.Buildings)
 							{
-								background.AddLayer(building.SmallIcon,
-									left: background.Width - building.SmallIcon.Width() 
-											- 15 - (building.SmallIcon.Width() + 1 - leftStartPackedForBigCities) * deltaX++,
+								if (building.SmallIcon is not IBitmap smallIcon)
+									continue;
+								background.AddLayer(smallIcon,
+									left: background.Width - smallIcon.Width() 
+											- 15 - (smallIcon.Width() + 1 - leftStartPackedForBigCities) * deltaX++,
 									top: yy + heightOffset);
 							}
 
@@ -183,16 +185,16 @@ namespace CivOne.Screens.CityManagerPanels
 							DrawHappyRow(citizens, yy, group2);
 
 							int deltaX = 0;
-							foreach (var wonder in group.Wonders)
+							foreach (var smallIcon in group.Wonders.Select(w => w.SmallIcon).OfType<IBitmap>())
 							{
-								background.AddLayer(wonder.SmallIcon,
-									left: background.Width - wonder.SmallIcon.Width() - 15 - (wonder.SmallIcon.Width() + 1) * deltaX++,
+								background.AddLayer(smallIcon,
+									left: background.Width - smallIcon.Width() - 15 - (smallIcon.Width() + 1) * deltaX++,
 									top: yy + heightOffset);
 							}
 						}
                     }
                 }
-				Picture output = new Picture(Width, Height).As<Picture>();
+				Picture output = new(Width, Height);
 				
 
 				output.AddLayer(citizens, 0, 0);
@@ -206,13 +208,14 @@ namespace CivOne.Screens.CityManagerPanels
 		{
 			get
 			{
-				Picture output = new Picture(144, 83)
+				Picture output = new(144, 83);
+
+				output
 					.FillRectangle(5, 2, 122, 1, 9)
 					.FillRectangle(5, 3, 1, 74, 9)
 					.FillRectangle(126, 3, 1, 74, 9)
 					.FillRectangle(5, 77, 122, 1, 9)
-					.FillRectangle(6, 3, 120, 74, 5)
-					.As<Picture>();
+					.FillRectangle(6, 3, 120, 74, 5);
 
                 Map local = Map.Instance;
                 var unis = Game.GetUnits().Where(u => u.Home == _city).ToArray(); // city-owned units
@@ -239,7 +242,7 @@ namespace CivOne.Screens.CityManagerPanels
 
                 foreach (var unit in unis)
                 {
-                    Draw2by2(unit.X, unit.Y, Common.ColourLight[_city.Owner]);
+                    Draw2by2(unit.X, unit.Y, Common.ColourLight[_city.CityOwnerPlayerIndex]);
                 }
                 Draw2by2(_city.X, _city.Y, 15);
 
@@ -346,8 +349,8 @@ namespace CivOne.Screens.CityManagerPanels
 		{
 			for (int i = 0; i < _units.Length; i++)
 			{
-				int xx = 4 + ((i % 6) * 18);
-				int yy = 0 + (((i - (i % 6)) / 6) * 16);
+				int xx = 4 + (i % 6 * 18);
+				int yy = 0 + ((i - (i % 6)) / 6 * 16);
 
 				if (new Rectangle(xx, yy, 16, 16).Contains(args.Location))
 				{
@@ -403,6 +406,17 @@ namespace CivOne.Screens.CityManagerPanels
 		{
 			_update = true;
 			_cityInfoUnits.Update();
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_cityInfoUnits?.Dispose();
+			base.Dispose(disposing);
 		}
     }
 }

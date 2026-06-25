@@ -6,7 +6,7 @@ namespace CivOne.UnitTests
 	public class TerrainEditorDelegateTests
 	{
 		[Fact]
-		public void BrushSizeSequence_IncludesTwoAndMatchesRequirement()
+		public void BrushSizeSequenceIncludesTwoAndMatchesRequirement()
 		{
 			// Arrange
 			TerrainEditorDelegate testee = new();

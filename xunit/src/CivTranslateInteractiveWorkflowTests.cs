@@ -25,7 +25,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Run_WithExistingValuesFile_ReturnsErrorAndKeepsTranslationFile()
+		public void RunWithExistingValuesFileReturnsErrorAndKeepsTranslationFile()
 		{
 			// Arrange
 			string originalContent = "# Header\nHELLO=Hallo\nBYE=Tschuess\n";
@@ -45,7 +45,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Run_WithTranslatedValues_WritesValuesBackAndPreservesStructure()
+		public void RunWithTranslatedValuesWritesValuesBackAndPreservesStructure()
 		{
 			// Arrange
 			File.WriteAllText(_translationFilePath, "# Header\n\nHELLO=Hallo\nA[EQ]B=X[EQ]Y\n");
@@ -71,7 +71,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Run_WithMismatchedTranslatedValuesCount_ReturnsErrorAndKeepsOriginalFile()
+		public void RunWithMismatchedTranslatedValuesCountReturnsErrorAndKeepsOriginalFile()
 		{
 			// Arrange
 			string originalContent = "HELLO=Hallo\nBYE=Tschuess\n";

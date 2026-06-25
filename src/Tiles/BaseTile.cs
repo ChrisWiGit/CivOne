@@ -7,8 +7,6 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-using System.Collections.Generic;
-using System.Drawing;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Units;
@@ -120,7 +118,7 @@ namespace CivOne.Tiles
 		/// TranslatedName = Translate("Arctic");
 		/// </code>
 		/// </example>
-		public string TranslatedName { get; protected set; }
+		public string TranslatedName { get; protected set; } = string.Empty;
 		/// <summary>
 		/// Gets the invariant civilopedia key name.
 		/// Derived tile classes must assign this to the English base value.
@@ -131,7 +129,7 @@ namespace CivOne.Tiles
 		/// TranslatedName = Translate("Arctic");
 		/// </code>
 		/// </example>
-		public string Name { get; protected set; }
+		public string Name { get; protected set; } = string.Empty;
 		public byte PageCount => 1;
 		public Picture DrawPage(byte pageNumber) => new Picture(320, 200);
 		
@@ -240,7 +238,7 @@ namespace CivOne.Tiles
 			{
 				if (Game.Started && _hut && !value)
 				{
-					Game.GetPlayer(0).Explore(X, Y, 0);
+					Game.GetPlayer(0)!.Explore(X, Y, 0);
 				}
 				_hut = value;
 			}
@@ -256,9 +254,9 @@ namespace CivOne.Tiles
 		
 		// This method is used to calculate whether a river or grassland tile is special.
 		protected bool AlternateSpecial() => ((X + Y) % 4 == 0) || ((X + Y) % 4 == 3);
-		public City City => Game?.GetCity(X, Y);
+		public City City => Game?.GetCity(X, Y)!;
         public bool HasCity => City != null;
-		public virtual IUnit[] Units => Game?.GetUnits(X, Y);
+		public virtual IUnit[] Units => Game?.GetUnits(X, Y)!;
 
 		public ITile this[int relativeX, int relativeY] => Map[X + relativeX, Y + relativeY];
 		public ITile[,] this[int relativeX, int relativeY, int width, int height] => Map[X + relativeX, Y + relativeY, width, height];

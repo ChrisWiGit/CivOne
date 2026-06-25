@@ -70,7 +70,7 @@ namespace CivOne.Screens.Debug
 		private const int MaxGridColumns = 4;
 
 		private readonly string[] _items;
-		private readonly Func<int, bool> _isChecked;
+		private readonly Func<int, bool>? _isChecked;
 		private readonly SelectionMode _mode;
 		private readonly byte _fontId;
 		private readonly bool _allowCancel;
@@ -84,7 +84,7 @@ namespace CivOne.Screens.Debug
 		private int _gridRow, _gridCol;
 
 		// Pagination state
-		private int _pageOffset = 0;        // First item index of current page
+		private int _pageOffset;        // First item index of current page
 		private int _maxVisibleItems = 1;   // Max items per page (rows * cols)
 		private int _pageCount = 1;         // Total number of pages
 
@@ -104,13 +104,13 @@ namespace CivOne.Screens.Debug
 		}
 
 		/// <summary>Fired in CheckUncheck mode when the user confirms a cell. Dialog stays open.</summary>
-		public event Action<int> ItemChecked;
+		public event Action<int>? ItemChecked;
 
 		/// <summary>Fired in Select mode when the user confirms a cell. Caller should close dialog.</summary>
-		public event Action<int> ItemSelected;
+		public event Action<int>? ItemSelected;
 
 		/// <summary>Fired when the user presses Escape.</summary>
-		public event EventHandler Cancelled;
+		public event EventHandler? Cancelled;
 
 		/// <summary>
 		/// Marks layout cache dirty so dimensions are recalculated on next <see cref="Draw(IBitmap, string, int)"/>.
@@ -544,10 +544,10 @@ namespace CivOne.Screens.Debug
 				_gridCellStartX = _gridX + 4;
 			}
 
-			Picture gridGfx = new Picture(_gridContentWidth, _gridContentHeight)
+			Picture gridGfx = new Picture(_gridContentWidth, _gridContentHeight);
+			gridGfx
 				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D()
-				.As<Picture>();
+				.DrawRectangle3D();
 
 			target.Clear();
 			target.FillRectangle(_gridX - 1, _gridY - 1, _gridContentWidth + 2, _gridContentHeight + 2, 5)
@@ -866,7 +866,7 @@ namespace CivOne.Screens.Debug
 		/// Pressing a single-match hotkey activates that item immediately.
 		/// Pressing a multi-match hotkey only cycles the selection cursor among matching items.
 		/// </param>
-		public GridMenuDelegate(string[] items, SelectionMode mode, Func<int, bool> isChecked = null,
+		public GridMenuDelegate(string[] items, SelectionMode mode, Func<int, bool>? isChecked = null,
 				byte fontId = 1, bool allowCancel = true, int defaultSelectedIndex = -1,
 				bool enableHotkeys = false)
 		{

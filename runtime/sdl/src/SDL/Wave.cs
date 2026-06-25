@@ -16,7 +16,7 @@ namespace CivOne
 	#pragma warning disable S101 // Types should be named in PascalCase - but these are named to match SDL as a name.
 	internal static partial class SDL
 	{
-		internal unsafe class Wave(string filename) : IDisposable
+		internal sealed class Wave(string filename) : IDisposable
 		{
 			private uint deviceId = uint.MaxValue;
 			private bool _disposed;
@@ -27,7 +27,7 @@ namespace CivOne
 
 			private void Log(string message) => OnLog?.Invoke(message);
 
-			public event Action<string> OnLog;
+			public event Action<string>? OnLog;
 
 			public string Filename { get; } = filename;
 			public bool Playing { get; private set; }
@@ -98,7 +98,7 @@ namespace CivOne
 				GC.SuppressFinalize(this);
 			}
 
-			protected virtual void Dispose(bool disposing)
+			private void Dispose(bool disposing)
 			{
 				if (_disposed) return;
 

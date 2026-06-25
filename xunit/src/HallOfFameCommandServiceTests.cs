@@ -13,7 +13,7 @@ namespace CivOne.UnitTests
 	{
 		private readonly string _storageDirectory;
 		private readonly IHallOfFameFileRepository _repository;
-		private readonly IHallOfFamePersistService _persistService;
+		private readonly HallOfFamePersistService _persistService;
 
 		public HallOfFameCommandServiceTests()
 		{
@@ -23,13 +23,13 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Clear_WhenEntriesExist_ReplacesWithCurrentHumanEntryOnly()
+		public void ClearWhenEntriesExistReplacesWithCurrentHumanEntryOnly()
 		{
 			// Arrange
 			_persistService.AddEntry(_storageDirectory, CreateEntry("Old Leader", score: 999));
 			HallOfFameEntry currentHumanEntry = CreateEntry("Current Human", score: 123);
 			IHallOfFameEntryComposerService composer = new StubComposer(currentHumanEntry);
-			IHallOfFameCommandService testee = new HallOfFameCommandService(
+			HallOfFameCommandService testee = new(
 				storageDirectory: _storageDirectory,
 				persistService: _persistService,
 				fileRepository: _repository,
@@ -45,12 +45,12 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Clear_PersistsCurrentHumanEntryToFile()
+		public void ClearPersistsCurrentHumanEntryToFile()
 		{
 			// Arrange
 			HallOfFameEntry currentHumanEntry = CreateEntry("Composer Human", score: 321);
 			IHallOfFameEntryComposerService composer = new StubComposer(currentHumanEntry);
-			IHallOfFameCommandService testee = new HallOfFameCommandService(
+			HallOfFameCommandService testee = new(
 				storageDirectory: _storageDirectory,
 				persistService: _persistService,
 				fileRepository: _repository,
@@ -67,12 +67,12 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Clear_WhenComposerThrowsInvalidOperation_ClearsToEmptyList()
+		public void ClearWhenComposerThrowsInvalidOperationClearsToEmptyList()
 		{
 			// Arrange
 			_persistService.AddEntry(_storageDirectory, CreateEntry("Old Leader", score: 999));
 			IHallOfFameEntryComposerService composer = new ThrowingComposer();
-			IHallOfFameCommandService testee = new HallOfFameCommandService(
+			HallOfFameCommandService testee = new(
 				storageDirectory: _storageDirectory,
 				persistService: _persistService,
 				fileRepository: _repository,

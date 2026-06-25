@@ -12,7 +12,7 @@ using CivOne.Enums;
 
 namespace CivOne.Units
 {
-	[Default]
+	[DefaultUnitProduction]
 	internal class Militia : BaseUnitLand
 	{
 		public Militia() : base(1, 1, 1, 1)

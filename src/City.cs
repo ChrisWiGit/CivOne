@@ -51,7 +51,7 @@ namespace CivOne
 		public Point Location => new(X, Y);
 
 		private byte _owner;
-		public byte Owner
+		public byte CityOwnerPlayerIndex
 		{
 			get => _owner;
 			set
@@ -87,9 +87,9 @@ namespace CivOne
 		public int Food { get; set; }
 		public IProduction CurrentProduction { get; private set; }
 
-		private List<ITile> _resourceTiles = new List<ITile>();
-		private List<Citizen> _specialists = new List<Citizen>();
-		private ICityEconomyService _economyService;
+		private List<ITile> _resourceTiles = [];
+		private List<Citizen> _specialists = [];
+		private ICityEconomyService? _economyService;
 
 		internal List<ITile> SetupResourceTiles
 		{
@@ -116,8 +116,8 @@ namespace CivOne
 			}
 		}
 
-		private List<IBuilding> _buildings = new List<IBuilding>();
-		private List<IWonder> _wonders = new List<IWonder>();
+		private List<IBuilding> _buildings = [];
+		private List<IWonder> _wonders = [];
 
 		public IBuilding[] Buildings => _buildings.OrderBy(b => b.Id).ToArray();
 		public IWonder[] Wonders => _wonders.OrderBy(b => b.Id).ToArray();
@@ -144,7 +144,7 @@ namespace CivOne
 		{
 			get
 			{
-				IGovernment government = Game.GetPlayer(_owner).Government;
+				IGovernment government = Game.GetPlayer(_owner)!.Government;
 				// store unitCount once to avoid multiple enumeration.
 				int unitCount = Units.Count(u => u is not Diplomat && u is not Caravan);
 				if (government is Anarchy || government is Despotism)
@@ -169,7 +169,7 @@ namespace CivOne
 			get
 			{
 				int costs = (_size * 2);
-				IGovernment government = Game.GetPlayer(_owner).Government;
+				IGovernment government = Game.GetPlayer(_owner)!.Government;
 				if (government is Anarchy || government is Despotism)
 				{
 					costs += Units.Count(u => (u is Settlers));
@@ -201,11 +201,11 @@ namespace CivOne
 				case Terrain.Grassland1:
 				case Terrain.Grassland2:
 				case Terrain.River:
-					if (!Player.AnarchyDespotism && tile.Irrigation) output += 1;
+					if (!CityOwnerPlayer.AnarchyDespotism && tile.Irrigation) output += 1;
 					break;
 				case Terrain.Ocean:
 				case Terrain.Tundra:
-					if (!Player.AnarchyDespotism && tile.Special) output += 1;
+					if (!CityOwnerPlayer.AnarchyDespotism && tile.Special) output += 1;
 					break;
 			}
 			if (tile.RailRoad) output = (int)Math.Floor((double)output * 1.5);
@@ -224,7 +224,7 @@ namespace CivOne
 			switch (tile.Type)
 			{
 				case Terrain.Hills:
-					if (!Player.AnarchyDespotism && tile.Mine) output += 1;
+					if (!CityOwnerPlayer.AnarchyDespotism && tile.Mine) output += 1;
 					break;
 			}
 			if (tile.RailRoad) output = (int)Math.Floor((double)output * 1.5);
@@ -264,21 +264,21 @@ namespace CivOne
 				case Terrain.Grassland2:
 				case Terrain.Plains:
 					if (!tile.Road) break;
-					if (Player.RepublicDemocratic) output += 1;
+					if (CityOwnerPlayer.RepublicDemocratic) output += 1;
 					break;
 				case Terrain.Ocean:
 				case Terrain.River:
-					if (Player.RepublicDemocratic) output += 1;
+					if (CityOwnerPlayer.RepublicDemocratic) output += 1;
 					break;
 				case Terrain.Jungle:
 					if (!tile.Special) break;
-					if (Player.MonarchyCommunist) output += 1;
-					if (Player.RepublicDemocratic) output += 2;
+					if (CityOwnerPlayer.MonarchyCommunist) output += 1;
+					if (CityOwnerPlayer.RepublicDemocratic) output += 2;
 					break;
 				case Terrain.Mountains:
 					if (!tile.Special) break;
-					if (Player.MonarchyCommunist) output += 1;
-					if (Player.RepublicDemocratic) output += 2;
+					if (CityOwnerPlayer.MonarchyCommunist) output += 1;
+					if (CityOwnerPlayer.RepublicDemocratic) output += 2;
 					break;
 			}
 			if (output > 0 && HasWonder<Colossus>() && !Game.WonderObsolete<Colossus>()) output += 1;
@@ -349,8 +349,8 @@ namespace CivOne
 				// FNV-1a 64-bit hash over food-affecting city/tile state.
 				ulong hash = 1469598103934665603UL;
 
-				hash = (hash ^ (uint)Owner) * 1099511628211UL;
-				hash = (hash ^ (Player.AnarchyDespotism ? 1UL : 0UL)) * 1099511628211UL;
+				hash = (hash ^ (uint)CityOwnerPlayerIndex) * 1099511628211UL;
+				hash = (hash ^ (CityOwnerPlayer.AnarchyDespotism ? 1UL : 0UL)) * 1099511628211UL;
 				foreach (ITile tile in ResourceTiles)
 				{
 					hash = (hash ^ (uint)tile.X) * 1099511628211UL;
@@ -375,8 +375,8 @@ namespace CivOne
 				// FNV-1a 64-bit hash over shield-affecting city/tile state.
 				ulong hash = 1469598103934665603UL;
 
-				hash = (hash ^ (uint)Owner) * 1099511628211UL;
-				hash = (hash ^ (Player.AnarchyDespotism ? 1UL : 0UL)) * 1099511628211UL;
+				hash = (hash ^ (uint)CityOwnerPlayerIndex) * 1099511628211UL;
+				hash = (hash ^ (CityOwnerPlayer.AnarchyDespotism ? 1UL : 0UL)) * 1099511628211UL;
 				foreach (ITile tile in ResourceTiles)
 				{
 					hash = (hash ^ (uint)tile.X) * 1099511628211UL;
@@ -408,14 +408,14 @@ namespace CivOne
 		public bool CityOfSameCiv(City city)
 		{
 			if (city == null) return false;
-			return city.Player == this.Player;
+			return city.CityOwnerPlayer == CityOwnerPlayer;
 		}
 
 		private int CalculateTradeValue(City city)
 		{
 			// CW: Source Civilization Or Rome on 640k A Day by Johnny L. Wilson et al. page 230
 			int sameCivPenalty = CityOfSameCiv(city) ? 2 : 1;
-			int trading = (int)Math.Round((city.RawTradeTotal + this.RawTradeTotal + 4) / 8.0 / sameCivPenalty);
+			int trading = (int)Math.Round((city.RawTradeTotal + RawTradeTotal + 4) / 8.0 / sameCivPenalty);
 			return trading;
 		}
 
@@ -460,7 +460,7 @@ namespace CivOne
 		{
 			get
 			{
-				IGovernment government = Game.GetPlayer(_owner).Government;
+				IGovernment government = CityOwnerPlayer.Government;
 				if (government.CorruptionMultiplier == 0) return 0;
 
 				int distance;
@@ -472,7 +472,7 @@ namespace CivOne
 					default:
 						if (HasBuilding<Palace>())
 							return 0;
-						City capital = Game.GetPlayer(Owner).GetCapital();
+						City? capital = CityOwnerPlayer.GetCapital();
 						distance = capital == null ? 32 : Common.DistanceToTile(X, Y, capital.X, capital.Y);
 						break;
 				}
@@ -548,10 +548,10 @@ namespace CivOne
 
 			int pollutionMultiplier = 100;
 			if (HasBuilding<MassTransit>()) pollutionMultiplier = 0;
-			else if (Player.HasAdvance<Plastics>()) pollutionMultiplier = 100;
-			else if (Player.HasAdvance<MassProduction>()) pollutionMultiplier = 75;
-			else if (Player.HasAdvance<Automobile>()) pollutionMultiplier = 50;
-			else if (Player.HasAdvance<Industrialization>()) pollutionMultiplier = 25;
+			else if (CityOwnerPlayer.HasAdvance<Plastics>()) pollutionMultiplier = 100;
+			else if (CityOwnerPlayer.HasAdvance<MassProduction>()) pollutionMultiplier = 75;
+			else if (CityOwnerPlayer.HasAdvance<Automobile>()) pollutionMultiplier = 50;
+			else if (CityOwnerPlayer.HasAdvance<Industrialization>()) pollutionMultiplier = 25;
 
 			int populationPollution = (int)Math.Round((double)(Size * pollutionMultiplier) / 100);
 			int smokeStacks = industrialPollution + populationPollution;
@@ -572,15 +572,15 @@ namespace CivOne
 				return false;
 			}
 
-			int maxRandom = 256 - (Player.Advances.Length * (1 + Game.Difficulty) / 2);
+			int maxRandom = 256 - (CityOwnerPlayer.Advances.Length * (1 + Game.Difficulty) / 2);
 			if (maxRandom < 1) maxRandom = 2; // Prevents bug -> still 50% chance of pollution with 256 advances
 
-			int rnd = Common.Random.Next(maxRandom);
+			int rnd = RandomService.NextInt(maxRandom);
 
 			return (2 * SmokeStacks) > rnd;
 		}
 
-		internal byte _status = 0;
+		internal byte _status;
 
 		/// <summary>
 		/// Only used for saving/loading, not for gameplay
@@ -602,44 +602,44 @@ namespace CivOne
 
 		public bool IsRiot
 		{
-			get => bitFlagExtensions.HasFlag(_status, CityStatus.RIOT);
-			set => SetStatusFlag(CityStatus.RIOT, value);
+			get => bitFlagExtensions.HasFlag(_status, CityStatus.Riot);
+			set => SetStatusFlag(CityStatus.Riot, value);
 		}
 
 		public bool IsCoastal 
 		{
-			get => bitFlagExtensions.HasFlag(_status, CityStatus.COASTAL);
-			set => SetStatusFlag(CityStatus.COASTAL, value);
+			get => bitFlagExtensions.HasFlag(_status, CityStatus.Coastal);
+			set => SetStatusFlag(CityStatus.Coastal, value);
 		}
 
 		public bool CelebrationCancelled
 		{
-			get => bitFlagExtensions.HasFlag(_status, CityStatus.CELEBRATION_CANCELLED);
-			set => SetStatusFlag(CityStatus.CELEBRATION_CANCELLED, value);
+			get => bitFlagExtensions.HasFlag(_status, CityStatus.CelebrationCancelled);
+			set => SetStatusFlag(CityStatus.CelebrationCancelled, value);
 		}
 
 		public bool HydroAvailable
 		{
-			get => bitFlagExtensions.HasFlag(_status, CityStatus.HYDRO_AVAILABLE);
-			set => SetStatusFlag(CityStatus.HYDRO_AVAILABLE, value);
+			get => bitFlagExtensions.HasFlag(_status, CityStatus.HydroAvailable);
+			set => SetStatusFlag(CityStatus.HydroAvailable, value);
 		}
 
 		public bool AutoBuild
 		{
-			get => bitFlagExtensions.HasFlag(_status, CityStatus.AUTO_BUILD);
-			set => SetStatusFlag(CityStatus.AUTO_BUILD, value);
+			get => bitFlagExtensions.HasFlag(_status, CityStatus.AutoBuild);
+			set => SetStatusFlag(CityStatus.AutoBuild, value);
 		}
 
 		public bool TechStolen
 		{
-			get => bitFlagExtensions.HasFlag(_status, CityStatus.TECH_STOLEN);
-			set => SetStatusFlag(CityStatus.TECH_STOLEN, value);
+			get => bitFlagExtensions.HasFlag(_status, CityStatus.TechnologyStolen);
+			set => SetStatusFlag(CityStatus.TechnologyStolen, value);
 		}
 
 		public bool CelebrationOrRapture
 		{
-			get => bitFlagExtensions.HasFlag(_status, CityStatus.CELEBRATION_RAPTURE);
-			set => SetStatusFlag(CityStatus.CELEBRATION_RAPTURE, value);
+			get => bitFlagExtensions.HasFlag(_status, CityStatus.CelebrationOrRapture);
+			set => SetStatusFlag(CityStatus.CelebrationOrRapture, value);
 		}
 		
 		/// <summary>
@@ -647,8 +647,8 @@ namespace CivOne
 		/// </summary>
 		public bool BuildingSold
 		{
-			get => bitFlagExtensions.HasFlag(_status, CityStatus.IMPROVEMENT_SOLD);
-			set => SetStatusFlag(CityStatus.IMPROVEMENT_SOLD, value);
+			get => bitFlagExtensions.HasFlag(_status, CityStatus.ImprovementSold);
+			set => SetStatusFlag(CityStatus.ImprovementSold, value);
 		}
 
 		internal void SetStatusFlag(CityStatus status, bool value)
@@ -665,7 +665,7 @@ namespace CivOne
 
 		internal bool InvalidTile(ITile tile)
 		{
-			return (Game.GetCities().Where(c => c != this).Any(c => c.ResourceTiles.Any(t => t.X == tile.X && t.Y == tile.Y)) || tile.Units.Any(u => u.Owner != Owner));
+			return (Game.GetCities().Where(c => c != this).Any(c => c.ResourceTiles.Any(t => t.X == tile.X && t.Y == tile.Y)) || tile.Units.Any(u => u.Owner != CityOwnerPlayerIndex));
 		}
 
 		internal void UpdateSpecialists()
@@ -802,7 +802,7 @@ namespace CivOne
 
 			bool isCoastal = Map[X, Y].GetBorderTiles().Any(t => t.IsOcean);
 
-			SetStatusFlag(CityStatus.COASTAL, isCoastal);
+			SetStatusFlag(CityStatus.Coastal, isCoastal);
 		}
 
 		private void SetupHydroFlag()
@@ -811,7 +811,7 @@ namespace CivOne
 
 			bool isHydroAvailable = Map[X, Y].GetBorderTiles().Any(t => t is Mountains or River);
 
-			SetStatusFlag(CityStatus.HYDRO_AVAILABLE, isHydroAvailable);
+			SetStatusFlag(CityStatus.HydroAvailable, isHydroAvailable);
 		}
 
 		public void ResetResourceTiles()
@@ -836,9 +836,12 @@ namespace CivOne
 				ResetResourceTiles();
 				return;
 			}
-			if (_resourceTiles.Contains(tile))
+			
+			bool contains = _resourceTiles.Contains(tile);
+			_resourceTiles.Remove(tile); // remove does not need a Contains check.
+			
+			if (contains)
 			{
-				_resourceTiles.Remove(tile);
 				InvalidateCityBreakdownCache();
 				UpdateSpecialists();
 
@@ -849,8 +852,8 @@ namespace CivOne
 			UpdateSpecialists();
 		}
 
-		public Player Player => Game.Instance.GetPlayer(Owner);
-		public IPlayer PlayerIntf => Player;
+		public Player CityOwnerPlayer => Game.Instance.GetPlayer(CityOwnerPlayerIndex)!;
+		public IPlayer PlayerIntf => CityOwnerPlayer;
 
 		/// <summary>
 		/// Return the list of possible city production [units, buildings,
@@ -860,9 +863,9 @@ namespace CivOne
 		{
 			get
 			{
-				foreach (IUnit unit in Reflect.GetUnits().Where(u => Player.ProductionAvailable(u)))
+				foreach (IUnit unit in Reflect.GetUnits().Where(u => CityOwnerPlayer.ProductionAvailable(u)))
 				{
-					if (unit.Class == UnitClass.Water && !Map[X, Y].GetBorderTiles().Any(t => t.IsOcean)) continue;
+					if (unit.UnitCategory == UnitClass.Water && !Map[X, Y].GetBorderTiles().Any(t => t.IsOcean)) continue;
 					if (unit is Nuclear && !Game.WonderBuilt<ManhattanProject>()) continue;
 					yield return unit;
 				}
@@ -874,12 +877,12 @@ namespace CivOne
 					yield return new Palace();
 				}
 									
-				foreach (IBuilding building in Reflect.GetBuildings().Where(b => Player.ProductionAvailable(b) && !_buildings.Any(x => x.Id == b.Id)))
+				foreach (IBuilding building in Reflect.GetBuildings().Where(b => CityOwnerPlayer.ProductionAvailable(b) && !_buildings.Any(x => x.Id == b.Id)))
 					{
 						if (HasBuilding<Palace>() && building is Courthouse) continue;
 						yield return building;
 					}
-				foreach (IWonder wonder in Reflect.GetWonders().Where(b => Player.ProductionAvailable(b)))
+				foreach (IWonder wonder in Reflect.GetWonders().Where(b => CityOwnerPlayer.ProductionAvailable(b)))
 				{
 					yield return wonder;
 				}
@@ -890,7 +893,7 @@ namespace CivOne
 
 		internal void SetProduction(byte productionId)
 		{
-			IProduction production = Reflect.GetProduction().FirstOrDefault(p => p.ProductionId == productionId);
+			IProduction? production = Reflect.GetProduction().FirstOrDefault(p => p.ProductionId == productionId);
 			if (production == null)
 			{
 				Log($"Invalid production ID for {Name}: {productionId}");
@@ -930,10 +933,10 @@ namespace CivOne
 			int buyPrice = BuyPrice;
 			if (buyPrice <= 0) return false;
 			if (IsRiot && CurrentProduction is IBuilding) return false;
-			if (Game.CurrentPlayer.Gold < buyPrice) return false;
+			if (CityOwnerPlayer.Gold < buyPrice) return false;
 
-			Game.CurrentPlayer.Gold -= (short)buyPrice;
-			Shields = (int)CurrentProduction.Price * 10;
+			CityOwnerPlayer.Gold -= (short)buyPrice;
+			Shields = CurrentProduction.Price * 10;
 			return true;
 		}
 
@@ -943,7 +946,7 @@ namespace CivOne
 			{
 				return false;
 			}
-			AI.Instance(Player).CityProduction(this);
+			AI.Instance(CityOwnerPlayer).CityProduction(this);
 
 			return true;
 		}
@@ -969,7 +972,7 @@ namespace CivOne
 			get
 			{
 				var service = ICityCitizenService.Create(this,
-					Game.Instance, this._specialists, Map.Instance);
+					Game.Instance, _specialists, Map.Instance);
 				return service.EnumerateCitizens();
 			}
 		}
@@ -988,7 +991,7 @@ namespace CivOne
 			UpdateSpecialists();
 
 			var service = ICityCitizenService.Create(this,
-				Game.Instance, this._specialists, Map.Instance);
+				Game.Instance, _specialists, Map.Instance);
 			return service.GetCitizenTypes();
 		}
 		internal IEnumerable<Citizen> GetCitizens()
@@ -1012,12 +1015,14 @@ namespace CivOne
 		{
 			get
 			{
-				ITile[,] tiles = CityRadius;
+				ITile?[,] tiles = CityRadius;
 				for (int xx = 0; xx < 5; xx++)
-				for (int yy = 0; yy < 5; yy++)
 				{
-					if (tiles[xx, yy] == null) continue;
-					yield return tiles[xx, yy];
+					for (int yy = 0; yy < 5; yy++)
+					{
+						if (tiles[xx, yy] == null) continue;
+						yield return tiles[xx, yy]!; //TODO: we should not use ! but CityTiles is currently used in many places. 
+					}
 				}
 			}
 		}
@@ -1030,17 +1035,16 @@ namespace CivOne
 		{
 			get
 			{
-				Player player = Game.Instance.GetPlayer(Owner);
-				ITile[,] tiles = Map[X - 2, Y - 2, 5, 5];
+				ITile?[,] tiles = Map[X - 2, Y - 2, 5, 5];
 				for (int xx = 0; xx < 5; xx++)
 				for (int yy = 0; yy < 5; yy++)
 				{
-					ITile tile = tiles[xx, yy];
+					ITile? tile = tiles[xx, yy];
 					if (tile == null) continue;
 					if ((xx == 0 || xx == 4) && (yy == 0 || yy == 4)) tiles[xx, yy] = null;
-					if (!player.Visible(tile)) tiles[xx, yy] = null;
+					if (!CityOwnerPlayer.Visible(tile)) tiles[xx, yy] = null;
 				}
-				return tiles;
+				return tiles!; //TODO: we should not use ! but CityRadius is currently used in many places.
 			}
 		}
 
@@ -1062,7 +1066,7 @@ namespace CivOne
 		public void SellBuilding(IBuilding building)
 		{
 			RemoveBuilding(building);
-			Game.CurrentPlayer.Gold += building.SellPrice;
+			CityOwnerPlayer.Gold += building.SellPrice;
 			BuildingSold = true;
 		}
 
@@ -1082,7 +1086,7 @@ namespace CivOne
 					(wonder is MagellansExpedition && !Game.WonderObsolete<MagellansExpedition>()))
 				{
 					// Apply Lighthouse/Magellan's Expedition wonder effects in the first turn
-					foreach (IUnit unit in Game.GetUnits().Where(x => x.Owner == Owner && x.Class ==  UnitClass.Water && x.MovesLeft == x.Move))
+					foreach (IUnit unit in Game.GetUnits().Where(x => x.Owner == CityOwnerPlayerIndex && x.UnitCategory ==  UnitClass.Water && x.MovesLeft == x.Move))
 					{
 						unit.MovesLeft++;
 					}
@@ -1105,7 +1109,7 @@ namespace CivOne
 				return false;
 			}
 
-			ISpaceShipService service = SpaceShipServiceFactoryProvider.GetInstance().Create(Player);
+			ISpaceShipService service = SpaceShipServiceFactoryProvider.GetInstance().Create(CityOwnerPlayer);
 			SpaceShipComponentType partType = CurrentProduction switch
 			{
 				SSStructural => SpaceShipComponentType.Structural,
@@ -1122,14 +1126,14 @@ namespace CivOne
 				_ => false
 			};
 
-			if (partType != SpaceShipComponentType.Empty && canShowInstallScreen)
+			if (partType != SpaceShipComponentType.Empty && canShowInstallScreen && CurrentProduction is ICivilopedia civilopedia)
 			{
 				Shields = 0;
-				Message message = Message.Newspaper(this, TranslateFormattedArray("{0} builds\n{1}.", this.Name, (CurrentProduction as ICivilopedia).TranslatedName));
-				message.Done += (s, a) =>
+				Message message = Message.Newspaper(this, TranslateFormattedArray("{0} builds\n{1}.", Name, civilopedia.TranslatedName));
+				message.Done += (_, __) =>
 				{
 					Show showSpaceShip = Show.SpaceShipWithInstall(partType);
-					showSpaceShip.Done += (s1, a1) => GameTask.Insert(Show.CityManager(this));
+					showSpaceShip.Done += (_, __) => GameTask.Insert(Show.CityManager(this));
 					GameTask.Enqueue(showSpaceShip);
 				};
 				GameTask.Enqueue(message);
@@ -1144,9 +1148,14 @@ namespace CivOne
 			{
 				return false;
 			}
+			if (CurrentProduction is not IBuilding palaceBuilding)
+			{
+				Log($"Error: Palace production is not an IBuilding in city {Name}");
+				return false;
+			}
 
 			Shields = 0;
-			foreach (City city in Game.Instance.GetCities().Where(c => c.Owner == Owner))
+			foreach (City city in Game.Instance.GetCities().Where(c => c.CityOwnerPlayerIndex == CityOwnerPlayerIndex))
 			{
 				// Remove palace from all cites.
 				city.RemoveBuilding<Palace>();
@@ -1155,16 +1164,20 @@ namespace CivOne
 			{
 				_buildings.RemoveAll(x => x is Courthouse);
 			}
-			_buildings.Add(CurrentProduction as IBuilding);
+			_buildings.Add(palaceBuilding);
 
-			Message message = Message.Newspaper(this, TranslateFormattedArray("{0} builds\n{1}.", this.Name, (CurrentProduction as ICivilopedia).TranslatedName));
-			message.Done += (s, a) =>
+			if (CurrentProduction is ICivilopedia civilopedia)
 			{
-				GameTask advisorMessage = Message.Advisor(Advisor.Foreign, true, $"{Player.TribeName} capital", $"moved to {Name}.");
-				advisorMessage.Done += (s1, a1) => GameTask.Insert(Show.CityManager(this));
+				Message message = Message.Newspaper(this, TranslateFormattedArray("{0} builds\n{1}.", Name, civilopedia.TranslatedName));
+				message.Done += (_, __) =>
+				{
+					GameTask advisorMessage = Message.Advisor(Advisor.Foreign, true, $"{CityOwnerPlayer.TribeName} capital", $"moved to {Name}.");
+				advisorMessage.Done += (_, __) => GameTask.Insert(Show.CityManager(this));
 				GameTask.Enqueue(advisorMessage);
-			};
-			GameTask.Enqueue(message);
+				};
+				
+				GameTask.Enqueue(message);
+			}
 
 			return true;
 		}
@@ -1182,16 +1195,16 @@ namespace CivOne
 				return;
 			}
 
-			int tileToPollute = Common.Random.Next(possiblePollutionTiles.Count);
+			int tileToPollute = RandomService.NextInt(possiblePollutionTiles.Count);
 
 			possiblePollutionTiles[tileToPollute].Pollution = true;
 
-			if (Human != Owner)
+			if (Human != CityOwnerPlayerIndex)
 			{
 				return;
 			}
 
-			GameTask.Enqueue(Message.Newspaper(this, TranslateFormattedArray("Pollution in\n{0}!\nHealth problems feared.", this.Name)));
+			GameTask.Enqueue(Message.Newspaper(this, TranslateFormattedArray("Pollution in\n{0}!\nHealth problems feared.", Name)));
 		}
 
 		public void NewTurn()
@@ -1208,27 +1221,27 @@ namespace CivOne
 
 			if (citizenTypes.InDisorder)
 			{
-				if (Common.Random.Next(20) == 1 && HasBuilding<Buildings.NuclearPlant>() && !Player.HasAdvance<Advances.FusionPower>())
+				if (RandomService.NextInt(20) == 1 && HasBuilding<NuclearPlant>() && !CityOwnerPlayer.HasAdvance<FusionPower>())
 				{
 					// todo: meltdown
 				}
 				if (WasInDisorder)
 				{
-					if (Player.IsHuman)
+					if (CityOwnerPlayer.IsHuman)
 						GameTask.Insert(Message.Advisor(Advisor.Domestic, true, "Civil Disorder in", $"{Name}! Mayor", "flees in panic."));
 				}
 				else
 				{
 					// TODO fire-eggs not showing loses side-effects
-					if (Player.IsHuman) // && !Game.Animations)
+					if (CityOwnerPlayer.IsHuman) // && !Game.Animations)
 					{
 						Show disorderCity = Show.DisorderCity(this);
 						GameTask.Insert(disorderCity);
 					}
 
-					Log($"City {Name} belonging to {Player.TribeName} has gone into disorder");
+					Log($"City {Name} belonging to {CityOwnerPlayer.TribeName} has gone into disorder");
 				}
-				if (WasInDisorder && Player.Government is Governments.Democracy)
+				if (WasInDisorder && CityOwnerPlayer.Government is Governments.Democracy)
 				{
 					// todo: Force revolution
 				}
@@ -1238,16 +1251,16 @@ namespace CivOne
 			{
 				if (WasInDisorder)
 				{
-					if (Player.IsHuman)
+					if (CityOwnerPlayer.IsHuman)
 						GameTask.Insert(Message.Advisor(Advisor.Domestic, true, "Order restored", $" in {Name}."));
-					Log($"City {Name} belonging to {Player.TribeName} is no longer in disorder");
+					Log($"City {Name} belonging to {CityOwnerPlayer.TribeName} is no longer in disorder");
 				}
 				WasInDisorder = false;
 			}
 			if (citizenTypes.unhappy == 0 && citizenTypes.redShirt == 0 && citizenTypes.happy >= citizenTypes.content && Size >= 3)
 			{
 				// we love the president day
-				if (Player.Government is Governments.Democracy || Player.Government is Republic)
+				if (CityOwnerPlayer.Government is Governments.Democracy || CityOwnerPlayer.Government is Republic)
 				{
 					if (Food > 0)
 					{
@@ -1257,7 +1270,7 @@ namespace CivOne
 				else
 				{
 					// we love the king day
-					if (Human == Owner && Settings.Animations != GameOption.Off)
+					if (Human == CityOwnerPlayerIndex && Settings.Animations != GameOption.Off)
 						GameTask.Insert(Show.WeLovePresidentDayCity(this));
 				}
 			}
@@ -1267,7 +1280,7 @@ namespace CivOne
 			{
 				Food = 0;
 				Size--;
-				if (Human == Owner)
+				if (Human == CityOwnerPlayerIndex)
 				{
 					GameTask.Enqueue(Message.Newspaper(this, TranslateFormattedArray("Food storage exhausted\nin {0}!\nFamine feared.", Name)));
 				}
@@ -1299,10 +1312,10 @@ namespace CivOne
 			{
 				int maxDistance = Units.Max(u => Common.DistanceToTile(X, Y, u.X, u.Y));
 				IUnit unit = Units.Last(u => Common.DistanceToTile(X, Y, u.X, u.Y) == maxDistance);
-				if (Human == Owner)
+				if (Human == CityOwnerPlayerIndex)
 				{
 					Message message = Message.DisbandUnit(this, unit);
-					message.Done += (s, a) =>
+					message.Done += (_, __) =>
 					{
 						Game.DisbandUnit(unit);
 					};
@@ -1324,82 +1337,90 @@ namespace CivOne
 				{
 					// On Chieftain level, it's not possible to create a Settlers in a city of size 1
 				}
-				else if (CurrentProduction is IUnit)
+				else if (CurrentProduction is IUnit unitProduction)
 				{
 					Shields = 0;
-					IUnit unit = Game.Instance.CreateUnit((CurrentProduction as IUnit).Type, X, Y, Owner);
+					IUnit? unit = Game.Instance.CreateUnit(unitProduction.Type, X, Y, CityOwnerPlayerIndex);
+
+					if (unit == null)
+					{
+						Log($"Error: Failed to create unit of type {unitProduction.Type} in city {Name}");
+						return;
+					}
+
 					unit.SetHome();
 					unit.Veteran = _buildings.Any(b => b is Barracks);
 					if (CurrentProduction is Settlers)
 					{
-						if (Size == 1 && Player.Cities.Length == 1) Size++;
+						if (Size == 1 && CityOwnerPlayer.Cities.Length == 1) Size++;
 						if (Size == 1)
 						{
 							unit.SetHome(null);
 						}
 						Size--;
 					}
-					if (Human == Owner && (unit is Settlers || unit is Diplomat || unit is Caravan))
+					if (Human == CityOwnerPlayerIndex && (unit is Settlers || unit is Diplomat || unit is Caravan))
 					{
-						GameTask advisorMessage = Message.Advisor(Advisor.Defense, true, $"{this.Name} builds {unit.TranslatedName}.");
-						advisorMessage.Done += (s, a) => GameTask.Insert(Show.CityManager(this));
+						GameTask advisorMessage = Message.Advisor(Advisor.Defense, true, $"{Name} builds {unit.TranslatedName}.");
+						advisorMessage.Done += (_, __) => GameTask.Insert(Show.CityManager(this));
 						GameTask.Enqueue(advisorMessage);
 					}
 				}
-				if (CurrentProduction is IBuilding && !_buildings.Any(b => b.Id == (CurrentProduction as IBuilding).Id) && !HandleSpaceShipProduction() && !HandlePalaceBuilding())
+				if (CurrentProduction is IBuilding buildingProduction && !_buildings.Any(b => b.Id == buildingProduction.Id) && !HandleSpaceShipProduction() && !HandlePalaceBuilding())
 				{
 					Shields = 0;
-					_buildings.Add(CurrentProduction as IBuilding);
-					GameTask.Enqueue(new ImprovementBuilt(this, CurrentProduction as IBuilding));
+					_buildings.Add(buildingProduction);
+					GameTask.Enqueue(new ImprovementBuilt(this, buildingProduction));
 				}
-				if (CurrentProduction is IWonder && !Game.Instance.BuiltWonders.Any(w => w.Id == (CurrentProduction as IWonder).Id))
+				if (CurrentProduction is IWonder wonderProduction && !Game.Instance.BuiltWonders.Any(w => w.Id == wonderProduction.Id))
 				{
 					Shields = 0;
-					AddWonder(CurrentProduction as IWonder);
-					GameTask.Enqueue(new ImprovementBuilt(this, CurrentProduction as IWonder));
+					AddWonder(wonderProduction);
+					GameTask.Enqueue(new ImprovementBuilt(this, wonderProduction));
 				}
 			}
 
 			// TODO: Handle luxuries
-			Player.Gold += citizenTypes.InDisorder ? (short)0 : Taxes;
-			Player.Gold -= TotalMaintenance;
-			Player.Science += Science;
+			CityOwnerPlayer.Gold += citizenTypes.InDisorder ? (short)0 : Taxes;
+			CityOwnerPlayer.Gold -= TotalMaintenance;
+			CityOwnerPlayer.Science += Science;
 
 			BuildingSold = false;
-			GameTask.Enqueue(new ProcessScience(Player));
+			GameTask.Enqueue(new ProcessScience(CityOwnerPlayer));
 
-			if (Player.IsHuman)
+			if (CityOwnerPlayer.IsHuman)
 			{
 				UpdateAutoBuild();
 			}
 			else
 			{
-				Player.AI.CityProduction(this);
+				CityOwnerPlayer.AI?.CityProduction(this);
 			}
 		}
 
 		public void Disaster()
 		{
-			List<string> message = new List<string>();
+			List<string> message = [];
 			bool humanGetsCity = false;
 
-			if (Player.Cities.Length == 1)
+			if (CityOwnerPlayer.Cities.Length == 1)
 				return;
 
 			if (Size < 5)
 				return;
 
-			switch (Common.Random.Next(0, 9))
+			switch (RandomService.NextInt(0, 9))
 			{
 				case 0:
 				{
 					// Earthquake
 					bool hillsNearby = CityTiles.Any(t => t.Type == Terrain.Hills);
-					IList<IBuilding> buildingsOtherThanPalace = Buildings.Where(b => !(b is Palace)).ToList();
+					IList<IBuilding> buildingsOtherThanPalace = [.. Buildings.OfType<IBuilding>().Where(b => b is not Palace)];
+					
 					if (!hillsNearby || !buildingsOtherThanPalace.Any())
 						return;
 
-					IBuilding buildingToDestroy = buildingsOtherThanPalace[Common.Random.Next(0, buildingsOtherThanPalace.Count - 1)];
+					IBuilding buildingToDestroy = RandomService.NextElement(buildingsOtherThanPalace);
 					RemoveBuilding(buildingToDestroy);
 
 					message.Add(TranslateFormatted("Earthquake in {0}!", Name));
@@ -1410,9 +1431,9 @@ namespace CivOne
 				case 1:
 				{
 					// Plague
-					bool hasMedicine = Player.HasAdvance<Medicine>();
+					bool hasMedicine = CityOwnerPlayer.HasAdvance<Medicine>();
 					bool hasAqueduct = HasBuilding<Aqueduct>();
-					bool hasConstruction = Player.Advances.Any(a => a is Construction);
+					bool hasConstruction = CityOwnerPlayer.Advances.Any(a => a is Construction);
 
 					if (!hasMedicine && !hasAqueduct && hasConstruction)
 					{
@@ -1430,7 +1451,7 @@ namespace CivOne
 					// Flooding
 					bool riverNearby = CityTiles.Any(t => t.Type == Terrain.River);
 					bool hasCityWalls = HasBuilding<CityWalls>();
-					bool hasMasonry = Player.HasAdvance<Masonry>();
+					bool hasMasonry = CityOwnerPlayer.HasAdvance<Masonry>();
 
 					if (riverNearby && !hasCityWalls && hasMasonry)
 					{
@@ -1447,7 +1468,7 @@ namespace CivOne
 					// Volcano
 					bool mountainNearby = CityTiles.Any(t => t.Type == Terrain.Mountains);
 					bool hasTemple = HasBuilding<Temple>();
-					bool hasCeremonialBurial = Player.HasAdvance<CeremonialBurial>();
+					bool hasCeremonialBurial = CityOwnerPlayer.HasAdvance<CeremonialBurial>();
 
 					if (mountainNearby && !hasTemple && hasCeremonialBurial)
 					{
@@ -1464,7 +1485,7 @@ namespace CivOne
 				{
 					// Famine
 					bool hasGranary = HasBuilding<Granary>();
-					bool hasPottery = Player.HasAdvance<Pottery>();
+					bool hasPottery = CityOwnerPlayer.HasAdvance<Pottery>();
 
 					if (!hasGranary && hasPottery)
 					{
@@ -1480,13 +1501,13 @@ namespace CivOne
 				case 5:
 				{
 					// Fire
-					IList<IBuilding> buildingsOtherThanPalace = Buildings.Where(b => !(b is Palace)).ToList();
+					IList<IBuilding> buildingsOtherThanPalace = [.. Buildings.OfType<IBuilding>().Where(b => b is not Palace)];
 					bool hasAqueduct = HasBuilding<Aqueduct>();
-					bool hasConstruction = Player.HasAdvance<Construction>();
+					bool hasConstruction = CityOwnerPlayer.HasAdvance<Construction>();
 
 					if (buildingsOtherThanPalace.Any() && !hasAqueduct && hasConstruction)
 					{
-						IBuilding buildingToDestroy = buildingsOtherThanPalace[Common.Random.Next(0, buildingsOtherThanPalace.Count - 1)];
+						IBuilding buildingToDestroy = RandomService.NextElement(buildingsOtherThanPalace);
 						RemoveBuilding(buildingToDestroy);
 
 						message.Add(TranslateFormatted("Fire in {0}!", Name));
@@ -1518,8 +1539,8 @@ namespace CivOne
 				case 9:
 					// Riot, scandal, corruption
 
-					string[] disasterTypes = { "Scandal", "Riot", "Corruption" };
-					string disasterType = disasterTypes[Common.Random.Next(0, disasterTypes.Length - 1)];
+					string[] disasterTypes = ["Scandal", "Riot", "Corruption"];
+					string disasterType = RandomService.NextElement(disasterTypes);
 					string buildingDemanded = "";
 					CitizenTypes citizenTypes = GetCitizenTypes();
 
@@ -1546,10 +1567,10 @@ namespace CivOne
 					if (HasBuilding<Palace>())
 						return;
 
-					if (Player.Cities.Length < 4)
+					if (CityOwnerPlayer.Cities.Length < 4)
 						return;
 
-					City admired = null;
+					City? admired = null;
 					int mostAppeal = 0;
 
 					foreach (City city in Game.GetCities())
@@ -1574,32 +1595,32 @@ namespace CivOne
 						}
 					}
 
-					if (admired != null && admired.Owner != this.Owner)
+					if (admired != null && admired.CityOwnerPlayerIndex != CityOwnerPlayerIndex)
 					{
 						message.Clear();
 						message.Add(TranslateFormatted("Residents of {0} admire the prosperity of {1}", Name, admired.Name));
 						message.Add(TranslateFormatted("{0} capture {1}", admired.Name, Name));
 
-						Player previousOwner = Game.GetPlayer(this.Owner);
+						Player previousOwner = CityOwnerPlayer;
 
                         // TODO fire-eggs captured gold
                         // TODO fire-eggs captured advance?
                         // TODO fire-eggs all owned units convert?
-						Show captureCity = Show.CaptureCity(this, null);
-						captureCity.Done += (s1, a1) =>
+						Show captureCity = Show.CaptureCity(this);
+						captureCity.Done += (_, __) =>
 						{
-							this.Owner = admired.Owner;
-							this.TechStolen = false;
+							CityOwnerPlayerIndex = admired.CityOwnerPlayerIndex;
+							TechStolen = false;
 
 							previousOwner.HandleExtinction();
 
-							if (Human == admired.Owner)
+							if (Human == admired.CityOwnerPlayerIndex)
 							{
-								GameTask.Insert(Tasks.Show.CityManager(this));
+								GameTask.Insert(Show.CityManager(this));
 							}
 						};
 
-						if (Human == admired.Owner)
+						if (Human == admired.CityOwnerPlayerIndex)
 						{
 							humanGetsCity = true;
 							GameTask.Insert(captureCity);
@@ -1610,9 +1631,9 @@ namespace CivOne
 					break;
 			}
 
-			if (message.Count > 0 && (Player.IsHuman || humanGetsCity))
+			if (message.Count > 0 && (CityOwnerPlayer.IsHuman || humanGetsCity))
 			{
-				GameTask.Enqueue(Message.Advisor(Advisor.Domestic, false, message.ToArray()));
+				GameTask.Enqueue(Message.Advisor(Advisor.Domestic, false, [.. message]));
 			}
 		}
 
@@ -1632,7 +1653,7 @@ namespace CivOne
 				}
 				return [.. _tradingCityIds
 					.Select(id => Game.Instance.GetCities().FirstOrDefault(c => c.Id == id))
-					.Where(c => c != null)];
+					.OfType<City>()];
 			}
 		}
 
@@ -1647,7 +1668,7 @@ namespace CivOne
 		public uint[] VisibleSizes {
 			get { 
 				// Owner always sees his city size;
-				_visibleSizes[Owner] = Size;
+				_visibleSizes[CityOwnerPlayerIndex] = Size;
 				return _visibleSizes;
 			}
 			set => _visibleSizes = value is { Length: >= 16 } ? value : new uint[16];
@@ -1666,9 +1687,9 @@ namespace CivOne
 			get
 			{
 				Game game = Game.Instance;
-				Debug.Assert(game?.HumanPlayer != null, "City.VisibleSizeToHumanPlayer accessed before HumanPlayer was initialized.");
 				if (game?.HumanPlayer == null)
 				{
+					Debug.Assert(false, "City.VisibleSizeToHumanPlayer accessed before HumanPlayer was initialized.");
 					return 0;
 				}
 
@@ -1677,9 +1698,9 @@ namespace CivOne
 			set
 			{
 				Game game = Game.Instance;
-				Debug.Assert(game?.HumanPlayer != null, "City.VisibleSizeToHumanPlayer assigned before HumanPlayer was initialized.");
 				if (game?.HumanPlayer == null)
 				{
+					Debug.Assert(false, "City.VisibleSizeToHumanPlayer assigned before HumanPlayer was initialized.");
 					return;
 				}
 
@@ -1715,7 +1736,7 @@ namespace CivOne
 			}
 
 			SetTradingCityIds([.. TradingCitiesAsCity
-				.Where(tradingCity => tradingCity.Owner != owner)
+				.Where(tradingCity => tradingCity.CityOwnerPlayerIndex != owner)
 				.Select(tradingCity => tradingCity.Id)]);
 		}
 
@@ -1723,29 +1744,36 @@ namespace CivOne
 		internal City(byte owner)
 		{
 			_visibleSizes = new uint[16];
-			Owner = owner;
+			CityOwnerPlayerIndex = owner;
+			_tradingCityIds = [];
+			_resourceTiles = [];
+			_buildings = [];
+			_wonders = [];
+			_specialists = [];
+			CurrentProduction = new Settlers(); // Default production, should be overridden by caller immediately after city creation.
+			
 			if (!Game.Started) return;
 			if (Player.Game == null) return;
-			var player = Game.Instance?.GetPlayer(owner);
-			if (player == null) return;
+			if (CityOwnerPlayer == null) return;
+			
 			CurrentProduction = Reflect.GetUnits()
-				.Where(u => player.ProductionAvailable(u))
-				.OrderBy(u => Common.HasAttribute<Default>(u) ? -1 : (int)u.Type)
-				.FirstOrDefault();
+				.Where(CityOwnerPlayer.ProductionAvailable)
+				.OrderBy(u => Common.HasAttribute<DefaultUnitProductionAttribute>(u) ? -1 : (int)u.Type)
+				.FirstOrDefault() ?? new Settlers(); // Default to Settlers, should never happen that no production is available at city founding, but just in case.
 			SetResourceTiles();
 		}
 
 
 		public enum CityStatus
 		{
-			RIOT = 0,
-			COASTAL = 1,
-			CELEBRATION_CANCELLED = 2,
-			HYDRO_AVAILABLE = 3,
-			AUTO_BUILD = 4,
-			TECH_STOLEN = 5,
-			CELEBRATION_RAPTURE = 6,
-			IMPROVEMENT_SOLD = 7
+			Riot = 0,
+			Coastal = 1,
+			CelebrationCancelled = 2,
+			HydroAvailable = 3,
+			AutoBuild = 4,
+			TechnologyStolen = 5,
+			CelebrationOrRapture = 6,
+			ImprovementSold = 7
 		}
 	}
 }

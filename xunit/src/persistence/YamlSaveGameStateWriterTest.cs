@@ -9,9 +9,9 @@ namespace CivOne.UnitTests.Persistence
 {
     public class YamlSaveGameStateWriterTest : IDisposable
     {
-        private RuntimeSettings rs;
-        private MockRuntime runtime;
-        private GameState mockGameState;
+        private RuntimeSettings? rs;
+        private MockRuntime? runtime;
+        private readonly GameState mockGameState;
         // private GameStateDto gameStateDto;
 
         private Player[] players;
@@ -63,6 +63,16 @@ namespace CivOne.UnitTests.Persistence
 
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposing)
+            {
+                return;
+            }
             // Tear everything down
             Map.Reset();
             runtime?.Dispose();

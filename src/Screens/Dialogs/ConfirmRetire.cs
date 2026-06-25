@@ -15,27 +15,14 @@ namespace CivOne.Screens.Dialogs
 {
 	internal class ConfirmRetire : BaseDialog
 	{
-		private Menu _menu;
-
 		private static void MenuRetire(object sender, EventArgs args)
 		{
 			_ = EndGameServiceFactory.CreateForHuman().HandleRetireAsync();
 		}
 
-		protected override void FirstUpdate()
+		protected override IMenu? CreateManagedMenu()
 		{
-			CreateMenu();
-			base.FirstUpdate();
-		}
-
-		private void CreateMenu()
-		{
-			if (_menu is not null)
-			{
-				return;
-			}
-
-			_menu = new(Palette, Selection(3, 12, 228, 16))
+			Menu menu = new(Palette, Selection(3, 12, 228, 16))
 			{
 				X = 67,
 				Y = 92,
@@ -50,14 +37,14 @@ namespace CivOne.Screens.Dialogs
 			int index = 0;
 			foreach (string choice in new[] { Translate("_Keep playing."), Translate("_Yes, retire.") })
 			{
-				_menu.Items.Add(choice, index++);
+				menu.Items.Add(choice, index++);
 			}
 
-			_menu.Items[0].Selected += Cancel;
-			_menu.Items[1].Selected += MenuRetire;
-			_menu.MissClick += Cancel;
-			_menu.Cancel += Cancel;
-			AddMenu(_menu);
+			menu.Items[0].Selected += Cancel;
+			menu.Items[1].Selected += MenuRetire;
+			menu.MissClick += Cancel;
+			menu.Cancel += Cancel;
+			return menu;
 		}
 
 		public ConfirmRetire() : base(64, 80, 231, 31)

@@ -22,7 +22,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryUseLanguage_WhenLanguageFileExists_ActivatesFileTranslation()
+		public void TryUseLanguageWhenLanguageFileExistsActivatesFileTranslation()
 		{
 			File.WriteAllText(Path.Combine(_translationDirectory, "civ_neutraltest.txt"), "HELLO=Hallo");
 
@@ -36,7 +36,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryUseLanguage_WhenTranslationFileHasUppercaseName_IsIgnored()
+		public void TryUseLanguageWhenTranslationFileHasUppercaseNameIsIgnored()
 		{
 			File.WriteAllText(Path.Combine(_translationDirectory, "CIV_GERMAN.TXT"), "HELLO=Hallo");
 
@@ -47,7 +47,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryUseLanguage_WhenSelectedAgain_ReloadsFileFromDisk()
+		public void TryUseLanguageWhenSelectedAgainReloadsFileFromDisk()
 		{
 			string filePath = Path.Combine(_translationDirectory, "civ_neutraltest.txt");
 			File.WriteAllText(filePath, "HELLO=Hallo1");
@@ -66,7 +66,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryUseLanguage_WhenLanguageMissing_LeavesCurrentLanguageUntouched()
+		public void TryUseLanguageWhenLanguageMissingLeavesCurrentLanguageUntouched()
 		{
 			File.WriteAllText(Path.Combine(_translationDirectory, "civ_neutraltest.txt"), "HELLO=Hallo");
 			bool initialSuccess = TranslationServiceFactory.TryUseLanguage(_storageDirectory, "neutraltest", out _);
@@ -82,7 +82,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryUseLanguage_WhenLanguageChanges_NotifiesRegisteredObserver()
+		public void TryUseLanguageWhenLanguageChangesNotifiesRegisteredObserver()
 		{
 			File.WriteAllText(Path.Combine(_translationDirectory, "civ_neutraltest.txt"), "HELLO=Hallo");
 			var observer = new TestTranslationLanguageObserver();
@@ -97,7 +97,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void UnregisterLanguageObserver_WhenCalled_StopsFurtherNotifications()
+		public void UnregisterLanguageObserverWhenCalledStopsFurtherNotifications()
 		{
 			File.WriteAllText(Path.Combine(_translationDirectory, "civ_neutraltest.txt"), "HELLO=Hallo");
 			var observer = new TestTranslationLanguageObserver();
@@ -113,7 +113,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void GetLanguageDisplayName_PrefersDisplayNameFromLanguageFile()
+		public void GetLanguageDisplayNamePrefersDisplayNameFromLanguageFile()
 		{
 			TranslationLanguageInfo language = new("german", "civ_german.txt", "Deutsch");
 
@@ -123,7 +123,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void GetLanguageDisplayName_UsesTranslatorWhenDisplayNameMissing()
+		public void GetLanguageDisplayNameUsesTranslatorWhenDisplayNameMissing()
 		{
 			TranslationLanguageInfo language = new("german", "civ_german.txt");
 
@@ -133,7 +133,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void GetLanguageDisplayName_WhenTranslatorReturnsEmpty_UsesPostfix()
+		public void GetLanguageDisplayNameWhenTranslatorReturnsEmptyUsesPostfix()
 		{
 			TranslationLanguageInfo language = new("german", "civ_german.txt");
 
@@ -176,9 +176,12 @@ namespace CivOne.UnitTests
 		{
 			public List<string> Notifications { get; } = [];
 
-			public void OnLanguageChanged(string activeLanguagePostfix)
+			public void OnLanguageChanged(string? activeLanguagePostfix)
 			{
-				Notifications.Add(activeLanguagePostfix);
+				if (activeLanguagePostfix is not null)
+				{
+					Notifications.Add(activeLanguagePostfix);
+				}
 			}
 		}
 	}

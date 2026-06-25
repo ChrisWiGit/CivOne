@@ -10,7 +10,7 @@ using CivOne.Enums;
 
 namespace CivOne.UnitTests
 {
-	partial class MockedIWonder: IWonder
+	sealed partial class MockedIWonder: IWonder
 	{
 		public MockedIWonder()
 		{
@@ -30,17 +30,17 @@ namespace CivOne.UnitTests
 
 		public byte Id { get; set; }
 
-		public IAdvance RequiredTech { get; set; }
+		public IAdvance? RequiredTech { get; set; }
 
-		public IAdvance ObsoleteTech { get; set; }
+		public IAdvance? ObsoleteTech { get; set; }
 
-		public IBitmap SmallIcon { get; set; }
+		public IBitmap? SmallIcon { get; set; }
 
 		public Wonder Type { get; set; }
 
 		public string TranslatedName { get; set; }
 
-		public IBitmap Icon { get; set; }
+		public IBitmap? Icon { get; set; }
 
 		public byte PageCount { get; set; }
 

@@ -22,6 +22,8 @@ using CivOne.Services;
 using CivOne.Screens;
 using CivOne.Wonders;
 using System.Threading;
+using System.Globalization;
+using System.Diagnostics;
 
 namespace CivOne
 {
@@ -30,7 +32,7 @@ namespace CivOne
 		private static Resources Resources => Resources.Instance;
 		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
 
-		public static Random Random; // = new Random((int)DateTime.Now.Ticks);
+		public static Random? Random; // = new Random((int)DateTime.Now.Ticks);
 
 		/// <summary>
 		/// True if Caps Lock is currently active. 
@@ -70,7 +72,7 @@ namespace CivOne
 		/// </remarks>
 		internal static IScreen? LastScreen => _screens.LastOrDefault();
 
-		internal static bool HasAttribute<T>(object checkObject) where T : Attribute
+		internal static bool HasAttribute<T>(object? checkObject) where T : Attribute
 		{
 			if (checkObject == null)
 				return false;
@@ -110,7 +112,7 @@ namespace CivOne
 				IScreen[] screens = [.. _screens];
 				for (int i = screens.Length - 1; i >= 0; i--)
 				{
-					if (HasAttribute<Modal>(screens[i]))
+					if (HasAttribute<ModalAttribute>(screens[i]))
 					{
 						return screens[i];
 					}
@@ -148,14 +150,14 @@ namespace CivOne
 		{
 			get
 			{
-				GamePlay gamePlay = GamePlay;
+				GamePlay? gamePlay = GamePlay;
 				if (gamePlay != null)
 					return gamePlay.MainPalette.Copy();
 				return Resources["SP257"].Palette.Copy();
 			}
 		}
 
-		public static GamePlay GamePlay => (GamePlay)_screens.FirstOrDefault(x => x is GamePlay);
+		public static GamePlay? GamePlay => (GamePlay?)_screens.FirstOrDefault(x => x is GamePlay);
 
         internal static void SetRandomSeed(ushort seed) => Random = new Random(seed == ushort.MaxValue ? -1 : seed);
         internal static void SetRandomSeed() => SetRandomSeed(ushort.MaxValue);
@@ -167,8 +169,22 @@ namespace CivOne
 		/// <remarks>
 		/// For new code, prefer IScreenCommandService.AddScreen obtained from ScreenServiceFactory.CreateCommandService().
 		/// This provides better testability and loose coupling.
+		/// If null is passed, this method does nothing.
 		/// </remarks>
-		internal static void AddScreen(IScreen screen) => _screens.Add(screen);
+		internal static void AddScreen(IScreen? screen)
+		{
+			if (screen == null)
+			{
+				Debug.Assert(false, "Attempted to add null screen.");
+				return;
+			}
+			if (_screens.Contains(screen))
+			{
+				return;
+			}
+
+			_screens.Add(screen);
+		}
 		
 		/// <summary>
 		/// Removes a screen from the screen stack and disposes it.
@@ -178,15 +194,25 @@ namespace CivOne
 		/// For new code, prefer IScreenCommandService.DestroyScreen obtained from ScreenServiceFactory.CreateCommandService().
 		/// This provides better testability and loose coupling.
 		/// </remarks>
-		internal static void DestroyScreen(IScreen screen)
+		internal static void DestroyScreen(IScreen? screen)
 		{
-			screen?.Dispose();
-			_screens.Remove(screen);
+			if (screen == null)
+			{
+				return;
+			}
+
+			// Remove all references first, then dispose once.
+			// This avoids disposed instances remaining in the stack when a screen was added more than once.
+			while (_screens.Remove(screen))
+			{
+			}
+
+			screen.Dispose();
 		}
 		
 		internal static bool HasScreenType<T>() where T : IScreen => _screens.Any(x => x is T);
 		
-		internal static string CaptureFilename
+		internal static string? CaptureFilename
 		{
 			get
 			{
@@ -222,7 +248,7 @@ namespace CivOne
 
 		internal static string NumberSeperator(int number)
 		{
-			string input = number.ToString();
+			string input = number.ToString(CultureInfo.InvariantCulture);
 			input = input.PadLeft(3 - (input.Length % 3) + input.Length, '0');
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < input.Length; i++)
@@ -251,7 +277,7 @@ namespace CivOne
 			else if (turn < 300) return ((turn - 250) * 10) + 1000;
 			else if (turn < 350) return ((turn - 300) * 5) + 1500;
 			else if (turn < 400) return ((turn - 350) * 2) + 1750;
-			return (turn - 400) + 1850;
+			return turn - 400 + 1850;
 		}
 		
 		public static string YearString(ushort turn, bool zeroAd = false)
@@ -357,14 +383,14 @@ namespace CivOne
 			return BytesToArray(reader.ReadBytes(length), itemLength);
 		}
 		
-		private static Palette _palette16;
+		private static Palette? _palette16;
 		public static Palette GetPalette16
 		{
 			get
 			{
 				if (_palette16 == null)
 				{
-					byte[] shades = new byte[] { 0, 104, 183, 255 };
+					byte[] shades = [0, 104, 183, 255];
 					_palette16 = new[]
 					{
 						Colour.Transparent,
@@ -389,7 +415,7 @@ namespace CivOne
 			}
 		}
 
-		private static Palette _palette256;
+		private static Palette? _palette256;
 		public static Palette GetPalette256
 		{
 			get
@@ -401,43 +427,45 @@ namespace CivOne
 					{
 						if (i >= 16 && i < 32)
 						{
-							int ii = (i % 16);
+							int ii = i % 16;
 							_palette256[i] = new Colour(254 - (ii * 16), 253 - (ii * 16), 252 - (ii * 16));
 							continue;
 						}
 						if (i >= 32 && i < 40)
 						{
 							// Greens
-							int ii = (i % 8);
+							int ii = i % 8;
 							_palette256[i] = new Colour(0, 197 - (ii * 11), 80 - (ii * 7));
 							continue;
 						}
 						if (i >= 40 && i < 42)
 						{
 							// Browns
-							int ii = (i % 2);
+							int ii = i % 2;
 							_palette256[i] = new Colour(128 + (ii * 16), 64 + (ii * 8), 0);
 							continue;
 						}
 						if (i >= 42 && i < 48)
 						{
 							// Yellows
-							int ii = (i + 2 % 6);
+							int ii = i + 2 % 6;
 							_palette256[i] = new Colour(254 - (ii * 6), 245 - (ii * 6), 0);
 							continue;
 						}
 						if (i >= 48 && i < 64)
 						{
-							int r = Convert.ToInt32((float)_palette16[i % 16].R * 0.7F);
-							int g = Convert.ToInt32((float)_palette16[i % 16].G * 0.7F);
-							int b = Convert.ToInt32((float)_palette16[i % 16].B * 0.7F);
+							_palette16 ??= GetPalette16;
+
+							int r = Convert.ToInt32(_palette16[i % 16].R * 0.7F);
+							int g = Convert.ToInt32(_palette16[i % 16].G * 0.7F);
+							int b = Convert.ToInt32(_palette16[i % 16].B * 0.7F);
 							_palette256[i] = new Colour(r, g, b);
 							continue;
 						}
 						if (i >= 64 && i < 80)
 						{
 							// Blues
-							int ii = (i % 8);
+							int ii = i % 8;
 							_palette256[i] = new Colour(0, 67 - (ii * 5), 211 - (ii * 9));
 							continue;
 						}

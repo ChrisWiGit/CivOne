@@ -10,7 +10,8 @@ namespace CivOne.Persistence.Factories
 	/// It is used by the YamlSaveGameStateWriter when writing save game files to ensure that the metadata is correctly represented in the resulting YAML output.
 	/// Currently there is no interface for this factory, but it is designed to be easily extracted into one if needed for testing or future flexibility in mapping strategies.
 	/// </summary>
-	public class SaveGameMetaDataDtoFactory
+	#pragma warning disable CA1822 // Mark members as static
+	public sealed class SaveGameMetaDataDtoFactory
 	{
 		public SaveGameMetaDataDto CreateFromRuntime(SaveFileMetaData metaData)
 		{

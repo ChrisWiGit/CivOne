@@ -11,18 +11,14 @@ using System;
 
 namespace CivOne.Units
 {
-	public class Moves : BaseAttribute
+	/// <summary>
+	/// Modify the number of moves a unit gets each turn.
+	/// </summary>
+	/// <param name="value">The new number of moves for the unit. (valid range: 1 to 16)</param>
+	public sealed class Moves(byte value) : BaseAttribute(typeof(byte), value, InRange)
 	{
 		private static bool InRange(object value) => (byte)value > 0 && (byte)value <= 16;
 
-		public byte Value => GetValue<byte>();
-
-		/// <summary>
-		/// Modify the number of moves a unit gets each turn.
-		/// </summary>
-		/// <param name="value">The new number of moves for the unit. (valid range: 1 to 16)</param>
-		public Moves(byte value) : base(typeof(byte), value, InRange)
-		{
-		}
+		public byte Value => GetRequiredValue<byte>();
 	}
 }

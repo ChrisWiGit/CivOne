@@ -1,6 +1,7 @@
 using CivOne.Civilizations;
 using CivOne.Governments;
 using CivOne.Tiles;
+using System.Diagnostics;
 using System.Linq;
 
 namespace CivOne.Units;
@@ -27,7 +28,13 @@ internal class ConfrontDelegate(IConfrontGameServices gameServices)
         if (attackingUnit == null)
             return true;
 
-        Player attackerOwner = _gameServices.GetPlayer(attackingUnit.Owner);
+        Player? attackerOwner = _gameServices.GetPlayer(attackingUnit.Owner);
+
+        if (attackerOwner == null)
+        {
+            Debug.Assert(false, "Attacking unit has no valid owner");
+            return true;
+        }
         
         if (!attackerOwner.IsHuman)
             return true;
@@ -35,7 +42,7 @@ internal class ConfrontDelegate(IConfrontGameServices gameServices)
         if (attackerOwner.Government is not Democracy)
             return true;
 
-        Player targetOwner = GetConfrontationTargetOwner(moveTarget);
+        Player? targetOwner = GetConfrontationTargetOwner(moveTarget);
         if (targetOwner == null)
             return true;
 
@@ -51,15 +58,14 @@ internal class ConfrontDelegate(IConfrontGameServices gameServices)
     /// <summary>
     /// Resolve the owner of the target (from city or unit).
     /// </summary>
-    private Player GetConfrontationTargetOwner(ITile moveTarget)
+    private Player? GetConfrontationTargetOwner(ITile moveTarget)
     {
-        var targetUnit = moveTarget?.Units.FirstOrDefault() as BaseUnit;
-        if (targetUnit != null)
-            return _gameServices.GetPlayer(targetUnit.Owner);
+		if (moveTarget?.Units.FirstOrDefault() is BaseUnit targetUnit)
+			return _gameServices.GetPlayer(targetUnit.Owner);
 
-        var targetCity = moveTarget?.City;
+		var targetCity = moveTarget?.City;
         if (targetCity != null)
-            return _gameServices.GetPlayer(targetCity.Owner);
+            return _gameServices.GetPlayer(targetCity.CityOwnerPlayerIndex);
 
         return null;
     }

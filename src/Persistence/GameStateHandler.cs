@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CivOne.Persistence;
 using CivOne.Persistence.Model;
@@ -18,11 +21,13 @@ namespace CivOne
 	{
 		int Difficulty { get; }
 		Player CurrentPlayer { get; }
-		Player HumanPlayer { get; }
+		Player? HumanPlayer { get; }
 
 		Player[] Players { get; }
 
+		[SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "A list is suffice and changing it would require unnecessary changes to the GameState and related code.")]
 		List<City> Cities { get; }
+		[SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "A list is suffice and changing it would require unnecessary changes to the GameState and related code.")]
 		List<IUnit> Units { get; }
 
 		
@@ -36,6 +41,7 @@ namespace CivOne
 
 		string[] CityNames { get; }
 
+		[SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "A list is suffice and changing it would require unnecessary changes to the GameState and related code.")]
 		List<ReplayData> ReplayData { get; }
 
 		byte PlayerNumber(Player player);
@@ -60,12 +66,14 @@ namespace CivOne
 		IGlobalWarmingService GlobalWarmingService { get; }
 	}
 
-	public class GameStateHandler
+	public static class GameStateHandler
 	{
-		public GameState Create(IGameSnapshotSource game)
+		public static GameState Create(IGameSnapshotSource game)
 		{
 			ArgumentNullException.ThrowIfNull(game);
 
+			Debug.Assert(game.HumanPlayer == null || game.Players.Contains(game.HumanPlayer), "Human player must be in the list of players.");
+			
 			if (game.HumanPlayer != null && game.GetHumanLastMapPosition() is { } humanLastMapPosition)
 			{
 				game.HumanPlayer.LastMapPosition = humanLastMapPosition;
@@ -106,13 +114,13 @@ namespace CivOne
 							game.MapTiles.GetLength(1) : 0,
 				
 				MapTiles = game.MapTiles,
-				Units = game.Units,  // Critical: Units were missing from snapshot!
+				Units = game.Units,
 				CityNames = game.CityNames,
 				
 				GameOptions = [.. options				
 					.Select((option, index) => (option, index))
 					.Where(x => x.option)
-					.Select(x => (GameOptionEnum)x.index)],
+					.Select(x => (GameSetting)x.index)],
 
 				Cities = game.Cities,
 				AdvanceOrigin = game.AdvanceOrigin,

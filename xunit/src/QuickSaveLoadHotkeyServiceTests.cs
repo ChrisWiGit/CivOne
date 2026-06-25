@@ -24,9 +24,9 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryHandle_ControlF1_SavesToSlotFile()
+		public void TryHandleControlF1SavesToSlotFile()
 		{
-			string savedPath = null;
+			string? savedPath = null;
 			var service = CreateService(
 				canQuickSave: () => true,
 				save: path => savedPath = path,
@@ -41,13 +41,13 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryHandle_AltF2_LoadsSlotAndRebuildsGameplay()
+		public void TryHandleAltF2LoadsSlotAndRebuildsGameplay()
 		{
 			string slotPath = Path.Combine(_fastSavesDirectory, "fastsave_f2.cos");
 			Directory.CreateDirectory(_fastSavesDirectory);
 			File.WriteAllText(slotPath, "test");
 
-			string loadedPath = null;
+			string? loadedPath = null;
 			int rebuildCalls = 0;
 			var service = CreateService(
 				canQuickSave: () => true,
@@ -68,7 +68,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryHandle_AltSlotWithoutFile_DoesNotInvokeLoader()
+		public void TryHandleAltSlotWithoutFileDoesNotInvokeLoader()
 		{
 			int loadCalls = 0;
 			var service = CreateService(
@@ -89,7 +89,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryHandle_UnmodifiedOrShiftFunctionKey_IsNotHandled()
+		public void TryHandleUnmodifiedOrShiftFunctionKeyIsNotHandled()
 		{
 			var service = CreateService(
 				canQuickSave: () => true,
@@ -106,13 +106,13 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryHandle_AltF11_OpensQuickLoadMenuWithExistingSlots()
+		public void TryHandleAltF11OpensQuickLoadMenuWithExistingSlots()
 		{
 			Directory.CreateDirectory(_fastSavesDirectory);
 			File.WriteAllText(Path.Combine(_fastSavesDirectory, "fastsave_f2.cos"), "test");
 			File.WriteAllText(Path.Combine(_fastSavesDirectory, "fastsave_f7.cos"), "test");
 
-			IReadOnlyList<int> listedSlots = null;
+			IReadOnlyList<int>? listedSlots = null;
 			var service = CreateService(
 				canQuickSave: () => true,
 				save: _ => { },
@@ -129,13 +129,13 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryHandle_AltF11_SelectionLoadsChosenSlot()
+		public void TryHandleAltF11SelectionLoadsChosenSlot()
 		{
 			Directory.CreateDirectory(_fastSavesDirectory);
 			string slotPath = Path.Combine(_fastSavesDirectory, "fastsave_f4.cos");
 			File.WriteAllText(slotPath, "test");
 
-			string loadedPath = null;
+			string? loadedPath = null;
 			int rebuildCalls = 0;
 			var service = CreateService(
 				canQuickSave: () => true,
@@ -157,9 +157,9 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryHandle_AltF11_WhenNoSlots_PassesEmptySlotListToMenu()
+		public void TryHandleAltF11WhenNoSlotsPassesEmptySlotListToMenu()
 		{
-			IReadOnlyList<int> listedSlots = null;
+			IReadOnlyList<int>? listedSlots = null;
 			var service = CreateService(
 				canQuickSave: () => true,
 				save: _ => { },
@@ -200,7 +200,7 @@ namespace CivOne.UnitTests
 			Func<string, bool> load,
 			Action rebuild,
 			Action<string> onError,
-			Action<IReadOnlyList<int>, Action<int>> showQuickLoadMenu = null)
+			Action<IReadOnlyList<int>, Action<int>>? showQuickLoadMenu = null)
 			=> new(
 				_runtime,
 				TranslationServiceFactory.GetCurrent(),
@@ -217,34 +217,34 @@ namespace CivOne.UnitTests
 		{
 			public event EventHandler Initialize { add { _ = value; } remove { _ = value; } }
 			public event EventHandler Draw { add { _ = value; } remove { _ = value; } }
-			public event UpdateEventHandler Update { add { _ = value; } remove { _ = value; } }
-			public event KeyboardEventHandler KeyboardUp { add { _ = value; } remove { _ = value; } }
-			public event KeyboardEventHandler KeyboardDown { add { _ = value; } remove { _ = value; } }
-			public event ScreenEventHandler MouseUp { add { _ = value; } remove { _ = value; } }
-			public event ScreenEventHandler MouseDown { add { _ = value; } remove { _ = value; } }
-			public event ScreenEventHandler MouseMove { add { _ = value; } remove { _ = value; } }
-			public event ScreenEventHandler MouseWheel { add { _ = value; } remove { _ = value; } }
+			public event EventHandler<UpdateEventArgs> Update { add { _ = value; } remove { _ = value; } }
+			public event EventHandler<KeyboardEventArgs> KeyboardUp { add { _ = value; } remove { _ = value; } }
+			public event EventHandler<KeyboardEventArgs> KeyboardDown { add { _ = value; } remove { _ = value; } }
+			public event EventHandler<ScreenEventArgs> MouseUp { add { _ = value; } remove { _ = value; } }
+			public event EventHandler<ScreenEventArgs> MouseDown { add { _ = value; } remove { _ = value; } }
+			public event EventHandler<ScreenEventArgs> MouseMove { add { _ = value; } remove { _ = value; } }
+			public event EventHandler<ScreenEventArgs> MouseWheel { add { _ = value; } remove { _ = value; } }
 
 			public Platform CurrentPlatform => Platform.Windows;
 			public string StorageDirectory { get; } = storageDirectory;
 			public RuntimeSettings Settings { get; } = new RuntimeSettings();
-			public MouseCursor CurrentCursor { get; private set; }
-			public Bytemap[] Layers { get; set; }
-			public Palette Palette { get; set; }
-			public IBitmap Cursor { get; private set; }
+			public MouseCursor? CurrentCursor { get; private set; }
+			public Bytemap[]? Layers { get; set; }
+			public Palette? Palette { get; set; }
+			public IBitmap? Cursor { get; private set; }
 			public int CanvasWidth => 320;
 			public int CanvasHeight => 200;
 			public int WindowWidth => 320;
 			public int WindowHeight => 200;
-			public string WindowTitle { get; private set; }
+			public string? WindowTitle { get; private set; }
 
-			public bool TryOpenUrl(string url, out string errorMessage) { errorMessage = null; return false; }
-			public bool TryCopyToClipboard(string text, out string errorMessage) { errorMessage = null; return false; }
+			public bool TryOpenUrl(string url, out string? errorMessage) { errorMessage = null; return false; }
+			public bool TryCopyToClipboard(string text, out string? errorMessage) { errorMessage = null; return false; }
 
-			public string GetSetting(string key) => null;
+			public string? GetSetting(string key) => null;
 			public void SetSetting(string key, string value) { }
-			public void SetCurrentCursor(MouseCursor cursor) => CurrentCursor = cursor;
-			public void SetCursor(IBitmap cursor) => Cursor = cursor;
+			public void SetCurrentCursor(MouseCursor? cursor) => CurrentCursor = cursor;
+			public void SetCursor(IBitmap? cursor) => Cursor = cursor;
 			public void Log(string text, params object[] parameters) { }
 			public string? BrowseFolder(string caption = "") => string.Empty;
 			public string FileChooser(bool save, string title, string initialFileName, string filter) => string.Empty;

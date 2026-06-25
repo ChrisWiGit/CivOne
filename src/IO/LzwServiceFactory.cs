@@ -23,11 +23,8 @@ namespace CivOne.IO
 		/// <returns>
 		/// Returns the original or corrected codec, depending on <see cref="Settings.LzwCodecMode"/>.
 		/// </returns>
-		public static ILzwCodec GetCodec()
-		{
-			return Settings.Instance.LzwCodecMode == Settings.LzwCodecType.Corrected
-				? CorrectedCodec
-				: OriginalCodec;
-		}
+		public static ILzwCodec Codec => Settings.Instance.LzwCodecMode == Settings.LzwCodecType.Corrected
+			? CorrectedCodec
+			: OriginalCodec;
 	}
 }

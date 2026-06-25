@@ -36,7 +36,7 @@ namespace CivOne.Mcp.Tools
 
 		public McpResponse Handle(McpRequest request)
 		{
-			if (request == null) throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 
 			if (request.Params.ValueKind != JsonValueKind.Undefined &&
 				request.Params.ValueKind != JsonValueKind.Null &&
@@ -61,12 +61,12 @@ namespace CivOne.Mcp.Tools
 					"path"));
 			}
 
-			string path = ReadString(request.Params, "path");
-			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string errorMessage))
-				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage, null, null));
+			string? path = ReadString(request.Params, "path");
+			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto? snapshot, out string? errorCode, out string? errorMessage))
+				return JsonResponse(request.Id, BuildErrorPayload(errorCode!, errorMessage, null, null));
 
 			if (string.IsNullOrWhiteSpace(path))
-				return JsonResponse(request.Id, BuildSuccessPayload(path, BuildSummary(snapshot)));
+				return JsonResponse(request.Id, BuildSuccessPayload(path, BuildSummary(snapshot!)));
 
 			if (string.Equals(path, "GameState", StringComparison.Ordinal))
 			{
@@ -92,7 +92,7 @@ namespace CivOne.Mcp.Tools
 			using JsonDocument jsonDocument = JsonDocument.Parse(rootJson);
 			JsonElement root = jsonDocument.RootElement;
 
-			if (!_pathResolver.TryResolve(root, normalizedPath, out JsonElement resolved, out string failedSegment, out string pathErrorMessage))
+			if (!McpGameStatePathResolver.TryResolve(root, normalizedPath, out JsonElement resolved, out string? failedSegment, out string? pathErrorMessage))
 			{
 				return JsonResponse(request.Id, BuildErrorPayload(
 					"INVALID_PATH",
@@ -101,11 +101,11 @@ namespace CivOne.Mcp.Tools
 					failedSegment));
 			}
 
-			object resolvedObject = JsonSerializer.Deserialize<object>(resolved.GetRawText());
+			object? resolvedObject = JsonSerializer.Deserialize<object>(resolved.GetRawText());
 			return JsonResponse(request.Id, BuildSuccessPayload(normalizedPath, resolvedObject));
 		}
 
-		private McpResponse JsonResponse(object id, object payload)
+		private McpResponse JsonResponse(object? id, object payload)
 		{
 			string json = _jsonWriter.AsString(payload);
 			if (json.Length > _maxJsonChars)
@@ -144,7 +144,7 @@ namespace CivOne.Mcp.Tools
 					return candidate;
 
 				int step = Math.Min(256, preview.Length);
-				preview = preview.Substring(0, preview.Length - step);
+				preview = preview[..^step];
 			}
 
 			return _jsonWriter.AsString(new
@@ -189,7 +189,7 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private object BuildSuccessPayload(string path, object data)
+		private object BuildSuccessPayload(string? path, object? data)
 		{
 			string payloadJson = _jsonWriter.AsString(data ?? new { });
 			return new
@@ -203,7 +203,7 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private object BuildErrorPayload(string code, string message, string path, string failedSegment)
+		private object BuildErrorPayload(string code, string? message, string? path, string? failedSegment)
 		{
 			return new
 			{
@@ -222,7 +222,7 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private static string ReadString(JsonElement value, string propertyName)
+		private static string? ReadString(JsonElement value, string propertyName)
 			=> value.ValueKind == JsonValueKind.Object && value.TryGetProperty(propertyName, out JsonElement property)
 				? property.GetString()
 				: null;

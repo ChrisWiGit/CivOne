@@ -14,17 +14,16 @@
 		<AssemblyName>CivOne</AssemblyName>
 		<RootNamespace>CivOne</RootNamespace>
 		<OutputType>Library</OutputType>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<LangVersion>13.0</LangVersion>
 		<PackageId>CivOne</PackageId>
 	</PropertyGroup>
 	<PropertyGroup>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
-		<AnalysisLevel>latest-recommended</AnalysisLevel>
+		<AnalysisLevel>latest-all</AnalysisLevel>
 		<Nullable>enable</Nullable>
-		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-		<NoWarn>$(NoWarn)</NoWarn>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<NoWarn>$(NoWarn),CA1303,CA1814,CA1819,CA2000,CA1515,CA1819,CA1814,CA1062</NoWarn>
 	</PropertyGroup>
 	<PropertyGroup Condition="$(Configuration.StartsWith('Debug'))">
 		<DebugSymbols>true</DebugSymbols>

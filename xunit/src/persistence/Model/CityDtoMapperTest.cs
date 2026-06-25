@@ -59,7 +59,7 @@ namespace CivOne.Persistence.Model
 				Specialists = [Citizen.Entertainer, Citizen.Taxman],
 				Buildings = [Building.Barracks],
 				Wonders = [Wonder.Pyramids],
-				Status = [CityStatusEnum.Riot, CityStatusEnum.AutoBuild],
+				Status = [CityStatus.Riot, CityStatus.AutoBuild],
 				WasInDisorder = true,
 				TradingCities = [tradeCityId],
 				ContinentId = 3
@@ -71,7 +71,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestCityDtoMapper_ContractCheck()
+		public void TestCityDtoMapperContractCheck()
 		{
 			var dtoProperties = GetWritablePropertyNames<CityDto>();
 			var expectedProperties = GetCityDtoRoundTripAssertionMap(_originalDto, _originalDto).Keys.ToHashSet();
@@ -80,7 +80,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestCityDtoMapper_RoundTrip()
+		public void TestCityDtoMapperRoundTrip()
 		{
 			var city = _testee.FromDto(_originalDto);
 			var roundTripDto = _testee.ToDto(city);
@@ -109,7 +109,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestMapResourceTiles_OutOfBounds()
+		public void TestMapResourceTilesOutOfBounds()
 		{
 			resourceTiles[0] = new Grassland(-3, -3);
 
@@ -144,7 +144,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestMapMapToTiles_Empty()
+		public void TestMapMapToTilesEmpty()
 		{
 			Bool2dMap map = new(5, 5);
 			var tiles = _testee.MapMapToTiles(_cityTile, map);
@@ -152,7 +152,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestMapResourceTiles_MapMapToTiles()
+		public void TestMapResourceTilesMapMapToTiles()
 		{
 			var map = _testee.MapResourceTiles([.. resourceTiles], _cityTile.Tile);
 			var tiles = _testee.MapMapToTiles(_cityTile, map);
@@ -194,14 +194,14 @@ namespace CivOne.Persistence.Model
 
 			var flags = _testee.MapStatusFlags(status);
 
-			Assert.Equal(isRiot, flags.Contains(CityStatusEnum.Riot));
-			Assert.Equal(isCoastal, flags.Contains(CityStatusEnum.Coastal));
-			Assert.Equal(celebrationCancelled, flags.Contains(CityStatusEnum.CelebrationCancelled));
-			Assert.Equal(hydroAvailable, flags.Contains(CityStatusEnum.HydroAvailable));
-			Assert.Equal(autoBuild, flags.Contains(CityStatusEnum.AutoBuild));
-			Assert.Equal(techStolen, flags.Contains(CityStatusEnum.TechStolen));
-			Assert.Equal(celebrationOrRapture, flags.Contains(CityStatusEnum.CelebrationRapture));
-			Assert.Equal(buildingSold, flags.Contains(CityStatusEnum.ImprovementSold));
+			Assert.Equal(isRiot, flags.Contains(CityStatus.Riot));
+			Assert.Equal(isCoastal, flags.Contains(CityStatus.Coastal));
+			Assert.Equal(celebrationCancelled, flags.Contains(CityStatus.CelebrationCancelled));
+			Assert.Equal(hydroAvailable, flags.Contains(CityStatus.HydroAvailable));
+			Assert.Equal(autoBuild, flags.Contains(CityStatus.AutoBuild));
+			Assert.Equal(techStolen, flags.Contains(CityStatus.TechStolen));
+			Assert.Equal(celebrationOrRapture, flags.Contains(CityStatus.CelebrationRapture));
+			Assert.Equal(buildingSold, flags.Contains(CityStatus.ImprovementSold));
 
 			var status2 = new MockedCityStatus();
 			_testee.MapStatusFlags(status2, flags);
@@ -229,6 +229,7 @@ namespace CivOne.Persistence.Model
 				[nameof(CityDto.VisibleSizes)] = () => Assert.Equal(expected.VisibleSizes, actual.VisibleSizes),
 				[nameof(CityDto.CurrentProduction)] = () =>
 				{
+					Assert.NotNull(expected.CurrentProduction);
 					Assert.NotNull(actual.CurrentProduction);
 					Assert.Equal(expected.CurrentProduction.ProductionId, actual.CurrentProduction.ProductionId);
 				},

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Text;
 
 namespace CivTranslateInteractive;
@@ -20,8 +21,8 @@ public sealed class TranslationDocumentRepository : ITranslationDocumentReposito
 		}
 
 		string[] lines = File.ReadAllLines(filePath, Encoding.UTF8);
-		List<ITranslationLine> parsedLines = [];
-		List<TranslationEntryLine> entries = [];
+		Collection<TranslationLine> parsedLines = [];
+		Collection<TranslationEntryLine> entries = [];
 
 		for (int i = 0; i < lines.Length; i++)
 		{
@@ -32,13 +33,13 @@ public sealed class TranslationDocumentRepository : ITranslationDocumentReposito
 				continue;
 			}
 
-			if (line.StartsWith("#", StringComparison.Ordinal))
+			if (line.StartsWith('#'))
 			{
 				parsedLines.Add(new TranslationCommentLine(line));
 				continue;
 			}
 
-			int separatorIndex = line.IndexOf('=');
+			int separatorIndex = line.IndexOf('=', StringComparison.Ordinal);
 			if (separatorIndex < 0)
 			{
 				throw new FormatException($"Malformed translation line at {filePath}:{i + 1}: {line}");
@@ -60,6 +61,8 @@ public sealed class TranslationDocumentRepository : ITranslationDocumentReposito
 
 	public void Write(string filePath, TranslationDocument document)
 	{
+		ArgumentNullException.ThrowIfNull(document);
+
 		string? directoryPath = Path.GetDirectoryName(filePath);
 		if (!string.IsNullOrWhiteSpace(directoryPath))
 		{
@@ -67,7 +70,7 @@ public sealed class TranslationDocumentRepository : ITranslationDocumentReposito
 		}
 
 		using StreamWriter writer = new(filePath, false, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-		foreach (ITranslationLine line in document.Lines)
+		foreach (TranslationLine line in document.Lines)
 		{
 			switch (line)
 			{

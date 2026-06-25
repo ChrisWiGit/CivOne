@@ -8,7 +8,7 @@ namespace CivOne.UnitTests
 	public class PlayerWarTests : TestsBase
 	{
 		[Fact]
-		public void IsAtWar_WhenSetAtWarWasNeverCalled_ReturnsFalse()
+		public void IsAtWarWhenSetAtWarWasNeverCalledReturnsFalse()
 		{
 			// Arrange
 			var players = GetNonBarbarianPlayers(Game.Instance, 2);
@@ -23,7 +23,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void SetAtWar_WhenCalledTwiceWithTrue_RemainsAtWar()
+		public void SetAtWarWhenCalledTwiceWithTrueRemainsAtWar()
 		{
 			// Arrange
 			var players = GetNonBarbarianPlayers(Game.Instance, 2);
@@ -41,7 +41,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void DeclareWar_WhenCalled_SetsSymmetricWarState()
+		public void DeclareWarWhenCalledSetsSymmetricWarState()
 		{
 			// Arrange
 			var players = GetNonBarbarianPlayers(Game.Instance, 2);
@@ -59,7 +59,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void MakePeace_AfterDeclareWar_ClearsSymmetricWarState()
+		public void MakePeaceAfterDeclareWarClearsSymmetricWarState()
 		{
 			// Arrange
 			var players = GetNonBarbarianPlayers(Game.Instance, 2);
@@ -78,11 +78,12 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void DeclareWar_WhenEnemyIsBarbarian_DoesNotCreateFormalWarState()
+		public void DeclareWarWhenEnemyIsBarbarianDoesNotCreateFormalWarState()
 		{
 			// Arrange
 			var player = GetNonBarbarianPlayers(Game.Instance, 1).Single();
 			var barbarian = Game.Instance.GetPlayer(0);
+			Assert.NotNull(barbarian);
 
 			// Act
 			player.DeclareWar(barbarian);
@@ -93,14 +94,16 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void DeclareWar_WhenTradingCitiesExistBetweenParties_PurgesThemOnBothSides()
+		public void DeclareWarWhenTradingCitiesExistBetweenPartiesPurgesThemOnBothSides()
 		{
 			// Arrange
 			var players = GetNonBarbarianPlayers(Game.Instance, 2);
 			var attacker = players[0];
 			var defender = players[1];
-			City attackerCity = Game.Instance.AddCity(attacker, 0, 40, 30);
-			City defenderCity = Game.Instance.AddCity(defender, 1, 42, 30);
+			City? attackerCity = Game.Instance.AddCity(attacker, 0, 40, 30);
+			City? defenderCity = Game.Instance.AddCity(defender, 1, 42, 30);
+			Assert.NotNull(attackerCity);
+			Assert.NotNull(defenderCity);
 
 			attackerCity.AddTradingCity(defenderCity);
 			defenderCity.AddTradingCity(attackerCity);
@@ -114,16 +117,20 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void DeclareWar_WhenThirdPartyTradingCitiesExist_LeavesThoseUntouched()
+		public void DeclareWarWhenThirdPartyTradingCitiesExistLeavesThoseUntouched()
 		{
 			// Arrange
 			var players = GetNonBarbarianPlayers(Game.Instance, 2);
 			var attacker = players[0];
 			var defender = players[1];
 			var thirdParty = Game.Instance.GetPlayer(0);
-			City attackerCity = Game.Instance.AddCity(attacker, 2, 44, 30);
-			City defenderCity = Game.Instance.AddCity(defender, 3, 46, 30);
-			City thirdPartyCity = Game.Instance.AddCity(thirdParty, 4, 48, 30);
+			Assert.NotNull(thirdParty);
+			City? attackerCity = Game.Instance.AddCity(attacker, 2, 44, 30);
+			City? defenderCity = Game.Instance.AddCity(defender, 3, 46, 30);
+			City? thirdPartyCity = Game.Instance.AddCity(thirdParty, 4, 48, 30);
+			Assert.NotNull(attackerCity);
+			Assert.NotNull(defenderCity);
+			Assert.NotNull(thirdPartyCity);
 
 			attackerCity.AddTradingCity(defenderCity);
 			attackerCity.AddTradingCity(thirdPartyCity);
@@ -149,7 +156,7 @@ namespace CivOne.UnitTests
 				.ToArray();
 
 			Assert.True(players.Length >= count, $"Expected at least {count} non-barbarian players in test setup.");
-			return players;
+			return players!;
 		}
 	}
 }

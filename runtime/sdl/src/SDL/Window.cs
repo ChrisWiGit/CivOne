@@ -33,10 +33,10 @@ namespace CivOne
 			private string _sdlTitle;
 			private string _title;
 
-			protected event Action<string> OnLog;
+			protected event Action<string>? OnLog;
 
-			protected Texture CreateTexture(IBitmap bitmap) => new Texture(_renderer, bitmap?.Palette, bitmap?.Bitmap);
-			protected Texture CreateTexture(Palette palette, Bytemap bytemap) => new Texture(_renderer, palette, bytemap);
+			protected Texture CreateTexture(IBitmap? bitmap) => new(_renderer, bitmap?.Palette, bitmap?.Bitmap);
+			protected Texture CreateTexture(Palette? palette, Bytemap? bytemap) => new(_renderer, palette, bytemap);
 
 			/// <summary>
 			/// Creates an empty streaming texture for the render-loop layer cache.
@@ -48,8 +48,12 @@ namespace CivOne
 			{
 				_redraw = true;
 
-				SDL_SetRenderDrawColor(_renderer, color.R, color.G, color.B, color.A);
-				SDL_RenderClear(_renderer);
+				var result = SDL_SetRenderDrawColor(_renderer, color.R, color.G, color.B, color.A);
+				if (result != 0)
+				{
+					Log($"SDL_SetRenderDrawColor failed: {GetSdlErrorMessage()}");
+				}
+				_ = SDL_RenderClear(_renderer);
 			}
 
 			protected void StopRunning()
@@ -334,6 +338,7 @@ namespace CivOne
 			protected Window(string title, int width, int height, bool fullscreen, bool softwareRender = false)
 			{
 				_title = title;
+				_sdlTitle = string.Empty;
 
 				if (SDL_Init(SDL_INIT.VIDEO | SDL_INIT.AUDIO) < 0)
 					throw new InvalidOperationException($"SDL_Init failed: {GetSdlErrorMessage()}");

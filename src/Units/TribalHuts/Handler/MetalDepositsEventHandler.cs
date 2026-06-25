@@ -2,11 +2,11 @@ using CivOne.Services;
 
 namespace CivOne.Units.TribalHuts
 {
-	public class MetalDepositsEventHandler : ITribalHutEventHandler
+	public class MetalDepositsHandler : ITribalHutEventHandler
 	{
 		private readonly Player player;
 
-		public MetalDepositsEventHandler(Player player)
+		public MetalDepositsHandler(Player player)
 		{
 			this.player = player;
 		}

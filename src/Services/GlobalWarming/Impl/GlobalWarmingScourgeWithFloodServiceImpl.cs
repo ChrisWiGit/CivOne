@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CivOne.Enums;
+using CivOne.Services.Random;
 using CivOne.Tiles;
 using CivOne.Units;
 
@@ -20,15 +21,16 @@ namespace CivOne.Services.GlobalWarming.Impl
 	/// <param name="tileChangeRequestCallback"></param>
 	/// <param name="MapWidth"></param>
 	/// <param name="MapHeight"></param>
-	public class GlobalWarmingScourgeWithFloodServiceImpl(
+	public class GlobalWarmingScourgeWithFloodService(
 		IGlobalWarmingService globalWarmingService,
 		ITile[,] mapTiles,
 		TileChangeRequestCallback tileChangeRequestCallback,
 		RemoveUnit removeUnit,
 		int MapWidth,
 		int MapHeight,
-		Settings.GlobalWarmingFeatureFlag featureFlags
-			) : GlobalWarmingScourgeServiceImpl(globalWarmingService, mapTiles, tileChangeRequestCallback, MapWidth, MapHeight)
+		Settings.GlobalWarmingFeatureFlag featureFlags,
+		IRandomService randomService
+			) : GlobalWarmingScourgeService(globalWarmingService, mapTiles, tileChangeRequestCallback, MapWidth, MapHeight)
 	{
 		private readonly TileChangeRequestCallback tileChangeRequestCallback = tileChangeRequestCallback;
 		private readonly RemoveUnit removeUnit = removeUnit;
@@ -52,9 +54,9 @@ namespace CivOne.Services.GlobalWarming.Impl
 		private bool RiseSeaLevelOnRiverTile(ITile tile, int totalWarmings)
 		{
 			bool isArctic = (tile.Type is Terrain.Arctic or Terrain.Tundra || IsPoles(tile)) &&
-				Common.Random.Hit(Math.Min(totalWarmings * 20, 100));
+				randomService.Hit(Math.Min(totalWarmings * 20, 100));
 			bool Otherwise = !isArctic &&
-				Common.Random.Hit(Math.Min(totalWarmings * 10, 100));
+				randomService.Hit(Math.Min(totalWarmings * 10, 100));
 
 			if (isArctic || Otherwise)
 			{

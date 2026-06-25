@@ -297,10 +297,10 @@ namespace CivOne.Screens.Reports
 
 		public TopLeaderScreen(
 			bool debugMode,
-			TopLeaderScreenEnvironment environment = null,
-			IAdvisorPortraitSpriteProvider portraitSpriteProvider = null,
-			LeaderOrderDelegate leaderOrderDelegate = null,
-			ICivilizationScoreService civilizationScoreService = null) : base(MouseCursor.None)
+			TopLeaderScreenEnvironment? environment = null,
+			IAdvisorPortraitSpriteProvider? portraitSpriteProvider = null,
+			LeaderOrderDelegate? leaderOrderDelegate = null,
+			ICivilizationScoreService? civilizationScoreService = null) : base(MouseCursor.None)
 		{
 			var _environment = environment ?? new TopLeaderScreenEnvironment();
 			_portraitSpriteProvider = portraitSpriteProvider ?? AdvisorPortraitSpriteProviderFactory.GetInstance();

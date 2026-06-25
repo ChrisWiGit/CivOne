@@ -15,7 +15,7 @@ public interface IConfrontGameServices
     /// <summary>
     /// Get player by owner index.
     /// </summary>
-    Player GetPlayer(byte owner);
+    Player? GetPlayer(byte owner);
 
     /// <summary>
     /// Check if two players are at war.

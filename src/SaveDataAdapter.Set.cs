@@ -16,16 +16,23 @@ using CivOne.IO;
 
 namespace CivOne
 {
+	#pragma warning disable CA1822 // Mark members as static
 	internal partial class SaveDataAdapter
 	{
 		private void SetArray<T>(ref T structure, string fieldName, params byte[] values) where T : struct
 		{
 			IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
-			Marshal.StructureToPtr(structure, ptr, false);
-			IntPtr offset = IntPtr.Add(ptr, (int)Marshal.OffsetOf<T>(fieldName));
-			Marshal.Copy(values, 0, offset, values.Length);
-			structure = Marshal.PtrToStructure<T>(ptr);
-			Marshal.FreeHGlobal(ptr);
+			try
+			{
+				Marshal.StructureToPtr(structure, ptr, false);
+				IntPtr offset = IntPtr.Add(ptr, (int)Marshal.OffsetOf<T>(fieldName));
+				Marshal.Copy(values, 0, offset, values.Length);
+				structure = Marshal.PtrToStructure<T>(ptr);
+			}
+			finally
+			{
+				Marshal.FreeHGlobal(ptr);
+			}
 		}
 
 		private void SetArray(string fieldName, params byte[] values) => SetArray(ref _saveData, fieldName, values);
@@ -38,9 +45,15 @@ namespace CivOne
 			{
 				T value = values[i];
 				IntPtr ptr = Marshal.AllocHGlobal(itemSize);
-				Marshal.StructureToPtr(value, ptr, false);
-				Marshal.Copy(ptr, bytes, (i * itemSize), itemSize);
-				Marshal.FreeHGlobal(ptr);
+				try
+				{
+					Marshal.StructureToPtr(value, ptr, false);
+					Marshal.Copy(ptr, bytes, i * itemSize, itemSize);
+				}
+				finally
+				{
+					Marshal.FreeHGlobal(ptr);
+				}
 			}
 			SetArray(fieldName, bytes);
 		}
@@ -70,7 +83,7 @@ namespace CivOne
 
 		private void SetArray(string fieldName, int itemLength, params string[] values) => SetArray(ref _saveData, fieldName, itemLength, values);
 
-		private unsafe void SetDiscoveredAdvanceIDs(byte[][] input)
+		private void SetDiscoveredAdvanceIDs(byte[][] input)
 		{
 			byte[] bytes = new byte[8 * 10];
 			for (int p = 0; p < 8; p++)
@@ -81,21 +94,21 @@ namespace CivOne
 			SetArray(nameof(SaveData.DiscoveredAdvances), bytes);
 		}
 
-		private unsafe void SetAdvancesCount(ushort[] values) => SetArray(nameof(SaveData.AdvancesCount), values);
+		private void SetAdvancesCount(ushort[] values) => SetArray(nameof(SaveData.AdvancesCount), values);
 
-		private unsafe void SetLeaderNames(string[] values) => SetArray(nameof(SaveData.LeaderNames), 14, values);
+		private void SetLeaderNames(string[] values) => SetArray(nameof(SaveData.LeaderNames), 14, values);
 
-		private unsafe void SetCivilizationNames(string[] values) => SetArray(nameof(SaveData.CivilizationNames), 12, values);
+		private void SetCivilizationNames(string[] values) => SetArray(nameof(SaveData.CivilizationNames), 12, values);
 
-		private unsafe void SetCitizenNames(string[] values) => SetArray(nameof(SaveData.CitizensName), 11, values);
+		private void SetCitizenNames(string[] values) => SetArray(nameof(SaveData.CitizensName), 11, values);
 
-		private unsafe void SetCityNames(string[] values) => SetArray(nameof(SaveData.CityNames), 13, values);
+		private void SetCityNames(string[] values) => SetArray(nameof(SaveData.CityNames), 13, values);
 
-		private unsafe void SetPlayerGold(short[] values) => SetArray(nameof(SaveData.PlayerGold), values);
+		private void SetPlayerGold(short[] values) => SetArray(nameof(SaveData.PlayerGold), values);
 
-		private unsafe void SetResearchProgress(short[] values) => SetArray(nameof(SaveData.ResearchProgress), values);
+		private void SetResearchProgress(short[] values) => SetArray(nameof(SaveData.ResearchProgress), values);
 
-		private unsafe void SetUnitsActive(UnitData[][] unitData)
+		private void SetUnitsActive(UnitData[][] unitData)
 		{
 			ushort[] data = new ushort[8 * 28];
 			for (int p = 0; p < unitData.Length; p++)
@@ -106,23 +119,23 @@ namespace CivOne
 			SetArray(nameof(SaveData.UnitsActive), data);
 		}
 
-		private unsafe void SetTaxRate(ushort[] values) => SetArray(nameof(SaveData.TaxRate), values);
+		private void SetTaxRate(ushort[] values) => SetArray(nameof(SaveData.TaxRate), values);
 
-		private unsafe void SetScienceRate(ushort[] values) => SetArray(nameof(SaveData.ScienceRate), values);
+		private void SetScienceRate(ushort[] values) => SetArray(nameof(SaveData.ScienceRate), values);
 
-		private unsafe void SetHumanContactTurns(ushort[] values) => SetArray(nameof(SaveData.HumanContactTurns), values);
+		private void SetHumanContactTurns(ushort[] values) => SetArray(nameof(SaveData.HumanContactTurns), values);
 
-		private unsafe void SetStartingPositionX(ushort[] values) => SetArray(nameof(SaveData.StartingPositionX), values);
+		private void SetStartingPositionX(ushort[] values) => SetArray(nameof(SaveData.StartingPositionX), values);
 
-		private unsafe void SetGovernment(ushort[] values) => SetArray(nameof(SaveData.Government), values);
+		private void SetGovernment(ushort[] values) => SetArray(nameof(SaveData.Government), values);
 
-		private unsafe void SetCityCount(ushort[] values) => SetArray(nameof(SaveData.CityCount), values);
+		private void SetCityCount(ushort[] values) => SetArray(nameof(SaveData.CityCount), values);
 
-		private unsafe void SetSettlerCount(ushort[] values) => SetArray(nameof(SaveData.SettlerCount), values);
+		private void SetSettlerCount(ushort[] values) => SetArray(nameof(SaveData.SettlerCount), values);
 
-		private unsafe void SetUnitCount(ushort[] values) => SetArray(nameof(SaveData.UnitCount), values);
+		private void SetUnitCount(ushort[] values) => SetArray(nameof(SaveData.UnitCount), values);
 
-		private unsafe void SetTotalCitySize(ushort[] values) => SetArray(nameof(SaveData.TotalCitySize), values);
+		private void SetTotalCitySize(ushort[] values) => SetArray(nameof(SaveData.TotalCitySize), values);
 
 		byte[] CopyArrayMax(byte[] source, int maxSourceLength, int maxDestLength, byte fillValue = 0)
 		{
@@ -140,7 +153,7 @@ namespace CivOne
 			return dest;
 		}
 
-		private unsafe void SetCities(CityData[] values)
+		private void SetCities(CityData[] values)
 		{
 			byte INVALID = 0xFF;
 			SaveData.City[] cities = GetArray<SaveData.City>(nameof(SaveData.Cities), 128);
@@ -173,55 +186,59 @@ namespace CivOne
 			SetArray(nameof(SaveData.Cities), cities);
 		}
 
-		private unsafe void SetUnitTypes(SaveData.UnitType[] types) => SetArray(nameof(SaveData.UnitTypes), types);
+		private void SetUnitTypes(SaveData.UnitType[] types) => SetArray(nameof(SaveData.UnitTypes), types);
 
-		private unsafe void SetUnits(UnitData[][] values)
+		private void SetUnits(UnitData[][] values)
 		{
 			SaveData.Unit[] units = GetArray<SaveData.Unit>(nameof(SaveData.Units), 8 * 128);
 
 			for (int p = 0; p < new[] { values.Length, 8 }.Min(); p++)
-			for (int u = 0; u < new[] { values[p].Length, 128 }.Min(); u++)
 			{
-				UnitData data = values[p][u];
+			for (int u = 0; u < new[] { values[p].Length, 128 }.Min(); u++)
+				{
+					UnitData data = values[p][u];
 
-				int i = (p * 128) + u;
-				units[i].Status = data.Status;
-				units[i].X = data.X;
-				units[i].Y = data.Y;
-				units[i].Type = data.TypeId;
-				units[i].RemainingMoves = data.RemainingMoves;
-				units[i].SpecialMoves = data.SpecialMoves;
-				units[i].GotoX = data.GotoX;
-				units[i].GotoY = data.GotoY;
-				units[i].Visibility = data.Visibility;
-				units[i].NextUnitId = data.NextUnitId;
-				units[i].HomeCityId = data.HomeCityId;
+					int i = (p * 128) + u;
+					units[i].Status = data.Status;
+					units[i].X = data.X;
+					units[i].Y = data.Y;
+					units[i].Type = data.TypeId;
+					units[i].RemainingMoves = data.RemainingMoves;
+					units[i].SpecialMoves = data.SpecialMoves;
+					units[i].GotoX = data.GotoX;
+					units[i].GotoY = data.GotoY;
+					units[i].Visibility = data.Visibility;
+					units[i].NextUnitId = data.NextUnitId;
+					units[i].HomeCityId = data.HomeCityId;
+				}
 			}
 
 			SetArray(nameof(SaveData.Units), units);
 		}
 
-		private unsafe void SetWonders(ushort[] values) => SetArray<ushort>(nameof(SaveData.Wonders), values);
+		private void SetWonders(ushort[] values) => SetArray<ushort>(nameof(SaveData.Wonders), values);
 
-		private unsafe void SetTileVisibility(bool[][,] values)
+		private void SetTileVisibility(bool[][,] values)
 		{
 			byte[] bytes = new byte[80 * 50];
 			for (int p = 0; p < values.Length; p++)
 			{
 				for (int y = 0; y < 50; y++)
-				for (int x = 0; x < 80; x++)
 				{
-					bytes[(x * 50) + y] |= (byte)(values[p][x, y] ? (1 << p) : 0);
+					for (int x = 0; x < 80; x++)
+					{
+						bytes[(x * 50) + y] |= (byte)(values[p][x, y] ? (1 << p) : 0);
+					}
 				}
 			}
 			SetArray(nameof(SaveData.MapVisibility), bytes);
 		}
 
-		private unsafe void SetAdvanceFirstDiscovery(ushort[] values) => SetArray(nameof(SaveData.AdvanceFirstDiscovery), values);
+		private void SetAdvanceFirstDiscovery(ushort[] values) => SetArray(nameof(SaveData.AdvanceFirstDiscovery), values);
 
-		private unsafe void SetCityX(byte[] values) => SetArray(nameof(SaveData.CityX), values);
+		private void SetCityX(byte[] values) => SetArray(nameof(SaveData.CityX), values);
 		
-		private unsafe void SetCityY(byte[] values) => SetArray(nameof(SaveData.CityY), values);
+		private void SetCityY(byte[] values) => SetArray(nameof(SaveData.CityY), values);
 
 		private unsafe void SetReplayData(ReplayData[] values)
 		{

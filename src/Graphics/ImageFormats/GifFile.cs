@@ -9,6 +9,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,12 +20,12 @@ namespace CivOne.Graphics.ImageFormats
 {
 	public class GifFile : IImageFormat, IDisposable
 	{
-		private Palette _palette;
-		private Bytemap _pixels;
+		private readonly Palette? _palette;
+		private readonly Bytemap? _pixels;
 
-		private static ILzwCodec LzwCodec => LzwServiceFactory.GetCodec();
+		private static ILzwCodec LzwCodec => LzwServiceFactory.Codec;
 
-		private IEnumerable<byte[]> OutputBlock(byte[] buffer)
+		private static IEnumerable<byte[]> OutputBlock(byte[] buffer)
 		{
 			for (int offset = 0; offset < buffer.Length; offset += 255)
 			{
@@ -35,7 +37,7 @@ namespace CivOne.Graphics.ImageFormats
 			}
 		}
 
-		private IEnumerable<byte[]> InputBlock(byte[] buffer, int startIndex)
+		private static IEnumerable<byte[]> InputBlock(byte[] buffer, int startIndex)
 		{
 			for (int offset = startIndex; offset < buffer.Length; )
 			{
@@ -50,74 +52,76 @@ namespace CivOne.Graphics.ImageFormats
 
 		public byte[] GetBytes()
 		{
-			using (MemoryStream output = new MemoryStream())
-			using (BinaryWriter writer = new BinaryWriter(output))
+			Debug.Assert(_pixels != null, "No pixel data to write.");
+			Debug.Assert(_palette != null, "No palette data to write.");
+
+			using MemoryStream output = new();
+			using BinaryWriter writer = new(output);
+			// GIF header
+			writer.Write("GIF89a".ToCharArray());
+
+			// Width x Height
+			writer.Write((ushort)_pixels.Width);
+			writer.Write((ushort)_pixels.Height);
+
+			// GCT Descriptor
+			writer.Write((byte)0xF7);
+
+			// Background colour #0
+			writer.Write((byte)0x00);
+
+			//Default pixel aspect ratio
+			writer.Write((byte)0x00);
+
+			// Write colour palette
+			for (int i = 0; i < 256; i++)
 			{
-				// GIF header
-				writer.Write("GIF89a".ToCharArray());
-
-				// Width x Height
-				writer.Write((ushort)_pixels.Width);
-				writer.Write((ushort)_pixels.Height);
-
-				// GCT Descriptor
-				writer.Write((byte)0xF7);
-
-				// Background colour #0
-				writer.Write((byte)0x00);
-				
-				//Default pixel aspect ratio
-				writer.Write((byte)0x00);
-
-				// Write colour palette
-				for (int i = 0; i < 256; i++)
+				byte r = 0, g = 0, b = 0;
+				if (_palette.Length > i)
 				{
-					byte r = 0, g = 0, b = 0;
-					if (_palette.Length > i)
-					{
-						r = _palette[i].R;
-						g = _palette[i].G;
-						b = _palette[i].B;
-					}
-					writer.Write(new byte[] { r, g, b });
+					r = _palette[i].R;
+					g = _palette[i].G;
+					b = _palette[i].B;
 				}
-
-				// Image Descriptor
-				writer.Write((byte)0x2C);
-				// NW Corner
-				writer.Write((ushort)0);
-				writer.Write((ushort)0);
-				// Width x Height
-				writer.Write((ushort)_pixels.Width);
-				writer.Write((ushort)_pixels.Height);
-				// No local colour table
-				writer.Write((byte)0x00);
-
-				byte[] encoded = LzwCodec.Encode(_pixels.ToByteArray(), true, false, 12);
-				
-				// Code length
-				writer.Write((byte)0x08);
-				foreach (byte[] byteBlock in OutputBlock(encoded))
-				{
-					writer.Write((byte)byteBlock.Length);
-					writer.Write(byteBlock);
-				}
-				writer.Write((byte)0x00);
-
-				// End of file
-				writer.Write((byte)0x3B);
-
-				return output.ToArray();
+				writer.Write(new byte[] { r, g, b });
 			}
-		}
 
-		public IBitmap GetBitmap()
+			// Image Descriptor
+			writer.Write((byte)0x2C);
+			// NW Corner
+			writer.Write((ushort)0);
+			writer.Write((ushort)0);
+			// Width x Height
+			writer.Write((ushort)_pixels.Width);
+			writer.Write((ushort)_pixels.Height);
+			// No local colour table
+			writer.Write((byte)0x00);
+
+			byte[] encoded = LzwCodec.Encode(_pixels.ToByteArray(), true, false, 12);
+
+			// Code length
+			writer.Write((byte)0x08);
+			foreach (byte[] byteBlock in OutputBlock(encoded))
+			{
+				writer.Write((byte)byteBlock.Length);
+				writer.Write(byteBlock);
+			}
+			writer.Write((byte)0x00);
+
+			// End of file
+			writer.Write((byte)0x3B);
+
+			return output.ToArray();
+		}
+		[SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This method may perform non-trivial logic to create a new bitmap instance, so we prefer to keep it as a method for clarity and to avoid giving the impression that it is a simple property access.")]
+		public IBitmap? GetNewBitmap()
 		{
 			if (_pixels == null || _palette == null)
 				return null;
 			return new Picture(_pixels, _palette);
 		}
 
+		[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch all exceptions that may occur during GIF decoding and log them without crashing the application, as a failure to decode a GIF file should not be considered a critical error.")]
 		public GifFile(byte[] buffer)
 		{
 			// Check for valid GIF-file header
@@ -128,10 +132,7 @@ namespace CivOne.Graphics.ImageFormats
 
 			// GCT Descriptor
 			bool hasGct = ((buffer[10] >> 7) & 1) == 1;
-			byte colourResolution = (byte)(((buffer[10] >> 4) & 7) + 1);
-			bool sorted = ((buffer[10] >> 3) * 1) == 1;
 			int colourCount = (int)Math.Pow(2, (buffer[10] & 7) + 1);
-			byte backgroundIndex = buffer[11];
 			byte aspectRatio = buffer[12];
 
 			if (aspectRatio != 0) return; // Can not handle this file
@@ -172,7 +173,6 @@ namespace CivOne.Graphics.ImageFormats
 									if (size == 4)
 									{
 										byte packed = buffer[index++];
-										ushort delayTime = BitConverter.ToUInt16(buffer, index);
 										index += 2;
 										byte transparentColour = buffer[index++];
 										if ((packed & 1) == 1)
@@ -231,14 +231,30 @@ namespace CivOne.Graphics.ImageFormats
 			}
 		}
 
-		public GifFile(IBitmap bitmap)
+		/// <summary>
+		/// Creates a new GIF file from the specified bitmap. 
+		/// <b>The bitmap should not be used after creating the GIF file, as it may be disposed when the GIF file is disposed.</b>
+		/// </summary>
+		/// <param name="transferBitmap">The bitmap to create the GIF file from. The ownership of the bitmap is transferred to the class.</param>
+		public GifFile(IBitmap transferBitmap)
 		{
-			_palette = bitmap.Palette;
-			_pixels = bitmap.Bitmap;
+			_palette = transferBitmap.Palette;
+			_pixels = transferBitmap.Bitmap;
 		}
 
 		public void Dispose()
 		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				_palette?.Dispose();
+				_pixels?.Dispose();
+			}
 		}
 	}
 }

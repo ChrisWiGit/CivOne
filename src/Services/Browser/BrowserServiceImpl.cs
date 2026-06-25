@@ -1,13 +1,15 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne.Services.Browser
 {
 	/// <summary>
 	/// Implementation of browser service using platform-specific runtime methods.
 	/// </summary>
+	[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch all exceptions to prevent crashes when opening URLs or copying to clipboard.")]
 	internal sealed class BrowserServiceImpl : IBrowserService
 	{
-		public bool TryOpenUrl(string url, out string errorMessage)
+		public bool TryOpenUrl(string url, out string? errorMessage)
 		{
 			if (string.IsNullOrWhiteSpace(url))
 			{
@@ -32,17 +34,17 @@ namespace CivOne.Services.Browser
 			}
 		}
 
-		public bool TryCopyToClipboard(string url, out string errorMessage)
+		public bool TryCopyToClipboard(string text, out string? errorMessage)
 		{
-			if (string.IsNullOrWhiteSpace(url))
+			if (string.IsNullOrWhiteSpace(text))
 			{
-				errorMessage = "URL is empty.";
+				errorMessage = "Text is empty.";
 				return false;
 			}
 
 			try
 			{
-				return RuntimeHandler.Runtime.TryCopyToClipboard(url, out errorMessage);
+				return RuntimeHandler.Runtime.TryCopyToClipboard(text, out errorMessage);
 			}
 			catch (Exception ex)
 			{
@@ -53,7 +55,7 @@ namespace CivOne.Services.Browser
 
 		private static bool IsValidHttpUrl(string url)
 		{
-			if (!Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+			if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? uri))
 				return false;
 			return uri.Scheme == "http" || uri.Scheme == "https";
 		}

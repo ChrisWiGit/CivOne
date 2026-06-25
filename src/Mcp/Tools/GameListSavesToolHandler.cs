@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -34,10 +35,10 @@ namespace CivOne.Mcp.Tools
 
 		public McpResponse Handle(McpRequest request)
 		{
-			if (request == null) throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 
-			if (!ValidateParamsObject(request, out McpResponse validationError))
-				return validationError;
+			if (!ValidateParamsObject(request, out McpResponse? validationError))
+				return validationError!;
 
 			string saveFolder = ResolveSaveFolder();
 			if (!Directory.Exists(saveFolder))
@@ -46,15 +47,15 @@ namespace CivOne.Mcp.Tools
 			List<object> saves = [];
 			IEnumerable<string> files = Directory
 				.EnumerateFiles(saveFolder, "*.cos", SearchOption.TopDirectoryOnly)
-				.OrderByDescending(path => File.GetLastWriteTimeUtc(path))
+				.OrderByDescending(File.GetLastWriteTimeUtc)
 				.ThenBy(path => Path.GetFileName(path), StringComparer.OrdinalIgnoreCase);
 
 			foreach (string file in files)
 			{
-				if (!CosSaveFileInspector.TryInspect(file, out CosSaveFileInspection inspection))
+				if (!CosSaveFileInspector.TryInspect(file, out CosSaveFileInspection? inspection))
 					continue;
 
-				var gameState = inspection.GameState;
+				var gameState = inspection!.GameState;
 				var mapTiles = gameState?.Map?.Tiles;
 				FileInfo fileInfo = new(file);
 
@@ -92,14 +93,14 @@ namespace CivOne.Mcp.Tools
 
 		private string ResolveSaveFolder()
 		{
-			string configuredFolder = _runtime.Settings.Get<string>("mcp-saves");
+			string? configuredFolder = _runtime.Settings.Get<string>("mcp-saves");
 			if (string.IsNullOrWhiteSpace(configuredFolder))
 				configuredFolder = Settings.Instance.CosSavesDirectory;
 
 			return Path.GetFullPath(configuredFolder);
 		}
 
-		private McpResponse JsonResponse(object id, object payload)
+		private McpResponse JsonResponse(object? id, object payload)
 			=> McpJsonToolResponse.JsonResponse(id, payload, _jsonWriter, _maxJsonChars);
 
 		private object BuildSuccessPayload(object data)
@@ -108,7 +109,7 @@ namespace CivOne.Mcp.Tools
 			return new
 			{
 				ok = true,
-				path = (string)null,
+				path = (string)null!,
 				truncated = false,
 				maxChars = _maxJsonChars,
 				returnedChars = payloadJson.Length,
@@ -116,7 +117,7 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private static bool ValidateParamsObject(McpRequest request, out McpResponse response)
+		private static bool ValidateParamsObject(McpRequest request, [NotNullWhen(false)] out McpResponse? response)
 		{
 			response = null;
 			if (request.Params.ValueKind == JsonValueKind.Undefined || request.Params.ValueKind == JsonValueKind.Null)

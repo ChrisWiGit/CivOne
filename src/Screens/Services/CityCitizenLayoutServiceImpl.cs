@@ -4,14 +4,14 @@ using CivOne.Enums;
 
 namespace CivOne.Screens
 {
-	public class CityCitizenLayoutServiceImpl(City city) : ICityCitizenLayoutService
+	public class CityCitizenLayoutService(City city) : ICityCitizenLayoutService
 	{
 		private readonly City _city = city ?? throw new ArgumentNullException(nameof(city));
 
 		public bool IsBigCity => _city.Size > 20;
 		public int CitizenOffset => IsBigCity ? 2 : 8;
 
-		private int _xSum = 0;
+		private int _xSum;
 
 		public static int CitizenGroup(Citizen citizen)
 		{

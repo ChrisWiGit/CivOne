@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CivOne.Advances;
 using CivOne.Civilizations;
@@ -34,14 +35,14 @@ namespace CivOne.Persistence.Model
 		IPlayerGame gameInstance,
 		IPlayerOwnerResolver ownerResolver,
 		IPlayerFactory _playerFactory,
-		DtoMapper<CivilizationDto, ICivilization> _civilizationMapper,
+		IDtoMapper<CivilizationDto, ICivilization> _civilizationMapper,
 		PalaceDtoMapper _palaceMapper,
 		CityDtoMapper _cityMapper,
 		UnitDtoMapper _unitMapper,
 		IAdvanceResolver _advanceResolver,
 		IGovernmentResolver _governmentResolver,
 		IValueSanitizer _valueSanitizer
-		) : DtoMapper<PlayerDto, IPlayer>
+		) : IDtoMapper<PlayerDto, IPlayer>
 	{
 		private const long AllAdvancesSentinel = -1;
 		private const int MapPositionSlotCount = 9;
@@ -217,6 +218,7 @@ namespace CivOne.Persistence.Model
 			};
 		}
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to access the Players collection does not crash the application, and that any exceptions are logged appropriately.")]
 		private Player[] TryGetPlayersByIndex()
 		{
 			try
@@ -263,7 +265,7 @@ namespace CivOne.Persistence.Model
 				advances.Select(x => _valueSanitizer.ClampToByte(x, nameof(PlayerDtoMapper), nameof(PlayerDto.Advances)))];
 		}
 
-		private SpaceShipDto BuildSpaceShipDto(IPlayer player)
+		private static SpaceShipDto BuildSpaceShipDto(IPlayer player)
 		{
 			if (player is not IPlayerRestorable restorablePlayer)
 			{
@@ -378,7 +380,7 @@ namespace CivOne.Persistence.Model
 			return output;
 		}
 
-		private string[] BuildMapPositionNames(List<MapPositionDto>? mapPositions)
+		private static string[] BuildMapPositionNames(List<MapPositionDto>? mapPositions)
 		{
 			var output = new string[MapPositionSlotCount];
 			for (var i = 0; i < output.Length; i++)
@@ -434,7 +436,7 @@ namespace CivOne.Persistence.Model
 			return (x, y);
 		}
 
-		private int BuildMapZoomBasisPoints(int value)
+		private static int BuildMapZoomBasisPoints(int value)
 		{
 			return MapZoomSettings.NormalizeBasisPoints(value);
 		}

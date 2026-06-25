@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using CivOne.Mcp.Contracts;
@@ -59,30 +60,30 @@ namespace CivOne.Mcp.Tools
 
 		public McpResponse Handle(McpRequest request)
 		{
-			if (request == null) throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 
-			if (!ValidateParamsObject(request, out McpResponse validationError))
-				return validationError;
+			if (!ValidateParamsObject(request, out McpResponse? validationError))
+				return validationError!;
 
-			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string errorMessage))
-				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage, null));
+			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto? snapshot, out string? errorCode, out string? errorMessage))
+				return JsonResponse(request.Id, BuildErrorPayload(errorCode!, errorMessage, null));
 
-			if (!TryReadOptionalInt(request.Params, "playerId", out int? playerId, out string playerIdError))
+			if (!TryReadOptionalInt(request.Params, "playerId", out int? playerId, out string? playerIdError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", playerIdError, "playerId"));
 
-			if (!TryReadOptionalGuid(request.Params, "playerGuid", out Guid? playerGuid, out string playerGuidError))
+			if (!TryReadOptionalGuid(request.Params, "playerGuid", out Guid? playerGuid, out string? playerGuidError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", playerGuidError, "playerGuid"));
 
-			if (!TryReadOptionalString(request.Params, "className", out string className, out string classNameError))
+			if (!TryReadOptionalString(request.Params, "className", out string? className, out string? classNameError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", classNameError, "className"));
 
-			if (!TryReadOptionalLocationRadius(request.Params, out LocationRadius radiusFilter, out string radiusError))
+			if (!TryReadOptionalLocationRadius(request.Params, out LocationRadius? radiusFilter, out string? radiusError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", radiusError, "locationRadius"));
 
-			if (!TryReadKeys(request.Params, out string[] keys, out string keysError))
+			if (!TryReadKeys(request.Params, out string[] keys, out string? keysError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", keysError, "keys"));
 
-			List<PlayerDto> players = snapshot.Players ?? [];
+			List<PlayerDto> players = snapshot!.Players ?? [];
 			IEnumerable<(int Index, PlayerDto Player)> selectedPlayers = players.Select((player, index) => (index, player));
 
 			if (playerId.HasValue)
@@ -179,7 +180,7 @@ namespace CivOne.Mcp.Tools
 			return (dx * dx) + (dy * dy) <= radius.Radius * radius.Radius;
 		}
 
-		private object ProjectByKeys(object source, string[] keys, ISet<string> invalidKeys)
+		private Dictionary<string, object> ProjectByKeys(object source, string[] keys, HashSet<string> invalidKeys)
 		{
 			using JsonDocument document = JsonDocument.Parse(_jsonWriter.AsString(source));
 			Dictionary<string, JsonElement> propertyMap = document.RootElement
@@ -195,13 +196,15 @@ namespace CivOne.Mcp.Tools
 					continue;
 				}
 
-				output[propertyMap.Keys.First(k => string.Equals(k, key, StringComparison.OrdinalIgnoreCase))] = JsonSerializer.Deserialize<object>(value.GetRawText());
+				output[propertyMap.Keys
+					.First(k => string.Equals(k, key, StringComparison.OrdinalIgnoreCase))]
+						= JsonSerializer.Deserialize<object>(value.GetRawText()) ?? null!; //keep nulls as nulls, not as empty objects or arrays
 			}
 
 			return output;
 		}
 
-		private McpResponse JsonResponse(object id, object payload)
+		private McpResponse JsonResponse(object? id, object payload)
 			=> McpJsonToolResponse.JsonResponse(id, payload, _jsonWriter, _maxJsonChars);
 
 		private object BuildSuccessPayload(object data)
@@ -210,7 +213,7 @@ namespace CivOne.Mcp.Tools
 			return new
 			{
 				ok = true,
-				path = (string)null,
+				path = (string)null!,
 				truncated = false,
 				maxChars = _maxJsonChars,
 				returnedChars = payloadJson.Length,
@@ -218,20 +221,20 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private object BuildErrorPayload(string code, string message, string failedSegment)
+		private object BuildErrorPayload(string code, string? message, string? failedSegment)
 		{
 			return new
 			{
 				ok = false,
-				path = (string)null,
+				path = (string)null!,
 				truncated = false,
 				maxChars = _maxJsonChars,
 				returnedChars = 0,
-				error = new { code, message, path = (string)null, failedSegment }
+				error = new { code, message, path = (string)null!, failedSegment }
 			};
 		}
 
-		private static bool ValidateParamsObject(McpRequest request, out McpResponse response)
+		private static bool ValidateParamsObject(McpRequest request, [NotNullWhen(false)] out McpResponse? response)
 		{
 			response = null;
 			if (request.Params.ValueKind == JsonValueKind.Undefined || request.Params.ValueKind == JsonValueKind.Null)
@@ -248,7 +251,7 @@ namespace CivOne.Mcp.Tools
 			return false;
 		}
 
-		private static bool TryReadOptionalInt(JsonElement value, string propertyName, out int? result, out string error)
+		private static bool TryReadOptionalInt(JsonElement value, string propertyName, out int? result, [NotNullWhen(false)] out string? error)
 		{
 			result = null;
 			error = null;
@@ -268,7 +271,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryReadOptionalGuid(JsonElement value, string propertyName, out Guid? result, out string error)
+		private static bool TryReadOptionalGuid(JsonElement value, string propertyName, out Guid? result, [NotNullWhen(false)] out string? error)
 		{
 			result = null;
 			error = null;
@@ -288,7 +291,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryReadOptionalString(JsonElement value, string propertyName, out string result, out string error)
+		private static bool TryReadOptionalString(JsonElement value, string propertyName, out string? result, [NotNullWhen(false)] out string? error)
 		{
 			result = null;
 			error = null;
@@ -308,7 +311,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryReadOptionalLocationRadius(JsonElement value, out LocationRadius locationRadius, out string error)
+		private static bool TryReadOptionalLocationRadius(JsonElement value, out LocationRadius? locationRadius, [NotNullWhen(false)] out string? error)
 		{
 			locationRadius = null;
 			error = null;
@@ -337,8 +340,7 @@ namespace CivOne.Mcp.Tools
 			locationRadius = new LocationRadius(x, y, radius);
 			return true;
 		}
-
-		private static bool TryReadRequiredInt(JsonElement value, string propertyName, out int result, out string error)
+		private static bool TryReadRequiredInt(JsonElement value, string propertyName, out int result, [NotNullWhen(false)] out string? error)
 		{
 			result = 0;
 			error = null;
@@ -351,7 +353,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryReadRequiredDouble(JsonElement value, string propertyName, out double result, out string error)
+		private static bool TryReadRequiredDouble(JsonElement value, string propertyName, out double result, [NotNullWhen(false)] out string? error)
 		{
 			result = 0;
 			error = null;
@@ -364,7 +366,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryReadKeys(JsonElement value, out string[] keys, out string error)
+		private static bool TryReadKeys(JsonElement value, out string[] keys, [NotNullWhen(false)] out string? error)
 		{
 			keys = [];
 			error = null;
@@ -390,7 +392,7 @@ namespace CivOne.Mcp.Tools
 					return false;
 				}
 
-				string text = item.GetString();
+				string? text = item.GetString();
 				if (!string.IsNullOrWhiteSpace(text))
 					parsed.Add(text.Trim());
 			}

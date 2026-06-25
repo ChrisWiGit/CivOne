@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Persistence.Model.Attributes;
 
 namespace CivOne.Persistence.Model
@@ -7,6 +8,7 @@ namespace CivOne.Persistence.Model
     /// DTO for a single replay event. Exactly one of the event-data properties must be
     /// non-null; the non-null property implicitly identifies the event type.
     /// </summary>
+    [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible", Justification = "The nested classes are only used as event data containers and are not intended for general use.")]
     public class ReplayDataDto
     {
         [Doc("Game turn on which the event occurred.", 0, 65535)]
@@ -15,40 +17,40 @@ namespace CivOne.Persistence.Model
         // ── Exactly one of the following must be non-null ─────────────────────────
 
         [Doc("A city was founded by a civilization.")]
-        public CityBuiltData CityBuilt { get; set; }
+        public CityBuiltData? CityBuilt { get; set; }
 
         [Doc("A city was destroyed.")]
-        public CityDestroyedData CityDestroyed { get; set; }
+        public CityDestroyedData? CityDestroyed { get; set; }
 
         [Doc("A city was captured by a civilization.")]
-        public CityCapturedData CityCaptured { get; set; }
+        public CityCapturedData? CityCaptured { get; set; }
 
         [Doc("A civilization was destroyed by another.")]
-        public CivilizationDestroyedData CivilizationDestroyed { get; set; }
+        public CivilizationDestroyedData? CivilizationDestroyed { get; set; }
 
         [Doc("War was declared between two civilizations.")]
-        public TwoCivsData WarDeclared { get; set; }
+        public TwoCivsData? WarDeclared { get; set; }
 
         [Doc("Peace was made between two civilizations.")]
-        public TwoCivsData PeaceMade { get; set; }
+        public TwoCivsData? PeaceMade { get; set; }
 
         [Doc("A technology advance was discovered by a civilization.")]
-        public CivWithTypeIdData AdvanceDiscovered { get; set; }
+        public CivWithTypeIdData? AdvanceDiscovered { get; set; }
 
         [Doc("A unit type was built for the first time by a civilization.")]
-        public CivWithTypeIdData UnitFirstBuilt { get; set; }
+        public CivWithTypeIdData? UnitFirstBuilt { get; set; }
 
         [Doc("A civilization changed its government.")]
-        public CivWithTypeIdData GovernmentChanged { get; set; }
+        public CivWithTypeIdData? GovernmentChanged { get; set; }
 
         [Doc("A wonder was built by a civilization.")]
-        public CivWithTypeIdData WonderBuilt { get; set; }
+        public CivWithTypeIdData? WonderBuilt { get; set; }
 
         [Doc("A per-turn replay summary (city count and population).")]
-        public ReplaySummaryData ReplaySummary { get; set; }
+        public ReplaySummaryData? ReplaySummary { get; set; }
 
         [Doc("Civilization rankings at the end of a turn.")]
-        public CivRankingsData CivRankings { get; set; }
+        public CivRankingsData? CivRankings { get; set; }
 
         // ── Nested data classes ───────────────────────────────────────────────────
 
@@ -124,10 +126,12 @@ namespace CivOne.Persistence.Model
             public int Population { get; set; }
         }
 
+        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "This collection needs to be settable for deserialization and mapping.")]
+        [SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "The collection needs to be List<T> for deserialization and mapping.")]
         public class CivRankingsData
         {
             [Doc("Ordered list of civilization IDs by rank (index 0 = rank 1).")]
-            public List<int> Rankings { get; set; }
+            public List<int> Rankings { get; set; } = [];
         }
     }
 }

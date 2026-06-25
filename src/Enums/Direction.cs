@@ -8,12 +8,12 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne.Enums
 {
 	[Flags]
-	// S2342: The name of this enum is not ideal, but it is used in many places and changing it would require a large refactor.
-	#pragma warning disable S2342
+	[SuppressMessage("Design", "CA2217:Do not mark enums with FlagsAttribute", Justification = "The Direction enum is intended to be used as a bit field to allow for combinations of directions, and the Flags attribute is appropriate for this use case to enable bitwise operations and clear representation of combined values.")]
 	public enum Direction
 	{
 		Alternating = -1,

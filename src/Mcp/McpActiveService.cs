@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Mcp.Contracts;
 using CivOne.Mcp.Tools;
 using CivOne.Mcp.Transport;
@@ -29,6 +30,7 @@ namespace CivOne.Mcp
 			}
 		}
 
+		[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch all exceptions and return a parse error response.")]
 		public void Process()
 		{
 			if (!_started) return;
@@ -36,19 +38,19 @@ namespace CivOne.Mcp
 			// VS Code closes stdin when stopping the server — treat as implicit exit.
 			if (_transport.StdinClosed)
 			{
-				Stop();
+				StopService();
 				return;
 			}
 
 			const int maxRequestsPerTick = 4;
 			for (int i = 0; i < maxRequestsPerTick; i++)
 			{
-				if (!_transport.TryRead(out McpRequest request)) return;
+				if (!_transport.TryRead(out McpRequest? request)) return;
 
-				McpResponse response = null;
+				McpResponse? response = null;
 				try
 				{
-					if (string.Equals(request.Method, "initialize", StringComparison.Ordinal))
+					if (string.Equals(request!.Method, "initialize", StringComparison.Ordinal))
 					{
 						response = HandleInitialize(request);
 					}
@@ -75,13 +77,13 @@ namespace CivOne.Mcp
 					{
 						response = McpResponse.Failure(request.Id, -32601, "Method not found", request.Method);
 					}
-					else if (!_registry.TryGet(request.Method, out IMcpToolHandler handler))
+					else if (!_registry.TryGet(request.Method, out IMcpToolHandler? handler))
 					{
 						response = McpResponse.Failure(request.Id, -32601, "Method not found", request.Method);
 					}
 					else
 					{
-						response = handler.Handle(request);
+						response = handler!.Handle(request);
 					}
 				}
 				catch (Exception ex)
@@ -97,13 +99,13 @@ namespace CivOne.Mcp
 
 				if (_exitRequested)
 				{
-					Stop();
+					StopService();
 					return;
 				}
 			}
 		}
 
-		private static bool ShouldRespond(McpRequest request)
+		private static bool ShouldRespond(McpRequest? request)
 		{
 			if (request?.Id == null)
 				return false;
@@ -142,16 +144,16 @@ namespace CivOne.Mcp
 			});
 		}
 
-		public void Stop()
+		public void StopService()
 		{
 			if (!_started) return;
-			_transport.Stop();
+			_transport.StopService();
 			_started = false;
 		}
 
 		public void Dispose()
 		{
-			Stop();
+			StopService();
 			_transport.Dispose();
 		}
 

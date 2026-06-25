@@ -3,21 +3,16 @@ using System.IO;
 
 namespace CivOne.Services
 {
-	public class AtomicFileReplacementService : IAtomicFileReplacementService
+	public class AtomicFileReplacementService(IAtomicFileOperations? fileOperations = null) : IAtomicFileReplacementService
 	{
-		private readonly IAtomicFileOperations _fileOperations;
-
-		public AtomicFileReplacementService(IAtomicFileOperations fileOperations = null)
-		{
-			_fileOperations = fileOperations ?? new AtomicFileOperations();
-		}
+		private readonly IAtomicFileOperations _fileOperations = fileOperations ?? new AtomicFileOperations();
 
 		public void ReplaceFile(string destinationPath, Action<Stream> writeAction)
 		{
 			ArgumentNullException.ThrowIfNull(writeAction);
 			if (string.IsNullOrWhiteSpace(destinationPath)) throw new ArgumentException("Destination path is required.", nameof(destinationPath));
 
-			string directory = _fileOperations.GetDirectoryName(destinationPath);
+			string? directory = _fileOperations.GetDirectoryName(destinationPath);
 			if (string.IsNullOrWhiteSpace(directory)) throw new InvalidOperationException("Cannot determine destination directory.");
 
 			_fileOperations.CreateDirectory(directory);

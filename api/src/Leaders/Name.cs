@@ -11,18 +11,14 @@ using System;
 
 namespace CivOne.Leaders
 {
-	public class Name : BaseAttribute
+	/// <summary>
+	/// Modify the leader name.
+	/// </summary>
+	/// <param name="value">The new name for the leader. Must be between 1 and 14 characters long.</param>
+	public sealed class Name(string value) : BaseAttribute(typeof(string), value, InRange)
 	{
-		private static bool InRange(object value) => (value as string).Length > 0 && (value as string).Length <= 14;
+		private static bool InRange(object value) => (value is string str) && str.Length > 0 && str.Length <= 14;
 
-		public string Value => GetValue<string>();
-
-		/// <summary>
-		/// Modify the leader name.
-		/// </summary>
-		/// <param name="value">The new name for the leader. Must be between 1 and 14 characters long.</param>
-		public Name(string value) : base(typeof(string), value, InRange)
-		{
-		}
+		public string Value => GetRequiredValue<string>();
 	}
 }

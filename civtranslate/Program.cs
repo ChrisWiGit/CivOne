@@ -95,7 +95,7 @@ static bool TryParseArguments(string[] args, out string inputFolder, out string 
 			return false;
 		}
 
-		if (arg.StartsWith("-", StringComparison.Ordinal) && !arg.Equals("-h", StringComparison.OrdinalIgnoreCase))
+		if (arg.StartsWith('-') && !arg.Equals("-h", StringComparison.OrdinalIgnoreCase))
 		{
 			error = $"Unknown option: {arg}";
 			return false;
@@ -488,13 +488,13 @@ static TranslationFile ReadTranslationFileIfExists(string outputFile)
 			continue;
 		}
 
-		if (line.StartsWith("#"))
+		if (line.StartsWith('#'))
 		{
 			comments.Add(line);
 			continue;
 		}
 
-		int separatorIndex = line.IndexOf('=');
+		int separatorIndex = line.IndexOf('=', StringComparison.Ordinal);
 		if (separatorIndex < 0)
 		{
 			Console.WriteLine($"Warning: Ignoring malformed line in existing file ({outputFile}:{i + 1}): {line}");

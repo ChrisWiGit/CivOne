@@ -7,13 +7,10 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
-using CivOne.Governments;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.IO;
@@ -21,14 +18,14 @@ using CivOne.Units;
 
 namespace CivOne.Screens.CityManagerPanels
 {
-	internal class CityInfoUnits : BaseScreen
+	internal class CityInfoUnits(City city, ICityManager cityManager, IUnit[] units) : BaseScreen(133, 92-9)
 	{
-		private readonly City _city;
+		private readonly City _city = city;
 
-		private readonly ICityManager _cityManager;
+		private readonly ICityManager _cityManager = cityManager;
 		
 		private bool _update = true;
-		private readonly List<IUnit> Units;
+		private readonly List<IUnit> Units = [.. units];
 
 		private readonly int RowCount = 6;
 		
@@ -62,9 +59,9 @@ namespace CivOne.Screens.CityManagerPanels
 				}
 
 				string homeCity = "NON.";
-				if (Units[i].Home != null)
+				if (Units[i].Home is {} home)
 				{
-					homeCity = Units[i].Home.Name;
+					homeCity = home.Name;
 					if (homeCity.Length >= 3)
 						homeCity = $"{homeCity[..3]}.";
 				}
@@ -294,13 +291,6 @@ namespace CivOne.Screens.CityManagerPanels
 		{
 			Bitmap = new Bytemap(width, 38);
 			_update = true;
-		}
-
-		public CityInfoUnits(City city, ICityManager cityManager, IUnit[] units) : base(133, 92-9)
-		{
-			_city = city;
-			_cityManager = cityManager;
-			Units = [.. units];
 		}
 	}
 }

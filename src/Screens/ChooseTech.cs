@@ -55,7 +55,7 @@ namespace CivOne.Screens
 
 				IBitmap background = _menuGfx[44, 35, 156, _menuHeight].ColourReplace((7, 11), (22, 3));
 
-				Menu<IAdvance> menu = new Menu<IAdvance>("ChooseTech", Palette, background)
+				Menu<IAdvance> menu = new("ChooseTech", Palette, background)
 				{
 					X = 83,
 					Y = 92,
@@ -88,7 +88,7 @@ namespace CivOne.Screens
 			TextSettings HelpText = new TextSettings() { FontId = 1, Colour = 10, Alignment = TextAlign.Right, VerticalAlignment = VerticalAlign.Bottom };
 
 			_availableAdvances = Human.AvailableResearch.Take(8).ToArray();
-			_menuHeight = Resources.GetFontHeight(0) * _availableAdvances.Count();
+			_menuHeight = Resources.GetFontHeight(0) * _availableAdvances.Length;
 			
 			bool modernGovernment = Human.HasAdvance<Invention>();
 			IBitmap governmentPortrait = Icons.GovernmentPortrait(Human.Government, Advisor.Science, modernGovernment);
@@ -101,7 +101,8 @@ namespace CivOne.Screens
 			int dialogHeight = 41 + _menuHeight;
 			if (dialogHeight < 62) dialogHeight = 62;
 
-			_menuGfx = new Picture(202, dialogHeight)
+			_menuGfx = new Picture(202, dialogHeight);
+			_menuGfx
 					.Tile(Pattern.PanelGrey)
 					.AddLayer(governmentPortrait, 1, dialogHeight - 61)
 					.DrawRectangle3D()
@@ -110,16 +111,20 @@ namespace CivOne.Screens
 					.DrawText(Translate("Which discovery should our"), 46, 12, DialogText)
 					.DrawText(Translate("wise men be pursuing, sire?"), 46, 20, DialogText)
 					.DrawText(Translate("Pick one..."), 46, 28, DialogText)
-					.DrawText(Translate("(Help available)"), 202, dialogHeight, HelpText)
-					.As<Picture>();
+					.DrawText(Translate("(Help available)"), 202, dialogHeight, HelpText);
 
 			Refresh();
 		}
 
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
+			if (!disposing)
+			{
+				return;
+			}
+
 			_menuGfx.Dispose();
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }

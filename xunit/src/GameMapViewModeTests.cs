@@ -17,7 +17,7 @@ namespace CivOne.UnitTests
 		public void MapViewModeArrowKeysPanMapWithoutMovingUnit()
 		{
 			var activeUnit = Game.Instance.GetUnits().First(x => playa == x.Owner);
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
 			Game.Instance.ActiveUnit = activeUnit;
 
 			using var gameMap = new GameMapForTesting();
@@ -43,7 +43,7 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void MapPositionSlotCtrlSavesAndAltRestoresCamera()
 		{
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
 			using var gameMap = new GameMapForTesting();
 
 			gameMap.CenterOnPoint(22, 18);
@@ -68,7 +68,7 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void MapPositionSlotCtrlSaveRaisesMapPositionSavedEvent()
 		{
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
 			using var gameMap = new GameMapForTesting();
 			int actualSlot = 0;
 			gameMap.MapPositionSaved += (_, slot) => actualSlot = slot;
@@ -85,7 +85,7 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void MapPositionSlotCtrlSaveWithoutNameDoesNotOpenRenameDialog()
 		{
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
 			using var gameMap = new GameMapForTesting();
 
 			var handled = gameMap.KeyDown(new KeyboardEventArgs('1', KeyModifier.Control));
@@ -100,7 +100,7 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void MapPositionSlotCtrlSaveWithNameOpensRenameDialog()
 		{
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
 			using var gameMap = new GameMapForTesting();
 			Game.Instance.HumanPlayer.MapPositionNames[0] = "Capital";
 
@@ -118,7 +118,7 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void MapPositionSlotClearingRenameDialogRestoresUnnamedState()
 		{
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
 			using var gameMap = new GameMapForTesting();
 			Game.Instance.HumanPlayer.MapPositionNames[0] = "Capital";
 
@@ -141,7 +141,7 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void CtrlWheelDownZoomsOutAndKeepsCursorFocus()
 		{
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
 			Game.Instance.CurrentPlayer.MapZoomBasisPoints = 1000;
 
 			using var gameMap = new GameMapForTesting();
@@ -165,7 +165,7 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void CtrlWheelUpZoomsInToNextPreset()
 		{
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
 			Game.Instance.CurrentPlayer.MapZoomBasisPoints = 750;
 
 			using var gameMap = new GameMapForTesting();
@@ -185,7 +185,7 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void WheelWithoutCtrlIsIgnored()
 		{
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
 			Game.Instance.CurrentPlayer.MapZoomBasisPoints = 1000;
 
 			using var gameMap = new GameMapForTesting();
@@ -204,7 +204,7 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void CtrlWheelDownOnExpandedCanvasIncreasesVisibleTileSpan()
 		{
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
 			Game.Instance.CurrentPlayer.MapZoomBasisPoints = 1000;
 
 			using var gameMap = new GameMapForTesting();
@@ -226,7 +226,7 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void CtrlWheelDownNearBottomEdgeKeepsViewportInYBounds()
 		{
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
 			Game.Instance.CurrentPlayer.MapZoomBasisPoints = 1000;
 
 			using var gameMap = new GameMapForTesting();

@@ -23,7 +23,6 @@ namespace CivOne.Screens.Dialogs
 		private readonly Caravan _unit;
 		private readonly City _city;
 		private readonly ICaravanChoiceService _service;
-		private Menu _menu;
 
 		private void KeepMoving(object sender, EventArgs args)
 		{
@@ -43,22 +42,11 @@ namespace CivOne.Screens.Dialogs
 			Cancel();
 		}
 
-		protected override void FirstUpdate()
+		protected override IMenu? CreateManagedMenu()
 		{
-			CreateMenu();
-			base.FirstUpdate();
-		}
-
-		private void CreateMenu()
-		{
-			if (_menu is not null)
-			{
-				return;
-			}
-
 			int choices = _city.IsBuildingWonder ? 3 : 2;
 
-			_menu = new Menu(Palette, Selection(3, 12, 130, (choices * Resources.GetFontHeight(FONT_ID)) + 4))
+			Menu menu = new Menu(Palette, Selection(3, 12, 130, (choices * Resources.GetFontHeight(FONT_ID)) + 4))
 			{
 				X = 103,
 				Y = 92,
@@ -69,17 +57,17 @@ namespace CivOne.Screens.Dialogs
 				FontId = FONT_ID
 			};
 
-			_menu.Items.Add(Translate("Keep moving")).OnSelect(KeepMoving);
-			_menu.Items.Add(Translate("Establish trade route"))
+			menu.Items.Add(Translate("Keep moving")).OnSelect(KeepMoving);
+			menu.Items.Add(Translate("Establish trade route"))
 				.SetEnabled(_service.CanEstablishTradeRoute(_unit, _city))
 				.OnSelect(EstablishTradeRoute);
 
 			if (_city.IsBuildingWonder)
 			{
-				_menu.Items.Add(Translate("Help build WONDER.")).OnSelect(HelpBuildWonder);
+				menu.Items.Add(Translate("Help build WONDER.")).OnSelect(HelpBuildWonder);
 			}
 
-			AddMenu(_menu);
+			return menu;
 		}
 
 		private static int DialogHeight(City city)

@@ -699,6 +699,59 @@ Alternatively, run individual cleanup tasks in VS Code:
 * `clean` – Runs `dotnet clean`
 * `clean-coverage-folders` – Removes `TestResults/` and `CoverageReport/` directories
 
+## Assembly Versioning
+
+The project uses centralized assembly versioning via `Directory.Build.props` in the repository root.
+This ensures all assemblies have consistent version numbers.
+
+### Current Version
+
+The current assembly version is `0.1.0.1417`.
+It is defined in a single location: [Directory.Build.props](Directory.Build.props).
+
+### How it works
+
+The `Directory.Build.props` file contains:
+
+* `AssemblyVersion` - Main version number (e.g. `0.1.0.1417`)
+* `FileVersion` - File version (same as AssemblyVersion)
+* `InformationalVersion` - Semantic version (e.g. `0.1.0`)
+* `GenerateAssemblyInfo` - Enables SDK generated assembly metadata
+* `AssemblyProduct` - Default product name (e.g. `CivOne`)
+* `AssemblyCopyright` - Copyright info
+
+Every project inherits these properties automatically.
+Project-specific metadata (like different `AssemblyProduct` values) can override these defaults.
+
+### Updating the version
+
+To update the version for all assemblies:
+
+1. Open [Directory.Build.props](Directory.Build.props).
+2. Update `AssemblyVersion`, `FileVersion`, and `InformationalVersion`.
+3. Do not add version attributes to `AssemblyInfo.cs` files.
+
+Example:
+
+```xml
+<AssemblyVersion>0.1.0.1500</AssemblyVersion>
+<FileVersion>0.1.0.1500</FileVersion>
+<InformationalVersion>0.1.0</InformationalVersion>
+```
+
+### Project-specific metadata
+
+Project-specific SDK metadata belongs in the project file.
+For example, [api/CivOne.API.csproj](api/CivOne.API.csproj) sets `AssemblyProduct` to `CivOne API`.
+
+Some projects still use custom `AssemblyInfo.cs` files for attributes that MSBuild cannot generate:
+
+* [src/Properties/AssemblyInfo.cs](src/Properties/AssemblyInfo.cs) - Contains `InternalsVisibleTo` attributes.
+* [xunit/properties/AssemblyInfo.cs](xunit/properties/AssemblyInfo.cs) - Contains the test-specific `CollectionBehavior` attribute.
+
+Do not add standard attributes like `AssemblyVersion`, `AssemblyProduct`, or `AssemblyCopyright` to these files.
+Those attributes are generated from MSBuild properties.
+
 ## Profiling
 
 Profiling helps identify performance issues and bottlenecks in the game.
@@ -983,3 +1036,168 @@ You can also use `Return` or `Backspace` to add or remove units without clicking
 
 Terrain editor changes are written into normal save files.
 Edited terrain, improvements, and land values remain after save and reload.
+
+## Analyzing Build Warnings
+
+When working with large .NET solutions, it is often useful to identify the most frequent warnings first and address them in descending order of impact.
+
+### Using MSBuild Structured Log Viewer
+
+A convenient way to analyze warnings is by generating an MSBuild binary log and opening it with the MSBuild Structured Log Viewer.
+
+Project website: [MSBuild Structured Log Viewer](https://msbuildlog.com)
+
+Install the viewer:
+
+```powershell
+winget install KirillOsenkov.MSBuildStructuredLogViewer
+````
+
+Generate a binary build log:
+
+```powershell
+dotnet build -bl
+```
+
+This creates a file named `msbuild.binlog`.
+
+Open the file in MSBuild Structured Log Viewer to:
+
+* Browse all warnings and errors
+* Filter by warning code
+* Identify which projects generate the most warnings
+* Inspect detailed warning information
+* Navigate directly to the affected source files
+
+This approach is recommended for interactive analysis of large solutions.
+
+### Counting Warnings from Build Logs
+
+For a quick overview, build output can be redirected to a log file and analyzed using PowerShell.
+
+Generate the log file:
+
+```powershell
+dotnet build --no-incremental > build.log 2>&1
+
+# Alternatively, to ensure UTF-8 encoding and capture all output:
+dotnet build --no-incremental 2>&1 | Out-File build.log -Encoding utf8
+```
+
+The following script groups warnings by warning code and includes the warning description and writes a summary to `warning-summary.txt`:
+
+```powershell
+$inputFile = "build.log"
+$outputFile = "warning-summary.txt"
+
+$warnings =
+    Get-Content $inputFile -Encoding UTF8 |
+    ForEach-Object {
+        if ($_ -match ':\s*warning\s+([A-Z]+\d+)\s*:\s*(.+?)(?:\s+\[[^\]]+\])?$') {
+            [PSCustomObject]@{
+                Code        = $matches[1]
+                Description = $matches[2].Trim()
+            }
+        }
+    }
+
+$result =
+    $warnings |
+    Group-Object Code, Description |
+    Sort-Object Count -Descending |
+    Select-Object Count,
+                  @{Name='Warning';Expression={$_.Group[0].Code}},
+                  @{Name='Description';Expression={$_.Group[0].Description}}
+
+$result |
+    Format-Table -AutoSize |
+    Out-String -Width 1000 |
+    Set-Content $outputFile -Encoding UTF8
+
+Write-Host "Written to $outputFile"
+```
+
+You may need to ensure Utf-8 encoding for the current powershell session:
+
+```powershell
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
+$OutputEncoding = [System.Text.UTF8Encoding]::new()
+```
+
+Example output:
+
+```text
+Count Warning Description
+----- ------- ---------------------------------------------------------------
+  523 CS8618  Non-nullable property must contain a non-null value when exiting constructor.
+  317 CS8602  Dereference of a possibly null reference.
+  144 CS8604  Possible null reference argument.
+   87 CS8625  Cannot convert null literal to non-nullable reference type.
+```
+
+```shell
+#!/usr/bin/env bash
+
+INPUT_FILE="build.log"
+OUTPUT_FILE="warning-summary.txt"
+
+awk '
+match($0, /warning [A-Z]+[0-9]+:/) {
+    code = substr($0, RSTART + 8, RLENGTH - 9)
+
+    desc = substr($0, RSTART + RLENGTH + 1)
+
+    sub(/ \[[^]]+\]$/, "", desc)
+
+    key = code "|" desc
+
+    count[key]++
+}
+
+END {
+    for (k in count)
+        print count[k] "|" k
+}
+' "$INPUT_FILE" |
+sort -t'|' -k1,1nr |
+awk -F'|' '
+BEGIN {
+    printf "%-8s %-10s %s\n", "Count", "Warning", "Description"
+}
+{
+    printf "%-8s %-10s %s\n", $1, $2, $3
+}
+' > "$OUTPUT_FILE"
+
+echo "Written to $OUTPUT_FILE"
+```
+
+## Services
+
+Most services have a factory.
+
+### IRandomService
+
+```cs
+private readonly IRandomService _randomService;
+_randomService = RandomServiceFactory.Create();
+_randomService.NextByte(20)
+_randomService.NextInt(1, 100)
+```
+
+### ITranslationService
+
+```cs
+ITranslationService translationService = TranslationServiceFactory.GetCurrent();
+string translatedText = translationService.Translate("HELLO_WORLD");
+```
+
+> `BaseScreen` has a `Translate` method that uses the current translation service:
+
+There are multipe overloads for translation and formatting.
+`Translate` is the simplest one that just translates a key to a string.
+`TranslateFormatted` allows you to pass arguments for string formatting (e.g. placeholders like `{0}` in the translation value).
+`TranslateArray` splits the translated string on `\n` and returns an array of lines, which is useful for multi-line messages stored as a single key.
+`TranslateFormattedArray` combines both features: it formats the string with arguments and then splits it into an array.
+
+> Use the array versions when the translation value contains multiple lines separated by `\n`, instead of calling `Translate` and then splitting the result manually. This would create multiple lines/keys in the translation files, which is less convenient to manage and maintain.

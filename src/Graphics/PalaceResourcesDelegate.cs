@@ -9,11 +9,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Enums;
 
 namespace CivOne.Graphics
 {
-	public sealed class PalaceResourcesDelegate(Func<string, Picture> getPictureByName, IPalaceSpriteLayout palaceSpriteLayout = null)
+	public sealed class PalaceResourcesWrapper(Func<string, Picture> getPictureByName, IPalaceSpriteLayout? palaceSpriteLayout = null)
 	{
 		private const int TOWER_WIDTH = 35;
 		private const int WALL_WIDTH = 48;
@@ -31,7 +32,15 @@ namespace CivOne.Graphics
 		private readonly IPalaceSpriteLayout _palaceSpriteLayout = palaceSpriteLayout ?? new PalaceSpriteLayout();
 		private readonly Dictionary<int, Picture> _cache = [];
 
-		internal void ClearCache() => _cache.Clear();
+		internal void ClearCache()
+		{
+			foreach (Picture picture in _cache.Values)
+			{
+				picture.Dispose();
+			}
+
+			_cache.Clear();
+		}
 
 		private Picture GetCastleSourceImage(int level) => _getPictureByName($"CASTLE{level}");
 
@@ -153,6 +162,7 @@ namespace CivOne.Graphics
 
 		static int HashKey(int level, PalaceStyle style, PalacePart part) => (level * 100) + ((int)style * 10) + (int)part;
 
+		[SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Cache ownership is transferred to the caller and disposed when the cache is cleared.")]
 		internal Picture GetPalacePart(PalaceStyle style, PalacePart part, int level)
 		{
 			if (level == 0)
@@ -161,12 +171,12 @@ namespace CivOne.Graphics
 			}
 
 			int combine = HashKey(level, style, part);
-			if (_cache.TryGetValue(combine, out Picture value))
+			if (_cache.TryGetValue(combine, out Picture? value))
 			{
 				return value;
 			}
 
-			Picture picture = null;
+			Picture? picture;
 			PalacePictureLayout layout = _palaceSpriteLayout.GetLayout(level);
 			PalacePartSourceSelection sourceLocation = _palaceSpriteLayout.GetSpriteCoordinatesForPart(style, part, layout);
 
@@ -198,10 +208,12 @@ namespace CivOne.Graphics
 						picture = GetCastleSourcePartImage(level, part, style, layout, offsetX);
 						break;
 					}
+				default:
+					throw new ArgumentException($"Unknown palace part: {part}");
 			}
 
 			_cache[combine] = picture;
-			return _cache[combine];
+			return picture;
 		}
 	}
 }
