@@ -45,8 +45,8 @@ namespace CivOne
 		
 
 		internal int NameId { get; set; }
-		internal byte X;
-		internal byte Y;
+		internal int X;
+		internal int Y;
 
 		public Point Location => new(X, Y);
 

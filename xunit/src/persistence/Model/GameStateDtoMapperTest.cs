@@ -322,6 +322,25 @@ namespace CivOne.Persistence.Model
 			}
 		}
 
+		[Fact]
+		public void TestGameStateDtoMapperPreservesCityCoordinatesAboveByteMaxValueInYamlPath()
+		{
+			_dto.Map = CreateUniformMapDto(320, 20);
+			_dto.Players[0].Cities[0].Location = new MapLocation(300, 10);
+			_dto.Players[1].Cities[0].Location = new MapLocation(319, 19);
+
+			var gameState = _testee.FromDto(_dto);
+			var roundTripDto = _testee.ToDto(gameState);
+
+			Assert.Equal(320, gameState.MapWidth);
+			Assert.Equal(new System.Drawing.Point(300, 10), gameState.Cities[0].Location);
+			Assert.Equal(new System.Drawing.Point(319, 19), gameState.Cities[1].Location);
+			Assert.Equal(300u, roundTripDto.Players[0].Cities[0].Location.X);
+			Assert.Equal(10u, roundTripDto.Players[0].Cities[0].Location.Y);
+			Assert.Equal(319u, roundTripDto.Players[1].Cities[0].Location.X);
+			Assert.Equal(19u, roundTripDto.Players[1].Cities[0].Location.Y);
+		}
+
 		private static Dictionary<string, Action> GetGameStateDtoRoundTripAssertionMap(GameStateDto expected, GameStateDto actual)
 			=> new()
 			{
@@ -390,6 +409,24 @@ namespace CivOne.Persistence.Model
 			.Where(p => p.CanRead && p.CanWrite)
 			.Select(p => p.Name)
 			.ToHashSet();
+
+		private static MapDto CreateUniformMapDto(int width, int height)
+		{
+			var tiles = new TileDto[width, height];
+			for (var x = 0; x < width; x++)
+			{
+				for (var y = 0; y < height; y++)
+				{
+					tiles[x, y] = new TileDto { Terrain = Terrain.Plains, LandValue = 1 };
+				}
+			}
+
+			return new MapDto
+			{
+				MapSeed = 4242,
+				Tiles = new Map2d<TileDto>(tiles)
+			};
+		}
 
 
 		// Mock implementations for testing

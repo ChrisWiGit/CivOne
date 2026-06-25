@@ -170,8 +170,8 @@ namespace CivOne.Persistence.Mapper
 
         private City CreateCity(ICity sourceCity, List<string> cityNames, Dictionary<string, int> cityNameIndexByName)
         {
-            var locationX = yamlReadValueSanitizer.ClampToInt32(sourceCity.Location.X, nameof(GameStateDtoMapper), "City.Location.X", min: 0, max: byte.MaxValue);
-            var locationY = yamlReadValueSanitizer.ClampToInt32(sourceCity.Location.Y, nameof(GameStateDtoMapper), "City.Location.Y", min: 0, max: byte.MaxValue);
+            var locationX = yamlReadValueSanitizer.ClampToInt32(sourceCity.Location.X, nameof(GameStateDtoMapper), "City.Location.X", min: 0, max: int.MaxValue);
+            var locationY = yamlReadValueSanitizer.ClampToInt32(sourceCity.Location.Y, nameof(GameStateDtoMapper), "City.Location.Y", min: 0, max: int.MaxValue);
             var cityName = sourceCity.Name ?? string.Empty;
             var nameId = cityNameIndexByName.TryGetValue(cityName, out var mappedNameId)
                 ? mappedNameId
@@ -180,8 +180,8 @@ namespace CivOne.Persistence.Mapper
             return new City(sourceCity.CityOwnerPlayerIndex)
             {
                 Id = sourceCity.Id,
-                X = (byte)locationX,
-                Y = (byte)locationY,
+                X = locationX,
+                Y = locationY,
                 NameId = nameId,
                 Food = sourceCity.Food,
                 Shields = sourceCity.Shields,
