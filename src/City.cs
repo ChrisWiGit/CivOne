@@ -1292,7 +1292,8 @@ namespace CivOne
 
 				if (Size == 10 && _buildings.All(b => b.Id != (int)Building.Aqueduct))
 				{
-					GameTask.Enqueue(Message.Advisor(Advisor.Domestic, false, $"{Name} requires an AQUEDUCT", "for further growth."));
+					GameTask.Enqueue(Message.Advisor(Advisor.Domestic, false, 
+						TranslateFormattedArray("{0} requires an AQUEDUCT", Name, "for further growth.")));
 				}
 				else
 				{
@@ -1361,7 +1362,8 @@ namespace CivOne
 					}
 					if (Human == CityOwnerPlayerIndex && (unit is Settlers || unit is Diplomat || unit is Caravan))
 					{
-						GameTask advisorMessage = Message.Advisor(Advisor.Defense, true, $"{Name} builds {unit.TranslatedName}.");
+						GameTask advisorMessage = Message.Advisor(Advisor.Defense, true, 
+							TranslateFormattedArray("{0} builds\n{1}.", Name, unit.TranslatedName));
 						advisorMessage.Done += (_, __) => GameTask.Insert(Show.CityManager(this));
 						GameTask.Enqueue(advisorMessage);
 					}
