@@ -50,7 +50,7 @@ namespace CivOne.Persistence.Mapper
                 Player.Game = new PlayerGameStub();
                 var (cities, cityNames) = MapCities(players);
                 
-                var randomSeed = yamlReadValueSanitizer.ClampToInt32(dto.GameRandomSeed, nameof(GameStateDtoMapper), nameof(GameStateDto.GameRandomSeed));
+                var randomSeed = dto.GameRandomSeed;
                 var difficulty = yamlReadValueSanitizer.ClampToInt32((int)dto.Difficulty, nameof(GameStateDtoMapper), nameof(GameStateDto.Difficulty));
                 var anthologyTurn = (ushort)yamlReadValueSanitizer.ClampToInt32(dto.AnthologyTurn, nameof(GameStateDtoMapper), nameof(GameStateDto.AnthologyTurn), min: 0, max: ushort.MaxValue);
                 var globalWarmingState = globalWarmingMapper.FromDto(dto.GlobalWarming);
@@ -278,8 +278,8 @@ namespace CivOne.Persistence.Mapper
             List<IUnit> units,
             List<City> cities,
             string[] cityNames,
-			(int width, int height, int terrainSeed, ITile[,] mapTiles) map,
-			int randomSeed,
+            (int width, int height, int terrainSeed, ITile[,] mapTiles) map,
+            uint randomSeed,
 			int difficulty,
             ushort anthologyTurn,
             GameState globalWarmingState)
@@ -370,7 +370,7 @@ namespace CivOne.Persistence.Mapper
                 HumanPlayer = FindPlayerIndex(gameState.Players, gameState.HumanPlayer ?? throw new InvalidOperationException("Human player not found"), "Human"),
                 CurrentPlayer = FindPlayerIndex(gameState.Players, gameState.CurrentPlayer ?? gameState.HumanPlayer, "Current"),
 
-                GameRandomSeed = (uint)gameState.RandomSeed,
+                GameRandomSeed = gameState.RandomSeed,
                 AnthologyTurn = gameState.AnthologyTurn,
                 Map = mapDto,
                 GameOptions = gameState.GameOptions ?? [],

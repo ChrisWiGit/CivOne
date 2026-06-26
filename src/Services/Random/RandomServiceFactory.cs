@@ -32,6 +32,13 @@ namespace CivOne.Services.Random
 			return _cached;
 		}
 
+		public static IRandomService Reset(int seed)
+		{
+			Common.SetRandomSeed(seed);
+			_cached = new CommonRandomService(() => Common.Random!);
+			return _cached;
+		}
+
 		public static IRandomService Reset()
 		{
 			Common.SetRandomSeed();

@@ -167,7 +167,7 @@ namespace CivOne
 				_replayData.AddRange(state.ReplayData);
 			}
 
-			RandomServiceFactory.Reset(_valueSanitizer.ClampToUInt16(state.RandomSeed, nameof(Game), nameof(state.RandomSeed)));
+			RandomServiceFactory.Reset(unchecked((int)state.RandomSeed));
 		}
 
 		private void ApplyGameOptions(IEnumerable<GameSetting> options)

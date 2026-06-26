@@ -37,7 +37,7 @@ namespace CivOne.Persistence
         /// <summary>
         /// The game-level random seed (global RNG state source for gameplay logic).
         /// </summary>
-        public int RandomSeed { get; set; }
+        public uint RandomSeed { get; set; }
 
 		public int Difficulty { get; set; }
 

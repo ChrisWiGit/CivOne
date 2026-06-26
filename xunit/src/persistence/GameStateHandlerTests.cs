@@ -19,7 +19,7 @@ namespace CivOne.UnitTests.Persistence
         public void CreateUsesExplicitGameRandomSeedWhenAvailable()
         {
             // Arrange
-            const int gameRandomSeed = 1337;
+            const uint gameRandomSeed = 1337;
             const int terrainMasterWord = 4242;
             var snapshot = new MockedGameSnapshotSource
             {
@@ -50,7 +50,7 @@ namespace CivOne.UnitTests.Persistence
             var actual = GameStateHandler.Create(snapshot);
 
             // Assert
-            Assert.Equal(terrainMasterWord, actual.RandomSeed);
+            Assert.Equal(unchecked((uint)terrainMasterWord), actual.RandomSeed);
             Assert.Equal(terrainMasterWord, actual.TerrainSeed);
         }
 
@@ -78,7 +78,7 @@ namespace CivOne.UnitTests.Persistence
             public bool AutoSave { get; set; }
             public bool EnemyMoves { get; set; }
             public bool Palace { get; set; }
-            public int? GameRandomSeed { get; set; }
+            public uint? GameRandomSeed { get; set; }
             public (short X, short Y)? HumanLastMapPosition { get; set; }
             public int TerrainMasterWord { get; set; }
 

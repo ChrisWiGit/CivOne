@@ -22,9 +22,20 @@ namespace CivOne
 		[SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "A list is suffice and changing it would require unnecessary changes to the GameState and related code.")]
 		public List<ReplayData> ReplayData => _replayData;
 
-		// No dedicated persisted game-RNG state is currently exposed here.
-		// Returning null keeps GameStateHandler on the documented legacy fallback path.
-		public int? GameRandomSeed => null;
+		public uint? GameRandomSeed
+		{
+			get
+			{
+				if (Common.Random == null)
+				{
+					return null;
+				}
+
+				int[] status = Common.Random.GetStatus();
+				// Combine the two 16-bit values into a single 32-bit value
+				return ((uint)(ushort)status[1] << 16) | (ushort)status[0];
+			}
+		}
 
 
 		public int TerrainMasterWord => Map.Instance.TerrainMasterWord;

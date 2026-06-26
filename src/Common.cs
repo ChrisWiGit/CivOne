@@ -160,6 +160,7 @@ namespace CivOne
 		public static GamePlay? GamePlay => (GamePlay?)_screens.FirstOrDefault(x => x is GamePlay);
 
         internal static void SetRandomSeed(ushort seed) => Random = new Random(seed == ushort.MaxValue ? -1 : seed);
+		internal static void SetRandomSeed(int seed) => Random = new Random(seed);
         internal static void SetRandomSeed() => SetRandomSeed(ushort.MaxValue);
 		
 		/// <summary>

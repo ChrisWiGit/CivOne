@@ -57,7 +57,7 @@ namespace CivOne
 		public bool EnemyMoves { get; }
 		public bool Palace { get; }
 
-		int? GameRandomSeed { get; }
+		uint? GameRandomSeed { get; }
 
 		(short X, short Y)? GetHumanLastMapPosition();
 
@@ -107,7 +107,7 @@ namespace CivOne
 				// - RandomSeed prefers explicit GameRandomSeed, with legacy fallback to TerrainMasterWord
 				//   when no dedicated RNG seed source is exposed by the snapshot source.
 				TerrainSeed = game.TerrainMasterWord,
-				RandomSeed = game.GameRandomSeed ?? game.TerrainMasterWord,
+				RandomSeed = game.GameRandomSeed ?? unchecked((uint)game.TerrainMasterWord),
 				
 				MapWidth = game.MapTiles.GetLength(0),
 				MapHeight = game.MapTiles.GetLength(0) > 0 ? 

@@ -283,7 +283,7 @@ namespace CivOne.Persistence.Model
 
 			Assert.NotNull(gameState);
 			Assert.Equal(50u, gameState.GameTurn);
-			Assert.Equal(99999, gameState.RandomSeed);
+			Assert.Equal(99999u, gameState.RandomSeed);
 			Assert.Equal(0, gameState.Difficulty); // Chieftain = 0
 			Assert.Equal(2, gameState.Players.Length);
 			Assert.Contains(GameSetting.Sound, gameState.GameOptions);
