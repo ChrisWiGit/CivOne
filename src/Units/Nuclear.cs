@@ -7,10 +7,10 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Enums;
-using CivOne.Screens;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Wonders;
@@ -42,11 +42,12 @@ namespace CivOne.Units
 		private void HandleNuclear(ITile moveTarget, int relX, int relY)
 		{	
 			var nukeSuccess = RandomService.Hit(90);
-			if (HasCitySDIBuilding(moveTarget) && nukeSuccess)
+			ITile? cityWithSdi = GetCityWithSDI(moveTarget);
+			if (cityWithSdi != null && nukeSuccess)
 			{
 				Game.DisbandUnit(this);
 				GameTask.Enqueue(Message.Advisor(Advisor.Defense, false, 
-					TranslateFormattedArray("{0} defense system\ndestroyed the nuclear missile\nbefore it could reach its target.", moveTarget.City.Name)));
+					TranslateFormattedArray("{0} defense system\ndestroyed the nuclear missile\nbefore it could reach its target.", cityWithSdi.City.Name)));
 				
 				// TODO: Should let all players (AI) know that the nuke was intercepted,
 				// This will trigger a war declaration from the player that launched 
@@ -61,6 +62,20 @@ namespace CivOne.Units
 
 			GameTask.Enqueue(nuke);
 		}
+
+		private static ITile? GetCityWithSDI(ITile tile)
+		{
+			foreach (ITile t in Map.QueryMapPart(tile.X - 1, tile.Y - 1, 3, 3))
+			{
+				if (HasCitySDIBuilding(t))
+				{
+					return t;
+				}
+			}
+			return null;
+		}
+
+
 		private static bool HasCitySDIBuilding(ITile moveTarget)
 		{
 			if (moveTarget.City == null) return false;
@@ -121,7 +136,7 @@ namespace CivOne.Units
 				}
 				if (tile.City != null)
 				{
-					tile.City.Size /= 2;
+					tile.City.Size = (byte)Math.Max(1, tile.City.Size / 2);
 					continue;
 				}
 				// CW: 16% chance is not the same as the original game.
