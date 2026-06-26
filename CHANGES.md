@@ -6,6 +6,9 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: SDI defense system can now destroy incoming nuclear missiles before they reach their target.
+  * If a nuclear missile is launched at a city with an SDI defense system, the missile is destroyed and a message is shown to the player.
+  * The SDI defense system is only effective against nuclear missiles in 90% of cases, so there is a 10% chance that the missile will still hit the target.
 * Refactoring: Addressed around 4,000 warnings
   * all projects have been compiled with `<AnalysisLevel>latest-all</AnalysisLevel>` and `<Nullable>enable</Nullable>` to enable the latest analyzers and nullable reference types.
   * Fixed potential null-reference and nullability-related warnings across the codebase.

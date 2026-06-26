@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using CivOne.Advances;
+using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Screens;
 using CivOne.Tasks;
@@ -39,7 +40,19 @@ namespace CivOne.Units
 		}
 
 		private void HandleNuclear(ITile moveTarget, int relX, int relY)
-		{
+		{	
+			var nukeSuccess = RandomService.Hit(90);
+			if (HasCitySDIBuilding(moveTarget) && nukeSuccess)
+			{
+				Game.DisbandUnit(this);
+				GameTask.Enqueue(Message.Advisor(Advisor.Defense, false, 
+					TranslateFormattedArray("{0} defense system\ndestroyed the nuclear missile\nbefore it could reach its target.", moveTarget.City.Name)));
+				
+				// TODO: Should let all players (AI) know that the nuke was intercepted,
+				// This will trigger a war declaration from the player that launched 
+				// the nuke, and a war declaration from the player that was nuked.
+				return;
+			}
 			Common.GamePlay?.CenterOnPoint(moveTarget.X, moveTarget.Y);
 			Show nuke = CreateNukeAnimation(moveTarget);
 
@@ -47,6 +60,18 @@ namespace CivOne.Units
 			nuke.Done += (s, a) => DestroyUnitsInNuclearBlast(relX, relY);
 
 			GameTask.Enqueue(nuke);
+		}
+		private static bool HasCitySDIBuilding(ITile moveTarget)
+		{
+			if (moveTarget.City == null) return false;
+			foreach (var building in moveTarget.City.Buildings)
+			{
+				if (building is SdiDefense)
+				{
+					return true;
+				}
+			}
+			return false;
 		}
 
 		private static Show CreateNukeAnimation(ITile moveTarget)
