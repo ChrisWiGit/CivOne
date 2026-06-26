@@ -717,6 +717,11 @@ namespace CivOne.Screens.GamePlayPanels
 				return true;
 			}
 
+			if (_zoomDelegate.KeyDown(args))
+			{
+				return true;
+			}
+
 			if (_mapViewEnabled && _panMapDelegate.KeyDownMapView(args))
 			{
 				return true;

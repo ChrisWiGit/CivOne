@@ -141,6 +141,44 @@ namespace CivOne.Screens.GamePlayPanels
 				return true;
 			}
 
+			public bool KeyDown(KeyboardEventArgs args)
+			{
+				if ((args.Modifier & KeyModifier.Control) == 0)
+				{
+					return false;
+				}
+
+				int direction;
+				switch (args.Key)
+				{
+					case Key.PageDown:
+						direction = +1;
+						break;
+					case Key.PageUp:
+						direction = -1;
+						break;
+					default:
+						return false;
+				}
+
+				int currentIndex = FindZoomPresetIndex(_gameMap.CurrentZoomBasisPoints);
+				int nextIndex = Math.Clamp(currentIndex + direction, 0, MapZoomSettings.BasisPointsPresets.Length - 1);
+				int nextBasisPoints = MapZoomSettings.BasisPointsPresets[nextIndex];
+				if (nextBasisPoints == _gameMap.CurrentZoomBasisPoints)
+				{
+					return true;
+				}
+
+				if (Game.CurrentPlayer != null)
+				{
+					Game.CurrentPlayer.MapZoomBasisPoints = nextBasisPoints;
+				}
+
+				SyncZoomState();
+				_gameMap.Refresh();
+				return true;
+			}
+
 			private static int TilePixelSizeFromBasisPoints(int basisPoints)
 				=> Math.Max(1, (BaseTilePixelSize * basisPoints + 500) / 1000);
 
