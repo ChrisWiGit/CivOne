@@ -54,6 +54,8 @@ namespace CivOne.Screens
 
 		internal int X => _gameMap.X;
 		internal int Y => _gameMap.Y;
+		internal int VisibleTilesX => _gameMap.VisibleTilesX;
+		internal int VisibleTilesY => _gameMap.VisibleTilesY;
 		internal bool IsMapViewEnabled => _gameMap.MapViewEnabled;
 		internal bool IsTerrainEditorEnabled => _gameMap.IsTerrainEditorEnabled;
 		internal bool IsTerrainEditorSpawnMode => _gameMap.EditorState.CurrentMode == EditorMode.SpawnUnit;
@@ -108,7 +110,10 @@ namespace CivOne.Screens
 		
 		private void MenuBarOrders(object? _, EventArgs __)
 		{
-			if (Game.ActiveUnit == null) return;
+			if (Game.ActiveUnit == null || _gameMap.MapViewEnabled)
+			{
+				return;
+			}
 
 			_menuIndex = 1;
 
@@ -261,6 +266,12 @@ namespace CivOne.Screens
 			if (args.Key == Key.Tab)
 			{
 				_gameMap.ToggleMapView();
+				if (_gameMap.MapViewEnabled && _menuIndex == 1)
+				{
+					_gameMenu = null;
+					_menuIndex = -1;
+					_redraw = true;
+				}
 				_update = true;
 				return true;
 			}
@@ -273,6 +284,10 @@ namespace CivOne.Screens
 
 			if (_menuBar.KeyDown(args))
 			{
+				if (_gameMenu != null)
+				{
+					_gameMenu.KeepOpen = true;
+				}
 				return true;
 			}
 

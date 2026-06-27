@@ -38,6 +38,25 @@ namespace CivOne.UnitTests
 		}
 
 		/// <summary>
+		/// Ensures the space key does not issue "No Orders" while map-view mode is active.
+		/// </summary>
+		[Fact]
+		public void MapViewModeSpaceKeyDoesNotSkipActiveUnitTurn()
+		{
+			var activeUnit = Game.Instance.GetUnits().First(x => playa == x.Owner);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
+			Game.Instance.ActiveUnit = activeUnit;
+
+			using var gameMap = new GameMapForTesting();
+			gameMap.ToggleMapView();
+
+			bool handled = gameMap.KeyDown(new KeyboardEventArgs(Key.Space));
+
+			Assert.True(handled);
+			Assert.Equal(activeUnit, Game.Instance.ActiveUnit);
+		}
+
+		/// <summary>
 		/// Ensures map camera slots can be saved with Ctrl+1 and restored with Alt+1.
 		/// </summary>
 		[Fact]

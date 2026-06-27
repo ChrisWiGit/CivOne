@@ -24,6 +24,8 @@ namespace CivOne.Tiles
 {
 	public static class TileExtensions
 	{
+		private const int BaseTilePixelSize = 16;
+
 		private static Game Game => Game.Instance;
 		private static Resources Resources => Resources.Instance;
 		private static Palette Palette => Resources["SP257"].Palette;
@@ -32,6 +34,27 @@ namespace CivOne.Tiles
 		private static bool GFX256 => (Settings.GraphicsMode == GraphicsMode.Graphics256);
 
 		private static TextSettings CityLabel = TextSettings.ShadowText(11, 5);
+
+		private static Bytemap ScaleBitmap(Bytemap source, int targetWidth, int targetHeight)
+		{
+			Bytemap output = new(targetWidth, targetHeight);
+			if (source == null || targetWidth <= 0 || targetHeight <= 0)
+			{
+				return output;
+			}
+
+			for (int y = 0; y < targetHeight; y++)
+			{
+				int sourceY = y * source.Height / targetHeight;
+				for (int x = 0; x < targetWidth; x++)
+				{
+					int sourceX = x * source.Width / targetWidth;
+					output[x, y] = source[sourceX, sourceY];
+				}
+			}
+
+			return output;
+		}
 
 		private static void LogNullTile(string methodName)
 		{
@@ -229,11 +252,12 @@ namespace CivOne.Tiles
 		/// <param name="settings">Optional settings for rendering the tiles.</param>
 		/// <param name="player">Optional player context for visibility checks.</param>
 		/// <returns>A bitmap representation of the tile array. The caller must dispose of the returned bitmap when no longer needed.</returns>
-		public static IBitmap ToBitmap(this ITile[,] tiles, TileSettings? settings = null, Player? player = null)
+		public static IBitmap ToBitmap(this ITile[,] tiles, TileSettings? settings = null, Player? player = null, int pixelSize = BaseTilePixelSize)
 		{
 			settings ??= TileSettings.Default;
+			int safePixelSize = Math.Max(1, pixelSize);
 
-			IBitmap output = new Picture(16 * tiles.GetLength(0), 16 * tiles.GetLength(1), Palette);
+			IBitmap output = new Picture(safePixelSize * tiles.GetLength(0), safePixelSize * tiles.GetLength(1), Palette);
 
 			for (int yy = 0; yy < tiles.GetLength(1); yy++)
 			for (int xx = 0; xx < tiles.GetLength(0); xx++)
@@ -241,8 +265,9 @@ namespace CivOne.Tiles
 				ITile tile = tiles[xx, yy];
 				if (tile == null || player != null && !player.Visible(tile)) continue;
 
-				int x = (xx * 16), y = (yy * 16);
-				output.AddLayer(tile.ToBitmap(settings, player), x, y, dispose: true);
+				int x = xx * safePixelSize;
+				int y = yy * safePixelSize;
+				output.AddLayer(tile.ToBitmap(settings, player, safePixelSize), x, y, dispose: true);
 			}
 
 			if (settings.CityLabels)
@@ -252,8 +277,8 @@ namespace CivOne.Tiles
 				{
 					ITile tile = tiles[xx, yy];
 					if (tile == null || tile.City == null || player != null && !player.Visible(tile)) continue;
-					int x = (xx == 0) ? 0 : (xx * 16) - 8;
-					int y = (yy * 16) + 16;
+					int x = (xx == 0) ? 0 : (xx * safePixelSize) - Math.Max(1, safePixelSize / 2);
+					int y = (yy * safePixelSize) + safePixelSize;
 					string label = tile.City.Name;
 					output.DrawText(label, x, y, CityLabel);
 				}
@@ -262,11 +287,12 @@ namespace CivOne.Tiles
 			return output;
 		}
 
-		public static IBitmap ToBitmap(this ITile tile, TileSettings? settings = null, Player? player = null)
+		public static IBitmap ToBitmap(this ITile tile, TileSettings? settings = null, Player? player = null, int pixelSize = BaseTilePixelSize)
 		{
 			if (settings == null) settings = TileSettings.Default;
+			int safePixelSize = Math.Max(1, pixelSize);
 
-			IBitmap output = new Picture(16, 16, Palette);
+			IBitmap output = new Picture(BaseTilePixelSize, BaseTilePixelSize, Palette);
 
 			output.AddLayer(MapTile.TileBase(tile));
 			if (GFX256 && settings.Improvements && tile.DrawIrrigation()) 
@@ -345,7 +371,16 @@ namespace CivOne.Tiles
 				}
 			}
 
-			return output;
+			if (safePixelSize == BaseTilePixelSize)
+			{
+				return output;
+			}
+
+			IBitmap scaledOutput = new Picture(safePixelSize, safePixelSize, Palette);
+			using Bytemap scaled = ScaleBitmap(output.Bitmap, safePixelSize, safePixelSize);
+			scaledOutput.AddLayer(scaled, dispose: true);
+			output.Dispose();
+			return scaledOutput;
 		}
 
 		public static IBitmap? UnitsToPicture(this ITile? tile)

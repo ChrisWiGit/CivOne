@@ -35,10 +35,6 @@ namespace CivOne.Screens.GamePlayPanels
 		private const int MiniMapTileHeight = MiniMapHeight - (MiniMapBorder * 2);
 		private const int MiniMapViewOffsetX = 30;
 		private const int MiniMapViewOffsetY = 18;
-		private const int MiniMapViewX = 31;
-		private const int MiniMapViewY = 18;
-		private const int MiniMapViewWidth = 18;
-		private const int MiniMapViewHeight = 11;
 		private const int PalaceHotspotBottomY = 62;
 
 		private bool _update = true;
@@ -46,6 +42,8 @@ namespace CivOne.Screens.GamePlayPanels
 		private int _lastGameInfoSignature;
 		private string _statusInfoText = string.Empty;
 		private int _statusInfoFrames;
+		private int _miniMapViewOffsetXCurrent = MiniMapViewOffsetX;
+		private int _miniMapViewOffsetYCurrent = MiniMapViewOffsetY;
 		
 		private readonly Picture _miniMap, _demographics;
 		private Picture _gameInfo;
@@ -56,10 +54,17 @@ namespace CivOne.Screens.GamePlayPanels
 			
 			if (GamePlay != null)
 			{
+				int viewWidth = Math.Clamp(GamePlay.VisibleTilesX, 1, MiniMapTileWidth);
+				int viewHeight = Math.Clamp(GamePlay.VisibleTilesY, 1, MiniMapTileHeight);
+				int dynamicOffsetX = Math.Clamp((MiniMapTileWidth - viewWidth) / 2, 0, MiniMapTileWidth - 1);
+				int dynamicOffsetY = Math.Clamp((MiniMapTileHeight - viewHeight) / 2, 0, MiniMapTileHeight - 1);
+				_miniMapViewOffsetXCurrent = dynamicOffsetX;
+				_miniMapViewOffsetYCurrent = dynamicOffsetY;
+
 				bool editorEnabled = GamePlay.IsTerrainEditorEnabled;
 				bool revealWorld = Settings.RevealWorld || editorEnabled;
 				IUnit? activeUnit = Game.ActiveUnit;
-				ITile[,] tiles = Map[GamePlay.X - MiniMapViewOffsetX, GamePlay.Y - MiniMapViewOffsetY, MiniMapTileWidth, MiniMapTileHeight];
+				ITile[,] tiles = Map[GamePlay.X - dynamicOffsetX, GamePlay.Y - dynamicOffsetY, MiniMapTileWidth, MiniMapTileHeight];
 				for (int yy = 0; yy < MiniMapTileHeight; yy++)
 				for (int xx = 0; xx < MiniMapTileWidth; xx++)
 				{
@@ -114,9 +119,19 @@ namespace CivOne.Screens.GamePlayPanels
 						}
 					}
 				}
+
+				int viewX = MiniMapBorder + dynamicOffsetX;
+				int viewY = MiniMapBorder + dynamicOffsetY;
+
+				_miniMap.DrawRectangle(viewX, viewY, viewWidth, viewHeight, 15)
+					.DrawRectangle3D();
+				return;
 			}
-			_miniMap.DrawRectangle(MiniMapViewX, MiniMapViewY, MiniMapViewWidth, MiniMapViewHeight, 15)
-				.DrawRectangle3D();
+
+			_miniMapViewOffsetXCurrent = MiniMapViewOffsetX;
+			_miniMapViewOffsetYCurrent = MiniMapViewOffsetY;
+
+			_miniMap.DrawRectangle3D();
 		}
 
 		private void DrawDemographics()
@@ -401,8 +416,8 @@ namespace CivOne.Screens.GamePlayPanels
 			{
 				if (args.X < MiniMapBorder || args.Y < MiniMapBorder || args.X > (SideBarWidth - MiniMapBorder) || args.Y > (MiniMapHeight - MiniMapBorder)) return true;
 				
-				int xx = args.X - MiniMapBorder + GamePlay!.X - MiniMapViewOffsetX;
-				int yy = args.Y - MiniMapBorder + GamePlay!.Y - MiniMapViewOffsetY;
+				int xx = args.X - MiniMapBorder + GamePlay!.X - _miniMapViewOffsetXCurrent;
+				int yy = args.Y - MiniMapBorder + GamePlay!.Y - _miniMapViewOffsetYCurrent;
 
 				GamePlay.CenterOnPoint(xx, yy);
 			}
