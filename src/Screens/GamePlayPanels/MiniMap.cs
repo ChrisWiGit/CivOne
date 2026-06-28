@@ -23,10 +23,10 @@ namespace CivOne.Screens.GamePlayPanels
 			Palette palette,
 			int miniMapViewOffsetX,
 			int miniMapViewOffsetY,
-			int MiniMapTileWidth,
-			int MiniMapTileHeight,
-			int SideBarWidth,
-			int MiniMapHeight
+			int miniMapTileWidth,
+			int miniMapTileHeight,
+			int sideBarWidth,
+			int miniMapHeight
 			) : IDisposable
 	{
 		public const int MiniMapBorder = 1;
@@ -34,7 +34,7 @@ namespace CivOne.Screens.GamePlayPanels
 		public int MiniMapViewOffsetXCurrent { get; private set; }
 		public int MiniMapViewOffsetYCurrent { get; private set; }
 		
-		private readonly Picture _miniMap = new(SideBarWidth, MiniMapHeight, palette);
+		private readonly Picture _miniMap = new(sideBarWidth, miniMapHeight, palette);
 
 		public IBitmap MiniMap => _miniMap;
 		public void DrawMiniMap(GamePlay? gamePlay, IUnit? activeUnit, uint gameTick = 0)
@@ -55,19 +55,19 @@ namespace CivOne.Screens.GamePlayPanels
 
 		private void DrawMiniMapInternal(GamePlay gamePlay, IUnit? activeUnit, uint gameTick)
 		{
-			int viewWidth = Math.Clamp(gamePlay.VisibleTilesX, 1, MiniMapTileWidth);
-			int viewHeight = Math.Clamp(gamePlay.VisibleTilesY, 1, MiniMapTileHeight);
-			int dynamicOffsetX = Math.Clamp((MiniMapTileWidth - viewWidth) / 2, 0, MiniMapTileWidth - 1);
-			int dynamicOffsetY = Math.Clamp((MiniMapTileHeight - viewHeight) / 2, 0, MiniMapTileHeight - 1);
+			int viewWidth = Math.Clamp(gamePlay.VisibleTilesX, 1, miniMapTileWidth);
+			int viewHeight = Math.Clamp(gamePlay.VisibleTilesY, 1, miniMapTileHeight);
+			int dynamicOffsetX = Math.Clamp((miniMapTileWidth - viewWidth) / 2, 0, miniMapTileWidth - 1);
+			int dynamicOffsetY = Math.Clamp((miniMapTileHeight - viewHeight) / 2, 0, miniMapTileHeight - 1);
 			MiniMapViewOffsetXCurrent = dynamicOffsetX;
 			MiniMapViewOffsetYCurrent = dynamicOffsetY;
 
 			bool editorEnabled = gamePlay.IsTerrainEditorEnabled;
 			bool revealWorld = settings.RevealWorld || editorEnabled;
 
-			ITile[,] tiles = map[gamePlay.X - dynamicOffsetX, gamePlay.Y - dynamicOffsetY, MiniMapTileWidth, MiniMapTileHeight];
-			for (int yy = 0; yy < MiniMapTileHeight; yy++)
-				for (int xx = 0; xx < MiniMapTileWidth; xx++)
+			ITile[,] tiles = map[gamePlay.X - dynamicOffsetX, gamePlay.Y - dynamicOffsetY, miniMapTileWidth, miniMapTileHeight];
+			for (int yy = 0; yy < miniMapTileHeight; yy++)
+				for (int xx = 0; xx < miniMapTileWidth; xx++)
 				{
 					ITile tile = tiles[xx, yy];
 					if (tile == null) continue;
