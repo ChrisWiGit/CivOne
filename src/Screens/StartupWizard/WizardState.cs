@@ -20,7 +20,9 @@ namespace CivOne.Screens.StartupWizard
 	/// </remarks>
 	internal sealed class WizardState(string? selectedLanguagePostfix)
 	{
+		public const int GamePatchesPageIndex = 99;
 		private const int LastPageIndex = 6;
+		private int _gamePatchesReturnPageIndex = -1;
 
 		/// <summary>
 		/// Gets the zero-based index of the currently active wizard page.
@@ -94,6 +96,41 @@ namespace CivOne.Screens.StartupWizard
 		public bool FullScreenEnabled { get; set; } = Settings.Instance.FullScreen;
 
 		/// <summary>
+		/// Gets or sets whether fast river movement is enabled.
+		/// </summary>
+		public bool RiverFastMovementEnabled { get; set; } = Settings.Instance.RiverFastMovement;
+
+		/// <summary>
+		/// Gets or sets whether smart pathfinding for goto is enabled.
+		/// </summary>
+		public bool PathFindingEnabled { get; set; } = Settings.Instance.PathFinding;
+
+		/// <summary>
+		/// Gets or sets whether smart pathfinding for computer players is enabled.
+		/// </summary>
+		public bool ComputerPlayerPathFindingEnabled { get; set; } = Settings.Instance.ComputerPlayerPathFinding;
+
+		/// <summary>
+		/// Gets or sets whether the auto settlers cheat is enabled.
+		/// </summary>
+		public bool AutoSettlersEnabled { get; set; } = Settings.Instance.AutoSettlers;
+
+		/// <summary>
+		/// Gets or sets whether sea units ignore the city movement penalty.
+		/// </summary>
+		public bool CanalCityEnabled { get; set; } = Settings.Instance.CanalCity;
+
+		/// <summary>
+		/// Gets or sets whether obsolete buildings are removed automatically.
+		/// </summary>
+		public bool RemoveObsoleteBuildingsEnabled { get; set; } = Settings.Instance.RemoveObsoleteBuildings;
+
+		/// <summary>
+		/// Gets or sets whether Deity difficulty is available.
+		/// </summary>
+		public bool DeityEnabled { get; set; } = Settings.Instance.DeityEnabled;
+
+		/// <summary>
 		/// Gets or sets the screen aspect ratio selected in the startup wizard.
 		/// </summary>
 		/// <remarks>
@@ -121,6 +158,31 @@ namespace CivOne.Screens.StartupWizard
 			{
 				PageIndex--;
 			}
+		}
+
+		/// <summary>
+		/// Opens the temporary game patches page and remembers the previous page index.
+		/// </summary>
+		public void OpenGamePatchesPage()
+		{
+			_gamePatchesReturnPageIndex = PageIndex;
+			RiverFastMovementEnabled = Settings.Instance.RiverFastMovement;
+			PageIndex = GamePatchesPageIndex;
+		}
+
+		/// <summary>
+		/// Returns from the temporary game patches page to the page that opened it.
+		/// </summary>
+		public bool CloseGamePatchesPage()
+		{
+			if (_gamePatchesReturnPageIndex < 0)
+			{
+				return false;
+			}
+
+			PageIndex = _gamePatchesReturnPageIndex;
+			_gamePatchesReturnPageIndex = -1;
+			return true;
 		}
 	}
 }
