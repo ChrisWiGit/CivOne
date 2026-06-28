@@ -50,6 +50,10 @@ namespace CivOne.Screens.StartupWizard
 		OpenSetupScreen,
 
 		/// <summary>
+		/// Opens the startup wizard page for optional gameplay patches.
+		/// </summary>
+		OpenGamePatchesScreen,
+		/// <summary>
 		/// Opens the CivOne profile folder in the file manager.
 		/// </summary>
 		OpenProfileFolder,
@@ -74,6 +78,41 @@ namespace CivOne.Screens.StartupWizard
 		/// Toggles the sound on or off and persists the choice to <see cref="Settings"/>.
 		/// </summary>
 		ToggleSound,
+
+		/// <summary>
+		/// Toggles fast river movement on or off and persists the choice to <see cref="Settings"/>.
+		/// </summary>
+		ToggleRiverFastMovement,
+
+		/// <summary>
+		/// Toggles smart goto pathfinding on or off and persists the choice to <see cref="Settings"/>.
+		/// </summary>
+		TogglePathFinding,
+
+		/// <summary>
+		/// Toggles smart computer player pathfinding on or off and persists the choice to <see cref="Settings"/>.
+		/// </summary>
+		ToggleComputerPlayerPathFinding,
+
+		/// <summary>
+		/// Toggles the auto settlers cheat on or off and persists the choice to <see cref="Settings"/>.
+		/// </summary>
+		ToggleAutoSettlers,
+
+		/// <summary>
+		/// Toggles the sea-units-in-city rule on or off and persists the choice to <see cref="Settings"/>.
+		/// </summary>
+		ToggleCanalCity,
+
+		/// <summary>
+		/// Toggles automatic removal of obsolete buildings on or off and persists the choice to <see cref="Settings"/>.
+		/// </summary>
+		ToggleRemoveObsoleteBuildings,
+
+		/// <summary>
+		/// Toggles whether Deity difficulty is available and persists the choice to <see cref="Settings"/>.
+		/// </summary>
+		ToggleDeityEnabled,
 
 		/// <summary>
 		/// Completes the wizard, saves all settings and starts the game.

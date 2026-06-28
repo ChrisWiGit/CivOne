@@ -30,15 +30,11 @@ namespace CivOne.Screens.GamePlayPanels
 		private const int MiniMapHeight = 50;
 		private const int DemographicsHeight = 39;
 		private const int GameInfoOffsetY = MiniMapHeight + DemographicsHeight;
-		private const int MiniMapBorder = 1;
+		private const int MiniMapBorder = MiniMapWrapper.MiniMapBorder;
 		private const int MiniMapTileWidth = SideBarWidth - (MiniMapBorder * 2);
 		private const int MiniMapTileHeight = MiniMapHeight - (MiniMapBorder * 2);
 		private const int MiniMapViewOffsetX = 30;
 		private const int MiniMapViewOffsetY = 18;
-		private const int MiniMapViewX = 31;
-		private const int MiniMapViewY = 18;
-		private const int MiniMapViewWidth = 18;
-		private const int MiniMapViewHeight = 11;
 		private const int PalaceHotspotBottomY = 62;
 
 		private bool _update = true;
@@ -46,79 +42,11 @@ namespace CivOne.Screens.GamePlayPanels
 		private int _lastGameInfoSignature;
 		private string _statusInfoText = string.Empty;
 		private int _statusInfoFrames;
-		
-		private readonly Picture _miniMap, _demographics;
+		private readonly Picture _demographics;
 		private Picture _gameInfo;
+
+		private readonly MiniMapWrapper _miniMapWrapper;
 		
-		private void DrawMiniMap(uint gameTick = 0)
-		{
-			_miniMap.Clear(5);
-			
-			if (GamePlay != null)
-			{
-				bool editorEnabled = GamePlay.IsTerrainEditorEnabled;
-				bool revealWorld = Settings.RevealWorld || editorEnabled;
-				IUnit? activeUnit = Game.ActiveUnit;
-				ITile[,] tiles = Map[GamePlay.X - MiniMapViewOffsetX, GamePlay.Y - MiniMapViewOffsetY, MiniMapTileWidth, MiniMapTileHeight];
-				for (int yy = 0; yy < MiniMapTileHeight; yy++)
-				for (int xx = 0; xx < MiniMapTileWidth; xx++)
-				{
-					ITile tile = tiles[xx, yy];
-					if (tile == null) continue;
-
-					// Flash active unit
-					if (!editorEnabled && activeUnit != null && Human == activeUnit.Owner && tile.X == activeUnit.X && tile.Y == activeUnit.Y && GamePlay.IsMapViewEnabled != true)
-					{
-						if (gameTick % 4 <= 1)
-						{
-							_miniMap[xx + MiniMapBorder, yy + MiniMapBorder] = 15;
-						}
-						else
-						{
-							_miniMap[xx + MiniMapBorder, yy + MiniMapBorder] = (byte)(tile.IsOcean ? 1 : 2);
-						}
-						continue;
-					}
-
-					if (revealWorld)
-					{
-						byte colour = 5;
-						switch (tile.Type)
-						{
-							case Terrain.Ocean: colour = 1; break;
-							case Terrain.Forest: colour = 2; break;
-							case Terrain.Swamp: colour = 3; break;
-							case Terrain.Plains: colour = 6; break;
-							case Terrain.Tundra: colour = 7; break;
-							case Terrain.River: colour = 9; break;
-							case Terrain.Grassland1:
-							case Terrain.Grassland2: colour = 10; break;
-							case Terrain.Jungle: colour = 11; break;
-							case Terrain.Hills: colour = 12; break;
-							case Terrain.Mountains: colour = 13; break;
-							case Terrain.Desert: colour = 14; break;
-							case Terrain.Arctic: colour = 15; break;
-						}
-						_miniMap[xx + MiniMapBorder, yy + MiniMapBorder] = colour;
-					}
-					else if (Human.Visible(tile.X, tile.Y))
-					{
-						if (tile.City != null)
-						{
-							_miniMap[xx + MiniMapBorder, yy + MiniMapBorder] = Common.ColourLight[tile.City.CityOwnerPlayerIndex];
-						}
-						else
-						{
-							if (tile.IsOcean) _miniMap[xx + MiniMapBorder, yy + MiniMapBorder] = 1;
-							else _miniMap[xx + MiniMapBorder, yy + MiniMapBorder] = 2;
-						}
-					}
-				}
-			}
-			_miniMap.DrawRectangle(MiniMapViewX, MiniMapViewY, MiniMapViewWidth, MiniMapViewHeight, 15)
-				.DrawRectangle3D();
-		}
-
 		private void DrawDemographics()
 		{
 			_demographics.Tile(Pattern.PanelGrey)
@@ -367,7 +295,7 @@ namespace CivOne.Screens.GamePlayPanels
 			if (!(Common.TopScreen is GamePlay))
 				gameTick = 0;
 
-			DrawMiniMap(gameTick);
+			_miniMapWrapper.DrawMiniMap(GamePlay, Game.ActiveUnit, gameTick);
 
 			int demographicsSignature = GetDemographicsSignature();
 			if (_update || demographicsSignature != _lastDemographicsSignature)
@@ -387,7 +315,7 @@ namespace CivOne.Screens.GamePlayPanels
 				_lastGameInfoSignature = gameInfoSignature;
 			}
 
-			this.AddLayer(_miniMap, 0, 0)
+			this.AddLayer(_miniMapWrapper.MiniMap, 0, 0)
 				.AddLayer(_demographics, 0, MiniMapHeight)
 				.AddLayer(_gameInfo, 0, GameInfoOffsetY);
 
@@ -401,8 +329,8 @@ namespace CivOne.Screens.GamePlayPanels
 			{
 				if (args.X < MiniMapBorder || args.Y < MiniMapBorder || args.X > (SideBarWidth - MiniMapBorder) || args.Y > (MiniMapHeight - MiniMapBorder)) return true;
 				
-				int xx = args.X - MiniMapBorder + GamePlay!.X - MiniMapViewOffsetX;
-				int yy = args.Y - MiniMapBorder + GamePlay!.Y - MiniMapViewOffsetY;
+				int xx = args.X - MiniMapBorder + GamePlay!.X - _miniMapWrapper.MiniMapViewOffsetXCurrent;
+				int yy = args.Y - MiniMapBorder + GamePlay!.Y - _miniMapWrapper.MiniMapViewOffsetYCurrent;
 
 				GamePlay.CenterOnPoint(xx, yy);
 			}
@@ -454,18 +382,22 @@ namespace CivOne.Screens.GamePlayPanels
 			_lastDemographicsSignature = int.MinValue;
 			_lastGameInfoSignature = int.MinValue;
 
-			_miniMap = new Picture(SideBarWidth, MiniMapHeight, palette);
 			_demographics = new Picture(SideBarWidth, DemographicsHeight, palette);
 			_gameInfo = new Picture(SideBarWidth, 192 - GameInfoOffsetY, palette);
 
-			DrawMiniMap();
+			_miniMapWrapper = 
+			new(Settings, Map, Human, palette, 
+				MiniMapViewOffsetX, MiniMapViewOffsetY, 
+				MiniMapTileWidth, MiniMapTileHeight, 
+				SideBarWidth, MiniMapHeight);
+			_miniMapWrapper.DrawMiniMap(GamePlay, Game.ActiveUnit);
 			DrawDemographics();
 			_lastDemographicsSignature = GetDemographicsSignature();
 			DrawGameInfo();
 			_lastGameInfoSignature = GetGameInfoSignature(0);
 
 			Palette = palette.Copy();
-			this.AddLayer(_miniMap, 0, 0)
+			this.AddLayer(_miniMapWrapper.MiniMap, 0, 0)
 				.AddLayer(_demographics, 0, MiniMapHeight)
 				.AddLayer(_gameInfo, 0, GameInfoOffsetY);
 		}
@@ -477,7 +409,7 @@ namespace CivOne.Screens.GamePlayPanels
 				return;
 			}
 
-			_miniMap.Dispose();
+			_miniMapWrapper.Dispose();
 			_demographics.Dispose();
 			_gameInfo.Dispose();
 			base.Dispose(disposing);

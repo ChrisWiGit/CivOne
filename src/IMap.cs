@@ -7,7 +7,7 @@ namespace CivOne
 	{
 	}
 	
-	public interface IMap : IMapContinents, IMapTerrain, IMapTiles
+	public interface IMap : IMapContinents, IMapTerrain, IMapTiles, IMapTilesRect
 	{
 	
 	}
@@ -30,5 +30,10 @@ namespace CivOne
 
 		int Width { get; }
 		int Height { get; }
+	}
+
+	public interface IMapTilesRect
+	{
+		ITile[,] this[int x, int y, int width, int height] { get; }
 	}
 }
