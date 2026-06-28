@@ -286,7 +286,7 @@ namespace CivOne
 
 		// Patches
 		
-		internal bool RevealWorld
+		public bool RevealWorld
 		{
 			get => _revealWorld;
 			set

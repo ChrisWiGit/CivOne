@@ -45,10 +45,11 @@ namespace CivOne.Tiles
 
 			for (int y = 0; y < targetHeight; y++)
 			{
-				int sourceY = y * source.Height / targetHeight;
+				int sourceY = targetHeight == 1 ? 0 : y * (source.Height - 1) / (targetHeight - 1);
+
 				for (int x = 0; x < targetWidth; x++)
 				{
-					int sourceX = x * source.Width / targetWidth;
+					int sourceX = targetWidth == 1 ? 0 : x * (source.Width - 1) / (targetWidth - 1);
 					output[x, y] = source[sourceX, sourceY];
 				}
 			}
@@ -292,7 +293,7 @@ namespace CivOne.Tiles
 			if (settings == null) settings = TileSettings.Default;
 			int safePixelSize = Math.Max(1, pixelSize);
 
-			IBitmap output = new Picture(BaseTilePixelSize, BaseTilePixelSize, Palette);
+			Picture output = new(BaseTilePixelSize, BaseTilePixelSize, Palette);
 
 			output.AddLayer(MapTile.TileBase(tile));
 			if (GFX256 && settings.Improvements && tile.DrawIrrigation()) 
@@ -378,7 +379,8 @@ namespace CivOne.Tiles
 
 			IBitmap scaledOutput = new Picture(safePixelSize, safePixelSize, Palette);
 			using Bytemap scaled = ScaleBitmap(output.Bitmap, safePixelSize, safePixelSize);
-			scaledOutput.AddLayer(scaled, dispose: true);
+			// don't dispose in AddLayer
+			scaledOutput.AddLayer(scaled, dispose: false);
 			output.Dispose();
 			return scaledOutput;
 		}

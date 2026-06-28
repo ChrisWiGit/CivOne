@@ -78,7 +78,7 @@ namespace CivOne.Screens.GamePlayPanels
 				{
 					return;
 				}
-				using Bytemap unitPicture = ScaleBitmap(unitSource, _gameMap._tilePixelSize, _gameMap._tilePixelSize);
+				using Bytemap unitPicture = GameMapZoomDelegate.ScaleBitmap(unitSource, _gameMap._tilePixelSize, _gameMap._tilePixelSize);
 				_gameMap.AddLayer(unitPicture, dx, dy);
 			}
 
