@@ -129,6 +129,11 @@ namespace CivOne.Screens.StartupWizard
 		/// Gets or sets whether Deity difficulty is available.
 		/// </summary>
 		public bool DeityEnabled { get; set; } = Settings.Instance.DeityEnabled;
+		
+		/// <summary>
+		/// Gets or sets whether extended global warming effects are enabled.
+		/// </summary>
+		public bool ExtendedGlobalWarming { get; set; } = Settings.Instance.GlobalWarmingFeatureFlags.HasFlag(Settings.GlobalWarmingFeatureFlag.SeaLevelRise);
 
 		/// <summary>
 		/// Gets or sets the screen aspect ratio selected in the startup wizard.

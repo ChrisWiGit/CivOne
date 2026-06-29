@@ -443,7 +443,8 @@ namespace CivOne.Screens.StartupWizard
 					new WizardEntry { Number = 5, Text = TF("No movement penalty for sea units in city: {0}", state.CanalCityEnabled.YesNo()), Action = WizardEntryAction.ToggleCanalCity },
 					new WizardEntry { Number = 6, Text = TF("Remove obsolete barracks: {0}", state.RemoveObsoleteBuildingsEnabled.YesNo()), Action = WizardEntryAction.ToggleRemoveObsoleteBuildings },
 					new WizardEntry { Number = 7, Text = TF("Enable Deity difficulty: {0}", state.DeityEnabled.YesNo()), Action = WizardEntryAction.ToggleDeityEnabled },
-					new WizardEntry { Number = 8, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack, KeepAlwaysLastPosition = true }
+					new WizardEntry { Number = 8, Text = TF("Extended global warming effects: {0}", state.ExtendedGlobalWarming.YesNo()), Action = WizardEntryAction.ToggleExtendedGlobalWarming },
+					new WizardEntry { Number = 9, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack, KeepAlwaysLastPosition = true }
 				],
 				EntriesMaxCount = 7,
 				EntriesYOffset = -1,

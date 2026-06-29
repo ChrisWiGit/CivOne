@@ -115,6 +115,11 @@ namespace CivOne.Screens.StartupWizard
 		ToggleDeityEnabled,
 
 		/// <summary>
+		/// Toggles whether extended global warming effects are enabled and persists the choice to <see cref="Settings"/>.
+		/// </summary>
+		ToggleExtendedGlobalWarming,
+
+		/// <summary>
 		/// Completes the wizard, saves all settings and starts the game.
 		/// </summary>
 		Finish

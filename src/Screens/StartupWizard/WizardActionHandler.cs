@@ -126,6 +126,9 @@ namespace CivOne.Screens.StartupWizard
 				case WizardEntryAction.ToggleDeityEnabled:
 						ToggleDeityEnabled(engine);
 						return new WizardActionResult(ShouldRefresh: true);
+				case WizardEntryAction.ToggleExtendedGlobalWarming:
+						ToggleExtendedGlobalWarming(engine);
+						return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.Finish:
 					return new WizardActionResult(ShouldRefresh: false, ShouldClose: true);
 				default:
@@ -437,6 +440,22 @@ namespace CivOne.Screens.StartupWizard
 			state.StatusMessage = state.DeityEnabled
 				? T("Deity difficulty enabled.")
 				: T("Deity difficulty disabled.");
+		}
+
+		private void ToggleExtendedGlobalWarming(WizardState state)
+		{
+			state.ExtendedGlobalWarming = !state.ExtendedGlobalWarming;
+			if (state.ExtendedGlobalWarming)
+			{
+				Settings.Instance.GlobalWarmingFeatureFlags |= Settings.GlobalWarmingFeatureFlag.SeaLevelRise;
+			}
+			else
+			{
+				Settings.Instance.GlobalWarmingFeatureFlags &= ~Settings.GlobalWarmingFeatureFlag.SeaLevelRise;
+			}
+			state.StatusMessage = state.ExtendedGlobalWarming
+				? T("Allow coastal tiles to turn into ocean.")
+				: T("Original global warming effects.");
 		}
 
 		private void ApplyFullScreen(string? value, WizardState state)
