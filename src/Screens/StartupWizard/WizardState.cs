@@ -166,7 +166,15 @@ namespace CivOne.Screens.StartupWizard
 		public void OpenGamePatchesPage()
 		{
 			_gamePatchesReturnPageIndex = PageIndex;
+
 			RiverFastMovementEnabled = Settings.Instance.RiverFastMovement;
+			PathFindingEnabled = Settings.Instance.PathFinding;
+			ComputerPlayerPathFindingEnabled = Settings.Instance.ComputerPlayerPathFinding;
+			AutoSettlersEnabled = Settings.Instance.AutoSettlers;
+			CanalCityEnabled = Settings.Instance.CanalCity;
+			RemoveObsoleteBuildingsEnabled = Settings.Instance.RemoveObsoleteBuildings;
+			DeityEnabled = Settings.Instance.DeityEnabled;
+
 			PageIndex = GamePatchesPageIndex;
 		}
 

@@ -155,12 +155,10 @@ namespace CivOne.Graphics
 		}
 		public static IBitmap AddLayer(this IBitmap bitmap, Bytemap layer, Point point, bool dispose = false) => AddLayer(bitmap, layer, point.X, point.Y, dispose);
 		
-		/// <summary>
 		/// Adds a layer to the bitmap at the specified position.
-		/// If the layer is null, nothing will be drawn and a warning will be logged.
+		/// If the layer is null, nothing will be drawn (a <see cref="Debug.Assert(bool,string,string)"/> is triggered in debug builds).
 		/// The layer will be disposed if the dispose parameter is set to true.
 		/// In this case do not use "using" on the layer, as it will be disposed twice.
-		/// </summary>
 		/// <param name="bitmap">The bitmap to which the layer will be added.</param>
 		/// <param name="layer">The layer to add to the bitmap.</param>
 		/// <param name="left">The left position where the layer will be added.</param>
