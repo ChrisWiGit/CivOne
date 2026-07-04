@@ -65,15 +65,16 @@ namespace CivOne.Services
 				return false;
 			}
 
-			if (args.Modifier == KeyModifier.Control)
+			if (args.Modifier == KeyModifier.Alt || 
+				(args.Control && args.Shift)) 
 			{
-				TryQuickSave(slot);
+				TryQuickLoad(slot);
 				return true;
 			}
 
-			if (args.Modifier == KeyModifier.Alt)
+			if (args.Modifier == KeyModifier.Control)
 			{
-				TryQuickLoad(slot);
+				TryQuickSave(slot);
 				return true;
 			}
 
