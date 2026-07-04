@@ -6,6 +6,15 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: The wizard contains a sub menu to allow change game behavior settings directly, instead of having to open the settings screen. Currently, the following settings can be toggled from the wizard:
+  * Use smart PathFinding for goto
+  * Use smart pathfinding for computer players
+  * Use auto settlers cheat
+  * Use fast river movement
+  * No movement penalty for sea units in city
+  * Remove obsolete barracks
+  * Enable Deity difficulty
+  * Extended global warming effects
 * Feature: SDI defense system can now destroy incoming nuclear missiles before they reach their target.
   * If a nuclear missile is launched at a city with an SDI defense system, the missile is destroyed and a message is shown to the player.
   * The SDI defense system is only effective against nuclear missiles in 90% of cases, so there is a 10% chance that the missile will still hit the target.
