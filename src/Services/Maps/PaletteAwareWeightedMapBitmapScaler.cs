@@ -7,11 +7,12 @@ namespace CivOne.Services.Maps
 	{
 		public Bytemap Scale(Bytemap source, int targetWidth, int targetHeight)
 		{
-			Bytemap output = new(targetWidth, targetHeight);
 			if (source == null || targetWidth <= 0 || targetHeight <= 0)
 			{
-				return output;
+				return new (1, 1);
 			}
+
+			Bytemap output = new(targetWidth, targetHeight);
 
 			if (source.Width == targetWidth && source.Height == targetHeight)
 			{

@@ -297,7 +297,7 @@ namespace CivOne.Screens.GamePlayPanels
 
 		private static int GetZoomButtonWidth(string text)
 		{
-			return Resources.GetTextSize(ZoomButtonFontId, text).Width + 2;
+			return Resources.GetTextSize(ZoomButtonFontId, text).Width + 4;
 		}
 
 		private Rectangle GetZoomButtonRectangle(int buttonIndex)
