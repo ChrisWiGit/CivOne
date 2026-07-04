@@ -463,6 +463,9 @@ namespace CivOne.Screens
 		private string LzwCodecModeText()
 			=> Settings.LzwCodecMode == Settings.LzwCodecType.Corrected ? Translate("Corrected") : Translate("Original");
 
+		private string MapBitmapScalerModeText()
+			=> Settings.BitmapScalerMode == Settings.MapBitmapScalerType.NearestNeighbor ? Translate("Nearest neighbor") : Translate("Palette-aware weighted");
+
 		private void PatchesMenu(int activeItem = 0) => CreateMenu(Translate("Patches"), activeItem,
 			MenuItem.Create(TranslateFormatted("Reveal world: {0}", Settings.RevealWorld.YesNo()))
 				.WithDescription(
@@ -514,6 +517,11 @@ namespace CivOne.Screens
 					Translate("Choose which LZW codec GIF and PIC loading/saving uses."),
 					Translate("Applies immediately."))
 				.OnSelect(GotoMenu(LzwCodecModeMenu)),
+			MenuItem.Create(TranslateFormatted("Map bitmap scaler: {0}", MapBitmapScalerModeText()))
+				.WithDescription(
+					Translate("Choose filter used for map and unit bitmap scaling."),
+					Translate("Applies immediately, including during gameplay."))
+				.OnSelect(GotoMenu(MapBitmapScalerModeMenu)),
 			MenuItem.Create(TranslateFormatted("FPS display: {0}", Settings.FpsCorner.ToText()))
 				.WithDescription(
 					Translate("Show frames per second in a screen corner."))
@@ -697,7 +705,19 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void FpsCornerMenu() => CreateMenu(Translate("FPS display"), GotoMenu(PatchesMenu, 11),
+		private void MapBitmapScalerModeMenu() => CreateMenu(Translate("Map bitmap scaler"), GotoMenu(PatchesMenu, 11),
+			MenuItem.Create(Translate("Palette-aware weighted (default)"))
+				.WithDescription(Translate("High-quality palette-aware weighted scaling."))
+				.OnSelect((s, a) => Settings.BitmapScalerMode = Settings.MapBitmapScalerType.PaletteAwareWeighted)
+				.SetActive(() => Settings.BitmapScalerMode == Settings.MapBitmapScalerType.PaletteAwareWeighted),
+			MenuItem.Create(Translate("Nearest neighbor"))
+				.WithDescription(Translate("Sharp pixel scaling without weighted filtering."))
+				.OnSelect((s, a) => Settings.BitmapScalerMode = Settings.MapBitmapScalerType.NearestNeighbor)
+				.SetActive(() => Settings.BitmapScalerMode == Settings.MapBitmapScalerType.NearestNeighbor),
+			MenuItem.Create(Translate("Back"))
+		);
+
+		private void FpsCornerMenu() => CreateMenu(Translate("FPS display"), GotoMenu(PatchesMenu, 12),
 			MenuItem.Create(FpsCorner.Off.ToText())
 				.WithDescription(Translate("Disable FPS display."))
 				.OnSelect((s, a) => Settings.FpsCorner = FpsCorner.Off).SetActive(() => Settings.FpsCorner == FpsCorner.Off),

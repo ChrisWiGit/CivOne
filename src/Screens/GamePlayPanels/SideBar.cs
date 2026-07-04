@@ -36,6 +36,12 @@ namespace CivOne.Screens.GamePlayPanels
 		private const int MiniMapViewOffsetX = 30;
 		private const int MiniMapViewOffsetY = 18;
 		private const int PalaceHotspotBottomY = 62;
+		private const int ZoomButtonHeight = 10;
+		private const int ZoomButtonGap = 2;
+		private const int ZoomButtonScalerGap = 5;
+		private const int ZoomButtonsLeft = 2;
+		private const int ZoomButtonsBottomMargin = 2;
+		private const int ZoomButtonFontId = 0;
 
 		private bool _update = true;
 		private int _lastDemographicsSignature;
@@ -257,6 +263,8 @@ namespace CivOne.Screens.GamePlayPanels
 			byte hoveredOwner = hoveredUnits.Length > 0 ? hoveredUnits[0].Owner : byte.MaxValue;
 			UnitType hoveredType = hoveredUnits.Length > 0 ? hoveredUnits[0].Type : (UnitType)(-1);
 			int hoveredCount = hoveredUnits.Length;
+			bool zoomActive = GamePlay?.IsMapZoomActive == true;
+			int bitmapScalerMode = (int)Settings.BitmapScalerMode;
 
 			return HashCode.Combine(
 				HashCode.Combine(
@@ -269,8 +277,121 @@ namespace CivOne.Screens.GamePlayPanels
 					_statusInfoText,
 					_statusInfoFrames),
 				HashCode.Combine(
-					HashCode.Combine(editorEnabled, spawnMode, editorMode, editorBrush, editorOwner),
+					HashCode.Combine(editorEnabled, spawnMode, editorMode, editorBrush, editorOwner, zoomActive, bitmapScalerMode),
 					HashCode.Combine(hoveredTileX, hoveredTileY, hoveredOwner, hoveredType, hoveredCount)));
+		}
+
+		private bool IsZoomButtonsVisible() => GamePlay?.IsMapZoomActive == true;
+
+		private static string GetZoomButtonText(int buttonIndex)
+		{
+			return buttonIndex switch
+			{
+				0 => "+",
+				1 => "-",
+				2 => "R",
+				3 => GetCurrentBitmapScalerModeText(),
+				_ => string.Empty
+			};
+		}
+
+		private static int GetZoomButtonWidth(string text)
+		{
+			return Resources.GetTextSize(ZoomButtonFontId, text).Width + 2;
+		}
+
+		private Rectangle GetZoomButtonRectangle(int buttonIndex)
+		{
+			int left = ZoomButtonsLeft;
+			for (int i = 0; i < buttonIndex; i++)
+			{
+				string previousText = GetZoomButtonText(i);
+				left += GetZoomButtonWidth(previousText) + ZoomButtonGap;
+			}
+
+			if (buttonIndex >= 3)
+			{
+				left += ZoomButtonScalerGap;
+			}
+
+			int top = _gameInfo.Height - ZoomButtonHeight - ZoomButtonsBottomMargin;
+			string text = GetZoomButtonText(buttonIndex);
+			return new Rectangle(left, top, GetZoomButtonWidth(text), ZoomButtonHeight);
+		}
+
+		private void DrawZoomButtons()
+		{
+			if (!IsZoomButtonsVisible())
+			{
+				return;
+			}
+
+			DrawZoomButton(0, GetZoomButtonText(0));
+			DrawZoomButton(1, GetZoomButtonText(1));
+			DrawZoomButton(2, GetZoomButtonText(2));
+			DrawZoomButton(3, GetZoomButtonText(3));
+		}
+
+		private static string GetCurrentBitmapScalerModeText()
+		{
+			return Settings.BitmapScalerMode switch
+			{
+				Settings.MapBitmapScalerType.NearestNeighbor => "NN",
+				Settings.MapBitmapScalerType.PaletteAwareWeighted => "PAW",
+				_ => "??"
+			};
+		}
+
+		private void DrawZoomButton(int index, string text)
+		{
+			Rectangle button = GetZoomButtonRectangle(index);
+			DrawButton(text, ZoomButtonFontId, 11, 8, button.X, GameInfoOffsetY + button.Y, button.Height);
+		}
+
+		private bool TryHandleZoomButtonClick(int x, int y)
+		{
+			if (!IsZoomButtonsVisible())
+			{
+				return false;
+			}
+
+			if (GamePlay == null)
+			{
+				return false;
+			}
+
+			int localX = x;
+			int localY = y - GameInfoOffsetY;
+			if (localY < 0)
+			{
+				return false;
+			}
+
+			if (GetZoomButtonRectangle(0).Contains(localX, localY))
+			{
+				_update |= GamePlay.ZoomInFromSideBar();
+				return true;
+			}
+
+			if (GetZoomButtonRectangle(1).Contains(localX, localY))
+			{
+				_update |= GamePlay.ZoomOutFromSideBar();
+				return true;
+			}
+
+			if (GetZoomButtonRectangle(2).Contains(localX, localY))
+			{
+				_update |= GamePlay.ZoomResetFromSideBar();
+				return true;
+			}
+
+			if (GetZoomButtonRectangle(3).Contains(localX, localY))
+			{
+				_update |= GamePlay.ToggleMapBitmapScalerFromSideBar();
+				return true;
+			}
+
+			return false;
 		}
 
 		internal void ShowMapPositionSavedInfo(int slot)
@@ -319,12 +440,19 @@ namespace CivOne.Screens.GamePlayPanels
 				.AddLayer(_demographics, 0, MiniMapHeight)
 				.AddLayer(_gameInfo, 0, GameInfoOffsetY);
 
+			DrawZoomButtons();
+
 			_update = false;
 			return true;
 		}
 
 		public override bool MouseDown(ScreenEventArgs args)
 		{
+			if (TryHandleZoomButtonClick(args.X, args.Y))
+			{
+				return true;
+			}
+
 			if (args.Y <= MiniMapHeight)
 			{
 				if (args.X < MiniMapBorder || args.Y < MiniMapBorder || args.X > (SideBarWidth - MiniMapBorder) || args.Y > (MiniMapHeight - MiniMapBorder)) return true;

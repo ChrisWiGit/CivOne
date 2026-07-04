@@ -16,6 +16,7 @@ using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.IO;
+using CivOne.Services.Maps;
 using CivOne.Units;
 
 using static CivOne.Enums.Direction;
@@ -30,32 +31,11 @@ namespace CivOne.Tiles
 		private static Resources Resources => Resources.Instance;
 		private static Palette Palette => Resources["SP257"].Palette;
 		private static Settings Settings => Settings.Instance;
+		private static IMapBitmapScaler MapBitmapScaler => MapBitmapScalerFactory.Create();
 		
 		private static bool GFX256 => (Settings.GraphicsMode == GraphicsMode.Graphics256);
 
 		private static TextSettings CityLabel = TextSettings.ShadowText(11, 5);
-
-		private static Bytemap ScaleBitmap(Bytemap source, int targetWidth, int targetHeight)
-		{
-			Bytemap output = new(targetWidth, targetHeight);
-			if (source == null || targetWidth <= 0 || targetHeight <= 0)
-			{
-				return output;
-			}
-
-			for (int y = 0; y < targetHeight; y++)
-			{
-				int sourceY = targetHeight == 1 ? 0 : y * (source.Height - 1) / (targetHeight - 1);
-
-				for (int x = 0; x < targetWidth; x++)
-				{
-					int sourceX = targetWidth == 1 ? 0 : x * (source.Width - 1) / (targetWidth - 1);
-					output[x, y] = source[sourceX, sourceY];
-				}
-			}
-
-			return output;
-		}
 
 		private static void LogNullTile(string methodName)
 		{
@@ -378,7 +358,7 @@ namespace CivOne.Tiles
 			}
 
 			IBitmap scaledOutput = new Picture(safePixelSize, safePixelSize, Palette);
-			using Bytemap scaled = ScaleBitmap(output.Bitmap, safePixelSize, safePixelSize);
+			using Bytemap scaled = MapBitmapScaler.Scale(output.Bitmap, safePixelSize, safePixelSize);
 			// don't dispose in AddLayer
 			scaledOutput.AddLayer(scaled, dispose: false);
 			output.Dispose();

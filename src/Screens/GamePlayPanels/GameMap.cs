@@ -14,6 +14,7 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
+using CivOne.Services.Maps;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -41,6 +42,7 @@ namespace CivOne.Screens.GamePlayPanels
 		public event EventHandler<int>? MapPositionSaved;
 		private readonly TerrainEditorState _editorState = new();
 		private readonly TerrainEditorDelegate _terrainEditorDelegate = new();
+		private IMapBitmapScaler MapBitmapScaler => MapBitmapScalerFactory.Create();
 		private IUnit? _editorStoredUnit;
 		private int _hoveredTileX, _hoveredTileY;
 
@@ -56,6 +58,7 @@ namespace CivOne.Screens.GamePlayPanels
 		internal bool MapViewEnabled => _mapViewEnabled;
 		internal int TilePixelSize => _tilePixelSize;
 		internal int ZoomBasisPoints => _zoomBasisPoints;
+		internal bool IsZoomActive => _zoomBasisPoints != MapZoomSettings.DefaultBasisPoints;
 		internal int VisibleTilesX => _tilesX;
 		internal int VisibleTilesY => _tilesY;
 		internal int HoveredTileX => _hoveredTileX;
@@ -107,7 +110,7 @@ namespace CivOne.Screens.GamePlayPanels
 
 		private void DrawScaledBitmap(IBitmap source, int left, int top, int width, int height)
 		{
-			using Bytemap scaled = GameMapZoomDelegate.ScaleBitmap(source.Bitmap, width, height);
+			using Bytemap scaled = MapBitmapScaler.Scale(source.Bitmap, width, height);
 			this.AddLayer(scaled, left, top);
 		}
 		
@@ -303,7 +306,7 @@ namespace CivOne.Screens.GamePlayPanels
 					// This bitmap comes from the unit sprite cache.
 					// Do not dispose it here; disposing would invalidate the cached sprite and break later renders.
 					Bytemap unitSource = movingUnit.ToBitmap();
-					using Bytemap unitPicture = GameMapZoomDelegate.ScaleBitmap(unitSource, _tilePixelSize, _tilePixelSize);
+					using Bytemap unitPicture = MapBitmapScaler.Scale(unitSource, _tilePixelSize, _tilePixelSize);
 					this.AddLayer(unitPicture, dx + (movement.X * _tilePixelSize / BaseTilePixelSize), dy + (movement.Y * _tilePixelSize / BaseTilePixelSize));
 
 					DrawFullCargoUnitWhileMoving(movingUnit, tile, dx, dy, movement, unitPicture);
@@ -500,6 +503,12 @@ namespace CivOne.Screens.GamePlayPanels
 			CenterOnUnit();
 			return true;
 		}
+
+		internal bool ZoomInFromSideBar() => _zoomDelegate.StepZoom(direction: -1);
+
+		internal bool ZoomOutFromSideBar() => _zoomDelegate.StepZoom(direction: +1);
+
+		internal bool ZoomResetFromSideBar() => _zoomDelegate.ResetZoom();
 
 		private bool KeyDownActiveUnit(KeyboardEventArgs args)
 		{

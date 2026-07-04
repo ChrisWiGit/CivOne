@@ -74,6 +74,7 @@ namespace CivOne
 		private bool _removeObsoleteBuildings = true;
 		private bool _preferSveSaveFormat = true;
 		private LzwCodecType _lzwCodecMode = LzwCodecType.Original;
+		private MapBitmapScalerType _bitmapScalerMode = MapBitmapScalerType.PaletteAwareWeighted;
 		private string _languagePostfix = string.Empty;
 		private SimulateInternationalFont _simulateInternationalFont = SimulateInternationalFont.Auto;
 		private bool _useUncheckedCastSanitizer;
@@ -413,6 +414,12 @@ namespace CivOne
 			Corrected = 1
 		}
 
+		internal enum MapBitmapScalerType
+		{
+			PaletteAwareWeighted = 0,
+			NearestNeighbor = 1
+		}
+
 		internal LzwCodecType LzwCodecMode
 		{
 			get => _lzwCodecMode;
@@ -421,6 +428,17 @@ namespace CivOne
 				_lzwCodecMode = value;
 				SetSetting("LzwCodecMode", ((int)_lzwCodecMode).ToString(CultureInfo.InvariantCulture));
 				Resources.ClearInstance();
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal MapBitmapScalerType BitmapScalerMode
+		{
+			get => _bitmapScalerMode;
+			set
+			{
+				_bitmapScalerMode = value;
+				SetSetting("MapBitmapScalerMode", ((int)_bitmapScalerMode).ToString(CultureInfo.InvariantCulture));
 				Common.ReloadSettings = true;
 			}
 		}
@@ -769,6 +787,7 @@ namespace CivOne
 			GetSetting("RemoveObsoleteBuildings", ref _removeObsoleteBuildings);
 			GetSetting("PreferSveSaveFormat", ref _preferSveSaveFormat);
 			GetSetting<LzwCodecType>("LzwCodecMode", ref _lzwCodecMode);
+			GetSetting<MapBitmapScalerType>("MapBitmapScalerMode", ref _bitmapScalerMode);
 			GetSetting("LanguagePostfix", ref _languagePostfix);
 			GetSetting("SimulateInternationalFont", ref _simulateInternationalFont);
 			GetSetting("UseUncheckedCastSanitizer", ref _useUncheckedCastSanitizer);
