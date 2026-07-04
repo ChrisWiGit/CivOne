@@ -277,6 +277,31 @@ namespace CivOne.UnitTests
 		}
 
 		/// <summary>
+		/// Ensures Ctrl+PageUp at maximum zoom in map-view mode is consumed and does not pan the map.
+		/// </summary>
+		[Fact]
+		public void CtrlPageUpAtMaxZoomInMapViewDoesNotPan()
+		{
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
+			Game.Instance.CurrentPlayer.MapZoomBasisPoints = 1000;
+
+			using var gameMap = new GameMapForTesting();
+			gameMap.ResizeMap(160, 120);
+			gameMap.SetViewOrigin(10, 10);
+			gameMap.ToggleMapView();
+
+			int beforeX = gameMap.X;
+			int beforeY = gameMap.Y;
+
+			bool handled = gameMap.KeyDown(new KeyboardEventArgs(Key.PageUp, KeyModifier.Control));
+
+			Assert.True(handled);
+			Assert.Equal(1000, Game.Instance.CurrentPlayer.MapZoomBasisPoints);
+			Assert.Equal(beforeX, gameMap.X);
+			Assert.Equal(beforeY, gameMap.Y);
+		}
+
+		/// <summary>
 		/// Ensures zooming out on an expanded logical canvas increases the visible tile span.
 		/// </summary>
 		[Fact]
@@ -316,6 +341,27 @@ namespace CivOne.UnitTests
 			Assert.True(handled);
 			Assert.True(gameMap.Y >= 0);
 			Assert.True(gameMap.Y <= Map.HEIGHT - gameMap.VisibleTilesY);
+		}
+
+		/// <summary>
+		/// Ensures wheel zoom outside the map viewport does not apply cursor-focus repositioning.
+		/// </summary>
+		[Fact]
+		public void CtrlWheelDownOutsideViewportKeepsViewOrigin()
+		{
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
+			Game.Instance.CurrentPlayer.MapZoomBasisPoints = 1000;
+
+			using var gameMap = new GameMapForTesting();
+			gameMap.ResizeMap(160, 120);
+			gameMap.SetViewOrigin(10, 5);
+
+			var handled = gameMap.MouseWheel(new ScreenEventArgs(999, 40, MouseButton.None, KeyModifier.Control, -1));
+
+			Assert.True(handled);
+			Assert.Equal(900, Game.Instance.CurrentPlayer.MapZoomBasisPoints);
+			Assert.Equal(10, gameMap.X);
+			Assert.Equal(5, gameMap.Y);
 		}
 	}
 }

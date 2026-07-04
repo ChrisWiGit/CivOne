@@ -158,7 +158,8 @@ namespace CivOne.Screens.GamePlayPanels
 					return true;
 				}
 
-				return StepZoom(direction, keepFocus: true, focusPixel: args.Location);
+				bool keepFocus = IsPointInsideViewport(args.Location);
+				return StepZoom(direction, keepFocus, keepFocus ? args.Location : null);
 			}
 
 			public bool KeyDown(KeyboardEventArgs args)
@@ -181,7 +182,8 @@ namespace CivOne.Screens.GamePlayPanels
 						return false;
 				}
 
-				return StepZoom(direction);
+				StepZoom(direction);
+				return true;
 			}
 
 			private static int TilePixelSizeFromBasisPoints(int basisPoints)
@@ -205,6 +207,12 @@ namespace CivOne.Screens.GamePlayPanels
 
 				return closestIndex;
 			}
+
+			private bool IsPointInsideViewport(Point point)
+				=> point.X >= 0
+					&& point.Y >= 0
+					&& point.X < _gameMap.Bitmap.Width
+					&& point.Y < _gameMap.Bitmap.Height;
 
 			private static Point GetWorldTileAtPixel(
 				Point pixel,
