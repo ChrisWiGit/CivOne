@@ -11,7 +11,6 @@ using System;
 using System.Drawing;
 using CivOne.Enums;
 using CivOne.Events;
-using CivOne.Graphics;
 using CivOne.IO;
 
 namespace CivOne
@@ -48,6 +47,36 @@ namespace CivOne.Screens.GamePlayPanels
 		private sealed class GameMapZoomDelegate(GameMap gameMap)
 		{
 			private readonly GameMap _gameMap = gameMap;
+
+			public bool StepZoom(int direction, bool keepFocus = false, Point? focusPixel = null)
+			{
+				int currentIndex = FindZoomPresetIndex(_gameMap.CurrentZoomBasisPoints);
+				int nextIndex = Math.Clamp(currentIndex + direction, 0, MapZoomSettings.BasisPointsPresets.Length - 1);
+				int nextBasisPoints = MapZoomSettings.BasisPointsPresets[nextIndex];
+				if (nextBasisPoints == _gameMap.CurrentZoomBasisPoints)
+				{
+					return false;
+				}
+
+				Human.MapZoomBasisPoints = nextBasisPoints;
+				SyncZoomState(keepFocus, focusPixel);
+				_gameMap.Refresh();
+				return true;
+			}
+
+			public bool ResetZoom()
+			{
+				int defaultBasisPoints = MapZoomSettings.DefaultBasisPoints;
+				if (_gameMap.CurrentZoomBasisPoints == defaultBasisPoints)
+				{
+					return false;
+				}
+
+				Human.MapZoomBasisPoints = defaultBasisPoints;
+				SyncZoomState();
+				_gameMap.Refresh();
+				return true;
+			}
 
 			public bool SyncZoomState(bool keepFocus = false, Point? focusPixel = null)
 			{
@@ -114,30 +143,46 @@ namespace CivOne.Screens.GamePlayPanels
 					return false;
 				}
 
-				int currentIndex = FindZoomPresetIndex(_gameMap.CurrentZoomBasisPoints);
-				int nextIndex = currentIndex;
+				int direction = 0;
 				if (args.WheelDelta < 0)
 				{
-					nextIndex = Math.Min(currentIndex + 1, MapZoomSettings.BasisPointsPresets.Length - 1);
+					direction = +1;
 				}
 				else if (args.WheelDelta > 0)
 				{
-					nextIndex = Math.Max(currentIndex - 1, 0);
+					direction = -1;
 				}
 
-				int nextBasisPoints = MapZoomSettings.BasisPointsPresets[nextIndex];
-				if (nextBasisPoints == _gameMap.CurrentZoomBasisPoints)
+				if (direction == 0)
 				{
 					return true;
 				}
 
-				if (Game.CurrentPlayer != null)
+				bool keepFocus = IsPointInsideViewport(args.Location);
+				return StepZoom(direction, keepFocus, keepFocus ? args.Location : null);
+			}
+
+			public bool KeyDown(KeyboardEventArgs args)
+			{
+				if ((args.Modifier & KeyModifier.Control) == 0)
 				{
-					Game.CurrentPlayer.MapZoomBasisPoints = nextBasisPoints;
+					return false;
 				}
 
-				SyncZoomState(keepFocus: true, focusPixel: args.Location);
-				_gameMap.Refresh();
+				int direction;
+				switch (args.Key)
+				{
+					case Key.PageDown:
+						direction = +1;
+						break;
+					case Key.PageUp:
+						direction = -1;
+						break;
+					default:
+						return false;
+				}
+
+				StepZoom(direction);
 				return true;
 			}
 
@@ -162,6 +207,12 @@ namespace CivOne.Screens.GamePlayPanels
 
 				return closestIndex;
 			}
+
+			private bool IsPointInsideViewport(Point point)
+				=> point.X >= 0
+					&& point.Y >= 0
+					&& point.X < _gameMap.Bitmap.Width
+					&& point.Y < _gameMap.Bitmap.Height;
 
 			private static Point GetWorldTileAtPixel(
 				Point pixel,

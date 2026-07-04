@@ -11,6 +11,8 @@ namespace CivOne.UnitTests
 
 		public ITile this[int x, int y] => throw new System.NotImplementedException();
 
+		public ITile[,] this[int x, int y, int width, int height] => throw new System.NotImplementedException();
+
 		public int TerrainMasterWord => throw new System.NotImplementedException();
 
 		public int Width => throw new System.NotImplementedException();

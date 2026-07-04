@@ -102,7 +102,16 @@ namespace CivOne.Screens
 				.DrawText(text, fontId, colourDark, x + (int)Math.Ceiling((double)width / 2), y + 2, TextAlign.Center);
 		}
 
+		public void DrawButton(string text, byte fontId, byte colour, byte colourDark, int x, int y, int height)
+		{
+			const int margin = 4;
+			int width = Resources.GetTextSize(fontId, text).Width + margin;
+			DrawButton(text, fontId, colour, colourDark, x, y, width, height);
+		}
+
 		public void DrawButton(string text, byte colour, byte colourDark, int x, int y, int width) => DrawButton(text, 1, colour, colourDark, x, y, width, Resources.GetFontHeight(1) + 3);
+
+		public void DrawButton(string text, byte colour, byte colourDark, int x, int y) => DrawButton(text, 1, colour, colourDark, x, y, Resources.GetFontHeight(1) + 3);
 
 		public void ResetPalette()
 		{

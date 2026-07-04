@@ -62,10 +62,17 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Generation logs now include stage timings, making it easier to understand runtime and spot bottlenecks.
   * Number of continents is only limited by `int` range (2 147 483 647); the previous cap of 15 (from the original 4-bit nibble format) is removed.
 * Feature: Zoom map
-  * The map can be zoomed in or out with `Ctrl+MouseWheel` in gameplay map view mode.
+  * The map can be zoomed in or out with `Ctrl+MouseWheel` in gameplay map view mode or with `Ctrl+PageUp` / `Ctrl+PageDown` hotkeys.
   * Scroll up to zoom in (larger tiles, fewer tiles visible); scroll down to zoom out (smaller tiles, more of the map visible).
   * There are 10 fixed zoom levels ranging from 100 % (default) down to 12.5 %.
-  * The zoom is cursor-focused: the map stays anchored to the mouse pointer position while zooming.
+  * Zooming is done by scaling the tiles individually using two scale algorithms: nearest-neighbor for pixel-perfect scaling and pallette weighted average for smoother scaling. 
+    * These can be switched in the setup menu under "Patches".
+  * 4 Buttons are shown in the left lower corner in the sidebar
+    * `+` Zoom in
+    * `-` Zoom out
+    * `R` Reset zoom to 100 %
+    * `NN` and `PAW` toggle the scale algorithm between nearest-neighbor and pallette weighted average.
+  * The zoom is cursor-focused: the map stays anchored to the mouse pointer position while zooming using the mouse wheel. This does not happen when using the keyboard hotkeys.
   * The current map zoom level is saved in the savegame and restored on game load.
 * Feature: Map viewport restore on load with CapsLock override.
   * When a saved game is loaded, the map viewport is restored to the position saved with the game.

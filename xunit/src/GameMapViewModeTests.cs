@@ -38,6 +38,25 @@ namespace CivOne.UnitTests
 		}
 
 		/// <summary>
+		/// Ensures the space key does not issue "No Orders" while map-view mode is active.
+		/// </summary>
+		[Fact]
+		public void MapViewModeSpaceKeyDoesNotSkipActiveUnitTurn()
+		{
+			var activeUnit = Game.Instance.GetUnits().First(x => playa == x.Owner);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
+			Game.Instance.ActiveUnit = activeUnit;
+
+			using var gameMap = new GameMapForTesting();
+			gameMap.ToggleMapView();
+
+			bool handled = gameMap.KeyDown(new KeyboardEventArgs(Key.Space));
+
+			Assert.True(handled);
+			Assert.Equal(activeUnit, Game.Instance.ActiveUnit);
+		}
+
+		/// <summary>
 		/// Ensures map camera slots can be saved with Ctrl+1 and restored with Alt+1.
 		/// </summary>
 		[Fact]
@@ -180,6 +199,44 @@ namespace CivOne.UnitTests
 		}
 
 		/// <summary>
+		/// Ensures Ctrl+PageDown zooms out to the next preset.
+		/// </summary>
+		[Fact]
+		public void CtrlPageDownZoomsOutToNextPreset()
+		{
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
+			Game.Instance.CurrentPlayer.MapZoomBasisPoints = 1000;
+
+			using var gameMap = new GameMapForTesting();
+			gameMap.ResizeMap(160, 120);
+
+			var handled = gameMap.KeyDown(new KeyboardEventArgs(Key.PageDown, KeyModifier.Control));
+
+			Assert.True(handled);
+			Assert.Equal(900, Game.Instance.CurrentPlayer.MapZoomBasisPoints);
+			Assert.Equal(14, gameMap.TilePixelSize);
+		}
+
+		/// <summary>
+		/// Ensures Ctrl+PageUp zooms in to the next preset.
+		/// </summary>
+		[Fact]
+		public void CtrlPageUpZoomsInToNextPreset()
+		{
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
+			Game.Instance.CurrentPlayer.MapZoomBasisPoints = 750;
+
+			using var gameMap = new GameMapForTesting();
+			gameMap.ResizeMap(160, 120);
+
+			var handled = gameMap.KeyDown(new KeyboardEventArgs(Key.PageUp, KeyModifier.Control));
+
+			Assert.True(handled);
+			Assert.Equal(900, Game.Instance.CurrentPlayer.MapZoomBasisPoints);
+			Assert.Equal(14, gameMap.TilePixelSize);
+		}
+
+		/// <summary>
 		/// Ensures wheel input without Ctrl remains ignored by the map screen.
 		/// </summary>
 		[Fact]
@@ -196,6 +253,52 @@ namespace CivOne.UnitTests
 			Assert.False(handled);
 			Assert.Equal(1000, Game.Instance.CurrentPlayer.MapZoomBasisPoints);
 			Assert.Equal(16, gameMap.TilePixelSize);
+		}
+
+		/// <summary>
+		/// Ensures PageUp/PageDown without Ctrl keep their existing non-zoom behavior.
+		/// </summary>
+		[Fact]
+		public void PageKeysWithoutCtrlDoNotTriggerZoom()
+		{
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
+			Game.Instance.CurrentPlayer.MapZoomBasisPoints = 1000;
+
+			using var gameMap = new GameMapForTesting();
+			gameMap.ResizeMap(160, 120);
+
+			var pageDownHandled = gameMap.KeyDown(new KeyboardEventArgs(Key.PageDown));
+			var pageUpHandled = gameMap.KeyDown(new KeyboardEventArgs(Key.PageUp));
+
+			Assert.False(pageDownHandled);
+			Assert.False(pageUpHandled);
+			Assert.Equal(1000, Game.Instance.CurrentPlayer.MapZoomBasisPoints);
+			Assert.Equal(16, gameMap.TilePixelSize);
+		}
+
+		/// <summary>
+		/// Ensures Ctrl+PageUp at maximum zoom in map-view mode is consumed and does not pan the map.
+		/// </summary>
+		[Fact]
+		public void CtrlPageUpAtMaxZoomInMapViewDoesNotPan()
+		{
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
+			Game.Instance.CurrentPlayer.MapZoomBasisPoints = 1000;
+
+			using var gameMap = new GameMapForTesting();
+			gameMap.ResizeMap(160, 120);
+			gameMap.SetViewOrigin(10, 10);
+			gameMap.ToggleMapView();
+
+			int beforeX = gameMap.X;
+			int beforeY = gameMap.Y;
+
+			bool handled = gameMap.KeyDown(new KeyboardEventArgs(Key.PageUp, KeyModifier.Control));
+
+			Assert.True(handled);
+			Assert.Equal(1000, Game.Instance.CurrentPlayer.MapZoomBasisPoints);
+			Assert.Equal(beforeX, gameMap.X);
+			Assert.Equal(beforeY, gameMap.Y);
 		}
 
 		/// <summary>
@@ -238,6 +341,27 @@ namespace CivOne.UnitTests
 			Assert.True(handled);
 			Assert.True(gameMap.Y >= 0);
 			Assert.True(gameMap.Y <= Map.HEIGHT - gameMap.VisibleTilesY);
+		}
+
+		/// <summary>
+		/// Ensures wheel zoom outside the map viewport does not apply cursor-focus repositioning.
+		/// </summary>
+		[Fact]
+		public void CtrlWheelDownOutsideViewportKeepsViewOrigin()
+		{
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
+			Game.Instance.CurrentPlayer.MapZoomBasisPoints = 1000;
+
+			using var gameMap = new GameMapForTesting();
+			gameMap.ResizeMap(160, 120);
+			gameMap.SetViewOrigin(10, 5);
+
+			var handled = gameMap.MouseWheel(new ScreenEventArgs(999, 40, MouseButton.None, KeyModifier.Control, -1));
+
+			Assert.True(handled);
+			Assert.Equal(900, Game.Instance.CurrentPlayer.MapZoomBasisPoints);
+			Assert.Equal(10, gameMap.X);
+			Assert.Equal(5, gameMap.Y);
 		}
 	}
 }

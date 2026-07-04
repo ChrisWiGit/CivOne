@@ -385,6 +385,41 @@ This screen allows to change additional modification options for the game.
 | (Gbm) No movement penalty for sea units in city | Sea units suffer no movement penalty when in a city. |
 | (Gbm) Extended global warming | Open extended global warming options (needs savegame load). |
 | (Gbm+Egw) Sea level rise | Extended game play with sea level rise instead of only land changing. |
+| Map bitmap scaler | Select the map scaling filter mode (`Palette-aware weighted` or `Nearest neighbor`). |
+
+### Map zoom and bitmap filtering
+
+The gameplay map supports zoom presets and a selectable bitmap scaling filter.
+You can zoom with keyboard shortcuts while playing.
+
+| Hotkey | Action |
+| ------ | ------ |
+| `Ctrl+PageUp` | Zoom in. |
+| `Ctrl+PageDown` | Zoom out. |
+
+Mouse wheel zoom is also available with `Ctrl+Wheel`.
+
+When zoom is active, extra sidebar buttons are shown.
+`+` zooms in, `-` zooms out, and `R` resets zoom to the default level.
+
+The sidebar also shows a separate scaler button.
+This button displays the current filter shorthand and toggles the filter at runtime.
+
+`PAW` means `Palette-aware weighted`.
+This mode uses weighted palette-aware sampling and is the default mode.
+It usually gives smoother results for scaled map tiles.
+
+`NN` means `Nearest neighbor`.
+This mode copies the nearest source pixel without weighted blending.
+It usually gives a sharper pixel look with hard edges.
+
+You can configure the default filter in the setup menu.
+Open `Shift+F1` when starting the game.
+Then go to `Patches`.
+Then open `Map bitmap scaler` and choose `Palette-aware weighted` or `Nearest neighbor`.
+
+You can also switch the filter during gameplay by clicking the scaler button in the sidebar when zoom is active.
+The map is refreshed immediately after switching.
 
 ### FPS overlay
 

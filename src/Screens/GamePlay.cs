@@ -54,6 +54,8 @@ namespace CivOne.Screens
 
 		internal int X => _gameMap.X;
 		internal int Y => _gameMap.Y;
+		internal int VisibleTilesX => _gameMap.VisibleTilesX;
+		internal int VisibleTilesY => _gameMap.VisibleTilesY;
 		internal bool IsMapViewEnabled => _gameMap.MapViewEnabled;
 		internal bool IsTerrainEditorEnabled => _gameMap.IsTerrainEditorEnabled;
 		internal bool IsTerrainEditorSpawnMode => _gameMap.EditorState.CurrentMode == EditorMode.SpawnUnit;
@@ -62,6 +64,59 @@ namespace CivOne.Screens
 		internal int TerrainEditorBrushSize => _gameMap.TerrainBrushSize;
 		internal int HoveredTileX => _gameMap.HoveredTileX;
 		internal int HoveredTileY => _gameMap.HoveredTileY;
+		internal bool IsMapZoomActive => _gameMap.IsZoomActive;
+
+		internal bool ZoomInFromSideBar()
+		{
+			if (Game.CurrentPlayer != Human)
+			{
+				return false;
+			}
+
+			bool changed = _gameMap.ZoomInFromSideBar();
+			_update |= changed;
+			return changed;
+		}
+
+		internal bool ZoomOutFromSideBar()
+		{
+			if (Game.CurrentPlayer != Human)
+			{
+				return false;
+			}
+
+			bool changed = _gameMap.ZoomOutFromSideBar();
+			_update |= changed;
+			return changed;
+		}
+
+		internal bool ZoomResetFromSideBar()
+		{
+			if (Game.CurrentPlayer != Human)
+			{
+				return false;
+			}
+
+			bool changed = _gameMap.ZoomResetFromSideBar();
+			_update |= changed;
+			return changed;
+		}
+
+		internal bool ToggleMapBitmapScalerFromSideBar()
+		{
+			if (Game.CurrentPlayer != Human)
+			{
+				return false;
+			}
+
+			Settings.BitmapScalerMode = Settings.BitmapScalerMode == Settings.MapBitmapScalerType.PaletteAwareWeighted
+				? Settings.MapBitmapScalerType.NearestNeighbor
+				: Settings.MapBitmapScalerType.PaletteAwareWeighted;
+
+			RefreshMap();
+			_update = true;
+			return true;
+		}
 
 		private void OpenOwnerSelectorOverlay(string menuName, EditorMode targetMode)
 			=> _terrainEditorDelegate.OpenOwnerSelectorOverlay(menuName, targetMode);
@@ -108,7 +163,10 @@ namespace CivOne.Screens
 		
 		private void MenuBarOrders(object? _, EventArgs __)
 		{
-			if (Game.ActiveUnit == null) return;
+			if (Game.ActiveUnit == null || _gameMap.MapViewEnabled)
+			{
+				return;
+			}
 
 			_menuIndex = 1;
 
@@ -261,6 +319,12 @@ namespace CivOne.Screens
 			if (args.Key == Key.Tab)
 			{
 				_gameMap.ToggleMapView();
+				if (_gameMap.MapViewEnabled && _menuIndex == 1)
+				{
+					_gameMenu = null;
+					_menuIndex = -1;
+					_redraw = true;
+				}
 				_update = true;
 				return true;
 			}
@@ -273,6 +337,10 @@ namespace CivOne.Screens
 
 			if (_menuBar.KeyDown(args))
 			{
+				if (_gameMenu != null)
+				{
+					_gameMenu.KeepOpen = true;
+				}
 				return true;
 			}
 

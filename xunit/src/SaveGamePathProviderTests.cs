@@ -155,6 +155,8 @@ namespace CivOne.UnitTests
 			public string PluginsDirectory => throw new NotImplementedException();
 
 			public string SoundsDirectory => throw new NotImplementedException();
+
+			public bool RevealWorld => throw new NotImplementedException();
 		}
 
 		private sealed class FakeRuntime : IRuntime

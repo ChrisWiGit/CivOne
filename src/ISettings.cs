@@ -64,5 +64,10 @@ namespace CivOne
 		/// Linux and macOS: <c>~/.local/share/CivOne/sounds</c>
 		/// </remarks>
 		string SoundsDirectory { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether the entire world map is revealed.
+		/// </summary>
+		bool RevealWorld { get; }
 	}
 }

@@ -446,7 +446,8 @@ namespace CivOne.Persistence.Mapper
         private class MapTilesArrayAdapter(ITile[,] tiles) : IMapTiles
         {
             public ITile this[int x, int y] => tiles[x, y];
-            public int Width => tiles.GetLength(0);
+
+			public int Width => tiles.GetLength(0);
             public int Height => tiles.GetLength(1);
         }
     }
