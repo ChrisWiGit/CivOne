@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using CivOne.Mcp.Contracts;
@@ -38,12 +40,13 @@ namespace CivOne.Mcp.Tools
 			_maxJsonChars = Math.Max(512, maxJsonChars);
 		}
 
+		[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch all exceptions and return a parse error response.")]
 		public McpResponse Handle(McpRequest request)
 		{
-			if (request == null) throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 
-			if (!ValidateParamsObject(request, out McpResponse validationError))
-				return validationError;
+			if (!ValidateParamsObject(request, out McpResponse? validationError))
+				return validationError!;
 
 			if (!Game.Started || Game.Instance == null)
 				return JsonResponse(request.Id, BuildErrorPayload("GAME_NOT_STARTED", "No active game to save.", null));
@@ -52,7 +55,7 @@ namespace CivOne.Mcp.Tools
 			if (!Directory.Exists(saveFolder))
 				return JsonResponse(request.Id, BuildErrorPayload("SAVE_FOLDER_NOT_FOUND", "Configured MCP saves folder does not exist.", "saveFolder"));
 
-			string timestamp = _utcNowProvider().ToUniversalTime().ToString("yyyyMMddHHmmssfff");
+			string timestamp = _utcNowProvider().ToUniversalTime().ToString("yyyyMMddHHmmssfff", CultureInfo.InvariantCulture);
 			string fileName = $"savegame_mcp_{timestamp}.cos";
 			string fullPath = Path.Combine(saveFolder, fileName);
 
@@ -74,7 +77,6 @@ namespace CivOne.Mcp.Tools
 
 			try
 			{
-				GameStateHandler gameState = new();
 				var mapperDependencies = YamlMapperDependenciesFactory
 					.CreateDefault()
 					.Create(game);
@@ -87,7 +89,7 @@ namespace CivOne.Mcp.Tools
 
 				using (FileStream stream = new(fullPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
 				{
-					writer.Write(stream, gameState.Create(game), game.SaveMetaData);
+					writer.Write(stream, GameStateHandler.Create(game), game.SaveMetaData);
 					stream.Flush();
 				}
 
@@ -114,14 +116,14 @@ namespace CivOne.Mcp.Tools
 
 		private string ResolveSaveFolder()
 		{
-			string configuredFolder = _runtime.Settings.Get<string>("mcp-saves");
+			string? configuredFolder = _runtime.Settings.Get<string>("mcp-saves");
 			if (string.IsNullOrWhiteSpace(configuredFolder))
 				configuredFolder = Settings.Instance.CosSavesDirectory;
 
 			return Path.GetFullPath(configuredFolder);
 		}
 
-		private McpResponse JsonResponse(object id, object payload)
+		private McpResponse JsonResponse(object? id, object payload)
 			=> McpJsonToolResponse.JsonResponse(id, payload, _jsonWriter, _maxJsonChars);
 
 		private object BuildSuccessPayload(object data)
@@ -130,7 +132,7 @@ namespace CivOne.Mcp.Tools
 			return new
 			{
 				ok = true,
-				path = (string)null,
+				path = (string)null!,
 				truncated = false,
 				maxChars = _maxJsonChars,
 				returnedChars = payloadJson.Length,
@@ -138,12 +140,12 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private object BuildErrorPayload(string code, string message, string failedSegment)
+		private object BuildErrorPayload(string code, string? message, string? failedSegment)
 		{
 			return new
 			{
 				ok = false,
-				path = (string)null,
+				path = (string)null!,
 				truncated = false,
 				maxChars = _maxJsonChars,
 				returnedChars = 0,
@@ -151,13 +153,13 @@ namespace CivOne.Mcp.Tools
 				{
 					code,
 					message,
-					path = (string)null,
+					path = (string)null!,
 					failedSegment
 				}
 			};
 		}
 
-		private static bool ValidateParamsObject(McpRequest request, out McpResponse response)
+		private static bool ValidateParamsObject(McpRequest request, [NotNullWhen(false)] out McpResponse? response)
 		{
 			response = null;
 			if (request.Params.ValueKind == JsonValueKind.Undefined || request.Params.ValueKind == JsonValueKind.Null)

@@ -9,12 +9,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne
 {
 	public class RuntimeSettings
 	{
-		private readonly Dictionary<string, object> _customSettings = new Dictionary<string, object>();
+		private readonly Dictionary<string, object?> _customSettings = [];
 
 		private bool _free;
 
@@ -25,9 +26,9 @@ namespace CivOne
 		public bool McpNoAuth { get; set; }
 		public bool ConsoleLogging { get; set; }
 
-		public Tuple<char, int> LoadSaveGameSlot { get; set; } = null;
-		public string LoadCosFile { get; set; } = null;
-		public string LanguagePostfix { get; set; } = null;
+		public Tuple<char, int>? LoadSaveGameSlot { get; set; }
+		public string? LoadCosFile { get; set; }
+		public string? LanguagePostfix { get; set; }
 		public static Tuple<char, int> UseLoadingScreen => new Tuple<char, int>('0', -1);
 
         // fire-eggs 20190711 allow specifying the initial RNG seed for game repeatability/debugging
@@ -52,37 +53,42 @@ namespace CivOne
 		public bool ShowCredits { get; set; }
 		public bool ShowIntro { get; set; }
 
-		public object this[string customSetting]
+		public object? this[string customSetting]
 		{
 			get
 			{
-				if (_customSettings.ContainsKey(customSetting.ToLower()))
-					return _customSettings[customSetting.ToLower()];
+				ArgumentNullException.ThrowIfNull(customSetting);
+
+				if (_customSettings.ContainsKey(customSetting.ToUpperInvariant()))
+					return _customSettings[customSetting.ToUpperInvariant()];
 				return null;
 			}
 			set
 			{
-				if (_customSettings.ContainsKey(customSetting.ToLower()))
+				ArgumentNullException.ThrowIfNull(customSetting);
+
+				if (_customSettings.ContainsKey(customSetting.ToUpperInvariant()))
 				{
-					_customSettings[customSetting.ToLower()] = value;
+					_customSettings[customSetting.ToUpperInvariant()] = value;
 					return;
 				}
-				_customSettings.Add(customSetting.ToLower(), value);
+				_customSettings.Add(customSetting.ToUpperInvariant(), value);
 			}
 		}
 
-		public T Get<T>(string customSetting)
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to retrieve a custom setting does not crash the application, and that any exceptions are logged appropriately.")]
+		public T? Get<T>(string customSetting)
 		{
             if (this[customSetting] == null)
-                return default(T);
+                return default;
 
 			try
 			{
-				return (T)this[customSetting];
+				return (T?)this[customSetting];
 			}
 			catch
 			{
-				return default(T);
+				return default;
 			}
 		}
 

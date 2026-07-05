@@ -55,7 +55,7 @@ namespace CivOne.Screens.StartupWizard
 			DrawMarkerForCell(mouseX, mouseY, cell, context);
 		}
 
-		private bool IsValidMousePosition(int mouseX, int mouseY, WizardRenderingContext context)
+		private static bool IsValidMousePosition(int mouseX, int mouseY, WizardRenderingContext context)
 		{
 			if (mouseX < 0 || mouseY < 0)
 			{
@@ -65,7 +65,7 @@ namespace CivOne.Screens.StartupWizard
 			return context.Box.Contains(mouseX, mouseY);
 		}
 
-		private bool IsWithinGrid(int col, int row, WizardRenderingContext context)
+		private static bool IsWithinGrid(int col, int row, WizardRenderingContext context)
 		{
 			return col >= 0 && col < context.Cols && row >= 0 && row < context.Rows;
 		}

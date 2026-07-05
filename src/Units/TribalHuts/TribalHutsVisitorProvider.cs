@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using CivOne.Services.Random;
 
 namespace CivOne.Units.TribalHuts
 {
@@ -22,7 +23,7 @@ namespace CivOne.Units.TribalHuts
 			IUnit currentUnit,
 			IGame gameInstance,
 			ILogger logger,
-			Random random)
+			IRandomService random)
 		{
 			Debug.Assert(player != null && map != null && currentUnit != null
 				&& gameInstance != null

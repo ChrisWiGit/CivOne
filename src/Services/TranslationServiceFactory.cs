@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -24,9 +25,9 @@ namespace CivOne.Services
 	{
 		private static readonly Lock _sync = new();
 		private static readonly List<ITranslationLanguageObserver> _languageObservers = [];
-		private static ITranslationFileRepository _translationFileRepository = new TranslationFileRepositoryImpl();
-		private static ITranslationService _instance;
-		private static string _activeLanguagePostfix;
+		private static ITranslationFileRepository _translationFileRepository = new TranslationFileRepository();
+		private static ITranslationService? _instance;
+		private static string? _activeLanguagePostfix;
 
 		// This is only a list of translation keys for the language names
 		// It is used to display the available languages in the settings menu, 
@@ -45,7 +46,7 @@ namespace CivOne.Services
 
 		/// <summary>
 		/// Returns the active translation service.
-		/// If none is configured yet, initializes and returns <see cref="TranslationIdentityServiceImpl"/>.
+		/// If none is configured yet, initializes and returns <see cref="TranslationIdentityService"/>.
 		/// 
 		/// You should instead call <see cref="GetCurrent"/> to get the active service, 
 		/// and only call this method if you explicitly want to initialize a default translation service.
@@ -58,14 +59,14 @@ namespace CivOne.Services
 		{
 			lock (_sync)
 			{
-				return _instance ??= new TranslationIdentityServiceImpl();
+				return _instance ??= new TranslationIdentityService();
 			}
 		}
 
 		/// <summary>
 		/// Resets the factory to a clean state with identity translation and no active language.
 		/// Intended for use in tests to ensure a consistent starting point and avoid test pollution.
-		/// The repository is reset to a new <see cref="TranslationFileRepositoryImpl"/> instance.
+		/// The repository is reset to a new <see cref="TranslationFileRepository"/> instance.
 		/// Tests that require a pure unit-test setup should call <see cref="ConfigureRepository"/> afterwards
 		/// to inject a mock or in-memory repository.
 		/// </summary>
@@ -73,10 +74,10 @@ namespace CivOne.Services
 		{
 			lock (_sync)
 			{
-				_instance = new TranslationIdentityServiceImpl();
+				_instance = new TranslationIdentityService();
 				_activeLanguagePostfix = "identity";
 				_languageObservers.Clear();
-				_translationFileRepository = new TranslationFileRepositoryImpl();
+				_translationFileRepository = new TranslationFileRepository();
 			}
 		}
 
@@ -84,18 +85,19 @@ namespace CivOne.Services
 		/// Returns the currently active translation service instance.
 		/// If no service is active yet, initializes identity translation.
 		/// </summary>
+		[SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This method may perform initialization and is not a simple property getter.")]
 		public static ITranslationService GetCurrent()
 		{
 			lock (_sync)
 			{
-				return _instance ??= new TranslationIdentityServiceImpl();
+				return _instance ??= new TranslationIdentityService();
 			}
 		}
 
 		/// <summary>
 		/// Gets the active language postfix, or <see langword="null"/> when identity translation is active.
 		/// </summary>
-		public static string ActiveLanguagePostfix
+		public static string? ActiveLanguagePostfix
 		{
 			get
 			{
@@ -112,10 +114,7 @@ namespace CivOne.Services
 		/// </summary>
 		public static void ConfigureRepository(ITranslationFileRepository repository)
 		{
-			if (repository == null)
-			{
-				throw new ArgumentNullException(nameof(repository));
-			}
+			ArgumentNullException.ThrowIfNull(repository);
 
 			lock (_sync)
 			{
@@ -162,7 +161,7 @@ namespace CivOne.Services
 		/// <summary>
 		/// Returns all valid language files for the given storage directory.
 		/// </summary>
-		public static IReadOnlyList<TranslationLanguageInfo> GetAvailableLanguages(string storageDirectory, Action<string> log = null)
+		public static IReadOnlyList<TranslationLanguageInfo> GetAvailableLanguages(string storageDirectory, Action<string>? log = null)
 		{
 			lock (_sync)
 			{
@@ -231,7 +230,7 @@ namespace CivOne.Services
 		/// Case-conflicting files and files with uppercase letters are skipped and reported via <paramref name="log"/>.
 		/// </summary>
 		/// <returns>Number of files successfully copied.</returns>
-		public static int SyncTranslationFiles(string sourceDirectory, string storageDirectory, Action<string> log = null)
+		public static int SyncTranslationFiles(string sourceDirectory, string storageDirectory, Action<string>? log = null)
 		{
 			string targetDirectory = Path.Combine(storageDirectory, "translations");
 			lock (_sync)
@@ -248,7 +247,7 @@ namespace CivOne.Services
 			ITranslationLanguageObserver[] observers;
 			lock (_sync)
 			{
-				_instance = new TranslationIdentityServiceImpl();
+				_instance = new TranslationIdentityService();
 				_activeLanguagePostfix = null;
 				observers = [.. _languageObservers];
 			}
@@ -259,17 +258,17 @@ namespace CivOne.Services
 		/// <summary>
 		/// Tries to activate a language by postfix.
 		/// Loads translations from file and swaps the active implementation to
-		/// <see cref="FileTranslationServiceImpl"/> when successful.
+		/// <see cref="FileTranslationService"/> when successful.
 		/// </summary>
 		/// <param name="storageDirectory">Runtime storage root containing the translation folder.</param>
 		/// <param name="postfix">Language postfix from file name pattern <c>civ_&lt;postfix&gt;.txt</c>.</param>
-		/// <param name="error">Error text on failure; otherwise <see langword="null"/>.</param>
+		/// <param name="errorMessage">Error text on failure; otherwise <see langword="null"/>.</param>
 		/// <param name="log">Optional logger used during language discovery/loading.</param>
-		public static bool TryUseLanguage(string storageDirectory, string postfix, out string error, Action<string> log = null)
+		public static bool TryUseLanguage(string storageDirectory, string postfix, [NotNullWhen(false)] out string? errorMessage, Action<string>? log = null)
 		{
-			error = null;
+			errorMessage = null;
 			ITranslationLanguageObserver[] observers;
-			string activeLanguagePostfix;
+			string? activeLanguagePostfix;
 
 			if (string.IsNullOrEmpty(postfix))
 			{
@@ -282,19 +281,19 @@ namespace CivOne.Services
 				IReadOnlyList<TranslationLanguageInfo> languages = _translationFileRepository.GetAvailableLanguages(storageDirectory, log);
 				if (!languages.Any(language => language.MatchesPostfix(postfix)))
 				{
-					error = $"Language postfix '{postfix}' not found.";
+					errorMessage = $"Language postfix '{postfix}' not found.";
 					return false;
 				}
 
 				TranslationLanguageInfo languageInfo = languages.First(language => language.MatchesPostfix(postfix));
 
-				if (!_translationFileRepository.TryLoadTranslations(languageInfo.FilePath, out IReadOnlyDictionary<string, string> translations, out string fileError))
+				if (!_translationFileRepository.TryLoadTranslations(languageInfo.FilePath, out IReadOnlyDictionary<string, string>? translations, out string? fileError))
 				{
-					error = fileError;
+					errorMessage = fileError;
 					return false;
 				}
 
-				_instance = new FileTranslationServiceImpl(translations);
+				_instance = new FileTranslationService(translations!);
 				_activeLanguagePostfix = languageInfo.Postfix;
 				observers = [.. _languageObservers];
 				activeLanguagePostfix = _activeLanguagePostfix;
@@ -304,7 +303,7 @@ namespace CivOne.Services
 			return true;
 		}
 
-		private static void NotifyLanguageChanged(IReadOnlyList<ITranslationLanguageObserver> observers, string activeLanguagePostfix)
+		private static void NotifyLanguageChanged(IReadOnlyList<ITranslationLanguageObserver> observers, string? activeLanguagePostfix)
 		{
 			foreach (ITranslationLanguageObserver observer in observers)
 			{

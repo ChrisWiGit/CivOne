@@ -159,8 +159,8 @@ namespace CivOne.UnitTests
 		{
 			public Picture GetPicture(string _)
 			{
-				PicFile pf = new(filename);
-				return new Picture(pf.GetPicture256, pf.GetPalette256);
+				using PicFile pf = new(filename);
+				return new Picture(pf.GetPicture256!, pf.GetPalette256);
 			}
 		}
 

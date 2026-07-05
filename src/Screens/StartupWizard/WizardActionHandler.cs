@@ -59,6 +59,9 @@ namespace CivOne.Screens.StartupWizard
 					case WizardEntryAction.ToggleDebugMenu:
 						ToggleDebugMenu(engine);
 						return new WizardActionResult(ShouldRefresh: true);
+					case WizardEntryAction.OpenGamePatchesScreen:
+						HandleOpenGamePatchesScreen(engine);
+						return new WizardActionResult(ShouldRefresh: true);
 					case WizardEntryAction.OpenSetupScreen:
 						_showSetupScreen();
 						return new WizardActionResult(ShouldRefresh: false);
@@ -83,6 +86,11 @@ namespace CivOne.Screens.StartupWizard
 						engine.StatusMessage = string.Empty;
 					return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.Back:
+						if (engine.CloseGamePatchesPage())
+						{
+							engine.StatusMessage = string.Empty;
+							return new WizardActionResult(ShouldRefresh: true);
+						}
 						engine.MoveBack();
 						engine.StatusMessage = string.Empty;
 					return new WizardActionResult(ShouldRefresh: true);
@@ -97,6 +105,30 @@ namespace CivOne.Screens.StartupWizard
 						? T("Sound enabled.")
 						: T("Sound disabled.");
 					return new WizardActionResult(ShouldRefresh: true);
+				case WizardEntryAction.ToggleRiverFastMovement:
+						ToggleRiverFastMovement(engine);
+						return new WizardActionResult(ShouldRefresh: true);
+				case WizardEntryAction.TogglePathFinding:
+						TogglePathFinding(engine);
+						return new WizardActionResult(ShouldRefresh: true);
+				case WizardEntryAction.ToggleComputerPlayerPathFinding:
+						ToggleComputerPlayerPathFinding(engine);
+						return new WizardActionResult(ShouldRefresh: true);
+				case WizardEntryAction.ToggleAutoSettlers:
+						ToggleAutoSettlers(engine);
+						return new WizardActionResult(ShouldRefresh: true);
+				case WizardEntryAction.ToggleCanalCity:
+						ToggleCanalCity(engine);
+						return new WizardActionResult(ShouldRefresh: true);
+				case WizardEntryAction.ToggleRemoveObsoleteBuildings:
+						ToggleRemoveObsoleteBuildings(engine);
+						return new WizardActionResult(ShouldRefresh: true);
+				case WizardEntryAction.ToggleDeityEnabled:
+						ToggleDeityEnabled(engine);
+						return new WizardActionResult(ShouldRefresh: true);
+				case WizardEntryAction.ToggleExtendedGlobalWarming:
+						ToggleExtendedGlobalWarming(engine);
+						return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.Finish:
 					return new WizardActionResult(ShouldRefresh: false, ShouldClose: true);
 				default:
@@ -138,7 +170,7 @@ namespace CivOne.Screens.StartupWizard
 				return;
 			}
 
-			if (!TranslationServiceFactory.TryUseLanguage(_storageDirectory, postfix, out string error, _log))
+			if (!TranslationServiceFactory.TryUseLanguage(_storageDirectory, postfix, out string? error, _log))
 			{
 				state.StatusMessage = TF("Could not load language '{0}'.", postfix);
 				_log($"Could not activate language '{postfix}': {error}");
@@ -158,7 +190,7 @@ namespace CivOne.Screens.StartupWizard
 				return;
 			}
 
-			string path = _browseFolder(T("Location of Civilization data files"));
+			string? path = _browseFolder(T("Location of Civilization data files"));
 			if (path == null)
 			{
 				engine.StatusMessage = T("Folder selection cancelled.");
@@ -221,8 +253,8 @@ namespace CivOne.Screens.StartupWizard
 
 		private void HandleBrowseSoundFolder(WizardState state)
 		{
-			string path = _browseFolder(T("Location of Civilization for Windows sound files"));
-			if (path == null)
+			string? path = _browseFolder(T("Location of Civilization for Windows sound files"));
+			if (string.IsNullOrWhiteSpace(path))
 			{
 				state.StatusMessage = T("Folder selection cancelled.");
 				return;
@@ -263,7 +295,7 @@ namespace CivOne.Screens.StartupWizard
 				return;
 			}
 
-			if (RuntimeHandler.Runtime.TryOpenUrl(_storageDirectory, out string errorMessage))
+			if (RuntimeHandler.Runtime.TryOpenUrl(_storageDirectory, out string? errorMessage))
 			{
 				state.StatusMessage = T("Opened CivOne profile folder.");
 				return;
@@ -321,7 +353,7 @@ namespace CivOne.Screens.StartupWizard
 				: shownFiles;
 		}
 
-		private void ApplyAspectRatio(string value, WizardState state)
+		private void ApplyAspectRatio(string? value, WizardState state)
 		{
 			if (!Enum.TryParse(value, ignoreCase: true, out AspectRatio aspectRatio))
 			{
@@ -342,7 +374,91 @@ namespace CivOne.Screens.StartupWizard
 				: T("Debug menu disabled.");
 		}
 
-		private void ApplyFullScreen(string value, WizardState state)
+		private static void HandleOpenGamePatchesScreen(WizardState state)
+		{
+			state.OpenGamePatchesPage();
+		}
+
+		private void ToggleRiverFastMovement(WizardState state)
+		{
+			state.RiverFastMovementEnabled = !state.RiverFastMovementEnabled;
+			Settings.Instance.RiverFastMovement = state.RiverFastMovementEnabled;
+			state.StatusMessage = state.RiverFastMovementEnabled
+				? T("Fast river movement enabled.")
+				: T("Fast river movement disabled.");
+		}
+
+		private void TogglePathFinding(WizardState state)
+		{
+			state.PathFindingEnabled = !state.PathFindingEnabled;
+			Settings.Instance.PathFinding = state.PathFindingEnabled;
+			state.StatusMessage = state.PathFindingEnabled
+				? T("Smart goto pathfinding enabled.")
+				: T("Smart goto pathfinding disabled.");
+		}
+
+		private void ToggleComputerPlayerPathFinding(WizardState state)
+		{
+			state.ComputerPlayerPathFindingEnabled = !state.ComputerPlayerPathFindingEnabled;
+			Settings.Instance.ComputerPlayerPathFinding = state.ComputerPlayerPathFindingEnabled;
+			state.StatusMessage = state.ComputerPlayerPathFindingEnabled
+				? T("Smart computer player pathfinding enabled.")
+				: T("Smart computer player pathfinding disabled.");
+		}
+
+		private void ToggleAutoSettlers(WizardState state)
+		{
+			state.AutoSettlersEnabled = !state.AutoSettlersEnabled;
+			Settings.Instance.AutoSettlers = state.AutoSettlersEnabled;
+			state.StatusMessage = state.AutoSettlersEnabled
+				? T("Auto settlers cheat enabled.")
+				: T("Auto settlers cheat disabled.");
+		}
+
+		private void ToggleCanalCity(WizardState state)
+		{
+			state.CanalCityEnabled = !state.CanalCityEnabled;
+			Settings.Instance.CanalCity = state.CanalCityEnabled;
+			state.StatusMessage = state.CanalCityEnabled
+				? T("City movement penalty for sea units disabled.")
+				: T("City movement penalty for sea units enabled.");
+		}
+
+		private void ToggleRemoveObsoleteBuildings(WizardState state)
+		{
+			state.RemoveObsoleteBuildingsEnabled = !state.RemoveObsoleteBuildingsEnabled;
+			Settings.Instance.RemoveObsoleteBuildings = state.RemoveObsoleteBuildingsEnabled;
+			state.StatusMessage = state.RemoveObsoleteBuildingsEnabled
+				? T("Obsolete buildings like barracks are removed when obsolete.")
+				: T("Obsolete buildings like barracks are kept.");
+		}
+
+		private void ToggleDeityEnabled(WizardState state)
+		{
+			state.DeityEnabled = !state.DeityEnabled;
+			Settings.Instance.DeityEnabled = state.DeityEnabled;
+			state.StatusMessage = state.DeityEnabled
+				? T("Deity difficulty enabled.")
+				: T("Deity difficulty disabled.");
+		}
+
+		private void ToggleExtendedGlobalWarming(WizardState state)
+		{
+			state.ExtendedGlobalWarming = !state.ExtendedGlobalWarming;
+			if (state.ExtendedGlobalWarming)
+			{
+				Settings.Instance.GlobalWarmingFeatureFlags |= Settings.GlobalWarmingFeatureFlag.SeaLevelRise;
+			}
+			else
+			{
+				Settings.Instance.GlobalWarmingFeatureFlags &= ~Settings.GlobalWarmingFeatureFlag.SeaLevelRise;
+			}
+			state.StatusMessage = state.ExtendedGlobalWarming
+				? T("Allow coastal tiles to turn into ocean.")
+				: T("Original global warming effects.");
+		}
+
+		private void ApplyFullScreen(string? value, WizardState state)
 		{
 			if (!bool.TryParse(value, out bool fullScreen))
 			{

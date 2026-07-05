@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Enums;
@@ -57,6 +58,7 @@ namespace CivOne.Agents
 			return Game.Instance.PlayerNumber(player) != 0;
 		}
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Agent execution must remain fault-tolerant so one controller failure does not break turn flow; errors are logged and host fallback continues.")]
 		internal bool RunForCurrentPlayerIfNeeded()
 		{
 			Player player = Game.CurrentPlayer;
@@ -197,6 +199,7 @@ namespace CivOne.Agents
 			return journal;
 		}
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Memory load failures must not abort the turn; host logs and continues with runtime defaults.")]
 		private void LoadMemory(Guid playerGuid, IAgentRegistration registration)
 		{
 			try
@@ -212,6 +215,7 @@ namespace CivOne.Agents
 			}
 		}
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Memory save failures must not abort gameplay; host logs and proceeds.")]
 		private void SaveMemory(Guid playerGuid, IAgentRegistration registration)
 		{
 			try
@@ -244,6 +248,7 @@ namespace CivOne.Agents
 			_storageDirectory = storageDirectory ?? Runtime.StorageDirectory;
 		}
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Malformed persisted payloads are tolerated for backward compatibility by falling back to raw YAML content.")]
 		public bool TryLoad(Guid playerGuid, out string? yaml)
 		{
 			string path = GetPath(playerGuid);
@@ -667,7 +672,7 @@ namespace CivOne.Agents
 			[.. Game.Instance.GetUnits().Where(unit => unit.Owner == _ownerId).Select(unit => new UnitView(unit))];
 
 		public IReadOnlyList<ICityView> OwnCities =>
-			[.. Game.Instance.GetCities().Where(city => city.Owner == _ownerId && city.Size > 0).Select(city => new CityView(city))];
+			[.. Game.Instance.GetCities().Where(city => city.CityOwnerPlayerIndex == _ownerId && city.Size > 0).Select(city => new CityView(city))];
 
 		public IReadOnlyList<string> AvailableResearchNames =>
 			[.. player.AvailableResearch.Select(advance => advance.GetType().Name)];
@@ -777,7 +782,7 @@ namespace CivOne.Agents
 				return session.BuildResult(false, "UNIT_NOT_FOUND", "Unit not found or not owned by current player.", sequenceBefore);
 			}
 
-			unit.Goto = new Point(x, y);
+			unit.GotoDestination = new Point(x, y);
 			return session.BuildResult(true, string.Empty, null, sequenceBefore);
 		}
 
@@ -795,7 +800,7 @@ namespace CivOne.Agents
 				return session.BuildResult(false, "UNIT_NOT_FOUND", "Unit not found or not owned by current player.", sequenceBefore);
 			}
 
-			unit.Goto = Point.Empty;
+			unit.GotoDestination = Point.Empty;
 			return session.BuildResult(true, string.Empty, null, sequenceBefore);
 		}
 
@@ -925,7 +930,7 @@ namespace CivOne.Agents
 				return session.BuildResult(false, "INVALID_PRODUCTION_NAME", "Production name must not be empty.", sequenceBefore);
 			}
 
-			City? city = Game.Instance.GetCities().FirstOrDefault(c => c.Owner == _ownerId && c.Id == cityId && c.Size > 0);
+			City? city = Game.Instance.GetCities().FirstOrDefault(c => c.CityOwnerPlayerIndex == _ownerId && c.Id == cityId && c.Size > 0);
 			if (city is null)
 			{
 				return session.BuildResult(false, "CITY_NOT_FOUND", "City not found or not owned by current player.", sequenceBefore);
@@ -1042,7 +1047,7 @@ namespace CivOne.Agents
 	{
 		public Guid Id => unit.Id;
 
-		public Guid OwnerId => Game.Instance.GetPlayer(unit.Owner).PlayerGuid;
+		public Guid OwnerId => Game.Instance.GetPlayer(unit.Owner)?.PlayerGuid ?? Guid.Empty;
 
 		public string Name => unit.GetType().Name;
 
@@ -1050,7 +1055,7 @@ namespace CivOne.Agents
 
 		public int Y => unit.Y;
 
-		public Point Goto => unit.Goto;
+		public Point GotoDestination => unit.GotoDestination;
 
 		public byte MovesLeft => unit.MovesLeft;
 
@@ -1076,7 +1081,7 @@ namespace CivOne.Agents
 	{
 		public Guid Id => city.Id;
 
-		public Guid OwnerId => city.Player.PlayerGuid;
+		public Guid OwnerId => city.CityOwnerPlayer.PlayerGuid;
 
 		public string Name => city.Name;
 

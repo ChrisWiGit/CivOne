@@ -323,7 +323,7 @@ namespace CivOne.UnitTests
 			public string Name { get; init; } = "Unit";
 			public int X { get; init; }
 			public int Y { get; init; }
-			public Point Goto { get; init; }
+			public Point GotoDestination { get; init; }
 			public byte MovesLeft { get; init; }
 			public byte PartMoves { get; init; }
 			public bool HasAction { get; init; }

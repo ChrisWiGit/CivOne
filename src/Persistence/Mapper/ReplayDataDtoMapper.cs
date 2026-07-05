@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using CivOne.Persistence.Mapper;
@@ -16,7 +17,8 @@ namespace CivOne.Persistence.Model
 	/// but <see cref="FromDto"/> will throw for them until domain classes are added.
 	/// </para>
 	/// </summary>
-	public class ReplayDataDtoMapper : DtoMapper<ReplayDataDto, ReplayData>
+	[SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "We want to use List<T> for simplicity and ease of use in YAML serialization, and we don't need the additional features of IReadOnlyList<T> or IEnumerable<T>.")]
+	public class ReplayDataDtoMapper : IDtoMapper<ReplayDataDto, ReplayData>
 	{
 		public ReplayDataDto ToDto(ReplayData domain)
 		{
@@ -129,7 +131,7 @@ namespace CivOne.Persistence.Model
 		}
 
 
-		bool ThrowIfMultipleNotNull(params object[] properties)
+		private static bool ThrowIfMultipleNotNull(params object?[] properties)
 		{
 			if (properties.Count(p => p != null) > 1)
 				throw new InvalidDataException(
@@ -206,7 +208,7 @@ namespace CivOne.Persistence.Model
 
 		private static NotImplementedException NotYetImplemented(string typeName)
 			=> new($"ReplayData type '{typeName}' is not yet implemented as a domain class. "
-				 + $"Add a matching subclass to ReplayData in api/src/ReplayData.cs.");
+					+ $"Add a matching subclass to ReplayData in api/src/ReplayData.cs.");
 
 		// ── Convenience list helpers ───────────────────────────────────────────────
 

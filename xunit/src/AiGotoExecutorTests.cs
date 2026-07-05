@@ -12,7 +12,7 @@ namespace CivOne.UnitTests
 	public class AiGotoExecutorTests
 	{
 		[Fact]
-		public void CreateFor_WhenComputerPathfindingEnabled_ReturnsSmartExecutor()
+		public void CreateForWhenComputerPathfindingEnabledReturnsSmartExecutor()
 		{
 			// Arrange
 			IAiGotoExecutor expected = new StubExecutor(AiGotoExecutionResult.NotHandled);
@@ -28,7 +28,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void CreateFor_WhenComputerPathfindingDisabled_ReturnsNoOpExecutor()
+		public void CreateForWhenComputerPathfindingDisabledReturnsNoOpExecutor()
 		{
 			// Arrange
 			IAiGotoExecutor smart = new StubExecutor(AiGotoExecutionResult.NotHandled);
@@ -44,7 +44,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryExecute_WhenUnitIsNull_ReturnsNotHandled()
+		public void TryExecuteWhenUnitIsNullReturnsNotHandled()
 		{
 			// Arrange
 			var testee = CreateSmartExecutor(PathStepResult.Disabled());
@@ -57,10 +57,10 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryExecute_WhenUnitGotoIsEmpty_ReturnsNotHandled()
+		public void TryExecuteWhenUnitGotoIsEmptyReturnsNotHandled()
 		{
 			// Arrange
-			TestUnit unit = new() { Goto = Point.Empty };
+			TestUnit unit = new() { GotoDestination = Point.Empty };
 			var testee = CreateSmartExecutor(PathStepResult.Disabled());
 
 			// Act
@@ -71,10 +71,10 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryExecute_WhenPathfinderDisabled_ReturnsNotHandled()
+		public void TryExecuteWhenPathfinderDisabledReturnsNotHandled()
 		{
 			// Arrange
-			TestUnit unit = new() { Goto = new Point(12, 10) };
+			TestUnit unit = new() { GotoDestination = new Point(12, 10) };
 			var testee = CreateSmartExecutor(PathStepResult.Disabled());
 
 			// Act
@@ -85,10 +85,10 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TryExecute_WhenNoPath_ClearsGotoAndReturnsContinue()
+		public void TryExecuteWhenNoPathClearsGotoAndReturnsContinue()
 		{
 			// Arrange
-			TestUnit unit = new() { Goto = new Point(12, 10) };
+			TestUnit unit = new() { GotoDestination = new Point(12, 10) };
 			var testee = CreateSmartExecutor(PathStepResult.NoPath());
 
 			// Act
@@ -96,14 +96,14 @@ namespace CivOne.UnitTests
 
 			// Assert
 			Assert.Equal(AiGotoExecutionResult.Continue, actual);
-			Assert.Equal(Point.Empty, unit.Goto);
+			Assert.Equal(Point.Empty, unit.GotoDestination);
 		}
 
 		[Fact]
-		public void TryExecute_WhenPathStepTileNotReachable_ClearsGotoAndReturnsContinue()
+		public void TryExecuteWhenPathStepTileNotReachableClearsGotoAndReturnsContinue()
 		{
 			// Arrange
-			TestUnit unit = new() { Goto = new Point(12, 10), MoveTargets = [] };
+			TestUnit unit = new() { GotoDestination = new Point(12, 10), MoveTargets = [] };
 			var testee = CreateSmartExecutor(PathStepResult.Success(12, 10));
 
 			// Act
@@ -111,11 +111,11 @@ namespace CivOne.UnitTests
 
 			// Assert
 			Assert.Equal(AiGotoExecutionResult.Continue, actual);
-			Assert.Equal(Point.Empty, unit.Goto);
+			Assert.Equal(Point.Empty, unit.GotoDestination);
 		}
 
 		[Fact]
-		public void TryExecute_WhenCivilianWouldAttack_ClearsGotoAndReturnsContinue()
+		public void TryExecuteWhenCivilianWouldAttackClearsGotoAndReturnsContinue()
 		{
 			// Arrange
 			var enemy = new MockedIUnit { Owner = 2 };
@@ -124,7 +124,7 @@ namespace CivOne.UnitTests
 			{
 				Owner = 1,
 				Role = CivOne.Enums.UnitRole.Civilian,
-				Goto = new Point(11, 10),
+				GotoDestination = new Point(11, 10),
 				MoveTargets = [targetTile]
 			};
 			var testee = CreateSmartExecutor(PathStepResult.Success(11, 10));
@@ -134,11 +134,11 @@ namespace CivOne.UnitTests
 
 			// Assert
 			Assert.Equal(AiGotoExecutionResult.Continue, actual);
-			Assert.Equal(Point.Empty, unit.Goto);
+			Assert.Equal(Point.Empty, unit.GotoDestination);
 		}
 
 		[Fact]
-		public void TryExecute_WhenMoveSucceeds_ReturnsTurnComplete()
+		public void TryExecuteWhenMoveSucceedsReturnsTurnComplete()
 		{
 			// Arrange
 			ITile targetTile = new MockedGrassland(11, 10);
@@ -147,7 +147,7 @@ namespace CivOne.UnitTests
 				Owner = 1,
 				X = 10,
 				Y = 10,
-				Goto = new Point(11, 10),
+				GotoDestination = new Point(11, 10),
 				MoveTargets = [targetTile],
 				MoveToHandler = (_, _) => true
 			};
@@ -208,11 +208,17 @@ namespace CivOne.UnitTests
 
 		private sealed class StubRandomService : IRandomService
 		{
-			public int Next(int max) => 0;
+			public int NextInt(int max) => 0;
 
-			public int Next(int min, int max) => min;
+			public int NextInt(int min, int max) => min;
 
 			public bool Hit(int percent) => percent > 0;
+
+			public bool Hit(int numerator, int denominator) => numerator > 0 && denominator > 0;
+
+			public byte NextByte(byte min, byte maxExclusive) => min;
+
+			public byte NextByte(byte maxExclusive) => 0;
 		}
 
 		private sealed class TestUnit : MockedIUnit, IUnit

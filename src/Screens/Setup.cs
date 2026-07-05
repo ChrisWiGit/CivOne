@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
@@ -26,6 +27,7 @@ using static CivOne.Enums.GraphicsMode;
 
 namespace CivOne.Screens
 {
+	#pragma warning disable CA1822 // Mark members as static
 	[Break, ScreenResizeable]
 	internal class Setup : BaseScreen
 	{
@@ -151,16 +153,17 @@ namespace CivOne.Screens
 				return;
 			}
 
-			if (!Runtime.TryOpenUrl(storageDirectory, out string errorMessage))
+			if (!Runtime.TryOpenUrl(storageDirectory, out string? errorMessage))
 			{
-				Log("Could not open profile folder '{0}': {1}", storageDirectory, errorMessage);
+				Log("Could not open profile folder '{0}': {1}", storageDirectory, errorMessage ?? "unknown error");
 			}
 		}
 
-		private void CreateMenu(string title, int activeItem, MenuItemEventHandler<int> always, params MenuItem<int>[] items) =>
-			AddMenu(new Menu("Setup", Palette)
+		private void CreateMenu(string title, int activeItem, MenuItemEventAction<int>? always, params MenuItem<int>[] items)
+		{
+			Menu<int> menu = new Menu("Setup", Palette)
 			{
-				Title = $"{title.ToUpper()}:",
+				Title = $"{title.ToUpper(CultureInfo.InvariantCulture)}:",
 				TitleColour = 15,
 				ActiveColour = 11,
 				TextColour = 5,
@@ -171,25 +174,61 @@ namespace CivOne.Screens
 			.Items([.. items.Where(item => item != null)])
 			.Always(always)
 			.Center(this)
-			.SetActiveItem(activeItem)
-		);
-		private void CreateMenu(string title, MenuItemEventHandler<int> always, params MenuItem<int>[] items) => CreateMenu(title, -1, always, items);
+			.SetActiveItem(activeItem);
+
+			menu.Cancel += SetupMenuCancel;
+			AddMenu(menu);
+		}
+
+		private void SetupMenuCancel(object? sender, EventArgs args)
+		{
+			if (sender is not Menu<int> menu)
+			{
+				return;
+			}
+
+			for (int i = menu.Items.Count - 1; i >= 0; i--)
+			{
+				MenuItem<int> item = menu.Items[i];
+				if (!item.Enabled || string.IsNullOrEmpty(item.Text))
+				{
+					continue;
+				}
+
+				if (!IsEscapeTarget(item.Text))
+				{
+					continue;
+				}
+
+				menu.ActiveItem = i;
+				item.Select();
+				return;
+			}
+		}
+
+		private bool IsEscapeTarget(string text)
+			=> string.Equals(text, Translate("Back"), StringComparison.OrdinalIgnoreCase)
+				|| string.Equals(text, Translate("Return to game"), StringComparison.OrdinalIgnoreCase)
+				|| string.Equals(text, Translate("Return to startup wizard"), StringComparison.OrdinalIgnoreCase)
+				|| string.Equals(text, Translate("Launch Game"), StringComparison.OrdinalIgnoreCase);
+
+		private void CreateMenu(string title, MenuItemEventAction<int> always, params MenuItem<int>[] items) => CreateMenu(title, -1, always, items);
 		private void CreateMenu(string title, int activeItem, params MenuItem<int>[] items) => CreateMenu(title, activeItem, null, items);
 		private void CreateMenu(string title, params MenuItem<int>[] items) => CreateMenu(title, -1, null, items);
 
-		private MenuItemEventHandler<int> GotoMenu(Action<int> action, int selectedItem = 0) => (s, a) =>
+		private MenuItemEventAction<int> GotoMenu(Action<int> action, int selectedItem = 0) => (s, a) =>
 		{
 			CloseMenus();
 			action(selectedItem);
 		};
 
-		private MenuItemEventHandler<int> GotoMenu(Action action) => (s, a) =>
+		private MenuItemEventAction<int> GotoMenu(Action action) => (s, a) =>
 		{
 			CloseMenus();
 			action();
 		};
 
-		private MenuItemEventHandler<int> GotoScreen<T>(Action doneAction) where T : IScreen, new() => (s, a) =>
+		private MenuItemEventAction<int> GotoScreen<T>(Action doneAction) where T : IScreen, new() => (s, a) =>
 		{
 			CloseMenus();
 			T screen = new T();
@@ -197,10 +236,10 @@ namespace CivOne.Screens
 			Common.AddScreen(screen);
 		};
 
-		private MenuItemEventHandler<int> CloseScreen(Action action = null) => (s, a) =>
+		private MenuItemEventAction<int> CloseScreen(Action? action = null) => (s, a) =>
 		{
 			Destroy();
-			if (action != null) action();
+			action?.Invoke();
 		};
 
 		private void ChangeWindowTitle()
@@ -421,6 +460,12 @@ namespace CivOne.Screens
 				Settings.GlobalWarmingFeatureFlags != Settings.GlobalWarmingFeatureFlag.None
 			}.Count(static enabled => enabled);
 
+		private string LzwCodecModeText()
+			=> Settings.LzwCodecMode == Settings.LzwCodecType.Corrected ? Translate("Corrected") : Translate("Original");
+
+		private string MapBitmapScalerModeText()
+			=> Settings.BitmapScalerMode == Settings.MapBitmapScalerType.NearestNeighbor ? Translate("Nearest neighbor") : Translate("Palette-aware weighted");
+
 		private void PatchesMenu(int activeItem = 0) => CreateMenu(Translate("Patches"), activeItem,
 			MenuItem.Create(TranslateFormatted("Reveal world: {0}", Settings.RevealWorld.YesNo()))
 				.WithDescription(
@@ -467,6 +512,16 @@ namespace CivOne.Screens
 					Translate("Choose checked or unchecked cast handling."),
 					Translate("Unchecked keeps legacy behavior."))
 				.OnSelect(GotoMenu(SaveCastBehaviorMenu)),
+			MenuItem.Create(TranslateFormatted("LZW implementation: {0}", LzwCodecModeText()))
+				.WithDescription(
+					Translate("Choose which LZW codec GIF and PIC loading/saving uses."),
+					Translate("Applies immediately."))
+				.OnSelect(GotoMenu(LzwCodecModeMenu)),
+			MenuItem.Create(TranslateFormatted("Map bitmap scaler: {0}", MapBitmapScalerModeText()))
+				.WithDescription(
+					Translate("Choose filter used for map and unit bitmap scaling."),
+					Translate("Applies immediately, including during gameplay."))
+				.OnSelect(GotoMenu(MapBitmapScalerModeMenu)),
 			MenuItem.Create(TranslateFormatted("FPS display: {0}", Settings.FpsCorner.ToText()))
 				.WithDescription(
 					Translate("Show frames per second in a screen corner."))
@@ -638,7 +693,31 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void FpsCornerMenu() => CreateMenu(Translate("FPS display"), GotoMenu(PatchesMenu, 10),
+		private void LzwCodecModeMenu() => CreateMenu(Translate("LZW implementation"), GotoMenu(PatchesMenu, 10),
+			MenuItem.Create(Translate("Original (default)"))
+				.WithDescription(
+					TranslateArray("Use original LZW codec implementation. This works with original game files.\nApplies immediately."))
+				.OnSelect((s, a) => Settings.LzwCodecMode = Settings.LzwCodecType.Original).SetActive(() => Settings.LzwCodecMode == Settings.LzwCodecType.Original),
+			MenuItem.Create(Translate("Corrected"))
+				.WithDescription(
+					TranslateArray("Use corrected LZW codec implementation. Only for use if you have\n modified game files with LZW-compressed images that don't work with the original codec.\nApplies immediately."))
+				.OnSelect((s, a) => Settings.LzwCodecMode = Settings.LzwCodecType.Corrected).SetActive(() => Settings.LzwCodecMode == Settings.LzwCodecType.Corrected),
+			MenuItem.Create(Translate("Back"))
+		);
+
+		private void MapBitmapScalerModeMenu() => CreateMenu(Translate("Map bitmap scaler"), GotoMenu(PatchesMenu, 11),
+			MenuItem.Create(Translate("Palette-aware weighted (default)"))
+				.WithDescription(Translate("High-quality palette-aware weighted scaling."))
+				.OnSelect((s, a) => Settings.BitmapScalerMode = Settings.MapBitmapScalerType.PaletteAwareWeighted)
+				.SetActive(() => Settings.BitmapScalerMode == Settings.MapBitmapScalerType.PaletteAwareWeighted),
+			MenuItem.Create(Translate("Nearest neighbor"))
+				.WithDescription(Translate("Sharp pixel scaling without weighted filtering."))
+				.OnSelect((s, a) => Settings.BitmapScalerMode = Settings.MapBitmapScalerType.NearestNeighbor)
+				.SetActive(() => Settings.BitmapScalerMode == Settings.MapBitmapScalerType.NearestNeighbor),
+			MenuItem.Create(Translate("Back"))
+		);
+
+		private void FpsCornerMenu() => CreateMenu(Translate("FPS display"), GotoMenu(PatchesMenu, 12),
 			MenuItem.Create(FpsCorner.Off.ToText())
 				.WithDescription(Translate("Disable FPS display."))
 				.OnSelect((s, a) => Settings.FpsCorner = FpsCorner.Off).SetActive(() => Settings.FpsCorner == FpsCorner.Off),
@@ -709,18 +788,18 @@ namespace CivOne.Screens
 		);
 
 		private void PluginsMenu(int activeItem = 0) => CreateMenu(Translate("Plugins"), activeItem,
-			new MenuItem<int>[0]
+			Array.Empty<MenuItem<int>>()
 				.Concat(
 					Reflect.Plugins().Any() ?
 						Reflect.Plugins().Select(x => MenuItem.Create(x.ToString()).SetEnabled(!x.Deleted).OnSelect(GotoMenu(PluginMenu(x.Id, x)))) :
-						new[] { MenuItem.Create(Translate("No plugins installed")).Disable() }
+						[MenuItem.Create(Translate("No plugins installed")).Disable()]
 				)
-				.Concat(new[]
-				{
-					MenuItem.Create(null).Disable(),
+				.Concat(
+				[
+					MenuItem.CreateSeparator(),
 					MenuItem.Create(Translate("Add plugins")).OnSelect(BrowseForPlugins),
 					MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(MainMenu, 2))
-				}).ToArray()
+				]).ToArray()
 		);
 
 		private Action PluginMenu(int item, Plugin plugin) => () => CreateMenu(plugin.Name, 0,
@@ -781,7 +860,7 @@ namespace CivOne.Screens
 		private string CurrentLanguageText()
 		{
 			IReadOnlyList<TranslationLanguageInfo> availableLanguages = TranslationServiceFactory.GetAvailableLanguages(Runtime.StorageDirectory, message => Log(message));
-			string activePostfix = TranslationServiceFactory.ActiveLanguagePostfix;
+			string? activePostfix = TranslationServiceFactory.ActiveLanguagePostfix;
 			return string.IsNullOrEmpty(activePostfix)
 				? Translate("Original (English)")
 				: TranslationServiceFactory.GetLanguageDisplayName(activePostfix, availableLanguages, Translate);
@@ -824,12 +903,12 @@ namespace CivOne.Screens
 				return;
 			}
 
-			if (!TranslationServiceFactory.TryUseLanguage(Runtime.StorageDirectory, postfix, out string error, message => Log(message)))
+			if (!TranslationServiceFactory.TryUseLanguage(Runtime.StorageDirectory, postfix, out string? message, message => Log(message)))
 			{
-				Log("Could not activate language '{0}': {1}", postfix, error);
+				Log("Could not activate language '{0}': {1}", postfix, message ?? "unknown error");
 				if (Game.Started)
 				{
-					GameTask.Enqueue(Message.Error(Translate("Language"), TranslateFormatted("Could not load language '{0}'.", postfix), error));
+					GameTask.Enqueue(Message.Error(Translate("Language"), TranslateFormatted("Could not load language '{0}'.", postfix), message ?? "unknown error"));
 				}
 				GameOptionsMenu(9);
 				return;
@@ -851,11 +930,11 @@ namespace CivOne.Screens
 			GameTask.Enqueue(Message.General(TranslateFormatted("Language switched to {0}.", languageName)));
 		}
 
-		private void Resize(object sender, ResizeEventArgs args)
+		private void Resize(object? _, ResizeEventArgs args)
 		{
 			this.Clear(3);
 
-			foreach (Menu menu in Menus["Setup"])
+			foreach (Menu menu in GlobalMenus["Setup"])
 			{
 				menu.Center(this).ForceUpdate();
 			}

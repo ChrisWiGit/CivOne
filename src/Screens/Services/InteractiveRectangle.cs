@@ -12,7 +12,7 @@ namespace CivOne.Screens.Services
 	/// <param name="bitmap">The bitmap on which the button will be drawn and where mouse clicks will be checked.</param>
 	/// <param name="buttonDrawer">The button drawer to use for drawing the button.</param>
 	/// <param name="bounds">The rectangle defining the button's bounds.</param>
-	public class InteractiveButtonImpl(
+	public class InteractiveButton(
 		IBitmap bitmap,
 		IButtonDrawer buttonDrawer,
 		Rectangle bounds) : IInteractiveButton
@@ -42,7 +42,7 @@ namespace CivOne.Screens.Services
 			IButtonDrawer buttonDrawer,
 			Rectangle hitBox)
 		{
-			return new InteractiveButtonImpl(bitmap, buttonDrawer, hitBox);
+			return new InteractiveButton(bitmap, buttonDrawer, hitBox);
 		}
 
 		public void DrawButton(string text, byte fontId, byte colour, byte colourDark)

@@ -10,6 +10,7 @@
 using System;
 using CivOne.Enums;
 using CivOne.Graphics;
+using CivOne.Services.Screen;
 
 namespace CivOne.Screens
 {
@@ -38,26 +39,25 @@ namespace CivOne.Screens
 
 		public int NameId { get; private set; }
 
-		public string Value { get; private set; }
+		public string? Value { get; private set; }
 
-		public event EventHandler Accept, Cancel;
+		public event EventHandler? Accept, Cancel;
 
-		private void CityName_Accept(object sender, EventArgs args)
+		private void CityName_Accept(object? sender, EventArgs args)
 		{
-			Value = (sender as Input).Text;
-			if (Accept != null)
-				Accept(this, null);
-			if (sender is Input)
-				((Input)sender)?.Close();
+			if (sender is not Input input)
+				return;
+			Value = input.Text;
+			Accept?.Invoke(this, EventArgs.Empty);
+			
+			input.Close();
 			Destroy();
 		}
 
-		private void CityName_Cancel(object sender, EventArgs args)
+		private void CityName_Cancel(object? sender, EventArgs args)
 		{
-			if (Cancel != null)
-				Cancel(this, null);
-			if (sender is Input)
-				((Input)sender)?.Close();
+			Cancel?.Invoke(this, EventArgs.Empty);
+			(sender as Input)?.Close();
 			Destroy();
 		}
 
@@ -68,16 +68,23 @@ namespace CivOne.Screens
 				DrawDialog();
 			}
 
-			if (!Common.HasScreenType<Input>())
+			if (!_screenQuery.HasScreenType<Input>())
 			{
-				Common.AddScreen(_input);
+				_screenCommands.AddScreen(_input);
 			}
 			return false;
 		}
 
+		private readonly IScreenQueryService _screenQuery;
+		private readonly IScreenCommandService _screenCommands;
+
 		public CityName(int nameId, string cityName)
 		{
+			_screenQuery = ScreenServiceFactory.CreateQueryService();
+			_screenCommands = ScreenServiceFactory.CreateCommandService();
+
 			NameId = nameId;
+			Value = cityName;
 			using var defaultPalette = Common.DefaultPalette;
 			Palette = defaultPalette;
 
@@ -86,6 +93,17 @@ namespace CivOne.Screens
 			_input.Cancel += CityName_Cancel;
 
 			DrawDialog();
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_input.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }

@@ -66,14 +66,19 @@ namespace CivOne.Graphics
 				return base.GetLetter(mappedCharacter, colour);
 			}
 
+			if (TryComposeEszettFallback(character, colour, out Bytemap? eszettFallbackGlyph))
+			{
+				return eszettFallbackGlyph!;
+			}
+
 			if (HasCharacter(character))
 			{
 				return base.GetLetter(character, colour);
 			}
 
-			if (TryComposeFromUnicode(character, colour, out Bytemap compositeGlyph))
+			if (TryComposeFromUnicode(character, colour, out Bytemap? compositeGlyph))
 			{
-				return compositeGlyph;
+				return compositeGlyph!; //always non-null if TryComposeFromUnicode returns true
 			}
 
 			if (TryGetBaseCharacter(character, out char baseCharacter) && HasCharacter(baseCharacter))
@@ -95,6 +100,33 @@ namespace CivOne.Graphics
 			return false;
 		}
 
+		private bool TryComposeEszettFallback(char character, byte colour, out Bytemap? compositeGlyph)
+		{
+			compositeGlyph = null;
+			if (character != '\u00DF' && character != '\u1E9E')
+			{
+				return false;
+			}
+
+			char fallbackBaseCharacter = character == '\u1E9E' ? 'S' : 's';
+			if (!HasCharacter(fallbackBaseCharacter))
+			{
+				return false;
+			}
+
+			using Bytemap leftGlyph = base.GetLetter(fallbackBaseCharacter, colour);
+			using Bytemap rightGlyph = base.GetLetter(fallbackBaseCharacter, colour);
+			int width = leftGlyph.Width + rightGlyph.Width;
+			int height = Math.Max(leftGlyph.Height, rightGlyph.Height);
+			Bytemap output = new(width, height);
+
+			DrawGlyph(output, leftGlyph, 0, 0);
+			DrawGlyph(output, rightGlyph, leftGlyph.Width, 0);
+
+			compositeGlyph = output;
+			return true;
+		}
+
 		private static bool TryGetBaseCharacter(char character, out char baseCharacter)
 		{
 			baseCharacter = '\0';
@@ -114,7 +146,7 @@ namespace CivOne.Graphics
 			return false;
 		}
 
-		private bool TryComposeFromUnicode(char character, byte colour, out Bytemap compositeGlyph)
+		private bool TryComposeFromUnicode(char character, byte colour, out Bytemap? compositeGlyph)
 		{
 			compositeGlyph = null;
 			string decomposed = character.ToString().Normalize(NormalizationForm.FormD);
@@ -296,6 +328,23 @@ namespace CivOne.Graphics
 			}
 
 			glyph[x, y] = colour;
+		}
+
+		private static void DrawGlyph(Bytemap target, Bytemap source, int offsetX, int offsetY)
+		{
+			for (int y = 0; y < source.Height; y++)
+			{
+				for (int x = 0; x < source.Width; x++)
+				{
+					byte pixel = source[x, y];
+					if (pixel == 0)
+					{
+						continue;
+					}
+
+					SetPixelSafe(target, offsetX + x, offsetY + y, pixel);
+				}
+			}
 		}
 
 		private static (int LeftDotX, int RightDotX) GetUmlautDotPositions(int width)

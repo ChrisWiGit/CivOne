@@ -6,8 +6,16 @@ namespace CivOne.src
 
 	public class PeaceTurnsTests : TestsBase
 	{
+		// fact Game.Instance is of IGameSnapshotSource
 		[Fact]
-		public void EndTurn_WhenNoHostileActionOccurred_IncrementsOncePerNewTurn()
+		public void GameInstanceImplementsIGameSnapshotSource()
+		{
+			var gameInstance = Game.Instance;
+			Assert.IsAssignableFrom<IGameSnapshotSource>(gameInstance);
+		}
+
+		[Fact]
+		public void EndTurnWhenNoHostileActionOccurredIncrementsOncePerNewTurn()
 		{
 			// Arrange
 			var game = Game.Instance;
@@ -16,14 +24,14 @@ namespace CivOne.src
 
 			// Act
 			AdvanceToNextTurn(game);
-			var actual = game.PeaceTurns;
+			var actual = (game as IGameSnapshotSource).PeaceTurns;
 
 			// Assert
 			Assert.Equal(expected, actual);
 		}
 
 		[Fact]
-		public void EndTurn_WhenHostileActionOccurred_ResetsToZero()
+		public void EndTurnWhenHostileActionOccurredResetsToZero()
 		{
 			// Arrange
 			var game = Game.Instance;
@@ -33,7 +41,7 @@ namespace CivOne.src
 
 			// Act
 			AdvanceToNextTurn(game);
-			var actual = game.PeaceTurns;
+			var actual = (game as IGameSnapshotSource).PeaceTurns;
 
 			// Assert
 			Assert.Equal(expected, actual);

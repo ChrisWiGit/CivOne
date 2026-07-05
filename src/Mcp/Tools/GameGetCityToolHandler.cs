@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using CivOne.Enums;
@@ -49,35 +50,35 @@ namespace CivOne.Mcp.Tools
 
 		public McpResponse Handle(McpRequest request)
 		{
-			if (request == null) throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 
-			if (!ValidateParamsObject(request, out McpResponse validationError))
-				return validationError;
+			if (!ValidateParamsObject(request, out McpResponse? validationError))
+				return validationError!;
 
-			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto snapshot, out string errorCode, out string errorMessage))
-				return JsonResponse(request.Id, BuildErrorPayload(errorCode, errorMessage, null));
+			if (!_snapshotProvider.TryGetSnapshot(out GameStateDto? snapshot, out string? errorCode, out string? errorMessage))
+				return JsonResponse(request.Id, BuildErrorPayload(errorCode!, errorMessage, null));
 
-			if (!TryReadOptionalGuid(request.Params, "cityId", out Guid? cityId, out string cityIdError))
+			if (!TryReadOptionalGuid(request.Params, "cityId", out Guid? cityId, out string? cityIdError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", cityIdError, "cityId"));
-
-			if (!TryReadOptionalString(request.Params, "cityName", out string cityName, out string cityNameError))
+	
+			if (!TryReadOptionalString(request.Params, "cityName", out string? cityName, out string? cityNameError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", cityNameError, "cityName"));
 
-			if (!TryReadOptionalString(request.Params, "cityNameStartsWith", out string cityNameStartsWith, out string cityNameStartsWithError))
+			if (!TryReadOptionalString(request.Params, "cityNameStartsWith", out string? cityNameStartsWith, out string? cityNameStartsWithError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", cityNameStartsWithError, "cityNameStartsWith"));
 
-			if (!TryReadKeys(request.Params, out string[] keys, out string keysError))
+			if (!TryReadKeys(request.Params, out string[] keys, out string? keysError))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_PARAMS", keysError, "keys"));
 
-			int selectorCount = CountSelectors(cityId, cityName, cityNameStartsWith);
+			int selectorCount = CountSelectors(cityId, cityName, cityNameStartsWith!);
 			if (selectorCount == 0)
 				return JsonResponse(request.Id, BuildErrorPayload("MISSING_SELECTOR", "Provide one selector: cityId, cityName, or cityNameStartsWith.", "cityId|cityName|cityNameStartsWith"));
 
 			if (selectorCount > 1)
 				return JsonResponse(request.Id, BuildErrorPayload("AMBIGUOUS_SELECTOR", "Provide only one selector: cityId, cityName, or cityNameStartsWith.", "cityId|cityName|cityNameStartsWith"));
 
-			List<(CityDto City, PlayerDto Owner)> allCities = GetAllCities(snapshot);
-			List<(CityDto City, PlayerDto Owner)> matches = FindMatches(allCities, cityId, cityName, cityNameStartsWith);
+			List<(CityDto City, PlayerDto Owner)> allCities = GetAllCities(snapshot!);
+			List<(CityDto City, PlayerDto Owner)> matches = FindMatches(allCities, cityId, cityName, cityNameStartsWith!);
 
 			if (matches.Count == 0)
 				return JsonResponse(request.Id, BuildErrorPayload("CITY_NOT_FOUND", "No city matched the provided selector.", "cityId|cityName|cityNameStartsWith"));
@@ -103,7 +104,7 @@ namespace CivOne.Mcp.Tools
 			return JsonResponse(request.Id, BuildSuccessPayload(projected));
 		}
 
-		private static int CountSelectors(Guid? cityId, string cityName, string cityNameStartsWith)
+		private static int CountSelectors(Guid? cityId, string? cityName, string? cityNameStartsWith)
 			=> (cityId.HasValue ? 1 : 0)
 			+ (!string.IsNullOrWhiteSpace(cityName) ? 1 : 0)
 			+ (!string.IsNullOrWhiteSpace(cityNameStartsWith) ? 1 : 0);
@@ -123,7 +124,7 @@ namespace CivOne.Mcp.Tools
 		private static List<(CityDto City, PlayerDto Owner)> FindMatches(
 			IEnumerable<(CityDto City, PlayerDto Owner)> cities,
 			Guid? cityId,
-			string cityName,
+			string? cityName,
 			string cityNameStartsWith)
 		{
 			if (cityId.HasValue)
@@ -135,15 +136,15 @@ namespace CivOne.Mcp.Tools
 			return [.. cities.Where(x => !string.IsNullOrWhiteSpace(x.City.Name) && x.City.Name.StartsWith(cityNameStartsWith, StringComparison.OrdinalIgnoreCase))];
 		}
 
-		private object BuildEnrichedCity(CityDto city, PlayerDto owner)
+		private JsonSerializerOptions _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+		private Dictionary<string, object> BuildEnrichedCity(CityDto city, PlayerDto owner)
 		{
-			Dictionary<string, object> baseData = JsonSerializer.Deserialize<Dictionary<string, object>>(_jsonWriter.AsString(city), new JsonSerializerOptions
-			{
-				PropertyNameCaseInsensitive = true
-			}) ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+			Dictionary<string, object> baseData = 
+				JsonSerializer.Deserialize<Dictionary<string, object>>(_jsonWriter.AsString(city), _jsonOptions) ?? 
+					new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
 			baseData["ownerGuid"] = owner?.PlayerGuid ?? Guid.Empty;
-			baseData["ownerTribeName"] = owner?.TribeName;
+			baseData["ownerTribeName"] = owner?.TribeName!;
 			baseData["productionView"] = BuildProductionView(city);
 			baseData["unrestView"] = BuildUnrestView(city);
 			baseData["happinessView"] = BuildHappinessView(city);
@@ -178,9 +179,9 @@ namespace CivOne.Mcp.Tools
 
 		private static object BuildUnrestView(CityDto city)
 		{
-			bool isRiot = HasStatus(city, CityStatusEnum.Riot);
-			bool isCelebrating = HasStatus(city, CityStatusEnum.CelebrationRapture);
-			bool celebrationCancelled = HasStatus(city, CityStatusEnum.CelebrationCancelled);
+			bool isRiot = HasStatus(city, CityStatus.Riot);
+			bool isCelebrating = HasStatus(city, CityStatus.CelebrationRapture);
+			bool celebrationCancelled = HasStatus(city, CityStatus.CelebrationCancelled);
 			return new
 			{
 				isRiot,
@@ -196,9 +197,9 @@ namespace CivOne.Mcp.Tools
 			int specialistCount = city.Specialists?.Count ?? 0;
 
 			string mood = "Stable";
-			if (HasStatus(city, CityStatusEnum.Riot))
+			if (HasStatus(city, CityStatus.Riot))
 				mood = "Riot";
-			else if (HasStatus(city, CityStatusEnum.CelebrationRapture) && !HasStatus(city, CityStatusEnum.CelebrationCancelled))
+			else if (HasStatus(city, CityStatus.CelebrationRapture) && !HasStatus(city, CityStatus.CelebrationCancelled))
 				mood = "Celebration";
 			else if (city.WasInDisorder)
 				mood = "Recovering";
@@ -212,10 +213,10 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private static bool HasStatus(CityDto city, CityStatusEnum status)
+		private static bool HasStatus(CityDto city, CityStatus status)
 			=> (city.Status ?? []).Contains(status);
 
-		private object ProjectByKeys(object source, string[] keys, ISet<string> invalidKeys)
+		private Dictionary<string, object> ProjectByKeys(object source, string[] keys, HashSet<string> invalidKeys)
 		{
 			using JsonDocument document = JsonDocument.Parse(_jsonWriter.AsString(source));
 			Dictionary<string, JsonElement> propertyMap = document.RootElement
@@ -231,13 +232,13 @@ namespace CivOne.Mcp.Tools
 					continue;
 				}
 
-				output[propertyMap.Keys.First(k => string.Equals(k, key, StringComparison.OrdinalIgnoreCase))] = JsonSerializer.Deserialize<object>(value.GetRawText());
+				output[propertyMap.Keys.First(k => string.Equals(k, key, StringComparison.OrdinalIgnoreCase))] = JsonSerializer.Deserialize<object>(value.GetRawText()) ?? null!;
 			}
 
 			return output;
 		}
 
-		private McpResponse JsonResponse(object id, object payload)
+		private McpResponse JsonResponse(object? id, object payload)
 			=> McpJsonToolResponse.JsonResponse(id, payload, _jsonWriter, _maxJsonChars);
 
 		private object BuildSuccessPayload(object data)
@@ -246,7 +247,7 @@ namespace CivOne.Mcp.Tools
 			return new
 			{
 				ok = true,
-				path = (string)null,
+				path = (string)null!,
 				truncated = false,
 				maxChars = _maxJsonChars,
 				returnedChars = payloadJson.Length,
@@ -254,20 +255,20 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private object BuildErrorPayload(string code, string message, string failedSegment)
+		private object BuildErrorPayload(string code, string? message, string? failedSegment)
 		{
 			return new
 			{
 				ok = false,
-				path = (string)null,
+				path = (string)null!,
 				truncated = false,
 				maxChars = _maxJsonChars,
 				returnedChars = 0,
-				error = new { code, message, path = (string)null, failedSegment }
+				error = new { code, message, path = (string)null!, failedSegment }
 			};
 		}
 
-		private static bool ValidateParamsObject(McpRequest request, out McpResponse response)
+		private static bool ValidateParamsObject(McpRequest request, [NotNullWhen(false)] out McpResponse? response)
 		{
 			response = null;
 			if (request.Params.ValueKind == JsonValueKind.Undefined || request.Params.ValueKind == JsonValueKind.Null)
@@ -284,7 +285,7 @@ namespace CivOne.Mcp.Tools
 			return false;
 		}
 
-		private static bool TryReadOptionalGuid(JsonElement value, string propertyName, out Guid? result, out string error)
+		private static bool TryReadOptionalGuid(JsonElement value, string propertyName, out Guid? result, [NotNullWhen(false)] out string? error)
 		{
 			result = null;
 			error = null;
@@ -304,7 +305,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryReadOptionalString(JsonElement value, string propertyName, out string result, out string error)
+		private static bool TryReadOptionalString(JsonElement value, string propertyName, out string? result, [NotNullWhen(false)] out string? error)
 		{
 			result = null;
 			error = null;
@@ -324,7 +325,7 @@ namespace CivOne.Mcp.Tools
 			return true;
 		}
 
-		private static bool TryReadKeys(JsonElement value, out string[] keys, out string error)
+		private static bool TryReadKeys(JsonElement value, out string[] keys, [NotNullWhen(false)] out string? error)
 		{
 			keys = [];
 			error = null;
@@ -350,7 +351,7 @@ namespace CivOne.Mcp.Tools
 					return false;
 				}
 
-				string text = item.GetString();
+				string? text = item.GetString();
 				if (!string.IsNullOrWhiteSpace(text))
 					parsed.Add(text.Trim());
 			}

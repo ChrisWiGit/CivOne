@@ -23,15 +23,31 @@ namespace CivOne.Services.Screen
 		public IScreen[] Screens => Common.Screens;
 
 		/// <inheritdoc/>
-		public IScreen LastScreen => Common.LastScreen;
+		public IScreen? LastScreen => Common.LastScreen;
 
 		/// <inheritdoc/>
-		public IScreen TopScreen => Common.TopScreen;
+		public IScreen? TopScreen => Common.TopScreen;
 
 		/// <inheritdoc/>
 		public void AddScreen(IScreen screen) => Common.AddScreen(screen);
 
 		/// <inheritdoc/>
 		public void DestroyScreen(IScreen screen) => Common.DestroyScreen(screen);
+
+		public bool HasScreenType<T>() where T : IScreen
+		{
+			return Common.HasScreenType<T>();
+		}
+
+		
+		public bool HasTopScreen<T>() where T : IScreen
+		{
+			return HasScreenType<T>() && TopScreen != null && TopScreen.GetType() == typeof(T);
+		}
+
+		public bool HasLastScreen<T>() where T : IScreen
+		{
+			return HasScreenType<T>() && LastScreen != null && LastScreen.GetType() == typeof(T);
+		}
 	}
 }

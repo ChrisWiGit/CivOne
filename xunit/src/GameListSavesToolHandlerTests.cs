@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json;
 using CivOne.Mcp.Contracts;
@@ -29,7 +30,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Handle_InvalidCosFiles_AreOmittedFromResponse()
+		public void HandleInvalidCosFilesAreOmittedFromResponse()
 		{
 			CreateValidCos(Path.Combine(_tempFolder, "valid.cos"));
 			File.WriteAllText(Path.Combine(_tempFolder, "broken.cos"), "not: yaml: save");
@@ -67,7 +68,10 @@ namespace CivOne.UnitTests
 					HumanPlayer = 0,
 					CurrentPlayer = 0,
 					Players = [],
-					Map = null
+					Map = new MapDto
+					{
+						Tiles = new Map2d<TileDto>(0, 0)
+					}
 				}
 			};
 
@@ -80,6 +84,7 @@ namespace CivOne.UnitTests
 			File.WriteAllText(filePath, yaml);
 		}
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Test cleanup")]
 		public void Dispose()
 		{
 			try

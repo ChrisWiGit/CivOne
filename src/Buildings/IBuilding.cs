@@ -16,10 +16,10 @@ namespace CivOne.Buildings
 	public interface IBuilding : ICivilopedia, IProduction
 	{
 		byte Id { get; }
-		IAdvance RequiredTech { get; }
+		IAdvance? RequiredTech { get; }
 		IAdvance[] ObsoleteTechs { get; }
 		byte Maintenance { get; }
-		IBitmap SmallIcon { get; }
+		IBitmap? SmallIcon { get; }
 		short SellPrice { get; }
 
 		Building Type { get; }

@@ -11,7 +11,7 @@ namespace CivOne.Services.Palace
 {
 	internal static class PalaceUpgradeServiceFactory
 	{
-		private static IPalaceUpgradeService _instance;
+		private static IPalaceUpgradeService? _instance;
 
 		public static IPalaceUpgradeService GetInstance()
 		{

@@ -32,7 +32,7 @@ namespace CivOne.UnitTests
 		[InlineData(350, 1750)]
 		[InlineData(400, 1850)]
 		[InlineData(500, 1950)]
-		public void TurnToYear_ReturnsExpectedYear(ushort turn, int expectedYear)
+		public void TurnToYearReturnsExpectedYear(ushort turn, int expectedYear)
 		{
 			var actual = _testee.TurnToYear(turn);
 
@@ -50,7 +50,7 @@ namespace CivOne.UnitTests
 		[InlineData(1750, (ushort)350)]
 		[InlineData(1850, (ushort)400)]
 		[InlineData(1950, (ushort)500)]
-		public void YearToTurn_ReturnsExpectedTurn(int year, ushort expectedTurn)
+		public void YearToTurnReturnsExpectedTurn(int year, ushort expectedTurn)
 		{
 			var actual = _testee.YearToTurn(year);
 
@@ -62,7 +62,7 @@ namespace CivOne.UnitTests
 		[InlineData(199, "20 BC")]
 		[InlineData(200, "1 AD")]
 		[InlineData(400, "1850 AD")]
-		public void FormatYear_WithIdentityTranslation_ReturnsExpectedString(ushort turn, string expected)
+		public void FormatYearWithIdentityTranslationReturnsExpectedString(ushort turn, string expected)
 		{
 			var actual = _testee.FormatYear(turn);
 
@@ -74,7 +74,7 @@ namespace CivOne.UnitTests
 		[InlineData(199, "BC")]
 		[InlineData(200, "AD")]
 		[InlineData(400, "AD")]
-		public void FormatEra_WithIdentityTranslation_ReturnsExpectedEra(ushort turn, string expectedEra)
+		public void FormatEraWithIdentityTranslationReturnsExpectedEra(ushort turn, string expectedEra)
 		{
 			var actual = _testee.FormatEra(turn);
 
@@ -82,7 +82,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void TurnToYear_AndYearToTurn_AreConsistentRoundTrip()
+		public void TurnToYearAndYearToTurnAreConsistentRoundTrip()
 		{
 			ushort expectedTurn = 250;
 

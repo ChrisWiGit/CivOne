@@ -24,7 +24,7 @@ namespace CivOne.Screens.Reports
 		private readonly City[] _cities;
 
 		private bool _update = true;
-		private int _page = 0;
+		private int _page;
 
 		private void Render()
 		{
@@ -93,10 +93,17 @@ namespace CivOne.Screens.Reports
 
 		private void DrawBuilding<T>(City city, ref int x, int y) where T : IBuilding
 		{
-			IBuilding building;
+			IBuilding? building;
 			if ((building = city.Buildings.FirstOrDefault(b => b is T)) == null) return;
 
-			this.AddLayer(building.SmallIcon, x, y - 1);
+			if (building.SmallIcon == null) 
+			{
+				Log($"City {city.Name} has building {building.GetType().Name} without small icon");
+			}
+			else
+			{
+				this.AddLayer(building.SmallIcon, x, y - 1);
+			}
 			x += 18;
 		}
 
@@ -163,7 +170,7 @@ namespace CivOne.Screens.Reports
 
 		public AttitudeSurvey() : base(9)
 		{
-			_cities = Game.GetCities().Where(c => Human == c.Owner && c.Size > 0).ToArray();
+			_cities = Game.GetCities().Where(c => Human == c.CityOwnerPlayerIndex && c.Size > 0).ToArray();
 			Render();
 		}
 	}

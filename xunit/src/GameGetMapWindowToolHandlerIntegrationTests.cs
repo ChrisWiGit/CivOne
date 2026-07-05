@@ -13,12 +13,11 @@ namespace CivOne.UnitTests
 	{
 		[Fact]
 		[Trait("Category", "IntegrationEarthYaml")]
-		public void Handle_FullMapViaMapSizeTool_EncodedFormat_IsNotTruncated()
+		public void HandleFullMapViaMapSizeToolEncodedFormatIsNotTruncated()
 		{
 			// Arrange
 			IGameStateDtoSnapshotProvider snapshotProvider = new GameStateDtoSnapshotProvider(
 				new RuntimeHandlerGameTickProvider(),
-				new GameStateHandler(),
 				YamlMapperDependenciesFactory.CreateDefault());
 
 			GameGetMapSizeToolHandler mapSizeTool = new(snapshotProvider, new JsonSaveGameStateWriter(), 32000);
@@ -55,7 +54,8 @@ namespace CivOne.UnitTests
 
 			JsonElement rows = root.GetProperty("data").GetProperty("window").GetProperty("rows");
 			Assert.Equal(height, rows.GetArrayLength());
-			Assert.Equal(width * 2, rows[0].GetString().Length);
+			Assert.NotNull(rows[0].GetString());
+			Assert.Equal(width * 2, rows[0].GetString()!.Length);
 
 			Assert.Equal(width, root.GetProperty("data").GetProperty("mapSize").GetProperty("width").GetInt32());
 			Assert.Equal(height, root.GetProperty("data").GetProperty("mapSize").GetProperty("height").GetInt32());
@@ -63,12 +63,11 @@ namespace CivOne.UnitTests
 
 		[Fact]
 		[Trait("Category", "IntegrationEarthYaml")]
-		public void Handle_EncodedFormat_WithEarthYamlSnapshot_ReturnsWindowRows()
+		public void HandleEncodedFormatWithEarthYamlSnapshotReturnsWindowRows()
 		{
 			// Arrange
 			IGameStateDtoSnapshotProvider snapshotProvider = new GameStateDtoSnapshotProvider(
 				new RuntimeHandlerGameTickProvider(),
-				new GameStateHandler(),
 				YamlMapperDependenciesFactory.CreateDefault());
 
 			GameGetMapWindowToolHandler testee = new(snapshotProvider, new JsonSaveGameStateWriter(), 32000);
@@ -90,9 +89,12 @@ namespace CivOne.UnitTests
 
 			JsonElement rows = root.GetProperty("data").GetProperty("window").GetProperty("rows");
 			Assert.Equal(3, rows.GetArrayLength());
-			Assert.Equal(10, rows[0].GetString().Length); // width 5 * 2 chars per tile
-			Assert.Equal(10, rows[1].GetString().Length);
-			Assert.Equal(10, rows[2].GetString().Length);
+			Assert.NotNull(rows[0].GetString());
+			Assert.Equal(10, rows[0].GetString()!.Length); // width 5 * 2 chars per tile
+			Assert.NotNull(rows[1].GetString());
+			Assert.Equal(10, rows[1].GetString()!.Length);
+			Assert.NotNull(rows[2].GetString());
+			Assert.Equal(10, rows[2].GetString()!.Length);
 		}
 	}
 }

@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Enums;
 using CivOne.Graphics;
 
@@ -17,6 +18,6 @@ namespace CivOne.Screens.SpaceShipAssets
 	/// </summary>
 	public interface ISpaceShipSpriteProvider
 	{
-		bool TryGetPartSprite(SpaceShipComponentType partType, out Picture sprite);
+		bool TryGetPartSprite(SpaceShipComponentType partType, [NotNullWhen(true)] out Picture? sprite);
 	}
 }

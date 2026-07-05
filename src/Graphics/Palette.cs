@@ -84,6 +84,7 @@ namespace CivOne.Graphics
 		public static Palette Copy(Palette source) => new(source);
 
 		public static implicit operator Palette(Colour[] palette) => new(palette);
+		public static Palette ToPalette(Colour[] palette) => new(palette);
 
 		private Palette(Colour[] palette) : this(palette.Length)
 		{
@@ -98,5 +99,7 @@ namespace CivOne.Graphics
 		public Palette(int length = 256) : base(length * 4)
 		{
 		}
+
+		public static readonly Palette Empty = new(0);
 	}
 }

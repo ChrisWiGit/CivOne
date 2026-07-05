@@ -8,10 +8,10 @@ namespace CivOne.Persistence.Model
     public class MapLocation
     {
         // [Doc("The X coordinate of the location.")]
-        public readonly uint X;
+        public uint X { get; }
 
         // [Doc("The Y coordinate of the location.")]
-        public readonly uint Y;
+        public uint Y { get; }
 
         public MapLocation() : this(0, 0)
 		{
@@ -45,7 +45,21 @@ namespace CivOne.Persistence.Model
         public static MapLocation operator +(MapLocation left, MapLocation right) => new(left.X + right.X, left.Y + right.Y);
         public static MapLocation operator -(MapLocation left, MapLocation right) => new(left.X - right.X, left.Y - right.Y);
 
-        public override bool Equals(object obj)
+        /// <summary>
+        /// Returns a new MapLocation that is the sum of this location and another location. This is equivalent to using the + operator, but provided as a method for convenience and readability in some contexts.
+        /// </summary>
+        /// <param name="other">The other MapLocation to add to this one.</param>
+        /// <returns>A new MapLocation that is the sum of this location and the other location.</returns>
+        public MapLocation Add(MapLocation other) => this + other;
+        
+        /// <summary>
+        /// Returns a new MapLocation that is the difference between this location and another location. This is equivalent to using the - operator, but provided as a method for convenience and readability in some contexts.
+        /// </summary>
+        /// <param name="other">The other MapLocation to subtract from this one.</param>
+        /// <returns>A new MapLocation that is the difference between this location and the other location.</returns>
+        public MapLocation Subtract(MapLocation other) => this - other;
+
+        public override bool Equals(object? obj)
         {
             if (obj is not MapLocation other) return false;
             return X == other.X && Y == other.Y;

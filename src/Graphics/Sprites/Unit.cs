@@ -15,12 +15,11 @@ namespace CivOne.Graphics.Sprites
 {
 	public static class Unit
 	{
-		private static IBitmap BaseSprite(UnitType type) => CivOne.Units.BaseUnit.GetBaseSprite(type);
-		private static Free Free => Free.Instance;
+		private static IBitmap? BaseSprite(UnitType type) => Units.BaseUnit.GetBaseSprite(type);
 		private static Resources Resources => Resources.Instance;
 		private static Settings Settings => Settings.Instance;
 
-		private static bool GFX256 => (Settings.GraphicsMode == GraphicsMode.Graphics256);
+		private static bool GFX256 => Settings.GraphicsMode == GraphicsMode.Graphics256;
 
 		private static Bytemap GetUnit((UnitType Type, byte PlayerNumber) unit)
 		{
@@ -28,7 +27,7 @@ namespace CivOne.Graphics.Sprites
 			byte colourLight = Common.ColourLight[unit.PlayerNumber];
 			int unitId = (int)unit.Type;
 
-			IBitmap baseSprite = BaseSprite(unit.Type);
+			IBitmap? baseSprite = BaseSprite(unit.Type);
 			Bytemap output;
 			if (baseSprite != null)
 			{
@@ -38,7 +37,7 @@ namespace CivOne.Graphics.Sprites
 			else
 			{
 				string resFile = GFX256 ? "SP257" : "SPRITES";
-				int xx = (unitId % 20) * 16;
+				int xx = unitId % 20 * 16;
 				int yy = unitId < 20 ? 160 : 176;
 
 				if (Resources.Exists(resFile))
@@ -72,7 +71,7 @@ namespace CivOne.Graphics.Sprites
 		{
 			return new Picture(16, 16)
 				.AddLayer(BaseUnit[(unit.Type, unit.PlayerNumber)].Bitmap)
-				.AddLayer(Generic.Fortify)
+				.AddLayer(FortifySprite.Fortify)
 				.Bitmap;
 		}
 
@@ -84,10 +83,10 @@ namespace CivOne.Graphics.Sprites
 				.Bitmap;
 		}
 
-		private static ISpriteCollection<(UnitType, byte)> BaseUnit = new CachedSpriteCollection<(UnitType, byte)>(GetUnit);
-		private static ISpriteCollection<(UnitType, byte)> SentryUnit = new CachedSpriteCollection<(UnitType, byte)>(GetUnitSentry);
-		private static ISpriteCollection<(UnitType, byte)> FortifyUnit = new CachedSpriteCollection<(UnitType, byte)>(GetUnitFortify);
-		private static ISpriteCollection<(UnitType, char, byte)> LetterUnit = new CachedSpriteCollection<(UnitType, char, byte)>(GetUnitLetter);
+		private static readonly CachedSpriteCollection<(UnitType, byte)> BaseUnit = new(GetUnit);
+		private static readonly CachedSpriteCollection<(UnitType, byte)> SentryUnit = new(GetUnitSentry);
+		private static readonly CachedSpriteCollection<(UnitType, byte)> FortifyUnit = new(GetUnitFortify);
+		private static readonly CachedSpriteCollection<(UnitType, char, byte)> LetterUnit = new(GetUnitLetter);
 		public static ISprite Base<T>(byte playerNumber) where T : IUnit, new() => BaseUnit[(new T().Type, playerNumber)];
 		public static ISprite Base(UnitType type, byte playerNumber) => BaseUnit[(type, playerNumber)];
 		public static ISprite Sentry<T>(byte playerNumber) where T : IUnit, new() => SentryUnit[(new T().Type, playerNumber)];

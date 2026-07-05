@@ -10,14 +10,14 @@ namespace CivOne.Persistence.Model
 	/// </summary>
 	public class SaveGameMetaDataDto
 	{
-		public string GameStartedAt { get; set; }
+		public string GameStartedAt { get; set; } = string.Empty;
 
-		public string GameVersion { get; set; }
+		public string GameVersion { get; set; } = string.Empty;
 
 		public long PlayDurationMinutes { get; set; }
 
 		[Doc("A user-friendly name for the save game, which can be displayed in load/save dialogs. This is not used by the game logic and is purely for presentation purposes.")]
-		public string DisplayName { get; set; }
+		public string DisplayName { get; set; } = string.Empty;
 
 		[Doc("Stable save GUID that uniquely identifies this save across sessions. Generated at save time, persists across load/save cycles.")]
 		public Guid? SaveGuid { get; set; }

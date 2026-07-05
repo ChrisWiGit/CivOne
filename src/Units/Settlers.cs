@@ -364,7 +364,7 @@ namespace CivOne.Units
 			.SetEnabled(Map[X, Y].Pollution)
 			.OnSelect((s, a) => GameTask.Enqueue(Orders.ClearPollution(this)));
 
-		public override IEnumerable<MenuItem<int>> MenuItems
+		public override IEnumerable<MenuItem<int>?> MenuItems
 		{
 			get
 			{

@@ -18,7 +18,7 @@ namespace CivOne.Persistence
 		private readonly PlayerDtoMapper? _playerMapper;
 		private readonly UnitDtoMapper? _unitMapper;
 		private readonly MapDtoMapper? _mapMapper;
-		private readonly DtoMapper<GlobalWarmingDto, GameState>? _globalWarmingMapper;
+		private readonly IDtoMapper<GlobalWarmingDto, GameState>? _globalWarmingMapper;
 		private readonly IValueSanitizer? _sanitizer;
 
 		private readonly SaveGameMetaDataDtoFactory _metaDataFactory;
@@ -39,7 +39,7 @@ namespace CivOne.Persistence
 			PlayerDtoMapper playerMapper,
 			UnitDtoMapper unitMapper,
 			MapDtoMapper mapMapper,
-			DtoMapper<GlobalWarmingDto, GameState> globalWarmingMapper,
+			IDtoMapper<GlobalWarmingDto, GameState> globalWarmingMapper,
 			IValueSanitizer sanitizer,
 			SaveGameMetaDataDtoFactory? metaDataFactory = null
 			)
@@ -89,11 +89,11 @@ namespace CivOne.Persistence
 			ArgumentNullException.ThrowIfNull(snapshot);
 
 			var mapper = new GameStateDtoMapper(
-				_playerMapper,
-				_unitMapper,
-				_mapMapper,
-				_globalWarmingMapper,
-				_sanitizer);
+				_playerMapper!,
+				_unitMapper!,
+				_mapMapper!,
+				_globalWarmingMapper!,
+				_sanitizer!);
 			return mapper.ToDto(snapshot);
 		}
 	}

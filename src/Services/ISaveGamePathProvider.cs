@@ -20,8 +20,9 @@ namespace CivOne.Services
 
         /// <summary>
         /// Returns the last used savegame path, or null if not set.
+        /// The returned path is not guaranteed to exist.
         /// </summary>
-        string EnsureLastUsedSaveGamePath();
+        string? EnsureLastUsedSaveGamePath();
 
         /// <summary>
         /// Returns the directory to be used for autosaves, ensuring it exists.

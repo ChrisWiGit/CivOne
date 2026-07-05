@@ -23,7 +23,7 @@ namespace CivOne.Units
 		/**
 		 * Enable or disable the ability to cross a canal city without losing all movement points.
 		 */
-		private Boolean AllowCanalCity => Settings.Instance.CanalCity;
+		private static bool AllowCanalCity => Settings.Instance.CanalCity;
 
 		private readonly int _range;
 
@@ -31,12 +31,12 @@ namespace CivOne.Units
 
 		protected virtual IEnumerable<IUnit> MoveUnits(ITile previousTile)
 		{
-			if (this is not IBoardable || !previousTile.Units.Any(u => u.Class == UnitClass.Land)) yield break;
+			if (this is not IBoardable boardable || !previousTile.Units.Any(u => u.UnitCategory == UnitClass.Land)) yield break;
 
-			IUnit[] moveUnits = previousTile.Units.Where(u => u.Class == UnitClass.Land).ToArray();
+			IUnit[] moveUnits = [.. previousTile.Units.Where(u => u.UnitCategory == UnitClass.Land)];
 			if (previousTile.City != null)
-				moveUnits = moveUnits.Where(u => u.Sentry).ToArray();
-			moveUnits = moveUnits.Take((this as IBoardable).Cargo).ToArray();
+				moveUnits = [.. moveUnits.Where(u => u.Sentry)];
+			moveUnits = [.. moveUnits.Take(boardable.Cargo)];
 			foreach (IUnit unit in moveUnits)
 			{
 				yield return unit;
@@ -80,10 +80,10 @@ namespace CivOne.Units
 		{
 			IUnit[] units;
 
-			if (this is not IBoardable)
+			if (this is not IBoardable boardable)
 				return false;
 
-			units = [.. Map[X, Y].Units.Where(u => u.Class is UnitClass.Air or UnitClass.Land).Take((this as IBoardable).Cargo)];
+			units = [.. Map[X, Y].Units.Where(u => u.UnitCategory is UnitClass.Air or UnitClass.Land).Take(boardable.Cargo)];
 			if (units.Length == 0)
 				return false;
 
@@ -104,7 +104,7 @@ namespace CivOne.Units
 
 		private MenuItem<int> MenuUnload() => MenuItem<int>.Create("Unload").SetShortcut("u").OnSelect((s, a) => Unload());
 
-		public override IEnumerable<MenuItem<int>> MenuItems
+		public override IEnumerable<MenuItem<int>?> MenuItems
 		{
 			get
 			{
@@ -117,7 +117,7 @@ namespace CivOne.Units
 					yield return MenuHomeCity();
 				}
 
-				if (Role == UnitRole.Transport && Map[X, Y].Units.Any(u => u.Class is UnitClass.Land or UnitClass.Air))
+				if (Role == UnitRole.Transport && Map[X, Y].Units.Any(u => u.UnitCategory is UnitClass.Land or UnitClass.Air))
 				{
 					yield return MenuUnload();
 				}
@@ -137,13 +137,13 @@ namespace CivOne.Units
 		{
 			base.NewTurn();
 
-			Player player = Game.GetPlayer(Owner);
-			if (player.HasWonder<MagellansExpedition>() || (!Game.WonderObsolete<Lighthouse>() && player.HasWonder<Lighthouse>())) MovesLeft++;
+			Player? player = Game.GetPlayer(Owner);
+			if (player != null && (player.HasWonder<MagellansExpedition>() || (!Game.WonderObsolete<Lighthouse>() && player.HasWonder<Lighthouse>()))) MovesLeft++;
 		}
 
 		protected BaseUnitSea(byte price = 1, byte attack = 1, byte defense = 1, byte move = 1, int range = 1) : base(price, attack, defense, move)
 		{
-			Class = UnitClass.Water;
+			UnitCategory = UnitClass.Water;
 			_range = range;
 			Role = UnitRole.SeaAttack;
 		}

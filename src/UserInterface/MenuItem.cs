@@ -13,21 +13,23 @@ using CivOne.Events;
 
 namespace CivOne.UserInterface
 {
+	#pragma warning disable CA1710
+
 	public class MenuItem<T>
 	{
-		private MenuItemEventArgs<T> _args => new MenuItemEventArgs<T>(Value);
+		private MenuItemEventArgs<T?> _args => new(Value);
 		private const int MaxDescriptionLines = 3;
 
-		public event MenuItemEventHandler<T> Selected;
-		public event MenuItemEventHandler<T> RightClick;
-		public event MenuItemEventHandler<T> GetHelp;
-		public T Value { get; private set; }
+		public event MenuItemEventAction<T?>? Selected;
+		public event MenuItemEventAction<T?>? RightClick;
+		public event MenuItemEventAction<T?>? GetHelp;
+		public T? Value { get; private set; }
 		public bool Enabled { get; set; }
-		public string Text { get; set; }
-		public string[] Description { get; private set; }
-		public string Shortcut { get; set; }
-		public string[] Shortcuts { get; set; }
-		public Func<bool> SelectedCondition { get; set; }
+		public string? Text { get; set; }
+		public string[] Description { get; private set; } = [];
+		public string? Shortcut { get; set; }
+		public string[]? Shortcuts { get; set; }
+		public Func<bool>? SelectedCondition { get; set; }
 
 		internal void Select()
 		{
@@ -38,7 +40,6 @@ namespace CivOne.UserInterface
 
 		internal void Help()
 		{
-			if (Selected == null) return;
 			GetHelp?.Invoke(this, _args);
 		}
 
@@ -52,9 +53,13 @@ namespace CivOne.UserInterface
 			RightClick(this, _args);
 		}
 
-		internal static MenuItem<T> Create(string text, T value = default(T))
+		internal static MenuItem<T> Create(string? text, T? value = default)
 		{
 			return new MenuItem<T>(text, value);
+		}
+		internal static MenuItem<T> CreateSeparator()
+		{
+			return new MenuItem<T>(null, default).Disable();
 		}
 
 		internal void SetDescription(params string[] description)
@@ -68,7 +73,7 @@ namespace CivOne.UserInterface
 			List<string> lines = [];
 			for (int i = 0; i < description.Length && lines.Count < MaxDescriptionLines; i++)
 			{
-				string line = description[i]?.Trim();
+				string? line = description[i]?.Trim();
 				if (!string.IsNullOrWhiteSpace(line))
 				{
 					lines.Add(line);
@@ -78,23 +83,22 @@ namespace CivOne.UserInterface
 			Description = [.. lines];
 		}
 
-		protected MenuItem(string text, T value = default(T))
+		protected MenuItem(string? text, T? value = default)
 		{
 			Enabled = true;
 			Text = text;
 			Value = value;
-			Description = Array.Empty<string>();
 		}
 	}
 
 	public class DescriptionItem<T> : MenuItem<T>
 	{
-		internal static DescriptionItem<T> Create(string text, string[] description, T value = default(T))
+		internal static DescriptionItem<T> Create(string text, string[] description, T? value = default)
 		{
 			return new DescriptionItem<T>(text, description, value);
 		}
 
-		protected DescriptionItem(string text, string[] description, T value = default(T)) : base(text, value)
+		protected DescriptionItem(string text, string[] description, T? value = default) : base(text, value)
 		{
 			SetDescription(description);
 		}
@@ -116,10 +120,12 @@ namespace CivOne.UserInterface
 
 	public static class Description<T>
 	{
+		#pragma warning disable CA1000
 		public static MenuItem<T> Create(params string[] description)
 		{
 			return MenuDescriptionItem<T>.Create(description);
 		}
+		#pragma warning restore CA1000
 	}
 
 	public static class Description

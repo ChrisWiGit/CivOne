@@ -21,7 +21,7 @@ namespace CivOne.Screens
 		public static int[] ZeroOffsets => new int[LayerCount];
 
 		private readonly IRandomService _randomService = randomService;
-		private (int x, int y, int layer)[] _starfieldPoints;
+		private (int x, int y, int layer)[]? _starfieldPoints;
 		private readonly int[] _lastParallaxOffsets = [-1, -1, -1, -1];
 		private int _starFieldWidth;
 		private int _starFieldHeight;
@@ -62,6 +62,10 @@ namespace CivOne.Screens
 		public void DrawStarfield(IBitmap target, int ox, int oy, int starFieldWidth, int starFieldHeight, int[] parallaxOffsets)
 		{
 			InitStarfield(starFieldWidth, starFieldHeight);
+			if (_starfieldPoints == null)
+			{
+				return;
+			}
 			foreach ((int sx, int sy, int layer) in _starfieldPoints)
 			{
 				target.DrawLine(ox + sx, oy + sy, ox + sx + 1, oy + sy + 1, LayerColors[layer]);
@@ -96,7 +100,7 @@ namespace CivOne.Screens
 					while (x >= _starFieldWidth)
 					{
 						x -= _starFieldWidth;
-						y = _randomService.Next(_starFieldHeight);
+						y = _randomService.NextInt(_starFieldHeight);
 					}
 
 					_starfieldPoints[index] = (x, y, starLayer);
@@ -119,7 +123,7 @@ namespace CivOne.Screens
 			for (int i = 0; i < points.Length; i++)
 			{
 				int layer = i / StarsPerLayer;
-				points[i] = (_randomService.Next(starFieldWidth), _randomService.Next(starFieldHeight), layer);
+				points[i] = (_randomService.NextInt(starFieldWidth), _randomService.NextInt(starFieldHeight), layer);
 			}
 
 			_starfieldPoints = points;

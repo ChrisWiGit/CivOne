@@ -17,7 +17,6 @@ using CivOne.Buildings;
 using CivOne.Civilizations;
 using CivOne.Concepts;
 using CivOne.Governments;
-using CivOne.Graphics.Sprites;
 using CivOne.Leaders;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -43,16 +42,16 @@ namespace CivOne
 	{
 		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
 
-		private static Plugin[] _plugins;
+		private static Plugin[]? _plugins;
 		private static void LoadPlugins()
 		{
 			if (_plugins != null) return;
-			_plugins = Directory.GetFiles(Settings.Instance.PluginsDirectory, "*.dll").Select(x => Plugin.Load(x)).Where(x => x != null).ToArray();
+			_plugins = [.. Directory.GetFiles(Settings.Instance.PluginsDirectory, "*.dll").Select(Plugin.Load).OfType<Plugin>()];
 
-			string[] disabledPlugins = Settings.Instance.DisabledPlugins.ToArray();
-			if (_plugins.Any(x => !disabledPlugins.Contains(x.Filename)))
+			string[] disabledPlugins = [.. Settings.Instance.DisabledPlugins];
+			if (_plugins.Any(x => !disabledPlugins.Contains(x?.Filename)))
 			{
-				Settings.Instance.DisabledPlugins = _plugins.Where(x => !x.Enabled).Select(x => x.Filename).ToArray();
+				Settings.Instance.DisabledPlugins = [.. _plugins.Where(x => !x.Enabled).Select(x => x.Filename)];
 			}
 		}
 
@@ -60,15 +59,16 @@ namespace CivOne
 		{
 			if (!Plugin.Validate(filename)) return;
 
-			List<Plugin> plugins = new List<Plugin>(_plugins ?? new Plugin[0]);
+			List<Plugin>? plugins = [.. _plugins ?? []];
 
-			Plugin plugin = Plugin.Load(filename);
+			Plugin? plugin = Plugin.Load(filename);
+			if (plugin == null) return;
 			plugin.Enabled = true;
 
-			plugins.RemoveAll(x => x.Filename == Path.GetFileName(filename));
+			plugins.RemoveAll(x => x?.Filename == null || x?.Filename == Path.GetFileName(filename));
 			plugins.Add(plugin);
 
-			_plugins = plugins.ToArray();
+			_plugins = [.. plugins];
 
 			ApplyPlugins();
 		}
@@ -80,19 +80,33 @@ namespace CivOne
 				yield return typeof(Reflect).GetTypeInfo().Assembly;
 			}
 		}
+
+		public static T SafeCreateInstance<T>(Type type)
+		{
+			if (!typeof(T).IsAssignableFrom(type))
+			{
+				throw new ArgumentException(
+					$"Type '{type.FullName}' is not assignable to '{typeof(T).FullName}'.",
+					nameof(type));
+			}
+
+			return (T)(Activator.CreateInstance(type)
+				?? throw new InvalidOperationException(
+					$"Could not create instance of type '{type.FullName}'."));
+		}
 		
 		private static IEnumerable<T> GetTypes<T>()
 		{
 			foreach (Assembly asm in GetAssemblies)
 			foreach (Type type in asm.GetTypes().Where(t => typeof(T).GetTypeInfo().IsAssignableFrom(t.GetTypeInfo()) && t.GetTypeInfo().IsClass && !t.GetTypeInfo().IsAbstract))
 			{
-				yield return (T)Activator.CreateInstance(type);
+				yield return SafeCreateInstance<T>(type);
 			}
 
 			foreach (Assembly asm in GetAssemblies)
 			foreach (Type type in asm.GetTypes().Where(t => (t is T) && t.GetTypeInfo().IsClass && !t.GetTypeInfo().IsAbstract))
 			{
-				yield return (T)Activator.CreateInstance(type);
+				yield return SafeCreateInstance<T>(type);
 			}
 		}
 		
@@ -122,7 +136,7 @@ namespace CivOne
 		
 		internal static IEnumerable<ICivilopedia> GetCivilopediaAll()
 		{
-			List<string> articles = new List<string>();
+			List<string> articles = [];
 			foreach (ICivilopedia article in GetTypes<ICivilopedia>().OrderBy(a => (a is IConcept) ? 1 : 0))
 			{
 				if (articles.Contains(article.Name)) continue;
@@ -159,7 +173,7 @@ namespace CivOne
 				LoadPlugins();
 				ApplyPlugins();
 			}
-			return _plugins;
+			return _plugins ?? [];
 		}
 
 		private static IEnumerable<Type> PluginModifications
@@ -168,7 +182,7 @@ namespace CivOne
 			{
 				if (_plugins == null) yield break;
 				foreach (Assembly assembly in _plugins.Where(x => x.Enabled).Select(x => x.Assembly))
-				foreach (Type type in assembly.GetTypes().Where(x => x.IsClass && !x.IsAbstract && x.GetInterfaces().Contains(typeof(IModification))))
+				foreach (Type type in assembly.GetTypes().Where(x => x.IsClass && !x.IsAbstract && x.GetInterfaces().Contains(typeof(Modification))))
 				{
 					yield return type;
 				}
@@ -177,7 +191,7 @@ namespace CivOne
 
 		private static object[] ParseParameters(params object[] parameters)
 		{
-			List<object> output = new List<object>();
+			List<object> output = [];
 			foreach (object parameter in parameters)
 			{
 				switch (parameter)
@@ -193,21 +207,21 @@ namespace CivOne
 						break;
 				}
 			}
-			return output.ToArray();
+			return [.. output];
 		}
 
 		internal static IEnumerable<T> GetModifications<T>()
 		{
 			foreach (Type type in PluginModifications.Where(x => x.IsSubclassOf(typeof(T))))
 			{
-				yield return (T)Activator.CreateInstance(type);
+				yield return SafeCreateInstance<T>(type);
 			}
 		}
 		
 		internal static void PreloadCivilopedia()
 		{
 			Log("Civilopedia: Preloading articles...");
-			foreach (ICivilopedia article in GetCivilopediaAll());
+			foreach (ICivilopedia _ in GetCivilopediaAll());
 			Log("Civilopedia: Preloading done!");
 		}
 	}

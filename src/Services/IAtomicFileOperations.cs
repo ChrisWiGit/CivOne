@@ -9,7 +9,7 @@ namespace CivOne.Services
 		void MoveFile(string sourcePath, string destinationPath);
 		Stream OpenWriteCreateNew(string path);
 		void CreateDirectory(string path);
-		string GetDirectoryName(string path);
+		string? GetDirectoryName(string path);
 		string GetFileName(string path);
 		string CombinePath(string left, string right);
 	}

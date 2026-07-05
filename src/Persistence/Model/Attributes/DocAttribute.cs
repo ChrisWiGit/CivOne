@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne.Persistence.Model.Attributes
 {
@@ -19,14 +20,15 @@ namespace CivOne.Persistence.Model.Attributes
 	[AttributeUsage(AttributeTargets.Property)]
 	public sealed class DocAttribute(
 		string description,
-		string allowedValuesPropertyName = null,
-		string commentValuesPropertyName = null) : Attribute
+		string? allowedValuesPropertyName = null,
+		string? commentValuesPropertyName = null) : Attribute
 	{
 		public string Description { get; } = description;
-		public string AllowedValuesPropertyName { get; } = allowedValuesPropertyName;
-		public string CommentValuesPropertyName { get; } = commentValuesPropertyName;
-		public string AllowedValues { get; }
+		public string? AllowedValuesPropertyName { get; } = allowedValuesPropertyName;
+		public string? CommentValuesPropertyName { get; } = commentValuesPropertyName;
+		public string? AllowedValues { get; }
 
+		[SuppressMessage("Microsoft.Design", "CA1019:DefineAccessorsForAttributeArguments", Justification = "The properties are accessed through the constructor parameters and do not need separate accessors.")]
 		public DocAttribute(string description, string[] allowedValues) : this(description)
 		{
 			AllowedValues = string.Join(", ", allowedValues);
@@ -42,6 +44,7 @@ namespace CivOne.Persistence.Model.Attributes
 		/// <param name="description"></param>
 		/// <param name="enumType"></param>
 		/// <exception cref="ArgumentException"></exception>
+		[SuppressMessage("Microsoft.Design", "CA1019:DefineAccessorsForAttributeArguments", Justification = "The properties are accessed through the constructor parameters and do not need separate accessors.")]
 		public DocAttribute(string description, Type enumType) : this(description)
 		{
 			if (!enumType.IsEnum)
@@ -50,7 +53,8 @@ namespace CivOne.Persistence.Model.Attributes
 			}
 			AllowedValues = string.Join(", ", Enum.GetNames(enumType));
 		}
-
+		
+		[SuppressMessage("Microsoft.Design", "CA1019:DefineAccessorsForAttributeArguments", Justification = "The properties are accessed through the constructor parameters and do not need separate accessors.")]
 		public DocAttribute(string description, long minValue, long maxValue) : this(description)
 		{
 			AllowedValues = $"[{minValue} to {maxValue}]";

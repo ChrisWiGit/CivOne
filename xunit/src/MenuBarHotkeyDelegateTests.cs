@@ -17,7 +17,7 @@ namespace CivOne.UnitTests
 		private readonly MenuBarHotkeyDelegate _testee = new();
 
 		[Fact]
-		public void Parse_UsesMarkedCharacterAsHotkeyAndRemovesMarker()
+		public void ParseUsesMarkedCharacterAsHotkeyAndRemovesMarker()
 		{
 			// Arrange
 			const string translationKey = "GAME";
@@ -33,7 +33,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Parse_UsesFirstValidMarkerAndRemovesAllMarkersFromVisibleText()
+		public void ParseUsesFirstValidMarkerAndRemovesAllMarkersFromVisibleText()
 		{
 			// Arrange
 			const string translationKey = "ADVISORS";
@@ -49,7 +49,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Parse_FallsBackToFirstVisibleCharacterWhenMarkerIsTrailing()
+		public void ParseFallsBackToFirstVisibleCharacterWhenMarkerIsTrailing()
 		{
 			// Arrange
 			const string translationKey = "WORLD";

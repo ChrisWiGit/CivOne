@@ -13,7 +13,7 @@ namespace CivOne.Screens.PalaceAssets
 {
 	internal static class PalaceSpriteProviderFactory
 	{
-		private static IPalaceSpriteProvider _instance;
+		private static IPalaceSpriteProvider? _instance;
 
 		public static IPalaceSpriteProvider GetInstance()
 		{

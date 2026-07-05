@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 
@@ -9,7 +10,7 @@ namespace CivOne.Services.Translation
 	/// Default file-system based implementation of <see cref="ITranslationFileRepository"/>.
 	/// Reads translation files from the runtime translation directory and validates file structure.
 	/// </summary>
-	public class TranslationFileRepositoryImpl : ITranslationFileRepository
+	public class TranslationFileRepository : ITranslationFileRepository
 	{
 		private const string EqualsPlaceholder = "[EQ]";
 		private const string LanguageDisplayNameKey = "__LANGUAGE_DISPLAYNAME__";
@@ -21,7 +22,8 @@ namespace CivOne.Services.Translation
 		};
 
 		/// <inheritdoc/>
-		public int SyncFiles(string sourceDirectory, string targetDirectory, Action<string> log = null)
+		[SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "We want to enforce lowercase file names for consistency across platforms.")]
+		public int SyncFiles(string sourceDirectory, string targetDirectory, Action<string>? log = null)
 		{
 			Directory.CreateDirectory(targetDirectory);
 
@@ -70,7 +72,7 @@ namespace CivOne.Services.Translation
 		}
 
 		/// <inheritdoc/>
-		public IReadOnlyList<TranslationLanguageInfo> GetAvailableLanguages(string storageDirectory, Action<string> log = null)
+		public IReadOnlyList<TranslationLanguageInfo> GetAvailableLanguages(string storageDirectory, Action<string>? log = null)
 		{
 			if (string.IsNullOrWhiteSpace(storageDirectory))
 			{
@@ -89,39 +91,40 @@ namespace CivOne.Services.Translation
 				.OrderBy(path => path, StringComparer.OrdinalIgnoreCase))
 			{
 				string fileName = Path.GetFileName(filePath);
-				if (!TryGetPostfix(fileName, out string postfix))
+				if (!TryGetPostfix(fileName, out string? postfix))
 				{
 					continue;
 				}
 
-				if (!TryLoadTranslations(filePath, out IReadOnlyDictionary<string, string> translations, out string error))
+				if (!TryLoadTranslations(filePath, out IReadOnlyDictionary<string, string>? translations, out string? errorMessage))
 				{
-					log?.Invoke($"Skipping translation file '{fileName}': {error}");
+					log?.Invoke($"Skipping translation file '{fileName}': {errorMessage}");
 					continue;
 				}
 
-				string displayName = TryGetDisplayName(postfix, translations);
-				output.Add(new TranslationLanguageInfo(postfix, filePath, displayName));
+				string? displayName = TryGetDisplayName(postfix!, translations);
+				output.Add(new TranslationLanguageInfo(postfix!, filePath, displayName));
 			}
 
 			return output;
 		}
 
 		/// <inheritdoc/>
-		public bool TryLoadTranslations(string filePath, out IReadOnlyDictionary<string, string> translations, out string error)
+		[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch all exceptions during file loading to prevent a single malformed file from crashing the application.")]
+		public bool TryLoadTranslations(string filePath, out IReadOnlyDictionary<string, string>? translations, [NotNullWhen(false)] out string? errorMessage)
 		{
 			translations = null;
-			error = null;
+			errorMessage = null;
 
 			if (string.IsNullOrWhiteSpace(filePath))
 			{
-				error = "File path is empty.";
+				errorMessage = "File path is empty.";
 				return false;
 			}
 
 			if (!File.Exists(filePath))
 			{
-				error = $"File not found: {filePath}";
+				errorMessage = $"File not found: {filePath}";
 				return false;
 			}
 
@@ -142,17 +145,17 @@ namespace CivOne.Services.Translation
 						continue;
 					}
 
-					int separatorIndex = line.IndexOf('=');
+					int separatorIndex = line.IndexOf('=', StringComparison.Ordinal);
 					if (separatorIndex < 0)
 					{
-						error = $"Malformed line {i + 1}: missing '=' separator.";
+						errorMessage = $"Malformed line {i + 1}: missing '=' separator.";
 						return false;
 					}
 
 					string key = NormalizeKey(UnescapeControlCharacters(UnescapeEquals(line[..separatorIndex])));
 					if (key.Length == 0)
 					{
-						error = $"Malformed line {i + 1}: empty key.";
+						errorMessage = $"Malformed line {i + 1}: empty key.";
 						return false;
 					}
 
@@ -162,7 +165,7 @@ namespace CivOne.Services.Translation
 			}
 			catch (Exception ex)
 			{
-				error = ex.Message;
+				errorMessage = ex.Message;
 				return false;
 			}
 
@@ -170,7 +173,7 @@ namespace CivOne.Services.Translation
 			return true;
 		}
 
-		private static bool TryGetPostfix(string fileName, out string postfix)
+		private static bool TryGetPostfix(string fileName, out string? postfix)
 		{
 			postfix = null;
 			if (string.IsNullOrEmpty(fileName)
@@ -186,14 +189,14 @@ namespace CivOne.Services.Translation
 
 		private static string GetTranslationDirectory(string storageDirectory) => Path.Combine(storageDirectory, "translations");
 
-		private static string TryGetDisplayName(string postfix, IReadOnlyDictionary<string, string> translations)
+		private static string? TryGetDisplayName(string postfix, IReadOnlyDictionary<string, string>? translations)
 		{
 			if (translations is null)
 			{
 				return null;
 			}
 
-			if (TryGetNonEmptyValue(translations, LanguageDisplayNameKey, out string displayName))
+			if (TryGetNonEmptyValue(translations, LanguageDisplayNameKey, out string? displayName))
 			{
 				return displayName;
 			}
@@ -207,10 +210,10 @@ namespace CivOne.Services.Translation
 			return null;
 		}
 
-		private static bool TryGetNonEmptyValue(IReadOnlyDictionary<string, string> translations, string key, out string value)
+		private static bool TryGetNonEmptyValue(IReadOnlyDictionary<string, string> translations, string key, out string? value)
 		{
 			value = null;
-			if (!translations.TryGetValue(key, out string rawValue))
+			if (!translations.TryGetValue(key, out string? rawValue))
 			{
 				return false;
 			}

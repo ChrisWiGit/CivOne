@@ -12,22 +12,17 @@ using CivOne.Enums;
 
 namespace CivOne.Civilizations
 {
-	public abstract class CivilizationModification : IModification
+	/// <summary>
+	/// Modifiy an existing civilization.
+	/// </summary>
+	/// <param name="civilizationId">The civilization to override.</param>
+	public abstract class CivilizationModification(Civilization civilizationId) : Modification
 	{
-		public Civilization Civilization { get; }
+		public Civilization Civilization { get; } = civilizationId;
 
-		public AttributeValue<CivilizationName> Name => AttributeValue<CivilizationName>.Set(this.GetAttribute<Name>());
-		public AttributeValue<string[]> CityNames => AttributeValue<string[]>.Set(this.GetAttribute<CityNames>());
-		public AttributeValue<Point> StartingPosition => AttributeValue<Point>.Set(this.GetAttribute<StartingPosition>());
-		public AttributeValue<Leader> LeaderId => AttributeValue<Leader>.Set(this.GetAttribute<CivilizationLeader>());
-
-		/// <summary>
-		/// Modifiy an existing civilization.
-		/// </summary>
-		/// <param name="civilizationId">The civilization to override.</param>
-		public CivilizationModification(Civilization civilizationId)
-		{
-			Civilization = civilizationId;
-		}
+		public AttributeValue<CivilizationName> Name => AttributeValue<CivilizationName>.Set(this.GetAttribute<Name>()!);
+		public AttributeValue<string[]> CityNames => AttributeValue<string[]>.Set(this.GetAttribute<CityNames>()!);
+		public AttributeValue<Point> StartingPosition => AttributeValue<Point>.Set(this.GetAttribute<StartingPosition>()!);
+		public AttributeValue<Leader> LeaderId => AttributeValue<Leader>.Set(this.GetAttribute<CivilizationLeader>()!);
 	}
 }

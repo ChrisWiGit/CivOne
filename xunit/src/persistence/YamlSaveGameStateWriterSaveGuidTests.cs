@@ -10,7 +10,7 @@ namespace CivOne.UnitTests.Persistence
 	public sealed class YamlSaveGameStateWriterSaveGuidTests
 	{
 		[Fact]
-		public void Write_WithSaveMetaData_WritesRootSaveGuid()
+		public void WriteWithSaveMetaDataWritesRootSaveGuid()
 		{
 			GameState snapshot = new()
 			{
@@ -50,7 +50,10 @@ namespace CivOne.UnitTests.Persistence
 					Difficulty = DifficultyLevel.Chieftain,
 					GameTurn = 1,
 					Players = [],
-					Map = null
+					Map = new MapDto
+					{
+						Tiles = new Map2d<TileDto>(0, 0)
+					}
 				};
 		}
 	}

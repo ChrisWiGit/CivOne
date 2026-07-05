@@ -20,9 +20,9 @@ namespace CivOne.Services
 	/// Converts between game turns and calendar years, and formats years for display.
 	/// BC/AD labels are resolved through the translation service to support localization.
 	/// </summary>
-	public class GameCalendarService(ITranslationService _translationService = null) : IGameCalendarService
+	public class GameCalendarService(ITranslationService? translationService = null) : IGameCalendarService
 	{
-		private readonly ITranslationService _translation = _translationService ?? TranslationServiceFactory.GetCurrent();
+		private readonly ITranslationService _translation = translationService ?? TranslationServiceFactory.GetCurrent();
 
 		/// <summary>
 		/// Converts a calendar year to the corresponding game turn.
@@ -81,6 +81,18 @@ namespace CivOne.Services
 			}
 
 			return _translation.Translate("AD");
+		}
+	}
+
+	public static class GameCalendarServiceFactory
+	{
+		private static IGameCalendarService? _current;
+
+		public static IGameCalendarService Current { get => _current ??= new GameCalendarService(); }
+
+		public static void SetCurrent(IGameCalendarService service)
+		{
+			_current = service;
 		}
 	}
 }

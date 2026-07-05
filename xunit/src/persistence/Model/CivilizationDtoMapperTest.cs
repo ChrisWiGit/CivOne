@@ -24,7 +24,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestCivilizationDtoMapper_ContractCheck()
+		public void TestCivilizationDtoMapperContractCheck()
 		{
 			var dtoProperties = GetWritablePropertyNames<CivilizationDto>();
 			var expectedProperties = GetCivilizationDtoRoundTripAssertionMap(_originalDto, _originalDto).Keys.ToHashSet();
@@ -33,7 +33,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestCivilizationDtoMapper_RoundTrip()
+		public void TestCivilizationDtoMapperRoundTrip()
 		{
 			var civilization = _testee.FromDto(_originalDto);
 			var roundTripDto = _testee.ToDto(civilization);

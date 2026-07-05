@@ -4,7 +4,7 @@ using CivOne.Persistence.Mapper;
 
 namespace CivOne.Persistence.Model
 {
-	public class PalaceDtoMapper(IValueSanitizer yamlReadValueSanitizer) : DtoMapper<PalaceDto, PalaceData>
+	public class PalaceDtoMapper(IValueSanitizer yamlReadValueSanitizer) : IDtoMapper<PalaceDto, PalaceData>
 	{
 		private static readonly Func<PalaceDto, PalaceSectionDto>[] _sectionGetters =
 		[
@@ -49,7 +49,7 @@ namespace CivOne.Persistence.Model
 
 		public PalaceDto ToDto(PalaceData palace)
 		{
-			if (palace == null) return null;
+			ArgumentNullException.ThrowIfNull(palace);
 			
 			var dto = new PalaceDto();
 			for (int i = 0; i < _sectionSetters.Length; i++)

@@ -14,7 +14,7 @@ namespace CivOne.Persistence.Model
         }
 
         [Fact]
-        public void DefaultConstructor_SetsXAndYToZero()
+        public void DefaultConstructorSetsXAndYToZero()
         {
             _testee = new MapLocation();
 
@@ -23,14 +23,14 @@ namespace CivOne.Persistence.Model
         }
 
         [Fact]
-        public void Constructor_WithCoordinates_SetsXAndY()
+        public void ConstructorWithCoordinatesSetsXAndY()
         {
             Assert.Equal(3u, _testee.X);
             Assert.Equal(5u, _testee.Y);
         }
 
         [Fact]
-        public void CopyConstructor_CopiesXAndY()
+        public void CopyConstructorCopiesXAndY()
         {
             var actual = new MapLocation(_testee);
 
@@ -39,13 +39,14 @@ namespace CivOne.Persistence.Model
         }
 
         [Fact]
-        public void CopyConstructor_WithNull_ThrowsArgumentNullException()
+        public void CopyConstructorWithNullThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => new MapLocation((MapLocation)null));
+            // At compile time the constructor does not allow nulls, but we want to be defensive in case of future changes or incorrect usage at runtime.
+            Assert.Throws<ArgumentNullException>(() => new MapLocation(null!));
         }
 
         [Fact]
-        public void Constructor_WithPoint_SetsXAndY()
+        public void ConstructorWithPointSetsXAndY()
         {
             _testee = new MapLocation(new Point(7, 9));
 
@@ -54,7 +55,7 @@ namespace CivOne.Persistence.Model
         }
 
         [Fact]
-        public void MoveTo_ReturnsNewLocationWithAddedValues()
+        public void MoveToReturnsNewLocationWithAddedValues()
         {
             var expected = new MapLocation(5, 8);
 
@@ -64,7 +65,7 @@ namespace CivOne.Persistence.Model
         }
 
         [Fact]
-        public void MoveX_ReturnsNewLocationWithAddedX()
+        public void MoveXReturnsNewLocationWithAddedX()
         {
             var expected = new MapLocation(7, 5);
 
@@ -74,7 +75,7 @@ namespace CivOne.Persistence.Model
         }
 
         [Fact]
-        public void MoveY_ReturnsNewLocationWithAddedY()
+        public void MoveYReturnsNewLocationWithAddedY()
         {
             var expected = new MapLocation(3, 7);
 
@@ -84,7 +85,7 @@ namespace CivOne.Persistence.Model
         }
 
         [Fact]
-        public void AddOperator_ReturnsSumOfCoordinates()
+        public void AddOperatorReturnsSumOfCoordinates()
         {
             var expected = new MapLocation(4, 7);
 
@@ -94,7 +95,7 @@ namespace CivOne.Persistence.Model
         }
 
         [Fact]
-        public void SubtractOperator_ReturnsDifferenceOfCoordinates()
+        public void SubtractOperatorReturnsDifferenceOfCoordinates()
         {
             var expected = new MapLocation(2, 3);
 
@@ -104,49 +105,49 @@ namespace CivOne.Persistence.Model
         }
 
         [Fact]
-        public void Equals_WithSameValues_ReturnsTrue()
+        public void EqualsWithSameValuesReturnsTrue()
         {
             Assert.True(_testee.Equals(new MapLocation(3, 5)));
         }
 
         [Fact]
-        public void Equals_WithDifferentValues_ReturnsFalse()
+        public void EqualsWithDifferentValuesReturnsFalse()
         {
             Assert.False(_testee.Equals(new MapLocation(1, 1)));
         }
 
         [Fact]
-        public void Equals_WithNull_ReturnsFalse()
+        public void EqualsWithNullReturnsFalse()
         {
             Assert.False(_testee.Equals(null));
         }
 
         [Fact]
-        public void EqualityOperator_WithEqualInstances_ReturnsTrue()
+        public void EqualityOperatorWithEqualInstancesReturnsTrue()
         {
             Assert.True(_testee == new MapLocation(3, 5));
         }
 
         [Fact]
-        public void EqualityOperator_WithDifferentInstances_ReturnsFalse()
+        public void EqualityOperatorWithDifferentInstancesReturnsFalse()
         {
             Assert.False(_testee == new MapLocation(1, 1));
         }
 
         [Fact]
-        public void InequalityOperator_WithDifferentInstances_ReturnsTrue()
+        public void InequalityOperatorWithDifferentInstancesReturnsTrue()
         {
             Assert.True(_testee != new MapLocation(1, 1));
         }
 
         [Fact]
-        public void InequalityOperator_WithEqualInstances_ReturnsFalse()
+        public void InequalityOperatorWithEqualInstancesReturnsFalse()
         {
             Assert.False(_testee != new MapLocation(3, 5));
         }
 
         [Fact]
-        public void GetHashCode_EqualInstances_ReturnsSameHashCode()
+        public void GetHashCodeEqualInstancesReturnsSameHashCode()
         {
             var expected = new MapLocation(3, 5).GetHashCode();
 
@@ -156,7 +157,7 @@ namespace CivOne.Persistence.Model
         }
 
         [Fact]
-        public void GetHashCode_DifferentInstances_ReturnsDifferentHashCodes()
+        public void GetHashCodeDifferentInstancesReturnsDifferentHashCodes()
         {
             var actual = _testee.GetHashCode();
             var expected = new MapLocation(1, 2).GetHashCode();

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json;
 using CivOne.Mcp.Contracts;
@@ -25,7 +26,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Handle_WithActiveGame_CreatesNewCosFileAndReturnsFileNameAndGuid()
+		public void HandleWithActiveGameCreatesNewCosFileAndReturnsFileNameAndGuid()
 		{
 			DateTimeOffset fixedNow = new(2026, 4, 30, 18, 45, 12, 123, TimeSpan.Zero);
 			GameSaveToolHandler testee = new(_runtime, new JsonSaveGameStateWriter(), 32000, () => fixedNow);
@@ -38,15 +39,18 @@ namespace CivOne.UnitTests
 
 			Assert.True(payload.RootElement.GetProperty("ok").GetBoolean());
 			JsonElement data = payload.RootElement.GetProperty("data");
-			string fileName = data.GetProperty("fileName").GetString();
-			string saveGuidText = data.GetProperty("saveGuid").GetString();
+			string? fileName = data.GetProperty("fileName").GetString();
+			string? saveGuidText = data.GetProperty("saveGuid").GetString();
+
+			Assert.NotNull(fileName);
+			Assert.NotNull(saveGuidText);
 			Assert.Equal("savegame_mcp_20260430184512123.cos", fileName);
 			Assert.True(Guid.TryParse(saveGuidText, out Guid _));
 			Assert.True(File.Exists(Path.Combine(_tempFolder, fileName)));
 		}
 
 		[Fact]
-		public void Handle_WhenTimestampFileAlreadyExists_ReturnsFileExistsError()
+		public void HandleWhenTimestampFileAlreadyExistsReturnsFileExistsError()
 		{
 			DateTimeOffset fixedNow = new(2026, 4, 30, 18, 45, 12, 123, TimeSpan.Zero);
 			string existingFile = Path.Combine(_tempFolder, "savegame_mcp_20260430184512123.cos");
@@ -64,6 +68,7 @@ namespace CivOne.UnitTests
 			Assert.Contains("wait a second", payload.RootElement.GetProperty("error").GetProperty("message").GetString(), StringComparison.OrdinalIgnoreCase);
 		}
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Test cleanup should not throw exceptions")]
 		protected override void AfterEach()
 		{
 			try

@@ -54,9 +54,9 @@ namespace CivOne.IO
 		public static bool CopyDataFiles(string folder)
 		{
 			Log("Copying data files to {0}...", Settings.Instance.DataDirectory);
-			if (!CopyFiles(folder, Settings.Instance.DataDirectory, DATA_FILES, out string missingFile))
+			if (!CopyFiles(folder, Settings.Instance.DataDirectory, DATA_FILES, out string? missingFile))
 			{
-				Log("- File not found: {0}", missingFile);
+				Log("- File not found: {0}", missingFile ?? "unknown");
 				return false;
 			}
 			Log("- Done, all copied");
@@ -121,7 +121,7 @@ namespace CivOne.IO
 			return GetMissingFiles(Settings.Instance.SoundsDirectory, SOUND_FILES);
 		}
 
-		internal static bool CopyFiles(string sourceDirectory, string targetDirectory, IReadOnlyList<string> fileNames, out string missingFile)
+		internal static bool CopyFiles(string sourceDirectory, string targetDirectory, IReadOnlyList<string> fileNames, out string? missingFile)
 		{
 			Directory.CreateDirectory(targetDirectory);
 			foreach (string filename in fileNames)
@@ -131,7 +131,7 @@ namespace CivOne.IO
 				// Linux: a previous install may have left the file under a different
 				// casing. Normalize it to the canonical name so subsequent lookups via
 				// the exact path succeed.
-				string existingTarget = FindFileIgnoreCase(targetDirectory, filename);
+				string? existingTarget = FindFileIgnoreCase(targetDirectory, filename);
 				if (existingTarget != null)
 				{
 					if (!string.Equals(existingTarget, targetPath, StringComparison.Ordinal))
@@ -142,7 +142,7 @@ namespace CivOne.IO
 					continue;
 				}
 
-				string sourcePath = FindFileIgnoreCase(sourceDirectory, filename);
+				string? sourcePath = FindFileIgnoreCase(sourceDirectory, filename);
 				if (sourcePath != null)
 				{
 					File.Copy(sourcePath, targetPath);
@@ -165,7 +165,7 @@ namespace CivOne.IO
 			{
 				string targetPath = Path.Combine(targetDirectory, filename);
 
-				string existingTarget = FindFileIgnoreCase(targetDirectory, filename);
+				string? existingTarget = FindFileIgnoreCase(targetDirectory, filename);
 				if (existingTarget != null)
 				{
 					if (!string.Equals(existingTarget, targetPath, StringComparison.Ordinal))
@@ -176,7 +176,7 @@ namespace CivOne.IO
 					continue;
 				}
 
-				string sourcePath = FindFileIgnoreCase(sourceDirectory, filename);
+				string? sourcePath = FindFileIgnoreCase(sourceDirectory, filename);
 				if (sourcePath != null)
 				{
 					File.Copy(sourcePath, targetPath);
@@ -227,7 +227,7 @@ namespace CivOne.IO
 		/// Required for Linux/macOS where the file system is case-sensitive but the original DOS game
 		/// data uses UPPERCASE names that users may have renamed.
 		/// </remarks>
-		internal static string FindFileIgnoreCase(string folder, string filename)
+		internal static string? FindFileIgnoreCase(string folder, string filename)
 		{
 			if (!Directory.Exists(folder))
 			{
@@ -310,14 +310,14 @@ namespace CivOne.IO
 				Reflect.LoadPlugin(destinationFile);
 			}
 
-			Action nextDialog = null;
-			nextDialog = () =>
+			void nextDialog()
 			{
 				if (dialogs.Count == 0) return;
 				OverwritePlugin dialog = dialogs.Dequeue();
 				dialog.Closed += (s, a) => nextDialog();
 				Common.AddScreen(dialog);
-			};
+			}
+
 			nextDialog();
 
 			return true;

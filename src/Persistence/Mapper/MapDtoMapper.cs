@@ -28,7 +28,7 @@ namespace CivOne.Persistence.Model
         IMapTiles CreateMap(int width, int height, uint terrainSeed);
     }
 
-    public interface ITileDtoMapper : DtoMapper<TileDto, ITile>
+    public interface ITileDtoMapper : IDtoMapper<TileDto, ITile>
     {
         /// <summary>
         /// Sets the properties of an existing tile based on the provided TileDto. This method modifies the tile in place rather than returning a new tile instance. The x and y parameters indicate the position of the tile being set, which may be useful for certain mapping logic that depends on tile coordinates.
@@ -42,17 +42,17 @@ namespace CivOne.Persistence.Model
 
 
     public class MapDtoMapper(
-        IMapFactory _mapFactory,
-        ITileDtoMapper _tileDtoMapper,
-        uint _terrainSeed = 0
-    ) : DtoMapper<MapDto, IMapTiles>
+        IMapFactory mapFactory,
+        ITileDtoMapper TileDtoMapper,
+        uint TerrainSeed = 0
+    ) : IDtoMapper<MapDto, IMapTiles>
     {
         public IMapTiles FromDto(MapDto dto)
         {
-            var tiles = dto.Tiles;
+            var tiles = dto.Tiles ?? throw new InvalidOperationException("MapDto.Tiles must be set before mapping.");
             int width = tiles.Width();
             int height = tiles.Height();
-            var map = _mapFactory.CreateMap(width, height, dto.TerrainSeed);
+            var map = mapFactory.CreateMap(width, height, dto.TerrainSeed);
             ConvertTileDtos(tiles);
 
             return map;
@@ -68,7 +68,7 @@ namespace CivOne.Persistence.Model
                 for (int y = 0; y < height; y++)
                 {
                     var tileDto = tileDtos[x, y];
-                    _tileDtoMapper.SetTileFromDto(tileDto, x, y);
+                    TileDtoMapper.SetTileFromDto(tileDto, x, y);
                 }
             }
         }
@@ -76,7 +76,7 @@ namespace CivOne.Persistence.Model
         {
             return new MapDto
             {
-                TerrainSeed = _terrainSeed,
+                TerrainSeed = TerrainSeed,
                 Tiles = ConvertMapTilesToTileDtos(map)
             };
         }
@@ -94,7 +94,7 @@ namespace CivOne.Persistence.Model
                 {
                     var tile = map[x, y];
                     Debug.Assert(tile != null, $"Tile at position ({x}, {y}) is null. This should not happen in a valid map.");
-                    tileDtos[x, y] = _tileDtoMapper.ToDto(tile);
+                    tileDtos[x, y] = TileDtoMapper.ToDto(tile);
                 }
             }
             return new Map2d<TileDto>(tileDtos);
@@ -102,13 +102,13 @@ namespace CivOne.Persistence.Model
     }
 
     public class DefaultTileDtoMapper(
-        ITileFactory _tileFactory
+        ITileFactory TileFactory
     ) : ITileDtoMapper
     {
         public void SetTileFromDto(TileDto dto, int x, int y)
         {
             // may raise exception if dto.Terrain is invalid
-            var tile = _tileFactory.CreateTile(x, y, dto.Terrain);
+            var tile = TileFactory.CreateTile(x, y, dto.Terrain);
             tile.Road = dto.Road;
             tile.RailRoad = dto.RailRoad;
             tile.Irrigation = dto.Irrigation;

@@ -27,6 +27,6 @@ namespace CivOne.Persistence.Model
         }
         
         [Doc("2D array of TileDto representing the terrain and features of each tile on the map. The dimensions should match the width and height of the map.")]
-        public Map2d<TileDto> Tiles { get; set; }
+        public Map2d<TileDto> Tiles { get; set; } = Map2d<TileDto>.Uninitialized;
     }
 }

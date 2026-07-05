@@ -83,7 +83,7 @@ namespace CivOne.Agents
 		/// <summary>
 		/// Gets the current goto destination.
 		/// </summary>
-		Point Goto { get; }
+		Point GotoDestination { get; }
 
 		/// <summary>
 		/// Gets the remaining full moves.

@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
+using CivOne.Services;
 
 namespace CivOne.Screens
 {
+    #pragma warning disable CA1822 // Mark members as static
     internal class SaveGameFile
     {
         public bool ValidFile { get; private set; }
@@ -33,19 +37,25 @@ namespace CivOne.Screens
             Name = displayName;
             SveFile = string.Empty;
             MapFile = string.Empty;
+            _t = TranslationServiceFactory.CreateDefault();
         }
+        private readonly ITranslationService _t;
+
+        private string Translate(string text) => _t.Translate(text);
 
         private static SaveGameFile FromCosFile(string cosFile) =>
-            new SaveGameFile(cosFile, Path.GetFileNameWithoutExtension(cosFile));
+            new(cosFile, Path.GetFileNameWithoutExtension(cosFile));
 
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to read the .SVE file does not crash the application, and that any exceptions are logged appropriately.")]
         public SaveGameFile(string filename)
         {
+            _t = TranslationServiceFactory.CreateDefault();
             ValidFile = false;
-            Name = "(EMPTY)";
+            Name = Translate("(EMPTY)");
             CosFile = string.Empty;
             IsYamlFile = false;
-            SveFile = string.Format("{0}.SVE", filename);
-            MapFile = string.Format("{0}.MAP", filename);
+            SveFile = string.Format(CultureInfo.InvariantCulture, "{0}.SVE", filename);
+            MapFile = string.Format(CultureInfo.InvariantCulture, "{0}.MAP", filename);
             if (!File.Exists(SveFile) || !File.Exists(MapFile)) return;
 
             try
@@ -55,7 +65,7 @@ namespace CivOne.Screens
                 {
                     if (fs.Length != 37856)
                     {
-                        Name = "(INCORRECT FILE SIZE)";
+                        Name = Translate("(INCORRECT FILE SIZE)");
                         return;
                     }
 
@@ -67,7 +77,7 @@ namespace CivOne.Screens
                     string tribeName = ReadStrings(br, 224, 88, 11)[humanPlayer];
                     string title = Common.DifficultyName(difficultyLevel);
 
-                    Name = string.Format("{0} {1}, {2}/{3}", title, leaderName, civName, turn);
+                    Name = string.Format(CultureInfo.InvariantCulture, "{0} {1}, {2}/{3}", title, leaderName, civName, turn);
                     Difficulty = (int)difficultyLevel;
                 }
                 ValidFile = true;
@@ -75,16 +85,16 @@ namespace CivOne.Screens
             catch (Exception ex)
             {
                 BaseInstance.Log($"Could not open .SVE file: {ex.InnerException}");
-                Name = "(COULD NOT READ SAVE FILE HEADER)";
+                Name = Translate("(COULD NOT READ SAVE FILE HEADER)");
             }
         }
 
         public static IEnumerable<SaveGameFile> GetSaveGames(char driveLetter)
         {
-            string path = Path.Combine(Settings.Instance.SavesDirectory, char.ToLower(driveLetter).ToString());
+            string path = Path.Combine(Settings.Instance.SavesDirectory, char.ToLowerInvariant(driveLetter).ToString());
             for (int i = 0; i < 10; i++)
             {
-                string filename = Path.Combine(path, string.Format("CIVIL{0}", i));
+                string filename = Path.Combine(path, string.Format(CultureInfo.InvariantCulture, "CIVIL{0}", i));
                 yield return new SaveGameFile(filename);
             }
         }

@@ -32,7 +32,7 @@ namespace CivOne.Persistence.Yaml
     class YamlWriter
     {
         private readonly object _dto;
-        private INamingConvention _namingConvention;
+        private INamingConvention? _namingConvention;
         private bool _omitNulls;
         private readonly List<IYamlTypeConverter> _typeConverters = [];
         private readonly List<Func<IEventEmitter, IEventEmitter>> _eventEmitterFactories = [];

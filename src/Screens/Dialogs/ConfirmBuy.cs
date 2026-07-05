@@ -15,9 +15,7 @@ namespace CivOne.Screens.Dialogs
 {
 	internal class ConfirmBuy : BaseDialog
 	{
-		public event EventHandler Buy;
-
-		private Menu _menu;
+		public event EventHandler? Buy;
 
 		private static string[] MessageLines(string name, short price, short treasury)
 		{
@@ -34,18 +32,9 @@ namespace CivOne.Screens.Dialogs
 			}
 		}
 
-		protected override void FirstUpdate()
+		protected override IMenu? CreateManagedMenu()
 		{
-			CreateMenu();
-			base.FirstUpdate();
-		}
-
-		private void CreateMenu()
-		{
-			if (_menu is not null)
-				return;
-
-			_menu = new Menu(Palette, Selection(3, 28, TextWidth + 5, 20))
+			Menu menu = new Menu(Palette, Selection(3, 28, TextWidth + 5, 20))
 			{
 				X = 103,
 				Y = 108,
@@ -56,16 +45,16 @@ namespace CivOne.Screens.Dialogs
 				FontId = 0
 			};
 
-			_menu.Items.Add(Translate("Yes"), 0);
-			_menu.Items.Add(Translate("No"), 1);
+			menu.Items.Add(Translate("Yes"), 0);
+			menu.Items.Add(Translate("No"), 1);
 
-			_menu.Items[0].Selected += Confirm;
-			_menu.Items[1].Selected += Cancel;
+			menu.Items[0].Selected += Confirm;
+			menu.Items[1].Selected += Cancel;
 
-			_menu.MissClick += Cancel;
-			_menu.Cancel += Cancel;
+			menu.MissClick += Cancel;
+			menu.Cancel += Cancel;
 
-			AddMenu(_menu);
+			return menu;
 		}
 
 		private void Confirm(object sender, EventArgs args)

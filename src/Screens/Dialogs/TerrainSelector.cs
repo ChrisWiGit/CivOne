@@ -24,7 +24,7 @@ namespace CivOne.Screens.Dialogs
 		private sealed class TerrainSelectorItem
 		{
 			public Terrain Terrain { get; init; }
-			public string Label { get; init; }
+			public string Label { get; init; } = string.Empty;
 			public char Hotkey { get; init; }
 		}
 
@@ -37,7 +37,7 @@ namespace CivOne.Screens.Dialogs
 		private const int GridColumns = 4;
 
 		private int GridRows => (int)Math.Ceiling((double)_items.Length / GridColumns);
-		private int GridWidth => GridColumns * CellWidth;
+		private static int GridWidth => GridColumns * CellWidth;
 		private int GridHeight => GridRows * CellHeight;
 		private int GridX => Math.Max(0, (Width - GridWidth) / 2);
 		private int GridY => Math.Max(0, (Height - GridHeight) / 2) + 6;
@@ -83,9 +83,9 @@ namespace CivOne.Screens.Dialogs
 			};
 		}
 
-		private ITile ResolvePreviewTile(Terrain terrain)
+		private static ITile ResolvePreviewTile(Terrain terrain)
 		{
-			ITile tile = Map.Instance.AllTiles().FirstOrDefault(t => t?.Type == terrain);
+			ITile? tile = Map.Instance.AllTiles().FirstOrDefault(t => t?.Type == terrain);
 			return tile ?? CreateFallbackTile(terrain);
 		}
 

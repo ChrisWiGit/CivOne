@@ -17,7 +17,7 @@ namespace CivOne.Mcp.Tools
 			new
 			{
 				type = "object",
-				required = new[] { "x", "y", "width", "height" },
+				required = InputSchema,
 				properties = new
 				{
 					sessionId = new { type = "string", description = "Artifact session identifier." },
@@ -29,9 +29,11 @@ namespace CivOne.Mcp.Tools
 				}
 			});
 
+		private static readonly string[] InputSchema = new[] { "x", "y", "width", "height" };
+
 		public McpResponse Handle(McpRequest request)
 		{
-			if (request == null) throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 
 			string sessionId = ReadString(request.Params, "sessionId") ?? "default";
 			int x = ReadInt(request.Params, "x");
@@ -44,24 +46,26 @@ namespace CivOne.Mcp.Tools
 				return McpResponse.Failure(request.Id, -32602, "Invalid params", "Region width and height must be greater than zero.");
 
 			McpScreenshotResult result = _screenshotRoutine.CaptureRegion(sessionId, x, y, width, height, includeCursor);
-			string json = JsonSerializer.Serialize(result, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+			string json = JsonSerializer.Serialize(result, StandardSerializerOptions);
 			return McpResponse.Success(request.Id, McpToolCallResult.Text(json));
 		}
 
-		private static string ReadString(JsonElement value, string propertyName)
+		private static readonly JsonSerializerOptions StandardSerializerOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+		private static string? ReadString(JsonElement value, string propertyName)
 			=> value.ValueKind == JsonValueKind.Object && value.TryGetProperty(propertyName, out JsonElement property)
 				? property.GetString()
 				: null;
 
 		private static int ReadInt(JsonElement value, string propertyName)
 			=> value.ValueKind == JsonValueKind.Object && value.TryGetProperty(propertyName, out JsonElement property) &&
-			   property.ValueKind == JsonValueKind.Number
+				property.ValueKind == JsonValueKind.Number
 				? property.GetInt32()
 				: 0;
 
 		private static bool ReadBoolean(JsonElement value, string propertyName)
 			=> value.ValueKind == JsonValueKind.Object && value.TryGetProperty(propertyName, out JsonElement property) &&
-			   property.ValueKind == JsonValueKind.True;
+				property.ValueKind == JsonValueKind.True;
 
 		public CaptureRegionToolHandler(IMcpScreenshotRoutine screenshotRoutine)
 		{

@@ -14,25 +14,26 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Services;
+using CivOne.Services.Screen;
 
 namespace CivOne.Screens.Debug
 {
 	[ScreenResizeable]
 	internal class SetPlayerAdvances : BaseScreen
 	{
-		private readonly IAdvanceManagementService _advanceService;
+		private readonly AdvanceManagementService _advanceService;
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
 		private CivSelectMenuDelegate _civSelectDelegate;
-		private GridMenuDelegate _gridDelegate;
-		private IAdvance[] _advances;
+		private GridMenuDelegate? _gridDelegate;
+		private IAdvance[]? _advances;
 
-		private Player _selectedPlayer = null;
+		private Player? _selectedPlayer;
 
-		public string Value { get; }
+		public string? Value { get; }
 
-		public event EventHandler Cancel;
+		public event EventHandler? Cancel;
 
 		private void DrawPlayerMenuDialog()
 		{
@@ -41,32 +42,52 @@ namespace CivOne.Screens.Debug
 
 		private void RenderAdvancesGrid()
 		{
+			Player? selectedPlayer = _selectedPlayer;
+			if (selectedPlayer == null)
+				return;
+
 			if (_gridDelegate == null)
 				CreateGridDelegate();
-			_gridDelegate.Draw(this, $"Set Advances: {_selectedPlayer.TribeNamePlural} (Help: Alt+H)", CanvasHeight);
+			if (_gridDelegate == null)
+				return;
+
+			_gridDelegate.Draw(this, TranslateFormatted("Set Advances: {0} (Help: Alt+H)", selectedPlayer.TribeNamePlural), CanvasHeight);
 		}
 
 		private void CreateGridDelegate()
 		{
-			_advances = _advanceService.GetAllAdvances();
-			string[] labels = [.. _advances.Select(a => a.TranslatedName)];
+			Player? selectedPlayer = _selectedPlayer;
+			if (selectedPlayer == null)
+				return;
+
+			IAdvance[] advances = _advanceService.GetAllAdvances();
+			_advances = advances;
+			string[] labels = [.. advances.Select(a => a.TranslatedName)];
 			_gridDelegate = new GridMenuDelegate(
 				labels,
 				GridMenuDelegate.SelectionMode.CheckUncheck,
-				isChecked: i => _selectedPlayer.HasAdvance(_advances[i]));
+				isChecked: i => selectedPlayer.HasAdvance(advances[i]));
 			_gridDelegate.ItemChecked += OnItemChecked;
 			_gridDelegate.Cancelled += OnGridCancelled;
 		}
 
 		private void OnItemChecked(int index)
 		{
-			_advanceService.ToggleAdvance(Game.PlayerNumber(_selectedPlayer), _advances[index]);
+			Player? selectedPlayer = _selectedPlayer;
+			IAdvance[]? advances = _advances;
+			if (selectedPlayer == null || advances == null)
+				return;
+			if (index < 0 || index >= advances.Length)
+				return;
+
+			_advanceService.ToggleAdvance(Game.PlayerNumber(selectedPlayer), advances[index]);
 			Refresh();
 		}
 
-		private void OnGridCancelled(object sender, EventArgs args)
+		private void OnGridCancelled(object? _, EventArgs __)
 		{
 			_selectedPlayer = null;
+			_advances = null;
 			_gridDelegate = null;
 			_civSelectDelegate = CreateCivSelectDelegate();
 			Refresh();
@@ -74,7 +95,7 @@ namespace CivOne.Screens.Debug
 
 		private CivSelectMenuDelegate CreateCivSelectDelegate()
 		{
-			var delegate_ = new CivSelectMenuDelegate(Palette, "Set Player Advances...");
+			var delegate_ = new CivSelectMenuDelegate(Palette, Translate("Set Player Advances..."));
 			delegate_.PlayerSelected += OnCivSelected;
 			delegate_.Cancelled += OnCancel;
 			return delegate_;
@@ -88,7 +109,7 @@ namespace CivOne.Screens.Debug
 			Refresh();
 		}
 
-		private void OnCancel(object sender, EventArgs args)
+		private void OnCancel(object? _, EventArgs args)
 		{
 			Cancel?.Invoke(this, EventArgs.Empty);
 			Destroy();
@@ -98,8 +119,8 @@ namespace CivOne.Screens.Debug
 		{
 			if (_gridDelegate == null || _advances == null) return false;
 			int idx = _gridDelegate.SelectedIndex;
-			if (idx < 0) return false;
-			Common.AddScreen(new CivOne.Screens.Civilopedia(_advances[idx]));
+			if (idx < 0 || idx >= _advances.Length) return false;
+			Common.AddScreen(new Civilopedia(_advances[idx]));
 			return true;
 		}
 
@@ -112,7 +133,7 @@ namespace CivOne.Screens.Debug
 				if (RefreshNeeded())
 					DrawPlayerMenuDialog();
 
-				if (Common.TopScreen.GetType() != typeof(Menu))
+				if (!_screen.HasTopScreen<Menu>())
 				{
 					AddMenu(_civSelectDelegate.Menu);
 					return false;
@@ -147,8 +168,11 @@ namespace CivOne.Screens.Debug
 			return _gridDelegate.MouseDown(args.X, args.Y);
 		}
 
+		private readonly IScreenQueryService _screen;
+
 		public SetPlayerAdvances() : base(MouseCursor.Pointer)
 		{
+			_screen = ScreenServiceFactory.CreateQueryService();
 			_advanceService = new AdvanceManagementService();
 			Palette = Common.Screens.LastOrDefault()?.OriginalColours ?? Common.DefaultPalette;
 

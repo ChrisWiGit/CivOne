@@ -230,7 +230,7 @@ namespace CivOne.Screens.GamePlayPanels
 			});
 		}
 
-		internal void EditCitySingleTile(int x, int y, byte cityOwner, bool shrink)
+		internal static void EditCitySingleTile(int x, int y, byte cityOwner, bool shrink)
 		{
 			Game game = Game.Instance;
 			ITile tile = Map.Instance[x, y];
@@ -239,7 +239,7 @@ namespace CivOne.Screens.GamePlayPanels
 				return;
 			}
 
-			City city = game.GetCity(x, y);
+			City? city = game.GetCity(x, y);
 
 			if (city == null)
 			{
@@ -247,7 +247,7 @@ namespace CivOne.Screens.GamePlayPanels
 				return;
 			}
 
-			if (city.Owner != cityOwner)
+			if (city.CityOwnerPlayerIndex != cityOwner)
 			{
 				return;
 			}
@@ -284,7 +284,7 @@ namespace CivOne.Screens.GamePlayPanels
 				return false;
 			}
 
-			Player owner = game.GetPlayer(cityOwner);
+			Player? owner = game.GetPlayer(cityOwner);
 			if (owner == null)
 			{
 				return false;
@@ -302,33 +302,33 @@ namespace CivOne.Screens.GamePlayPanels
 				return false;
 			}
 
-			if (selectedUnit.Class == UnitClass.Land && tile.City != null)
+			if (selectedUnit.UnitCategory == UnitClass.Land && tile.City != null)
 			{
-				return ownerId == tile.City.Owner;
+				return ownerId == tile.City.CityOwnerPlayerIndex;
 			}
 
-			if (selectedUnit.Class == UnitClass.Land && tile.Type == Terrain.Ocean)
+			if (selectedUnit.UnitCategory == UnitClass.Land && tile.Type == Terrain.Ocean)
 			{
-				if (!tile.Units.Any(x => x.Class == UnitClass.Water && x is IBoardable))
+				if (!tile.Units.Any(x => x.UnitCategory == UnitClass.Water && x is IBoardable))
 				{
 					return false;
 				}
 
-				int capacity = tile.Units.Where(x => x.Class == UnitClass.Water && x is IBoardable)
-									.Sum(x => (x as IBoardable).Cargo);
-				int unitCount = tile.Units.Count(x => x.Class == UnitClass.Land);
+				int capacity = tile.Units.Where(x => x.UnitCategory == UnitClass.Water).OfType<IBoardable>()
+									.Sum(x => x.Cargo);
+				int unitCount = tile.Units.Count(x => x.UnitCategory == UnitClass.Land);
 				return unitCount < capacity;
 			}
 
-			if (selectedUnit.Class == UnitClass.Water && tile.Type != Terrain.Ocean)
+			if (selectedUnit.UnitCategory == UnitClass.Water && tile.Type != Terrain.Ocean)
 			{
-				return tile.City != null && ownerId == tile.City.Owner;
+				return tile.City != null && ownerId == tile.City.CityOwnerPlayerIndex;
 			}
 
 			return true;
 		}
 
-		internal bool SpawnUnit(int x, int y, byte unitOwner, UnitType unitType)
+		internal static bool SpawnUnit(int x, int y, byte unitOwner, UnitType unitType)
 		{
 			Game game = Game.Instance;
 			ITile tile = Map.Instance[x, y];
@@ -342,19 +342,19 @@ namespace CivOne.Screens.GamePlayPanels
 				return false;
 			}
 
-			IUnit selectedUnit = Game.CreateUnit(unitType);
+			IUnit? selectedUnit = Game.CreateUnit(unitType);
 			if (selectedUnit == null || !CanPlaceUnit(tile, selectedUnit, unitOwner))
 			{
 				return false;
 			}
 
-			IUnit unit = game.CreateUnit(unitType, x, y, unitOwner, false);
+			IUnit? unit = game.CreateUnit(unitType, x, y, unitOwner, false);
 			if (unit == null)
 			{
 				return false;
 			}
 
-			if (unit.Class == UnitClass.Land && tile.Type == Terrain.Ocean)
+			if (unit.UnitCategory == UnitClass.Land && tile.Type == Terrain.Ocean)
 			{
 				unit.Sentry = true;
 			}
@@ -364,7 +364,7 @@ namespace CivOne.Screens.GamePlayPanels
 				unit.MovesLeft = 0;
 			}
 
-			if (unit.Class == UnitClass.Land && tile.Hut)
+			if (unit.UnitCategory == UnitClass.Land && tile.Hut)
 			{
 				tile.Hut = false;
 			}
@@ -378,6 +378,7 @@ namespace CivOne.Screens.GamePlayPanels
 			return true;
 		}
 
+		#pragma warning disable CA1822
 		internal bool RemoveUnit(int x, int y, byte unitOwner, UnitType unitType)
 		{
 			ITile tile = Map.Instance[x, y];
@@ -386,7 +387,7 @@ namespace CivOne.Screens.GamePlayPanels
 				return false;
 			}
 
-			IUnit unit = tile.Units.FirstOrDefault(u => u.Owner == unitOwner && u.Type == unitType)
+			IUnit? unit = tile.Units.FirstOrDefault(u => u.Owner == unitOwner && u.Type == unitType)
 				?? tile.Units.FirstOrDefault(u => u.Owner == unitOwner);
 			if (unit == null)
 			{
@@ -396,5 +397,6 @@ namespace CivOne.Screens.GamePlayPanels
 			Game.Instance.DisbandUnit(unit);
 			return true;
 		}
+		#pragma warning restore CA1822
 	}
 }

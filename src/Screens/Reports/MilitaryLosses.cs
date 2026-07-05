@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 
+using System.Globalization;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
@@ -49,7 +50,7 @@ namespace CivOne.Screens.Reports
 
 				this.AddLayer(unit.ToBitmap(player, false), x, y)
 					.DrawText(unit.TranslatedName, 0, 15, x + 16, y + 1)
-					.DrawText(count.ToString(), 0, 11, x + 138, y + 1, TextAlign.Right);
+					.DrawText(count.ToString(CultureInfo.CurrentCulture), 0, 11, x + 138, y + 1, TextAlign.Right);
 			}
 		}
 

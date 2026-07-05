@@ -17,10 +17,10 @@ namespace CivOne.UnitTests
 	public class CachedSpriteDisposeTests
 	{
 		[Fact]
-		public void Bitmap_LazyInitialisesOnce()
+		public void BitmapLazyInitialisesOnce()
 		{
 			int factoryCalls = 0;
-			var sprite = new CachedSprite(() => { factoryCalls++; return new Bytemap(2, 2); });
+			using var sprite = new CachedSprite(() => { factoryCalls++; return new Bytemap(2, 2); });
 
 			Assert.Equal(0, factoryCalls);
 			_ = sprite.Bitmap;
@@ -30,7 +30,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Dispose_IsIdempotent()
+		public void DisposeIsIdempotent()
 		{
 			var sprite = new CachedSprite(() => new Bytemap(1, 1));
 			_ = sprite.Bitmap;
@@ -40,7 +40,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Bitmap_AfterDispose_Throws()
+		public void BitmapAfterDisposeThrows()
 		{
 			var sprite = new CachedSprite(() => new Bytemap(1, 1));
 			_ = sprite.Bitmap;
@@ -50,7 +50,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Dispose_WithoutAccess_DoesNotInvokeFactory()
+		public void DisposeWithoutAccessDoesNotInvokeFactory()
 		{
 			int factoryCalls = 0;
 			var sprite = new CachedSprite(() => { factoryCalls++; return new Bytemap(1, 1); });
@@ -64,10 +64,10 @@ namespace CivOne.UnitTests
 	public class CachedSpriteCollectionDisposeTests
 	{
 		[Fact]
-		public void Indexer_LazyInitialisesPerKey()
+		public void IndexerLazyInitialisesPerKey()
 		{
 			int factoryCalls = 0;
-			var coll = new CachedSpriteCollection<int>(_ => { factoryCalls++; return new Bytemap(1, 1); });
+			using var coll = new CachedSpriteCollection<int>(_ => { factoryCalls++; return new Bytemap(1, 1); });
 
 			_ = coll[0];
 			_ = coll[0];
@@ -77,10 +77,10 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Clear_DisposesAndAllowsReBuild()
+		public void ClearDisposesAndAllowsReBuild()
 		{
 			int factoryCalls = 0;
-			var coll = new CachedSpriteCollection<int>(_ => { factoryCalls++; return new Bytemap(1, 1); });
+			using var coll = new CachedSpriteCollection<int>(_ => { factoryCalls++; return new Bytemap(1, 1); });
 			_ = coll[0];
 
 			coll.Clear();
@@ -90,7 +90,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Dispose_IsIdempotent()
+		public void DisposeIsIdempotent()
 		{
 			var coll = new CachedSpriteCollection<int>(_ => new Bytemap(1, 1));
 			_ = coll[0];
@@ -100,7 +100,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Dispose_ClearsEntries()
+		public void DisposeClearsEntries()
 		{
 			int factoryCalls = 0;
 			var coll = new CachedSpriteCollection<int>(_ => { factoryCalls++; return new Bytemap(1, 1); });

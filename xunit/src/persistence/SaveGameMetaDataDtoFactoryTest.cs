@@ -16,7 +16,7 @@ namespace CivOne.UnitTests.Persistence
 		}
 
 		[Fact]
-		public void CreateFromRuntime_MapsMetaDataToDto()
+		public void CreateFromRuntimeMapsMetaDataToDto()
 		{
 			// Arrange
 			var gameStartedAt = new DateTimeOffset(2026, 1, 2, 3, 4, 5, TimeSpan.FromHours(2));

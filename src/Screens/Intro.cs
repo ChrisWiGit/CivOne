@@ -24,6 +24,7 @@ namespace CivOne.Screens
 		private const float FADE_STEP = 0.0625F;
 		private const uint MAP_NOT_READY_MESSAGE_TICKS = 60;
 		private const string INTRO_END_MARKER = "\0";
+		private const string INTRO_ERROR_MESSAGE = "Error loading intro text.";
 		
 		private readonly string[] _introText;
 		private readonly Picture[] _pictures;
@@ -115,7 +116,7 @@ namespace CivOne.Screens
 			get
 			{
 				bool mapReady = Map.Ready;
-				if (_introTicks % 30 > 1 && _introTicks % 30 < 29 || ((_introLine + 1) < _introText.Length && _introText[_introLine + 1] == string.Empty)) return mapReady ? (byte)10 : (byte)11;
+				if (_introTicks % 30 > 1 && _introTicks % 30 < 29 || ((_introLine + 1) < _introText.Length && _introText[_introLine + 1].Length == 0)) return mapReady ? (byte)10 : (byte)11;
 				if (_introTicks % 30 == 1 || _introTicks % 30 == 29) return mapReady ? (byte)2 : (byte)3;
 				return 0;
 			}
@@ -145,8 +146,18 @@ namespace CivOne.Screens
 		private string GetGenerationProgressText()
 		{
 			int stageCurrent = Math.Max(0, Map.GenerationStageCurrent);
-			int stageTotal = Math.Max(1, Map.GenerationStageTotal);
+			int stageTotal = Map.GenerationStageTotal;
 			int stageCode = Map.GenerationStageCode;
+			if (stageTotal <= 0)
+			{
+				if (Map.GenerationInProgress)
+				{
+					return Translate("Preparing map generation...");
+				}
+
+				return Translate("Waiting for map generation to start...");
+			}
+
 			string stageLabel = GetGenerationStageLabel(stageCode);
 			int stageDisplay = Math.Clamp(stageCurrent, 1, stageTotal);
 			return TranslateFormatted("{0} of {1}: {2}...", stageDisplay, stageTotal, stageLabel);
@@ -226,9 +237,18 @@ namespace CivOne.Screens
 			if (FadeStep < 1.0F) return true;
 
 			int previousText = 0;
-			string introLine = _introText[_introLine];
-			while (introLine == string.Empty)
-				introLine = _introText[_introLine - (++previousText)];
+			string introLine = _introText[_introLine] ?? string.Empty;
+			while (string.IsNullOrEmpty(introLine))
+			{
+				int previousTextIndex = _introLine - (++previousText);
+				if (previousTextIndex < 0)
+				{
+					introLine = Translate(INTRO_ERROR_MESSAGE);
+					break;
+				}
+
+				introLine = _introText[previousTextIndex] ?? string.Empty;
+			}
 			ShowHintText(x, y);
 			if (_mapNotReadyMessageUntil > gameTick)
 			{
@@ -358,7 +378,7 @@ namespace CivOne.Screens
 			return false;
 		}
 
-		public void Resize(object sender, ResizeEventArgs args)
+		public void Resize(object? _, ResizeEventArgs __)
 		{
 			Bitmap.Clear();
 			HasUpdate(0);

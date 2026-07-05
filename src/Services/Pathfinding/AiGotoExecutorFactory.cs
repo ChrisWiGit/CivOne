@@ -11,11 +11,11 @@ namespace CivOne.Services.Pathfinding
 		private readonly IAiGotoExecutor _noOpGotoExecutor;
 
 		public AiGotoExecutorFactory(
-			Func<bool> isComputerPlayerPathfindingEnabled = null,
-			IAiGotoExecutor smartGotoExecutor = null,
-			IAiGotoExecutor noOpGotoExecutor = null,
-			IPathfinderFactory pathfinderFactory = null,
-			IRandomService randomService = null)
+			Func<bool>? isComputerPlayerPathfindingEnabled = null,
+			IAiGotoExecutor? smartGotoExecutor = null,
+			IAiGotoExecutor? noOpGotoExecutor = null,
+			IPathfinderFactory? pathfinderFactory = null,
+			IRandomService? randomService = null)
 		{
 			_isComputerPlayerPathfindingEnabled = isComputerPlayerPathfindingEnabled ?? (() => Settings.Instance.ComputerPlayerPathFinding);
 			IPathfinderFactory effectivePathfinderFactory = pathfinderFactory ?? IPathfinderFactory.Create();

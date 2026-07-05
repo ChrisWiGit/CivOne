@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -18,30 +19,31 @@ namespace CivOne
 	public interface IRuntime
 	{
 		event EventHandler Initialize, Draw;
-		event UpdateEventHandler Update;
-		event KeyboardEventHandler KeyboardUp, KeyboardDown;
-		event ScreenEventHandler MouseUp, MouseDown, MouseMove, MouseWheel;
+		event EventHandler<UpdateEventArgs> Update;
+		event EventHandler<KeyboardEventArgs> KeyboardUp, KeyboardDown;
+		event EventHandler<ScreenEventArgs> MouseUp, MouseDown, MouseMove, MouseWheel;
 		Platform CurrentPlatform { get; }
 		string StorageDirectory { get; }
-		string GetSetting(string key);
+		string? GetSetting(string key);
 		void SetSetting(string key, string value);
 		RuntimeSettings Settings { get; }
-		void SetCurrentCursor(MouseCursor cursor);
-		Bytemap[] Layers { get; set; }
-		Palette Palette { get; set; }
-		void SetCursor(IBitmap cursor);
+		void SetCurrentCursor(MouseCursor? cursor);
+		Bytemap[]? Layers { get; set; }
+		Palette? Palette { get; set; }
+		void SetCursor(IBitmap? cursor);
 		int CanvasWidth { get; }
 		int CanvasHeight { get; }
 		int WindowWidth { get; }
 		int WindowHeight { get; }
 		void Log(string text, params object[] parameters);
 		string? BrowseFolder(string caption = "");
-		string FileChooser(bool save, string title, string initialFileName, string filter);
+		string? FileChooser(bool save, string title, string initialFileName, string filter);
 		void SetWindowTitle(string title);
 		void PlaySound(string file);
 		void StopSound();
-		bool TryOpenUrl(string url, out string errorMessage);
-		bool TryCopyToClipboard(string text, out string errorMessage);
+		[SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", Justification = "Simplicity of use.")]
+		bool TryOpenUrl(string url, out string? errorMessage);
+		bool TryCopyToClipboard(string text, out string? errorMessage);
 		void Quit();
 	}
 }

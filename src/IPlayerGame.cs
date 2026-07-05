@@ -29,11 +29,11 @@ namespace CivOne
 		IEnumerable<Player> Players { get; }
 
 		byte PlayerNumber(Player player);
-		Player GetPlayer(byte number);
+		Player? GetPlayer(byte number);
 
 		City[] GetCities();
 		IUnit[] GetUnits();
-		void DisbandUnit(IUnit unit);
+		void DisbandUnit(IUnit? unit);
 
 		bool WonderObsolete<T>() where T : IWonder, new();
 		bool WonderBuilt<T>() where T : IWonder;

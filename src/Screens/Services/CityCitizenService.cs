@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 using CivOne.Advances;
@@ -16,18 +17,21 @@ namespace CivOne.Screens.Services
 		IGameTurnQuery, IGameSettings
 	{
 	}
-	public class CityCitizenServiceImpl(
+
+	[SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "The list is intended for internal use and is not exposed as a public API.")]
+	#pragma warning disable CA1822 // Mark members as static
+	public class CityCitizenService(
 		ICityBasic city,
 		ICityBuildings cityBuildings,
 		IGameCitizenDependency game,
 		List<Citizen> specialists,
 		IMap map) : ICityCitizenService
 	{
-		protected readonly ICityBasic _city = city;
-		protected readonly ICityBuildings _cityBuildings = cityBuildings;
-		protected readonly IGameCitizenDependency _game = game;
-		protected readonly List<Citizen> _specialists = specialists;
-		protected readonly IMap _map = map;
+		readonly ICityBasic _city = city;
+		readonly ICityBuildings _cityBuildings = cityBuildings;
+		readonly IGameCitizenDependency _game = game;
+		readonly List<Citizen> _specialists = specialists;
+		readonly IMap _map = map;
 
 
 		public IEnumerable<CitizenTypes> EnumerateCitizens()
@@ -98,6 +102,7 @@ namespace CivOne.Screens.Services
 			return ct;
 		}
 
+		[SuppressMessage("Design", "CA1033:Interface methods should be callable by child types", Justification = "The interface is only intended to be used via the static Create method and not directly implemented by external classes.")]
 		Citizen[] ICityCitizenService.GetCitizens()
 		{
 			return GetCitizenTypes().Citizens;
@@ -264,7 +269,7 @@ namespace CivOne.Screens.Services
 				return;
 			}
 
-			int totalCities = _game.GetPlayer(_city.Owner).Cities.Count();
+			int totalCities = _game.GetPlayer(_city.CityOwnerPlayerIndex)!.Cities.Length;
 
 			if (totalCities < MinEmperorCityCount)
 			{
@@ -451,8 +456,8 @@ namespace CivOne.Screens.Services
 			// https://civilization.fandom.com/wiki/Michelangelo%27s_Chapel_(Civ1)
 			bool isObsolete = _game.WonderObsolete<MichelangelosChapel>();
 			bool hasChapelOnSameContinent = !isObsolete &&
-						_game.GetPlayer(_city.Owner)
-							.CitiesInterface.Any(c => c.HasWonder<MichelangelosChapel>()
+							_city.PlayerIntf
+								.CitiesInterface.Any(c => c.HasWonder<MichelangelosChapel>()
 					&& c.ContinentId == _city.ContinentId);
 			int chapelBonus = !isObsolete && hasChapelOnSameContinent ? 6 : 4;
 
@@ -466,7 +471,7 @@ namespace CivOne.Screens.Services
 			DebugService.Assert(_city.Tile != null, "City has no tile assigned.");
 			return _map
 					.ContinentCities(_city.ContinentId)
-					.Any(city => city.Owner == _city.Owner &&
+					.Any(city => city.CityOwnerPlayerIndex == _city.CityOwnerPlayerIndex &&
 							city.HasWonder<JSBachsCathedral>());
 		}
 
@@ -564,6 +569,7 @@ namespace CivOne.Screens.Services
 			}
 		}
 
+		[SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "The list is intended for internal use and is not exposed as a public API.")]
 		protected internal void InitSpecialists(List<Citizen> specialists, Citizen[] target)
 		{
 			DebugService.Assert(specialists.Count <= target.Length, "Too many specialists for city size.");

@@ -13,7 +13,7 @@ using CivOne.IO;
 
 namespace CivOne.Graphics.Sprites
 {
-	internal class CachedSpriteCollection<T>(Func<T, Bytemap> getSprite) : ISpriteCollection<T>, ICached, IDisposable
+	internal class CachedSpriteCollection<T>(Func<T, Bytemap> getSprite) : ISprites<T>, ICached, IDisposable where T : notnull
 	{
 		private class Sprite : ISprite, IDisposable
 		{
@@ -37,7 +37,6 @@ namespace CivOne.Graphics.Sprites
 				if (disposing)
 				{
 					Bitmap?.Dispose();
-					Bitmap = null;
 				}
 				_disposed = true;
 			}
@@ -47,7 +46,7 @@ namespace CivOne.Graphics.Sprites
 
 		private readonly Func<T, Bytemap> GetSprite = getSprite;
 
-		private readonly Dictionary<T, ISprite> _sprites = new Dictionary<T, ISprite>();
+		private readonly Dictionary<T, ISprite> _sprites = [];
 
 		private bool _disposed;
 
@@ -61,11 +60,12 @@ namespace CivOne.Graphics.Sprites
 		{
 			get
 			{
-				if (!_sprites.ContainsKey(index))
+				if (!_sprites.TryGetValue(index, out ISprite? value))
 				{
-					_sprites.Add(index, new Sprite(GetSprite(index)));
+					value = new Sprite(GetSprite(index));
+					_sprites.Add(index, value);
 				}
-				return _sprites[index];
+				return value;
 			}
 		}
 
@@ -91,7 +91,5 @@ namespace CivOne.Graphics.Sprites
 			}
 			_disposed = true;
 		}
-
-		~CachedSpriteCollection() => Dispose(false);
 	}
 }

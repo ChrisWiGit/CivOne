@@ -8,21 +8,21 @@ using CivOne.Tiles;
 
 namespace CivOne.Services.GlobalWarming.Impl
 {	
-	public class GlobalWarmingStoreServiceImpl(IGlobalWarmingService globalWarmingService, IValueSanitizer valueSanitizer) : IGlobalWarmingStoreService
+	public class GlobalWarmingStoreService(IGlobalWarmingService globalWarmingService, IValueSanitizer valueSanitizer) : IGlobalWarmingStoreService
 	{
 		public void Store(IGameData gameData)
 		{
 			gameData.GlobalWarmingCount = valueSanitizer.ClampToUInt16(
 				globalWarmingService.GlobalWarmingCount,
-				nameof(GlobalWarmingStoreServiceImpl),
+				nameof(GlobalWarmingStoreService),
 				nameof(IGameData.GlobalWarmingCount));
 			gameData.PollutedSquaresCount = valueSanitizer.ClampToUInt16(
 				globalWarmingService.PollutedSquaresCount,
-				nameof(GlobalWarmingStoreServiceImpl),
+				nameof(GlobalWarmingStoreService),
 				nameof(IGameData.PollutedSquaresCount));
 			gameData.WarmingIndicator = valueSanitizer.ClampToUInt16(
 				(int)globalWarmingService.WarmingIndicator,
-				nameof(GlobalWarmingStoreServiceImpl),
+				nameof(GlobalWarmingStoreService),
 				nameof(IGameData.WarmingIndicator));
 		}
 	}

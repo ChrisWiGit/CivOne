@@ -10,15 +10,14 @@
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using CivOne.Graphics;
-using CivOne.Screens;
 
 namespace CivOne.IO
 {
 	public class Bytemap : BaseUnmanaged
 	{
-		public readonly int Width, Height;
-		public new Size Size => new Size(Width, Height);
+		public int Width { get; private set; }
+		public int Height { get; private set; }
+		public new Size Size => new(Width, Height);
 		public int Length => base.Size;
 
 		public byte this[int x, int y]
@@ -48,11 +47,11 @@ namespace CivOne.IO
 				byte[] buffer = new byte[sx2 - sx1];
 				for (int yy = sy1; yy < sy2; yy++)
 				{
-					Marshal.Copy(IntPtr.Add(_handle, (Width * yy) + sx1), buffer, 0, buffer.Length);
+					Marshal.Copy(IntPtr.Add(Handle, (Width * yy) + sx1), buffer, 0, buffer.Length);
 					// Row index in the output bitmap: (yy - top) maps source row yy to the
 					// correct destination row. The destination row stride is the full output
 					// width, not the clipped source row width in buffer.Length.
-					Marshal.Copy(buffer, 0, IntPtr.Add(output._handle, ((yy - top) * output.Width) + dx), buffer.Length);
+					Marshal.Copy(buffer, 0, IntPtr.Add(output.Handle, ((yy - top) * output.Width) + dx), buffer.Length);
 				}
 				return output;
 			}
@@ -73,7 +72,7 @@ namespace CivOne.IO
 			byte[] buffer = new byte[width].Clear(colour);
 			for (int yy = top; yy < (top + height); yy++)
 			{
-				Marshal.Copy(buffer, 0, IntPtr.Add(_handle, (Width * yy) + left), buffer.Length);
+				Marshal.Copy(buffer, 0, IntPtr.Add(Handle, (Width * yy) + left), buffer.Length);
 			}
 		}
 
@@ -125,8 +124,8 @@ namespace CivOne.IO
 		{
 			ArgumentNullException.ThrowIfNull(destination);
 			if (destination.Length < Length) throw new ArgumentException("Destination buffer too small.", nameof(destination));
-			if (_handle == IntPtr.Zero) return;
-			Marshal.Copy(_handle, destination, 0, Length);
+			if (Handle == IntPtr.Zero) return;
+			Marshal.Copy(Handle, destination, 0, Length);
 		}
 
 		public static Bytemap Copy(Bytemap source) => new Bytemap(source);
@@ -156,7 +155,7 @@ namespace CivOne.IO
 					flat[(y * w) + x] = bytes[x, y];
 				}
 			}
-			Marshal.Copy(flat, 0, _handle, flat.Length);
+			Marshal.Copy(flat, 0, Handle, flat.Length);
 		}
 	}
 }

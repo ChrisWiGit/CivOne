@@ -5,7 +5,7 @@ using CivOne.Persistence.Mapper;
 
 namespace CivOne.Persistence.Model
 {
-    public class CivilizationDtoMapper : DtoMapper<CivilizationDto, ICivilization>
+    public class CivilizationDtoMapper : IDtoMapper<CivilizationDto, ICivilization>
     {
         private readonly IEnumerable<ICivilization> _availableCivilizations;
 

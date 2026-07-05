@@ -16,7 +16,7 @@ namespace CivOne
 	{
 		internal abstract partial class Window
 		{
-			protected event EventHandler OnLoad, OnDraw, OnUpdate;
+			protected event EventHandler? OnLoad, OnDraw, OnUpdate;
 
 			/// <summary>
 			/// Raised when the SDL window has been resized by the user or the system.
@@ -25,7 +25,7 @@ namespace CivOne
 			/// Fires for both SDL_WINDOWEVENT_RESIZED and SDL_WINDOWEVENT_SIZE_CHANGED so
 			/// hosts can force a redraw after a drag-resize completes.
 			/// </remarks>
-			protected event EventHandler OnWindowResize;
+			protected event EventHandler? OnWindowResize;
 			/// <summary>
 			/// Raised when the SDL window position changes.
 			/// </summary>
@@ -33,7 +33,7 @@ namespace CivOne
 			/// Used by hosts to persist window placement and trigger deferred sync logic
 			/// without polling window coordinates every frame.
 			/// </remarks>
-			protected event EventHandler OnWindowMove;
+			protected event EventHandler? OnWindowMove;
 			/// <summary>
 			/// Raised when the SDL window state changes.
 			/// </summary>
@@ -42,9 +42,9 @@ namespace CivOne
 			/// Hosts can use this to refresh cached window/canvas state after OS-driven
 			/// state transitions.
 			/// </remarks>
-			protected event EventHandler OnWindowStateChanged;
+			protected event EventHandler? OnWindowStateChanged;
 
-			public event EventHandler OnClose;
+			public event EventHandler? OnClose;
 
 			private bool _fullscreen;
 			protected bool Fullscreen

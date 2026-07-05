@@ -23,7 +23,7 @@ namespace CivOne.Persistence.Yaml
 
         public object ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
         {
-            var yamlMap = (MapDtoYamlRepresentation)rootDeserializer(typeof(MapDtoYamlRepresentation));
+            var yamlMap = (MapDtoYamlRepresentation?)rootDeserializer(typeof(MapDtoYamlRepresentation));
 
             ArgumentNullException.ThrowIfNull(yamlMap);
             ArgumentNullException.ThrowIfNull(yamlMap.Tiles);
@@ -37,9 +37,10 @@ namespace CivOne.Persistence.Yaml
             };
         }
 
-        public void WriteYaml(IEmitter emitter, object value, Type type, ObjectSerializer serializer)
+        public void WriteYaml(IEmitter emitter, object? value, Type type, ObjectSerializer serializer)
         {
-            var mapDto = (MapDto)value;
+			ArgumentNullException.ThrowIfNull(value);
+			var mapDto = (MapDto)value;
             
             // Convert to a serializable format with encoded tiles and compact land values
             var encodedRows = EncodeMapToRows(mapDto.Tiles);
@@ -139,7 +140,7 @@ namespace CivOne.Persistence.Yaml
             }
 
             var normalized = row.Trim();
-            if (normalized.StartsWith("[", StringComparison.Ordinal) && normalized.EndsWith("]", StringComparison.Ordinal))
+            if (normalized.StartsWith('[') && normalized.EndsWith(']'))
             {
                 normalized = normalized[1..^1];
             }
@@ -171,7 +172,7 @@ namespace CivOne.Persistence.Yaml
             return byte.Parse(token, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
         }
 
-        private string[] ExtractLandValues(Map2d<TileDto> tiles)
+        private static string[] ExtractLandValues(Map2d<TileDto> tiles)
         {
             int width = tiles.Width();
             int height = tiles.Height();
@@ -204,9 +205,9 @@ namespace CivOne.Persistence.Yaml
         public uint TerrainSeed { get; set; }
         
         [Doc("Encoded tile data. Each row contains Base64-encoded tiles (2 chars per tile). Use TileCodec to decode individual tiles. See YAML.md for encoding details.")]
-        public string[] Tiles { get; set; }
+        public string[] Tiles { get; set; } = [];
         
         [Doc("Land values for each tile row, encoded as comma-separated 2-digit hex bytes to reduce YAML size on large maps. See INTERNALS.md for details on how this value is used.")]
-        public string[] LandValues { get; set; }
+        public string[] LandValues { get; set; } = [];
     }
 }

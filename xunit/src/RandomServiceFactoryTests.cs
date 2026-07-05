@@ -1,4 +1,5 @@
 using CivOne.Services.Random;
+using System;
 using Xunit;
 
 namespace CivOne.UnitTests
@@ -6,7 +7,7 @@ namespace CivOne.UnitTests
 	public class RandomServiceFactoryTests
 	{
 		[Fact]
-		public void Create_WhenServiceWasOverridden_ReturnsSameCachedInstance()
+		public void CreateWhenServiceWasOverriddenReturnsSameCachedInstance()
 		{
 			// Arrange
 			IRandomService expected = new StubRandomService();
@@ -20,7 +21,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Override_WhenCalledTwice_ReplacesCachedInstance()
+		public void OverrideWhenCalledTwiceReplacesCachedInstance()
 		{
 			// Arrange
 			IRandomService oldService = new StubRandomService();
@@ -37,7 +38,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Next_WhenCalled_ReturnsValueFromWrappedRandomInstance()
+		public void NextWhenCalledReturnsValueFromWrappedRandomInstance()
 		{
 			// Arrange
 			var random = new Random(1234);
@@ -47,14 +48,14 @@ namespace CivOne.UnitTests
 			int expected = random.Next(0, 100);
 			random = new Random(1234);
 			testee = new CommonRandomService(() => random);
-			int actual = testee.Next(0, 100);
+			int actual = testee.NextInt(0, 100);
 
 			// Assert
 			Assert.Equal(expected, actual);
 		}
-
+		
 		[Fact]
-		public void Hit_WhenPercentIsZero_ReturnsFalse()
+		public void HitWhenPercentIsZeroReturnsFalse()
 		{
 			// Arrange
 			var random = new Random(23905);
@@ -67,13 +68,88 @@ namespace CivOne.UnitTests
 			Assert.False(actual);
 		}
 
+		[Fact]
+		public void HitFractionWhenCalledReturnsValueFromWrappedRandomInstance()
+		{
+			// Arrange
+			var random = new Random(1234);
+			var testee = new CommonRandomService(() => random);
+
+			// Act
+			bool expected = random.Hit(1, 3);
+			random = new Random(1234);
+			testee = new CommonRandomService(() => random);
+			bool actual = testee.Hit(1, 3);
+
+			// Assert
+			Assert.Equal(expected, actual);
+		}
+
+		[Fact]
+		public void HitFractionWhenNumeratorIsZeroReturnsFalse()
+		{
+			// Arrange
+			var random = new Random(23905);
+			var testee = new CommonRandomService(() => random);
+
+			// Act
+			bool actual = testee.Hit(0, 3);
+
+			// Assert
+			Assert.False(actual);
+		}
+
+		[Fact]
+		public void HitFractionWhenNumeratorEqualsDenominatorReturnsTrue()
+		{
+			// Arrange
+			var random = new Random(23905);
+			var testee = new CommonRandomService(() => random);
+
+			// Act
+			bool actual = testee.Hit(3, 3);
+
+			// Assert
+			Assert.True(actual);
+		}
+
+		[Fact]
+		public void HitFractionWhenDenominatorIsZeroThrowsArgumentOutOfRangeException()
+		{
+			// Arrange
+			var random = new Random(23905);
+			var testee = new CommonRandomService(() => random);
+
+			// Act
+			Action action = () => testee.Hit(1, 0);
+
+			// Assert
+			Assert.Throws<ArgumentOutOfRangeException>(action);
+		}
+
 		private sealed class StubRandomService : IRandomService
 		{
-			public int Next(int max) => 0;
+			public int NextInt(int max) => 0;
 
-			public int Next(int min, int max) => min;
+			public int NextInt(int min, int max) => min;
 
 			public bool Hit(int percent) => percent > 0;
+
+			public byte NextByte(byte min, byte maxExclusive) => (byte)NextInt(min, maxExclusive);
+
+			public byte NextByte(byte maxExclusive) => (byte)NextInt(maxExclusive);
+
+			public bool Hit(int numerator, int denominator)
+			{
+				ArgumentOutOfRangeException.ThrowIfNegativeOrZero(denominator);
+
+				if (numerator <= 0)
+				{
+					return false;
+				}
+
+				return numerator >= denominator;
+			}
 		}
 	}
 }

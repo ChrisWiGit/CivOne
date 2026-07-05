@@ -67,7 +67,7 @@ namespace CivOne.Screens.Reports
 			return true;
 		}
 
-		private void DrawHappyRow(Picture output, int yy, int happy, int content, int unhappy, int ent, int sci, int tax)
+		private static void DrawHappyRow(Picture output, int yy, int happy, int content, int unhappy, int ent, int sci, int tax)
 		{
 			int dex = 0;
 			for (int x = 0; x < happy; x++)
@@ -84,7 +84,7 @@ namespace CivOne.Screens.Reports
 				output.AddLayer(Icons.Citizen(Citizen.Taxman), 7 + (8 * dex++), yy);
 		}
 
-		private void DrawHappyRow(Picture output, int yy, CitizenTypes group)
+		private static void DrawHappyRow(Picture output, int yy, CitizenTypes group)
 		{
 			DrawHappyRow(output, yy, group.happy, group.content, group.unhappy, group.elvis, group.einstein, group.taxman);
 		}
@@ -118,7 +118,7 @@ namespace CivOne.Screens.Reports
 			return y;
 		}
 
-		private int CityScore(CitizenTypes citizens)
+		private static int CityScore(CitizenTypes citizens)
         {
 			// don't count unhappy
 			// happy is *2
@@ -214,7 +214,7 @@ namespace CivOne.Screens.Reports
 
 		public override string Title() => Translate("CIVILIZATION SCORE");
 
-		public CivilizationScore(ICivilizationScoreService civilizationScoreService = null) : base(3)
+		public CivilizationScore(ICivilizationScoreService? civilizationScoreService = null) : base(3)
 		{
 			_civilizationScoreService = civilizationScoreService ?? CivilizationScoreServiceFactory.CreateDefault();
 			// Delay initial input briefly so the key that opened the report does not close it immediately again.

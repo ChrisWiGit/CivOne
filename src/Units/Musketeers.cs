@@ -12,7 +12,7 @@ using CivOne.Enums;
 
 namespace CivOne.Units
 {
-	[Default]
+	[DefaultUnitProduction]
 	internal class Musketeers : BaseUnitLand
 	{
 		public Musketeers() : base(3, 2, 3, 1)

@@ -6,6 +6,36 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: The wizard contains a sub menu to allow change game behavior settings directly, instead of having to open the settings screen. Currently, the following settings can be toggled from the wizard:
+  * Use smart PathFinding for goto
+  * Use smart pathfinding for computer players
+  * Use auto settlers cheat
+  * Use fast river movement
+  * No movement penalty for sea units in city
+  * Remove obsolete barracks
+  * Enable Deity difficulty
+  * Extended global warming effects
+* Feature: SDI defense system can now destroy incoming nuclear missiles before they reach their target.
+  * If a nuclear missile is launched at a city with an SDI defense system, the missile is destroyed and a message is shown to the player.
+  * The SDI defense system is only effective against nuclear missiles in 90% of cases, so there is a 10% chance that the missile will still hit the target.
+  * Not as in original civ: When a nuclear missile is launched at a unit near a city with an SDI defense system, the missile will be destroyed in 90% of cases.
+* Refactoring: Addressed around 4,000 warnings
+  * all projects have been compiled with `<AnalysisLevel>latest-all</AnalysisLevel>` and `<Nullable>enable</Nullable>` to enable the latest analyzers and nullable reference types.
+  * Fixed potential null-reference and nullability-related warnings across the codebase.
+  * Improved dispose patterns to release resources immediately after use where appropriate.
+  * Suppressed selected warnings with `#pragma warning disable` or `[SuppressMessage]` when they were not relevant or not reasonably fixable.
+  * Suppressed additional warnings at project level via `<NoWarn>` for the same reasons. See [REMARKS.md](REMARKS.md#warnings-suppressed) for the list and rationale.
+* Fix: Attack with nuke shows units on the map instead of hiding them.
+  * Attack of city or unit near city will reduce city size to half.
+  * All improvements on the target tile are removed.
+  * Pollution is added to the target tile and surrounding tiles with a chance of 25% for each surrounding tile.
+    * This is not like the original game.
+* Fix: Click on menu separator will no longer close the menu.
+* Feature: Added corrected LZW (Lempel-Ziv-Welch) codec implementation as a new option in the setup menu for different compression compatibility.
+  * The original LZW codec implementation is still available as the default option and works with original game files.
+  * The corrected LZW codec implementation can be selected for use with modified game files that contain LZW-compressed images which do not work with the original codec.
+  * Both options are available in the setup menu under "Patches → LZW implementation" and apply immediately when selected.
+  * The selected LZW codec mode is saved in the profile and applied on game startup, allowing users to choose the appropriate codec for their game files without needing to modify settings each time.
 * Feature: Added terrain, tile improvements, land value, found city and unit editor
   * Editor menu shown if debug mode is enabled (`Shift+F1 -> Patches -> Debug menu enabled` or `--debug` when starting the game).
   * Added a `Terrain` top menu in gameplay map view with editor actions for terrain painting, found city, unit spawn, irrigation, road/railroad, mine, fortress, pollution, hut/village, clearing improvements, land values, and brush size changes.
@@ -41,10 +71,17 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Generation logs now include stage timings, making it easier to understand runtime and spot bottlenecks.
   * Number of continents is only limited by `int` range (2 147 483 647); the previous cap of 15 (from the original 4-bit nibble format) is removed.
 * Feature: Zoom map
-  * The map can be zoomed in or out with `Ctrl+MouseWheel` in gameplay map view mode.
+  * The map can be zoomed in or out with `Ctrl+MouseWheel` in gameplay map view mode or with `Ctrl+PageUp` / `Ctrl+PageDown` hotkeys.
   * Scroll up to zoom in (larger tiles, fewer tiles visible); scroll down to zoom out (smaller tiles, more of the map visible).
   * There are 10 fixed zoom levels ranging from 100 % (default) down to 12.5 %.
-  * The zoom is cursor-focused: the map stays anchored to the mouse pointer position while zooming.
+  * Zooming is done by scaling the tiles individually using two scale algorithms: nearest-neighbor for pixel-perfect scaling and pallette weighted average for smoother scaling. 
+    * These can be switched in the setup menu under "Patches".
+  * 4 Buttons are shown in the left lower corner in the sidebar
+    * `+` Zoom in
+    * `-` Zoom out
+    * `R` Reset zoom to 100 %
+    * `NN` and `PAW` toggle the scale algorithm between nearest-neighbor and pallette weighted average.
+  * The zoom is cursor-focused: the map stays anchored to the mouse pointer position while zooming using the mouse wheel. This does not happen when using the keyboard hotkeys.
   * The current map zoom level is saved in the savegame and restored on game load.
 * Feature: Map viewport restore on load with CapsLock override.
   * When a saved game is loaded, the map viewport is restored to the position saved with the game.

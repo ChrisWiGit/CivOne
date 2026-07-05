@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using CivOne.Enums;
 using CivOne.Events;
 
@@ -21,7 +22,7 @@ namespace CivOne
 			// but for now it's only relevant to mouse wheel events in the window, so it's nested here.
 			private const uint SDL_MOUSEWHEEL_FLIPPED = 1;
 
-			protected ScreenEventHandler OnMouseMove, OnMouseUp, OnMouseDown, OnMouseWheel;
+			protected event EventHandler<ScreenEventArgs>? OnMouseMove, OnMouseUp, OnMouseDown, OnMouseWheel;
 
 			private readonly bool[] _mouseButtonState = new bool[3];
 			protected int MouseX { get; private set; }

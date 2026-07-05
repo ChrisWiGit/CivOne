@@ -232,7 +232,7 @@ namespace CivOne.Persistence.Model
 				Difficulty = DifficultyLevel.Chieftain,
 				Players = [playerDto0, playerDto1],
 				AnthologyTurn = 0,
-				GameOptions = [GameOptionEnum.Sound],
+				GameOptions = [GameSetting.Sound],
 				AdvanceOrigin = new Dictionary<byte, byte> { [3] = 1, [7] = 0 },
 				ReplayData = [new ReplayDataDto { Turn = 5, CivilizationDestroyed = new() { DestroyedId = 1, DestroyedById = 2 } }],
 				GlobalWarming = new GlobalWarmingDto
@@ -260,7 +260,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestGameStateDtoMapper_ContractCheck()
+		public void TestGameStateDtoMapperContractCheck()
 		{
 			var dtoProperties = GetWritablePropertyNames<GameStateDto>();
 			// This prevents silent mapper drift: every writable GameStateDto property must
@@ -271,7 +271,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestGameStateDtoMapper_RoundTrip()
+		public void TestGameStateDtoMapperRoundTrip()
 		{
 			var gameState = _testee.FromDto(_dto);
 			var roundTripDto = _testee.ToDto(gameState);
@@ -283,10 +283,10 @@ namespace CivOne.Persistence.Model
 
 			Assert.NotNull(gameState);
 			Assert.Equal(50u, gameState.GameTurn);
-			Assert.Equal(99999, gameState.RandomSeed);
+			Assert.Equal(99999u, gameState.RandomSeed);
 			Assert.Equal(0, gameState.Difficulty); // Chieftain = 0
 			Assert.Equal(2, gameState.Players.Length);
-			Assert.Contains(GameOptionEnum.Sound, gameState.GameOptions);
+			Assert.Contains(GameSetting.Sound, gameState.GameOptions);
 			Assert.Equal(4242, gameState.TerrainSeed);
 			Assert.Equal(2, gameState.MapWidth);
 			Assert.Equal(2, gameState.MapHeight);
@@ -322,6 +322,25 @@ namespace CivOne.Persistence.Model
 			}
 		}
 
+		[Fact]
+		public void TestGameStateDtoMapperPreservesCityCoordinatesAboveByteMaxValueInYamlPath()
+		{
+			_dto.Map = CreateUniformMapDto(320, 20);
+			_dto.Players[0].Cities[0].Location = new MapLocation(300, 10);
+			_dto.Players[1].Cities[0].Location = new MapLocation(319, 19);
+
+			var gameState = _testee.FromDto(_dto);
+			var roundTripDto = _testee.ToDto(gameState);
+
+			Assert.Equal(320, gameState.MapWidth);
+			Assert.Equal(new System.Drawing.Point(300, 10), gameState.Cities[0].Location);
+			Assert.Equal(new System.Drawing.Point(319, 19), gameState.Cities[1].Location);
+			Assert.Equal(300u, roundTripDto.Players[0].Cities[0].Location.X);
+			Assert.Equal(10u, roundTripDto.Players[0].Cities[0].Location.Y);
+			Assert.Equal(319u, roundTripDto.Players[1].Cities[0].Location.X);
+			Assert.Equal(19u, roundTripDto.Players[1].Cities[0].Location.Y);
+		}
+
 		private static Dictionary<string, Action> GetGameStateDtoRoundTripAssertionMap(GameStateDto expected, GameStateDto actual)
 			=> new()
 			{
@@ -336,7 +355,7 @@ namespace CivOne.Persistence.Model
 					{
 						var expectedPlayer = expected.Players[i];
 						var actualPlayer = actual.Players.FirstOrDefault(p => p.Id == expectedPlayer.Id)
-							?? throw new Exception($"Player with ID {expectedPlayer.Id} not found in actual players");
+							?? throw new InvalidOperationException($"Player with ID {expectedPlayer.Id} not found in actual players");
 						Assert.Equal(expectedPlayer.Gold, actualPlayer.Gold);
 						Assert.Equal(expectedPlayer.Anarchy, actualPlayer.Anarchy);
 						Assert.Equal(expectedPlayer.PlayerGuid, actualPlayer.PlayerGuid);
@@ -391,9 +410,27 @@ namespace CivOne.Persistence.Model
 			.Select(p => p.Name)
 			.ToHashSet();
 
+		private static MapDto CreateUniformMapDto(int width, int height)
+		{
+			var tiles = new TileDto[width, height];
+			for (var x = 0; x < width; x++)
+			{
+				for (var y = 0; y < height; y++)
+				{
+					tiles[x, y] = new TileDto { Terrain = Terrain.Plains, LandValue = 1 };
+				}
+			}
+
+			return new MapDto
+			{
+				MapSeed = 4242,
+				Tiles = new Map2d<TileDto>(tiles)
+			};
+		}
+
 
 		// Mock implementations for testing
-		private class MockGameInstanceForTesting : IPlayerGame
+		private sealed class MockGameInstanceForTesting : IPlayerGame
 		{
 			private readonly List<IPlayer> _players;
 
@@ -415,14 +452,14 @@ namespace CivOne.Persistence.Model
 			public Player GetPlayer(byte number) => throw new NotImplementedException();
 			public City[] GetCities() => [];
 			public IUnit[] GetUnits() => [];
-			public void DisbandUnit(IUnit unit) => throw new NotImplementedException();
+			public void DisbandUnit(IUnit? unit) => throw new NotImplementedException();
 			public bool WonderObsolete<T>() where T : IWonder, new() => false;
 			public bool WonderBuilt<T>() where T : IWonder => false;
 			public IWonder[] BuiltWonders => [];
 			public void SetAdvanceOrigin(IAdvance advance, Player player) => throw new NotImplementedException();
 		}
 
-		private class MockPlayerFactoryForTesting : IPlayerFactory
+		private sealed class MockPlayerFactoryForTesting : IPlayerFactory
 		{
 			private readonly List<IPlayerRestorable> _players;
 
@@ -434,18 +471,18 @@ namespace CivOne.Persistence.Model
 			public IPlayerRestorable Create(ICivilization civilization, PlayerDto dto)
 			{
 				var result = _players.FirstOrDefault(p => p.Civilization.Name == civilization.Name)
-					?? throw new Exception("No matching player found for civilization " + civilization.Name);
+					?? throw new InvalidOperationException("No matching player found for civilization " + civilization.Name);
 				return result;
 			}
 		}
 
-		private class MockUnitFactoryForTesting : IUnitFactory
+		private sealed class MockUnitFactoryForTesting : IUnitFactory
 		{
 			public IUnitRestorable Create(string className, byte player, Guid? HomeCityGuid)
 				=> new MockedIUnit { Owner = player, TranslatedName = className, Name = className };
 		}
 
-		private class FixedPlayerOwnerResolver : IPlayerOwnerResolver
+		private sealed class FixedPlayerOwnerResolver : IPlayerOwnerResolver
 		{
 			public bool TryResolveOwnerId(IPlayer player, out byte ownerId)
 			{

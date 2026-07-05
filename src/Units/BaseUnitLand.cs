@@ -23,8 +23,8 @@ namespace CivOne.Units
 {
 	internal abstract class BaseUnitLand : BaseUnit
 	{
-		private bool FastRiverMovement => Settings.Instance.RiverFastMovement;
-		private byte FastRiverMovementCount => FastRiverMovement ? (byte)3 : (byte)1;
+		private static bool FastRiverMovement => Settings.Instance.RiverFastMovement;
+		private static byte FastRiverMovementCount => FastRiverMovement ? (byte)3 : (byte)1;
 
 		protected override void MovementDone(ITile previousTile)
 		{
@@ -70,7 +70,7 @@ namespace CivOne.Units
 				currentUnit: this,
 				Game.Instance,
 				Game.Instance,
-				Common.Random
+				RandomService
 			).ExecuteRandomTribalHutEvent();
 		}
 
@@ -92,7 +92,7 @@ namespace CivOne.Units
 
 		private void MoveOnYourOwn()
 		{
-			Debug.Assert(Class == UnitClass.Land);
+			Debug.Assert(UnitCategory == UnitClass.Land);
 
 			PartMoves = 0; // fire-eggs 20190806 we've moved off-road: all partial moves always lost
 			if (MovesLeft == 0)
@@ -129,7 +129,7 @@ namespace CivOne.Units
 			}
 		}
 
-		public override IEnumerable<MenuItem<int>> MenuItems
+		public override IEnumerable<MenuItem<int>?> MenuItems
 		{
 			get
 			{
@@ -154,7 +154,7 @@ namespace CivOne.Units
 		public override bool MoveTo(int relX, int relY)
 		{
 			// no base.MoveTo. We handle everything on our own.
-			Debug.Assert(Class == UnitClass.Land);
+			Debug.Assert(UnitCategory == UnitClass.Land);
 
 			if (Movement != null) return false;
 
@@ -190,14 +190,14 @@ namespace CivOne.Units
 				{
 					if (Human == Owner)
 					{
-						Goto = Point.Empty;             // Cancel any goto mode ( maybe for AI too ?? )
+						GotoDestination = Point.Empty;             // Cancel any goto mode ( maybe for AI too ?? )
 						GameTask.Enqueue(Message.Error(Translate("-- Civilization Note --"), GetGameText($"ERROR/ZOC")));
 					}
 					return false;
 				}
 			}
 
-			if (!IsFastRoadTraveling(relX, relY, moveTarget))
+			if (!IsFastRoadTraveling(moveTarget))
 			{
 				if (!TryLeavingRoad(relX, relY, moveTarget))
 				{
@@ -215,7 +215,7 @@ namespace CivOne.Units
 		}
 
 		// auf road oder river, wie in newmethod
-		private bool IsFastRoadTraveling(int relX, int relY, ITile moveTarget)
+		private bool IsFastRoadTraveling(ITile moveTarget)
 		{
 			bool isOnRoad = (moveTarget.Road || moveTarget.RailRoad) && (Tile.Road || Tile.RailRoad);
 			bool isOnRiver = FastRiverMovement && moveTarget is River && Tile is River;
@@ -253,7 +253,7 @@ namespace CivOne.Units
 			}
 			
 			// 10% chance of failure if not enough moves left to enter the tile
-			var failure = Common.Random.Hit(10);
+			var failure = RandomService.Hit(10);
 			if (failure)
 			{
 				SkipTurn();
@@ -269,12 +269,12 @@ namespace CivOne.Units
 			if (PartMoves >= 2)
 			{
 				// 2/3 moves left? 50% chance of success
-				success = Common.Random.Next(0, 2) == 0;
+				success = RandomService.Hit(50);
 			}
 			else
 			{
 				// 1/3 moves left? 33% chance of success
-				success = Common.Random.Next(0, 3) == 0;
+				success = RandomService.Hit(1, 3);
 			}
 
 			if (success)
@@ -299,8 +299,6 @@ namespace CivOne.Units
 			return base.ConfrontEnemy(moveTarget, relX, relY);
 		}
 
-
-
 		protected override bool ValidMoveTarget(ITile tile)
 		{
 			if (tile == null)
@@ -311,15 +309,15 @@ namespace CivOne.Units
 				return true;
 
 			bool isOwner = tile.Units.Any(u => u.Owner == Owner);
-			bool allowedToBoard = tile.Units.Where(u => u is IBoardable).Any(u => (u as IBoardable).AllowedToBoard(this));
-			bool hasFreeSlots = tile.Units.Where(u => u is IBoardable).Sum(u => (u as IBoardable).Cargo) > tile.Units.Count(u => u.Class == UnitClass.Land);
+			bool allowedToBoard = tile.Units.OfType<IBoardable>().Any(u => u.AllowedToBoard(this));
+			bool hasFreeSlots = tile.Units.OfType<IBoardable>().Sum(u => u.Cargo) > tile.Units.Count(u => u.UnitCategory == UnitClass.Land);
 
 			return isOwner && allowedToBoard && hasFreeSlots;
 		}
 
 		protected BaseUnitLand(byte price = 1, byte attack = 1, byte defense = 1, byte move = 1) : base(price, attack, defense, move)
 		{
-			Class = UnitClass.Land;
+			UnitCategory = UnitClass.Land;
 			Role = UnitRole.LandAttack;
 		}
 	}

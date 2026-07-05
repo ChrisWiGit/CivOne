@@ -10,6 +10,7 @@ namespace CivOne.Units;
 /// This interface is provided for future dependency injection refactoring.
 /// Implement this interface to provide alternative task queuing mechanisms.
 /// </summary>
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public interface IGameTaskCommandQueue
 {
     /// <summary>

@@ -15,7 +15,7 @@ namespace CivOne.UnitTests
 				AggressionLevel = 2,
 				ConservativeMovement = true
 			};
-			AgentMemoryDtoDelegate<MemoryDto> testee = new(
+			AgentMemoryDtoWrapper<MemoryDto> testee = new(
 				snapshotDelegate: () => state,
 				restoreDelegate: dto => state = dto,
 				createDefaultDelegate: () => new MemoryDto());
@@ -34,7 +34,7 @@ namespace CivOne.UnitTests
 		{
 			// Arrange
 			MemoryDto state = new();
-			AgentMemoryDtoDelegate<MemoryDto> testee = new(
+			AgentMemoryDtoWrapper<MemoryDto> testee = new(
 				snapshotDelegate: () => state,
 				restoreDelegate: dto => state = dto,
 				createDefaultDelegate: () => new MemoryDto());
@@ -60,7 +60,7 @@ namespace CivOne.UnitTests
 				AggressionLevel = 9,
 				ConservativeMovement = false
 			};
-			AgentMemoryDtoDelegate<MemoryDto> testee = new(
+			AgentMemoryDtoWrapper<MemoryDto> testee = new(
 				snapshotDelegate: () => state,
 				restoreDelegate: dto => state = dto,
 				createDefaultDelegate: () => new MemoryDto
@@ -89,7 +89,7 @@ namespace CivOne.UnitTests
 				AggressionLevel = 9,
 				ConservativeMovement = false
 			};
-			AgentMemoryDtoDelegate<MemoryDto> testee = new(
+			AgentMemoryDtoWrapper<MemoryDto> testee = new(
 				snapshotDelegate: () => state,
 				restoreDelegate: dto => state = dto,
 				createDefaultDelegate: () => new MemoryDto

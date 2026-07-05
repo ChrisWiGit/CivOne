@@ -66,27 +66,27 @@ namespace CivOne.Screens.Reports
 		private bool _showAllCivilizations;
 		private bool _update = true;
 
-		private readonly bool _debugMode = false;
+		private readonly bool _debugMode;
 
 		public CivilizationRankingScreen(
 			CivilizationRankingHistorian? historian = null,
 			CivilizationRankingCategory? category = null,
 			bool randomSelection = true,
 			bool debugMode = false,
-			ICivilizationRankingService rankingService = null,
-			IPreviewPalaceRenderer palaceRenderer = null,
-			IRandomService randomService = null) : base(MouseCursor.None)
+			ICivilizationRankingService? rankingService = null,
+			IPreviewPalaceRenderer? palaceRenderer = null,
+			IRandomService? randomService = null) : base(MouseCursor.None)
 		{
 			_rankingService = rankingService ?? CivilizationRankingServiceFactory.GetInstance();
 			_palaceRenderer = palaceRenderer ?? PreviewPalaceRendererFactory.GetInstance();
 			IRandomService effectiveRandomService = randomService ?? RandomServiceFactory.Create();
 
 			_historian = randomSelection || historian == null
-				? Historians[effectiveRandomService.Next(Historians.Length)]
+				? Historians[effectiveRandomService.NextInt(Historians.Length)]
 				: historian.Value;
 
 			_category = randomSelection || category == null
-				? CategoryCycle[effectiveRandomService.Next(CategoryCycle.Length)]
+				? CategoryCycle[effectiveRandomService.NextInt(CategoryCycle.Length)]
 				: category.Value;
 			_showAllCivilizations = false;
 			_debugMode = debugMode;
@@ -109,6 +109,8 @@ namespace CivOne.Screens.Reports
 
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
+			ArgumentNullException.ThrowIfNull(args);
+			
 			if (_debugMode && args[Key.F1])
 			{
 				CycleCategory();

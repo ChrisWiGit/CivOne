@@ -41,13 +41,13 @@ namespace CivOne.Persistence.Model
 			string[] classes = [.. this.GetType().Assembly.GetTypes()
 				.Where(t => typeof(ILeader).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
 				.Select(t => t.Name)];
-			
+
 			CivilizationDto.AllLeaderClassNames = classes;
 
 			_city = new MockedICity(1)
 			{
 				Name = "Rome",
-				Owner = 0,
+				CityOwnerPlayerIndex = 0,
 				Size = 7
 			};
 
@@ -56,7 +56,7 @@ namespace CivOne.Persistence.Model
 				Owner = 0,
 				X = 10,
 				Y = 20,
-				Goto = new Point(5, 8),
+				GotoDestination = new Point(5, 8),
 				Veteran = true,
 				MovesLeft = 2,
 				PartMoves = 1,
@@ -181,7 +181,7 @@ namespace CivOne.Persistence.Model
 			// Setup game instance mock
 			var gameInstance = new MockPlayerGameForTesting(_player, [_unit]);
 			var yamlReadValueSanitizer = new ValueSanitizer(new NoOpLogger());
-			
+
 			_testee = new PlayerDtoMapper(
 				gameInstance,
 				new FixedPlayerOwnerResolver(0),
@@ -193,7 +193,7 @@ namespace CivOne.Persistence.Model
 				new TestAdvanceResolver(),
 				new TestGovernmentResolver(),
 				yamlReadValueSanitizer);
-			
+
 			PlayerDto.AllAdvances = ["0(Advance0)", "1(Advance1)", "2(Advance2)", "3(Advance3)"];
 			PlayerDto.AllAdvancesInfo = new Dictionary<AdvanceId, string>
 							{   { 0, "Advance0" },
@@ -206,7 +206,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestPlayerDtoMapper_ContractCheck()
+		public void TestPlayerDtoMapperContractCheck()
 		{
 			var dtoProperties = GetWritablePropertyNames<PlayerDto>();
 			// This guards mapping completeness: when a new writable PlayerDto property is added,
@@ -219,7 +219,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestPlayerDtoMapper_RoundTrip()
+		public void TestPlayerDtoMapperRoundTrip()
 		{
 			var player = _testee.FromDto(originalDto);
 			var roundTripDto = _testee.ToDto(player);
@@ -236,7 +236,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestPlayerDtoMapper_FromDto_ExpandsAllAdvancesSentinel()
+		public void TestPlayerDtoMapperFromDtoExpandsAllAdvancesSentinel()
 		{
 			var dto = new PlayerDto
 			{
@@ -381,7 +381,8 @@ namespace CivOne.Persistence.Model
 		private static HashSet<string> GetExcludedPlayerDtoProperties() =>
 			[nameof(PlayerDto.Id), nameof(PlayerDto.UnitsDestroyedByByPlayerGuid)];
 
-		private static HashSet<string> GetWritablePropertyNames<T>() => typeof(T).GetProperties()
+		private static HashSet<string> GetWritablePropertyNames<T>() => typeof(T)
+			.GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)
 			.Where(p => p.CanRead && p.CanWrite)
 			.Select(p => p.Name)
 			.ToHashSet();
@@ -400,7 +401,7 @@ namespace CivOne.Persistence.Model
 			}
 		}
 
-		private static void AssertSpaceShipEqual(SpaceShipDto expected, SpaceShipDto actual)
+		private static void AssertSpaceShipEqual(SpaceShipDto? expected, SpaceShipDto? actual)
 		{
 			if (expected == null)
 			{
@@ -428,12 +429,12 @@ namespace CivOne.Persistence.Model
 			}
 		}
 
-		private class MockPlayerGameForTesting : IPlayerGame
+		private sealed class MockPlayerGameForTesting : IPlayerGame
 		{
 			private readonly IPlayer _player;
 			private readonly IUnit[] _units;
 
-			public MockPlayerGameForTesting(IPlayer player, IUnit[] units = null)
+			public MockPlayerGameForTesting(IPlayer player, IUnit[]? units = null)
 			{
 				_player = player;
 				_units = units ?? [];
@@ -450,14 +451,14 @@ namespace CivOne.Persistence.Model
 			public Player GetPlayer(byte number) => (_player as Player) ?? throw new InvalidOperationException("Player must be a Player instance");
 			public City[] GetCities() => [];
 			public IUnit[] GetUnits() => _units;
-			public void DisbandUnit(IUnit unit) => throw new NotImplementedException();
+			public void DisbandUnit(IUnit? unit) => throw new NotImplementedException();
 			public bool WonderObsolete<T>() where T : IWonder, new() => false;
 			public bool WonderBuilt<T>() where T : IWonder => false;
 			public IWonder[] BuiltWonders => [];
 			public void SetAdvanceOrigin(IAdvance advance, Player player) => throw new NotImplementedException();
 		}
 
-		private class MockPlayerFactoryForTesting : IPlayerFactory
+		private sealed class MockPlayerFactoryForTesting : IPlayerFactory
 		{
 			private readonly MockedIPlayer _mockPlayer;
 
@@ -473,19 +474,13 @@ namespace CivOne.Persistence.Model
 			}
 		}
 
-		private class MockUnitDtoMapperForTesting : DtoMapper<UnitDto, IUnit>
-		{
-			public IUnit FromDto(UnitDto dto) => throw new NotImplementedException();
-			public UnitDto ToDto(IUnit domain) => throw new NotImplementedException();
-		}
-
-		private class MockUnitFactoryForTesting : IUnitFactory
+		private sealed class MockUnitFactoryForTesting : IUnitFactory
 		{
 			public IUnitRestorable Create(string className, byte player, Guid? HomeCityGuid)
 				=> throw new NotImplementedException();
 		}
 
-		private class FixedPlayerOwnerResolver : IPlayerOwnerResolver
+		private sealed class FixedPlayerOwnerResolver : IPlayerOwnerResolver
 		{
 			private readonly byte _ownerId;
 
@@ -528,5 +523,6 @@ namespace CivOne.Persistence.Model
 			{
 				return new MockedIGovernment { Id = id };
 			}
-		}	}
+		}
+	}
 }

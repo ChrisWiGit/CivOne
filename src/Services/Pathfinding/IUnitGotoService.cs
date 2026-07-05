@@ -9,6 +9,6 @@ namespace CivOne.Services.Pathfinding
 		/// Returns the next tile to move into on the path towards unit.Goto,
 		/// or null if the goal is already reached or no path exists.
 		/// </summary>
-		ITile GotoStep(IUnit unit);
+		ITile? GotoStep(IUnit unit);
 	}
 }

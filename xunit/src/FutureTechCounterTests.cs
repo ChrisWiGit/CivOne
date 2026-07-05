@@ -7,7 +7,7 @@ namespace CivOne.src
 	public class FutureTechCounterTests : TestsBase
 	{
 		[Fact]
-		public void ProcessScience_IncrementsPlayerAndGlobalCounter_ForHumanFutureTech()
+		public void ProcessScienceIncrementsPlayerAndGlobalCounterForHumanFutureTech()
 		{
 			foreach (var advance in Common.Advances.ToArray())
 			{
@@ -22,7 +22,7 @@ namespace CivOne.src
 			playa.FutureTechCount = 0;
 
 			var game = Game.Instance;
-			game._currentPlayer = game.PlayerNumber(playa);
+			game.SetCurrentPlayerForTesting(game.PlayerNumber(playa));
 			Assert.Equal((ushort)0, game.PlayerFutureTech);
 
 			new ProcessScience(playa).Run();
@@ -33,7 +33,7 @@ namespace CivOne.src
 		}
 
 		[Fact]
-		public void ProcessScience_IncrementsOnlyPlayerCounter_ForAiFutureTech()
+		public void ProcessScienceIncrementsOnlyPlayerCounterForAiFutureTech()
 		{
 			var aiPlayer = Game.Instance.Players.First(player => player != playa && !(player.Civilization is CivOne.Civilizations.Barbarian));
 			foreach (var advance in Common.Advances.ToArray())
@@ -49,7 +49,7 @@ namespace CivOne.src
 			aiPlayer.FutureTechCount = 0;
 
 			var game = Game.Instance;
-			game._currentPlayer = game.PlayerNumber(aiPlayer);
+			game.SetCurrentPlayerForTesting(game.PlayerNumber(aiPlayer));
 			Assert.Equal((ushort)0, game.PlayerFutureTech);
 
 			new ProcessScience(aiPlayer).Run();

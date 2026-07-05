@@ -20,23 +20,11 @@ namespace CivOne.Screens.Dialogs
 	internal class DisbandUnit : BaseDialog
 	{
 		private readonly Picture[] _textLines;
-		private Menu _menu;
 
-		protected override void FirstUpdate()
+		protected override IMenu? CreateManagedMenu()
 		{
-			CreateMenu();
-			base.FirstUpdate();
-		}
-
-		private void CreateMenu()
-		{
-			if (_menu is not null)
-			{
-				return;
-			}
-
 			int menuWidth = _textLines.Max(b => b.Width) + 5;
-			_menu = new Menu(Palette, Selection(45, 28, menuWidth, 10))
+			Menu menu = new Menu(Palette, Selection(45, 28, menuWidth, 10))
 			{
 				X = 103,
 				Y = 100,
@@ -46,10 +34,10 @@ namespace CivOne.Screens.Dialogs
 				TextColour = 5,
 				FontId = 0
 			};
-			_menu.Items.Add(Translate("Unit Disbanded.")).OnSelect(Cancel);
-			_menu.MissClick += Cancel;
-			_menu.Cancel += Cancel;
-			AddMenu(_menu);
+			menu.Items.Add(Translate("Unit Disbanded.")).OnSelect(Cancel);
+			menu.MissClick += Cancel;
+			menu.Cancel += Cancel;
+			return menu;
 		}
 
 		private static Picture[] TextPictures(City city, IUnit unit)

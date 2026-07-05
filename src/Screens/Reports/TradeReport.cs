@@ -10,7 +10,6 @@
 using System;
 using System.Linq;
 using CivOne.Buildings;
-using CivOne.Concepts;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -28,7 +27,7 @@ namespace CivOne.Screens.Reports
 		private readonly City[] _cities;
 
 		private bool _update = true;
-		private int _page = 0;
+		private int _page;
 
 		private readonly int PAGE_SIZE = 17;
 
@@ -93,7 +92,7 @@ namespace CivOne.Screens.Reports
 			this.DrawText(Translate("Maintenance Cost"), 0, 15, OffsetX + 160, OffsetY + 32);
 
 			int yy = OffsetY + 40;
-			foreach (Building entry in Enum.GetValues(typeof(Building)))
+			foreach (Building entry in Enum.GetValues<Building>())
 			{
 				int count = _cities.SelectMany(c => c.Buildings).Count(b => b.Id == (int)entry);
 				if (count == 0) continue;
@@ -147,7 +146,7 @@ namespace CivOne.Screens.Reports
 
 		public TradeReport() : base(2)
 		{
-			_cities = Game.GetCities().Where(c => Human == c.Owner && c.Size > 0).ToArray();
+			_cities = Game.GetCities().Where(c => Human == c.CityOwnerPlayerIndex && c.Size > 0).ToArray();
 			Render();
 		}
 

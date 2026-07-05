@@ -9,13 +9,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using CivOne.Advances;
 using CivOne.Enums;
-using CivOne.Screens;
 using CivOne.Tasks;
 using CivOne.Tiles;
-using CivOne.Units;
 using CivOne.UserInterface;
 using CivOne.Wonders;
 
@@ -24,10 +23,10 @@ namespace CivOne.Units
 	public interface IUnit : ICivilopedia, IProduction, ITurn
 	{
 		Guid Id { get; set; }
-		IAdvance RequiredTech { get; }
-		IWonder RequiredWonder { get; }
-		IAdvance ObsoleteTech { get; }
-		UnitClass Class { get; }
+		IAdvance? RequiredTech { get; }
+		IWonder? RequiredWonder { get; }
+		IAdvance? ObsoleteTech { get; }
+		UnitClass UnitCategory { get; }
 		/// <summary>
 		/// Defines type of the unit
 		/// </summary>
@@ -37,7 +36,7 @@ namespace CivOne.Units
 		/// Deprecated: use IsHome(ICityBasic city) method instead
 		/// to check if unit's home is the given city
 		/// </summary>
-		City Home { get; }
+		City? Home { get; }
 
 		virtual bool IsHome(ICityBasic city) => HasHome && Home == city;
 		bool HasHome => Home != null;
@@ -47,7 +46,7 @@ namespace CivOne.Units
 		byte Move { get; }
 		int X { get; set; }
 		int Y { get; set; }
-		Point Goto { get; set; }
+		Point GotoDestination { get; set; }
 		/// <summary>
 		/// Current tile of `Map` that Unit sit on
 		/// </summary>
@@ -101,15 +100,16 @@ namespace CivOne.Units
 		/// Unit is Moving now
 		/// </summary>
 		bool Moving { get; }
-		MoveUnit Movement { get; }
+		MoveUnit? Movement { get; }
 		bool MoveTo(int relX, int relY);
 		/// <summary>
 		/// Tells who is owner [player/civilization/barbarian] for this Unit
 		/// </summary>
 		byte Owner { get; set; }
 		/// <summary>
-		/// The Status property is for saving/restoring state with the savefile
+		/// The Status property is for restoring state from the savefile bitfield.
 		/// </summary>
+		[SuppressMessage("Design", "CA1044:Properties should not be write only", Justification = "The property is a restore hook for savefile status bits. Loading writes the serialized bitfield into the unit, while saving derives the bitfield from the unit's actual state instead of reading this property.")]
 		byte Status { set; }
 		/// <summary>
 		/// Current Order for Unit.
@@ -144,8 +144,8 @@ namespace CivOne.Units
 		/// <summary>
 		/// Establishes the unit's home (supporting) city.
 		/// </summary>
-		void SetHome(City city);
-		IEnumerable<MenuItem<int>> MenuItems { get; }
+		void SetHome(City? city);
+		IEnumerable<MenuItem<int>?> MenuItems { get; }
 		IEnumerable<UnitModification> Modifications { get; }
 		/// <summary>
 		/// Perform pillaging activity

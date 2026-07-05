@@ -24,16 +24,23 @@ namespace CivOne.Persistence.Yaml
 
         public object ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
         {
-            var data = (MapLocationData)rootDeserializer(typeof(MapLocationData));
+            var data = (MapLocationData?)rootDeserializer(typeof(MapLocationData));
+
+            if (data == null)
+            {
+                return new MapLocation();
+            }
+
             return new MapLocation(data.X, data.Y);
         }
 
-        public void WriteYaml(IEmitter emitter, object value, Type type, ObjectSerializer serializer)
+        public void WriteYaml(IEmitter emitter, object? value, Type type, ObjectSerializer serializer)
         {
+            ArgumentNullException.ThrowIfNull(value);
+
             if (value is not MapLocation loc)
             {
-                throw new InvalidOperationException(
-                    $"WriteYaml expected a {nameof(MapLocation)} but received {value?.GetType().FullName ?? "null"}.");
+                throw new ArgumentException($"WriteYaml expected a {nameof(MapLocation)} but received {value.GetType().FullName}.");
             }
 
             serializer(new MapLocationData { X = loc.X, Y = loc.Y }, typeof(MapLocationData));

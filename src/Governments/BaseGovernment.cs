@@ -17,13 +17,14 @@ namespace CivOne.Governments
 	{
 		public byte Id { get; private set; }
 		public string NameAdjective { get; protected set; }
-		public IAdvance RequiredTech { get; private set; }
+		public IAdvance? RequiredTech { get; private set; }
 		public int CorruptionMultiplier { get; protected set; }
 
-		internal BaseGovernment(byte id, IAdvance requiredTech = null)
+		internal BaseGovernment(byte id, IAdvance? requiredTech = null)
 		{
 			Id = id;
 			RequiredTech = requiredTech;
+			NameAdjective = Name;
 		}
 	}
 }

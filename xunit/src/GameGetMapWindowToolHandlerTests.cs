@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using CivOne.Mcp.Contracts;
 using CivOne.Mcp.Tools;
@@ -11,7 +12,7 @@ namespace CivOne.UnitTests
 	public sealed class GameGetMapWindowToolHandlerTests
 	{
 		[Fact]
-		public void Handle_EncodedFormat_IncludesMetaDocPathAndEncodedRows()
+		public void HandleEncodedFormatIncludesMetaDocPathAndEncodedRows()
 		{
 			// Arrange
 			GameGetMapWindowToolHandler testee = CreateTestee();
@@ -37,11 +38,12 @@ namespace CivOne.UnitTests
 
 			JsonElement rows = root.GetProperty("data").GetProperty("window").GetProperty("rows");
 			Assert.Equal(1, rows.GetArrayLength());
-			Assert.Equal(4, rows[0].GetString().Length); // 2 tiles * 2 chars per tile
+			Assert.NotNull(rows[0].GetString());
+			Assert.Equal(4, rows[0].GetString()!.Length); // 2 tiles * 2 chars per tile
 		}
 
 		[Fact]
-		public void Handle_EncodedFormat_IncludeMetaFalse_StillReturnsMeta()
+		public void HandleEncodedFormatIncludeMetaFalseStillReturnsMeta()
 		{
 			// Arrange
 			GameGetMapWindowToolHandler testee = CreateTestee();
@@ -63,7 +65,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Handle_DecodedFormat_WithIncludeMetaTrue_ReturnsDecodedMeta()
+		public void HandleDecodedFormatWithIncludeMetaTrueReturnsDecodedMeta()
 		{
 			// Arrange
 			GameGetMapWindowToolHandler testee = CreateTestee();
@@ -89,7 +91,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Handle_InvalidBounds_ReturnsInvalidBoundsError()
+		public void HandleInvalidBoundsReturnsInvalidBoundsError()
 		{
 			// Arrange
 			GameGetMapWindowToolHandler testee = CreateTestee();
@@ -110,7 +112,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Handle_InvalidFormat_ReturnsInvalidFormatError()
+		public void HandleInvalidFormatReturnsInvalidFormatError()
 		{
 			// Arrange
 			GameGetMapWindowToolHandler testee = CreateTestee();
@@ -151,7 +153,7 @@ namespace CivOne.UnitTests
 
 		private sealed class StaticSnapshotProvider(GameStateDto snapshot) : IGameStateDtoSnapshotProvider
 		{
-			public bool TryGetSnapshot(out GameStateDto output, out string errorCode, out string errorMessage)
+			public bool TryGetSnapshot([NotNullWhen(true)] out GameStateDto? output, [NotNullWhen(false)] out string? errorCode, [NotNullWhen(false)] out string? errorMessage)
 			{
 				output = snapshot;
 				errorCode = null;

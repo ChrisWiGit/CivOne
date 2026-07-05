@@ -1,4 +1,6 @@
 using CivOne.IO;
+using CivOne.Persistence.Factories;
+using CivOne.Persistence.Model;
 using CivOne.src;
 using System;
 using System.Linq;
@@ -9,7 +11,7 @@ namespace CivOne.UnitTests.Persistence
 	public class SaveDataAdapterTests : TestsBase
 	{
 		[Fact]
-		public void CivilizationIdentity_SetterAndGetter_RoundtripFlagsWithoutBitShiftRegression()
+		public void CivilizationIdentitySetterAndGetterRoundtripFlagsWithoutBitShiftRegression()
 		{
 			// Arrange
 			using var _testee = new SaveDataAdapter();
@@ -25,7 +27,7 @@ namespace CivOne.UnitTests.Persistence
 		}
 
 		[Fact]
-		public void Cities_Setter_PreservesVisibleSizeInBinarySaveData()
+		public void CitiesSetterPreservesVisibleSizeInBinarySaveData()
 		{
 			// Arrange
 			using var _testee = new SaveDataAdapter();
@@ -61,7 +63,7 @@ namespace CivOne.UnitTests.Persistence
 		}
 
 		[Fact]
-		public void ReplayData_Setter_ThrowsWhenSerializedDataExceedsFixedBuffer()
+		public void ReplayDataSetterThrowsWhenSerializedDataExceedsFixedBuffer()
 		{
 			// Each CivilizationDestroyed entry serializes to 4 bytes.
 			// 1025 entries exceed the 4096-byte fixed replay buffer.
@@ -75,6 +77,27 @@ namespace CivOne.UnitTests.Persistence
 			var ex = Assert.Throws<InvalidOperationException>(() => testee.ReplayData = replayData);
 
 			Assert.Contains("Replay data exceeds 4096 bytes", ex.Message);
+		}
+
+		[Fact]
+		public void CitiesSetterClampsCoordinatesAboveByteMaxValueWhenCheckedSanitizerIsActive()
+		{
+			using var sanitizerScope = ValueSanitizerFactory.UseCheckedValueSanitizer(new ValueSanitizer(new NoOpLogger()));
+			var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
+			City? city = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+			Assert.NotNull(city);
+
+			city.X = 300;
+			city.Y = 20;
+
+			using var testee = new SaveDataAdapter();
+
+			testee.Cities = [.. new[] { city }.GetCityData()];
+			using var actualAdapter = SaveDataAdapter.Load(testee.GetBytes());
+			var actual = Assert.Single(actualAdapter.Cities);
+
+			Assert.Equal(byte.MaxValue, actual.X);
+			Assert.Equal((byte)20, actual.Y);
 		}
 	}
 }

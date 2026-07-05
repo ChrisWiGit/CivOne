@@ -15,12 +15,12 @@ namespace CivOne.Persistence.Mapper
     public class GameStateDtoMapper(
         PlayerDtoMapper playerMapper,
         UnitDtoMapper unitMapper,
-        DtoMapper<MapDto, IMapTiles> mapMapper,
-        DtoMapper<GlobalWarmingDto, GameState> globalWarmingMapper,
+        IDtoMapper<MapDto, IMapTiles> mapMapper,
+        IDtoMapper<GlobalWarmingDto, GameState> globalWarmingMapper,
         IValueSanitizer yamlReadValueSanitizer,
-        ICityNameCatalog cityNameCatalog = null,
-        UnitsDestroyedByResolver unitsDestroyedByResolver = null
-    ) : DtoMapper<GameStateDto, GameState>
+        ICityNameCatalog? cityNameCatalog = null,
+        UnitsDestroyedByResolver? unitsDestroyedByResolver = null
+    ) : IDtoMapper<GameStateDto, GameState>
     {
         private readonly ICityNameCatalog _cityNameCatalog = cityNameCatalog ?? new RuntimeCityNameCatalog();
         private readonly UnitsDestroyedByResolver _unitsDestroyedByResolver = unitsDestroyedByResolver ?? new UnitsDestroyedByResolver(yamlReadValueSanitizer);
@@ -35,8 +35,8 @@ namespace CivOne.Persistence.Mapper
             var players = MapPlayers(dto);
             ResolveUnitsDestroyedByByPlayerGuid(dto, players);
             ApplyLegacyFutureTech(dto, players);
-            ValidateHumanPlayerIndex(dto, players);
-            ValidateCurrentPlayerIndex(dto, players);
+			ValidateHumanPlayerIndex(dto, players);
+			ValidateCurrentPlayerIndex(dto, players);
             ResolveTradingCities(dto, players);
 
             var units = MapUnits(dto);
@@ -50,7 +50,7 @@ namespace CivOne.Persistence.Mapper
                 Player.Game = new PlayerGameStub();
                 var (cities, cityNames) = MapCities(players);
                 
-                var randomSeed = yamlReadValueSanitizer.ClampToInt32(dto.GameRandomSeed, nameof(GameStateDtoMapper), nameof(GameStateDto.GameRandomSeed));
+                var randomSeed = dto.GameRandomSeed;
                 var difficulty = yamlReadValueSanitizer.ClampToInt32((int)dto.Difficulty, nameof(GameStateDtoMapper), nameof(GameStateDto.Difficulty));
                 var anthologyTurn = (ushort)yamlReadValueSanitizer.ClampToInt32(dto.AnthologyTurn, nameof(GameStateDtoMapper), nameof(GameStateDto.AnthologyTurn), min: 0, max: ushort.MaxValue);
                 var globalWarmingState = globalWarmingMapper.FromDto(dto.GlobalWarming);
@@ -71,7 +71,7 @@ namespace CivOne.Persistence.Mapper
             _unitsDestroyedByResolver.ResolveAndApply(players, dto.Players);
         }
 
-        private void ValidateHumanPlayerIndex(GameStateDto dto, IPlayer[] players)
+        private static void ValidateHumanPlayerIndex(GameStateDto dto, IPlayer[] players)
         {
             if (dto.HumanPlayer >= players.Length)
             {
@@ -79,7 +79,7 @@ namespace CivOne.Persistence.Mapper
             }
         }
 
-        private void ValidateCurrentPlayerIndex(GameStateDto dto, IPlayer[] players)
+        private static void ValidateCurrentPlayerIndex(GameStateDto dto, IPlayer[] players)
         {
             if (dto.CurrentPlayer >= players.Length)
             {
@@ -120,7 +120,7 @@ namespace CivOne.Persistence.Mapper
             List<ICity> sourceCities = [.. players.SelectMany(p => p.Cities ?? [])];
             var (cityNames, cityNameIndexByName) = BuildCityNameCatalog(sourceCities);
             var (mappedCities, _) = MaterializeCities(sourceCities, cityNames, cityNameIndexByName);
-            ApplyTradingLinks(sourceCities, mappedCities);
+			ApplyTradingLinks(sourceCities, mappedCities);
             return (mappedCities, [.. cityNames]);
         }
 
@@ -154,9 +154,9 @@ namespace CivOne.Persistence.Mapper
             {
                 var sourceCity = sourceCities[i];
                 var city = CreateCity(sourceCity, cityNames, cityNameIndexByName);
-                ApplyStatusFlags(city, sourceCity);
-                ApplyProductionAndCollections(city, sourceCity);
-                ApplySize(city, sourceCity);
+				ApplyStatusFlags(city, sourceCity);
+				ApplyProductionAndCollections(city, sourceCity);
+				ApplySize(city, sourceCity);
                 
                 mappedCities.Add(city);
                 if (!cityIndexById.ContainsKey(city.Id))
@@ -170,18 +170,18 @@ namespace CivOne.Persistence.Mapper
 
         private City CreateCity(ICity sourceCity, List<string> cityNames, Dictionary<string, int> cityNameIndexByName)
         {
-            var locationX = yamlReadValueSanitizer.ClampToInt32(sourceCity.Location.X, nameof(GameStateDtoMapper), "City.Location.X", min: 0, max: byte.MaxValue);
-            var locationY = yamlReadValueSanitizer.ClampToInt32(sourceCity.Location.Y, nameof(GameStateDtoMapper), "City.Location.Y", min: 0, max: byte.MaxValue);
+            var locationX = yamlReadValueSanitizer.ClampToInt32(sourceCity.Location.X, nameof(GameStateDtoMapper), "City.Location.X", min: 0, max: int.MaxValue);
+            var locationY = yamlReadValueSanitizer.ClampToInt32(sourceCity.Location.Y, nameof(GameStateDtoMapper), "City.Location.Y", min: 0, max: int.MaxValue);
             var cityName = sourceCity.Name ?? string.Empty;
             var nameId = cityNameIndexByName.TryGetValue(cityName, out var mappedNameId)
                 ? mappedNameId
                 : AddCityName(cityNames, cityNameIndexByName, cityName);
 
-            return new City(sourceCity.Owner)
+            return new City(sourceCity.CityOwnerPlayerIndex)
             {
                 Id = sourceCity.Id,
-                X = (byte)locationX,
-                Y = (byte)locationY,
+                X = locationX,
+                Y = locationY,
                 NameId = nameId,
                 Food = sourceCity.Food,
                 Shields = sourceCity.Shields,
@@ -190,12 +190,12 @@ namespace CivOne.Persistence.Mapper
             };
         }
 
-        private void ApplySize(City city, ICity sourceCity)
+        private static void ApplySize(City city, ICity sourceCity)
         {
             city.Size = sourceCity.Size;
         }
 
-        private void ApplyStatusFlags(City city, ICity sourceCity)
+        private static void ApplyStatusFlags(City city, ICity sourceCity)
         {
             city.SetupStatus(sourceCity.Status);
             city.IsRiot = sourceCity.IsRiot;
@@ -208,7 +208,7 @@ namespace CivOne.Persistence.Mapper
             city.BuildingSold = sourceCity.BuildingSold;
         }
 
-        private void ApplyProductionAndCollections(City city, ICity sourceCity)
+        private static void ApplyProductionAndCollections(City city, ICity sourceCity)
         {
             if (sourceCity.CurrentProduction != null)
             {
@@ -230,7 +230,7 @@ namespace CivOne.Persistence.Mapper
             }
         }
 
-        private void ApplyTradingLinks(List<ICity> sourceCities, List<City> mappedCities)
+        private static void ApplyTradingLinks(List<ICity> sourceCities, List<City> mappedCities)
         {
             for (var i = 0; i < sourceCities.Count; i++)
             {
@@ -278,8 +278,8 @@ namespace CivOne.Persistence.Mapper
             List<IUnit> units,
             List<City> cities,
             string[] cityNames,
-			(int width, int height, int terrainSeed, ITile[,] mapTiles) map,
-			int randomSeed,
+            (int width, int height, int terrainSeed, ITile[,] mapTiles) map,
+            uint randomSeed,
 			int difficulty,
             ushort anthologyTurn,
             GameState globalWarmingState)
@@ -354,7 +354,7 @@ namespace CivOne.Persistence.Mapper
                 }
             }
 
-            throw new Exception($"{playerKind} player not found in players array");
+            throw new InvalidOperationException($"{playerKind} player not found in players array");
         }
 
         public GameStateDto ToDto(GameState gameState)
@@ -367,17 +367,17 @@ namespace CivOne.Persistence.Mapper
                 Difficulty = (DifficultyLevel)gameState.Difficulty,
                 GameTurn = gameState.GameTurn,
                 Players = [.. gameState.Players.Select(playerMapper.ToDto)],
-                HumanPlayer = FindPlayerIndex(gameState.Players, gameState.HumanPlayer, "Human"),
+                HumanPlayer = FindPlayerIndex(gameState.Players, gameState.HumanPlayer ?? throw new InvalidOperationException("Human player not found"), "Human"),
                 CurrentPlayer = FindPlayerIndex(gameState.Players, gameState.CurrentPlayer ?? gameState.HumanPlayer, "Current"),
 
-                GameRandomSeed = (uint)gameState.RandomSeed,
+                GameRandomSeed = gameState.RandomSeed,
                 AnthologyTurn = gameState.AnthologyTurn,
                 Map = mapDto,
                 GameOptions = gameState.GameOptions ?? [],
                 AdvanceOrigin = gameState.AdvanceOrigin,
                 ReplayData = new ReplayDataDtoMapper().ToDtoList(gameState.ReplayData ?? []),
                 PeaceTurns = gameState.PeaceTurns,
-				PlayerFutureTech = gameState.HumanPlayer?.FutureTechCount ?? gameState.PlayerFutureTech,
+				PlayerFutureTech = gameState.HumanPlayer.FutureTechCount,
                 GlobalWarming = globalWarmingMapper.ToDto(gameState)
             };
 
@@ -446,7 +446,8 @@ namespace CivOne.Persistence.Mapper
         private class MapTilesArrayAdapter(ITile[,] tiles) : IMapTiles
         {
             public ITile this[int x, int y] => tiles[x, y];
-            public int Width => tiles.GetLength(0);
+
+			public int Width => tiles.GetLength(0);
             public int Height => tiles.GetLength(1);
         }
     }

@@ -12,8 +12,6 @@ using CivOne.Enums;
 
 namespace CivOne.Events
 {
-	public delegate void UpdateEventHandler(object sender, UpdateEventArgs args);
-
 	public class UpdateEventArgs : EventArgs
 	{
 		public bool HasUpdate { get; internal set; }

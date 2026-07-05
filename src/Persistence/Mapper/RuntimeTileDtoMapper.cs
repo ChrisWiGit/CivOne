@@ -14,16 +14,16 @@ namespace CivOne.Persistence.Model
 	/// <c>_terrainMasterWord</c> to be set first via
 	/// <see cref="Map.InitializeForYamlLoad"/>).
 	/// </summary>
-	public class RuntimeTileDtoMapper(Map _map, ITerrainFactory _terrainFactory) : ITileDtoMapper
+	public class RuntimeTileDtoMapper(Map map, ITerrainFactory terrainFactory) : ITileDtoMapper
 	{
 
 		public void SetTileFromDto(TileDto dto, int x, int y)
 		{
 			// dto.Special=true means explicitly set in YAML → honour it directly.
 			// dto.Special=false means not stored (old saves) → derive from map seed for backwards compatibility.
-			bool special = dto.Special || _map.TileIsSpecialInternal(x, y);
+			bool special = dto.Special || map.TileIsSpecialInternal(x, y);
 
-			ITile tile = _terrainFactory.CreateTile(dto.Terrain, x, y, special);
+			ITile tile = terrainFactory.CreateTile(dto.Terrain, x, y, special);
 
 			tile.Road       = dto.Road;
 			tile.RailRoad   = dto.RailRoad;
@@ -34,7 +34,7 @@ namespace CivOne.Persistence.Model
 			tile.Hut        = dto.Hut;
 			tile.LandValue  = dto.LandValue;
 
-			_map.SetTileInternal(x, y, tile);
+			map.SetTileInternal(x, y, tile);
 		}
 
 		public TileDto ToDto(ITile domain)

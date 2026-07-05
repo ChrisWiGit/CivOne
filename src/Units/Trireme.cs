@@ -11,6 +11,7 @@ using System.Linq;
 using CivOne.Advances;
 using CivOne.Enums;
 using CivOne.IO;
+using CivOne.Services.Random;
 using CivOne.Tasks;
 using CivOne.Tiles;
 
@@ -25,10 +26,10 @@ namespace CivOne.Units
 			if (MovesLeft > 0) return;
 
 			// Check if the Trireme is at open sea
-			if (Tile.GetBorderTiles().Any(t => !(t is Ocean))) return;
+			if (Tile.GetBorderTiles().Any(t => t is not Ocean)) return;
 
 			// The Trireme unit is surrounded by oceans, there's a 50% chance it will be lost at sea
-			if (Common.Random.Next(0, 100) < 50) return;
+			if (RandomServiceFactory.Create().Hit(50)) return;
 
 			Game.DisbandUnit(this);
 			GameTask.Enqueue(Message.Error(Translate("-- Civilization Note --"), GetGameText("ERROR/TRIREME")));

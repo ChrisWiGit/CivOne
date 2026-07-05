@@ -10,7 +10,7 @@ namespace CivOne.Mcp.Tools
 
 		public IReadOnlyCollection<IMcpToolHandler> All => _handlers.Values;
 
-		public bool TryGet(string method, out IMcpToolHandler handler)
+		public bool TryGet(string method, out IMcpToolHandler? handler)
 		{
 			handler = null;
 			if (string.IsNullOrWhiteSpace(method)) return false;
@@ -19,7 +19,7 @@ namespace CivOne.Mcp.Tools
 
 		public McpToolRegistry(IEnumerable<IMcpToolHandler> handlers)
 		{
-			if (handlers == null) throw new ArgumentNullException(nameof(handlers));
+			ArgumentNullException.ThrowIfNull(handlers);
 			_handlers = handlers
 				.GroupBy(x => x.Method, StringComparer.OrdinalIgnoreCase)
 				.ToDictionary(x => x.Key, x => x.First(), StringComparer.OrdinalIgnoreCase);

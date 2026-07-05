@@ -14,19 +14,19 @@ namespace CivOne.Services.HallOfFame
 		IHallOfFamePersistService persistService,
 		IHallOfFameFileRepository fileRepository,
 		IHallOfFameEntryComposerService entryComposerService,
-		Action<string> log = null) : IHallOfFameCommandService
+		Action<string>? log = null) : IHallOfFameCommandService
 	{
 		private readonly string _storageDirectory = storageDirectory;
 		private readonly IHallOfFamePersistService _persistService = persistService;
 		private readonly IHallOfFameFileRepository _fileRepository = fileRepository;
 		private readonly IHallOfFameEntryComposerService _entryComposerService = entryComposerService;
-		private readonly Action<string> _log = log;
+		private readonly Action<string>? _log = log;
 
 		public IReadOnlyList<HallOfFameEntry> Clear()
 		{
 			IReadOnlyList<HallOfFameEntry> clearedEntries = BuildClearedEntries();
 
-			if (!_fileRepository.TrySave(_storageDirectory, clearedEntries, out string saveError))
+			if (!_fileRepository.TrySave(_storageDirectory, clearedEntries, out string? saveError))
 			{
 				_log?.Invoke($"Could not clear Hall of Fame entries: {saveError}");
 				return _persistService.ViewEntries(_storageDirectory, _log);

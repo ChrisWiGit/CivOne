@@ -10,12 +10,13 @@
 using CivOne.Advances;
 using CivOne.Enums;
 using CivOne.Graphics;
+using System;
 
 namespace CivOne.Buildings
 {
 	internal class PowerPlant : BaseBuilding
 	{
-		private static Picture _iconCache = null;
+		private static Picture? _iconCache;
 		
 		public PowerPlant() : base(16, 4)
 		{
@@ -25,7 +26,11 @@ namespace CivOne.Buildings
 			if (_iconCache == null)
 			{
 				SetIcon(4, 1, false);
-				Picture icon = new Picture(52, 50, Icon.Palette);
+				if (Icon == null)
+				{
+					throw new InvalidOperationException("Power Plant icon base sprite was not initialized.");
+				}
+				Picture icon = new(52, 50, Icon.Palette);
 				icon.AddLayer(Icon.Crop(31, 0, 20, 50), 1);
 				icon.AddLayer(Icon.Crop(0, 0, 32, 50), 19);
 				icon.FillRectangle(50, 0, 2, 50, 0);

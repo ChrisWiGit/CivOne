@@ -22,7 +22,7 @@ namespace CivOne.Screens.Dialogs
 		private sealed class UnitSelectorItem
 		{
 			public UnitType UnitType { get; init; }
-			public string Label { get; init; }
+			public string Label { get; init; } = "";
 			public char Hotkey { get; init; }
 		}
 
@@ -36,7 +36,7 @@ namespace CivOne.Screens.Dialogs
 		private const int GridColumns = 6;
 
 		private int GridRows => (int)Math.Ceiling((double)_items.Length / GridColumns);
-		private int GridWidth => GridColumns * CellWidth;
+		private static int GridWidth => GridColumns * CellWidth;
 		private int GridHeight => GridRows * CellHeight;
 		private int GridX => Math.Max(0, (Width - GridWidth) / 2);
 		private int GridY => Math.Max(0, (Height - GridHeight) / 2) + 6;
@@ -143,7 +143,7 @@ namespace CivOne.Screens.Dialogs
 
 				// Do not wrap this in using/dispose: ToBitmap can return/shared underlying buffers.
 				// Disposing here can invalidate later map rendering and trigger ObjectDisposedException.
-				var preview = Game.CreateUnit(_items[i].UnitType).ToBitmap(_previewOwner, false);
+				var preview = Game.CreateUnit(_items[i].UnitType)!.ToBitmap(_previewOwner, false);
 				this.AddLayer(preview, left + 2, top + 2);
 
 				if (_items[i].Hotkey != '\0')

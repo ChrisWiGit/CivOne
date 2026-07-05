@@ -12,11 +12,11 @@ using CivOne.IO;
 
 namespace CivOne.Graphics.Sprites
 {
-	internal class CachedSprite(Func<Bytemap> getSprite) : BaseInstance, ISprite, ICached, IDisposable
+	internal class CachedSprite(Func<Bytemap?> getSprite) : BaseInstance, ISprite, ICached, IDisposable
 	{
-		private readonly Func<Bytemap> GetSprite = getSprite;
+		private readonly Func<Bytemap?> GetSprite = getSprite;
 
-		private Bytemap _bitmap;
+		private Bytemap? _bitmap;
 		private bool _disposed;
 
 		/// <summary>
@@ -25,7 +25,7 @@ namespace CivOne.Graphics.Sprites
 		/// Ownership stays in <see cref="CachedSprite"/>.
 		/// Callers must not wrap this value in <c>using</c> and must not call <c>Dispose()</c> on it.
 		/// </summary>
-		public Bytemap Bitmap
+		public Bytemap? Bitmap
 		{
 			get
 			{
@@ -55,7 +55,5 @@ namespace CivOne.Graphics.Sprites
 			}
 			_disposed = true;
 		}
-
-		~CachedSprite() => Dispose(false);
 	}
 }

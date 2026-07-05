@@ -40,7 +40,7 @@ namespace CivOne.Persistence.Model
         // Reverse lookup table for O(1) decode.
         private readonly int[] _reverse;
 
-        public TileCodec(int[] reverse = null)
+        public TileCodec(int[]? reverse = null)
         {
             _reverse = reverse ?? BuildReverse();
         }

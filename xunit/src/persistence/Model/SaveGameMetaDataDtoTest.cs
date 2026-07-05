@@ -13,7 +13,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void GetCreatedAtOr_WhenGameStartedAtIsValid_ReturnsParsedUtcValue()
+		public void GetCreatedAtOrWhenGameStartedAtIsValidReturnsParsedUtcValue()
 		{
 			// Arrange
 			var expected = new DateTimeOffset(2026, 4, 1, 9, 30, 0, TimeSpan.FromHours(2)).ToUniversalTime();

@@ -6,7 +6,7 @@ using CivOne.UserInterface;
 
 namespace CivOne.UnitTests
 {
-    class MockedUnit : BaseUnit, IUnit
+    sealed class MockedUnit : BaseUnit, IUnit
     {
         public override IEnumerable<MenuItem<int>> MenuItems => throw new NotImplementedException();
 
@@ -17,7 +17,7 @@ namespace CivOne.UnitTests
             Attack = attack;
         }
 
-        private ICityBasic _city;
+        private ICityBasic? _city;
 
         public MockedUnit WithHome(ICityBasic city)
         {

@@ -1,4 +1,6 @@
 using CivOne.Enums;
+using CivOne.Services;
+using CivOne.Services.Random;
 using CivOne.Tiles;
 
 namespace CivOne.Units.TribalHuts
@@ -9,11 +11,11 @@ namespace CivOne.Units.TribalHuts
 		private readonly int y;
 		private readonly Map map;
 
-		private readonly Random random;
+		private readonly IRandomService random;
 
 		private readonly IGame gameInstance;
 
-		public BarbariansEventHandler(int x, int y, IGame gameInstance, Map map, Random random)
+		public BarbariansEventHandler(int x, int y, IGame gameInstance, Map map, IRandomService random)
 		{
 			this.random = random;
 			this.x = x;
@@ -24,11 +26,7 @@ namespace CivOne.Units.TribalHuts
 
 		public string[] GetEventMessage()
 		{
-			return
-			[
-				"You have unleashed",
-				"a horde of barbarians!"
-			];
+			return TranslationServiceFactory.GetCurrent().TranslateFormattedArray("You have unleashed\na horde of barbarians!");
 		}
 
 		public void PreExecute()
@@ -47,7 +45,7 @@ namespace CivOne.Units.TribalHuts
 
 					if (hasCity || hasUnits || isOcean || isPolar) continue;
 
-					if (random.Next(0, 10) < 6) continue;
+					if (random.Hit(6,10)) continue;
 
 					gameInstance.CreateUnit(GetRandomBarbarianUnitType(), tile.X, tile.Y, 0, true);
 
@@ -60,7 +58,7 @@ namespace CivOne.Units.TribalHuts
 
 		private UnitType GetRandomBarbarianUnitType()
 		{
-			return random.Next(0, 100) < 50 ? UnitType.Cavalry : UnitType.Legion;
+			return random.Hit(50) ? UnitType.Cavalry : UnitType.Legion;
 		}
 
 		public void PostExecute()

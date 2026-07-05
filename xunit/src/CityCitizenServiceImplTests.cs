@@ -22,15 +22,15 @@ namespace CivOne.UnitTests
     /// </summary>
     public partial class CityCitizenServiceImplTests : TestsBase
     {
-        CityCitizenServiceImplShim testee;
-        List<Citizen> mockedSpecialists;
+        CityCitizenServiceImplShim testee = null!;
+        List<Citizen>? mockedSpecialists;
 
-        MockedGame mockedIGame;
-        MockedCity mockedCity;
+        MockedGame mockedIGame = null!;
+        MockedCity mockedCity = null!;
 
-        MockedMap mockedIMap;
+        MockedMap mockedIMap = null!;
 
-        MockedGrassland mockedGrassland;
+        MockedGrassland mockedGrassland = null!;
         protected override void BeforeEach()
         {
             mockedSpecialists = [];
@@ -61,7 +61,7 @@ namespace CivOne.UnitTests
 
         protected override void AfterEach()
         {
-            testee = null;
+            testee = null!;
         }
 
         [Fact]
@@ -77,7 +77,7 @@ namespace CivOne.UnitTests
             mockedCity.Taxmen = 1;
             mockedCity.Luxuries = 5; // 2 + 3 from entertainer
 
-            mockedSpecialists.AddRange([Citizen.Entertainer, Citizen.Scientist, Citizen.Taxman]);
+            mockedSpecialists!.AddRange([Citizen.Entertainer, Citizen.Scientist, Citizen.Taxman]);
 
             mockedCity.MockPlayer = new MockedPlayer()
                 .WithGovernmentType(typeof(Anarchy))
@@ -118,7 +118,7 @@ namespace CivOne.UnitTests
             mockedCity.Taxmen = 1;
             mockedCity.Luxuries = 4 + 3; // 4 lux + entertainer effect
 
-            mockedSpecialists.AddRange([Citizen.Entertainer, Citizen.Scientist, Citizen.Taxman]);
+            mockedSpecialists!.AddRange([Citizen.Entertainer, Citizen.Scientist, Citizen.Taxman]);
 
             mockedCity.MockPlayer = new MockedPlayer()
                 .WithGovernmentType(typeof(Anarchy))
@@ -331,7 +331,7 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void UnhappyToContentTests_ZeroCount()
+        public void UnhappyToContentTestsZeroCount()
         {
             var target = new Citizen[5];
             target[0] = Citizen.UnhappyMale;
@@ -364,7 +364,7 @@ namespace CivOne.UnitTests
         public void UnhappyToContentTests(
             int conversionCount, int expectedContentCount)
         {
-            mockedSpecialists.Clear();
+            mockedSpecialists!.Clear();
             var target = new Citizen[8];
             target[0] = Citizen.UnhappyMale; // count necessary: 1, content: 2
             target[1] = Citizen.UnhappyFemale; // count necessary: 2, content: 4
@@ -396,7 +396,7 @@ namespace CivOne.UnitTests
         public void ContentToHappyTests(
             int conversionCount, int expectedHappyCount)
         {
-            mockedSpecialists.Clear();
+            mockedSpecialists!.Clear();
             var target = new Citizen[8];
             target[0] = Citizen.ContentMale; // count: 1, happy: 1
             target[1] = Citizen.ContentFemale; // count: 2, happy: 2
@@ -439,7 +439,7 @@ namespace CivOne.UnitTests
             int contentCount, int unhappyCount)
         {
             mockedCity.Size = 6;
-            mockedSpecialists.Clear();
+            mockedSpecialists!.Clear();
 
             mockedSpecialists.AddRange([.. Enumerable.Repeat(Citizen.HappyMale, mockedCity.Size - contentCount - unhappyCount)]);
 
@@ -479,7 +479,7 @@ namespace CivOne.UnitTests
             int expectedContentCount,
             int expectedHappyCount)
         {
-            mockedSpecialists.Clear();
+            mockedSpecialists!.Clear();
             var target = new Citizen[8];
 
             target[0] = Citizen.RedShirtMale;
@@ -586,19 +586,19 @@ namespace CivOne.UnitTests
                 [
                     new MockedCity()
                     {
-                        Owner = mockedCity.Owner,
+                        CityOwnerPlayerIndex = mockedCity.CityOwnerPlayerIndex,
                         ContinentId = 1
                     }
                     .ReturnHasWonderValues(false, false, false, false),
                     new MockedCity()
                     {
-                        Owner = mockedCity.Owner,
+                        CityOwnerPlayerIndex = mockedCity.CityOwnerPlayerIndex,
                         ContinentId = 2
                     }
                     .ReturnHasWonderValues(true, true, true, true),
                     new MockedCity()
                     {
-                        Owner = 255,
+                        CityOwnerPlayerIndex = 255,
                         ContinentId = 3
                     }
                     .ReturnHasWonderValues(true, true, true, true)
@@ -626,20 +626,22 @@ namespace CivOne.UnitTests
             mockedCity.ReturnHasBuildingValues(
                 hasCathedral);
 
+            var player = new MockedPlayer();
+            player
+                .withCitiesInterface([
+                    new MockedCity()
+                    .ReturnHasWonderValues(
+                            hasMichelangelosChapel)
+                    .WithContinentId(mockedCity.ContinentId),
+                    new MockedCity()
+                    .ReturnHasWonderValues(
+                            true)
+                    .WithContinentId(mockedCity.ContinentId+1)
+                ]);
+            mockedCity.MockPlayer = player;
+
             mockedIGame.OnGetPlayer = (owner) =>
             {
-                var player = new MockedPlayer();
-                player
-                    .withCitiesInterface([
-                        new MockedCity()
-                        .ReturnHasWonderValues(
-                                hasMichelangelosChapel)
-                        .WithContinentId(mockedCity.ContinentId),
-                        new MockedCity()
-                        .ReturnHasWonderValues(
-                                true)
-                        .WithContinentId(mockedCity.ContinentId+1)
-                    ]);
                 return player;
             };
 
@@ -710,7 +712,7 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void ApplyBuildingEffectsTests_Cathedrals()
+        public void ApplyBuildingEffectsTestsCathedrals()
         {
             mockedCity.Size = 5;
             mockedCity.ReturnHasWonderValues(false);
@@ -743,7 +745,7 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void ApplyBuildingEffectsTests_Colosseum()
+        public void ApplyBuildingEffectsTestsColosseum()
         {
             mockedCity.Size = 5;
             mockedCity.ReturnHasWonderValues(false);
@@ -773,7 +775,7 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void ApplyBuildingEffectsTests_NoEffects()
+        public void ApplyBuildingEffectsTestsNoEffects()
         {
             mockedCity.Size = 5;
             mockedCity.ReturnHasWonderValues(false);
@@ -1068,7 +1070,7 @@ namespace CivOne.UnitTests
         [InlineData(4, 3, 3, 0, 0)]  // all Specialists -> no Workers, everything 0
         [InlineData(3, 5, 1, 2, 2)]  // medium Difficulty, mixed Case
         [InlineData(5, 4, 3, 0, 1)]  // negative contentLimit -> content=0
-        public void CalculateCityStats_AllCases(
+        public void CalculateCityStatsAllCases(
             byte difficulty,
             byte citySize,
             int specialists,

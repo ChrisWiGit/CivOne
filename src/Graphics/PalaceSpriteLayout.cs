@@ -118,7 +118,7 @@ namespace CivOne.Graphics
 
 		public PalacePictureLayout GetLayout(int level)
 		{
-			if (Castle1To4.TryGetValue(level, out PalacePictureLayout layout))
+			if (Castle1To4.TryGetValue(level, out PalacePictureLayout? layout))
 			{
 				return layout;
 			}

@@ -8,7 +8,7 @@ namespace CivOne.Persistence.Model
 {
 	public class ProductionDtoMapperTest
 	{
-		private readonly IReflect _reflect = new MockedReflect();
+		private readonly MockedReflect _reflect = new();
 		private readonly ProductionDtoMapper _testee;
 		private readonly ProductionDto _originalDto;
 
@@ -25,7 +25,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void TestProductionDtoMapper_ContractCheck()
+		public void TestProductionDtoMapperContractCheck()
 		{
 			var dtoProperties = GetWritablePropertyNames<ProductionDto>();
 			var expectedProperties = GetProductionDtoRoundTripAssertionMap(_originalDto, _originalDto).Keys.ToHashSet();
@@ -34,7 +34,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void ToDto_MapsAllFieldsCorrectly()
+		public void ToDtoMapsAllFieldsCorrectly()
 		{
 			IProduction production = _reflect.GetProduction().First();
 
@@ -46,7 +46,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void FromDto_WithValidProductionId_ReturnsMatchingProduction()
+		public void FromDtoWithValidProductionIdReturnsMatchingProduction()
 		{
 			// 0 is okay, but we want to test another one.
 			IProduction expected = _reflect.GetProduction().First(p => p.Price > 0);
@@ -58,15 +58,15 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void FromDto_WithInvalidProductionId_ThrowsException()
+		public void FromDtoWithInvalidProductionIdThrowsException()
 		{
 			var dto = new ProductionDto { ProductionId = uint.MaxValue };
 
-			Assert.Throws<Exception>(() => _testee.FromDto(dto));
+			Assert.Throws<InvalidOperationException>(() => _testee.FromDto(dto));
 		}
 
 		[Fact]
-		public void TestProductionDtoMapper_RoundTrip()
+		public void TestProductionDtoMapperRoundTrip()
 		{
 			var restoredProduction = _testee.FromDto(_originalDto);
 			var roundTripDto = _testee.ToDto(restoredProduction);

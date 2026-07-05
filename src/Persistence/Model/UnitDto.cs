@@ -4,6 +4,8 @@ using CivOne.Persistence.Model.Attributes;
 
 namespace CivOne.Persistence.Model
 {
+    #pragma warning disable CS8618, CA2211 // Non-nullable property must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
     public class UnitDto
     {
 		[Doc("Stable Unit Guid. Optional for legacy saves. If empty, a new Guid is generated at load time.")]

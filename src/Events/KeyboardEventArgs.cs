@@ -12,10 +12,9 @@ using CivOne.Enums;
 
 namespace CivOne.Events
 {
-	public delegate void KeyboardEventHandler(object sender, KeyboardEventArgs args);
-
 	public class KeyboardEventArgs : EventArgs
 	{
+		public new static readonly KeyboardEventArgs Empty = new(Key.None);
 		public Key Key { get; private set; }
 		public char KeyChar { get; private set; }
 		public KeyModifier Modifier { get; private set; }

@@ -8,9 +8,11 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Graphics;
+using CivOne.Services;
 using CivOne.Tasks;
 
 namespace CivOne.Screens.Debug
@@ -18,9 +20,9 @@ namespace CivOne.Screens.Debug
 	[ScreenResizeable]
 	internal class SetGameYear : BaseScreen
 	{
-		private readonly Input _input;
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => Math.Max(0, (Height - 200) / 2);
+		private Input? ActiveInput => Inputs.OfType<Input>().FirstOrDefault();
 
 		private void DrawDialog()
 		{
@@ -34,18 +36,22 @@ namespace CivOne.Screens.Debug
 				.FillRectangle(88 + ox, 95 + oy, 105, 14, 5)
 				.FillRectangle(89 + ox, 96 + oy, 103, 12, 15);
 
-			_input.X = 90 + ox;
-			_input.Y = 97 + oy;
+			if (ActiveInput is Input input)
+			{
+				input.X = 90 + ox;
+				input.Y = 97 + oy;
+			}
 		}
 
-		public string Value { get; private set; }
+		public string? Value { get; private set; }
 
-		public event EventHandler Accept, Cancel;
+		public event EventHandler? Accept, Cancel;
 
-		private void GameYear_Accept(object sender, EventArgs args)
+		private void GameYear_Accept(object? sender, EventArgs __)
 		{
-			Value = (sender as Input).Text;
-			
+			if (sender is not Input input) return;
+			Value = input.Text;
+
 			int gameYear;
 			if (!int.TryParse(Value, out gameYear) || gameYear < -4000 || gameYear > 6000)
 			{
@@ -53,24 +59,29 @@ namespace CivOne.Screens.Debug
 			}
 			else
 			{
-				Game.GameTurn = Common.YearToTurn(gameYear);
+				Game.GameTurn = _gameCalendarService.YearToTurn(gameYear);
 				GameTask.Enqueue(Message.General(TranslateFormatted("Game year set to {0}.", Game.GameYear)));
 			}
 
-			if (Accept != null)
-				Accept(this, null);
-			if (sender is Input)
-				((Input)sender)?.Close();
+			Accept?.Invoke(this, EventArgs.Empty);
+			input.Close();
 			Destroy();
 		}
 
-		private void GameYear_Cancel(object sender, EventArgs args)
+		private void GameYear_Cancel(object? sender, EventArgs __)
 		{
-			if (Cancel != null)
-				Cancel(this, null);
-			if (sender is Input)
-				((Input)sender)?.Close();
+			Cancel?.Invoke(this, EventArgs.Empty);
+			if (sender is Input input) input.Close();
 			Destroy();
+		}
+
+		protected override IScreen? CreateManagedInput()
+		{
+			string yearString = _gameCalendarService.TurnToYear(Game.GameTurn).ToString(CultureInfo.InvariantCulture);
+			Input input = new(Palette, yearString, 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 5);
+			input.Accept += GameYear_Accept;
+			input.Cancel += GameYear_Cancel;
+			return input;
 		}
 
 		protected override bool HasUpdate(uint gameTick)
@@ -80,19 +91,19 @@ namespace CivOne.Screens.Debug
 				DrawDialog();
 			}
 
-			if (!Common.HasScreenType<Input>())
+			if (!HasInput)
 			{
-				Common.AddScreen(_input);
+				EnsureManagedInput();
 			}
 			return false;
 		}
 
+		private readonly IGameCalendarService _gameCalendarService;
+		
 		public SetGameYear()
 		{
+			_gameCalendarService = GameCalendarServiceFactory.Current;
 			Palette = Common.Screens.Last().OriginalColours;
-			_input = new Input(Palette, Common.TurnToYear(Game.GameTurn).ToString(), 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 5);
-			_input.Accept += GameYear_Accept;
-			_input.Cancel += GameYear_Cancel;
 
 			DrawDialog();
 		}

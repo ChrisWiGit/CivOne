@@ -7,14 +7,14 @@ using CivOne.Tiles;
 
 namespace CivOne.Services.GlobalWarming.Impl
 {
-	public class GlobalWarmingCountServiceImpl : IGlobalWarmingService
+	public class GlobalWarmingCountService : IGlobalWarmingService
 	{
-		private IEnumerable<ITile> _tiles = null;
-		int _pollutedSquaresCount = 0;
-		short _globalWarmingCount = 0;
-		WarmingIndicator _warmingIndicator = WarmingIndicator.None;
+		private IEnumerable<ITile> _tiles = [];
+		int _pollutedSquaresCount;
+		short _globalWarmingCount;
+		WarmingIndicator _warmingIndicator;
 
-		public GlobalWarmingCountServiceImpl(IGameData gameData,
+		public GlobalWarmingCountService(IGameData? gameData,
 				IEnumerable<ITile> tiles)
 		{
 			if (gameData != null)
@@ -29,7 +29,7 @@ namespace CivOne.Services.GlobalWarming.Impl
 			SetReadonlyTiles(tiles);
 		}
 
-		public GlobalWarmingCountServiceImpl(int globalWarmingCount, int pollutedSquaresCount, WarmingIndicator warmingIndicator,
+		public GlobalWarmingCountService(int globalWarmingCount, int pollutedSquaresCount, WarmingIndicator warmingIndicator,
 				IEnumerable<ITile> tiles)
 		{
 			_globalWarmingCount = (short)Math.Clamp(globalWarmingCount, short.MinValue, short.MaxValue);
@@ -39,7 +39,7 @@ namespace CivOne.Services.GlobalWarming.Impl
 			SetReadonlyTiles(tiles);
 		}
 
-		public GlobalWarmingCountServiceImpl(IEnumerable<ITile> tiles) : this(null, tiles)
+		public GlobalWarmingCountService(IEnumerable<ITile> tiles) : this(null, tiles)
 		{
 		}
 
@@ -48,7 +48,7 @@ namespace CivOne.Services.GlobalWarming.Impl
 			_pollutedSquaresCount = GetPollutedSquareCount();
 			_warmingIndicator = GetWarmingIndicator(_pollutedSquaresCount);
 
-			if (_pollutedSquaresCount >= GetCurrentPollutionLimit())
+			if (_pollutedSquaresCount >= CurrentPollutionLimit)
 			{
 				if (_globalWarmingCount < short.MaxValue)
 				{
@@ -72,12 +72,9 @@ namespace CivOne.Services.GlobalWarming.Impl
 			return _tiles.Count(t => t.Pollution);
 		}
 
-		protected int GetCurrentPollutionLimit()
-		{
-			return 8 + (_globalWarmingCount * 2);
-		}
+		protected int CurrentPollutionLimit { get => 8 + (_globalWarmingCount * 2); }
 
-		protected WarmingIndicator GetWarmingIndicator(int pollutedSquares)
+		protected static WarmingIndicator GetWarmingIndicator(int pollutedSquares)
 		{
 			foreach (var range in IndicatorRanges())
 			{
@@ -89,7 +86,7 @@ namespace CivOne.Services.GlobalWarming.Impl
 			return WarmingIndicator.None;
 		}
 
-		protected IndicatorRange[] IndicatorRanges() =>
+		protected static IndicatorRange[] IndicatorRanges() =>
 		[
 			new IndicatorRange(WarmingIndicator.None, 0, 0),
 			new IndicatorRange(WarmingIndicator.DarkRed, 1, 1),
@@ -106,6 +103,7 @@ namespace CivOne.Services.GlobalWarming.Impl
 
 		public void SetReadonlyTiles(IEnumerable<ITile> tiles)
 		{
+			ArgumentNullException.ThrowIfNull(tiles);
 			_tiles = tiles;
 		}
 	}

@@ -15,7 +15,7 @@ namespace CivOne.Governments
 	{
 		byte Id { get; }
 		string NameAdjective { get; }
-		IAdvance RequiredTech { get; }
+		IAdvance? RequiredTech { get; }
 		int CorruptionMultiplier { get; }
 	}
 }

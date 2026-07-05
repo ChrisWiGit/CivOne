@@ -20,11 +20,11 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void CopyFiles_WhenSourceFileUsesDifferentCasing_CopiesUsingCanonicalTargetName()
+		public void CopyFilesWhenSourceFileUsesDifferentCasingCopiesUsingCanonicalTargetName()
 		{
 			File.WriteAllText(Path.Combine(_sourceDirectory, "fonts.cv"), "font-data");
 
-			bool actual = FileSystem.CopyFiles(_sourceDirectory, _targetDirectory, ["FONTS.CV"], out string missingFile);
+			bool actual = FileSystem.CopyFiles(_sourceDirectory, _targetDirectory, ["FONTS.CV"], out string? missingFile);
 
 			Assert.True(actual);
 			Assert.Null(missingFile);
@@ -32,9 +32,9 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void CopyFiles_WhenFileIsMissing_ReturnsMissingCanonicalFileName()
+		public void CopyFilesWhenFileIsMissingReturnsMissingCanonicalFileName()
 		{
-			bool actual = FileSystem.CopyFiles(_sourceDirectory, _targetDirectory, ["FONTS.CV"], out string missingFile);
+			bool actual = FileSystem.CopyFiles(_sourceDirectory, _targetDirectory, ["FONTS.CV"], out string? missingFile);
 
 			Assert.False(actual);
 			Assert.Equal("FONTS.CV", missingFile);
@@ -42,6 +42,16 @@ namespace CivOne.UnitTests
 
 		public void Dispose()
 		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
 			if (Directory.Exists(_tempDirectory))
 			{
 				Directory.Delete(_tempDirectory, true);

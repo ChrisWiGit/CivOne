@@ -13,7 +13,7 @@ namespace CivOne.Enums
 	/// Spaceship component grid cell type.
 	/// Legacy values (Structural/Component/Module) are kept for save and gameplay compatibility.
 	/// </summary>
-	public enum SpaceShipComponentType : byte
+	public enum SpaceShipComponentType
 	{
 		Empty = 0,
 		Structural = 1,      // SSStructural (Cost 8)

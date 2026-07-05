@@ -41,7 +41,7 @@ namespace CivOne.Persistence.Model
 		[InlineData((int)Terrain.Forest, false, false, false, false, false, false, true, "QD")]  // Forest with Hut = 548
 		[InlineData((int)Terrain.Tundra, false, false, false, false, false, false, false, "AG")] // Tundra with no flags = 6
 		[InlineData((int)Terrain.Tundra, false, false, false, false, false, false, true, "QG")]  // Tundra with Hut = 1030
-		public void Encode_KnownExamples(
+		public void EncodeKnownExamples(
 			int terrain,
 			bool road,
 			bool railRoad,
@@ -74,7 +74,7 @@ namespace CivOne.Persistence.Model
 		[InlineData((int)Terrain.Desert, true, false, true, false, true, false, true)]
 		[InlineData((int)Terrain.Grassland2, false, true, false, true, false, true, false)]
 		[InlineData((int)Terrain.River, true, true, true, true, true, true, true)]
-		public void EncodeDecode_RoundTrip_PreservesAllMappedFields(
+		public void EncodeDecodeRoundTripPreservesAllMappedFields(
 			int terrain,
 			bool road,
 			bool railRoad,
@@ -118,7 +118,7 @@ namespace CivOne.Persistence.Model
 		[InlineData((int)Terrain.Desert, false, "gA")]
 		// Desert+Special+Road → value 2048+16 = 2064 → first 2064>>6 = 32 = 'g', second 2064&63 = 16 = 'Q'
 		[InlineData((int)Terrain.Desert, true, "gQ")]
-		public void Encode_DesertWithSpecial_UsesExpectedEncoding(int terrain, bool road, string expected)
+		public void EncodeDesertWithSpecialUsesExpectedEncoding(int terrain, bool road, string expected)
 		{
 			TileDto tile = new()
 			{
@@ -138,7 +138,7 @@ namespace CivOne.Persistence.Model
 		[InlineData((int)Terrain.Desert, false, true)]
 		[InlineData((int)Terrain.Desert, true,  true)]
 		[InlineData((int)Terrain.Plains, false, true)]
-		public void EncodeDecode_RoundTrip_PreservesSpecialFlag(int terrain, bool road, bool special)
+		public void EncodeDecodeRoundTripPreservesSpecialFlag(int terrain, bool road, bool special)
 		{
 			TileDto original = new()
 			{
@@ -156,7 +156,7 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
-		public void Decode_UsesOffsetInsideRow()
+		public void DecodeUsesOffsetInsideRow()
 		{
 			const string row = "ZZARQQ";
 
@@ -176,7 +176,7 @@ namespace CivOne.Persistence.Model
 		[InlineData("", 0)]
 		[InlineData("A", 0)]
 		[InlineData("AB", 1)]
-		public void Decode_RowTooShort_ThrowsArgumentOutOfRangeException(string row, int offset)
+		public void DecodeRowTooShortThrowsArgumentOutOfRangeException(string row, int offset)
 		{
 			Assert.Throws<ArgumentOutOfRangeException>(() => _testee.Decode(row, offset));
 		}
@@ -185,7 +185,7 @@ namespace CivOne.Persistence.Model
 		[InlineData("=A")]
 		[InlineData("A=")]
 		[InlineData("~~")]
-		public void Decode_InvalidCharacters_ThrowsFormatException(string encoded)
+		public void DecodeInvalidCharactersThrowsFormatException(string encoded)
 		{
 			Assert.Throws<FormatException>(() => _testee.Decode(encoded, 0));
 		}

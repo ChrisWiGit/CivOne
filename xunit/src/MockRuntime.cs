@@ -8,27 +8,26 @@ using CivOne.IO;
 
 namespace CivOne.UnitTests
 {
-    #pragma warning disable CS0067 // Events are never used - but required to implement IRuntime
     public sealed class MockRuntime : IRuntime
     {
         private readonly Dictionary<string, string> _settings = new(StringComparer.OrdinalIgnoreCase);
 
-        public event EventHandler Initialize;
-        public event EventHandler Draw;
-        public event UpdateEventHandler Update;
-        public event KeyboardEventHandler KeyboardUp;
-        public event KeyboardEventHandler KeyboardDown;
-        public event ScreenEventHandler MouseUp;
-        public event ScreenEventHandler MouseDown;
-        public event ScreenEventHandler MouseMove;
-        public event ScreenEventHandler MouseWheel;
-        public Platform CurrentPlatform { get; }
+        public event EventHandler Initialize { add { } remove { } }
+        public event EventHandler Draw { add { } remove { } }
+        public event EventHandler<UpdateEventArgs> Update { add { } remove { } }
+        public event EventHandler<KeyboardEventArgs> KeyboardUp { add { } remove { } }
+        public event EventHandler<KeyboardEventArgs> KeyboardDown { add { } remove { } }
+        public event EventHandler<ScreenEventArgs> MouseUp { add { } remove { } }
+        public event EventHandler<ScreenEventArgs> MouseDown { add { } remove { } }
+        public event EventHandler<ScreenEventArgs> MouseMove { add { } remove { } }
+        public event EventHandler<ScreenEventArgs> MouseWheel { add { } remove { } }
+        public Platform CurrentPlatform { get; } = Platform.Unknown;
 
         public string StorageDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CivOne");
 
-        public string GetSetting(string key)
+        public string? GetSetting(string key)
         {
-            return _settings.TryGetValue(key, out string value) ? value : null;
+            return _settings.TryGetValue(key, out string? value) ? value : null;
         }
 
         public void SetSetting(string key, string value)
@@ -37,29 +36,29 @@ namespace CivOne.UnitTests
         }
 
         public RuntimeSettings Settings { get; }
-        public MouseCursor CurrentCursor { get; private set; }
-        public Bytemap[] Layers { get; set; }
-        public Palette Palette { get; set; }
-        public IBitmap Cursor { get; private set; }
+        public MouseCursor? CurrentCursor { get; private set; }
+        public Bytemap[]? Layers { get; set; }
+        public Palette? Palette { get; set; }
+        public IBitmap? Cursor { get; private set; }
         public int CanvasWidth { get; }
         public int CanvasHeight { get; }
         public int WindowWidth { get; }
         public int WindowHeight { get; }
 
-        public bool TryOpenUrl(string url, out string errorMessage)
+        public bool TryOpenUrl(string url, out string? errorMessage)
         {
             errorMessage = null;
             return false;
         }
 
-        public bool TryCopyToClipboard(string text, out string errorMessage)
+        public bool TryCopyToClipboard(string text, out string? errorMessage)
         {
             errorMessage = null;
             return false;
         }
 
-        public void SetCurrentCursor(MouseCursor cursor) => CurrentCursor = cursor;
-        public void SetCursor(IBitmap cursor) => Cursor = cursor;
+        public void SetCurrentCursor(MouseCursor? cursor) => CurrentCursor = cursor;
+        public void SetCursor(IBitmap? cursor) => Cursor = cursor;
 
         public void Log(string text, params object[] parameters)
         {
@@ -72,7 +71,7 @@ namespace CivOne.UnitTests
             throw new NotImplementedException();
         }
 
-        public string WindowTitle { get; private set; }
+        public string WindowTitle { get; private set; } = "Test Window";
         public void SetWindowTitle(string title) => WindowTitle = title;
         public void PlaySound(string file)
         {
@@ -89,10 +88,13 @@ namespace CivOne.UnitTests
             // ignore
         }
 
+    
+        #pragma warning disable CA1822
         public void Dispose()
         {
 			// No resources to release in this test double.
         }
+        #pragma warning restore CA1822 // Mark members as static - but these are required to implement IRuntime
 
 		public string FileChooser(bool save, string title, string initialFileName, string filter)
 		{
@@ -101,11 +103,21 @@ namespace CivOne.UnitTests
 
 		public MockRuntime(RuntimeSettings settings)
         {
+            ArgumentNullException.ThrowIfNull(settings, nameof(settings));
+            
             Settings = settings;
             _settings["GraphicsMode"] = GraphicsMode.Graphics256.ToString();
             settings.Free = false;
             RuntimeHandler.Wipe(); // Ensure any previous runtime is cleared out otherwise exceptions occur
             RuntimeHandler.RegisterForTest(this);
+
+            CurrentPlatform = Platform.Windows;
+            CanvasWidth = 320;
+            CanvasHeight = 200;
+            WindowWidth = 320;
+            WindowHeight = 200;
+
+            // This will hopefully cause exceptions in tests.            
         }
     }
 }

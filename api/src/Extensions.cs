@@ -22,19 +22,17 @@ namespace CivOne
 			return Attribute.IsDefined(checkObject.GetType(), typeof(T));
 		}
 
-		internal static T GetAttribute<T>(this object checkObject) where T : Attribute
+		internal static T? GetAttribute<T>(this object checkObject) where T : Attribute
 		{
 			if (!checkObject.HasAttribute<T>()) return null;
-			return (T)Attribute.GetCustomAttribute(checkObject.GetType(), typeof(T));
+			return (T?)Attribute.GetCustomAttribute(checkObject.GetType(), typeof(T));
 		}
 
 		internal static byte[] GetBytes(this Stream stream)
 		{
-			using (MemoryStream ms = new MemoryStream())
-			{
-				stream.CopyTo(ms);
-				return ms.ToArray();
-			}
+			using MemoryStream ms = new();
+			stream.CopyTo(ms);
+			return ms.ToArray();
 		}
 	}
 }

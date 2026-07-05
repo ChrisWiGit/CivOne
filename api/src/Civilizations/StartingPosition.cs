@@ -8,24 +8,22 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 
 namespace CivOne.Civilizations
 {
-	public class StartingPosition : BaseAttribute
+	/// <summary>
+	/// Modify the civilization starting position on the EARTH map.
+	/// </summary>
+	/// <param name="x">The X coordinate on the EARTH map where the player will start. Must be a value in the range 0 to 79.</param>
+	/// <param name="y">The Y coordinate on the EARTH map where the player will start. Must be a value in the range 0 to 49.</param>
+	[SuppressMessage("Microsoft.Design", "CA1019:DefineAccessorsForAttributeArguments", Justification = "The attribute arguments are already accessible through the Location property, and defining separate accessors for X and Y would be redundant.")]
+	public sealed class StartingPosition(int x, int y) : BaseAttribute(typeof(Point), new Point(x, y), InRange)
 	{
 		private static bool InRange(object value) => ((Point)value) != Point.Empty && ((Point)value).X >= 0 && ((Point)value).Y >= 0 && ((Point)value).X <= 79 && ((Point)value).Y <= 49;
 
-		public Point Location => GetValue<Point>();
-
-		/// <summary>
-		/// Modify the civilization starting position on the EARTH map.
-		/// </summary>
-		/// <param name="x">The X coordinate on the EARTH map where the player will start. Must be a value in the range 0 to 79.</param>
-		/// <param name="y">The Y coordinate on the EARTH map where the player will start. Must be a value in the range 0 to 49.</param>
-		public StartingPosition(int x, int y) : base(typeof(Point), new Point(x, y), InRange)
-		{
-		}
+		public Point Location => GetRequiredValue<Point>();
 	}
 }

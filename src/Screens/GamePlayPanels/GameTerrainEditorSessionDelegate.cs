@@ -43,7 +43,7 @@ namespace CivOne.Screens.GamePlayPanels
 				_gameMap._editorStoredUnit = Game.ActiveUnit;
 				Game.ActiveUnit = null;
 
-				_gameMap._editorState.CityOwner = Game.PlayerNumber(Game.Human);
+				_gameMap._editorState.CityOwner = Game.PlayerNumber(Human);
 
 				if (_gameMap._editorStoredUnit == null)
 					return;
@@ -56,7 +56,7 @@ namespace CivOne.Screens.GamePlayPanels
 			{
 				var storedUnit = _gameMap._editorStoredUnit;
 
-				if (storedUnit != null && Game.Human == storedUnit.Owner)
+				if (storedUnit != null && Human == storedUnit.Owner)
 					Game.ActiveUnit = storedUnit;
 
 				_gameMap._editorStoredUnit = null;

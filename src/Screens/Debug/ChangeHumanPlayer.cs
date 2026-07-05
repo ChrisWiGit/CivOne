@@ -10,10 +10,7 @@
 using System;
 using System.Linq;
 using CivOne.Enums;
-using CivOne.Events;
-using CivOne.Graphics;
-using CivOne.Graphics.Sprites;
-using CivOne.UserInterface;
+using CivOne.Services.Screen;
 
 namespace CivOne.Screens.Debug
 {
@@ -22,7 +19,7 @@ namespace CivOne.Screens.Debug
 	{
 		private readonly CivSelectMenuDelegate _civSelectDelegate;
 
-		private Player _selectedPlayer = null;
+		private Player? _selectedPlayer;
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
 		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
@@ -31,7 +28,7 @@ namespace CivOne.Screens.Debug
 			_civSelectDelegate.DrawDialog(this, OffsetX, OffsetY);
 		}
 
-		public event EventHandler Accept, Cancel;
+		public event EventHandler? Accept, Cancel;
 
 		private void ChangePlayer_Accept(Player player)
 		{
@@ -43,15 +40,13 @@ namespace CivOne.Screens.Debug
 				Game.EndTurn(3);
 			}
 
-			if (Accept != null)
-				Accept(this, EventArgs.Empty);
+			Accept?.Invoke(this, EventArgs.Empty);
 			Destroy();
 		}
 
-		private void ChangePlayer_Cancel(object sender, EventArgs args)
+		private void ChangePlayer_Cancel(object? sender, EventArgs args)
 		{
-			if (Cancel != null)
-				Cancel(this, EventArgs.Empty);
+			Cancel?.Invoke(this, EventArgs.Empty);
 			Destroy();
 		}
 
@@ -62,7 +57,7 @@ namespace CivOne.Screens.Debug
 				DrawDialog();
 			}
 
-			if (_selectedPlayer == null && Common.TopScreen.GetType() != typeof(Menu))
+			if (_selectedPlayer == null && !_screenQueryService.HasTopScreen<Menu>())
 			{
 				AddMenu(_civSelectDelegate.Menu);
 				return false;
@@ -70,9 +65,11 @@ namespace CivOne.Screens.Debug
 			return false;
 		}
 
+		private readonly IScreenQueryService _screenQueryService;
 		public ChangeHumanPlayer() : base(MouseCursor.Pointer)
 		{
-			Palette = Common.Screens[Common.Screens.Count() - 1].OriginalColours;
+			_screenQueryService = ScreenServiceFactory.CreateQueryService();
+			Palette = Common.Screens[Common.Screens.Length - 1].OriginalColours;
 			_civSelectDelegate = new CivSelectMenuDelegate(Palette, "Change Human Player...");
 			_civSelectDelegate.PlayerSelected += ChangePlayer_Accept;
 			_civSelectDelegate.Cancelled += ChangePlayer_Cancel;

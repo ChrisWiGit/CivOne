@@ -20,7 +20,7 @@ namespace CivOne.Screens
 	{
 		private readonly Input _input;
 
-		private bool _done = false;
+		private bool _done;
 		private bool _showUnknownCityMessage;
 		private string _unknownCityText = string.Empty;
 
@@ -34,9 +34,9 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
-		public City City { get; private set; }
+		public City? City { get; private set; }
 
-		public event EventHandler Accept, Cancel;
+		public event EventHandler? Accept, Cancel;
 
 		public override bool MouseDown(ScreenEventArgs args)
 		{
@@ -50,8 +50,9 @@ namespace CivOne.Screens
 			return true;
 		}
 
-		private void Search_Accept(object sender, EventArgs args)
+		private void Search_Accept(object? sender, EventArgs args)
 		{
+			Input? input = sender as Input;
 			City = Game.GetCities().FirstOrDefault(x => x.Name.StartsWith(_input.Text, StringComparison.CurrentCultureIgnoreCase) && Human.Visible(x.X, x.Y));
 			if (City == null)
 			{
@@ -59,20 +60,21 @@ namespace CivOne.Screens
 				_unknownCityText = _input.Text;
 				_done = true;
 				RenderDialog();
-				((Input)sender).Close();
+				input?.Close();
 				return;
 			}
 			_done = true;
-			Accept?.Invoke(this, null);
-			((Input)sender).Close();
+			Accept?.Invoke(this, EventArgs.Empty);
+			input?.Close();
 			Close();
 		}
 
-		private void Search_Cancel(object sender, EventArgs args)
+		private void Search_Cancel(object? sender, EventArgs args)
 		{
+			Input? input = sender as Input;
 			_done = true;
-			Cancel?.Invoke(this, null);
-			((Input)sender).Close();
+			Cancel?.Invoke(this, EventArgs.Empty);
+			input?.Close();
 			Close();
 		}
 

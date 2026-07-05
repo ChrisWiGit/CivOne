@@ -8,6 +8,8 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using CivOne.Advances;
@@ -23,25 +25,31 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens
 {
+	#pragma warning disable CA1822 // Mark members as static
 	[ScreenResizeable]
 	internal class NewGame : BaseScreen
 	{
-		private ICivilization[] _tribesAvailable;
-		private string[] _menuItemsDifficulty, _menuItemsCompetition, _menuItemsTribes;
-		
+		private ICivilization[] _tribesAvailable = [];
+		private readonly string[] _menuItemsDifficulty;
+		private readonly string[] _menuItemsCompetition;
+		private string[] _menuItemsTribes = [];
 		private readonly Picture _background;
 
-		private int OffsetX => ((Width - 320) / 2);
-		private int OffsetY => ((Height - 200) / 2);
+		private int OffsetX => (Width - 320) / 2;
+		private int OffsetY => (Height - 200) / 2;
 
 		private int _difficulty = -1, _competition = -1, _tribe = -1;
-		private string _leaderName = null, _tribeName = null, _tribeNamePlural = null;
-		private bool _done = false, _showIntroText = false, _gameCreated = false, _introDirty = false;
+		private string? _leaderName;
+		private string? _tribeName;
+		private string? _tribeNamePlural;
+
+		private bool _done, _showIntroText, _gameCreated, _introDirty;
 		private int _introBorderStyle = -1;
 		
-		private Menu CreateMenu(string title, MenuItemEventHandler<int> setChoice, params string[] menuTexts)
+		
+		private Menu CreateMenu(string title, MenuItemEventAction<int> setChoice, params string[] menuTexts)
 		{
-			Menu menu = new Menu("NewGameMenu", Palette)
+			Menu menu = new("NewGameMenu", Palette)
 			{
 				Title = title,
 				X = OffsetX + 163,
@@ -90,7 +98,7 @@ namespace CivOne.Screens
 			if (Common.HasScreenType<Input>()) return;
 			
 			ICivilization civ = _tribesAvailable[_tribe];
-			Input input = new Input(Palette, civ.Leader.Name, 6, 5, 11, OffsetX + 168, OffsetY + 105, 109, 10, 13);
+			Input input = new(Palette, civ.Leader.Name, 6, 5, 11, OffsetX + 168, OffsetY + 105, 109, 10, 13);
 			input.Accept += LeaderName_Accept;
 			input.Cancel += LeaderName_Accept;
 			Common.AddScreen(input);
@@ -105,12 +113,12 @@ namespace CivOne.Screens
 		
 		private void SetCompetition(object sender, MenuItemEventArgs<int> args)
 		{
-			_competition = (7 - args.Value);
+			_competition = 7 - args.Value;
 			CloseMenus();
 			Log("Competition: {0} Civilizations", _competition);
 			
-			_tribesAvailable = Common.Civilizations.Where(c => c.PreferredPlayerNumber > 0 && c.PreferredPlayerNumber <= _competition).ToArray();
-			_menuItemsTribes = _tribesAvailable.Select(c => c.Name).ToArray();
+			_tribesAvailable = [.. Common.Civilizations.Where(c => c.PreferredPlayerNumber > 0 && c.PreferredPlayerNumber <= _competition)];
+			_menuItemsTribes = [.. _tribesAvailable.Select(c => c.Name)];
 		}
 		
 		private void SetTribe(object sender, MenuItemEventArgs<int> args)
@@ -124,36 +132,36 @@ namespace CivOne.Screens
 			Log("Tribe: {0}", _menuItemsTribes[_tribe]);
 		}
 		
-		private void SetTribe_Cancel(object sender, EventArgs args)
+		private void SetTribe_Cancel(object? sender, EventArgs args)
 		{
-			if (sender.GetType() != typeof(Menu)) return;
+			if (sender is not Menu menu) return;
 			
-			_tribe = Common.Random.Next(_competition);
-			this.AddLayer((Menu)sender);
+			_tribe = RandomService.NextInt(_competition);
+			this.AddLayer(menu);
 			CloseMenus();
 			
 			ICivilization civ = _tribesAvailable[_tribe];
-			Input input = new Input(Palette, civ.NamePlural, 6, 5, 11, OffsetX + 168, OffsetY + 105, 109, 10, 11);
+			Input input = new(Palette, civ.NamePlural, 6, 5, 11, OffsetX + 168, OffsetY + 105, 109, 10, 11);
 			input.Accept += TribeName_Accept;
 			input.Cancel += TribeName_Accept;
 			Common.AddScreen(input);
 		}
 		
-		private void LeaderName_Accept(object sender, EventArgs args)
+		private void LeaderName_Accept(object? sender, EventArgs args)
 		{
-			if (sender.GetType() != typeof(Input)) return;
+			if (sender is not Input input) return;
 			
-			_leaderName = ((Input)sender).Text;
-			((Input)sender).Close();
+			_leaderName = input.Text;
+			input.Close();
 		}
 		
-		private void TribeName_Accept(object sender, EventArgs args)
+		private void TribeName_Accept(object? sender, EventArgs args)
 		{
-			if (sender.GetType() != typeof(Input)) return;
+			if (sender is not Input input) return;
 			
-			_tribeNamePlural = ((Input)sender).Text;
-			_tribeName = ((Input)sender).Text;
-			((Input)sender).Close();
+			_tribeNamePlural = input.Text;
+			_tribeName = input.Text;
+			input.Close();
 		}
 		
 		private Picture DifficultyPicture
@@ -189,6 +197,7 @@ namespace CivOne.Screens
 			return true;
 		}
 		
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to create a game does not crash the application, and that any exceptions are logged appropriately.")]
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (HasMenu) return false;
@@ -218,7 +227,7 @@ namespace CivOne.Screens
 					}
 
 					_gameCreated = true;
-					_introBorderStyle = Common.Random.Next(2);
+					_introBorderStyle = RandomService.NextInt(2);
 					_introDirty = true;
 				}
 
@@ -232,18 +241,21 @@ namespace CivOne.Screens
 				int yy = OffsetY + 81;
 				foreach (string textLine in GetGameText("KING/INIT"))
 				{
-					string line = textLine.Replace("$RPLC1", Human.LeaderName).Replace("$US", Human.TribeNamePlural).Replace("^", "");
+					string line = textLine
+						.Replace("$RPLC1", Human.LeaderName, StringComparison.InvariantCulture)
+						.Replace("$US", Human.TribeNamePlural, StringComparison.InvariantCulture)
+						.Replace("^", "", StringComparison.InvariantCulture);
 					this.DrawText(line, 0, 5, OffsetX + 88, yy);
 					yy += 8;
 					Log(line);
 				}
-				StringBuilder sb = new StringBuilder();
+				StringBuilder sb = new();
 				int i = 0;
 				foreach (IAdvance advance in Human.Advances.OrderBy(a => a.Id))
 				{
-					sb.Append($"{advance.TranslatedName}, ");
+					sb.Append(CultureInfo.CurrentCulture,$"{advance.TranslatedName}, ");
 					i++;
-					if (i % 2 == 0) sb.Append("|");
+					if (i % 2 == 0) sb.Append('|');
 				}
 				sb.Append(Translate("and Roads."));
 
@@ -274,7 +286,7 @@ namespace CivOne.Screens
 
 				Destroy();
 
-				GamePlay gamePlay = new GamePlay();
+				GamePlay gamePlay = new();
 				Common.AddScreen(gamePlay);
 				IUnit? startUnit = Game.GetUnits().FirstOrDefault(x => Game.Human == x.Owner);
 				if (startUnit != null)
@@ -319,7 +331,7 @@ namespace CivOne.Screens
 				
 				if (_tribe != -1 && _leaderName == null)
 				{
-					this.DrawText(_tribeNamePlural, 6, 15, OffsetX + 47, OffsetY + 92, TextAlign.Center);
+					this.DrawText(_tribeNamePlural!, 6, 15, OffsetX + 47, OffsetY + 92, TextAlign.Center);
 					DrawInputBox(Translate("Your Name..."));
 				}
 			}
@@ -351,7 +363,7 @@ namespace CivOne.Screens
 			return _done;
 		}
 
-		private void Resize(object sender, ResizeEventArgs args)
+		private void Resize(object? _, ResizeEventArgs args)
 		{
 			this.FillRectangle(0, 0, args.Width, args.Height, 5);
 			if (_leaderName == null)
@@ -413,7 +425,18 @@ namespace CivOne.Screens
 			this.AddLayer(_background);
 
 			_menuItemsDifficulty = BuildDifficultyMenuItems();
-			_menuItemsCompetition = Enumerable.Range(3, 5).Reverse().Select(i => TranslateFormatted("{0} Civilizations", i)).ToArray();
+			_menuItemsCompetition = [.. Enumerable.Range(3, 5).Reverse().Select(i => TranslateFormatted("{0} Civilizations", i))];
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_background?.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }

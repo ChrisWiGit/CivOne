@@ -20,7 +20,7 @@ namespace CivOne.Tasks
 		private readonly Player _player;
 		private readonly bool _human;
 		
-		private void CivilopediaClosed(object sender, EventArgs args)
+		private void CivilopediaClosed(object? _, EventArgs __)
 		{
 			EndTask();
 		}
@@ -74,7 +74,7 @@ namespace CivOne.Tasks
 		{
 			_advance = advance;
 			_player = player;
-			_human = (Human == player);
+			_human = Human == player;
 		}
 	}
 }

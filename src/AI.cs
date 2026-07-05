@@ -23,6 +23,7 @@ using CivOne.Units;
 using Democratic = CivOne.Governments.Democracy;
 
 using static CivOne.Enums.DevelopmentLevel;
+using CivOne.Services.Random;
 
 namespace CivOne
 {
@@ -46,19 +47,19 @@ namespace CivOne
 			{
 				ITile tile = unit.Tile;
 
-				bool hasCity = (tile.City != null);
+				bool hasCity = tile.City != null;
 				bool validCity = (tile is Grassland || tile is River || tile is Plains) && (tile.City == null);
 				bool validIrrigation = (tile is Grassland || tile is River || tile is Plains || tile is Desert) && (tile.City == null) && (!tile.Mine) && (!tile.Irrigation) && tile.CrossTiles().Any(x => x.IsOcean || x is River || x.Irrigation);
 				bool validMine = (tile is Mountains || tile is Hills) && (tile.City == null) && (!tile.Mine) && (!tile.Irrigation);
-				bool validRoad = (tile.City == null) &&
+				bool validRoad = !hasCity &&
 									!tile.RailRoad &&
 									(!tile.Road || Player.HasAdvance<RailRoad>());
 				int nearestCity = 255;
 				int nearestOwnCity = 255;
 				City[] cities = Game.GetCities();
-				City[] ownCities = cities.Where(x => x.Owner == unit.Owner).ToArray();
-				if (cities.Any()) nearestCity = cities.Min(x => Common.DistanceToTile(x.X, x.Y, tile.X, tile.Y));
-				if (ownCities.Any()) nearestOwnCity = ownCities.Min(x => Common.DistanceToTile(x.X, x.Y, tile.X, tile.Y));
+				City[] ownCities = [.. cities.Where(x => x.CityOwnerPlayerIndex == unit.Owner)];
+				if (cities.Length != 0) nearestCity = cities.Min(x => Common.DistanceToTile(x.X, x.Y, tile.X, tile.Y));
+				if (ownCities.Length != 0) nearestOwnCity = ownCities.Min(x => Common.DistanceToTile(x.X, x.Y, tile.X, tile.Y));
 				
 				if (validCity && nearestCity > 3)
 				{
@@ -67,7 +68,7 @@ namespace CivOne
 				}
 				else if (nearestOwnCity < 3)
 				{
-					switch (Common.Random.Next(5 * nearestOwnCity))
+					switch (_randomService.NextInt(5 * nearestOwnCity))
 					{
 						case 0:
 							if (validRoad)
@@ -98,8 +99,8 @@ namespace CivOne
 
 				for (int i = 0; i < 1000; i++)
 				{
-					int relX = Common.Random.Next(-1, 2);
-					int relY = Common.Random.Next(-1, 2);
+					int relX = _randomService.NextInt(-1, 2);
+					int relY = _randomService.NextInt(-1, 2);
 					if (relX == 0 && relY == 0) continue;
 					if (unit.Tile[relX, relY] is Ocean) continue;
 					if (unit.Tile[relX, relY].Units.Any(x => x.Owner != unit.Owner)) continue;
@@ -114,8 +115,8 @@ namespace CivOne
 				unit.Fortify = true;
 				while (unit.Tile.City != null && unit.Tile.Units.Count(x => x is Militia || x is Phalanx || x is Musketeers || x is Riflemen || x is MechInf) > 2)
 				{
-					IUnit disband = null;
-					IUnit[] units = unit.Tile.Units.Where(x => x != unit).ToArray();
+					IUnit? disband = null;
+					IUnit[] units = [.. unit.Tile.Units.Where(x => x != unit)];
 					if ((disband = unit.Tile.Units.FirstOrDefault(x => x is Militia)) != null) { Game.DisbandUnit(disband); continue; }
 					if ((disband = unit.Tile.Units.FirstOrDefault(x => x is Phalanx)) != null) { Game.DisbandUnit(disband); continue; }
 					if ((disband = unit.Tile.Units.FirstOrDefault(x => x is Musketeers)) != null) { Game.DisbandUnit(disband); continue; }
@@ -125,22 +126,22 @@ namespace CivOne
 			}
 			else
 			{
-				if (unit.Class != UnitClass.Land) Game.DisbandUnit(unit);
+				if (unit.UnitCategory != UnitClass.Land) Game.DisbandUnit(unit);
 
 				for (int i = 0; i < 1000; i++)
 				{
-					if (unit.Goto.IsEmpty)
+					if (unit.GotoDestination.IsEmpty)
 					{
-						int gotoX = Common.Random.Next(-5, 6);
-						int gotoY = Common.Random.Next(-5, 6);
+						int gotoX = _randomService.NextInt(-5, 6);
+						int gotoY = _randomService.NextInt(-5, 6);
 						if (gotoX == 0 && gotoY == 0) continue;
 						if (!Player.Visible(unit.X + gotoX, unit.Y + gotoY)) continue;
 
-						unit.Goto = new Point(unit.X + gotoX, unit.Y + gotoY);
+						unit.GotoDestination = new Point(unit.X + gotoX, unit.Y + gotoY);
 						continue;
 					}
 
-					if (!unit.Goto.IsEmpty)
+					if (!unit.GotoDestination.IsEmpty)
 					{
 						IAiGotoExecutor gotoExecutor = _gotoExecutorFactory.CreateFor(unit);
 						AiGotoExecutionResult gotoExecutionResult = gotoExecutor.TryExecute(unit);
@@ -155,20 +156,20 @@ namespace CivOne
 							return;
 						}
 
-						int distance = unit.Tile.DistanceTo(unit.Goto);
-						ITile[] tiles = unit.MoveTargets.OrderBy(x => x.DistanceTo(unit.Goto)).ThenBy(x => x.Movement).ToArray();
-						if (tiles.Length == 0 || tiles[0].DistanceTo(unit.Goto) > distance)
+						int distance = unit.Tile.DistanceTo(unit.GotoDestination);
+						ITile[] tiles = [.. unit.MoveTargets.OrderBy(x => x.DistanceTo(unit.GotoDestination)).ThenBy(x => x.Movement)];
+						if (tiles.Length == 0 || tiles[0].DistanceTo(unit.GotoDestination) > distance)
 						{
 							// No valid tile to move to, cancel goto
-							unit.Goto = Point.Empty;
+							unit.GotoDestination = Point.Empty;
 							continue;
 						}
-						else if (tiles[0].DistanceTo(unit.Goto) == distance)
+						else if (tiles[0].DistanceTo(unit.GotoDestination) == distance)
 						{
 							// Distance is unchanged, 50% chance to cancel goto
-							if (Common.Random.Next(0, 100) < 50)
+							if (_randomService.Hit(50))
 							{
-								unit.Goto = Point.Empty;
+								unit.GotoDestination = Point.Empty;
 								continue;
 							}
 						}
@@ -178,21 +179,21 @@ namespace CivOne
 							if (unit.Role == UnitRole.Civilian || unit.Role == UnitRole.Settler || unit is Carrier)
 							{
 								// do not attack with civilian or settler units or carrier
-								unit.Goto = Point.Empty;
+								unit.GotoDestination = Point.Empty;
 								continue;
 							}
 
-							if (unit.Role == UnitRole.Transport && Common.Random.Next(0, 100) < 67)
+							if (unit.Role == UnitRole.Transport && _randomService.Hit(67))
 							{
 								// 67% chance of cancelling attack with transport unit
-								unit.Goto = Point.Empty;
+								unit.GotoDestination = Point.Empty;
 								continue;
 							}
 
-							if (unit.Attack < tiles[0].Units.Select(x => x.Defense).Max() && Common.Random.Next(0, 100) < 50)
+							if (unit.Attack < tiles[0].Units.Max(x => x.Defense) && _randomService.Hit(50))
 							{
 								// 50% of attacking cancelling attack of stronger unit
-								unit.Goto = Point.Empty;
+								unit.GotoDestination = Point.Empty;
 								continue;
 							}
 						}
@@ -200,12 +201,12 @@ namespace CivOne
 						if (!unit.MoveTo(tiles[0].X - unit.X, tiles[0].Y - unit.Y))
 						{
 							// The code below is to prevent the game from becoming stuck...
-							if (Common.Random.Next(0, 100) < 67)
+							if (_randomService.Hit(67))
 							{
-								unit.Goto = Point.Empty;
+								unit.GotoDestination = Point.Empty;
 								continue;
 							}
-							else if (Common.Random.Next(0, 100) < 67)
+							else if (_randomService.Hit(67))
 							{
 								unit.SkipTurn();
 								return;
@@ -228,21 +229,21 @@ namespace CivOne
 		{
 			if (Player.CurrentResearch != null) return;
 			
-			IAdvance[] advances = Player.AvailableResearch.ToArray();
+			IAdvance[] advances = [.. Player.AvailableResearch];
 			
 			// No further research possible
 			if (advances.Length == 0) return;
 
-			Player.CurrentResearch = advances[Common.Random.Next(0, advances.Length)];
+			Player.CurrentResearch = _randomService.NextElement(advances);
 
 			Log($"AI: {Player.LeaderName} of the {Player.TribeNamePlural} starts researching {Player.CurrentResearch.TranslatedName}.");
 		}
 
 		internal void CityProduction(City city)
 		{
-			if (city == null || city.Size == 0 || city.Tile == null || Player != city.Owner) return;
+			if (city == null || city.Size == 0 || city.Tile == null || Player != city.CityOwnerPlayerIndex) return;
 
-			IProduction production = null;
+			IProduction? production = null;
 
 			// Create 2 defensive units per city
 			if (Player.HasAdvance<LaborUnion>())
@@ -304,7 +305,7 @@ namespace CivOne
 				}
 				else
 				{
-					if (Player.HasAdvance<Trade>() && city.TradingCities.Length < 3 && city.Units.Count(x => x is Caravan) == 0)
+					if (Player.HasAdvance<Trade>() && city.TradingCities.Length < 3 && !city.Units.Any(x => x is Caravan))
 					{
 						production = new Caravan();
 					}
@@ -314,8 +315,8 @@ namespace CivOne
 			// Set random production
 			if (production == null)
 			{
-				IProduction[] items = city.AvailableProduction.ToArray();
-				production = items[Common.Random.Next(items.Length)];
+				IProduction[] items = [.. city.AvailableProduction];
+				production = items[_randomService.NextInt(items.Length)];
 			}
 
 			city.SetProduction(production);
@@ -324,8 +325,8 @@ namespace CivOne
 		private static Dictionary<Player, AI> _instances = new Dictionary<Player, AI>();
 		internal static AI Instance(Player player)
 		{
-			if (_instances.ContainsKey(player))
-				return _instances[player];
+			if (_instances.TryGetValue(player, out AI? value))
+				return value;
 			_instances.Add(player, Create(player));
 			return _instances[player];
 		}

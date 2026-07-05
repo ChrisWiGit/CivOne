@@ -14,47 +14,51 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
+using CivOne.Services.Maps;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
 
 namespace CivOne.Screens.GamePlayPanels
 {
+#pragma warning disable CA1822 // Mark members as static
 	internal partial class GameMap : BaseScreen
 	{
 		private const int BaseTilePixelSize = 16;
 
-		private IUnit ActiveUnit => Game.Started ? Game.ActiveUnit : null;
-		
-		private Point _helperDirection = new Point(0, 0);
+		private IUnit? ActiveUnit => Game.Started ? Game.ActiveUnit : null;
+
+		private Point _helperDirection = new(0, 0);
 		private bool _update = true;
-		private bool _fullRedraw = false;
-		private bool _mapViewEnabled = false;
+		private bool _fullRedraw;
+		private bool _mapViewEnabled;
 		private int _x, _y;
-		private IUnit _lastUnit;
+		private IUnit? _lastUnit;
 		private ushort _lastTurn;
 		private int _tilePixelSize = BaseTilePixelSize;
 		private int _zoomBasisPoints = MapZoomSettings.DefaultBasisPoints;
 
 		private int _tilesX = 15, _tilesY = 12;
-		public event EventHandler<int> MapPositionSaved;
+		public event EventHandler<int>? MapPositionSaved;
 		private readonly TerrainEditorState _editorState = new();
 		private readonly TerrainEditorDelegate _terrainEditorDelegate = new();
-		private IUnit _editorStoredUnit;
-		private int _hoveredTileX = 0, _hoveredTileY = 0;
+		private IMapBitmapScaler MapBitmapScaler => MapBitmapScalerFactory.Create();
+		private IUnit? _editorStoredUnit;
+		private int _hoveredTileX, _hoveredTileY;
 
 		protected GameMapPositionDelegate _mapPositionDelegate;
-		private GamePanMapDelegate _panMapDelegate;
-		private GameMapZoomDelegate _zoomDelegate;
-		private GameTerrainEditorDelegate _terrainEditorInputDelegate;
-		private GameTerrainEditorRenderDelegate _terrainEditorRenderDelegate;
-		private GameTerrainEditorSessionDelegate _terrainEditorSessionDelegate;
+		private readonly GamePanMapDelegate _panMapDelegate;
+		private readonly GameMapZoomDelegate _zoomDelegate;
+		private readonly GameTerrainEditorDelegate _terrainEditorInputDelegate;
+		private readonly GameTerrainEditorRenderDelegate _terrainEditorRenderDelegate;
+		private readonly GameTerrainEditorSessionDelegate _terrainEditorSessionDelegate;
 
 		internal int X => _x;
 		internal int Y => _y;
 		internal bool MapViewEnabled => _mapViewEnabled;
 		internal int TilePixelSize => _tilePixelSize;
 		internal int ZoomBasisPoints => _zoomBasisPoints;
+		internal bool IsZoomActive => _zoomBasisPoints != MapZoomSettings.DefaultBasisPoints;
 		internal int VisibleTilesX => _tilesX;
 		internal int VisibleTilesY => _tilesY;
 		internal int HoveredTileX => _hoveredTileX;
@@ -67,7 +71,7 @@ namespace CivOne.Screens.GamePlayPanels
 		{
 			get
 			{
-				Player player = Game.GetPlayer(_editorState.CityOwner);
+				Player? player = Game.GetPlayer(_editorState.CityOwner);
 				if (player == null)
 				{
 					return null;
@@ -99,38 +103,17 @@ namespace CivOne.Screens.GamePlayPanels
 
 		private ITile[,] Tiles => Map[_x, _y, _tilesX, _tilesY];
 
-		private int CurrentZoomBasisPoints => Game.Started && Game.CurrentPlayer != null
-			? MapZoomSettings.NormalizeBasisPoints(Game.CurrentPlayer.MapZoomBasisPoints)
+		private int CurrentZoomBasisPoints => Game.Started
+			? MapZoomSettings.NormalizeBasisPoints(Human.MapZoomBasisPoints)
 			: MapZoomSettings.DefaultBasisPoints;
 
-		private static Bytemap ScaleBitmap(Bytemap source, int targetWidth, int targetHeight)
-		{
-			Bytemap output = new(targetWidth, targetHeight);
-			if (source == null || targetWidth <= 0 || targetHeight <= 0)
-			{
-				return output;
-			}
-
-			for (int y = 0; y < targetHeight; y++)
-			{
-				int sourceY = (y * source.Height) / targetHeight;
-				for (int x = 0; x < targetWidth; x++)
-				{
-					int sourceX = (x * source.Width) / targetWidth;
-					output[x, y] = source[sourceX, sourceY];
-				}
-			}
-
-			return output;
-		}
 
 		private void DrawScaledBitmap(IBitmap source, int left, int top, int width, int height)
 		{
-			using Bytemap scaled = ScaleBitmap(source.Bitmap, width, height);
+			using Bytemap scaled = MapBitmapScaler.Scale(source.Bitmap, width, height);
 			this.AddLayer(scaled, left, top);
 		}
-
-
+		
 		private int GetX(ITile tile)
 		{
 			ITile[,] tiles = Tiles;
@@ -191,37 +174,37 @@ namespace CivOne.Screens.GamePlayPanels
 		private void DrawHelperArrows(int x, int y)
 		{
 			if (_helperDirection.X == 0 && _helperDirection.Y == 0) return;
-			
+
 			if (_helperDirection.X < 0)
 			{
-				DrawScaledBitmap(Icons.HelperArrow(Direction.North), x - _tilePixelSize, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
-				DrawScaledBitmap(Icons.HelperArrow(Direction.West), x - _tilePixelSize, y, _tilePixelSize, _tilePixelSize);
-				DrawScaledBitmap(Icons.HelperArrow(Direction.South), x - _tilePixelSize, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.North)!, x - _tilePixelSize, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.West)!, x - _tilePixelSize, y, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.South)!, x - _tilePixelSize, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
 			}
 			if (_helperDirection.X > 0)
 			{
-				DrawScaledBitmap(Icons.HelperArrow(Direction.North), x + _tilePixelSize, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
-				DrawScaledBitmap(Icons.HelperArrow(Direction.East), x + _tilePixelSize, y, _tilePixelSize, _tilePixelSize);
-				DrawScaledBitmap(Icons.HelperArrow(Direction.South), x + _tilePixelSize, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.North)!, x + _tilePixelSize, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.East)!, x + _tilePixelSize, y, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.South)!, x + _tilePixelSize, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
 			}
 			if (_helperDirection.Y < 0)
 			{
-				DrawScaledBitmap(Icons.HelperArrow(Direction.West), x - _tilePixelSize, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
-				DrawScaledBitmap(Icons.HelperArrow(Direction.North), x, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
-				DrawScaledBitmap(Icons.HelperArrow(Direction.East), x + _tilePixelSize, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.West)!, x - _tilePixelSize, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.North)!, x, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.East)!, x + _tilePixelSize, y - _tilePixelSize, _tilePixelSize, _tilePixelSize);
 			}
 			if (_helperDirection.Y > 0)
 			{
-				DrawScaledBitmap(Icons.HelperArrow(Direction.West), x - _tilePixelSize, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
-				DrawScaledBitmap(Icons.HelperArrow(Direction.South), x, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
-				DrawScaledBitmap(Icons.HelperArrow(Direction.East), x + _tilePixelSize, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.West)!, x - _tilePixelSize, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.South)!, x, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
+				DrawScaledBitmap(Icons.HelperArrow(Direction.East)!, x + _tilePixelSize, y + _tilePixelSize, _tilePixelSize, _tilePixelSize);
 			}
 		}
 
 
 		internal void SetTerrainEditorEnabled(bool enabled)
 			=> _terrainEditorSessionDelegate.SetEnabled(enabled);
-		
+
 		public bool MustUpdate(uint gameTick)
 		{
 			if (!Game.Started)
@@ -233,7 +216,7 @@ namespace CivOne.Screens.GamePlayPanels
 			_zoomDelegate.SyncZoomState();
 			HandleTerrainEditorActiveUnit();
 
-			IUnit unit = ActiveUnit;
+			IUnit? unit = ActiveUnit;
 
 			if ((gameTick % 2) == 0 && (_lastTurn != Game.GameTurn || _lastUnit != unit))
 			{
@@ -271,7 +254,7 @@ namespace CivOne.Screens.GamePlayPanels
 			}
 			else
 			{
-				_update = (unit != _lastUnit);
+				_update = unit != _lastUnit;
 			}
 			return _update;
 		}
@@ -304,7 +287,7 @@ namespace CivOne.Screens.GamePlayPanels
 
 			Player? renderPlayer = (Settings.RevealWorld || TerrainEditorEnabled) ? null : Human;
 
-			IUnit activeUnit = ActiveUnit;
+			IUnit? activeUnit = ActiveUnit;
 			if (Game.MovingUnit != null && !_fullRedraw)
 			{
 				IUnit movingUnit = Game.MovingUnit;
@@ -315,16 +298,16 @@ namespace CivOne.Screens.GamePlayPanels
 				{
 					dx *= _tilePixelSize; dy *= _tilePixelSize;
 
-					MoveUnit movement = movingUnit.Movement;
-					using IBitmap movingArea = Map[movingUnit.X - 1, movingUnit.Y - 1, 3, 3].ToBitmap(player: renderPlayer);
-					using Bytemap scaledMovingArea = ScaleBitmap(movingArea.Bitmap, 3 * _tilePixelSize, 3 * _tilePixelSize);
+					MoveUnit movement = movingUnit.Movement!; // Movement is guaranteed to be non-null when Moving is true.
+
+					using IBitmap movingArea = Map[movingUnit.X - 1, movingUnit.Y - 1, 3, 3].ToBitmap(player: renderPlayer, pixelSize: _tilePixelSize);
 					this.FillRectangle(dx - _tilePixelSize, dy - _tilePixelSize, 3 * _tilePixelSize, 3 * _tilePixelSize, 5)
-						.AddLayer(scaledMovingArea, dx - _tilePixelSize, dy - _tilePixelSize);
+						.AddLayer(movingArea.Bitmap, dx - _tilePixelSize, dy - _tilePixelSize);
 					// This bitmap comes from the unit sprite cache.
 					// Do not dispose it here; disposing would invalidate the cached sprite and break later renders.
 					Bytemap unitSource = movingUnit.ToBitmap();
-					using Bytemap unitPicture = ScaleBitmap(unitSource, _tilePixelSize, _tilePixelSize);
-					this.AddLayer(unitPicture, dx + ((movement.X * _tilePixelSize) / BaseTilePixelSize), dy + ((movement.Y * _tilePixelSize) / BaseTilePixelSize));
+					using Bytemap unitPicture = MapBitmapScaler.Scale(unitSource, _tilePixelSize, _tilePixelSize);
+					this.AddLayer(unitPicture, dx + (movement.X * _tilePixelSize / BaseTilePixelSize), dy + (movement.Y * _tilePixelSize / BaseTilePixelSize));
 
 					DrawFullCargoUnitWhileMoving(movingUnit, tile, dx, dy, movement, unitPicture);
 
@@ -343,12 +326,9 @@ namespace CivOne.Screens.GamePlayPanels
 			else if (_fullRedraw)
 			{
 				_fullRedraw = false;
-				using IBitmap tilesPicture = Tiles.ToBitmap(player: renderPlayer);
-				int drawWidth = _tilesX * _tilePixelSize;
-				int drawHeight = _tilesY * _tilePixelSize;
-				using Bytemap scaledTiles = ScaleBitmap(tilesPicture.Bitmap, drawWidth, drawHeight);
+				using IBitmap tilesPicture = Tiles.ToBitmap(player: renderPlayer, pixelSize: _tilePixelSize);
 				this.Clear(5)
-					.AddLayer(scaledTiles);
+					.AddLayer(tilesPicture.Bitmap);
 			}
 
 			if (!TerrainEditorEnabled && activeUnit != null && Game.CurrentPlayer == Human && !GameTask.Any() && !_mapViewEnabled)
@@ -359,13 +339,12 @@ namespace CivOne.Screens.GamePlayPanels
 				if (dx < _tilesX && dy < _tilesY)
 				{
 					dx *= _tilePixelSize; dy *= _tilePixelSize;
-					
+
 					// blink status
 					bool blinkOn = (gameTick % 4) < 2;
 					TileSettings blinkState = blinkOn ? TileSettings.BlinkOn : TileSettings.BlinkOff;
-					using IBitmap activeTileSource = tile.ToBitmap(blinkState);
-					using Bytemap activeTile = ScaleBitmap(activeTileSource.Bitmap, _tilePixelSize, _tilePixelSize);
-					this.AddLayer(activeTile, dx, dy);
+					using IBitmap activeTile = tile.ToBitmap(blinkState, pixelSize: _tilePixelSize);
+					this.AddLayer(activeTile.Bitmap, dx, dy);
 
 					DrawHelperArrows(dx, dy);
 				}
@@ -381,7 +360,7 @@ namespace CivOne.Screens.GamePlayPanels
 
 				return true;
 			}
-			
+
 			_update = false;
 			_terrainEditorRenderDelegate.DrawLandValuesOverlay();
 			_terrainEditorRenderDelegate.DrawSpawnUnitPreview();
@@ -397,9 +376,9 @@ namespace CivOne.Screens.GamePlayPanels
 
 		private void DrawFullCargoUnitWhileMoving(IUnit movingUnit, ITile tile, int dx, int dy, MoveUnit movement, Bytemap unitPicture)
 		{
-			if (movingUnit is IBoardable && tile.Units.Any(u => u.Class is UnitClass.Land or UnitClass.Air && (tile.City == null || (tile.City != null && u.Sentry))))
+			if (movingUnit is IBoardable && tile.Units.Any(u => u.UnitCategory is UnitClass.Land or UnitClass.Air && (tile.City == null || (tile.City != null && u.Sentry))))
 			{
-				this.AddLayer(unitPicture, dx + ((movement.X * _tilePixelSize) / BaseTilePixelSize) - 1, dy + ((movement.Y * _tilePixelSize) / BaseTilePixelSize) - 1);
+				this.AddLayer(unitPicture, dx + (movement.X * _tilePixelSize / BaseTilePixelSize) - 1, dy + (movement.Y * _tilePixelSize / BaseTilePixelSize) - 1);
 			}
 		}
 
@@ -437,12 +416,12 @@ namespace CivOne.Screens.GamePlayPanels
 			_update = true;
 			_fullRedraw = true;
 		}
-		
+
 		internal void CenterOnPoint(int x, int y)
 		{
 			SetViewOrigin(x - (_tilesX / 2), y - (_tilesY / 2));
 		}
-		
+
 		private void CenterOnUnit()
 		{
 			if (Game.ActiveUnit == null) return;
@@ -451,48 +430,58 @@ namespace CivOne.Screens.GamePlayPanels
 
 		private bool ShouldCenter(int relX = 0, int relY = 0)
 		{
-			IUnit unit = Game.ActiveUnit;
+			IUnit? unit = Game.ActiveUnit;
 			if (unit == null) return false;
+
 			int viewRange = 1;
-			if (unit.Class == UnitClass.Water)
+
+			if (unit.UnitCategory == UnitClass.Water && unit is BaseUnitSea seaUnit)
 			{
-				viewRange = (unit as BaseUnitSea).Range;
+				viewRange = seaUnit.Range;
 			}
-			if (unit.Class == UnitClass.Air)
+			if (unit.UnitCategory == UnitClass.Air)
 			{
 				viewRange = 2;
 			}
-			return !Map.QueryMapPart(_x + viewRange, _y + viewRange, (_tilesX - (viewRange * 2)), (_tilesY - (viewRange * 2)))
+			return !Map.QueryMapPart(_x + viewRange, _y + viewRange, _tilesX - (viewRange * 2), _tilesY - (viewRange * 2))
 				.Any(t => t != null && t.X == unit.X + relX && t.Y == unit.Y + relY);
 		}
 
 		public bool MoveTo(int relX, int relY) // public for unit testing
 		{
 			_helperDirection = new Point(0, 0);
-			
+
 			if (Game.ActiveUnit == null)
 				return false;
-			
+
 			return Game.ActiveUnit.MoveTo(relX, relY);
 		}
 
-		private void TaskStarted(object sender, TaskEventArgs args)
+		private void TaskStarted(object? sender, TaskEventArgs args)
 		{
-			if (!(sender is GameTask)) return;
-			switch (sender)
+			if (sender is not MoveUnit moveUnit)
+				return;
+
+			IUnit? unit = moveUnit.ActiveUnit;
+
+			if (unit == null)
 			{
-				case MoveUnit moveUnit:
-					IUnit unit = moveUnit.ActiveUnit;
-					if (unit == null || (Human != unit.Owner && !Game.EnemyMoves) || (!Settings.RevealWorld && Human != unit.Owner && !Human.Visible(unit.X, unit.Y)))
-					{
-						args.Abort();
-						return;
-					}
-					if (!_mapViewEnabled && ShouldCenter(moveUnit.RelX, moveUnit.RelY))
-					{
-						CenterOnUnit();
-					}
-					return;
+				args.Abort();
+				return;
+			}
+
+			bool isHumanUnit = Human == unit.Owner;
+
+			if ((!isHumanUnit && !Game.EnemyMoves) ||
+				(!Settings.RevealWorld && !isHumanUnit && !Human.Visible(unit.X, unit.Y)))
+			{
+				args.Abort();
+				return;
+			}
+
+			if (!_mapViewEnabled && ShouldCenter(moveUnit.RelX, moveUnit.RelY))
+			{
+				CenterOnUnit();
 			}
 		}
 
@@ -515,11 +504,17 @@ namespace CivOne.Screens.GamePlayPanels
 			return true;
 		}
 
+		internal bool ZoomInFromSideBar() => _zoomDelegate.StepZoom(direction: -1);
+
+		internal bool ZoomOutFromSideBar() => _zoomDelegate.StepZoom(direction: +1);
+
+		internal bool ZoomResetFromSideBar() => _zoomDelegate.ResetZoom();
+
 		private bool KeyDownActiveUnit(KeyboardEventArgs args)
 		{
 			if (TerrainEditorEnabled || Game.ActiveUnit == null || Game.ActiveUnit.Moving)
 				return false;
-			
+
 			if (args.Key == Key.Space)
 			{
 				Game.ActiveUnit.SkipTurn();
@@ -535,7 +530,6 @@ namespace CivOne.Screens.GamePlayPanels
 					case Key.NumPad2:
 						return MoveTo(0, 1);
 					case Key.NumPad3:
-					case Key.PageDown:
 						return MoveTo(1, 1);
 					case Key.NumPad4:
 						return MoveTo(-1, 0);
@@ -550,7 +544,6 @@ namespace CivOne.Screens.GamePlayPanels
 					case Key.NumPad8:
 						return MoveTo(0, -1);
 					case Key.NumPad9:
-					case Key.PageUp:
 						return MoveTo(1, -1);
 					case Key.Escape:
 						_helperDirection = new Point(0, 0);
@@ -579,12 +572,12 @@ namespace CivOne.Screens.GamePlayPanels
 						x = -1;
 					else if (_helperDirection.X > 0)
 						x = 1;
-					
+
 					if (_helperDirection.Y < 0)
 						y = -1;
 					else if (_helperDirection.Y > 0)
 						y = 1;
-					
+
 					_helperDirection = new Point(0, 0);
 					return MoveTo(x, y);
 				}
@@ -600,7 +593,6 @@ namespace CivOne.Screens.GamePlayPanels
 					case Key.Down:
 						return MoveTo(0, 1);
 					case Key.NumPad3:
-					case Key.PageDown:
 						return MoveTo(1, 1);
 					case Key.NumPad4:
 					case Key.Left:
@@ -618,11 +610,10 @@ namespace CivOne.Screens.GamePlayPanels
 					case Key.Up:
 						return MoveTo(0, -1);
 					case Key.NumPad9:
-					case Key.PageUp:
 						return MoveTo(1, -1);
 				}
 			}
-			
+
 			switch (args.KeyChar)
 			{
 				case 'B':
@@ -649,7 +640,8 @@ namespace CivOne.Screens.GamePlayPanels
 					if (args.Modifier == KeyModifier.Shift)
 					{
 						Game.ActiveUnit.Pillage();
-					} else if (args.Modifier == KeyModifier.None)
+					}
+					else if (args.Modifier == KeyModifier.None)
 					{
 						GameTask.Enqueue(Orders.ClearPollution(Game.ActiveUnit));
 					}
@@ -669,9 +661,9 @@ namespace CivOne.Screens.GamePlayPanels
 					Game.ActiveUnit.Fortify = true;
 					break;
 				case 'U':
-					if (Game.ActiveUnit is IBoardable)
+					if (Game.ActiveUnit is BaseUnitSea seaUnit)
 					{
-						return (Game.ActiveUnit as BaseUnitSea).Unload();;
+						return seaUnit.Unload();
 					}
 					break;
 				case 'W':
@@ -699,8 +691,13 @@ namespace CivOne.Screens.GamePlayPanels
 			{
 				return _mapPositionDelegate.TryOpenMapPositionSlotList();
 			}
-			
+
 			if (_mapPositionDelegate.TryHandleMapPositionHotkey(args))
+			{
+				return true;
+			}
+
+			if (_zoomDelegate.KeyDown(args))
 			{
 				return true;
 			}
@@ -727,9 +724,14 @@ namespace CivOne.Screens.GamePlayPanels
 
 			if (Game.ActiveUnit != null)
 			{
+				if (_mapViewEnabled)
+				{
+					return true;
+				}
+
 				return KeyDownActiveUnit(args);
 			}
-			
+
 			switch (args.Key)
 			{
 				case Key.Space:
@@ -739,7 +741,7 @@ namespace CivOne.Screens.GamePlayPanels
 			}
 			return false;
 		}
-		
+
 		public override bool MouseMove(ScreenEventArgs args)
 		{
 			if (_terrainEditorInputDelegate.TryGetMapTileCoordinates(args, out int xx, out int yy))
@@ -781,15 +783,15 @@ namespace CivOne.Screens.GamePlayPanels
 			}
 
 			City city = selectedTile.City;
-			
+
 			if ((args.Buttons & MouseButton.Right) > 0)
 			{
-				if (Game.ActiveUnit != null && (Game.ActiveUnit as BaseUnit).MoveTargets.Any(t => t.X == xx && t.Y == yy))
+				if (Game.ActiveUnit is BaseUnit baseUnit && baseUnit.MoveTargets.Any(t => t.X == xx && t.Y == yy))
 				{
-					int relX = xx - Game.ActiveUnit.X;
-					int relY = yy - Game.ActiveUnit.Y;
+					int relX = xx - baseUnit.X;
+					int relY = yy - baseUnit.Y;
 					if (relX < -1) relX = 1;
-					if (relY > 1) relY = -1; 
+					if (relY > 1) relY = -1;
 
 					MoveTo(relX, relY);
 					_update = true;
@@ -801,7 +803,7 @@ namespace CivOne.Screens.GamePlayPanels
 			}
 			if ((args.Buttons & MouseButton.Left) > 0)
 			{
-				if (city != null && (Human == city.Owner || Settings.RevealWorld))
+				if (city != null && (Human == city.CityOwnerPlayerIndex || Settings.RevealWorld))
 				{
 					Common.AddScreen(new CityManager(city));
 				}
@@ -834,7 +836,7 @@ namespace CivOne.Screens.GamePlayPanels
 		public override bool MouseWheel(ScreenEventArgs args) => _zoomDelegate.MouseWheel(args);
 
 		internal void ResizeMap(int width, int height) => Resize(width, height);
-		
+
 		public GameMap()
 		{
 			GameTask.Started += TaskStarted;
@@ -848,8 +850,20 @@ namespace CivOne.Screens.GamePlayPanels
 			_terrainEditorInputDelegate = new(this);
 			_terrainEditorRenderDelegate = new(this);
 			_terrainEditorSessionDelegate = new(this);
-			
+
 			Palette = Resources["SP257"].Palette.Copy();
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			GameTask.Started -= TaskStarted;
+			MapPositionSaved = null;
+			base.Dispose(disposing);
 		}
 	}
 }

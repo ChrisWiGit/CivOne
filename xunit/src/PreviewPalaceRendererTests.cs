@@ -8,11 +8,15 @@ namespace CivOne.UnitTests
 	public class PreviewPalaceResourcesDelegateTests
 	{
 		[Fact]
-		public void GetPreviewPart_WhenLevelAndPartProvided_ReturnsExpectedSpriteSlice()
+		public void GetPreviewPartWhenLevelAndPartProvidedReturnsExpectedSpriteSlice()
 		{
 			// Arrange
-			Picture sp257 = CreateSp257WithPreviewMarkers();
-			var testee = new PreviewPalaceResourcesDelegate(name => name == "SP257" ? sp257 : null);
+			using Picture sp257 = CreateSp257WithPreviewMarkers();
+			var testee = new PreviewPalaceResourcesWrapper(
+					name => {
+						Assert.Equal("SP257", name);
+						return sp257;
+					});
 
 			// Act
 			Picture actual = testee.GetPreviewPart(PreviewPalacePart.WallRight, level: 3, PalaceStyle.Medieval);
@@ -24,11 +28,15 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void GetPreviewPart_WhenCalledTwice_ReturnsCachedInstance()
+		public void GetPreviewPartWhenCalledTwiceReturnsCachedInstance()
 		{
 			// Arrange
-			Picture sp257 = CreateSp257WithPreviewMarkers();
-			var testee = new PreviewPalaceResourcesDelegate(name => name == "SP257" ? sp257 : null);
+			using Picture sp257 = CreateSp257WithPreviewMarkers();
+			var testee = new PreviewPalaceResourcesWrapper(
+					name => {
+						Assert.Equal("SP257", name);
+						return sp257;
+					});
 
 			// Act
 			Picture first = testee.GetPreviewPart(PreviewPalacePart.Center, level: 2, PalaceStyle.Medieval);
@@ -79,11 +87,15 @@ namespace CivOne.UnitTests
 	public class PreviewPalaceRendererTests
 	{
 		[Fact]
-		public void RenderPalace_WhenNoPalacePartsActive_ReturnsOneByOneBitmap()
+		public void RenderPalaceWhenNoPalacePartsActiveReturnsOneByOneBitmap()
 		{
 			// Arrange
-			Picture sp257 = CreateSp257WithPreviewMarkers();
-			var resources = new PreviewPalaceResourcesDelegate(name => name == "SP257" ? sp257 : null);
+			using Picture sp257 = CreateSp257WithPreviewMarkers();
+			var resources = new PreviewPalaceResourcesWrapper(
+					name => {
+						Assert.Equal("SP257", name);
+						return sp257;
+					});
 			var testee = new PreviewPalaceRenderer(resources);
 			var palace = new PalaceData();
 
@@ -96,11 +108,15 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void RenderPalace_WhenSomePartsActive_ReturnsBitmapWithExpectedSize()
+		public void RenderPalaceWhenSomePartsActiveReturnsBitmapWithExpectedSize()
 		{
 			// Arrange
-			Picture sp257 = CreateSp257WithPreviewMarkers();
-			var resources = new PreviewPalaceResourcesDelegate(name => name == "SP257" ? sp257 : null);
+			using Picture sp257 = CreateSp257WithPreviewMarkers();
+			var resources = new PreviewPalaceResourcesWrapper(
+					name => {
+						Assert.Equal("SP257", name);
+						return sp257;
+					});
 			var testee = new PreviewPalaceRenderer(resources);
 			var palace = new PalaceData();
 			palace.SetPalace(0, style: 1, level: 1);
@@ -116,11 +132,15 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void RenderPalace_WhenWallBuilt_AlwaysRendersAdjacentTower()
+		public void RenderPalaceWhenWallBuiltAlwaysRendersAdjacentTower()
 		{
 			// Arrange
-			Picture sp257 = CreateSp257WithPreviewMarkers();
-			var resources = new PreviewPalaceResourcesDelegate(name => name == "SP257" ? sp257 : null);
+			using Picture sp257 = CreateSp257WithPreviewMarkers();
+			var resources = new PreviewPalaceResourcesWrapper(
+					name => {
+						Assert.Equal("SP257", name);
+						return sp257;
+					});
 			var testee = new PreviewPalaceRenderer(resources);
 			var palace = new PalaceData();
 			// Only center and one wall on each side — outer towers (0, 6) remain at level 0
@@ -140,11 +160,15 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void RenderPalace_WhenRenderingWallsAndCenter_UsesExpectedPartMapping()
+		public void RenderPalaceWhenRenderingWallsAndCenterUsesExpectedPartMapping()
 		{
 			// Arrange
-			Picture sp257 = CreateSp257WithPreviewMarkers();
-			var resources = new PreviewPalaceResourcesDelegate(name => name == "SP257" ? sp257 : null);
+			using Picture sp257 = CreateSp257WithPreviewMarkers();
+			var resources = new PreviewPalaceResourcesWrapper(
+					name => {
+						Assert.Equal("SP257", name);
+						return sp257;
+					});
 			var testee = new PreviewPalaceRenderer(resources);
 			var palace = new PalaceData();
 			palace.SetPalace(1, style: 1, level: 2); // WallLeft → also forces Left tower at index 0

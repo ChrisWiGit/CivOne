@@ -6,9 +6,9 @@ namespace CivOne.Mcp.Transport
 	public interface IMcpTransport : IDisposable
 	{
 		void Start();
-		bool TryRead(out McpRequest request);
+		bool TryRead(out McpRequest? request);
 		void Write(McpResponse response);
-		void Stop();
+		void StopService();
 		/// <summary>True when the host closed stdin (EOF) — server should exit.</summary>
 		bool StdinClosed { get; }
 	}

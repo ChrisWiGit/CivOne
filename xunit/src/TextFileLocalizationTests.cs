@@ -22,7 +22,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void GetGameText_WhenLoaderReturnsUmlautLines_PreservesInternationalCharacters()
+		public void GetGameTextWhenLoaderReturnsUmlautLinesPreservesInternationalCharacters()
 		{
 			// Arrange
 			var loader = new StubLoader(new Dictionary<string, string[]>
@@ -40,7 +40,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void GetGameText_WhenLoaderReturnsEmptyForMissingFile_ReturnsEmpty()
+		public void GetGameTextWhenLoaderReturnsEmptyForMissingFileReturnsEmpty()
 		{
 			// Arrange – loader returns nothing (simulates "localized file not found, data file also missing")
 			var loader = new StubLoader(new Dictionary<string, string[]>());
@@ -54,7 +54,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void OnLanguageChanged_WhenTriggered_ReloadsFromLoader()
+		public void OnLanguageChangedWhenTriggeredReloadsFromLoader()
 		{
 			// Arrange – first load returns English content
 			var loaderMap = new Dictionary<string, string[]>
@@ -75,7 +75,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Reset_WhenCalledTwice_UsesLatestLoaderData()
+		public void ResetWhenCalledTwiceUsesLatestLoaderData()
 		{
 			// Arrange
 			var loaderMap = new Dictionary<string, string[]>

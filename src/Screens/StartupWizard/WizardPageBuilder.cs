@@ -48,6 +48,7 @@ namespace CivOne.Screens.StartupWizard
 				3 => BuildAspectRatioPage(state),
 				4 => BuildSoundPage(state),
 				5 => BuildMoreSettingsPage(state),
+				WizardState.GamePatchesPageIndex => BuildGamePatchesPage(state),
 				6 => BuildFinalPage(),
 				_ => BuildLanguagePage(state)
 			};
@@ -109,7 +110,7 @@ namespace CivOne.Screens.StartupWizard
 
 			for (char c = 'a'; c <= 'z'; c++)
 			{
-				if (excludedChars.Contains(c))
+				if (excludedChars.Contains(c, StringComparison.OrdinalIgnoreCase))
 				{
 					continue;
 				}
@@ -281,14 +282,14 @@ namespace CivOne.Screens.StartupWizard
 		{
 			bool previousHasDataFiles = FileSystem.DataFilesExist();
 			bool previousCopyInProgress = state.IsDataFilesCopyInProgress;
-			string previousDataFolder = state.DataFolder;
+			string? previousDataFolder = state.DataFolder;
 			string previousStatusMessage = state.StatusMessage;
 
 			return () =>
 			{
 				bool currentHasDataFiles = FileSystem.DataFilesExist();
 				bool currentCopyInProgress = state.IsDataFilesCopyInProgress;
-				string currentDataFolder = state.DataFolder;
+				string? currentDataFolder = state.DataFolder;
 				string currentStatusMessage = state.StatusMessage;
 
 				if (previousHasDataFiles == currentHasDataFiles
@@ -415,11 +416,39 @@ namespace CivOne.Screens.StartupWizard
 					new WizardEntry { Number = 1, Text = debugMenuEntryText, Action = WizardEntryAction.ToggleDebugMenu },
 					new WizardEntry { Number = 2, Text = T("Open CivOne Profile folder..."), Action = WizardEntryAction.OpenProfileFolder },
 					new WizardEntry { Number = 3, Text = T("Show more settings"), Action = WizardEntryAction.OpenSetupScreen },
-					new WizardEntry { Number = 4, Text = ContinueText(), Action = WizardEntryAction.Continue, Hotkey = HotkeyContinue },
-					new WizardEntry { Number = 5, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
+					new WizardEntry { Number = 4, Text = T("Configure game patches"), Action = WizardEntryAction.OpenGamePatchesScreen },
+					new WizardEntry { Number = 5, Text = ContinueText(), Action = WizardEntryAction.Continue, Hotkey = HotkeyContinue },
+					new WizardEntry { Number = 6, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
 				],
 				EntriesYOffset = 0,
 				HasContextChanged = () => SyncMoreSettingsState(state)
+			};
+		}
+
+		private WizardPage BuildGamePatchesPage(WizardState state)
+		{
+			return new WizardPage
+			{
+				Title = T("Startup Wizard: Game Patches"),
+				Lines =
+				[
+					T("Configure optional gameplay patches here."),
+				],
+				Entries =
+				[
+					new WizardEntry { Number = 1, Text = TF("Use smart PathFinding for goto: {0}", state.PathFindingEnabled.YesNo()), Action = WizardEntryAction.TogglePathFinding },
+					new WizardEntry { Number = 2, Text = TF("Use smart pathfinding for computer players: {0}", state.ComputerPlayerPathFindingEnabled.YesNo()), Action = WizardEntryAction.ToggleComputerPlayerPathFinding },
+					new WizardEntry { Number = 3, Text = TF("Use auto settlers cheat: {0}", state.AutoSettlersEnabled.YesNo()), Action = WizardEntryAction.ToggleAutoSettlers },
+					new WizardEntry { Number = 4, Text = TF("Use fast river movement: {0}", state.RiverFastMovementEnabled.YesNo()), Action = WizardEntryAction.ToggleRiverFastMovement },
+					new WizardEntry { Number = 5, Text = TF("No movement penalty for sea units in city: {0}", state.CanalCityEnabled.YesNo()), Action = WizardEntryAction.ToggleCanalCity },
+					new WizardEntry { Number = 6, Text = TF("Remove obsolete barracks: {0}", state.RemoveObsoleteBuildingsEnabled.YesNo()), Action = WizardEntryAction.ToggleRemoveObsoleteBuildings },
+					new WizardEntry { Number = 7, Text = TF("Enable Deity difficulty: {0}", state.DeityEnabled.YesNo()), Action = WizardEntryAction.ToggleDeityEnabled },
+					new WizardEntry { Number = 8, Text = TF("Extended global warming effects: {0}", state.ExtendedGlobalWarming.YesNo()), Action = WizardEntryAction.ToggleExtendedGlobalWarming },
+					new WizardEntry { Number = 9, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack, KeepAlwaysLastPosition = true }
+				],
+				EntriesMaxCount = 7,
+				EntriesYOffset = -1,
+				HasContextChanged = () => SyncGamePatchesState(state)
 			};
 		}
 
@@ -485,6 +514,62 @@ namespace CivOne.Screens.StartupWizard
 			return hasChanged;
 		}
 
+		private static bool SyncGamePatchesState(WizardState state)
+		{
+			bool hasChanged = false;
+
+			bool pathFindingEnabled = Settings.Instance.PathFinding;
+			if (state.PathFindingEnabled != pathFindingEnabled)
+			{
+				state.PathFindingEnabled = pathFindingEnabled;
+				hasChanged = true;
+			}
+
+			bool computerPlayerPathFindingEnabled = Settings.Instance.ComputerPlayerPathFinding;
+			if (state.ComputerPlayerPathFindingEnabled != computerPlayerPathFindingEnabled)
+			{
+				state.ComputerPlayerPathFindingEnabled = computerPlayerPathFindingEnabled;
+				hasChanged = true;
+			}
+
+			bool autoSettlersEnabled = Settings.Instance.AutoSettlers;
+			if (state.AutoSettlersEnabled != autoSettlersEnabled)
+			{
+				state.AutoSettlersEnabled = autoSettlersEnabled;
+				hasChanged = true;
+			}
+
+			bool riverFastMovementEnabled = Settings.Instance.RiverFastMovement;
+			if (state.RiverFastMovementEnabled != riverFastMovementEnabled)
+			{
+				state.RiverFastMovementEnabled = riverFastMovementEnabled;
+				hasChanged = true;
+			}
+
+			bool canalCityEnabled = Settings.Instance.CanalCity;
+			if (state.CanalCityEnabled != canalCityEnabled)
+			{
+				state.CanalCityEnabled = canalCityEnabled;
+				hasChanged = true;
+			}
+
+			bool removeObsoleteBuildingsEnabled = Settings.Instance.RemoveObsoleteBuildings;
+			if (state.RemoveObsoleteBuildingsEnabled != removeObsoleteBuildingsEnabled)
+			{
+				state.RemoveObsoleteBuildingsEnabled = removeObsoleteBuildingsEnabled;
+				hasChanged = true;
+			}
+
+			bool deityEnabled = Settings.Instance.DeityEnabled;
+			if (state.DeityEnabled != deityEnabled)
+			{
+				state.DeityEnabled = deityEnabled;
+				hasChanged = true;
+			}
+
+			return hasChanged;
+		}
+
 		private static bool SyncFullScreenState(WizardState state)
 		{
 			bool fullScreenEnabled = Settings.Instance.FullScreen;
@@ -497,7 +582,7 @@ namespace CivOne.Screens.StartupWizard
 			return true;
 		}
 
-		private WizardEntry CreateAspectRatioEntry(int number, AspectRatio aspectRatio, string explanation) => new()
+		private static WizardEntry CreateAspectRatioEntry(int number, AspectRatio aspectRatio, string explanation) => new()
 		{
 			Number = number,
 			Text = explanation,
@@ -506,7 +591,7 @@ namespace CivOne.Screens.StartupWizard
 			Hotkey = null
 		};
 
-		private WizardEntry CreateFullScreenEntry(int number, bool entryEnabled, bool targetValue, string text) => new()
+		private static WizardEntry CreateFullScreenEntry(int number, bool entryEnabled, bool targetValue, string text) => new()
 		{
 			Number = number,
 			Text = text,

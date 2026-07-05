@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -19,52 +20,61 @@ namespace CivOne.IO
 
 		public static byte[] Decode(byte[] input)
 		{
-			using (MemoryStream ms = new MemoryStream())
-			{
-				byte value = input[0];
-				for (int i = 0; i < input.Length; i++)
-				{
-					if (input[i] != RLE_REPEAT || input[i + 1] == RLE_ESCAPE)
-					{
-						value = input[i];
-						ms.WriteByte(value);
-						if (input[i] == RLE_REPEAT && input[i + 1] == RLE_ESCAPE) i++;
-						continue;
-					}
-
-					int repeat = input[i + 1];
-					ms.Write(Enumerable.Repeat(value, repeat).ToArray(), 0, repeat - 1);
-					i++;
-				}
-				return ms.ToArray();
+			Debug.Assert(input.Length > 0);
+			if (input.Length == 0)
+			{ 
+				Debug.Assert(false, "RLE input for decoding is empty");
+				return [];
 			}
+			
+			using MemoryStream ms = new();
+			byte value = input[0];
+			for (int i = 0; i < input.Length; i++)
+			{
+				if (input[i] != RLE_REPEAT || input[i + 1] == RLE_ESCAPE)
+				{
+					value = input[i];
+					ms.WriteByte(value);
+					if (input[i] == RLE_REPEAT && input[i + 1] == RLE_ESCAPE) i++;
+					continue;
+				}
+
+				int repeat = input[i + 1];
+				ms.Write(Enumerable.Repeat(value, repeat).ToArray(), 0, repeat - 1);
+				i++;
+			}
+			return ms.ToArray();
 		}
 
 		public static byte[] Encode(byte[] input)
 		{
-			using (MemoryStream ms = new MemoryStream())
-			{
-				for (int i = 0; i < input.Length; i++)
-				{
-					byte value = input[i];
-					byte repeat = 1;
-					for (int r = 1; r < 255 && (i + r) < input.Length; r++)
-					{
-						if (input[i + r] != value) break;
-						repeat++;
-					}
+			if (input.Length == 0)
+			{ 
+				Debug.Assert(false, "RLE input for encoding is empty");
+				return [];
+			}
 
-					ms.WriteByte(value);
-					if (value == RLE_REPEAT) ms.WriteByte(RLE_ESCAPE);
-					if (repeat == 1) continue;
-					ms.WriteByte(RLE_REPEAT);
-					ms.WriteByte(repeat);
-					//if (repeat == RLE_REPEAT) ms.WriteByte(RLE_ESCAPE); EnockNitti: never RLE_ESCAPE after repeat byte
-					i += (repeat - 1);
+			using MemoryStream ms = new();
+			for (int i = 0; i < input.Length; i++)
+			{
+				byte value = input[i];
+				byte repeat = 1;
+				for (int r = 1; r < 255 && (i + r) < input.Length; r++)
+				{
+					if (input[i + r] != value) break;
+					repeat++;
 				}
 
-				return ms.ToArray();
+				ms.WriteByte(value);
+				if (value == RLE_REPEAT) ms.WriteByte(RLE_ESCAPE);
+				if (repeat == 1) continue;
+				ms.WriteByte(RLE_REPEAT);
+				ms.WriteByte(repeat);
+				//if (repeat == RLE_REPEAT) ms.WriteByte(RLE_ESCAPE); EnockNitti: never RLE_ESCAPE after repeat byte
+				i += (repeat - 1);
 			}
+
+			return ms.ToArray();
 		}
 	}
 }

@@ -8,12 +8,14 @@ using YamlDotNet.Serialization;
 
 namespace CivOne.Persistence.Yaml
 {
+	#pragma warning disable CA1720 // Identifier contains type name
 	public enum ByteArrayValueFormat
 	{
 		Decimal,
 		Binary,
 		Hexadecimal
 	}
+	#pragma warning restore CA1720
 
 	/// <summary>
 	/// Alternative YAML converter for byte[][] that produces true nested arrays in YAML.
@@ -40,10 +42,10 @@ namespace CivOne.Persistence.Yaml
 
 		public bool Accepts(Type type) => type == typeof(byte[][]);
 
-		public object ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
+		public object? ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
 		{
 			// Deserialize as List<List<object>> to support decimal, binary and hexadecimal string formats.
-			var listOfLists = (List<List<object>>)rootDeserializer(typeof(List<List<object>>));
+			List<List<object>>? listOfLists = (List<List<object>>?)rootDeserializer(typeof(List<List<object>>));
 
 			if (listOfLists == null)
 				return null;
@@ -110,8 +112,13 @@ namespace CivOne.Persistence.Yaml
 			throw new FormatException($"Invalid byte value '{token}'.");
 		}
 
-		public void WriteYaml(IEmitter emitter, object value, Type type, ObjectSerializer serializer)
+		public void WriteYaml(IEmitter emitter, object? value, Type type, ObjectSerializer serializer)
 		{
+			if (value == null)
+			{
+				emitter.Emit(new Scalar("null"));
+				return;
+			}
 			var data = (byte[][])value;
 
 			// Outer array (block style)

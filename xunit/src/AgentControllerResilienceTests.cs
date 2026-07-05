@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 using CivOne.Agents;
@@ -113,14 +114,14 @@ namespace CivOne.UnitTests
 					HandleCommandResult(research);
 				}
 
-				ICityView? city = session.Context.OwnCities.FirstOrDefault();
+				ICityView? city = session.Context.OwnCities.Count > 0 ? session.Context.OwnCities[0] : null;
 				if (city is not null && city.AvailableProductionNames.Count > 0)
 				{
 					ICommandResult production = session.Commands.Cities.ChooseProduction(city.Id, city.AvailableProductionNames[0]);
 					HandleCommandResult(production);
 				}
 
-				IUnitView? unit = session.Context.OwnUnits.FirstOrDefault();
+				IUnitView? unit = session.Context.OwnUnits.Count > 0 ? session.Context.OwnUnits[0] : null;
 				if (unit is not null)
 				{
 					ICommandResult move = session.Commands.Units.Move(unit.Id, 0, 1);
@@ -284,7 +285,7 @@ namespace CivOne.UnitTests
 			public string Name { get; init; } = "Unit";
 			public int X { get; init; }
 			public int Y { get; init; }
-			public Point Goto { get; init; }
+			public Point GotoDestination { get; init; }
 			public byte MovesLeft { get; init; }
 			public byte PartMoves { get; init; }
 			public bool HasAction { get; init; }

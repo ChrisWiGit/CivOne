@@ -17,3 +17,14 @@
 **/civ_orig/**
 temp/
 profiling/
+**/docs
+**/.github
+build.*
+PreviewPalast.txt
+msbuild.binlog
+plan-mapTileZoom.prompt.md
+profiling.review.md
+staged.*
+todo Warnings.md
+translation/obsoletekeys.txt
+warning*.*

@@ -27,7 +27,7 @@ namespace CivOne.Screens
 		private readonly Action<Player> _onSelected;
 		private readonly ITranslationService _translationService;
 		private readonly Menu<Player> _menu;
-		private readonly Picture _capturedBackground;
+		private readonly Picture? _capturedBackground;
 
 		private int _lastWidth;
 		private int _lastHeight;
@@ -92,12 +92,12 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
-		private static SpaceShipCivilizationSelectorServices ResolveServices(SpaceShipCivilizationSelectorServices services)
+		private static SpaceShipCivilizationSelectorServices ResolveServices(SpaceShipCivilizationSelectorServices? services)
 		{
 			return services ?? SpaceShipCivilizationSelectorServicesFactory.CreateDefault();
 		}
 
-		private static Picture CaptureBackground()
+		private static Picture? CaptureBackground()
 		{
 			if (Common.TopScreen == null)
 			{
@@ -109,9 +109,9 @@ namespace CivOne.Screens
 
 		private static Picture CreateMenuBackground(int rowCount)
 		{
-			Picture menuBackground = new Picture(DialogWidth - 4, Resources.GetFontHeight(0) * rowCount)
-				.Tile(Pattern.PanelGrey)
-				.As<Picture>();
+			Picture menuBackground = new(DialogWidth - 4, Resources.GetFontHeight(0) * rowCount);
+			menuBackground
+				.Tile(Pattern.PanelGrey);
 			menuBackground.ColourReplace((7, 11), (22, 3));
 			return menuBackground;
 		}
@@ -168,7 +168,7 @@ namespace CivOne.Screens
 			Refresh();
 		}
 
-		public SpaceShipCivilizationSelectorDialog(Action<Player> onSelected = null, SpaceShipCivilizationSelectorServices services = null) : base(MouseCursor.Pointer)
+		public SpaceShipCivilizationSelectorDialog(Action<Player>? onSelected = null, SpaceShipCivilizationSelectorServices? services = null) : base(MouseCursor.Pointer)
 		{
 			SpaceShipCivilizationSelectorServices resolvedServices = ResolveServices(services);
 			ISpaceShipCivilizationSelectorService selectorService = resolvedServices.SelectorService ?? throw new InvalidOperationException("SelectorService is required to create SpaceShipCivilizationSelectorDialog");
@@ -217,10 +217,10 @@ namespace CivOne.Screens
 			int x = OffsetX + ((320 - DialogWidth) / 2);
 			int y = OffsetY + ((200 - dialogHeight) / 2);
 
-			Picture panel = new Picture(DialogWidth, dialogHeight)
+			Picture panel = new Picture(DialogWidth, dialogHeight);
+			panel
 				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D()
-				.As<Picture>();
+				.DrawRectangle3D();
 
 			this.FillRectangle(x - 1, y - 1, DialogWidth + 2, dialogHeight + 2, 5)
 				.AddLayer(panel, x, y)
@@ -292,11 +292,16 @@ namespace CivOne.Screens
 			return true;
 		}
 
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
+			if (!disposing)
+			{
+				return;
+			}
+
 			_menu?.Dispose();
 			_capturedBackground?.Dispose();
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }

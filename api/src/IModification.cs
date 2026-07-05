@@ -9,7 +9,7 @@
 
 namespace CivOne
 {
-	public interface IModification
+	public abstract class Modification
 	{
 	}
 }

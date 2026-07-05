@@ -20,6 +20,6 @@ namespace CivOne.Services
 		/// <param name="activeLanguagePostfix">
 		/// The active language postfix, or <see langword="null"/> when identity translation is active.
 		/// </param>
-		void OnLanguageChanged(string activeLanguagePostfix);
+		void OnLanguageChanged(string? activeLanguagePostfix);
 	}
 }

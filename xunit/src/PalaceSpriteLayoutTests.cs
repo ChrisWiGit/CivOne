@@ -7,7 +7,7 @@ namespace CivOne.UnitTests
 	public class PalaceSpriteLayoutTests
 	{
 		[Fact]
-		public void GetPartSourceRect_ForIslamicCenter_UsesSecondQuadrantYRange()
+		public void GetPartSourceRectForIslamicCenterUsesSecondQuadrantYRange()
 		{
 			var testee = new PalaceSpriteLayout();
 			PalacePictureLayout layout = testee.GetLayout(level: 1);
@@ -20,7 +20,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void GetPartSourceRect_ForIslamicTowers_UsesSecondQuadrantYRange()
+		public void GetPartSourceRectForIslamicTowersUsesSecondQuadrantYRange()
 		{
 			var testee = new PalaceSpriteLayout();
 			PalacePictureLayout layout = testee.GetLayout(level: 1);

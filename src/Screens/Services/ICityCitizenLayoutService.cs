@@ -24,7 +24,7 @@ namespace CivOne.Screens
 		/// </summary>
 		/// <param name="city">The city for which to create the layout service.</param>
 		/// <returns>An instance of ICityCitizenLayoutService for the specified city.</returns>
-		static ICityCitizenLayoutService Create(City city) => new CityCitizenLayoutServiceImpl(city);
+		static ICityCitizenLayoutService Create(City city) => new CityCitizenLayoutService(city);
 	}
 
 }

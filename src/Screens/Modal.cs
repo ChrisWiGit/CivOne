@@ -11,7 +11,8 @@ using System;
 
 namespace CivOne.Screens
 {
-	public class Modal : Attribute
+	[AttributeUsage(AttributeTargets.Class)]
+	public sealed class ModalAttribute : Attribute
 	{
 	}
 }

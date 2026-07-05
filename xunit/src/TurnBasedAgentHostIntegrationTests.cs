@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -19,7 +20,7 @@ namespace CivOne.UnitTests
 			Player aiPlayer = GetHostManagedAiPlayer();
 			ThrowingController controller = new();
 			RegisterAndBind(aiPlayer, controller);
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(aiPlayer);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(aiPlayer));
 
 			// Act
 			Exception? actual = Record.Exception(() => TurnBasedAgentHost.Instance.RunForCurrentPlayerIfNeeded());
@@ -37,7 +38,7 @@ namespace CivOne.UnitTests
 			Player aiPlayer = GetHostManagedAiPlayer();
 			NoEndTurnController controller = new();
 			RegisterAndBind(aiPlayer, controller);
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(aiPlayer);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(aiPlayer));
 
 			// Act
 			Exception? actual = Record.Exception(() => TurnBasedAgentHost.Instance.RunForCurrentPlayerIfNeeded());
@@ -57,7 +58,7 @@ namespace CivOne.UnitTests
 
 			ResearchSpamController controller = new();
 			RegisterAndBind(aiPlayer, controller);
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(aiPlayer);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(aiPlayer));
 
 			// Act
 			bool actual = TurnBasedAgentHost.Instance.RunForCurrentPlayerIfNeeded();
@@ -75,7 +76,7 @@ namespace CivOne.UnitTests
 			Player aiPlayer = GetHostManagedAiPlayer();
 			MoveSpamController controller = new();
 			RegisterAndBind(aiPlayer, controller);
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(aiPlayer);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(aiPlayer));
 
 			// Act
 			bool actual = TurnBasedAgentHost.Instance.RunForCurrentPlayerIfNeeded();
@@ -91,12 +92,12 @@ namespace CivOne.UnitTests
 			// Arrange
 			ResetHostState();
 			Player aiPlayer = GetHostManagedAiPlayer();
-			City city = Game.Instance.AddCity(aiPlayer, 0, 40, 30);
+			City? city = Game.Instance.AddCity(aiPlayer, 0, 40, 30);
 			Assert.NotNull(city);
 
 			DeterministicFullTurnController controller = new();
 			RegisterAndBind(aiPlayer, controller);
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(aiPlayer);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(aiPlayer));
 
 			// Act
 			bool actual = TurnBasedAgentHost.Instance.RunForCurrentPlayerIfNeeded();
@@ -112,7 +113,7 @@ namespace CivOne.UnitTests
 			Assert.Equal(controller.SelectedResearchName, aiPlayer.CurrentResearch.GetType().Name);
 
 			Assert.NotNull(controller.SelectedProductionName);
-			City persistedCity = Game.Instance.GetCities().Single(c => c.Id == city.Id);
+			City persistedCity = Game.Instance.GetCities().Single(c => c.Id == city!.Id);
 			Assert.NotNull(persistedCity.CurrentProduction);
 			Assert.Equal(controller.SelectedProductionName, persistedCity.CurrentProduction.GetType().Name);
 		}
@@ -126,7 +127,7 @@ namespace CivOne.UnitTests
 			MemoryLoadProbeController controller = new(memory);
 			TestAgentRegistration registration = new(controller, memory);
 			RegisterAndBind(aiPlayer, registration);
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(aiPlayer);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(aiPlayer));
 
 			FakeAgentMemoryStore memoryStore = new();
 			memoryStore.StoredByPlayer[aiPlayer.PlayerGuid] = "policy: loaded";
@@ -149,7 +150,7 @@ namespace CivOne.UnitTests
 			MemorySaveProbeController controller = new(memory);
 			TestAgentRegistration registration = new(controller, memory);
 			RegisterAndBind(aiPlayer, registration);
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(aiPlayer);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(aiPlayer));
 
 			FakeAgentMemoryStore memoryStore = new();
 			TurnBasedAgentHost host = new(memoryStore: memoryStore);
@@ -220,7 +221,7 @@ namespace CivOne.UnitTests
 			Player aiPlayer = GetHostManagedAiPlayer();
 			DeterministicFullTurnController controller = new();
 			RegisterAndBind(aiPlayer, controller);
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(aiPlayer);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(aiPlayer));
 
 			FakeAgentTurnMetricsHook metricsHook = new();
 			TurnBasedAgentHost host = new(metricsHook: metricsHook);
@@ -248,7 +249,7 @@ namespace CivOne.UnitTests
 			Guid unitId = Game.Instance.GetUnits().First(unit => unit.Owner == aiPlayerNumber).Id;
 			DisbandProbeController controller = new(unitId);
 			RegisterAndBind(aiPlayer, controller);
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(aiPlayer);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(aiPlayer));
 
 			// Act
 			bool actual = TurnBasedAgentHost.Instance.RunForCurrentPlayerIfNeeded();
@@ -381,7 +382,7 @@ namespace CivOne.UnitTests
 					ResearchSucceeded = researchResult.Success;
 				}
 
-				ICityView? city = session.Context.OwnCities.FirstOrDefault();
+				ICityView? city = session.Context.OwnCities.Count > 0 ? session.Context.OwnCities[0] : null;
 				if (city is not null && city.AvailableProductionNames.Count > 0)
 				{
 					SelectedProductionName = city.AvailableProductionNames[0];
@@ -406,7 +407,10 @@ namespace CivOne.UnitTests
 				Assert.True(result.Success);
 
 				EventReadResult eventsResult = session.Events.ReadSince(0);
-				Events.AddRange(eventsResult.Events);
+				for (int i = 0; i < eventsResult.Events.Count; i++)
+				{
+					Events.Add(eventsResult.Events[i]);
+				}
 
 				session.EndTurn();
 			}

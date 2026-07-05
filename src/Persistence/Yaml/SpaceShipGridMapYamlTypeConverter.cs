@@ -32,16 +32,23 @@ namespace CivOne.Persistence.Yaml
 
 		public object ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
 		{
-			var rows = (string[])rootDeserializer(typeof(string[]));
+			var rows = (string[]?)rootDeserializer(typeof(string[]));
+
+			if (rows == null || rows.Length == 0)
+			{
+				return new SpaceShipGridMap2D();
+			}
+
 			return new SpaceShipGridMap2D(rows);
 		}
 
-		public void WriteYaml(IEmitter emitter, object value, Type type, ObjectSerializer serializer)
+		public void WriteYaml(IEmitter emitter, object? value, Type type, ObjectSerializer serializer)
 		{
+			ArgumentNullException.ThrowIfNull(value);
+
 			if (value is not SpaceShipGridMap2D grid)
 			{
-				throw new InvalidOperationException(
-					$"WriteYaml expected a {nameof(SpaceShipGridMap2D)} but received {value?.GetType().FullName ?? "null"}.");
+				throw new ArgumentException($"WriteYaml expected a {nameof(SpaceShipGridMap2D)} but received {value.GetType().FullName}.");
 			}
 
 			serializer(grid.Rows, typeof(string[]));

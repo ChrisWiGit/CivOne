@@ -12,7 +12,7 @@ namespace CivOne.Persistence.Model
 		[Doc("The architectural style of this palace section.", nameof(AllPalaceStyles))]
 		public PalaceStyle Style { get; set; }
 
-		public static readonly PalaceStyle[] AllPalaceStyles = (PalaceStyle[])System.Enum.GetValues(typeof(PalaceStyle));
+		public static readonly PalaceStyle[] AllPalaceStyles = System.Enum.GetValues<PalaceStyle>();
 		
 		
 		[Doc("The build level of this palace section.", 0, 4)]

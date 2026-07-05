@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Persistence.Yaml;
 
 namespace CivOne.Agents
@@ -8,7 +9,7 @@ namespace CivOne.Agents
 	/// It uses delegates so each AI can decide how DTO state is captured and restored.
 	/// </summary>
 	/// <typeparam name="TDto">The DTO type used for memory serialization.</typeparam>
-	public sealed class AgentMemoryDtoDelegate<TDto> : IAgentMemory
+	public sealed class AgentMemoryDtoWrapper<TDto> : IAgentMemory
 		where TDto : class
 	{
 		private readonly Func<TDto> _snapshotDelegate;
@@ -32,7 +33,7 @@ namespace CivOne.Agents
 		/// When <see langword="true"/>, invalid YAML falls back to default DTO.
 		/// When <see langword="false"/>, deserialization exceptions are rethrown.
 		/// </param>
-		public AgentMemoryDtoDelegate(
+		public AgentMemoryDtoWrapper(
 			Func<TDto> snapshotDelegate,
 			Action<TDto> restoreDelegate,
 			Func<TDto> createDefaultDelegate,
@@ -48,6 +49,7 @@ namespace CivOne.Agents
 		/// Restores AI memory from YAML.
 		/// </summary>
 		/// <param name="yaml">Serialized YAML memory content.</param>
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Deserialization errors are intentionally treated as recoverable and replaced with default DTO state when fallback mode is enabled.")]
 		public void SetMemory(string yaml)
 		{
 			if (string.IsNullOrWhiteSpace(yaml))

@@ -40,7 +40,7 @@ namespace CivOne.UnitTests
 			EpicRanking = 0;
 			MilitaryPower = 0;
 			CivilizationScore = 0;
-			Government = null;
+			Government = null!;
 			RepublicDemocratic = false;
 			AnarchyDespotism = false;
 			MonarchyCommunist = false;
@@ -48,8 +48,11 @@ namespace CivOne.UnitTests
 			TaxesRate = 0;
 			ScienceRate = 0;
 			Science = 0;
-			Palace = null;
+			Palace = null!;
 			Cities = [];
+			SpaceShipGrid = new SpaceShipComponentType[0,0];
+			SpaceShipPopulation = 0;
+			SpaceShipLaunchYear = 0;
 		}
 		public ICivilization Civilization { get; set; }
 
@@ -73,7 +76,7 @@ namespace CivOne.UnitTests
 
 		public short Gold { get; set; }
 
-		public IAdvance CurrentResearch { get; set; }
+		public IAdvance? CurrentResearch { get; set; }
 
 		public int CityNamesSkipped { get; set; }
 
@@ -123,6 +126,8 @@ namespace CivOne.UnitTests
 		public SpaceShipComponentType[,] SpaceShipGrid { get; set; }
 		public ushort SpaceShipPopulation { get; set; }
 		public short SpaceShipLaunchYear { get; set; }
+
+		public ICity[] CitiesInterface => Cities?.ToArray() ?? [];
 
 		public bool HasAdvance<T>() where T : IAdvance
 		{

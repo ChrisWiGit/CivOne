@@ -16,7 +16,7 @@ namespace CivOne.UnitTests
     {
         // The public helper methods are pure calculations (value-in, value-out),
         // so no City/IGame setup is needed; null is safe here.
-        private readonly CityEconomyServiceImpl _service = new(null, null);
+        private readonly CityEconomyServiceImpl _service = new(null!, null!);
 
         [Theory]
         [InlineData(1, 5, 0)]
@@ -24,7 +24,7 @@ namespace CivOne.UnitTests
         [InlineData(1, 9, 0)]
         [InlineData(19, 5, 9)]
         [InlineData(19, 9, 17)]
-        public void CalculateTradeTaxes_TruncatesTowardsZero(int totalTrade, int taxesRate, short expectedTaxes)
+        public void CalculateTradeTaxesTruncatesTowardsZero(int totalTrade, int taxesRate, short expectedTaxes)
         {
             short taxes = _service.CalculateTradeTaxes(totalTrade, taxesRate);
 
@@ -32,35 +32,35 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void CalculateTradeLuxuries_ReturnsZero_WhenTaxesRateIsMax()
+        public void CalculateTradeLuxuriesReturnsZeroWhenTaxesRateIsMax()
         {
             short luxuries = _service.CalculateTradeLuxuries(20, 10, 10, 5);
             Assert.Equal(0, luxuries);
         }
 
         [Fact]
-        public void CalculateTradeScience_DoesNotGoNegative()
+        public void CalculateTradeScienceDoesNotGoNegative()
         {
             short science = _service.CalculateTradeScience(3, 2, 3);
             Assert.Equal(0, science);
         }
 
         [Fact]
-        public void CalculateLuxuries_AppliesBuildingAndEntertainerBonuses()
+        public void CalculateLuxuriesAppliesBuildingAndEntertainerBonuses()
         {
             short luxuries = _service.CalculateLuxuries(4, hasMarketPlace: true, hasBank: true, entertainerLuxuries: 3);
             Assert.Equal(12, luxuries);
         }
 
         [Fact]
-        public void CalculateTaxes_AppliesBuildingAndTaxmanBonuses()
+        public void CalculateTaxesAppliesBuildingAndTaxmanBonuses()
         {
             short taxes = _service.CalculateTaxes(4, hasMarketPlace: true, hasBank: true, taxmen: 2);
             Assert.Equal(13, taxes);
         }
 
         [Fact]
-        public void CalculateScience_AppliesScienceMultipliersInExpectedOrder()
+        public void CalculateScienceAppliesScienceMultipliersInExpectedOrder()
         {
             short science = _service.CalculateScience(
                 tradeScience: 10,
@@ -75,7 +75,7 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void CalculateScience_CapsAtShortMaxValue()
+        public void CalculateScienceCapsAtShortMaxValue()
         {
             short science = _service.CalculateScience(
                 tradeScience: 30000,
@@ -93,10 +93,11 @@ namespace CivOne.UnitTests
     public class CityEconomyServiceImplCalculateBreakdownTests : TestsBase
     {
         [Fact]
-        public void FoodTotal_Recomputes_WhenWorkedTileFoodChangesWithinSameTurn()
+        public void FoodTotalRecomputesWhenWorkedTileFoodChangesWithinSameTurn()
         {
             var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City city = Game.Instance.AddCity(playa, 0, unit.X, unit.Y);
+            City? city = Game.Instance.AddCity(playa, 0, unit.X, unit.Y);
+            Assert.NotNull(city);
             city.Size = 4;
             city.ResetResourceTiles();
             playa.Government = new Monarchy();
@@ -126,10 +127,11 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void ShieldTotal_Recomputes_WhenWorkedTileShieldChangesWithinSameTurn()
+        public void ShieldTotalRecomputesWhenWorkedTileShieldChangesWithinSameTurn()
         {
             var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-            City city = Game.Instance.AddCity(playa, 0, unit.X, unit.Y);
+            City? city = Game.Instance.AddCity(playa, 0, unit.X, unit.Y);
+            Assert.NotNull(city);
             city.Size = 4;
             city.ResetResourceTiles();
             playa.Government = new Monarchy();
@@ -164,18 +166,20 @@ namespace CivOne.UnitTests
             var field = typeof(City).GetField("_cachedShieldRawStateHash", BindingFlags.Instance | BindingFlags.NonPublic);
             Assert.NotNull(field);
 
-            object rawValue = field.GetValue(city);
+            object? rawValue = field.GetValue(city);
             Assert.NotNull(rawValue);
 
             return (ulong)rawValue;
         }
 
         [Fact]
-        public void CalculateBreakdown_IncludesTradingRoutesAndWonderRules()
+        public void CalculateBreakdownIncludesTradingRoutesAndWonderRules()
         {
             Player player = playa;
-            City city = Game.Instance.AddCity(player, 0, 40, 30);
-            City tradingCity = Game.Instance.AddCity(player, 1, 42, 30);
+            City? city = Game.Instance.AddCity(player, 0, 40, 30);
+            City? tradingCity = Game.Instance.AddCity(player, 1, 42, 30);
+            Assert.NotNull(city);
+            Assert.NotNull(tradingCity);
 
             city.AddTradingCity(tradingCity);
             city.AddBuilding(new MarketPlace());
@@ -201,8 +205,8 @@ namespace CivOne.UnitTests
             short expectedLuxuries = service.CalculateLuxuries(expectedTradeLuxuries, hasMarketPlace: true, hasBank: true, city.EntertainerLuxuries);
             short expectedTaxes = service.CalculateTaxes(expectedTradeTaxes, hasMarketPlace: true, hasBank: true, city.Taxmen);
 
-            bool hasSeti = city.Player.HasWonder<SETIProgram>();
-            bool hasNewton = !Game.Instance.WonderObsolete<IsaacNewtonsCollege>() && city.Player.HasWonder<IsaacNewtonsCollege>() && !hasSeti;
+            bool hasSeti = city.CityOwnerPlayer.HasWonder<SETIProgram>();
+            bool hasNewton = !Game.Instance.WonderObsolete<IsaacNewtonsCollege>() && city.CityOwnerPlayer.HasWonder<IsaacNewtonsCollege>() && !hasSeti;
             bool hasCopernicus = !Game.Instance.WonderObsolete<CopernicusObservatory>() && city.HasWonder<CopernicusObservatory>();
 
             short expectedScience = service.CalculateScience(

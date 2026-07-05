@@ -600,11 +600,16 @@ namespace CivOne.Screens.StartupWizard
 		}
 
 		/// <inheritdoc />
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
+			if (!disposing)
+			{
+				return;
+			}
+
 			_pageSnapshot?.Dispose();
 			_pageSnapshot = null;
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }

@@ -10,7 +10,6 @@
 using System;
 using System.Drawing;
 using System.Linq;
-using System.Net;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -19,16 +18,16 @@ using CivOne.Tiles;
 
 namespace CivOne.Screens.CityManagerPanels
 {
-	internal class CityMap : BaseScreen
+	internal class CityMap(City city, ICityManager cityManager) : BaseScreen(82, 82)
 	{
-		private readonly City _city;
+		private readonly City _city = city;
 
 		private bool _update = true;
 
-		public event EventHandler MapUpdate;
+		public event EventHandler? MapUpdate;
 
-		private Point? _selectedTile = null;
-		private int MAX_TILES = 5;
+		private Point? _selectedTile;
+		private readonly int MAX_TILES = 5;
 
 		private void DrawResources(ITile tile, int x, int y)
 		{
@@ -56,8 +55,8 @@ namespace CivOne.Screens.CityManagerPanels
 				else if (i >= food) icon = Icons.Shield;
 				else icon = Icons.Food;
 
-				int xx = (x + ((i % iconsPerLine) * iconWidth));
-				int yy = (y + (((i - (i % iconsPerLine)) / iconsPerLine) * 8));
+				int xx = x + (i % iconsPerLine * iconWidth);
+				int yy = y + ((i - (i % iconsPerLine)) / iconsPerLine * 8);
 
 				this.AddLayer(icon, xx, yy);
 			}
@@ -71,7 +70,7 @@ namespace CivOne.Screens.CityManagerPanels
 					.DrawRectangle(colour: 1);
 
 				ITile[,] tiles = _city.CityRadius;
-				this.AddLayer(tiles.ToBitmap(TileSettings.CityManager, Settings.RevealWorld ? null : Game.GetPlayer(_city.Owner)), 1, 1, dispose: true);
+				this.AddLayer(tiles.ToBitmap(TileSettings.CityManager, Settings.RevealWorld ? null : Game.GetPlayer(_city.CityOwnerPlayerIndex)), 1, 1, dispose: true);
 
 				for (int xx = 0; xx < MAX_TILES; xx++)
 					for (int yy = 0; yy < MAX_TILES; yy++)
@@ -117,7 +116,7 @@ namespace CivOne.Screens.CityManagerPanels
 
 			_city.SetResourceTile(_city.CityRadius[tileX, tileY]);
 			_update = true;
-			MapUpdate?.Invoke(this, null);
+			MapUpdate?.Invoke(this, EventArgs.Empty);
 			return true;
 		}
 
@@ -159,7 +158,7 @@ namespace CivOne.Screens.CityManagerPanels
 				case Key.Enter:
 				case Key.Space:
 					_city.SetResourceTile(_city.CityRadius[_selectedTile.Value.X, _selectedTile.Value.Y]);
-					MapUpdate?.Invoke(this, null);
+					MapUpdate?.Invoke(this, EventArgs.Empty);
 					_update = true;
 					return true;
 				case Key.Up:
@@ -181,6 +180,11 @@ namespace CivOne.Screens.CityManagerPanels
 
 		protected void MoveTile(int x, int y)
 		{
+			if (!_selectedTile.HasValue)
+			{
+				throw new InvalidCastException(nameof(_selectedTile));
+			}
+
 			ITile[,] tiles = _city.CityRadius;
 			do
 			{
@@ -202,13 +206,6 @@ namespace CivOne.Screens.CityManagerPanels
 			return new Point(newX, newY);
 		}
 
-
-		public CityMap(City city, ICityManager cityManager) : base(82, 82)
-		{
-			_city = city;
-			_cityManager = cityManager;
-		}
-		
-		private ICityManager _cityManager;
+		private readonly ICityManager _cityManager = cityManager;
 	}
 }

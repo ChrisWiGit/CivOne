@@ -64,12 +64,12 @@ namespace CivOne.Screens
 			texts[i++] = Resources.GetText(" " + title, 0, 15);
 			foreach (string item in items)
 				texts[i++] = Resources.GetText(" " + item, 0, 5);
-			return (texts.Select(t => t.Width).Max()) + 6;
+			return texts.Max(t => t.Width) + 6;
 		}
 		
-		private Menu CreateMenu(string menuId, int y, string title, MenuItemEventHandler<int> setChoice, params string[] menuTexts)
+		private Menu CreateMenu(string menuId, int y, string title, MenuItemEventAction<int> setChoice, params string[] menuTexts)
 		{
-			Menu menu = new Menu(menuId, Palette)
+			Menu menu = new(menuId, Palette)
 			{
 				Title = title,
 				X = 203,
@@ -148,7 +148,7 @@ namespace CivOne.Screens
 
 		private bool HasMenuById(string menuId)
 		{
-			return _menus.Any(x => x.Id == menuId);
+			return Menus.Any(x => x.Id == menuId);
 		}
 
 		private void SetMapSize(object sender, MenuItemEventArgs<int> args)
@@ -406,7 +406,7 @@ namespace CivOne.Screens
 				else
 				{
 					_closing = true;
-					foreach (IScreen menu in _menus)
+					foreach (IScreen menu in Menus)
 					{
 						this.AddLayer(menu);
 					}

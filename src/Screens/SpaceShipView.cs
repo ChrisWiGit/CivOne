@@ -37,7 +37,7 @@ namespace CivOne.Screens
 		private readonly Player _player;
 		private readonly bool _debug;
 		private readonly bool _viewOnly;
-		private bool _debugLaunch = false;
+		private bool _debugLaunch;
 		private ISpaceShipService _service;
 		private readonly ISpaceShipService _standardService;
 		private readonly ISpaceShipService _debugService;
@@ -166,7 +166,7 @@ namespace CivOne.Screens
 			int ox = OffsetX; int oy = OffsetY;
 
 			DrawBackground();
-			using IBitmap shipOverlay = new Picture(ScreenWidth, ScreenHeight, SpaceShipPalette);
+			using Picture shipOverlay = new(ScreenWidth, ScreenHeight, SpaceShipPalette);
 			DrawStarsBackground(shipOverlay, sceneTop, parallaxOffsets);
 			DrawShip(shipOverlay);
 
@@ -299,7 +299,7 @@ namespace CivOne.Screens
 				int cx = left + overlay.PixelX(GridCellSize);
 				int cy = top + overlay.PixelY(GridCellSize);
 
-				if (_sprites.TryGetPartSprite(overlay.SpriteType, out Picture sprite))
+				if (_sprites.TryGetPartSprite(overlay.SpriteType, out Picture? sprite))
 				{
 					target.AddLayer(sprite, cx, cy);
 				}
@@ -318,7 +318,7 @@ namespace CivOne.Screens
 			int cx = left + col * GridCellSize;
 			int cy = top + row * GridCellSize;
 
-			if (_sprites.TryGetPartSprite(cell, out Picture sprite))
+			if (_sprites.TryGetPartSprite(cell, out Picture? sprite))
 			{
 				target.AddLayer(sprite, cx, cy);
 			}
@@ -536,7 +536,7 @@ namespace CivOne.Screens
 			return true;
 		}
 
-		private string T(string key) => Translation.Translate(key);
+		private static string T(string key) => Translation.Translate(key);
 
 		/// <summary>
 		/// Handles the pending installation of a space ship part if specified.
@@ -572,8 +572,8 @@ namespace CivOne.Screens
 
 		private readonly Palette SpaceShipPalette;
 
-		public SpaceShipView(Player player = null, bool debug = false,
-				SpaceShipViewServices services = null,
+		public SpaceShipView(Player? player = null, bool debug = false,
+				SpaceShipViewServices? services = null,
 				SpaceShipComponentType pendingInstall = SpaceShipComponentType.Empty,
 				bool viewOnly = false) : base(MouseCursor.Pointer)
 		{
@@ -611,10 +611,15 @@ namespace CivOne.Screens
 			Refresh();
 		}
 
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
+			if (!disposing)
+			{
+				return;
+			}
+
 			SpaceShipPalette?.Dispose();
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }

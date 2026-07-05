@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne.Services.Translation
 {
@@ -12,12 +13,12 @@ namespace CivOne.Services.Translation
 		/// <summary>
 		/// Returns all valid language files found in the runtime storage directory.
 		/// </summary>
-		IReadOnlyList<TranslationLanguageInfo> GetAvailableLanguages(string storageDirectory, Action<string> log = null);
+		IReadOnlyList<TranslationLanguageInfo> GetAvailableLanguages(string storageDirectory, Action<string>? log = null);
 
 		/// <summary>
 		/// Tries to load translation entries from a language file.
 		/// </summary>
-		bool TryLoadTranslations(string filePath, out IReadOnlyDictionary<string, string> translations, out string error);
+		bool TryLoadTranslations(string filePath, out IReadOnlyDictionary<string, string>? translations, [NotNullWhen(false)] out string? errorMessage);
 
 		/// <summary>
 		/// Copies translation files from <paramref name="sourceDirectory"/> into <paramref name="targetDirectory"/>.
@@ -31,6 +32,6 @@ namespace CivOne.Services.Translation
 		/// <param name="targetDirectory">Destination directory. Will be created if it does not exist.</param>
 		/// <param name="log">Optional logger for progress and conflict warnings.</param>
 		/// <returns>Number of files successfully copied.</returns>
-		int SyncFiles(string sourceDirectory, string targetDirectory, Action<string> log = null);
+		int SyncFiles(string sourceDirectory, string targetDirectory, Action<string>? log = null);
 	}
 }

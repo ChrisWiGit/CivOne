@@ -11,11 +11,14 @@ namespace CivOne.Persistence.Model
 	using CivOne.Persistence.Game;
 	using CivOne.Persistence.Resolver;
 	using CivOne.Persistence.Mapper;
+	using System.Diagnostics.CodeAnalysis;
 
+#pragma warning disable CA1822 // Mark members as static
+	[SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "We want to use List<T> for simplicity and performance in our DTOs.")]
 	public class CityDtoMapper(
         ProductionDtoMapper productionMapper,
 		ICityDefinitionResolver cityDefinitionResolver,
-		IValueSanitizer valueSanitizer) : DtoMapper<CityDto, ICityMapper>
+		IValueSanitizer valueSanitizer) : IDtoMapper<CityDto, ICityMapper>
     {
         public ICityMapper FromDto(CityDto dto)
         {
@@ -28,7 +31,7 @@ namespace CivOne.Persistence.Model
             var restored = new RestorableCity
             {
                 Id = dto.Id,
-                Owner = dto.Owner,
+                CityOwnerPlayerIndex = dto.Owner,
                 Name = dto.Name ?? string.Empty,
                 Size = valueSanitizer.ClampToByte(dto.Size, nameof(CityDtoMapper), nameof(CityDto.Size)),
                 Food = valueSanitizer.ClampToInt32(dto.Food, nameof(CityDtoMapper), nameof(CityDto.Food), min: 0, max: 65535),
@@ -111,7 +114,7 @@ namespace CivOne.Persistence.Model
             return new CityDto
             {
                 Id = domain.Id,
-                Owner = domain.Owner,
+                Owner = domain.CityOwnerPlayerIndex,
                 Size = domain.Size,
                 Food = domain.Food,
                 Shields = domain.Shields,
@@ -124,8 +127,7 @@ namespace CivOne.Persistence.Model
                 ),
                 Name = domain.Name,
                 ContinentId = domain.ContinentId,
-                CurrentProduction = domain.CurrentProduction == null ? null : 
-                    productionMapper.ToDto(domain.CurrentProduction),
+                CurrentProduction = domain.CurrentProduction == null ? null : productionMapper.ToDto(domain.CurrentProduction),
 
                 Buildings = [.. domain.Buildings
                     .Select(b => b.Type)],
@@ -141,32 +143,32 @@ namespace CivOne.Persistence.Model
             };
         }
 
-        public List<CityStatusEnum> MapStatusFlags(ICityStatus status)
+        public List<CityStatus> MapStatusFlags(ICityStatus status)
         {
-            List<CityStatusEnum> flags = [];
+            List<CityStatus> flags = [];
 
-            if (status.IsRiot) flags.Add(CityStatusEnum.Riot);
-            if (status.IsCoastal) flags.Add(CityStatusEnum.Coastal);
-            if (status.CelebrationCancelled) flags.Add(CityStatusEnum.CelebrationCancelled);
-            if (status.HydroAvailable) flags.Add(CityStatusEnum.HydroAvailable);
-            if (status.AutoBuild) flags.Add(CityStatusEnum.AutoBuild);
-            if (status.TechStolen) flags.Add(CityStatusEnum.TechStolen);
-            if (status.CelebrationOrRapture) flags.Add(CityStatusEnum.CelebrationRapture);
-            if (status.BuildingSold) flags.Add(CityStatusEnum.ImprovementSold);
+            if (status.IsRiot) flags.Add(CityStatus.Riot);
+            if (status.IsCoastal) flags.Add(CityStatus.Coastal);
+            if (status.CelebrationCancelled) flags.Add(CityStatus.CelebrationCancelled);
+            if (status.HydroAvailable) flags.Add(CityStatus.HydroAvailable);
+            if (status.AutoBuild) flags.Add(CityStatus.AutoBuild);
+            if (status.TechStolen) flags.Add(CityStatus.TechStolen);
+            if (status.CelebrationOrRapture) flags.Add(CityStatus.CelebrationRapture);
+            if (status.BuildingSold) flags.Add(CityStatus.ImprovementSold);
 
             return flags;
         }
 
-        public void MapStatusFlags(ICityStatus status, List<CityStatusEnum> flags)
+        public void MapStatusFlags(ICityStatus status, List<CityStatus> flags)
         {
-            status.IsRiot = flags.Contains(CityStatusEnum.Riot);
-            status.IsCoastal = flags.Contains(CityStatusEnum.Coastal);
-            status.CelebrationCancelled = flags.Contains(CityStatusEnum.CelebrationCancelled);
-            status.HydroAvailable = flags.Contains(CityStatusEnum.HydroAvailable);
-            status.AutoBuild = flags.Contains(CityStatusEnum.AutoBuild);
-            status.TechStolen = flags.Contains(CityStatusEnum.TechStolen);
-            status.CelebrationOrRapture = flags.Contains(CityStatusEnum.CelebrationRapture);
-            status.BuildingSold = flags.Contains(CityStatusEnum.ImprovementSold);
+            status.IsRiot = flags.Contains(CityStatus.Riot);
+            status.IsCoastal = flags.Contains(CityStatus.Coastal);
+            status.CelebrationCancelled = flags.Contains(CityStatus.CelebrationCancelled);
+            status.HydroAvailable = flags.Contains(CityStatus.HydroAvailable);
+            status.AutoBuild = flags.Contains(CityStatus.AutoBuild);
+            status.TechStolen = flags.Contains(CityStatus.TechStolen);
+            status.CelebrationOrRapture = flags.Contains(CityStatus.CelebrationRapture);
+            status.BuildingSold = flags.Contains(CityStatus.ImprovementSold);
         }
 
         private class RestorableCity : ICityTradingCitiesWritable
@@ -176,25 +178,25 @@ namespace CivOne.Persistence.Model
             public byte Size { get; set; }
             public short Luxuries { get; set; }
             public int EntertainerLuxuries { get; set; }
-            public byte Owner { get; set; }
-            public string Name { get; set; }
-            public ITile[] ResourceTiles { get; set; }
-            public Citizen[] Specialists { get; set; }
+            public byte CityOwnerPlayerIndex { get; set; }
+            public string Name { get; set; } = string.Empty;
+            public ITile[] ResourceTiles { get; set; } = [];
+            public Citizen[] Specialists { get; set; } = [];
             public int Shields { get; set; }
             public int Food { get; set; }
             public int ContinentId { get; set; }
-            public IPlayer PlayerIntf { get; set; }
+            public IPlayer PlayerIntf { get; set; } = null!;
             public int Entertainers { get; set; }
             public int Scientists { get; set; }
             public int Taxmen { get; set; }
-            public IProduction CurrentProduction { get; set; }
-            public IBuilding[] Buildings { get; set; }
-            public IWonder[] Wonders { get; set; }
+            public IProduction? CurrentProduction { get; set; } 
+            public IBuilding[] Buildings { get; set; } = [];
+            public IWonder[] Wonders { get; set; } = [];
             public byte Status { get; set; }
             public bool WasInDisorder { get; set; }
-            public ICity[] TradingCities { get; set; }
-            public uint[] VisibleSizes { get; set; }
-            public ITile Tile { get; set; }
+            public ICity[] TradingCities { get; set; } = [];
+            public uint[] VisibleSizes { get; set; } = [];
+            public ITile Tile { get; set; } = null!;
             public bool IsRiot { get; set; }
             public bool IsCoastal { get; set; }
             public bool CelebrationCancelled { get; set; }

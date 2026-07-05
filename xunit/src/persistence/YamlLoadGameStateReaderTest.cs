@@ -13,7 +13,7 @@ namespace CivOne.UnitTests.Persistence
 	public class YamlLoadGameStateReaderTest
 	{
 		[Fact]
-		public void GameStateDtoYamlRead_MapsCoreSections()
+		public void GameStateDtoYamlReadMapsCoreSections()
 		{
 			// Arrange
 			const string yaml =
@@ -66,7 +66,7 @@ namespace CivOne.UnitTests.Persistence
 		}
 
 		[Fact]
-		public void GameStateDtoYamlRead_PreservesNegativeAdvanceSentinel()
+		public void GameStateDtoYamlReadPreservesNegativeAdvanceSentinel()
 		{
 			const string yaml =
 				"Players:\n" +
@@ -92,11 +92,11 @@ namespace CivOne.UnitTests.Persistence
 		private readonly IValueSanitizer _sanitizer = new ValueSanitizer(new TestLogger());
 
 		[Fact]
-		public void FromDto_MapsPlayersUnitsCitiesAndMapTiles()
+		public void FromDtoMapsPlayersUnitsCitiesAndMapTiles()
 		{
 			// Arrange
 			var dto = YamlLoadGameStateReaderTestData.BuildSampleGameStateDto();
-			Player.Game = null;
+			Player.Game = null!;
 			var deps = YamlLoadMapperDependenciesFactory.Create(_sanitizer);
 			var mapper = new GameStateDtoMapper(deps.PlayerMapper, deps.UnitMapper, deps.MapMapper, deps.GlobalWarmingMapper, deps.Sanitizer);
 
@@ -119,11 +119,11 @@ namespace CivOne.UnitTests.Persistence
 		}
 
 		[Fact]
-		public void FromDto_TransfersHutAndLandValue()
+		public void FromDtoTransfersHutAndLandValue()
 		{
 			// Arrange
 			var dto = YamlLoadGameStateReaderTestData.BuildSampleGameStateDto();
-			Player.Game = null;
+			Player.Game = null!;
 			var deps = YamlLoadMapperDependenciesFactory.Create(_sanitizer);
 			var mapper = new GameStateDtoMapper(deps.PlayerMapper, deps.UnitMapper, deps.MapMapper, deps.GlobalWarmingMapper, deps.Sanitizer);
 
@@ -137,19 +137,19 @@ namespace CivOne.UnitTests.Persistence
 		}
 
 		[Fact]
-		public void FromDto_PreservesCityStatusFlags()
+		public void FromDtoPreservesCityStatusFlags()
 		{
 			// Arrange
 			var dto = YamlLoadGameStateReaderTestData.BuildSampleGameStateDto();
 			dto.Players[0].Cities[0].Status =
 			[
-				CityStatusEnum.Riot,
-				CityStatusEnum.CelebrationCancelled,
-				CityStatusEnum.AutoBuild,
-				CityStatusEnum.ImprovementSold
+				CityStatus.Riot,
+				CityStatus.CelebrationCancelled,
+				CityStatus.AutoBuild,
+				CityStatus.ImprovementSold
 			];
 
-			Player.Game = null;
+			Player.Game = null!;
 			var deps = YamlLoadMapperDependenciesFactory.Create(_sanitizer);
 			var mapper = new GameStateDtoMapper(deps.PlayerMapper, deps.UnitMapper, deps.MapMapper, deps.GlobalWarmingMapper, deps.Sanitizer);
 
@@ -165,10 +165,10 @@ namespace CivOne.UnitTests.Persistence
 			Assert.True(city.BuildingSold);
 
 			var roundTripStatus = roundTrip.Players[0].Cities[0].Status;
-			Assert.Contains(CityStatusEnum.Riot, roundTripStatus);
-			Assert.Contains(CityStatusEnum.CelebrationCancelled, roundTripStatus);
-			Assert.Contains(CityStatusEnum.AutoBuild, roundTripStatus);
-			Assert.Contains(CityStatusEnum.ImprovementSold, roundTripStatus);
+			Assert.Contains(CityStatus.Riot, roundTripStatus);
+			Assert.Contains(CityStatus.CelebrationCancelled, roundTripStatus);
+			Assert.Contains(CityStatus.AutoBuild, roundTripStatus);
+			Assert.Contains(CityStatus.ImprovementSold, roundTripStatus);
 		}
 
 		private sealed class TestLogger : ILogger
@@ -313,7 +313,7 @@ namespace CivOne.UnitTests.Persistence
 				GameRandomSeed = 1234,
 				AnthologyTurn = 75,
 				Map = map,
-				GameOptions = [GameOptionEnum.EndOfTurn, GameOptionEnum.Sound]
+				GameOptions = [GameSetting.EndOfTurn, GameSetting.Sound]
 			};
 		}
 

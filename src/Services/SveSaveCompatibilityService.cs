@@ -447,9 +447,9 @@ namespace CivOne.Services
 			// Validate total units per player: normal units (max 128) + fortified units (max 2 per city).
 			for (byte player = 0; player < SveMaxPlayers; player++)
 			{
-				var normalUnitsCount = unitsByOwner.ContainsKey(player) ? unitsByOwner[player] : 0;
-				var fortifiedUnitsCount = fortifiedUnitsByOwner.ContainsKey(player) ? fortifiedUnitsByOwner[player] : 0;
-				var citiesCount = citiesByOwner.ContainsKey(player) ? citiesByOwner[player] : 0;
+				var normalUnitsCount = unitsByOwner.TryGetValue(player, out int value) ? value : 0;
+				var fortifiedUnitsCount = fortifiedUnitsByOwner.TryGetValue(player, out int value1) ? value1 : 0;
+				var citiesCount = citiesByOwner.TryGetValue(player, out int value2) ? value2 : 0;
 				var maxTotalUnitsForPlayer = SveMaxUnitsPerPlayer + (citiesCount * SveMaxFortifiedUnitsPerCity);
 				var totalUnitsCount = normalUnitsCount + fortifiedUnitsCount;
 

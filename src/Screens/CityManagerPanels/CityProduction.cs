@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Events;
@@ -19,7 +20,7 @@ using CivOne.Wonders;
 
 namespace CivOne.Screens.CityManagerPanels
 {
-	internal class CityProduction : BaseScreen
+	internal class CityProduction(City city, bool viewCity) : BaseScreen(90, 99)
 	{
 		private const int SHIELD_HEIGHT = 8;
 		private const int BUTTON_TOP = 7;
@@ -29,20 +30,20 @@ namespace CivOne.Screens.CityManagerPanels
 		private const int BUY_BUTTON_X = 50;
 		private const int BUY_BUTTON_RIGHT_MARGIN = 1;
 
-		private readonly City _city;
-		private readonly bool _viewCity;
+		private readonly City _city = city;
+		private readonly bool _viewCity = viewCity;
 		
 		private int _shieldPrice, _totalShields, _shieldsPerLine;
 		private double _shieldWidth;
 
 		private int BuyButtonWidth => Math.Max(3, Width - BUY_BUTTON_X - BUY_BUTTON_RIGHT_MARGIN);
 
-		private void ForceUpdate(object sender, EventArgs args)
+		private void ForceUpdate(object? _, EventArgs __)
 		{
 			Refresh();
 		}
 
-		private void AcceptBuy(object sender, EventArgs args)
+		private void AcceptBuy(object? _, EventArgs __)
 		{
 			_city.Buy();
 			Refresh();
@@ -53,7 +54,7 @@ namespace CivOne.Screens.CityManagerPanels
 			for (int i = 0; i < _city.Shields; i++)
 			{
 				double x = 1 + (_shieldWidth * (i % _shieldsPerLine));
-				int y = 17 + (((i - (i % _shieldsPerLine)) / _shieldsPerLine) * SHIELD_HEIGHT);
+				int y = 17 + ((i - (i % _shieldsPerLine)) / _shieldsPerLine * SHIELD_HEIGHT);
 				this.AddLayer(Icons.Shield, (int)Math.Floor(x), y);
 			}
 		}
@@ -62,13 +63,13 @@ namespace CivOne.Screens.CityManagerPanels
 		{
 			get
 			{
-				if (_city.CurrentProduction is IBuilding)
+				if (_city.CurrentProduction is IBuilding production)
 				{
-					return _city.HasBuilding(_city.CurrentProduction as IBuilding);
+					return _city.HasBuilding(production);
 				}
-				if (_city.CurrentProduction is IWonder)
+				if (_city.CurrentProduction is IWonder wonder)
 				{
-					return Game.WonderBuilt(_city.CurrentProduction as IWonder);
+					return Game.WonderBuilt(wonder);
 				}
 				return false;
 			}
@@ -81,7 +82,7 @@ namespace CivOne.Screens.CityManagerPanels
 				int maxShieldDisplayWidth = Width - 2;
 
 				_shieldsPerLine = 10;
-				_shieldPrice = (int)_city.CurrentProduction.Price * 10;
+				_shieldPrice = _city.CurrentProduction.Price * 10;
 				_totalShields = _shieldPrice;
 				if (_city.Shields > _totalShields) _totalShields = _city.Shields;
 				
@@ -94,7 +95,7 @@ namespace CivOne.Screens.CityManagerPanels
 
 				this.Tile(Pattern.PanelBlue)
 					.DrawRectangle(0, 0, Width, Height, 1)
-					.FillRectangle(1, 1, (Width - 2), 16, 1);
+					.FillRectangle(1, 1, Width - 2, 16, 1);
 				bool blink = ProductionInvalid && (gameTick % 4 > 1);
 				if (Common.TopScreen is not CityManager) blink = ProductionInvalid;
 				if (!_viewCity)
@@ -105,17 +106,16 @@ namespace CivOne.Screens.CityManagerPanels
 
 				DrawShields();
 
-				if (_city.CurrentProduction is IUnit)
+				if (_city.CurrentProduction is IUnit unit)
 				{
-					IUnit unit = _city.CurrentProduction as IUnit;
-					this.AddLayer(unit.ToBitmap(_city.Owner), 33, 0);
+					this.AddLayer(unit.ToBitmap(_city.CityOwnerPlayerIndex), 33, 0);
 				}
-				else
+				else if (_city.CurrentProduction is ICivilopedia production)
 				{
-					string name = (_city.CurrentProduction as ICivilopedia).TranslatedName;
+					string name = production.TranslatedName;
 					while (Resources.GetTextSize(1, name).Width > Width - 2)
 					{
-						name = $"{name.Substring(0, name.Length - 2)}.";
+						name = $"{name[..^2]}.";
 					}
 					this.DrawText(name, 1, 15, Width / 2, 1, TextAlign.Center);
 				}
@@ -130,6 +130,7 @@ namespace CivOne.Screens.CityManagerPanels
 			Refresh();
 		}
 
+		[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Screen ownership is transferred to Common.AddScreen and released via Common.DestroyScreen.")]
 		private bool Change()
 		{
 			_city.AutoBuild = false;
@@ -141,9 +142,13 @@ namespace CivOne.Screens.CityManagerPanels
 			return true;
 		}
 
+		[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Screen ownership is transferred to Common.AddScreen and released via Common.DestroyScreen.")]
 		private bool Buy()
 		{
-			string name = (_city.CurrentProduction as ICivilopedia).TranslatedName;
+			if (_city.CurrentProduction is not ICivilopedia currentProduction)
+				return true;
+
+			string name = currentProduction.TranslatedName;
 			short playerGold = Game.CurrentPlayer.Gold;
 			short buyPrice = _city.BuyPrice;
 			if (_city.IsRiot && _city.CurrentProduction is IBuilding)
@@ -165,7 +170,7 @@ namespace CivOne.Screens.CityManagerPanels
 				return true;
 			}
 
-			ConfirmBuy confirmBuy = new ConfirmBuy(name, buyPrice, playerGold);
+			ConfirmBuy confirmBuy = new(name, buyPrice, playerGold);
 			confirmBuy.Buy += AcceptBuy;
 			Common.AddScreen(confirmBuy);
 			return true;
@@ -207,12 +212,6 @@ namespace CivOne.Screens.CityManagerPanels
 			if (args.X >= CHANGE_BUTTON_X && args.X < CHANGE_BUTTON_X + CHANGE_BUTTON_WIDTH) return Change();
 			if (args.X >= BUY_BUTTON_X && args.X < BUY_BUTTON_X + BuyButtonWidth) return Buy();
 			return false;
-		}
-
-		public CityProduction(City city, bool viewCity) : base(90, 99)
-		{
-			_city = city;
-			_viewCity = viewCity;
 		}
 	}
 }

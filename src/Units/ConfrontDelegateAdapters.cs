@@ -8,6 +8,6 @@ namespace CivOne.Units;
 /// </summary>
 internal sealed class ConfrontGameServicesAdapter : IConfrontGameServices
 {
-	public Player GetPlayer(byte owner) => Game.Instance.GetPlayer(owner);
+	public Player? GetPlayer(byte owner) => Game.Instance.GetPlayer(owner);
 	public bool IsAtWar(Player playerA, Player playerB) => playerA.IsAtWar(playerB);
 }

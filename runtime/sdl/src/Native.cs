@@ -16,7 +16,7 @@ using CivOne.Enums;
 
 namespace CivOne
 {
-	internal partial class Native
+	internal sealed partial class Native
 	{
 		private static IntPtr _handle = IntPtr.Zero;
 
@@ -44,7 +44,7 @@ namespace CivOne
 			}
 		}
 		
-		internal static string FileChooser(
+		internal static string? FileChooser(
 			bool save,
 			string title,
 			string initialFileName,
@@ -53,7 +53,7 @@ namespace CivOne
 			switch (Platform)
 			{
 				case Platform.Windows:
-					return Native.Win32FileDialog(
+					return Win32FileDialog(
 						SDL.GetSDLWindowHandle(_handle),
 						save,
 						title,
@@ -106,7 +106,7 @@ namespace CivOne
 		switch (Platform)
 		{
 			case Platform.Windows:
-				ShowCursor(true);
+				_ = ShowCursor(true);
 				break;
 		}
 	}
@@ -116,7 +116,7 @@ namespace CivOne
 		switch (Platform)
 		{
 			case Platform.Windows:
-				ShowCursor(false);
+				_ = ShowCursor(false);
 				break;
 		}
 	}
@@ -126,9 +126,10 @@ namespace CivOne
 			switch (Platform)
 			{
 				case Platform.Windows:
+					if (Resources.BinPath == null) return false;
 #if DEBUG
 					string path = "dotnet";
-					arguments = new [] { $@"""{Path.Combine(Resources.BinPath, "CivOne.SDL.dll")}""" }.Union(arguments).ToArray();
+					arguments = [.. new [] { $@"""{Path.Combine(Resources.BinPath, "CivOne.SDL.dll")}""" }.Union(arguments)];
 #else
 					if (!File.Exists(Path.Combine(Resources.BinPath, "CivOne.SDL.exe"))) return false;
 					string path = Path.Combine(Resources.BinPath, "CivOne.SDL.exe");

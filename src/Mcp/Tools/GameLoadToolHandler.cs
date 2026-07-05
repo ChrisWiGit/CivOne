@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -47,12 +48,12 @@ namespace CivOne.Mcp.Tools
 
 		public McpResponse Handle(McpRequest request)
 		{
-			if (request == null) throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 
-			if (!ValidateParamsObject(request, out McpResponse validationError))
-				return validationError;
+			if (!ValidateParamsObject(request, out McpResponse? validationError))
+				return validationError!;
 
-			TryReadOptionalFileName(request.Params, out string fileName);
+			TryReadOptionalFileName(request.Params, out string? fileName);
 			TryReadOptionalSaveGuid(request.Params, out Guid saveGuid);
 
 			if (string.IsNullOrWhiteSpace(fileName) && saveGuid == Guid.Empty)
@@ -65,33 +66,33 @@ namespace CivOne.Mcp.Tools
 			if (!Directory.Exists(saveFolder))
 				return JsonResponse(request.Id, BuildErrorPayload("SAVE_FOLDER_NOT_FOUND", "Configured MCP saves folder does not exist.", "saveFolder"));
 
-			string fullPath;
+			string? fullPath = null;
 			if (saveGuid != Guid.Empty)
 			{
-				if (!TryFindByGuid(saveFolder, saveGuid, out fullPath, out string resolvedFileName))
+				if (!TryFindByGuid(saveFolder, saveGuid, out fullPath, out string? resolvedFileName))
 					return JsonResponse(request.Id, BuildErrorPayload("FILE_NOT_FOUND", $"No .cos file with saveGuid '{saveGuid}' found in saves folder.", "saveGuid"));
-				fileName = resolvedFileName;
+				fileName = resolvedFileName!;
 			}
 			else
 			{
-				if (!TryResolveSafeCosPath(saveFolder, fileName, out fullPath, out string pathError))
+				if (!TryResolveSafeCosPath(saveFolder, fileName!, out fullPath, out string? pathError))
 					return JsonResponse(request.Id, BuildErrorPayload("INVALID_FILE_NAME", pathError, "fileName"));
 
 				if (!File.Exists(fullPath))
 					return JsonResponse(request.Id, BuildErrorPayload("FILE_NOT_FOUND", "Save file not found.", "fileName"));
 			}
 
-			if (!CosSaveFileInspector.TryInspect(fullPath, out CosSaveFileInspection inspection))
+			if (!CosSaveFileInspector.TryInspect(fullPath, out CosSaveFileInspection? inspection))
 				return JsonResponse(request.Id, BuildErrorPayload("INVALID_SAVE_FILE", "Save file could not be parsed as a valid .cos save.", "fileName"));
 
-			bool loaded = Game.LoadYamlGame(fullPath);
+			bool loaded = Game.LoadYamlGame(fullPath!);
 			if (!loaded)
 				return JsonResponse(request.Id, BuildErrorPayload("LOAD_FAILED", "Game.LoadYamlGame returned false.", "fileName"));
 
 			Common.DestroyScreen(Common.Screens.FirstOrDefault(s => s is GamePlay));
 			Common.AddScreen(new GamePlay());
 
-			Guid effectiveSaveGuid = Game.Started ? Game.Instance.SaveMetaData.SaveGuid : inspection.SaveGuid ?? Guid.Empty;
+			Guid effectiveSaveGuid = Game.Started ? Game.Instance.SaveMetaData.SaveGuid : inspection!.SaveGuid ?? Guid.Empty;
 			if (effectiveSaveGuid == Guid.Empty)
 				effectiveSaveGuid = Guid.NewGuid();
 
@@ -99,7 +100,7 @@ namespace CivOne.Mcp.Tools
 			{
 				fileName,
 				saveGuid = effectiveSaveGuid,
-				displayName = string.IsNullOrWhiteSpace(inspection.Meta?.DisplayName)
+				displayName = string.IsNullOrWhiteSpace(inspection!.Meta?.DisplayName)
 					? Path.GetFileNameWithoutExtension(fileName)
 					: inspection.Meta.DisplayName,
 				gameTurn = inspection.GameState?.GameTurn,
@@ -115,23 +116,23 @@ namespace CivOne.Mcp.Tools
 
 		private string ResolveSaveFolder()
 		{
-			string configuredFolder = _runtime.Settings.Get<string>("mcp-saves");
+			string? configuredFolder = _runtime.Settings.Get<string>("mcp-saves");
 			if (string.IsNullOrWhiteSpace(configuredFolder))
 				configuredFolder = Settings.Instance.CosSavesDirectory;
 
 			return Path.GetFullPath(configuredFolder);
 		}
 
-		private static bool TryFindByGuid(string saveFolder, Guid saveGuid, out string fullPath, out string fileName)
+		private static bool TryFindByGuid(string saveFolder, Guid saveGuid, out string? fullPath, out string? fileName)
 		{
 			fullPath = null;
 			fileName = null;
 
 			foreach (string candidate in Directory.EnumerateFiles(saveFolder, "*.cos", SearchOption.TopDirectoryOnly))
 			{
-				if (!CosSaveFileInspector.TryInspect(candidate, out CosSaveFileInspection inspection))
+				if (!CosSaveFileInspector.TryInspect(candidate, out CosSaveFileInspection? inspection))
 					continue;
-				if (inspection.SaveGuid.HasValue && inspection.SaveGuid.Value == saveGuid)
+				if (inspection!.SaveGuid.HasValue && inspection.SaveGuid.Value == saveGuid)
 				{
 					fullPath = candidate;
 					fileName = Path.GetFileName(candidate);
@@ -141,7 +142,7 @@ namespace CivOne.Mcp.Tools
 			return false;
 		}
 
-		private static bool TryResolveSafeCosPath(string saveFolder, string fileName, out string fullPath, out string error)
+		private static bool TryResolveSafeCosPath(string saveFolder, string fileName, out string? fullPath, [NotNullWhen(false)] out string? error)
 		{
 			fullPath = null;
 			error = null;
@@ -182,10 +183,10 @@ namespace CivOne.Mcp.Tools
 
 		private static bool ContainsPathSeparators(string fileName)
 		{
-			return fileName.IndexOf('/') >= 0 || fileName.IndexOf('\\') >= 0;
+			return fileName.Contains('/', StringComparison.Ordinal) || fileName.Contains('\\', StringComparison.Ordinal);
 		}
 
-		private McpResponse JsonResponse(object id, object payload)
+		private McpResponse JsonResponse(object? id, object payload)
 			=> McpJsonToolResponse.JsonResponse(id, payload, _jsonWriter, _maxJsonChars);
 
 		private object BuildSuccessPayload(object data)
@@ -194,7 +195,7 @@ namespace CivOne.Mcp.Tools
 			return new
 			{
 				ok = true,
-				path = (string)null,
+				path = (string)null!,
 				truncated = false,
 				maxChars = _maxJsonChars,
 				returnedChars = payloadJson.Length,
@@ -202,12 +203,12 @@ namespace CivOne.Mcp.Tools
 			};
 		}
 
-		private object BuildErrorPayload(string code, string message, string failedSegment)
+		private object BuildErrorPayload(string code, string message, string? failedSegment)
 		{
 			return new
 			{
 				ok = false,
-				path = (string)null,
+				path = (string)null!,
 				truncated = false,
 				maxChars = _maxJsonChars,
 				returnedChars = 0,
@@ -215,13 +216,13 @@ namespace CivOne.Mcp.Tools
 				{
 					code,
 					message,
-					path = (string)null,
+					path = (string)null!,
 					failedSegment
 				}
 			};
 		}
 
-		private static bool ValidateParamsObject(McpRequest request, out McpResponse response)
+		private static bool ValidateParamsObject(McpRequest request, [NotNullWhen(false)] out McpResponse? response)
 		{
 			response = null;
 			if (request.Params.ValueKind == JsonValueKind.Undefined || request.Params.ValueKind == JsonValueKind.Null)
@@ -238,7 +239,7 @@ namespace CivOne.Mcp.Tools
 			return false;
 		}
 
-		private static void TryReadOptionalFileName(JsonElement value, out string fileName)
+		private static void TryReadOptionalFileName(JsonElement value, out string? fileName)
 		{
 			fileName = null;
 			if (value.ValueKind != JsonValueKind.Object) return;
@@ -257,7 +258,7 @@ namespace CivOne.Mcp.Tools
 		}
 
 		[Obsolete("Kept for reference only")]
-		private static bool TryReadRequiredFileName(JsonElement value, out string fileName, out string error)
+		private static bool TryReadRequiredFileName(JsonElement value, out string? fileName, [NotNullWhen(false)] out string? error)
 		{
 			fileName = null;
 			error = null;

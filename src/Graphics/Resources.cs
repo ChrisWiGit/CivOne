@@ -10,6 +10,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
 using System.Text;
@@ -21,6 +23,7 @@ using CivOne.Tiles;
 
 namespace CivOne.Graphics
 {
+	[SuppressMessage("Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces", Justification = "Resources is the main class for accessing game resources, and it is appropriate to have the same name as the namespace.")]
 	public class Resources : IResourceFileBitmapProvider, IResourceFontHeightProvider
 	{
 		private static Settings Settings => Settings.Instance;
@@ -34,7 +37,7 @@ namespace CivOne.Graphics
 		private readonly ConcurrentDictionary<string, bool> _existsCache = new(StringComparer.OrdinalIgnoreCase);
 		private readonly IFont _defaultFont = new DefaultFont();
 		private readonly List<IFont> _fonts = [];
-		private readonly PalaceResourcesDelegate _palaceResources;
+		private readonly PalaceResourcesWrapper _palaceResources;
 		internal void ClearTextCache() => _textCache.Clear();
 		
 		/// <summary>
@@ -51,7 +54,7 @@ namespace CivOne.Graphics
 		private void LoadFonts()
 		{
 			byte[] file;
-			string filename = FileSystem.FindFileIgnoreCase(Settings.DataDirectory, "FONTS.CV");
+			string? filename = FileSystem.FindFileIgnoreCase(Settings.DataDirectory, "FONTS.CV");
 			if (filename == null)
 			{
 				Log("Font file not found, fallback to default font");
@@ -108,13 +111,13 @@ namespace CivOne.Graphics
 		public bool ValidCharacter(int fontId, char c)
 		{
 			byte asciiChar = (byte)c;
-			return (asciiChar >= Font(fontId).FirstChar && asciiChar <= Font(fontId).LastChar);
+			return asciiChar >= Font(fontId).FirstChar && asciiChar <= Font(fontId).LastChar;
 		}
 		
 		public Size GetTextSize(int font, string text)
 		{
 			int width = 0, height = 0;
-			foreach (char c in text)
+			foreach (char c in text ?? string.Empty)
 			{
 				Size size = GetLetterSize(font, c);
 				width += size.Width + 1;
@@ -182,7 +185,7 @@ namespace CivOne.Graphics
 		private Bytemap GetLetter(byte colour, int font, char letter)
 		{
 			var key = (colour, font, letter);
-			if (_textCache.TryGetValue(key, out Bytemap cached))
+			if (_textCache.TryGetValue(key, out Bytemap? cached))
 				return cached;
 			return _textCache.GetOrAdd(key, k => Font(k.Font).GetLetter(k.Letter, k.Colour));
 		}
@@ -208,6 +211,7 @@ namespace CivOne.Graphics
 		private const int CivilopediaFont = 6;
 		private const int CivilopediaLineWidth = 294;
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to load Civilopedia text does not crash the application, and that any exceptions are logged appropriately.")]
 		internal string[] GetCivilopediaText(string name)
 		{
 			try
@@ -271,7 +275,7 @@ namespace CivOne.Graphics
 			current.Clear().Append(word);
 		}
 		
-		private static Picture _worldMapTiles;
+		private static Picture? _worldMapTiles;
 		public static Picture WorldMapTiles
 		{
 			get
@@ -286,20 +290,37 @@ namespace CivOne.Graphics
 			}
 		}
 
+		/// <summary>
+		/// Gets a picture by resource filename.
+		/// </summary>
+		/// <param name="filename">
+		/// The resource filename.
+		/// </param>
+		/// <returns>
+		/// A new <see cref="Picture"/> instance containing the requested bitmap data.
+		/// </returns>
+		/// <remarks>
+		/// This indexer does not return the internal cache instance.
+		/// Even on cache hits, it returns a newly constructed copy.
+		/// Callers own the returned instance and may dispose it safely.
+		/// </remarks>
 		public Picture this[string filename]
 		{
 			get
 			{
-				string key = filename.ToUpper();
-				if (_cache.TryGetValue(key, out Picture cached))
+				ArgumentNullException.ThrowIfNull(filename);
+
+				string key = filename.ToUpperInvariant();
+				if (_cache.TryGetValue(key, out Picture? cached))
 				{
 					return new Picture(cached.Bitmap, cached.Palette);
 				}
 
 				Picture output;
-				PicFile picFile = new PicFile(filename);
+				using PicFile picFile = new(filename);
 				if ((Settings.GraphicsMode == GraphicsMode.Graphics256 && picFile.GetPicture256 != null) || picFile.GetPicture16 == null)
 				{
+					Debug.Assert(picFile.GetPicture256 != null, $"Expected 256-color version of {filename} to be available.");
 					output = new Picture(picFile.GetPicture256, picFile.GetPalette256);
 				}
 				else
@@ -321,21 +342,25 @@ namespace CivOne.Graphics
 		public Picture GetPalace(PalaceStyle style, PalacePart part, int level)
 			=> _palaceResources.GetPalacePart(style, part, level);
 		
-		private static Resources _instance;
+		private static Resources? _instance;
 		public static Resources Instance
 		{
 			get
 			{
-				if (_instance == null)
-				{
-					_instance = new Resources();
-				}
+				_instance ??= new Resources();
 				return _instance;
 			}
 		}
 
 		public static void ClearInstance()
 		{
+			_instance?._palaceResources.ClearCache();
+			_instance?._cache.Clear();
+			_instance?._textCache.Clear();
+			_instance?._fonts.Clear();
+			_instance?.ClearExistsCache();
+			_instance?.ClearTextCache();
+			
 			_instance = null;
 			_worldMapTiles = null;
 			PicFile.ClearCache();
@@ -345,7 +370,7 @@ namespace CivOne.Graphics
 		
 		private Resources()
 		{
-			_palaceResources = new PalaceResourcesDelegate(name => this[name]);
+			_palaceResources = new PalaceResourcesWrapper(name => this[name]);
 			if (!RuntimeHandler.Runtime.Settings.Free) LoadFonts();
 		}
 	}

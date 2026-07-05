@@ -5,7 +5,7 @@ namespace CivOne.UnitTests
 	public class PalaceDataTests
 	{
 		[Fact]
-		public void IsSlotUnlocked_InitialState_UnlocksCenterAndAdjacentWings()
+		public void IsSlotUnlockedInitialStateUnlocksCenterAndAdjacentWings()
 		{
 			var palaceData = new PalaceData();
 
@@ -17,7 +17,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void IsSlotUnlocked_WhenAdjacentWingBuilt_UnlocksNextOuterSlot()
+		public void IsSlotUnlockedWhenAdjacentWingBuiltUnlocksNextOuterSlot()
 		{
 			var palaceData = new PalaceData();
 

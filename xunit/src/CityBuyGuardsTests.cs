@@ -10,16 +10,20 @@ namespace CivOne.UnitTests
 	{
 		private City CreateCityForHuman()
 		{
-			Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
 			var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
-			return Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+			City? result = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+
+			Assert.NotNull(result);
+			return result;
 		}
 
 		[Fact]
-		public void Buy_WhenBuyPriceIsNonPositive_ReturnsFalseAndKeepsGold()
+		public void BuyWhenBuyPriceIsNonPositiveReturnsFalseAndKeepsGold()
 		{
 			// Arrange
 			City city = CreateCityForHuman();
+			
 			var production = new Barracks();
 			city.SetProduction(production);
 			city.Shields = (int)production.Price * 10 + 1;
@@ -35,7 +39,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Buy_WhenCityInRiotAndProductionIsBuilding_ReturnsFalseAndKeepsGold()
+		public void BuyWhenCityInRiotAndProductionIsBuildingReturnsFalseAndKeepsGold()
 		{
 			// Arrange
 			City city = CreateCityForHuman();
@@ -53,7 +57,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void Buy_WhenCityInRiotAndProductionIsUnit_AllowsBuying()
+		public void BuyWhenCityInRiotAndProductionIsUnitAllowsBuying()
 		{
 			// Arrange
 			City city = CreateCityForHuman();

@@ -33,44 +33,44 @@ namespace CivOne.Units
 					case Settlers settlers:
 						if (settlers.order == Enums.Order.Road)
 						{
-							return Unit.Letter(settlers.Type, 'R', colour).Bitmap;
+							return Unit.Letter(settlers.Type, 'R', colour).Bitmap!;
 						}
 						else if (settlers.order == Enums.Order.Irrigate)
 						{
-							return Unit.Letter(settlers.Type, 'I', colour).Bitmap;
+							return Unit.Letter(settlers.Type, 'I', colour).Bitmap!;
 						}
 						else if (settlers.order == Enums.Order.Mines)
 						{
-							return Unit.Letter(settlers.Type, 'M', colour).Bitmap;
+							return Unit.Letter(settlers.Type, 'M', colour).Bitmap!;
 						}
 						else if (settlers.order == Enums.Order.Fortress)
 						{
-							return Unit.Letter(settlers.Type, 'F', colour).Bitmap;
+							return Unit.Letter(settlers.Type, 'F', colour).Bitmap!;
 						}
 						else if (settlers.order == Enums.Order.ClearPollution)
 						{
-							return Unit.Letter(settlers.Type, 'P', colour).Bitmap;
+							return Unit.Letter(settlers.Type, 'P', colour).Bitmap!;
 						}
 						break;
 				}
 				if (unit.Sentry)
 				{
-					return Unit.Sentry(unit.Type, colour).Bitmap;
+					return Unit.Sentry(unit.Type, colour).Bitmap!;
 				}
 				else if (unit.FortifyActive)
 				{
-					return Unit.Letter(unit.Type, 'F', colour).Bitmap;
+					return Unit.Letter(unit.Type, 'F', colour).Bitmap!;
 				}
 				else if (unit.Fortify)
 				{
-					return Unit.Fortify(unit.Type, colour).Bitmap;
+					return Unit.Fortify(unit.Type, colour).Bitmap!;
 				}
-				else if (Human == unit.Owner && unit.Goto != Point.Empty)
+				else if (Human == unit.Owner && unit.GotoDestination != Point.Empty)
 				{
-					return Unit.Letter(unit.Type, 'G', colour).Bitmap;
+					return Unit.Letter(unit.Type, 'G', colour).Bitmap!;
 				}
 			}
-			return Unit.Base(unit.Type, colour).Bitmap;
+			return Unit.Base(unit.Type, colour).Bitmap!;
 		}
 	}
 }

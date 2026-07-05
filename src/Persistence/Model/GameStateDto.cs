@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Persistence.Model.Attributes;
 
 namespace CivOne.Persistence.Model
 {
+    [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "These collections need to be settable for deserialization and mapping.")]
+    [SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "The collections need to be List<T> for deserialization and mapping.")]
     public class GameStateDto
     {
         private uint _gameRandomSeed;
@@ -20,7 +23,7 @@ namespace CivOne.Persistence.Model
         [Doc("The id of the player whose turn is currently active. This is typically equal to HumanPlayer, but can differ when loading/saving in the middle of AI turns.")]
         public ushort CurrentPlayer { get; set; }
 
-        public List<PlayerDto> Players { get; set; }
+        public List<PlayerDto> Players { get; set; } = [];
 
         [Doc("Seed for the game-wide random generator used by gameplay logic.")]
         public uint GameRandomSeed
@@ -40,18 +43,18 @@ namespace CivOne.Persistence.Model
         // in MapDto.cs
         // public uint TerrainSeed { get; set; }
 
-        public MapDto Map { get; set; }
+        public MapDto Map { get; set; } = new MapDto();
 
         [Doc("The game options that are enabled in the game.",
             nameof(GameOptionsAll))]
         [YamlDotNet.Serialization.YamlMember(typeof(List<string>))]
-        public List<GameOptionEnum> GameOptions { get; set; }
+        public List<GameSetting> GameOptions { get; set; } = [];
 
         [Doc("Maps each advance ID to the player number who first discovered it.")]
-        public Dictionary<byte, byte> AdvanceOrigin { get; set; }
+        public Dictionary<byte, byte> AdvanceOrigin { get; set; } = [];
 
         [Doc("Replay events recorded during the game session.")]
-        public List<ReplayDataDto> ReplayData { get; set; }
+        public List<ReplayDataDto> ReplayData { get; set; } = [];
 
         [Doc("Global peace turn counter from the original save format. Reserved for future diplomacy logic.", 0, ushort.MaxValue)]
         public ushort PeaceTurns { get; set; }
@@ -60,9 +63,9 @@ namespace CivOne.Persistence.Model
         public ushort PlayerFutureTech { get; set; }
 
 		[Doc("Global warming simulation state (count, pollution level, warning indicator).")]
-		public GlobalWarmingDto GlobalWarming { get; set; }
+		public GlobalWarmingDto GlobalWarming { get; set; } = new GlobalWarmingDto();
 
         private static string DifficultyAll { get => string.Join(", ", Enum.GetNames<DifficultyLevel>()); }
-        private static string GameOptionsAll { get => string.Join(", ", Enum.GetNames<GameOptionEnum>()); }
+        private static string GameOptionsAll { get => string.Join(", ", Enum.GetNames<GameSetting>()); }
     }
 }
