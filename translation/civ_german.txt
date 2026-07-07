@@ -1315,3 +1315,4 @@ HIGH-QUALITY PALETTE-AWARE WEIGHTED SCALING.=Hochwertige, palettenabhängig gewi
 SHARP PIXEL SCALING WITHOUT WEIGHTED FILTERING.=Scharfe Pixel-Skalierung ohne gewichteten Filter.
 ORIGINAL GLOBAL WARMING EFFECTS.=Originale Effekte der globalen Erwärmung.
 EXTENDED GLOBAL WARMING EFFECTS: {0}=Erweiterte Effekte der globalen Erwärmung: {0}
+No wonders of the world\nhave been built yet.=Es wurden noch keine\nWeltwunder gebaut.

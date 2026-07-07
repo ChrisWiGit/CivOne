@@ -202,7 +202,7 @@ namespace CivOne.Screens
 			_gameMenu = new GameMenu("MenuBarWorld", Palette);
 			_gameMenu.Items.Add(Translate("Wonders of the World (F7)")).OnSelect((s, a) => {
 				if (Game.BuiltWonders.Length == 0)
-					GameTask.Enqueue(Show.Empty);
+					GameTask.Enqueue(Message.General(TranslateArray("No wonders of the world\nhave been built yet.")));
 				else
 					Common.AddScreen(new WorldWonders());
 			});
@@ -403,7 +403,7 @@ namespace CivOne.Screens
 					return true;
 				case Key.F7:
 					if (Game.BuiltWonders.Length == 0)
-						GameTask.Enqueue(Show.Empty);
+						GameTask.Enqueue(Message.General(TranslateArray("No wonders of the world\nhave been built yet.")));
 					else
 						Common.AddScreen(new WorldWonders());
 					return true;
