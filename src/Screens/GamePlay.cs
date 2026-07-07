@@ -403,7 +403,7 @@ namespace CivOne.Screens
 					return true;
 				case Key.F7:
 					if (Game.BuiltWonders.Length == 0)
-						GameTask.Enqueue(Message.General(TranslateArray("No wonders of the world\nhave been built yet.")));
+						GameTask.Enqueue(Message.General(Translate("No wonders of the world have been built yet.")));
 					else
 						Common.AddScreen(new WorldWonders());
 					return true;

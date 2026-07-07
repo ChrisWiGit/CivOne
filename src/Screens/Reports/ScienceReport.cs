@@ -51,13 +51,16 @@ namespace CivOne.Screens.Reports
 				}
 			}
 
+			const byte MAX_TEXT_CHARS = 17;
+
 			int c = 0;
 			foreach (IAdvance advance in Human.Advances.OrderBy(a => a.Id))
 			{
 				bool first = Game.GetAdvanceOrigin(advance, Human);
-				int xx = OffsetX + 8 + ((c % 3) * 100);
-				int yy = OffsetY + 42 + (((c - (c % 3)) / 3) * 7);
-				this.DrawText(advance.TranslatedName, 0, (byte)(first ? 15 : 11), xx, yy);
+				int xx = OffsetX + 2 + ((c % 3) * 106);
+				int yy = OffsetY + 48 + (((c - (c % 3)) / 3) * 10);
+				string advanceName = advance.TranslatedName.Length > MAX_TEXT_CHARS ? advance.TranslatedName[..MAX_TEXT_CHARS] + "." : advance.TranslatedName;
+				this.DrawText(advanceName, 0, (byte)(first ? 15 : 11), xx, yy);
 				c++;
 			}
 
@@ -65,7 +68,7 @@ namespace CivOne.Screens.Reports
 			{
 				return;
 			}
-			this.AddLayer(Portrait[(int)Advisor.Science], OffsetX + 278, OffsetY + 2);
+			this.AddLayer(Portrait[(int)Advisor.Science], OffsetX + 278, OffsetY - 18);
 		}
 
 		protected override bool HasUpdate(uint gameTick)
@@ -86,8 +89,7 @@ namespace CivOne.Screens.Reports
 
 		public ScienceReport() : base(1)
 		{
-			Render();
-			_update = false;
+			_update = true;
 		}
 	}
 }
