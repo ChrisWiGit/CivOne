@@ -130,7 +130,6 @@ namespace CivOne.Mcp.Tools
 				name = profile.DisplayName,
 				description = profile.Description,
 				provider = profile.Provider,
-				capabilities = profile.Capabilities.ToString(),
 				difficulty = profile.Difficulty.ToString()
 			}).ToArray());
 			AddSetting(patches, flatSettings, "patches", "globalWarmingFeatureFlags", BuildFlagsValue(settings.GlobalWarmingFeatureFlags));
