@@ -22,11 +22,9 @@ namespace CivOne.Agents
 		/// Registers or replaces one agent implementation by its stable UUID.
 		/// </summary>
 		/// <param name="registration">The registration object to store.</param>
-		/// <param name="capabilities">The capabilities of the agent.</param>
 		/// <param name="difficulty">The difficulty of the agent.</param>
 		public void Register(
 			IAgentRegistration registration,
-			AiCapabilities capabilities = AiCapabilities.All,
 			AiDifficulty difficulty = AiDifficulty.Unspecified)
 		{
 			ArgumentNullException.ThrowIfNull(registration);
@@ -39,7 +37,6 @@ namespace CivOne.Agents
 				information.GetName(),
 				information.GetDescription(),
 				information.GetAuthor(),
-				capabilities,
 				difficulty);
 		}
 
