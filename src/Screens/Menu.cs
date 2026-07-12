@@ -77,6 +77,7 @@ namespace CivOne.Screens
 		public int IndentTitle { get; set; }
 		public int RowHeight { get; set; }
 		public bool CenterTo320Coordinates { get; set; }
+		public bool DrawFullBackground { get; set; }
 		public string[] DefaultDescription { get; set; } = [];
 
 		/// <summary>
@@ -129,18 +130,37 @@ namespace CivOne.Screens
 				int y = Y + CoordinateOffsetY;
 				int yy = y + (_activeItem * fontHeight);
 				int offsetY = 0;
+				int contentHeight = 0;
+				bool hasTitle = !string.IsNullOrEmpty(Title);
+				int fullBackgroundTitleExtraY = (DrawFullBackground && hasTitle) ? 2 : 0;
 
 				this.Clear();
-				if (!string.IsNullOrEmpty(Title))
+				if (hasTitle)
 				{
-					this.DrawText(Title, FontId, TitleColour, x + IndentTitle, y + 1);
-					offsetY = fontHeight;
+					offsetY = fontHeight + 2;
+				}
+				else if (DrawFullBackground)
+				{
+					offsetY = 1;
+				}
+				contentHeight = offsetY + (Items.Count * fontHeight) + (DrawFullBackground ? 4 + fullBackgroundTitleExtraY : 0);
+
+				if (DrawFullBackground && MenuWidth > 0 && contentHeight > 0)
+				{
+					DrawPanel(x, y, MenuWidth, contentHeight, border: true);
+				}
+				if (hasTitle && !string.IsNullOrEmpty(Title))
+				{
+					this.DrawText(Title, FontId, TitleColour, x + IndentTitle, y + 1 + fullBackgroundTitleExtraY);
 				}
 				if (_activeItem >= 0)
 				{
-					if (_background == null)
+					if (_background == null || DrawFullBackground)
 					{
-						this.FillRectangle(x, yy + offsetY, MenuWidth, fontHeight, ActiveColour);
+						int activeX = DrawFullBackground ? x + 2 : x;
+						int activeY = yy + offsetY + (DrawFullBackground ? 1 : 0);
+						int activeWidth = DrawFullBackground ? Math.Max(1, MenuWidth - 4) : MenuWidth;
+						this.FillRectangle(activeX, activeY, activeWidth, fontHeight, ActiveColour);
 					}
 					else
 					{
