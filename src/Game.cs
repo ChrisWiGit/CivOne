@@ -190,6 +190,10 @@ namespace CivOne
 				.WithReplayDataLengthBytes(GetSveReplayDataLengthBytes())
 				.WithInvalidTradeCityReferences(_cities.Any(city => city.TradingCitiesAsCity.Any(tradingCity => !cityLookup.Contains(tradingCity))))
 				.WithInvalidUnitHomeCityReferences(_units.Any(unit => unit.Home != null && !cityLookup.Contains(unit.Home)))
+				.WithUnsupportedAiSelection(_players.Any(player => !player.IsHuman
+					&& player.AiId.HasValue
+					&& player.AiId.Value != Guid.Empty
+					&& player.AiId.Value != AiDefinitionIds.Legacy))
 				.WithOutOfBoundsCityCoordinates(_cities.Any(city => city.X >= Map.WIDTH || city.Y >= Map.HEIGHT))
 				.WithOutOfBoundsUnitCoordinates(_units.Any(unit => unit.X < 0 || unit.Y < 0 || unit.X >= Map.WIDTH || unit.Y >= Map.HEIGHT))
 				.WithOutOfBoundsUnitGotoCoordinates(_units.Any(unit => !unit.GotoDestination.IsEmpty && (unit.GotoDestination.X < 0 || unit.GotoDestination.Y < 0 || unit.GotoDestination.X >= Map.WIDTH || unit.GotoDestination.Y >= Map.HEIGHT)))

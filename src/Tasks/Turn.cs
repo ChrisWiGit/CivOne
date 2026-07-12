@@ -36,12 +36,12 @@ namespace CivOne.Tasks
 				}
 				else
 				{
-					if (Game.CurrentPlayer.AI == null)
+					if (Game.CurrentPlayer.AiController == null)
 					{
 						Log("Warning: Attempting to move unit {0} for player {1}, but the player has no AI assigned. Ending turn instead.",
 							_unit.GetType().Name, Game.CurrentPlayer.TribeName);
 					}
-					Game.CurrentPlayer.AI?.Move(_unit);
+					Game.CurrentPlayer.AiController?.Move(_unit);
 				}
 				EndTask();
 			}

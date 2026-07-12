@@ -54,8 +54,13 @@ namespace CivOne.Agents
 				return false;
 			}
 
-			// Barbarian flow stays on legacy path for now.
-			return Game.Instance.PlayerNumber(player) != 0;
+			return GetConfiguredAiId(player) != AiDefinitionIds.Legacy;
+		}
+
+		internal static Guid GetConfiguredAiId(Player player)
+		{
+			ArgumentNullException.ThrowIfNull(player);
+			return player.AiId.GetValueOrDefault() == Guid.Empty ? AiDefinitionIds.Legacy : player.AiId!.Value;
 		}
 
 		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Agent execution must remain fault-tolerant so one controller failure does not break turn flow; errors are logged and host fallback continues.")]
@@ -112,6 +117,8 @@ namespace CivOne.Agents
 				hostEndedTurn = true;
 				Log("Turn-based agent did not call EndTurn(); host ended turn automatically for {0}.", player.TribeNamePlural);
 			}
+
+			ConsumeRemainingUnitMoves(player);
 
 			SaveMemory(player.PlayerGuid, registration);
 			durationWatch.Stop();
@@ -197,6 +204,23 @@ namespace CivOne.Agents
 			}
 
 			return journal;
+		}
+
+		// The turn-based agent executes the entire AI turn in one OnTurn call.
+		// Game.Update() picks any unit with remaining moves as ActiveUnit and
+		// enqueues Turn.Move(unit) again; RunForCurrentPlayerIfNeeded then
+		// short-circuits via its player/turn cache without advancing the game
+		// state, causing an infinite loop that never returns control to the
+		// human player. Consuming leftover movement here forces those units to
+		// become Busy so ActiveUnit is null and Turn.End() runs next tick.
+		private static void ConsumeRemainingUnitMoves(Player player)
+		{
+			byte ownerId = Game.Instance.PlayerNumber(player);
+			foreach (IUnit unit in Game.Instance.GetUnits().Where(unit => unit.Owner == ownerId))
+			{
+				unit.MovesLeft = 0;
+				unit.PartMoves = 0;
+			}
 		}
 
 		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Memory load failures must not abort the turn; host logs and continues with runtime defaults.")]
@@ -391,9 +415,16 @@ namespace CivOne.Agents
 				return registered!;
 			}
 
+			Guid aiId = TurnBasedAgentHost.GetConfiguredAiId(player);
+			if (aiId != AiDefinitionIds.TurnBasedDefault
+				&& AgentRegistry.Instance.TryResolveAi(aiId, out IAgentRegistration? aiRegistration))
+			{
+				return aiRegistration!;
+			}
+
 			if (!_registrations.TryGetValue(player.PlayerGuid, out IAgentRegistration? registration))
 			{
-				registration = new LegacyAgentRegistration(player);
+				registration = new BuiltInTurnBasedAgentRegistration();
 				_registrations[player.PlayerGuid] = registration;
 			}
 
@@ -404,9 +435,9 @@ namespace CivOne.Agents
 	/// <summary>
 	/// Built-in <see cref="IAgentRegistration"/> used when no external binding exists.
 	/// </summary>
-	internal sealed class LegacyAgentRegistration(Player player) : IAgentRegistration
+	internal sealed class BuiltInTurnBasedAgentRegistration : IAgentRegistration
 	{
-		private readonly IAgentInformation _information = new LegacyAgentInformation(player);
+		private readonly IAgentInformation _information = new BuiltInTurnBasedAgentInformation();
 		private readonly IAgentMemory _memory = new LegacyAgentMemory();
 		private readonly ITurnBasedController _controller = new DefaultTurnBasedController();
 
@@ -420,17 +451,17 @@ namespace CivOne.Agents
 	/// <summary>
 	/// Built-in metadata provider for <see cref="LegacyAgentRegistration"/>.
 	/// </summary>
-	internal sealed class LegacyAgentInformation(Player player) : IAgentInformation
+	internal sealed class BuiltInTurnBasedAgentInformation : IAgentInformation
 	{
-		public string GetName() => "BuiltInLegacyAgent";
+		public string GetName() => "BuiltInTurnBasedDefault";
 
 		public string GetAuthor() => "CivOne";
 
-		public (int Major, int Minor, int Patch) GetVersion() => (2, 0, 0);
+		public (int Major, int Minor, int Patch) GetVersion() => (3, 0, 0);
 
-		public string GetDescription() => $"Built-in turn-based bridge for {player.TribeNamePlural}.";
+		public string GetDescription() => "Built-in default turn-based AI.";
 
-		public Guid GetUuid() => player.PlayerGuid;
+		public Guid GetUuid() => AiDefinitionIds.TurnBasedDefault;
 	}
 
 	/// <summary>
@@ -503,15 +534,35 @@ namespace CivOne.Agents
 				}
 
 				bool anyMoveApplied = false;
+				bool stopRequested = false;
 				foreach (IUnitView unit in movableUnits)
 				{
-					if (TryMoveUnit(session, unit.Id))
+					if (IsSettlers(unit))
+					{
+						if (TryFoundCity(session, unit.Id, out stopRequested))
+						{
+							anyMoveApplied = true;
+							continue;
+						}
+
+						if (stopRequested)
+						{
+							break;
+						}
+					}
+
+					if (TryMoveUnit(session, unit.Id, out stopRequested))
 					{
 						anyMoveApplied = true;
 					}
+
+					if (stopRequested)
+					{
+						break;
+					}
 				}
 
-				if (!anyMoveApplied)
+				if (stopRequested || !anyMoveApplied)
 				{
 					break;
 				}
@@ -520,23 +571,45 @@ namespace CivOne.Agents
 			session.EndTurn();
 		}
 
-		private static bool TryMoveUnit(ITurnSession session, Guid unitId)
+		private static bool IsSettlers(IUnitView unit)
+		{
+			return string.Equals(unit.Name, nameof(Settlers), StringComparison.OrdinalIgnoreCase);
+		}
+
+		private static bool TryFoundCity(ITurnSession session, Guid unitId, out bool stopRequested)
+		{
+			ICommandResult result = session.Commands.Units.FoundCity(unitId);
+			stopRequested = ShouldStopCommandLoop(result.ErrorCode);
+			return result.Success;
+		}
+
+		private static bool TryMoveUnit(ITurnSession session, Guid unitId, out bool stopRequested)
 		{
 			foreach ((int dx, int dy) in _moveDeltas)
 			{
 				ICommandResult result = session.Commands.Units.Move(unitId, dx, dy);
 				if (result.Success)
 				{
+					stopRequested = false;
 					return true;
 				}
 
-				if (result.ErrorCode == "TURN_ALREADY_ENDED" || result.ErrorCode == "TOTAL_ACTION_LIMIT_REACHED" || result.ErrorCode == "ACTION_TYPE_LIMIT_REACHED")
+				if (ShouldStopCommandLoop(result.ErrorCode))
 				{
+					stopRequested = true;
 					return false;
 				}
 			}
 
+			stopRequested = false;
 			return false;
+		}
+
+		private static bool ShouldStopCommandLoop(string errorCode)
+		{
+			return errorCode == "TURN_ALREADY_ENDED"
+				|| errorCode == "TOTAL_ACTION_LIMIT_REACHED"
+				|| errorCode == "ACTION_TYPE_LIMIT_REACHED";
 		}
 	}
 

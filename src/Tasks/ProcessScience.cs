@@ -67,13 +67,13 @@ namespace CivOne.Tasks
 				}
 				else if (!TurnBasedAgentHost.ShouldHandlePlayer(_player))
 				{
-					if (_player.AI == null)
+					if (_player.AiController == null)
 					{
 						Log($"Warning: The player {_player.TribeName} is not human but has no field AI. Skipping research selection.");
 					}
 					else
 					{
-						_player.AI.ChooseResearch();
+						_player.AiController.ChooseResearch();
 					}
 				}
 				EndTask();
@@ -96,13 +96,13 @@ namespace CivOne.Tasks
 				_player.CurrentResearch = null;
 				if (!TurnBasedAgentHost.ShouldHandlePlayer(_player))
 				{
-					if (_player.AI == null)
+					if (_player.AiController == null)
 					{
 						Log($"Warning: The player {_player.TribeName} is not human but has no field AI. Skipping research selection.");
 					}
 					else
 					{
-						_player.AI.ChooseResearch();
+						_player.AiController.ChooseResearch();
 					}
 				}
 				EndTask();

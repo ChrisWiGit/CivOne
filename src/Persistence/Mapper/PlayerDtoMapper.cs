@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using CivOne.Agents;
 using CivOne.Advances;
 using CivOne.Civilizations;
 using CivOne.Enums;
@@ -57,6 +58,7 @@ namespace CivOne.Persistence.Model
 			IPlayerRestorable player = _playerFactory.Create(civilization, dto);
 			
 			player.PlayerGuid = dto.PlayerGuid == Guid.Empty ? Guid.NewGuid() : dto.PlayerGuid;
+			player.AiId = dto.AiId == Guid.Empty ? null : dto.AiId;
 			player.TribeName = string.IsNullOrEmpty(dto.TribeName) ? civilization.Name : dto.TribeName;
 			player.TribeNamePlural = string.IsNullOrEmpty(dto.TribeNamePlural) ? civilization.NamePlural : dto.TribeNamePlural;
 			player.Explored = dto.Explored;
@@ -124,6 +126,11 @@ namespace CivOne.Persistence.Model
 			{
 				Civilization = _civilizationMapper.ToDto(player.Civilization),
 				PlayerGuid = player.PlayerGuid,
+				AiId = player == gameInstance.HumanPlayer
+					? null
+					: player.AiId.HasValue && player.AiId.Value != Guid.Empty
+						? player.AiId
+						: AiDefinitionIds.Legacy,
 
 				Explored = player.Explored,
 				Visible = player.Visible,

@@ -24,7 +24,16 @@ namespace CivOne.Civilizations
 	{
 		internal static readonly byte Owner;
 
-		internal static bool IsSeaSpawnTurn => Game.Started && (Game.GameTurn % 8 == 0) && (Game.GameTurn > 150 || Game.GameTurn >= (5 - Game.Difficulty) * 32) && !Game.Players.Any(x => x.HasAdvance<Combustion>());
+		internal static int Difficulty
+		{
+			get
+			{
+				Player? barbarianPlayer = Game.GetPlayer(0);
+				return barbarianPlayer?.Handicap ?? Game.Difficulty;
+			}
+		}
+
+		internal static bool IsSeaSpawnTurn => Game.Started && (Game.GameTurn % 8 == 0) && (Game.GameTurn > 150 || Game.GameTurn >= (5 - Difficulty) * 32) && !Game.Players.Any(x => x.HasAdvance<Combustion>());
 
 		// TODO land spawn rate
 		internal static bool IsLandSpawnTurn => IsSeaSpawnTurn; // no idea - make them the same for now

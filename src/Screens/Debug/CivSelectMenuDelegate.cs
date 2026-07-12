@@ -23,6 +23,7 @@ namespace CivOne.Screens.Debug
 		private readonly int _menuHeight;
 		private readonly string _title;
 		private readonly Menu _menu;
+		private readonly Func<Player, bool> _isSelectable;
 
 		public event Action<Player>? PlayerSelected;
 		public event EventHandler? Cancelled;
@@ -83,11 +84,26 @@ namespace CivOne.Screens.Debug
 			};
 
 			foreach (Player player in Game.Players)
-				menu.Items.Add(player.TribeNamePlural).OnSelect(OnAccept);
+			{
+				menu.Items.Add(player.TribeNamePlural)
+					.SetEnabled(_isSelectable(player))
+					.OnSelect(OnAccept);
+			}
 
 			menu.Cancel += OnMenuCancel;
 			menu.MissClick += OnMenuCancel;
-			menu.ActiveItem = Game.PlayerNumber(Human);
+
+			int activeItem = Game.PlayerNumber(Human);
+			if (activeItem < 0 || activeItem >= menu.Items.Count || !menu.Items[activeItem].Enabled)
+			{
+				activeItem = Array.FindIndex([.. Game.Players], player => _isSelectable(player));
+				if (activeItem < 0)
+				{
+					activeItem = 0;
+				}
+			}
+
+			menu.ActiveItem = activeItem;
 			return menu;
 		}
 
@@ -100,9 +116,10 @@ namespace CivOne.Screens.Debug
 			return Math.Max(maxTextWidth, titleWidth) + padding;
 		}
 
-		public CivSelectMenuDelegate(Palette palette, string title = "Select Civilization...")
+		public CivSelectMenuDelegate(Palette palette, string title = "Select Civilization...", Func<Player, bool>? isSelectable = null)
 		{
 			_title = title;
+			_isSelectable = isSelectable ?? (_ => true);
 			_menuWidth = Math.Max(CalculateMenuWidth(title), MinDialogWidth);
 			_menuHeight = Resources.GetFontHeight(0) * (Game.Players.Count() + 2);
 			_menu = CreateMenu(palette);

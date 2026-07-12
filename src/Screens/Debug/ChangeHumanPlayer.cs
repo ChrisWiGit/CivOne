@@ -10,7 +10,9 @@
 using System;
 using System.Linq;
 using CivOne.Enums;
+using CivOne.Persistence.Game;
 using CivOne.Services.Screen;
+using CivOne.Tasks;
 
 namespace CivOne.Screens.Debug
 {
@@ -32,16 +34,39 @@ namespace CivOne.Screens.Debug
 
 		private void ChangePlayer_Accept(Player player)
 		{
+			if (player.Civilization.Id == 0)
+			{
+				GameTask.Enqueue(Message.General(Translate("Barbarians cannot be selected as the human player.")));
+				return;
+			}
+
 			_selectedPlayer = player;
 
 			if (_selectedPlayer != Game.HumanPlayer)
 			{
+				SwapHumanAndSelectedPlayerRuntimeAiState(Game.HumanPlayer, _selectedPlayer);
 				Game.HumanPlayer = _selectedPlayer;
 				Game.EndTurn(3);
 			}
 
 			Accept?.Invoke(this, EventArgs.Empty);
 			Destroy();
+		}
+
+		private static void SwapHumanAndSelectedPlayerRuntimeAiState(Player previousHumanPlayer, Player newHumanPlayer)
+		{
+			ArgumentNullException.ThrowIfNull(previousHumanPlayer);
+			ArgumentNullException.ThrowIfNull(newHumanPlayer);
+
+			Guid? previousHumanAiId = previousHumanPlayer.AiId;
+			Guid? newHumanAiId = newHumanPlayer.AiId;
+
+			((IPlayerRestorable)previousHumanPlayer).AiId = newHumanAiId;
+			((IPlayerRestorable)newHumanPlayer).AiId = previousHumanAiId;
+
+			byte previousHumanHandicap = previousHumanPlayer.Handicap;
+			previousHumanPlayer.Handicap = newHumanPlayer.Handicap;
+			newHumanPlayer.Handicap = previousHumanHandicap;
 		}
 
 		private void ChangePlayer_Cancel(object? sender, EventArgs args)
@@ -69,8 +94,8 @@ namespace CivOne.Screens.Debug
 		public ChangeHumanPlayer() : base(MouseCursor.Pointer)
 		{
 			_screenQueryService = ScreenServiceFactory.CreateQueryService();
-			Palette = Common.Screens[Common.Screens.Length - 1].OriginalColours;
-			_civSelectDelegate = new CivSelectMenuDelegate(Palette, "Change Human Player...");
+			Palette = Common.Screens[^1].OriginalColours;
+			_civSelectDelegate = new CivSelectMenuDelegate(Palette, Translate("Change Human Player..."), player => player.Civilization.Id != 0);
 			_civSelectDelegate.PlayerSelected += ChangePlayer_Accept;
 			_civSelectDelegate.Cancelled += ChangePlayer_Cancel;
 

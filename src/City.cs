@@ -1399,7 +1399,7 @@ namespace CivOne
 			{
 				if (!TurnBasedAgentHost.ShouldHandlePlayer(CityOwnerPlayer))
 				{
-					CityOwnerPlayer.AI?.CityProduction(this);
+					CityOwnerPlayer.AiController?.CityProduction(this);
 				}
 			}
 		}

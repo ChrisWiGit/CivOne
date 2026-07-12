@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using CivOne.Agents;
+using CivOne.Persistence.Game;
 using Xunit;
 
 namespace CivOne.UnitTests
@@ -28,6 +29,165 @@ namespace CivOne.UnitTests
 			// Assert
 			Assert.Null(actual);
 			Assert.Equal(1, controller.CallCount);
+		}
+
+		[Fact]
+		public void ShouldHandlePlayer_WhenMixedModeAndCivilizationConfiguredAsLegacy_ReturnsFalse()
+		{
+			// Arrange
+			Player aiPlayer = GetHostManagedAiPlayer();
+			Guid? previousAiId = aiPlayer.AiId;
+
+			try
+			{
+				((IPlayerRestorable)aiPlayer).AiId = AiDefinitionIds.Legacy;
+
+				// Act
+				bool actual = TurnBasedAgentHost.ShouldHandlePlayer(aiPlayer);
+
+				// Assert
+				Assert.False(actual);
+			}
+			finally
+			{
+				((IPlayerRestorable)aiPlayer).AiId = previousAiId;
+			}
+		}
+
+		[Fact]
+		public void ShouldHandlePlayer_WhenMixedModeAndCivilizationConfiguredAsTurnBased_ReturnsTrue()
+		{
+			// Arrange
+			Player aiPlayer = GetHostManagedAiPlayer();
+			Guid? previousAiId = aiPlayer.AiId;
+
+			try
+			{
+				((IPlayerRestorable)aiPlayer).AiId = AiDefinitionIds.TurnBasedDefault;
+
+				// Act
+				bool actual = TurnBasedAgentHost.ShouldHandlePlayer(aiPlayer);
+
+				// Assert
+				Assert.True(actual);
+			}
+			finally
+			{
+				((IPlayerRestorable)aiPlayer).AiId = previousAiId;
+			}
+		}
+
+		[Fact]
+		public void ShouldHandlePlayer_WhenMixedModeAndProfileIsUnknown_FallsBackToLegacyPath()
+		{
+			// Arrange
+			Player aiPlayer = GetHostManagedAiPlayer();
+			Guid? previousAiId = aiPlayer.AiId;
+
+			try
+			{
+				((IPlayerRestorable)aiPlayer).AiId = Guid.NewGuid();
+
+				// Act
+				bool actual = TurnBasedAgentHost.ShouldHandlePlayer(aiPlayer);
+
+				// Assert
+				Assert.True(actual);
+			}
+			finally
+			{
+				((IPlayerRestorable)aiPlayer).AiId = previousAiId;
+			}
+		}
+
+		[Fact]
+		public void ShouldHandlePlayer_WhenMixedModeAndProfileIsRegisteredCustomProfile_ReturnsTrue()
+		{
+			// Arrange
+			Player aiPlayer = GetHostManagedAiPlayer();
+			Guid? previousAiId = aiPlayer.AiId;
+
+			TestAgentRegistration registration = new(new NoEndTurnController());
+			AgentLoaderEntry.Register(registration);
+
+			try
+			{
+				((IPlayerRestorable)aiPlayer).AiId = registration.GetInformation().GetUuid();
+
+				// Act
+				bool actual = TurnBasedAgentHost.ShouldHandlePlayer(aiPlayer);
+
+				// Assert
+				Assert.True(actual);
+			}
+			finally
+			{
+				((IPlayerRestorable)aiPlayer).AiId = previousAiId;
+			}
+		}
+
+		[Fact]
+		public void ShouldHandlePlayer_WhenMixedModeAndDifferentCivilizationsUseDifferentModes_ResolvesPerCivilization()
+		{
+			// Arrange
+			Player[] aiPlayers = GetHostManagedAiPlayers(2);
+			Guid? previousAiId0 = aiPlayers[0].AiId;
+			Guid? previousAiId1 = aiPlayers[1].AiId;
+
+			try
+			{
+				((IPlayerRestorable)aiPlayers[0]).AiId = AiDefinitionIds.Legacy;
+				((IPlayerRestorable)aiPlayers[1]).AiId = AiDefinitionIds.TurnBasedDefault;
+
+				// Act
+				bool firstHandledByHost = TurnBasedAgentHost.ShouldHandlePlayer(aiPlayers[0]);
+				bool secondHandledByHost = TurnBasedAgentHost.ShouldHandlePlayer(aiPlayers[1]);
+
+				// Assert
+				Assert.False(firstHandledByHost);
+				Assert.True(secondHandledByHost);
+			}
+			finally
+			{
+				((IPlayerRestorable)aiPlayers[0]).AiId = previousAiId0;
+				((IPlayerRestorable)aiPlayers[1]).AiId = previousAiId1;
+			}
+		}
+
+		[Fact]
+		public void ShouldHandlePlayer_WhenMixedModeAndDifferentCivilizationsUseDifferentProfiles_ResolvesPerCivilization()
+		{
+			// Arrange
+			Player[] aiPlayers = GetHostManagedAiPlayers(3);
+			Guid? previousAiId0 = aiPlayers[0].AiId;
+			Guid? previousAiId1 = aiPlayers[1].AiId;
+			Guid? previousAiId2 = aiPlayers[2].AiId;
+
+			TestAgentRegistration registration = new(new NoEndTurnController());
+			AgentLoaderEntry.Register(registration);
+
+			try
+			{
+				((IPlayerRestorable)aiPlayers[0]).AiId = AiDefinitionIds.Legacy;
+				((IPlayerRestorable)aiPlayers[1]).AiId = AiDefinitionIds.TurnBasedDefault;
+				((IPlayerRestorable)aiPlayers[2]).AiId = registration.GetInformation().GetUuid();
+
+				// Act
+				bool firstHandledByHost = TurnBasedAgentHost.ShouldHandlePlayer(aiPlayers[0]);
+				bool secondHandledByHost = TurnBasedAgentHost.ShouldHandlePlayer(aiPlayers[1]);
+				bool thirdHandledByHost = TurnBasedAgentHost.ShouldHandlePlayer(aiPlayers[2]);
+
+				// Assert
+				Assert.False(firstHandledByHost);
+				Assert.True(secondHandledByHost);
+				Assert.True(thirdHandledByHost);
+			}
+			finally
+			{
+				((IPlayerRestorable)aiPlayers[0]).AiId = previousAiId0;
+				((IPlayerRestorable)aiPlayers[1]).AiId = previousAiId1;
+				((IPlayerRestorable)aiPlayers[2]).AiId = previousAiId2;
+			}
 		}
 
 		[Fact]
@@ -269,6 +429,23 @@ namespace CivOne.UnitTests
 
 			Assert.NotNull(result);
 			return result!;
+		}
+
+		private static Player[] GetHostManagedAiPlayers(int count)
+		{
+			ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count);
+
+			Game game = Game.Instance;
+			Player[] result =
+			[
+				.. game.Players
+					.Where(player => player is not null && !player.IsHuman)
+					.Where(player => game.PlayerNumber(player) != 0)
+					.Take(count)
+			];
+
+			Assert.Equal(count, result.Length);
+			return result;
 		}
 
 		private static void RegisterAndBind(Player player, ITurnBasedController controller)

@@ -48,6 +48,12 @@ namespace CivOne
 			set => _playerGuid = value;
 		}
 
+		Guid? IPlayerRestorable.AiId
+		{
+			get => _aiId;
+			set => _aiId = value == Guid.Empty ? null : value;
+		}
+
 		string IPlayerRestorable.TribeNamePlural
 		{
 			get => _tribeNamePlural;

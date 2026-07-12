@@ -22,6 +22,7 @@ using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
 using CivOne.Wonders;
+using CivOne.Agents;
 using CivOne.Services.SpaceShip;
 
 using Gov = CivOne.Governments;
@@ -34,6 +35,7 @@ namespace CivOne
 		internal static new IPlayerGame Game = null!; //For Player this is never expected to be null at runtime.
 		private readonly ICivilization _civilization;
 		private Guid _playerGuid = Guid.NewGuid();
+		private Guid? _aiId;
 		private string _tribeName, _tribeNamePlural;
 
 		private readonly bool[,] _explored = new bool[Map.WIDTH, Map.HEIGHT];
@@ -86,6 +88,7 @@ namespace CivOne
 
 		public ICivilization Civilization => _civilization;
 		public Guid PlayerGuid => _playerGuid;
+		public Guid? AiId => _aiId;
 		
 		public string LeaderName => _civilization.Leader.Name;
 		public string TribeName => _tribeName ?? _civilization?.Name ?? "Unknown";
@@ -97,6 +100,7 @@ namespace CivOne
 		public PalaceData Palace => _palace;
 
 		internal AI? AI => IsHuman ? null : AI.Instance(this);
+		internal IPlayerAiController? AiController => IsHuman ? null : PlayerAiControllerFactory.Instance.CreateFor(this);
 		
 		private IGovernment _government = new Despotism();
 		public IGovernment Government

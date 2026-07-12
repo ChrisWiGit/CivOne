@@ -4,6 +4,7 @@ namespace CivOne.Persistence.Model
 	using System.Collections.Generic;
 	using System.Drawing;
 	using System.Linq;
+		using CivOne.Agents;
 	using CivOne.Advances;
 	using CivOne.Buildings;
 	using CivOne.Civilizations;
@@ -66,6 +67,7 @@ namespace CivOne.Persistence.Model
 			_player = new MockedIPlayer()
 			{
 				PlayerGuid = _playerGuid,
+				AiId = AiDefinitionIds.Legacy,
 				Advances = [1, 2, 3],
 				Embassies = [4, 5],
 				Diplomacy = [0, 1, 2, 3, 4, 5, 6, 7],
@@ -91,6 +93,7 @@ namespace CivOne.Persistence.Model
 			{
 				Id = 0,
 				PlayerGuid = _playerGuid,
+				AiId = AiDefinitionIds.Legacy,
 				Civilization = new CivilizationDto { LeaderClassName = civsInGame[0].Leader.GetType().Name },
 				Advances = [1, 2, 3],
 				Embassies = [4, 5],
@@ -301,6 +304,7 @@ namespace CivOne.Persistence.Model
 			=> new()
 			{
 				[nameof(PlayerDto.PlayerGuid)] = () => Assert.Equal(expected.PlayerGuid, actual.PlayerGuid),
+				[nameof(PlayerDto.AiId)] = () => Assert.Equal(expected.AiId, actual.AiId),
 				[nameof(PlayerDto.TribeName)] = () => Assert.Equal(expected.TribeName, actual.TribeName),
 				[nameof(PlayerDto.TribeNamePlural)] = () => Assert.Equal(expected.TribeNamePlural, actual.TribeNamePlural),
 				[nameof(PlayerDto.Anarchy)] = () => Assert.Equal(expected.Anarchy, actual.Anarchy),

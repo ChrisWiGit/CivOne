@@ -20,6 +20,7 @@ namespace CivOne.Persistence.Game
 	{
 		new string TribeName { get; set; }
 		new Guid PlayerGuid { get; set; }
+		new Guid? AiId { get; set; }
 		new string TribeNamePlural { get; set; }
 		new bool[,] Explored { get; set; }
 		new bool[,] Visible { get; set; }

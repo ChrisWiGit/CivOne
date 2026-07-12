@@ -3,6 +3,7 @@ namespace CivOne.Persistence.Model
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+		using CivOne.Agents;
 	using CivOne;
 	using CivOne.Advances;
 	using CivOne.Buildings;
@@ -21,15 +22,18 @@ namespace CivOne.Persistence.Model
 	using CivOne.Persistence.Resolver;
 	using CivOne.Persistence.Factories;
 
-	public class GameStateDtoMapperTest
+	public class GameStateDtoMapperTest : IDisposable
 	{
 		private readonly GameStateDtoMapper _testee;
 		private readonly List<MockedIPlayer> _players;
 		private readonly IPlayerGame _gameInstance;
 		private readonly GameStateDto _dto;
+		private readonly MockRuntime _runtime;
 
 		public GameStateDtoMapperTest()
 		{
+			_runtime = new MockRuntime(new RuntimeSettings());
+
 			var civsInGame = MockedICivilization.Mock(3);
 			CivilizationDto.AllLeaderClassNames = [.. civsInGame.Select(c => c.Leader.GetType().Name).Distinct()];
 
@@ -79,6 +83,7 @@ namespace CivOne.Persistence.Model
 			{
 				Id = 0,
 				PlayerGuid = _players[0].PlayerGuid,
+				AiId = AiDefinitionIds.Legacy,
 				Civilization = new CivilizationDto { LeaderClassName = civsInGame[0].Leader.GetType().Name },
 				Advances = [1, 2, 3],
 				Embassies = [1],
@@ -152,6 +157,7 @@ namespace CivOne.Persistence.Model
 			{
 				Id = 1,
 				PlayerGuid = _players[1].PlayerGuid,
+				AiId = Guid.NewGuid(),
 				Civilization = new CivilizationDto { LeaderClassName = civsInGame[1].Leader.GetType().Name },
 				Advances = [0, 2],
 				Embassies = [0],
@@ -359,6 +365,7 @@ namespace CivOne.Persistence.Model
 						Assert.Equal(expectedPlayer.Gold, actualPlayer.Gold);
 						Assert.Equal(expectedPlayer.Anarchy, actualPlayer.Anarchy);
 						Assert.Equal(expectedPlayer.PlayerGuid, actualPlayer.PlayerGuid);
+						Assert.Equal(expectedPlayer.AiId, actualPlayer.AiId);
 						Assert.Equal(expectedPlayer.TribeName, actualPlayer.TribeName);
 						Assert.Equal(expectedPlayer.FutureTechCount, actualPlayer.FutureTechCount);
 						Assert.Equal(expectedPlayer.HumanContactTurn, actualPlayer.HumanContactTurn);
@@ -428,8 +435,22 @@ namespace CivOne.Persistence.Model
 			};
 		}
 
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+			_runtime.Dispose();
+			RuntimeHandler.Wipe();
+		}
 
-		// Mock implementations for testing
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
 		private sealed class MockGameInstanceForTesting : IPlayerGame
 		{
 			private readonly List<IPlayer> _players;

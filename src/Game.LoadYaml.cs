@@ -14,9 +14,11 @@ using System.IO;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Persistence;
+using CivOne.Persistence.Game;
 using CivOne.Persistence.Mapper;
 using CivOne.Persistence.Model;
 using CivOne.Persistence.Yaml;
+using CivOne.Agents;
 using CivOne.Services.GlobalWarming;
 using CivOne.Services.Palace;
 using CivOne.Services.Random;
@@ -133,15 +135,20 @@ namespace CivOne
 		{
 			GameTurn = _valueSanitizer.ClampToUInt16(state.GameTurn, nameof(Game), nameof(GameTurn));
 
-			HumanPlayer = state.HumanPlayer as Player
-				?? throw new InvalidOperationException("YAML load requires HumanPlayer to be a Player instance.");
+			int humanPlayerIndex = Array.FindIndex(state.Players, player => EqualityComparer<IPlayer>.Default.Equals(player, state.HumanPlayer));
+			if (humanPlayerIndex < 0)
+			{
+				throw new InvalidOperationException("YAML load requires HumanPlayer to be present in the player list.");
+			}
+
+			HumanPlayer = _players[humanPlayerIndex];
 
 			if (HumanPlayer.LastMapPosition.X >= 0 && HumanPlayer.LastMapPosition.Y >= 0)
 			{
 				_pendingMapPositionRestore = HumanPlayer.LastMapPosition;
 			}
 
-			_currentPlayer = Array.IndexOf(_players, state.CurrentPlayer as Player);
+			_currentPlayer = Array.FindIndex(state.Players, player => EqualityComparer<IPlayer>.Default.Equals(player, state.CurrentPlayer));
 			if (_currentPlayer < 0)
 				_currentPlayer = Array.IndexOf(_players, HumanPlayer);
 			if (_currentPlayer < 0)

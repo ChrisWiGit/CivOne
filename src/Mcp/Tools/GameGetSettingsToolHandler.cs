@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using CivOne.Agents;
 using CivOne.Mcp.Contracts;
 using CivOne.Persistence;
 
@@ -123,6 +124,15 @@ namespace CivOne.Mcp.Tools
 			AddSetting(patches, flatSettings, "patches", "removeObsoleteBuildings", BuildBooleanValue(settings.RemoveObsoleteBuildings));
 			AddSetting(patches, flatSettings, "patches", "preferSveSaveFormat", BuildBooleanValue(settings.PreferSveSaveFormat));
 			AddSetting(patches, flatSettings, "patches", "useUncheckedCastSanitizer", BuildBooleanValue(settings.UseUncheckedCastSanitizer));
+			AddSetting(patches, flatSettings, "patches", "aiAvailableProfiles", AgentLoaderEntry.GetAvailableDefinitions().Select(profile => new
+			{
+				id = profile.Id,
+				name = profile.DisplayName,
+				description = profile.Description,
+				provider = profile.Provider,
+				capabilities = profile.Capabilities.ToString(),
+				difficulty = profile.Difficulty.ToString()
+			}).ToArray());
 			AddSetting(patches, flatSettings, "patches", "globalWarmingFeatureFlags", BuildFlagsValue(settings.GlobalWarmingFeatureFlags));
 
 			Dictionary<string, object> gameOptions = [];

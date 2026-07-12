@@ -9,6 +9,7 @@ namespace CivOne.src
 	{
 		private static SveSaveCompatibilitySnapshot CreateSnapshot(
 			bool isLoadedFromYaml = false,
+			bool hasUnsupportedAiSelection = false,
 			int playerCount = 8,
 			int mapWidth = 80,
 			int mapHeight = 50,
@@ -32,6 +33,7 @@ namespace CivOne.src
 
 			return SveSaveCompatibilitySnapshot.Builder()
 				.FromYamlSource(isLoadedFromYaml)
+				.WithUnsupportedAiSelection(hasUnsupportedAiSelection)
 				.WithPlayerCount(playerCount)
 				.WithMapSize(mapWidth, mapHeight)
 				.WithCityCount(cityCount)
@@ -60,6 +62,18 @@ namespace CivOne.src
 
 			Assert.False(actual.CanSaveAsSve);
 			Assert.Contains("YAML/COS", actual.Reason, StringComparison.OrdinalIgnoreCase);
+		}
+
+		[Fact]
+		public void EvaluateWhenUnsupportedAiSelectionIsPresentReturnsIncompatible()
+		{
+			var testee = new SveSaveCompatibilityService();
+			var snapshot = CreateSnapshot(hasUnsupportedAiSelection: true);
+
+			var actual = testee.Evaluate(snapshot);
+
+			Assert.False(actual.CanSaveAsSve);
+			Assert.Contains("Non-legacy AI", actual.Reason, StringComparison.OrdinalIgnoreCase);
 		}
 
 		[Fact]

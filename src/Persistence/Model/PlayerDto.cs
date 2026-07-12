@@ -25,6 +25,9 @@ namespace CivOne.Persistence.Model
 
 		[Doc("Stable player identity independent from list/index positions.")]
 		public Guid PlayerGuid { get; set; }
+
+		[Doc("Optional AI definition GUID for this player. Null means human-controlled. Non-human players should store a concrete AI GUID, with the built-in default AI using the fixed all-Fs GUID.")]
+		public Guid? AiId { get; set; }
         
 		[Doc("A list of explored advances. Use -1 to indicate all advances.", null, nameof(AllAdvancesInfo))]
 		// We use long to allow YAML to read/write the values without overflow issues, but the mapper will clamp to the valid range of advances.

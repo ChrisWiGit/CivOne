@@ -11,6 +11,7 @@ namespace CivOne.Agents
 	{
 		private readonly Dictionary<Guid, IAgentRegistration> _agentsById = [];
 		private readonly Dictionary<Guid, Guid> _playerToAgent = [];
+		private readonly Dictionary<Guid, AiDefinition> _definitionsById = [];
 
 		/// <summary>
 		/// Gets singleton registry instance.
@@ -21,11 +22,25 @@ namespace CivOne.Agents
 		/// Registers or replaces one agent implementation by its stable UUID.
 		/// </summary>
 		/// <param name="registration">The registration object to store.</param>
-		public void Register(IAgentRegistration registration)
+		/// <param name="capabilities">The capabilities of the agent.</param>
+		/// <param name="difficulty">The difficulty of the agent.</param>
+		public void Register(
+			IAgentRegistration registration,
+			AiCapabilities capabilities = AiCapabilities.All,
+			AiDifficulty difficulty = AiDifficulty.Unspecified)
 		{
 			ArgumentNullException.ThrowIfNull(registration);
 			Guid agentId = registration.GetInformation().GetUuid();
 			_agentsById[agentId] = registration;
+
+			IAgentInformation information = registration.GetInformation();
+			_definitionsById[agentId] = new AiDefinition(
+				agentId,
+				information.GetName(),
+				information.GetDescription(),
+				information.GetAuthor(),
+				capabilities,
+				difficulty);
 		}
 
 		/// <summary>
@@ -62,6 +77,23 @@ namespace CivOne.Agents
 
 			registration = null;
 			return false;
+		}
+
+		public bool TryResolveAi(Guid aiId, out IAgentRegistration? registration)
+		{
+			if (aiId != Guid.Empty
+				&& _agentsById.TryGetValue(aiId, out registration))
+			{
+				return true;
+			}
+
+			registration = null;
+			return false;
+		}
+
+		public IReadOnlyCollection<AiDefinition> GetRegisteredDefinitions()
+		{
+			return [.. _definitionsById.Values];
 		}
 	}
 }

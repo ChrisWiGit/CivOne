@@ -236,7 +236,15 @@ namespace CivOne
 			}
 		}
 
-		public static void CreateGame(int difficulty, int competition, ICivilization tribe, string? leaderName = null, string? tribeName = null, string? tribeNamePlural = null, bool replaceExisting = false)
+		public static void CreateGame(
+			int difficulty,
+			int competition,
+			ICivilization tribe,
+			string? leaderName = null,
+			string? tribeName = null,
+			string? tribeNamePlural = null,
+			bool replaceExisting = false,
+			IReadOnlyDictionary<int, int>? aiDifficultyOverrides = null)
 		{
 			if (!Map.Ready)
 			{
@@ -257,7 +265,7 @@ namespace CivOne
 			}
 			try
 			{
-				_instance = new Game(difficulty, competition, tribe, leaderName, tribeName, tribeNamePlural);
+				_instance = new Game(difficulty, competition, tribe, leaderName, tribeName, tribeNamePlural, aiDifficultyOverrides);
 			}
 			catch
 			{
@@ -284,7 +292,14 @@ namespace CivOne
 			);
 		}
 
-		private Game(int difficulty, int competition, ICivilization tribe, string? leaderName, string? playerTribeName, string? playerTribeNamePlural) : this(CreateValueSanitizer())
+		private Game(
+			int difficulty,
+			int competition,
+			ICivilization tribe,
+			string? leaderName,
+			string? playerTribeName,
+			string? playerTribeNamePlural,
+			IReadOnlyDictionary<int, int>? aiDifficultyOverrides) : this(CreateValueSanitizer())
 		{
 			if (RuntimeHandler.Runtime.Settings.InitialSeed != 0)
 			{
@@ -345,8 +360,16 @@ namespace CivOne
 					// fire-eggs 20190730 never show "barbarian civilization destroyed"
 					_players[i].Destroyed += PlayerDestroyed;
 				}
+				if (aiDifficultyOverrides is not null && aiDifficultyOverrides.TryGetValue(i, out int difficultyOverride))
+				{
+					int clampedDifficulty = Math.Clamp(difficultyOverride, 0, MaxDifficulty);
+					Log("- Player {0} has AI selection difficulty override: {1} ({2})", i, clampedDifficulty, Common.DifficultyName(clampedDifficulty));
+				}
 				Log("- Player {0} is {1} of the {2}", i, _players[i].LeaderName, _players[i].TribeNamePlural);
 			}
+
+			// Keep barbarian spawn timing aligned with the selected game difficulty by default.
+			_players[0].Handicap = (byte)Math.Clamp(_difficulty, 0, MaxDifficulty);
 
 			Debug.Assert(HumanPlayer != null, "NewGame invariant violated: HumanPlayer must be initialized during player setup.");
 			if (string.IsNullOrWhiteSpace(SaveMetaData.DisplayName))
@@ -366,6 +389,8 @@ namespace CivOne
 				CalculateHandicap(i);
 			}
 
+			OverrideAiDifficulties(competition, aiDifficultyOverrides);
+
 			Log("Apply players bonus...");
 			for (byte i = 1; i <= competition; i++)
 			{
@@ -378,6 +403,21 @@ namespace CivOne
 			_anthologyTurn = (ushort)RandomServiceFactory.Create().NextInt(1, 128);
 
 			InitGlobalWarmingServices();
+		}
+
+		private void OverrideAiDifficulties(int competition, IReadOnlyDictionary<int, int>? aiDifficultyOverrides)
+		{
+			if (aiDifficultyOverrides is null)
+			{
+				return;
+			}
+			for (byte i = 1; i <= competition; i++)
+			{
+				if (aiDifficultyOverrides.TryGetValue(i, out int difficultyOverride))
+				{
+					_players[i].Handicap = (byte)Math.Clamp(difficultyOverride, 0, MaxDifficulty);
+				}
+			}
 		}
 	}
 }

@@ -104,6 +104,80 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
+		public void OnTurn_WhenSettlerCanFoundCity_PrioritizesFoundCityBeforeMove()
+		{
+			// Arrange
+			FakeUnitGateway unitGateway = new(
+				moveResult: new CommandResult(false, "MOVE_REJECTED", "blocked", 0, 0),
+				foundCityResult: new CommandResult(true, string.Empty, null, 0, 0));
+			FakeCommandGateway commandGateway = new(new FakeResearchGateway(), new FakeCityGateway(), unitGateway);
+			FakeContext context = new()
+			{
+				CurrentResearchName = "Alphabet",
+				AvailableResearchNames = [],
+				OwnCities = [],
+				OwnUnits =
+				[
+					new FakeUnitView
+					{
+						Id = Guid.NewGuid(),
+						Name = "Settlers",
+						HasMovesLeft = true,
+						HasAction = false
+					}
+				]
+			};
+
+			FakeSession session = new(context, commandGateway);
+			DefaultTurnBasedController testee = new();
+
+			// Act
+			testee.OnTurn(session);
+
+			// Assert
+			Assert.True(session.EndTurnCalled);
+			Assert.True(unitGateway.FoundCityCalls >= 1);
+			Assert.Equal(0, unitGateway.MoveCalls);
+		}
+
+		[Fact]
+		public void OnTurn_WhenSettlerCannotFoundCity_AttemptsMoveAfterwards()
+		{
+			// Arrange
+			FakeUnitGateway unitGateway = new(
+				moveResult: new CommandResult(true, string.Empty, null, 0, 0),
+				foundCityResult: new CommandResult(false, "FOUND_CITY_REJECTED", "invalid tile", 0, 0));
+			FakeCommandGateway commandGateway = new(new FakeResearchGateway(), new FakeCityGateway(), unitGateway);
+			FakeContext context = new()
+			{
+				CurrentResearchName = "Alphabet",
+				AvailableResearchNames = [],
+				OwnCities = [],
+				OwnUnits =
+				[
+					new FakeUnitView
+					{
+						Id = Guid.NewGuid(),
+						Name = "Settlers",
+						HasMovesLeft = true,
+						HasAction = false
+					}
+				]
+			};
+
+			FakeSession session = new(context, commandGateway);
+			DefaultTurnBasedController testee = new();
+
+			// Act
+			testee.OnTurn(session);
+
+			// Assert
+			Assert.True(session.EndTurnCalled);
+			Assert.True(unitGateway.FoundCityCalls >= 1);
+			Assert.True(unitGateway.MoveCalls >= 1);
+		}
+
+		[Fact]
 		public void OnTurn_WhenResearchCityAndMoveCommandsFail_DoesNotThrowAndEndsTurn()
 		{
 			// Arrange
@@ -253,9 +327,11 @@ namespace CivOne.UnitTests
 			}
 		}
 
-		private sealed class FakeUnitGateway(ICommandResult? moveResult = null) : IUnitCommandGateway
+		private sealed class FakeUnitGateway(ICommandResult? moveResult = null, ICommandResult? foundCityResult = null) : IUnitCommandGateway
 		{
 			public int MoveCalls { get; private set; }
+
+			public int FoundCityCalls { get; private set; }
 
 			public ICommandResult Move(Guid unitId, int dx, int dy)
 			{
@@ -268,7 +344,11 @@ namespace CivOne.UnitTests
 			public ICommandResult SetGoto(Guid unitId, int x, int y) => new CommandResult(true, string.Empty, null, 0, 0);
 			public ICommandResult ClearGoto(Guid unitId) => new CommandResult(true, string.Empty, null, 0, 0);
 			public ICommandResult Disband(Guid unitId) => new CommandResult(true, string.Empty, null, 0, 0);
-			public ICommandResult FoundCity(Guid unitId) => new CommandResult(true, string.Empty, null, 0, 0);
+			public ICommandResult FoundCity(Guid unitId)
+			{
+				FoundCityCalls++;
+				return foundCityResult ?? new CommandResult(true, string.Empty, null, 0, 0);
+			}
 			public ICommandResult BuildRoad(Guid unitId) => new CommandResult(true, string.Empty, null, 0, 0);
 			public ICommandResult BuildIrrigation(Guid unitId) => new CommandResult(true, string.Empty, null, 0, 0);
 			public ICommandResult BuildMine(Guid unitId) => new CommandResult(true, string.Empty, null, 0, 0);
