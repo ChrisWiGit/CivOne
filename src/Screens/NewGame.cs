@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -18,6 +19,7 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
+using CivOne.Persistence.Game;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -42,9 +44,13 @@ namespace CivOne.Screens
 		private string? _leaderName;
 		private string? _tribeName;
 		private string? _tribeNamePlural;
+		private NewGameAiSelectionResult? _aiSelectionResult;
+		private readonly NewGameAiSelectionDelegate _newGameAiSelectionDelegate = new();
 
 		private bool _done, _showIntroText, _gameCreated, _introDirty;
 		private int _introBorderStyle = -1;
+
+		private const int AiSelectionMenuValue = -999;
 		
 		
 		private Menu CreateMenu(string title, MenuItemEventAction<int> setChoice, params string[] menuTexts)
@@ -73,7 +79,9 @@ namespace CivOne.Screens
 		
 		private void MenuDifficulty()
 		{
-			AddMenu(CreateMenu(Translate("Difficulty Level..."), SetDifficulty, _menuItemsDifficulty));
+			Menu menu = CreateMenu(Translate("Difficulty Level..."), SetDifficulty, _menuItemsDifficulty);
+			menu.Items.Add(Translate("Use AI selections..."), AiSelectionMenuValue).OnSelect(SetDifficulty);
+			AddMenu(menu);
 		}
 		
 		private void MenuCompetition()
@@ -106,11 +114,57 @@ namespace CivOne.Screens
 		
 		private void SetDifficulty(object sender, MenuItemEventArgs<int> args)
 		{
+			if (args.Value == AiSelectionMenuValue)
+			{
+				CloseMenus();
+				OpenAiSelectionScreen();
+				return;
+			}
+
 			_difficulty = args.Value;
 			CloseMenus();
 			Log("Difficulty: {0}", _menuItemsDifficulty[_difficulty]);
 		}
-		
+
+		private void OpenAiSelectionScreen()
+		{
+			int initialDifficulty = _difficulty >= 0 ? _difficulty : 0;
+			NewGameAiSelection aiSelection = new(initialDifficulty);
+			aiSelection.StartRequested += AiSelection_StartRequested;
+			aiSelection.Closed += AiSelection_Closed;
+			Common.AddScreen(aiSelection);
+		}
+
+		private void AiSelection_StartRequested(object? sender, NewGameAiSelectionResultEventArgs args)
+		{
+			ArgumentNullException.ThrowIfNull(args);
+			_aiSelectionResult = args.Result;
+
+			NewGameAiSelectionState state = _newGameAiSelectionDelegate.BuildState(_aiSelectionResult, Common.Civilizations);
+			_difficulty = state.Difficulty;
+			_competition = state.Competition;
+			_tribesAvailable = state.TribesAvailable;
+			_menuItemsTribes = state.MenuItemsTribes;
+			_tribe = state.TribeIndex;
+			_leaderName = state.LeaderName;
+			_tribeName = state.TribeName;
+			_tribeNamePlural = state.TribeNamePlural;
+
+			_newGameAiSelectionDelegate.LogSelectionSummary(
+				_aiSelectionResult,
+				_menuItemsDifficulty,
+				Common.DifficultyName,
+				(text, parameters) => Log(text, parameters!));
+		}
+
+		private void AiSelection_Closed(object? sender, EventArgs args)
+		{
+			if (_difficulty < 0)
+			{
+				CloseMenus();
+			}
+		}
+
 		private void SetCompetition(object sender, MenuItemEventArgs<int> args)
 		{
 			_competition = 7 - args.Value;
@@ -218,7 +272,21 @@ namespace CivOne.Screens
 					ICivilization civ = _tribesAvailable[_tribe];
 					try
 					{
-						Game.CreateGame(_difficulty, _competition, civ, _leaderName, _tribeName, _tribeNamePlural, replaceExisting: true);
+						IReadOnlyDictionary<int, int>? aiDifficultyOverrides = _newGameAiSelectionDelegate.BuildDifficultyOverrides(_aiSelectionResult);
+						Game.CreateGame(
+							_difficulty,
+							_competition,
+							civ,
+							_leaderName,
+							_tribeName,
+							_tribeNamePlural,
+							replaceExisting: true,
+							aiDifficultyOverrides: aiDifficultyOverrides);
+						_newGameAiSelectionDelegate.ApplySelectionsToCreatedGame(
+							_aiSelectionResult,
+							Game.Instance.MaxDifficulty,
+							Game.GetPlayer,
+							(text, parameters) => Log(text, parameters!));
 					}
 					catch (Exception ex)
 					{
