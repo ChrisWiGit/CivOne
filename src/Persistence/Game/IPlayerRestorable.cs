@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System;
+using CivOne.Agents;
 using CivOne.Advances;
 using CivOne.Governments;
 using CivOne.Enums;
@@ -22,6 +23,8 @@ namespace CivOne.Persistence.Game
 		new Guid PlayerGuid { get; set; }
 		new Guid? AiId { get; set; }
 		new string TribeNamePlural { get; set; }
+		new AiDifficulty AiDifficulty { get; set; }
+		new byte Handicap { get; set; }
 		new bool[,] Explored { get; set; }
 		new bool[,] Visible { get; set; }
 		new List<byte> Advances { get; set; }

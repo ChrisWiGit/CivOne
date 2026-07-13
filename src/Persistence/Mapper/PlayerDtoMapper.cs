@@ -54,11 +54,13 @@ namespace CivOne.Persistence.Model
 			ArgumentNullException.ThrowIfNull(dto);
 
 			var civilization = _civilizationMapper.FromDto(dto.Civilization);
-			
+
 			IPlayerRestorable player = _playerFactory.Create(civilization, dto);
-			
+
 			player.PlayerGuid = dto.PlayerGuid == Guid.Empty ? Guid.NewGuid() : dto.PlayerGuid;
 			player.AiId = dto.AiId == Guid.Empty ? null : dto.AiId;
+			player.AiDifficulty = ToDifficultyIndex(dto.AiDifficulty);
+			player.Handicap = _valueSanitizer.ClampToByte(dto.Handicap, nameof(PlayerDtoMapper), nameof(PlayerDto.Handicap));
 			player.TribeName = string.IsNullOrEmpty(dto.TribeName) ? civilization.Name : dto.TribeName;
 			player.TribeNamePlural = string.IsNullOrEmpty(dto.TribeNamePlural) ? civilization.NamePlural : dto.TribeNamePlural;
 			player.Explored = dto.Explored;
@@ -114,7 +116,25 @@ namespace CivOne.Persistence.Model
 
 			return player;
 		}
-        public PlayerDto ToDto(IPlayer player)
+
+		private AiDifficulty ToDifficultyIndex(int? dto)
+		{
+			if (!dto.HasValue)
+			{
+				return AiDifficulty.Unspecified;
+			}
+			int aiDifficultyValue = _valueSanitizer.ClampToInt32(
+					dto.Value,
+					mapperName: nameof(PlayerDtoMapper),
+					fieldName: nameof(PlayerDto.AiDifficulty),
+					min: (int)AiDifficulty.Unspecified,
+					max: (int)AiDifficulty.Deity);
+			return Enum.IsDefined(typeof(AiDifficulty), aiDifficultyValue)
+				? (AiDifficulty)aiDifficultyValue
+				: AiDifficulty.Unspecified;
+		}
+
+		public PlayerDto ToDto(IPlayer player)
 		{
 			ArgumentNullException.ThrowIfNull(player);
 
@@ -131,6 +151,8 @@ namespace CivOne.Persistence.Model
 					: player.AiId.HasValue && player.AiId.Value != Guid.Empty
 						? player.AiId
 						: AiDefinitionIds.Legacy,
+				AiDifficulty = player.AiDifficulty == AiDifficulty.Unspecified ? null : (int)player.AiDifficulty,
+				Handicap = player.Handicap,
 
 				Explored = player.Explored,
 				Visible = player.Visible,

@@ -9,6 +9,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using CivOne.Agents;
 using CivOne.Advances;
 using CivOne.Enums;
 using CivOne.Leaders;
@@ -29,7 +30,13 @@ namespace CivOne.Civilizations
 			get
 			{
 				Player? barbarianPlayer = Game.GetPlayer(0);
-				return barbarianPlayer?.Handicap ?? Game.Difficulty;
+				if (barbarianPlayer?.AiDifficulty is AiDifficulty barbarianDifficulty
+					&& barbarianDifficulty != AiDifficulty.Unspecified)
+				{
+					return (int)barbarianDifficulty;
+				}
+
+				return Game.Difficulty;
 			}
 		}
 

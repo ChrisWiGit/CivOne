@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using CivOne.Agents;
 using CivOne.Advances;
 using CivOne.Civilizations;
 using CivOne.Enums;
@@ -368,8 +369,16 @@ namespace CivOne
 				Log("- Player {0} is {1} of the {2}", i, _players[i].LeaderName, _players[i].TribeNamePlural);
 			}
 
-			// Keep barbarian spawn timing aligned with the selected game difficulty by default.
-			_players[0].Handicap = (byte)Math.Clamp(_difficulty, 0, MaxDifficulty);
+			AiDifficulty selectedDifficulty = (AiDifficulty)Math.Clamp(_difficulty, 0, MaxDifficulty);
+			for (int i = 0; i <= competition; i++)
+			{
+				if (_players[i].IsHuman)
+				{
+					continue;
+				}
+
+				_players[i].AiDifficulty = selectedDifficulty;
+			}
 
 			Debug.Assert(HumanPlayer != null, "NewGame invariant violated: HumanPlayer must be initialized during player setup.");
 			if (string.IsNullOrWhiteSpace(SaveMetaData.DisplayName))
@@ -411,11 +420,11 @@ namespace CivOne
 			{
 				return;
 			}
-			for (byte i = 1; i <= competition; i++)
+			for (byte i = 0; i <= competition; i++)
 			{
 				if (aiDifficultyOverrides.TryGetValue(i, out int difficultyOverride))
 				{
-					_players[i].Handicap = (byte)Math.Clamp(difficultyOverride, 0, MaxDifficulty);
+					_players[i].AiDifficulty = (AiDifficulty)Math.Clamp(difficultyOverride, 0, MaxDifficulty);
 				}
 			}
 		}

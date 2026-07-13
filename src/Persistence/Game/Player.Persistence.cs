@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using CivOne.Agents;
 using CivOne.Advances;
 using CivOne.Enums;
 using CivOne.Governments;
@@ -58,6 +59,18 @@ namespace CivOne
 		{
 			get => _tribeNamePlural;
 			set => _tribeNamePlural = value;
+		}
+
+		AiDifficulty IPlayerRestorable.AiDifficulty
+		{
+			get => AiDifficulty;
+			set => AiDifficulty = value;
+		}
+
+		byte IPlayerRestorable.Handicap
+		{
+			get => Handicap;
+			set => Handicap = value;
 		}
 
 		bool[,] IPlayerRestorable.Explored

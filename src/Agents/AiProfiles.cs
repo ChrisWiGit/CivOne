@@ -10,27 +10,37 @@ namespace CivOne.Agents
 		/// <summary>
 		/// No explicit difficulty classification is assigned.
 		/// </summary>
-		Unspecified = 0,
+		Unspecified = -1,
 
 		/// <summary>
-		/// Entry-level behavior intended to be easier to play against.
+		/// Chieftain game difficulty.
 		/// </summary>
-		Easy = 1,
+		Chieftain = 0,
 
 		/// <summary>
-		/// Standard gameplay behavior.
+		/// Warlord game difficulty.
 		/// </summary>
-		Normal = 2,
+		Warlord = 1,
 
 		/// <summary>
-		/// Stronger or more demanding gameplay behavior.
+		/// Prince game difficulty.
 		/// </summary>
-		Hard = 3,
+		Prince = 2,
 
 		/// <summary>
-		/// Incomplete or test-oriented behavior that is not yet considered stable.
+		/// King game difficulty.
 		/// </summary>
-		Experimental = 4
+		King = 3,
+
+		/// <summary>
+		/// Emperor game difficulty.
+		/// </summary>
+		Emperor = 4,
+
+		/// <summary>
+		/// Deity game difficulty.
+		/// </summary>
+		Deity = 5
 	}
 
 	/// <summary>
@@ -103,5 +113,27 @@ namespace CivOne.Agents
 		/// Gets the intended difficulty classification.
 		/// </summary>
 		public AiDifficulty Difficulty { get; } = difficulty;
+	}
+
+	/// <summary>
+	/// Maps <see cref="AiDifficulty"/> classifications to game difficulty indices.
+	/// </summary>
+	public static class AiDifficultyMapper
+	{
+		/// <summary>
+		/// Converts an AI profile difficulty to a game difficulty index.
+		/// </summary>
+		/// <param name="difficulty">The profile difficulty classification.</param>
+		/// <param name="fallbackIndex">The fallback index to use for <see cref="AiDifficulty.Unspecified"/>.</param>
+		/// <returns>The mapped index on the standard game difficulty scale.</returns>
+		public static int ToDifficultyIndex(AiDifficulty difficulty, int fallbackIndex)
+		{
+			if (difficulty == AiDifficulty.Unspecified)
+			{
+				return fallbackIndex;
+			}
+
+			return (int)difficulty;
+		}
 	}
 }

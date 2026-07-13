@@ -68,6 +68,8 @@ namespace CivOne.Persistence.Model
 			{
 				PlayerGuid = _playerGuid,
 				AiId = AiDefinitionIds.Legacy,
+				AiDifficulty = AiDifficulty.King,
+				Handicap = 7,
 				Advances = [1, 2, 3],
 				Embassies = [4, 5],
 				Diplomacy = [0, 1, 2, 3, 4, 5, 6, 7],
@@ -94,6 +96,8 @@ namespace CivOne.Persistence.Model
 				Id = 0,
 				PlayerGuid = _playerGuid,
 				AiId = AiDefinitionIds.Legacy,
+				AiDifficulty = (int)AiDifficulty.King,
+				Handicap = 7,
 				Civilization = new CivilizationDto { LeaderClassName = civsInGame[0].Leader.GetType().Name },
 				Advances = [1, 2, 3],
 				Embassies = [4, 5],
@@ -300,13 +304,47 @@ namespace CivOne.Persistence.Model
 			Assert.Equal(125, clampedZoomPlayer.MapZoomBasisPoints);
 		}
 
+		[Fact]
+		public void TestPlayerDtoMapperFromDtoWithNullAiDifficultyUsesUnspecified()
+		{
+			var dto = new PlayerDto
+			{
+				Civilization = originalDto.Civilization,
+				AiDifficulty = null,
+				CurrentResearch = 1,
+				Government = 1,
+				Advances = [],
+				Embassies = [],
+				Diplomacy = [],
+				Cities = [],
+				Units = [],
+				Explored = new Bool2dMap(5, 5),
+				Visible = new Bool2dMap(5, 5)
+			};
+
+			var actual = _testee.FromDto(dto);
+
+			Assert.Equal(AiDifficulty.Unspecified, actual.AiDifficulty);
+		}
+
+		[Fact]
+		public void TestPlayerDtoMapperToDtoWithUnspecifiedAiDifficultyWritesNull()
+		{
+			_player.AiDifficulty = AiDifficulty.Unspecified;
+			var dto = _testee.ToDto(_player);
+
+			Assert.Null(dto.AiDifficulty);
+		}
+
 		private static Dictionary<string, Action> GetPlayerDtoRoundTripAssertionMap(PlayerDto expected, PlayerDto actual)
 			=> new()
 			{
 				[nameof(PlayerDto.PlayerGuid)] = () => Assert.Equal(expected.PlayerGuid, actual.PlayerGuid),
 				[nameof(PlayerDto.AiId)] = () => Assert.Equal(expected.AiId, actual.AiId),
+				[nameof(PlayerDto.AiDifficulty)] = () => Assert.Equal(expected.AiDifficulty, actual.AiDifficulty),
 				[nameof(PlayerDto.TribeName)] = () => Assert.Equal(expected.TribeName, actual.TribeName),
 				[nameof(PlayerDto.TribeNamePlural)] = () => Assert.Equal(expected.TribeNamePlural, actual.TribeNamePlural),
+				[nameof(PlayerDto.Handicap)] = () => Assert.Equal(expected.Handicap, actual.Handicap),
 				[nameof(PlayerDto.Anarchy)] = () => Assert.Equal(expected.Anarchy, actual.Anarchy),
 				[nameof(PlayerDto.Gold)] = () => Assert.Equal(expected.Gold, actual.Gold),
 				[nameof(PlayerDto.CurrentResearch)] = () => Assert.Equal(expected.CurrentResearch, actual.CurrentResearch),

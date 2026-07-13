@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using CivOne.Services;
 
 namespace CivOne.Agents
 {
@@ -13,7 +14,7 @@ namespace CivOne.Agents
 		{
 			Register(
 				new BarbarianTurnBasedBridgeAgentRegistration(),
-				AiDifficulty.Normal);
+				AiDifficulty.Prince);
 
 			Register(
 				new BarbarianDisabledAgentRegistration(),
@@ -22,7 +23,7 @@ namespace CivOne.Agents
 #if DEBUG
 			Register(
 				new DebugTestAgentRegistration(),
-				AiDifficulty.Experimental);
+				AiDifficulty.Deity);
 #endif
 		}
 
@@ -51,10 +52,12 @@ namespace CivOne.Agents
 
 		public static IReadOnlyCollection<AiDefinition> GetAvailableDefinitions()
 		{
+			var translate = TranslationServiceFactory.CreateDefault();
+				
 			List<AiDefinition> result =
 			[
-				new AiDefinition(AiDefinitionIds.Legacy, "Legacy AI", "Classic built-in AI path.", "CivOne", AiDifficulty.Normal),
-				new AiDefinition(AiDefinitionIds.TurnBasedDefault, "Turn-Based Default", "Default command-based turn controller.", "CivOne", AiDifficulty.Normal)
+				new AiDefinition(AiDefinitionIds.Legacy, translate.Translate("Legacy AI"), translate.Translate("Classic built-in AI path."), "CivOne", AiDifficulty.Prince),
+				new AiDefinition(AiDefinitionIds.TurnBasedDefault, translate.Translate("Turn-Based Default"), translate.Translate("Default command-based turn controller."), "CivOne", AiDifficulty.Prince)
 			];
 
 			result.AddRange(AgentRegistry.Instance.GetRegisteredDefinitions());

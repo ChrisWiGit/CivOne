@@ -65,13 +65,15 @@ namespace CivOne.Screens
 		IReadOnlyList<string> GetDifficultyLabels();
 	}
 
-	internal sealed class AiCatalogEntry(Guid id, string name, string provider)
+	internal sealed class AiCatalogEntry(Guid id, string name, string provider, AiDifficulty difficulty)
 	{
 		public Guid Id { get; } = id;
 
 		public string Name { get; } = name ?? string.Empty;
 
 		public string Provider { get; } = provider ?? string.Empty;
+
+		public AiDifficulty Difficulty { get; } = difficulty;
 	}
 
 	internal sealed class DefaultNewGameAiCatalogService : INewGameAiCatalogService
@@ -83,7 +85,7 @@ namespace CivOne.Screens
 				.. AgentLoaderEntry
 					.GetAvailableDefinitions()
 					.Where(definition => definition.Id != AiDefinitionIds.BarbarianDisabled)
-					.Select(definition => new AiCatalogEntry(definition.Id, definition.DisplayName, definition.Provider))
+					.Select(definition => new AiCatalogEntry(definition.Id, definition.DisplayName, definition.Provider, definition.Difficulty))
 			];
 		}
 
@@ -170,6 +172,19 @@ namespace CivOne.Screens
 			return IsValidDifficultyIndex(difficultyIndex)
 				? _difficultyLabels[difficultyIndex]
 				: Translate("Chieftain");
+		}
+
+		private int GetDifficultyIndexForAi(AiCatalogEntry entry)
+		{
+			ArgumentNullException.ThrowIfNull(entry);
+			int fallback = GetRememberedDifficultyOrDefault();
+			if (_difficultyLabels.Count == 0)
+			{
+				return -1;
+			}
+
+			int mapped = AiDifficultyMapper.ToDifficultyIndex(entry.Difficulty, fallback);
+			return Math.Clamp(mapped, 0, _difficultyLabels.Count - 1);
 		}
 
 		public event EventHandler<NewGameAiSelectionResultEventArgs>? StartRequested;
@@ -317,7 +332,11 @@ namespace CivOne.Screens
 				return -1;
 			}
 
-			return Math.Clamp(player.Handicap, 0, _difficultyLabels.Count - 1);
+			int index = player.AiDifficulty == AiDifficulty.Unspecified
+				? Math.Clamp(_difficulty, 0, _difficultyLabels.Count - 1)
+				: (int)player.AiDifficulty;
+
+			return Math.Clamp(index, 0, _difficultyLabels.Count - 1);
 		}
 
 		private void InitializeRememberedDefaults()
@@ -339,7 +358,7 @@ namespace CivOne.Screens
 
 			AiCatalogEntry fallback = _aiEntries.Count > 0
 				? _aiEntries[0]
-				: new AiCatalogEntry(AiDefinitionIds.Legacy, "Legacy AI", "CivOne");
+				: new AiCatalogEntry(AiDefinitionIds.Legacy, Translate("Legacy AI"), "CivOne", AiDifficulty.Prince);
 
 			return (fallback.Id, fallback.Name);
 		}
@@ -381,8 +400,8 @@ namespace CivOne.Screens
 			}
 
 			AiCatalogEntry defaultBarbarianAi = _aiEntries.FirstOrDefault(entry => entry.Id == AiDefinitionIds.BarbarianBridge)
-				?? new AiCatalogEntry(AiDefinitionIds.BarbarianBridge, "Barbarian Bridge", "CivOne");
-			int defaultDifficultyIndex = GetRememberedDifficultyOrDefault();
+				?? new AiCatalogEntry(AiDefinitionIds.BarbarianBridge, Translate("Barbarian Bridge"), "CivOne", AiDifficulty.Prince);
+			int defaultDifficultyIndex = GetDifficultyIndexForAi(defaultBarbarianAi);
 
 			_opponents.Add(new NewGamePlayerSelection
 			{
@@ -407,7 +426,7 @@ namespace CivOne.Screens
 
 			return _aiEntries.Count > 0
 				? _aiEntries[0]
-				: new AiCatalogEntry(AiDefinitionIds.Legacy, "Legacy AI", "CivOne");
+				: new AiCatalogEntry(AiDefinitionIds.Legacy, Translate("Legacy AI"), "CivOne", AiDifficulty.Prince);
 		}
 
 		private int GetRememberedDifficultyOrDefault()
@@ -906,6 +925,7 @@ namespace CivOne.Screens
 					row.AiId = AiDefinitionIds.BarbarianDisabled;
 					row.AiName = Translate("Disabled");
 					_lastSelectedAiId = AiDefinitionIds.BarbarianDisabled;
+					row.DifficultyIndex = GetRememberedDifficultyOrDefault();
 					CloseMenus();
 					RequestUpdate();
 				});
@@ -918,7 +938,9 @@ namespace CivOne.Screens
 				{
 					row.AiId = entry.Id;
 					row.AiName = entry.Name;
+					row.DifficultyIndex = GetDifficultyIndexForAi(entry);
 					_lastSelectedAiId = entry.Id;
+					_lastSelectedDifficultyIndex = row.DifficultyIndex;
 					CloseMenus();
 					RequestUpdate();
 				});
@@ -987,7 +1009,7 @@ namespace CivOne.Screens
 
 			AiCatalogEntry defaultRegularAi = GetRegularDefaultAiOrFallback();
 			(Guid rememberedAiId, string rememberedAiName) = (defaultRegularAi.Id, defaultRegularAi.Name);
-			int rememberedDifficultyIndex = GetRememberedDifficultyOrDefault();
+			int rememberedDifficultyIndex = GetDifficultyIndexForAi(defaultRegularAi);
 
 			_lastSelectedAiId = rememberedAiId;
 			_lastSelectedDifficultyIndex = rememberedDifficultyIndex;
@@ -1099,7 +1121,7 @@ namespace CivOne.Screens
 			};
 		}
 
-		private int GetLowestOpponentDifficulty()
+		private int GetHighestOpponentDifficulty()
 		{
 			if (_opponents.Count == 0)
 			{
@@ -1107,7 +1129,7 @@ namespace CivOne.Screens
 			}
 
 			int fallbackDifficulty = Math.Clamp(_difficulty, 0, Math.Max(0, _difficultyLabels.Count - 1));
-			int lowestDifficulty = fallbackDifficulty;
+			int highestDifficulty = fallbackDifficulty;
 			bool hasMappedDifficulty = false;
 
 			foreach (NewGamePlayerSelection opponent in _opponents)
@@ -1119,18 +1141,18 @@ namespace CivOne.Screens
 
 				if (!hasMappedDifficulty)
 				{
-					lowestDifficulty = opponent.DifficultyIndex;
+					highestDifficulty = opponent.DifficultyIndex;
 					hasMappedDifficulty = true;
 					continue;
 				}
 
-				if (opponent.DifficultyIndex < lowestDifficulty)
+				if (opponent.DifficultyIndex > highestDifficulty)
 				{
-					lowestDifficulty = opponent.DifficultyIndex;
+					highestDifficulty = opponent.DifficultyIndex;
 				}
 			}
 
-			return hasMappedDifficulty ? lowestDifficulty : fallbackDifficulty;
+			return hasMappedDifficulty ? highestDifficulty : fallbackDifficulty;
 		}
 
 		private void StartGame()
@@ -1141,7 +1163,7 @@ namespace CivOne.Screens
 				return;
 			}
 
-			int selectedGameDifficulty = GetLowestOpponentDifficulty();
+			int selectedGameDifficulty = GetHighestOpponentDifficulty();
 			int participantCount = Math.Max(2, GetRegularOpponentCount() + 1);
 			int highestPreferredSlot = Math.Max(
 				_human.Civilization.PreferredPlayerNumber,
@@ -1208,7 +1230,7 @@ namespace CivOne.Screens
 
 				if (IsValidDifficultyIndex(row.DifficultyIndex))
 				{
-					player.Handicap = (byte)row.DifficultyIndex;
+					player.AiDifficulty = (AiDifficulty)row.DifficultyIndex;
 				}
 			}
 

@@ -13,6 +13,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using CivOne.Agents;
 using CivOne.Advances;
 using CivOne.Civilizations;
 using CivOne.Enums;
@@ -45,7 +46,6 @@ namespace CivOne.Screens
 		private string? _tribeName;
 		private string? _tribeNamePlural;
 		private NewGameAiSelectionResult? _aiSelectionResult;
-		private readonly NewGameAiSelectionDelegate _newGameAiSelectionDelegate = new();
 
 		private bool _done, _showIntroText, _gameCreated, _introDirty;
 		private int _introBorderStyle = -1;
@@ -140,21 +140,21 @@ namespace CivOne.Screens
 			ArgumentNullException.ThrowIfNull(args);
 			_aiSelectionResult = args.Result;
 
-			NewGameAiSelectionState state = _newGameAiSelectionDelegate.BuildState(_aiSelectionResult, Common.Civilizations);
-			_difficulty = state.Difficulty;
-			_competition = state.Competition;
-			_tribesAvailable = state.TribesAvailable;
-			_menuItemsTribes = state.MenuItemsTribes;
-			_tribe = state.TribeIndex;
-			_leaderName = state.LeaderName;
-			_tribeName = state.TribeName;
-			_tribeNamePlural = state.TribeNamePlural;
+			_difficulty = _aiSelectionResult.Difficulty;
+			_competition = _aiSelectionResult.Competition;
 
-			_newGameAiSelectionDelegate.LogSelectionSummary(
-				_aiSelectionResult,
-				_menuItemsDifficulty,
-				Common.DifficultyName,
-				(text, parameters) => Log(text, parameters!));
+			_tribesAvailable = [.. Common.Civilizations.Where(c => c.PreferredPlayerNumber > 0 && c.PreferredPlayerNumber <= _competition)];
+			_menuItemsTribes = [.. _tribesAvailable.Select(c => c.Name)];
+
+			_tribe = Array.FindIndex(_tribesAvailable, civ => civ == _aiSelectionResult.Human.Civilization);
+			if (_tribe < 0)
+			{
+				_tribe = 0;
+			}
+
+			_leaderName = _aiSelectionResult.Human.Name;
+			_tribeName = _aiSelectionResult.Human.Civilization.Name;
+			_tribeNamePlural = _aiSelectionResult.Human.Civilization.NamePlural;
 		}
 
 		private void AiSelection_Closed(object? sender, EventArgs args)
@@ -165,6 +165,70 @@ namespace CivOne.Screens
 			}
 		}
 
+		private void ApplyAiSelectionsToCreatedGame()
+		{
+			if (_aiSelectionResult is null)
+			{
+				return;
+			}
+
+			foreach (NewGamePlayerSelection selection in _aiSelectionResult.Opponents)
+			{
+				int slot = selection.Civilization.PreferredPlayerNumber;
+				if (slot < 0)
+				{
+					continue;
+				}
+
+				Player? player = Game.GetPlayer((byte)slot);
+				if (player is null || player.IsHuman)
+				{
+					continue;
+				}
+
+				IPlayerRestorable restorable = player;
+				restorable.AiId = selection.AiId;
+				if (!string.IsNullOrWhiteSpace(selection.Name))
+				{
+					string trimmedName = selection.Name.Trim();
+					restorable.TribeName = trimmedName;
+					restorable.TribeNamePlural = trimmedName;
+				}
+
+				if (selection.DifficultyIndex >= 0 && selection.DifficultyIndex <= Game.Instance.MaxDifficulty)
+				{
+					player.AiDifficulty = (AiDifficulty)selection.DifficultyIndex;
+				}
+			}
+		}
+
+		private Dictionary<int, int>? BuildAiDifficultyOverrides()
+		{
+			if (_aiSelectionResult is null)
+			{
+				return null;
+			}
+
+			Dictionary<int, int> overrides = [];
+			foreach (NewGamePlayerSelection selection in _aiSelectionResult.Opponents)
+			{
+				if (selection.DifficultyIndex < 0)
+				{
+					continue;
+				}
+
+				int slot = selection.Civilization.PreferredPlayerNumber;
+				if (slot <= 0)
+				{
+					continue;
+				}
+
+				overrides[slot] = selection.DifficultyIndex;
+			}
+
+			return overrides;
+		}
+		
 		private void SetCompetition(object sender, MenuItemEventArgs<int> args)
 		{
 			_competition = 7 - args.Value;
@@ -272,21 +336,9 @@ namespace CivOne.Screens
 					ICivilization civ = _tribesAvailable[_tribe];
 					try
 					{
-						IReadOnlyDictionary<int, int>? aiDifficultyOverrides = _newGameAiSelectionDelegate.BuildDifficultyOverrides(_aiSelectionResult);
-						Game.CreateGame(
-							_difficulty,
-							_competition,
-							civ,
-							_leaderName,
-							_tribeName,
-							_tribeNamePlural,
-							replaceExisting: true,
-							aiDifficultyOverrides: aiDifficultyOverrides);
-						_newGameAiSelectionDelegate.ApplySelectionsToCreatedGame(
-							_aiSelectionResult,
-							Game.Instance.MaxDifficulty,
-							Game.GetPlayer,
-							(text, parameters) => Log(text, parameters!));
+						IReadOnlyDictionary<int, int>? aiDifficultyOverrides = BuildAiDifficultyOverrides();
+						Game.CreateGame(_difficulty, _competition, civ, _leaderName, _tribeName, _tribeNamePlural, replaceExisting: true, aiDifficultyOverrides: aiDifficultyOverrides);
+						ApplyAiSelectionsToCreatedGame();
 					}
 					catch (Exception ex)
 					{

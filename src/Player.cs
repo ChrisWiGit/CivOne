@@ -93,6 +93,7 @@ namespace CivOne
 		public string LeaderName => _civilization.Leader.Name;
 		public string TribeName => _tribeName ?? _civilization?.Name ?? "Unknown";
 		public string TribeNamePlural => _tribeNamePlural ?? _civilization?.NamePlural ?? "Unknown";
+		public AiDifficulty AiDifficulty { get; internal set; } = AiDifficulty.Unspecified;
 
 		public byte Handicap { get; internal set; }
 

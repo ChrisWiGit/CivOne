@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using CivOne.Agents;
 using CivOne.Civilizations;
 using CivOne.Persistence.Game;
 
@@ -143,8 +144,9 @@ namespace CivOne.Screens
 				}
 
 				int slot = selection.Civilization.PreferredPlayerNumber;
-				if (slot <= 0)
+				if (slot < 0)
 				{
+					// includes barbarian (which is index 0)
 					continue;
 				}
 
@@ -193,13 +195,22 @@ namespace CivOne.Screens
 
 				if (selection.DifficultyIndex >= 0 && selection.DifficultyIndex <= maxDifficulty)
 				{
-					player.Handicap = (byte)selection.DifficultyIndex;
+					player.AiDifficulty = (AiDifficulty)selection.DifficultyIndex;
+				} 
+				else
+				{
+					log(
+						"Warning: Ignoring invalid difficulty index {0} for slot {1}. Valid range is 0..{2}.",
+						[
+							selection.DifficultyIndex,
+							slot,
+							maxDifficulty
+						]);
 				}
 
 				log(
 					"Applied AI selection for slot {0}: Name={1}, AiId={2}, AiName={3}, DifficultyIndex={4}, Color={5}, Team={6}",
-					new object?[]
-					{
+					[
 						slot,
 						player.TribeName,
 						selection.AiId?.ToString() ?? "<null>",
@@ -207,7 +218,7 @@ namespace CivOne.Screens
 						selection.DifficultyIndex,
 						selection.ColorSlot,
 						selection.TeamSlot
-					});
+					]);
 			}
 		}
 	}
