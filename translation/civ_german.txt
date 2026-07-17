@@ -1359,3 +1359,4 @@ TEAM #{0}=Team #{0}
 PICK AI=KI wählen
 {0} ({1})={0} ({1})
 PICK AI DIFFICULTY=KI-Schwierigkeit wählen
+No wonders of the world\nhave been built yet.=Es wurden noch keine\nWeltwunder gebaut.

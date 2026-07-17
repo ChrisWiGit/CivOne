@@ -140,6 +140,7 @@ namespace CivOne.Screens
 		{
 			public EmptyScreen() : base(MouseCursor.None)
 			{
+				Palette = new Palette();
 			}
 
 			protected override bool HasUpdate(uint gameTick) => false;
