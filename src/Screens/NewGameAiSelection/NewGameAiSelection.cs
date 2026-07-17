@@ -23,97 +23,6 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens
 {
-	internal sealed class NewGameAiSelectionResult
-	{
-		public required int Difficulty { get; init; }
-
-		public required int Competition { get; init; }
-
-		public required NewGamePlayerSelection Human { get; init; }
-
-		public required IReadOnlyList<NewGamePlayerSelection> Opponents { get; init; }
-	}
-
-	internal sealed class NewGameAiSelectionResultEventArgs(NewGameAiSelectionResult result) : EventArgs
-	{
-		public NewGameAiSelectionResult Result { get; } = result;
-	}
-
-	internal sealed class NewGamePlayerSelection
-	{
-		public required bool IsHuman { get; init; }
-
-		public required string Name { get; set; }
-
-		public required ICivilization Civilization { get; set; }
-
-		public required Guid? AiId { get; set; }
-
-		public required string AiName { get; set; }
-
-		public required int DifficultyIndex { get; set; }
-
-		public required int ColorSlot { get; set; }
-
-		public required int TeamSlot { get; set; }
-	}
-
-	internal interface INewGameAiCatalogService
-	{
-		IReadOnlyList<AiCatalogEntry> GetAiEntries();
-
-		IReadOnlyList<string> GetDifficultyLabels();
-	}
-
-	internal sealed class AiCatalogEntry(Guid id, string name, string provider, AiDifficulty difficulty)
-	{
-		public Guid Id { get; } = id;
-
-		public string Name { get; } = name ?? string.Empty;
-
-		public string Provider { get; } = provider ?? string.Empty;
-
-		public AiDifficulty Difficulty { get; } = difficulty;
-	}
-
-	internal sealed class DefaultNewGameAiCatalogService : INewGameAiCatalogService
-	{
-		public IReadOnlyList<AiCatalogEntry> GetAiEntries()
-		{
-			return
-			[
-				.. AgentLoaderEntry
-					.GetAvailableDefinitions()
-					.Where(definition => definition.Id != AiDefinitionIds.BarbarianDisabled)
-					.Select(definition => new AiCatalogEntry(definition.Id, definition.DisplayName, definition.Provider, definition.Difficulty))
-			];
-		}
-
-		private static readonly string[] BaseDifficultyLabels =
-		[
-			"Chieftain",
-			"Warlord",
-			"Prince",
-			"King",
-			"Emperor"
-		];
-
-		public IReadOnlyList<string> GetDifficultyLabels()
-		{
-			return Settings.Instance.DeityEnabled
-				? [.. BaseDifficultyLabels, "Deity"]
-				: BaseDifficultyLabels;
-		}
-	}
-
-	internal static class NewGameAiCatalogServiceFactory
-	{
-		public static INewGameAiCatalogService Create()
-		{
-			return new DefaultNewGameAiCatalogService();
-		}
-	}
-
 	[Break, ScreenResizeable]
 	internal sealed class NewGameAiSelection : BaseScreen
 	{
@@ -599,9 +508,9 @@ namespace CivOne.Screens
 
 			int footerFontHeight = Resources.GetFontHeight(FooterFont);
 			int footerY = innerBottom - footerFontHeight;
-			
+
 			this.DrawText(Translate("Colors and Teams are currently not implemented."), FooterFont, 8, innerLeft + 4, footerY - footerFontHeight * 2);
-			
+
 			int displayOpponentLimit = (_mode == SelectionMode.InGameEdit || HasBarbarianRow()) ? MaxOpponents + 1 : MaxOpponents;
 			string[] helpText = _mode == SelectionMode.InGameEdit
 				? TranslateFormattedArray("Opponents: {0}/{1} - Keys 1..8 edit\nH = human, S = apply, ESC = back.", _opponents.Count, displayOpponentLimit)
