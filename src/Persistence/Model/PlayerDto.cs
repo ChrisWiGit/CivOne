@@ -26,7 +26,7 @@ namespace CivOne.Persistence.Model
 		[Doc("Stable player identity independent from list/index positions.")]
 		public Guid PlayerGuid { get; set; }
 
-		[Doc("Optional AI definition GUID for this player. Null means human-controlled. Non-human players should store a concrete AI GUID, with the built-in default AI using the fixed all-Fs GUID.")]
+		[Doc("Optional AI definition GUID for this player. Null means human-controlled. Non-human players should store a concrete AI GUID (e.g. the built-in legacy AI GUID or the turn-based default AI all-Fs GUID).")]
 		public Guid? AiId { get; set; }
 
 		[Doc("Selected AI difficulty level (Chieftain..Deity). Null means unspecified and falls back to default game difficulty.", 0, 5)]

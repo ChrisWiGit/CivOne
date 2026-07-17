@@ -6,6 +6,21 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Introduced an AI selection screen. When creating a new game a new menu item ("Use AI selections") is shown in the NewGame screen. 
+  * Add up to 6 AI players to the game, each with a selectable AI type and difficulty level.
+  * Add or remove barbarian AI players to the game. When removing barbarians, barbarians will not spawn on the map.
+  * Change the civilization of each AI player.
+    * Barbarian AI players are always set to the Barbarian civilization and cannot be changed because the game reserves player index 0 for the Barbarian player.
+  * Change the difficulty level of each AI player separately.
+  * Assigning a non-legacy AI type to any player will disable saving using the original SVE savegame format, because SVE cannot store custom AI identifiers. The COS/YAML format must be used instead.
+* Feature: Added AI difficulty and handicap properties to player interfaces
+  * The AI code was separated and refactored to support multiple AI types and difficulty levels.
+  * There are 3 implemented AI types:
+    * Legacy AI: The classic built-in AI from the original CivOne codebase. Controls unit movement, city production, and research selection using the original game logic. Wrapped by `LegacyPlayerAiController` to implement the new `IPlayerAiController` interface without modifying the underlying `AI` class.
+    * Turn-based AI: A new extensible AI framework built around `TurnBasedAgentHost` and `ITurnBasedController`. Each registered agent receives an `ITurnSession` per turn and can control its units independently. Designed to support custom and external AI implementations as plugins via `IAgentRegistration`.
+    * Barbarian AI: Runs barbarian turns through the turn-based framework via `BarbarianTurnBasedBridgeAgentRegistration`, but delegates the actual movement decisions to the existing legacy barbarian logic in `AI.Barbarians.cs`. Can also be configured as disabled (`BarbarianDisabled`), in which case barbarians do not spawn or take actions on the map.
+  * AI implementation, the difficulty and calculated handicap are stored in the new COS savegame format, so the original savegame format cannot be used when AI difficulty is enabled.
+    * Handicap is an original game concept that measures how favorable a civilization's starting position is. It is calculated purely from map factors: isolation from other civs (+4/+2/+1), adjacent terrain quality (river +2, grassland +1), and continent size (+2/+1). A higher handicap means a better starting position. Civs with a lower handicap than the maximum receive a compensating bonus (extra Settlers or free technologies) to balance the game.
 * Feature: The wizard contains a sub menu to allow change game behavior settings directly, instead of having to open the settings screen. Currently, the following settings can be toggled from the wizard:
   * Use smart PathFinding for goto
   * Use smart pathfinding for computer players

@@ -173,7 +173,8 @@ namespace CivOne.Screens
 
 					string text = Items[i].Text ?? string.Empty;
 
-					this.DrawText(text, FontId, Items[i].Enabled ? TextColour : DisabledColour, x + Indent, yy + 1);
+					int textX = x + (DrawFullBackground ? 2 : 0) + Indent;
+					this.DrawText(text, FontId, Items[i].Enabled ? TextColour : DisabledColour, textX, yy + 1);
 				}
 
 				DrawDescription(fontHeight, x, y, offsetY);

@@ -1072,6 +1072,59 @@ You can also use `Return` or `Backspace` to add or remove units without clicking
 Terrain editor changes are written into normal save files.
 Edited terrain, improvements, and land values remain after save and reload.
 
+### New AI selection screen
+
+When starting a new game, the NewGame screen now contains a "Use AI selections" menu item.
+Selecting it opens the AI selection screen where you can configure each opponent individually before the game starts.
+
+#### What you can configure
+
+* Add up to 6 regular AI opponents.
+* Add or remove the Barbarian player.
+  Removing the Barbarian player disables barbarian spawning entirely.
+* Change the civilization of each regular AI player.
+  The Barbarian player is always fixed to the Barbarian civilization and cannot be changed.
+* Choose the AI type for each opponent (see below).
+* Set the difficulty level for each opponent independently.
+
+#### AI types
+
+| AI type | Description |
+| ------- | ----------- |
+| Legacy AI | The classic built-in AI. Uses the original CivOne unit movement, city production, and research logic. |
+| Turn-based AI | A new extensible framework. Receives a full turn session per round and can control its units independently. Designed to support custom and external AI plugins. |
+| Barbarian AI | Routes barbarian turns through the turn-based framework but delegates movement decisions to the existing legacy barbarian logic. Can be set to `Disabled` to suppress all barbarian actions. |
+
+#### Difficulty levels
+
+Difficulty levels range from Chieftain to Emperor (and Deity if enabled in Patches).
+Each opponent can have a different difficulty level.
+The highest opponent difficulty is used as the game difficulty for gameplay balance purposes.
+
+#### Savegame format
+
+If any opponent is assigned a non-legacy AI type, saving in the original SVE format is disabled.
+Only the COS/YAML format supports custom AI identifiers.
+
+#### Hotkeys
+
+| Key | Action |
+| --- | ------ |
+| `1` to `7` | Open the edit menu for opponent 1 to 7. |
+| `8` | Edit opponent 8 (if barbarian row is present). |
+| `H` | Edit the human player name and civilization. |
+| `A` | Add a new opponent (up to 6 regular opponents). |
+| `S` | Start the game (or apply changes in in-game edit mode). |
+| `Esc` | Cancel and go back. |
+
+#### In-game editing
+
+The AI selection screen can also be opened during a running game from the debug menu.
+In that mode, changes to AI type and difficulty are applied to the current game immediately.
+Adding or removing opponents is not available in this mode.
+
+> Colors and Teams are visible in the screen but not yet implemented.
+
 ## Analyzing Build Warnings
 
 When working with large .NET solutions, it is often useful to identify the most frequent warnings first and address them in descending order of impact.
