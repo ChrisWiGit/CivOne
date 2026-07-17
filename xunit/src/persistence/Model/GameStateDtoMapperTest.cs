@@ -3,14 +3,13 @@ namespace CivOne.Persistence.Model
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-		using CivOne.Agents;
+	using CivOne.Agents;
 	using CivOne;
 	using CivOne.Advances;
 	using CivOne.Buildings;
 	using CivOne.Civilizations;
 	using CivOne.Enums;
 	using CivOne.Governments;
-	using CivOne.Leaders;
 	using CivOne.Persistence.Yaml;
 	using CivOne.UnitTests;
 	using CivOne.Units;

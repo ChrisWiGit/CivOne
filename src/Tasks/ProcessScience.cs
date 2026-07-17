@@ -69,7 +69,7 @@ namespace CivOne.Tasks
 				{
 					if (_player.AiController == null)
 					{
-						Log($"Warning: The player {_player.TribeName} is not human but has no field AI. Skipping research selection.");
+						Log($"Warning: The player {_player.TribeName} is not human but has no AI controller. Skipping research selection.");
 					}
 					else
 					{
@@ -98,7 +98,7 @@ namespace CivOne.Tasks
 				{
 					if (_player.AiController == null)
 					{
-						Log($"Warning: The player {_player.TribeName} is not human but has no field AI. Skipping research selection.");
+						Log($"Warning: The player {_player.TribeName} is not human but has no AI controller. Skipping research selection.");
 					}
 					else
 					{

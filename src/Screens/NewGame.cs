@@ -46,6 +46,7 @@ namespace CivOne.Screens
 		private string? _tribeName;
 		private string? _tribeNamePlural;
 		private NewGameAiSelectionResult? _aiSelectionResult;
+		private readonly NewGameAiSetupDelegate _aiSetupDelegate;
 
 		private bool _done, _showIntroText, _gameCreated, _introDirty;
 		private int _introBorderStyle = -1;
@@ -140,21 +141,28 @@ namespace CivOne.Screens
 			ArgumentNullException.ThrowIfNull(args);
 			_aiSelectionResult = args.Result;
 
-			_difficulty = _aiSelectionResult.Difficulty;
-			_competition = _aiSelectionResult.Competition;
+			NewGameAiSelectionState state = _aiSetupDelegate.BuildState(_aiSelectionResult, Common.Civilizations);
+			_difficulty = state.Difficulty;
+			_competition = state.Competition;
+			_tribesAvailable = state.TribesAvailable;
+			_menuItemsTribes = state.MenuItemsTribes;
+			_tribe = state.TribeIndex;
+			_leaderName = state.LeaderName;
+			_tribeName = state.TribeName;
+			_tribeNamePlural = state.TribeNamePlural;
 
-			_tribesAvailable = [.. Common.Civilizations.Where(c => c.PreferredPlayerNumber > 0 && c.PreferredPlayerNumber <= _competition)];
-			_menuItemsTribes = [.. _tribesAvailable.Select(c => c.Name)];
+			_aiSetupDelegate.LogSelectionSummary(
+				_aiSelectionResult,
+				_menuItemsDifficulty,
+				ResolveDifficultyName,
+				Log);
+		}
 
-			_tribe = Array.FindIndex(_tribesAvailable, civ => civ == _aiSelectionResult.Human.Civilization);
-			if (_tribe < 0)
-			{
-				_tribe = 0;
-			}
-
-			_leaderName = _aiSelectionResult.Human.Name;
-			_tribeName = _aiSelectionResult.Human.Civilization.Name;
-			_tribeNamePlural = _aiSelectionResult.Human.Civilization.NamePlural;
+		private string ResolveDifficultyName(int difficultyIndex)
+		{
+			return difficultyIndex >= 0 && difficultyIndex < _menuItemsDifficulty.Length
+				? _menuItemsDifficulty[difficultyIndex]
+				: difficultyIndex.ToString(CultureInfo.InvariantCulture);
 		}
 
 		private void AiSelection_Closed(object? sender, EventArgs args)
@@ -167,66 +175,16 @@ namespace CivOne.Screens
 
 		private void ApplyAiSelectionsToCreatedGame()
 		{
-			if (_aiSelectionResult is null)
-			{
-				return;
-			}
-
-			foreach (NewGamePlayerSelection selection in _aiSelectionResult.Opponents)
-			{
-				int slot = selection.Civilization.PreferredPlayerNumber;
-				if (slot < 0)
-				{
-					continue;
-				}
-
-				Player? player = Game.GetPlayer((byte)slot);
-				if (player is null || player.IsHuman)
-				{
-					continue;
-				}
-
-				IPlayerRestorable restorable = player;
-				restorable.AiId = selection.AiId;
-				if (!string.IsNullOrWhiteSpace(selection.Name))
-				{
-					string trimmedName = selection.Name.Trim();
-					restorable.TribeName = trimmedName;
-					restorable.TribeNamePlural = trimmedName;
-				}
-
-				if (selection.DifficultyIndex >= 0 && selection.DifficultyIndex <= Game.Instance.MaxDifficulty)
-				{
-					player.AiDifficulty = (AiDifficulty)selection.DifficultyIndex;
-				}
-			}
+			_aiSetupDelegate.ApplySelectionsToCreatedGame(
+				_aiSelectionResult,
+				Game.Instance.MaxDifficulty,
+				slot => Game.GetPlayer(slot),
+				Log);
 		}
 
-		private Dictionary<int, int>? BuildAiDifficultyOverrides()
+		private IReadOnlyDictionary<int, int>? BuildAiDifficultyOverrides()
 		{
-			if (_aiSelectionResult is null)
-			{
-				return null;
-			}
-
-			Dictionary<int, int> overrides = [];
-			foreach (NewGamePlayerSelection selection in _aiSelectionResult.Opponents)
-			{
-				if (selection.DifficultyIndex < 0)
-				{
-					continue;
-				}
-
-				int slot = selection.Civilization.PreferredPlayerNumber;
-				if (slot <= 0)
-				{
-					continue;
-				}
-
-				overrides[slot] = selection.DifficultyIndex;
-			}
-
-			return overrides;
+			return _aiSetupDelegate.BuildDifficultyOverrides(_aiSelectionResult);
 		}
 		
 		private void SetCompetition(object sender, MenuItemEventArgs<int> args)
@@ -385,7 +343,6 @@ namespace CivOne.Screens
 					Log(line);
 					yy += 8;
 				}
-
 				PlaySound(Human.Civilization.Tune);
 				
 				_showIntroText = true;
@@ -531,6 +488,7 @@ namespace CivOne.Screens
 		public NewGame() : base(MouseCursor.Pointer)
 		{
 			OnResize += Resize;
+			_aiSetupDelegate = new();
 			
 			if (Runtime.Settings.Free || !Resources.Exists("DIFFS"))
 			{

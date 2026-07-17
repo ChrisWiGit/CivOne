@@ -43,7 +43,7 @@ namespace CivOne.Agents
 	/// </summary>
 	internal sealed class PlayerAiControllerFactory : IPlayerAiControllerFactory
 	{
-		private readonly Dictionary<Guid, IPlayerAiController> _controllers = [];
+		private readonly Dictionary<Player, IPlayerAiController> _controllers = [];
 
 		/// <summary>
 		/// Gets the singleton factory instance.
@@ -59,10 +59,13 @@ namespace CivOne.Agents
 		{
 			ArgumentNullException.ThrowIfNull(player);
 
-			if (!_controllers.TryGetValue(player.PlayerGuid, out IPlayerAiController? controller))
+			// using Player as cache key is necessary, 
+			// otherwise the factory can return a controller bound to an old Player instance (stale state / wrong AI target) 
+			// if a game is loaded/recreated in the same process with the same persisted PlayerGuid.
+			if (!_controllers.TryGetValue(player, out IPlayerAiController? controller))
 			{
 				controller = new LegacyPlayerAiController(player);
-				_controllers[player.PlayerGuid] = controller;
+				_controllers[player] = controller;
 			}
 
 			return controller;

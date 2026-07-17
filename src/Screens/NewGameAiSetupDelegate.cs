@@ -37,7 +37,7 @@ namespace CivOne.Screens
 	}
 
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1822:Mark members as static", Justification = "Instance methods are required by design.")]
-	internal sealed class NewGameAiSelectionDelegate
+	internal sealed class NewGameAiSetupDelegate
 	{
 		public NewGameAiSelectionState BuildState(NewGameAiSelectionResult result, IEnumerable<ICivilization> civilizations)
 		{
@@ -73,7 +73,7 @@ namespace CivOne.Screens
 			NewGameAiSelectionResult? aiSelectionResult,
 			IReadOnlyList<string> menuItemsDifficulty,
 			Func<int, string> difficultyNameResolver,
-			Action<string, object?[]> log)
+			Action<string, object[]> log)
 		{
 			if (aiSelectionResult is null)
 			{
@@ -86,23 +86,21 @@ namespace CivOne.Screens
 
 			log(
 				"AI selection mode active: Difficulty={0} ({1}), Competition={2}, Opponents={3}",
-				new object?[]
-				{
+				[
 					aiSelectionResult.Difficulty,
 					selectedDifficultyLabel,
 					aiSelectionResult.Competition,
 					aiSelectionResult.Opponents.Count
-				});
+				]);
 
 			log(
 				"AI selection human: Name={0}, Civilization={1}, Color={2}, Team={3}",
-				new object?[]
-				{
+				[
 					aiSelectionResult.Human.Name,
 					aiSelectionResult.Human.Civilization.Name,
 					aiSelectionResult.Human.ColorSlot,
 					aiSelectionResult.Human.TeamSlot
-				});
+				]);
 
 			foreach (NewGamePlayerSelection selection in aiSelectionResult.Opponents)
 			{
@@ -113,8 +111,7 @@ namespace CivOne.Screens
 
 				log(
 					"AI selection opponent: Slot={0}, Name={1}, Civilization={2}, AiId={3}, AiName={4}, Difficulty={5} ({6}), Color={7}, Team={8}",
-					new object?[]
-					{
+					[
 						slot,
 						selection.Name,
 						selection.Civilization.Name,
@@ -124,7 +121,7 @@ namespace CivOne.Screens
 						difficultyLabel,
 						selection.ColorSlot,
 						selection.TeamSlot
-					});
+					]);
 			}
 		}
 
@@ -144,7 +141,7 @@ namespace CivOne.Screens
 				}
 
 				int slot = selection.Civilization.PreferredPlayerNumber;
-				if (slot < 0)
+				if (slot <= 0)
 				{
 					// includes barbarian (which is index 0)
 					continue;
@@ -160,7 +157,7 @@ namespace CivOne.Screens
 			NewGameAiSelectionResult? aiSelectionResult,
 			int maxDifficulty,
 			Func<byte, Player?> getPlayer,
-			Action<string, object?[]> log)
+			Action<string, object[]> log)
 		{
 			if (aiSelectionResult is null)
 			{
