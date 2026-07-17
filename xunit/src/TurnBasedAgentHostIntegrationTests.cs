@@ -19,8 +19,11 @@ namespace CivOne.UnitTests
 			// Arrange
 			ResetHostState();
 			Player aiPlayer = GetHostManagedAiPlayer();
+			Assert.IsAssignableFrom<IPlayerRestorable>(aiPlayer);
+			
 			ThrowingController controller = new();
 			RegisterAndBind(aiPlayer, controller);
+			((IPlayerRestorable)aiPlayer).AiId = AiDefinitionIds.TurnBasedDefault;
 			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(aiPlayer));
 
 			// Act
@@ -196,8 +199,11 @@ namespace CivOne.UnitTests
 			// Arrange
 			ResetHostState();
 			Player aiPlayer = GetHostManagedAiPlayer();
+			Assert.IsAssignableFrom<IPlayerRestorable>(aiPlayer);
+			
 			NoEndTurnController controller = new();
 			RegisterAndBind(aiPlayer, controller);
+			((IPlayerRestorable)aiPlayer).AiId = AiDefinitionIds.TurnBasedDefault;
 			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(aiPlayer));
 
 			// Act
@@ -218,6 +224,8 @@ namespace CivOne.UnitTests
 
 			ResearchSpamController controller = new();
 			RegisterAndBind(aiPlayer, controller);
+			Assert.IsAssignableFrom<IPlayerRestorable>(aiPlayer);
+			((IPlayerRestorable)aiPlayer).AiId = AiDefinitionIds.TurnBasedDefault;
 			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(aiPlayer));
 
 			// Act
@@ -236,6 +244,8 @@ namespace CivOne.UnitTests
 			Player aiPlayer = GetHostManagedAiPlayer();
 			MoveSpamController controller = new();
 			RegisterAndBind(aiPlayer, controller);
+			Assert.IsAssignableFrom<IPlayerRestorable>(aiPlayer);
+			((IPlayerRestorable)aiPlayer).AiId = AiDefinitionIds.TurnBasedDefault;
 			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(aiPlayer));
 
 			// Act
@@ -257,6 +267,8 @@ namespace CivOne.UnitTests
 
 			DeterministicFullTurnController controller = new();
 			RegisterAndBind(aiPlayer, controller);
+			Assert.IsAssignableFrom<IPlayerRestorable>(aiPlayer);
+			((IPlayerRestorable)aiPlayer).AiId = AiDefinitionIds.TurnBasedDefault;
 			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(aiPlayer));
 
 			// Act
@@ -287,6 +299,8 @@ namespace CivOne.UnitTests
 			MemoryLoadProbeController controller = new(memory);
 			TestAgentRegistration registration = new(controller, memory);
 			RegisterAndBind(aiPlayer, registration);
+			Assert.IsAssignableFrom<IPlayerRestorable>(aiPlayer);
+			((IPlayerRestorable)aiPlayer).AiId = registration.GetInformation().GetUuid();
 			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(aiPlayer));
 
 			FakeAgentMemoryStore memoryStore = new();
@@ -310,6 +324,8 @@ namespace CivOne.UnitTests
 			MemorySaveProbeController controller = new(memory);
 			TestAgentRegistration registration = new(controller, memory);
 			RegisterAndBind(aiPlayer, registration);
+			Assert.IsAssignableFrom<IPlayerRestorable>(aiPlayer);
+			((IPlayerRestorable)aiPlayer).AiId = registration.GetInformation().GetUuid();
 			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(aiPlayer));
 
 			FakeAgentMemoryStore memoryStore = new();
@@ -381,6 +397,8 @@ namespace CivOne.UnitTests
 			Player aiPlayer = GetHostManagedAiPlayer();
 			DeterministicFullTurnController controller = new();
 			RegisterAndBind(aiPlayer, controller);
+			Assert.IsAssignableFrom<IPlayerRestorable>(aiPlayer);
+			((IPlayerRestorable)aiPlayer).AiId = AiDefinitionIds.TurnBasedDefault;
 			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(aiPlayer));
 
 			FakeAgentTurnMetricsHook metricsHook = new();
@@ -405,6 +423,8 @@ namespace CivOne.UnitTests
 			// Arrange
 			ResetHostState();
 			Player aiPlayer = GetHostManagedAiPlayer();
+			Assert.IsAssignableFrom<IPlayerRestorable>(aiPlayer);
+			((IPlayerRestorable)aiPlayer).AiId = AiDefinitionIds.TurnBasedDefault;
 			byte aiPlayerNumber = (byte)Game.Instance.PlayerNumber(aiPlayer);
 			Guid unitId = Game.Instance.GetUnits().First(unit => unit.Owner == aiPlayerNumber).Id;
 			DisbandProbeController controller = new(unitId);

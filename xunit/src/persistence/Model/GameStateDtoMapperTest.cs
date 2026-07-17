@@ -462,7 +462,7 @@ namespace CivOne.Persistence.Model
 			public bool Started => true;
 			public ushort GameTurn => 0;
 			public int Difficulty => 3;
-			public Player HumanPlayer => throw new NotImplementedException();
+			public Player HumanPlayer => null!;
 			public Player CurrentPlayer => throw new NotImplementedException();
 			// Return a dummy Player array for Validate to use as fallback
 			// In tests, this satisfies the check that gameInstance.Players.Any()
@@ -519,7 +519,6 @@ namespace CivOne.Persistence.Model
 			public IWonder[] ResolveWonders(IEnumerable<Wonder> wonderTypes)
 				=> [.. (wonderTypes ?? []).Select(type => new MockedIWonder { Type = type })];
 		}
-
 		private sealed class TestAdvanceResolver : IAdvanceResolver
 		{
 			public IAdvance ResolveById(uint id)
