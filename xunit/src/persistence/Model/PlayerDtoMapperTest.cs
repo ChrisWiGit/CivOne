@@ -4,7 +4,7 @@ namespace CivOne.Persistence.Model
 	using System.Collections.Generic;
 	using System.Drawing;
 	using System.Linq;
-		using CivOne.Agents;
+	using CivOne.Agents;
 	using CivOne.Advances;
 	using CivOne.Buildings;
 	using CivOne.Civilizations;
@@ -20,7 +20,6 @@ namespace CivOne.Persistence.Model
 	using CivOne.Persistence.Factories;
 	using CivOne.Persistence.Game;
 	using CivOne.Persistence.Resolver;
-	using CivOne.Persistence.Mapper;
 	using CivOne.Services.SpaceShip;
 
 	public class PlayerDtoMapperTest
