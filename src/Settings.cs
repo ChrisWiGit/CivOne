@@ -140,6 +140,9 @@ namespace CivOne
 		/// </remarks>
 		public string CosSavesDirectory => Path.Combine(StorageDirectory, "saves", "cos");
 
+		/// <inheritdoc/>
+		public string MapsDirectory => Path.Combine(StorageDirectory, "maps");
+
 		/// <summary>
 		/// Gets the directory used for sound assets.
 		/// </summary>
@@ -713,7 +716,7 @@ namespace CivOne
 		
 		private void CreateDirectories()
 		{
-			foreach (string dir in new[] { StorageDirectory, CaptureDirectory, DataDirectory, PluginsDirectory, SavesDirectory, CosSavesDirectory, SoundsDirectory })
+			foreach (string dir in new[] { StorageDirectory, CaptureDirectory, DataDirectory, PluginsDirectory, SavesDirectory, CosSavesDirectory, MapsDirectory, SoundsDirectory })
                 if (!Directory.Exists(dir))
 			    {
 				    Directory.CreateDirectory(dir);

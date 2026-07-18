@@ -21,6 +21,7 @@ using CivOne.IO;
 using CivOne.IO.Text;
 using CivOne.Screens.Reports;
 using CivOne.Services;
+using CivOne.Services.Maps;
 using CivOne.Services.Random;
 using CivOne.Tasks;
 using CivOne.UserInterface;
@@ -160,14 +161,26 @@ namespace CivOne.Screens
 		private void RebuildShortcutMapping()
 		{
 			var menuItems = GetMenuItems();
-			_shortKeyMapping = new Dictionary<char, Action<object, EventArgs>>
+			_shortKeyMapping = [];
+			AddShortcut(menuItems[0], StartNewGame);
+			AddShortcut(menuItems[1], LoadSavedGame);
+			AddShortcut(menuItems[2], LoadMaps);
+			AddShortcut(menuItems[3], CustomizeWorld);
+			AddShortcut(menuItems[4], ViewHallOfFame);
+		}
+
+		private void AddShortcut(string label, Action<object, EventArgs> action)
+		{
+			foreach (char key in label.ToUpper(CultureInfo.CurrentCulture))
 			{
-				{ menuItems[0].ToUpper(CultureInfo.CurrentCulture)[0], StartNewGame },
-				{ menuItems[1].ToUpper(CultureInfo.CurrentCulture)[0], LoadSavedGame },
-				{ menuItems[2].ToUpper(CultureInfo.CurrentCulture)[0], Earth },
-				{ menuItems[3].ToUpper(CultureInfo.CurrentCulture)[0], CustomizeWorld },
-				{ menuItems[4].ToUpper(CultureInfo.CurrentCulture)[0], ViewHallOfFame }
-			};
+				if (!char.IsLetterOrDigit(key) || _shortKeyMapping!.ContainsKey(key))
+				{
+					continue;
+				}
+
+				_shortKeyMapping.Add(key, action);
+				return;
+			}
 		}
 
 		public void OnLanguageChanged(string? _)
@@ -328,7 +341,7 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 			[
 				Translate("Start a New Game"),
 				Translate("Load a Saved Game"),
-				Translate("EARTH"),
+				Translate("Load maps..."),
 				Translate("Customize World"),
 				Translate("View Hall of Fame")
 			];
@@ -363,7 +376,7 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 			var items = GetMenuItems();
 			menu.Items.Add(items[0]).OnSelect(StartNewGame);
 			menu.Items.Add(items[1]).OnSelect(LoadSavedGame);
-			menu.Items.Add(items[2]).OnSelect(Earth);
+			menu.Items.Add(items[2]).OnSelect(LoadMaps);
 			menu.Items.Add(items[3]).OnSelect(CustomizeWorld);
 			menu.Items.Add(items[4]).OnSelect(ViewHallOfFame);
 			menu.Items.Add(Translate("Change language...")).OnSelect(ChangeLanguage);
@@ -450,11 +463,11 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 			LoadGame.LoadSaveFile(slot.Item1, slot.Item2);
 		}
 		
-		private void Earth(object sender, EventArgs args)
+		private void LoadMaps(object sender, EventArgs args)
 		{
-			Log("Main Menu: EARTH");
-			Map.LoadEarthMapInThread();
-			StartIntro();
+			Log("Main Menu: Load maps...");
+			Destroy();
+			Common.AddScreen(new LoadMapScreen(CustomMapLoaderServiceFactory.Create()));
 		}
 		
 		private void CustomizeWorld(object sender, EventArgs args)

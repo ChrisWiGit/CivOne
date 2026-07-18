@@ -14,6 +14,7 @@ using System.Linq;
 using CivOne.Advances;
 using CivOne.Civilizations;
 using CivOne.Enums;
+using CivOne.Persistence.Model;
 using CivOne.Services;
 using CivOne.Services.GlobalWarming;
 using CivOne.Services.Random;
@@ -81,7 +82,17 @@ namespace CivOne
 				// Choose a map square randomly
 				int x = randomService.NextInt(0, Map.WIDTH);
 				int y = randomService.NextInt(2, Map.HEIGHT - 2);
-				if (Map.FixedStartPositions && GameTurn == 0)
+				MapLocation? mapStartPosition = _players[player].MapStartPosition;
+				if (GameTurn == 0 && mapStartPosition is MapLocation startPosition)
+				{
+					x = (int)startPosition.X;
+					y = (int)startPosition.Y;
+					if (TryPlaceStartingSettlers(player, x, y, true))
+					{
+						return;
+					}
+				}
+				else if (Map.FixedStartPositions && GameTurn == 0)
 				{
 					// Map position is fixed, don't check anything
 					x = _players[player].Civilization.StartX;
@@ -142,6 +153,19 @@ namespace CivOne
 
 			Log("AddStartingUnits: no valid fallback tile found for player {0}.", player);
 			throw new InvalidOperationException($"Unable to place starting settlers for player {player}.");
+		}
+
+		private static void ApplyMapStartPosition(Player player)
+		{
+			ArgumentNullException.ThrowIfNull(player);
+
+			if (Map.TryGetStartPosition(player.Civilization, out MapLocation? mapStartPosition))
+			{
+				player.MapStartPosition = mapStartPosition;
+				return;
+			}
+
+			player.MapStartPosition = null;
 		}
 
 		private void CalculateHandicap(byte player)
@@ -326,6 +350,7 @@ namespace CivOne
 				if (i == tribe.PreferredPlayerNumber)
 				{
 					_players[i] = new Player(tribe, leaderName, playerTribeName, playerTribeNamePlural);
+					ApplyMapStartPosition(_players[i]);
 					_players[i].Destroyed += PlayerDestroyed;
 					HumanPlayer = _players[i];
 					HumanPlayer.TaxesRate = Settings.TaxRate; // fire-eggs 20190725
@@ -340,6 +365,7 @@ namespace CivOne
 				ICivilization[] civs = Common.Civilizations.Where(civ => civ.PreferredPlayerNumber == i).ToArray();
 				int r = startRandom.Next(civs.Length);
 				_players[i] = new Player(civs[r], customTribeName: null);
+				ApplyMapStartPosition(_players[i]);
 				if (i != 0)
 				{
 					// fire-eggs 20190730 never show "barbarian civilization destroyed"

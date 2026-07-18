@@ -75,6 +75,7 @@ namespace CivOne.Screens.Debug
 		private readonly byte _fontId;
 		private readonly bool _allowCancel;
 		private readonly int _defaultSelectedIndex;
+		private readonly int _minDialogWidth;
 
 		private int _gridRows, _gridCols;
 		private int _gridCellWidth, _gridCellHeight;
@@ -498,7 +499,7 @@ namespace CivOne.Screens.Debug
 			int desiredCellWidth = maxLabelWidth + 8;
 			int cellWidth = Math.Min(desiredCellWidth, Math.Max(8, usableGridWidth / _gridCols));
 
-			_gridContentWidth = cellWidth * _gridCols + 8;
+			_gridContentWidth = Math.Max(cellWidth * _gridCols + 8, _minDialogWidth);
 			_gridContentHeight = HeaderHeight + (cellHeight * _gridRows) + BottomPadding;
 			_gridContentHeight = Math.Min(_gridContentHeight, canvasHeight - (VerticalDialogMargin * 2));
 
@@ -536,7 +537,7 @@ namespace CivOne.Screens.Debug
 			int minSelectedContentWidth = string.IsNullOrEmpty(selectedText)
 				? 0
 				: Resources.GetTextSize(_fontId, selectedText).Width + 16;
-			int minHeaderContentWidth = Math.Max(minTitleContentWidth, minSelectedContentWidth);
+			int minHeaderContentWidth = Math.Max(Math.Max(minTitleContentWidth, minSelectedContentWidth), _minDialogWidth);
 			if (_gridContentWidth < minHeaderContentWidth)
 			{
 				_gridContentWidth = minHeaderContentWidth;
@@ -866,9 +867,10 @@ namespace CivOne.Screens.Debug
 		/// Pressing a single-match hotkey activates that item immediately.
 		/// Pressing a multi-match hotkey only cycles the selection cursor among matching items.
 		/// </param>
+		/// <param name="minDialogWidth">Optional minimum dialog width in pixels.</param>
 		public GridMenuDelegate(string[] items, SelectionMode mode, Func<int, bool>? isChecked = null,
 				byte fontId = 1, bool allowCancel = true, int defaultSelectedIndex = -1,
-				bool enableHotkeys = false)
+				bool enableHotkeys = false, int minDialogWidth = 0)
 		{
 			_items = items;
 			_mode = mode;
@@ -877,6 +879,7 @@ namespace CivOne.Screens.Debug
 			_allowCancel = allowCancel;
 			_defaultSelectedIndex = defaultSelectedIndex;
 			_enableHotkeys = enableHotkeys;
+			_minDialogWidth = Math.Max(0, minDialogWidth);
 			_defaultSelectionPending = _mode == SelectionMode.Select
 				&& _defaultSelectedIndex >= 0
 				&& _defaultSelectedIndex < _items.Length;

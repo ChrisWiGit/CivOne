@@ -56,6 +56,7 @@ namespace CivOne
 			UseDefaultMapSize();
 			Log("Map: Loading {0} - Random seed: {1}", filename, randomSeed);
 			_terrainMasterWord = randomSeed;
+			ClearStartPositions();
 			
 			using (Bytemap bitmap = _mapResourceProvider.GetPicture(filename).Bitmap)
 			{
@@ -213,6 +214,8 @@ namespace CivOne
 		protected void RunEarthMapThread()
 		{
 			Log("Map: Loading MAP.PIC");
+			ClearStartPositions();
+			FixedStartPositions = true;
 			
 			using (Bytemap bitmap = _mapResourceProvider.GetPicture("MAP").Bitmap)
 			{
@@ -245,6 +248,7 @@ namespace CivOne
 			_climateValue = -1;
 			_age = null;
 			_ageValue = -1;
+			ClearStartPositions();
 			FixedStartPositions = true;
 
 			TaskRunEarthMapGeneration();

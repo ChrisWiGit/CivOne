@@ -367,6 +367,7 @@ namespace CivOne
 			}
 
 			EnsureTranslationFilesAvailable(runtime);
+			EnsureMapFilesAvailable(runtime);
 			ConfigureTranslation(runtime);
 			_instance = new RuntimeHandler(runtime, CreateQuickSaveLoadHotkeyService(runtime));
 		}
@@ -402,8 +403,44 @@ namespace CivOne
 			runtime.Log("Copied {0} translation file(s) to {1}", copiedCount, targetDirectory);
 		}
 
+		private static void EnsureMapFilesAvailable(IRuntime runtime)
+		{
+			string? sourceDirectory = FindStartupContentDirectory("maps");
+			if (string.IsNullOrEmpty(sourceDirectory))
+			{
+				runtime.Log("Map source directory not found. Skipping .comap file copy.");
+				return;
+			}
+
+			string targetDirectory = Path.Combine(runtime.StorageDirectory, "maps");
+			Directory.CreateDirectory(targetDirectory);
+
+			int copiedCount = 0;
+			foreach (string sourcePath in Directory.EnumerateFiles(sourceDirectory, "*.comap", SearchOption.TopDirectoryOnly))
+			{
+				string filename = Path.GetFileName(sourcePath);
+				string targetPath = Path.Combine(targetDirectory, filename);
+				if (File.Exists(targetPath))
+				{
+					continue;
+				}
+
+				File.Copy(sourcePath, targetPath);
+				copiedCount++;
+			}
+
+			runtime.Log("Copied {0} .comap file(s) to {1}", copiedCount, targetDirectory);
+		}
+
 		private static string? FindTranslationSourceDirectory()
 		{
+			return FindStartupContentDirectory("translation");
+		}
+
+		private static string? FindStartupContentDirectory(string directoryName)
+		{
+			ArgumentException.ThrowIfNullOrWhiteSpace(directoryName);
+
 			string[] roots =
 			[
 				AppContext.BaseDirectory,
@@ -415,7 +452,7 @@ namespace CivOne
 				DirectoryInfo? directory = new(root);
 				while (directory != null)
 				{
-					string candidate = Path.Combine(directory.FullName, "translation");
+					string candidate = Path.Combine(directory.FullName, directoryName);
 					if (Directory.Exists(candidate))
 					{
 						return candidate;

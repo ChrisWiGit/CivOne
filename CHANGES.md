@@ -6,6 +6,11 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Replaced the `EARTH` entry in the credits menu with `Load Maps...`
+  * Custom maps can now be loaded from the `maps` folder in the CivOne user profile directory.
+  * The `maps` folder is created automatically on first run and is used for custom map files with the `.comap` extension.
+  * Added optional `StartPositions` support to the map file format for civilization-specific starting positions.
+  * If a map file defines a valid start position for a civilization, that position is used instead of random placement or the original default Earth start position.
 * Feature: The wizard contains a sub menu to allow change game behavior settings directly, instead of having to open the settings screen. Currently, the following settings can be toggled from the wizard:
   * Use smart PathFinding for goto
   * Use smart pathfinding for computer players

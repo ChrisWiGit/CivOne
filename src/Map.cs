@@ -14,6 +14,8 @@ using System.Linq;
 using System.Threading;
 using CivOne.Enums;
 using CivOne.Graphics;
+using CivOne.Persistence.Model;
+using CivOne.Civilizations;
 using CivOne.Services.Maps;
 using CivOne.Services.Random;
 using CivOne.Tiles;
@@ -191,6 +193,7 @@ namespace CivOne
 		public void ResetForGenerationRetry()
 		{
 			_tiles = null!;
+			ClearStartPositions();
 			SetReady(false);
 			SetError(false);
 			SetGenerationProgress(0, 0, 0);
@@ -198,6 +201,48 @@ namespace CivOne
 		}
 
 		public bool FixedStartPositions { get; private set; }
+
+		private readonly Dictionary<Civilization, MapLocation> _customStartPositions = [];
+
+		internal void ClearStartPositions()
+		{
+			_customStartPositions.Clear();
+			FixedStartPositions = false;
+		}
+
+		internal void SetStartPositions(IReadOnlyDictionary<Civilization, MapLocation>? startPositions)
+		{
+			_customStartPositions.Clear();
+			if (startPositions != null)
+			{
+				foreach ((Civilization civilization, MapLocation location) in startPositions)
+				{
+					_customStartPositions[civilization] = new MapLocation(location);
+				}
+			}
+
+			FixedStartPositions = _customStartPositions.Count > 0;
+		}
+
+		internal bool TryGetStartPosition(ICivilization civilization, out MapLocation? location)
+		{
+			ArgumentNullException.ThrowIfNull(civilization);
+
+			if (civilization.Id <= 0 || civilization.Id == 15)
+			{
+				location = null;
+				return false;
+			}
+
+			if (_customStartPositions.TryGetValue((Civilization)civilization.Id, out MapLocation? mapLocation))
+			{
+				location = new MapLocation(mapLocation);
+				return true;
+			}
+
+			location = null;
+			return false;
+		}
 
 		public IEnumerable<ITile> QueryMapPart(int x, int y, int width, int height)
 		{
@@ -388,6 +433,7 @@ namespace CivOne
 		internal static void Reset(Map? newInstance = null)
         {
             _instance = newInstance;
+			_instance?.ClearStartPositions();
 			UseDefaultMapSize();
         }
 	}

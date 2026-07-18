@@ -36,6 +36,7 @@ namespace CivOne.Persistence.Yaml
         private INamingConvention? _namingConvention;
         private readonly List<IYamlTypeConverter> _typeConverters = new List<IYamlTypeConverter>();
         private readonly List<INodeDeserializer> _nodeDeserializerFactories = new List<INodeDeserializer>();
+        private bool _ignoreUnmatchedProperties;
 
         private YamlReader(string yaml)
         {
@@ -123,6 +124,20 @@ namespace CivOne.Persistence.Yaml
         }
 
         /// <summary>
+        /// Configures the deserializer to silently ignore YAML keys that have no
+        /// matching property on the target type.
+        /// </summary>
+        /// <remarks>
+        /// Useful when deserializing a partial view of a larger document (e.g. reading
+        /// only the <c>Map</c> section from a full game save).
+        /// </remarks>
+        public YamlReader WithIgnoreUnmatchedProperties()
+        {
+            _ignoreUnmatchedProperties = true;
+            return this;
+        }
+
+        /// <summary>
         /// Deserializes the YAML content using the configured options into an instance of type <typeparamref name="T"/>.
         /// </summary>
         /// <typeparam name="T">The target type to deserialize into.</typeparam>
@@ -133,6 +148,9 @@ namespace CivOne.Persistence.Yaml
 
             if (_namingConvention != null)
                 builder = builder.WithNamingConvention(_namingConvention);
+
+            if (_ignoreUnmatchedProperties)
+                builder = builder.IgnoreUnmatchedProperties();
 
             foreach (var converter in _typeConverters)
                 builder = builder.WithTypeConverter(converter);
