@@ -6,7 +6,10 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
-* Feature: Replaced the `EARTH` entry in the credits menu with `Load Maps...`
+* Credits menu highlighty short cut keys for all menu items.
+  * These shortcuts can be used when the intro animation is running, so the user can skip the intro and go directly to the desired menu item.
+  * In menu itself the shortcut just selects the menu item, but does not trigger the action. 
+* Feature: Replaced the `EARTH` entry in the credits menu with `EARTHS...`
   * Custom maps can now be loaded from the `maps` folder in the CivOne user profile directory.
   * The `maps` folder is created automatically on first run and is used for custom map files with the `.comap` extension.
   * Added optional `StartPositions` support to the map file format for civilization-specific starting positions.

@@ -19,6 +19,7 @@ using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
 using CivOne.IO.Text;
+using CivOne.Screens.GamePlayPanels;
 using CivOne.Screens.Reports;
 using CivOne.Services;
 using CivOne.Services.Maps;
@@ -68,6 +69,7 @@ namespace CivOne.Screens
 		[SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "Ownership is transferred to the global screen stack via Common.AddScreen(_nextScreen). The receiving stack controls disposal through Common.DestroyScreen().")]
 		private IScreen? _nextScreen;
 
+		private readonly MenuBarHotkeyDelegate _hotkeyDelegate = new();
 		private Dictionary<char, Action<object, EventArgs>>? _shortKeyMapping;
 		private Action<object, EventArgs>? _shortCutAction;
 		private int _mouseX = -1;
@@ -171,16 +173,13 @@ namespace CivOne.Screens
 
 		private void AddShortcut(string label, Action<object, EventArgs> action)
 		{
-			foreach (char key in label.ToUpper(CultureInfo.CurrentCulture))
+			char key = _hotkeyDelegate.Parse(label, label).Hotkey;
+			if (!char.IsLetterOrDigit(key) || _shortKeyMapping!.ContainsKey(key))
 			{
-				if (!char.IsLetterOrDigit(key) || _shortKeyMapping!.ContainsKey(key))
-				{
-					continue;
-				}
-
-				_shortKeyMapping.Add(key, action);
 				return;
 			}
+
+			_shortKeyMapping.Add(key, action);
 		}
 
 		public void OnLanguageChanged(string? _)
@@ -341,7 +340,7 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 			[
 				Translate("Start a New Game"),
 				Translate("Load a Saved Game"),
-				Translate("Load maps..."),
+				Translate("~Earths..."),
 				Translate("Customize World"),
 				Translate("View Hall of Fame")
 			];
@@ -361,6 +360,7 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 				ActiveColour = 11,
 				TextColour = 5,
 				DisabledColour = 8,
+				HighlightColour = 11,
 				FontId = 0,
 				OnShiftF1 = () =>
 				{
@@ -374,17 +374,24 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 			menu.MouseMoveAt += (_, args) => UpdateFooterLinkHover(args.X, args.Y);
 
 			var items = GetMenuItems();
-			menu.Items.Add(items[0]).OnSelect(StartNewGame);
-			menu.Items.Add(items[1]).OnSelect(LoadSavedGame);
-			menu.Items.Add(items[2]).OnSelect(LoadMaps);
-			menu.Items.Add(items[3]).OnSelect(CustomizeWorld);
-			menu.Items.Add(items[4]).OnSelect(ViewHallOfFame);
-			menu.Items.Add(Translate("Change language...")).OnSelect(ChangeLanguage);
+			AddParsedItem(menu, items[0]).OnSelect(StartNewGame);
+			AddParsedItem(menu, items[1]).OnSelect(LoadSavedGame);
+			AddParsedItem(menu, items[2]).OnSelect(LoadMaps);
+			AddParsedItem(menu, items[3]).OnSelect(CustomizeWorld);
+			AddParsedItem(menu, items[4]).OnSelect(ViewHallOfFame);
+			AddParsedItem(menu, Translate("Change language...")).OnSelect(ChangeLanguage);
 
 			AddMenu(menu);
 
 			_shortCutAction?.Invoke(this, EventArgs.Empty);
 			_shortCutAction = null;
+		}
+
+		private MenuItem<int> AddParsedItem(Menu menu, string label)
+		{
+			MenuBarTitle title = _hotkeyDelegate.Parse(label, label);
+			return menu.Items.Add(title.VisibleText)
+				.SetHighlightedCharacterIndex(title.HighlightedCharacterIndex);
 		}
 
 		private void StartIntro()
