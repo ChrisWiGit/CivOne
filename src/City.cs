@@ -1096,10 +1096,21 @@ namespace CivOne
 
 		public void UpdateResources()
 		{
-			foreach (ITile tile in ResourceTiles.Where(t => InvalidTile(t)))
+			// Materialise the list first: RelocateResourceTile mutates the worked-tile
+			// set, which would corrupt a lazy enumeration mid-loop.
+			foreach (ITile tile in ResourceTiles.Where(t => InvalidTile(t)).ToList())
 			{
 				RelocateResourceTile(tile);
 			}
+			// Recover a city that has been stripped to ZERO worked tiles (e.g. several of
+			// its tiles blocked at once by foreign units crossing them). Without this such
+			// a city stayed at zero forever — UpdateResources only ever RELOCATED existing
+			// tiles, never ADDED — so it worked only its centre, forced all its citizens
+			// into specialists, and starved. Refill ONLY from the zero case: refilling to
+			// Size unconditionally would overwrite the player's manual specialist
+			// (entertainer) allocations every turn.
+			if (_resourceTiles.Count == 0 && Size > 0)
+				SetResourceTiles();
 		}
 
 		private bool HandleSpaceShipProduction()
