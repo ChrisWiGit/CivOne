@@ -74,6 +74,13 @@ namespace CivOne
 		private void AddStartingUnits(byte player)
 		{
 			var randomService = RandomServiceFactory.Create();
+
+			// If the map has any player with a MapStartPosition, 
+			// then use that mode for every player, instead of the fixed positions of the civilization class.
+			// In this case the player is set to randomly chosen coordinates, and the civilization's StartX and StartY are ignored.
+			bool hasAnyPlayerMapStartPosition = _players.Any(p => p.MapStartPosition != null);
+			bool isFirstGameTurn = GameTurn == 0;
+			
 			// Translated from this post by darkpanda, might contain errors:
 			// http://forums.civfanatics.com/showthread.php?p=12895306&highlight=starting+position#post12895306
 			int loopCounter = 0;
@@ -83,7 +90,7 @@ namespace CivOne
 				int x = randomService.NextInt(0, Map.WIDTH);
 				int y = randomService.NextInt(2, Map.HEIGHT - 2);
 				MapLocation? mapStartPosition = _players[player].MapStartPosition;
-				if (GameTurn == 0 && mapStartPosition is MapLocation startPosition)
+				if (isFirstGameTurn && mapStartPosition is MapLocation startPosition)
 				{
 					x = (int)startPosition.X;
 					y = (int)startPosition.Y;
@@ -92,7 +99,7 @@ namespace CivOne
 						return;
 					}
 				}
-				else if (Map.FixedStartPositions && GameTurn == 0)
+				else if (isFirstGameTurn && !hasAnyPlayerMapStartPosition && Map.FixedStartPositions)
 				{
 					// Map position is fixed, don't check anything
 					x = _players[player].Civilization.StartX;

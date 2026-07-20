@@ -29,7 +29,6 @@ namespace CivOne.Screens
 	[ScreenResizeable]
 	internal class LoadMapScreen : BaseScreen
 	{
-		private const string Title = "Load Map";
 		private const int MinDialogWidth = 160;
 
 		private readonly ICustomMapLoaderService _mapLoader;
@@ -57,11 +56,11 @@ namespace CivOne.Screens
 			_grid.Cancelled += OnCancelled;
 		}
 
-		private static string[] BuildLabels(IReadOnlyList<string> files)
+		private string[] BuildLabels(IReadOnlyList<string> files)
 		{
 			if (files.Count == 0)
 			{
-				return ["No maps found"];
+				return [Translate("No maps found")];
 			}
 
 			return [.. files.Select(f => Path.GetFileNameWithoutExtension(f))];
@@ -121,7 +120,7 @@ namespace CivOne.Screens
 			}
 
 			_hasUpdate = false;
-			_grid.Draw(this, Translate(Title), CanvasHeight);
+			_grid.Draw(this, Translate("Load Map"), CanvasHeight);
 			return true;
 		}
 

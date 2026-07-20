@@ -228,7 +228,7 @@ namespace CivOne
 		{
 			ArgumentNullException.ThrowIfNull(civilization);
 
-			if (civilization.Id <= 0 || civilization.Id == 15)
+			if (civilization.Id <= 0)
 			{
 				location = null;
 				return false;
