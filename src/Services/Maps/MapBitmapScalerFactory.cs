@@ -1,11 +1,18 @@
 namespace CivOne.Services.Maps
 {
+	/// <summary>
+	/// Provides a default <see cref="IMapBitmapScaler"/> implementation based on <see cref="Settings.BitmapScalerMode"/>.
+	/// </summary>
 	internal static class MapBitmapScalerFactory
 	{
 		private static IMapBitmapScaler? _cached;
 		private static Settings.MapBitmapScalerType? _cachedMode;
 
-		public static IMapBitmapScaler Create()
+		/// <summary>
+		/// Gets the default <see cref="IMapBitmapScaler"/> implementation based on <see cref="Settings.BitmapScalerMode"/>.
+		/// </summary>
+		/// <returns>An <see cref="IMapBitmapScaler"/> instance.</returns>
+		public static IMapBitmapScaler GetDefault()
 		{
 			Settings.MapBitmapScalerType mode = Settings.Instance.BitmapScalerMode;
 			if (_cached != null && _cachedMode == mode)

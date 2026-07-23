@@ -224,7 +224,7 @@ namespace CivOne
 			FixedStartPositions = _customStartPositions.Count > 0;
 		}
 
-		internal bool TryGetStartPosition(ICivilization civilization, out MapLocation? location)
+		public bool TryGetStartPosition(ICivilization civilization, out MapLocation? location)
 		{
 			ArgumentNullException.ThrowIfNull(civilization);
 

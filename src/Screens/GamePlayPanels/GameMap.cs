@@ -42,7 +42,7 @@ namespace CivOne.Screens.GamePlayPanels
 		public event EventHandler<int>? MapPositionSaved;
 		private readonly TerrainEditorState _editorState = new();
 		private readonly TerrainEditorDelegate _terrainEditorDelegate = new();
-		private IMapBitmapScaler MapBitmapScaler => MapBitmapScalerFactory.Create();
+		private IMapBitmapScaler MapBitmapScaler => MapBitmapScalerFactory.GetDefault();
 		private IUnit? _editorStoredUnit;
 		private int _hoveredTileX, _hoveredTileY;
 
@@ -95,6 +95,7 @@ namespace CivOne.Screens.GamePlayPanels
 				EditorMode.Pollution => Translate("Pollution"),
 				EditorMode.Hut => Translate("Hut"),
 				EditorMode.Clear => Translate("Clear"),
+				EditorMode.StartPosition => Translate("Start Position"),
 				_ => Translate("None")
 			};
 
@@ -282,6 +283,15 @@ namespace CivOne.Screens.GamePlayPanels
 				return false;
 			}
 
+			// Editor overlays (brush preview, spawn preview, start-position markers) are drawn on
+			// top of the map bitmap, which is only cleared on a full redraw. Promote any pending
+			// editor update to a full redraw so the previous frame's hover overlay is cleared
+			// instead of accumulating on the map until the next unrelated full redraw.
+			if (TerrainEditorEnabled && _update)
+			{
+				_fullRedraw = true;
+			}
+
 			if (!(_update || _fullRedraw || renameDialogActive)) return false;
 			if (!renameDialogActive && Game.MovingUnit == null && (gameTick % 2 == 1)) return false;
 
@@ -313,6 +323,7 @@ namespace CivOne.Screens.GamePlayPanels
 
 					_terrainEditorRenderDelegate.DrawLandValuesOverlay();
 					_terrainEditorRenderDelegate.DrawSpawnUnitPreview();
+					_terrainEditorRenderDelegate.DrawStartPositionMarkers();
 					_terrainEditorRenderDelegate.DrawBrushPreview();
 
 					if (renameDialogActive)
@@ -351,6 +362,7 @@ namespace CivOne.Screens.GamePlayPanels
 
 				_terrainEditorRenderDelegate.DrawLandValuesOverlay();
 				_terrainEditorRenderDelegate.DrawSpawnUnitPreview();
+				_terrainEditorRenderDelegate.DrawStartPositionMarkers();
 				_terrainEditorRenderDelegate.DrawBrushPreview();
 
 				if (renameDialogActive)
@@ -364,6 +376,7 @@ namespace CivOne.Screens.GamePlayPanels
 			_update = false;
 			_terrainEditorRenderDelegate.DrawLandValuesOverlay();
 			_terrainEditorRenderDelegate.DrawSpawnUnitPreview();
+			_terrainEditorRenderDelegate.DrawStartPositionMarkers();
 			_terrainEditorRenderDelegate.DrawBrushPreview();
 
 			if (renameDialogActive)

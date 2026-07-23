@@ -15,6 +15,22 @@ using CivOne.Units;
 
 namespace CivOne.Tasks
 {
+	/// <summary>
+	/// Defines a service for creating <see cref="Message"/> instances.
+	/// See <see cref="MessageServiceAdapter"/> for the default implementation.
+	/// </summary>
+	interface IMessageService
+	{
+		Message Advisor(Advisor advisor, bool leftAlign, params string[] message);
+		Message Spy(params string[] message);
+		Message DisbandUnit(City city, IUnit unit);
+		Message NewGoverment(City? city, params string[] message);
+		Message Newspaper(City? city, params string[] message);
+		Message General(params string[] message);
+		Message Help(string title, params string[] message);
+		Message Error(string title, params string[] message);
+	}
+
 	internal class Message : GameTask
 	{
 		private readonly IScreen _screen;

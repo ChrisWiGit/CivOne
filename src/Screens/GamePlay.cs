@@ -20,6 +20,7 @@ using CivOne.Tasks;
 using CivOne.Units;
 using CivOne.Services.EndGame;
 using CivOne.Services;
+using CivOne.Services.Maps;
 using CivOne.UserInterface;
 
 namespace CivOne.Screens
@@ -725,7 +726,8 @@ namespace CivOne.Screens
 			_sideBar = new SideBar(Palette, Game.GlobalWarmingService);
 			_gameMap = new GameMap();
 			_translationService = TranslationServiceFactory.GetCurrent();
-			_terrainEditorDelegate = new(this, _translationService);
+			GamePlaySaveMapDelegate saveMapDelegate = new(_translationService, Settings, Runtime, MapSaveServiceFactory.Create(), new GameTaskCommandQueueAdapter(), new MessageServiceAdapter(), new DirectoryService());
+			_terrainEditorDelegate = new(this, _translationService, Game, Common.Civilizations, saveMapDelegate);
 			_gameMap.MapPositionSaved += GameMapMapPositionSaved;
 
 			if (!TryRestoreLastLoadedMapPosition())

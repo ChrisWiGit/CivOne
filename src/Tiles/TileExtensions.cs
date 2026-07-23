@@ -31,7 +31,7 @@ namespace CivOne.Tiles
 		private static Resources Resources => Resources.Instance;
 		private static Palette Palette => Resources["SP257"].Palette;
 		private static Settings Settings => Settings.Instance;
-		private static IMapBitmapScaler MapBitmapScaler => MapBitmapScalerFactory.Create();
+		private static IMapBitmapScaler MapBitmapScaler => MapBitmapScalerFactory.GetDefault();
 		
 		private static bool GFX256 => (Settings.GraphicsMode == GraphicsMode.Graphics256);
 

@@ -9,15 +9,27 @@
 
 using System;
 using System.Linq;
+using CivOne.Civilizations;
 using CivOne.Enums;
+using CivOne.Persistence.Model;
 using CivOne.Tiles;
 using CivOne.Units;
 
 namespace CivOne.Screens.GamePlayPanels
 {
-	internal sealed class TerrainEditorDelegate
+	internal sealed class TerrainEditorDelegate(IMapEditor? mapEditor = null, ICivilization[]? civilizations = null)
 	{
 		private readonly int[] _brushSizes = [1, 2, 3, 5, 7, 9, 11, 13, 15];
+		private readonly IMapEditor? _mapEditor = mapEditor;
+		private readonly ICivilization[]? _civilizations = civilizations;
+
+		// Resolved lazily instead of in the constructor: Map.Instance/Common.Civilizations touch
+		// static state (Common's static constructor reflects over and instantiates every
+		// advance/building/wonder and requires a registered IRuntime). Eagerly resolving them here
+		// would break plain unit tests (e.g. brush-size tests) that construct this class without a
+		// running game engine but never touch the map or civilizations.
+		private IMapEditor MapEditor => _mapEditor ?? Map.Instance;
+		private ICivilization[] Civilizations => _civilizations ?? Common.Civilizations;
 
 		internal int BrushSizeCount => _brushSizes.Length;
 
@@ -39,10 +51,10 @@ namespace CivOne.Screens.GamePlayPanels
 			GetRelativeBounds(brushIndex, out int minRel, out int maxRel);
 			for (int relY = minRel; relY <= maxRel; relY++)
 			{
-				int targetY = Map.EditorClampY(centerY + relY);
+				int targetY = MapEditor.EditorClampY(centerY + relY);
 				for (int relX = minRel; relX <= maxRel; relX++)
 				{
-					int targetX = Map.EditorWrapX(centerX + relX);
+					int targetX = MapEditor.EditorWrapX(centerX + relX);
 					action(targetX, targetY);
 				}
 			}
@@ -50,14 +62,14 @@ namespace CivOne.Screens.GamePlayPanels
 
 		internal void ApplyBrush(int centerX, int centerY, int brushIndex, Terrain terrain)
 		{
-			ApplyToBrush(centerX, centerY, brushIndex, (x, y) => Map.Instance.EditorSetTerrain(x, y, terrain));
+			ApplyToBrush(centerX, centerY, brushIndex, (x, y) => MapEditor.EditorSetTerrain(x, y, terrain));
 		}
 
 		internal void SetIrrigation(int centerX, int centerY, int brushIndex)
 		{
 			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
 			{
-				ITile tile = Map.Instance[x, y];
+				ITile tile = MapEditor[x, y];
 				if (tile == null)
 				{
 					return;
@@ -72,7 +84,7 @@ namespace CivOne.Screens.GamePlayPanels
 		{
 			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
 			{
-				ITile tile = Map.Instance[x, y];
+				ITile tile = MapEditor[x, y];
 				if (tile == null)
 				{
 					return;
@@ -86,7 +98,7 @@ namespace CivOne.Screens.GamePlayPanels
 		{
 			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
 			{
-				ITile tile = Map.Instance[x, y];
+				ITile tile = MapEditor[x, y];
 				if (tile == null)
 				{
 					return;
@@ -107,7 +119,7 @@ namespace CivOne.Screens.GamePlayPanels
 		{
 			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
 			{
-				ITile tile = Map.Instance[x, y];
+				ITile tile = MapEditor[x, y];
 				if (tile == null)
 				{
 					return;
@@ -128,7 +140,7 @@ namespace CivOne.Screens.GamePlayPanels
 		{
 			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
 			{
-				ITile tile = Map.Instance[x, y];
+				ITile tile = MapEditor[x, y];
 				if (tile == null)
 				{
 					return;
@@ -143,7 +155,7 @@ namespace CivOne.Screens.GamePlayPanels
 		{
 			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
 			{
-				ITile tile = Map.Instance[x, y];
+				ITile tile = MapEditor[x, y];
 				if (tile == null)
 				{
 					return;
@@ -157,7 +169,7 @@ namespace CivOne.Screens.GamePlayPanels
 		{
 			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
 			{
-				ITile tile = Map.Instance[x, y];
+				ITile tile = MapEditor[x, y];
 				if (tile == null)
 				{
 					return;
@@ -171,7 +183,7 @@ namespace CivOne.Screens.GamePlayPanels
 		{
 			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
 			{
-				ITile tile = Map.Instance[x, y];
+				ITile tile = MapEditor[x, y];
 				if (tile == null)
 				{
 					return;
@@ -185,7 +197,7 @@ namespace CivOne.Screens.GamePlayPanels
 		{
 			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
 			{
-				ITile tile = Map.Instance[x, y];
+				ITile tile = MapEditor[x, y];
 				if (tile == null)
 				{
 					return;
@@ -199,7 +211,7 @@ namespace CivOne.Screens.GamePlayPanels
 		{
 			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
 			{
-				ITile tile = Map.Instance[x, y];
+				ITile tile = MapEditor[x, y];
 				if (tile == null)
 				{
 					return;
@@ -219,7 +231,7 @@ namespace CivOne.Screens.GamePlayPanels
 		{
 			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
 			{
-				ITile tile = Map.Instance[x, y];
+				ITile tile = MapEditor[x, y];
 				if (tile == null)
 				{
 					return;
@@ -230,10 +242,10 @@ namespace CivOne.Screens.GamePlayPanels
 			});
 		}
 
-		internal static void EditCitySingleTile(int x, int y, byte cityOwner, bool shrink)
+		internal void EditCitySingleTile(int x, int y, byte cityOwner, bool shrink)
 		{
 			Game game = Game.Instance;
-			ITile tile = Map.Instance[x, y];
+			ITile tile = MapEditor[x, y];
 			if (tile == null)
 			{
 				return;
@@ -328,10 +340,10 @@ namespace CivOne.Screens.GamePlayPanels
 			return true;
 		}
 
-		internal static bool SpawnUnit(int x, int y, byte unitOwner, UnitType unitType)
+		internal bool SpawnUnit(int x, int y, byte unitOwner, UnitType unitType)
 		{
 			Game game = Game.Instance;
-			ITile tile = Map.Instance[x, y];
+			ITile tile = MapEditor[x, y];
 			if (tile == null)
 			{
 				return false;
@@ -378,10 +390,9 @@ namespace CivOne.Screens.GamePlayPanels
 			return true;
 		}
 
-		#pragma warning disable CA1822
 		internal bool RemoveUnit(int x, int y, byte unitOwner, UnitType unitType)
 		{
-			ITile tile = Map.Instance[x, y];
+			ITile tile = MapEditor[x, y];
 			if (tile == null)
 			{
 				return false;
@@ -397,6 +408,44 @@ namespace CivOne.Screens.GamePlayPanels
 			Game.Instance.DisbandUnit(unit);
 			return true;
 		}
-		#pragma warning restore CA1822
+
+		internal bool SetStartPosition(int x, int y, Civilization civilization)
+		{
+			if (civilization <= 0)
+			{
+				return false;
+			}
+
+			ITile tile = MapEditor[x, y];
+			if (tile == null || tile.IsOcean)
+			{
+				return false;
+			}
+
+			MapEditor.SetStartPosition(civilization, new MapLocation((uint)x, (uint)y));
+			return true;
+		}
+
+		internal bool RemoveStartPositionAt(int x, int y)
+		{
+			bool removed = false;
+			foreach (ICivilization civilization in Civilizations)
+			{
+				if (!MapEditor.TryGetStartPosition(civilization, out MapLocation? location) || location == null)
+				{
+					continue;
+				}
+
+				if (location.X != x || location.Y != y)
+				{
+					continue;
+				}
+
+				MapEditor.RemoveStartPosition((Civilization)civilization.Id);
+				removed = true;
+			}
+
+			return removed;
+		}
 	}
 }

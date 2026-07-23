@@ -76,7 +76,7 @@ namespace CivOne.Services.Maps
 			}
 		}
 
-		private static Dictionary<Civilization, MapLocation>? ResolveStartPositions(MapDto mapDto)
+		internal static Dictionary<Civilization, MapLocation>? ResolveStartPositions(MapDto mapDto)
 		{
 			ArgumentNullException.ThrowIfNull(mapDto);
 
