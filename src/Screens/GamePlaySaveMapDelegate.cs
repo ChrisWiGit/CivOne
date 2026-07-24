@@ -49,19 +49,36 @@ namespace CivOne.Screens
 					_directoryService.CreateDirectory(mapsDirectory);
 					string initialFileName = Path.Combine(mapsDirectory, "map.comap");
 
+					// Checked before the dialog opens so the *.map filter entry can be hidden entirely
+					// when the current map would lose data in that format, instead of letting the user
+					// pick it and only failing afterwards.
+					LegacyMapSaveCompatibilityResult legacyCompatibility = _mapSaveService.GetLegacyMapCompatibility();
+					bool canSaveAsLegacyMap = legacyCompatibility.CanSaveAsLegacyMap;
+					if (!canSaveAsLegacyMap)
+					{
+						_runtime.Log("OnSaveMapMenuAction: Legacy map save unavailable: {0}", legacyCompatibility.Reason);
+					}
+
 					string? selectedFile = _runtime.FileChooser(
 						true,
 						Translate("Save Map As..."),
 						initialFileName,
-						$"{Translate("CivOne Map")} (*.comap)|*.comap");
+						BuildFileChooserFilter(canSaveAsLegacyMap));
 
 					if (string.IsNullOrEmpty(selectedFile))
 					{
 						return;
 					}
 
-					string filePath = Path.ChangeExtension(selectedFile, ".comap");
-					_mapSaveService.SaveCivOneMap(filePath);
+					// The *.map filter was hidden, but a save dialog still lets the user type any
+					// extension by hand - fall back to *.comap silently rather than reject the save.
+					if (canSaveAsLegacyMap && IsLegacyMapExtension(selectedFile))
+					{
+						_mapSaveService.SaveLegacyMap(Path.ChangeExtension(selectedFile, ".map"));
+						return;
+					}
+
+					_mapSaveService.SaveCivOneMap(Path.ChangeExtension(selectedFile, ".comap"));
 				}
 				catch (Exception ex)
 				{
@@ -69,6 +86,31 @@ namespace CivOne.Screens
 					ShowError(ex);
 				}
 			}
+
+			/// <summary>
+			/// Builds the save-dialog filter, offering the legacy <c>*.map</c> entry only when
+			/// <paramref name="includeLegacyMap"/> is true.
+			/// </summary>
+			/// <param name="includeLegacyMap">Whether the current map can be written as a legacy <c>*.map</c> file.</param>
+			/// <returns>The filter string passed to <see cref="IRuntime.FileChooser"/>.</returns>
+			private string BuildFileChooserFilter(bool includeLegacyMap)
+			{
+				string comapFilter = $"{Translate("CivOne Map")} (*.comap)|*.comap";
+				if (!includeLegacyMap)
+				{
+					return comapFilter;
+				}
+
+				return $"{comapFilter}|{Translate("Civ1 Map")} (*.map)|*.map";
+			}
+
+			/// <summary>
+			/// Determines whether the user chose the legacy <c>*.map</c> extension in the save dialog.
+			/// </summary>
+			/// <param name="filePath">The file path returned by the file chooser.</param>
+			/// <returns><c>true</c> when the extension is <c>.map</c> (case-insensitive); otherwise <c>false</c>.</returns>
+			private static bool IsLegacyMapExtension(string filePath)
+				=> string.Equals(Path.GetExtension(filePath), ".map", StringComparison.OrdinalIgnoreCase);
 
 			private void ShowError(Exception ex)
 			{

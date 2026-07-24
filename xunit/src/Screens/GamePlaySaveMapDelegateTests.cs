@@ -104,6 +104,119 @@ namespace CivOne.Screens
 			Assert.Equal(0, _gameTaskCommandQueue.EnqueueCallCount);
 		}
 
+		[Fact]
+		public void OnSaveMapMenuActionSavesLegacyMapWhenExtensionIsMapAndCompatible()
+		{
+			string selected = Path.Combine(_settings.MapsDirectory, "earth.map");
+			_runtime.FileChooserResult = () => selected;
+			_mapSaveService.LegacyCompatibility = LegacyMapSaveCompatibilityResult.Compatible;
+			GamePlay.GamePlaySaveMapDelegate testee = CreateTestee();
+
+			testee.OnSaveMapMenuAction(this, new MenuItemEventArgs<int>(0));
+
+			string savedPath = Assert.Single(_mapSaveService.SaveLegacyMapCalls);
+			Assert.Equal(".map", Path.GetExtension(savedPath));
+			Assert.Empty(_mapSaveService.SaveCivOneMapCalls);
+			Assert.Equal(0, _gameTaskCommandQueue.EnqueueCallCount);
+		}
+
+		[Fact]
+		public void OnSaveMapMenuActionTreatsUppercaseMapExtensionAsLegacy()
+		{
+			string selected = Path.Combine(_settings.MapsDirectory, "earth.MAP");
+			_runtime.FileChooserResult = () => selected;
+			GamePlay.GamePlaySaveMapDelegate testee = CreateTestee();
+
+			testee.OnSaveMapMenuAction(this, new MenuItemEventArgs<int>(0));
+
+			Assert.Single(_mapSaveService.SaveLegacyMapCalls);
+			Assert.Empty(_mapSaveService.SaveCivOneMapCalls);
+		}
+
+		[Fact]
+		public void OnSaveMapMenuActionFallsBackToComapWhenIncompatibleButUserTypesMapExtensionManually()
+		{
+			// The *.map filter entry is hidden in this case (see OnSaveMapMenuActionOmitsLegacyMapFilterWhenIncompatible),
+			// but a native save dialog still lets the user type any extension by hand - simulate that override.
+			string selected = Path.Combine(_settings.MapsDirectory, "earth.map");
+			_runtime.FileChooserResult = () => selected;
+			_mapSaveService.LegacyCompatibility = new LegacyMapSaveCompatibilityResult(
+				false, "The legacy Civ1 map format cannot store custom start positions.");
+			GamePlay.GamePlaySaveMapDelegate testee = CreateTestee();
+
+			testee.OnSaveMapMenuAction(this, new MenuItemEventArgs<int>(0));
+
+			string savedPath = Assert.Single(_mapSaveService.SaveCivOneMapCalls);
+			Assert.Equal(".comap", Path.GetExtension(savedPath));
+			Assert.Empty(_mapSaveService.SaveLegacyMapCalls);
+			Assert.Equal(0, _gameTaskCommandQueue.EnqueueCallCount);
+		}
+
+		[Fact]
+		public void OnSaveMapMenuActionChecksLegacyCompatibilityOnceBeforeShowingDialog()
+		{
+			string selected = Path.Combine(_settings.MapsDirectory, "earth.comap");
+			_runtime.FileChooserResult = () => selected;
+			GamePlay.GamePlaySaveMapDelegate testee = CreateTestee();
+
+			testee.OnSaveMapMenuAction(this, new MenuItemEventArgs<int>(0));
+
+			Assert.Equal(1, _mapSaveService.GetLegacyMapCompatibilityCallCount);
+			Assert.Single(_mapSaveService.SaveCivOneMapCalls);
+		}
+
+		[Fact]
+		public void OnSaveMapMenuActionOmitsLegacyMapFilterWhenIncompatible()
+		{
+			_mapSaveService.LegacyCompatibility = new LegacyMapSaveCompatibilityResult(false, "reason");
+			_runtime.FileChooserResult = () => null;
+			GamePlay.GamePlaySaveMapDelegate testee = CreateTestee();
+
+			testee.OnSaveMapMenuAction(this, new MenuItemEventArgs<int>(0));
+
+			Assert.DoesNotContain("*.map", _runtime.LastFilter);
+			Assert.Contains("*.comap", _runtime.LastFilter);
+		}
+
+		[Fact]
+		public void OnSaveMapMenuActionLogsReasonBeforeDialogWhenLegacyMapIsIncompatible()
+		{
+			_mapSaveService.LegacyCompatibility = new LegacyMapSaveCompatibilityResult(
+				false, "The legacy Civ1 map format cannot store custom start positions.");
+			_runtime.FileChooserResult = () => null;
+			GamePlay.GamePlaySaveMapDelegate testee = CreateTestee();
+
+			testee.OnSaveMapMenuAction(this, new MenuItemEventArgs<int>(0));
+
+			Assert.Contains(_runtime.LogCalls, log => log.Contains(
+				"The legacy Civ1 map format cannot store custom start positions.", StringComparison.Ordinal));
+		}
+
+		[Fact]
+		public void OnSaveMapMenuActionDoesNotLogWhenLegacyMapIsCompatible()
+		{
+			_mapSaveService.LegacyCompatibility = LegacyMapSaveCompatibilityResult.Compatible;
+			_runtime.FileChooserResult = () => null;
+			GamePlay.GamePlaySaveMapDelegate testee = CreateTestee();
+
+			testee.OnSaveMapMenuAction(this, new MenuItemEventArgs<int>(0));
+
+			Assert.Empty(_runtime.LogCalls);
+		}
+
+		[Fact]
+		public void OnSaveMapMenuActionIncludesLegacyMapFilterWhenCompatible()
+		{
+			_mapSaveService.LegacyCompatibility = LegacyMapSaveCompatibilityResult.Compatible;
+			_runtime.FileChooserResult = () => null;
+			GamePlay.GamePlaySaveMapDelegate testee = CreateTestee();
+
+			testee.OnSaveMapMenuAction(this, new MenuItemEventArgs<int>(0));
+
+			Assert.Contains("*.map", _runtime.LastFilter);
+			Assert.Contains("*.comap", _runtime.LastFilter);
+		}
+
 		private sealed class FakeSettings : ISettings
 		{
 			public string MapsDirectory { get; } = Path.Combine(Path.GetTempPath(), "CivOneTests", Guid.NewGuid().ToString("N"), "maps");
@@ -153,15 +266,22 @@ namespace CivOne.Screens
 				=> _storedSettings[key] = value;
 
 			public List<string> LogCalls { get; } = [];
-			public void Log(string text, params object[] parameters) => LogCalls.Add(text);
+			public void Log(string text, params object[] parameters)
+				=> LogCalls.Add(parameters.Length > 0 ? string.Format(System.Globalization.CultureInfo.InvariantCulture, text, parameters) : text);
 
 			public string? BrowseFolder(string caption = "") => string.Empty;
 
 			/// <summary>Set before calling the testee; invoked by <see cref="FileChooser"/> to simulate the dialog result.</summary>
 			public Func<string?>? FileChooserResult { get; set; }
 
+			/// <summary>Records the filter string passed to the most recent <see cref="FileChooser"/> call.</summary>
+			public string? LastFilter { get; private set; }
+
 			public string? FileChooser(bool save, string title, string initialFileName, string filter)
-				=> FileChooserResult != null ? FileChooserResult() : throw new NotImplementedException();
+			{
+				LastFilter = filter;
+				return FileChooserResult != null ? FileChooserResult() : throw new NotImplementedException();
+			}
 
 			public void PlaySound(string file) { }
 
@@ -173,8 +293,22 @@ namespace CivOne.Screens
 		private sealed class FakeMapSaveService : IMapSaveService
 		{
 			public List<string> SaveCivOneMapCalls { get; } = [];
+			public List<string> SaveLegacyMapCalls { get; } = [];
+
+			/// <summary>Controls the result returned by <see cref="GetLegacyMapCompatibility"/>.</summary>
+			public LegacyMapSaveCompatibilityResult LegacyCompatibility { get; set; } = LegacyMapSaveCompatibilityResult.Compatible;
+
+			public int GetLegacyMapCompatibilityCallCount { get; private set; }
 
 			public void SaveCivOneMap(string filePath) => SaveCivOneMapCalls.Add(filePath);
+
+			public void SaveLegacyMap(string filePath) => SaveLegacyMapCalls.Add(filePath);
+
+			public LegacyMapSaveCompatibilityResult GetLegacyMapCompatibility()
+			{
+				GetLegacyMapCompatibilityCallCount++;
+				return LegacyCompatibility;
+			}
 		}
 
 		private sealed class FakeGameTaskCommandQueue : IGameTaskCommandQueue

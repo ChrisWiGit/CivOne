@@ -6,7 +6,10 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
-* Credits menu highlighty short cut keys for all menu items.
+* Feature: Terrain editor "Save Map..." can now save a standalone map file without a full game/savegame.
+  * The save dialog offers two file types: the new `.comap` YAML format and the original legacy Civ1 `.map` format.
+  * The legacy `.map` option is only offered when the current map actually fits that format (fixed 80x50 size, no custom start positions, no pollution, no fortresses); otherwise only `.comap` is shown, since the legacy format supports fewer features than `.comap`.
+* Credits menu highlighting shortcut keys for all menu items.
   * These shortcuts can be used when the intro animation is running, so the user can skip the intro and go directly to the desired menu item.
   * In menu itself the shortcut just selects the menu item, but does not trigger the action. 
 * Feature: Replaced the `EARTH` entry in the credits menu with `EARTHS...`
