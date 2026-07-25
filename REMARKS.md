@@ -407,6 +407,88 @@ Reading `/dev/input` inside the game would require seat/device permissions and p
 | `GamePanMapDelegate` | `src/Screens/GamePlayPanels/GamePanMapDelegate.cs` |
 | `GameMapZoomDelegate` | `src/Screens/GamePlayPanels/GameMapZoomDelegate.cs` |
 
+## Map Rendering Performance
+
+Redrawing the gameplay map is the most expensive recurring operation in the game, and it gets worse
+the further the player zooms out. This section records why, what was already done about it, and which
+step is still open.
+
+### Why a full map redraw is expensive
+
+The number of rendered tiles grows as the tile size shrinks, until it is capped at the map size
+(`Map.WIDTH` x `Map.HEIGHT` = 80 x 50 = 4000 tiles) in `GameMapZoomDelegate.UpdateViewportMetrics`.
+At the default zoom about 1000 tiles are drawn, at maximum zoom-out four times as many.
+
+Every one of those tiles is composed from scratch in `TileExtensions.ToBitmap`:
+
+* two `Picture` instances are created, and each `Picture` constructor copies the palette **twice**
+  (`_originalColours` and `_palette`), so four unmanaged 1 KB allocations per tile
+* four to eight sprite layers are drawn on top of each other
+* the result is scaled to the current tile size
+
+There is no cache, so this happens again for every tile on every full redraw.
+
+### What was already optimised
+
+| Change | Effect |
+| --- | --- |
+| Row spans in `Bytemap.Row(int)` | `AddLayer` and both map scalers no longer validate the handle and the offset for every single pixel. The `Bytemap` indexer performs those checks per access, which previously dominated the cost of any per-pixel loop. |
+| Tile palette cache in `TileExtensions` | `Resources["SP257"]` returns an owned copy of the full tile sheet. Reading it once per rendered tile copied that sheet thousands of times per frame. |
+| Terrain editor base layer cache in `GameMap` | Editor overlays need a clean terrain layer on every hover change. Restoring a cached copy avoids re-rendering all visible tiles for overlay-only updates. |
+| Viewport fingerprint in `GameMap` | The cached layer is only rebuilt when the visible map actually changed, instead of on a fixed interval. |
+| Tick budget in `RuntimeHandler.OnUpdate` | Game ticks are derived from wall clock time, so a slow update let real time run ahead and queued further updates into the same frame. The loop then kept running instead of returning to the event loop, which stopped drawing and input handling entirely. The budget turns that into a skipped frame. |
+
+### Open idea: tile bitmap cache
+
+The remaining step would be a cache keyed by tile appearance plus tile size, so that a full redraw
+becomes a series of blits instead of a full re-composition. `CachedSpriteCollection` already exists as
+a model for this kind of cache.
+
+**Advantages**
+
+* The gain is largest exactly where the problem is. At high zoom-out most of the 4000 tiles are
+  repetitions of a few appearances (ocean, grassland), so the hit rate would be very high.
+* Each cache hit skips the whole chain described above.
+* The cache invalidates itself. If the state is part of the key, a changed tile simply produces a
+  different key, so no dirty flag is needed and none can be forgotten. The viewport fingerprint in
+  `GameMap` could then be removed again.
+* Putting the tile size in the key means a zoom change invalidates nothing and previously used zoom
+  levels stay warm.
+
+**Disadvantages**
+
+* **Designing the key is the hard part.** A tile is not rendered from its own state alone: `Borders`,
+  `DrawRoadDirections()` and `DrawRailRoadDirections()` read the neighbouring tiles. The key must
+  therefore include neighbour-derived data, otherwise coastlines and roads render incorrectly - and
+  only sometimes, which is hard to diagnose.
+* Further parts of the key are easy to overlook: fog directions (per player), blink state, `GFX256`,
+  city size and owner, units on the tile, and `TileSettings`. City labels contain the city name and
+  would make the key unbounded, so they have to stay outside the cache.
+* Computing the key must stay cheaper than the work it saves. On a cache miss both costs are paid.
+* Memory grows without bound unless an eviction strategy is added, plus a clear on
+  `Resources.ClearInstance`.
+* Ownership inverts. The cache would own the returned `Bytemap` instances, so callers must not dispose
+  them - the same trap that `CachedSpriteCollection` already documents. Today `ToBitmap` disposes its
+  intermediate results correctly, and that would have to change.
+
+**Recommendation:** measure what is actually left after the optimisations listed above before starting
+this. The neighbour-dependent key is the part that can go wrong, and the effort may no longer pay off.
+
+### Relevant classes
+
+| Class / member | File |
+| --- | --- |
+| `TileExtensions.ToBitmap` | `src/Tiles/TileExtensions.cs` |
+| `Bytemap.Row` | `src/IO/Bytemap.cs` |
+| `BitmapExtensions.AddLayer` | `src/Graphics/BitmapExtensions.cs` |
+| `PaletteAwareWeightedMapBitmapScaler` | `src/Services/Maps/PaletteAwareWeightedMapBitmapScaler.cs` |
+| `NearestNeighborMapBitmapScaler` | `src/Services/Maps/NearestNeighborMapBitmapScaler.cs` |
+| `GameMap.CacheEditorBaseLayer` | `src/Screens/GamePlayPanels/GameMap.cs` |
+| `GameMap.ComputeVisibleMapFingerprint` | `src/Screens/GamePlayPanels/GameMap.cs` |
+| `GameMapZoomDelegate.UpdateViewportMetrics` | `src/Screens/GamePlayPanels/GameMapZoomDelegate.cs` |
+| `RuntimeHandler.OnUpdate` | `src/RuntimeHandler.cs` |
+| `CachedSpriteCollection` | `src/Graphics/Sprites/CachedSpriteCollection.cs` |
+
 ## DrawText Symbols
 
 | Symbol | Meaning      |
