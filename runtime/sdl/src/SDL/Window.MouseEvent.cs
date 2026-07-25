@@ -96,13 +96,56 @@ namespace CivOne
 				MouseY = y;
 
 				int wheelDelta = mouseWheelEvent.Y;
+				int wheelDeltaX = mouseWheelEvent.X;
 				if (mouseWheelEvent.Direction == SDL_MOUSEWHEEL_FLIPPED)
 				{
 					wheelDelta = -wheelDelta;
+					wheelDeltaX = -wheelDeltaX;
 				}
 
 				KeyModifier modifier = ConvertModifier(SDL_GetModState());
-				OnMouseWheel?.Invoke(this, new ScreenEventArgs(x, y, MouseButton.None, modifier, wheelDelta));
+				OnMouseWheel?.Invoke(this, new ScreenEventArgs(x, y, MouseButton.None, modifier, wheelDelta, wheelDeltaX));
+			}
+
+			// Amount the fingers must spread/pinch (as a fraction of screen diagonal) before one
+			// zoom step fires. SDL reports dDist in small fractional increments per event, so the
+			// deltas are accumulated across events until they cross this threshold.
+			private const float PinchZoomStepThreshold = 0.02f;
+			private float _pinchZoomAccumulator;
+
+			/// <summary>
+			/// Turns a touchpad pinch into a zoom step.
+			/// </summary>
+			/// <remarks>
+			/// Platform note: SDL2 derives multi-gesture events from touch events only.
+			/// macOS reports trackpad gestures as touch, so this path works there.
+			/// On X11 a touchpad is exposed as a pointer device without a touch class, so SDL reports
+			/// zero touch devices and this handler is never called; the same applies to Wayland, where
+			/// SDL2 does not implement the pointer-gestures protocol.
+			/// On those platforms zoom is reached with Ctrl + two-finger scroll, which arrives as a
+			/// Ctrl-modified wheel event and is handled by the map zoom delegate.
+			/// </remarks>
+			/// <param name="gestureEvent">The gesture reported by SDL.</param>
+			private void HandleMultiGesture(SDL_MultiGestureEvent gestureEvent)
+			{
+				if (gestureEvent.NumFingers < 2)
+				{
+					return;
+				}
+
+				_pinchZoomAccumulator += gestureEvent.DDist;
+				while (System.Math.Abs(_pinchZoomAccumulator) >= PinchZoomStepThreshold)
+				{
+					int wheelDelta = _pinchZoomAccumulator > 0 ? 1 : -1;
+					_pinchZoomAccumulator -= wheelDelta * PinchZoomStepThreshold;
+
+					int pixelX = (int)(gestureEvent.X * Width);
+					int pixelY = (int)(gestureEvent.Y * Height);
+
+					// Reuse the existing Ctrl+MouseWheel zoom path: a pinch is treated as a
+					// synthetic Ctrl-modified wheel event centered on the gesture location.
+					OnMouseWheel?.Invoke(this, new ScreenEventArgs(pixelX, pixelY, MouseButton.None, KeyModifier.Control, wheelDelta));
+				}
 			}
 		}
 	}

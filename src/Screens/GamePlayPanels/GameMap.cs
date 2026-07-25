@@ -846,7 +846,7 @@ namespace CivOne.Screens.GamePlayPanels
 
 		protected override void Resize(int width, int height) => _zoomDelegate.Resize(width, height);
 
-		public override bool MouseWheel(ScreenEventArgs args) => _zoomDelegate.MouseWheel(args);
+		public override bool MouseWheel(ScreenEventArgs args) => _zoomDelegate.MouseWheel(args) || _panMapDelegate.PanMapWheel(args);
 
 		internal void ResizeMap(int width, int height) => Resize(width, height);
 

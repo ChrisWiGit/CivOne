@@ -6,6 +6,16 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Two-finger touchpad gestures for the gameplay map.
+  * A two-finger swipe now scrolls the map viewport in all directions: vertical swipes pan up and down, horizontal swipes pan left and right.
+  * Panning moves one tile per scroll step, so a single swipe scrolls several tiles.
+  * Zooming uses `Ctrl` + two-finger scroll, which reuses the existing `Ctrl+MouseWheel` zoom including its cursor-focused anchoring.
+  * Pinch-to-zoom is supported where the operating system reports the gesture as touch input (macOS trackpads, Windows touchscreens). On Linux neither X11 nor Wayland delivers touchpad gestures to SDL, so pinch does nothing there and `Ctrl` + two-finger scroll is the way to zoom.
+  * See [Touchpad Gestures and SDL](REMARKS.md#touchpad-gestures-and-sdl) for the platform details, the sign conventions of horizontal scrolling, and a workaround for pinch on Linux.
+* Feature: The terrain editor now has its own "Terrain editor menu" setting and no longer depends on debug mode.
+  * Enable it in the setup menu under `Shift+F1 → Patches → Terrain editor menu`, or in the setup wizard.
+  * The setting can only be changed while no game is running, and it is stored in the profile.
+  * With the setting enabled, the `Terrain` top menu is available during normal gameplay; previously the editor was only reachable after turning on the debug menu.
 * Feature: Terrain editor "Save Map..." can now save a standalone map file without a full game/savegame.
   * The save dialog offers two file types: the new `.comap` YAML format and the original legacy Civ1 `.map` format.
   * The legacy `.map` option is only offered when the current map actually fits that format (fixed 80x50 size, no custom start positions, no pollution, no fortresses); otherwise only `.comap` is shown, since the legacy format supports fewer features than `.comap`.

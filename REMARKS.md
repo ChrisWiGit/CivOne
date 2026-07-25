@@ -346,6 +346,67 @@ Clear does not always mean empty file:
 * If a current human game context exists, clear keeps exactly **one** entry: the current human composed score.
 * If no active game context exists (for example credits/debug without `Game.Instance`), clear falls back to empty entries.
 
+## Touchpad Gestures and SDL
+
+Two-finger touchpad input is used for two things on the gameplay map: scrolling (pan) and zooming.
+Both are driven by SDL mouse wheel events, and only pinch would need real gesture events.
+This section documents what SDL can and cannot deliver, because the limits are not obvious from the code.
+
+### How the two gestures arrive
+
+| Gesture | SDL event | Handled in |
+| --- | --- | --- |
+| Two-finger scroll, vertical | `SDL_MOUSEWHEEL` with `y = ±1` | `GamePanMapDelegate.PanMapWheel` |
+| Two-finger scroll, horizontal | `SDL_MOUSEWHEEL` with `x = ±1` | `GamePanMapDelegate.PanMapWheel` |
+| Ctrl + two-finger scroll | `SDL_MOUSEWHEEL` with Ctrl modifier | `GameMapZoomDelegate.MouseWheel` |
+| Pinch | `SDL_MULTIGESTURE` | `SDL.Window.HandleMultiGesture` |
+
+A touchpad scroll produces many wheel events per swipe (roughly one per 120 scroll units), so one swipe pans several tiles.
+
+### Pitfall: event fields must be carried through `Transform`
+
+`GameWindow.Transform(...)` rescales window pixel coordinates to canvas coordinates and builds a **new** `ScreenEventArgs` for every mouse event.
+Any field that is not copied there silently arrives as `0` in the screens, even though the SDL layer filled it correctly.
+This is what broke horizontal panning initially: `WheelDeltaX` was added to `ScreenEventArgs` and filled in `Window.HandleMouseWheel`, but `Transform` still used the constructor overload without it.
+When adding a field to `ScreenEventArgs`, update `GameWindow.CreateScreenEventArgs`/`Transform` and `BaseScreen.MouseArgsOffset` as well.
+
+### Horizontal scroll direction is consistent across platforms
+
+The sign convention is the same on Linux and Windows, so no platform-specific inversion is needed:
+
+* X11 (`SDL_x11events.c`): scroll left is X button 6, scroll right is button 7, and SDL negates the horizontal ticks before sending them (`SDL_SendMouseWheel(..., (float)-xticks, (float)yticks, ...)`). Result: left is negative, right is positive.
+* Windows (`SDL_windowsevents.c`): `WM_MOUSEHWHEEL` passes the normalized wheel delta unchanged, which is positive when scrolling right.
+
+What still differs is the user's own "natural scrolling" setting, which flips both axes at driver level on any platform.
+
+### Pinch-to-zoom is not available on Linux
+
+SDL2 derives `SDL_MULTIGESTURE` exclusively from touch events.
+A touchpad only produces touch events if the operating system exposes it as a touch device, and on Linux it does not:
+
+* **X11** has no gesture protocol at all. libinput recognises pinch, but `xf86-input-libinput` does not forward gestures to X clients, and XInput2 has no gesture events. The touchpad is exposed as a pointer device with button and scroll classes only, without an `XITouchClass`. `SDL_GetNumTouchDevices()` therefore returns `0` and no gesture event is ever generated. This affects every X11 application, not just CivOne.
+* **Wayland** does define a gesture protocol (`zwp_pointer_gestures_v1`), but SDL2 does not implement it. SDL3 does not either; it removed the gesture API entirely. Switching SDL version would not help.
+* **macOS** reports trackpad gestures as touch, so `HandleMultiGesture` is reached and pinch zoom works.
+* **Windows** registers `WM_TOUCH`, which touchscreens send but precision touchpads do not. For touchpads Windows itself translates pinch into Ctrl + wheel for applications without gesture handling, which lands in the normal Ctrl-zoom path.
+
+The verification for the Linux case was done with a small SDL2 probe program that logged every wheel, finger, and gesture event: wheel events arrived on both axes, while `SDL_GetNumTouchDevices()` reported `0` and pinching produced nothing at all.
+
+If pinch is wanted on Linux, it has to be solved outside the game.
+A gesture daemon such as `touchegg` (X11) or `libinput-gestures` reads libinput directly and can map pinch to Ctrl + scroll, which then reaches the existing zoom path without any code change.
+Reading `/dev/input` inside the game would require seat/device permissions and platform-specific code, and is not worth it.
+
+### Relevant classes
+
+| Class / member | File |
+| --- | --- |
+| `SDL.Window.HandleMouseWheel` | `runtime/sdl/src/SDL/Window.MouseEvent.cs` |
+| `SDL.Window.HandleMultiGesture` | `runtime/sdl/src/SDL/Window.MouseEvent.cs` |
+| `SDL_MultiGestureEvent` | `runtime/sdl/src/SDL/Structs/SDL_Event.cs` |
+| `GameWindow.Transform` | `runtime/sdl/src/GameWindow.cs` |
+| `ScreenEventArgs` | `src/Events/ScreenEventArgs.cs` |
+| `GamePanMapDelegate` | `src/Screens/GamePlayPanels/GamePanMapDelegate.cs` |
+| `GameMapZoomDelegate` | `src/Screens/GamePlayPanels/GameMapZoomDelegate.cs` |
+
 ## DrawText Symbols
 
 | Symbol | Meaning      |

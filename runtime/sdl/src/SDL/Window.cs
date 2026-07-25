@@ -85,6 +85,9 @@ namespace CivOne
 					case SDL_EventType.SDL_MOUSEWHEEL:
 						HandleMouseWheel(CastToStruct<SDL_MouseWheelEvent>(sdlEvent));
 						break;
+					case SDL_EventType.SDL_MULTIGESTURE:
+						HandleMultiGesture(CastToStruct<SDL_MultiGestureEvent>(sdlEvent));
+						break;
 				}
 			}
 
