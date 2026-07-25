@@ -47,13 +47,14 @@ namespace CivOne
 		/// </summary>
 		private readonly HashSet<byte> _warWith = [];
 		/// <summary>
-		/// Raw legacy diplomacy bitmask storage (8 targets).
+		/// Raw legacy diplomacy bitmask storage, one entry per player slot (see <see cref="Game.MaxPlayers"/>).
 		/// The bit semantics are not fully documented; gameplay war logic does not currently
-		/// read or write these flags directly.
+		/// read or write these flags directly. Not written to the legacy SVE format (which is
+		/// separately capped at 8 players by SveSaveCompatibilityService), so widening this is safe.
 		/// </summary>
-		private readonly ushort[] _diplomacy = new ushort[8];
+		private readonly ushort[] _diplomacy = new ushort[CivOne.Game.MaxPlayers];
 		private readonly ushort[] _unitsLost = new ushort[28];
-		private readonly ushort[] _unitsDestroyedBy = new ushort[8];
+		private readonly ushort[] _unitsDestroyedBy = new ushort[CivOne.Game.MaxPlayers];
 		internal readonly (short X, short Y)[] MapPositions = new (short X, short Y)[9];
 		internal readonly string[] MapPositionNames = new string[9];
 		internal (short X, short Y) LastMapPosition = (-1, -1);

@@ -143,7 +143,7 @@ namespace CivOne.Tiles
 			get
 			{
 				sbyte score = (sbyte)(Trade + (3 * Food));
-				if (!Map.TileIsType(this, Terrain.River, Terrain.Grassland1, Terrain.Grassland2))
+				if (!Map.Instance.TileIsType(this, Terrain.River, Terrain.Grassland1, Terrain.Grassland2))
 				{
 					score += (sbyte)(2 * Shield);
 				}
@@ -243,11 +243,11 @@ namespace CivOne.Tiles
 				_hut = value;
 			}
 		}
-		public byte Visited { get; private set; }
+		public uint Visited { get; private set; }
 		public void Visit(byte owner)
 		{
-			if (((int)Visited & (0x01 << owner)) != 0) return;
-			Visited = (byte)(Visited + (0x01 << owner));
+			if (owner >= Game.MaxPlayers) return;
+			Visited |= 1u << owner;
 		}
 
 		public virtual bool IsOcean => false;

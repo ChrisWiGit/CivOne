@@ -62,11 +62,14 @@ namespace CivOne.src
 			Assert.Contains("YAML/COS", actual.Reason, StringComparison.OrdinalIgnoreCase);
 		}
 
-		[Fact]
-		public void EvaluateWhenMoreThanEightPlayersReturnsIncompatible()
+		[Theory]
+		[InlineData(9)]
+		[InlineData(20)]
+		[InlineData(32)]
+		public void EvaluateWhenMoreThanEightPlayersReturnsIncompatible(int playerCount)
 		{
 			var testee = new SveSaveCompatibilityService();
-			var snapshot = CreateSnapshot(playerCount: 9);
+			var snapshot = CreateSnapshot(playerCount: playerCount);
 
 			var actual = testee.Evaluate(snapshot);
 

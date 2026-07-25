@@ -76,6 +76,7 @@ namespace CivOne
 		private bool _preferSveSaveFormat = true;
 		private LzwCodecType _lzwCodecMode = LzwCodecType.Original;
 		private MapBitmapScalerType _bitmapScalerMode = MapBitmapScalerType.PaletteAwareWeighted;
+		private StartPositionAlgorithmType _startPositionAlgorithm = StartPositionAlgorithmType.Legacy;
 		private string _languagePostfix = string.Empty;
 		private SimulateInternationalFont _simulateInternationalFont = SimulateInternationalFont.Auto;
 		private bool _useUncheckedCastSanitizer;
@@ -458,6 +459,23 @@ namespace CivOne
 			}
 		}
 
+		internal enum StartPositionAlgorithmType
+		{
+			Legacy = 0,
+			AreaBased = 1
+		}
+
+		internal StartPositionAlgorithmType StartPositionAlgorithm
+		{
+			get => _startPositionAlgorithm;
+			set
+			{
+				_startPositionAlgorithm = value;
+				SetSetting("StartPositionAlgorithm", ((int)_startPositionAlgorithm).ToString(CultureInfo.InvariantCulture));
+				Common.ReloadSettings = true;
+			}
+		}
+
 		internal bool UseUncheckedCastSanitizer
 		{
 			get => _useUncheckedCastSanitizer;
@@ -804,6 +822,7 @@ namespace CivOne
 			GetSetting("PreferSveSaveFormat", ref _preferSveSaveFormat);
 			GetSetting<LzwCodecType>("LzwCodecMode", ref _lzwCodecMode);
 			GetSetting<MapBitmapScalerType>("MapBitmapScalerMode", ref _bitmapScalerMode);
+			GetSetting<StartPositionAlgorithmType>("StartPositionAlgorithm", ref _startPositionAlgorithm);
 			GetSetting("LanguagePostfix", ref _languagePostfix);
 			GetSetting("SimulateInternationalFont", ref _simulateInternationalFont);
 			GetSetting("UseUncheckedCastSanitizer", ref _useUncheckedCastSanitizer);

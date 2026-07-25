@@ -29,6 +29,10 @@ namespace CivOne.Screens
 	[ScreenResizeable]
 	internal class NewGame : BaseScreen
 	{
+		// Non-linear list of selectable competition (non-barbarian player) counts: the Menu widget has no
+		// scrolling/paging, so a plain 3..31 list would not fit the 200px design area (see MenuCompetition()).
+		private static readonly int[] CompetitionChoices = [31, 24, 20, 16, 12, 10, 8, 7, 6, 5, 4, 3];
+
 		private ICivilization[] _tribesAvailable = [];
 		private readonly string[] _menuItemsDifficulty;
 		private readonly string[] _menuItemsCompetition;
@@ -113,11 +117,13 @@ namespace CivOne.Screens
 		
 		private void SetCompetition(object sender, MenuItemEventArgs<int> args)
 		{
-			_competition = 7 - args.Value;
+			_competition = CompetitionChoices[args.Value];
 			CloseMenus();
 			Log("Competition: {0} Civilizations", _competition);
-			
-			_tribesAvailable = [.. Common.Civilizations.Where(c => c.PreferredPlayerNumber > 0 && c.PreferredPlayerNumber <= _competition)];
+
+			// Beyond the 7 "preferred player number" slots, civilizations are assigned independently of
+			// player index (see CivilizationAssignment) and reused as needed, so the human may pick any of them.
+			_tribesAvailable = [.. Common.Civilizations.Where(c => c.PreferredPlayerNumber > 0 && (_competition >= 7 || c.PreferredPlayerNumber <= _competition))];
 			_menuItemsTribes = [.. _tribesAvailable.Select(c => c.Name)];
 		}
 		
@@ -136,7 +142,7 @@ namespace CivOne.Screens
 		{
 			if (sender is not Menu menu) return;
 			
-			_tribe = RandomService.NextInt(_competition);
+			_tribe = RandomService.NextInt(_tribesAvailable.Length);
 			this.AddLayer(menu);
 			CloseMenus();
 			
@@ -323,7 +329,7 @@ namespace CivOne.Screens
 			{
 				if (_tribe == -1)
 					this.AddLayer(_background[140, 0, 180, 200], OffsetX + 140, OffsetY);
-				int pictureStack = (_competition <= 0) ? 1 : _competition;
+				int pictureStack = (_competition <= 0) ? 1 : Math.Min(_competition, 7);
 				for (int i = pictureStack; i > 0; i--)
 				{
 					this.AddLayer(DifficultyPicture, OffsetX + 22 + (i * 2), OffsetY + 100 + (i * 3));
@@ -425,7 +431,7 @@ namespace CivOne.Screens
 			this.AddLayer(_background);
 
 			_menuItemsDifficulty = BuildDifficultyMenuItems();
-			_menuItemsCompetition = [.. Enumerable.Range(3, 5).Reverse().Select(i => TranslateFormatted("{0} Civilizations", i))];
+			_menuItemsCompetition = [.. CompetitionChoices.Select(i => TranslateFormatted("{0} Civilizations", i))];
 		}
 
 		protected override void Dispose(bool disposing)

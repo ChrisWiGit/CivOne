@@ -280,7 +280,9 @@ namespace CivOne
 			return false;
 		}
 		
-		internal static bool TileIsType(ITile tile, params Terrain[] terrain) => terrain.Any(x => tile.Type == x);
+		// Doesn't use any instance state, but kept as an instance member (rather than static)
+		// so it can be part of IMapEditor and substituted in tests, matching EditorWrapX/EditorClampY.
+		public bool TileIsType(ITile tile, params Terrain[] terrain) => terrain.Any(x => tile.Type == x);
 
 		public void ChangeTileType(int x, int y, Terrain type)
 		{

@@ -7,9 +7,11 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System.Collections.Generic;
 using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.Persistence.Model;
+using CivOne.Tiles;
 
 namespace CivOne
 {
@@ -25,5 +27,8 @@ namespace CivOne
 		void SetStartPosition(Civilization civilization, MapLocation location);
 		void RemoveStartPosition(Civilization civilization);
 		bool TryGetStartPosition(ICivilization civilization, out MapLocation? location);
+		bool FixedStartPositions { get; }
+		IEnumerable<ITile> ContinentTiles(int continentId);
+		bool TileIsType(ITile tile, params Terrain[] terrain);
 	}
 }

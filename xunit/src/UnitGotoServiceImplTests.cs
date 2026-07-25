@@ -356,7 +356,7 @@ namespace CivOne.UnitTests
 			public byte FortressCost { get; set; }
 			public bool Mine { get; set; }
 			public bool Hut { get; set; }
-			public byte Visited => 0;
+			public uint Visited => 0;
 			public void Visit(byte owner) { }
 
 			public Picture DrawPage(byte pageNumber)

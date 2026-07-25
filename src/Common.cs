@@ -46,8 +46,40 @@ namespace CivOne
 		public static IBuilding[] Buildings = Reflect.GetBuildings().ToArray();
 		public static IWonder[] Wonders = Reflect.GetWonders().ToArray();
 		public static ICivilization[] Civilizations => Reflect.GetCivilizations().ToArray();
-		public static byte[] ColourLight = new byte[] { 12, 15, 10, 9, 14, 11, 13, 7 };
-		public static byte[] ColourDark = new byte[] { 4, 7, 2, 1, 10, 3, 4, 8 };
+		/// <summary>
+		/// Light player colours, indexed by player number (0 = barbarians). Supports up to <see cref="Game.MaxPlayers"/> players.
+		/// Indices 0-7 are unchanged from the original 8-player palette for visual continuity with legacy SVE saves.
+		/// Beyond player 7, the light colour repeats every 8 slots; combined with <see cref="ColourDark"/> every (light, dark) pair stays unique.
+		/// Tribe/leader names in the UI remain the authoritative way to distinguish players once colours repeat.
+		/// </summary>
+		public static byte[] ColourLight = new byte[]
+		{
+			12, 15, 10,  9, 14, 11, 13,  7,	// 0-7
+			12, 15, 10,  9, 14, 11, 13,  7,	// 8-15
+			12, 15, 10,  9, 14, 11, 13,  7,	// 16-23
+			12, 15, 10,  9, 14, 11, 13,  7		// 24-31
+		};
+
+		/// <summary>
+		/// Dark player colours, indexed by player number (0 = barbarians). Paired with <see cref="ColourLight"/>, see remarks there.
+		/// </summary>
+		public static byte[] ColourDark = new byte[]
+		{
+			 4,  7,  2,  1, 10,  3,  4,  8,	// 0-7
+			 1,  4,  6,  5,  8,  4,  2,  1,	// 8-15
+			 8,  2,  1,  6,  4,  5,  8,  2,	// 16-23
+			 5,  6,  8,  4,  1,  6,  5,  6		// 24-31
+		};
+
+		/// <summary>
+		/// Returns the light player colour for the given player index, wrapping safely if the index is out of range.
+		/// </summary>
+		public static byte PlayerColourLight(int playerIndex) => ColourLight[((playerIndex % ColourLight.Length) + ColourLight.Length) % ColourLight.Length];
+
+		/// <summary>
+		/// Returns the dark player colour for the given player index, wrapping safely if the index is out of range.
+		/// </summary>
+		public static byte PlayerColourDark(int playerIndex) => ColourDark[((playerIndex % ColourDark.Length) + ColourDark.Length) % ColourDark.Length];
 		
 		internal static IEnumerable<string> AllCityNames => Civilizations.Select(x => x.CityNames).SelectMany(x => x);
 

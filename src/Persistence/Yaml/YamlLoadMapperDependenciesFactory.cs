@@ -39,9 +39,12 @@ namespace CivOne.Persistence.Yaml
 				new NullPlayerGame(),
 				new NoopPlayerOwnerResolver(),
 				new RuntimePlayerFactory(),
-				// Common.Civilizations: direct access is acceptable here; a CommonFactory
-				// abstraction may be introduced in the future if more Common calls accumulate.
-				new CivilizationDtoMapper(Common.Civilizations),
+				// Reflect.GetCivilizations() (not Common.Civilizations, which materializes to a fixed array
+				// via ToArray()) is deferred-execution and yields fresh ICivilization instances on each full
+				// enumeration, which CivilizationDtoMapper.FromDto relies on; see its constructor doc comment.
+				// Direct access is acceptable here; a CommonFactory abstraction may be introduced in the
+				// future if more Common/Reflect calls accumulate.
+				new CivilizationDtoMapper(Reflect.GetCivilizations()),
 				new PalaceDtoMapper(sanitizer),
 				cityMapper,
 				unitMapper,

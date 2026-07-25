@@ -82,6 +82,12 @@ namespace CivOne
 
 		public int Competition => _competition;
 
+		/// <summary>
+		/// The maximum number of players supported by a game (including the barbarian player at index 0).
+		/// This bounds the <see cref="Tiles.ITile.Visited"/> bitmask width and the player colour palette size.
+		/// </summary>
+		internal const int MaxPlayers = 32;
+
 		private static string GetGameVersion()
 			=> Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown";
 
@@ -257,7 +263,13 @@ namespace CivOne
 			ICivilization destroyedBy = Game.CurrentPlayer.Civilization;
 			if (destroyedBy == destroyed) destroyedBy = Game.GetPlayer(0)!.Civilization;
 
-			_replayData.Add(new ReplayData.CivilizationDestroyed(_gameTurn, destroyed.PreferredPlayerNumber, destroyedBy.PreferredPlayerNumber));
+			// Use the player's index (its slot in _players), not Civilization.PreferredPlayerNumber:
+			// with civilization reuse beyond player 7, PreferredPlayerNumber no longer identifies the player slot.
+			byte destroyedIndex = PlayerNumber(player);
+			byte destroyedByIndex = PlayerNumber(Game.CurrentPlayer);
+			if (destroyedByIndex == destroyedIndex) destroyedByIndex = 0;
+
+			_replayData.Add(new ReplayData.CivilizationDestroyed(_gameTurn, destroyedIndex, destroyedByIndex));
 
 			if (player.IsHuman)
 			{
@@ -269,12 +281,12 @@ namespace CivOne
 				player.AllowedToRespawn(GetReplayData<ReplayData.CivilizationDestroyed>()))
 			{
 				Player newPlayer = player.Respawn();
-				var index = newPlayer.Civilization.PreferredPlayerNumber;
+				byte index = destroyedIndex;
 
 				_players[index] = newPlayer;
 				_players[index].Destroyed += PlayerDestroyed;
 
-				AddStartingUnits(index);
+				PlaceStartingUnits([index]);
 				// CW: Not sure, but are these new civs given technology or better units?
 				// Could be a feature to advance such a civilization.
 				// In higher dificulties, does the civ get more units and techs?

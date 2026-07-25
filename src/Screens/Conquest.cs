@@ -221,10 +221,10 @@ namespace CivOne.Screens
 
 			BaseCivilization.BuddyCivilization getBuddyCiv =
 				BaseCivilization.GetBuddyCivilizationSupplier(
-					Common.Random!.InitialSeed, Game.Competition, Game.HumanPlayer.Civilization.PreferredPlayerNumber);
+					Common.Random!.InitialSeed, Game.Competition, Game.HumanPlayerId, Game.HumanPlayer.Civilization);
 
 			_enemies = [.. Game.GetReplayData<ReplayData.CivilizationDestroyed>()
-				.Where(x => x.DestroyedById == Game.HumanPlayer.Civilization.Id)
+				.Where(x => x.DestroyedById == Game.HumanPlayerId)
 				.Select(x =>
 				{
 					ICivilization civ = getBuddyCiv(x.DestroyedId);

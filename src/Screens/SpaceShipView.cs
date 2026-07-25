@@ -32,8 +32,6 @@ namespace CivOne.Screens
 		private readonly ISpaceShipResourceService _resources;
 		private readonly IGameCalendarService _calendarService;
 
-		// only hard coupling but easy to refactor if needed.
-		private readonly static byte[] ColourDark = Common.ColourDark;
 		private readonly Player _player;
 		private readonly bool _debug;
 		private readonly bool _viewOnly;
@@ -97,16 +95,8 @@ namespace CivOne.Screens
 		{
 			get
 			{
-				int playerNumber = Game.PlayerNumber(_player);
-				if (playerNumber < 0)
-				{
-					playerNumber = 0;
-				}
-				if (playerNumber >= ColourDark.Length)
-				{
-					playerNumber = ColourDark.Length - 1;
-				}
-				return ColourDark[playerNumber];
+				int playerNumber = Math.Max(0, (int)Game.PlayerNumber(_player));
+				return Common.PlayerColourDark(playerNumber);
 			}
 		}
 

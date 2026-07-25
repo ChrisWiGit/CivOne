@@ -39,8 +39,6 @@ namespace CivOne
 
 			ICivilization[] civs = [.. Common.Civilizations.Where(civ => civ.Id == civId)];
 
-			int playerIndex = destroyed.PreferredPlayerNumber;
-
 			return new Player(civs.First());
 			// CW: schism could be done the same but with a different civ slot
 			// But. Make sure the civ is not used.
@@ -48,11 +46,15 @@ namespace CivOne
 
 		public bool AllowedToRespawn(ReplayData.CivilizationDestroyed[] ReplayData)
 		{
-			bool atLeastOneCivBuddyAvailable = ReplayData.Count(x => x.DestroyedId == this.Civilization.PreferredPlayerNumber) < 2;
+			// Use the player's slot index (not Civilization.PreferredPlayerNumber): with civilization reuse
+			// beyond player 7, PreferredPlayerNumber no longer identifies the player slot, but Game.PlayerDestroyed
+			// now records the real slot index in ReplayData.CivilizationDestroyed.DestroyedId.
+			byte playerIndex = Game.PlayerNumber(this);
+			bool atLeastOneCivBuddyAvailable = ReplayData.Count(x => x.DestroyedId == playerIndex) < 2;
 
 			// CW: If atLeastOneCivBuddyAvailable is disabled, this may affect end screen and could
 			// confuse BaseCivilization.Buddy.cs Algorithm.
-			return this.Civilization.PreferredPlayerNumber != 0 && !this.IsHuman && atLeastOneCivBuddyAvailable;
+			return playerIndex != 0 && !this.IsHuman && atLeastOneCivBuddyAvailable;
 		}
 	}
 }
