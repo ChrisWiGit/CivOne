@@ -48,6 +48,7 @@ namespace CivOne.Screens
 		private bool _redraw;
 		private bool _rightSideBar;
 		private static bool DebugMenuEnabled => Settings.DebugMenu || RuntimeHandler.Runtime.Settings.Get<bool>("debug") == true;
+		private static bool TerrainEditorMenuEnabled => Settings.TerrainEditorMenu;
 
 		private bool _shift5;
 
@@ -450,7 +451,7 @@ namespace CivOne.Screens
 				return;
 			}
 
-			int menuCount = DebugMenuEnabled ? 6 : 5;
+			int menuCount = TerrainEditorMenuEnabled ? 6 : 5;
 			int nextIndex = _menuIndex;
 			for (int attempts = 0; attempts < menuCount; attempts++)
 			{

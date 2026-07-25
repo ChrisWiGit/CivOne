@@ -99,8 +99,8 @@ namespace CivOne.Screens.GamePlayPanels
 				_ => Translate("None")
 			};
 
-		private static bool DebugTerrainEditorEnabled => Settings.DebugMenu || RuntimeHandler.Runtime?.Settings.Get<bool>("debug") == true;
-		private bool TerrainEditorEnabled => DebugTerrainEditorEnabled && _editorState.Enabled;
+		private static bool TerrainEditorMenuEnabled => Settings.TerrainEditorMenu;
+		private bool TerrainEditorEnabled => TerrainEditorMenuEnabled && _editorState.Enabled;
 
 		private ITile[,] Tiles => Map[_x, _y, _tilesX, _tilesY];
 

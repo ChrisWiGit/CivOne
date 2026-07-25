@@ -65,6 +65,7 @@ namespace CivOne
 		private bool _vSync = true;
 		private bool _revealWorld;
 		private bool _debugMenu;
+		private bool _terrainEditorMenu;
 		private bool _deityEnabled;
 		private bool _arrowHelper;
 		private bool _pathFinding;
@@ -322,7 +323,18 @@ namespace CivOne
 				Common.ReloadSettings = true;
 			}
 		}
-		
+
+		internal bool TerrainEditorMenu
+		{
+			get => _terrainEditorMenu;
+			set
+			{
+				_terrainEditorMenu = value;
+				SetSetting("TerrainEditorMenu", _terrainEditorMenu ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
 		internal bool DeityEnabled
 		{
 			get => _deityEnabled;
@@ -780,6 +792,7 @@ namespace CivOne
 			}
 			GetSetting("RevealWorld", ref _revealWorld);
 			GetSetting("DebugMenu", ref _debugMenu);
+			GetSetting("TerrainEditorMenu", ref _terrainEditorMenu);
 			GetSetting("DeityEnabled", ref _deityEnabled);
 			GetSetting("ArrowHelper", ref _arrowHelper);
 			GetSetting("PathFindingAlgorithm", ref _pathFinding);

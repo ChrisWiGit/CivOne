@@ -278,7 +278,7 @@ namespace CivOne.Screens
 
 			public void MenuBarTerrain(object? _, EventArgs __)
 			{
-				if (!DebugMenuEnabled)
+				if (!TerrainEditorMenuEnabled)
 				{
 					return;
 				}

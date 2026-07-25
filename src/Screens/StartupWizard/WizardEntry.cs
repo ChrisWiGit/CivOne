@@ -120,6 +120,11 @@ namespace CivOne.Screens.StartupWizard
 		ToggleExtendedGlobalWarming,
 
 		/// <summary>
+		/// Toggles whether the in-game terrain editor menu is enabled.
+		/// </summary>
+		ToggleTerrainEditorMenu,
+
+		/// <summary>
 		/// Completes the wizard, saves all settings and starts the game.
 		/// </summary>
 		Finish

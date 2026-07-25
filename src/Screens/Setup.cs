@@ -261,7 +261,7 @@ namespace CivOne.Screens
 				MenuItem.Create(Translate("Game Options")).OnSelect(GotoMenu(GameOptionsMenu))
 					.WithDescription(Translate("Configure game rules and difficulty settings.")),
 				MenuItem.Create(Translate("Open CivOne Profile folder...")).OnSelect(OpenProfileFolder)
-					.WithDescription(Translate("Open the folder where CivOne stores profiles, save games, and settings.")),
+					.WithDescription(TranslateArray("Open the folder where CivOne\nstores profiles, save games, and settings.")),
 				MenuItem.Create(GetReturnTargetString()).OnSelect(CloseScreen())
 			];
 
@@ -526,6 +526,11 @@ namespace CivOne.Screens
 				.WithDescription(
 					Translate("Show frames per second in a screen corner."))
 				.OnSelect(GotoMenu(FpsCornerMenu)),
+			MenuItem.Create(TranslateFormatted("Terrain editor menu: {0}", Settings.TerrainEditorMenu.YesNo()))
+				.WithDescription(
+					Translate("Show the terrain editor menu and hotkeys in game."),
+					Translate("Can only be changed before a game starts."))
+				.OnSelect(GotoMenu(TerrainEditorMenuMenu)).SetEnabled(!Game.Started),
 			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(MainMenu, 1))
 		);
 
@@ -556,6 +561,16 @@ namespace CivOne.Screens
 			MenuItem.Create(true.YesNo())
 				.WithDescription(Translate("Show debug menu entries."))
 				.OnSelect((s, a) => Settings.DebugMenu = true).SetActive(() => Settings.DebugMenu),
+			MenuItem.Create(Translate("Back"))
+		);
+
+		private void TerrainEditorMenuMenu() => CreateMenu(Translate("Terrain editor menu"), GotoMenu(PatchesMenu, 13),
+			MenuItem.Create(TranslateFormatted("{0} (default)", false.YesNo()))
+				.WithDescription(Translate("Hide terrain editor menu and hotkeys."))
+				.OnSelect((s, a) => Settings.TerrainEditorMenu = false || Game.Started).SetActive(() => !Settings.TerrainEditorMenu || Game.Started),
+			MenuItem.Create(true.YesNo())
+				.WithDescription(Translate("Show terrain editor menu and hotkeys."))
+				.OnSelect((s, a) => Settings.TerrainEditorMenu = true).SetActive(() => Settings.TerrainEditorMenu),
 			MenuItem.Create(Translate("Back"))
 		);
 
