@@ -172,17 +172,34 @@ namespace CivOne.Graphics
 				Debug.Assert(false, "Layer is null", "AddLayer was called with a null layer. This may indicate a missing resource or an error in the code.");
 				return bitmap;
 			}
-			for (int yy = 0; yy < layer.Height; yy++)
+
+			Bytemap target = bitmap.Bitmap;
+
+			// Clip once instead of testing every pixel: these are the layer coordinates that land inside
+			// the target bitmap, which is exactly what the previous per-pixel break/continue pair
+			// produced. Copying row by row keeps the handle and range validation out of the inner loop.
+			int firstX = Math.Max(0, -left);
+			int firstY = Math.Max(0, -top);
+			int lastX = Math.Min(layer.Width, target.Width - left);
+			int lastY = Math.Min(layer.Height, target.Height - top);
+
+			if (lastX > firstX && lastY > firstY)
 			{
-				if (top + yy >= bitmap.Height()) break;
-				if (bitmap.OutBoundY(top + yy)) continue;
-				for (int xx = 0; xx < layer.Width; xx++)
+				int rowLength = lastX - firstX;
+				for (int yy = firstY; yy < lastY; yy++)
 				{
-					if (left + xx >= bitmap.Width()) break;
-					if (layer[xx, yy] == 0 || bitmap.OutBoundX(left + xx)) continue;
-					bitmap.Bitmap[left + xx, top + yy] = layer[xx, yy];
+					ReadOnlySpan<byte> source = layer.Row(yy).Slice(firstX, rowLength);
+					Span<byte> destination = target.Row(top + yy).Slice(left + firstX, rowLength);
+					for (int xx = 0; xx < rowLength; xx++)
+					{
+						byte colour = source[xx];
+						// Colour index 0 is transparent.
+						if (colour == 0) continue;
+						destination[xx] = colour;
+					}
 				}
 			}
+
 			if (dispose) layer.Dispose();
 			return bitmap;
 		}

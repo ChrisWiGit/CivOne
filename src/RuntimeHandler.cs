@@ -73,9 +73,18 @@ namespace CivOne
 
 		private Stopwatch _tickWatch = new();
 
-#if DEBUG
 		private uint _tickWatchOffset;
-#endif
+
+		/// <summary>
+		/// Maximum number of game ticks processed in a single frame.
+		/// </summary>
+		/// <remarks>
+		/// Ticks advance at 60 per second while screens are updated every fourth tick, so this allows
+		/// three screen updates per frame. A normal frame consumes one tick or none at all, so the limit
+		/// only takes effect once the game has fallen behind real time.
+		/// </remarks>
+		private const uint MaxTicksPerFrame = 12;
+
 		private uint TickWatch
 		{
 			get
@@ -86,12 +95,22 @@ namespace CivOne
 				}
 
 				uint elapsedTicks = Convert.ToUInt32(((double)_tickWatch.ElapsedMilliseconds / 1000) * 60);
-#if DEBUG
 				return _tickWatchOffset + elapsedTicks;
-#else
-				return elapsedTicks;
-#endif
 			}
+		}
+
+		/// <summary>
+		/// Drops the accumulated tick backlog and continues counting from the current game tick.
+		/// </summary>
+		/// <remarks>
+		/// The tick counter itself is never reset, because screens derive animation state from it.
+		/// Restarting the stopwatch with the current tick as offset makes the outstanding ticks
+		/// disappear without moving the counter backwards.
+		/// </remarks>
+		private void ResyncTickWatch()
+		{
+			_tickWatchOffset = _gameTick;
+			_tickWatch.Restart();
 		}
 		private uint _gameTick;
 		private readonly IMcpService _mcpService;
@@ -161,29 +180,25 @@ namespace CivOne
 		{
 			_mcpService.Process();
 
+			// The tick budget bounds how much work a single frame may do. Without it, one slow screen
+			// update lets real time run ahead, which queues up further updates in the same frame, which
+			// costs more time again. The loop then keeps running instead of returning to the event loop,
+			// so the window stops drawing and stops reacting to input until the backlog is worked off.
+			// The same runaway happens when the game tick stops advancing under a debugger while real
+			// time continues. Dropping the backlog turns both cases into a skipped frame.
+			uint ticksThisFrame = 0;
+
 			while (_gameTick < TickWatch)
 			{
-				_gameTick++;
-
-#if DEBUG
-				if (TickWatch - _gameTick > 1_000)
+				if (ticksThisFrame >= MaxTicksPerFrame)
 				{
-					// NOTE:
-					// When debugging, the game tick stops advancing while real time continues.
-					// This causes the difference between TickWatch and _gameTick to grow continuously,
-					// making this while-loop take an increasingly long time to finish.
-					//
-					// To avoid resetting _gameTick, we restart the TickWatch and apply the current
-					// _gameTick as an offset, effectively continuing from the current tick.
-					//
-					// In the previous implementation, after continuing from the debugger and
-					// returning to normal gameplay, all user input was stalled until the loop
-					// had completed.
-					_tickWatchOffset = _gameTick;
-					_tickWatch.Restart();
+					ResyncTickWatch();
 					break;
 				}
-#endif
+
+				_gameTick++;
+				ticksThisFrame++;
+
 				if (!Update()) continue;
 				args.HasUpdate = true;
 

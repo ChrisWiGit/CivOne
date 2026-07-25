@@ -26,6 +26,11 @@ namespace CivOne.Screens.GamePlayPanels
 		/// </summary>
 		private sealed class GameTerrainEditorRenderDelegate(GameMap gameMap, ICivilization[]? civilizations = null)
 		{
+			/// <summary>
+			/// Smallest tile size in pixels at which land value labels are still readable.
+			/// </summary>
+			private const int MinimumLandValueTilePixelSize = 8;
+
 			private readonly GameMap _gameMap = gameMap;
 			private readonly ICivilization[]? _civilizations = civilizations;
 
@@ -42,11 +47,22 @@ namespace CivOne.Screens.GamePlayPanels
 					return;
 				}
 
+				// A single tile below the text height would only produce unreadable overlapping labels,
+				// and rendering thousands of them at high zoom-out levels stalls the frame.
+				if (_gameMap._tilePixelSize < MinimumLandValueTilePixelSize)
+				{
+					return;
+				}
+
+				// Read the visible tiles once: the Tiles property rebuilds the whole visible tile array
+				// on every access, which is O(tiles) work per tile when used inside the loop.
+				ITile[,] tiles = _gameMap.Tiles;
+
 				for (int yy = 0; yy < _gameMap._tilesY; yy++)
 				{
 					for (int xx = 0; xx < _gameMap._tilesX; xx++)
 					{
-						ITile tile = _gameMap.Tiles[xx, yy];
+						ITile tile = tiles[xx, yy];
 						if (tile == null)
 						{
 							continue;

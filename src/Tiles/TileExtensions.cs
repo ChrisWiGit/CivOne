@@ -29,7 +29,55 @@ namespace CivOne.Tiles
 
 		private static Game Game => Game.Instance;
 		private static Resources Resources => Resources.Instance;
-		private static Palette Palette => Resources["SP257"].Palette;
+
+		private static volatile CachedTilePalette? _tilePalette;
+
+		/// <summary>
+		/// Immutable pairing of a cached palette and the resource cache generation it was built from.
+		/// </summary>
+		/// <remarks>
+		/// Keeping both values in a single object lets the palette and its generation be published in one
+		/// atomic reference write, so a concurrent reader can never observe a new palette together with an
+		/// old generation (or the other way round).
+		/// </remarks>
+		private sealed class CachedTilePalette(Palette palette, int generation)
+		{
+			public Palette Palette { get; } = palette;
+			public int Generation { get; } = generation;
+		}
+
+		/// <summary>
+		/// Gets the terrain tile palette, cached across calls.
+		/// </summary>
+		/// <remarks>
+		/// The resource indexer hands out an owned copy of the requested picture, so reading
+		/// <c>Resources["SP257"].Palette</c> copied the full 320x200 tile sheet plus two palettes on every
+		/// access, and the copy was discarded undisposed. This property is read once per rendered tile, so
+		/// a zoomed-out map redraw did that thousands of times per frame.
+		/// The cached copy is rebuilt when <see cref="Graphics.Resources.CacheGeneration"/> changes, which
+		/// happens whenever the resources are discarded (for example after a graphics mode change).
+		/// The replaced palette is deliberately not disposed: resource caches are also read from the
+		/// background preload task, so another thread may still be copying the old palette. Disposing it
+		/// here would free its unmanaged buffer while it is in use. <see cref="Palette"/> derives from
+		/// <see cref="IO.BaseUnmanaged"/>, whose finalizer releases the buffer once no reader holds it.
+		/// </remarks>
+		private static Palette Palette
+		{
+			get
+			{
+				int generation = Graphics.Resources.CacheGeneration;
+				CachedTilePalette? cached = _tilePalette;
+				if (cached != null && cached.Generation == generation)
+				{
+					return cached.Palette;
+				}
+
+				using Picture tileSheet = Resources["SP257"];
+				CachedTilePalette rebuilt = new(tileSheet.Palette.Copy(), generation);
+				_tilePalette = rebuilt;
+				return rebuilt.Palette;
+			}
+		}
 		private static Settings Settings => Settings.Instance;
 		private static IMapBitmapScaler MapBitmapScaler => MapBitmapScalerFactory.GetDefault();
 		

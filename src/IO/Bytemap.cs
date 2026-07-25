@@ -26,6 +26,30 @@ namespace CivOne.IO
 			set => WriteByte((Width * y) + x, value);
 		}
 
+		/// <summary>
+		/// Returns a view over a single pixel row of the unmanaged buffer.
+		/// </summary>
+		/// <param name="y">The zero-based row index.</param>
+		/// <returns>A span of <see cref="Width"/> bytes covering the requested row.</returns>
+		/// <exception cref="ObjectDisposedException">The bitmap has already been disposed.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">The row index is outside the bitmap.</exception>
+		/// <remarks>
+		/// The indexer validates the handle and the offset on every single pixel, which makes per-pixel
+		/// loops over a full bitmap dominated by those checks rather than by the actual work.
+		/// Taking a row span validates once and then allows plain memory access, the same approach
+		/// <see cref="ToColourMap"/> and <see cref="Fill"/> already use.
+		/// The span points directly into unmanaged memory, so it must not outlive the bitmap and must not
+		/// be stored; use it inside the loop that requested it.
+		/// </remarks>
+		internal unsafe Span<byte> Row(int y)
+		{
+			ObjectDisposedException.ThrowIf(Handle == IntPtr.Zero, this);
+			ArgumentOutOfRangeException.ThrowIfNegative(y);
+			ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(y, Height);
+
+			return new Span<byte>((byte*)Handle + ((long)Width * y), Width);
+		}
+
 		internal Bytemap this[int left, int top, int width, int height]
 		{
 			get

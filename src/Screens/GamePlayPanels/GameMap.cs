@@ -104,6 +104,135 @@ namespace CivOne.Screens.GamePlayPanels
 
 		private ITile[,] Tiles => Map[_x, _y, _tilesX, _tilesY];
 
+		/// <summary>
+		/// Copy of the last fully rendered terrain layer, used to clear terrain editor overlays without
+		/// re-rendering every visible tile.
+		/// </summary>
+		private Bytemap? _editorBaseLayer;
+
+		/// <summary>
+		/// Screen tick at which <see cref="_editorBaseLayer"/> was last checked or rebuilt.
+		/// </summary>
+		private uint _editorBaseLayerTick;
+
+		/// <summary>
+		/// Fingerprint of the map state that <see cref="_editorBaseLayer"/> was rendered from.
+		/// </summary>
+		private long _editorBaseLayerFingerprint;
+
+		/// <summary>
+		/// Interval at which the cached terrain layer is checked for staleness, in screen ticks.
+		/// </summary>
+		/// <remarks>
+		/// Screens are updated 15 times per second, so this is roughly one second.
+		/// The cached layer is normally refreshed by every editor action that changes the map, but the
+		/// game keeps running while the editor is open (see <see cref="Game.Update"/>, called from
+		/// <see cref="GamePlay"/>), so cities, pollution or moving units can change tiles without any
+		/// editor input. The check compares a fingerprint of the visible map and only re-renders when
+		/// it actually differs, so an idle editor costs a fingerprint per second instead of a redraw.
+		/// </remarks>
+		private const uint EditorBaseLayerCheckIntervalTicks = 15;
+
+		private bool CanRestoreEditorBaseLayer => _editorBaseLayer != null
+			&& _editorBaseLayer.Width == _tilesX * _tilePixelSize
+			&& _editorBaseLayer.Height == _tilesY * _tilePixelSize;
+
+		/// <summary>
+		/// Stores a copy of the freshly rendered terrain layer while the terrain editor is active.
+		/// </summary>
+		/// <param name="tilesLayer">The terrain layer that was just drawn onto the map bitmap.</param>
+		/// <param name="gameTick">The screen tick the layer was rendered on.</param>
+		/// <remarks>
+		/// The cache is only kept for the terrain editor. Rendering the visible tiles is expensive at high
+		/// zoom-out levels, where the viewport can cover the whole map, and the editor overlays require a
+		/// clean terrain layer on every hover change.
+		/// </remarks>
+		private void CacheEditorBaseLayer(Bytemap tilesLayer, uint gameTick)
+		{
+			_editorBaseLayer?.Dispose();
+			if (!TerrainEditorEnabled)
+			{
+				_editorBaseLayer = null;
+				return;
+			}
+
+			_editorBaseLayer = Bytemap.Copy(tilesLayer);
+			_editorBaseLayerTick = gameTick;
+			_editorBaseLayerFingerprint = ComputeVisibleMapFingerprint();
+		}
+
+		/// <summary>
+		/// Builds a fingerprint of everything the terrain layer is rendered from.
+		/// </summary>
+		/// <returns>A value that changes whenever the visible map would render differently.</returns>
+		/// <remarks>
+		/// Covers the terrain and improvements of every visible tile plus the position and state of all
+		/// cities and units. Cities and units are read from their own collections rather than per tile,
+		/// because the per-tile accessors search those collections and would turn this into a scan per
+		/// tile. Tiles just outside the viewport are not included, so a terrain change directly next to
+		/// the viewport edge can leave that edge's coastline outline stale until the next real redraw.
+		/// </remarks>
+		private long ComputeVisibleMapFingerprint()
+		{
+			long hash = 17;
+			ITile[,] tiles = Tiles;
+
+			for (int yy = 0; yy < _tilesY; yy++)
+			{
+				for (int xx = 0; xx < _tilesX; xx++)
+				{
+					ITile tile = tiles[xx, yy];
+					if (tile == null)
+					{
+						hash *= 31;
+						continue;
+					}
+
+					int improvements = (tile.Road ? 1 : 0)
+						| (tile.RailRoad ? 2 : 0)
+						| (tile.Irrigation ? 4 : 0)
+						| (tile.Mine ? 8 : 0)
+						| (tile.Fortress ? 16 : 0)
+						| (tile.Pollution ? 32 : 0)
+						| (tile.Hut ? 64 : 0);
+
+					hash = (hash * 31) + (int)tile.Type;
+					hash = (hash * 31) + improvements;
+				}
+			}
+
+			foreach (City city in Game.GetCities())
+			{
+				hash = (hash * 31) + city.X;
+				hash = (hash * 31) + city.Y;
+				hash = (hash * 31) + city.Size;
+				hash = (hash * 31) + city.CityOwnerPlayerIndex;
+			}
+
+			foreach (IUnit unit in Game.GetUnits())
+			{
+				hash = (hash * 31) + unit.X;
+				hash = (hash * 31) + unit.Y;
+				hash = (hash * 31) + (int)unit.Type;
+				hash = (hash * 31) + unit.Owner;
+			}
+
+			return hash;
+		}
+
+		/// <summary>
+		/// Releases the cached terrain layer.
+		/// </summary>
+		/// <remarks>
+		/// Called when the terrain editor is switched off, so the buffer is not kept alive until the next
+		/// full redraw happens to run.
+		/// </remarks>
+		private void ClearEditorBaseLayer()
+		{
+			_editorBaseLayer?.Dispose();
+			_editorBaseLayer = null;
+		}
+
 		private int CurrentZoomBasisPoints => Game.Started
 			? MapZoomSettings.NormalizeBasisPoints(Human.MapZoomBasisPoints)
 			: MapZoomSettings.DefaultBasisPoints;
@@ -115,24 +244,48 @@ namespace CivOne.Screens.GamePlayPanels
 			this.AddLayer(scaled, left, top);
 		}
 		
+		/// <summary>
+		/// Gets the viewport column of a world tile.
+		/// </summary>
+		/// <param name="tile">The world tile to locate.</param>
+		/// <returns>The column index inside the viewport, or -1 when the tile is outside it.</returns>
+		/// <remarks>
+		/// The viewport column of a tile is simply its X distance from the viewport origin, with map
+		/// wrapping applied. The previous implementation scanned the <see cref="Tiles"/> property, which
+		/// rebuilds the whole visible tile array on every access (and once per loop iteration, because the
+		/// property was also evaluated in the loop condition). At high zoom-out levels the viewport covers
+		/// the entire map, so a single call allocated and filled dozens of full-map arrays. That made the
+		/// terrain editor overlays (which call this per brush tile and per start position) freeze the game.
+		/// </remarks>
 		private int GetX(ITile tile)
 		{
-			ITile[,] tiles = Tiles;
-			for (int xx = 0; xx < Tiles.GetLength(0); xx++)
+			ArgumentNullException.ThrowIfNull(tile);
+
+			int relativeX = tile.X - _x;
+			while (relativeX < 0)
 			{
-				if (tiles[xx, 0].X == tile.X) return xx;
+				relativeX += Map.WIDTH;
 			}
-			return -1;
+
+			relativeX %= Map.WIDTH;
+			return relativeX < _tilesX ? relativeX : -1;
 		}
 
+		/// <summary>
+		/// Gets the viewport row of a world tile.
+		/// </summary>
+		/// <param name="tile">The world tile to locate.</param>
+		/// <returns>The row index inside the viewport, or -1 when the tile is outside it.</returns>
+		/// <remarks>
+		/// The map does not wrap vertically, so the row is the plain Y distance from the viewport origin.
+		/// See <see cref="GetX(ITile)"/> for why the previous scanning implementation was replaced.
+		/// </remarks>
 		private int GetY(ITile tile)
 		{
-			ITile[,] tiles = Tiles;
-			for (int yy = 0; yy < Tiles.GetLength(1); yy++)
-			{
-				if (tiles[0, yy].Y == tile.Y) return yy;
-			}
-			return -1;
+			ArgumentNullException.ThrowIfNull(tile);
+
+			int relativeY = tile.Y - _y;
+			return (relativeY >= 0 && relativeY < _tilesY) ? relativeY : -1;
 		}
 
 		/// <summary>
@@ -234,8 +387,17 @@ namespace CivOne.Screens.GamePlayPanels
 			// Check if the active unit is on the screen and the blink status has changed.
 			if (unit == null)
 			{
-				_update = true;
-				return false;
+				// The terrain editor clears the active unit (see HandleTerrainEditorActiveUnit), so this
+				// branch would request an update on every tick. There is no blinking unit to animate in
+				// editor mode, and every editor input path sets _update itself, so an unconditional
+				// per-tick update would only force redundant map redraws.
+				if (!TerrainEditorEnabled)
+				{
+					_update = true;
+					return false;
+				}
+
+				return RequestEditorBaseLayerRefresh(gameTick);
 			}
 
 			// O(1) viewport check replaces previous TileList scan in this hot tick path.
@@ -258,6 +420,38 @@ namespace CivOne.Screens.GamePlayPanels
 				_update = unit != _lastUnit;
 			}
 			return _update;
+		}
+
+		/// <summary>
+		/// Requests a full redraw when the map changed underneath the cached terrain layer.
+		/// </summary>
+		/// <param name="gameTick">The current screen tick.</param>
+		/// <returns>
+		/// <c>true</c> when a redraw was requested, so the calling screen composites the map panel again.
+		/// </returns>
+		/// <remarks>
+		/// The map can change while the editor is open without any editor input, and those changes only
+		/// reach the screen through a full redraw. See <see cref="EditorBaseLayerCheckIntervalTicks"/>.
+		/// </remarks>
+		private bool RequestEditorBaseLayerRefresh(uint gameTick)
+		{
+			if (_editorBaseLayer == null || (gameTick - _editorBaseLayerTick) < EditorBaseLayerCheckIntervalTicks)
+			{
+				return false;
+			}
+
+			if (ComputeVisibleMapFingerprint() == _editorBaseLayerFingerprint)
+			{
+				// Nothing that the terrain layer is built from has changed, so the cache is still valid.
+				// Restarting the interval keeps the next check one interval away instead of running it
+				// on every following tick.
+				_editorBaseLayerTick = gameTick;
+				return false;
+			}
+
+			_update = true;
+			_fullRedraw = true;
+			return true;
 		}
 
 		private void HandleTerrainEditorActiveUnit()
@@ -284,10 +478,16 @@ namespace CivOne.Screens.GamePlayPanels
 			}
 
 			// Editor overlays (brush preview, spawn preview, start-position markers) are drawn on
-			// top of the map bitmap, which is only cleared on a full redraw. Promote any pending
-			// editor update to a full redraw so the previous frame's hover overlay is cleared
-			// instead of accumulating on the map until the next unrelated full redraw.
-			if (TerrainEditorEnabled && _update)
+			// top of the map bitmap, so the previous frame's overlay has to be cleared before the
+			// next one is drawn. Restoring the cached base map layer does that without re-rendering
+			// every visible tile; only when no usable or sufficiently recent cache exists is a full
+			// redraw forced. Every editor action that actually changes the map sets _fullRedraw
+			// itself, which refreshes the cache, so overlay-only updates never show stale terrain.
+			// A moving unit is drawn into the previous frame's bitmap, so keep the old full-redraw
+			// behaviour in that case instead of restoring the base layer underneath it.
+			bool editorBaseLayerExpired = (gameTick - _editorBaseLayerTick) >= EditorBaseLayerCheckIntervalTicks;
+			bool restoreEditorBaseLayer = TerrainEditorEnabled && _update && !_fullRedraw && !editorBaseLayerExpired && Game.MovingUnit == null && CanRestoreEditorBaseLayer;
+			if (TerrainEditorEnabled && _update && !restoreEditorBaseLayer)
 			{
 				_fullRedraw = true;
 			}
@@ -304,7 +504,9 @@ namespace CivOne.Screens.GamePlayPanels
 				ITile tile = movingUnit.Tile;
 				int dx = GetX(tile);
 				int dy = GetY(tile);
-				if (dx < _tilesX && dy < _tilesY)
+				// GetX/GetY return -1 for tiles outside the viewport; without the lower bound the unit
+				// would be drawn at a negative offset instead of being skipped.
+				if (dx >= 0 && dy >= 0 && dx < _tilesX && dy < _tilesY)
 				{
 					dx *= _tilePixelSize; dy *= _tilePixelSize;
 
@@ -340,6 +542,12 @@ namespace CivOne.Screens.GamePlayPanels
 				using IBitmap tilesPicture = Tiles.ToBitmap(player: renderPlayer, pixelSize: _tilePixelSize);
 				this.Clear(5)
 					.AddLayer(tilesPicture.Bitmap);
+				CacheEditorBaseLayer(tilesPicture.Bitmap, gameTick);
+			}
+			else if (restoreEditorBaseLayer)
+			{
+				this.Clear(5)
+					.AddLayer(_editorBaseLayer!);
 			}
 
 			if (!TerrainEditorEnabled && activeUnit != null && Game.CurrentPlayer == Human && !GameTask.Any() && !_mapViewEnabled)
@@ -347,7 +555,9 @@ namespace CivOne.Screens.GamePlayPanels
 				ITile tile = activeUnit.Tile;
 				int dx = GetX(tile);
 				int dy = GetY(tile);
-				if (dx < _tilesX && dy < _tilesY)
+				// GetX/GetY return -1 for tiles outside the viewport; without the lower bound the blink
+				// tile and the helper arrows would be drawn at a negative offset instead of being skipped.
+				if (dx >= 0 && dy >= 0 && dx < _tilesX && dy < _tilesY)
 				{
 					dx *= _tilePixelSize; dy *= _tilePixelSize;
 
@@ -864,7 +1074,10 @@ namespace CivOne.Screens.GamePlayPanels
 			_terrainEditorRenderDelegate = new(this);
 			_terrainEditorSessionDelegate = new(this);
 
-			Palette = Resources["SP257"].Palette.Copy();
+			// The resource indexer hands out an owned copy, so it has to be disposed after the palette
+			// has been copied out of it.
+			using Picture tileSheet = Resources["SP257"];
+			Palette = tileSheet.Palette.Copy();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -876,6 +1089,7 @@ namespace CivOne.Screens.GamePlayPanels
 
 			GameTask.Started -= TaskStarted;
 			MapPositionSaved = null;
+			ClearEditorBaseLayer();
 			base.Dispose(disposing);
 		}
 	}

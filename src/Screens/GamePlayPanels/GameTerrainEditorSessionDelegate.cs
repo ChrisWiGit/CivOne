@@ -54,6 +54,8 @@ namespace CivOne.Screens.GamePlayPanels
 
 			private void DisableEditor()
 			{
+				_gameMap.ClearEditorBaseLayer();
+
 				var storedUnit = _gameMap._editorStoredUnit;
 
 				if (storedUnit != null && Human == storedUnit.Owner)
