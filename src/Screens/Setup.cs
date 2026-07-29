@@ -466,6 +466,9 @@ namespace CivOne.Screens
 		private string MapBitmapScalerModeText()
 			=> Settings.BitmapScalerMode == Settings.MapBitmapScalerType.NearestNeighbor ? Translate("Nearest neighbor") : Translate("Palette-aware weighted");
 
+		private string StartPositionAlgorithmText()
+			=> Settings.StartPositionAlgorithm == Settings.StartPositionAlgorithmType.AreaBased ? Translate("Area-based") : Translate("Legacy");
+
 		private void PatchesMenu(int activeItem = 0) => CreateMenu(Translate("Patches"), activeItem,
 			MenuItem.Create(TranslateFormatted("Reveal world: {0}", Settings.RevealWorld.YesNo()))
 				.WithDescription(
@@ -531,6 +534,11 @@ namespace CivOne.Screens
 					Translate("Show the terrain editor menu and hotkeys in game."),
 					Translate("Can only be changed before a game starts."))
 				.OnSelect(GotoMenu(TerrainEditorMenuMenu)).SetEnabled(!Game.Started),
+			MenuItem.Create(TranslateFormatted("Starting position algorithm: {0}", StartPositionAlgorithmText()))
+				.WithDescription(
+					Translate("Choose how civilizations' starting positions are determined."),
+					Translate("Can only be changed before a game starts."))
+				.OnSelect(GotoMenu(StartPositionAlgorithmMenu)).SetEnabled(!Game.Started),
 			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(MainMenu, 1))
 		);
 
@@ -571,6 +579,18 @@ namespace CivOne.Screens
 			MenuItem.Create(true.YesNo())
 				.WithDescription(Translate("Show terrain editor menu and hotkeys."))
 				.OnSelect((s, a) => Settings.TerrainEditorMenu = true).SetActive(() => Settings.TerrainEditorMenu),
+			MenuItem.Create(Translate("Back"))
+		);
+
+		private void StartPositionAlgorithmMenu() => CreateMenu(Translate("Starting position algorithm"), GotoMenu(PatchesMenu, 14),
+			MenuItem.Create(Translate("Legacy (default)"))
+				.WithDescription(
+					TranslateArray("Use the original random search for starting positions.\nOn Chieftain difficulty, there is a 50% chance of an extra Settlers unit at the same tile."))
+				.OnSelect((s, a) => Settings.StartPositionAlgorithm = Settings.StartPositionAlgorithmType.Legacy).SetActive(() => Settings.StartPositionAlgorithm == Settings.StartPositionAlgorithmType.Legacy),
+			MenuItem.Create(Translate("Area-based"))
+				.WithDescription(
+					TranslateArray("Divide the map into equally sized areas and place each civilization in its own area.\nSpreads starting positions out more evenly across the map."))
+				.OnSelect((s, a) => Settings.StartPositionAlgorithm = Settings.StartPositionAlgorithmType.AreaBased).SetActive(() => Settings.StartPositionAlgorithm == Settings.StartPositionAlgorithmType.AreaBased),
 			MenuItem.Create(Translate("Back"))
 		);
 

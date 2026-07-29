@@ -1336,3 +1336,5 @@ HIDE TERRAIN EDITOR MENU AND HOTKEYS.=Terrain Editor-Menü und Hotkeys ausblende
 SHOW TERRAIN EDITOR MENU AND HOTKEYS.=Terrain Editor-Menü und Hotkeys anzeigen.
 TERRAIN EDITOR MENU ENABLED.=Terrain Editor-Menü aktiviert.
 TERRAIN EDITOR MENU DISABLED.=Terrain Editor-Menü deaktiviert.
+A: START POSITION AREAS=A: Startgebiete ein/aus
+CURSOR KEYS: SCROLL MAP=Pfeiltasten: Karte scrollen

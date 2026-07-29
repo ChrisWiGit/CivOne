@@ -20,6 +20,7 @@ using CivOne.Persistence.Yaml;
 using CivOne.Services.GlobalWarming;
 using CivOne.Services.Palace;
 using CivOne.Services.Random;
+using CivOne.Services.StartPositions;
 using CivOne.Services;
 using CivOne.Units;
 using CivOne.Tasks;
@@ -52,12 +53,18 @@ namespace CivOne
 		private Game(
 			IValueSanitizer valueSanitizer,
 			IPalaceUpgradeService? palaceUpgradeService = null,
-			ICivilizationRankingTriggerService? civilizationRankingTriggerService = null)
+			ICivilizationRankingTriggerService? civilizationRankingTriggerService = null,
+			IMapEditor? mapEditor = null,
+			IStartPositionService? startPositionService = null)
 		{
 			_valueSanitizer = valueSanitizer ?? throw new ArgumentNullException(nameof(valueSanitizer));
 			_palaceUpgradeService = palaceUpgradeService ?? PalaceUpgradeServiceFactory.GetInstance();
 			_civilizationRankingTriggerService = civilizationRankingTriggerService ?? CivilizationRankingTriggerServiceFactory.GetInstance();
-			
+			// Map is a static singleton with order-dependent static initialization; resolve it lazily (see MapEditor property)
+			// instead of defaulting it here, so constructing a Game doesn't force that initialization.
+			_mapEditor = mapEditor;
+			_startPositionService = startPositionService;
+
 			// Initialize collections and other fields to default values. 
 			// This only remedies the warning about uninitialized non-nullable fields.
 			// This constructor is not expected to be used directly; 

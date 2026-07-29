@@ -1309,3 +1309,5 @@ TERRAIN EDITOR MENU DISABLED.=Terrain editor menu disabled.
 LOAD MAPS...=Load maps...
 SELECT STARTUP LANGUAGE.=Select startup language.
 HAVE BEEN BUILT YET.=No wonders of the world
+A: START POSITION AREAS=A: start position areas
+CURSOR KEYS: SCROLL MAP=Cursor keys: scroll map

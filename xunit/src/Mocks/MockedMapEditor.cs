@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.Persistence.Model;
@@ -21,8 +22,8 @@ namespace CivOne.UnitTests
 
 		public ITile this[int x, int y] => _tiles.TryGetValue((x, y), out ITile? tile) ? tile : null!;
 
-		public int Width => throw new System.NotImplementedException();
-		public int Height => throw new System.NotImplementedException();
+		public int Width { get; set; }
+		public int Height { get; set; }
 
 		public int EditorWrapX(int x) => x;
 		public int EditorClampY(int y) => y;
@@ -43,6 +44,12 @@ namespace CivOne.UnitTests
 
 		public bool TryGetStartPosition(ICivilization civilization, out MapLocation? location)
 			=> _startPositions.TryGetValue((Civilization)civilization.Id, out location);
+
+		public bool FixedStartPositions { get; set; }
+
+		public IEnumerable<ITile> ContinentTiles(int continentId) => _tiles.Values.Where(t => t.ContinentId == continentId);
+
+		public bool TileIsType(ITile tile, params Terrain[] terrain) => terrain.Any(t => tile.Type == t);
 
 		public void SetTile(int x, int y, ITile tile) => _tiles[(x, y)] = tile;
 
