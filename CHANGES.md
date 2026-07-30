@@ -14,6 +14,7 @@ I did not browse all issues on github at first, so I did not recognize that some
   * If a civilization's assigned area has no usable land tile (e.g. it's entirely ocean), placement falls back to one of the other areas, chosen at random, before giving up.
   * As a last resort, both algorithms place the Settlers on any free land tile, so a civilization is never left without units while usable land exists. Only a map without any free land tile leaves a civilization without a starting Settlers unit, instead of aborting the whole game setup.
   * In-game, open the World Map screen (or `F10`) and press `A` to toggle a dashed-border overlay of the computed areas (only available when the debug menu is enabled and `Area based` is selected) — useful for visually checking that civilizations land inside their own area.
+    * In addition a null perimeter meridian line is drawn in yellow, so you can see where the map wraps around when the map is too large to fit on the screen.
 * Feature: Two-finger touchpad gestures for the gameplay map.
   * A two-finger swipe now scrolls the map viewport in all directions: vertical swipes pan up and down, horizontal swipes pan left and right.
   * Panning moves one tile per scroll step, so a single swipe scrolls several tiles.

@@ -820,9 +820,9 @@ namespace CivOne
 			GetSetting("CanalCity", ref _canalCity);
 			GetSetting("RemoveObsoleteBuildings", ref _removeObsoleteBuildings);
 			GetSetting("PreferSveSaveFormat", ref _preferSveSaveFormat);
-			GetSetting<LzwCodecType>("LzwCodecMode", ref _lzwCodecMode);
-			GetSetting<MapBitmapScalerType>("MapBitmapScalerMode", ref _bitmapScalerMode);
-			GetSetting<StartPositionAlgorithmType>("StartPositionAlgorithm", ref _startPositionAlgorithm);
+			GetSetting("LzwCodecMode", ref _lzwCodecMode);
+			GetSetting("MapBitmapScalerMode", ref _bitmapScalerMode);
+			GetSetting("StartPositionAlgorithm", ref _startPositionAlgorithm);
 			GetSetting("LanguagePostfix", ref _languagePostfix);
 			GetSetting("SimulateInternationalFont", ref _simulateInternationalFont);
 			GetSetting("UseUncheckedCastSanitizer", ref _useUncheckedCastSanitizer);

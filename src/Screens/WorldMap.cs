@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -50,6 +51,9 @@ namespace CivOne.Screens
 
 		/// <summary>Palette index of the dashed start-position area borders (white).</summary>
 		private const byte StartPositionAreaColour = 15;
+
+		/// <summary>Palette index of the prime meridian line (yellow).</summary>
+		private const byte PrimeMeridianColour = 14;
 
 		/// <summary>Number of pixels drawn per dash of an area border.</summary>
 		private const int DashLength = 2;
@@ -324,12 +328,40 @@ namespace CivOne.Screens
 				}
 			}
 
+			if (!FitsHorizontally)
+			{
+				DrawPrimeMeridian(tilePixelSize, originX, originY, rows);
+			}
+
 			if (_showStartPositionAreas && CanToggleStartPositionAreas)
 			{
 				DrawStartPositionAreas();
 			}
 
 			DrawHints();
+		}
+
+		/// <summary>
+		/// Draws a reference line at map column 0 (the prime/null meridian), so the horizontally scrollable
+		/// overview always keeps a fixed longitude anchor to orient by while scrolling.
+		/// Only drawn when column 0 is currently inside the visible section.
+		/// </summary>
+		/// <param name="tilePixelSize">Pixel size of a single map tile on screen.</param>
+		/// <param name="originX">Left pixel column of the map.</param>
+		/// <param name="originY">Top pixel row of the map.</param>
+		/// <param name="rows">Number of map rows currently drawn.</param>
+		private void DrawPrimeMeridian(int tilePixelSize, int originX, int originY, int rows)
+		{
+			int column = WrapX(-_offsetX);
+			if (column >= ViewColumns)
+			{
+				return;
+			}
+
+			int x = originX + (column * tilePixelSize);
+			int top = originY;
+			int bottom = originY + (rows * tilePixelSize) - 1;
+			this.DrawLine(x, top, x, bottom, PrimeMeridianColour);
 		}
 
 		/// <summary>
@@ -460,6 +492,7 @@ namespace CivOne.Screens
 			int originY = OriginY;
 			int mapPixelWidth = Map.WIDTH * tilePixelSize;
 
+			int areaIndex = 0;
 			foreach (AreaBasedStartPositionService.MapArea area in areas)
 			{
 				// Offsets are calculated relative to the map, not to the screen, so that the seam check below
@@ -472,13 +505,31 @@ namespace CivOne.Screens
 				// Rectangles are drawn with their real (unclipped) bounds so that partially visible areas
 				// keep the edges they actually have instead of getting a fake border at the screen edge.
 				DrawDashedRectangle(originX + mapLeft, top, width, height);
+				DrawAreaLabel(originX + mapLeft, top, areaIndex);
 
 				if (mapLeft + width > mapPixelWidth)
 				{
 					// The area continues across the map seam, so its remainder reappears on the left side.
 					DrawDashedRectangle(originX + mapLeft - mapPixelWidth, top, width, height);
+					DrawAreaLabel(originX + mapLeft - mapPixelWidth, top, areaIndex);
 				}
+
+				areaIndex++;
 			}
+		}
+
+		/// <summary>
+		/// Draws the area's index number just inside its top-left corner, so overlapping or similarly
+		/// shaped areas can be told apart on the debug overlay.
+		/// </summary>
+		/// <param name="left">Left pixel column of the area rectangle.</param>
+		/// <param name="top">Top pixel row of the area rectangle.</param>
+		/// <param name="index">Zero-based index of the area, shown as-is.</param>
+		private void DrawAreaLabel(int left, int top, int index)
+		{
+			string text = index.ToString(CultureInfo.InvariantCulture);
+			this.DrawText(text, HintFont, HintShadowColour, left + 2, top + 1)
+				.DrawText(text, HintFont, StartPositionAreaColour, left + 1, top);
 		}
 
 		/// <summary>

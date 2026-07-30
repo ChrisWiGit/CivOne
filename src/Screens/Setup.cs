@@ -533,12 +533,12 @@ namespace CivOne.Screens
 				.WithDescription(
 					Translate("Show the terrain editor menu and hotkeys in game."),
 					Translate("Can only be changed before a game starts."))
-				.OnSelect(GotoMenu(TerrainEditorMenuMenu)).SetEnabled(!Game.Started),
+				.OnSelect(GotoMenu(TerrainEditorMenuMenu)),
 			MenuItem.Create(TranslateFormatted("Starting position algorithm: {0}", StartPositionAlgorithmText()))
 				.WithDescription(
 					Translate("Choose how civilizations' starting positions are determined."),
 					Translate("Can only be changed before a game starts."))
-				.OnSelect(GotoMenu(StartPositionAlgorithmMenu)).SetEnabled(!Game.Started),
+				.OnSelect(GotoMenu(StartPositionAlgorithmMenu)),
 			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(MainMenu, 1))
 		);
 
