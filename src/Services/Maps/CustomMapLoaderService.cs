@@ -16,6 +16,8 @@ using CivOne.Persistence.Factories;
 using CivOne.Persistence.Mapper;
 using CivOne.Persistence.Model;
 using CivOne.Persistence.Yaml;
+using CivOne.Services.Random;
+using CivOne.Services.Sorting;
 
 namespace CivOne.Services.Maps
 {
@@ -23,12 +25,36 @@ namespace CivOne.Services.Maps
 	/// Discovers and loads custom map files from <see cref="ISettings.MapsDirectory"/>.
 	/// </summary>
 	/// <remarks>
-	/// Supported formats are <c>*.comap</c> and <c>*.cos</c> YAML map files.
-	/// Both use a top-level <c>Map:</c> key matching <see cref="MapFileDto"/>.
+	/// Supported formats are <c>*.comap</c> YAML map files, which use a top-level
+	/// <c>Map:</c> key matching <see cref="MapFileDto"/>, and legacy Civilization I
+	/// <c>*.map</c> files.
 	/// </remarks>
-	internal class CustomMapLoaderService(ISettings settings) : ICustomMapLoaderService
+	/// <param name="settings">Provides the maps directory to scan.</param>
+	/// <param name="randomService">
+	/// Supplies the terrain seed used when a legacy <c>*.map</c> file is loaded.
+	/// Resolved from <see cref="RandomServiceFactory"/> when not supplied.
+	/// </param>
+	/// <param name="naturalSortService">
+	/// Orders map file names so that embedded numbers sort by value.
+	/// Resolved from <see cref="NaturalSortServiceFactory"/> when not supplied.
+	/// </param>
+	internal class CustomMapLoaderService(ISettings settings, IRandomService? randomService = null, INaturalSortService? naturalSortService = null) : ICustomMapLoaderService
 	{
-		private static readonly string[] MapExtensions = ["*.comap", "*.cos"];
+		private static readonly string[] MapExtensions = ["*.comap", "*.map"];
+
+		private const string LegacyMapExtension = ".map";
+
+		/// <summary>
+		/// Upper bound of the terrain seed, matching the value range used by map generation.
+		/// </summary>
+		private const int TerrainSeedMaxExclusive = 16;
+
+		private readonly IRandomService? _randomService = randomService;
+		private readonly INaturalSortService? _naturalSortService = naturalSortService;
+
+		private IRandomService RandomService => _randomService ?? RandomServiceFactory.Create();
+
+		private INaturalSortService NaturalSortService => _naturalSortService ?? NaturalSortServiceFactory.Create();
 
 		/// <inheritdoc/>
 		public IReadOnlyList<string> GetMapFiles()
@@ -42,7 +68,7 @@ namespace CivOne.Services.Maps
 
 			return [.. MapExtensions
 				.SelectMany(ext => Directory.EnumerateFiles(dir, ext, SearchOption.TopDirectoryOnly))
-				.Order(StringComparer.OrdinalIgnoreCase)];
+				.OrderBy(path => Path.GetFileNameWithoutExtension(path) ?? path, NaturalSortService)];
 		}
 
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions to log and return false.")]
@@ -51,6 +77,11 @@ namespace CivOne.Services.Maps
 		{
 			try
 			{
+				if (IsLegacyMapFile(filePath))
+				{
+					return LoadLegacyMapFile(filePath);
+				}
+
 				var mapFileDto = YamlReader
 					.OfString(File.ReadAllText(filePath))
 					.WithStandard()
@@ -74,6 +105,35 @@ namespace CivOne.Services.Maps
 				RuntimeHandler.Runtime.Log("CustomMapLoaderService: Failed to load map from '{0}': {1}", filePath, ex.Message);
 				return false;
 			}
+		}
+
+		/// <summary>
+		/// Checks whether the file is a legacy Civilization I <c>*.map</c> file.
+		/// </summary>
+		/// <param name="filePath">Full path to the map file.</param>
+		/// <returns><see langword="true"/> for <c>*.map</c> files.</returns>
+		private static bool IsLegacyMapFile(string filePath)
+			=> Path.GetExtension(filePath).Equals(LegacyMapExtension, StringComparison.OrdinalIgnoreCase);
+
+		/// <summary>
+		/// Loads a legacy Civilization I <c>*.map</c> file.
+		/// </summary>
+		/// <remarks>
+		/// The legacy format stores no terrain seed, so a random one is used.
+		/// It also stores no start positions; they are calculated when the game starts.
+		/// </remarks>
+		/// <param name="filePath">Full path to the <c>*.map</c> file.</param>
+		/// <returns><see langword="true"/> on success; <see langword="false"/> if the file does not exist.</returns>
+		private bool LoadLegacyMapFile(string filePath)
+		{
+			if (!File.Exists(filePath))
+			{
+				RuntimeHandler.Runtime.Log("CustomMapLoaderService: Map file '{0}' does not exist", filePath);
+				return false;
+			}
+
+			Map.Instance.LoadMap(filePath, RandomService.NextInt(TerrainSeedMaxExclusive));
+			return true;
 		}
 
 		internal static Dictionary<Civilization, MapLocation>? ResolveStartPositions(MapDto mapDto)

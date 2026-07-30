@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -38,6 +39,10 @@ namespace CivOne
 		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 		[DllImport(LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
 		private static extern void gtk_file_chooser_set_current_name(IntPtr raw, IntPtr name);
+
+		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
+		[DllImport(LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
+		private static extern bool gtk_file_chooser_set_current_folder(IntPtr raw, IntPtr filename);
 
 		[DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory)]
 		[DllImport(LIBGTK3, CallingConvention = CallingConvention.Cdecl)]
@@ -157,6 +162,32 @@ namespace CivOne
 			return output;
 		}
 
+		/// <summary>
+		/// Adds every glob of a Windows-style filter segment to a GTK file filter.
+		/// </summary>
+		/// <remarks>
+		/// Windows accepts several globs in one segment separated by <c>;</c> (for example
+		/// <c>*.comap;*.map</c>), while GTK expects one call per glob - passing the whole
+		/// segment would create a pattern that never matches any file.
+		/// GTK patterns are also case sensitive, so upper and lower case variants are added
+		/// as well to keep files such as <c>EARTH.MAP</c> visible.
+		/// </remarks>
+		/// <param name="gtkFilter">The GTK file filter to extend.</param>
+		/// <param name="patternSegment">The filter segment, for example <c>*.comap;*.map</c>.</param>
+		[SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "GTK patterns are case sensitive, so lower-case variants are added as well.")]
+		private static void AddFilterPatterns(IntPtr gtkFilter, string patternSegment)
+		{
+			foreach (string pattern in patternSegment.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+			{
+				foreach (string variant in new[] { pattern, pattern.ToLowerInvariant(), pattern.ToUpperInvariant() }.Distinct())
+				{
+					IntPtr nativePattern = StringToIntPtr(variant);
+					gtk_file_filter_add_pattern(gtkFilter, nativePattern);
+					g_free(nativePattern);
+				}
+			}
+		}
+
 		private static string? GtkFileDialog(bool save, string title, string initialFileName, string filter)
 		{
 			// action: 0 = GTK_FILE_CHOOSER_ACTION_OPEN, 1 = GTK_FILE_CHOOSER_ACTION_SAVE
@@ -165,14 +196,28 @@ namespace CivOne
 			IntPtr dialog = gtk_file_chooser_dialog_new(nativeTitle, IntPtr.Zero, action, IntPtr.Zero);
 			g_free(nativeTitle);
 
-			if (save && !string.IsNullOrEmpty(initialFileName))
+			if (!string.IsNullOrEmpty(initialFileName))
 			{
-				IntPtr nativeName = StringToIntPtr(initialFileName);
-				gtk_file_chooser_set_current_name(dialog, nativeName);
-				g_free(nativeName);
+				// The open dialog ignores a suggested file name, but it still needs the
+				// directory - otherwise it starts in the working directory instead of the
+				// maps or saves folder the caller asked for.
+				string? initialDirectory = System.IO.Path.GetDirectoryName(initialFileName);
+				if (!string.IsNullOrEmpty(initialDirectory) && System.IO.Directory.Exists(initialDirectory))
+				{
+					IntPtr nativeFolder = StringToIntPtr(initialDirectory);
+					_ = gtk_file_chooser_set_current_folder(dialog, nativeFolder);
+					g_free(nativeFolder);
+				}
+
+				if (save)
+				{
+					IntPtr nativeName = StringToIntPtr(System.IO.Path.GetFileName(initialFileName));
+					gtk_file_chooser_set_current_name(dialog, nativeName);
+					g_free(nativeName);
+				}
 			}
 
-			// filter format: "Description (*.ext)|*.ext|All Files (*.*)|*.*"
+			// filter format: "Description (*.ext)|*.ext;*.ext2|All Files (*.*)|*.*"
 			if (!string.IsNullOrEmpty(filter))
 			{
 				string[] parts = filter.Split('|');
@@ -182,9 +227,7 @@ namespace CivOne
 					IntPtr nativeName = StringToIntPtr(parts[i]);
 					gtk_file_filter_set_name(gtkFilter, nativeName);
 					g_free(nativeName);
-					IntPtr nativePattern = StringToIntPtr(parts[i + 1]);
-					gtk_file_filter_add_pattern(gtkFilter, nativePattern);
-					g_free(nativePattern);
+					AddFilterPatterns(gtkFilter, parts[i + 1]);
 					gtk_file_chooser_add_filter(dialog, gtkFilter);
 				}
 			}
