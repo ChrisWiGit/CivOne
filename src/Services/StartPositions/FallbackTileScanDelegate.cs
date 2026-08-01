@@ -29,10 +29,11 @@ namespace CivOne.Services.StartPositions
 		private readonly StartPositionContext _context = context ?? throw new ArgumentNullException(nameof(context));
 
 		/// <summary>
-		/// Scans the map for the first free, non-ocean tile.
-		/// Tiles near the poles and Arctic tiles are only considered once the rest of the map turned out to be
-		/// unusable: a polar start is playable but bad, while Arctic offers no growth at all (no food, no
-		/// irrigation bonus) and is only accepted as an absolute last resort.
+		/// Scans the map for the first free tile that could plausibly support a city.
+		/// Ocean and Mountains are never returned, since cities cannot be founded there; Arctic and Tundra
+		/// are never returned either, since they offer no realistic growth and would just be a bad starting
+		/// position. Tiles near the poles are only considered once the rest of the map turned out to be
+		/// unusable, because a polar start is playable but bad.
 		/// </summary>
 		/// <param name="occupiedTiles">Tiles that are already taken and must not be returned.</param>
 		/// <returns>The first usable tile, or <see langword="null"/> if the map has no free land tile at all.</returns>
@@ -41,25 +42,18 @@ namespace CivOne.Services.StartPositions
 			ArgumentNullException.ThrowIfNull(occupiedTiles);
 
 			const int poleMargin = 2;
-			return Scan(poleMargin, _context.Map.Height - poleMargin, allowArctic: false, occupiedTiles)
-				?? Scan(0, _context.Map.Height, allowArctic: false, occupiedTiles)
-				?? Scan(poleMargin, _context.Map.Height - poleMargin, allowArctic: true, occupiedTiles)
-				?? Scan(0, _context.Map.Height, allowArctic: true, occupiedTiles);
+			return Scan(poleMargin, _context.Map.Height - poleMargin, occupiedTiles)
+				?? Scan(0, _context.Map.Height, occupiedTiles);
 		}
 
-		private MapLocation? Scan(int firstRow, int lastRowExclusive, bool allowArctic, IReadOnlyList<MapLocation> occupiedTiles)
+		private MapLocation? Scan(int firstRow, int lastRowExclusive, IReadOnlyList<MapLocation> occupiedTiles)
 		{
 			for (int y = firstRow; y < lastRowExclusive; y++)
 			{
 				for (int x = 0; x < _context.Map.Width; x++)
 				{
 					ITile tile = _context.Map[x, y];
-					if (tile == null)
-					{
-						continue;
-					}
-
-					if (!allowArctic && tile.OfTypes(Terrain.Arctic, Terrain.Tundra, Terrain.Ocean, Terrain.Mountains))
+					if (tile == null || tile.OfTypes(Terrain.Ocean, Terrain.Mountains, Terrain.Arctic, Terrain.Tundra))
 					{
 						continue;
 					}

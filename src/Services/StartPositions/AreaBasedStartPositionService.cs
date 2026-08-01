@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CivOne.Enums;
 using CivOne.Persistence.Model;
 using CivOne.Services.Random;
 using CivOne.Tiles;
@@ -224,6 +225,9 @@ namespace CivOne.Services.StartPositions
 		{
 			ITile tile = context.Map[x, y];
 			if (tile == null || tile.IsOcean) return false;
+			// Cities cannot be founded on Mountains; Arctic and Tundra offer no realistic growth.
+			// Never valid starting positions, no matter how much the other constraints below are relaxed.
+			if (tile.OfTypes(Terrain.Mountains, Terrain.Arctic, Terrain.Tundra)) return false;
 			if (tile.Hut) return false;
 			if (IsOccupied(x, y, occupiedTiles)) return false;
 			if (tile.LandValue < (12 - (attempt / 32))) return false;

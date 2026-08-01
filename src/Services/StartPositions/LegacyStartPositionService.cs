@@ -123,6 +123,9 @@ namespace CivOne.Services.StartPositions
 			ITile tile = context.Map[x, y];
 			if (tile == null) return false; // Outside the generated map.
 			if (tile.IsOcean) return false;
+			// Cities cannot be founded on Mountains; Arctic and Tundra offer no realistic growth.
+			// Never valid starting positions, no matter how much the other constraints below are relaxed.
+			if (tile.OfTypes(Terrain.Mountains, Terrain.Arctic, Terrain.Tundra)) return false;
 			if (tile.Hut) return false;
 			if (IsOccupied(x, y, occupiedTiles)) return false;
 			if (tile.LandValue < (12 - (loopCounter / 32))) return false; // Is the land value high enough?
