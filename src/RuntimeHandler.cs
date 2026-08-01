@@ -331,9 +331,17 @@ namespace CivOne
 			TopScreen?.KeyDown(args);
 		}
 
-		private void OnMouseUp(object? _, ScreenEventArgs args) => TopScreen?.MouseUp(args);
+		private void OnMouseUp(object? _, ScreenEventArgs args)
+		{
+			Common.ShiftKeyHeld = (args.Modifier & KeyModifier.Shift) > 0;
+			TopScreen?.MouseUp(args);
+		}
 
-		private void OnMouseDown(object? _, ScreenEventArgs args) => TopScreen?.MouseDown(args);
+		private void OnMouseDown(object? _, ScreenEventArgs args)
+		{
+			Common.ShiftKeyHeld = (args.Modifier & KeyModifier.Shift) > 0;
+			TopScreen?.MouseDown(args);
+		}
 
 		private void OnMouseWheel(object? _, ScreenEventArgs args) => TopScreen?.MouseWheel(args);
 

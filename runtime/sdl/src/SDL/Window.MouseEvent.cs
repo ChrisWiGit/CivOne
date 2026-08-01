@@ -62,13 +62,17 @@ namespace CivOne
 				bool state = (buttonMask & mask) > 0;
 				if (_mouseButtonState[(int)button] == state) return;
 				_mouseButtonState[(int)button] = state;
+
+				// Capture the live keyboard modifier state so consumers can react to Shift/Ctrl/Alt-clicks.
+				// A modifier held on its own does not raise a keyboard event, so it can only be read here.
+				KeyModifier modifier = ConvertModifier(SDL_GetModState());
 				if (state)
 				{
-					OnMouseDown?.Invoke(this, new ScreenEventArgs(MouseX, MouseY, button));
+					OnMouseDown?.Invoke(this, new ScreenEventArgs(MouseX, MouseY, button, modifier, 0));
 				}
 				else
 				{
-					OnMouseUp?.Invoke(this, new ScreenEventArgs(MouseX, MouseY, button));
+					OnMouseUp?.Invoke(this, new ScreenEventArgs(MouseX, MouseY, button, modifier, 0));
 				}
 			}
 
