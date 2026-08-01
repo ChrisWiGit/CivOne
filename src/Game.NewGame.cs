@@ -79,7 +79,7 @@ namespace CivOne
 		// but it also shouldn't create a new service on every access.
 		private IStartPositionService? _startPositionService;
 		private IStartPositionService StartPositionService => _startPositionService ??= StartPositionServiceFactory.Create();
-
+		
 		/// <summary>
 		/// Finds and places starting Settlers for a batch of players in a single call, so algorithms that need to
 		/// know the total number of players up front (e.g. dividing the map into equally sized areas) can do so.

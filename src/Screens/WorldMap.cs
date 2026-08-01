@@ -16,7 +16,6 @@ using CivOne.Graphics;
 using CivOne.IO;
 using CivOne.Services.StartPositions;
 using CivOne.Tiles;
-using CivOne.Units;
 
 namespace CivOne.Screens
 {

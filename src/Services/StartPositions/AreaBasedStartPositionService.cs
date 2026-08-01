@@ -79,6 +79,9 @@ namespace CivOne.Services.StartPositions
 		/// </summary>
 		internal readonly record struct MapArea(int X0, int Y0, int X1, int Y1);
 
+		const int poleMargin = 2;
+
+
 		/// <summary>
 		/// Splits the map into a <c>cols x rows</c> grid large enough to hold at least <paramref name="count"/> areas.
 		/// All <c>cols * rows</c> cells are returned, so the grid covers the whole map (minus the pole margin) without
@@ -94,7 +97,6 @@ namespace CivOne.Services.StartPositions
 			int cols = Math.Max(1, (int)Math.Ceiling(Math.Sqrt(count)));
 			int rows = Math.Max(1, (int)Math.Ceiling(count / (double)cols));
 
-			const int poleMargin = 2;
 			int top = poleMargin;
 			int bottom = mapHeight - poleMargin;
 
@@ -155,7 +157,8 @@ namespace CivOne.Services.StartPositions
 			// Nothing satisfied the regular rules anywhere: take any free land tile rather than
 			// letting the civilization start without a Settlers unit.
 			MapLocation? fallback = fallbackTileScan.FindAnyUsableTile(occupiedTiles);
-			if (fallback != null)
+			// do not allow poleMargin tiles for fallback, as they are not valid starting positions
+			if (fallback != null && fallback.Y >= poleMargin && fallback.Y < context.Map.Height - poleMargin)
 			{
 				context.Logger?.Log("PlaceStartingUnits: no valid area tile for {0}; using last-resort placement at {1},{2}.", candidate.Civilization.Name, fallback.X, fallback.Y);
 				return Success(candidate, fallback);
