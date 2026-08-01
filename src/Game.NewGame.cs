@@ -75,8 +75,18 @@ namespace CivOne
 		private readonly IMapEditor? _mapEditor;
 		private IMapEditor MapEditor => _mapEditor ?? Map.Instance;
 
-		private readonly IStartPositionService? _startPositionService;
-		private IStartPositionService StartPositionService => _startPositionService ?? StartPositionServiceFactory.Create();
+		private readonly List<ICivilization> _unplacedCivilizations = [];
+
+		/// <summary>
+		/// Civilizations that could not be placed on the map and were destroyed during game creation.
+		/// Read once by the new-game flow to inform the player. Empty for any normal map.
+		/// </summary>
+		public IReadOnlyList<ICivilization> UnplacedCivilizations => _unplacedCivilizations;
+
+		// Resolved lazily and then cached: the factory reads Settings, so it must not run at construction time,
+		// but it also shouldn't create a new service on every access.
+		private IStartPositionService? _startPositionService;
+		private IStartPositionService StartPositionService => _startPositionService ??= StartPositionServiceFactory.Create();
 
 		/// <summary>
 		/// Finds and places starting Settlers for a batch of players in a single call, so algorithms that need to
@@ -100,7 +110,6 @@ namespace CivOne
 				// then use that mode for every player, instead of the fixed positions of the civilization class.
 				AnyFixedMapStartPosition = _players.Any(p => p.MapStartPosition != null),
 				GameTurn = GameTurn,
-				Difficulty = Difficulty,
 				OccupiedTiles = [.. _units.Select(u => new MapLocation((uint)u.X, (uint)u.Y))],
 				CityLocations = [.. _cities.Select(c => new MapLocation((uint)c.X, (uint)c.Y))],
 				SettlerLocations = [.. _units.Where(u => u is Settlers).Select(u => new MapLocation((uint)u.X, (uint)u.Y))],
@@ -113,42 +122,47 @@ namespace CivOne
 			{
 				byte player = players[i];
 				StartPositionResult result = results[i];
-				if (!result.Success)
+				if (result.Success && TryPlaceStartingSettlers(player, (int)result.Position.X, (int)result.Position.Y, true))
 				{
-					Log("AddStartingUnits: no valid starting position found for player {0}.", player);
-					throw new InvalidOperationException($"Unable to place starting settlers for player {player}.");
+					continue;
 				}
 
-				int x = (int)result.Position.X, y = (int)result.Position.Y;
-				if (!TryPlaceStartingSettlers(player, x, y, true))
+				Log("PlaceStartingUnits: no usable starting position for player {0}; trying last-resort placement.", player);
+				if (TryLastResortPlacement(player, context))
 				{
-					Log("AddStartingUnits: computed starting position for player {0} was unexpectedly invalid at {1},{2}.", player, x, y);
-					throw new InvalidOperationException($"Unable to place starting settlers for player {player}.");
+					continue;
 				}
 
-				if (result.PlaceSecondSettlerAtSamePosition)
-				{
-					PlaceSecondSettler(player, x, y);
-				}
+				// The map has no free land tile at all (e.g. a degenerate custom map): don't abort game
+				// creation over one civilization. Mark it destroyed outright instead of leaving a
+				// "phantom" player with zero units and zero cities floating around.
+				//
+				// The Destroyed event is deliberately suppressed. We are still inside the Game
+				// constructor here, and PlayerDestroyed would:
+				//   - build an AdvisorMessage screen right away (portrait, palette, fonts), pulling the
+				//     graphics subsystem into game construction, and queue it as a GameTask that the
+				//     runtime pops on the next tick - while the new-game intro screen is still up and
+				//     GamePlay does not exist yet, so the popup would appear over the intro;
+				//   - respawn the civilization and call PlaceStartingUnits again from inside this very
+				//     loop, which fails the same way on a landless map.
+				// The replay entry is therefore written directly below.
+				Log("PlaceStartingUnits: no free land tile left for player {0}; player will be destroyed.", player);
+				_unplacedCivilizations.Add(_players[player].Civilization);
+				_players[player].HandleExtinction(invokeDestroyedEvent: false);
+
+				// Attributed to the Barbarians (civilization 0): nobody actually defeated this
+				// civilization, the map simply had no room for it.
+				_replayData.Add(new ReplayData.CivilizationDestroyed(
+					_gameTurn, _players[player].Civilization.PreferredPlayerNumber, 0));
 			}
-		}
-
-		/// <summary>
-		/// Places a second Settlers unit on the same tile as the player's first one (Chieftain difficulty bonus).
-		/// Bypasses the <see cref="HasUnitAt"/> guard used by <see cref="TryPlaceStartingSettlers"/>, which exists
-		/// to stop different civilizations from sharing a starting tile, not to stop a player's own units from stacking.
-		/// </summary>
-		private void PlaceSecondSettler(byte player, int x, int y)
-		{
-			IUnit? unit = CreateUnit(UnitType.Settlers, x, y);
-			unit!.Owner = player;
-			_units.Add(unit);
 		}
 
 		/// <summary>
 		/// Converts a small positive integer to a Roman numeral, used to disambiguate players that share a
 		/// reused civilization (e.g. "Caesar II") when there are more non-barbarian players than civilizations.
 		/// </summary>
+		/// <param name="number">The number to convert. Values below 1 produce an empty string.</param>
+		/// <returns>The Roman numeral for <paramref name="number"/>.</returns>
 		private static string ToRomanNumeral(int number)
 		{
 			(int Value, string Numeral)[] table =
@@ -170,7 +184,41 @@ namespace CivOne
 			return numeral.ToString();
 		}
 
-		private static void ApplyMapStartPosition(Player player)
+		/// <summary>
+		/// Places the starting Settlers on any free land tile, ignoring the regular placement rules.
+		/// Used when the starting-position service could not satisfy them, so a player is never left
+		/// without units while the map still has usable land.
+		/// </summary>
+		/// <param name="player">The player index to place Settlers for.</param>
+		/// <param name="context">The context of the current placement batch, reused for its map reference.</param>
+		/// <returns>True if Settlers were placed; otherwise, false.</returns>
+		private bool TryLastResortPlacement(byte player, StartPositionContext context)
+		{
+			// Occupied tiles are re-read here instead of taken from the context, because units placed
+			// earlier in this same batch are already on the map.
+			MapLocation[] occupiedTiles = [.. _units.Select(u => new MapLocation((uint)u.X, (uint)u.Y))];
+			MapLocation? tile = new FallbackTileScanDelegate(context).FindAnyUsableTile(occupiedTiles);
+			if (tile == null)
+			{
+				return false;
+			}
+
+			if (!TryPlaceStartingSettlers(player, (int)tile.X, (int)tile.Y, true))
+			{
+				return false;
+			}
+
+			Log("PlaceStartingUnits: last-resort placement for player {0} at {1},{2}.", player, tile.X, tile.Y);
+			return true;
+		}
+
+		/// <summary>
+		/// Terrain editor map start positions.
+		/// Only looks up and stores a custom starting position for the player, if the map has one for their civilization
+		/// (e.g. painted in the terrain editor). Does not place any units. <see cref="PlaceStartingUnits"/> is what
+		/// actually creates the Settlers, using <see cref="Player.MapStartPosition"/> set here as one of its inputs.
+		/// </summary>
+		private static void ApplyMapStartPositionFromMapFile(Player player)
 		{
 			ArgumentNullException.ThrowIfNull(player);
 
@@ -366,7 +414,7 @@ namespace CivOne
 				if (i == tribe.PreferredPlayerNumber)
 				{
 					_players[i] = new Player(tribe, leaderName, playerTribeName, playerTribeNamePlural);
-					ApplyMapStartPosition(_players[i]);
+					ApplyMapStartPositionFromMapFile(_players[i]);
 					civIdOccurrences[tribe.Id] = 1;
 					_players[i].Destroyed += PlayerDestroyed;
 					HumanPlayer = _players[i];
@@ -401,7 +449,7 @@ namespace CivOne
 					// Only the first player assigned a given civilization claims its fixed start position;
 					// later reuses fall back to normal scored/random placement in AddStartingUnits to avoid
 					// two players colliding on the same starting tile.
-					ApplyMapStartPosition(_players[i]);
+					ApplyMapStartPositionFromMapFile(_players[i]);
 				}
 				if (i != 0)
 				{

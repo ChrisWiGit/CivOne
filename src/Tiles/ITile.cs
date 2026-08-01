@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System.Linq;
 using CivOne.Enums;
 using CivOne.Units;
 
@@ -66,6 +67,10 @@ namespace CivOne.Tiles
 		bool SameLocationAs(ITile other)
 		{
 			return this.X == other.X && this.Y == other.Y;
+		}
+		bool OfTypes(params Terrain[] types)
+		{
+			return types.Any(t => t == Type);
 		}
 	}
 }

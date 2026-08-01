@@ -123,7 +123,7 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void DisposesLayerWhenRequested()
 		{
-			Bytemap layer = CreatePattern(4, 4, 1);
+			using Bytemap layer = CreatePattern(4, 4, 1);
 			using Picture target = new(8, 8);
 
 			target.AddLayer(layer, 0, 0, dispose: true);

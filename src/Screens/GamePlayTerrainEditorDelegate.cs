@@ -15,6 +15,8 @@ using CivOne.Events;
 using CivOne.Screens.Dialogs;
 using CivOne.Screens.GamePlayPanels;
 using CivOne.Services;
+using CivOne.Services.Random;
+using CivOne.Services.StartPositions;
 using CivOne.UserInterface;
 
 namespace CivOne.Screens
@@ -46,6 +48,7 @@ namespace CivOne.Screens
 				ModeHut,
 				ModeClear,
 				ModeStartPosition,
+				AutoStartPositions,
 				ToggleLandValues,
 				BrushIncrease,
 				BrushDecrease,
@@ -61,6 +64,12 @@ namespace CivOne.Screens
 			private readonly IPlayerGame _playerGame = playerGame ?? throw new ArgumentNullException(nameof(playerGame));
 			private readonly ICivilization[] _civilizations = civilizations ?? throw new ArgumentNullException(nameof(civilizations));
 			private readonly GamePlaySaveMapDelegate _saveMapDelegate = saveMapDelegate ?? throw new ArgumentNullException(nameof(saveMapDelegate));
+
+			// Resolved lazily: the delegate touches Map.Instance and the random-service factory, so it must not
+			// be built at construction time before those singletons are ready.
+			private AutoStartPositionDelegate? _autoStartPositionDelegate;
+			private AutoStartPositionDelegate AutoStartPositions =>
+				_autoStartPositionDelegate ??= new AutoStartPositionDelegate(_playerGame, _civilizations, Map.Instance, RandomServiceFactory.Create());
 
 			public void OpenOwnerSelectorOverlay(string menuName, EditorMode targetMode)
 			{
@@ -140,6 +149,46 @@ namespace CivOne.Screens
 				_gamePlay._menuX = Math.Max(0, (_gamePlay.Width - _gamePlay._gameMenu.PixelWidth) / 2);
 				_gamePlay._menuY = Math.Max(8, (_gamePlay.Height - _gamePlay._gameMenu.PixelHeight) / 2);
 				_gamePlay._gameMenu.KeepOpen = true;
+				_gamePlay._redraw = true;
+				_gamePlay._update = true;
+			}
+
+			public void OpenStartPositionAlgorithmSelector()
+			{
+				(Settings.StartPositionAlgorithmType Algorithm, string Label)[] options =
+				[
+					(Settings.StartPositionAlgorithmType.Legacy, Translate("Legacy")),
+					(Settings.StartPositionAlgorithmType.AreaBased, Translate("Area Based")),
+				];
+
+				_gamePlay._gameMenu = new GameMenu("MenuBarTerrainAutoStartPosition", _gamePlay.Palette)
+				{
+					DefaultDescription = [Translate("Hold Shift to redistribute all")],
+				};
+				for (int i = 0; i < options.Length; i++)
+				{
+					(Settings.StartPositionAlgorithmType algorithm, string label) = options[i];
+					char hotkey = (char)('1' + i);
+
+					_gamePlay._gameMenu.Items
+						.Add(label)
+						.SetShortcut(hotkey.ToString())
+						.OnSelect((s, a) => RunAutoStartPositions(algorithm, overwriteExisting: IsShiftKeyPressed));
+				}
+
+				_gamePlay._menuIndex = 5;
+				_gamePlay._menuX = Math.Max(0, (_gamePlay.Width - _gamePlay._gameMenu.PixelWidth) / 2);
+				_gamePlay._menuY = Math.Max(8, (_gamePlay.Height - _gamePlay._gameMenu.PixelHeight) / 2);
+				_gamePlay._gameMenu.KeepOpen = true;
+				_gamePlay._redraw = true;
+				_gamePlay._update = true;
+			}
+
+			private void RunAutoStartPositions(Settings.StartPositionAlgorithmType algorithm, bool overwriteExisting)
+			{
+				AutoStartPositions.AssignStartPositions(algorithm, overwriteExisting);
+				_gamePlay._gameMenu = null;
+				_gamePlay._gameMap.ForceRefresh();
 				_gamePlay._redraw = true;
 				_gamePlay._update = true;
 			}
@@ -250,6 +299,9 @@ namespace CivOne.Screens
 						EnsureStartPositionCivilizationSelected(state);
 						state.CurrentMode = EditorMode.StartPosition;
 						break;
+					case TerrainMenuAction.AutoStartPositions:
+						OpenStartPositionAlgorithmSelector();
+						return;
 					case TerrainMenuAction.ToggleLandValues:
 						state.ShowLandValues = !state.ShowLandValues;
 						break;
@@ -313,6 +365,10 @@ namespace CivOne.Screens
 				_gamePlay._gameMenu.Items
 					.Add(Translate("Start Position"), (int)TerrainMenuAction.ModeStartPosition)
 					.SetShortcuts("s", "^s")
+					.OnSelect(OnTerrainMenuAction)
+					.SetEnabled(state.Enabled);
+				_gamePlay._gameMenu.Items
+					.Add(Translate("Auto Start Positions..."), (int)TerrainMenuAction.AutoStartPositions)
 					.OnSelect(OnTerrainMenuAction)
 					.SetEnabled(state.Enabled);
 				_gamePlay._gameMenu.Items.Add(null);

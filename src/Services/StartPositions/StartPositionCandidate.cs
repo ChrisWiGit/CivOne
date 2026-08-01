@@ -7,9 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-using System.Collections.Generic;
 using CivOne.Civilizations;
-using CivOne.Enums;
 using CivOne.Persistence.Model;
 
 namespace CivOne.Services.StartPositions
@@ -29,10 +27,5 @@ namespace CivOne.Services.StartPositions
 		/// When set and the request is for the first game turn, this position is used instead of a computed one.
 		/// </summary>
 		public MapLocation? MapStartPosition { get; init; }
-
-		/// <summary>
-		/// Additional unit types the caller wants a position for, alongside the starting Settlers.
-		/// </summary>
-		public IReadOnlyList<UnitType> AdditionalUnitTypes { get; init; } = [];
 	}
 }

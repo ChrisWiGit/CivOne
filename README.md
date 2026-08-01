@@ -1024,7 +1024,7 @@ The editor is available only when the debug menu is enabled.
 Enable it with `Shift + F1`, open `Patches`, then set `Debug menu` to `Yes`, or start the game with `--debug`.
 
 When debug mode is active, a new `Terrain` menu appears in the top gameplay menu bar.
-This menu lets you paint terrain, add or remove tile improvements, edit land values, found cities, and spawn units.
+This menu lets you paint terrain, add or remove tile improvements, edit land values, found cities, spawn units, and place civilization start positions.
 
 #### Main terrain editor hotkeys
 
@@ -1042,6 +1042,8 @@ This menu lets you paint terrain, add or remove tile improvements, edit land val
 | `P` | Switch to pollution mode. |
 | `H` | Switch to hut and village mode. |
 | `C` | Switch to clear improvements mode. |
+| `S` | Switch to start position mode. |
+| `Shift+S` | Select the civilization used by start position mode. |
 | `L` | Toggle land value editing mode. |
 | `+` or `]` | Increase brush size. |
 | `-` or `[` | Decrease brush size. |
@@ -1068,6 +1070,35 @@ The alternate action reduces the size of an existing city on the target tile.
 In unit spawn mode, left click places the selected unit for the selected owner.
 The alternate action removes matching units from the target tile.
 You can also use `Return` or `Backspace` to add or remove units without clicking, which applies the action to all tiles under the brush.
+
+#### Start positions
+
+A start position marks where a civilization's Settlers unit is placed when a game starts on the map.
+Custom maps can define a fixed start position for each civilization, which is useful for scenario maps.
+
+In start position mode (`S`), left click sets the start position for the currently selected civilization on the clicked tile.
+The alternate action (right click or `Backspace`) removes any start position on the target tile.
+Start positions cannot be placed on ocean tiles.
+Use `Shift+S` to open a picker and choose which civilization the next placement belongs to.
+
+When a map has fixed start positions, they take priority at game start: each civilization begins on its assigned tile instead of a computed one.
+
+##### Auto start positions
+
+The `Auto Start Positions...` menu entry assigns start positions automatically instead of placing them tile by tile.
+It opens a small menu where you choose the placement algorithm:
+
+* `Legacy` reproduces the original placement logic.
+* `Area Based` divides the map into equally sized areas and spreads civilizations across them.
+
+Positions are generated for every non-barbarian civilization, not only the ones playing in the current game, so a map can be fully populated in one step.
+
+There are two modes:
+
+* Normal selection only fills in civilizations that do not have a start position yet. Existing, manually placed positions are kept and used as anchors so the new ones stay clear of them.
+* Holding `Shift` while choosing the algorithm redistributes every civilization from scratch, ignoring and overwriting all current positions.
+
+The generated positions never use the hardcoded Earth start coordinates, so they stay meaningful on custom maps.
 
 Terrain editor changes are written into normal save files.
 Edited terrain, improvements, and land values remain after save and reload.

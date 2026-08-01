@@ -22,9 +22,20 @@ namespace CivOne.Screens
 {
 	public class GameMenu : BaseScreen
 	{
+		private const int DescriptionFontId = 1;
+		private const byte DescriptionTextColour = 15;
+		private const int DescriptionTopPadding = 6;
+		private const int MaxDescriptionLines = 3;
+
 		private readonly MenuItemCollection<int> _items;
 		public MenuItemCollection<int> Items => _items;
-		
+
+		/// <summary>
+		/// Help text shown at the bottom of the menu for items that do not define their own
+		/// <see cref="MenuItem{T}.Description"/>.
+		/// </summary>
+		public string[] DefaultDescription { get; set; } = [];
+
 		private int _activeItem = -1;
 		private bool _update = true;
 
@@ -58,8 +69,67 @@ namespace CivOne.Screens
 		}
 
 		private int MaxItemWidth => Items.OfType<MenuItem<int>>().Select(ItemWidth).DefaultIfEmpty(0).Max();
-		internal int PixelWidth => MaxItemWidth + 17;
-		internal int PixelHeight => (Resources.GetFontHeight(0) * Items.Count) + 9;
+
+		// The description area is sized for the largest description any item (or the default) can show,
+		// so the menu keeps a stable size while the user navigates between items.
+		private IEnumerable<string> AllDescriptionLines()
+		{
+			foreach (string line in DefaultDescription)
+			{
+				yield return line;
+			}
+			foreach (MenuItem<int> item in Items)
+			{
+				if (item == null)
+				{
+					continue;
+				}
+				foreach (string line in item.Description)
+				{
+					yield return line;
+				}
+			}
+		}
+
+		private int MaxDescriptionLineCount
+		{
+			get
+			{
+				int max = DefaultDescription.Length;
+				foreach (MenuItem<int> item in Items)
+				{
+					if (item != null && item.Description.Length > max)
+					{
+						max = item.Description.Length;
+					}
+				}
+				return Math.Min(max, MaxDescriptionLines);
+			}
+		}
+
+		private int MaxDescriptionWidth => AllDescriptionLines()
+			.Select(line => Resources.GetTextSize(DescriptionFontId, line).Width)
+			.DefaultIfEmpty(0)
+			.Max();
+
+		private int DescriptionAreaHeight => MaxDescriptionLineCount > 0
+			? DescriptionTopPadding + (MaxDescriptionLineCount * Resources.GetFontHeight(DescriptionFontId))
+			: 0;
+
+		private string[] ActiveDescription
+		{
+			get
+			{
+				if (_activeItem >= 0 && _activeItem < Items.Count && Items[_activeItem]?.Description.Length > 0)
+				{
+					return Items[_activeItem].Description;
+				}
+				return DefaultDescription;
+			}
+		}
+
+		internal int PixelWidth => Math.Max(MaxItemWidth, MaxDescriptionWidth) + 17;
+		internal int PixelHeight => (Resources.GetFontHeight(0) * Items.Count) + 9 + DescriptionAreaHeight;
 
 		private string FormatShortcutToken(string shortcut)
 		{
@@ -101,6 +171,23 @@ namespace CivOne.Screens
 			return string.IsNullOrWhiteSpace(menuItem.Shortcut) ? null : FormatShortcutToken(menuItem.Shortcut);
 		}
 
+		private void DrawDescription(int menuWidth, int itemsBottom)
+		{
+			string[] description = ActiveDescription;
+			if (description.Length == 0)
+			{
+				return;
+			}
+
+			int lineHeight = Resources.GetFontHeight(DescriptionFontId);
+			int descriptionY = itemsBottom + DescriptionTopPadding;
+			for (int i = 0; i < description.Length && i < MaxDescriptionLines; i++)
+			{
+				this.DrawText(description[i], DescriptionFontId, DescriptionTextColour, menuWidth / 2, descriptionY, TextAlign.Center);
+				descriptionY += lineHeight;
+			}
+		}
+
 		private void MenuItemDraw(MenuItem<int> menuItem, int x, int y)
 		{
 			if (menuItem == null || menuItem.Text == null) return;
@@ -137,7 +224,9 @@ namespace CivOne.Screens
 				yy += Resources.GetFontHeight(0);
 				i++;
 			}
-			
+
+			DrawDescription(ww, yy);
+
 			_update = false;
 			return true;
 		}

@@ -33,7 +33,9 @@ namespace CivOne.Services.Maps
 	/// </remarks>
 	public class MapSaveService(
 		IAtomicFileReplacementService? atomicFileReplacementService = null,
-		ILegacyMapSaveCompatibilityService? legacyMapSaveCompatibilityService = null) : IMapSaveService
+		ILegacyMapSaveCompatibilityService? legacyMapSaveCompatibilityService = null,
+		IMapEditor? mapEditor = null,
+		IEnumerable<ICivilization>? civilizations = null) : IMapSaveService
 	{
 		/// <summary>
 		/// Performs the actual file write through a write-to-temp-then-swap strategy.
@@ -51,6 +53,17 @@ namespace CivOne.Services.Maps
 		/// </summary>
 		private readonly ILegacyMapSaveCompatibilityService _legacyMapSaveCompatibilityService = legacyMapSaveCompatibilityService ?? new LegacyMapSaveCompatibilityService();
 
+		private readonly IMapEditor? _mapEditor = mapEditor;
+		private readonly IEnumerable<ICivilization>? _civilizations = civilizations;
+
+		// Resolved lazily instead of in the constructor: Map.Instance/Common.Civilizations touch static
+		// state (Common's static constructor reflects over and instantiates every advance/building/wonder
+		// and requires a registered IRuntime). Eagerly resolving here would force that on every
+		// MapSaveService construction, including in unit tests that never touch the live map.
+		private IMapEditor MapEditor => _mapEditor ?? Map.Instance;
+
+		private IEnumerable<ICivilization> Civilizations => _civilizations ?? Common.Civilizations;
+
 		private sealed class UnusedMapFactory : IMapFactory
 		{
 			public IMapTiles CreateMap(int width, int height, uint terrainSeed) => throw new NotSupportedException("Not used when writing YAML (ToDto only).");
@@ -67,9 +80,9 @@ namespace CivOne.Services.Maps
 			if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentException("File path is required.", nameof(filePath));
 
 			MapDtoMapper mapMapper = new(new UnusedMapFactory(), new DefaultTileDtoMapper(new UnusedTileFactory()));
-			MapDto mapDto = mapMapper.ToDto(Map.Instance);
+			MapDto mapDto = mapMapper.ToDto(MapEditor);
 			mapDto.MapSeed = unchecked((uint)Map.Instance.TerrainMasterWord);
-			mapDto.StartPositions = BuildStartPositions(Common.Civilizations, Map.Instance);
+			mapDto.StartPositions = BuildStartPositions(Civilizations, MapEditor);
 
 			MapFileDto mapFileDto = new() { Map = mapDto };
 			string yaml = YamlWriter.Of(mapFileDto)
@@ -95,7 +108,7 @@ namespace CivOne.Services.Maps
 		/// <inheritdoc/>
 		public LegacyMapSaveCompatibilityResult GetLegacyMapCompatibility()
 		{
-			return _legacyMapSaveCompatibilityService.Evaluate(BuildLegacyCompatibilitySnapshot(Map.Instance, Common.Civilizations));
+			return _legacyMapSaveCompatibilityService.Evaluate(BuildLegacyCompatibilitySnapshot(Map.Instance, Civilizations));
 		}
 
 		/// <summary>

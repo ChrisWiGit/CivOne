@@ -548,7 +548,10 @@ namespace CivOne.Screens
 				}
 			}
 			
-			if (_gameMenu.MouseUp(args))
+			// Keep a reference so we can tell if the item's OnSelect handler swapped in a new menu
+			// (e.g. an owner or algorithm selector). If it did, do not close that fresh menu.
+			GameMenu? menuBeforeSelect = _gameMenu;
+			if (_gameMenu.MouseUp(args) && ReferenceEquals(_gameMenu, menuBeforeSelect))
 			{
 				_gameMenu = null;
 				_redraw = true;

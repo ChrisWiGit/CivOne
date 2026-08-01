@@ -20,8 +20,9 @@ namespace CivOne.Services.StartPositions
 	{
 		/// <summary>
 		/// The map to search for valid starting tiles. Injected instead of using the <c>Map</c> singleton directly.
+		/// Read-only on purpose: starting-position services only query the map, they never edit it.
 		/// </summary>
-		public required IMapEditor Map { get; init; }
+		public required IMapQueries Map { get; init; }
 
 		/// <summary>
 		/// The random number generator to use, so placement stays reproducible for a given game seed.
@@ -43,11 +44,6 @@ namespace CivOne.Services.StartPositions
 		/// The current game turn, used to relax placement constraints over time.
 		/// </summary>
 		public int GameTurn { get; init; }
-
-		/// <summary>
-		/// The game difficulty (0 = Chieftain, the easiest). See <see cref="CivOne.Persistence.Model.DifficultyLevel"/>.
-		/// </summary>
-		public int Difficulty { get; init; }
 
 		/// <summary>
 		/// Tiles that are already occupied by a unit and cannot be used for a new starting position.
