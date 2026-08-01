@@ -27,6 +27,14 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Enable it in the setup menu under `Shift+F1 → Patches → Terrain editor menu`, or in the setup wizard.
   * The setting can only be changed while no game is running, and it is stored in the profile.
   * With the setting enabled, the `Terrain` top menu is available during normal gameplay; previously the editor was only reachable after turning on the debug menu.
+* Feature: Terrain editor "Auto Start Positions..." menu entry to automatically place civilizations' starting Settlers.
+  * It opens a small menu where you choose the placement algorithm:
+    * `Legacy` reproduces the original placement logic.
+    * `Area Based` divides the map into equally sized areas and spreads civilizations across them.
+  * There are two modes:
+    * Normal selection only fills in civilizations that do not have a start position yet. Existing, manually placed positions are kept and used as anchors so the new ones stay clear of them.
+    * Holding `Shift` while choosing the algorithm redistributes every civilization from scratch, ignoring and overwriting all current positions.
+  * The generated positions never use the hardcoded Earth start coordinates, so they stay meaningful on custom maps.
 * Feature: Terrain editor "Save Map..." can now save a standalone map file without a full game/savegame.
   * The save dialog offers two file types: the new `.comap` YAML format and the original legacy Civ1 `.map` format.
   * The legacy `.map` option is only offered when the current map actually fits that format (fixed 80x50 size, no custom start positions, no pollution, no fortresses); otherwise only `.comap` is shown, since the legacy format supports fewer features than `.comap`.
