@@ -531,13 +531,11 @@ namespace CivOne.Screens
 				.OnSelect(GotoMenu(FpsCornerMenu)),
 			MenuItem.Create(TranslateFormatted("Terrain editor menu: {0}", Settings.TerrainEditorMenu.YesNo()))
 				.WithDescription(
-					Translate("Show the terrain editor menu and hotkeys in game."),
-					Translate("Can only be changed before a game starts."))
+					Translate("Show the terrain editor menu and hotkeys in game."))
 				.OnSelect(GotoMenu(TerrainEditorMenuMenu)),
 			MenuItem.Create(TranslateFormatted("Starting position algorithm: {0}", StartPositionAlgorithmText()))
 				.WithDescription(
-					Translate("Choose how civilizations' starting positions are determined."),
-					Translate("Can only be changed before a game starts."))
+					Translate("Choose how civilizations' starting positions are determined."))
 				.OnSelect(GotoMenu(StartPositionAlgorithmMenu)),
 			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(MainMenu, 1))
 		);
@@ -575,7 +573,7 @@ namespace CivOne.Screens
 		private void TerrainEditorMenuMenu() => CreateMenu(Translate("Terrain editor menu"), GotoMenu(PatchesMenu, 13),
 			MenuItem.Create(TranslateFormatted("{0} (default)", false.YesNo()))
 				.WithDescription(Translate("Hide terrain editor menu and hotkeys."))
-				.OnSelect((s, a) => Settings.TerrainEditorMenu = false || Game.Started).SetActive(() => !Settings.TerrainEditorMenu || Game.Started),
+				.OnSelect((s, a) => Settings.TerrainEditorMenu = false).SetActive(() => !Settings.TerrainEditorMenu),
 			MenuItem.Create(true.YesNo())
 				.WithDescription(Translate("Show terrain editor menu and hotkeys."))
 				.OnSelect((s, a) => Settings.TerrainEditorMenu = true).SetActive(() => Settings.TerrainEditorMenu),
