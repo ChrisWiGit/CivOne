@@ -179,7 +179,7 @@ namespace CivOne.Screens
 					yy = y + (i * fontHeight) + offsetY;
 
 					string text = Items[i].Text ?? string.Empty;
-					byte colour = Items[i].Enabled ? TextColour : DisabledColour;
+					byte colour = Items[i].TextColour ?? (Items[i].Enabled ? TextColour : DisabledColour);
 
 					int textX = x + (DrawFullBackground ? 2 : 0) + Indent;
 					if (ActiveItem != i && HighlightColour != 0 && Items[i].HighlightedCharacterIndex >= 0)

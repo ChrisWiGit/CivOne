@@ -81,7 +81,7 @@ namespace CivOne.Screens
 		private void MenuDifficulty()
 		{
 			Menu menu = CreateMenu(Translate("Difficulty Level..."), SetDifficulty, _menuItemsDifficulty);
-			menu.Items.Add(Translate("Use AI selections..."), AiSelectionMenuValue).OnSelect(SetDifficulty);
+			menu.Items.Add(Translate("Use AI selections..."), AiSelectionMenuValue).TextColor(3).OnSelect(SetDifficulty);
 			AddMenu(menu);
 		}
 		

@@ -40,6 +40,12 @@ namespace CivOne.UserInterface
 
 		public static MenuItem<T> SetActive<T>(this MenuItem<T> menuItem) => menuItem.SetActive(() => true);
 
+		public static MenuItem<T> TextColor<T>(this MenuItem<T> menuItem, byte colour)
+		{
+			menuItem.TextColour = colour;
+			return menuItem;
+		}
+
 		public static MenuItem<T> SetHighlightedCharacterIndex<T>(this MenuItem<T> menuItem, int index)
 		{
 			menuItem.HighlightedCharacterIndex = index;
