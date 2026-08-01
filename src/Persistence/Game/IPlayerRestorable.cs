@@ -4,6 +4,7 @@ using CivOne.Agents;
 using CivOne.Advances;
 using CivOne.Governments;
 using CivOne.Enums;
+using CivOne.Persistence.Model;
 using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne.Persistence.Game
@@ -37,6 +38,7 @@ namespace CivOne.Persistence.Game
 		new ushort FutureTechCount { get; set; }
 		new ushort HumanContactTurn { get; set; }
 		new short StartX { get; set; }
+		new MapLocation? MapStartPosition { get; set; }
 		new (short X, short Y)[] MapPositions { get; set; }
 		new string[] MapPositionNames { get; set; }
 		new (short X, short Y) LastMapPosition { get; set; }

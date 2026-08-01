@@ -115,6 +115,7 @@ namespace CivOne.Mcp.Tools
 			AddSetting(patches, flatSettings, "patches", "rightSideBar", BuildBooleanValue(settings.RightSideBar));
 			AddSetting(patches, flatSettings, "patches", "revealWorld", BuildBooleanValue(settings.RevealWorld));
 			AddSetting(patches, flatSettings, "patches", "debugMenu", BuildBooleanValue(settings.DebugMenu));
+			AddSetting(patches, flatSettings, "patches", "terrainEditorMenu", BuildBooleanValue(settings.TerrainEditorMenu));
 			AddSetting(patches, flatSettings, "patches", "deityEnabled", BuildBooleanValue(settings.DeityEnabled));
 			AddSetting(patches, flatSettings, "patches", "arrowHelper", BuildBooleanValue(settings.ArrowHelper));
 			AddSetting(patches, flatSettings, "patches", "pathFinding", BuildBooleanValue(settings.PathFinding));

@@ -15,9 +15,11 @@ using CivOne.Agents;
 using CivOne.Advances;
 using CivOne.Civilizations;
 using CivOne.Enums;
+using CivOne.Persistence.Model;
 using CivOne.Services;
 using CivOne.Services.GlobalWarming;
 using CivOne.Services.Random;
+using CivOne.Services.StartPositions;
 using CivOne.Tiles;
 using CivOne.Units;
 
@@ -71,78 +73,136 @@ namespace CivOne
 			return true;
 		}
 
-		private void AddStartingUnits(byte player)
+		private readonly IMapEditor? _mapEditor;
+		private IMapEditor MapEditor => _mapEditor ?? Map.Instance;
+
+		private readonly List<ICivilization> _unplacedCivilizations = [];
+
+		/// <summary>
+		/// Civilizations that could not be placed on the map and were destroyed during game creation.
+		/// Read once by the new-game flow to inform the player. Empty for any normal map.
+		/// </summary>
+		public IReadOnlyList<ICivilization> UnplacedCivilizations => _unplacedCivilizations;
+
+		// Resolved lazily and then cached: the factory reads Settings, so it must not run at construction time,
+		// but it also shouldn't create a new service on every access.
+		private IStartPositionService? _startPositionService;
+		private IStartPositionService StartPositionService => _startPositionService ??= StartPositionServiceFactory.Create();
+		
+		/// <summary>
+		/// Finds and places starting Settlers for a batch of players in a single call, so algorithms that need to
+		/// know the total number of players up front (e.g. dividing the map into equally sized areas) can do so.
+		/// </summary>
+		/// <param name="players">The player indexes that need a starting position.</param>
+		private void PlaceStartingUnits(IReadOnlyList<byte> players)
 		{
-			var randomService = RandomServiceFactory.Create();
-			// Translated from this post by darkpanda, might contain errors:
-			// http://forums.civfanatics.com/showthread.php?p=12895306&highlight=starting+position#post12895306
-			int loopCounter = 0;
-			while (loopCounter++ < 2000)
+			StartPositionCandidate[] candidates = [.. players.Select(p => new StartPositionCandidate
 			{
-				// Choose a map square randomly
-				int x = randomService.NextInt(0, Map.WIDTH);
-				int y = randomService.NextInt(2, Map.HEIGHT - 2);
-				if (Map.FixedStartPositions && GameTurn == 0)
-				{
-					// Map position is fixed, don't check anything
-					x = _players[player].Civilization.StartX;
-					y = _players[player].Civilization.StartY;
-					if (TryPlaceStartingSettlers(player, x, y, true))
-					{
-						return;
-					}
-				}
-				else
-				{
-					ITile tile = Map[x, y];
-					if (tile == null) continue;
+				Civilization = _players[p].Civilization,
+				MapStartPosition = _players[p].MapStartPosition,
+			})];
 
-					if (tile.IsOcean) continue; // Is it an ocean tile?
-					if (tile.Hut) continue; // Is there a hut on this tile?
-					if (HasUnitAt(x, y)) continue; // Is there already a unit on this tile?
-					if (tile.LandValue < (12 - (loopCounter / 32))) continue; // Is the land value high enough?
-					if (_cities.Any(c => Common.DistanceToTile(x, y, c.X, c.Y) < (10 - (loopCounter / 64)))) continue; // Distance to other cities
-					if (_units.Any(u => (u is Settlers) && Common.DistanceToTile(x, y, u.X, u.Y) < (10 - (loopCounter / 64)))) continue; // Distance to other settlers
-					if (Map.ContinentTiles(tile.ContinentId).Count(t => Map.TileIsType(t, Terrain.Plains, Terrain.Grassland1, Terrain.Grassland2, Terrain.River)) < (32 - (GameTurn / 16))) continue; // Check buildable tiles on continent
+			StartPositionContext context = new()
+			{
+				Map = MapEditor,
+				RandomService = _randomService,
+				IsFirstGameTurn = GameTurn == 0,
+				// If the map has any player with a MapStartPosition,
+				// then use that mode for every player, instead of the fixed positions of the civilization class.
+				AnyFixedMapStartPosition = _players.Any(p => p.MapStartPosition != null),
+				GameTurn = GameTurn,
+				OccupiedTiles = [.. _units.Select(u => new MapLocation((uint)u.X, (uint)u.Y))],
+				CityLocations = [.. _cities.Select(c => new MapLocation((uint)c.X, (uint)c.Y))],
+				SettlerLocations = [.. _units.Where(u => u is Settlers).Select(u => new MapLocation((uint)u.X, (uint)u.Y))],
+				Logger = this,
+			};
 
-					// CW: Civs are only spawned until 0 AD. So what is the point of this?
-					// After 0 AD, don't spawn a Civilization on a continent that already contains cities.
-					if (Common.TurnToYear(GameTurn) >= 0 && Map.ContinentTiles(tile.ContinentId).Any(t => t.City != null)) continue;
-				}
+			IReadOnlyList<StartPositionResult> results = StartPositionService.FindStartPositions(candidates, context);
 
-				// Starting position found, add Settlers
-				if (TryPlaceStartingSettlers(player, x, y, false))
+			for (int i = 0; i < players.Count; i++)
+			{
+				byte player = players[i];
+				StartPositionResult result = results[i];
+				if (result.Success && TryPlaceStartingSettlers(player, (int)result.Position.X, (int)result.Position.Y, true))
 				{
-					return;
+					continue;
 				}
+
+				Log("PlaceStartingUnits: no usable starting position for player {0}; trying last-resort placement.", player);
+				if (TryLastResortPlacement(player, context))
+				{
+					continue;
+				}
+
+				// The map has no free land tile at all (e.g. a degenerate custom map): don't abort game
+				// creation over one civilization. Mark it destroyed outright instead of leaving a
+				// "phantom" player with zero units and zero cities floating around.
+				//
+				// The Destroyed event is deliberately suppressed. We are still inside the Game
+				// constructor here, and PlayerDestroyed would:
+				//   - build an AdvisorMessage screen right away (portrait, palette, fonts), pulling the
+				//     graphics subsystem into game construction, and queue it as a GameTask that the
+				//     runtime pops on the next tick - while the new-game intro screen is still up and
+				//     GamePlay does not exist yet, so the popup would appear over the intro;
+				//   - respawn the civilization and call PlaceStartingUnits again from inside this very
+				//     loop, which fails the same way on a landless map.
+				// The replay entry is therefore written directly below.
+				Log("PlaceStartingUnits: no free land tile left for player {0}; player will be destroyed.", player);
+				_unplacedCivilizations.Add(_players[player].Civilization);
+				_players[player].HandleExtinction(invokeDestroyedEvent: false);
+
+				// Attributed to the Barbarians (civilization 0): nobody actually defeated this
+				// civilization, the map simply had no room for it.
+				_replayData.Add(new ReplayData.CivilizationDestroyed(
+					_gameTurn, _players[player].Civilization.PreferredPlayerNumber, 0));
+			}
+		}
+
+		/// <summary>
+		/// Places the starting Settlers on any free land tile, ignoring the regular placement rules.
+		/// Used when the starting-position service could not satisfy them, so a player is never left
+		/// without units while the map still has usable land.
+		/// </summary>
+		/// <param name="player">The player index to place Settlers for.</param>
+		/// <param name="context">The context of the current placement batch, reused for its map reference.</param>
+		/// <returns>True if Settlers were placed; otherwise, false.</returns>
+		private bool TryLastResortPlacement(byte player, StartPositionContext context)
+		{
+			// Occupied tiles are re-read here instead of taken from the context, because units placed
+			// earlier in this same batch are already on the map.
+			MapLocation[] occupiedTiles = [.. _units.Select(u => new MapLocation((uint)u.X, (uint)u.Y))];
+			MapLocation? tile = new FallbackTileScanDelegate(context).FindAnyUsableTile(occupiedTiles);
+			if (tile == null)
+			{
+				return false;
 			}
 
-			Log("AddStartingUnits: strict placement failed for player {0}; trying relaxed fallback placement.", player);
-			for (int y = 2; y < (Map.HEIGHT - 2); y++)
+			if (!TryPlaceStartingSettlers(player, (int)tile.X, (int)tile.Y, true))
 			{
-				for (int x = 0; x < Map.WIDTH; x++)
-				{
-					ITile tile = Map[x, y];
-					if (tile == null || tile.IsOcean)
-					{
-						continue;
-					}
-
-					if (HasUnitAt(x, y))
-					{
-						continue;
-					}
-
-					if (TryPlaceStartingSettlers(player, x, y, true))
-					{
-						Log("AddStartingUnits: fallback placement succeeded for player {0} at {1},{2}.", player, x, y);
-						return;
-					}
-				}
+				return false;
 			}
 
-			Log("AddStartingUnits: no valid fallback tile found for player {0}.", player);
-			throw new InvalidOperationException($"Unable to place starting settlers for player {player}.");
+			Log("PlaceStartingUnits: last-resort placement for player {0} at {1},{2}.", player, tile.X, tile.Y);
+			return true;
+		}
+
+		/// <summary>
+		/// Terrain editor map start positions.
+		/// Only looks up and stores a custom starting position for the player, if the map has one for their civilization
+		/// (e.g. painted in the terrain editor). Does not place any units. <see cref="PlaceStartingUnits"/> is what
+		/// actually creates the Settlers, using <see cref="Player.MapStartPosition"/> set here as one of its inputs.
+		/// </summary>
+		private static void ApplyMapStartPositionFromMapFile(Player player)
+		{
+			ArgumentNullException.ThrowIfNull(player);
+
+			if (Map.TryGetStartPosition(player.Civilization, out MapLocation? mapStartPosition))
+			{
+				player.MapStartPosition = mapStartPosition;
+				return;
+			}
+
+			player.MapStartPosition = null;
 		}
 
 		private void CalculateHandicap(byte player)
@@ -342,6 +402,7 @@ namespace CivOne
 				if (i == tribe.PreferredPlayerNumber)
 				{
 					_players[i] = new Player(tribe, leaderName, playerTribeName, playerTribeNamePlural);
+					ApplyMapStartPositionFromMapFile(_players[i]);
 					_players[i].Destroyed += PlayerDestroyed;
 					HumanPlayer = _players[i];
 					HumanPlayer.TaxesRate = Settings.TaxRate; // fire-eggs 20190725
@@ -356,6 +417,7 @@ namespace CivOne
 				ICivilization[] civs = Common.Civilizations.Where(civ => civ.PreferredPlayerNumber == i).ToArray();
 				int r = startRandom.Next(civs.Length);
 				_players[i] = new Player(civs[r], customTribeName: null);
+				ApplyMapStartPositionFromMapFile(_players[i]);
 				if (i != 0)
 				{
 					// fire-eggs 20190730 never show "barbarian civilization destroyed"
@@ -387,10 +449,7 @@ namespace CivOne
 			}
 
 			Log("Adding starting units...");
-			for (byte i = 1; i <= competition; i++)
-			{
-				AddStartingUnits(i);
-			}
+			PlaceStartingUnits([.. Enumerable.Range(1, competition).Select(i => (byte)i)]);
 
 			Log("Calculate players handicap...");
 			for (byte i = 1; i <= competition; i++)

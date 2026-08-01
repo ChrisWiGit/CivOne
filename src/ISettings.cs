@@ -57,6 +57,15 @@ namespace CivOne
 		string CosSavesDirectory { get; }
 
 		/// <summary>
+		/// Gets the directory used for custom map files (<c>*.comap</c>, <c>*.map</c>).
+		/// </summary>
+		/// <remarks>
+		/// Windows: <c>%LOCALAPPDATA%\CivOne\maps</c>
+		/// Linux and macOS: <c>~/.local/share/CivOne/maps</c>
+		/// </remarks>
+		string MapsDirectory { get; }
+
+		/// <summary>
 		/// Gets the directory used for sound assets.
 		/// </summary>
 		/// <remarks>

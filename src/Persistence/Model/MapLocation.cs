@@ -65,13 +65,13 @@ namespace CivOne.Persistence.Model
             return X == other.X && Y == other.Y;
         }
 
-        public static bool operator ==(MapLocation left, MapLocation right)
+        public static bool operator ==(MapLocation? left, MapLocation? right)
         {
             if (ReferenceEquals(left, right)) return true;
             if (left is null || right is null) return false;
             return left.Equals(right);
         }   
-        public static bool operator !=(MapLocation left, MapLocation right) => !(left == right);
+        public static bool operator !=(MapLocation? left, MapLocation? right) => !(left == right);
 
 		public override int GetHashCode()
 		{

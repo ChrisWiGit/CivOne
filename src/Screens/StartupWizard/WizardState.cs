@@ -91,6 +91,11 @@ namespace CivOne.Screens.StartupWizard
 		public bool DebugMenuEnabled { get; set; } = Settings.Instance.DebugMenu;
 
 		/// <summary>
+		/// Gets or sets whether the in-game terrain editor menu is enabled.
+		/// </summary>
+		public bool TerrainEditorMenuEnabled { get; set; } = Settings.Instance.TerrainEditorMenu;
+
+		/// <summary>
 		/// Gets or sets whether fullscreen mode is enabled.
 		/// </summary>
 		public bool FullScreenEnabled { get; set; } = Settings.Instance.FullScreen;

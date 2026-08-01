@@ -64,4 +64,10 @@
 	<ItemGroup>
 		<EmbeddedResource Include="Resources/**" />
 	</ItemGroup>
+	<ItemGroup>
+		<Content Include="../../maps/*.comap">
+			<Link>maps/%(Filename)%(Extension)</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 </Project>

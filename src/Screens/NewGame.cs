@@ -376,6 +376,14 @@ namespace CivOne.Screens
 					gamePlay.CenterOnPoint(Map.WIDTH / 2, Map.HEIGHT / 2);
 				}
 				
+				if (Game.UnplacedCivilizations.Count > 0)
+				{
+					string names = string.Join(", ", Game.UnplacedCivilizations.Select(c => c.NamePlural));
+					GameTask.Enqueue(Message.Error(
+						Translate("--- Map Problem ---"),
+						TranslateFormattedArray("This map has no free land for:\n{0}\nRemoved from the game.", names)));
+				}
+
 				if (Game.InstantAdvice)
 				{
 					GameTask.Enqueue(Show.InterfaceHelp);

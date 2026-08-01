@@ -18,3 +18,4 @@
 *.icns     binary
 
 *.cos linguist-language=YAML
+*.comap linguist-language=YAML

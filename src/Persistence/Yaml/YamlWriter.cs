@@ -57,6 +57,7 @@ namespace CivOne.Persistence.Yaml
         ///   <item><see cref="PascalCaseNamingConvention"/></item>
         ///   <item><see cref="Bool2dMapYamlTypeConverter"/></item>
         ///   <item><see cref="SpaceShipGridMapYamlTypeConverter"/></item>
+        ///   <item><see cref="MapLocationYamlConverter"/></item>
         ///   <item><see cref="DocCommentEventEmitter"/></item>
         /// </list>
         /// Further <c>With*</c> calls can supplement or override individual settings.
@@ -65,6 +66,7 @@ namespace CivOne.Persistence.Yaml
             => WithNamingConvention(PascalCaseNamingConvention.Instance)
                 .WithTypeConverter(new Bool2dMapYamlTypeConverter())
                 .WithTypeConverter(new SpaceShipGridMapYamlTypeConverter())
+                .WithTypeConverter(new MapLocationYamlConverter())
                 .WithEventEmitter(next => new DocCommentEventEmitter(next))
                 .WithoutNullValues();
 

@@ -614,6 +614,7 @@ namespace CivOne
             _climateValue = (int)climate;
             _age = age;
             _ageValue = (int)age;
+			ClearStartPositions();
 			SetError(false);
 			
             Task.Run(() => GenerateThread());

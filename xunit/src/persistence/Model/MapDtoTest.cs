@@ -55,8 +55,18 @@ namespace CivOne.Persistence.Model
 		{
 			var dtoProperties = GetWritablePropertyNames<MapDto>();
 			var expectedProperties = GetMapDtoRoundTripAssertionMap(
-				new MapDto { TerrainSeed = _terrainSeed, Tiles = new Map2d<TileDto>(_tileDtos) },
-				new MapDto { TerrainSeed = _terrainSeed, Tiles = new Map2d<TileDto>(_tileDtos) }).Keys.ToHashSet();
+				new MapDto
+				{
+					TerrainSeed = _terrainSeed,
+					Tiles = new Map2d<TileDto>(_tileDtos),
+					StartPositions = new Dictionary<string, MapLocation> { ["Romans"] = new(36, 19) }
+				},
+				new MapDto
+				{
+					TerrainSeed = _terrainSeed,
+					Tiles = new Map2d<TileDto>(_tileDtos),
+					StartPositions = new Dictionary<string, MapLocation> { ["Romans"] = new(36, 19) }
+				}).Keys.ToHashSet();
 
 			Assert.Equal([], dtoProperties.Except(expectedProperties).OrderBy(x => x));
 		}
@@ -180,6 +190,7 @@ namespace CivOne.Persistence.Model
 
 			string yaml = YamlWriter.Of(mapDto)
 				.WithTypeConverter(new MapDtoTileDtoYamlConverter())
+				.WithoutNullValues()
 				.AsString();
 
 			Assert.NotNull(yaml);
@@ -215,6 +226,10 @@ namespace CivOne.Persistence.Model
 				"Tiles:\n" +
 				"- ARIE\n" +
 				"- AiQD\n" +
+				"StartPositions:\n" +
+				"  Romans:\n" +
+				"    X: 1\n" +
+				"    Y: 0\n" +
 				"LandValues:\n" +
 				"- 01,03\n" +
 				"- 02,04\n";
@@ -226,8 +241,10 @@ namespace CivOne.Persistence.Model
 			Assert.NotNull(actual);
 			Assert.Equal((uint)4242, actual.TerrainSeed);
 			Assert.NotNull(actual.Tiles);
+			Assert.NotNull(actual.StartPositions);
 			Assert.Equal(2, actual.Tiles.Width());
 			Assert.Equal(2, actual.Tiles.Height());
+			Assert.Equal(new MapLocation(1, 0), actual.StartPositions["Romans"]);
 
 			Assert.Equal(Terrain.Plains, actual.Tiles[0, 0].Terrain);
 			Assert.True(actual.Tiles[0, 0].Road);
@@ -331,6 +348,20 @@ namespace CivOne.Persistence.Model
 					Assert.NotNull(actual.Tiles);
 					Assert.Equal(expected.Tiles.Width(), actual.Tiles.Width());
 					Assert.Equal(expected.Tiles.Height(), actual.Tiles.Height());
+				},
+				[nameof(MapDto.StartPositions)] = () =>
+				{
+					Assert.Equal(expected.StartPositions?.Count ?? 0, actual.StartPositions?.Count ?? 0);
+					if (expected.StartPositions == null || actual.StartPositions == null)
+					{
+						return;
+					}
+
+					foreach ((string key, MapLocation expectedLocation) in expected.StartPositions)
+					{
+						Assert.True(actual.StartPositions.TryGetValue(key, out MapLocation? actualLocation));
+						Assert.Equal(expectedLocation, actualLocation);
+					}
 				}
 			};
 
@@ -503,4 +534,3 @@ namespace CivOne.Persistence.Model
 		}
 	}
 }
-

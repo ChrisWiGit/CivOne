@@ -35,6 +35,7 @@ namespace CivOne.UnitTests
 			FutureTechCount = 0;
 			HumanContactTurn = 0;
 			StartX = 0;
+			MapStartPosition = null;
 			MapPositions = [.. Enumerable.Repeat(((short)-1, (short)-1), 9)];
 			MapPositionNames = [.. Enumerable.Repeat(string.Empty, 9)];
 			LastMapPosition = (-1, -1);
@@ -95,6 +96,8 @@ namespace CivOne.UnitTests
 		public ushort HumanContactTurn { get; set; }
 
 		public short StartX { get; set; }
+
+		public MapLocation? MapStartPosition { get; set; }
 
 		public (short X, short Y)[] MapPositions { get; set; }
 

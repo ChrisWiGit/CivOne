@@ -279,7 +279,7 @@ namespace CivOne
 				_players[index] = newPlayer;
 				_players[index].Destroyed += PlayerDestroyed;
 
-				AddStartingUnits(index);
+				PlaceStartingUnits([index]);
 				// CW: Not sure, but are these new civs given technology or better units?
 				// Could be a feature to advance such a civilization.
 				// In higher dificulties, does the civ get more units and techs?

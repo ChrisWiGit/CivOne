@@ -8,11 +8,15 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Linq;
+using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Screens.Dialogs;
 using CivOne.Screens.GamePlayPanels;
 using CivOne.Services;
+using CivOne.Services.Random;
+using CivOne.Services.StartPositions;
 using CivOne.UserInterface;
 
 namespace CivOne.Screens
@@ -22,7 +26,12 @@ namespace CivOne.Screens
 		/// <summary>
 		/// Handles terrain editor menu and hotkey orchestration in gameplay screen.
 		/// </summary>
-		private sealed class GamePlayTerrainEditorDelegate(GamePlay gamePlay, ITranslationService translationService)
+		private sealed class GamePlayTerrainEditorDelegate(
+			GamePlay gamePlay,
+			ITranslationService translationService,
+			IPlayerGame playerGame,
+			ICivilization[] civilizations,
+			GamePlaySaveMapDelegate saveMapDelegate)
 		{
 			private enum TerrainMenuAction
 			{
@@ -38,25 +47,38 @@ namespace CivOne.Screens
 				ModePollution,
 				ModeHut,
 				ModeClear,
+				ModeStartPosition,
+				AutoStartPositions,
 				ToggleLandValues,
 				BrushIncrease,
-				BrushDecrease
+				BrushDecrease,
+				SaveMap
 			}
 
-			private char FOUND_CITY_HOTKEY = 'y';
-			private char SPAWN_UNIT_HOTKEY = 'u';
+			private readonly char FOUND_CITY_HOTKEY = 'y';
+			private readonly char SPAWN_UNIT_HOTKEY = 'u';
+			private readonly char START_POSITION_HOTKEY = 's';
 			
 			private readonly GamePlay _gamePlay = gamePlay;
 			private readonly ITranslationService _translationService = translationService ?? throw new ArgumentNullException(nameof(translationService));
+			private readonly IPlayerGame _playerGame = playerGame ?? throw new ArgumentNullException(nameof(playerGame));
+			private readonly ICivilization[] _civilizations = civilizations ?? throw new ArgumentNullException(nameof(civilizations));
+			private readonly GamePlaySaveMapDelegate _saveMapDelegate = saveMapDelegate ?? throw new ArgumentNullException(nameof(saveMapDelegate));
+
+			// Resolved lazily: the delegate touches Map.Instance and the random-service factory, so it must not
+			// be built at construction time before those singletons are ready.
+			private AutoStartPositionDelegate? _autoStartPositionDelegate;
+			private AutoStartPositionDelegate AutoStartPositions =>
+				_autoStartPositionDelegate ??= new AutoStartPositionDelegate(_playerGame, _civilizations, Map.Instance, RandomServiceFactory.Create());
 
 			public void OpenOwnerSelectorOverlay(string menuName, EditorMode targetMode)
 			{
-				Player[] players = [.. Game.Players];
+				Player[] players = [.. _playerGame.Players];
 				_gamePlay._gameMenu = new GameMenu(menuName, _gamePlay.Palette);
 				for (int i = 0; i < players.Length; i++)
 				{
 					Player player = players[i];
-					byte ownerId = Game.PlayerNumber(player);
+					byte ownerId = _playerGame.PlayerNumber(player);
 					string label = player.Civilization is Civilizations.Barbarian ? 
 						_translationService.Translate("Barbarians") : _translationService.Translate(player.TribeNamePlural);
 					char hotkey = (i < 9) ? (char)('1' + i) : (char)('A' + (i - 9));
@@ -85,6 +107,91 @@ namespace CivOne.Screens
 			public void OpenCityOwnerSelector() => OpenOwnerSelectorOverlay("MenuBarTerrainCityOwner", EditorMode.FoundCity);
 
 			public void OpenUnitOwnerSelector() => OpenOwnerSelectorOverlay("MenuBarTerrainUnitOwner", EditorMode.SpawnUnit);
+
+			private void EnsureStartPositionCivilizationSelected(TerrainEditorState state)
+			{
+				if (state.StartPositionCivilization != Civilization.Barbarians)
+				{
+					return;
+				}
+
+				ICivilization? first = _civilizations.FirstOrDefault(c => c is not Barbarian);
+				if (first != null)
+				{
+					state.StartPositionCivilization = (Civilization)first.Id;
+				}
+			}
+
+			public void OpenStartPositionOwnerSelector()
+			{
+				ICivilization[] civilizations = [.. _civilizations.Where(c => c is not Barbarian)];
+				_gamePlay._gameMenu = new GameMenu("MenuBarTerrainStartPositionOwner", _gamePlay.Palette);
+				for (int i = 0; i < civilizations.Length; i++)
+				{
+					ICivilization civilization = civilizations[i];
+					string label = _translationService.Translate(civilization.NamePlural);
+					char hotkey = (i < 9) ? (char)('1' + i) : (char)('A' + (i - 9));
+
+					_gamePlay._gameMenu.Items
+						.Add(label)
+						.SetShortcut(hotkey.ToString())
+						.OnSelect((s, a) =>
+						{
+							TerrainEditorState state = _gamePlay._gameMap.EditorState;
+							state.StartPositionCivilization = (Civilization)civilization.Id;
+							state.CurrentMode = EditorMode.StartPosition;
+							_gamePlay._gameMap.ForceRefresh();
+							_gamePlay._update = true;
+						});
+				}
+
+				_gamePlay._menuIndex = 5;
+				_gamePlay._menuX = Math.Max(0, (_gamePlay.Width - _gamePlay._gameMenu.PixelWidth) / 2);
+				_gamePlay._menuY = Math.Max(8, (_gamePlay.Height - _gamePlay._gameMenu.PixelHeight) / 2);
+				_gamePlay._gameMenu.KeepOpen = true;
+				_gamePlay._redraw = true;
+				_gamePlay._update = true;
+			}
+
+			public void OpenStartPositionAlgorithmSelector()
+			{
+				(Settings.StartPositionAlgorithmType Algorithm, string Label)[] options =
+				[
+					(Settings.StartPositionAlgorithmType.Legacy, Translate("Legacy")),
+					(Settings.StartPositionAlgorithmType.AreaBased, Translate("Area Based")),
+				];
+
+				_gamePlay._gameMenu = new GameMenu("MenuBarTerrainAutoStartPosition", _gamePlay.Palette)
+				{
+					DefaultDescription = [Translate("Hold Shift to redistribute all")],
+				};
+				for (int i = 0; i < options.Length; i++)
+				{
+					(Settings.StartPositionAlgorithmType algorithm, string label) = options[i];
+					char hotkey = (char)('1' + i);
+
+					_gamePlay._gameMenu.Items
+						.Add(label)
+						.SetShortcut(hotkey.ToString())
+						.OnSelect((s, a) => RunAutoStartPositions(algorithm, overwriteExisting: IsShiftKeyPressed));
+				}
+
+				_gamePlay._menuIndex = 5;
+				_gamePlay._menuX = Math.Max(0, (_gamePlay.Width - _gamePlay._gameMenu.PixelWidth) / 2);
+				_gamePlay._menuY = Math.Max(8, (_gamePlay.Height - _gamePlay._gameMenu.PixelHeight) / 2);
+				_gamePlay._gameMenu.KeepOpen = true;
+				_gamePlay._redraw = true;
+				_gamePlay._update = true;
+			}
+
+			private void RunAutoStartPositions(Settings.StartPositionAlgorithmType algorithm, bool overwriteExisting)
+			{
+				AutoStartPositions.AssignStartPositions(algorithm, overwriteExisting);
+				_gamePlay._gameMenu = null;
+				_gamePlay._gameMap.ForceRefresh();
+				_gamePlay._redraw = true;
+				_gamePlay._update = true;
+			}
 
 			public void OpenUnitSelector()
 			{
@@ -182,6 +289,19 @@ namespace CivOne.Screens
 					case TerrainMenuAction.ModeClear:
 						state.CurrentMode = EditorMode.Clear;
 						break;
+					case TerrainMenuAction.ModeStartPosition:
+						if (IsShiftKeyPressed)
+						{
+							OpenStartPositionOwnerSelector();
+							break;
+						}
+
+						EnsureStartPositionCivilizationSelected(state);
+						state.CurrentMode = EditorMode.StartPosition;
+						break;
+					case TerrainMenuAction.AutoStartPositions:
+						OpenStartPositionAlgorithmSelector();
+						return;
 					case TerrainMenuAction.ToggleLandValues:
 						state.ShowLandValues = !state.ShowLandValues;
 						break;
@@ -210,7 +330,7 @@ namespace CivOne.Screens
 
 			public void MenuBarTerrain(object? _, EventArgs __)
 			{
-				if (!DebugMenuEnabled)
+				if (!TerrainEditorMenuEnabled)
 				{
 					return;
 				}
@@ -242,10 +362,21 @@ namespace CivOne.Screens
 				_gamePlay._gameMenu.Items.Add(Translate("Pollution"), (int)TerrainMenuAction.ModePollution).SetShortcut("p").OnSelect(OnTerrainMenuAction).SetEnabled(state.Enabled);
 				_gamePlay._gameMenu.Items.Add(Translate("Hut"), (int)TerrainMenuAction.ModeHut).SetShortcut("h").OnSelect(OnTerrainMenuAction).SetEnabled(state.Enabled);
 				_gamePlay._gameMenu.Items.Add(Translate("Clear Improvements"), (int)TerrainMenuAction.ModeClear).SetShortcut("c").OnSelect(OnTerrainMenuAction).SetEnabled(state.Enabled);
+				_gamePlay._gameMenu.Items
+					.Add(Translate("Start Position"), (int)TerrainMenuAction.ModeStartPosition)
+					.SetShortcuts("s", "^s")
+					.OnSelect(OnTerrainMenuAction)
+					.SetEnabled(state.Enabled);
+				_gamePlay._gameMenu.Items
+					.Add(Translate("Auto Start Positions..."), (int)TerrainMenuAction.AutoStartPositions)
+					.OnSelect(OnTerrainMenuAction)
+					.SetEnabled(state.Enabled);
 				_gamePlay._gameMenu.Items.Add(null);
 				_gamePlay._gameMenu.Items.Add(Translate("Toggle Land Values"), (int)TerrainMenuAction.ToggleLandValues).SetShortcut("l").OnSelect(OnTerrainMenuAction).SetEnabled(state.Enabled);
 				_gamePlay._gameMenu.Items.Add(Translate("Brush Size +"), (int)TerrainMenuAction.BrushIncrease).SetShortcut("+").OnSelect(OnTerrainMenuAction).SetEnabled(state.Enabled);
 				_gamePlay._gameMenu.Items.Add(Translate("Brush Size -"), (int)TerrainMenuAction.BrushDecrease).SetShortcut("-").OnSelect(OnTerrainMenuAction).SetEnabled(state.Enabled);
+				_gamePlay._gameMenu.Items.Add(null);
+				_gamePlay._gameMenu.Items.Add(Translate("Save Map..."), (int)TerrainMenuAction.SaveMap).SetEnabled(state.Enabled).OnSelect(_saveMapDelegate.OnSaveMapMenuAction);
 
 				const int enabledEditorMenuX = 216;
 				const int disabledEditorMenuX = 236;
@@ -291,7 +422,21 @@ namespace CivOne.Screens
 						continue;
 					}
 
+					GameMenu? menuBeforeSelect = _gamePlay._gameMenu;
+					bool keepMenuOpen = item.Value == (int)TerrainMenuAction.BrushIncrease
+						|| item.Value == (int)TerrainMenuAction.BrushDecrease
+						|| item.Value == (int)TerrainMenuAction.ToggleLandValues;
 					item.Select();
+
+					// Auto-close after a one-shot selection so the map becomes interactable again,
+					// but keep the menu open for repeatable adjustments (brush size, land-value toggle)
+					// and when Select() opened a different menu (e.g. a shift-triggered owner selector).
+					if (!keepMenuOpen && ReferenceEquals(_gamePlay._gameMenu, menuBeforeSelect))
+					{
+						_gamePlay._gameMenu = null;
+						_gamePlay._redraw = true;
+					}
+
 					return true;
 				}
 
@@ -325,6 +470,23 @@ namespace CivOne.Screens
 					else
 					{
 						OpenUnitSelector();
+					}
+
+					return true;
+				}
+
+				if (args.Key == Key.Character && char.ToLowerInvariant(args.KeyChar) == START_POSITION_HOTKEY)
+				{
+					if (IsShiftKeyPressed)
+					{
+						OpenStartPositionOwnerSelector();
+					}
+					else
+					{
+						TerrainEditorState state = _gamePlay._gameMap.EditorState;
+						EnsureStartPositionCivilizationSelected(state);
+						state.CurrentMode = EditorMode.StartPosition;
+						_gamePlay._gameMap.ForceRefresh();
 					}
 
 					return true;

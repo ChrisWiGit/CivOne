@@ -85,6 +85,9 @@ namespace CivOne
 					case SDL_EventType.SDL_MOUSEWHEEL:
 						HandleMouseWheel(CastToStruct<SDL_MouseWheelEvent>(sdlEvent));
 						break;
+					case SDL_EventType.SDL_MULTIGESTURE:
+						HandleMultiGesture(CastToStruct<SDL_MultiGestureEvent>(sdlEvent));
+						break;
 				}
 			}
 
@@ -398,12 +401,27 @@ namespace CivOne
 				return new Size(r.w, r.h);
 			}
 
-			protected static bool IsPointInAnyDisplay(int x, int y)
+			/// <summary>
+			/// Finds the display whose bounds (expanded by <paramref name="margin"/>) contain the
+			/// given point, and returns a position on that display with at least <paramref name="margin"/>
+			/// clearance from its top-left corner.
+			/// </summary>
+			/// <remarks>
+			/// The margin serves two purposes: it tolerates the small position offset some window
+			/// managers report near display edges (e.g. Windows/DWM invisible resize borders), and it
+			/// guarantees the title bar keeps enough clearance from the corner to stay grabbable, even
+			/// when the stored position sits exactly at (or under a top-docked taskbar near) that corner.
+			/// </remarks>
+			/// <param name="x">Stored window X position.</param>
+			/// <param name="y">Stored window Y position.</param>
+			/// <param name="margin">Minimum clearance, in pixels, from a display's top-left corner.</param>
+			/// <param name="fallback">Position to use if no display contains the point.</param>
+			protected static Point ClampToVisibleDisplay(int x, int y, int margin, Point fallback)
 			{
 				int displays = SDL_GetNumVideoDisplays();
 				if (displays <= 0)
 				{
-					return true;
+					return new Point(Math.Max(x, margin), Math.Max(y, margin));
 				}
 
 				for (int i = 0; i < displays; i++)
@@ -413,13 +431,13 @@ namespace CivOne
 						continue;
 					}
 
-					if (x >= r.x && x < (r.x + r.w) && y >= r.y && y < (r.y + r.h))
+					if (x >= r.x - margin && x < (r.x + r.w + margin) && y >= r.y - margin && y < (r.y + r.h + margin))
 					{
-						return true;
+						return new Point(Math.Max(x, r.x + margin), Math.Max(y, r.y + margin));
 					}
 				}
 
-				return false;
+				return fallback;
 			}
 
 			private bool _disposed;

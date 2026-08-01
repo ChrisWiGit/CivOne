@@ -9,6 +9,7 @@
 
 using System;
 using CivOne.Enums;
+using CivOne.Persistence.Model;
 using CivOne.Tiles;
 
 namespace CivOne
@@ -19,9 +20,14 @@ namespace CivOne
 	/// But it only exists for terrain editing related methods.
 	/// Do not use it for game logic.
 	/// </summary>
-	public partial class Map
+	public partial class Map : IMapEditor
 	{
-		internal static int EditorWrapX(int x)
+		// These don't use any instance state, but are kept as instance members (rather than static)
+		// so they can be part of IMapEditor and substituted in tests of terrain-editor logic.
+		// Public (not internal) because IMapEditor is implemented implicitly: Map has a real
+		// subclass (MapGenerationFromYaml, used in tests) and can't be sealed, so an explicit
+		// interface implementation would hide this functionality from that derived class.
+		public int EditorWrapX(int x)
 		{
 			while (x < 0)
 			{
@@ -36,7 +42,7 @@ namespace CivOne
 			return x;
 		}
 
-		internal static int EditorClampY(int y)
+		public int EditorClampY(int y)
 		{
 			if (y < 0)
 			{
@@ -72,7 +78,7 @@ namespace CivOne
 			};
 		}
 
-		internal void EditorSetTerrain(int x, int y, Terrain type)
+		public void EditorSetTerrain(int x, int y, Terrain type)
 		{
 			x = EditorWrapX(x);
 			y = EditorClampY(y);
@@ -133,6 +139,18 @@ namespace CivOne
 			}
 
 			tile.Hut = !tile.Hut;
+		}
+
+		public void SetStartPosition(Civilization civilization, MapLocation location)
+		{
+			_customStartPositions[civilization] = new MapLocation(location);
+			FixedStartPositions = _customStartPositions.Count > 0;
+		}
+
+		public void RemoveStartPosition(Civilization civilization)
+		{
+			_customStartPositions.Remove(civilization);
+			FixedStartPositions = _customStartPositions.Count > 0;
 		}
 	}
 }

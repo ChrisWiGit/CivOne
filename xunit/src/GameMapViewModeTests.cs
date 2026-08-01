@@ -237,20 +237,47 @@ namespace CivOne.UnitTests
 		}
 
 		/// <summary>
-		/// Ensures wheel input without Ctrl remains ignored by the map screen.
+		/// Ensures vertical wheel input without Ctrl pans the map instead of zooming.
+		/// A two-finger touchpad swipe arrives as such a wheel event.
 		/// </summary>
 		[Fact]
-		public void WheelWithoutCtrlIsIgnored()
+		public void VerticalWheelWithoutCtrlPansMapInsteadOfZooming()
 		{
 			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
 			Game.Instance.CurrentPlayer.MapZoomBasisPoints = 1000;
 
 			using var gameMap = new GameMapForTesting();
 			gameMap.ResizeMap(160, 120);
+			gameMap.SetViewOrigin(10, 10);
 
 			var handled = gameMap.MouseWheel(new ScreenEventArgs(40, 40, MouseButton.None, KeyModifier.None, -1));
 
-			Assert.False(handled);
+			Assert.True(handled);
+			Assert.Equal(10, gameMap.X);
+			Assert.Equal(11, gameMap.Y);
+			Assert.Equal(1000, Game.Instance.CurrentPlayer.MapZoomBasisPoints);
+			Assert.Equal(16, gameMap.TilePixelSize);
+		}
+
+		/// <summary>
+		/// Ensures horizontal wheel input without Ctrl pans the map along the X axis.
+		/// This guards the horizontal wheel delta being carried through the event pipeline.
+		/// </summary>
+		[Fact]
+		public void HorizontalWheelWithoutCtrlPansMapAlongX()
+		{
+			Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
+			Game.Instance.CurrentPlayer.MapZoomBasisPoints = 1000;
+
+			using var gameMap = new GameMapForTesting();
+			gameMap.ResizeMap(160, 120);
+			gameMap.SetViewOrigin(10, 10);
+
+			var handled = gameMap.MouseWheel(new ScreenEventArgs(40, 40, MouseButton.None, KeyModifier.None, 0, 1));
+
+			Assert.True(handled);
+			Assert.Equal(11, gameMap.X);
+			Assert.Equal(10, gameMap.Y);
 			Assert.Equal(1000, Game.Instance.CurrentPlayer.MapZoomBasisPoints);
 			Assert.Equal(16, gameMap.TilePixelSize);
 		}

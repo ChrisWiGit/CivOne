@@ -203,7 +203,7 @@ namespace CivOne.Screens.GamePlayPanels
 
 				if ((args.Buttons & MouseButton.Left) > 0)
 				{
-					if (_gameMap._editorState.CurrentMode == EditorMode.SpawnUnit)
+					if (_gameMap._editorState.CurrentMode == EditorMode.SpawnUnit || _gameMap._editorState.CurrentMode == EditorMode.StartPosition)
 					{
 						_gameMap._update = true;
 						return true;
@@ -271,6 +271,7 @@ namespace CivOne.Screens.GamePlayPanels
 					EditorMode.Pollution => true,
 					EditorMode.Hut => true,
 					EditorMode.Clear => true,
+					EditorMode.StartPosition => true,
 					_ => false
 				};
 			}
@@ -341,7 +342,7 @@ namespace CivOne.Screens.GamePlayPanels
 							_gameMap._terrainEditorDelegate.ApplyBrush(x, y, _gameMap._editorState.PencilSizeIndex, _gameMap._editorState.SelectedTerrain);
 							break;
 						case EditorMode.FoundCity:
-							TerrainEditorDelegate.EditCitySingleTile(x, y, _gameMap._editorState.CityOwner, shrink: rightButton);
+							_gameMap._terrainEditorDelegate.EditCitySingleTile(x, y, _gameMap._editorState.CityOwner, shrink: rightButton);
 							break;
 						case EditorMode.SpawnUnit:
 							if (rightButton)
@@ -350,7 +351,7 @@ namespace CivOne.Screens.GamePlayPanels
 							}
 							else
 							{
-								TerrainEditorDelegate.SpawnUnit(x, y, _gameMap._editorState.CityOwner, _gameMap._editorState.SelectedUnitType);
+								_gameMap._terrainEditorDelegate.SpawnUnit(x, y, _gameMap._editorState.CityOwner, _gameMap._editorState.SelectedUnitType);
 							}
 							break;
 						case EditorMode.Irrigation:
@@ -394,6 +395,16 @@ namespace CivOne.Screens.GamePlayPanels
 							break;
 						case EditorMode.Clear:
 							_gameMap._terrainEditorDelegate.ClearImprovements(x, y, _gameMap._editorState.PencilSizeIndex);
+							break;
+						case EditorMode.StartPosition:
+							if (rightButton)
+							{
+								_gameMap._terrainEditorDelegate.RemoveStartPositionAt(x, y);
+							}
+							else
+							{
+								_gameMap._terrainEditorDelegate.SetStartPosition(x, y, _gameMap._editorState.StartPositionCivilization);
+							}
 							break;
 					}
 				}

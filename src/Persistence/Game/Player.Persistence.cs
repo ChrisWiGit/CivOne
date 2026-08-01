@@ -158,6 +158,12 @@ namespace CivOne
 			set => StartX = value;
 		}
 
+		MapLocation? IPlayerRestorable.MapStartPosition
+		{
+			get => MapStartPosition;
+			set => MapStartPosition = value is null ? null : new MapLocation(value);
+		}
+
 		(short X, short Y)[] IPlayerRestorable.MapPositions
 		{
 			get => MapPositions;

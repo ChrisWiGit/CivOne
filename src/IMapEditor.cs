@@ -1,0 +1,29 @@
+// CivOne
+//
+// To the extent possible under law, the person who associated CC0 with
+// CivOne has waived all copyright and related or neighboring rights
+// to CivOne.
+//
+// You should have received a copy of the CC0 legalcode along with this
+// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+
+using CivOne.Civilizations;
+using CivOne.Enums;
+using CivOne.Persistence.Model;
+
+namespace CivOne
+{
+	/// <summary>
+	/// Defines the map-editing operations used by the terrain editor.
+	/// Replaces direct Map.Instance access so terrain-editor logic can be unit tested without a live Map.
+	/// Read-only queries live in <see cref="IMapQueries"/>.
+	/// </summary>
+	public interface IMapEditor : IMapQueries
+	{
+		int EditorWrapX(int x);
+		int EditorClampY(int y);
+		void EditorSetTerrain(int x, int y, Terrain type);
+		void SetStartPosition(Civilization civilization, MapLocation location);
+		void RemoveStartPosition(Civilization civilization);
+	}
+}

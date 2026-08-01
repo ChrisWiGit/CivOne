@@ -65,6 +65,7 @@ namespace CivOne
 		private bool _vSync = true;
 		private bool _revealWorld;
 		private bool _debugMenu;
+		private bool _terrainEditorMenu;
 		private bool _deityEnabled;
 		private bool _arrowHelper;
 		private bool _pathFinding;
@@ -75,6 +76,7 @@ namespace CivOne
 		private bool _preferSveSaveFormat = true;
 		private LzwCodecType _lzwCodecMode = LzwCodecType.Original;
 		private MapBitmapScalerType _bitmapScalerMode = MapBitmapScalerType.PaletteAwareWeighted;
+		private StartPositionAlgorithmType _startPositionAlgorithm = StartPositionAlgorithmType.Legacy;
 		private string _languagePostfix = string.Empty;
 		private SimulateInternationalFont _simulateInternationalFont = SimulateInternationalFont.Auto;
 		private bool _useUncheckedCastSanitizer;
@@ -139,6 +141,9 @@ namespace CivOne
 		/// Linux and macOS: <c>~/.local/share/CivOne/saves/cos</c>
 		/// </remarks>
 		public string CosSavesDirectory => Path.Combine(StorageDirectory, "saves", "cos");
+
+		/// <inheritdoc/>
+		public string MapsDirectory => Path.Combine(StorageDirectory, "maps");
 
 		/// <summary>
 		/// Gets the directory used for sound assets.
@@ -319,7 +324,18 @@ namespace CivOne
 				Common.ReloadSettings = true;
 			}
 		}
-		
+
+		internal bool TerrainEditorMenu
+		{
+			get => _terrainEditorMenu;
+			set
+			{
+				_terrainEditorMenu = value;
+				SetSetting("TerrainEditorMenu", _terrainEditorMenu ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
 		internal bool DeityEnabled
 		{
 			get => _deityEnabled;
@@ -439,6 +455,23 @@ namespace CivOne
 			{
 				_bitmapScalerMode = value;
 				SetSetting("MapBitmapScalerMode", ((int)_bitmapScalerMode).ToString(CultureInfo.InvariantCulture));
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal enum StartPositionAlgorithmType
+		{
+			Legacy = 0,
+			AreaBased = 1
+		}
+
+		internal StartPositionAlgorithmType StartPositionAlgorithm
+		{
+			get => _startPositionAlgorithm;
+			set
+			{
+				_startPositionAlgorithm = value;
+				SetSetting("StartPositionAlgorithm", ((int)_startPositionAlgorithm).ToString(CultureInfo.InvariantCulture));
 				Common.ReloadSettings = true;
 			}
 		}
@@ -713,7 +746,7 @@ namespace CivOne
 		
 		private void CreateDirectories()
 		{
-			foreach (string dir in new[] { StorageDirectory, CaptureDirectory, DataDirectory, PluginsDirectory, SavesDirectory, CosSavesDirectory, SoundsDirectory })
+			foreach (string dir in new[] { StorageDirectory, CaptureDirectory, DataDirectory, PluginsDirectory, SavesDirectory, CosSavesDirectory, MapsDirectory, SoundsDirectory })
                 if (!Directory.Exists(dir))
 			    {
 				    Directory.CreateDirectory(dir);
@@ -777,6 +810,7 @@ namespace CivOne
 			}
 			GetSetting("RevealWorld", ref _revealWorld);
 			GetSetting("DebugMenu", ref _debugMenu);
+			GetSetting("TerrainEditorMenu", ref _terrainEditorMenu);
 			GetSetting("DeityEnabled", ref _deityEnabled);
 			GetSetting("ArrowHelper", ref _arrowHelper);
 			GetSetting("PathFindingAlgorithm", ref _pathFinding);
@@ -786,8 +820,9 @@ namespace CivOne
 			GetSetting("CanalCity", ref _canalCity);
 			GetSetting("RemoveObsoleteBuildings", ref _removeObsoleteBuildings);
 			GetSetting("PreferSveSaveFormat", ref _preferSveSaveFormat);
-			GetSetting<LzwCodecType>("LzwCodecMode", ref _lzwCodecMode);
-			GetSetting<MapBitmapScalerType>("MapBitmapScalerMode", ref _bitmapScalerMode);
+			GetSetting("LzwCodecMode", ref _lzwCodecMode);
+			GetSetting("MapBitmapScalerMode", ref _bitmapScalerMode);
+			GetSetting("StartPositionAlgorithm", ref _startPositionAlgorithm);
 			GetSetting("LanguagePostfix", ref _languagePostfix);
 			GetSetting("SimulateInternationalFont", ref _simulateInternationalFont);
 			GetSetting("UseUncheckedCastSanitizer", ref _useUncheckedCastSanitizer);
