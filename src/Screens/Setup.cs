@@ -583,7 +583,7 @@ namespace CivOne.Screens
 		private void StartPositionAlgorithmMenu() => CreateMenu(Translate("Starting position algorithm"), GotoMenu(PatchesMenu, 14),
 			MenuItem.Create(Translate("Legacy (default)"))
 				.WithDescription(
-					TranslateArray("Use the original random search for starting positions.\nOn Chieftain difficulty, there is a 50% chance of an extra Settlers unit at the same tile."))
+					TranslateArray("Use the original random search for starting positions."))
 				.OnSelect((s, a) => Settings.StartPositionAlgorithm = Settings.StartPositionAlgorithmType.Legacy).SetActive(() => Settings.StartPositionAlgorithm == Settings.StartPositionAlgorithmType.Legacy),
 			MenuItem.Create(Translate("Area-based"))
 				.WithDescription(
