@@ -75,6 +75,14 @@ namespace CivOne
 		private readonly IMapEditor? _mapEditor;
 		private IMapEditor MapEditor => _mapEditor ?? Map.Instance;
 
+		private readonly List<ICivilization> _unplacedCivilizations = [];
+
+		/// <summary>
+		/// Civilizations that could not be placed on the map and were destroyed during game creation.
+		/// Read once by the new-game flow to inform the player. Empty for any normal map.
+		/// </summary>
+		public IReadOnlyList<ICivilization> UnplacedCivilizations => _unplacedCivilizations;
+
 		// Resolved lazily and then cached: the factory reads Settings, so it must not run at construction time,
 		// but it also shouldn't create a new service on every access.
 		private IStartPositionService? _startPositionService;
@@ -139,6 +147,7 @@ namespace CivOne
 				//     loop, which fails the same way on a landless map.
 				// The replay entry is therefore written directly below.
 				Log("PlaceStartingUnits: no free land tile left for player {0}; player will be destroyed.", player);
+				_unplacedCivilizations.Add(_players[player].Civilization);
 				_players[player].HandleExtinction(invokeDestroyedEvent: false);
 
 				// Attributed to the Barbarians (civilization 0): nobody actually defeated this

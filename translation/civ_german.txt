@@ -1338,3 +1338,5 @@ TERRAIN EDITOR MENU ENABLED.=Terrain Editor-Menü aktiviert.
 TERRAIN EDITOR MENU DISABLED.=Terrain Editor-Menü deaktiviert.
 A: START POSITION AREAS=A: Startgebiete ein/aus
 CURSOR KEYS: SCROLL MAP=Pfeiltasten: Karte scrollen
+--- MAP PROBLEM ---=--- Kartenproblem ---
+THIS MAP HAS NO FREE LAND FOR:\N{0}\NREMOVED FROM THE GAME.=Diese Karte hat kein freies Land für:\n{0}\nAus dem Spiel entfernt.
