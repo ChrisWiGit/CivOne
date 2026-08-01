@@ -47,6 +47,22 @@ namespace CivOne.Screens.GamePlayPanels
 				return true;
 			}
 
+			/// <summary>
+			/// Pans the map in response to a plain (non-Ctrl) mouse wheel event, so two-finger
+			/// trackpad swipes scroll the viewport instead of being ignored.
+			/// </summary>
+			public bool PanMapWheel(ScreenEventArgs args)
+			{
+				int relX = Math.Sign(args.WheelDeltaX);
+				int relY = -Math.Sign(args.WheelDelta);
+				if (relX == 0 && relY == 0)
+				{
+					return false;
+				}
+
+				return PanMap(relX, relY);
+			}
+
 			public bool KeyDownMapView(KeyboardEventArgs args)
 			{
 				if (args.KeyChar == 'C' && args.Modifier == KeyModifier.None)

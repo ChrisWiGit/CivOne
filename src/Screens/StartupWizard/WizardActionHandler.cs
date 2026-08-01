@@ -59,6 +59,9 @@ namespace CivOne.Screens.StartupWizard
 					case WizardEntryAction.ToggleDebugMenu:
 						ToggleDebugMenu(engine);
 						return new WizardActionResult(ShouldRefresh: true);
+					case WizardEntryAction.ToggleTerrainEditorMenu:
+						ToggleTerrainEditorMenu(engine);
+						return new WizardActionResult(ShouldRefresh: true);
 					case WizardEntryAction.OpenGamePatchesScreen:
 						HandleOpenGamePatchesScreen(engine);
 						return new WizardActionResult(ShouldRefresh: true);
@@ -372,6 +375,15 @@ namespace CivOne.Screens.StartupWizard
 			state.StatusMessage = state.DebugMenuEnabled
 				? T("Debug menu enabled. Press F12 in game to open it.")
 				: T("Debug menu disabled.");
+		}
+
+		private void ToggleTerrainEditorMenu(WizardState state)
+		{
+			state.TerrainEditorMenuEnabled = !state.TerrainEditorMenuEnabled;
+			Settings.Instance.TerrainEditorMenu = state.TerrainEditorMenuEnabled;
+			state.StatusMessage = state.TerrainEditorMenuEnabled
+				? T("Terrain editor menu enabled.")
+				: T("Terrain editor menu disabled.");
 		}
 
 		private static void HandleOpenGamePatchesScreen(WizardState state)

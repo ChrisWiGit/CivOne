@@ -31,6 +31,12 @@ namespace CivOne.UserInterface
 		public string[]? Shortcuts { get; set; }
 		public Func<bool>? SelectedCondition { get; set; }
 
+		/// <summary>
+		/// Zero-based index of the character to render with the hotkey highlight colour.
+		/// A negative value disables per-item highlighting.
+		/// </summary>
+		public int HighlightedCharacterIndex { get; set; } = -1;
+
 		internal void Select()
 		{
 			if (!Enabled) return;

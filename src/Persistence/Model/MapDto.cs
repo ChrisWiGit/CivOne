@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using CivOne.Persistence.Model.Attributes;
 
 namespace CivOne.Persistence.Model
@@ -28,5 +29,9 @@ namespace CivOne.Persistence.Model
         
         [Doc("2D array of TileDto representing the terrain and features of each tile on the map. The dimensions should match the width and height of the map.")]
         public Map2d<TileDto> Tiles { get; set; } = Map2d<TileDto>.Uninitialized;
+
+        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "This property is intended to be set during deserialization.")]
+        [Doc("Optional civilization-specific starting positions for this map. Keys must match Civilization enum names such as Romans or Greeks.")]
+        public Dictionary<string, MapLocation>? StartPositions { get; set; } = null;
     }
 }

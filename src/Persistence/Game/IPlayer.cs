@@ -3,6 +3,7 @@ using System;
 using CivOne.Advances;
 using CivOne.Civilizations;
 using CivOne.Governments;
+using CivOne.Persistence.Model;
 using CivOne.Wonders;
 using System.Diagnostics.CodeAnalysis;
 
@@ -33,6 +34,7 @@ namespace CivOne.Persistence.Game
 		ushort FutureTechCount { get; }
 		ushort HumanContactTurn { get; }
 		short StartX { get; }
+		MapLocation? MapStartPosition { get; }
 		(short X, short Y)[] MapPositions { get; }
 		string[] MapPositionNames { get; }
 		(short X, short Y) LastMapPosition { get; }

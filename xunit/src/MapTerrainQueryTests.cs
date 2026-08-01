@@ -31,7 +31,7 @@ namespace CivOne.UnitTests
 		{
 			ITile tile = Map.Instance.AllTiles().First(t => t.Type == Terrain.Ocean);
 
-			bool actual = Map.TileIsType(tile, Terrain.Ocean);
+			bool actual = Map.Instance.TileIsType(tile, Terrain.Ocean);
 
 			Assert.True(actual);
 		}
@@ -41,7 +41,7 @@ namespace CivOne.UnitTests
 		{
 			ITile tile = Map.Instance.AllTiles().First(t => t.Type == Terrain.Ocean);
 
-			bool actual = Map.TileIsType(tile, Terrain.Desert);
+			bool actual = Map.Instance.TileIsType(tile, Terrain.Desert);
 
 			Assert.False(actual);
 		}
@@ -51,7 +51,7 @@ namespace CivOne.UnitTests
 		{
 			ITile tile = Map.Instance.AllTiles().First(t => t.Type == Terrain.Ocean);
 
-			bool actual = Map.TileIsType(tile, Terrain.Desert, Terrain.Ocean, Terrain.Plains);
+			bool actual = Map.Instance.TileIsType(tile, Terrain.Desert, Terrain.Ocean, Terrain.Plains);
 
 			Assert.True(actual);
 		}
@@ -61,7 +61,7 @@ namespace CivOne.UnitTests
 		{
 			ITile tile = Map.Instance.AllTiles().First();
 
-			bool actual = Map.TileIsType(tile);
+			bool actual = Map.Instance.TileIsType(tile);
 
 			Assert.False(actual);
 		}

@@ -74,6 +74,13 @@ namespace CivOne.Screens
 		public byte ActiveColour { get; set; }
 		public byte TextColour { get; set; }
 		public byte DisabledColour { get; set; }
+
+		/// <summary>
+		/// Colour used to highlight the hotkey character of a menu item.
+		/// When set to 0 (default), no per-item highlighting is applied.
+		/// The highlighted color will not be applied for selected items.
+		/// </summary>
+		public byte HighlightColour { get; set; }
 		public int IndentTitle { get; set; }
 		public int RowHeight { get; set; }
 		public bool CenterTo320Coordinates { get; set; }
@@ -152,8 +159,18 @@ namespace CivOne.Screens
 					yy = y + (i * fontHeight) + offsetY;
 
 					string text = Items[i].Text ?? string.Empty;
+					byte colour = Items[i].Enabled ? TextColour : DisabledColour;
 
-					this.DrawText(text, FontId, Items[i].Enabled ? TextColour : DisabledColour, x + Indent, yy + 1);
+					if (ActiveItem != i && HighlightColour != 0 && Items[i].HighlightedCharacterIndex >= 0)
+					{
+						var ts = TextSettings.DifferentCharacter(HighlightColour, colour, Items[i].HighlightedCharacterIndex);
+						ts.FontId = FontId;
+						this.DrawText(text, x + Indent, yy + 1, ts);
+					}
+					else
+					{
+						this.DrawText(text, FontId, colour, x + Indent, yy + 1);
+					}
 				}
 
 				DrawDescription(fontHeight, x, y, offsetY);

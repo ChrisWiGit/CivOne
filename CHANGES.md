@@ -6,6 +6,48 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: New "Area based" algorithm for placing civilizations' starting Settlers, as an alternative to the original placement logic.
+  * Choose the algorithm in the setup menu under `Shift+F1 → Patches → Starting position algorithm`: `Legacy` (default, original random-search behavior, unchanged) or `Area based` (new). The setting can only be changed while no game is running.
+  * With `Area based` selected, the map is divided into a grid of areas — twice as many areas as there are civilizations, so roughly half stay unassigned as buffer/fallback space. Areas are handed out to civilizations in random order (not left-to-right), so each civilization gets its own area to start in.
+  * The area grid covers the whole map (minus a two-tile margin at the poles), so no land is left out of the search even when the number of civilizations doesn't fill the last grid row.
+  * Civilizations keep the same minimum distance to existing cities and Settlers as the original algorithm, so two civilizations can't start next to each other at a shared area border. The distance is relaxed step by step if a crowded or small map leaves no other option.
+  * If a civilization's assigned area has no usable land tile (e.g. it's entirely ocean), placement falls back to one of the other areas, chosen at random, before giving up.
+  * Both algorithms never place the Settlers on Ocean, Mountains, Arctic, or Tundra — Ocean and Mountains cannot hold a city at all, and Arctic/Tundra offer no realistic growth, so these are excluded even when every other constraint is relaxed to the maximum.
+  * As a last resort, when no tile satisfies the regular rules, both algorithms fall back to any other free land tile (never Ocean, Mountains, Arctic, or Tundra), so a civilization is not left without units while usable land exists away from the poles. The two algorithms differ in how they treat the two-tile pole margin:
+    * `Legacy` uses a tile inside the pole margin as a true last resort, once no other tile is available. It therefore only leaves a civilization without a starting Settlers unit when the map has no free, non-excluded land tile at all, instead of aborting the whole game setup.
+    * `Area based` never places the Settlers inside the pole margin, not even as a fallback. On a map whose only remaining free land lies within that margin, the civilization is left without a starting Settlers unit.
+  * If a civilization still ends up without a starting position, it is destroyed during game creation instead of remaining a "phantom" civilization with no units or cities. Once the game screen is up, a popup lists which civilizations were removed this way.
+  * In-game, open the World Map screen (or `F10`) and press `A` to toggle a dashed-border overlay of the computed areas (only available when the debug menu is enabled and `Area based` is selected) — useful for visually checking that civilizations land inside their own area.
+    * In addition a null perimeter meridian line is drawn in yellow, so you can see where the map wraps around when the map is too large to fit on the screen.
+* Feature: Two-finger touchpad gestures for the gameplay map.
+  * A two-finger swipe now scrolls the map viewport in all directions: vertical swipes pan up and down, horizontal swipes pan left and right.
+  * Panning moves one tile per scroll step, so a single swipe scrolls several tiles.
+  * Zooming uses `Ctrl` + two-finger scroll, which reuses the existing `Ctrl+MouseWheel` zoom including its cursor-focused anchoring.
+  * Pinch-to-zoom is supported where the operating system reports the gesture as touch input (macOS trackpads, Windows touchscreens). On Linux neither X11 nor Wayland delivers touchpad gestures to SDL, so pinch does nothing there and `Ctrl` + two-finger scroll is the way to zoom.
+  * See [Touchpad Gestures and SDL](REMARKS.md#touchpad-gestures-and-sdl) for the platform details, the sign conventions of horizontal scrolling, and a workaround for pinch on Linux.
+* Feature: The terrain editor now has its own "Terrain editor menu" setting and no longer depends on debug mode.
+  * Enable it in the setup menu under `Shift+F1 → Patches → Terrain editor menu`, or in the setup wizard.
+  * The setting can only be changed while no game is running, and it is stored in the profile.
+  * With the setting enabled, the `Terrain` top menu is available during normal gameplay; previously the editor was only reachable after turning on the debug menu.
+* Feature: Terrain editor "Auto Start Positions..." menu entry to automatically place civilizations' starting Settlers.
+  * It opens a small menu where you choose the placement algorithm:
+    * `Legacy` reproduces the original placement logic.
+    * `Area Based` divides the map into equally sized areas and spreads civilizations across them.
+  * There are two modes:
+    * Normal selection only fills in civilizations that do not have a start position yet. Existing, manually placed positions are kept and used as anchors so the new ones stay clear of them.
+    * Holding `Shift` while choosing the algorithm redistributes every civilization from scratch, ignoring and overwriting all current positions.
+  * The generated positions never use the hardcoded Earth start coordinates, so they stay meaningful on custom maps.
+* Feature: Terrain editor "Save Map..." can now save a standalone map file without a full game/savegame.
+  * The save dialog offers two file types: the new `.comap` YAML format and the original legacy Civ1 `.map` format.
+  * The legacy `.map` option is only offered when the current map actually fits that format (fixed 80x50 size, no custom start positions, no pollution, no fortresses); otherwise only `.comap` is shown, since the legacy format supports fewer features than `.comap`.
+* Credits menu highlighting shortcut keys for all menu items.
+  * These shortcuts can be used when the intro animation is running, so the user can skip the intro and go directly to the desired menu item.
+  * In menu itself the shortcut just selects the menu item, but does not trigger the action. 
+* Feature: Replaced the `EARTH` entry in the credits menu with `EARTHS...`
+  * Custom maps can now be loaded from the `maps` folder in the CivOne user profile directory.
+  * The `maps` folder is created automatically on first run and is used for custom map files with the `.comap` extension.
+  * Added optional `StartPositions` support to the map file format for civilization-specific starting positions.
+  * If a map file defines a valid start position for a civilization, that position is used instead of random placement or the original default Earth start position.
 * Feature: The wizard contains a sub menu to allow change game behavior settings directly, instead of having to open the settings screen. Currently, the following settings can be toggled from the wizard:
   * Use smart PathFinding for goto
   * Use smart pathfinding for computer players

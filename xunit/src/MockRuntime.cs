@@ -96,10 +96,15 @@ namespace CivOne.UnitTests
         }
         #pragma warning restore CA1822 // Mark members as static - but these are required to implement IRuntime
 
-		public string FileChooser(bool save, string title, string initialFileName, string filter)
-		{
-			throw new NotImplementedException();
-		}
+		/// <summary>
+		/// Return value for <see cref="FileChooser"/>. Defaults to throwing, matching the previous
+		/// behavior for tests that never expect a file dialog to be shown; set to a value (or <c>null</c>
+		/// to simulate a cancelled dialog) before exercising code paths that call it.
+		/// </summary>
+		public Func<string?>? FileChooserResult { get; set; }
+
+		public string? FileChooser(bool save, string title, string initialFileName, string filter)
+			=> FileChooserResult != null ? FileChooserResult() : throw new NotImplementedException();
 
 		public MockRuntime(RuntimeSettings settings)
         {

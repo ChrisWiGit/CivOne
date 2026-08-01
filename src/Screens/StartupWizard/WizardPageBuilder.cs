@@ -414,11 +414,12 @@ namespace CivOne.Screens.StartupWizard
 				Entries =
 				[
 					new WizardEntry { Number = 1, Text = debugMenuEntryText, Action = WizardEntryAction.ToggleDebugMenu },
-					new WizardEntry { Number = 2, Text = T("Open CivOne Profile folder..."), Action = WizardEntryAction.OpenProfileFolder },
-					new WizardEntry { Number = 3, Text = T("Show more settings"), Action = WizardEntryAction.OpenSetupScreen },
-					new WizardEntry { Number = 4, Text = T("Configure game patches"), Action = WizardEntryAction.OpenGamePatchesScreen },
-					new WizardEntry { Number = 5, Text = ContinueText(), Action = WizardEntryAction.Continue, Hotkey = HotkeyContinue },
-					new WizardEntry { Number = 6, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
+					new WizardEntry { Number = 2, Text = TF("Terrain editor menu: {0}", state.TerrainEditorMenuEnabled.YesNo()), Action = WizardEntryAction.ToggleTerrainEditorMenu },
+					new WizardEntry { Number = 3, Text = T("Open CivOne Profile folder..."), Action = WizardEntryAction.OpenProfileFolder },
+					new WizardEntry { Number = 4, Text = T("Show more settings"), Action = WizardEntryAction.OpenSetupScreen },
+					new WizardEntry { Number = 5, Text = T("Configure game patches"), Action = WizardEntryAction.OpenGamePatchesScreen },
+					new WizardEntry { Number = 6, Text = ContinueText(), Action = WizardEntryAction.Continue, Hotkey = HotkeyContinue },
+					new WizardEntry { Number = 7, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
 				],
 				EntriesYOffset = 0,
 				HasContextChanged = () => SyncMoreSettingsState(state)
@@ -503,6 +504,13 @@ namespace CivOne.Screens.StartupWizard
 			if (state.DebugMenuEnabled != debugMenuEnabled)
 			{
 				state.DebugMenuEnabled = debugMenuEnabled;
+				hasChanged = true;
+			}
+
+			bool terrainEditorMenuEnabled = Settings.Instance.TerrainEditorMenu;
+			if (state.TerrainEditorMenuEnabled != terrainEditorMenuEnabled)
+			{
+				state.TerrainEditorMenuEnabled = terrainEditorMenuEnabled;
 				hasChanged = true;
 			}
 

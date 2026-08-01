@@ -18,8 +18,8 @@ namespace CivOne.Screens.GamePlayPanels
 {
 	internal class MenuBar : BaseScreen
 	{
-		private static bool DebugMenuEnabled => Settings.DebugMenu || RuntimeHandler.Runtime.Settings.Get<bool>("debug") == true;
-		
+		private static bool TerrainEditorMenuEnabled => Settings.TerrainEditorMenu;
+
 		public event EventHandler? GameSelected;
 		public event EventHandler? OrdersSelected;
 		public event EventHandler? AdvisorsSelected;
@@ -37,7 +37,7 @@ namespace CivOne.Screens.GamePlayPanels
 		private bool _update;
 		private int _mouseX, _mouseY;
 
-		private static int ExpectedMenuCount => DebugMenuEnabled ? 6 : 5;
+		private static int ExpectedMenuCount => TerrainEditorMenuEnabled ? 6 : 5;
 
 		private bool MenuTitlesOutOfDate() => _menuTitles.Length != ExpectedMenuCount;
 
@@ -105,7 +105,7 @@ namespace CivOne.Screens.GamePlayPanels
 				_menuBarHotkeyDelegate.Create(translationKey: "CIVILOPEDIA", translatedText: Translate("CIVILOPEDIA"))
 			};
 
-			if (DebugMenuEnabled)
+			if (TerrainEditorMenuEnabled)
 			{
 				titles.Add(_menuBarHotkeyDelegate.Create(translationKey: "TERRAIN", translatedText: Translate("TERRAIN")));
 			}

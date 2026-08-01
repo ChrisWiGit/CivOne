@@ -73,6 +73,7 @@ namespace CivOne
 		internal ushort HumanContactTurn { get; set; }
 
 		internal short StartX { get; set; }
+		internal MapLocation? MapStartPosition { get; set; }
 
 		internal SpaceShipComponentType[,] SpaceShipGrid { get; set; } = new SpaceShipComponentType[SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight];
 		internal ushort SpaceShipPopulation { get; set; }
@@ -721,6 +722,8 @@ namespace CivOne
 		ushort IPlayer.HumanContactTurn => HumanContactTurn;
 
 		short IPlayer.StartX => StartX;
+
+		MapLocation? IPlayer.MapStartPosition => MapStartPosition;
 
 		(short X, short Y)[] IPlayer.MapPositions => MapPositions;
 

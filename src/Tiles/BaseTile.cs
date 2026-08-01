@@ -143,7 +143,7 @@ namespace CivOne.Tiles
 			get
 			{
 				sbyte score = (sbyte)(Trade + (3 * Food));
-				if (!Map.TileIsType(this, Terrain.River, Terrain.Grassland1, Terrain.Grassland2))
+				if (!Map.Instance.TileIsType(this, Terrain.River, Terrain.Grassland1, Terrain.Grassland2))
 				{
 					score += (sbyte)(2 * Shield);
 				}

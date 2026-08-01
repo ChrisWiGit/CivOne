@@ -20,6 +20,7 @@ using CivOne.Tasks;
 using CivOne.Units;
 using CivOne.Services.EndGame;
 using CivOne.Services;
+using CivOne.Services.Maps;
 using CivOne.UserInterface;
 
 namespace CivOne.Screens
@@ -47,6 +48,7 @@ namespace CivOne.Screens
 		private bool _redraw;
 		private bool _rightSideBar;
 		private static bool DebugMenuEnabled => Settings.DebugMenu || RuntimeHandler.Runtime.Settings.Get<bool>("debug") == true;
+		private static bool TerrainEditorMenuEnabled => Settings.TerrainEditorMenu;
 
 		private bool _shift5;
 
@@ -449,7 +451,7 @@ namespace CivOne.Screens
 				return;
 			}
 
-			int menuCount = DebugMenuEnabled ? 6 : 5;
+			int menuCount = TerrainEditorMenuEnabled ? 6 : 5;
 			int nextIndex = _menuIndex;
 			for (int attempts = 0; attempts < menuCount; attempts++)
 			{
@@ -546,7 +548,10 @@ namespace CivOne.Screens
 				}
 			}
 			
-			if (_gameMenu.MouseUp(args))
+			// Keep a reference so we can tell if the item's OnSelect handler swapped in a new menu
+			// (e.g. an owner or algorithm selector). If it did, do not close that fresh menu.
+			GameMenu? menuBeforeSelect = _gameMenu;
+			if (_gameMenu.MouseUp(args) && ReferenceEquals(_gameMenu, menuBeforeSelect))
 			{
 				_gameMenu = null;
 				_redraw = true;
@@ -725,7 +730,8 @@ namespace CivOne.Screens
 			_sideBar = new SideBar(Palette, Game.GlobalWarmingService);
 			_gameMap = new GameMap();
 			_translationService = TranslationServiceFactory.GetCurrent();
-			_terrainEditorDelegate = new(this, _translationService);
+			GamePlaySaveMapDelegate saveMapDelegate = new(_translationService, Settings, Runtime, MapSaveServiceFactory.Create(), new GameTaskCommandQueueAdapter(), new MessageServiceAdapter(), new DirectoryService());
+			_terrainEditorDelegate = new(this, _translationService, Game, Common.Civilizations, saveMapDelegate);
 			_gameMap.MapPositionSaved += GameMapMapPositionSaved;
 
 			if (!TryRestoreLastLoadedMapPosition())

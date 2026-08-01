@@ -23,6 +23,9 @@ namespace CivOne.Services.Maps
 			double xRatio = targetWidth > 1 ? (double)(source.Width - 1) / (targetWidth - 1) : 0d;
 			double yRatio = targetHeight > 1 ? (double)(source.Height - 1) / (targetHeight - 1) : 0d;
 
+			// Scaling runs once per rendered map tile and reads four source pixels per target pixel, so
+			// the per-pixel handle and range validation of the Bytemap indexer dominates the cost.
+			// The two source rows and the target row are resolved once per row instead.
 			for (int y = 0; y < targetHeight; y++)
 			{
 				double sampleY = y * yRatio;
@@ -30,6 +33,11 @@ namespace CivOne.Services.Maps
 				int sourceY2 = Math.Min(sourceY + 1, source.Height - 1);
 				double yBlend = sampleY - sourceY;
 				double invYBlend = 1d - yBlend;
+
+				ReadOnlySpan<byte> sourceRow = source.Row(sourceY);
+				ReadOnlySpan<byte> sourceRow2 = source.Row(sourceY2);
+				Span<byte> targetRow = output.Row(y);
+
 				for (int x = 0; x < targetWidth; x++)
 				{
 					double sampleX = x * xRatio;
@@ -38,10 +46,10 @@ namespace CivOne.Services.Maps
 					double xBlend = sampleX - sourceX;
 					double invXBlend = 1d - xBlend;
 
-					byte c00 = source[sourceX, sourceY];
-					byte c10 = source[sourceX2, sourceY];
-					byte c01 = source[sourceX, sourceY2];
-					byte c11 = source[sourceX2, sourceY2];
+					byte c00 = sourceRow[sourceX];
+					byte c10 = sourceRow[sourceX2];
+					byte c01 = sourceRow2[sourceX];
+					byte c11 = sourceRow2[sourceX2];
 
 					double w00 = invXBlend * invYBlend;
 					double w10 = xBlend * invYBlend;
@@ -78,7 +86,7 @@ namespace CivOne.Services.Maps
 						bestIndex = c11;
 					}
 
-					output[x, y] = bestIndex;
+					targetRow[x] = bestIndex;
 				}
 			}
 

@@ -143,10 +143,14 @@ namespace CivOne.UnitTests
 
 		private sealed class FakeSettings(string savesDirectory, string cosSavesDirectory) : ISettings
 		{
+			private readonly string _storageDirectory = Path.GetDirectoryName(savesDirectory)
+				?? throw new InvalidOperationException("The save directory must have a parent storage directory.");
+
 			public string SavesDirectory { get; } = savesDirectory;
 			public string CosSavesDirectory { get; } = cosSavesDirectory;
+			public string MapsDirectory => Path.Combine(_storageDirectory, "maps");
 
-			public string StorageDirectory => throw new NotImplementedException();
+			public string StorageDirectory => _storageDirectory;
 
 			public string CaptureDirectory => throw new NotImplementedException();
 

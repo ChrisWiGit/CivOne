@@ -25,6 +25,7 @@ namespace CivOne
 			SetMapSize(width, height);
 			_terrainMasterWord = terrainSeed;
 			_tiles = new ITile[width, height];
+			_customStartPositions.Clear();
 			SetReady(false);
 		}
 

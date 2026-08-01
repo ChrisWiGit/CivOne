@@ -15,6 +15,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
 using System.Text;
+using System.Threading;
 using CivOne.Enums;
 using CivOne.Graphics.ImageFormats;
 using CivOne.IO;
@@ -39,6 +40,21 @@ namespace CivOne.Graphics
 		private readonly List<IFont> _fonts = [];
 		private readonly PalaceResourcesWrapper _palaceResources;
 		internal void ClearTextCache() => _textCache.Clear();
+
+		private static int _cacheGeneration;
+
+		/// <summary>
+		/// Gets the current resource cache generation.
+		/// </summary>
+		/// <remarks>
+		/// The value changes whenever <see cref="ClearInstance"/> discards the loaded resources, for
+		/// example after a graphics mode change.
+		/// Callers that keep their own copies of resource data (palettes, bitmaps) can compare this value
+		/// to detect that their copy is stale, instead of reloading the resource on every access.
+		/// The value is read and written atomically, because resource caches are also populated from the
+		/// background preload task while the render loop reads them.
+		/// </remarks>
+		public static int CacheGeneration => Volatile.Read(ref _cacheGeneration);
 		
 		/// <summary>
 		/// Reloads all fonts and clears associated caches.
@@ -363,6 +379,7 @@ namespace CivOne.Graphics
 			
 			_instance = null;
 			_worldMapTiles = null;
+			Interlocked.Increment(ref _cacheGeneration);
 			PicFile.ClearCache();
 			TextFileFactory.ClearInstance();
 			Sprites.Cursor.ClearCache();

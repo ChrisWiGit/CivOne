@@ -39,7 +39,7 @@ namespace CivOne.Screens
 
 		protected void MouseArgsOffset(ref ScreenEventArgs args, int offsetX, int offsetY)
 		{
-			args = new ScreenEventArgs(args.X - offsetX, args.Y - offsetY, args.Buttons, args.Modifier, args.WheelDelta);
+			args = new ScreenEventArgs(args.X - offsetX, args.Y - offsetY, args.Buttons, args.Modifier, args.WheelDelta, args.WheelDeltaX);
 		}
 
 		public event EventHandler? Closed;

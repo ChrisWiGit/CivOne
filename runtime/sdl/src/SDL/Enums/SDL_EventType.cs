@@ -37,6 +37,9 @@ namespace CivOne
 			SDL_MOUSEBUTTONUP,
 			SDL_MOUSEWHEEL,
 
+			// Gesture events (touchpad pinch/rotate)
+			SDL_MULTIGESTURE = 0x802,
+
 			SDL_MAX = 0xFFFF
 		}
 	}

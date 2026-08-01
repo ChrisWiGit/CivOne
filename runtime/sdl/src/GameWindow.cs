@@ -506,8 +506,8 @@ namespace CivOne
 			}
 		}
 
-		private static ScreenEventArgs CreateScreenEventArgs(int x, int y, MouseButton buttons, KeyModifier modifier, int wheelDelta)
-			=> new(x, y, buttons, modifier, wheelDelta);
+		private static ScreenEventArgs CreateScreenEventArgs(int x, int y, MouseButton buttons, KeyModifier modifier, int wheelDelta, int wheelDeltaX)
+			=> new(x, y, buttons, modifier, wheelDelta, wheelDeltaX);
 
 		private static int ScaleToRange(int value, int sourceSize, int targetSize)
 			=> (int)((float)value * targetSize / sourceSize);
@@ -529,13 +529,13 @@ namespace CivOne
 			int localY = args.Y - offsetY;
 			if (drawWidth <= 0 || drawHeight <= 0)
 			{
-				return CreateScreenEventArgs(0, 0, args.Buttons, args.Modifier, args.WheelDelta);
+				return CreateScreenEventArgs(0, 0, args.Buttons, args.Modifier, args.WheelDelta, args.WheelDeltaX);
 			}
 
 			int x = Clamp(ScaleToRange(localX, drawWidth, inputSize.Width), 0, inputSize.Width - 1);
 			int y = Clamp(ScaleToRange(localY, drawHeight, inputSize.Height), 0, inputSize.Height - 1);
 
-			return CreateScreenEventArgs(x, y, args.Buttons, args.Modifier, args.WheelDelta);
+			return CreateScreenEventArgs(x, y, args.Buttons, args.Modifier, args.WheelDelta, args.WheelDeltaX);
 		}
 
 		private void KeyDown(object? _, KeyboardEventArgs args)
@@ -608,6 +608,12 @@ namespace CivOne
 			_runtime.InvokeMouseUp(args);
 		}
 
+		// Windows/DWM can report a window position that is off by a few pixels due to the
+		// invisible resize border, and (0,0) itself can leave the title bar under a
+		// top-docked taskbar or flush against the corner where it can't be grabbed.
+		// This margin both tolerates the offset and guarantees title bar clearance.
+		private const int WindowPositionMargin = 64;
+
 		private void RestoreWindowPlacement()
 		{
 			if (Settings.FullScreen)
@@ -616,13 +622,12 @@ namespace CivOne
 			}
 
 			Point position = Settings.WindowPosition;
-			int x = position.X;
-			int y = position.Y;
-			if (x < 0 || y < 0 || !IsPointInAnyDisplay(x, y))
-			{
-				x = 0;
-				y = 0;
-			}
+			// Match the default used when no position was ever stored (see Settings.cs) as the
+			// fallback, so an off-screen position still lands somewhere with a reachable title bar.
+			Point fallback = new(WindowPositionMargin, WindowPositionMargin);
+			Point clamped = ClampToVisibleDisplay(position.X, position.Y, WindowPositionMargin, fallback);
+			int x = clamped.X;
+			int y = clamped.Y;
 
 			SetWindowPosition(x, y);
 			_lastWindowPosition = new Point(x, y);

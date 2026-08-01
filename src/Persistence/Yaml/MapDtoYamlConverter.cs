@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using CivOne.Persistence.Model;
@@ -33,7 +34,8 @@ namespace CivOne.Persistence.Yaml
             return new MapDto
             {
                 TerrainSeed = yamlMap.TerrainSeed,
-                Tiles = tiles
+                Tiles = tiles,
+                StartPositions = DecodeStartPositions(yamlMap.StartPositions)
             };
         }
 
@@ -50,7 +52,8 @@ namespace CivOne.Persistence.Yaml
             {
                 TerrainSeed = mapDto.TerrainSeed,
                 Tiles = encodedRows,
-                LandValues = landValues
+                LandValues = landValues,
+                StartPositions = EncodeStartPositions(mapDto.StartPositions)
             };
             
             serializer(mapYamlRepresentation, typeof(MapDtoYamlRepresentation));
@@ -191,6 +194,32 @@ namespace CivOne.Persistence.Yaml
 
             return landValues;
         }
+
+        private static Dictionary<string, MapLocation>? DecodeStartPositions(Dictionary<string, MapDtoYamlRepresentation.MapLocationData>? startPositions)
+        {
+            if (startPositions == null || startPositions.Count == 0)
+            {
+                return null;
+            }
+
+            return startPositions.ToDictionary(
+                entry => entry.Key,
+                entry => new MapLocation(entry.Value.X, entry.Value.Y),
+                StringComparer.Ordinal);
+        }
+
+        private static Dictionary<string, MapDtoYamlRepresentation.MapLocationData>? EncodeStartPositions(Dictionary<string, MapLocation>? startPositions)
+        {
+            if (startPositions == null || startPositions.Count == 0)
+            {
+                return null;
+            }
+
+            return startPositions.ToDictionary(
+                entry => entry.Key,
+                entry => new MapDtoYamlRepresentation.MapLocationData { X = entry.Value.X, Y = entry.Value.Y },
+                StringComparer.Ordinal);
+        }
     }
 
     /// <summary>
@@ -201,6 +230,12 @@ namespace CivOne.Persistence.Yaml
 	/// <seealso cref="MapDto"/>
     internal class MapDtoYamlRepresentation
     {
+        internal sealed class MapLocationData
+        {
+            public uint X { get; set; }
+            public uint Y { get; set; }
+        }
+
         [Doc("The seed used for procedural terrain generation. This ensures that the same map can be recreated if needed.", 0, uint.MaxValue)]
         public uint TerrainSeed { get; set; }
         
@@ -209,5 +244,8 @@ namespace CivOne.Persistence.Yaml
         
         [Doc("Land values for each tile row, encoded as comma-separated 2-digit hex bytes to reduce YAML size on large maps. See INTERNALS.md for details on how this value is used.")]
         public string[] LandValues { get; set; } = [];
+
+        [Doc("Optional civilization-specific starting positions keyed by Civilization enum name, for example Romans or Greeks.")]
+        public Dictionary<string, MapLocationData>? StartPositions { get; set; }
     }
 }
