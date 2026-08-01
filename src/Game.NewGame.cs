@@ -125,9 +125,26 @@ namespace CivOne
 					continue;
 				}
 
-				// The map has no free land tile at all (e.g. a degenerate custom map): don't abort game creation
-				// over one civilization, just leave it without a starting Settlers unit.
-				Log("PlaceStartingUnits: no free land tile left for player {0}; player will start without units.", player);
+				// The map has no free land tile at all (e.g. a degenerate custom map): don't abort game
+				// creation over one civilization. Mark it destroyed outright instead of leaving a
+				// "phantom" player with zero units and zero cities floating around.
+				//
+				// The Destroyed event is deliberately suppressed. We are still inside the Game
+				// constructor here, and PlayerDestroyed would:
+				//   - build an AdvisorMessage screen right away (portrait, palette, fonts), pulling the
+				//     graphics subsystem into game construction, and queue it as a GameTask that the
+				//     runtime pops on the next tick - while the new-game intro screen is still up and
+				//     GamePlay does not exist yet, so the popup would appear over the intro;
+				//   - respawn the civilization and call PlaceStartingUnits again from inside this very
+				//     loop, which fails the same way on a landless map.
+				// The replay entry is therefore written directly below.
+				Log("PlaceStartingUnits: no free land tile left for player {0}; player will be destroyed.", player);
+				_players[player].HandleExtinction(invokeDestroyedEvent: false);
+
+				// Attributed to the Barbarians (civilization 0): nobody actually defeated this
+				// civilization, the map simply had no room for it.
+				_replayData.Add(new ReplayData.CivilizationDestroyed(
+					_gameTurn, _players[player].Civilization.PreferredPlayerNumber, 0));
 			}
 		}
 

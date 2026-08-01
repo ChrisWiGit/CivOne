@@ -17,19 +17,21 @@ using CivOne.Units;
 
 namespace CivOne.Screens.GamePlayPanels
 {
-	internal sealed class TerrainEditorDelegate(IMapEditor? mapEditor = null, ICivilization[]? civilizations = null)
+	internal sealed class TerrainEditorDelegate(IMapEditor? mapEditor = null, ICivilization[]? civilizations = null, Game? game = null)
 	{
 		private readonly int[] _brushSizes = [1, 2, 3, 5, 7, 9, 11, 13, 15];
 		private readonly IMapEditor? _mapEditor = mapEditor;
 		private readonly ICivilization[]? _civilizations = civilizations;
+		private readonly Game? _game = game;
 
-		// Resolved lazily instead of in the constructor: Map.Instance/Common.Civilizations touch
-		// static state (Common's static constructor reflects over and instantiates every
+		// Resolved lazily instead of in the constructor: Map.Instance/Common.Civilizations/Game.Instance
+		// touch static state (Common's static constructor reflects over and instantiates every
 		// advance/building/wonder and requires a registered IRuntime). Eagerly resolving them here
 		// would break plain unit tests (e.g. brush-size tests) that construct this class without a
-		// running game engine but never touch the map or civilizations.
+		// running game engine but never touch the map, civilizations, or game.
 		private IMapEditor MapEditor => _mapEditor ?? Map.Instance;
 		private ICivilization[] Civilizations => _civilizations ?? Common.Civilizations;
+		private Game Game => _game ?? Game.Instance;
 
 		internal int BrushSizeCount => _brushSizes.Length;
 
@@ -244,18 +246,17 @@ namespace CivOne.Screens.GamePlayPanels
 
 		internal void EditCitySingleTile(int x, int y, byte cityOwner, bool shrink)
 		{
-			Game game = Game.Instance;
 			ITile tile = MapEditor[x, y];
 			if (tile == null)
 			{
 				return;
 			}
 
-			City? city = game.GetCity(x, y);
+			City? city = Game.GetCity(x, y);
 
 			if (city == null)
 			{
-				HandleCityFounding(x, y, cityOwner, shrink, game, tile);
+				HandleCityFounding(x, y, cityOwner, shrink, Game, tile);
 				return;
 			}
 
@@ -342,25 +343,24 @@ namespace CivOne.Screens.GamePlayPanels
 
 		internal bool SpawnUnit(int x, int y, byte unitOwner, UnitType unitType)
 		{
-			Game game = Game.Instance;
 			ITile tile = MapEditor[x, y];
 			if (tile == null)
 			{
 				return false;
 			}
 
-			if (game.GetPlayer(unitOwner) == null)
+			if (Game.GetPlayer(unitOwner) == null)
 			{
 				return false;
 			}
 
-			IUnit? selectedUnit = Game.CreateUnit(unitType);
+			IUnit? selectedUnit = global::CivOne.Game.CreateUnit(unitType);
 			if (selectedUnit == null || !CanPlaceUnit(tile, selectedUnit, unitOwner))
 			{
 				return false;
 			}
 
-			IUnit? unit = game.CreateUnit(unitType, x, y, unitOwner, false);
+			IUnit? unit = Game.CreateUnit(unitType, x, y, unitOwner, false);
 			if (unit == null)
 			{
 				return false;
@@ -371,7 +371,7 @@ namespace CivOne.Screens.GamePlayPanels
 				unit.Sentry = true;
 			}
 
-			if (unitOwner < game.PlayerNumber(game.CurrentPlayer))
+			if (unitOwner < Game.PlayerNumber(Game.CurrentPlayer))
 			{
 				unit.MovesLeft = 0;
 			}
@@ -405,7 +405,7 @@ namespace CivOne.Screens.GamePlayPanels
 				return false;
 			}
 
-			Game.Instance.DisbandUnit(unit);
+			Game.DisbandUnit(unit);
 			return true;
 		}
 

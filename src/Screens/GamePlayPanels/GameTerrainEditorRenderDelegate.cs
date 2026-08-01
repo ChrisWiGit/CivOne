@@ -24,7 +24,7 @@ namespace CivOne.Screens.GamePlayPanels
 		/// <summary>
 		/// Handles terrain editor overlay rendering.
 		/// </summary>
-		private sealed class GameTerrainEditorRenderDelegate(GameMap gameMap, ICivilization[]? civilizations = null)
+		private sealed class GameTerrainEditorRenderDelegate(GameMap gameMap, ICivilization[]? civilizations = null, ITranslationService? translationService = null)
 		{
 			/// <summary>
 			/// Smallest tile size in pixels at which land value labels are still readable.
@@ -33,12 +33,15 @@ namespace CivOne.Screens.GamePlayPanels
 
 			private readonly GameMap _gameMap = gameMap;
 			private readonly ICivilization[]? _civilizations = civilizations;
+			private readonly ITranslationService? _translationService = translationService;
 
 			// Resolved lazily instead of in the constructor: Common.Civilizations touches Common's static
 			// constructor, which reflects over and instantiates every advance/building/wonder and requires
 			// a registered IRuntime. Eagerly resolving it here would force that on every GameMap construction,
 			// including in unit tests that never render the start-position overlay.
 			private ICivilization[] Civilizations => _civilizations ?? Common.Civilizations;
+
+			private ITranslationService TranslationService => _translationService ?? TranslationServiceFactory.GetCurrent();
 
 			public void DrawLandValuesOverlay()
 			{
@@ -115,8 +118,6 @@ namespace CivOne.Screens.GamePlayPanels
 					return;
 				}
 
-				ITranslationService translationService = TranslationServiceFactory.GetCurrent();
-
 				foreach (ICivilization civilization in Civilizations)
 				{
 					if (civilization is Barbarian)
@@ -151,7 +152,7 @@ namespace CivOne.Screens.GamePlayPanels
 					_gameMap.FillRectangle(dx, dy, _gameMap._tilePixelSize, _gameMap._tilePixelSize, Common.ColourDark[colourIndex]);
 					_gameMap.DrawRectangle(dx, dy, _gameMap._tilePixelSize, _gameMap._tilePixelSize, Common.ColourLight[colourIndex]);
 
-					_gameMap.DrawText(translationService.Translate(civilization.NamePlural), 0, Common.ColourLight[colourIndex], dx + _gameMap._tilePixelSize + 1, dy + 1, TextAlign.Left);
+					_gameMap.DrawText(TranslationService.Translate(civilization.NamePlural), 0, Common.ColourLight[colourIndex], dx + _gameMap._tilePixelSize + 1, dy + 1, TextAlign.Left);
 				}
 			}
 
