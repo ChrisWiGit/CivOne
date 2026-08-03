@@ -110,6 +110,90 @@ namespace CivOne.src
 			Assert.Empty(city.Specialists);
 		}
 
+		[Fact]
+		public void UpdateResourcesRelocatesTileOccupiedByEnemyUnit()
+		{
+			var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
+			City? city = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+			Assert.NotNull(city);
+
+			city.Size = 3;
+
+			ITile victim = city.ResourceTiles.First(t => (t.X != city.X || t.Y != city.Y) && !t.IsOcean);
+
+			byte enemyId = Game.Instance.PlayerNumber(
+				Game.Instance.Players.First(player => player != null && !player.IsHuman && player.Civilization is not Barbarian));
+			Assert.NotNull(Game.Instance.CreateUnit(UnitType.Settlers, victim.X, victim.Y, enemyId));
+			Assert.True(city.InvalidTile(victim));
+
+			int workedBefore = city.ResourceTiles.Length;
+
+			city.UpdateResources();
+
+			Assert.DoesNotContain(city.ResourceTiles, t => t.X == victim.X && t.Y == victim.Y);
+			Assert.Contains(city.ResourceTiles, t => t.X == city.X && t.Y == city.Y);
+			Assert.Equal(workedBefore, city.ResourceTiles.Length);
+		}
+
+		[Fact]
+		public void UpdateResourcesDoesNotRefillIntentionallyEmptyWorkedTiles()
+		{
+			var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
+			City? city = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+			Assert.NotNull(city);
+
+			city.Size = 3;
+			SetResourceTiles(city, []);
+
+			// A city run entirely on specialists (no worked tiles) is a valid player choice.
+			// UpdateResources must not silently re-assign workers every turn.
+			for (int turn = 0; turn < 3; turn++)
+			{
+				city.UpdateResources();
+			}
+
+			// Only the always-free city-center tile remains.
+			Assert.Single(city.ResourceTiles);
+			Assert.Equal(city.X, city.ResourceTiles[0].X);
+			Assert.Equal(city.Y, city.ResourceTiles[0].Y);
+		}
+
+		[Fact]
+		public void UpdateResourcesRelocatesMultipleInvalidTilesWithoutError()
+		{
+			var unit = Game.Instance.GetUnits().First(x => x.Owner == playa.Civilization.Id);
+			City? city = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+			Assert.NotNull(city);
+
+			city.Size = 4;
+
+			byte enemyId = Game.Instance.PlayerNumber(
+				Game.Instance.Players.First(player => player != null && !player.IsHuman && player.Civilization is not Barbarian));
+
+			List<ITile> victims =
+			[
+				.. city.ResourceTiles
+					.Where(t => (t.X != city.X || t.Y != city.Y) && !t.IsOcean)
+					.Take(2)
+			];
+			Assert.Equal(2, victims.Count);
+
+			foreach (ITile victim in victims)
+			{
+				Assert.NotNull(Game.Instance.CreateUnit(UnitType.Settlers, victim.X, victim.Y, enemyId));
+			}
+			Assert.All(victims, victim => Assert.True(city.InvalidTile(victim)));
+
+			// Iterating the ResourceTiles array snapshot while RelocateResourceTile mutates
+			// _resourceTiles must not throw and must clear every invalid tile.
+			city.UpdateResources();
+
+			foreach (ITile victim in victims)
+			{
+				Assert.DoesNotContain(city.ResourceTiles, t => t.X == victim.X && t.Y == victim.Y);
+			}
+		}
+
 		private static ITile? FindFoundCityTargetTile(ITile origin)
 		{
 			for (int radius = 0; radius <= 4; radius++)

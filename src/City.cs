@@ -1096,7 +1096,9 @@ namespace CivOne
 
 		public void UpdateResources()
 		{
-			foreach (ITile tile in ResourceTiles.Where(t => InvalidTile(t)))
+			// ResourceTiles returns a fresh array snapshot, so iterating it while
+			// RelocateResourceTile mutates _resourceTiles is safe (no extra copy needed).
+			foreach (ITile tile in ResourceTiles.Where(InvalidTile))
 			{
 				RelocateResourceTile(tile);
 			}
