@@ -150,10 +150,12 @@ namespace CivOne
 				_unplacedCivilizations.Add(_players[player].Civilization);
 				_players[player].HandleExtinction(invokeDestroyedEvent: false);
 
-				// Attributed to the Barbarians (civilization 0): nobody actually defeated this
-				// civilization, the map simply had no room for it.
-				_replayData.Add(new ReplayData.CivilizationDestroyed(
-					_gameTurn, _players[player].Civilization.PreferredPlayerNumber, 0));
+				// The player slot index, not Civilization.PreferredPlayerNumber: with civilization reuse beyond
+				// player 7 the latter no longer identifies the slot, and every reader of DestroyedId
+				// (Player.AllowedToRespawn, Conquest) expects the slot index.
+				// Attributed to the Barbarians (player 0): nobody actually defeated this civilization,
+				// the map simply had no room for it.
+				_replayData.Add(new ReplayData.CivilizationDestroyed(_gameTurn, player, 0));
 			}
 		}
 

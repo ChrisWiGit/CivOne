@@ -1666,14 +1666,28 @@ namespace CivOne
 			}
 		}
 
-		private uint[] _visibleSizes = new uint[16];
+		private uint[] _visibleSizes = new uint[Game.MaxPlayers];
+
+		/// <summary>
+		/// The city size as last seen by each player, indexed by player slot (see <see cref="Game.MaxPlayers"/>).
+		/// Shorter arrays (e.g. from saves written before the player limit was raised) are copied into a
+		/// full-size array, so already known sizes are kept.
+		/// </summary>
 		public uint[] VisibleSizes {
-			get { 
+			get {
 				// Owner always sees his city size;
 				_visibleSizes[CityOwnerPlayerIndex] = Size;
 				return _visibleSizes;
 			}
-			set => _visibleSizes = value is { Length: >= 16 } ? value : new uint[16];
+			set
+			{
+				uint[] sizes = new uint[Game.MaxPlayers];
+				if (value != null)
+				{
+					Array.Copy(value, sizes, Math.Min(value.Length, sizes.Length));
+				}
+				_visibleSizes = sizes;
+			}
 		}
 
 		/// <summary>
@@ -1745,7 +1759,7 @@ namespace CivOne
 
 		internal City(byte owner)
 		{
-			_visibleSizes = new uint[16];
+			_visibleSizes = new uint[Game.MaxPlayers];
 			CityOwnerPlayerIndex = owner;
 			_tradingCityIds = [];
 			_resourceTiles = [];

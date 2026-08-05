@@ -17,10 +17,18 @@ namespace CivOne.UnitTests
 			_runtime = new MockRuntime(new RuntimeSettings());
 		}
 
+		protected virtual void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				_runtime.Dispose();
+				RuntimeHandler.Wipe();
+			}
+		}
+
 		public void Dispose()
 		{
-			_runtime.Dispose();
-			RuntimeHandler.Wipe();
+			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 
