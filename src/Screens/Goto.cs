@@ -435,14 +435,23 @@ namespace CivOne.Screens
 				int tilesX = Math.Max(1, gamePlay.VisibleTilesX);
 				int tilesY = Math.Max(1, gamePlay.VisibleTilesY);
 
-				int relX = _cursorX - _viewX;
+				int relXRaw = _cursorX - _viewX;
+				int relX = relXRaw % Map.WIDTH;
 				if (relX < 0)
 				{
-					_viewX = _cursorX;
+					relX += Map.WIDTH;
 				}
-				else if (relX >= tilesX)
+
+				if (relX >= tilesX)
 				{
-					_viewX = _cursorX - tilesX + 1;
+					if (relXRaw < 0)
+					{
+						_viewX = _cursorX;
+					}
+					else
+					{
+						_viewX = _cursorX - tilesX + 1;
+					}
 				}
 
 				while (_viewX < 0)
