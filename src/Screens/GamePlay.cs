@@ -135,6 +135,8 @@ namespace CivOne.Screens
 
 		internal void CenterOnPoint(int x, int y) => _gameMap.CenterOnPoint(x, y);
 
+		internal void SetViewOrigin(int x, int y) => _gameMap.SetViewOrigin(x, y);
+
 		internal void RefreshMap() => _gameMap.ForceRefresh();
 
 		internal Palette MainPalette => OriginalColours.Copy();

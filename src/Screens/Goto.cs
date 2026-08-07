@@ -46,6 +46,22 @@ namespace CivOne.Screens
 
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
+			if (_delegate.KeyDown(args, out Point? destination, out bool closeScreen))
+			{
+				if (destination.HasValue)
+				{
+					X = destination.Value.X;
+					Y = destination.Value.Y;
+				}
+
+				if (closeScreen)
+				{
+					Destroy();
+				}
+
+				return true;
+			}
+
 			Destroy();
 			return true;
 		}
@@ -85,14 +101,64 @@ namespace CivOne.Screens
 		private sealed class GotoDelegate(Goto gotoScreen, int originX, int originY)
 		{
 			private readonly Goto _gotoScreen = gotoScreen;
-			private readonly int _originX = originX;
-			private readonly int _originY = originY;
+			private int _viewX = originX;
+			private int _viewY = originY;
+			private bool _keyboardMode;
+			private int _cursorX = -1;
+			private int _cursorY = -1;
 
 			public void Render(uint gameTick)
 			{
 				GamePlay gamePlay = Goto.CurrentGamePlay;
+				gamePlay.SetViewOrigin(_viewX, _viewY);
+				gamePlay.Update(gameTick);
 				_gotoScreen.Clear(5).AddLayer(gamePlay.Bitmap);
 				DrawBlinkingActiveUnit(gameTick, gamePlay);
+				if (_keyboardMode)
+				{
+					DrawKeyboardCursor(gameTick, gamePlay);
+				}
+			}
+
+			public bool KeyDown(KeyboardEventArgs args, out Point? destination, out bool closeScreen)
+			{
+				destination = null;
+				closeScreen = false;
+
+				if (args.Key == Key.Tab)
+				{
+					ToggleKeyboardMode();
+					_gotoScreen._update = true;
+					return true;
+				}
+
+				if (!_keyboardMode)
+				{
+					return false;
+				}
+
+				if (args.Key == Key.Enter)
+				{
+					_keyboardMode = false;
+					destination = Normalize(_cursorX, _cursorY);
+					closeScreen = true;
+					return true;
+				}
+
+				if (args.Key == Key.Escape)
+				{
+					closeScreen = true;
+					return true;
+				}
+
+				if (!TryGetKeyboardDelta(args, out int relX, out int relY))
+				{
+					return true;
+				}
+
+				MoveCursor(relX, relY);
+				_gotoScreen._update = true;
+				return true;
 			}
 
 			public bool TrySelect(ScreenEventArgs args, out Point destination)
@@ -121,7 +187,7 @@ namespace CivOne.Screens
 					return false;
 				}
 
-				ITile? tile = Map[_originX + xx, _originY + yy];
+				ITile? tile = Map[_viewX + xx, _viewY + yy];
 				if (tile == null)
 				{
 					destination = default;
@@ -169,6 +235,159 @@ namespace CivOne.Screens
 				}
 
 				return new Point(x, y);
+			}
+
+			private void ToggleKeyboardMode()
+			{
+				_keyboardMode = !_keyboardMode;
+				if (!_keyboardMode)
+				{
+					return;
+				}
+
+				if (Game.ActiveUnit is IUnit activeUnit)
+				{
+					_cursorX = activeUnit.X;
+					_cursorY = activeUnit.Y;
+				}
+				else
+				{
+					_cursorX = _viewX;
+					_cursorY = _viewY;
+				}
+
+				EnsureCursorVisible();
+			}
+
+			private void MoveCursor(int relX, int relY)
+			{
+				_cursorX += relX;
+				while (_cursorX < 0)
+				{
+					_cursorX += Map.WIDTH;
+				}
+
+				while (_cursorX >= Map.WIDTH)
+				{
+					_cursorX -= Map.WIDTH;
+				}
+
+				_cursorY = Math.Clamp(_cursorY + relY, 0, Map.HEIGHT - 1);
+				EnsureCursorVisible();
+			}
+
+			private void EnsureCursorVisible()
+			{
+				GamePlay gamePlay = Goto.CurrentGamePlay;
+				int tilesX = Math.Max(1, gamePlay.VisibleTilesX);
+				int tilesY = Math.Max(1, gamePlay.VisibleTilesY);
+
+				int relX = _cursorX - _viewX;
+				if (relX < 0)
+				{
+					_viewX = _cursorX;
+				}
+				else if (relX >= tilesX)
+				{
+					_viewX = _cursorX - tilesX + 1;
+				}
+
+				while (_viewX < 0)
+				{
+					_viewX += Map.WIDTH;
+				}
+
+				while (_viewX >= Map.WIDTH)
+				{
+					_viewX -= Map.WIDTH;
+				}
+
+				int relY = _cursorY - _viewY;
+				if (relY < 0)
+				{
+					_viewY = _cursorY;
+				}
+				else if (relY >= tilesY)
+				{
+					_viewY = _cursorY - tilesY + 1;
+				}
+
+				_viewY = Math.Clamp(_viewY, 0, Math.Max(0, Map.HEIGHT - tilesY));
+			}
+
+			private void DrawKeyboardCursor(uint gameTick, GamePlay gamePlay)
+			{
+				if (_cursorX < 0 || _cursorY < 0)
+				{
+					return;
+				}
+
+				int relX = _cursorX - _viewX;
+				if (relX < 0)
+				{
+					relX += Map.WIDTH;
+				}
+
+				int relY = _cursorY - _viewY;
+				if (relX < 0 || relY < 0 || relX >= gamePlay.VisibleTilesX || relY >= gamePlay.VisibleTilesY)
+				{
+					return;
+				}
+
+				int mapOffsetX = Settings.RightSideBar ? 0 : 80;
+				int mapOffsetY = 8;
+				int left = mapOffsetX + (relX * gamePlay.TilePixelSize);
+				int top = mapOffsetY + (relY * gamePlay.TilePixelSize);
+				byte colour = (gameTick % 4) < 2 ? (byte)15 : (byte)0;
+				_gotoScreen.DrawRectangle(left, top, gamePlay.TilePixelSize, gamePlay.TilePixelSize, colour);
+			}
+
+			private static bool TryGetKeyboardDelta(KeyboardEventArgs args, out int relX, out int relY)
+			{
+				relX = 0;
+				relY = 0;
+
+				switch (args.Key)
+				{
+					case Key.Left:
+					case Key.NumPad4:
+						relX = -1;
+						return true;
+					case Key.Right:
+					case Key.NumPad6:
+						relX = 1;
+						return true;
+					case Key.Up:
+					case Key.NumPad8:
+						relY = -1;
+						return true;
+					case Key.Down:
+					case Key.NumPad2:
+						relY = 1;
+						return true;
+					case Key.Home:
+					case Key.NumPad7:
+						relX = -1;
+						relY = -1;
+						return true;
+					case Key.PageUp:
+					case Key.NumPad9:
+						relX = 1;
+						relY = -1;
+						return true;
+					case Key.End:
+					case Key.NumPad1:
+						relX = -1;
+						relY = 1;
+						return true;
+					case Key.PageDown:
+					case Key.NumPad3:
+						relX = 1;
+						relY = 1;
+						return true;
+					default:
+						return false;
+				}
 			}
 
 			private void DrawBlinkingActiveUnit(uint gameTick, GamePlay gamePlay)
