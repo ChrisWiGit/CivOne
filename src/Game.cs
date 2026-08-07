@@ -191,7 +191,7 @@ namespace CivOne
 				.WithInvalidUnitHomeCityReferences(_units.Any(unit => unit.Home != null && !cityLookup.Contains(unit.Home)))
 				.WithOutOfBoundsCityCoordinates(_cities.Any(city => city.X >= Map.WIDTH || city.Y >= Map.HEIGHT))
 				.WithOutOfBoundsUnitCoordinates(_units.Any(unit => unit.X < 0 || unit.Y < 0 || unit.X >= Map.WIDTH || unit.Y >= Map.HEIGHT))
-				.WithOutOfBoundsUnitGotoCoordinates(_units.Any(unit => unit.HasGotoDestination() && (unit.GotoDestination.X < 0 || unit.GotoDestination.Y < 0 || unit.GotoDestination.X >= Map.WIDTH || unit.GotoDestination.Y >= Map.HEIGHT)))
+				.WithOutOfBoundsUnitGotoCoordinates(_units.Any(unit => unit.HasGotoDestination() && unit.GotoDestination.Y >= Map.HEIGHT))
 				.WithTradeCityCountsPerCity([.. _cities.Select(city => city.TradingCities?.Length ?? 0)])
 				.WithCityOwners([.. _cities.Select(city => city.CityOwnerPlayerIndex)])
 				.WithUnitOwners(sveUnitOwners)

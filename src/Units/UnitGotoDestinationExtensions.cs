@@ -19,12 +19,14 @@ namespace CivOne.Units
 		/// </summary>
 		/// <param name="unit">The unit whose goto destination state is checked.</param>
 		/// <returns>
-		/// <see langword="true"/> when both goto coordinates are non-negative.
+		/// <see langword="true"/> when the destination is not the dedicated "no destination" sentinel
+		/// and Y is non-negative.
+		/// X may be negative or larger than the map width before normalization.
 		/// Otherwise, <see langword="false"/>.
 		/// </returns>
 		public static bool HasGotoDestination(this IUnit unit)
 		{
-			return unit.GotoDestination.X >= 0 && unit.GotoDestination.Y >= 0;
+			return unit.GotoDestination != NoGotoDestination && unit.GotoDestination.Y >= 0;
 		}
 
 		/// <summary>
