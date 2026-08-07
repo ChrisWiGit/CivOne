@@ -19,15 +19,10 @@ namespace CivOne.Services.Pathfinding
 			// X is wrapped to the map width because the map wraps east-west and callers (e.g. AI.cs)
 			// may set an unnormalized GotoDestination.X; AStar.Neighbors() wraps X internally too,
 			// so an unwrapped goal would never match a wrapped current node and the path would never complete.
-			int normalizedX = destination.X;
-			while (normalizedX < 0)
+			int normalizedX = destination.X % Map.WIDTH;
+			if (normalizedX < 0)
 			{
 				normalizedX += Map.WIDTH;
-			}
-
-			while (normalizedX >= Map.WIDTH)
-			{
-				normalizedX -= Map.WIDTH;
 			}
 
 			if (destination.Y < 0 || destination.Y >= Map.HEIGHT)

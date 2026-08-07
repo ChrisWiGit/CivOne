@@ -885,7 +885,13 @@ namespace CivOne.Units
 			ITile previousTile = Map[_x, _y];
 			X += Movement.RelX;
 			Y += Movement.RelY;
-			if (X == GotoDestination.X && Y == GotoDestination.Y)
+			int normalizedGotoX = GotoDestination.X % Map.WIDTH;
+			if (normalizedGotoX < 0)
+			{
+				normalizedGotoX += Map.WIDTH;
+			}
+
+			if (X == normalizedGotoX && Y == GotoDestination.Y)
 			{
 				this.ClearGotoDestination();
 			}

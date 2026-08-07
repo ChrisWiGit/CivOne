@@ -549,15 +549,10 @@ namespace CivOne
 					// (0,0) is a valid map coordinate, not "no destination" (see UnitGotoDestinationExtensions).
 					// X must be normalized to map width before passing a goal to AStar.
 					// AStar neighbor expansion wraps X internally; an unwrapped goal may never be reached.
-					int gotoX = unit.GotoDestination.X;
-					while (gotoX < 0)
+					int gotoX = unit.GotoDestination.X % Map.WIDTH;
+					if (gotoX < 0)
 					{
 						gotoX += Map.WIDTH;
-					}
-
-					while (gotoX >= Map.WIDTH)
-					{
-						gotoX -= Map.WIDTH;
 					}
 
 					int gotoY = unit.GotoDestination.Y;
