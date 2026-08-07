@@ -1,6 +1,7 @@
 //NOSONAR
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using CivOne.Enums;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -26,9 +27,28 @@ namespace CivOne.Services.Pathfinding
 		// Cost units: railroad=1, road=3, terrain=Movement*9 (max 18 for hills/forest).
 		public ITile? GotoStep(IUnit unit)
 		{
-			int gx = unit.GotoDestination.X, gy = unit.GotoDestination.Y;
+			ITile[] path = GetPath(unit, unit.GotoDestination);
+			if (path.Length == 0)
+			{
+				return null;
+			}
+
+			return path[0];
+		}
+
+		public ITile[] GetPath(IUnit unit, Point destination)
+		{
+			if (destination.IsEmpty)
+			{
+				return [];
+			}
+
+			int gx = destination.X, gy = destination.Y;
 			int sx = unit.X, sy = unit.Y;
-			if (sx == gx && sy == gy) return null;
+			if (sx == gx && sy == gy)
+			{
+				return [];
+			}
 
 			int w = _mapTiles.Width, h = _mapTiles.Height;
 
@@ -54,15 +74,20 @@ namespace CivOne.Services.Pathfinding
 				int cx = curPos % w, cy = curPos / w;
 				if (cx == gx && cy == gy)
 				{
-					// Reconstruct path and return the first step
-					int cur = curPos;
-					int prev = cameFrom.TryGetValue(cur, out int p) ? p : startPos;
-					while (prev != startPos)
+					List<int> pathPositions = ReconstructPathPositions(curPos, startPos, cameFrom);
+					if (pathPositions.Count == 0)
 					{
-						cur = prev;
-						prev = cameFrom[cur];
+						return [];
 					}
-					return _mapTiles[cur % w, cur / w];
+
+					ITile[] path = new ITile[pathPositions.Count];
+					for (int i = 0; i < pathPositions.Count; i++)
+					{
+						int position = pathPositions[i];
+						path[i] = _mapTiles[position % w, position / w];
+					}
+
+					return path;
 				}
 
 				for (int dy = -1; dy <= 1; dy++)
@@ -106,7 +131,27 @@ namespace CivOne.Services.Pathfinding
 				}
 			}
 
-			return null;
+			return [];
+		}
+
+		private static List<int> ReconstructPathPositions(int currentPosition, int startPosition, Dictionary<int, int> cameFrom)
+		{
+			List<int> reversePath = [currentPosition];
+			int cursor = currentPosition;
+
+			while (cameFrom.TryGetValue(cursor, out int previousPosition))
+			{
+				if (previousPosition == startPosition)
+				{
+					break;
+				}
+
+				reversePath.Add(previousPosition);
+				cursor = previousPosition;
+			}
+
+			reversePath.Reverse();
+			return reversePath;
 		}
 
 		private int DistanceToTile(int x1, int y1, int x2, int y2)
