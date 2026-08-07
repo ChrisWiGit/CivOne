@@ -6,6 +6,7 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Goto pathfinding now handles horizontal map wrapping correctly in both smart and legacy modes, so wrapped goto targets are found reliably.
 * Feature: Goto moving unit
   * zoom mode supported. Yet zooming is not supported while in goto mode, so the user must exit go to mode first before zooming.
   * Draws a live path preview to the current target tile (mouse hover and keyboard target mode).

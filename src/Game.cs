@@ -545,15 +545,43 @@ namespace CivOne
 
 				if (unit is {} baseUnit && unit.HasGotoDestination())
 				{
-					ITile[] tiles = [.. baseUnit.MoveTargets.OrderBy(x => x.DistanceTo(unit.GotoDestination)).ThenBy(x => x.Movement)];
+					// Keep in sync with AStarPathfinderAdapter.GetNextStep().
+					// (0,0) is a valid map coordinate, not "no destination" (see UnitGotoDestinationExtensions).
+					// X must be normalized to map width before passing a goal to AStar.
+					// AStar neighbor expansion wraps X internally; an unwrapped goal may never be reached.
+					int gotoX = unit.GotoDestination.X;
+					while (gotoX < 0)
+					{
+						gotoX += Map.WIDTH;
+					}
+
+					while (gotoX >= Map.WIDTH)
+					{
+						gotoX -= Map.WIDTH;
+					}
+
+					int gotoY = unit.GotoDestination.Y;
+					if (gotoY < 0 || gotoY >= Map.HEIGHT)
+					{
+						unit.ClearGotoDestination();
+						return;
+					}
+
+					Point normalizedDestination = new(gotoX, gotoY);
+					if (unit.GotoDestination != normalizedDestination)
+					{
+						unit.GotoDestination = normalizedDestination;
+					}
+
+					ITile[] tiles = [.. baseUnit.MoveTargets.OrderBy(x => x.DistanceTo(normalizedDestination)).ThenBy(x => x.Movement)];
 
 					if (Settings.Instance.PathFinding)
 					{
 						/*  Use AStar  */
 						AStar.SPosition Destination = new()
 						{
-							iX = unit.GotoDestination.X,
-							iY = unit.GotoDestination.Y
+							iX = normalizedDestination.X,
+							iY = normalizedDestination.Y
 						};
 						
 						AStar.SPosition Pos = new()
@@ -581,14 +609,14 @@ namespace CivOne
 					else
 					{
 
-						int distance = unit.Tile.DistanceTo(unit.GotoDestination);
-						if (tiles.Length == 0 || tiles[0].DistanceTo(unit.GotoDestination) > distance)
+						int distance = unit.Tile.DistanceTo(normalizedDestination);
+						if (tiles.Length == 0 || tiles[0].DistanceTo(normalizedDestination) > distance)
 						{
 							// No valid tile to move to, cancel goto
 							unit.ClearGotoDestination();
 							return;
 						}
-						else if (tiles[0].DistanceTo(unit.GotoDestination) == distance)
+						else if (tiles[0].DistanceTo(normalizedDestination) == distance)
 						{
 							// Distance is unchanged, 50% chance to cancel goto
 							if (_randomService.NextInt(0, 100) < 50)

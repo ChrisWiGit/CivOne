@@ -8,14 +8,36 @@ namespace CivOne.Services.Pathfinding
 	{
 		public PathStepResult GetNextStep(IUnit unit, Point destination)
 		{
-			if (unit == null || destination.IsEmpty)
+			if (unit == null)
+			{
+				return PathStepResult.InvalidRequest();
+			}
+
+			// Keep in sync with Game.Update() legacy pathfinding branch.
+			// (0,0) is a valid map coordinate, not "no destination" (see UnitGotoDestinationExtensions),
+			// so it must reach AStar rather than being rejected here.
+			// X is wrapped to the map width because the map wraps east-west and callers (e.g. AI.cs)
+			// may set an unnormalized GotoDestination.X; AStar.Neighbors() wraps X internally too,
+			// so an unwrapped goal would never match a wrapped current node and the path would never complete.
+			int normalizedX = destination.X;
+			while (normalizedX < 0)
+			{
+				normalizedX += Map.WIDTH;
+			}
+
+			while (normalizedX >= Map.WIDTH)
+			{
+				normalizedX -= Map.WIDTH;
+			}
+
+			if (destination.Y < 0 || destination.Y >= Map.HEIGHT)
 			{
 				return PathStepResult.InvalidRequest();
 			}
 
 			AStar.SPosition goal = new()
 			{
-				iX = destination.X,
+				iX = normalizedX,
 				iY = destination.Y
 			};
 
