@@ -162,7 +162,14 @@ namespace CivOne
 							normalizedGotoX += Map.WIDTH;
 						}
 
-						Point normalizedGotoDestination = new(normalizedGotoX, unit.GotoDestination.Y);
+						int normalizedGotoY = unit.GotoDestination.Y;
+						if (normalizedGotoY < 0 || normalizedGotoY >= Map.HEIGHT)
+						{
+							unit.ClearGotoDestination();
+							continue;
+						}
+
+						Point normalizedGotoDestination = new(normalizedGotoX, normalizedGotoY);
 						int distance = unit.Tile.DistanceTo(normalizedGotoDestination);
 						ITile[] tiles = [.. unit.MoveTargets.OrderBy(x => x.DistanceTo(normalizedGotoDestination)).ThenBy(x => x.Movement)];
 						if (tiles.Length == 0 || tiles[0].DistanceTo(normalizedGotoDestination) > distance)

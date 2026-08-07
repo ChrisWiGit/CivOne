@@ -9,10 +9,11 @@ namespace CivOne.Units
 	/// We intentionally do not use <see cref="Point.Empty"/> as "no goto destination".
 	/// <see cref="Point.Empty"/> equals (0,0), and (0,0) is a valid map coordinate.
 	/// Using a dedicated sentinel keeps "no destination" distinct from a real target tile.
+	/// The sentinel must stay non-negative because YAML persistence stores coordinates as uint.
 	/// </remarks>
 	internal static class UnitGotoDestinationExtensions
 	{
-		private static readonly Point NoGotoDestination = new(-1, -1);
+		private static readonly Point NoGotoDestination = new(int.MaxValue, int.MaxValue);
 
 		/// <summary>
 		/// Determines whether the unit currently has a valid goto destination.
