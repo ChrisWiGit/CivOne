@@ -190,7 +190,7 @@ namespace CivOne.Units
 				{
 					if (Human == Owner)
 					{
-						GotoDestination = Point.Empty;             // Cancel any goto mode ( maybe for AI too ?? )
+						this.ClearGotoDestination();             // Cancel any goto mode ( maybe for AI too ?? )
 						GameTask.Enqueue(Message.Error(Translate("-- Civilization Note --"), GetGameText($"ERROR/ZOC")));
 					}
 					return false;

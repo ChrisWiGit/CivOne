@@ -122,7 +122,7 @@ namespace CivOne.UnitTests
 			// Arrange
 			var (map, _) = MakeLandMap(10, 10);
 			var unit = MakeUnit(5, 5, 0, 0);
-			unit.GotoDestination = Point.Empty;
+			unit.ClearGotoDestination();
 			var _testee = CreateTestee(map, useNewImpl);
 
 			// Act

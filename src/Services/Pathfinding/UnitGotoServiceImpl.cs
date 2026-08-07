@@ -27,7 +27,7 @@ namespace CivOne.Services.Pathfinding
 		// Cost units: railroad=1, road=3, terrain=Movement*9 (max 18 for hills/forest).
 		public ITile? GotoStep(IUnit unit)
 		{
-			if (unit.GotoDestination.IsEmpty)
+			if (!unit.HasGotoDestination())
 			{
 				return null;
 			}

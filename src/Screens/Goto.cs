@@ -14,7 +14,6 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Services.Pathfinding;
-using CivOne.Screens.GamePlayPanels;
 using CivOne.Tiles;
 using CivOne.Units;
 
