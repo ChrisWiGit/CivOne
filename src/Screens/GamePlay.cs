@@ -58,6 +58,7 @@ namespace CivOne.Screens
 		internal int Y => _gameMap.Y;
 		internal int VisibleTilesX => _gameMap.VisibleTilesX;
 		internal int VisibleTilesY => _gameMap.VisibleTilesY;
+		internal int TilePixelSize => _gameMap.TilePixelSize;
 		internal bool IsMapViewEnabled => _gameMap.MapViewEnabled;
 		internal bool IsTerrainEditorEnabled => _gameMap.IsTerrainEditorEnabled;
 		internal bool IsTerrainEditorSpawnMode => _gameMap.EditorState.CurrentMode == EditorMode.SpawnUnit;
