@@ -29,22 +29,16 @@ namespace CivOne.Services.Pathfinding
 		// Cost units: railroad=1, road=3, terrain=Movement*9 (max 18 for hills/forest).
 		public ITile? GotoStep(IUnit unit)
 		{
-			ITile[] path = GetPath(unit, unit.GotoDestination);
-			if (path.Length == 0)
+			if (unit.GotoDestination.IsEmpty)
 			{
 				return null;
 			}
 
-			return path[0];
+			return GetFirstStep(unit, unit.GotoDestination);
 		}
 
 		public ITile[] GetPath(IUnit unit, Point destination)
 		{
-			if (destination.IsEmpty)
-			{
-				return [];
-			}
-
 			int goalX = destination.X, goalY = destination.Y;
 			int startX = unit.X, startY = unit.Y;
 
@@ -84,11 +78,6 @@ namespace CivOne.Services.Pathfinding
 				if (isCurrentPositionGoal)
 				{
 					List<int> pathPositions = ReconstructPathPositions(currentPosition, startPosition, state.CameFromMap);
-					if (pathPositions.Count == 0)
-					{
-						return [];
-					}
-
 					ITile[] path = new ITile[pathPositions.Count];
 					for (int i = 0; i < pathPositions.Count; i++)
 					{
@@ -103,6 +92,71 @@ namespace CivOne.Services.Pathfinding
 			}
 
 			return [];
+		}
+
+		private ITile? GetFirstStep(IUnit unit, Point destination)
+		{
+			int goalX = destination.X, goalY = destination.Y;
+			int startX = unit.X, startY = unit.Y;
+
+			bool isAlreadyAtGoal = startX == goalX && startY == goalY;
+			if (isAlreadyAtGoal)
+			{
+				return null;
+			}
+
+			int mapWidth = _mapTiles.Width, mapHeight = _mapTiles.Height;
+
+			var state = new AStarState(
+				GCostMap: [],
+				CameFromMap: [],
+				OpenSet: []
+			);
+
+			int startPosition = EncodeCoordinatesToPosition(startX, startY, mapWidth);
+			state.GCostMap[startPosition] = 0;
+			state.OpenSet.Add((DistanceToTile(startX, startY, goalX, goalY), startPosition));
+
+			HashSet<int> closedPositions = [];
+			int maxClosedNodes = mapWidth * mapHeight;
+			while (state.OpenSet.Count > 0 && closedPositions.Count < maxClosedNodes)
+			{
+				int nextNodeIndex = FindNextOpenNodeWithLowestFScore(state.OpenSet);
+				int currentPosition = state.OpenSet[nextNodeIndex].position;
+				state.OpenSet.RemoveAt(nextNodeIndex);
+
+				if (!closedPositions.Add(currentPosition))
+				{
+					continue;
+				}
+
+				int currentX = currentPosition % mapWidth, currentY = currentPosition / mapWidth;
+				bool isCurrentPositionGoal = currentX == goalX && currentY == goalY;
+				if (isCurrentPositionGoal)
+				{
+					return ReconstructFirstStepTile(currentPosition, startPosition, state.CameFromMap, mapWidth);
+				}
+
+				ExpandNeighbors(unit, currentX, currentY, goalX, goalY, currentPosition, state);
+			}
+
+			return null;
+		}
+
+		private ITile? ReconstructFirstStepTile(int currentPosition, int startPosition, Dictionary<int, int> cameFromMap, int mapWidth)
+		{
+			int cursor = currentPosition;
+			while (cameFromMap.TryGetValue(cursor, out int previousPosition))
+			{
+				if (previousPosition == startPosition)
+				{
+					return _mapTiles[cursor % mapWidth, cursor / mapWidth];
+				}
+
+				cursor = previousPosition;
+			}
+
+			return null;
 		}
 
 		private static int FindNextOpenNodeWithLowestFScore(List<(int fScore, int position)> openSet)

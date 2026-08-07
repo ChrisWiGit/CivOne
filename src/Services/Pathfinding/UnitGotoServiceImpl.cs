@@ -27,22 +27,16 @@ namespace CivOne.Services.Pathfinding
 		// Cost units: railroad=1, road=3, terrain=Movement*9 (max 18 for hills/forest).
 		public ITile? GotoStep(IUnit unit)
 		{
-			ITile[] path = GetPath(unit, unit.GotoDestination);
-			if (path.Length == 0)
+			if (unit.GotoDestination.IsEmpty)
 			{
 				return null;
 			}
 
-			return path[0];
+			return GetFirstStep(unit, unit.GotoDestination);
 		}
 
 		public ITile[] GetPath(IUnit unit, Point destination)
 		{
-			if (destination.IsEmpty)
-			{
-				return [];
-			}
-
 			int gx = destination.X, gy = destination.Y;
 			int sx = unit.X, sy = unit.Y;
 			if (sx == gx && sy == gy)
@@ -75,11 +69,6 @@ namespace CivOne.Services.Pathfinding
 				if (cx == gx && cy == gy)
 				{
 					List<int> pathPositions = ReconstructPathPositions(curPos, startPos, cameFrom);
-					if (pathPositions.Count == 0)
-					{
-						return [];
-					}
-
 					ITile[] path = new ITile[pathPositions.Count];
 					for (int i = 0; i < pathPositions.Count; i++)
 					{
@@ -132,6 +121,128 @@ namespace CivOne.Services.Pathfinding
 			}
 
 			return [];
+		}
+
+		private ITile? GetFirstStep(IUnit unit, Point destination)
+		{
+			int gx = destination.X, gy = destination.Y;
+			int sx = unit.X, sy = unit.Y;
+			if (sx == gx && sy == gy)
+			{
+				return null;
+			}
+
+			int w = _mapTiles.Width, h = _mapTiles.Height;
+
+			var gScore = new Dictionary<int, int>();
+			var cameFrom = new Dictionary<int, int>();
+			var open = new List<(int f, int pos)>();
+
+			int Encode(int x, int y) => y * w + x;
+			int startPos = Encode(sx, sy);
+			gScore[startPos] = 0;
+			open.Add((DistanceToTile(sx, sy, gx, gy), startPos));
+
+			int maxIterations = w * h;
+			while (open.Count > 0 && maxIterations-- > 0)
+			{
+				int minIdx = 0;
+				for (int i = 1; i < open.Count; i++)
+				{
+					if (open[i].f < open[minIdx].f)
+					{
+						minIdx = i;
+					}
+				}
+
+				int curPos = open[minIdx].pos;
+				open.RemoveAt(minIdx);
+
+				int cx = curPos % w, cy = curPos / w;
+				if (cx == gx && cy == gy)
+				{
+					return ReconstructFirstStepTile(curPos, startPos, cameFrom, w);
+				}
+
+				for (int dy = -1; dy <= 1; dy++)
+				{
+					for (int dx = -1; dx <= 1; dx++)
+					{
+						if (dx == 0 && dy == 0)
+						{
+							continue;
+						}
+
+						int nx = (cx + dx + w) % w;
+						int ny = cy + dy;
+						if (ny < 0 || ny >= h)
+						{
+							continue;
+						}
+
+						ITile neighbor = _mapTiles[nx, ny];
+						bool isGoal = nx == gx && ny == gy;
+
+						bool passable;
+						if (unit.UnitCategory == UnitClass.Water)
+						{
+							passable = neighbor.IsOcean || isGoal;
+						}
+						else
+						{
+							passable = !neighbor.IsOcean && neighbor.Type != Terrain.Arctic;
+						}
+
+						if (!passable)
+						{
+							continue;
+						}
+
+						int cost;
+						if (neighbor.RailRoad)
+						{
+							cost = 1;
+						}
+						else if (neighbor.Road)
+						{
+							cost = 3;
+						}
+						else
+						{
+							cost = neighbor.Movement * 9;
+						}
+
+						int neighborPos = Encode(nx, ny);
+						int tentativeG = gScore[curPos] + cost;
+
+						if (!gScore.TryGetValue(neighborPos, out int existingG) || tentativeG < existingG)
+						{
+							gScore[neighborPos] = tentativeG;
+							cameFrom[neighborPos] = curPos;
+							int fScore = tentativeG + DistanceToTile(nx, ny, gx, gy);
+							open.Add((fScore, neighborPos));
+						}
+					}
+				}
+			}
+
+			return null;
+		}
+
+		private ITile? ReconstructFirstStepTile(int currentPosition, int startPosition, Dictionary<int, int> cameFrom, int mapWidth)
+		{
+			int cursor = currentPosition;
+			while (cameFrom.TryGetValue(cursor, out int previousPosition))
+			{
+				if (previousPosition == startPosition)
+				{
+					return _mapTiles[cursor % mapWidth, cursor / mapWidth];
+				}
+
+				cursor = previousPosition;
+			}
+
+			return null;
 		}
 
 		private static List<int> ReconstructPathPositions(int currentPosition, int startPosition, Dictionary<int, int> cameFrom)

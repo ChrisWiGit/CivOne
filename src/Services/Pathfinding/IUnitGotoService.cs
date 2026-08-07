@@ -14,6 +14,7 @@ namespace CivOne.Services.Pathfinding
 		/// <returns>
 		/// A sequence of tiles starting with the first movement step and ending at the destination.
 		/// Returns an empty array if no path exists or if the unit is already at the destination.
+		/// The destination is interpreted literally, including (0,0).
 		/// </returns>
 		ITile[] GetPath(IUnit unit, Point destination);
 
