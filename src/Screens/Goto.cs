@@ -134,6 +134,14 @@ namespace CivOne.Screens
 
 				if (!_keyboardMode)
 				{
+					if (TryGetKeyboardDelta(args, out int initialRelX, out int initialRelY))
+					{
+						ToggleKeyboardMode();
+						MoveCursor(initialRelX, initialRelY);
+						_gotoScreen._update = true;
+						return true;
+					}
+
 					return false;
 				}
 
