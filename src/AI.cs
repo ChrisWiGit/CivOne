@@ -156,15 +156,22 @@ namespace CivOne
 							return;
 						}
 
-						int distance = unit.Tile.DistanceTo(unit.GotoDestination);
-						ITile[] tiles = [.. unit.MoveTargets.OrderBy(x => x.DistanceTo(unit.GotoDestination)).ThenBy(x => x.Movement)];
-						if (tiles.Length == 0 || tiles[0].DistanceTo(unit.GotoDestination) > distance)
+						int normalizedGotoX = unit.GotoDestination.X % Map.WIDTH;
+						if (normalizedGotoX < 0)
+						{
+							normalizedGotoX += Map.WIDTH;
+						}
+
+						Point normalizedGotoDestination = new(normalizedGotoX, unit.GotoDestination.Y);
+						int distance = unit.Tile.DistanceTo(normalizedGotoDestination);
+						ITile[] tiles = [.. unit.MoveTargets.OrderBy(x => x.DistanceTo(normalizedGotoDestination)).ThenBy(x => x.Movement)];
+						if (tiles.Length == 0 || tiles[0].DistanceTo(normalizedGotoDestination) > distance)
 						{
 							// No valid tile to move to, cancel goto
 							unit.ClearGotoDestination();
 							continue;
 						}
-						else if (tiles[0].DistanceTo(unit.GotoDestination) == distance)
+						else if (tiles[0].DistanceTo(normalizedGotoDestination) == distance)
 						{
 							// Distance is unchanged, 50% chance to cancel goto
 							if (_randomService.Hit(50))

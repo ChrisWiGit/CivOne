@@ -37,14 +37,18 @@ namespace CivOne.Services.Pathfinding
 
 		public ITile[] GetPath(IUnit unit, Point destination)
 		{
-			int gx = destination.X, gy = destination.Y;
+			int w = _mapTiles.Width, h = _mapTiles.Height;
+			int gx = NormalizeWrappedX(destination.X, w), gy = destination.Y;
 			int sx = unit.X, sy = unit.Y;
 			if (sx == gx && sy == gy)
 			{
 				return [];
 			}
 
-			int w = _mapTiles.Width, h = _mapTiles.Height;
+			if (gy < 0 || gy >= h)
+			{
+				return [];
+			}
 
 			var gScore = new Dictionary<int, int>();
 			var cameFrom = new Dictionary<int, int>();
@@ -125,14 +129,18 @@ namespace CivOne.Services.Pathfinding
 
 		private ITile? GetFirstStep(IUnit unit, Point destination)
 		{
-			int gx = destination.X, gy = destination.Y;
+			int w = _mapTiles.Width, h = _mapTiles.Height;
+			int gx = NormalizeWrappedX(destination.X, w), gy = destination.Y;
 			int sx = unit.X, sy = unit.Y;
 			if (sx == gx && sy == gy)
 			{
 				return null;
 			}
 
-			int w = _mapTiles.Width, h = _mapTiles.Height;
+			if (gy < 0 || gy >= h)
+			{
+				return null;
+			}
 
 			var gScore = new Dictionary<int, int>();
 			var cameFrom = new Dictionary<int, int>();
@@ -267,5 +275,16 @@ namespace CivOne.Services.Pathfinding
 
 		private int DistanceToTile(int x1, int y1, int x2, int y2)
 			=> Math.Max(Math.Min(Math.Abs(x2 - x1), _mapTiles.Width - Math.Abs(x2 - x1)), Math.Abs(y2 - y1));
+
+		private static int NormalizeWrappedX(int x, int width)
+		{
+			int normalizedX = x % width;
+			if (normalizedX < 0)
+			{
+				normalizedX += width;
+			}
+
+			return normalizedX;
+		}
 	}
 }

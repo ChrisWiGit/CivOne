@@ -101,6 +101,25 @@ namespace CivOne.UnitTests
 
 		[Theory]
 		[MemberData(nameof(ImplementationModes))]
+		public void GetPathWithNegativeDestinationXWrapsToMapWidth(bool useNewImpl)
+		{
+			// Arrange
+			var (map, _) = MakeLandMap(10, 10);
+			var unit = MakeUnit(1, 5, 9, 9);
+			var _testee = CreateTestee(map, useNewImpl);
+
+			// Act
+			ITile[] actual = _testee.GetPath(unit, new Point(-1, 5));
+
+			// Assert
+			Assert.NotEmpty(actual);
+			ITile destinationTile = actual[^1];
+			Assert.Equal(9, destinationTile.X);
+			Assert.Equal(5, destinationTile.Y);
+		}
+
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
 		public void GotoStepWhenAlreadyAtGoalReturnsNull(bool useNewImpl)
 		{
 			// Arrange
@@ -341,6 +360,33 @@ namespace CivOne.UnitTests
 			ITile? actual = testee.GotoStep(unit);
 
 			// Assert: first step must wrap left to x=0, not try to cross ocean
+			Assert.NotNull(actual);
+			Assert.Equal(0, actual.X);
+		}
+
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
+		public void GotoStepWithNegativeDestinationXWrapsToMapWidth(bool useNewImpl)
+		{
+			// Arrange
+			// Unit at x=1, goal at x=-1 (wrapped x=9). Ocean wall x=2..8 forces left wrap via x=0.
+			var (map, tiles) = MakeLandMap(10, 5);
+			for (int x = 2; x <= 8; x++)
+			{
+				for (int y = 0; y < 5; y++)
+				{
+					tiles[x, y].IsOcean = true;
+					tiles[x, y].Type = Terrain.Ocean;
+				}
+			}
+
+			var unit = MakeUnit(1, 2, -1, 2, UnitClass.Land);
+			var testee = CreateTestee(map, useNewImpl);
+
+			// Act
+			ITile? actual = testee.GotoStep(unit);
+
+			// Assert
 			Assert.NotNull(actual);
 			Assert.Equal(0, actual.X);
 		}

@@ -39,7 +39,8 @@ namespace CivOne.Services.Pathfinding
 
 		public ITile[] GetPath(IUnit unit, Point destination)
 		{
-			int goalX = destination.X, goalY = destination.Y;
+			int mapWidth = _mapTiles.Width, mapHeight = _mapTiles.Height;
+			int goalX = NormalizeWrappedX(destination.X, mapWidth), goalY = destination.Y;
 			int startX = unit.X, startY = unit.Y;
 
 			bool isAlreadyAtGoal = startX == goalX && startY == goalY;
@@ -48,7 +49,10 @@ namespace CivOne.Services.Pathfinding
 				return [];
 			}
 
-			int mapWidth = _mapTiles.Width, mapHeight = _mapTiles.Height;
+			if (goalY < 0 || goalY >= mapHeight)
+			{
+				return [];
+			}
 
 			var state = new AStarState(
 				GCostMap: [],
@@ -96,7 +100,8 @@ namespace CivOne.Services.Pathfinding
 
 		private ITile? GetFirstStep(IUnit unit, Point destination)
 		{
-			int goalX = destination.X, goalY = destination.Y;
+			int mapWidth = _mapTiles.Width, mapHeight = _mapTiles.Height;
+			int goalX = NormalizeWrappedX(destination.X, mapWidth), goalY = destination.Y;
 			int startX = unit.X, startY = unit.Y;
 
 			bool isAlreadyAtGoal = startX == goalX && startY == goalY;
@@ -105,7 +110,10 @@ namespace CivOne.Services.Pathfinding
 				return null;
 			}
 
-			int mapWidth = _mapTiles.Width, mapHeight = _mapTiles.Height;
+			if (goalY < 0 || goalY >= mapHeight)
+			{
+				return null;
+			}
 
 			var state = new AStarState(
 				GCostMap: [],
@@ -281,5 +289,16 @@ namespace CivOne.Services.Pathfinding
 
 		private int DistanceToTile(int x1, int y1, int x2, int y2)
 			=> Math.Max(Math.Min(Math.Abs(x2 - x1), _mapTiles.Width - Math.Abs(x2 - x1)), Math.Abs(y2 - y1));
+
+		private static int NormalizeWrappedX(int x, int width)
+		{
+			int normalizedX = x % width;
+			if (normalizedX < 0)
+			{
+				normalizedX += width;
+			}
+
+			return normalizedX;
+		}
 	}
 }
