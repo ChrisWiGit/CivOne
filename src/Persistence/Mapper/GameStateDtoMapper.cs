@@ -305,6 +305,7 @@ namespace CivOne.Persistence.Mapper
                 ReplayData = new ReplayDataDtoMapper().FromDtoList(dto.ReplayData ?? []),
                 PeaceTurns = dto.PeaceTurns,
                 PlayerFutureTech = players[dto.HumanPlayer].FutureTechCount,
+                DisableBuddyCivilizationRespawn = dto.DisableBuddyCivilizationRespawn,
                 GlobalWarmingCount = globalWarmingState.GlobalWarmingCount,
                 PollutedSquaresCount = globalWarmingState.PollutedSquaresCount,
                 WarmingIndicator = globalWarmingState.WarmingIndicator
@@ -378,6 +379,7 @@ namespace CivOne.Persistence.Mapper
                 ReplayData = new ReplayDataDtoMapper().ToDtoList(gameState.ReplayData ?? []),
                 PeaceTurns = gameState.PeaceTurns,
 				PlayerFutureTech = gameState.HumanPlayer.FutureTechCount,
+                DisableBuddyCivilizationRespawn = gameState.DisableBuddyCivilizationRespawn,
                 GlobalWarming = globalWarmingMapper.ToDto(gameState)
             };
 

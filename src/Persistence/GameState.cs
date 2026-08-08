@@ -80,6 +80,7 @@ namespace CivOne.Persistence
 
 		/// <summary>Future-tech counter from the original save format.</summary>
 		public ushort PlayerFutureTech { get; set; }
+		public bool DisableBuddyCivilizationRespawn { get; set; }
 
         public int GlobalWarmingCount { get; set; }
         public int PollutedSquaresCount { get; set; }

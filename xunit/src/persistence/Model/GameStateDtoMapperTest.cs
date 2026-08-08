@@ -229,6 +229,7 @@ namespace CivOne.Persistence.Model
 				GameRandomSeed = 99999,
 				PeaceTurns = 11,
 				PlayerFutureTech = 4,
+				DisableBuddyCivilizationRespawn = true,
 				Difficulty = DifficultyLevel.Chieftain,
 				Players = [playerDto0, playerDto1],
 				AnthologyTurn = 0,
@@ -371,6 +372,7 @@ namespace CivOne.Persistence.Model
 				[nameof(GameStateDto.AnthologyTurn)] = () => Assert.Equal(expected.AnthologyTurn, actual.AnthologyTurn),
 				[nameof(GameStateDto.PeaceTurns)] = () => Assert.Equal(expected.PeaceTurns, actual.PeaceTurns),
 				[nameof(GameStateDto.PlayerFutureTech)] = () => Assert.Equal(expected.PlayerFutureTech, actual.PlayerFutureTech),
+				[nameof(GameStateDto.DisableBuddyCivilizationRespawn)] = () => Assert.Equal(expected.DisableBuddyCivilizationRespawn, actual.DisableBuddyCivilizationRespawn),
 				[nameof(GameStateDto.Map)] = () =>
 				{
 					Assert.NotNull(actual.Map);
@@ -442,6 +444,7 @@ namespace CivOne.Persistence.Model
 			public bool Started => true;
 			public ushort GameTurn => 0;
 			public int Difficulty => 3;
+			public bool DisableBuddyCivilizationRespawn => false;
 			public Player HumanPlayer => throw new NotImplementedException();
 			public Player CurrentPlayer => throw new NotImplementedException();
 			// Return a dummy Player array for Validate to use as fallback

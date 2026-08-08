@@ -23,6 +23,7 @@ namespace CivOne
 		bool Started { get; }
 		ushort GameTurn { get; }
 		int Difficulty { get; }
+		bool DisableBuddyCivilizationRespawn { get; }
 
 		Player HumanPlayer { get; }
 		Player CurrentPlayer { get; }

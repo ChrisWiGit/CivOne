@@ -54,6 +54,19 @@ namespace CivOne.UnitTests.Persistence
             Assert.Equal(terrainMasterWord, actual.TerrainSeed);
         }
 
+        [Fact]
+        public void CreatePersistsDisableBuddyCivilizationRespawnFlag()
+        {
+            var snapshot = new MockedGameSnapshotSource
+            {
+                DisableBuddyCivilizationRespawn = true
+            };
+
+            var actual = GameStateHandler.Create(snapshot);
+
+            Assert.True(actual.DisableBuddyCivilizationRespawn);
+        }
+
         private sealed class MockedGameSnapshotSource : IGameSnapshotSource
         {
             public int Difficulty { get; set; } = 3;
@@ -78,6 +91,7 @@ namespace CivOne.UnitTests.Persistence
             public bool AutoSave { get; set; }
             public bool EnemyMoves { get; set; }
             public bool Palace { get; set; }
+            public bool DisableBuddyCivilizationRespawn { get; set; }
             public uint? GameRandomSeed { get; set; }
             public (short X, short Y)? HumanLastMapPosition { get; set; }
             public int TerrainMasterWord { get; set; }

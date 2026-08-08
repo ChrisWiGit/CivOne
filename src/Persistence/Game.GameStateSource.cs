@@ -19,6 +19,8 @@ namespace CivOne
 
 		public ushort PlayerFutureTech => HumanPlayer?.FutureTechCount ?? _playerFutureTech;
 
+		bool IGameSnapshotSource.DisableBuddyCivilizationRespawn => DisableBuddyCivilizationRespawn;
+
 		[SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "A list is suffice and changing it would require unnecessary changes to the GameState and related code.")]
 		public List<ReplayData> ReplayData => _replayData;
 

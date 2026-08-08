@@ -62,6 +62,9 @@ namespace CivOne.Persistence.Model
         [Doc("Legacy future-tech counter from the original save format. New YAML should prefer Players[].FutureTechCount. For backward compatibility this still mirrors the human player's count.", 0, ushort.MaxValue)]
         public ushort PlayerFutureTech { get; set; }
 
+        [Doc("If true, respawn never prefers the buddy civilization even in classic player-count setups. If true, the legacy save format is disabled.")]
+        public bool DisableBuddyCivilizationRespawn { get; set; }
+
 		[Doc("Global warming simulation state (count, pollution level, warning indicator).")]
 		public GlobalWarmingDto GlobalWarming { get; set; } = new GlobalWarmingDto();
 

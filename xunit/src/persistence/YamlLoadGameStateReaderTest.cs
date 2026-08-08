@@ -63,6 +63,7 @@ namespace CivOne.UnitTests.Persistence
 			Assert.True(actual.Map.MapSeed > 0);
 			Assert.Equal((ushort)0, actual.HumanPlayer);
 			Assert.Equal((ushort)1, actual.CurrentPlayer);
+			Assert.False(actual.DisableBuddyCivilizationRespawn);
 		}
 
 		[Fact]
@@ -116,6 +117,7 @@ namespace CivOne.UnitTests.Persistence
 			Assert.NotNull(actual.MapTiles[4, 3]);
 			Assert.NotNull(actual.HumanPlayer);
 			Assert.NotNull(actual.CurrentPlayer);
+			Assert.False(actual.DisableBuddyCivilizationRespawn);
 		}
 
 		[Fact]

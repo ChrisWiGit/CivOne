@@ -160,6 +160,7 @@ namespace CivOne
 			_anthologyTurn = state.AnthologyTurn;
 			_peaceTurns = state.PeaceTurns;
 			_playerFutureTech = HumanPlayer?.FutureTechCount ?? state.PlayerFutureTech;
+			DisableBuddyCivilizationRespawn = state.DisableBuddyCivilizationRespawn;
 
 			if (state.AdvanceOrigin != null)
 			{

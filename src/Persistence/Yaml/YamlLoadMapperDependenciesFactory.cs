@@ -133,6 +133,7 @@ namespace CivOne.Persistence.Yaml
 			public bool Started => false;
 			public ushort GameTurn => 0;
 			public int Difficulty => 0;
+			public bool DisableBuddyCivilizationRespawn => false;
 
 			public Player HumanPlayer => null!;
 			public Player CurrentPlayer => null!;

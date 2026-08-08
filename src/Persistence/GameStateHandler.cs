@@ -56,6 +56,7 @@ namespace CivOne
 		public bool AutoSave { get; }
 		public bool EnemyMoves { get; }
 		public bool Palace { get; }
+		public bool DisableBuddyCivilizationRespawn { get; }
 
 		uint? GameRandomSeed { get; }
 
@@ -127,6 +128,7 @@ namespace CivOne
 				ReplayData = [.. game.ReplayData],
 				PeaceTurns = game.PeaceTurns,
 				PlayerFutureTech = game.PlayerFutureTech,
+				DisableBuddyCivilizationRespawn = game.DisableBuddyCivilizationRespawn,
 				GlobalWarmingCount = game.GlobalWarmingService?.GlobalWarmingCount ?? 0,
 				PollutedSquaresCount = game.GlobalWarmingService?.PollutedSquaresCount ?? 0,
 				WarmingIndicator = game.GlobalWarmingService?.WarmingIndicator ?? WarmingIndicator.None,

@@ -62,6 +62,7 @@ namespace CivOne
 		private ushort _anthologyTurn;
 		private ushort _peaceTurns;
 		private ushort _playerFutureTech;
+		private bool _disableBuddyCivilizationRespawn;
 		private bool _hostileActionOccurred;
 		private bool _loadedFromYamlSaveSource;
 		private (short X, short Y) _pendingMapPositionRestore = (-1, -1);
@@ -81,6 +82,19 @@ namespace CivOne
 		public SaveMetaDataService SaveMetaDataService => _saveMetaDataService;
 
 		public int Competition => _competition;
+
+		/// <summary>
+		/// Gets or sets a value indicating whether the buddy civilization 
+		/// respawn feature is disabled.
+		/// When using the new civ selection screen this 
+		/// value should be set to true, as the buddy civ respawn feature
+		/// is
+		/// </summary>
+		internal bool DisableBuddyCivilizationRespawn
+		{
+			get => _disableBuddyCivilizationRespawn;
+			set => _disableBuddyCivilizationRespawn = value;
+		}
 
 		/// <summary>
 		/// The maximum number of players supported by a game (including the barbarian player at index 0).
