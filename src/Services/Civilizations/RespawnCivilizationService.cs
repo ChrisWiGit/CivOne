@@ -9,16 +9,14 @@ namespace CivOne.Services.Civilizations
 	/// <summary>
 	/// Picks the replacement civilization for a respawning player slot, preferring one that nobody plays.
 	///
-	/// The candidates are tried in a single order, so the original behaviour is a special case rather than a
-	/// separate branch:
+	/// For games with at most six opponents, the candidates are tried in this order:
 	/// <list type="number">
 	/// <item>the "buddy" civilization (Id +/- 7), if it is free;</item>
 	/// <item>otherwise a random civilization that no living player uses;</item>
 	/// <item>otherwise a random one among the least used, which the caller disambiguates by name.</item>
 	/// </list>
-	/// With seven or fewer non-barbarian players, every slot holds one civilization of its own buddy pair, so
-	/// the buddy is always free and step 1 always wins — the original games behave exactly as before and no
-	/// random number is drawn.
+	/// Games configured with more than six opponents skip the buddy preference and use the extended free
+	/// civilization selection directly.
 	/// </summary>
 	internal sealed class RespawnCivilizationService : IRespawnCivilizationService
 	{
@@ -44,7 +42,10 @@ namespace CivOne.Services.Civilizations
 			_randomService = randomService;
 		}
 
-		public RespawnCivilizationResult SelectReplacement(ICivilization destroyed, IReadOnlyCollection<ICivilization> civilizationsInUse)
+		public RespawnCivilizationResult SelectReplacement(
+			ICivilization destroyed,
+			IReadOnlyCollection<ICivilization> civilizationsInUse,
+			bool preferBuddyCivilization)
 		{
 			ArgumentNullException.ThrowIfNull(destroyed);
 			ArgumentNullException.ThrowIfNull(civilizationsInUse);
@@ -63,7 +64,7 @@ namespace CivOne.Services.Civilizations
 			}
 
 			ICivilization? buddy = candidates.FirstOrDefault(civ => civ.Id == BuddyId(destroyed.Id));
-			if (buddy != null && !usageById.ContainsKey(buddy.Id))
+			if (preferBuddyCivilization && buddy != null && !usageById.ContainsKey(buddy.Id))
 			{
 				return new RespawnCivilizationResult { Civilization = buddy, Occurrence = 0 };
 			}

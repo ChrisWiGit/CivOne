@@ -8,7 +8,7 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 * Feature: Improved civilization assignment and respawning for games with more players than available civilizations.
   * Initial player assignment now uses every regular civilization before reusing one and never assigns the Barbarians to a normal player slot.
-  * When a civilization is destroyed before 0 AD, its player slot prefers the free buddy civilization, then another free civilization, and finally one of the least-used civilizations if all are occupied.
+  * When a civilization is destroyed before 0 AD in a game with at most six opponents, its player slot prefers the free buddy civilization to preserve the original SVE-compatible behavior. Games with more opponents use another free civilization without buddy priority. If all civilizations are occupied, one of the least-used civilizations is selected.
   * Players sharing a civilization receive distinguishable leader and tribe names with Roman numerals, such as `Caesar II` and `Romans II`.
   * Respawned civilization identities are recorded in replay data and persisted in COS savegames, allowing later screens to reconstruct the correct civilization even after several respawns. Older saves without these replay entries remain supported.
   * The Conquest screen now shows the correct civilization for every defeated player, supports more than 14 defeated civilizations by clearing and reusing the portrait board, and preserves numbered civilization names.

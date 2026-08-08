@@ -43,7 +43,11 @@ namespace CivOne
 			Debug.Assert(IsHuman == false, "Cannot respawn a human player!");
 			Debug.Assert(Civilization.PreferredPlayerNumber != 0, "Cannot respawn barbarian player!");
 
-			RespawnCivilizationResult replacement = RespawnCivilizationService.SelectReplacement(Civilization, CivilizationsInUse());
+			bool preferBuddyCivilization = Game.Players.Count() <= 8;
+			RespawnCivilizationResult replacement = RespawnCivilizationService.SelectReplacement(
+				Civilization,
+				CivilizationsInUse(),
+				preferBuddyCivilization);
 			CivilizationNames names = new CivilizationNameDelegate().Build(replacement.Civilization, replacement.Occurrence);
 
 			return new Player(replacement.Civilization, names.LeaderName, names.TribeName, names.TribeNamePlural);

@@ -30,11 +30,24 @@ namespace CivOne.UnitTests.Services.Civilizations
 			RespawnCivilizationService testee = new(all, random);
 
 			// Romans (1) and Russians (8) are a buddy pair.
-			RespawnCivilizationResult result = testee.SelectReplacement(Civilization(all, 1), [Civilization(all, 2)]);
+			RespawnCivilizationResult result = testee.SelectReplacement(Civilization(all, 1), [Civilization(all, 2)], true);
 
 			Assert.Equal(8, result.Civilization.Id);
 			Assert.Equal(0, result.Occurrence);
 			Assert.Empty(random.RequestedRanges);
+		}
+
+		[Fact]
+		public void DoesNotPreferTheBuddyCivilizationForExtendedPlayerCounts()
+		{
+			ICivilization[] all = Civilizations();
+			RespawnCivilizationService testee = new(all, new StubRandomService());
+
+			RespawnCivilizationResult result = testee.SelectReplacement(Civilization(all, 1), [], false);
+
+			Assert.Equal(2, result.Civilization.Id);
+			Assert.NotEqual(8, result.Civilization.Id);
+			Assert.Equal(0, result.Occurrence);
 		}
 
 		[Fact]
@@ -44,7 +57,7 @@ namespace CivOne.UnitTests.Services.Civilizations
 			RespawnCivilizationService testee = new(all, new StubRandomService());
 
 			ICivilization[] inUse = [Civilization(all, 8)];
-			RespawnCivilizationResult result = testee.SelectReplacement(Civilization(all, 1), inUse);
+			RespawnCivilizationResult result = testee.SelectReplacement(Civilization(all, 1), inUse, true);
 
 			Assert.NotEqual(1, result.Civilization.Id);
 			Assert.NotEqual(8, result.Civilization.Id);
@@ -59,7 +72,7 @@ namespace CivOne.UnitTests.Services.Civilizations
 
 			// Everything except the destroyed civilization itself is taken.
 			ICivilization[] inUse = [.. all.Where(civ => civ.PreferredPlayerNumber != 0 && civ.Id != 3)];
-			RespawnCivilizationResult result = testee.SelectReplacement(Civilization(all, 3), inUse);
+			RespawnCivilizationResult result = testee.SelectReplacement(Civilization(all, 3), inUse, true);
 
 			Assert.NotEqual(3, result.Civilization.Id);
 		}
@@ -74,7 +87,7 @@ namespace CivOne.UnitTests.Services.Civilizations
 			for (int seed = 0; seed < 20; seed++)
 			{
 				RespawnCivilizationService testee = new(all, new StubRandomService(seed));
-				RespawnCivilizationResult result = testee.SelectReplacement(Civilization(all, 5), inUse);
+				RespawnCivilizationResult result = testee.SelectReplacement(Civilization(all, 5), inUse, true);
 
 				Assert.NotEqual(BarbarianId, result.Civilization.Id);
 			}
@@ -88,7 +101,7 @@ namespace CivOne.UnitTests.Services.Civilizations
 
 			// Every civilization is used once, civilization 2 twice: it must not be the one handed out.
 			ICivilization[] inUse = [.. all.Where(civ => civ.PreferredPlayerNumber != 0).Append(Civilization(all, 2))];
-			RespawnCivilizationResult result = testee.SelectReplacement(Civilization(all, 1), inUse);
+			RespawnCivilizationResult result = testee.SelectReplacement(Civilization(all, 1), inUse, true);
 
 			Assert.NotEqual(2, result.Civilization.Id);
 			Assert.Equal(1, result.Occurrence);
@@ -106,7 +119,7 @@ namespace CivOne.UnitTests.Services.Civilizations
 				.. all.Where(civ => civ.PreferredPlayerNumber != 0),
 				.. all.Where(civ => civ.PreferredPlayerNumber != 0)
 			];
-			RespawnCivilizationResult result = testee.SelectReplacement(Civilization(all, 1), inUse);
+			RespawnCivilizationResult result = testee.SelectReplacement(Civilization(all, 1), inUse, true);
 
 			Assert.Equal(2, result.Occurrence);
 		}
