@@ -6,6 +6,12 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: The power graph can be limited to the civilizations you care about.
+  * The graph draws at most 12 civilizations, so its rows stay inside the screen even in games with up to 31 opponents.
+  * In games with more than 12 civilizations, `F1` opens a grid dialog to check and uncheck the civilizations to draw. `F1` or `Escape` closes it again.
+  * By default the human player and the first civilizations are shown, up to seven in total. These are the civilizations that still carry their own name without a Roman numeral.
+  * The selection is remembered while the game runs and is reset to the default when another game is started or loaded.
+
 * Feature: Improved civilization assignment and respawning for games with more players than available civilizations.
   * Initial player assignment now uses every regular civilization before reusing one and never assigns the Barbarians to a normal player slot.
   * When a civilization is destroyed before 0 AD in a game with at most six opponents, its player slot prefers the free buddy civilization to preserve the original SVE-compatible behavior. Games with more opponents use another free civilization without buddy priority. If all civilizations are occupied, one of the least-used civilizations is selected.
