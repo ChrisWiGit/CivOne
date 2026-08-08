@@ -47,7 +47,10 @@ namespace CivOne.Persistence.Mapper
             var savedGame = Player.Game;
             try
             {
-                Player.Game = new PlayerGameStub();
+                // The stub carries the players of this save file, so cities resolve their owner from the
+                // game being loaded instead of from the still-current Game singleton (whose player array
+                // belongs to the previously loaded game and may be shorter).
+                Player.Game = new PlayerGameStub([.. players.OfType<Player>()]);
                 var (cities, cityNames) = MapCities(players);
                 
                 var randomSeed = dto.GameRandomSeed;

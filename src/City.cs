@@ -852,7 +852,13 @@ namespace CivOne
 			UpdateSpecialists();
 		}
 
-		public Player CityOwnerPlayer => Game.Instance.GetPlayer(CityOwnerPlayerIndex)!;
+		/// <summary>
+		/// The player owning this city.
+		/// Resolved through <see cref="Player.Game"/> rather than the <see cref="Game"/> singleton:
+		/// while a save file is being hydrated, the singleton still points at the previously loaded
+		/// game, whose player array can be shorter than the one of the incoming save.
+		/// </summary>
+		public Player CityOwnerPlayer => (Player.Game ?? Game.Instance).GetPlayer(CityOwnerPlayerIndex)!;
 		public IPlayer PlayerIntf => CityOwnerPlayer;
 
 		/// <summary>
@@ -1768,12 +1774,17 @@ namespace CivOne
 			_specialists = [];
 			CurrentProduction = new Settlers(); // Default production, should be overridden by caller immediately after city creation.
 			
-			if (!Game.Started) return;
-			if (Player.Game == null) return;
-			if (CityOwnerPlayer == null) return;
-			
+			// Resolve the owner through Player.Game, not through the Game singleton: while a save is being
+			// hydrated, Game.Instance still points at the previously loaded game, whose player array can be
+			// shorter than the incoming one (Game.GetPlayer would then assert on an out-of-range index).
+			IPlayerGame playerGame = Player.Game;
+			if (playerGame == null || !playerGame.Started) return;
+
+			Player? ownerPlayer = playerGame.GetPlayer(owner);
+			if (ownerPlayer == null) return;
+
 			CurrentProduction = Reflect.GetUnits()
-				.Where(CityOwnerPlayer.ProductionAvailable)
+				.Where(ownerPlayer.ProductionAvailable)
 				.OrderBy(u => Common.HasAttribute<DefaultUnitProductionAttribute>(u) ? -1 : (int)u.Type)
 				.FirstOrDefault() ?? new Settlers(); // Default to Settlers, should never happen that no production is available at city founding, but just in case.
 			SetResourceTiles();
