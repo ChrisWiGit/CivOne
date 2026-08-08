@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using CivOne.Civilizations;
@@ -26,10 +27,25 @@ namespace CivOne.Screens
 		{
 			public string DestroyYear;
 			public ILeader Leader;
-			public ICivilization Civilization;
+			public string CivilizationName;
 		}
 
 		private const int NOISE_COUNT = 64;
+
+		/// <summary>
+		/// Number of small leader portraits the board can show: two rows of seven.
+		/// Once they are all taken, the board is wiped and filled again from the first slot.
+		/// </summary>
+		private const int PORTRAIT_SLOTS = 14;
+
+		private static readonly Point[] PortraitPoints =
+		[
+			// lower row of leader portraits
+			new(8, 49), new(284, 49), new(54, 49), new(238, 49), new(100, 49), new(192, 49), new(146, 49),
+			// upper row of leader portraits
+			new(8, 8), new(284, 8), new(54, 8), new(238, 8), new(100, 8), new(192, 8), new(146, 8)
+		];
+
 		private int _noiseCounter;
 		private readonly byte[,] _noiseMap;
 		private bool _update = true;
@@ -40,7 +56,7 @@ namespace CivOne.Screens
 		private int _step;
 
 		private int _timer;
-		private readonly Picture _background;
+		private Picture _background;
 		private Picture? _overlay;
 
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
@@ -65,7 +81,7 @@ namespace CivOne.Screens
 		private void DrawMessageLines()
 		{
 			string line1 = TranslateFormatted("{0}: {1} destroy", _enemies[_enemy].DestroyYear, Human.Civilization.NamePlural);
-			string line2 = TranslateFormatted("{0} civilization!", _enemies[_enemy].Civilization.Name);
+			string line2 = TranslateFormatted("{0} civilization!", _enemies[_enemy].CivilizationName);
 			this.DrawText(line1, 5, 20, 159 + OffsetX, 152 + OffsetY, TextAlign.Center)
 				.DrawText(line1, 5, 23, 159 + OffsetX, 151 + OffsetY, TextAlign.Center)
 				.DrawText(line2, 5, 20, 159 + OffsetX, 168 + OffsetY, TextAlign.Center)
@@ -82,27 +98,21 @@ namespace CivOne.Screens
 			}
 		}
 
-		private Point GetPoint(int number)
+		/// <summary>
+		/// Returns the board position for the given enemy, wrapping around once the board is full.
+		/// </summary>
+		/// <param name="number">The index of the enemy in <see cref="_enemies"/>.</param>
+		/// <returns>The top left corner of the portrait, in unscaled 320x200 coordinates.</returns>
+		private static Point GetPoint(int number) => PortraitPoints[number % PORTRAIT_SLOTS];
+
+		/// <summary>
+		/// Replaces the board with an empty one, so the portraits start again at the first slot.
+		/// </summary>
+		private void ClearBoard()
 		{
-			return number switch
-			{
-				0 => new Point(8, 49),
-				1 => new Point(284, 49),
-				2 => new Point(54, 49),
-				3 => new Point(238, 49),
-				4 => new Point(100, 49),
-				5 => new Point(192, 49),
-				6 => new Point(146, 49),
-				// high up pictures of leaders
-				7 => new Point(8, 8),
-				8 => new Point(284, 8),
-				9 => new Point(54, 8),
-				10 => new Point(238, 8),
-				11 => new Point(100, 8),
-				12 => new Point(192, 8),
-				13 => new Point(146, 8),
-				_ => new Point(8, 49),
-			};
+			Picture previous = _background;
+			_background = Resources["SLAM1"];
+			previous.Dispose();
 		}
 
 		protected override bool HasUpdate(uint gameTick)
@@ -115,9 +125,17 @@ namespace CivOne.Screens
 				Console.WriteLine($"Conquest step {_step} ");
 				if (_step == 2)
 				{
+					_overlay?.Dispose();
 					_overlay = new Picture(_background);
 					_overlay.AddLayer(_enemies[_enemy].Leader.GetPortrait(FaceState.Angry), 90, 0);
 					_noiseCounter = NOISE_COUNT + 2;
+					if (_enemy > 0 && _enemy % PORTRAIT_SLOTS == 0)
+					{
+						// The board is full: wipe it and start over instead of drawing on top of the
+						// portraits that are already there. The overlay still holds the old board, so the
+						// noise transition dissolves the previous portraits away.
+						ClearBoard();
+					}
 					_background.AddLayer(_enemies[_enemy].Leader.PortraitSmall, GetPoint(_enemy));
 				}
 				if (_step == 3)
@@ -219,22 +237,23 @@ namespace CivOne.Screens
 					_noiseMap[x, y] = RandomService.NextByte(1, NOISE_COUNT);
 				}
 
-			BaseCivilization.BuddyCivilization getBuddyCiv =
-				BaseCivilization.GetBuddyCivilizationSupplier(
-					Common.Random!.InitialSeed, Game.Competition, Game.HumanPlayerId, Game.HumanPlayer.Civilization);
+			IReadOnlyDictionary<ReplayData.CivilizationDestroyed, DestroyedCivilization> destroyedCivilizations =
+				new DestroyedCivilizationResolverDelegate().Resolve(
+					Game.GetReplayData<ReplayData>(), Common.Random!.InitialSeed, Game.Competition,
+					Game.HumanPlayerId, Game.HumanPlayer.Civilization);
 
-			_enemies = [.. Game.GetReplayData<ReplayData.CivilizationDestroyed>()
-				.Where(x => x.DestroyedById == Game.HumanPlayerId)
-				.Select(x =>
+			CivilizationNameDelegate civilizationNames = new();
+			_enemies = [.. destroyedCivilizations
+				.Where(entry => entry.Key.DestroyedById == Game.HumanPlayerId)
+				.OrderBy(entry => entry.Key.Turn)
+				.Select(entry => new Enemy
 				{
-					ICivilization civ = getBuddyCiv(x.DestroyedId);
-
-					return new Enemy
-					{
-						DestroyYear = Common.YearString((ushort)x.Turn),
-						Leader = civ.Leader,
-						Civilization = civ,
-					};
+					DestroyYear = Common.YearString((ushort)entry.Key.Turn),
+					Leader = entry.Value.Civilization.Leader,
+					// Several players can share one civilization once there are more players than civilizations,
+					// so use the same numbered name the destroyed player had ("Roman II").
+					CivilizationName = civilizationNames.Build(entry.Value.Civilization, entry.Value.Occurrence).TribeName
+						?? entry.Value.Civilization.Name,
 				}
 			)];
 
@@ -250,6 +269,7 @@ namespace CivOne.Screens
 
 			_overlay?.Dispose();
 			_overlay = null;
+			_background.Dispose();
 			base.Dispose(disposing);
 		}
 	}

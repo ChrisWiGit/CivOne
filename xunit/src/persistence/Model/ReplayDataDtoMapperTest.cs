@@ -163,6 +163,18 @@ namespace CivOne.Persistence.Model
 			Assert.Equal(original.DestroyedById, restored.DestroyedById);
 		}
 
+		[Fact]
+		public void RoundTripCivilizationRespawnedPreservesAllFields()
+		{
+			var original = new ReplayData.CivilizationRespawned(turn: 42, playerId: 17, civilizationId: 9);
+
+			var restored = Assert.IsType<ReplayData.CivilizationRespawned>(_testee.FromDto(_testee.ToDto(original)));
+
+			Assert.Equal(original.Turn, restored.Turn);
+			Assert.Equal(original.PlayerId, restored.PlayerId);
+			Assert.Equal(original.CivilizationId, restored.CivilizationId);
+		}
+
 		// ── Multi-set guard ──────────────────────────────────────────────────────
 
 		[Fact]

@@ -286,6 +286,11 @@ namespace CivOne
 				_players[index] = newPlayer;
 				_players[index].Destroyed += PlayerDestroyed;
 
+				// The replacement civilization is picked from whatever is free at this moment, so it cannot be
+				// derived from the initial seed later on. Record it, so screens can look up which civilization
+				// held this slot at any turn (see DestroyedCivilizationResolverDelegate).
+				_replayData.Add(new ReplayData.CivilizationRespawned(_gameTurn, index, (byte)newPlayer.Civilization.Id));
+
 				PlaceStartingUnits([index]);
 				// CW: Not sure, but are these new civs given technology or better units?
 				// Could be a feature to advance such a civilization.

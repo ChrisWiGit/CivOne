@@ -61,6 +61,16 @@ namespace CivOne.Persistence.Model
 					}
 				},
 
+				ReplayData.CivilizationRespawned civr => new ReplayDataDto
+				{
+					Turn = civr.Turn,
+					CivilizationRespawned = new ReplayDataDto.CivilizationRespawnedData
+					{
+						PlayerId = civr.PlayerId,
+						CivilizationId = civr.CivilizationId
+					}
+				},
+
 				// ── Types without domain class yet ──
 				// Uncomment each block once the corresponding ReplayData subclass is added
 				// in api/src/ReplayData.cs, and remove the matching throw in FromDto.
@@ -148,6 +158,7 @@ namespace CivOne.Persistence.Model
 				dto.CityDestroyed,
 				dto.CityCaptured,
 				dto.CivilizationDestroyed,
+				dto.CivilizationRespawned,
 				dto.WarDeclared,
 				dto.PeaceMade,
 				dto.AdvanceDiscovered,
@@ -184,6 +195,14 @@ namespace CivOne.Persistence.Model
 					turn: dto.Turn,
 					destroyedId: (byte)civd.DestroyedId,
 					destroyedById: (byte)civd.DestroyedById);
+			}
+
+			if (dto.CivilizationRespawned is { } civr)
+			{
+				return new ReplayData.CivilizationRespawned(
+					turn: dto.Turn,
+					playerId: (byte)civr.PlayerId,
+					civilizationId: (byte)civr.CivilizationId);
 			}
 
 			// ── Types without domain class yet ──

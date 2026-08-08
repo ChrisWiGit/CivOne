@@ -130,11 +130,18 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		private void MenuShowPlayerSlots(object? _, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen<PlayerSlotsScreen>());
+			Destroy();
+		}
+
 		private void InstantConquest(object? _, EventArgs args)
 		{
 			Game.Players.ToList().ForEach(p =>
 			{
-				if (p.IsHuman || p.Civilization.Id == 0) return;
+				// PreferredPlayerNumber 0 identifies the barbarians, whose Id is 15 rather than 0.
+				if (p.IsHuman || p.Civilization.PreferredPlayerNumber == 0) return;
 
 				Game.GetUnits().Where(u => u.Player == p).ToList().ForEach(u =>
 				{
@@ -321,7 +328,8 @@ namespace CivOne.Screens
 
 		private void MenuRunSelectAdvanceAfterCityCapture(object? _, EventArgs args)
 		{
-			var enemy = Game.Players.FirstOrDefault(p => p != Human && p.Civilization.Id != 0);
+			// PreferredPlayerNumber 0 identifies the barbarians, whose Id is 15 rather than 0.
+			var enemy = Game.Players.FirstOrDefault(p => p != Human && p.Civilization.PreferredPlayerNumber != 0);
 			if (enemy == null)
 			{
 				GameTask.Enqueue(Message.General(Translate("No enemy player available for advance capture test.")));
@@ -557,6 +565,7 @@ namespace CivOne.Screens
 				new(Translate("Instant Conquest"), () => InstantConquest(null, EventArgs.Empty)),
 				new(Translate("Instant Global Warming"), () => InstantGlobalWarming(null, EventArgs.Empty)),
 				new(Translate("Palette Viewer"), () => MenuPaletteViewer(null, EventArgs.Empty)),
+				new(Translate("Show Player Slots"), () => MenuShowPlayerSlots(null, EventArgs.Empty)),
 				new(Translate("Settings"), () => ShowSettings(null, EventArgs.Empty)),
 				new(Translate("End Game: Conquest"),  () => EndGameConquest(null, EventArgs.Empty)),
 				new(Translate("End Game: Defeat"), () => EndGameDefeat(null, EventArgs.Empty)),

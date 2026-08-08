@@ -88,14 +88,17 @@ namespace CivOne.Civilizations
 
 			if (competition > 7)
 			{
+				// PreferredPlayerNumber 0 identifies the barbarians, whose Id is 15 rather than 0, so they have
+				// to be filtered out by that instead — otherwise they end up in the pool for a regular player.
+				int[] selectableIds = [.. Common.Civilizations.Where(civ => civ.PreferredPlayerNumber != 0).Select(civ => civ.Id)];
 				HashSet<int> usedIds = [.. civilizationByIndex.Where(civ => civ != null).Select(civ => civ.Id)];
-				List<int> reusePool = [.. Common.Civilizations.Where(civ => civ.Id != 0 && !usedIds.Contains(civ.Id)).Select(civ => civ.Id)];
+				List<int> reusePool = [.. selectableIds.Where(id => !usedIds.Contains(id))];
 
 				for (int i = 8; i <= competition; i++)
 				{
 					if (reusePool.Count == 0)
 					{
-						reusePool.AddRange(Common.Civilizations.Where(civ => civ.Id != 0).Select(civ => civ.Id));
+						reusePool.AddRange(selectableIds);
 					}
 
 					int poolIndex = startRandom.Next(reusePool.Count);

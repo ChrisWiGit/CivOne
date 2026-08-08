@@ -6,6 +6,14 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Improved civilization assignment and respawning for games with more players than available civilizations.
+  * Initial player assignment now uses every regular civilization before reusing one and never assigns the Barbarians to a normal player slot.
+  * When a civilization is destroyed before 0 AD, its player slot prefers the free buddy civilization, then another free civilization, and finally one of the least-used civilizations if all are occupied.
+  * Players sharing a civilization receive distinguishable leader and tribe names with Roman numerals, such as `Caesar II` and `Romans II`.
+  * Respawned civilization identities are recorded in replay data and persisted in COS savegames, allowing later screens to reconstruct the correct civilization even after several respawns. Older saves without these replay entries remain supported.
+  * The Conquest screen now shows the correct civilization for every defeated player, supports more than 14 defeated civilizations by clearing and reusing the portrait board, and preserves numbered civilization names.
+  * Added a paginated `Show Player Slots` debug screen showing every slot's leader, tribe, civilization, unit and city counts, respawn count, player colors, and human or Barbarian status.
+
 * Feature: New "Area based" algorithm for placing civilizations' starting Settlers, as an alternative to the original placement logic.
   * Choose the algorithm in the setup menu under `Shift+F1 → Patches → Starting position algorithm`: `Legacy` (default, original random-search behavior, unchanged) or `Area based` (new). The setting can only be changed while no game is running.
   * With `Area based` selected, the map is divided into a grid of areas — twice as many areas as there are civilizations, so roughly half stay unassigned as buffer/fallback space. Areas are handed out to civilizations in random order (not left-to-right), so each civilization gets its own area to start in.

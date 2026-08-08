@@ -84,6 +84,20 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
+		public void NoPlayerSlotIsGivenTheBarbarians()
+		{
+			// The barbarians carry Id 15, not 0, so filtering the reuse pool by Id alone let them through
+			// once the pool was refilled - which happens from slot 15 onwards.
+			ICivilization human = HumanCivilization();
+			CivilizationAssignment assignment = CivilizationAssignment.Create(Seed, 31, human.PreferredPlayerNumber, human);
+
+			for (int slot = 1; slot < assignment.Count; slot++)
+			{
+				Assert.NotEqual(0, assignment[slot].PreferredPlayerNumber);
+			}
+		}
+
+		[Fact]
 		public void BuddySwapsToTheOtherCivilizationInThePair()
 		{
 			ICivilization human = HumanCivilization();

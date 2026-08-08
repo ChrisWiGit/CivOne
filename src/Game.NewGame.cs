@@ -160,33 +160,6 @@ namespace CivOne
 		}
 
 		/// <summary>
-		/// Converts a small positive integer to a Roman numeral, used to disambiguate players that share a
-		/// reused civilization (e.g. "Caesar II") when there are more non-barbarian players than civilizations.
-		/// </summary>
-		/// <param name="number">The number to convert. Values below 1 produce an empty string.</param>
-		/// <returns>The Roman numeral for <paramref name="number"/>.</returns>
-		private static string ToRomanNumeral(int number)
-		{
-			(int Value, string Numeral)[] table =
-			[
-				(1000, "M"), (900, "CM"), (500, "D"), (400, "CD"),
-				(100, "C"), (90, "XC"), (50, "L"), (40, "XL"),
-				(10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I")
-			];
-
-			System.Text.StringBuilder numeral = new();
-			foreach ((int value, string symbol) in table)
-			{
-				while (number >= value)
-				{
-					numeral.Append(symbol);
-					number -= value;
-				}
-			}
-			return numeral.ToString();
-		}
-
-		/// <summary>
 		/// Places the starting Settlers on any free land tile, ignoring the regular placement rules.
 		/// Used when the starting-position service could not satisfy them, so a player is never left
 		/// without units while the map still has usable land.
@@ -409,6 +382,7 @@ namespace CivOne
 			_players = new Player[competition + 1];
 
 			CivilizationAssignment assignment = CivilizationAssignment.Create(Common.Random!.InitialSeed, competition, tribe.PreferredPlayerNumber, tribe);
+			CivilizationNameDelegate civilizationNames = new();
 			Dictionary<int, int> civIdOccurrences = [];
 
 			for (int i = 0; i <= competition; i++)
@@ -436,16 +410,9 @@ namespace CivOne
 
 				// When a civilization is reused (more non-barbarian players than the 14 available civilizations),
 				// disambiguate the leader/tribe names of the repeat occurrences instead of showing duplicates.
-				string? customLeaderName = null, customTribeName = null, customTribeNamePlural = null;
-				if (occurrence > 0)
-				{
-					string numeral = ToRomanNumeral(occurrence + 1);
-					customLeaderName = $"{civ.Leader.Name} {numeral}";
-					customTribeName = $"{civ.Name} {numeral}";
-					customTribeNamePlural = $"{civ.NamePlural} {numeral}";
-				}
+				CivilizationNames names = civilizationNames.Build(civ, occurrence);
 
-				_players[i] = new Player(civ, customLeaderName, customTribeName, customTribeNamePlural);
+				_players[i] = new Player(civ, names.LeaderName, names.TribeName, names.TribeNamePlural);
 				if (occurrence == 0)
 				{
 					// Only the first player assigned a given civilization claims its fixed start position;

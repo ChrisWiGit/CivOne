@@ -107,6 +107,31 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
+		public void RespawnPicksAnotherCivilizationAndRecordsItInTheReplay()
+		{
+			byte targetIndex = (byte)Enumerable.Range(8, Competition - 7)
+				.First(i => !Game.Instance.GetPlayer((byte)i)!.IsHuman);
+
+			int destroyedCivilizationId = Game.Instance.GetPlayer(targetIndex)!.Civilization.Id;
+
+			foreach (var unit in Game.Instance.GetUnits().Where(u => u.Owner == targetIndex).ToArray())
+			{
+				Game.Instance.DisbandUnit(unit);
+			}
+
+			Player replacement = Game.Instance.GetPlayer(targetIndex)!;
+			Assert.NotEqual(destroyedCivilizationId, replacement.Civilization.Id);
+			Assert.NotEqual(0, replacement.Civilization.PreferredPlayerNumber);
+
+			// The replacement depends on which civilizations were free at that moment, so it cannot be derived
+			// from the seed afterwards and has to be in the replay.
+			ReplayData.CivilizationRespawned entry = Assert.Single(
+				Game.Instance.GetReplayData<ReplayData.CivilizationRespawned>(),
+				x => x.PlayerId == targetIndex);
+			Assert.Equal(replacement.Civilization.Id, entry.CivilizationId);
+		}
+
+		[Fact]
 		public void CityOwnedByAPlayerBeyondIndexFifteenExposesItsVisibleSizes()
 		{
 			Player owner = Game.Instance.GetPlayer(HighPlayerIndex)!;
