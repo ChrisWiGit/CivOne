@@ -191,7 +191,7 @@ namespace CivOne
 				.WithInvalidUnitHomeCityReferences(_units.Any(unit => unit.Home != null && !cityLookup.Contains(unit.Home)))
 				.WithOutOfBoundsCityCoordinates(_cities.Any(city => city.X >= Map.WIDTH || city.Y >= Map.HEIGHT))
 				.WithOutOfBoundsUnitCoordinates(_units.Any(unit => unit.X < 0 || unit.Y < 0 || unit.X >= Map.WIDTH || unit.Y >= Map.HEIGHT))
-				.WithOutOfBoundsUnitGotoCoordinates(_units.Any(unit => !unit.GotoDestination.IsEmpty && (unit.GotoDestination.X < 0 || unit.GotoDestination.Y < 0 || unit.GotoDestination.X >= Map.WIDTH || unit.GotoDestination.Y >= Map.HEIGHT)))
+				.WithOutOfBoundsUnitGotoCoordinates(_units.Any(unit => unit.HasGotoDestination() && unit.GotoDestination.Y >= Map.HEIGHT))
 				.WithTradeCityCountsPerCity([.. _cities.Select(city => city.TradingCities?.Length ?? 0)])
 				.WithCityOwners([.. _cities.Select(city => city.CityOwnerPlayerIndex)])
 				.WithUnitOwners(sveUnitOwners)
@@ -543,17 +543,40 @@ namespace CivOne
 			{
 				LastActivePlayerUnit = unit ?? LastActivePlayerUnit;
 
-				if (unit is {} baseUnit && !unit.GotoDestination.IsEmpty)
+				if (unit is {} baseUnit && unit.HasGotoDestination())
 				{
-					ITile[] tiles = [.. baseUnit.MoveTargets.OrderBy(x => x.DistanceTo(unit.GotoDestination)).ThenBy(x => x.Movement)];
+					// Keep in sync with AStarPathfinderAdapter.GetNextStep().
+					// (0,0) is a valid map coordinate, not "no destination" (see UnitGotoDestinationExtensions).
+					// X must be normalized to map width before passing a goal to AStar.
+					// AStar neighbor expansion wraps X internally; an unwrapped goal may never be reached.
+					int gotoX = unit.GotoDestination.X % Map.WIDTH;
+					if (gotoX < 0)
+					{
+						gotoX += Map.WIDTH;
+					}
+
+					int gotoY = unit.GotoDestination.Y;
+					if (gotoY < 0 || gotoY >= Map.HEIGHT)
+					{
+						unit.ClearGotoDestination();
+						return;
+					}
+
+					Point normalizedDestination = new(gotoX, gotoY);
+					if (unit.GotoDestination != normalizedDestination)
+					{
+						unit.GotoDestination = normalizedDestination;
+					}
+
+					ITile[] tiles = [.. baseUnit.MoveTargets.OrderBy(x => x.DistanceTo(normalizedDestination)).ThenBy(x => x.Movement)];
 
 					if (Settings.Instance.PathFinding)
 					{
 						/*  Use AStar  */
 						AStar.SPosition Destination = new()
 						{
-							iX = unit.GotoDestination.X,
-							iY = unit.GotoDestination.Y
+							iX = normalizedDestination.X,
+							iY = normalizedDestination.Y
 						};
 						
 						AStar.SPosition Pos = new()
@@ -564,14 +587,14 @@ namespace CivOne
 
 						if (Destination.iX == Pos.iX && Destination.iY == Pos.iY)
 						{
-							unit.GotoDestination = Point.Empty;   // eh... never mind
+							unit.ClearGotoDestination();   // eh... never mind
 							return;
 						}
 						AStar AStar = new AStar();
 						AStar.SPosition NextPosition = AStar.FindPath(Destination, unit);
 						if (NextPosition.iX < 0)
 						{         // if no path found
-							unit.GotoDestination = Point.Empty;
+							unit.ClearGotoDestination();
 							return;
 						}
 						unit.MoveTo(NextPosition.iX - Pos.iX, NextPosition.iY - Pos.iY);
@@ -581,19 +604,19 @@ namespace CivOne
 					else
 					{
 
-						int distance = unit.Tile.DistanceTo(unit.GotoDestination);
-						if (tiles.Length == 0 || tiles[0].DistanceTo(unit.GotoDestination) > distance)
+						int distance = unit.Tile.DistanceTo(normalizedDestination);
+						if (tiles.Length == 0 || tiles[0].DistanceTo(normalizedDestination) > distance)
 						{
 							// No valid tile to move to, cancel goto
-							unit.GotoDestination = Point.Empty;
+							unit.ClearGotoDestination();
 							return;
 						}
-						else if (tiles[0].DistanceTo(unit.GotoDestination) == distance)
+						else if (tiles[0].DistanceTo(normalizedDestination) == distance)
 						{
 							// Distance is unchanged, 50% chance to cancel goto
 							if (_randomService.NextInt(0, 100) < 50)
 							{
-								unit.GotoDestination = Point.Empty;
+								unit.ClearGotoDestination();
 								return;
 							}
 						}

@@ -130,7 +130,7 @@ namespace CivOne
 
 				for (int i = 0; i < 1000; i++)
 				{
-					if (unit.GotoDestination.IsEmpty)
+					if (!unit.HasGotoDestination())
 					{
 						int gotoX = _randomService.NextInt(-5, 6);
 						int gotoY = _randomService.NextInt(-5, 6);
@@ -141,7 +141,7 @@ namespace CivOne
 						continue;
 					}
 
-					if (!unit.GotoDestination.IsEmpty)
+					if (unit.HasGotoDestination())
 					{
 						IAiGotoExecutor gotoExecutor = _gotoExecutorFactory.CreateFor(unit);
 						AiGotoExecutionResult gotoExecutionResult = gotoExecutor.TryExecute(unit);
@@ -156,20 +156,34 @@ namespace CivOne
 							return;
 						}
 
-						int distance = unit.Tile.DistanceTo(unit.GotoDestination);
-						ITile[] tiles = [.. unit.MoveTargets.OrderBy(x => x.DistanceTo(unit.GotoDestination)).ThenBy(x => x.Movement)];
-						if (tiles.Length == 0 || tiles[0].DistanceTo(unit.GotoDestination) > distance)
+						int normalizedGotoX = unit.GotoDestination.X % Map.WIDTH;
+						if (normalizedGotoX < 0)
 						{
-							// No valid tile to move to, cancel goto
-							unit.GotoDestination = Point.Empty;
+							normalizedGotoX += Map.WIDTH;
+						}
+
+						int normalizedGotoY = unit.GotoDestination.Y;
+						if (normalizedGotoY < 0 || normalizedGotoY >= Map.HEIGHT)
+						{
+							unit.ClearGotoDestination();
 							continue;
 						}
-						else if (tiles[0].DistanceTo(unit.GotoDestination) == distance)
+
+						Point normalizedGotoDestination = new(normalizedGotoX, normalizedGotoY);
+						int distance = unit.Tile.DistanceTo(normalizedGotoDestination);
+						ITile[] tiles = [.. unit.MoveTargets.OrderBy(x => x.DistanceTo(normalizedGotoDestination)).ThenBy(x => x.Movement)];
+						if (tiles.Length == 0 || tiles[0].DistanceTo(normalizedGotoDestination) > distance)
+						{
+							// No valid tile to move to, cancel goto
+							unit.ClearGotoDestination();
+							continue;
+						}
+						else if (tiles[0].DistanceTo(normalizedGotoDestination) == distance)
 						{
 							// Distance is unchanged, 50% chance to cancel goto
 							if (_randomService.Hit(50))
 							{
-								unit.GotoDestination = Point.Empty;
+								unit.ClearGotoDestination();
 								continue;
 							}
 						}
@@ -179,21 +193,21 @@ namespace CivOne
 							if (unit.Role == UnitRole.Civilian || unit.Role == UnitRole.Settler || unit is Carrier)
 							{
 								// do not attack with civilian or settler units or carrier
-								unit.GotoDestination = Point.Empty;
+								unit.ClearGotoDestination();
 								continue;
 							}
 
 							if (unit.Role == UnitRole.Transport && _randomService.Hit(67))
 							{
 								// 67% chance of cancelling attack with transport unit
-								unit.GotoDestination = Point.Empty;
+								unit.ClearGotoDestination();
 								continue;
 							}
 
 							if (unit.Attack < tiles[0].Units.Max(x => x.Defense) && _randomService.Hit(50))
 							{
 								// 50% of attacking cancelling attack of stronger unit
-								unit.GotoDestination = Point.Empty;
+								unit.ClearGotoDestination();
 								continue;
 							}
 						}
@@ -203,7 +217,7 @@ namespace CivOne
 							// The code below is to prevent the game from becoming stuck...
 							if (_randomService.Hit(67))
 							{
-								unit.GotoDestination = Point.Empty;
+								unit.ClearGotoDestination();
 								continue;
 							}
 							else if (_randomService.Hit(67))

@@ -112,6 +112,26 @@ namespace CivOne.Persistence.Model
 			}
 		}
 
+		[Fact]
+		public void ClearedGotoDestinationRoundTripRemainsNoDestination()
+		{
+			// Arrange
+			var unit = new MockedIUnit
+			{
+				Owner = ExpectedPlayerId,
+			};
+			unit.ClearGotoDestination();
+
+			// Act
+			var dto = _testee.ToDto(unit);
+			var restored = _testee.FromDto(dto);
+
+			// Assert
+			Assert.Equal((uint)int.MaxValue, dto.Goto.X);
+			Assert.Equal((uint)int.MaxValue, dto.Goto.Y);
+			Assert.False(restored.HasGotoDestination());
+		}
+
 		[Theory]
 		[InlineData(false, true, true, false)]
 		[InlineData(false, false, false, true)]

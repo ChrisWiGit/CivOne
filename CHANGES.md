@@ -6,6 +6,21 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Fix: Goto pathfinding now handles horizontal map wrapping correctly in both smart and legacy modes, so wrapped goto targets are found reliably.
+* Feature: Goto moving unit
+  * zoom mode supported. Yet zooming is not supported while in goto mode, so the user must exit go to mode first before zooming.
+  * Draws a live path preview to the current target tile (mouse hover and keyboard target mode).
+  * Added keyboard target mode in Goto as in original Civ.
+    * Press `Tab` to toggle keyboard target mode.
+    * Arrow keys and numpad (including diagonals) move the target cursor.
+    * Press `Enter` to confirm the current target, `Escape` to cancel.
+    * Pressing a direction key also activates keyboard target mode immediately.
+  * Path preview uses the `IUnitGotoService` interface, so preview behavior follows the currently selected goto/pathfinding implementation.
+  * Path preview calculation is skipped beyond a configured maximum preview distance to avoid expensive pathfinding for far targets. The current hard limit is exactly 35 tiles.
+  * Blink behavior:
+    * Active unit and keyboard target rectangle use the normal map blink timing.
+    * Small path preview markers use a separate, slower blink interval.
+  * Current limitations (known): not all original Civ1 goto interactions are implemented yet (for example, entering other unit commands or opening/using the game menu while Goto is active).
 * Feature: New "Area based" algorithm for placing civilizations' starting Settlers, as an alternative to the original placement logic.
   * Choose the algorithm in the setup menu under `Shift+F1 → Patches → Starting position algorithm`: `Legacy` (default, original random-search behavior, unchanged) or `Area based` (new). The setting can only be changed while no game is running.
   * With `Area based` selected, the map is divided into a grid of areas — twice as many areas as there are civilizations, so roughly half stay unassigned as buffer/fallback space. Areas are handed out to civilizations in random order (not left-to-right), so each civilization gets its own area to start in.
