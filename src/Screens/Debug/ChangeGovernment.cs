@@ -10,148 +10,153 @@
 using System;
 using System.Linq;
 using CivOne.Civilizations;
+using CivOne.Enums;
 using CivOne.Events;
-using CivOne.Graphics;
 using CivOne.Governments;
-using CivOne.Screens.Dialogs;
 using CivOne.Tasks;
-using CivOne.UserInterface;
 
 namespace CivOne.Screens.Debug
 {
-	internal class DebugChangeGovernment : BaseDialog
+	/// <summary>
+	/// Debug screen that assigns a government to any living civilization.
+	/// </summary>
+	/// <remarks>
+	/// Both steps use the paging grid dialogs, so the player list stays usable with the maximum of
+	/// 32 players instead of running off the bottom of a fixed-size dialog box.
+	/// </remarks>
+	[ScreenResizeable]
+	internal class DebugChangeGovernment : BaseScreen
 	{
-		private enum SelectionStep
-		{
-			SelectPlayer,
-			SelectGovernment
-		}
-
 		private readonly Player[] _livingPlayers;
 		private readonly IGovernment[] _governments;
-		private SelectionStep _step = SelectionStep.SelectPlayer;
+
+		private readonly CivSelectMenuDelegate? _playerSelect;
+		private GridMenuDelegate? _governmentSelect;
+
 		private Player? _selectedPlayer;
 
-		private Menu<Player>? _playerMenu;
-		private Menu<IGovernment>? _governmentMenu;
-
-		private void PlayerChoice(object? _, MenuItemEventArgs<Player> args)
+		private void OnPlayerSelected(Player player)
 		{
-			_selectedPlayer = args.Value;
-			_step = SelectionStep.SelectGovernment;
-			CloseMenus();
-			_playerMenu = null;
+			_selectedPlayer = player;
+			_governmentSelect = null;
 			Refresh();
 		}
 
-		private void GovernmentChoice(object? _, MenuItemEventArgs<IGovernment> args)
+		private void CreateGovernmentGrid()
 		{
-			if (_selectedPlayer == null)
+			Player? selectedPlayer = _selectedPlayer;
+			if (selectedPlayer == null)
 			{
-				System.Diagnostics.Debug.Assert(false, "Selected player is null when choosing government.");
 				return;
 			}
 
-			_selectedPlayer.Government = args.Value;
+			string[] labels = [.. _governments.Select(government => government.TranslatedName)];
+			_governmentSelect = new GridMenuDelegate(
+				labels,
+				GridMenuDelegate.SelectionMode.Select,
+				isChecked: i => _governments[i].Id == selectedPlayer.Government.Id,
+				fontId: 0);
+			_governmentSelect.ItemSelected += OnGovernmentSelected;
+			_governmentSelect.Cancelled += OnGovernmentCancelled;
+		}
+
+		private void OnGovernmentSelected(int index)
+		{
+			Player? selectedPlayer = _selectedPlayer;
+			if (selectedPlayer == null || index < 0 || index >= _governments.Length)
+			{
+				return;
+			}
+
+			IGovernment government = _governments[index];
+			if (government.Id == selectedPlayer.Government.Id)
+			{
+				Destroy();
+				return;
+			}
+
+			selectedPlayer.Government = government;
 			GameTask.Enqueue(Message.NewGoverment(null,
-				$"{_selectedPlayer.TribeName} government",
-				$"changed to {args.Value.TranslatedName}!"));
-			Cancel();
+				$"{selectedPlayer.TribeName} government",
+				$"changed to {government.TranslatedName}!"));
+			Destroy();
 		}
 
-		private void CreatePlayerMenu()
+		private void OnGovernmentCancelled(object? _, EventArgs __)
 		{
-			if (_playerMenu != null)
+			_selectedPlayer = null;
+			_governmentSelect = null;
+			Refresh();
+		}
+
+		private void OnCancel(object? _, EventArgs __) => Destroy();
+
+		private void DrawDialog()
+		{
+			if (_playerSelect == null)
 			{
 				return;
 			}
-			int menuPositionY = 2 * Resources.GetFontHeight(0) + 4;
 
-
-			int menuHeight = (_livingPlayers.Length * Resources.GetFontHeight(0)) + 4;
-			_playerMenu = new Menu<Player>("DebugChangeGovernmentPlayer", Palette, Selection(3, 20, 178, menuHeight))
-			{
-				X = 70,
-				Y = 84 + menuPositionY,
-				CenterTo320Coordinates = true,
-				MenuWidth = 176,
-				ActiveColour = 11,
-				TextColour = 5,
-				DisabledColour = 3,
-				FontId = 0,
-				Indent = 2
-			};
-
-			foreach (Player player in _livingPlayers)
-			{
-				_playerMenu.Items.Add(player.TribeNamePlural, player).OnSelect(PlayerChoice);
-			}
-
-			_playerMenu.ActiveItem = Array.FindIndex(_livingPlayers, player => player == Human);
-			if (_playerMenu.ActiveItem < 0)
-			{
-				_playerMenu.ActiveItem = 0;
-			}
-
-			_playerMenu.MissClick += Cancel;
-			_playerMenu.Cancel += Cancel;
-			AddMenu(_playerMenu);
-		}
-
-		private void CreateGovernmentMenu()
-		{
-			if (_governmentMenu != null)
-			{
-				return;
-			}
 			if (_selectedPlayer == null)
 			{
-				System.Diagnostics.Debug.Assert(false, "Selected player is null when creating government menu.");
+				_playerSelect.Draw(this, CanvasHeight);
 				return;
 			}
 
-			int menuPositionY = 2 * Resources.GetFontHeight(0) + 4;
-
-			int menuHeight = (_governments.Length * Resources.GetFontHeight(0)) + 4;
-			_governmentMenu = new Menu<IGovernment>("DebugChangeGovernmentGovernment", Palette, Selection(3, 20, 178, menuHeight))
+			if (_governmentSelect == null)
 			{
-				X = 70,
-				Y = 84 + menuPositionY,
-				CenterTo320Coordinates = true,
-				MenuWidth = 176,
-				ActiveColour = 11,
-				TextColour = 5,
-				DisabledColour = 3,
-				FontId = 0,
-				Indent = 2
-			};
-
-			foreach (IGovernment government in _governments)
-			{
-				bool isCurrentGovernment = government.Id == _selectedPlayer.Government.Id;
-				_governmentMenu.Items
-					.Add(government.TranslatedName, government)
-					.SetEnabled(!isCurrentGovernment)
-					.OnSelect(GovernmentChoice);
+				CreateGovernmentGrid();
 			}
-
-			int firstSelectable = Array.FindIndex(_governments, government => government.Id != _selectedPlayer.Government.Id);
-			_governmentMenu.ActiveItem = (firstSelectable >= 0) ? firstSelectable : 0;
-
-			_governmentMenu.MissClick += Cancel;
-			_governmentMenu.Cancel += Cancel;
-			AddMenu(_governmentMenu);
+			_governmentSelect?.Draw(this, TranslateFormatted("Government: {0}", _selectedPlayer.TribeNamePlural), CanvasHeight);
 		}
 
-		protected override void FirstUpdate()
+		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_step == SelectionStep.SelectPlayer)
+			if (RefreshNeeded())
 			{
-				CreatePlayerMenu();
-				return;
+				DrawDialog();
+				return true;
 			}
+			return false;
+		}
 
-			CreateGovernmentMenu();
+		public override bool KeyDown(KeyboardEventArgs args)
+		{
+			bool handled = ActiveDelegateKeyDown(args);
+			if (handled)
+			{
+				Refresh();
+			}
+			return handled;
+		}
+
+		private bool ActiveDelegateKeyDown(KeyboardEventArgs args)
+		{
+			if (_selectedPlayer == null)
+			{
+				return _playerSelect?.KeyDown(args) ?? false;
+			}
+			return _governmentSelect?.KeyDown(args) ?? false;
+		}
+
+		public override bool MouseDown(ScreenEventArgs args)
+		{
+			bool handled = ActiveDelegateMouseDown(args);
+			if (handled)
+			{
+				Refresh();
+			}
+			return handled;
+		}
+
+		private bool ActiveDelegateMouseDown(ScreenEventArgs args)
+		{
+			if (_selectedPlayer == null)
+			{
+				return _playerSelect?.MouseDown(args.X, args.Y) ?? false;
+			}
+			return _governmentSelect?.MouseDown(args.X, args.Y) ?? false;
 		}
 
 		private static bool IsLivingCivilization(Player player)
@@ -164,8 +169,10 @@ namespace CivOne.Screens.Debug
 			return !player.IsDestroyed;
 		}
 
-		public DebugChangeGovernment() : base(68, 80, 182, 84)
+		public DebugChangeGovernment() : base(MouseCursor.Pointer)
 		{
+			Palette = Common.Screens.LastOrDefault()?.OriginalColours ?? Common.DefaultPalette;
+
 			_livingPlayers = [.. Game.Players.Where(IsLivingCivilization)];
 			_governments = [.. Reflect.GetGovernments()];
 
@@ -176,21 +183,11 @@ namespace CivOne.Screens.Debug
 				return;
 			}
 
-			DialogBox.DrawText("Debug government change", 0, 15, 5, 5);
-			DialogBox.DrawText("Select entry below...", 0, 15, 5, 13);
-		}
+			_playerSelect = new CivSelectMenuDelegate(_livingPlayers, Translate("Debug government change"));
+			_playerSelect.PlayerSelected += OnPlayerSelected;
+			_playerSelect.Cancelled += OnCancel;
 
-		protected override void Dispose(bool disposing)
-		{
-			if (!disposing)
-			{
-				return;
-			}
-
-			_playerMenu?.Dispose();
-			_governmentMenu?.Dispose();
-			
-			base.Dispose(disposing);
+			DrawDialog();
 		}
 	}
 }

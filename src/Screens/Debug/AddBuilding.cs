@@ -24,9 +24,6 @@ namespace CivOne.Screens.Debug
     internal class AddBuilding : BaseScreen
     {
         private readonly City[] _cities = [.. Game.GetCities().OrderBy(x => x.Name)];
-        private int OffsetX => Math.Max(0, (Width - 320) / 2);
-        private int OffsetY => Math.Max(0, (Height - 200) / 2);
-
         private CivSelectMenuDelegate? _playerSelectDelegate;
 
         private City[] _playerCities = [];
@@ -37,25 +34,15 @@ namespace CivOne.Screens.Debug
         private Player? _selectedPlayer;
         private City? _selectedCity;
 
-        private void EnsurePlayerSelectDelegate()
-        {
-            if (_playerSelectDelegate != null && Menus.Contains(_playerSelectDelegate.Menu)) return;
-            _playerSelectDelegate = CreatePlayerSelectDelegate();
-        }
-
         private void DrawPlayerMenuDialog()
         {
-            EnsurePlayerSelectDelegate();
-            _playerSelectDelegate!.DrawDialog(this, OffsetX, OffsetY);
+            _playerSelectDelegate ??= CreatePlayerSelectDelegate();
+            _playerSelectDelegate.Draw(this, CanvasHeight);
         }
 
         private CivSelectMenuDelegate CreatePlayerSelectDelegate()
         {
-            Palette palette = Palette
-                ?? Common.Screens.LastOrDefault()?.OriginalColours
-                ?? Common.DefaultPalette;
-
-            CivSelectMenuDelegate delegate_ = new(palette, "Add building...");
+            CivSelectMenuDelegate delegate_ = new("Add building...");
             delegate_.PlayerSelected += OnPlayerSelected;
             delegate_.Cancelled += Cancel;
             return delegate_;
@@ -168,14 +155,8 @@ namespace CivOne.Screens.Debug
             if (_selectedPlayer == null)
             {
                 DrawPlayerMenuDialog();
-                if (!Menus.Contains(_playerSelectDelegate!.Menu))
-                {
-                    AddMenu(_playerSelectDelegate.Menu);
-                }
                 return;
             }
-
-            CloseMenus();
 
             if (_selectedCity == null)
             {
@@ -205,11 +186,6 @@ namespace CivOne.Screens.Debug
 
             if (_selectedPlayer == null)
             {
-                if (!Menus.Contains(_playerSelectDelegate!.Menu))
-                {
-                    DrawPlayerMenuDialog();
-                    AddMenu(_playerSelectDelegate!.Menu);
-                }
                 return false;
             }
 
@@ -229,6 +205,13 @@ namespace CivOne.Screens.Debug
 
         public override bool KeyDown(KeyboardEventArgs args)
 		{
+            if (_selectedPlayer == null && _playerSelectDelegate != null)
+            {
+                bool playerHandled = _playerSelectDelegate.KeyDown(args);
+                if (playerHandled) Refresh();
+                return playerHandled;
+            }
+
             if (_selectedPlayer != null && _selectedCity == null && _citySelect != null)
             {
                 bool handled = _citySelect.KeyDown(args);
@@ -254,6 +237,13 @@ namespace CivOne.Screens.Debug
 
 		public override bool MouseDown(ScreenEventArgs args)
 		{
+            if (_selectedPlayer == null && _playerSelectDelegate != null)
+            {
+                bool playerHandled = _playerSelectDelegate.MouseDown(args.X, args.Y);
+                if (playerHandled) Refresh();
+                return playerHandled;
+            }
+
             if (_selectedPlayer != null && _selectedCity == null && _citySelect != null)
             {
                 bool handled = _citySelect.MouseDown(args.X, args.Y);

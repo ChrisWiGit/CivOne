@@ -38,12 +38,10 @@ namespace CivOne.Screens.Debug
 		private bool _hasUpdate;
 
 		private int _unitX, _unitY;
-		private int OffsetX => Math.Max(0, (Width - 320) / 2);
-		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
 		private void DrawCivMenuDialog()
 		{
-			_civSelect.DrawDialog(this, OffsetX, OffsetY);
+			_civSelect.Draw(this, CanvasHeight);
 		}
 
 		private int UnitX
@@ -84,7 +82,7 @@ namespace CivOne.Screens.Debug
 
 		private CivSelectMenuDelegate CreateCivSelectDelegate()
 		{
-			CivSelectMenuDelegate delegate_ = new(Palette, "Spawn Unit...");
+			CivSelectMenuDelegate delegate_ = new("Spawn Unit...");
 			delegate_.PlayerSelected += OnCivSelected;
 			delegate_.Cancelled += SpawnUnit_Cancel;
 			return delegate_;
@@ -154,7 +152,14 @@ namespace CivOne.Screens.Debug
 		
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
-			if (_selectedPlayer != null && _selectedUnit == null && _unitSelectDelegate != null)
+			if (_selectedPlayer == null)
+			{
+				bool civHandled = _civSelect.KeyDown(args);
+				if (civHandled) Refresh();
+				return civHandled;
+			}
+
+			if (_selectedUnit == null && _unitSelectDelegate != null)
 			{
 				bool handled = _unitSelectDelegate.KeyDown(args);
 				if (handled) Refresh();
@@ -172,6 +177,7 @@ namespace CivOne.Screens.Debug
 		
 		public override bool MouseDown(ScreenEventArgs args)
 		{
+			if (TryHandleCivMouseDown(args)) return true;
 			if (TryHandleUnitGridMouseDown(args)) return true;
 			if (_selectedUnit == null) return false;
 
@@ -186,6 +192,15 @@ namespace CivOne.Screens.Debug
 				Destroy();
 			}
 			return true;
+		}
+
+		private bool TryHandleCivMouseDown(ScreenEventArgs args)
+		{
+			if (_selectedPlayer != null) return false;
+
+			bool handled = _civSelect.MouseDown(args.X, args.Y);
+			if (handled) Refresh();
+			return handled;
 		}
 
 		private bool TryHandleUnitGridMouseDown(ScreenEventArgs args)
@@ -259,7 +274,7 @@ namespace CivOne.Screens.Debug
 				return true;
 			}
 
-			if (TryEnsureCivMenuVisible()) return false;
+			if (_selectedPlayer == null) return false;
 			if (TryDrawUnitSelectionGrid()) return false;
 			if (TryDrawUnitPreview()) return false;
 
@@ -271,29 +286,16 @@ namespace CivOne.Screens.Debug
 			if (_selectedPlayer == null)
 			{
 				DrawCivMenuDialog();
-				if (!Menus.Contains(_civSelect.Menu))
-				{
-					AddMenu(_civSelect.Menu);
-				}
 				return;
 			}
 
 			if (_selectedUnit == null)
 			{
-				CloseMenus();
 				DrawUnitSelectionGrid();
 				return;
 			}
 
 			_hasUpdate = true;
-		}
-
-		private bool TryEnsureCivMenuVisible()
-		{
-			if (_selectedPlayer != null || Menus.Contains(_civSelect.Menu)) return false;
-
-			AddMenu(_civSelect.Menu);
-			return true;
 		}
 
 		private bool TryDrawUnitSelectionGrid()

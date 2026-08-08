@@ -10,22 +10,14 @@
 using System;
 using System.Linq;
 using CivOne.Enums;
-using CivOne.Graphics;
-using CivOne.Graphics.Sprites;
-using CivOne.UserInterface;
+using CivOne.Events;
 
 namespace CivOne.Screens.Debug
 {
 	[ScreenResizeable]
 	internal class MeetWithKing : BaseScreen
 	{
-		private readonly Menu _civSelect;
-
-		private readonly Player[] _players;
-		private readonly int _menuWidth;
-		private readonly int _menuHeight;
-		private int OffsetX => Math.Max(0, (Width - 320) / 2);
-		private int OffsetY => Math.Max(0, (Height - 200) / 2);
+		private readonly CivSelectMenuDelegate _civSelect;
 
 		private Player? _selectedPlayer;
 
@@ -33,26 +25,12 @@ namespace CivOne.Screens.Debug
 
 		private void DrawDialog()
 		{
-			int xx = OffsetX + ((320 - _menuWidth) / 2);
-			int yy = OffsetY + ((200 - _menuHeight) / 2);
-
-			IBitmap menuGfx = new Picture(_menuWidth, _menuHeight)
-				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D();
-
-			this.Clear();
-			this.FillRectangle(xx - 1, yy - 1, _menuWidth + 2, _menuHeight + 2, 5)
-				.AddLayer(menuGfx, xx, yy, dispose: true)
-				.DrawText(Translate("Meet With King"), 0, 15, xx + 8, yy + 3);
-
-			_civSelect.X = xx + 2;
-			_civSelect.Y = yy + 11;
-			_civSelect.ForceUpdate();
+			_civSelect.Draw(this, CanvasHeight);
 		}
 
-		private void MeetKingAccept(object? _, EventArgs args)
+		private void MeetKingAccept(Player player)
 		{
-			_selectedPlayer = _players[_civSelect.ActiveItem];
+			_selectedPlayer = player;
 
 			if (_selectedPlayer != Game.HumanPlayer)
 			{
@@ -75,69 +53,56 @@ namespace CivOne.Screens.Debug
 
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (RefreshNeeded())
+			if (RefreshNeeded() && _selectedPlayer == null)
 			{
 				DrawDialog();
-			}
-
-			if (_selectedPlayer == null && Common.TopScreen!.GetType() != typeof(Menu))
-			{
-				AddMenu(_civSelect);
-				return false;
+				return true;
 			}
 			return false;
+		}
+
+		public override bool KeyDown(KeyboardEventArgs args)
+		{
+			if (_selectedPlayer != null)
+			{
+				return false;
+			}
+
+			bool handled = _civSelect.KeyDown(args);
+			if (handled)
+			{
+				Refresh();
+			}
+			return handled;
+		}
+
+		public override bool MouseDown(ScreenEventArgs args)
+		{
+			if (_selectedPlayer != null)
+			{
+				return false;
+			}
+
+			bool handled = _civSelect.MouseDown(args.X, args.Y);
+			if (handled)
+			{
+				Refresh();
+			}
+			return handled;
 		}
 
 		public MeetWithKing() : base(MouseCursor.Pointer)
 		{
 			Palette = Common.Screens[^1].OriginalColours;
-			_players = Game.Players.Where(p => p != 0 && p != Human).ToArray();
+			Player[] players = [.. Game.Players.Where(p => p != 0 && p != Human)];
 
-			int fontHeight = Resources.GetFontHeight(0);
-			_menuHeight = (fontHeight * (_players.Length + 1)) + 5;
-			_menuWidth = 144;
-
-			Picture menuGfx = new(_menuWidth, _menuHeight);
-			menuGfx.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D();
-			IBitmap menuBackground = menuGfx[2, 11, _menuWidth - 4, _menuHeight - 11].ColourReplace((7, 11), (22, 3));
-
-			_civSelect = new Menu(Palette, menuBackground)
-			{
-				X = 0,
-				Y = 0,
-				MenuWidth = _menuWidth - 4,
-				ActiveColour = 11,
-				TextColour = 5,
-				DisabledColour = 3,
-				FontId = 0,
-				Indent = 8
-			};
-
-			foreach (Player player in _players)
-			{
-				_civSelect.Items.Add($"{player.LeaderName} ({player.TribeName})").OnSelect(MeetKingAccept);
-			}
-
-			_civSelect.Cancel += MeetKingCancel;
-			_civSelect.MissClick += MeetKingCancel;
-			if (_players.Length > 0)
-			{
-				_civSelect.ActiveItem = 0;
-			}
+			// Leader and tribe name together are much wider than a tribe name alone, so the grid has to size
+			// itself from the labels instead of using a fixed dialog width.
+			_civSelect = new CivSelectMenuDelegate(players, Translate("Meet With King"), player => $"{player.LeaderName} ({player.TribeName})");
+			_civSelect.PlayerSelected += MeetKingAccept;
+			_civSelect.Cancelled += MeetKingCancel;
 
 			DrawDialog();
-		}
-
-		protected override void Dispose(bool disposing)
-		{
-			if (!disposing)
-			{
-				return;
-			}
-
-			_civSelect.Dispose();
-			base.Dispose(disposing);
 		}
 	}
 }
