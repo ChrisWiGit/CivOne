@@ -114,7 +114,7 @@ namespace CivOne.Screens
 
 		private void MenuBuildPalace(object? _, EventArgs args)
 		{
-			GameTask.Enqueue(Show.BuildPalace(keepOpenUntilEscape: true));
+			GameTask.Enqueue(Show.Screen<DebugBuildPalace>());
 			Destroy();
 		}
 
