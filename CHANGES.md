@@ -1,3 +1,8 @@
+<!-- On sentence one line.
+This is a more detailed version of changes in the game.
+It describes the changes in more detail than the commit messages, and is intended for players who want to know what has changed in the game.
+If you want to add a change, do not add technical details, but describe the change in a way that is understandable to players.
+-->
 # Changes
 
 ## Comment
@@ -14,13 +19,11 @@ I did not browse all issues on github at first, so I did not recognize that some
   * The info buttons are numbered by their row on the page, so they stay between `1` and `7` and the matching number key opens the leader details.
   * The details of a single civilization now return to the list instead of closing the report.
   * Player colours no longer break in games with more than eight civilizations.
-
 * Feature: The power graph can be limited to the civilizations you care about.
   * The graph draws at most 12 civilizations, so its rows stay inside the screen even in games with up to 31 opponents.
   * In games with more than 12 civilizations, `F1` opens a grid dialog to check and uncheck the civilizations to draw. `F1` or `Escape` closes it again.
   * By default the human player and the first civilizations are shown, up to seven in total. These are the civilizations that still carry their own name without a Roman numeral.
   * The selection is remembered while the game runs and is reset to the default when another game is started or loaded.
-
 * Feature: Improved civilization assignment and respawning for games with more players than available civilizations.
   * Initial player assignment now uses every regular civilization before reusing one and never assigns the Barbarians to a normal player slot.
   * When a civilization is destroyed before 0 AD in a game with at most six opponents, its player slot prefers the free buddy civilization to preserve the original SVE-compatible behavior. Games with more opponents use another free civilization without buddy priority. If all civilizations are occupied, one of the least-used civilizations is selected.
@@ -28,7 +31,6 @@ I did not browse all issues on github at first, so I did not recognize that some
   * Respawned civilization identities are recorded in replay data and persisted in COS savegames, allowing later screens to reconstruct the correct civilization even after several respawns. Older saves without these replay entries remain supported.
   * The Conquest screen now shows the correct civilization for every defeated player, supports more than 14 defeated civilizations by clearing and reusing the portrait board, and preserves numbered civilization names.
   * Added a paginated `Show Player Slots` debug screen showing every slot's leader, tribe, civilization, unit and city counts, respawn count, player colors, and human or Barbarian status.
-
 * Feature: New "Area based" algorithm for placing civilizations' starting Settlers, as an alternative to the original placement logic.
   * Choose the algorithm in the setup menu under `Shift+F1 → Patches → Starting position algorithm`: `Legacy` (default, original random-search behavior, unchanged) or `Area based` (new). The setting can only be changed while no game is running.
   * With `Area based` selected, the map is divided into a grid of areas — twice as many areas as there are civilizations, so roughly half stay unassigned as buffer/fallback space. Areas are handed out to civilizations in random order (not left-to-right), so each civilization gets its own area to start in.
@@ -42,6 +44,13 @@ I did not browse all issues on github at first, so I did not recognize that some
   * If a civilization still ends up without a starting position, it is destroyed during game creation instead of remaining a "phantom" civilization with no units or cities. Once the game screen is up, a popup lists which civilizations were removed this way.
   * In-game, open the World Map screen (or `F10`) and press `A` to toggle a dashed-border overlay of the computed areas (only available when the debug menu is enabled and `Area based` is selected) — useful for visually checking that civilizations land inside their own area.
     * In addition a null perimeter meridian line is drawn in yellow, so you can see where the map wraps around when the map is too large to fit on the screen.
+* Raise player limit from 8 to 32 and improve start position handling
+  * New Game now supports up to 31 regular players (plus Barbarians).
+  * Fixes slot mix-ups in respawn and replay data for large games.
+  * Expands player colors and explored-map tracking for more players.
+  * Legacy SVE saves remain limited to 8 players for compatibility.
+  * YAML saves support the full 32-player range.
+  * Includes the new start position placement services.
 * Feature: Two-finger touchpad gestures for the gameplay map.
   * A two-finger swipe now scrolls the map viewport in all directions: vertical swipes pan up and down, horizontal swipes pan left and right.
   * Panning moves one tile per scroll step, so a single swipe scrolls several tiles.
