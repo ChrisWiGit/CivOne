@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using CivOne.Enums;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -28,16 +29,30 @@ namespace CivOne.Services.Pathfinding
 		// Cost units: railroad=1, road=3, terrain=Movement*9 (max 18 for hills/forest).
 		public ITile? GotoStep(IUnit unit)
 		{
-			int goalX = unit.GotoDestination.X, goalY = unit.GotoDestination.Y;
+			if (!unit.HasGotoDestination())
+			{
+				return null;
+			}
+
+			return GetFirstStep(unit, unit.GotoDestination);
+		}
+
+		public ITile[] GetPath(IUnit unit, Point destination)
+		{
+			int mapWidth = _mapTiles.Width, mapHeight = _mapTiles.Height;
+			int goalX = NormalizeWrappedX(destination.X, mapWidth), goalY = destination.Y;
 			int startX = unit.X, startY = unit.Y;
 
 			bool isAlreadyAtGoal = startX == goalX && startY == goalY;
 			if (isAlreadyAtGoal)
 			{
-				return null;
+				return [];
 			}
 
-			int mapWidth = _mapTiles.Width, mapHeight = _mapTiles.Height;
+			if (goalY < 0 || goalY >= mapHeight)
+			{
+				return [];
+			}
 
 			var state = new AStarState(
 				GCostMap: [],
@@ -66,10 +81,87 @@ namespace CivOne.Services.Pathfinding
 				bool isCurrentPositionGoal = currentX == goalX && currentY == goalY;
 				if (isCurrentPositionGoal)
 				{
-					return ReconstructPath(currentPosition, startPosition, state.CameFromMap, mapWidth);
+					List<int> pathPositions = ReconstructPathPositions(currentPosition, startPosition, state.CameFromMap);
+					ITile[] path = new ITile[pathPositions.Count];
+					for (int i = 0; i < pathPositions.Count; i++)
+					{
+						int position = pathPositions[i];
+						path[i] = _mapTiles[position % mapWidth, position / mapWidth];
+					}
+
+					return path;
 				}
 
 				ExpandNeighbors(unit, currentX, currentY, goalX, goalY, currentPosition, state);
+			}
+
+			return [];
+		}
+
+		private ITile? GetFirstStep(IUnit unit, Point destination)
+		{
+			int mapWidth = _mapTiles.Width, mapHeight = _mapTiles.Height;
+			int goalX = NormalizeWrappedX(destination.X, mapWidth), goalY = destination.Y;
+			int startX = unit.X, startY = unit.Y;
+
+			bool isAlreadyAtGoal = startX == goalX && startY == goalY;
+			if (isAlreadyAtGoal)
+			{
+				return null;
+			}
+
+			if (goalY < 0 || goalY >= mapHeight)
+			{
+				return null;
+			}
+
+			var state = new AStarState(
+				GCostMap: [],
+				CameFromMap: [],
+				OpenSet: []
+			);
+
+			int startPosition = EncodeCoordinatesToPosition(startX, startY, mapWidth);
+			state.GCostMap[startPosition] = 0;
+			state.OpenSet.Add((DistanceToTile(startX, startY, goalX, goalY), startPosition));
+
+			HashSet<int> closedPositions = [];
+			int maxClosedNodes = mapWidth * mapHeight;
+			while (state.OpenSet.Count > 0 && closedPositions.Count < maxClosedNodes)
+			{
+				int nextNodeIndex = FindNextOpenNodeWithLowestFScore(state.OpenSet);
+				int currentPosition = state.OpenSet[nextNodeIndex].position;
+				state.OpenSet.RemoveAt(nextNodeIndex);
+
+				if (!closedPositions.Add(currentPosition))
+				{
+					continue;
+				}
+
+				int currentX = currentPosition % mapWidth, currentY = currentPosition / mapWidth;
+				bool isCurrentPositionGoal = currentX == goalX && currentY == goalY;
+				if (isCurrentPositionGoal)
+				{
+					return ReconstructFirstStepTile(currentPosition, startPosition, state.CameFromMap, mapWidth);
+				}
+
+				ExpandNeighbors(unit, currentX, currentY, goalX, goalY, currentPosition, state);
+			}
+
+			return null;
+		}
+
+		private ITile? ReconstructFirstStepTile(int currentPosition, int startPosition, Dictionary<int, int> cameFromMap, int mapWidth)
+		{
+			int cursor = currentPosition;
+			while (cameFromMap.TryGetValue(cursor, out int previousPosition))
+			{
+				if (previousPosition == startPosition)
+				{
+					return _mapTiles[cursor % mapWidth, cursor / mapWidth];
+				}
+
+				cursor = previousPosition;
 			}
 
 			return null;
@@ -88,16 +180,23 @@ namespace CivOne.Services.Pathfinding
 			return nodeIndexWithLowestFScore;
 		}
 
-		private ITile ReconstructPath(int currentPosition, int startPosition, Dictionary<int, int> cameFromMap, int mapWidth)
+		private static List<int> ReconstructPathPositions(int currentPosition, int startPosition, Dictionary<int, int> cameFromMap)
 		{
-			int curPos = currentPosition;
-			int previousPosition = cameFromMap.TryGetValue(curPos, out int p) ? p : startPosition;
-			while (previousPosition != startPosition)
+			List<int> reversePath = [currentPosition];
+			int cursor = currentPosition;
+			while (cameFromMap.TryGetValue(cursor, out int previousPosition))
 			{
-				curPos = previousPosition;
-				previousPosition = cameFromMap[curPos];
+				if (previousPosition == startPosition)
+				{
+					break;
+				}
+
+				reversePath.Add(previousPosition);
+				cursor = previousPosition;
 			}
-			return _mapTiles[curPos % mapWidth, curPos / mapWidth];
+
+			reversePath.Reverse();
+			return reversePath;
 		}
 
 		private void ExpandNeighbors(
@@ -190,5 +289,16 @@ namespace CivOne.Services.Pathfinding
 
 		private int DistanceToTile(int x1, int y1, int x2, int y2)
 			=> Math.Max(Math.Min(Math.Abs(x2 - x1), _mapTiles.Width - Math.Abs(x2 - x1)), Math.Abs(y2 - y1));
+
+		private static int NormalizeWrappedX(int x, int width)
+		{
+			int normalizedX = x % width;
+			if (normalizedX < 0)
+			{
+				normalizedX += width;
+			}
+
+			return normalizedX;
+		}
 	}
 }

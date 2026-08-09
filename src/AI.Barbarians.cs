@@ -87,7 +87,7 @@ namespace CivOne
 					return;
 				}
 
-				if (unit.GotoDestination.IsEmpty)
+				if (!unit.HasGotoDestination())
 				{
 					// Target a coastal ocean tile adjacent to the nearest palace city.
 					// Targeting the city tile itself would make GotoStep fail (water→land),
@@ -114,19 +114,19 @@ namespace CivOne
 					continue;
 				}
 
-				if (!unit.GotoDestination.IsEmpty)
+				if (unit.HasGotoDestination())
 				{
 					ITile? next = _unitGotoService.GotoStep(unit);
 					if (next == null)
 					{
 						// No path to current target — give up for this turn.
-						unit.GotoDestination = Point.Empty;
+						unit.ClearGotoDestination();
 						unit.SkipTurn();
 						return;
 					}
 					if (!unit.MoveTo(next.X - unit.X, next.Y - unit.Y))
 					{
-						unit.GotoDestination = Point.Empty;
+						unit.ClearGotoDestination();
 						unit.SkipTurn();
 					}
 					return;

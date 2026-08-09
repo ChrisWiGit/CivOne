@@ -98,7 +98,7 @@ namespace CivOne.Screens
 				
 				Game.ActiveUnit = _units[uid];
 				_units[uid].Busy = false;
-                    _units[uid].GotoDestination = Point.Empty; // fire-eggs 20190612 clear Goto
+				_units[uid].ClearGotoDestination();
 				_update = true;
 				return true;
 			}
@@ -141,7 +141,7 @@ namespace CivOne.Screens
 				// already moved would be able to move again after being selected from the stack
 			}
 
-			unit.GotoDestination = Point.Empty;
+			unit.ClearGotoDestination();
 			Game.ActiveUnit = unit;
 		}
 
