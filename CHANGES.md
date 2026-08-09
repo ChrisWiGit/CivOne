@@ -1,4 +1,4 @@
-<!-- On sentence one line.
+<!-- One sentence per line.
 This is a more detailed version of changes in the game.
 It describes the changes in more detail than the commit messages, and is intended for players who want to know what has changed in the game.
 If you want to add a change, do not add technical details, but describe the change in a way that is understandable to players.

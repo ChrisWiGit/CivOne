@@ -92,6 +92,7 @@ namespace CivOne
 			public CivilizationRespawned(int turn, byte playerId, byte civilizationId) : base(turn)
 			{
 				Debug.Assert(playerId <= MaxPlayerIndex, "Invalid player index in replay data.");
+				Debug.Assert(civilizationId <= 15, "Invalid civilization ID in replay data.");
 
 				PlayerId = playerId;
 				CivilizationId = civilizationId;

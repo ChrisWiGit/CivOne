@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using CivOne.Advances;
 using CivOne.Units;
 using CivOne.Wonders;
@@ -32,8 +31,15 @@ namespace CivOne.Persistence.Stubs
 
         public byte PlayerNumber(Player player)
         {
-            int index = _players.ToList().IndexOf(player);
-            return index < 0 ? (byte)0 : (byte)index;
+            for (int i = 0; i < _players.Count; i++)
+            {
+                if (ReferenceEquals(_players[i], player))
+                {
+                    return (byte)i;
+                }
+            }
+
+            return 0;
         }
 
         /// <summary>

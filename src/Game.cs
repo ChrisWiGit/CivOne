@@ -84,11 +84,9 @@ namespace CivOne
 		public int Competition => _competition;
 
 		/// <summary>
-		/// Gets or sets a value indicating whether the buddy civilization 
-		/// respawn feature is disabled.
-		/// When using the new civ selection screen this 
-		/// value should be set to true, as the buddy civ respawn feature
-		/// is
+		/// Gets or sets whether respawn should skip the classic buddy-civilization preference.
+		/// When true, respawn selects from the full replacement pool even in classic (up to 8 total players) games.
+		/// This flag is persisted in YAML/COS saves; legacy SVE saves always use buddy respawn.
 		/// </summary>
 		internal bool DisableBuddyCivilizationRespawn
 		{
