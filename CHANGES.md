@@ -6,6 +6,15 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: The intelligence report is split into pages when there are more than six opponents.
+  * `PgUp` and `PgDn` switch pages and wrap around at both ends of the list.
+  * Every page shows up to seven civilizations, the current page and the number of pages are shown at the bottom.
+  * `F1` moves the civilizations you have an embassy with to the front of the list, so they are not buried behind pages of rows without an embassy. `F1` again restores the original order.
+  * With the debug menu enabled, `F2` shows every civilization as if you had an embassy with all of them.
+  * The info buttons are numbered by their row on the page, so they stay between `1` and `7` and the matching number key opens the leader details.
+  * The details of a single civilization now return to the list instead of closing the report.
+  * Player colours no longer break in games with more than eight civilizations.
+
 * Feature: The power graph can be limited to the civilizations you care about.
   * The graph draws at most 12 civilizations, so its rows stay inside the screen even in games with up to 31 opponents.
   * In games with more than 12 civilizations, `F1` opens a grid dialog to check and uncheck the civilizations to draw. `F1` or `Escape` closes it again.
