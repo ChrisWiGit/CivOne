@@ -25,7 +25,6 @@ using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Civilizations;
 using CivOne.Services;
-using CivOne.Services.Maps;
 using CivOne.Services.Screen;
 
 namespace CivOne.Screens
@@ -120,13 +119,7 @@ namespace CivOne.Screens
 		/// </summary>
 		private void MenuExportMapImage(object? _, EventArgs args)
 		{
-			GamePlay.GamePlayExportMapImageDelegate exportMapImageDelegate = new(
-				Translation, Settings, Runtime, Map, Game,
-				Game.SaveMetaDataService, new GameCalendarService(Translation),
-				MapImageExportServiceFactory.Create(),
-				new GameTaskCommandQueueAdapter(), new MessageServiceAdapter(), new DirectoryService(),
-				() => Settings.RevealWorld);
-			exportMapImageDelegate.ExportMapImage();
+			MapImageExportDelegateFactory.Create(Translation).ExportMapImage();
 			Destroy();
 		}
 
