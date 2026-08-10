@@ -34,11 +34,11 @@ The behaviour is controlled by the **Simulate International Font** setting (**Sh
 
 ## Number of Civilizations
 
-The game supports up to `Game.MaxPlayers` (32) total players (player 0 is always the Barbarians), so up to 30 civilizations can be controlled by the AI in a single game. This limit is bounded by two things: the `ITile.Visited` bitmask, a `uint` (32 bits, one bit per player), and the player colour tables `Common.ColourLight`/`ColourDark` (32 entries).
+The game supports up to `Game.MaxPlayers` (32) total players (player 0 is always the Barbarians), so up to 30 civilizations can be controlled by the AI in a single game. This limit is bounded by two things: the `ITile.Visited` bitmask, a `uint` (32 bits, one bit per player), and the player colour tables behind `Common.PlayerColourLight`/`PlayerColourDark` (32 entries).
 
 There are only 14 non-barbarian civilizations, organized into pairs of "buddy civilizations" (`ICivilization.PreferredPlayerNumber`, slots 1-7). For player slots 1-7 this original pairing is unchanged, and is still required by the legacy `.SVE` binary save format, which only ever stores 8 players and identifies a civilization by which of the two buddies occupies a slot (`SaveData.CivilizationIdentityFlag`). `SveSaveCompatibilityService` (`SveMaxPlayers = 8`) automatically rejects `.SVE` saves once a game has more than 8 players, falling back to the YAML `.cos` format, which has no such limit.
 
-For player slots 8 and above (only reachable with more than 7 non-barbarian players), civilization assignment is decoupled from the player index: `CivilizationAssignment` (`src/Civilizations/CivilizationAssignment.cs`) draws from a pool of all 14 civilizations, reusing them once the pool is exhausted. Reused civilizations get a disambiguated leader/tribe name (e.g. "Caesar II"), since two players can otherwise end up playing the same civilization. Player colours also repeat every 8 slots (see `Common.ColourLight`/`ColourDark`) since there are only so many visually distinct EGA colours; the tribe/leader name in the UI remains the authoritative way to tell players apart once colours and civilizations repeat.
+For player slots 8 and above (only reachable with more than 7 non-barbarian players), civilization assignment is decoupled from the player index: `CivilizationAssignment` (`src/Civilizations/CivilizationAssignment.cs`) draws from a pool of all 14 civilizations, reusing them once the pool is exhausted. Reused civilizations get a disambiguated leader/tribe name (e.g. "Caesar II"), since two players can otherwise end up playing the same civilization. Player colours also repeat every 8 slots (see `Common.PlayerColourLight`/`PlayerColourDark`) since there are only so many visually distinct EGA colours; the tribe/leader name in the UI remains the authoritative way to tell players apart once colours and civilizations repeat.
 
 The replay system (`ReplayData.CivilizationDestroyed`) records player index, not civilization ID (this was fixed as part of raising the player limit — it previously recorded `Civilization.PreferredPlayerNumber`, which stopped being equivalent to the player index once civilization assignment was decoupled). The `Conquest` end-game screen resolves a slot's civilization from replay history when available (`ReplayData.CivilizationRespawned`) and falls back to `BaseCivilization.GetBuddyCivilizationSupplier` for older saves that do not contain respawn entries.
 
@@ -560,6 +560,45 @@ The exact glyph shapes come from `FONTS.CV` (runtime data file, not in this repo
 | 14   | Light Yellow | Light yellow            |
 | 15   | White        | White                   |
 | 16   | White        | White                   |
+
+## Static Initializers and Tests
+
+`Common` is touched by almost everything, so its static initializer must stay cheap and must not require a
+running game. `Advances`, `Buildings` and `Wonders` are therefore **lazily initialized cached properties**,
+not field initializers:
+
+```csharp
+// BAD: runs on the first touch of any Common member, needs a registered runtime.
+public static IAdvance[] Advances = Reflect.GetAdvances().ToArray();
+
+// GOOD: resolved only when the list is actually used.
+private static IAdvance[]? _advances;
+public static IAdvance[] Advances => _advances ??= [.. Reflect.GetAdvances()];
+```
+
+### Why this matters more than it looks
+
+`Reflect.GetAdvances()` and friends reflect over every loaded assembly and instantiate each type, and those
+constructors need `RuntimeHandler.Runtime`. With a field initializer, reading an unrelated member such as a
+player colour was enough to trigger all of it.
+
+The failure mode is nasty: **a static initializer that throws poisons the type for the whole process.** Once
+`Common..cctor()` has failed, every later access throws `TypeInitializationException`, including from tests
+that do register a runtime and would otherwise pass. A single test class that touches `Common` without a
+runtime therefore takes down every later test in the same run.
+
+### Rules for new tests
+
+* A test that constructs `MockRuntime` (directly or via `TestsBase`) is fine.
+* A test that touches **any** `Common` member without a runtime is only safe as long as that member does not
+  pull in reflection. If you add eager static state to `Common`, such tests start failing.
+* Symptom to recognize: a large number of unrelated tests failing at once with
+  `TypeInitializationException: The type initializer for 'CivOne.Common' threw an exception` and an inner
+  `InvalidOperationException: RuntimeHandler is not initialized`. The first failing test is not necessarily
+  the culprit — look for the test class that ran first.
+* The order test classes run in is not stable between runs, so this shows up as flakiness: the same filter
+  can pass repeatedly and then fail. Do not dismiss it as a random glitch. Test parallelization is already
+  disabled assembly-wide (`xunit/properties/AssemblyInfo.cs`), so it is never a threading race.
 
 ## Warnings suppressed
 
