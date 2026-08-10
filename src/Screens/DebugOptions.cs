@@ -112,6 +112,17 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		/// <summary>
+		/// Exports the world map to an image file.
+		/// The delegate is built here because <see cref="DebugOptions"/> is created through a parameterless
+		/// screen factory and therefore cannot receive its dependencies through the constructor.
+		/// </summary>
+		private void MenuExportMapImage(object? _, EventArgs args)
+		{
+			MapImageExportDelegateFactory.Create(Translation).ExportMapImage();
+			Destroy();
+		}
+
 		private void MenuBuildPalace(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.BuildPalace(keepOpenUntilEscape: true));
@@ -548,6 +559,7 @@ namespace CivOne.Screens
 				new(Translate("Spawn Unit"), () => MenuSpawnUnit(null, EventArgs.Empty)),
 				new(Translate("Meet With King"), () => MenuMeetWithKing(null, EventArgs.Empty)),
 				new(Translate("Toggle Reveal World"), () => MenuRevealWorld(null, EventArgs.Empty)),
+				new(Translate("Export Map Image..."), () => MenuExportMapImage(null, EventArgs.Empty)),
 				new(Translate("Build Palace"), () => MenuBuildPalace(null, EventArgs.Empty)),
 				new(Translate("City Menu Grid (Test)"), () => MenuCityGridTest(null, EventArgs.Empty)),
 				new(Translate("Ranking (Random)"), () => MenuShowCivilizationRanking(null, EventArgs.Empty)),

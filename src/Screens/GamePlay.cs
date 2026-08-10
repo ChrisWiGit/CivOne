@@ -734,7 +734,8 @@ namespace CivOne.Screens
 			_gameMap = new GameMap();
 			_translationService = TranslationServiceFactory.GetCurrent();
 			GamePlaySaveMapDelegate saveMapDelegate = new(_translationService, Settings, Runtime, MapSaveServiceFactory.Create(), new GameTaskCommandQueueAdapter(), new MessageServiceAdapter(), new DirectoryService());
-			_terrainEditorDelegate = new(this, _translationService, Game, Common.Civilizations, saveMapDelegate);
+			GamePlayExportMapImageDelegate exportMapImageDelegate = MapImageExportDelegateFactory.Create(_translationService);
+			_terrainEditorDelegate = new(this, _translationService, Game, Common.Civilizations, saveMapDelegate, exportMapImageDelegate);
 			_gameMap.MapPositionSaved += GameMapMapPositionSaved;
 
 			if (!TryRestoreLastLoadedMapPosition())

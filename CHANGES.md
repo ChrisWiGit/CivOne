@@ -6,6 +6,15 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Export the world map as an image file.
+  * Open the terrain editor menu and choose `Export Map Image...`, or pick the same entry in the debug menu (`F12`).
+  * The picture contains the whole map with all terrain, improvements, cities, city names, and units, drawn at the original tile size — so it looks like the normal game map, just without the surrounding user interface.
+  * How much of the world ends up in the picture depends on what you can currently see:
+    * While the terrain editor is open, or while `Reveal world` is switched on, the complete world is exported.
+    * Otherwise only the parts your civilization has already explored are drawn; everything still hidden by the fog of war stays black.
+  * A save dialog asks where to store the file. It starts in a new `pictures` folder inside your CivOne profile folder (`Open CivOne Profile folder...` in the setup menu takes you there), and suggests a name in the same style as your savegames, for example `Chieftain Caesar of the Romans at 1234 AD.bmp`. You can change folder and name freely.
+  * The image is written as an uncompressed `*.bmp` file, which every common image viewer and editor can open. Large maps produce large files.
+    * 300x300 tiles = ~22 MB
 * Fix: Goto pathfinding now handles horizontal map wrapping correctly in both smart and legacy modes, so wrapped goto targets are found reliably.
 * Feature: Goto moving unit
   * zoom mode supported. Yet zooming is not supported while in goto mode, so the user must exit go to mode first before zooming.
