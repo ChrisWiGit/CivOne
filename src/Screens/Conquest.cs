@@ -237,23 +237,23 @@ namespace CivOne.Screens
 					_noiseMap[x, y] = RandomService.NextByte(1, NOISE_COUNT);
 				}
 
-			IReadOnlyDictionary<ReplayData.CivilizationDestroyed, DestroyedCivilization> destroyedCivilizations =
+			// Already in replay order, so destructions that share a turn keep the order they happened in.
+			IReadOnlyList<DestroyedCivilizationEntry> destroyedCivilizations =
 				new DestroyedCivilizationResolverDelegate().Resolve(
 					Game.GetReplayData<ReplayData>(), Common.Random!.InitialSeed, Game.Competition,
 					Game.HumanPlayerId, Game.HumanPlayer.Civilization);
 
 			CivilizationNameDelegate civilizationNames = new();
 			_enemies = [.. destroyedCivilizations
-				.Where(entry => entry.Key.DestroyedById == Game.HumanPlayerId)
-				.OrderBy(entry => entry.Key.Turn)
+				.Where(entry => entry.Destroyed.DestroyedById == Game.HumanPlayerId)
 				.Select(entry => new Enemy
 				{
-					DestroyYear = Common.YearString((ushort)entry.Key.Turn),
-					Leader = entry.Value.Civilization.Leader,
+					DestroyYear = Common.YearString((ushort)entry.Destroyed.Turn),
+					Leader = entry.Civilization.Leader,
 					// Several players can share one civilization once there are more players than civilizations,
 					// so use the same numbered name the destroyed player had ("Roman II").
-					CivilizationName = civilizationNames.Build(entry.Value.Civilization, entry.Value.Occurrence).TribeName
-						?? entry.Value.Civilization.Name,
+					CivilizationName = civilizationNames.Build(entry.Civilization, entry.Occurrence).TribeName
+						?? entry.Civilization.Name,
 				}
 			)];
 

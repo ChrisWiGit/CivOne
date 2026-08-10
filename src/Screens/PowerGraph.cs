@@ -192,6 +192,10 @@ namespace CivOne.Screens
 		{
 			Palette = ScreenServiceFactory.CreateQueryService().TopScreen!.Palette.Copy();
 
+			// Drops a selection that belongs to a previously played game; a new game with the same number of
+			// players would otherwise inherit it and apply it to different civilizations.
+			_selection.UseGame(Game);
+
 			_players = [.. Game.Players.Where(x => x.Civilization is not Barbarian)];
 			_playerNumbers = [.. _players.Select(player => (int)Game.PlayerNumber(player))];
 			_canSelectCivilizations = _selection.RequiresSelection(_playerNumbers);

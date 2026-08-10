@@ -23,10 +23,11 @@ I did not browse all issues on github at first, so I did not recognize that some
   * The graph draws at most 12 civilizations, so its rows stay inside the screen even in games with up to 31 opponents.
   * In games with more than 12 civilizations, `F1` opens a grid dialog to check and uncheck the civilizations to draw. `F1` or `Escape` closes it again.
   * By default the human player and the first civilizations are shown, up to seven in total. These are the civilizations that still carry their own name without a Roman numeral.
-  * The selection is remembered while the game runs and is reset to the default when another game is started or loaded.
+  * The selection is remembered while the game runs and is reset to the default when another game is started or loaded, even when the new game has the same number of civilizations.
 * Feature: Improved civilization assignment and respawning for games with more players than available civilizations.
   * Initial player assignment now uses every regular civilization before reusing one and never assigns the Barbarians to a normal player slot.
-  * When a civilization is destroyed before 0 AD in a game with at most six opponents, its player slot prefers the free buddy civilization to preserve the original SVE-compatible behavior. Games with more opponents use another free civilization without buddy priority. If all civilizations are occupied, one of the least-used civilizations is selected.
+  * When a civilization is destroyed before 0 AD in a game with at most six opponents, its player slot prefers the free buddy civilization, as in the original game. Games with more opponents use another free civilization without buddy priority. If all civilizations are occupied, one of the least-used civilizations is selected.
+  * Changed compared to the original game: if the buddy civilization is already being played, the slot now receives a free civilization instead. Previously two players could end up playing the same civilization after a respawn.
   * Players sharing a civilization receive distinguishable leader and tribe names with Roman numerals, such as `Caesar II` and `Romans II`.
   * Respawned civilization identities are recorded in replay data and persisted in COS savegames, allowing later screens to reconstruct the correct civilization even after several respawns. Older saves without these replay entries remain supported.
   * The Conquest screen now shows the correct civilization for every defeated player, supports more than 14 defeated civilizations by clearing and reusing the portrait board, and preserves numbered civilization names.

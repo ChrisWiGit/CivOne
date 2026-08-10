@@ -43,7 +43,8 @@ namespace CivOne
 			Debug.Assert(IsHuman == false, "Cannot respawn a human player!");
 			Debug.Assert(Civilization.PreferredPlayerNumber != 0, "Cannot respawn barbarian player!");
 
-			bool preferBuddyCivilization = !Game.DisableBuddyCivilizationRespawn && Game.Players.Count() <= 8;
+			// Competition is the number of non-barbarian slots, so 7 is the classic eight-player setup.
+			bool preferBuddyCivilization = !Game.DisableBuddyCivilizationRespawn && Game.Competition <= 7;
 			RespawnCivilizationResult replacement = RespawnCivilizationService.SelectReplacement(
 				Civilization,
 				CivilizationsInUse(),

@@ -8,8 +8,10 @@ namespace CivOne.Services.Screen
 	/// Default <see cref="IPowerGraphSelectionService"/>, keeping the selection in memory for the running game.
 	/// </summary>
 	/// <remarks>
-	/// The selection is rebuilt from the defaults as soon as the candidate list changes, which happens when
-	/// another game is started or loaded.
+	/// The selection is rebuilt from the defaults when <see cref="UseGame"/> reports a different game, and
+	/// also when the candidate list of the current game changes.
+	/// Comparing candidate lists alone is not enough: two different games can produce the same list of player
+	/// numbers, and the selection of the previous one would then be applied to other civilizations.
 	/// </remarks>
 	internal sealed class PowerGraphSelectionService : IPowerGraphSelectionService
 	{
@@ -18,6 +20,7 @@ namespace CivOne.Services.Screen
 
 		private readonly HashSet<int> _selected = [];
 		private int[] _initializedFor = [];
+		private WeakReference? _gameIdentity;
 
 		/// <inheritdoc />
 		public int MaxVisiblePlayers => MaxVisible;
@@ -27,6 +30,23 @@ namespace CivOne.Services.Screen
 
 		/// <inheritdoc />
 		public int SelectedCount => _selected.Count;
+
+		/// <inheritdoc />
+		public void UseGame(object gameIdentity)
+		{
+			ArgumentNullException.ThrowIfNull(gameIdentity);
+
+			if (_gameIdentity != null && 
+				_gameIdentity.Target is object current && 
+				ReferenceEquals(current, gameIdentity))
+			{
+				return;
+			}
+
+			_gameIdentity = new WeakReference(gameIdentity);
+			_initializedFor = [];
+			_selected.Clear();
+		}
 
 		/// <inheritdoc />
 		public bool RequiresSelection(IReadOnlyList<int> candidates)

@@ -271,13 +271,20 @@ namespace CivOne
 				return;
 			}
 
+			// Use the player's index (its slot in _players), not Civilization.PreferredPlayerNumber:
+			// with civilization reuse beyond player 7, PreferredPlayerNumber no longer identifies the player slot.
+			// A player that no longer holds a slot (e.g. one that was already replaced by a respawn and fires
+			// its event a second time) must not be attributed to slot 0, which belongs to the barbarians.
+			if (!TryGetPlayerNumber(player, out byte destroyedIndex))
+			{
+				Log($"PlayerDestroyed event triggered for a player that holds no slot: {player.TribeNamePlural}");
+				return;
+			}
+
 			ICivilization destroyed = player.Civilization;
 			ICivilization destroyedBy = Game.CurrentPlayer.Civilization;
 			if (destroyedBy == destroyed) destroyedBy = Game.GetPlayer(0)!.Civilization;
 
-			// Use the player's index (its slot in _players), not Civilization.PreferredPlayerNumber:
-			// with civilization reuse beyond player 7, PreferredPlayerNumber no longer identifies the player slot.
-			byte destroyedIndex = PlayerNumber(player);
 			byte destroyedByIndex = PlayerNumber(Game.CurrentPlayer);
 			if (destroyedByIndex == destroyedIndex) destroyedByIndex = 0;
 
@@ -320,16 +327,32 @@ namespace CivOne
 		/// </summary>
 		/// <param name="player">The player for which to get the player number.</param>
 		/// <returns>The player number, or 0 if the player is not found or if null is passed.</returns>
-		internal byte PlayerNumber(Player player)
+		internal byte PlayerNumber(Player player) => TryGetPlayerNumber(player, out byte number) ? number : (byte)0;
+
+		/// <summary>
+		/// Looks up the player number (the player's slot in the game) for the given player.
+		/// Use this instead of <see cref="PlayerNumber(Player)"/> in game logic: a missing player is reported
+		/// as a failure rather than silently answered with slot 0, which belongs to the barbarians.
+		/// </summary>
+		/// <param name="player">The player to look up.</param>
+		/// <param name="number">The player number, or 0 when the player was not found.</param>
+		/// <returns><c>true</c> when the player occupies a slot in this game.</returns>
+		internal bool TryGetPlayerNumber(Player player, out byte number)
 		{
-			byte i = 0;
-			foreach (Player p in _players)
+			if (player != null)
 			{
-				if (p == player)
-					return i;
-				i++;
+				for (int i = 0; i < _players.Length; i++)
+				{
+					if (ReferenceEquals(_players[i], player))
+					{
+						number = (byte)i;
+						return true;
+					}
+				}
 			}
-			return 0;
+
+			number = 0;
+			return false;
 		}
 
 		public Player? GetPlayer(byte number)

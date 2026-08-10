@@ -35,6 +35,7 @@ namespace CivOne
 		private readonly ICivilization _civilization;
 		private Guid _playerGuid = Guid.NewGuid();
 		private string _tribeName, _tribeNamePlural;
+		private string? _leaderName;
 
 		private readonly bool[,] _explored = new bool[Map.WIDTH, Map.HEIGHT];
 		private readonly bool[,] _visible = new bool[Map.WIDTH, Map.HEIGHT];
@@ -89,7 +90,13 @@ namespace CivOne
 		public ICivilization Civilization => _civilization;
 		public Guid PlayerGuid => _playerGuid;
 		
-		public string LeaderName => _civilization.Leader.Name;
+		/// <summary>
+		/// The name of this player's leader.
+		/// Stored on the player rather than written through to <see cref="ICivilization.Leader"/>, because a
+		/// civilization can be shared by several players once there are more players than civilizations, and
+		/// a disambiguated name ("Caesar II") must not leak to the other players of the same civilization.
+		/// </summary>
+		public string LeaderName => _leaderName ?? _civilization?.Leader?.Name ?? "Unknown";
 		public string TribeName => _tribeName ?? _civilization?.Name ?? "Unknown";
 		public string TribeNamePlural => _tribeNamePlural ?? _civilization?.NamePlural ?? "Unknown";
 
@@ -785,7 +792,7 @@ namespace CivOne
 		public Player(ICivilization civilization, string? customLeaderName = null, string? customTribeName = null, string? customTribeNamePlural = null)
 		{
 			_civilization = civilization;
-			if (!string.IsNullOrEmpty(customLeaderName)) _civilization.Leader.Name = customLeaderName;
+			_leaderName = string.IsNullOrEmpty(customLeaderName) ? null : customLeaderName;
 			_tribeName = string.IsNullOrEmpty(customTribeName) ? _civilization.Name : customTribeName;
 			_tribeNamePlural = string.IsNullOrEmpty(customTribeNamePlural) ? _civilization.NamePlural : customTribeNamePlural;
 			Government = new Despotism();

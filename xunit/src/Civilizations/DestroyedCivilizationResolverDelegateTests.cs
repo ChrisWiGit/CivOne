@@ -41,9 +41,16 @@ namespace CivOne.UnitTests.Civilizations
 
 		private static ICivilization HumanCivilization() => Common.Civilizations.First(c => c.Name == "Babylonian");
 
-		private static IReadOnlyDictionary<ReplayData.CivilizationDestroyed, DestroyedCivilization> Resolve(IReadOnlyList<ReplayData> replay)
+		private static IReadOnlyList<DestroyedCivilizationEntry> Resolve(IReadOnlyList<ReplayData> replay)
 			=> new DestroyedCivilizationResolverDelegate()
 				.Resolve(replay, Seed, Competition, HumanPlayerIndex, HumanCivilization());
+
+		/// <summary>
+		/// Looks up the result for a single replay entry, for tests that only care about one destruction.
+		/// </summary>
+		private static DestroyedCivilizationEntry ResultFor(
+			IReadOnlyList<DestroyedCivilizationEntry> resolved, ReplayData.CivilizationDestroyed destroyed)
+			=> resolved.Single(entry => entry.Destroyed == destroyed);
 
 		[Fact]
 		public void WithoutRespawnsTheStartingCivilizationIsReported()
@@ -51,7 +58,7 @@ namespace CivOne.UnitTests.Civilizations
 			CivilizationAssignment assignment = CivilizationAssignment.Create(Seed, Competition, HumanPlayerIndex, HumanCivilization());
 			ReplayData.CivilizationDestroyed destroyed = new(40, 9, HumanPlayerIndex);
 
-			DestroyedCivilization resolved = Resolve([destroyed])[destroyed];
+			DestroyedCivilizationEntry resolved = ResultFor(Resolve([destroyed]), destroyed);
 
 			Assert.Equal(assignment[9].Id, resolved.Civilization.Id);
 		}
@@ -66,12 +73,12 @@ namespace CivOne.UnitTests.Civilizations
 			ReplayData.CivilizationRespawned respawn = new(40, 9, (byte)replacement.Id);
 			ReplayData.CivilizationDestroyed second = new(70, 9, HumanPlayerIndex);
 
-			IReadOnlyDictionary<ReplayData.CivilizationDestroyed, DestroyedCivilization> resolved = Resolve([first, respawn, second]);
+			IReadOnlyList<DestroyedCivilizationEntry> resolved = Resolve([first, respawn, second]);
 
 			// The first destruction still refers to the civilization that started on the slot ...
-			Assert.Equal(assignment[9].Id, resolved[first].Civilization.Id);
+			Assert.Equal(assignment[9].Id, ResultFor(resolved, first).Civilization.Id);
 			// ... and the second one to the civilization that took it over.
-			Assert.Equal(replacement.Id, resolved[second].Civilization.Id);
+			Assert.Equal(replacement.Id, ResultFor(resolved, second).Civilization.Id);
 		}
 
 		[Fact]
@@ -85,9 +92,9 @@ namespace CivOne.UnitTests.Civilizations
 			ReplayData.CivilizationRespawned respawn = new(30, 5, (byte)replacement.Id);
 			ReplayData.CivilizationDestroyed mine = new(60, 9, HumanPlayerIndex);
 
-			IReadOnlyDictionary<ReplayData.CivilizationDestroyed, DestroyedCivilization> resolved = Resolve([other, respawn, mine]);
+			IReadOnlyList<DestroyedCivilizationEntry> resolved = Resolve([other, respawn, mine]);
 
-			Assert.Equal(assignment[9].Id, resolved[mine].Civilization.Id);
+			Assert.Equal(assignment[9].Id, ResultFor(resolved, mine).Civilization.Id);
 		}
 
 		[Fact]
@@ -105,8 +112,10 @@ namespace CivOne.UnitTests.Civilizations
 			ReplayData.CivilizationDestroyed destroyed = new(40, (byte)repeatedSlot, HumanPlayerIndex);
 			ReplayData.CivilizationRespawned unrelatedRespawn = new(41, 1, (byte)assignment[1].Id);
 
-			DestroyedCivilization resolved = new DestroyedCivilizationResolverDelegate()
-				.Resolve([destroyed, unrelatedRespawn], Seed, sharedCompetition, HumanPlayerIndex, HumanCivilization())[destroyed];
+			DestroyedCivilizationEntry resolved = ResultFor(
+				new DestroyedCivilizationResolverDelegate()
+					.Resolve([destroyed, unrelatedRespawn], Seed, sharedCompetition, HumanPlayerIndex, HumanCivilization()),
+				destroyed);
 
 			Assert.Equal(assignment[repeatedSlot].Id, resolved.Civilization.Id);
 			Assert.True(resolved.Occurrence > 0);
@@ -123,9 +132,9 @@ namespace CivOne.UnitTests.Civilizations
 			ReplayData.CivilizationRespawned respawn = new(40, 9, (byte)free.Id);
 			ReplayData.CivilizationDestroyed second = new(70, 9, HumanPlayerIndex);
 
-			IReadOnlyDictionary<ReplayData.CivilizationDestroyed, DestroyedCivilization> resolved = Resolve([first, respawn, second]);
+			IReadOnlyList<DestroyedCivilizationEntry> resolved = Resolve([first, respawn, second]);
 
-			Assert.Equal(0, resolved[second].Occurrence);
+			Assert.Equal(0, ResultFor(resolved, second).Occurrence);
 		}
 
 		[Fact]
@@ -138,10 +147,10 @@ namespace CivOne.UnitTests.Civilizations
 			ReplayData.CivilizationRespawned respawn = new(40, 9, (byte)assignment[5].Id);
 			ReplayData.CivilizationDestroyed second = new(70, 9, HumanPlayerIndex);
 
-			IReadOnlyDictionary<ReplayData.CivilizationDestroyed, DestroyedCivilization> resolved = Resolve([first, respawn, second]);
+			IReadOnlyList<DestroyedCivilizationEntry> resolved = Resolve([first, respawn, second]);
 
-			Assert.Equal(assignment[5].Id, resolved[second].Civilization.Id);
-			Assert.Equal(1, resolved[second].Occurrence);
+			Assert.Equal(assignment[5].Id, ResultFor(resolved, second).Civilization.Id);
+			Assert.Equal(1, ResultFor(resolved, second).Occurrence);
 		}
 
 		[Fact]
@@ -155,9 +164,23 @@ namespace CivOne.UnitTests.Civilizations
 			ReplayData.CivilizationRespawned respawn = new(40, 9, (byte)assignment[5].Id);
 			ReplayData.CivilizationDestroyed second = new(70, 9, HumanPlayerIndex);
 
-			IReadOnlyDictionary<ReplayData.CivilizationDestroyed, DestroyedCivilization> resolved = Resolve([other, first, respawn, second]);
+			IReadOnlyList<DestroyedCivilizationEntry> resolved = Resolve([other, first, respawn, second]);
 
-			Assert.Equal(0, resolved[second].Occurrence);
+			Assert.Equal(0, ResultFor(resolved, second).Occurrence);
+		}
+
+		[Fact]
+		public void ResultsKeepTheReplayOrderWithinOneTurn()
+		{
+			// Three slots destroyed on the same turn: ordering by turn alone would leave the sequence open,
+			// so the result has to follow the order the entries appear in the replay.
+			ReplayData.CivilizationDestroyed first = new(40, 9, HumanPlayerIndex);
+			ReplayData.CivilizationDestroyed second = new(40, 5, HumanPlayerIndex);
+			ReplayData.CivilizationDestroyed third = new(40, 3, HumanPlayerIndex);
+
+			IReadOnlyList<DestroyedCivilizationEntry> resolved = Resolve([first, second, third]);
+
+			Assert.Equal([first, second, third], resolved.Select(entry => entry.Destroyed));
 		}
 
 		[Fact]
@@ -173,10 +196,10 @@ namespace CivOne.UnitTests.Civilizations
 			ReplayData.CivilizationDestroyed first = new(40, 9, HumanPlayerIndex);
 			ReplayData.CivilizationDestroyed second = new(70, 9, HumanPlayerIndex);
 
-			IReadOnlyDictionary<ReplayData.CivilizationDestroyed, DestroyedCivilization> resolved = Resolve([first, second]);
+			IReadOnlyList<DestroyedCivilizationEntry> resolved = Resolve([first, second]);
 
-			Assert.Equal(expectedFirst.Id, resolved[first].Civilization.Id);
-			Assert.Equal(expectedSecond.Id, resolved[second].Civilization.Id);
+			Assert.Equal(expectedFirst.Id, ResultFor(resolved, first).Civilization.Id);
+			Assert.Equal(expectedSecond.Id, ResultFor(resolved, second).Civilization.Id);
 		}
 	}
 }

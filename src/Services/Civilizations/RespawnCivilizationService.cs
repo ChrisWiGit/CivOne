@@ -9,14 +9,17 @@ namespace CivOne.Services.Civilizations
 	/// <summary>
 	/// Picks the replacement civilization for a respawning player slot, preferring one that nobody plays.
 	///
-	/// For games with at most six opponents, the candidates are tried in this order:
+	/// The candidates are tried in this order:
 	/// <list type="number">
-	/// <item>the "buddy" civilization (Id +/- 7), if it is free;</item>
+	/// <item>the "buddy" civilization (Id +/- 7), if <c>preferBuddyCivilization</c> is set and it is free;</item>
 	/// <item>otherwise a random civilization that no living player uses;</item>
 	/// <item>otherwise a random one among the least used, which the caller disambiguates by name.</item>
 	/// </list>
-	/// Games configured with more than six opponents skip the buddy preference and use the extended free
-	/// civilization selection directly.
+	/// The caller decides whether the buddy is preferred: <see cref="Player.Respawn"/> does so for the classic
+	/// setup of at most seven non-barbarian players, unless the game disables it.
+	/// Note that this differs from the original game even in that classic setup: the original always handed
+	/// out the buddy civilization, so two players could end up playing the same one. Here a taken buddy falls
+	/// through to a free civilization instead.
 	/// </summary>
 	internal sealed class RespawnCivilizationService : IRespawnCivilizationService
 	{

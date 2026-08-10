@@ -83,5 +83,38 @@ namespace CivOne.UnitTests
 
 			Assert.Equal([1, 2, 3, 4, 5, 6, 7], visible);
 		}
+
+		[Fact]
+		public void AnotherGameWithTheSamePlayerCountResetsTheSelection()
+		{
+			object firstGame = new();
+			object secondGame = new();
+			int[] candidates = Candidates(31);
+
+			_testee.UseGame(firstGame);
+			_testee.GetVisiblePlayers(candidates, humanPlayerNumber: 1);
+			_testee.Toggle(1);
+			Assert.False(_testee.IsSelected(1));
+
+			// Same candidate list, different game: the selection must not carry over.
+			_testee.UseGame(secondGame);
+
+			Assert.Equal([1, 2, 3, 4, 5, 6, 7], _testee.GetVisiblePlayers(candidates, humanPlayerNumber: 1));
+		}
+
+		[Fact]
+		public void ReopeningTheGraphInTheSameGameKeepsTheSelection()
+		{
+			object game = new();
+			int[] candidates = Candidates(31);
+
+			_testee.UseGame(game);
+			_testee.GetVisiblePlayers(candidates, humanPlayerNumber: 1);
+			_testee.Toggle(1);
+
+			_testee.UseGame(game);
+
+			Assert.Equal([2, 3, 4, 5, 6, 7], _testee.GetVisiblePlayers(candidates, humanPlayerNumber: 1));
+		}
 	}
 }

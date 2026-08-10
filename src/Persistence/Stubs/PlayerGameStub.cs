@@ -23,6 +23,7 @@ namespace CivOne.Persistence.Stubs
         public bool Started => false;
         public ushort GameTurn => 0;
         public int Difficulty => 0;
+        public int Competition => Math.Max(0, _players.Count - 1);
         public bool DisableBuddyCivilizationRespawn => false;
         public Player HumanPlayer => null!;
         public Player CurrentPlayer => null!;

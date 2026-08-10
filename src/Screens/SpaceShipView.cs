@@ -91,14 +91,7 @@ namespace CivOne.Screens
 		private int LaunchButtonTop => SidePanelOffsetY + LaunchButtonY + LaunchButtonRenderYOffset;
 		private static int LaunchButtonRenderHeight => LaunchButtonHeight + LaunchButtonRenderHeightOffset;
 
-		private byte PlayerColor
-		{
-			get
-			{
-				int playerNumber = Math.Max(0, (int)Game.PlayerNumber(_player));
-				return Common.PlayerColourDark(playerNumber);
-			}
-		}
+		private byte PlayerColor => Common.PlayerColourDark(Game.PlayerNumber(_player));
 
 		private string FormatYearLabel(int year)
 		{

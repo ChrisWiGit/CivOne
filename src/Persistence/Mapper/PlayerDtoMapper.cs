@@ -53,15 +53,12 @@ namespace CivOne.Persistence.Model
 			ArgumentNullException.ThrowIfNull(dto);
 
 			var civilization = _civilizationMapper.FromDto(dto.Civilization);
-			if (!string.IsNullOrEmpty(dto.LeaderName))
-			{
-				// Restores disambiguated leader names (e.g. "Caesar II") for reused civilizations; see PlayerDto.LeaderName.
-				civilization.Leader.Name = dto.LeaderName;
-			}
 
 			IPlayerRestorable player = _playerFactory.Create(civilization, dto);
 
 			player.PlayerGuid = dto.PlayerGuid == Guid.Empty ? Guid.NewGuid() : dto.PlayerGuid;
+			// Restores disambiguated leader names (e.g. "Caesar II") for reused civilizations; see PlayerDto.LeaderName.
+			player.LeaderName = string.IsNullOrEmpty(dto.LeaderName) ? civilization.Leader.Name : dto.LeaderName;
 			player.TribeName = string.IsNullOrEmpty(dto.TribeName) ? civilization.Name : dto.TribeName;
 			player.TribeNamePlural = string.IsNullOrEmpty(dto.TribeNamePlural) ? civilization.NamePlural : dto.TribeNamePlural;
 			player.Explored = dto.Explored;
@@ -133,7 +130,7 @@ namespace CivOne.Persistence.Model
 				Explored = player.Explored,
 				Visible = player.Visible,
 
-				LeaderName = player.Civilization.Leader.Name,
+				LeaderName = player.LeaderName,
 				TribeName = player.TribeName,
 				TribeNamePlural = player.TribeNamePlural,
 

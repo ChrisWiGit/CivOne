@@ -26,6 +26,14 @@ namespace CivOne.Civilizations
 	internal readonly record struct DestroyedCivilization(ICivilization Civilization, int Occurrence);
 
 	/// <summary>
+	/// One resolved destruction: the replay entry and the civilization that was destroyed by it.
+	/// </summary>
+	/// <param name="Destroyed">The replay entry the result belongs to.</param>
+	/// <param name="Civilization">The civilization that held the slot at that moment.</param>
+	/// <param name="Occurrence">0 when the civilization was used by this player only.</param>
+	internal readonly record struct DestroyedCivilizationEntry(ReplayData.CivilizationDestroyed Destroyed, ICivilization Civilization, int Occurrence);
+
+	/// <summary>
 	/// Works out which civilization occupied a player slot at the moment it was destroyed, for screens that
 	/// look back over a finished game.
 	///
@@ -46,9 +54,12 @@ namespace CivOne.Civilizations
 		/// <param name="competition">The number of non-barbarian player slots.</param>
 		/// <param name="humanPlayerIndex">The player slot of the human player.</param>
 		/// <param name="humanCivilization">The civilization the human player started with.</param>
-		/// <returns>One entry per destruction, keyed by the replay entry itself.</returns>
+		/// <returns>
+		/// One entry per destruction, in replay order, so callers get a stable sequence even when several
+		/// destructions share a turn.
+		/// </returns>
 		[SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This class is a delegate, not a static utility.")]
-		public IReadOnlyDictionary<ReplayData.CivilizationDestroyed, DestroyedCivilization> Resolve(
+		public IReadOnlyList<DestroyedCivilizationEntry> Resolve(
 			IReadOnlyList<ReplayData> replayData,
 			short initialSeed,
 			int competition,
@@ -63,7 +74,7 @@ namespace CivOne.Civilizations
 				: ResolveFromBuddySupplier(replayData, initialSeed, competition, humanPlayerIndex, humanCivilization);
 		}
 
-		private static Dictionary<ReplayData.CivilizationDestroyed, DestroyedCivilization> ResolveFromRespawnHistory(
+		private static List<DestroyedCivilizationEntry> ResolveFromRespawnHistory(
 			IReadOnlyList<ReplayData> replayData,
 			short initialSeed,
 			int competition,
@@ -77,14 +88,14 @@ namespace CivOne.Civilizations
 
 			// The respawn entry for a slot is always written after the destruction that caused it, so reading
 			// the slot's current civilization when the destruction is reached gives the one that died.
-			Dictionary<ReplayData.CivilizationDestroyed, DestroyedCivilization> result = [];
+			List<DestroyedCivilizationEntry> result = [];
 			foreach (ReplayData entry in replayData)
 			{
 				switch (entry)
 				{
 					case ReplayData.CivilizationDestroyed destroyed
 						when currentBySlot.TryGetValue(destroyed.DestroyedId, out DestroyedCivilization civilization):
-						result[destroyed] = civilization;
+						result.Add(new DestroyedCivilizationEntry(destroyed, civilization.Civilization, civilization.Occurrence));
 						aliveSlots.Remove(destroyed.DestroyedId);
 						break;
 
@@ -127,9 +138,7 @@ namespace CivOne.Civilizations
 			return slots;
 		}
 
-		[SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This class is a delegate, not a static utility.")]
-
-		private Dictionary<ReplayData.CivilizationDestroyed, DestroyedCivilization> ResolveFromBuddySupplier(
+		private static List<DestroyedCivilizationEntry> ResolveFromBuddySupplier(
 			IReadOnlyList<ReplayData> replayData,
 			short initialSeed,
 			int competition,
@@ -141,7 +150,7 @@ namespace CivOne.Civilizations
 			CivilizationAssignment assignment = CivilizationAssignment.Create(initialSeed, competition, humanPlayerIndex, humanCivilization);
 			Dictionary<int, DestroyedCivilization> initialSlots = InitialSlots(assignment);
 
-			Dictionary<ReplayData.CivilizationDestroyed, DestroyedCivilization> result = [];
+			List<DestroyedCivilizationEntry> result = [];
 			foreach (ReplayData.CivilizationDestroyed destroyed in replayData.OfType<ReplayData.CivilizationDestroyed>())
 			{
 				ICivilization civilization = getBuddyCivilization(destroyed.DestroyedId);
@@ -152,7 +161,7 @@ namespace CivOne.Civilizations
 					initialSlots.TryGetValue(destroyed.DestroyedId, out DestroyedCivilization initial) && initial.Civilization.Id == civilization.Id
 						? initial.Occurrence
 						: 0;
-				result[destroyed] = new DestroyedCivilization(civilization, occurrence);
+				result.Add(new DestroyedCivilizationEntry(destroyed, civilization, occurrence));
 			}
 
 			return result;

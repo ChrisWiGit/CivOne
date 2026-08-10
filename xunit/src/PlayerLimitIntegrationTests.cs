@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
-using CivOne.Persistence.Factories;
-using CivOne.Persistence.Model;
+using CivOne.Civilizations;
 using CivOne.Services;
 using CivOne.src;
 using CivOne.Units;
@@ -129,6 +128,35 @@ namespace CivOne.UnitTests
 				Game.Instance.GetReplayData<ReplayData.CivilizationRespawned>(),
 				x => x.PlayerId == targetIndex);
 			Assert.Equal(replacement.Civilization.Id, entry.CivilizationId);
+		}
+
+		[Fact]
+		public void APlayerThatHoldsNoSlotIsNotReportedAsSlotZero()
+		{
+			// PlayerNumber answers 0 for an unknown player, which is the barbarian slot. Game logic has to use
+			// TryGetPlayerNumber instead, so a stale player (e.g. one already replaced by a respawn) cannot be
+			// attributed to the barbarians.
+			Player stranger = new(Common.Civilizations.First(c => c.Name == "Egyptian"));
+
+			Assert.False(Game.Instance.TryGetPlayerNumber(stranger, out byte number));
+			Assert.Equal(0, number);
+			Assert.True(Game.Instance.TryGetPlayerNumber(Game.Instance.GetPlayer(1)!, out byte known));
+			Assert.Equal(1, known);
+		}
+
+		[Fact]
+		public void ANumberedLeaderNameStaysOnItsOwnPlayer()
+		{
+			// Two players share one civilization instance; only the one created with a custom name may show it.
+			ICivilization shared = Common.Civilizations.First(c => c.Name == "Egyptian");
+			string defaultLeaderName = shared.Leader.Name;
+
+			Player numbered = new(shared, "Caesar II", "Roman II", "Romans II");
+			Player plain = new(shared);
+
+			Assert.Equal("Caesar II", numbered.LeaderName);
+			Assert.Equal(defaultLeaderName, plain.LeaderName);
+			Assert.Equal(defaultLeaderName, shared.Leader.Name);
 		}
 
 		[Fact]

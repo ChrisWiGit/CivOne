@@ -27,6 +27,17 @@ namespace CivOne.Services.Screen
 		int DefaultVisiblePlayers { get; }
 
 		/// <summary>
+		/// Binds the selection to a game.
+		/// The selection is dropped as soon as a different game is passed, so a new or loaded game never
+		/// inherits the civilizations that were selected in the previous one.
+		/// </summary>
+		/// <param name="gameIdentity">
+		/// Any object that identifies the running game, typically the game instance itself.
+		/// Only held weakly, so it does not keep a finished game alive.
+		/// </param>
+		void UseGame(object gameIdentity);
+
+		/// <summary>
 		/// Returns whether the given candidates need a selection at all.
 		/// </summary>
 		/// <param name="candidates">Player numbers of every civilization the graph could draw.</param>

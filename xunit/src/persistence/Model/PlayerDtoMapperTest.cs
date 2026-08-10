@@ -444,6 +444,7 @@ namespace CivOne.Persistence.Model
 			public bool Started => true;
 			public ushort GameTurn => 0;
 			public int Difficulty => 3;
+			public int Competition => 7;
 			public bool DisableBuddyCivilizationRespawn => false;
 			public Player HumanPlayer => throw new NotImplementedException();
 			public Player CurrentPlayer => throw new NotImplementedException();
