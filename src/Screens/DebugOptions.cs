@@ -25,6 +25,7 @@ using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Civilizations;
 using CivOne.Services;
+using CivOne.Services.Maps;
 using CivOne.Services.Screen;
 
 namespace CivOne.Screens
@@ -109,6 +110,23 @@ namespace CivOne.Screens
 		{
 			Settings.Instance.RevealWorldCheat();
 			Common.GamePlay?.RefreshMap();
+			Destroy();
+		}
+
+		/// <summary>
+		/// Exports the world map to an image file.
+		/// The delegate is built here because <see cref="DebugOptions"/> is created through a parameterless
+		/// screen factory and therefore cannot receive its dependencies through the constructor.
+		/// </summary>
+		private void MenuExportMapImage(object? _, EventArgs args)
+		{
+			GamePlay.GamePlayExportMapImageDelegate exportMapImageDelegate = new(
+				Translation, Settings, Runtime, Map, Game,
+				Game.SaveMetaDataService, new GameCalendarService(Translation),
+				MapImageExportServiceFactory.Create(),
+				new GameTaskCommandQueueAdapter(), new MessageServiceAdapter(), new DirectoryService(),
+				() => Settings.RevealWorld);
+			exportMapImageDelegate.ExportMapImage();
 			Destroy();
 		}
 
@@ -556,6 +574,7 @@ namespace CivOne.Screens
 				new(Translate("Spawn Unit"), () => MenuSpawnUnit(null, EventArgs.Empty)),
 				new(Translate("Meet With King"), () => MenuMeetWithKing(null, EventArgs.Empty)),
 				new(Translate("Toggle Reveal World"), () => MenuRevealWorld(null, EventArgs.Empty)),
+				new(Translate("Export Map Image..."), () => MenuExportMapImage(null, EventArgs.Empty)),
 				new(Translate("Build Palace"), () => MenuBuildPalace(null, EventArgs.Empty)),
 				new(Translate("City Menu Grid (Test)"), () => MenuCityGridTest(null, EventArgs.Empty)),
 				new(Translate("Ranking (Random)"), () => MenuShowCivilizationRanking(null, EventArgs.Empty)),
