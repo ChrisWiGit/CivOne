@@ -66,6 +66,15 @@ namespace CivOne
 		string MapsDirectory { get; }
 
 		/// <summary>
+		/// Gets the directory used for exported map images.
+		/// </summary>
+		/// <remarks>
+		/// Windows: <c>%LOCALAPPDATA%\CivOne\pictures</c>
+		/// Linux and macOS: <c>~/.local/share/CivOne/pictures</c>
+		/// </remarks>
+		string PicturesDirectory { get; }
+
+		/// <summary>
 		/// Gets the directory used for sound assets.
 		/// </summary>
 		/// <remarks>

@@ -31,7 +31,8 @@ namespace CivOne.Screens
 			ITranslationService translationService,
 			IPlayerGame playerGame,
 			ICivilization[] civilizations,
-			GamePlaySaveMapDelegate saveMapDelegate)
+			GamePlaySaveMapDelegate saveMapDelegate,
+			GamePlayExportMapImageDelegate exportMapImageDelegate)
 		{
 			private enum TerrainMenuAction
 			{
@@ -52,7 +53,8 @@ namespace CivOne.Screens
 				ToggleLandValues,
 				BrushIncrease,
 				BrushDecrease,
-				SaveMap
+				SaveMap,
+				ExportMapImage
 			}
 
 			private readonly char FOUND_CITY_HOTKEY = 'y';
@@ -64,6 +66,7 @@ namespace CivOne.Screens
 			private readonly IPlayerGame _playerGame = playerGame ?? throw new ArgumentNullException(nameof(playerGame));
 			private readonly ICivilization[] _civilizations = civilizations ?? throw new ArgumentNullException(nameof(civilizations));
 			private readonly GamePlaySaveMapDelegate _saveMapDelegate = saveMapDelegate ?? throw new ArgumentNullException(nameof(saveMapDelegate));
+			private readonly GamePlayExportMapImageDelegate _exportMapImageDelegate = exportMapImageDelegate ?? throw new ArgumentNullException(nameof(exportMapImageDelegate));
 
 			// Resolved lazily: the delegate touches Map.Instance and the random-service factory, so it must not
 			// be built at construction time before those singletons are ready.
@@ -377,6 +380,7 @@ namespace CivOne.Screens
 				_gamePlay._gameMenu.Items.Add(Translate("Brush Size -"), (int)TerrainMenuAction.BrushDecrease).SetShortcut("-").OnSelect(OnTerrainMenuAction).SetEnabled(state.Enabled);
 				_gamePlay._gameMenu.Items.Add(null);
 				_gamePlay._gameMenu.Items.Add(Translate("Save Map..."), (int)TerrainMenuAction.SaveMap).SetEnabled(state.Enabled).OnSelect(_saveMapDelegate.OnSaveMapMenuAction);
+				_gamePlay._gameMenu.Items.Add(Translate("Export Map Image..."), (int)TerrainMenuAction.ExportMapImage).OnSelect(_exportMapImageDelegate.OnExportMapImageMenuAction);
 
 				const int enabledEditorMenuX = 216;
 				const int disabledEditorMenuX = 236;

@@ -220,6 +220,7 @@ namespace CivOne.Screens
 		private sealed class FakeSettings : ISettings
 		{
 			public string MapsDirectory { get; } = Path.Combine(Path.GetTempPath(), "CivOneTests", Guid.NewGuid().ToString("N"), "maps");
+			public string PicturesDirectory => throw new NotImplementedException();
 			public string SavesDirectory => throw new NotImplementedException();
 			public string CosSavesDirectory => throw new NotImplementedException();
 			public string StorageDirectory => throw new NotImplementedException();
