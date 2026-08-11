@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 
@@ -39,6 +40,7 @@ namespace CivOne.Graphics.ImageFormats
 		/// <param name="bitmap">The bitmap to write.</param>
 		/// <param name="stream">The stream that receives the BMP data.</param>
 		/// <exception cref="ArgumentException">The bitmap has no pixels.</exception>
+		[SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Instance method is more convenient for callers.")]
 		public void Write(IBitmap bitmap, Stream stream)
 		{
 			ArgumentNullException.ThrowIfNull(bitmap);
