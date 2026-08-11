@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,6 +6,7 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
+using CivOne.Units;
 
 namespace CivOne.Screens.Debug
 {
@@ -71,26 +63,36 @@ namespace CivOne.Screens.Debug
 				}
 			}
 
+			// Counted once for all slots instead of scanning every unit and city per row.
+			int[] unitsBySlot = new int[Game.MaxPlayers];
+			foreach (IUnit unit in Game.GetUnits())
+			{
+				unitsBySlot[unit.Owner]++;
+			}
+
+			int[] citiesBySlot = new int[Game.MaxPlayers];
+			foreach (City city in Game.Cities)
+			{
+				citiesBySlot[city.CityOwnerPlayerIndex]++;
+			}
+
 			List<SlotRow> rows = [];
+			int slot = 0;
 			foreach (Player player in Game.Players)
 			{
-				byte slot = Game.PlayerNumber(player);
-
 				// Deliberately no Player.IsDestroyed here: that property runs HandleExtinction, which disbands
 				// units and marks players destroyed. A debug view must not change the game it displays.
-				int units = Game.GetUnits().Count(unit => unit.Owner == slot);
-				int cities = Game.Cities.Count(city => city.CityOwnerPlayerIndex == slot);
-
 				rows.Add(new SlotRow(
 					slot,
 					player.LeaderName,
 					player.TribeNamePlural,
 					player.Civilization.Id,
-					units,
-					cities,
-					slot < respawnsBySlot.Length ? respawnsBySlot[slot] : 0,
+					unitsBySlot[slot],
+					citiesBySlot[slot],
+					respawnsBySlot[slot],
 					player.IsHuman,
 					player.Civilization.PreferredPlayerNumber == 0));
+				slot++;
 			}
 
 			return rows;
@@ -212,9 +214,15 @@ namespace CivOne.Screens.Debug
 			}
 		}
 
+		/// <remarks>
+		/// A click on the left half of the screen pages back, one on the right half pages forward, so the
+		/// list can be walked in both directions with the mouse alone.
+		/// </remarks>
 		public override bool MouseDown(ScreenEventArgs args)
 		{
-			ChangePage(1);
+			ArgumentNullException.ThrowIfNull(args);
+
+			ChangePage(args.X < Width / 2 ? -1 : 1);
 			return true;
 		}
 

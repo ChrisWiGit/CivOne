@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.Linq;
 using CivOne.Enums;
@@ -82,7 +73,7 @@ namespace CivOne.Screens.Debug
 
 		private CivSelectMenuDelegate CreateCivSelectDelegate()
 		{
-			CivSelectMenuDelegate delegate_ = new("Spawn Unit...");
+			CivSelectMenuDelegate delegate_ = new(Translate("Spawn Unit..."));
 			delegate_.PlayerSelected += OnCivSelected;
 			delegate_.Cancelled += SpawnUnit_Cancel;
 			return delegate_;

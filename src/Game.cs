@@ -97,8 +97,10 @@ namespace CivOne
 		/// <summary>
 		/// The maximum number of players supported by a game (including the barbarian player at index 0).
 		/// This bounds the <see cref="Tiles.ITile.Visited"/> bitmask width and the player colour palette size.
+		/// Defined in <see cref="PlayerLimits"/>, because the API assembly needs the same value to validate
+		/// replay data but cannot reference this class.
 		/// </summary>
-		internal const int MaxPlayers = 32;
+		internal const int MaxPlayers = PlayerLimits.MaxPlayers;
 
 		private static string GetGameVersion()
 			=> Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown";
@@ -281,12 +283,14 @@ namespace CivOne
 				return;
 			}
 
-			ICivilization destroyed = player.Civilization;
-			ICivilization destroyedBy = Game.CurrentPlayer.Civilization;
-			if (destroyedBy == destroyed) destroyedBy = Game.GetPlayer(0)!.Civilization;
-
+			// A player cannot destroy itself, so that case is attributed to the barbarians. Compare the slots,
+			// not the civilizations: two players can share a civilization once there are more players than
+			// civilizations, and comparing those would blame the barbarians for a regular conquest.
 			byte destroyedByIndex = PlayerNumber(Game.CurrentPlayer);
 			if (destroyedByIndex == destroyedIndex) destroyedByIndex = 0;
+
+			ICivilization destroyed = player.Civilization;
+			ICivilization destroyedBy = GetPlayer(destroyedByIndex)!.Civilization;
 
 			_replayData.Add(new ReplayData.CivilizationDestroyed(_gameTurn, destroyedIndex, destroyedByIndex));
 

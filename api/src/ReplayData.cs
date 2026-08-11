@@ -58,8 +58,8 @@ namespace CivOne
 
 			public CivilizationDestroyed(int turn, byte destroyedId, byte destroyedById) : base(turn)
 			{
-				Debug.Assert(destroyedId <= MaxPlayerIndex, "Invalid player index in replay data.");
-				Debug.Assert(destroyedById <= MaxPlayerIndex, "Invalid player index in replay data.");
+				Debug.Assert(destroyedId <= PlayerLimits.MaxPlayerIndex, "Invalid player index in replay data.");
+				Debug.Assert(destroyedById <= PlayerLimits.MaxPlayerIndex, "Invalid player index in replay data.");
 
 				DestroyedId = destroyedId;
 				DestroyedById = destroyedById;
@@ -91,16 +91,13 @@ namespace CivOne
 			/// <param name="civilizationId">The Id of the civilization taking over the slot.</param>
 			public CivilizationRespawned(int turn, byte playerId, byte civilizationId) : base(turn)
 			{
-				Debug.Assert(playerId <= MaxPlayerIndex, "Invalid player index in replay data.");
-				Debug.Assert(civilizationId <= 15, "Invalid civilization ID in replay data.");
+				Debug.Assert(playerId <= PlayerLimits.MaxPlayerIndex, "Invalid player index in replay data.");
+				Debug.Assert(civilizationId <= PlayerLimits.MaxCivilizationId, "Invalid civilization ID in replay data.");
 
 				PlayerId = playerId;
 				CivilizationId = civilizationId;
 			}
 		}
-
-		// Mirrors CivOne.Game.MaxPlayers - 1 (this project cannot reference the Game class in the main assembly).
-		private const int MaxPlayerIndex = 31;
 
 		public int Turn { get; private set; }
 

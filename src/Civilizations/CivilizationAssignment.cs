@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,8 +44,7 @@ namespace CivOne.Civilizations
 		/// </summary>
 		public ICivilization Buddy(int playerIndex)
 		{
-			ICivilization current = this[playerIndex];
-			int buddyId = current.Id >= 8 ? current.Id - 7 : current.Id + 7;
+			int buddyId = BuddyPair.BuddyId(this[playerIndex].Id);
 			return Common.Civilizations.First(civ => civ.Id == buddyId);
 		}
 
@@ -69,6 +59,10 @@ namespace CivOne.Civilizations
 		{
 			ArgumentNullException.ThrowIfNull(humanCivilization);
 
+			// Read once: Common.Civilizations reflects over every loaded assembly and instantiates all
+			// civilizations on each access, and this method would otherwise do that once per player slot.
+			ICivilization[] allCivilizations = Common.Civilizations;
+
 			ICivilization[] civilizationByIndex = new ICivilization[competition + 1];
 			Random startRandom = new(initialSeed);
 
@@ -81,7 +75,7 @@ namespace CivOne.Civilizations
 					continue;
 				}
 
-				ICivilization[] civs = [.. Common.Civilizations.Where(civ => civ.PreferredPlayerNumber == i)];
+				ICivilization[] civs = [.. allCivilizations.Where(civ => civ.PreferredPlayerNumber == i)];
 				int r = startRandom.Next(civs.Length);
 				civilizationByIndex[i] = civs[r];
 			}
@@ -90,7 +84,7 @@ namespace CivOne.Civilizations
 			{
 				// PreferredPlayerNumber 0 identifies the barbarians, whose Id is 15 rather than 0, so they have
 				// to be filtered out by that instead — otherwise they end up in the pool for a regular player.
-				int[] selectableIds = [.. Common.Civilizations.Where(civ => civ.PreferredPlayerNumber != 0).Select(civ => civ.Id)];
+				int[] selectableIds = [.. allCivilizations.Where(civ => civ.PreferredPlayerNumber != 0).Select(civ => civ.Id)];
 				HashSet<int> usedIds = [.. civilizationByIndex.Where(civ => civ != null).Select(civ => civ.Id)];
 				List<int> reusePool = [.. selectableIds.Where(id => !usedIds.Contains(id))];
 
@@ -105,7 +99,7 @@ namespace CivOne.Civilizations
 					int civId = reusePool[poolIndex];
 					reusePool.RemoveAt(poolIndex);
 
-					civilizationByIndex[i] = Common.Civilizations.First(civ => civ.Id == civId);
+					civilizationByIndex[i] = allCivilizations.First(civ => civ.Id == civId);
 				}
 			}
 

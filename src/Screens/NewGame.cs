@@ -121,9 +121,10 @@ namespace CivOne.Screens
 			CloseMenus();
 			Log("Competition: {0} Civilizations", _competition);
 
-			// Beyond the 7 "preferred player number" slots, civilizations are assigned independently of
-			// player index (see CivilizationAssignment) and reused as needed, so the human may pick any of them.
-			_tribesAvailable = [.. Common.Civilizations.Where(c => c.PreferredPlayerNumber > 0 && (_competition >= 7 || c.PreferredPlayerNumber <= _competition))];
+			// The human player takes the slot matching its civilization's preferred player number, so only
+			// civilizations whose number fits into the chosen player count can be offered. From 7 upwards
+			// that is every civilization, because the preferred player numbers only go up to 7.
+			_tribesAvailable = [.. Common.Civilizations.Where(c => c.PreferredPlayerNumber > 0 && c.PreferredPlayerNumber <= _competition)];
 			_menuItemsTribes = [.. _tribesAvailable.Select(c => c.Name)];
 		}
 		

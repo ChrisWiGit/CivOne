@@ -42,7 +42,7 @@ namespace CivOne.Screens.Debug
 
         private CivSelectMenuDelegate CreatePlayerSelectDelegate()
         {
-            CivSelectMenuDelegate delegate_ = new("Add building...");
+            CivSelectMenuDelegate delegate_ = new(Translate("Add building..."));
             delegate_.PlayerSelected += OnPlayerSelected;
             delegate_.Cancelled += Cancel;
             return delegate_;

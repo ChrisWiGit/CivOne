@@ -1,13 +1,4 @@
-﻿// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
-using System;
+﻿using System;
 using System.Drawing;
 using System.Linq;
 using CivOne.Enums;
@@ -220,7 +211,7 @@ namespace CivOne.Screens
 				this.DrawText(Translate("(L)aunch (B)ackground (C)ivs"), 0, 15, ox + 16, yy, TextAlign.Left);
 				this.DrawText(Translate("1 Struct. 2/F3 Compts.  3/F4 Modules"), 0, 15, ox + 16, yy + fontHeight, TextAlign.Left);
 				string ruleMode = _useDebugRules ? Translate("Debug") : Translate("Real");
-				this.DrawText(TranslateFormatted($"F5:{0}  (V)ictory", ruleMode), 0, 15, ox + 16, yy + 2 * fontHeight, TextAlign.Left);
+				this.DrawText(TranslateFormatted("F5:{0}  (V)ictory", ruleMode), 0, 15, ox + 16, yy + 2 * fontHeight, TextAlign.Left);
 			}
 		}
 

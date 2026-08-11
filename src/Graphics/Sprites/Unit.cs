@@ -23,8 +23,8 @@ namespace CivOne.Graphics.Sprites
 
 		private static Bytemap GetUnit((UnitType Type, byte PlayerNumber) unit)
 		{
-			byte colourDark = Common.ColourDark[unit.PlayerNumber];
-			byte colourLight = Common.ColourLight[unit.PlayerNumber];
+			byte colourDark = Common.PlayerColourDark(unit.PlayerNumber);
+			byte colourLight = Common.PlayerColourLight(unit.PlayerNumber);
 			int unitId = (int)unit.Type;
 
 			IBitmap? baseSprite = BaseSprite(unit.Type);

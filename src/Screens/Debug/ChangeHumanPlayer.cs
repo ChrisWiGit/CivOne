@@ -90,7 +90,7 @@ namespace CivOne.Screens.Debug
 		public ChangeHumanPlayer() : base(MouseCursor.Pointer)
 		{
 			Palette = Common.Screens[Common.Screens.Length - 1].OriginalColours;
-			_civSelectDelegate = new CivSelectMenuDelegate("Change Human Player...");
+			_civSelectDelegate = new CivSelectMenuDelegate(Translate("Change Human Player..."));
 			_civSelectDelegate.PlayerSelected += ChangePlayer_Accept;
 			_civSelectDelegate.Cancelled += ChangePlayer_Cancel;
 

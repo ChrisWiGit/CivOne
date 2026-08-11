@@ -116,26 +116,4 @@ namespace CivOne.Services.Screen
 			}
 		}
 	}
-
-	/// <summary>
-	/// Provides the <see cref="IPowerGraphSelectionService"/> used by the power graph.
-	/// </summary>
-	/// <remarks>
-	/// The service outlives the power graph screen, so the selection survives closing and reopening the graph.
-	/// </remarks>
-	internal static class PowerGraphSelectionServiceFactory
-	{
-		private static IPowerGraphSelectionService? _current;
-
-		/// <summary>
-		/// The service instance shared by every power graph screen.
-		/// </summary>
-		public static IPowerGraphSelectionService Current => _current ??= new PowerGraphSelectionService();
-
-		/// <summary>
-		/// Replaces the shared instance, used by tests.
-		/// </summary>
-		/// <param name="service">The service to use from now on.</param>
-		public static void SetCurrent(IPowerGraphSelectionService service) => _current = service;
-	}
 }

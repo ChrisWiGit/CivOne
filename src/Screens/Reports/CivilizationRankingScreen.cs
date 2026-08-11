@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -202,7 +193,7 @@ namespace CivOne.Screens.Reports
 			int dockedTopOverlap = hasPalace ? Math.Max(0, palaceHeight) : 0;
 			int rowY = rowTop + (isFirstRow ? 0 : dockedTopOverlap);
 
-			byte rowColour = Common.ColourLight[rankingRow.PlayerColorId];
+			byte rowColour = Common.PlayerColourLight(rankingRow.PlayerColorId);
 			this.FillRectangle(rowX, rowY, rowWidth, rowHeight, rowColour)
 				.FillRectangle(rowX + 1, rowY + 1, rowWidth - 2, rowHeight - 2, 3);
 

@@ -23,11 +23,6 @@ namespace CivOne.Services.Civilizations
 	/// </summary>
 	internal sealed class RespawnCivilizationService : IRespawnCivilizationService
 	{
-		/// <summary>
-		/// Distance between the two civilizations of a buddy pair (Romans 1 and Russians 8, and so on).
-		/// </summary>
-		private const int BuddyIdOffset = 7;
-
 		private readonly ICivilization[]? _civilizations;
 		private readonly IRandomService? _randomService;
 
@@ -66,7 +61,7 @@ namespace CivOne.Services.Civilizations
 				usageById[civilization.Id] = usageById.TryGetValue(civilization.Id, out int count) ? count + 1 : 1;
 			}
 
-			ICivilization? buddy = candidates.FirstOrDefault(civ => civ.Id == BuddyId(destroyed.Id));
+			ICivilization? buddy = candidates.FirstOrDefault(civ => civ.Id == BuddyPair.BuddyId(destroyed.Id));
 			if (preferBuddyCivilization && buddy != null && !usageById.ContainsKey(buddy.Id))
 			{
 				return new RespawnCivilizationResult { Civilization = buddy, Occurrence = 0 };
@@ -83,14 +78,6 @@ namespace CivOne.Services.Civilizations
 			ICivilization[] leastUsed = [.. candidates.Where(civ => usageById[civ.Id] == fewestUses)];
 			return new RespawnCivilizationResult { Civilization = Pick(leastUsed), Occurrence = fewestUses };
 		}
-
-		/// <summary>
-		/// Returns the Id of the other civilization in the same buddy pair.
-		/// </summary>
-		/// <param name="civilizationId">The Id to find the buddy for.</param>
-		/// <returns>The buddy's Id.</returns>
-		private static int BuddyId(int civilizationId)
-			=> civilizationId > BuddyIdOffset ? civilizationId - BuddyIdOffset : civilizationId + BuddyIdOffset;
 
 		private ICivilization Pick(ICivilization[] candidates)
 			=> candidates.Length == 1 ? candidates[0] : candidates[RandomService.NextInt(candidates.Length)];

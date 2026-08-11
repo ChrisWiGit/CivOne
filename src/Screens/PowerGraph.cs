@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -26,7 +17,16 @@ namespace CivOne.Screens
 		private const int RowHeight = 8;
 		private const int FirstRowY = 12;
 
-		private readonly IPowerGraphSelectionService _selection = PowerGraphSelectionServiceFactory.Current;
+		private readonly IPowerGraphSelectionService? _injectedSelection;
+		private IPowerGraphSelectionService? _selectionService;
+
+		/// <summary>
+		/// The civilization selection, resolved on first use so constructing the screen does not pull in the
+		/// shared service when it was injected.
+		/// </summary>
+		private IPowerGraphSelectionService Selection
+			=> _selectionService ??= _injectedSelection ?? PowerGraphSelectionServiceFactory.Create();
+
 		private readonly Player[] _players;
 		private readonly int[] _playerNumbers;
 		private readonly bool _canSelectCivilizations;
@@ -51,7 +51,7 @@ namespace CivOne.Screens
 			return true;
 		}
 
-		private string SelectionTitle => TranslateFormatted("Show Civilizations ({0}/{1})", _selection.SelectedCount, _selection.MaxVisiblePlayers);
+		private string SelectionTitle => TranslateFormatted("Show Civilizations ({0}/{1})", Selection.SelectedCount, Selection.MaxVisiblePlayers);
 
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
@@ -109,7 +109,7 @@ namespace CivOne.Screens
 			_civSelect = new GridMenuDelegate(
 				[.. _players.Select(player => player.TribeName)],
 				GridMenuDelegate.SelectionMode.CheckUncheck,
-				isChecked: index => _selection.IsSelected(_playerNumbers[index]),
+				isChecked: index => Selection.IsSelected(_playerNumbers[index]),
 				fontId: 0,
 				enableHotkeys: true);
 			_civSelect.ItemChecked += ToggleCivilization;
@@ -133,7 +133,7 @@ namespace CivOne.Screens
 			}
 
 			// Toggle returns false when the maximum is already reached; the dialog then simply stays as it is.
-			_selection.Toggle(_playerNumbers[index]);
+			Selection.Toggle(_playerNumbers[index]);
 			_update = true;
 		}
 
@@ -173,7 +173,7 @@ namespace CivOne.Screens
 
 		private void DrawLegend()
 		{
-			IReadOnlyList<int> visible = _selection.GetVisiblePlayers(_playerNumbers, Game.PlayerNumber(Human));
+			IReadOnlyList<int> visible = Selection.GetVisiblePlayers(_playerNumbers, Game.PlayerNumber(Human));
 
 			int row = 0;
 			for (int i = 0; i < _players.Length; i++)
@@ -188,17 +188,36 @@ namespace CivOne.Screens
 			}
 		}
 
-		public PowerGraph() : base(MouseCursor.None)
+		/// <summary>
+		/// Creates the screen with the shared civilization selection.
+		/// </summary>
+		/// <remarks>
+		/// A parameterless constructor is required because the screen is opened through
+		/// <c>Show.Screen&lt;PowerGraph&gt;()</c>, which needs a <c>new()</c> constraint.
+		/// </remarks>
+		public PowerGraph() : this(null)
 		{
+		}
+
+		/// <summary>
+		/// Creates the screen with an explicit civilization selection.
+		/// </summary>
+		/// <param name="selection">
+		/// The selection to use, or <see langword="null"/> for the instance shared by every power graph.
+		/// </param>
+		internal PowerGraph(IPowerGraphSelectionService? selection) : base(MouseCursor.None)
+		{
+			_injectedSelection = selection;
+
 			Palette = ScreenServiceFactory.CreateQueryService().TopScreen!.Palette.Copy();
 
 			// Drops a selection that belongs to a previously played game; a new game with the same number of
 			// players would otherwise inherit it and apply it to different civilizations.
-			_selection.UseGame(Game);
+			Selection.UseGame(Game);
 
 			_players = [.. Game.Players.Where(x => x.Civilization is not Barbarian)];
 			_playerNumbers = [.. _players.Select(player => (int)Game.PlayerNumber(player))];
-			_canSelectCivilizations = _selection.RequiresSelection(_playerNumbers);
+			_canSelectCivilizations = Selection.RequiresSelection(_playerNumbers);
 
 			DrawGraph();
 		}

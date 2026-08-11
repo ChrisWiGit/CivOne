@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.Linq;
 using CivOne.Graphics;
@@ -54,9 +45,9 @@ namespace CivOne.Screens.Debug
 		/// Creates a selection dialog for the given players.
 		/// </summary>
 		/// <param name="players">Players to offer, in display order.</param>
-		/// <param name="title">Dialog title.</param>
+		/// <param name="title">Dialog title, already translated by the caller.</param>
 		/// <param name="labelSelector">Optional label builder; defaults to the plural tribe name.</param>
-		public CivSelectMenuDelegate(Player[] players, string title = "Select Civilization...", Func<Player, string>? labelSelector = null)
+		public CivSelectMenuDelegate(Player[] players, string title, Func<Player, string>? labelSelector = null)
 			: base(
 				GetLabels(players, labelSelector),
 				SelectionMode.Select,
@@ -73,8 +64,8 @@ namespace CivOne.Screens.Debug
 		/// <summary>
 		/// Creates a selection dialog for every player of the running game.
 		/// </summary>
-		/// <param name="title">Dialog title.</param>
-		public CivSelectMenuDelegate(string title = "Select Civilization...")
+		/// <param name="title">Dialog title, already translated by the caller.</param>
+		public CivSelectMenuDelegate(string title)
 			: this([.. Game.Players], title)
 		{
 		}

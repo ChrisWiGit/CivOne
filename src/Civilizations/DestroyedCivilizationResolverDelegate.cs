@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -83,6 +74,9 @@ namespace CivOne.Civilizations
 		{
 			CivilizationAssignment assignment = CivilizationAssignment.Create(initialSeed, competition, humanPlayerIndex, humanCivilization);
 
+			// Read once, not per respawn entry: see Common.Civilizations.
+			ICivilization[] allCivilizations = Common.Civilizations;
+
 			Dictionary<int, DestroyedCivilization> currentBySlot = InitialSlots(assignment);
 			HashSet<int> aliveSlots = [.. currentBySlot.Keys];
 
@@ -100,7 +94,7 @@ namespace CivOne.Civilizations
 						break;
 
 					case ReplayData.CivilizationRespawned respawned:
-						ICivilization? replacement = Common.Civilizations.FirstOrDefault(civ => civ.Id == respawned.CivilizationId);
+						ICivilization? replacement = allCivilizations.FirstOrDefault(civ => civ.Id == respawned.CivilizationId);
 						if (replacement != null)
 						{
 							// Player.Respawn names the new player after how many living players already use the
