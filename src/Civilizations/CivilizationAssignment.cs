@@ -20,6 +20,8 @@ namespace CivOne.Civilizations
 	/// </summary>
 	internal sealed class CivilizationAssignment
 	{
+		private const int ClassicCivilizationMaxId = 14;
+
 		private readonly ICivilization[] _civilizationByIndex;
 
 		private CivilizationAssignment(ICivilization[] civilizationByIndex)
@@ -53,7 +55,7 @@ namespace CivOne.Civilizations
 		/// </summary>
 		/// <param name="initialSeed">The random seed the game was created with.</param>
 		/// <param name="competition">The number of non-barbarian player slots (the human player plus AI opponents).</param>
-		/// <param name="humanPlayerIndex">The player index of the human player (always 1-7, its civilization's preferred player number).</param>
+		/// <param name="humanPlayerIndex">The player index of the human player in the current game setup.</param>
 		/// <param name="humanCivilization">The civilization chosen by the human player.</param>
 		public static CivilizationAssignment Create(short initialSeed, int competition, byte humanPlayerIndex, ICivilization humanCivilization)
 		{
@@ -75,7 +77,18 @@ namespace CivOne.Civilizations
 					continue;
 				}
 
-				ICivilization[] civs = [.. allCivilizations.Where(civ => civ.PreferredPlayerNumber == i)];
+				ICivilization[] civs =
+				[
+					.. allCivilizations.Where(civ =>
+						civ.PreferredPlayerNumber == i &&
+						civ.Id <= ClassicCivilizationMaxId)
+				];
+
+				if (civs.Length == 0)
+				{
+					civs = [.. allCivilizations.Where(civ => civ.PreferredPlayerNumber == i)];
+				}
+
 				int r = startRandom.Next(civs.Length);
 				civilizationByIndex[i] = civs[r];
 			}
@@ -84,7 +97,13 @@ namespace CivOne.Civilizations
 			{
 				// PreferredPlayerNumber 0 identifies the barbarians, whose Id is 15 rather than 0, so they have
 				// to be filtered out by that instead — otherwise they end up in the pool for a regular player.
-				int[] selectableIds = [.. allCivilizations.Where(civ => civ.PreferredPlayerNumber != 0).Select(civ => civ.Id)];
+				int[] selectableIds =
+				[
+					.. allCivilizations.Where(civ =>
+						civ.PreferredPlayerNumber != 0 &&
+						civ.Id <= ClassicCivilizationMaxId)
+					.Select(civ => civ.Id)
+				];
 				HashSet<int> usedIds = [.. civilizationByIndex.Where(civ => civ != null).Select(civ => civ.Id)];
 				List<int> reusePool = [.. selectableIds.Where(id => !usedIds.Contains(id))];
 

@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -29,13 +30,25 @@ namespace CivOne.Screens
 	[ScreenResizeable]
 	internal class NewGame : BaseScreen
 	{
-		// Non-linear list of selectable competition (non-barbarian player) counts: the Menu widget has no
-		// scrolling/paging, so a plain 3..31 list would not fit the 200px design area (see MenuCompetition()).
-		private static readonly int[] CompetitionChoices = [31, 24, 20, 16, 12, 10, 8, 7, 6, 5, 4, 3];
+		private const int ClassicCivilizationMaxId = 14;
+		private const int CompetitionOpenExtendedValue = -900;
+		private const int CompetitionScrollLessValue = -901;
+		private const int CompetitionScrollMoreValue = -902;
+		private const int CompetitionMin = 1;
+		private const int CompetitionMainMin = 2;
+		private const int CompetitionMainMax = 6;
+		private const int ClassicMaxOpponents = 6;
+		private const int CompetitionMax = 30;
+		private const int ExtendedCompetitionMenuPageSize = 11;
+		private const int TribeOpenExtendedMenuValue = -1000;
+		private const int TribeScrollPreviousValue = -1001;
+		private const int TribeScrollNextValue = -1002;
+		private const int TribeBackToClassicValue = -1003;
+		private const int ExtendedTribeMenuPageSize = 13;
+		private const int TribeMenuYOffset = -8;
 
 		private ICivilization[] _tribesAvailable = [];
 		private readonly string[] _menuItemsDifficulty;
-		private readonly string[] _menuItemsCompetition;
 		private string[] _menuItemsTribes = [];
 		private readonly Picture _background;
 
@@ -49,15 +62,24 @@ namespace CivOne.Screens
 
 		private bool _done, _showIntroText, _gameCreated, _introDirty;
 		private int _introBorderStyle = -1;
+		private int _extendedCompetitionMenuOffset;
+		private int _extendedTribeMenuOffset;
+
+		private static int OpponentsToCompetition(int opponents)
+		{
+			// Game.CreateGame expects non-barbarian player count (human + opponents),
+			// while this screen now stores opponent count.
+			return Math.Clamp(opponents + 1, 2, 31);
+		}
 		
 		
-		private Menu CreateMenu(string title, MenuItemEventAction<int> setChoice, params string[] menuTexts)
+		private Menu CreateMenu(string title, MenuItemEventAction<int> setChoice, int yOffset = 0, params string[] menuTexts)
 		{
 			Menu menu = new("NewGameMenu", Palette)
 			{
 				Title = title,
 				X = OffsetX + 163,
-				Y = OffsetY + 39,
+				Y = OffsetY + 39 + yOffset,
 				MenuWidth = 114,
 				TitleColour = 3,
 				ActiveColour = 11,
@@ -77,23 +99,200 @@ namespace CivOne.Screens
 		
 		private void MenuDifficulty()
 		{
-			AddMenu(CreateMenu(Translate("Difficulty Level..."), SetDifficulty, _menuItemsDifficulty));
+			Menu menu = CreateMenu(Translate("Difficulty Level..."), SetDifficulty, 0, _menuItemsDifficulty);
+			menu.Hints = [Translate("Esc: Back")];
+			menu.Cancel += DifficultyMenu_Cancel;
+			AddMenu(menu);
 		}
 		
 		private void MenuCompetition()
 		{
-			AddMenu(CreateMenu(Translate("Level of Competition..."), SetCompetition, _menuItemsCompetition));
+			Menu menu = CreateMenu(Translate("Level of Competition..."), SetCompetition);
+			menu.Hints = [Translate("Esc: Back")];
+			menu.OnCustomKeyDown = CompetitionMenu_KeyDown;
+			for (int i = CompetitionMainMax; i >= CompetitionMainMin; i--)
+			{
+				menu.Items.Add(TranslateFormatted("{0} Civilizations", OpponentsToCompetition(i)), i).OnSelect(SetCompetition);
+			}
+
+			menu.Items.Add(Translate("More Civilizations..."), CompetitionOpenExtendedValue).OnSelect(SetCompetition);
+			menu.Cancel += SetCompetition_Cancel;
+			AddMenu(menu);
+		}
+
+		private bool CompetitionMenu_KeyDown(KeyboardEventArgs args)
+		{
+			int totalEntries = CompetitionMax - CompetitionMin + 1;
+			int maxOffset = Math.Max(0, totalEntries - ExtendedCompetitionMenuPageSize);
+
+			switch (args.Key)
+			{
+				case Key.PageDown:
+					_extendedCompetitionMenuOffset = 0;
+					CloseMenus();
+					MenuExtendedCompetition(selectFirstNumberItem: true);
+					return true;
+				case Key.PageUp:
+					_extendedCompetitionMenuOffset = maxOffset;
+					CloseMenus();
+					MenuExtendedCompetition(selectFirstNumberItem: true);
+					return true;
+				default:
+					return false;
+			}
+		}
+
+		private void MenuExtendedCompetition(bool selectFirstNumberItem = false)
+		{
+			Menu menu = CreateMenu(Translate("More Civilizations..."), SetCompetition);
+			menu.Hints = [Translate("Esc: Back")];
+			menu.OnCustomKeyDown = ExtendedCompetitionMenu_KeyDown;
+			int totalEntries = CompetitionMax - CompetitionMin + 1;
+			int maxOffset = Math.Max(0, totalEntries - ExtendedCompetitionMenuPageSize);
+			if (_extendedCompetitionMenuOffset > maxOffset)
+			{
+				_extendedCompetitionMenuOffset = maxOffset;
+			}
+
+			bool needsPaging = totalEntries > ExtendedCompetitionMenuPageSize;
+			if (needsPaging)
+			{
+				menu.Items.Add(Translate("Back..."), CompetitionScrollLessValue).OnSelect(SetCompetition);
+			}
+
+			int startValue = CompetitionMin + _extendedCompetitionMenuOffset;
+			int endValue = Math.Min(CompetitionMax, startValue + ExtendedCompetitionMenuPageSize - 1);
+			for (int value = startValue; value <= endValue; value++)
+			{
+				menu.Items.Add(TranslateFormatted("{0} Civilizations", OpponentsToCompetition(value)), value).OnSelect(SetCompetition);
+			}
+
+			if (needsPaging && endValue < CompetitionMax)
+			{
+				menu.Items.Add(Translate("More..."), CompetitionScrollMoreValue).OnSelect(SetCompetition);
+			}
+
+			menu.Cancel += ExtendedCompetitionMenu_Cancel;
+			if (selectFirstNumberItem)
+			{
+				menu.ActiveItem = needsPaging ? 1 : 0;
+			}
+			AddMenu(menu);
+		}
+
+		private bool ExtendedCompetitionMenu_KeyDown(KeyboardEventArgs args)
+		{
+			int totalEntries = CompetitionMax - CompetitionMin + 1;
+			int maxOffset = Math.Max(0, totalEntries - ExtendedCompetitionMenuPageSize);
+
+			switch (args.Key)
+			{
+				case Key.PageUp:
+					if (_extendedCompetitionMenuOffset == 0)
+					{
+						CloseMenus();
+						MenuCompetition();
+						return true;
+					}
+
+					_extendedCompetitionMenuOffset = Math.Max(0, _extendedCompetitionMenuOffset - ExtendedCompetitionMenuPageSize);
+					CloseMenus();
+					MenuExtendedCompetition(selectFirstNumberItem: true);
+					return true;
+				case Key.PageDown:
+					if (_extendedCompetitionMenuOffset >= maxOffset)
+					{
+						CloseMenus();
+						MenuCompetition();
+						return true;
+					}
+
+					_extendedCompetitionMenuOffset = Math.Min(maxOffset, _extendedCompetitionMenuOffset + ExtendedCompetitionMenuPageSize);
+					CloseMenus();
+					MenuExtendedCompetition(selectFirstNumberItem: true);
+					return true;
+				default:
+					return false;
+			}
 		}
 		
 		private void MenuTribe()
 		{
-			Menu menu = CreateMenu(Translate("Pick your tribe..."), SetTribe, _menuItemsTribes);
-			if (_menuItemsTribes.Length > 14)
+			Menu menu = CreateMenu(Translate("Pick your tribe..."), SetTribe, TribeMenuYOffset);
+			menu.Hints = [
+				Translate("Esc: Back"),
+				Translate("R: Rename")
+			];
+			menu.OnCustomKeyDown = args => TribeMenu_KeyDown(menu, args);
+
+			for (int i = 0; i < _tribesAvailable.Length; i++)
 			{
-				menu.FontId = 1;
-				menu.RowHeight -= 2;
+				ICivilization civilization = _tribesAvailable[i];
+				if (IsExtendedCivilization(civilization))
+				{
+					continue;
+				}
+
+				menu.Items.Add(civilization.Name, i).OnSelect(SetTribe);
 			}
+
+			if (_tribesAvailable.Any(IsExtendedCivilization))
+			{
+				menu.Items.Add(Translate("New Civilizations..."), TribeOpenExtendedMenuValue).OnSelect(SetTribe);
+			}
+
 			menu.Cancel += SetTribe_Cancel;
+			AddMenu(menu);
+		}
+
+		private void MenuExtendedTribe()
+		{
+			Menu menu = CreateMenu(Translate("Pick new civilization..."), SetTribe, TribeMenuYOffset);
+			menu.Hints = [
+				Translate("Esc: Back"),
+				Translate("R: Rename")
+			];
+			menu.OnCustomKeyDown = args => TribeMenu_KeyDown(menu, args);
+
+			(int Index, ICivilization Civilization)[] extendedCivilizations =
+				[.. _tribesAvailable
+					.Select((civ, index) => (Index: index, Civilization: civ))
+					.Where(x => IsExtendedCivilization(x.Civilization))];
+
+			if (extendedCivilizations.Length == 0)
+			{
+				MenuTribe();
+				return;
+			}
+
+			menu.Items.Add(Translate("Original Civilizations..."), TribeBackToClassicValue).OnSelect(SetTribe);
+
+			int maxOffset = Math.Max(0, extendedCivilizations.Length - ExtendedTribeMenuPageSize);
+			if (_extendedTribeMenuOffset > maxOffset)
+			{
+				_extendedTribeMenuOffset = maxOffset;
+			}
+
+			int startIndex = _extendedTribeMenuOffset;
+			int endExclusive = Math.Min(extendedCivilizations.Length, startIndex + ExtendedTribeMenuPageSize);
+
+			if (startIndex > 0)
+			{
+				menu.Items.Add(Translate("Previous civilizations..."), TribeScrollPreviousValue).OnSelect(SetTribe);
+			}
+
+			for (int i = startIndex; i < endExclusive; i++)
+			{
+				var entry = extendedCivilizations[i];
+				menu.Items.Add(entry.Civilization.Name, entry.Index).OnSelect(SetTribe);
+			}
+
+			if (endExclusive < extendedCivilizations.Length)
+			{
+				menu.Items.Add(Translate("Next civilizations..."), TribeScrollNextValue).OnSelect(SetTribe);
+			}
+
+			menu.Cancel += ExtendedTribeMenu_Cancel;
 			AddMenu(menu);
 		}
 		
@@ -117,21 +316,149 @@ namespace CivOne.Screens
 		
 		private void SetCompetition(object sender, MenuItemEventArgs<int> args)
 		{
-			_competition = CompetitionChoices[args.Value];
-			CloseMenus();
-			Log("Competition: {0} Civilizations", _competition);
+			if (args.Value == CompetitionOpenExtendedValue)
+			{
+				_extendedCompetitionMenuOffset = 0;
+				CloseMenus();
+				MenuExtendedCompetition();
+				return;
+			}
 
-			// The human player takes the slot matching its civilization's preferred player number, so only
-			// civilizations whose number fits into the chosen player count can be offered. From 7 upwards
-			// that is every civilization, because the preferred player numbers only go up to 7.
-			_tribesAvailable = [.. Common.Civilizations.Where(c => c.PreferredPlayerNumber > 0 && c.PreferredPlayerNumber <= _competition)];
+			if (args.Value == CompetitionScrollLessValue)
+			{
+				CloseMenus();
+				MenuCompetition();
+				return;
+			}
+
+			if (args.Value == CompetitionScrollMoreValue)
+			{
+				int totalEntries = CompetitionMax - CompetitionMin + 1;
+				int maxOffset = Math.Max(0, totalEntries - ExtendedCompetitionMenuPageSize);
+				_extendedCompetitionMenuOffset = Math.Min(maxOffset, _extendedCompetitionMenuOffset + ExtendedCompetitionMenuPageSize);
+				CloseMenus();
+				MenuExtendedCompetition(selectFirstNumberItem: true);
+				return;
+			}
+
+			_competition = args.Value;
+			_extendedTribeMenuOffset = 0;
+			CloseMenus();
+			Log("Competition: {0} Civilizations", OpponentsToCompetition(_competition));
+
+			// For classic-sized games (up to 6 opponents), offer classic civilizations only.
+			// For larger games, offer the full civilization list.
+			IEnumerable<ICivilization> selectable = Common.Civilizations
+				.Where(c => c.PreferredPlayerNumber > 0);
+
+			if (_competition <= ClassicMaxOpponents)
+			{
+				selectable = selectable.Where(c => c.Id <= ClassicCivilizationMaxId);
+			}
+
+			_tribesAvailable = [.. selectable
+				.OrderBy(c => IsExtendedCivilization(c))
+				.ThenBy(c => c.Id)];
 			_menuItemsTribes = [.. _tribesAvailable.Select(c => c.Name)];
+		}
+
+		private void DifficultyMenu_Cancel(object? sender, EventArgs args)
+		{
+			CloseMenus();
+			BackToCredits();
+		}
+
+		private void BackToCredits()
+		{
+			var credits = new Credits();
+			credits.SkipIntro();
+			credits.SkipLogo();
+			Common.AddScreen(credits);
+			Destroy();
+		}
+
+		private void SetCompetition_Cancel(object? sender, EventArgs args)
+		{
+			CloseMenus();
+			MenuDifficulty();
+		}
+
+		private void ExtendedCompetitionMenu_Cancel(object? sender, EventArgs args)
+		{
+			CloseMenus();
+			MenuCompetition();
+		}
+
+		private static bool IsExtendedCivilization(ICivilization civilization)
+		{
+			return civilization.Id > ClassicCivilizationMaxId;
+		}
+
+		private bool TribeMenu_KeyDown(Menu menu, KeyboardEventArgs args)
+		{
+			if (args.KeyChar != 'r' && args.KeyChar != 'R')
+			{
+				return false;
+			}
+
+			StartCustomTribeNameInput(menu);
+			return true;
+		}
+
+		private void StartCustomTribeNameInput(Menu menu)
+		{
+			int selectedTribeIndex = menu.SelectedItem.Value;
+			if (selectedTribeIndex < 0 || selectedTribeIndex >= _tribesAvailable.Length)
+			{
+				selectedTribeIndex = RandomService.NextInt(_tribesAvailable.Length);
+			}
+
+			_tribe = selectedTribeIndex;
+			CloseMenus();
+
+			ICivilization civ = _tribesAvailable[_tribe];
+			Input input = new(Palette, civ.NamePlural, 6, 5, 11, OffsetX + 168, OffsetY + 105, 109, 10, 11);
+			input.Accept += TribeName_Accept;
+			input.Cancel += TribeName_Accept;
+			Common.AddScreen(input);
 		}
 		
 		private void SetTribe(object sender, MenuItemEventArgs<int> args)
 		{
+			if (args.Value == TribeOpenExtendedMenuValue)
+			{
+				CloseMenus();
+				MenuExtendedTribe();
+				return;
+			}
+
+			if (args.Value == TribeBackToClassicValue)
+			{
+				CloseMenus();
+				MenuTribe();
+				return;
+			}
+
+			if (args.Value == TribeScrollPreviousValue)
+			{
+				_extendedTribeMenuOffset = Math.Max(0, _extendedTribeMenuOffset - ExtendedTribeMenuPageSize);
+				CloseMenus();
+				MenuExtendedTribe();
+				return;
+			}
+
+			if (args.Value == TribeScrollNextValue)
+			{
+				int totalExtended = _tribesAvailable.Count(IsExtendedCivilization);
+				int maxOffset = Math.Max(0, totalExtended - ExtendedTribeMenuPageSize);
+				_extendedTribeMenuOffset = Math.Min(maxOffset, _extendedTribeMenuOffset + ExtendedTribeMenuPageSize);
+				CloseMenus();
+				MenuExtendedTribe();
+				return;
+			}
+
 			_tribe = args.Value;
-			
+
 			ICivilization civ = _tribesAvailable[_tribe];
 			_tribeName = civ.Name;
 			_tribeNamePlural = civ.NamePlural;
@@ -141,19 +468,16 @@ namespace CivOne.Screens
 		
 		private void SetTribe_Cancel(object? sender, EventArgs args)
 		{
-			if (sender is not Menu menu) return;
-			
-			_tribe = RandomService.NextInt(_tribesAvailable.Length);
-			this.AddLayer(menu);
 			CloseMenus();
-			
-			ICivilization civ = _tribesAvailable[_tribe];
-			Input input = new(Palette, civ.NamePlural, 6, 5, 11, OffsetX + 168, OffsetY + 105, 109, 10, 11);
-			input.Accept += TribeName_Accept;
-			input.Cancel += TribeName_Accept;
-			Common.AddScreen(input);
+			MenuCompetition();
 		}
-		
+
+		private void ExtendedTribeMenu_Cancel(object? sender, EventArgs args)
+		{
+			CloseMenus();
+			MenuTribe();
+		}
+
 		private void LeaderName_Accept(object? sender, EventArgs args)
 		{
 			if (sender is not Input input) return;
@@ -225,7 +549,7 @@ namespace CivOne.Screens
 					ICivilization civ = _tribesAvailable[_tribe];
 					try
 					{
-						Game.CreateGame(_difficulty, _competition, civ, _leaderName, _tribeName, _tribeNamePlural, replaceExisting: true);
+						Game.CreateGame(_difficulty, OpponentsToCompetition(_competition), civ, _leaderName, _tribeName, _tribeNamePlural, replaceExisting: true);
 					}
 					catch (Exception ex)
 					{
@@ -440,7 +764,6 @@ namespace CivOne.Screens
 			this.AddLayer(_background);
 
 			_menuItemsDifficulty = BuildDifficultyMenuItems();
-			_menuItemsCompetition = [.. CompetitionChoices.Select(i => TranslateFormatted("{0} Civilizations", i))];
 		}
 
 		protected override void Dispose(bool disposing)

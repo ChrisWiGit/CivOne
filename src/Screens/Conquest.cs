@@ -91,6 +91,11 @@ namespace CivOne.Screens
 
 		private void SetPalette()
 		{
+			if (_enemy < 0 || _enemy >= _enemies.Length)
+			{
+				return;
+			}
+
 			Palette palette = _enemies[_enemy].Leader.GetPortrait().Palette;
 			for (int i = 64; i < 144; i++)
 			{
@@ -257,7 +262,17 @@ namespace CivOne.Screens
 				}
 			)];
 
-			SetPalette();
+			if (_enemies.Length == 0)
+			{
+				// No matching replay entries (e.g. instant conquest without human-tagged destroy events):
+				// jump straight to the final victory board text.
+				_enemy = -1;
+				_step = 4;
+			}
+			else
+			{
+				SetPalette();
+			}
 		}
 
 		protected override void Dispose(bool disposing)

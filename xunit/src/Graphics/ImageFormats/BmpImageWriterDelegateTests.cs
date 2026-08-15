@@ -42,7 +42,7 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 		}
 
 		[Fact]
-		public void Write_ProducesExpectedFileHeader()
+		public void WriteProducesExpectedFileHeader()
 		{
 			using Picture picture = CreateTestPicture();
 
@@ -58,7 +58,7 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 		}
 
 		[Fact]
-		public void Write_ProducesExpectedInfoHeader()
+		public void WriteProducesExpectedInfoHeader()
 		{
 			using Picture picture = CreateTestPicture();
 
@@ -74,7 +74,7 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 		}
 
 		[Fact]
-		public void Write_WritesPaletteAsBlueGreenRed()
+		public void WriteWritesPaletteAsBlueGreenRed()
 		{
 			using Picture picture = CreateTestPicture();
 
@@ -88,7 +88,7 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 		}
 
 		[Fact]
-		public void Write_WritesRowsBottomUpWithPadding()
+		public void WriteWritesRowsBottomUpWithPadding()
 		{
 			using Picture picture = CreateTestPicture();
 
@@ -100,7 +100,7 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 		}
 
 		[Fact]
-		public void Write_ToFile_CreatesReadableFile()
+		public void WriteToFileCreatesReadableFile()
 		{
 			using Picture picture = CreateTestPicture();
 			string filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.bmp");
@@ -122,7 +122,7 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 		}
 
 		[Fact]
-		public void Write_NullBitmap_Throws()
+		public void WriteNullBitmapThrows()
 		{
 			BmpImageWriterDelegate testee = new();
 			using MemoryStream stream = new();

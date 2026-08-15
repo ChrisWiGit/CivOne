@@ -202,6 +202,7 @@ namespace CivOne
 			// CW: TODO simply inject service associated with Game constructor in future if necessary.
 			var service = new SveSaveCompatibilityService();
 			var snapshot = SveSaveCompatibilitySnapshot.Builder()
+				.WithCivilizationIds([.. _players.Select(player => player.Civilization.Id)])
 				.FromYamlSource(_loadedFromYamlSaveSource)
 				.WithPlayerCount(_players.Length)
 				.WithMapSize(Map.WIDTH, Map.HEIGHT)

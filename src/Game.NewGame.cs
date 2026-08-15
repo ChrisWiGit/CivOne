@@ -346,6 +346,25 @@ namespace CivOne
 			);
 		}
 
+		private static byte ResolveHumanPlayerIndex(int competition, ICivilization tribe)
+		{
+			ArgumentNullException.ThrowIfNull(tribe);
+
+			if (competition < 1)
+			{
+				throw new ArgumentOutOfRangeException(nameof(competition), "Competition must be at least 1 so a human player slot exists.");
+			}
+
+			if (tribe.PreferredPlayerNumber <= competition)
+			{
+				return tribe.PreferredPlayerNumber;
+			}
+
+			// For low player counts where the chosen civilization's preferred slot is not present,
+			// place the human in the highest available non-barbarian slot.
+			return (byte)competition;
+		}
+
 		private Game(int difficulty, int competition, ICivilization tribe, string? leaderName, string? playerTribeName, string? playerTribeNamePlural) : this(CreateValueSanitizer())
 		{
 			if (RuntimeHandler.Runtime.Settings.InitialSeed != 0)
@@ -380,14 +399,15 @@ namespace CivOne
 
 			Player.Game = this;
 			_players = new Player[competition + 1];
+			byte humanPlayerIndex = ResolveHumanPlayerIndex(competition, tribe);
 
-			CivilizationAssignment assignment = CivilizationAssignment.Create(Common.Random!.InitialSeed, competition, tribe.PreferredPlayerNumber, tribe);
+			CivilizationAssignment assignment = CivilizationAssignment.Create(Common.Random!.InitialSeed, competition, humanPlayerIndex, tribe);
 			CivilizationNameDelegate civilizationNames = new();
 			Dictionary<int, int> civIdOccurrences = [];
 
 			for (int i = 0; i <= competition; i++)
 			{
-				if (i == tribe.PreferredPlayerNumber)
+				if (i == humanPlayerIndex)
 				{
 					_players[i] = new Player(tribe, leaderName, playerTribeName, playerTribeNamePlural);
 					ApplyMapStartPositionFromMapFile(_players[i]);
