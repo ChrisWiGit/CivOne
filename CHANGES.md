@@ -71,7 +71,7 @@ I did not browse all issues on github at first, so I did not recognize that some
     * In addition a null perimeter meridian line is drawn in yellow, so you can see where the map wraps around when the map is too large to fit on the screen.
 * Raise player limit from 8 to 32 and improve start position handling
   * New Game now supports up to 31 regular players (plus Barbarians).
-  * Fixes slot mix-ups in respawn and replay data for large games.
+  * The `Level of Competition...` menu counts civilizations, as in the original game: the number you pick is the number of civilizations in the world, including your own. Picking `2 Civilizations` therefore starts a game with you, one opponent and the Barbarians.
   * Expands player colors and explored-map tracking for more players.
   * Legacy SVE saves remain limited to 8 players for compatibility.
   * YAML saves support the full 32-player range.
