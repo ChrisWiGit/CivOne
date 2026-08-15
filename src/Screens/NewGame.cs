@@ -34,11 +34,15 @@ namespace CivOne.Screens
 		private const int CompetitionOpenExtendedValue = -900;
 		private const int CompetitionScrollLessValue = -901;
 		private const int CompetitionScrollMoreValue = -902;
-		private const int CompetitionMin = 1;
+		// Every value in this screen is an opponent count (the number of AI players), while Game.CreateGame
+		// expects the number of non-barbarian players (the human player plus the opponents).
+		// OpponentsToCompetition converts between the two; the bounds are derived from the game limits so
+		// the menu can never offer a player count the game would reject.
+		private const int CompetitionMin = Game.MinCompetition - 1;
 		private const int CompetitionMainMin = 2;
 		private const int CompetitionMainMax = 6;
 		private const int ClassicMaxOpponents = 6;
-		private const int CompetitionMax = 30;
+		private const int CompetitionMax = Game.MaxCompetition - 1;
 		private const int ExtendedCompetitionMenuPageSize = 11;
 		private const int TribeOpenExtendedMenuValue = -1000;
 		private const int TribeScrollPreviousValue = -1001;
@@ -65,11 +69,16 @@ namespace CivOne.Screens
 		private int _extendedCompetitionMenuOffset;
 		private int _extendedTribeMenuOffset;
 
+		/// <summary>
+		/// Converts the number of opponents selected in this screen into the number of non-barbarian
+		/// players <see cref="Game.CreateGame"/> expects: the human player plus the opponents.
+		/// The barbarians always get their own slot on top and are not part of this count.
+		/// </summary>
+		/// <param name="opponents">The number of AI opponents.</param>
+		/// <returns>The number of non-barbarian players, clamped to the range a game can be created with.</returns>
 		private static int OpponentsToCompetition(int opponents)
 		{
-			// Game.CreateGame expects non-barbarian player count (human + opponents),
-			// while this screen now stores opponent count.
-			return Math.Clamp(opponents + 1, 2, 31);
+			return Math.Clamp(opponents + 1, Game.MinCompetition, Game.MaxCompetition);
 		}
 		
 		
@@ -626,8 +635,13 @@ namespace CivOne.Screens
 				}
 				else
 				{
+					// Without a start unit there is nothing to activate: the map would come up with no
+					// blinking unit and swallow every input, so say so instead of locking up silently.
 					Log("NewGame: No human start unit found. Falling back to map center.");
 					gamePlay.CenterOnPoint(Map.WIDTH / 2, Map.HEIGHT / 2);
+					GameTask.Enqueue(Message.Error(
+						Translate("--- Map Problem ---"),
+						TranslateArray("Your civilization has no\nstarting position on this map.")));
 				}
 				
 				if (Game.UnplacedCivilizations.Count > 0)
@@ -662,7 +676,9 @@ namespace CivOne.Screens
 			{
 				if (_tribe == -1)
 					this.AddLayer(_background[140, 0, 180, 200], OffsetX + 140, OffsetY);
-				int pictureStack = (_competition <= 0) ? 1 : Math.Min(_competition, 7);
+				// One stacked portrait per civilization in the game (human player included), capped at the
+				// seven the original game draws.
+				int pictureStack = (_competition <= 0) ? 1 : Math.Min(OpponentsToCompetition(_competition), 7);
 				for (int i = pictureStack; i > 0; i--)
 				{
 					this.AddLayer(DifficultyPicture, OffsetX + 22 + (i * 2), OffsetY + 100 + (i * 3));

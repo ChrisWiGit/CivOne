@@ -9,7 +9,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using CivOne.Advances;
 using CivOne.Civilizations;
@@ -298,8 +297,45 @@ namespace CivOne
 			}
 		}
 
+		/// <summary>
+		/// The smallest number of non-barbarian player slots a new game can be created with:
+		/// the human player plus at least one opponent.
+		/// A game without an opponent would satisfy the "conquered the entire planet" condition on the very
+		/// first end of turn, which queues the conquest screen over the map before the player can move.
+		/// </summary>
+		internal const int MinCompetition = 2;
+
+		/// <summary>
+		/// The largest number of non-barbarian player slots a new game can be created with.
+		/// Slot 0 belongs to the barbarians, so this is one less than the number of player slots.
+		/// </summary>
+		internal const int MaxCompetition = MaxPlayers - 1;
+
+		/// <summary>
+		/// Validates the number of non-barbarian player slots (human player plus AI opponents) a new game
+		/// is created with.
+		/// The New Game menu asks for the number of opponents and adds the human player itself, so a value
+		/// arriving here is always "opponents + 1".
+		/// </summary>
+		/// <param name="competition">The number of non-barbarian player slots.</param>
+		/// <exception cref="ArgumentOutOfRangeException">
+		/// The value is below <see cref="MinCompetition"/> or above <see cref="MaxCompetition"/>.
+		/// </exception>
+		private static void ValidateCompetition(int competition)
+		{
+			if (competition < MinCompetition || competition > MaxCompetition)
+			{
+				BaseInstance.Log("ERROR: Invalid competition {0}. Expected {1}-{2} non-barbarian players (human player plus {3}-{4} opponents).",
+					competition, MinCompetition, MaxCompetition, MinCompetition - 1, MaxCompetition - 1);
+				throw new ArgumentOutOfRangeException(nameof(competition),
+					$"Competition must be between {MinCompetition} and {MaxCompetition} (human player plus opponents).");
+			}
+		}
+
 		public static void CreateGame(int difficulty, int competition, ICivilization tribe, string? leaderName = null, string? tribeName = null, string? tribeNamePlural = null, bool replaceExisting = false)
 		{
+			ValidateCompetition(competition);
+
 			if (!Map.Ready)
 			{
 				BaseInstance.Log("ERROR: Game creation requested before map generation finished");
@@ -350,9 +386,13 @@ namespace CivOne
 		{
 			ArgumentNullException.ThrowIfNull(tribe);
 
-			if (competition < 1)
+			ValidateCompetition(competition);
+
+			if (tribe.PreferredPlayerNumber == 0)
 			{
-				throw new ArgumentOutOfRangeException(nameof(competition), "Competition must be at least 1 so a human player slot exists.");
+				// Slot 0 is the barbarian slot: it gets no starting units and never ends its turn like a
+				// regular player, so a human player placed there could never move.
+				throw new ArgumentException("The chosen civilization has no player slot of its own (it is the barbarian civilization).", nameof(tribe));
 			}
 
 			if (tribe.PreferredPlayerNumber <= competition)
@@ -400,6 +440,10 @@ namespace CivOne
 			Player.Game = this;
 			_players = new Player[competition + 1];
 			byte humanPlayerIndex = ResolveHumanPlayerIndex(competition, tribe);
+			// competition counts the non-barbarian players, so the human player is one of them and the
+			// remaining slots are the AI opponents. Slot 0 is the barbarian player and is not counted.
+			Log("Player setup: {0} civilizations (1 human player + {1} opponents), plus barbarians. Human player slot: {2}",
+				competition, competition - 1, humanPlayerIndex);
 
 			CivilizationAssignment assignment = CivilizationAssignment.Create(Common.Random!.InitialSeed, competition, humanPlayerIndex, tribe);
 			CivilizationNameDelegate civilizationNames = new();
@@ -448,7 +492,13 @@ namespace CivOne
 				Log("- Player {0} is {1} of the {2}", i, _players[i].LeaderName, _players[i].TribeNamePlural);
 			}
 
-			Debug.Assert(HumanPlayer != null, "NewGame invariant violated: HumanPlayer must be initialized during player setup.");
+			// Checked rather than asserted: a Debug.Assert is removed in release builds, and a game without a
+			// human player looks like a running game while accepting no input at all.
+			if (HumanPlayer == null || PlayerNumber(HumanPlayer) != humanPlayerIndex || humanPlayerIndex == 0)
+			{
+				throw new InvalidOperationException($"New game invariant violated: the human player must hold a non-barbarian slot (expected slot {humanPlayerIndex}).");
+			}
+
 			if (string.IsNullOrWhiteSpace(SaveMetaData.DisplayName))
 			{
 				SaveMetaData.DisplayName = _saveMetaDataService.BuildDisplayName(difficulty, HumanPlayer, 0);
@@ -456,6 +506,14 @@ namespace CivOne
 
 			Log("Adding starting units...");
 			PlaceStartingUnits([.. Enumerable.Range(1, competition).Select(i => (byte)i)]);
+
+			// Without a unit the human player has nothing to activate, so the map would come up with no
+			// blinking unit and no way to end the turn. PlaceStartingUnits already logs why a slot stayed
+			// empty; this makes the consequence for the human player explicit.
+			if (!_units.Any(unit => unit.Owner == humanPlayerIndex))
+			{
+				Log("ERROR: The human player (slot {0}) has no starting unit. The map has no usable start position left.", humanPlayerIndex);
+			}
 
 			Log("Calculate players handicap...");
 			for (byte i = 1; i <= competition; i++)
