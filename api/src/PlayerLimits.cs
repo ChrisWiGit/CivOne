@@ -20,8 +20,9 @@ namespace CivOne
 
 		/// <summary>
 		/// The highest valid civilization Id.
-		/// The 14 regular civilizations use 1-14, the barbarians use 15.
+		/// Includes classic and extended civilizations.
+		/// Barbarians remain 0; regular civilizations are currently in range 1-32.
 		/// </summary>
-		public const int MaxCivilizationId = 15;
+		public const int MaxCivilizationId = 32;
 	}
 }
