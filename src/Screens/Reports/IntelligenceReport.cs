@@ -21,6 +21,13 @@ namespace CivOne.Screens.Reports
 	[ScreenResizeable]
 	internal class IntelligenceReport : BaseReport
 	{
+		private const int DetailsMinWidth = 320;
+		private const int DetailsMaxWidth = 420;
+		private const int DetailsLabelX = 16;
+		private const int DetailsValueMinX = 62;
+		private const int DetailsValueGap = 8;
+		private const int DetailsMinValueWidth = 150;
+
 		private const int RowHeight = 24;
 		private const int FirstRowY = 30;
 		private const int MaxOpponentsPerPage = 6;
@@ -146,30 +153,55 @@ namespace CivOne.Screens.Reports
 
 		private void RenderDetails(Player player)
 		{
+			int detailsWidth = Math.Min(Math.Max(DetailsMinWidth, Width), DetailsMaxWidth);
+			int detailsLeft = Math.Max(0, (Width - detailsWidth) / 2);
 			int y = OffsetY + 32;
 			int fontHeight = Resources.GetFontHeight(0);
+			int labelX = detailsLeft + DetailsLabelX;
+
+			string leaderLabel = Translate("Leader:");
+			string capitalLabel = Translate("Capital:");
+			string governmentLabel = Translate("Government:");
+			string treasuryLabel = Translate("Treasury:");
+			string militaryLabel = Translate("Military:");
+			string foreignAffairsLabel = Translate("Foreign Affairs:");
+			string technologiesLabel = Translate("Technologies:");
+
+			int widestLabel = new[]
+			{
+				leaderLabel,
+				capitalLabel,
+				governmentLabel,
+				treasuryLabel,
+				militaryLabel,
+				foreignAffairsLabel,
+				technologiesLabel
+			}.Max(label => Resources.GetTextSize(0, label).Width);
+			int valueX = Math.Max(detailsLeft + DetailsValueMinX, labelX + widestLabel + DetailsValueGap);
+			int maxValueX = detailsLeft + detailsWidth - DetailsMinValueWidth;
+			valueX = Math.Min(valueX, maxValueX);
 
 			// Covers the whole list area down to the bottom edge, including the hint line of the overview.
-			this.FillRectangle(OffsetX, OffsetY + 25, 320, 200 - 25, BackgroundColour)
-				.DrawText(TranslateFormatted("Subject: the {0}", player.TribeNamePlural), 0, 5, OffsetX + 16, y + 1)
-				.DrawText(TranslateFormatted("Subject: the {0}", player.TribeNamePlural), 0, 15, OffsetX + 16, y)
-				.DrawText(Translate("Leader:"), 0, 9, OffsetX + 16, (y += fontHeight + 4))
-				.DrawText(TranslateFormatted("Emperor {0}", player.LeaderName), 0, 15, OffsetX + 62, y);
+			this.FillRectangle(detailsLeft, OffsetY + 25, detailsWidth, 200 - 25, BackgroundColour)
+				.DrawText(TranslateFormatted("Subject: the {0}", player.TribeNamePlural), 0, 5, detailsLeft + 16, y + 1)
+				.DrawText(TranslateFormatted("Subject: the {0}", player.TribeNamePlural), 0, 15, detailsLeft + 16, y)
+				.DrawText(leaderLabel, 0, 9, labelX, (y += fontHeight + 4))
+				.DrawText(TranslateFormatted("Emperor {0}", player.LeaderName), 0, 15, valueX, y);
 
 			foreach (string line in player.Civilization.Leader.Traits())
-				this.DrawText(line, 0, 7, OffsetX + 24, (y += fontHeight));
+				this.DrawText(line, 0, 7, detailsLeft + 24, (y += fontHeight));
 
-			this.DrawText(Translate("Capital:"), 0, 9, OffsetX + 16, (y += fontHeight + 4))
-				.DrawText(player.GetCapitalName(), 0, 15, OffsetX + 63, y)
-				.DrawText(Translate("Government:"), 0, 9, OffsetX + 16, (y += fontHeight))
-				.DrawText(player.Government.TranslatedName, 0, 15, OffsetX + 83, y)
-				.DrawText(Translate("Treasury:"), 0, 9, OffsetX + 16, (y += fontHeight))
-				.DrawText(TranslateFormatted("{0}$", player.Gold), 0, 15, OffsetX + 73, y)
-				.DrawText(Translate("Military:"), 0, 9, OffsetX + 16, (y += fontHeight))
-				.DrawText(TranslateFormatted("{0} Units", Game.GetUnits().Count(x => player == x.Owner)), 0, 15, OffsetX + 67, y)
-				.DrawText(Translate("Foreign Affairs:"), 0, 9, OffsetX + 16, (y += fontHeight + 4))
-				.DrawText(Translate("Technologies:"), 0, 9, OffsetX + 16, (y += fontHeight + 4))
-				.DrawText(Translate("Any key: Back"), 0, 15, OffsetX + 8, OffsetY + HintY);
+			this.DrawText(capitalLabel, 0, 9, labelX, (y += fontHeight + 4))
+				.DrawText(player.GetCapitalName(), 0, 15, valueX, y)
+				.DrawText(governmentLabel, 0, 9, labelX, (y += fontHeight))
+				.DrawText(player.Government.TranslatedName, 0, 15, valueX, y)
+				.DrawText(treasuryLabel, 0, 9, labelX, (y += fontHeight))
+				.DrawText(TranslateFormatted("{0}$", player.Gold), 0, 15, valueX, y)
+				.DrawText(militaryLabel, 0, 9, labelX, (y += fontHeight))
+				.DrawText(TranslateFormatted("{0} Units", Game.GetUnits().Count(x => player == x.Owner)), 0, 15, valueX, y)
+				.DrawText(foreignAffairsLabel, 0, 9, labelX, (y += fontHeight + 4))
+				.DrawText(technologiesLabel, 0, 9, labelX, (y += fontHeight + 4))
+				.DrawText(Translate("Any key: Back"), 0, 15, detailsLeft + 8, OffsetY + HintY);
 		}
 
 		private void MouseDown(object? _, ScreenEventArgs args)
