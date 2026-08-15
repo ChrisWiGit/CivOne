@@ -87,9 +87,21 @@ namespace CivOne.Screens
 		public string[] DefaultDescription { get; set; } = [];
 
 		/// <summary>
+		/// Optional hint lines rendered at the bottom of the menu layer.
+		/// Intended for key hints such as "Esc: Back".
+		/// </summary>
+		public string[] Hints { get; set; } = [];
+
+		/// <summary>
 		/// Optional action to call when Shift+F1 is pressed while the menu is active.
 		/// </summary>
 		public Action? OnShiftF1 { get; set; }
+
+		/// <summary>
+		/// Optional key handler that can consume keys before the menu default navigation runs.
+		/// Return true to mark the key as handled.
+		/// </summary>
+		public Func<KeyboardEventArgs, bool>? OnCustomKeyDown { get; set; }
 
 		private int CoordinateOffsetX => CenterTo320Coordinates ? Math.Max(0, (Width - 320) / 2) : 0;
 		private int CoordinateOffsetY => CenterTo320Coordinates ? Math.Max(0, (Height - 200) / 2) : 0;
@@ -174,10 +186,30 @@ namespace CivOne.Screens
 				}
 
 				DrawDescription(fontHeight, x, y, offsetY);
+				DrawHints();
 				_change = false;
 				return true;
 			}
 			return false;
+		}
+
+		private void DrawHints()
+		{
+			if (Hints.Length == 0)
+			{
+				return;
+			}
+
+			int rightX = CoordinateOffsetX + 318;
+			int lineHeight = Resources.GetFontHeight(DescriptionFontId);
+			// Keep one-line and two-line hints anchored at the same bottom area to avoid touching menu rows.
+			int stackedLinesAbove = Math.Max(0, Hints.Length - 2);
+			int y = CoordinateOffsetY + 190 - (stackedLinesAbove * lineHeight);
+			foreach (string line in Hints)
+			{
+				this.DrawText(line, DescriptionFontId, DescriptionTextColour, rightX, y, TextAlign.Right);
+				y += lineHeight;
+			}
 		}
 
 		private void DrawDescription(int fontHeight, int x, int y, int offsetY)
@@ -209,6 +241,11 @@ namespace CivOne.Screens
 
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
+			if (OnCustomKeyDown?.Invoke(args) == true)
+			{
+				return true;
+			}
+
 			if (args.Shift && args.Key == Key.F1)
 			{
 				// CW: Allow opening the setup screen from anywhere in the credits menu.
