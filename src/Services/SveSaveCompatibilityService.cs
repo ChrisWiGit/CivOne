@@ -43,6 +43,12 @@ namespace CivOne.Services
 	internal sealed class SveSaveCompatibilitySnapshot
 	{
 		/// <summary>
+		/// Civilization ids currently used by player slots.
+		/// SVE only supports the classic civilization id range 0-15.
+		/// </summary>
+		public IReadOnlyCollection<int> CivilizationIds { get; }
+
+		/// <summary>
 		/// Indicates whether the game was loaded from a YAML/COS save source. SVE saves are only compatible with games that were not loaded from YAML/COS, as they rely on the original binary save format. If true, the game is locked to YAML/COS saves and cannot be saved in SVE format.
 		/// </summary>
 		public bool IsLoadedFromYaml { get; }
@@ -129,6 +135,7 @@ namespace CivOne.Services
 		public int FortifiedUnitsCount { get; }
 
 		internal SveSaveCompatibilitySnapshot(
+			IReadOnlyCollection<int> civilizationIds,
 			bool isLoadedFromYaml,
 			int playerCount,
 			int mapWidth,
@@ -147,6 +154,7 @@ namespace CivOne.Services
 			IReadOnlyCollection<int> fortifiedUnitCountsPerCity,
 			int fortifiedUnitsCount)
 		{
+			CivilizationIds = civilizationIds ?? Array.Empty<int>();
 			IsLoadedFromYaml = isLoadedFromYaml;
 			PlayerCount = playerCount;
 			MapWidth = mapWidth;
@@ -174,6 +182,7 @@ namespace CivOne.Services
 	/// </summary>
 	internal sealed class SveSaveCompatibilitySnapshotBuilder
 	{
+		private IReadOnlyCollection<int> _civilizationIds = Array.Empty<int>();
 		private bool _isLoadedFromYaml;
 		private int _playerCount;
 		private int _mapWidth;
@@ -191,6 +200,12 @@ namespace CivOne.Services
 		private int _unitsCount;
 		private IReadOnlyCollection<int> _fortifiedUnitCountsPerCity = Array.Empty<int>();
 		private int _fortifiedUnitsCount;
+
+		public SveSaveCompatibilitySnapshotBuilder WithCivilizationIds(IReadOnlyCollection<int> civilizationIds)
+		{
+			_civilizationIds = civilizationIds ?? Array.Empty<int>();
+			return this;
+		}
 
 		public SveSaveCompatibilitySnapshotBuilder FromYamlSource(bool isLoadedFromYaml)
 		{
@@ -292,6 +307,7 @@ namespace CivOne.Services
 		public SveSaveCompatibilitySnapshot Build()
 		{
 			return new SveSaveCompatibilitySnapshot(
+				_civilizationIds,
 				_isLoadedFromYaml,
 				_playerCount,
 				_mapWidth,
@@ -319,6 +335,7 @@ namespace CivOne.Services
 
 	internal sealed class SveSaveCompatibilityService : ISveSaveCompatibilityService
 	{
+		private const int SveMaxCivilizationId = 15;
 		private const int SveMaxPlayers = 8;
 		private const int SveMapWidth = 80;
 		private const int SveMapHeight = 50;
@@ -335,6 +352,11 @@ namespace CivOne.Services
 			if (snapshot.IsLoadedFromYaml)
 			{
 				return new SveSaveCompatibilityResult(false, "Game was loaded from YAML/COS or already saved as YAML/COS and is locked to YAML/COS saves.");
+			}
+
+			if (snapshot.CivilizationIds.Any(id => id > SveMaxCivilizationId))
+			{
+				return new SveSaveCompatibilityResult(false, "Extended civilization names are not supported by SVE. Save as YAML/COS instead.");
 			}
 
 			if (snapshot.MapWidth != SveMapWidth || snapshot.MapHeight != SveMapHeight)
