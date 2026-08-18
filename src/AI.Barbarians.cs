@@ -31,7 +31,13 @@ namespace CivOne
 		private readonly IUnitGotoService _unitGotoService = UnitGotoServiceFactory.Create();
 		private readonly IRandomService _randomService = RandomServiceFactory.Create();
 
-		private static bool IsPolarTile(ITile tile) => tile.Type == Terrain.Arctic;
+		/// <summary>
+		/// Determines whether a tile belongs to the polar region.
+		/// A <c>null</c> tile is treated as polar, because the map indexer returns <c>null</c> for coordinates beyond the northern or southern map edge.
+		/// </summary>
+		/// <param name="tile">The tile to check, may be <c>null</c> when it lies outside the map.</param>
+		/// <returns><c>true</c> if the tile is arctic or outside the map; otherwise <c>false</c>.</returns>
+		private static bool IsPolarTile(ITile? tile) => tile == null || tile.Type == Terrain.Arctic;
 
 		private void BarbarianMove(IUnit unit)
 		{
