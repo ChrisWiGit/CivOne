@@ -248,9 +248,10 @@ namespace CivOne
 					int relX = randomService.NextInt(-1, 2);
 					int relY = randomService.NextInt(-1, 2);
 					if (relX == 0 && relY == 0) continue;
-					if (unit.Tile[relX, relY] is Ocean || IsPolarTile(unit.Tile[relX, relY])) continue;
-					if (unit is Diplomat && unit.Tile[relX, relY].City != null) continue;
-					if (unit.Tile.IsOcean && unit.Tile[relX, relY].City != null) continue;
+					ITile? destination = unit.Tile[relX, relY];
+					if (destination == null || destination is Ocean || IsPolarTile(destination)) continue;
+					if (unit is Diplomat && destination.City != null) continue;
+					if (unit.Tile.IsOcean && destination.City != null) continue;
 					if (unit.Attack == 0) continue; // Units that cannot attack will try to move away from enemies instead of towards them.
 					unit.MoveTo(relX, relY);
 					return false;
