@@ -21,6 +21,7 @@ namespace CivOne.Screens.NewGamePanels
 		public const int ExtendedMenuPageSize = 11;
 
 		private const int OpenExtendedValue = -900;
+		private const int OpenBarbarianValue = -903;
 		private const int ScrollLessValue = -901;
 		private const int ScrollMoreValue = -902;
 
@@ -30,6 +31,7 @@ namespace CivOne.Screens.NewGamePanels
 		private readonly Action _cancelled;
 		private readonly ITranslationService? _translationService;
 		private readonly MenuPagingDelegate _paging;
+		private readonly NewGameBarbarianMenuDelegate? _barbarianMenu;
 
 		/// <summary>
 		/// Creates the competition menu delegate.
@@ -40,13 +42,18 @@ namespace CivOne.Screens.NewGamePanels
 		/// <param name="cancelled">Called when the first menu is cancelled.</param>
 		/// <param name="translationService">Translation service for the menu texts. Falls back to the active service.</param>
 		/// <param name="paging">Paging state of the extended menu. A default one is used when omitted.</param>
+		/// <param name="barbarianMenu">
+		/// The barbarian menu reached from this menu.
+		/// When omitted, the menu offers no barbarian entry.
+		/// </param>
 		public NewGameCompetitionMenuDelegate(
 			INewGameMenuHost host,
 			NewGameRulesDelegate rules,
 			Action<int> opponentsSelected,
 			Action cancelled,
 			ITranslationService? translationService = null,
-			MenuPagingDelegate? paging = null)
+			MenuPagingDelegate? paging = null,
+			NewGameBarbarianMenuDelegate? barbarianMenu = null)
 		{
 			ArgumentNullException.ThrowIfNull(host);
 			ArgumentNullException.ThrowIfNull(rules);
@@ -59,6 +66,7 @@ namespace CivOne.Screens.NewGamePanels
 			_cancelled = cancelled;
 			_translationService = translationService;
 			_paging = paging ?? new MenuPagingDelegate(ExtendedMenuPageSize);
+			_barbarianMenu = barbarianMenu;
 		}
 
 		/// <summary>
@@ -104,6 +112,10 @@ namespace CivOne.Screens.NewGamePanels
 			}
 
 			menu.Items.Add(Translation.Translate("More Civilizations..."), OpenExtendedValue).OnSelect(ItemSelected);
+			if (_barbarianMenu != null)
+			{
+				menu.Items.Add(_barbarianMenu.MenuEntryText, OpenBarbarianValue).OnSelect(ItemSelected);
+			}
 			menu.Cancel += MainMenuCancel;
 			Host.ShowMenu(menu);
 		}
@@ -239,6 +251,15 @@ namespace CivOne.Screens.NewGamePanels
 					Paging.Reset();
 					Host.CloseOpenMenus();
 					ShowExtendedMenu();
+					return;
+				case OpenBarbarianValue:
+					if (_barbarianMenu == null)
+					{
+						return;
+					}
+
+					Host.CloseOpenMenus();
+					_barbarianMenu.ShowMenu();
 					return;
 				case ScrollLessValue:
 					Host.CloseOpenMenus();

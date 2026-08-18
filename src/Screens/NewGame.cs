@@ -31,6 +31,7 @@ namespace CivOne.Screens
 	{
 		private readonly NewGameRulesDelegate _rules;
 		private readonly NewGameCompetitionMenuDelegate _competitionMenu;
+		private readonly NewGameBarbarianMenuDelegate _barbarianMenu;
 		private readonly NewGameTribeMenuDelegate _tribeMenu;
 
 		private ICivilization[] _tribesAvailable = [];
@@ -87,6 +88,15 @@ namespace CivOne.Screens
 		public void CloseOpenMenus()
 		{
 			CloseMenus();
+		}
+
+		/// <summary>
+		/// Reopens the competition menu.
+		/// The submenus reached from it return here when they are left.
+		/// </summary>
+		private void ShowCompetitionMenu()
+		{
+			_competitionMenu.ShowMenu();
 		}
 
 		private void MenuDifficulty()
@@ -443,8 +453,9 @@ namespace CivOne.Screens
 			this.AddLayer(_background);
 
 			_rules = new NewGameRulesDelegate();
-			_competitionMenu = new NewGameCompetitionMenuDelegate(this, _rules, SetCompetition, MenuDifficulty);
-			_tribeMenu = new NewGameTribeMenuDelegate(this, _rules, () => _tribesAvailable, SetTribe, _competitionMenu.ShowMenu, StartCustomTribeNameInput);
+			_barbarianMenu = new NewGameBarbarianMenuDelegate(this, ShowCompetitionMenu);
+			_competitionMenu = new NewGameCompetitionMenuDelegate(this, _rules, SetCompetition, MenuDifficulty, barbarianMenu: _barbarianMenu);
+			_tribeMenu = new NewGameTribeMenuDelegate(this, _rules, () => _tribesAvailable, SetTribe, ShowCompetitionMenu, StartCustomTribeNameInput);
 
 			_menuItemsDifficulty = _rules.BuildDifficultyMenuItems();
 		}

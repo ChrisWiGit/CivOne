@@ -95,6 +95,51 @@ namespace CivOne
 		}
 
 		/// <summary>
+		/// Gets or sets where barbarians may come from in this game.
+		/// A new game starts with the global setting, YAML/COS saves keep the value of the running game,
+		/// and classic SVE saves fall back to the global setting because their format has no room for it.
+		/// </summary>
+		internal BarbarianActivity BarbarianActivity { get; set; } = BarbarianActivity.VillagesAndRaids;
+
+		/// <summary>
+		/// Places a barbarian raiding party of the given kind, using the spawn position and the unit list
+		/// of the barbarian rules.
+		/// </summary>
+		/// <param name="kind">The kind of raiding party to place.</param>
+		/// <returns><see langword="true"/> when units were created.</returns>
+		internal bool SpawnBarbarians(BarbarianSpawnKind kind)
+		{
+			ITile? tile = kind switch
+			{
+				BarbarianSpawnKind.Land => Barbarian.LandSpawnPosition,
+				BarbarianSpawnKind.Sea => Barbarian.SeaSpawnPosition,
+				_ => null
+			};
+			if (tile == null)
+			{
+				return false;
+			}
+
+			IEnumerable<UnitType> unitTypes = kind == BarbarianSpawnKind.Land ? Barbarian.LandSpawnUnits : Barbarian.SeaSpawnUnits;
+			bool created = false;
+			foreach (UnitType unitType in unitTypes)
+			{
+				CreateUnit(unitType, tile.X, tile.Y, 0, false);
+				created = true;
+			}
+			return created;
+		}
+
+		private BarbarianSpawnDelegate? _barbarianSpawn;
+
+		/// <summary>
+		/// Decides whether barbarians appear in the current turn, and which kind.
+		/// </summary>
+		private BarbarianSpawnDelegate BarbarianSpawn => _barbarianSpawn ??= new(() => BarbarianActivity, _randomService);
+
+		BarbarianActivity IGameBarbarianSettings.BarbarianActivity => BarbarianActivity;
+
+		/// <summary>
 		/// The maximum number of players supported by a game (including the barbarian player at index 0).
 		/// This bounds the <see cref="Tiles.ITile.Visited"/> bitmask width and the player colour palette size.
 		/// Defined in <see cref="PlayerLimits"/>, because the API assembly needs the same value to validate
@@ -438,30 +483,7 @@ namespace CivOne
 				foreach (City city in disasterCities)
 					city.Disaster();
 
-				if (Barbarian.IsSeaSpawnTurn)
-				{
-					// KBR 20200927 use cdonges land spawn code
-					// https://github.com/cdonges/CivOne/commit/e54fe9377030de625c51b674c0ecf29a335e0556
-					// TODO land spawning and sea spawning as separate timing / acts
-					if (_randomService.NextInt(100) > 50)
-					{
-						ITile? tile = Barbarian.LandSpawnPosition;
-						if (tile != null)
-						{
-							foreach (UnitType unitType in Barbarian.LandSpawnUnits)
-								CreateUnit(unitType, tile.X, tile.Y, 0, false);
-						}
-					}
-					else
-					{
-						ITile? tile = Barbarian.SeaSpawnPosition;
-						if (tile != null)
-						{
-							foreach (UnitType unitType in Barbarian.SeaSpawnUnits)
-								CreateUnit(unitType, tile.X, tile.Y, 0, false);
-						}
-					}
-				}
+				SpawnBarbarians(BarbarianSpawn.GetSpawnKind());
 			}
 
 			if (!_players.Any(x => Game.PlayerNumber(x) != 0 && x != Human && !x.HandleExtinction()))

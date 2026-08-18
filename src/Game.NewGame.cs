@@ -432,6 +432,7 @@ namespace CivOne
 			EnemyMoves = Settings.EnemyMoves != GameOption.Off;
 			CivilopediaText = Settings.CivilopediaText != GameOption.Off;
 			Palace = Settings.Palace != GameOption.Off;
+			BarbarianActivity = Settings.BarbarianActivity;
 
 			_cities = [];
 			_units = [];

@@ -46,7 +46,9 @@ namespace CivOne.UnitTests
 		public Menu CreateNewGameMenu(string title, int yOffset = 0)
 		{
 			LastYOffset = yOffset;
-			Menu menu = new("NewGameMenu", new Palette())
+			// Menu copies the palette, so the source can be released right away.
+			using Palette palette = new();
+			Menu menu = new("NewGameMenu", palette)
 			{
 				Title = title
 			};

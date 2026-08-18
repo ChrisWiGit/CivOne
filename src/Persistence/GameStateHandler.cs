@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using CivOne.Enums;
 using CivOne.Persistence;
 using CivOne.Persistence.Model;
 using CivOne.Services.GlobalWarming;
@@ -57,6 +58,11 @@ namespace CivOne
 		public bool EnemyMoves { get; }
 		public bool Palace { get; }
 		public bool DisableBuddyCivilizationRespawn { get; }
+
+		/// <summary>
+		/// Barbarian sources of the running game.
+		/// </summary>
+		public BarbarianActivity BarbarianActivity { get; }
 
 		uint? GameRandomSeed { get; }
 
@@ -129,6 +135,7 @@ namespace CivOne
 				PeaceTurns = game.PeaceTurns,
 				PlayerFutureTech = game.PlayerFutureTech,
 				DisableBuddyCivilizationRespawn = game.DisableBuddyCivilizationRespawn,
+				BarbarianActivity = game.BarbarianActivity,
 				GlobalWarmingCount = game.GlobalWarmingService?.GlobalWarmingCount ?? 0,
 				PollutedSquaresCount = game.GlobalWarmingService?.PollutedSquaresCount ?? 0,
 				WarmingIndicator = game.GlobalWarmingService?.WarmingIndicator ?? WarmingIndicator.None,

@@ -15,7 +15,7 @@ namespace CivOne.UnitTests
 	///
 	/// The menus are built against a stand-in host, so no screen is involved.
 	/// </summary>
-	public class NewGameTribeMenuDelegateTests : IDisposable
+	public sealed class NewGameTribeMenuDelegateTests : IDisposable
 	{
 		private const int ClassicTribeCount = 3;
 		private const int ExtendedTribeCount = 15;
@@ -60,7 +60,7 @@ namespace CivOne.UnitTests
 			tribe => _renameTribe = tribe,
 			randomService: new MockedIRandomService(RandomTribeIndex));
 
-		private int PageSize => NewGameTribeMenuDelegate.ExtendedMenuPageSize;
+		private static int PageSize => NewGameTribeMenuDelegate.ExtendedMenuPageSize;
 
 		/// <summary>
 		/// The first menu lists the civilizations of the original game and the way to the added ones.

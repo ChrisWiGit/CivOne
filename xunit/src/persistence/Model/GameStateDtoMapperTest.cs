@@ -230,6 +230,7 @@ namespace CivOne.Persistence.Model
 				PeaceTurns = 11,
 				PlayerFutureTech = 4,
 				DisableBuddyCivilizationRespawn = true,
+				BarbarianActivity = BarbarianActivity.Villages | BarbarianActivity.SeaRaids,
 				Difficulty = DifficultyLevel.Chieftain,
 				Players = [playerDto0, playerDto1],
 				AnthologyTurn = 0,
@@ -373,6 +374,7 @@ namespace CivOne.Persistence.Model
 				[nameof(GameStateDto.PeaceTurns)] = () => Assert.Equal(expected.PeaceTurns, actual.PeaceTurns),
 				[nameof(GameStateDto.PlayerFutureTech)] = () => Assert.Equal(expected.PlayerFutureTech, actual.PlayerFutureTech),
 				[nameof(GameStateDto.DisableBuddyCivilizationRespawn)] = () => Assert.Equal(expected.DisableBuddyCivilizationRespawn, actual.DisableBuddyCivilizationRespawn),
+				[nameof(GameStateDto.BarbarianActivity)] = () => Assert.Equal(expected.BarbarianActivity, actual.BarbarianActivity),
 				[nameof(GameStateDto.Map)] = () =>
 				{
 					Assert.NotNull(actual.Map);

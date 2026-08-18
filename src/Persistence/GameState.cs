@@ -6,6 +6,8 @@ using CivOne.Services.GlobalWarming;
 using CivOne.Tiles;
 using CivOne.Units;
 
+using CivOne.Enums;
+
 namespace CivOne.Persistence
 {
     public enum GameSetting
@@ -81,6 +83,12 @@ namespace CivOne.Persistence
 		/// <summary>Future-tech counter from the original save format.</summary>
 		public ushort PlayerFutureTech { get; set; }
 		public bool DisableBuddyCivilizationRespawn { get; set; }
+
+		/// <summary>
+		/// Barbarian sources of the saved game.
+		/// Null for savegames written before this setting existed, which fall back to the global setting.
+		/// </summary>
+		public BarbarianActivity? BarbarianActivity { get; set; }
 
         public int GlobalWarmingCount { get; set; }
         public int PollutedSquaresCount { get; set; }

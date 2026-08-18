@@ -333,6 +333,8 @@ namespace CivOne
 			EnemyMoves = Settings.EnemyMoves != GameOption.Off;
 			CivilopediaText = Settings.CivilopediaText != GameOption.Off;
 			Palace = Settings.Palace != GameOption.Off;
+			// The classic save format has no field for the barbarian setting, so the global one applies.
+			BarbarianActivity = Settings.BarbarianActivity;
 
 			bool[] options = gameData.GameOptions;
 			if (Settings.InstantAdvice == GameOption.Default) InstantAdvice = options[0];

@@ -14,7 +14,7 @@ namespace CivOne.UnitTests
 	///
 	/// The menus are built against a stand-in host, so no screen is involved.
 	/// </summary>
-	public class NewGameCompetitionMenuDelegateTests : IDisposable
+	public sealed class NewGameCompetitionMenuDelegateTests : IDisposable
 	{
 		private readonly MockRuntime _runtime;
 		private readonly MockedNewGameMenuHost _host = new();
@@ -39,7 +39,81 @@ namespace CivOne.UnitTests
 				() => _cancelCount++);
 		}
 
-		private int PageSize => NewGameCompetitionMenuDelegate.ExtendedMenuPageSize;
+		private static int PageSize => NewGameCompetitionMenuDelegate.ExtendedMenuPageSize;
+
+		private NewGameCompetitionMenuDelegate CreateDelegateWithBarbarianMenu(BarbarianActivity activity)
+		{
+			NewGameCompetitionMenuDelegate? competitionMenu = null;
+			NewGameBarbarianMenuDelegate barbarianMenu = new(
+				_host,
+				() => competitionMenu!.ShowMenu(),
+				() => activity,
+				value => activity = value);
+
+			competitionMenu = new NewGameCompetitionMenuDelegate(
+				_host,
+				_rules,
+				opponents => _selectedOpponents = opponents,
+				() => _cancelCount++,
+				barbarianMenu: barbarianMenu);
+
+			return competitionMenu;
+		}
+
+		/// <summary>
+		/// Without a barbarian menu the competition menu stays as it was.
+		/// </summary>
+		[Fact]
+		public void MainMenuHasNoBarbarianEntryWithoutBarbarianMenu()
+		{
+			_delegateUnderTest.ShowMenu();
+
+			Assert.DoesNotContain(_host.MenuTexts(), text => text.StartsWith("Barbarians", StringComparison.Ordinal));
+		}
+
+		/// <summary>
+		/// With a barbarian menu the last entry shows the current setting.
+		/// </summary>
+		[Fact]
+		public void MainMenuShowsCurrentBarbarianSetting()
+		{
+			CreateDelegateWithBarbarianMenu(BarbarianActivity.Raids).ShowMenu();
+
+			string[] texts = _host.MenuTexts();
+
+			Assert.Equal(7, texts.Length);
+			Assert.Equal("More Civilizations...", texts[5]);
+			Assert.Equal("Barbarians: Raids", texts[6]);
+		}
+
+		/// <summary>
+		/// The barbarian entry opens the barbarian menu instead of reporting an opponent count.
+		/// </summary>
+		[Fact]
+		public void BarbarianEntryOpensBarbarianMenu()
+		{
+			CreateDelegateWithBarbarianMenu(BarbarianActivity.VillagesAndRaids).ShowMenu();
+
+			_host.SelectLastItem();
+
+			Assert.Equal("Barbarians...", _host.OpenMenu.Title);
+			Assert.Equal(-1, _selectedOpponents);
+		}
+
+		/// <summary>
+		/// After picking a source the competition menu is back, with the new value in its entry.
+		/// </summary>
+		[Fact]
+		public void PickingBarbarianSourceReturnsToUpdatedMainMenu()
+		{
+			CreateDelegateWithBarbarianMenu(BarbarianActivity.VillagesAndRaids).ShowMenu();
+			_host.SelectLastItem();
+
+			_host.SelectItem(0);
+
+			Assert.Equal("Level of Competition...", _host.OpenMenu.Title);
+			Assert.Equal("Barbarians: None", _host.MenuTexts()[6]);
+		}
 
 		/// <summary>
 		/// The first menu offers the opponent counts of the original game, plus the way to the full list.

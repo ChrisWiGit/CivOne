@@ -11,6 +11,19 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Where barbarians come from is now configurable.
+  * Barbarians reach the map on three ways, and each one can be switched on and off on its own: tribal villages that release a horde when one of your units enters them, raiding parties that appear inland, and raiding parties that arrive by ship and land on the coast.
+  * The eight resulting combinations are offered as ready-made choices, from `None` over `Villages Only`, `Land Raids Only`, `Sea Raids Only` and `Raids Only` up to `Villages + Raids`, which is the default and matches the original game.
+  * In the setup menu the setting is `Patches` -> `Barbarians`, and every choice explains in one line what it does.
+  * When starting a new game the setting can also be reached from the `Level of Competition...` menu, through the new `Barbarians: ...` entry that always shows the current value.
+  * `Escape` goes back to the competition menu without changing anything.
+  * Both places change the same setting, so a change made while starting a game also applies to the games you start afterwards.
+  * A game takes the setting over when it starts and then keeps it, even when you change the setting in the meantime.
+  * The value is stored in savegames of this project, so a loaded game plays on with the barbarians it was started with.
+  * Savegames of the original game have no room for the value, so they use the setting as it is when you load them. Older savegames of this project do the same.
+  * With villages switched off, entering a tribal village never releases barbarians. Such a village yields metal deposits instead, so the reward is not simply lost.
+  * Switching one kind of raiding party off does not make the other kind appear more often than it does in the original game. The turn of the disabled kind simply passes without anything happening.
+  * With the debug menu enabled, `F12` offers `Spawn Barbarians`, which places a raiding party right away and reports whether it appeared inland or arrived by sea. It ignores the setting on purpose, so there is always something to look at.
 * Feature: The intelligence report is split into pages when there are more than six opponents.
   * `PgUp` and `PgDn` switch pages and wrap around at both ends of the list.
   * Every page shows up to seven civilizations, the current page and the number of pages are shown at the bottom.

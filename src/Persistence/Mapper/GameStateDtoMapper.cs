@@ -309,6 +309,7 @@ namespace CivOne.Persistence.Mapper
                 PeaceTurns = dto.PeaceTurns,
                 PlayerFutureTech = players[dto.HumanPlayer].FutureTechCount,
                 DisableBuddyCivilizationRespawn = dto.DisableBuddyCivilizationRespawn,
+                BarbarianActivity = dto.BarbarianActivity,
                 GlobalWarmingCount = globalWarmingState.GlobalWarmingCount,
                 PollutedSquaresCount = globalWarmingState.PollutedSquaresCount,
                 WarmingIndicator = globalWarmingState.WarmingIndicator
@@ -383,6 +384,7 @@ namespace CivOne.Persistence.Mapper
                 PeaceTurns = gameState.PeaceTurns,
 				PlayerFutureTech = gameState.HumanPlayer.FutureTechCount,
                 DisableBuddyCivilizationRespawn = gameState.DisableBuddyCivilizationRespawn,
+                BarbarianActivity = gameState.BarbarianActivity,
                 GlobalWarming = globalWarmingMapper.ToDto(gameState)
             };
 
