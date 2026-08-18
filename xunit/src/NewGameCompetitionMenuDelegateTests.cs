@@ -233,13 +233,29 @@ namespace CivOne.UnitTests
 		}
 
 		/// <summary>
-		/// The "Back..." entry always returns to the first menu, even from a later page.
+		/// The "Back..." entry moves one page back while a previous page exists.
 		/// </summary>
 		[Fact]
-		public void BackEntryReturnsToMainMenuFromAnyPage()
+		public void BackEntryScrollsToPreviousPage()
 		{
 			_delegateUnderTest.ShowMenu();
 			_host.SelectLastItem();
+			_host.SelectLastItem();
+
+			_host.SelectItem(0);
+
+			Assert.Equal("More Civilizations...", _host.OpenMenu.Title);
+			Assert.Equal(_rules.MinOpponents, _host.MenuValues()[1]);
+			Assert.Equal(1, _host.OpenMenu.ActiveItem);
+		}
+
+		/// <summary>
+		/// The "Back..." entry returns to the first menu once the first page is reached.
+		/// </summary>
+		[Fact]
+		public void BackEntryOnFirstPageReturnsToMainMenu()
+		{
+			_delegateUnderTest.ShowMenu();
 			_host.SelectLastItem();
 
 			_host.SelectItem(0);
@@ -256,6 +272,7 @@ namespace CivOne.UnitTests
 			_delegateUnderTest.ShowMenu();
 			_host.SelectLastItem();
 			_host.SelectLastItem();
+			_host.SelectItem(0);
 			_host.SelectItem(0);
 
 			_host.SelectLastItem();

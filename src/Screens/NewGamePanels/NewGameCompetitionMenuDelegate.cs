@@ -262,8 +262,15 @@ namespace CivOne.Screens.NewGamePanels
 					_barbarianMenu.ShowMenu();
 					return;
 				case ScrollLessValue:
+					if (!Paging.PreviousPage())
+					{
+						Host.CloseOpenMenus();
+						ShowMenu();
+						return;
+					}
+
 					Host.CloseOpenMenus();
-					ShowMenu();
+					ShowExtendedMenu(selectFirstNumberItem: true);
 					return;
 				case ScrollMoreValue:
 					Paging.NextPage(Rules.OpponentCount);
