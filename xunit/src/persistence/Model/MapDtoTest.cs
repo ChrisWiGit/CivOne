@@ -496,7 +496,7 @@ namespace CivOne.Persistence.Model
 
 			public byte FortressCost { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-			public byte Visited => throw new NotImplementedException();
+			public uint Visited => throw new NotImplementedException();
 
 			public bool IsOcean => throw new NotImplementedException();
 

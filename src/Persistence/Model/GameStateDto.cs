@@ -1,3 +1,4 @@
+using CivOne.Enums;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -61,6 +62,13 @@ namespace CivOne.Persistence.Model
 
         [Doc("Legacy future-tech counter from the original save format. New YAML should prefer Players[].FutureTechCount. For backward compatibility this still mirrors the human player's count.", 0, ushort.MaxValue)]
         public ushort PlayerFutureTech { get; set; }
+
+        [Doc("If true, respawn never prefers the buddy civilization even in classic player-count setups. If true, the legacy save format is disabled.")]
+        public bool DisableBuddyCivilizationRespawn { get; set; }
+
+        [Doc("Where barbarians may come from. Villages release them from huts, LandRaids and SeaRaids are the raiding parties appearing inland and by ship. The flags combine, either through a named combination (Raids, VillagesAndRaids) or as a list such as 'Villages, SeaRaids'. Omitted in older savegames, which then use the global setting.",
+            typeof(BarbarianActivity))]
+        public BarbarianActivity? BarbarianActivity { get; set; }
 
 		[Doc("Global warming simulation state (count, pollution level, warning indicator).")]
 		public GlobalWarmingDto GlobalWarming { get; set; } = new GlobalWarmingDto();

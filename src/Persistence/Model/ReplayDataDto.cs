@@ -28,6 +28,9 @@ namespace CivOne.Persistence.Model
         [Doc("A civilization was destroyed by another.")]
         public CivilizationDestroyedData? CivilizationDestroyed { get; set; }
 
+        [Doc("A destroyed player slot was taken over by a new civilization.")]
+        public CivilizationRespawnedData? CivilizationRespawned { get; set; }
+
         [Doc("War was declared between two civilizations.")]
         public TwoCivsData? WarDeclared { get; set; }
 
@@ -98,6 +101,14 @@ namespace CivOne.Persistence.Model
             public int DestroyedId { get; set; }
             [Doc("ID of the civilization that caused the destruction.", 0, 7)]
             public int DestroyedById { get; set; }
+        }
+
+        public class CivilizationRespawnedData
+        {
+            [Doc("Index of the player slot that respawned.", 0, 31)]
+            public int PlayerId { get; set; }
+            [Doc("ID of the civilization that now occupies the slot.", 0, 15)]
+            public int CivilizationId { get; set; }
         }
 
         /// <summary>Shared data for two-civilization events (war, peace).</summary>

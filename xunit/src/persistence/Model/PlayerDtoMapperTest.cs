@@ -94,16 +94,15 @@ namespace CivOne.Persistence.Model
 				Civilization = new CivilizationDto { LeaderClassName = civsInGame[0].Leader.GetType().Name },
 				Advances = [1, 2, 3],
 				Embassies = [4, 5],
+				// One entry per player slot (Game.MaxPlayers): entry 0 is the player's own (owner) slot,
+				// entries 1-7 carry a distinguishing RawFlags value like before, and entries 8+ (only
+				// reachable now that Player.Diplomacy/UnitsDestroyedBy were widened past 8) default to 0,
+				// matching what PlayerDtoMapper.BuildDiplomacyArray leaves unset slots at.
 				Diplomacy =
 				[
 					new DiplomacyEntryDto { TargetPlayerId = 0, TargetPlayerGuid = _playerGuid, RawFlags = 0, Decoded = new DiplomacyDecodedDto() },
-					new DiplomacyEntryDto { TargetPlayerId = 1, RawFlags = 1, Decoded = new DiplomacyDecodedDto() },
-					new DiplomacyEntryDto { TargetPlayerId = 2, RawFlags = 2, Decoded = new DiplomacyDecodedDto() },
-					new DiplomacyEntryDto { TargetPlayerId = 3, RawFlags = 3, Decoded = new DiplomacyDecodedDto() },
-					new DiplomacyEntryDto { TargetPlayerId = 4, RawFlags = 4, Decoded = new DiplomacyDecodedDto() },
-					new DiplomacyEntryDto { TargetPlayerId = 5, RawFlags = 5, Decoded = new DiplomacyDecodedDto() },
-					new DiplomacyEntryDto { TargetPlayerId = 6, RawFlags = 6, Decoded = new DiplomacyDecodedDto() },
-					new DiplomacyEntryDto { TargetPlayerId = 7, RawFlags = 7, Decoded = new DiplomacyDecodedDto() }
+					.. Enumerable.Range(1, CivOne.Game.MaxPlayers - 1)
+						.Select(i => new DiplomacyEntryDto { TargetPlayerId = (ushort)i, RawFlags = (ushort)(i < 8 ? i : 0), Decoded = new DiplomacyDecodedDto() })
 				],
 				Anarchy = 2,
 				Gold = 1234,
@@ -142,6 +141,7 @@ namespace CivOne.Persistence.Model
 				],
 				Explored = new Bool2dMap(5, 5),
 				Visible = new Bool2dMap(5, 5),
+				LeaderName = "Caesar II",
 				TribeName = "Romans",
 				TribeNamePlural = "Romans",
 				LuxuriesRate = 0,
@@ -172,7 +172,7 @@ namespace CivOne.Persistence.Model
 					LaunchYear = 0
 				},
 				UnitsLost = [.. Enumerable.Range(0, 28).Select(i => (long)i)],
-				UnitsDestroyedBy = [.. Enumerable.Range(0, 8).Select(i => (long)i)],
+				UnitsDestroyedBy = [.. Enumerable.Range(0, CivOne.Game.MaxPlayers).Select(i => (long)i)],
 				EpicRanking = 11,
 				MilitaryPower = 222,
 				CivilizationScore = 333
@@ -301,6 +301,7 @@ namespace CivOne.Persistence.Model
 			=> new()
 			{
 				[nameof(PlayerDto.PlayerGuid)] = () => Assert.Equal(expected.PlayerGuid, actual.PlayerGuid),
+				[nameof(PlayerDto.LeaderName)] = () => Assert.Equal(expected.LeaderName, actual.LeaderName),
 				[nameof(PlayerDto.TribeName)] = () => Assert.Equal(expected.TribeName, actual.TribeName),
 				[nameof(PlayerDto.TribeNamePlural)] = () => Assert.Equal(expected.TribeNamePlural, actual.TribeNamePlural),
 				[nameof(PlayerDto.Anarchy)] = () => Assert.Equal(expected.Anarchy, actual.Anarchy),
@@ -443,6 +444,8 @@ namespace CivOne.Persistence.Model
 			public bool Started => true;
 			public ushort GameTurn => 0;
 			public int Difficulty => 3;
+			public int Competition => 7;
+			public bool DisableBuddyCivilizationRespawn => false;
 			public Player HumanPlayer => throw new NotImplementedException();
 			public Player CurrentPlayer => throw new NotImplementedException();
 			public IEnumerable<Player> Players => [(_player as Player) ?? throw new InvalidOperationException("Player must be a Player instance")];
@@ -469,7 +472,10 @@ namespace CivOne.Persistence.Model
 
 			public IPlayerRestorable Create(ICivilization civilization, PlayerDto dto)
 			{
-				// Return the mock player which already implements IPlayerRestorable
+				// Return the mock player which already implements IPlayerRestorable, but wire through the
+				// civilization instance resolved by CivilizationDtoMapper so that mutations made to it in
+				// PlayerDtoMapper.FromDto (e.g. applying PlayerDto.LeaderName) are observable on the player.
+				_mockPlayer.Civilization = civilization;
 				return _mockPlayer;
 			}
 		}

@@ -17,6 +17,7 @@ using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.Governments;
 using CivOne.Graphics.Sprites;
+using CivOne.Services.Civilizations;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -28,31 +29,52 @@ namespace CivOne
 {
 	public partial class Player : BaseInstance, ITurn
 	{
+		private IRespawnCivilizationService? _respawnCivilizationService;
+		private IRespawnCivilizationService RespawnCivilizationService => _respawnCivilizationService ??= RespawnCivilizationServiceFactory.Create();
+
+		/// <summary>
+		/// Creates the player that takes over this player's slot after it was destroyed.
+		/// The replacement gets a civilization that nobody else plays where possible, and a name that
+		/// distinguishes it from the other players when it has to share one.
+		/// </summary>
+		/// <returns>The new player for this slot.</returns>
 		public Player Respawn()
 		{
 			Debug.Assert(IsHuman == false, "Cannot respawn a human player!");
-			Debug.Assert(Civilization.Id != 0, "Cannot respawn barbarian player!");
+			Debug.Assert(Civilization.PreferredPlayerNumber != 0, "Cannot respawn barbarian player!");
 
-			var destroyed = Civilization;
+			// Competition is the number of non-barbarian slots, so 7 is the classic eight-player setup.
+			bool preferBuddyCivilization = !Game.DisableBuddyCivilizationRespawn && Game.Competition <= 7;
+			RespawnCivilizationResult replacement = RespawnCivilizationService.SelectReplacement(
+				Civilization,
+				CivilizationsInUse(),
+				preferBuddyCivilization);
+			CivilizationNames names = new CivilizationNameDelegate().Build(replacement.Civilization, replacement.Occurrence);
 
-			var civId = destroyed.Id >= 8 ? destroyed.Id - 7 : destroyed.Id + 7;
-
-			ICivilization[] civs = [.. Common.Civilizations.Where(civ => civ.Id == civId)];
-
-			int playerIndex = destroyed.PreferredPlayerNumber;
-
-			return new Player(civs.First());
-			// CW: schism could be done the same but with a different civ slot
-			// But. Make sure the civ is not used.
+			return new Player(replacement.Civilization, names.LeaderName, names.TribeName, names.TribeNamePlural);
 		}
+
+		/// <summary>
+		/// The civilizations of all other players that are still alive.
+		/// Reads the raw <c>_destroyed</c> flag on purpose: the <see cref="IsDestroyed"/> property runs
+		/// <see cref="HandleExtinction(bool)"/>, which disbands units and marks players as destroyed, and must
+		/// not be triggered for every player just to build this list.
+		/// </summary>
+		/// <returns>One entry per living player, including duplicates when a civilization is shared.</returns>
+		private ICivilization[] CivilizationsInUse()
+			=> [.. Game.Players.Where(player => player != this && !player._destroyed).Select(player => player.Civilization)];
 
 		public bool AllowedToRespawn(ReplayData.CivilizationDestroyed[] ReplayData)
 		{
-			bool atLeastOneCivBuddyAvailable = ReplayData.Count(x => x.DestroyedId == this.Civilization.PreferredPlayerNumber) < 2;
+			// Use the player's slot index (not Civilization.PreferredPlayerNumber): with civilization reuse
+			// beyond player 7, PreferredPlayerNumber no longer identifies the player slot, but Game.PlayerDestroyed
+			// now records the real slot index in ReplayData.CivilizationDestroyed.DestroyedId.
+			byte playerIndex = Game.PlayerNumber(this);
+			bool atLeastOneCivBuddyAvailable = ReplayData.Count(x => x.DestroyedId == playerIndex) < 2;
 
 			// CW: If atLeastOneCivBuddyAvailable is disabled, this may affect end screen and could
 			// confuse BaseCivilization.Buddy.cs Algorithm.
-			return this.Civilization.PreferredPlayerNumber != 0 && !this.IsHuman && atLeastOneCivBuddyAvailable;
+			return playerIndex != 0 && !this.IsHuman && atLeastOneCivBuddyAvailable;
 		}
 	}
 }

@@ -17,6 +17,7 @@ namespace CivOne.UnitTests
 		{
 			Civilization = new MockedICivilization(1);
 			PlayerGuid = Guid.NewGuid();
+			LeaderName = "Mock Leader";
 			TribeName = "Mock Tribe";
 			TribeNamePlural = "Mock Tribes";
 			Explored = new bool[10, 10];
@@ -58,6 +59,8 @@ namespace CivOne.UnitTests
 		public ICivilization Civilization { get; set; }
 
 		public Guid PlayerGuid { get; set; }
+
+		public string LeaderName { get; set; }
 
 		public string TribeName { get; set; }
 

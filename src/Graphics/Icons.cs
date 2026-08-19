@@ -320,8 +320,8 @@ namespace CivOne.Graphics
 			if (city.Tile.Units.Length > 0)
 				output.FillRectangle(0, 0, 16, 16, 5);
 			output.FillRectangle(1, 1, 14, 14, 15)
-				.FillRectangle(2, 1, 13, 13, Common.ColourDark[city.CityOwnerPlayerIndex])
-				.FillRectangle(2, 2, 12, 12, Common.ColourLight[city.CityOwnerPlayerIndex]);
+				.FillRectangle(2, 1, 13, 13, Common.PlayerColourDark(city.CityOwnerPlayerIndex))
+				.FillRectangle(2, 2, 12, 12, Common.PlayerColourLight(city.CityOwnerPlayerIndex));
 			
 			Picture resource;
 			if (Resources.Exists(Filename))
@@ -334,7 +334,7 @@ namespace CivOne.Graphics
 			}
 			resource
 				.ColourReplace(3, 0)
-				.ColourReplace(5, Common.ColourDark[city.CityOwnerPlayerIndex]);
+				.ColourReplace(5, Common.PlayerColourDark(city.CityOwnerPlayerIndex));
 				
 			CitizenTypes citizenType = city.GetCitizenTypes();
 			if (citizenType.InDisorder)

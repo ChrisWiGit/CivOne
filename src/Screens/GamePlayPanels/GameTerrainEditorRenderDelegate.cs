@@ -148,11 +148,13 @@ namespace CivOne.Screens.GamePlayPanels
 					dx *= _gameMap._tilePixelSize;
 					dy *= _gameMap._tilePixelSize;
 
-					byte colourIndex = civilization.PreferredPlayerNumber;
-					_gameMap.FillRectangle(dx, dy, _gameMap._tilePixelSize, _gameMap._tilePixelSize, Common.ColourDark[colourIndex]);
-					_gameMap.DrawRectangle(dx, dy, _gameMap._tilePixelSize, _gameMap._tilePixelSize, Common.ColourLight[colourIndex]);
+					// Use the civilization Id (not PreferredPlayerNumber) so buddy-pair civilizations get distinct colours
+					// in the editor, where all civilizations are shown at once and no actual player slots exist yet.
+					int colourIndex = civilization.Id;
+					_gameMap.FillRectangle(dx, dy, _gameMap._tilePixelSize, _gameMap._tilePixelSize, Common.PlayerColourDark(colourIndex));
+					_gameMap.DrawRectangle(dx, dy, _gameMap._tilePixelSize, _gameMap._tilePixelSize, Common.PlayerColourLight(colourIndex));
 
-					_gameMap.DrawText(TranslationService.Translate(civilization.NamePlural), 0, Common.ColourLight[colourIndex], dx + _gameMap._tilePixelSize + 1, dy + 1, TextAlign.Left);
+					_gameMap.DrawText(TranslationService.Translate(civilization.NamePlural), 0, Common.PlayerColourLight(colourIndex), dx + _gameMap._tilePixelSize + 1, dy + 1, TextAlign.Left);
 				}
 			}
 

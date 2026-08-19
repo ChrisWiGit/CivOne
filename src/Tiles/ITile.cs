@@ -55,7 +55,7 @@ namespace CivOne.Tiles
 		byte FortressCost { get; set; }
 		bool Mine { get; set; }
 		bool Hut { get; set; }
-		byte Visited { get; }
+		uint Visited { get; }
 		void Visit(byte owner);
 		bool IsOcean { get; }
 		City City { get; }

@@ -1,3 +1,4 @@
+using CivOne.Enums;
 using System.Collections.Generic;
 using CivOne.Services.GlobalWarming;
 using CivOne.Tiles;
@@ -54,6 +55,36 @@ namespace CivOne.UnitTests.Persistence
             Assert.Equal(terrainMasterWord, actual.TerrainSeed);
         }
 
+        /// <summary>
+        /// The barbarian setting of the running game must reach the saved state, so a COS savegame can
+        /// restore it instead of falling back to the global setting.
+        /// </summary>
+        [Fact]
+        public void CreatePersistsBarbarianActivity()
+        {
+            var snapshot = new MockedGameSnapshotSource
+            {
+                BarbarianActivity = BarbarianActivity.SeaRaids
+            };
+
+            var actual = GameStateHandler.Create(snapshot);
+
+            Assert.Equal(BarbarianActivity.SeaRaids, actual.BarbarianActivity);
+        }
+
+        [Fact]
+        public void CreatePersistsDisableBuddyCivilizationRespawnFlag()
+        {
+            var snapshot = new MockedGameSnapshotSource
+            {
+                DisableBuddyCivilizationRespawn = true
+            };
+
+            var actual = GameStateHandler.Create(snapshot);
+
+            Assert.True(actual.DisableBuddyCivilizationRespawn);
+        }
+
         private sealed class MockedGameSnapshotSource : IGameSnapshotSource
         {
             public int Difficulty { get; set; } = 3;
@@ -78,6 +109,8 @@ namespace CivOne.UnitTests.Persistence
             public bool AutoSave { get; set; }
             public bool EnemyMoves { get; set; }
             public bool Palace { get; set; }
+            public bool DisableBuddyCivilizationRespawn { get; set; }
+            public BarbarianActivity BarbarianActivity { get; set; } = BarbarianActivity.VillagesAndRaids;
             public uint? GameRandomSeed { get; set; }
             public (short X, short Y)? HumanLastMapPosition { get; set; }
             public int TerrainMasterWord { get; set; }

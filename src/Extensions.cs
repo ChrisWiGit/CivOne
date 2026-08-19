@@ -369,6 +369,46 @@ namespace CivOne
 			};
 		}
 
+		public static string ToText(this BarbarianActivity barbarianActivity)
+		{
+			Debug.Assert((barbarianActivity & ~BarbarianActivity.VillagesAndRaids) == 0, $"Unexpected BarbarianActivity value {barbarianActivity} in Extensions.ToText");
+			return barbarianActivity switch
+			{
+				BarbarianActivity.None => T("None"),
+				BarbarianActivity.Villages => T("Villages Only"),
+				BarbarianActivity.LandRaids => T("Land Raids Only"),
+				BarbarianActivity.SeaRaids => T("Sea Raids Only"),
+				BarbarianActivity.Villages | BarbarianActivity.LandRaids => T("Villages + Land"),
+				BarbarianActivity.Villages | BarbarianActivity.SeaRaids => T("Villages + Sea"),
+				BarbarianActivity.Raids => T("Raids Only"),
+				BarbarianActivity.VillagesAndRaids => T("Villages + Raids"),
+				_ => T("(unknown)"),
+			};
+		}
+
+		/// <summary>
+		/// Returns a short form of the barbarian setting, for menu entries that only have room for a few
+		/// characters next to their label.
+		/// </summary>
+		/// <param name="barbarianActivity">The setting to name.</param>
+		/// <returns>The short, translated name.</returns>
+		public static string ToShortText(this BarbarianActivity barbarianActivity)
+		{
+			Debug.Assert((barbarianActivity & ~BarbarianActivity.VillagesAndRaids) == 0, $"Unexpected BarbarianActivity value {barbarianActivity} in Extensions.ToShortText");
+			return barbarianActivity switch
+			{
+				BarbarianActivity.None => T("None"),
+				BarbarianActivity.Villages => T("Villages"),
+				BarbarianActivity.LandRaids => T("Land"),
+				BarbarianActivity.SeaRaids => T("Sea"),
+				BarbarianActivity.Villages | BarbarianActivity.LandRaids => T("Vil.+Land"),
+				BarbarianActivity.Villages | BarbarianActivity.SeaRaids => T("Vil.+Sea"),
+				BarbarianActivity.Raids => T("Raids"),
+				BarbarianActivity.VillagesAndRaids => T("All"),
+				_ => T("?"),
+			};
+		}
+
 		public static string ToText(this GameOption gameOption)
 		{
 			Debug.Assert(Enum.IsDefined(gameOption), $"Unexpected GameOption value {gameOption} in Extensions.ToText");
@@ -445,6 +485,23 @@ namespace CivOne
 				Leader.Mao => new Mao(),
 				Leader.Elizabeth => new Elizabeth(),
 				Leader.Genghis => new Genghis(),
+				Leader.Tokugawa => new Tokugawa(),
+				Leader.Darius => new Darius(),
+				Leader.Suleiman => new Suleiman(),
+				Leader.Isabella => new Isabella(),
+				Leader.Henrique => new Henrique(),
+				Leader.Harald => new Harald(),
+				Leader.Sejong => new Sejong(),
+				Leader.Pacal => new Pacal(),
+				Leader.Pachacuti => new Pachacuti(),
+				Leader.Hannibal => new Hannibal(),
+				Leader.Justinian => new Justinian(),
+				Leader.Harun => new Harun(),
+				Leader.MansaMusa => new MansaMusa(),
+				Leader.Selassie => new Selassie(),
+				Leader.Casimir => new Casimir(),
+				Leader.Corvinus => new Corvinus(),
+				Leader.PedroII => new PedroII(),
 				_ => throw new InvalidOperationException($"Unexpected Leader value {leader} in Extensions.ToInstance"),
 			};
 		}

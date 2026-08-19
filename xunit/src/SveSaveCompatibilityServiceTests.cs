@@ -62,11 +62,14 @@ namespace CivOne.src
 			Assert.Contains("YAML/COS", actual.Reason, StringComparison.OrdinalIgnoreCase);
 		}
 
-		[Fact]
-		public void EvaluateWhenMoreThanEightPlayersReturnsIncompatible()
+		[Theory]
+		[InlineData(9)]
+		[InlineData(20)]
+		[InlineData(32)]
+		public void EvaluateWhenMoreThanEightPlayersReturnsIncompatible(int playerCount)
 		{
 			var testee = new SveSaveCompatibilityService();
-			var snapshot = CreateSnapshot(playerCount: 9);
+			var snapshot = CreateSnapshot(playerCount: playerCount);
 
 			var actual = testee.Evaluate(snapshot);
 
@@ -178,6 +181,36 @@ namespace CivOne.src
 
 			Assert.False(actual.CanSaveAsSve);
 			Assert.Contains("UnitsCount", actual.Reason, StringComparison.OrdinalIgnoreCase);
+		}
+
+		[Fact]
+		public void EvaluateWhenExtendedCivilizationIdsAreUsedReturnsIncompatible()
+		{
+			var testee = new SveSaveCompatibilityService();
+			var snapshot = SveSaveCompatibilitySnapshot.Builder()
+				.WithCivilizationIds([1, 2, 16])
+				.FromYamlSource(false)
+				.WithPlayerCount(8)
+				.WithMapSize(80, 50)
+				.WithCityCount(1)
+				.WithReplayDataLengthBytes(0)
+				.WithInvalidTradeCityReferences(false)
+				.WithInvalidUnitHomeCityReferences(false)
+				.WithOutOfBoundsCityCoordinates(false)
+				.WithOutOfBoundsUnitCoordinates(false)
+				.WithOutOfBoundsUnitGotoCoordinates(false)
+				.WithTradeCityCountsPerCity([0])
+				.WithCityOwners([0])
+				.WithUnitOwners([0])
+				.WithUnitsCount(1)
+				.WithFortifiedUnitCountsPerCity([0])
+				.WithFortifiedUnitsCount(0)
+				.Build();
+
+			var actual = testee.Evaluate(snapshot);
+
+			Assert.False(actual.CanSaveAsSve);
+			Assert.Contains("Extended civilization", actual.Reason, StringComparison.OrdinalIgnoreCase);
 		}
 	}
 }

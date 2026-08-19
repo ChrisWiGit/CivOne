@@ -1,111 +1,90 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.Linq;
 using CivOne.Graphics;
-using CivOne.Graphics.Sprites;
-using CivOne.UserInterface;
 
 namespace CivOne.Screens.Debug
 {
-	internal class CivSelectMenuDelegate : BaseInstance
+	/// <summary>
+	/// Player selection dialog for the debug screens.
+	/// </summary>
+	/// <remarks>
+	/// Built on <see cref="GridMenuDelegate"/>, so the players are laid out in up to four columns and
+	/// paged when they still do not fit.
+	/// A single-column menu would grow past the bottom of the canvas once a game has more than about
+	/// eight players, hiding the remaining ones.
+	///
+	/// The host screen owns the input: forward <see cref="GridMenuDelegate.KeyDown"/> and
+	/// <see cref="GridMenuDelegate.MouseDown"/>, and call <see cref="Draw(IBitmap, int)"/> while drawing.
+	/// </remarks>
+	internal class CivSelectMenuDelegate : GridMenuDelegate
 	{
 		private const int MinDialogWidth = 136;
 
-		private readonly int _menuWidth;
-		private readonly int _menuHeight;
-		private readonly string _title;
-		private readonly Menu _menu;
+		private readonly Player[] _players;
 
+		/// <summary>
+		/// Raised when the user confirms a player.
+		/// </summary>
 		public event Action<Player>? PlayerSelected;
-		public event EventHandler? Cancelled;
 
-		public Menu Menu => _menu;
+		/// <summary>
+		/// Title drawn in the header row of the dialog.
+		/// </summary>
+		public string Title { get; }
 
-		public void DrawDialog(IBitmap target, int offsetX, int offsetY)
+		private static string[] GetLabels(Player[] players, Func<Player, string>? labelSelector)
 		{
-			int xx = offsetX + ((320 - _menuWidth) / 2);
-			int yy = offsetY + ((200 - _menuHeight) / 2);
-
-			Picture menuGfx = new(_menuWidth, _menuHeight);
-			menuGfx
-				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D();
-
-			target.Clear();
-			target.FillRectangle(xx - 1, yy - 1, _menuWidth + 2, _menuHeight + 2, 5)
-				.AddLayer(menuGfx, xx, yy, dispose: true)
-				.DrawText(_title, 0, 15, xx + 8, yy + 3);
-
-			_menu.X = xx + 2;
-			_menu.Y = yy + 11;
+			ArgumentNullException.ThrowIfNull(players);
+			Func<Player, string> selector = labelSelector ?? (player => player.TribeNamePlural);
+			return [.. players.Select(selector)];
 		}
 
-		private void OnAccept(object? _, EventArgs args)
-		{
-			var player = Game.GetPlayer((byte)_menu.ActiveItem);
-			if (player == null) return;
+		private static int GetDefaultIndex(Player[] players) => Array.FindIndex(players, player => player.IsHuman);
 
-			PlayerSelected?.Invoke(player);
+		/// <summary>
+		/// Creates a selection dialog for the given players.
+		/// </summary>
+		/// <param name="players">Players to offer, in display order.</param>
+		/// <param name="title">Dialog title, already translated by the caller.</param>
+		/// <param name="labelSelector">Optional label builder; defaults to the plural tribe name.</param>
+		public CivSelectMenuDelegate(Player[] players, string title, Func<Player, string>? labelSelector = null)
+			: base(
+				GetLabels(players, labelSelector),
+				SelectionMode.Select,
+				fontId: 0,
+				defaultSelectedIndex: GetDefaultIndex(players),
+				enableHotkeys: true,
+				minDialogWidth: MinDialogWidth)
+		{
+			_players = players;
+			Title = title;
+			ItemSelected += OnItemSelected;
 		}
 
-		private void OnMenuCancel(object? _, EventArgs args)
+		/// <summary>
+		/// Creates a selection dialog for every player of the running game.
+		/// </summary>
+		/// <param name="title">Dialog title, already translated by the caller.</param>
+		public CivSelectMenuDelegate(string title)
+			: this([.. Game.Players], title)
 		{
-			Cancelled?.Invoke(this, EventArgs.Empty);
 		}
 
-		private Menu CreateMenu(Palette palette)
+		/// <summary>
+		/// Draws the dialog using <see cref="Title"/>.
+		/// </summary>
+		/// <param name="target">Drawing target, typically the host screen.</param>
+		/// <param name="canvasHeight">Runtime canvas height, used to decide how many rows fit.</param>
+		public void Draw(IBitmap target, int canvasHeight) => Draw(target, Title, canvasHeight);
+
+		private void OnItemSelected(int index)
 		{
-			Picture menuGfx = new(_menuWidth, _menuHeight);
-			menuGfx
-				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D();
-
-			IBitmap menuBackground = menuGfx[2, 11, _menuWidth - 4, _menuHeight - 11].ColourReplace((7, 11), (22, 3));
-
-			Menu menu = new(palette, menuBackground)
+			if (index < 0 || index >= _players.Length)
 			{
-				X = 0,
-				Y = 0,
-				MenuWidth = _menuWidth - 4,
-				ActiveColour = 11,
-				TextColour = 5,
-				DisabledColour = 3,
-				FontId = 0,
-				Indent = 8
-			};
+				return;
+			}
 
-			foreach (Player player in Game.Players)
-				menu.Items.Add(player.TribeNamePlural).OnSelect(OnAccept);
-
-			menu.Cancel += OnMenuCancel;
-			menu.MissClick += OnMenuCancel;
-			menu.ActiveItem = Game.PlayerNumber(Human);
-			return menu;
-		}
-
-		// max length player oder title
-		private static int CalculateMenuWidth(string title)
-		{
-			const int padding = 16;
-			int maxTextWidth = Game.Players.Max(p => Resources.GetTextSize(0, p.TribeNamePlural).Width);
-			int titleWidth = Resources.GetTextSize(0, title).Width;
-			return Math.Max(maxTextWidth, titleWidth) + padding;
-		}
-
-		public CivSelectMenuDelegate(Palette palette, string title = "Select Civilization...")
-		{
-			_title = title;
-			_menuWidth = Math.Max(CalculateMenuWidth(title), MinDialogWidth);
-			_menuHeight = Resources.GetFontHeight(0) * (Game.Players.Count() + 2);
-			_menu = CreateMenu(palette);
+			PlayerSelected?.Invoke(_players[index]);
 		}
 	}
 }

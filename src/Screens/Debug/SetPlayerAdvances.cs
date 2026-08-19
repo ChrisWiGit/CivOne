@@ -14,7 +14,6 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Services;
-using CivOne.Services.Screen;
 
 namespace CivOne.Screens.Debug
 {
@@ -22,8 +21,6 @@ namespace CivOne.Screens.Debug
 	internal class SetPlayerAdvances : BaseScreen
 	{
 		private readonly AdvanceManagementService _advanceService;
-		private int OffsetX => Math.Max(0, (Width - 320) / 2);
-		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
 		private CivSelectMenuDelegate _civSelectDelegate;
 		private GridMenuDelegate? _gridDelegate;
@@ -37,7 +34,7 @@ namespace CivOne.Screens.Debug
 
 		private void DrawPlayerMenuDialog()
 		{
-			_civSelectDelegate.DrawDialog(this, OffsetX, OffsetY);
+			_civSelectDelegate.Draw(this, CanvasHeight);
 		}
 
 		private void RenderAdvancesGrid()
@@ -95,7 +92,7 @@ namespace CivOne.Screens.Debug
 
 		private CivSelectMenuDelegate CreateCivSelectDelegate()
 		{
-			var delegate_ = new CivSelectMenuDelegate(Palette, Translate("Set Player Advances..."));
+			var delegate_ = new CivSelectMenuDelegate(Translate("Set Player Advances..."));
 			delegate_.PlayerSelected += OnCivSelected;
 			delegate_.Cancelled += OnCancel;
 			return delegate_;
@@ -127,22 +124,11 @@ namespace CivOne.Screens.Debug
 		protected override bool HasUpdate(uint gameTick)
 		{
 			// Draw the appropriate dialog based on state
-			if (_selectedPlayer == null)
+			if (RefreshNeeded())
 			{
-				// State 1: Civ selection
-				if (RefreshNeeded())
+				if (_selectedPlayer == null)
 					DrawPlayerMenuDialog();
-
-				if (!_screen.HasTopScreen<Menu>())
-				{
-					AddMenu(_civSelectDelegate.Menu);
-					return false;
-				}
-			}
-			else
-			{
-				// State 2: Grid display
-				if (RefreshNeeded())
+				else
 					RenderAdvancesGrid();
 			}
 
@@ -151,7 +137,13 @@ namespace CivOne.Screens.Debug
 
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
-			if (_selectedPlayer == null) return false;
+			if (_selectedPlayer == null)
+			{
+				bool civHandled = _civSelectDelegate.KeyDown(args);
+				if (civHandled) Refresh();
+				return civHandled;
+			}
+
 			if (_gridDelegate == null) return false;
 
 			if (args.Alt && args.Key == Key.Character && (args.KeyChar == 'h' || args.KeyChar == 'H'))
@@ -164,15 +156,19 @@ namespace CivOne.Screens.Debug
 
 		public override bool MouseDown(ScreenEventArgs args)
 		{
-			if (_selectedPlayer == null || _gridDelegate == null) return false;
+			if (_selectedPlayer == null)
+			{
+				bool civHandled = _civSelectDelegate.MouseDown(args.X, args.Y);
+				if (civHandled) Refresh();
+				return civHandled;
+			}
+
+			if (_gridDelegate == null) return false;
 			return _gridDelegate.MouseDown(args.X, args.Y);
 		}
 
-		private readonly IScreenQueryService _screen;
-
 		public SetPlayerAdvances() : base(MouseCursor.Pointer)
 		{
-			_screen = ScreenServiceFactory.CreateQueryService();
 			_advanceService = new AdvanceManagementService();
 			Palette = Common.Screens.LastOrDefault()?.OriginalColours ?? Common.DefaultPalette;
 

@@ -92,7 +92,7 @@ namespace CivOne
 			bool special = TileIsSpecial(x, y);
 			int continentId = oldTile.ContinentId;
 			byte landValue = oldTile.LandValue;
-			byte visited = oldTile.Visited;
+			uint visited = oldTile.Visited;
 			bool road = oldTile.Road;
 			bool railRoad = oldTile.RailRoad;
 			bool irrigation = oldTile.Irrigation;
@@ -111,9 +111,9 @@ namespace CivOne
 			newTile.Fortress = fortress;
 			newTile.Pollution = pollution;
 			newTile.Hut = hut;
-			for (int i = 0; i < 8; i++)
+			for (int i = 0; i < Game.MaxPlayers; i++)
 			{
-				if ((visited & (1 << i)) != 0)
+				if ((visited & (1u << i)) != 0)
 				{
 					newTile.Visit((byte)i);
 				}

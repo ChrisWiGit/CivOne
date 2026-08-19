@@ -9,6 +9,12 @@ namespace CivOne.Persistence.Model
     {
         private readonly IEnumerable<ICivilization> _availableCivilizations;
 
+        /// <param name="availableCivilizations">
+        /// The civilizations a <see cref="CivilizationDto"/> can be resolved to.
+        /// Instances may be shared between players: a player that needs a name of its own (e.g. "Caesar II"
+        /// when several players share a civilization) stores it on <see cref="Player.LeaderName"/> instead of
+        /// writing it back into the civilization.
+        /// </param>
         public CivilizationDtoMapper(IEnumerable<ICivilization> availableCivilizations)
         {
             if (availableCivilizations == null || !availableCivilizations.Any())

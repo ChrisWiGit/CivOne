@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using CivOne.Enums;
 using CivOne.Services.Random;
 
 namespace CivOne.Units.TribalHuts
@@ -128,6 +129,13 @@ namespace CivOne.Units.TribalHuts
 
 		private void BarbariansEvent()
 		{
+			if (!gameInstance.BarbarianActivity.HasFlag(BarbarianActivity.Villages))
+			{
+				// Not orig Civ: Villages release no barbarians
+				Execute(CreateMetalDepositsEvent());
+				return;
+			}
+
 			// CW: original code was
 			//	if (NearestCity < 4 || !Game.Instance.GetCities().Any(c => Player == c.Owner))
 			// the second part makes no sense

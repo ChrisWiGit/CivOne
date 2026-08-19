@@ -62,6 +62,7 @@ namespace CivOne
 		private ushort _anthologyTurn;
 		private ushort _peaceTurns;
 		private ushort _playerFutureTech;
+		private bool _disableBuddyCivilizationRespawn;
 		private bool _hostileActionOccurred;
 		private bool _loadedFromYamlSaveSource;
 		private (short X, short Y) _pendingMapPositionRestore = (-1, -1);
@@ -81,6 +82,70 @@ namespace CivOne
 		public SaveMetaDataService SaveMetaDataService => _saveMetaDataService;
 
 		public int Competition => _competition;
+
+		/// <summary>
+		/// Gets or sets whether respawn should skip the classic buddy-civilization preference.
+		/// When true, respawn selects from the full replacement pool even in classic (up to 8 total players) games.
+		/// This flag is persisted in YAML/COS saves; legacy SVE saves always use buddy respawn.
+		/// </summary>
+		internal bool DisableBuddyCivilizationRespawn
+		{
+			get => _disableBuddyCivilizationRespawn;
+			set => _disableBuddyCivilizationRespawn = value;
+		}
+
+		/// <summary>
+		/// Gets or sets where barbarians may come from in this game.
+		/// A new game starts with the global setting, YAML/COS saves keep the value of the running game,
+		/// and classic SVE saves fall back to the global setting because their format has no room for it.
+		/// </summary>
+		internal BarbarianActivity BarbarianActivity { get; set; } = BarbarianActivity.VillagesAndRaids;
+
+		/// <summary>
+		/// Places a barbarian raiding party of the given kind, using the spawn position and the unit list
+		/// of the barbarian rules.
+		/// </summary>
+		/// <param name="kind">The kind of raiding party to place.</param>
+		/// <returns><see langword="true"/> when units were created.</returns>
+		internal bool SpawnBarbarians(BarbarianSpawnKind kind)
+		{
+			ITile? tile = kind switch
+			{
+				BarbarianSpawnKind.Land => Barbarian.LandSpawnPosition,
+				BarbarianSpawnKind.Sea => Barbarian.SeaSpawnPosition,
+				_ => null
+			};
+			if (tile == null)
+			{
+				return false;
+			}
+
+			IEnumerable<UnitType> unitTypes = kind == BarbarianSpawnKind.Land ? Barbarian.LandSpawnUnits : Barbarian.SeaSpawnUnits;
+			bool created = false;
+			foreach (UnitType unitType in unitTypes)
+			{
+				CreateUnit(unitType, tile.X, tile.Y, 0, false);
+				created = true;
+			}
+			return created;
+		}
+
+		private BarbarianSpawnDelegate? _barbarianSpawn;
+
+		/// <summary>
+		/// Decides whether barbarians appear in the current turn, and which kind.
+		/// </summary>
+		private BarbarianSpawnDelegate BarbarianSpawn => _barbarianSpawn ??= new(() => BarbarianActivity, _randomService);
+
+		BarbarianActivity IGameBarbarianSettings.BarbarianActivity => BarbarianActivity;
+
+		/// <summary>
+		/// The maximum number of players supported by a game (including the barbarian player at index 0).
+		/// This bounds the <see cref="Tiles.ITile.Visited"/> bitmask width and the player colour palette size.
+		/// Defined in <see cref="PlayerLimits"/>, because the API assembly needs the same value to validate
+		/// replay data but cannot reference this class.
+		/// </summary>
+		internal const int MaxPlayers = PlayerLimits.MaxPlayers;
 
 		private static string GetGameVersion()
 			=> Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown";
@@ -182,6 +247,7 @@ namespace CivOne
 			// CW: TODO simply inject service associated with Game constructor in future if necessary.
 			var service = new SveSaveCompatibilityService();
 			var snapshot = SveSaveCompatibilitySnapshot.Builder()
+				.WithCivilizationIds([.. _players.Select(player => player.Civilization.Id)])
 				.FromYamlSource(_loadedFromYamlSaveSource)
 				.WithPlayerCount(_players.Length)
 				.WithMapSize(Map.WIDTH, Map.HEIGHT)
@@ -253,11 +319,26 @@ namespace CivOne
 				return;
 			}
 
-			ICivilization destroyed = player.Civilization;
-			ICivilization destroyedBy = Game.CurrentPlayer.Civilization;
-			if (destroyedBy == destroyed) destroyedBy = Game.GetPlayer(0)!.Civilization;
+			// Use the player's index (its slot in _players), not Civilization.PreferredPlayerNumber:
+			// with civilization reuse beyond player 7, PreferredPlayerNumber no longer identifies the player slot.
+			// A player that no longer holds a slot (e.g. one that was already replaced by a respawn and fires
+			// its event a second time) must not be attributed to slot 0, which belongs to the barbarians.
+			if (!TryGetPlayerNumber(player, out byte destroyedIndex))
+			{
+				Log($"PlayerDestroyed event triggered for a player that holds no slot: {player.TribeNamePlural}");
+				return;
+			}
 
-			_replayData.Add(new ReplayData.CivilizationDestroyed(_gameTurn, destroyed.PreferredPlayerNumber, destroyedBy.PreferredPlayerNumber));
+			// A player cannot destroy itself, so that case is attributed to the barbarians. Compare the slots,
+			// not the civilizations: two players can share a civilization once there are more players than
+			// civilizations, and comparing those would blame the barbarians for a regular conquest.
+			byte destroyedByIndex = PlayerNumber(Game.CurrentPlayer);
+			if (destroyedByIndex == destroyedIndex) destroyedByIndex = 0;
+
+			ICivilization destroyed = player.Civilization;
+			ICivilization destroyedBy = GetPlayer(destroyedByIndex)!.Civilization;
+
+			_replayData.Add(new ReplayData.CivilizationDestroyed(_gameTurn, destroyedIndex, destroyedByIndex));
 
 			if (player.IsHuman)
 			{
@@ -269,10 +350,15 @@ namespace CivOne
 				player.AllowedToRespawn(GetReplayData<ReplayData.CivilizationDestroyed>()))
 			{
 				Player newPlayer = player.Respawn();
-				var index = newPlayer.Civilization.PreferredPlayerNumber;
+				byte index = destroyedIndex;
 
 				_players[index] = newPlayer;
 				_players[index].Destroyed += PlayerDestroyed;
+
+				// The replacement civilization is picked from whatever is free at this moment, so it cannot be
+				// derived from the initial seed later on. Record it, so screens can look up which civilization
+				// held this slot at any turn (see DestroyedCivilizationResolverDelegate).
+				_replayData.Add(new ReplayData.CivilizationRespawned(_gameTurn, index, (byte)newPlayer.Civilization.Id));
 
 				PlaceStartingUnits([index]);
 				// CW: Not sure, but are these new civs given technology or better units?
@@ -291,16 +377,32 @@ namespace CivOne
 		/// </summary>
 		/// <param name="player">The player for which to get the player number.</param>
 		/// <returns>The player number, or 0 if the player is not found or if null is passed.</returns>
-		internal byte PlayerNumber(Player player)
+		internal byte PlayerNumber(Player player) => TryGetPlayerNumber(player, out byte number) ? number : (byte)0;
+
+		/// <summary>
+		/// Looks up the player number (the player's slot in the game) for the given player.
+		/// Use this instead of <see cref="PlayerNumber(Player)"/> in game logic: a missing player is reported
+		/// as a failure rather than silently answered with slot 0, which belongs to the barbarians.
+		/// </summary>
+		/// <param name="player">The player to look up.</param>
+		/// <param name="number">The player number, or 0 when the player was not found.</param>
+		/// <returns><c>true</c> when the player occupies a slot in this game.</returns>
+		internal bool TryGetPlayerNumber(Player player, out byte number)
 		{
-			byte i = 0;
-			foreach (Player p in _players)
+			if (player != null)
 			{
-				if (p == player)
-					return i;
-				i++;
+				for (int i = 0; i < _players.Length; i++)
+				{
+					if (ReferenceEquals(_players[i], player))
+					{
+						number = (byte)i;
+						return true;
+					}
+				}
 			}
-			return 0;
+
+			number = 0;
+			return false;
 		}
 
 		public Player? GetPlayer(byte number)
@@ -381,30 +483,7 @@ namespace CivOne
 				foreach (City city in disasterCities)
 					city.Disaster();
 
-				if (Barbarian.IsSeaSpawnTurn)
-				{
-					// KBR 20200927 use cdonges land spawn code
-					// https://github.com/cdonges/CivOne/commit/e54fe9377030de625c51b674c0ecf29a335e0556
-					// TODO land spawning and sea spawning as separate timing / acts
-					if (_randomService.NextInt(100) > 50)
-					{
-						ITile? tile = Barbarian.LandSpawnPosition;
-						if (tile != null)
-						{
-							foreach (UnitType unitType in Barbarian.LandSpawnUnits)
-								CreateUnit(unitType, tile.X, tile.Y, 0, false);
-						}
-					}
-					else
-					{
-						ITile? tile = Barbarian.SeaSpawnPosition;
-						if (tile != null)
-						{
-							foreach (UnitType unitType in Barbarian.SeaSpawnUnits)
-								CreateUnit(unitType, tile.X, tile.Y, 0, false);
-						}
-					}
-				}
+				SpawnBarbarians(BarbarianSpawn.GetSpawnKind());
 			}
 
 			if (!_players.Any(x => Game.PlayerNumber(x) != 0 && x != Human && !x.HandleExtinction()))

@@ -9,13 +9,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using CivOne.Advances;
 using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.Persistence.Model;
-using CivOne.Services;
 using CivOne.Services.GlobalWarming;
 using CivOne.Services.Random;
 using CivOne.Services.StartPositions;
@@ -87,7 +85,7 @@ namespace CivOne
 		// but it also shouldn't create a new service on every access.
 		private IStartPositionService? _startPositionService;
 		private IStartPositionService StartPositionService => _startPositionService ??= StartPositionServiceFactory.Create();
-		
+
 		/// <summary>
 		/// Finds and places starting Settlers for a batch of players in a single call, so algorithms that need to
 		/// know the total number of players up front (e.g. dividing the map into equally sized areas) can do so.
@@ -150,10 +148,12 @@ namespace CivOne
 				_unplacedCivilizations.Add(_players[player].Civilization);
 				_players[player].HandleExtinction(invokeDestroyedEvent: false);
 
-				// Attributed to the Barbarians (civilization 0): nobody actually defeated this
-				// civilization, the map simply had no room for it.
-				_replayData.Add(new ReplayData.CivilizationDestroyed(
-					_gameTurn, _players[player].Civilization.PreferredPlayerNumber, 0));
+				// The player slot index, not Civilization.PreferredPlayerNumber: with civilization reuse beyond
+				// player 7 the latter no longer identifies the slot, and every reader of DestroyedId
+				// (Player.AllowedToRespawn, Conquest) expects the slot index.
+				// Attributed to the Barbarians (player 0): nobody actually defeated this civilization,
+				// the map simply had no room for it.
+				_replayData.Add(new ReplayData.CivilizationDestroyed(_gameTurn, player, 0));
 			}
 		}
 
@@ -296,8 +296,45 @@ namespace CivOne
 			}
 		}
 
+		/// <summary>
+		/// The smallest number of non-barbarian player slots a new game can be created with:
+		/// the human player plus at least one opponent.
+		/// A game without an opponent would satisfy the "conquered the entire planet" condition on the very
+		/// first end of turn, which queues the conquest screen over the map before the player can move.
+		/// </summary>
+		internal const int MinCompetition = 2;
+
+		/// <summary>
+		/// The largest number of non-barbarian player slots a new game can be created with.
+		/// Slot 0 belongs to the barbarians, so this is one less than the number of player slots.
+		/// </summary>
+		internal const int MaxCompetition = MaxPlayers - 1;
+
+		/// <summary>
+		/// Validates the number of non-barbarian player slots (human player plus AI opponents) a new game
+		/// is created with.
+		/// The New Game menu asks for the number of opponents and adds the human player itself, so a value
+		/// arriving here is always "opponents + 1".
+		/// </summary>
+		/// <param name="competition">The number of non-barbarian player slots.</param>
+		/// <exception cref="ArgumentOutOfRangeException">
+		/// The value is below <see cref="MinCompetition"/> or above <see cref="MaxCompetition"/>.
+		/// </exception>
+		private static void ValidateCompetition(int competition)
+		{
+			if (competition < MinCompetition || competition > MaxCompetition)
+			{
+				BaseInstance.Log("ERROR: Invalid competition {0}. Expected {1}-{2} non-barbarian players (human player plus {3}-{4} opponents).",
+					competition, MinCompetition, MaxCompetition, MinCompetition - 1, MaxCompetition - 1);
+				throw new ArgumentOutOfRangeException(nameof(competition),
+					$"Competition must be between {MinCompetition} and {MaxCompetition} (human player plus opponents).");
+			}
+		}
+
 		public static void CreateGame(int difficulty, int competition, ICivilization tribe, string? leaderName = null, string? tribeName = null, string? tribeNamePlural = null, bool replaceExisting = false)
 		{
+			ValidateCompetition(competition);
+
 			if (!Map.Ready)
 			{
 				BaseInstance.Log("ERROR: Game creation requested before map generation finished");
@@ -344,6 +381,29 @@ namespace CivOne
 			);
 		}
 
+		private static byte ResolveHumanPlayerIndex(int competition, ICivilization tribe)
+		{
+			ArgumentNullException.ThrowIfNull(tribe);
+
+			ValidateCompetition(competition);
+
+			if (tribe.PreferredPlayerNumber == 0)
+			{
+				// Slot 0 is the barbarian slot: it gets no starting units and never ends its turn like a
+				// regular player, so a human player placed there could never move.
+				throw new ArgumentException("The chosen civilization has no player slot of its own (it is the barbarian civilization).", nameof(tribe));
+			}
+
+			if (tribe.PreferredPlayerNumber <= competition)
+			{
+				return tribe.PreferredPlayerNumber;
+			}
+
+			// For low player counts where the chosen civilization's preferred slot is not present,
+			// place the human in the highest available non-barbarian slot.
+			return (byte)competition;
+		}
+
 		private Game(int difficulty, int competition, ICivilization tribe, string? leaderName, string? playerTribeName, string? playerTribeNamePlural) : this(CreateValueSanitizer())
 		{
 			if (RuntimeHandler.Runtime.Settings.InitialSeed != 0)
@@ -372,21 +432,30 @@ namespace CivOne
 			EnemyMoves = Settings.EnemyMoves != GameOption.Off;
 			CivilopediaText = Settings.CivilopediaText != GameOption.Off;
 			Palace = Settings.Palace != GameOption.Off;
+			BarbarianActivity = Settings.BarbarianActivity;
 
 			_cities = [];
 			_units = [];
 
 			Player.Game = this;
 			_players = new Player[competition + 1];
+			byte humanPlayerIndex = ResolveHumanPlayerIndex(competition, tribe);
+			// competition counts the non-barbarian players, so the human player is one of them and the
+			// remaining slots are the AI opponents. Slot 0 is the barbarian player and is not counted.
+			Log("Player setup: {0} civilizations (1 human player + {1} opponents), plus barbarians. Human player slot: {2}",
+				competition, competition - 1, humanPlayerIndex);
 
-			Random startRandom = new(Common.Random!.InitialSeed);
+			CivilizationAssignment assignment = CivilizationAssignment.Create(Common.Random!.InitialSeed, competition, humanPlayerIndex, tribe);
+			CivilizationNameDelegate civilizationNames = new();
+			Dictionary<int, int> civIdOccurrences = [];
 
 			for (int i = 0; i <= competition; i++)
 			{
-				if (i == tribe.PreferredPlayerNumber)
+				if (i == humanPlayerIndex)
 				{
 					_players[i] = new Player(tribe, leaderName, playerTribeName, playerTribeNamePlural);
 					ApplyMapStartPositionFromMapFile(_players[i]);
+					civIdOccurrences[tribe.Id] = 1;
 					_players[i].Destroyed += PlayerDestroyed;
 					HumanPlayer = _players[i];
 					HumanPlayer.TaxesRate = Settings.TaxRate; // fire-eggs 20190725
@@ -398,10 +467,23 @@ namespace CivOne
 					Log("- Player {0} is {1} of the {2} (human)", i, _players[i].LeaderName, _players[i].TribeNamePlural);
 					continue;
 				}
-				ICivilization[] civs = Common.Civilizations.Where(civ => civ.PreferredPlayerNumber == i).ToArray();
-				int r = startRandom.Next(civs.Length);
-				_players[i] = new Player(civs[r], customTribeName: null);
-				ApplyMapStartPositionFromMapFile(_players[i]);
+
+				ICivilization civ = assignment[i];
+				int occurrence = civIdOccurrences.TryGetValue(civ.Id, out int count) ? count : 0;
+				civIdOccurrences[civ.Id] = occurrence + 1;
+
+				// When a civilization is reused (more non-barbarian players than the 14 available civilizations),
+				// disambiguate the leader/tribe names of the repeat occurrences instead of showing duplicates.
+				CivilizationNames names = civilizationNames.Build(civ, occurrence);
+
+				_players[i] = new Player(civ, names.LeaderName, names.TribeName, names.TribeNamePlural);
+				if (occurrence == 0)
+				{
+					// Only the first player assigned a given civilization claims its fixed start position;
+					// later reuses fall back to normal scored/random placement in AddStartingUnits to avoid
+					// two players colliding on the same starting tile.
+					ApplyMapStartPositionFromMapFile(_players[i]);
+				}
 				if (i != 0)
 				{
 					// fire-eggs 20190730 never show "barbarian civilization destroyed"
@@ -410,7 +492,13 @@ namespace CivOne
 				Log("- Player {0} is {1} of the {2}", i, _players[i].LeaderName, _players[i].TribeNamePlural);
 			}
 
-			Debug.Assert(HumanPlayer != null, "NewGame invariant violated: HumanPlayer must be initialized during player setup.");
+			// Checked rather than asserted: a Debug.Assert is removed in release builds, and a game without a
+			// human player looks like a running game while accepting no input at all.
+			if (HumanPlayer == null || PlayerNumber(HumanPlayer) != humanPlayerIndex || humanPlayerIndex == 0)
+			{
+				throw new InvalidOperationException($"New game invariant violated: the human player must hold a non-barbarian slot (expected slot {humanPlayerIndex}).");
+			}
+
 			if (string.IsNullOrWhiteSpace(SaveMetaData.DisplayName))
 			{
 				SaveMetaData.DisplayName = _saveMetaDataService.BuildDisplayName(difficulty, HumanPlayer, 0);
@@ -418,6 +506,14 @@ namespace CivOne
 
 			Log("Adding starting units...");
 			PlaceStartingUnits([.. Enumerable.Range(1, competition).Select(i => (byte)i)]);
+
+			// Without a unit the human player has nothing to activate, so the map would come up with no
+			// blinking unit and no way to end the turn. PlaceStartingUnits already logs why a slot stayed
+			// empty; this makes the consequence for the human player explicit.
+			if (!_units.Any(unit => unit.Owner == humanPlayerIndex))
+			{
+				Log("ERROR: The human player (slot {0}) has no starting unit. The map has no usable start position left.", humanPlayerIndex);
+			}
 
 			Log("Calculate players handicap...");
 			for (byte i = 1; i <= competition; i++)

@@ -67,6 +67,7 @@ namespace CivOne
 		private bool _debugMenu;
 		private bool _terrainEditorMenu;
 		private bool _deityEnabled;
+		private BarbarianActivity _barbarianActivity = BarbarianActivity.VillagesAndRaids;
 		private bool _arrowHelper;
 		private bool _pathFinding;
 		private bool _computerPlayerPathFinding = true;
@@ -346,6 +347,22 @@ namespace CivOne
 			{
 				_deityEnabled = value;
 				SetSetting("DeityEnabled", _deityEnabled ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets where barbarians may come from in new games.
+		/// A running game keeps its own value, this is the setting new games start with and the fallback
+		/// for savegames that cannot store the value themselves (classic SVE format).
+		/// </summary>
+		internal BarbarianActivity BarbarianActivity
+		{
+			get => _barbarianActivity;
+			set
+			{
+				_barbarianActivity = value;
+				SetSetting("BarbarianActivity", ((int)_barbarianActivity).ToString(CultureInfo.InvariantCulture));
 				Common.ReloadSettings = true;
 			}
 		}
@@ -815,6 +832,12 @@ namespace CivOne
 			GetSetting("DebugMenu", ref _debugMenu);
 			GetSetting("TerrainEditorMenu", ref _terrainEditorMenu);
 			GetSetting("DeityEnabled", ref _deityEnabled);
+			int barbarianActivity = (int)_barbarianActivity;
+			if (GetSetting("BarbarianActivity", ref barbarianActivity, (int)BarbarianActivity.None, (int)BarbarianActivity.VillagesAndRaids))
+			{
+				// Read as a number, because the value is a flag combination that Enum.IsDefined rejects.
+				_barbarianActivity = (BarbarianActivity)barbarianActivity;
+			}
 			GetSetting("ArrowHelper", ref _arrowHelper);
 			GetSetting("PathFindingAlgorithm", ref _pathFinding);
 			GetSetting("ComputerPlayerPathFindingAlgorithm", ref _computerPlayerPathFinding);

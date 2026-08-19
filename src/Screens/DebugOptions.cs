@@ -99,6 +99,36 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		/// <summary>
+		/// Spawns a barbarian raiding party right away, using the spawn rules of the game: the kind is
+		/// drawn like on a spawn turn, and position and units come from the barbarian rules.
+		/// The barbarian setting of the running game is ignored on purpose, so the entry always produces
+		/// something to look at.
+		/// </summary>
+		private void MenuSpawnBarbarians(object? _, EventArgs args)
+		{
+			BarbarianSpawnDelegate spawnDelegate = new(() => BarbarianActivity.VillagesAndRaids, isSpawnTurn: () => true);
+			BarbarianSpawnKind kind = spawnDelegate.GetSpawnKind();
+			bool spawned = Game.SpawnBarbarians(kind);
+
+			Common.GamePlay?.RefreshMap();
+			Destroy();
+
+			if (!spawned)
+			{
+				GameTask.Enqueue(Message.General(Translate("No suitable tile for a barbarian raiding party was found.")));
+				return;
+			}
+
+			if (kind == BarbarianSpawnKind.Land)
+			{
+				GameTask.Enqueue(Message.General(Translate("A barbarian raiding party appeared inland.")));
+				return;
+			}
+
+			GameTask.Enqueue(Message.General(Translate("A barbarian raiding party arrived by sea.")));
+		}
+
 		private void MenuMeetWithKing(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<MeetWithKing>());
@@ -125,7 +155,7 @@ namespace CivOne.Screens
 
 		private void MenuBuildPalace(object? _, EventArgs args)
 		{
-			GameTask.Enqueue(Show.BuildPalace(keepOpenUntilEscape: true));
+			GameTask.Enqueue(Show.Screen<DebugBuildPalace>());
 			Destroy();
 		}
 
@@ -141,11 +171,18 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
+		private void MenuShowPlayerSlots(object? _, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen<PlayerSlotsScreen>());
+			Destroy();
+		}
+
 		private void InstantConquest(object? _, EventArgs args)
 		{
 			Game.Players.ToList().ForEach(p =>
 			{
-				if (p.IsHuman || p.Civilization.Id == 0) return;
+				// PreferredPlayerNumber 0 identifies the barbarians, whose Id is 15 rather than 0.
+				if (p.IsHuman || p.Civilization.PreferredPlayerNumber == 0) return;
 
 				Game.GetUnits().Where(u => u.Player == p).ToList().ForEach(u =>
 				{
@@ -332,7 +369,8 @@ namespace CivOne.Screens
 
 		private void MenuRunSelectAdvanceAfterCityCapture(object? _, EventArgs args)
 		{
-			var enemy = Game.Players.FirstOrDefault(p => p != Human && p.Civilization.Id != 0);
+			// PreferredPlayerNumber 0 identifies the barbarians, whose Id is 15 rather than 0.
+			var enemy = Game.Players.FirstOrDefault(p => p != Human && p.Civilization.PreferredPlayerNumber != 0);
 			if (enemy == null)
 			{
 				GameTask.Enqueue(Message.General(Translate("No enemy player available for advance capture test.")));
@@ -557,6 +595,7 @@ namespace CivOne.Screens
 				new(Translate("Test Dialog: Discovery"), () => MenuRunDiscovery(null, EventArgs.Empty)),
 				new(Translate("Change Human Player"), () => MenuChangeHumanPlayer(null, EventArgs.Empty)),
 				new(Translate("Spawn Unit"), () => MenuSpawnUnit(null, EventArgs.Empty)),
+				new(Translate("Spawn Barbarians"), () => MenuSpawnBarbarians(null, EventArgs.Empty)),
 				new(Translate("Meet With King"), () => MenuMeetWithKing(null, EventArgs.Empty)),
 				new(Translate("Toggle Reveal World"), () => MenuRevealWorld(null, EventArgs.Empty)),
 				new(Translate("Export Map Image..."), () => MenuExportMapImage(null, EventArgs.Empty)),
@@ -569,6 +608,7 @@ namespace CivOne.Screens
 				new(Translate("Instant Conquest"), () => InstantConquest(null, EventArgs.Empty)),
 				new(Translate("Instant Global Warming"), () => InstantGlobalWarming(null, EventArgs.Empty)),
 				new(Translate("Palette Viewer"), () => MenuPaletteViewer(null, EventArgs.Empty)),
+				new(Translate("Show Player Slots"), () => MenuShowPlayerSlots(null, EventArgs.Empty)),
 				new(Translate("Settings"), () => ShowSettings(null, EventArgs.Empty)),
 				new(Translate("End Game: Conquest"),  () => EndGameConquest(null, EventArgs.Empty)),
 				new(Translate("End Game: Defeat"), () => EndGameDefeat(null, EventArgs.Empty)),

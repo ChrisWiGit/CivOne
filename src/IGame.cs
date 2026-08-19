@@ -8,8 +8,19 @@ namespace CivOne
 	public interface IGame :
 		IGameUnitsCommand, IGameUnitsQuery,
 		IGameWonderQuery, IGamePlayerQuery,
-		IGameTurnQuery, IGameSettings
+		IGameTurnQuery, IGameSettings, IGameBarbarianSettings
 	{
+	}
+
+	/// <summary>
+	/// Tells consumers where barbarians may come from in the running game.
+	/// </summary>
+	public interface IGameBarbarianSettings
+	{
+		/// <summary>
+		/// Gets the barbarian sources active in this game.
+		/// </summary>
+		BarbarianActivity BarbarianActivity { get; }
 	}
 
 	public interface IGameTurnQuery

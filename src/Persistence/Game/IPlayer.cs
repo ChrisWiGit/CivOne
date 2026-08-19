@@ -20,6 +20,7 @@ namespace CivOne.Persistence.Game
 	{
 		ICivilization Civilization { get; }
 		Guid PlayerGuid { get; }
+		string LeaderName { get; }
 		string TribeName { get; }
 		string TribeNamePlural { get; }
 		bool[,] Explored { get; }

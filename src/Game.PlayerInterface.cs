@@ -15,6 +15,7 @@ namespace CivOne
 	{
 		// Explicit implementations for members that are internal in Game.
 		bool IPlayerGame.Started => Game.Started;
+		bool IPlayerGame.DisableBuddyCivilizationRespawn => DisableBuddyCivilizationRespawn;
 		Player IPlayerGame.HumanPlayer => HumanPlayer;
 		Player IPlayerGame.CurrentPlayer => CurrentPlayer;
 		IEnumerable<Player> IPlayerGame.Players => Players;
