@@ -21,6 +21,14 @@ namespace CivOne.Persistence.Game
 	public interface IPlayerRestorable : IPlayer
 	{
 		new string TribeName { get; set; }
+
+		/// <summary>
+		/// The leader name of the player.
+		/// Settable so a disambiguated name ("Caesar II") survives a save/load round trip without the
+		/// shared <see cref="ICivilization"/> instance having to carry it.
+		/// </summary>
+		new string LeaderName { get; set; }
+
 		new Guid PlayerGuid { get; set; }
 		new Guid? AiId { get; set; }
 		new string TribeNamePlural { get; set; }

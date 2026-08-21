@@ -149,6 +149,7 @@ namespace CivOne.UnitTests
 			public string SavesDirectory { get; } = savesDirectory;
 			public string CosSavesDirectory { get; } = cosSavesDirectory;
 			public string MapsDirectory => Path.Combine(_storageDirectory, "maps");
+			public string PicturesDirectory => Path.Combine(_storageDirectory, "pictures");
 
 			public string StorageDirectory => _storageDirectory;
 

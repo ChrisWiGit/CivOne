@@ -58,6 +58,7 @@ namespace CivOne.Screens
 		internal int Y => _gameMap.Y;
 		internal int VisibleTilesX => _gameMap.VisibleTilesX;
 		internal int VisibleTilesY => _gameMap.VisibleTilesY;
+		internal int TilePixelSize => _gameMap.TilePixelSize;
 		internal bool IsMapViewEnabled => _gameMap.MapViewEnabled;
 		internal bool IsTerrainEditorEnabled => _gameMap.IsTerrainEditorEnabled;
 		internal bool IsTerrainEditorSpawnMode => _gameMap.EditorState.CurrentMode == EditorMode.SpawnUnit;
@@ -133,6 +134,8 @@ namespace CivOne.Screens
 			=> _terrainEditorDelegate.OnUnitSpawnMenuAction(sender, args);
 
 		internal void CenterOnPoint(int x, int y) => _gameMap.CenterOnPoint(x, y);
+
+		internal void SetViewOrigin(int x, int y) => _gameMap.SetViewOrigin(x, y);
 
 		internal void RefreshMap() => _gameMap.ForceRefresh();
 
@@ -731,7 +734,8 @@ namespace CivOne.Screens
 			_gameMap = new GameMap();
 			_translationService = TranslationServiceFactory.GetCurrent();
 			GamePlaySaveMapDelegate saveMapDelegate = new(_translationService, Settings, Runtime, MapSaveServiceFactory.Create(), new GameTaskCommandQueueAdapter(), new MessageServiceAdapter(), new DirectoryService());
-			_terrainEditorDelegate = new(this, _translationService, Game, Common.Civilizations, saveMapDelegate);
+			GamePlayExportMapImageDelegate exportMapImageDelegate = MapImageExportDelegateFactory.Create(_translationService);
+			_terrainEditorDelegate = new(this, _translationService, Game, Common.Civilizations, saveMapDelegate, exportMapImageDelegate);
 			_gameMap.MapPositionSaved += GameMapMapPositionSaved;
 
 			if (!TryRestoreLastLoadedMapPosition())

@@ -11,7 +11,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne.Enums
 {
-	[SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32", Justification = "The enum values are all between 0 and 15, so a byte is sufficient and more memory-efficient than an int.")]
+	[SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32", Justification = "The enum values are all between 0 and 31, so a byte is sufficient and more memory-efficient than an int.")]
 	public enum Leader : byte
 	{
 		Atilla,
@@ -28,6 +28,23 @@ namespace CivOne.Enums
 		Montezuma,
 		Mao,
 		Elizabeth,
-		Genghis
+		Genghis,
+		Tokugawa,
+		Darius,
+		Suleiman,
+		Isabella,
+		Henrique,
+		Harald,
+		Sejong,
+		Pacal,
+		Pachacuti,
+		Hannibal,
+		Justinian,
+		Harun,
+		MansaMusa,
+		Selassie,
+		Casimir,
+		Corvinus,
+		PedroII
 	}
 }

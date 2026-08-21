@@ -18,6 +18,108 @@ namespace CivOne.UnitTests
 
 		[Theory]
 		[MemberData(nameof(ImplementationModes))]
+		public void GetPathWhenAlreadyAtGoalReturnsEmpty(bool useNewImpl)
+		{
+			// Arrange
+			var (map, _) = MakeLandMap(10, 10);
+			var unit = MakeUnit(5, 5, 9, 9);
+			var _testee = CreateTestee(map, useNewImpl);
+
+			// Act
+			ITile[] actual = _testee.GetPath(unit, new Point(5, 5));
+
+			// Assert
+			Assert.Empty(actual);
+		}
+
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
+		public void GetPathReturnsStepsExcludingStartAndIncludingDestination(bool useNewImpl)
+		{
+			// Arrange
+			var (map, _) = MakeLandMap(10, 10);
+			var unit = MakeUnit(0, 5, 9, 9);
+			var _testee = CreateTestee(map, useNewImpl);
+
+			// Act
+			ITile[] actual = _testee.GetPath(unit, new Point(2, 5));
+
+			// Assert
+			Assert.NotEmpty(actual);
+			Assert.False(actual[0].X == unit.X && actual[0].Y == unit.Y, "start tile must not be part of path");
+			ITile destinationTile = actual[^1];
+			Assert.Equal(2, destinationTile.X);
+			Assert.Equal(5, destinationTile.Y);
+		}
+
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
+		public void GetPathWhenUnreachableReturnsEmpty(bool useNewImpl)
+		{
+			// Arrange
+			var (map, tiles) = MakeLandMap(3, 3);
+			for (int x = 0; x < 3; x++)
+			{
+				for (int y = 0; y < 3; y++)
+				{
+					if (x != 0 || y != 0)
+					{
+						tiles[x, y].IsOcean = true;
+						tiles[x, y].Type = Terrain.Ocean;
+					}
+				}
+			}
+
+			var unit = MakeUnit(0, 0, 9, 9, UnitClass.Land);
+			var _testee = CreateTestee(map, useNewImpl);
+
+			// Act
+			ITile[] actual = _testee.GetPath(unit, new Point(2, 2));
+
+			// Assert
+			Assert.Empty(actual);
+		}
+
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
+		public void GetPathDestinationZeroZeroIsHandledAsRealCoordinate(bool useNewImpl)
+		{
+			// Arrange
+			var (map, _) = MakeLandMap(10, 10);
+			var unit = MakeUnit(1, 0, 9, 9);
+			var _testee = CreateTestee(map, useNewImpl);
+
+			// Act
+			ITile[] actual = _testee.GetPath(unit, new Point(0, 0));
+
+			// Assert
+			Assert.NotEmpty(actual);
+			ITile destinationTile = actual[^1];
+			Assert.Equal(0, destinationTile.X);
+			Assert.Equal(0, destinationTile.Y);
+		}
+
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
+		public void GetPathWithNegativeDestinationXWrapsToMapWidth(bool useNewImpl)
+		{
+			// Arrange
+			var (map, _) = MakeLandMap(10, 10);
+			var unit = MakeUnit(1, 5, 9, 9);
+			var _testee = CreateTestee(map, useNewImpl);
+
+			// Act
+			ITile[] actual = _testee.GetPath(unit, new Point(-1, 5));
+
+			// Assert
+			Assert.NotEmpty(actual);
+			ITile destinationTile = actual[^1];
+			Assert.Equal(9, destinationTile.X);
+			Assert.Equal(5, destinationTile.Y);
+		}
+
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
 		public void GotoStepWhenAlreadyAtGoalReturnsNull(bool useNewImpl)
 		{
 			// Arrange
@@ -27,6 +129,23 @@ namespace CivOne.UnitTests
 
 			// Act
 			ITile? actual = testee.GotoStep(unit);
+
+			// Assert
+			Assert.Null(actual);
+		}
+
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
+		public void GotoStepWhenNoGotoDestinationReturnsNull(bool useNewImpl)
+		{
+			// Arrange
+			var (map, _) = MakeLandMap(10, 10);
+			var unit = MakeUnit(5, 5, 0, 0);
+			unit.ClearGotoDestination();
+			var _testee = CreateTestee(map, useNewImpl);
+
+			// Act
+			ITile? actual = _testee.GotoStep(unit);
 
 			// Assert
 			Assert.Null(actual);
@@ -245,6 +364,33 @@ namespace CivOne.UnitTests
 			Assert.Equal(0, actual.X);
 		}
 
+		[Theory]
+		[MemberData(nameof(ImplementationModes))]
+		public void GotoStepWithNegativeDestinationXWrapsToMapWidth(bool useNewImpl)
+		{
+			// Arrange
+			// Unit at x=1, goal at x=-1 (wrapped x=9). Ocean wall x=2..8 forces left wrap via x=0.
+			var (map, tiles) = MakeLandMap(10, 5);
+			for (int x = 2; x <= 8; x++)
+			{
+				for (int y = 0; y < 5; y++)
+				{
+					tiles[x, y].IsOcean = true;
+					tiles[x, y].Type = Terrain.Ocean;
+				}
+			}
+
+			var unit = MakeUnit(1, 2, -1, 2, UnitClass.Land);
+			var testee = CreateTestee(map, useNewImpl);
+
+			// Act
+			ITile? actual = testee.GotoStep(unit);
+
+			// Assert
+			Assert.NotNull(actual);
+			Assert.Equal(0, actual.X);
+		}
+
 
 		[Fact]
 		public void GotoStepWithRiverFastMovementPrefersRiverOverPlainTerrain()
@@ -356,7 +502,7 @@ namespace CivOne.UnitTests
 			public byte FortressCost { get; set; }
 			public bool Mine { get; set; }
 			public bool Hut { get; set; }
-			public byte Visited => 0;
+			public uint Visited => 0;
 			public void Visit(byte owner) { }
 
 			public Picture DrawPage(byte pageNumber)

@@ -131,6 +131,14 @@ namespace CivOne.Tasks
 
 		public static Show BuildPalace(bool keepOpenUntilEscape = false) => new(new PalaceView(true, PalaceSpriteProviderFactory.GetInstance(), keepOpenUntilEscape));
 
+		/// <summary>
+		/// Opens the palace builder for a specific palace instead of the human player's one.
+		/// </summary>
+		/// <param name="palace">Palace to edit.</param>
+		/// <param name="keepOpenUntilEscape">Keeps the builder open until Escape is pressed (debug mode).</param>
+		/// <returns>The task showing the palace builder.</returns>
+		public static Show BuildPalace(PalaceData palace, bool keepOpenUntilEscape = false) => new(new PalaceView(true, PalaceSpriteProviderFactory.GetInstance(), keepOpenUntilEscape, palace));
+
 		public static Show BuildSpaceShip() => new(new SpaceShipView(Human));
 
 		public static Show SpaceShipWithInstall(SpaceShipComponentType partType) => new(new SpaceShipView(Human, pendingInstall: partType));

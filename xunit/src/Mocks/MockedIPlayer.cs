@@ -20,6 +20,7 @@ namespace CivOne.UnitTests
 			PlayerGuid = Guid.NewGuid();
 			AiId = null;
 			AiDifficulty = AiDifficulty.Unspecified;
+			LeaderName = "Mock Leader";
 			TribeName = "Mock Tribe";
 			TribeNamePlural = "Mock Tribes";
 			Handicap = 0;
@@ -66,6 +67,8 @@ namespace CivOne.UnitTests
 		public Guid? AiId { get; set; }
 
 		public AiDifficulty AiDifficulty { get; set; }
+
+		public string LeaderName { get; set; }
 
 		public string TribeName { get; set; }
 

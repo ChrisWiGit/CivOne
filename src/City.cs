@@ -853,7 +853,13 @@ namespace CivOne
 			UpdateSpecialists();
 		}
 
-		public Player CityOwnerPlayer => Game.Instance.GetPlayer(CityOwnerPlayerIndex)!;
+		/// <summary>
+		/// The player owning this city.
+		/// Resolved through <see cref="Player.Game"/> rather than the <see cref="Game"/> singleton:
+		/// while a save file is being hydrated, the singleton still points at the previously loaded
+		/// game, whose player array can be shorter than the one of the incoming save.
+		/// </summary>
+		public Player CityOwnerPlayer => (Player.Game ?? Game.Instance).GetPlayer(CityOwnerPlayerIndex)!;
 		public IPlayer PlayerIntf => CityOwnerPlayer;
 
 		/// <summary>
@@ -1097,7 +1103,9 @@ namespace CivOne
 
 		public void UpdateResources()
 		{
-			foreach (ITile tile in ResourceTiles.Where(t => InvalidTile(t)))
+			// ResourceTiles returns a fresh array snapshot, so iterating it while
+			// RelocateResourceTile mutates _resourceTiles is safe (no extra copy needed).
+			foreach (ITile tile in ResourceTiles.Where(InvalidTile))
 			{
 				RelocateResourceTile(tile);
 			}
@@ -1670,14 +1678,28 @@ namespace CivOne
 			}
 		}
 
-		private uint[] _visibleSizes = new uint[16];
+		private uint[] _visibleSizes = new uint[Game.MaxPlayers];
+
+		/// <summary>
+		/// The city size as last seen by each player, indexed by player slot (see <see cref="Game.MaxPlayers"/>).
+		/// Shorter arrays (e.g. from saves written before the player limit was raised) are copied into a
+		/// full-size array, so already known sizes are kept.
+		/// </summary>
 		public uint[] VisibleSizes {
-			get { 
+			get {
 				// Owner always sees his city size;
 				_visibleSizes[CityOwnerPlayerIndex] = Size;
 				return _visibleSizes;
 			}
-			set => _visibleSizes = value is { Length: >= 16 } ? value : new uint[16];
+			set
+			{
+				uint[] sizes = new uint[Game.MaxPlayers];
+				if (value != null)
+				{
+					Array.Copy(value, sizes, Math.Min(value.Length, sizes.Length));
+				}
+				_visibleSizes = sizes;
+			}
 		}
 
 		/// <summary>
@@ -1749,7 +1771,7 @@ namespace CivOne
 
 		internal City(byte owner)
 		{
-			_visibleSizes = new uint[16];
+			_visibleSizes = new uint[Game.MaxPlayers];
 			CityOwnerPlayerIndex = owner;
 			_tradingCityIds = [];
 			_resourceTiles = [];
@@ -1758,12 +1780,17 @@ namespace CivOne
 			_specialists = [];
 			CurrentProduction = new Settlers(); // Default production, should be overridden by caller immediately after city creation.
 			
-			if (!Game.Started) return;
-			if (Player.Game == null) return;
-			if (CityOwnerPlayer == null) return;
-			
+			// Resolve the owner through Player.Game, not through the Game singleton: while a save is being
+			// hydrated, Game.Instance still points at the previously loaded game, whose player array can be
+			// shorter than the incoming one (Game.GetPlayer would then assert on an out-of-range index).
+			IPlayerGame playerGame = Player.Game;
+			if (playerGame == null || !playerGame.Started) return;
+
+			Player? ownerPlayer = playerGame.GetPlayer(owner);
+			if (ownerPlayer == null) return;
+
 			CurrentProduction = Reflect.GetUnits()
-				.Where(CityOwnerPlayer.ProductionAvailable)
+				.Where(ownerPlayer.ProductionAvailable)
 				.OrderBy(u => Common.HasAttribute<DefaultUnitProductionAttribute>(u) ? -1 : (int)u.Type)
 				.FirstOrDefault() ?? new Settlers(); // Default to Settlers, should never happen that no production is available at city founding, but just in case.
 			SetResourceTiles();

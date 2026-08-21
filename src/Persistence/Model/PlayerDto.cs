@@ -110,6 +110,10 @@ namespace CivOne.Persistence.Model
         [Doc("A 2D array indicating which tiles are visible to the player (1) or not (0). This only accounts for the city tiles to be shown (4x4). Center tile is always 1.", 0,4)]
 		public Bool2dMap Visible { get; set; } = new();
 
+		[Doc("The name of the player's civilization leader, e.g. 'Caesar'. Empty means use the civilization's default leader name. " +
+			"Used to disambiguate players that share a reused civilization (e.g. 'Caesar II') when there are more non-barbarian players than civilizations.")]
+		public string LeaderName { get; set; } = string.Empty;
+
 		[Doc("The name of the player's tribe, e.g. 'Romans'.")]
 		public string TribeName { get; set; } = string.Empty;
         

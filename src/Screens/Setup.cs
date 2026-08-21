@@ -537,7 +537,40 @@ namespace CivOne.Screens
 				.WithDescription(
 					Translate("Choose how civilizations' starting positions are determined."))
 				.OnSelect(GotoMenu(StartPositionAlgorithmMenu)),
+			MenuItem.Create(TranslateFormatted("Barbarians: {0}", Settings.BarbarianActivity.ToText()))
+				.WithDescription(
+					Translate("Choose where barbarians come from in new games."),
+					Translate("Running games keep their own value."))
+				.OnSelect(GotoMenu(BarbarianActivityMenu)),
 			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(MainMenu, 1))
+		);
+
+		private MenuItem<int> BarbarianActivityMenuItem(BarbarianActivity activity, params string[] description)
+			=> MenuItem.Create(activity.ToText())
+				.WithDescription(description)
+				.OnSelect((s, a) => Settings.BarbarianActivity = activity)
+				.SetActive(() => Settings.BarbarianActivity == activity);
+
+		private void BarbarianActivityMenu() => CreateMenu(Translate("Barbarians"), GotoMenu(PatchesMenu, 15),
+			BarbarianActivityMenuItem(BarbarianActivity.None,
+				Translate("No barbarians at all.")),
+			BarbarianActivityMenuItem(BarbarianActivity.Villages,
+				Translate("Only tribal villages release barbarians.")),
+			BarbarianActivityMenuItem(BarbarianActivity.LandRaids,
+				Translate("Only raiding parties that appear inland.")),
+			BarbarianActivityMenuItem(BarbarianActivity.SeaRaids,
+				Translate("Only raiding parties that arrive by ship.")),
+			BarbarianActivityMenuItem(BarbarianActivity.Raids,
+				Translate("Raiding parties on land and by sea, no villages.")),
+			BarbarianActivityMenuItem(BarbarianActivity.Villages | BarbarianActivity.LandRaids,
+				Translate("Villages and raiding parties that appear inland.")),
+			BarbarianActivityMenuItem(BarbarianActivity.Villages | BarbarianActivity.SeaRaids,
+				Translate("Villages and raiding parties that arrive by ship.")),
+			MenuItem.Create(TranslateFormatted("{0} (default)", BarbarianActivity.VillagesAndRaids.ToText()))
+				.WithDescription(Translate("Villages and all raiding parties, like the original game."))
+				.OnSelect((s, a) => Settings.BarbarianActivity = BarbarianActivity.VillagesAndRaids)
+				.SetActive(() => Settings.BarbarianActivity == BarbarianActivity.VillagesAndRaids),
+			MenuItem.Create(Translate("Back"))
 		);
 
 		private void RevealWorldMenu() => CreateMenu(Translate("Reveal world"), GotoMenu(PatchesMenu, 0),
@@ -583,7 +616,7 @@ namespace CivOne.Screens
 		private void StartPositionAlgorithmMenu() => CreateMenu(Translate("Starting position algorithm"), GotoMenu(PatchesMenu, 14),
 			MenuItem.Create(Translate("Legacy (default)"))
 				.WithDescription(
-					TranslateArray("Use the original random search for starting positions.\nOn Chieftain difficulty, there is a 50% chance of an extra Settlers unit at the same tile."))
+					TranslateArray("Use the original random search for starting positions."))
 				.OnSelect((s, a) => Settings.StartPositionAlgorithm = Settings.StartPositionAlgorithmType.Legacy).SetActive(() => Settings.StartPositionAlgorithm == Settings.StartPositionAlgorithmType.Legacy),
 			MenuItem.Create(Translate("Area-based"))
 				.WithDescription(

@@ -23,6 +23,13 @@ namespace CivOne
 		bool Started { get; }
 		ushort GameTurn { get; }
 		int Difficulty { get; }
+		bool DisableBuddyCivilizationRespawn { get; }
+
+		/// <summary>
+		/// The number of non-barbarian player slots the game was created with (the human player plus its
+		/// opponents). The total number of slots is one higher, because slot 0 holds the barbarians.
+		/// </summary>
+		int Competition { get; }
 
 		Player HumanPlayer { get; }
 		Player CurrentPlayer { get; }

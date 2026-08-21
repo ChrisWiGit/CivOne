@@ -43,6 +43,12 @@ namespace CivOne
 			set => _tribeName = value;
 		}
 
+		string IPlayerRestorable.LeaderName
+		{
+			get => LeaderName;
+			set => _leaderName = string.IsNullOrEmpty(value) ? null : value;
+		}
+
 		Guid IPlayerRestorable.PlayerGuid
 		{
 			get => _playerGuid;

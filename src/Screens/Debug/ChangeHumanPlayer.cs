@@ -1,17 +1,8 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.Linq;
 using CivOne.Enums;
+using CivOne.Events;
 using CivOne.Persistence.Game;
-using CivOne.Services.Screen;
 using CivOne.Tasks;
 
 namespace CivOne.Screens.Debug
@@ -22,12 +13,10 @@ namespace CivOne.Screens.Debug
 		private readonly CivSelectMenuDelegate _civSelectDelegate;
 
 		private Player? _selectedPlayer;
-		private int OffsetX => Math.Max(0, (Width - 320) / 2);
-		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
 		private void DrawDialog()
 		{
-			_civSelectDelegate.DrawDialog(this, OffsetX, OffsetY);
+			_civSelectDelegate.Draw(this, CanvasHeight);
 		}
 
 		public event EventHandler? Accept, Cancel;
@@ -69,6 +58,12 @@ namespace CivOne.Screens.Debug
 			newHumanPlayer.Handicap = previousHumanHandicap;
 		}
 
+		/// <summary>
+		/// The players the human may switch to.
+		/// Barbarians are left out, they cannot be played.
+		/// </summary>
+		private static Player[] SelectablePlayers() => [.. Game.Players.Where(player => player.Civilization.Id != 0)];
+
 		private void ChangePlayer_Cancel(object? sender, EventArgs args)
 		{
 			Cancel?.Invoke(this, EventArgs.Empty);
@@ -77,25 +72,48 @@ namespace CivOne.Screens.Debug
 
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (RefreshNeeded())
+			if (RefreshNeeded() && _selectedPlayer == null)
 			{
 				DrawDialog();
-			}
-
-			if (_selectedPlayer == null && !_screenQueryService.HasTopScreen<Menu>())
-			{
-				AddMenu(_civSelectDelegate.Menu);
-				return false;
+				return true;
 			}
 			return false;
 		}
 
-		private readonly IScreenQueryService _screenQueryService;
+		public override bool KeyDown(KeyboardEventArgs args)
+		{
+			if (_selectedPlayer != null)
+			{
+				return false;
+			}
+
+			bool handled = _civSelectDelegate.KeyDown(args);
+			if (handled)
+			{
+				Refresh();
+			}
+			return handled;
+		}
+
+		public override bool MouseDown(ScreenEventArgs args)
+		{
+			if (_selectedPlayer != null)
+			{
+				return false;
+			}
+
+			bool handled = _civSelectDelegate.MouseDown(args.X, args.Y);
+			if (handled)
+			{
+				Refresh();
+			}
+			return handled;
+		}
+
 		public ChangeHumanPlayer() : base(MouseCursor.Pointer)
 		{
-			_screenQueryService = ScreenServiceFactory.CreateQueryService();
 			Palette = Common.Screens[^1].OriginalColours;
-			_civSelectDelegate = new CivSelectMenuDelegate(Palette, Translate("Change Human Player..."), player => player.Civilization.Id != 0);
+			_civSelectDelegate = new CivSelectMenuDelegate(SelectablePlayers(), Translate("Change Human Player..."));
 			_civSelectDelegate.PlayerSelected += ChangePlayer_Accept;
 			_civSelectDelegate.Cancelled += ChangePlayer_Cancel;
 

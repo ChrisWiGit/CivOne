@@ -47,7 +47,10 @@ namespace CivOne.Persistence.Mapper
             var savedGame = Player.Game;
             try
             {
-                Player.Game = new PlayerGameStub();
+                // The stub carries the players of this save file, so cities resolve their owner from the
+                // game being loaded instead of from the still-current Game singleton (whose player array
+                // belongs to the previously loaded game and may be shorter).
+                Player.Game = new PlayerGameStub([.. players.OfType<Player>()]);
                 var (cities, cityNames) = MapCities(players);
                 
                 var randomSeed = dto.GameRandomSeed;
@@ -305,6 +308,8 @@ namespace CivOne.Persistence.Mapper
                 ReplayData = new ReplayDataDtoMapper().FromDtoList(dto.ReplayData ?? []),
                 PeaceTurns = dto.PeaceTurns,
                 PlayerFutureTech = players[dto.HumanPlayer].FutureTechCount,
+                DisableBuddyCivilizationRespawn = dto.DisableBuddyCivilizationRespawn,
+                BarbarianActivity = dto.BarbarianActivity,
                 GlobalWarmingCount = globalWarmingState.GlobalWarmingCount,
                 PollutedSquaresCount = globalWarmingState.PollutedSquaresCount,
                 WarmingIndicator = globalWarmingState.WarmingIndicator
@@ -378,6 +383,8 @@ namespace CivOne.Persistence.Mapper
                 ReplayData = new ReplayDataDtoMapper().ToDtoList(gameState.ReplayData ?? []),
                 PeaceTurns = gameState.PeaceTurns,
 				PlayerFutureTech = gameState.HumanPlayer.FutureTechCount,
+                DisableBuddyCivilizationRespawn = gameState.DisableBuddyCivilizationRespawn,
+                BarbarianActivity = gameState.BarbarianActivity,
                 GlobalWarming = globalWarmingMapper.ToDto(gameState)
             };
 

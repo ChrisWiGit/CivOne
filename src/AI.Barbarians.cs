@@ -31,7 +31,13 @@ namespace CivOne
 		private readonly IUnitGotoService _unitGotoService = UnitGotoServiceFactory.Create();
 		private readonly IRandomService _randomService = RandomServiceFactory.Create();
 
-		private static bool IsPolarTile(ITile tile) => tile.Type == Terrain.Arctic;
+		/// <summary>
+		/// Determines whether a tile belongs to the polar region.
+		/// A <c>null</c> tile is treated as polar, because the map indexer returns <c>null</c> for coordinates beyond the northern or southern map edge.
+		/// </summary>
+		/// <param name="tile">The tile to check, may be <c>null</c> when it lies outside the map.</param>
+		/// <returns><c>true</c> if the tile is arctic or outside the map; otherwise <c>false</c>.</returns>
+		private static bool IsPolarTile(ITile? tile) => tile == null || tile.Type == Terrain.Arctic;
 
 		private void BarbarianMove(IUnit unit)
 		{
@@ -87,7 +93,7 @@ namespace CivOne
 					return;
 				}
 
-				if (unit.GotoDestination.IsEmpty)
+				if (!unit.HasGotoDestination())
 				{
 					// Target a coastal ocean tile adjacent to the nearest palace city.
 					// Targeting the city tile itself would make GotoStep fail (water→land),
@@ -114,19 +120,19 @@ namespace CivOne
 					continue;
 				}
 
-				if (!unit.GotoDestination.IsEmpty)
+				if (unit.HasGotoDestination())
 				{
 					ITile? next = _unitGotoService.GotoStep(unit);
 					if (next == null)
 					{
 						// No path to current target — give up for this turn.
-						unit.GotoDestination = Point.Empty;
+						unit.ClearGotoDestination();
 						unit.SkipTurn();
 						return;
 					}
 					if (!unit.MoveTo(next.X - unit.X, next.Y - unit.Y))
 					{
-						unit.GotoDestination = Point.Empty;
+						unit.ClearGotoDestination();
 						unit.SkipTurn();
 					}
 					return;
@@ -248,9 +254,10 @@ namespace CivOne
 					int relX = randomService.NextInt(-1, 2);
 					int relY = randomService.NextInt(-1, 2);
 					if (relX == 0 && relY == 0) continue;
-					if (unit.Tile[relX, relY] is Ocean || IsPolarTile(unit.Tile[relX, relY])) continue;
-					if (unit is Diplomat && unit.Tile[relX, relY].City != null) continue;
-					if (unit.Tile.IsOcean && unit.Tile[relX, relY].City != null) continue;
+					ITile? destination = unit.Tile[relX, relY];
+					if (destination == null || destination is Ocean || IsPolarTile(destination)) continue;
+					if (unit is Diplomat && destination.City != null) continue;
+					if (unit.Tile.IsOcean && destination.City != null) continue;
 					if (unit.Attack == 0) continue; // Units that cannot attack will try to move away from enemies instead of towards them.
 					unit.MoveTo(relX, relY);
 					return false;

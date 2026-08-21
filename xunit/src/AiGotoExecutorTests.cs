@@ -60,7 +60,8 @@ namespace CivOne.UnitTests
 		public void TryExecuteWhenUnitGotoIsEmptyReturnsNotHandled()
 		{
 			// Arrange
-			TestUnit unit = new() { GotoDestination = Point.Empty };
+			TestUnit unit = new();
+			unit.ClearGotoDestination();
 			var testee = CreateSmartExecutor(PathStepResult.Disabled());
 
 			// Act
@@ -96,7 +97,7 @@ namespace CivOne.UnitTests
 
 			// Assert
 			Assert.Equal(AiGotoExecutionResult.Continue, actual);
-			Assert.Equal(Point.Empty, unit.GotoDestination);
+			Assert.False(unit.HasGotoDestination());
 		}
 
 		[Fact]
@@ -111,7 +112,7 @@ namespace CivOne.UnitTests
 
 			// Assert
 			Assert.Equal(AiGotoExecutionResult.Continue, actual);
-			Assert.Equal(Point.Empty, unit.GotoDestination);
+			Assert.False(unit.HasGotoDestination());
 		}
 
 		[Fact]
@@ -134,7 +135,7 @@ namespace CivOne.UnitTests
 
 			// Assert
 			Assert.Equal(AiGotoExecutionResult.Continue, actual);
-			Assert.Equal(Point.Empty, unit.GotoDestination);
+			Assert.False(unit.HasGotoDestination());
 		}
 
 		[Fact]

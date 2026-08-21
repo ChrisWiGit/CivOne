@@ -37,6 +37,7 @@ namespace CivOne
 		private Guid _playerGuid = Guid.NewGuid();
 		private Guid? _aiId;
 		private string _tribeName, _tribeNamePlural;
+		private string? _leaderName;
 
 		private readonly bool[,] _explored = new bool[Map.WIDTH, Map.HEIGHT];
 		private readonly bool[,] _visible = new bool[Map.WIDTH, Map.HEIGHT];
@@ -49,13 +50,14 @@ namespace CivOne
 		/// </summary>
 		private readonly HashSet<byte> _warWith = [];
 		/// <summary>
-		/// Raw legacy diplomacy bitmask storage (8 targets).
+		/// Raw legacy diplomacy bitmask storage, one entry per player slot (see <see cref="Game.MaxPlayers"/>).
 		/// The bit semantics are not fully documented; gameplay war logic does not currently
-		/// read or write these flags directly.
+		/// read or write these flags directly. Not written to the legacy SVE format (which is
+		/// separately capped at 8 players by SveSaveCompatibilityService), so widening this is safe.
 		/// </summary>
-		private readonly ushort[] _diplomacy = new ushort[8];
+		private readonly ushort[] _diplomacy = new ushort[CivOne.Game.MaxPlayers];
 		private readonly ushort[] _unitsLost = new ushort[28];
-		private readonly ushort[] _unitsDestroyedBy = new ushort[8];
+		private readonly ushort[] _unitsDestroyedBy = new ushort[CivOne.Game.MaxPlayers];
 		internal readonly (short X, short Y)[] MapPositions = new (short X, short Y)[9];
 		internal readonly string[] MapPositionNames = new string[9];
 		internal (short X, short Y) LastMapPosition = (-1, -1);
@@ -91,7 +93,13 @@ namespace CivOne
 		public Guid PlayerGuid => _playerGuid;
 		public Guid? AiId => _aiId;
 		
-		public string LeaderName => _civilization.Leader.Name;
+		/// <summary>
+		/// The name of this player's leader.
+		/// Stored on the player rather than written through to <see cref="ICivilization.Leader"/>, because a
+		/// civilization can be shared by several players once there are more players than civilizations, and
+		/// a disambiguated name ("Caesar II") must not leak to the other players of the same civilization.
+		/// </summary>
+		public string LeaderName => _leaderName ?? _civilization?.Leader?.Name ?? "Unknown";
 		public string TribeName => _tribeName ?? _civilization?.Name ?? "Unknown";
 		public string TribeNamePlural => _tribeNamePlural ?? _civilization?.NamePlural ?? "Unknown";
 		public AiDifficulty AiDifficulty { get; internal set; } = AiDifficulty.Unspecified;
@@ -789,7 +797,7 @@ namespace CivOne
 		public Player(ICivilization civilization, string? customLeaderName = null, string? customTribeName = null, string? customTribeNamePlural = null)
 		{
 			_civilization = civilization;
-			if (!string.IsNullOrEmpty(customLeaderName)) _civilization.Leader.Name = customLeaderName;
+			_leaderName = string.IsNullOrEmpty(customLeaderName) ? null : customLeaderName;
 			_tribeName = string.IsNullOrEmpty(customTribeName) ? _civilization.Name : customTribeName;
 			_tribeNamePlural = string.IsNullOrEmpty(customTribeNamePlural) ? _civilization.NamePlural : customTribeNamePlural;
 			Government = new Despotism();

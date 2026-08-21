@@ -318,12 +318,12 @@ namespace CivOne.Screens
 
 				if (city is { Size: > 0 })
 				{
-					this.FillRectangle(dx, dy, tilePixelSize, tilePixelSize, Common.ColourLight[city.CityOwnerPlayerIndex]);
+					this.FillRectangle(dx, dy, tilePixelSize, tilePixelSize, Common.PlayerColourLight(city.CityOwnerPlayerIndex));
 				}
 				else if (tile.Units is { Length: > 0 } units)
 				{
 					this.FillRectangle(dx + markerOffset, dy + markerOffset, markerSize, markerSize, 5)
-						.FillRectangle(dx, dy, markerSize, markerSize, Common.ColourLight[units[0].Owner]);
+						.FillRectangle(dx, dy, markerSize, markerSize, Common.PlayerColourLight(units[0].Owner));
 				}
 			}
 

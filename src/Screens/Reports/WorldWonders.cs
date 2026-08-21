@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.Linq;
 using CivOne.Events;
@@ -55,7 +46,7 @@ namespace CivOne.Screens.Reports
 
 				byte colour = 12;
 				if (city.Size > 0)
-					colour = Common.ColourLight[city.CityOwnerPlayerIndex];
+					colour = Common.PlayerColourLight(city.CityOwnerPlayerIndex);
 				this.FillRectangle(xx, yy, ww, hh, colour)
 					.FillRectangle(xx + 1, yy + 1, ww - 2, hh - 2, 3)
 					.AddLayer(wonder.SmallIcon, xx + 8, yy + 3)

@@ -61,6 +61,8 @@ namespace CivOne.Persistence.Model
 			player.AiId = dto.AiId == Guid.Empty ? null : dto.AiId;
 			player.AiDifficulty = ToDifficultyIndex(dto.AiDifficulty);
 			player.Handicap = _valueSanitizer.ClampToByte(dto.Handicap, nameof(PlayerDtoMapper), nameof(PlayerDto.Handicap));
+			// Restores disambiguated leader names (e.g. "Caesar II") for reused civilizations; see PlayerDto.LeaderName.
+			player.LeaderName = string.IsNullOrEmpty(dto.LeaderName) ? civilization.Leader.Name : dto.LeaderName;
 			player.TribeName = string.IsNullOrEmpty(dto.TribeName) ? civilization.Name : dto.TribeName;
 			player.TribeNamePlural = string.IsNullOrEmpty(dto.TribeNamePlural) ? civilization.NamePlural : dto.TribeNamePlural;
 			player.Explored = dto.Explored;
@@ -157,6 +159,7 @@ namespace CivOne.Persistence.Model
 				Explored = player.Explored,
 				Visible = player.Visible,
 
+				LeaderName = player.LeaderName,
 				TribeName = player.TribeName,
 				TribeNamePlural = player.TribeNamePlural,
 
@@ -318,7 +321,7 @@ namespace CivOne.Persistence.Model
 
 		private ushort[] BuildDiplomacyArray(List<DiplomacyEntryDto> entries)
 		{
-			var diplomacy = new ushort[8];
+			var diplomacy = new ushort[CivOne.Game.MaxPlayers];
 			if (entries == null)
 			{
 				return diplomacy;
@@ -509,7 +512,7 @@ namespace CivOne.Persistence.Model
 
 		private ushort[] BuildUnitsDestroyedByArray(List<long> values)
 		{
-			var output = new ushort[8];
+			var output = new ushort[CivOne.Game.MaxPlayers];
 			if (values == null)
 			{
 				return output;

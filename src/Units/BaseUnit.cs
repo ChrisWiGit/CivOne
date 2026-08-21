@@ -80,7 +80,7 @@ namespace CivOne.Units
 		{
 			get
 			{
-				return order != Order.None || Sentry || Fortify || FortifyActive || !GotoDestination.IsEmpty;
+				return order != Order.None || Sentry || Fortify || FortifyActive || this.HasGotoDestination();
 			}
 		}
 		public virtual bool HasMovesLeft
@@ -339,7 +339,7 @@ namespace CivOne.Units
 		/// </remarks>
 		internal virtual bool PreConfront(int relX, int relY)
 		{
-			GotoDestination = Point.Empty;             // Cancel any goto mode when Confronting
+			this.ClearGotoDestination();             // Cancel any goto mode when Confronting
 
 			Debug.Assert(this is not Diplomat && this is not Caravan, "PreConfront should not be called for Diplomat or Caravan units, as they have their own special handling.");
 
@@ -855,7 +855,7 @@ namespace CivOne.Units
 
 		protected virtual bool ConfrontEnemy(ITile moveTarget, int relX, int relY)
 		{
-			GotoDestination = Point.Empty;             // Cancel any goto mode
+			this.ClearGotoDestination();             // Cancel any goto mode
 
 			if (!CanAttackEnemy(moveTarget))
 			{
@@ -892,9 +892,15 @@ namespace CivOne.Units
 			ITile previousTile = Map[_x, _y];
 			X += Movement.RelX;
 			Y += Movement.RelY;
-			if (X == GotoDestination.X && Y == GotoDestination.Y)
+			int normalizedGotoX = GotoDestination.X % Map.WIDTH;
+			if (normalizedGotoX < 0)
 			{
-				GotoDestination = Point.Empty;
+				normalizedGotoX += Map.WIDTH;
+			}
+
+			if (X == normalizedGotoX && Y == GotoDestination.Y)
+			{
+				this.ClearGotoDestination();
 			}
 			Movement = null;
 
@@ -1323,7 +1329,7 @@ namespace CivOne.Units
 			Move = move;
 			X = -1;
 			Y = -1;
-			GotoDestination = Point.Empty;
+			this.ClearGotoDestination();
 			Owner = 0;
 			Status = 0;
 			MovesSkip = 0;

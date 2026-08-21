@@ -192,7 +192,10 @@ namespace CivOne
 			{
 				for (int y = 0; y < HEIGHT; y++)
 				{
-					bitmap[x + (WIDTH * 2), y] = _tiles[x, y].Visited;
+					// The legacy .MAP explored layer is one byte per tile (players 0-7 only); this only
+					// controls hut re-visibility on reload (see LoadMap above), so bits for players >= 8
+					// are intentionally dropped here rather than folded into the low byte.
+					bitmap[x + (WIDTH * 2), y] = (byte)(_tiles[x, y].Visited & 0xFF);
 				}
 			}
 		}

@@ -25,6 +25,11 @@ namespace CivOne.Civilizations
 	{
 		internal static readonly byte Owner;
 
+		/// <summary>
+		/// The difficulty the barbarians play at.
+		/// Uses the AI difficulty configured for the barbarian player when one is set,
+		/// otherwise falls back to the game difficulty.
+		/// </summary>
 		internal static int Difficulty
 		{
 			get
@@ -40,16 +45,26 @@ namespace CivOne.Civilizations
 			}
 		}
 
-		internal static bool IsSeaSpawnTurn => Game.Started && (Game.GameTurn % 8 == 0) && (Game.GameTurn > 150 || Game.GameTurn >= (5 - Difficulty) * 32) && !Game.Players.Any(x => x.HasAdvance<Combustion>());
+		/// <summary>
+		/// Tells whether the current turn is one where barbarians appear.
+		/// Land and sea raiders share the same rhythm, so this answers for both.
+		/// Whether they may actually appear is a separate question, see <see cref="BarbarianSpawnDelegate"/>.
+		/// </summary>
+		internal static bool IsSpawnTurn => Game.Started && (Game.GameTurn % 8 == 0) && (Game.GameTurn > 150 || Game.GameTurn >= (5 - Difficulty) * 32) && !Game.Players.Any(x => x.HasAdvance<Combustion>());
+
+		internal static bool IsSeaSpawnTurn => IsSpawnTurn;
 
 		// TODO land spawn rate
-		internal static bool IsLandSpawnTurn => IsSeaSpawnTurn; // no idea - make them the same for now
+		internal static bool IsLandSpawnTurn => IsSpawnTurn; // no idea - make them the same for now
 
+		/// <summary>
+		/// The units of a raiding party arriving by sea, for the current turn.
+		/// Whether a party arrives at all is decided by <see cref="BarbarianSpawnDelegate"/>.
+		/// </summary>
 		internal static IEnumerable<UnitType> SeaSpawnUnits
 		{
 			get
 			{
-				if (!IsSeaSpawnTurn) yield break;
 				yield return (Game.GameTurn < 300) ? UnitType.Sail : UnitType.Frigate;
 				
 				UnitType unitType = (Game.Players.Any(x => x.HasAdvance<Gunpowder>())) ? UnitType.Knights : UnitType.Legion;
@@ -61,11 +76,14 @@ namespace CivOne.Civilizations
 		}
 
 		// https://forums.civfanatics.com/threads/barbarians-spawn-logic.630389/#post-15096489
+		/// <summary>
+		/// The units of a raiding party appearing inland, for the current turn.
+		/// Whether a party appears at all is decided by <see cref="BarbarianSpawnDelegate"/>.
+		/// </summary>
 		internal static IEnumerable<UnitType> LandSpawnUnits
 		{
 			get
 			{
-				if (!IsLandSpawnTurn) yield break;
 				// TODO this doesn't look right for land units
 				//yield return (Game.GameTurn < 300) ? UnitType.Sail : UnitType.Frigate;
 
@@ -82,7 +100,7 @@ namespace CivOne.Civilizations
 			get
 			{
 				IRandomService random = RandomServiceFactory.Create();
-				ITile[] tiles = Map.AllTiles().Where(t => t != null && t.IsOcean).ToArray();
+				ITile[] tiles = [.. Map.AllTiles().Where(t => t != null && t.IsOcean)];
 				for (int i = 0; i < 1000; i++)
 				{
 					ITile tile = tiles[random.NextInt(tiles.Length)];
@@ -98,7 +116,8 @@ namespace CivOne.Civilizations
 			get
 			{
 				IRandomService random = RandomServiceFactory.Create();
-				ITile[] tiles = Map.AllTiles().Where(t => t != null && !t.IsOcean && t.Visited != 0).ToArray();
+				// CW: don't spawn barbarians on cities itself.
+				ITile[] tiles = [.. Map.AllTiles().Where(t => t != null && !t.IsOcean && t.Visited != 0 && t.City == null)];
 				for (int i = 0; i < 1000; i++)
 				{
 					ITile tile = tiles[random.NextInt(tiles.Length)];

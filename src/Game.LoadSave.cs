@@ -145,7 +145,9 @@ namespace CivOne
 			SaveMetaData.InitializeForLoadedGame(GameVersion);
 
 			_difficulty = gameData.Difficulty;
-			_competition = gameData.OpponentCount + 1;
+			// SVE only ever stores 1-7 opponents (8 total players); clamp defensively so a corrupted
+			// OpponentCount value cannot make the loop below index Common.Civilizations out of range.
+			_competition = Math.Min(gameData.OpponentCount + 1, 7);
 
 			// CW: Dependency Injection. Otherwise this would be handled after this constructor (too late to call HandleExtinction).
 			Player.Game = this;
@@ -331,6 +333,8 @@ namespace CivOne
 			EnemyMoves = Settings.EnemyMoves != GameOption.Off;
 			CivilopediaText = Settings.CivilopediaText != GameOption.Off;
 			Palace = Settings.Palace != GameOption.Off;
+			// The classic save format has no field for the barbarian setting, so the global one applies.
+			BarbarianActivity = Settings.BarbarianActivity;
 
 			bool[] options = gameData.GameOptions;
 			if (Settings.InstantAdvice == GameOption.Default) InstantAdvice = options[0];

@@ -22,6 +22,7 @@ namespace CivOne.Persistence.Game
 		ICivilization Civilization { get; }
 		Guid PlayerGuid { get; }
 		Guid? AiId { get; }
+		string LeaderName { get; }
 		string TribeName { get; }
 		string TribeNamePlural { get; }
 		AiDifficulty AiDifficulty { get; }

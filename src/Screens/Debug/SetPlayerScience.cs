@@ -11,9 +11,9 @@ using System;
 using System.Globalization;
 using System.Linq;
 using CivOne.Enums;
+using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
-using CivOne.Services.Screen;
 using CivOne.Tasks;
 using CivOne.UserInterface;
 
@@ -32,7 +32,7 @@ namespace CivOne.Screens.Debug
 
 		private void DrawPlayerSelectDialog()
 		{
-			_civSelectDelegate.DrawDialog(this, OffsetX, OffsetY);
+			_civSelectDelegate.Draw(this, CanvasHeight);
 		}
 
 		private void DrawInputDialog()
@@ -135,12 +135,6 @@ namespace CivOne.Screens.Debug
 					DrawInputDialog();
 			}
 
-			if (_selectedPlayer == null && !_screenQueryService.HasTopScreen<Menu>())
-			{
-				AddMenu(_civSelectDelegate.Menu);
-				return false;
-			}
-			
 			if (_selectedPlayer != null && !HasInput)
 			{
 				EnsureManagedInput();
@@ -148,14 +142,40 @@ namespace CivOne.Screens.Debug
 			return false;
 		}
 
-		private readonly IScreenQueryService _screenQueryService;
+		public override bool KeyDown(KeyboardEventArgs args)
+		{
+			if (_selectedPlayer != null)
+			{
+				return false;
+			}
+
+			bool handled = _civSelectDelegate.KeyDown(args);
+			if (handled)
+			{
+				Refresh();
+			}
+			return handled;
+		}
+
+		public override bool MouseDown(ScreenEventArgs args)
+		{
+			if (_selectedPlayer != null)
+			{
+				return false;
+			}
+
+			bool handled = _civSelectDelegate.MouseDown(args.X, args.Y);
+			if (handled)
+			{
+				Refresh();
+			}
+			return handled;
+		}
 
 		public SetPlayerScience() : base(MouseCursor.Pointer)
 		{
-			_screenQueryService = ScreenServiceFactory.CreateQueryService();			
-			
 			Palette = Common.Screens[^1].OriginalColours;
-			_civSelectDelegate = new CivSelectMenuDelegate(Palette, Translate("Set Player Science..."));
+			_civSelectDelegate = new CivSelectMenuDelegate(Translate("Set Player Science..."));
 			_civSelectDelegate.PlayerSelected += OnPlayerSelected;
 			_civSelectDelegate.Cancelled += PlayerScience_Cancel;
 

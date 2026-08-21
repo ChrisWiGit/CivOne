@@ -38,7 +38,7 @@ namespace CivOne.Screens.Reports
 				City city = _cities[i];
 
 				if (city == null || city.Size == 0) continue;
-				byte colour = Common.ColourLight[city.CityOwnerPlayerIndex];
+				byte colour = Common.PlayerColourLight(city.CityOwnerPlayerIndex);
 
 				int xx = offsetX + 8;
 				int yy = offsetY + 32 + (32 * i);

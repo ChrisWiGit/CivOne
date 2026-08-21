@@ -18,7 +18,7 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void CityNamesCount()
         {
-            int expectedCount = 256;
+            int expectedCount = 256 + 272; // 256 original + 272 new
             int count = Common.AllCityNames.Count();
             bool result = (count == expectedCount);
 

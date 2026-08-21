@@ -1,13 +1,4 @@
-﻿// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
-using System;
+﻿using System;
 using System.Drawing;
 using System.Linq;
 using CivOne.Enums;
@@ -32,8 +23,6 @@ namespace CivOne.Screens
 		private readonly ISpaceShipResourceService _resources;
 		private readonly IGameCalendarService _calendarService;
 
-		// only hard coupling but easy to refactor if needed.
-		private readonly static byte[] ColourDark = Common.ColourDark;
 		private readonly Player _player;
 		private readonly bool _debug;
 		private readonly bool _viewOnly;
@@ -93,22 +82,7 @@ namespace CivOne.Screens
 		private int LaunchButtonTop => SidePanelOffsetY + LaunchButtonY + LaunchButtonRenderYOffset;
 		private static int LaunchButtonRenderHeight => LaunchButtonHeight + LaunchButtonRenderHeightOffset;
 
-		private byte PlayerColor
-		{
-			get
-			{
-				int playerNumber = Game.PlayerNumber(_player);
-				if (playerNumber < 0)
-				{
-					playerNumber = 0;
-				}
-				if (playerNumber >= ColourDark.Length)
-				{
-					playerNumber = ColourDark.Length - 1;
-				}
-				return ColourDark[playerNumber];
-			}
-		}
+		private byte PlayerColor => Common.PlayerColourDark(Game.PlayerNumber(_player));
 
 		private string FormatYearLabel(int year)
 		{
@@ -237,7 +211,7 @@ namespace CivOne.Screens
 				this.DrawText(Translate("(L)aunch (B)ackground (C)ivs"), 0, 15, ox + 16, yy, TextAlign.Left);
 				this.DrawText(Translate("1 Struct. 2/F3 Compts.  3/F4 Modules"), 0, 15, ox + 16, yy + fontHeight, TextAlign.Left);
 				string ruleMode = _useDebugRules ? Translate("Debug") : Translate("Real");
-				this.DrawText(TranslateFormatted($"F5:{0}  (V)ictory", ruleMode), 0, 15, ox + 16, yy + 2 * fontHeight, TextAlign.Left);
+				this.DrawText(TranslateFormatted("F5:{0}  (V)ictory", ruleMode), 0, 15, ox + 16, yy + 2 * fontHeight, TextAlign.Left);
 			}
 		}
 

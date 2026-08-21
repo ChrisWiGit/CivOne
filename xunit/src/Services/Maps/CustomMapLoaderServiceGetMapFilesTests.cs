@@ -110,6 +110,7 @@ namespace CivOne.Services.Maps
 		private sealed class FakeSettings(string mapsDirectory) : ISettings
 		{
 			public string MapsDirectory { get; } = mapsDirectory;
+			public string PicturesDirectory => throw new NotImplementedException();
 			public string SavesDirectory => throw new NotImplementedException();
 			public string CosSavesDirectory => throw new NotImplementedException();
 			public string StorageDirectory => throw new NotImplementedException();
