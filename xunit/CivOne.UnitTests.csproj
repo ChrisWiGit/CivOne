@@ -24,7 +24,7 @@
 		<AnalysisLevel>latest-all</AnalysisLevel>
 		<Nullable>enable</Nullable>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-		<NoWarn>$(NoWarn),CA1515,CA1819,CA1065,CA1814,CA1307,CA1002,CA1034</NoWarn>
+		<NoWarn>$(NoWarn),CA1515,CA1819,CA1065,CA1814,CA1307,CA1002,CA1034,CA1707</NoWarn>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(SuppressConsoleLogs)' == 'true'">

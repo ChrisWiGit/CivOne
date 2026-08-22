@@ -26,6 +26,13 @@ namespace CivOne.UserInterface
 		public T? Value { get; private set; }
 		public bool Enabled { get; set; }
 		public string? Text { get; set; }
+
+		/// <summary>
+		/// Optional colour override for this item's text.
+		/// When null, the menu's <c>TextColour</c> is used for enabled items
+		/// and <c>DisabledColour</c> for disabled items.
+		/// </summary>
+		public byte? TextColour { get; set; }
 		public string[] Description { get; private set; } = [];
 		public string? Shortcut { get; set; }
 		public string[]? Shortcuts { get; set; }
