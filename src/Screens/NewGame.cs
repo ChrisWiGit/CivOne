@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -36,6 +37,7 @@ namespace CivOne.Screens
 		private readonly NewGameCompetitionMenuDelegate _competitionMenu;
 		private readonly NewGameBarbarianMenuDelegate _barbarianMenu;
 		private readonly NewGameTribeMenuDelegate _tribeMenu;
+		private readonly NewGameDifficultyPictureDelegate _difficultyPictures = new();
 
 		private ICivilization[] _tribesAvailable = [];
 		private readonly string[] _menuItemsDifficulty;
@@ -109,6 +111,27 @@ namespace CivOne.Screens
 			_competitionMenu.ShowMenu();
 		}
 
+		/// <summary>
+		/// Steps back from the competition menu to the difficulty menu.
+		/// Only the state is cleared, the menu itself is reopened by the next update.
+		/// Reopening it here would leave the screen with the drawing of the competition step, because
+		/// the screen only redraws while no menu is open.
+		/// </summary>
+		private void BackToDifficultyMenu()
+		{
+			_difficulty = -1;
+		}
+
+		/// <summary>
+		/// Steps back from the tribe menu to the competition menu.
+		/// Only the state is cleared, the menu itself is reopened by the next update, so the screen
+		/// redraws the portrait stack of the competition step.
+		/// </summary>
+		private void BackToCompetitionMenu()
+		{
+			_competition = -1;
+		}
+
 		private void MenuDifficulty()
 		{
 			Menu menu = CreateNewGameMenu(Translate("Difficulty Level..."));
@@ -119,6 +142,7 @@ namespace CivOne.Screens
 			}
 			menu.Items.Add(Translate("Use AI selections..."), AiSelectionMenuValue).TextColor(3).OnSelect(SetDifficulty);
 			menu.Cancel += DifficultyMenu_Cancel;
+			menu.MissClickAt += DifficultyMenu_MissClick;
 			AddMenu(menu);
 		}
 
@@ -142,7 +166,36 @@ namespace CivOne.Screens
 				return;
 			}
 
-			_difficulty = args.Value;
+			ApplyDifficulty(args.Value);
+		}
+
+		/// <summary>
+		/// Picks the difficulty whose portrait was clicked next to the difficulty menu.
+		/// Clicks that miss every portrait are ignored, so the menu stays open.
+		/// </summary>
+		private void DifficultyMenu_MissClick(object? sender, ScreenEventArgs args)
+		{
+			if (args == null || (args.Buttons & MouseButton.Left) == 0)
+			{
+				return;
+			}
+
+			int difficulty = _difficultyPictures.GetDifficultyAt(args.Location, OffsetX, OffsetY, _menuItemsDifficulty.Length);
+			if (difficulty == NewGameDifficultyPictureDelegate.NoDifficulty)
+			{
+				return;
+			}
+
+			ApplyDifficulty(difficulty);
+		}
+
+		/// <summary>
+		/// Stores the picked difficulty and closes the difficulty menu.
+		/// </summary>
+		/// <param name="difficulty">Index of the difficulty.</param>
+		private void ApplyDifficulty(int difficulty)
+		{
+			_difficulty = difficulty;
 			CloseMenus();
 			Log("Difficulty: {0}", _menuItemsDifficulty[_difficulty]);
 		}
@@ -318,12 +371,8 @@ namespace CivOne.Screens
 		{
 			get
 			{
-				int pictureId = _difficulty;
-				if (pictureId > 4) pictureId = 4;
-
-				int x = (pictureId % 2) == 0 ? 21 : 80;
-				int y = 6 + (35 * pictureId);
-				return _background[x, y, 53, 47];
+				Rectangle bounds = _difficultyPictures.GetPictureBounds(_difficulty);
+				return _background[bounds.X, bounds.Y, bounds.Width, bounds.Height];
 			}
 		}
 
@@ -565,8 +614,8 @@ namespace CivOne.Screens
 
 			_rules = new NewGameRulesDelegate();
 			_barbarianMenu = new NewGameBarbarianMenuDelegate(this, ShowCompetitionMenu);
-			_competitionMenu = new NewGameCompetitionMenuDelegate(this, _rules, SetCompetition, MenuDifficulty, barbarianMenu: _barbarianMenu);
-			_tribeMenu = new NewGameTribeMenuDelegate(this, _rules, () => _tribesAvailable, SetTribe, ShowCompetitionMenu, StartCustomTribeNameInput);
+			_competitionMenu = new NewGameCompetitionMenuDelegate(this, _rules, SetCompetition, BackToDifficultyMenu, barbarianMenu: _barbarianMenu);
+			_tribeMenu = new NewGameTribeMenuDelegate(this, _rules, () => _tribesAvailable, SetTribe, BackToCompetitionMenu, StartCustomTribeNameInput);
 
 			_menuItemsDifficulty = _rules.BuildDifficultyMenuItems();
 		}
