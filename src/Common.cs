@@ -66,6 +66,18 @@ namespace CivOne
 		public static IWonder[] Wonders => _wonders ??= [.. Reflect.GetWonders()];
 
 		/// <summary>
+		/// Drops the cached content lists so they are rebuilt on next use.
+		/// Called after plugins are loaded, enabled, disabled or deleted, because the set of scanned
+		/// assemblies - and therefore the available content - changes with them.
+		/// </summary>
+		internal static void ResetContentCaches()
+		{
+			_advances = null;
+			_buildings = null;
+			_wonders = null;
+		}
+
+		/// <summary>
 		/// Every civilization in the game, as a fresh set of instances on every access.
 		/// Reading this is expensive (it reflects over every loaded assembly), so read it once into a local
 		/// instead of calling it inside a loop.
