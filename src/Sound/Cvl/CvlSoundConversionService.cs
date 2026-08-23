@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -93,6 +94,7 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
         return report;
     }
 
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "A single unreadable or unconvertible CVL module must not abort the batch; it is reported and skipped.")]
     public CvlConversionResult ConvertFile(string cvlPath, string targetFolder)
     {
         string name = Path.GetFileName(cvlPath);
@@ -239,6 +241,7 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
         => new() { SourceFile = cvlPath, Message = message };
 
     /// <summary>"Alexander the Great" -> "alexander-the-great".</summary>
+    [SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Lowercase is required here for the on-disk file name, not for a culture-independent comparison.")]
     internal static string Slug(string text)
     {
         if (string.IsNullOrWhiteSpace(text)) return "tune";

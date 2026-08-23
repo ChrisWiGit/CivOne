@@ -16,6 +16,7 @@ using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
 using CivOne.Services;
+using CivOne.Sound.Cvl;
 using CivOne.Services.Translation;
 using CivOne.Tasks;
 using CivOne.UserInterface;
@@ -446,9 +447,74 @@ namespace CivOne.Screens
 		);
 
 		private void SoundMenu() => CreateMenu(Translate("In-game sound"), GotoMenu(SettingsMenu, 9),
-			MenuItem.Create(Translate("Browse for files...")).OnSelect(BrowseForSoundFiles).SetEnabled(!FileSystem.SoundFilesExist()).SetEnabled(!Game.Started),
+			MenuItem.Create(Translate("Browse for Wave files..."))
+				.WithDescription(Translate("Copy original .WAV sound effects into your profile."))
+				.OnSelect(BrowseForSoundFiles).SetEnabled(!FileSystem.SoundFilesExist()).SetEnabled(!Game.Started),
+			MenuItem.Create(TranslateFormatted("Sound pack: {0}", CurrentSoundPackText()))
+				.WithDescription(Translate("Choose a converted CVL sound pack (e.g. PC Speaker)."))
+				.OnSelect(GotoMenu(SoundPackMenu)),
 			MenuItem.Create(Translate("Back"))
 		);
+
+		private string CurrentSoundPackText()
+		{
+			if (string.IsNullOrEmpty(Settings.SoundPack)) return Translate("None");
+
+			IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory);
+			foreach (SoundPackSummary pack in packs)
+			{
+				if (string.Equals(pack.PackId, Settings.SoundPack, StringComparison.OrdinalIgnoreCase)) return pack.DisplayName;
+			}
+			return Settings.SoundPack;
+		}
+
+		private void SoundPackMenu()
+		{
+			IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory);
+			List<MenuItem<int>> menuItems =
+			[
+				MenuItem.Create(Translate("None (default)"))
+					.WithDescription(Translate("Use the original .WAV sound effects, no CVL sound pack."))
+					.OnSelect((s, a) => SelectSoundPack(string.Empty)).SetActive(() => string.IsNullOrEmpty(Settings.SoundPack))
+			];
+
+			if (packs.Count == 0)
+			{
+				menuItems.Add(MenuItem.Create(Translate("No sound packs found.")).Disable());
+				menuItems.Add(MenuItem.Create(Translate("Copy the original game data to convert one.")).Disable());
+			}
+			else
+			{
+				menuItems.AddRange(packs.Select(pack => MenuItem.Create(pack.DisplayName)
+					.OnSelect((s, a) => SelectSoundPack(pack.PackId))
+					.SetActive(() => string.Equals(Settings.SoundPack, pack.PackId, StringComparison.OrdinalIgnoreCase))));
+			}
+
+			menuItems.Add(MenuItem.Create(Translate("Back")));
+			CreateMenu(Translate("Sound pack"), GotoMenu(SoundMenu), [.. menuItems]);
+		}
+
+		private void SelectSoundPack(string packId)
+		{
+			Settings.SoundPack = packId ?? string.Empty;
+
+			IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory);
+			string displayName = Translate("None");
+			foreach (SoundPackSummary pack in packs)
+			{
+				if (string.Equals(pack.PackId, Settings.SoundPack, StringComparison.OrdinalIgnoreCase)) displayName = pack.DisplayName;
+			}
+			NotifySoundPackSelection(displayName);
+
+			SoundMenu();
+		}
+
+		private void NotifySoundPackSelection(string packName)
+		{
+			if (!Game.Started) return;
+
+			GameTask.Enqueue(Message.General(TranslateFormatted("Sound pack switched to {0}.", packName)));
+		}
 
 		private int ActiveBehaviorPatchCount()
 			=> new[]

@@ -11,7 +11,7 @@ namespace CivOne.UnitTests.Sound.Cvl
     /// Deckt den einmaligen Konvertierungslauf ab: CVL-Ordner rein, ein Pack-Ordner mit
     /// je einer Datei pro Tune und einer index.json raus.
     /// </summary>
-    public class CvlSoundConversionServiceTests : IDisposable
+    public sealed class CvlSoundConversionServiceTests : IDisposable
     {
         private readonly ITestOutputHelper _output;
         private readonly string _sourceFolder;
@@ -30,35 +30,33 @@ namespace CivOne.UnitTests.Sound.Cvl
 
         public void Dispose()
         {
-            string root = Directory.GetParent(_sourceFolder)?.FullName;
+            string? root = Directory.GetParent(_sourceFolder)?.FullName;
             if (root != null && Directory.Exists(root)) Directory.Delete(root, true);
-            GC.SuppressFinalize(this);
         }
 
-        private string PlaceFakeIsound(string fileName = "ISOUND.CVL")
+        private void PlaceFakeIsound(string fileName = "ISOUND.CVL")
         {
             string path = Path.Combine(_sourceFolder, fileName);
             File.WriteAllBytes(path, FakeIsoundModule.Build());
-            return path;
         }
 
         [Fact]
-        public void DeviceDetector_RecognisesSpeakerDriver()
+        public void DeviceDetectorRecognisesSpeakerDriver()
             => Assert.Equal("PcSpeaker",
                 CvlDeviceDetector.Detect(CvlImage.FromBytes(FakeIsoundModule.Build(), "fake.cvl")).ToString());
 
         [Fact]
-        public void IsoundConverter_AcceptsSpeakerModule()
+        public void IsoundConverterAcceptsSpeakerModule()
         {
             var converter = new IsoundCvlConverter();
             var image = CvlImage.FromBytes(FakeIsoundModule.Build(), "fake.cvl");
 
-            Assert.True(converter.CanConvert(image, out string reason), reason);
+            Assert.True(converter.CanConvert(image, out string? reason), reason);
             Assert.Equal("pc-speaker", converter.PackId);
         }
 
         [Fact]
-        public void ConvertFolder_WritesOneFilePerTuneAndAnIndex()
+        public void ConvertFolderWritesOneFilePerTuneAndAnIndex()
         {
             PlaceFakeIsound();
 
@@ -79,11 +77,11 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.Contains("06-montezuma.sound.json", files);
 
             // Der stumme Tune 4 bekommt keine Datei.
-            Assert.DoesNotContain(files, f => f.StartsWith("04-"));
+            Assert.DoesNotContain(files, f => f!.StartsWith("04-", StringComparison.Ordinal));
         }
 
         [Fact]
-        public void ConvertFolder_WritesSelfContainedTuneFiles()
+        public void ConvertFolderWritesSelfContainedTuneFiles()
         {
             PlaceFakeIsound();
             new CvlSoundConversionService().ConvertFolder(_sourceFolder, _targetFolder);
@@ -106,7 +104,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void ConvertFolder_IndexMapsEngineSoundNamesAndListsTheRest()
+        public void ConvertFolderIndexMapsEngineSoundNamesAndListsTheRest()
         {
             PlaceFakeIsound();
             new CvlSoundConversionService().ConvertFolder(_sourceFolder, _targetFolder);
@@ -137,7 +135,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void ConvertFolder_SkipsUnsupportedModulesWithAMessage()
+        public void ConvertFolderSkipsUnsupportedModulesWithAMessage()
         {
             // Gültiges CVL, aber ohne erkennbares Gerät.
             byte[] bytes = FakeIsoundModule.Build();
@@ -157,7 +155,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void ConvertFolder_ReportsUnreadableFiles()
+        public void ConvertFolderReportsUnreadableFiles()
         {
             File.WriteAllBytes(Path.Combine(_sourceFolder, "BROKEN.CVL"), new byte[16]);
 
@@ -168,7 +166,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void ConvertFolder_ReportsEmptySourceFolder()
+        public void ConvertFolderReportsEmptySourceFolder()
         {
             var result = new CvlSoundConversionService().ConvertFolder(_sourceFolder, _targetFolder).Results.Single();
 
@@ -181,7 +179,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         [InlineData("Alexander the Great", "alexander-the-great")]
         [InlineData("Tune 19", "tune-19")]
         [InlineData("  ", "tune")]
-        public void Slug_MakesFileSystemSafeNames(string title, string expected)
+        public void SlugMakesFileSystemSafeNames(string title, string expected)
             => Assert.Equal(expected, CvlSoundConversionService.Slug(title));
 
         // -----------------------------------------------------------------------------
@@ -194,9 +192,9 @@ namespace CivOne.UnitTests.Sound.Cvl
         [InlineData("TSOUND.CVL", "Tandy")]
         [InlineData("RSOUND.CVL", "Roland")]
         [InlineData("NSOUND.CVL", "Silent")]
-        public void RealModules_AreDetectedByPortUsage(string fileName, string expectedDevice)
+        public void RealModulesAreDetectedByPortUsage(string fileName, string expectedDevice)
         {
-            string isound = CvlTestFiles.TryFindIsound();
+            string? isound = CvlTestFiles.TryFindIsound();
             if (isound == null)
             {
                 _output.WriteLine(CvlTestFiles.MissingHint(fileName, CvlTestFiles.IsoundEnvironmentVariable));
@@ -217,9 +215,9 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void RealIsound_ConvertsIntoAUsablePack()
+        public void RealIsoundConvertsIntoAUsablePack()
         {
-            string isound = CvlTestFiles.TryFindIsound();
+            string? isound = CvlTestFiles.TryFindIsound();
             if (isound == null)
             {
                 _output.WriteLine(CvlTestFiles.MissingHint("ISOUND.CVL", CvlTestFiles.IsoundEnvironmentVariable));
@@ -229,7 +227,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             File.Copy(isound, Path.Combine(_sourceFolder, "ISOUND.CVL"), true);
 
             // CIVONE_SOUND_OUT setzen, um das Ergebnis zum Anschauen dauerhaft abzulegen.
-            string configured = Environment.GetEnvironmentVariable("CIVONE_SOUND_OUT");
+            string? configured = Environment.GetEnvironmentVariable("CIVONE_SOUND_OUT");
             string targetFolder = string.IsNullOrWhiteSpace(configured) ? _targetFolder : configured;
 
             var report = new CvlSoundConversionService().ConvertFolder(_sourceFolder, targetFolder);
@@ -253,7 +251,9 @@ namespace CivOne.UnitTests.Sound.Cvl
             // Die sieben Effekte bleiben offen.
             Assert.Equal(7, index.UnmappedSoundNames.Count);
 
-            var win = TuneScoreJson.Load(Path.Combine(packFolder, index.Tunes.Single(t => t.TuneId == 34).File));
+            string winFile = index.Tunes.Single(t => t.TuneId == 34).File
+                ?? throw new InvalidOperationException("Win Music sollte eine Datei haben.");
+            var win = TuneScoreJson.Load(Path.Combine(packFolder, winFile));
             Assert.Equal(3320, win.Tunes.Single().Steps[0].Divisor);
         }
     }

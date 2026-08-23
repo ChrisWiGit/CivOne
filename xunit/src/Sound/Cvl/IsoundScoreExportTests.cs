@@ -11,7 +11,7 @@ namespace CivOne.UnitTests.Sound.Cvl
     /// Prüft den Weg CVL -> TuneScorePack -> *.score.json. Das JSON ist die Form, die
     /// CivOne ausliefert; ab da wird die CVL nicht mehr gebraucht.
     /// </summary>
-    public class IsoundScoreExportTests
+    public sealed class IsoundScoreExportTests
     {
         /// <summary>Setzen, um beim Testlauf die ausgelieferte Score-Datei neu zu erzeugen.</summary>
         private const string ScoreOutputVariable = "CIVONE_SCORE_OUT";
@@ -21,7 +21,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         public IsoundScoreExportTests(ITestOutputHelper output) => _output = output;
 
         [Fact]
-        public void Export_ProducesScorePack_WithTitlesAndKinds()
+        public void ExportProducesScorePackWithTitlesAndKinds()
         {
             var pack = IsoundScoreExporter.Export(CvlImage.FromBytes(FakeIsoundModule.Build(), "fake-isound.cvl"));
 
@@ -53,7 +53,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void Export_KeepsUnsupportedTunes_WhenRequested()
+        public void ExportKeepsUnsupportedTunesWhenRequested()
         {
             var options = new IsoundScoreOptions { SkipUnsupported = false };
             var pack = IsoundScoreExporter.Export(CvlImage.FromBytes(FakeIsoundModule.Build(), "fake-isound.cvl"), options);
@@ -64,7 +64,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void ScoreJson_RoundTripsWithoutLoss()
+        public void ScoreJsonRoundTripsWithoutLoss()
         {
             var pack = IsoundScoreExporter.Export(CvlImage.FromBytes(FakeIsoundModule.Build(), "fake-isound.cvl"));
             string path = Path.Combine(Path.GetTempPath(), $"isound-{Guid.NewGuid():N}.score.json");
@@ -93,7 +93,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void ScoreJson_RejectsSequenceWithoutSteps()
+        public void ScoreJsonRejectsSequenceWithoutSteps()
         {
             var pack = new TuneScorePack
             {
@@ -109,16 +109,16 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void Export_RealIsound_WritesScoreJson()
+        public void ExportRealIsoundWritesScoreJson()
         {
-            string cvlPath = CvlTestFiles.TryFindIsound();
+            string? cvlPath = CvlTestFiles.TryFindIsound();
             if (cvlPath == null)
             {
                 _output.WriteLine(CvlTestFiles.MissingHint("ISOUND.CVL", CvlTestFiles.IsoundEnvironmentVariable));
                 return;
             }
 
-            string configured = Environment.GetEnvironmentVariable(ScoreOutputVariable);
+            string? configured = Environment.GetEnvironmentVariable(ScoreOutputVariable);
             string outputPath = string.IsNullOrWhiteSpace(configured)
                 ? Path.Combine(Path.GetTempPath(), $"isound-{Guid.NewGuid():N}.score.json")
                 : configured;

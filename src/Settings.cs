@@ -79,6 +79,7 @@ namespace CivOne
 		private MapBitmapScalerType _bitmapScalerMode = MapBitmapScalerType.PaletteAwareWeighted;
 		private StartPositionAlgorithmType _startPositionAlgorithm = StartPositionAlgorithmType.Legacy;
 		private string _languagePostfix = string.Empty;
+		private string _soundPack = string.Empty;
 		private SimulateInternationalFont _simulateInternationalFont = SimulateInternationalFont.Auto;
 		private bool _useUncheckedCastSanitizer;
 		private GlobalWarmingFeatureFlag _globalWarmingFeatureFlags = GlobalWarmingFeatureFlag.None;
@@ -721,6 +722,17 @@ namespace CivOne
 			}
 		}
 
+		/// <summary>Id des ausgewählten CVL-Sound-Packs (siehe sounds/&lt;packId&gt;/index.json), leer = kein Pack.</summary>
+		public string SoundPack
+		{
+			get => _soundPack;
+			set
+			{
+				_soundPack = value ?? string.Empty;
+				SetSetting("SoundPack", _soundPack);
+			}
+		}
+
 		internal SimulateInternationalFont SimulateInternationalFont
 		{
 			get => _simulateInternationalFont;
@@ -850,6 +862,7 @@ namespace CivOne
 			GetSetting("MapBitmapScalerMode", ref _bitmapScalerMode);
 			GetSetting("StartPositionAlgorithm", ref _startPositionAlgorithm);
 			GetSetting("LanguagePostfix", ref _languagePostfix);
+			GetSetting("SoundPack", ref _soundPack);
 			GetSetting("SimulateInternationalFont", ref _simulateInternationalFont);
 			GetSetting("UseUncheckedCastSanitizer", ref _useUncheckedCastSanitizer);
 			GetSetting("CursorType", ref _cursorType);

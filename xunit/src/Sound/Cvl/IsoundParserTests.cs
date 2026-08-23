@@ -11,7 +11,7 @@ namespace CivOne.UnitTests.Sound.Cvl
     /// Deckt den ISOUND-Parser über ein synthetisches Modul ab (läuft immer) und prüft
     /// zusätzlich gegen die echte ISOUND.CVL, falls sie lokal vorliegt.
     /// </summary>
-    public class IsoundParserTests
+    public sealed class IsoundParserTests
     {
         private readonly ITestOutputHelper _output;
 
@@ -21,7 +21,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             => IsoundParser.Create(CvlImage.FromBytes(FakeIsoundModule.Build(), "fake-isound.cvl"));
 
         [Fact]
-        public void CvlImage_ReadsModuleHeaderAndResolvesSegments()
+        public void CvlImageReadsModuleHeaderAndResolvesSegments()
         {
             var image = CvlImage.FromBytes(FakeIsoundModule.Build(), "fake-isound.cvl");
 
@@ -40,7 +40,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void CvlImage_FromBytes_RejectsNonMzData()
+        public void CvlImageFromBytesRejectsNonMzData()
         {
             var bytes = new byte[512];
             var error = Assert.Throws<System.InvalidOperationException>(() => CvlImage.FromBytes(bytes, "broken.cvl"));
@@ -48,7 +48,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void TryCreate_DerivesLayoutFromModuleCode()
+        public void TryCreateDerivesLayoutFromModuleCode()
         {
             var parser = CreateFakeParser();
             var layout = parser.Layout;
@@ -63,7 +63,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void TryCreate_FailsWithReason_WhenModuleIsNotIsound()
+        public void TryCreateFailsWithReasonWhenModuleIsNotIsound()
         {
             // Gültiger CVL-Kopf, aber ohne PlayTune-Dispatch.
             var bytes = FakeIsoundModule.Build();
@@ -71,13 +71,13 @@ namespace CivOne.UnitTests.Sound.Cvl
 
             var image = CvlImage.FromBytes(bytes, "not-isound.cvl");
 
-            Assert.False(IsoundParser.TryCreate(image, out var parser, out string error));
+            Assert.False(IsoundParser.TryCreate(image, out var parser, out string? error));
             Assert.Null(parser);
             Assert.False(string.IsNullOrWhiteSpace(error));
         }
 
         [Fact]
-        public void ParseTune_Music_ReadsFourByteRecords()
+        public void ParseTuneMusicReadsFourByteRecords()
         {
             var info = CreateFakeParser().ParseTune(FakeIsoundModule.TuneMusicA);
 
@@ -95,7 +95,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void ParseTune_Music_RestHasDurationButNoTone()
+        public void ParseTuneMusicRestHasDurationButNoTone()
         {
             var rest = CreateFakeParser().ParseTune(FakeIsoundModule.TuneMusicA).Steps[1];
 
@@ -106,7 +106,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void ParseTune_Music_ResolvesEffectFromTimbreTable()
+        public void ParseTuneMusicResolvesEffectFromTimbreTable()
         {
             var parser = CreateFakeParser();
 
@@ -128,7 +128,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void ParseTune_Silent_WhenHandlerReturnsImmediately()
+        public void ParseTuneSilentWhenHandlerReturnsImmediately()
         {
             var info = CreateFakeParser().ParseTune(FakeIsoundModule.TuneSilent);
 
@@ -138,7 +138,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void ParseTune_Effect_ReadsTenByteRecordsAndShortRest()
+        public void ParseTuneEffectReadsTenByteRecordsAndShortRest()
         {
             var info = CreateFakeParser().ParseTune(FakeIsoundModule.TuneEffect);
 
@@ -161,7 +161,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void ParseTune_Unsupported_WhenHandlerIsNotASequence()
+        public void ParseTuneUnsupportedWhenHandlerIsNotASequence()
         {
             var info = CreateFakeParser().ParseTune(FakeIsoundModule.TuneUnsupported);
 
@@ -174,7 +174,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         [InlineData(3)]
         [InlineData(0x2D)]
         [InlineData(-1)]
-        public void ParseTune_Unsupported_WhenDispatchEntryIsEmptyOrOutOfRange(int tuneId)
+        public void ParseTuneUnsupportedWhenDispatchEntryIsEmptyOrOutOfRange(int tuneId)
         {
             // 3 ist belegt, deshalb nur die Randfälle prüfen.
             var info = CreateFakeParser().ParseTune(tuneId);
@@ -196,7 +196,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         [InlineData(0x8FFF, nameof(SpeakerEffectKind.Vibrato), 0xFF, 0x0F, 0)]
         [InlineData(0x000F, nameof(SpeakerEffectKind.Slide), 0, 0, 15)]
         [InlineData(0xFFF1, nameof(SpeakerEffectKind.Slide), 0, 0, -15)]
-        public void SpeakerEffect_Decode_SplitsVibratoAndSlide(int raw, string kind, int range, int step, int delta)
+        public void SpeakerEffectDecodeSplitsVibratoAndSlide(int raw, string kind, int range, int step, int delta)
         {
             var effect = SpeakerEffect.Decode(raw);
 
@@ -207,7 +207,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void FrequencyHz_UsesPitClockDividedByDivisor()
+        public void FrequencyHzUsesPitClockDividedByDivisor()
         {
             var step = new TuneStep { Duration = 1, Divisor = 4180 };
 
@@ -221,10 +221,12 @@ namespace CivOne.UnitTests.Sound.Cvl
 
         private const string KnownBuildSignature = "Civil IBM   11-14-91";
 
-        private IsoundParser TryCreateRealParser(out CvlImage image)
+        private static readonly int[] DistinctSequenceTuneIds = [3, 5, 9, 34, 35];
+
+        private IsoundParser? TryCreateRealParser(out CvlImage? image)
         {
             image = null;
-            string path = CvlTestFiles.TryFindIsound();
+            string? path = CvlTestFiles.TryFindIsound();
             if (path == null)
             {
                 _output.WriteLine(CvlTestFiles.MissingHint("ISOUND.CVL", CvlTestFiles.IsoundEnvironmentVariable));
@@ -236,10 +238,10 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void RealIsound_LayoutMatchesKnownBuild()
+        public void RealIsoundLayoutMatchesKnownBuild()
         {
             var parser = TryCreateRealParser(out var image);
-            if (parser == null) return;
+            if (parser == null || image == null) return;
 
             _output.WriteLine($"Signatur: {image.Signature}");
             _output.WriteLine($"Dispatch 0x{parser.Layout.DispatchTable:X4}, Musik 0x{parser.Layout.MusicPlayer:X4}, "
@@ -261,7 +263,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void RealIsound_WinMusic_StartsWithExpectedNotesOnAUniformGrid()
+        public void RealIsoundWinMusicStartsWithExpectedNotesOnAUniformGrid()
         {
             var parser = TryCreateRealParser(out _);
             if (parser == null) return;
@@ -286,7 +288,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void RealIsound_Tune4_IsSilentByDesign()
+        public void RealIsoundTune4IsSilentByDesign()
         {
             var parser = TryCreateRealParser(out _);
             if (parser == null) return;
@@ -298,12 +300,12 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void RealIsound_TunesHaveDistinctSequences()
+        public void RealIsoundTunesHaveDistinctSequences()
         {
             var parser = TryCreateRealParser(out _);
             if (parser == null) return;
 
-            var sequences = new[] { 3, 5, 9, 34, 35 }
+            var sequences = DistinctSequenceTuneIds
                 .Select(parser.ParseTune)
                 .ToArray();
 
@@ -318,7 +320,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         [Fact]
-        public void RealIsound_AllParsedTunesStayInPlausibleRanges()
+        public void RealIsoundAllParsedTunesStayInPlausibleRanges()
         {
             var parser = TryCreateRealParser(out _);
             if (parser == null) return;
