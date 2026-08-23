@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using CivOne.Screens.Dialogs;
+using CivOne.Sound.Cvl;
 
 namespace CivOne.IO
 {
@@ -60,7 +61,28 @@ namespace CivOne.IO
 				return false;
 			}
 			Log("- Done, all copied");
+
+			ConvertSoundDrivers(folder);
 			return true;
+		}
+
+		/// <summary>
+		/// Wandelt die CVL-Soundtreiber des Originalspiels einmalig in eigene Notendaten um.
+		/// Sie landen als *.sound.json je Tune unter sounds/&lt;pack&gt;/; die CVL-Dateien selbst
+		/// werden nicht ins Profil kopiert und danach nicht mehr gebraucht.
+		/// </summary>
+		public static bool ConvertSoundDrivers(string folder)
+		{
+			Log("Converting CVL sound drivers from {0}...", folder);
+
+			CvlConversionReport report = new CvlSoundConversionService().ConvertFolder(folder, Settings.Instance.SoundsDirectory);
+			foreach (string message in report.Messages)
+			{
+				Log("- {0}", message);
+			}
+
+			if (!report.AnyConverted) Log("- No sound driver converted");
+			return report.AnyConverted;
 		}
 
 		public static bool SoundFilesExist(params string[] files)

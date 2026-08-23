@@ -1,0 +1,56 @@
+using System.Collections.Generic;
+
+namespace CivOne.Sound.Cvl;
+
+#nullable enable
+
+/// <summary>
+/// Bekannte Tune-Nummern der CVL-Module. CIVPLAY erlaubt 3..44; benannt ist nur ein Teil davon.
+/// </summary>
+internal static class CvlTuneCatalog
+{
+    private static readonly Dictionary<int, string> _titles = new()
+    {
+        [3] = "Title Music",
+        [4] = "Evolution Music",
+        [5] = "Lincoln",
+        [6] = "Montezuma",
+        [7] = "Ramses",
+        [8] = "Shaka Zulu",
+        [9] = "Napoleon",
+        [10] = "Caesar",
+        [11] = "Stalin",
+        [12] = "Alexander the Great",
+        [13] = "Elizabeth",
+        [14] = "Hammurabi",
+        [15] = "Mao",
+        [16] = "Genghis Khan",
+        [17] = "Gandhi",
+        [18] = "Frederick",
+        [34] = "Win Music",
+        [35] = "Lose Music"
+    };
+
+    /// <summary>Erste vom Host adressierbare Tune-Nummer.</summary>
+    public const int FirstPlayableTuneId = 3;
+
+    /// <summary>Letzte vom Host adressierbare Tune-Nummer.</summary>
+    public const int LastPlayableTuneId = 44;
+
+    public static string ResolveTitle(int tuneId)
+        => _titles.TryGetValue(tuneId, out string? title) ? title : $"Tune {tuneId}";
+
+    /// <summary>Tunes, die im Original endlos laufen (Titel- und Evolutionsmusik).</summary>
+    public static bool IsEndlessLoop(int tuneId) => tuneId is 3 or 4;
+
+    public static IEnumerable<int> PlayableTuneIds
+    {
+        get
+        {
+            for (int tuneId = FirstPlayableTuneId; tuneId <= LastPlayableTuneId; tuneId++)
+            {
+                yield return tuneId;
+            }
+        }
+    }
+}
