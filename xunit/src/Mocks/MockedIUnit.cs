@@ -16,6 +16,7 @@ namespace CivOne.UnitTests
 	{
         public MockedIUnit()
         {
+			Id = Guid.NewGuid();
             MenuItems = [];
             Modifications = [];
 
@@ -65,6 +66,7 @@ namespace CivOne.UnitTests
             ProductionId = 0;
         }
 		public bool FortifyActive { get; set; }
+		public Guid Id { get; set; }
 		public Guid? PendingHomeCityGuid { get; set; }
 		void IUnitRestorable.ForceStatus(bool sentry, bool fortifyActive, bool fortify, bool veteran)
 		{

@@ -27,12 +27,62 @@ namespace CivOne.Screens
 	[ScreenResizeable]
 	internal class Civilopedia : BaseScreen
 	{
-		internal static ICivilopedia[] Advances = Reflect.GetCivilopediaAdvances().OrderBy(x => x.TranslatedName).ToArray();
-		internal static ICivilopedia[] Improvements = Reflect.GetCivilopediaCityImprovements().OrderBy(x => x.TranslatedName).ToArray();
-		internal static ICivilopedia[] Units = Reflect.GetCivilopediaUnits().OrderBy(x => x.TranslatedName).ToArray();
-		internal static ICivilopedia[] TerrainType = Reflect.GetCivilopediaTerrainTypes().OrderBy(x => x.TranslatedName).ToArray();
-		internal static ICivilopedia[] Misc = Reflect.GetConcepts().OrderBy(x => x.TranslatedName).ToArray();
-		internal static ICivilopedia[] Complete = Reflect.GetCivilopediaAll().OrderBy(x => x.TranslatedName).ToArray();
+		private static ICivilopedia[]? _advances;
+		private static ICivilopedia[]? _improvements;
+		private static ICivilopedia[]? _units;
+		private static ICivilopedia[]? _terrainType;
+		private static ICivilopedia[]? _misc;
+		private static ICivilopedia[]? _complete;
+
+		/// <summary>
+		/// Every advance article, resolved on first use.
+		/// These lists are not initialized eagerly: building them reflects over every loaded assembly
+		/// and instantiates each type, which needs a registered runtime, and a static initializer
+		/// that throws would poison this type for the rest of the process.
+		/// They are also cleared whenever plugins change, so plugin content does not linger.
+		/// </summary>
+		internal static ICivilopedia[] Advances => _advances ??= [.. Reflect.GetCivilopediaAdvances().OrderBy(x => x.TranslatedName)];
+
+		/// <summary>
+		/// Every city improvement and wonder article, resolved on first use. See <see cref="Advances"/>.
+		/// </summary>
+		internal static ICivilopedia[] Improvements => _improvements ??= [.. Reflect.GetCivilopediaCityImprovements().OrderBy(x => x.TranslatedName)];
+
+		/// <summary>
+		/// Every unit article, resolved on first use. See <see cref="Advances"/>.
+		/// </summary>
+		internal static ICivilopedia[] Units => _units ??= [.. Reflect.GetCivilopediaUnits().OrderBy(x => x.TranslatedName)];
+
+		/// <summary>
+		/// Every terrain article, resolved on first use. See <see cref="Advances"/>.
+		/// </summary>
+		internal static ICivilopedia[] TerrainType => _terrainType ??= [.. Reflect.GetCivilopediaTerrainTypes().OrderBy(x => x.TranslatedName)];
+
+		/// <summary>
+		/// Every concept article, resolved on first use. See <see cref="Advances"/>.
+		/// </summary>
+		internal static ICivilopedia[] Misc => _misc ??= [.. Reflect.GetConcepts().OrderBy(x => x.TranslatedName)];
+
+		/// <summary>
+		/// Every article of any kind, resolved on first use. See <see cref="Advances"/>.
+		/// </summary>
+		internal static ICivilopedia[] Complete => _complete ??= [.. Reflect.GetCivilopediaAll().OrderBy(x => x.TranslatedName)];
+
+		/// <summary>
+		/// Drops the cached article lists so they are rebuilt on next use.
+		/// Called after plugins are loaded, enabled, disabled or deleted: the cached articles are
+		/// instances of plugin types, and keeping them would both show stale content and prevent the
+		/// plugin assembly from being unloaded.
+		/// </summary>
+		internal static void ResetCaches()
+		{
+			_advances = null;
+			_improvements = null;
+			_units = null;
+			_terrainType = null;
+			_misc = null;
+			_complete = null;
+		}
 		
 		private readonly ICivilopedia[]? _pages;
 		private readonly ICivilopedia? _singlePage;

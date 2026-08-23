@@ -8,16 +8,20 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using CivOne.Agents;
 using CivOne.Advances;
 using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
+using CivOne.Persistence.Game;
 using CivOne.Screens.NewGamePanels;
 using CivOne.Tasks;
 using CivOne.Units;
@@ -33,6 +37,7 @@ namespace CivOne.Screens
 		private readonly NewGameCompetitionMenuDelegate _competitionMenu;
 		private readonly NewGameBarbarianMenuDelegate _barbarianMenu;
 		private readonly NewGameTribeMenuDelegate _tribeMenu;
+		private readonly NewGameDifficultyPictureDelegate _difficultyPictures = new();
 
 		private ICivilization[] _tribesAvailable = [];
 		private readonly string[] _menuItemsDifficulty;
@@ -45,9 +50,16 @@ namespace CivOne.Screens
 		private string? _leaderName;
 		private string? _tribeName;
 		private string? _tribeNamePlural;
+		private NewGameAiSelectionResult? _aiSelectionResult;
 
 		private bool _done, _showIntroText, _gameCreated, _introDirty;
 		private int _introBorderStyle = -1;
+
+		/// <summary>
+		/// Menu value of the extra difficulty menu entry that opens the AI selection screen.
+		/// Kept outside the range of the difficulty indices so it cannot collide with one.
+		/// </summary>
+		private const int AiSelectionMenuValue = -999;
 
 		/// <summary>
 		/// Creates an empty menu with the look and position used by this screen.
@@ -99,6 +111,27 @@ namespace CivOne.Screens
 			_competitionMenu.ShowMenu();
 		}
 
+		/// <summary>
+		/// Steps back from the competition menu to the difficulty menu.
+		/// Only the state is cleared, the menu itself is reopened by the next update.
+		/// Reopening it here would leave the screen with the drawing of the competition step, because
+		/// the screen only redraws while no menu is open.
+		/// </summary>
+		private void BackToDifficultyMenu()
+		{
+			_difficulty = -1;
+		}
+
+		/// <summary>
+		/// Steps back from the tribe menu to the competition menu.
+		/// Only the state is cleared, the menu itself is reopened by the next update, so the screen
+		/// redraws the portrait stack of the competition step.
+		/// </summary>
+		private void BackToCompetitionMenu()
+		{
+			_competition = -1;
+		}
+
 		private void MenuDifficulty()
 		{
 			Menu menu = CreateNewGameMenu(Translate("Difficulty Level..."));
@@ -107,7 +140,9 @@ namespace CivOne.Screens
 			{
 				menu.Items.Add(_menuItemsDifficulty[i], i).OnSelect(SetDifficulty);
 			}
+			menu.Items.Add(Translate("Use AI selections..."), AiSelectionMenuValue).TextColor(3).OnSelect(SetDifficulty);
 			menu.Cancel += DifficultyMenu_Cancel;
+			menu.MissClickAt += DifficultyMenu_MissClick;
 			AddMenu(menu);
 		}
 
@@ -124,9 +159,137 @@ namespace CivOne.Screens
 
 		private void SetDifficulty(object sender, MenuItemEventArgs<int> args)
 		{
-			_difficulty = args.Value;
+			if (args.Value == AiSelectionMenuValue)
+			{
+				CloseMenus();
+				OpenAiSelectionScreen();
+				return;
+			}
+
+			ApplyDifficulty(args.Value);
+		}
+
+		/// <summary>
+		/// Picks the difficulty whose portrait was clicked next to the difficulty menu.
+		/// Clicks that miss every portrait are ignored, so the menu stays open.
+		/// </summary>
+		private void DifficultyMenu_MissClick(object? sender, ScreenEventArgs args)
+		{
+			if (args == null || (args.Buttons & MouseButton.Left) == 0)
+			{
+				return;
+			}
+
+			int difficulty = _difficultyPictures.GetDifficultyAt(args.Location, OffsetX, OffsetY, _menuItemsDifficulty.Length);
+			if (difficulty == NewGameDifficultyPictureDelegate.NoDifficulty)
+			{
+				return;
+			}
+
+			ApplyDifficulty(difficulty);
+		}
+
+		/// <summary>
+		/// Stores the picked difficulty and closes the difficulty menu.
+		/// </summary>
+		/// <param name="difficulty">Index of the difficulty.</param>
+		private void ApplyDifficulty(int difficulty)
+		{
+			_difficulty = difficulty;
 			CloseMenus();
 			Log("Difficulty: {0}", _menuItemsDifficulty[_difficulty]);
+		}
+
+		private void OpenAiSelectionScreen()
+		{
+			int initialDifficulty = _difficulty >= 0 ? _difficulty : 0;
+			NewGameAiSelection aiSelection = new(initialDifficulty);
+			aiSelection.StartRequested += AiSelection_StartRequested;
+			aiSelection.Closed += AiSelection_Closed;
+			Common.AddScreen(aiSelection);
+		}
+
+		/// <summary>
+		/// Takes over the setup made on the AI selection screen, so the remaining steps of this screen
+		/// (competition menu, tribe menu, name input) are already answered and get skipped.
+		/// </summary>
+		private void AiSelection_StartRequested(object? sender, NewGameAiSelectionResultEventArgs args)
+		{
+			ArgumentNullException.ThrowIfNull(args);
+			_aiSelectionResult = args.Result;
+
+			_difficulty = _aiSelectionResult.Difficulty;
+
+			// The selection screen reports the number of non-barbarian players, this screen counts the
+			// opponents of the human player.
+			_competition = _aiSelectionResult.Competition - 1;
+			_tribeMenu.Reset();
+
+			ICivilization humanCivilization = _aiSelectionResult.Human.Civilization;
+			_tribesAvailable = _rules.GetSelectableCivilizations(_competition);
+			_tribe = Array.FindIndex(_tribesAvailable, civ => civ.Id == humanCivilization.Id);
+			if (_tribe < 0)
+			{
+				// The selection screen offers every civilization, the tribe menu of this screen only the
+				// ones allowed for the chosen game size. Keep the player's choice instead of replacing it.
+				_tribesAvailable = [.. _tribesAvailable, humanCivilization];
+				_tribe = _tribesAvailable.Length - 1;
+			}
+
+			_leaderName = _aiSelectionResult.Human.Name;
+			_tribeName = humanCivilization.Name;
+			_tribeNamePlural = humanCivilization.NamePlural;
+		}
+
+		private void AiSelection_Closed(object? sender, EventArgs args)
+		{
+			if (_difficulty < 0)
+			{
+				CloseMenus();
+			}
+		}
+
+		/// <summary>
+		/// Copies the AI, name and difficulty picked per opponent onto the players of the created game.
+		/// The player slots are assigned during game creation, so the selections are matched by
+		/// civilization rather than by a slot number known beforehand.
+		/// Each created player is claimed at most once, so a civilization reused by a large game still
+		/// gets one selection each.
+		/// </summary>
+		private void ApplyAiSelectionsToCreatedGame()
+		{
+			if (_aiSelectionResult is null)
+			{
+				return;
+			}
+
+			List<Player> unclaimedPlayers = [.. Game.Players.Where(player => !player.IsHuman)];
+
+			foreach (NewGamePlayerSelection selection in _aiSelectionResult.Opponents)
+			{
+				Player? player = unclaimedPlayers.Find(candidate => candidate.Civilization.Id == selection.Civilization.Id);
+				if (player is null)
+				{
+					Log("NewGame: No player slot for the selected {0}, skipping its AI setup.", selection.Civilization.NamePlural);
+					continue;
+				}
+
+				unclaimedPlayers.Remove(player);
+
+				IPlayerRestorable restorable = player;
+				restorable.AiId = selection.AiId;
+				if (!string.IsNullOrWhiteSpace(selection.Name))
+				{
+					string trimmedName = selection.Name.Trim();
+					restorable.TribeName = trimmedName;
+					restorable.TribeNamePlural = trimmedName;
+				}
+
+				if (selection.DifficultyIndex >= 0 && selection.DifficultyIndex <= Game.Instance.MaxDifficulty)
+				{
+					player.AiDifficulty = (AiDifficulty)selection.DifficultyIndex;
+				}
+			}
 		}
 
 		/// <summary>
@@ -208,12 +371,8 @@ namespace CivOne.Screens
 		{
 			get
 			{
-				int pictureId = _difficulty;
-				if (pictureId > 4) pictureId = 4;
-
-				int x = (pictureId % 2) == 0 ? 21 : 80;
-				int y = 6 + (35 * pictureId);
-				return _background[x, y, 53, 47];
+				Rectangle bounds = _difficultyPictures.GetPictureBounds(_difficulty);
+				return _background[bounds.X, bounds.Y, bounds.Width, bounds.Height];
 			}
 		}
 
@@ -259,6 +418,7 @@ namespace CivOne.Screens
 					try
 					{
 						Game.CreateGame(_difficulty, _rules.OpponentsToCompetition(_competition), civ, _leaderName, _tribeName, _tribeNamePlural, replaceExisting: true);
+						ApplyAiSelectionsToCreatedGame();
 					}
 					catch (Exception ex)
 					{
@@ -454,8 +614,8 @@ namespace CivOne.Screens
 
 			_rules = new NewGameRulesDelegate();
 			_barbarianMenu = new NewGameBarbarianMenuDelegate(this, ShowCompetitionMenu);
-			_competitionMenu = new NewGameCompetitionMenuDelegate(this, _rules, SetCompetition, MenuDifficulty, barbarianMenu: _barbarianMenu);
-			_tribeMenu = new NewGameTribeMenuDelegate(this, _rules, () => _tribesAvailable, SetTribe, ShowCompetitionMenu, StartCustomTribeNameInput);
+			_competitionMenu = new NewGameCompetitionMenuDelegate(this, _rules, SetCompetition, BackToDifficultyMenu, barbarianMenu: _barbarianMenu);
+			_tribeMenu = new NewGameTribeMenuDelegate(this, _rules, () => _tribesAvailable, SetTribe, BackToCompetitionMenu, StartCustomTribeNameInput);
 
 			_menuItemsDifficulty = _rules.BuildDifficultyMenuItems();
 		}

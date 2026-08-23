@@ -111,10 +111,10 @@ namespace CivOne.Screens.NewGamePanels
 				menu.Items.Add(Rules.FormatCivilizationCount(opponents), opponents).OnSelect(ItemSelected);
 			}
 
-			menu.Items.Add(Translation.Translate("More Civilizations..."), OpenExtendedValue).OnSelect(ItemSelected);
+			menu.Items.Add(Translation.Translate("More Civilizations..."), OpenExtendedValue).TextColor(3).OnSelect(ItemSelected);
 			if (_barbarianMenu != null)
 			{
-				menu.Items.Add(_barbarianMenu.MenuEntryText, OpenBarbarianValue).OnSelect(ItemSelected);
+				menu.Items.Add(_barbarianMenu.MenuEntryText, OpenBarbarianValue).TextColor(3).OnSelect(ItemSelected);
 			}
 			menu.Cancel += MainMenuCancel;
 			Host.ShowMenu(menu);

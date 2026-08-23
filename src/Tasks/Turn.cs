@@ -9,6 +9,7 @@
 
 using CivOne.Services.EndGame;
 using CivOne.Units;
+using CivOne.Agents;
 
 namespace CivOne.Tasks
 {
@@ -29,12 +30,19 @@ namespace CivOne.Tasks
 		{
 			if (_unit != null)
 			{
-				if (Game.CurrentPlayer.AI == null)
+				if (TurnBasedAgentHost.ShouldHandlePlayer(Game.CurrentPlayer))
 				{
-					Log("Warning: Attempting to move unit {0} for player {1}, but the player has no AI assigned. Ending turn instead.",
-						_unit.GetType().Name, Game.CurrentPlayer.TribeName);
+					TurnBasedAgentHost.Instance.RunForCurrentPlayerIfNeeded();
 				}
-				Game.CurrentPlayer.AI?.Move(_unit);
+				else
+				{
+					if (Game.CurrentPlayer.AiController == null)
+					{
+						Log("Warning: Attempting to move unit {0} for player {1}, but the player has no AI assigned. Ending turn instead.",
+							_unit.GetType().Name, Game.CurrentPlayer.TribeName);
+					}
+					Game.CurrentPlayer.AiController?.Move(_unit);
+				}
 				EndTask();
 			}
 			if (_endTurn && _step-- <= 0)
@@ -103,6 +111,11 @@ namespace CivOne.Tasks
 			if (!_endTurn || Game.CurrentPlayer.IsHuman)
 			{
 				return false;
+			}
+
+			if (TurnBasedAgentHost.ShouldHandlePlayer(Game.CurrentPlayer))
+			{
+				TurnBasedAgentHost.Instance.RunForCurrentPlayerIfNeeded();
 			}
 
 			Game.EndTurn(1);

@@ -87,9 +87,9 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
-		private void MenuChangeHumanPlayer(object? _, EventArgs args)
+		private void MenuCivSelections(object? _, EventArgs args)
 		{
-			GameTask.Enqueue(Show.Screen<ChangeHumanPlayer>());
+			GameTask.Enqueue(Show.Screen<CivSelections>());
 			Destroy();
 		}
 
@@ -593,7 +593,7 @@ namespace CivOne.Screens
 				new(Translate("Test Dialog: OverwritePlugin"), () => MenuRunOverwritePlugin(null, EventArgs.Empty)),
 				new(Translate("Test Dialog: ChooseTech"), () => MenuRunChooseTech(null, EventArgs.Empty)),
 				new(Translate("Test Dialog: Discovery"), () => MenuRunDiscovery(null, EventArgs.Empty)),
-				new(Translate("Change Human Player"), () => MenuChangeHumanPlayer(null, EventArgs.Empty)),
+				new(Translate("Civ Selections"), () => MenuCivSelections(null, EventArgs.Empty)),
 				new(Translate("Spawn Unit"), () => MenuSpawnUnit(null, EventArgs.Empty)),
 				new(Translate("Spawn Barbarians"), () => MenuSpawnBarbarians(null, EventArgs.Empty)),
 				new(Translate("Meet With King"), () => MenuMeetWithKing(null, EventArgs.Empty)),

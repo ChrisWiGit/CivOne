@@ -34,6 +34,13 @@ namespace CivOne.Units
 	{
 		protected int _x, _y;
 		private readonly ConfrontDelegate _confrontDelegate;
+		private Guid _id = Guid.NewGuid();
+
+		public Guid Id
+		{
+			get => _id;
+			set => _id = value;
+		}
 
 		protected Order _order;
 		public Order order
@@ -1285,7 +1292,7 @@ namespace CivOne.Units
 
 			Log("Applying unit modifications");
 
-			foreach (UnitModification modification in Reflect.GetModifications<UnitModification>())
+			foreach (UnitModification modification in unitModifications)
 			{
 				if (!_modifications.ContainsKey(modification.UnitType))
 					_modifications.Add(modification.UnitType, []);

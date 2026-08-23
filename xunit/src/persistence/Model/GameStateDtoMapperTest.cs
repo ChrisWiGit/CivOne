@@ -3,13 +3,13 @@ namespace CivOne.Persistence.Model
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using CivOne.Agents;
 	using CivOne;
 	using CivOne.Advances;
 	using CivOne.Buildings;
 	using CivOne.Civilizations;
 	using CivOne.Enums;
 	using CivOne.Governments;
-	using CivOne.Leaders;
 	using CivOne.Persistence.Yaml;
 	using CivOne.UnitTests;
 	using CivOne.Units;
@@ -21,15 +21,18 @@ namespace CivOne.Persistence.Model
 	using CivOne.Persistence.Resolver;
 	using CivOne.Persistence.Factories;
 
-	public class GameStateDtoMapperTest
+	public class GameStateDtoMapperTest : IDisposable
 	{
 		private readonly GameStateDtoMapper _testee;
 		private readonly List<MockedIPlayer> _players;
 		private readonly IPlayerGame _gameInstance;
 		private readonly GameStateDto _dto;
+		private readonly MockRuntime _runtime;
 
 		public GameStateDtoMapperTest()
 		{
+			_runtime = new MockRuntime(new RuntimeSettings());
+
 			var civsInGame = MockedICivilization.Mock(3);
 			CivilizationDto.AllLeaderClassNames = [.. civsInGame.Select(c => c.Leader.GetType().Name).Distinct()];
 
@@ -79,6 +82,7 @@ namespace CivOne.Persistence.Model
 			{
 				Id = 0,
 				PlayerGuid = _players[0].PlayerGuid,
+				AiId = AiDefinitionIds.Legacy,
 				Civilization = new CivilizationDto { LeaderClassName = civsInGame[0].Leader.GetType().Name },
 				Advances = [1, 2, 3],
 				Embassies = [1],
@@ -152,6 +156,7 @@ namespace CivOne.Persistence.Model
 			{
 				Id = 1,
 				PlayerGuid = _players[1].PlayerGuid,
+				AiId = Guid.NewGuid(),
 				Civilization = new CivilizationDto { LeaderClassName = civsInGame[1].Leader.GetType().Name },
 				Advances = [0, 2],
 				Embassies = [0],
@@ -361,6 +366,7 @@ namespace CivOne.Persistence.Model
 						Assert.Equal(expectedPlayer.Gold, actualPlayer.Gold);
 						Assert.Equal(expectedPlayer.Anarchy, actualPlayer.Anarchy);
 						Assert.Equal(expectedPlayer.PlayerGuid, actualPlayer.PlayerGuid);
+						Assert.Equal(expectedPlayer.AiId, actualPlayer.AiId);
 						Assert.Equal(expectedPlayer.TribeName, actualPlayer.TribeName);
 						Assert.Equal(expectedPlayer.FutureTechCount, actualPlayer.FutureTechCount);
 						Assert.Equal(expectedPlayer.HumanContactTurn, actualPlayer.HumanContactTurn);
@@ -432,8 +438,22 @@ namespace CivOne.Persistence.Model
 			};
 		}
 
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+			_runtime.Dispose();
+			RuntimeHandler.Wipe();
+		}
 
-		// Mock implementations for testing
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
 		private sealed class MockGameInstanceForTesting : IPlayerGame
 		{
 			private readonly List<IPlayer> _players;
@@ -448,7 +468,9 @@ namespace CivOne.Persistence.Model
 			public int Difficulty => 3;
 			public int Competition => 7;
 			public bool DisableBuddyCivilizationRespawn => false;
-			public Player HumanPlayer => throw new NotImplementedException();
+			// Returns null instead of throwing: PlayerDtoMapper.ToDto compares every player against the
+			// human player, so this stub is touched even though the tests do not need a human player.
+			public Player HumanPlayer => null!;
 			public Player CurrentPlayer => throw new NotImplementedException();
 			// Return a dummy Player array for Validate to use as fallback
 			// In tests, this satisfies the check that gameInstance.Players.Any()
@@ -505,7 +527,6 @@ namespace CivOne.Persistence.Model
 			public IWonder[] ResolveWonders(IEnumerable<Wonder> wonderTypes)
 				=> [.. (wonderTypes ?? []).Select(type => new MockedIWonder { Type = type })];
 		}
-
 		private sealed class TestAdvanceResolver : IAdvanceResolver
 		{
 			public IAdvance ResolveById(uint id)

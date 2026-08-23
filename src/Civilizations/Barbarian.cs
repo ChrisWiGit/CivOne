@@ -9,6 +9,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using CivOne.Agents;
 using CivOne.Advances;
 using CivOne.Enums;
 using CivOne.Leaders;
@@ -25,11 +26,31 @@ namespace CivOne.Civilizations
 		internal static readonly byte Owner;
 
 		/// <summary>
+		/// The difficulty the barbarians play at.
+		/// Uses the AI difficulty configured for the barbarian player when one is set,
+		/// otherwise falls back to the game difficulty.
+		/// </summary>
+		internal static int Difficulty
+		{
+			get
+			{
+				Player? barbarianPlayer = Game.GetPlayer(0);
+				if (barbarianPlayer?.AiDifficulty is AiDifficulty barbarianDifficulty
+					&& barbarianDifficulty != AiDifficulty.Unspecified)
+				{
+					return (int)barbarianDifficulty;
+				}
+
+				return Game.Difficulty;
+			}
+		}
+
+		/// <summary>
 		/// Tells whether the current turn is one where barbarians appear.
 		/// Land and sea raiders share the same rhythm, so this answers for both.
 		/// Whether they may actually appear is a separate question, see <see cref="BarbarianSpawnDelegate"/>.
 		/// </summary>
-		internal static bool IsSpawnTurn => Game.Started && (Game.GameTurn % 8 == 0) && (Game.GameTurn > 150 || Game.GameTurn >= (5 - Game.Difficulty) * 32) && !Game.Players.Any(x => x.HasAdvance<Combustion>());
+		internal static bool IsSpawnTurn => Game.Started && (Game.GameTurn % 8 == 0) && (Game.GameTurn > 150 || Game.GameTurn >= (5 - Difficulty) * 32) && !Game.Players.Any(x => x.HasAdvance<Combustion>());
 
 		internal static bool IsSeaSpawnTurn => IsSpawnTurn;
 

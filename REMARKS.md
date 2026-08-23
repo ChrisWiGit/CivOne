@@ -665,3 +665,4 @@ runtime therefore takes down every later test in the same run.
 | CA1814 | Prefer jagged arrays over multidimensional | Not really useful and used a lot in the project. |
 | CA1307 | Specify StringComparison for clarity | Unit tests often intentionally use default string comparison behavior. Tests will fail if it changes. |
 | CA1002 | Do not expose generic lists | Unit tests often intentionally use generic lists for simplicity. |
+| CA1707 | Identifiers should not contain underscores | Unit tests often intentionally use underscores in method names for readability. |

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using CivOne.Agents;
 using CivOne.Advances;
 using CivOne.Civilizations;
 using CivOne.Enums;
@@ -57,6 +58,9 @@ namespace CivOne.Persistence.Model
 			IPlayerRestorable player = _playerFactory.Create(civilization, dto);
 
 			player.PlayerGuid = dto.PlayerGuid == Guid.Empty ? Guid.NewGuid() : dto.PlayerGuid;
+			player.AiId = dto.AiId == Guid.Empty ? null : dto.AiId;
+			player.AiDifficulty = ToDifficultyIndex(dto.AiDifficulty);
+			player.Handicap = _valueSanitizer.ClampToByte(dto.Handicap, nameof(PlayerDtoMapper), nameof(PlayerDto.Handicap));
 			// Restores disambiguated leader names (e.g. "Caesar II") for reused civilizations; see PlayerDto.LeaderName.
 			player.LeaderName = string.IsNullOrEmpty(dto.LeaderName) ? civilization.Leader.Name : dto.LeaderName;
 			player.TribeName = string.IsNullOrEmpty(dto.TribeName) ? civilization.Name : dto.TribeName;
@@ -114,7 +118,25 @@ namespace CivOne.Persistence.Model
 
 			return player;
 		}
-        public PlayerDto ToDto(IPlayer player)
+
+		private AiDifficulty ToDifficultyIndex(int? dto)
+		{
+			if (!dto.HasValue)
+			{
+				return AiDifficulty.Unspecified;
+			}
+			int aiDifficultyValue = _valueSanitizer.ClampToInt32(
+					dto.Value,
+					mapperName: nameof(PlayerDtoMapper),
+					fieldName: nameof(PlayerDto.AiDifficulty),
+					min: (int)AiDifficulty.Unspecified,
+					max: (int)AiDifficulty.Deity);
+			return Enum.IsDefined(typeof(AiDifficulty), aiDifficultyValue)
+				? (AiDifficulty)aiDifficultyValue
+				: AiDifficulty.Unspecified;
+		}
+
+		public PlayerDto ToDto(IPlayer player)
 		{
 			ArgumentNullException.ThrowIfNull(player);
 
@@ -126,6 +148,13 @@ namespace CivOne.Persistence.Model
 			{
 				Civilization = _civilizationMapper.ToDto(player.Civilization),
 				PlayerGuid = player.PlayerGuid,
+				AiId = player == gameInstance.HumanPlayer
+					? null
+					: player.AiId.HasValue && player.AiId.Value != Guid.Empty
+						? player.AiId
+						: AiDefinitionIds.Legacy,
+				AiDifficulty = player.AiDifficulty == AiDifficulty.Unspecified ? null : (int)player.AiDifficulty,
+				Handicap = player.Handicap,
 
 				Explored = player.Explored,
 				Visible = player.Visible,
