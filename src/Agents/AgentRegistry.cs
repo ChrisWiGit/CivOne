@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CivOne.Agents
 {
@@ -12,6 +13,7 @@ namespace CivOne.Agents
 		private readonly Dictionary<Guid, IAgentRegistration> _agentsById = [];
 		private readonly Dictionary<Guid, Guid> _playerToAgent = [];
 		private readonly Dictionary<Guid, AiDefinition> _definitionsById = [];
+		private readonly Dictionary<Guid, Func<IAgentRegistration>> _factoriesById = [];
 
 		/// <summary>
 		/// Gets singleton registry instance.
@@ -30,6 +32,7 @@ namespace CivOne.Agents
 			ArgumentNullException.ThrowIfNull(registration);
 			Guid agentId = registration.GetInformation().GetUuid();
 			_agentsById[agentId] = registration;
+			_factoriesById.Remove(agentId);
 
 			IAgentInformation information = registration.GetInformation();
 			_definitionsById[agentId] = new AiDefinition(
@@ -38,6 +41,48 @@ namespace CivOne.Agents
 				information.GetDescription(),
 				information.GetAuthor(),
 				difficulty);
+		}
+
+		/// <summary>
+		/// Registers one agent implementation without creating it yet.
+		/// The definition is enough to show the agent in the selection menu; the factory runs only
+		/// when a player is actually resolved to this agent.
+		/// </summary>
+		/// <param name="agentId">
+		/// The stable UUID the agent is registered and persisted under.
+		/// </param>
+		/// <param name="definition">
+		/// The display metadata shown in the selection menu.
+		/// </param>
+		/// <param name="factory">
+		/// Creates the registration on first use.
+		/// </param>
+		public void RegisterLazy(Guid agentId, AiDefinition definition, Func<IAgentRegistration> factory)
+		{
+			ArgumentNullException.ThrowIfNull(definition);
+			ArgumentNullException.ThrowIfNull(factory);
+
+			_agentsById.Remove(agentId);
+			_factoriesById[agentId] = factory;
+			_definitionsById[agentId] = definition;
+		}
+
+		/// <summary>
+		/// Removes one agent registration.
+		/// </summary>
+		/// <param name="agentId">
+		/// The UUID of the agent to remove.
+		/// </param>
+		public void Unregister(Guid agentId)
+		{
+			_agentsById.Remove(agentId);
+			_factoriesById.Remove(agentId);
+			_definitionsById.Remove(agentId);
+
+			foreach (Guid playerGuid in _playerToAgent.Where(x => x.Value == agentId).Select(x => x.Key).ToArray())
+			{
+				_playerToAgent.Remove(playerGuid);
+			}
 		}
 
 		/// <summary>
@@ -62,26 +107,19 @@ namespace CivOne.Agents
 		public bool TryResolve(Guid playerGuid, out IAgentRegistration? registration)
 		{
 			if (_playerToAgent.TryGetValue(playerGuid, out Guid boundAgentId)
-				&& _agentsById.TryGetValue(boundAgentId, out registration))
+				&& TryMaterialize(boundAgentId, out registration))
 			{
 				return true;
 			}
 
-			if (_agentsById.TryGetValue(playerGuid, out registration))
-			{
-				return true;
-			}
-
-			registration = null;
-			return false;
+			return TryMaterialize(playerGuid, out registration);
 		}
 
 		public bool TryResolveAi(Guid aiId, out IAgentRegistration? registration)
 		{
-			if (aiId != Guid.Empty
-				&& _agentsById.TryGetValue(aiId, out registration))
+			if (aiId != Guid.Empty)
 			{
-				return true;
+				return TryMaterialize(aiId, out registration);
 			}
 
 			registration = null;
@@ -91,6 +129,41 @@ namespace CivOne.Agents
 		public IReadOnlyCollection<AiDefinition> GetRegisteredDefinitions()
 		{
 			return [.. _definitionsById.Values];
+		}
+
+		/// <summary>
+		/// Resolves an agent, creating it from its registered factory on first access.
+		/// </summary>
+		/// <param name="agentId">
+		/// The agent UUID to resolve.
+		/// </param>
+		/// <param name="registration">
+		/// The resolved registration when found.
+		/// </param>
+		/// <returns>
+		/// True when a registration exists or could be created.
+		/// </returns>
+		private bool TryMaterialize(Guid agentId, out IAgentRegistration? registration)
+		{
+			if (_agentsById.TryGetValue(agentId, out registration))
+			{
+				return true;
+			}
+
+			if (!_factoriesById.TryGetValue(agentId, out Func<IAgentRegistration>? factory))
+			{
+				registration = null;
+				return false;
+			}
+
+			registration = factory();
+			if (registration == null)
+			{
+				return false;
+			}
+
+			_agentsById[agentId] = registration;
+			return true;
 		}
 	}
 }

@@ -75,6 +75,8 @@ namespace CivOne
 			_advances = null;
 			_buildings = null;
 			_wonders = null;
+			// Fully qualified: Common has a Screens property that would shadow the namespace.
+			CivOne.Screens.Civilopedia.ResetCaches();
 		}
 
 		/// <summary>

@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using CivOne.Agents;
 
 namespace CivOne
 {
@@ -7,6 +9,11 @@ namespace CivOne
 	/// </summary>
 	/// <param name="Id">
 	/// Gets the stable unique identifier of the AI variant.
+	/// This is the single identity of the variant: the host passes it back to
+	/// <see cref="IPluginAiProvider.CreateAi(Guid, AiCreationContext)"/> to select it, uses it as the
+	/// registry key, and persists it in the save game as the player's chosen AI.
+	/// It must therefore stay stable across plugin versions, and it must match the value returned by
+	/// the created registration's <c>GetInformation().GetUuid()</c>.
 	/// </param>
 	/// <param name="Name">
 	/// Gets the user-facing display name.
@@ -24,14 +31,16 @@ namespace CivOne
 	/// Gets optional tags for grouping and filtering in the UI.
 	/// </param>
 	/// <param name="DefaultDifficulty">
-	/// Gets the optional preferred game difficulty index (0..5) for this variant.
+	/// Gets the preferred game difficulty for this variant.
+	/// Defaults to <see cref="AiDifficulty.Unspecified"/>, which lets the host use the difficulty
+	/// the player picked.
 	/// </param>
 	public sealed record AiDescriptor(
-		string Id,
+		Guid Id,
 		string Name,
 		string Author,
 		string Description,
 		string Version,
 		IReadOnlyList<string>? Tags = null,
-		int? DefaultDifficulty = null);
+		AiDifficulty DefaultDifficulty = AiDifficulty.Unspecified);
 }

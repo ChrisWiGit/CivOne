@@ -61,6 +61,14 @@ namespace CivOne.Agents
 		ICivilizationView CurrentCivilization { get; }
 
 		/// <summary>
+		/// Gets the difficulty the acting player was set up with.
+		/// Difficulty is per player, not per AI: two opponents can run the same AI at different
+		/// difficulties, so this is read here rather than passed in when the AI is created.
+		/// Returns <see cref="AiDifficulty.Unspecified"/> when no explicit difficulty was chosen.
+		/// </summary>
+		AiDifficulty Difficulty { get; }
+
+		/// <summary>
 		/// Gets the current map view.
 		/// </summary>
 		IMapView Map { get; }

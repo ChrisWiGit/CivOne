@@ -184,6 +184,7 @@ namespace CivOne.UnitTests
 		private sealed class FakeContext : ITurnContext
 		{
 			public int GameTurn { get; init; }
+			public AiDifficulty Difficulty { get; init; } = AiDifficulty.Unspecified;
 			public ICivilizationView CurrentCivilization { get; init; } = new FakeCivilizationView();
 			public IMapView Map { get; init; } = new FakeMapView();
 			public IReadOnlyList<IUnitView> OwnUnits { get; init; } = [];

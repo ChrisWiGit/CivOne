@@ -41,6 +41,30 @@ namespace CivOne.Agents
 		}
 
 		/// <summary>
+		/// Registers one agent implementation without creating it yet.
+		/// Use this when the metadata is known up front but building the agent is expensive or
+		/// unnecessary until a player actually uses it.
+		/// </summary>
+		/// <param name="agentId">The stable UUID the agent is registered under.</param>
+		/// <param name="definition">The display metadata shown in the selection menu.</param>
+		/// <param name="factory">Creates the registration on first use.</param>
+		public static void RegisterLazy(Guid agentId, AiDefinition definition, Func<IAgentRegistration> factory)
+		{
+			ArgumentNullException.ThrowIfNull(definition);
+			ArgumentNullException.ThrowIfNull(factory);
+			AgentRegistry.Instance.RegisterLazy(agentId, definition, factory);
+		}
+
+		/// <summary>
+		/// Removes one agent registration, for example when its plugin is disabled or deleted.
+		/// </summary>
+		/// <param name="agentGuid">The UUID of the agent to remove.</param>
+		public static void Unregister(Guid agentGuid)
+		{
+			AgentRegistry.Instance.Unregister(agentGuid);
+		}
+
+		/// <summary>
 		/// Binds one runtime player to a registered agent UUID.
 		/// </summary>
 		/// <param name="playerGuid">The runtime player identifier.</param>

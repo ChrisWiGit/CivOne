@@ -280,6 +280,8 @@ namespace CivOne.UnitTests
 		{
 			public int GameTurn { get; init; }
 
+			public AiDifficulty Difficulty { get; init; } = AiDifficulty.Unspecified;
+
 			public ICivilizationView CurrentCivilization { get; init; } = new FakeCivilizationView();
 
 			public IMapView Map { get; init; } = new FakeMapView();

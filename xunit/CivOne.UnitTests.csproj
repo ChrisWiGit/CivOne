@@ -44,7 +44,36 @@
 	<ItemGroup>
 		<ProjectReference Include="..\CivOne.csproj" />
 		<ProjectReference Include="..\civtranslate-interactive\civtranslate-interactive.csproj" />
+		<!--
+			Built, but deliberately not referenced: the plugin tests load this assembly from disk into
+			an isolated load context. Referencing it would put its types into the default context and
+			make the isolation untestable.
+		-->
+		<ProjectReference Include="TestPlugin\CivOne.TestPlugin.csproj"
+			ReferenceOutputAssembly="false"
+			Private="false"
+			SkipGetTargetFrameworkProperties="true" />
 	</ItemGroup>
+
+	<!-- The test plugin has its own sources; they must not be compiled into the test assembly. -->
+	<ItemGroup>
+		<Compile Remove="TestPlugin\**" />
+		<None Remove="TestPlugin\**" />
+	</ItemGroup>
+
+	<!--
+		Copy the built plugin next to the tests. The tests copy it from there into a temporary
+		plugins directory, so each test gets its own directory and they cannot interfere.
+	-->
+	<Target Name="CopyTestPluginAssembly" AfterTargets="Build">
+		<ItemGroup>
+			<TestPluginAssembly Include="$(MSBuildThisFileDirectory)TestPlugin\bin\$(Configuration)\$(TargetFramework)\CivOne.TestPlugin.dll" />
+		</ItemGroup>
+		<Copy SourceFiles="@(TestPluginAssembly)"
+			DestinationFolder="$(OutDir)testplugin"
+			SkipUnchangedFiles="true"
+			Condition="Exists('%(TestPluginAssembly.Identity)')" />
+	</Target>
 
 	<ItemGroup>
 		<Content Include="earth.yml">

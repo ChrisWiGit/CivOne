@@ -1292,7 +1292,7 @@ namespace CivOne.Units
 
 			Log("Applying unit modifications");
 
-			foreach (UnitModification modification in Reflect.GetModifications<UnitModification>())
+			foreach (UnitModification modification in unitModifications)
 			{
 				if (!_modifications.ContainsKey(modification.UnitType))
 					_modifications.Add(modification.UnitType, []);

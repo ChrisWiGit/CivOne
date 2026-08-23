@@ -2,46 +2,8 @@ using System;
 
 namespace CivOne.Agents
 {
-	/// <summary>
-	/// Describes the intended strength or maturity level of one AI definition.
-	/// </summary>
-	public enum AiDifficulty
-	{
-		/// <summary>
-		/// No explicit difficulty classification is assigned.
-		/// </summary>
-		Unspecified = -1,
-
-		/// <summary>
-		/// Chieftain game difficulty.
-		/// </summary>
-		Chieftain = 0,
-
-		/// <summary>
-		/// Warlord game difficulty.
-		/// </summary>
-		Warlord = 1,
-
-		/// <summary>
-		/// Prince game difficulty.
-		/// </summary>
-		Prince = 2,
-
-		/// <summary>
-		/// King game difficulty.
-		/// </summary>
-		King = 3,
-
-		/// <summary>
-		/// Emperor game difficulty.
-		/// </summary>
-		Emperor = 4,
-
-		/// <summary>
-		/// Deity game difficulty.
-		/// </summary>
-		Deity = 5
-	}
+	// AiDifficulty lives in the API assembly (api/src/Agents/AiDifficulty.cs) so plugins can use it
+	// in their AI descriptors.
 
 	/// <summary>
 	/// Provides stable identifiers for built-in AI definitions.

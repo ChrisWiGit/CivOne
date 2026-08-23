@@ -739,6 +739,8 @@ namespace CivOne.Agents
 
 		public ICivilizationView CurrentCivilization => new CivilizationView(player);
 
+		public AiDifficulty Difficulty => player.AiDifficulty;
+
 		public IMapView Map => new MapView(player, _playerState);
 
 		public IReadOnlyList<IUnitView> OwnUnits =>

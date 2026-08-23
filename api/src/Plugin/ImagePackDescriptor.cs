@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace CivOne
@@ -7,6 +8,9 @@ namespace CivOne
 	/// </summary>
 	/// <param name="Id">
 	/// Gets the stable unique identifier of the image pack variant.
+	/// The host passes it back to
+	/// <see cref="IPluginImageProvider.CreateImageFactory(Guid, ImageCreationContext)"/>
+	/// to select this variant, so it must stay stable across plugin versions.
 	/// </param>
 	/// <param name="Name">
 	/// Gets the user-facing display name.
@@ -24,7 +28,7 @@ namespace CivOne
 	/// Gets optional tags for grouping and filtering in the UI.
 	/// </param>
 	public sealed record ImagePackDescriptor(
-		string Id,
+		Guid Id,
 		string Name,
 		string Author,
 		string Description,
