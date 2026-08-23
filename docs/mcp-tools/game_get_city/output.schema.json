@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_get_city/output",
+  "title": "game_get_city – output",
+  "type": "object",
+  "required": ["ok", "truncated", "maxChars", "returnedChars"],
+  "properties": {
+    "ok": { "type": "boolean" },
+    "truncated": { "type": "boolean" },
+    "maxChars": { "type": "integer" },
+    "returnedChars": { "type": "integer" },
+    "data": {
+      "type": "object",
+      "description": "Single city object, enriched with compact views.",
+      "properties": {
+        "Id": { "type": "string", "format": "uuid" },
+        "Name": { "type": "string" },
+        "Owner": { "type": "integer" },
+        "ownerGuid": { "type": "string", "format": "uuid" },
+        "ownerTribeName": { "type": ["string", "null"] },
+        "productionView": {
+          "type": "object",
+          "properties": {
+            "productionId": { "type": ["integer", "null"] },
+            "price": { "type": ["integer", "null"] },
+            "buyPrice": { "type": ["integer", "null"] },
+            "storedShields": { "type": "integer" },
+            "remainingShields": { "type": ["integer", "null"] }
+          },
+          "additionalProperties": false
+        },
+        "unrestView": {
+          "type": "object",
+          "properties": {
+            "isRiot": { "type": "boolean" },
+            "wasInDisorder": { "type": "boolean" },
+            "isCelebrating": { "type": "boolean" },
+            "celebrationCancelled": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        },
+        "happinessView": {
+          "type": "object",
+          "properties": {
+            "size": { "type": "integer" },
+            "entertainerCount": { "type": "integer" },
+            "specialistCount": { "type": "integer" },
+            "mood": { "type": "string", "enum": ["Stable", "Riot", "Celebration", "Recovering"] }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": true
+    },
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": ["NO_GAME", "INVALID_PARAMS", "MISSING_SELECTOR", "AMBIGUOUS_SELECTOR", "CITY_NOT_FOUND", "AMBIGUOUS_CITY", "INVALID_KEYS", "PAYLOAD_TRUNCATED"]
+        },
+        "message": { "type": "string" },
+        "failedSegment": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

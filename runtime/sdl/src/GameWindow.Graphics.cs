@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using System.Drawing;
 using System.Linq;
 using CivOne.Enums;
@@ -16,15 +17,131 @@ namespace CivOne
 {
 	internal partial class GameWindow
 	{
-		private SDL.Texture CursorTexture = null;
+		private SDL.Texture? CursorTexture;
+		private SDL.Texture? _fpsOverlayTexture;
+		private readonly FpsOverlayDrawDelegate _fpsOverlayDrawDelegate = new();
+		private double _lastGameDrawMs;
+		private double _lastFrameRenderMs;
+
+		// Set from any thread when the cursor changes; consumed on the render thread in Draw().
+		private volatile bool _cursorDirty;
+
+		/// <summary>
+		/// Cached SDL textures for each layer of the most recent <see cref="Runtime.InvokeDraw"/> result.
+		/// Re-uploading large bytemaps to GPU memory on every frame is the dominant cost when the
+		/// canvas is at full display resolution (e.g. fullscreen wizard). The cache is invalidated
+		/// whenever layer content actually changes; pure cursor moves reuse the existing textures.
+		/// </summary>
+		private SDL.Texture[]? _cachedLayerTextures;
+		private bool _layerTexturesDirty = true;
+
+		/// <summary>
+		/// Marks the cached layer textures as needing a rebuild on the next render.
+		/// Called whenever <see cref="Runtime.InvokeDraw"/> has run and may have mutated layer bitmaps.
+		/// </summary>
+		private void InvalidateLayerTextureCache() => _layerTexturesDirty = true;
+
+		private void DisposeCachedLayerTextures()
+		{
+			if (_cachedLayerTextures == null) return;
+			foreach (SDL.Texture texture in _cachedLayerTextures)
+			{
+				texture?.Dispose();
+			}
+			_cachedLayerTextures = null;
+		}
+
+		private void ReleaseFpsOverlayTexture()
+		{
+			_fpsOverlayTexture?.Dispose();
+			_fpsOverlayTexture = null;
+		}
+
+		private void RenderFpsOverlay(int x1, int y1, int x2, int y2)
+		{
+			if (_fpsOverlayTexture == null || RuntimeHandler.CurrentFpsCorner == FpsCorner.Off) return;
+
+			int drawWidth = x2 - x1;
+			int drawHeight = y2 - y1;
+			(int targetX, int targetY, int targetWidth, int targetHeight) = FpsOverlayDrawDelegate.GetOverlayTargetRect(
+				RuntimeHandler.CurrentFpsCorner,
+				CanvasWidth,
+				CanvasHeight,
+				drawWidth,
+				drawHeight,
+				x1,
+				y1,
+				_fpsOverlayTexture.Width,
+				_fpsOverlayTexture.Height);
+			if (targetWidth <= 0 || targetHeight <= 0) return;
+
+			_fpsOverlayTexture.Draw(targetX, targetY, targetWidth, targetHeight);
+		}
+
+		private void RebuildLayerTextureCacheIfNeeded()
+		{
+			if (!_layerTexturesDirty && _cachedLayerTextures != null
+				&& _runtime.Layers != null
+				&& _cachedLayerTextures.Length == _runtime.Layers.Length)
+			{
+				return;
+			}
+
+			DisposeCachedLayerTextures();
+			if (_runtime.Layers == null)
+			{
+				_layerTexturesDirty = false;
+				return;
+			}
+
+			_cachedLayerTextures = new SDL.Texture[_runtime.Layers.Length];
+			for (int i = 0; i < _runtime.Layers.Length; i++)
+			{
+				_cachedLayerTextures[i] = CreateTexture(_runtime.Palette, _runtime.Layers[i]);
+			}
+			_layerTexturesDirty = false;
+		}
 
 		private static Size DefaultCanvasSize
 		{
 			get
 			{
-				if (Settings.AspectRatio != AspectRatio.Expand || Settings.ExpandWidth == -1 || Settings.ExpandHeight == -1)
+				if (Settings.AspectRatio != AspectRatio.Expand)
 					return new Size(320, 200);
-				return new Size(Settings.ExpandWidth, Settings.ExpandHeight);
+				if (Settings.ExpandWidth > 0 && Settings.ExpandHeight > 0)
+					return new Size(Settings.ExpandWidth, Settings.ExpandHeight);
+				return new Size(320, 200);
+			}
+		}
+
+		/// <summary>
+		/// Draws the cursor overlay on top of the rendered layers, if a cursor is set.
+		///
+		/// Accounts for the current aspect ratio mode and scale settings to position and size the cursor correctly.
+		/// Both <see cref="AspectRatio.Scaled"/> and <see cref="AspectRatio.ScaledFixed"/> use the same
+		/// scaled-mouse calculation via <c>GetScaleF()</c>.
+		///
+		/// Refactoring note: <c>ScaledFixed</c> previously had a separate branch with commented-out offset
+		/// additions (<c>_mouseX + x1</c>, <c>_mouseY + y1</c>) that were never active.
+		/// After confirming both branches produced identical results, they were merged into one case.
+		/// </summary>
+		/// <param name="x1">The x-coordinate of the top-left corner of the drawing area.</param>
+		/// <param name="y1">The y-coordinate of the top-left corner of the drawing area.</param>
+		private void DrawCursorOverlay(int x1, int y1)
+		{
+			if (CursorTexture == null) return;
+			switch (Settings.AspectRatio)
+			{
+				case AspectRatio.Scaled:
+				case AspectRatio.ScaledFixed:
+					{
+						PointF scaleF = GetScaleF();
+						CursorTexture.Draw((int)(_mouseX * scaleF.X), (int)(_mouseY * scaleF.Y), (int)(CursorTexture.Width * scaleF.X), (int)(CursorTexture.Height * scaleF.Y));
+					}
+					break;
+				default:
+					CursorTexture.Draw(x1 + (_mouseX * ScaleX), y1 + (_mouseY * ScaleY), CursorTexture.Width * ScaleX, CursorTexture.Height * ScaleY);
+					break;
 			}
 		}
 
@@ -44,35 +161,25 @@ namespace CivOne
 			Clear(Color.Black);
 			GetBorders(out int x1, out int y1, out int x2, out int y2);
 			if (_runtime.Layers == null) return;
-			foreach (Bytemap bytemap in _runtime.Layers)
-			using (SDL.Texture canvas = CreateTexture(_runtime.Palette, bytemap))
+			RebuildLayerTextureCacheIfNeeded();
+			if (_cachedLayerTextures == null) return;
+			foreach (SDL.Texture canvas in _cachedLayerTextures)
 			{
 				canvas.Draw(x1, y1, (x2 - x1), (y2 - y1));
-				
-				switch (Settings.AspectRatio)
-				{
-					case AspectRatio.Scaled:
-						{
-							PointF scaleF = GetScaleF();
-							CursorTexture?.Draw((int)(_mouseX * scaleF.X), (int)(_mouseY * scaleF.Y), (int)(CursorTexture.Width * scaleF.X), (int)(CursorTexture.Height * scaleF.Y));
-						}
-						break;
-					case AspectRatio.ScaledFixed:
-						{
-							PointF scaleF = GetScaleF();
-							CursorTexture?.Draw((int)((_mouseX /*+ x1*/) * scaleF.X), (int)((_mouseY/* + y1*/) * scaleF.Y), (int)(CursorTexture.Width * scaleF.X), (int)(CursorTexture.Height * scaleF.Y));
-						}
-						break;
-					default:
-						CursorTexture?.Draw(x1 + (_mouseX * ScaleX), y1 + (_mouseY * ScaleY), CursorTexture.Width * ScaleX, CursorTexture.Height * ScaleY);
-						break;
-				}
 			}
+
+			DrawCursorOverlay(x1, y1);
+			RenderFpsOverlay(x1, y1, x2, y2);
 		}
 
 		private Size SetCanvasSize()
 		{
-			if (Settings.AspectRatio != AspectRatio.Expand || (ScaleX < 1 || ScaleY < 1))
+			if (RuntimeHandler.IsFullWindowCanvasRequested)
+			{
+				return new Size(Width, Height);
+			}
+
+			if (Settings.AspectRatio != AspectRatio.Expand)
 			{
 				return DefaultCanvasSize;
 			}
@@ -80,13 +187,15 @@ namespace CivOne
 			int cw = ClientRectangle.Width, ch = ClientRectangle.Height;
 			int scale = new int[] { (cw - (cw % 320)) / 320, (ch - (ch % 200)) / 200 }.Min();
 
-			if (Settings.ExpandWidth != -1 && Settings.ExpandHeight != -1)
+			bool hasExplicitExpandSize = Settings.ExpandWidth > 0 && Settings.ExpandHeight > 0;
+			if (hasExplicitExpandSize)
 			{
 				cw = Settings.ExpandWidth;
 				ch = Settings.ExpandHeight;
 			}
 			else
 			{
+				if (scale < 1) scale = 1;
 				cw /= scale;
 				ch /= scale;
 			}
@@ -95,19 +204,21 @@ namespace CivOne
 			cw -= (cw % 8);
 			ch -= (ch % 8);
 
-			// Set maximum bounds to 512x384, the maximum logical boundaries 
-			// according this this table: https://github.com/SWY1985/CivOne/wiki/Settings#expand-experimental
-			if (cw > 512) cw = 512;
-			if (ch > 384) ch = 384;
+			// CW: Keep auto-expand conservative for stability, but allow larger explicit user values.
+			// Original: https://github.com/Solen1985/CivOne/wiki/Settings#expand-experimental
+			int maxWidth  = hasExplicitExpandSize ? Settings.MaxExpandWidth  : Settings.AutoExpandMaxWidth;
+			int maxHeight = hasExplicitExpandSize ? Settings.MaxExpandHeight : Settings.AutoExpandMaxHeight;
+			if (cw > maxWidth) cw = maxWidth;
+			if (ch > maxHeight) ch = maxHeight;
 
 			return new Size(cw, ch);
 		}
 
-		private static int InitialCanvasWidth => DefaultCanvasSize.Width;
-		private static int InitialCanvasHeight => DefaultCanvasSize.Height;
+		private static int InitialCanvasWidth => 320;
+		private static int InitialCanvasHeight => 200;
 
-		private static int InitialWidth => InitialCanvasWidth * Settings.Scale;
-		private static int InitialHeight => InitialCanvasHeight * Settings.Scale;
+		private static int InitialWidth => Settings.WindowWidth > 0 ? Settings.WindowWidth : InitialCanvasWidth * Settings.Scale;
+		private static int InitialHeight => Settings.WindowHeight > 0 ? Settings.WindowHeight : InitialCanvasHeight * Settings.Scale;
 
 		private Size ClientRectangle => new Size(Width, Height);
 
@@ -132,8 +243,8 @@ namespace CivOne
 						int scaleX = (ClientRectangle.Width - (ClientRectangle.Width % cw)) / cw;
 						int scaleY = (ClientRectangle.Height - (ClientRectangle.Height % ch)) / ch;
 						if (scaleX > scaleY)
-							return scaleY;
-						return scaleX;
+								return scaleY < 1 ? 1 : scaleY;
+							return scaleX < 1 ? 1 : scaleX;
 					default:
 						return (ClientRectangle.Width - (ClientRectangle.Width % cw)) / cw;
 				}
@@ -156,16 +267,16 @@ namespace CivOne
 						int scaleX = (ClientRectangle.Width - (ClientRectangle.Width % cw)) / cw;
 						int scaleY = (ClientRectangle.Height - (ClientRectangle.Height % ch)) / ch;
 						if (scaleY > scaleX)
-							return scaleX;
-						return scaleY;
+								return scaleX < 1 ? 1 : scaleX;
+							return scaleY < 1 ? 1 : scaleY;
 					default:
 						return (ClientRectangle.Height - (ClientRectangle.Height % ch)) / ch;
 				}
 			}
 		}
 
-		private int CanvasWidth => Runtime.CanvasSize.Width;
-		private int CanvasHeight => Runtime.CanvasSize.Height;
+		private static int CanvasWidth => Runtime.CanvasSize.Width;
+		private static int CanvasHeight => Runtime.CanvasSize.Height;
 
 		private int DrawWidth => CanvasWidth * ScaleX;
 		private int DrawHeight => CanvasHeight * ScaleY;

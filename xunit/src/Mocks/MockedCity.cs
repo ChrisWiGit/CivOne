@@ -6,6 +6,9 @@ using CivOne.Units;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using CivOne.Enums;
+using CivOne.Persistence.Model;
+using CivOne.Persistence.Game;
 
 namespace CivOne.UnitTests
 {
@@ -13,33 +16,72 @@ namespace CivOne.UnitTests
         // ICityBasic, ICityBuildings, ICityOnContinent
         ICity
     {
-        public Point Location => new Point(0, 0);
+        public Point Location => new(0, 0);
         public byte Size { get; set; } = 5;
-        public short Luxuries { get; set; } = 0;
-        public byte Owner { get; set; } = 0;
+		public short Luxuries { get; set; }
+		public byte CityOwnerPlayerIndex { get; set; }
 
 
-        public ITile Tile { get; set; } = null;
+        public ITile Tile { get; set; } = new MockedGrassland(0, 0);
 
-        public int ContinentId { get; set; } = 0;
-        public Player Player => _player;
-        private Player _player = null;
-        public Player MockPlayer
+		public int ContinentId { get; set; }
+		public IPlayer Player => _player!;
+        private Player? _player;
+        public Player? MockPlayer
         {
             get => _player;
             set => _player = value;
         }
 
-        public int Entertainers { get; set; } = 0;
-        public int Scientists { get; set; } = 0;
-        public int Taxmen { get; set; } = 0;
+		public int Entertainers { get; set; }
+		public int Scientists { get; set; }
+		public int Taxmen { get; set; }
 
         public int EntertainerLuxuries => Entertainers * 3;
-        private readonly SupplyMockedValues<bool> _hasBuilding = new SupplyMockedValues<bool>();
-        private readonly SupplyMockedValues<bool> _hasWonder = new SupplyMockedValues<bool>();
 
-        private readonly ISet<IWonder> _wonders = new HashSet<IWonder>();
-        private readonly ISet<IBuilding> _buildings = new HashSet<IBuilding>();
+		public string Name => throw new NotImplementedException();
+
+		public ITile[] ResourceTiles => throw new NotImplementedException();
+
+		public Citizen[] Specialists => throw new NotImplementedException();
+
+		public int Shields => throw new NotImplementedException();
+
+		public int Food => throw new NotImplementedException();
+
+		public IProduction CurrentProduction => throw new NotImplementedException();
+
+		public IBuilding[] Buildings => throw new NotImplementedException();
+
+		public IWonder[] Wonders => throw new NotImplementedException();
+
+		public byte Status => throw new NotImplementedException();
+
+		public bool WasInDisorder => throw new NotImplementedException();
+
+		public ICity[] TradingCities => throw new NotImplementedException();
+
+		public uint VisibleSize => throw new NotImplementedException();
+
+		public bool IsRiot { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public bool IsCoastal { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public bool CelebrationCancelled { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public bool HydroAvailable { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public bool AutoBuild { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public bool TechStolen { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public bool CelebrationOrRapture { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public bool BuildingSold { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		public Guid Id { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+		public uint[] VisibleSizes => throw new NotImplementedException();
+
+		public IPlayer PlayerIntf => Player;
+
+		private readonly SupplyMockedValues<bool> _hasBuilding = new();
+        private readonly SupplyMockedValues<bool> _hasWonder = new();
+
+        private readonly HashSet<IWonder> _wonders = [];
+        private readonly HashSet<IBuilding> _buildings = [];
 
         public MockedCity ReturnHasBuildingValues(params bool[] values)
         {

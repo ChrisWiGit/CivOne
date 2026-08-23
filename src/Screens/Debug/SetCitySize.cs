@@ -8,169 +8,198 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using CivOne.Enums;
+using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
+using CivOne.Services.Screen;
 using CivOne.Tasks;
 using CivOne.UserInterface;
 
 namespace CivOne.Screens.Debug
 {
+	[ScreenResizeable]
 	internal class SetCitySize : BaseScreen
 	{
 		private readonly City[] _cities = Game.GetCities().OrderBy(x => x.Name).ToArray();
+		private int OffsetX => Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
-		private Menu _citySelect;
+		private CityGridMenuDelegate? _citySelect;
 
-		private Input _input;
+		private City? _selectedCity;
+		private Input? ActiveInput => Inputs.OfType<Input>().FirstOrDefault();
 
-		private int _index = 0;
+		public string? Value { get; private set; }
 
-		private City _selectedCity = null;
+		public event EventHandler? Accept, Cancel;
 
-		public string Value { get; private set; }
-
-		public event EventHandler Accept, Cancel;
-
-		private void CitiesMenu()
+		private void DrawInputDialog()
 		{
-			Palette = Common.Screens.Last().OriginalColours;
+			int ox = OffsetX;
+			int oy = OffsetY;
 
-			City[] cities = _cities.Skip(_index).Take(15).ToArray();
+			this.Clear();
+			this.FillRectangle(80 + ox, 80 + oy, 161, 33, 11)
+				.FillRectangle(81 + ox, 81 + oy, 159, 31, 15)
+				.DrawText(Translate("Set City Size..."), 0, 5, 88 + ox, 82 + oy)
+				.FillRectangle(88 + ox, 95 + oy, 105, 14, 5)
+				.FillRectangle(89 + ox, 96 + oy, 103, 12, 15);
 
-			bool more = (cities.Length < _cities.Length);
-
-			int fontHeight = Resources.GetFontHeight(0);
-			int hh = (fontHeight * (cities.Length + (more ? 2 : 1))) + 5;
-			int ww = 136;
-
-			int xx = (320 - ww) / 2;
-			int yy = (200 - hh) / 2;
-
-			Picture menuGfx = new Picture(ww, hh)
-				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D()
-				.As<Picture>();
-			IBitmap menuBackground = menuGfx[2, 11, ww - 4, hh - 11].ColourReplace((7, 11), (22, 3));
-
-			this.FillRectangle(xx - 1, yy - 1, ww + 2, hh + 2, 5)
-				.AddLayer(menuGfx, xx, yy)
-				.DrawText("Set City Size...", 0, 15, xx + 8, yy + 3);
-
-			_citySelect = new Menu(Palette, menuBackground)
+			if (ActiveInput is Input input)
 			{
-				X = xx + 2,
-				Y = yy + 11,
-				MenuWidth = ww - 4,
-				ActiveColour = 11,
-				TextColour = 5,
-				DisabledColour = 3,
-				FontId = 0,
-				Indent = 8
-			};
-
-			foreach (City city in cities)
-			{
-				_citySelect.Items.Add($"{city.Name} ({Game.GetPlayer(city.Owner).TribeName})").OnSelect(CitySize_Accept);
+				input.X = 90 + ox;
+				input.Y = 97 + oy;
 			}
-
-			if (more)
-			{
-				_citySelect.Items.Add($" ---MORE---").OnSelect(CitySize_More);
-			}
-
-			_citySelect.Cancel += CitySize_Cancel;
-			_citySelect.MissClick += CitySize_Cancel;
-			_citySelect.ActiveItem = (_citySelect.Items.Count - 1);
 		}
 
-		private void CitySizeSet_Accept(object sender, EventArgs args)
+		private void DrawCityMenuDialog()
 		{
-			Value = (sender as Input).Text;
-			
-			byte citySize;
-			if (!byte.TryParse(Value, out citySize) || citySize < 1 || citySize > 99)
+			if (_citySelect == null)
 			{
-				GameTask.Enqueue(Message.Error("-- DEBUG: Set City Size --", $"The value {Value} is invalid or out of range.", "Please enter a value between 1 and 99."));
-			}
-			else
-			{
-				_selectedCity.Size = citySize;
-				GameTask.Enqueue(Message.General($"{_selectedCity.Name} size set to {citySize}."));
+				Palette = Common.Screens[^1].OriginalColours;
+				_citySelect = new CityGridMenuDelegate(
+					_cities,
+					city => $"{city.Name} ({city.CityOwnerPlayer.TribeName})");
+				_citySelect.CitySelected += OnCitySelected;
+				_citySelect.Cancelled += CitySize_Cancel;
 			}
 
-			if (Accept != null)
-				Accept(this, null);
-			if (sender is Input)
-				((Input)sender)?.Close();
+			_citySelect.Draw(this, Translate("Set City Size..."), CanvasHeight);
+		}
+
+		private void CitySizeSet_Accept(object? sender, EventArgs args)
+		{
+			if (sender is not Input input)
+				return;
+			Value = input.Text;
+
+			if (!byte.TryParse(Value, out byte citySize) || citySize < 1 || citySize > 99)
+			{
+				GameTask.Enqueue(Message.Error(Translate("-- DEBUG: Set City Size --"), TranslateFormattedArray("The value {0} is invalid or out of range.\nPlease enter a value between 1 and 99.", Value)));
+			}
+			else if (_selectedCity != null)
+			{
+				_selectedCity.Size = citySize;
+				GameTask.Enqueue(Message.General(TranslateFormatted("{0} size set to {1}.", _selectedCity.Name, citySize)));
+			}
+
+			Accept?.Invoke(this, EventArgs.Empty);
+
+			input.Close();
 			Destroy();
 		}
 
-		private void CitySize_More(object sender, EventArgs args)
+		private void OnCitySelected(City city)
 		{
-			_index += 15;
-			if (_index > _cities.Count()) _index = 0;
-			CloseMenus();
+			Palette = Common.Screens[^1].OriginalColours;
+			_selectedCity = city;
+
+			EnsureManagedInput();
+			Refresh();
 		}
 
-		private void CitySize_Accept(object sender, EventArgs args)
+		protected override IScreen? CreateManagedInput()
 		{
-			Palette = Common.Screens.Last().OriginalColours;
+			if (_selectedCity == null)
+			{
+				return null;
+			}
 
-			this.FillRectangle(80, 80, 161, 33, 11)
-				.FillRectangle(81, 81, 159, 31, 15)
-				.DrawText("Set City Size...", 0, 5, 88, 82)
-				.FillRectangle(88, 95, 105, 14, 5)
-				.FillRectangle(89, 96, 103, 12, 15);
-
-			_selectedCity = _cities[_citySelect.ActiveItem + _index];
-
-			_input = new Input(Palette, _selectedCity.Size.ToString(), 0, 5, 11, 90, 97, 101, 10, 3);
-			_input.Accept += CitySizeSet_Accept;
-			_input.Cancel += CitySize_Cancel;
-
-			CloseMenus();
+			Input input = new(Palette, _selectedCity.Size.ToString(CultureInfo.InvariantCulture), 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 3);
+			input.Accept += CitySizeSet_Accept;
+			input.Cancel += CitySize_Cancel;
+			return input;
 		}
 
-		private void CitySize_Cancel(object sender, EventArgs args)
+		private void CitySize_Cancel(object? sender, EventArgs args)
 		{
 			if (Cancel != null)
-				Cancel(this, null);
-			if (sender is Input)
-				((Input)sender)?.Close();
+				Cancel(this, EventArgs.Empty);
+			if (sender is Input input)
+				input.Close();
 			Destroy();
 		}
 
 		protected override bool HasUpdate(uint gameTick)
 		{
+			if (RefreshNeeded())
+			{
+				if (_selectedCity == null)
+				{
+					DrawCityMenuDialog();
+				}
+				else
+				{
+					DrawInputDialog();
+				}
+				return true;
+			}
+
 			if (_cities.Length == 0)
 			{
 				Destroy();
 				return false;
 			}
 
-			if (_selectedCity == null && Common.TopScreen.GetType() != typeof(Menu))
+			if (_selectedCity == null && TopScreen.GetType() != typeof(Menu))
 			{
-				AddMenu(_citySelect);
+				DrawCityMenuDialog();
 				return false;
 			}
-			else if (_selectedCity != null && Common.TopScreen.GetType() != typeof(Input))
+			else if (_selectedCity != null && !HasInput && TopScreen.GetType() != typeof(Input))
 			{
-				Common.AddScreen(_input);
+				EnsureManagedInput();
 			}
 			return false;
 		}
 
-		public SetCitySize() : base(MouseCursor.Pointer)
+		private IScreen TopScreen => _screenQuery.TopScreen!;
+
+		public override bool KeyDown(KeyboardEventArgs args)
 		{
+			if (_selectedCity == null && _citySelect != null)
+			{
+				bool handled = _citySelect.KeyDown(args);
+				if (handled) Refresh();
+				return handled;
+			}
+
+			if (args.Key == Key.Escape)
+			{
+				Destroy();
+				return true;
+			}
+
+			return false;
+		}
+
+		public override bool MouseDown(ScreenEventArgs args)
+		{
+			if (_selectedCity == null && _citySelect != null)
+			{
+				bool handled = _citySelect.MouseDown(args.X, args.Y);
+				if (handled) Refresh();
+				return handled;
+			}
+
+			return false;
+		}
+
+		private readonly IScreenQueryService _screenQuery;
+
+		public SetCitySize(IScreenQueryService screenQuery) : base(MouseCursor.Pointer)
+		{
+			_screenQuery = screenQuery;
 			if (_cities.Length == 0)
 			{
-				GameTask.Enqueue(Message.General($"There are no cities yet."));
+				GameTask.Enqueue(Message.General(Translate("There are no cities yet.")));
 				return;
 			}
 
-			CitiesMenu();
+			DrawCityMenuDialog();
 		}
 	}
 }

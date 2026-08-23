@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public Automobile() : base(6, 0, 2, Advance.Combustion, Advance.Steel)
 		{
 			Name = "Automobile";
+			TranslatedName = Translate("Automobile");
 			Type = Advance.Automobile;
 		}
 	}

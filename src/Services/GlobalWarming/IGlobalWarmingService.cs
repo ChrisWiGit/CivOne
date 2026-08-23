@@ -18,6 +18,11 @@ namespace CivOne.Services.GlobalWarming
 	public interface IGlobalWarmingService
 	{
 		bool IsGlobalWarmingOnNewTurn();
+
+		/// <summary>
+		/// Updates the internal state of the global warming simulation, including the count of polluted squares and the warming indicator.
+		/// </summary>
+		void RefreshPollutionState();
 		int PollutedSquaresCount { get; }
 
 		WarmingIndicator WarmingIndicator { get; }

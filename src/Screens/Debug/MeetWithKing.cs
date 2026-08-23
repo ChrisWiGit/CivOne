@@ -10,99 +10,99 @@
 using System;
 using System.Linq;
 using CivOne.Enums;
-using CivOne.Graphics;
-using CivOne.Graphics.Sprites;
-using CivOne.UserInterface;
+using CivOne.Events;
 
 namespace CivOne.Screens.Debug
 {
+	[ScreenResizeable]
 	internal class MeetWithKing : BaseScreen
 	{
-		private readonly Menu _civSelect;
+		private readonly CivSelectMenuDelegate _civSelect;
 
-		private readonly Player[] _players;
+		private Player? _selectedPlayer;
 
-		private Player _selectedPlayer = null;
+		public event EventHandler? Accept, Cancel;
 
-		public string Value { get; private set; }
-
-		public event EventHandler Accept, Cancel;
-
-		private void MeetKing_Accept(object sender, EventArgs args)
+		private void DrawDialog()
 		{
-			_selectedPlayer = _players[_civSelect.ActiveItem];
+			_civSelect.Draw(this, CanvasHeight);
+		}
+
+		private void MeetKingAccept(Player player)
+		{
+			_selectedPlayer = player;
 
 			if (_selectedPlayer != Game.HumanPlayer)
 			{
 				Common.AddScreen(new King(_selectedPlayer));
 			}
 
-			if (Accept != null)
-				Accept(this, null);
+			Accept?.Invoke(this, EventArgs.Empty);
 			Destroy();
 		}
 
-		private void MeetKing_Cancel(object sender, EventArgs args)
+		private void MeetKingCancel(object? sender, EventArgs args)
 		{
-			if (Cancel != null)
-				Cancel(this, null);
-			if (sender is Input)
-				((Input)sender)?.Close();
+			Cancel?.Invoke(this, EventArgs.Empty);
+			if (sender is Input input)
+			{
+				input.Close();
+			}
 			Destroy();
 		}
 
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_selectedPlayer == null && Common.TopScreen.GetType() != typeof(Menu))
+			if (RefreshNeeded() && _selectedPlayer == null)
 			{
-				AddMenu(_civSelect);
-				return false;
+				DrawDialog();
+				return true;
 			}
 			return false;
 		}
 
-		public MeetWithKing() : base(MouseCursor.Pointer)
+		public override bool KeyDown(KeyboardEventArgs args)
 		{
-			Palette = Common.Screens.Last().OriginalColours;
-			_players = Game.Players.Where(p => p != 0 && p != Human).ToArray();
-
-			int fontHeight = Resources.GetFontHeight(0);
-			int hh = (fontHeight * (_players.Length + 1)) + 5;
-			int ww = 144;
-
-			int xx = (320 - ww) / 2;
-			int yy = (200 - hh) / 2;
-
-			Picture menuGfx = new Picture(ww, hh)
-				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D()
-				.As<Picture>();
-			IBitmap menuBackground = menuGfx[2, 11, ww - 4, hh - 11].ColourReplace((7, 11), (22, 3));
-
-			this.FillRectangle(xx - 1, yy - 1, ww + 2, hh + 2, 5)
-				.AddLayer(menuGfx, xx, yy)
-				.DrawText("Meet With King", 0, 15, xx + 8, yy + 3);
-
-			_civSelect = new Menu(Palette, menuBackground)
+			if (_selectedPlayer != null)
 			{
-				X = xx + 2,
-				Y = yy + 11,
-				MenuWidth = ww - 4,
-				ActiveColour = 11,
-				TextColour = 5,
-				DisabledColour = 3,
-				FontId = 0,
-				Indent = 8
-			};
-
-			foreach (Player player in _players)
-			{
-				_civSelect.Items.Add($"{player.LeaderName} ({player.TribeName})").OnSelect(MeetKing_Accept);
+				return false;
 			}
 
-			_civSelect.Cancel += MeetKing_Cancel;
-			_civSelect.MissClick += MeetKing_Cancel;
-			_civSelect.ActiveItem = Game.PlayerNumber(Human);
+			bool handled = _civSelect.KeyDown(args);
+			if (handled)
+			{
+				Refresh();
+			}
+			return handled;
+		}
+
+		public override bool MouseDown(ScreenEventArgs args)
+		{
+			if (_selectedPlayer != null)
+			{
+				return false;
+			}
+
+			bool handled = _civSelect.MouseDown(args.X, args.Y);
+			if (handled)
+			{
+				Refresh();
+			}
+			return handled;
+		}
+
+		public MeetWithKing() : base(MouseCursor.Pointer)
+		{
+			Palette = Common.Screens[^1].OriginalColours;
+			Player[] players = [.. Game.Players.Where(p => p != 0 && p != Human)];
+
+			// Leader and tribe name together are much wider than a tribe name alone, so the grid has to size
+			// itself from the labels instead of using a fixed dialog width.
+			_civSelect = new CivSelectMenuDelegate(players, Translate("Meet With King"), player => $"{player.LeaderName} ({player.TribeName})");
+			_civSelect.PlayerSelected += MeetKingAccept;
+			_civSelect.Cancelled += MeetKingCancel;
+
+			DrawDialog();
 		}
 	}
 }

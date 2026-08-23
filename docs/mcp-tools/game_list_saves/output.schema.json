@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_list_saves/output",
+  "title": "game_list_saves – output",
+  "type": "object",
+  "required": ["ok", "truncated", "maxChars", "returnedChars"],
+  "properties": {
+    "ok": { "type": "boolean" },
+    "truncated": { "type": "boolean" },
+    "maxChars": { "type": "integer" },
+    "returnedChars": { "type": "integer" },
+    "data": {
+      "type": "object",
+      "required": ["saveFolder", "saves"],
+      "properties": {
+        "saveFolder": { "type": "string" },
+        "saves": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["fileName", "displayName", "fileSizeBytes", "lastWriteAtUtc"],
+            "properties": {
+              "fileName": { "type": "string" },
+              "formatVersion": { "type": ["integer", "null"] },
+              "saveGuid": { "type": ["string", "null"], "format": "uuid" },
+              "displayName": { "type": "string" },
+              "gameTurn": { "type": ["integer", "null"] },
+              "difficulty": {
+                "type": ["object", "null"],
+                "properties": {
+                  "value": { "type": "integer" },
+                  "name": { "type": "string" }
+                },
+                "additionalProperties": false
+              },
+              "humanPlayer": { "type": ["integer", "null"] },
+              "currentPlayer": { "type": ["integer", "null"] },
+              "playerCount": { "type": "integer" },
+              "mapWidth": { "type": ["integer", "null"] },
+              "mapHeight": { "type": ["integer", "null"] },
+              "gameStartedAt": { "type": ["string", "null"] },
+              "gameVersion": { "type": ["string", "null"] },
+              "playDurationMinutes": { "type": ["integer", "null"] },
+              "fileSizeBytes": { "type": "integer" },
+              "lastWriteAtUtc": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": { "type": "string", "enum": ["INVALID_PARAMS", "PAYLOAD_TRUNCATED"] },
+        "message": { "type": "string" }
+      }
+    }
+  }
+}

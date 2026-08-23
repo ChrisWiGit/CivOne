@@ -12,6 +12,8 @@ using System.Linq;
 using CivOne.Advances;
 using CivOne.Enums;
 using CivOne.Leaders;
+using CivOne.Services;
+using CivOne.Services.Random;
 using CivOne.Tiles;
 
 // KBR 20200927 integrate cdonges land spawn code
@@ -20,18 +22,28 @@ namespace CivOne.Civilizations
 {
 	internal class Barbarian : BaseCivilization<Atilla>
 	{
-		internal static readonly byte Owner = 0;
+		internal static readonly byte Owner;
 
-		internal static bool IsSeaSpawnTurn => Game.Started && (Game.GameTurn % 8 == 0) && (Game.GameTurn > 150 || Game.GameTurn >= (5 - Game.Difficulty) * 32) && !Game.Players.Any(x => x.HasAdvance<Combustion>());
+		/// <summary>
+		/// Tells whether the current turn is one where barbarians appear.
+		/// Land and sea raiders share the same rhythm, so this answers for both.
+		/// Whether they may actually appear is a separate question, see <see cref="BarbarianSpawnDelegate"/>.
+		/// </summary>
+		internal static bool IsSpawnTurn => Game.Started && (Game.GameTurn % 8 == 0) && (Game.GameTurn > 150 || Game.GameTurn >= (5 - Game.Difficulty) * 32) && !Game.Players.Any(x => x.HasAdvance<Combustion>());
+
+		internal static bool IsSeaSpawnTurn => IsSpawnTurn;
 
 		// TODO land spawn rate
-		internal static bool IsLandSpawnTurn => IsSeaSpawnTurn; // no idea - make them the same for now
+		internal static bool IsLandSpawnTurn => IsSpawnTurn; // no idea - make them the same for now
 
+		/// <summary>
+		/// The units of a raiding party arriving by sea, for the current turn.
+		/// Whether a party arrives at all is decided by <see cref="BarbarianSpawnDelegate"/>.
+		/// </summary>
 		internal static IEnumerable<UnitType> SeaSpawnUnits
 		{
 			get
 			{
-				if (!IsSeaSpawnTurn) yield break;
 				yield return (Game.GameTurn < 300) ? UnitType.Sail : UnitType.Frigate;
 				
 				UnitType unitType = (Game.Players.Any(x => x.HasAdvance<Gunpowder>())) ? UnitType.Knights : UnitType.Legion;
@@ -43,11 +55,14 @@ namespace CivOne.Civilizations
 		}
 
 		// https://forums.civfanatics.com/threads/barbarians-spawn-logic.630389/#post-15096489
+		/// <summary>
+		/// The units of a raiding party appearing inland, for the current turn.
+		/// Whether a party appears at all is decided by <see cref="BarbarianSpawnDelegate"/>.
+		/// </summary>
 		internal static IEnumerable<UnitType> LandSpawnUnits
 		{
 			get
 			{
-				if (!IsLandSpawnTurn) yield break;
 				// TODO this doesn't look right for land units
 				//yield return (Game.GameTurn < 300) ? UnitType.Sail : UnitType.Frigate;
 
@@ -59,14 +74,15 @@ namespace CivOne.Civilizations
 			}
 		}
 
-		internal static ITile SeaSpawnPosition
+		internal static ITile? SeaSpawnPosition
 		{
 			get
 			{
-				ITile[] tiles = Map.AllTiles().Where(t => t != null && t.IsOcean).ToArray();
+				IRandomService random = RandomServiceFactory.Create();
+				ITile[] tiles = [.. Map.AllTiles().Where(t => t != null && t.IsOcean)];
 				for (int i = 0; i < 1000; i++)
 				{
-					ITile tile = tiles[Common.Random.Next(tiles.Length)];
+					ITile tile = tiles[random.NextInt(tiles.Length)];
 					if (tile == null || !tile.IsOcean || tile.GetBorderTiles().Any(t => t == null || !t.IsOcean)) continue;
 					return tile;
 				}
@@ -74,14 +90,16 @@ namespace CivOne.Civilizations
 			}
 		}
 
-		internal static ITile LandSpawnPosition
+		internal static ITile? LandSpawnPosition
 		{
 			get
 			{
-				ITile[] tiles = Map.AllTiles().Where(t => t != null && !t.IsOcean && t.Visited != 0).ToArray();
+				IRandomService random = RandomServiceFactory.Create();
+				// CW: don't spawn barbarians on cities itself.
+				ITile[] tiles = [.. Map.AllTiles().Where(t => t != null && !t.IsOcean && t.Visited != 0 && t.City == null)];
 				for (int i = 0; i < 1000; i++)
 				{
-					ITile tile = tiles[Common.Random.Next(tiles.Length)];
+					ITile tile = tiles[random.NextInt(tiles.Length)];
 					if (tile == null || Game.GetCities().Any(c => c.CityTiles.Any(t => t == tile))) continue;
 					return tile;
 				}
@@ -89,45 +107,43 @@ namespace CivOne.Civilizations
 			}
 		}
 
-		public Barbarian() : base(Civilization.Barbarians, "Barbarian", "Barbarians")
+		public Barbarian() : base(Civilization.Barbarians, TranslationServiceFactory.GetCurrent().Translate("Barbarian"), TranslationServiceFactory.GetCurrent().Translate("Barbarians"))
 		{
 			StartX = 255;
 			StartY = 255;
-			CityNames = new[]
-			{
-				"Mecca",
-				"Naples",
-				"Sidon",
-				"Tyre",
-				"Tarsus",
-				"Issus",
-				"Cunaxa",
-				"Cremona",
-				"Cannae",
-				"Capua",
-				"Turin",
-				"Genoa",
-				"Utica",
-				"Crete",
-				"Damascus",
-				"Verona",
-				"Salamis",
-				"Lisbon",
-				"Hamburg",
-				"Prague",
-				"Salzburg",
-				"Bergen",
-				"Venice",
-				"Milan",
-				"Ghent",
-				"Pisa",
-				"Cordoba",
-				"Seville",
-				"Dublin",
-				"Toronto",
-				"Melbourne",
-				"Sydney"
-			};
+			CityNames = TranslateArray(
+				"Mecca\n" +
+				"Naples\n" +
+				"Sidon\n" +
+				"Tyre\n" +
+				"Tarsus\n" +
+				"Issus\n" +
+				"Cunaxa\n" +
+				"Cremona\n" +
+				"Cannae\n" +
+				"Capua\n" +
+				"Turin\n" +
+				"Genoa\n" +
+				"Utica\n" +
+				"Crete\n" +
+				"Damascus\n" +
+				"Verona\n" +
+				"Salamis\n" +
+				"Lisbon\n" +
+				"Hamburg\n" +
+				"Prague\n" +
+				"Salzburg\n" +
+				"Bergen\n" +
+				"Venice\n" +
+				"Milan\n" +
+				"Ghent\n" +
+				"Pisa\n" +
+				"Cordoba\n" +
+				"Seville\n" +
+				"Dublin\n" +
+				"Toronto\n" +
+				"Melbourne\n" +
+				"Sydney");
 		}
 	}
 }

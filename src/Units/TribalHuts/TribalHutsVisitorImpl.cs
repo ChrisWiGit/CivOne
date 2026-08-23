@@ -1,5 +1,7 @@
 using System;
 using System.Diagnostics;
+using CivOne.Enums;
+using CivOne.Services.Random;
 
 namespace CivOne.Units.TribalHuts
 {
@@ -10,7 +12,7 @@ namespace CivOne.Units.TribalHuts
 		private readonly IGame gameInstance;
 		private readonly Player player;
 		private readonly ILogger logger;
-		private readonly Random random;
+		private readonly IRandomService random;
 
 		private readonly Action[] events;
 
@@ -20,7 +22,7 @@ namespace CivOne.Units.TribalHuts
 			IUnit currentUnit,
 			IGame gameInstance,
 			ILogger logger,
-			Random random)
+			IRandomService random)
 
 		{
 			this.player = player;
@@ -42,7 +44,7 @@ namespace CivOne.Units.TribalHuts
 
 		public void ExecuteRandomTribalHutEvent()
 		{
-			int eventIndex = random.Next(0, events.Length);
+			int eventIndex = random.NextIndex(events);
 
 			Debug.Assert(eventIndex >= 0 && eventIndex < events.Length, "Invalid event index");
 
@@ -55,32 +57,32 @@ namespace CivOne.Units.TribalHuts
 			tribalHutEvent.PostExecute();
 		}
 
-		private ITribalHutEventHandler CreateFriendlyTribeEvent()
+		private FriendlyTribeHandler CreateFriendlyTribeEvent()
 		{
-			return new FriendlyTribeEventHandler(
+			return new FriendlyTribeHandler(
 				currentUnit.X, currentUnit.Y, currentUnit.Owner);
 		}
 
-		private ITribalHutEventHandler CreateAncientScrollsEvent()
+		private AncientScrollsHandler CreateAncientScrollsEvent()
 		{
-			return new AncientScrollsEventHandler(
+			return new AncientScrollsHandler(
 				currentUnit.X, currentUnit.Y, player, logger);
 		}
 
-		private ITribalHutEventHandler CreateBarbariansEvent()
+		private BarbariansEventHandler CreateBarbariansEvent()
 		{
 			return new BarbariansEventHandler(
 				currentUnit.X, currentUnit.Y, gameInstance, map, random);
 		}
 
-		private ITribalHutEventHandler CreateMetalDepositsEvent()
+		private MetalDepositsHandler CreateMetalDepositsEvent()
 		{
-			return new MetalDepositsEventHandler(player);
+			return new MetalDepositsHandler(player);
 		}
 
-		private ITribalHutEventHandler CreateAdvancedTribeEvent()
+		private AdvancedTribeHandler CreateAdvancedTribeEvent()
 		{
-			return new AdvancedTribeEventHandler(currentUnit.X, currentUnit.Y, player);
+			return new AdvancedTribeHandler(currentUnit.X, currentUnit.Y, player);
 		}
 
 		private void FriendlyEvent()
@@ -127,6 +129,13 @@ namespace CivOne.Units.TribalHuts
 
 		private void BarbariansEvent()
 		{
+			if (!gameInstance.BarbarianActivity.HasFlag(BarbarianActivity.Villages))
+			{
+				// Not orig Civ: Villages release no barbarians
+				Execute(CreateMetalDepositsEvent());
+				return;
+			}
+
 			// CW: original code was
 			//	if (NearestCity < 4 || !Game.Instance.GetCities().Any(c => Player == c.Owner))
 			// the second part makes no sense

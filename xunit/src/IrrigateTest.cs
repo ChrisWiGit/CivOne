@@ -19,10 +19,11 @@ namespace CivOne.UnitTests
             //  M P P
 
             var unit = Game.Instance.GetUnits().First(x => playa == x.Owner);
-            City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            City? city = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            Assert.NotNull(city);
 
             ITile tile = Map.Instance[unit.X, unit.Y];
-            Assert.Equal(true, tile.HasCity);
+            Assert.True(tile.HasCity);
             Assert.True(tile is Grassland);
 
             // Before 20190810, this would incorrectly return true

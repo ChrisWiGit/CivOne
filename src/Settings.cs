@@ -8,49 +8,155 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Drawing;
+using System.Globalization;
 using System.IO;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
+using CivOne.Persistence.Factories;
 
 namespace CivOne
 {
-	public class Settings
+	#pragma warning disable CA1822,CA1711 // Mark members as static, Do not postfix enum type with "Flag"
+	public class Settings : ISettings
 	{
 		private static IRuntime Runtime => RuntimeHandler.Runtime;
-		//private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
+
+		// ── Window / OS canvas ────────────────────────────────────────────────
+		// Hard limits for the physical OS window size and the raw SDL canvas.
+		public const int MinWidth  = 320;
+		public const int MinHeight = 200;
+		public const int MaxWindowWidth  = 7680;  // maximum OS window width  (8K)
+		public const int MaxWindowHeight = 4320;  // maximum OS window height (8K)
+
+		// ── Expand mode stored values ──────────────────────────────────────
+		// Upper bound for the ExpandWidth / ExpandHeight values that the user
+		// can configure and that are persisted in the profile.  These may be
+		// as large as the largest supported display.
+		public const int MaxExpandWidth  = 7680;
+		public const int MaxExpandHeight = 4320;
+
+		// ── Effective gameplay surface ─────────────────────────────────────
+		// Cap on the logical canvas size that game-logic code (tile counts,
+		// map queries, etc.) ever sees via RuntimeHandler.CanvasWidth/Height.
+		// Keeping this small prevents _tilesX/_tilesY from growing beyond what
+		// Map.QueryMapPart can safely handle.
+		public const int MaxScreenWidth  = 512;
+		public const int MaxScreenHeight = 384;
+
+		// ── Auto-expand fallback ───────────────────────────────────────────
+		// When AspectRatio=Auto and no explicit expand size is stored, the
+		// canvas is capped to these values instead of the full window size.
+		public const int AutoExpandMaxWidth  = 1280;
+		public const int AutoExpandMaxHeight = 720;
 
 		// Set default settings
 		private string _windowTitle = "CivOne";
 		private GraphicsMode _graphicsMode = GraphicsMode.Graphics256;
-		private bool _fullScreen = false;
-		private bool _rightSideBar = false;
+		private bool _fullScreen;
+		private int _windowWidth = -1, _windowHeight = -1;
+		private Point _windowPosition = new Point(-1, -1);
+		private bool _windowMaximized;
+		private bool _rightSideBar;
 		private int _scale = 2;
-		private AspectRatio _aspectRatio = AspectRatio.Auto;
+		private AspectRatio _aspectRatio = AspectRatio.Expand;
 		private int _expandWidth, _expandHeight;
-		private bool _revealWorld = false;
-		private bool _debugMenu = false;
-		private bool _deityEnabled = false;
-		private bool _arrowHelper = false;
-		private bool _customMapSize = false;
-		private bool _pathFinding = false;
-		private bool _riverFastMovement = false;
-		private bool _canalCity = false;
+		private bool _vSync = true;
+		private bool _revealWorld;
+		private bool _debugMenu;
+		private bool _terrainEditorMenu;
+		private bool _deityEnabled;
+		private BarbarianActivity _barbarianActivity = BarbarianActivity.VillagesAndRaids;
+		private bool _arrowHelper;
+		private bool _pathFinding;
+		private bool _computerPlayerPathFinding = true;
+		private bool _riverFastMovement;
+		private bool _canalCity;
+		private bool _removeObsoleteBuildings = true;
+		private bool _preferSveSaveFormat = true;
+		private LzwCodecType _lzwCodecMode = LzwCodecType.Original;
+		private MapBitmapScalerType _bitmapScalerMode = MapBitmapScalerType.PaletteAwareWeighted;
+		private StartPositionAlgorithmType _startPositionAlgorithm = StartPositionAlgorithmType.Legacy;
+		private string _languagePostfix = string.Empty;
+		private SimulateInternationalFont _simulateInternationalFont = SimulateInternationalFont.Auto;
+		private bool _useUncheckedCastSanitizer;
 		private GlobalWarmingFeatureFlag _globalWarmingFeatureFlags = GlobalWarmingFeatureFlag.None;
         private bool _autoSettlers;
 		private CursorType _cursorType = CursorType.Default;
+		private FpsCorner _fpsCorner = FpsCorner.Off;
 		private DestroyAnimation _destroyAnimation = DestroyAnimation.Sprites;
 		private GameOption _instantAdvice, _autoSave, _endOfTurn, _animations, _sound, _enemyMoves, _civilopediaText, _palace;
         private int _taxRate = 5;
 
-		internal string StorageDirectory => Runtime.StorageDirectory;
-		internal string CaptureDirectory => Path.Combine(StorageDirectory, "capture");
-		internal string DataDirectory => Path.Combine(StorageDirectory, "data");
-		internal string PluginsDirectory => Path.Combine(StorageDirectory, "plugins");
-		internal string SavesDirectory => Path.Combine(StorageDirectory, "saves");
-		internal string SoundsDirectory => Path.Combine(StorageDirectory, "sounds");
+		/// <summary>
+		/// Gets the CivOne storage root. This is the root folder where all CivOne data is stored
+		/// </summary>
+		/// <remarks>
+		/// Windows: <c>%LOCALAPPDATA%\CivOne</c>
+		/// Linux and macOS: <c>~/.local/share/CivOne</c>
+		/// </remarks>
+		public string StorageDirectory => Runtime.StorageDirectory;
 
-		// Settings
+		/// <summary>
+		/// Gets the directory used for captured screenshots and recordings.
+		/// </summary>
+		/// <remarks>
+		/// Windows: <c>%LOCALAPPDATA%\CivOne\capture</c>
+		/// Linux and macOS: <c>~/.local/share/CivOne/capture</c>
+		/// </remarks>
+		public string CaptureDirectory => Path.Combine(StorageDirectory, "capture");
+
+		/// <summary>
+		/// Gets the directory that contains the game data files.
+		/// </summary>
+		/// <remarks>
+		/// Windows: <c>%LOCALAPPDATA%\CivOne\data</c>
+		/// Linux and macOS: <c>~/.local/share/CivOne/data</c>
+		/// </remarks>
+		public string DataDirectory => Path.Combine(StorageDirectory, "data");
+
+		/// <summary>
+		/// Gets the directory used for plugins.
+		/// </summary>
+		/// <remarks>
+		/// Windows: <c>%LOCALAPPDATA%\CivOne\plugins</c>
+		/// Linux and macOS: <c>~/.local/share/CivOne/plugins</c>
+		/// </remarks>
+		public string PluginsDirectory => Path.Combine(StorageDirectory, "plugins");
+
+		/// <summary>
+		/// Gets the directory used for savegames.
+		/// </summary>
+		/// <remarks>
+		/// Windows: <c>%LOCALAPPDATA%\CivOne\saves</c>
+		/// Linux and macOS: <c>~/.local/share/CivOne/saves</c>
+		/// </remarks>
+		public string SavesDirectory => Path.Combine(StorageDirectory, "saves");
+
+		/// <summary>
+		/// Gets the directory used for classic .cos savegames.
+		/// </summary>
+		/// <remarks>
+		/// Windows: <c>%LOCALAPPDATA%\CivOne\saves\cos</c>
+		/// Linux and macOS: <c>~/.local/share/CivOne/saves/cos</c>
+		/// </remarks>
+		public string CosSavesDirectory => Path.Combine(StorageDirectory, "saves", "cos");
+
+		/// <inheritdoc/>
+		public string MapsDirectory => Path.Combine(StorageDirectory, "maps");
+
+		/// <inheritdoc/>
+		public string PicturesDirectory => Path.Combine(StorageDirectory, "pictures");
+
+		/// <summary>
+		/// Gets the directory used for sound assets.
+		/// </summary>
+		/// <remarks>
+		/// Windows: <c>%LOCALAPPDATA%\CivOne\sounds</c>
+		/// Linux and macOS: <c>~/.local/share/CivOne/sounds</c>
+		/// </remarks>
+		public string SoundsDirectory => Path.Combine(StorageDirectory, "sounds");
 
 		internal string WindowTitle
 		{
@@ -87,6 +193,47 @@ namespace CivOne
 				Common.ReloadSettings = true;
 			}
 		}
+
+		public int WindowWidth
+		{
+			get => _windowWidth;
+			set
+			{
+				_windowWidth = value;
+				SetSetting("WindowWidth", _windowWidth.ToString(CultureInfo.InvariantCulture));
+			}
+		}
+
+		public int WindowHeight
+		{
+			get => _windowHeight;
+			set
+			{
+				_windowHeight = value;
+				SetSetting("WindowHeight", _windowHeight.ToString(CultureInfo.InvariantCulture));
+			}
+		}
+
+		public Point WindowPosition
+		{
+			get => _windowPosition;
+			set
+			{
+				_windowPosition = value;
+				SetSetting("WindowPosX", _windowPosition.X.ToString(CultureInfo.InvariantCulture));
+				SetSetting("WindowPosY", _windowPosition.Y.ToString(CultureInfo.InvariantCulture));
+			}
+		}
+
+		public bool WindowMaximized
+		{
+			get => _windowMaximized;
+			set
+			{
+				_windowMaximized = value;
+				SetSetting("WindowMaximized", _windowMaximized ? "1" : "0");
+			}
+		}
 		
 		public int Scale
 		{
@@ -95,7 +242,7 @@ namespace CivOne
 			{
 				if (value < 1 || value > 8) return;
 				_scale = value;
-				SetSetting("Scale", _scale.ToString());
+				SetSetting("Scale", _scale.ToString(CultureInfo.InvariantCulture));
 				Common.ReloadSettings = true;
 			}
 		}
@@ -106,7 +253,7 @@ namespace CivOne
 			set
 			{
 				_aspectRatio = value;
-				string saveValue = ((int)_aspectRatio).ToString();
+				string saveValue = ((int)_aspectRatio).ToString(CultureInfo.InvariantCulture);
 				SetSetting("AspectRatio", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -118,7 +265,7 @@ namespace CivOne
 			set
 			{
 				_expandWidth = value;
-				string saveValue = ((int)_expandWidth).ToString();
+				string saveValue = _expandWidth.ToString(CultureInfo.InvariantCulture);
 				SetSetting("ExpandWidth", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -130,15 +277,26 @@ namespace CivOne
 			set
 			{
 				_expandHeight = value;
-				string saveValue = ((int)_expandHeight).ToString();
+				string saveValue = _expandHeight.ToString(CultureInfo.InvariantCulture);
 				SetSetting("ExpandHeight", saveValue);
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal bool VSync
+		{
+			get => _vSync;
+			set
+			{
+				_vSync = value;
+				SetSetting("VSync", _vSync ? "1" : "0");
 				Common.ReloadSettings = true;
 			}
 		}
 
 		// Patches
 		
-		internal bool RevealWorld
+		public bool RevealWorld
 		{
 			get => _revealWorld;
 			set
@@ -170,7 +328,18 @@ namespace CivOne
 				Common.ReloadSettings = true;
 			}
 		}
-		
+
+		internal bool TerrainEditorMenu
+		{
+			get => _terrainEditorMenu;
+			set
+			{
+				_terrainEditorMenu = value;
+				SetSetting("TerrainEditorMenu", _terrainEditorMenu ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
 		internal bool DeityEnabled
 		{
 			get => _deityEnabled;
@@ -178,6 +347,22 @@ namespace CivOne
 			{
 				_deityEnabled = value;
 				SetSetting("DeityEnabled", _deityEnabled ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets where barbarians may come from in new games.
+		/// A running game keeps its own value, this is the setting new games start with and the fallback
+		/// for savegames that cannot store the value themselves (classic SVE format).
+		/// </summary>
+		internal BarbarianActivity BarbarianActivity
+		{
+			get => _barbarianActivity;
+			set
+			{
+				_barbarianActivity = value;
+				SetSetting("BarbarianActivity", ((int)_barbarianActivity).ToString(CultureInfo.InvariantCulture));
 				Common.ReloadSettings = true;
 			}
 		}
@@ -193,17 +378,6 @@ namespace CivOne
 			}
 		}
 
-		internal bool CustomMapSize
-		{
-			get => _customMapSize;
-			set
-			{
-				_customMapSize = value;
-				SetSetting("CustomMapSize", _customMapSize ? "1" : "0");
-				Common.ReloadSettings = true;
-			}
-		}
-
 		internal bool PathFinding
 		{
 			get => _pathFinding;
@@ -211,6 +385,17 @@ namespace CivOne
 			{
 				_pathFinding = value;
 				SetSetting("PathFindingAlgorithm", _pathFinding ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal bool ComputerPlayerPathFinding
+		{
+			get => _computerPlayerPathFinding;
+			set
+			{
+				_computerPlayerPathFinding = value;
+				SetSetting("ComputerPlayerPathFindingAlgorithm", _computerPlayerPathFinding ? "1" : "0");
 				Common.ReloadSettings = true;
 			}
 		}
@@ -237,6 +422,92 @@ namespace CivOne
 			}
 		}
 
+		internal bool RemoveObsoleteBuildings
+		{
+			get => _removeObsoleteBuildings;
+			set
+			{
+				_removeObsoleteBuildings = value;
+				SetSetting("RemoveObsoleteBuildings", _removeObsoleteBuildings ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal bool PreferSveSaveFormat
+		{
+			get => _preferSveSaveFormat;
+			set
+			{
+				_preferSveSaveFormat = value;
+				SetSetting("PreferSveSaveFormat", _preferSveSaveFormat ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal enum LzwCodecType
+		{
+			Original = 0,
+			Corrected = 1
+		}
+
+		internal enum MapBitmapScalerType
+		{
+			PaletteAwareWeighted = 0,
+			NearestNeighbor = 1
+		}
+
+		internal LzwCodecType LzwCodecMode
+		{
+			get => _lzwCodecMode;
+			set
+			{
+				_lzwCodecMode = value;
+				SetSetting("LzwCodecMode", ((int)_lzwCodecMode).ToString(CultureInfo.InvariantCulture));
+				Resources.ClearInstance();
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal MapBitmapScalerType BitmapScalerMode
+		{
+			get => _bitmapScalerMode;
+			set
+			{
+				_bitmapScalerMode = value;
+				SetSetting("MapBitmapScalerMode", ((int)_bitmapScalerMode).ToString(CultureInfo.InvariantCulture));
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal enum StartPositionAlgorithmType
+		{
+			Legacy = 0,
+			AreaBased = 1
+		}
+
+		internal StartPositionAlgorithmType StartPositionAlgorithm
+		{
+			get => _startPositionAlgorithm;
+			set
+			{
+				_startPositionAlgorithm = value;
+				SetSetting("StartPositionAlgorithm", ((int)_startPositionAlgorithm).ToString(CultureInfo.InvariantCulture));
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal bool UseUncheckedCastSanitizer
+		{
+			get => _useUncheckedCastSanitizer;
+			set
+			{
+				_useUncheckedCastSanitizer = value;
+				SetSetting("UseUncheckedCastSanitizer", _useUncheckedCastSanitizer ? "1" : "0");
+				ValueSanitizerFactory.SetRuntimeUseUncheckedCastSanitizer(_useUncheckedCastSanitizer);
+				Common.ReloadSettings = true;
+			}
+		}
+
 		[Flags]
 		public enum GlobalWarmingFeatureFlag
 		{
@@ -251,7 +522,7 @@ namespace CivOne
 			set
 			{
 				_globalWarmingFeatureFlags = value;
-				SetSetting("GlobalWarmingFeatureFlags", ((int)value).ToString());
+				SetSetting("GlobalWarmingFeatureFlags", ((int)value).ToString(CultureInfo.InvariantCulture));
 				Common.ReloadSettings = true;
 			}
 		}
@@ -268,7 +539,7 @@ namespace CivOne
 			else
 				_globalWarmingFeatureFlags &= ~flag;
 
-			SetSetting("GlobalWarmingFeatureFlags", ((int)_globalWarmingFeatureFlags).ToString());
+			SetSetting("GlobalWarmingFeatureFlags", ((int)_globalWarmingFeatureFlags).ToString(CultureInfo.InvariantCulture));
 			Common.ReloadSettings = true;
 		}
 
@@ -294,9 +565,21 @@ namespace CivOne
 			internal set
 			{
 				_cursorType = value;
-				string saveValue = ((int)_cursorType).ToString();
+				string saveValue = ((int)_cursorType).ToString(CultureInfo.InvariantCulture);
 				SetSetting("CursorType", saveValue);
 				Cursor.ClearCache();
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal FpsCorner FpsCorner
+		{
+			get => _fpsCorner;
+			set
+			{
+				_fpsCorner = value;
+				string saveValue = ((int)_fpsCorner).ToString(CultureInfo.InvariantCulture);
+				SetSetting("FpsCorner", saveValue);
 				Common.ReloadSettings = true;
 			}
 		}
@@ -307,7 +590,7 @@ namespace CivOne
 			set
 			{
 				_destroyAnimation = value;
-				string saveValue = ((int)_destroyAnimation).ToString();
+				string saveValue = ((int)_destroyAnimation).ToString(CultureInfo.InvariantCulture);
 				SetSetting("DestroyAnimation", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -320,7 +603,7 @@ namespace CivOne
 			set
 			{
 				_instantAdvice = value;
-				string saveValue = ((int)_instantAdvice).ToString();
+				string saveValue = ((int)_instantAdvice).ToString(CultureInfo.InvariantCulture);
 				SetSetting("GameInstantAdvice", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -332,7 +615,7 @@ namespace CivOne
 			set
 			{
 				_autoSave = value;
-				string saveValue = ((int)_autoSave).ToString();
+				string saveValue = ((int)_autoSave).ToString(CultureInfo.InvariantCulture);
 				SetSetting("GameAutoSave", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -344,7 +627,7 @@ namespace CivOne
 			set
 			{
 				_endOfTurn = value;
-				string saveValue = ((int)_endOfTurn).ToString();
+				string saveValue = ((int)_endOfTurn).ToString(CultureInfo.InvariantCulture);
 				SetSetting("GameEndOfTurn", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -356,7 +639,7 @@ namespace CivOne
 			set
 			{
 				_animations = value;
-				string saveValue = ((int)_animations).ToString();
+				string saveValue = ((int)_animations).ToString(CultureInfo.InvariantCulture);
 				SetSetting("GameAnimations", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -368,7 +651,7 @@ namespace CivOne
 			set
 			{
 				_sound = value;
-				string saveValue = ((int)_sound).ToString();
+				string saveValue = ((int)_sound).ToString(CultureInfo.InvariantCulture);
 				SetSetting("GameSound", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -380,7 +663,7 @@ namespace CivOne
 			set
 			{
 				_enemyMoves = value;
-				string saveValue = ((int)_enemyMoves).ToString();
+				string saveValue = ((int)_enemyMoves).ToString(CultureInfo.InvariantCulture);
 				SetSetting("GameEnemyMoves", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -392,7 +675,7 @@ namespace CivOne
 			set
 			{
 				_civilopediaText = value;
-				string saveValue = ((int)_civilopediaText).ToString();
+				string saveValue = ((int)_civilopediaText).ToString(CultureInfo.InvariantCulture);
 				SetSetting("GameCivilopediaText", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -404,7 +687,7 @@ namespace CivOne
 			set
 			{
 				_palace = value;
-				string saveValue = ((int)_palace).ToString();
+				string saveValue = ((int)_palace).ToString(CultureInfo.InvariantCulture);
 				SetSetting("GamePalace", saveValue);
 				Common.ReloadSettings = true;
 			}
@@ -416,15 +699,38 @@ namespace CivOne
             set
             {
                 _taxRate = Math.Max(0,Math.Min(10,value));
-                SetSetting("TaxRate", _taxRate.ToString());
+                SetSetting("TaxRate", _taxRate.ToString(CultureInfo.InvariantCulture));
                 Common.ReloadSettings = true;
             }
         }
 
 		public string[] DisabledPlugins
 		{
-			get => GetSetting("DisabledPlugins")?.Split(';') ?? new string[0];
+			get => GetSetting("DisabledPlugins")?.Split(';') ?? [];
 			set => SetSetting("DisabledPlugins", string.Join(";", value));
+		}
+
+		public string LanguagePostfix
+		{
+			get => _languagePostfix;
+			set
+			{
+				_languagePostfix = value ?? string.Empty;
+				SetSetting("LanguagePostfix", _languagePostfix);
+				Common.ReloadSettings = true;
+			}
+		}
+
+		internal SimulateInternationalFont SimulateInternationalFont
+		{
+			get => _simulateInternationalFont;
+			set
+			{
+				_simulateInternationalFont = value;
+				SetSetting("SimulateInternationalFont", ((int)_simulateInternationalFont).ToString(CultureInfo.InvariantCulture));
+				Common.ReloadSettings = true;
+				Resources.Instance.ReloadFonts();
+			}
 		}
 
 		internal void RevealWorldCheat() => _revealWorld = !_revealWorld;
@@ -432,19 +738,19 @@ namespace CivOne
 		//internal int ScaleX => _scale;
 		//internal int ScaleY => _scale;
 		
-		private string GetSetting(string settingName) => Runtime.GetSetting(settingName);
+		private string? GetSetting(string settingName) => Runtime.GetSetting(settingName);
 
 		private bool GetSetting<T>(string settingName, ref T output) where T: struct, IConvertible
 		{
 			if (!Int32.TryParse(GetSetting(settingName), out int value)) return false;
 			if (!Enum.IsDefined(typeof(T), value)) return false;
-			output = (T)Enum.Parse(typeof(T), value.ToString());
+			output = Enum.Parse<T>(value.ToString(CultureInfo.InvariantCulture));
 			return true;
 		}
 
 		private void GetSetting(string settingName, ref string output) => output = GetSetting(settingName) ?? output;
 
-		private void GetSetting(string settingName, ref bool output) => output = (GetSetting(settingName) == "1");
+		private void GetSetting(string settingName, ref bool output) => output = GetSetting(settingName) == "1";
 		
 		private bool GetSetting(string settingName, ref int output, int minValue = int.MinValue, int maxValue = int.MaxValue)
 		{
@@ -460,7 +766,7 @@ namespace CivOne
 		
 		private void CreateDirectories()
 		{
-			foreach (string dir in new[] { StorageDirectory, CaptureDirectory, DataDirectory, PluginsDirectory, SavesDirectory, SoundsDirectory })
+			foreach (string dir in new[] { StorageDirectory, CaptureDirectory, DataDirectory, PluginsDirectory, SavesDirectory, CosSavesDirectory, MapsDirectory, PicturesDirectory, SoundsDirectory })
                 if (!Directory.Exists(dir))
 			    {
 				    Directory.CreateDirectory(dir);
@@ -476,8 +782,8 @@ namespace CivOne
 			}
 		}
 		
-		private static Settings _instance;
-		public static Settings Instance => _instance ?? (_instance = new Settings());
+		private static Settings? _instance;
+		public static Settings Instance => _instance ??= new Settings();
 
 		private Settings()
 		{
@@ -485,35 +791,78 @@ namespace CivOne
 
 			// Read settings
 			GetSetting("WindowTitle", ref _windowTitle);
-			GetSetting<GraphicsMode>("GraphicsMode", ref _graphicsMode);
+			GetSetting("GraphicsMode", ref _graphicsMode);
 			GetSetting("FullScreen", ref _fullScreen);
 			GetSetting("SideBar", ref _rightSideBar);
 			GetSetting("Scale", ref _scale, 1, 8);
-			GetSetting<AspectRatio>("AspectRatio", ref _aspectRatio);
+			if (!GetSetting("WindowWidth", ref _windowWidth, MinWidth, MaxWindowWidth) || !GetSetting("WindowHeight", ref _windowHeight, MinHeight, MaxWindowHeight))
+			{
+				_windowWidth = -1;
+				_windowHeight = -1;
+			}
+			int windowPosX = -1;
+			int windowPosY = -1;
+			if (!GetSetting("WindowPosX", ref windowPosX, -MaxWindowWidth, MaxWindowWidth) || !GetSetting("WindowPosY", ref windowPosY, -MaxWindowHeight, MaxWindowHeight))
+			{
+				// Default to a position near the top-left corner, but not exactly (to avoid issues with taskbars and such).
+				_windowPosition = new Point(100, 100);
+			}
+			else
+			{
+				_windowPosition = new Point(windowPosX, windowPosY);
+			}
+			GetSetting("WindowMaximized", ref _windowMaximized);
+			GetSetting("AspectRatio", ref _aspectRatio);
 			GetSetting("Sound", ref _sound);
-			if (!GetSetting("ExpandWidth", ref _scale, 320, 512) || !GetSetting("ExpandHeight", ref _scale, 200, 384))
+			if (!GetSetting("ExpandWidth", ref _expandWidth, MinWidth, MaxExpandWidth) || !GetSetting("ExpandHeight", ref _expandHeight, MinHeight, MaxExpandHeight))
 			{
 				_expandWidth = -1;
 				_expandHeight = -1;
 			}
+			string? vSyncSetting = GetSetting("VSync");
+			if (vSyncSetting == null)
+			{
+				SetSetting("VSync", "1");
+			}
+			else
+			{
+				_vSync = vSyncSetting == "1";
+			}
 			GetSetting("RevealWorld", ref _revealWorld);
 			GetSetting("DebugMenu", ref _debugMenu);
+			GetSetting("TerrainEditorMenu", ref _terrainEditorMenu);
 			GetSetting("DeityEnabled", ref _deityEnabled);
+			int barbarianActivity = (int)_barbarianActivity;
+			if (GetSetting("BarbarianActivity", ref barbarianActivity, (int)BarbarianActivity.None, (int)BarbarianActivity.VillagesAndRaids))
+			{
+				// Read as a number, because the value is a flag combination that Enum.IsDefined rejects.
+				_barbarianActivity = (BarbarianActivity)barbarianActivity;
+			}
 			GetSetting("ArrowHelper", ref _arrowHelper);
-			GetSetting("CustomMapSize", ref _customMapSize);
 			GetSetting("PathFindingAlgorithm", ref _pathFinding);
+			GetSetting("ComputerPlayerPathFindingAlgorithm", ref _computerPlayerPathFinding);
 			GetSetting("AutoSettlers", ref _autoSettlers);
 			GetSetting("RiverFastMovement", ref _riverFastMovement);
-			GetSetting<CursorType>("CursorType", ref _cursorType);
-			GetSetting<DestroyAnimation>("DestroyAnimation", ref _destroyAnimation);
-			GetSetting<GameOption>("GameInstantAdvice", ref _instantAdvice);
-			GetSetting<GameOption>("GameAutoSave", ref _autoSave);
-			GetSetting<GameOption>("GameEndOfTurn", ref _endOfTurn);
-			GetSetting<GameOption>("GameAnimations", ref _animations);
-			GetSetting<GameOption>("GameSound", ref _sound);
-			GetSetting<GameOption>("GameEnemyMoves", ref _enemyMoves);
-			GetSetting<GameOption>("GameCivilopediaText", ref _civilopediaText);
-			GetSetting<GameOption>("GamePalace", ref _palace);
+			GetSetting("CanalCity", ref _canalCity);
+			GetSetting("RemoveObsoleteBuildings", ref _removeObsoleteBuildings);
+			GetSetting("PreferSveSaveFormat", ref _preferSveSaveFormat);
+			GetSetting("LzwCodecMode", ref _lzwCodecMode);
+			GetSetting("MapBitmapScalerMode", ref _bitmapScalerMode);
+			GetSetting("StartPositionAlgorithm", ref _startPositionAlgorithm);
+			GetSetting("LanguagePostfix", ref _languagePostfix);
+			GetSetting("SimulateInternationalFont", ref _simulateInternationalFont);
+			GetSetting("UseUncheckedCastSanitizer", ref _useUncheckedCastSanitizer);
+			GetSetting("CursorType", ref _cursorType);
+			GetSetting("FpsCorner", ref _fpsCorner);
+			GetSetting("DestroyAnimation", ref _destroyAnimation);
+			GetSetting("GameInstantAdvice", ref _instantAdvice);
+			GetSetting("GameAutoSave", ref _autoSave);
+			GetSetting("GameEndOfTurn", ref _endOfTurn);
+			GetSetting("GameAnimations", ref _animations);
+			GetSetting("GameSound", ref _sound);
+			GetSetting("GameEnemyMoves", ref _enemyMoves);
+			GetSetting("GameCivilopediaText", ref _civilopediaText);
+			GetSetting("GamePalace", ref _palace);
 			GetSetting("TaxRate", ref _taxRate, 0, 10);
 
 			string gwFlags = "";
@@ -523,6 +872,8 @@ namespace CivOne
 			{
 				_globalWarmingFeatureFlags = GlobalWarmingFeatureFlag.None;
 			}
+
+			ValueSanitizerFactory.SetRuntimeUseUncheckedCastSanitizer(_useUncheckedCastSanitizer);
 		}
 	}
 }

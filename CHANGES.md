@@ -1,3 +1,8 @@
+<!-- One sentence per line.
+This is a more detailed version of changes in the game.
+It describes the changes in more detail than the commit messages, and is intended for players who want to know what has changed in the game.
+If you want to add a change, do not add technical details, but describe the change in a way that is understandable to players.
+-->
 # Changes
 
 ## Comment
@@ -6,6 +11,472 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Where barbarians come from is now configurable.
+  * Barbarians reach the map on three ways, and each one can be switched on and off on its own: tribal villages that release a horde when one of your units enters them, raiding parties that appear inland, and raiding parties that arrive by ship and land on the coast.
+  * The eight resulting combinations are offered as ready-made choices, from `None` over `Villages Only`, `Land Raids Only`, `Sea Raids Only` and `Raids Only` up to `Villages + Raids`, which is the default and matches the original game.
+  * In the setup menu the setting is `Patches` -> `Barbarians`, and every choice explains in one line what it does.
+  * When starting a new game the setting can also be reached from the `Level of Competition...` menu, through the new `Barbarians: ...` entry that always shows the current value.
+  * `Escape` goes back to the competition menu without changing anything.
+  * Both places change the same setting, so a change made while starting a game also applies to the games you start afterwards.
+  * A game takes the setting over when it starts and then keeps it, even when you change the setting in the meantime.
+  * The value is stored in savegames of this project, so a loaded game plays on with the barbarians it was started with.
+  * Savegames of the original game have no room for the value, so they use the setting as it is when you load them. Older savegames of this project do the same.
+  * With villages switched off, entering a tribal village never releases barbarians. Such a village yields metal deposits instead, so the reward is not simply lost.
+  * Switching one kind of raiding party off does not make the other kind appear more often than it does in the original game. The turn of the disabled kind simply passes without anything happening.
+  * With the debug menu enabled, `F12` offers `Spawn Barbarians`, which places a raiding party right away and reports whether it appeared inland or arrived by sea. It ignores the setting on purpose, so there is always something to look at.
+* Feature: The intelligence report is split into pages when there are more than six opponents.
+  * `PgUp` and `PgDn` switch pages and wrap around at both ends of the list.
+  * Every page shows up to seven civilizations, the current page and the number of pages are shown at the bottom.
+  * `F1` moves the civilizations you have an embassy with to the front of the list, so they are not buried behind pages of rows without an embassy. `F1` again restores the original order.
+  * With the debug menu enabled, `F2` shows every civilization as if you had an embassy with all of them.
+  * The info buttons are numbered by their row on the page, so they stay between `1` and `7` and the matching number key opens the leader details.
+  * The details of a single civilization now return to the list instead of closing the report.
+  * Player colours no longer break in games with more than eight civilizations.
+* Feature: The power graph can be limited to the civilizations you care about.
+  * The graph draws at most 12 civilizations, so its rows stay inside the screen even in games with up to 31 opponents.
+  * In games with more than 12 civilizations, `F1` opens a grid dialog to check and uncheck the civilizations to draw. `F1` or `Escape` closes it again.
+  * By default the human player and the first civilizations are shown, up to seven in total. These are the civilizations that still carry their own name without a Roman numeral.
+  * The selection is remembered while the game runs and is reset to the default when another game is started or loaded, even when the new game has the same number of civilizations.
+* Feature: Improved civilization assignment and respawning for games with more players than available civilizations.
+  * Initial player assignment now uses every regular civilization before reusing one and never assigns the Barbarians to a normal player slot.
+  * When a civilization is destroyed before 0 AD in a game with at most six opponents, its player slot prefers the free buddy civilization, as in the original game. Games with more opponents use another free civilization without buddy priority. If all civilizations are occupied, one of the least-used civilizations is selected.
+  * Changed compared to the original game: if the buddy civilization is already being played, the slot now receives a free civilization instead. Previously two players could end up playing the same civilization after a respawn.
+  * Players sharing a civilization receive distinguishable leader and tribe names with Roman numerals, such as `Caesar II` and `Romans II`.
+  * Respawned civilization identities are recorded in replay data and persisted in COS savegames, allowing later screens to reconstruct the correct civilization even after several respawns. Older saves without these replay entries remain supported.
+  * The Conquest screen now shows the correct civilization for every defeated player, supports more than 14 defeated civilizations by clearing and reusing the portrait board, and preserves numbered civilization names.
+  * Added a paginated `Show Player Slots` debug screen showing every slot's leader, tribe, civilization, unit and city counts, respawn count, player colors, and human or Barbarian status.
+* Feature: Export the world map as an image file.
+  * Open the terrain editor menu and choose `Export Map Image...`, or pick the same entry in the debug menu (`F12`).
+  * The picture contains the whole map with all terrain, improvements, cities, city names, and units, drawn at the original tile size — so it looks like the normal game map, just without the surrounding user interface.
+  * How much of the world ends up in the picture depends on what you can currently see:
+    * While the terrain editor is open, or while `Reveal world` is switched on, the complete world is exported.
+    * Otherwise only the parts your civilization has already explored are drawn; everything still hidden by the fog of war stays black.
+  * A save dialog asks where to store the file. It starts in a new `pictures` folder inside your CivOne profile folder (`Open CivOne Profile folder...` in the setup menu takes you there), and suggests a name in the same style as your savegames, for example `Chieftain Caesar of the Romans at 1234 AD.bmp`. You can change folder and name freely.
+  * The image is written as an uncompressed `*.bmp` file, which every common image viewer and editor can open. Large maps produce large files.
+    * 300x300 tiles = ~22 MB
+* Fix: Goto pathfinding now handles horizontal map wrapping correctly in both smart and legacy modes, so wrapped goto targets are found reliably.
+* Feature: Goto moving unit
+  * zoom mode supported. Yet zooming is not supported while in goto mode, so the user must exit go to mode first before zooming.
+  * Draws a live path preview to the current target tile (mouse hover and keyboard target mode).
+  * Added keyboard target mode in Goto as in original Civ.
+    * Press `Tab` to toggle keyboard target mode.
+    * Arrow keys and numpad (including diagonals) move the target cursor.
+    * Press `Enter` to confirm the current target, `Escape` to cancel.
+    * Pressing a direction key also activates keyboard target mode immediately.
+  * Path preview uses the `IUnitGotoService` interface, so preview behavior follows the currently selected goto/pathfinding implementation.
+  * Path preview calculation is skipped beyond a configured maximum preview distance to avoid expensive pathfinding for far targets. The current hard limit is exactly 35 tiles.
+  * Blink behavior:
+    * Active unit and keyboard target rectangle use the normal map blink timing.
+    * Small path preview markers use a separate, slower blink interval.
+  * Current limitations (known): not all original Civ1 goto interactions are implemented yet (for example, entering other unit commands or opening/using the game menu while Goto is active).
+* Feature: New "Area based" algorithm for placing civilizations' starting Settlers, as an alternative to the original placement logic.
+  * Choose the algorithm in the setup menu under `Shift+F1 → Patches → Starting position algorithm`: `Legacy` (default, original random-search behavior, unchanged) or `Area based` (new). The setting can only be changed while no game is running.
+  * With `Area based` selected, the map is divided into a grid of areas — twice as many areas as there are civilizations, so roughly half stay unassigned as buffer/fallback space. Areas are handed out to civilizations in random order (not left-to-right), so each civilization gets its own area to start in.
+  * The area grid covers the whole map (minus a two-tile margin at the poles), so no land is left out of the search even when the number of civilizations doesn't fill the last grid row.
+  * Civilizations keep the same minimum distance to existing cities and Settlers as the original algorithm, so two civilizations can't start next to each other at a shared area border. The distance is relaxed step by step if a crowded or small map leaves no other option.
+  * If a civilization's assigned area has no usable land tile (e.g. it's entirely ocean), placement falls back to one of the other areas, chosen at random, before giving up.
+  * Both algorithms never place the Settlers on Ocean, Mountains, Arctic, or Tundra — Ocean and Mountains cannot hold a city at all, and Arctic/Tundra offer no realistic growth, so these are excluded even when every other constraint is relaxed to the maximum.
+  * As a last resort, when no tile satisfies the regular rules, both algorithms fall back to any other free land tile (never Ocean, Mountains, Arctic, or Tundra), so a civilization is not left without units while usable land exists away from the poles. The two algorithms differ in how they treat the two-tile pole margin:
+    * `Legacy` uses a tile inside the pole margin as a true last resort, once no other tile is available. It therefore only leaves a civilization without a starting Settlers unit when the map has no free, non-excluded land tile at all, instead of aborting the whole game setup.
+    * `Area based` never places the Settlers inside the pole margin, not even as a fallback. On a map whose only remaining free land lies within that margin, the civilization is left without a starting Settlers unit.
+  * If a civilization still ends up without a starting position, it is destroyed during game creation instead of remaining a "phantom" civilization with no units or cities. Once the game screen is up, a popup lists which civilizations were removed this way.
+  * In-game, open the World Map screen (or `F10`) and press `A` to toggle a dashed-border overlay of the computed areas (only available when the debug menu is enabled and `Area based` is selected) — useful for visually checking that civilizations land inside their own area.
+    * In addition a null perimeter meridian line is drawn in yellow, so you can see where the map wraps around when the map is too large to fit on the screen.
+* Raise player limit from 8 to 32 and improve start position handling
+  * New Game now supports up to 31 regular players (plus Barbarians).
+  * The `Level of Competition...` menu counts civilizations, as in the original game: the number you pick is the number of civilizations in the world, including your own. Picking `2 Civilizations` therefore starts a game with you, one opponent and the Barbarians.
+  * Expands player colors and explored-map tracking for more players.
+  * Legacy SVE saves remain limited to 8 players for compatibility.
+  * YAML saves support the full 32-player range.
+  * Includes the new start position placement services.
+* Feature: Two-finger touchpad gestures for the gameplay map.
+  * A two-finger swipe now scrolls the map viewport in all directions: vertical swipes pan up and down, horizontal swipes pan left and right.
+  * Panning moves one tile per scroll step, so a single swipe scrolls several tiles.
+  * Zooming uses `Ctrl` + two-finger scroll, which reuses the existing `Ctrl+MouseWheel` zoom including its cursor-focused anchoring.
+  * Pinch-to-zoom is supported where the operating system reports the gesture as touch input (macOS trackpads, Windows touchscreens). On Linux neither X11 nor Wayland delivers touchpad gestures to SDL, so pinch does nothing there and `Ctrl` + two-finger scroll is the way to zoom.
+  * See [Touchpad Gestures and SDL](REMARKS.md#touchpad-gestures-and-sdl) for the platform details, the sign conventions of horizontal scrolling, and a workaround for pinch on Linux.
+* Feature: The terrain editor now has its own "Terrain editor menu" setting and no longer depends on debug mode.
+  * Enable it in the setup menu under `Shift+F1 → Patches → Terrain editor menu`, or in the setup wizard.
+  * The setting can only be changed while no game is running, and it is stored in the profile.
+  * With the setting enabled, the `Terrain` top menu is available during normal gameplay; previously the editor was only reachable after turning on the debug menu.
+* Feature: Terrain editor "Auto Start Positions..." menu entry to automatically place civilizations' starting Settlers.
+  * It opens a small menu where you choose the placement algorithm:
+    * `Legacy` reproduces the original placement logic.
+    * `Area Based` divides the map into equally sized areas and spreads civilizations across them.
+  * There are two modes:
+    * Normal selection only fills in civilizations that do not have a start position yet. Existing, manually placed positions are kept and used as anchors so the new ones stay clear of them.
+    * Holding `Shift` while choosing the algorithm redistributes every civilization from scratch, ignoring and overwriting all current positions.
+  * The generated positions never use the hardcoded Earth start coordinates, so they stay meaningful on custom maps.
+* Feature: Terrain editor "Save Map..." can now save a standalone map file without a full game/savegame.
+  * The save dialog offers two file types: the new `.comap` YAML format and the original legacy Civ1 `.map` format.
+  * The legacy `.map` option is only offered when the current map actually fits that format (fixed 80x50 size, no custom start positions, no pollution, no fortresses); otherwise only `.comap` is shown, since the legacy format supports fewer features than `.comap`.
+* Credits menu highlighting shortcut keys for all menu items.
+  * These shortcuts can be used when the intro animation is running, so the user can skip the intro and go directly to the desired menu item.
+  * In menu itself the shortcut just selects the menu item, but does not trigger the action. 
+* Feature: Replaced the `EARTH` entry in the credits menu with `EARTHS...`
+  * Custom maps can now be loaded from the `maps` folder in the CivOne user profile directory.
+  * The `maps` folder is created automatically on first run and is used for custom map files with the `.comap` extension.
+  * Added optional `StartPositions` support to the map file format for civilization-specific starting positions.
+  * If a map file defines a valid start position for a civilization, that position is used instead of random placement or the original default Earth start position.
+* Feature: The wizard contains a sub menu to allow change game behavior settings directly, instead of having to open the settings screen. Currently, the following settings can be toggled from the wizard:
+  * Use smart PathFinding for goto
+  * Use smart pathfinding for computer players
+  * Use auto settlers cheat
+  * Use fast river movement
+  * No movement penalty for sea units in city
+  * Remove obsolete barracks
+  * Enable Deity difficulty
+  * Extended global warming effects
+* Feature: SDI defense system can now destroy incoming nuclear missiles before they reach their target.
+  * If a nuclear missile is launched at a city with an SDI defense system, the missile is destroyed and a message is shown to the player.
+  * The SDI defense system is only effective against nuclear missiles in 90% of cases, so there is a 10% chance that the missile will still hit the target.
+  * Not as in original civ: When a nuclear missile is launched at a unit near a city with an SDI defense system, the missile will be destroyed in 90% of cases.
+* Refactoring: Addressed around 4,000 warnings
+  * all projects have been compiled with `<AnalysisLevel>latest-all</AnalysisLevel>` and `<Nullable>enable</Nullable>` to enable the latest analyzers and nullable reference types.
+  * Fixed potential null-reference and nullability-related warnings across the codebase.
+  * Improved dispose patterns to release resources immediately after use where appropriate.
+  * Suppressed selected warnings with `#pragma warning disable` or `[SuppressMessage]` when they were not relevant or not reasonably fixable.
+  * Suppressed additional warnings at project level via `<NoWarn>` for the same reasons. See [REMARKS.md](REMARKS.md#warnings-suppressed) for the list and rationale.
+* Fix: Attack with nuke shows units on the map instead of hiding them.
+  * Attack of city or unit near city will reduce city size to half.
+  * All improvements on the target tile are removed.
+  * Pollution is added to the target tile and surrounding tiles with a chance of 25% for each surrounding tile.
+    * This is not like the original game.
+* Fix: Click on menu separator will no longer close the menu.
+* Feature: Added corrected LZW (Lempel-Ziv-Welch) codec implementation as a new option in the setup menu for different compression compatibility.
+  * The original LZW codec implementation is still available as the default option and works with original game files.
+  * The corrected LZW codec implementation can be selected for use with modified game files that contain LZW-compressed images which do not work with the original codec.
+  * Both options are available in the setup menu under "Patches → LZW implementation" and apply immediately when selected.
+  * The selected LZW codec mode is saved in the profile and applied on game startup, allowing users to choose the appropriate codec for their game files without needing to modify settings each time.
+* Feature: Added terrain, tile improvements, land value, found city and unit editor
+  * Editor menu shown if debug mode is enabled (`Shift+F1 -> Patches -> Debug menu enabled` or `--debug` when starting the game).
+  * Added a `Terrain` top menu in gameplay map view with editor actions for terrain painting, found city, unit spawn, irrigation, road/railroad, mine, fortress, pollution, hut/village, clearing improvements, land values, and brush size changes.
+  * Terrain painting uses a selectable terrain picker (`T`) and supports direct map editing with the currently selected terrain type.
+  * Added terrain editor hotkeys: `T` select terrain, `Y` found city, `Shift+Y` select city owner, `U` spawn selected unit, `Shift+U` select unit owner, `I` irrigation, `R` road/railroad, `M` mine, `F` fortress, `P` pollution, `H` hut/village, `C` clear improvements, `L` toggle land value mode.
+  * Added brush size controls with menu shortcuts `+` and `-`; editor brush sizes cycle through 1,2,3,5,7,9,11,13,15 tiles.
+  * Requirement: brush size `2` is intentionally supported for 2x2 edits, even though it is not centered like odd brush sizes.
+  * In land value mode, left click increases and right click decreases tile land values.
+  * Found city mode can create cities for the selected owner; using the alternate action on an existing city reduces its size.
+  * Unit spawn mode can place the selected unit type for the selected owner; using the alternate action removes matching units from the target tile.
+  * Terrain editor changes are applied directly on the gameplay map and persist through normal save/load.
+* Fix: Corrected city resource tile save/load mapping and growth allocation.
+  * Fixed the savegame bit mapping so the inner northeast tile `(1,-1)` no longer collides with the outer northeast tile `(2,-1)` (only for sve savegames).
+  * `SetResourceTiles()` now keeps adding tiles until the city reaches its full size, preventing missing worked tiles from being turned into entertainers.
+* Feature: Introduced V-sync toggle in setup menu
+  * Added "V-Sync" setting in the setup menu with options "On" (default) and "Off".
+  * When V-Sync is enabled, the game synchronizes its frame rate with the display's refresh rate to prevent screen tearing.
+  * When V-Sync is disabled, the game runs at the maximum possible frame rate maxing out the GPU.
+  * The selected V-Sync setting is saved in the profile and applied on game startup.
+* Feature: Large maps with improved map generation
+  * Map generation now supports sizes up to 1000x1000 tiles.
+    Very large maps can take a long time to generate and may reduce performance.
+  * Maps that differ from the original 80x50 size require the new savegame format.
+    Older savegames are not compatible with non-80x50 map sizes, because the legacy format assumes fixed map dimensions.
+  * The "Customize World" screen now includes larger size presets up to 160x100 (Huge):
+    * Tiny (40x25), Small (60x40), Normal (80x50), Large (120x75), Huge (160x100)
+    * You can also enter a custom size between 20x20 and 1000x1000.
+    * The standard "New Game" menu still starts a normal 80x50 map for quick play.
+  * If generation is still running and the intro is skipped, the intro screen shows a progress message.
+  * When generation is complete, the intro text turns green.
+  * If generation fails (for example due to an exception), the intro screen shows an error message and then retries map generation automatically.
+    Logs still contain the technical details for troubleshooting.
+  * Generation logs now include stage timings, making it easier to understand runtime and spot bottlenecks.
+  * Number of continents is only limited by `int` range (2 147 483 647); the previous cap of 15 (from the original 4-bit nibble format) is removed.
+* Feature: Zoom map
+  * The map can be zoomed in or out with `Ctrl+MouseWheel` in gameplay map view mode or with `Ctrl+PageUp` / `Ctrl+PageDown` hotkeys.
+  * Scroll up to zoom in (larger tiles, fewer tiles visible); scroll down to zoom out (smaller tiles, more of the map visible).
+  * There are 10 fixed zoom levels ranging from 100 % (default) down to 12.5 %.
+  * Zooming is done by scaling the tiles individually using two scale algorithms: nearest-neighbor for pixel-perfect scaling and pallette weighted average for smoother scaling. 
+    * These can be switched in the setup menu under "Patches".
+  * 4 Buttons are shown in the left lower corner in the sidebar
+    * `+` Zoom in
+    * `-` Zoom out
+    * `R` Reset zoom to 100 %
+    * `NN` and `PAW` toggle the scale algorithm between nearest-neighbor and pallette weighted average.
+  * The zoom is cursor-focused: the map stays anchored to the mouse pointer position while zooming using the mouse wheel. This does not happen when using the keyboard hotkeys.
+  * The current map zoom level is saved in the savegame and restored on game load.
+* Feature: Map viewport restore on load with CapsLock override.
+  * When a saved game is loaded, the map viewport is restored to the position saved with the game.
+  * If an active unit is waiting for orders, the camera centers on that unit instead.
+  * Enable **CapsLock** before loading to suppress unit centering and keep the restored map position. Don't forget to disable CapsLock again after loading if you dont want to shout ;-)
+  * CapsLock state is also checked on every unit change during normal gameplay; while CapsLock is on, the camera never auto-centers on the new active unit.
+  * Press `Tab` to enter/exit map pan mode, which allows you to explore the entire map without moving units.
+  * In pan mode, navigate with arrow keys to scroll in any direction or use mouse click to change the center of the map (as without map pan mode).
+  * Press `c` to quickly center the camera on your currently selected unit or city (pan mode or normal mode).
+  * The selected unit does not blink while panning, so your unit selection remains stable.
+* Feature: Added map position UX improvements in gameplay map view mode.
+  * Saving a map position with `Ctrl+1` to `Ctrl+9` now shows a short sidebar message (`Map position X saved`) in the lower-left game info area.
+  * Added `Alt+0` map position slot list dialog titled `Map position. Select a number...`.
+  * The dialog lists only saved slots, prefixes each item with its number, supports direct number key selection, and does not open when no slots are saved.
+  * If a slot with a name is selected with `Ctrl+1` to `Ctrl+9`, a rename dialog is shown with the text `Keep name or change it?` and the current name as default input, allowing the user to keep or change the name of the map position. Not changing the name or hit cancel will keep the existing name but the slot still updates to the new position.
+* Refactor: Hardened the `Map` partial singleton and decoupled it from four global singletons (`Common.Random`, `Resources`, `Settings`, file IO) to improve testability and maintainability.
+  * Added unit tests for `Map` covering map generation and continent counting logic in `MapTests`, using a new `TestMap` subclass that injects deterministic random, resource, settings, and file IO dependencies.
+  * This allows for better separation of concerns, easier testing of map generation logic in isolation, and future flexibility to have multiple map instances if needed.
+* Refactoring: Performance/Stability: Reduced per-frame rendering and CPU overhead in game.
+  * Refactors runtime update/draw and SDL window handling to avoid hot-path LINQ/allocation patterns and to react to SDL events instead of per-frame polling.
+  * Optimizes gameplay panel redraw logic (sidebar signature-based redraw, map viewport O(1) visibility check).
+* Feature: Added FPS display overlay
+  * Shows frames per second in a configurable screen corner (Top Left, Top Right, Bottom Left, Bottom Right, or Off).
+  * FPS counter updates every second and is rendered with yellow text in the selected corner.
+  * Setting is persistent across game restarts and accessible via `Shift+F1 → Patches → FPS display`.
+  * When disabled (Off), the overlay is not rendered and no performance impact is incurred.
+* Feature: Introduces a --debug runtime option that also enables the in-game debug menu and add process id in window caption.
+* Refactoring
+  * Runtime/SDL hardening: input/audio/runtime safety fixes, stronger dispose patterns, safer native interop (DllImport search paths, nullable folder-browser APIs, enum/warning cleanup), and resource/lifecycle fixes in Window/Wave.
+  * Startup wizard improvements: background data-file copy flow with status updates, canonical file-casing handling, action-handler/main-thread refresh updates, and UX refinements (fullscreen/aspect/default rendering updates).
+  * Graphics/rendering updates: cache/thread-safety hardening, deterministic sprite disposal, reduced allocations, and new header rendering helper (DrawBlueBackground).
+  * Gameplay/performance/logic fixes: A* heuristic correction, city shield-cost enumeration optimization, and map query/iteration refactors.
+  * Quality and tooling updates: analyzers enabled/configured across projects, targeted unit-test updates/fixes, plus README/docs/translation cleanup and updates.
+* Feature: Change default aspect ratio to "Expand" (formerly only experimental) for better support of modern displays and improved UI layout.
+  * The "Expand" aspect ratio mode stretches the game canvas to fill the entire window, allowing for more flexible window sizes and better use of screen real estate on modern displays.
+  * The original "Auto" aspect ratio mode is still available as an option in the setup menu for users who prefer the original behavior or are using older displays.
+* Feature: Added setup wizard to guide users through initial configuration and data file setup.
+  * The wizard is triggered on first launch when no valid data files are found, or can be accessed later from command line with `--setup`.
+  * It provides a step-by-step interface to select data files, configure graphics settings (fullscreen, aspect ratio).
+  * It provides copying of sound files provided by third-party contributors into the profile folder, with status updates and error handling.
+  * The wizard applies selected settings and copied data files to the normal runtime configuration.
+* Fix: Screens marked `[ScreenResizeable]` (e.g. Credits) now react to host-window resizes even when the canvas size stays fixed (e.g. `AspectRatio=Auto`).
+  * `BaseScreen.Update` tracks the window size and fires `OnResize` plus a refresh when only the window changes.
+  * SDL runtime now raises an `OnWindowResize` event on `SDL_WINDOWEVENT_RESIZED` / `SDL_WINDOWEVENT_SIZE_CHANGED` and `GameWindow` forces a redraw, eliminating the 1–2 s frozen frame after a drag-resize.
+* Fix: Intro text are shown again.
+  * Additional the text "Shift+Left/Right Forward/Backward" is shown at the beginning of the intro, to hint the user that they can fast forward the intro text.
+* Debug Option:
+  * Added a debug option to trigger an instant government change.
+* Consolidated fixes ([PR #38](https://github.com/ChrisWiGit/CivOne/pull/38))
+  * [Issue #31](https://github.com/ChrisWiGit/CivOne/issues/31): Fixed Democracy war declaration flow so Senate blocking is handled correctly.
+  * [Issue #34](https://github.com/ChrisWiGit/CivOne/issues/34): Extended `CityEconomyBreakdown` performance work to include food and shield tile sums.
+  * [PR #30](https://github.com/ChrisWiGit/CivOne/pull/30): Improved unit stack handling so units can be woken up reliably from stacked selections.
+    * Sleeping units do not reset their moves left when selected from the stack, so they cannot move immediately after being woken up if they have already moved before.
+  * [PR #27](https://github.com/ChrisWiGit/CivOne/pull/27): Corrected east-west wrap distance calculation in `DistanceToTile` and related pathfinding distance checks.
+  * [PR #29](https://github.com/ChrisWiGit/CivOne/pull/29): Fixed Settler AI improvement tight-loop by correcting road eligibility and ending the turn after queuing improvement orders.
+* Fix: Stabilized city resource caching to prevent stale values after resource tile changes.
+  * `FoodRaw` cache is now validated via tile/city state hash and recalculated when needed.
+  * Added `ShieldRaw` cache using the same state-hash pattern to avoid repeated `ResourceTiles.Sum(t => ShieldValue(t))` scans.
+  * `ShieldTotal` now consumes `ShieldRaw` before applying building multipliers (Factory, Nuclear Plant, Mfg Plant).
+  * Cache invalidation now clears both food and shield raw caches on relevant city/resource tile mutation paths (owner/size/resource tile updates).
+  * Added focused unit test coverage for shield cache recomputation in `CityEconomyServiceImplCalculateBreakdownTests.ShieldTotal_Recomputes_WhenWorkedTileShieldChangesWithinSameTurn`.
+  * Keeps the performance optimization while ensuring correct `FoodIncome`, `FoodTotal`, and `ShieldTotal` values.
+* Fix: Fix and Migration of [mwerneburg](https://github.com/ChrisWiGit/CivOne/pull/33)
+  * Keep city home-unit cache and unit home reference consistent during removal.
+  * `DestroyCity(...)` and `DisbandUnit(...)` now clear a unit's home via `SetHome(null)` before removing it from game unit lists.
+  * Prevents stale `city.Units` cache entries and avoids mismatches where `unit.Home` still points to an old city after disband/removal.
+* Refactoring: Added translation support for texts in dialogs and reports.
+* Fix: Dialogs now render correctly when using "Expand Size" in the setup menu, instead of being stretched across the expanded canvas.
+* Feature: Implementation of spaceship construction and victory condition
+  * Added spaceship construction mechanics that let cities produce ship parts and assemble them through the spaceship screen.
+  * Added end-game handling for a completed spaceship so it can participate in victory processing as a distinct late-game win path.
+  * Debug: added spaceship construction menu with part placement and launch action to the debug options for testing purposes.
+* Debug Option:
+  * Introduce large 2d menu for large lists of items (e.g. cities, units, etc.) with keyboard navigation and selection.
+  * Refactored existing civilization and city selection menus to use the new grid menu, allowing for more items and better navigation.
+* Extended game menu
+  * Menu items now wrap at the top and bottom, so moving past the first or last entry jumps to the other end.
+  * When a submenu is already open, `Left` and `Right` now switch between the main menu groups (`Game`, `Orders`, `Advisors`, `World`, `Civilopedia`) in a loop.
+  * Disabled menu items stay disabled for both mouse and keyboard input and no longer close the menu when selected.
+  * The World -> SpaceShips entry is only shown when at least one civilization can actually access spaceship content.
+* Feature: International font simulation for non-English languages
+  * Players with an English-only `FONTS.CV` can now display translated text (e.g. German umlauts, French accented letters) without a modified font file.
+  * Missing glyphs are synthesised at runtime by composing the base letter with the required diacritic mark.
+  * Activated automatically in auto language mode; can also be set explicitly via **Shift+F1 → Game Options → Language**.
+* Feature: Added Hall of Fame screen showing top historical civilizations based on the player's score
+  * Shown during end-game flow after the score/ranking sequence for conquest, defeat, Alpha Centauri, and retire outcomes.
+  * The Hall of Fame screen shows a ranked list of civilizations with their score, leader name, civilization name, and victory type.
+  * The look does not match the original game.
+* Feature: Added victory screen showing a victory message and the player's palace in the background when the player conquers the world. This is not original game behavior.
+* Top Leader screen now shows a percentage-based rating bar for each leader, with the player's leader highlighted. The rating is calculated based on the player's score relative to the top leader's score, and is displayed as a horizontal bar with a percentage label.
+  * TODO: Currently, only available through debug menu. Future integration into the original ranking screen trigger conditions is planned once they are identified.
+* Feature: Translation system with multi-language support
+  * Fully translated texts in German.
+  * In-game translation is now active.
+  * Language can be changed in the setup menu via `Shift+F1` -> `Game Options` -> `Language`.
+  * The selected language is applied through `TranslationServiceFactory` and reused by gameplay and UI services.
+  * Top gameplay menu hotkeys can now be defined per translation with a `~` marker, so translated labels can choose their own highlighted Alt shortcut.
+  * `civtranslate` CLI tool scans `*.cs` files for translation calls and creates/updates translation key-value files.
+    * Scans for `.Translate("...")`, `.TranslateFormatted("...", ...)`, and `T("...")` patterns.
+    * Normalizes keys to uppercase while keeping values as source text.
+    * Writes `key=value` entries and escapes literal `=` as `[EQ]`.
+    * Merges with existing output files, preserving comments and handling value overwrites.
+    * Writes obsolete keys to `obsoletekeys.txt` in the output directory.
+    * Translation files support comment headers (lines starting with `#`).
+    * Existing comment headers are preserved when updating files.
+  * Translation loader ignores `#` comment lines in language files.
+  * `SaveMetaDataService` now resolves translation service via factory to always use the currently active language.
+* Refactored palette handling
+  * Extended the `Palette.Merge` method and used it to improve performance and code clarity.
+  * Replaced all direct `Palette = Common.DefaultPalette` assignments with `using` blocks to ensure immediate disposal.
+* Barracks are now obsolete when Gunpowder or Combustion is discovered, i.e. all existing Barracks are removed immediately when either of these technologies is researched.
+  * The behaviour can be turned on or off in the setup menu under "Remove obsolete buildings".
+* Settings (Shift-F1) shows a helpful description for each setting when it is selected.
+* Migration:
+  * Copied A* pathfinding (`GotoStep`) implementation from [mwerneburg/CivOne/`Common.cs`](https://github.com/mwerneburg/CivOne/commit/e33b3968ebceea45a5f046c99c166574a5dfa08f)
+  * Copied behaviour of [mwerneburg/CivOne/`Ai.Barbarians.cs`](https://github.com/mwerneburg/CivOne/commit/5525827163b01996553b3b7a854c5d16b406a509) for better movement decisions of barbarian units, including ocean/land avoidance and goal tile bypass.
+  * Added as new service `UnitGotoServiceImpl` in `Services/Pathfinding` and factory method in `UnitGotoServiceFactory` to not mix the A* implementation with the existing movement logic and to allow for future extension to other pathfinding algorithms if needed.
+  * Unit tests added (`UnitGotoServiceImplTests`) for the A* pathfinding implementation, covering various terrain and unit scenarios.
+* The game is now paused when
+  * the window is minimized or hidden to waste less CPU resources when the game is not visible.
+  * the user presses the Pause key to toggle pause state of the game.
+  * Pressing the Pause key and minimizing and then restoring the window will not unpause the game.
+* Feature: Added Civilization Ranking screen integration with turn-based trigger service.
+  * The ranking screen is now triggered from a dedicated service checked on each human turn.
+  * Temporary (non-original) trigger algorithm: show the ranking every random 300-500 years.
+    * The next trigger year is randomized after each display.
+    * This is an interim implementation until original game conditions are identified.
+  * Palace preview rendering is integrated into the ranking screen, showing the palace corresponding to each civilization's current palace level.
+  * Debug controls on the ranking screen:
+    * `F1`: cycle ranking category.
+    * `F2`: toggle known civilizations vs all civilizations.
+  * Save-state note:
+    * The current ranking screen trigger state/category rotation is not persisted.
+    * There is an SVE/SAV `rank` field, but its exact original semantic meaning is currently unknown and is not yet used as source of truth for this feature.
+* Feature: Added the new palace rendering and palace part composition.
+  * The palace upgrade trigger currently uses `CivilizationScore >= 1 + n*n + n` (`HumanCivScorePalaceTrigger`), where `n` is the number of existing palace upgrades.
+    This can be adjusted later if balancing changes are needed.
+  * Preview of the palace is shown in the sidebar demographics panel.
+  * TODO: AI still needs to be able to build the palace.
+  * Some minor changes may apply:
+    * Alignment and placement of palace parts may be slightly different from the original game.
+    * The furthest left and right (key 1 and 7) towers are now fully visible in the palace view, while in the original game they were behind the wall.
+  * Debug: when the palace screen is opened from the debug menu you can:
+    * Press F1 to toggle noise on/off for easier debugging of the morph stages.
+    * Place all parts of the palace manually.
+    * Press Escape to exit the palace screen.
+* Fix: Addressed multiple long-standing gameplay issues from issue tracker from [https://github.com/fire-eggs/CivOne/issues](https://github.com/fire-eggs/CivOne/issues).
+  * Fixed city buy edge case where overpayment could lead to invalid negative-cost purchase handling ([#179](https://github.com/fire-eggs/CivOne/issues/179)).
+  * Buying city improvements is now blocked while the city is in civil disorder. ([#153](https://github.com/fire-eggs/CivOne/issues/153)).
+  * AI city production no longer defaults to excessive caravan production once basic unit thresholds are met ([#172](https://github.com/fire-eggs/CivOne/issues/172)).
+  * Diplomat tech theft is now limited to one successful theft per city until ownership changes ([#121](https://github.com/fire-eggs/CivOne/issues/121)).
+  * Tech-theft city state now resets correctly when a city changes owner (conquest/incite/flip) ([#121](https://github.com/fire-eggs/CivOne/issues/121)).
+  * Barbarians no longer land/spawn on arctic polar tiles ([#122](https://github.com/fire-eggs/CivOne/issues/122)).
+  * Open/under review: No code change included yet for "We love the president" population behavior and "Unit trying to leave city blocked"; current behavior appears rule-dependent or already covered by existing movement logic/tests, but both tickets stay open for targeted regression verification ([#182](https://github.com/fire-eggs/CivOne/issues/182), [#123](https://github.com/fire-eggs/CivOne/issues/123)).
+* Feature: Added support for MCP (Multi Client Protocol) to allow external clients (e.g. VS Code extension) to connect and interact with the game for testing, debugging, and automation purposes. See [MCP.md](MCP.md) for details on how to use the MCP server and its current capabilities.
+  * Added command line option `--mcp` to start the game in MCP server mode.
+  * Added command line option `--mcp-artifacts <folder>` to specify a custom folder for MCP artifacts (e.g. screenshots).
+  * Added command line option `--mcp-saves <folder>` to specify a custom folder for MCP `.cos` save listing, loading, and MCP save creation.
+  * Added command line option `--mcp-no-auth` to disable session token authentication for easier testing without token handling.
+  * Added manual MCP execution support via OpenAPI in [mcp/openapi.yml](mcp/openapi.yml) for HTTP mode (`--mcp-http`).
+    * OpenAPI examples are prefilled with valid JSON-RPC `tools/call` envelopes.
+    * In most cases only `id` and `params.arguments` need to be changed for manual testing.
+    * Can be used directly in Visual Studio Code REST Client extension or any other OpenAPI-compatible client.
+  * Added MCP tool `game_save` to write the current game state as a new `.cos` file in the configured MCP saves folder.
+    * Save files are always created with a unique timestamp-based name: `savegame_mcp_<UTC yyyyMMddHHmmssfff>.cos`.
+    * Existing files are never overwritten.
+    * If the computed file name already exists, the tool returns a `FILE_EXISTS` error with the message `file exists, wait a second, till next try`.
+    * The response returns both `fileName` and the newly generated `saveGuid`.
+* Add end credit score screen after conquering the world, showing the final score and ranking of the player.
+  * Shows the player's final score and rank compared to historical civilizations.
+  * Uses the original game's scoring system and ranking thresholds (may currently show only 0)
+  * Triggered after the conquest screen when the player wins by conquering the world.
+  * TODO: implement the actual score calculation logic based on the player's achievements and game state at the end of the game.
+* Feature: Added quick save and quick load hotkeys with profile-based COS slots.
+  * `Ctrl+F1` to `Ctrl+F10` saves quick slots to `fastsave_f1.cos` to `fastsave_f10.cos`.
+  * `Alt+F1` to `Alt+F10` loads quick slots from the same files.
+  * `Alt+F11` opens a modal quick load slot dialog.
+  * In the quick load dialog, `F1` to `F10` can be used as direct slot shortcuts.
+  * Invalid `.cos` slots are listed as `Invalid savegame`, disabled, and cannot be selected.
+  * Quick slot files are stored in `saves` under the runtime profile storage directory (`%LOCALAPPDATA%\CivOne\saves` on Windows and `~/CivOne/saves` on Linux/macOS).
+  * Hotkeys are handled globally and work in gameplay, credits, and end screens.
+  * Missing or invalid quick slot loads now show a simple user-facing error message and log the technical error details.
+  * After YAML quick load, gameplay screen is rebuilt so map centering is refreshed correctly.
+  * Report hotkeys are now restricted to F1-F10 (without modifiers) to prevent conflicts with quick save/load hotkeys.
+* Fix: `Alt+Enter` fullscreen toggle now persists the new state to the profile.
+* Feature: Window placement persistence improved.
+  * Window position is now stored in the profile and restored on startup.
+  * On restore, position is validated against currently available displays; invalid/off-screen positions fall back to top-left (`0,0`).
+  * Window maximized state is persisted and restored (windowed mode).
+  * Refactor: window placement handling in `GameWindow.Update(...)` was split into smaller helper methods with clearer names.
+* Feature: Added multiple standard screen and window resolutions to the setup menu (e.g. `1920x1080`, `2560x1440`, `3840x2160`).
+  * Added preset options for "Window Size" and "Expand Size" settings in the setup menu.
+  * Updated the "Expand Size" setting to allow for larger resolutions up to `7680x4320` (8K UHD).
+  * Use "Auto" option for "Expand Size" to stretch the canvas to fill the window, otherwise the game will render at the selected resolution and may be cropped if the window is smaller.
+* Feature: Ongoing migration from [`mwerneburg/CivOne`](https://github.com/mwerneburg/CivOne) (single consolidated entry; extend sub-points over time)
+  * Migrated: `CivilizationIdentity` save/load bitmask fix in `SaveDataAdapter` (bit-shift mapping aligned with source fork behavior).
+  * Migrated: macOS SDL native resolver registration in startup (`Program`).
+    * Adds explicit fallback search paths for SDL2 framework/Homebrew installs on macOS.
+    * Reduces manual environment setup requirements for native SDL loading.
+  * Migrated: map centering and horizontal wrapping fix in `GameMap.CenterOnPoint(...)`.
+    * Replaced hard-coded X offset with dynamic viewport-based centering.
+    * Added explicit X wrapping for negative/overflow values.
+    * Replaced hard-coded Y clamp window with `_tilesY`-based clamp.
+  * Migrated: map generation grassland assignment fix in `Map.Generate` climate adjustment pass.
+    * Ensures transformed `Terrain.Plains` tiles are assigned back to `_tiles[x, y]`.
+  * Migrated: continent/ocean counting flood-fill in `Map.Generate`.
+    * Replaced recursive traversal with iterative queue-based traversal.
+    * Added horizontal X-axis wrapping during connectivity checks.
+    * Reduces stack overflow risk on larger maps.
+    * Implementation extracted to `ContinentTraversalDelegate` for better separation of concerns and testability.
+  * Migrated: Expand settings load fix in `Settings`.
+    * `ExpandWidth`/`ExpandHeight` now load into dedicated fields instead of `_scale`.
+    * Allowed Expand ranges updated to `320..2560` and `200..1600`.
+  * Migrated: Expand canvas/scaling adjustments in `GameWindow.Graphics`.
+    * Expand default canvas fallback changed to `640x360` when no explicit Expand size is configured.
+    * Sub-canvas bytemaps in Expand mode now keep integer scaling and centered placement.
+    * Expand canvas hard cap raised from `512x384` to `2560x1600`.
+    * Allowed Expand ranges updated to `320..7680` and `200..4320`.
+  * War-time trade route purge now uses the existing city `TradingCities` model.
+  * On `SetAtWar(...)`, trade links between both parties are removed bilaterally; third-party links remain unchanged.
+  * added `IsAtWar(Player)` and `SetAtWar(...)` methods to `Player` to check runtime war state without consulting legacy diplomacy flags.
+    * These methods are not yet integrated into gameplay and are not yet used for any game logic. They are intended to be used in future diplomacy mechanics implementation.
+  * Implemented A* for computer player AI movement.
+    * This can be reset to old behaviour in settings.
+* Feature: Extended fixed-layout UI behavior in `Aspect Ratio = Expand` mode to avoid stretching and keep screens centered.
+  * `Palace`, `CityView`, `Conquest`, `Civilopedia` now renders as centered 320x200 content instead of stretching across the expanded canvas.
+  * All report screens (Demographics, City Status, Attitude Survey, Science Report, Trade Report) are now rendered as centered 320x200 content instead of stretching across the expanded canvas.
+  * `Civilopedia` entry pages (icon/title/content/terrain text) are centered in expanded windows.
+* Fix: Civilopedia entries could show icons but no text.
+* Fix: Debug overlay dialogs/menus could stretch across the expanded canvas.
+  * Menus do not stretch across the expanded canvas and are now centered with fixed width.
+  * Input dialogs are now centered and have a fixed width instead of stretching across the expanded canvas.
+* Fix: Improved Newspaper rendering in `Aspect Ratio = Expand` mode.
+  * Keeps the newspaper at its original 320x200 aspect ratio (centered), instead of stretching it to the full expanded canvas.
+  * Redraws the newspaper correctly after window resize, so it no longer disappears while the screen is resized.
+* Feature: Added 'r' to rename a city in city view.
+* Feature: Introduced `SveSaveCompatibilitySnapshot` to validate SVE savegame compatibility.
+  * This enables future gameplay extensions that may no longer fit into the legacy SVE save format and therefore require the newer COS format.
+  * Saving in SVE format is disabled when a game is loaded from the new COS format (`CivOneSave`), i.e. once a game is loaded from COS, it can only be saved in COS to prevent accidental data loss.
+* Feature: Hardening against silent out-of-range errors
+  * Added boundary checks for types with smaller range than `int` and consistent logging of overflow/underflow events during save/snapshot mapping.
+  * Prepared plan for more checks. See [docs/plan-boundaryCastCheckedSanitizer.prompt.md](docs/plan-boundaryCastCheckedSanitizer.prompt.md) for details.
+* Feature: Autosave format is configurable in patches menu (YAML or COS).
+  * `YAML` autosave writes `autosave.cos` to the last used folder (fallback profile save folder).
+* Feature: In Yaml, Advances allows -1 as an indicator to represent "all advances", e.g. for debugging or testing purposes. The mapper will resolve this to the full list of advance IDs in the game.
+* Feature: Gameplay updates
+  * Future Tech handling:
+    * Added per-player `FutureTechCount` runtime state.
+    * When no normal research is available and science threshold is reached, Future Tech is applied.
+    * Human player increments both counters (`FutureTechCount` + legacy global `PlayerFutureTech`), AI increments only per-player counter.
+  * Human contact tracking:
+    * `HumanContactTurn` is set when a non-human player gains visibility of a human-owned unit/city.
+    * Human exploration does not modify AI contact counters.
+  * Diplomacy persistence:
+    * Added per-player `Diplomacy` field (8 target entries with raw bitmask flags) to the YAML/game persistence model.
+    * Added `DiplomacyDecodedDto` as placeholder for future decoded diplomacy flags.
+    * **Not yet active in gameplay** — diplomacy flags are loaded and saved but not yet modified during gameplay.
+  * Peace timer (minimal integration):
+    * `PeaceTurns` now increases by 1 when a full game turn advances without hostile action.
+    * Any hostile action during a turn resets `PeaceTurns` to `0` on the next turn advance.
+  * Refactor: `Player.Explore(...)`
+    * Kept original visibility update logic as a dedicated contiguous method block.
+    * Moved contact-tracking behavior into separate helper methods to avoid mixing with legacy core code.
+* Feature:Implemented Future Tech counter for players, stored in save files and used for game logic (e.g. victory conditions).
+  * Each new Future Tech increases the counter by 1.
+* Fix:Heap corruption due to buffer allocation and indexing issues in Win32 folder browser and Bytemap copy operations.
+* YAML: Added `UnitsDestroyedBy` statistics per player
+  * Each player now tracks how many units they have destroyed, broken down by opponent.
+  * **Not yet active in gameplay** — counters are loaded and saved but not yet incremented during combat.
+  * See [docs/UNITS_DESTROYED_BY_GAME_IMPLEMENTATION.md](docs/UNITS_DESTROYED_BY_GAME_IMPLEMENTATION.md) for the planned runtime implementation.
+* Implemented YAML savegame format to save and load games
+  * See example save file in [docs/SAVEGAME_EXAMPLE.cos](docs/SAVEGAME_EXAMPLE.cos).
+  * Implemented extensive DTO and Mapper classes to convert between internal game state and YAML save format.
+  * Using modern software design principles, patterns and methods.
+  * Using extensive Tests to ensure correctness and maintainability of the code.
+  * Added YAML-based loading and saving for game state persistence.
+  * Added command line loading of YAML save files via `--load-cos <path>`.
+  * Added runtime support setting `LoadCosFile` to start directly from a YAML save file.
+  * Designed to support future in-memory model refactoring while keeping save format mapping isolated.
+  * Current scope focuses on CivOne YAML save files and does not target binary CIV save compatibility.
+  * Prepared for future changes to how data is handled in memory for more flexibility and maintainability.
+  * TestBase and TestBase2 now load the Earth map from bundled `earth.yml` instead of relying on `MAP.PIC`, ensuring consistent test environments without external dependencies.
+  * See [YAML Save Format](YAML.md) for more details.
 * Fix: Corrected city economy calculation after refactoring the city economy breakdown logic.
   * Refactoring: Extracted the city economy breakdown calculation into a separate service (CityEconomyServiceImpl) to improve separation of concerns and testability.
 * Fix: InstantAdvice messages now only appear once.
@@ -73,7 +544,6 @@ I did not browse all issues on github at first, so I did not recognize that some
     * Removes units on affected tiles
     * Removes improvements on affected tiles
     * Removes pole ice caps (Arctic and Tundra tiles on top and bottom 3 rows of map) in 20% of cases.
-  * [ ] TODO: store and load from save files.
 * Feature: Implement pollution mechanics and visual representation in city management
 * Fix: Removed duplicate update check in DrawLayer to allow using false as return value in HasUpdate in city screens and still be able to draw the contents.
 * Feature: Citizens in Attitude Survey screen and Top Five Cities screen are drawn tightly packed in big cities (size > 20) to show up to 99 citizens.

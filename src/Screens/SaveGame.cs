@@ -10,52 +10,138 @@
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
+using CivOne.Services;
+using CivOne.Services.Random;
 using CivOne.UserInterface;
 using System;
+using System.IO;
 using System.Linq;
 
 namespace CivOne.Screens
 {
-    [Modal]
+	[Modal, ScreenResizeable]
 	internal class SaveGame : BaseScreen
 	{
-        internal static int SelectedGame = 0;
-		
+		internal static int SelectedGame = -1;
+
+		private static SaveGamePathProvider PathProvider =>
+			new(RuntimeHandler.Runtime, Settings.Instance);
+
+		private static IAtomicFileReplacementService AtomicFileReplacementService =>
+			new AtomicFileReplacementService();
+
+		private static YamlSaveGameService YamlSaveGameService =>
+			new(Game, AtomicFileReplacementService);
+
+		// CW: This is a bit of a hack to allow the SaveGame screen to access the compatibility provider without Dependency Injection or a service locator. Since the SaveGame screen is only used during the save process, it should be safe to assume that Game is available and can serve as the provider.
+		private static ISveSaveCompatibilityProvider SveSaveCompatibilityProvider => Game;
+
 		private char _driveLetter = 'C';
-		private readonly int _border = Common.Random.Next(2);
+		private readonly int _border = RandomServiceFactory.Create().NextInt(2);
 		private int _gameId;
+
+		internal static string SaveFileName = "";
 		private bool _update = true;
-		private bool _saving = false;
-		private Menu _menu;
+		private bool _saving;
+		private bool _attemptedInitialDirectSaveDialog;
+		private Menu? _menu;
+		private string _sveUnavailableReason = string.Empty;
+
+		private int OffsetX => Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => Math.Max(0, (Height - 200) / 2);
+
+		private static string BuildDialogInitialFileName(string fileName, string defaultExtension)
+		{
+			var provider = PathProvider;
+			string initial = provider.EnsureInitialSaveFilePath();
+			initial = Path.ChangeExtension(initial, defaultExtension);
+			if (!string.IsNullOrWhiteSpace(fileName))
+				return Path.ChangeExtension(Path.Combine(Path.GetDirectoryName(initial) ?? string.Empty, Path.GetFileName(fileName)), defaultExtension);
+			return initial;
+		}
+
+		private static void SetLastUsedSaveGameDialogPath(string fileName)
+		{
+			PathProvider.SetLastUsedSaveGamePath(fileName);
+		}
 
 		public override MouseCursor Cursor => (_menu == null ? MouseCursor.Pointer : MouseCursor.None);
-        
+
 		private void SaveFile(object sender, EventArgs args)
 		{
-			int item = (sender as MenuItem<int>).Value;
-			_gameId = item;
-			SelectedGame = item;
+			var sveCompatibility = SveSaveCompatibilityProvider.GetSveSaveCompatibility();
+			if (!sveCompatibility.CanSaveAsSve)
+			{
+				_sveUnavailableReason = sveCompatibility.Reason;
+				Log("SVE save unavailable: {0}. Switching to YAML/COS save dialog.", _sveUnavailableReason);
+				SaveFileDialog(sender, args);
+				return;
+			}
+
+			// int item = (sender as MenuItem<int>).Value;
+			if (sender is not MenuItem<int> menuItem)
+			{
+				System.Diagnostics.Debug.Assert(false, "Sender is not MenuItem<int> in SaveFile");
+				return;
+			}
+			_gameId = menuItem.Value;
+			SelectedGame = menuItem.Value;
 			_saving = true;
 			_update = true;
 
-			SaveGameFile file = SaveGameFile.GetSaveGames(_driveLetter).ToArray()[item];
+			SaveGameFile file = SaveGameFile.GetSaveGames(_driveLetter).ToArray()[menuItem.Value];
 			Game.Save(file.SveFile, file.MapFile);
 		}
-		
+
+		private void SaveFileDialog(object sender, EventArgs args)
+		{
+			_menu?.Close();
+			_menu = null;
+
+			SelectedGame = -1;
+			_gameId = -1;
+			const string extension = ".cos";
+
+			string? selectedFile = RuntimeHandler.Runtime.FileChooser(
+				true,
+				Translate("Save Game As..."),
+				BuildDialogInitialFileName(SaveFileName, extension),
+				Translate("CivOne Save Game (*.cos)|*.cos")
+			);
+			if (string.IsNullOrEmpty(selectedFile))
+			{
+				Destroy();
+				return;
+			}
+
+			SaveFileName = Path.ChangeExtension(selectedFile, extension);
+			SetLastUsedSaveGameDialogPath(SaveFileName);
+			YamlSaveGameService.SaveCos(SaveFileName);
+
+			_saving = true;
+			_update = true;
+		}
+
 		private void DrawDriveQuestion()
 		{
 			Bitmap.Clear();
 			this.Clear(15);
 			DrawBorder(_border);
 
-			this.DrawText("Which drive contains your", 0, 5, 92, 72, TextAlign.Left)
-				.DrawText("Save Game disk?", 0, 5, 104, 80, TextAlign.Left)
-				.DrawText(string.Format("{0}:", _driveLetter), 0, 5, 146, 96, TextAlign.Left)
-				.DrawText("Press drive letter and", 0, 5, 104, 112, TextAlign.Left)
-				.DrawText("Return when disk is inserted", 0, 5, 80, 120, TextAlign.Left)
-				.DrawText("Press Escape to cancel", 0, 5, 104, 128, TextAlign.Left);
+			this.DrawText(Translate("Which drive contains your"), 0, 5, OffsetX + 92, OffsetY + 72, TextAlign.Left)
+				.DrawText(Translate("Save Game disk?"), 0, 5, OffsetX + 104, OffsetY + 80, TextAlign.Left)
+				.DrawText(TranslateFormatted("{0}:", _driveLetter), 0, 5, OffsetX + 146, OffsetY + 96, TextAlign.Left)
+				.DrawText(Translate("Press drive letter and"), 0, 5, OffsetX + 104, OffsetY + 112, TextAlign.Left)
+				.DrawText(Translate("Return when disk is inserted"), 0, 5, OffsetX + 80, OffsetY + 120, TextAlign.Left)
+				.DrawText(Translate("Press Escape to cancel"), 0, 5, OffsetX + 104, OffsetY + 128, TextAlign.Left);
 		}
-		
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_update = true;
+		}
+
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (_saving)
@@ -68,19 +154,28 @@ namespace CivOne.Screens
 
 				if (_menu != null)
 				{
-					this.AddLayer(_menu);
+					this.AddLayer(_menu, OffsetX, OffsetY);
 					_menu.Close();
 					_menu = null;
 				}
 
-				DrawPanel(64, 86, 124, 41);
-				this.DrawText($"{char.ToLower(_driveLetter)}:CIVIL{_gameId}.SVE", 0, 5, 75, 91)
-					.DrawText($"{Common.DifficultyName(Game.Difficulty)} {Game.HumanPlayer.LeaderName}", 0, 5, 75, 99)
-					.DrawText($"{Game.HumanPlayer.TribeNamePlural}/{Game.GameYear}", 0, 5, 75, 107)
-					.DrawText("... save in progress.", 0, 5, 75, 115);
-				
-				this.DrawText("Game has been saved.", 0, 5, 75, 132)
-					.DrawText("Press key to continue.", 0, 5, 75, 140);
+				DrawPanel(OffsetX + 64, OffsetY + 86, 124, 41);
+
+				if (_gameId >= 0)
+				{
+					this.DrawText($"{char.ToLowerInvariant(_driveLetter)}:CIVIL{_gameId}.SVE", 0, 5, OffsetX + 75, OffsetY + 91);
+				}
+				else
+				{
+					this.DrawText(Path.GetFileName(SaveFileName), 0, 5, OffsetX + 75, OffsetY + 91);
+				}
+
+				this.DrawText($"{Common.DifficultyName(Game.Difficulty)} {Game.HumanPlayer.LeaderName}", 0, 5, OffsetX + 75, OffsetY + 99)
+					.DrawText($"{Game.HumanPlayer.TribeNamePlural}/{Game.GameYear}", 0, 5, OffsetX + 75, OffsetY + 107)
+					.DrawText(Translate("... save in progress."), 0, 5, OffsetX + 75, OffsetY + 115);
+
+				this.DrawText(Translate("Game has been saved."), 0, 5, OffsetX + 75, OffsetY + 132)
+					.DrawText(Translate("Press key to continue."), 0, 5, OffsetX + 75, OffsetY + 140);
 				return true;
 			}
 			else if (_menu != null)
@@ -96,13 +191,26 @@ namespace CivOne.Screens
 			}
 			else if (_update)
 			{
+				if (!_attemptedInitialDirectSaveDialog)
+				{
+					_attemptedInitialDirectSaveDialog = true;
+					var sveCompatibility = SveSaveCompatibilityProvider.GetSveSaveCompatibility();
+					if (!sveCompatibility.CanSaveAsSve)
+					{
+						_sveUnavailableReason = sveCompatibility.Reason;
+						Log("SVE save unavailable: {0}. Opening YAML/COS save dialog directly.", _sveUnavailableReason);
+						SaveFileDialog(this, EventArgs.Empty);
+						return true;
+					}
+				}
+
 				DrawDriveQuestion();
 				_update = false;
 				return true;
 			}
 			return false;
 		}
-		
+
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
 			if (_saving)
@@ -110,8 +218,8 @@ namespace CivOne.Screens
 				Destroy();
 				return true;
 			}
-			
-			char c = Char.ToUpper(args.KeyChar);
+
+			char c = char.ToUpperInvariant(args.KeyChar);
 			if (args.Key == Key.Escape)
 			{
 				Log("Cancel");
@@ -126,6 +234,15 @@ namespace CivOne.Screens
 			{
 				if (_gameId >= 0)
 				{
+					var sveCompatibility = SveSaveCompatibilityProvider.GetSveSaveCompatibility();
+					if (!sveCompatibility.CanSaveAsSve)
+					{
+						_sveUnavailableReason = sveCompatibility.Reason;
+						Log("SVE save unavailable: {0}. Switching to YAML/COS save dialog.", _sveUnavailableReason);
+						SaveFileDialog(this, EventArgs.Empty);
+						return true;
+					}
+
 					SaveGameFile file = SaveGameFile.GetSaveGames(_driveLetter).ToArray()[_gameId];
 					Game.Save(file.SveFile, file.MapFile);
 					_saving = true;
@@ -133,9 +250,18 @@ namespace CivOne.Screens
 					return true;
 				}
 
+				var currentSveCompatibility = SveSaveCompatibilityProvider.GetSveSaveCompatibility();
+				if (!currentSveCompatibility.CanSaveAsSve)
+				{
+					_sveUnavailableReason = currentSveCompatibility.Reason;
+					Log("SVE save unavailable: {0}. Opening YAML/COS save dialog directly.", _sveUnavailableReason);
+					SaveFileDialog(this, EventArgs.Empty);
+					return true;
+				}
+
 				_menu = new Menu(Palette)
 				{
-					Title = "Select Save File...",
+					Title = Translate("Select Save File..."),
 					X = 51,
 					Y = 38,
 					MenuWidth = 217,
@@ -146,13 +272,23 @@ namespace CivOne.Screens
 					IndentTitle = 2,
 					RowHeight = 8
 				};
-				
+
+				_sveUnavailableReason = currentSveCompatibility.CanSaveAsSve ? string.Empty : currentSveCompatibility.Reason;
+
+				_menu.Items.Add(Translate("Save with file dialog..."), -1).OnSelect(SaveFileDialog);
+				if (!currentSveCompatibility.CanSaveAsSve)
+				{
+					_menu.Items.Add(TranslateFormatted("SVE unavailable: {0}", _sveUnavailableReason), -2).SetEnabled(false);
+				}
+
 				int i = 0;
 				foreach (SaveGameFile file in SaveGameFile.GetSaveGames(_driveLetter).Take(4))
 				{
-					_menu.Items.Add(file.Name, i++).OnSelect(SaveFile);
+					_menu.Items.Add(file.Name, i++)
+						.OnSelect(SaveFile)
+						.SetEnabled(currentSveCompatibility.CanSaveAsSve);
 				}
-				
+
 				_menu.ActiveItem = SelectedGame;
 			}
 			else if (c >= 'A' && c <= 'Z')
@@ -163,23 +299,23 @@ namespace CivOne.Screens
 			}
 			return false;
 		}
-		
+
 		public override bool MouseDown(ScreenEventArgs args)
 		{
 			if (_menu != null)
 				return _menu.MouseDown(args);
-            if (_saving)
-                Destroy();
+			if (_saving)
+				Destroy();
 			return false;
 		}
-		
+
 		public override bool MouseUp(ScreenEventArgs args)
 		{
 			if (_menu != null)
 				return _menu.MouseUp(args);
 			return false;
 		}
-		
+
 		public override bool MouseDrag(ScreenEventArgs args)
 		{
 			if (_menu != null)
@@ -190,11 +326,23 @@ namespace CivOne.Screens
 		public SaveGame() : this(-1)
 		{
 		}
-		
+
 		public SaveGame(int gameId)
 		{
 			Palette = Resources["SP257"].Palette;
 			_gameId = gameId;
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_menu?.Dispose();
+			_menu = null;
+			base.Dispose(disposing);
 		}
 	}
 }

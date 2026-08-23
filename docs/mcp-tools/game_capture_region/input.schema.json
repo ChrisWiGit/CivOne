@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_capture_region/input",
+  "title": "game_capture_region – input",
+  "description": "Captures a cropped PNG screenshot of a rectangular region of the game window.",
+  "type": "object",
+  "required": ["x", "y", "width", "height"],
+  "properties": {
+    "x": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Left edge of the capture region in screen pixels."
+    },
+    "y": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Top edge of the capture region in screen pixels."
+    },
+    "width": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Width of the capture region in screen pixels."
+    },
+    "height": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Height of the capture region in screen pixels."
+    },
+    "sessionId": {
+      "type": "string",
+      "description": "Optional caller-supplied identifier echoed back in the response."
+    },
+    "includeCursor": {
+      "type": "boolean",
+      "description": "Reserved for future use. Has no effect currently.",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -15,20 +15,41 @@
 		<AssemblyName>CivOne.UnitTests</AssemblyName>
 		<RootNamespace>CivOne</RootNamespace>
 		<OutputType>Library</OutputType>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<AllowUnsafeBlocks>false</AllowUnsafeBlocks>
 		<LangVersion>latest</LangVersion>
 		<RuntimeIdentifiers>win-x86;win-x64;osx-x64;linux-x64</RuntimeIdentifiers>
 	</PropertyGroup>
+	<PropertyGroup>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<AnalysisLevel>latest-all</AnalysisLevel>
+		<Nullable>enable</Nullable>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<NoWarn>$(NoWarn),CA1515,CA1819,CA1065,CA1814,CA1307,CA1002,CA1034</NoWarn>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(SuppressConsoleLogs)' == 'true'">
+		<DefineConstants>$(DefineConstants);SUPPRESS_CONSOLE_LOGS</DefineConstants>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+		<PackageReference Include="coverlet.collector" Version="6.0.2">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 		<PackageReference Include="xunit" Version="2.9.0" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\CivOne.csproj" />
+		<ProjectReference Include="..\civtranslate-interactive\civtranslate-interactive.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="earth.yml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 
 	<ItemGroup>

@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public Mysticism() : base(1, 1, 1, Advance.CeremonialBurial)
 		{
 			Name = "Mysticism";
+			TranslatedName = Translate("Mysticism");
 			Type = Advance.Mysticism;
 		}
 	}

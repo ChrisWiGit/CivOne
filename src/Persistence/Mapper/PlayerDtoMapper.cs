@@ -1,0 +1,506 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using CivOne.Advances;
+using CivOne.Civilizations;
+using CivOne.Enums;
+using CivOne.Governments;
+using CivOne.Persistence.Factories;
+using CivOne.Persistence.Game;
+using CivOne.Persistence.Mapper;
+using CivOne.Persistence.Resolver;
+using CivOne.Services.SpaceShip;
+
+namespace CivOne.Persistence.Model
+{
+	using AdvanceId = UInt32;
+
+	public interface IAdvanceResolver
+	{
+		IAdvance ResolveById(uint id);
+		/// <summary>
+		/// Resolves the IDs of all advances in the game. Used to support the "all advances" sentinel value.
+		/// </summary>
+		IEnumerable<byte> ResolveAllIds();
+	}
+
+	public interface IGovernmentResolver
+	{
+		IGovernment ResolveById(byte id);
+	}
+
+	#pragma warning disable CA1707 // ignore too many parameters in constructor, as this is a pure mapping class and all dependencies are required
+    public class PlayerDtoMapper(
+		IPlayerGame gameInstance,
+		IPlayerOwnerResolver ownerResolver,
+		IPlayerFactory _playerFactory,
+		IDtoMapper<CivilizationDto, ICivilization> _civilizationMapper,
+		PalaceDtoMapper _palaceMapper,
+		CityDtoMapper _cityMapper,
+		UnitDtoMapper _unitMapper,
+		IAdvanceResolver _advanceResolver,
+		IGovernmentResolver _governmentResolver,
+		IValueSanitizer _valueSanitizer
+		) : IDtoMapper<PlayerDto, IPlayer>
+	{
+		private const long AllAdvancesSentinel = -1;
+		private const int MapPositionSlotCount = 9;
+		private const int MapPositionNameMaxLength = 70;
+
+		public IPlayer FromDto(PlayerDto dto)
+		{
+			ArgumentNullException.ThrowIfNull(dto);
+
+			var civilization = _civilizationMapper.FromDto(dto.Civilization);
+
+			IPlayerRestorable player = _playerFactory.Create(civilization, dto);
+
+			player.PlayerGuid = dto.PlayerGuid == Guid.Empty ? Guid.NewGuid() : dto.PlayerGuid;
+			// Restores disambiguated leader names (e.g. "Caesar II") for reused civilizations; see PlayerDto.LeaderName.
+			player.LeaderName = string.IsNullOrEmpty(dto.LeaderName) ? civilization.Leader.Name : dto.LeaderName;
+			player.TribeName = string.IsNullOrEmpty(dto.TribeName) ? civilization.Name : dto.TribeName;
+			player.TribeNamePlural = string.IsNullOrEmpty(dto.TribeNamePlural) ? civilization.NamePlural : dto.TribeNamePlural;
+			player.Explored = dto.Explored;
+			player.Visible = dto.Visible;
+			player.Advances = BuildAdvances(dto.Advances);
+			player.Embassies = [..
+				(dto.Embassies ?? [])
+					.Select(x => _valueSanitizer.ClampToByte(x, nameof(PlayerDtoMapper), nameof(PlayerDto.Embassies)))
+			];
+			player.Diplomacy = BuildDiplomacyArray(dto.Diplomacy);
+			player.Anarchy = dto.Anarchy;
+			player.Gold = _valueSanitizer.ClampToInt16(dto.Gold, nameof(PlayerDtoMapper), nameof(PlayerDto.Gold));
+			player.CurrentResearch = _advanceResolver.ResolveById(dto.CurrentResearch);
+			player.CityNamesSkipped = dto.CityNamesSkipped;
+			player.FutureTechCount = _valueSanitizer.ClampToUInt16(dto.FutureTechCount, nameof(PlayerDtoMapper), nameof(PlayerDto.FutureTechCount));
+			player.HumanContactTurn = _valueSanitizer.ClampToUInt16(dto.HumanContactTurn, nameof(PlayerDtoMapper), nameof(PlayerDto.HumanContactTurn));
+			player.StartX = _valueSanitizer.ClampToInt16(dto.StartX, nameof(PlayerDtoMapper), nameof(PlayerDto.StartX));
+			player.MapPositions = BuildMapPositions(dto.MapPositions);
+			player.MapPositionNames = BuildMapPositionNames(dto.MapPositions);
+			player.LastMapPosition = BuildLastMapPosition(dto.LastMapPosition);
+			player.MapZoomBasisPoints = BuildMapZoomBasisPoints(dto.MapZoomBasisPoints);
+			player.UnitsLost = BuildUnitsLostArray(dto.UnitsLost);
+			player.UnitsDestroyedBy = BuildUnitsDestroyedByArray(dto.UnitsDestroyedBy);
+			player.EpicRanking = _valueSanitizer.ClampToUInt16(dto.EpicRanking, nameof(PlayerDtoMapper), nameof(PlayerDto.EpicRanking));
+			player.MilitaryPower = _valueSanitizer.ClampToUInt16(dto.MilitaryPower, nameof(PlayerDtoMapper), nameof(PlayerDto.MilitaryPower));
+			player.CivilizationScore = _valueSanitizer.ClampToUInt16(dto.CivilizationScore, nameof(PlayerDtoMapper), nameof(PlayerDto.CivilizationScore));
+			player.Government = _governmentResolver.ResolveById(dto.Government);
+
+			// Spaceship state
+			if (dto.SpaceShip != null)
+			{
+				player.SpaceShipGrid = dto.SpaceShip.Grid?.ToArray() ?? new SpaceShipComponentType[SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight];
+				player.SpaceShipPopulation = _valueSanitizer.ClampToUInt16(dto.SpaceShip.Population, nameof(PlayerDtoMapper), $"{nameof(PlayerDto.SpaceShip)}.{nameof(SpaceShipDto.Population)}");
+				player.SpaceShipLaunchYear = _valueSanitizer.ClampToInt16(dto.SpaceShip.LaunchYear, nameof(PlayerDtoMapper), $"{nameof(PlayerDto.SpaceShip)}.{nameof(SpaceShipDto.LaunchYear)}");
+			}
+
+			// Keep rate invariant (luxuries + taxes + science == 10) by setting all three.
+			player.TaxesRate = dto.TaxesRate;
+			player.LuxuriesRate = dto.LuxuriesRate;
+			player.ScienceRate = dto.ScienceRate;
+			player.Science = _valueSanitizer.ClampToInt16(dto.Science, nameof(PlayerDtoMapper), nameof(PlayerDto.Science));
+
+			if (dto.Palace != null)
+			{
+				player.Palace = _palaceMapper.FromDto(dto.Palace);
+			}
+
+			player.Cities = [..
+				(dto.Cities ?? [])
+				.Select(_cityMapper.FromDto)
+				.Select(city => city as ICity ?? throw new InvalidOperationException("City mapper must return ICity instances"))
+			];
+
+			return player;
+		}
+        public PlayerDto ToDto(IPlayer player)
+		{
+			ArgumentNullException.ThrowIfNull(player);
+
+			var hasOwnerId = ownerResolver.TryResolveOwnerId(player, out var ownerId);
+			var playersByIndex = TryGetPlayersByIndex();
+			var mapProjection = BuildMapProjectionDto(player);
+
+			return new PlayerDto
+			{
+				Civilization = _civilizationMapper.ToDto(player.Civilization),
+				PlayerGuid = player.PlayerGuid,
+
+				Explored = player.Explored,
+				Visible = player.Visible,
+
+				LeaderName = player.LeaderName,
+				TribeName = player.TribeName,
+				TribeNamePlural = player.TribeNamePlural,
+
+				Advances = [.. player.Advances],
+				Embassies = [.. player.Embassies],
+				Diplomacy = [.. player.Diplomacy.Select((flags, targetId) => new DiplomacyEntryDto
+				{
+					TargetPlayerId = (ushort)targetId,
+					TargetPlayerGuid = ResolveTargetPlayerGuid(playersByIndex, targetId, hasOwnerId, ownerId, player.PlayerGuid),
+					RawFlags = flags,
+					Decoded = new DiplomacyDecodedDto()
+				})],
+
+				Anarchy = player.Anarchy,
+				Gold = player.Gold,
+				CurrentResearch = player.CurrentResearch?.Id ?? 0,
+				Government = player.Government?.Id ?? 0,
+				LuxuriesRate = player.LuxuriesRate,
+				TaxesRate = player.TaxesRate,
+				ScienceRate = player.ScienceRate,
+				Science = player.Science,
+				FutureTechCount = player.FutureTechCount,
+				HumanContactTurn = player.HumanContactTurn,
+				StartX = player.StartX,
+				MapPositions = mapProjection.MapPositions,
+				LastMapPosition = mapProjection.LastMapPosition,
+				MapZoomBasisPoints = BuildMapZoomBasisPoints(player.MapZoomBasisPoints),
+				UnitsLost = [.. player.UnitsLost],
+				UnitsDestroyedBy = [.. player.UnitsDestroyedBy],
+				EpicRanking = player.EpicRanking,
+				MilitaryPower = player.MilitaryPower,
+				CivilizationScore = player.CivilizationScore,
+				Palace = _palaceMapper.ToDto(player.Palace),
+				SpaceShip = BuildSpaceShipDto(player),
+
+				Cities = [.. player.Cities
+					.Select(_cityMapper.ToDto)],
+
+				// Filter units by owner ID (byte) to avoid instance comparison issues
+				Units = [.. gameInstance.GetUnits()
+					.Where(u => !hasOwnerId || u.Owner == ownerId)
+					.Select(_unitMapper.ToDto)]
+			};
+		}
+
+		private static (List<MapPositionDto>? MapPositions, MapPositionDto? LastMapPosition) BuildMapProjectionDto(IPlayer player)
+			=> (BuildMapPositionsDto(player), BuildLastMapPositionDto(player));
+
+		private static List<MapPositionDto>? BuildMapPositionsDto(IPlayer player)
+		{
+			var mapPositionNames = NormalizeMapPositionNames(player.MapPositionNames);
+			List<MapPositionDto> positions = [.. (player.MapPositions ?? [])
+					.Take(MapPositionSlotCount)
+					.Select((position, index) => new MapPositionDto
+					{
+						X = position.X,
+						Y = position.Y,
+						Name = index < mapPositionNames.Length ? mapPositionNames[index] : string.Empty
+					})];
+
+			if (positions.Count > 0 && positions.All(p => p.X == -1 && p.Y == -1))
+			{
+				// ignore fully empty positions list to save space.
+				return null;
+			}
+
+			return positions.Count > 0 ? positions : null;
+		}
+
+		private static MapPositionDto? BuildLastMapPositionDto(IPlayer player)
+		{
+			if (player == null)
+			{
+				return null;
+			}
+
+			var lastMapPosition = player.LastMapPosition;
+			if (lastMapPosition.X < 0 || lastMapPosition.Y < 0)
+			{
+				return null;
+			}
+
+			return new MapPositionDto
+			{
+				X = lastMapPosition.X,
+				Y = lastMapPosition.Y,
+				Name = string.Empty
+			};
+		}
+
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to access the Players collection does not crash the application, and that any exceptions are logged appropriately.")]
+		private Player[] TryGetPlayersByIndex()
+		{
+			try
+			{
+				return [.. gameInstance.Players ?? []];
+			}
+			catch
+			{
+				return [];
+			}
+		}
+
+		private static Guid ResolveTargetPlayerGuid(Player[] playersByIndex, int targetId, bool hasOwnerId, byte ownerId, Guid ownerGuid)
+		{
+			if (hasOwnerId && targetId == ownerId)
+			{
+				return ownerGuid;
+			}
+
+			if (playersByIndex == null || targetId < 0 || targetId >= playersByIndex.Length)
+			{
+				return Guid.Empty;
+			}
+
+			return playersByIndex[targetId]?.PlayerGuid ?? Guid.Empty;
+		}
+
+		private List<byte> BuildAdvances(List<long> advances)
+		{
+			if (advances == null || advances.Count == 0)
+			{
+				return [];
+			}
+
+			if (advances.Contains(AllAdvancesSentinel))
+			{
+				return [..
+					_advanceResolver.ResolveAllIds()
+						.Distinct()
+						.OrderBy(id => id)];
+			}
+
+			return [..
+				advances.Select(x => _valueSanitizer.ClampToByte(x, nameof(PlayerDtoMapper), nameof(PlayerDto.Advances)))];
+		}
+
+		private static SpaceShipDto BuildSpaceShipDto(IPlayer player)
+		{
+			if (player is not IPlayerRestorable restorablePlayer)
+			{
+				return new SpaceShipDto
+				{
+					Grid = new SpaceShipGridMap2D(new SpaceShipComponentType[SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight]),
+					Population = 0,
+					LaunchYear = 0
+				};
+			}
+
+			var grid = restorablePlayer.SpaceShipGrid ?? new SpaceShipComponentType[SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight];
+
+			return new SpaceShipDto
+			{
+				Grid = new SpaceShipGridMap2D(grid),
+				Population = restorablePlayer.SpaceShipPopulation,
+				LaunchYear = restorablePlayer.SpaceShipLaunchYear
+			};
+		}
+
+		private ushort[] BuildDiplomacyArray(List<DiplomacyEntryDto> entries)
+		{
+			var diplomacy = new ushort[CivOne.Game.MaxPlayers];
+			if (entries == null)
+			{
+				return diplomacy;
+			}
+
+			foreach (var entry in entries)
+			{
+				if (entry == null)
+				{
+					continue;
+				}
+
+				var target = _valueSanitizer.ClampToInt32(
+					entry.TargetPlayerId,
+					nameof(PlayerDtoMapper),
+					$"{nameof(PlayerDto.Diplomacy)}.{nameof(DiplomacyEntryDto.TargetPlayerId)}",
+					min: 0,
+					max: diplomacy.Length - 1);
+
+				diplomacy[target] = _valueSanitizer.ClampToUInt16(
+					entry.RawFlags,
+					nameof(PlayerDtoMapper),
+					$"{nameof(PlayerDto.Diplomacy)}.{nameof(DiplomacyEntryDto.RawFlags)}"
+				);
+			}
+
+			return diplomacy;
+		}
+
+		private ushort[] BuildUnitsLostArray(List<long> values)
+		{
+			var output = new ushort[28];
+			if (values == null)
+			{
+				return output;
+			}
+
+			for (var i = 0; i < output.Length && i < values.Count; i++)
+			{
+				output[i] = _valueSanitizer.ClampToUInt16(
+					values[i],
+					nameof(PlayerDtoMapper),
+					$"{nameof(PlayerDto.UnitsLost)}[{i}]"
+				);
+			}
+
+			return output;
+		}
+
+		private (short X, short Y)[] BuildMapPositions(List<MapPositionDto>? mapPositions)
+		{
+			var output = new (short X, short Y)[MapPositionSlotCount];
+			for (var i = 0; i < output.Length; i++)
+			{
+				output[i] = (-1, -1);
+			}
+
+			if (mapPositions == null)
+			{
+				return output;
+			}
+
+			for (var i = 0; i < output.Length && i < mapPositions.Count; i++)
+			{
+				var position = mapPositions[i];
+				if (position == null)
+				{
+					continue;
+				}
+
+				var x = _valueSanitizer.ClampToInt16(
+					position.X,
+					mapperName: nameof(PlayerDtoMapper),
+					fieldName: $"{nameof(PlayerDto.MapPositions)}[{i}].{nameof(MapPositionDto.X)}",
+					min: -1,
+					max: (short)(Map.WIDTH - 1));
+
+				var y = _valueSanitizer.ClampToInt16(
+					position.Y,
+					mapperName: nameof(PlayerDtoMapper),
+					fieldName: $"{nameof(PlayerDto.MapPositions)}[{i}].{nameof(MapPositionDto.Y)}",
+					min: -1,
+					max: (short)(Map.HEIGHT - 1));
+
+				output[i] = (x, y);
+			}
+
+			return output;
+		}
+
+		private static string[] BuildMapPositionNames(List<MapPositionDto>? mapPositions)
+		{
+			var output = new string[MapPositionSlotCount];
+			for (var i = 0; i < output.Length; i++)
+			{
+				output[i] = string.Empty;
+			}
+
+			if (mapPositions == null)
+			{
+				return output;
+			}
+
+			for (var i = 0; i < output.Length && i < mapPositions.Count; i++)
+			{
+				var position = mapPositions[i];
+				if (position == null)
+				{
+					continue;
+				}
+
+				output[i] = TruncateMapPositionName(position.Name);
+			}
+
+			return output;
+		}
+
+		private (short X, short Y) BuildLastMapPosition(MapPositionDto? mapPosition)
+		{
+			if (mapPosition == null)
+			{
+				return (-1, -1);
+			}
+
+			var x = _valueSanitizer.ClampToInt16(
+				mapPosition.X,
+				mapperName: nameof(PlayerDtoMapper),
+				fieldName: $"{nameof(PlayerDto.LastMapPosition)}.{nameof(MapPositionDto.X)}",
+				min: -1,
+				max: (short)(Map.WIDTH - 1));
+
+			var y = _valueSanitizer.ClampToInt16(
+				mapPosition.Y,
+				mapperName: nameof(PlayerDtoMapper),
+				fieldName: $"{nameof(PlayerDto.LastMapPosition)}.{nameof(MapPositionDto.Y)}",
+				min: -1,
+				max: (short)(Map.HEIGHT - 1));
+
+			if (x < 0 || y < 0)
+			{
+				return (-1, -1);
+			}
+
+			return (x, y);
+		}
+
+		private static int BuildMapZoomBasisPoints(int value)
+		{
+			return MapZoomSettings.NormalizeBasisPoints(value);
+		}
+
+		private static string[] NormalizeMapPositionNames(string[] names)
+		{
+			var output = new string[MapPositionSlotCount];
+			for (var i = 0; i < output.Length; i++)
+			{
+				output[i] = string.Empty;
+			}
+
+			if (names == null)
+			{
+				return output;
+			}
+
+			for (var i = 0; i < output.Length && i < names.Length; i++)
+			{
+				output[i] = TruncateMapPositionName(names[i]);
+			}
+
+			return output;
+		}
+
+		private static string TruncateMapPositionName(string? name)
+		{
+			if (string.IsNullOrWhiteSpace(name))
+			{
+				return string.Empty;
+			}
+
+			var trimmed = name.Trim();
+			if (trimmed.Length <= MapPositionNameMaxLength)
+			{
+				return trimmed;
+			}
+
+			return trimmed[..MapPositionNameMaxLength];
+		}
+
+		private ushort[] BuildUnitsDestroyedByArray(List<long> values)
+		{
+			var output = new ushort[CivOne.Game.MaxPlayers];
+			if (values == null)
+			{
+				return output;
+			}
+
+			for (var i = 0; i < output.Length && i < values.Count; i++)
+			{
+				output[i] = _valueSanitizer.ClampToUInt16(
+					values[i],
+					nameof(PlayerDtoMapper),
+					$"{nameof(PlayerDto.UnitsDestroyedBy)}[{i}]"
+				);
+			}
+
+			return output;
+		}
+	}
+}
+
+

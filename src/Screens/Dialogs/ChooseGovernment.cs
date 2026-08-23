@@ -20,7 +20,7 @@ namespace CivOne.Screens.Dialogs
 	{
 		private readonly IGovernment[] _availableGovernments;
 
-		public IGovernment Result { get; private set; }
+		public IGovernment? Result { get; private set; }
 
 		private void GovernmentChoice(object sender, MenuItemEventArgs<IGovernment> args)
 		{
@@ -59,8 +59,8 @@ namespace CivOne.Screens.Dialogs
 		{
 			_availableGovernments = Game.HumanPlayer.AvailableGovernments.ToArray();
 
-			DialogBox.DrawText("Select type of", 0, 15, 5, 5);
-			DialogBox.DrawText("Government...", 0, 15, 5, 13);
+			DialogBox.DrawText(Translate("Select type of"), 0, 15, 5, 5);
+			DialogBox.DrawText(Translate("Government..."), 0, 15, 5, 13);
 		}
 	}
 }

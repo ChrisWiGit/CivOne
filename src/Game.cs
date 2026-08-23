@@ -10,19 +10,27 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
+using System.IO;
 using System.Linq;
-using System.Reflection.Metadata;
+using System.Reflection;
 using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.IO;
-using CivOne.Leaders;
+using CivOne.IO.Text;
 using CivOne.Screens;
+using CivOne.Screens.Reports;
 using CivOne.Screens.Services;
 using CivOne.Services;
+using CivOne.Services.EndGame;
 using CivOne.Services.GlobalWarming;
+using CivOne.Services.Palace;
+using CivOne.Services.Random;
+using CivOne.Services.SpaceShip;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -30,23 +38,117 @@ using CivOne.Wonders;
 
 namespace CivOne
 {
-	public partial class Game : BaseInstance, IGame, ILogger, IGameCitizenDependency
+	[SuppressMessage("Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces", Justification = "Game is the main class of the game, and it is appropriate to have the same name as the namespace.")]
+	public partial class Game : BaseInstance, IGame, ILogger, IGameCitizenDependency, ISveSaveCompatibilityProvider
 	{
+		private static readonly string GameVersion = GetGameVersion();
+		private readonly IRandomService _randomService = RandomServiceFactory.Create();
+
 		private readonly int _difficulty, _competition;
 		private readonly Player[] _players;
 		private readonly List<City> _cities;
 		private readonly List<IUnit> _units;
-		private readonly Dictionary<byte, byte> _advanceOrigin = new Dictionary<byte, byte>();
-		private readonly List<ReplayData> _replayData = new List<ReplayData>();
+		private readonly Dictionary<byte, byte> _advanceOrigin = [];
+		private readonly List<ReplayData> _replayData = [];
 
-		internal readonly string[] CityNames = Common.AllCityNames.ToArray();
+		internal readonly string[] CityNames = [.. Common.AllCityNames];
 
-		public int _currentPlayer = 0; // public for unit testing
+		private int _currentPlayer;
+
+		public void SetCurrentPlayerForTesting(int currentPlayer) => _currentPlayer = currentPlayer;
+		
 		private int _activeUnit;
 
-		private ushort _anthologyTurn = 0;
+		private ushort _anthologyTurn;
+		private ushort _peaceTurns;
+		private ushort _playerFutureTech;
+		private bool _disableBuddyCivilizationRespawn;
+		private bool _hostileActionOccurred;
+		private bool _loadedFromYamlSaveSource;
+		private (short X, short Y) _pendingMapPositionRestore = (-1, -1);
+
+		/// <summary>
+		/// The metadata for the current save file, which is initialized when starting a new game or loading an existing game, and updated when saving a game.
+		/// This is the real structure used by the game. SaveFileMetaDataDto is only used for serialization and should not be used in the game logic.
+		/// </summary>
+		public SaveFileMetaData SaveMetaData { get; } = new();
+
+		private readonly SaveMetaDataService _saveMetaDataService = new(GameVersion);
+
+		/// <summary>
+		/// This service provides methods for creating and managing save game metadata, which is used for display in the load game dialog and for informational purposes in the game.
+		/// Use this service only for SaveMetaData.
+		/// </summary>
+		public SaveMetaDataService SaveMetaDataService => _saveMetaDataService;
 
 		public int Competition => _competition;
+
+		/// <summary>
+		/// Gets or sets whether respawn should skip the classic buddy-civilization preference.
+		/// When true, respawn selects from the full replacement pool even in classic (up to 8 total players) games.
+		/// This flag is persisted in YAML/COS saves; legacy SVE saves always use buddy respawn.
+		/// </summary>
+		internal bool DisableBuddyCivilizationRespawn
+		{
+			get => _disableBuddyCivilizationRespawn;
+			set => _disableBuddyCivilizationRespawn = value;
+		}
+
+		/// <summary>
+		/// Gets or sets where barbarians may come from in this game.
+		/// A new game starts with the global setting, YAML/COS saves keep the value of the running game,
+		/// and classic SVE saves fall back to the global setting because their format has no room for it.
+		/// </summary>
+		internal BarbarianActivity BarbarianActivity { get; set; } = BarbarianActivity.VillagesAndRaids;
+
+		/// <summary>
+		/// Places a barbarian raiding party of the given kind, using the spawn position and the unit list
+		/// of the barbarian rules.
+		/// </summary>
+		/// <param name="kind">The kind of raiding party to place.</param>
+		/// <returns><see langword="true"/> when units were created.</returns>
+		internal bool SpawnBarbarians(BarbarianSpawnKind kind)
+		{
+			ITile? tile = kind switch
+			{
+				BarbarianSpawnKind.Land => Barbarian.LandSpawnPosition,
+				BarbarianSpawnKind.Sea => Barbarian.SeaSpawnPosition,
+				_ => null
+			};
+			if (tile == null)
+			{
+				return false;
+			}
+
+			IEnumerable<UnitType> unitTypes = kind == BarbarianSpawnKind.Land ? Barbarian.LandSpawnUnits : Barbarian.SeaSpawnUnits;
+			bool created = false;
+			foreach (UnitType unitType in unitTypes)
+			{
+				CreateUnit(unitType, tile.X, tile.Y, 0, false);
+				created = true;
+			}
+			return created;
+		}
+
+		private BarbarianSpawnDelegate? _barbarianSpawn;
+
+		/// <summary>
+		/// Decides whether barbarians appear in the current turn, and which kind.
+		/// </summary>
+		private BarbarianSpawnDelegate BarbarianSpawn => _barbarianSpawn ??= new(() => BarbarianActivity, _randomService);
+
+		BarbarianActivity IGameBarbarianSettings.BarbarianActivity => BarbarianActivity;
+
+		/// <summary>
+		/// The maximum number of players supported by a game (including the barbarian player at index 0).
+		/// This bounds the <see cref="Tiles.ITile.Visited"/> bitmask width and the player colour palette size.
+		/// Defined in <see cref="PlayerLimits"/>, because the API assembly needs the same value to validate
+		/// replay data but cannot reference this class.
+		/// </summary>
+		internal const int MaxPlayers = PlayerLimits.MaxPlayers;
+
+		private static string GetGameVersion()
+			=> Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown";
 
 		public bool Animations { get; set; }
 		public bool Sound { get; set; }
@@ -57,7 +159,7 @@ namespace CivOne
 		public bool EnemyMoves { get; set; }
 		public bool Palace { get; set; }
 
-		public void SetAdvanceOrigin(IAdvance advance, Player player)
+		public void SetAdvanceOrigin(IAdvance advance, Player? player)
 		{
 			if (_advanceOrigin.ContainsKey(advance.Id))
 				return;
@@ -68,8 +170,8 @@ namespace CivOne
 		}
 		public bool GetAdvanceOrigin(IAdvance advance, Player player)
 		{
-			if (_advanceOrigin.ContainsKey(advance.Id))
-				return (_advanceOrigin[advance.Id] == PlayerNumber(player));
+			if (_advanceOrigin.TryGetValue(advance.Id, out byte value))
+				return value == PlayerNumber(player);
 			return false;
 		}
 
@@ -87,7 +189,7 @@ namespace CivOne
 			get { return Settings.Instance.DeityEnabled ? 5 : 4; }
 		}
 
-		public bool HasUpdate => false;
+		public static bool HasUpdate => false;
 
 		private ushort _gameTurn;
 		public ushort GameTurn
@@ -103,29 +205,140 @@ namespace CivOne
 				if (_anthologyTurn >= _gameTurn)
 				{
 					//TODO: Show anthology
-					_anthologyTurn = (ushort)(_gameTurn + 20 + Common.Random.Next(40));
+					_anthologyTurn = (ushort)(_gameTurn + 20 + _randomService.NextInt(40));
 				}
 			}
 		}
 
 		internal string GameYear => Common.YearString(GameTurn);
 
+		internal bool IsYamlSaveSource => _loadedFromYamlSaveSource;
+
+		internal bool TryConsumePendingMapPositionRestore(out int x, out int y)
+		{
+			x = -1;
+			y = -1;
+
+			if (_pendingMapPositionRestore.X < 0 || _pendingMapPositionRestore.Y < 0)
+			{
+				return false;
+			}
+
+			x = _pendingMapPositionRestore.X;
+			y = _pendingMapPositionRestore.Y;
+			_pendingMapPositionRestore = (-1, -1);
+			return true;
+		}
+
+		internal void MarkAsYamlSaveSource()
+		{
+			_loadedFromYamlSaveSource = true;
+		}
+
+		internal SveSaveCompatibilityResult GetSveSaveCompatibility()
+		{
+			var cityLookup = _cities.ToHashSet();
+			var sveUnitOwners = _players
+				.SelectMany((player, index) => Enumerable.Repeat((byte)index, _units.Where(unit => player == unit.Owner).GetUnitData().Count()))
+				.ToArray();
+			var fortifiedUnitCountsPerCity = _cities
+				.Select(city => city.Tile?.Units.Count(unit => unit.Home == city && unit.Fortify) ?? 0)
+				.ToArray();
+			// CW: TODO simply inject service associated with Game constructor in future if necessary.
+			var service = new SveSaveCompatibilityService();
+			var snapshot = SveSaveCompatibilitySnapshot.Builder()
+				.WithCivilizationIds([.. _players.Select(player => player.Civilization.Id)])
+				.FromYamlSource(_loadedFromYamlSaveSource)
+				.WithPlayerCount(_players.Length)
+				.WithMapSize(Map.WIDTH, Map.HEIGHT)
+				.WithCityCount(_cities.Count)
+				.WithReplayDataLengthBytes(GetSveReplayDataLengthBytes())
+				.WithInvalidTradeCityReferences(_cities.Any(city => city.TradingCitiesAsCity.Any(tradingCity => !cityLookup.Contains(tradingCity))))
+				.WithInvalidUnitHomeCityReferences(_units.Any(unit => unit.Home != null && !cityLookup.Contains(unit.Home)))
+				.WithOutOfBoundsCityCoordinates(_cities.Any(city => city.X >= Map.WIDTH || city.Y >= Map.HEIGHT))
+				.WithOutOfBoundsUnitCoordinates(_units.Any(unit => unit.X < 0 || unit.Y < 0 || unit.X >= Map.WIDTH || unit.Y >= Map.HEIGHT))
+				.WithOutOfBoundsUnitGotoCoordinates(_units.Any(unit => unit.HasGotoDestination() && unit.GotoDestination.Y >= Map.HEIGHT))
+				.WithTradeCityCountsPerCity([.. _cities.Select(city => city.TradingCities?.Length ?? 0)])
+				.WithCityOwners([.. _cities.Select(city => city.CityOwnerPlayerIndex)])
+				.WithUnitOwners(sveUnitOwners)
+				.WithUnitsCount(sveUnitOwners.Length)
+				.WithFortifiedUnitCountsPerCity(fortifiedUnitCountsPerCity)
+				.WithFortifiedUnitsCount(fortifiedUnitCountsPerCity.Sum())
+				.Build();
+
+			return service.Evaluate(snapshot);
+		}
+
+		private int GetSveReplayDataLengthBytes()
+		{
+			var length = 0;
+			foreach (var replayEntry in _replayData)
+			{
+				switch (replayEntry)
+				{
+					case ReplayData.CivilizationDestroyed _:
+						length += 4;
+						break;
+				}
+			}
+
+			return length;
+		}
+
+		SveSaveCompatibilityResult ISveSaveCompatibilityProvider.GetSveSaveCompatibility() => GetSveSaveCompatibility();
+
 		internal Player HumanPlayer { get; set; }
+
+		internal byte HumanPlayerId => PlayerNumber(HumanPlayer);
 
 		internal Player CurrentPlayer => _players[_currentPlayer];
 
-		internal ReplayData[] GetReplayData() => _replayData.ToArray();
-		internal T[] GetReplayData<T>() where T : ReplayData => _replayData.Where(x => x is T).Select(x => (x as T)).ToArray();
+		internal T[] GetReplayData<T>() where T : ReplayData => [.. _replayData.OfType<T>()];
 
-		private void PlayerDestroyed(object sender, EventArgs args)
+		internal void RegisterFutureTech(Player player)
 		{
-			Player player = (sender as Player);
+			ArgumentNullException.ThrowIfNull(player);
+
+			player.FutureTechCount++;
+			if (player == HumanPlayer)
+			{
+				_playerFutureTech = player.FutureTechCount;
+			}
+		}
+
+		internal void RegisterHostileAction()
+		{
+			_hostileActionOccurred = true;
+		}
+
+		private void PlayerDestroyed(object? sender, EventArgs args)
+		{
+			if (sender is not Player player) 
+			{
+				Log($"PlayerDestroyed event triggered with invalid sender. Player: {sender ?? "null"}");
+				return;
+			}
+
+			// Use the player's index (its slot in _players), not Civilization.PreferredPlayerNumber:
+			// with civilization reuse beyond player 7, PreferredPlayerNumber no longer identifies the player slot.
+			// A player that no longer holds a slot (e.g. one that was already replaced by a respawn and fires
+			// its event a second time) must not be attributed to slot 0, which belongs to the barbarians.
+			if (!TryGetPlayerNumber(player, out byte destroyedIndex))
+			{
+				Log($"PlayerDestroyed event triggered for a player that holds no slot: {player.TribeNamePlural}");
+				return;
+			}
+
+			// A player cannot destroy itself, so that case is attributed to the barbarians. Compare the slots,
+			// not the civilizations: two players can share a civilization once there are more players than
+			// civilizations, and comparing those would blame the barbarians for a regular conquest.
+			byte destroyedByIndex = PlayerNumber(Game.CurrentPlayer);
+			if (destroyedByIndex == destroyedIndex) destroyedByIndex = 0;
 
 			ICivilization destroyed = player.Civilization;
-			ICivilization destroyedBy = Game.CurrentPlayer.Civilization;
-			if (destroyedBy == destroyed) destroyedBy = Game.GetPlayer(0).Civilization;
+			ICivilization destroyedBy = GetPlayer(destroyedByIndex)!.Civilization;
 
-			_replayData.Add(new ReplayData.CivilizationDestroyed(_gameTurn, destroyed.PreferredPlayerNumber, destroyedBy.PreferredPlayerNumber));
+			_replayData.Add(new ReplayData.CivilizationDestroyed(_gameTurn, destroyedIndex, destroyedByIndex));
 
 			if (player.IsHuman)
 			{
@@ -137,46 +350,90 @@ namespace CivOne
 				player.AllowedToRespawn(GetReplayData<ReplayData.CivilizationDestroyed>()))
 			{
 				Player newPlayer = player.Respawn();
-				var index = newPlayer.Civilization.PreferredPlayerNumber;
+				byte index = destroyedIndex;
 
 				_players[index] = newPlayer;
 				_players[index].Destroyed += PlayerDestroyed;
 
-				AddStartingUnits(index);
+				// The replacement civilization is picked from whatever is free at this moment, so it cannot be
+				// derived from the initial seed later on. Record it, so screens can look up which civilization
+				// held this slot at any turn (see DestroyedCivilizationResolverDelegate).
+				_replayData.Add(new ReplayData.CivilizationRespawned(_gameTurn, index, (byte)newPlayer.Civilization.Id));
+
+				PlaceStartingUnits([index]);
 				// CW: Not sure, but are these new civs given technology or better units?
 				// Could be a feature to advance such a civilization.
 				// In higher dificulties, does the civ get more units and techs?
 			}
 
-			GameTask.Insert(Message.Advisor(Advisor.Defense, false, destroyed.Name, "civilization", "destroyed", $"by {destroyedBy.NamePlural}!"));
+			GameTask.Insert(Message.Advisor(Advisor.Defense, false,
+				TranslateFormattedArray("{0}\ncivilization\ndestroyed\nby {1}!", destroyed.Name, destroyedBy.NamePlural)));
 		}
 
-		internal byte PlayerNumber(Player player)
+		/// <summary>
+		/// Returns the player number for the given player, or 0 if the player is not found. 
+		/// This method is used for serialization and should not be used in game logic, as it may return 0 for a valid player if the player is not found, which can lead to bugs.
+		/// If null is passed as player, 0 is returned, which is also a valid player number, so this method should be used with caution and only for serialization purposes.
+		/// </summary>
+		/// <param name="player">The player for which to get the player number.</param>
+		/// <returns>The player number, or 0 if the player is not found or if null is passed.</returns>
+		internal byte PlayerNumber(Player player) => TryGetPlayerNumber(player, out byte number) ? number : (byte)0;
+
+		/// <summary>
+		/// Looks up the player number (the player's slot in the game) for the given player.
+		/// Use this instead of <see cref="PlayerNumber(Player)"/> in game logic: a missing player is reported
+		/// as a failure rather than silently answered with slot 0, which belongs to the barbarians.
+		/// </summary>
+		/// <param name="player">The player to look up.</param>
+		/// <param name="number">The player number, or 0 when the player was not found.</param>
+		/// <returns><c>true</c> when the player occupies a slot in this game.</returns>
+		internal bool TryGetPlayerNumber(Player player, out byte number)
 		{
-			byte i = 0;
-			foreach (Player p in _players)
+			if (player != null)
 			{
-				if (p == player)
-					return i;
-				i++;
+				for (int i = 0; i < _players.Length; i++)
+				{
+					if (ReferenceEquals(_players[i], player))
+					{
+						number = (byte)i;
+						return true;
+					}
+				}
 			}
-			return 0;
+
+			number = 0;
+			return false;
 		}
 
-		public Player GetPlayer(byte number)
+		public Player? GetPlayer(byte number)
 		{
-			if (_players.Length < number)
+			if (number >= _players.Length)
+			{
+				Debug.Assert(false, $"Player number {number} is out of bounds. Returning null.");
 				return null;
+			}
 			return _players[number];
 		}
 
 		internal IEnumerable<Player> Players => _players;
 
 
-		internal IGlobalWarmingService globalWarmingService;
+		internal IGlobalWarmingService _globalWarmingService;
 
-		public IGlobalWarmingService GlobalWarmingService => globalWarmingService;
-		internal IGlobalWarmingScourgeService globalWarmingScourgeService;
+		public IGlobalWarmingService GlobalWarmingService => _globalWarmingService;
+		internal IGlobalWarmingScourgeService _globalWarmingScourgeService;
+
+		internal readonly IPalaceUpgradeService _palaceUpgradeService;
+		internal readonly ICivilizationRankingTriggerService _civilizationRankingTriggerService;
+
+		private readonly struct PlayerGameStateAdapter(Player player) : IPlayerGameState
+		{
+			private readonly Player _player = player;
+
+			public int CivilizationScore => ((Persistence.Game.IPlayer)_player).CivilizationScore;
+			public IPalaceData Palace => _player.Palace;
+			public bool IsHuman => _player.IsHuman;
+		}
 
 		/// <summary>
 		/// End the current player's turn and advance to the next player.
@@ -197,39 +454,36 @@ namespace CivOne
 			{
 				_currentPlayer = 0;
 				GameTurn++;
-				if (GameTurn % 50 == 0 && AutoSave)
+				AdvancePeaceTurns();
+				if (AutoSave)
 				{
-					GameTask.Enqueue(Show.AutoSave);
-				}
-
-				IEnumerable<City> disasterCities = _cities.OrderBy(o => Common.Random.Next(0, 1000)).Take(2).AsEnumerable();
-				foreach (City city in disasterCities)
-					city.Disaster();
-
-				if (Barbarian.IsSeaSpawnTurn)
-				{
-					// KBR 20200927 use cdonges land spawn code
-					// https://github.com/cdonges/CivOne/commit/e54fe9377030de625c51b674c0ecf29a335e0556
-					// TODO land spawning and sea spawning as separate timing / acts
-					if (Common.Random.Next(100) > 50)
+					var sveCompatibility = GetSveSaveCompatibility();
+					if (Settings.Instance.PreferSveSaveFormat)
 					{
-						ITile tile = Barbarian.LandSpawnPosition;
-						if (tile != null)
+						if (sveCompatibility.CanSaveAsSve)
 						{
-							foreach (UnitType unitType in Barbarian.LandSpawnUnits)
-								CreateUnit(unitType, tile.X, tile.Y, 0, false);
+							if (GameTurn % 50 == 0)
+							{
+								GameTask.Enqueue(Show.AutoSave);
+							}
+						}
+						else if (GameTurn % 50 == 0)
+						{
+							Log("SVE autosave unavailable: {0}. Falling back to COS autosave.", sveCompatibility.Reason);
+							SaveCosAutoSave();
 						}
 					}
 					else
 					{
-						ITile tile = Barbarian.SeaSpawnPosition;
-						if (tile != null)
-						{
-							foreach (UnitType unitType in Barbarian.SeaSpawnUnits)
-								CreateUnit(unitType, tile.X, tile.Y, 0, false);
-						}
+						SaveCosAutoSave();
 					}
 				}
+
+				IEnumerable<City> disasterCities = _cities.OrderBy(o => _randomService.NextInt(0, 1000)).Take(2).AsEnumerable();
+				foreach (City city in disasterCities)
+					city.Disaster();
+
+				SpawnBarbarians(BarbarianSpawn.GetSpawnKind());
 			}
 
 			if (!_players.Any(x => Game.PlayerNumber(x) != 0 && x != Human && !x.HandleExtinction()))
@@ -237,9 +491,15 @@ namespace CivOne
 				PlaySound("wintune");
 
 				GameTask conquest;
-				GameTask.Enqueue(Message.Newspaper(null, "Your civilization", "has conquered", "the entire planet!"));
+				GameTask.Enqueue(Message.Newspaper(null, TranslateArray("Your civilization\nhas conquered\nthe entire planet!")));
 				GameTask.Enqueue(conquest = Show.Screen<Conquest>());
-				conquest.Done += (s, a) => Runtime.Quit();
+				conquest.Done += (_, __) => _ = EndGameServiceFactory.CreateForHuman().HandleConquestAsync();
+			}
+
+			bool gameEnds = !CheckSpaceVitory();
+			if (gameEnds)
+			{
+				return;
 			}
 
 			if (origin == 0)
@@ -247,66 +507,173 @@ namespace CivOne
 				HandleGlobalWarming();
 			}
 
+			// Palace upgrade trigger check for all players (trigger evaluation is player-independent)
+			if (_palaceUpgradeService != null)
+			{
+				foreach (Player player in _players.Where(x => x.Civilization is not Barbarian))
+				{
+					if (_palaceUpgradeService.ShouldShowPalaceUpgrade(new PlayerGameStateAdapter(player)))
+					{
+						// Enqueue show-palace action only for human player (AI palace upgrades handled separately in future)
+						if (player.IsHuman)
+						{
+							GameTask.Enqueue(Show.BuildPalace());
+						}
+					}
+				}
+			}
+
 			foreach (IUnit unit in _units.Where(u => u.Owner == _currentPlayer))
 			{
 				GameTask.Enqueue(Turn.New(unit));
 			}
-			foreach (City city in _cities.Where(c => c.Owner == _currentPlayer).ToArray())
+			foreach (City city in _cities.Where(c => c.CityOwnerPlayerIndex == _currentPlayer).ToArray())
 			{
 				GameTask.Enqueue(Turn.New(city));
 			}
 			GameTask.Enqueue(Turn.New(CurrentPlayer));
+
+			if (CurrentPlayer == HumanPlayer && _civilizationRankingTriggerService?.ShouldShowRanking(HumanPlayer, this) == true)
+			{
+				GameTask.Enqueue(Show.Screen(CivilizationRankingScreenFactory.Create()));
+			}
+
 			if (Game.InstantAdvice && CurrentPlayer == HumanPlayer && (Common.TurnToYear(Game.GameTurn) == -3600 || Common.TurnToYear(Game.GameTurn) == -2800))
-				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFile.Instance.GetGameText("HELP/HELP1")));
+				GameTask.Enqueue(Message.Help(Translate("--- Civilization Note ---"), TextFileFactory.Get().GetGameText("HELP/HELP1")));
 			else if (Game.InstantAdvice && CurrentPlayer == HumanPlayer && (Common.TurnToYear(Game.GameTurn) == -3200 || Common.TurnToYear(Game.GameTurn) == -2400))
-				GameTask.Enqueue(Message.Help("--- Civilization Note ---", TextFile.Instance.GetGameText("HELP/HELP2")));
+				GameTask.Enqueue(Message.Help(Translate("--- Civilization Note ---"), TextFileFactory.Get().GetGameText("HELP/HELP2")));
+		}
+
+		private bool CheckSpaceVitory()
+		{
+			int currentYear = Common.TurnToYear(GameTurn);
+			foreach (Player player in _players.Where(x => x.Civilization is not Barbarian && x.SpaceShipLaunchYear != 0))
+			{
+				ISpaceShipService shipService = SpaceShipServiceFactoryProvider.GetInstance().Create(player);
+				SpaceShipScreenData screenData = shipService.GetScreenData();
+				int arrivalYear = player.SpaceShipLaunchYear + (int)Math.Ceiling(screenData.FlightTimeYears);
+				if (currentYear < arrivalYear)
+				{
+					continue;
+				}
+
+				if (player == HumanPlayer)
+				{
+					PlaySound("wintune");
+
+					GameTask.Enqueue(Message.Newspaper(null, TranslateArray("Your civilization\nhas reached\nAlpha Centauri!")));
+					_ = EndGameServiceFactory.CreateForHuman().HandleAlphaCentauriAsync();
+				}
+				else
+				{
+					GameTask.Enqueue(Message.Newspaper(null, TranslateFormattedArray("{0} space ship\nhas reached\nAlpha Centauri!", player.TribeName)));
+					_ = EndGameServiceFactory.CreateForHuman().HandleDefeatAsync();
+				}
+
+				return false;
+			}
+
+			return true;
 		}
 
 		protected void HandleGlobalWarming()
 		{
-			if (!globalWarmingService.IsGlobalWarmingOnNewTurn())
+			if (!_globalWarmingService.IsGlobalWarmingOnNewTurn())
 			{
 				return;
 			}
 			
-			globalWarmingScourgeService.UnleashScourgeOfPollution();
+			_globalWarmingScourgeService.UnleashScourgeOfPollution();
+			_globalWarmingService.RefreshPollutionState();
 
-			GameTask.Enqueue(Message.Newspaper(null, "Global temperature", "rises! Icecaps melt.", "Severe Drought."));
+			GameTask.Enqueue(Message.Newspaper(null, TranslateArray("Global temperature\nrises! Icecaps melt.\nSevere Drought.")));
+		}
+
+		private void AdvancePeaceTurns()
+		{
+			if (_hostileActionOccurred)
+			{
+				_peaceTurns = 0;
+				_hostileActionOccurred = false;
+				return;
+			}
+
+			if (_peaceTurns < ushort.MaxValue)
+			{
+				_peaceTurns++;
+			}
+		}
+
+		private void SaveCosAutoSave()
+		{
+			SaveGamePathProvider pathProvider = new(RuntimeHandler.Runtime, Settings.Instance);
+			string saveDirectory = pathProvider.EnsureAutoSaveDirectory();
+			string autoSaveFile = Path.Combine(saveDirectory, "autosave.cos");
+			new YamlSaveGameService(this).SaveCos(autoSaveFile);
 		}
 
 		// store last active player unit to check if a previous player move happened or a game was loaded.
-		IUnit LastActivePlayerUnit = null;
+		IUnit LastActivePlayerUnit;
 
 		public void Update()
 		{
-			IUnit unit = ActiveUnit;
+			IUnit? unit = ActiveUnit;
 			if (CurrentPlayer == HumanPlayer)
 			{
-				LastActivePlayerUnit = unit != null ? unit : LastActivePlayerUnit;
+				LastActivePlayerUnit = unit ?? LastActivePlayerUnit;
 
-				if (unit != null && !unit.Goto.IsEmpty)
+				if (unit is {} baseUnit && unit.HasGotoDestination())
 				{
-					ITile[] tiles = (unit as BaseUnit).MoveTargets.OrderBy(x => x.DistanceTo(unit.Goto)).ThenBy(x => x.Movement).ToArray();
+					// Keep in sync with AStarPathfinderAdapter.GetNextStep().
+					// (0,0) is a valid map coordinate, not "no destination" (see UnitGotoDestinationExtensions).
+					// X must be normalized to map width before passing a goal to AStar.
+					// AStar neighbor expansion wraps X internally; an unwrapped goal may never be reached.
+					int gotoX = unit.GotoDestination.X % Map.WIDTH;
+					if (gotoX < 0)
+					{
+						gotoX += Map.WIDTH;
+					}
+
+					int gotoY = unit.GotoDestination.Y;
+					if (gotoY < 0 || gotoY >= Map.HEIGHT)
+					{
+						unit.ClearGotoDestination();
+						return;
+					}
+
+					Point normalizedDestination = new(gotoX, gotoY);
+					if (unit.GotoDestination != normalizedDestination)
+					{
+						unit.GotoDestination = normalizedDestination;
+					}
+
+					ITile[] tiles = [.. baseUnit.MoveTargets.OrderBy(x => x.DistanceTo(normalizedDestination)).ThenBy(x => x.Movement)];
 
 					if (Settings.Instance.PathFinding)
 					{
 						/*  Use AStar  */
-						AStar.sPosition Destination, Pos;
-						Destination.iX = unit.Goto.X;
-						Destination.iY = unit.Goto.Y;
-						Pos.iX = unit.X;
-						Pos.iY = unit.Y;
+						AStar.SPosition Destination = new()
+						{
+							iX = normalizedDestination.X,
+							iY = normalizedDestination.Y
+						};
+						
+						AStar.SPosition Pos = new()
+						{
+							iX = unit.X,
+							iY = unit.Y
+						};
 
 						if (Destination.iX == Pos.iX && Destination.iY == Pos.iY)
 						{
-							unit.Goto = Point.Empty;   // eh... never mind
+							unit.ClearGotoDestination();   // eh... never mind
 							return;
 						}
 						AStar AStar = new AStar();
-						AStar.sPosition NextPosition = AStar.FindPath(Destination, unit);
+						AStar.SPosition NextPosition = AStar.FindPath(Destination, unit);
 						if (NextPosition.iX < 0)
 						{         // if no path found
-							unit.Goto = Point.Empty;
+							unit.ClearGotoDestination();
 							return;
 						}
 						unit.MoveTo(NextPosition.iX - Pos.iX, NextPosition.iY - Pos.iY);
@@ -316,19 +683,19 @@ namespace CivOne
 					else
 					{
 
-						int distance = unit.Tile.DistanceTo(unit.Goto);
-						if (tiles.Length == 0 || tiles[0].DistanceTo(unit.Goto) > distance)
+						int distance = unit.Tile.DistanceTo(normalizedDestination);
+						if (tiles.Length == 0 || tiles[0].DistanceTo(normalizedDestination) > distance)
 						{
 							// No valid tile to move to, cancel goto
-							unit.Goto = Point.Empty;
+							unit.ClearGotoDestination();
 							return;
 						}
-						else if (tiles[0].DistanceTo(unit.Goto) == distance)
+						else if (tiles[0].DistanceTo(normalizedDestination) == distance)
 						{
 							// Distance is unchanged, 50% chance to cancel goto
-							if (Common.Random.Next(0, 100) < 50)
+							if (_randomService.NextInt(0, 100) < 50)
 							{
-								unit.Goto = Point.Empty;
+								unit.ClearGotoDestination();
 								return;
 							}
 						}
@@ -391,13 +758,12 @@ namespace CivOne
 			ICivilization[] civilizations = Common.Civilizations;
 			int startIndex = Enumerable.Range(1, civilization.Id - 1).Sum(i => civilizations[i].CityNames.Length);
 			int spareIndex = Enumerable.Range(1, Common.Civilizations.Length - 1).Sum(i => civilizations[i].CityNames.Length);
-			int[] used = _cities.Select(c => c.NameId).ToArray();
-			int[] available = Enumerable.Range(0, CityNames.Length)
+			int[] used = [.. _cities.Select(c => c.NameId)];
+			int[] available = [.. Enumerable.Range(0, CityNames.Length)
 				.Where(i => !used.Contains(i))
 				.OrderBy(i => (i >= startIndex && i < startIndex + civilization.CityNames.Length) ? 0 : 1)
 				.ThenBy(i => (i >= spareIndex) ? 0 : 1)
-				.ThenBy(i => i)
-				.ToArray();
+				.ThenBy(i => i)];
 			if (player.CityNamesSkipped >= available.Length)
 				return 0;
 
@@ -406,7 +772,7 @@ namespace CivOne
 			return nameId;
 		}
 
-		internal City AddCity(Player player, int nameId, int x, int y)
+		internal City? AddCity(Player player, int nameId, int x, int y)
 		{
 			bool hasCity = _cities.Any(c => c.X == x && c.Y == y);
 			if (hasCity)
@@ -414,16 +780,21 @@ namespace CivOne
 				return null;
 			}
 
-			City city = new City(PlayerNumber(player))
+			City city = new(PlayerNumber(player))
 			{
-				X = (byte)x,
-				Y = (byte)y,
-				NameId = nameId,
-				Size = 1
+				X = x,
+				Y = y,
+				NameId = nameId
 			};
-			if (!_cities.Any(c => c.Size > 0 && c.Owner == city.Owner))
+			// Order is important here -
+			// first explore the tile to reveal it to the player, 
+			// then add the city so that the city tile is properly initialized with the explored tile!
+			player.Explore(x, y);
+			city.Size = 1;
+
+			if (!_cities.Any(c => c.Size > 0 && c.CityOwnerPlayerIndex == city.CityOwnerPlayerIndex))
 			{
-				Palace palace = new Palace();
+				Palace palace = new();
 				palace.SetFree();
 				city.AddBuilding(palace);
 			}
@@ -443,115 +814,146 @@ namespace CivOne
 		public void DestroyCity(City city)
 		{
 			foreach (IUnit unit in _units.Where(u => u.Home == city).ToArray())
+			{
+				unit.SetHome(null);
 				_units.Remove(unit);
+			}
 			city.X = 255;
 			city.Y = 255;
-			city.Owner = 0;
+			city.CityOwnerPlayerIndex = 0;
 		}
 
-		internal City GetCity(int x, int y)
+		internal City? GetCity(int x, int y)
 		{
 			while (x < 0) x += Map.WIDTH;
 			while (x >= Map.WIDTH) x -= Map.WIDTH;
 			if (y < 0) return null;
 			if (y >= Map.HEIGHT) return null;
-			return _cities.Where(c => c.X == x && c.Y == y && c.Size > 0).FirstOrDefault();
+			return _cities.FirstOrDefault(c => c.X == x && c.Y == y && c.Size > 0);
 		}
 
-		private static IUnit CreateUnit(UnitType type, int x, int y)
+		private static IUnit? CreateUnit(UnitType type, int x, int y)
 		{
-			IUnit unit = CreateUnit(type);
+			IUnit? unit = CreateUnit(type);
+			if (unit == null) return null;
 			unit.X = x;
 			unit.Y = y;
 			unit.MovesLeft = unit.Move;
 			return unit;
 		}
 
-		public static IUnit CreateUnit(UnitType type)
+		public static IUnit? CreateUnit(UnitType type)
 		{
-			IUnit unit;
-			switch (type)
+			IUnit? unit = type switch
 			{
-				case UnitType.Settlers: unit = new Settlers(); break;
-				case UnitType.Militia: unit = new Militia(); break;
-				case UnitType.Phalanx: unit = new Phalanx(); break;
-				case UnitType.Legion: unit = new Legion(); break;
-				case UnitType.Musketeers: unit = new Musketeers(); break;
-				case UnitType.Riflemen: unit = new Riflemen(); break;
-				case UnitType.Cavalry: unit = new Cavalry(); break;
-				case UnitType.Knights: unit = new Knights(); break;
-				case UnitType.Catapult: unit = new Catapult(); break;
-				case UnitType.Cannon: unit = new Cannon(); break;
-				case UnitType.Chariot: unit = new Chariot(); break;
-				case UnitType.Armor: unit = new Armor(); break;
-				case UnitType.MechInf: unit = new MechInf(); break;
-				case UnitType.Artillery: unit = new Artillery(); break;
-				case UnitType.Fighter: unit = new Fighter(); break;
-				case UnitType.Bomber: unit = new Bomber(); break;
-				case UnitType.Trireme: unit = new Trireme(); break;
-				case UnitType.Sail: unit = new Sail(); break;
-				case UnitType.Frigate: unit = new Frigate(); break;
-				case UnitType.Ironclad: unit = new Ironclad(); break;
-				case UnitType.Cruiser: unit = new Cruiser(); break;
-				case UnitType.Battleship: unit = new Battleship(); break;
-				case UnitType.Submarine: unit = new Submarine(); break;
-				case UnitType.Carrier: unit = new Carrier(); break;
-				case UnitType.Transport: unit = new Transport(); break;
-				case UnitType.Nuclear: unit = new Nuclear(); break;
-				case UnitType.Diplomat: unit = new Diplomat(); break;
-				case UnitType.Caravan: unit = new Caravan(); break;
-				default: return null;
+				UnitType.Settlers => new Settlers(),
+				UnitType.Militia => new Militia(),
+				UnitType.Phalanx => new Phalanx(),
+				UnitType.Legion => new Legion(),
+				UnitType.Musketeers => new Musketeers(),
+				UnitType.Riflemen => new Riflemen(),
+				UnitType.Cavalry => new Cavalry(),
+				UnitType.Knights => new Knights(),
+				UnitType.Catapult => new Catapult(),
+				UnitType.Cannon => new Cannon(),
+				UnitType.Chariot => new Chariot(),
+				UnitType.Armor => new Armor(),
+				UnitType.MechInf => new MechInf(),
+				UnitType.Artillery => new Artillery(),
+				UnitType.Fighter => new Fighter(),
+				UnitType.Bomber => new Bomber(),
+				UnitType.Trireme => new Trireme(),
+				UnitType.Sail => new Sail(),
+				UnitType.Frigate => new Frigate(),
+				UnitType.Ironclad => new Ironclad(),
+				UnitType.Cruiser => new Cruiser(),
+				UnitType.Battleship => new Battleship(),
+				UnitType.Submarine => new Submarine(),
+				UnitType.Carrier => new Carrier(),
+				UnitType.Transport => new Transport(),
+				UnitType.Nuclear => new Nuclear(),
+				UnitType.Diplomat => new Diplomat(),
+				UnitType.Caravan => new Caravan(),
+				_ => null
+			};
+			if (unit == null)
+			{
+				Debug.Assert(false, $"Unknown unit type: {type}");
 			}
 			return unit;
 		}
 
-		public IUnit CreateUnit(UnitType type, int x, int y, byte owner, bool endTurn = false)
+		public IUnit? CreateUnit(UnitType type, int x, int y, byte owner, bool endTurn = false)
 		{
-			IUnit unit = CreateUnit((UnitType)type, x, y);
+			IUnit? unit = CreateUnit(type, x, y);
 			if (unit == null) return null;
 
 			unit.Owner = owner;
-			if (unit.Class == UnitClass.Water)
+			if (unit.UnitCategory == UnitClass.Water)
 			{
-				Player player = GetPlayer(owner);
-				if ((player.HasWonder<Lighthouse>() && !WonderObsolete<Lighthouse>()) ||
-					(player.HasWonder<MagellansExpedition>() && !WonderObsolete<MagellansExpedition>()))
+				Player? player = GetPlayer(owner);
+				if (player != null && ((player.HasWonder<Lighthouse>() && !WonderObsolete<Lighthouse>()) ||
+					(player.HasWonder<MagellansExpedition>() && !WonderObsolete<MagellansExpedition>())))
 				{
 					unit.MovesLeft++;
 				}
 			}
 			if (endTurn)
+			{
 				unit.SkipTurn();
-			_instance._units.Add(unit);
+			}
+			Instance._units.Add(unit);
 			return unit;
 		}
 
-		public IUnit[] GetUnits(int x, int y)
+		public IUnit[]? GetUnits(int x, int y)
 		{
 			while (x < 0) x += Map.WIDTH;
 			while (x >= Map.WIDTH) x -= Map.WIDTH;
 			if (y < 0) return null;
 			if (y >= Map.HEIGHT) return null;
-			return _units.Where(u => u.X == x && u.Y == y).OrderBy(u => (u == ActiveUnit) ? 0 : (u.Fortify || u.FortifyActive ? 1 : 2)).ToArray();
+			return [.. _units.Where(u => u.X == x && u.Y == y).OrderBy(u => (u == ActiveUnit) ? 0 : (u.Fortify || u.FortifyActive ? 1 : 2))];
 		}
 
-		public IUnit[] GetUnits() => _units.ToArray();
+		public IUnit[] GetUnits() => [.. _units];
 
 		internal void UpdateResources(ITile tile, bool ownerCities = true)
 		{
 			for (int relY = -3; relY <= 3; relY++)
+			{
 				for (int relX = -3; relX <= 3; relX++)
 				{
 					if (tile[relX, relY] == null) continue;
 					City city = tile[relX, relY].City;
 					if (city == null) continue;
-					if (!ownerCities && CurrentPlayer == city.Owner) continue;
+					if (!ownerCities && CurrentPlayer == city.CityOwnerPlayerIndex) continue;
 					city.UpdateResources();
 				}
+			}
 		}
 
-		public City[] GetCities() => _cities.ToArray();
+		/// <summary>
+		/// Gets a snapshot array of all cities.
+		/// </summary>
+		/// <returns>
+		/// A new array containing the current cities.
+		/// </returns>
+		/// <remarks>
+		/// This method allocates a new array on every call.
+		/// For repeated read access, prefer <see cref="Cities"/>.
+		/// If an array is required, call this once and store the result in a local variable.
+		/// Avoid calling this method directly inside loops.
+		/// </remarks>
+		public City[] GetCities() => [.. _cities];
 
+		/// <summary>
+		/// Gets a read-only view of the city collection.
+		/// </summary>
+		/// <remarks>
+		/// Prefer this property for repeated read access.
+		/// It avoids creating a full city array on each call.
+		/// </remarks>
+		[SuppressMessage("Design", "CA1721:Property names should not match get methods", Justification = "This property is intended to provide a read-only view of the city collection, while the GetCities method provides a snapshot array. Both are useful in different scenarios.")]
 		public ReadOnlyCollection<City> Cities { get { return _cities.AsReadOnly(); } }
 		
 		/** <summary>
@@ -562,7 +964,7 @@ namespace CivOne
 		public ReadOnlyCollection<ICity> CitiesInterface { get { 
 			return _cities.Cast<ICity>().ToList().AsReadOnly(); } }
 
-		public IWonder[] BuiltWonders => _cities.SelectMany(c => c.Wonders).ToArray();
+		public IWonder[] BuiltWonders => [.. _cities.SelectMany(c => c.Wonders)];
 
 		public bool WonderBuilt<T>() where T : IWonder => BuiltWonders.Any(w => w is T);
 
@@ -572,34 +974,41 @@ namespace CivOne
 
 		public bool WonderObsolete(IWonder wonder) => (wonder.ObsoleteTech != null && _players.Any(x => x.HasAdvance(wonder.ObsoleteTech)));
 
-		public void DisbandUnit(IUnit unit)
+		public void DisbandUnit(IUnit? unit)
 		{
 			if (unit == null)
 			{
 				return;
 			}
 
-			IUnit activeUnit = ActiveUnit;
+			IUnit? activeUnit = ActiveUnit;
+
+			if (unit == activeUnit)
+			{
+				activeUnit = null;
+			}
 
 			if (!_units.Contains(unit)) return;
-			if (unit.Tile is Ocean && unit is IBoardable)
+			if (unit.Tile is Ocean && unit is IBoardable boardable)
 			{
-				int totalCargo = unit.Tile.Units.Where(u => u is IBoardable).Sum(u => (u as IBoardable).Cargo) - (unit as IBoardable).Cargo;
-				while (unit.Tile.Units.Count(u => u.Class != UnitClass.Water) > totalCargo)
+				int totalCargo = unit.Tile.Units.OfType<IBoardable>().Sum(u => u.Cargo) - boardable.Cargo;
+				while (unit.Tile.Units.Count(u => u.UnitCategory != UnitClass.Water) > totalCargo)
 				{
-					IUnit subUnit = unit.Tile.Units.First(u => u.Class != UnitClass.Water);
+					IUnit subUnit = unit.Tile.Units.First(u => u.UnitCategory != UnitClass.Water);
+					subUnit.SetHome(null);
 					subUnit.X = 255;
 					subUnit.Y = 255;
 					_units.Remove(subUnit);
 				}
 			}
+			unit.SetHome(null);
 			unit.X = 255;
 			unit.Y = 255;
 			_units.Remove(unit);
 
-			GetPlayer(unit.Owner).HandleExtinction();
+			GetPlayer(unit.Owner)?.HandleExtinction();
 
-			if (_units.Contains(activeUnit))
+			if (activeUnit != null && _units.Contains(activeUnit))
 			{
 				_activeUnit = _units.IndexOf(activeUnit);
 			}
@@ -616,11 +1025,11 @@ namespace CivOne
 		/// 
 		/// Returns: null if the current players units are all busy
 		/// </summary>
-		public IUnit ActiveUnit
+		public IUnit? ActiveUnit
 		{
 			get
 			{
-				if (_units.Count(u => u.Owner == _currentPlayer && !u.Busy) == 0)
+				if (!_units.Any(u => u.Owner == _currentPlayer && !u.Busy))
 					return null;
 
 				// If the unit counter is too high, return to 0
@@ -635,7 +1044,7 @@ namespace CivOne
 				if (GameTask.Any())
 					return _units[_activeUnit];
 
-				IUnit anyActive = _units.Find(u => u.Owner == _currentPlayer && !u.Busy);
+				IUnit? anyActive = _units.Find(u => u.Owner == _currentPlayer && !u.Busy);
 				// Check if any units are still available for this player; used to start "end of turn" for the human
 				if (anyActive == null)
 				{
@@ -661,7 +1070,7 @@ namespace CivOne
 			}
 			internal set
 			{
-				IUnit toActivateUnit = value;
+				IUnit? toActivateUnit = value;
 
 				if (toActivateUnit == null)
 				{
@@ -673,15 +1082,13 @@ namespace CivOne
 				// - If the unit has no moves left, it will not be set as active
 				// - If the unit is has an action (e.g. building a road, fortify, sentry, goto), it will not be set as active
 
-				bool isSettlers = toActivateUnit is Settlers;
 				bool isAlreadyMoved = toActivateUnit.MovesLeft == 0 && toActivateUnit.PartMoves == 0;
 				bool isSentryOrFortify = toActivateUnit.Sentry || toActivateUnit.Fortify || toActivateUnit.FortifyActive;
 
-				if (isSettlers)
+				if (toActivateUnit is Settlers settlers)
 				{
 					// Cancel order if settler is set active
-					var settler = toActivateUnit as Settlers;
-					settler.ResetOrder();
+					settlers.ResetOrder();
 				}
 
 				if (isSentryOrFortify && isAlreadyMoved)
@@ -703,9 +1110,9 @@ namespace CivOne
 			}
 		}
 
-		public IUnit MovingUnit => _units.FirstOrDefault(u => u.Moving);
+		public IUnit? MovingUnit => _units.FirstOrDefault(u => u.Moving);
 
-		public static bool Started => (_instance != null);
+		public static bool Started => _instance != null;
 
 
 		/**
@@ -720,7 +1127,7 @@ namespace CivOne
 			BaseInstance.Log(text, parameters);
 		}
 
-		private static Game _instance;
+		private static Game? _instance;
 		public static Game Instance
 		{
 			get
@@ -728,8 +1135,9 @@ namespace CivOne
 				if (_instance == null)
 				{
 					BaseInstance.Log("ERROR: Game instance does not exist");
+					Debug.Assert(false, "Game instance does not exist. This is a precondition to execute playing the game!");
 				}
-				return _instance;
+				return _instance!; // This is a precondition to execute playing the game!
 			}
 		}
 

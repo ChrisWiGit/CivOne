@@ -17,6 +17,7 @@ namespace CivOne.Buildings
 		public MassTransit() : base(16, 4)
 		{
 			Name = "Mass Transit";
+			TranslatedName = Translate("Mass Transit");
 			RequiredTech = new MassProduction();
 			SetIcon(2, 3, false);
 			SetSmallIcon(2, 2);

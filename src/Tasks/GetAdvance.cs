@@ -8,7 +8,9 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Linq;
 using CivOne.Advances;
+using CivOne.Buildings;
 
 namespace CivOne.Tasks
 {
@@ -18,7 +20,7 @@ namespace CivOne.Tasks
 		private readonly Player _player;
 		private readonly bool _human;
 		
-		private void CivilopediaClosed(object sender, EventArgs args)
+		private void CivilopediaClosed(object? _, EventArgs __)
 		{
 			EndTask();
 		}
@@ -27,11 +29,13 @@ namespace CivOne.Tasks
 		{
 			_player.AddAdvance(_advance);
 
+			RemoveObsoleteBuildingsOnNewTech();
+
 			if (_player.CurrentResearch == _advance)
 			{
 				_player.CurrentResearch = null;
-                _player.Science = 0; // fire-eggs 20170729 if player acquires advance from city/steal/hut, do NOT roll-over existing lightbulbs
-            }
+				_player.Science = 0; // fire-eggs 20170729 if player acquires advance from city/steal/hut, do NOT roll-over existing lightbulbs
+			}
 
 			if (!_human)
 			{
@@ -49,11 +53,28 @@ namespace CivOne.Tasks
 			Common.AddScreen(civilopedia);
 		}
 
+		private void RemoveObsoleteBuildingsOnNewTech()
+		{
+			if (!Settings.Instance.RemoveObsoleteBuildings)
+				return;
+
+			foreach (City city in _player.Cities)
+			{
+				foreach (IBuilding building in city.Buildings)
+				{
+					if (building.ObsoleteTechs.Any(t => t.Id == _advance.Id))
+					{
+						city.RemoveBuilding(building);
+					}
+				}
+			}
+		}
+
 		public GetAdvance(Player player, IAdvance advance)
 		{
 			_advance = advance;
 			_player = player;
-			_human = (Human == player);
+			_human = Human == player;
 		}
 	}
 }

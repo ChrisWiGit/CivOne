@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public Currency() : base(5, 0, 0, Advance.BronzeWorking)
 		{
 			Name = "Currency";
+			TranslatedName = Translate("Currency");
 			Type = Advance.Currency;
 		}
 	}

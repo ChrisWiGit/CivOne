@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,6 +19,9 @@ using CivOne.Graphics;
 using CivOne.Graphics.ImageFormats;
 using CivOne.IO;
 using CivOne.Leaders;
+using CivOne.Persistence.Factories;
+using CivOne.Persistence.Model;
+using CivOne.Services;
 using CivOne.Units;
 
 namespace CivOne
@@ -25,10 +29,17 @@ namespace CivOne
 	internal static class Extensions
 	{
 		private static Settings Settings => Settings.Instance;
+		// CVS = Checked Value Sanitizer. Used for all conversions. Shorthand to clarify intent and reduce verbosity in this save/load specific code.
+		private static ICheckedValueSanitizer CVS => ValueSanitizerFactory.GetCheckedValueSanitizer();
 
-		public static string GetSoundFile(this string input)
+		private static string T(this string input) => TranslationServiceFactory.GetCurrent().Translate(input);
+		
+
+		public static string? GetSoundFile(this string input)
 		{
-			return Directory.GetFiles(Settings.SoundsDirectory).Where(x => Path.GetFileName(x).ToLower() == $"{input.ToLower()}.wav").FirstOrDefault();
+			return Directory.GetFiles(Settings.SoundsDirectory).
+				FirstOrDefault(
+					x => Path.GetFileName(x).Equals($"{input}.wav", StringComparison.OrdinalIgnoreCase));
 		}
 
 		public static byte[] Clear(this byte[] byteArray, byte value = 0)
@@ -40,7 +51,7 @@ namespace CivOne
 
 		public static string ToString(this byte[] bytes, int startIndex, int length)
 		{
-			StringBuilder output = new StringBuilder();
+			StringBuilder output = new();
 			for (int i = startIndex; i < startIndex + length; i++)
 			{
 				if (bytes[i] == 0) break;
@@ -88,25 +99,38 @@ namespace CivOne
 		private static CityData GetCityData(this City city, byte id)
 		{
             // TODO fire-eggs fails to take 'fortifyING' into account?
-            IUnit[] units = city.Tile?.Units.Where(x => x.Home == city && x.Fortify).Take(2).ToArray();
+            IUnit[]? units = city.Tile?.Units.Where(x => x.Home == city && x.Fortify)
+				.Take(2)
+				.ToArray();
+			var cityNameId = CVS.CheckedByte(city.NameId, nameof(Extensions), "CityData.NameId");
+			var visibleSize = CVS.CheckedByte(city.VisibleSizeToHumanPlayer, nameof(Extensions), "CityData.VisibleSize");
+			var food = CVS.CheckedUInt16(city.Food, nameof(Extensions), "CityData.Food");
+			var shields = CVS.CheckedUInt16(city.Shields, nameof(Extensions), "CityData.Shields");
+			var baseTrade = CVS.CheckedByte(city.TradeTotal, nameof(Extensions), "CityData.BaseTrade");
 			
 			return new CityData
 			{
 				Id = city.GetId(),
-				NameId = (byte)city.NameId,
+				NameId = cityNameId,
 				Status = city.Status,
 				Buildings = city.Buildings.Select(b => b.Id).ToArray(),
-				X = city.X,
-				Y = city.Y,
+				X = CVS.CheckedByte(city.X, nameof(Extensions), "CityData.X"),
+				Y = CVS.CheckedByte(city.Y, nameof(Extensions), "CityData.Y"),
 				ActualSize = city.Size,
+				VisibleSize = visibleSize,
 				CurrentProduction = city.CurrentProduction.ProductionId,
-				Owner = city.Owner,
-				Food = (ushort)city.Food,
-				Shields = (ushort)city.Shields,
+				Owner = city.CityOwnerPlayerIndex,
+				Food = food,
+				Shields = shields,
+				// BaseTrade is written solely for compatibility with original CIV1 DOS saves.
+				// CivOne itself never reads this value back – trade is recalculated dynamically
+				// from resource tiles each turn. Original CIV1 uses this cached value in the
+				// trade-route yield formula: (BaseTrade_A + BaseTrade_B + 4) / 8.
+				BaseTrade = baseTrade,
 				ResourceTiles = city.GetResourceTiles(),
 				// fire-eggs 20190622 make sure to save fortify/veteran status as per Microprose
-				FortifiedUnits = units?.Select(x => (byte)((int)x.Type | 0x40 | (x.Veteran ? 0x80 : 0))).ToArray(),
-				TradingCities = [.. city.TradingCities.Select(c => c.GetId())]
+				FortifiedUnits = [.. units?.Select(x => (byte)((int)x.Type | 0x40 | (x.Veteran ? 0x80 : 0))) ?? []],
+				TradingCities = [.. city.TradingCitiesAsCity.Select(c => c.GetId())]
 			};
 		}
 
@@ -130,6 +154,15 @@ namespace CivOne
         {
 			switch (unit.order)
 			{
+				case Order.None:
+				case Order.NewCity:
+				case Order.Sentry:
+				case Order.Fortify:
+				case Order.Wait:
+				case Order.Skip:
+				case Order.Unload:
+				case Order.Disband:
+					break;
 				case Order.Road:
 					result |= 0b00000010;
 					break;
@@ -145,6 +178,8 @@ namespace CivOne
 				case Order.ClearPollution:
 					result |= 0b10000010;
 					break;
+				default:
+					throw new InvalidOperationException($"Unexpected settler order {unit.order} in GetSettlerStatus");
 			}
 		}
 
@@ -181,31 +216,47 @@ namespace CivOne
 		private static UnitData GetUnitData(this IUnit unit, byte id)
 		{
 			byte gotoX = 0xFF, gotoY = 0;
-			if (!unit.Goto.IsEmpty)
+			if (unit.HasGotoDestination())
 			{
-				gotoX = (byte)unit.Goto.X;
-				gotoY = (byte)unit.Goto.Y;
+				int normalizedGotoY = unit.GotoDestination.Y;
+				if (normalizedGotoY >= 0 && normalizedGotoY < Map.HEIGHT)
+				{
+					// Save format stores wrapped map coordinates, so normalize X into map range first.
+					int normalizedGotoX = unit.GotoDestination.X % Map.WIDTH;
+					if (normalizedGotoX < 0)
+					{
+						normalizedGotoX += Map.WIDTH;
+					}
+
+					gotoX = CVS.CheckedByte(normalizedGotoX, nameof(Extensions), "UnitData.GotoX");
+					gotoY = CVS.CheckedByte(normalizedGotoY, nameof(Extensions), "UnitData.GotoY");
+				}
 			}
+
+			var remainingMoves = (unit.MovesLeft * 3) + unit.PartMoves;
+			var unitX = CVS.CheckedByte(unit.X, nameof(Extensions), "UnitData.X");
+			var unitY = CVS.CheckedByte(unit.Y, nameof(Extensions), "UnitData.Y");
+			var unitTypeId = CVS.CheckedByte((int)unit.Type, nameof(Extensions), "UnitData.TypeId");
 
 			// TODO need to save (Settlers.)MovesSkip value to savefile
 
 			return new UnitData {
 				Id = id,
 				Status = unit.GetUnitStatus(),
-				X = (byte)unit.X,
-				Y = (byte)unit.Y,
-				TypeId = (byte)unit.Type,
-				RemainingMoves = (byte)((unit.MovesLeft * 3) + unit.PartMoves),
+				X = unitX,
+				Y = unitY,
+				TypeId = unitTypeId,
+				RemainingMoves = CVS.CheckedByte(remainingMoves, nameof(Extensions), "UnitData.RemainingMoves"),
 				SpecialMoves = unit.FuelOrProgress,
 				GotoX = gotoX,
 				GotoY = gotoY,
 				Visibility = 0xFF,
 				NextUnitId = 0xFF,
-				HomeCityId = unit.Home.GetId()
+				HomeCityId = unit.Home?.GetId() ?? 0xFF
 			};
 		}
 
-		private static IEnumerable<IUnit> FilterUnits(this List<IUnit> unitList)
+		private static List<IUnit> FilterUnits(this List<IUnit> unitList)
 		{
 			unitList.RemoveAll(unit =>
 				unit.Home != null &&
@@ -225,7 +276,7 @@ namespace CivOne
 			IEnumerable<IUnit> filteredUnits = unitList.ToList().FilterUnits();
 
 			byte index = 0;
-			List<UnitData> unitDataList = new List<UnitData>();
+			List<UnitData> unitDataList = [];
 			foreach (IUnit unit in filteredUnits)
 			{
 				unitDataList.Add(unit.GetUnitData(index++));
@@ -240,145 +291,252 @@ namespace CivOne
 			return units;
 		}
 
-		public static string YesNo(this bool value) => value ? "Yes" : "No";
-		public static string OnOff(this bool value) => value ? "On" : "Off";
-		public static string EnabledDisabled(this bool value) => value ? "Enabled" : "Disabled";
+		public static string YesNo(this bool value) => value ?  T("Yes") : T("No");
+		public static string OnOff(this bool value) => value ? T("On") : T("Off");
+		public static string EnabledDisabled(this bool value) => value ? T("Enabled") : T("Disabled");
 
 		public static string ToText(this AspectRatio aspectRatio)
 		{
-			switch (aspectRatio)
+			Debug.Assert(Enum.IsDefined(aspectRatio), $"Unexpected AspectRatio value {aspectRatio} in Extensions.ToText");
+			return aspectRatio switch
 			{
-				case AspectRatio.Auto: return "Automatic";
-				case AspectRatio.Fixed: return "Fixed";
-				case AspectRatio.Scaled: return "Scaled (blurry)";
-				case AspectRatio.ScaledFixed: return "Scaled and fixed (blurry)";
-				case AspectRatio.Expand: return "Expand (experimental)";
-				default: return null;
-			}
+				AspectRatio.Auto => T("Automatic"),
+				AspectRatio.Fixed => T("Fixed"),
+				AspectRatio.Scaled => T("Scaled (blurry)"),
+				AspectRatio.ScaledFixed => T("Scaled and fixed (blurry)"),
+				AspectRatio.Expand => T("Expand"),
+				_ => T("(unknown)"),
+			};
 		}
 
 		public static string ToText(this GraphicsMode graphicsMode)
 		{
-			switch (graphicsMode)
+			Debug.Assert(Enum.IsDefined(graphicsMode), $"Unexpected GraphicsMode value {graphicsMode} in Extensions.ToText");
+			return graphicsMode switch
 			{
-				case GraphicsMode.Graphics256: return "256 colors";
-				case GraphicsMode.Graphics16: return "16 colors";
-				default: return null;
-			}
+				GraphicsMode.Graphics16 => T("16 colors"),
+				GraphicsMode.Graphics256 => T("256 colors"),
+				_ => T("(unknown)"),
+			};
+		}
+
+		public static string ToText(this SimulateInternationalFont simulateInternationalFont)
+		{
+			Debug.Assert(Enum.IsDefined(simulateInternationalFont), $"Unexpected SimulateInternationalFont value {simulateInternationalFont} in Extensions.ToText");
+			return simulateInternationalFont switch
+			{
+				SimulateInternationalFont.Yes => T("Yes"),
+				SimulateInternationalFont.No => T("No"),
+				SimulateInternationalFont.Auto => T("Auto"),
+				_ => T("(unknown)"),
+			};
 		}
 
 		public static string ToText(this CursorType cursorType)
 		{
-			switch (cursorType)
+			Debug.Assert(Enum.IsDefined(cursorType), $"Unexpected CursorType value {cursorType} in Extensions.ToText");
+			return cursorType switch
 			{
-				case CursorType.Default: return "Default";
-				case CursorType.Builtin: return "Built-in";
-				case CursorType.Native: return "Native";
-				default: return null;
-			}
+				CursorType.Builtin => T("Built-in"),
+				CursorType.Native => T("Native"),
+				CursorType.Default => T("Default"),
+				_ => T("(unknown)"),
+			};
 		}
 
 		public static string ToText(this DestroyAnimation destroyAnimation)
 		{
-			switch (destroyAnimation)
+			Debug.Assert(Enum.IsDefined(destroyAnimation), $"Unexpected DestroyAnimation value {destroyAnimation} in Extensions.ToText");
+			return destroyAnimation switch
 			{
-				case DestroyAnimation.Sprites: return "Sprites (original)";
-				case DestroyAnimation.Noise: return "Noise";
-				default: return null;
-			}
+				DestroyAnimation.Noise => T("Noise"),
+				DestroyAnimation.Sprites => T("Sprites (original)"),
+				_ => T("(unknown)"),
+			};
+		}
+
+		public static string ToText(this FpsCorner fpsCorner)
+		{
+			Debug.Assert(Enum.IsDefined(fpsCorner), $"Unexpected FpsCorner value {fpsCorner} in Extensions.ToText");
+			return fpsCorner switch
+			{
+				FpsCorner.Off => T("Off"),
+				FpsCorner.TopLeft => T("Top Left"),
+				FpsCorner.TopRight => T("Top Right"),
+				FpsCorner.BottomLeft => T("Bottom Left"),
+				FpsCorner.BottomRight => T("Bottom Right"),
+				_ => T("(unknown)"),
+			};
+		}
+
+		public static string ToText(this BarbarianActivity barbarianActivity)
+		{
+			Debug.Assert((barbarianActivity & ~BarbarianActivity.VillagesAndRaids) == 0, $"Unexpected BarbarianActivity value {barbarianActivity} in Extensions.ToText");
+			return barbarianActivity switch
+			{
+				BarbarianActivity.None => T("None"),
+				BarbarianActivity.Villages => T("Villages Only"),
+				BarbarianActivity.LandRaids => T("Land Raids Only"),
+				BarbarianActivity.SeaRaids => T("Sea Raids Only"),
+				BarbarianActivity.Villages | BarbarianActivity.LandRaids => T("Villages + Land"),
+				BarbarianActivity.Villages | BarbarianActivity.SeaRaids => T("Villages + Sea"),
+				BarbarianActivity.Raids => T("Raids Only"),
+				BarbarianActivity.VillagesAndRaids => T("Villages + Raids"),
+				_ => T("(unknown)"),
+			};
+		}
+
+		/// <summary>
+		/// Returns a short form of the barbarian setting, for menu entries that only have room for a few
+		/// characters next to their label.
+		/// </summary>
+		/// <param name="barbarianActivity">The setting to name.</param>
+		/// <returns>The short, translated name.</returns>
+		public static string ToShortText(this BarbarianActivity barbarianActivity)
+		{
+			Debug.Assert((barbarianActivity & ~BarbarianActivity.VillagesAndRaids) == 0, $"Unexpected BarbarianActivity value {barbarianActivity} in Extensions.ToShortText");
+			return barbarianActivity switch
+			{
+				BarbarianActivity.None => T("None"),
+				BarbarianActivity.Villages => T("Villages"),
+				BarbarianActivity.LandRaids => T("Land"),
+				BarbarianActivity.SeaRaids => T("Sea"),
+				BarbarianActivity.Villages | BarbarianActivity.LandRaids => T("Vil.+Land"),
+				BarbarianActivity.Villages | BarbarianActivity.SeaRaids => T("Vil.+Sea"),
+				BarbarianActivity.Raids => T("Raids"),
+				BarbarianActivity.VillagesAndRaids => T("All"),
+				_ => T("?"),
+			};
 		}
 
 		public static string ToText(this GameOption gameOption)
 		{
-			switch (gameOption)
+			Debug.Assert(Enum.IsDefined(gameOption), $"Unexpected GameOption value {gameOption} in Extensions.ToText");
+			return gameOption switch
 			{
-				case GameOption.Default: return "Default";
-				case GameOption.On: return "On";
-				case GameOption.Off: return "Off";
-				default: return null;
-			}
+				GameOption.Default => T("Default"),
+				GameOption.On => T("On"),
+				GameOption.Off => T("Off"),
+				_ => T("(unknown)")
+			};
 		}
 
 		public static string ToText(this AggressionLevel aggression)
 		{
-			switch (aggression)
+			Debug.Assert(Enum.IsDefined(aggression), $"Unexpected AggressionLevel value {aggression} in Extensions.ToText");
+			return aggression switch
 			{
-				case AggressionLevel.Friendly: return "Friendly";
-				case AggressionLevel.Normal: return "Normal";
-				case AggressionLevel.Aggressive: return "Aggressive";
-				default: return null;
-			}
+				AggressionLevel.Friendly => T("Friendly"),
+				AggressionLevel.Normal => T("Normal"),
+				AggressionLevel.Aggressive => T("Aggressive"),
+				_ => T("(unknown)"),
+			};
 		}
 
 		public static string ToText(this DevelopmentLevel development)
 		{
-			switch (development)
+			Debug.Assert(Enum.IsDefined(development), $"Unexpected DevelopmentLevel value {development} in Extensions.ToText");
+			return development switch
 			{
-				case DevelopmentLevel.Perfectionist: return "Perfectionist";
-				case DevelopmentLevel.Normal: return "Normal";
-				case DevelopmentLevel.Expansionistic: return "Expansionistic";
-				default: return null;
-			}
+				DevelopmentLevel.Perfectionist => T("Perfectionist"),
+				DevelopmentLevel.Normal => T("Normal"),
+				DevelopmentLevel.Expansionistic => T("Expansionistic"),
+				_ => T("(unknown)"),
+			};
 		}
 
 		public static string ToText(this MilitarismLevel militarism)
 		{
-			switch (militarism)
+			return militarism switch
 			{
-				case MilitarismLevel.Civilized: return "Civilized";
-				case MilitarismLevel.Normal: return "Normal";
-				case MilitarismLevel.Militaristic: return "Militaristic";
-				default: return null;
-			}
+				MilitarismLevel.Civilized => T("Civilized"),
+				MilitarismLevel.Normal => T("Normal"),
+				MilitarismLevel.Militaristic => T("Militaristic"),
+				_ => T("(unknown)"),
+			};
 		}
 
 		public static string[] Traits(this ILeader leader)
 		{
-			List<string> output = new List<string>();
+			List<string> output = [];
 			if (leader.Aggression != AggressionLevel.Normal) output.Add(leader.Aggression.ToText());
-			if (leader.Development != DevelopmentLevel.Normal) output.Add(leader.Development.ToString());
-			if (leader.Militarism != MilitarismLevel.Normal) output.Add(leader.Militarism.ToString());
-			return output.ToArray();
+			if (leader.Development != DevelopmentLevel.Normal) output.Add(leader.Development.ToText());
+			if (leader.Militarism != MilitarismLevel.Normal) output.Add(leader.Militarism.ToText());
+			return [.. output];
 		}
 
-		public static IAdvance ToInstance(this Advance advance) => Common.Advances.FirstOrDefault(x => x.Id == (byte)advance);
+		public static IAdvance? ToInstance(this Advance advance) => Common.Advances.FirstOrDefault(x => x.Id == (byte)advance);
 		public static ILeader ToInstance(this Leader leader)
 		{
-			switch (leader)
+			return leader switch
 			{
-				case Leader.Atilla: return new Atilla();
-				case Leader.Caesar: return new Caesar();
-				case Leader.Hammurabi: return new Hammurabi();
-				case Leader.Frederick: return new Frederick();
-				case Leader.Ramesses: return new Ramesses();
-				case Leader.Lincoln: return new Lincoln();
-				case Leader.Alexander: return new Alexander();
-				case Leader.Gandhi: return new Gandhi();
-				case Leader.Stalin: return new Stalin();
-				case Leader.Shaka: return new Shaka();
-				case Leader.Napoleon: return new Napoleon();
-				case Leader.Montezuma: return new Montezuma();
-				case Leader.Mao: return new Mao();
-				case Leader.Elizabeth: return new Elizabeth();
-				case Leader.Genghis: return new Genghis();
-				default: return null;
-			}
+				Leader.Atilla => new Atilla(),
+				Leader.Caesar => new Caesar(),
+				Leader.Hammurabi => new Hammurabi(),
+				Leader.Frederick => new Frederick(),
+				Leader.Ramesses => new Ramesses(),
+				Leader.Lincoln => new Lincoln(),
+				Leader.Alexander => new Alexander(),
+				Leader.Gandhi => new Gandhi(),
+				Leader.Stalin => new Stalin(),
+				Leader.Shaka => new Shaka(),
+				Leader.Napoleon => new Napoleon(),
+				Leader.Montezuma => new Montezuma(),
+				Leader.Mao => new Mao(),
+				Leader.Elizabeth => new Elizabeth(),
+				Leader.Genghis => new Genghis(),
+				Leader.Tokugawa => new Tokugawa(),
+				Leader.Darius => new Darius(),
+				Leader.Suleiman => new Suleiman(),
+				Leader.Isabella => new Isabella(),
+				Leader.Henrique => new Henrique(),
+				Leader.Harald => new Harald(),
+				Leader.Sejong => new Sejong(),
+				Leader.Pacal => new Pacal(),
+				Leader.Pachacuti => new Pachacuti(),
+				Leader.Hannibal => new Hannibal(),
+				Leader.Justinian => new Justinian(),
+				Leader.Harun => new Harun(),
+				Leader.MansaMusa => new MansaMusa(),
+				Leader.Selassie => new Selassie(),
+				Leader.Casimir => new Casimir(),
+				Leader.Corvinus => new Corvinus(),
+				Leader.PedroII => new PedroII(),
+				_ => throw new InvalidOperationException($"Unexpected Leader value {leader} in Extensions.ToInstance"),
+			};
 		}
 
 		public static IBitmap GifToBitmap(this byte[] buffer)
 		{
-			using (GifFile gifFile = new GifFile(buffer))
-			{
-				return gifFile.GetBitmap();
-			}
+			// Anti-Refactor-Notice:
+			// Safe despite returning from inside a using-block: GifFile.GetBitmap() returns
+			// a new Picture(_pixels, _palette), and that Picture constructor performs a deep
+			// copy of both the Bytemap (Bytemap.Copy) and the Palette (Palette.Copy).
+			// The returned IBitmap therefore does not share buffers with the GifFile instance
+			// and stays valid after Dispose(). Additionally GifFile.Dispose() is currently a
+			// no-op, so disposal does not invalidate any state either way.
+			using GifFile gifFile = new(buffer);
+			return gifFile.GetNewBitmap()!;
 		}
 
+		/// <summary>
+		/// Match the colours in the input bitmap to the closest possible match in the provided palette, 
+		/// and return a bytemap with the remapped colour indices. This is used for loading external bitmaps as game assets, 
+		/// to ensure they are displayed with the correct colours regardless of their original palette. 
+		/// The startIndex and length parameters allow specifying a subset of the palette to match against, 
+		/// which is useful when the palette contains reserved colours that should not be used for matching (e.g. transparency or UI colours).
+		/// </summary>
+		/// <param name="input">The input bitmap to match colours from.</param>
+		/// <param name="palette">The target palette to match colours against.</param>
+		/// <param name="startIndex">The starting index in the palette to begin matching.</param>
+		/// <param name="length">The number of colours in the palette to consider for matching.</param>
+		/// <returns>A bytemap with the remapped colour indices.</returns>
 		public static Bytemap MatchColours(this IBitmap input, Palette palette, int startIndex, int length)
 		{
-			Dictionary<int, int> matches = new Dictionary<int, int>();
+			Dictionary<int, int> matches = [];
 
-			Colour[] pal = input.Palette.Entries.ToArray();
-			Colour[] cmp = palette.Entries.ToArray();
+			Colour[] pal = [.. input.Palette.Entries];
+			Colour[] cmp = [.. palette.Entries];
 			for (int i = 0; i < pal.Length; i++)
 			{
 				if (pal[i].A == 0)
@@ -391,7 +549,8 @@ namespace CivOne
 				int mx = 768;
 				for (int j = startIndex; j < cmp.Length && j < (startIndex + length); j++)
 				{
-					int total = Math.Abs((int)pal[i].R - cmp[j].R) + Math.Abs((int)pal[i].G - cmp[j].G) + Math.Abs((int)pal[i].B - cmp[j].B);
+					// Simple colour distance calculation (Manhattan distance in RGB space). 
+					int total = Math.Abs(pal[i].R - cmp[j].R) + Math.Abs(pal[i].G - cmp[j].G) + Math.Abs(pal[i].B - cmp[j].B);
 					if (total >= mx) continue;
 					entry = j;
 					mx = total;
@@ -399,30 +558,32 @@ namespace CivOne
 				matches.Add(i, entry);
 			}
 			
-			Bytemap output = new Bytemap(input.Width(), input.Height());
+			Bytemap output = new(input.Width(), input.Height());
 			for (int yy = 0; yy < input.Height(); yy++)
-			for (int xx = 0; xx < input.Height(); xx++)
 			{
-				output[xx, yy] = (byte)matches[input.Bitmap[xx, yy]];
+				for (int xx = 0; xx < input.Width(); xx++)
+				{
+					output[xx, yy] = (byte)matches[input.Bitmap[xx, yy]];
+				}
 			}
 			return output;
 		}
 
 		public static Picture MakePalette(this IBitmap bitmap, int startIndex, int colourLength)
 		{
-			Dictionary<byte, int> colourCount = new Dictionary<byte, int>();
+			Dictionary<byte, int> colourCount = [];
 			foreach (byte colourIndex in bitmap.Bitmap.ToByteArray())
 			{
 				if (bitmap.Palette[colourIndex].A == 0) continue; // Do not count transparent
-				if (colourCount.ContainsKey(colourIndex))
+				if (colourCount.TryGetValue(colourIndex, out int value))
 				{
-					colourCount[colourIndex]++;
+					colourCount[colourIndex] = ++value;
 					continue;
 				}
 				colourCount.Add(colourIndex, 1);
 			}
 
-			Colour[] colours = colourCount.OrderByDescending(x => x.Value).Select(x => bitmap.Palette[x.Key]).Take(colourLength).ToArray();
+			Colour[] colours = [.. colourCount.OrderByDescending(x => x.Value).Select(x => bitmap.Palette[x.Key]).Take(colourLength)];
 			Colour[] palette;
 			if (Settings.GraphicsMode == GraphicsMode.Graphics256)
 			{
@@ -432,7 +593,7 @@ namespace CivOne
 			}
 			else
 			{
-				palette = Common.GetPalette16.Entries.ToArray();
+				palette = [.. Common.GetPalette16.Entries];
 			}
 			
 			Bytemap bytemap = bitmap.MatchColours(palette, startIndex, colourLength);

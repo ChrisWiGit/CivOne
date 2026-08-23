@@ -9,34 +9,33 @@
 
 using CivOne.Enums;
 using CivOne.Leaders;
+using CivOne.Services;
 
 namespace CivOne.Civilizations
 {
 	internal class Roman : BaseCivilization<Caesar>
 	{
-		public Roman() : base(Civilization.Romans, "Roman", "Romans", "ceas")
+		public Roman() : base(Civilization.Romans, TranslationServiceFactory.GetCurrent().Translate("Roman"), TranslationServiceFactory.GetCurrent().Translate("Romans"), "ceas")
 		{
 			StartX = 36;
 			StartY = 19;
-			CityNames = new[]
-			{
-				"Rome",
-				"Caesarea",
-				"Carthage",
-				"Nicopolis",
-				"Byzantium",
-				"Brundisium",
-				"Syracuse",
-				"Antioch",
-				"Palmyra",
-				"Cyrene",
-				"Gordion",
-				"Tyrus",
-				"Jerusalem",
-				"Seleucia",
-				"Ravenna",
-				"Artaxata"
-			};
+			CityNames = TranslateArray(
+				"Rome\n" +
+				"Caesarea\n" +
+				"Carthage\n" +
+				"Nicopolis\n" +
+				"Byzantium\n" +
+				"Brundisium\n" +
+				"Syracuse\n" +
+				"Antioch\n" +
+				"Palmyra\n" +
+				"Cyrene\n" +
+				"Gordion\n" +
+				"Tyrus\n" +
+				"Jerusalem\n" +
+				"Seleucia\n" +
+				"Ravenna\n" +
+				"Artaxata");
 		}
 	}
 }

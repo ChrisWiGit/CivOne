@@ -32,12 +32,13 @@ namespace CivOne.Screens.Dialogs
 			Cancel();
 		}
 
-		protected override void FirstUpdate()
+		protected override IMenu? CreateManagedMenu()
 		{
 			Menu menu = new Menu(Palette, Selection(3, 5 + (1 * Resources.GetFontHeight(FONT_ID)), 130, ((2 * Resources.GetFontHeight(FONT_ID)) + (_advances.Count * Resources.GetFontHeight(FONT_ID)) + 9)))
 			{
 				X = 103,
 				Y = 95,
+				CenterTo320Coordinates = true,
 				MenuWidth = 130,
 				ActiveColour = 11,
 				TextColour = 5,
@@ -46,10 +47,10 @@ namespace CivOne.Screens.Dialogs
 
 			foreach (IAdvance advance in _advances)
 			{
-				menu.Items.Add(advance.Name).OnSelect((s, a) => Steal(advance));
+				menu.Items.Add(advance.TranslatedName).OnSelect((s, a) => Steal(advance));
 			}
 
-			AddMenu(menu);
+			return menu;
 		}
 
 		private static int DialogHeight(int choices)
@@ -62,7 +63,7 @@ namespace CivOne.Screens.Dialogs
 			_player = player ?? throw new ArgumentNullException(nameof(player));
 			_advances = advances ?? throw new ArgumentNullException(nameof(advances));
 
-			DialogBox.DrawText($"Select one...", 0, 15, 5, 5);
+			DialogBox.DrawText(Translate("Select one..."), 0, 15, 5, 5);
 		}
 	}
 }

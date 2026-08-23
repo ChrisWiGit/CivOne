@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_capture_region/output",
+  "title": "game_capture_region – output",
+  "description": "Result of a cropped PNG screenshot capture.",
+  "type": "object",
+  "required": ["sessionId", "gameTick", "capturedAtUtc", "width", "height", "format", "artifactPath"],
+  "properties": {
+    "sessionId": {
+      "type": "string",
+      "description": "Session identifier passed in the request."
+    },
+    "gameTick": {
+      "type": "integer",
+      "description": "Game tick at capture time."
+    },
+    "capturedAtUtc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp of the capture."
+    },
+    "width": {
+      "type": "integer",
+      "description": "Captured image width in pixels."
+    },
+    "height": {
+      "type": "integer",
+      "description": "Captured image height in pixels."
+    },
+    "format": {
+      "type": "string",
+      "const": "png",
+      "description": "Always 'png'."
+    },
+    "artifactPath": {
+      "type": "string",
+      "description": "Absolute path to the saved PNG file (forward slashes)."
+    }
+  },
+  "additionalProperties": false
+}

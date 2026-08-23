@@ -9,29 +9,46 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
+using CivOne.IO.Text;
+using CivOne.Screens.GamePlayPanels;
+using CivOne.Screens.Reports;
+using CivOne.Services;
+using CivOne.Services.Maps;
+using CivOne.Services.Random;
 using CivOne.Tasks;
 using CivOne.UserInterface;
 
 namespace CivOne.Screens
 {
+	/// <summary>
+	/// Displays the animated credits sequence and provides the main menu entry point.
+	/// </summary>
+	/// <remarks>
+	/// Shows the intro animation, handles skipping, and exposes the main menu.
+	/// </remarks>
 	[ScreenResizeable]
-	internal class Credits : BaseScreen
+	internal class Credits : BaseScreen, ITranslationLanguageObserver
 	{
 		private const int NOISE_COUNT = 40;
+		private const int MENU_Y_OFFSET = 58;
 		
-		private readonly int[] SHOW_INTRO_LINE = { 312, 279, 254, 221, 196, 171, 146, 121, 96, 71, 46, 21, -4, -37, -62, -95, -120, -145, -170, -195, -220, -245, -270, -295 };
-		private readonly int[] HIDE_INTRO_LINE = { 287, 229, -29, -87, -315 };
+		private readonly int[] SHOW_INTRO_LINE = [312, 279, 254, 221, 196, 171, 146, 121, 96, 71, 46, 21, -4, -37, -62, -95, -120, -145, -170, -195, -220, -245, -270, -295];
+		private readonly int[] HIDE_INTRO_LINE = [287, 229, -29, -87, -315];
 		
 		private readonly byte[] _menuColours;
 		private readonly string[] _introText;
 		private readonly Picture[] _pictures;
 		private readonly byte[,] _noiseMap;
+		private readonly List<(string Url, Rectangle Area)> _footerLinkAreas = [];
 		
 		private int _introLeft = 320;
         private int _logoSwipe;
@@ -40,19 +57,138 @@ namespace CivOne.Screens
 		
 		private bool _allowEnterSetup = true;
 		private bool _done;
+		private bool _forceRedraw;
 		private bool _showIntroLine;
 		private bool _introSkipped;
 		private int _introLine = -1;
 		
-		// Auto-Load a saved game at startup? (--load-slot)
-		private bool _loadSavedGame = false; 
+		// Auto-Load a saved game at startup? (--load-slot or --load-cos)
+		// Used only once, and then reset to null to avoid re-loading when coming back to the credits screen.
+		private static bool? _loadSavedGame = false; 
 
-		private IScreen _overlay = null; // TODO fire-eggs: with fix for issue #34, this logic may no longer be required
+		[SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "Ownership is transferred to the global screen stack via Common.AddScreen(_nextScreen). The receiving stack controls disposal through Common.DestroyScreen().")]
+		private IScreen? _nextScreen;
 
-		private IScreen _nextScreen;
+		private readonly MenuBarHotkeyDelegate _hotkeyDelegate = new();
+		private Dictionary<char, Action<object, EventArgs>>? _shortKeyMapping;
+		private Action<object, EventArgs>? _shortCutAction;
+		private int _mouseX = -1;
+		private int _mouseY = -1;
 
-		private Dictionary<char, Action<object, EventArgs>> _shortKeyMapping;
-		private Action<object, EventArgs> _shortCutAction;
+		private void DrawFooterLinks()
+		{
+			_footerLinkAreas.Clear();
+
+			const int margin = 6;
+			const int fontId = 1;
+			int fontHeight = Resources.GetFontHeight(fontId);
+
+			string discordText = "Discord";
+			string separator = "  ";
+			string githubText = "GitHub";
+
+			int linksWidth = Resources.GetTextSize(fontId, discordText + separator + githubText).Width;
+			int bottomY = Height - margin - fontHeight;
+			int linksX = Math.Max(0, Width - margin - linksWidth);
+			int discordWidth = Resources.GetTextSize(fontId, discordText).Width;
+			int separatorWidth = Resources.GetTextSize(fontId, separator).Width;
+			int githubX = linksX + discordWidth + separatorWidth;
+			int githubWidth = Resources.GetTextSize(fontId, githubText).Width;
+
+			Rectangle discordArea = new(linksX, bottomY, discordWidth, fontHeight);
+			Rectangle githubArea = new(githubX, bottomY, githubWidth, fontHeight);
+			_footerLinkAreas.Add((ProjectPublicLinks.Discord, discordArea));
+			_footerLinkAreas.Add((ProjectPublicLinks.CurrentGitRepository, githubArea));
+
+			byte discordColour = discordArea.Contains(_mouseX, _mouseY) ? (byte)15 : (byte)9;
+			byte githubColour = githubArea.Contains(_mouseX, _mouseY) ? (byte)15 : (byte)9;
+
+			this.DrawText(discordText, fontId, discordColour, linksX, bottomY, TextAlign.Left);
+			this.DrawText(separator, fontId, 5, linksX + discordWidth, bottomY, TextAlign.Left);
+			this.DrawText(githubText, fontId, githubColour, githubX, bottomY, TextAlign.Left);
+		}
+
+		private int GetHoveredFooterLinkIndex(int x, int y)
+		{
+			for (int i = 0; i < _footerLinkAreas.Count; i++)
+			{
+				if (_footerLinkAreas[i].Area.Contains(x, y))
+				{
+					return i;
+				}
+			}
+
+			return -1;
+		}
+
+		private bool UpdateFooterLinkHover(int x, int y)
+		{
+			int previousHoveredLink = GetHoveredFooterLinkIndex(_mouseX, _mouseY);
+			_mouseX = x;
+			_mouseY = y;
+			int hoveredLink = GetHoveredFooterLinkIndex(_mouseX, _mouseY);
+
+			if (previousHoveredLink == hoveredLink)
+			{
+				return false;
+			}
+
+			_forceRedraw = true;
+			Refresh();
+			return true;
+		}
+
+		private void HandleFooterLinkClick(ScreenEventArgs args)
+		{
+			if (args.Buttons != MouseButton.Left)
+			{
+				return;
+			}
+
+			foreach ((string url, Rectangle area) in _footerLinkAreas)
+			{
+				if (!area.Contains(args.Location))
+				{
+					continue;
+				}
+
+				if (!Runtime.TryOpenUrl(url, out string? errorMessage))
+				{
+					Log("Could not open URL {0}: {1}", url, errorMessage ?? "unknown error");
+				}
+				return;
+			}
+		}
+
+		private void RebuildShortcutMapping()
+		{
+			var menuItems = GetMenuItems();
+			_shortKeyMapping = [];
+			AddShortcut(menuItems[0], StartNewGame);
+			AddShortcut(menuItems[1], LoadSavedGame);
+			AddShortcut(menuItems[2], LoadMaps);
+			AddShortcut(menuItems[3], CustomizeWorld);
+			AddShortcut(menuItems[4], ViewHallOfFame);
+		}
+
+		private void AddShortcut(string label, Action<object, EventArgs> action)
+		{
+			char key = _hotkeyDelegate.Parse(label, label).Hotkey;
+			if (!char.IsLetterOrDigit(key) || _shortKeyMapping!.ContainsKey(key))
+			{
+				return;
+			}
+
+			_shortKeyMapping.Add(key, action);
+		}
+
+		public void OnLanguageChanged(string? _)
+		{
+			RebuildShortcutMapping();
+			CloseMenus();
+			_forceRedraw = true;
+			Refresh();
+		}
 		
 		private void HandleIntroText()
 		{
@@ -70,19 +206,11 @@ namespace CivOne.Screens
 			}
 		}
 		
-		private bool LoadGameCancel
-		{
-			get
-			{
-				return _overlay != null && (_overlay.GetType() == typeof(LoadGame) && ((LoadGame)_overlay).Cancel);
-			}
-		}
-		
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_loadSavedGame)
+			if (_loadSavedGame.GetValueOrDefault(false))
 			{
-				_loadSavedGame = false;
+				_loadSavedGame = null;
 				LoadSavedGame();
 				_done = true;
 				return true;
@@ -99,10 +227,7 @@ namespace CivOne.Screens
 				return true;
 			}
 
-			if (_done && (_overlay == null || !_overlay.Update(gameTick))) return false;
-
-			if ((gameTick % 3) == 0) return false;
-			
+		if (_done && !_forceRedraw) return false;
 			// Updates
 			if (_introLeft > -320)
 			{
@@ -124,13 +249,13 @@ namespace CivOne.Screens
 				_pictures[1].ApplyNoise(_noiseMap, --_noiseCounter);
 			}
 			
-			if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>() && (_overlay == null || LoadGameCancel))
+if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 			{
 				CreateMenu();
 			}
 			
 			// Drawing
-			int ox = (Width - 320), cx = (ox / 2), cy = (Height - 200) / 2;
+			int ox = Width - 320, cx = ox / 2, cy = (Height - 200) / 2;
 			this.Clear();
 			if (_introLeft > -320)
 			{
@@ -139,7 +264,7 @@ namespace CivOne.Screens
 			}
 			if (_introLeft > -320 && _showIntroLine)
 			{
-				this.DrawText(_introText[_introLine], (Width / 2), (Height / 2) - 16);
+				this.DrawText(_introText[_introLine], Width / 2, (Height / 2) - 16);
 			}
 			if (_introLeft == -320 && _noiseCounter > 0)
 			{
@@ -170,26 +295,18 @@ namespace CivOne.Screens
 				this.AddLayer(_pictures[2], cx, cy);
 				this.ResetPalette();
 				_done = true;
-				
-				if (_overlay != null)
-				{
-					this.AddLayer(_overlay);
-					if (_overlay.GetType() == typeof(LoadGame) && ((LoadGame)_overlay).Cancel)
-					{
-						CreateMenu();
-					}
-					if (!HasMenu) return true;
-				}
+				DrawFooterLinks();
 				
 				// Draw menu background
-				int mx = ((Width - 120) / 2), my = Height - 59;
-				this.FillRectangle(mx, my, 122, 49, 5)
-					.FillRectangle(mx + 1, my + 1, 120, 47, _menuColours[0])
-					.FillRectangle(mx + 1, my + 2, 119, 46, _menuColours[1])
-					.FillRectangle(mx + 2, my + 2, 118, 45, _menuColours[2]);
+				int mx = (Width - 120) / 2, my = Height - (MENU_Y_OFFSET + 4);
+				this.FillRectangle(mx, my, 122, 57, 5)
+					.FillRectangle(mx + 1, my + 1, 120, 55, _menuColours[0])
+					.FillRectangle(mx + 1, my + 2, 119, 54, _menuColours[1])
+					.FillRectangle(mx + 2, my + 2, 118, 53, _menuColours[2]);
 				
 				CreateMenu();
 			}
+			_forceRedraw = false;
 			return true;
 		}
 		
@@ -216,42 +333,53 @@ namespace CivOne.Screens
             _noiseCounter = 0;
         }
 
-		// liefert eine Liste (später übersetzt) der menu items zurück
+		// Returns menu items resolved through the active translation service.
 		private string[] GetMenuItems()
 		{
 			return
 			[
-				"Start a New Game",
-				"Load a Saved Game",
-				"EARTH",
-				"Customize World",
-				"View Hall of Fame"
+				Translate("Start a New Game"),
+				Translate("Load a Saved Game"),
+				Translate("~Earths..."),
+				Translate("Customize World"),
+				Translate("View Hall of Fame")
 			];
 		}
 
 		private void CreateMenu()
 		{
 			_allowEnterSetup = false;
-			Runtime.WindowTitle = Settings.WindowTitle;
+			Runtime.SetWindowTitle(Settings.WindowTitle);
 
 			if (HasMenu) return;
 			Menu menu = new Menu("MainMenu", Palette)
 			{
-				X = ((Width - 120) / 2) + 3,
-				Y = Height - 55,
+					X = ((Width - 120) / 2) + 3,
+				Y = Height - MENU_Y_OFFSET,
 				MenuWidth = 116,
 				ActiveColour = 11,
 				TextColour = 5,
 				DisabledColour = 8,
-				FontId = 0
+				HighlightColour = 11,
+				FontId = 0,
+				OnShiftF1 = () =>
+				{
+					if (!_allowEnterSetup) return;
+					
+					GameTask.Enqueue(Show.Screens(typeof(Setup), typeof(Credits)));
+					Destroy();
+				}
 			};
+			menu.MissClickAt += (_, args) => HandleFooterLinkClick(args);
+			menu.MouseMoveAt += (_, args) => UpdateFooterLinkHover(args.X, args.Y);
 
 			var items = GetMenuItems();
-			menu.Items.Add(items[0]).OnSelect(StartNewGame);
-			menu.Items.Add(items[1]).OnSelect(LoadSavedGame);
-			menu.Items.Add(items[2]).OnSelect(Earth);
-			menu.Items.Add(items[3]).OnSelect(CustomizeWorld);
-			menu.Items.Add(items[4]).Disable();
+			AddParsedItem(menu, items[0]).OnSelect(StartNewGame);
+			AddParsedItem(menu, items[1]).OnSelect(LoadSavedGame);
+			AddParsedItem(menu, items[2]).OnSelect(LoadMaps);
+			AddParsedItem(menu, items[3]).OnSelect(CustomizeWorld);
+			AddParsedItem(menu, items[4]).OnSelect(ViewHallOfFame);
+			AddParsedItem(menu, Translate("Change language...")).OnSelect(ChangeLanguage);
 
 			AddMenu(menu);
 
@@ -259,9 +387,16 @@ namespace CivOne.Screens
 			_shortCutAction = null;
 		}
 
+		private MenuItem<int> AddParsedItem(Menu menu, string label)
+		{
+			MenuBarTitle title = _hotkeyDelegate.Parse(label, label);
+			return menu.Items.Add(title.VisibleText)
+				.SetHighlightedCharacterIndex(title.HighlightedCharacterIndex);
+		}
+
 		private void StartIntro()
 		{
-			foreach (IMenu menu in _menus)
+			foreach (IMenu menu in Menus)
 				this.AddLayer(menu);
 			CloseMenus();
 			if (!Runtime.Settings.ShowIntro)
@@ -277,6 +412,7 @@ namespace CivOne.Screens
 		private void StartNewGame(object sender, EventArgs args)
 		{
 			Log("Main Menu: Start a New Game");
+			Map.UseDefaultMapSize();
 			Map.Generate();
 			StartIntro();
 		}
@@ -291,11 +427,40 @@ namespace CivOne.Screens
 
 		private void LoadSavedGame()
 		{
-			
+			// Check if --load-cos was specified
+			if (!string.IsNullOrEmpty(Runtime.Settings.LoadCosFile))
+			{
+				Log("Main Menu: Load a YAML game from {0}", Runtime.Settings.LoadCosFile);
+				Destroy();
+				if (!Game.LoadYamlGame(Runtime.Settings.LoadCosFile))
+				{
+					Log("Failed to load YAML game");
+					Common.AddScreen(new Credits());
+
+					var savegameName = Path.GetFileName(Runtime.Settings.LoadCosFile);
+					GameTask.Enqueue(Message.Error(
+						Translate("-- Civilization Note --"),
+						TranslateFormattedArray("Could not load save game from --load-cos.\nFile: {0}", savegameName)));
+					return;
+				}
+				Common.DestroyScreen(Common.Screens.FirstOrDefault(s => s is GamePlay, null));
+				Common.AddScreen(new GamePlay());
+				return;
+			}
+
 			var slot = Runtime.Settings.LoadSaveGameSlot;
+
+			if (slot == null)
+			{
+				Log("Main Menu: Load Saved Game requested but no slot specified");
+				StartIntro();
+				return;
+			}
+
+
 			if (slot.Equals(RuntimeSettings.UseLoadingScreen))
 			{
-				LoadSavedGame(this, null);
+				LoadSavedGame(this, EventArgs.Empty);
 				return;
 			}
 
@@ -305,11 +470,11 @@ namespace CivOne.Screens
 			LoadGame.LoadSaveFile(slot.Item1, slot.Item2);
 		}
 		
-		private void Earth(object sender, EventArgs args)
+		private void LoadMaps(object sender, EventArgs args)
 		{
-			Log("Main Menu: EARTH");
-			Map.LoadEarthMapInThread();
-			StartIntro();
+			Log("Main Menu: Load maps...");
+			Destroy();
+			Common.AddScreen(new LoadMapScreen(CustomMapLoaderServiceFactory.Create()));
 		}
 		
 		private void CustomizeWorld(object sender, EventArgs args)
@@ -317,6 +482,18 @@ namespace CivOne.Screens
 			Log("Main Menu: Customize World");
 			Destroy();
 			Common.AddScreen(new CustomizeWorld());
+		}
+
+		private static void ViewHallOfFame(object sender, EventArgs args)
+		{
+			Log("Main Menu: View Hall of Fame");
+			Common.AddScreen(HallOfFameScreenFactory.ViewScore());
+		}
+
+		private static void ChangeLanguage(object sender, EventArgs args)
+		{
+			Log("Main Menu: Change language");
+			Common.AddScreen(new LanguageScreen());
 		}
 
 		public override bool KeyDown(KeyboardEventArgs args)
@@ -328,11 +505,8 @@ namespace CivOne.Screens
 				return true;
 			}
 
-			if (_done && _overlay != null)
-				return _overlay.KeyDown(args);
 
-
-			if (_shortKeyMapping.TryGetValue(char.ToUpper(args.KeyChar), out var action))
+			if (_shortKeyMapping!.TryGetValue(char.ToUpper(args.KeyChar, CultureInfo.CurrentCulture), out var action))
 			{
 				_shortCutAction = action;
 				// invoke in CreateMenu to show title first and then execute action
@@ -343,101 +517,104 @@ namespace CivOne.Screens
 		
 		public override bool MouseDown(ScreenEventArgs args)
 		{
-			if (_done && _overlay != null)
-				return _overlay.MouseDown(args);
 			return SkipIntro();
 		}
 		
 		public override bool MouseUp(ScreenEventArgs args)
 		{
-			if (_done && _overlay != null)
-				return _overlay.MouseUp(args);
 			return false;
 		}
 		
 		public override bool MouseDrag(ScreenEventArgs args)
 		{
-			if (_done && _overlay != null)
-				return _overlay.MouseDrag(args);
 			return false;
 		}
-		
-		public override MouseCursor Cursor
-		{
-			get
-			{
-				if (_overlay != null && !LoadGameCancel)
-					return _overlay.Cursor;
-				return base.Cursor;
-			}
-		}
 
-		private void Resize(object sender, ResizeEventArgs args)
+		public override bool MouseMove(ScreenEventArgs args)
 		{
-			_done = false;
-			foreach (Menu menu in Common.Screens.Where(x => x is Menu && (x as Menu).Id == "MainMenu"))
+			return UpdateFooterLinkHover(args.X, args.Y);
+		}
+		
+		public override MouseCursor Cursor => base.Cursor;
+
+		private void Resize(object? _, ResizeEventArgs args)
+		{
+			_forceRedraw = true;
+			if (_done)
+			{
+				DrawFooterLinks();
+			}
+			foreach (Menu menu in Common.Screens.OfType<Menu>().Where(menu => menu.Id == "MainMenu"))
 			{
 				menu.X = ((Width - 120) / 2) + 3;
-				menu.Y = Height - 55;
+				menu.Y = Height - MENU_Y_OFFSET;
+				menu.ForceUpdate();
 			}
 		}
 
 		public Credits()
 		{
-			Runtime.WindowTitle = $"{Settings.WindowTitle} (press SHIFT+F1 to enter Setup)";
+			Runtime.SetWindowTitle($"{Settings.WindowTitle} (press SHIFT+F1 to enter Setup)");
 
 			OnResize += Resize;
-			Closed += (s, a) => Runtime.WindowTitle = Settings.WindowTitle;
+			Closed += (s, a) =>
+			{
+				TranslationServiceFactory.UnregisterLanguageObserver(this);
+				Runtime.SetWindowTitle(Settings.WindowTitle);
+			};
+			TranslationServiceFactory.RegisterLanguageObserver(this);
 
-			_introText = TextFile.Instance.LoadArray("CREDITS");
+			_introText = TextFileFactory.LoadTextFile("CREDITS");
 			if (_introText.Length == 0) _introText = new string[25];
 			_pictures = new Picture[3];
 			for (int i = 0; i < 2; i++)
+			{
 				_pictures[i] = Resources[$"BIRTH{i}"];
+			}
 			_pictures[2] = Resources["LOGO"];
 			_noiseMap = new byte[320, 200];
 			for (int x = 0; x < 320; x++)
+			{
 				for (int y = 0; y < 200; y++)
 				{
-					_noiseMap[x, y] = (byte)Common.Random.Next(1, _noiseCounter);
+					byte noiseMaxExclusive = (byte)Math.Clamp(_noiseCounter, 2, byte.MaxValue);
+					_noiseMap[x, y] = RandomServiceFactory.Create().NextByte(1, noiseMaxExclusive);
 				}
-			switch (Settings.GraphicsMode)
-			{
-				case GraphicsMode.Graphics256:
-					DefaultTextSettings = TextSettings.ThreeLayers(244, 248, 242);
-					break;
-				case GraphicsMode.Graphics16:
-					DefaultTextSettings = TextSettings.ThreeLayers(15, 15, 7);
-					break;
 			}
+			DefaultTextSettings = Settings.GraphicsMode switch
+			{
+				GraphicsMode.Graphics256 => TextSettings.ThreeLayers(244, 248, 242),
+				GraphicsMode.Graphics16 => TextSettings.ThreeLayers(15, 15, 7),
+				_ => throw new InvalidOperationException($"Unsupported graphics mode: {Settings.GraphicsMode}"),
+			};
 			DefaultTextSettings.Alignment = TextAlign.Center;
 			DefaultTextSettings.FontId = 4;
 
-			_menuColours = new byte[] { 8, 15, 7 };
+			_menuColours = [8, 15, 7];
 
 			Palette = _pictures[2].Palette;
 
 			if (Settings.Sound != GameOption.Off)
 			{
+				var opening = Extensions.GetSoundFile("OPENING");
 				// In this stage using Game.PlaySound() is not possible, as the Game instance is not yet created.
-				Runtime.PlaySound(Extensions.GetSoundFile("OPENING"));
+				if (opening != null)
+				{
+					Runtime.PlaySound(opening);
+				}
 			}
 
 			if (!Runtime.Settings.ShowCredits) SkipIntro();
-			if (Runtime.Settings.LoadSaveGameSlot != null)
+			
+			bool loadedSavedGameSlot = Runtime.Settings.LoadSaveGameSlot != null;
+			bool loadedCosFile = !string.IsNullOrEmpty(Runtime.Settings.LoadCosFile);
+
+			if ((loadedSavedGameSlot || loadedCosFile) && _loadSavedGame.HasValue)
 			{
 				_loadSavedGame = true;
 			}
 
-			var menuItems = GetMenuItems();
-			_shortKeyMapping = new Dictionary<char, Action<object, EventArgs>>
-			{
-				{ menuItems[0].ToUpper()[0], StartNewGame },
-				{ menuItems[1].ToUpper()[0], LoadSavedGame },
-				{ menuItems[2].ToUpper()[0], Earth },
-				{ menuItems[3].ToUpper()[0], CustomizeWorld },
-				{ menuItems[4].ToUpper()[0], (_,_) => { } } 
-			};
+			RebuildShortcutMapping();
 		}
 	}
 }

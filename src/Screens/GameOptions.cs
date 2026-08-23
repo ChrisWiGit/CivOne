@@ -12,6 +12,7 @@ using System.Linq;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
+using CivOne.Services.Screen;
 using CivOne.UserInterface;
 
 namespace CivOne.Screens
@@ -19,65 +20,67 @@ namespace CivOne.Screens
 	[ScreenResizeable]
 	internal class GameOptions : BaseScreen
 	{
-		private Menu _menu;
-
-		private void MenuCancel(object sender, EventArgs args)
+		private void MenuCancel(object? _, EventArgs __)
 		{
 			Destroy();
 		}
 
-		private void MenuAnimations(object sender, EventArgs args)
+		private void MenuAnimations(object? _, EventArgs __)
 		{
 			Game.Animations = !Game.Animations;
 			Update();
 		}
 
-		private void MenuSound(object sender, EventArgs args)
+		private void MenuSound(object? _, EventArgs __)
 		{
 			Game.Sound = !Game.Sound;
 			Update();
 		}
 
-		private void MenuEnemyMoves(object sender, EventArgs args)
+		private void MenuEnemyMoves(object? _, EventArgs __)
 		{
 			Game.EnemyMoves = !Game.EnemyMoves;
 			Update();
 		}
 
-		private void MenuCivilopediaText(object sender, EventArgs args)
+		private void MenuCivilopediaText(object? _, EventArgs __)
 		{
 			Game.CivilopediaText = !Game.CivilopediaText;
 			Update();
 		}
 
-		private void MenuInstantAdvice(object sender, EventArgs args)
+		private void MenuInstantAdvice(object? _, EventArgs __)
 		{
 			Game.InstantAdvice = !Game.InstantAdvice;
 			Update();
 		}
 
-		private void MenuAutoSave(object sender, EventArgs args)
+		private void MenuAutoSave(object? _, EventArgs __)
 		{
 			Game.AutoSave = !Game.AutoSave;
 			Update();
 		}
 
-		private void MenuEndOfTurn(object sender, EventArgs args)
+		private void MenuEndOfTurn(object? _, EventArgs __)
 		{
 			Game.EndOfTurn = !Game.EndOfTurn;
 			Update();
 		}
 
-		private void MenuPalace(object sender, EventArgs args)
+		private void MenuPalace(object? _, EventArgs __)
 		{
 			Game.Palace = !Game.Palace;
 			Update();
 		}
 
+		private void MenuChangeLanguage(object? _, EventArgs __)
+		{
+			Common.AddScreen(new LanguageScreen());
+		}
+
 		private void Update()
 		{
 			CloseMenus();
-			_menu = null;
 			Refresh();
 		}
 
@@ -89,13 +92,13 @@ namespace CivOne.Screens
 			}
 
 			int menuBoxWidth = 103;
-			int menuBoxHeight = 79;
+			int menuBoxHeight = 88;
 
-			Picture menuGfx = new Picture(103, 79)
+			Picture menuGfx = new(menuBoxWidth, menuBoxHeight);
+			menuGfx
 				.Tile(Pattern.PanelGrey)
 				.DrawRectangle3D()
-				.DrawText("Options:", 0, 15, 4, 4)
-				.As<Picture>();
+				.DrawText(Translate("Options:"), 0, 15, 4, 4);
 
 			IBitmap menuBackground = menuGfx[2, 11, menuBoxWidth, menuBoxHeight]
 				.ColourReplace((7, 11), (22, 3));
@@ -110,13 +113,14 @@ namespace CivOne.Screens
 
 		private void CreateMenu(IBitmap menuBackground)
 		{
-			if (_menu != null)
+			Menu? menu = GetMenu<Menu>();
+			if (menu != null)
 			{
 				// The menu does not have to be recreated if it already exists
 				// Otherwise Selection is lost when resizing the screen
 				return;
 			}
-			_menu = new Menu(Palette, menuBackground)
+			menu = new Menu(Palette, menuBackground)
 			{
 				X = 27,
 				Y = 28,
@@ -127,26 +131,29 @@ namespace CivOne.Screens
 				FontId = 0,
 				Indent = 2
 			};
-			_menu.MissClick += MenuCancel;
-			_menu.Cancel += MenuCancel;
+			menu.MissClick += MenuCancel;
+			menu.Cancel += MenuCancel;
 
-			_menu.Items.Add($"{(Game.InstantAdvice ? '^' : ' ')}Instant Advice").OnSelect(MenuInstantAdvice);
-			_menu.Items.Add($"{(Game.AutoSave ? '^' : ' ')}AutoSave").SetEnabled(Common.AllowSaveGame).OnSelect(MenuAutoSave);
-			_menu.Items.Add($"{(Game.EndOfTurn ? '^' : ' ')}End of Turn").OnSelect(MenuEndOfTurn);
-			_menu.Items.Add($"{(Game.Animations ? '^' : ' ')}Animations").OnSelect(MenuAnimations);
-			_menu.Items.Add($"{(Game.Sound ? '^' : ' ')}Sound").OnSelect(MenuSound);
-			_menu.Items.Add($"{(Game.EnemyMoves ? '^' : ' ')}Enemy Moves").OnSelect(MenuEnemyMoves);
-			_menu.Items.Add($"{(Game.CivilopediaText ? '^' : ' ')}Civilopedia Text").OnSelect(MenuCivilopediaText);
-			_menu.Items.Add($"{(Game.Palace ? '^' : ' ')}Palace").OnSelect(MenuPalace);
+			menu.Items.Add($"{(Game.InstantAdvice ? '^' : ' ')}{Translate("Instant Advice")}").OnSelect(MenuInstantAdvice);
+			menu.Items.Add($"{(Game.AutoSave ? '^' : ' ')}{Translate("AutoSave")}").SetEnabled(Common.AllowSaveGame).OnSelect(MenuAutoSave);
+			menu.Items.Add($"{(Game.EndOfTurn ? '^' : ' ')}{Translate("End of Turn")}").OnSelect(MenuEndOfTurn);
+			menu.Items.Add($"{(Game.Animations ? '^' : ' ')}{Translate("Animations")}").OnSelect(MenuAnimations);
+			menu.Items.Add($"{(Game.Sound ? '^' : ' ')}{Translate("Sound")}").OnSelect(MenuSound);
+			menu.Items.Add($"{(Game.EnemyMoves ? '^' : ' ')}{Translate("Enemy Moves")}").OnSelect(MenuEnemyMoves);
+			menu.Items.Add($"{(Game.CivilopediaText ? '^' : ' ')}{Translate("Civilopedia Text")}").OnSelect(MenuCivilopediaText);
+			menu.Items.Add($"{(Game.Palace ? '^' : ' ')}{Translate("Palace")}").OnSelect(MenuPalace);
+			menu.Items.Add($" {Translate("Change language...")}").OnSelect(MenuChangeLanguage);
 
-			AddMenu(_menu);
+			AddMenu(menu);
 		}
 
 		public GameOptions() : base(MouseCursor.Pointer)
 		{
-			Palette = Common.DefaultPalette;
-			this.AddLayer(Common.Screens.Last(), 0, 0)
-				.FillRectangle(24, 16, 105, 81, 5);
+			using var defaultPalette = Common.DefaultPalette;
+			Palette = defaultPalette;
+
+			this.AddLayer(ScreenServiceFactory.CreateQueryService().LastScreen!, 0, 0)
+				.FillRectangle(24, 16, 105, 90, 5);
 		}
 	}
 }

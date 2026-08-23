@@ -9,7 +9,7 @@
 
 namespace CivOne.Enums
 {
-	internal enum Building
+	public enum Building
 	{
 		Palace = 0,
 		Barracks = 1,

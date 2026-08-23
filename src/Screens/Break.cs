@@ -11,7 +11,21 @@ using System;
 
 namespace CivOne.Screens
 {
-	public class Break : Attribute
+	/// <summary>
+	/// Marks a screen that should break the screen update loop.
+	/// </summary>
+	/// <remarks>
+	/// When a screen is decorated with this attribute, the update loop in <see cref="RuntimeHandler.Update"/> will stop 
+	/// processing additional screens after this screen is updated. This prevents lower screens in the stack from being 
+	/// updated, effectively giving this screen exclusive update priority.
+	/// 
+	/// Typical use case: Modal screens or screens that should block updates to screens beneath them in the screen stack.
+	/// 
+	/// The attribute is checked in <see cref="RuntimeHandler"/> during the <see cref="RuntimeHandler.Update"/> method 
+	/// after each screen update. When detected, the loop returns immediately.
+	/// </remarks>
+	[AttributeUsage(AttributeTargets.Class)]
+	public sealed class BreakAttribute : Attribute
 	{
 	}
 }

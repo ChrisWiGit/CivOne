@@ -13,15 +13,16 @@ using CivOne.Enums;
 
 namespace CivOne.Events
 {
-	public delegate void ScreenEventHandler(object sender, ScreenEventArgs args);
-
 	public class ScreenEventArgs : EventArgs
 	{
 		public bool Handled { get; set; }
 		public int X { get; private set; }
 		public int Y { get; private set; }
 		public MouseButton Buttons { get; private set; }
-		
+		public KeyModifier Modifier { get; private set; }
+		public int WheelDelta { get; private set; }
+		public int WheelDeltaX { get; private set; }
+
 		public Point Location
 		{
 			get
@@ -29,19 +30,45 @@ namespace CivOne.Events
 				return new Point(X, Y);
 			}
 		}
-		
+
 		public ScreenEventArgs(int x, int y)
 		{
 			X = x;
 			Y = y;
 			Buttons = MouseButton.None;
+			Modifier = KeyModifier.None;
+			WheelDelta = 0;
+			WheelDeltaX = 0;
 		}
-		
+
 		public ScreenEventArgs(int x, int y, MouseButton buttons)
 		{
 			X = x;
 			Y = y;
 			Buttons = buttons;
+			Modifier = KeyModifier.None;
+			WheelDelta = 0;
+			WheelDeltaX = 0;
+		}
+
+		public ScreenEventArgs(int x, int y, MouseButton buttons, KeyModifier modifier, int wheelDelta)
+		{
+			X = x;
+			Y = y;
+			Buttons = buttons;
+			Modifier = modifier;
+			WheelDelta = wheelDelta;
+			WheelDeltaX = 0;
+		}
+
+		public ScreenEventArgs(int x, int y, MouseButton buttons, KeyModifier modifier, int wheelDelta, int wheelDeltaX)
+		{
+			X = x;
+			Y = y;
+			Buttons = buttons;
+			Modifier = modifier;
+			WheelDelta = wheelDelta;
+			WheelDeltaX = wheelDeltaX;
 		}
 	}
 }

@@ -31,6 +31,7 @@ namespace CivOne.Tiles
 		{
 			Type = Terrain.Ocean;
 			Name = "Ocean";
+			TranslatedName = Translate("Ocean");
 		}
 		public Ocean() : this(-1, -1, false)
 		{

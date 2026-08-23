@@ -2,11 +2,13 @@
 using System.Linq;
 using CivOne.Advances;
 using CivOne.Enums;
+using CivOne.Services;
+using CivOne.Services.Random;
 using CivOne.Tasks;
 
 namespace CivOne.Units.TribalHuts
 {
-	public class AncientScrollsEventHandler : ITribalHutEventHandler
+	public class AncientScrollsHandler : ITribalHutEventHandler
 	{
 		private readonly int x;
 		private readonly int y;
@@ -16,7 +18,7 @@ namespace CivOne.Units.TribalHuts
 
 		private readonly Player player;
 
-		public AncientScrollsEventHandler(int x, int y, Player player, ILogger logger)
+		public AncientScrollsHandler(int x, int y, Player player, ILogger logger)
 		{
 			this.logger = logger;
 			this.player = player;
@@ -26,11 +28,7 @@ namespace CivOne.Units.TribalHuts
 
 		public string[] GetEventMessage()
 		{
-			return
-			[
-				"You have discovered",
-				"scrolls of ancient wisdom."
-			];
+			return TranslationServiceFactory.GetCurrent().TranslateFormattedArray("You have discovered\nscrolls of ancient wisdom.");
 		}
 
 		public void PreExecute()
@@ -44,19 +42,19 @@ namespace CivOne.Units.TribalHuts
 			int MAX_ADVANCES = AdvanceExtensions.AllAdvances.Length;
 
 			var available = player.AvailableResearch;
-			int advanceId = Common.Random.Next(0, MAX_ADVANCES);
+			int advanceId = RandomServiceFactory.Create().NextInt(MAX_ADVANCES);
 
 			// This works because advances are sorted from early to modern technologies.
 			// So we start with i the lowest advance and try to find the first next lowest advance that is available.
 			for (int i = 0; i < 1000; i++)
 			{
 				int targetId = (advanceId + i) % MAX_ADVANCES;
-				IAdvance foundAdvance = available.FirstOrDefault(a => a.Id == targetId);
+				IAdvance? foundAdvance = available.FirstOrDefault(a => a.Id == targetId);
 
 				if (foundAdvance != null)
 				{
 					logger.Log("Found advance: {0} (ID: {1}) in {2} attempts with starting ID: {3}",
-						foundAdvance.Name, foundAdvance.Id, i, advanceId);
+						foundAdvance.TranslatedName, foundAdvance.Id, i, advanceId);
 					GameTask.Enqueue(new GetAdvance(player, foundAdvance));
 					break;
 				}

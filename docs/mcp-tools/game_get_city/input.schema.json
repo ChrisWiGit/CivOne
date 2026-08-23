@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_get_city/input",
+  "title": "game_get_city – input",
+  "description": "Returns a single city by one selector: cityId, cityName, or cityNameStartsWith.",
+  "type": "object",
+  "properties": {
+    "cityId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "City GUID selector."
+    },
+    "cityName": {
+      "type": "string",
+      "description": "Exact city name selector (case-insensitive)."
+    },
+    "cityNameStartsWith": {
+      "type": "string",
+      "description": "Prefix city name selector (case-insensitive)."
+    },
+    "keys": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true,
+      "description": "Optional field list for projection."
+    },
+    "sessionId": {
+      "type": "string",
+      "description": "Optional caller-supplied identifier."
+    },
+    "includeCursor": {
+      "type": "boolean",
+      "default": false,
+      "description": "Reserved for future use."
+    }
+  },
+  "additionalProperties": false
+}

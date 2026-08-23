@@ -8,8 +8,10 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using CivOne.Enums;
+using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.Tasks;
@@ -17,123 +19,161 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens.Debug
 {
+	[ScreenResizeable]
 	internal class SetPlayerGold : BaseScreen
 	{
-		private readonly Menu _civSelect;
+		private readonly CivSelectMenuDelegate _civSelectDelegate;
 
-		private Input _input;
+		private Player? _selectedPlayer;
+		private int OffsetX => Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
-		private Player _selectedPlayer = null;
+		private Input? ActiveInput => Inputs.OfType<Input>().FirstOrDefault();
 
-		public string Value { get; private set; }
-
-		public event EventHandler Accept, Cancel;
-
-		private void CivSelect_Accept(object sender, EventArgs args)
+		private void DrawPlayerSelectDialog()
 		{
-			Bitmap.Clear();
-
-			this.FillRectangle(80, 80, 161, 33, 11)
-				.FillRectangle(81, 81, 159, 31, 15)
-				.DrawText("Set Player Gold...", 0, 5, 88, 82)
-				.FillRectangle(88, 95, 105, 14, 5)
-				.FillRectangle(89, 96, 103, 12, 15);
-
-			_selectedPlayer = Game.GetPlayer((byte)_civSelect.ActiveItem);
-
-			_input = new Input(Palette, _selectedPlayer.Gold.ToString(), 0, 5, 11, 90, 97, 101, 10, 5);
-			_input.Accept += PlayerGold_Accept;
-			_input.Cancel += PlayerGold_Cancel;
-
-			CloseMenus();
+			_civSelectDelegate.Draw(this, CanvasHeight);
 		}
 
-		private void PlayerGold_Accept(object sender, EventArgs args)
+		private void DrawInputDialog()
 		{
-			Value = (sender as Input).Text;
-			
-			short playerGold;
-			if (!short.TryParse(Value, out playerGold) || playerGold < 0 || playerGold > 30000)
+			int ox = OffsetX;
+			int oy = OffsetY;
+
+			this.Clear();
+			this.FillRectangle(80 + ox, 80 + oy, 161, 33, 11)
+				.FillRectangle(81 + ox, 81 + oy, 159, 31, 15)
+				.DrawText(Translate("Set Player Gold..."), 0, 5, 88 + ox, 82 + oy)
+				.FillRectangle(88 + ox, 95 + oy, 105, 14, 5)
+				.FillRectangle(89 + ox, 96 + oy, 103, 12, 15);
+
+			if (ActiveInput is Input input)
 			{
-				GameTask.Enqueue(Message.Error("-- DEBUG: Set Player Gold --", $"The value {Value} is invalid or out of range.", "Please enter a value between 0 and", "30000."));
+				input.X = 90 + ox;
+				input.Y = 97 + oy;
 			}
-			else
+		}
+
+		public string? Value { get; private set; }
+
+		public event EventHandler? Accept, Cancel;
+
+		private void OnPlayerSelected(Player? player)
+		{
+			_selectedPlayer = player;
+
+			if (_selectedPlayer == null)
 			{
-				_selectedPlayer.Gold = playerGold;
-				GameTask.Enqueue(Message.General($"{_selectedPlayer.TribeName} gold set to {playerGold}$."));
+				System.Diagnostics.Debug.Assert(false, "Player selection was cancelled or invalid in OnPlayerSelected");
+				return;
 			}
 
-			if (Accept != null)
-				Accept(this, null);
-			if (sender is Input)
-				((Input)sender)?.Close();
+			DrawInputDialog();
+
+			CloseMenus();
+			EnsureManagedInput();
+		}
+
+		protected override IScreen? CreateManagedInput()
+		{
+			if (_selectedPlayer == null)
+			{
+				return null;
+			}
+
+			Input input = new(Palette, _selectedPlayer.Gold.ToString(CultureInfo.InvariantCulture), 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 5);
+			input.Accept += PlayerGold_Accept;
+			input.Cancel += PlayerGold_Cancel;
+			return input;
+		}
+
+		private void PlayerGold_Accept(object? sender, EventArgs args)
+		{
+			if (sender is not Input input)
+			{
+				System.Diagnostics.Debug.Assert(false, "Sender is not Input in PlayerGold_Accept");
+				return;
+			}
+			Value = input.Text;
+
+			if (!short.TryParse(input.Text, out short playerGold) || playerGold < 0 || playerGold > 30000)
+			{
+				GameTask.Enqueue(Message.Error(Translate("-- DEBUG: Set Player Gold --"), TranslateFormattedArray("The value {0} is invalid or out of range.\nPlease enter a value between 0 and\n30000.", Value ?? "(null)")));
+			}
+			else if (_selectedPlayer != null)
+			{
+				_selectedPlayer.Gold = playerGold;
+				GameTask.Enqueue(Message.General(TranslateFormatted("{0} gold set to {1}$.", _selectedPlayer.TribeName, playerGold)));
+			}
+
+			Accept?.Invoke(this, EventArgs.Empty);
+			input.Close();
 			Destroy();
 		}
 
-		private void PlayerGold_Cancel(object sender, EventArgs args)
+		private void PlayerGold_Cancel(object? sender, EventArgs args)
 		{
-			if (Cancel != null)
-				Cancel(this, null);
-			if (sender is Input)
-				((Input)sender)?.Close();
+			Cancel?.Invoke(this, EventArgs.Empty);
+			if (sender is Input input)
+				input.Close();
 			Destroy();
 		}
 
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_selectedPlayer == null && Common.TopScreen.GetType() != typeof(Menu))
+			if (RefreshNeeded())
 			{
-				AddMenu(_civSelect);
-				return false;
+				if (_selectedPlayer == null)
+					DrawPlayerSelectDialog();
+				else
+					DrawInputDialog();
 			}
-			else if (_selectedPlayer != null && !Common.HasScreenType<Input>())
+
+			if (_selectedPlayer != null && !HasInput)
 			{
-				Common.AddScreen(_input);
+				EnsureManagedInput();
 			}
 			return false;
 		}
 
-		public SetPlayerGold() : base(MouseCursor.Pointer)
+		public override bool KeyDown(KeyboardEventArgs args)
 		{
-			Palette = Common.Screens.Last().OriginalColours;
-
-			int fontHeight = Resources.GetFontHeight(0);
-			int hh = (fontHeight * (Game.Players.Count() + 1)) + 5;
-			int ww = 108;
-
-			int xx = (320 - ww) / 2;
-			int yy = (200 - hh) / 2;
-
-			Picture menuGfx = new Picture(ww, hh)
-				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D()
-				.As<Picture>();
-			IBitmap menuBackground = menuGfx[2, 11, ww - 4, hh - 11].ColourReplace((7, 11), (22, 3));
-
-			this.FillRectangle(xx - 1, yy - 1, ww + 2, hh + 2, 5)
-				.AddLayer(menuGfx, xx, yy)
-				.DrawText("Set Player Gold...", 0, 15, xx + 8, yy + 3);
-
-			_civSelect = new Menu(Palette, menuBackground)
+			if (_selectedPlayer != null)
 			{
-				X = xx + 2,
-				Y = yy + 11,
-				MenuWidth = ww - 4,
-				ActiveColour = 11,
-				TextColour = 5,
-				DisabledColour = 3,
-				FontId = 0,
-				Indent = 8
-			};
-
-			foreach (Player player in Game.Players)
-			{
-				_civSelect.Items.Add(player.TribeNamePlural).OnSelect(CivSelect_Accept);
+				return false;
 			}
 
-			_civSelect.Cancel += PlayerGold_Cancel;
-			_civSelect.MissClick += PlayerGold_Cancel;
-			_civSelect.ActiveItem = Game.PlayerNumber(Human);
+			bool handled = _civSelectDelegate.KeyDown(args);
+			if (handled)
+			{
+				Refresh();
+			}
+			return handled;
+		}
+
+		public override bool MouseDown(ScreenEventArgs args)
+		{
+			if (_selectedPlayer != null)
+			{
+				return false;
+			}
+
+			bool handled = _civSelectDelegate.MouseDown(args.X, args.Y);
+			if (handled)
+			{
+				Refresh();
+			}
+			return handled;
+		}
+
+		public SetPlayerGold() : base(MouseCursor.Pointer)
+		{
+			Palette = Common.Screens[^1].OriginalColours;
+			_civSelectDelegate = new CivSelectMenuDelegate(Translate("Set Player Gold..."));
+			_civSelectDelegate.PlayerSelected += OnPlayerSelected;
+			_civSelectDelegate.Cancelled += PlayerGold_Cancel;
+
+			DrawPlayerSelectDialog();
 		}
 	}
 }

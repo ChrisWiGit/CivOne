@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CivOne.Events;
 using CivOne.Graphics;
+using CivOne.Services;
 using CivOne.UserInterface;
 
 namespace CivOne.Screens.Dialogs
@@ -40,8 +41,8 @@ namespace CivOne.Screens.Dialogs
 			get
 			{
 				if (_luxuries)
-					return "Luxuries";
-				return "Tax";
+					return Translate("Luxuries");
+				return Translate("Tax");
 			}
 		}
 
@@ -53,7 +54,7 @@ namespace CivOne.Screens.Dialogs
 			}
 		}
 
-		private MenuItemEventHandler<int> ChoiceMethod
+		private MenuItemEventAction<int> ChoiceMethod
 		{
 			get
 			{
@@ -63,12 +64,13 @@ namespace CivOne.Screens.Dialogs
 			}
 		}
 
-		protected override void FirstUpdate()
+		protected override IMenu? CreateManagedMenu()
 		{
 			Menu menu = new Menu(Palette, Selection(3, 12, ItemWidth, (_menuItems.Length * Resources.GetFontHeight(FONT_ID)) + 4))
 			{
 				X = 103,
 				Y = 92,
+				CenterTo320Coordinates = true,
 				MenuWidth = ItemWidth,
 				ActiveColour = 11,
 				TextColour = 5,
@@ -87,17 +89,19 @@ namespace CivOne.Screens.Dialogs
 			else
 				menu.ActiveItem = Human.TaxesRate;
 			
-			AddMenu(menu);
+			return menu;
 		}
 
 		private static IEnumerable<string> MenuOptions(bool luxuries)
 		{
+			var translation = TranslationServiceFactory.GetCurrent();
+
 			if (luxuries)
 			{
 				for (int i = 0; i <= (10 - Human.TaxesRate); i++)
 				{
 					int science = 10 - Human.TaxesRate - i;
-					yield return $"{i * 10}% Luxuries, ({science * 10}% Science)";
+					yield return translation.TranslateFormatted("{0}% Luxuries, ({1}% Science)", i * 10, science * 10);
 				}
 				yield break;
 			}
@@ -105,7 +109,7 @@ namespace CivOne.Screens.Dialogs
 			for (int i = 0; i <= (10 - Human.LuxuriesRate); i++)
 			{
 				int science = 10 - Human.LuxuriesRate - i;
-				yield return $"{i * 10}% Tax, ({science * 10}% Science)";
+				yield return translation.TranslateFormatted("{0}% Tax, ({1}% Science)", i * 10, science * 10);
 			}
 		}
 
@@ -140,7 +144,7 @@ namespace CivOne.Screens.Dialogs
 			_luxuries = luxuries;
 			_menuItems = MenuOptions(luxuries).ToArray();
 			
-			DialogBox.DrawText($"Select new {ScreenName} rate...", 0, 15, 5, 5);
+			DialogBox.DrawText(TranslateFormatted("Select new {0} rate...", ScreenName), 0, 15, 5, 5);
 		}
 	}
 }

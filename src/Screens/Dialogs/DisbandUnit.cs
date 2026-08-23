@@ -11,6 +11,7 @@ using System.Linq;
 using CivOne.Advances;
 using CivOne.Enums;
 using CivOne.Graphics;
+using CivOne.Services;
 using CivOne.Units;
 using CivOne.UserInterface;
 
@@ -20,27 +21,28 @@ namespace CivOne.Screens.Dialogs
 	{
 		private readonly Picture[] _textLines;
 
-		protected override void FirstUpdate()
+		protected override IMenu? CreateManagedMenu()
 		{
 			int menuWidth = _textLines.Max(b => b.Width) + 5;
 			Menu menu = new Menu(Palette, Selection(45, 28, menuWidth, 10))
 			{
 				X = 103,
 				Y = 100,
+				CenterTo320Coordinates = true,
 				MenuWidth = menuWidth,
 				ActiveColour = 11,
 				TextColour = 5,
 				FontId = 0
 			};
-			menu.Items.Add("Unit Disbanded.").OnSelect(Cancel);
+			menu.Items.Add(Translate("Unit Disbanded.")).OnSelect(Cancel);
 			menu.MissClick += Cancel;
 			menu.Cancel += Cancel;
-			AddMenu(menu);
+			return menu;
 		}
 
 		private static Picture[] TextPictures(City city, IUnit unit)
 		{
-			string[] message = new string[] { $"{city.Name} can't support", $"{unit.Name}." };
+			string[] message = TranslationServiceFactory.GetCurrent().TranslateFormattedArray("{0} can't support\n{1}.", city.Name, unit.TranslatedName);
 			Picture[] output = new Picture[message.Length];
 			for (int i = 0; i < message.Length; i++)
 				output[i] = Resources.GetText(message[i], 0, 15);
@@ -52,16 +54,13 @@ namespace CivOne.Screens.Dialogs
 			bool modernGovernment = Human.HasAdvance<Invention>();
 			IBitmap governmentPortrait = Icons.GovernmentPortrait(Human.Government, Advisor.Defense, modernGovernment);
 			
-			Palette palette = Common.DefaultPalette;
-			for (int i = 144; i < 256; i++)
-			{
-				palette[i] = governmentPortrait.Palette[i];
-			}
-			this.SetPalette(palette);
+			using Palette palette = Common.DefaultPalette.Merge(governmentPortrait.Palette, 144);
+			Palette = palette;
 
 			DialogBox.AddLayer(governmentPortrait, 2, 2);
-			DialogBox.DrawText("Defense Minister:", 0, 15, 47, 4);
-			DialogBox.FillRectangle(47, 11, 94, 1, 11);
+			string advisorLabel = Translate("Defense Minister:");
+			DialogBox.DrawText(advisorLabel, 0, 15, 47, 4);
+			DialogBox.FillRectangle(47, 11, Resources.GetText(advisorLabel, 0, 15).Width + 1, 1, 11);
 
 			_textLines = TextPictures(city, unit);
 			for (int i = 0; i < _textLines.Length; i++)

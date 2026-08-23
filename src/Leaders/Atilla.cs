@@ -16,8 +16,10 @@ namespace CivOne.Leaders
 	{
 		protected override Leader Leader => Leader.Atilla;
 
-		public Atilla() : base("Atilla")
+		public Atilla() : base()
 		{
+			Name = Translate("Atilla");
+			DefaultName = Name;
 			Aggression = AggressionLevel.Aggressive;
 			Development = DevelopmentLevel.Expansionistic;
 			Militarism = MilitarismLevel.Militaristic;

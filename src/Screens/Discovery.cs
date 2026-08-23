@@ -7,19 +7,21 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
 using CivOne.Advances;
 using CivOne.Events;
 using CivOne.Graphics;
 
 namespace CivOne.Screens
 {
+	// NO [ScreenResizeable] - it auto-resizes and redraws itself on each update, so no need to handle resize events separately
 	internal class Discovery : BaseScreen
 	{
 		private const float FADE_STEP = 0.025f;
 
 		private readonly IAdvance _advance;
 
-        private float _fadeStep = 0.0f;
+        private float _fadeStep;
 		
 		private void FadeColours()
 		{
@@ -28,9 +30,12 @@ namespace CivOne.Screens
             FadeStep = _fadeStep;
 
 			Palette palette = Palette;
-			for (int i = 86; i < 256; i++)
+			int max = Math.Min(OriginalColours.Length, _advance.OriginalColours.Length);
+			for (int i = 86; i < max; i++)
+			{
 				palette[i] = FadeColour(OriginalColours[i], _advance.OriginalColours[i]);
-			this.SetPalette(palette);
+			}			
+			SetPalette(palette);
 		}
 		
 		protected override bool HasUpdate(uint gameTick)
@@ -64,20 +69,15 @@ namespace CivOne.Screens
 		public Discovery(IAdvance advance)
 		{
             _advance = advance;
-			var modern = Human.HasAdvance<Electricity>() && advance.Not<Electricity>();
-			string scientistName = Human.HasAdvance<Invention>() && (advance.Not<Invention>()) ? "scientists" : "wise men";
+			var modern = Human.HasAdvance<Electricity>() && advance.NotOf<Electricity>();
+			string scientistName = Human.HasAdvance<Invention>() && advance.NotOf<Invention>() ? Translate("scientists") : Translate("wise men");
 
 			Picture background = Resources[$"DISCOVR{(modern ? 2 : 1)}"];
 			
 			Palette = background.Palette;
 			this.Clear(32).AddLayer(background);
 
-			string[] text = 
-            {
-				$"{Human.Civilization.Name} {scientistName}",
-				"discover the secret",
-				$"of {advance.Name}!"
-			};
+			string[] text = TranslateFormattedArray("{0} {1}\ndiscover the secret\nof {2}!", Human.Civilization.Name, scientistName, advance.TranslatedName);
 
 			
 			for (int i = 0; i < text.Length; i++)
@@ -93,7 +93,10 @@ namespace CivOne.Screens
 				}
 			}
 
-			this.AddLayer(advance.Icon, 119, modern ? 53 : 61);
+			if (advance.Icon != null)
+			{
+				this.AddLayer(advance.Icon, 119, modern ? 53 : 61);
+			}
 
 			PlaySound(Human.Civilization.Tune);
 		}

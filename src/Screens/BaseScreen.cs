@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Drawing;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -15,31 +16,39 @@ using CivOne.IO;
 
 namespace CivOne.Screens
 {
+	#pragma warning disable CA1822 // Mark members as static
 	public abstract partial class BaseScreen : BaseInstance, IScreen
 	{
 		private readonly MouseCursor _cursor;
 
-		protected bool _doRefresh = true;
+		private bool _doRefresh = true;
 		
-		private int CanvasWidth => RuntimeHandler.Instance.CanvasWidth;
-		private int CanvasHeight => RuntimeHandler.Instance.CanvasHeight;
-		private bool CanExpand => Common.HasAttribute<ScreenResizeable>(this);
-		private bool SizeChanged => (this.Width() != CanvasWidth || this.Height() != CanvasHeight);
+		protected int CanvasWidth => RuntimeHandler.Instance!.CanvasWidth;
+		protected int CanvasHeight => RuntimeHandler.Instance!.CanvasHeight;
+		protected static Size WindowSize => new(RuntimeHandler.WindowWidth, RuntimeHandler.WindowHeight);
+		public virtual bool UseFullWindowCanvas => false;
+		private bool CanExpand => Common.HasAttribute<ScreenResizeableAttribute>(this);
+		private bool SizeChanged => this.Width() != CanvasWidth || this.Height() != CanvasHeight;
 
-		protected event ResizeEventHandler OnResize;
+		// Last window size observed by Update; used to detect host-window resizes
+		// even when the canvas size stays fixed (e.g. AspectRatio != Expand).
+		private Size _lastWindowSize = WindowSize;
+		private bool WindowSizeChanged => _lastWindowSize != WindowSize;
+
+		protected event EventHandler<ResizeEventArgs>? OnResize;
 
 		protected void MouseArgsOffset(ref ScreenEventArgs args, int offsetX, int offsetY)
 		{
-			args = new ScreenEventArgs(args.X - offsetX, args.Y - offsetY, args.Buttons);
+			args = new ScreenEventArgs(args.X - offsetX, args.Y - offsetY, args.Buttons, args.Modifier, args.WheelDelta, args.WheelDeltaX);
 		}
 
-		public event EventHandler Closed;
+		public event EventHandler? Closed;
 
 		protected void HandleClose()
 		{
 			if (Closed == null)
 				return;
-			Closed(this, null);
+			Closed(this, EventArgs.Empty);
 		}
 
 		protected abstract bool HasUpdate(uint gameTick);
@@ -69,21 +78,39 @@ namespace CivOne.Screens
 		{
 			if (CanExpand && SizeChanged)
 			{
-				Resize(Runtime.CanvasWidth, Runtime.CanvasHeight);
+				// Use capped canvas size here to match SizeChanged checks.
+				// Using Runtime.CanvasWidth can trigger perpetual resize/redraw loops in Expand mode.
+				Resize(CanvasWidth, CanvasHeight);
+				_lastWindowSize = WindowSize;
 				HasUpdate(gameTick);
 				return true;
 			}
+
+			// Notify resize-aware screens when the host window changed size even though
+			// the canvas dimensions stayed the same (e.g. AspectRatio != Expand).
+			// This lets screens rebuild layout / force a redraw after a window drag.
+			if (CanExpand && WindowSizeChanged)
+			{
+				_lastWindowSize = WindowSize;
+				Refresh();
+				OnResize?.Invoke(this, new ResizeEventArgs(this.Width(), this.Height()));
+				HasUpdate(gameTick);
+				return true;
+			}
+
 			return HasUpdate(gameTick);
 		}
 		public virtual bool KeyDown(KeyboardEventArgs args) => false;
 		public virtual bool MouseDown(ScreenEventArgs args) => false;
 		public virtual bool MouseUp(ScreenEventArgs args) => false;
+		public virtual bool MouseWheel(ScreenEventArgs args) => false;
 		public virtual bool MouseDrag(ScreenEventArgs args) => false;
 		public virtual bool MouseMove(ScreenEventArgs args) => false;
 
 		protected void Destroy()
 		{
 			CloseMenus();
+			CloseInputs();
 			HandleClose();
 			Common.DestroyScreen(this);
 		}
@@ -105,6 +132,39 @@ namespace CivOne.Screens
 		{
 			_cursor = cursor;
 			Bitmap = new Bytemap(width, height);
+		}
+
+		internal readonly static IScreen Empty = new EmptyScreen();
+
+		internal class EmptyScreen : BaseScreen
+		{
+			public EmptyScreen() : base(MouseCursor.None)
+			{
+				Palette = new Palette();
+			}
+
+			protected override bool HasUpdate(uint gameTick) => false;
+			public override bool KeyDown(KeyboardEventArgs args) => false;
+			public override bool MouseDown(ScreenEventArgs args) => false;
+			public override bool MouseUp(ScreenEventArgs args) => false;
+			public override bool MouseWheel(ScreenEventArgs args) => false;
+			public override bool MouseDrag(ScreenEventArgs args) => false;
+			public override bool MouseMove(ScreenEventArgs args) => false;
+			protected override void Dispose(bool disposing)
+			{
+				if (!disposing)
+				{
+					return;
+				}
+
+				// Don't dispose the shared empty screen's bitmap.
+				this.Bitmap = null!;
+				base.Dispose(disposing);
+				Common.DestroyScreen(this);
+				GC.KeepAlive(this);
+				// Don't allow the empty screen to be resurrected after disposal.
+				throw new ObjectDisposedException(nameof(EmptyScreen));
+			}
 		}
 	}
 }

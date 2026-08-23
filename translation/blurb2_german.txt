@@ -1,0 +1,314 @@
+# CivOne Translation File
+# CC-BY-SA 4.0
+# This file contains the German translation
+# This file was auto translated using ChatGPT. Please check for errors and report them to the project.
+*PHALANX
+Eine in Griechenland entwickelte und in Mazedonien perfektionierte militärische
+Formation. Die PHALANX bestand aus einem großen Block von Männern in Reihen,
+meist zwischen 8 und 32 Mann tief. Alle waren mit langen Piken bewaffnet.
+Die ersten fünf Reihen richteten ihre Piken nach außen und bildeten eine
+stachelige Barriere aus Speerspitzen, während die übrigen ihre Piken aufrecht
+hielten, um Geschosse abzuwehren. Feinden fiel es schwer, die Männer hinter
+den Piken zu erreichen. Beim Angriff rückte diese dicht gedrängte Masse oft
+im Laufschritt vor, sodass Gegner meist weichen mussten oder aufgespießt
+wurden.
+
+*PHALANX2
+Wird durch MUSKETIERE überholt.
+
+*KNIGHTS
+Die RITTER des Mittelalters waren die vollendete schwere Kavallerie. Auf
+gewaltigen Pferden, gezüchtet für Kraft statt Geschwindigkeit, in Rüstung
+gehüllt und fest in den Steigbügeln, stürmten sie im donnernden Galopp auf
+den Feind zu. Für Fußsoldaten waren sie ein furchterregender Anblick. Sie
+waren das mittelalterliche Gegenstück zum modernen Kampfpanzer. Obwohl neue
+Taktiken und Verteidigungsformationen RITTER manchmal unwirksam machten,
+beherrschten sie das Schlachtfeld bis zur Entwicklung von Feuerwaffen.
+
+*KNIGHTS2
+Wird durch PANZER überholt.
+
+*TRIREME
+Die Griechen führten die TRIREME ein, das erste speziell für den Krieg gebaute
+Schiff. Am Bug trug sie einen großen bronzenen Rammbock zum Versenken
+feindlicher Schiffe. Die TRIREME war außerdem schnell, angetrieben von drei
+Ruderreihen pro Seite mit gut ausgebildeten Ruderern. Wegen ihres langen,
+schmalen Rumpfes war sie jedoch nur in ruhigen Gewässern stabil. Daher wagte
+sich ihre Besatzung selten lange außer Sichtweite des Landes, um nicht von
+Stürmen überrascht zu werden.
+
+*TRIREME2
+TRIREMEN können auf See verloren gehen, wenn sie am Zugende nicht an Land
+angrenzen. Sie transportieren bis zu 2 Einheiten und werden durch
+SEGELSCHIFFE überholt.
+
+*SAIL
+Obwohl die TRIREME und ihre Nachfolger lange die Meere beherrschten, wurden
+sie schließlich vom SEGELSCHIFF verdrängt. Fortschritte im Schiffbau
+ermöglichten große und robuste Schiffe mit kleiner Besatzung für Menschen,
+Fracht und Geschütze. SEGELSCHIFFE konnten deutlich weiter reisen als
+TRIREMEN und größere Wasserflächen sicherer überqueren. Dadurch wurden
+Erkundung und Eroberung neuer Länder wesentlich einfacher.
+
+*SAIL2
+SEGELSCHIFFE transportieren bis zu 3 Einheiten und werden durch FREGATTEN
+überholt.
+
+*FRIGATE
+Die FREGATTE war ein schnelles und starkes Kriegsschiff unter Segeln, das
+mehrere wichtige Aufgaben erfüllte. Sie diente als Auge der Hauptflotte und
+griff feindliche Handelsschiffe an. Die FREGATTE war stark genug, um die
+meisten Gegner zu besiegen, und schnell genug, um stärkeren Feinden zu
+entkommen. Wegen ihrer Geschwindigkeit und Stärke wurde sie oft zum Schutz
+von Handelskonvois eingesetzt. Die FREGATTE blieb bis zum Auftreten des
+Panzerschiffs das nützlichste Kriegsschiff.
+
+*FRIGATE2
+FREGATTEN transportieren bis zu 4 Einheiten und werden durch TRANSPORTE
+überholt.
+
+*IRONCLAD
+Während des Amerikanischen Bürgerkriegs bewiesen PANZERSCHIFFE erstmals ihre
+Überlegenheit gegenüber hölzernen Kriegsschiffen. PANZERSCHIFFE waren gegen
+die damaligen Marinewaffen fast unverwundbar, während Holzschiffe leicht von
+Sprenggranaten durchschlagen wurden. PANZERSCHIFFE waren die ersten einer
+neuen Generation gepanzerter Schiffe, die die Meere fast hundert Jahre lang
+beherrschten.
+
+*IRONCLAD2
+Wird durch KREUZER überholt.
+
+*TRANSPORT
+Der TRANSPORT dient in Friedenszeiten als Fracht- oder Passagierschiff und
+ist das wichtigste Mittel moderner Staaten, große Mengen Ausrüstung und
+Militäreinheiten zu verlegen. TRANSPORTE benötigen stets Schutz, können aber
+richtig eingesetzt schnell starke Truppenverbände bewegen, um Feindgebiete
+zu bedrohen oder eigene Städte und Truppen in Übersee zu verstärken.
+
+*TRANSPORT2
+TRANSPORTE können bis zu 8 Einheiten transportieren.
+
+*FIGHTER
+Die ersten Militärflugzeuge dienten vor allem der Aufklärung, doch bald wurden
+sie bewaffnet und der JÄGER entstand. Seine Aufgabe war der Abschuss anderer
+Flugzeuge, besonders von BOMBERN und Aufklärern. Die Zerstörung feindlicher
+JÄGER war zudem der beste Schutz für eigene BOMBER. Der JÄGER sollte die
+Luftüberlegenheit erringen und die Kontrolle über den Himmel sichern.
+
+*FIGHTER2
+JÄGER müssen am Ende jedes Zuges in eine Stadt oder auf einen TRÄGER
+zurückkehren. JÄGER sind die einzigen Einheiten, die andere Lufteinheiten
+angreifen dürfen.
+
+*BOMBER
+Der BOMBER wurde im Ersten Weltkrieg eingeführt, aber erst im Zweiten
+Weltkrieg zu einer bedeutenden Waffe. Seine Aufgabe war es, Bomben tief in
+Feindgebiet zu tragen und militärisch oder wirtschaftlich wichtige Ziele zu
+zerstören. BOMBER spezialisierten sich auf verschiedene Rollen wie Angriffe
+auf Schiffe, Fahrzeuge, Eisenbahnen oder Präzisionsbombardements.
+
+*BOMBER2
+BOMBER ignorieren beim Angriff Stadtmauern und müssen spätestens am Ende ihres
+zweiten Luftzuges in eine Stadt oder auf einen TRÄGER zurückkehren. BOMBER
+haben eine Sichtweite von 2 Feldern. Ein Angriff beendet ihren Zug.
+
+*CARRIER
+Der FlugzeugTRÄGER dient als schwimmender Flugplatz und transportiert JÄGER
+und BOMBER weit entfernt von eigenen Küsten. Dadurch kann militärische Macht
+über große Entfernungen projiziert werden. Der TRÄGER kann außerdem
+NUKLEARWAFFEN transportieren und gegen weit entfernte Ziele einsetzen.
+
+*CARRIER2
+TRÄGER besitzen eine Sichtweite von 2 Seefeldern.
+TRÄGER können bis zu 8 Luft- und NUKLEAREINHEITEN transportieren.
+
+*SUBMARINE
+Das U-BOOT ist ein tauchfähiges Kriegsschiff, das andere Schiffe mit Torpedos
+unter Wasser angreift. Trotz schwacher Verteidigung ist das U-BOOT wegen
+seiner versteckten Angriffe gefürchtet. Oft ist ein Torpedotreffer die erste
+Warnung vor einem nahen U-BOOT. Ein verborgenes U-BOOT kann auf Handelswegen
+lauern und dann TRANSPORTE, TRÄGER oder andere Schiffe angreifen.
+
+*SUBMARINE2
+U-BOOTE besitzen eine Sichtweite von 2 Seefeldern.
+
+*CRUISER
+Der KREUZER ist das moderne Gegenstück zur FREGATTE. Obwohl viel stärker als
+sein Segelvorgänger, dient er weiterhin als Eskorte und Handelsstörer.
+Zusätzlich kann er wie ein SCHLACHTSCHIFF Küstenziele bombardieren, jedoch
+mit geringerer Feuerkraft. Er ist günstiger und schneller als ein
+SCHLACHTSCHIFF und eignet sich gut zur Aufklärung oder zum Angriff auf
+ungeschützte TRANSPORTE.
+
+*CRUISER2
+KREUZER besitzen eine Sichtweite von 2 Seefeldern.
+KREUZER können Einheiten auf Küstenfeldern bombardieren.
+
+*BATTLESHIP
+Das mächtigste je gebaute Überwasserkriegsschiff war das SCHLACHTSCHIFF. Es
+beherrschte die Meere bis zum Auftreten des TRÄGERS. Schwer gepanzert und
+schwer zu zerstören, verfügte es über gewaltige Geschütze mit großer
+Reichweite. Das SCHLACHTSCHIFF räumte feindliche Flotten aus dem Weg und
+bombardierte Küstenziele zur Vorbereitung von Invasionen.
+
+*BATTLESHIP2
+SCHLACHTSCHIFFE besitzen eine Sichtweite von 2 Seefeldern.
+SCHLACHTSCHIFFE können Einheiten auf Küstenfeldern bombardieren.
+
+*NUCLEAR
+Die Atombombe veränderte alle Maßstäbe militärischer Stärke. Selbst die
+stärksten Städte und Armeen konnten durch eine einzige NUKLEARWAFFE von der
+Karte gelöscht werden. Die einzige wirksame Verteidigung gegen die nukleare
+Bedrohung war ein eigenes Arsenal zur Abschreckung. Ironischerweise führte
+gerade die Entwicklung dieser verheerenden Waffe zu einer langen Phase
+relativen Weltfriedens.
+
+*NUCLEAR2
+NUKLEARWAFFEN müssen am Ende jedes Zuges in einer Stadt oder auf einem
+TRÄGER stationiert sein, sofern sie nicht eingesetzt werden. Sie ignorieren
+Kontrollzonen und bleiben für Feinde unsichtbar.
+
+*DIPLOMAT
+Der geschickte DIPLOMAT dient seiner Heimat auf vielfältige Weise. Er knüpft
+Kontakte zu anderen Mächten, berichtet seinem Herrscher über wichtige
+Entwicklungen und übernimmt bei Bedarf auch fragwürdige Aufgaben. Dazu zählen
+Sabotage, Spionage oder Bestechung feindlicher Städte und Einheiten. Obwohl
+er keine militärische Stärke besitzt, ist der DIPLOMAT ein mächtiges Werkzeug
+für kluge Herrscher.
+
+*DIPLOMAT2
+DIPLOMATEN dürfen beim Bewegen benachbarte Feinde ignorieren.
+
+*CARAVAN
+Handel war in der Geschichte stets eine wichtige Einnahmequelle. KARAWANEN
+zogen in ferne Länder und tauschten ihre Waren gegen Geld oder andere Werte.
+Die Händler brachten oft auch neues Wissen über fremde Fortschritte zurück.
+Ein berühmtes Beispiel war Marco Polo, der mit Händlern nach China reiste und
+viele wertvolle Informationen nach Europa brachte.
+
+*CARAVAN2
+KARAWANEN dürfen beim Bewegen benachbarte Feinde ignorieren.
+
+*ARMOR
+Mit dem Niedergang der RITTER und dem Aufstieg der SCHÜTZEN gewann die
+Verteidigung lange Zeit die Oberhand. Erst die Entwicklung des PANZERS im
+Ersten Weltkrieg brachte wieder eine Waffe hervor, die feindliche Linien
+durchbrechen konnte. PANZER waren schnell, schlagkräftig und besaßen dennoch
+eine gute Verteidigung gegen Bodeneinheiten.
+
+*ARMOR2
+PANZER dürfen bis zu dreimal pro Zug angreifen.
+
+*ARTILLERY
+Moderne selbstfahrende ARTILLERIE ist wesentlich stärker und beweglicher als
+ihre alten Vorderlader-Vorgänger. Sie kann selbst starke Befestigungen
+zerstören und rasch die Stellung wechseln, was in beweglichen Schlachten oder
+gegen Gegenfeuer entscheidend ist.
+
+*ARTILLERY2
+ARTILLERIE ignoriert beim Angriff die Wirkung von Stadtmauern.
+
+*CANNON
+Die Entwicklung der KANONE nach der Entdeckung des SCHIESSPULVERS löste eine
+Revolution der Belagerungskriege aus. Hohe gerade Mauern konnten nun leicht
+durch direkten Beschuss zerstört werden. So fiel auch Konstantinopel nach
+über tausend Jahren erfolgreicher Verteidigung. Auf dem Schlachtfeld spielte
+die KANONE eine wichtige Rolle, wurde jedoch später durch Feuerwaffen ergänzt.
+
+*CANNON2
+Wird durch ARTILLERIE überholt.
+
+*CATAPULT
+Das KATAPULT war der antike Vorläufer der ARTILLERIE. Mit seinem großen Arm
+schleuderte es schwere Steine, Feuerkugeln und andere Geschosse über große
+Entfernungen. Selbst starke Tore und Mauern konnten damit zerstört werden.
+Obwohl auf offenen Schlachtfeldern wenig nützlich, war das KATAPULT bei
+Belagerungen äußerst wirkungsvoll.
+
+*CATAPULT2
+Wird durch KANONEN überholt.
+
+*CAVALRY
+Menschen zähmten und ritten Pferde schon vor Jahrtausenden. Der Wert des
+Pferdes im Kampf wurde schnell erkannt, denn ein heranstürmender Reiter hatte
+eine enorme Wirkung auf die Moral des Feindes. Die KAVALLERIE war nicht nur
+als Stoßtruppe nützlich, sondern konnte fliehende Gegner verfolgen und
+vernichten. Pferde verliehen der KAVALLERIE Kraft, Größe und Geschwindigkeit.
+
+*CAVALRY2
+Wird durch SCHÜTZEN überholt.
+
+*CHARIOT
+Der STREITWAGEN war das erste echte Kampffahrzeug. Er wurde genutzt, um
+Bogenschützen und andere Truppen zum Schlachtfeld zu bringen. Die Assyrer
+machten ihn zu einer furchterregenden Angriffswaffe, indem sie direkt vom
+STREITWAGEN aus kämpften. Viele Feinde konnten dem Angriff assyrischer Wagen
+nicht standhalten, weshalb diese Waffe bald weit verbreitet war.
+
+*CHARIOT2
+Wird durch RITTER überholt.
+
+*LEGION
+Die römische LEGION entstand in den frühen Kriegen der Republik und bewährte
+sich in den Punischen Kriegen gegen Karthago. Sie eroberte und hielt über
+Jahrhunderte ein Weltreich. Im Angriff fast unaufhaltsam, war die LEGION in
+unwegsamem Gelände defensiv schwächer. Ihr Niedergang beschleunigte sich nach
+der Vernichtung der Armee von Kaiser Valens durch gotische RITTER.
+
+*LEGION2
+Wird durch SCHÜTZEN überholt.
+
+*MECH. INF.
+Die Einführung des PANZERS ermöglichte Durchbrüche und schnelle Vorstöße.
+Benötigt wurde jedoch eine Truppe, die erobertes Gebiet halten konnte.
+MECHANISIERTE INFANTERIE, erstmals im Zweiten Weltkrieg eingesetzt, erwies
+sich als äußerst wertvoll. Infanteristen wurden in gepanzerten Fahrzeugen
+wie Halbketten oder Mannschaftstransportern gemeinsam mit PANZERN bewegt.
+
+*MECH. INF.2
+MECH. INF. darf bis zu dreimal pro Zug angreifen.
+
+*MILITIA
+Die ersten Militäreinheiten bestanden einfach aus Bürgern mit Werkzeugen und
+Waffen, die sie greifen konnten. Obwohl MILIZEN billig aufzustellen waren,
+waren sie gegen ausgebildete Armeen wenig wirksam. Dennoch blieben sie lange
+in Gebrauch, weil sie schnell mobilisiert werden konnten.
+
+*MILITIA2
+Wird durch MUSKETIERE überholt.
+
+*MUSKETEERS
+Die Entwicklung des Schießpulvers revolutionierte die Kriegsführung, denn
+MUSKETIERE waren günstig auszurüsten und dennoch tödliche Gegner für RITTER.
+Nun mussten MUSKETIERE, KANONEN und Reiterei gemeinsam eingesetzt werden.
+Der Sieg gehörte meist dem General, der alle drei Waffengattungen am besten
+koordinieren konnte. Große Gruppen von MUSKETIEREN hinter Mauern waren eine
+gefährliche Verteidigung.
+
+*MUSKETEERS2
+Wird durch SCHÜTZEN überholt.
+
+*RIFLEMEN
+SCHÜTZEN waren die Weiterentwicklung der MUSKETIERE. Das Gewehr war deutlich
+präziser und hatte eine größere Reichweite als die Muskete. Mit den großen
+Wehrpflichtarmeen wurde die Verteidigung noch stärker. Im Amerikanischen
+Bürgerkrieg zeigte sich erstmals die volle Wirkung des Gewehrs. Ein SCHÜTZE
+konnte mehrfach feuern, bevor Angreifer seine Stellung erreichten. Dieser
+Vorteil hielt bis zum Aufkommen des PANZERS an.
+
+*RIFLEMEN2
+SCHÜTZEN werden nicht überholt.
+
+*SETTLERS
+In der Antike erreichten Städte oft eine Größe, bei der Ressourcen nicht mehr
+für alle Bewohner ausreichten. Dann war es Zeit für abenteuerlustige Bürger,
+weiterzuziehen und einen neuen Ort zu suchen. Neue SIEDLER brachen auf,
+fanden geeignete Plätze und gründeten dort neue Städte. Die neue Stadt blieb
+meist mit der alten verbunden und entsandte später eigene SIEDLER.
+
+*SETTLERS2
+SIEDLER sind die einzigen Einheiten, die Straßen, Eisenbahnen,
+Bewässerung, Minen und Festungen bauen können.
+SIEDLER können außerdem Städte gründen und Umweltverschmutzung beseitigen.
+
+*END

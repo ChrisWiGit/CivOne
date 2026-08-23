@@ -18,6 +18,7 @@ namespace CivOne.Units
 		{
 			Type = UnitType.Ironclad;
 			Name = "Ironclad";
+			TranslatedName = Translate("Ironclad");
 			RequiredTech = new SteamEngine();
 			ObsoleteTech = new Combustion();
 			SetIcon('A', 0, 1);

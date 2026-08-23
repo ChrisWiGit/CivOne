@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_get_map_landvalues_window/input",
+  "title": "game_get_map_landvalues_window – input",
+  "description": "Returns raw land values for a bounded tile window. Same strict bounds rules as game_get_map_window.",
+  "type": "object",
+  "required": ["x", "y", "width", "height"],
+  "properties": {
+    "x": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Left column (0-based)."
+    },
+    "y": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Top row (0-based)."
+    },
+    "width": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of columns."
+    },
+    "height": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of rows."
+    },
+    "sessionId": {
+      "type": "string",
+      "description": "Optional caller-supplied identifier."
+    },
+    "includeCursor": {
+      "type": "boolean",
+      "description": "Reserved for future use.",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

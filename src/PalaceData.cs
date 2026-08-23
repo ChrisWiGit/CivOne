@@ -8,15 +8,29 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Linq;
 using CivOne.Enums;
 
 namespace CivOne
 {
-	public class PalaceData
+	public interface IPalaceData
 	{
-		private byte[] PalaceStyle = new byte[7];
-		private byte[] PalaceLevel = new byte[7];
-		private byte[] GardenLevel = new byte[3];
+		int PalaceLeft { get; }
+		int PalaceRight { get; }
+
+		PalaceStyle GetPalaceStyle(int index);
+		byte GetPalaceLevel(int index);
+		byte GetGardenLevel(int index);
+		int UpgradeCount { get; }
+		bool CanUpgrade { get; }
+		bool IsSlotUnlocked(int index);
+	}
+
+	public class PalaceData : IPalaceData
+	{
+		readonly byte[] PalaceStyle = new byte[7];
+		readonly byte[] PalaceLevel = new byte[7];
+		readonly byte[] GardenLevel = new byte[3];
 
 		public int PalaceLeft
 		{
@@ -44,30 +58,63 @@ namespace CivOne
 
 		public PalaceStyle GetPalaceStyle(int index)
 		{
-			if (index < 0 || index > 6) throw new Exception("Invalid palace index");
+			if (index < 0 || index > 6) throw new InvalidOperationException("Invalid palace index");
 			return (PalaceStyle)PalaceStyle[index];
 		}
 
 		public byte GetPalaceLevel(int index)
 		{
-			if (index < 0 || index > 6) throw new Exception("Invalid palace index");
+			if (index < 0 || index > 6) throw new InvalidOperationException("Invalid palace index");
 			return PalaceLevel[index];
 		}
 
 		public byte GetGardenLevel(int index)
 		{
-			if (index < 0 || index > 2) throw new Exception("Invalid garden index");
+			if (index < 0 || index > 2) throw new InvalidOperationException("Invalid garden index");
 			return GardenLevel[index];
+		}
+
+		public int UpgradeCount => PalaceLevel.Sum(x => x) + GardenLevel.Sum(x => x);
+
+		public bool CanUpgrade
+		{
+			get
+			{
+				for (int i = 0; i < 7; i++)
+				{
+					if (IsSlotUnlocked(i) && PalaceLevel[i] < 4)
+					{
+						return true;
+					}
+				}
+
+				return GardenLevel.Any(x => x < 3);
+			}
+		}
+
+		public bool IsSlotUnlocked(int index)
+		{
+			return index switch
+			{
+				3 => true,
+				2 => true,
+				4 => true,
+				1 => PalaceLevel[2] > 0,
+				5 => PalaceLevel[4] > 0,
+				0 => PalaceLevel[1] > 0,
+				6 => PalaceLevel[5] > 0,
+				_ => false
+			};
 		}
 
 		public void SetPalace(int index, byte style, byte level)
 		{
 			if (index < 0 || index > 6)
-				throw new Exception("Invalid palace index");
+				throw new InvalidOperationException($"Invalid palace index: {index}");
 			if (style < 0 || style > 3)
-				throw new Exception("Invalid palace style");
+				throw new InvalidOperationException($"Invalid palace style: {style}");
 			if (level < 0 || level > 4)
-				throw new Exception("Invalid palace level");
+				throw new InvalidOperationException($"Invalid palace level: {level}");
 
 			if (level == 0 || style == 0)
 			{
@@ -81,8 +128,8 @@ namespace CivOne
 
 		public void SetGarden(int index, byte level)
 		{
-			if (index < 0 || index > 2) throw new Exception("Invalid garden index");
-			if (level < 0 || level > 3) throw new Exception("Invalid garden level");
+			if (index < 0 || index > 2) throw new InvalidOperationException("Invalid garden index");
+			if (level < 0 || level > 3) throw new InvalidOperationException("Invalid garden level");
 
 			GardenLevel[index] = level;
 		}

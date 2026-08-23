@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace CivOne
 {
+	#pragma warning disable S101 // Types should be named in PascalCase - but these are named to match SDL as a name.
 	internal static partial class SDL
 	{
 		[StructLayout(LayoutKind.Sequential)]
@@ -23,6 +24,7 @@ namespace CivOne
 		[StructLayout(LayoutKind.Sequential)]
 		private unsafe struct SDL_WindowEvent
 		{
+			#pragma warning disable S4487 //keep unused field to match SDL structure
 			public SDL_EventType SDL_EventType;
 			public uint Timestamp;
 			public uint WindowId;
@@ -42,6 +44,37 @@ namespace CivOne
 			public byte Repeat;
 			private fixed byte _nil[2];
 			internal SDL_Keysym KeySym;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		private unsafe struct SDL_MouseWheelEvent
+		{
+			public SDL_EventType Type;
+			public uint Timestamp;
+			public uint WindowId;
+			public uint Which;
+			public int X;
+			public int Y;
+			public uint Direction;
+		}
+
+		/// <summary>
+		/// Fired for touchpad pinch/rotate gestures. dDist is the fractional change in distance
+		/// between the fingers since the previous event (positive = fingers spreading apart).
+		/// x/y are the gesture centroid in normalized (0..1) window coordinates.
+		/// </summary>
+		[StructLayout(LayoutKind.Sequential)]
+		private unsafe struct SDL_MultiGestureEvent
+		{
+			public SDL_EventType Type;
+			public uint Timestamp;
+			public long TouchId;
+			public float DTheta;
+			public float DDist;
+			public float X;
+			public float Y;
+			public ushort NumFingers;
+			public ushort Padding;
 		}
 	}
 }

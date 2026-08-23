@@ -15,8 +15,10 @@ namespace CivOne.Leaders
 	{
 		protected override Leader Leader => Leader.Gandhi;
 
-		public Gandhi() : base("M.Gandhi", "KING02", 43, 33)
+		public Gandhi() : base("KING02", 43, 33)
 		{
+			Name = Translate("M.Gandhi");
+			DefaultName = Name;
 			Aggression = AggressionLevel.Friendly;
 			Development = DevelopmentLevel.Perfectionist;
 		}

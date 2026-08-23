@@ -22,9 +22,24 @@ namespace CivOne.Screens.Reports
 
 		protected readonly IBitmap[] Portrait = new Picture[4];
 
-		protected event ScreenEventHandler OnMouseDown;
+		protected event EventHandler<ScreenEventArgs>? OnMouseDown;
 		
 		protected byte BackgroundColour { get; }
+		protected int OffsetX => Math.Max(0, (Width - 320) / 2);
+		protected int OffsetY => Math.Max(0, (Height - 200) / 2);
+
+		protected void DrawReportHeader()
+		{
+			this.DrawText(Title(), 0, 15, OffsetX + 160, OffsetY + 2, TextAlign.Center)
+				.DrawText(TranslateFormatted("{0} of the {1}", Translate("Empire"), Human.TribeNamePlural), 0, 15, OffsetX + 160, OffsetY + 10, TextAlign.Center)
+				.DrawText(TranslateFormatted("{0} {1}: {2}", Translate("Emperor"), Human.LeaderName, Game.GameYear), 0, 15, OffsetX + 160, OffsetY + 18, TextAlign.Center);
+		}
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_update = true;
+		}
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
@@ -52,26 +67,23 @@ namespace CivOne.Screens.Reports
 			Destroy();
 			return true;
 		}
+
+		public virtual string Title() => "UNDEFINED REPORT";
 		
-		public BaseReport(string title, byte backgroundColour, MouseCursor cursor = MouseCursor.None) : base(cursor)
+		protected BaseReport(byte backgroundColour, MouseCursor cursor = MouseCursor.None) : base(cursor)
 		{
 			BackgroundColour = backgroundColour;
 
 			bool modernGovernment = Human.HasAdvance<Invention>();
 			for (int i = 0; i < 4; i++)
 			{
-				Portrait[i] = Icons.GovernmentPortrait(Human.Government, (Advisor)Enum.Parse(typeof(Advisor), $"{i}"), modernGovernment); 
+				Portrait[i] = Icons.GovernmentPortrait(Human.Government, Enum.Parse<Advisor>($"{i}"), modernGovernment); 
 			}
-			using (Palette palette = Common.DefaultPalette)
-			{
-				palette.MergePalette(Portrait[0].Palette, 144);
-				Palette = palette;
-			}
+
+			using Palette palette = Common.DefaultPalette.Merge(Portrait[0].Palette, 144);
+			Palette = palette;
 			
-			this.Clear(backgroundColour)
-				.DrawText(title, 0, 15, 160, 2, TextAlign.Center)
-				.DrawText(string.Format("{0} of the {1}", "Empire", Human.TribeNamePlural), 0, 15, 160, 10, TextAlign.Center)
-				.DrawText(string.Format("{0} {1}: {2}", "Emperor", Human.LeaderName, Game.GameYear), 0, 15, 160, 18, TextAlign.Center);
+			this.Clear(backgroundColour);
 		}
 	}
 }

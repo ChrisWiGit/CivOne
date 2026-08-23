@@ -17,6 +17,7 @@ namespace CivOne.Wonders
 		public IsaacNewtonsCollege() : base(40)
 		{
 			Name = "Isaac Newton's College";
+			TranslatedName = Translate("Isaac Newton's College");
 			RequiredTech = new TheoryOfGravity();
 			ObsoleteTech = new NuclearFission();
 			SetSmallIcon(6, 2);

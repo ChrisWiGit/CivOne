@@ -1,0 +1,573 @@
+openapi: 3.0.3
+info:
+  title: CivOne MCP HTTP Tool API
+  version: 1.1.0
+  description: |
+    OpenAPI facade for CivOne MCP tools over HTTP.
+    Endpoint path can be /mcp or /mcp/<anything>, but the body MUST be a JSON-RPC request.
+    Prefilled examples below already contain a valid tools/call envelope.
+servers:
+  - url: http://127.0.0.1:8765
+    description: Local MCP HTTP endpoint
+tags:
+  - name: MCP Tools
+
+paths:
+  /mcp/game_capture_screenshot:
+    post:
+      tags: [MCP Tools]
+      operationId: game_capture_screenshot
+      summary: Capture a full-frame screenshot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcToolCallRequest'
+            example:
+              jsonrpc: '2.0'
+              id: '1'
+              method: tools/call
+              params:
+                name: game_capture_screenshot
+                arguments: {}
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+
+  /mcp/game_capture_region:
+    post:
+      tags: [MCP Tools]
+      operationId: game_capture_region
+      summary: Capture a region screenshot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcToolCallRequest'
+            example:
+              jsonrpc: '2.0'
+              id: '1'
+              method: tools/call
+              params:
+                name: game_capture_region
+                arguments:
+                  x: 0
+                  y: 0
+                  width: 320
+                  height: 200
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+
+  /mcp/game_get_settings:
+    post:
+      tags: [MCP Tools]
+      operationId: game_get_settings
+      summary: Read grouped runtime/game settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcToolCallRequest'
+            example:
+              jsonrpc: '2.0'
+              id: '1'
+              method: tools/call
+              params:
+                name: game_get_settings
+                arguments: {}
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+
+  /mcp/game_get_map_size:
+    post:
+      tags: [MCP Tools]
+      operationId: game_get_map_size
+      summary: Get map dimensions and wrap semantics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcToolCallRequest'
+            example:
+              jsonrpc: '2.0'
+              id: '1'
+              method: tools/call
+              params:
+                name: game_get_map_size
+                arguments: {}
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+
+  /mcp/game_get_map_window:
+    post:
+      tags: [MCP Tools]
+      operationId: game_get_map_window
+      summary: Get bounded map window tiles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcToolCallRequest'
+            example:
+              jsonrpc: '2.0'
+              id: '1'
+              method: tools/call
+              params:
+                name: game_get_map_window
+                arguments:
+                  x: 0
+                  y: 0
+                  width: 10
+                  height: 10
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+
+  /mcp/game_get_map_landvalues_window:
+    post:
+      tags: [MCP Tools]
+      operationId: game_get_map_landvalues_window
+      summary: Get bounded map land values window
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcToolCallRequest'
+            example:
+              jsonrpc: '2.0'
+              id: '1'
+              method: tools/call
+              params:
+                name: game_get_map_landvalues_window
+                arguments:
+                  x: 0
+                  y: 0
+                  width: 10
+                  height: 10
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+
+  /mcp/game_get_visibility:
+    post:
+      tags: [MCP Tools]
+      operationId: game_get_visibility
+      summary: Get explored and visible masks for a player
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcToolCallRequest'
+            example:
+              jsonrpc: '2.0'
+              id: '1'
+              method: tools/call
+              params:
+                name: game_get_visibility
+                arguments:
+                  playerId: 1
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+
+  /mcp/game_get_state:
+    post:
+      tags: [MCP Tools]
+      operationId: game_get_state
+      summary: Get projected game state by path
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcToolCallRequest'
+            example:
+              jsonrpc: '2.0'
+              id: '1'
+              method: tools/call
+              params:
+                name: game_get_state
+                arguments: {}
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+
+  /mcp/game_get_entities_index:
+    post:
+      tags: [MCP Tools]
+      operationId: game_get_entities_index
+      summary: Get compact players/cities entity index
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcToolCallRequest'
+            example:
+              jsonrpc: '2.0'
+              id: '1'
+              method: tools/call
+              params:
+                name: game_get_entities_index
+                arguments: {}
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+
+  /mcp/game_validate_path:
+    post:
+      tags: [MCP Tools]
+      operationId: game_validate_path
+      summary: Validate a dot-notation game state path
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcToolCallRequest'
+            example:
+              jsonrpc: '2.0'
+              id: '1'
+              method: tools/call
+              params:
+                name: game_validate_path
+                arguments:
+                  path: GameState.GameTurn
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+
+  /mcp/game_get_units:
+    post:
+      tags: [MCP Tools]
+      operationId: game_get_units
+      summary: Get units with optional filters and key projection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcToolCallRequest'
+            example:
+              jsonrpc: '2.0'
+              id: '1'
+              method: tools/call
+              params:
+                name: game_get_units
+                arguments: {}
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+
+  /mcp/game_get_city:
+    post:
+      tags: [MCP Tools]
+      operationId: game_get_city
+      summary: Get single city by selector
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcToolCallRequest'
+            example:
+              jsonrpc: '2.0'
+              id: '1'
+              method: tools/call
+              params:
+                name: game_get_city
+                arguments:
+                  cityNameStartsWith: Rom
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+
+  /mcp/game_get_player:
+    post:
+      tags: [MCP Tools]
+      operationId: game_get_player
+      summary: Get single player by selector
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcToolCallRequest'
+            example:
+              jsonrpc: '2.0'
+              id: '1'
+              method: tools/call
+              params:
+                name: game_get_player
+                arguments:
+                  playerId: 1
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+
+  /mcp/game_list_saves:
+    post:
+      tags: [MCP Tools]
+      operationId: game_list_saves
+      summary: List valid .cos saves from configured folder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcToolCallRequest'
+            example:
+              jsonrpc: '2.0'
+              id: '1'
+              method: tools/call
+              params:
+                name: game_list_saves
+                arguments: {}
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+
+  /mcp/game_load:
+    post:
+      tags: [MCP Tools]
+      operationId: game_load
+      summary: Load a .cos save file by fileName or saveGuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcToolCallRequest'
+            example:
+              jsonrpc: '2.0'
+              id: '1'
+              method: tools/call
+              params:
+                name: game_load
+                arguments:
+                  fileName: savegame_11.cos
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+
+  /mcp/game_save:
+    post:
+      tags: [MCP Tools]
+      operationId: game_save
+      summary: Save current game as a new .cos file
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcToolCallRequest'
+            example:
+              jsonrpc: '2.0'
+              id: '1'
+              method: tools/call
+              params:
+                name: game_save
+                arguments: {}
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+
+  /mcp/game_get_players:
+    post:
+      tags: [MCP Tools]
+      operationId: game_get_players
+      summary: Get players data (all or one)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcToolCallRequest'
+            example:
+              jsonrpc: '2.0'
+              id: '1'
+              method: tools/call
+              params:
+                name: game_get_players
+                arguments:
+                  keys: [id, tribeName]
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+
+  /mcp/game_get_cities:
+    post:
+      tags: [MCP Tools]
+      operationId: game_get_cities
+      summary: Get cities data with optional filters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcToolCallRequest'
+            example:
+              jsonrpc: '2.0'
+              id: '1'
+              method: tools/call
+              params:
+                name: game_get_cities
+                arguments:
+                  keys: [id, name, owner, size]
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+
+components:
+  schemas:
+    JsonRpcToolCallRequest:
+      type: object
+      required: [jsonrpc, id, method, params]
+      properties:
+        jsonrpc:
+          type: string
+          default: '2.0'
+          example: '2.0'
+        id:
+          oneOf:
+            - type: string
+            - type: integer
+          default: '1'
+          example: '1'
+        method:
+          type: string
+          enum: [tools/call]
+          default: tools/call
+        sessionToken:
+          type: string
+          description: Optional when --mcp-no-auth is active.
+        params:
+          type: object
+          required: [name, arguments]
+          properties:
+            name:
+              type: string
+              description: MCP tool name.
+            arguments:
+              type: object
+              description: Tool-specific arguments.
+              additionalProperties: true
+
+    JsonRpcResponse:
+      type: object
+      properties:
+        jsonrpc:
+          type: string
+          example: '2.0'
+        id:
+          nullable: true
+          oneOf:
+            - type: string
+            - type: integer
+        result:
+          nullable: true
+          type: object
+          properties:
+            content:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    example: text
+                  text:
+                    type: string
+                    description: JSON string containing the actual tool payload.
+        error:
+          nullable: true
+          type: object
+          properties:
+            code:
+              type: integer
+            message:
+              type: string
+            details:
+              type: string

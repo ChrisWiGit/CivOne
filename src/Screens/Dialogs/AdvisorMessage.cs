@@ -12,13 +12,12 @@ using System.Linq;
 using CivOne.Advances;
 using CivOne.Enums;
 using CivOne.Graphics;
+using CivOne.Services;
 
 namespace CivOne.Screens.Dialogs
 {
 	internal class AdvisorMessage : BaseDialog
 	{
-		private readonly Picture[] _textLines;
-
 		private static Picture[] TextBitmaps(string[] message)
 		{
 			Picture[] output = new Picture[message.Length];
@@ -27,14 +26,24 @@ namespace CivOne.Screens.Dialogs
 			return output;
 		}
 
-        private static int PORTRAIT_SIZE = 52;
-        private static int MINIMUM = 94;
+		private static int PORTRAIT_SIZE = 52;
+		private static int MINIMUM = 94;
 
-        private static string[] advisorNames = new string[] { "Defense Minister", "Domestic Advisor", "Foreign Minister", "Science Advisor" };
-
-        private static int DialogWidth(string[] message)
+		private static string[] LocalizedAdvisorNames()
 		{
-            int advisorWidth = TextBitmaps(advisorNames).Max(b => b.Width) + PORTRAIT_SIZE;
+			ITranslationService translation = TranslationServiceFactory.GetCurrent();
+			return
+			[
+				translation.Translate("Defense Minister"),
+				translation.Translate("Domestic Advisor"),
+				translation.Translate("Foreign Minister"),
+				translation.Translate("Science Advisor")
+			];
+		}
+
+		private static int DialogWidth(string[] message)
+		{
+			int advisorWidth = TextBitmaps(LocalizedAdvisorNames()).Max(b => b.Width) + PORTRAIT_SIZE;
             int maxWidth = TextBitmaps(message).Max(b => b.Width) + PORTRAIT_SIZE;
 			maxWidth = System.Math.Max(System.Math.Max(maxWidth, advisorWidth), MINIMUM);
 			return maxWidth;
@@ -45,20 +54,18 @@ namespace CivOne.Screens.Dialogs
 			bool modernGovernment = Human.HasAdvance<Invention>();
 			IBitmap governmentPortrait = Icons.GovernmentPortrait(Human.Government, advisor, modernGovernment);
 			
-            // TODO fire-eggs common operation
-			Palette palette = Common.DefaultPalette;
-			for (int i = 144; i < 256; i++)
-			{
-				palette[i] = governmentPortrait.Palette[i];
-			}
-			this.SetPalette(palette);
+			const int portraitPaletteStart = 144;
+			using Palette palette = Common.DefaultPalette
+				.Merge(governmentPortrait.Palette, portraitPaletteStart, 256 - portraitPaletteStart);
+			SetPalette(palette);
 			
-			_textLines = TextBitmaps(message);
+			Picture[] textLines = TextBitmaps(message);
 			DialogBox.AddLayer(governmentPortrait, 2, 2);
-			DialogBox.DrawText($"{advisorNames[(int)advisor]}:", 0, 15, 47, 4);
-			DialogBox.FillRectangle(47, 11, Resources.GetText($"{advisorNames[(int)advisor]}:", 0, 15).Width + 1, 1, 11);
-			for (int i = 0; i < _textLines.Length; i++)
-				DialogBox.AddLayer(_textLines[i], 47, (_textLines[i].Height * i) + 13);
+			string advisorLabel = TranslateFormatted("{0}:", LocalizedAdvisorNames()[(int)advisor]);
+			DialogBox.DrawText(advisorLabel, 0, 15, 47, 4);
+			DialogBox.FillRectangle(47, 11, Resources.GetText(advisorLabel, 0, 15).Width + 1, 1, 11);
+			for (int i = 0; i < textLines.Length; i++)
+				DialogBox.AddLayer(textLines[i], 47, (textLines[i].Height * i) + 13);
 		}
 	}
 }

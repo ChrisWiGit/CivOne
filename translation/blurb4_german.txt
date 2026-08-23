@@ -1,0 +1,270 @@
+# CivOne Translation File
+# CC-BY-SA 4.0
+# This file contains the German translation
+# This file was auto translated using ChatGPT. Please check for errors and report them to the project.
+
+*ROADS
+Gut ausgebaute Straßen verbesserten die Verbindung zwischen Städten. Das war
+wichtig für Handel und Militär. Hochwertige Straßen waren bei fast jedem Wetter
+passierbar und konnten von Wagen viel schneller genutzt werden als bloße
+Trampelpfade. Dadurch konnten berittene Boten, Handelswagen und Militäreinheiten
+rasch durch das Straßennetz ziehen. So konnten zentral stationierte Armeen
+bedrohte Grenzen schneller erreichen. Die bekanntesten Straßen der Antike waren
+die Persische Königsstraße und die römischen Straßen Südeuropas.
+*ROADS2
+Nur von Siedlern baubar. Drücke die Straßen-Taste (R) oder wähle Straße bauen
+im Befehlsmenü.
+Straßen können erst nach Brückenbau über Flüsse gebaut werden.
+Einheiten, die sich von einer Straßenkachel zur nächsten bewegen,
+verbrauchen unabhängig vom Gelände nur 1/3 Bewegungspunkt.
+Straßen erhöhen den Handel auf Grasland, Ebenen und Wüsten.
+
+*RAILROADS
+Eisenbahnen revolutionierten den Transport, da sie Menschen, Rohstoffe,
+Waren und Truppen schnell und günstig bewegten. Sie waren entscheidend für die
+Industrialisierung. Sie förderten das Wachstum der Industrie durch stark
+gesenkte Transportkosten und trieben zugleich neue Technik voran.
+Fortschritte bei Lokomotiven und Ingenieurwesen wirkten sich auch auf andere
+Bereiche aus. Eisenbahnen waren die ersten großen Industriekonzerne.
+*RAILROADS2
+Nur von Siedlern baubar und nur auf Feldern mit Straße.
+Drücke die Eisenbahn-Taste (R).
+Einheiten, die sich von einer Eisenbahnkachel zur nächsten bewegen,
+verbrauchen unabhängig vom Gelände keine Bewegungspunkte.
+Eisenbahnen erhöhen Nahrung und Produktion eines Feldes um 1/2
+(abgerundet). Der Handel steigt ebenso, jedoch vor den Effekten
+von Republik oder Demokratie.
+
+*IRRIGATION
+Als frühe Bauern aus den Hügeln in die Täler von Nil, Tigris und Euphrat
+zogen, mussten sie Bewässerung entwickeln. Die Flüsse durchquerten trockenes
+Land mit kaum Regen. Durch Bewässerung konnte Wasser aus den Flüssen auf die
+umliegenden Felder geleitet werden und das Land fruchtbar machen. Seit diesen
+Tagen ist Bewässerung ein wichtiges Werkzeug der Landwirtschaft und ließ viele
+Wüsten erblühen. Moderne Beispiele sind die fruchtbaren Wüsten Kaliforniens.
+*IRRIGATION2
+Bewässerung erhöht den Nahrungswert von Fluss-, Grasland-, Ebenen-, Wüsten-
+und Hügel-Feldern. Nur Felder direkt neben Wasser
+(Ozean oder Fluss) oder bestehender Bewässerung können bewässert werden.
+
+*MINING
+Als die ersten Menschen entstanden, lagen fast reine Vorkommen mehrerer Metalle
+offen an der Erdoberfläche. Besonders häufig waren Gold, Silber und Kupfer.
+Mit der Zeit wurden diese Lager erschöpft und man begann tiefer zu graben.
+Der Abbau der Erde nach Rohstoffen dauert bis heute an, wobei die Zahl der
+gesuchten Stoffe stark gewachsen ist. Neue Metalle, Rohstoffe oder Verfahren
+machten einst wertlose Gebiete zu Quellen für Öl, Uran, Platin und mehr.
+*MINING2
+Bergbau erhöht die Produktion von Wüsten- (+1), Hügel- (+3)
+und Berg-Feldern (+1).
+
+*FORTIFY
+Römische Legionen beendeten ihre Märsche früh genug, um jede Nacht ein
+befestigtes Lager zu errichten. Sie kannten den Wert von Verteidigungsanlagen.
+Wann immer ein Angriff erwartet wurde, bauten Armeen meist Schutzstellungen.
+Befestigte Verteidiger kämpften deutlich stärker und waren schwerer zu
+vertreiben.
+*FORTIFY2
+Eine befestigte Einheit erhält +50% Verteidigung.
+
+*FORTRESS
+Um wichtige Punkte wie Gebirgspässe, Furten oder Landungsstrände zu sichern,
+kannst du eine Festung bauen. Gut verteidigt kann sie Feinde aufhalten.
+Festungen können von Siedlern gebaut werden, sobald du Konstruktion erforscht
+hast. Sie können auf jedem Landfeld außer Städten errichtet werden. Wird auf
+einer Festung eine Stadt gegründet, verschwindet die Festung. Eine Festung
+verdoppelt die Stärke aller Verteidiger nach Gelände- und Veteranenboni.
+Einheiten verteidigen die Festung nacheinander. Anders als auf normalem
+Gelände werden nicht alle Verteidiger zerstört, wenn eine Einheit fällt.
+*FORTRESS2
+Nur von Siedlern baubar. Drücke die Festungs-Taste (F) oder wähle Festung
+im Befehlsmenü.
+Verdoppelt die Stärke der Verteidiger.
+Einheiten verteidigen einzeln.
+Kann nicht in Städten gebaut werden oder bestehen.
+
+*PILLAGE
+Du kannst feindliche Bewässerung und Bergwerke zerstören, indem du eine
+Einheit auf ein verbessertes Feld ziehst und plündern befiehlst. Dadurch sinkt
+die Produktion der nahen Stadt und der Gegner muss später alles neu aufbauen.
+Wenn du die Stadt bald erobern willst, ist Plündern oft unklug, da Stadt und
+Produktion bald dir gehören könnten.
+*PILLAGE2
+Jedes durch Bergbau oder Bewässerung verbesserte Feld kann geplündert werden.
+Drücke die Plündern-Taste (Shift + P) oder wähle Plündern im Befehlsmenü.
+Die plündernde Einheit muss noch Bewegung übrig haben.
+
+*DISBAND
+Manchmal möchtest du eigene Einheiten auflösen. Vielleicht sind sie veraltet,
+kosten Unterhalt oder verursachen Unzufriedenheit unter Republik oder
+Demokratie. Um eine Einheit zu entfernen, löse sie auf. Die Einheit wird von
+der Karte und aus ihrer Heimatstadt entfernt.
+*DISBAND2
+Um eine wartende Einheit aufzulösen,
+drücke die Auflösen-Taste (Shift + D) oder wähle Auflösen
+im Befehlsmenü.
+
+*VETERAN UNITS
+Im Amerikanischen Bürgerkrieg sagte man über unerfahrene Truppen nach ihrem
+ersten Gefecht, sie hätten "den Elefanten gesehen". Sie waren nun Veteranen,
+Teil von etwas, das Außenstehenden nie völlig erklärt werden konnte.
+Historische Belege zeigen, dass erfahrene Soldaten deutlich häufiger
+überlebten und ihre Aufgabe erfüllten als unerfahrene Truppen. Für
+US-Ersatzsoldaten im Zweiten Weltkrieg galten die ersten zwei Wochen im Kampf
+als die gefährlichsten. Danach waren sie Veteranen und kannten die Tricks des
+Überlebens auf dem Schlachtfeld.
+*VETERAN UNITS2
+Veteranen erhalten +50% auf Angriff und Verteidigung.
+Einheiten werden Veteranen durch gewonnene Kämpfe oder wenn sie in
+einer Stadt mit Kaserne gebaut werden.
+
+*ANARCHY
+Anarchie ist der Zusammenbruch der Regierung und jeder politischen Ordnung.
+Der Staat und seine Dienste funktionieren nicht mehr. Obwohl Anarchie oft als
+Alternative vorgeschlagen wurde, fand sie nie breite Zustimmung. In der
+Geschichte trat sie nach Revolutionen, Kriegen, Naturkatastrophen oder Seuchen
+auf. Fast immer bedeutete Anarchie Panik, Chaos, Verschwendung und Zerstörung.
+*ANARCHY2
+Felder mit drei oder mehr Einheiten einer Ware produzieren eins weniger.
+Ein Feld mit drei Nahrung liefert unter Anarchie also nur zwei.
+Einheiten bis zur Stadtgröße benötigen keinen Unterhalt.
+Militäreinheiten in Städten senken Unzufriedenheit.
+Keine Steuern und keine Forschung.
+
+*DESPOTISM
+Despotismus ist eine primitive Regierungsform, aber für junge Zivilisationen
+nützlich. Da Einheiten wenig Unterhalt kosten, können große Armeen aufgestellt
+und neue Projekte rasch gebaut werden. Langfristig hemmt Despotismus jedoch
+das Wachstum der Städte. Um große Städte zu entwickeln, brauchst du später
+eine bessere Regierungsform mit höherer Nahrung und Produktion. Despotismus
+eignet sich besonders für Expansion und Krieg.
+*DESPOTISM2
+Felder mit Produktion ab 3 verlieren eins (3 Nahrung -> 2).
+Einheiten der Heimatstadt bis zur Stadtgröße benötigen keinen Unterhalt.
+Militäreinheiten in Städten senken Unzufriedenheit.
+
+*MONARCHY
+Monarchie ersetzt oft den Despotismus. Unter einer Monarchie lassen sich
+Nahrung und Produktion durch Bergbau und Bewässerung stark steigern, sobald
+deine Städte groß genug sind. Kriege können etwas schwieriger werden und neue
+Produktion langsamer wachsen, doch langfristig gewinnen deine Städte viel mehr
+Stärke und gleichen frühe Nachteile aus.
+*MONARCHY2
+Normale Wirtschaftseffekte.
+Einheiten kosten 1 Produktion pro Runde Unterhalt.
+Militäreinheiten in Städten senken Unzufriedenheit.
+
+*COMMUNISM
+Kommunismus ähnelt der Monarchie mit einem wichtigen Unterschied.
+Unter kommunistischer Herrschaft ist Korruption in allen Städten gleich hoch.
+Das macht ihn ideal für weit verstreute Reiche. Normalerweise ist die
+Korruption an den Randgebieten enorm, doch unter Kommunismus bleibt sie
+kontrollierbar. Kommunismus erlaubt wie die Monarchie deutlich höhere
+Produktion als Despotismus.
+*COMMUNISM2
+Normale Wirtschaftseffekte.
+Einheiten kosten 1 Produktion pro Runde Unterhalt.
+Militäreinheiten in Städten senken Unzufriedenheit.
+Gleiche Korruption in allen Städten.
+
+*REPUBLIC
+Die republikanische Regierungsform fördert wirtschaftliche Freiheit und führt
+zu stark steigendem Handel. Mehr Handel bedeutet mehr Luxus, Steuern und
+Forschung. Krieg ist unter einer Republik jedoch deutlich schwerer, da
+Militäreinheiten außerhalb ihrer Heimatstadt einen Bürger unglücklich machen.
+Die meisten Städte können daher nur wenige Einheiten im Feld versorgen, ohne
+Unruhen zu riskieren. Die Republik wird besonders nützlich, wenn deine Städte
+groß geworden sind und vom zusätzlichen Handel profitieren.
+*REPUBLIC2
++1 Handel pro Feld mit bestehendem Handel.
+Muss alle Friedensangebote annehmen.
+Militär in Städten senkt Unzufriedenheit nicht - kein Kriegsrecht.
+Militäreinheiten außerhalb der Stadt erhöhen Unzufriedenheit.
+Einheiten kosten 1 Produktion pro Runde Unterhalt.
+
+*DEMOCRACY
+Eine Demokratie erhöht den Handel wie eine Republik und besitzt einen weiteren
+großen Vorteil. In demokratischen Städten gibt es keine Korruption, was sie
+für große Reiche sehr wertvoll macht. Allerdings bringt Demokratie zwei
+Probleme mit sich. Erstens machen Militäreinheiten außerhalb ihrer Heimatstadt
+gleich zwei Bürger unglücklich. Kriege sind daher besonders schwierig.
+Zweitens stürzt die Regierung sofort in Anarchie, wenn irgendeine Stadt in
+Unruhe gerät. Demokratie bietet enorme wirtschaftliche Vorteile, ist aber
+empfindlich und verlangt ständige Aufmerksamkeit.
+*DEMOCRACY2
++1 Handel pro Feld mit bestehendem Handel.
+Muss alle Friedensangebote annehmen.
+Militär in Städten senkt Unzufriedenheit nicht - kein Kriegsrecht.
+Militäreinheiten außerhalb der Stadt erhöhen Unzufriedenheit.
+Einheiten kosten 1 Produktion pro Runde Unterhalt.
+Keine Korruption. Unruhen führen zu Anarchie.
+
+*POLLUTION
+Verschmutzung kann durch hohe Produktion, große Städte, Atomwaffen oder einen
+GAU in einem Kernkraftwerk entstehen. Hat eine Stadt ein Verschmutzungsproblem,
+zeigen Schornsteine im Stadtfenster die Wahrscheinlichkeit an, dass ein nahes
+Feld verschmutzt wird.
+*POLLUTION2
+Verschmutzung auf einem Feld kann von einem Siedler beseitigt werden.
+Ziehe den Siedler auf das Feld und drücke die Verschmutzungs-Taste (P)
+oder wähle Verschmutzung im Befehlsmenü. Die Säuberung dauert vier Runden.
+Gerät die Verschmutzung außer Kontrolle, kann globale Erwärmung auftreten.
+
+*SENTRY
+Einheiten im Wachmodus werden ausgegraut angezeigt und warten nicht mehr jede
+Runde blinkend auf Befehle. Das ist nützlich, wenn du eine Einheit auf einem
+Feld belassen willst, sie aber nicht befestigen kannst oder möchtest.
+Wacheinheiten in Städten werden außerdem automatisch auf passende Schiffe
+verladen, die aus der Stadt auslaufen.
+*SENTRY2
+Versetze eine Einheit in Wachstellung mit der Wach-Taste (S) oder über das
+Befehlsmenü. Eine Wacheinheit wird durch Klick mit der linken Maustaste oder
+durch einen benachbarten Feind aktiviert.
+
+*LUXURIES
+Luxusgüter für deine Bevölkerung werden durch helle Diamanten im Ressourcen-
+fenster der Stadt angezeigt. Je zwei Luxusgüter machen einen zufriedenen
+Bürger glücklich oder einen unglücklichen Bürger zufrieden. Die Menge an
+Luxus hängt vor allem von der Luxus-Rate deiner Zivilisation ab, also dem
+Anteil des Handels jeder Stadt, der als Luxus ankommt. Diese Rate kann im
+Spielmenü über Steuer- und Forschungsrate angepasst werden.
+*LUXURIES2
+Luxus kann außerdem durch Marktplätze
+und Banken erhöht werden oder indem Bürger zu Entertainern werden.
+
+*TAXES
+Die von einer Stadt erhobenen Steuern werden durch Goldmünzen im Ressourcen-
+fenster angezeigt. Die Einnahmen decken zuerst den Unterhalt der Gebäude.
+Überschüsse gehen in die Staatskasse, Defizite werden daraus bezahlt.
+Die Steuerhöhe hängt hauptsächlich von der Steuer-Rate deiner Zivilisation ab,
+also dem Anteil des Handels jeder Stadt, der als Steuern eingeht.
+Diese Rate kann im Spielmenü angepasst werden.
+*TAXES2
+Steuern lassen sich außerdem durch Marktplätze
+und Banken erhöhen oder indem Bürger zu Steuereintreibern werden.
+
+*SCIENCE
+Die Forschung einer Stadt wird durch Glühbirnen im Ressourcenfenster
+angezeigt. Die Forschung wird zur bisherigen Forschung addiert und ermöglicht
+bei genügend Punkten eine neue Errungenschaft. Die Menge an Wissenschaft hängt
+hauptsächlich von der Forschungsrate deiner Zivilisation ab, also dem Anteil
+des Handels jeder Stadt, der als Wissen ankommt. Diese Rate kann im Spielmenü
+angepasst werden.
+*SCIENCE2
+Forschung lässt sich außerdem steigern
+durch Bibliotheken, Universitäten, bestimmte Wunder und Wissenschaftler.
+
+*TRADE ROUTES
+Handelsrouten entstehen, wenn du eine Karawane in eine andere Stadt bewegst:
+eine eigene Stadt mindestens zehn Felder von der Heimatstadt entfernt oder
+eine fremde Stadt. Die Ankunft einer Karawane bringt sofort Gold sowie eine
+Handelsroute. Diese erhöht danach dauerhaft den Handel der Heimatstadt, außer
+die verbundene Stadt wird zerstört. Der Wert einer Handelsroute ist am größten
+zwischen fremden Städten auf verschiedenen Kontinenten und steigt mit Größe
+und Entfernung beider Städte. Handelsrouten sind entscheidend für starke
+Wirtschaften und große Reiche.
+
+*TRADE ROUTES2
+Werden durch Karawanen erstellt.
+
+*END

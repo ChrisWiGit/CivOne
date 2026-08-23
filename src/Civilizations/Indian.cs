@@ -9,34 +9,33 @@
 
 using CivOne.Enums;
 using CivOne.Leaders;
+using CivOne.Services;
 
 namespace CivOne.Civilizations
 {
 	internal class Indian : BaseCivilization<Gandhi>
 	{
-		public Indian() : base(Civilization.Indians, "Indian", "Indians", "gand")
+		public Indian() : base(Civilization.Indians, TranslationServiceFactory.GetCurrent().Translate("Indian"), TranslationServiceFactory.GetCurrent().Translate("Indians"), "gand")
 		{
 			StartX = 57;
 			StartY = 24;
-			CityNames = new[]
-			{
-				"Delhi",
-				"Bombay",
-				"Madras",
-				"Bangalore",
-				"Calcutta",
-				"Lahore",
-				"Karachi",
-				"Kolhapur",
-				"Jaipur",
-				"Hyderbad",
-				"Bengal",
-				"Chittagong",
-				"Punjab",
-				"Dacca",
-				"Indus",
-				"Ganges"
-			};
+			CityNames = TranslateArray(
+				"Delhi\n" +
+				"Bombay\n" +
+				"Madras\n" +
+				"Bangalore\n" +
+				"Calcutta\n" +
+				"Lahore\n" +
+				"Karachi\n" +
+				"Kolhapur\n" +
+				"Jaipur\n" +
+				"Hyderbad\n" +
+				"Bengal\n" +
+				"Chittagong\n" +
+				"Punjab\n" +
+				"Dacca\n" +
+				"Indus\n" +
+				"Ganges");
 		}
 	}
 }

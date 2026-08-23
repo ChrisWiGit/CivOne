@@ -17,6 +17,7 @@ namespace CivOne.Buildings
 		public SSModule() : base(32)
 		{
 			Name = "SS Module";
+			TranslatedName = Translate("SS Module");
 			RequiredTech = new Robotics();
 			Type = Building.SSModule;
 		}

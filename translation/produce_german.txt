@@ -1,0 +1,115 @@
+# CivOne Translation File
+# CC-BY-SA 4.0
+# This file contains the German translation
+*Temple
+*Cathedral
+*Colosseum
+Die Bevölkerung ist unzufrieden.^
+Wir sollten ein $RPLC1 bauen.
+
+*Barracks
+Wir sollten ein $RPLC1 bauen^
+um erfahrene Einheiten zu produzieren.
+
+*Granary
+Wir sollten ein $RPLC1 bauen^
+um das Wachstum der Stadt zu fördern.
+
+*MarketPlace
+*Bank
+Wir sollten ein $RPLC1 bauen^
+um die Wirtschaft zu verbessern.
+
+*Library
+*University
+Wir sollten ein $RPLC1 bauen^
+um unser Wissen zu erweitern.
+
+*Courthouse
+Wir sollten ein $RPLC1 bauen^
+um Korruption zu reduzieren.
+
+*City Walls
+Wir sollten ein $RPLC1 bauen^
+um unsere Stadt zu schützen.
+
+*Aqueduct
+Wir sollten ein $RPLC1 bauen^
+um das Wachstum unserer Stadt zu fördern.
+
+*Mass Transit
+*Recycling Cntr.
+Wir sollten ein $RPLC1 bauen, um^
+Umweltverschmutzung zu reduzieren.
+
+*Factory
+*Mfg. Plant
+*Power Plant
+*Hydro Plant
+*Nuclear Plant
+Wir sollten ein $RPLC1 bauen^
+um die Produktivität zu steigern.
+
+*SDI Defense
+Wir sollten ein $RPLC1 bauen.
+
+*SS Structural
+*SS Component
+*SS Module
+Wir sollten ein $RPLC1 bauen^
+um andere Welten zu kolonisieren.
+
+*Settlers
+Wir sollten ein $RPLC1 bauen^
+um den Kontinent zu besiedeln.
+
+*Militia
+*Phalanx
+*Musketeers
+*Riflemen
+*Mech. Inf.
+Wir sollten ein $RPLC1 bauen^
+um unsere Städte zu verteidigen.
+
+*Legion
+*Cavalry
+*Knights
+*Catapult
+*Cannon
+*Chariot
+*Armor
+*Artillery
+*Fighter
+*Bomber
+Wir sollten ein $RPLC1 bauen^
+um unsere Feinde anzugreifen.
+
+*Trireme
+*Sail
+Wir sollten $RPLC1s bauen^
+um die Welt zu erkunden.
+
+*Frigate
+*Ironclad
+*Cruiser
+*Battleship
+*Submarine
+Wir sollten $RPLC1s bauen^
+um die Meere zu beherrschen.
+
+*Carrier
+*Transport
+*Nuclear
+Wir sollten ein $RPLC1 bauen.
+
+*Diplomat
+Wir sollten ein $RPLC1 bauen^
+um Kontakt mit anderen^
+Zivilisationen aufzunehmen.
+
+*Caravan
+Wir sollten ein $RPLC1 bauen^
+um Handelsrouten mit anderen^
+Zivilisationen zu etablieren.
+
+*END

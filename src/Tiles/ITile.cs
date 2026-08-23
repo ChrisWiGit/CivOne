@@ -7,6 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System.Linq;
 using CivOne.Enums;
 using CivOne.Units;
 
@@ -18,7 +19,7 @@ namespace CivOne.Tiles
 		int Y { get; }
 		Terrain Type { get; }
 		bool Special { get; }
-		byte ContinentId { get; set; }
+		int ContinentId { get; set; }
 		byte LandValue { get; set; }
 		byte LandScore { get; }
 		byte Movement { get; }
@@ -54,7 +55,7 @@ namespace CivOne.Tiles
 		byte FortressCost { get; set; }
 		bool Mine { get; set; }
 		bool Hut { get; set; }
-		byte Visited { get; }
+		uint Visited { get; }
 		void Visit(byte owner);
 		bool IsOcean { get; }
 		City City { get; }
@@ -66,6 +67,10 @@ namespace CivOne.Tiles
 		bool SameLocationAs(ITile other)
 		{
 			return this.X == other.X && this.Y == other.Y;
+		}
+		bool OfTypes(params Terrain[] types)
+		{
+			return types.Any(t => t == Type);
 		}
 	}
 }

@@ -18,8 +18,12 @@ using CivOne.Buildings;
 using CivOne.Civilizations;
 using CivOne.Enums;
 using CivOne.Graphics;
+using CivOne.Services;
 using CivOne.Screens;
 using CivOne.Wonders;
+using System.Threading;
+using System.Globalization;
+using System.Diagnostics;
 
 namespace CivOne
 {
@@ -28,34 +32,163 @@ namespace CivOne
 		private static Resources Resources => Resources.Instance;
 		private static void Log(string text, params object[] parameters) => RuntimeHandler.Runtime.Log(text, parameters);
 
-		public static Random Random; // = new Random((int)DateTime.Now.Ticks);
-		
-		public static IAdvance[] Advances = Reflect.GetAdvances().ToArray();
-		public static IBuilding[] Buildings = Reflect.GetBuildings().ToArray();
-		public static IWonder[] Wonders = Reflect.GetWonders().ToArray();
-		public static ICivilization[] Civilizations => Reflect.GetCivilizations().ToArray();
-		public static byte[] ColourLight = new byte[] { 12, 15, 10, 9, 14, 11, 13, 7 };
-		public static byte[] ColourDark = new byte[] { 4, 7, 2, 1, 10, 3, 4, 8 };
+		public static Random? Random; // = new Random((int)DateTime.Now.Ticks);
+
+		/// <summary>
+		/// True if Caps Lock is currently active. 
+		/// It does not track the state of the Shift key, as Shift is properly tracked via KeyboardEventArgs.Modifier, 
+		/// but Caps Lock is not a modifier in the same sense and thus requires separate tracking.
+		/// </summary>
+		internal static bool CapsLockActive;
+		internal static bool ShiftKeyHeld;
+
+		private static IAdvance[]? _advances;
+		private static IBuilding[]? _buildings;
+		private static IWonder[]? _wonders;
+
+		/// <summary>
+		/// Every advance in the game.
+		/// Resolved on first use, not in the static initializer: reflecting over and instantiating every
+		/// advance needs a registered <see cref="RuntimeHandler.Runtime"/>, and a static initializer that
+		/// throws poisons the whole type for the rest of the process. Touching an unrelated member such as
+		/// <see cref="ColourLight"/> must not depend on a running game.
+		/// </summary>
+		public static IAdvance[] Advances => _advances ??= [.. Reflect.GetAdvances()];
+
+		/// <summary>
+		/// Every building in the game. Resolved on first use, see <see cref="Advances"/>.
+		/// </summary>
+		public static IBuilding[] Buildings => _buildings ??= [.. Reflect.GetBuildings()];
+
+		/// <summary>
+		/// Every wonder in the game. Resolved on first use, see <see cref="Advances"/>.
+		/// </summary>
+		public static IWonder[] Wonders => _wonders ??= [.. Reflect.GetWonders()];
+
+		/// <summary>
+		/// Every civilization in the game, as a fresh set of instances on every access.
+		/// Reading this is expensive (it reflects over every loaded assembly), so read it once into a local
+		/// instead of calling it inside a loop.
+		/// </summary>
+		public static ICivilization[] Civilizations => [.. Reflect.GetCivilizations()];
+		/// <summary>
+		/// Light player colours, indexed by player number (0 = barbarians). Supports up to <see cref="Game.MaxPlayers"/> players.
+		/// Indices 0-7 are unchanged from the original 8-player palette for visual continuity with legacy SVE saves.
+		/// Beyond player 7, the light colour repeats every 8 slots; combined with <see cref="ColourDark"/> every (light, dark) pair stays unique.
+		/// Tribe/leader names in the UI remain the authoritative way to distinguish players once colours repeat.
+		/// Private, so every caller goes through <see cref="PlayerColourLight"/> and cannot index it out of range.
+		/// </summary>
+		private static readonly byte[] ColourLight =
+		[
+			12, 15, 10,  9, 14, 11, 13,  7,	// 0-7
+			12, 15, 10,  9, 14, 11, 13,  7,	// 8-15
+			12, 15, 10,  9, 14, 11, 13,  7,	// 16-23
+			12, 15, 10,  9, 14, 11, 13,  7		// 24-31
+		];
+
+		/// <summary>
+		/// Dark player colours, indexed by player number (0 = barbarians). Paired with <see cref="ColourLight"/>, see remarks there.
+		/// </summary>
+		private static readonly byte[] ColourDark =
+		[
+			 4,  7,  2,  1, 10,  3,  4,  8,	// 0-7
+			 1,  4,  6,  5,  8,  4,  2,  1,	// 8-15
+			 8,  2,  1,  6,  4,  5,  8,  2,	// 16-23
+			 5,  6,  8,  4,  1,  6,  5,  6		// 24-31
+		];
+
+		/// <summary>
+		/// The number of distinct player colour slots before the colours repeat.
+		/// </summary>
+		public static int PlayerColourCount => ColourLight.Length;
+
+		/// <summary>
+		/// Returns the light player colour for the given player index, wrapping safely if the index is out of range.
+		/// </summary>
+		/// <param name="playerIndex">The player slot to get the colour for.</param>
+		/// <returns>The palette index of the light colour.</returns>
+		public static byte PlayerColourLight(int playerIndex) => ColourLight[WrapPlayerIndex(playerIndex)];
+
+		/// <summary>
+		/// Returns the dark player colour for the given player index, wrapping safely if the index is out of range.
+		/// </summary>
+		/// <param name="playerIndex">The player slot to get the colour for.</param>
+		/// <returns>The palette index of the dark colour.</returns>
+		public static byte PlayerColourDark(int playerIndex) => ColourDark[WrapPlayerIndex(playerIndex)];
+
+		private static int WrapPlayerIndex(int playerIndex)
+			=> ((playerIndex % ColourLight.Length) + ColourLight.Length) % ColourLight.Length;
 		
 		internal static IEnumerable<string> AllCityNames => Civilizations.Select(x => x.CityNames).SelectMany(x => x);
 
 		private static List<IScreen> _screens = new List<IScreen>();
+		private static readonly Lock _attributeCacheSync = new();
+		private static readonly Dictionary<(Type ObjectType, Type AttributeType), bool> _attributeCache = [];
+		/// <summary>
+		/// Returns a snapshot of all currently active screens in stack order (bottom to top).
+		/// </summary>
+		/// <remarks>
+		/// For new code, prefer IScreenQueryService.Screens obtained from ScreenServiceFactory.CreateQueryService().
+		/// This provides better testability and loose coupling.
+		/// </remarks>
 		internal static IScreen[] Screens => _screens.ToArray();
 
-		internal static bool HasAttribute<T>(object checkObject) where T : Attribute
+		/// <summary>
+		/// Returns the screen at the bottom of the stack, or <c>null</c> if the stack is empty.
+		/// </summary>
+		/// <remarks>
+		/// For new code, prefer IScreenQueryService.LastScreen obtained from ScreenServiceFactory.CreateQueryService().
+		/// This provides better testability and loose coupling.
+		/// </remarks>
+		internal static IScreen? LastScreen => _screens.LastOrDefault();
+
+		internal static bool HasAttribute<T>(object? checkObject) where T : Attribute
 		{
 			if (checkObject == null)
 				return false;
-			return Attribute.IsDefined(checkObject.GetType(), typeof(T));
+
+			Type objectType = checkObject.GetType();
+			Type attributeType = typeof(T);
+			return HasAttribute(objectType, attributeType);
 		}
 
-		public static IScreen TopScreen
+		private static bool HasAttribute(Type objectType, Type attributeType)
+		{
+			lock (_attributeCacheSync)
+			{
+				if (_attributeCache.TryGetValue((objectType, attributeType), out bool isDefined))
+				{
+					return isDefined;
+				}
+
+				isDefined = Attribute.IsDefined(objectType, attributeType);
+				_attributeCache[(objectType, attributeType)] = isDefined;
+				return isDefined;
+			}
+		}
+
+		/// <summary>
+		/// Returns the topmost active screen, favouring modal screens if any are present.
+		/// Returns <c>null</c> if the stack is empty.
+		/// </summary>
+		/// <remarks>
+		/// For new code, prefer IScreenQueryService.TopScreen obtained from ScreenServiceFactory.CreateQueryService().
+		/// This provides better testability and loose coupling.
+		/// </remarks>
+		public static IScreen? TopScreen
 		{
 			get
 			{
-				if (_screens.Any(HasAttribute<Modal>))
-					return _screens.Last(HasAttribute<Modal>);
-				return _screens.LastOrDefault();
+				IScreen[] screens = [.. _screens];
+				for (int i = screens.Length - 1; i >= 0; i--)
+				{
+					if (HasAttribute<ModalAttribute>(screens[i]))
+					{
+						return screens[i];
+					}
+				}
+
+				return screens.LastOrDefault();
 			}
 		}
 
@@ -63,39 +196,94 @@ namespace CivOne
 		{
 			get
 			{
-				if (TopScreen == null)
+				IScreen? topScreen = TopScreen;
+				if (topScreen == null)
 					return MouseCursor.None;
-				return TopScreen.Cursor;
+
+				return topScreen.Cursor;
 			}
 		}
 
+
+		/// <summary>
+		/// Gets a <b>copy</b> of the default palette.
+		/// You must not call Copy() on the returned palette, as it is already a copy.
+		/// 
+		/// You should use "using" on the returned palette, to ensure it is disposed properly after use, to avoid memory leaks.
+		/// </summary>
+		/// <example>
+		/// <code>
+		/// using Palette palette = Common.DefaultPalette
+		/// </code>
+		/// </example>
 		public static Palette DefaultPalette
 		{
 			get
 			{
-				GamePlay gamePlay = GamePlay;
+				GamePlay? gamePlay = GamePlay;
 				if (gamePlay != null)
 					return gamePlay.MainPalette.Copy();
 				return Resources["SP257"].Palette.Copy();
 			}
 		}
 
-		public static GamePlay GamePlay => (GamePlay)_screens.FirstOrDefault(x => x is GamePlay);
+		public static GamePlay? GamePlay => (GamePlay?)_screens.FirstOrDefault(x => x is GamePlay);
 
         internal static void SetRandomSeed(ushort seed) => Random = new Random(seed == ushort.MaxValue ? -1 : seed);
+		internal static void SetRandomSeed(int seed) => Random = new Random(seed);
         internal static void SetRandomSeed() => SetRandomSeed(ushort.MaxValue);
 		
-		internal static void AddScreen(IScreen screen) => _screens.Add(screen);
-		
-		internal static void DestroyScreen(IScreen screen)
+		/// <summary>
+		/// Adds a screen to the top of the screen stack and makes it active.
+		/// </summary>
+		/// <param name="screen">The screen to add.</param>
+		/// <remarks>
+		/// For new code, prefer IScreenCommandService.AddScreen obtained from ScreenServiceFactory.CreateCommandService().
+		/// This provides better testability and loose coupling.
+		/// If null is passed, this method does nothing.
+		/// </remarks>
+		internal static void AddScreen(IScreen? screen)
 		{
-			screen?.Dispose();
-			_screens.Remove(screen);
+			if (screen == null)
+			{
+				Debug.Assert(false, "Attempted to add null screen.");
+				return;
+			}
+			if (_screens.Contains(screen))
+			{
+				return;
+			}
+
+			_screens.Add(screen);
+		}
+		
+		/// <summary>
+		/// Removes a screen from the screen stack and disposes it.
+		/// </summary>
+		/// <param name="screen">The screen to remove and dispose.</param>
+		/// <remarks>
+		/// For new code, prefer IScreenCommandService.DestroyScreen obtained from ScreenServiceFactory.CreateCommandService().
+		/// This provides better testability and loose coupling.
+		/// </remarks>
+		internal static void DestroyScreen(IScreen? screen)
+		{
+			if (screen == null)
+			{
+				return;
+			}
+
+			// Remove all references first, then dispose once.
+			// This avoids disposed instances remaining in the stack when a screen was added more than once.
+			while (_screens.Remove(screen))
+			{
+			}
+
+			screen.Dispose();
 		}
 		
 		internal static bool HasScreenType<T>() where T : IScreen => _screens.Any(x => x is T);
 		
-		internal static string CaptureFilename
+		internal static string? CaptureFilename
 		{
 			get
 			{
@@ -131,7 +319,7 @@ namespace CivOne
 
 		internal static string NumberSeperator(int number)
 		{
-			string input = number.ToString();
+			string input = number.ToString(CultureInfo.InvariantCulture);
 			input = input.PadLeft(3 - (input.Length % 3) + input.Length, '0');
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < input.Length; i++)
@@ -160,7 +348,7 @@ namespace CivOne
 			else if (turn < 300) return ((turn - 250) * 10) + 1000;
 			else if (turn < 350) return ((turn - 300) * 5) + 1500;
 			else if (turn < 400) return ((turn - 350) * 2) + 1750;
-			return (turn - 400) + 1850;
+			return turn - 400 + 1850;
 		}
 		
 		public static string YearString(ushort turn, bool zeroAd = false)
@@ -168,21 +356,22 @@ namespace CivOne
 			int year = TurnToYear(turn);
 			if (zeroAd && year == 1) year = 0;
 			if (year < 0)
-				return $"{-year} BC";
-			return $"{year} AD";
+				return $"{-year} " + TranslationServiceFactory.GetCurrent().Translate("BC");
+			return $"{year} " + TranslationServiceFactory.GetCurrent().Translate("AD");
 		}
 
 		public static string DifficultyName(int difficuly)
 		{
-			switch (difficuly)
+			ITranslationService translation = TranslationServiceFactory.GetCurrent();
+			return difficuly switch
 			{
-				case 1: return "Lord";
-				case 2: return "Prince";
-				case 3: return "King";
-				case 4: return "Emperor";
-				case 5: return "Deity";
-				default: return "Chief";
-			}
+				1 => translation.Translate("Warlord"),
+				2 => translation.Translate("Prince"),
+				3 => translation.Translate("King"),
+				4 => translation.Translate("Emperor"),
+				5 => translation.Translate("Deity"),
+				_ => translation.Translate("Chieftain"),
+			};
 		}
 
 		internal static int CitizenGroup(Citizen citizen)
@@ -205,7 +394,7 @@ namespace CivOne
 		
 		public static bool InCityRange(int x1, int y1, int x2, int y2) => new Rectangle(x2 - 2, y2 - 2, 5, 5).IntersectsWith(new Rectangle(x1, y1, 1, 1));
 		
-		public static int DistanceToTile(int x1, int y1, int x2, int y2) => Math.Max(Math.Min(Math.Abs(x2 - x1), Math.Abs(Map.WIDTH - (x2 - x1))), Math.Abs(y2 - y1));
+		public static int DistanceToTile(int x1, int y1, int x2, int y2) => Math.Max(Math.Min(Math.Abs(x2 - x1), Map.WIDTH - Math.Abs(x2 - x1)), Math.Abs(y2 - y1));
 
         // The above function do not work properly at "dateline"  ( methink is is just a "Math.Abs" that is missing ? )   I use the one below.   JR
         /*  ******************************************************************************************************** */
@@ -265,14 +454,14 @@ namespace CivOne
 			return BytesToArray(reader.ReadBytes(length), itemLength);
 		}
 		
-		private static Palette _palette16;
+		private static Palette? _palette16;
 		public static Palette GetPalette16
 		{
 			get
 			{
 				if (_palette16 == null)
 				{
-					byte[] shades = new byte[] { 0, 104, 183, 255 };
+					byte[] shades = [0, 104, 183, 255];
 					_palette16 = new[]
 					{
 						Colour.Transparent,
@@ -297,7 +486,7 @@ namespace CivOne
 			}
 		}
 
-		private static Palette _palette256;
+		private static Palette? _palette256;
 		public static Palette GetPalette256
 		{
 			get
@@ -309,43 +498,45 @@ namespace CivOne
 					{
 						if (i >= 16 && i < 32)
 						{
-							int ii = (i % 16);
+							int ii = i % 16;
 							_palette256[i] = new Colour(254 - (ii * 16), 253 - (ii * 16), 252 - (ii * 16));
 							continue;
 						}
 						if (i >= 32 && i < 40)
 						{
 							// Greens
-							int ii = (i % 8);
+							int ii = i % 8;
 							_palette256[i] = new Colour(0, 197 - (ii * 11), 80 - (ii * 7));
 							continue;
 						}
 						if (i >= 40 && i < 42)
 						{
 							// Browns
-							int ii = (i % 2);
+							int ii = i % 2;
 							_palette256[i] = new Colour(128 + (ii * 16), 64 + (ii * 8), 0);
 							continue;
 						}
 						if (i >= 42 && i < 48)
 						{
 							// Yellows
-							int ii = (i + 2 % 6);
+							int ii = i + 2 % 6;
 							_palette256[i] = new Colour(254 - (ii * 6), 245 - (ii * 6), 0);
 							continue;
 						}
 						if (i >= 48 && i < 64)
 						{
-							int r = Convert.ToInt32((float)_palette16[i % 16].R * 0.7F);
-							int g = Convert.ToInt32((float)_palette16[i % 16].G * 0.7F);
-							int b = Convert.ToInt32((float)_palette16[i % 16].B * 0.7F);
+							_palette16 ??= GetPalette16;
+
+							int r = Convert.ToInt32(_palette16[i % 16].R * 0.7F);
+							int g = Convert.ToInt32(_palette16[i % 16].G * 0.7F);
+							int b = Convert.ToInt32(_palette16[i % 16].B * 0.7F);
 							_palette256[i] = new Colour(r, g, b);
 							continue;
 						}
 						if (i >= 64 && i < 80)
 						{
 							// Blues
-							int ii = (i % 8);
+							int ii = i % 8;
 							_palette256[i] = new Colour(0, 67 - (ii * 5), 211 - (ii * 9));
 							continue;
 						}
@@ -360,12 +551,9 @@ namespace CivOne
 		{
 			get
 			{
-				if (!Map.Instance.Ready) return false;
-				
-				using (IGameData gameData = new SaveDataAdapter())
-				{
-					return gameData.ValidMapSize(Map.WIDTH, Map.HEIGHT);
-				}
+				// SaveGame supports COS/YAML for all map sizes.
+				// The save game compatibility service will determine if the current game is compatible with SaveGame based on the map size and other factors, and provide appropriate messaging to the user if it is not compatible.
+				return Map.Instance.Ready;
 			}
 		}
 	}

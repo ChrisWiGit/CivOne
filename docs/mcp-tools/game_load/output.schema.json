@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_load/output",
+  "title": "game_load – output",
+  "type": "object",
+  "required": ["ok", "truncated", "maxChars", "returnedChars"],
+  "properties": {
+    "ok": { "type": "boolean" },
+    "truncated": { "type": "boolean" },
+    "maxChars": { "type": "integer" },
+    "returnedChars": { "type": "integer" },
+    "data": {
+      "type": "object",
+      "required": ["fileName", "saveGuid", "displayName"],
+      "properties": {
+        "fileName": { "type": "string" },
+        "saveGuid": { "type": "string", "format": "uuid" },
+        "displayName": { "type": "string" },
+        "gameTurn": { "type": ["integer", "null"] },
+        "difficulty": {
+          "type": ["object", "null"],
+          "properties": {
+            "value": { "type": "integer" },
+            "name": { "type": "string" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "INVALID_PARAMS",
+            "SAVE_FOLDER_NOT_FOUND",
+            "INVALID_FILE_NAME",
+            "FILE_NOT_FOUND",
+            "INVALID_SAVE_FILE",
+            "LOAD_FAILED",
+            "PAYLOAD_TRUNCATED"
+          ]
+        },
+        "message": { "type": "string" },
+        "failedSegment": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

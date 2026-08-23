@@ -9,56 +9,58 @@
 
 using System;
 using CivOne.Graphics;
+using CivOne.Services;
 
 namespace CivOne.Screens.Dialogs
 {
 	internal class ConfirmBuy : BaseDialog
 	{
-		public event EventHandler Buy;
+		public event EventHandler? Buy;
 
-		private void MenuYes(object sender, EventArgs args)
+		private static string[] MessageLines(string name, short price, short treasury)
 		{
-			Buy?.Invoke(this, args);
-			Cancel();
+			return TranslationServiceFactory.GetCurrent()
+				.TranslateFormattedArray("Cost to complete\n{0}: ${1}\nTreasury: ${2}", name, price, treasury);
 		}
 
-		protected override void FirstUpdate()
-		{
-			DrawMenu();
-
-			base.FirstUpdate();
-		}
-
-		private void DrawMenu()
-		{
-			Menu menu = new(Palette, Selection(3, 28, TextWidth + 5, 20))
-			{
-				X = 103,
-				Y = 108,
-				MenuWidth = TextWidth + 5,
-				ActiveColour = 11,
-				TextColour = 5,
-				FontId = 0
-			};
-			int i = 0;
-			foreach (string choice in new[] { "Yes", "No" })
-			{
-				menu.Items.Add(choice, i++);
-			}
-			menu.Items[0].Selected += MenuYes;
-			menu.Items[1].Selected += Cancel;
-
-			menu.MissClick += Cancel;
-			menu.Cancel += Cancel;
-			AddMenu(menu);
-		}
-
-		public ConfirmBuy(string name, short price, short treasury) : base(100, 80, 9, 23, new string[] { "Cost to complete", $"{name}: ${price}", $"Treasury: ${treasury}" })
+		public ConfirmBuy(string name, short price, short treasury)
+			: base(100, 80, 9, 23, MessageLines(name, price, treasury))
 		{
 			for (int i = 0; i < TextLines.Length; i++)
 			{
 				DialogBox.AddLayer(TextLines[i], 5, (TextLines[i].Height * i) + 5);
 			}
+		}
+
+		protected override IMenu? CreateManagedMenu()
+		{
+			Menu menu = new Menu(Palette, Selection(3, 28, TextWidth + 5, 20))
+			{
+				X = 103,
+				Y = 108,
+				CenterTo320Coordinates = true,
+				MenuWidth = TextWidth + 5,
+				ActiveColour = 11,
+				TextColour = 5,
+				FontId = 0
+			};
+
+			menu.Items.Add(Translate("Yes"), 0);
+			menu.Items.Add(Translate("No"), 1);
+
+			menu.Items[0].Selected += Confirm;
+			menu.Items[1].Selected += Cancel;
+
+			menu.MissClick += Cancel;
+			menu.Cancel += Cancel;
+
+			return menu;
+		}
+
+		private void Confirm(object sender, EventArgs args)
+		{
+			Buy?.Invoke(this, args);
+			Cancel();
 		}
 	}
 }

@@ -8,8 +8,10 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using CivOne.Enums;
+using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.Tasks;
@@ -17,124 +19,167 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens.Debug
 {
+	[ScreenResizeable]
 	internal class SetPlayerScience : BaseScreen
 	{
-		private readonly Menu _civSelect;
+		private readonly CivSelectMenuDelegate _civSelectDelegate;
 
-		private Input _input;
+		private Player? _selectedPlayer;
+		private int OffsetX => Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 
-		private Player _selectedPlayer = null;
+		private Input? ActiveInput => Inputs.OfType<Input>().FirstOrDefault();
 
-		public string Value { get; private set; }
-
-		public event EventHandler Accept, Cancel;
-
-		private void CivSelect_Accept(object sender, EventArgs args)
+		private void DrawPlayerSelectDialog()
 		{
-			Palette = Common.Screens.Last().OriginalColours;
-
-			this.FillRectangle(80, 80, 161, 33, 11)
-				.FillRectangle(81, 81, 159, 31, 15)
-				.DrawText("Set Player Science...", 0, 5, 88, 82)
-				.FillRectangle(88, 95, 105, 14, 5)
-				.FillRectangle(89, 96, 103, 12, 15);
-
-			_selectedPlayer = Game.GetPlayer((byte)_civSelect.ActiveItem);
-
-			_input = new Input(Palette, _selectedPlayer.Science.ToString(), 0, 5, 11, 90, 97, 101, 10, 5);
-			_input.Accept += PlayerScience_Accept;
-			_input.Cancel += PlayerScience_Cancel;
-
-			CloseMenus();
+			_civSelectDelegate.Draw(this, CanvasHeight);
 		}
 
-		private void PlayerScience_Accept(object sender, EventArgs args)
+		private void DrawInputDialog()
 		{
-			Value = (sender as Input).Text;
-			
-			short playerScience;
-			if (!short.TryParse(Value, out playerScience) || playerScience < 0 || playerScience > 30000)
+			int ox = OffsetX;
+			int oy = OffsetY;
+
+			this.Clear();
+			this.FillRectangle(80 + ox, 80 + oy, 161, 33, 11)
+				.FillRectangle(81 + ox, 81 + oy, 159, 31, 15)
+				.DrawText(Translate("Set Player Science..."), 0, 5, 88 + ox, 82 + oy)
+				.FillRectangle(88 + ox, 95 + oy, 105, 14, 5)
+				.FillRectangle(89 + ox, 96 + oy, 103, 12, 15);
+
+			if (ActiveInput is Input input)
 			{
-				GameTask.Enqueue(Message.Error("-- DEBUG: Set Player Science --", $"The value {Value} is invalid or out of range.", "Please enter a value between 0 and", "30000."));
+				input.X = 90 + ox;
+				input.Y = 97 + oy;
+			}
+		}
+
+		public string? Value { get; private set; }
+
+		public event EventHandler? Accept, Cancel;
+
+		private void OnPlayerSelected(Player player)
+		{
+			Palette = Common.Screens[^1].OriginalColours;
+
+			_selectedPlayer = player;
+
+			if (_selectedPlayer == null)
+			{
+				System.Diagnostics.Debug.Assert(false, "Selected player is null in OnPlayerSelected.");
+				return;
+			}
+
+			DrawInputDialog();
+
+			CloseMenus();
+			EnsureManagedInput();
+		}
+
+		protected override IScreen? CreateManagedInput()
+		{
+			if (_selectedPlayer == null)
+			{
+				return null;
+			}
+
+			Input input = new(Palette, _selectedPlayer.Science.ToString(CultureInfo.CurrentCulture), 0, 5, 11, 90 + OffsetX, 97 + OffsetY, 101, 10, 5);
+			input.Accept += PlayerScience_Accept;
+			input.Cancel += PlayerScience_Cancel;
+			return input;
+		}
+
+		private void PlayerScience_Accept(object? sender, EventArgs args)
+		{
+			if (sender is not Input input) return;
+			Value = input.Text;
+
+			if (!short.TryParse(Value, out short playerScience) || playerScience < 0 || playerScience > 30000)
+			{
+				GameTask.Enqueue(Message.Error(Translate("-- DEBUG: Set Player Science --"), TranslateFormattedArray("The value {0} is invalid or out of range.\nPlease enter a value between 0 and\n30000.", Value)));
 			}
 			else
 			{
+				if (_selectedPlayer == null)
+				{
+					System.Diagnostics.Debug.Assert(false, "Selected player is null in PlayerScience_Accept.");
+					return;
+				}
 				if (playerScience > _selectedPlayer.ScienceCost) playerScience = _selectedPlayer.ScienceCost;
 				_selectedPlayer.Science = playerScience;
-				GameTask.Enqueue(Message.General($"{_selectedPlayer.TribeName} science set to {playerScience}~."));
+				GameTask.Enqueue(Message.General(TranslateFormatted("{0} science set to {1}~.", _selectedPlayer.TribeName, playerScience)));
 			}
 
-			if (Accept != null)
-				Accept(this, null);
-			if (sender is Input)
-				((Input)sender)?.Close();
+			Accept?.Invoke(this, EventArgs.Empty);
+			input.Close();
 			Destroy();
 		}
 
-		private void PlayerScience_Cancel(object sender, EventArgs args)
+		private void PlayerScience_Cancel(object? sender, EventArgs args)
 		{
-			if (Cancel != null)
-				Cancel(this, null);
-			if (sender is Input)
-				((Input)sender)?.Close();
+			Cancel?.Invoke(this, EventArgs.Empty);
+			if (sender is Input input)
+			{
+				input.Close();
+			}
 			Destroy();
 		}
 
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_selectedPlayer == null && Common.TopScreen.GetType() != typeof(Menu))
+			if (RefreshNeeded())
 			{
-				AddMenu(_civSelect);
-				return false;
+				if (_selectedPlayer == null)
+					DrawPlayerSelectDialog();
+				else
+					DrawInputDialog();
 			}
-			else if (_selectedPlayer != null && !Common.HasScreenType<Input>())
+
+			if (_selectedPlayer != null && !HasInput)
 			{
-				Common.AddScreen(_input);
+				EnsureManagedInput();
 			}
 			return false;
 		}
 
-		public SetPlayerScience() : base(MouseCursor.Pointer)
+		public override bool KeyDown(KeyboardEventArgs args)
 		{
-			Palette = Common.Screens.Last().OriginalColours;
-
-			int fontHeight = Resources.GetFontHeight(0);
-			int hh = (fontHeight * (Game.Players.Count() + 1)) + 5;
-			int ww = 120;
-
-			int xx = (320 - ww) / 2;
-			int yy = (200 - hh) / 2;
-
-			Picture menuGfx = new Picture(ww, hh)
-				.Tile(Pattern.PanelGrey)
-				.DrawRectangle3D()
-				.As<Picture>();
-			IBitmap menuBackground = menuGfx[2, 11, ww - 4, hh - 11].ColourReplace((7, 11), (22, 3));
-
-			this.FillRectangle(xx - 1, yy - 1, ww + 2, hh + 2, 5)
-				.AddLayer(menuGfx, xx, yy)
-				.DrawText("Set Player Science...", 0, 15, xx + 8, yy + 3);
-
-			_civSelect = new Menu(Palette, menuBackground)
+			if (_selectedPlayer != null)
 			{
-				X = xx + 2,
-				Y = yy + 11,
-				MenuWidth = ww - 4,
-				ActiveColour = 11,
-				TextColour = 5,
-				DisabledColour = 3,
-				FontId = 0,
-				Indent = 8
-			};
-
-			foreach (Player player in Game.Players)
-			{
-				_civSelect.Items.Add(player.TribeNamePlural).OnSelect(CivSelect_Accept);
+				return false;
 			}
 
-			_civSelect.Cancel += PlayerScience_Cancel;
-			_civSelect.MissClick += PlayerScience_Cancel;
-			_civSelect.ActiveItem = Game.PlayerNumber(Human);
+			bool handled = _civSelectDelegate.KeyDown(args);
+			if (handled)
+			{
+				Refresh();
+			}
+			return handled;
+		}
+
+		public override bool MouseDown(ScreenEventArgs args)
+		{
+			if (_selectedPlayer != null)
+			{
+				return false;
+			}
+
+			bool handled = _civSelectDelegate.MouseDown(args.X, args.Y);
+			if (handled)
+			{
+				Refresh();
+			}
+			return handled;
+		}
+
+		public SetPlayerScience() : base(MouseCursor.Pointer)
+		{
+			Palette = Common.Screens[^1].OriginalColours;
+			_civSelectDelegate = new CivSelectMenuDelegate(Translate("Set Player Science..."));
+			_civSelectDelegate.PlayerSelected += OnPlayerSelected;
+			_civSelectDelegate.Cancelled += PlayerScience_Cancel;
+
+			DrawPlayerSelectDialog();
 		}
 	}
 }

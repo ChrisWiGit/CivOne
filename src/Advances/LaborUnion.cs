@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public LaborUnion() : base(1, 0, 1, Advance.MassProduction, Advance.Communism)
 		{
 			Name = "Labor Union";
+			TranslatedName = Translate("Labor Union");
 			Type = Advance.LaborUnion;
 		}
 	}

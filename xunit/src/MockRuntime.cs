@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
@@ -9,66 +8,71 @@ using CivOne.IO;
 
 namespace CivOne.UnitTests
 {
-    public class MockRuntime : IRuntime, IDisposable
+    public sealed class MockRuntime : IRuntime
     {
-        public event EventHandler Initialize;
-        public event EventHandler Draw;
-        public event UpdateEventHandler Update;
-        public event KeyboardEventHandler KeyboardUp;
-        public event KeyboardEventHandler KeyboardDown;
-        public event ScreenEventHandler MouseUp;
-        public event ScreenEventHandler MouseDown;
-        public event ScreenEventHandler MouseMove;
-        public Platform CurrentPlatform { get; }
+        private readonly Dictionary<string, string> _settings = new(StringComparer.OrdinalIgnoreCase);
+
+        public event EventHandler Initialize { add { } remove { } }
+        public event EventHandler Draw { add { } remove { } }
+        public event EventHandler<UpdateEventArgs> Update { add { } remove { } }
+        public event EventHandler<KeyboardEventArgs> KeyboardUp { add { } remove { } }
+        public event EventHandler<KeyboardEventArgs> KeyboardDown { add { } remove { } }
+        public event EventHandler<ScreenEventArgs> MouseUp { add { } remove { } }
+        public event EventHandler<ScreenEventArgs> MouseDown { add { } remove { } }
+        public event EventHandler<ScreenEventArgs> MouseMove { add { } remove { } }
+        public event EventHandler<ScreenEventArgs> MouseWheel { add { } remove { } }
+        public Platform CurrentPlatform { get; } = Platform.Unknown;
 
         public string StorageDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CivOne");
 
-        public string GetSetting(string key)
+        public string? GetSetting(string key)
         {
-            if (key == "GraphicsMode")
-                return GraphicsMode.Graphics256.ToString();
-            return null;
+            return _settings.TryGetValue(key, out string? value) ? value : null;
         }
 
         public void SetSetting(string key, string value)
         {
-            throw new NotImplementedException();
+            _settings[key] = value;
         }
 
         public RuntimeSettings Settings { get; }
-        public MouseCursor CurrentCursor { get; set; }
-        public Bytemap[] Layers { get; set; }
-        public Palette Palette { get; set; }
-        public IBitmap Cursor { get; set; }
+        public MouseCursor? CurrentCursor { get; private set; }
+        public Bytemap[]? Layers { get; set; }
+        public Palette? Palette { get; set; }
+        public IBitmap? Cursor { get; private set; }
         public int CanvasWidth { get; }
         public int CanvasHeight { get; }
+        public int WindowWidth { get; }
+        public int WindowHeight { get; }
 
-        //private static Mutex _mutex = new Mutex();
+        public bool TryOpenUrl(string url, out string? errorMessage)
+        {
+            errorMessage = null;
+            return false;
+        }
+
+        public bool TryCopyToClipboard(string text, out string? errorMessage)
+        {
+            errorMessage = null;
+            return false;
+        }
+
+        public void SetCurrentCursor(MouseCursor? cursor) => CurrentCursor = cursor;
+        public void SetCursor(IBitmap? cursor) => Cursor = cursor;
 
         public void Log(string text, params object[] parameters)
         {
-            // TODO tests apparently keep stepping on each other trying to access the log file; using mutex lock doesn't seem to help
-#if false
-            var path = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "Civ.log");
-            //_mutex.WaitOne();
-            using (TextWriter tw = new StreamWriter(path, append: true))
-            {
-                tw.WriteLine(text, parameters);
-                tw.Flush();
-                tw.Close();
-            }
-            //_mutex.ReleaseMutex();
-#endif
-
+            // Use dotnet test -p:SuppressConsoleLogs=true to silence console output here.
             Console.WriteLine(text, parameters);
         }
 
-        public string BrowseFolder(string caption = "")
+        public string? BrowseFolder(string caption = "")
         {
             throw new NotImplementedException();
         }
 
-        public string WindowTitle { get; set; }
+        public string WindowTitle { get; private set; } = "Test Window";
+        public void SetWindowTitle(string title) => WindowTitle = title;
         public void PlaySound(string file)
         {
             // ignore
@@ -84,17 +88,41 @@ namespace CivOne.UnitTests
             // ignore
         }
 
+    
+        #pragma warning disable CA1822
         public void Dispose()
         {
+			// No resources to release in this test double.
         }
+        #pragma warning restore CA1822 // Mark members as static - but these are required to implement IRuntime
 
-        public MockRuntime(RuntimeSettings settings)
+		/// <summary>
+		/// Return value for <see cref="FileChooser"/>. Defaults to throwing, matching the previous
+		/// behavior for tests that never expect a file dialog to be shown; set to a value (or <c>null</c>
+		/// to simulate a cancelled dialog) before exercising code paths that call it.
+		/// </summary>
+		public Func<string?>? FileChooserResult { get; set; }
+
+		public string? FileChooser(bool save, string title, string initialFileName, string filter)
+			=> FileChooserResult != null ? FileChooserResult() : throw new NotImplementedException();
+
+		public MockRuntime(RuntimeSettings settings)
         {
+            ArgumentNullException.ThrowIfNull(settings, nameof(settings));
+            
             Settings = settings;
-            // TODO fire-eggs this needs to be false if you want to use Earth! and must have a pointer to the Civ data files!
+            _settings["GraphicsMode"] = GraphicsMode.Graphics256.ToString();
             settings.Free = false;
             RuntimeHandler.Wipe(); // Ensure any previous runtime is cleared out otherwise exceptions occur
             RuntimeHandler.RegisterForTest(this);
+
+            CurrentPlatform = Platform.Windows;
+            CanvasWidth = 320;
+            CanvasHeight = 200;
+            WindowWidth = 320;
+            WindowHeight = 200;
+
+            // This will hopefully cause exceptions in tests.            
         }
     }
 }

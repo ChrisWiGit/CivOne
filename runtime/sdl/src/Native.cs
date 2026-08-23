@@ -16,17 +16,20 @@ using CivOne.Enums;
 
 namespace CivOne
 {
-	internal partial class Native
+	internal sealed partial class Native
 	{
 		private static IntPtr _handle = IntPtr.Zero;
 
 		internal static Platform Platform =>
-			RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Platform.Windows :
-			RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Platform.Linux :
-			RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? Platform.macOS :
-			Platform.Unknown;
+			true switch
+			{
+				_ when RuntimeInformation.IsOSPlatform(OSPlatform.Windows) => Platform.Windows,
+				_ when RuntimeInformation.IsOSPlatform(OSPlatform.Linux)   => Platform.Linux,
+				_ when RuntimeInformation.IsOSPlatform(OSPlatform.OSX)     => Platform.macOS,
+				_ => throw new PlatformNotSupportedException("Unsupported platform")
+			};
 
-		internal static string FolderBrowser(string caption = "")
+		internal static string? FolderBrowser(string caption = "")
 		{
 			switch (Platform)
 			{
@@ -40,35 +43,93 @@ namespace CivOne
 					return null;
 			}
 		}
-
-		internal static void ShowCursor()
+		
+		internal static string? FileChooser(
+			bool save,
+			string title,
+			string initialFileName,
+			string filter)
 		{
 			switch (Platform)
 			{
 				case Platform.Windows:
-					ShowCursor(true);
-					break;
+					return Win32FileDialog(
+						SDL.GetSDLWindowHandle(_handle),
+						save,
+						title,
+						initialFileName,
+						filter
+					);
+				case Platform.Linux:
+					return GtkFileDialog(save, title, initialFileName, filter);
+				case Platform.macOS:
+					return MacFileChooser(save, title, initialFileName, filter);					
+				default:
+					return null;
 			}
 		}
 
-		internal static void HideCursor()
+	internal static bool TryOpenUrl(string url, out string errorMessage)
+	{
+		switch (Platform)
 		{
-			switch (Platform)
-			{
-				case Platform.Windows:
-					ShowCursor(false);
-					break;
-			}
+			case Platform.Windows:
+				return Win32TryOpenUrl(url, out errorMessage);
+			case Platform.Linux:
+				return LinuxTryOpenUrl(url, out errorMessage);
+			case Platform.macOS:
+				return MacTryOpenUrl(url, out errorMessage);
+			default:
+				errorMessage = "Unsupported platform.";
+				return false;
 		}
+	}
 
-		internal static bool CreateDesktopIcon(string name, string description, params string[] arguments)
+	internal static bool TryCopyToClipboard(string text, out string errorMessage)
+	{
+		switch (Platform)
+		{
+			case Platform.Windows:
+				return Win32TryCopyToClipboard(text, out errorMessage);
+			case Platform.Linux:
+				return LinuxTryCopyToClipboard(text, out errorMessage);
+			case Platform.macOS:
+				return MacTryCopyToClipboard(text, out errorMessage);
+			default:
+				errorMessage = "Unsupported platform.";
+				return false;
+		}
+	}
+
+	internal static void ShowCursor()
+	{
+		switch (Platform)
+		{
+			case Platform.Windows:
+				_ = ShowCursor(true);
+				break;
+		}
+	}
+
+	internal static void HideCursor()
+	{
+		switch (Platform)
+		{
+			case Platform.Windows:
+				_ = ShowCursor(false);
+				break;
+		}
+	}
+
+	internal static bool CreateDesktopIcon(string name, string description, params string[] arguments)
 		{
 			switch (Platform)
 			{
 				case Platform.Windows:
+					if (Resources.BinPath == null) return false;
 #if DEBUG
 					string path = "dotnet";
-					arguments = new [] { $@"""{Path.Combine(Resources.BinPath, "CivOne.SDL.dll")}""" }.Union(arguments).ToArray();
+					arguments = [.. new [] { $@"""{Path.Combine(Resources.BinPath, "CivOne.SDL.dll")}""" }.Union(arguments)];
 #else
 					if (!File.Exists(Path.Combine(Resources.BinPath, "CivOne.SDL.exe"))) return false;
 					string path = Path.Combine(Resources.BinPath, "CivOne.SDL.exe");

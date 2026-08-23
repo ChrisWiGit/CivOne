@@ -17,6 +17,7 @@ namespace CivOne.Buildings
 		public RecyclingCenter() : base(20, 2)
 		{
 			Name = "Recycling Cntr.";
+			TranslatedName = Translate("Recycling Cntr.");
 			RequiredTech = new Recycling();
 			SetIcon(4, 0, true);
 			SetSmallIcon(3, 2);

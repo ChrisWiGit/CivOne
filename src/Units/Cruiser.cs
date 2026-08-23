@@ -18,6 +18,7 @@ namespace CivOne.Units
 		{
 			Type = UnitType.Cruiser;
 			Name = "Cruiser";
+			TranslatedName = Translate("Cruiser");
 			RequiredTech = new Combustion();
 			ObsoleteTech = null;
 			SetIcon('C', 0, 1);

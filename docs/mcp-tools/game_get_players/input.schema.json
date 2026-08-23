@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "civone/mcp-tools/game_get_players/input",
+  "title": "game_get_players – input",
+  "description": "Returns player data. Omit 'playerId' for all players; omit 'keys' for all fields.",
+  "type": "object",
+  "properties": {
+    "playerId": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "0-based player index. Omit to return data for all players."
+    },
+    "keys": {
+      "type": "array",
+      "description": "Field names to include. Omit to return all fields.",
+      "items": {
+        "type": "string",
+        "examples": [
+          "id", "playerGuid", "tribeName", "gold", "science",
+          "currentResearch", "advances", "diplomacy"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "sessionId": {
+      "type": "string",
+      "description": "Optional caller-supplied identifier."
+    },
+    "includeCursor": {
+      "type": "boolean",
+      "description": "Reserved for future use.",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

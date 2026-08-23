@@ -20,18 +20,20 @@ namespace CivOne.Screens.Dialogs
 			Cancel();
 		}
 
-		protected override void FirstUpdate()
+		protected override IMenu? CreateManagedMenu()
 		{
 			Menu menu = new Menu(Palette, Selection(3, 20, 100, 16))
 			{
 				X = 103,
 				Y = 100,
+				CenterTo320Coordinates = true,
 				MenuWidth = 100,
 				ActiveColour = 11,
 				TextColour = 5,
 				FontId = 0
 			};
-			foreach (string choice in new [] { "Keep Playing", "Yes, Quit" })
+			string[] choices = [Translate("Keep Playing"), Translate("Yes, Quit")];
+			foreach (string choice in choices)
 			{
 				menu.Items.Add(choice);
 			}
@@ -40,13 +42,13 @@ namespace CivOne.Screens.Dialogs
 
 			menu.MissClick += Cancel;
 			menu.Cancel += Cancel;
-			AddMenu(menu);
+			return menu;
 		}
 
 		public ConfirmQuit() : base(100, 80, 104, 39)
 		{
-			DialogBox.DrawText("Are you sure you", 0, 15, 5, 5);
-			DialogBox.DrawText("want to Quit?", 0, 15, 5, 13);
+			DialogBox.DrawText(Translate("Are you sure you"), 0, 15, 5, 5);
+			DialogBox.DrawText(Translate("want to Quit?"), 0, 15, 5, 13);
 		}
 	}
 }

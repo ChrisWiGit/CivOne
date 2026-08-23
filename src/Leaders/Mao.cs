@@ -15,8 +15,10 @@ namespace CivOne.Leaders
 	{
 		protected override Leader Leader => Leader.Mao;
 
-		public Mao() : base("Mao Tse Tung", "KING06", 37, 32)
+		public Mao() : base("KING06", 37, 32)
 		{
+			Name = Translate("Mao Tse Tung");
+			DefaultName = Name;
 			Militarism = MilitarismLevel.Civilized;
 		}
 	}

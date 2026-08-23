@@ -11,7 +11,7 @@ using CivOne.IO;
 
 namespace CivOne.Graphics.Sprites
 {
-	public interface ISpriteCollection<T>
+	public interface ISprites<T> where T : notnull
 	{
 		ISprite this[T index] { get; }
 	}

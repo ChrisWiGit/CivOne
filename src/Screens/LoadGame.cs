@@ -10,25 +10,42 @@
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
+using CivOne.Services;
 using CivOne.UserInterface;
 using System;
 using System.Linq;
-using CivOne.Tasks;
+using System.IO;
 
 namespace CivOne.Screens
 {
-    [Modal]
+	[Modal, ScreenResizeable]
 	internal class LoadGame : BaseScreen
 	{
+		private static SaveGamePathProvider PathProvider =>
+			new SaveGamePathProvider(RuntimeHandler.Runtime, Settings.Instance);
+
+
 		private MouseCursor _cursor = MouseCursor.None;
 		public override MouseCursor Cursor => _cursor;
-		
+
 		private char _driveLetter = 'C';
 		private bool _update = true;
-		private Menu _menu;
-		
+		private int OffsetX => Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => Math.Max(0, (Height - 200) / 2);
+		private Menu? CurrentMenu => GetMenu<Menu>();
+
 		public bool Cancel { get; private set; }
-        
+
+		private static string BuildDialogInitialFileName()
+		{
+			return PathProvider.EnsureInitialSaveFilePath();
+		}
+
+		private static void SetLastUsedSaveGameDialogPath(string fileName)
+		{
+			PathProvider.SetLastUsedSaveGamePath(fileName);
+		}
+
 		private void LoadSaveFile(object sender, MenuItemEventArgs<int> args)
 		{
 			int item = args.Value;
@@ -36,18 +53,46 @@ namespace CivOne.Screens
 			LoadSaveFileByItem(_driveLetter, item);
 		}
 
-		private void LoadSaveFileByItem(char driveLetter, int item)
+		private bool LoadSaveFileByItem(char driveLetter, int item)
 		{
-			SaveGameFile file = SaveGameFile.GetSaveGames(driveLetter).ToArray()[item];
-			SaveGame.SelectedGame = (item > 3 ? 3 : item);
+			SaveGameFile[] saveGames = SaveGameFile.GetSaveGames(driveLetter).ToArray();
+			if (item < 0 || item >= saveGames.Length)
+			{
+				Log("Invalid save game index: {0}", item);
+				Cancel = true;
+				_update = true;
+				BackToCredits();
+				return false;
+			}
+
+			SaveGameFile file = saveGames[item];
 			Log("Load game: {0}", file.Name);
 			Destroy();
-			
-			Game.LoadGame(file.SveFile, file.MapFile);
+
+			bool success;
+			if (file.IsYamlFile)
+			{
+				success = Game.LoadYamlGame(file.CosFile);
+			}
+			else
+			{
+				SaveGame.SelectedGame = item > 3 ? 3 : item;
+				success = Game.LoadGame(file.SveFile, file.MapFile);
+			}
+
+			if (!success)
+			{
+				Log("Failed to load game");
+				Cancel = true;
+				_update = true;
+				BackToCredits();
+				return false;
+			}
 
 			// Allows in-game loading of a game (destroy old gameplay)
 			Common.DestroyScreen(Common.Screens.FirstOrDefault(s => s is GamePlay, null));
 			Common.AddScreen(new GamePlay());
+			return true;
 		}
 
 		public static void LoadSaveFile(char driveLetter, int slotId)
@@ -56,7 +101,7 @@ namespace CivOne.Screens
 			loadGame.LoadSaveFileByItem(driveLetter, slotId);
 		}
 
-		
+
 		private void LoadEmptyFile(object sender, MenuItemEventArgs<int> args)
 		{
 			Log("Empty save file, cancel");
@@ -65,34 +110,76 @@ namespace CivOne.Screens
 			BackToCredits();
 		}
 
-		private MenuItemEventHandler<int> LoadFileHandler(SaveGameFile file)
+		private MenuItemEventAction<int> LoadFileHandler(SaveGameFile file)
 		{
 			if (file.ValidFile)
 				return LoadSaveFile;
 			return LoadEmptyFile;
 		}
-		
+
+		private void LoadYamlFromBrowser(object? sender, EventArgs args)
+		{
+			CloseMenus();
+			_update = true;
+
+			string? cosFile = RuntimeHandler.Runtime.FileChooser(
+				false,
+				Translate("Load Game..."),
+				BuildDialogInitialFileName(),
+				Translate("CivOne Save Game (*.cos)|*.cos")
+			);
+			if (string.IsNullOrEmpty(cosFile))
+			{
+				_update = true;
+				return;
+			}
+			SetLastUsedSaveGameDialogPath(cosFile);
+
+			Log("Load game: {0}", Path.GetFileName(cosFile));
+			Destroy();
+
+			if (!Game.LoadYamlGame(cosFile))
+			{
+				Log("Failed to load game");
+				Cancel = true;
+				_update = true;
+				BackToCredits();
+				return;
+			}
+
+			// Allows in-game loading of a game (destroy old gameplay)
+			Common.DestroyScreen(Common.Screens.FirstOrDefault(s => s is GamePlay, null));
+			Common.AddScreen(new GamePlay());
+		}
+
 		private void DrawDriveQuestion()
 		{
 			Bitmap.Clear();
 			this.Clear(15)
-				.DrawText("Which drive contains your", 0, 5, 92, 72, TextAlign.Left)
-				.DrawText("saved game files?", 0, 5, 104, 80, TextAlign.Left)
-				.DrawText($"{_driveLetter}:", 0, 5, 146, 96, TextAlign.Left)
-				.DrawText("Press drive letter and", 0, 5, 104, 112, TextAlign.Left)
-				.DrawText("Return when disk is inserted", 0, 5, 80, 120, TextAlign.Left)
-				.DrawText("Press Escape to cancel", 0, 5, 104, 128, TextAlign.Left);
+				.DrawText(Translate("Which drive contains your"), 0, 5, OffsetX + 92, OffsetY + 72, TextAlign.Left)
+				.DrawText(Translate("saved game files?"), 0, 5, OffsetX + 104, OffsetY + 80, TextAlign.Left)
+				.DrawText(TranslateFormatted("{0}:", _driveLetter), 0, 5, OffsetX + 146, OffsetY + 96, TextAlign.Left)
+				.DrawText(Translate("Press drive letter and"), 0, 5, OffsetX + 104, OffsetY + 112, TextAlign.Left)
+				.DrawText(Translate("Return when disk is inserted"), 0, 5, OffsetX + 80, OffsetY + 120, TextAlign.Left)
+				.DrawText(Translate("Press Escape to cancel"), 0, 5, OffsetX + 104, OffsetY + 128, TextAlign.Left);
 		}
-		
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_update = true;
+		}
+
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_menu != null)
+			Menu? menu = CurrentMenu;
+			if (menu != null)
 			{
-				if (_menu.Update(gameTick))
+				if (menu.Update(gameTick))
 				{
 					Bitmap.Clear();
 					this.Clear(15)
-						.AddLayer(_menu);
+						.AddLayer(menu, OffsetX, OffsetY);
 					return true;
 				}
 				return Cancel;
@@ -106,8 +193,8 @@ namespace CivOne.Screens
 			return Cancel;
 		}
 
-        private void BackToCredits()
-        {
+		private void BackToCredits()
+		{
 			if (Common.HasScreenType<GamePlay>())
 			{
 				// Loading a game while in game already,
@@ -115,38 +202,38 @@ namespace CivOne.Screens
 				Destroy();
 				return;
 			}
-            // fire-eggs fix for issue #34: when cancel out of this, go back to 
-            // credits screen, _always_ skipping the intro, and not animating 
-            // the logo.
-            var blah = new Credits();
-            blah.SkipIntro();
-            blah.SkipLogo();
-            Common.AddScreen(blah);
-            Destroy();
-        }
+			// fire-eggs fix for issue #34: when cancel out of this, go back to 
+			// credits screen, _always_ skipping the intro, and not animating 
+			// the logo.
+			var blah = new Credits();
+			blah.SkipIntro();
+			blah.SkipLogo();
+			Common.AddScreen(blah);
+			Destroy();
+		}
 
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
 			if (Cancel) return false;
-			
-			char c = Char.ToUpper(args.KeyChar);
+
+			char c = char.ToUpperInvariant(args.KeyChar);
 			if (args.Key == Key.Escape)
 			{
 				Log("Cancel");
 				Cancel = true;
 				_update = true;
-                BackToCredits();
+				BackToCredits();
 				return true;
 			}
-			else if (_menu != null)
+			else if (CurrentMenu is Menu menu)
 			{
-				return _menu.KeyDown(args);
+				return menu.KeyDown(args);
 			}
 			else if (args.Key == Key.Enter)
 			{
-				_menu = new Menu(Palette)
+				Menu newMenu = new Menu(Palette)
 				{
-					Title = "Select Load File...",
+					Title = Translate("Select Load File..."),
 					X = 51,
 					Y = 70,
 					MenuWidth = 217,
@@ -157,12 +244,18 @@ namespace CivOne.Screens
 					IndentTitle = 2,
 					RowHeight = 8
 				};
-				
-				int i = 0;
+
+				int menuValue = -1;
+				int saveGameIndex = 0;
+
+				// Add "Load from new format..." option at the top
+				newMenu.Items.Add(Translate("Load game from new format..."), menuValue).OnSelect(LoadYamlFromBrowser);
+
 				foreach (SaveGameFile file in SaveGameFile.GetSaveGames(_driveLetter))
 				{
-					_menu.Items.Add(file.Name, i++).OnSelect(LoadFileHandler(file));
+					newMenu.Items.Add(file.Name, saveGameIndex++).OnSelect(LoadFileHandler(file));
 				}
+				AddMenu(newMenu);
 				_cursor = MouseCursor.Pointer;
 			}
 			else if (c >= 'A' && c <= 'Z')
@@ -173,37 +266,52 @@ namespace CivOne.Screens
 			}
 			return false;
 		}
-		
+
 		public override bool MouseDown(ScreenEventArgs args)
 		{
-			if (_menu != null)
-				return _menu.MouseDown(args);
+			Menu? menu = CurrentMenu;
+			if (menu != null)
+			{
+				ScreenEventArgs menuArgs = args;
+				MouseArgsOffset(ref menuArgs, OffsetX, OffsetY);
+				return menu.MouseDown(menuArgs);
+			}
 			return false;
 		}
-		
+
 		public override bool MouseUp(ScreenEventArgs args)
 		{
-			if (_menu != null)
-				return _menu.MouseUp(args);
+			Menu? menu = CurrentMenu;
+			if (menu != null)
+			{
+				ScreenEventArgs menuArgs = args;
+				MouseArgsOffset(ref menuArgs, OffsetX, OffsetY);
+				return menu.MouseUp(menuArgs);
+			}
 			return false;
 		}
-		
+
 		public override bool MouseDrag(ScreenEventArgs args)
 		{
-			if (_menu != null)
-				return _menu.MouseDrag(args);
+			Menu? menu = CurrentMenu;
+			if (menu != null)
+			{
+				ScreenEventArgs menuArgs = args;
+				MouseArgsOffset(ref menuArgs, OffsetX, OffsetY);
+				return menu.MouseDrag(menuArgs);
+			}
 			return false;
 		}
-		
+
 		public LoadGame(Palette palette)
 		{
 			Palette = palette;
 		}
 
-        public LoadGame()
-        {
-            var blah = Resources["LOGO"];
-            Palette = blah.Palette;
-        }
+		public LoadGame()
+		{
+			var blah = Resources["LOGO"];
+			Palette = blah.Palette;
+		}
 	}
 }

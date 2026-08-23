@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using CivOne;
 using CivOne.Enums;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -31,7 +32,7 @@ namespace CivOne.UnitTests
 
             // give other player a city
             Game.Instance.AddCity(otherP, 3, 52, 14);
-            Assert.Equal(true, Map.Instance[52,14].HasCity);
+            Assert.True(Map.Instance[52,14].HasCity);
 
             // set up other player units
             if (defendedCity)
@@ -42,8 +43,8 @@ namespace CivOne.UnitTests
             var chariot = Game.Instance.CreateUnit(UnitType.Chariot, 53, 16, Game.Instance.PlayerNumber(playa));
 
             // try to move the human unit up and left
-            var gm = new Screens.GamePlayPanels.GameMap();
-            Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+            using var gm = new CivOne.Screens.GamePlayPanels.GameMap();
+            Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
             Game.Instance.ActiveUnit = chariot;
             return gm.MoveTo(-1, -1);
         }
@@ -75,7 +76,7 @@ namespace CivOne.UnitTests
 
             // give other player a city
             Game.Instance.AddCity(otherP, 3, 52, 14);
-            Assert.Equal(true, Map.Instance[52,14].HasCity);
+            Assert.True(Map.Instance[52,14].HasCity);
 
             // set up other player unit in city
             Game.Instance.CreateUnit(UnitType.Militia, 52, 14, Game.Instance.PlayerNumber(otherP));
@@ -85,8 +86,8 @@ namespace CivOne.UnitTests
             var chariot2 = Game.Instance.CreateUnit(UnitType.Chariot, 52, 15, Game.Instance.PlayerNumber(playa));
 
             // try to move the human unit down and left to own unit
-            var gm = new Screens.GamePlayPanels.GameMap();
-            Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+            using var gm = new CivOne.Screens.GamePlayPanels.GameMap();
+            Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
             Game.Instance.ActiveUnit = chariot1;
             Assert.True(gm.MoveTo(-1, +1));
         }
@@ -114,14 +115,14 @@ namespace CivOne.UnitTests
 
             // give human a city
             Game.Instance.AddCity(playa, 3, 52, 14);
-            Assert.Equal(true, Map.Instance[52,14].HasCity);
+            Assert.True(Map.Instance[52,14].HasCity);
 
             // give human a unit
             var chariot1 = Game.Instance.CreateUnit(UnitType.Chariot, 52, 13, Game.Instance.PlayerNumber(playa));
 
             // try to move the human unit down to own city
-            var gm = new Screens.GamePlayPanels.GameMap();
-            Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+            using var gm = new CivOne.Screens.GamePlayPanels.GameMap();
+            Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
             Game.Instance.ActiveUnit = chariot1;
             Assert.True(gm.MoveTo(0, +1));
         }
@@ -133,25 +134,25 @@ namespace CivOne.UnitTests
 
             // give other player a city [undefended]
             Game.Instance.AddCity(otherP, 3, 52, 14);
-            Assert.Equal(true, Map.Instance[52,14].HasCity);
+            Assert.True(Map.Instance[52,14].HasCity);
 
             // give other player a unit
             Game.Instance.CreateUnit(UnitType.Militia, 51, 13, Game.Instance.PlayerNumber(otherP));
 
             // give human a unit
-            var chariot1 = Game.Instance.CreateUnit(UnitType.Chariot, 52, 13, Game.Instance.PlayerNumber(playa));
-
+            var chariot1 = Game.Instance.CreateUnit(UnitType.Chariot, 52, 13, Game.Instance.PlayerNumber(playa)) as BaseUnit;
+            Assert.NotNull(chariot1);
             // try to move the human unit down to enemy city
-            Game.Instance._currentPlayer = Game.Instance.PlayerNumber(playa);
+            Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(playa));
             Game.Instance.ActiveUnit = chariot1;
-            Assert.True(((BaseUnit)chariot1).CanMoveTo(0, +1));
+            Assert.True(chariot1.CanMoveTo(0, +1));
         }
 
         /// <summary>
         /// Common setup for MarineAttackTests.
         /// </summary>
         /// <returns>the chariot onboard a ship</returns>
-        private IUnit SetupMarineAttackTest()
+        private BaseUnit SetupMarineAttackTest()
         {
             // Issue #116: in MicroproseCiv, can move from ship to any unoccupied land space. Broken after 
             // changes for issue #93 [see above]
@@ -164,22 +165,27 @@ namespace CivOne.UnitTests
 
             // Establish initial city
             var unit = Game.Instance.GetUnits().First(x => playa == x.Owner);
-            City acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            City? acity = Game.Instance.AddCity(playa, 1, unit.X, unit.Y);
+            Assert.NotNull(acity);
 
+            Assert.NotNull(acity);
 
             // Confirm it was set up properly
             ITile tile = Map.Instance[unit.X, unit.Y];
-            Assert.Equal(true, tile.HasCity);
+            Assert.True(tile.HasCity);
             Assert.True(tile is Grassland); // NOTE: if the tile is Ocean, likely failed to load MAP.PIC
 
             // find another player
             var otherP = Game.Instance.Players.First(p => p.Civilization.Name != "Chinese");
             var enemyShip = Game.Instance.CreateUnit(UnitType.Trireme, unit.X + 1, unit.Y, Game.Instance.PlayerNumber(otherP));
-            var enemyChariot = Game.Instance.CreateUnit(UnitType.Chariot, unit.X + 1, unit.Y, Game.Instance.PlayerNumber(otherP));
+            var enemyChariot = Game.Instance.CreateUnit(UnitType.Chariot, unit.X + 1, unit.Y, Game.Instance.PlayerNumber(otherP)) as BaseUnit;
+            Assert.NotNull(enemyChariot);
 
-            Game.Instance._currentPlayer = Game.Instance.PlayerNumber(otherP);
+            Game.Instance.SetCurrentPlayerForTesting(Game.Instance.PlayerNumber(otherP));
             Game.Instance.ActiveUnit = enemyChariot;
 
+            Assert.NotNull(enemyShip);
+            Assert.NotNull(enemyChariot);
             return enemyChariot;
         }
 
@@ -189,6 +195,7 @@ namespace CivOne.UnitTests
             // Test a shipborne unit can land on an location next to an enemy city
             // Location '1', see setup routine above
             BaseUnit enemyChariot = (BaseUnit)SetupMarineAttackTest();
+            Assert.NotNull(enemyChariot);
             Assert.True(enemyChariot.CanMoveTo(-1, -1));
         }
 

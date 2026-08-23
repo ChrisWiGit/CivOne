@@ -34,7 +34,7 @@ jobs:
         run: dotnet build CivOne.sln --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test CivOne.sln --configuration Release --no-build --verbosity normal --filter "FullyQualifiedName!~ZOCTests&FullyQualifiedName!~IrrigateTest"
+        run: dotnet test CivOne.sln --configuration Release --no-build --verbosity normal --filter "FullyQualifiedName!~ZOCTests&FullyQualifiedName!~IrrigateTest&Category!=IntegrationLocalData&TestCategory!=IntegrationLocalData"
         continue-on-error: false
 
   release:

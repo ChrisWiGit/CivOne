@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public Communism() : base(4, 0, 2, Advance.Philosophy, Advance.Industrialization)
 		{
 			Name = "Communism";
+			TranslatedName = Translate("Communism");
 			Type = Advance.Communism;
 		}
 	}

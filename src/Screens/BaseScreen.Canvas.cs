@@ -8,7 +8,6 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
-using System.Drawing;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.IO;
@@ -18,17 +17,20 @@ namespace CivOne.Screens
 {
 	public abstract partial class BaseScreen : IDefaultTextSettings, IButtonDrawer
 	{
-		public TextSettings DefaultTextSettings { get; set; }
+		private readonly BorderDrawDelegate _borderDrawDelegate = new();
+
+		public TextSettings? DefaultTextSettings { get; set; }
 
 		protected int Width => Bitmap.Width;
 		protected int Height => Bitmap.Height;
+		protected int BorderTileSize => _borderDrawDelegate.BorderTileSize;
 
-		private Bytemap _bitmap;
+		private Bytemap? _bitmap;
 		public Bytemap Bitmap
 		{
 			get
 			{
-				return _bitmap;
+				return _bitmap ?? throw new InvalidOperationException("Bitmap is not initialized.");
 			}
 			protected set
 			{
@@ -36,23 +38,34 @@ namespace CivOne.Screens
 				_bitmap = value;
 			}
 		}
-		private Palette _palette, _originalColours;
+		private Palette? _palette, _originalColours;
+		private bool _disposed;
+		/// <summary>
+		/// Gets or sets the active screen palette.
+		///
+		/// Setting this property replaces the entire active palette with a copy of the provided palette.
+		///
+		/// Use this when you intentionally want a full palette switch for the screen.
+		///
+		/// This includes index 0, which is commonly used as transparency.
+		///
+		/// If you need to preserve transparency index 0 while applying colors from another palette, use <see cref="SetPalette(Palette)"/> instead.
+		/// </summary>
 		public Palette Palette
 		{
 			get
 			{
-				return _palette;
+				return _palette ?? throw new InvalidOperationException("Palette is not initialized.");
 			}
 			set
 			{
-				_palette = value.Copy();
-				if (_originalColours == null)
-					_originalColours = value.Copy();
+				_palette = value?.Copy();
+				_originalColours ??= value?.Copy();
 			}
 		}
-		public Palette OriginalColours => _originalColours;
-		public void SetOriginalColours() => _originalColours.MergePalette(_palette);
-		
+		public Palette OriginalColours => _originalColours ?? throw new InvalidOperationException("OriginalColours is not initialized.");
+		public void SetOriginalColours() => _originalColours?.Merge(_palette ?? throw new InvalidOperationException("Palette is not initialized."));
+
 		protected void DrawPanel(int x, int y, int width, int height, bool border = true)
 		{
 			int xx = x, yy = y, ww = width, hh = height;
@@ -71,30 +84,12 @@ namespace CivOne.Screens
 
 		protected void DrawBorder(int border)
 		{
-			border = (border % 2);
-			Picture[] borders = new Picture[8];
-			int index = 0;
-			for (int yy = 0; yy < 2; yy++)
-			for (int xx = 0; xx < 4; xx++)
-			{
-				borders[index] = Resources["SP299"][((border == 0) ? 192 : 224) + (8 * xx), 120 + (8 * yy), 8, 8];
-				index++;
-			}
-			
-			for (int x = 8; x < Width - 8; x += 8)
-			{
-				this.AddLayer(borders[4], x, 0)
-					.AddLayer(borders[6], x, Height - 8);
-	}
-			for (int y = 8; y < Height - 8; y += 8)
-			{
-				this.AddLayer(borders[7], 0, y)
-					.AddLayer(borders[5], Width - 8, y);
-			}
-			this.AddLayer(borders[0], 0, 0)
-				.AddLayer(borders[1], Width - 8, 0)
-				.AddLayer(borders[2], 0, Height - 8)
-				.AddLayer(borders[3], Width - 8, Height - 8);
+			_borderDrawDelegate.Draw(
+				screen: this,
+				border: border,
+				width: Width,
+				height: Height,
+				getBorderSprite: (x, y, width, height) => Resources["SP299"][x, y, width, height]);
 		}
 
 		public void DrawButton(string text, byte fontId, byte colour, byte colourDark, int x, int y, int width, int height)
@@ -107,7 +102,16 @@ namespace CivOne.Screens
 				.DrawText(text, fontId, colourDark, x + (int)Math.Ceiling((double)width / 2), y + 2, TextAlign.Center);
 		}
 
+		public void DrawButton(string text, byte fontId, byte colour, byte colourDark, int x, int y, int height)
+		{
+			const int margin = 4;
+			int width = Resources.GetTextSize(fontId, text).Width + margin;
+			DrawButton(text, fontId, colour, colourDark, x, y, width, height);
+		}
+
 		public void DrawButton(string text, byte colour, byte colourDark, int x, int y, int width) => DrawButton(text, 1, colour, colourDark, x, y, width, Resources.GetFontHeight(1) + 3);
+
+		public void DrawButton(string text, byte colour, byte colourDark, int x, int y) => DrawButton(text, 1, colour, colourDark, x, y, Resources.GetFontHeight(1) + 3);
 
 		public void ResetPalette()
 		{
@@ -115,17 +119,48 @@ namespace CivOne.Screens
 				Palette[i] = OriginalColours[i];
 		}
 
+		/// <summary>
+		/// Merges the provided palette into the current active palette.
+		///
+		/// This method preserves index 0 from the current palette.
+		///
+		/// Index 0 is often used as transparency, so preserving it avoids transparency artifacts.
+		///
+		/// Use this when you want to apply another palette's colors without fully replacing the current palette.
+		///
+		/// Use <see cref="Palette"/> assignment for a complete palette replacement.
+		/// </summary>
+		/// <param name="palette">The palette whose colors should be merged into the current palette.</param>
 		public void SetPalette(Palette palette)
 		{
-			for (int i = 1; i < palette.Length && i < 256; i++)
-				Palette[i] = palette[i];
+			Colour indexZero = Palette[0];
+			Palette.Merge(palette);
+			Palette[0] = indexZero;
 		}
 
-		public virtual void Dispose()
+		public void Dispose()
 		{
-			Bitmap?.Dispose();
-			Palette?.Dispose();
-			OriginalColours?.Dispose();
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			if (disposing)
+			{
+				DisposeMenus();
+				DisposeInputs();
+				_bitmap?.Dispose();
+				_palette?.Dispose();
+				_originalColours?.Dispose();
+			}
+
+			_disposed = true;
 		}
 	}
 }

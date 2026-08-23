@@ -17,6 +17,7 @@ namespace CivOne.Buildings
 		public Aqueduct() : base(12, 2)
 		{
 			Name = "Aqueduct";
+			TranslatedName = Translate("Aqueduct");
 			RequiredTech = new Construction();
 			SetIcon(1, 3, false);
 			SetSmallIcon(1, 3);

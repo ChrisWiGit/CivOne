@@ -1,0 +1,451 @@
+// CivOne
+//
+// To the extent possible under law, the person who associated CC0 with
+// CivOne has waived all copyright and related or neighboring rights
+// to CivOne.
+//
+// You should have received a copy of the CC0 legalcode along with this
+// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+
+using System;
+using System.Linq;
+using CivOne.Civilizations;
+using CivOne.Enums;
+using CivOne.Persistence.Model;
+using CivOne.Tiles;
+using CivOne.Units;
+
+namespace CivOne.Screens.GamePlayPanels
+{
+	internal sealed class TerrainEditorDelegate(IMapEditor? mapEditor = null, ICivilization[]? civilizations = null, Game? game = null)
+	{
+		private readonly int[] _brushSizes = [1, 2, 3, 5, 7, 9, 11, 13, 15];
+		private readonly IMapEditor? _mapEditor = mapEditor;
+		private readonly ICivilization[]? _civilizations = civilizations;
+		private readonly Game? _game = game;
+
+		// Resolved lazily instead of in the constructor: Map.Instance/Common.Civilizations/Game.Instance
+		// touch static state (Common's static constructor reflects over and instantiates every
+		// advance/building/wonder and requires a registered IRuntime). Eagerly resolving them here
+		// would break plain unit tests (e.g. brush-size tests) that construct this class without a
+		// running game engine but never touch the map, civilizations, or game.
+		private IMapEditor MapEditor => _mapEditor ?? Map.Instance;
+		private ICivilization[] Civilizations => _civilizations ?? Common.Civilizations;
+		private Game Game => _game ?? Game.Instance;
+
+		internal int BrushSizeCount => _brushSizes.Length;
+
+		internal int GetBrushSize(int brushIndex)
+		{
+			int normalizedIndex = Math.Clamp(brushIndex, 0, _brushSizes.Length - 1);
+			return _brushSizes[normalizedIndex];
+		}
+
+		private void GetRelativeBounds(int brushIndex, out int minRel, out int maxRel)
+		{
+			int size = GetBrushSize(brushIndex);
+			minRel = -((size - 1) / 2);
+			maxRel = size / 2;
+		}
+
+		private void ApplyToBrush(int centerX, int centerY, int brushIndex, Action<int, int> action)
+		{
+			GetRelativeBounds(brushIndex, out int minRel, out int maxRel);
+			for (int relY = minRel; relY <= maxRel; relY++)
+			{
+				int targetY = MapEditor.EditorClampY(centerY + relY);
+				for (int relX = minRel; relX <= maxRel; relX++)
+				{
+					int targetX = MapEditor.EditorWrapX(centerX + relX);
+					action(targetX, targetY);
+				}
+			}
+		}
+
+		internal void ApplyBrush(int centerX, int centerY, int brushIndex, Terrain terrain)
+		{
+			ApplyToBrush(centerX, centerY, brushIndex, (x, y) => MapEditor.EditorSetTerrain(x, y, terrain));
+		}
+
+		internal void SetIrrigation(int centerX, int centerY, int brushIndex)
+		{
+			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
+			{
+				ITile tile = MapEditor[x, y];
+				if (tile == null)
+				{
+					return;
+				}
+
+				tile.Irrigation = true;
+				tile.Mine = false;
+			});
+		}
+
+		internal void RemoveIrrigation(int centerX, int centerY, int brushIndex)
+		{
+			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
+			{
+				ITile tile = MapEditor[x, y];
+				if (tile == null)
+				{
+					return;
+				}
+
+				tile.Irrigation = false;
+			});
+		}
+
+		internal void AddRoad(int centerX, int centerY, int brushIndex)
+		{
+			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
+			{
+				ITile tile = MapEditor[x, y];
+				if (tile == null)
+				{
+					return;
+				}
+
+				if (tile.Road)
+				{
+					tile.RailRoad = true;
+				}
+				else
+				{
+					tile.Road = true;
+				}
+			});
+		}
+
+		internal void RemoveRoad(int centerX, int centerY, int brushIndex)
+		{
+			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
+			{
+				ITile tile = MapEditor[x, y];
+				if (tile == null)
+				{
+					return;
+				}
+
+				if (tile.RailRoad)
+				{
+					tile.RailRoad = false;
+				}
+				else
+				{
+					tile.Road = false;
+				}
+			});
+		}
+
+		internal void SetMine(int centerX, int centerY, int brushIndex)
+		{
+			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
+			{
+				ITile tile = MapEditor[x, y];
+				if (tile == null)
+				{
+					return;
+				}
+
+				tile.Mine = true;
+				tile.Irrigation = false;
+			});
+		}
+
+		internal void RemoveMine(int centerX, int centerY, int brushIndex)
+		{
+			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
+			{
+				ITile tile = MapEditor[x, y];
+				if (tile == null)
+				{
+					return;
+				}
+
+				tile.Mine = false;
+			});
+		}
+
+		internal void SetFortress(int centerX, int centerY, int brushIndex, bool enabled)
+		{
+			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
+			{
+				ITile tile = MapEditor[x, y];
+				if (tile == null)
+				{
+					return;
+				}
+
+				tile.Fortress = enabled;
+			});
+		}
+
+		internal void SetPollution(int centerX, int centerY, int brushIndex, bool enabled)
+		{
+			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
+			{
+				ITile tile = MapEditor[x, y];
+				if (tile == null)
+				{
+					return;
+				}
+
+				tile.Pollution = enabled;
+			});
+		}
+
+		internal void SetHut(int centerX, int centerY, int brushIndex, bool enabled)
+		{
+			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
+			{
+				ITile tile = MapEditor[x, y];
+				if (tile == null)
+				{
+					return;
+				}
+
+				tile.Hut = enabled;
+			});
+		}
+
+		internal void ClearImprovements(int centerX, int centerY, int brushIndex)
+		{
+			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
+			{
+				ITile tile = MapEditor[x, y];
+				if (tile == null)
+				{
+					return;
+				}
+
+				tile.Road = false;
+				tile.RailRoad = false;
+				tile.Irrigation = false;
+				tile.Mine = false;
+				tile.Fortress = false;
+				tile.Pollution = false;
+				tile.Hut = false;
+			});
+		}
+
+		internal void AdjustLandValue(int centerX, int centerY, int brushIndex, int delta)
+		{
+			ApplyToBrush(centerX, centerY, brushIndex, (x, y) =>
+			{
+				ITile tile = MapEditor[x, y];
+				if (tile == null)
+				{
+					return;
+				}
+
+				int newValue = Math.Clamp(tile.LandValue + delta, 0, 255);
+				tile.LandValue = (byte)newValue;
+			});
+		}
+
+		internal void EditCitySingleTile(int x, int y, byte cityOwner, bool shrink)
+		{
+			ITile tile = MapEditor[x, y];
+			if (tile == null)
+			{
+				return;
+			}
+
+			City? city = Game.GetCity(x, y);
+
+			if (city == null)
+			{
+				HandleCityFounding(x, y, cityOwner, shrink, Game, tile);
+				return;
+			}
+
+			if (city.CityOwnerPlayerIndex != cityOwner)
+			{
+				return;
+			}
+
+			if (shrink)
+			{
+				if (city.Size > 1)
+				{
+					city.Size--;
+				}
+				else
+				{
+					city.Size = 0;
+				}
+			}
+			else
+			{
+				if (city.Size < byte.MaxValue)
+				{
+					city.Size++;
+				}
+			}
+		}
+
+		private static bool HandleCityFounding(int x, int y, byte cityOwner, bool shrink, Game game, ITile tile)
+		{
+			if (shrink)
+			{
+				return false;
+			}
+
+			if (tile.IsOcean)
+			{
+				return false;
+			}
+
+			Player? owner = game.GetPlayer(cityOwner);
+			if (owner == null)
+			{
+				return false;
+			}
+
+			int nameId = game.CityNameId(owner);
+			game.AddCity(owner, nameId, x, y);
+			return true;
+		}
+
+		private static bool CanPlaceUnit(ITile tile, IUnit selectedUnit, byte ownerId)
+		{
+			if (tile.Units.Any(x => x.Owner != ownerId))
+			{
+				return false;
+			}
+
+			if (selectedUnit.UnitCategory == UnitClass.Land && tile.City != null)
+			{
+				return ownerId == tile.City.CityOwnerPlayerIndex;
+			}
+
+			if (selectedUnit.UnitCategory == UnitClass.Land && tile.Type == Terrain.Ocean)
+			{
+				if (!tile.Units.Any(x => x.UnitCategory == UnitClass.Water && x is IBoardable))
+				{
+					return false;
+				}
+
+				int capacity = tile.Units.Where(x => x.UnitCategory == UnitClass.Water).OfType<IBoardable>()
+									.Sum(x => x.Cargo);
+				int unitCount = tile.Units.Count(x => x.UnitCategory == UnitClass.Land);
+				return unitCount < capacity;
+			}
+
+			if (selectedUnit.UnitCategory == UnitClass.Water && tile.Type != Terrain.Ocean)
+			{
+				return tile.City != null && ownerId == tile.City.CityOwnerPlayerIndex;
+			}
+
+			return true;
+		}
+
+		internal bool SpawnUnit(int x, int y, byte unitOwner, UnitType unitType)
+		{
+			ITile tile = MapEditor[x, y];
+			if (tile == null)
+			{
+				return false;
+			}
+
+			if (Game.GetPlayer(unitOwner) == null)
+			{
+				return false;
+			}
+
+			IUnit? selectedUnit = global::CivOne.Game.CreateUnit(unitType);
+			if (selectedUnit == null || !CanPlaceUnit(tile, selectedUnit, unitOwner))
+			{
+				return false;
+			}
+
+			IUnit? unit = Game.CreateUnit(unitType, x, y, unitOwner, false);
+			if (unit == null)
+			{
+				return false;
+			}
+
+			if (unit.UnitCategory == UnitClass.Land && tile.Type == Terrain.Ocean)
+			{
+				unit.Sentry = true;
+			}
+
+			if (unitOwner < Game.PlayerNumber(Game.CurrentPlayer))
+			{
+				unit.MovesLeft = 0;
+			}
+
+			if (unit.UnitCategory == UnitClass.Land && tile.Hut)
+			{
+				tile.Hut = false;
+			}
+
+			if (unit is BaseUnitAir airUnit)
+			{
+				airUnit.FuelLeft = airUnit.TotalFuel;
+			}
+
+			unit.Explore();
+			return true;
+		}
+
+		internal bool RemoveUnit(int x, int y, byte unitOwner, UnitType unitType)
+		{
+			ITile tile = MapEditor[x, y];
+			if (tile == null)
+			{
+				return false;
+			}
+
+			IUnit? unit = tile.Units.FirstOrDefault(u => u.Owner == unitOwner && u.Type == unitType)
+				?? tile.Units.FirstOrDefault(u => u.Owner == unitOwner);
+			if (unit == null)
+			{
+				return false;
+			}
+
+			Game.DisbandUnit(unit);
+			return true;
+		}
+
+		internal bool SetStartPosition(int x, int y, Civilization civilization)
+		{
+			if (civilization <= 0)
+			{
+				return false;
+			}
+
+			ITile tile = MapEditor[x, y];
+			if (tile == null || tile.IsOcean)
+			{
+				return false;
+			}
+
+			MapEditor.SetStartPosition(civilization, new MapLocation((uint)x, (uint)y));
+			return true;
+		}
+
+		internal bool RemoveStartPositionAt(int x, int y)
+		{
+			bool removed = false;
+			foreach (ICivilization civilization in Civilizations)
+			{
+				if (!MapEditor.TryGetStartPosition(civilization, out MapLocation? location) || location == null)
+				{
+					continue;
+				}
+
+				if (location.X != x || location.Y != y)
+				{
+					continue;
+				}
+
+				MapEditor.RemoveStartPosition((Civilization)civilization.Id);
+				removed = true;
+			}
+
+			return removed;
+		}
+	}
+}

@@ -2,7 +2,7 @@
 use sh or cmd blocks for commands.
 Do not use en-dash or em-dash, use simple sentences only.
  -->
-# CivOne# (Civ One Sharp)
+# CivOne# (Civ One Sharp or just CivOne)
 
 ## Introduction
 
@@ -11,11 +11,28 @@ It was originally developed several years ago by other authors, and then abandon
 This project is a continuation of that work, with the goal of completing the game and making it fully playable, but with some tweaks and improvements that
 make it more enjoyable for modern players.
 
+## Original Sources
+
+This [CivOne project](https://github.com/ChrisWiGit/CivOne) is a fork of [FireEggs CivOne project](https://github.com/fire-eggs/CivOne/) which itself was a fork of [Solen1985 CivOne project](https://github.com/Solen1985/CivOne/).
+
+The former projects have been abandoned for more than ten years, but their source code is still available and has been used as the starting point for this continuation project.
+
+Many issues have been fixed and features have been added since the original codebase.
+
+## Contact
+
+You can reach out to the project maintainers via [Discord](https://discord.gg/kfaFcTnCX)
+
+## Forum
+
+The starting point for this project was the [CivFanatics forum thread](https://forums.civfanatics.com/threads/civone-an-open-source-remake-of-civilization-1.535036/) where the original project was announced and discussed.
+
 ## First Steps
 
 ### Requirements
 
-* This program requires the .NET 9 Runtime to be installed on your system.
+* This program requires the .NET 9 Runtime to be installed on your system.(see [DotNet Runtime 9](#dotnet-runtime-9)).
+  * Check `dotnet --list-runtimes` to see if it's installed.
 * Also SDL2 is required for graphics and sound support see [SDL2 Installation](#sdl2-installation-linux-windows-macos) for instructions.
 
 ### Running the Program
@@ -55,12 +72,141 @@ There are some command line parameters that can be used to modify the behavior o
 
 | Parameter | Description |
 | --------- | ----------- |
+| `--debug` | Enables the in-game debug menu and adds the process id to the window title. |
 | `--seed <number>` | Sets the random seed for the game. Replace `<number>` with an integer value. |
 | `--skip-credits` | Skips the credits sequence at the start of the game. |
 | `--skip-intro` | Skips the intro cinematic at the start of the game. |
 | `--no-sound` | Disables sound in the game. |
 | `--no-data-check` | Skips the data integrity check at startup. |
+| `--setup` | Opens the setup wizard to configure data files, graphics, and sound settings. |
+| `--console-log` | Enables console log output. This is the default. |
+| `--no-console-log` | Disables console log output on the console. The log file is still written. |
+| `--language <postfix>` | Loads `translations/civ_<postfix>.txt` at startup. Use `identity` for original text without translation. Language files must exist in the active CivOne profile. |
 | `--load-slot <drive><slot>` | Loads a saved game from the specified drive and slot. Replace `<drive>` with a letter (a-z) and `<slot>` with a number (0-15) as if you were in the game |
+| `--load-cos <path>` | Loads a savegame file directly from a file path. |
+| `--mcp` | Enables the MCP server. See [MCP.md](MCP.md) for setup and usage. |
+| `--mcp-no-auth` | Disables MCP session-token authentication. Useful for direct VS Code MCP client usage. |
+| `--mcp-artifacts <path>` | Sets the directory where MCP screenshot artifacts are saved. Defaults to `temp/mcp-runs/` inside the storage directory. |
+| `--mcp-saves <path>` | Sets the directory where MCP save tools read and write `.cos` files (`game_list_saves`, `game_load`, `game_save`). |
+
+```sh
+dotnet run --project ./runtime/sdl/CivOne.SDL.csproj -- --seed 12345 --language german
+```
+
+```powershell
+dotnet run --project ./runtime/sdl/CivOne.SDL.csproj -- --seed 12345 --language german
+```
+
+```sh
+dotnet run --project ./runtime/sdl/CivOne.SDL.csproj -- --seed 12345 --language identity
+```
+
+```sh
+dotnet run --project ./runtime/sdl/CivOne.SDL.csproj -- --debug --skip-intro --skip-credits
+```
+
+### Wizard Setup
+
+The setup wizard will show up on first launch if no valid data files are found, or can be accessed later from command line with `--setup` or from the main menu.
+The wizard provides a step-by-step interface to select language, data files, configure graphics settings (fullscreen, aspect ratio), and adjust sound settings.
+
+> For programmers see [README.md](src/Screens/StartupWizard/README.md) in the `src/Screens/StartupWizard` folder for details on the implementation and how to add new steps.
+
+### Translation workflow
+
+The repository includes translation helper tools in the repository root.
+Use `translate.ps1` or `translate.sh` to generate or update `translation/all.txt`.
+If you already have an existing language file with manual translations, it is often better to merge missing keys instead of generating the whole file again.
+Use `civtranslate-mergekeys` to append keys from `translation/all.txt` that are missing in your `civ_<postfix>.txt` file without changing existing translated values.
+
+```sh
+dotnet run --project ./civtranslate-mergekeys/civtranslate-mergekeys.csproj -- ./translation/all.txt ./translation/civ_german.txt
+```
+
+You can also use the helper scripts from repository root and pass only file names.
+
+```powershell
+.\translate-mergekeys.ps1 all civ_german
+```
+
+```sh
+./translate-mergekeys.sh all civ_german
+```
+
+Use `translate-interactive.ps1` or `translate-interactive.sh` to run the values-only translation roundtrip for a language postfix.
+Use `copy-translations.ps1` or `copy-translations.sh` to copy final language files to the active CivOne profile.
+For the full translation workflow and naming rules, see [civtranslate/README.md](civtranslate/README.md).
+For merge helper details, see [civtranslate-mergekeys/README.md](civtranslate-mergekeys/README.md).
+
+Examples:
+
+```powershell
+.\translate-interactive.ps1 -Language german
+```
+
+```sh
+./translate-interactive.sh --language german
+```
+
+### Use translation in game
+
+Translation is now active in the game UI and gameplay text.
+You can select the language in the setup menu with `Shift + F1`.
+Open `Game Options`, then select `Language`.
+Choose `Identity (default)` to use original keys, or choose one of the available `civ_<postfix>.txt` language files.
+
+Language files must be placed in your CivOne profile translation folder.
+On Windows this is `%LOCALAPPDATA%\CivOne\translations`.
+On Linux and macOS this is `~/.local/share/CivOne/translations`.
+
+The CivOne profile root is the parent folder of those files.
+On Windows this is `%LOCALAPPDATA%\CivOne`.
+On Linux and macOS this is `~/.local/share/CivOne`.
+
+Other common folders are:
+
+* Windows: `%LOCALAPPDATA%\CivOne\data`, `%LOCALAPPDATA%\CivOne\saves`, `%LOCALAPPDATA%\CivOne\sounds`
+* Linux and macOS: `~/.local/share/CivOne/data`, `~/.local/share/CivOne/saves`, `~/.local/share/CivOne/sounds`
+
+To create or update language files, run the CLI scanner from repository root and copy the output file to your profile translation folder with a `civ_<postfix>.txt` name.
+
+Example:
+
+```sh
+dotnet run --project ./civtranslate/civtranslate.csproj -- ./src --output ./translation/civ_german.txt
+```
+
+### Game menu hotkeys
+
+The top gameplay menu supports translator-defined hotkeys.
+Use `~` directly before the character that should be highlighted and used for the `Alt+<key>` shortcut.
+The `~` marker is not shown in the UI.
+The marked character is highlighted in the menu bar.
+If no valid marker exists, the first visible character is used as fallback.
+The translation keys in code must still be written as explicit `Translate("...")` calls so the translation tools can find them.
+
+Example entries in a translation file:
+
+```txt
+GAME=~SPIEL
+ORDERS=~BEFEHLE
+ADVISORS=BE~RATER
+WORLD=~WELT
+CIVILOPEDIA=~CIVILOPEDIA
+```
+
+In this example, `Alt+S` opens `SPIEL`, `Alt+B` opens `BEFEHLE`, and `Alt+R` opens `BERATER`.
+
+If no `~` marker is present, the first character is used as fallback.
+
+### MCP savegame tools
+
+When MCP is enabled, savegame automation tools can read and write `.cos` files in the configured MCP saves folder.
+
+`game_save` creates a new save file and never overwrites an existing file.
+The filename format is `savegame_mcp_<UTC yyyyMMddHHmmssfff>.cos`.
+If a file with the computed name already exists, the tool returns a `FILE_EXISTS` error and asks the caller to retry.
+On success, the response includes both the new `fileName` and a newly generated `saveGuid`.
 
 ### Loading a saved game immediately
 
@@ -81,7 +227,91 @@ You can find your saves in the following locations:
 * on Linux/macOS: `~/CivOne/saves/`
 * on Windows: `C:\Users\<YourUsername>\AppData\Local\CivOne\saves\` (also `%LOCALAPPDATA%\CivOne\saves\`)
 
-### The debug menu (in game)
+### Loading a savegame from a file (new file format - YAML)
+
+To load a savegame file directly when starting the game, use the `--load-cos` option followed by the file path.
+The path can be absolute or relative to the current working directory.
+
+Example:
+
+```sh
+civone --load-cos ./SaveGames/c/auto-save.cos
+```
+
+On Windows you can also use:
+
+```cmd
+CivOne.SDL.exe --load-cos "C:\\Users\\<YourUsername>\\AppData\\Local\\CivOne\\saves\\c\\auto-save.cos"
+```
+
+### Quick save and quick load hotkeys
+
+You can use fast in-game hotkeys for ten quick save slots.
+
+| Hotkey | Action |
+| ------ | ------ |
+| `Ctrl+F1` to `Ctrl+F10` | Save quick slot 1 to 10 |
+| `Alt+F1` to `Alt+F10` | Load quick slot 1 to 10 |
+| `Alt+F11` | Open quick load slot menu |
+
+Quick slot files are stored in the `saves` subfolder of the profile storage directory.
+
+* Windows: `%LOCALAPPDATA%\CivOne\saves`.
+* Linux/macOS: `~/CivOne/saves`.
+
+File names are:
+
+* `fastsave_f1.cos`
+* `fastsave_f2.cos`
+* `fastsave_f3.cos`
+* `fastsave_f4.cos`
+* `fastsave_f5.cos`
+* `fastsave_f6.cos`
+* `fastsave_f7.cos`
+* `fastsave_f8.cos`
+* `fastsave_f9.cos`
+* `fastsave_f10.cos`
+
+Behavior notes:
+
+* Hotkeys are handled globally and work in gameplay, credits, and end screens.
+* If a slot does not exist or load/save fails, the game shows a simple error message and writes technical details to the log.
+* After a YAML quick load, the gameplay screen is rebuilt so map centering is refreshed.
+* `Alt+F11` opens a modal quick load dialog with all existing quick slots.
+* In the `Alt+F11` dialog, `F1` to `F10` are direct slot shortcuts.
+* Slots with invalid `.cos` content are shown as `Invalid savegame`, are disabled, and cannot be selected.
+* If no quick save exists, the dialog shows `No fast savegames available. Use Ctrl+F1-F10 to save.` as a disabled entry.
+* Report shortcuts are now plain `F1` to `F12` only.
+  * Modified combinations (`Shift`, `Ctrl`, `Alt`) no longer open report screens.
+
+### Map position hotkeys in gameplay
+
+Map view mode supports saved camera positions for fast navigation.
+
+| Hotkey | Action |
+| ------ | ------ |
+| `Tab` | Toggle map view mode |
+| `Ctrl+1` to `Ctrl+9` | Save current camera position to slot 1 to 9 |
+| `Alt+1` to `Alt+9` | Jump to saved camera position slot 1 to 9 |
+| `Alt+0` | Open list of saved map position slots |
+
+Behavior notes:
+
+* Saving a map position shows a short sidebar message in the lower left corner: `Map position X saved`.
+* The `Alt+0` slot list only opens when at least one slot is saved.
+* The slot list title is `Map position. Select a number...`.
+* Slot entries are prefixed with their slot number and support direct number key selection.
+* If a slot with a name is selected with `Ctrl+1` to `Ctrl+9`, a rename dialog is shown with the text `Keep name or change it?` and the current name as default input, allowing the user to keep or change the name of the map position. Not changing the name or hit cancel will keep the existing name but the slot still updates to the new position.
+
+### Map position restore on load
+
+When a saved game is loaded, the map viewport is restored to the position that was active when the game was saved.
+If an active unit is waiting for orders at that moment, the camera centers on that unit instead — so you always land on something actionable.
+
+To suppress the unit centering and restore the saved viewport position instead, enable **CapsLock** before loading the game.
+The CapsLock state is checked the moment the game resumes; as long as CapsLock is on, the camera stays at the saved position regardless of whether a unit is active.
+
+## The debug menu (in game)
 
 You can activate the debug menu in-game by hitting `Shift + F1` and in the menu choosing `Patches`, then enabling `Debug Menu` by hitting `Enter` and selecting `Yes`.
 
@@ -111,12 +341,12 @@ The menu provides multiple options for testing and debugging the game, including
 
 The debug menu visible flag is stored in `default.profile` in the CivOne directory in your user folder.
 
-### Settings screen (CivOne Setup)
+## Settings screen (CivOne Setup)
 
 You can access the settings screen by hitting `Shift + F1` when starting the game or in-game through the debug menu (see [The debug menu (in game)](#the-debug-menu-in-game)).
 The settings contains multiple options to configure the game, including:
 
-#### Settings
+### Settings
 
 These settings affect the overall game behavior and used graphics/sound options.
 
@@ -126,10 +356,11 @@ These settings affect the overall game behavior and used graphics/sound options.
 | Graphics Mode | Choose the graphics rendering mode (e.g. 256-colour or 16-colour). |
 | Aspect Ratio | Select how the game handles aspect ratio (Auto, Fixed, Scaled, ScaledFixed, Expand). |
 | Full Screen | Toggle fullscreen mode on or off (`Alt+Enter`). |
+| VSync | Synchronize rendering to the display refresh rate. This is enabled by default. It helps prevent the GPU from running at full load. Changing this setting requires a restart. |
 | Window Scale | Set the UI scale multiplier (1x to 8x) for window size. |
 | In-game sound | Browse for and enable in-game sound files. |
 
-#### Patches
+### Patches
 
 This screen allows to change additional modification options for the game.
 
@@ -143,19 +374,112 @@ This screen allows to change additional modification options for the game.
 | Enable Deity difficulty | Enable the Deity difficulty option. |
 | Enable (no keypad) arrow helper | Toggle an arrow helper for users without a numeric keypad. |
 | Custom map sizes (experimental) | Enable experimental custom map sizes. |
+| FPS display | Show performance counters in a screen corner (Off, Top Left, Top Right, Bottom Left, Bottom Right). See [FPS overlay](#fps-overlay) below for the meaning of all values. |
 | Game behavior menu | Open the behavior submenu to change gameplay-related toggles and cheats. |
+| AutoSave format | Choose whether autosaves prefer legacy `SVE` output with automatic `COS` fallback or always write `COS`. |
+| Save cast behavior | Select whether save/load casts use checked conversion or the legacy unchecked mode. |
 | (Gbm) Use smart PathFinding for "goto" | Enable smart pathfinding for unit movement. |
+| (Gbm) Use smart pathfinding for computer players | Enable smart pathfinding for computer controlled units only. Disable to use legacy AI movement behavior. |
 | (Gbm) Use auto-settlers-cheat | Enable automatic settlers (cheat) to place settlers automatically. |
 | (Gbm) Use fast river movement | Movements on rivers behave like roads (faster movement). |
 | (Gbm) No movement penalty for sea units in city | Sea units suffer no movement penalty when in a city. |
 | (Gbm) Extended global warming | Open extended global warming options (needs savegame load). |
 | (Gbm+Egw) Sea level rise | Extended game play with sea level rise instead of only land changing. |
+| Map bitmap scaler | Select the map scaling filter mode (`Palette-aware weighted` or `Nearest neighbor`). |
 
-#### Plugins
+### Map zoom and bitmap filtering
+
+The gameplay map supports zoom presets and a selectable bitmap scaling filter.
+You can zoom with keyboard shortcuts while playing.
+
+| Hotkey | Action |
+| ------ | ------ |
+| `Ctrl+PageUp` | Zoom in. |
+| `Ctrl+PageDown` | Zoom out. |
+
+Mouse wheel zoom is also available with `Ctrl+Wheel`.
+
+When zoom is active, extra sidebar buttons are shown.
+`+` zooms in, `-` zooms out, and `R` resets zoom to the default level.
+
+The sidebar also shows a separate scaler button.
+This button displays the current filter shorthand and toggles the filter at runtime.
+
+`PAW` means `Palette-aware weighted`.
+This mode uses weighted palette-aware sampling and is the default mode.
+It usually gives smoother results for scaled map tiles.
+
+`NN` means `Nearest neighbor`.
+This mode copies the nearest source pixel without weighted blending.
+It usually gives a sharper pixel look with hard edges.
+
+You can configure the default filter in the setup menu.
+Open `Shift+F1` when starting the game.
+Then go to `Patches`.
+Then open `Map bitmap scaler` and choose `Palette-aware weighted` or `Nearest neighbor`.
+
+You can also switch the filter during gameplay by clicking the scaler button in the sidebar when zoom is active.
+The map is refreshed immediately after switching.
+
+### FPS overlay
+
+When **FPS display** is enabled, the chosen corner shows two lines in yellow.
+Both lines use the same value format.
+
+```text
+Game: 74019/10fps/0,014ms
+Render: 38345/540fps/0,026ms
+```
+
+Each line has three values:
+
+```text
+1.250/16fps/2,1ms
+```
+
+Numbers use the German format: dot (`.`) as thousands separator and comma (`,`) as decimal separator.
+The first value is also FPS.
+
+| Value | Meaning |
+| ----- | ------- |
+| `1.250` (potential FPS) | Theoretical maximum rate based on the average measured duration of that line in the last second (`1000 / avg ms`). |
+| `16fps` (actual FPS) | Number of measured events per second for that line. |
+| `2,1ms` (avg duration) | Average wall-clock time per measured event in the last second. |
+
+Line semantics:
+
+* `Game` measures only update draws when game state changed and `_hasUpdate` triggered a runtime draw.
+* `Render` measures the full SDL render pass for each displayed frame.
+
+Why `Game ms` is often lower than `Render ms`:
+
+* `Game ms` times only the update-draw section that builds or updates runtime layers.
+* `Render ms` times the complete SDL pass, including drawing all cached layers, cursor overlay, FPS overlay, scaling, and presentation work.
+* In calm scenes, game updates are often small and short, so `Game ms` can stay very low.
+* Even when no game state changes, render still performs full frame composition, so `Render ms` usually stays higher.
+* Therefore `Game ms < Render ms` is expected in many situations and does not indicate a bug.
+
+Why `Game` potential FPS can be much higher than `Render` potential FPS:
+
+* Game updates can be rare in static situations.
+* When updates happen, the measured game draw section can be very short.
+* A very small average duration makes `1000 / ms` very large.
+* This high value is theoretical throughput for one update call, not real update frequency.
+
+> On static screens where no game updates occur, the `Game` line may show `0` for the actual FPS (middle value), but retains the previous `potential FPS` and `avg ms` (first and third values) from the last measurement. This is expected and not a bug. The `actual FPS` correctly reflects that no updates happened. Moving the mouse cursor if available can trigger updates and refresh all values.
+
+Rule of thumb:
+
+* Compare `actual FPS` between Game and Render for real rates.
+* Treat potential FPS as a capacity hint, not an observed rate.
+* If Game actual is low but Game ms is low, the game loop or update cadence is the limiter.
+* If Render ms grows, rendering is the limiter.
+
+### Plugins
 
 This screen allows you to manage plugins for the game.
 
-#### Game Options
+### Game Options
 
 These options affect the gameplay mechanics and rules and can also be changed in-game via the options menu.
 
@@ -170,9 +494,9 @@ These options affect the gameplay mechanics and rules and can also be changed in
 | Civilopedia Text | Select Civilopedia text display mode (affects in-game encyclopedia text). |
 | Palace | Toggle palace-related behaviour or display options in cities. |
 | Tax Rate | Set the tax rate which splits commerce between gold and science (0%–100%). |
+| Language | Select active translation language (`Identity` or any valid `civ_<postfix>.txt` file from the profile translation folder). |
 
-
-#### Launch Game / Return to Game
+### Launch Game / Return to Game
 
 Closes the settings screen and launches or returns to the game.
 
@@ -243,6 +567,12 @@ brew install sdl2
 
 Homebrew installs SDL2 system-wide, and the dynamic library will be available automatically at runtime.
 
+The SDL loader also includes a macOS native resolver with fallback search paths.
+The resolver checks `/Library/Frameworks/SDL2.framework/Versions/Current/SDL2` first.
+The resolver then checks Homebrew library paths in `/opt/homebrew/lib` and `/usr/local/lib`.
+This reduces manual setup and usually avoids setting `DYLD_LIBRARY_PATH`.
+This behavior applies only on macOS.
+
 ### Troubleshooting
 
 * Ensure the SDL2 **native library** is installed, not only C# bindings.
@@ -253,7 +583,7 @@ Homebrew installs SDL2 system-wide, and the dynamic library will be available au
 
 ### Prerequisites
 
-* .NET 9 SDK
+* .NET 9 SDK (see [DotNet Runtime 9](#dotnet-runtime-9))
 * SDL2 runtime installed (see [SDL2 Installation](#sdl2-installation-linux-windows-macos))
 
 ### Using Visual Studio Code
@@ -261,7 +591,43 @@ Homebrew installs SDL2 system-wide, and the dynamic library will be available au
 The project provides a `launch.json` file for Visual Studio Code, which can be used to run and debug the project.
 To use it, open the project in Visual Studio Code, go to the Run and Debug view and use one
 
-### Tests
+### DotNet Runtime 9
+
+This project currently targets **.NET 9**.
+Even if you already have the **.NET 10 SDK** installed, the application still requires the **.NET 9 Runtime** to run.
+
+This is because .NET applications do not automatically roll forward between major runtime versions (for example from 9 → 10).
+
+You can check the currently installed runtimes with:
+
+```bash
+dotnet --list-runtimes
+```
+
+If `.NET 9` is missing, install it manually:
+
+#### Install .NET 9 Runtime
+
+```bash
+curl -sSL https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh
+chmod +x dotnet-install.sh
+
+./dotnet-install.sh --runtime dotnet --channel 9.0
+```
+
+For ASP.NET Core applications, also install:
+
+```bash
+./dotnet-install.sh --runtime aspnetcore --channel 9.0
+```
+
+After installation, verify again:
+
+```bash
+dotnet --list-runtimes
+```
+
+## Tests
 
 To run the tests, you can use the following command:
 
@@ -270,6 +636,14 @@ dotnet test
 ```
 
 Extended console output will be shown during the test run, providing more insights into the test execution and results.
+
+If you want to suppress console output from the game code during tests, run:
+
+```sh
+dotnet test xunit/CivOne.UnitTests.csproj -p:SuppressConsoleLogs=true
+```
+
+This keeps xUnit status output and hides log messages written by the code under test.
 
 ```sh
 dotnet test --logger "console;verbosity=detailed"
@@ -282,6 +656,614 @@ To skip them use
 dotnet test --filter "FullyQualifiedName!~ZOCTests&FullyQualifiedName!~IrrigateTest"
 ```
 
+The test suite uses two integration trait categories.
+
+* `IntegrationEarthYaml` is for integration tests that rely only on bundled Earth YAML test data.
+* `IntegrationLocalData` is for integration tests that require local proprietary game data files.
+
+CI workflows run `IntegrationEarthYaml` tests.
+CI workflows skip `IntegrationLocalData` tests.
+
+Run all tests except local-data integration tests.
+
+```sh
+dotnet test --filter "Category!=IntegrationLocalData&TestCategory!=IntegrationLocalData"
+```
+
+Run only Earth YAML integration tests.
+
+```sh
+dotnet test --filter "Category=IntegrationEarthYaml|TestCategory=IntegrationEarthYaml"
+```
+
+Run only local-data integration tests.
+
+```sh
+dotnet test --filter "Category=IntegrationLocalData|TestCategory=IntegrationLocalData"
+```
+
+### Test coverage
+
+This repository supports code coverage with Coverlet and ReportGenerator.
+You can generate a text summary for the console and an HTML report for local inspection.
+
+Run coverage from command line.
+
+```sh
+dotnet test xunit/CivOne.UnitTests.csproj --collect:"XPlat Code Coverage" --results-directory TestResults --filter "FullyQualifiedName!~CivOne.UnitTests.CityCitizenServiceImplPerformanceTests.Measure"
+dotnet tool restore
+dotnet tool run reportgenerator -- "-reports:TestResults/**/coverage.cobertura.xml" "-targetdir:CoverageReport" "-reporttypes:Html;TextSummary"
+```
+
+Read the text summary in console friendly format.
+
+```sh
+cat CoverageReport/Summary.txt
+```
+
+On Windows Command Prompt you can use.
+
+```cmd
+type CoverageReport\Summary.txt
+```
+
+Open the HTML report at [CoverageReport/index.html](CoverageReport/index.html).
+
+If you use Visual Studio Code, run the task `test-coverage`.
+This task runs tests with coverage, generates HTML, and prints the text summary in the terminal.
+
+### Coverage in GitHub Actions
+
+A workflow is available at [.github/workflows/coverage.yml](.github/workflows/coverage.yml).
+It runs on push and pull request, prints the coverage summary in the job logs, writes the summary into the GitHub job summary, and uploads the HTML report as an artifact.
+
+## Cleaning up
+
+To clean build artifacts and coverage files:
+
+Run `dotnet clean` to remove `bin/` and `obj/` directories.
+
+```sh
+dotnet clean
+```
+
+Run the `clean-all` VS Code task to remove build artifacts and coverage data (`TestResults/` and `CoverageReport/`).
+
+Alternatively, run individual cleanup tasks in VS Code:
+
+* `clean` – Runs `dotnet clean`
+* `clean-coverage-folders` – Removes `TestResults/` and `CoverageReport/` directories
+
+## Assembly Versioning
+
+The project uses centralized assembly versioning via `Directory.Build.props` in the repository root.
+This ensures all assemblies have consistent version numbers.
+
+### Current Version
+
+The current assembly version is `0.1.0.1417`.
+It is defined in a single location: [Directory.Build.props](Directory.Build.props).
+
+### How it works
+
+The `Directory.Build.props` file contains:
+
+* `AssemblyVersion` - Main version number (e.g. `0.1.0.1417`)
+* `FileVersion` - File version (same as AssemblyVersion)
+* `InformationalVersion` - Semantic version (e.g. `0.1.0`)
+* `GenerateAssemblyInfo` - Enables SDK generated assembly metadata
+* `AssemblyProduct` - Default product name (e.g. `CivOne`)
+* `AssemblyCopyright` - Copyright info
+
+Every project inherits these properties automatically.
+Project-specific metadata (like different `AssemblyProduct` values) can override these defaults.
+
+### Updating the version
+
+To update the version for all assemblies:
+
+1. Open [Directory.Build.props](Directory.Build.props).
+2. Update `AssemblyVersion`, `FileVersion`, and `InformationalVersion`.
+3. Do not add version attributes to `AssemblyInfo.cs` files.
+
+Example:
+
+```xml
+<AssemblyVersion>0.1.0.1500</AssemblyVersion>
+<FileVersion>0.1.0.1500</FileVersion>
+<InformationalVersion>0.1.0</InformationalVersion>
+```
+
+### Project-specific metadata
+
+Project-specific SDK metadata belongs in the project file.
+For example, [api/CivOne.API.csproj](api/CivOne.API.csproj) sets `AssemblyProduct` to `CivOne API`.
+
+Some projects still use custom `AssemblyInfo.cs` files for attributes that MSBuild cannot generate:
+
+* [src/Properties/AssemblyInfo.cs](src/Properties/AssemblyInfo.cs) - Contains `InternalsVisibleTo` attributes.
+* [xunit/properties/AssemblyInfo.cs](xunit/properties/AssemblyInfo.cs) - Contains the test-specific `CollectionBehavior` attribute.
+
+Do not add standard attributes like `AssemblyVersion`, `AssemblyProduct`, or `AssemblyCopyright` to these files.
+Those attributes are generated from MSBuild properties.
+
+## Profiling
+
+Profiling helps identify performance issues and bottlenecks in the game.
+
+### Automated Profiling via Launch Configuration
+
+The project includes a ready-made launch configuration for VS Code that starts the game with comprehensive profiling data.
+
+### In VS Code
+
+1. Open the Run and Debug view (Ctrl+Shift+D).
+2. Select "Launch Game (dotnet trace profiling)" from the dropdown.
+3. Press F5 or click "Start Debugging".
+
+The game will start and a `.nettrace` file will be automatically created in the `profiling/` folder and converted to JSON format.
+The file will have a name like `civone-profile-<PID>.nettrace`.
+
+### In the shell (manual approach)
+
+If the launch configuration is not available or not working, you can use the following PowerShell commands:
+
+Windows PowerShell:
+
+```powershell
+dotnet trace collect --process-name CivOne.SDL --output ${workspaceFolder}/profiling/civone-profile.nettrace
+dotnet trace convert --format Speedscope ${workspaceFolder}/profiling/civone-profile.nettrace
+```
+
+or using the process id:
+
+```powershell
+$gameProcess = Start-Process dotnet -ArgumentList '${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll','--debug' -WorkingDirectory '${workspaceRoot}' -PassThru
+dotnet trace collect --process-id $gameProcess.Id --output ${workspaceFolder}/profiling/civone-profile-$($gameProcess.Id).nettrace
+dotnet trace convert --format Speedscope ${workspaceFolder}/profiling/civone-profile-$($gameProcess.Id).nettrace
+```
+
+Linux / macOS:
+
+```sh
+dotnet trace collect --process-name CivOne.SDL --output ./profiling/civone-profile.nettrace
+dotnet trace convert --format Speedscope ./profiling/civone-profile.nettrace
+```
+
+or using the process id:
+
+```sh
+./runtime/sdl/bin/Debug/net9.0/CivOne.SDL --debug &
+GAME_PID=$!
+dotnet trace collect --process-id $GAME_PID --output ./profiling/civone-profile-$GAME_PID.nettrace
+dotnet trace convert --format Speedscope ./profiling/civone-profile-$GAME_PID.nettrace
+```
+
+### Lighter-weight manual profiling
+
+The automated approach is comprehensive but resource-intensive.
+If you want to quickly investigate a performance bottleneck, there are simpler alternatives:
+
+* **Enable FPS overlay**: Use the "FPS display" option in Settings (Shift+F1) to see `Game` and `Render` metrics directly in the game.
+* **Check debug output**: Use debug mode (--debug) and check the logs for suspicious values.
+* **Targeted profiling**: Start the game with `--seed <number>` to reproduce scenarios and investigate them specifically.
+
+Interpretation hint:
+
+* A very large `Game` potential value with a low `Game` actual value is normal when little state changes happen per second.
+* `Game ms` can be lower than `Render ms` because both lines measure different scopes.
+* `Game ms` measures update work only, while `Render ms` includes full frame composition and presentation.
+* In that case, focus on `actual FPS` and `ms` instead of potential FPS.
+
+#### Analyzing profiling data
+
+The resulting `.json` file (converted from `.nettrace`) can be analyzed in two ways:
+
+**1. Speedscope (web-based):**
+
+1. Open [https://www.speedscope.app/](https://www.speedscope.app/).
+2. Drag the JSON file onto the website or import it.
+3. Examine the flame graphs and call trees.
+
+**2. AI-assisted analysis:**
+
+The JSON file can also be analyzed by AI tools like GitHub Copilot or ChatGPT:
+
+1. Open the `.json` file in VS Code or an editor.
+2. Provide the contents to an AI tool and ask about performance bottlenecks.
+3. The AI can identify issues and suggest optimizations.
+
+The profiling data shows where the CPU spends the most time and helps identify performance-critical code sections.
+
+## FAQ
+
+### The screen content is cut off after resizing the window
+
+This happens when **Aspect Ratio** is set to `Expand` and a fixed window size was saved.
+In `Expand` mode the game renders exactly as many tiles as fit the current window.
+When the window is later made smaller, the rendered area stays the same size but no longer fits inside the window, so parts of the screen (e.g. the top or sides) are cropped.
+
+To fix this, resize the window to match the size the game was configured for, or change the **Aspect Ratio** setting to `Fixed`, `Scaled`, or `ScaledFixed`.
+Those modes always scale or letterbox the fixed 320x200 game surface to fit any window size.
+
+If you want to use `Expand` mode, make sure to use `Auto` for the Expand size in the settings, which allows the game to automatically adjust the rendered area to fit the window size.
+
 ## Changes (Log)
 
 See [CHANGES.md](CHANGES.md) for a detailed list of changes and updates.
+
+## MCP Integration
+
+CivOne includes a built-in MCP server for local automation and screenshot capture.
+
+Start the game with `--mcp` to enable it.
+Use `--mcp-artifacts <path>` to choose where screenshots are written.
+
+```cmd
+CivOne.SDL.exe --mcp
+```
+
+The server communicates over stdio and prints a session token to `stderr` on startup.
+That token must be included in every request.
+
+> There is a mcp.json file for Visual Studio Code MCP client integration. You can use `Ctrl+Shift+P` → "MCP: List Servers" to start/connect to `civone`'s MCP server and send requests directly from VS Code.
+
+For activation, request examples, available tools, response format, and Visual Studio Code integration, see [MCP.md](MCP.md).
+For internal architecture and implementation notes, see [docs/MCP.md](docs/MCP.md).
+
+## New or changed Game Mechanics
+
+### Map panning and camera control
+
+Explore the entire map at your own pace with map panning and camera positioning.
+
+#### Basic map panning
+
+Press `Tab` to enter or exit **map pan mode**.
+In this mode, the selected unit remains highlighted and does not blink, so you always know which unit you will control when returning to normal mode.
+Navigate the map using:
+
+* **Arrow keys** — scroll the map in cardinal directions
+* **Mouse click** — click on the map to instantly jump the camera to that location (as without map pan mode)
+* **Center on selection** — press `c` to instantly center the camera on your selected unit or city
+
+#### Saving and loading camera positions
+
+Save up to 9 named camera positions for quick navigation across the map.
+
+| Hotkey | Action |
+| ------ | ------ |
+| `Tab` | Toggle map pan mode (explore map without moving units) |
+| `Ctrl+1` to `Ctrl+9` | Save current camera position to slot 1–9 |
+| `Alt+1` to `Alt+9` | Jump to saved camera position slot 1–9 |
+| `Alt+0` | Open the list of all saved map position slots |
+| `c` | Center camera on selected unit or city (works in both modes) |
+
+#### Saving position details
+
+* When you save a map position with `Ctrl+1` to `Ctrl+9`, a sidebar message appears in the lower left corner: `Map position X saved`.
+* If the slot already contains a saved position, a rename dialog opens with the text `Keep name or change it?` and the current name as the default value.
+* You can keep the existing name or type a new one; pressing `Cancel` keeps the old name but still updates the map position to the current location.
+* The `Alt+0` slot list only appears when at least one position is saved.
+* In the slot list dialog (titled `Map position. Select a number...`), you can press `1` through `9` to jump directly to that slot, or use arrow keys to navigate and press `Enter` to confirm.
+
+#### Camera position on load
+
+When a saved game is loaded, the map viewport is restored to the position that was active when the game was saved.
+If an active unit is waiting for orders, the camera centers on that unit instead — so you always land on something actionable.
+
+To suppress unit centering and restore the saved viewport position instead, enable **CapsLock** before loading the game.
+The CapsLock state is checked the moment the game resumes; as long as CapsLock is on, the camera stays at the saved map position.
+
+#### Zooming
+
+Use `Ctrl+MouseWheel` while hovering over the gameplay map to zoom in or out.
+
+* **Scroll up** — zoom in (larger tiles, fewer tiles visible)
+* **Scroll down** — zoom out (smaller tiles, more of the map visible)
+
+There are 10 fixed zoom levels ranging from 100 % down to 12.5 %.
+The zoom level steps through these presets automatically; you cannot set an arbitrary value between steps.
+
+| Level | Scale | Tiles visible (approx.) |
+| ----- | ----- | ----------------------- |
+| 1 (default) | 100 % | smallest area |
+| 5 | 50 % | medium overview |
+| 10 | 12.5 % | largest area |
+
+The zoom level is saved in the savegame and restored when you reload the save.
+If the field `MapZoomBasisPoints` is absent in an older save file, the game falls back to 100 %.
+
+> Note: The minimap currently only shows the upper-left area of the displayed (zoomed) map.
+> This means the minimap display can be misleading when zoomed, as it does not reflect the actual visible map area.
+> This is a known limitation and will be improved in future updates to correctly align the minimap with the current zoom level and displayed map area.
+
+### Customize World screen help
+
+Use `Customize World` from the main menu if you want to generate a custom map.
+You can select predefined map size presets or enter a custom map size.
+
+Available presets are Tiny `40x25`, Small `60x40`, Normal `80x50`, Large `120x75`, and Huge `160x100`.
+
+For custom size input, two formats are supported.
+You can enter `WidthxHeight`, for example `160x100`.
+You can also enter a single number, and the game uses it for both axes.
+Example: `200` means `200x200`.
+
+The allowed range is `20x20` up to `1000x1000`.
+Values outside that range are rejected.
+
+The normal `Start a New Game` menu item still uses the default map size `80x50`.
+
+### Some changed map generation mechanics
+
+1. Large maps can contain more water tiles than expected.
+This happens because land generation uses hard stop limits and a clamped land target to prevent endless generation loops.
+2. Larger maps can produce more hills and mountains.
+This happens because chunk size and age adjustment passes scale with map area.
+3. World age has a strong effect on mountain and hill balance.
+Younger worlds tend to keep or create more mountains.
+Older worlds tend to erode more mountains into hills.
+4. Wet world settings can create more tundra and swamp tiles.
+Wet worlds can also create many rivers when enough land start tiles are available.
+This effect is especially visible on wet and young worlds (3 billion years).
+5. River generation is climate weighted.
+Wet climate uses a much higher river target and stronger fallback start behavior than arid climate.
+6. Arctic pole regions can be larger than in the original game.
+Top and bottom map rows are forced to arctic and extra tundra can appear in the two outer rows near each pole.
+7. Continent and ocean IDs are sorted by size.
+The continent ID on tiles is stored as `int` with no artificial upper limit.
+The binary `.MAP` save format stores the ID as a byte for compatibility with the original game.
+8. Goody hut placement is deterministic and not fully random.
+Huts are not placed in the top two or bottom two rows.
+
+### Terrain editor
+
+The gameplay map now includes a terrain editor for debugging and scenario style map changes.
+The editor is available only when the debug menu is enabled.
+Enable it with `Shift + F1`, open `Patches`, then set `Debug menu` to `Yes`, or start the game with `--debug`.
+
+When debug mode is active, a new `Terrain` menu appears in the top gameplay menu bar.
+This menu lets you paint terrain, add or remove tile improvements, edit land values, found cities, spawn units, and place civilization start positions.
+
+#### Main terrain editor hotkeys
+
+| Hotkey | Action |
+| ------ | ------ |
+| `T` | Open terrain selection and choose the terrain type used for painting. |
+| `Y` | Switch to found city mode. |
+| `Shift+Y` | Select the owner used by found city mode. |
+| `U` | Open unit selection and switch to unit spawn mode. |
+| `Shift+U` | Select the owner used by unit spawn mode. |
+| `I` | Switch to irrigation mode. |
+| `R` | Switch to road and railroad mode. |
+| `M` | Switch to mine mode. |
+| `F` | Switch to fortress mode. |
+| `P` | Switch to pollution mode. |
+| `H` | Switch to hut and village mode. |
+| `C` | Switch to clear improvements mode. |
+| `S` | Switch to start position mode. |
+| `Shift+S` | Select the civilization used by start position mode. |
+| `L` | Toggle land value editing mode. |
+| `+` or `]` | Increase brush size. |
+| `-` or `[` | Decrease brush size. |
+| `Return` | Apply the current action to all tiles under the brush. |
+| `Backspace` | Apply the alternate action to all tiles under the brush (e.g. remove improvements, shrink a city, remove units, or decrease land value). |
+| Left click | Apply the current action to the clicked tile. |
+| Right click | Apply the alternate action to the clicked tile (e.g. decrease land value, remove units, etc.). |
+
+#### Terrain editor behavior
+
+Brush sizes cycle through `1`, `2`, `3`, `5`, `7`, `9`, `11`, `13`, and `15`.
+This is an explicit terrain editor requirement: brush size `2` must stay available for small-area edits.
+Brush size `2` uses a 2x2 footprint and is intentionally not centered like odd brush sizes.
+Larger brush sizes apply the selected action to a wider area.
+The white selection square shows where the brush is currently applied.
+You can use the mouse to click on the map or the cursor keys to move the selection square and apply changes with the keyboard by pressing `Return`. This changes the terrain under the selection square, applying the current brush size.
+
+In land value mode, left click increases land value and right click decreases land value.
+This helps inspect and adjust city site quality directly on the map.
+
+In found city mode, left click creates a city for the selected owner.
+The alternate action reduces the size of an existing city on the target tile.
+
+In unit spawn mode, left click places the selected unit for the selected owner.
+The alternate action removes matching units from the target tile.
+You can also use `Return` or `Backspace` to add or remove units without clicking, which applies the action to all tiles under the brush.
+
+#### Start positions
+
+A start position marks where a civilization's Settlers unit is placed when a game starts on the map.
+Custom maps can define a fixed start position for each civilization, which is useful for scenario maps.
+
+In start position mode (`S`), left click sets the start position for the currently selected civilization on the clicked tile.
+The alternate action (right click or `Backspace`) removes any start position on the target tile.
+Start positions cannot be placed on ocean tiles.
+Use `Shift+S` to open a picker and choose which civilization the next placement belongs to.
+
+When a map has fixed start positions, they take priority at game start: each civilization begins on its assigned tile instead of a computed one.
+
+##### Auto start positions
+
+The `Auto Start Positions...` menu entry assigns start positions automatically instead of placing them tile by tile.
+It opens a small menu where you choose the placement algorithm:
+
+* `Legacy` reproduces the original placement logic.
+* `Area Based` divides the map into equally sized areas and spreads civilizations across them.
+
+Positions are generated for every non-barbarian civilization, not only the ones playing in the current game, so a map can be fully populated in one step.
+
+There are two modes:
+
+* Normal selection only fills in civilizations that do not have a start position yet. Existing, manually placed positions are kept and used as anchors so the new ones stay clear of them.
+* Holding `Shift` while choosing the algorithm redistributes every civilization from scratch, ignoring and overwriting all current positions.
+
+The generated positions never use the hardcoded Earth start coordinates, so they stay meaningful on custom maps.
+
+Terrain editor changes are written into normal save files.
+Edited terrain, improvements, and land values remain after save and reload.
+
+## Analyzing Build Warnings
+
+When working with large .NET solutions, it is often useful to identify the most frequent warnings first and address them in descending order of impact.
+
+### Using MSBuild Structured Log Viewer
+
+A convenient way to analyze warnings is by generating an MSBuild binary log and opening it with the MSBuild Structured Log Viewer.
+
+Project website: [MSBuild Structured Log Viewer](https://msbuildlog.com)
+
+Install the viewer:
+
+```powershell
+winget install KirillOsenkov.MSBuildStructuredLogViewer
+````
+
+Generate a binary build log:
+
+```powershell
+dotnet build -bl
+```
+
+This creates a file named `msbuild.binlog`.
+
+Open the file in MSBuild Structured Log Viewer to:
+
+* Browse all warnings and errors
+* Filter by warning code
+* Identify which projects generate the most warnings
+* Inspect detailed warning information
+* Navigate directly to the affected source files
+
+This approach is recommended for interactive analysis of large solutions.
+
+### Counting Warnings from Build Logs
+
+For a quick overview, build output can be redirected to a log file and analyzed using PowerShell.
+
+Generate the log file:
+
+```powershell
+dotnet build --no-incremental > build.log 2>&1
+
+# Alternatively, to ensure UTF-8 encoding and capture all output:
+dotnet build --no-incremental 2>&1 | Out-File build.log -Encoding utf8
+```
+
+The following script groups warnings by warning code and includes the warning description and writes a summary to `warning-summary.txt`:
+
+```powershell
+$inputFile = "build.log"
+$outputFile = "warning-summary.txt"
+
+$warnings =
+    Get-Content $inputFile -Encoding UTF8 |
+    ForEach-Object {
+        if ($_ -match ':\s*warning\s+([A-Z]+\d+)\s*:\s*(.+?)(?:\s+\[[^\]]+\])?$') {
+            [PSCustomObject]@{
+                Code        = $matches[1]
+                Description = $matches[2].Trim()
+            }
+        }
+    }
+
+$result =
+    $warnings |
+    Group-Object Code, Description |
+    Sort-Object Count -Descending |
+    Select-Object Count,
+                  @{Name='Warning';Expression={$_.Group[0].Code}},
+                  @{Name='Description';Expression={$_.Group[0].Description}}
+
+$result |
+    Format-Table -AutoSize |
+    Out-String -Width 1000 |
+    Set-Content $outputFile -Encoding UTF8
+
+Write-Host "Written to $outputFile"
+```
+
+You may need to ensure Utf-8 encoding for the current powershell session:
+
+```powershell
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
+$OutputEncoding = [System.Text.UTF8Encoding]::new()
+```
+
+Example output:
+
+```text
+Count Warning Description
+----- ------- ---------------------------------------------------------------
+  523 CS8618  Non-nullable property must contain a non-null value when exiting constructor.
+  317 CS8602  Dereference of a possibly null reference.
+  144 CS8604  Possible null reference argument.
+   87 CS8625  Cannot convert null literal to non-nullable reference type.
+```
+
+```shell
+#!/usr/bin/env bash
+
+INPUT_FILE="build.log"
+OUTPUT_FILE="warning-summary.txt"
+
+awk '
+match($0, /warning [A-Z]+[0-9]+:/) {
+    code = substr($0, RSTART + 8, RLENGTH - 9)
+
+    desc = substr($0, RSTART + RLENGTH + 1)
+
+    sub(/ \[[^]]+\]$/, "", desc)
+
+    key = code "|" desc
+
+    count[key]++
+}
+
+END {
+    for (k in count)
+        print count[k] "|" k
+}
+' "$INPUT_FILE" |
+sort -t'|' -k1,1nr |
+awk -F'|' '
+BEGIN {
+    printf "%-8s %-10s %s\n", "Count", "Warning", "Description"
+}
+{
+    printf "%-8s %-10s %s\n", $1, $2, $3
+}
+' > "$OUTPUT_FILE"
+
+echo "Written to $OUTPUT_FILE"
+```
+
+## Services
+
+Most services have a factory.
+
+### IRandomService
+
+```cs
+private readonly IRandomService _randomService;
+_randomService = RandomServiceFactory.Create();
+_randomService.NextByte(20)
+_randomService.NextInt(1, 100)
+```
+
+### ITranslationService
+
+```cs
+ITranslationService translationService = TranslationServiceFactory.GetCurrent();
+string translatedText = translationService.Translate("HELLO_WORLD");
+```
+
+> `BaseScreen` has a `Translate` method that uses the current translation service:
+
+There are multipe overloads for translation and formatting.
+`Translate` is the simplest one that just translates a key to a string.
+`TranslateFormatted` allows you to pass arguments for string formatting (e.g. placeholders like `{0}` in the translation value).
+`TranslateArray` splits the translated string on `\n` and returns an array of lines, which is useful for multi-line messages stored as a single key.
+`TranslateFormattedArray` combines both features: it formats the string with arguments and then splits it into an array.
+
+> Use the array versions when the translation value contains multiple lines separated by `\n`, instead of calling `Translate` and then splitting the result manually. This would create multiple lines/keys in the translation files, which is less convenient to manage and maintain.

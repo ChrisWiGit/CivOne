@@ -57,29 +57,30 @@ namespace CivOne.Civilizations
 			protected set => _startY = value;
 		}
 
-		private string[] _cityNames;
+		private string[] _cityNames = [];
 		public string[] CityNames
 		{
 			get => Modifications.LastOrDefault(x => x.CityNames.HasValue)?.CityNames.Value ?? _cityNames;
 			protected set => _cityNames = value;
 		}
 
-		public string Tune { get; private set; }
+		public string? Tune { get ; protected set; }
 
-		public BaseCivilization(Civilization civilization, string name, string namePlural, string tune = null) : base(civilization)
+		protected BaseCivilization(Civilization civilization, string name, string namePlural, string? tune = null) : base(civilization)
 		{
-			Id = (Civilization == Civilization.Barbarians ? 15 : (int)Civilization);
+			Id = Civilization == Civilization.Barbarians ? 15 : (int)Civilization;
 			PreferredPlayerNumber = (byte)(Civilization == Civilization.Barbarians ? 0 : ((int)Civilization - 1) % 7 + 1);
-			Name = name;
-			NamePlural = namePlural;
-			Leader = new T();
+			_name = name;
+			_namePlural = namePlural;
+			T t = new();
+			_leader = t;
 			Tune = tune;
 		}
 	}
 
-	public abstract partial class BaseCivilization : BaseInstance
+	public abstract partial class BaseCivilization(Civilization civilization) : BaseInstance
 	{
-		protected Civilization Civilization { get; }
+		protected Civilization Civilization { get; } = civilization;
 
 		private static Dictionary<Civilization, List<CivilizationModification>> _modifications = new Dictionary<Civilization, List<CivilizationModification>>();
 		internal static void LoadModifications()
@@ -100,11 +101,6 @@ namespace CivOne.Civilizations
 
 			Log("Finished applying civilization modifications");
 		}
-		public IEnumerable<CivilizationModification> Modifications => _modifications.ContainsKey(Civilization) ? _modifications[Civilization].ToArray() : new CivilizationModification[0];
-
-		protected BaseCivilization(Civilization civilization)
-		{
-			Civilization = civilization;
-		}
+		public IEnumerable<CivilizationModification> Modifications => _modifications.TryGetValue(Civilization, out List<CivilizationModification>? value) ? value.ToArray() : [];
 	}
 }

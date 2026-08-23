@@ -17,6 +17,12 @@ namespace CivOne.Units
 	{
 		private static Player Human => Game.Instance.HumanPlayer;
 
+		/// <summary>
+		/// Returns the shared cached bitmap for the unit sprite.
+		///
+		/// The returned <see cref="Bytemap"/> is owned by the sprite cache.
+		/// Callers must not wrap it in <c>using</c> or dispose it.
+		/// </summary>
 		public static Bytemap ToBitmap(this IUnit unit, bool showState = true) => ToBitmap(unit, unit.Owner, showState);
 		public static Bytemap ToBitmap(this IUnit unit, byte colour, bool showState = true)
 		{
@@ -27,44 +33,44 @@ namespace CivOne.Units
 					case Settlers settlers:
 						if (settlers.order == Enums.Order.Road)
 						{
-							return Unit.Letter(settlers.Type, 'R', colour).Bitmap;
+							return Unit.Letter(settlers.Type, 'R', colour).Bitmap!;
 						}
 						else if (settlers.order == Enums.Order.Irrigate)
 						{
-							return Unit.Letter(settlers.Type, 'I', colour).Bitmap;
+							return Unit.Letter(settlers.Type, 'I', colour).Bitmap!;
 						}
 						else if (settlers.order == Enums.Order.Mines)
 						{
-							return Unit.Letter(settlers.Type, 'M', colour).Bitmap;
+							return Unit.Letter(settlers.Type, 'M', colour).Bitmap!;
 						}
 						else if (settlers.order == Enums.Order.Fortress)
 						{
-							return Unit.Letter(settlers.Type, 'F', colour).Bitmap;
+							return Unit.Letter(settlers.Type, 'F', colour).Bitmap!;
 						}
 						else if (settlers.order == Enums.Order.ClearPollution)
 						{
-							return Unit.Letter(settlers.Type, 'P', colour).Bitmap;
+							return Unit.Letter(settlers.Type, 'P', colour).Bitmap!;
 						}
 						break;
 				}
 				if (unit.Sentry)
 				{
-					return Unit.Sentry(unit.Type, colour).Bitmap;
+					return Unit.Sentry(unit.Type, colour).Bitmap!;
 				}
 				else if (unit.FortifyActive)
 				{
-					return Unit.Letter(unit.Type, 'F', colour).Bitmap;
+					return Unit.Letter(unit.Type, 'F', colour).Bitmap!;
 				}
 				else if (unit.Fortify)
 				{
-					return Unit.Fortify(unit.Type, colour).Bitmap;
+					return Unit.Fortify(unit.Type, colour).Bitmap!;
 				}
-				else if (Human == unit.Owner && unit.Goto != Point.Empty)
+				else if (Human == unit.Owner && unit.HasGotoDestination())
 				{
-					return Unit.Letter(unit.Type, 'G', colour).Bitmap;
+					return Unit.Letter(unit.Type, 'G', colour).Bitmap!;
 				}
 			}
-			return Unit.Base(unit.Type, colour).Bitmap;
+			return Unit.Base(unit.Type, colour).Bitmap!;
 		}
 	}
 }

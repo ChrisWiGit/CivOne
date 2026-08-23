@@ -16,46 +16,61 @@ using static CivOne.Enums.Direction;
 
 namespace CivOne.Graphics
 {
+	// Refactor note: 
+	// Free terrain bitmaps (Plains, Arctic, Tundra, Desert, Forest, Hills, Mountains)
+	//   now cached via private fields with ??= to avoid regenerating 64KB Bytemap per access
+	// CW: Not sure why this class is called Free. 
+	// It seems to be a collection of static properties that generate Bytemaps for various terrain types and UI elements, 
+	// using either hardcoded byte arrays or procedural noise generation. 
+	// The name "Free" doesn't seem to reflect its purpose, so it might be worth renaming it to something more 
+	// descriptive like "TerrainBitmaps" or "TileBitmaps". However, without more context on how this class is used, it's hard to say for sure.
 	internal class Free
 	{
-		private Bytemap _panelGrey, _panelBlue;
-		private Bytemap _landBase, _seaBase, _city, _fortify;
-		private Bytemap[] _terrain = new Bytemap[10];
+		private Bytemap? _panelGrey, _panelBlue;
+		private Bytemap? _landBase, _seaBase, _city, _fortify;
+		private Bytemap? _plains, _arctic, _tundra, _desert, _forest, _hills, _mountains;
 
-		private IEnumerable<byte> GenerateNoise(params byte[] values)
+		#pragma warning disable S2190
+		/// <summary>
+		/// This will generate an infinite stream of noise values based on the provided byte values.
+		/// Infinite recursion is intentional.
+		/// </summary>
+		private static IEnumerable<byte> GenerateNoise(params byte[] values)
 		{
-			Random r = new Random(0x4701);
+			Random r = new(0x4701);
 			while (true)
 			{
 				yield return values[r.Next(values.Length)];
 			}
 		}
 
-		private IEnumerable<byte> GenerateUnit()
+		private static IEnumerable<byte> GenerateUnit()
 		{
 			for (int yy = 0; yy < 16; yy++)
-			for (int xx = 0; xx < 16; xx++)
 			{
-				if ((xx == 0 || xx == 15 || yy == 0 || yy == 15) || ((xx == 1 || xx == 14) && (yy == 1 || yy == 14)))
+				for (int xx = 0; xx < 16; xx++)
 				{
-					yield return 0;
-				}
-				else if (xx == 1 || yy == 14)
-				{
-					yield return 15;
-				}
-				else if (xx == 14 || yy == 1)
-				{
-					yield return 2;
-				}
-				else
-				{
-					yield return 10;
+					if (xx == 0 || xx == 15 || yy == 0 || yy == 15 || ((xx == 1 || xx == 14) && (yy == 1 || yy == 14)))
+					{
+						yield return 0;
+					}
+					else if (xx == 1 || yy == 14)
+					{
+						yield return 15;
+					}
+					else if (xx == 14 || yy == 1)
+					{
+						yield return 2;
+					}
+					else
+					{
+						yield return 10;
+					}
 				}
 			}
 		}
 
-		private void DiffPanel(ref Bytemap bytemap, int left, int top, int width, int height)
+		private static void DiffPanel(ref Bytemap bytemap, int left, int top, int width, int height)
 		{
 			byte[] colours = new byte[] { 42, 41, 47, 15 };
 			for (int i = 0; i < colours.Length; i++)
@@ -68,10 +83,7 @@ namespace CivOne.Graphics
 		{
 			get
 			{
-				if (_panelGrey == null)
-				{
-					_panelGrey = new Bytemap(16, 16).FromByteArray(GenerateNoise(7, 22).Take(16 * 16).ToArray());
-				}
+				_panelGrey ??= new Bytemap(16, 16).FromByteArray([.. GenerateNoise(7, 22).Take(16 * 16)]);
 				return _panelGrey;
 			}
 		}
@@ -80,10 +92,7 @@ namespace CivOne.Graphics
 		{
 			get
 			{
-				if (_panelBlue == null)
-				{
-					_panelBlue = new Bytemap(16, 16).FromByteArray(GenerateNoise(57, 9).Take(16 * 16).ToArray());
-				}
+				_panelBlue ??= new Bytemap(16, 16).FromByteArray([.. GenerateNoise(57, 9).Take(16 * 16)]);
 				return _panelBlue;
 			}
 		}
@@ -92,10 +101,7 @@ namespace CivOne.Graphics
 		{
 			get
 			{
-				if (_landBase == null)
-				{
-					_landBase = new Bytemap(16, 16).FromByteArray(GenerateNoise(37, 38, 39).Take(16 * 16).ToArray());
-				}
+				_landBase ??= new Bytemap(16, 16).FromByteArray([.. GenerateNoise(37, 38, 39).Take(16 * 16)]);
 				return _landBase;
 			}
 		}
@@ -104,27 +110,24 @@ namespace CivOne.Graphics
 		{
 			get
 			{
-				if (_seaBase == null)
-				{
-					_seaBase = new Bytemap(16, 16).FromByteArray(GenerateNoise(77, 78, 79).Take(16 * 16).ToArray());
-				}
+				_seaBase ??= new Bytemap(16, 16).FromByteArray([.. GenerateNoise(77, 78, 79).Take(16 * 16)]);
 				return _seaBase;
 			}
 		}
 
-		public Bytemap Plains => new Bytemap(16, 16).FromByteArray(GenerateNoise(0, 0, 0, 47, 0, 0, 0, 7, 0, 0, 0, 0).Take(16 * 16).ToArray());
+		public Bytemap Plains => _plains ??= new Bytemap(16, 16).FromByteArray([.. GenerateNoise(0, 0, 0, 47, 0, 0, 0, 7, 0, 0, 0, 0).Take(16 * 16)]);
 
-		public Bytemap Arctic => new Bytemap(16, 16).FromByteArray(GenerateNoise(16, 7, 17, 18, 7, 15, 20, 19, 15).Skip(380).Take(16 * 16).ToArray());
+		public Bytemap Arctic => _arctic ??= new Bytemap(16, 16).FromByteArray([.. GenerateNoise(16, 7, 17, 18, 7, 15, 20, 19, 15).Skip(380).Take(16 * 16)]);
 
-		public Bytemap Tundra => new Bytemap(16, 16).FromByteArray(GenerateNoise(7, 0, 0, 0, 0, 0, 7, 0, 15).Skip(590).Take(16 * 16).ToArray());
+		public Bytemap Tundra => _tundra ??= new Bytemap(16, 16).FromByteArray([.. GenerateNoise(7, 0, 0, 0, 0, 0, 7, 0, 15).Skip(590).Take(16 * 16)]);
 
-		public Bytemap Desert => new Bytemap(16, 16).FromByteArray(GenerateNoise(42, 0, 43, 0, 44, 0, 45, 0, 46, 0, 47).Skip(914).Take(16 * 16).ToArray());
+		public Bytemap Desert => _desert ??= new Bytemap(16, 16).FromByteArray([.. GenerateNoise(42, 0, 43, 0, 44, 0, 45, 0, 46, 0, 47).Skip(914).Take(16 * 16)]);
 
 		public Bytemap Forest
 		{
 			get
 			{
-				return new Bytemap(16, 16).FromByteArray(
+				return _forest ??= new Bytemap(16, 16).FromByteArray(
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  5,  5,  0,  0,  0,
@@ -149,7 +152,7 @@ namespace CivOne.Graphics
 		{
 			get
 			{
-				return new Bytemap(16, 16).FromByteArray(
+				return _hills ??= new Bytemap(16, 16).FromByteArray(
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -174,7 +177,7 @@ namespace CivOne.Graphics
 		{
 			get
 			{
-				return new Bytemap(16, 16).FromByteArray(
+				return _mountains ??= new Bytemap(16, 16).FromByteArray(
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 					0,  0,  0,  0,  0,  0,  0,  5,  5,  0,  0,  0,  0,  0,  0,  0,
@@ -195,7 +198,7 @@ namespace CivOne.Graphics
 			}
 		}
 
-		public Bytemap Jungle
+		public static Bytemap Jungle
 		{
 			get
 			{
@@ -220,7 +223,7 @@ namespace CivOne.Graphics
 			}
 		}
 
-		public Bytemap Swamp
+		public static Bytemap Swamp
 		{
 			get
 			{
@@ -245,7 +248,7 @@ namespace CivOne.Graphics
 			}
 		}
 
-		public Bytemap Grassland
+		public static Bytemap Grassland
 		{
 			get
 			{
@@ -270,7 +273,7 @@ namespace CivOne.Graphics
 			}
 		}
 
-		public Bytemap Special(Terrain type)
+		public static Bytemap Special(Terrain type)
 		{
 			switch(type)
 			{
@@ -315,12 +318,12 @@ namespace CivOne.Graphics
 			);
 		}
 
-		public Bytemap River(Direction directions)
+		public static Bytemap River(Direction directions)
 		{
-			Picture output = new Picture(16, 16);
+			using Picture output = new(16, 16);
 			foreach (Direction direction in new Direction[] { North, East, South, West })
 			{
-				switch ((Direction)(directions & direction))
+				switch (directions & direction)
 				{
 					case North:
 						output.DrawLine(6, -1, 8, 5, 77)
@@ -348,7 +351,7 @@ namespace CivOne.Graphics
 						break;
 				}
 			}
-			return output.Bitmap;
+			return Bytemap.Copy(output.Bitmap);
 		}
 
 		public Bytemap City
@@ -357,16 +360,16 @@ namespace CivOne.Graphics
 			{
 				if (_city == null)
 				{
-					Random r = new Random(0x4701);
-					_city = new Picture(16, 16)
-						.DrawLine(7, 3, 11, 3)
+					using Picture city = new(16, 16);
+					city.DrawLine(7, 3, 11, 3)
 						.DrawLine(4, 5, 9, 5)
 						.DrawLine(3, 7, 11, 7)
 						.DrawLine(5, 9, 9, 9)
 						.DrawLine(3, 11, 6, 11)
 						.DrawLine(3, 6, 3, 8)
 						.DrawLine(7, 3, 7, 11)
-						.DrawLine(11, 5, 11, 11).Bitmap;
+						.DrawLine(11, 5, 11, 11);
+					_city = Bytemap.Copy(city.Bitmap);
 				}
 				return _city;
 			}
@@ -376,46 +379,43 @@ namespace CivOne.Graphics
 		{
 			get
 			{
-				if (_fortify == null)
-				{
-					_fortify = new Bytemap(16, 16)
-						.FromByteArray(GenerateNoise(26, 27, 28).Take(16 * 16).ToArray())
-						.AddLayer(new Bytemap(14, 14).FromByteArray(GenerateNoise(24, 25, 26).Take(14 * 14).ToArray()))
+				_fortify ??= new Bytemap(16, 16)
+						.FromByteArray([.. GenerateNoise(26, 27, 28).Take(16 * 16)])
+						.AddLayerOwned(new Bytemap(14, 14).FromByteArray([.. GenerateNoise(24, 25, 26).Take(14 * 14)]))
 						.FillRectangle(2, 2, 12, 12, 0);
-				}
 				return _fortify;
 			}
 		}
 
-		public Bytemap Fog(Direction direction)
+		public static Bytemap Fog(Direction direction)
 		{
-			Bytemap output = new Bytemap(16, 16);
+			Bytemap output = new(16, 16);
 			switch(direction)
 			{
-				case Direction.West:
-					output.AddLayer(new Bytemap(3, 16).FromByteArray(GenerateNoise(0, 28, 29, 30, 31).Take(3 * 16).ToArray()), 0, 0);
+				case West:
+					output.AddLayerOwned(new Bytemap(3, 16).FromByteArray([.. GenerateNoise(0, 28, 29, 30, 31).Take(3 * 16)]), 0, 0);
 					break;
-				case Direction.South:
-					output.AddLayer(new Bytemap(16, 3).FromByteArray(GenerateNoise(28, 0, 29, 30, 31).Take(16 * 3).ToArray()), 0, 13);
+				case South:
+					output.AddLayerOwned(new Bytemap(16, 3).FromByteArray([.. GenerateNoise(28, 0, 29, 30, 31).Take(16 * 3)]), 0, 13);
 					break;
-				case Direction.East:
-					output.AddLayer(new Bytemap(3, 16).FromByteArray(GenerateNoise(28, 29, 0, 30, 31).Take(3 * 16).ToArray()), 13, 0);
+				case East:
+					output.AddLayerOwned(new Bytemap(3, 16).FromByteArray([.. GenerateNoise(28, 29, 0, 30, 31).Take(3 * 16)]), 13, 0);
 					break;
-				case Direction.North:
-					output.AddLayer(new Bytemap(16, 3).FromByteArray(GenerateNoise(28, 29, 30, 0, 31).Take(16 * 3).ToArray()), 0, 0);
+				case North:
+					output.AddLayerOwned(new Bytemap(16, 3).FromByteArray([.. GenerateNoise(28, 29, 30, 0, 31).Take(16 * 3)]), 0, 0);
 					break;
 			}
 			return output;
 		}
 
-		public Bytemap GetUnit(UnitType type)
+		public static Bytemap GetUnit(UnitType type)
 		{
-			Bytemap output = new Bytemap(16, 16).FromByteArray(GenerateUnit().ToArray());
+			Bytemap output = new Bytemap(16, 16).FromByteArray([.. GenerateUnit()]);
 			char text = ' ';
 			switch (type)
 			{
 				case UnitType.Settlers:
-					output.AddLayer(new Bytemap(10, 10).FromByteArray(
+					output.AddLayerOwned(new Bytemap(10, 10).FromByteArray(
 						0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 						0,  5,  5,  5,  5,  5,  5,  5,  0,  0,
 						5, 15, 15,  8, 15, 15,  8,  7,  5,  0,
@@ -429,7 +429,7 @@ namespace CivOne.Graphics
 					), 3, 3);
 					break;
 				case UnitType.Militia:
-					output.AddLayer(new Bytemap(10, 10).FromByteArray(
+					output.AddLayerOwned(new Bytemap(10, 10).FromByteArray(
 						0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 						0,  0,  0,  4,  4,  4,  0,  0,  0,  0,
 						0,  0,  4,  4,  4,  4,  4,  0,  0,  0,
@@ -443,7 +443,7 @@ namespace CivOne.Graphics
 					), 3, 3);
 					break;
 				case UnitType.Phalanx:
-					output.AddLayer(new Bytemap(10, 10).FromByteArray(
+					output.AddLayerOwned(new Bytemap(10, 10).FromByteArray(
 						0,  0,  0,  0,  8,  8,  0,  0,  0,  0,
 						0,  0,  0,  8,  8,  8,  8,  0,  0,  0,
 						0,  0,  8, 14, 14, 14,  7,  8,  0,  0,
@@ -484,16 +484,15 @@ namespace CivOne.Graphics
 			}
 			if (text != ' ')
 			{
-				output.AddLayer(
-					new Picture(16, 16)
-						.DrawText(text.ToString(), 0, 8, 8, 5, TextAlign.Center)
-						.DrawText(text.ToString(), 0, 7, 8, 4, TextAlign.Center)
-						.Bitmap);
+				using Picture textPicture = new(16, 16);
+				textPicture.DrawText(text.ToString(), 0, 8, 8, 5, TextAlign.Center)
+					.DrawText(text.ToString(), 0, 7, 8, 4, TextAlign.Center);
+				output.AddLayer(textPicture.Bitmap);
 			}
 			return output;
 		}
 
-		public Bytemap Food
+		public static Bytemap Food
 		{
 			get
 			{
@@ -510,7 +509,7 @@ namespace CivOne.Graphics
 			}
 		}
 
-		public Bytemap Shield
+		public static Bytemap Shield
 		{
 			get
 			{
@@ -527,7 +526,7 @@ namespace CivOne.Graphics
 			}
 		}
 
-		public Bytemap Trade
+		public static Bytemap Trade
 		{
 			get
 			{
@@ -544,7 +543,7 @@ namespace CivOne.Graphics
 			}
 		}
 
-		public Bytemap Luxuries
+		public static Bytemap Luxuries
 		{
 			get
 			{
@@ -561,7 +560,7 @@ namespace CivOne.Graphics
 			}
 		}
 
-		public Bytemap Taxes
+		public static Bytemap Taxes
 		{
 			get
 			{
@@ -578,7 +577,7 @@ namespace CivOne.Graphics
 			}
 		}
 
-		public Bytemap Science
+		public static Bytemap Science
 		{
 			get
 			{
@@ -595,11 +594,11 @@ namespace CivOne.Graphics
 			}
 		}
 
-		public Bytemap Difficulties
+		public static Bytemap Difficulties
 		{
 			get
 			{
-				Bytemap output = new Bytemap(320, 200);
+				Bytemap output = new(320, 200);
 				
 				DiffPanel(ref output, 155, 29, 131, 137);
 				
@@ -616,20 +615,19 @@ namespace CivOne.Graphics
 					int xx = (i % 2) == 0 ? 21 : 80;
 					int yy = 6 + (35 * i);
 					DiffPanel(ref output, xx, yy, 53, 47);
-					output.AddLayer(new Bytemap(47, 41).FromByteArray(GenerateNoise(backgrounds[i].Colours).Skip(backgrounds[i].Skip).Take(47 * 41).ToArray()), xx + 3, yy + 3);
+					output.AddLayerOwned(new Bytemap(47, 41).FromByteArray([.. GenerateNoise(backgrounds[i].Colours).Skip(backgrounds[i].Skip).Take(47 * 41)]), xx + 3, yy + 3);
 				}
 
 				return output;
 			}
 		}
 
-		private static Free _instance;
+		private static Free? _instance;
 		public static Free Instance
 		{
 			get
 			{
-				if (_instance == null)
-					_instance = new Free();
+				_instance ??= new Free();
 				return _instance;
 			}
 		}

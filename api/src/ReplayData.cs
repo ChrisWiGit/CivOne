@@ -9,16 +9,21 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace CivOne
 {
+	[SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible", Justification = "These types are only used for replay data and are closely related to the ReplayData class, so it makes sense to nest them.")]
 	public abstract class ReplayData
 	{
 		public class CityBuilt : ReplayData
 		{
-			public readonly byte OwnerId;
-			public readonly int CityId, CityNameId, X, Y;
+			public byte OwnerId { get; private set; }
+			public int CityId { get; private set; }
+			public int CityNameId { get; private set; }
+			public int X { get; private set; }
+			public int Y { get; private set; }
 
 			public CityBuilt(int turn, byte ownerId, int cityId, int cityNameId, int x, int y) : base(turn)
 			{
@@ -32,8 +37,11 @@ namespace CivOne
 
 		public class CityDestroyed : ReplayData
 		{
-			public readonly int CityId, CityNameId, X, Y;
-			
+			public int CityId { get; private set; }
+			public int CityNameId { get; private set; }
+			public int X { get; private set; }
+			public int Y { get; private set; }
+
 			public CityDestroyed(int turn, int cityId, int cityNameId, int x, int y) : base(turn)
 			{
 				CityId = cityId;
@@ -45,15 +53,49 @@ namespace CivOne
 
 		public class CivilizationDestroyed : ReplayData
 		{
-			public readonly int DestroyedId, DestroyedById;
+			public int DestroyedId { get; private set; }
+			public int DestroyedById { get; private set; }
 
 			public CivilizationDestroyed(int turn, byte destroyedId, byte destroyedById) : base(turn)
 			{
-				Debug.Assert(destroyedId >= 0 && destroyedById <= 7, "Invalid civilization ID in replay data.");
-				Debug.Assert(destroyedById >= 0 && destroyedById <= 7, "Invalid civilization ID in replay data.");
+				Debug.Assert(destroyedId <= PlayerLimits.MaxPlayerIndex, "Invalid player index in replay data.");
+				Debug.Assert(destroyedById <= PlayerLimits.MaxPlayerIndex, "Invalid player index in replay data.");
 
 				DestroyedId = destroyedId;
 				DestroyedById = destroyedById;
+			}
+		}
+
+		/// <summary>
+		/// A destroyed player slot was taken over by a new civilization.
+		/// Recorded so screens that look back at the game (e.g. the conquest screen) know which civilization
+		/// occupied a slot at any point in time, instead of deriving it from the initial random seed.
+		/// </summary>
+		public class CivilizationRespawned : ReplayData
+		{
+			/// <summary>
+			/// The player slot that respawned. Matches <see cref="CivilizationDestroyed.DestroyedId"/>.
+			/// </summary>
+			public int PlayerId { get; private set; }
+
+			/// <summary>
+			/// The Id of the civilization that now occupies the slot.
+			/// </summary>
+			public int CivilizationId { get; private set; }
+
+			/// <summary>
+			/// Creates a respawn entry.
+			/// </summary>
+			/// <param name="turn">The game turn the respawn happened on.</param>
+			/// <param name="playerId">The player slot that respawned.</param>
+			/// <param name="civilizationId">The Id of the civilization taking over the slot.</param>
+			public CivilizationRespawned(int turn, byte playerId, byte civilizationId) : base(turn)
+			{
+				Debug.Assert(playerId <= PlayerLimits.MaxPlayerIndex, "Invalid player index in replay data.");
+				Debug.Assert(civilizationId <= PlayerLimits.MaxCivilizationId, "Invalid civilization ID in replay data.");
+
+				PlayerId = playerId;
+				CivilizationId = civilizationId;
 			}
 		}
 

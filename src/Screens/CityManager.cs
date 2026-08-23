@@ -14,6 +14,7 @@ using CivOne.Screens.CityManagerPanels;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 
 namespace CivOne.Screens
 {
@@ -33,15 +34,15 @@ namespace CivOne.Screens
 		private readonly bool _viewCity;
 		
 		private bool _update = true;
-		private bool _mouseDown = false;
+		private bool _mouseDown;
 
-		private int ExtraWidth => (Width - 320);
+		private int ExtraWidth => Width - 320;
 		private int ExtraLeft => (int)Math.Ceiling((float)ExtraWidth / 2);
 		private int ExtraRight => (int)Math.Floor((float)ExtraWidth / 2);
 
-		private List<IScreen> _subScreens = new List<IScreen>();
+		private readonly List<IScreen> _subScreens = [];
 
-		private IScreen _activeScreen = null;
+		private IScreen? _activeScreen;
 
 		private void CloseScreen()
 		{
@@ -76,9 +77,7 @@ namespace CivOne.Screens
 				DrawLayer(_cityFoodStorage, 2, 106);
 				DrawLayer(_cityInfo, 95 + ExtraLeft, 106);
 				DrawLayer(_cityProduction, 230 + ExtraLeft, 99);
-
-				DrawButton("Rename", 9, 1, 231 + ExtraLeft, (Height - 10), 42);
-				DrawButton("Exit", 12, 4, (Width - 36), (Height - 10), 33);
+				DrawCityButtons();
 
 				_update = false;
 				return true;
@@ -86,11 +85,23 @@ namespace CivOne.Screens
 			return false;
 		}
 
-		private void CityRename(object sender, EventArgs args)
+		private void DrawCityButtons()
 		{
-			if (!(sender is CityName)) return;
+			var renameText = Translate("Rename");
+			var renameTextWidth = Resources.GetTextSize(1, renameText).Width + 2;
+			var exitText = Translate("Exit");
+			var exitTextWidth = Resources.GetTextSize(1, exitText).Width + 2;
 
-			Game.CityNames[_city.NameId] = (sender as CityName).Value;
+			DrawButton(renameText, 9, 1, 231 + ExtraLeft, Height - 10, renameTextWidth + 2);
+			DrawButton(exitText, 12, 4, Width - exitTextWidth - 2, Height - 10, exitTextWidth + 2);
+		}
+
+		private void CityRename(object? sender, EventArgs __)
+		{
+			if (sender is not CityName cityName) return;
+			if (string.IsNullOrWhiteSpace(cityName.Value)) return;
+
+			Game.CityNames[_city.NameId] = cityName.Value;
 			_cityHeader.Update();
 		}
 		
@@ -100,6 +111,14 @@ namespace CivOne.Screens
 			{
 				if (_activeScreen.KeyDown(args)) return true;
 				_update = true;
+				return true;
+			}
+
+			if (!_viewCity && args.Modifier == KeyModifier.None && char.ToUpper(args.KeyChar, CultureInfo.InvariantCulture) == 'R')
+			{
+				CityName name = new CityName(_city.NameId, _city.Name);
+				name.Accept += CityRename;
+				Common.AddScreen(name);
 				return true;
 			}
 
@@ -125,7 +144,7 @@ namespace CivOne.Screens
 			
 			if (!_viewCity)
 			{
-				if (new Rectangle(231 + ExtraLeft, (Height - 10), 42, 10).Contains(args.Location))
+				if (new Rectangle(231 + ExtraLeft, Height - 10, 42, 10).Contains(args.Location))
 				{
 					// Rename button
 					CityName name = new CityName(_city.NameId, _city.Name);
@@ -154,7 +173,7 @@ namespace CivOne.Screens
 					if (_cityBuildings.MouseDown(args))
 						return true;
 				}
-				if (new Rectangle(230 + ExtraLeft, 99, 88, 99).Contains(args.Location))
+				if (new Rectangle(230 + ExtraLeft, 99, _cityProduction.Width(), _cityProduction.Height()).Contains(args.Location))
 				{
 					MouseArgsOffset(ref args, 230 + ExtraLeft, 99);
 					if (_cityProduction.MouseDown(args))
@@ -169,7 +188,7 @@ namespace CivOne.Screens
 		{
 			if (!_mouseDown) return true;
 
-			if (new Rectangle(230 + ExtraLeft, 99, 88, 99).Contains(args.Location))
+			if (new Rectangle(230 + ExtraLeft, 99, _cityProduction.Width(), _cityProduction.Height()).Contains(args.Location))
 			{
 				MouseArgsOffset(ref args, 230 + ExtraLeft, 99);
 				return _cityProduction.MouseUp(args);
@@ -177,7 +196,7 @@ namespace CivOne.Screens
 			return false;
 		}
 
-		private void BuildingUpdate(object sender, EventArgs args)
+		private void BuildingUpdate(object? _, EventArgs __)
 		{
 			_cityFoodStorage.Update();
 			_cityHeader.Update();
@@ -186,20 +205,20 @@ namespace CivOne.Screens
             _cityInfo.Update(); // fire-eggs 20190612 change to buildings impacts Happy view in Info
         }
 
-        private void HeaderUpdate(object sender, EventArgs args)
+        private void HeaderUpdate(object? _, EventArgs __)
 		{
 			_cityResources.Update();
             _cityInfo.Update(); // fire-eggs 20190612 change to header impacts Happy view in Info
 		}
 
-		private void MapUpdate(object sender, EventArgs args)
+		private void MapUpdate(object? _, EventArgs __)
 		{
 			_cityHeader.Update();
 			_cityResources.Update();
             _cityInfo.Update(); // fire-eggs 20190612 change to workers impacts Happy view in Info
         }
 
-        private void Resize(object sender, ResizeEventArgs args)
+        private void Resize(object? _, ResizeEventArgs args)
 		{
 			this.Clear(5);
 
@@ -219,7 +238,8 @@ namespace CivOne.Screens
 			
 			_city = city;
 
-			Palette = Common.DefaultPalette;
+			using var defaultPalette = Common.DefaultPalette;
+			Palette = defaultPalette;
 			this.Clear(5);
 			
 			_subScreens.Add(_cityHeader = new CityHeader(_city));
@@ -238,11 +258,24 @@ namespace CivOne.Screens
 			if (Width != 320 || Height != 200) Resize(null, new ResizeEventArgs(Width, Height));
 		}
 
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
-			_subScreens.ForEach(x => x.Dispose());
+			if (!disposing)
+			{
+				return;
+			}
+
+			_cityHeader?.Dispose();
+			_cityResources?.Dispose();
+			_cityUnits?.Dispose();
+			_cityMap?.Dispose();
+			_cityBuildings?.Dispose();
+			_cityFoodStorage?.Dispose();
+			_cityInfo?.Dispose();
+			_cityProduction?.Dispose();
+
 			_subScreens.Clear();
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 
 		public void SetActiveScreen(IScreen screen)

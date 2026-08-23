@@ -7,8 +7,6 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-using System.Collections.Generic;
-using System.Drawing;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Units;
@@ -94,21 +92,58 @@ namespace CivOne.Tiles
 		}
 
 		public Terrain Type { get; protected set; }
-		public string Name { get; protected set; }
+		/// <summary>
+		/// Gets the localized display name shown to the player.
+		/// </summary>
+		/// <remarks>
+		/// Derived tile classes must set this from <c>Translate("...")</c>.
+		/// <para>
+		/// The value of <see cref="Name"/> is also used as the invariant Civilopedia key,
+		/// so it must be set to the English base value, for example <c>"Arctic"</c>.
+		/// </para>
+		/// <para>
+		/// For tile types that do not exist in the original game, use a unique
+		/// <see cref="Name"/> value and use the same value as the Civilopedia text key,
+		/// for example <c>"MySpecialTile"</c>.
+		/// </para>
+		/// <para>
+		/// The test <c>RegisteredCivilopediaNamesTests</c>
+		/// (<c>src/xunit/RegisteredCivilopediaNamesTests.cs</c>) verifies that all items
+		/// have a non-empty translated name.
+		/// </para>
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// Name = "Arctic";
+		/// TranslatedName = Translate("Arctic");
+		/// </code>
+		/// </example>
+		public string TranslatedName { get; protected set; } = string.Empty;
+		/// <summary>
+		/// Gets the invariant civilopedia key name.
+		/// Derived tile classes must assign this to the English base value.
+		/// </summary>
+		/// <example>
+		/// <code>
+		/// Name = "Arctic";
+		/// TranslatedName = Translate("Arctic");
+		/// </code>
+		/// </example>
+		public string Name { get; protected set; } = string.Empty;
 		public byte PageCount => 1;
 		public Picture DrawPage(byte pageNumber) => new Picture(320, 200);
 		
 		public int X { get; private set; }
 		public int Y { get; private set; }
 		public bool Special { get; protected set; }
-		public byte ContinentId { get; set; }
+		public int ContinentId { get; set; }
 		public byte LandValue { get; set; }
 		public byte LandScore
 		{
 			get
 			{
 				sbyte score = (sbyte)(Trade + (3 * Food));
-				if (!Map.TileIsType(this, Terrain.River, Terrain.Grassland1, Terrain.Grassland2))
+				if (!Map.Instance.TileIsType(this, Terrain.River, Terrain.Grassland1, Terrain.Grassland2))
 				{
 					score += (sbyte)(2 * Shield);
 				}
@@ -203,25 +238,25 @@ namespace CivOne.Tiles
 			{
 				if (Game.Started && _hut && !value)
 				{
-					Game.GetPlayer(0).Explore(X, Y, 0);
+					Game.GetPlayer(0)!.Explore(X, Y, 0);
 				}
 				_hut = value;
 			}
 		}
-		public byte Visited { get; private set; }
+		public uint Visited { get; private set; }
 		public void Visit(byte owner)
 		{
-			if (((int)Visited & (0x01 << owner)) != 0) return;
-			Visited = (byte)(Visited + (0x01 << owner));
+			if (owner >= Game.MaxPlayers) return;
+			Visited |= 1u << owner;
 		}
 
 		public virtual bool IsOcean => false;
 		
 		// This method is used to calculate whether a river or grassland tile is special.
 		protected bool AlternateSpecial() => ((X + Y) % 4 == 0) || ((X + Y) % 4 == 3);
-		public City City => Game?.GetCity(X, Y);
+		public City City => Game?.GetCity(X, Y)!;
         public bool HasCity => City != null;
-		public virtual IUnit[] Units => Game?.GetUnits(X, Y);
+		public virtual IUnit[] Units => Game?.GetUnits(X, Y)!;
 
 		public ITile this[int relativeX, int relativeY] => Map[X + relativeX, Y + relativeY];
 		public ITile[,] this[int relativeX, int relativeY, int width, int height] => Map[X + relativeX, Y + relativeY, width, height];

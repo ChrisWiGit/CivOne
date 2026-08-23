@@ -28,6 +28,7 @@ namespace CivOne.Tiles
 		{
 			Type = Terrain.Plains;
 			Name = "Plains";
+			TranslatedName = Translate("Plains");
 		}
 		public Plains() : this(-1, -1, false)
 		{

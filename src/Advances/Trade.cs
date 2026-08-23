@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public Trade() : base(1, 0, 0, Advance.Currency, Advance.CodeOfLaws)
 		{
 			Name = "Trade";
+			TranslatedName = Translate("Trade");
 			Type = Advance.Trade;
 		}
 	}

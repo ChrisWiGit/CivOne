@@ -9,8 +9,10 @@
 
 namespace CivOne
 {
+	#pragma warning disable S101 // Types should be named in PascalCase - but these are named to match SDL as a name.
 	internal static partial class SDL
 	{
+		#pragma warning disable S2342,CA1712 // Keep case sensitive to match SDL as a name. Ignore prefix SDL_SCANCODE_ for enum values.
 		private enum SDL_Scancode : uint
 		{
 			SDL_SCANCODE_UNKNOWN = 0,
@@ -45,6 +47,7 @@ namespace CivOne
 			SDL_SCANCODE_F10 = 67,
 			SDL_SCANCODE_F11 = 68,
 			SDL_SCANCODE_F12 = 69,
+			SDL_SCANCODE_PAUSE = 72,
 
 			SDL_SCANCODE_HOME = 74,
 			SDL_SCANCODE_PAGEUP = 75,

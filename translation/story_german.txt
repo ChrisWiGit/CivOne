@@ -1,0 +1,54 @@
+# This file contains the German translation of STORY.TXT, which is the introductory story text shown at the beginning of a new game in Civilization I.
+# License is Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+_
+Am Anfang
+war die Erde wüst
+und leer.
+_
+Doch die Sonne schien auf die schlafende Erde,
+und tief im Inneren der brüchigen Erdkruste
+warteten gewaltige Kräfte darauf, entfesselt zu werden.
+_
+Die Meere trennten sich,
+und große Kontinente entstanden.
+Die Kontinente verschoben sich, Berge erhoben sich.
+Erdbeben lösten gewaltige Flutwellen aus.
+Vulkane brachen aus
+und spuckten feurige Lava
+und füllten die Atmosphäre
+mit seltsamen Gasen.
+_
+In diesem wirbelnden Strudel
+aus Feuer und Luft und Wasser
+erschienen die ersten Anzeichen von Leben:
+winzige Organismen, Zellen und Amöben,
+die sich an winzige, geschützte Lebensräume klammerten.
+_
+Doch die Samen des Lebens wuchsen,
+wurden stärker, breiteten sich aus,
+vielfältigten sich,
+und gediehen,
+und bald wimmelte es auf jedem Kontinent und in jedem Klima
+von Leben.
+_
+Und mit dem Leben kamen Instinkt,
+Spezialisierung und natürliche Selektion,
+Reptilien, Dinosaurier und Säugetiere,
+und schließlich entwickelte sich eine Spezies,
+bekannt als Mensch,
+und es erschienen
+die ersten schwachen Anzeichen von
+Intelligenz.
+_
+Die Früchte der Intelligenz waren vielfältig:
+Feuer, Werkzeuge und Waffen,
+die Jagd, der Ackerbau und das Teilen von Nahrung,
+die Familie, das Dorf und der Stamm.
+Nun fehlte nur noch eine Zutat:
+ein großer Anführer,
+der die zerstrittenen Stämme vereinte,
+um die Kraft des Landes zu nutzen
+und ein Vermächtnis zu schaffen,
+das den Test der Zeit bestehen würde:
+_
+eine ZIVILISATION!

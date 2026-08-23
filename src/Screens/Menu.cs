@@ -8,7 +8,9 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
@@ -17,19 +19,52 @@ using CivOne.UserInterface;
 
 namespace CivOne.Screens
 {
+	/// <summary>
+	/// Generic menu UI component used throughout the UI to display selectable items.
+	/// </summary>
+	/// <typeparam name="T">Menu item payload type (commonly an enum or integer).</typeparam>
 	[ScreenResizeable]
 	public class Menu<T> : BaseScreen, IMenu
 	{
-		private readonly Picture _background;
-		
-		public event EventHandler Cancel;
-		public event EventHandler MissClick;
-		
-		public readonly MenuItemCollection<T> Items;
+		private const int DescriptionFontId = 0;
+		private const int DescriptionTopPadding = 10;
+		private const byte DescriptionTextColour = 1;
 
-		public string Id => Items.Id;
+		private readonly Picture? _background;
 
-		public string Title { get; set; }
+		/// <summary>
+		/// Raised when the menu is cancelled (for example via Escape).
+		/// </summary>
+		public event EventHandler? Cancel;
+
+		/// <summary>
+		/// Raised when the user clicks outside all menu entries.
+		/// </summary>
+		public event EventHandler? MissClick;
+
+		/// <summary>
+		/// Raised when the user clicks outside all menu entries, including mouse coordinates.
+		/// </summary>
+		public event EventHandler<ScreenEventArgs>? MissClickAt;
+
+		/// <summary>
+		/// Raised on mouse movement over the menu surface, including mouse coordinates.
+		/// </summary>
+		public event EventHandler<ScreenEventArgs>? MouseMoveAt;
+
+		private readonly MenuItemCollection<T> _items;
+
+		public MenuItemCollection<T> Items
+		{
+			get => _items;
+			private init => _items = value;
+		}
+
+
+
+		public string? Id => Items.Id;
+
+		public string? Title { get; set; }
 		public int FontId { get; set; }
 		public int X { get; set; }
 		public int Y { get; set; }
@@ -39,12 +74,42 @@ namespace CivOne.Screens
 		public byte ActiveColour { get; set; }
 		public byte TextColour { get; set; }
 		public byte DisabledColour { get; set; }
+
+		/// <summary>
+		/// Colour used to highlight the hotkey character of a menu item.
+		/// When set to 0 (default), no per-item highlighting is applied.
+		/// The highlighted color will not be applied for selected items.
+		/// </summary>
+		public byte HighlightColour { get; set; }
 		public int IndentTitle { get; set; }
 		public int RowHeight { get; set; }
-		
-		private bool _mouseDown = false;
+		public bool CenterTo320Coordinates { get; set; }
+		public string[] DefaultDescription { get; set; } = [];
+
+		/// <summary>
+		/// Optional hint lines rendered at the bottom of the menu layer.
+		/// Intended for key hints such as "Esc: Back".
+		/// </summary>
+		public string[] Hints { get; set; } = [];
+
+		/// <summary>
+		/// Optional action to call when Shift+F1 is pressed while the menu is active.
+		/// </summary>
+		public Action? OnShiftF1 { get; set; }
+
+		/// <summary>
+		/// Optional key handler that can consume keys before the menu default navigation runs.
+		/// Return true to mark the key as handled.
+		/// </summary>
+		public Func<KeyboardEventArgs, bool>? OnCustomKeyDown { get; set; }
+
+		private int CoordinateOffsetX => CenterTo320Coordinates ? Math.Max(0, (Width - 320) / 2) : 0;
+		private int CoordinateOffsetY => CenterTo320Coordinates ? Math.Max(0, (Height - 200) / 2) : 0;
+
+		private bool _mouseDown;
 		private bool _change = true;
-		private int _activeItem = 0;
+		private const int NoMenuItemIndex = -1;
+		private int _activeItem;
 		public int ActiveItem
 		{
 			get
@@ -62,7 +127,7 @@ namespace CivOne.Screens
 
 		public MenuItem<T> SelectedItem => Items[ActiveItem];
 
-		private void SelectDefault(object sender, EventArgs args)
+		private void SelectDefault(object? _, EventArgs __)
 		{
 			for (int i = 0; i < Items.Count; i++)
 			{
@@ -72,46 +137,126 @@ namespace CivOne.Screens
 				return;
 			}
 		}
-		
+
 		protected override bool HasUpdate(uint gameTick)
 		{
 			int fontHeight = Resources.GetFontHeight(FontId);
 			if (RowHeight != 0) fontHeight = RowHeight;
 			if (_change)
 			{
-				int yy = Y + (_activeItem * fontHeight);
+				int x = X + CoordinateOffsetX;
+				int y = Y + CoordinateOffsetY;
+				int yy = y + (_activeItem * fontHeight);
 				int offsetY = 0;
-				
+
 				this.Clear();
-				if (Title != null)
+				if (!string.IsNullOrEmpty(Title))
 				{
-					this.DrawText(Title, FontId, TitleColour, X + IndentTitle, Y + 1);
+					this.DrawText(Title, FontId, TitleColour, x + IndentTitle, y + 1);
 					offsetY = fontHeight;
 				}
 				if (_activeItem >= 0)
 				{
 					if (_background == null)
 					{
-						this.FillRectangle(X, yy + offsetY, MenuWidth, fontHeight, ActiveColour);
+						this.FillRectangle(x, yy + offsetY, MenuWidth, fontHeight, ActiveColour);
 					}
 					else
 					{
-						this.AddLayer(_background[0, (_activeItem * fontHeight) + offsetY, MenuWidth, fontHeight], X, yy + offsetY, dispose: true);
+						this.AddLayer(_background[0, (_activeItem * fontHeight) + offsetY, MenuWidth, fontHeight], x, yy + offsetY, dispose: true);
 					}
 				}
 				for (int i = 0; i < Items.Count; i++)
 				{
-					yy = Y + (i * fontHeight) + offsetY;
-					this.DrawText(Items[i].Text, FontId, (byte)(Items[i].Enabled ? TextColour : DisabledColour), X + Indent, yy + 1);
+					yy = y + (i * fontHeight) + offsetY;
+
+					string text = Items[i].Text ?? string.Empty;
+					byte colour = Items[i].Enabled ? TextColour : DisabledColour;
+
+					if (ActiveItem != i && HighlightColour != 0 && Items[i].HighlightedCharacterIndex >= 0)
+					{
+						var ts = TextSettings.DifferentCharacter(HighlightColour, colour, Items[i].HighlightedCharacterIndex);
+						ts.FontId = FontId;
+						this.DrawText(text, x + Indent, yy + 1, ts);
+					}
+					else
+					{
+						this.DrawText(text, FontId, colour, x + Indent, yy + 1);
+					}
 				}
+
+				DrawDescription(fontHeight, x, y, offsetY);
+				DrawHints();
 				_change = false;
 				return true;
 			}
 			return false;
 		}
-		
+
+		private void DrawHints()
+		{
+			if (Hints.Length == 0)
+			{
+				return;
+			}
+
+			int rightX = CoordinateOffsetX + 318;
+			int lineHeight = Resources.GetFontHeight(DescriptionFontId);
+			// Keep one-line and two-line hints anchored at the same bottom area to avoid touching menu rows.
+			int stackedLinesAbove = Math.Max(0, Hints.Length - 2);
+			int y = CoordinateOffsetY + 190 - (stackedLinesAbove * lineHeight);
+			foreach (string line in Hints)
+			{
+				this.DrawText(line, DescriptionFontId, DescriptionTextColour, rightX, y, TextAlign.Right);
+				y += lineHeight;
+			}
+		}
+
+		private void DrawDescription(int fontHeight, int x, int y, int offsetY)
+		{
+			if (_activeItem >= 0 && _activeItem < Items.Count)
+			{
+				string[] description = Items[_activeItem].Description;
+				if (description.Length == 0)
+				{
+					description = DefaultDescription;
+				}
+				if (description.Length > 0)
+				{
+					// Lower and center description text within the menu, with a minimum of 
+					// DescriptionTopPadding pixels between the active item and the description
+					int descriptionLineHeight = Resources.GetFontHeight(DescriptionFontId);
+					int descriptionHeight = description.Length * descriptionLineHeight;
+					int descriptionTop = y + offsetY + (Items.Count * fontHeight) + DescriptionTopPadding;
+					int availableHeight = Math.Max(0, Height - descriptionTop - CoordinateOffsetY);
+					int descriptionY = descriptionTop + Math.Max(0, (availableHeight - descriptionHeight) / 2);
+					for (int i = 0; i < description.Length; i++)
+					{
+						this.DrawText(description[i], DescriptionFontId, DescriptionTextColour, x + (MenuWidth / 2), descriptionY, TextAlign.Center);
+						descriptionY += descriptionLineHeight;
+					}
+				}
+			}
+		}
+
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
+			if (OnCustomKeyDown?.Invoke(args) == true)
+			{
+				return true;
+			}
+
+			if (args.Shift && args.Key == Key.F1)
+			{
+				// CW: Allow opening the setup screen from anywhere in the credits menu.
+				// Previously, the setup screen was only accessible before the credits menu
+				// had been shown for the first time, due to how the credits animation
+				// was initialized. This makes the game settings consistently accessible
+				// throughout the entire credits menu. Other menus do not use this behavior.
+				OnShiftF1?.Invoke();
+				return true;
+			}
+
 			switch (args.Key)
 			{
 				case Key.NumPad8:
@@ -146,7 +291,7 @@ namespace CivOne.Screens
 						_activeItem = -1;
 						_change = true;
 						HasUpdate(0);
-						Cancel(this, null);
+						Cancel(this, EventArgs.Empty);
 					}
 					break;
 			}
@@ -161,7 +306,7 @@ namespace CivOne.Screens
 
 			return false;
 		}
-		
+
 		private void SelectNextMenuItemByChar(char inputChar)
 		{
 			if (Items == null || Items.Count == 0)
@@ -169,53 +314,74 @@ namespace CivOne.Screens
 				return;
 			}
 
-			char key = char.ToLower(inputChar);
+			char key = char.ToLower(inputChar, CultureInfo.CurrentCulture);
 
 			var matchingIndices = Enumerable.Range(0, Items.Count)
 				.Select(i => (Index: (ActiveItem + 1 + i) % Items.Count, Text: Items[(ActiveItem + 1 + i) % Items.Count].Text))
-				.Where(t => !string.IsNullOrEmpty(t.Text) && char.ToLower(t.Text[0]) == key)
+				.Where(t => !string.IsNullOrEmpty(t.Text) && char.ToLower(t.Text[0], CultureInfo.CurrentCulture) == key)
 				.Select(t => t.Index)
 				.ToList();
 
-			if (matchingIndices.Any())
+			if (matchingIndices.Count != 0)
 			{
 				ActiveItem = matchingIndices.First();
 			}
 		}
 
-		
+
 		private int MouseOverItem(ScreenEventArgs args)
 		{
 			int fontHeight = Resources.GetFontHeight(FontId);
 			if (RowHeight != 0) fontHeight = RowHeight;
-			int yy = Y;
+			int x = X + CoordinateOffsetX;
+			int yy = Y + CoordinateOffsetY;
 
-			if (Title != null) yy += fontHeight;
+			if (!string.IsNullOrEmpty(Title)) yy += fontHeight;
 			for (int i = 0; i < Items.Count; i++)
 			{
-				if (new Rectangle(X, yy, MenuWidth, fontHeight).Contains(args.Location)) return i;
+				if (new Rectangle(x, yy, MenuWidth, fontHeight).Contains(args.Location)) return i;
 				yy += fontHeight;
 			}
 
 			return -1;
 		}
-		
+
 		public override bool MouseDown(ScreenEventArgs args)
 		{
 			_mouseDown = true;
 
 			int index = MouseOverItem(args);
-			if (index < 0 && MissClick != null)
+			if (IsOutsideMenu(index))
 			{
-				MissClick(this, null);
-				return true;
+				return HandleMissClick(args);
 			}
-			if (index < 0 || index == _activeItem) return false;
+
+			if (index == _activeItem) return false;
 			ActiveItem = index;
 			_change = true;
 			return true;
 		}
-		
+
+		private static bool IsOutsideMenu(int index) => index == NoMenuItemIndex;
+
+		private bool HandleMissClick(ScreenEventArgs args)
+		{
+			if (MissClick != null)
+			{
+				MissClick(this, EventArgs.Empty);
+				MissClickAt?.Invoke(this, args);
+				return true;
+			}
+
+			if (MissClickAt != null)
+			{
+				MissClickAt.Invoke(this, args);
+				return true;
+			}
+
+			return false;
+		}
+
 		public override bool MouseUp(ScreenEventArgs args)
 		{
 			if (!_mouseDown) return true;
@@ -238,7 +404,7 @@ namespace CivOne.Screens
 			_change = true;
 			return true;
 		}
-		
+
 		public override bool MouseDrag(ScreenEventArgs args)
 		{
 			int index = MouseOverItem(args);
@@ -248,25 +414,31 @@ namespace CivOne.Screens
 			return true;
 		}
 
+		public override bool MouseMove(ScreenEventArgs args)
+		{
+			MouseMoveAt?.Invoke(this, args);
+			return false;
+		}
+
 		public void ForceUpdate()
 		{
 			_change = true;
 			HasUpdate(0);
 		}
 
-		private void Resize(object sender, ResizeEventArgs args) => ForceUpdate();
-		
+		private void Resize(object? _, ResizeEventArgs __) => ForceUpdate();
+
 		public void Close()
 		{
 			Destroy();
 		}
-		
-		public Menu(string menuId, Palette palette, IBitmap background = null) : base(MouseCursor.Pointer)
+
+		public Menu(string? menuId, Palette palette, IBitmap? background = null) : base(MouseCursor.Pointer)
 		{
 			OnResize += Resize;
 
-			Items = new MenuItemCollection<T>(menuId);
-			Items.ItemsChanged += SelectDefault;
+			_items = new MenuItemCollection<T>(menuId);
+			_items.ItemsChanged += SelectDefault;
 
 			if (background != null)
 			{
@@ -275,24 +447,32 @@ namespace CivOne.Screens
 
 			IndentTitle = 8;
 			Indent = 8;
-			
+
 			Palette = palette.Copy();
 		}
 
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
+			if (!disposing)
+			{
+				return;
+			}
+
 			_background?.Dispose();
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 
+	/// <summary>
+	/// Non-generic convenience `Menu` specialized for `int` menu identifiers.
+	/// </summary>
 	public class Menu : Menu<int>
 	{
-		public Menu(Palette palette, IBitmap background = null) : base(null, palette, background)
+		public Menu(Palette palette, IBitmap? background = null) : base(null, palette, background)
 		{
 		}
 
-		public Menu(string menuId, Palette palette, IBitmap background = null) : base(menuId, palette, background)
+		public Menu(string menuId, Palette palette, IBitmap? background = null) : base(menuId, palette, background)
 		{
 		}
 	}

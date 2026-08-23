@@ -96,7 +96,7 @@ namespace CivOne.Units
 		{
 			// TODO: CW: We should disallow setting sentry (or just remove it here?) -> This would be a convenience setting for the player.
 			Game.DisbandUnit(this);
-			GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText("ERROR/FUEL")));
+			GameTask.Enqueue(Message.Error(Translate("-- Civilization Note --"), GetGameText("ERROR/FUEL")));
 		}
 
 		protected override void MovementDone(ITile previousTile)
@@ -133,7 +133,7 @@ namespace CivOne.Units
 			TryToLandOnCarrier();
 		}
 
-		public override IEnumerable<MenuItem<int>> MenuItems
+		public override IEnumerable<MenuItem<int>?> MenuItems
 		{
 			get
 			{
@@ -165,7 +165,7 @@ namespace CivOne.Units
 
 		protected BaseUnitAir(byte price = 1, byte attack = 1, byte defense = 1, byte movesCount = 1) : base(price, attack, defense, movesCount)
 		{
-			Class = UnitClass.Air;
+			UnitCategory = UnitClass.Air;
 			TotalFuel = movesCount;
 			FuelLeft = movesCount;
 		}

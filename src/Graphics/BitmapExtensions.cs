@@ -15,6 +15,7 @@ using CivOne.Graphics.Sprites;
 
 using static CivOne.Enums.TextAlign;
 using static CivOne.Enums.VerticalAlign;
+using System.Diagnostics;
 
 namespace CivOne.Graphics
 {
@@ -30,7 +31,7 @@ namespace CivOne.Graphics
 		public static int Height(this IBitmap bitmap) => bitmap.Bitmap.Height;
 		public static int Width(this IBitmap bitmap) => bitmap.Bitmap.Width;
 
-		public static T As<T>(this IBitmap bitmap) where T : class, IBitmap => (bitmap as T);
+		public static T? As<T>(this IBitmap bitmap) where T : class, IBitmap => bitmap as T;
 
 		/// <summary>
 		/// Clears the entire bitmap to the specified colour.
@@ -84,25 +85,31 @@ namespace CivOne.Graphics
 		{
 			if (width < 0) width = bitmap.Width() - left;
 			if (height < 0) height = bitmap.Height() - top;
-			int ww = (left + width - 1), hh = (top + height - 1);
-			for (int yy = top; yy <= hh; yy++)
+
+			// Logical edges of the requested rectangle (may extend past the bitmap).
+			int rightEdge = left + width - 1;
+			int bottomEdge = top + height - 1;
+
+			// Visible area clamped to bitmap bounds (end-exclusive).
+			int startX = Math.Max(0, left);
+			int startY = Math.Max(0, top);
+			int endX = Math.Min(left + width, bitmap.Width());
+			int endY = Math.Min(top + height, bitmap.Height());
+
+			for (int y = startY; y < endY; y++)
 			{
-				if (yy >= bitmap.Height()) break;
-				if (bitmap.OutBoundY(yy)) continue;
-				for (int xx = left; xx <= ww; xx++)
+				for (int x = startX; x < endX; x++)
 				{
-					if (xx >= bitmap.Width()) break;
-					if (bitmap.OutBoundX(xx)) continue;
-					if (yy == top || xx == ww)
-						bitmap.Bitmap[xx, yy] = colourDark;
-					else if (yy == hh || xx == left)
-						bitmap.Bitmap[xx, yy] = colourLight;
+					if (y == top || x == rightEdge)
+						bitmap.Bitmap[x, y] = colourDark;
+					else if (y == bottomEdge || x == left)
+						bitmap.Bitmap[x, y] = colourLight;
 				}
 			}
 			return bitmap;
 		}
 		
-		public static IBitmap DrawLine(this IBitmap bitmap, Point from, Point to, byte colour) => DrawLine(bitmap, from.X, from.Y, to.X, to.Y, colour = 5);
+		public static IBitmap DrawLine(this IBitmap bitmap, Point from, Point to, byte colour) => DrawLine(bitmap, from.X, from.Y, to.X, to.Y, colour);
 		public static IBitmap DrawLine(this IBitmap bitmap, int x1, int y1, int x2, int y2, byte colour = 5)
 		{
 			int difX = (x2 - x1), difY = (y2 - y1);
@@ -124,7 +131,12 @@ namespace CivOne.Graphics
 			}
 			for (int i = 0; i < Math.Abs(steps); i++)
 			{
-				bitmap.Bitmap[(int)Math.Round(xx), (int)Math.Round(yy)] = colour;
+				int x = (int)Math.Round(xx);
+				int y = (int)Math.Round(yy);
+				if (!bitmap.OutBoundX(x) && !bitmap.OutBoundY(y))
+				{
+					bitmap.Bitmap[x, y] = colour;
+				}
 				xx += incX;
 				yy += incY;
 			}
@@ -142,20 +154,52 @@ namespace CivOne.Graphics
 			return bitmap;
 		}
 		public static IBitmap AddLayer(this IBitmap bitmap, Bytemap layer, Point point, bool dispose = false) => AddLayer(bitmap, layer, point.X, point.Y, dispose);
-		public static IBitmap AddLayer(this IBitmap bitmap, Bytemap layer, int left = 0, int top = 0, bool dispose = false)
+		
+		/// Adds a layer to the bitmap at the specified position.
+		/// If the layer is null, nothing will be drawn (a <see cref="Debug.Assert(bool,string,string)"/> is triggered in debug builds).
+		/// The layer will be disposed if the dispose parameter is set to true.
+		/// In this case do not use "using" on the layer, as it will be disposed twice.
+		/// <param name="bitmap">The bitmap to which the layer will be added.</param>
+		/// <param name="layer">The layer to add to the bitmap.</param>
+		/// <param name="left">The left position where the layer will be added.</param>
+		/// <param name="top">The top position where the layer will be added.</param>
+		/// <param name="dispose">Whether to dispose the layer after adding it. If true the ownership of the layer is transferred to the bitmap.</param>
+		/// <returns>The bitmap with the added layer.</returns>
+		public static IBitmap AddLayer(this IBitmap bitmap, Bytemap? layer, int left = 0, int top = 0, bool dispose = false)
 		{
-			if (layer == null) return bitmap;
-			for (int yy = 0; yy < layer.Height; yy++)
+			if (layer == null)
 			{
-				if (top + yy >= bitmap.Height()) break;
-				if (bitmap.OutBoundY(top + yy)) continue;
-				for (int xx = 0; xx < layer.Width; xx++)
+				Debug.Assert(false, "Layer is null", "AddLayer was called with a null layer. This may indicate a missing resource or an error in the code.");
+				return bitmap;
+			}
+
+			Bytemap target = bitmap.Bitmap;
+
+			// Clip once instead of testing every pixel: these are the layer coordinates that land inside
+			// the target bitmap, which is exactly what the previous per-pixel break/continue pair
+			// produced. Copying row by row keeps the handle and range validation out of the inner loop.
+			int firstX = Math.Max(0, -left);
+			int firstY = Math.Max(0, -top);
+			int lastX = Math.Min(layer.Width, target.Width - left);
+			int lastY = Math.Min(layer.Height, target.Height - top);
+
+			if (lastX > firstX && lastY > firstY)
+			{
+				int rowLength = lastX - firstX;
+				for (int yy = firstY; yy < lastY; yy++)
 				{
-					if (left + xx >= bitmap.Width()) break;
-					if (layer[xx, yy] == 0 || bitmap.OutBoundX(left + xx)) continue;
-					bitmap.Bitmap[left + xx, top + yy] = layer[xx, yy];
+					ReadOnlySpan<byte> source = layer.Row(yy).Slice(firstX, rowLength);
+					Span<byte> destination = target.Row(top + yy).Slice(left + firstX, rowLength);
+					for (int xx = 0; xx < rowLength; xx++)
+					{
+						byte colour = source[xx];
+						// Colour index 0 is transparent.
+						if (colour == 0) continue;
+						destination[xx] = colour;
+					}
 				}
 			}
+
 			if (dispose) layer.Dispose();
 			return bitmap;
 		}
@@ -170,7 +214,7 @@ namespace CivOne.Graphics
 
 		public static IBitmap Tile(this IBitmap bitmap, Bytemap layer, Rectangle rectangle) => Tile(bitmap, layer, rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
 		public static IBitmap Tile(this IBitmap bitmap, Bytemap layer, Point point, Size size) => Tile(bitmap, layer, point.X, point.Y, size.Width, size.Height);
-		public static IBitmap Tile(this IBitmap bitmap, Bytemap layer, int left = 0, int top = 0, int width = -1, int height = -1)
+		public static IBitmap Tile(this IBitmap bitmap, Bytemap? layer, int left = 0, int top = 0, int width = -1, int height = -1)
 		{
 			if (layer == null) return bitmap;
 			if (width == -1) width = bitmap.Width() - left;
@@ -201,22 +245,22 @@ namespace CivOne.Graphics
 			AddLayer(bitmap, textLayer, x, y, dispose: true);
 			return bitmap;
 		}
-		public static IBitmap DrawText(this IBitmap bitmap, string text, int x = 0, int y = 0, TextSettings settings = null)
+		public static IBitmap DrawText(this IBitmap bitmap, string text, int x = 0, int y = 0, TextSettings? settings = null)
 		{
 			if (string.IsNullOrWhiteSpace(text)) return bitmap;
 			if (settings == null)
 			{
-				if (bitmap is IDefaultTextSettings)
-					settings = (bitmap as IDefaultTextSettings).DefaultTextSettings;
+				if (bitmap is IDefaultTextSettings defaultTextSettings)
+					settings = defaultTextSettings.DefaultTextSettings;
 				else
 					settings = new TextSettings();
 			}
 			
-			Size textSize = Resources.GetTextSize(settings.FontId, text);
+			Size textSize = Resources.GetTextSize(settings!.FontId, text);
 			Bytemap textLayer;
 			if (settings.FirstLetterColour != 0)
 			{
-				textLayer = Resources.GetText(text, settings.FontId, settings.FirstLetterColour, settings.Colour).Bitmap;
+				textLayer = Resources.GetText(text, settings.FontId, settings.FirstLetterColour, settings.Colour, settings.HighlightedCharacterIndex).Bitmap;
 			}
 			else if (settings.TopColour != 0 && settings.BottomColour != 0)
 			{

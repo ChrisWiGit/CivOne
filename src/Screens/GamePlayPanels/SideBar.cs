@@ -15,6 +15,7 @@ using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
 using CivOne.Graphics.Sprites;
+using CivOne.Screens.PalaceAssets;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -25,78 +26,33 @@ namespace CivOne.Screens.GamePlayPanels
 {
 	internal class SideBar : BaseScreen
 	{
+		private const int SideBarWidth = 80;
+		private const int MiniMapHeight = 50;
+		private const int DemographicsHeight = 39;
+		private const int GameInfoOffsetY = MiniMapHeight + DemographicsHeight;
+		private const int MiniMapBorder = MiniMapWrapper.MiniMapBorder;
+		private const int MiniMapTileWidth = SideBarWidth - (MiniMapBorder * 2);
+		private const int MiniMapTileHeight = MiniMapHeight - (MiniMapBorder * 2);
+		private const int MiniMapViewOffsetX = 30;
+		private const int MiniMapViewOffsetY = 18;
+		private const int PalaceHotspotBottomY = 62;
+		private const int ZoomButtonHeight = 10;
+		private const int ZoomButtonGap = 2;
+		private const int ZoomButtonScalerGap = 5;
+		private const int ZoomButtonsLeft = 2;
+		private const int ZoomButtonsBottomMargin = 2;
+		private const int ZoomButtonFontId = 0;
+
 		private bool _update = true;
-		
-		private readonly Picture _miniMap, _demographics;
+		private int _lastDemographicsSignature;
+		private int _lastGameInfoSignature;
+		private string _statusInfoText = string.Empty;
+		private int _statusInfoFrames;
+		private readonly Picture _demographics;
 		private Picture _gameInfo;
+
+		private readonly MiniMapWrapper _miniMapWrapper;
 		
-		private void DrawMiniMap(uint gameTick = 0)
-		{
-			_miniMap.Clear(5);
-			
-			if (GamePlay != null)
-			{
-				IUnit activeUnit = Game.ActiveUnit;
-				ITile[,] tiles = Map[GamePlay.X - 30, GamePlay.Y - 18, 78, 48];
-				for (int yy = 0; yy < 48; yy++)
-				for (int xx = 0; xx < 78; xx++)
-				{
-					ITile tile = tiles[xx, yy];
-					if (tile == null) continue;
-
-					// Flash active unit
-					if (activeUnit != null && Human == activeUnit.Owner && (tile.X == activeUnit.X && tile.Y == activeUnit.Y))
-					{
-						if (gameTick % 4 <= 1)
-						{
-							_miniMap[xx + 1, yy + 1] = 15;
-						}
-						else
-						{
-							_miniMap[xx + 1, yy + 1] = (byte)(tile.IsOcean ? 1 : 2);
-						}
-						continue;
-					}
-
-					if (Settings.RevealWorld)
-					{
-						byte colour = 5;
-						switch (tile.Type)
-						{
-							case Terrain.Ocean: colour = 1; break;
-							case Terrain.Forest: colour = 2; break;
-							case Terrain.Swamp: colour = 3; break;
-							case Terrain.Plains: colour = 6; break;
-							case Terrain.Tundra: colour = 7; break;
-							case Terrain.River: colour = 9; break;
-							case Terrain.Grassland1:
-							case Terrain.Grassland2: colour = 10; break;
-							case Terrain.Jungle: colour = 11; break;
-							case Terrain.Hills: colour = 12; break;
-							case Terrain.Mountains: colour = 13; break;
-							case Terrain.Desert: colour = 14; break;
-							case Terrain.Arctic: colour = 15; break;
-						}
-						_miniMap[xx + 1, yy + 1] = colour;
-					}
-					else if (Human.Visible(tile.X, tile.Y))
-					{
-						if (tile.City != null)
-						{
-							_miniMap[xx + 1, yy + 1] = Common.ColourLight[tile.City.Owner];
-						}
-						else
-						{
-							if (tile.IsOcean) _miniMap[xx + 1, yy + 1] = 1;
-							else _miniMap[xx + 1, yy + 1] = 2;
-						}
-					}
-				}
-			}
-			_miniMap.DrawRectangle(31, 18, 18, 11, 15)
-				.DrawRectangle3D();
-		}
-
 		private void DrawDemographics()
 		{
 			_demographics.Tile(Pattern.PanelGrey)
@@ -112,12 +68,21 @@ namespace CivOne.Screens.GamePlayPanels
 
 
 			int width = Resources.GetTextSize(0, Game.GameYear).Width;
-			int stage = (int)Math.Floor(((double)Human.Science / Human.ScienceCost) * 4);
-			_demographics.AddLayer(Icons.Lamp(stage), 4 + width, 22);
+			int stage = (int)Math.Floor((double)Human.Science / Human.ScienceCost * 4);
+			_demographics.AddLayer(Icons.Lamp(stage)!, 4 + width, 22);
 
 			DrawPollutionSun(width);
 
 			_demographics.DrawText($"{Human.Gold}$ {Human.LuxuriesRate}.{Human.TaxesRate}.{Human.ScienceRate}", 0, 5, 2, 31, TextAlign.Left);
+			
+			DrawPreviewPalace(_demographics);
+		}
+
+		private void DrawPreviewPalace(IBitmap targetLayer)
+		{
+			IBitmap palacePreview = _palaceRenderer.RenderPalace(Human.Palace);
+			int palacePreviewX = (SideBarWidth - palacePreview.Width()) / 2;
+			targetLayer.AddLayer(palacePreview, palacePreviewX, 1);
 		}
 
 		private void DrawPollutionSun(int width)
@@ -126,16 +91,44 @@ namespace CivOne.Screens.GamePlayPanels
 			{
 				return;
 			}
-			_demographics.AddLayer(Icons.Sun((int)_globalWarmingService.WarmingIndicator - 1), 4 + 10 + width, 24);
+			_demographics.AddLayer(Icons.Sun((int)_globalWarmingService.WarmingIndicator - 1)!, 4 + 10 + width, 24);
+		}
+
+		private int GetDemographicsSignature()
+		{
+			HashCode hash = new();
+			hash.Add(Human.Population);
+			hash.Add(Game.GameYear);
+			hash.Add(Human.Gold);
+			hash.Add(Human.LuxuriesRate);
+			hash.Add(Human.TaxesRate);
+			hash.Add(Human.ScienceRate);
+			hash.Add(Human.Science);
+			hash.Add(Human.ScienceCost);
+			hash.Add((int)_globalWarmingService.WarmingIndicator);
+
+			for (int i = 0; i < 7; i++)
+			{
+				hash.Add(Human.Palace.GetPalaceLevel(i));
+				hash.Add((int)Human.Palace.GetPalaceStyle(i));
+			}
+
+			return hash.ToHashCode();
 		}
 
 		private void DrawGameInfo(uint gameTick = 0)
 		{
-			IUnit unit = Game.ActiveUnit;
-			
+			IUnit? unit = Game.ActiveUnit;
+
 			_gameInfo.Tile(Pattern.PanelGrey)
 				.DrawRectangle3D();
-			
+
+			bool isInEditorMode = DrawTerrainEditorInfo();
+			if (isInEditorMode)
+			{
+				return;
+			}
+
 			if (Game.CurrentPlayer != Human || (unit != null && Human != unit.Owner) || (GameTask.Any() && !GameTask.Is<Show>() && !GameTask.Is<Message>()))
 			{
 				_gameInfo.FillRectangle(2, _gameInfo.Height - 8, 6, 6, (byte)((gameTick % 4 < 2) ? 15 : 8));
@@ -146,94 +139,335 @@ namespace CivOne.Screens.GamePlayPanels
 			{
 				int yy = 2;
 				_gameInfo.DrawText(Human.TribeName, 0, 5, 4, 2, TextAlign.Left);
-				_gameInfo.DrawText(unit.Name, 0, 5, 4, (yy += 8), TextAlign.Left);
-				
+				_gameInfo.DrawText(unit.TranslatedName, 0, 5, 4, yy += 8, TextAlign.Left);
+
 				if (unit.Veteran)
 				{
-					_gameInfo.DrawText("Veteran", 0, 5, 8, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(Translate("Veteran"), 0, 5, 8, yy += 8, TextAlign.Left);
 				}
 
-				if (unit is BaseUnitAir)
+				if (unit is BaseUnitAir airUnit)
 				{
-					_gameInfo.DrawText($"Moves: {unit.MovesLeft}({(unit as BaseUnitAir).FuelLeft})", 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(TranslateFormatted("Moves: {0}({1})", unit.MovesLeft, airUnit.FuelLeft), 0, 5, 4, yy += 8, TextAlign.Left);
 				}
 				else if (unit.PartMoves > 0)
 				{
-					_gameInfo.DrawText($"Moves: {unit.MovesLeft}.{unit.PartMoves}", 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(TranslateFormatted("Moves: {0}.{1}", unit.MovesLeft, unit.PartMoves), 0, 5, 4, yy += 8, TextAlign.Left);
 				}
 				else
 				{
-					_gameInfo.DrawText($"Moves: {unit.MovesLeft}", 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(TranslateFormatted("Moves: {0}", unit.MovesLeft), 0, 5, 4, yy += 8, TextAlign.Left);
 				}
-				_gameInfo.DrawText((unit.Home == null ? "NONE" : unit.Home.Name), 0, 5, 4, (yy += 8), TextAlign.Left);
-				_gameInfo.DrawText($"({Map[unit.X, unit.Y].Name})", 0, 5, 4, (yy += 8), TextAlign.Left);
-				
+				_gameInfo.DrawText(unit.Home == null ? Translate("NONE") : unit.Home.Name, 0, 5, 4, yy += 8, TextAlign.Left);
+				_gameInfo.DrawText($"({Map[unit.X, unit.Y].TranslatedName})", 0, 5, 4, yy += 8, TextAlign.Left);
+
 				if (Map[unit.X, unit.Y].RailRoad)
-					_gameInfo.DrawText("(RailRoad)", 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(Translate("(RailRoad)"), 0, 5, 4, yy += 8, TextAlign.Left);
 				else if (Map[unit.X, unit.Y].Road)
-					_gameInfo.DrawText("(Road)", 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(Translate("(Road)"), 0, 5, 4, yy += 8, TextAlign.Left);
 				if (Map[unit.X, unit.Y].Irrigation)
-					_gameInfo.DrawText("(Irrigation)", 0, 5, 4, (yy += 8), TextAlign.Left);
+					_gameInfo.DrawText(Translate("(Irrigation)"), 0, 5, 4, yy += 8, TextAlign.Left);
 				else if (Map[unit.X, unit.Y].Mine)
-					_gameInfo.DrawText("(Mining)", 0, 5, 4, (yy += 8), TextAlign.Left);
-				
+					_gameInfo.DrawText(Translate("(Mining)"), 0, 5, 4, yy += 8, TextAlign.Left);
+
 				yy += 11;
 
 				IUnit[] units = Map[unit.X, unit.Y].Units.Where(u => u != unit).Take(8).ToArray();
 				for (int i = 0; i < units.Length; i++)
 				{
-					int ix = 7 + ((i % 4) * 16);
-					int iy = yy + (((i - (i % 4)) / 4) * 16);
+					int ix = 7 + (i % 4 * 16);
+					int iy = yy + ((i - (i % 4)) / 4 * 16);
 					_gameInfo.AddLayer(units[i].ToBitmap(), ix, iy);
 				}
 			}
 			else
 			{
 				if (gameTick % 4 < 2)
-					_gameInfo.DrawText($"End of Turn", 0, 5, 4, 26, TextAlign.Left);
-				_gameInfo.DrawText($"Press Enter", 0, 5, 4, 42, TextAlign.Left);
-				_gameInfo.DrawText($"to continue", 0, 5, 4, 50, TextAlign.Left);
+					_gameInfo.DrawText(Translate("End of Turn"), 0, 5, 4, 26, TextAlign.Left);
+				_gameInfo.DrawText(Translate("Press Enter"), 0, 5, 4, 42, TextAlign.Left);
+				_gameInfo.DrawText(Translate("to continue"), 0, 5, 4, 50, TextAlign.Left);
 			}
+		}
+
+		private bool DrawTerrainEditorInfo()
+		{
+			if ((GamePlay?.IsTerrainEditorEnabled) != true)
+			{
+				return false;
+			}
+
+			const int fontId = 1;
+			const byte colorId = 5;
+			const int yStart = 2;
+			int brushSize = GamePlay.TerrainEditorBrushSize;
+			int fontHeight = Resources.GetFontHeight(fontId) + 1;
+			bool spawnMode = GamePlay.IsTerrainEditorSpawnMode;
+			ITile hoveredTile = Map[GamePlay.HoveredTileX, GamePlay.HoveredTileY];
+			IUnit[] hoveredUnits = hoveredTile?.Units ?? [];
+			string? hoveredUnitOwnerText = null;
+			string? hoveredUnitStackText = null;
+
+			if (spawnMode && hoveredUnits.Length > 0)
+			{
+				IUnit firstUnit = hoveredUnits[0];
+				Player? owner = Game.GetPlayer(firstUnit.Owner);
+				if (owner != null)
+				{
+					hoveredUnitOwnerText = owner.Civilization is CivOne.Civilizations.Barbarian
+						? Translate("Barbarians")
+						: owner.TribeNamePlural;
+				}
+
+				hoveredUnitStackText = $"{firstUnit.TranslatedName} : {hoveredUnits.Length}";
+			}
+
+			_gameInfo.DrawText(Translate("Editor active"), fontId, colorId, 2, yStart, TextAlign.Left);
+			_gameInfo.DrawText(GamePlay.TerrainEditorModeText, fontId, colorId, 2, yStart + fontHeight, TextAlign.Left);
+			_gameInfo.DrawText(TranslateFormatted("Brush {0}x{0}", brushSize), fontId, colorId, 2, yStart + 2 * fontHeight, TextAlign.Left);
+
+			if (spawnMode)
+			{
+				if (!string.IsNullOrEmpty(hoveredUnitOwnerText))
+				{
+					_gameInfo.DrawText(hoveredUnitOwnerText, fontId, colorId, 2, yStart + 3 * fontHeight, TextAlign.Left);
+				}
+
+				if (!string.IsNullOrEmpty(hoveredUnitStackText))
+				{
+					_gameInfo.DrawText(hoveredUnitStackText, fontId, colorId, 2, yStart + 4 * fontHeight, TextAlign.Left);
+				}
+			}
+			else if (!string.IsNullOrEmpty(GamePlay.TerrainEditorCityOwnerText))
+			{
+				_gameInfo.DrawText(GamePlay.TerrainEditorCityOwnerText, fontId, colorId, 2, yStart + 3 * fontHeight, TextAlign.Left);
+			}
+			_gameInfo.DrawText($"{GamePlay.HoveredTileX},{GamePlay.HoveredTileY}", fontId, colorId, 2, yStart + 5 * fontHeight, TextAlign.Left);
+			
+			return true;
+		}
+
+		private int GetGameInfoSignature(uint gameTick)
+		{
+			IUnit? unit = Game.ActiveUnit;
+			bool hasBlockingTask = GameTask.Any() && !GameTask.Is<Show>() && !GameTask.Is<Message>();
+			int blinkPhase = (unit == null || hasBlockingTask) ? (int)(gameTick % 4) : -1;
+			bool editorEnabled = GamePlay?.IsTerrainEditorEnabled == true;
+			bool spawnMode = editorEnabled && GamePlay!.IsTerrainEditorSpawnMode;
+			string editorMode = editorEnabled ? GamePlay!.TerrainEditorModeText : string.Empty;
+			int editorBrush = editorEnabled ? GamePlay!.TerrainEditorBrushSize : -1;
+			string editorOwner = editorEnabled ? GamePlay!.TerrainEditorCityOwnerText ?? string.Empty : string.Empty;
+			int hoveredTileX = editorEnabled ? GamePlay!.HoveredTileX : -1;
+			int hoveredTileY = editorEnabled ? GamePlay!.HoveredTileY : -1;
+			ITile? hoveredTile = editorEnabled ? Map[hoveredTileX, hoveredTileY] : null;
+			IUnit[] hoveredUnits = hoveredTile?.Units ?? [];
+			byte hoveredOwner = hoveredUnits.Length > 0 ? hoveredUnits[0].Owner : byte.MaxValue;
+			UnitType hoveredType = hoveredUnits.Length > 0 ? hoveredUnits[0].Type : (UnitType)(-1);
+			int hoveredCount = hoveredUnits.Length;
+			bool zoomActive = GamePlay?.IsMapZoomActive == true;
+			int bitmapScalerMode = (int)Settings.BitmapScalerMode;
+
+			return HashCode.Combine(
+				HashCode.Combine(
+					Game.CurrentPlayer,
+					unit,
+					unit == null ? -1 : unit.MovesLeft,
+					unit == null ? -1 : unit.PartMoves,
+					hasBlockingTask,
+					blinkPhase,
+					_statusInfoText,
+					_statusInfoFrames),
+				HashCode.Combine(
+					HashCode.Combine(editorEnabled, spawnMode, editorMode, editorBrush, editorOwner, zoomActive, bitmapScalerMode),
+					HashCode.Combine(hoveredTileX, hoveredTileY, hoveredOwner, hoveredType, hoveredCount)));
+		}
+
+		private bool IsZoomButtonsVisible() => GamePlay?.IsMapZoomActive == true;
+
+		private static string GetZoomButtonText(int buttonIndex)
+		{
+			return buttonIndex switch
+			{
+				0 => "+",
+				1 => "-",
+				2 => "R",
+				3 => GetCurrentBitmapScalerModeText(),
+				_ => string.Empty
+			};
+		}
+
+		private static int GetZoomButtonWidth(string text)
+		{
+			return Resources.GetTextSize(ZoomButtonFontId, text).Width + 4;
+		}
+
+		private Rectangle GetZoomButtonRectangle(int buttonIndex)
+		{
+			int left = ZoomButtonsLeft;
+			for (int i = 0; i < buttonIndex; i++)
+			{
+				string previousText = GetZoomButtonText(i);
+				left += GetZoomButtonWidth(previousText) + ZoomButtonGap;
+			}
+
+			if (buttonIndex >= 3)
+			{
+				left += ZoomButtonScalerGap;
+			}
+
+			int top = _gameInfo.Height - ZoomButtonHeight - ZoomButtonsBottomMargin;
+			string text = GetZoomButtonText(buttonIndex);
+			return new Rectangle(left, top, GetZoomButtonWidth(text), ZoomButtonHeight);
+		}
+
+		private void DrawZoomButtons()
+		{
+			if (!IsZoomButtonsVisible())
+			{
+				return;
+			}
+
+			DrawZoomButton(0, GetZoomButtonText(0));
+			DrawZoomButton(1, GetZoomButtonText(1));
+			DrawZoomButton(2, GetZoomButtonText(2));
+			DrawZoomButton(3, GetZoomButtonText(3));
+		}
+
+		private static string GetCurrentBitmapScalerModeText()
+		{
+			return Settings.BitmapScalerMode switch
+			{
+				Settings.MapBitmapScalerType.NearestNeighbor => "NN",
+				Settings.MapBitmapScalerType.PaletteAwareWeighted => "PAW",
+				_ => "??"
+			};
+		}
+
+		private void DrawZoomButton(int index, string text)
+		{
+			Rectangle button = GetZoomButtonRectangle(index);
+			DrawButton(text, ZoomButtonFontId, 11, 8, button.X, GameInfoOffsetY + button.Y, button.Height);
+		}
+
+		private bool TryHandleZoomButtonClick(int x, int y)
+		{
+			if (!IsZoomButtonsVisible())
+			{
+				return false;
+			}
+
+			if (GamePlay == null)
+			{
+				return false;
+			}
+
+			int localX = x;
+			int localY = y - GameInfoOffsetY;
+			if (localY < 0)
+			{
+				return false;
+			}
+
+			if (GetZoomButtonRectangle(0).Contains(localX, localY))
+			{
+				_update |= GamePlay.ZoomInFromSideBar();
+				return true;
+			}
+
+			if (GetZoomButtonRectangle(1).Contains(localX, localY))
+			{
+				_update |= GamePlay.ZoomOutFromSideBar();
+				return true;
+			}
+
+			if (GetZoomButtonRectangle(2).Contains(localX, localY))
+			{
+				_update |= GamePlay.ZoomResetFromSideBar();
+				return true;
+			}
+
+			if (GetZoomButtonRectangle(3).Contains(localX, localY))
+			{
+				_update |= GamePlay.ToggleMapBitmapScalerFromSideBar();
+				return true;
+			}
+
+			return false;
+		}
+
+		internal void ShowMapPositionSavedInfo(int slot)
+		{
+			_statusInfoText = TranslateFormatted("Map position {0} saved", slot);
+			_statusInfoFrames = 20;
+			_update = true;
 		}
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_update || (gameTick % 2 == 0))
+			if (_statusInfoFrames > 0)
 			{
-				if (!(Common.TopScreen is GamePlay))
-					gameTick = 0;
-
-				DrawMiniMap(gameTick);
-				DrawDemographics();
-				DrawGameInfo(gameTick);
-				
-				this.AddLayer(_miniMap, 0, 0)
-					.AddLayer(_demographics, 0, 50)
-					.AddLayer(_gameInfo, 0, 89);
-				
-				_update = false;
-				return true;
+				_statusInfoFrames--;
+				_update = true;
 			}
-			return false;
+
+			if (!_update && gameTick % 2 != 0)
+			{
+				return false;
+			}
+			if (!(Common.TopScreen is GamePlay))
+				gameTick = 0;
+
+			_miniMapWrapper.DrawMiniMap(GamePlay, Game.ActiveUnit, gameTick);
+
+			int demographicsSignature = GetDemographicsSignature();
+			if (_update || demographicsSignature != _lastDemographicsSignature)
+			{
+				DrawDemographics();
+				_lastDemographicsSignature = demographicsSignature;
+			}
+
+			int gameInfoSignature = GetGameInfoSignature(gameTick);
+			if (_update || gameInfoSignature != _lastGameInfoSignature)
+			{
+				DrawGameInfo(gameTick);
+				if (_statusInfoFrames > 0 && !string.IsNullOrWhiteSpace(_statusInfoText))
+				{
+					_gameInfo.DrawText(_statusInfoText, 0, 5, 2, _gameInfo.Height - 8, TextAlign.Left);
+				}
+				_lastGameInfoSignature = gameInfoSignature;
+			}
+
+			this.AddLayer(_miniMapWrapper.MiniMap, 0, 0)
+				.AddLayer(_demographics, 0, MiniMapHeight)
+				.AddLayer(_gameInfo, 0, GameInfoOffsetY);
+
+			DrawZoomButtons();
+
+			_update = false;
+			return true;
 		}
-		
+
 		public override bool MouseDown(ScreenEventArgs args)
 		{
-			if (args.Y <= 50)
+			if (TryHandleZoomButtonClick(args.X, args.Y))
 			{
-				if (args.X < 1 || args.Y < 1 || args.X > 79 || args.Y > 49) return true;
+				return true;
+			}
+
+			if (args.Y <= MiniMapHeight)
+			{
+				if (args.X < MiniMapBorder || args.Y < MiniMapBorder || args.X > (SideBarWidth - MiniMapBorder) || args.Y > (MiniMapHeight - MiniMapBorder)) return true;
 				
-				int xx = (args.X - 1) + GamePlay.X - 30;
-				int yy = (args.Y - 1) + GamePlay.Y - 18;
+				int xx = args.X - MiniMapBorder + GamePlay!.X - _miniMapWrapper.MiniMapViewOffsetXCurrent;
+				int yy = args.Y - MiniMapBorder + GamePlay!.Y - _miniMapWrapper.MiniMapViewOffsetYCurrent;
 
 				GamePlay.CenterOnPoint(xx, yy);
 			}
-			if (args.Y > 50 && args.Y < 62)
+			if (args.Y > MiniMapHeight && args.Y < PalaceHotspotBottomY)
 			{
 				Log("Sidebar: Palace View");
-				Common.AddScreen(new PalaceView());
+				Common.AddScreen(new PalaceView(false, PalaceSpriteProviderFactory.GetInstance()));
 			}
-			else if (args.Y >= 62)
+			else if (args.Y >= PalaceHotspotBottomY)
 			{
 				if (Game.CurrentPlayer == Human && Game.ActiveUnit == null)
 				{
@@ -243,51 +477,70 @@ namespace CivOne.Screens.GamePlayPanels
 			return true;
 		}
 
-		private GamePlay GamePlay
+		#pragma warning disable CA1822 // This method may be static
+		private GamePlay? GamePlay
 		{
 			get
 			{
-				IScreen mapScreen = Common.Screens.FirstOrDefault(s => (s is GamePlay));
-				if (mapScreen != null)
-					return (mapScreen as GamePlay);
+				IScreen? mapScreen = Common.Screens.FirstOrDefault(s => s is GamePlay);
+				if (mapScreen is GamePlay gamePlay)
+					return gamePlay;
+
 				return null;
 			}
 		}
+		#pragma warning restore CA1822
 		
 		public void Resize(int height)
 		{
-			Bitmap = new Bytemap(80, height);
+			Bitmap = new Bytemap(SideBarWidth, height);
 			_gameInfo?.Dispose();
-			_gameInfo = new Picture(80, (height - 89), Palette);
+			_gameInfo = new Picture(SideBarWidth, height - GameInfoOffsetY, Palette);
+			_lastDemographicsSignature = int.MinValue;
+			_lastGameInfoSignature = int.MinValue;
 			_update = true;
 		}
 
 		private readonly IGlobalWarmingService _globalWarmingService;
+		private readonly IPreviewPalaceRenderer _palaceRenderer = PreviewPalaceRendererFactory.GetInstance();
 
-		public SideBar(Palette palette, IGlobalWarmingService globalWarmingService) : base(80, 192)
+		public SideBar(Palette palette, IGlobalWarmingService globalWarmingService) : base(SideBarWidth, 192)
 		{
 			_globalWarmingService = globalWarmingService;
+			_lastDemographicsSignature = int.MinValue;
+			_lastGameInfoSignature = int.MinValue;
 
-			_miniMap = new Picture(80, 50, palette);
-			_demographics = new Picture(80, 39, palette);
-			_gameInfo = new Picture(80, 103, palette);
+			_demographics = new Picture(SideBarWidth, DemographicsHeight, palette);
+			_gameInfo = new Picture(SideBarWidth, 192 - GameInfoOffsetY, palette);
 
-			DrawMiniMap();
+			_miniMapWrapper = 
+			new(Settings, Map, Human, palette, 
+				MiniMapViewOffsetX, MiniMapViewOffsetY, 
+				MiniMapTileWidth, MiniMapTileHeight, 
+				SideBarWidth, MiniMapHeight);
+			_miniMapWrapper.DrawMiniMap(GamePlay, Game.ActiveUnit);
 			DrawDemographics();
+			_lastDemographicsSignature = GetDemographicsSignature();
 			DrawGameInfo();
+			_lastGameInfoSignature = GetGameInfoSignature(0);
 
 			Palette = palette.Copy();
-			this.AddLayer(_miniMap, 0, 0)
-				.AddLayer(_demographics, 0, 50)
-				.AddLayer(_gameInfo, 0, 89);
+			this.AddLayer(_miniMapWrapper.MiniMap, 0, 0)
+				.AddLayer(_demographics, 0, MiniMapHeight)
+				.AddLayer(_gameInfo, 0, GameInfoOffsetY);
 		}
 
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
-			_miniMap.Dispose();
+			if (!disposing)
+			{
+				return;
+			}
+
+			_miniMapWrapper.Dispose();
 			_demographics.Dispose();
 			_gameInfo.Dispose();
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }

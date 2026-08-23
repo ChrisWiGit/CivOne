@@ -10,6 +10,7 @@
 using CivOne.Advances;
 using CivOne.Enums;
 using CivOne.Screens.Dialogs;
+using CivOne.Services.Random;
 using CivOne.Tasks;
 using CivOne.Tiles;
 
@@ -17,7 +18,20 @@ namespace CivOne.Units
 {
 	internal class Caravan : BaseUnitLand
 	{
-		private static string[] WARES = new string[] { "Silk", "Silver", "Wine", "Copper", "Gems", "Dye", "Salt", "Spice" };
+		private string GetRandomWareName()
+		{
+			return RandomServiceFactory.Create().NextInt(8) switch
+			{
+				0 => Translate("Silk"),
+				1 => Translate("Silver"),
+				2 => Translate("Wine"),
+				3 => Translate("Copper"),
+				4 => Translate("Gems"),
+				5 => Translate("Dye"),
+				6 => Translate("Salt"),
+				_ => Translate("Spice")
+			};
+		}
 
 		private int TradeGoldBonus(City targetCity)
 		{
@@ -39,19 +53,20 @@ namespace CivOne.Units
 
 			float multiplier = 1;
 			if (Home != null && Home.Tile.ContinentId == targetCity.Tile.ContinentId) multiplier *= 0.5F;
-			if (Owner == targetCity.Owner) multiplier *= 0.5F;
-			if (Game.GetPlayer(Owner).HasAdvance<RailRoad>() && Game.GetPlayer(targetCity.Owner).HasAdvance<RailRoad>()) multiplier *= 0.66F;
-			if (Game.GetPlayer(Owner).HasAdvance<Flight>() && Game.GetPlayer(targetCity.Owner).HasAdvance<Flight>()) multiplier *= 0.66F;
+			if (Owner == targetCity.CityOwnerPlayerIndex) multiplier *= 0.5F;
+			if (OwnerPlayer.HasAdvance<RailRoad>() && targetCity.PlayerIntf.HasAdvance<RailRoad>()) multiplier *= 0.66F;
+			if (OwnerPlayer.HasAdvance<Flight>() && targetCity.PlayerIntf.HasAdvance<Flight>()) multiplier *= 0.66F;
 
-			return (int)(multiplier * (float)((distance + 10) * (tradeHome + tradeTarget) / 24));
+			return (int)(multiplier * ((distance + 10) * (tradeHome + tradeTarget) / 24));
 		}
+		private Player OwnerPlayer => Game.GetPlayer(Owner)!;
 
 		internal void KeepMoving(City city) => MovementTo(city.X - X, city.Y - Y);
 
 		internal void EstablishTradeRoute(City city)
 		{
-			string homeName = Home?.Name ?? "NONE";
-			string ware = WARES[Common.Random.Next(8)];
+			string homeName = Home?.Name ?? Translate("NONE");
+			string ware = GetRandomWareName();
 			int revenue = TradeGoldBonus(city);
 			if (revenue <= 0) revenue = 1; // revenue should at least be 1, I think (needs to be checked)
 
@@ -63,12 +78,9 @@ namespace CivOne.Units
 			if (Human == Owner)
 			{
 				GameTask.Insert(Message.General(
-					$"{ware} caravan from {homeName}",
-					$"arrives in {city.Name}",
-					"Trade route established",
-					$"Revenue: ${revenue}."));
+					TranslateFormattedArray("{0} caravan from {1}\narrives in {2}\nTrade route established\nRevenue: ${3}.", ware, homeName, city.Name, revenue)));
 			}
-			Game.GetPlayer(Owner).Gold += (short)revenue;
+			OwnerPlayer.Gold += (short)revenue;
 			Game.DisbandUnit(this);
 		}
 
@@ -78,17 +90,21 @@ namespace CivOne.Units
 			Game.DisbandUnit(this);
 		}
 
-		internal override bool Confront(int relX, int relY)
+		internal override bool PreConfront(int relX, int relY)
 		{
 			ITile moveTarget = Map[X, Y][relX, relY];
-			City city = moveTarget.City;
-			
-			bool hasTargetCity = city != null;
-			bool isCityOwner = hasTargetCity && city.Owner == Owner;
+
+			if (moveTarget.City is not { } city)
+			{
+				MovementTo(relX, relY);
+				return true;
+			}
+
+			bool isCityOwner = city.CityOwnerPlayerIndex == Owner;
 
 			if (isCityOwner && Human == Owner)
 			{
-				if (city.IsBuildingWonder || CaravanChoice.AllowEstablishTradeRoute(this, city))
+				if (city.IsBuildingWonder || Home == null || Home.Tile.DistanceTo(city) >= 10)
 				{
 					GameTask.Enqueue(Show.CaravanChoice(this, city));
 				}
@@ -96,10 +112,11 @@ namespace CivOne.Units
 				{
 					MovementTo(relX, relY);
 				}
+
 				return true;
 			}
 
-            if (!hasTargetCity || city == Home ||
+			if (city == Home ||
 				(isCityOwner && Home != null && moveTarget.DistanceTo(Home) < 10))
 			{
 				MovementTo(relX, relY);
@@ -108,7 +125,7 @@ namespace CivOne.Units
 
 			if (!isCityOwner)
 			{
-				EstablishTradeRoute(moveTarget.City);
+				EstablishTradeRoute(city);
 				return true;
 			}
 
@@ -121,7 +138,7 @@ namespace CivOne.Units
 
 			if (hasTargetCity)
 			{
-				return Confront(relX, relY);
+				return PreConfront(relX, relY);
 			}
 
 			return null;
@@ -131,6 +148,7 @@ namespace CivOne.Units
 		{
 			Type = UnitType.Caravan;
 			Name = "Caravan";
+			TranslatedName = Translate("Caravan");
 			RequiredTech = new Trade();
 			ObsoleteTech = null;
 			SetIcon('E', 0, 1);

@@ -22,6 +22,7 @@ using UniversityBuilding = CivOne.Buildings.University;
 
 namespace CivOne.Screens
 {
+	[ScreenResizeable]
 	[Modal]
 	internal class CityView : BaseScreen
 	{
@@ -33,33 +34,41 @@ namespace CivOne.Screens
 		private readonly TextSettings _dialogText;
 
 		private readonly City _city;
-		private readonly IProduction _production;
+		private readonly IProduction? _production;
 		private readonly Picture _background;
 		private readonly bool _showFoundedScreen;
 		private readonly bool _firstView;
 		private readonly bool _captured;
 		private readonly bool _disorder;
 		private readonly bool _weLovePresidentDay;
-		private readonly byte[,] _noiseMap;
+		private readonly byte[,]? _noiseMap;
 		
 		private int _noiseCounter = NOISE_COUNT + 15;
 
 		private int _houseType;
 
 		private readonly Picture _overlay;
-		private readonly Picture[] _invadersOrRevolters;
+		private readonly Picture[]? _invadersOrRevolters;
 
 		private bool _update = true;
+		private int OffsetX => Math.Max(0, (Width - 320) / 2);
+		private int OffsetY => Math.Max(0, (Height - 200) / 2);
 		
 		private int _x = 80;
         private int _y = 138;
 
 		private float _fadeStep = 1.0f;
-		private bool _skip = false;
+		private bool _skip;
 
-		private string _buildingFile = null;
+		private string? _buildingFile;
 
-		public event EventHandler Skipped;
+		public event EventHandler? Skipped;
+
+		private void RenderBase()
+		{
+			this.Clear()
+				.AddLayer(_background, OffsetX, OffsetY);
+		}
 		
 		private void FadeColours()
 		{
@@ -83,18 +92,21 @@ namespace CivOne.Screens
 
 			if (_captured || _disorder)
 			{
-				this.AddLayer(_background);
-				int frame = (_x % 30) / 3;
+				RenderBase();
+				int frame = _x % 30 / 3;
 				if (frame < 0)
 				{
-					Log($"Warning: Invaders/Revolters frame is negative: {frame} for x={_x} and player={_city.Owner}");
+					Log($"Warning: Invaders/Revolters frame is negative: {frame} for x={_x} and player={_city.CityOwnerPlayerIndex}");
 					frame = 0;
 				}
 				for (int i = 7; i >= 0; i--)
 				{
-					int xx = (_x - 65) - (48 * i);
+					int xx = _x - 65 - (48 * i);
 					if (xx + 78 <= 0) continue;
-					this.AddLayer(_invadersOrRevolters[frame], xx, _y);
+					if (_invadersOrRevolters != null)
+					{
+						this.AddLayer(_invadersOrRevolters[frame], xx + OffsetX, _y + OffsetY);
+					}
 				}
 				_x++;
 				return true;
@@ -102,20 +114,23 @@ namespace CivOne.Screens
 			
 			if (_weLovePresidentDay)
 			{
-				this.AddLayer(_background);
-				int frame = ((_x + 600) % 30) / 3;
+				RenderBase();
+				int frame = (_x + 600) % 30 / 3;
 				if (frame < 0)
 				{
-					Log($"Warning: We love the president day frame is negative: {frame} for x={_x} and player={_city.Owner}");
+					Log($"Warning: We love the president day frame is negative: {frame} for x={_x} and player={_city.CityOwnerPlayerIndex}");
 					//CW: Reset to first frame and set _x to right side of screen as in construction of class.
 					frame = 0; // =(240 + 600) % 30 / 3;
 					_x = 240;
 				}
 				for (int i = 0; i <= 7; i++)
 					{
-						int xx = (_x + 65) + (48 * i);
+						int xx = _x + 65 + (48 * i);
 						//if (xx <= 0) continue;
-						this.AddLayer(_invadersOrRevolters[frame], xx, _y);
+						if (_invadersOrRevolters != null)
+						{
+							this.AddLayer(_invadersOrRevolters[frame], xx + OffsetX, _y + OffsetY);
+						}
 					}
 				_x--;
 
@@ -127,8 +142,8 @@ namespace CivOne.Screens
 				if (_noiseCounter > 0)
 				{
 					_overlay.ApplyNoise(_noiseMap, _noiseCounter--);
-					this.AddLayer(_background)
-						.AddLayer(_overlay);
+					RenderBase();
+					this.AddLayer(_overlay, OffsetX, OffsetY);
 					return true;
 				}
 				return false;
@@ -144,18 +159,19 @@ namespace CivOne.Screens
 				}
 				FadeColours();
 			}
-			if (_showFoundedScreen && (gameTick % 3 == 0))
+			if (_showFoundedScreen)
 			{
-				this.AddLayer(_background)
-					.DrawText($"{_city.Name} founded: {Game.GameYear}.", 5, 5, 161, 3, TextAlign.Center);
+				RenderBase();
+				this.DrawText(TranslateFormatted("{0} founded: {1}.", _city.Name, Game.GameYear), 5, 5, 161 + OffsetX, 3 + OffsetY, TextAlign.Center);
 
-				int frame = (_x % 4);
-				this.AddLayer(Resources["SETTLERS"][1, 1 + (16 * frame), 48, 15], _x, 120)
-					.AddLayer(Resources["SETTLERS"][1, 1 + (16 * ((frame + 2) % 4)), 48, 15], _x + 27, 125)
-					.AddLayer(Resources["SETTLERS"][1, 1 + (16 * ((frame + 3) % 4)), 48, 15], _x + 14, 131)
-					.AddLayer(Resources["SETTLERS"][1, 1 + (16 * ((frame + 1) % 4)), 48, 15], _x + 40, 135);
+				int frame = _x % 4;
+				this.AddLayer(Resources["SETTLERS"][1, 1 + (16 * frame), 48, 15], _x + OffsetX, 120 + OffsetY)
+					.AddLayer(Resources["SETTLERS"][1, 1 + (16 * ((frame + 2) % 4)), 48, 15], _x + 27 + OffsetX, 125 + OffsetY)
+					.AddLayer(Resources["SETTLERS"][1, 1 + (16 * ((frame + 3) % 4)), 48, 15], _x + 14 + OffsetX, 131 + OffsetY)
+					.AddLayer(Resources["SETTLERS"][1, 1 + (16 * ((frame + 1) % 4)), 48, 15], _x + 40 + OffsetX, 135 + OffsetY);
 
-				_x++;
+				if (gameTick % 3 == 0)
+					_x++;
 				return true;
 			}
 
@@ -167,8 +183,17 @@ namespace CivOne.Screens
 			}
 
 			if (_update)
+			{
+				RenderBase();
 				_update = false;
+			}
 			return true;
+		}
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_update = true;
 		}
 
 		private bool SkipAction()
@@ -177,8 +202,9 @@ namespace CivOne.Screens
 			if (_noiseCounter > 0 && _noiseCounter < NOISE_COUNT) return false;
 
 			Destroy();
+			
 			if (Skipped != null)
-				Skipped(this, null);
+				Skipped(this, EventArgs.Empty);
 			else
 				HandleClose();
 			return true;
@@ -194,9 +220,10 @@ namespace CivOne.Screens
 			return SkipAction();
 		}
 
-		private void DrawWonder<T>(Picture picture = null, int x = -1, int y = -1) where T : IWonder
+		private void DrawWonder<T>(Picture? picture = null, int x = -1, int y = -1) where T : IWonder
 		{
-			if (picture == null) picture = _background;
+			picture ??= _background;
+
 			if (typeof(T) == typeof(Pyramids))
 			{
 				picture.AddLayer(Resources["WONDERS2"][131, 54, 187, 29], 133, 0);
@@ -235,18 +262,18 @@ namespace CivOne.Screens
 		private void DrawWonderOverlay<T>(int x, int y, int offset) where T : IWonder
 		{
 			DrawWonder<T>(x: x, y: y + offset);
-			if (!(_production is T))
+			if (_production is not T)
 				DrawWonder<T>(_overlay, x, y + offset);
 		}
 
-		private void DrawBuilding<T>(Picture picture = null, int x = -1, int y = -1) where T : IBuilding
+		private void DrawBuilding<T>(Picture? picture = null, int x = -1, int y = -1) where T : IBuilding
 		{
 			if (_buildingFile == null)
 			{
-				_buildingFile = Game.GetPlayer(_city.Owner).HasAdvance<Invention>() ? "CITYPIX3" : "CITYPIX2";
+				_buildingFile = Game.GetPlayer(_city.CityOwnerPlayerIndex)!.HasAdvance<Invention>() ? "CITYPIX3" : "CITYPIX2";
 			}
 
-			if (picture == null) picture = _background;
+			picture ??= _background;
 			if (typeof(T) == typeof(Aqueduct))
 			{
 				picture.AddLayer(Resources[_buildingFile][51, 151, 49, 49], 0, 72);
@@ -299,7 +326,7 @@ namespace CivOne.Screens
 		private void DrawBuildingOverlay<T>(int x, int y, int offset = -18) where T : IBuilding
 		{
 			DrawBuilding<T>(x: x, y: y + offset);
-			if (!(_production is T))
+			if (_production is not T)
 				DrawBuilding<T>(_overlay, x, y + offset);
 		}
 
@@ -345,7 +372,7 @@ namespace CivOne.Screens
 				if (hh > 11) hh = 11;
 
 				int bx = (ww / 2) + ((18 - ww) / 2);
-				int by = (hh / 2);
+				int by = hh / 2;
 				for (int ii = 0; ii < _city.Size; ii++)
 				{
 					houseCount += PlaceHouses(localRandom, cityMap, ww, hh, ref bx, ref by);
@@ -397,13 +424,12 @@ namespace CivOne.Screens
 					}
 					if (cityMap[xx, yy] != CityViewMap.Road) continue;
 
-					if ((xx == 0 || (int)cityMap[xx - 1, yy] > 1) ||
-							(xx == 17 || (int)cityMap[xx + 1, yy] > 1) ||
-							(yy == 0 || (int)cityMap[xx, yy - 1] > 1) ||
-							(yy == 10 || (int)cityMap[xx, yy + 1] > 1))
-					{
-						continue;
-					}
+					bool blocked =
+							xx == 0 || (int)cityMap[xx - 1, yy] > 1 ||
+							xx == 17 || (int)cityMap[xx + 1, yy] > 1 ||
+							yy == 0 || (int)cityMap[xx, yy - 1] > 1 ||
+							yy == 10 || (int)cityMap[xx, yy + 1] > 1;
+					if (blocked) continue;
 
 					cityMap[xx, yy] = CityViewMap.Empty;
 				}
@@ -413,10 +439,15 @@ namespace CivOne.Screens
 				{
 					if (cityMap[xx, yy] != CityViewMap.Empty) continue;
 					if (!(xx == 6 || xx == 11 || yy == 2 || yy == 6)) continue;
-					if (((xx == 0 || (int)cityMap[xx - 1, yy] != 1) ? 1 : 0) +
-						((xx == 17 || (int)cityMap[xx + 1, yy] != 1) ? 1 : 0) +
-						((yy == 0 || (int)cityMap[xx, yy - 1] != 1) ? 1 : 0) +
-						((yy == 10 || (int)cityMap[xx, yy + 1] != 1 ? 1 : 0)) > 1) continue;
+
+					bool blocked =
+						xx == 0  || (int)cityMap[xx - 1, yy] != 1 ||
+						xx == 17 || (int)cityMap[xx + 1, yy] != 1 ||
+						yy == 0  || (int)cityMap[xx, yy - 1] != 1 ||
+						yy == 10 || (int)cityMap[xx, yy + 1] != 1;
+
+					if (blocked) continue;
+					
 					cityMap[xx, yy] = CityViewMap.Road;
 				}
 
@@ -605,36 +636,36 @@ namespace CivOne.Screens
 			if (_city.Wonders.Any(b => b is Pyramids))
 			{
 				DrawWonder<Pyramids>();
-				if (!(_production is Pyramids))
+				if (_production is not Pyramids)
 					DrawWonder<Pyramids>(_overlay);
 			}
 			if (_city.Wonders.Any(b => b is Colossus))
 			{
 				DrawWonder<Colossus>();
-				if (!(_production is Colossus))
+				if (_production is not Colossus)
 					DrawWonder<Colossus>(_overlay);
 			}
 			if (_city.Wonders.Any(b => b is GreatWall))
 			{
 				DrawWonder<GreatWall>();
-				if (!(_production is GreatWall))
+				if (_production is not GreatWall)
 					DrawWonder<GreatWall>(_overlay);
 			}
 			if (_city.Wonders.Any(b => b is HooverDam))
 			{
 				DrawWonder<HooverDam>();
-				if (!(_production is HooverDam))
+				if (_production is not HooverDam)
 					DrawWonder<HooverDam>(_overlay);
 			}
 
 			if (_city.Buildings.Any(b => b is Aqueduct))
 			{
 				DrawBuilding<Aqueduct>();
-				if (!(_production is Aqueduct))
+				if (_production is not Aqueduct)
 					DrawBuilding<Aqueduct>(_overlay);
 			}
 
-			int stage = (int)Math.Floor((double)(Game.GetPlayer(_city.Owner).Advances.Count() - 9) / 2);
+			int stage = (int)Math.Floor((double)(Game.GetPlayer(_city.CityOwnerPlayerIndex)!.Advances.Length - 9) / 2);
 			for (int xx = 0; xx < 18; xx++)
 			for (int yy = 10; yy >= 0; yy--)
 			{
@@ -647,20 +678,20 @@ namespace CivOne.Screens
 						int centerDistance = Math.Max(Math.Abs(9 - xx), yy);
 						if (stage >= 20)
 						{
-							if (_city.Size > 8 && Common.Random.Next((_city.Size - 7) * 2) > centerDistance)
+							if (_city.Size > 8 && RandomService.NextInt((_city.Size - 7) * 2) > centerDistance)
 							{
-								if (Common.Random.Next(10) > 5)
+								if (RandomService.NextInt(10) > 5)
 								{
-									building = Resources["CITYPIX1"][1 + (32 * 8), (Common.Random.Next(10) > 5) ? 1 : 33, 31, 31];
+									building = Resources["CITYPIX1"][1 + (32 * 8), (RandomService.NextInt(10) > 5) ? 1 : 33, 31, 31];
 								}
 								else
 								{
-									building = Resources["CITYPIX1"][1 + (32 * 9), (Common.Random.Next(10) > 5) ? 1 : 33, 31, 31];
+									building = Resources["CITYPIX1"][1 + (32 * 9), (RandomService.NextInt(10) > 5) ? 1 : 33, 31, 31];
 								}
 							}
 							else
 							{
-								if (Common.Random.Next(10) > 5)
+								if (RandomService.NextInt(10) > 5)
 								{
 									building = Resources["CITYPIX1"][1 + (32 * 6), 33, 31, 31];
 								}
@@ -672,9 +703,9 @@ namespace CivOne.Screens
 						}
 						else if (stage >= 16)
 						{
-							if (Common.Random.Next(stage - 16) > centerDistance)
+							if (RandomService.NextInt(stage - 16) > centerDistance)
 							{
-								if (Common.Random.Next(10) > 5)
+								if (RandomService.NextInt(10) > 5)
 								{
 									building = Resources["CITYPIX1"][1 + (32 * 6), 1, 31, 31];
 								}
@@ -685,7 +716,7 @@ namespace CivOne.Screens
 							}
 							else
 							{
-								if (Common.Random.Next(10) > 5)
+								if (RandomService.NextInt(10) > 5)
 								{
 									building = Resources["CITYPIX1"][1 + (32 * 4), 33, 31, 31];
 								}
@@ -697,9 +728,9 @@ namespace CivOne.Screens
 						}
 						else if (stage >= 7)
 						{
-							if (Common.Random.Next(stage - 7) > centerDistance)
+							if (RandomService.NextInt(stage - 7) > centerDistance)
 							{
-								if (Common.Random.Next(10) > 5)
+								if (RandomService.NextInt(10) > 5)
 								{
 									building = Resources["CITYPIX1"][1 + (32 * 4), 1, 31, 31];
 								}
@@ -710,7 +741,7 @@ namespace CivOne.Screens
 							}
 							else
 							{
-								if (Common.Random.Next(10) > 5)
+								if (RandomService.NextInt(10) > 5)
 								{
 									building = Resources["CITYPIX1"][1 + (32 * 2), 33, 31, 31];
 								}
@@ -722,11 +753,11 @@ namespace CivOne.Screens
 						}
 						else if (stage >= 1)
 						{
-							if (Common.Random.Next(stage) > centerDistance)
+							if (RandomService.NextInt(stage) > centerDistance)
 							{
-								if (Common.Random.Next(10) > 5)
+								if (RandomService.NextInt(10) > 5)
 								{
-									if (Common.Random.Next((stage - 5) * 4) > centerDistance)
+									if (RandomService.NextInt((stage - 5) * 4) > centerDistance)
 									{
 										building = Resources["CITYPIX1"][1 + (32 * 2), 33, 31, 31];
 									}
@@ -737,7 +768,7 @@ namespace CivOne.Screens
 								}
 								else
 								{
-									if (Common.Random.Next((stage - 5) * 4) > centerDistance)
+									if (RandomService.NextInt((stage - 5) * 4) > centerDistance)
 									{
 										building = Resources["CITYPIX1"][1 + (32 * 3), 33, 31, 31];
 									}
@@ -754,7 +785,7 @@ namespace CivOne.Screens
 						}
 						else
 						{
-							if (Common.Random.Next((-3 - stage)) > centerDistance)
+							if (RandomService.NextInt(-3 - stage) > centerDistance)
 							{
 								building = Resources["CITYPIX1"][1 + (32 * _houseType), 33, 31, 31];
 							}
@@ -780,8 +811,8 @@ namespace CivOne.Screens
 						int sy = 65;
 						if (sx == 0) continue;
 						if (sx > 7) sy += 8;
-						sx = (sx % 8) * 24;
-						if (Game.GetPlayer(_city.Owner).HasAdvance<Automobile>()) sy += 16;
+						sx = sx % 8 * 24;
+						if (Game.GetPlayer(_city.CityOwnerPlayerIndex)!.HasAdvance<Automobile>()) sy += 16;
 						building = Resources["CITYPIX1"][sx, sy, 24, 8];
 						dx -= 5;
 						dy += 24;
@@ -853,12 +884,24 @@ namespace CivOne.Screens
 			if (_city.Buildings.Any(b => b is CityWalls))
 			{
 				DrawBuilding<CityWalls>();
-				if (!(_production is CityWalls))
+				if (_production is not CityWalls)
 					DrawBuilding<CityWalls>( _overlay);
 			}
 		}
 
-		public static CityView Capture(City city, string [] message)
+		protected override void Dispose(bool disposing)
+		{
+			if (!disposing)
+			{
+				return;
+			}
+
+			_background.Dispose();
+			_overlay.Dispose();
+			base.Dispose(disposing);
+		}
+
+		public static CityView Capture(City city, string []? message)
 		{
 			return new CityView(city, message, captured: true);
 		}
@@ -883,10 +926,11 @@ namespace CivOne.Screens
 			return new CityView(city);
 		}
 
-		public CityView(City city, string[] message = null, bool showFoundedScreen = false, bool firstView = false, IProduction production = null, bool captured = false, bool disorder = false, bool weLovePresidentDay = false)
+		public CityView(City city, string[]? message = null, bool showFoundedScreen = false, bool firstView = false, IProduction? production = null, bool captured = false, bool disorder = false, bool weLovePresidentDay = false)
 		{
 			_dialogText = TextSettings.ShadowText(15, 5);
 			_dialogText.FontId = 5;
+			_skip = false;
 
 			_city = city;
 			_production = production;
@@ -900,7 +944,7 @@ namespace CivOne.Screens
 			if (showFoundedScreen) return;
 
 			DrawBuildings();
-			this.AddLayer(_background);
+			RenderBase();
 
 			// ReSharper disable once AssignmentInConditionalExpression
 			if (_captured = captured)
@@ -928,7 +972,7 @@ namespace CivOne.Screens
 				_invadersOrRevolters = new Picture[10];
 				for (int ii = 0; ii < 10; ii++)
 				{
-					int frameX = (ii % 4);
+					int frameX = ii % 4;
 					int frameY = (ii - frameX) / 4;
 					_invadersOrRevolters[ii] = invaders[xx + (frameX * (ww + 1)), yy + (frameY * (hh + 1)), ww, hh];
 				}
@@ -958,12 +1002,12 @@ namespace CivOne.Screens
 				_invadersOrRevolters = new Picture[10];
 				for (int ii = 0; ii < 10; ii++)
 				{
-					int frameX = (ii % 4);
+					int frameX = ii % 4;
 					int frameY = (ii - frameX) / 4;
 					_invadersOrRevolters[ii] = revolters[xx + (frameX * (ww + 1)), yy + (frameY * (hh + 1)), ww, hh];
 				}
 				_x = 0;
-				string[] lines = { "Civil disorder in", $"{city.Name}! Mayor", "flees in panic." };
+				string[] lines = TranslateFormattedArray("Civil disorder in\n{0}! Mayor\nflees in panic.", city.Name);
 				drawMessage(lines);
 			}
 
@@ -972,48 +1016,51 @@ namespace CivOne.Screens
 			{
 				int xx = 1, yy = 1, ww = 78, hh = 65;
 
-				var resourceName = (Game.CurrentPlayer.HasAdvance<Conscription>()) ? "LOVE2" : "LOVE1";
+				var resourceName = Game.CurrentPlayer.HasAdvance<Conscription>() ? "LOVE2" : "LOVE1";
 				Picture marchers = Resources[resourceName];
 
 				_invadersOrRevolters = new Picture[10];
 				for (int ii = 0; ii < 10; ii++)
 				{
-					int frameX = (ii % 4);
+					int frameX = ii % 4;
 					int frameY = (ii - frameX) / 4;
 					_invadersOrRevolters[ii] = marchers[xx + (frameX * (ww + 1)), yy + (frameY * (hh + 1)), ww, hh];
 				}
 				_x = 240;
 
-				string leaderTitle = "President";
+				string leaderTitle = Translate("President");
 				if (Game.CurrentPlayer.Government is Governments.Monarchy)
-					leaderTitle = "King";
+					leaderTitle = Translate("King");
 				if (Game.CurrentPlayer.Government is Governments.Communism)
-					leaderTitle = "Comrade";
+					leaderTitle = Translate("Comrade");
 				if (Game.CurrentPlayer.Government is Despotism)
-					leaderTitle = "Emperor";
+					leaderTitle = Translate("Emperor");
 
-				string[] lines = { "'We Love the " + leaderTitle + "'", "day celebrated in", $"{city.Name}!" };
+				string[] lines = TranslateFormattedArray("'We Love the {0}'\nday celebrated in\n{1}!", leaderTitle, city.Name);
 				drawMessage(lines);
 			}
 
-			if (production != null)
+			if (production is ICivilopedia civilopedia)
 			{
 				_noiseMap = new byte[320, 200];
 				for (int x = 0; x < 320; x++)
+				{
 					for (int y = 0; y < 200; y++)
 					{
-						_noiseMap[x, y] = (byte)Common.Random.Next(1, NOISE_COUNT);
+						_noiseMap[x, y] = (byte)RandomService.NextInt(1, NOISE_COUNT);
 					}
+				}
 
-				string[] lines = { $"{_city.Name} builds", $"{(production as ICivilopedia).Name}." };
+				string[] lines = TranslateFormattedArray("{0} builds\n{1}.", _city.Name, civilopedia.TranslatedName);
 				int width = lines.Max(l => Resources.GetTextSize(5, l).Width) + 12;
-				Picture dialog = new Picture(width, 39)
+				using Picture dialog = new(width, 39);
+				dialog
 					.Tile(Pattern.PanelGrey, 1, 1)
 					.DrawRectangle()
 					.DrawRectangle3D(1, 1, width - 2, 37)
 					.DrawText(lines[0], 5, 6, _dialogText)
-					.DrawText(lines[1], 5, 21, _dialogText)
-					.As<Picture>();
+					.DrawText(lines[1], 5, 21, _dialogText);
+					
 
 				foreach (Picture picture in new[] { _background, _overlay })
 				{
@@ -1024,7 +1071,7 @@ namespace CivOne.Screens
 
 			if (captured) return;
 
-			this.DrawText(_city.Name, 5, 5, 161, 3, TextAlign.Center)
+			_background.DrawText(_city.Name, 5, 5, 161, 3, TextAlign.Center)
 				.DrawText(_city.Name, 5, 15, 160, 2, TextAlign.Center)
 				.DrawText(Game.GameYear, 5, 5, 161, 16, TextAlign.Center)
 				.DrawText(Game.GameYear, 5, 15, 160, 15, TextAlign.Center);
@@ -1044,23 +1091,23 @@ namespace CivOne.Screens
 			{
 				if (group != (group = Common.CitizenGroup(citizen)) && group > 0) offsetX += 8;
 
-				int sx = ((int)(citizen) * 35) + 1, sy = (modern ? 1 : 52);
-				int sw = 34, sh = (modern ? 50 : 52);
-				int dx = (int)(citizen) + offsetX + (11 * i++), dy = 140;
-				this.AddLayer(Resources["POP"][sx, sy, sw, sh], dx, dy);
+				int sx = ((int)citizen * 35) + 1, sy = modern ? 1 : 52;
+				int sw = 34, sh = modern ? 50 : 52;
+				int dx = (int)citizen + offsetX + (11 * i++), dy = 140;
+				_background.AddLayer(Resources["POP"][sx, sy, sw, sh], dx, dy);
 			}
 
 			void drawMessage(string[] lines)
 			{
 				int width = lines.Max(l => Resources.GetTextSize(5, l).Width) + 12;
-				Picture dialog = new Picture(width, 54)
+				using Picture dialog = new(width, 54);
+				dialog
 					.Tile(Pattern.PanelGrey, 1, 1)
 					.DrawRectangle()
 					.DrawRectangle3D(1, 1, width - 2, 52)
 					.DrawText(lines[0], 5, 6, _dialogText)
 					.DrawText(lines[1], 5, 21, _dialogText)
-					.DrawText(lines[2], 5, 36, _dialogText)
-					.As<Picture>();
+					.DrawText(lines[2], 5, 36, _dialogText);
 
 				_background.AddLayer(dialog, 80, 8);
 			}

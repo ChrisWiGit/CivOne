@@ -10,15 +10,18 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.Tiles;
 using CivOne.Units;
+using CivOne.Services.Screen;
 
 namespace CivOne.Screens
 {
+	[ScreenResizeable]
 	internal class Overlay : BaseScreen
 	{
 		private struct HelpLabel
@@ -37,59 +40,97 @@ namespace CivOne.Screens
 		}
 
 		private bool _update = true;
-		private bool _interfaceHelp = false;
-		private bool _showTerrain = false;
+		private bool _interfaceHelp;
+		private bool _showTerrain;
 
 		private int _x, _y;
 
-		private bool _closing = false;
+		private bool _closing;
 
 		private IEnumerable<HelpLabel> HelpLabels
 		{
 			get
 			{
 				IUnit startUnit = Game.GetUnits().First(x => Game.Human == x.Owner);
-				IUnit activeUnit = Game.ActiveUnit;
-				((GamePlay)Common.Screens.First(x => x is GamePlay)).Update(0);
-				int offset = 0;
+				IUnit? activeUnit = Game.ActiveUnit;
+				GamePlay gamePlay = (GamePlay)Common.Screens.First(x => x is GamePlay);
+				gamePlay.Update(0);
+
+				IUnit focusUnit = (activeUnit != null && activeUnit.Owner == Game.PlayerNumber(Human)) ? activeUnit : startUnit;
+				int mapOffsetX = Settings.RightSideBar ? 0 : 80;
+				const int mapOffsetY = 8;
+				int mapWidth = Math.Max(0, gamePlay.Width() - 80);
+				int mapHeight = Math.Max(0, gamePlay.Height() - 8);
+				int mapCenterX = mapOffsetX + (mapWidth / 2);
+				int mapWindowPointX = Settings.RightSideBar
+					? mapOffsetX + Math.Max(8, mapWidth - 8)
+					: Math.Max(8, mapOffsetX - 32);
+				int mapWindowPointY = mapOffsetY + 24;
+				int referenceCenterX = Settings.RightSideBar ? 120 : 200;
+				int labelShiftX = mapCenterX - referenceCenterX;
+				int tilesX = Math.Max(1, (int)Math.Ceiling((double)mapWidth / 16));
+				int tilesY = Math.Max(1, (int)Math.Ceiling((double)mapHeight / 16));
+				int mapX = gamePlay.X;
+				int mapY = gamePlay.Y;
+
+				int activeRelX = focusUnit.X - mapX;
+				while (activeRelX < 0) activeRelX += Map.WIDTH;
+				while (activeRelX >= Map.WIDTH) activeRelX -= Map.WIDTH;
+				int activeRelY = focusUnit.Y - mapY;
+				int activePointX = mapOffsetX + (activeRelX * 16) + 8;
+				int activePointY = mapOffsetY + (activeRelY * 16) + 8;
 				if (Settings.RightSideBar)
 				{
-					yield return new HelpLabel("Map Window", 148, 24, 272, 32);
-					yield return new HelpLabel("Menu Bar", 61, 16, 160, 6);
-					yield return new HelpLabel("Active Unit", 158, 170, 280, 128);
-					offset = -80;
+					yield return new HelpLabel(Translate("Map Window"), 148 + labelShiftX, 24, mapWindowPointX, mapWindowPointY);
+					yield return new HelpLabel(Translate("Menu Bar"), 61 + labelShiftX, 16, 160 + labelShiftX, 6);
+					yield return new HelpLabel(Translate("Active Unit"), 158 + labelShiftX, 170, activePointX, activePointY);
 				}
 				else
 				{
-					yield return new HelpLabel("Map Window", 88, 24, 48, 32);
-					yield return new HelpLabel("Menu Bar", 201, 16, 160, 6);
-					yield return new HelpLabel("Active Unit", 88, 170, 40, 128);
+					yield return new HelpLabel(Translate("Map Window"), 88 + labelShiftX, 24, mapWindowPointX, mapWindowPointY);
+					yield return new HelpLabel(Translate("Menu Bar"), 201 + labelShiftX, 16, 160 + labelShiftX, 6);
+					yield return new HelpLabel(Translate("Active Unit"), 88 + labelShiftX, 170, activePointX, activePointY);
 				}
+
+				int labelCenterBaseX = mapCenterX - 30;
 				
 				for (int yy = -1; yy <= 1; yy++)
 				for (int xx = -1; xx <= 1; xx++)
 				{
 					if (xx == 0 && yy == 0) continue;
 					string text = string.Empty;
-					ITile tile = startUnit.Tile[xx, yy];
+					ITile tile = focusUnit.Tile[xx, yy];
 					switch (tile.Type)
 					{
-						case Terrain.Desert: text = (tile.Special ? "Oasis" : "Desert"); break;
-						case Terrain.Plains: text = (tile.Special ? "Horses" : "Plains"); break;
-						case Terrain.Forest: text = (tile.Special ? "Game" : "Desert"); break;
-						case Terrain.Hills: text = (tile.Special ? "Coal" : "Hills"); break;
-						case Terrain.Mountains: text = (tile.Special ? "Gold" : "Mountains"); break;
-						case Terrain.Tundra: text = (tile.Special ? "Game" : "Tundra"); break;
-						case Terrain.Arctic: text = (tile.Special ? "Seals" : "Arctic"); break;
-						case Terrain.Swamp: text = (tile.Special ? "Oil" : "Swamp"); break;
-						case Terrain.Jungle: text = (tile.Special ? "Gems" : "Jungle"); break;
-						case Terrain.Ocean: text = (tile.Special ? "Fish" : "Ocean"); break;
-						case Terrain.River: text = "River"; break;
+						case Terrain.Desert: text = (tile.Special ? Translate("Oasis") : Translate("Desert")); break;
+						case Terrain.Plains: text = (tile.Special ? Translate("Horses") : Translate("Plains")); break;
+						case Terrain.Forest: text = (tile.Special ? Translate("Game") : Translate("Desert")); break;
+						case Terrain.Hills: text = (tile.Special ? Translate("Coal") : Translate("Hills")); break;
+						case Terrain.Mountains: text = (tile.Special ? Translate("Gold") : Translate("Mountains")); break;
+						case Terrain.Tundra: text = (tile.Special ? Translate("Game") : Translate("Tundra")); break;
+						case Terrain.Arctic: text = (tile.Special ? Translate("Seals") : Translate("Arctic")); break;
+						case Terrain.Swamp: text = (tile.Special ? Translate("Oil") : Translate("Swamp")); break;
+						case Terrain.Jungle: text = (tile.Special ? Translate("Gems") : Translate("Jungle")); break;
+						case Terrain.Ocean: text = (tile.Special ? Translate("Fish") : Translate("Ocean")); break;
+						case Terrain.River: text = Translate("River"); break;
 						case Terrain.Grassland1:
-						case Terrain.Grassland2: text = "Grassland"; break;
+						case Terrain.Grassland2: text = Translate("Grassland"); break;
 					}
-					if (tile.Hut) text = "Village";
-					yield return new HelpLabel(text, 170 + (65 * xx) + offset, 100 + (49 * yy), 200 + (xx * 16) + offset, 112 + (yy * 16));
+					if (tile.Hut) text = Translate("Village");
+
+					int relX = tile.X - mapX;
+					while (relX < 0) relX += Map.WIDTH;
+					while (relX >= Map.WIDTH) relX -= Map.WIDTH;
+
+					int relY = tile.Y - mapY;
+					if (relX < 0 || relY < 0 || relX >= tilesX || relY >= tilesY)
+					{
+						continue;
+					}
+
+					int pointX = mapOffsetX + (relX * 16) + 8;
+					int pointY = mapOffsetY + (relY * 16) + 8;
+					yield return new HelpLabel(text, labelCenterBaseX + (65 * xx), 100 + (49 * yy), pointX, pointY);
 				}
 			}
 		}
@@ -104,6 +145,8 @@ namespace CivOne.Screens
 
 			if (_update)
 			{
+				this.Clear();
+
 				if (_interfaceHelp)
 				{
 					foreach (HelpLabel helpLabel in HelpLabels)
@@ -111,12 +154,12 @@ namespace CivOne.Screens
 						Size textSize = Resources.GetTextSize(0, helpLabel.Text);
 
 						int ww = textSize.Width + 11, hh = textSize.Height + 9;
-						Picture label = new Picture(textSize.Width + 11, textSize.Height + 9)
+						using var label = new Picture(textSize.Width + 11, textSize.Height + 9);
+						label
 							.Tile(Pattern.PanelGrey)
 							.DrawRectangle()
 							.DrawRectangle3D(1, 1, ww - 2, hh - 2)
-							.DrawText(helpLabel.Text, 0, 15, 5, 5)
-							.As<Picture>();
+							.DrawText(helpLabel.Text, 0, 15, 5, 5);
 
 						this.DrawLine(helpLabel.PointX, helpLabel.PointY, helpLabel.X + 5, helpLabel.Y + 6, 15)
 							.AddLayer(label, helpLabel.X, helpLabel.Y);
@@ -128,13 +171,20 @@ namespace CivOne.Screens
 					int cx = Settings.RightSideBar ? 0 : 80;
 					int cy = 8;
 
-					this.AddLayer(Map[_x, _y, 15, 12].ToBitmap(TileSettings.Terrain, Human), cx, cy, dispose: true);
+					using var bit = Map[_x, _y, 15, 12].ToBitmap(TileSettings.Terrain, Human);
+					this.AddLayer(bit, cx, cy, dispose: true);
 				}
 
 				_update = false;
 				return true;
 			}
 			return false;
+		}
+
+		protected override void Resize(int width, int height)
+		{
+			base.Resize(width, height);
+			_update = true;
 		}
 		
 		public override bool KeyDown(KeyboardEventArgs args)
@@ -157,14 +207,6 @@ namespace CivOne.Screens
 			}
 			Destroy();
 			return true;
-		}
-
-		public static Overlay Empty
-		{
-			get
-			{
-				return new Overlay();
-			}
 		}
 
 		public static Overlay InterfaceHelp
@@ -190,7 +232,7 @@ namespace CivOne.Screens
 
 		private Overlay() : base(MouseCursor.Pointer)
 		{	
-			Palette = Common.TopScreen.Palette.Copy();
+			Palette = ScreenServiceFactory.CreateQueryService().TopScreen!.Palette.Copy();
 		}
 	}
 }

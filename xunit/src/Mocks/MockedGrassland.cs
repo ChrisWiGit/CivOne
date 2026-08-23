@@ -5,12 +5,15 @@ using System;
 namespace CivOne.UnitTests
 {
 
-    class MockedGrassland : Grassland, ITile
+    sealed class MockedGrassland : Grassland, ITile
     {
-        private IUnit[] _units = Array.Empty<IUnit>();
+        private IUnit[] _units = [];
 
 
         public MockedGrassland()
+        {
+        }
+        public MockedGrassland(int x, int y) : base(x, y)
         {
         }
 
@@ -21,5 +24,10 @@ namespace CivOne.UnitTests
         }
 
         public override IUnit[] Units => _units;
+
+        public ITile[,] MockedMap { get; set; } = new ITile[1, 1];
+
+        public new ITile this[int relativeX, int relativeY] => MockedMap[X + relativeX, Y + relativeY];
+		
     }
 }

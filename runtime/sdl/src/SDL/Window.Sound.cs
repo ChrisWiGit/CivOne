@@ -7,13 +7,17 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace CivOne
 {
+	#pragma warning disable S101 // Types should be named in PascalCase - but these are named to match SDL as a name.
 	internal static partial class SDL
 	{
 		internal abstract partial class Window
 		{
-			private Wave _currentSound = null;
+			[SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed", Justification = "_currentSound is disposed by StopSound, which is called in the destructor and in PlaySound, and is protected against concurrent access by atomic swap.")]
+			private Wave? _currentSound;
 
 			private void HandleSound()
 			{
@@ -32,12 +36,11 @@ namespace CivOne
 
 			protected void StopSound()
 			{
-				// it is a best practice to make a copy of the current sound
-				// before disposing it, as HandleSound() may be called in another thread
-				// in the future.
-				Wave sound = _currentSound;
-				_currentSound = null;
-				sound.Dispose();
+				if (_currentSound == null) return;
+				// Atomic swap: protects against concurrent StopSound/PlaySound and against
+				// callers invoking StopSound when no sound is active (NullReferenceException).
+				Wave sound = System.Threading.Interlocked.Exchange(ref _currentSound, null);
+				sound?.Dispose();
 			}
 		}
 	}

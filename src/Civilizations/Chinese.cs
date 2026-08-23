@@ -9,34 +9,33 @@
 
 using CivOne.Enums;
 using CivOne.Leaders;
+using CivOne.Services;
 
 namespace CivOne.Civilizations
 {
 	internal class Chinese : BaseCivilization<Mao>
 	{
-		public Chinese() : base(Civilization.Chinese, "Chinese", "Chinese", "mao")
+		public Chinese() : base(Civilization.Chinese, TranslationServiceFactory.GetCurrent().Translate("Chinese"), TranslationServiceFactory.GetCurrent().Translate("Chinese"), "mao")
 		{
 			StartX = 66;
 			StartY = 19;
-			CityNames = new[]
-			{
-				"Peking",
-				"Shanghai",
-				"Canton",
-				"Nanking",
-				"Tsingtao",
-				"Hangchow",
-				"Tientsin",
-				"Tatung",
-				"Macao",
-				"Anyang",
-				"Shantung",
-				"Chinan",
-				"Kaifeng",
-				"Ningpo",
-				"Paoting",
-				"Yangchow"
-			};
+			CityNames = TranslateArray(
+				"Peking\n" +
+				"Shanghai\n" +
+				"Canton\n" +
+				"Nanking\n" +
+				"Tsingtao\n" +
+				"Hangchow\n" +
+				"Tientsin\n" +
+				"Tatung\n" +
+				"Macao\n" +
+				"Anyang\n" +
+				"Shantung\n" +
+				"Chinan\n" +
+				"Kaifeng\n" +
+				"Ningpo\n" +
+				"Paoting\n" +
+				"Yangchow");
 		}
 	}
 }

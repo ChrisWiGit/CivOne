@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public RailRoad() : base(3, 0, 1, Advance.SteamEngine, Advance.BridgeBuilding)
 		{
 			Name = "RailRoad";
+			TranslatedName = Translate("RailRoad");
 			Type = Advance.RailRoad;
 		}
 	}

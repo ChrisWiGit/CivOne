@@ -14,7 +14,7 @@ namespace CivOne.Units
 {
 	internal class Bomber : BaseUnitAir
 	{
-		private static readonly byte MAX_MOVES = 8;
+		private const byte MAX_MOVES = 8;
 		public override void Explore()
 		{
 			Explore(2);
@@ -51,6 +51,7 @@ namespace CivOne.Units
 		{
 			Type = UnitType.Bomber;
 			Name = "Bomber";
+			TranslatedName = Translate("Bomber");
 			RequiredTech = new AdvancedFlight();
 			ObsoleteTech = null;
 			SetIcon('A', 1, 2);

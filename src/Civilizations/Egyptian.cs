@@ -9,34 +9,33 @@
 
 using CivOne.Enums;
 using CivOne.Leaders;
+using CivOne.Services;
 
 namespace CivOne.Civilizations
 {
 	internal class Egyptian : BaseCivilization<Ramesses>
 	{
-		public Egyptian() : base(Civilization.Egyptians, "Egyptian", "Egyptians", "rams")
+		public Egyptian() : base(Civilization.Egyptians, TranslationServiceFactory.GetCurrent().Translate("Egyptian"), TranslationServiceFactory.GetCurrent().Translate("Egyptians"), "rams")
 		{
 			StartX = 41;
 			StartY = 24;
-			CityNames = new[]
-			{
-				"Thebes",
-				"Memphis",
-				"Oryx",
-				"Heliopolis",
-				"Gaza",
-				"Alexandria",
-				"Byblos",
-				"Cairo",
-				"Coptos",
-				"Edfu",
-				"Pithom",
-				"Busirus",
-				"Athribus",
-				"Mendes",
-				"Tanis",
-				"Abydos"
-			};
+			CityNames = TranslateArray(
+				"Thebes\n" +
+				"Memphis\n" +
+				"Oryx\n" +
+				"Heliopolis\n" +
+				"Gaza\n" +
+				"Alexandria\n" +
+				"Byblos\n" +
+				"Cairo\n" +
+				"Coptos\n" +
+				"Edfu\n" +
+				"Pithom\n" +
+				"Busirus\n" +
+				"Athribus\n" +
+				"Mendes\n" +
+				"Tanis\n" +
+				"Abydos");
 		}
 	}
 }

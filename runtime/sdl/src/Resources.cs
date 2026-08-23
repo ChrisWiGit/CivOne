@@ -17,44 +17,37 @@ using CivOne.Graphics.ImageFormats;
 
 namespace CivOne
 {
-	internal class Resources
+	internal static class Resources
 	{
-		private static Assembly CurrentAssembly { get; } = AppDomain.CurrentDomain.GetAssemblies().First(x => x.FullName.StartsWith("CivOne.SDL,"));
+		private static Assembly CurrentAssembly { get; } = AppDomain.CurrentDomain.GetAssemblies().First(x => x.FullName?.StartsWith("CivOne.SDL,", StringComparison.OrdinalIgnoreCase) ?? false);
 
-		private static Stream GetInternalResource(string name) => CurrentAssembly.GetManifestResourceStream($"CivOne.Resources.{name}");
+		private static Stream GetInternalResource(string name) => CurrentAssembly.GetManifestResourceStream($"CivOne.Resources.{name}") ?? throw new InvalidOperationException($"Resource '{name}' not found.");
 
 		private static Stream HelpTextTxt => GetInternalResource("HelpText.txt");
 
 		private static Stream WindowIcon => GetInternalResource("WindowIcon.gif");
 
-		private static string GetResourceString(Stream resource)
+		private static string? GetResourceString(Stream resource)
 		{
-			using (Stream resourceStream = resource)
-			{
-				if (resourceStream == null) return null;
+			using Stream resourceStream = resource;
+			if (resourceStream == null) return null;
 
-				using (StreamReader sr = new StreamReader(resourceStream))
-				{
-					return sr.ReadToEnd();
-				}
-			}
+			using StreamReader sr = new(resourceStream);
+			return sr.ReadToEnd();
 		}
 
-		public static string BinPath => Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+		public static string? BinPath => Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location);
 		
-		public static IBitmap GetWindowIcon()
+		public static IBitmap? GetWindowIcon()
 		{
-			using (Stream resourceStream = WindowIcon)
-			using (MemoryStream ms = new MemoryStream())
-			{
-				resourceStream.CopyTo(ms);
-				using (GifFile gifFile = new GifFile(ms.ToArray()))
-				{
-					return gifFile.GetBitmap();
-				}
-			}
+			using Stream resourceStream = WindowIcon;
+			using MemoryStream ms = new MemoryStream();
+			resourceStream.CopyTo(ms);
+			using GifFile gifFile = new(ms.ToArray());
+			
+			return gifFile.GetNewBitmap();
 		}
 		
-		public static string HelpText => GetResourceString(HelpTextTxt);
+		public static string HelpText => GetResourceString(HelpTextTxt) ?? string.Empty;
 	}
 }

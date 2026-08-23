@@ -12,10 +12,9 @@ using CivOne.Enums;
 
 namespace CivOne.Events
 {
-	public delegate void KeyboardEventHandler(object sender, KeyboardEventArgs args);
-
 	public class KeyboardEventArgs : EventArgs
 	{
+		public new static readonly KeyboardEventArgs Empty = new(Key.None);
 		public Key Key { get; private set; }
 		public char KeyChar { get; private set; }
 		public KeyModifier Modifier { get; private set; }
@@ -23,6 +22,14 @@ namespace CivOne.Events
 		public bool Control => (Modifier & KeyModifier.Control) > 0;
 		public bool Alt => (Modifier & KeyModifier.Alt) > 0;
 		public bool Shift => (Modifier & KeyModifier.Shift) > 0;
+		/// <summary>
+		/// Special state for the Caps Lock key, which is not a modifier in the same sense 
+		/// as Control/Alt/Shift but is still relevant to track for input handling purposes.
+		/// Adding it to Modifier would break the semantics of Modifier as a bitfield of simultaneous modifiers, 
+		/// since code already checks for Alt or Control without expecting Caps Lock to be part of that, 
+		/// thus breaking existing hotkey handling logic.
+		/// </summary>
+		public bool CapsLock { get; internal set; }
 		public bool None => (Key == Key.None);
 
 		public bool this[Key key] => (Key == key);

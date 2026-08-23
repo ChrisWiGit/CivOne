@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public NuclearFission() : base(5, 0, 1, Advance.MassProduction, Advance.AtomicTheory)
 		{
 			Name = "Nuclear Fission";
+			TranslatedName = Translate("Nuclear Fission");
 			Type = Advance.NuclearFission;
 		}
 	}

@@ -16,6 +16,7 @@ namespace CivOne.Advances
 		public Refining() : base(6, 2, 0, Advance.Chemistry, Advance.TheCorporation)
 		{
 			Name = "Refining";
+			TranslatedName = Translate("Refining");
 			Type = Advance.Refining;
 		}
 	}

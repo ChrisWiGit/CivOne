@@ -19,7 +19,7 @@ namespace CivOne.Screens
 	{
 		private readonly Input _input;
 
-		private bool _done = false;
+		private bool _done;
 
 		public void Close()
 		{
@@ -28,7 +28,7 @@ namespace CivOne.Screens
 			Destroy();
 		}
 
-		public event EventHandler Accept, Cancel;
+		public event EventHandler? Accept, Cancel;
 
 		public override bool MouseDown(ScreenEventArgs args)
 		{
@@ -42,20 +42,20 @@ namespace CivOne.Screens
 			return true;
 		}
 
-		private void Input_Accept(object sender, EventArgs args)
+		private void Input_Accept(object? sender, EventArgs args)
 		{
 			_done = true;
 			Settings.WindowTitle = _input.Text;
-			Accept?.Invoke(this, null);
-			((Input)sender).Close();
+			Accept?.Invoke(this, EventArgs.Empty);
+			((Input?)sender)?.Close();
 			Close();
 		}
 
-		private void Input_Cancel(object sender, EventArgs args)
+		private void Input_Cancel(object? sender, EventArgs args)
 		{
 			_done = true;
-			Cancel?.Invoke(this, null);
-			((Input)sender).Close();
+			Cancel?.Invoke(this, EventArgs.Empty);
+			((Input?)sender)?.Close();
 			Close();
 		}
 
@@ -74,7 +74,7 @@ namespace CivOne.Screens
 
 			this.FillRectangle(64, 78, 225, 25, 5)
 				.FillRectangle(65, 79, 223, 23, 15)
-				.DrawText("Set window title...", 0, 5, 66, 80)
+				.DrawText(Translate("Set window title..."), 0, 5, 66, 80)
 				.FillRectangle(66, 88, 221, 14, 5)
 				.FillRectangle(67, 89, 219, 12, 15);
 

@@ -12,13 +12,14 @@ using CivOne.Enums;
 
 namespace CivOne.Units
 {
-	[Default]
+	[DefaultUnitProduction]
 	internal class Militia : BaseUnitLand
 	{
 		public Militia() : base(1, 1, 1, 1)
 		{
 			Type = UnitType.Militia;
 			Name = "Militia";
+			TranslatedName = Translate("Militia");
 			RequiredTech = null;
 			ObsoleteTech = new Gunpowder();
 			SetIcon('C', 0, 2);

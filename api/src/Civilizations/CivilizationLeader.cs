@@ -12,18 +12,16 @@ using CivOne.Enums;
 
 namespace CivOne.Civilizations
 {
-	public class CivilizationLeader : BaseAttribute
+	/// <summary>
+	/// Modify the civilization leader.
+	/// </summary>
+	/// <param name="leader">The new leader for this civilization.</param>
+	public sealed class CivilizationLeader(Leader leader) : BaseAttribute(typeof(Leader), leader, InRange)
 	{
 		private static bool InRange(object value) => Enum.IsDefined(typeof(Leader), value) && ((Leader)value) != Leader.Atilla;
 
-		public Leader Value => GetValue<Leader>();
+		public Leader Value => GetRequiredValue<Leader>();
 
-		/// <summary>
-		/// Modify the civilization leader.
-		/// </summary>
-		/// <param name="leader">The new leader for this civilization.</param>
-		public CivilizationLeader(Leader leader) : base(typeof(Leader), leader, InRange)
-		{
-		}
+		public Leader Leader => Value;
 	}
 }

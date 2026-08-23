@@ -20,21 +20,11 @@ namespace CivOne.Screens
 	[Break]
 	public class MissingFiles : BaseScreen
 	{
-		private readonly string[] _text = new string[]
-		{
-			"One or more data files are missing from the",
-			"data folder. CivOne works best with the",
-			"original Civilization for DOS data files.",
-			" ",
-			"What do you want to do?"
-		};
 		private bool _update = true;
 
-		private bool _success = false;
+		private bool _success;
 
 		private int _y;
-
-		private Menu _menu = null;
 
 		private void Menu_Continue(object sender, EventArgs args)
 		{
@@ -43,7 +33,7 @@ namespace CivOne.Screens
 
 		private void Menu_Copy(object sender, EventArgs args)
 		{
-			string path = Runtime.BrowseFolder("Location of Civilization data files");
+			string? path = Runtime.BrowseFolder(Translate("Location of Civilization data files"));
 			if (path == null)
 			{
 				// User pressed cancel
@@ -61,9 +51,9 @@ namespace CivOne.Screens
 				this.FillRectangle(0, 0, 320, 200, 8)
 					.FillRectangle(40, 50, 240, 100, 15);
 
-				this.DrawText("Succes!", 1, 2, 160, 54, TextAlign.Center);
+				this.DrawText(Translate("Succes!"), 1, 2, 160, 54, TextAlign.Center);
 
-				string[] text = new string[] { "Done copying the data files.", " ", "Press any key to start the game..." };
+				string[] text = TranslateArray("Done copying the data files.\n \nPress any key to start the game...");
 
 				for (int i = 0; i < text.Length; i++)
 				{
@@ -72,9 +62,9 @@ namespace CivOne.Screens
 			}
 			else
 			{
-				this.DrawText("Failed!", 1, 4, 160, 54, TextAlign.Center);
+				this.DrawText(Translate("Failed!"), 1, 4, 160, 54, TextAlign.Center);
 
-				string[] text = new string[] { "Copying the data files has failed.", "Please make sure you pointed to the correct", "data folder and try again.", " ", "Press any key to close the game..." };
+				string[] text = TranslateArray("Copying the data files has failed.\nPlease make sure you pointed to the correct\ndata folder and try again.\n \nPress any key to close the game...");
 
 				for (int i = 0; i < text.Length; i++)
 				{
@@ -94,9 +84,9 @@ namespace CivOne.Screens
 		
 		protected override bool HasUpdate(uint gameTick)
 		{
-			if (_menu == null)
+			if (GetMenu<Menu>() == null)
 			{
-				_menu = new Menu(Palette)
+				Menu menu = new Menu(Palette)
 				{
 					X = 44,
 					Y = _y,
@@ -107,13 +97,13 @@ namespace CivOne.Screens
 					Indent = 4
 				};
 
-				_menu.Items.AddRange(
-					MenuItem.Create("Continue without data files (not recommended)").OnSelect(Menu_Continue),
-					MenuItem.Create("Browse for data files").OnSelect(Menu_Copy),
-					MenuItem.Create("Quit").OnSelect(Menu_Quit)
+				menu.Items.AddRange(
+					MenuItem.Create(Translate("Continue without data files (not recommended)")).OnSelect(Menu_Continue),
+					MenuItem.Create(Translate("Browse for data files")).OnSelect(Menu_Copy),
+					MenuItem.Create(Translate("Quit")).OnSelect(Menu_Quit)
 				);
 				
-				AddMenu(_menu);
+				AddMenu(menu);
 				return true;
 			}
 
@@ -131,10 +121,12 @@ namespace CivOne.Screens
 		
 		public MissingFiles()
 		{
+			var _text = TranslateArray("One or more data files are missing from the\ndata folder. CivOne works best with the\noriginal Civilization for DOS data files.\n \nWhat do you want to do?");
+
 			Palette = Common.GetPalette256;
 			this.Clear(8)
 				.FillRectangle(40, 50, 240, 100, 15)
-				.DrawText("Warning!", 1, 4, 160, 54, TextAlign.Center);
+				.DrawText(Translate("Warning!"), 1, 4, 160, 54, TextAlign.Center);
 
 			for (int i = 0; i < _text.Length; i++)
 			{

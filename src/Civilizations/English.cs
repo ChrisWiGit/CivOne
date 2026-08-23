@@ -9,34 +9,33 @@
 
 using CivOne.Enums;
 using CivOne.Leaders;
+using CivOne.Services;
 
 namespace CivOne.Civilizations
 {
 	internal class English : BaseCivilization<Elizabeth>
 	{
-		public English() : base(Civilization.English, "English", "English", "eliz")
+		public English() : base(Civilization.English, TranslationServiceFactory.GetCurrent().Translate("English"), TranslationServiceFactory.GetCurrent().Translate("English"), "eliz")
 		{
 			StartX = 31;
 			StartY = 14;
-			CityNames = new[]
-			{
-				"London",
-				"Coventry",
-				"Birmingham",
-				"Dover",
-				"Nottingham",
-				"York",
-				"Liverpool",
-				"Brighton",
-				"Oxford",
-				"Reading",
-				"Exeter",
-				"Cambridge",
-				"Hastings",
-				"Canterbury",
-				"Banbury",
-				"Newcastle"
-			};
+			CityNames = TranslateArray(
+				"London\n" +
+				"Coventry\n" +
+				"Birmingham\n" +
+				"Dover\n" +
+				"Nottingham\n" +
+				"York\n" +
+				"Liverpool\n" +
+				"Brighton\n" +
+				"Oxford\n" +
+				"Reading\n" +
+				"Exeter\n" +
+				"Cambridge\n" +
+				"Hastings\n" +
+				"Canterbury\n" +
+				"Banbury\n" +
+				"Newcastle");
 		}
 	}
 }

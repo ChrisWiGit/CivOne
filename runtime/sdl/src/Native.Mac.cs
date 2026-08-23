@@ -8,18 +8,22 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace CivOne
 {
+	[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to open a file dialog does not crash the application, and that failure to open a URL or copy to clipboard does not crash the application or cause excessive logging.")]
 	internal partial class Native
 	{
-		private static string MacFolderBrowser(string caption)
+		private static string? MacFolderBrowser(string caption)
 		{
-			string scriptPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "OpenFolder.sh");
-			using (StreamWriter sw = new StreamWriter(scriptPath, false))
+			string? dirName = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+			if (dirName == null) return null;
+
+			string scriptPath = Path.Combine(dirName, "OpenFolder.sh");
+			using (StreamWriter sw = new(scriptPath, false))
 			{
 				sw.WriteLine("!#/bin/bash");
 				sw.WriteLine($@"osascript -e 'set getPath to choose folder with prompt ""{caption}""' -e 'set output to POSIX path of getPath'");
@@ -28,22 +32,114 @@ namespace CivOne
 
 			Process.Start("chmod", $@"+x ""{scriptPath}""");
 
-			Process process = new Process();
-			process.StartInfo = new ProcessStartInfo()
+			using Process process = new()
 			{
-				FileName = "/bin/sh",
-				Arguments = scriptPath,
-				RedirectStandardOutput = true,
-				UseShellExecute = false
+				StartInfo = new ProcessStartInfo()
+				{
+					FileName = "/bin/sh",
+					Arguments = scriptPath,
+					RedirectStandardOutput = true,
+					UseShellExecute = false
+				}
 			};
-			
+
 			process.Start();
-			string output = process.StandardOutput.ReadToEnd().Trim(new [] { '\n', '"' });
+			string output = process.StandardOutput.ReadToEnd().Trim(['\n', '"']);
 			process.WaitForExit();
 
 			if (output.Length == 0 || !Directory.Exists(output)) return null;
 
 			return output;
 		}
+
+		private static string? MacFileChooser(bool save, string title, string initialFileName, string filter)
+		{
+			string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+			if (path == null) return null;
+
+			string scriptPath = Path.Combine(path, "FileChooser.sh");
+
+			string appleScript = save
+				? BuildSaveScript(title, initialFileName)
+				: BuildOpenScript(title);
+
+			using (StreamWriter sw = new StreamWriter(scriptPath, false))
+			{
+				sw.WriteLine("#!/bin/bash");
+				sw.WriteLine(appleScript);
+				sw.Flush();
+			}
+
+			Process.Start("chmod", $@"+x ""{scriptPath}""");
+
+			using Process process = new()
+			{
+				StartInfo = new ProcessStartInfo()
+				{
+					FileName = "/bin/sh",
+					Arguments = scriptPath,
+					RedirectStandardOutput = true,
+					UseShellExecute = false
+				}
+			};
+
+			process.Start();
+			string output = process.StandardOutput.ReadToEnd().Trim(['\n', '"']);
+			process.WaitForExit();
+
+			if (output.Length == 0) return null;
+			if (!save && !File.Exists(output)) return null;
+
+			return output;
+		}
+
+		private static string BuildSaveScript(string title, string initialFileName)
+		{
+			string defaultName = string.IsNullOrEmpty(initialFileName)
+				? ""
+				: $" default name \"{initialFileName}\"";
+			return $"osascript -e 'set result to choose file name with prompt \"{title}\"{defaultName}' -e 'set output to POSIX path of result' -e 'return output'";
+		}
+
+		private static string BuildOpenScript(string title) =>
+			$"osascript -e 'set result to choose file with prompt \"{title}\"' -e 'set output to POSIX path of result' -e 'return output'";
+	private static bool MacTryOpenUrl(string url, out string errorMessage)
+	{
+		try
+		{
+			Process.Start("open", url);
+			errorMessage = string.Empty;
+			return true;
+		}
+		catch (System.Exception ex)
+		{
+			errorMessage = ex.Message;
+			return false;
+		}
 	}
+
+	private static bool MacTryCopyToClipboard(string text, out string errorMessage)
+	{
+		try
+		{
+			using var process = new Process();
+			process.StartInfo = new ProcessStartInfo()
+			{
+				FileName = "pbcopy",
+				UseShellExecute = false,
+				RedirectStandardInput = true
+			};
+			process.Start();
+			process.StandardInput.Write(text);
+			process.StandardInput.Close();
+			process.WaitForExit();
+			errorMessage = string.Empty;
+			return true;
+		}
+		catch (System.Exception ex)
+		{
+			errorMessage = ex.Message;
+			return false;
+		}
+	}	}
 }

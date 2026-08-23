@@ -7,11 +7,13 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using System;
+
 namespace CivOne.Civilizations
 {
-	public struct CivilizationName
+	public struct CivilizationName : IEquatable<CivilizationName>
 	{
-		internal bool Valid
+		internal readonly bool Valid
 		{
 			get
 			{
@@ -28,6 +30,31 @@ namespace CivOne.Civilizations
 		{
 			Name = name;
 			Plural = plural;
+		}
+
+		public override readonly bool Equals(object? obj)
+		{
+			return obj is CivilizationName other && Name == other.Name && Plural == other.Plural;
+		}
+
+		public override readonly int GetHashCode()
+		{
+			return HashCode.Combine(Name, Plural);
+		}
+
+		public static bool operator ==(CivilizationName left, CivilizationName right)
+		{
+			return left.Equals(right);
+		}
+
+		public static bool operator !=(CivilizationName left, CivilizationName right)
+		{
+			return !(left == right);
+		}
+
+		public readonly bool Equals(CivilizationName other)
+		{
+			return this == other;
 		}
 	}
 }

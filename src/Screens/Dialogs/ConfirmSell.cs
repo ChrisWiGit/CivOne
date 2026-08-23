@@ -10,6 +10,7 @@
 using System;
 using CivOne.Buildings;
 using CivOne.Graphics;
+using CivOne.Services;
 
 namespace CivOne.Screens.Dialogs
 {
@@ -17,28 +18,29 @@ namespace CivOne.Screens.Dialogs
 	{
 		public IBuilding Building { get; private set; }
 
-		public event EventHandler Sell;
+		public event EventHandler? Sell;
 
 		private void MenuYes(object sender, EventArgs args)
 		{
-			if (Sell != null)
-				Sell(this, args);
+			Sell?.Invoke(this, args);
 			Cancel();
 		}
 
-		protected override void FirstUpdate()
+		protected override IMenu? CreateManagedMenu()
 		{
 			Menu menu = new Menu(Palette, Selection(3, 20, TextWidth + 5, 20))
 			{
 				X = 131,
 				Y = 100,
+				CenterTo320Coordinates = true,
 				MenuWidth = TextWidth + 5,
 				ActiveColour = 11,
 				TextColour = 5,
 				FontId = 0
 			};
 			int i = 0;
-			foreach (string choice in new [] { "No.", "Yes." })
+			string[] choices = [Translate("No."), Translate("Yes.")];
+			foreach (string choice in choices)
 			{
 				menu.Items.Add(choice, i++);
 			}
@@ -47,10 +49,16 @@ namespace CivOne.Screens.Dialogs
 
 			menu.MissClick += Cancel;
 			menu.Cancel += Cancel;
-			AddMenu(menu);
+			return menu;
 		}
 
-		public ConfirmSell(IBuilding building) : base(128, 80, 9, 23, new string[] { "Do you want to sell", $"your {building.Name} for {building.SellPrice}$?" })
+		private static string[] MessageLines(IBuilding building)
+		{
+			return TranslationServiceFactory.GetCurrent()
+				.TranslateFormattedArray("Do you want to sell\nyour {0} for {1}$?", building.TranslatedName, building.SellPrice);
+		}
+
+		public ConfirmSell(IBuilding building) : base(128, 80, 9, 23, MessageLines(building))
 		{
 			Building = building;
 			

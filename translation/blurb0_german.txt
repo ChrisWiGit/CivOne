@@ -1,0 +1,661 @@
+# CivOne Translation File
+# CC-BY-SA 4.0
+# This file contains the German translation
+# This file was auto translated using ChatGPT. Please check for errors and report them to the project.
+*NAVIGATION
+Die Seefahrer der Antike studierten den Nachthimmel. Nach der Himmelskarte
+konnten sie außer Sicht der Küste segeln, denn bestimmte, verlässliche Sterne
+führten sie wieder heim. Diese rohe, praktische Anwendung der ASTRONOMIE ließ
+Wagemutige ins Unbekannte fahren, mit guter Aussicht, den Weg zu finden.
+Windgetriebene Schiffe wagten längere Reisen, gelockt von Wissen, HANDEL und
+neuen Siedlungen ferner Länder. Die Karten der bekannten Welt wuchsen, als
+die Lücken durch Berichte jener Seeleute gefüllt wurden, die NAVIGATION
+beherrschten.
+
+*CONSTRUCTION
+Über Lehmziegel und Mörtel für Häuser und Mauern hinausgehend, entwickelten
+antike Ingenieure neue Verfahren und Fertigkeiten im BAUWESEN, um stärkere
+und aufwendigere Bauten zu schaffen. Stein wurde zum bevorzugten Baumaterial.
+Diese neuen Kenntnisse ermöglichten Aquädukte, Stadtmauern, Paläste, Tempel,
+Brücken und Straßen, die vielerorts noch heute stehen, als Zeugnisse alter
+Baumeister. In CIVILIZATION erlaubt Bauwesen Siedler-Einheiten, Festungen zu
+bauen.
+
+*HORSEBACK RIDING
+Pferde wurden vermutlich zuerst in den großen Ebenen Nordasiens gezähmt.
+Berittene Reiter von dort wanderten in die zivilisierteren Teile Europas und
+Asiens ein und vertrieben oder versklavten oft die Bewohner. Wo Pferde
+gehalten werden konnten, war REITEN als Kraftquelle und Transportmittel äußerst
+nützlich. Im Kampf war es besonders wertvoll, da es den Reiter eindrucksvoller
+und beweglicher machte. Berittene Krieger gehörten zu den meisten Heeren, bis
+Fahrzeuge und Flugzeuge ihre Rolle als Späher und Kavallerie ersetzten.
+
+*CEREMONIAL BURIAL
+Auf der Suche nach einer Erklärung der Welt entwickelten die frühesten
+Menschen die ersten Begriffe von Religion. Diese frühen Formen der Verehrung
+sollten der Welt Ordnung geben und dem Menschen einen Platz im Universum
+zuweisen. Allmählich wurden die Riten feiner, mit Opfern, Zeremonien,
+Nachtwachen, Symbolen, heiligen Dingen und Gebet. Ein wichtiger Schritt war die
+ZEREMONIELLE BESTATTUNG, oft als Vorbereitung auf ein Jenseits. Ihre Überreste
+liefern einige der genauesten Hinweise auf vergangene Zivilisationen.
+
+*POTTERY
+Mit der Agrarrevolution verbunden und für sie unentbehrlich war die Erfindung
+der TÖPFEREI. Damit saisonale Ernten und Haustiere wirklich nützlich wurden,
+brauchte man feste und wasserdichte Behälter, um Überschüsse bis zum Bedarf zu
+schützen. Die Entdeckung von Ton, Brennofen und Töpferscheibe machte
+zuverlässige Gefäße möglich. TÖPFEREI war wesentlich für das Wachstum größerer
+Menschenmengen. Ohne sie wären Städte nicht möglich gewesen.
+
+*ALPHABET
+Ein ALPHABET ist eine Gruppe von Zeichen, die Phoneme darstellt, also Laute,
+die Menschen bilden oder unterscheiden können. Manche ALPHABETE stehen für
+Silben. Vorläufer moderner ALPHABETE waren die bildhaften und ideographischen
+Zeichen alter Völker, etwa Keilschrift und Hieroglyphen. Das westliche
+ALPHABET führt über die Römer zu den Griechen und weiter zu den Phöniziern
+zurück. Wichtig war das ALPHABET, weil Ideen nun auf Keramik gemalt, in Stein
+gemeißelt oder in Ton gedrückt werden konnten. Sie mussten nicht mehr von
+Angesicht zu Angesicht durch Stimme oder Zeichen getauscht werden.
+
+*ADVANCED FLIGHT
+Die Technik des FLUGES schritt im 20. Jahrhundert rasch voran, besonders in
+den beiden Weltkriegen, als die Kriegsparteien um Luftherrschaft rangen.
+FORTGESCHRITTENER FLUG war im Zweiten Weltkrieg eine Stärke der Deutschen.
+Sie entwickelten die ersten brauchbaren Düsenjäger, sehr weit reichende Bomber
+und die ersten Lenkraketen. Doch diese Neuerungen konnten nicht in genügender
+Zahl gebaut werden, um wirklich zu nützen. Die Alliierten produzierten weniger
+neuartige, aber zuverlässige Flugzeuge in Massen und gewannen den Luftkrieg.
+
+*ASTRONOMY
+Die vielleicht älteste Wissenschaft, ASTRONOMIE, entstand aus der Beobachtung
+regelmäßiger Himmelsbewegungen. Die ersten Astronomen waren Priester, die die
+Vorhersagbarkeit der Ereignisse oft zur Sicherung ihrer Macht nutzten.
+Griechische Schüler der ASTRONOMIE verstanden, dass die Sonne im Zentrum des
+Sonnensystems stand, schätzten Größe und Entfernung von Sonne und Mond
+vernünftig und bestimmten den Erdumfang recht genau. Diese Tatsachen wurden im
+Westen über tausend Jahre lang nicht wiederentdeckt. Später wurde ASTRONOMIE
+für Zeitmessung und NAVIGATION wichtig.
+
+*ATOMIC THEORY
+Griechische Philosophen vermuteten zuerst, Materie bestehe aus winzigen,
+unteilbaren Teilchen in ständiger Bewegung. Doch diese Idee war damals,
+besonders bei Aristoteles, unbeliebt und verschwand. Unabhängig davon wurde
+die ATOMTHEORIE im 19. Jahrhundert neu belebt. Fortschritte in der PHYSIK,
+vor allem die Quantenmechanik, erklärten das Verhalten von Elektronen und
+anderen subatomaren Teilchen zufriedenstellend. Das Verständnis der
+ATOMTHEORIE machte KERNSPALTUNG und Atomwaffen möglich.
+
+*AUTOMOBILE
+Die ersten brauchbaren AUTOMOBILE entstanden Ende des 19. Jahrhunderts, obwohl
+Versuche mit Dampfwagen schon mehr als hundert Jahre früher stattfanden. Die
+entscheidende Erfindung für den Erfolg war der innere VERBRENNUNGSMOTOR.
+Dieser kleine, aber starke Motor passte in den Rahmen der „pferdelosen
+Kutsche“ und trieb die Räder an. Das AUTOMOBIL beeinflusste Wirtschaft und
+Lebensstil der reichen westlichen Länder enorm und revolutionierte auch die
+Kriegführung. Bewaffnete, gepanzerte AUTOMOBILE, Panzer genannt, wurden zur
+beherrschenden Waffe auf dem Schlachtfeld.
+
+*BANKING
+Modernes BANKWESEN entstand in der Renaissance bei Kaufmannsfamilien der
+italienischen Stadtstaaten, die vom wachsenden HANDEL in Europa und mit dem
+Nahen Osten profitierten. Reiche Händler legten überschüssiges Geld in einer
+Bank zusammen und verliehen es gegen Zinsen an Unternehmen. Dieses Kapital für
+Investitionen machte viele neue Geschäfte möglich und beschleunigte das
+Wachstum. Nach der Industriellen Revolution wurde BANKWESEN noch wichtiger,
+da die neuen industriellen UNTERNEHMEN weit größere Kapitalanlagen brauchten.
+
+*BRIDGE BUILDING
+Ein wichtiges Maß für den Fortschritt einer Zivilisation waren innere
+BAUWESEN-Verbesserungen, die Handel und Verkehr erleichterten. Das Römische
+Reich war berühmt für Straßen, Aquädukte und andere Bauwerke, die die Grenzen
+mit der Hauptstadt verbanden. Der BRÜCKENBAU wurde von den Römern stark
+entwickelt und im Westen viel später von mittelalterlichen Ingenieuren neu
+entdeckt. Die erste EISEN-Brücke entstand Ende des 18. Jahrhunderts in
+England; danach entwickelten sich die Techniken rasch, um den wachsenden
+EISENBAHNEN des 19. Jahrhunderts zu dienen.
+
+*BRONZE WORKING
+BRONZE ist eine Legierung aus Kupfer und anderen Metallen, vor allem Zinn. Die
+Technik der BRONZEVERARBEITUNG wuchs aus Versuchen mit Kupfererz, das in alter
+Zeit oft rein genug für Metallarbeiten war. Experimente mit grünlichem
+Kupfererz führten zu Metallmischungen und BRONZE. Das neue Metall war viel
+nützlicher als Kupfer, denn es war härter, weniger spröde und hielt schärfere
+Kanten. Es ergab bessere, billigere Werkzeuge und eignete sich sehr für Waffen
+und Rüstung. Erste Völker mit BRONZE-Waffen hatten klare Vorteile gegenüber
+Stein oder Kupfer.
+
+*CHEMISTRY
+Die Grundlage moderner CHEMIE legte die Pseudowissenschaft Alchemie, die
+unedle Metalle mit Elixier oder Stein der Weisen in Gold und Silber verwandeln
+wollte. Alchemie tauchte immer wieder auf und verfiel, bis die echte
+Wissenschaft CHEMIE wirtschaftlich nützliche Anwendungen fand. CHEMIE wurde
+auch durch praktische Bedürfnisse der MEDIZIN und durch theoretische Fragen der
+Natur-PHILOSOPHIE gefördert.
+
+*CHIVALRY
+RITTERTUM war ein System sittlicher Ideale, das aus dem FEUDALISMUS erwuchs.
+Es gab der landbesitzenden Klasse berittener Krieger, den Rittern, einen
+Verhaltenskodex. Die wichtigsten ritterlichen Tugenden waren Frömmigkeit,
+Ehre, Tapferkeit, Höflichkeit, Keuschheit und Treue. Sie verbanden christliche
+und militärische Moral und wurden Grundlage vornehmer Lebensart. Der Höhepunkt
+des RITTERTUMS waren die Kreuzzüge, Invasionen des Nahen Ostens zur
+Rückgewinnung des Heiligen Landes von den Muslimen. Ritterorden wie Templer
+und Hospitaliter stärkten das RITTERTUM.
+
+*CODE OF LAWS
+Als Bevölkerung und Städte wuchsen, entstand der Bedarf nach Regeln für das
+Zusammenleben in den neu geordneten Gesellschaften. Nach der Entwicklung des
+ALPHABETS wurden diese Regeln samt Strafen niedergeschrieben. Die frühesten
+bekannten Gesetzbücher gab es in Babylon, Indien und Palästina. Römisches
+Recht unterschied erstmals zwischen öffentlichem Recht, an dem der Staat
+beteiligt ist, und Privatrecht für Streitigkeiten unter Bürgern. Das Recht der
+USA wurde stark von Sir William Blackstone beeinflusst, der die natürlichen
+Rechte des Einzelnen betonte.
+
+*COMBUSTION
+Die Entwicklung des inneren VERBRENNUNGSMOTORS war ein großer Fortschritt des
+Industriezeitalters. Gestützt auf flüchtige neue Brennstoffe aus der
+RAFFINATION von Öl lieferten diese kompakten Motoren große Kraft. Sie waren
+für AUTOMOBIL und Flugzeug unverzichtbar, da frühere Maschinen zu sperrig
+waren. Zudem erzeugte der innere VERBRENNUNGSMOTOR im Verhältnis zum
+verbrauchten Treibstoff sehr effizient Leistung, sodass Fahrzeuge, Flugzeuge
+und Schiffe brauchbare Entfernungen zurücklegen konnten.
+
+*COMMUNISM
+KOMMUNISMUS entwickelte sich als Gesellschaftsordnung, in der Grundbesitz
+(Land) und Produktionsmittel (Fabriken) allen gehören sollten. Versuche damit
+gab es früher mehrfach, doch der heutige KOMMUNISMUS entstand aus den oft
+entsetzlichen Lebensbedingungen der Fabrikarbeiter im Industriezeitalter. Die
+Empörung über die Gier der neuen Kapitalisten und die Armut der Arbeiter
+führte zum Kommunistischen Manifest von Marx und Engels, das eine klassenlose
+Gesellschaft vorhersagte. KOMMUNISMUS hat sein Versprechen einer egalitären
+Gesellschaft nach Arbeiterwerten bisher nicht erfüllt.
+
+*COMPUTERS
+Ein COMPUTER ist ein Gerät, das eine Folge arithmetischer oder logischer
+Operationen ausführen kann. Er unterscheidet sich vom Rechner dadurch, dass er
+programmierbar ist und Daten speichern und abrufen kann. COMPUTER wurden durch
+frühere Fortschritte der MATHEMATIK und laufende Entwicklungen der ELEKTRONIK
+möglich. Bedeutende Fortschritte in der COMPUTER-Technik geschehen mit
+staunlicher Geschwindigkeit. COMPUTER sind in vielen Bereichen nützlich und
+nötig: Großrechnungen, Unterhaltung, Datenspeicherung, Kryptographie und
+Steuerung von ROBOTERN.
+
+*CONSCRIPTION
+Die Zwangseinziehung zu den Streitkräften, die WEHRPFLICHT, wurde während der
+Revolution in Frankreich eingeführt. Die neue, von Feinden umgebene Regierung
+hielt sie für notwendig und gerecht. In der folgenden Ära nationaler
+Kriegsmobilmachung führten viele Staaten die WEHRPFLICHT in Kriegszeiten ein,
+darunter die meisten Großmächte der Weltkriege. In den USA blieb eine
+Friedens-WEHRPFLICHT nach dem Zweiten Weltkrieg fast 30 Jahre bestehen.
+
+*CURRENCY
+Als Städte wuchsen, wurden ihre Binnenwirtschaften komplizierter. Menschen
+spezialisierten sich: einige erzeugten Getreide, andere Töpferwaren, Ziegel
+usw. Ein Tauschsystem entstand, damit Waren und Dienste des einen gegen die
+eines anderen getauscht werden konnten. Aus dem Bedarf nach einem Tauschmittel
+und feineren Wegen, Kaufkraft zu speichern und Werte zu messen, kam WÄHRUNG in
+Gebrauch. Die erste befriedigende WÄHRUNG waren Münzen aus Elektron, einer
+natürlichen Legierung von Gold und Silber.
+
+*DEMOCRACY
+Eine Staatsform, in der alle Bürger an der Leitung des Staates mitwirken,
+wurde DEMOKRATIE genannt. Sie entstand zuerst in einigen antiken griechischen
+Stadtstaaten, wenn auch Sklaven und Frauen ausgeschlossen waren. Die modernen
+DEMOKRATIEN des Westens entwickelten sich über lange Zeit und reichen bis zur
+Magna Carta zurück, die König Johann von England im 13. Jahrhundert
+unterzeichnete. Regierung durch gewählte Volksvertreter wurde zum
+Grundgedanken moderner DEMOKRATIE. DEMOKRATIE ermöglichte nie gekannte
+persönliche und wirtschaftliche Freiheit und die bisher stärksten
+Volkswirtschaften der Welt.
+
+*ELECTRICITY
+Das Phänomen ELEKTRIZITÄT ist den Menschen seit jeher in Blitz, statischer
+ELEKTRIZITÄT und MAGNETISMUS begegnet, doch erst seit gut zweihundert Jahren
+wird die Energie geladener Teilchen genutzt. Elektrischer Strom ist ein Fluss
+von Elektronen aus einer elektromotorischen Kraft, etwa Batterie oder Generator,
+mit negativer Ladung. Der Strom fließt durch einen Leiter, zum Beispiel einen
+Kupferdraht, zu einem positiven Pol, der die Ladung anzieht. Dabei kann der
+elektrische Strom Kraft liefern und Arbeit verrichten.
+
+*ELECTRONICS
+ELEKTRONIK ist die Wissenschaft vom Verstehen und INGENIEURWESEN des
+gesteuerten Elektronenflusses in elektronischen Strömen. Wichtige Durchbrüche
+der ELEKTRONIK waren Elektronenröhre, Halbleiter, Transistor und integrierte
+Schaltungen. Sie ermöglichten COMPUTER, moderne Waffen, bessere Radars und
+Funkempfänger sowie wirksamere Techniken der Stromerzeugung und -übertragung.
+
+*ENGINEERING
+Die Wissenschaft des INGENIEURWESENS entstand bei Bauingenieuren, die Brücken,
+Straßen, Aquädukte und andere Bauten schufen, und bei Militäringenieuren, die
+Festungen und Waffen bauten. Mit der Zeit meinte INGENIEURWESEN Entwurf,
+BAUWESEN und Betrieb der Bauten und Maschinen von Industrie, Krieg und Alltag.
+Ingenieure setzten neue Erkenntnisse praktisch ein. Sie waren nicht nur mit
+den Händen, sondern auch mit dem Kopf geschickt. Der Problemlöser im
+INGENIEURWESEN entdeckte am ehesten eine neue ERFINDUNG und trieb das Wissen
+voran.
+
+*EXPLOSIVES
+SPRENGSTOFFE wurden bei Versuchen mit SCHIESSPULVER und CHEMIE entdeckt, auf
+der Suche nach stabilen, starken Chemikalien für Industrie und Militär. Ein
+SPRENGSTOFF ist eine Chemikalie, die rasch VERBRENNT und viel Hitze und Gas
+bildet. Die Hitze dehnt das Gas schnell aus und erzeugt den Druck einer
+Explosion. Manche SPRENGSTOFFE sind entzündete Brennstoffgemische. Andere
+enthalten instabile Moleküle, die sich in einer Detonation zersetzen. Erstere
+dienen als Treibmittel für Kugeln und Feuerwerk, letztere in Sprengköpfen und
+beim Felsensprengen.
+
+*FEUDALISM
+In den unruhigen Zeiten nach dem Zerfall von Karls Frankenreich entstand in
+Europa ein neues soziales und politisches System: FEUDALISMUS. Aus dem Begriff
+MONARCHIE abgeleitet, war es eine Hierarchie, in der jede Schicht den darüber
+stehenden Treue schuldete. Unten standen die Leibeigenen, die das Land für den
+örtlichen Gutsherrn bearbeiteten. Dieser verwaltete es für den Herrn über ihm,
+und so weiter bis zum König, dem eigentlich alles Land gehörte. Die Unteren
+wurden von den Oberen geschützt und dienten dafür ihren Herren. FEUDALISMUS
+führte zum Kodex des RITTERTUMS und zum berittenen Ritter.
+
+*FLIGHT
+Dauerhafte, eigengetriebene Bewegung durch die Luft, also FLUG, fasziniert die
+Menschen seit Urzeiten. Trotz vieler Experimente und Flugversuche gelang es
+erst nach Entwicklung des inneren VERBRENNUNGSMOTORS, die Gesetze der PHYSIK
+für diesen Traum nutzbar zu machen. Kurz nach Beginn des 20. Jahrhunderts
+unternahmen Orville und Wilbur Wright in Kitty Hawk, N.C., die ersten vier
+gesteuerten, anhaltenden Flüge. Die Technik des FLUGES entwickelte sich rasch.
+Schon nach wenigen Jahren umrundeten Flugzeuge die Erde und beförderten
+Passagiere und Post sicher mit Rekordgeschwindigkeit.
+
+*FUSION POWER
+Kern-FUSION ist der Vorgang, bei dem zwei Atomkerne zu einem schwereren Kern
+verschmelzen und dabei gewaltige Energie abgeben. Die Schwierigkeit der
+anhaltenden thermonuklearen Reaktion liegt in den sehr hohen Starttemperaturen
+und im Einschluss des Brennstoffs. Eine Teillösung der FUSION-Probleme könnte
+in der Entwicklung von SUPRALEITERN liegen. Kern-FUSION verspricht viel als
+Stromquelle, weil sicherer Brennstoff reichlich vorhanden ist und kein
+radioaktiver Abfall wie bei KERNSPALTUNG entsteht. In CIVILIZATION beseitigt
+FUSIONSKRAFT das Risiko einer Kernkraftwerks-Kernschmelze.
+
+*GENETIC ENGINEERING
+Eine Hoffnung bei der Suche nach Heilung für Krebs und viele andere Krankheiten
+und Störungen kommt aus der GENTECHNIK, einem neuen Feld von Wissenschaft und
+MEDIZIN. GENTECHNIK umfasst Verfahren zur Veränderung des Erbmaterials
+lebender Zellen. Gen-Spleißen transportiert Erbmaterial von einer Art zu einer
+anderen. Weitere Verfahren sind Zellfusion und Kerntransplantation. Die
+Hoffnung ist, dass DNA, das Grundmaterial allen Lebens, reparierbar und
+veränderbar wird. Dann wären genetische Störungen nicht mehr endgültig,
+sondern heilbar.
+
+*GUNPOWDER
+SCHIESSPULVER ist ein chemisches Gemisch aus Salpeter, Schwefel und Holzkohle.
+Beim Entzünden brennt es so schnell, dass es bei jeder Einengung explodiert.
+SCHIESSPULVER wurde vermutlich schon im 9. Jahrhundert von den Chinesen
+entwickelt, erreichte Europa aber erst im 14. Jahrhundert. Die Chinesen
+nutzten es offenbar fast nur für Feuerwerk, doch die konkurrierenden,
+kämpferischen Europäer machten daraus Waffen, die die Kriegführung
+revolutionierten. Musketiere und Kanonen beendeten die Vorherrschaft schwerer
+Kavallerie und auch wiederkehrende Barbareneinfälle aus Asien.
+
+*HORSEBACK RIDING
+Das PFERD wurde zuerst von Stämmen der asiatischen Steppen gezähmt. Sie
+nutzten es für Transport und Krieg und überwältigten mit seiner Hilfe die
+Protozivilisationen, die gerade in Südosteuropa und im Nahen Osten entstanden.
+REITEN wurde danach von den unterworfenen Völkern übernommen und begleitete die
+Ausbreitung der Zivilisation. Wo das PFERD gezüchtet werden konnte, war es für
+Transport und Landwirtschaft äußerst nützlich. Erst in den letzten hundert
+Jahren wurde das PFERD als Zugtier und Reittier der Kavallerie durch
+Motorfahrzeuge ersetzt.
+
+*INDUSTRIALIZATION
+Die Erfindung der DAMPFMASCHINE und anderer Technik, besonders der EISENBAHN,
+führte zur INDUSTRIALISIERUNG des Westens. INDUSTRIALISIERUNG bedeutete den
+Einsatz von Maschinen, um die Produktivität der Arbeiter stark zu steigern.
+Industrie sammelte sich in Fabriken, wodurch neue Produkte in riesigen Mengen
+verfügbar wurden. INDUSTRIALISIERUNG veränderte den Lebensstandard, nicht immer
+zum Guten. Die neue Arbeiterklasse erlitt oft ein hartes, untergeordnetes
+Dasein, das schließlich die Sozialphilosophie des KOMMUNISMUS und die
+praktischere ARBEITERUNION hervorbrachte. Beide sollten die Lage der Arbeiter
+verbessern.
+
+*INVENTION
+Die Ersinnung eines zuvor unbekannten Geräts, Verfahrens oder Prozesses heißt
+ERFINDUNG. Der Fortschritt technischen Wissens ist im Kern die Entdeckung
+neuer ERFINDUNGEN. Die Geschichte der Zivilisation zeigt, dass die Ausbreitung
+der ALPHABETISIERUNG und das Auftreten von INGENIEURWESEN-Spezialisten
+entscheidend für die Beschleunigung neuer Technik waren. INGENIEURWESEN ist
+der praktische Einsatz von ERFINDUNG, und diese Leute erkennen oft den Bedarf
+für weiteren Fortschritt und erreichen ihn. Der Fortschritt einer Gesellschaft
+misst sich daran, wie gut sie neue ERFINDUNGEN fördert und annimmt.
+
+*IRON WORKING
+Aufbauend auf der Erfahrung mit BRONZEVERARBEITUNG lernten alte Schmelzer die
+EISENVERARBEITUNG, die Herstellung und Bearbeitung eines weit nützlicheren
+Metalls. Eisenerz war im Vergleich zu Kupfer und Zinn sehr häufig, und EISEN
+war härter, weniger spröde und hielt eine viel schärfere Schneide. Es war ein
+ideales Material für Werkzeuge und Waffen. Manche sehen in der
+EISENVERARBEITUNG einen Schlüssel zum Fortschritt der Zivilisation. Sie machte
+Arbeiter viel wirksamer und erwies sich in vielen neuen Anwendungen als
+nützlich.
+
+*LABOR UNION
+Mit dem Aufstieg der MASSENPRODUKTION im Industriezeitalter verschob sich das
+Machtgleichgewicht zwischen Besitzern und Arbeitern zu stark zugunsten der
+Besitzer. Die wachsende Arbeiterklasse steckte oft in schlechten Arbeits- und
+Lebensbedingungen fest, während die Besitzer reich wurden. Als Antwort auf
+diese Ungerechtigkeit entstand die ARBEITERUNION: ein Versuch der Arbeiter,
+ihre Interessen zu bündeln und gemeinsam mit den Eigentümern über bessere
+Bedingungen und wirtschaftlichen Status zu verhandeln. Nach vielen Wirren
+konnten ARBEITERUNIONEN ein Machtgleichgewicht erreichen und die Lage der
+Arbeiter bessern.
+
+*LITERACY
+Die Entwicklung der SCHRIFT stellte ein entscheidendes neues Werkzeug für den
+Wissensfortschritt bereit, doch wie jedes Werkzeug nützte es nur, wenn es
+benutzt wurde. Je größer der Anteil der ALPHABETISIERTE an der Bevölkerung, desto
+mehr Vorteil ließ sich aus SCHRIFT ziehen. Wo nur Priester und Schreiber
+ALPHABETISIERTE waren, musste alles Wissen langsam durch direkten Kontakt
+weitergehen. War ein hoher Bevölkerungsanteil ALPHABETISIERT, wie im
+klassischen Griechenland, profitierte die Wirtschaft und der Wissensfortschritt
+beschleunigte sich.
+
+*MAGNETISM
+Die Anziehungs- oder Abstoßungskraft zwischen verschiedenen Stoffen, besonders
+Eisen, entsteht durch Bewegung elektrischer Ladungen und heißt MAGNETISMUS. Ein
+MAGNETISCHES Objekt besitzt meist zwei Pole, einen nordweisenden und einen
+südweisenden, so genannt, weil ein frei schwimmender MAGNET sich im
+MAGNETISCHEN Feld der Erde entlang einer Nord-Süd-Achse ausrichtet. MAGNETISMUS
+könnte in China entdeckt worden sein, doch seine wichtige Anwendung im
+Seemannskompass erfolgte im Europa des 12. Jahrhunderts. Spätere Arbeit mit
+MAGNETISMUS war wichtig für PHYSIK und ELEKTRIZITÄT.
+
+*MAPMAKING
+KARTOGRAPHIE war ein Nebenprodukt der Entwicklung des ALPHABETS. Mit dieser
+Technik wurde es möglich, die Lage wichtiger Orte und Merkmale auf Tierhäuten,
+Tontafeln, Baumrinde oder anderem Material festzuhalten und an andere
+weiterzugeben. Besonders nützlich war dies für Seeleute, die oft fern der
+Heimat an fremden Küsten fuhren und nur die KARTEN früherer Fahrer als Führer
+hatten. KARTOGRAPHIE förderte Reisen und Entdeckungen, weil sie das Risiko
+senkte. Sie war der Beginn jener Fertigkeiten, aus denen die Wissenschaft der
+NAVIGATION wurde.
+
+*MASONRY
+Das Zusammenströmen von Menschen in erste Städte verlangte dauerhafte Gebäude.
+Um diesen Bedarf zu decken, wurden manche neuen Stadtbewohner Experten der
+STEINMETZKUNST. Diese Technik nutzte Steine und Lehmziegel, die zu Gebäuden
+und Mauern verbunden wurden. Mit Erfahrung wurden die Bauten größer und
+aufwendiger, Mauern eindrucksvoller und die Arbeit dauerhafter und schöner.
+Jahre der Erfahrung führten zu feineren Techniken des BAUWESENS.
+
+*MASS PRODUCTION
+Nach Beginn der INDUSTRIALISIERUNG entwickelten Fabrikbesitzer neue Techniken,
+um die Produktion effizienter zu machen. Henry Ford wird ein großer
+Fortschritt zugeschrieben: die Einführung von MASSENPRODUKTION-Fließbändern in
+seinen AUTOMOBIL-Werken. Dabei wurde das Montageobjekt, ein Auto, auf
+Förderbändern zu den Arbeitsstationen gebracht, wo jeder Arbeiter geübt seinen
+Teil erledigte. Am Ende der Linie war der Wagen fertig. Solche Techniken
+steigerten die Produktivität der Arbeiter enorm, solange die Arbeiter zufrieden
+blieben.
+
+*MATHEMATICS
+Aus den frühesten ALPHABETEN wurden einige Zeichen zu Zahlzeichen. MATHEMATIK
+entstand aus den Bedürfnissen von Landwirtschaft und Handel, Mengen, Konten und
+Maße zu erfassen. Bauern mussten den Ertrag ihrer Felder kennen. Händler
+mussten wissen, was sie zum Tausch hatten und welche Wechselkurse galten.
+STEINMETZE mussten die Maße der Bauten kennen. Die Entwicklung der MATHEMATIK
+war entscheidend für den späteren Fortschritt der PHYSIK und anderer
+Wissenschaften.
+
+*MEDICINE
+Die Erforschung des Körpers und der Heilung wurde zuerst von den Griechen zur
+Wissenschaft entwickelt. Hippokrates, der Vater der MEDIZIN, gründete seine
+Studien des menschlichen Körpers auf Beobachtung und Vernunft. Seine Arbeiten
+waren nur einer von vielen Durchbrüchen aus der Blüte griechischer
+PHILOSOPHIE. Obwohl manche seiner Ansichten falsch waren, leisten viele
+Medizinstudenten nach dem Abschluss den Hippokratischen Eid und schwören, seine
+Grundsätze zu wahren. MEDIZIN und Alchemie waren Grundlagen der entstehenden
+Wissenschaft CHEMIE.
+
+*METALLURGY
+Die Wissenschaft der METALLURGIE wurde nach der Entwicklung des SCHIESSPULVERS
+besonders wichtig, als die europäischen Mächte um den neuesten Waffenvorsprung
+rangen. Forschung in METALLURGIE betrieben private Schmelzer und UNIVERSITÄTEN.
+Das Ergebnis waren Artillerie und Schiffsgeschütze, die allen anderen der Welt
+überlegen waren. Diese Entwicklung war ein wichtiger Faktor für den Aufstieg
+europäischer Staaten zu Weltmächten. METALLURGIE führte später zur Entdeckung
+von STAHL und anderen Metallen.
+
+*MONARCHY
+Die MONARCHIE entwickelte sich aus der absoluten Herrschaft des vorgeschicht-
+lichen Stammeshäuptlings. Dieser Absolutismus wurde zuerst zu einem erblichen,
+lebenslangen Herrschaftsrecht und später als göttliches Recht beansprucht. Die
+MONARCHIE wurde durch die Durchsetzung von GESETZEN möglich, die Herrscher und
+ihre Nutznießer schufen. Sie war praktischer als der Despotismus, den sie oft
+ablöste, denn die Macht des Herrschers war nicht absolut und willkürlich,
+sondern meist durch eine aristokratische Klasse örtlicher Herren ausgeübt. Die
+Aristokraten beschränkten seine Macht und blockierten Vorhaben gegen ihre
+Interessen.
+
+*MYSTICISM
+Als Bevölkerung und Wissen wuchsen, entstand eine neue Klasse geistlicher
+Berater, um den Bedarf nach weniger formellen, staatsgebundenen Riten zu
+decken. Priester und Priesterinnen des MYSTIZISMUS, oft Orakel genannt,
+beanspruchten Einung mit dem Göttlichen durch Meditation und tranceartige
+Versenkung. MYSTIZISMUS bot erstmals Hoffnung auf persönliche Erlösung und
+Unsterblichkeit, Begriffe, die für spätere RELIGIONEN wichtig wurden.
+
+*NUCLEAR FISSION
+KERNSPALTUNG tritt ein, wenn ein spaltbarer Atomkern ein Neutron aufnimmt,
+instabil wird und in zwei neue Kerne zerfällt. Dabei wird gewaltige Energie als
+Hitze, Licht und Radioaktivität frei. Erstmals wurde KERNSPALTUNG im Krieg
+genutzt, wo Hitze und Druckwelle unkontrollierter Spaltung eine nie dagewesene
+Waffe erzeugten: die Atombombe. Später wurde kontrollierte KERNSPALTUNG
+eingesetzt, um genug Hitze für Stromerzeugung in einem KERNKRAFT-Werk zu
+liefern. Die Gefahren und Risiken der KERNKRAFT haben ihre Nutzung bisher
+begrenzt.
+
+*NUCLEAR POWER
+Die Entwicklung der KERNKRAFT war ein Versuch, die bei KERNSPALTUNG frei
+werdende Energie friedlich zu nutzen. Die abgegebene Hitze erzeugte Dampf, der
+Turbinen antrieb und Strom produzierte. KERNKRAFT versprach, sauberer und
+billiger zu sein als fossile Brennstoffe. Doch die dabei verbrauchten
+radioaktiven Stoffe waren extrem tödlich, die Entsorgung von Atommüll
+schwierig, und das Risiko der Kernschmelze ließ sich nicht beseitigen. Weitere
+Arbeit könnte zu sichererer Nutzung führen. Reaktoren nach den Prinzipien der
+Kern-FUSION statt SPALTUNG könnten eines Tages saubere, sichere Energie
+liefern.
+
+*PHILOSOPHY
+Im alten Griechenland waren ALPHABETISIERUNG und Interesse an der Natur in einer
+wachsenden Oberschicht verbreitet, die viel Muße dem Streitgespräch widmete.
+Beliebte Themen waren Wirklichkeit, Ursachen und Grundsätze von Denken und
+Sein, besser bekannt als PHILOSOPHIE. Diese Debatten betrachteten Tatsachen
+unabhängig von den religiösen Dogmen der Zeit und öffneten die Tür für viele
+neue Ideen. Die Schriften vieler früher griechischer Philosophen, darunter
+Platon und Aristoteles, blieben glücklicherweise erhalten. Man sagt, alle
+PHILOSOPHIE nach Platon sei nur Fußnote zu seinem Werk.
+
+*PHYSICS
+Die PHYSIK entstand aus abstrakten Theorien der MATHEMATIK und der praktischen
+Erfahrung von Ingenieuren und Seeleuten. Mit der Untersuchung von Materie,
+Energie und ihren Beziehungen befasste sich die klassische PHYSIK mit
+Phänomenen im Bereich normaler Beobachtung: Bewegung, Akustik, Thermodynamik
+und Optik. Diese Studien führten wiederum zu Fortschritten in Bereichen wie
+MAGNETISMUS und ELEKTRIZITÄT. Moderne PHYSIK befasst sich vor allem mit dem
+Verhalten von Materie und Energie unter extremen Bedingungen oder auf extremen
+Skalen.
+
+*PLASTICS
+Ein Nebenprodukt der Forschung an der RAFFINATION von Öl war die Entdeckung der
+KUNSTSTOFFE, organischer Verbindungen, die unter Hitze und Druck formbar sind.
+KUNSTSTOFFE galten als Wunder des Industriezeitalters und wurden als billige,
+robuste Ersatzstoffe für herkömmliche Materialien in vielen Anwendungen
+verwendet. Doch die weite Nutzung der KUNSTSTOFFE führte zu Umweltproblemen,
+weil das Material nicht verrottet. Verbrennung war schwierig, weil es schmilzt,
+Anlagen verstopft und schädliche Dämpfe freisetzen kann.
+
+*RAILROAD
+Die EISENBAHN entstand aus der erfolgreichen Verbindung einer vielversprechenden
+neuen Technik, der DAMPFMASCHINE, mit einem wachsenden Bedarf: schneller,
+sicherer und billiger Transport. EISENBAHNEN nutzten die nie gekannte Kraft der
+Lokomotive, um Züge beladener Wagen auf Schienen zu ziehen. Dadurch konnten
+wenige Männer weit mehr Fracht schnell und über große Entfernungen bewegen.
+EISENBAHNEN waren ein entscheidender Beitrag zur INDUSTRIALISIERUNG. Sie
+erleichterten nicht nur Rohstoffbezug und Marktzugang; die Suche nach besserem
+Gerät förderte Neuerungen, die vielen anderen Industrien nützten.
+
+*RECYCLING
+Obwohl Schrottmetalle und andere Stoffe schon lange in der Fertigung
+wiederverwendet werden, ist RECYCLING erst kürzlich ein Anliegen der Haushalte
+geworden. Wachsende Weltbevölkerung und der Strom von Produkten aus der
+MASSENPRODUKTION drohen unseren Planeten mit Müll und Verschmutzung zu
+ersticken. In den DEMOKRATIEN des Westens, den reichsten und verschwenderisch-
+sten Staaten, entsteht eine Bewegung, möglichst viel Abfall neu zu nutzen.
+RECYCELT sparen alte Zeitungen Bäume, Plastikflaschen Öl und Aluminiumdosen
+Strom. RECYCLING senkt Kosten und Verschmutzung und verbessert so die
+Lebensqualität.
+
+*REFINING
+Mineralteer und Erdöl sind seit jeher bekannt, doch beide fanden wenig
+Verwendung, bis die CHEMIE zeigte, dass Öl zu Chemikalien mit vielen Nutzungen
+RAFFINIERT werden konnte. Hauptanwendung der Ölderivate war Treibstoff für
+innere VERBRENNUNGSMOTOREN, die AUTOMOBIL und andere Maschinen antrieben. Öl
+musste auf die Industrielle Revolution warten, bevor sein Potenzial genutzt
+werden konnte, denn nur große UNTERNEHMEN konnten die nötigen Investitionen in
+AUTOMOBIL-Produktion und RAFFINATION leisten.
+
+*RELIGION
+Die Entwicklung der RELIGION reicht zu einfachen Glaubens- und Praxisformen
+über das Außerordentliche, Geheimnisvolle und Übernatürliche zurück. RELIGION
+gab Menschen ein Ziel der Verehrung, Regeln des sozialen Verhaltens und einen
+Bezugspunkt für den Einzelnen in Gruppe und Universum. Die Annahme der Lehren
+der RELIGION brachte Seelenfrieden und die Kraft zur Arbeit des Lebens, weil
+die furchtbaren Fragen des Unbekannten gebändigt waren. Der Wissensfortschritt
+nach Entwicklung der SCHRIFT und dem Studium der PHILOSOPHIE führte zu den
+großen RELIGIONEN der modernen Welt.
+
+*ROBOTICS
+Fortschritte der COMPUTER-Technik machten die neue Wissenschaft ROBOTIK
+möglich, die zuvor ins Reich der Science-Fiction gehörte. ROBOTIK befasst sich
+mit Entwurf und Bau von Maschinen, die in gewissem Maß menschliches Handeln
+nachahmen können. Diese Maschinen erkennen Veränderungen ihrer Umgebung und
+handeln begrenzt nach diesen Informationen. ROBOTER sind im Kern
+computergesteuerte Werkzeugmaschinen, die Aufgaben wie das Schweißen von
+Autoteilen ausführen können. Sie sind besonders nützlich für monotone,
+gefährliche oder ermüdende Arbeit und oft produktiver als Menschen.
+
+*ROCKETRY
+Obwohl Versuche mit RAKETENTECHNIK bis zu chinesischem, SCHIESSPULVER-
+getriebenem Feuerwerk vor tausend Jahren zurückreichen, stammt das meiste
+heutige Wissen aus dem 20. Jahrhundert. Eine RAKETE wird durch Ausstoß von
+Gasen angetrieben, die bei der VERBRENNUNG von Bordtreibstoff entstehen. Diese
+VERBRENNUNG erzeugt großen Druck, der nach hinten entweicht; der Schub gegen
+die vordere Innenseite der Kammer treibt die RAKETE vorwärts. Die ersten
+brauchbaren Lenk-RAKETEN wurden im Zweiten Weltkrieg eingesetzt. Später trieben
+RAKETEN Interkontinentalwaffen an und starteten Raumfahrzeuge.
+
+*SPACE FLIGHT
+Nach der Entwicklung der ersten Lenkraketen im Zweiten Weltkrieg schritt die
+Wissenschaft der RAKETENTECHNIK so weit voran, dass direkte Weltraumerkundung
+möglich wurde. WELTRAUMFLUG entwickelte sich von einfachen suborbitalen Flügen
+zu bemannten Mondmissionen. Heute wird weiter an Raumstationen und
+wiederverwendbaren Raumfahrzeugen gearbeitet. In naher Zukunft könnte es eine
+bemannte Marsmission geben. In späteren Generationen könnten neue Fortschritte
+bemannte Reisen zu anderen Sternsystemen möglich machen.
+
+*STEAM ENGINE
+Einige Eigenschaften von Dampf sind seit der Antike bekannt, doch es brauchte
+Jahrtausende an Vorarbeit in der PHYSIK und die praktischen Fähigkeiten einiger
+ERFINDER, um eine funktionierende DAMPFMASCHINE zu bauen. Schönheit und Wert
+dieser Maschine lagen darin, dass sie die Arbeit vieler Männer leisten konnte.
+Ein Bediener der DAMPFMASCHINE konnte seine Kraft enorm vervielfachen, indem er
+die Wärmeenergie brennender Kohle nutzte. Die DAMPFMASCHINE war Voraussetzung
+der Industriellen Revolution und führte zur Verbreitung von Fabriken und
+EISENBAHNEN in der ganzen Welt.
+
+*STEEL
+Mit der Industriellen Revolution entstanden neue Bedürfnisse nach Metallen,
+sowohl als Baustoffe wie auch für die Fertigung von Produkten. Besonders der
+Aufstieg der EISENBAHNEN förderte die Forschung der METALLURGIE nach einem
+Metall, aus dem billige, starke Schienen und Brücken gemacht werden konnten.
+Schließlich wurde das Geheimnis des STAHLS entdeckt, und er erwies sich als
+nahezu perfektes Baumaterial. Billig herstellen ließ er sich jedoch erst, als
+die INDUSTRIALISIERUNG Ressourcen und Maschinen zusammenbrachte. STAHL führte
+wiederum zu großen Veränderungen: riesigen Wolkenkratzern, Panzerschiffen und
+dem AUTOMOBIL.
+
+*SUPERCONDUCTOR
+Fließt elektrischer Strom durch einen Leiter, etwa einen Kupferdraht, geht ein
+kleiner, aber wichtiger Teil durch Widerstand verloren. Werden bestimmte Stoffe
+auf Temperaturen nahe dem absoluten Nullpunkt gekühlt, verschwindet dieser
+Widerstand. Dieses Phänomen heißt Supraleitung; ein Stoff ohne elektrischen
+Widerstand ist ein SUPRALEITER. Fände man ein Material, das bei annähernd
+normalen Temperaturen wirkt, könnte seine Entdeckung den Alltag revolutionieren:
+Energie würde viel billiger, und viele neue Erfindungen würden praktisch.
+
+*THE CORPORATION
+Die EISENBAHNEN, Eisenhändler und anderen Firmen, die die Industrielle
+Revolution auslösten, wuchsen binnen einer Generation zu Großunternehmen heran
+und überstiegen die Mittel eines einzelnen Besitzers bei weitem. Die riesigen
+Kapitalanlagen der INDUSTRIALISIERUNG wurden im Westen durch UNTERNEHMEN von
+Aktionären gedeckt, die Zugang zu ausgereiften BANKWESEN-Systemen hatten.
+Diese großen Industrieunternehmen beherrschen heute die Weltwirtschaft. Obwohl
+sie oft als verschwenderisch, verschwörerisch und über dem Gesetz stehend
+gelten, sind sie meist effizient und erfinderisch, oder sie verschwinden bald.
+
+*THE REPUBLIC
+Das Konzept DIE REPUBLIK erschien zuerst im alten Rom, wo die Provinzen
+Vertreter in den Senat sandten, um den Staat zu regieren. Das Staatsoberhaupt
+einer REPUBLIK war ein gewählter Vertreter, kein MONARCH. Die Verfassung der
+Vereinigten Staaten belebte das Konzept neu, und viele große und verschieden-
+artige Nationen übernahmen Ähnliches. DIE REPUBLIK erlaubte nie gekannte
+Freiheit, zumindest für einen bedeutenden Teil der Bürger, und dies förderte
+oft starkes Wirtschaftswachstum.
+
+*THE WHEEL
+Eine der fünf großen einfachen Maschinen, DAS RAD mit Achse, erhöhte die Last,
+die Mensch oder Tier ziehen konnte, indem es den Bewegungswiderstand senkte.
+DAS RAD wurde nach seiner Erfindung auch schnell zur Kriegswaffe, besonders im
+Streitwagen. Neben dem Transport wurde DAS RAD im INGENIEURWESEN und im
+Industriezeitalter ein lebenswichtiges Werkzeug. In der präkolumbischen Neuen
+Welt erschien DAS RAD nur in Kinderspielzeug, teils weil das Gebirge
+Südamerikas seinen Einsatz weniger praktisch machte.
+
+*THEORY OF GRAVITY
+Die anziehende Kraft zwischen zwei Materieteilchen heißt Gravitation. Diese
+Kraft wirkt im ganzen Universum und erklärt sowohl den Apfel, der Newton auf
+den Kopf fiel, als auch die Umlaufbahn der Erde um die Sonne. Die
+GRAVITATIONSTHEORIE wird Sir Isaac Newton zugeschrieben, der zuerst erkannte,
+dass Gravitation allgemein gilt. Seine Arbeit öffnete späteren Wissenschaftlern
+den Weg, darunter Albert Einstein mit der Relativitätstheorie und den Männern,
+die die ATOMTHEORIE entwickelten.
+
+*TRADE
+Eine der ältesten und verbreitetsten sozialen Einrichtungen ist der Austausch
+von Gütern, also HANDEL. Auf der einfachsten Ebene tauschen zwei Menschen
+Gegenstände miteinander. Idealerweise gibt jeder Überschüsse und erhält etwas
+Gewünschtes. Das Ergebnis ist, dass beide besser dastehen, weil sie Überfluss
+gegen Bedarf tauschen. Menschen wie auch Staaten haben meist gegenüber anderen
+einen komparativen Vorteil bei der Herstellung mancher Waren oder Dienste.
+Durch HANDEL nützt dieser Vorteil beiden Seiten. HANDEL erwies sich auch beim
+Austausch von Ideen als sehr wichtig.
+
+*UNIVERSITY
+Die ersten UNIVERSITÄTEN wurden im Mittelalter auf kirchliche oder königliche
+Initiative gegründet, um junge Männer in Recht, Theologie und Medizin
+auszubilden. Die moderne UNIVERSITÄT besteht aus mehreren Fakultäten oder
+Kollegs mit jeweils eigenem Lehrplan. Traditionell verliehen nur UNIVERSITÄTEN
+höhere Abschlüsse, doch diese Grenze ist heute unscharf. Im 20. Jahrhundert
+erhielten viele UNIVERSITÄTEN, besonders in den USA, große staatliche Zuschüsse
+für wissenschaftliche und technische Forschung, vor allem für waffenbezogene
+Forschung.
+
+*WRITING
+Die Entwicklung der SCHRIFT gilt als einer der wichtigsten Fortschritte der
+Zivilisation. Von da an begann Geschichte, definiert durch schriftliche
+Aufzeichnungen, zuerst auf Tontafeln geritzt oder in Stein gemeißelt. Die
+Bedeutung der SCHRIFT liegt darin, dass Ideen und Wissen über Entfernung und
+Zeit bewahrt und weitergegeben werden konnten, weit weg vom Urheber. Zuvor
+musste Kommunikation von Angesicht zu Angesicht erfolgen. SCHRIFT beschleunigte
+den Wissensfortschritt stark, weil Bekanntes nicht von jeder Generation neu
+gelernt werden musste.
+
+*END

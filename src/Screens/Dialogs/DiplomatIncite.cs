@@ -11,147 +11,159 @@ using System;
 using System.Linq;
 using CivOne.Buildings;
 using CivOne.Graphics;
+using CivOne.Services;
+using CivOne.Services.Random;
 using CivOne.Tasks;
 using CivOne.Units;
 using CivOne.UserInterface;
 
 namespace CivOne.Screens.Dialogs
 {
-    internal class DiplomatIncite : BaseDialog
+	internal class DiplomatIncite : BaseDialog
 	{
 		private const int FONT_ID = 0;
 
 		private readonly City _cityToIncite;
 		private readonly Diplomat _diplomat;
-
-		private readonly int _inciteCost;
+		private readonly IDiplomatInciteService _service;
 
 		private readonly bool _canIncite;
 
-		private void DontIncite(object sender, EventArgs args)
+		private void DontIncite(object? _, EventArgs __)
 		{
 			Cancel();
 		}
 
-		private void Incite(object sender, EventArgs args)
+		private void Incite(object? _, EventArgs __)
 		{
-			Player previousOwner = Game.GetPlayer(_cityToIncite.Owner);
-            var newOwner = _diplomat.Owner;
-            var newPlayer = Game.GetPlayer(newOwner);
-
-            // Initial incite message
-            var msg = Message.General($"{previousOwner.TribeNamePlural} rebel!",
-                "Civil War in",
-                $"{_cityToIncite.Name}.",
-                $"{newPlayer.TribeName} influence",
-                "suspected.");
-            GameTask.Insert(msg);
-
-            // TODO fire-eggs gold captured
-            int plundered = 0;
-            // TODO fire-eggs advance stolen
-
-            string[] lines = { $"{newPlayer.TribeNamePlural} capture", 
-                               $"{_cityToIncite.Name}. {plundered} gold", 
-                               "pieces plundered." };
-
-			Show captureCity = Show.CaptureCity(_cityToIncite, lines);
-			EventHandler capture_done = (s1, a1) =>
-			{
-				Game.DisbandUnit(_diplomat);
-				_cityToIncite.Owner = newOwner;
-
-                // fire-eggs 20190701 city units must convert
-                // TODO fire-eggs not all units _always_ convert, e.g. settlers ?
-                foreach (var unit in _cityToIncite.Units)
-                {
-                    unit.Owner = newOwner;
-                }
-
-				// remove half the buildings at random
-				foreach (IBuilding building in _cityToIncite.Buildings.Where(b => Common.Random.Next(0, 1) == 1).ToList())
-				{
-					_cityToIncite.RemoveBuilding(building);
-				}
-
-				newPlayer.Gold -= (short)_inciteCost;
-                newPlayer.Gold += (short) plundered;
-
-				previousOwner.HandleExtinction();
-
-                // TODO fire-eggs not sure if human-city being incited should be here [except incite of rebelling human city?]
-				if (Human == _cityToIncite.Owner || Human == newOwner)
-				{
-					GameTask.Insert(Tasks.Show.CityManager(_cityToIncite));
-				}
-			};
-            captureCity.Done += capture_done;
-
-			if (Human == _cityToIncite.Owner || Human == _diplomat.Owner)
-            {
-                // TODO fire-eggs not showing loses side-effects
-                //if (!Game.Animations)
-                    GameTask.Insert(captureCity);
-                //else
-                //    capture_done(null, null);
-            }
-            else
-            {
-                capture_done(null, null); // non-human city incite
-            }
-
+			_service.InciteRevolt(_cityToIncite, _diplomat);
 			Cancel();
 		}
 
-		protected override void FirstUpdate()
+		protected override IMenu? CreateManagedMenu()
 		{
-			int choices = _canIncite ? 2 : 0;
-
-			if (_canIncite)
+			if (!_canIncite)
 			{
-				Menu menu = new Menu(Palette, Selection(45, 5 + (3 * Resources.GetFontHeight(FONT_ID)), 130, ((2 * Resources.GetFontHeight(FONT_ID)) + (choices * Resources.GetFontHeight(FONT_ID)) + 9)))
-				{
-					X = 143,
-					Y = 110,
-					MenuWidth = 130,
-					ActiveColour = 11,
-					TextColour = 5,
-					FontId = FONT_ID
-				};
-
-				menu.Items.Add("Forget It.").OnSelect(DontIncite);
-
-				if (_canIncite)
-				{
-					menu.Items.Add("Incite revolt").OnSelect(Incite);
-				}
-
-				AddMenu(menu);
+				return null;
 			}
+
+			int choices = 2;
+			Menu menu = new Menu(Palette, Selection(45, 5 + (3 * Resources.GetFontHeight(FONT_ID)), 130, (2 * Resources.GetFontHeight(FONT_ID)) + (choices * Resources.GetFontHeight(FONT_ID)) + 9))
+			{
+				X = 143,
+				Y = 110,
+				CenterTo320Coordinates = true,
+				MenuWidth = 130,
+				ActiveColour = 11,
+				TextColour = 5,
+				FontId = FONT_ID
+			};
+
+			menu.Items.Add(Translate("Forget It.")).OnSelect(DontIncite);
+			menu.Items.Add(Translate("Incite revolt")).OnSelect(Incite);
+			return menu;
 		}
 
-		internal DiplomatIncite(City cityToIncite, Diplomat diplomat) : base(100, 80, 180, 56)
+		internal DiplomatIncite(City cityToIncite, Diplomat diplomat, IDiplomatInciteService service) : base(100, 80, 180, 56)
 		{
 			_cityToIncite = cityToIncite ?? throw new ArgumentNullException(nameof(cityToIncite));
 			_diplomat = diplomat ?? throw new ArgumentNullException(nameof(diplomat));
+			_service = service ?? throw new ArgumentNullException(nameof(service));
 
 			IBitmap spyPortrait = Icons.Spy;
-
-			Palette palette = Common.DefaultPalette;
-			for (int i = 144; i < 256; i++)
-			{
-				palette[i] = spyPortrait.Palette[i];
-			}
-			this.SetPalette(palette);
+			using Palette palette = Common.DefaultPalette.Merge(spyPortrait.Palette, 144);
+			Palette = palette;
 
 			DialogBox.AddLayer(spyPortrait, 2, 2);
 
-			_inciteCost = Diplomat.InciteCost(cityToIncite);
+			int inciteCost = Diplomat.InciteCost(cityToIncite);
 			_canIncite = Diplomat.CanIncite(cityToIncite, diplomat.Player.Gold);
 
-			DialogBox.DrawText($"Spies Report", 0, 15, 45, 5);
-			DialogBox.DrawText($"Dissidents in {_cityToIncite.Name}", 0, 15, 45, 5 + Resources.GetFontHeight(FONT_ID));
-			DialogBox.DrawText($"will revolt for ${_inciteCost}", 0, 15, 45, 5 + (2 * Resources.GetFontHeight(FONT_ID)));
+			DialogBox.DrawText(Translate("Spies Report"), 0, 15, 45, 5);
+			DialogBox.DrawText(TranslateFormatted("Dissidents in {0}", _cityToIncite.Name), 0, 15, 45, 5 + Resources.GetFontHeight(FONT_ID));
+			DialogBox.DrawText(TranslateFormatted("will revolt for ${0}", inciteCost), 0, 15, 45, 5 + (2 * Resources.GetFontHeight(FONT_ID)));
+		}
+	}
+
+	internal static class DiplomatInciteDialogFactory
+	{
+		public static IDiplomatInciteService CreateService()
+		{
+			return new DiplomatInciteService(TranslationServiceFactory.GetCurrent());
+		}
+
+		public static IScreen CreateDialog(City cityToIncite, Diplomat diplomat)
+		{
+			return new DiplomatIncite(cityToIncite, diplomat, CreateService());
+		}
+
+		public static IScreen CreateDialog(City cityToIncite, Diplomat diplomat, IDiplomatInciteService service)
+		{
+			return new DiplomatIncite(cityToIncite, diplomat, service);
+		}
+	}
+
+	internal interface IDiplomatInciteService
+	{
+		void InciteRevolt(City cityToIncite, Diplomat diplomat);
+	}
+
+	internal class DiplomatInciteService(ITranslationService translationService) : IDiplomatInciteService
+	{
+		private static Player Human => Game.Instance.HumanPlayer;
+		private readonly ITranslationService _t = translationService ?? throw new ArgumentNullException(nameof(translationService));
+
+		public void InciteRevolt(City cityToIncite, Diplomat diplomat)
+		{
+			Player previousOwner = cityToIncite.CityOwnerPlayer;
+			byte newOwner = diplomat.Owner;
+			Player newOwnerPlayer = diplomat.Player;
+
+			var msg = Message.General(_t.TranslateFormattedArray("{0} rebel!\nCivil War in\n{1}.\n{2} influence\nsuspected.", 
+						previousOwner.TribeNamePlural, cityToIncite.Name, newOwnerPlayer.TribeName));
+
+			int plundered = 0;
+			string[] lines = _t.TranslateFormattedArray("{0} capture\n{1}. {2} gold\npieces plundered.", newOwnerPlayer.TribeNamePlural, cityToIncite.Name, plundered);
+
+			Show captureCity = Show.CaptureCity(cityToIncite, lines);
+			void capture_done(object? _, EventArgs __)
+			{
+				Game.Instance.DisbandUnit(diplomat);
+				cityToIncite.CityOwnerPlayerIndex = newOwner;
+				cityToIncite.TechStolen = false;
+
+				foreach (var unit in cityToIncite.Units)
+				{
+					unit.Owner = newOwner;
+				}
+
+				var random = RandomServiceFactory.Create();
+				foreach (IBuilding building in cityToIncite.Buildings.Where(b => random.Hit(50)).ToList())
+				{
+					cityToIncite.RemoveBuilding(building);
+				}
+
+				newOwnerPlayer.Gold -= (short)Diplomat.InciteCost(cityToIncite);
+				newOwnerPlayer.Gold += (short)plundered;
+				previousOwner.HandleExtinction();
+				// Fix #181 When inciting an enemy's last city, the messages are in the wrong order #181
+				GameTask.Insert(msg);
+
+				if (Human == cityToIncite.CityOwnerPlayerIndex || Human == newOwner)
+				{
+					GameTask.Insert(Tasks.Show.CityManager(cityToIncite));
+				}
+			}
+			captureCity.Done += capture_done;
+
+			if (Human == cityToIncite.CityOwnerPlayerIndex || Human == diplomat.Owner)
+			{
+				GameTask.Insert(captureCity);
+			}
+			else
+			{
+				capture_done(null, EventArgs.Empty);
+			}
 		}
 	}
 }

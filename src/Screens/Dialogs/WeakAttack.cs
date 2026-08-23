@@ -20,35 +20,36 @@ namespace CivOne.Screens.Dialogs
     internal class WeakAttack : BaseDialog
     {
         private static int WIDE = 80;
-        private int _dX;
-        private int _dY;
-        private BaseUnit _unit;
+        private readonly int _dX;
+        private readonly int _dY;
+        private readonly BaseUnit _unit;
 
         private void Continue(object sender, EventArgs args)
         {
-            _unit.Confront(_dX, _dY);
+            _unit.PreConfront(_dX, _dY);
             Cancel();
         }
 
-        protected override void FirstUpdate()
+        protected override IMenu? CreateManagedMenu()
         {
             Menu menu = new Menu(Palette, Selection(3, 10 + 2*FontHigh, WIDE-8, (2 * FontHigh) + 4))
             {
-                X = 103, // TODO this is hard: have the menu be positioned relative to "owner"
+                X = 103,
                 Y = 85 + 2 * FontHigh,
+                CenterTo320Coordinates = true,
                 MenuWidth = WIDE - 8,
                 ActiveColour = 11,
                 TextColour = 5,
                 FontId = 0
             };
 
-            menu.Items.Add("Cancel").OnSelect(Cancel);
-            menu.Items.Add("Attack").OnSelect(Continue);
+            menu.Items.Add(Translate("Cancel")).OnSelect(Cancel);
+            menu.Items.Add(Translate("Attack")).OnSelect(Continue);
 
             menu.MissClick += Cancel;
             menu.Cancel += Cancel;
 
-            AddMenu(menu);
+            return menu;
         }
 
         private static int DialogHeight()
@@ -65,9 +66,9 @@ namespace CivOne.Screens.Dialogs
             _dY = relY;
             _unit = unit;
 
-            string prompt = unit.PartMoves >= 2 ? "2" : "1";
-            prompt += "/3 strength?";
-            DialogBox.DrawText($"Attack at", 0, 15, 5, 5);
+            int strength = unit.PartMoves >= 2 ? 2 : 1;
+            string prompt = TranslateFormatted("{0}/3 strength?", strength);
+            DialogBox.DrawText(Translate("Attack at"), 0, 15, 5, 5);
             DialogBox.DrawText(prompt, 0, 15, 5, 5 + FontHigh);
         }
     }

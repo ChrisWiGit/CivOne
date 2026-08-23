@@ -4,16 +4,34 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"name": "Run Test Coverage Task",
+			"type": "node-terminal",
+			"request": "launch",
+			"command": "echo Test coverage task finished.",
+			"preLaunchTask": "test-coverage"
+		},
+		{
 			"name": "Launch Game",
 			"type": "coreclr",
 			"request": "launch",
 			"preLaunchTask": "build",
 			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
-			"args": [],
+			"args": ["--debug"],
 			"cwd": "${workspaceRoot}",
 			"stopAtEntry": false,
 			"console": "internalConsole",
-			"internalConsoleOptions": "openOnSessionStart"
+			"internalConsoleOptions": "openOnSessionStart",
+			"justMyCode": false
+		},
+		{
+			"name": "Launch Game (dotnet trace profiling)",
+			"type": "node-terminal",
+			"request": "launch",
+			"preLaunchTask": "build",
+			"command": "dotnet '${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll' --debug & game_pid=$!; dotnet trace collect --process-id \"$game_pid\" --output '${workspaceFolder}/profiling/civone-profile-'\"$game_pid\"'.nettrace'; dotnet trace convert --format Speedscope '${workspaceFolder}/profiling/civone-profile-'\"$game_pid\"'.nettrace'",
+			"windows": {
+				"command": "$gameProcess = Start-Process dotnet -ArgumentList '${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll','--debug' -WorkingDirectory '${workspaceRoot}' -PassThru; dotnet trace collect --process-id $gameProcess.Id --output ${workspaceFolder}/profiling/civone-profile-$($gameProcess.Id).nettrace; dotnet trace convert --format Speedscope ${workspaceFolder}/profiling/civone-profile-$($gameProcess.Id).nettrace"
+			}
 		},
 		{
 			"name": "Quick Launch Game (seed +32768)",
@@ -21,23 +39,120 @@
 			"request": "launch",
 			"preLaunchTask": "build",
 			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
-			"args": ["--seed", "32768", "--skip-credits", "--skip-intro", "--no-sound", "--no-data-check"],
+			"args": [
+				"--seed",
+				"32768",
+				"--skip-credits",
+				"--skip-intro",
+				"--no-sound",
+				"--no-data-check"
+			],
 			"cwd": "${workspaceRoot}",
 			"stopAtEntry": false,
 			"console": "internalConsole",
 			"internalConsoleOptions": "openOnSessionStart"
 		},
 		{
-			"name": "Quick Load Game Slot 0",
+			"name": "Quick Load Game Slot C0",
 			"type": "coreclr",
 			"request": "launch",
 			"preLaunchTask": "build",
 			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
-			"args": ["--seed", "32768", "--skip-credits", "--skip-intro", "--no-sound", "--no-data-check", "--load-slot", "k3"],
+			"args": ["--seed", "32768", "--skip-credits", "--skip-intro", "--no-sound", "--no-data-check", "--load-slot", "c0"],
 			"cwd": "${workspaceRoot}",
 			"stopAtEntry": false,
 			"console": "internalConsole",
 			"internalConsoleOptions": "openOnSessionStart"
+		},
+		{
+			"name": "Quick Load Game Slot C1",
+			"type": "coreclr",
+			"request": "launch",
+			"preLaunchTask": "build",
+			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
+			"args": ["--seed", "32768", "--skip-credits", "--skip-intro", "--no-sound", "--no-data-check", "--load-slot", "c1"],
+			"cwd": "${workspaceRoot}",
+			"stopAtEntry": false,
+			"console": "internalConsole",
+			"internalConsoleOptions": "openOnSessionStart"
+		},
+		{
+			"name": "Quick Load Game Slot C2",
+			"type": "coreclr",
+			"request": "launch",
+			"preLaunchTask": "build",
+			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
+			"args": ["--seed", "32768", "--skip-credits", "--skip-intro", "--no-sound", "--no-data-check", "--load-slot", "c2"],
+			"cwd": "${workspaceRoot}",
+			"stopAtEntry": false,
+			"console": "internalConsole",
+			"internalConsoleOptions": "openOnSessionStart"
+		},
+		{
+			"name": "Quick Load Game Slot C3",
+			"type": "coreclr",
+			"request": "launch",
+			"preLaunchTask": "build",
+			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
+			"args": ["--seed", "32768", "--skip-credits", "--skip-intro", "--no-sound", "--no-data-check", "--load-slot", "c3"],
+			"cwd": "${workspaceRoot}",
+			"stopAtEntry": false,
+			"console": "internalConsole",
+			"internalConsoleOptions": "openOnSessionStart"
+		},
+		{
+			"name": "Quick Load Game Slot C4",
+			"type": "coreclr",
+			"request": "launch",
+			"preLaunchTask": "build",
+			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
+			"args": ["--seed", "32768", "--skip-credits", "--skip-intro", "--no-sound", "--no-data-check", "--load-slot", "c4"],
+			"cwd": "${workspaceRoot}",
+			"stopAtEntry": false,
+			"console": "internalConsole",
+			"internalConsoleOptions": "openOnSessionStart"
+		},
+		{
+			"name": "Quick Load Game Slot C5",
+			"type": "coreclr",
+			"request": "launch",
+			"preLaunchTask": "build",
+			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
+			"args": ["--seed", "32768", "--skip-credits", "--skip-intro", "--no-sound", "--no-data-check", "--load-slot", "c5"],
+			"cwd": "${workspaceRoot}",
+			"stopAtEntry": false,
+			"console": "internalConsole",
+			"internalConsoleOptions": "openOnSessionStart"
+		},
+		{
+			"name": "Quick Load Game YAML .saves/savegame_0.cos",
+			"type": "coreclr",
+			"request": "launch",
+			"preLaunchTask": "build",
+			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
+			"args": ["--seed", "32768", "--mcp", "--mcp-no-auth", "--skip-credits", "--skip-intro", "--no-sound", "--no-data-check", "--load-cos", "${workspaceFolder}/.saves/savegame_11.cos"],
+			"cwd": "${workspaceRoot}",
+			"stopAtEntry": false,
+			"console": "internalConsole",
+			"internalConsoleOptions": "openOnSessionStart"
+		},
+		{
+			"name": "Quick Load YAML Game",
+			"type": "coreclr",
+			"request": "launch",
+			"preLaunchTask": "build",
+			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
+			"args": [
+				"--skip-credits",
+				"--skip-intro",
+				"--no-sound",
+				"--no-data-check",
+				"--load-cos",
+				"${workspaceFolder}/.saves/savegame_1.cos"
+			],
+			"cwd": "${workspaceRoot}",
+			"stopAtEntry": false,
+			"console": "internalConsole"
 		},
 		{
 			"name": "Launch Setup",
@@ -45,7 +160,29 @@
 			"request": "launch",
 			"preLaunchTask": "build",
 			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
-			"args": ["setup"],
+			"args": [
+				"setup"
+			],
+			"cwd": "${workspaceRoot}",
+			"stopAtEntry": false,
+			"console": "internalConsole",
+			"internalConsoleOptions": "openOnSessionStart"
+		},
+		{
+			"name": "Run Unit Tests",
+			"type": "node-terminal",
+			"request": "launch",
+			"command": "dotnet test \"${workspaceRoot}/xunit/CivOne.UnitTests.csproj\" -p:SuppressConsoleLogs=true -p:NoWarn=\"*\""
+		},
+		{
+			"name": "Test Startup Wizard (forced)",
+			"type": "coreclr",
+			"request": "launch",
+			"preLaunchTask": "build",
+			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
+			"args": [
+				"setup"
+			],
 			"cwd": "${workspaceRoot}",
 			"stopAtEntry": false,
 			"console": "internalConsole",
@@ -57,7 +194,9 @@
 			"request": "launch",
 			"preLaunchTask": "build",
 			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
-			"args": ["demo"],
+			"args": [
+				"demo"
+			],
 			"cwd": "${workspaceRoot}",
 			"stopAtEntry": false,
 			"console": "internalConsole",
@@ -69,7 +208,9 @@
 			"request": "launch",
 			"preLaunchTask": "build",
 			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
-			"args": ["free"],
+			"args": [
+				"free"
+			],
 			"cwd": "${workspaceRoot}",
 			"stopAtEntry": false,
 			"console": "internalConsole",
@@ -81,7 +222,9 @@
 			"request": "launch",
 			"preLaunchTask": "build",
 			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
-			"args": ["--help"],
+			"args": [
+				"--help"
+			],
 			"cwd": "${workspaceRoot}",
 			"stopAtEntry": false,
 			"console": "internalConsole",
@@ -93,7 +236,9 @@
 			"request": "launch",
 			"preLaunchTask": "build",
 			"program": "${workspaceRoot}/runtime/sdl/bin/Debug/net9.0/CivOne.SDL.dll",
-			"args": ["--desktop-icon"],
+			"args": [
+				"--desktop-icon"
+			],
 			"cwd": "${workspaceRoot}",
 			"stopAtEntry": false,
 			"console": "internalConsole",

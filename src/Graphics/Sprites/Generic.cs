@@ -11,9 +11,8 @@ using CivOne.IO;
 
 namespace CivOne.Graphics.Sprites
 {
-	public static class Generic
+	public static class FortifySprite
 	{
-		private static Free Free => Free.Instance;
 		private static Resources Resources => Resources.Instance;
 
 		private static Bytemap GetFortify()
@@ -24,6 +23,6 @@ namespace CivOne.Graphics.Sprites
 				.ColourReplace(3, 0);
 		}
 
-		public static ISprite Fortify = new CachedSprite(GetFortify);
+		public static readonly ISprite Fortify = new CachedSprite(GetFortify);
 	}
 }

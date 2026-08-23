@@ -9,34 +9,33 @@
 
 using CivOne.Enums;
 using CivOne.Leaders;
+using CivOne.Services;
 
 namespace CivOne.Civilizations
 {
 	internal class Mongol : BaseCivilization<Genghis>
 	{
-		public Mongol() : base(Civilization.Mongols, "Mongol", "Mongols", "geng")
+		public Mongol() : base(Civilization.Mongols, TranslationServiceFactory.GetCurrent().Translate("Mongol"), TranslationServiceFactory.GetCurrent().Translate("Mongols"), "geng")
 		{
 			StartX = 49;
 			StartY = 19;
-			CityNames = new[]
-			{
-				"Samarkand",
-				"Bokhara",
-				"Nishapur",
-				"Karakorum",
-				"Kashgar",
-				"Tabriz",
-				"Aleppo",
-				"Kabul",
-				"Ormuz",
-				"Basra",
-				"Khanbaryk",
-				"Khorasan",
-				"Shangtu",
-				"Kazan",
-				"Qyinsay",
-				"Kerman"
-			};
+			CityNames = TranslateArray(
+				"Samarkand\n" +
+				"Bokhara\n" +
+				"Nishapur\n" +
+				"Karakorum\n" +
+				"Kashgar\n" +
+				"Tabriz\n" +
+				"Aleppo\n" +
+				"Kabul\n" +
+				"Ormuz\n" +
+				"Basra\n" +
+				"Khanbaryk\n" +
+				"Khorasan\n" +
+				"Shangtu\n" +
+				"Kazan\n" +
+				"Qyinsay\n" +
+				"Kerman");
 		}
 	}
 }

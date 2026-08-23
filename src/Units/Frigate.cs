@@ -24,13 +24,14 @@ namespace CivOne.Units
 		
 		public bool AllowedToBoard(IUnit unit)
 		{
-			return unit.Class == UnitClass.Land && unit.Owner == Owner;
+			return unit.UnitCategory == UnitClass.Land && unit.Owner == Owner;
 		}
 
 		public Frigate() : base(4, 2, 2, 3)
 		{
 			Type = UnitType.Frigate;
 			Name = "Frigate";
+			TranslatedName = Translate("Frigate");
 			RequiredTech = new Magnetism();
 			ObsoleteTech = null;
 			SetIcon('B', 1, 0);

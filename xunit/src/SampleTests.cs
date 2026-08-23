@@ -18,7 +18,7 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void CityNamesCount()
         {
-            int expectedCount = 256;
+            int expectedCount = 256 + 272; // 256 original + 272 new
             int count = Common.AllCityNames.Count();
             bool result = (count == expectedCount);
 
@@ -28,9 +28,11 @@ namespace CivOne.UnitTests
 		[Fact]
 		public void PaletteColourCount()
 		{
+            using var defaultPalette = Common.DefaultPalette;
+            
             int expectedCount = 256;
-            int count = Common.DefaultPalette.Length;
-            bool result = (count == expectedCount);
+            int count = defaultPalette.Length;
+            bool result = count == expectedCount;
 
             Assert.True(result, $"Common.DefaultPalette should have {expectedCount} entries, returns {count}.");
         }

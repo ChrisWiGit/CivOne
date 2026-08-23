@@ -40,25 +40,45 @@ namespace CivOne.UserInterface
 
 		public static MenuItem<T> SetActive<T>(this MenuItem<T> menuItem) => menuItem.SetActive(() => true);
 
+		public static MenuItem<T> SetHighlightedCharacterIndex<T>(this MenuItem<T> menuItem, int index)
+		{
+			menuItem.HighlightedCharacterIndex = index;
+			return menuItem;
+		}
+
 		public static MenuItem<T> SetShortcut<T>(this MenuItem<T> menuItem, string shortcut)
 		{
 			menuItem.Shortcut = shortcut;
 			return menuItem;
 		}
+		
+		public static MenuItem<T> SetShortcuts<T>(this MenuItem<T> menuItem, params string[] shortcuts)
+		{
+			shortcuts ??= Array.Empty<string>();
+			menuItem.Shortcuts = shortcuts;
+			menuItem.Shortcut = shortcuts.Length > 0 ? shortcuts[0] ?? string.Empty : string.Empty;
+			return menuItem;
+		}
 
-		public static MenuItem<T> OnSelect<T>(this MenuItem<T> menuItem, MenuItemEventHandler<T> eventMethod)
+		public static MenuItem<T> WithDescription<T>(this MenuItem<T> menuItem, params string[] description)
+		{
+			menuItem.SetDescription(description);
+			return menuItem;
+		}
+
+		public static MenuItem<T> OnSelect<T>(this MenuItem<T> menuItem, MenuItemEventAction<T> eventMethod)
 		{
 			menuItem.Selected += eventMethod;
 			return menuItem;
 		}
 
-		public static MenuItem<T> OnContext<T>(this MenuItem<T> menuItem, MenuItemEventHandler<T> eventMethod)
+		public static MenuItem<T> OnContext<T>(this MenuItem<T> menuItem, MenuItemEventAction<T> eventMethod)
 		{
 			menuItem.RightClick += eventMethod;
 			return menuItem;
 		}
 
-		public static MenuItem<T> OnHelp<T>(this MenuItem<T> menuItem, MenuItemEventHandler<T> eventMethod)
+		public static MenuItem<T> OnHelp<T>(this MenuItem<T> menuItem, MenuItemEventAction<T> eventMethod)
 		{
 			menuItem.GetHelp += eventMethod;
 			return menuItem;

@@ -17,6 +17,7 @@ namespace CivOne.Wonders
 		public ApolloProgram() : base(60)
 		{
 			Name = "Apollo Program";
+			TranslatedName = Translate("Apollo Program");
 			RequiredTech = new SpaceFlight();
 			ObsoleteTech = null;
 			SetSmallIcon(7, 4);

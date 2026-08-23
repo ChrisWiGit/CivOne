@@ -1,15 +1,16 @@
+using CivOne.Services;
 using CivOne.Tasks;
 
 namespace CivOne.Units.TribalHuts
 {
-	public class AdvancedTribeEventHandler : ITribalHutEventHandler
+	public class AdvancedTribeHandler : ITribalHutEventHandler
 	{
 		private readonly int X;
 		private readonly int Y;
 
 		private readonly Player player;
 
-		public AdvancedTribeEventHandler(int x, int y, Player player)
+		public AdvancedTribeHandler(int x, int y, Player player)
 		{
 			this.player = player;
 			X = x;
@@ -18,11 +19,7 @@ namespace CivOne.Units.TribalHuts
 
 		public string[] GetEventMessage()
 		{
-			return
-			[
-				"You have discovered",
-				"an advanced tribe."
-			];
+			return TranslationServiceFactory.GetCurrent().TranslateFormattedArray("You have discovered\nan advanced tribe.");
 		}
 
 		public void PostExecute()

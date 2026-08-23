@@ -9,34 +9,33 @@
 
 using CivOne.Enums;
 using CivOne.Leaders;
+using CivOne.Services;
 
 namespace CivOne.Civilizations
 {
 	internal class Russian : BaseCivilization<Stalin>
 	{
-		public Russian() : base(Civilization.Russians, "Russian", "Russians", "stal")
+		public Russian() : base(Civilization.Russians, TranslationServiceFactory.GetCurrent().Translate("Russian"), TranslationServiceFactory.GetCurrent().Translate("Russians"), "stal")
 		{
 			StartX = 44;
 			StartY = 12;
-			CityNames = new[]
-			{
-				"Moscow",
-				"Leningrad",
-				"Kiev",
-				"Minsk",
-				"Smolensk",
-				"Odessa",
-				"Sevastopol",
-				"Tblisi",
-				"Sverdlovsk",
-				"Yakutsk",
-				"Vladivostok",
-				"Novograd",
-				"Krasnoyarsk",
-				"Riga",
-				"Rostov",
-				"Atrakhan"
-			};
+			CityNames = TranslateArray(
+				"Moscow\n" +
+				"Leningrad\n" +
+				"Kiev\n" +
+				"Minsk\n" +
+				"Smolensk\n" +
+				"Odessa\n" +
+				"Sevastopol\n" +
+				"Tblisi\n" +
+				"Sverdlovsk\n" +
+				"Yakutsk\n" +
+				"Vladivostok\n" +
+				"Novograd\n" +
+				"Krasnoyarsk\n" +
+				"Riga\n" +
+				"Rostov\n" +
+				"Atrakhan");
 		}
 	}
 }

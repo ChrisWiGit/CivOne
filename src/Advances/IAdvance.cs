@@ -17,7 +17,7 @@ namespace CivOne.Advances
 		IAdvance[] RequiredTechs { get; }
 		Palette OriginalColours { get; }
 		bool Requires(byte id);
-		bool Is<T>() where T : IAdvance;
-		bool Not<T>() where T : IAdvance;
+		bool IsOf<T>() where T : IAdvance;
+		bool NotOf<T>() where T : IAdvance;
 	}
 }

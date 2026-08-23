@@ -9,17 +9,23 @@
 
 namespace CivOne
 {
-	public class AttributeValue<T>
+	public class AttributeValue<T> where T : notnull
 	{
 		public bool HasValue { get; }
-		public T Value { get; }
+		public T? Value { get; }
 
-		internal static AttributeValue<T> Set(BaseAttribute attribute) => new AttributeValue<T>(attribute);
+		internal static AttributeValue<T> Set(BaseAttribute attribute) => new(attribute);
 
 		private AttributeValue(BaseAttribute attribute)
 		{
-			if (!(HasValue = (attribute != null && attribute.Valid))) return;
-			Value = attribute.GetValue<T>();
+			if (attribute == null || !attribute.Valid)
+			{
+				HasValue = false;
+				return;
+			}
+
+			HasValue = true;
+			Value = attribute.GetRequiredValue<T>();
 		}
 	}
 }

@@ -52,6 +52,7 @@ namespace CivOne.Enums
 		Plus,
 		Minus,
 		Slash,
+		Pause,
 		Other,
 	}
 }

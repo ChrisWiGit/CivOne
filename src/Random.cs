@@ -9,11 +9,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace CivOne
 {
 	/// <remarks>
 	/// This code is based on JCivED[r23] source code by darkpanda. <http://sourceforge.net/p/jcived/code/HEAD/tree/branches/dev/src/dd/civ/logic/CivRandom.java>
+	/// CW refactoring: Removed lists of observers and listeners, as well as all related methods. 
+	/// These were a major source of performance and out of memory issues and not really necessary.
 	/// </remarks>
 	internal class Random
 	{
@@ -25,40 +28,39 @@ namespace CivOne
 		private bool _zf, _cf, _of;
 		
 		private Stack<short> _stack;
+		private readonly object _syncRoot = new();
 		
-		private List<short> _seeds1 = new List<short>();
-		private List<short> _seeds2 = new List<short>();
-		private List<int> _inputs = new List<int>();
-		private List<int> _outputs = new List<int>();
+		private short _lastSeed1, _lastSeed2;
+		private int _lastInput, _lastOutput;
 		
 		private short _ds5BDA, _ds5BDC;
 		
 		private void AssemblyMultiply(short value)
 		{
-			int val = ((int)value) & 0xFFFF;
-			int eax = ((int)_ax) & 0xFFFF;
+			int val = value & 0xFFFF;
+			int eax = _ax & 0xFFFF;
 			eax *= val;
 			_dx = (short)(eax >> 16);
-			_ax = (short)(eax);
-			_cf = (_dx != 0x0);
+			_ax = (short)eax;
+			_cf = _dx != 0x0;
 			_of = _cf;
 		}
 		private void AssemblyAddAX(short value)
 		{
-			int eax = (((int)_ax) & 0xFFFF) + (((int)value) & 0xFFFF);
-			_cf = ((eax & 0xFFFF0000) != 0);
+			int eax = (_ax & 0xFFFF) + (value & 0xFFFF);
+			_cf = (eax & 0xFFFF0000) != 0;
 			_ax = (short)eax;
 		}
 		private void AssemblyAddDX(short value)
 		{
-			int edx = (((int)_ax) & 0xFFFF) + (((int)value) & 0xFFFF);
-			_cf = ((edx & 0xFFFF0000) != 0);
+			int edx = (_ax & 0xFFFF) + (value & 0xFFFF);
+			_cf = (edx & 0xFFFF0000) != 0;
 			_dx = (short)edx;
 		}
 		private void AssemblyAdcDX(short value)
 		{
 			int edx = (short)(_dx + value + (_cf ? 1 : 0));
-			_cf = ((edx & 0xFFFF0000) != 0);
+			_cf = (edx & 0xFFFF0000) != 0;
 			_dx = (short)edx;
 		}
 		private void AssemblyCwd()
@@ -68,7 +70,7 @@ namespace CivOne
 		private void AssemblyRcrAX(int i)
 		{
 			bool tempCF = _cf;
-			_cf = ((_ax & 0x1) == 1);
+			_cf = (_ax & 0x1) == 1;
 			_ax >>= 1;
 			if (tempCF) _ax = (short)((ushort)_ax | 0x8000);
 			else _ax &= 0x7FFF;
@@ -84,7 +86,7 @@ namespace CivOne
 			_ax = arg2;
 			_bx = arg6;
 			_bx |= _ax;
-			_zf = (_bx == 0);
+			_zf = _bx == 0;
 			_bx = arg4;
 			if (_zf)
 			{
@@ -107,7 +109,7 @@ namespace CivOne
 			_ax = 0x43FD;
 			_dx = 3;
 			RandomPartFormula(DS5BDA, DS5BDC, _ax, _dx);
-			AssemblyAddAX((short)(0 & 0x9EC3));
+			AssemblyAddAX(0 & 0x9EC3);
 			AssemblyAdcDX(0x26);
 			DS5BDA = _ax;
 			DS5BDC = _dx;
@@ -171,7 +173,7 @@ namespace CivOne
 			set
 			{
 				_ds5BDA = value;
-				_seeds1.Add(_ds5BDA);
+				_lastSeed1 = _ds5BDA;
 			}
 		}
 		
@@ -184,29 +186,29 @@ namespace CivOne
 			set
 			{
 				_ds5BDC = value;
-				_seeds1.Add(_ds5BDC);
+				_lastSeed2 = _ds5BDC;
 			}
 		}
 		
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
-			if (obj.GetType() != typeof(Random))
+			if (obj is not Random)
 				return false;
 				
 			Random tr2 = (Random)obj;
 			
 			bool equal = true;
 			
-			equal &= (_initialSeed == tr2._initialSeed);
-			equal &= (_counter == tr2._counter);
-			equal &= (_ds5BDA == tr2._ds5BDA);
-			equal &= (_ds5BDC == tr2._ds5BDC);
-			equal &= (_stack.Equals(tr2._stack));
+			equal &= _initialSeed == tr2._initialSeed;
+			equal &= _counter == tr2._counter;
+			equal &= _ds5BDA == tr2._ds5BDA;
+			equal &= _ds5BDC == tr2._ds5BDC;
+			equal &= _stack.Equals(tr2._stack);
 			
-			equal &= (_seeds1.Equals(tr2._seeds1));
-			equal &= (_seeds2.Equals(tr2._seeds2));
-			equal &= (_inputs.Equals(tr2._inputs));
-			equal &= (_outputs.Equals(tr2._outputs));
+			equal &= _lastSeed1 == tr2._lastSeed1;
+			equal &= _lastSeed2 == tr2._lastSeed2;
+			equal &= _lastInput == tr2._lastInput;
+			equal &= _lastOutput == tr2._lastOutput;
 			
 			return equal;
 		}
@@ -218,21 +220,12 @@ namespace CivOne
 		
 		public int[] GetStatus(int i)
 		{
-			int[] status = new int[4];
-			if (i < 0 | i >= _inputs.Count)
-			{
-				i = _inputs.Count;
-			}
-			status[0] = _seeds1[i];
-			status[1] = _seeds2[i];
-			status[2] = _inputs[i];
-			status[3] = _outputs[i];
-			
+			int[] status = [_lastSeed1, _lastSeed2, _lastInput, _lastOutput];
 			return status;
 		}
 		public int[] GetStatus()
 		{
-			return GetStatus((int)_counter - 1);
+			return GetStatus(0);
 		}
 		
 		/// <summary>
@@ -242,20 +235,26 @@ namespace CivOne
 		/// <returns>A 32-bit signed integer greater than or equal to zero and less than <paramref name="max"/>.</returns>
 		public int Next(int max)
 		{
-			_inputs.Add(max);
-			DoRandom(Convert.ToInt16(max));
-			_counter++;
-			_outputs.Add((int)_ax);
-			return _ax;
+			lock (_syncRoot)
+			{
+				_lastInput = max;
+				DoRandom(Convert.ToInt16(max));
+				_counter++;
+				_lastOutput = _ax;
+				return _ax;
+			}
 		}
 		
 		public int Next(int min, int max)
 		{
-			_inputs.Add(max - min);
-			DoRandom(Convert.ToInt16(max - min));
-			_counter++;
-			_outputs.Add((int)_ax);
-			return _ax + min;
+			lock (_syncRoot)
+			{
+				_lastInput = max - min;
+				DoRandom(Convert.ToInt16(max - min));
+				_counter++;
+				_lastOutput = _ax;
+				return _ax + min;
+			}
 		}
 
 		/// <summary>
@@ -273,6 +272,36 @@ namespace CivOne
 			if (percent >= 100) return true;
 
 			return Next(0, 100) < percent;
+		}
+
+		/// <summary>
+		/// Determines if a random event occurs based on a fractional chance defined by a numerator and denominator.
+		/// For example, a 1 in 4 chance would be represented as numerator=1 and denominator=4. The method returns true if the random event occurs, and false otherwise.
+		/// The method generates a random number between 0 (inclusive) and the denominator (exclusive) and checks if it is less than the numerator. 
+		/// If the numerator is greater than or equal to the denominator, the method will always return true. 
+		/// If the numerator is less than or equal to zero, the method will always return false.
+		/// Use this method when you want to represent probabilities that are not easily expressed as a percentage, such as a 1 in 3 chance (numerator=1, denominator=3) or a 2 in 5 chance (numerator=2, denominator=5).
+		/// </summary>
+		/// <param name="numerator">The numerator representing the number of successful outcomes. Must be non-negative.</param>
+		/// <param name="denominator">The denominator representing the total number of possible outcomes. Must be positive.</param>
+		/// <returns>True if the random event occurs, false otherwise.</returns>
+		public bool Hit(int numerator, int denominator)
+		{
+			ArgumentOutOfRangeException.ThrowIfNegativeOrZero(denominator);
+
+			if (numerator <= 0)
+			{
+				Debug.Assert(numerator == 0, "Numerator should be non-negative");
+				return false;
+			}
+
+			if (numerator >= denominator)
+			{
+				Debug.Assert(numerator == denominator, "Numerator should be less than or equal to denominator");
+				return true;
+			}
+
+			return Next(0, denominator) < numerator;
 		}
 		
 		public Random(int seed = -1)

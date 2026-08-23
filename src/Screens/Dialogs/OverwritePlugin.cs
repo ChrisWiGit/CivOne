@@ -18,31 +18,28 @@ namespace CivOne.Screens.Dialogs
 	{
 		private readonly string _source, _destination, _filename;
 
+		private readonly IPluginOverwriteService _overwriteService;
+
 		private void ConfirmOverwrite(object sender, EventArgs args)
 		{
-			Plugin plugin = Reflect.Plugins().FirstOrDefault(x => x.Filename == _filename && !x.Deleted);
-			if (plugin != null)
-			{
-				plugin.Delete();
-			}
-			File.Copy(_source, _destination);
-			Reflect.LoadPlugin(_destination);
-
+			_overwriteService.ConfirmOverwrite(_source, _destination, _filename);
 			Destroy();
 		}
 
-		protected override void FirstUpdate()
+		protected override IMenu? CreateManagedMenu()
 		{
 			Menu menu = new Menu(Palette, Selection(3, 20, 160, 16))
 			{
 				X = 73,
 				Y = 100,
+				CenterTo320Coordinates = true,
 				MenuWidth = 160,
 				ActiveColour = 11,
 				TextColour = 5,
 				FontId = 0
 			};
-			foreach (string choice in new [] { "No, keep existing", "Yes, overwrite" })
+			string[] choices = [Translate("No, keep existing"), Translate("Yes, overwrite")];
+			foreach (string choice in choices)
 			{
 				menu.Items.Add(choice);
 			}
@@ -51,17 +48,52 @@ namespace CivOne.Screens.Dialogs
 
 			menu.MissClick += Cancel;
 			menu.Cancel += Cancel;
-			AddMenu(menu);
+			return menu;
 		}
 
-		public OverwritePlugin(string source, string destination) : base(70, 80, 164, 39)
+		public OverwritePlugin(string source, string destination, IPluginOverwriteService overwriteService) : base(70, 80, 164, 39)
 		{
+			_overwriteService = overwriteService ?? throw new ArgumentNullException(nameof(overwriteService));
 			_source = source;
 			_destination = destination;
 			_filename = Path.GetFileName(destination);
 
-			DialogBox.DrawText("Overwrite existing plugin", 0, 15, 5, 5);
-			DialogBox.DrawText($"file {_filename}?", 0, 15, 5, 13);
+			DialogBox.DrawText(Translate("Overwrite existing plugin"), 0, 15, 5, 5);
+			DialogBox.DrawText(TranslateFormatted("file {0}?", _filename), 0, 15, 5, 13);
+		}
+	}
+
+	internal static class OverwritePluginDialogFactory
+	{
+		public static IPluginOverwriteService CreateService()
+		{
+			return new PluginOverwriteService();
+		}
+
+		public static IScreen CreateDialog(string source, string destination)
+		{
+			return new OverwritePlugin(source, destination, CreateService());
+		}
+
+		public static IScreen CreateDialog(string source, string destination, IPluginOverwriteService overwriteService)
+		{
+			return new OverwritePlugin(source, destination, overwriteService);
+		}
+	}
+
+	interface IPluginOverwriteService
+	{
+		void ConfirmOverwrite(string source, string destination, string filename);
+	}
+
+	internal class PluginOverwriteService : IPluginOverwriteService
+	{
+		public void ConfirmOverwrite(string source, string destination, string filename)
+		{
+			Plugin? plugin = Reflect.Plugins().FirstOrDefault(x => x.Filename == filename && !x.Deleted);
+			plugin?.Delete();
+			File.Copy(source, destination);
+			Reflect.LoadPlugin(destination);
 		}
 	}
 }

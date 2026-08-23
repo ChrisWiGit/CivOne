@@ -22,6 +22,7 @@ namespace CivOne.Buildings
 		public Palace() : base(20, 5)
 		{
 			Name = "Palace";
+			TranslatedName = Translate("Palace");
 			RequiredTech = new Masonry();
 			SetSmallIcon(0, 0);
 			Type = Building.Palace;

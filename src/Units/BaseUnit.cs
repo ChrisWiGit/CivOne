@@ -22,13 +22,18 @@ using CivOne.Screens.Dialogs;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.UserInterface;
+
 using CivOne.Wonders;
+using System.Diagnostics;
+using CivOne.Services;
 
 namespace CivOne.Units
 {
-	internal abstract class BaseUnit : BaseInstance, IUnit
+#pragma warning disable CA1822 // Mark members as static
+	internal abstract class BaseUnit : BaseInstance, IUnitRestorable
 	{
 		protected int _x, _y;
+		private readonly ConfrontDelegate _confrontDelegate;
 
 		protected Order _order;
 		public Order order
@@ -68,7 +73,7 @@ namespace CivOne.Units
 		{
 			get
 			{
-				return order != Order.None || Sentry || Fortify || FortifyActive || !Goto.IsEmpty;
+				return order != Order.None || Sentry || Fortify || FortifyActive || this.HasGotoDestination();
 			}
 		}
 		public virtual bool HasMovesLeft
@@ -80,17 +85,48 @@ namespace CivOne.Units
 		}
 
 		public bool Veteran { get; set; }
-		public bool FortifyActive { get; private set; }
-		private bool _fortify = false;
+		public bool FortifyActive { get; set; }
+		public Guid? PendingHomeCityGuid { get; set; }
+
+		/// <summary>
+		/// Sets the unit's status flags based on the provided boolean values.
+		/// This is only used to restore the status from YAML, and is not intended to be called directly by game logic.
+		/// Calling the properties does not have the same effect as setting the status via this method, 
+		/// e.g. setting FortifyActive will first show start fortifying the unit (takes one round) and
+		/// shows an F, instead of just put the unit into fortified status with no animation and no F. 
+		/// </summary>
+		void IUnitRestorable.ForceStatus(bool sentry, bool fortifyActive, bool fortify, bool veteran)
+		{
+			byte status = 0;
+			if (sentry)
+			{
+				status |= 0x1;
+			}
+			if (fortify)
+			{
+				status |= 0x8;
+			}
+			else if (fortifyActive)
+			{
+				status |= 0x4;
+			}
+			if (veteran)
+			{
+				status |= 0x20;
+			}
+
+			Status = status;
+		}
+		private bool _fortify;
 		public bool Fortify
 		{
 			get
 			{
-				return (_fortify || FortifyActive);
+				return _fortify || FortifyActive;
 			}
 			set
 			{
-				if (Class != UnitClass.Land) return;
+				if (UnitCategory != UnitClass.Land) return;
 				if (this is Settlers) return;
 				if (!value)
 					_fortify = false;
@@ -128,19 +164,19 @@ namespace CivOne.Units
 		}
 
 		public bool Moving => Movement != null;
-		public MoveUnit Movement { get; protected set; }
+		public MoveUnit? Movement { get; protected set; }
 
 		private int AttackStrength(IUnit defendUnit)
 		{
 			// Step 1: Determine the nominal attack value of the attacking unit and multiply it by 8.
-			int attackStrength = ((int)Attack * 8);
+			int attackStrength = (int)Attack * 8;
 
 			if (Owner == 0)
 			{
 				// Step 2: If the attacking unit is a Barbarian unit and the defending unit is player-controlled, multiply the attack strength by the Difficulty Modifier, then divide it by 4.
 				if (Human == defendUnit.Owner)
 				{
-					attackStrength *= (Game.Difficulty + 1);
+					attackStrength *= Game.Difficulty + 1;
 					attackStrength /= 4;
 				}
 
@@ -152,7 +188,7 @@ namespace CivOne.Units
 
 				// Step 4: If the attacking unit is a Barbarian unit and the defending unit is inside a city and the defending civilization does not control any other cities, set the attack strength to zero.
 				// This actually makes the defending unit invincible in this special case. Might well save you from being obliterated by that unlucky hut at 3600BC.
-				if (defendUnit.Tile.City != null && Game.GetPlayer(defendUnit.Owner).Cities.Length == 1)
+				if (defendUnit.Tile.City != null && Game.GetPlayer(defendUnit.Owner)?.Cities.Length == 1)
 				{
 					attackStrength = 0;
 				}
@@ -167,7 +203,7 @@ namespace CivOne.Units
 			// Step 6: If the attacking unit is a veteran unit, increase the attack strength by 50%.
 			if (Veteran)
 			{
-				attackStrength += (attackStrength / 2);
+				attackStrength += attackStrength / 2;
 			}
 
 			// Step 7: If the attacking unit has only 0.2 movement points left, multiply the attack strength by 2, then divide it by 3. If the attacking unit has only 0.1 movement points left, then just divide by 3 instead.
@@ -196,15 +232,15 @@ namespace CivOne.Units
 			return attackStrength;
 		}
 
-		private int DefendStrength(IUnit defendUnit, IUnit attackUnit)
+		private int DefendStrength(IUnit defendUnit, BaseUnit attackUnit)
 		{
 			// Check City Walls for step 5
-			bool cityWalls = (defendUnit.Tile.City != null && defendUnit.Tile.City.HasBuilding<CityWalls>());
+			bool cityWalls = defendUnit.Tile.City != null && defendUnit.Tile.City.HasBuilding<CityWalls>();
 
 			// Step 1: Determine the nominal defense value of defending unit.
 			int defendStrength = (int)defendUnit.Defense;
 
-			if (defendUnit.Class == UnitClass.Land || (defendUnit.Class == UnitClass.Water && cityWalls && attackUnit.Attack != 12))
+			if (defendUnit.UnitCategory == UnitClass.Land || (defendUnit.UnitCategory == UnitClass.Water && cityWalls && attackUnit.Attack != 12))
 			{
 				int fortificationModifier = 4;
 				if (defendUnit.Tile.Fortress)
@@ -226,7 +262,7 @@ namespace CivOne.Units
 
 			// Step 4: If the defending unit is a sea or air unit, multiply the defense strength by 8.
 			// This effectively treats the Terrain Modifier as 2, regardless of the actual terrain type. It also means that these units will never benefit from the Fortification Modifier.
-			if (defendUnit.Class != UnitClass.Land && (!cityWalls || attackUnit.Attack == 12))
+			if (defendUnit.UnitCategory != UnitClass.Land && (!cityWalls || attackUnit.Attack == 12))
 			{
 				defendStrength *= 8;
 			}
@@ -241,32 +277,32 @@ namespace CivOne.Units
 			// Step 6: If the defending unit is a veteran unit, increase the defense strength by 50%.
 			if (defendUnit.Veteran)
 			{
-				defendStrength += (defendStrength / 2);
+				defendStrength += defendStrength / 2;
 			}
 
 			return defendStrength;
 		}
 
-		private bool AttackOutcome(IUnit attackUnit, ITile defendTile)
+		private bool AttackOutcome(BaseUnit attackUnit, ITile defendTile)
 		{
 			IUnit defendUnit = defendTile.Units.OrderByDescending(x => x.Attack * (x.Veteran ? 1.5 : 1)).ThenBy(x => (int)x.Type).First();
 
 			int attackStrength = AttackStrength(defendUnit);
 			int defenseStrength = DefendStrength(defendUnit, attackUnit);
-			int randomAttack = Common.Random.Next(attackStrength);
-			int randomDefense = Common.Random.Next(defenseStrength);
-			bool win = (randomAttack > randomDefense);
+			int randomAttack = RandomService.NextInt(attackStrength);
+			int randomDefense = RandomService.NextInt(defenseStrength);
+			bool win = randomAttack > randomDefense;
 			if (win && attackUnit.Owner == 0 && defendUnit.Tile.City != null)
 			{
-				 // If the attacking unit is a Barbarian unit and the defending unit is inside a city, then, if the attacking unit won, the procedure will be repeated once
-				 // This time, the attacking unit wins on a tie.
-				randomAttack = Common.Random.Next(attackStrength);
-				randomDefense = Common.Random.Next(defenseStrength);
-				win = (randomAttack >= randomDefense);
+				// If the attacking unit is a Barbarian unit and the defending unit is inside a city, then, if the attacking unit won, the procedure will be repeated once
+				// This time, the attacking unit wins on a tie.
+				randomAttack = RandomService.NextInt(attackStrength);
+				randomDefense = RandomService.NextInt(defenseStrength);
+				win = randomAttack >= randomDefense;
 			}
 
 			// 50% chance to award veteran status to the winner
-			if (Common.Random.Next(100) < 50)
+			if (RandomService.Hit(50))
 			{
 				if (win && !attackUnit.Veteran) attackUnit.Veteran = true;
 				if (!win && !defendUnit.Veteran) defendUnit.Veteran = true;
@@ -275,219 +311,424 @@ namespace CivOne.Units
 			return win;
 		}
 
-		internal virtual bool Confront(int relX, int relY)
+		/// <summary>
+		/// Prepares a hostile move before combat resolution starts.
+		/// </summary>
+		/// <param name="relX">
+		/// Relative target X offset from the unit position.
+		/// </param>
+		/// <param name="relY">
+		/// Relative target Y offset from the unit position.
+		/// </param>
+		/// <returns>
+		/// <see langword="true"/> when the confront pipeline starts and queues work.
+		/// <see langword="false"/> when the attack is blocked or cannot start.
+		/// </returns>
+		/// <remarks>
+		/// Call order starts here.
+		/// This method resolves basic preconditions, creates the movement task, and then calls <see cref="HandleConfront(ITile, int, int, MoveUnit?)"/>.
+		/// Override this method when a unit needs custom pre-checks or a different movement setup before confrontation.
+		/// Keep the default flow to <see cref="HandleConfront(ITile, int, int, MoveUnit?)"/> unless the unit has a fully custom confront pipeline.
+		/// </remarks>
+		internal virtual bool PreConfront(int relX, int relY)
 		{
-            Goto = Point.Empty;             // Cancel any goto mode when Confronting
+			this.ClearGotoDestination();             // Cancel any goto mode when Confronting
 
-			if (Class == UnitClass.Land && (this is Diplomat || this is Caravan))
+			Debug.Assert(this is not Diplomat && this is not Caravan, "PreConfront should not be called for Diplomat or Caravan units, as they have their own special handling.");
+
+
+			ITile moveTarget = Map[X, Y][relX, relY];
+			if (moveTarget == null) return false;
+
+			if (HandleSenateBlock(moveTarget))
 			{
-				// TODO fire-eggs this should never happen? Diplomat/Caravan have overloads
 				return false;
 			}
 
 			Movement = new MoveUnit(relX, relY);
 
-			ITile moveTarget = Map[X, Y][relX, relY];
-			if (moveTarget == null) return false;
-			if (moveTarget.Units.Length == 0 && moveTarget.City != null && moveTarget.City.Owner != Owner)
+			return HandleConfront(moveTarget, relX, relY, Movement);
+		}
+
+		internal virtual void RegisterHostileAction()
+		{
+			Game.RegisterHostileAction();
+		}
+
+		/// <summary>
+		/// Resolves confront outcome after preconditions and movement initialization.
+		/// </summary>
+		/// <param name="moveTarget">
+		/// Target tile that contains the city or defending units.
+		/// </param>
+		/// <param name="relX">
+		/// Relative target X offset from the unit position.
+		/// </param>
+		/// <param name="relY">
+		/// Relative target Y offset from the unit position.
+		/// </param>
+		/// <param name="movement">
+		/// Movement task created by the caller.
+		/// </param>
+		/// <returns>
+		/// Returns the value returned by <see cref="PostConfront(ITile, int, int, MoveUnit?)"/>.
+		/// </returns>
+		/// <remarks>
+		/// Typical call chain: <see cref="PreConfront(int, int)"/> -> <see cref="HandleConfront(ITile, int, int, MoveUnit?)"/> -> <see cref="PostConfront(ITile, int, int, MoveUnit?)"/>.
+		/// This method is responsible for registering hostile state, deciding city capture versus combat, and wiring win or loss handlers.
+		/// Override this method when a unit needs custom confrontation logic.
+		/// If you override, call <see cref="RegisterHostileAction"/> and forward to <see cref="PostConfront(ITile, int, int, MoveUnit?)"/> unless you intentionally replace those behaviors.
+		/// </remarks>
+		internal virtual bool HandleConfront(ITile moveTarget, int relX, int relY, MoveUnit? movement)
+		{
+			RegisterHostileAction();
+			if (IsCapturingEnemyCity(moveTarget))
 			{
-				if (Class != UnitClass.Land) // can't occupy city with sea/air unit
+				if (!TryHandleCityCapture(moveTarget))
 				{
-					GameTask.Enqueue(Message.Error("-- Civilization Note --", TextFile.Instance.GetGameText($"ERROR/OCCUPY")));
-					Movement = null;
 					return false;
 				}
-
-				City capturedCity = moveTarget.City;
-				Movement.Done += (s, a) =>
-				{
-					Action changeOwner = delegate()
-					{
-						Player previousOwner = Game.GetPlayer(capturedCity.Owner);
-
-						if (capturedCity.HasBuilding<Palace>())
-							capturedCity.RemoveBuilding<Palace>();
-						capturedCity.Food = 0;
-						capturedCity.Shields = 0;
-						while (capturedCity.Units.Length > 0)
-							Game.DisbandUnit(capturedCity.Units[0]);
-						capturedCity.Owner = Owner;
-
-						if (!capturedCity.HasBuilding<CityWalls>())
-						{
-							capturedCity.Size--;
-						}
-
-						previousOwner.HandleExtinction();
-					};
-
-					IList<IAdvance> advancesToSteal = GetAdvancesToSteal(capturedCity.Player);
-
-                    if (Human == capturedCity.Owner || Human == Owner)
-					{
-						Player cityOwner = Game.GetPlayer(capturedCity.Owner);
-						float totalSize = cityOwner.Cities.Sum(x => x.Size);
-						int totalGold = cityOwner.Gold;
-
-						// Issue #56 : Gold formula from CivFanatics
-						int captureGold = (int)(totalGold * ((float)capturedCity.Size / totalSize));
-
-                        Game.GetPlayer(capturedCity.Owner).Gold -= (short)captureGold;
-                        Game.CurrentPlayer.Gold += (short)captureGold;
-
-                        string[] lines = { $"{Game.CurrentPlayer.TribeNamePlural} capture",
-                                           $"{capturedCity.Name}. {captureGold} gold",
-                                           "pieces plundered." };
-
-                        EventHandler doneCapture = (s1,a1) =>
-                        {
-                            changeOwner();
-
-                            if (capturedCity.Size == 0 || Human != Owner) return;
-                            GameTask.Insert(Show.CityManager(capturedCity));
-
-							// fire-eggs 20190628 no 'select advance' dialog when non-human is doing the capturing!
-							if (advancesToSteal.Any() && Human == Owner)
-								GameTask.Enqueue(Show.SelectAdvanceAfterCityCapture(Player, advancesToSteal));
-						};
-
-                        if (Game.Animations)
-                        {
-                            Show captureCity = Show.CaptureCity(capturedCity, lines);
-                            captureCity.Done += doneCapture;
-                            GameTask.Insert(captureCity);
-                        }
-                        else
-                        {
-                            IScreen captureNews = new Newspaper(capturedCity, lines, false);
-                            captureNews.Closed += doneCapture;
-                            Common.AddScreen(captureNews);
-                        }
-					}
-					else
-					{
-						changeOwner();
-						if (advancesToSteal.Any())
-							Player.AddAdvance(advancesToSteal.First());
-					}
-					MoveEnd(s, a);
-				};
 			}
-			else if (this is Nuclear)
+			else if (AttackOutcome(this, moveTarget))
 			{
-				int xx = (X - Common.GamePlay.X + relX) * 16;
-				int yy = (Y - Common.GamePlay.Y + relY) * 16;
-				Show nuke = Show.Nuke(xx, yy);
-
-				if (Map[X, Y][relX, relY].City != null)
-					PlaySound("airnuke");
-				else
-					PlaySound("s_nuke");
-
-				nuke.Done += (s, a) =>
-				{
-					foreach (ITile tile in Map.QueryMapPart(X + relX - 1, Y + relY - 1, 3, 3))
-					{
-						while (tile.Units.Length > 0)
-						{
-							Game.DisbandUnit(tile.Units[0]);
-						}
-					}
-				};
-				GameTask.Enqueue(nuke);
-			}
-			else if (AttackOutcome(this, Map[X, Y][relX, relY]))
-			{
-				Movement.Done += (s, a) =>
-				{
-					if (this is Cannon)
-					{
-						PlaySound("cannon");
-					}
-					else if (this is Musketeers || this is Riflemen || this is Armor || this is Artillery || this is MechInf)
-					{
-						PlaySound("s_land");
-					}
-					else
-					{
-						PlaySound("they_die");
-					}
-
-					// fire-eggs 20190702 capture barbarian leader, get ransom
-					IUnit[] attackedUnits = moveTarget.Units;
-
-					CaptureBarbarianLeader(attackedUnits);
-
-					IUnit unit = attackedUnits.FirstOrDefault();
-
-					DestroyAttackedUnit(unit);
-
-					if (MovesLeft == 0)
-					{
-						PartMoves = 0;
-					}
-					else if (MovesLeft > 0)
-					{
-						if (this is Bomber)
-						{
-							SkipTurn();
-						}
-						else
-						{
-							MovesLeft--;
-						}
-					}
-					Movement = null;
-					if (Map[X, Y][relX, relY].City != null)
-					{
-						if (!Map[X, Y][relX, relY].City.HasBuilding<CityWalls>())
-						{
-							Map[X, Y][relX, relY].City.Size--;
-						}
-					}
-				};
+				HandleAttackWin(moveTarget);
 			}
 			else
 			{
-				Movement.Done += (s, a) =>
-				{
-					if (this is Cannon)
-					{
-						PlaySound("cannon");
-					}
-					else if (this is Musketeers || this is Riflemen || this is Armor || this is Artillery || this is MechInf)
-					{
-						PlaySound("s_land");
-					}
-					else
-					{
-						PlaySound("we_die");
-					}
-					GameTask.Insert(Show.DestroyUnit(this, false));
-					Movement = null;
-				};
+				HandleAttackLoss();
 			}
-			GameTask.Insert(Movement);
+
+			return PostConfront(moveTarget, relX, relY, movement);
+		}
+
+		/// <summary>
+		/// Finalizes confront setup by scheduling the prepared movement task.
+		/// </summary>
+		/// <param name="moveTarget">
+		/// Target tile that was confronted.
+		/// </param>
+		/// <param name="relX">
+		/// Relative target X offset from the unit position.
+		/// </param>
+		/// <param name="relY">
+		/// Relative target Y offset from the unit position.
+		/// </param>
+		/// <param name="movement">
+		/// Movement task to enqueue.
+		/// </param>
+		/// <returns>
+		/// Default implementation returns <see langword="false"/> because completion happens asynchronously via queued tasks.
+		/// </returns>
+		/// <remarks>
+		/// This is the last step of the default confront chain.
+		/// Override this method when task scheduling, animation sequencing, or return semantics differ for a specific unit type.
+		/// When overriding, preserve enqueue side effects unless the unit intentionally bypasses normal movement execution.
+		/// </remarks>
+		internal virtual bool PostConfront(ITile moveTarget, int relX, int relY, MoveUnit? movement)
+		{
+			GameTask.Insert(movement);
 			return false;
 		}
 
-		private static void DestroyAttackedUnit(IUnit unit)
+		private bool HandleSenateBlock(ITile moveTarget)
 		{
-			if (unit != null)
+			if (_confrontDelegate.AllowedToConfrontInDemocracy(this, moveTarget))
 			{
-				var task = Show.DestroyUnit(unit, true);
-
-				// fire-eggs 20190729 when destroying last city, check for civ destruction ASAP
-				if (unit.Owner != 0)
-					task.Done += (s1, a1) => { Game.GetPlayer(unit.Owner).HandleExtinction(); };
-
-				GameTask.Insert(task);
+				return false;
 			}
+
+			GameTask.Enqueue(Message.Advisor(Advisor.Defense, false, Translate("The Senate has blocked your attack!")));
+			return true;
+		}
+
+		private bool IsCapturingEnemyCity(ITile moveTarget)
+			=> moveTarget.Units.Length == 0 && moveTarget.City != null && moveTarget.City.CityOwnerPlayerIndex != Owner;
+
+		private bool TryHandleCityCapture(ITile moveTarget)
+		{
+			if (!CanOccupyEnemyCity())
+			{
+				RejectCityCapture();
+				return false;
+			}
+
+			City capturedCity = moveTarget.City;
+			if (Movement != null)
+			{
+				Movement.Done += (_, __) => CompleteCityCapture(capturedCity, null, EventArgs.Empty);
+			}
+			return true;
+		}
+
+		private bool CanOccupyEnemyCity()
+		{
+			return UnitCategory == UnitClass.Land;
+		}
+
+		private void RejectCityCapture()
+		{
+			GameTask.Enqueue(Message.Error(Translate("-- Civilization Note --"), GetGameText($"ERROR/OCCUPY")));
+			Movement = null;
+		}
+
+		private void CompleteCityCapture(City capturedCity, object? sender, EventArgs args)
+		{
+			IList<IAdvance> advancesToSteal = GetAdvancesToSteal(capturedCity.CityOwnerPlayer);
+			Action changeOwner = () => ChangeCapturedCityOwner(capturedCity);
+
+			if (IsHumanInvolvedInCityCapture(capturedCity))
+			{
+				HandleHumanCityCapture(capturedCity, advancesToSteal, changeOwner);
+			}
+			else
+			{
+				HandleAiCityCapture(advancesToSteal, changeOwner);
+			}
+
+			MoveEnd(sender, args);
+		}
+
+		private bool IsHumanInvolvedInCityCapture(City capturedCity)
+		{
+			return Human == capturedCity.CityOwnerPlayerIndex || Human == Owner;
+		}
+
+		private void ChangeCapturedCityOwner(City capturedCity)
+		{
+			Player? previousOwner = Game.GetPlayer(capturedCity.CityOwnerPlayerIndex);
+
+			if (previousOwner == null)
+			{
+				Debug.Assert(false, $"Could not find previous owner of captured city {capturedCity.Name} (owner index {capturedCity.CityOwnerPlayerIndex}). City capture will proceed without handling previous owner's extinction.");
+				return;
+			}
+
+			RemovePalaceFromCapturedCity(capturedCity);
+			ResetCapturedCityProduction(capturedCity);
+			DisbandCapturedCityUnits(capturedCity);
+			TransferCapturedCity(capturedCity);
+
+			previousOwner.HandleExtinction();
+		}
+
+		private static void RemovePalaceFromCapturedCity(City capturedCity)
+		{
+			if (capturedCity.HasBuilding<Palace>())
+			{
+				capturedCity.RemoveBuilding<Palace>();
+			}
+		}
+
+		private static void ResetCapturedCityProduction(City capturedCity)
+		{
+			capturedCity.Food = 0;
+			capturedCity.Shields = 0;
+		}
+
+		private static void DisbandCapturedCityUnits(City capturedCity)
+		{
+			while (capturedCity.Units.Length > 0)
+			{
+				Game.DisbandUnit(capturedCity.Units[0]);
+			}
+		}
+
+		private void TransferCapturedCity(City capturedCity)
+		{
+			capturedCity.CityOwnerPlayerIndex = Owner;
+			capturedCity.TechStolen = false;
+
+			if (!capturedCity.HasBuilding<CityWalls>())
+			{
+				capturedCity.Size--;
+			}
+		}
+
+		private void HandleAiCityCapture(IList<IAdvance> advancesToSteal, Action changeOwner)
+		{
+			changeOwner();
+			StealAdvanceAfterAiCityCapture(advancesToSteal);
+		}
+
+		private void StealAdvanceAfterAiCityCapture(IList<IAdvance> advancesToSteal)
+		{
+			if (advancesToSteal.Any())
+			{
+				Player.AddAdvance(advancesToSteal[0]);
+			}
+		}
+
+		private void HandleHumanCityCapture(City capturedCity, IList<IAdvance> advancesToSteal, Action changeOwner)
+		{
+			int captureGold = PlunderCapturedCityGold(capturedCity);
+			string[] lines = CreateCityCaptureNewsLines(capturedCity, captureGold);
+			EventHandler doneCapture = CreateCityCaptureDoneHandler(capturedCity, advancesToSteal, changeOwner);
+
+			ShowCityCaptureResult(capturedCity, lines, doneCapture);
+		}
+
+		private int PlunderCapturedCityGold(City capturedCity)
+		{
+			Player? cityOwner = Game.GetPlayer(capturedCity.CityOwnerPlayerIndex);
+			if (cityOwner == null)
+			{
+				Debug.Assert(false, $"Could not find owner of captured city {capturedCity.Name} (owner index {capturedCity.CityOwnerPlayerIndex}). City capture will proceed without plundering gold.");
+				return 0;
+			}
+
+			float totalSize = cityOwner.Cities.Sum(x => x.Size);
+			int captureGold = (int)(cityOwner.Gold * ((float)capturedCity.Size / totalSize));
+
+			cityOwner.Gold -= (short)captureGold;
+			Game.CurrentPlayer.Gold += (short)captureGold;
+
+			return captureGold;
+		}
+
+		private static string[] CreateCityCaptureNewsLines(City capturedCity, int captureGold)
+		{
+			return TranslationServiceFactory.GetCurrent().TranslateFormattedArray("{0} capture\n{1}. {2} gold\npieces plundered.", Game.CurrentPlayer.TribeNamePlural, capturedCity.Name, captureGold);
+		}
+
+		private EventHandler CreateCityCaptureDoneHandler(City capturedCity, IList<IAdvance> advancesToSteal, Action changeOwner)
+		{
+			return (s1, a1) =>
+			{
+				changeOwner();
+				OpenCapturedCityManager(capturedCity);
+				OfferAdvanceAfterHumanCityCapture(advancesToSteal);
+			};
+		}
+
+		private void OpenCapturedCityManager(City capturedCity)
+		{
+			if (capturedCity.Size == 0 || Human != Owner)
+			{
+				return;
+			}
+
+			GameTask.Insert(Show.CityManager(capturedCity));
+		}
+
+		private void OfferAdvanceAfterHumanCityCapture(IList<IAdvance> advancesToSteal)
+		{
+			if (advancesToSteal.Any() && Human == Owner)
+			{
+				GameTask.Enqueue(Show.SelectAdvanceAfterCityCapture(Player, advancesToSteal));
+			}
+		}
+
+		private static void ShowCityCaptureResult(City capturedCity, string[] lines, EventHandler doneCapture)
+		{
+			if (Game.Animations)
+			{
+				Show captureCity = Show.CaptureCity(capturedCity, lines);
+				captureCity.Done += doneCapture;
+				GameTask.Insert(captureCity);
+				return;
+			}
+
+			IScreen captureNews = new Newspaper(capturedCity, lines, false);
+			captureNews.Closed += doneCapture;
+			Common.AddScreen(captureNews);
+		}
+
+		private void HandleAttackWin(ITile moveTarget)
+		{
+			if (Movement == null)
+			{
+				Debug.Assert(false, "HandleAttackWin called but Movement is null. This should not happen.");
+				return;
+			}
+			Movement.Done += (_, __) =>
+			{
+				PlayAttackSound(attackerWon: true);
+				IUnit[] attackedUnits = moveTarget.Units;
+
+				CaptureBarbarianLeader(attackedUnits);
+				DestroyAttackedUnit(attackedUnits.FirstOrDefault());
+				ConsumeConfrontMoves();
+				Movement = null;
+				ReduceCitySizeAfterSuccessfulAttack(moveTarget);
+			};
+		}
+
+		private void HandleAttackLoss()
+		{
+			if (Movement == null)
+			{
+				return;
+			}
+			Movement.Done += (_, __) =>
+			{
+				PlayAttackSound(attackerWon: false);
+				GameTask.Insert(Show.DestroyUnit(this, false));
+				Movement = null;
+			};
+		}
+
+		private void PlayAttackSound(bool attackerWon)
+		{
+			if (this is Cannon)
+			{
+				PlaySound("cannon");
+			}
+			else if (this is Musketeers || this is Riflemen || this is Armor || this is Artillery || this is MechInf)
+			{
+				PlaySound("s_land");
+			}
+			else
+			{
+				PlaySound(attackerWon ? "they_die" : "we_die");
+			}
+		}
+
+		private void ConsumeConfrontMoves()
+		{
+			if (MovesLeft == 0)
+			{
+				PartMoves = 0;
+			}
+			else if (MovesLeft > 0)
+			{
+				if (this is Bomber)
+				{
+					SkipTurn();
+				}
+				else
+				{
+					MovesLeft--;
+				}
+			}
+		}
+
+		private static void ReduceCitySizeAfterSuccessfulAttack(ITile moveTarget)
+		{
+			if (moveTarget.City != null && !moveTarget.City.HasBuilding<CityWalls>())
+			{
+				moveTarget.City.Size--;
+			}
+		}
+
+		private static void DestroyAttackedUnit(IUnit? unit)
+		{
+			if (unit == null)
+			{
+				Debug.Assert(false, "No unit to destroy after winning attack. This should not happen.");
+				return;
+			}
+			var task = Show.DestroyUnit(unit, true);
+
+			// fire-eggs 20190729 when destroying last city, check for civ destruction ASAP
+			if (unit.Owner != 0)
+				task.Done += (_, __) => { Game.GetPlayer(unit.Owner)?.HandleExtinction(); };
+
+			GameTask.Insert(task);
 		}
 
 		private void CaptureBarbarianLeader(IUnit[] attackedUnits)
 		{
-			bool isAirUnit = this.Class == UnitClass.Air;
+			bool isAirUnit = this.UnitCategory == UnitClass.Air;
 			if (isAirUnit)
 			{
 				// CW: air units cannot capture barbarian leader
@@ -495,58 +736,58 @@ namespace CivOne.Units
 			}
 
 			// CW: only a single barbarian diplomat can be captured and receive ransom
-				bool isBarbarianLeader = attackedUnits.Length == 1 && attackedUnits.First().Owner == Barbarian.Owner && attackedUnits.First() is Diplomat;
+			bool isBarbarianLeader = attackedUnits.Length == 1 && attackedUnits[0].Owner == Barbarian.Owner && attackedUnits[0] is Diplomat;
 
 			if (!isBarbarianLeader)
 			{
 				return;
 			}
 
-			Player.Gold += 100;
+			const int ransomAmount = 100;
+			Player.Gold += ransomAmount;
 
 			if (Human == Player)
 			{
-				Common.AddScreen(new MessageBox("Barbarian leader captured!", "100$ ransom paid."));
+				Common.AddScreen(new MessageBox(Translate("Barbarian leader captured!"), TranslateFormatted("{0}$ ransom paid.", ransomAmount)));
 			}
 		}
 
 		private IList<IAdvance> GetAdvancesToSteal(Player victim)
 		{
-			return victim.Advances
+			return [.. victim.Advances
 			.Where(p => Player.Advances.All(p2 => p2.Id != p.Id))
-			.OrderBy(a => Common.Random.Next(0, 1000))
-			.Take(3)
-			.ToList();
+			.OrderBy(a => RandomService.NextInt(0, 1000))
+			.Take(3)];
 		}
 
-        public bool CanMoveTo(int relX, int relY)
-        {
+		public bool CanMoveTo(int relX, int relY)
+		{
 			// TODO only referenced by land units, move to BaseUnitLand?
 
-            // Issue #93: fix problems with zone-of-control.
+			// Issue #93: fix problems with zone-of-control.
 
-            // refactored out for unit testability
-            ITile moveTarget = Map[X, Y][relX, relY];
-            if (moveTarget == null) return false;
+			// refactored out for unit testability
+			ITile moveTarget = Map[X, Y][relX, relY];
+			if (moveTarget == null) return false;
 
 			// Issue #116: allow ship-borne units to move to any unoccupied tile
-			if (Map[X,Y].IsOcean)
-            {
+			if (Map[X, Y].IsOcean)
+			{
 				return !moveTarget.Units.Any(u => u.Owner != Owner);
-            }
+			}
 
-            var thisUnits = Map[X, Y].GetBorderTiles().SelectMany(t => t.Units);
-            var destUnits = moveTarget.GetBorderTiles().SelectMany(t => t.Units);
+			var thisUnits = Map[X, Y].GetBorderTiles().SelectMany(t => t.Units);
+			var destUnits = moveTarget.GetBorderTiles().SelectMany(t => t.Units);
 
-            // Any enemy units around my position OR the target position?
-            bool thisBlocked = thisUnits.Any(u => u.Owner != Owner);
-            bool destBlocked = destUnits.Any(u => u.Owner != Owner);
-            bool destOK = moveTarget.Units.Any(u => u.Owner == Owner) || moveTarget.HasCity;
+			// Any enemy units around my position OR the target position?
+			bool thisBlocked = thisUnits.Any(u => u.Owner != Owner);
+			bool destBlocked = destUnits.Any(u => u.Owner != Owner);
+			bool destOK = moveTarget.Units.Any(u => u.Owner == Owner) || moveTarget.HasCity;
 
-            // Cannot move from a square adjacent to enemy unit to a square adjacent to enemy unit
-            // but _can_ move to square occupied by own units or to any undefended city square
-            return destOK || !thisBlocked || !destBlocked;
-        }
+			// Cannot move from a square adjacent to enemy unit to a square adjacent to enemy unit
+			// but _can_ move to square occupied by own units or to any undefended city square
+			return destOK || !thisBlocked || !destBlocked;
+		}
 
 		public virtual bool MoveTo(int relX, int relY)
 		{
@@ -555,7 +796,6 @@ namespace CivOne.Units
 			ITile moveTarget = Map[X, Y][relX, relY];
 			if (moveTarget == null) return false;
 
-			// if (!MoveTargets.Any(t => t.X == moveTarget.X && t.Y == moveTarget.Y))
 			if (!MoveTargets.Any(t => t.SameLocationAs(moveTarget)))
 			{
 				// Target tile is invalid
@@ -574,7 +814,6 @@ namespace CivOne.Units
 				return ConfrontEnemy(moveTarget, relX, relY);
 			}
 
-			// if (!MoveTargets.Any(t => t.X == moveTarget.X && t.Y == moveTarget.Y))
 			if (!MoveTargets.Any(t => t.SameLocationAs(moveTarget)))
 			{
 				// Target tile is invalid
@@ -590,12 +829,12 @@ namespace CivOne.Units
 		{
 			// fire-eggs Caravan needs to be able to move into owner city
 			bool hasTargetCity = moveTarget.City != null;
-			bool belongsTargetCityOwner = moveTarget.City?.Owner == Owner;
+			bool belongsTargetCityOwner = moveTarget.City?.CityOwnerPlayerIndex == Owner;
 
 			// if (moveTarget.City != null && (moveTarget.City.Owner != Owner || this is Caravan))
 			if (hasTargetCity && !belongsTargetCityOwner)
 			{
-				return Confront(relX, relY);
+				return PreConfront(relX, relY);
 			}
 
 			return null;
@@ -609,7 +848,7 @@ namespace CivOne.Units
 
 		protected virtual bool ConfrontEnemy(ITile moveTarget, int relX, int relY)
 		{
-			Goto = Point.Empty;             // Cancel any goto mode
+			this.ClearGotoDestination();             // Cancel any goto mode
 
 			if (!CanAttackEnemy(moveTarget))
 			{
@@ -625,24 +864,36 @@ namespace CivOne.Units
 				return true;
 			}
 
-			return Confront(relX, relY);
+			return PreConfront(relX, relY);
 		}
 
 		protected virtual bool CanAttackEnemy(ITile moveTarget)
 		{
 			// Cannot attack not air units. Only if on a Carrier.
-			return moveTarget.Units.Any(u => u.Class != UnitClass.Air) ||
+			return moveTarget.Units.Any(u => u.UnitCategory != UnitClass.Air) ||
 				moveTarget.Units.Any(u => u is not BaseUnitAir);
 		}
 
-		private void MoveEnd(object sender, EventArgs args)
+		private void MoveEnd(object? _, EventArgs __)
 		{
+			if (Movement == null)
+			{
+				Debug.Assert(false, "MoveEnd called but Movement is null. This should not happen.");
+				return;
+			}
+
 			ITile previousTile = Map[_x, _y];
 			X += Movement.RelX;
 			Y += Movement.RelY;
-			if (X == Goto.X && Y == Goto.Y)
+			int normalizedGotoX = GotoDestination.X % Map.WIDTH;
+			if (normalizedGotoX < 0)
 			{
-				Goto = Point.Empty;
+				normalizedGotoX += Map.WIDTH;
+			}
+
+			if (X == normalizedGotoX && Y == GotoDestination.Y)
+			{
+				this.ClearGotoDestination();
 			}
 			Movement = null;
 
@@ -675,24 +926,68 @@ namespace CivOne.Units
 		}
 
 		private static readonly IBitmap[] _iconCache = new IBitmap[28];
-		public virtual IBitmap Icon { get; private set; }
+		public virtual IBitmap? Icon { get; private set; }
 		private string _name;
+		/// <summary>
+		/// Gets the localized display name shown to the player.
+		/// </summary>
+		/// <remarks>
+		/// Derived unit classes must set this from <c>Translate("...")</c>.
+		/// <para>
+		/// The value assigned to <see cref="Name"/> is also used as the invariant Civilopedia key,
+		/// so it must be set to the English base value, for example <c>"Legion"</c>.
+		/// </para>
+		/// <para>
+		/// For units that do not exist in the original game, use a unique
+		/// <see cref="Name"/> value and use the same value as the Civilopedia text key,
+		/// for example <c>"MySpecialUnit"</c>.
+		/// </para>
+		/// <para>
+		/// The test <c>RegisteredCivilopediaNamesTests</c>
+		/// (<c>xunit/src/RegisteredCivilopediaNamesTests.cs</c>) verifies that all items
+		/// have a non-empty translated name.
+		/// </para>
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// Name = "Legion";
+		/// TranslatedName = Translate("Legion");
+		/// </code>
+		/// </example>
+		public string TranslatedName { get; protected set; }
+
+		/// <summary>
+		/// Gets the invariant civilopedia key name.
+		/// </summary>
+		/// <remarks>
+		/// Runtime plugin modifications can override the returned display value.
+		/// The assigned base value should still remain the English Civilopedia key.
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// Name = "Legion";
+		/// TranslatedName = Translate("Legion");
+		/// </code>
+		/// </example>
 		public string Name
 		{
+			// Plugin modifications can change the name of a unit, so check for modifications first before returning the default name.
 			get => Modifications.LastOrDefault(x => x.Name.HasValue)?.Name.Value ?? _name;
 			protected set => _name = value;
 		}
 		public byte PageCount => 2;
 		public Picture DrawPage(byte pageNumber)
 		{
-			string[] text = new string[0];
+			string[] text = [];
+			// keep the original name for looking up the text, even if modifications change the name of the unit
+			string originalName = _name;
 			switch (pageNumber)
 			{
 				case 1:
-					text = Resources.GetCivilopediaText("BLURB2/" + _name.ToUpper());
+					text = Resources.GetCivilopediaText($"BLURB2/{originalName.ToUpperInvariant()}");
 					break;
 				case 2:
-					text = Resources.GetCivilopediaText("BLURB2/" + _name.ToUpper() + "2");
+					text = Resources.GetCivilopediaText($"BLURB2/{originalName.ToUpperInvariant()}2");
 					break;
 				default:
 					Log("Invalid page number: {0}", pageNumber);
@@ -715,38 +1010,56 @@ namespace CivOne.Units
 			{
 				yy += 8;
 				string requiredTech = "";
-				if (RequiredTech != null) requiredTech = RequiredTech.Name;
-				output.DrawText(string.Format("Requires {0}", requiredTech), 6, 9, 100, yy); yy += 8;
-				output.DrawText(string.Format("Cost: {0}0 resources.", Price), 6, 9, 100, yy); yy += 8;
-				output.DrawText(string.Format("Attack Strength: {0}", Attack), 6, 12, 100, yy); yy += 8;
-				output.DrawText(string.Format("Defense Strength: {0}", Defense), 6, 12, 100, yy); yy += 8;
-				output.DrawText(string.Format("Movement Rate: {0}", Move), 6, 5, 100, yy);
+				if (RequiredTech != null)
+				{
+					requiredTech = RequiredTech.TranslatedName;
+				}
+
+				output.DrawText(TranslateFormatted("Requires {0}", requiredTech), 6, 9, 100, yy);
+				yy += 8;
+				output.DrawText(TranslateFormatted("Cost: {0}0 resources.", Price), 6, 9, 100, yy);
+				yy += 8;
+				output.DrawText(TranslateFormatted("Attack Strength: {0}", Attack), 6, 12, 100, yy);
+				yy += 8;
+				output.DrawText(TranslateFormatted("Defense Strength: {0}", Defense), 6, 12, 100, yy);
+				yy += 8;
+				output.DrawText(TranslateFormatted("Movement Rate: {0}", Move), 6, 5, 100, yy);
 			}
 
 			return output;
 		}
 
-		private IAdvance _requiredTech;
-		public IAdvance RequiredTech
+		private IAdvance? _requiredTech;
+		public IAdvance? RequiredTech
 		{
 			get => Modifications.LastOrDefault(x => x.Requires.HasValue)?.Requires.Value.ToInstance() ?? _requiredTech;
 			protected set => _requiredTech = value;
 		}
 
-		public IWonder RequiredWonder { get; protected set; }
+		public IWonder? RequiredWonder { get; protected set; }
 
-		private IAdvance _obsoleteTech;
-		public IAdvance ObsoleteTech
+		private IAdvance? _obsoleteTech;
+		public IAdvance? ObsoleteTech
 		{
 			get => Modifications.LastOrDefault(x => x.Obsolete.HasValue)?.Obsolete.Value.ToInstance() ?? _obsoleteTech;
 			protected set => _obsoleteTech = value;
 		}
 
-		public UnitClass Class { get; protected set; }
+		public UnitClass UnitCategory { get; protected set; }
 		public UnitType Type { get; protected set; }
-		public City Home { get; private set; }
+		private City? _home;
+		public City? Home
+		{
+			get => _home;
+			private set
+			{
+				_home?.RemoveHomeUnit(this);
+				_home = value;
+				_home?.AddHomeUnit(this);
+			}
+		}
 
-        private short _buyPrice;
+		private short _buyPrice;
 		public short BuyPrice
 		{
 			get => Modifications.LastOrDefault(x => x.BuyPrice.HasValue)?.BuyPrice.Value ?? _buyPrice;
@@ -814,7 +1127,7 @@ namespace CivOne.Units
 			}
 		}
 
-		public Point Goto { get; set; }
+		public Point GotoDestination { get; set; }
 
 		public ITile Tile => Map[_x, _y];
 
@@ -834,7 +1147,10 @@ namespace CivOne.Units
 			}
 		}
 
-		public Player Player => Game.GetPlayer(Owner);
+		/// <summary>
+		/// Gets the <see cref="Player"/> instance that owns this unit.
+		/// </summary>
+		public Player Player => Game.GetPlayer(Owner)!;
 
 		public byte Status
 		{
@@ -842,14 +1158,14 @@ namespace CivOne.Units
 			{
 				bool[] bits = new bool[8];
 				for (int i = 0; i < 8; i++)
-					bits[i] = (((value >> i) & 1) > 0);
+					bits[i] = ((value >> i) & 1) > 0;
 				if (bits[0]) Sentry = true;
 				else if (bits[2]) FortifyActive = true;
 				else if (bits[3]) _fortify = true;
-				
-				if (this is Settlers)
+
+				if (this is Settlers settlers)
 				{
-					(this as Settlers).SetStatus(bits);
+					settlers.SetStatus(bits);
 				}
 
 				Veteran = bits[5];
@@ -858,7 +1174,7 @@ namespace CivOne.Units
 		public byte MovesLeft { get; set; }
 		public int MovesSkip { get; set; }
 		public byte PartMoves { get; set; }
-		
+
 		public virtual void NewTurn()
 		{
 			if (FortifyActive)
@@ -873,7 +1189,7 @@ namespace CivOne.Units
 			}
 
 			MovesLeft = Move;
-            PartMoves = 0;
+			PartMoves = 0;
 			Explore();
 		}
 
@@ -883,13 +1199,13 @@ namespace CivOne.Units
 			Home = Map[X, Y].City;
 		}
 
-		public void SetHome(City city) => Home = city;
+		public void SetHome(City? city) => Home = city;
 
 		public void Pillage()
 		{
 			if (!(Tile.Irrigation || Tile.Mine || Tile.Road || Tile.RailRoad))
 				return;
-			
+
 			if (Tile.Irrigation)
 				Tile.Irrigation = false;
 			else if (Tile.Mine)
@@ -901,7 +1217,7 @@ namespace CivOne.Units
 				Tile.RailRoad = false;
 				Tile.Road = true;
 			}
-			SkipTurn();			
+			SkipTurn();
 		}
 
 		public virtual void SkipTurn()
@@ -909,7 +1225,7 @@ namespace CivOne.Units
 			MovesLeft = 0;
 			PartMoves = 0;
 		}
-		
+
 		protected void SetIcon(char page, int col, int row)
 		{
 			if (_iconCache[(int)Type] == null)
@@ -920,23 +1236,23 @@ namespace CivOne.Units
 			Icon = _iconCache[(int)Type];
 		}
 
-		protected MenuItem<int> MenuNoOrders() => MenuItem<int>.Create("No Orders").SetShortcut("space").OnSelect((s, a) => SkipTurn());
+		protected MenuItem<int> MenuNoOrders() => MenuItem<int>.Create(Translate("No Orders")).SetShortcut(Translate("space")).OnSelect((s, a) => SkipTurn());
 
-		protected MenuItem<int> MenuFortify() => MenuItem<int>.Create("Fortify").SetShortcut("f").OnSelect((s, a) => Fortify = true);
+		protected MenuItem<int> MenuFortify() => MenuItem<int>.Create(Translate("Fortify")).SetShortcut("f").OnSelect((s, a) => Fortify = true);
 
-		protected MenuItem<int> MenuWait() => MenuItem<int>.Create("Wait").SetShortcut("w").OnSelect((s, a) => Game.UnitWait());
+		protected MenuItem<int> MenuWait() => MenuItem<int>.Create(Translate("Wait")).SetShortcut("w").OnSelect((s, a) => Game.UnitWait());
 
-		protected MenuItem<int> MenuSentry() => MenuItem<int>.Create("Sentry").SetShortcut("s").OnSelect((s, a) => Sentry = true);
+		protected MenuItem<int> MenuSentry() => MenuItem<int>.Create(Translate("Sentry")).SetShortcut("s").OnSelect((s, a) => Sentry = true);
 
-		protected MenuItem<int> MenuGoTo() => MenuItem<int>.Create("GoTo").SetShortcut("g").OnSelect((s, a) => GameTask.Enqueue(Show.Goto));
+		protected MenuItem<int> MenuGoTo() => MenuItem<int>.Create(Translate("GoTo")).SetShortcut("g").OnSelect((s, a) => GameTask.Enqueue(Show.Goto));
 
-		protected MenuItem<int> MenuPillage() => MenuItem<int>.Create("Pillage").SetShortcut("P").OnSelect((s, a) => Pillage());
+		protected MenuItem<int> MenuPillage() => MenuItem<int>.Create(Translate("Pillage")).SetShortcut("P").OnSelect((s, a) => Pillage());
 
-		protected MenuItem<int> MenuHomeCity() => MenuItem<int>.Create("Home City").SetShortcut("h").OnSelect((s, a) => SetHome());
+		protected MenuItem<int> MenuHomeCity() => MenuItem<int>.Create(Translate("Home City")).SetShortcut("h").OnSelect((s, a) => SetHome());
 
-		protected MenuItem<int> MenuDisbandUnit() => MenuItem<int>.Create("Disband Unit").SetShortcut("D").OnSelect((s, a) => Game.DisbandUnit(this));
+		protected MenuItem<int> MenuDisbandUnit() => MenuItem<int>.Create(Translate("Disband Unit")).SetShortcut(Translate("Shift+D")).OnSelect((s, a) => Game.DisbandUnit(this));
 
-		public abstract IEnumerable<MenuItem<int>> MenuItems { get; }
+		public abstract IEnumerable<MenuItem<int>?> MenuItems { get; }
 
 		protected abstract bool ValidMoveTarget(ITile tile);
 
@@ -945,26 +1261,26 @@ namespace CivOne.Units
 		protected void Explore(int range, bool sea = false)
 		{
 			if (Game == null) return;
-			Player player = Game.GetPlayer(Owner);
-			if (player == null) return;
-			player.Explore(X, Y, range, sea);
-			if (player.IsHuman) Common.GamePlay?.RefreshMap();
+			if (Player == null) return;
+			Player.Explore(X, Y, range, sea);
+			if (Player.IsHuman) Common.GamePlay?.RefreshMap();
 		}
 
 		public virtual void Explore() => Explore(1);
 
-		internal static IBitmap GetBaseSprite(UnitType type)
+		internal static IBitmap? GetBaseSprite(UnitType type)
 		{
-			if (!_modifications.ContainsKey(type)) return null;
-			return _modifications[type].LastOrDefault(x => x.Sprite != null && x.Sprite.GifToBitmap() != null)?.Sprite.GifToBitmap();
+			if (!_modifications.TryGetValue(type, out List<UnitModification>? value)) return null;
+
+			return value.LastOrDefault(x => x.Sprite?.GifToBitmap() != null)?.Sprite?.GifToBitmap();
 		}
 
-		private static Dictionary<UnitType, List<UnitModification>> _modifications = new Dictionary<UnitType, List<UnitModification>>();
+		private static Dictionary<UnitType, List<UnitModification>> _modifications = [];
 		internal static void LoadModifications()
 		{
 			_modifications.Clear();
 
-			UnitModification[] unitModifications = Reflect.GetModifications<UnitModification>().ToArray();
+			UnitModification[] unitModifications = [.. Reflect.GetModifications<UnitModification>()];
 			if (unitModifications.Length == 0) return;
 
 			Log("Applying unit modifications");
@@ -972,13 +1288,13 @@ namespace CivOne.Units
 			foreach (UnitModification modification in Reflect.GetModifications<UnitModification>())
 			{
 				if (!_modifications.ContainsKey(modification.UnitType))
-					_modifications.Add(modification.UnitType, new List<UnitModification>());
+					_modifications.Add(modification.UnitType, []);
 				_modifications[modification.UnitType].Add(modification);
 			}
 
 			Log("Finished applying unit modifications");
 		}
-		public IEnumerable<UnitModification> Modifications => _modifications.ContainsKey(Type) ? _modifications[Type].ToArray() : new UnitModification[0];
+		public IEnumerable<UnitModification> Modifications => _modifications.TryGetValue(Type, out List<UnitModification>? value) ? [.. value] : Array.Empty<UnitModification>();
 
 		public byte FuelOrProgress { get; set; }
 		public byte Fuel { get => FuelOrProgress; set => FuelOrProgress = value; }
@@ -992,12 +1308,13 @@ namespace CivOne.Units
 				{
 					return 0;
 				}
-				return Game.Instance.GetCities().Select(c => Common.DistanceToTile(_x, _y, c.X, c.Y)).Min();
+				return Game.Instance.GetCities().Min(c => Common.DistanceToTile(_x, _y, c.X, c.Y));
 			}
 		}
 
 		protected BaseUnit(byte price = 1, byte attack = 1, byte defense = 1, byte move = 1)
 		{
+			_confrontDelegate = new(new ConfrontGameServicesAdapter());
 			Price = price;
 			BuyPrice = (short)((Price + 4) * 10 * Price);
 			Attack = attack;
@@ -1005,12 +1322,14 @@ namespace CivOne.Units
 			Move = move;
 			X = -1;
 			Y = -1;
-			Goto = Point.Empty;
+			this.ClearGotoDestination();
 			Owner = 0;
 			Status = 0;
 			MovesSkip = 0;
 			RequiredWonder = null;
 			FuelOrProgress = 0;
+			TranslatedName = "";
+			_name = "";
 		}
 	}
 }

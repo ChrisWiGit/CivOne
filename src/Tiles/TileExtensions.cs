@@ -16,6 +16,7 @@ using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.IO;
+using CivOne.Services.Maps;
 using CivOne.Units;
 
 using static CivOne.Enums.Direction;
@@ -24,14 +25,70 @@ namespace CivOne.Tiles
 {
 	public static class TileExtensions
 	{
+		private const int BaseTilePixelSize = 16;
+
 		private static Game Game => Game.Instance;
 		private static Resources Resources => Resources.Instance;
-		private static Palette Palette => Resources["SP257"].Palette;
+
+		private static volatile CachedTilePalette? _tilePalette;
+
+		/// <summary>
+		/// Immutable pairing of a cached palette and the resource cache generation it was built from.
+		/// </summary>
+		/// <remarks>
+		/// Keeping both values in a single object lets the palette and its generation be published in one
+		/// atomic reference write, so a concurrent reader can never observe a new palette together with an
+		/// old generation (or the other way round).
+		/// </remarks>
+		private sealed class CachedTilePalette(Palette palette, int generation)
+		{
+			public Palette Palette { get; } = palette;
+			public int Generation { get; } = generation;
+		}
+
+		/// <summary>
+		/// Gets the terrain tile palette, cached across calls.
+		/// </summary>
+		/// <remarks>
+		/// The resource indexer hands out an owned copy of the requested picture, so reading
+		/// <c>Resources["SP257"].Palette</c> copied the full 320x200 tile sheet plus two palettes on every
+		/// access, and the copy was discarded undisposed. This property is read once per rendered tile, so
+		/// a zoomed-out map redraw did that thousands of times per frame.
+		/// The cached copy is rebuilt when <see cref="Graphics.Resources.CacheGeneration"/> changes, which
+		/// happens whenever the resources are discarded (for example after a graphics mode change).
+		/// The replaced palette is deliberately not disposed: resource caches are also read from the
+		/// background preload task, so another thread may still be copying the old palette. Disposing it
+		/// here would free its unmanaged buffer while it is in use. <see cref="Palette"/> derives from
+		/// <see cref="IO.BaseUnmanaged"/>, whose finalizer releases the buffer once no reader holds it.
+		/// </remarks>
+		private static Palette Palette
+		{
+			get
+			{
+				int generation = Graphics.Resources.CacheGeneration;
+				CachedTilePalette? cached = _tilePalette;
+				if (cached != null && cached.Generation == generation)
+				{
+					return cached.Palette;
+				}
+
+				using Picture tileSheet = Resources["SP257"];
+				CachedTilePalette rebuilt = new(tileSheet.Palette.Copy(), generation);
+				_tilePalette = rebuilt;
+				return rebuilt.Palette;
+			}
+		}
 		private static Settings Settings => Settings.Instance;
+		private static IMapBitmapScaler MapBitmapScaler => MapBitmapScalerFactory.GetDefault();
 		
 		private static bool GFX256 => (Settings.GraphicsMode == GraphicsMode.Graphics256);
 
 		private static TextSettings CityLabel = TextSettings.ShadowText(11, 5);
+
+		private static void LogNullTile(string methodName)
+		{
+			RuntimeHandler.Runtime.Log("TileExtensions.{0}: tile was null", methodName);
+		}
 
         private static bool DrawRoad(this ITile tile) => (tile.Road || tile.RailRoad) && (!tile.RailRoad || (tile.RailRoad && tile.BorderRoads() != tile.BorderRailRoads()));
         private static bool DrawRailRoad(this ITile tile) => tile.RailRoad;
@@ -48,26 +105,42 @@ namespace CivOne.Tiles
 
 		public static Terrain GetBorderType(this ITile tile, Direction direction)
 		{
+			if (tile == null)
+			{
+				Debug.Assert(false, "TileExtensions.GetBorderType: tile was null");
+				LogNullTile(nameof(GetBorderType));
+				return Terrain.None;
+			}
+
 			ITile borderTile = GetBorderTile(tile, direction);
 			if (borderTile == null) return Terrain.None;
 			if (borderTile.Type == Terrain.Grassland2) return Terrain.Grassland1;
 			return borderTile.Type;
 		}
 
-		public static ITile GetBorderTile(this ITile tile, Direction direction)
+		public static ITile GetBorderTile(this ITile? tile, Direction direction)
 		{
-			switch (direction)
+			if (tile == null)
 			{
-				case North: return tile[0, -1];
-				case East: return tile[1, 0];
-				case South: return tile[0, 1];
-				case West: return tile[-1, 0];
-				case NorthWest: return tile[-1, -1];
-				case NorthEast: return tile[1, -1];
-				case SouthWest: return tile[-1, 1];
-				case SouthEast: return tile[1, 1];
+				Debug.Assert(false, "TileExtensions.GetBorderTile: tile was null");
+				LogNullTile(nameof(GetBorderTile));
+
+				return null;
 			}
-			return null;
+
+			return direction switch
+			{
+				North => tile[0, -1],
+				East => tile[1, 0],
+				South => tile[0, 1],
+				West => tile[-1, 0],
+				NorthWest => tile[-1, -1],
+				NorthEast => tile[1, -1],
+				SouthWest => tile[-1, 1],
+				SouthEast => tile[1, 1],
+				None => tile,
+				_ => throw new ArgumentException($"Invalid direction {direction} in GetBorderTile"),
+			};
 		}
 		
         /// <summary>
@@ -76,12 +149,23 @@ namespace CivOne.Tiles
         /// <param name="tile"></param>
 		public static IEnumerable<ITile> GetBorderTiles(this ITile tile)
 		{
+			if (tile == null)
+			{
+				// CW
+				// Ignore these errors, as they are often caused by 
+				// checking border tiles of ocean tiles at the edge of the map, which is a normal part of gameplay and not worth logging repeatedly.
+				///Debug.Assert(false, "TileExtensions.GetBorderTiles: tile was null");
+				LogNullTile(nameof(GetBorderTiles));
+				yield break;
+			}
+
 			for (int relY = -1; relY <= 1; relY++)
 			for (int relX = -1; relX <= 1; relX++)
 			{
 				if (relX == 0 && relY == 0) continue;
-				if (tile[relX, relY] == null) continue;
-				yield return tile[relX, relY];
+				ITile borderTile = tile[relX, relY];
+				if (borderTile == null) continue;
+				yield return borderTile;
 			}
 		}
 
@@ -91,6 +175,13 @@ namespace CivOne.Tiles
         /// <param name="tile"></param>
 		public static IEnumerable<ITile> CrossTiles(this ITile tile)
         {
+			if (tile == null)
+			{
+				Debug.Assert(false, "TileExtensions.CrossTiles: tile was null");
+				LogNullTile(nameof(CrossTiles));
+				yield break;
+			}
+
             yield return tile[-1, 0];
             yield return tile[0, +1];
             yield return tile[+1, 0];
@@ -183,11 +274,19 @@ namespace CivOne.Tiles
             return tile.Type == Terrain.Forest || tile.Type == Terrain.Jungle || tile.Type == Terrain.Swamp;
         }
 
-		public static IBitmap ToBitmap(this ITile[,] tiles, TileSettings settings = null, Player player = null)
+		/// <summary>
+		/// Creates a bitmap representation of the provided tile array, including optional city labels.
+		/// </summary>
+		/// <param name="tiles">The array of tiles to convert to a bitmap.</param>
+		/// <param name="settings">Optional settings for rendering the tiles.</param>
+		/// <param name="player">Optional player context for visibility checks.</param>
+		/// <returns>A bitmap representation of the tile array. The caller must dispose of the returned bitmap when no longer needed.</returns>
+		public static IBitmap ToBitmap(this ITile[,] tiles, TileSettings? settings = null, Player? player = null, int pixelSize = BaseTilePixelSize)
 		{
-			if (settings == null) settings = TileSettings.Default;
+			settings ??= TileSettings.Default;
+			int safePixelSize = Math.Max(1, pixelSize);
 
-			IBitmap output = new Picture(16 * tiles.GetLength(0), 16 * tiles.GetLength(1), Palette);
+			IBitmap output = new Picture(safePixelSize * tiles.GetLength(0), safePixelSize * tiles.GetLength(1), Palette);
 
 			for (int yy = 0; yy < tiles.GetLength(1); yy++)
 			for (int xx = 0; xx < tiles.GetLength(0); xx++)
@@ -195,8 +294,9 @@ namespace CivOne.Tiles
 				ITile tile = tiles[xx, yy];
 				if (tile == null || player != null && !player.Visible(tile)) continue;
 
-				int x = (xx * 16), y = (yy * 16);
-				output.AddLayer(tile.ToBitmap(settings, player), x, y, dispose: true);
+				int x = xx * safePixelSize;
+				int y = yy * safePixelSize;
+				output.AddLayer(tile.ToBitmap(settings, player, safePixelSize), x, y, dispose: true);
 			}
 
 			if (settings.CityLabels)
@@ -206,8 +306,8 @@ namespace CivOne.Tiles
 				{
 					ITile tile = tiles[xx, yy];
 					if (tile == null || tile.City == null || player != null && !player.Visible(tile)) continue;
-					int x = (xx == 0) ? 0 : (xx * 16) - 8;
-					int y = (yy * 16) + 16;
+					int x = (xx == 0) ? 0 : (xx * safePixelSize) - Math.Max(1, safePixelSize / 2);
+					int y = (yy * safePixelSize) + safePixelSize;
 					string label = tile.City.Name;
 					output.DrawText(label, x, y, CityLabel);
 				}
@@ -216,11 +316,12 @@ namespace CivOne.Tiles
 			return output;
 		}
 
-		public static IBitmap ToBitmap(this ITile tile, TileSettings settings = null, Player player = null)
+		public static IBitmap ToBitmap(this ITile tile, TileSettings? settings = null, Player? player = null, int pixelSize = BaseTilePixelSize)
 		{
 			if (settings == null) settings = TileSettings.Default;
+			int safePixelSize = Math.Max(1, pixelSize);
 
-			IBitmap output = new Picture(16, 16, Palette);
+			Picture output = new(BaseTilePixelSize, BaseTilePixelSize, Palette);
 
 			output.AddLayer(MapTile.TileBase(tile));
 			if (GFX256 && settings.Improvements && tile.DrawIrrigation()) 
@@ -229,9 +330,11 @@ namespace CivOne.Tiles
 
 
             // fire-eggs mine drawing goes under coal
-            var special = MapTile.TileSpecial(tile);
-            if (special != MapTile.Coal)
-			    output.AddLayer(special);
+            ISprite? special = MapTile.TileSpecial(tile);
+            if (special != null && special != MapTile.Coal)
+			{
+				output.AddLayer(special);
+			}
 			
 			// Add tile improvements
 			if (tile.Type != Terrain.River && settings.Improvements)
@@ -281,9 +384,10 @@ namespace CivOne.Tiles
 			{
 				output.AddLayer(Icons.City(tile.City, smallFont: settings.CitySmallFonts));
 				if (settings.ActiveUnit && 
+					player != null && // make sure we have a player to compare visibility against. 
 					tile.Units.Any(u => u == Game.ActiveUnit && u.Owner != Game.PlayerNumber(player)))
 				{
-					output.AddLayer(tile.UnitsToPicture(), -1, -1, dispose: true);
+					output.AddLayer(tile.UnitsToPicture()!, -1, -1, dispose: true);
 				}
 			}
 			
@@ -292,16 +396,26 @@ namespace CivOne.Tiles
 				int unitCount = tile.Units.Count(u => settings.Units || player == null || u.Owner != Game.PlayerNumber(player));
 				if (unitCount > 0)
 				{
-					output.AddLayer(tile.UnitsToPicture(), dispose: true);
+					output.AddLayer(tile.UnitsToPicture()!, dispose: true);
 				}
 			}
 
-			return output;
+			if (safePixelSize == BaseTilePixelSize)
+			{
+				return output;
+			}
+
+			IBitmap scaledOutput = new Picture(safePixelSize, safePixelSize, Palette);
+			using Bytemap scaled = MapBitmapScaler.Scale(output.Bitmap, safePixelSize, safePixelSize);
+			// don't dispose in AddLayer
+			scaledOutput.AddLayer(scaled, dispose: false);
+			output.Dispose();
+			return scaledOutput;
 		}
 
-		public static IBitmap UnitsToPicture(this ITile tile)
+		public static IBitmap? UnitsToPicture(this ITile? tile)
 		{
-			if (tile?.Units.Length == 0)
+			if (tile == null || tile.Units.Length == 0)
 			{
 				return null;
 			}
@@ -320,7 +434,7 @@ namespace CivOne.Tiles
 				return null;
 			}
 
-			IUnit firstUnitToDraw = units.First();
+			IUnit? firstUnitToDraw = units.First();
 
 			
 
@@ -332,11 +446,11 @@ namespace CivOne.Tiles
 
 			if (isActiveUnitOnCurrentTile)
 			{
-				firstUnitToDraw = Game.ActiveUnit;
+				firstUnitToDraw = Game.ActiveUnit!;
 			}
 			else if (tile.IsOcean)
 			{
-				IUnit firstWaterUnit = units.FirstOrDefault(x => x.Class == UnitClass.Water);
+				IUnit? firstWaterUnit = units.FirstOrDefault(x => x.UnitCategory == UnitClass.Water);
 				firstUnitToDraw = firstWaterUnit ?? units.FirstOrDefault(findFirstAvailableUnit => !findFirstAvailableUnit.Sentry);
 			}
 
@@ -367,7 +481,7 @@ namespace CivOne.Tiles
 
 		static System.Func<IUnit, int> WaterUnitsFirst(ITile tile)
 		{
-			return unit => (tile.IsOcean && unit.Class == UnitClass.Water) ? 1 : 0;
+			return unit => (tile.IsOcean && unit.UnitCategory == UnitClass.Water) ? 1 : 0;
 		}
 
 		static System.Func<IUnit, bool> OrMovingUnitFirst()

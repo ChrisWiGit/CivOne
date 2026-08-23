@@ -24,7 +24,7 @@ namespace CivOne.UserInterface
 		{
 			if (menu.Title != null) yield return menu.Title;
 			foreach (MenuItem<T> item in menu.Items)
-				yield return item.Text;
+				yield return item.Text ?? string.Empty;
 		}
 
 		public static int GetMenuWidth<T>(this Menu<T> menu) => menu.GetMenuItemTexts().Max(x => Resources.GetText($" {x}", menu.FontId, 5).Width + 2);
@@ -33,12 +33,18 @@ namespace CivOne.UserInterface
 
 		public static Menu<T> Items<T>(this Menu<T> menu, params MenuItem<T>[] menuItems)
 		{
-			menu.Items.AddRange(menuItems);
+			MenuDescriptionItem<T>? defaultDescription = menuItems.OfType<MenuDescriptionItem<T>>().LastOrDefault();
+			if (defaultDescription != null)
+			{
+				menu.DefaultDescription = defaultDescription.Description;
+			}
+
+			menu.Items.AddRange(menuItems.Where(x => x is not MenuDescriptionItem<T>));
 			menu.MenuWidth = menu.GetMenuWidth();
 			return menu;
 		}
 
-		public static Menu<T> Always<T>(this Menu<T> menu, MenuItemEventHandler<T> action)
+		public static Menu<T> Always<T>(this Menu<T> menu, MenuItemEventAction<T>? action)
 		{
 			if (action != null)
 			{

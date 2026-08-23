@@ -7,7 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-using CivOne.Screens;
+using CivOne.Services.EndGame;
 using CivOne.Units;
 
 namespace CivOne.Tasks
@@ -17,19 +17,24 @@ namespace CivOne.Tasks
 	{
 		private const int TURN_TIME = 10;
 
-		private ITurn _turnObject = null;
-		private IUnit _unit = null;
-		private bool _endTurn = false;
+		private ITurn? _turnObject;
+		private IUnit? _unit;
+		private bool _endTurn;
 
-		private Player _gameOver = null;
+		private Player? _gameOver;
 
-		private int _step = 0;
+		private int _step;
 
-		protected override bool Step()
+		protected override bool NextStep()
 		{
 			if (_unit != null)
 			{
-				Game.CurrentPlayer.AI.Move(_unit);
+				if (Game.CurrentPlayer.AI == null)
+				{
+					Log("Warning: Attempting to move unit {0} for player {1}, but the player has no AI assigned. Ending turn instead.",
+						_unit.GetType().Name, Game.CurrentPlayer.TribeName);
+				}
+				Game.CurrentPlayer.AI?.Move(_unit);
 				EndTask();
 			}
 			if (_endTurn && _step-- <= 0)
@@ -42,38 +47,87 @@ namespace CivOne.Tasks
 
 		public override void Run()
 		{
-			if (_turnObject != null)
-			{
-				_turnObject.NewTurn();
-			}
-			else if (_unit != null)
+			if (HandleNewTurn())
 			{
 				return;
 			}
-			else if (_endTurn)
+
+			if (_unit != null)
 			{
-				if (Game.CurrentPlayer.IsHuman)
-				{
-					_step = TURN_TIME;
-					return;
-				}
-				Game.EndTurn(1);
-				EndTask();
 				return;
 			}
-			else if (_gameOver != null)
+
+			if (PauseHumanEndTurn())
 			{
-				if (_gameOver.IsHuman)
-				{
-					Common.AddScreen(new GameOver());
-				}
-				else
-				{
-					// TODO: Spawn barbarians or respawn civilization
-				}
+				return;
 			}
+
+			if (HandleAiEndTurn())
+			{
+				return;
+			}
+
+			if (HandleGameOver())
+			{
+				return;
+			}
+
 			EndTask();
-			return;
+		}
+
+		private bool PauseHumanEndTurn()
+		{
+			if (!_endTurn || !Game.CurrentPlayer.IsHuman)
+			{
+				return false;
+			}
+
+			_step = TURN_TIME;
+			return true;
+		}
+
+		private bool HandleNewTurn()
+		{
+			if (_turnObject == null)
+			{
+				return false;
+			}
+
+			_turnObject.NewTurn();
+			EndTask();
+			return true;
+		}
+
+		private bool HandleAiEndTurn()
+		{
+			if (!_endTurn || Game.CurrentPlayer.IsHuman)
+			{
+				return false;
+			}
+
+			Game.EndTurn(1);
+			EndTask();
+			return true;
+		}
+
+		private bool HandleGameOver()
+		{
+			if (_gameOver == null)
+			{
+				return false;
+			}
+
+			if (_gameOver.IsHuman)
+			{
+				_ = EndGameServiceFactory.CreateForHuman().HandleDefeatAsync();
+			}
+			else
+			{
+				// TODO: Spawn barbarians or respawn civilization
+			}
+
+			EndTask();
+			return true;
 		}
 
 		public static Turn New(ITurn turnObject)
