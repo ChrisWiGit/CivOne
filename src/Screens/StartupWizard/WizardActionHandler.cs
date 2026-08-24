@@ -8,7 +8,9 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using CivOne.Enums;
 using CivOne.Graphics;
@@ -16,6 +18,8 @@ using CivOne.IO;
 using CivOne.Services;
 using CivOne.Services.Browser;
 using CivOne.Services.Translation;
+using CivOne.Sound.Cvl;
+using CivOne.Sound.Playback;
 
 namespace CivOne.Screens.StartupWizard
 {
@@ -80,19 +84,36 @@ namespace CivOne.Screens.StartupWizard
 				case WizardEntryAction.BrowseSoundFolder:
 						HandleBrowseSoundFolder(engine);
 					return new WizardActionResult(ShouldRefresh: true);
+				case WizardEntryAction.OpenSoundPackScreen:
+						engine.OpenSoundPackPage();
+					return new WizardActionResult(ShouldRefresh: true);
+				case WizardEntryAction.SelectSoundPack:
+						SelectSoundPack(entry.Value, engine);
+					return new WizardActionResult(ShouldRefresh: true);
+				case WizardEntryAction.ToggleTestSound:
+						ToggleTestSound(engine);
+					return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.Continue:
 						if (engine.PageIndex == 3)
 						{
 							Settings.Instance.AspectRatio = engine.ScreenAspectRatio;
 						}
+						if (engine.PageIndex == 4)
+						{
+							StopTestSound(engine);
+						}
 						engine.MoveNext();
 						engine.StatusMessage = string.Empty;
 					return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.Back:
-						if (engine.CloseGamePatchesPage())
+						if (engine.CloseGamePatchesPage() || engine.CloseSoundPackPage())
 						{
 							engine.StatusMessage = string.Empty;
 							return new WizardActionResult(ShouldRefresh: true);
+						}
+						if (engine.PageIndex == 4)
+						{
+							StopTestSound(engine);
 						}
 						engine.MoveBack();
 						engine.StatusMessage = string.Empty;
@@ -288,6 +309,104 @@ namespace CivOne.Screens.StartupWizard
 				RefreshSoundAvailability(state);
 				state.StatusMessage = T("No usable sound files found in selected folder.");
 			}
+		}
+
+		private void SelectSoundPack(string? value, WizardState state)
+		{
+			StopTestSound(state);
+
+			Settings.Instance.SoundPack = value ?? string.Empty;
+			state.SoundPackId = Settings.Instance.SoundPack;
+			state.SoundEnabled = Settings.Instance.Sound != GameOption.Off;
+
+			IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.Instance.SoundsDirectory);
+			state.StatusMessage = TF("Sound pack set to {0}.", SoundPackDisplayName(state.SoundPackId, packs));
+
+			state.CloseSoundPackPage();
+		}
+
+		private void ToggleTestSound(WizardState state)
+		{
+			if (state.IsTestSoundPlaying)
+			{
+				StopTestSound(state);
+				state.StatusMessage = T("Test sound stopped.");
+				return;
+			}
+
+			string soundPackId = state.SoundPackId;
+			IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.Instance.SoundsDirectory);
+			bool isWave = string.Equals(soundPackId, SoundPlaybackStrategyConstants.WaveSoundPack, StringComparison.OrdinalIgnoreCase)
+				|| (string.IsNullOrEmpty(soundPackId) && packs.Count != 1);
+
+			SoundPlaybackStrategyProvider.Current.Abort();
+
+			if (isWave)
+			{
+				bool playedWave = SoundPlaybackStrategyProvider.Current.PlaySound("OPENING");
+				state.IsTestSoundPlaying = playedWave;
+				state.StatusMessage = playedWave
+					? T("Playing test sound.")
+					: T("Test sound could not be played.");
+				return;
+			}
+
+			string packId = string.IsNullOrEmpty(soundPackId) ? packs[0].PackId : soundPackId;
+			SoundPackIndexEntry? tune = LoadSoundPackIndex(packId)?.Tunes.FirstOrDefault();
+			if (tune == null)
+			{
+				state.StatusMessage = T("No test tune available for this sound pack.");
+				return;
+			}
+
+			bool playedTune = SoundPlaybackStrategyProvider.PlayTune(packId, tune);
+			state.IsTestSoundPlaying = playedTune;
+			state.StatusMessage = playedTune
+				? TF("Playing test tune: {0}", tune.Title)
+				: TF("Test tune could not be played: {0}", tune.Title);
+		}
+
+		private static void StopTestSound(WizardState state)
+		{
+			if (!state.IsTestSoundPlaying)
+			{
+				return;
+			}
+
+			SoundPlaybackStrategyProvider.Current.Abort();
+			state.IsTestSoundPlaying = false;
+		}
+
+		private SoundPackIndex? LoadSoundPackIndex(string packId)
+		{
+			string indexPath = Path.Combine(Settings.Instance.SoundsDirectory, packId, SoundPackIndex.FileName);
+			if (!File.Exists(indexPath))
+			{
+				return null;
+			}
+
+			try
+			{
+				return SoundPackIndexJson.Load(indexPath);
+			}
+			catch (InvalidOperationException ex)
+			{
+				_log($"Could not load sound pack index '{indexPath}': {ex.Message}");
+				return null;
+			}
+		}
+
+		private string SoundPackDisplayName(string soundPackId, IReadOnlyList<SoundPackSummary> packs)
+		{
+			if (string.Equals(soundPackId, SoundPlaybackStrategyConstants.NoSoundPack, StringComparison.OrdinalIgnoreCase)) return T("None");
+			if (string.Equals(soundPackId, SoundPlaybackStrategyConstants.WaveSoundPack, StringComparison.OrdinalIgnoreCase)) return T("Wave files");
+			if (string.IsNullOrEmpty(soundPackId)) return packs.Count == 1 ? packs[0].DisplayName : T("Wave files");
+
+			foreach (SoundPackSummary pack in packs)
+			{
+				if (string.Equals(pack.PackId, soundPackId, StringComparison.OrdinalIgnoreCase)) return pack.DisplayName;
+			}
+			return soundPackId;
 		}
 
 		private void HandleOpenProfileFolder(WizardState state)

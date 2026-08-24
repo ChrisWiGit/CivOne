@@ -7,6 +7,8 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+using CivOne.Sound.Playback;
+
 namespace CivOne.Screens.StartupWizard
 {
 	/// <summary>
@@ -78,6 +80,25 @@ namespace CivOne.Screens.StartupWizard
 		/// Toggles the sound on or off and persists the choice to <see cref="Settings"/>.
 		/// </summary>
 		ToggleSound,
+
+		/// <summary>
+		/// Opens the startup wizard page for choosing the sound pack.
+		/// </summary>
+		OpenSoundPackScreen,
+
+		/// <summary>
+		/// Selects the sound pack used for playback. The chosen identifier is stored in
+		/// <see cref="WizardEntry.Value"/>: empty for auto, or one of
+		/// <see cref="SoundPlaybackStrategyConstants.WaveSoundPack"/> /
+		/// <see cref="SoundPlaybackStrategyConstants.NoSoundPack"/> / a sound-pack identifier.
+		/// The choice is persisted to <see cref="Settings"/>.
+		/// </summary>
+		SelectSoundPack,
+
+		/// <summary>
+		/// Plays or stops a short test tune from the currently selected sound pack.
+		/// </summary>
+		ToggleTestSound,
 
 		/// <summary>
 		/// Toggles fast river movement on or off and persists the choice to <see cref="Settings"/>.

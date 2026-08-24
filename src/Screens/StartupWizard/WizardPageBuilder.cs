@@ -14,6 +14,8 @@ using CivOne.Enums;
 using CivOne.IO;
 using CivOne.Services;
 using CivOne.Services.Translation;
+using CivOne.Sound.Cvl;
+using CivOne.Sound.Playback;
 
 namespace CivOne.Screens.StartupWizard
 {
@@ -49,6 +51,7 @@ namespace CivOne.Screens.StartupWizard
 				4 => BuildSoundPage(state),
 				5 => BuildMoreSettingsPage(state),
 				WizardState.GamePatchesPageIndex => BuildGamePatchesPage(state),
+				WizardState.SoundPackPageIndex => BuildSoundPackPage(state),
 				6 => BuildFinalPage(),
 				_ => BuildLanguagePage(state)
 			};
@@ -313,9 +316,11 @@ namespace CivOne.Screens.StartupWizard
 			string soundState = state.SoundEnabled ? T("On") : T("Off");
 			bool hasAnySoundFiles = state.SoundFilesAvailable == true;
 			bool hasMissingSoundFiles = state.MissingSoundFiles.Length > 0;
-			(string Label, string Url)[] links = hasMissingSoundFiles
-				? [(T("Download sounds:"), ProjectPublicLinks.CivWinSoundtrackMod)]
-				: [];
+			// Only shown when there are no sound files at all: the extra link row does not fit
+			// on screen together with the (longer) partial-missing-files message and all 6 entries.
+			(string Label, string Url)[] links = hasAnySoundFiles
+				? []
+				: [(T("Download sounds:"), ProjectPublicLinks.CivWinSoundtrackMod)];
 			string soundFilesState;
 			if (!hasAnySoundFiles)
 			{
@@ -342,6 +347,12 @@ namespace CivOne.Screens.StartupWizard
 				lines.Add(T("You can still play with sound."));
 			}
 
+			IReadOnlyList<SoundPackSummary> packs = GetAvailableSoundPacks();
+			string soundPackName = SoundPackDisplayName(state.SoundPackId, packs);
+			bool resolvedIsWave = IsWaveSoundPack(state.SoundPackId)
+				|| (string.IsNullOrEmpty(state.SoundPackId) && packs.Count != 1);
+			bool testSoundEnabled = !IsNoSoundPack(state.SoundPackId) && (!resolvedIsWave || hasAnySoundFiles);
+
 			return new WizardPage
 			{
 				Title = T("Startup Wizard: Sound"),
@@ -349,14 +360,98 @@ namespace CivOne.Screens.StartupWizard
 				Entries =
 				[
 					new WizardEntry { Number = 1, Text = TF("Toggle sound: {0}", soundState), Action = WizardEntryAction.ToggleSound, Enabled = hasAnySoundFiles || state.SoundEnabled },
-					new WizardEntry { Number = 2, Text = T("Browse sound folder"), Action = WizardEntryAction.BrowseSoundFolder },
-					new WizardEntry { Number = 3, Text = ContinueText(), Action = WizardEntryAction.Continue, Hotkey = HotkeyContinue },
-					new WizardEntry { Number = 4, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
+					new WizardEntry { Number = 2, Text = TF("Sound pack: {0}", soundPackName), Action = WizardEntryAction.OpenSoundPackScreen },
+					new WizardEntry { Number = 3, Text = state.IsTestSoundPlaying ? T("Stop test sound") : T("Test sound"), Action = WizardEntryAction.ToggleTestSound, Enabled = testSoundEnabled },
+					new WizardEntry { Number = 4, Text = T("Browse sound folder"), Action = WizardEntryAction.BrowseSoundFolder },
+					new WizardEntry { Number = 5, Text = ContinueText(), Action = WizardEntryAction.Continue, Hotkey = HotkeyContinue },
+					new WizardEntry { Number = 6, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack }
 				],
 				Links = links,
 				EntriesYOffset = 0
 			};
 		}
+
+		private WizardPage BuildSoundPackPage(WizardState state)
+		{
+			IReadOnlyList<SoundPackSummary> packs = GetAvailableSoundPacks();
+			string currentName = SoundPackDisplayName(state.SoundPackId, packs);
+
+			List<WizardEntry> entries = [];
+			int number = 1;
+
+			entries.Add(new WizardEntry
+			{
+				Number = number++,
+				Text = packs.Count == 1 ? TF("Auto (default): {0}", packs[0].DisplayName) : T("Auto (default) - Wave files"),
+				Action = WizardEntryAction.SelectSoundPack,
+				Value = string.Empty
+			});
+			entries.Add(new WizardEntry
+			{
+				Number = number++,
+				Text = T("Wave files"),
+				Action = WizardEntryAction.SelectSoundPack,
+				Value = SoundPlaybackStrategyConstants.WaveSoundPack
+			});
+			entries.Add(new WizardEntry
+			{
+				Number = number++,
+				Text = T("None"),
+				Action = WizardEntryAction.SelectSoundPack,
+				Value = SoundPlaybackStrategyConstants.NoSoundPack
+			});
+
+			if (packs.Count == 0)
+			{
+				entries.Add(new WizardEntry { Number = number++, Text = T("No sound packs found."), Action = WizardEntryAction.None, Enabled = false });
+			}
+			else
+			{
+				foreach (SoundPackSummary pack in packs)
+				{
+					entries.Add(new WizardEntry
+					{
+						Number = number++,
+						Text = pack.DisplayName,
+						Action = WizardEntryAction.SelectSoundPack,
+						Value = pack.PackId
+					});
+				}
+			}
+
+			entries.Add(new WizardEntry { Number = number, Text = BackText(), Action = WizardEntryAction.Back, Hotkey = HotkeyBack, KeepAlwaysLastPosition = true });
+
+			return new WizardPage
+			{
+				Title = T("Startup Wizard: Sound Pack"),
+				Lines =
+				[
+					T("Choose the sound source used in-game."),
+					TF("Current: {0}", currentName)
+				],
+				Entries = entries,
+				EntriesMaxCount = 7,
+				EntriesYOffset = -1
+			};
+		}
+
+		private static IReadOnlyList<SoundPackSummary> GetAvailableSoundPacks() => SoundPackCatalog.GetAvailablePacks(Settings.Instance.SoundsDirectory);
+
+		private string SoundPackDisplayName(string soundPackId, IReadOnlyList<SoundPackSummary> packs)
+		{
+			if (IsNoSoundPack(soundPackId)) return T("None");
+			if (IsWaveSoundPack(soundPackId)) return T("Wave files");
+			if (string.IsNullOrEmpty(soundPackId)) return packs.Count == 1 ? packs[0].DisplayName : T("Wave files");
+
+			foreach (SoundPackSummary pack in packs)
+			{
+				if (string.Equals(pack.PackId, soundPackId, StringComparison.OrdinalIgnoreCase)) return pack.DisplayName;
+			}
+			return soundPackId;
+		}
+
+		private static bool IsNoSoundPack(string soundPackId) => string.Equals(soundPackId, SoundPlaybackStrategyConstants.NoSoundPack, StringComparison.OrdinalIgnoreCase);
+		private static bool IsWaveSoundPack(string soundPackId) => string.Equals(soundPackId, SoundPlaybackStrategyConstants.WaveSoundPack, StringComparison.OrdinalIgnoreCase);
 
 		private void RefreshSoundAvailability(WizardState state)
 		{
