@@ -7,13 +7,13 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-using System.IO;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.IO.Text;
 using CivOne.Persistence.Factories;
 using CivOne.Services;
 using CivOne.Services.Random;
+using CivOne.Sound.Playback;
 using CivOne.UserInterface;
 
 namespace CivOne
@@ -40,9 +40,8 @@ namespace CivOne
 			if (string.IsNullOrEmpty(filename)) return;
 			if (!Game.Started || !Game.Sound) return;
 			if (Settings.Sound == GameOption.Off) return;
-			if (!File.Exists(filename = filename.GetSoundFile())) return;
 
-			Runtime.PlaySound(filename);
+			_ = SoundPlaybackStrategyProvider.Current.PlaySound(filename);
 		}
 
 		protected bool GFX256 => Settings.GraphicsMode == GraphicsMode.Graphics256;
