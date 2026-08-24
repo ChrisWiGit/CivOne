@@ -24,6 +24,7 @@ using CivOne.Screens.Reports;
 using CivOne.Services;
 using CivOne.Services.Maps;
 using CivOne.Services.Random;
+using CivOne.Sound.Playback;
 using CivOne.Tasks;
 using CivOne.UserInterface;
 
@@ -596,12 +597,8 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 
 			if (Settings.Sound != GameOption.Off)
 			{
-				var opening = Extensions.GetSoundFile("OPENING");
 				// In this stage using Game.PlaySound() is not possible, as the Game instance is not yet created.
-				if (opening != null)
-				{
-					Runtime.PlaySound(opening);
-				}
+				SoundPlaybackStrategyProvider.Current.PlaySound("OPENING");
 			}
 
 			if (!Runtime.Settings.ShowCredits) SkipIntro();
