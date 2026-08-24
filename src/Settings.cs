@@ -52,6 +52,7 @@ namespace CivOne
 		public const int AutoExpandMaxHeight = 720;
 
 		// Set default settings
+		private const string NoSoundPack = "__none__";
 		private string _windowTitle = "CivOne";
 		private GraphicsMode _graphicsMode = GraphicsMode.Graphics256;
 		private bool _fullScreen;
@@ -730,6 +731,7 @@ namespace CivOne
 			{
 				_soundPack = value ?? string.Empty;
 				SetSetting("SoundPack", _soundPack);
+				Sound = string.Equals(_soundPack, NoSoundPack, StringComparison.OrdinalIgnoreCase) ? GameOption.Off : GameOption.On;
 			}
 		}
 

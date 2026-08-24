@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
@@ -17,6 +18,7 @@ using CivOne.Graphics;
 using CivOne.IO;
 using CivOne.Services;
 using CivOne.Sound.Cvl;
+using CivOne.Sound.Playback;
 using CivOne.Services.Translation;
 using CivOne.Tasks;
 using CivOne.UserInterface;
@@ -33,6 +35,12 @@ namespace CivOne.Screens
 	internal class Setup : BaseScreen
 	{
 		private const int MenuFont = 6;
+		private const int MaxMenuItems = 19;
+		private const string NoSoundPack = "__none__";
+		private const string WaveSoundPack = "__wave__";
+		private string? _soundTestMessage;
+		private string? _playingTestPackId;
+		private int? _playingTestTuneId;
 
 		private (string Label, int Width, int Height)[] ExpandSizeOptions() =>
 		[
@@ -446,21 +454,195 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void SoundMenu() => CreateMenu(Translate("In-game sound"), GotoMenu(SettingsMenu, 9),
+		private void SoundMenu() => CreateMenu(Translate("In-game sound"),
 			MenuItem.Create(Translate("Browse for Wave files..."))
 				.WithDescription(Translate("Copy original .WAV sound effects into your profile."))
 				.OnSelect(BrowseForSoundFiles).SetEnabled(!FileSystem.SoundFilesExist()).SetEnabled(!Game.Started),
 			MenuItem.Create(TranslateFormatted("Sound pack: {0}", CurrentSoundPackText()))
 				.WithDescription(Translate("Choose a converted CVL sound pack (e.g. PC Speaker)."))
 				.OnSelect(GotoMenu(SoundPackMenu)),
-			MenuItem.Create(Translate("Back"))
+			MenuItem.Create(Translate("Tests tunes..."))
+				.WithDescription(Translate("Play tunes from the selected sound pack."))
+				.OnSelect(GotoMenu(TestTunesMenu)),
+			CreateSoundTestStatusItem(),
+			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(SettingsMenu, 9))
 		);
+
+		private void TestTunesMenu(int page = 0) => TestTunesMenu(page, 0);
+
+		private void TestTunesMenu(int page, int activeItem)
+		{
+			List<MenuItem<int>> menuItems =
+			[
+				MenuItem.Create(Translate("Back")).OnSelect(StopTestSoundAndReturn)
+			];
+
+			string? packId = CurrentTestSoundPackId();
+			SoundPackIndex? index = packId == null ? null : LoadSoundPackIndex(packId);
+			if (packId == null || index == null)
+			{
+				menuItems.Add(MenuItem.Create(Translate("No sound pack selected.")).Disable());
+			}
+			else if (index.Tunes.Count == 0)
+			{
+				menuItems.Add(MenuItem.Create(Translate("No tunes found.")).Disable());
+			}
+			else
+			{
+				int playingItem = AddPagedTuneItems(menuItems, packId, index.Tunes, page);
+				if (activeItem < 0 && playingItem >= 0)
+				{
+					activeItem = playingItem;
+				}
+			}
+
+			if (menuItems.Count < MaxMenuItems)
+			{
+				menuItems.Add(CreateSoundTestStatusItem());
+			}
+
+			CreateMenu(Translate("Test tunes"), activeItem, [.. menuItems]);
+		}
+
+		private int AddPagedTuneItems(List<MenuItem<int>> menuItems, string packId, List<SoundPackIndexEntry> tunes, int page)
+		{
+			int playingItem = -1;
+			bool hasPreviousPage = page > 0;
+			int navigationCount = hasPreviousPage ? 1 : 0;
+			int tuneSlots = MaxMenuItems - 1 - navigationCount;
+			int firstTune = hasPreviousPage ? page * (tuneSlots - 1) + 1 : 0;
+			bool hasNextPage = tunes.Count - firstTune > tuneSlots;
+
+			if (hasNextPage)
+			{
+				tuneSlots--;
+			}
+
+			if (hasPreviousPage)
+			{
+				menuItems.Add(MenuItem.Create(Translate("Previous page")).OnSelect(GotoMenu(() => TestTunesMenu(page - 1))));
+			}
+
+			foreach (SoundPackIndexEntry tune in tunes.Skip(firstTune).Take(tuneSlots))
+			{
+				int selectedItem = menuItems.Count;
+				if (IsPlayingTestTune(packId, tune))
+				{
+					playingItem = selectedItem;
+				}
+
+				menuItems.Add(MenuItem.Create(TuneText(tune))
+					.OnSelect((s, a) => TestTune(packId, tune, page, selectedItem))
+					.SetActive(() => IsPlayingTestTune(packId, tune)));
+			}
+
+			if (hasNextPage)
+			{
+				menuItems.Add(MenuItem.Create(Translate("Next page")).OnSelect(GotoMenu(() => TestTunesMenu(page + 1))));
+			}
+
+			return playingItem;
+		}
+
+		private void StopTestSoundAndReturn(object sender, MenuItemEventArgs<int> args)
+		{
+			SoundPlaybackStrategyProvider.Current.Abort();
+			ClearPlayingTestTune();
+			_soundTestMessage = Translate("Test sound stopped.");
+			Log(_soundTestMessage);
+			CloseMenus();
+			SoundMenu();
+		}
+
+		private void TestTune(string packId, SoundPackIndexEntry tune, int page, int selectedItem)
+		{
+			if (IsPlayingTestTune(packId, tune))
+			{
+				SoundPlaybackStrategyProvider.Current.Abort();
+				ClearPlayingTestTune();
+				_soundTestMessage = TranslateFormatted("Test tune stopped: {0}", tune.Title);
+				Log(_soundTestMessage);
+				CloseMenus();
+				TestTunesMenu(page, selectedItem);
+				return;
+			}
+
+			SoundPlaybackStrategyProvider.Current.Abort();
+			bool played = SoundPlaybackStrategyProvider.PlayTune(packId, tune);
+			if (played)
+			{
+				_playingTestPackId = packId;
+				_playingTestTuneId = tune.TuneId;
+			}
+			else
+			{
+				ClearPlayingTestTune();
+			}
+
+			_soundTestMessage = played
+				? TranslateFormatted("Test tune started: {0}", tune.Title)
+				: TranslateFormatted("Test tune could not be played: {0}", tune.Title);
+			Log(_soundTestMessage);
+			CloseMenus();
+			TestTunesMenu(page, selectedItem);
+		}
+
+		private bool IsPlayingTestTune(string packId, SoundPackIndexEntry tune)
+		{
+			return _playingTestTuneId == tune.TuneId
+				&& string.Equals(_playingTestPackId, packId, StringComparison.OrdinalIgnoreCase);
+		}
+
+		private void ClearPlayingTestTune()
+		{
+			_playingTestPackId = null;
+			_playingTestTuneId = null;
+		}
+
+		private string TuneText(SoundPackIndexEntry tune)
+		{
+			return TranslateFormatted("{0}: {1}", tune.TuneId, tune.Title);
+		}
+
+		private string? CurrentTestSoundPackId()
+		{
+			if (IsNoSoundPackSelected() || IsWaveSoundPackSelected()) return null;
+			if (!string.IsNullOrEmpty(Settings.SoundPack)) return Settings.SoundPack;
+
+			IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory);
+			return packs.Count == 1 ? packs[0].PackId : null;
+		}
+
+		private SoundPackIndex? LoadSoundPackIndex(string packId)
+		{
+			string indexPath = Path.Combine(Settings.SoundsDirectory, packId, SoundPackIndex.FileName);
+			if (!File.Exists(indexPath)) return null;
+
+			try
+			{
+				return SoundPackIndexJson.Load(indexPath);
+			}
+			catch (InvalidOperationException ex)
+			{
+				Log("Could not load sound pack index '{0}': {1}", indexPath, ex.Message);
+				return null;
+			}
+		}
+
+		private MenuItem<int> CreateSoundTestStatusItem()
+		{
+			return string.IsNullOrEmpty(_soundTestMessage)
+				? MenuItem.CreateSeparator()
+				: MenuItem.Create(_soundTestMessage).Disable();
+		}
 
 		private string CurrentSoundPackText()
 		{
-			if (string.IsNullOrEmpty(Settings.SoundPack)) return Translate("None");
-
 			IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory);
+			if (IsNoSoundPackSelected()) return Translate("None");
+			if (IsWaveSoundPackSelected()) return Translate("Wave files");
+			if (string.IsNullOrEmpty(Settings.SoundPack)) return packs.Count == 1 ? packs[0].DisplayName : Translate("None");
+
 			foreach (SoundPackSummary pack in packs)
 			{
 				if (string.Equals(pack.PackId, Settings.SoundPack, StringComparison.OrdinalIgnoreCase)) return pack.DisplayName;
@@ -468,14 +650,40 @@ namespace CivOne.Screens
 			return Settings.SoundPack;
 		}
 
+		private bool IsNoSoundPackSelected()
+		{
+			return string.Equals(Settings.SoundPack, NoSoundPack, StringComparison.OrdinalIgnoreCase);
+		}
+
+		private bool IsWaveSoundPackSelected()
+		{
+			return string.Equals(Settings.SoundPack, WaveSoundPack, StringComparison.OrdinalIgnoreCase);
+		}
+
+		private bool IsSoundPackActive(SoundPackSummary pack)
+		{
+			if (string.IsNullOrEmpty(Settings.SoundPack))
+			{
+				return SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory).Count == 1;
+			}
+
+			return string.Equals(Settings.SoundPack, pack.PackId, StringComparison.OrdinalIgnoreCase);
+		}
+
 		private void SoundPackMenu()
 		{
 			IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory);
 			List<MenuItem<int>> menuItems =
 			[
-				MenuItem.Create(Translate("None (default)"))
-					.WithDescription(Translate("Use the original .WAV sound effects, no CVL sound pack."))
-					.OnSelect((s, a) => SelectSoundPack(string.Empty)).SetActive(() => string.IsNullOrEmpty(Settings.SoundPack))
+				MenuItem.Create(packs.Count == 1 ? TranslateFormatted("Auto (default): {0}", packs[0].DisplayName) : Translate("Auto (default)"))
+					.WithDescription(Translate("Use the only available sound pack automatically, otherwise use Wave files."))
+					.OnSelect((s, a) => SelectSoundPack(string.Empty)).SetActive(() => string.IsNullOrEmpty(Settings.SoundPack)),
+				MenuItem.Create(Translate("Wave files"))
+					.WithDescription(Translate("Use original .WAV sound effects from your profile."))
+					.OnSelect((s, a) => SelectSoundPack(WaveSoundPack)).SetActive(IsWaveSoundPackSelected),
+				MenuItem.Create(Translate("None"))
+					.WithDescription(Translate("Do not use an external sound format."))
+					.OnSelect((s, a) => SelectSoundPack(NoSoundPack)).SetActive(IsNoSoundPackSelected)
 			];
 
 			if (packs.Count == 0)
@@ -487,7 +695,7 @@ namespace CivOne.Screens
 			{
 				menuItems.AddRange(packs.Select(pack => MenuItem.Create(pack.DisplayName)
 					.OnSelect((s, a) => SelectSoundPack(pack.PackId))
-					.SetActive(() => string.Equals(Settings.SoundPack, pack.PackId, StringComparison.OrdinalIgnoreCase))));
+					.SetActive(() => IsSoundPackActive(pack))));
 			}
 
 			menuItems.Add(MenuItem.Create(Translate("Back")));
@@ -497,9 +705,13 @@ namespace CivOne.Screens
 		private void SelectSoundPack(string packId)
 		{
 			Settings.SoundPack = packId ?? string.Empty;
+			if (Settings.Sound == GameOption.Off)
+			{
+				SoundPlaybackStrategyProvider.Current.Abort();
+			}
 
 			IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory);
-			string displayName = Translate("None");
+			string displayName = SoundPackSelectionText(packs);
 			foreach (SoundPackSummary pack in packs)
 			{
 				if (string.Equals(pack.PackId, Settings.SoundPack, StringComparison.OrdinalIgnoreCase)) displayName = pack.DisplayName;
@@ -507,6 +719,13 @@ namespace CivOne.Screens
 			NotifySoundPackSelection(displayName);
 
 			SoundMenu();
+		}
+
+		private string SoundPackSelectionText(IReadOnlyList<SoundPackSummary> packs)
+		{
+			if (IsNoSoundPackSelected()) return Translate("None");
+			if (IsWaveSoundPackSelected()) return Translate("Wave files");
+			return packs.Count == 1 ? packs[0].DisplayName : Translate("Wave files");
 		}
 
 		private void NotifySoundPackSelection(string packName)
