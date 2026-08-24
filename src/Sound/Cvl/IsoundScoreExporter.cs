@@ -11,26 +11,26 @@ internal sealed class IsoundScoreOptions
     public string PackId { get; init; } = "isound";
     public string DisplayName { get; init; } = "IBM PC Speaker";
 
-    /// <summary>Welche Tunes extrahiert werden sollen. Standard: alle vom Host adressierbaren.</summary>
+    /// <summary>Which tunes to extract. Default: every tune addressable by the host.</summary>
     public IReadOnlyList<int>? TuneIds { get; init; }
 
-    /// <summary>Basis-Tickrate des CIVPLAY-Schedulers.</summary>
+    /// <summary>Base tick rate of the CIVPLAY scheduler.</summary>
     public int FastTickHz { get; init; } = 300;
 
-    /// <summary>SoundWorkerFn läuft jeden n-ten Basis-Tick.</summary>
+    /// <summary>SoundWorkerFn runs every nth base tick.</summary>
     public int WorkerTickDivider { get; init; } = 5;
 
     /// <summary>
-    /// Tunes ohne Sequenz (Steuerfunktionen wie Stop oder Statusabfrage) weglassen,
-    /// statt sie als <see cref="TuneScoreKind.Unsupported"/> mitzuschreiben.
+    /// Skip tunes without a sequence (control functions such as stop or status query)
+    /// instead of writing them out as <see cref="TuneScoreKind.Unsupported"/>.
     /// </summary>
     public bool SkipUnsupported { get; init; } = true;
 }
 
 /// <summary>
-/// Extrahiert die Notendaten aus ISOUND.CVL in ein eigenständiges <see cref="TuneScorePack"/>.
-/// Das Ergebnis wird einmalig als <c>*.score.json</c> abgelegt; zur Laufzeit wird die CVL
-/// danach nicht mehr benötigt.
+/// Extracts the note data from ISOUND.CVL into a standalone <see cref="TuneScorePack"/>.
+/// The result is written once as <c>*.score.json</c>; the CVL is no longer needed at
+/// runtime afterwards.
 /// </summary>
 internal static class IsoundScoreExporter
 {

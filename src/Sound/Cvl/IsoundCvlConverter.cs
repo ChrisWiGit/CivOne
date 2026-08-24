@@ -2,7 +2,7 @@ namespace CivOne.Sound.Cvl;
 
 #nullable enable
 
-/// <summary>Konverter für ISOUND.CVL – IBM-PC-Lautsprecher.</summary>
+/// <summary>Converter for ISOUND.CVL – IBM PC speaker.</summary>
 internal sealed class IsoundCvlConverter : CvlSoundConverterBase
 {
     public const string Id = "pc-speaker";

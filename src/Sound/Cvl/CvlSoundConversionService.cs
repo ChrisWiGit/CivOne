@@ -33,19 +33,19 @@ internal sealed class CvlConversionReport
 
 internal interface ICvlSoundConversionService
 {
-    /// <summary>Konvertiert alle unterstützten CVL-Module eines Ordners nach <paramref name="targetFolder"/>.</summary>
+    /// <summary>Converts all supported CVL modules of a folder into <paramref name="targetFolder"/>.</summary>
     CvlConversionReport ConvertFolder(string sourceFolder, string targetFolder);
 
-    /// <summary>Konvertiert ein einzelnes CVL-Modul.</summary>
+    /// <summary>Converts a single CVL module.</summary>
     CvlConversionResult ConvertFile(string cvlPath, string targetFolder);
 }
 
 /// <summary>
-/// Wandelt die CVL-Soundmodule des Originalspiels einmalig in eigene Notendaten um.
+/// Converts the original game's CVL sound modules into our own note data, once.
 ///
-/// Ergebnis je unterstütztem Modul: ein Ordner <c>&lt;targetFolder&gt;/&lt;packId&gt;/</c> mit einer
-/// <c>*.sound.json</c> je Tune und einer <c>index.json</c>. Danach werden die CVL-Dateien
-/// nicht mehr gebraucht; sie werden auch nicht ins Profil kopiert.
+/// Result per supported module: a folder <c>&lt;targetFolder&gt;/&lt;packId&gt;/</c> containing one
+/// <c>*.sound.json</c> per tune and an <c>index.json</c>. After that the CVL files are no
+/// longer needed; they are also not copied into the profile.
 /// </summary>
 internal sealed class CvlSoundConversionService : ICvlSoundConversionService
 {
@@ -143,7 +143,7 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
         {
             if (converter.CanConvert(image, out string? converterReason)) return converter;
 
-            // Nur die Begründung des Konverters merken, der das Gerät überhaupt bedient.
+            // Only keep the reason from the converter that actually serves this device.
             if (converter.Device == CvlDeviceDetector.Detect(image)) reason = converterReason;
         }
 
@@ -177,8 +177,8 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
                 TotalTicks = tune.TotalTicks
             };
 
-            // Bewusst stumme Tunes bekommen keine Datei, stehen aber im Index. So kann die
-            // Spiellogik "absichtlich still" von "nicht vorhanden" unterscheiden.
+            // Deliberately silent tunes get no file but still appear in the index, so the
+            // game logic can tell "intentionally silent" apart from "not present".
             if (tune.Steps.Count > 0)
             {
                 entry.File = $"{tune.TuneId:00}-{Slug(tune.Title)}{ScoreFileExtension}";

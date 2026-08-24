@@ -9,8 +9,8 @@ namespace CivOne.Sound.Cvl;
 #nullable enable
 
 /// <summary>
-/// Persistenz für <see cref="TuneScorePack"/> (<c>*.score.json</c>). Das ist die Form,
-/// in der CivOne die Musik ausliefert – ohne die originalen CVL-Dateien.
+/// Persistence for <see cref="TuneScorePack"/> (<c>*.score.json</c>). This is the form
+/// in which CivOne ships the music – without the original CVL files.
 /// </summary>
 internal static class TuneScoreJson
 {
@@ -70,7 +70,7 @@ internal static class TuneScoreJson
             if (string.IsNullOrWhiteSpace(tune.Title))
                 throw new InvalidOperationException($"{source}: tune {tune.TuneId} hat keinen title.");
 
-            // Silent und Unsupported dürfen leer sein – eine Sequenz aber nicht.
+            // Silent and Unsupported may be empty – but an actual sequence must not be.
             if (tune.Kind is TuneScoreKind.Music or TuneScoreKind.Effect && tune.Steps.Count == 0)
                 throw new InvalidOperationException($"{source}: tune {tune.TuneId} ist als {tune.Kind} markiert, hat aber keine steps.");
 

@@ -6,13 +6,13 @@ namespace CivOne.Sound.Cvl;
 #nullable enable
 
 /// <summary>
-/// Verbindet die Namen, mit denen die Spiellogik <c>PlaySound</c> aufruft, mit den
-/// Tune-Nummern der CVL-Treiber.
+/// Links the names the game logic uses to call <c>PlaySound</c> with the tune numbers of
+/// the CVL drivers.
 ///
-/// Musik und Herrscherthemen lassen sich eindeutig zuordnen. Für die Effekte
-/// (<c>cannon</c>, <c>s_beep</c>, …) ist die Tune-Nummer noch nicht bekannt; sie bleiben
-/// hier absichtlich offen und werden beim Konvertieren als "nicht zugeordnet" gemeldet.
-/// Die Zuordnung wird pro Pack in die <c>index.json</c> geschrieben und ist dort anpassbar.
+/// Music and leader themes can be mapped unambiguously. For the effects
+/// (<c>cannon</c>, <c>s_beep</c>, …) the tune number is not yet known; they are deliberately
+/// left open here and reported as "unmapped" during conversion. The mapping is written into
+/// the <c>index.json</c> per pack and can be adjusted there.
 /// </summary>
 internal static class SoundNameMap
 {
@@ -22,7 +22,7 @@ internal static class SoundNameMap
         ["wintune"] = 34,
         ["lose2"] = 35,
 
-        // Herrscherthemen – Reihenfolge entspricht den Tunes 5..18.
+        // Leader themes – order matches tunes 5..18.
         ["linc"] = 5,
         ["mont"] = 6,
         ["rams"] = 7,
@@ -45,13 +45,13 @@ internal static class SoundNameMap
         "linc", "mont", "rams", "shak", "napo", "ceas", "stal",
         "alex", "eliz", "hama", "mao", "geng", "gand", "fred",
 
-        // Noch ohne bekannte Tune-Nummer.
+        // Not yet mapped to a known tune number.
         "airnuke", "s_nuke", "s_land", "cannon", "they_die", "we_die", "s_beep"
     ];
 
     public static IReadOnlyDictionary<string, int> Defaults => _defaults;
 
-    /// <summary>Alle Namen, die die Spiellogik derzeit an <c>PlaySound</c> übergibt.</summary>
+    /// <summary>All names the game logic currently passes to <c>PlaySound</c>.</summary>
     public static IReadOnlyList<string> EngineSoundNames => _engineSoundNames;
 
     public static bool TryGetTuneId(string soundName, out int tuneId)

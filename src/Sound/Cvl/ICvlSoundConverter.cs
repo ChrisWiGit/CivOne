@@ -5,29 +5,29 @@ namespace CivOne.Sound.Cvl;
 #nullable enable
 
 /// <summary>
-/// Wandelt ein CVL-Modul eines bestimmten Tonerzeugers in ein <see cref="TuneScorePack"/>.
-/// Pro Gerät gibt es eine Implementierung; der Konvertierungsdienst wählt anhand von
-/// <see cref="CanConvert"/> die passende aus.
+/// Converts a CVL module of a specific sound generator into a <see cref="TuneScorePack"/>.
+/// There is one implementation per device; the conversion service picks the right one via
+/// <see cref="CanConvert"/>.
 /// </summary>
 internal interface ICvlSoundConverter
 {
-    /// <summary>Ordnername und Pack-Id, z.B. "pc-speaker".</summary>
+    /// <summary>Folder name and pack id, e.g. "pc-speaker".</summary>
     string PackId { get; }
 
-    /// <summary>Anzeigename für die Auswahl in den Einstellungen, z.B. "PC Speaker".</summary>
+    /// <summary>Display name for the selection in the settings, e.g. "PC Speaker".</summary>
     string DisplayName { get; }
 
-    /// <summary>Gerät, das dieser Konverter bedient.</summary>
+    /// <summary>Device that this converter serves.</summary>
     CvlDevice Device { get; }
 
-    /// <summary>Prüft, ob dieses Modul von diesem Konverter gelesen werden kann.</summary>
+    /// <summary>Checks whether this module can be read by this converter.</summary>
     bool CanConvert(CvlImage image, out string? reason);
 
-    /// <summary>Extrahiert alle spielbaren Tunes.</summary>
+    /// <summary>Extracts all playable tunes.</summary>
     TuneScorePack Convert(CvlImage image);
 }
 
-/// <summary>Gemeinsame Basis: Gerätevergleich plus Ableitung des Anzeigenamens.</summary>
+/// <summary>Common base: device comparison plus deriving the display name.</summary>
 internal abstract class CvlSoundConverterBase : ICvlSoundConverter
 {
     public abstract string PackId { get; }
@@ -50,7 +50,7 @@ internal abstract class CvlSoundConverterBase : ICvlSoundConverter
 
     public abstract TuneScorePack Convert(CvlImage image);
 
-    /// <summary>Zusätzliche Prüfung, nachdem das Gerät passt (z.B. ob das Codelayout erkannt wird).</summary>
+    /// <summary>Additional check once the device matches (e.g. whether the code layout is recognized).</summary>
     protected virtual bool CanConvertDevice(CvlImage image, out string? reason)
     {
         reason = null;

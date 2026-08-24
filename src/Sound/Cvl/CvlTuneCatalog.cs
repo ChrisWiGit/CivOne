@@ -5,7 +5,7 @@ namespace CivOne.Sound.Cvl;
 #nullable enable
 
 /// <summary>
-/// Bekannte Tune-Nummern der CVL-Module. CIVPLAY erlaubt 3..44; benannt ist nur ein Teil davon.
+/// Known tune numbers of the CVL modules. CIVPLAY allows 3..44; only part of that range is named.
 /// </summary>
 internal static class CvlTuneCatalog
 {
@@ -31,16 +31,16 @@ internal static class CvlTuneCatalog
         [35] = "Lose Music"
     };
 
-    /// <summary>Erste vom Host adressierbare Tune-Nummer.</summary>
+    /// <summary>First tune number addressable by the host.</summary>
     public const int FirstPlayableTuneId = 3;
 
-    /// <summary>Letzte vom Host adressierbare Tune-Nummer.</summary>
+    /// <summary>Last tune number addressable by the host.</summary>
     public const int LastPlayableTuneId = 44;
 
     public static string ResolveTitle(int tuneId)
         => _titles.TryGetValue(tuneId, out string? title) ? title : $"Tune {tuneId}";
 
-    /// <summary>Tunes, die im Original endlos laufen (Titel- und Evolutionsmusik).</summary>
+    /// <summary>Tunes that loop indefinitely in the original (title and evolution music).</summary>
     public static bool IsEndlessLoop(int tuneId) => tuneId is 3 or 4;
 
     public static IEnumerable<int> PlayableTuneIds

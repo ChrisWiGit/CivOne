@@ -14,7 +14,7 @@ internal sealed class SoundPackIndexEntry
     public required string Title { get; set; }
     public TuneScoreKind Kind { get; set; }
 
-    /// <summary>Dateiname im selben Ordner, oder <c>null</c> bei bewusst stummen Tunes.</summary>
+    /// <summary>File name within the same folder, or <c>null</c> for deliberately silent tunes.</summary>
     public string? File { get; set; }
 
     public int StepCount { get; set; }
@@ -22,9 +22,9 @@ internal sealed class SoundPackIndexEntry
 }
 
 /// <summary>
-/// <c>index.json</c> eines Sound-Packs: was der Ordner enthält und welcher Name aus der
-/// Spiellogik auf welche Tune-Nummer zeigt. Die Zuordnung steht hier und nicht in den
-/// Dateinamen, damit die Extraktion treiberneutral bleibt und pro Pack angepasst werden kann.
+/// <c>index.json</c> of a sound pack: what the folder contains and which name from the
+/// game logic points to which tune number. The mapping lives here rather than in the file
+/// names, so extraction stays driver-neutral and can be adjusted per pack.
 /// </summary>
 internal sealed class SoundPackIndex
 {
@@ -39,13 +39,13 @@ internal sealed class SoundPackIndex
 
     public List<SoundPackIndexEntry> Tunes { get; set; } = [];
 
-    /// <summary>Name aus <c>PlaySound</c> -> Tune-Nummer.</summary>
+    /// <summary>Name from <c>PlaySound</c> -> tune number.</summary>
     public Dictionary<string, int> SoundNames { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>Namen, für die dieses Pack keinen Tune anbietet – rein informativ.</summary>
+    /// <summary>Names for which this pack offers no tune – informational only.</summary>
     public List<string> UnmappedSoundNames { get; set; } = [];
 
-    /// <summary>Dateiname des Index innerhalb eines Pack-Ordners.</summary>
+    /// <summary>File name of the index within a pack folder.</summary>
     public const string FileName = "index.json";
 }
 
@@ -65,7 +65,7 @@ internal static class SoundPackIndexJson
         var index = JsonSerializer.Deserialize<SoundPackIndex>(json, _options)
             ?? throw new InvalidOperationException($"Konnte Sound-Pack-Index aus {path} nicht laden.");
 
-        // Nach dem Deserialisieren ist der Vergleicher der Standardvergleicher.
+        // After deserialization the comparer is the default comparer.
         index.SoundNames = new Dictionary<string, int>(index.SoundNames, StringComparer.OrdinalIgnoreCase);
         return index;
     }

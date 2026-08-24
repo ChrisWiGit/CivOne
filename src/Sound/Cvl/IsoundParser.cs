@@ -6,8 +6,8 @@ namespace CivOne.Sound.Cvl;
 #nullable enable
 
 /// <summary>
-/// Aus dem Modul selbst abgeleitete Codeadressen von ISOUND.CVL. Nichts davon ist
-/// fest verdrahtet, damit der Parser nicht an einen einzelnen Build gebunden ist.
+/// Code addresses of ISOUND.CVL derived from the module itself. None of this is
+/// hardcoded, so the parser is not tied to a single build.
 /// </summary>
 internal sealed class IsoundLayout
 {
@@ -17,58 +17,58 @@ internal sealed class IsoundLayout
     public required int EffectPlayer { get; init; }
     public required int EffectParamTable { get; init; }
 
-    /// <summary>Timbre-Code, für den der Treiber ohne Effekt spielt (im 11-14-91-Build 0x7E).</summary>
+    /// <summary>Timbre code for which the driver plays without an effect (0x7E in the 11-14-91 build).</summary>
     public required int PlainTimbreCode { get; init; }
 
-    /// <summary>Erster Code, der in die Effekttabelle zeigt (im 11-14-91-Build 0x65).</summary>
+    /// <summary>First code that points into the effect table (0x65 in the 11-14-91 build).</summary>
     public required int FirstTimbreCode { get; init; }
 
     public int TuneCount => MaxTuneId + 1;
 }
 
-/// <summary>Ergebnis der Analyse eines einzelnen Tune-Handlers.</summary>
+/// <summary>Result of analyzing a single tune handler.</summary>
 internal sealed class IsoundTuneInfo
 {
     public int TuneId { get; init; }
     public TuneScoreKind Kind { get; init; }
     public int HandlerOffset { get; init; }
 
-    /// <summary>Datensegment-Offset der Sequenz, oder -1.</summary>
+    /// <summary>Data-segment offset of the sequence, or -1.</summary>
     public int DataOffset { get; init; } = -1;
 
-    /// <summary>Code-Offset der ansprungenen Player-Routine, oder -1.</summary>
+    /// <summary>Code offset of the player routine the handler jumps to, or -1.</summary>
     public int PlayerOffset { get; init; } = -1;
 
     public List<TuneStep> Steps { get; init; } = [];
 
-    /// <summary>Begründung, falls der Handler nicht als Sequenz interpretierbar war.</summary>
+    /// <summary>Reason why the handler could not be interpreted as a sequence, if any.</summary>
     public string? Diagnostic { get; init; }
 }
 
 /// <summary>
-/// Liest die Tune-Sequenzen aus ISOUND.CVL (IBM-PC-Speaker-Treiber).
+/// Reads the tune sequences from ISOUND.CVL (the IBM PC speaker driver).
 ///
-/// Aufbau, verifiziert am disassemblierten Treiber:
+/// Layout, verified against the disassembled driver:
 /// <code>
 ///   Export[1] (PlayTuneFn):  cmp bx,MaxTuneId ; shl bx,1 ; call word ptr cs:[bx+DispatchTable]
 ///
-///   Handler:                 8D 1E &lt;ptr16&gt;   lea bx,[ptr]   ; ptr ist DATENSEGMENT-relativ
+///   Handler:                 8D 1E &lt;ptr16&gt;   lea bx,[ptr]   ; ptr is DATA-SEGMENT-relative
 ///                            E9 &lt;rel16&gt;      jmp &lt;Player&gt;
 ///
-///   Musik-Record (4 Byte):   +0 byte Timbre/Priorität
-///                            +1 byte Dauer in Worker-Ticks
-///                            +2 word PIT-Divisor (0 = Pause)
+///   Music record (4 bytes):  +0 byte timbre/priority
+///                            +1 byte duration in worker ticks
+///                            +2 word PIT divisor (0 = rest)
 ///
-///   Effekt-Record (10 Byte): +0 word Priorität   +2 word Dauer   +4 word Noise-Maske
-///                            +6 word PIT-Divisor +8 word Slide/Vibrato-Parameter
-///                            Maske 0 = Stille, der Record ist dann nur 6 Byte lang.
+///   Effect record (10 bytes): +0 word priority   +2 word duration   +4 word noise mask
+///                            +6 word PIT divisor +8 word slide/vibrato parameter
+///                            Mask 0 = silence; the record is then only 6 bytes long.
 ///
-///   Ende einer Sequenz:      Wort am Recordanfang == 0
+///   End of a sequence:       word at the start of the record == 0
 /// </code>
 ///
-/// Der Divisor steht wörtlich in der Datei; es gibt <em>keine</em> Note-nach-Frequenz-Tabelle.
-/// Der Timbre-Code wählt bei Musik über eine Tabelle im Codesegment einen Vibrato- oder
-/// Slide-Parameter aus; bei Effekten steht der Parameter direkt im Record.
+/// The divisor is stored literally in the file; there is <em>no</em> note-to-frequency table.
+/// For music, the timbre code selects a vibrato or slide parameter via a table in the code
+/// segment; for effects, the parameter is stored directly in the record.
 /// </summary>
 internal sealed class IsoundParser
 {
@@ -158,7 +158,7 @@ internal sealed class IsoundParser
             };
         }
 
-        // RET / RETF: der Treiber kennt den Tune, spielt aber bewusst nichts (z.B. Tune 4).
+        // RET / RETF: the driver knows the tune but deliberately plays nothing (e.g. tune 4).
         if (opcode is 0xC3 or 0xCB)
         {
             return new IsoundTuneInfo
@@ -218,7 +218,7 @@ internal sealed class IsoundParser
         };
     }
 
-    /// <summary>Effektparameter, den der Treiber für einen Musik-Timbre-Code nachschlägt.</summary>
+    /// <summary>Effect parameter the driver looks up for a music timbre code.</summary>
     public int ResolveMusicEffect(int timbreCode)
     {
         if (timbreCode == Layout.PlainTimbreCode) return 0;
@@ -253,7 +253,7 @@ internal sealed class IsoundParser
 
         while (steps.Count < MaxStepsPerTune)
         {
-            // Der Worker beendet die Sequenz, sobald das Wort am Recordanfang 0 ist.
+            // The worker ends the sequence as soon as the word at the start of the record is 0.
             if (!_image.TryDataWord(p, out ushort head) || head == 0) break;
             if (!_image.TryDataByte(p, out byte timbre)) break;
             if (!_image.TryDataByte(p + 1, out byte duration)) break;
@@ -267,7 +267,7 @@ internal sealed class IsoundParser
                     Duration = duration,
                     Divisor = divisor,
                     Timbre = timbre,
-                    NoiseMask = 1, // der Musikplayer setzt ds:0x6D fest auf 1
+                    NoiseMask = 1, // the music player hardcodes ds:0x6D to 1
                     Effect = ResolveMusicEffect(timbre)
                 });
         }
@@ -288,7 +288,7 @@ internal sealed class IsoundParser
 
             if (noiseMask == 0)
             {
-                // Maske 0 schaltet den Speaker ab; der Record ist dann nur 6 Byte lang.
+                // A mask of 0 turns the speaker off; the record is then only 6 bytes long.
                 steps.Add(new TuneStep { Duration = duration, Divisor = 0, Timbre = priority });
                 p += 6;
                 continue;
@@ -367,7 +367,7 @@ internal sealed class IsoundParser
 
         foreach (int target in targets)
         {
-            // 33 C0 C6 06 <imm16> 01 = xor ax,ax ; mov byte ptr ds:[flag],1  -> Musikplayer
+            // 33 C0 C6 06 <imm16> 01 = xor ax,ax ; mov byte ptr ds:[flag],1  -> music player
             if (musicPlayer < 0 && image.CodeMatches(target, 0x33, 0xC0, 0xC6, 0x06, -1, -1, 0x01))
             {
                 musicPlayer = target;
@@ -408,7 +408,7 @@ internal sealed class IsoundParser
             return false;
         }
 
-        // 83 FB <imm8> = cmp bx,<Code ohne Effekt>
+        // 83 FB <imm8> = cmp bx,<code without effect>
         int compare = image.FindCodePattern(musicPlayer, PlayerScanLength, 0x83, 0xFB);
         if (compare < 0 || !image.TryCodeByte(compare + 2, out byte plain))
         {
@@ -416,7 +416,7 @@ internal sealed class IsoundParser
             return false;
         }
 
-        // 83 EB <imm8> = sub bx,<erster Tabellencode>
+        // 83 EB <imm8> = sub bx,<first table code>
         int subtract = image.FindCodePattern(musicPlayer, PlayerScanLength, 0x83, 0xEB);
         if (subtract < 0 || !image.TryCodeByte(subtract + 2, out byte first))
         {

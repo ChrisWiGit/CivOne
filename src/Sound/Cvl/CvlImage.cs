@@ -8,26 +8,26 @@ namespace CivOne.Sound.Cvl;
 #nullable enable
 
 /// <summary>
-/// Ein geladenes CVL-Overlay (MicroProse "Civilization overlay", DOS-MZ-Executable
-/// mit zusätzlichem Modulkopf am Anfang des Load-Image).
+/// A loaded CVL overlay (MicroProse "Civilization overlay", a DOS MZ executable
+/// with an extra module header at the start of the load image).
 ///
-/// Dateiaufbau:
+/// File layout:
 /// <code>
-///   0x00            MZ-Header, 0x08 = Headergröße in Paragraphen -> Beginn des Load-Image
-///   image + 0x10    20 Byte ASCII-Signatur, z.B. "Civil IBM   11-14-91"
-///   image + 0x28    Codesegment  (bei allen bekannten Modulen 0)
-///   image + 0x2A    Datensegment in Paragraphen, relativ zum Image-Anfang
-///   image + 0x30    Anzahl der Exporte (bei allen bekannten Modulen 11)
-///   image + 0x32    Exporttabelle: Word-Offsets im Codesegment
+///   0x00            MZ header, 0x08 = header size in paragraphs -> start of the load image
+///   image + 0x10    20-byte ASCII signature, e.g. "Civil IBM   11-14-91"
+///   image + 0x28    code segment  (0 for every known module)
+///   image + 0x2A    data segment in paragraphs, relative to the start of the image
+///   image + 0x30    export count (11 for every known module)
+///   image + 0x32    export table: word offsets in the code segment
 /// </code>
 ///
-/// Die beiden Segmentwörter stehen unrelokiert in der Datei (sie sind Ziele der
-/// MZ-Relocation-Tabelle); der DOS-Loader addiert dort das Ladesegment. Da hier das
-/// Image selbst die Basis ist, sind die Rohwerte direkt als Paragraphen-Offsets ab
-/// <see cref="ImageStart"/> verwendbar.
+/// Both segment words are stored unrelocated in the file (they are targets of the
+/// MZ relocation table); the DOS loader adds the load segment to them there. Since the
+/// image itself is the base here, the raw values can be used directly as paragraph
+/// offsets from <see cref="ImageStart"/>.
 ///
-/// Wichtig: Zeiger im Code (z.B. <c>lea bx,[0x0144]</c>) sind <em>datensegment</em>-relativ
-/// und müssen über <see cref="DataStart"/> aufgelöst werden, nicht über <see cref="ImageStart"/>.
+/// Important: pointers in the code (e.g. <c>lea bx,[0x0144]</c>) are <em>data-segment</em>-relative
+/// and must be resolved via <see cref="DataStart"/>, not via <see cref="ImageStart"/>.
 /// </summary>
 internal sealed class CvlImage
 {
@@ -41,7 +41,7 @@ internal sealed class CvlImage
     private const int ExportTableField = 0x32;
     private const int MaxExportCount = 64;
 
-    /// <summary>Index der von CIVPLAY genutzten Exporte in <see cref="Exports"/>.</summary>
+    /// <summary>Index of the exports used by CIVPLAY within <see cref="Exports"/>.</summary>
     public const int ExportInitSound = 0;
     public const int ExportPlayTune = 1;
     public const int ExportCloseSound = 2;
@@ -64,19 +64,19 @@ internal sealed class CvlImage
     public string? FilePath { get; }
     public byte[] Bytes { get; }
 
-    /// <summary>Dateioffset des Load-Image (MZ-Headergröße in Paragraphen * 16).</summary>
+    /// <summary>File offset of the load image (MZ header size in paragraphs * 16).</summary>
     public int ImageStart { get; }
 
-    /// <summary>ASCII-Signatur inklusive Builddatum, z.B. "Civil IBM   11-14-91".</summary>
+    /// <summary>ASCII signature including build date, e.g. "Civil IBM   11-14-91".</summary>
     public string Signature { get; }
 
     public ushort CodeSegment { get; }
     public ushort DataSegment { get; }
 
-    /// <summary>Dateioffset, ab dem Code-Offsets zählen.</summary>
+    /// <summary>File offset from which code offsets are counted.</summary>
     public int CodeStart => ImageStart + CodeSegment * 16;
 
-    /// <summary>Dateioffset, ab dem Datensegment-Offsets zählen.</summary>
+    /// <summary>File offset from which data-segment offsets are counted.</summary>
     public int DataStart => ImageStart + DataSegment * 16;
 
     public IReadOnlyList<ushort> Exports { get; }
@@ -147,7 +147,7 @@ internal sealed class CvlImage
             : throw new InvalidOperationException($"Code-Offset 0x{offset:X4} liegt außerhalb der Datei.");
 
     /// <summary>
-    /// Prüft ein Opcode-Muster im Codesegment. <c>-1</c> in <paramref name="pattern"/> ist ein Platzhalter.
+    /// Checks an opcode pattern in the code segment. A <c>-1</c> in <paramref name="pattern"/> is a wildcard.
     /// </summary>
     public bool CodeMatches(int offset, params int[] pattern)
     {
@@ -163,9 +163,9 @@ internal sealed class CvlImage
     }
 
     /// <summary>
-    /// Sucht das erste Vorkommen eines Opcode-Musters im Codesegment innerhalb von
-    /// <paramref name="length"/> Bytes ab <paramref name="offset"/>. <c>-1</c> ist ein Platzhalter.
-    /// Liefert den Code-Offset oder -1.
+    /// Searches for the first occurrence of an opcode pattern in the code segment within
+    /// <paramref name="length"/> bytes starting at <paramref name="offset"/>. <c>-1</c> is a wildcard.
+    /// Returns the code offset, or -1.
     /// </summary>
     public int FindCodePattern(int offset, int length, params int[] pattern)
     {

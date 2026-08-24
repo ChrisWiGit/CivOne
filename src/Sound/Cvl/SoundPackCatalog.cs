@@ -11,9 +11,9 @@ namespace CivOne.Sound.Cvl;
 internal readonly record struct SoundPackSummary(string PackId, string DisplayName);
 
 /// <summary>
-/// Listet die im Profil vorhandenen Sound-Packs auf: jeder Unterordner von
-/// <c>sounds/</c>, der von <see cref="CvlSoundConversionService"/> mit einer
-/// <see cref="SoundPackIndex"/> beschrieben wurde.
+/// Lists the sound packs present in the profile: every subfolder of
+/// <c>sounds/</c> that <see cref="CvlSoundConversionService"/> described with a
+/// <see cref="SoundPackIndex"/>.
 /// </summary>
 internal static class SoundPackCatalog
 {
@@ -37,7 +37,7 @@ internal static class SoundPackCatalog
             }
             catch
             {
-                // Beschädigter oder fremder Ordner unter sounds/ - ignorieren statt die Liste abzubrechen.
+                // Corrupted or foreign folder under sounds/ - skip it instead of aborting the list.
             }
         }
 
