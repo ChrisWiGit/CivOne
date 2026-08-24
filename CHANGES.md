@@ -11,6 +11,16 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Play sound and music through a converted PC Speaker / AdLib / Tandy / Roland sound pack instead of the original `.WAV` files.
+  * Copying the original DOS Civilization game data (`Startup Wizard` or `Browse data folder...` in the setup menu) automatically converts and stores a matching sound pack per detected sound device in your CivOne profile.
+  * Choose the sound source in the setup menu under `Shift+F1 → Settings → In-game sound → Sound pack`, or on the sound page of the startup wizard: `Auto` (uses the sound pack automatically when exactly one is available, otherwise falls back to Wave files), `Wave files` (the original `.WAV` sound effects), `None`, or a specific converted sound pack, e.g. `PC Speaker`.
+  * `Test tunes...` (setup menu) or `Test sound` (startup wizard) plays a short sample from the selected pack, so you can check it before starting the game.
+  * In settings you can play each tune individually to hear all the converted sound effects and music from the selected pack. This is not available in the startup wizard, because the wizard does not have enough space to show all tunes.
+  * The selected sound source is saved in the profile and used for both sound effects and in-game music.
+* Feature: `Ctrl+Alt+M` toggles sound on and off from anywhere in the game.
+  * A short on-screen notification (`Sound on` / `Sound off`) confirms the new state.
+  * Turning sound off immediately stops whatever is currently playing.
+  * This is the same setting shown as `Sound: On/Off` in the setup menu and the startup wizard, so all three always stay in sync.
 * Feature: Where barbarians come from is now configurable.
   * Barbarians reach the map on three ways, and each one can be switched on and off on its own: tribal villages that release a horde when one of your units enters them, raiding parties that appear inland, and raiding parties that arrive by ship and land on the coast.
   * The eight resulting combinations are offered as ready-made choices, from `None` over `Villages Only`, `Land Raids Only`, `Sea Raids Only` and `Raids Only` up to `Villages + Raids`, which is the default and matches the original game.
