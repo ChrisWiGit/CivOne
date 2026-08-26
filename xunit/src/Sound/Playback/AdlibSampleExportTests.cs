@@ -17,7 +17,9 @@ namespace CivOne.UnitTests.Sound.Playback
     /// <remarks>
     /// Off by default: set <c>CIVONE_ADLIB_SAMPLE_DIR</c> to a folder to have the tunes written
     /// there. Nothing is exported otherwise, so a normal test run stays quiet.
+    /// Marked <c>Category=Slow</c> because it renders the whole pack once it is switched on.
     /// </remarks>
+    [Trait("Category", "Slow")]
     public sealed class AdlibSampleExportTests
     {
         /// <summary>Environment variable that names the folder to export to.</summary>

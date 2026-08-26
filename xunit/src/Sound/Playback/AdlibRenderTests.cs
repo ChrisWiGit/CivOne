@@ -14,6 +14,12 @@ namespace CivOne.UnitTests.Sound.Playback
     /// Renders real tunes end to end: CVL in, wave file out. Skips itself when the original
     /// ASOUND.CVL is not available locally.
     /// </summary>
+    /// <remarks>
+    /// Every test here drives the OPL emulation over whole tunes and takes about two minutes in
+    /// total, so the class is marked <c>Category=Slow</c> and excluded from a normal test run.
+    /// Run it after changes to the renderer, the CVL parser, or the score format.
+    /// </remarks>
+    [Trait("Category", "Slow")]
     public sealed class AdlibRenderTests : IDisposable
     {
         private readonly ITestOutputHelper _output;

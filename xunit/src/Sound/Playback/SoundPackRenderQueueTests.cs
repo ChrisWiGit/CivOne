@@ -127,6 +127,11 @@ namespace CivOne.UnitTests.Sound.Playback
         /// The warm-up renders the whole pack in the background, and the opening theme - the first
         /// sound the game asks for - is among the results.
         /// </summary>
+        /// <remarks>
+        /// Renders every tune of the pack and takes roughly 45 seconds, so it is marked
+        /// <c>Category=Slow</c> and excluded from a normal test run.
+        /// </remarks>
+        [Trait("Category", "Slow")]
         [Fact]
         public async Task WarmingUpAPackRendersEveryTune()
         {
@@ -190,7 +195,11 @@ namespace CivOne.UnitTests.Sound.Playback
         /// This is the case at game start on a profile whose sound data has not been converted yet:
         /// the warm-up finds nothing, and the conversion that follows has to be able to trigger it
         /// again.
+        /// The only signal that the warm-up ran is a rendered tune, so this waits for a real render
+        /// and takes roughly 25 seconds. It is therefore marked <c>Category=Slow</c> and excluded
+        /// from a normal test run.
         /// </remarks>
+        [Trait("Category", "Slow")]
         [Fact]
         public void APackThatAppearsLaterIsStillWarmedUp()
         {
