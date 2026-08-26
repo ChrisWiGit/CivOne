@@ -26,9 +26,9 @@ internal sealed class LowPassFilterDelegate
     /// <param name="stages">How many one-pole stages to put in series.</param>
     public LowPassFilterDelegate(double cutoffHz, int sampleRate, int stages)
     {
-        if (cutoffHz <= 0d) throw new ArgumentOutOfRangeException(nameof(cutoffHz));
-        if (sampleRate <= 0) throw new ArgumentOutOfRangeException(nameof(sampleRate));
-        if (stages <= 0) throw new ArgumentOutOfRangeException(nameof(stages));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(cutoffHz);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sampleRate);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(stages);
 
         double interval = 1d / sampleRate;
         double timeConstant = 1d / (2d * Math.PI * cutoffHz);

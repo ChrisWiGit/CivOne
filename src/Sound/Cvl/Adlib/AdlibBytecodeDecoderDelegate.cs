@@ -109,7 +109,7 @@ internal sealed class AdlibBytecodeDecoderDelegate
         return true;
     }
 
-    private bool TryDecodeRandomVariant(CvlImage image, List<AdlibEvent> events, ref int offset)
+    private static bool TryDecodeRandomVariant(CvlImage image, List<AdlibEvent> events, ref int offset)
     {
         int start = offset;
         if (!image.TryDataByte(start + 1, out byte count)) return false;

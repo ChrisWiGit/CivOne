@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne.Sound.Cvl;
 
@@ -28,6 +29,7 @@ internal sealed class CvlDispatchTableDelegate
     /// <param name="maxTuneId">Highest addressable tune number, or <c>-1</c> on failure.</param>
     /// <param name="error">Reason why the layout was not recognized, or <c>null</c> on success.</param>
     /// <returns><c>true</c> when both values were found.</returns>
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Instance method by design.")]
     public bool TryRead(CvlImage image, out int dispatchTable, out int maxTuneId, out string? error)
     {
         ArgumentNullException.ThrowIfNull(image);

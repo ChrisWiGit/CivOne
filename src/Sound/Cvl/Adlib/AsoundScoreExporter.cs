@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne.Sound.Cvl.Adlib;
 
@@ -40,6 +41,7 @@ internal sealed class AsoundScoreExporter
     /// </summary>
     /// <param name="parser">Parser for the module.</param>
     /// <returns>The bank.</returns>
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Exporter members stay instance members so the exporter can be replaced.")]
     public AdlibSoundBank ExportBank(AsoundParser parser)
     {
         ArgumentNullException.ThrowIfNull(parser);
@@ -75,6 +77,7 @@ internal sealed class AsoundScoreExporter
     /// <param name="parser">Parser for the module.</param>
     /// <param name="options">Extraction options, or <c>null</c> for the defaults.</param>
     /// <returns>The tunes, ordered by tune number.</returns>
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Exporter members stay instance members so the exporter can be replaced.")]
     public List<AdlibTuneScore> ExportTunes(AsoundParser parser, AsoundScoreOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(parser);

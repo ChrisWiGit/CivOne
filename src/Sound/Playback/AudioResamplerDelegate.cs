@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne.Sound.Playback;
 
@@ -21,11 +22,12 @@ internal sealed class AudioResamplerDelegate
     /// <param name="sourceRate">Rate the samples are at, in Hz.</param>
     /// <param name="targetRate">Rate to convert them to, in Hz.</param>
     /// <returns>The converted samples, or the input itself when the rates already match.</returns>
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This class is a delegate, not a static utility.")]
     public float[] Resample(float[] samples, int sourceRate, int targetRate)
     {
         ArgumentNullException.ThrowIfNull(samples);
-        if (sourceRate <= 0) throw new ArgumentOutOfRangeException(nameof(sourceRate));
-        if (targetRate <= 0) throw new ArgumentOutOfRangeException(nameof(targetRate));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sourceRate);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(targetRate);
 
         if (sourceRate == targetRate || samples.Length == 0) return samples;
 

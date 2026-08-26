@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne.Sound.Playback;
 
@@ -27,6 +28,7 @@ internal sealed class PcmMixerDelegate
     /// <param name="samples">The samples to convert.</param>
     /// <param name="gain">Gain to apply before limiting.</param>
     /// <returns>The converted samples.</returns>
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This class is a delegate, not a static utility.")]
     public short[] ToPcm16(float[] samples, float gain)
     {
         ArgumentNullException.ThrowIfNull(samples);

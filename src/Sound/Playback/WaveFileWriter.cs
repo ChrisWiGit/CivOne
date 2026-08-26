@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 
@@ -24,10 +25,11 @@ internal sealed class WaveFileWriter
     /// <param name="path">Where to write.</param>
     /// <param name="samples">The samples to write.</param>
     /// <param name="sampleRate">Rate of the samples, in Hz.</param>
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This class is a writer used as an instance, not a static utility.")]
     public void Write(string path, short[] samples, int sampleRate)
     {
         ArgumentNullException.ThrowIfNull(samples);
-        if (sampleRate <= 0) throw new ArgumentOutOfRangeException(nameof(sampleRate));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sampleRate);
 
         string? folder = Path.GetDirectoryName(Path.GetFullPath(path));
         if (!string.IsNullOrEmpty(folder)) Directory.CreateDirectory(folder);
