@@ -15,6 +15,7 @@ namespace CivOne.UnitTests.Sound.Cvl.Adlib
     /// The file belongs to the original game and is deliberately not in the repository, so these
     /// tests skip themselves when it is missing.
     /// </summary>
+    [Trait("Category", "IntegrationLocalData")]
     public sealed class AsoundRealModuleTests
     {
         private readonly ITestOutputHelper _output;

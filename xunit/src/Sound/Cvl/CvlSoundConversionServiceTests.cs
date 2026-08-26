@@ -188,6 +188,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         // Opt-in: die echten Module, falls lokal vorhanden.
         // -----------------------------------------------------------------------------
 
+        [Trait("Category", "IntegrationLocalData")]
         [Theory]
         [InlineData("ISOUND.CVL", "PcSpeaker")]
         [InlineData("ASOUND.CVL", "AdLib")]
@@ -216,6 +217,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.Equal(expectedDevice, CvlDeviceDetector.Detect(image).ToString());
         }
 
+        [Trait("Category", "IntegrationLocalData")]
         [Fact]
         public void RealIsoundConvertsIntoAUsablePack()
         {

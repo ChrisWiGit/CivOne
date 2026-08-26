@@ -19,6 +19,7 @@ namespace CivOne.UnitTests.Sound.Playback
     /// total, so the class is marked <c>Category=Slow</c> and excluded from a normal test run.
     /// Run it after changes to the renderer, the CVL parser, or the score format.
     /// </remarks>
+    [Trait("Category", "IntegrationLocalData")]
     [Trait("Category", "Slow")]
     public sealed class AdlibRenderTests : IDisposable
     {

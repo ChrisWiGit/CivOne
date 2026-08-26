@@ -237,6 +237,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             return IsoundParser.Create(image);
         }
 
+        [Trait("Category", "IntegrationLocalData")]
         [Fact]
         public void RealIsoundLayoutMatchesKnownBuild()
         {
@@ -262,6 +263,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.Equal(0x65, parser.Layout.FirstTimbreCode);
         }
 
+        [Trait("Category", "IntegrationLocalData")]
         [Fact]
         public void RealIsoundWinMusicStartsWithExpectedNotesOnAUniformGrid()
         {
@@ -287,6 +289,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.All(groups, ticks => Assert.Equal(30, ticks));
         }
 
+        [Trait("Category", "IntegrationLocalData")]
         [Fact]
         public void RealIsoundTune4IsSilentByDesign()
         {
@@ -299,6 +302,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.Empty(info.Steps);
         }
 
+        [Trait("Category", "IntegrationLocalData")]
         [Fact]
         public void RealIsoundTunesHaveDistinctSequences()
         {
@@ -319,6 +323,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.Equal(fingerprints.Length, fingerprints.Distinct().Count());
         }
 
+        [Trait("Category", "IntegrationLocalData")]
         [Fact]
         public void RealIsoundAllParsedTunesStayInPlausibleRanges()
         {

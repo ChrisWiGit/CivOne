@@ -116,6 +116,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.Contains("schemaVersion", error.Message);
         }
 
+        [Trait("Category", "IntegrationLocalData")]
         [Fact]
         public void ExportRealIsoundYieldsTheExpectedTunes()
         {

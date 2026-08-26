@@ -656,10 +656,11 @@ To skip them use
 dotnet test --filter "FullyQualifiedName!~ZOCTests&FullyQualifiedName!~IrrigateTest"
 ```
 
-The test suite uses two integration trait categories.
+The test suite uses these trait categories.
 
 * `IntegrationEarthYaml` is for integration tests that rely only on bundled Earth YAML test data.
 * `IntegrationLocalData` is for integration tests that require local proprietary game data files.
+* `Slow` is for tests that take minutes rather than seconds, currently the AdLib rendering tests.
 
 CI workflows run `IntegrationEarthYaml` tests.
 CI workflows skip `IntegrationLocalData` tests.
@@ -681,6 +682,62 @@ Run only local-data integration tests.
 ```sh
 dotnet test --filter "Category=IntegrationLocalData|TestCategory=IntegrationLocalData"
 ```
+
+Skip the slow rendering tests.
+
+```sh
+dotnet test xunit/CivOne.UnitTests.csproj --filter "Category!=Slow" -p:SuppressConsoleLogs=true
+```
+
+### Sound tests and the original CVL files
+
+The sound tests read the two original sound drivers of Civilization I.
+
+* `ISOUND.CVL` drives the PC speaker.
+* `ASOUND.CVL` drives the AdLib / OPL2 chip.
+
+Both files belong to the original game and are therefore **not** part of this repository.
+
+#### Why the files are not bundled
+
+Shipping them would redistribute copyrighted game data.
+The tests are opt-in instead: everyone who owns the original game can point the suite at their own copy, and everyone else still gets a complete test run.
+
+#### Where to put the files
+
+The tests look in these places, in this order, and accept both upper and lower case file names.
+
+1. The path in the environment variable `CIVONE_ISOUND_CVL` or `CIVONE_ASOUND_CVL`.
+2. `xunit/src/Sound/Cvl/`
+3. `xunit/TestData/Cvl/`
+4. `temp/Sound/` in the repository root.
+5. `temp/` in the repository root.
+
+Copying the files into `xunit/TestData/Cvl/` is the simplest option.
+All five locations are excluded from version control, so the files cannot be committed by accident.
+
+Using the environment variable instead:
+
+```sh
+export CIVONE_ASOUND_CVL=/path/to/civ1/ASOUND.CVL
+export CIVONE_ISOUND_CVL=/path/to/civ1/ISOUND.CVL
+```
+
+#### What happens without the files
+
+Nothing fails.
+Each affected test writes a short hint to its test output and returns without asserting anything.
+This is deliberate: a missing original game file is not a defect in CivOne, so it must never turn the build red.
+
+The consequence is that these tests pass without having verified anything, in CI as well as on a machine without the files.
+Real coverage of the sound code on such a machine comes from `FakeIsoundModule` and `FakeAsoundModule`, which are bundled and always run.
+
+Whoever changes the CVL parser, the score format, or the OPL renderer should therefore run the sound tests once **with** the original files present.
+
+#### Runtime
+
+With the files present, a full sound test run takes several minutes because whole tunes are rendered through the OPL emulation.
+The longest tests carry the `Slow` trait and can be excluded with `--filter "Category!=Slow"`.
 
 ### Test coverage
 

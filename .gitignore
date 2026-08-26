@@ -9,6 +9,9 @@
 **/sounds/**
 **/obj/**
 xunit/TestData/Cvl/*.cvl
+xunit/TestData/Cvl/*.CVL
+xunit/src/Sound/Cvl/*.cvl
+xunit/src/Sound/Cvl/*.CVL
 !xunit/TestData/Cvl/.gitkeep
 **/TestResults/**
 **/CoverageReport/**

@@ -63,6 +63,7 @@ namespace CivOne.UnitTests.Sound.Playback
         /// <summary>
         /// A tune is only reported as cached once it has actually been rendered.
         /// </summary>
+        [Trait("Category", "IntegrationLocalData")]
         [Fact]
         public async Task TryGetCachedOnlyReportsAFinishedRender()
         {
@@ -84,6 +85,7 @@ namespace CivOne.UnitTests.Sound.Playback
         /// Asking twice for the same tune joins the render that is already running instead of
         /// starting a second one that would write the same file.
         /// </summary>
+        [Trait("Category", "IntegrationLocalData")]
         [Fact]
         public async Task RequestingTheSameTuneTwiceRendersItOnce()
         {
@@ -104,6 +106,7 @@ namespace CivOne.UnitTests.Sound.Playback
         /// Arrangements are rendered separately, so a pack that offers several does not hand out the
         /// same file for all of them.
         /// </summary>
+        [Trait("Category", "IntegrationLocalData")]
         [Fact]
         public async Task ArrangementsAreRenderedSeparately()
         {
@@ -131,6 +134,7 @@ namespace CivOne.UnitTests.Sound.Playback
         /// Renders every tune of the pack and takes roughly 45 seconds, so it is marked
         /// <c>Category=Slow</c> and excluded from a normal test run.
         /// </remarks>
+        [Trait("Category", "IntegrationLocalData")]
         [Trait("Category", "Slow")]
         [Fact]
         public async Task WarmingUpAPackRendersEveryTune()
@@ -159,6 +163,7 @@ namespace CivOne.UnitTests.Sound.Playback
         /// <summary>
         /// Warming a pack a second time does not start the work again.
         /// </summary>
+        [Trait("Category", "IntegrationLocalData")]
         [Fact]
         public async Task WarmingUpTwiceIsHarmless()
         {
@@ -199,6 +204,7 @@ namespace CivOne.UnitTests.Sound.Playback
         /// and takes roughly 25 seconds. It is therefore marked <c>Category=Slow</c> and excluded
         /// from a normal test run.
         /// </remarks>
+        [Trait("Category", "IntegrationLocalData")]
         [Trait("Category", "Slow")]
         [Fact]
         public void APackThatAppearsLaterIsStillWarmedUp()
@@ -228,6 +234,7 @@ namespace CivOne.UnitTests.Sound.Playback
         /// A wave file that has been deleted is rendered again instead of being handed out as a
         /// path that points at nothing.
         /// </summary>
+        [Trait("Category", "IntegrationLocalData")]
         [Fact]
         public async Task ADeletedWaveFileIsRenderedAgain()
         {
@@ -271,6 +278,7 @@ namespace CivOne.UnitTests.Sound.Playback
         /// Two packs are warmed up one after another rather than at the same time, so they do not
         /// ask for twice the cores the warm-up is allowed to use.
         /// </summary>
+        [Trait("Category", "IntegrationLocalData")]
         [Fact]
         public async Task WarmingUpASecondPackWaitsForTheFirst()
         {

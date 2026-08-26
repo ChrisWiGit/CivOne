@@ -19,6 +19,7 @@ namespace CivOne.UnitTests.Sound.Playback
     /// there. Nothing is exported otherwise, so a normal test run stays quiet.
     /// Marked <c>Category=Slow</c> because it renders the whole pack once it is switched on.
     /// </remarks>
+    [Trait("Category", "IntegrationLocalData")]
     [Trait("Category", "Slow")]
     public sealed class AdlibSampleExportTests
     {
