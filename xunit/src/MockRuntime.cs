@@ -73,15 +73,24 @@ namespace CivOne.UnitTests
 
         public string WindowTitle { get; private set; } = "Test Window";
         public void SetWindowTitle(string title) => WindowTitle = title;
-        public void PlaySound(string file)
-        {
-            // ignore
-        }
 
-        public void StopSound()
-        {
-            // ignore
-        }
+        /// <summary>
+        /// Files handed to <see cref="PlaySound"/>, in the order they were played.
+        /// </summary>
+        /// <remarks>
+        /// Lets a test tell "the sound started" apart from "the sound is still being prepared",
+        /// which matters for the sound packs because their tunes are rendered asynchronously.
+        /// </remarks>
+        public List<string> PlayedSounds { get; } = [];
+
+        /// <summary>
+        /// How often <see cref="StopSound"/> was called.
+        /// </summary>
+        public int StopSoundCount { get; private set; }
+
+        public void PlaySound(string file) => PlayedSounds.Add(file);
+
+        public void StopSound() => StopSoundCount++;
 
         public void Quit()
         {

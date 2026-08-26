@@ -4,8 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne.Sound.Cvl.Adlib;
 
-#nullable enable
-
 /// <summary>
 /// Options for turning ASOUND.CVL into a sound pack.
 /// </summary>

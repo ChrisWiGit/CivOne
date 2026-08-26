@@ -85,6 +85,10 @@ namespace CivOne.Screens.StartupWizard
 						HandleBrowseSoundFolder(engine);
 					return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.OpenSoundPackScreen:
+						// Opening the page is the earliest point at which the wizard knows a pack is
+						// of interest. Preparing it here means the test sound, and the music right
+						// after the wizard, do not have to wait for it.
+						SoundPlaybackStrategyProvider.WarmUp();
 						engine.OpenSoundPackPage();
 					return new WizardActionResult(ShouldRefresh: true);
 				case WizardEntryAction.SelectSoundPack:
@@ -318,6 +322,10 @@ namespace CivOne.Screens.StartupWizard
 			Settings.Instance.SoundPack = value ?? string.Empty;
 			state.SoundPackId = Settings.Instance.SoundPack;
 			state.SoundEnabled = Settings.Instance.Sound != GameOption.Off;
+
+			// Also covers picking the pack that was already selected, which changes no setting and
+			// would therefore not be noticed anywhere else.
+			SoundPlaybackStrategyProvider.WarmUp();
 
 			IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.Instance.SoundsDirectory);
 			state.StatusMessage = TF("Sound pack set to {0}.", SoundPackDisplayName(state.SoundPackId, packs));

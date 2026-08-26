@@ -710,6 +710,10 @@ namespace CivOne.Screens
 				SoundPlaybackStrategyProvider.Current.Abort();
 			}
 
+			// Also covers picking the pack that was already selected, which changes no setting and
+			// would therefore not be noticed anywhere else.
+			SoundPlaybackStrategyProvider.WarmUp();
+
 			IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory);
 			string displayName = SoundPackSelectionText(packs);
 			foreach (SoundPackSummary pack in packs)

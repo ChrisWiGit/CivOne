@@ -12,9 +12,16 @@ namespace CivOne.Sound.Playback;
 /// Turns a tune of a sound pack into a wave file the runtime can play, and keeps the result.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Rendering an emulated sound chip is far too slow to do while the game waits for a sound, so
 /// every tune is rendered once into <c>wav-cache/</c> next to the pack. The cache is rebuilt when
 /// the score changes or when this renderer changes.
+/// </para>
+/// <para>
+/// <see cref="Render"/> may be called from several threads at once, as long as no two calls render
+/// the same tune and arrangement - two of those would write the same file. Keeping them apart is
+/// <see cref="SoundPackRenderQueue"/>'s job.
+/// </para>
 /// </remarks>
 internal sealed class SoundPackWaveRenderService
 {
@@ -74,6 +81,27 @@ internal sealed class SoundPackWaveRenderService
         {
             return null;
         }
+    }
+
+    /// <summary>
+    /// Returns a tune's cached wave file when one is already up to date, without rendering anything.
+    /// </summary>
+    /// <remarks>
+    /// This is the cheap path the game thread takes: it only looks at file names and timestamps, so
+    /// it may be called while a sound is due.
+    /// </remarks>
+    /// <param name="packFolder">Folder of the sound pack.</param>
+    /// <param name="fileName">File name of the tune inside that folder.</param>
+    /// <param name="arrangement">Which arrangement is wanted.</param>
+    /// <returns>Path of the wave file, or <c>null</c> when the tune still has to be rendered.</returns>
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This is part of the service's instance API, so a test can substitute the whole service.")]
+    public string? TryGetCached(string packFolder, string fileName, int arrangement = 0)
+    {
+        string sourcePath = Path.Combine(packFolder, fileName);
+        if (!File.Exists(sourcePath)) return null;
+
+        string targetPath = Path.Combine(packFolder, CacheFolderName, CacheFileName(fileName, arrangement));
+        return IsUpToDate(targetPath, sourcePath, packFolder) ? targetPath : null;
     }
 
     /// <summary>

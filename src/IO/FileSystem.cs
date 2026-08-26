@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using CivOne.Screens.Dialogs;
 using CivOne.Sound.Cvl;
+using CivOne.Sound.Playback;
 
 namespace CivOne.IO
 {
@@ -82,6 +83,12 @@ namespace CivOne.IO
 			}
 
 			if (!report.AnyConverted) Log("- No sound driver converted");
+
+			// The converted note data still has to be turned into audio. Starting that here means it
+			// runs while the player is still working through the setup, instead of when the first
+			// tune is due.
+			if (report.AnyConverted) SoundPlaybackStrategyProvider.WarmUp();
+
 			return report.AnyConverted;
 		}
 

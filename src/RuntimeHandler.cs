@@ -180,12 +180,21 @@ namespace CivOne
 		{
 			Runtime.SetWindowTitle(Settings.WindowTitle);
 			_mcpService.Start();
+
+			// Render the selected sound pack while the startup screens are still going, so the
+			// first tune does not have to wait for it.
+			SoundPlaybackStrategyProvider.WarmUp();
+
 			GameTask.Enqueue(Show.Screens(StartupScreens));
 		}
 
 		private void OnUpdate(object? _, UpdateEventArgs args)
 		{
 			_mcpService.Process();
+
+			// Sound pack tunes are rendered off the game thread. This starts one whose render has
+			// finished since the last frame.
+			SoundPlaybackStrategyProvider.Process();
 
 			// The tick budget bounds how much work a single frame may do. Without it, one slow screen
 			// update lets real time run ahead, which queues up further updates in the same frame, which

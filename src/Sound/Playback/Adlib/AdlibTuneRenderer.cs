@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using CivOne.Sound.Cvl;
@@ -13,9 +14,15 @@ namespace CivOne.Sound.Playback.Adlib;
 /// Renders an AdLib tune by running the original driver logic against an emulated OPL2.
 /// </summary>
 /// <remarks>
+/// <para>
 /// The chain is the one the hardware used: the sequencer writes chip registers, the chip turns
 /// them into samples at its own rate, and only then is the result filtered and resampled for the
 /// output file.
+/// </para>
+/// <para>
+/// One instance serves every render, including the parallel ones of a background warm-up, so the
+/// only state it keeps - the loaded instrument banks - is held in a concurrent collection.
+/// </para>
 /// </remarks>
 internal sealed class AdlibTuneRenderer : ITuneRenderer
 {
@@ -43,7 +50,7 @@ internal sealed class AdlibTuneRenderer : ITuneRenderer
     private const double TailSeconds = 0.5d;
 
     private readonly AudioResamplerDelegate _resampler = new();
-    private readonly Dictionary<string, AdlibSoundBank> _banks = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, AdlibSoundBank> _banks = new(StringComparer.OrdinalIgnoreCase);
 
     /// <inheritdoc/>
     public string Device => AsoundScoreExporter.DeviceName;
@@ -77,14 +84,13 @@ internal sealed class AdlibTuneRenderer : ITuneRenderer
     /// </summary>
     public static float Gain => MixGain;
 
+    /// <summary>
+    /// Loads a pack's instrument bank once. Two threads racing here may both read the file, which
+    /// costs a little but yields the same bank either way.
+    /// </summary>
     private AdlibSoundBank LoadBank(string packFolder)
-    {
-        if (_banks.TryGetValue(packFolder, out AdlibSoundBank? cached)) return cached;
-
-        AdlibSoundBank bank = AdlibScoreJson.LoadBank(Path.Combine(packFolder, AdlibSoundBank.FileName));
-        _banks[packFolder] = bank;
-        return bank;
-    }
+        => _banks.GetOrAdd(packFolder,
+            folder => AdlibScoreJson.LoadBank(Path.Combine(folder, AdlibSoundBank.FileName)));
 
     /// <summary>
     /// Runs the driver and the chip in lockstep, one block of chip samples per driver tick.

@@ -4,8 +4,6 @@ using System.Text.Json.Serialization;
 
 namespace CivOne.Sound.Cvl;
 
-#nullable enable
-
 /// <summary>
 /// How a tune is realized inside the driver.
 /// </summary>
