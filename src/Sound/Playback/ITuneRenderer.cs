@@ -2,7 +2,7 @@ using CivOne.Sound.Cvl;
 
 namespace CivOne.Sound.Playback;
 
-#nullable enable
+
 
 /// <summary>
 /// Audio produced by a renderer, before it is written to a file.

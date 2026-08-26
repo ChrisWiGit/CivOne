@@ -2,7 +2,7 @@ using System;
 
 namespace CivOne.Sound.Playback;
 
-#nullable enable
+
 
 /// <summary>
 /// Chooses which arrangement of a tune to play.

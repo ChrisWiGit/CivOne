@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace CivOne.Sound.Cvl;
 
-#nullable enable
+
 
 /// <summary>Converter for ISOUND.CVL – IBM PC speaker.</summary>
 internal sealed class IsoundCvlConverter : CvlSoundConverterBase

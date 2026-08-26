@@ -2,7 +2,7 @@ using System;
 
 namespace CivOne.Sound.Cvl;
 
-#nullable enable
+
 
 /// <summary>The sound generators for which CVL drivers exist.</summary>
 internal enum CvlDevice

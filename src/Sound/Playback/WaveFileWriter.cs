@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CivOne.Sound.Playback;
 
-#nullable enable
+
 
 /// <summary>
 /// Writes mono 16-bit PCM to a RIFF wave file, the format the runtime hands to the audio backend.

@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace CivOne.Sound.Cvl;
 
-#nullable enable
+
 
 internal readonly record struct SoundPackSummary(string PackId, string DisplayName);
 

@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne.Sound.Playback;
 
-#nullable enable
+
 
 /// <summary>
 /// Converts a buffer from one sample rate to another by linear interpolation.

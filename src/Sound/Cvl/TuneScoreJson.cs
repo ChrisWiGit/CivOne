@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace CivOne.Sound.Cvl;
 
-#nullable enable
+
 
 /// <summary>
 /// Persistence for a single PC speaker tune (<c>*.sound.json</c>). This is the form in which

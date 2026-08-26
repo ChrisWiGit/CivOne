@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace CivOne.Sound.Cvl.Adlib;
 
-#nullable enable
+
 
 /// <summary>Converter for ASOUND.CVL - AdLib and Sound Blaster (OPL2 FM).</summary>
 internal sealed class AsoundCvlConverter : CvlSoundConverterBase

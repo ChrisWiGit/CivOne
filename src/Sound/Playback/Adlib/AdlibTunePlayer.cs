@@ -5,7 +5,7 @@ using CivOne.Sound.Opl;
 
 namespace CivOne.Sound.Playback.Adlib;
 
-#nullable enable
+
 
 /// <summary>
 /// Plays an <see cref="AdlibArrangement"/> the way ASOUND.CVL did, by writing OPL registers.

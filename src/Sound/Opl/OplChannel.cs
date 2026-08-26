@@ -1,6 +1,6 @@
 namespace CivOne.Sound.Opl;
 
-#nullable enable
+
 
 /// <summary>
 /// One OPL channel: a pair of operators, a pitch and how the two are wired together.

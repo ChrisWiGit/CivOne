@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace CivOne.Sound.Cvl.Adlib;
 
-#nullable enable
+
 
 /// <summary>
 /// Turns one raw ASOUND voice stream into a list of <see cref="AdlibEvent"/>.

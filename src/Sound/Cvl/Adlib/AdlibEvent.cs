@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace CivOne.Sound.Cvl.Adlib;
 
-#nullable enable
+
 
 /// <summary>
 /// One instruction of an ASOUND voice stream.

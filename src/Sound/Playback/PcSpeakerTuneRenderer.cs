@@ -5,7 +5,7 @@ using CivOne.Sound.Cvl;
 
 namespace CivOne.Sound.Playback;
 
-#nullable enable
+
 
 /// <summary>
 /// Renders a PC speaker tune from its note data.

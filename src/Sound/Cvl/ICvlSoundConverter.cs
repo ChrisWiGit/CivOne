@@ -2,7 +2,7 @@ using System;
 
 namespace CivOne.Sound.Cvl;
 
-#nullable enable
+
 
 /// <summary>
 /// Converts a CVL module of a specific sound generator into a <see cref="TuneScorePack"/>.

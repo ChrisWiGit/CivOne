@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace CivOne.Sound.Cvl;
 
-#nullable enable
+
 
 /// <summary>
 /// Options for extracting the tunes of ISOUND.CVL.

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace CivOne.Sound.Cvl;
 
-#nullable enable
+
 
 /// <summary>
 /// Code addresses of ISOUND.CVL derived from the module itself. None of this is

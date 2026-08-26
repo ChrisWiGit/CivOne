@@ -1,6 +1,6 @@
 namespace CivOne.Sound.Playback;
 
-#nullable enable
+
 
 internal sealed class NoSoundPlaybackStrategy : ISoundPlaybackStrategy
 {

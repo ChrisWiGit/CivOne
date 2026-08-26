@@ -2,7 +2,7 @@ using System;
 
 namespace CivOne.Sound.Opl;
 
-#nullable enable
+
 
 /// <summary>
 /// The lookup tables an OPL chip works from.

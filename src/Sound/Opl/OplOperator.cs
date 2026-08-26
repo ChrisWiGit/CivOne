@@ -1,6 +1,6 @@
 namespace CivOne.Sound.Opl;
 
-#nullable enable
+
 
 /// <summary>The four phases an operator's envelope runs through.</summary>
 internal enum OplEnvelopeState

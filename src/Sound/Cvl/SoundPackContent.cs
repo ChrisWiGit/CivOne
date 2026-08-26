@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace CivOne.Sound.Cvl;
 
-#nullable enable
+
 
 /// <summary>
 /// One tune of a converted pack: everything the index needs, plus how to write the tune itself.

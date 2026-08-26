@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace CivOne.Sound.Cvl;
 
-#nullable enable
+
 
 /// <summary>
 /// Known tune numbers of the CVL modules. CIVPLAY allows 3..44; only part of that range is named.

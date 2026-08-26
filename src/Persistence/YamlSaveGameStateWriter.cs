@@ -5,7 +5,7 @@ using CivOne.Persistence.Mapper;
 using CivOne.Persistence.Model;
 using CivOne.Persistence.Yaml;
 
-#nullable enable
+
 
 namespace CivOne.Persistence
 {

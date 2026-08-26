@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace CivOne.Sound.Cvl.Adlib;
 
-#nullable enable
+
 
 /// <summary>
 /// Persistence for the AdLib pack: one <see cref="AdlibSoundBank"/> per pack and one

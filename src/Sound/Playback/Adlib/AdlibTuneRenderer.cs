@@ -7,7 +7,7 @@ using CivOne.Sound.Opl;
 
 namespace CivOne.Sound.Playback.Adlib;
 
-#nullable enable
+
 
 /// <summary>
 /// Renders an AdLib tune by running the original driver logic against an emulated OPL2.

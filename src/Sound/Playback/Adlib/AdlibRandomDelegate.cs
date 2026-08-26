@@ -1,6 +1,6 @@
 namespace CivOne.Sound.Playback.Adlib;
 
-#nullable enable
+
 
 /// <summary>
 /// The driver's own pseudo-random generator: <c>seed = rotateRight(0x9248 + seed, 3)</c> on

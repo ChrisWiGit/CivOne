@@ -3,7 +3,7 @@ using CivOne.Sound.Cvl.Adlib;
 
 namespace CivOne.Sound.Playback.Adlib;
 
-#nullable enable
+
 
 /// <summary>
 /// The running state of one voice, mirroring the 30-byte structure the driver keeps per OPL channel.

@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace CivOne.Sound.Cvl;
 
-#nullable enable
+
 
 internal sealed class SoundPackIndexEntry
 {

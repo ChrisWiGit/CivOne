@@ -8,7 +8,7 @@ using CivOne.Sound.Cvl.Adlib;
 
 namespace CivOne.Sound.Cvl;
 
-#nullable enable
+
 
 internal sealed class CvlConversionResult
 {

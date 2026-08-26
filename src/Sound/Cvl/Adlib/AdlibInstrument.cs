@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace CivOne.Sound.Cvl.Adlib;
 
-#nullable enable
+
 
 /// <summary>
 /// One FM operator of an instrument.

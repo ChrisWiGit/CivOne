@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace CivOne.Sound.Cvl.Adlib;
 
-#nullable enable
+
 
 /// <summary>
 /// One voice of an arrangement: the OPL channel it uses and the events it plays.

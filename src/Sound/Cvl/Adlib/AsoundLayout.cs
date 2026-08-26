@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace CivOne.Sound.Cvl.Adlib;
 
-#nullable enable
+
 
 /// <summary>
 /// Addresses of ASOUND.CVL, all derived from the module itself. Nothing here is hardcoded, so the

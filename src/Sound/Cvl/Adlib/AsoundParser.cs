@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace CivOne.Sound.Cvl.Adlib;
 
-#nullable enable
+
 
 /// <summary>One voice of an arrangement: which OPL channel plays which stream.</summary>
 /// <param name="Channel">OPL channel index, 0..8.</param>

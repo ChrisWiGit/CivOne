@@ -2,7 +2,7 @@ using System;
 
 namespace CivOne.Sound.Opl;
 
-#nullable enable
+
 
 /// <summary>
 /// An FM synthesis chip of the OPL family, driven the way the original hardware was: by writing

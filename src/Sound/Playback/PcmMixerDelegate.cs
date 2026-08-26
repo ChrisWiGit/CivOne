@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne.Sound.Playback;
 
-#nullable enable
+
 
 /// <summary>
 /// The last stage before a file is written: applies the device's gain, keeps loud passages inside

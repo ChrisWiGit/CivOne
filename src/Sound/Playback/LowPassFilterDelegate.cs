@@ -2,7 +2,7 @@ using System;
 
 namespace CivOne.Sound.Playback;
 
-#nullable enable
+
 
 /// <summary>
 /// A cascade of one-pole low-pass filters, the same shape DOSBox puts on its sound card channels.

@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace CivOne.Sound.Cvl;
 
-#nullable enable
+
 
 /// <summary>
 /// Reads the tune dispatch table out of a CVL module's <c>PlayTune</c> export.

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CivOne.Sound.Cvl;
 
-#nullable enable
+
 
 /// <summary>
 /// A loaded CVL overlay (MicroProse "Civilization overlay", a DOS MZ executable

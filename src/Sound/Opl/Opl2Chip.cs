@@ -2,7 +2,7 @@ using System;
 
 namespace CivOne.Sound.Opl;
 
-#nullable enable
+
 
 /// <summary>
 /// A YM3812 (OPL2): nine two-operator FM channels, mono.
