@@ -86,18 +86,20 @@ namespace CivOne.UnitTests.Sound.Cvl
             PlaceFakeIsound();
             new CvlSoundConversionService().ConvertFolder(_sourceFolder, _targetFolder);
 
-            string file = Path.Combine(_targetFolder, "pc-speaker", "03-title-music.sound.json");
-            var pack = TuneScoreJson.Load(file);
+            string packFolder = Path.Combine(_targetFolder, "pc-speaker");
+            var index = SoundPackIndexJson.Load(Path.Combine(packFolder, SoundPackIndex.FileName));
 
-            // Jede Datei trägt die Pack-Metadaten, damit sie allein abspielbar ist.
-            Assert.Equal("pc-speaker", pack.Id);
-            Assert.Equal("ISOUND", pack.Driver);
-            Assert.Equal("pcSpeaker", pack.Device);
-            Assert.Equal(1_193_182, pack.PitClockHz);
-            Assert.Equal(300, pack.FastTickHz);
-            Assert.Equal(5, pack.WorkerTickDivider);
+            // Die Pack-Metadaten stehen genau einmal, naemlich im Manifest.
+            Assert.Equal("pc-speaker", index.PackId);
+            Assert.Equal("ISOUND", index.Driver);
+            Assert.Equal("pcSpeaker", index.Device);
+            Assert.Equal(1_193_182, index.PitClockHz);
+            Assert.Equal(300, index.FastTickHz);
+            Assert.Equal(5, index.WorkerTickDivider);
+            Assert.Empty(index.SharedFiles);
 
-            var tune = Assert.Single(pack.Tunes);
+            // Die Tune-Datei enthaelt nur noch den Tune selbst.
+            var tune = TuneScoreJson.Load(Path.Combine(packFolder, "03-title-music.sound.json"));
             Assert.Equal(3, tune.TuneId);
             Assert.Equal("Title Music", tune.Title);
             Assert.Equal(3, tune.Steps.Count);
@@ -254,7 +256,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             string winFile = index.Tunes.Single(t => t.TuneId == 34).File
                 ?? throw new InvalidOperationException("Win Music sollte eine Datei haben.");
             var win = TuneScoreJson.Load(Path.Combine(packFolder, winFile));
-            Assert.Equal(3320, win.Tunes.Single().Steps[0].Divisor);
+            Assert.Equal(3320, win.Steps[0].Divisor);
         }
     }
 }

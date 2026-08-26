@@ -19,6 +19,12 @@ internal sealed class SoundPackIndexEntry
 
     public int StepCount { get; set; }
     public int TotalTicks { get; set; }
+
+    /// <summary>
+    /// How many interchangeable arrangements the tune offers. One for everything except the AdLib
+    /// leader themes, which the original picks between at random.
+    /// </summary>
+    public int ArrangementCount { get; set; } = 1;
 }
 
 /// <summary>
@@ -28,7 +34,13 @@ internal sealed class SoundPackIndexEntry
 /// </summary>
 internal sealed class SoundPackIndex
 {
-    public int SchemaVersion { get; set; } = 1;
+    /// <summary>
+    /// Schema of the whole pack, including its tune files. Raised whenever their shape changes, so
+    /// a pack written by an older build is skipped instead of being read as something it is not.
+    /// </summary>
+    public const int CurrentSchemaVersion = 2;
+
+    public int SchemaVersion { get; set; } = CurrentSchemaVersion;
     public required string PackId { get; set; }
     public required string DisplayName { get; set; }
     public required string Driver { get; set; }
@@ -36,6 +48,28 @@ internal sealed class SoundPackIndex
 
     public string? SourceFile { get; set; }
     public string? SourceSignature { get; set; }
+
+    /// <summary>
+    /// Base tick rate of the CIVPLAY scheduler in Hz. Every driver was clocked by the same
+    /// scheduler, so this belongs to the pack rather than to a device.
+    /// </summary>
+    public int FastTickHz { get; set; } = 300;
+
+    /// <summary>
+    /// How many base ticks make one sequencer tick. Note and event durations count in those.
+    /// </summary>
+    public int WorkerTickDivider { get; set; } = 5;
+
+    /// <summary>
+    /// Clock frequency of the PC's timer chip in Hz, from which the PC speaker's tone frequency is
+    /// derived. <c>null</c> for devices that do not derive their pitch from it.
+    /// </summary>
+    public int? PitClockHz { get; set; }
+
+    /// <summary>
+    /// Files the pack shares between all its tunes, e.g. the AdLib instrument bank.
+    /// </summary>
+    public List<string> SharedFiles { get; set; } = [];
 
     public List<SoundPackIndexEntry> Tunes { get; set; } = [];
 
@@ -64,6 +98,13 @@ internal static class SoundPackIndexJson
         string json = File.ReadAllText(path);
         var index = JsonSerializer.Deserialize<SoundPackIndex>(json, _options)
             ?? throw new InvalidOperationException($"Konnte Sound-Pack-Index aus {path} nicht laden.");
+
+        if (index.SchemaVersion != SoundPackIndex.CurrentSchemaVersion)
+        {
+            throw new InvalidOperationException(
+                $"{path}: schemaVersion {index.SchemaVersion} wird nicht unterstützt, erwartet wird "
+                + $"{SoundPackIndex.CurrentSchemaVersion}. Die Sound-Daten des Originalspiels erneut importieren.");
+        }
 
         // After deserialization the comparer is the default comparer.
         index.SoundNames = new Dictionary<string, int>(index.SoundNames, StringComparer.OrdinalIgnoreCase);

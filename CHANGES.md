@@ -11,6 +11,13 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: The AdLib / Sound Blaster music of the original game can now be played.
+  * Copying the original DOS game data converts `ASOUND.CVL` into an `AdLib / Sound Blaster` sound pack, next to the `PC Speaker` one. Pick it in the setup menu under `Shift+F1 → Settings → In-game sound → Sound pack`.
+  * This is the FM music the game played on an AdLib card or a Sound Blaster: the title theme, the evolution sequence, all fourteen leader themes, the win and lose music, and the sound effects.
+  * The music is synthesized the way the sound card did it, so it sounds like the original rather than like beeps.
+  * Each leader has four versions of their theme in the original, and one of them is picked at random every time the leader appears, just as the original does.
+  * A tune is synthesized once, the first time it is played, and kept in your profile afterwards. The first play of a long piece can therefore take a moment.
+  * The PC Speaker pack has been improved at the same time: it now follows the pitch bends and vibrato the original driver applied inside a note, and it is filtered the way a real speaker would sound instead of playing bare square waves.
 * Feature: Play sound and music through a converted PC Speaker / AdLib / Tandy / Roland sound pack instead of the original `.WAV` files.
   * Copying the original DOS Civilization game data (`Startup Wizard` or `Browse data folder...` in the setup menu) automatically converts and stores a matching sound pack per detected sound device in your CivOne profile.
   * Choose the sound source in the setup menu under `Shift+F1 → Settings → In-game sound → Sound pack`, or on the sound page of the startup wizard: `Auto` (uses the sound pack automatically when exactly one is available, otherwise falls back to Wave files), `Wave files` (the original `.WAV` sound effects), `None`, or a specific converted sound pack, e.g. `PC Speaker`.

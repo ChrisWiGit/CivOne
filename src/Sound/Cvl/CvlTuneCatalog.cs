@@ -40,6 +40,14 @@ internal static class CvlTuneCatalog
     public static string ResolveTitle(int tuneId)
         => _titles.TryGetValue(tuneId, out string? title) ? title : $"Tune {tuneId}";
 
+    /// <summary>
+    /// Gets whether the tune number has a known name. Named tunes are the music pieces
+    /// (title, evolution, leader themes, win and lose); everything else is a sound effect.
+    /// </summary>
+    /// <param name="tuneId">The tune number to check.</param>
+    /// <returns><c>true</c> when the catalog knows a title for this tune.</returns>
+    public static bool IsNamedTune(int tuneId) => _titles.ContainsKey(tuneId);
+
     /// <summary>Tunes that loop indefinitely in the original (title and evolution music).</summary>
     public static bool IsEndlessLoop(int tuneId) => tuneId is 3 or 4;
 

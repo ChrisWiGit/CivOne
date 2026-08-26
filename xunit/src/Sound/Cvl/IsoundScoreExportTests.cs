@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CivOne.Sound.Cvl;
@@ -8,57 +9,64 @@ using Xunit.Abstractions;
 namespace CivOne.UnitTests.Sound.Cvl
 {
     /// <summary>
-    /// Prüft den Weg CVL -> TuneScorePack -> *.score.json. Das JSON ist die Form, die
-    /// CivOne ausliefert; ab da wird die CVL nicht mehr gebraucht.
+    /// Prüft den Weg CVL -> TuneScore -> *.sound.json. Das JSON ist die Form, die CivOne
+    /// ausliefert; ab da wird die CVL nicht mehr gebraucht.
+    ///
+    /// Die Kopfdaten des Packs (Treiber, Gerät, Taktraten) stehen bewusst nicht in der Tune-Datei,
+    /// sondern nur in der index.json - siehe <see cref="CvlSoundConversionServiceTests"/>.
     /// </summary>
     public sealed class IsoundScoreExportTests
     {
-        /// <summary>Setzen, um beim Testlauf die ausgelieferte Score-Datei neu zu erzeugen.</summary>
-        private const string ScoreOutputVariable = "CIVONE_SCORE_OUT";
-
         private readonly ITestOutputHelper _output;
 
         public IsoundScoreExportTests(ITestOutputHelper output) => _output = output;
 
+        private static List<TuneScore> Export(IsoundScoreOptions? options = null)
+            => IsoundScoreExporter.Export(CvlImage.FromBytes(FakeIsoundModule.Build(), "fake-isound.cvl"), options);
+
         [Fact]
-        public void ExportProducesScorePackWithTitlesAndKinds()
+        public void ExportProducesTunesWithTitlesAndKinds()
         {
-            var pack = IsoundScoreExporter.Export(CvlImage.FromBytes(FakeIsoundModule.Build(), "fake-isound.cvl"));
+            List<TuneScore> tunes = Export();
 
-            Assert.Equal("isound", pack.Id);
-            Assert.Equal("ISOUND", pack.Driver);
-            Assert.Equal("pcSpeaker", pack.Device);
-            Assert.Equal(FakeIsoundModule.Signature, pack.SourceSignature);
-
-            // 300 Hz Basis-Tick, Worker alle 5 Ticks -> 60 Hz, also 1/60 s pro Dauereinheit.
-            Assert.Equal(60d, pack.WorkerTickHz);
-            Assert.Equal(0.5d, pack.DurationSeconds(new TuneStep { Duration = 30 }), 6);
-
-            var music = pack.Tunes.Single(t => t.TuneId == FakeIsoundModule.TuneMusicA);
+            var music = tunes.Single(t => t.TuneId == FakeIsoundModule.TuneMusicA);
             Assert.Equal("Title Music", music.Title);
             Assert.Equal(TuneScoreKind.Music, music.Kind);
             Assert.True(music.EndlessLoop);
             Assert.Equal(3, music.Steps.Count);
             Assert.Equal(54, music.TotalTicks);
+            Assert.Equal(SoundPackIndex.CurrentSchemaVersion, music.SchemaVersion);
 
-            var silent = pack.Tunes.Single(t => t.TuneId == FakeIsoundModule.TuneSilent);
+            var silent = tunes.Single(t => t.TuneId == FakeIsoundModule.TuneSilent);
             Assert.Equal(TuneScoreKind.Silent, silent.Kind);
             Assert.Empty(silent.Steps);
 
-            var effect = pack.Tunes.Single(t => t.TuneId == FakeIsoundModule.TuneEffect);
+            var effect = tunes.Single(t => t.TuneId == FakeIsoundModule.TuneEffect);
             Assert.Equal(TuneScoreKind.Effect, effect.Kind);
 
             // Handler ohne Sequenz werden standardmäßig weggelassen.
-            Assert.DoesNotContain(pack.Tunes, t => t.TuneId == FakeIsoundModule.TuneUnsupported);
+            Assert.DoesNotContain(tunes, t => t.TuneId == FakeIsoundModule.TuneUnsupported);
+        }
+
+        [Fact]
+        public void TimingConstantsDescribeTheSchedulerOfTheOriginal()
+        {
+            // 300 Hz Basis-Tick, Sequencer alle 5 Ticks -> 60 Hz, also 1/60 s pro Dauereinheit.
+            Assert.Equal(300, IsoundScoreExporter.FastTickHz);
+            Assert.Equal(5, IsoundScoreExporter.WorkerTickDivider);
+            Assert.Equal(1_193_182, IsoundScoreExporter.PitClockHz);
+
+            double sequencerHz = IsoundScoreExporter.FastTickHz / (double)IsoundScoreExporter.WorkerTickDivider;
+            Assert.Equal(60d, sequencerHz);
+            Assert.Equal(0.5d, 30 / sequencerHz, 6);
         }
 
         [Fact]
         public void ExportKeepsUnsupportedTunesWhenRequested()
         {
-            var options = new IsoundScoreOptions { SkipUnsupported = false };
-            var pack = IsoundScoreExporter.Export(CvlImage.FromBytes(FakeIsoundModule.Build(), "fake-isound.cvl"), options);
+            List<TuneScore> tunes = Export(new IsoundScoreOptions { SkipUnsupported = false });
 
-            var unsupported = pack.Tunes.Single(t => t.TuneId == FakeIsoundModule.TuneUnsupported);
+            var unsupported = tunes.Single(t => t.TuneId == FakeIsoundModule.TuneUnsupported);
             Assert.Equal(TuneScoreKind.Unsupported, unsupported.Kind);
             Assert.Empty(unsupported.Steps);
         }
@@ -66,25 +74,22 @@ namespace CivOne.UnitTests.Sound.Cvl
         [Fact]
         public void ScoreJsonRoundTripsWithoutLoss()
         {
-            var pack = IsoundScoreExporter.Export(CvlImage.FromBytes(FakeIsoundModule.Build(), "fake-isound.cvl"));
-            string path = Path.Combine(Path.GetTempPath(), $"isound-{Guid.NewGuid():N}.score.json");
+            TuneScore music = Export().Single(t => t.TuneId == FakeIsoundModule.TuneMusicA);
+            string path = Path.Combine(Path.GetTempPath(), $"isound-{Guid.NewGuid():N}.sound.json");
 
             try
             {
-                TuneScoreJson.Save(path, pack);
-                var loaded = TuneScoreJson.Load(path);
+                TuneScoreJson.Save(path, music);
+                TuneScore loaded = TuneScoreJson.Load(path);
 
-                Assert.Equal(pack.Id, loaded.Id);
-                Assert.Equal(pack.Driver, loaded.Driver);
-                Assert.Equal(pack.FastTickHz, loaded.FastTickHz);
-                Assert.Equal(pack.WorkerTickDivider, loaded.WorkerTickDivider);
-                Assert.Equal(pack.Tunes.Count, loaded.Tunes.Count);
-                Assert.Equal(TuneScoreJson.Serialize(pack), TuneScoreJson.Serialize(loaded));
+                Assert.Equal(music.TuneId, loaded.TuneId);
+                Assert.Equal(music.Title, loaded.Title);
+                Assert.Equal(music.Steps.Count, loaded.Steps.Count);
+                Assert.Equal(TuneScoreJson.Serialize(music), TuneScoreJson.Serialize(loaded));
 
                 // Nach dem Laden hängt nichts mehr an der Quelldatei.
-                var music = loaded.Tunes.Single(t => t.TuneId == FakeIsoundModule.TuneMusicA);
-                Assert.Equal(8360, music.Steps[0].Divisor);
-                Assert.Equal(SpeakerEffectKind.Vibrato, music.Steps[2].DecodedEffect.Kind);
+                Assert.Equal(8360, loaded.Steps[0].Divisor);
+                Assert.Equal(SpeakerEffectKind.Vibrato, loaded.Steps[2].DecodedEffect.Kind);
             }
             finally
             {
@@ -95,21 +100,24 @@ namespace CivOne.UnitTests.Sound.Cvl
         [Fact]
         public void ScoreJsonRejectsSequenceWithoutSteps()
         {
-            var pack = new TuneScorePack
-            {
-                Id = "broken",
-                DisplayName = "Broken",
-                Driver = "ISOUND",
-                Device = "pcSpeaker",
-                Tunes = [new TuneScore { TuneId = 3, Title = "Title Music", Kind = TuneScoreKind.Music }]
-            };
+            var broken = new TuneScore { TuneId = 3, Title = "Title Music", Kind = TuneScoreKind.Music };
 
-            var error = Assert.Throws<InvalidOperationException>(() => TuneScoreJson.Serialize(pack));
+            var error = Assert.Throws<InvalidOperationException>(() => TuneScoreJson.Serialize(broken));
             Assert.Contains("steps", error.Message);
         }
 
         [Fact]
-        public void ExportRealIsoundWritesScoreJson()
+        public void ScoreJsonRejectsAFileFromAnOlderPackLayout()
+        {
+            TuneScore music = Export().Single(t => t.TuneId == FakeIsoundModule.TuneMusicA);
+            music.SchemaVersion = 1;
+
+            var error = Assert.Throws<InvalidOperationException>(() => TuneScoreJson.Serialize(music));
+            Assert.Contains("schemaVersion", error.Message);
+        }
+
+        [Fact]
+        public void ExportRealIsoundYieldsTheExpectedTunes()
         {
             string? cvlPath = CvlTestFiles.TryFindIsound();
             if (cvlPath == null)
@@ -118,30 +126,14 @@ namespace CivOne.UnitTests.Sound.Cvl
                 return;
             }
 
-            string? configured = Environment.GetEnvironmentVariable(ScoreOutputVariable);
-            string outputPath = string.IsNullOrWhiteSpace(configured)
-                ? Path.Combine(Path.GetTempPath(), $"isound-{Guid.NewGuid():N}.score.json")
-                : configured;
-            bool temporary = string.IsNullOrWhiteSpace(configured);
+            List<TuneScore> tunes = IsoundScoreExporter.ExportFromFile(cvlPath);
 
-            try
-            {
-                IsoundScoreExporter.ExportToFile(cvlPath, outputPath);
-                var loaded = TuneScoreJson.Load(outputPath);
+            var withSteps = tunes.Where(t => t.Steps.Count > 0).ToArray();
+            Assert.True(withSteps.Length >= 20, $"Zu wenige Tunes extrahiert: {withSteps.Length}.");
+            Assert.Contains(tunes, t => t.TuneId == 34 && t.Kind == TuneScoreKind.Music);
+            Assert.Contains(tunes, t => t.TuneId == 4 && t.Kind == TuneScoreKind.Silent);
 
-                var withSteps = loaded.Tunes.Where(t => t.Steps.Count > 0).ToArray();
-                Assert.True(withSteps.Length >= 20, $"Zu wenige Tunes extrahiert: {withSteps.Length}.");
-                Assert.Contains(loaded.Tunes, t => t.TuneId == 34 && t.Kind == TuneScoreKind.Music);
-                Assert.Contains(loaded.Tunes, t => t.TuneId == 4 && t.Kind == TuneScoreKind.Silent);
-
-                _output.WriteLine($"{outputPath}: {loaded.Tunes.Count} Tunes, "
-                                  + $"{loaded.Tunes.Sum(t => t.Steps.Count)} Schritte, "
-                                  + $"{new FileInfo(outputPath).Length / 1024} KiB");
-            }
-            finally
-            {
-                if (temporary && File.Exists(outputPath)) File.Delete(outputPath);
-            }
+            _output.WriteLine($"{tunes.Count} Tunes, {tunes.Sum(t => t.Steps.Count)} Schritte");
         }
     }
 }

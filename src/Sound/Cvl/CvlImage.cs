@@ -79,6 +79,9 @@ internal sealed class CvlImage
     /// <summary>File offset from which data-segment offsets are counted.</summary>
     public int DataStart => ImageStart + DataSegment * 16;
 
+    /// <summary>Size of the code segment in bytes, i.e. everything up to the data segment.</summary>
+    public int CodeLength => Math.Max(0, Math.Min(DataStart, Bytes.Length) - CodeStart);
+
     public IReadOnlyList<ushort> Exports { get; }
 
     public static CvlImage Load(string path)

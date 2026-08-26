@@ -17,7 +17,11 @@ namespace CivOne.UnitTests.Sound.Cvl
     {
         public static string IsoundEnvironmentVariable => "CIVONE_ISOUND_CVL";
 
+        public static string AsoundEnvironmentVariable => "CIVONE_ASOUND_CVL";
+
         public static string? TryFindIsound() => TryFind("ISOUND.CVL", IsoundEnvironmentVariable);
+
+        public static string? TryFindAsound() => TryFind("ASOUND.CVL", AsoundEnvironmentVariable);
 
         public static string MissingHint(string fileName, string environmentVariable)
             => $"Übersprungen: {fileName} nicht gefunden. "

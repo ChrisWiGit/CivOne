@@ -1,87 +1,129 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
 using CivOne.Sound.Cvl;
 
 namespace CivOne.Sound.Playback;
 
+#nullable enable
+
+/// <summary>
+/// Turns a tune of a sound pack into a wave file the runtime can play, and keeps the result.
+/// </summary>
+/// <remarks>
+/// Rendering an emulated sound chip is far too slow to do while the game waits for a sound, so
+/// every tune is rendered once into <c>wav-cache/</c> next to the pack. The cache is rebuilt when
+/// the score changes or when this renderer changes.
+/// </remarks>
 internal sealed class SoundPackWaveRenderService
 {
-	private const int SoundSampleRate = 44100;
-	private const short SoundAmplitude = 8000;
+    /// <summary>Folder inside a pack that holds the rendered wave files.</summary>
+    public const string CacheFolderName = "wav-cache";
 
-	[SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Instance method is required for DI")]
-	public string? Render(string packFolder, string fileName)
-	{
-		string sourcePath = Path.Combine(packFolder, fileName);
-		if (!File.Exists(sourcePath)) return null;
+    /// <summary>
+    /// Bumped whenever a change here would make an already cached file sound wrong. Old files are
+    /// then simply not found again and get rendered anew.
+    /// </summary>
+    private const int RendererVersion = 2;
 
-		string cacheFolder = Path.Combine(packFolder, "wav-cache");
-		Directory.CreateDirectory(cacheFolder);
+    private readonly TuneRendererFactory _renderers;
+    private readonly WaveFileWriter _writer = new();
+    private readonly PcmMixerDelegate _mixer = new();
 
-		string targetPath = Path.Combine(cacheFolder, Path.ChangeExtension(fileName, ".wav"));
-		if (File.Exists(targetPath) && File.GetLastWriteTimeUtc(targetPath) >= File.GetLastWriteTimeUtc(sourcePath)) return targetPath;
+    /// <summary>
+    /// Creates the service.
+    /// </summary>
+    /// <param name="renderers">
+    /// Factory that supplies the per-device renderers, or <c>null</c> for the built-in ones.
+    /// </param>
+    public SoundPackWaveRenderService(TuneRendererFactory? renderers = null)
+        => _renderers = renderers ?? new TuneRendererFactory();
 
-		TuneScorePack pack = TuneScoreJson.Load(sourcePath);
-		TuneScore? tune = pack.Tunes.FirstOrDefault();
-		if (tune == null || tune.Steps.Count == 0) return null;
+    /// <summary>
+    /// Renders a tune, or returns the cached file when one is already up to date.
+    /// </summary>
+    /// <param name="packFolder">Folder of the sound pack.</param>
+    /// <param name="fileName">File name of the tune inside that folder.</param>
+    /// <param name="arrangement">Which arrangement to render; ignored by packs that have only one.</param>
+    /// <returns>Path of the wave file, or <c>null</c> when the tune could not be rendered.</returns>
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "A single unreadable or unrenderable tune must not take the game's sound down; it is reported and skipped.")]
+    public string? Render(string packFolder, string fileName, int arrangement = 0)
+    {
+        string sourcePath = Path.Combine(packFolder, fileName);
+        if (!File.Exists(sourcePath)) return null;
 
-		WriteWaveFile(targetPath, RenderPcm16(pack, tune));
-		return targetPath;
-	}
+        SoundPackIndex? index = ReadIndex(packFolder);
+        ITuneRenderer? renderer = _renderers.Create(index?.Device);
+        if (index == null || renderer == null) return null;
 
-	private static short[] RenderPcm16(TuneScorePack pack, TuneScore tune)
-	{
-		List<short> samples = [];
-		foreach (TuneStep step in tune.Steps)
-		{
-			int sampleCount = Math.Max(1, (int)Math.Round(pack.DurationSeconds(step) * SoundSampleRate));
-			if (step.IsRest)
-			{
-				samples.AddRange(Enumerable.Repeat((short)0, sampleCount));
-				continue;
-			}
+        string targetPath = Path.Combine(packFolder, CacheFolderName, CacheFileName(fileName, arrangement));
+        if (IsUpToDate(targetPath, sourcePath, packFolder)) return targetPath;
 
-			double frequency = step.FrequencyHz(pack.PitClockHz);
-			for (int i = 0; i < sampleCount; i++)
-			{
-				double phase = i * frequency / SoundSampleRate;
-				samples.Add(phase % 1d < 0.5d ? SoundAmplitude : (short)-SoundAmplitude);
-			}
-		}
+        try
+        {
+            RenderedTune? rendered = renderer.Render(index, packFolder, fileName, arrangement);
+            if (rendered == null) return null;
 
-		return [.. samples];
-	}
+            _writer.Write(targetPath, _mixer.ToPcm16(rendered.Value.Samples, _renderers.Gain(index.Device)),
+                rendered.Value.SampleRate);
 
-	private static void WriteWaveFile(string path, short[] samples)
-	{
-		const short CHANNELS = 1;
-		const short BITS_PER_SAMPLE = 16;
-		const short BYTES_PER_SAMPLE = BITS_PER_SAMPLE / 8;
-		int dataSize = samples.Length * BYTES_PER_SAMPLE;
+            return targetPath;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
 
-		using var stream = File.Create(path);
-		using var writer = new BinaryWriter(stream, Encoding.ASCII);
-		writer.Write(Encoding.ASCII.GetBytes("RIFF"));
-		writer.Write(36 + dataSize); // = size of the rest of the file
-		writer.Write(Encoding.ASCII.GetBytes("WAVE"));
-		writer.Write(Encoding.ASCII.GetBytes("fmt "));
-		writer.Write(16); // = size of the rest of the subchunk
-		writer.Write((short)1);
-		writer.Write(CHANNELS);
-		writer.Write(SoundSampleRate);
-		writer.Write(SoundSampleRate * CHANNELS * BYTES_PER_SAMPLE);
-		writer.Write((short)(CHANNELS * BYTES_PER_SAMPLE));
-		writer.Write(BITS_PER_SAMPLE);
-		writer.Write(Encoding.ASCII.GetBytes("data"));
-		writer.Write(dataSize);
+    /// <summary>
+    /// Builds the cache file name. The renderer version is part of it, so a changed renderer simply
+    /// stops finding the old files instead of silently reusing them.
+    /// </summary>
+    private static string CacheFileName(string fileName, int arrangement)
+    {
+        string name = Path.GetFileNameWithoutExtension(fileName);
+        if (name.EndsWith(".sound", StringComparison.OrdinalIgnoreCase)) name = name[..^".sound".Length];
 
-		foreach (short sample in samples)
-		{
-			writer.Write(sample);
-		}
-	}
+        string suffix = arrangement > 0
+            ? "-" + arrangement.ToString(CultureInfo.InvariantCulture)
+            : string.Empty;
+
+        return $"{name}{suffix}.v{RendererVersion.ToString(CultureInfo.InvariantCulture)}.wav";
+    }
+
+    /// <summary>
+    /// A cached file counts as current when it is newer than the tune and than anything the pack
+    /// shares, such as the AdLib instrument bank.
+    /// </summary>
+    private static bool IsUpToDate(string targetPath, string sourcePath, string packFolder)
+    {
+        if (!File.Exists(targetPath)) return false;
+
+        DateTime rendered = File.GetLastWriteTimeUtc(targetPath);
+        if (rendered < File.GetLastWriteTimeUtc(sourcePath)) return false;
+
+        string indexPath = Path.Combine(packFolder, SoundPackIndex.FileName);
+        return !File.Exists(indexPath) || rendered >= File.GetLastWriteTimeUtc(indexPath);
+    }
+
+    /// <summary>
+    /// Reads the pack's manifest, which carries both the device and the clock rates the renderer
+    /// needs. A pack written by an older build fails to load here and is simply not rendered.
+    /// </summary>
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "A corrupted or outdated index must not take the game's sound down; the pack is simply not rendered.")]
+    private static SoundPackIndex? ReadIndex(string packFolder)
+    {
+        string indexPath = Path.Combine(packFolder, SoundPackIndex.FileName);
+        if (!File.Exists(indexPath)) return null;
+
+        try
+        {
+            return SoundPackIndexJson.Load(indexPath);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
 }

@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
+using CivOne.Sound.Cvl.Adlib;
 
 namespace CivOne.Sound.Cvl;
 
@@ -54,7 +55,7 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
     private readonly IReadOnlyList<ICvlSoundConverter> _converters;
 
     public CvlSoundConversionService(IEnumerable<ICvlSoundConverter>? converters = null)
-        => _converters = converters?.ToArray() ?? [new IsoundCvlConverter()];
+        => _converters = converters?.ToArray() ?? [new IsoundCvlConverter(), new AsoundCvlConverter()];
 
     public CvlConversionReport ConvertFolder(string sourceFolder, string targetFolder)
     {
@@ -126,8 +127,8 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
 
         try
         {
-            var pack = converter.Convert(image);
-            return Write(pack, converter, cvlPath, targetFolder, device);
+            var content = converter.Convert(image);
+            return Write(content, converter, cvlPath, targetFolder, device);
         }
         catch (Exception ex)
         {
@@ -150,7 +151,7 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
         return null;
     }
 
-    private static CvlConversionResult Write(TuneScorePack pack, ICvlSoundConverter converter,
+    private static CvlConversionResult Write(SoundPackContent content, ICvlSoundConverter converter,
         string cvlPath, string targetFolder, CvlDevice device)
     {
         string packFolder = Path.Combine(targetFolder, converter.PackId);
@@ -160,29 +161,39 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
         {
             PackId = converter.PackId,
             DisplayName = converter.DisplayName,
-            Driver = pack.Driver,
-            Device = pack.Device,
+            Driver = content.Driver,
+            Device = content.Device,
             SourceFile = Path.GetFileName(cvlPath),
-            SourceSignature = pack.SourceSignature
+            SourceSignature = content.SourceSignature,
+            FastTickHz = content.FastTickHz,
+            WorkerTickDivider = content.WorkerTickDivider,
+            PitClockHz = content.PitClockHz
         };
 
-        foreach (var tune in pack.Tunes)
+        foreach (var shared in content.SharedFiles)
+        {
+            shared.Value(Path.Combine(packFolder, shared.Key));
+            index.SharedFiles.Add(shared.Key);
+        }
+
+        foreach (var tune in content.Tunes)
         {
             var entry = new SoundPackIndexEntry
             {
                 TuneId = tune.TuneId,
                 Title = tune.Title,
                 Kind = tune.Kind,
-                StepCount = tune.Steps.Count,
-                TotalTicks = tune.TotalTicks
+                StepCount = tune.StepCount,
+                TotalTicks = tune.TotalTicks,
+                ArrangementCount = tune.ArrangementCount
             };
 
             // Deliberately silent tunes get no file but still appear in the index, so the
             // game logic can tell "intentionally silent" apart from "not present".
-            if (tune.Steps.Count > 0)
+            if (tune.WriteTo != null)
             {
                 entry.File = $"{tune.TuneId:00}-{Slug(tune.Title)}{ScoreFileExtension}";
-                TuneScoreJson.Save(Path.Combine(packFolder, entry.File), SingleTunePack(pack, tune));
+                tune.WriteTo(Path.Combine(packFolder, entry.File));
             }
 
             index.Tunes.Add(entry);
@@ -222,20 +233,6 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
                       + $"{index.SoundNames.Count} von {SoundNameMap.EngineSoundNames.Count} Namen zugeordnet{unmapped}"
         };
     }
-
-    private static TuneScorePack SingleTunePack(TuneScorePack pack, TuneScore tune) => new()
-    {
-        SchemaVersion = pack.SchemaVersion,
-        Id = pack.Id,
-        DisplayName = pack.DisplayName,
-        Driver = pack.Driver,
-        Device = pack.Device,
-        SourceSignature = pack.SourceSignature,
-        PitClockHz = pack.PitClockHz,
-        FastTickHz = pack.FastTickHz,
-        WorkerTickDivider = pack.WorkerTickDivider,
-        Tunes = [tune]
-    };
 
     private static CvlConversionResult Failed(string cvlPath, string message)
         => new() { SourceFile = cvlPath, Message = message };

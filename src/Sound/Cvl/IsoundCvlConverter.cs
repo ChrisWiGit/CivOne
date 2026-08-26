@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace CivOne.Sound.Cvl;
 
 #nullable enable
@@ -16,10 +18,38 @@ internal sealed class IsoundCvlConverter : CvlSoundConverterBase
     protected override bool CanConvertDevice(CvlImage image, out string? reason)
         => IsoundParser.TryCreate(image, out _, out reason);
 
-    public override TuneScorePack Convert(CvlImage image)
-        => IsoundScoreExporter.Export(image, new IsoundScoreOptions
+    /// <inheritdoc/>
+    public override SoundPackContent Convert(CvlImage image)
+    {
+        var content = new SoundPackContent
         {
-            PackId = PackId,
-            DisplayName = DisplayName
-        });
+            Driver = IsoundScoreExporter.DriverName,
+            Device = IsoundScoreExporter.DeviceName,
+            SourceSignature = image?.Signature,
+            FastTickHz = IsoundScoreExporter.FastTickHz,
+            WorkerTickDivider = IsoundScoreExporter.WorkerTickDivider,
+            PitClockHz = IsoundScoreExporter.PitClockHz
+        };
+
+        foreach (TuneScore tune in IsoundScoreExporter.Export(image!))
+        {
+            TuneScore captured = tune;
+
+            content.Tunes.Add(new SoundPackTune
+            {
+                TuneId = tune.TuneId,
+                Title = tune.Title,
+                Kind = tune.Kind,
+                EndlessLoop = tune.EndlessLoop,
+                StepCount = tune.Steps.Count,
+                TotalTicks = tune.TotalTicks,
+
+                // Deliberately silent tunes get no file but still appear in the index, so the game
+                // logic can tell "intentionally silent" apart from "not present".
+                WriteTo = tune.Steps.Count == 0 ? null : path => TuneScoreJson.Save(path, captured)
+            });
+        }
+
+        return content;
+    }
 }

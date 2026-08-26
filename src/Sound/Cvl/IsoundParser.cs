@@ -73,7 +73,6 @@ internal sealed class IsoundTuneInfo
 internal sealed class IsoundParser
 {
     private const int MaxStepsPerTune = 8192;
-    private const int ExportScanLength = 64;
     private const int PlayerScanLength = 192;
     private const int MaxHandlerCandidates = 256;
 
@@ -99,7 +98,7 @@ internal sealed class IsoundParser
         ArgumentNullException.ThrowIfNull(image);
         parser = null;
 
-        if (!TryFindDispatch(image, out int dispatchTable, out int maxTuneId, out error))
+        if (!new CvlDispatchTableDelegate().TryRead(image, out int dispatchTable, out int maxTuneId, out error))
             return false;
 
         if (!TryFindPlayers(image, dispatchTable, maxTuneId, out int musicPlayer, out int effectPlayer, out error))
@@ -309,41 +308,6 @@ internal sealed class IsoundParser
         }
 
         return steps;
-    }
-
-    private static bool TryFindDispatch(CvlImage image, out int dispatchTable, out int maxTuneId, out string? error)
-    {
-        dispatchTable = -1;
-        maxTuneId = -1;
-
-        if (image.Exports.Count <= CvlImage.ExportPlayTune)
-        {
-            error = "Das Modul hat keinen PlayTune-Export.";
-            return false;
-        }
-
-        int playTune = image.Exports[CvlImage.ExportPlayTune];
-
-        // 2E FF 97 <disp16> = call word ptr cs:[bx+disp16]
-        int call = image.FindCodePattern(playTune, ExportScanLength, 0x2E, 0xFF, 0x97);
-        if (call < 0 || !image.TryCodeWord(call + 3, out ushort table))
-        {
-            error = $"In PlayTune (0x{playTune:X4}) wurde kein 'call cs:[bx+disp16]' gefunden.";
-            return false;
-        }
-
-        // 83 FB <imm8> = cmp bx,MaxTuneId
-        int compare = image.FindCodePattern(playTune, ExportScanLength, 0x83, 0xFB);
-        if (compare < 0 || !image.TryCodeByte(compare + 2, out byte limit))
-        {
-            error = $"In PlayTune (0x{playTune:X4}) wurde keine Bereichsprüfung 'cmp bx,imm8' gefunden.";
-            return false;
-        }
-
-        dispatchTable = table;
-        maxTuneId = limit;
-        error = null;
-        return true;
     }
 
     private static bool TryFindPlayers(CvlImage image, int dispatchTable, int maxTuneId,

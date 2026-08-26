@@ -140,10 +140,20 @@ internal sealed class TuneStep
 }
 
 /// <summary>
-/// A single tune (music or effect sequence) extracted from a CVL driver.
+/// A single PC speaker tune, as stored in one <c>*.sound.json</c>.
 /// </summary>
+/// <remarks>
+/// Everything the whole pack shares - who it came from and how fast its clocks ran - lives in the
+/// pack's <see cref="SoundPackIndex"/>, not in here.
+/// </remarks>
 internal sealed class TuneScore
 {
+    /// <summary>
+    /// Gets or sets the schema version of this file. It matches
+    /// <see cref="SoundPackIndex.CurrentSchemaVersion"/>.
+    /// </summary>
+    public int SchemaVersion { get; set; } = SoundPackIndex.CurrentSchemaVersion;
+
     /// <summary>
     /// Gets or sets the numeric tune id, as used by <c>PlaySound</c>.
     /// </summary>
@@ -186,86 +196,5 @@ internal sealed class TuneScore
             foreach (var step in Steps) total += step.Duration;
             return total;
         }
-    }
-}
-
-/// <summary>
-/// Note data of a driver fully extracted from a CVL. At runtime only this structure
-/// (serialized as <c>*.score.json</c>) is needed - the CVL itself is no longer required.
-/// </summary>
-internal sealed class TuneScorePack
-{
-    /// <summary>
-    /// Gets or sets the schema version of this file, for forward compatibility.
-    /// </summary>
-    public int SchemaVersion { get; set; } = 1;
-
-    /// <summary>
-    /// Gets or sets the identifier of this pack.
-    /// </summary>
-    public required string Id { get; set; }
-
-    /// <summary>
-    /// Gets or sets the display name of this pack.
-    /// </summary>
-    public required string DisplayName { get; set; }
-
-    /// <summary>
-    /// Source driver, e.g. <c>"ISOUND"</c>.
-    /// </summary>
-    public required string Driver { get; set; }
-
-    /// <summary>
-    /// Target device, e.g. <c>"pcSpeaker"</c>.
-    /// </summary>
-    public required string Device { get; set; }
-
-    /// <summary>
-    /// Signature of the source file - documents which build the pack was extracted from.
-    /// </summary>
-    public string? SourceSignature { get; set; }
-
-    /// <summary>
-    /// Clock frequency of the PIT; tone frequency = <see cref="PitClockHz"/> / divisor.
-    /// </summary>
-    public int PitClockHz { get; set; } = 1_193_182;
-
-    /// <summary>
-    /// Base tick rate of the CIVPLAY scheduler. <c>FastSoundWorkerFn</c> (vibrato, slide, noise)
-    /// runs at this rate.
-    /// </summary>
-    public int FastTickHz { get; set; } = 300;
-
-    /// <summary>
-    /// <c>SoundWorkerFn</c> runs every nth base tick; step durations count in worker ticks.
-    /// </summary>
-    public int WorkerTickDivider { get; set; } = 5;
-
-    /// <summary>
-    /// Gets or sets the tunes contained in this pack.
-    /// </summary>
-    public List<TuneScore> Tunes { get; set; } = [];
-
-    /// <summary>
-    /// Gets the worker tick rate in Hz, derived from <see cref="FastTickHz"/> and <see cref="WorkerTickDivider"/>.
-    /// </summary>
-    [JsonIgnore]
-    public double WorkerTickHz => WorkerTickDivider <= 0 ? 0d : FastTickHz / (double)WorkerTickDivider;
-
-    /// <summary>
-    /// Gets the duration of one worker tick in seconds.
-    /// </summary>
-    [JsonIgnore]
-    public double WorkerTickSeconds => WorkerTickHz <= 0d ? 0d : 1d / WorkerTickHz;
-
-    /// <summary>
-    /// Computes the wall-clock duration of a single step in seconds.
-    /// </summary>
-    /// <param name="step">The step whose duration is converted from worker ticks to seconds.</param>
-    /// <returns>The step's duration in seconds.</returns>
-    public double DurationSeconds(TuneStep step)
-    {
-        ArgumentNullException.ThrowIfNull(step);
-        return step.Duration * WorkerTickSeconds;
     }
 }
