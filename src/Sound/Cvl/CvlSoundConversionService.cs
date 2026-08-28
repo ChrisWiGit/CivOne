@@ -66,7 +66,7 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
             report.Results.Add(new CvlConversionResult
             {
                 SourceFile = sourceFolder ?? string.Empty,
-                Message = $"Quellordner nicht gefunden: {sourceFolder}"
+                Message = $"Source folder not found: {sourceFolder}"
             });
             return report;
         }
@@ -82,7 +82,7 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
             report.Results.Add(new CvlConversionResult
             {
                 SourceFile = sourceFolder,
-                Message = $"Keine CVL-Dateien in {sourceFolder} gefunden."
+                Message = $"No CVL files found in {sourceFolder}."
             });
             return report;
         }
@@ -107,7 +107,7 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
         }
         catch (Exception ex)
         {
-            return Failed(cvlPath, $"{name}: nicht lesbar – {ex.Message}");
+            return Failed(cvlPath, $"{name}: not readable - {ex.Message}");
         }
 
         var device = CvlDeviceDetector.Detect(image);
@@ -120,8 +120,8 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
                 SourceFile = cvlPath,
                 Device = device,
                 Message = device == CvlDevice.Silent
-                    ? $"{name}: Treiber ohne Tonausgabe, übersprungen."
-                    : $"{name}: kein Konverter für Gerät {device}{(reason == null ? "" : $" ({reason})")}, übersprungen."
+                    ? $"{name}: driver without sound output, skipped."
+                    : $"{name}: no converter for device {device}{(reason == null ? "" : $" ({reason})")}, skipped."
             };
         }
 
@@ -132,7 +132,7 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
         }
         catch (Exception ex)
         {
-            return Failed(cvlPath, $"{name}: Konvertierung fehlgeschlagen – {ex.Message}");
+            return Failed(cvlPath, $"{name}: conversion failed - {ex.Message}");
         }
     }
 
@@ -217,7 +217,7 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
         int withFile = index.Tunes.Count(t => t.File != null);
         string unmapped = index.UnmappedSoundNames.Count == 0
             ? string.Empty
-            : $"; ohne Zuordnung: {string.Join(", ", index.UnmappedSoundNames)}";
+            : $"; unmapped: {string.Join(", ", index.UnmappedSoundNames)}";
 
         return new CvlConversionResult
         {
@@ -229,8 +229,8 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
             TuneCount = withFile,
             MappedSoundNames = index.SoundNames.Count,
             UnmappedSoundNames = index.UnmappedSoundNames,
-            Message = $"{Path.GetFileName(cvlPath)} -> {converter.PackId}: {withFile} Tunes, "
-                      + $"{index.SoundNames.Count} von {SoundNameMap.EngineSoundNames.Count} Namen zugeordnet{unmapped}"
+            Message = $"{Path.GetFileName(cvlPath)} -> {converter.PackId}: {withFile} tunes, "
+                      + $"{index.SoundNames.Count} of {SoundNameMap.EngineSoundNames.Count} names mapped{unmapped}"
         };
     }
 

@@ -95,7 +95,7 @@ internal sealed class AsoundParser
     public static AsoundParser Create(CvlImage image)
         => TryCreate(image, out AsoundParser? parser, out string? error)
             ? parser!
-            : throw new InvalidOperationException($"ASOUND-Layout nicht erkannt: {error}");
+            : throw new InvalidOperationException($"ASOUND layout not recognized: {error}");
 
     /// <summary>
     /// Tries to create a parser for <paramref name="image"/>.
@@ -153,7 +153,7 @@ internal sealed class AsoundParser
                 TuneId = tuneId,
                 Kind = TuneScoreKind.Unsupported,
                 HandlerOffset = -1,
-                Diagnostic = $"TuneId {tuneId} liegt außerhalb von 0..{Layout.MaxTuneId}."
+                Diagnostic = $"TuneId {tuneId} is outside 0..{Layout.MaxTuneId}."
             };
         }
 
@@ -164,7 +164,7 @@ internal sealed class AsoundParser
                 TuneId = tuneId,
                 Kind = TuneScoreKind.Unsupported,
                 HandlerOffset = handler,
-                Diagnostic = "Dispatch-Eintrag ist leer."
+                Diagnostic = "Dispatch entry is empty."
             };
         }
 
@@ -175,7 +175,7 @@ internal sealed class AsoundParser
                 TuneId = tuneId,
                 Kind = TuneScoreKind.Unsupported,
                 HandlerOffset = handler,
-                Diagnostic = $"Handler 0x{handler:X4} liegt außerhalb der Datei."
+                Diagnostic = $"Handler 0x{handler:X4} is outside the file."
             };
         }
 
@@ -202,8 +202,8 @@ internal sealed class AsoundParser
                 TuneId = tuneId,
                 Kind = TuneScoreKind.Unsupported,
                 HandlerOffset = handler,
-                Diagnostic = $"Handler 0x{handler:X4} startet keine Stimme "
-                             + "(vermutlich eine Steuerfunktion wie Stop oder Statusabfrage)."
+                Diagnostic = $"Handler 0x{handler:X4} starts no voice "
+                             + "(likely a control function like Stop or status query)."
             };
         }
 
@@ -215,8 +215,8 @@ internal sealed class AsoundParser
             Arrangements = arrangements,
             Diagnostic = exact
                 ? null
-                : $"Handler 0x{handler:X4} enthält zusätzlichen Code (z. B. eine Zufallsvariation), "
-                  + "der nicht nachgebildet wird."
+                : $"Handler 0x{handler:X4} contains extra code (e.g. a random variation) "
+                  + "that is not reproduced."
         };
     }
 
@@ -451,7 +451,7 @@ internal sealed class AsoundParser
 
         if (candidates.Count == 0)
         {
-            error = "Es wurden keine Stimmen-Thunks (lea bx,[state] / jmp short) gefunden.";
+            error = "No voice thunks (lea bx,[state] / jmp short) found.";
             return false;
         }
 
@@ -469,7 +469,7 @@ internal sealed class AsoundParser
 
         if (offsets.Count < 2)
         {
-            error = $"Nur {offsets.Count} Stimmen-Thunk(s) gefunden, das ist zu wenig für den Player.";
+            error = $"Only {offsets.Count} voice thunk(s) found, which is too few for the player.";
             return false;
         }
 
@@ -500,7 +500,7 @@ internal sealed class AsoundParser
         if (first < 0 || !image.TryCodeWord(first + 1, out ushort strideValue)
             || !image.TryCodeWord(first + 6, out ushort bankValue))
         {
-            error = "Die Instrumentenbank wurde nicht gefunden (kein 'imul stride / mov cx,bank').";
+            error = "The instrument bank was not found (no 'imul stride / mov cx,bank').";
             return false;
         }
 
@@ -509,7 +509,7 @@ internal sealed class AsoundParser
             0xB9, -1, 0x00, 0xF7, 0xE9, 0xB9, -1, -1, 0x03, 0xC8, 0x83, 0xC1);
         if (second < 0 || !image.TryCodeByte(second + 12, out byte operatorValue))
         {
-            error = "Die Größe eines Operator-Blocks wurde nicht gefunden (kein 'add cx,imm8').";
+            error = "The size of an operator block was not found (no 'add cx,imm8').";
             return false;
         }
 
@@ -519,7 +519,7 @@ internal sealed class AsoundParser
 
         if (stride <= 0 || operatorStride <= 0 || operatorStride * 2 > stride)
         {
-            error = $"Unplausible Instrumentgröße: {stride} Bytes mit Operator-Block {operatorStride}.";
+            error = $"Implausible instrument size: {stride} bytes with operator block {operatorStride}.";
             return false;
         }
 
@@ -543,7 +543,7 @@ internal sealed class AsoundParser
         if (load < 0 || !image.TryCodeWord(load + 4, out ushort channels)
             || !image.TryCodeWord(load + 11, out ushort registers))
         {
-            error = "Die Operator-Tabellen (Kanal -> Operator -> Registeroffset) wurden nicht gefunden.";
+            error = "The operator tables (channel -> operator -> register offset) were not found.";
             return false;
         }
 
@@ -564,7 +564,7 @@ internal sealed class AsoundParser
         int add = image.FindCodePattern(0, image.CodeLength, 0x03, 0x87);
         if (add < 0 || !image.TryCodeWord(add + 2, out ushort table))
         {
-            error = "Die Tabelle der Halbton-Frequenzen wurde nicht gefunden.";
+            error = "The semitone frequency table was not found.";
             return false;
         }
 
@@ -587,7 +587,7 @@ internal sealed class AsoundParser
 
         if (deepTremolo < 0 || deepVibrato < 0 || noteSelect < 0)
         {
-            error = "Die globalen Chip-Flags (Tremolo-/Vibrato-Tiefe, Note-Select) wurden nicht gefunden.";
+            error = "The global chip flags (tremolo/vibrato depth, note select) were not found.";
             return false;
         }
 

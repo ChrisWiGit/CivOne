@@ -86,8 +86,8 @@ internal sealed class CvlImage
 
     public static CvlImage Load(string path)
     {
-        if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Pfad fehlt.", nameof(path));
-        if (!File.Exists(path)) throw new FileNotFoundException("CVL-Datei nicht gefunden.", path);
+        if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Path is missing.", nameof(path));
+        if (!File.Exists(path)) throw new FileNotFoundException("CVL file not found.", path);
         return FromBytes(File.ReadAllBytes(path), Path.GetFullPath(path));
     }
 
@@ -97,28 +97,28 @@ internal sealed class CvlImage
 
         string where = filePath ?? "<memory>";
         if (bytes.Length < 0x40)
-            throw new InvalidOperationException($"{where}: Datei ist zu klein für einen MZ-Header.");
+            throw new InvalidOperationException($"{where}: file is too small for an MZ header.");
         if (ReadU16(bytes, 0, where) != MzSignature)
-            throw new InvalidOperationException($"{where}: keine MZ-Signatur, das ist keine CVL-Datei.");
+            throw new InvalidOperationException($"{where}: no MZ signature, this is not a CVL file.");
 
         int imageStart = ReadU16(bytes, HeaderParagraphsField, where) * 16;
         if (imageStart <= 0 || imageStart + ExportTableField + 2 > bytes.Length)
-            throw new InvalidOperationException($"{where}: Load-Image liegt außerhalb der Datei.");
+            throw new InvalidOperationException($"{where}: load image is outside the file.");
 
         ushort codeSegment = ReadU16(bytes, imageStart + CodeSegmentField, where);
         ushort dataSegment = ReadU16(bytes, imageStart + DataSegmentField, where);
 
         int dataStart = imageStart + dataSegment * 16;
         if (dataStart < 0 || dataStart >= bytes.Length)
-            throw new InvalidOperationException($"{where}: Datensegment 0x{dataSegment:X4} liegt außerhalb der Datei.");
+            throw new InvalidOperationException($"{where}: data segment 0x{dataSegment:X4} is outside the file.");
 
         int exportCount = ReadU16(bytes, imageStart + ExportCountField, where);
         if (exportCount is <= 0 or > MaxExportCount)
-            throw new InvalidOperationException($"{where}: unplausible Exportanzahl {exportCount}.");
+            throw new InvalidOperationException($"{where}: implausible export count {exportCount}.");
 
         int exportTable = imageStart + ExportTableField;
         if (exportTable + exportCount * 2 > bytes.Length)
-            throw new InvalidOperationException($"{where}: Exporttabelle liegt außerhalb der Datei.");
+            throw new InvalidOperationException($"{where}: export table is outside the file.");
 
         var exports = new ushort[exportCount];
         for (int i = 0; i < exportCount; i++)
@@ -142,12 +142,12 @@ internal sealed class CvlImage
     public byte CodeByte(int offset)
         => TryCodeByte(offset, out byte value)
             ? value
-            : throw new InvalidOperationException($"Code-Offset 0x{offset:X4} liegt außerhalb der Datei.");
+            : throw new InvalidOperationException($"Code offset 0x{offset:X4} is outside the file.");
 
     public ushort CodeWord(int offset)
         => TryCodeWord(offset, out ushort value)
             ? value
-            : throw new InvalidOperationException($"Code-Offset 0x{offset:X4} liegt außerhalb der Datei.");
+            : throw new InvalidOperationException($"Code offset 0x{offset:X4} is outside the file.");
 
     /// <summary>
     /// Checks an opcode pattern in the code segment. A <c>-1</c> in <paramref name="pattern"/> is a wildcard.
@@ -210,7 +210,7 @@ internal sealed class CvlImage
     private static ushort ReadU16(byte[] bytes, int offset, string where)
     {
         if (offset < 0 || offset + 1 >= bytes.Length)
-            throw new InvalidOperationException($"{where}: Offset 0x{offset:X4} liegt außerhalb der Datei.");
+            throw new InvalidOperationException($"{where}: offset 0x{offset:X4} is outside the file.");
         return (ushort)(bytes[offset] | (bytes[offset + 1] << 8));
     }
 

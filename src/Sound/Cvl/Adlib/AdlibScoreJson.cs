@@ -46,7 +46,7 @@ internal static class AdlibScoreJson
     public static AdlibSoundBank LoadBank(string path)
     {
         var bank = JsonSerializer.Deserialize<AdlibSoundBank>(File.ReadAllText(path), _bankOptions)
-            ?? throw new InvalidOperationException($"Konnte AdLib-Bank aus {path} nicht laden.");
+            ?? throw new InvalidOperationException($"Could not load AdLib bank from {path}.");
 
         ValidateBank(bank, path);
         return bank;
@@ -73,7 +73,7 @@ internal static class AdlibScoreJson
     public static AdlibTuneScore LoadTune(string path)
     {
         var tune = JsonSerializer.Deserialize<AdlibTuneScore>(File.ReadAllText(path), _tuneOptions)
-            ?? throw new InvalidOperationException($"Konnte AdLib-Tune aus {path} nicht laden.");
+            ?? throw new InvalidOperationException($"Could not load AdLib tune from {path}.");
 
         ValidateTune(tune, path);
         return tune;
@@ -103,11 +103,11 @@ internal static class AdlibScoreJson
     {
         Expect(bank.SchemaVersion, source);
 
-        if (bank.Instruments.Count == 0) throw new InvalidOperationException($"{source}: instruments darf nicht leer sein.");
+        if (bank.Instruments.Count == 0) throw new InvalidOperationException($"{source}: instruments must not be empty.");
         if (bank.FrequencyNumbers.Count != 12)
-            throw new InvalidOperationException($"{source}: frequencyNumbers braucht genau 12 Einträge.");
+            throw new InvalidOperationException($"{source}: frequencyNumbers needs exactly 12 entries.");
         if (bank.ModulatorOffsets.Count == 0 || bank.ModulatorOffsets.Count != bank.CarrierOffsets.Count)
-            throw new InvalidOperationException($"{source}: modulatorOffsets und carrierOffsets passen nicht zusammen.");
+            throw new InvalidOperationException($"{source}: modulatorOffsets and carrierOffsets do not match.");
     }
 
     /// <summary>
@@ -118,27 +118,27 @@ internal static class AdlibScoreJson
         if (schemaVersion == SoundPackIndex.CurrentSchemaVersion) return;
 
         throw new InvalidOperationException(
-            $"{source}: schemaVersion muss {SoundPackIndex.CurrentSchemaVersion} sein.");
+            $"{source}: schemaVersion must be {SoundPackIndex.CurrentSchemaVersion}.");
     }
 
     private static void ValidateTune(AdlibTuneScore tune, string source)
     {
         Expect(tune.SchemaVersion, source);
 
-        if (string.IsNullOrWhiteSpace(tune.Title)) throw new InvalidOperationException($"{source}: title fehlt.");
-        if (tune.Arrangements.Count == 0) throw new InvalidOperationException($"{source}: arrangements darf nicht leer sein.");
+        if (string.IsNullOrWhiteSpace(tune.Title)) throw new InvalidOperationException($"{source}: title is missing.");
+        if (tune.Arrangements.Count == 0) throw new InvalidOperationException($"{source}: arrangements must not be empty.");
 
         foreach (AdlibArrangement arrangement in tune.Arrangements)
         {
             if (arrangement.Voices.Count == 0)
-                throw new InvalidOperationException($"{source}: tune {tune.TuneId} hat ein Arrangement ohne Stimmen.");
+                throw new InvalidOperationException($"{source}: tune {tune.TuneId} has an arrangement without voices.");
 
             foreach (AdlibVoice voice in arrangement.Voices)
             {
                 if (voice.Channel < 0)
-                    throw new InvalidOperationException($"{source}: tune {tune.TuneId} hat eine negative Kanalnummer.");
+                    throw new InvalidOperationException($"{source}: tune {tune.TuneId} has a negative channel number.");
                 if (voice.Events.Count == 0)
-                    throw new InvalidOperationException($"{source}: tune {tune.TuneId}, Kanal {voice.Channel} hat keine Events.");
+                    throw new InvalidOperationException($"{source}: tune {tune.TuneId}, channel {voice.Channel} has no events.");
             }
         }
     }

@@ -30,7 +30,7 @@ internal static class TuneScoreJson
     public static TuneScore Load(string path)
     {
         var tune = JsonSerializer.Deserialize<TuneScore>(File.ReadAllText(path), _options)
-            ?? throw new InvalidOperationException($"Konnte Tune aus {path} nicht laden.");
+            ?? throw new InvalidOperationException($"Could not load tune from {path}.");
 
         Validate(tune, path);
         return tune;
@@ -69,27 +69,27 @@ internal static class TuneScoreJson
         if (tune.SchemaVersion != SoundPackIndex.CurrentSchemaVersion)
         {
             throw new InvalidOperationException(
-                $"{source}: schemaVersion muss {SoundPackIndex.CurrentSchemaVersion} sein.");
+                $"{source}: schemaVersion must be {SoundPackIndex.CurrentSchemaVersion}.");
         }
 
-        if (string.IsNullOrWhiteSpace(tune.Title)) throw new InvalidOperationException($"{source}: title fehlt.");
+        if (string.IsNullOrWhiteSpace(tune.Title)) throw new InvalidOperationException($"{source}: title is missing.");
 
         // Silent and Unsupported may be empty – but an actual sequence must not be.
         if (tune.Kind is TuneScoreKind.Music or TuneScoreKind.Effect && tune.Steps.Count == 0)
-            throw new InvalidOperationException($"{source}: tune {tune.TuneId} ist als {tune.Kind} markiert, hat aber keine steps.");
+            throw new InvalidOperationException($"{source}: tune {tune.TuneId} is marked as {tune.Kind} but has no steps.");
 
         foreach (var step in tune.Steps)
         {
             if (step.Duration < 0)
-                throw new InvalidOperationException($"{source}: tune {tune.TuneId} hat einen negativen duration-Wert.");
+                throw new InvalidOperationException($"{source}: tune {tune.TuneId} has a negative duration value.");
             if (step.Divisor is < 0 or > 0xFFFF)
-                throw new InvalidOperationException($"{source}: tune {tune.TuneId} hat einen ungültigen divisor.");
+                throw new InvalidOperationException($"{source}: tune {tune.TuneId} has an invalid divisor.");
             if (step.Timbre is < 0 or > 0xFFFF)
-                throw new InvalidOperationException($"{source}: tune {tune.TuneId} hat einen ungültigen timbre-Wert.");
+                throw new InvalidOperationException($"{source}: tune {tune.TuneId} has an invalid timbre value.");
             if (step.NoiseMask is < 0 or > 0xFFFF)
-                throw new InvalidOperationException($"{source}: tune {tune.TuneId} hat eine ungültige noiseMask.");
+                throw new InvalidOperationException($"{source}: tune {tune.TuneId} has an invalid noiseMask.");
             if (step.Effect is < 0 or > 0xFFFF)
-                throw new InvalidOperationException($"{source}: tune {tune.TuneId} hat einen ungültigen effect-Wert.");
+                throw new InvalidOperationException($"{source}: tune {tune.TuneId} has an invalid effect value.");
         }
     }
 }

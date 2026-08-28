@@ -97,13 +97,13 @@ internal static class SoundPackIndexJson
     {
         string json = File.ReadAllText(path);
         var index = JsonSerializer.Deserialize<SoundPackIndex>(json, _options)
-            ?? throw new InvalidOperationException($"Konnte Sound-Pack-Index aus {path} nicht laden.");
+            ?? throw new InvalidOperationException($"Could not load sound pack index from {path}.");
 
         if (index.SchemaVersion != SoundPackIndex.CurrentSchemaVersion)
         {
             throw new InvalidOperationException(
-                $"{path}: schemaVersion {index.SchemaVersion} wird nicht unterstützt, erwartet wird "
-                + $"{SoundPackIndex.CurrentSchemaVersion}. Die Sound-Daten des Originalspiels erneut importieren.");
+                $"{path}: schemaVersion {index.SchemaVersion} is not supported, expected "
+                + $"{SoundPackIndex.CurrentSchemaVersion}. Re-import the original game's sound data.");
         }
 
         // After deserialization the comparer is the default comparer.

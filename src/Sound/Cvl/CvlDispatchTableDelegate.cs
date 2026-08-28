@@ -39,7 +39,7 @@ internal sealed class CvlDispatchTableDelegate
 
         if (image.Exports.Count <= CvlImage.ExportPlayTune)
         {
-            error = "Das Modul hat keinen PlayTune-Export.";
+            error = "The module has no PlayTune export.";
             return false;
         }
 
@@ -48,14 +48,14 @@ internal sealed class CvlDispatchTableDelegate
         int call = image.FindCodePattern(playTune, ExportScanLength, 0x2E, 0xFF, 0x97);
         if (call < 0 || !image.TryCodeWord(call + 3, out ushort table))
         {
-            error = $"In PlayTune (0x{playTune:X4}) wurde kein 'call cs:[bx+disp16]' gefunden.";
+            error = $"No 'call cs:[bx+disp16]' found in PlayTune (0x{playTune:X4}).";
             return false;
         }
 
         int compare = image.FindCodePattern(playTune, ExportScanLength, 0x83, 0xFB);
         if (compare < 0 || !image.TryCodeByte(compare + 2, out byte limit))
         {
-            error = $"In PlayTune (0x{playTune:X4}) wurde keine Bereichsprüfung 'cmp bx,imm8' gefunden.";
+            error = $"No range check 'cmp bx,imm8' found in PlayTune (0x{playTune:X4}).";
             return false;
         }
 

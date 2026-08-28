@@ -45,7 +45,7 @@ internal abstract class CvlSoundConverterBase : ICvlSoundConverter
         var detected = CvlDeviceDetector.Detect(image);
         if (detected != Device)
         {
-            reason = $"Gerät ist {detected}, dieser Konverter bedient {Device}.";
+            reason = $"Device is {detected}, this converter serves {Device}.";
             return false;
         }
 

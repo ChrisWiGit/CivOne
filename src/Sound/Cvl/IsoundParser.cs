@@ -91,7 +91,7 @@ internal sealed class IsoundParser
     public static IsoundParser Create(CvlImage image)
         => TryCreate(image, out var parser, out string? error)
             ? parser!
-            : throw new InvalidOperationException($"ISOUND-Layout nicht erkannt: {error}");
+            : throw new InvalidOperationException($"ISOUND layout not recognized: {error}");
 
     public static bool TryCreate(CvlImage image, out IsoundParser? parser, out string? error)
     {
@@ -131,7 +131,7 @@ internal sealed class IsoundParser
                 TuneId = tuneId,
                 Kind = TuneScoreKind.Unsupported,
                 HandlerOffset = -1,
-                Diagnostic = $"TuneId {tuneId} liegt außerhalb von 0..{Layout.MaxTuneId}."
+                Diagnostic = $"TuneId {tuneId} is outside 0..{Layout.MaxTuneId}."
             };
         }
 
@@ -142,7 +142,7 @@ internal sealed class IsoundParser
                 TuneId = tuneId,
                 Kind = TuneScoreKind.Unsupported,
                 HandlerOffset = handler,
-                Diagnostic = "Dispatch-Eintrag ist leer."
+                Diagnostic = "Dispatch entry is empty."
             };
         }
 
@@ -153,7 +153,7 @@ internal sealed class IsoundParser
                 TuneId = tuneId,
                 Kind = TuneScoreKind.Unsupported,
                 HandlerOffset = handler,
-                Diagnostic = $"Handler 0x{handler:X4} liegt außerhalb der Datei."
+                Diagnostic = $"Handler 0x{handler:X4} is outside the file."
             };
         }
 
@@ -175,8 +175,8 @@ internal sealed class IsoundParser
                 TuneId = tuneId,
                 Kind = TuneScoreKind.Unsupported,
                 HandlerOffset = handler,
-                Diagnostic = $"Handler 0x{handler:X4} ist keine 'lea bx,[ptr] / jmp player'-Sequenz "
-                             + "(vermutlich eine Steuerfunktion wie Stop oder Statusabfrage)."
+                Diagnostic = $"Handler 0x{handler:X4} is not a 'lea bx,[ptr] / jmp player' sequence "
+                             + "(likely a control function like Stop or status query)."
             };
         }
 
@@ -213,7 +213,7 @@ internal sealed class IsoundParser
             HandlerOffset = handler,
             DataOffset = dataOffset,
             PlayerOffset = player,
-            Diagnostic = $"Handler springt nach 0x{player:X4}, das ist keine bekannte Player-Routine."
+            Diagnostic = $"Handler jumps to 0x{player:X4}, which is not a known player routine."
         };
     }
 
@@ -348,8 +348,8 @@ internal sealed class IsoundParser
         if (musicPlayer < 0)
         {
             error = targets.Count == 0
-                ? $"Dispatch-Tabelle 0x{dispatchTable:X4} enthält keine auswertbaren Handler."
-                : "Keine der angesprungenen Routinen sieht wie der Musikplayer aus.";
+                ? $"Dispatch table 0x{dispatchTable:X4} contains no evaluable handlers."
+                : "None of the jump targets looks like the music player.";
             return false;
         }
 
@@ -368,7 +368,7 @@ internal sealed class IsoundParser
         int load = image.FindCodePattern(musicPlayer, PlayerScanLength, 0x2E, 0x8B, 0x87);
         if (load < 0 || !image.TryCodeWord(load + 3, out ushort table))
         {
-            error = $"Im Musikplayer (0x{musicPlayer:X4}) wurde keine Effekttabelle gefunden.";
+            error = $"No effect table found in the music player (0x{musicPlayer:X4}).";
             return false;
         }
 
@@ -376,7 +376,7 @@ internal sealed class IsoundParser
         int compare = image.FindCodePattern(musicPlayer, PlayerScanLength, 0x83, 0xFB);
         if (compare < 0 || !image.TryCodeByte(compare + 2, out byte plain))
         {
-            error = $"Im Musikplayer (0x{musicPlayer:X4}) fehlt der Vergleich auf den Timbre-Sonderfall.";
+            error = $"Music player (0x{musicPlayer:X4}) is missing the comparison for the timbre special case.";
             return false;
         }
 
@@ -384,7 +384,7 @@ internal sealed class IsoundParser
         int subtract = image.FindCodePattern(musicPlayer, PlayerScanLength, 0x83, 0xEB);
         if (subtract < 0 || !image.TryCodeByte(subtract + 2, out byte first))
         {
-            error = $"Im Musikplayer (0x{musicPlayer:X4}) fehlt die Basis der Effekttabelle.";
+            error = $"Music player (0x{musicPlayer:X4}) is missing the base of the effect table.";
             return false;
         }
 
