@@ -5,13 +5,13 @@ using System.Text;
 namespace CivOne.UnitTests.Sound.Cvl
 {
     /// <summary>
-    /// Baut ein synthetisches CVL-Modul, das ISOUND.CVL strukturell nachbildet: MZ-Header,
-    /// Modulkopf mit Datensegment, Exporttabelle, Dispatch-Tabelle, Handler im
-    /// <c>lea bx,[ptr] / jmp player</c>-Muster, beide Player-Routinen, die Effekt-Parametertabelle
-    /// und Sequenzdaten in beiden Recordformaten.
+    /// Builds a synthetic CVL module that structurally replicates ISOUND.CVL: MZ header,
+    /// module header with data segment, export table, dispatch table, handlers in the
+    /// <c>lea bx,[ptr] / jmp player</c> pattern, both player routines, the effect parameter
+    /// table, and sequence data in both record formats.
     ///
-    /// Damit ist der Parser vollständig testbar, ohne Originaldaten im Repository abzulegen.
-    /// Die Sequenzinhalte sind frei erfunden.
+    /// This makes the parser fully testable without storing original data in the repository.
+    /// The sequence contents are made up.
     /// </summary>
     internal static class FakeIsoundModule
     {
@@ -25,7 +25,7 @@ namespace CivOne.UnitTests.Sound.Cvl
 
         public const string Signature = "Civil FAKE  01-01-00";
 
-        // Code-Offsets (Codesegment ist 0, also zugleich Image-Offsets).
+        // Code offsets (code segment is 0, so also image offsets).
         public const int InitSound = 0x0050;
         public const int PlayTune = 0x0060;
         public const int DispatchTable = 0x0100;
@@ -41,7 +41,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         public const int PlainTimbreCode = 0x7E;
         public const int FirstTimbreCode = 0x65;
 
-        // Datensegment-Offsets.
+        // Data-segment offsets.
         public const int MusicDataA = 0x0000;
         public const int MusicDataB = 0x0010;
         public const int EffectData = 0x0020;
@@ -52,7 +52,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         public const int TuneEffect = 6;
         public const int TuneUnsupported = 7;
 
-        /// <summary>Effektparameter für die Codes 0x65..0x6F, wie sie der Musikplayer nachschlägt.</summary>
+        /// <summary>Effect parameters for codes 0x65..0x6F, as looked up by the music player.</summary>
         public static readonly ushort[] EffectParams =
         [
             0x8D20, 0x8F20, 0x8610, 0x8306, 0x8204, 0x8FFF, 0xD204, 0xCC05, 0xDC73, 0x000F, 0xFFF1
@@ -89,8 +89,8 @@ namespace CivOne.UnitTests.Sound.Cvl
         private static void BuildModuleHeader(byte[] file)
         {
             WriteAscii(file, ImageStart + 0x10, Signature);
-            WriteWord(file, ImageStart + 0x28, 0x0000);                  // Codesegment
-            WriteWord(file, ImageStart + 0x2A, DataSegmentParagraphs);   // Datensegment
+            WriteWord(file, ImageStart + 0x28, 0x0000);                  // Code segment
+            WriteWord(file, ImageStart + 0x2A, DataSegmentParagraphs);   // Data segment
             WriteWord(file, ImageStart + 0x30, ExportCount);
 
             for (int i = 0; i < ExportCount; i++)
@@ -117,7 +117,7 @@ namespace CivOne.UnitTests.Sound.Cvl
                 0x5D,
                 0xCB);
 
-            // Musikplayer: xor ax,ax ; mov byte ptr ds:[0x90],1 ; mov bx,ds:[0x57]
+            // Music player: xor ax,ax ; mov byte ptr ds:[0x90],1 ; mov bx,ds:[0x57]
             //              cmp bx,PlainTimbreCode ; je end ; cmp bx,FirstTimbreCode ; jb end
             //              sub bx,FirstTimbreCode ; shl bx,1 ; mov ax,cs:[bx+EffectParamTable] ; ret
             WriteCode(file, MusicPlayer,
@@ -131,18 +131,18 @@ namespace CivOne.UnitTests.Sound.Cvl
                 0x83, 0xEB, FirstTimbreCode,
                 0xD1, 0xE3,
                 0x2E, 0x8B, 0x87, Low(EffectParamTable), High(EffectParamTable),
-                // Speaker ansteuern – daran erkennt CvlDeviceDetector das Gerät.
-                0xE6, 0x42,             // out 0x42,al  (Divisor low)
+                // Drive the speaker - this is how CvlDeviceDetector recognizes the device.
+                0xE6, 0x42,             // out 0x42,al  (divisor low)
                 0x8A, 0xC4,             // mov al,ah
-                0xE6, 0x42,             // out 0x42,al  (Divisor high)
+                0xE6, 0x42,             // out 0x42,al  (divisor high)
                 0xB0, 0xB6,             // mov al,0xB6
-                0xE6, 0x43,             // out 0x43,al  (PIT Kanal 2, Modus 3)
+                0xE6, 0x43,             // out 0x43,al  (PIT channel 2, mode 3)
                 0xE4, 0x61,             // in al,0x61
                 0x0C, 0x03,             // or al,3
-                0xE6, 0x61,             // out 0x61,al  (Gate auf)
+                0xE6, 0x61,             // out 0x61,al  (gate on)
                 0xC3);
 
-            // Effektplayer: xor ax,ax ; push ax ; mov ax,ds:[0x57] ; cmp ax,[bx] ; pop ax ; ret
+            // Effect player: xor ax,ax ; push ax ; mov ax,ds:[0x57] ; cmp ax,[bx] ; pop ax ; ret
             WriteCode(file, EffectPlayer,
                 0x33, 0xC0,
                 0x50,
@@ -151,7 +151,7 @@ namespace CivOne.UnitTests.Sound.Cvl
                 0x58,
                 0xC3);
 
-            // Handler für einen bewusst stummen Tune.
+            // Handler for a deliberately silent tune.
             WriteCode(file, SilentHandler, 0xC3);
 
             for (int i = 0; i < EffectParams.Length; i++)
@@ -175,7 +175,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             WriteSequenceHandler(file, MusicHandlerB, MusicDataB, MusicPlayer);
             WriteSequenceHandler(file, EffectHandler, EffectData, EffectPlayer);
 
-            // lea bx,[ptr] ; mov ds:[0x5D],bx — kein jmp, also keine Sequenz (wie die Stop-Funktion im Original).
+            // lea bx,[ptr] ; mov ds:[0x5D],bx - no jmp, so no sequence (like the Stop function in the original).
             WriteCode(file, UnsupportedHandler,
                 0x8D, 0x1E, Low(MusicDataA), High(MusicDataA),
                 0x89, 0x1E, 0x5D, 0x00);
@@ -183,18 +183,18 @@ namespace CivOne.UnitTests.Sound.Cvl
 
         private static void BuildData(byte[] file)
         {
-            // Musik: 4-Byte-Records {Timbre, Dauer, Divisor}, Abschluss durch ein Nullwort.
+            // Music: 4-byte records {timbre, duration, divisor}, terminated by a zero word.
             WriteData(file, MusicDataA,
-                0x7E, 22, 0xA8, 0x20,   // Ton, 22 Ticks, Divisor 8360
-                0x62, 2, 0x00, 0x00,    // Pause, 2 Ticks
-                0x69, 30, 0x54, 0x10,   // Ton mit Vibrato-Timbre, 30 Ticks, Divisor 4180
+                0x7E, 22, 0xA8, 0x20,   // tone, 22 ticks, divisor 8360
+                0x62, 2, 0x00, 0x00,    // rest, 2 ticks
+                0x69, 30, 0x54, 0x10,   // tone with vibrato timbre, 30 ticks, divisor 4180
                 0x00, 0x00);
 
             WriteData(file, MusicDataB,
-                0x65, 10, 0xF8, 0x30,   // Ton, 10 Ticks, Divisor 12536
+                0x65, 10, 0xF8, 0x30,   // tone, 10 ticks, divisor 12536
                 0x00, 0x00);
 
-            // Effekt: 10-Byte-Records; Maske 0 kürzt den Record auf 6 Byte (Stille).
+            // Effect: 10-byte records; a mask of 0 shortens the record to 6 bytes (silence).
             WriteData(file, EffectData,
                 0x5E, 0x00, 0x07, 0x00, 0xFF, 0x0F, 0x98, 0x08, 0x14, 0x00,
                 0x5E, 0x00, 0x02, 0x00, 0x00, 0x00,

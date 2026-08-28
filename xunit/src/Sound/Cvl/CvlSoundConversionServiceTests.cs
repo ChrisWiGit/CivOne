@@ -8,8 +8,8 @@ using Xunit.Abstractions;
 namespace CivOne.UnitTests.Sound.Cvl
 {
     /// <summary>
-    /// Deckt den einmaligen Konvertierungslauf ab: CVL-Ordner rein, ein Pack-Ordner mit
-    /// je einer Datei pro Tune und einer index.json raus.
+    /// Covers the one-off conversion run: CVL folder in, a pack folder with one file per
+    /// tune plus an index.json out.
     /// </summary>
     public sealed class CvlSoundConversionServiceTests : IDisposable
     {
@@ -76,7 +76,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.Contains("05-lincoln-long.sound.json", files);
             Assert.Contains("06-montezuma-long.sound.json", files);
 
-            // Der stumme Tune 4 bekommt keine Datei.
+            // The silent tune 4 gets no file.
             Assert.DoesNotContain(files, f => f!.StartsWith("04-", StringComparison.Ordinal));
         }
 
@@ -89,7 +89,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             string packFolder = Path.Combine(_targetFolder, "pc-speaker");
             var index = SoundPackIndexJson.Load(Path.Combine(packFolder, SoundPackIndex.FileName));
 
-            // Die Pack-Metadaten stehen genau einmal, naemlich im Manifest.
+            // The pack metadata lives in exactly one place, the manifest.
             Assert.Equal("pc-speaker", index.PackId);
             Assert.Equal("ISOUND", index.Driver);
             Assert.Equal("pcSpeaker", index.Device);
@@ -98,7 +98,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.Equal(5, index.WorkerTickDivider);
             Assert.Empty(index.SharedFiles);
 
-            // Die Tune-Datei enthaelt nur noch den Tune selbst.
+            // The tune file now only contains the tune itself.
             var tune = TuneScoreJson.Load(Path.Combine(packFolder, "03-title-music.sound.json"));
             Assert.Equal(3, tune.TuneId);
             Assert.Equal("Title Music", tune.Title);
@@ -117,20 +117,20 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.Equal("PC Speaker", index.DisplayName);
             Assert.Equal("ISOUND.CVL", index.SourceFile);
 
-            // Im Fake-Modul gibt es Tune 3, 4, 5 und 6.
+            // The fake module has tunes 3, 4, 5, and 6.
             Assert.Equal(3, index.SoundNames["opening"]);
             Assert.Equal(5, index.SoundNames["linc"]);
             Assert.Equal(6, index.SoundNames["mont"]);
 
-            // Zuordnung ist unabhängig von Groß-/Kleinschreibung, die Engine ruft "OPENING".
+            // Mapping is case-insensitive; the engine calls "OPENING".
             Assert.Equal(3, index.SoundNames["OPENING"]);
 
-            // Effekte sind noch nicht zugeordnet und werden gemeldet statt still zu verschwinden.
+            // Effects are not mapped yet and are reported instead of silently disappearing.
             Assert.Contains("cannon", index.UnmappedSoundNames);
             Assert.Contains("s_beep", index.UnmappedSoundNames);
             Assert.DoesNotContain("opening", index.UnmappedSoundNames);
 
-            // Der stumme Tune steht im Index, aber ohne Datei.
+            // The silent tune appears in the index, but without a file.
             var silent = index.Tunes.Single(t => t.TuneId == 4);
             Assert.Equal("Silent", silent.Kind.ToString());
             Assert.Null(silent.File);
@@ -139,7 +139,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         [Fact]
         public void ConvertFolderSkipsUnsupportedModulesWithAMessage()
         {
-            // Gültiges CVL, aber ohne erkennbares Gerät.
+            // Valid CVL, but without a recognizable device.
             byte[] bytes = FakeIsoundModule.Build();
             for (int i = 0; i < bytes.Length; i++)
             {
@@ -152,7 +152,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             var result = report.Results.Single();
 
             Assert.False(result.Converted);
-            Assert.Contains("kein Konverter", result.Message);
+            Assert.Contains("no converter", result.Message);
             Assert.Empty(Directory.GetDirectories(_targetFolder));
         }
 
@@ -164,7 +164,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             var result = new CvlSoundConversionService().ConvertFolder(_sourceFolder, _targetFolder).Results.Single();
 
             Assert.False(result.Converted);
-            Assert.Contains("nicht lesbar", result.Message);
+            Assert.Contains("not readable", result.Message);
         }
 
         [Fact]
@@ -173,7 +173,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             var result = new CvlSoundConversionService().ConvertFolder(_sourceFolder, _targetFolder).Results.Single();
 
             Assert.False(result.Converted);
-            Assert.Contains("Keine CVL-Dateien", result.Message);
+            Assert.Contains("No CVL files found", result.Message);
         }
 
         [Theory]
@@ -185,7 +185,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             => Assert.Equal(expected, CvlSoundConversionService.Slug(title));
 
         // -----------------------------------------------------------------------------
-        // Opt-in: die echten Module, falls lokal vorhanden.
+        // Opt-in: the real modules, if available locally.
         // -----------------------------------------------------------------------------
 
         [Trait("Category", "IntegrationLocalData")]
@@ -207,12 +207,12 @@ namespace CivOne.UnitTests.Sound.Cvl
             string path = Path.Combine(Path.GetDirectoryName(isound) ?? string.Empty, fileName);
             if (!File.Exists(path))
             {
-                _output.WriteLine($"Übersprungen: {path} nicht vorhanden.");
+                _output.WriteLine($"Skipped: {path} does not exist.");
                 return;
             }
 
             var image = CvlImage.Load(path);
-            _output.WriteLine($"{fileName}: Signatur '{image.Signature}', Datensegment 0x{image.DataSegment:X4}");
+            _output.WriteLine($"{fileName}: signature '{image.Signature}', data segment 0x{image.DataSegment:X4}");
 
             Assert.Equal(expectedDevice, CvlDeviceDetector.Detect(image).ToString());
         }
@@ -230,7 +230,7 @@ namespace CivOne.UnitTests.Sound.Cvl
 
             File.Copy(isound, Path.Combine(_sourceFolder, "ISOUND.CVL"), true);
 
-            // CIVONE_SOUND_OUT setzen, um das Ergebnis zum Anschauen dauerhaft abzulegen.
+            // Set CIVONE_SOUND_OUT to persist the result somewhere for inspection.
             string? configured = Environment.GetEnvironmentVariable("CIVONE_SOUND_OUT");
             string targetFolder = string.IsNullOrWhiteSpace(configured) ? _targetFolder : configured;
 
@@ -239,26 +239,27 @@ namespace CivOne.UnitTests.Sound.Cvl
 
             var result = report.Results.Single(r => r.Converted);
             Assert.Equal("pc-speaker", result.PackId);
-            Assert.True(result.TuneCount >= 20, $"Zu wenige Tunes: {result.TuneCount}.");
+            Assert.True(result.TuneCount >= 20, $"Too few tunes: {result.TuneCount}.");
 
             string packFolder = Path.Combine(targetFolder, "pc-speaker");
             Assert.Equal(result.TuneCount, Directory.GetFiles(packFolder, "*.sound.json").Length);
 
             var index = SoundPackIndexJson.Load(Path.Combine(packFolder, SoundPackIndex.FileName));
 
-            // Musik, alle 14 langen und kurzen Herrscherthemen, cityview und die drei
-            // identifizierten Effekte sind zuzuordnen.
-            Assert.Equal(37, index.SoundNames.Count);
+            // Music, all 14 long and short leader themes, cityview, the three identified
+            // effects, and the four combat outcome names (combat_*) should be mapped.
+            Assert.Equal(41, index.SoundNames.Count);
             Assert.Equal(34, index.SoundNames["wintune"]);
             Assert.Equal(35, index.SoundNames["lose2"]);
             Assert.Equal(12, index.SoundNames["alex"]);
 
-            // Die vier Kampfausgang-Effekte bleiben offen (siehe SoundNameMap); audience und alarm
-            // haben auf dem PC-Speaker-Treiber keine Daten (wie Tune 4).
+            // The four combat names actually extracted but no longer invoked remain unmapped
+            // (see SoundNameMap); audience and alarm have no data on the PC speaker driver
+            // (like tune 4).
             Assert.Equal(6, index.UnmappedSoundNames.Count);
 
             string winFile = index.Tunes.Single(t => t.TuneId == 34).File
-                ?? throw new InvalidOperationException("Win Music sollte eine Datei haben.");
+                ?? throw new InvalidOperationException("Win Music should have a file.");
             var win = TuneScoreJson.Load(Path.Combine(packFolder, winFile));
             Assert.Equal(3320, win.Steps[0].Divisor);
         }

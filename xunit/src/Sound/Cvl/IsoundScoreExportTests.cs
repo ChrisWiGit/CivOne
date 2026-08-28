@@ -9,11 +9,11 @@ using Xunit.Abstractions;
 namespace CivOne.UnitTests.Sound.Cvl
 {
     /// <summary>
-    /// Prüft den Weg CVL -> TuneScore -> *.sound.json. Das JSON ist die Form, die CivOne
-    /// ausliefert; ab da wird die CVL nicht mehr gebraucht.
+    /// Checks the path CVL -> TuneScore -> *.sound.json. The JSON is the form CivOne ships;
+    /// the CVL is no longer needed from that point on.
     ///
-    /// Die Kopfdaten des Packs (Treiber, Gerät, Taktraten) stehen bewusst nicht in der Tune-Datei,
-    /// sondern nur in der index.json - siehe <see cref="CvlSoundConversionServiceTests"/>.
+    /// The pack's header data (driver, device, tick rates) deliberately does not live in the
+    /// tune file, only in index.json - see <see cref="CvlSoundConversionServiceTests"/>.
     /// </summary>
     public sealed class IsoundScoreExportTests
     {
@@ -44,14 +44,14 @@ namespace CivOne.UnitTests.Sound.Cvl
             var effect = tunes.Single(t => t.TuneId == FakeIsoundModule.TuneEffect);
             Assert.Equal(TuneScoreKind.Effect, effect.Kind);
 
-            // Handler ohne Sequenz werden standardmäßig weggelassen.
+            // Handlers without a sequence are skipped by default.
             Assert.DoesNotContain(tunes, t => t.TuneId == FakeIsoundModule.TuneUnsupported);
         }
 
         [Fact]
         public void TimingConstantsDescribeTheSchedulerOfTheOriginal()
         {
-            // 300 Hz Basis-Tick, Sequencer alle 5 Ticks -> 60 Hz, also 1/60 s pro Dauereinheit.
+            // 300 Hz base tick, sequencer every 5 ticks -> 60 Hz, i.e. 1/60 s per duration unit.
             Assert.Equal(300, IsoundScoreExporter.FastTickHz);
             Assert.Equal(5, IsoundScoreExporter.WorkerTickDivider);
             Assert.Equal(1_193_182, IsoundScoreExporter.PitClockHz);
@@ -87,7 +87,7 @@ namespace CivOne.UnitTests.Sound.Cvl
                 Assert.Equal(music.Steps.Count, loaded.Steps.Count);
                 Assert.Equal(TuneScoreJson.Serialize(music), TuneScoreJson.Serialize(loaded));
 
-                // Nach dem Laden hängt nichts mehr an der Quelldatei.
+                // After loading, nothing depends on the source file anymore.
                 Assert.Equal(8360, loaded.Steps[0].Divisor);
                 Assert.Equal(SpeakerEffectKind.Vibrato, loaded.Steps[2].DecodedEffect.Kind);
             }
@@ -130,11 +130,11 @@ namespace CivOne.UnitTests.Sound.Cvl
             List<TuneScore> tunes = IsoundScoreExporter.ExportFromFile(cvlPath);
 
             var withSteps = tunes.Where(t => t.Steps.Count > 0).ToArray();
-            Assert.True(withSteps.Length >= 20, $"Zu wenige Tunes extrahiert: {withSteps.Length}.");
+            Assert.True(withSteps.Length >= 20, $"Too few tunes extracted: {withSteps.Length}.");
             Assert.Contains(tunes, t => t.TuneId == 34 && t.Kind == TuneScoreKind.Music);
             Assert.Contains(tunes, t => t.TuneId == 4 && t.Kind == TuneScoreKind.Silent);
 
-            _output.WriteLine($"{tunes.Count} Tunes, {tunes.Sum(t => t.Steps.Count)} Schritte");
+            _output.WriteLine($"{tunes.Count} tunes, {tunes.Sum(t => t.Steps.Count)} steps");
         }
     }
 }

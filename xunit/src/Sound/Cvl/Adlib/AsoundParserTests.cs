@@ -182,7 +182,7 @@ namespace CivOne.UnitTests.Sound.Cvl.Adlib
             AsoundTuneInfo info = Parser().ParseTune(FakeAsoundModule.MaxTuneId + 1);
 
             Assert.Equal(TuneScoreKind.Unsupported, info.Kind);
-            Assert.Contains("außerhalb", info.Diagnostic);
+            Assert.Contains("outside", info.Diagnostic);
         }
     }
 }

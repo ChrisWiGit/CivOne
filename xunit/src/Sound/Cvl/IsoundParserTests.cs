@@ -8,8 +8,8 @@ using Xunit.Abstractions;
 namespace CivOne.UnitTests.Sound.Cvl
 {
     /// <summary>
-    /// Deckt den ISOUND-Parser über ein synthetisches Modul ab (läuft immer) und prüft
-    /// zusätzlich gegen die echte ISOUND.CVL, falls sie lokal vorliegt.
+    /// Covers the ISOUND parser via a synthetic module (always runs) and additionally
+    /// checks against the real ISOUND.CVL if it is available locally.
     /// </summary>
     public sealed class IsoundParserTests
     {
@@ -30,8 +30,8 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.Equal(0, image.CodeSegment);
             Assert.Equal(FakeIsoundModule.DataSegmentParagraphs, image.DataSegment);
 
-            // Datensegment-Offsets zählen ab DataStart, nicht ab ImageStart – genau der Punkt,
-            // an dem der alte Konverter danebenlag.
+            // Data-segment offsets count from DataStart, not from ImageStart - exactly the
+            // point where the old converter got it wrong.
             Assert.Equal(image.ImageStart + FakeIsoundModule.DataSegmentParagraphs * 16, image.DataStart);
             Assert.NotEqual(image.ImageStart, image.DataStart);
 
@@ -65,7 +65,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         [Fact]
         public void TryCreateFailsWithReasonWhenModuleIsNotIsound()
         {
-            // Gültiger CVL-Kopf, aber ohne PlayTune-Dispatch.
+            // Valid CVL header, but without PlayTune dispatch.
             var bytes = FakeIsoundModule.Build();
             for (int i = 0; i < 64; i++) bytes[FakeIsoundModule.ImageStart + FakeIsoundModule.PlayTune + i] = 0x90;
 
@@ -110,7 +110,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         {
             var parser = CreateFakeParser();
 
-            // Timbre 0x69 -> Tabellenindex 4.
+            // Timbre 0x69 -> table index 4.
             var note = parser.ParseTune(FakeIsoundModule.TuneMusicA).Steps[2];
             Assert.Equal(0x69, note.Timbre);
             Assert.Equal(FakeIsoundModule.EffectParams[4], note.Effect);
@@ -120,10 +120,10 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.Equal(0x04, vibrato.Range);
             Assert.Equal(0x02, vibrato.Step);
 
-            // Timbre 0x7E ist der Sonderfall "reiner Ton".
+            // Timbre 0x7E is the special case "plain tone".
             Assert.Equal(0, parser.ResolveMusicEffect(FakeIsoundModule.PlainTimbreCode));
 
-            // Codes unterhalb des Tabellenanfangs ebenfalls ohne Effekt.
+            // Codes below the start of the table also have no effect.
             Assert.Equal(0, parser.ResolveMusicEffect(0x62));
         }
 
@@ -151,7 +151,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.Equal(SpeakerEffectKind.Slide, info.Steps[0].DecodedEffect.Kind);
             Assert.Equal(0x14, info.Steps[0].DecodedEffect.Delta);
 
-            // Maske 0 verkürzt den Record auf 6 Byte und schaltet den Speaker ab.
+            // A mask of 0 shortens the record to 6 bytes and turns the speaker off.
             Assert.True(info.Steps[1].IsRest);
             Assert.Equal(2, info.Steps[1].Duration);
             Assert.Equal(0, info.Steps[1].NoiseMask);
@@ -176,7 +176,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         [InlineData(-1)]
         public void ParseTuneUnsupportedWhenDispatchEntryIsEmptyOrOutOfRange(int tuneId)
         {
-            // 3 ist belegt, deshalb nur die Randfälle prüfen.
+            // 3 is taken, so only the edge cases need checking.
             var info = CreateFakeParser().ParseTune(tuneId);
 
             if (tuneId == FakeIsoundModule.TuneMusicA)
@@ -189,7 +189,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.False(string.IsNullOrWhiteSpace(info.Diagnostic));
         }
 
-        // Der Enum-Typ ist internal, deshalb wird der erwartete Wert als Name übergeben.
+        // The enum type is internal, so the expected value is passed as its name.
         [Theory]
         [InlineData(0x0000, nameof(SpeakerEffectKind.None), 0, 0, 0)]
         [InlineData(0x8306, nameof(SpeakerEffectKind.Vibrato), 0x06, 0x03, 0)]
@@ -216,7 +216,7 @@ namespace CivOne.UnitTests.Sound.Cvl
         }
 
         // ---------------------------------------------------------------------------------
-        // Integrationstests gegen die echte ISOUND.CVL. Opt-in: ohne Datei passiert nichts.
+        // Integration tests against the real ISOUND.CVL. Opt-in: nothing happens without the file.
         // ---------------------------------------------------------------------------------
 
         private const string KnownBuildSignature = "Civil IBM   11-14-91";
@@ -244,9 +244,9 @@ namespace CivOne.UnitTests.Sound.Cvl
             var parser = TryCreateRealParser(out var image);
             if (parser == null || image == null) return;
 
-            _output.WriteLine($"Signatur: {image.Signature}");
-            _output.WriteLine($"Dispatch 0x{parser.Layout.DispatchTable:X4}, Musik 0x{parser.Layout.MusicPlayer:X4}, "
-                              + $"Effekt 0x{parser.Layout.EffectPlayer:X4}, Effekttabelle 0x{parser.Layout.EffectParamTable:X4}");
+            _output.WriteLine($"Signature: {image.Signature}");
+            _output.WriteLine($"Dispatch 0x{parser.Layout.DispatchTable:X4}, Music 0x{parser.Layout.MusicPlayer:X4}, "
+                              + $"Effect 0x{parser.Layout.EffectPlayer:X4}, Effect table 0x{parser.Layout.EffectParamTable:X4}");
 
             Assert.Equal(0x2C, parser.Layout.MaxTuneId);
             Assert.True(parser.Layout.MusicPlayer > 0);
@@ -272,9 +272,9 @@ namespace CivOne.UnitTests.Sound.Cvl
 
             var info = parser.ParseTune(34);
             Assert.Equal(TuneScoreKind.Music, info.Kind);
-            Assert.True(info.Steps.Count > 20, "Win Music sollte deutlich mehr als 20 Schritte haben.");
+            Assert.True(info.Steps.Count > 20, "Win Music should have significantly more than 20 steps.");
 
-            // Erste Takthälfte: Ton, kurze Pause, Ton, kurze Pause.
+            // First half-bar: tone, short rest, tone, short rest.
             Assert.Equal(27, info.Steps[0].Duration);
             Assert.Equal(3320, info.Steps[0].Divisor);
             Assert.Equal(0x68, info.Steps[0].Timbre);
@@ -283,7 +283,7 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.Equal(29, info.Steps[2].Duration);
             Assert.Equal(3320, info.Steps[2].Divisor);
 
-            // Ton + Pause ergeben je 30 Worker-Ticks – bei 60 Hz genau eine halbe Sekunde.
+            // Tone + rest each add up to 30 worker ticks - at 60 Hz that's exactly half a second.
             var groups = GroupNoteAndRest(info.Steps).Take(12).ToArray();
             Assert.Equal(12, groups.Length);
             Assert.All(groups, ticks => Assert.Equal(30, ticks));
@@ -335,7 +335,7 @@ namespace CivOne.UnitTests.Sound.Cvl
                 .Where(info => info.Kind is TuneScoreKind.Music or TuneScoreKind.Effect)
                 .ToArray();
 
-            Assert.True(parsed.Length >= 20, $"Es sollten deutlich mehr Tunes lesbar sein, gefunden: {parsed.Length}.");
+            Assert.True(parsed.Length >= 20, $"Significantly more tunes should be readable, found: {parsed.Length}.");
 
             foreach (var info in parsed)
             {
@@ -345,15 +345,15 @@ namespace CivOne.UnitTests.Sound.Cvl
                     Assert.InRange(step.Duration, 1, 0xFFFF);
                     Assert.InRange(step.Divisor, 0, 0xFFFF);
 
-                    // Alles Hörbare liegt zwischen ca. 30 Hz und 5 kHz.
+                    // Everything audible lies between roughly 30 Hz and 5 kHz.
                     if (!step.IsRest) Assert.InRange(step.FrequencyHz(1_193_182), 30d, 5000d);
                 });
 
                 if (info.Kind != TuneScoreKind.Music) continue;
 
-                // Musik-Records nutzen nur eine schmale Auswahl an Timbre-Codes: 0x62 für
-                // Pausen, 0x65..0x6F für die Effekttabelle und 0x7E für den reinen Ton.
-                // Ein um Bytes verschobener Parser läse hier Divisor-Bytes und damit beliebige Werte.
+                // Music records only use a narrow range of timbre codes: 0x62 for rests,
+                // 0x65..0x6F for the effect table, and 0x7E for the plain tone.
+                // A parser shifted by bytes would read divisor bytes here, i.e. arbitrary values.
                 Assert.All(info.Steps, step =>
                     Assert.InRange(step.Timbre, 0x60, parser.Layout.PlainTimbreCode));
             }
