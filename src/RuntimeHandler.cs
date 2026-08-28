@@ -395,9 +395,14 @@ namespace CivOne
 
 		private bool TryHandleSoundToggleHotkey(KeyboardEventArgs args)
 		{
-			if (!args.Control || !args.Alt || args.Key != Key.Character || char.ToUpperInvariant(args.KeyChar) != 'M') return false;
+			if (args.Control || args.Shift || !args.Alt || args.Key != Key.Character || char.ToUpperInvariant(args.KeyChar) != 'V') return false;
 
 			Settings.Sound = Settings.Sound == GameOption.Off ? GameOption.On : GameOption.Off;
+			
+			if (Game.Started)
+			{
+				Game.Instance.Sound = Settings.Sound == GameOption.On;
+			}
 			if (Settings.Sound == GameOption.Off)
 			{
 				SoundPlaybackStrategyProvider.Current.Abort();

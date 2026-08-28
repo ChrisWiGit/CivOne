@@ -31,7 +31,7 @@ I did not browse all issues on github at first, so I did not recognize that some
   * `Test tunes...` (setup menu) or `Test sound` (startup wizard) plays a short sample from the selected pack, so you can check it before starting the game.
   * In settings you can play each tune individually to hear all the converted sound effects and music from the selected pack. This is not available in the startup wizard, because the wizard does not have enough space to show all tunes.
   * The selected sound source is saved in the profile and used for both sound effects and in-game music.
-* Feature: `Ctrl+Alt+M` toggles sound on and off from anywhere in the game.
+* Feature: `Alt+v` (like in original) toggles sound on and off from anywhere in the game.
   * A short on-screen notification (`Sound on` / `Sound off`) confirms the new state.
   * Turning sound off immediately stops whatever is currently playing.
   * This is the same setting shown as `Sound: On/Off` in the setup menu and the startup wizard, so all three always stay in sync.

@@ -697,6 +697,7 @@ The sound tests read the two original sound drivers of Civilization I.
 * `ASOUND.CVL` drives the AdLib / OPL2 chip.
 
 Both files belong to the original game and are therefore **not** part of this repository.
+The tests that read them carry the `IntegrationLocalData` trait, so the CI filter shown above leaves them out.
 
 #### Why the files are not bundled
 
