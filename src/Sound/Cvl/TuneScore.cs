@@ -48,6 +48,7 @@ internal enum SpeakerEffectKind
 
     /// <summary>
     /// <see cref="SpeakerEffect.Delta"/> is added to the divisor on every worker tick.
+    /// The divisor is a 16-bit timer register, so the sum wraps around rather than being clamped.
     /// </summary>
     Slide
 }
@@ -56,7 +57,13 @@ internal enum SpeakerEffectKind
 /// Decoded slide/vibrato parameter (<c>ds:0x6F</c> in the driver).
 /// <para>
 /// High nibble <c>8</c> means vibrato (low byte = range, middle nibble = step size);
-/// any other value is a signed addition applied to the divisor.
+/// any other value is an addition applied to the divisor.
+/// </para>
+/// <para>
+/// The driver's own table holds entries such as <c>0xD204</c> that look like vibrato but do not
+/// have the high nibble the check demands, so they act as very large additions. They are the
+/// percussion of the tunes and must not be mistaken for a small downward slide: read as a signed
+/// delta they would push the divisor below zero and silence the note.
 /// </para>
 /// </summary>
 internal readonly record struct SpeakerEffect(SpeakerEffectKind Kind, int Range, int Step, int Delta, int Raw)

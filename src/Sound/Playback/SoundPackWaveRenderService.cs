@@ -32,7 +32,7 @@ internal sealed class SoundPackWaveRenderService
     /// Bumped whenever a change here would make an already cached file sound wrong. Old files are
     /// then simply not found again and get rendered anew.
     /// </summary>
-    private const int RendererVersion = 2;
+    private const int RendererVersion = 3;
 
     private readonly TuneRendererFactory _renderers;
     private readonly WaveFileWriter _writer = new();

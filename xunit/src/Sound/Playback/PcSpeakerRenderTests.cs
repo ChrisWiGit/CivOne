@@ -152,5 +152,56 @@ namespace CivOne.UnitTests.Sound.Playback
             Assert.Equal(0d, restPeak);
             Assert.True(tonePeak > 0.5d, $"The tone is too quiet: {tonePeak}");
         }
+
+        /// <summary>
+        /// The driver's effect table holds slide words such as <c>0xD204</c> whose value is far
+        /// larger than the divisor they are added to. The timer register wraps, which turns the
+        /// note into the deep percussion of the original tunes; reading the word as a signed delta
+        /// instead drives the divisor below zero and drops the note entirely.
+        /// </summary>
+        [Theory]
+        [InlineData(0xD204)]
+        [InlineData(0xCC05)]
+        [InlineData(0xDC73)]
+        public void ALargeSlideWrapsIntoADeepToneInsteadOfSilence(int effect)
+        {
+            var tune = new TuneScore
+            {
+                TuneId = 3,
+                Title = "Test",
+                Kind = TuneScoreKind.Music,
+                Steps =
+                [
+                    new TuneStep { Duration = 30, Divisor = 7448, NoiseMask = 1, Effect = effect }
+                ]
+            };
+
+            var index = new SoundPackIndex
+            {
+                PackId = "test",
+                DisplayName = "Test",
+                Driver = "ISOUND",
+                Device = PcSpeakerTuneRenderer.DeviceName,
+                PitClockHz = 1_193_182
+            };
+
+            string folder = Path.Combine(_root, $"slide-{effect:X4}");
+            Directory.CreateDirectory(folder);
+            TuneScoreJson.Save(Path.Combine(folder, "03-test.sound.json"), tune);
+
+            RenderedTune? rendered = new PcSpeakerTuneRenderer().Render(index, folder, "03-test.sound.json", 0);
+            Assert.NotNull(rendered);
+
+            float[] samples = rendered!.Value.Samples;
+
+            // The first worker tick still carries the note's own divisor, so only what follows it
+            // shows whether the slide survived.
+            int afterFirstTick = samples.Length / 10;
+            double peak = samples.Skip(afterFirstTick).Max(Math.Abs);
+
+            _output.WriteLine($"effect 0x{effect:X4}: peak after the first tick {peak:F4}");
+
+            Assert.True(peak > 0.5d, $"Effect 0x{effect:X4} silences the note: {peak}");
+        }
     }
 }
