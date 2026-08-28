@@ -246,14 +246,16 @@ namespace CivOne.UnitTests.Sound.Cvl
 
             var index = SoundPackIndexJson.Load(Path.Combine(packFolder, SoundPackIndex.FileName));
 
-            // Musik und alle 14 Herrscherthemen sind zuzuordnen.
-            Assert.Equal(17, index.SoundNames.Count);
+            // Musik, alle 14 langen und kurzen Herrscherthemen, cityview und die drei
+            // identifizierten Effekte sind zuzuordnen.
+            Assert.Equal(37, index.SoundNames.Count);
             Assert.Equal(34, index.SoundNames["wintune"]);
             Assert.Equal(35, index.SoundNames["lose2"]);
             Assert.Equal(12, index.SoundNames["alex"]);
 
-            // Die sieben Effekte bleiben offen.
-            Assert.Equal(7, index.UnmappedSoundNames.Count);
+            // Die vier Kampfausgang-Effekte bleiben offen (siehe SoundNameMap); audience und alarm
+            // haben auf dem PC-Speaker-Treiber keine Daten (wie Tune 4).
+            Assert.Equal(6, index.UnmappedSoundNames.Count);
 
             string winFile = index.Tunes.Single(t => t.TuneId == 34).File
                 ?? throw new InvalidOperationException("Win Music sollte eine Datei haben.");
