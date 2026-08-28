@@ -15,6 +15,7 @@ using CivOne.Graphics;
 using CivOne.IO;
 using CivOne.IO.Text;
 using CivOne.Screens.Dialogs;
+using CivOne.Sound.Playback;
 
 namespace CivOne.Screens
 {
@@ -171,6 +172,7 @@ namespace CivOne.Screens
 				return false;
 			}
 
+			SoundPlaybackStrategyProvider.Current.Abort();
 			Destroy();
 			Common.AddScreen(new NewGame());
 			return true;
@@ -403,6 +405,14 @@ namespace CivOne.Screens
 				_pictures[i] = Resources[$"BIRTH{(i + 1)}"];
 			
 			Palette = _pictures[0].Palette;
+
+			if (Settings.Sound != GameOption.Off)
+			{
+				// Game.Instance does not exist yet at this stage (Game.CreateGame runs once NewGame
+				// finalizes the setup), so BaseInstance.PlaySound's Game.Started gate would swallow
+				// this call. Go through the strategy directly, as Credits does for the opening theme.
+				SoundPlaybackStrategyProvider.Current.PlaySound("evolution");
+			}
 		}
 	}
 }

@@ -314,7 +314,11 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 		public bool SkipIntro()
 		{
 			if (_introSkipped || _noiseCounter < NOISE_COUNT) return false;
-			
+
+			// A key or click here is what leads to the credits menu, so the opening theme has to
+			// stop now rather than run on underneath it.
+			SoundPlaybackStrategyProvider.Current.Abort();
+
 			_showIntroLine = false;
 			_introLeft = -320;
 			_logoSwipe = 320;
