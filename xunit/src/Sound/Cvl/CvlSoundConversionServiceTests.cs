@@ -73,8 +73,8 @@ namespace CivOne.UnitTests.Sound.Cvl
             var files = Directory.GetFiles(packFolder, "*.sound.json").Select(Path.GetFileName).OrderBy(x => x).ToArray();
             Assert.Equal(3, files.Length);
             Assert.Contains("03-title-music.sound.json", files);
-            Assert.Contains("05-lincoln.sound.json", files);
-            Assert.Contains("06-montezuma.sound.json", files);
+            Assert.Contains("05-lincoln-long.sound.json", files);
+            Assert.Contains("06-montezuma-long.sound.json", files);
 
             // Der stumme Tune 4 bekommt keine Datei.
             Assert.DoesNotContain(files, f => f!.StartsWith("04-", StringComparison.Ordinal));
