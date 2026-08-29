@@ -313,6 +313,7 @@ namespace CivOne
 				.OfString(yaml)
 				.WithStandard()
 				.WithTypeConverter(new MapDtoTileDtoYamlConverter())
+				.WithIgnoreUnmatchedProperties() // tolerate legacy fields (e.g. removed AiId) in older save files
 				.As<SaveGame1FileRootDto>();
 
 			if (saveFile?.GameState == null)
