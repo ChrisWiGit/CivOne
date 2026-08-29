@@ -100,7 +100,9 @@ namespace CivOne.Screens
 				palette.Merge(portrait.Palette, 64, 80);
 				Palette = palette;
 			}
-			
+
+			PlaySound("audience");
+
 			Render();
 		}
 	}

@@ -1243,6 +1243,7 @@ namespace CivOne
 					// TODO fire-eggs not showing loses side-effects
 					if (CityOwnerPlayer.IsHuman) // && !Game.Animations)
 					{
+						PlaySound("alarm");
 						Show disorderCity = Show.DisorderCity(this);
 						GameTask.Insert(disorderCity);
 					}
@@ -1290,6 +1291,7 @@ namespace CivOne
 				Size--;
 				if (Human == CityOwnerPlayerIndex)
 				{
+					PlaySound("alarm");
 					GameTask.Enqueue(Message.Newspaper(this, TranslateFormattedArray("Food storage exhausted\nin {0}!\nFamine feared.", Name)));
 				}
 				if (Size == 0) return;

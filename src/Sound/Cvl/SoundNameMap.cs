@@ -76,7 +76,15 @@ internal static class SoundNameMap
         // see docs/CVL-ASOUND-AdLib.md "Open items").
         ["s_beep"] = 37,
         ["s_nuke"] = 42,
-        ["airnuke"] = 43
+        ["airnuke"] = 43,
+
+        // Combat outcome, called from BaseUnit.PlayAttackSound - see the confidence note there.
+        // Names of this map's own choosing; which of cannon/s_land/they_die/we_die below (real
+        // names extracted from the game data) each of these four actually is remains open.
+        ["combat_win_weak"] = 38,
+        ["combat_loss_weak"] = 39,
+        ["combat_win_strong"] = 40,
+        ["combat_loss_strong"] = 41
     };
 
     private static readonly string[] _engineSoundNames =
@@ -88,9 +96,11 @@ internal static class SoundNameMap
         "alex_short", "eliz_short", "hama_short", "mao_short", "geng_short", "gand_short", "fred_short",
         "audience", "alarm", "cityview",
         "s_beep", "s_nuke", "airnuke",
+        "combat_win_weak", "combat_loss_weak", "combat_win_strong", "combat_loss_strong",
 
-        // Not yet mapped to a known tune number: which of the four combat-outcome tunes
-        // (38..41) each belongs to is still open, see docs/CVL-ASOUND-AdLib.md "Open items".
+        // Real names extracted from the game data (tune ids 38..41, in some order), but no longer
+        // called from game logic - BaseUnit.PlayAttackSound now calls the four combat_* names
+        // above instead, see docs/CVL-ASOUND-AdLib.md "Open items".
         "s_land", "cannon", "they_die", "we_die"
     ];
 

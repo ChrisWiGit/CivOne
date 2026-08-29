@@ -46,12 +46,12 @@ internal static class CvlTuneCatalog
         [35] = "Lose Music",
         [36] = "Alarm - Barbarian Theme",
         [37] = "Unit Arrived",
-        [38] = "Combat Outcome 1",
-        [39] = "Combat Outcome 2",
-        [40] = "Combat Outcome 3",
-        [41] = "Combat Outcome 4",
+        [38] = "Combat Win (Weak Unit)",
+        [39] = "Combat Loss (Weak Unit)",
+        [40] = "Combat Win (Strong Unit)",
+        [41] = "Combat Loss (Strong Unit)",
         [42] = "Nuclear Meltdown",
-        [43] = "Bomber Shot Down",
+        [43] = "Bomber Air Strike",
         [44] = "City View Opened"
     };
 

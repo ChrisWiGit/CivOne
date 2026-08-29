@@ -1083,6 +1083,13 @@ namespace CivOne.Screens
 				return;
 			}
 
+			// Short flourish for opening a city view plainly - not on top of the disorder or
+			// "we love the president" overlays, which already got their own sound.
+			if (!disorder && !weLovePresidentDay)
+			{
+				PlaySound("cityview");
+			}
+
 			int i = 0;
 			int group = -1;
 			int offsetX = 24;

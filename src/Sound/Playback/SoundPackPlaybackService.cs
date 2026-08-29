@@ -26,6 +26,7 @@ namespace CivOne.Sound.Playback;
 /// </remarks>
 internal sealed class SoundPackPlaybackService
 {
+	private readonly IRuntime _runtime;
 	private readonly ISoundPackRenderQueue _queue;
 	private readonly ArrangementPickerDelegate _arrangements;
 
@@ -34,14 +35,17 @@ internal sealed class SoundPackPlaybackService
 	/// <summary>
 	/// Creates the service.
 	/// </summary>
+	/// <param name="runtime">Runtime used to play sounds and write diagnostic messages.</param>
 	/// <param name="queue">Queue that renders tunes off the game thread.</param>
 	/// <param name="arrangements">
 	/// Picks which arrangement of a tune to play, or <c>null</c> for a random choice.
 	/// </param>
-	public SoundPackPlaybackService(ISoundPackRenderQueue queue, ArrangementPickerDelegate? arrangements = null)
+	public SoundPackPlaybackService(IRuntime runtime, ISoundPackRenderQueue queue, ArrangementPickerDelegate? arrangements = null)
 	{
+		ArgumentNullException.ThrowIfNull(runtime);
 		ArgumentNullException.ThrowIfNull(queue);
 
+		_runtime = runtime;
 		_queue = queue;
 		_arrangements = arrangements ?? new ArrangementPickerDelegate();
 	}
@@ -75,13 +79,25 @@ internal sealed class SoundPackPlaybackService
 
 		string packFolder = Path.Combine(Settings.Instance.SoundsDirectory, packId);
 		string indexPath = Path.Combine(packFolder, SoundPackIndex.FileName);
-		if (!File.Exists(indexPath)) return false;
+		if (!File.Exists(indexPath))
+		{
+			_runtime.Log("Sound pack '{0}' has no index file.", packId);
+			return false;
+		}
 
 		SoundPackIndex index = SoundPackIndexJson.Load(indexPath);
-		if (!index.SoundNames.TryGetValue(soundName, out int tuneId)) return false;
+		if (!index.SoundNames.TryGetValue(soundName, out int tuneId))
+		{
+			_runtime.Log("Sound pack '{0}' does not map sound '{1}'.", packId, soundName);
+			return false;
+		}
 
 		SoundPackIndexEntry? entry = index.Tunes.FirstOrDefault(tune => tune.TuneId == tuneId);
-		if (entry == null) return false;
+		if (entry == null)
+		{
+			_runtime.Log("Sound pack '{0}' maps sound '{1}' to missing tune {2}.", packId, soundName, tuneId);
+			return false;
+		}
 
 		if (string.IsNullOrEmpty(entry.File)) return true;
 
@@ -125,7 +141,7 @@ internal sealed class SoundPackPlaybackService
 		string? cached = _queue.TryGetCached(packFolder, fileName, arrangement);
 		if (cached != null)
 		{
-			RuntimeHandler.Runtime.PlaySound(cached);
+			_runtime.PlaySound(cached);
 			return true;
 		}
 
@@ -151,7 +167,7 @@ internal sealed class SoundPackPlaybackService
 		string? soundFile = pending.Result;
 		if (soundFile == null) return;
 
-		RuntimeHandler.Runtime.PlaySound(soundFile);
+		_runtime.PlaySound(soundFile);
 	}
 
 	/// <summary>

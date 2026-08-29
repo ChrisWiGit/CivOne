@@ -35,10 +35,12 @@ internal sealed class SoundPackIndexEntry
 internal sealed class SoundPackIndex
 {
     /// <summary>
-    /// Schema of the whole pack, including its tune files. Raised whenever their shape changes, so
-    /// a pack written by an older build is skipped instead of being read as something it is not.
+    /// Schema of the whole pack, including its tune files. Raised whenever their shape changes, or
+    /// whenever <see cref="SoundNameMap"/> changes what it maps, so a pack written by an older
+    /// build - whose <see cref="SoundPackIndexEntry.Title"/>s or <c>SoundNames</c> would otherwise
+    /// silently stay stale - is skipped instead of being read as something it is not.
     /// </summary>
-    public const int CurrentSchemaVersion = 2;
+    public const int CurrentSchemaVersion = 3;
 
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
     public required string PackId { get; set; }
@@ -95,7 +97,7 @@ internal static class SoundPackIndexJson
 
     public static SoundPackIndex Load(string path)
     {
-        string json = File.ReadAllText(path);
+        string json     = File.ReadAllText(path);
         var index = JsonSerializer.Deserialize<SoundPackIndex>(json, _options)
             ?? throw new InvalidOperationException($"Could not load sound pack index from {path}.");
 

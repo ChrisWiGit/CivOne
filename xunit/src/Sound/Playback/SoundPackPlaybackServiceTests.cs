@@ -26,7 +26,7 @@ namespace CivOne.UnitTests.Sound.Playback
         public SoundPackPlaybackServiceTests()
         {
             _runtime = new MockRuntime(new RuntimeSettings());
-            _serviceUnderTest = new SoundPackPlaybackService(_queue, new ArrangementPickerDelegate(seed: 1));
+            _serviceUnderTest = new SoundPackPlaybackService(_runtime, _queue, new ArrangementPickerDelegate(seed: 1));
         }
 
         private static SoundPackIndexEntry Tune(string file = "03-title.sound.json")

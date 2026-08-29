@@ -6,9 +6,12 @@ namespace CivOne.Sound.Playback;
 
 internal static class SoundPlaybackStrategyProvider
 {
-	private static readonly SoundPackPlaybackService _soundPackPlaybackService = new(new SoundPackRenderQueue());
+	private static SoundPackPlaybackService? _soundPackPlaybackService;
 	private static string? _activeSoundPack;
 	private static ISoundPlaybackStrategy? _activeStrategy;
+
+	private static SoundPackPlaybackService SoundPackPlaybackService
+		=> _soundPackPlaybackService ??= new(RuntimeHandler.Runtime, new SoundPackRenderQueue());
 
 	public static ISoundPlaybackStrategy Current
 	{
@@ -18,7 +21,7 @@ internal static class SoundPlaybackStrategyProvider
 			if (_activeStrategy != null && string.Equals(_activeSoundPack, soundPack, StringComparison.Ordinal)) return _activeStrategy;
 
 			_activeSoundPack = soundPack;
-			_activeStrategy = SoundPlaybackStrategyFactory.Create(soundPack, _soundPackPlaybackService);
+			_activeStrategy = SoundPlaybackStrategyFactory.Create(soundPack, SoundPackPlaybackService);
 
 			// A pack that was just switched to has nothing rendered yet, so start on it right away
 			// rather than when the first sound is due.
@@ -30,7 +33,7 @@ internal static class SoundPlaybackStrategyProvider
 
 	public static bool PlayTune(string packId, SoundPackIndexEntry entry)
 	{
-		return _soundPackPlaybackService.TryPlayTune(packId, entry);
+		return SoundPackPlaybackService.TryPlayTune(packId, entry);
 	}
 
 	/// <summary>
@@ -50,14 +53,14 @@ internal static class SoundPlaybackStrategyProvider
 
 		if (!string.IsNullOrEmpty(soundPack))
 		{
-			_soundPackPlaybackService.WarmUp(soundPack);
+			SoundPackPlaybackService.WarmUp(soundPack);
 			return;
 		}
 
 		// Automatic choice, so warm up what would actually be played: the same single pack
 		// AutoSoundPlaybackStrategy settles on.
 		IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.Instance.SoundsDirectory);
-		if (packs.Count == 1) _soundPackPlaybackService.WarmUp(packs[0].PackId);
+		if (packs.Count == 1) SoundPackPlaybackService.WarmUp(packs[0].PackId);
 	}
 
 	/// <summary>
@@ -68,5 +71,5 @@ internal static class SoundPlaybackStrategyProvider
 	/// become playable a moment later. Calling this once per frame from the game thread is what
 	/// starts it; without it such a sound would never be heard.
 	/// </remarks>
-	public static void Process() => _soundPackPlaybackService.Process();
+	public static void Process() => SoundPackPlaybackService.Process();
 }

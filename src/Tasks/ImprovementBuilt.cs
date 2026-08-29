@@ -51,6 +51,11 @@ namespace CivOne.Tasks
 			}
 			else if (_improvement is IWonder wonder)
 			{
+				string? tune = Human.Civilization.Tune;
+				if (tune != null)
+				{
+					PlaySound($"{tune}_short");
+				}
 				cityView = new CityView(_city, production: wonder);
 			}
 			else
