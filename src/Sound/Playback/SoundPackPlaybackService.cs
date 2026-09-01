@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using CivOne.Sound.Cvl;
 
@@ -69,7 +68,7 @@ internal sealed class SoundPackPlaybackService
 	/// <summary>
 	/// Plays the tune a sound name maps to.
 	/// </summary>
-	/// <param name="soundName">Name the game logic uses, e.g. <c>"opening"</c>.</param>
+	/// <param name="soundName">Name the game logic uses, e.g. <see cref="SoundNames.MusicTitle"/>.</param>
 	/// <param name="packId">Id of the pack to play from.</param>
 	/// <returns><c>true</c> when the pack handled the sound, including when it is deliberately silent.</returns>
 	public bool TryPlay(string soundName, string packId)
@@ -86,16 +85,9 @@ internal sealed class SoundPackPlaybackService
 		}
 
 		SoundPackIndex index = SoundPackIndexJson.Load(indexPath);
-		if (!index.SoundNames.TryGetValue(soundName, out int tuneId))
+		if (!index.TryGetByName(soundName, out SoundPackIndexEntry? entry))
 		{
-			_runtime.Log("Sound pack '{0}' does not map sound '{1}'.", packId, soundName);
-			return false;
-		}
-
-		SoundPackIndexEntry? entry = index.Tunes.FirstOrDefault(tune => tune.TuneId == tuneId);
-		if (entry == null)
-		{
-			_runtime.Log("Sound pack '{0}' maps sound '{1}' to missing tune {2}.", packId, soundName, tuneId);
+			_runtime.Log("Sound pack '{0}' has no tune for sound '{1}'.", packId, soundName);
 			return false;
 		}
 

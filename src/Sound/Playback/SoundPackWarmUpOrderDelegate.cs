@@ -11,9 +11,8 @@ namespace CivOne.Sound.Playback;
 /// </summary>
 /// <remarks>
 /// A whole pack takes a while to render, so the order matters: the tunes the game asks for first
-/// should be finished first. <see cref="SoundNameMap.EngineSoundNames"/> already lists the names in
-/// roughly that order - the opening theme, then the win and lose music, then the leader themes - so
-/// it is used as the front of the queue. Everything the pack contains beyond that follows.
+/// should be finished first. <see cref="CvlTuneCatalog.WarmUpOrder"/> lists the identified tunes in
+/// that order, so it forms the front of the queue. Everything else the pack contains follows.
 /// </remarks>
 internal sealed class SoundPackWarmUpOrderDelegate
 {
@@ -54,20 +53,14 @@ internal sealed class SoundPackWarmUpOrderDelegate
     {
         ArgumentNullException.ThrowIfNull(index);
 
-        var byTuneId = new Dictionary<int, string>();
-        foreach (SoundPackIndexEntry entry in index.Tunes)
-        {
-            if (!string.IsNullOrEmpty(entry.File)) byTuneId[entry.TuneId] = entry.File;
-        }
-
-        var ordered = new List<string>(byTuneId.Count);
+        var ordered = new List<string>(index.Tunes.Count);
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (string soundName in SoundNameMap.EngineSoundNames)
+        foreach (string soundName in CvlTuneCatalog.WarmUpOrder)
         {
-            if (!index.SoundNames.TryGetValue(soundName, out int tuneId)) continue;
-            if (!byTuneId.TryGetValue(tuneId, out string? file)) continue;
-            if (seen.Add(file)) ordered.Add(file);
+            if (!index.TryGetByName(soundName, out SoundPackIndexEntry? entry)) continue;
+            if (string.IsNullOrEmpty(entry.File)) continue;
+            if (seen.Add(entry.File)) ordered.Add(entry.File);
         }
 
         foreach (SoundPackIndexEntry entry in index.Tunes)

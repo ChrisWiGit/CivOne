@@ -1,17 +1,22 @@
 namespace CivOne.Sound.Playback;
 
+/// <summary>
+/// Plays sounds from one converted sound pack.
+/// </summary>
+/// <remarks>
+/// The pack is the only source. A sound it does not carry is silent rather than being taken from
+/// the profile's wave files, so what the player picked is what the player hears.
+/// </remarks>
+/// <param name="packId">Id of the pack to play from.</param>
+/// <param name="soundPackPlaybackService">The service that renders and plays a pack's tunes.</param>
 internal sealed class SoundPackPlaybackStrategy(
 	string packId,
-	SoundPackPlaybackService soundPackPlaybackService,
-	ISoundPlaybackStrategy fallback) : ISoundPlaybackStrategy
+	SoundPackPlaybackService soundPackPlaybackService) : ISoundPlaybackStrategy
 {
-	public bool PlaySound(string soundName)
-	{
-		if (soundPackPlaybackService.TryPlay(soundName, packId)) return true;
+	/// <inheritdoc/>
+	public bool PlaySound(string soundName) => soundPackPlaybackService.TryPlay(soundName, packId);
 
-		return fallback.PlaySound(soundName);
-	}
-
+	/// <inheritdoc/>
 	public void Abort()
 	{
 		// A tune that is still being rendered must not start after the game has silenced everything.

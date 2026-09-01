@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using CivOne.Sound.Cvl;
 
 namespace CivOne.Sound.Playback;
@@ -7,21 +6,34 @@ namespace CivOne.Sound.Playback;
 internal static class SoundPlaybackStrategyProvider
 {
 	private static SoundPackPlaybackService? _soundPackPlaybackService;
+	private static SoundAliasRegistry? _aliases;
 	private static string? _activeSoundPack;
 	private static ISoundPlaybackStrategy? _activeStrategy;
 
+	private static readonly SoundPackSelectionDelegate _selection = new();
+
 	private static SoundPackPlaybackService SoundPackPlaybackService
 		=> _soundPackPlaybackService ??= new(RuntimeHandler.Runtime, new SoundPackRenderQueue());
+
+	/// <summary>
+	/// The sound name redirects in force, shared by every strategy this provider hands out.
+	/// </summary>
+	public static ISoundAliasRegistry Aliases => _aliases ??= new SoundAliasRegistry();
+
+	/// <summary>
+	/// The id of the sound source in use, resolved from the setting.
+	/// </summary>
+	public static string SelectedPack => _selection.Resolve();
 
 	public static ISoundPlaybackStrategy Current
 	{
 		get
 		{
-			string soundPack = Settings.Instance.SoundPack;
+			string soundPack = SelectedPack;
 			if (_activeStrategy != null && string.Equals(_activeSoundPack, soundPack, StringComparison.Ordinal)) return _activeStrategy;
 
 			_activeSoundPack = soundPack;
-			_activeStrategy = SoundPlaybackStrategyFactory.Create(soundPack, SoundPackPlaybackService);
+			_activeStrategy = SoundPlaybackStrategyFactory.Create(soundPack, SoundPackPlaybackService, Aliases);
 
 			// A pack that was just switched to has nothing rendered yet, so start on it right away
 			// rather than when the first sound is due.
@@ -41,26 +53,17 @@ internal static class SoundPlaybackStrategyProvider
 	/// </summary>
 	/// <remarks>
 	/// Safe to call at any time and as often as wanted: a pack that is already being worked on is
-	/// not started again. Does nothing when no pack is in play, which is the case for the original
-	/// wave files, for silence, and while several packs are available without one being chosen.
+	/// not started again. Does nothing when the chosen source is not a converted pack, which is the
+	/// case for the wave files and for silence.
 	/// </remarks>
 	public static void WarmUp()
 	{
-		string soundPack = Settings.Instance.SoundPack;
+		string soundPack = SelectedPack;
 
 		if (string.Equals(soundPack, SoundPlaybackStrategyConstants.NoSoundPack, StringComparison.OrdinalIgnoreCase)) return;
 		if (string.Equals(soundPack, SoundPlaybackStrategyConstants.WaveSoundPack, StringComparison.OrdinalIgnoreCase)) return;
 
-		if (!string.IsNullOrEmpty(soundPack))
-		{
-			SoundPackPlaybackService.WarmUp(soundPack);
-			return;
-		}
-
-		// Automatic choice, so warm up what would actually be played: the same single pack
-		// AutoSoundPlaybackStrategy settles on.
-		IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.Instance.SoundsDirectory);
-		if (packs.Count == 1) SoundPackPlaybackService.WarmUp(packs[0].PackId);
+		SoundPackPlaybackService.WarmUp(soundPack);
 	}
 
 	/// <summary>

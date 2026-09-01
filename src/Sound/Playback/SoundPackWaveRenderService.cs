@@ -26,13 +26,13 @@ namespace CivOne.Sound.Playback;
 internal sealed class SoundPackWaveRenderService
 {
     /// <summary>Folder inside a pack that holds the rendered wave files.</summary>
-    public const string CacheFolderName = "wav-cache";
+    public const string CacheFolderName = SoundPackIndex.WaveCacheFolderName;
 
     /// <summary>
     /// Bumped whenever a change here would make an already cached file sound wrong. Old files are
     /// then simply not found again and get rendered anew.
     /// </summary>
-    private const int RendererVersion = 3;
+    private const int RendererVersion = 4;
 
     private readonly TuneRendererFactory _renderers;
     private readonly WaveFileWriter _writer = new();
