@@ -723,7 +723,14 @@ namespace CivOne
 			}
 		}
 
-		/// <summary>Id des ausgewählten CVL-Sound-Packs (siehe sounds/&lt;packId&gt;/index.json), leer = kein Pack.</summary>
+		/// <summary>
+		/// Id of the chosen sound source: a converted pack (see sounds/&lt;packId&gt;/index.json),
+		/// <c>__wave__</c> for the profile's wave files, or <c>__none__</c> for silence.
+		///
+		/// Empty means nothing has been chosen yet. <c>SoundPackSelectionDelegate</c> turns that into
+		/// a real choice the first time anything asks, so nothing else has to deal with the empty
+		/// case.
+		/// </summary>
 		public string SoundPack
 		{
 			get => _soundPack;

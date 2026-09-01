@@ -11,6 +11,7 @@ using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Services.Pathfinding;
 using CivOne.Services.Random;
+using CivOne.Sound;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -80,7 +81,7 @@ namespace CivOne
 							// city. There is no general "a barbarian unit just became visible to the
 							// human" detection (e.g. land-spawned barbarians, or ones the human simply
 							// walks up to), so those cases stay silent for now.
-							PlaySound("alarm");
+							PlaySound(SoundNames.EventAlarm);
 							GameTask.Insert(Message.Advisor(Advisor.Defense, false,
 								TranslateFormattedArray("Barbarian raiding party\nlands near {0}!\nCitizens are alarmed.", nearestCity.Name)));
 						}

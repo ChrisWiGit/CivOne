@@ -122,6 +122,7 @@ namespace CivOne
 		internal static IEnumerable<string> AllCityNames => Civilizations.Select(x => x.CityNames).SelectMany(x => x);
 
 		private static List<IScreen> _screens = new List<IScreen>();
+		private static bool _screenStackChanged;
 		private static readonly Lock _attributeCacheSync = new();
 		private static readonly Dictionary<(Type ObjectType, Type AttributeType), bool> _attributeCache = [];
 		/// <summary>
@@ -255,6 +256,27 @@ namespace CivOne
 			}
 
 			_screens.Add(screen);
+			_screenStackChanged = true;
+		}
+
+		/// <summary>
+		/// Reports whether the screen stack changed since the last call, and resets that state.
+		/// </summary>
+		/// <returns><c>true</c> when a screen was added or removed since the last call.</returns>
+		/// <remarks>
+		/// Adding or removing a screen changes what is drawn even when no remaining screen redraws
+		/// itself. Without this signal the window keeps showing a closed screen until something else
+		/// happens to request a redraw.
+		/// </remarks>
+		internal static bool ConsumeScreenStackChanged()
+		{
+			if (!_screenStackChanged)
+			{
+				return false;
+			}
+
+			_screenStackChanged = false;
+			return true;
 		}
 		
 		/// <summary>
@@ -276,6 +298,7 @@ namespace CivOne
 			// This avoids disposed instances remaining in the stack when a screen was added more than once.
 			while (_screens.Remove(screen))
 			{
+				_screenStackChanged = true;
 			}
 
 			screen.Dispose();

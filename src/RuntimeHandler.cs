@@ -127,16 +127,19 @@ namespace CivOne
 		{
 			if (!GameTask.Update() && (!GameTask.Fast && (_gameTick % 4) > 0)) return false;
 
+			// A screen that was added or closed changes the drawn layers even when no remaining
+			// screen redraws itself, so the frame has to be drawn again in that case.
+			bool update = Common.ConsumeScreenStackChanged();
+
 			IScreen[] currentScreens = Common.Screens;
 			for (int i = currentScreens.Length - 1; i >= 0; i--)
 			{
 				if (Common.HasAttribute<ModalAttribute>(currentScreens[i]))
 				{
-					return currentScreens[i].Update(_gameTick / 4);
+					return currentScreens[i].Update(_gameTick / 4) || update;
 				}
 			}
-			
-			bool update = false;
+
 			for (int i = currentScreens.Length - 1; i >= 0; i--)
 			{
 				IScreen screen = currentScreens[i];
