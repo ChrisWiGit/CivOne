@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CivOne.Sound;
 using CivOne.Sound.Cvl;
 using CivOne.Sound.Playback;
 using Xunit;
@@ -13,13 +14,11 @@ namespace CivOne.UnitTests.Sound.Playback
         private readonly SoundPackWarmUpOrderDelegate _delegateUnderTest = new();
 
         /// <summary>
-        /// Builds an index with the given tunes and name mapping.
+        /// Builds an index with the given tunes.
         /// </summary>
-        /// <param name="tunes">Tune id and file name; a <c>null</c> file marks a silent tune.</param>
-        /// <param name="soundNames">Engine sound name to tune id.</param>
+        /// <param name="tunes">Sound name and file name; a <c>null</c> file marks a silent tune.</param>
         /// <returns>The index.</returns>
-        private static SoundPackIndex Index((int TuneId, string? File)[] tunes,
-            params (string Name, int TuneId)[] soundNames)
+        private static SoundPackIndex Index(params (string Name, string? File)[] tunes)
         {
             var index = new SoundPackIndex
             {
@@ -29,28 +28,25 @@ namespace CivOne.UnitTests.Sound.Playback
                 Device = "pcSpeaker"
             };
 
-            foreach ((int tuneId, string? file) in tunes)
+            foreach ((string name, string? file) in tunes)
             {
-                index.Tunes.Add(new SoundPackIndexEntry { TuneId = tuneId, Title = $"Tune {tuneId}", File = file });
-            }
-
-            foreach ((string name, int tuneId) in soundNames)
-            {
-                index.SoundNames[name] = tuneId;
+                index.Tunes.Add(new SoundPackIndexEntry { Name = name, Title = name, File = file });
             }
 
             return index;
         }
 
         /// <summary>
-        /// The sounds the game asks for first come first, in the order of the engine's own name list.
+        /// Tunes the catalog knows come first, in the catalog's warm-up order rather than in the
+        /// order the pack happens to list them.
         /// </summary>
         [Fact]
-        public void MappedSoundsComeFirstInEngineOrder()
+        public void KnownSoundsComeFirstInCatalogOrder()
         {
             SoundPackIndex index = Index(
-                [(3, "opening.json"), (34, "win.json"), (35, "lose.json")],
-                ("lose2", 35), ("opening", 3), ("wintune", 34));
+                (SoundNames.MusicLose, "lose.json"),
+                (SoundNames.MusicTitle, "opening.json"),
+                (SoundNames.MusicWin, "win.json"));
 
             IReadOnlyList<string> order = _delegateUnderTest.Order(index);
 
@@ -58,14 +54,15 @@ namespace CivOne.UnitTests.Sound.Playback
         }
 
         /// <summary>
-        /// Tunes without a mapped name are still rendered, just after the mapped ones.
+        /// Tunes the catalog does not name are still rendered, just after the known ones.
         /// </summary>
         [Fact]
-        public void UnmappedTunesFollowTheMappedOnes()
+        public void UnknownTunesFollowTheKnownOnes()
         {
             SoundPackIndex index = Index(
-                [(20, "effect.json"), (3, "opening.json"), (21, "other.json")],
-                ("opening", 3));
+                ("tune_20", "effect.json"),
+                (SoundNames.MusicTitle, "opening.json"),
+                ("tune_21", "other.json"));
 
             IReadOnlyList<string> order = _delegateUnderTest.Order(index);
 
@@ -78,31 +75,33 @@ namespace CivOne.UnitTests.Sound.Playback
         [Fact]
         public void SilentTunesAreLeftOut()
         {
-            SoundPackIndex index = Index([(3, "opening.json"), (4, null)], ("opening", 3));
+            SoundPackIndex index = Index(
+                (SoundNames.MusicTitle, "opening.json"),
+                (SoundNames.MusicEvolution, null));
 
             Assert.Equal(["opening.json"], _delegateUnderTest.Order(index));
         }
 
         /// <summary>
-        /// A tune reachable through more than one name is rendered once, not once per name.
+        /// Two names sharing one file render it once, not once per name.
         /// </summary>
         [Fact]
-        public void ATuneIsListedOnlyOnce()
+        public void AFileIsListedOnlyOnce()
         {
             SoundPackIndex index = Index(
-                [(3, "shared.json")],
-                ("opening", 3), ("wintune", 3));
+                (SoundNames.MusicTitle, "shared.json"),
+                (SoundNames.MusicWin, "shared.json"));
 
             Assert.Equal(["shared.json"], _delegateUnderTest.Order(index));
         }
 
         /// <summary>
-        /// A name that points at a tune the pack does not have is skipped instead of throwing.
+        /// A name the catalog knows but the pack has no tune for is skipped instead of throwing.
         /// </summary>
         [Fact]
-        public void UnknownTuneIdsAreIgnored()
+        public void NamesWithoutATuneAreIgnored()
         {
-            SoundPackIndex index = Index([(3, "opening.json")], ("opening", 3), ("wintune", 99));
+            SoundPackIndex index = Index((SoundNames.MusicTitle, "opening.json"));
 
             Assert.Equal(["opening.json"], _delegateUnderTest.Order(index));
         }

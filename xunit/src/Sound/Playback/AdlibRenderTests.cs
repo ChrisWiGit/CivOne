@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using CivOne.Sound;
 using CivOne.Sound.Cvl;
 using CivOne.Sound.Cvl.Adlib;
 using CivOne.Sound.Playback;
@@ -59,7 +60,7 @@ namespace CivOne.UnitTests.Sound.Playback
         private static SoundPackIndexEntry Tune(string packFolder, int tuneId)
         {
             SoundPackIndex index = SoundPackIndexJson.Load(Path.Combine(packFolder, SoundPackIndex.FileName));
-            return index.Tunes.Single(t => t.TuneId == tuneId);
+            return index.Tunes.Single(t => t.Name == CvlTuneCatalog.ResolveName(tuneId));
         }
 
         /// <summary>
@@ -174,7 +175,7 @@ namespace CivOne.UnitTests.Sound.Playback
 
             Assert.Equal(entry.ArrangementCount,
                 Directory.GetFiles(Path.Combine(packFolder, SoundPackWaveRenderService.CacheFolderName),
-                    "05-*.wav").Length);
+                    $"{SoundNames.LeaderLincoln}*.wav").Length);
         }
 
         [Fact]
@@ -192,14 +193,14 @@ namespace CivOne.UnitTests.Sound.Playback
             foreach (SoundPackIndexEntry entry in index.Tunes)
             {
                 string? wave = service.Render(packFolder, entry.File!);
-                Assert.True(wave != null, $"Tune {entry.TuneId} ({entry.Title}) produced no audio.");
+                Assert.True(wave != null, $"Tune {entry.Name} ({entry.Title}) produced no audio.");
 
                 (short[] samples, int rate) = ReadWave(wave!);
                 (double peak, _) = Levels(samples);
                 double seconds = samples.Length / (double)rate;
                 longest = Math.Max(longest, seconds);
 
-                Assert.True(peak > 0.001d, $"Tune {entry.TuneId} ({entry.Title}) is silent.");
+                Assert.True(peak > 0.001d, $"Tune {entry.Name} ({entry.Title}) is silent.");
                 rendered++;
             }
 

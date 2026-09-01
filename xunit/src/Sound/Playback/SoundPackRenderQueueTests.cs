@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CivOne.Sound;
 using CivOne.Sound.Cvl;
 using CivOne.Sound.Cvl.Adlib;
 using CivOne.Sound.Playback;
@@ -70,7 +71,7 @@ namespace CivOne.UnitTests.Sound.Playback
             string? packFolder = ConvertPack();
             if (packFolder == null) return;
 
-            string file = Index(packFolder).Tunes.Single(t => t.TuneId == 17).File!;
+            string file = Index(packFolder).Tunes.Single(t => t.Name == SoundNames.LeaderGandhi).File!;
             var queueUnderTest = new SoundPackRenderQueue();
 
             Assert.Null(queueUnderTest.TryGetCached(packFolder, file, 0));
@@ -92,7 +93,7 @@ namespace CivOne.UnitTests.Sound.Playback
             string? packFolder = ConvertPack();
             if (packFolder == null) return;
 
-            string file = Index(packFolder).Tunes.Single(t => t.TuneId == 17).File!;
+            string file = Index(packFolder).Tunes.Single(t => t.Name == SoundNames.LeaderGandhi).File!;
             var queueUnderTest = new SoundPackRenderQueue();
 
             Task<string?> first = queueUnderTest.Request(packFolder, file, 0);
@@ -113,7 +114,7 @@ namespace CivOne.UnitTests.Sound.Playback
             string? packFolder = ConvertPack();
             if (packFolder == null) return;
 
-            SoundPackIndexEntry entry = Index(packFolder).Tunes.Single(t => t.TuneId == 5);
+            SoundPackIndexEntry entry = Index(packFolder).Tunes.Single(t => t.Name == SoundNames.LeaderLincoln);
             Assert.True(entry.ArrangementCount > 1, "This tune was expected to offer several arrangements.");
 
             var queueUnderTest = new SoundPackRenderQueue();
@@ -154,7 +155,7 @@ namespace CivOne.UnitTests.Sound.Playback
 
             Assert.All(rendered, Assert.NotNull);
 
-            string opening = index.Tunes.Single(t => t.TuneId == index.SoundNames["opening"]).File!;
+            string opening = index.Tunes.Single(t => t.Name == SoundNames.MusicTitle).File!;
             Assert.NotNull(queueUnderTest.TryGetCached(packFolder, opening, 0));
 
             _output.WriteLine($"{files.Length} tunes warmed up into {SoundPackWaveRenderService.CacheFolderName}");
@@ -175,7 +176,7 @@ namespace CivOne.UnitTests.Sound.Playback
             queueUnderTest.WarmPack(packFolder);
             queueUnderTest.WarmPack(packFolder);
 
-            string file = Index(packFolder).Tunes.Single(t => t.TuneId == 17).File!;
+            string file = Index(packFolder).Tunes.Single(t => t.Name == SoundNames.LeaderGandhi).File!;
 
             Assert.NotNull(await queueUnderTest.Request(packFolder, file, 0)
                 .WaitAsync(_renderTimeout).ConfigureAwait(true));
@@ -219,7 +220,7 @@ namespace CivOne.UnitTests.Sound.Playback
             if (ConvertPack() == null) return;
 
             SoundPackIndex index = Index(packFolder);
-            string opening = index.Tunes.Single(t => t.TuneId == index.SoundNames["opening"]).File!;
+            string opening = index.Tunes.Single(t => t.Name == SoundNames.MusicTitle).File!;
 
             // The later attempts have to be accepted, which is what a stuck "already warmed" mark
             // would prevent. Nothing here renders on its own, so only the warm-up can produce this.
@@ -241,7 +242,7 @@ namespace CivOne.UnitTests.Sound.Playback
             string? packFolder = ConvertPack();
             if (packFolder == null) return;
 
-            string file = Index(packFolder).Tunes.Single(t => t.TuneId == 17).File!;
+            string file = Index(packFolder).Tunes.Single(t => t.Name == SoundNames.LeaderGandhi).File!;
             var queueUnderTest = new SoundPackRenderQueue();
 
             string? first = await queueUnderTest.Request(packFolder, file, 0).ConfigureAwait(true);
@@ -296,7 +297,7 @@ namespace CivOne.UnitTests.Sound.Playback
             queueUnderTest.WarmPack(packFolder);
             queueUnderTest.WarmPack(secondFolder);
 
-            string file17 = Index(packFolder).Tunes.Single(t => t.TuneId == 17).File!;
+            string file17 = Index(packFolder).Tunes.Single(t => t.Name == SoundNames.LeaderGandhi).File!;
 
             Assert.NotNull(await queueUnderTest.Request(secondFolder, file17, 0)
                 .WaitAsync(_renderTimeout).ConfigureAwait(true));

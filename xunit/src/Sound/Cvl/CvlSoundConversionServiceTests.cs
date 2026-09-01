@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using CivOne.Sound;
 using CivOne.Sound.Cvl;
 using Xunit;
 using Xunit.Abstractions;
@@ -72,12 +73,12 @@ namespace CivOne.UnitTests.Sound.Cvl
 
             var files = Directory.GetFiles(packFolder, "*.sound.json").Select(Path.GetFileName).OrderBy(x => x).ToArray();
             Assert.Equal(3, files.Length);
-            Assert.Contains("03-title-music.sound.json", files);
-            Assert.Contains("05-lincoln-long.sound.json", files);
-            Assert.Contains("06-montezuma-long.sound.json", files);
+            Assert.Contains($"{SoundNames.MusicTitle}.sound.json", files);
+            Assert.Contains($"{SoundNames.LeaderLincoln}.sound.json", files);
+            Assert.Contains($"{SoundNames.LeaderMontezuma}.sound.json", files);
 
-            // The silent tune 4 gets no file.
-            Assert.DoesNotContain(files, f => f!.StartsWith("04-", StringComparison.Ordinal));
+            // The evolution music is silent on this driver and gets no file.
+            Assert.DoesNotContain($"{SoundNames.MusicEvolution}.sound.json", files);
         }
 
         [Fact]
@@ -99,14 +100,14 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.Empty(index.SharedFiles);
 
             // The tune file now only contains the tune itself.
-            var tune = TuneScoreJson.Load(Path.Combine(packFolder, "03-title-music.sound.json"));
+            var tune = TuneScoreJson.Load(Path.Combine(packFolder, $"{SoundNames.MusicTitle}.sound.json"));
             Assert.Equal(3, tune.TuneId);
             Assert.Equal("Title Music", tune.Title);
             Assert.Equal(3, tune.Steps.Count);
         }
 
         [Fact]
-        public void ConvertFolderIndexMapsEngineSoundNamesAndListsTheRest()
+        public void ConvertFolderIndexNamesItsTunesAndListsWhatIsMissing()
         {
             PlaceFakeIsound();
             new CvlSoundConversionService().ConvertFolder(_sourceFolder, _targetFolder);
@@ -118,20 +119,22 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.Equal("ISOUND.CVL", index.SourceFile);
 
             // The fake module has tunes 3, 4, 5, and 6.
-            Assert.Equal(3, index.SoundNames["opening"]);
-            Assert.Equal(5, index.SoundNames["linc"]);
-            Assert.Equal(6, index.SoundNames["mont"]);
+            Assert.True(index.TryGetByName(SoundNames.MusicTitle, out SoundPackIndexEntry? title));
+            Assert.Equal($"{SoundNames.MusicTitle}.sound.json", title!.File);
+            Assert.True(index.TryGetByName(SoundNames.LeaderLincoln, out _));
+            Assert.True(index.TryGetByName(SoundNames.LeaderMontezuma, out _));
 
-            // Mapping is case-insensitive; the engine calls "OPENING".
-            Assert.Equal(3, index.SoundNames["OPENING"]);
+            // The lookup is case-insensitive, so a differently spelled call site still finds a tune.
+            Assert.True(index.TryGetByName(SoundNames.MusicTitle.ToUpperInvariant(), out _));
 
-            // Effects are not mapped yet and are reported instead of silently disappearing.
-            Assert.Contains("cannon", index.UnmappedSoundNames);
-            Assert.Contains("s_beep", index.UnmappedSoundNames);
-            Assert.DoesNotContain("opening", index.UnmappedSoundNames);
+            // Names the catalog knows but this module has no data for are reported rather than
+            // silently disappearing.
+            Assert.Contains(SoundNames.CombatWinWeak, index.UnavailableSoundNames);
+            Assert.Contains(SoundNames.UiBeep, index.UnavailableSoundNames);
+            Assert.DoesNotContain(SoundNames.MusicTitle, index.UnavailableSoundNames);
 
             // The silent tune appears in the index, but without a file.
-            var silent = index.Tunes.Single(t => t.TuneId == 4);
+            var silent = index.Tunes.Single(t => t.Name == SoundNames.MusicEvolution);
             Assert.Equal("Silent", silent.Kind.ToString());
             Assert.Null(silent.File);
         }
@@ -175,14 +178,6 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.False(result.Converted);
             Assert.Contains("No CVL files found", result.Message);
         }
-
-        [Theory]
-        [InlineData("Title Music", "title-music")]
-        [InlineData("Alexander the Great", "alexander-the-great")]
-        [InlineData("Tune 19", "tune-19")]
-        [InlineData("  ", "tune")]
-        public void SlugMakesFileSystemSafeNames(string title, string expected)
-            => Assert.Equal(expected, CvlSoundConversionService.Slug(title));
 
         // -----------------------------------------------------------------------------
         // Opt-in: the real modules, if available locally.
@@ -246,19 +241,18 @@ namespace CivOne.UnitTests.Sound.Cvl
 
             var index = SoundPackIndexJson.Load(Path.Combine(packFolder, SoundPackIndex.FileName));
 
-            // Music, all 14 long and short leader themes, cityview, the three identified
-            // effects, and the four combat outcome names (combat_*) should be mapped.
-            Assert.Equal(41, index.SoundNames.Count);
-            Assert.Equal(34, index.SoundNames["wintune"]);
-            Assert.Equal(35, index.SoundNames["lose2"]);
-            Assert.Equal(12, index.SoundNames["alex"]);
+            // Music, all 14 long and short leader themes, the city view flourish, the beep and
+            // the four combat outcomes should all be there.
+            Assert.True(index.TryGetByName(SoundNames.MusicWin, out _));
+            Assert.True(index.TryGetByName(SoundNames.MusicLose, out _));
+            Assert.True(index.TryGetByName(SoundNames.LeaderAlexander, out _));
 
-            // The four combat names actually extracted but no longer invoked remain unmapped
-            // (see SoundNameMap); audience and alarm have no data on the PC speaker driver
-            // (like tune 4).
-            Assert.Equal(6, index.UnmappedSoundNames.Count);
+            // The audience sting and the alarm have no data on the PC speaker driver.
+            Assert.Equal(
+                [SoundNames.EventAudience, SoundNames.EventAlarm],
+                index.UnavailableSoundNames);
 
-            string winFile = index.Tunes.Single(t => t.TuneId == 34).File
+            string winFile = index.Tunes.Single(t => t.Name == SoundNames.MusicWin).File
                 ?? throw new InvalidOperationException("Win Music should have a file.");
             var win = TuneScoreJson.Load(Path.Combine(packFolder, winFile));
             Assert.Equal(3320, win.Steps[0].Divisor);

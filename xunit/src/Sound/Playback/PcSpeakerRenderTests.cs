@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using CivOne.Sound;
 using CivOne.Sound.Cvl;
 using CivOne.Sound.Playback;
 using CivOne.UnitTests.Sound.Cvl;
@@ -71,16 +72,16 @@ namespace CivOne.UnitTests.Sound.Playback
             foreach (SoundPackIndexEntry entry in index.Tunes.Where(t => t.File != null))
             {
                 string? wave = service.Render(packFolder, entry.File!);
-                Assert.True(wave != null, $"Tune {entry.TuneId} ({entry.Title}) produced no audio.");
+                Assert.True(wave != null, $"Tune {entry.Name} ({entry.Title}) produced no audio.");
 
                 (short[] samples, int rate) = ReadWave(wave!);
                 double peak = samples.Length == 0 ? 0d : samples.Max(s => Math.Abs(s / (double)short.MaxValue));
 
-                _output.WriteLine($"{entry.TuneId,2} {entry.Title,-16} "
+                _output.WriteLine($"{entry.Name,-26} {entry.Title,-16} "
                                   + $"{samples.Length / (double)rate:F2} s, peak {peak:F3}");
 
                 Assert.Equal(44100, rate);
-                Assert.True(peak > 0.05d, $"Tune {entry.TuneId} is silent.");
+                Assert.True(peak > 0.05d, $"Tune {entry.Name} is silent.");
                 rendered++;
             }
 
@@ -93,7 +94,7 @@ namespace CivOne.UnitTests.Sound.Playback
             string packFolder = ConvertPack();
             SoundPackIndex index = SoundPackIndexJson.Load(Path.Combine(packFolder, SoundPackIndex.FileName));
 
-            SoundPackIndexEntry silent = index.Tunes.Single(t => t.TuneId == FakeIsoundModule.TuneSilent);
+            SoundPackIndexEntry silent = index.Tunes.Single(t => t.Name == CvlTuneCatalog.ResolveName(FakeIsoundModule.TuneSilent));
             Assert.Null(silent.File);
             Assert.Equal(TuneScoreKind.Silent, silent.Kind);
         }

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using CivOne.Sound;
 using CivOne.Sound.Cvl;
 using CivOne.Sound.Cvl.Adlib;
 using CivOne.Sound.Playback;
@@ -57,13 +58,13 @@ namespace CivOne.UnitTests.Sound.Playback
             SoundPackIndex index = SoundPackIndexJson.Load(Path.Combine(packFolder, SoundPackIndex.FileName));
             var service = new SoundPackWaveRenderService();
 
-            foreach (SoundPackIndexEntry entry in index.Tunes.OrderBy(t => t.TuneId))
+            foreach (SoundPackIndexEntry entry in index.Tunes.OrderBy(t => t.Name, System.StringComparer.Ordinal))
             {
                 string? wave = service.Render(packFolder, entry.File!);
                 if (wave == null) continue;
 
                 var info = new FileInfo(wave);
-                _output.WriteLine($"{entry.TuneId,2} {entry.Title,-20} {info.Length / 1024,6} KiB  {info.Name}");
+                _output.WriteLine($"{entry.Name,-26} {entry.Title,-20} {info.Length / 1024,6} KiB  {info.Name}");
             }
 
             _output.WriteLine($"Exported to {Path.Combine(packFolder, SoundPackWaveRenderService.CacheFolderName)}");

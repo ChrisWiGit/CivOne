@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using CivOne.Sound;
 using CivOne.Sound.Cvl;
 using CivOne.Sound.Cvl.Adlib;
 using Xunit;
@@ -284,7 +285,7 @@ namespace CivOne.UnitTests.Sound.Cvl.Adlib
                     Assert.NotNull(entry.File);
                     AdlibTuneScore tune = AdlibScoreJson.LoadTune(Path.Combine(packFolder, entry.File!));
 
-                    Assert.Equal(entry.TuneId, tune.TuneId);
+                    Assert.Equal(entry.Name, CvlTuneCatalog.ResolveName(tune.TuneId));
                     Assert.Equal(entry.ArrangementCount, tune.Arrangements.Count);
 
                     foreach (AdlibVoice voice in tune.Arrangements[0].Voices)
@@ -293,7 +294,7 @@ namespace CivOne.UnitTests.Sound.Cvl.Adlib
                     }
                 }
 
-                SoundPackIndexEntry leader = index.Tunes.Single(t => t.TuneId == 5);
+                SoundPackIndexEntry leader = index.Tunes.Single(t => t.Name == SoundNames.LeaderLincoln);
                 Assert.Equal(4, leader.ArrangementCount);
 
                 long bytes = Directory.GetFiles(packFolder).Sum(f => new FileInfo(f).Length);

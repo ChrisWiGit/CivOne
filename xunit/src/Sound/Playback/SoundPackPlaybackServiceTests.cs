@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CivOne;
+using CivOne.Sound;
 using CivOne.Sound.Cvl;
 using CivOne.Sound.Playback;
 using Xunit;
@@ -29,8 +30,8 @@ namespace CivOne.UnitTests.Sound.Playback
             _serviceUnderTest = new SoundPackPlaybackService(_runtime, _queue, new ArrangementPickerDelegate(seed: 1));
         }
 
-        private static SoundPackIndexEntry Tune(string file = "03-title.sound.json")
-            => new() { TuneId = 3, Title = "Title Music", File = file };
+        private static SoundPackIndexEntry Tune(string file = "music_title.sound.json")
+            => new() { Name = SoundNames.MusicTitle, Title = "Title Music", File = file };
 
         /// <summary>
         /// A tune that is already rendered is handed to the runtime right away.
@@ -56,7 +57,7 @@ namespace CivOne.UnitTests.Sound.Playback
             Assert.True(_serviceUnderTest.TryPlayTune(PackId, Tune(), 0));
 
             Assert.Empty(_runtime.PlayedSounds);
-            Assert.Equal(["03-title.sound.json"], _queue.Requested);
+            Assert.Equal(["music_title.sound.json"], _queue.Requested);
         }
 
         /// <summary>
@@ -136,7 +137,7 @@ namespace CivOne.UnitTests.Sound.Playback
         [Fact]
         public void ANewSoundSupersedesTheWaitingOne()
         {
-            _serviceUnderTest.TryPlayTune(PackId, Tune("03-title.sound.json"), 0);
+            _serviceUnderTest.TryPlayTune(PackId, Tune("music_title.sound.json"), 0);
             _serviceUnderTest.TryPlayTune(PackId, Tune("09-napoleon.sound.json"), 0);
 
             _queue.Complete(0, "title.wav");
