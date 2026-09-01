@@ -19,6 +19,7 @@ using CivOne.Graphics;
 using CivOne.IO;
 using CivOne.Screens;
 using CivOne.Screens.Dialogs;
+using CivOne.Sound;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.UserInterface;
@@ -565,7 +566,7 @@ namespace CivOne.Units
 			string? tune = Player.Civilization.Tune;
 			if (tune != null)
 			{
-				PlaySound($"{tune}_short");
+				PlaySound($"{tune}{SoundNames.ShortSuffix}");
 			}
 
 			int captureGold = PlunderCapturedCityGold(capturedCity);
@@ -694,7 +695,7 @@ namespace CivOne.Units
 		{
 			if (attackerWon && Type == UnitType.Bomber)
 			{
-				PlaySound("airnuke");
+				PlaySound(SoundNames.CombatAirStrike);
 				return;
 			}
 
@@ -706,11 +707,11 @@ namespace CivOne.Units
 
 			if (humanWon)
 			{
-				PlaySound(strongWinner ? "combat_win_strong" : "combat_win_weak");
+				PlaySound(strongWinner ? SoundNames.CombatWinStrong : SoundNames.CombatWinWeak);
 			}
 			else
 			{
-				PlaySound(strongWinner ? "combat_loss_strong" : "combat_loss_weak");
+				PlaySound(strongWinner ? SoundNames.CombatLossStrong : SoundNames.CombatLossWeak);
 			}
 		}
 
