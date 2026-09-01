@@ -66,6 +66,120 @@ The data files will be copied to
 * on Linux/macOS: `~/CivOne/data`
 * on Windows: `C:\Users\<YourUsername>\AppData\Local\CivOne\data` (also `%LOCALAPPDATA%\CivOne\data`)
 
+### Sound
+
+You pick one sound source in the settings, and that source is the only one that plays.
+A sound it does not carry stays silent; nothing is taken from anywhere else.
+
+The choices are:
+
+* **A converted sound pack.** If the original game's `.CVL` sound drivers were present when you
+  installed the graphics, they were converted into sound packs (`sounds/pc-speaker/`,
+  `sounds/adlib/`). These cover every sound the game knows and need no further work.
+* **Wave files.** Your own `.wav` files in the sounds folder, played by name. This is the option to
+  choose if you want the sounds described below.
+* **None.** No sound at all.
+
+Pick one under **Settings → In-game sound → Sound pack**, or in the startup wizard.
+
+#### Sounds directory
+
+Wave files go directly into
+
+* on Linux/macOS: `~/CivOne/sounds`
+* on Windows: `C:\Users\<YourUsername>\AppData\Local\CivOne\sounds` (also `%LOCALAPPDATA%\CivOne\sounds`)
+
+Subfolders belong to converted packs; your own files go into the folder itself. A file has to be a
+RIFF/WAVE file SDL can load - uncompressed PCM is the safe choice.
+
+#### File naming
+
+These names apply when **Wave files** is the selected source.
+A file is named after the **situation** it plays in, plus `.wav`: `music_title.wav`,
+`combat_win_strong.wav`. Upper and lower case do not matter, so `MUSIC_TITLE.WAV` works too.
+
+You do not need a file for every sound. A sound without one is simply silent, and everything else
+keeps working.
+
+**Music**
+
+| File name | Plays when | Older name also accepted |
+| --------- | ---------- | ------------------------ |
+| `music_title.wav` | Title screen and credits. Repeats. | `opening.wav` |
+| `music_evolution.wav` | Evolution intro. Repeats. | `evolution.wav` |
+| `music_win.wav` | The game is won, a city celebrates "We love the President", the civilization is founded, or the Hall of Fame is opened. | `wintune.wav`, `win.wav` |
+| `music_lose.wav` | The game is lost. | `lose2.wav` |
+
+> The evolution music is not available for PC Speaker.
+
+**Leader themes**
+
+Played when a game starts and when your civilization discovers an advance.
+
+| File name | Civilization | Older name also accepted |
+| --------- | ------------ | ------------------------ |
+| `leader_lincoln.wav` | Americans | `linc.wav` |
+| `leader_montezuma.wav` | Aztecs | `mont.wav` |
+| `leader_ramesses.wav` | Egyptians | `rams.wav` |
+| `leader_shaka.wav` | Zulus | `shak.wav` |
+| `leader_napoleon.wav` | French | `napo.wav` |
+| `leader_caesar.wav` | Romans | `ceas.wav` |
+| `leader_stalin.wav` | Russians | `stal.wav` |
+| `leader_alexander.wav` | Greeks | `alex.wav` |
+| `leader_elizabeth.wav` | English | `eliz.wav` |
+| `leader_hammurabi.wav` | Babylonians | `hama.wav` |
+| `leader_mao.wav` | Chinese | `mao.wav` |
+| `leader_genghis.wav` | Mongols | `geng.wav` |
+| `leader_gandhi.wav` | Indians | `gand.wav` |
+| `leader_frederick.wav` | Germans | `fred.wav` |
+
+Each theme also has a short jingle, named by appending `_short`: `leader_lincoln_short.wav`,
+`leader_gandhi_short.wav`, and so on for all fourteen. These play on a wonder being completed, a
+city being captured and similar single events. The original game shipped no wave file for them.
+
+**Events and interface**
+
+| File name | Plays when | Older name also accepted |
+| --------- | ---------- | ------------------------ |
+| `event_audience.wav` | An audience with a foreign leader begins. | `audience.wav` |
+| `event_alarm.wav` | Famine, civil disorder, a government is overthrown - and as the barbarians' theme. | `alarm.wav` |
+| `event_city_view_opened.wav` | The city view is opened. | `cityview.wav` |
+| `event_nuclear_blast.wav` | A nuclear device goes off outside a city. | `s_nuke.wav` |
+| `ui_beep.wav` | An error message appears. | `s_beep.wav` |
+
+**Combat**
+
+| File name | Plays when | Older name also accepted |
+| --------- | ---------- | ------------------------ |
+| `combat_win_strong.wav` | You win, decided by a strong unit. | `they_die.wav` |
+| `combat_win_weak.wav` | You win, decided by a middling unit. | `s_land.wav`, `they_die.wav` |
+| `combat_loss_strong.wav` | You lose, decided by a strong unit. | `we_die.wav` |
+| `combat_loss_weak.wav` | You lose, decided by a middling unit. | `s_land.wav`, `we_die.wav` |
+| `combat_air_strike.wav` | A bomber wins an attack, or a nuclear device hits a city. | `airnuke.wav` |
+
+"Strong" means the deciding unit has an attack above 4 or a defence of 2 or less; "middling" is the
+handful of well-rounded units such as Musketeers and Riflemen that fit neither.
+
+#### Older file names
+
+The right-hand column lists the file names an older CivOne used, taken from the Windows release of
+the original game or [Downloadable fan version](https://www.moddb.com/mods/civwin-complete-soundtrack-overhaul-mod). They still work, so an existing collection of those files needs no renaming. A
+file under the new name always wins, which is how you replace a single sound without renaming the
+rest.
+
+Two of those old names do not map cleanly. `cannon.wav` was picked by unit type rather than by
+outcome and has no counterpart at all, so it is never played. `s_land.wav` is offered for both
+middling outcomes, so with only that file a win and a loss sound the same.
+
+In settings screen only available sounds are shown for custom wave files, so you have to provide a file for each sound you want to test.
+See the the tables above for the names of the sounds you can provide.
+
+#### Checking what works
+
+Open the settings screen (`Shift + F1`), then **In-game sound → Test tunes...**. The list shows
+exactly what the current selection can play and lets you listen to each entry. If you selected
+**Wave files**, sounds you have no file for do not appear at all.
+
 ### Program parameters
 
 There are some command line parameters that can be used to modify the behavior of the program.
@@ -358,7 +472,7 @@ These settings affect the overall game behavior and used graphics/sound options.
 | Full Screen | Toggle fullscreen mode on or off (`Alt+Enter`). |
 | VSync | Synchronize rendering to the display refresh rate. This is enabled by default. It helps prevent the GPU from running at full load. Changing this setting requires a restart. |
 | Window Scale | Set the UI scale multiplier (1x to 8x) for window size. |
-| In-game sound | Browse for and enable in-game sound files. |
+| In-game sound | Browse for and enable in-game sound files, choose a sound pack, and test single tunes. See [Sound](#sound) for how to add your own wave files. |
 
 ### Patches
 
