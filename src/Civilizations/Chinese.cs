@@ -10,12 +10,13 @@
 using CivOne.Enums;
 using CivOne.Leaders;
 using CivOne.Services;
+using CivOne.Sound;
 
 namespace CivOne.Civilizations
 {
 	internal class Chinese : BaseCivilization<Mao>
 	{
-		public Chinese() : base(Civilization.Chinese, TranslationServiceFactory.GetCurrent().Translate("Chinese"), TranslationServiceFactory.GetCurrent().Translate("Chinese"), "mao")
+		public Chinese() : base(Civilization.Chinese, TranslationServiceFactory.GetCurrent().Translate("Chinese"), TranslationServiceFactory.GetCurrent().Translate("Chinese"), SoundNames.LeaderMao)
 		{
 			StartX = 66;
 			StartY = 19;

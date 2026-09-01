@@ -10,12 +10,13 @@
 using CivOne.Enums;
 using CivOne.Leaders;
 using CivOne.Services;
+using CivOne.Sound;
 
 namespace CivOne.Civilizations
 {
 	internal class Indian : BaseCivilization<Gandhi>
 	{
-		public Indian() : base(Civilization.Indians, TranslationServiceFactory.GetCurrent().Translate("Indian"), TranslationServiceFactory.GetCurrent().Translate("Indians"), "gand")
+		public Indian() : base(Civilization.Indians, TranslationServiceFactory.GetCurrent().Translate("Indian"), TranslationServiceFactory.GetCurrent().Translate("Indians"), SoundNames.LeaderGandhi)
 		{
 			StartX = 57;
 			StartY = 24;

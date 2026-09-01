@@ -10,12 +10,13 @@
 using CivOne.Enums;
 using CivOne.Leaders;
 using CivOne.Services;
+using CivOne.Sound;
 
 namespace CivOne.Civilizations
 {
 	internal class Babylonian : BaseCivilization<Hammurabi>
 	{
-		public Babylonian() : base(Civilization.Babylonians, TranslationServiceFactory.GetCurrent().Translate("Babylonian"), TranslationServiceFactory.GetCurrent().Translate("Babylonians"), "hama")
+		public Babylonian() : base(Civilization.Babylonians, TranslationServiceFactory.GetCurrent().Translate("Babylonian"), TranslationServiceFactory.GetCurrent().Translate("Babylonians"), SoundNames.LeaderHammurabi)
 		{
 			StartX = 45;
 			StartY = 22;

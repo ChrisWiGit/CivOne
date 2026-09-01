@@ -10,12 +10,13 @@
 using CivOne.Enums;
 using CivOne.Leaders;
 using CivOne.Services;
+using CivOne.Sound;
 
 namespace CivOne.Civilizations
 {
 	internal class Roman : BaseCivilization<Caesar>
 	{
-		public Roman() : base(Civilization.Romans, TranslationServiceFactory.GetCurrent().Translate("Roman"), TranslationServiceFactory.GetCurrent().Translate("Romans"), "ceas")
+		public Roman() : base(Civilization.Romans, TranslationServiceFactory.GetCurrent().Translate("Roman"), TranslationServiceFactory.GetCurrent().Translate("Romans"), SoundNames.LeaderCaesar)
 		{
 			StartX = 36;
 			StartY = 19;

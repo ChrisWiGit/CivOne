@@ -10,12 +10,13 @@
 using CivOne.Enums;
 using CivOne.Leaders;
 using CivOne.Services;
+using CivOne.Sound;
 
 namespace CivOne.Civilizations
 {
 	internal class Aztec : BaseCivilization<Montezuma>
 	{
-		public Aztec() : base(Civilization.Aztecs, TranslationServiceFactory.GetCurrent().Translate("Aztec"), TranslationServiceFactory.GetCurrent().Translate("Aztecs"), "mont")
+		public Aztec() : base(Civilization.Aztecs, TranslationServiceFactory.GetCurrent().Translate("Aztec"), TranslationServiceFactory.GetCurrent().Translate("Aztecs"), SoundNames.LeaderMontezuma)
 		{
 			StartX = 5;
 			StartY = 23;
