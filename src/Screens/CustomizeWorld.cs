@@ -15,6 +15,7 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Screens.Dialogs;
+using CivOne.Sound;
 using CivOne.Tasks;
 using CivOne.UserInterface;
 
@@ -47,6 +48,7 @@ namespace CivOne.Screens
 		private bool _closing;
 		private readonly Picture _background;
 		private InputDialogDelegate? _mapSizeInputDialog;
+		private readonly WorldGenerationMusicDelegate _generationMusic = new();
 
 		private int OffsetX => ((Width - 320) / 2);
 		private int OffsetY => ((Height - 200) / 2);
@@ -343,6 +345,7 @@ namespace CivOne.Screens
 					Destroy();
 					Map.SetMapSize(_mapWidth, _mapHeight);
 					Map.Generate((LandMass)_landMass, (Temperature)_temperature, (Climate)_climate, (EarthAge)_age);
+					_generationMusic.Start();
 					if (!Runtime.Settings.ShowIntro)
 					{
 						Common.AddScreen(new NewGame());

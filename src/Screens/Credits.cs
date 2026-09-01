@@ -24,6 +24,7 @@ using CivOne.Screens.Reports;
 using CivOne.Services;
 using CivOne.Services.Maps;
 using CivOne.Services.Random;
+using CivOne.Sound;
 using CivOne.Sound.Playback;
 using CivOne.Tasks;
 using CivOne.UserInterface;
@@ -71,6 +72,7 @@ namespace CivOne.Screens
 		private IScreen? _nextScreen;
 
 		private readonly MenuBarHotkeyDelegate _hotkeyDelegate = new();
+		private readonly WorldGenerationMusicDelegate _generationMusic = new();
 		private Dictionary<char, Action<object, EventArgs>>? _shortKeyMapping;
 		private Action<object, EventArgs>? _shortCutAction;
 		private int _mouseX = -1;
@@ -419,6 +421,7 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 			Log("Main Menu: Start a New Game");
 			Map.UseDefaultMapSize();
 			Map.Generate();
+			_generationMusic.Start();
 			StartIntro();
 		}
 		
@@ -602,7 +605,7 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 			if (Settings.Sound != GameOption.Off)
 			{
 				// In this stage using Game.PlaySound() is not possible, as the Game instance is not yet created.
-				SoundPlaybackStrategyProvider.Current.PlaySound("OPENING");
+				SoundPlaybackStrategyProvider.Current.PlaySound(SoundNames.MusicTitle);
 			}
 
 			if (!Runtime.Settings.ShowCredits) SkipIntro();

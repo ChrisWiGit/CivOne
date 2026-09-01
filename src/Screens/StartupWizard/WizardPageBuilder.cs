@@ -349,9 +349,8 @@ namespace CivOne.Screens.StartupWizard
 
 			IReadOnlyList<SoundPackSummary> packs = GetAvailableSoundPacks();
 			string soundPackName = SoundPackDisplayName(state.SoundPackId, packs);
-			bool resolvedIsWave = IsWaveSoundPack(state.SoundPackId)
-				|| (string.IsNullOrEmpty(state.SoundPackId) && packs.Count != 1);
-			bool testSoundEnabled = !IsNoSoundPack(state.SoundPackId) && (!resolvedIsWave || hasAnySoundFiles);
+			bool isWave = IsWaveSoundPack(state.SoundPackId);
+			bool testSoundEnabled = !IsNoSoundPack(state.SoundPackId) && (!isWave || hasAnySoundFiles);
 
 			return new WizardPage
 			{
@@ -382,23 +381,17 @@ namespace CivOne.Screens.StartupWizard
 			entries.Add(new WizardEntry
 			{
 				Number = number++,
-				Text = packs.Count == 1 ? TF("Auto (default): {0}", packs[0].DisplayName) : T("Auto (default) - Wave files"),
-				Action = WizardEntryAction.SelectSoundPack,
-				Value = string.Empty
-			});
-			entries.Add(new WizardEntry
-			{
-				Number = number++,
-				Text = T("Wave files"),
-				Action = WizardEntryAction.SelectSoundPack,
-				Value = SoundPlaybackStrategyConstants.WaveSoundPack
-			});
-			entries.Add(new WizardEntry
-			{
-				Number = number++,
 				Text = T("None"),
 				Action = WizardEntryAction.SelectSoundPack,
 				Value = SoundPlaybackStrategyConstants.NoSoundPack
+			});
+
+			entries.Add(new WizardEntry
+			{
+				Number = number++,
+				Text = T("Custom sound files (CivWin)"),
+				Action = WizardEntryAction.SelectSoundPack,
+				Value = SoundPlaybackStrategyConstants.WaveSoundPack
 			});
 
 			if (packs.Count == 0)
@@ -431,7 +424,7 @@ namespace CivOne.Screens.StartupWizard
 				],
 				Entries = entries,
 				EntriesMaxCount = 7,
-				EntriesYOffset = -1
+				EntriesYOffset = 0
 			};
 		}
 
@@ -441,7 +434,6 @@ namespace CivOne.Screens.StartupWizard
 		{
 			if (IsNoSoundPack(soundPackId)) return T("None");
 			if (IsWaveSoundPack(soundPackId)) return T("Wave files");
-			if (string.IsNullOrEmpty(soundPackId)) return packs.Count == 1 ? packs[0].DisplayName : T("Wave files");
 
 			foreach (SoundPackSummary pack in packs)
 			{

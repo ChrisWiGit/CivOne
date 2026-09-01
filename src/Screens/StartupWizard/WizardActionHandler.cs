@@ -18,6 +18,7 @@ using CivOne.IO;
 using CivOne.Services;
 using CivOne.Services.Browser;
 using CivOne.Services.Translation;
+using CivOne.Sound;
 using CivOne.Sound.Cvl;
 using CivOne.Sound.Playback;
 
@@ -343,15 +344,13 @@ namespace CivOne.Screens.StartupWizard
 			}
 
 			string soundPackId = state.SoundPackId;
-			IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.Instance.SoundsDirectory);
-			bool isWave = string.Equals(soundPackId, SoundPlaybackStrategyConstants.WaveSoundPack, StringComparison.OrdinalIgnoreCase)
-				|| (string.IsNullOrEmpty(soundPackId) && packs.Count != 1);
+			bool isWave = string.Equals(soundPackId, SoundPlaybackStrategyConstants.WaveSoundPack, StringComparison.OrdinalIgnoreCase);
 
 			SoundPlaybackStrategyProvider.Current.Abort();
 
 			if (isWave)
 			{
-				bool playedWave = SoundPlaybackStrategyProvider.Current.PlaySound("OPENING");
+				bool playedWave = SoundPlaybackStrategyProvider.Current.PlaySound(SoundNames.MusicTitle);
 				state.IsTestSoundPlaying = playedWave;
 				state.StatusMessage = playedWave
 					? T("Playing test sound.")
@@ -359,7 +358,7 @@ namespace CivOne.Screens.StartupWizard
 				return;
 			}
 
-			string packId = string.IsNullOrEmpty(soundPackId) ? packs[0].PackId : soundPackId;
+			string packId = soundPackId;
 			SoundPackIndexEntry? tune = LoadSoundPackIndex(packId)?.Tunes.FirstOrDefault();
 			if (tune == null)
 			{
@@ -408,8 +407,6 @@ namespace CivOne.Screens.StartupWizard
 		{
 			if (string.Equals(soundPackId, SoundPlaybackStrategyConstants.NoSoundPack, StringComparison.OrdinalIgnoreCase)) return T("None");
 			if (string.Equals(soundPackId, SoundPlaybackStrategyConstants.WaveSoundPack, StringComparison.OrdinalIgnoreCase)) return T("Wave files");
-			if (string.IsNullOrEmpty(soundPackId)) return packs.Count == 1 ? packs[0].DisplayName : T("Wave files");
-
 			foreach (SoundPackSummary pack in packs)
 			{
 				if (string.Equals(pack.PackId, soundPackId, StringComparison.OrdinalIgnoreCase)) return pack.DisplayName;

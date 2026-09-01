@@ -11,6 +11,7 @@ using System;
 using CivOne.Advances;
 using CivOne.Events;
 using CivOne.Graphics;
+using CivOne.Sound;
 using CivOne.Sound.Playback;
 
 namespace CivOne.Screens
@@ -106,7 +107,7 @@ namespace CivOne.Screens
 			}
 
 			string? tune = Human.Civilization.Tune;
-			PlaySound(tune == null ? null : $"{tune}_short");
+			PlaySound(tune == null ? null : $"{tune}{SoundNames.ShortSuffix}");
 		}
 	}
 }

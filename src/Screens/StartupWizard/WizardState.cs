@@ -96,7 +96,7 @@ namespace CivOne.Screens.StartupWizard
 		/// <remarks>
 		/// Initialised from <see cref="Settings.Instance"/> and persisted back when changed.
 		/// </remarks>
-		public string SoundPackId { get; set; } = Settings.Instance.SoundPack;
+		public string SoundPackId { get; set; } = SoundPlaybackStrategyProvider.SelectedPack;
 
 		/// <summary>
 		/// Gets or sets whether the quick sound-pack test tune is currently playing.
@@ -227,7 +227,7 @@ namespace CivOne.Screens.StartupWizard
 		public void OpenSoundPackPage()
 		{
 			_soundPackReturnPageIndex = PageIndex;
-			SoundPackId = Settings.Instance.SoundPack;
+			SoundPackId = SoundPlaybackStrategyProvider.SelectedPack;
 			PageIndex = SoundPackPageIndex;
 		}
 

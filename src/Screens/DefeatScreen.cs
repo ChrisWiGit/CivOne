@@ -12,6 +12,7 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
+using CivOne.Sound;
 
 namespace CivOne.Screens
 {
@@ -89,7 +90,7 @@ namespace CivOne.Screens
 			Palette = _background.Palette;
 			this.AddLayer(_background);
 
-			PlaySound("lose2");
+			PlaySound(SoundNames.MusicLose);
 
 			// Load defeat text
 			_textLines = GetGameText("KING/ARCH");

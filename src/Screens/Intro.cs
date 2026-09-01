@@ -15,7 +15,7 @@ using CivOne.Graphics;
 using CivOne.IO;
 using CivOne.IO.Text;
 using CivOne.Screens.Dialogs;
-using CivOne.Sound.Playback;
+using CivOne.Sound;
 
 namespace CivOne.Screens
 {
@@ -37,6 +37,8 @@ namespace CivOne.Screens
 		private int _introPictureNext;
 		private uint _mapNotReadyMessageUntil;
 		private bool _errorDialogShown;
+
+		private readonly WorldGenerationMusicDelegate _generationMusic = new();
         
 		private int IntroPicture
 		{
@@ -172,7 +174,7 @@ namespace CivOne.Screens
 				return false;
 			}
 
-			SoundPlaybackStrategyProvider.Current.Abort();
+			_generationMusic.Stop();
 			Destroy();
 			Common.AddScreen(new NewGame());
 			return true;
@@ -277,6 +279,7 @@ namespace CivOne.Screens
 			}
 			Map.ResetForGenerationRetry();
 			Map.Generate();
+			_generationMusic.Start();
 			_introTicks = 0;
 			_introLine = 1;
 			_introPicture = 0;
@@ -406,13 +409,8 @@ namespace CivOne.Screens
 			
 			Palette = _pictures[0].Palette;
 
-			if (Settings.Sound != GameOption.Off)
-			{
-				// Game.Instance does not exist yet at this stage (Game.CreateGame runs once NewGame
-				// finalizes the setup), so BaseInstance.PlaySound's Game.Started gate would swallow
-				// this call. Go through the strategy directly, as Credits does for the opening theme.
-				SoundPlaybackStrategyProvider.Current.PlaySound("evolution");
-			}
+			// The evolution music is not started here: it belongs to the world generation, which
+			// starts before this screen is created and is where the music is started as well.
 		}
 	}
 }

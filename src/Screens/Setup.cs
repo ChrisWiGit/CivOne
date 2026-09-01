@@ -17,6 +17,7 @@ using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
 using CivOne.Services;
+using CivOne.Sound;
 using CivOne.Sound.Cvl;
 using CivOne.Sound.Playback;
 using CivOne.Services.Translation;
@@ -40,7 +41,8 @@ namespace CivOne.Screens
 		private const string WaveSoundPack = "__wave__";
 		private string? _soundTestMessage;
 		private string? _playingTestPackId;
-		private int? _playingTestTuneId;
+		private string? _playingTestSoundName;
+		private readonly SoundTitleTranslationDelegate _soundTitles = new();
 
 		private (string Label, int Width, int Height)[] ExpandSizeOptions() =>
 		[
@@ -457,7 +459,7 @@ namespace CivOne.Screens
 		private void SoundMenu() => CreateMenu(Translate("In-game sound"),
 			MenuItem.Create(Translate("Browse for Wave files..."))
 				.WithDescription(Translate("Copy original .WAV sound effects into your profile."))
-				.OnSelect(BrowseForSoundFiles).SetEnabled(!FileSystem.SoundFilesExist()).SetEnabled(!Game.Started),
+				.OnSelect(BrowseForSoundFiles).SetEnabled(!FileSystem.HasAnySoundFiles()).SetEnabled(!Game.Started),
 			MenuItem.Create(TranslateFormatted("Sound pack: {0}", CurrentSoundPackText()))
 				.WithDescription(Translate("Choose a converted CVL sound pack (e.g. PC Speaker)."))
 				.OnSelect(GotoMenu(SoundPackMenu)),
@@ -478,18 +480,19 @@ namespace CivOne.Screens
 			];
 
 			string? packId = CurrentTestSoundPackId();
-			SoundPackIndex? index = packId == null ? null : LoadSoundPackIndex(packId);
-			if (packId == null || index == null)
+			IReadOnlyList<SoundTestEntry> entries = CollectTestEntries(packId);
+
+			if (IsNoSoundPackSelected())
 			{
-				menuItems.Add(MenuItem.Create(Translate("No sound pack selected.")).Disable());
+				menuItems.Add(MenuItem.Create(Translate("Sound is switched off.")).Disable());
 			}
-			else if (index.Tunes.Count == 0)
+			else if (entries.Count == 0)
 			{
 				menuItems.Add(MenuItem.Create(Translate("No tunes found.")).Disable());
 			}
 			else
 			{
-				int playingItem = AddPagedTuneItems(menuItems, packId, index.Tunes, page);
+				int playingItem = AddPagedTuneItems(menuItems, packId, entries, page);
 				if (activeItem < 0 && playingItem >= 0)
 				{
 					activeItem = playingItem;
@@ -504,7 +507,7 @@ namespace CivOne.Screens
 			CreateMenu(Translate("Test tunes"), activeItem, [.. menuItems]);
 		}
 
-		private int AddPagedTuneItems(List<MenuItem<int>> menuItems, string packId, List<SoundPackIndexEntry> tunes, int page)
+		private int AddPagedTuneItems(List<MenuItem<int>> menuItems, string? packId, IReadOnlyList<SoundTestEntry> tunes, int page)
 		{
 			int playingItem = -1;
 			bool hasPreviousPage = page > 0;
@@ -523,7 +526,7 @@ namespace CivOne.Screens
 				menuItems.Add(MenuItem.Create(Translate("Previous page")).OnSelect(GotoMenu(() => TestTunesMenu(page - 1))));
 			}
 
-			foreach (SoundPackIndexEntry tune in tunes.Skip(firstTune).Take(tuneSlots))
+			foreach (SoundTestEntry tune in tunes.Skip(firstTune).Take(tuneSlots))
 			{
 				int selectedItem = menuItems.Count;
 				if (IsPlayingTestTune(packId, tune))
@@ -531,7 +534,7 @@ namespace CivOne.Screens
 					playingItem = selectedItem;
 				}
 
-				menuItems.Add(MenuItem.Create(TuneText(tune))
+				menuItems.Add(MenuItem.Create(tune.Title)
 					.OnSelect((s, a) => TestTune(packId, tune, page, selectedItem))
 					.SetActive(() => IsPlayingTestTune(packId, tune)));
 			}
@@ -554,7 +557,7 @@ namespace CivOne.Screens
 			SoundMenu();
 		}
 
-		private void TestTune(string packId, SoundPackIndexEntry tune, int page, int selectedItem)
+		private void TestTune(string? packId, SoundTestEntry tune, int page, int selectedItem)
 		{
 			if (IsPlayingTestTune(packId, tune))
 			{
@@ -568,11 +571,18 @@ namespace CivOne.Screens
 			}
 
 			SoundPlaybackStrategyProvider.Current.Abort();
-			bool played = SoundPlaybackStrategyProvider.PlayTune(packId, tune);
+
+			// A pack tune is started directly so the test plays that pack even when the game is set
+			// to something else; everything the pack does not carry goes the normal way, which is
+			// what makes a plain collection of wave files testable at all.
+			bool played = tune.PackEntry == null || packId == null
+				? SoundPlaybackStrategyProvider.Current.PlaySound(tune.Name)
+				: SoundPlaybackStrategyProvider.PlayTune(packId, tune.PackEntry);
+
 			if (played)
 			{
-				_playingTestPackId = packId;
-				_playingTestTuneId = tune.TuneId;
+				_playingTestPackId = packId ?? WaveSoundPack;
+				_playingTestSoundName = tune.Name;
 			}
 			else
 			{
@@ -587,30 +597,52 @@ namespace CivOne.Screens
 			TestTunesMenu(page, selectedItem);
 		}
 
-		private bool IsPlayingTestTune(string packId, SoundPackIndexEntry tune)
+		private bool IsPlayingTestTune(string? packId, SoundTestEntry tune)
 		{
-			return _playingTestTuneId == tune.TuneId
-				&& string.Equals(_playingTestPackId, packId, StringComparison.OrdinalIgnoreCase);
+			return string.Equals(_playingTestSoundName, tune.Name, StringComparison.OrdinalIgnoreCase)
+				&& string.Equals(_playingTestPackId, packId ?? WaveSoundPack, StringComparison.OrdinalIgnoreCase);
 		}
 
 		private void ClearPlayingTestTune()
 		{
 			_playingTestPackId = null;
-			_playingTestTuneId = null;
+			_playingTestSoundName = null;
 		}
 
-		private string TuneText(SoundPackIndexEntry tune)
+		/// <summary>
+		/// Lists what the sound test can play right now.
+		/// </summary>
+		/// <remarks>
+		/// A converted pack is described by its own index, so its tunes are taken from there,
+		/// including the ones we have no name for. Wave files have no index; there the list is
+		/// whichever sounds the profile happens to hold a file for.
+		/// </remarks>
+		/// <param name="packId">Id of the pack to test, or <c>null</c> for wave files.</param>
+		/// <returns>The entries, in the order they should be offered.</returns>
+		private IReadOnlyList<SoundTestEntry> CollectTestEntries(string? packId)
 		{
-			return TranslateFormatted("{0}: {1}", tune.TuneId, tune.Title);
+			if (IsNoSoundPackSelected()) return [];
+
+			if (packId != null)
+			{
+				SoundPackIndex? index = LoadSoundPackIndex(packId);
+				if (index == null) return [];
+
+				return [.. index.Tunes.Select(tune => new SoundTestEntry(
+					tune.Name, _soundTitles.Translate(tune.Name, tune.Title), tune))];
+			}
+
+			return [.. new WaveSoundFileDelegate().Available().Select(wave => new SoundTestEntry(
+				wave.Name,
+				_soundTitles.Translate(wave.Name, CvlTuneCatalog.Find(wave.Name)?.Title ?? wave.Name),
+				null))];
 		}
 
-		private string? CurrentTestSoundPackId()
+		private static string? CurrentTestSoundPackId()
 		{
 			if (IsNoSoundPackSelected() || IsWaveSoundPackSelected()) return null;
-			if (!string.IsNullOrEmpty(Settings.SoundPack)) return Settings.SoundPack;
 
-			IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory);
-			return packs.Count == 1 ? packs[0].PackId : null;
+			return SoundPlaybackStrategyProvider.SelectedPack;
 		}
 
 		private SoundPackIndex? LoadSoundPackIndex(string packId)
@@ -637,37 +669,21 @@ namespace CivOne.Screens
 		}
 
 		private string CurrentSoundPackText()
-		{
-			IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory);
-			if (IsNoSoundPackSelected()) return Translate("None");
-			if (IsWaveSoundPackSelected()) return Translate("Wave files");
-			if (string.IsNullOrEmpty(Settings.SoundPack)) return packs.Count == 1 ? packs[0].DisplayName : Translate("None");
+			=> SoundPackSelectionText(SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory));
 
-			foreach (SoundPackSummary pack in packs)
-			{
-				if (string.Equals(pack.PackId, Settings.SoundPack, StringComparison.OrdinalIgnoreCase)) return pack.DisplayName;
-			}
-			return Settings.SoundPack;
+		private static bool IsNoSoundPackSelected()
+		{
+			return string.Equals(SoundPlaybackStrategyProvider.SelectedPack, NoSoundPack, StringComparison.OrdinalIgnoreCase);
 		}
 
-		private bool IsNoSoundPackSelected()
+		private static bool IsWaveSoundPackSelected()
 		{
-			return string.Equals(Settings.SoundPack, NoSoundPack, StringComparison.OrdinalIgnoreCase);
+			return string.Equals(SoundPlaybackStrategyProvider.SelectedPack, WaveSoundPack, StringComparison.OrdinalIgnoreCase);
 		}
 
-		private bool IsWaveSoundPackSelected()
+		private static bool IsSoundPackActive(SoundPackSummary pack)
 		{
-			return string.Equals(Settings.SoundPack, WaveSoundPack, StringComparison.OrdinalIgnoreCase);
-		}
-
-		private bool IsSoundPackActive(SoundPackSummary pack)
-		{
-			if (string.IsNullOrEmpty(Settings.SoundPack))
-			{
-				return SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory).Count == 1;
-			}
-
-			return string.Equals(Settings.SoundPack, pack.PackId, StringComparison.OrdinalIgnoreCase);
+			return string.Equals(SoundPlaybackStrategyProvider.SelectedPack, pack.PackId, StringComparison.OrdinalIgnoreCase);
 		}
 
 		private void SoundPackMenu()
@@ -675,9 +691,6 @@ namespace CivOne.Screens
 			IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory);
 			List<MenuItem<int>> menuItems =
 			[
-				MenuItem.Create(packs.Count == 1 ? TranslateFormatted("Auto (default): {0}", packs[0].DisplayName) : Translate("Auto (default)"))
-					.WithDescription(Translate("Use the only available sound pack automatically, otherwise use Wave files."))
-					.OnSelect((s, a) => SelectSoundPack(string.Empty)).SetActive(() => string.IsNullOrEmpty(Settings.SoundPack)),
 				MenuItem.Create(Translate("Wave files"))
 					.WithDescription(Translate("Use original .WAV sound effects from your profile."))
 					.OnSelect((s, a) => SelectSoundPack(WaveSoundPack)).SetActive(IsWaveSoundPackSelected),
@@ -714,13 +727,7 @@ namespace CivOne.Screens
 			// would therefore not be noticed anywhere else.
 			SoundPlaybackStrategyProvider.WarmUp();
 
-			IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory);
-			string displayName = SoundPackSelectionText(packs);
-			foreach (SoundPackSummary pack in packs)
-			{
-				if (string.Equals(pack.PackId, Settings.SoundPack, StringComparison.OrdinalIgnoreCase)) displayName = pack.DisplayName;
-			}
-			NotifySoundPackSelection(displayName);
+			NotifySoundPackSelection(SoundPackSelectionText(SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory)));
 
 			SoundMenu();
 		}
@@ -729,7 +736,16 @@ namespace CivOne.Screens
 		{
 			if (IsNoSoundPackSelected()) return Translate("None");
 			if (IsWaveSoundPackSelected()) return Translate("Wave files");
-			return packs.Count == 1 ? packs[0].DisplayName : Translate("Wave files");
+
+			string selected = SoundPlaybackStrategyProvider.SelectedPack;
+			foreach (SoundPackSummary pack in packs)
+			{
+				if (string.Equals(pack.PackId, selected, StringComparison.OrdinalIgnoreCase)) return pack.DisplayName;
+			}
+
+			// A pack that was selected and has since been removed; showing its id beats showing
+			// something that is not what will play.
+			return selected;
 		}
 
 		private void NotifySoundPackSelection(string packName)

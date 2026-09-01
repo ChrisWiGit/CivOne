@@ -92,27 +92,6 @@ namespace CivOne.IO
 			return report.AnyConverted;
 		}
 
-		public static bool SoundFilesExist(params string[] files)
-		{
-			Log("Checking sound files...");
-			if (files.Length == 0) files = SOUND_FILES;
-			if (!Directory.Exists(Settings.Instance.SoundsDirectory))
-			{
-				Log("Target sound directory does not exist: {0}", Settings.Instance.SoundsDirectory);
-				return false;
-			}
-			HashSet<string> existingFiles = EnumerateFileNames(Settings.Instance.SoundsDirectory);
-			foreach (string filename in files)
-			{
-				if (existingFiles.Contains(filename)) continue;
-
-				Log("- File not found: {0}", filename);
-				return false;
-			}
-			Log("- Done, all files exist");
-			return true;
-		}
-
 		public static bool CopySoundFiles(string folder)
 		{
 			return CopySoundFiles(folder, out _);

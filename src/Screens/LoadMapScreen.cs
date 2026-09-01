@@ -15,6 +15,7 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Services.Maps;
+using CivOne.Sound;
 using CivOne.Tasks;
 using CivOne.UserInterface;
 
@@ -53,6 +54,7 @@ namespace CivOne.Screens
 		private readonly ICustomMapLoaderService _mapLoader;
 		private readonly IMapDialogPathProvider? _pathProvider;
 		private readonly List<MapEntry> _entries = [];
+		private readonly WorldGenerationMusicDelegate _generationMusic = new();
 
 		private int _selectedIndex;
 		private int _scrollOffset;
@@ -332,6 +334,9 @@ namespace CivOne.Screens
 			}
 			else
 			{
+				// The loaded map needs no generation, but the intro that follows is the same one a
+				// generated world gets, and it comes with the same music.
+				_generationMusic.Start();
 				Common.AddScreen(new Intro());
 			}
 		}
