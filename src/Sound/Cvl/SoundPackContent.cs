@@ -15,8 +15,8 @@ namespace CivOne.Sound.Cvl;
 /// </remarks>
 internal sealed class SoundPackTune
 {
-    /// <summary>Gets the numeric tune id, as used by <c>PlaySound</c>.</summary>
-    public required int TuneId { get; init; }
+    /// <summary>Gets the name <c>PlaySound</c> plays this tune by, from <see cref="SoundNames"/>.</summary>
+    public required string Name { get; init; }
 
     /// <summary>Gets the display title of the tune.</summary>
     public required string Title { get; init; }

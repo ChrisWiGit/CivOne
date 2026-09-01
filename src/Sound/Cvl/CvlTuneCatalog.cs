@@ -1,67 +1,102 @@
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 
 namespace CivOne.Sound.Cvl;
 
-
+/// <summary>
+/// One tune of a CVL driver: its number in the driver, the name the game plays it by, and how it
+/// behaves.
+/// </summary>
+/// <param name="TuneId">Number the CVL dispatch table addresses this tune by.</param>
+/// <param name="Name">Name from <see cref="SoundNames"/> that plays this tune.</param>
+/// <param name="Title">English display title, shown in the sound test.</param>
+/// <param name="IsMusic">Whether this is a music piece rather than a short sound effect.</param>
+/// <param name="EndlessLoop">Whether the tune repeats instead of ending.</param>
+internal sealed record CvlTuneDefinition(int TuneId, string Name, string Title, bool IsMusic, bool EndlessLoop);
 
 /// <summary>
-/// Known tune numbers of the CVL modules. CIVPLAY allows 3..44; only part of that range is named.
+/// Everything known about the tunes of the CVL modules. CIVPLAY allows tune numbers 3..44; this
+/// table names the ones we have identified.
 /// </summary>
+/// <remarks>
+/// <para>
+/// The tune number only exists inside the CVL modules, where it is the index into the driver's
+/// dispatch table. It is resolved to a name here, at the boundary between reading a module and
+/// writing a sound pack; everything after that - pack index, file names, the wave cache, playback -
+/// works on names alone.
+/// </para>
+/// <para>
+/// None of the names or titles below are read from the modules. The modules contain numbers and
+/// note data, no strings at all. Every entry here comes from analysing where the game calls a tune
+/// from; see <c>docs/CVL-ASOUND-AdLib.md</c> for how certain each one is.
+/// </para>
+/// </remarks>
 internal static class CvlTuneCatalog
 {
-    private static readonly Dictionary<int, string> _titles = new()
-    {
-        [3] = "Title Music",
-        [4] = "Evolution Music",
-        [5] = "Lincoln (Long)",
-        [6] = "Montezuma (Long)",
-        [7] = "Ramesses (Long)",
-        [8] = "Shaka Zulu (Long)",
-        [9] = "Napoleon (Long)",
-        [10] = "Caesar (Long)",
-        [11] = "Stalin (Long)",
-        [12] = "Alexander the Great (Long)",
-        [13] = "Elizabeth (Long)",
-        [14] = "Hammurabi (Long)",
-        [15] = "Mao (Long)",
-        [16] = "Genghis Khan (Long)",
-        [17] = "Gandhi (Long)",
-        [18] = "Frederick (Long)",
-        [19] = "Lincoln (Short)",
-        [20] = "Montezuma (Short)",
-        [21] = "Ramesses (Short)",
-        [22] = "Shaka Zulu (Short)",
-        [23] = "Napoleon (Short)",
-        [24] = "Caesar (Short)",
-        [25] = "Stalin (Short)",
-        [26] = "Alexander the Great (Short)",
-        [27] = "Elizabeth (Short)",
-        [28] = "Hammurabi (Short)",
-        [29] = "Mao (Short)",
-        [30] = "Genghis Khan (Short)",
-        [31] = "Gandhi (Short)",
-        [32] = "Frederick (Short)",
-        [33] = "Foreign Leader Audience Sting",
-        [34] = "Win Music",
-        [35] = "Lose Music",
-        [36] = "Alarm - Barbarian Theme",
-        [37] = "Unit Arrived",
-        [38] = "Combat Win (Weak Unit)",
-        [39] = "Combat Loss (Weak Unit)",
-        [40] = "Combat Win (Strong Unit)",
-        [41] = "Combat Loss (Strong Unit)",
-        [42] = "Nuclear Meltdown",
-        [43] = "Bomber Air Strike",
-        [44] = "City View Opened"
-    };
+    private static readonly CvlTuneDefinition[] _tunes =
+    [
+        new(3, SoundNames.MusicTitle, "Title Music", IsMusic: true, EndlessLoop: true),
+        new(4, SoundNames.MusicEvolution, "Evolution Music", IsMusic: true, EndlessLoop: true),
 
-    /// <summary>Tune ids that are music (as opposed to short sound effects), used to classify a tune's <c>Kind</c>.</summary>
-    private static readonly HashSet<int> _musicTuneIds = new()
-    {
-        3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
-        19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
-        33, 34, 35, 36
-    };
+        new(5, SoundNames.LeaderLincoln, "Lincoln (Long)", IsMusic: true, EndlessLoop: false),
+        new(6, SoundNames.LeaderMontezuma, "Montezuma (Long)", IsMusic: true, EndlessLoop: false),
+        new(7, SoundNames.LeaderRamesses, "Ramesses (Long)", IsMusic: true, EndlessLoop: false),
+        new(8, SoundNames.LeaderShaka, "Shaka Zulu (Long)", IsMusic: true, EndlessLoop: false),
+        new(9, SoundNames.LeaderNapoleon, "Napoleon (Long)", IsMusic: true, EndlessLoop: false),
+        new(10, SoundNames.LeaderCaesar, "Caesar (Long)", IsMusic: true, EndlessLoop: false),
+        new(11, SoundNames.LeaderStalin, "Stalin (Long)", IsMusic: true, EndlessLoop: false),
+        new(12, SoundNames.LeaderAlexander, "Alexander the Great (Long)", IsMusic: true, EndlessLoop: false),
+        new(13, SoundNames.LeaderElizabeth, "Elizabeth (Long)", IsMusic: true, EndlessLoop: false),
+        new(14, SoundNames.LeaderHammurabi, "Hammurabi (Long)", IsMusic: true, EndlessLoop: false),
+        new(15, SoundNames.LeaderMao, "Mao (Long)", IsMusic: true, EndlessLoop: false),
+        new(16, SoundNames.LeaderGenghis, "Genghis Khan (Long)", IsMusic: true, EndlessLoop: false),
+        new(17, SoundNames.LeaderGandhi, "Gandhi (Long)", IsMusic: true, EndlessLoop: false),
+        new(18, SoundNames.LeaderFrederick, "Frederick (Long)", IsMusic: true, EndlessLoop: false),
+
+        new(19, SoundNames.LeaderLincolnShort, "Lincoln (Short)", IsMusic: true, EndlessLoop: false),
+        new(20, SoundNames.LeaderMontezumaShort, "Montezuma (Short)", IsMusic: true, EndlessLoop: false),
+        new(21, SoundNames.LeaderRamessesShort, "Ramesses (Short)", IsMusic: true, EndlessLoop: false),
+        new(22, SoundNames.LeaderShakaShort, "Shaka Zulu (Short)", IsMusic: true, EndlessLoop: false),
+        new(23, SoundNames.LeaderNapoleonShort, "Napoleon (Short)", IsMusic: true, EndlessLoop: false),
+        new(24, SoundNames.LeaderCaesarShort, "Caesar (Short)", IsMusic: true, EndlessLoop: false),
+        new(25, SoundNames.LeaderStalinShort, "Stalin (Short)", IsMusic: true, EndlessLoop: false),
+        new(26, SoundNames.LeaderAlexanderShort, "Alexander the Great (Short)", IsMusic: true, EndlessLoop: false),
+        new(27, SoundNames.LeaderElizabethShort, "Elizabeth (Short)", IsMusic: true, EndlessLoop: false),
+        new(28, SoundNames.LeaderHammurabiShort, "Hammurabi (Short)", IsMusic: true, EndlessLoop: false),
+        new(29, SoundNames.LeaderMaoShort, "Mao (Short)", IsMusic: true, EndlessLoop: false),
+        new(30, SoundNames.LeaderGenghisShort, "Genghis Khan (Short)", IsMusic: true, EndlessLoop: false),
+        new(31, SoundNames.LeaderGandhiShort, "Gandhi (Short)", IsMusic: true, EndlessLoop: false),
+        new(32, SoundNames.LeaderFrederickShort, "Frederick (Short)", IsMusic: true, EndlessLoop: false),
+
+        new(33, SoundNames.EventAudience, "Foreign Leader Audience Sting", IsMusic: true, EndlessLoop: false),
+        new(34, SoundNames.MusicWin, "Win Music", IsMusic: true, EndlessLoop: false),
+        new(35, SoundNames.MusicLose, "Lose Music", IsMusic: true, EndlessLoop: false),
+        new(36, SoundNames.EventAlarm, "Alarm - Barbarian Theme", IsMusic: true, EndlessLoop: false),
+
+        // The only call site is the error message beep. The same tune may well be the original's
+        // "unit arrived" cue, which CivOne has no trigger for yet.
+        new(37, SoundNames.UiBeep, "Beep", IsMusic: false, EndlessLoop: false),
+
+        new(38, SoundNames.CombatWinWeak, "Combat Win (Weak Unit)", IsMusic: false, EndlessLoop: false),
+        new(39, SoundNames.CombatLossWeak, "Combat Loss (Weak Unit)", IsMusic: false, EndlessLoop: false),
+        new(40, SoundNames.CombatWinStrong, "Combat Win (Strong Unit)", IsMusic: false, EndlessLoop: false),
+        new(41, SoundNames.CombatLossStrong, "Combat Loss (Strong Unit)", IsMusic: false, EndlessLoop: false),
+
+        new(42, SoundNames.EventNuclearBlast, "Nuclear Blast", IsMusic: false, EndlessLoop: false),
+        new(43, SoundNames.CombatAirStrike, "Air Strike", IsMusic: false, EndlessLoop: false),
+        new(44, SoundNames.EventCityViewOpened, "City View Opened", IsMusic: false, EndlessLoop: false)
+    ];
+
+    /// <summary>
+    /// Tunes that should be rendered before the rest, because the game asks for them first or
+    /// cannot wait for them.
+    /// </summary>
+    private static readonly int[] _warmUpFirst = [3, 4, 34, 35];
+
+    private static Dictionary<int, CvlTuneDefinition>? _byTuneId;
+    private static Dictionary<string, CvlTuneDefinition>? _byName;
+    private static string[]? _warmUpOrder;
 
     /// <summary>First tune number addressable by the host.</summary>
     public const int FirstPlayableTuneId = 3;
@@ -69,8 +104,59 @@ internal static class CvlTuneCatalog
     /// <summary>Last tune number addressable by the host.</summary>
     public const int LastPlayableTuneId = 44;
 
+    /// <summary>All identified tunes, ordered by tune number.</summary>
+    public static IReadOnlyList<CvlTuneDefinition> Tunes => _tunes;
+
+    private static Dictionary<int, CvlTuneDefinition> ByTuneId
+        => _byTuneId ??= _tunes.ToDictionary(tune => tune.TuneId);
+
+    private static Dictionary<string, CvlTuneDefinition> ByName
+        => _byName ??= _tunes.ToDictionary(tune => tune.Name, System.StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// The names of all identified tunes, in the order their wave files should be rendered.
+    /// </summary>
+    /// <remarks>
+    /// A whole pack takes a while to render, so the order matters. The title and evolution music
+    /// are needed before anything else, and the win and lose music are long enough that starting
+    /// them late is noticeable; the rest follows by tune number.
+    /// </remarks>
+    public static IReadOnlyList<string> WarmUpOrder
+        => _warmUpOrder ??=
+        [
+            .. _warmUpFirst.Select(ResolveName),
+            .. _tunes.Where(tune => !_warmUpFirst.Contains(tune.TuneId)).Select(tune => tune.Name)
+        ];
+
+    /// <summary>Finds a tune by its number.</summary>
+    /// <param name="tuneId">The tune number.</param>
+    /// <returns>The definition, or <c>null</c> when the number is not identified.</returns>
+    public static CvlTuneDefinition? Find(int tuneId)
+        => ByTuneId.TryGetValue(tuneId, out CvlTuneDefinition? tune) ? tune : null;
+
+    /// <summary>Finds a tune by the name it is played with.</summary>
+    /// <param name="name">The sound name.</param>
+    /// <returns>The definition, or <c>null</c> when no tune carries that name.</returns>
+    public static CvlTuneDefinition? Find(string name)
+        => name != null && ByName.TryGetValue(name, out CvlTuneDefinition? tune) ? tune : null;
+
+    /// <summary>
+    /// Gets the name a tune number is played by.
+    /// </summary>
+    /// <param name="tuneId">The tune number.</param>
+    /// <returns>
+    /// The name from <see cref="SoundNames"/>, or a generated <c>tune_&lt;id&gt;</c> for a number we
+    /// have not identified. The generated name still carries the number, so such a tune stays
+    /// traceable back to the module.
+    /// </returns>
+    public static string ResolveName(int tuneId)
+        => Find(tuneId)?.Name ?? string.Create(CultureInfo.InvariantCulture, $"tune_{tuneId}");
+
+    /// <summary>Gets the display title of a tune number.</summary>
+    /// <param name="tuneId">The tune number.</param>
+    /// <returns>The English title, or a generated one for an unidentified number.</returns>
     public static string ResolveTitle(int tuneId)
-        => _titles.TryGetValue(tuneId, out string? title) ? title : $"Tune {tuneId}";
+        => Find(tuneId)?.Title ?? string.Create(CultureInfo.InvariantCulture, $"Tune {tuneId}");
 
     /// <summary>
     /// Gets whether the tune number is a music piece (title, evolution, leader themes long and
@@ -79,11 +165,14 @@ internal static class CvlTuneCatalog
     /// </summary>
     /// <param name="tuneId">The tune number to check.</param>
     /// <returns><c>true</c> when the tune is classified as music.</returns>
-    public static bool IsNamedTune(int tuneId) => _musicTuneIds.Contains(tuneId);
+    public static bool IsNamedTune(int tuneId) => Find(tuneId)?.IsMusic ?? false;
 
-    /// <summary>Tunes that loop indefinitely in the original (title and evolution music).</summary>
-    public static bool IsEndlessLoop(int tuneId) => tuneId is 3 or 4;
+    /// <summary>Gets whether the tune repeats indefinitely in the original.</summary>
+    /// <param name="tuneId">The tune number to check.</param>
+    /// <returns><c>true</c> for the title and evolution music.</returns>
+    public static bool IsEndlessLoop(int tuneId) => Find(tuneId)?.EndlessLoop ?? false;
 
+    /// <summary>Every tune number the host may ask a driver for.</summary>
     public static IEnumerable<int> PlayableTuneIds
     {
         get

@@ -37,7 +37,7 @@ internal sealed class IsoundCvlConverter : CvlSoundConverterBase
 
             content.Tunes.Add(new SoundPackTune
             {
-                TuneId = tune.TuneId,
+                Name = CvlTuneCatalog.ResolveName(tune.TuneId),
                 Title = tune.Title,
                 Kind = tune.Kind,
                 EndlessLoop = tune.EndlessLoop,

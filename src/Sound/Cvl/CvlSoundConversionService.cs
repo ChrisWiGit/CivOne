@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Text;
 using CivOne.Sound.Cvl.Adlib;
 
 namespace CivOne.Sound.Cvl;
@@ -19,7 +18,7 @@ internal sealed class CvlConversionResult
     public CvlDevice Device { get; init; }
     public int TuneCount { get; init; }
     public int MappedSoundNames { get; init; }
-    public IReadOnlyList<string> UnmappedSoundNames { get; init; } = [];
+    public IReadOnlyList<string> UnavailableSoundNames { get; init; } = [];
     public required string Message { get; init; }
 }
 
@@ -156,6 +155,7 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
     {
         string packFolder = Path.Combine(targetFolder, converter.PackId);
         Directory.CreateDirectory(packFolder);
+        RemovePreviousConversion(packFolder);
 
         var index = new SoundPackIndex
         {
@@ -180,7 +180,7 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
         {
             var entry = new SoundPackIndexEntry
             {
-                TuneId = tune.TuneId,
+                Name = tune.Name,
                 Title = tune.Title,
                 Kind = tune.Kind,
                 StepCount = tune.StepCount,
@@ -192,32 +192,27 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
             // game logic can tell "intentionally silent" apart from "not present".
             if (tune.WriteTo != null)
             {
-                entry.File = $"{tune.TuneId:00}-{Slug(tune.Title)}{ScoreFileExtension}";
+                entry.File = $"{tune.Name}{ScoreFileExtension}";
                 tune.WriteTo(Path.Combine(packFolder, entry.File));
             }
 
             index.Tunes.Add(entry);
         }
 
-        var available = index.Tunes.Select(t => t.TuneId).ToHashSet();
+        var available = index.Tunes.Select(t => t.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        foreach (string soundName in SoundNameMap.EngineSoundNames)
+        foreach (CvlTuneDefinition definition in CvlTuneCatalog.Tunes)
         {
-            if (SoundNameMap.TryGetTuneId(soundName, out int tuneId) && available.Contains(tuneId))
-            {
-                index.SoundNames[soundName] = tuneId;
-                continue;
-            }
-
-            index.UnmappedSoundNames.Add(soundName);
+            if (!available.Contains(definition.Name)) index.UnavailableSoundNames.Add(definition.Name);
         }
 
         SoundPackIndexJson.Save(Path.Combine(packFolder, SoundPackIndex.FileName), index);
 
         int withFile = index.Tunes.Count(t => t.File != null);
-        string unmapped = index.UnmappedSoundNames.Count == 0
+        int mapped = CvlTuneCatalog.Tunes.Count - index.UnavailableSoundNames.Count;
+        string unavailable = index.UnavailableSoundNames.Count == 0
             ? string.Empty
-            : $"; unmapped: {string.Join(", ", index.UnmappedSoundNames)}";
+            : $"; no data for: {string.Join(", ", index.UnavailableSoundNames)}";
 
         return new CvlConversionResult
         {
@@ -227,40 +222,43 @@ internal sealed class CvlSoundConversionService : ICvlSoundConversionService
             PackFolder = packFolder,
             Device = device,
             TuneCount = withFile,
-            MappedSoundNames = index.SoundNames.Count,
-            UnmappedSoundNames = index.UnmappedSoundNames,
+            MappedSoundNames = mapped,
+            UnavailableSoundNames = index.UnavailableSoundNames,
             Message = $"{Path.GetFileName(cvlPath)} -> {converter.PackId}: {withFile} tunes, "
-                      + $"{index.SoundNames.Count} of {SoundNameMap.EngineSoundNames.Count} names mapped{unmapped}"
+                      + $"{mapped} of {CvlTuneCatalog.Tunes.Count} names mapped{unavailable}"
         };
+    }
+
+    /// <summary>
+    /// Removes what an earlier conversion of this pack left behind.
+    /// </summary>
+    /// <remarks>
+    /// Tune files are named after the sound they play, so a build that named them differently -
+    /// or a module that no longer yields a tune - would otherwise leave files nothing refers to,
+    /// together with their rendered waves. Only files this service writes itself are removed.
+    /// </remarks>
+    /// <param name="packFolder">Folder of the pack about to be written.</param>
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Leftovers that cannot be deleted - a file in use, a permission problem - must not abort the conversion; they are only wasted space.")]
+    private static void RemovePreviousConversion(string packFolder)
+    {
+        try
+        {
+            // The list is taken before anything is deleted; deleting while enumerating the same
+            // folder is not safe on every file system.
+            foreach (string file in Directory.GetFiles(packFolder, $"*{ScoreFileExtension}"))
+            {
+                File.Delete(file);
+            }
+
+            string cacheFolder = Path.Combine(packFolder, SoundPackIndex.WaveCacheFolderName);
+            if (Directory.Exists(cacheFolder)) Directory.Delete(cacheFolder, recursive: true);
+        }
+        catch (Exception)
+        {
+            // Keep going: a stale file costs disk space, a failed conversion costs the player sound.
+        }
     }
 
     private static CvlConversionResult Failed(string cvlPath, string message)
         => new() { SourceFile = cvlPath, Message = message };
-
-    /// <summary>"Alexander the Great" -> "alexander-the-great".</summary>
-    [SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Lowercase is required here for the on-disk file name, not for a culture-independent comparison.")]
-    internal static string Slug(string text)
-    {
-        if (string.IsNullOrWhiteSpace(text)) return "tune";
-
-        var slug = new StringBuilder(text.Length);
-        bool separator = false;
-
-        foreach (char c in text.ToLowerInvariant())
-        {
-            if (c is >= 'a' and <= 'z' or >= '0' and <= '9')
-            {
-                slug.Append(c);
-                separator = false;
-                continue;
-            }
-
-            if (separator || slug.Length == 0) continue;
-
-            slug.Append('-');
-            separator = true;
-        }
-
-        return slug.ToString().Trim('-') is { Length: > 0 } result ? result : "tune";
-    }
 }
