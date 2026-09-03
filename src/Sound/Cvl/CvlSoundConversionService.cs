@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using CivOne.Sound.Cvl.Adlib;
+using CivOne.Sound.Cvl.Ibm;
 
 namespace CivOne.Sound.Cvl;
 

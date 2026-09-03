@@ -2,10 +2,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CivOne.Sound.Cvl;
+using CivOne.Sound.Cvl.Ibm;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace CivOne.UnitTests.Sound.Cvl
+namespace CivOne.UnitTests.Sound.Cvl.Ibm
 {
     /// <summary>
     /// Covers the ISOUND parser via a synthetic module (always runs) and additionally

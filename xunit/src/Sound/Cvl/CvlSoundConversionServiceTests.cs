@@ -3,6 +3,8 @@ using System.IO;
 using System.Linq;
 using CivOne.Sound;
 using CivOne.Sound.Cvl;
+using CivOne.Sound.Cvl.Ibm;
+using CivOne.UnitTests.Sound.Cvl.Ibm;
 using Xunit;
 using Xunit.Abstractions;
 

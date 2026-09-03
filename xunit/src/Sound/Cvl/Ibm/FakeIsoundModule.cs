@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace CivOne.UnitTests.Sound.Cvl
+namespace CivOne.UnitTests.Sound.Cvl.Ibm
 {
     /// <summary>
     /// Builds a synthetic CVL module that structurally replicates ISOUND.CVL: MZ header,

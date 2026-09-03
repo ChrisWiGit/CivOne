@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using CivOne.UnitTests.Sound.Cvl.Ibm;
 
 namespace CivOne.UnitTests.Sound.Cvl
 {

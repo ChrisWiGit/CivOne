@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CivOne.Sound.Cvl;
+using CivOne.Sound.Cvl.Ibm;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace CivOne.UnitTests.Sound.Cvl
+namespace CivOne.UnitTests.Sound.Cvl.Ibm
 {
     /// <summary>
     /// Checks the path CVL -> TuneScore -> *.sound.json. The JSON is the form CivOne ships;

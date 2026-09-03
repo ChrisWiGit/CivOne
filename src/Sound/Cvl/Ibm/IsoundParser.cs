@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace CivOne.Sound.Cvl;
+namespace CivOne.Sound.Cvl.Ibm;
 
 
 
