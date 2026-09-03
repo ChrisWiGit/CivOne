@@ -15,6 +15,8 @@ internal sealed class AsoundCvlConverter : CvlSoundConverterBase
     /// <inheritdoc/>
     public override string PackId => Id;
 
+    // 	Translate("AdLib / Sound Blaster")
+    // Comment is only for translation scanner.
     /// <inheritdoc/>
     public override string DisplayName => "AdLib / Sound Blaster";
 

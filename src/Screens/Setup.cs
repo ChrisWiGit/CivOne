@@ -37,6 +37,12 @@ namespace CivOne.Screens
 	{
 		private const int MenuFont = 6;
 		private const int MaxMenuItems = 19;
+
+		/// <summary>
+		/// Menu lines the sound test keeps free on every page for its status message: a blank
+		/// separator and the message itself.
+		/// </summary>
+		private const int SoundTestStatusLines = 2;
 		private const string NoSoundPack = "__none__";
 		private const string WaveSoundPack = "__wave__";
 		private string? _soundTestMessage;
@@ -499,10 +505,7 @@ namespace CivOne.Screens
 				}
 			}
 
-			if (menuItems.Count < MaxMenuItems)
-			{
-				menuItems.Add(CreateSoundTestStatusItem());
-			}
+			AddSoundTestStatus(menuItems);
 
 			CreateMenu(Translate("Test tunes"), activeItem, [.. menuItems]);
 		}
@@ -512,7 +515,7 @@ namespace CivOne.Screens
 			int playingItem = -1;
 			bool hasPreviousPage = page > 0;
 			int navigationCount = hasPreviousPage ? 1 : 0;
-			int tuneSlots = MaxMenuItems - 1 - navigationCount;
+			int tuneSlots = MaxMenuItems - 1 - navigationCount - SoundTestStatusLines;
 			int firstTune = hasPreviousPage ? page * (tuneSlots - 1) + 1 : 0;
 			bool hasNextPage = tunes.Count - firstTune > tuneSlots;
 
@@ -668,6 +671,22 @@ namespace CivOne.Screens
 				: MenuItem.Create(_soundTestMessage).Disable();
 		}
 
+		/// <summary>
+		/// Appends the sound test status line, separated from the entries above it.
+		/// </summary>
+		/// <remarks>
+		/// The status always belongs to the page the user is looking at, so the paged tune list
+		/// reserves <see cref="SoundTestStatusLines"/> slots for it on every page. Without that
+		/// reservation a full page pushed the message onto a later page, where it stayed unseen
+		/// until the user scrolled there.
+		/// </remarks>
+		/// <param name="menuItems">Items of the menu being built.</param>
+		private void AddSoundTestStatus(List<MenuItem<int>> menuItems)
+		{
+			menuItems.Add(MenuItem.CreateSeparator());
+			menuItems.Add(CreateSoundTestStatusItem());
+		}
+
 		private string CurrentSoundPackText()
 			=> SoundPackSelectionText(SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory));
 
@@ -706,7 +725,7 @@ namespace CivOne.Screens
 			}
 			else
 			{
-				menuItems.AddRange(packs.Select(pack => MenuItem.Create(pack.DisplayName)
+				menuItems.AddRange(packs.Select(pack => MenuItem.Create(Translate(pack.DisplayName))
 					.OnSelect((s, a) => SelectSoundPack(pack.PackId))
 					.SetActive(() => IsSoundPackActive(pack))));
 			}
@@ -740,7 +759,9 @@ namespace CivOne.Screens
 			string selected = SoundPlaybackStrategyProvider.SelectedPack;
 			foreach (SoundPackSummary pack in packs)
 			{
-				if (string.Equals(pack.PackId, selected, StringComparison.OrdinalIgnoreCase)) return pack.DisplayName;
+				if (string.Equals(pack.PackId, selected, StringComparison.OrdinalIgnoreCase)) {
+					return Translate(pack.DisplayName);
+				}
 			}
 
 			// A pack that was selected and has since been removed; showing its id beats showing

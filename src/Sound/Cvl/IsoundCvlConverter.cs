@@ -11,6 +11,8 @@ internal sealed class IsoundCvlConverter : CvlSoundConverterBase
 
     public override string PackId => Id;
 
+    // Comment is only for translation scanner.
+    // 	Translate("PC Speaker")
     public override string DisplayName => "PC Speaker";
 
     public override CvlDevice Device => CvlDevice.PcSpeaker;

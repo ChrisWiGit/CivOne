@@ -1572,3 +1572,6 @@ AUTO (DEFAULT): {0}=Automatisch (Standard): {0}
 USE THE ONLY AVAILABLE SOUND PACK AUTOMATICALLY, OTHERWISE USE WAVE FILES.=Verwende automatisch das einzige verfügbare Sound-Pack, andernfalls verwende Wave-Dateien.
 AUTO (DEFAULT) - WAVE FILES=Automatisch (Standard) - Wave-Dateien
 NO SOUND PACK SELECTED.=Kein Sound-Pack ausgewählt.
+SOUND IS SWITCHED OFF.=Sound is switched off.
+PC SPEAKER=PC Lautsprecher
+ADLIB / SOUND BLASTER=AdLib / Sound Blaster
