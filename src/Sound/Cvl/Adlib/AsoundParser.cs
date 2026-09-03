@@ -4,37 +4,6 @@ using System.Linq;
 
 namespace CivOne.Sound.Cvl.Adlib;
 
-
-
-/// <summary>One voice of an arrangement: which OPL channel plays which stream.</summary>
-/// <param name="Channel">OPL channel index, 0..8.</param>
-/// <param name="DataOffset">Data-segment offset of the voice stream.</param>
-internal readonly record struct AsoundVoiceRef(int Channel, int DataOffset);
-
-/// <summary>Result of analyzing a single tune handler.</summary>
-internal sealed class AsoundTuneInfo
-{
-    /// <summary>Gets the tune number this result belongs to.</summary>
-    public int TuneId { get; init; }
-
-    /// <summary>Gets how the driver realizes the tune.</summary>
-    public TuneScoreKind Kind { get; init; }
-
-    /// <summary>Gets the code offset of the handler, or <c>-1</c>.</summary>
-    public int HandlerOffset { get; init; }
-
-    /// <summary>
-    /// Gets the arrangements of the tune. Most tunes have exactly one; the leader themes offer four
-    /// and the driver picks between them with the second <c>PlayTune</c> argument.
-    /// </summary>
-    public List<List<AsoundVoiceRef>> Arrangements { get; init; } = [];
-
-    /// <summary>
-    /// Gets a note about anything in the handler that could not be interpreted, or <c>null</c>.
-    /// </summary>
-    public string? Diagnostic { get; init; }
-}
-
 /// <summary>
 /// Reads the tunes and the instrument bank from ASOUND.CVL, the AdLib / Sound Blaster driver.
 ///

@@ -6,10 +6,6 @@ using System.Linq;
 
 namespace CivOne.Sound.Cvl;
 
-
-
-internal readonly record struct SoundPackSummary(string PackId, string DisplayName);
-
 /// <summary>
 /// Lists the sound packs present in the profile: every subfolder of
 /// <c>sounds/</c> that <see cref="CvlSoundConversionService"/> described with a

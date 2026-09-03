@@ -8,39 +8,6 @@ using CivOne.Sound.Cvl.Ibm;
 
 namespace CivOne.Sound.Cvl;
 
-
-
-internal sealed class CvlConversionResult
-{
-    public required string SourceFile { get; init; }
-    public bool Converted { get; init; }
-    public string? PackId { get; init; }
-    public string? PackFolder { get; init; }
-    public CvlDevice Device { get; init; }
-    public int TuneCount { get; init; }
-    public int MappedSoundNames { get; init; }
-    public IReadOnlyList<string> UnavailableSoundNames { get; init; } = [];
-    public required string Message { get; init; }
-}
-
-internal sealed class CvlConversionReport
-{
-    public List<CvlConversionResult> Results { get; } = [];
-
-    public bool AnyConverted => Results.Any(r => r.Converted);
-
-    public IEnumerable<string> Messages => Results.Select(r => r.Message);
-}
-
-internal interface ICvlSoundConversionService
-{
-    /// <summary>Converts all supported CVL modules of a folder into <paramref name="targetFolder"/>.</summary>
-    CvlConversionReport ConvertFolder(string sourceFolder, string targetFolder);
-
-    /// <summary>Converts a single CVL module.</summary>
-    CvlConversionResult ConvertFile(string cvlPath, string targetFolder);
-}
-
 /// <summary>
 /// Converts the original game's CVL sound modules into our own note data, once.
 ///

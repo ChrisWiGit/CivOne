@@ -3,48 +3,6 @@ using System.Collections.Generic;
 
 namespace CivOne.Sound.Cvl.Ibm;
 
-
-
-/// <summary>
-/// Code addresses of ISOUND.CVL derived from the module itself. None of this is
-/// hardcoded, so the parser is not tied to a single build.
-/// </summary>
-internal sealed class IsoundLayout
-{
-    public required int DispatchTable { get; init; }
-    public required int MaxTuneId { get; init; }
-    public required int MusicPlayer { get; init; }
-    public required int EffectPlayer { get; init; }
-    public required int EffectParamTable { get; init; }
-
-    /// <summary>Timbre code for which the driver plays without an effect (0x7E in the 11-14-91 build).</summary>
-    public required int PlainTimbreCode { get; init; }
-
-    /// <summary>First code that points into the effect table (0x65 in the 11-14-91 build).</summary>
-    public required int FirstTimbreCode { get; init; }
-
-    public int TuneCount => MaxTuneId + 1;
-}
-
-/// <summary>Result of analyzing a single tune handler.</summary>
-internal sealed class IsoundTuneInfo
-{
-    public int TuneId { get; init; }
-    public TuneScoreKind Kind { get; init; }
-    public int HandlerOffset { get; init; }
-
-    /// <summary>Data-segment offset of the sequence, or -1.</summary>
-    public int DataOffset { get; init; } = -1;
-
-    /// <summary>Code offset of the player routine the handler jumps to, or -1.</summary>
-    public int PlayerOffset { get; init; } = -1;
-
-    public List<TuneStep> Steps { get; init; } = [];
-
-    /// <summary>Reason why the handler could not be interpreted as a sequence, if any.</summary>
-    public string? Diagnostic { get; init; }
-}
-
 /// <summary>
 /// Reads the tune sequences from ISOUND.CVL (the IBM PC speaker driver).
 ///

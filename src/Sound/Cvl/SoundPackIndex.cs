@@ -1,36 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace CivOne.Sound.Cvl;
-
-
-
-internal sealed class SoundPackIndexEntry
-{
-    /// <summary>Name <c>PlaySound</c> plays this tune by, from <see cref="SoundNames"/>.</summary>
-    public required string Name { get; set; }
-
-    /// <summary>English display title, shown in the sound test. Translated only when displayed.</summary>
-    public required string Title { get; set; }
-
-    public TuneScoreKind Kind { get; set; }
-
-    /// <summary>File name within the same folder, or <c>null</c> for deliberately silent tunes.</summary>
-    public string? File { get; set; }
-
-    public int StepCount { get; set; }
-    public int TotalTicks { get; set; }
-
-    /// <summary>
-    /// How many interchangeable arrangements the tune offers. One for everything except the AdLib
-    /// leader themes, which the original picks between at random.
-    /// </summary>
-    public int ArrangementCount { get; set; } = 1;
-}
 
 /// <summary>
 /// <c>index.json</c> of a sound pack: what the folder contains, and under which name the game
@@ -120,42 +92,5 @@ internal sealed class SoundPackIndex
         }
 
         return lookup;
-    }
-}
-
-internal static class SoundPackIndexJson
-{
-    private static readonly JsonSerializerOptions _options = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-    };
-
-    public static SoundPackIndex Load(string path)
-    {
-        string json     = File.ReadAllText(path);
-        var index = JsonSerializer.Deserialize<SoundPackIndex>(json, _options)
-            ?? throw new InvalidOperationException($"Could not load sound pack index from {path}.");
-
-        if (index.SchemaVersion != SoundPackIndex.CurrentSchemaVersion)
-        {
-            throw new InvalidOperationException(
-                $"{path}: schemaVersion {index.SchemaVersion} is not supported, expected "
-                + $"{SoundPackIndex.CurrentSchemaVersion}. Re-import the original game's sound data.");
-        }
-
-        return index;
-    }
-
-    public static void Save(string path, SoundPackIndex index)
-    {
-        ArgumentNullException.ThrowIfNull(index);
-
-        string? folder = Path.GetDirectoryName(Path.GetFullPath(path));
-        if (!string.IsNullOrEmpty(folder)) Directory.CreateDirectory(folder);
-
-        File.WriteAllText(path, JsonSerializer.Serialize(index, _options));
     }
 }

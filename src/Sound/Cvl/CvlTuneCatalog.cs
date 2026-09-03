@@ -5,17 +5,6 @@ using System.Linq;
 namespace CivOne.Sound.Cvl;
 
 /// <summary>
-/// One tune of a CVL driver: its number in the driver, the name the game plays it by, and how it
-/// behaves.
-/// </summary>
-/// <param name="TuneId">Number the CVL dispatch table addresses this tune by.</param>
-/// <param name="Name">Name from <see cref="SoundNames"/> that plays this tune.</param>
-/// <param name="Title">English display title, shown in the sound test.</param>
-/// <param name="IsMusic">Whether this is a music piece rather than a short sound effect.</param>
-/// <param name="EndlessLoop">Whether the tune repeats instead of ending.</param>
-internal sealed record CvlTuneDefinition(int TuneId, string Name, string Title, bool IsMusic, bool EndlessLoop);
-
-/// <summary>
 /// Everything known about the tunes of the CVL modules. CIVPLAY allows tune numbers 3..44; this
 /// table names the ones we have identified.
 /// </summary>
