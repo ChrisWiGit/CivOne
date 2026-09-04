@@ -317,10 +317,8 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 		{
 			if (_introSkipped || _noiseCounter < NOISE_COUNT) return false;
 
-			// A key or click here is what leads to the credits menu, so the opening theme has to
-			// stop now rather than run on underneath it.
-			SoundPlaybackStrategyProvider.Current.Abort();
-
+			// The title theme keeps playing underneath the credits menu; it is only stopped once
+			// the player actually leaves this screen (e.g. StartNewGame, LoadSavedGame).
 			_showIntroLine = false;
 			_introLeft = -320;
 			_logoSwipe = 320;
@@ -406,13 +404,13 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 			foreach (IMenu menu in Menus)
 				this.AddLayer(menu);
 			CloseMenus();
-			if (!Runtime.Settings.ShowIntro)
+			if (Runtime.Settings.ShowIntro)
 			{
-				_nextScreen = new NewGame();
+				_nextScreen = new Intro();
 			}
 			else
 			{
-				_nextScreen = new Intro();
+				_nextScreen = new NewGame();
 			}
 		}
 		
