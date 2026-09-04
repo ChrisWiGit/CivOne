@@ -1,3 +1,4 @@
+using System;
 using CivOne.Enums;
 using CivOne.Sound.Playback;
 
@@ -51,4 +52,11 @@ internal sealed class WorldGenerationMusicDelegate
     /// Stops the music, so it does not run on underneath the next screen.
     /// </summary>
     public void Stop() => Strategy.Abort();
+
+    /// <summary>
+    /// Tries to get how long one pass of the evolution music takes.
+    /// </summary>
+    /// <param name="duration">The length, when the current sound source has timing data for it.</param>
+    /// <returns><c>true</c> when the length is known.</returns>
+    public bool TryGetDuration(out TimeSpan duration) => Strategy.TryGetDuration(SoundNames.MusicEvolution, out duration);
 }

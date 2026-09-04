@@ -1,3 +1,5 @@
+using System;
+
 namespace CivOne.Sound.Playback;
 
 
@@ -13,5 +15,11 @@ internal sealed class NoSoundPlaybackStrategy : ISoundPlaybackStrategy
 	public void Abort()
 	{
 		RuntimeHandler.Runtime.StopSound();
+	}
+
+	public bool TryGetDuration(string soundName, out TimeSpan duration)
+	{
+		duration = TimeSpan.Zero;
+		return false;
 	}
 }

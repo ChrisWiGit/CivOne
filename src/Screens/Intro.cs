@@ -26,11 +26,53 @@ namespace CivOne.Screens
 		private const uint MAP_NOT_READY_MESSAGE_TICKS = 60;
 		private const string INTRO_END_MARKER = "\0";
 		private const string INTRO_ERROR_MESSAGE = "Error loading intro text.";
-		
+
+		/// <summary>Line of the intro text that swaps to the next picture instead of showing text.</summary>
+		private const string PICTURE_CHANGE_MARKER = "_";
+
+		/// <summary>
+		/// How often <see cref="HasUpdate"/> runs per second: the 60 Hz raw tick divided by 4, which
+		/// is the game tick RuntimeHandler passes to screens. One screen fade step costs one of these.
+		/// </summary>
+		private const double SCREEN_UPDATES_PER_SECOND = 15.0;
+
+		/// <summary>
+		/// How fast <see cref="_elapsedTicks"/> advances: half the screen update rate, because the
+		/// text only advances on even game ticks (see <see cref="HasUpdate"/>).
+		/// </summary>
+		private const double INTRO_TICKS_PER_SECOND = SCREEN_UPDATES_PER_SECOND / 2;
+
+		/// <summary>
+		/// How long the music should keep playing after the last line of the text has appeared, so
+		/// the text does not run into silence.
+		/// </summary>
+		private const double LEAD_OUT_SECONDS = 2.0;
+
+		/// <summary>Standard intro length when the evolution music's duration is not known.</summary>
+		private const double DEFAULT_DURATION_SECONDS = 150.0;
+
+		/// <summary>Ticks per line when there is nothing to pace against, e.g. missing intro text.</summary>
+		private const int DEFAULT_TICKS_PER_LINE = 30;
+
 		private readonly string[] _introText;
 		private readonly Picture[] _pictures;
 
-		private int _introTicks;
+		/// <summary>How many advance-steps (see <see cref="CountAdvanceSteps"/>) the text takes end to end.</summary>
+		private readonly int _totalSteps;
+
+		/// <summary>
+		/// The steps the pacing is spread over: every step up to the last line of real text. The
+		/// closing prompt follows one step later, at the same rate.
+		/// </summary>
+		private readonly int _pacedSteps;
+
+		/// <summary>
+		/// When the last line of real text is due, in <see cref="_elapsedTicks"/> units.
+		/// </summary>
+		private readonly int _targetTicks;
+
+		private int _elapsedTicks;
+		private int _stepIndex;
 		private int _introLine = 1;
 		
 		private int _introPicture;
@@ -114,14 +156,46 @@ namespace CivOne.Screens
 			Log(@"Intro: ""{0}""", _introText[_introLine]);
 		}
 		
+		/// <summary>
+		/// When a step is due, in <see cref="_elapsedTicks"/> units.
+		/// </summary>
+		/// <param name="step">The step to look up; may run past <see cref="_pacedSteps"/>.</param>
+		/// <returns>The tick the step is due at.</returns>
+		/// <remarks>
+		/// Every deadline is measured from the start rather than added up step by step, so rounding
+		/// a single step never shifts the ones after it.
+		/// </remarks>
+		private int StepDeadline(int step) => (int)((long)step * _targetTicks / _pacedSteps);
+
+		/// <summary>
+		/// The colour the current line is drawn in: black just as it changes, dim for a tick on
+		/// either side, and bright in between.
+		/// </summary>
+		/// <remarks>
+		/// The phase is measured against the current step's own start and end, not against an
+		/// average line length. A line lasts a whole number of ticks but the steps are spaced by a
+		/// rounded fraction, so a fixed period would drift out of step with the line changes and
+		/// blink somewhere in the middle of a line.
+		/// </remarks>
 		private byte TextColour
 		{
 			get
 			{
 				bool mapReady = Map.Ready;
-				if (_introTicks % 30 > 1 && _introTicks % 30 < 29 || ((_introLine + 1) < _introText.Length && _introText[_introLine + 1].Length == 0)) return mapReady ? (byte)10 : (byte)11;
-				if (_introTicks % 30 == 1 || _introTicks % 30 == 29) return mapReady ? (byte)2 : (byte)3;
-				return 0;
+				byte bright = mapReady ? (byte)10 : (byte)11;
+
+				// Nothing follows the closing prompt, or the last line of text, that it could fade
+				// out for, so it stays up instead of blinking.
+				bool nextLineIsBlank = (_introLine + 1) < _introText.Length && string.IsNullOrEmpty(_introText[_introLine + 1]);
+				if (_stepIndex >= _totalSteps || nextLineIsBlank) return bright;
+
+				int lineStart = StepDeadline(_stepIndex);
+				int lastPhase = StepDeadline(_stepIndex + 1) - lineStart - 1;
+				int phase = _elapsedTicks - lineStart;
+
+				if (phase <= 0 || phase > lastPhase) return 0;
+				if (phase == 1 || phase == lastPhase) return mapReady ? (byte)2 : (byte)3;
+				return bright;
 			}
 		}
 
@@ -188,24 +262,15 @@ namespace CivOne.Screens
 			bool update = HandleScreenFade();
 			if (!update && gameTick % 2 == 0)
 			{
-				_introTicks++;
-				if (_introTicks % 30 == 0)
+				_elapsedTicks++;
+
+				// The intro holds on its last line (the "press a key to continue" prompt) instead
+				// of moving on by itself; only an explicit key press (see KeyDown) starts the new
+				// game, so no more steps are taken once the text is done.
+				if (_stepIndex < _totalSteps && _elapsedTicks >= StepDeadline(_stepIndex + 1))
 				{
-					_introLine++;
-					if (_introLine >= _introText.Length)
-					{
-						if (TryOpenNewGame())
-						{
-							return true;
-						}
-						_introLine = _introText.Length - 1;
-						_introTicks = 1;
-					}
-					if (_introText[_introLine] == "_")
-					{
-						IntroPicture++;
-						_introLine++;
-					}
+					_stepIndex++;
+					AdvanceLine();
 				}
 
 				switch (_introPicture)
@@ -266,8 +331,50 @@ namespace CivOne.Screens
 			}
 			this.DrawText(introLine, 6, TextColour, x + 160, y + 160, TextAlign.Center);
 
-			if (_introTicks % 30 == 1) LogIntroText();
 			return true;
+		}
+
+		/// <summary>
+		/// Moves to the next line of real text - exactly what <see cref="CountAdvanceSteps"/> counts
+		/// as one step.
+		/// </summary>
+		private void AdvanceLine()
+		{
+			_introLine++;
+			while (_introLine < _introText.Length && IsSkippedLine(_introText[_introLine]))
+			{
+				if (_introText[_introLine] == PICTURE_CHANGE_MARKER)
+				{
+					IntroPicture++;
+				}
+				_introLine++;
+			}
+
+			if (_introLine >= _introText.Length)
+			{
+				_introLine = _introText.Length - 1;
+			}
+			LogIntroText();
+		}
+
+		/// <summary>
+		/// Whether a line is passed over rather than shown: a picture-change marker draws no text,
+		/// and an empty line has none to draw. The original text pads its end with empty lines, and
+		/// giving each of those a step of its own would spend a sixth of the intro on a screen that
+		/// never changes.
+		/// </summary>
+		private static bool IsSkippedLine(string line)
+			=> string.IsNullOrEmpty(line) || line == PICTURE_CHANGE_MARKER;
+
+		/// <summary>
+		/// Realigns the pacing state to a step index set from outside the automatic ticker, e.g. by
+		/// manual navigation, so the next automatic step waits a full step's worth of ticks instead
+		/// of firing immediately because <see cref="_elapsedTicks"/> ran ahead of it.
+		/// </summary>
+		private void ResyncStepTiming(int stepIndex)
+		{
+			_stepIndex = Math.Clamp(stepIndex, 0, _totalSteps);
+			_elapsedTicks = StepDeadline(_stepIndex);
 		}
 
 		private void HandleMapGenerationRetry()
@@ -280,7 +387,8 @@ namespace CivOne.Screens
 			Map.ResetForGenerationRetry();
 			Map.Generate();
 			_generationMusic.Start();
-			_introTicks = 0;
+			_elapsedTicks = 0;
+			_stepIndex = 0;
 			_introLine = 1;
 			_introPicture = 0;
 			_introPictureNext = 0;
@@ -346,32 +454,32 @@ namespace CivOne.Screens
 					if (_introText[_introLine] == "_")
 					{
 						_introLine--;
-						_introTicks = 0;
 						IntroPicture--;
 					}
 					else
 					{
 						LogIntroText();
 					}
+					ResyncStepTiming(_stepIndex - 1);
 					return true;
 				}
 				if (args.Key == Key.Right)
 				{
 					if (_introLine >= _introText.Length - 1) return false;
-					
+
 					Log("Intro: >>");
-					
+
 					_introLine++;
 					if (_introText[_introLine] == "_")
 					{
 						_introLine++;
-						_introTicks = 0;
 						IntroPicture++;
 					}
 					else
 					{
-						LogIntroText();	
+						LogIntroText();
 					}
+					ResyncStepTiming(_stepIndex + 1);
 					return true;
 				}
 			}
@@ -406,11 +514,93 @@ namespace CivOne.Screens
 			_pictures = new Picture[8];
 			for (int i = 0; i < _pictures.Length; i++)
 				_pictures[i] = Resources[$"BIRTH{(i + 1)}"];
-			
+
 			Palette = _pictures[0].Palette;
 
 			// The evolution music is not started here: it belongs to the world generation, which
 			// starts before this screen is created and is where the music is started as well.
+
+			(_totalSteps, _pacedSteps, _targetTicks) = CalculatePacing();
+		}
+
+		/// <summary>
+		/// Sizes the text pacing so the last line of text appears <see cref="LEAD_OUT_SECONDS"/>
+		/// before one pass of the evolution music ends, or before
+		/// <see cref="DEFAULT_DURATION_SECONDS"/> have passed when that length is not known -
+		/// regardless of how many lines the loaded text (or its translation) has.
+		/// </summary>
+		private (int totalSteps, int pacedSteps, int targetTicks) CalculatePacing()
+		{
+			(int totalSteps, int pictureChanges) = CountAdvanceSteps(_introText);
+
+			// The closing prompt is the step after the last line of text, so it is not paced itself:
+			// it follows one step later, at whatever rate the rest of the text runs at.
+			int pacedSteps = totalSteps - 1;
+			if (pacedSteps <= 0) return (totalSteps, 1, DEFAULT_TICKS_PER_LINE);
+
+			double targetSeconds = _generationMusic.TryGetDuration(out TimeSpan duration) && duration > TimeSpan.Zero
+				? duration.TotalSeconds
+				: DEFAULT_DURATION_SECONDS;
+
+			// Fading between the pictures freezes the text - HasUpdate only advances it while no
+			// fade is running - so that time has to come out of the budget, or the text ends up
+			// running well past the music.
+			double budgetSeconds = targetSeconds - LEAD_OUT_SECONDS - FadeSeconds(pictureChanges);
+
+			// Every line needs room for the black tick it changes on plus at least one lit tick.
+			int targetTicks = Math.Max(pacedSteps * 2, (int)Math.Round(budgetSeconds * INTRO_TICKS_PER_SECOND));
+
+			return (totalSteps, pacedSteps, targetTicks);
+		}
+
+		/// <summary>
+		/// How long the screen spends fading, which is time the text does not advance in.
+		/// </summary>
+		/// <param name="pictureChanges">How many times the picture is swapped.</param>
+		/// <returns>The total fading time in seconds.</returns>
+		/// <remarks>
+		/// One fade step happens per <see cref="HasUpdate"/> call. The screen fades in once at the
+		/// start, and every picture change fades the old picture out, swaps it in a step of its own,
+		/// then fades the new one in.
+		/// </remarks>
+		private static double FadeSeconds(int pictureChanges)
+		{
+			int stepsPerDirection = (int)Math.Ceiling(1.0F / FADE_STEP);
+			int updates = stepsPerDirection + (pictureChanges * ((2 * stepsPerDirection) + 1));
+
+			return updates / SCREEN_UPDATES_PER_SECOND;
+		}
+
+		/// <summary>
+		/// Counts how many times <see cref="AdvanceLine"/> fires while walking from the first line
+		/// to the last, and how many pictures are swapped on the way.
+		/// </summary>
+		private static (int steps, int pictureChanges) CountAdvanceSteps(string[] introText)
+		{
+			int steps = 0;
+			int pictureChanges = 0;
+			int line = 1;
+
+			while (line < introText.Length - 1)
+			{
+				line++;
+				while (line < introText.Length && IsSkippedLine(introText[line]))
+				{
+					if (introText[line] == PICTURE_CHANGE_MARKER)
+					{
+						pictureChanges++;
+					}
+					line++;
+				}
+
+				if (line >= introText.Length)
+				{
+					line = introText.Length - 1;
+				}
+				steps++;
+			}
+
+			return (steps, pictureChanges);
 		}
 	}
 }

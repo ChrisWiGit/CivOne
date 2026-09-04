@@ -28,6 +28,7 @@ internal sealed class SoundPackPlaybackService
 	private readonly IRuntime _runtime;
 	private readonly ISoundPackRenderQueue _queue;
 	private readonly ArrangementPickerDelegate _arrangements;
+	private readonly WaveFileDurationDelegate _waveDuration = new();
 
 	private Task<string?>? _pending;
 
@@ -76,15 +77,12 @@ internal sealed class SoundPackPlaybackService
 		// Whatever was still waiting belongs to the previous sound, no matter how this call ends.
 		CancelPending();
 
-		string packFolder = Path.Combine(Settings.Instance.SoundsDirectory, packId);
-		string indexPath = Path.Combine(packFolder, SoundPackIndex.FileName);
-		if (!File.Exists(indexPath))
+		if (!TryLoadIndex(packId, out SoundPackIndex? index))
 		{
 			_runtime.Log("Sound pack '{0}' has no index file.", packId);
 			return false;
 		}
 
-		SoundPackIndex index = SoundPackIndexJson.Load(indexPath);
 		if (!index.TryGetByName(soundName, out SoundPackIndexEntry? entry))
 		{
 			_runtime.Log("Sound pack '{0}' has no tune for sound '{1}'.", packId, soundName);
@@ -94,6 +92,53 @@ internal sealed class SoundPackPlaybackService
 		if (string.IsNullOrEmpty(entry.File)) return true;
 
 		return TryPlayTune(packId, entry);
+	}
+
+	/// <summary>
+	/// Looks up how long one pass of a tune takes, without starting playback.
+	/// </summary>
+	/// <remarks>
+	/// A rendered wave file is the real length, loop repeats and all. <see cref="SoundPackIndexEntry.TotalTicks"/>
+	/// only sums the note stream once, so for a tune with a repeated passage - such as the endlessly
+	/// looping title and evolution music - it is little more than a lower bound; it is used only
+	/// until the tune has been rendered at least once.
+	/// </remarks>
+	/// <param name="soundName">Name the game logic uses, e.g. <see cref="SoundNames.MusicEvolution"/>.</param>
+	/// <param name="packId">Id of the pack to look the tune up in.</param>
+	/// <param name="duration">The length of one pass, when it could be determined.</param>
+	/// <returns><c>true</c> when the duration is known.</returns>
+	public bool TryGetDuration(string soundName, string packId, out TimeSpan duration)
+	{
+		duration = TimeSpan.Zero;
+
+		if (!TryLoadIndex(packId, out SoundPackIndex? index)) return false;
+		if (!index.TryGetByName(soundName, out SoundPackIndexEntry? entry)) return false;
+
+		if (!string.IsNullOrEmpty(entry.File))
+		{
+			string packFolder = Path.Combine(Settings.Instance.SoundsDirectory, packId);
+			string? cached = _queue.TryGetCached(packFolder, entry.File, 0);
+			if (cached != null && _waveDuration.TryRead(cached, out duration)) return true;
+		}
+
+		if (entry.TotalTicks <= 0) return false;
+
+		duration = TimeSpan.FromSeconds(entry.TotalTicks * index.WorkerTickDivider / (double)index.FastTickHz);
+		return true;
+	}
+
+	private static bool TryLoadIndex(string packId, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out SoundPackIndex? index)
+	{
+		string packFolder = Path.Combine(Settings.Instance.SoundsDirectory, packId);
+		string indexPath = Path.Combine(packFolder, SoundPackIndex.FileName);
+		if (!File.Exists(indexPath))
+		{
+			index = null;
+			return false;
+		}
+
+		index = SoundPackIndexJson.Load(indexPath);
+		return true;
 	}
 
 	/// <summary>

@@ -1,3 +1,5 @@
+using System;
+
 namespace CivOne.Sound.Playback;
 
 /// <summary>
@@ -23,4 +25,8 @@ internal sealed class SoundPackPlaybackStrategy(
 		soundPackPlaybackService.CancelPending();
 		RuntimeHandler.Runtime.StopSound();
 	}
+
+	/// <inheritdoc/>
+	public bool TryGetDuration(string soundName, out TimeSpan duration)
+		=> soundPackPlaybackService.TryGetDuration(soundName, packId, out duration);
 }

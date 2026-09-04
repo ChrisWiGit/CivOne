@@ -23,4 +23,8 @@ internal sealed class AliasSoundPlaybackStrategy(ISoundPlaybackStrategy inner, I
 
     /// <inheritdoc/>
     public void Abort() => _inner.Abort();
+
+    /// <inheritdoc/>
+    public bool TryGetDuration(string soundName, out TimeSpan duration)
+        => _inner.TryGetDuration(_aliases.Resolve(soundName), out duration);
 }

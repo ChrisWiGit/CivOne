@@ -1,3 +1,5 @@
+using System;
+
 namespace CivOne.Sound.Playback;
 
 /// <summary>
@@ -24,5 +26,14 @@ internal sealed class WaveSoundPlaybackStrategy : ISoundPlaybackStrategy
 	public void Abort()
 	{
 		RuntimeHandler.Runtime.StopSound();
+	}
+
+	/// <summary>
+	/// Wave files carry no timing metadata here, so the duration is always unknown.
+	/// </summary>
+	public bool TryGetDuration(string soundName, out TimeSpan duration)
+	{
+		duration = TimeSpan.Zero;
+		return false;
 	}
 }

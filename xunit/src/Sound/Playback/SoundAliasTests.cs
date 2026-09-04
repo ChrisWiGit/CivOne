@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using CivOne.Sound;
 using CivOne.Sound.Playback;
@@ -27,6 +28,12 @@ namespace CivOne.UnitTests.Sound.Playback
             }
 
             public void Abort() => Aborts++;
+
+            public bool TryGetDuration(string soundName, out TimeSpan duration)
+            {
+                duration = TimeSpan.Zero;
+                return false;
+            }
         }
 
         /// <summary>
