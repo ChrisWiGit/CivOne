@@ -80,7 +80,6 @@ internal sealed class AsoundScoreExporter
                 TuneId = tuneId,
                 Title = CvlTuneCatalog.ResolveTitle(tuneId),
                 Kind = info.Kind,
-                EndlessLoop = CvlTuneCatalog.IsEndlessLoop(tuneId),
                 Diagnostic = info.Diagnostic,
                 Arrangements = BuildArrangements(parser, info)
             });

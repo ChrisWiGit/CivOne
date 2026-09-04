@@ -25,56 +25,56 @@ internal static class CvlTuneCatalog
 {
     private static readonly CvlTuneDefinition[] _tunes =
     [
-        new(3, SoundNames.MusicTitle, "Title Music", IsMusic: true, EndlessLoop: true),
-        new(4, SoundNames.MusicEvolution, "Evolution Music", IsMusic: true, EndlessLoop: true),
+        new(3, SoundNames.MusicTitle, "Title Music", IsMusic: true),
+        new(4, SoundNames.MusicEvolution, "Evolution Music", IsMusic: true),
 
-        new(5, SoundNames.LeaderLincoln, "Lincoln (Long)", IsMusic: true, EndlessLoop: false),
-        new(6, SoundNames.LeaderMontezuma, "Montezuma (Long)", IsMusic: true, EndlessLoop: false),
-        new(7, SoundNames.LeaderRamesses, "Ramesses (Long)", IsMusic: true, EndlessLoop: false),
-        new(8, SoundNames.LeaderShaka, "Shaka Zulu (Long)", IsMusic: true, EndlessLoop: false),
-        new(9, SoundNames.LeaderNapoleon, "Napoleon (Long)", IsMusic: true, EndlessLoop: false),
-        new(10, SoundNames.LeaderCaesar, "Caesar (Long)", IsMusic: true, EndlessLoop: false),
-        new(11, SoundNames.LeaderStalin, "Stalin (Long)", IsMusic: true, EndlessLoop: false),
-        new(12, SoundNames.LeaderAlexander, "Alexander the Great (Long)", IsMusic: true, EndlessLoop: false),
-        new(13, SoundNames.LeaderElizabeth, "Elizabeth (Long)", IsMusic: true, EndlessLoop: false),
-        new(14, SoundNames.LeaderHammurabi, "Hammurabi (Long)", IsMusic: true, EndlessLoop: false),
-        new(15, SoundNames.LeaderMao, "Mao (Long)", IsMusic: true, EndlessLoop: false),
-        new(16, SoundNames.LeaderGenghis, "Genghis Khan (Long)", IsMusic: true, EndlessLoop: false),
-        new(17, SoundNames.LeaderGandhi, "Gandhi (Long)", IsMusic: true, EndlessLoop: false),
-        new(18, SoundNames.LeaderFrederick, "Frederick (Long)", IsMusic: true, EndlessLoop: false),
+        new(5, SoundNames.LeaderLincoln, "Lincoln (Long)", IsMusic: true),
+        new(6, SoundNames.LeaderMontezuma, "Montezuma (Long)", IsMusic: true),
+        new(7, SoundNames.LeaderRamesses, "Ramesses (Long)", IsMusic: true),
+        new(8, SoundNames.LeaderShaka, "Shaka Zulu (Long)", IsMusic: true),
+        new(9, SoundNames.LeaderNapoleon, "Napoleon (Long)", IsMusic: true),
+        new(10, SoundNames.LeaderCaesar, "Caesar (Long)", IsMusic: true),
+        new(11, SoundNames.LeaderStalin, "Stalin (Long)", IsMusic: true),
+        new(12, SoundNames.LeaderAlexander, "Alexander the Great (Long)", IsMusic: true),
+        new(13, SoundNames.LeaderElizabeth, "Elizabeth (Long)", IsMusic: true),
+        new(14, SoundNames.LeaderHammurabi, "Hammurabi (Long)", IsMusic: true),
+        new(15, SoundNames.LeaderMao, "Mao (Long)", IsMusic: true),
+        new(16, SoundNames.LeaderGenghis, "Genghis Khan (Long)", IsMusic: true),
+        new(17, SoundNames.LeaderGandhi, "Gandhi (Long)", IsMusic: true),
+        new(18, SoundNames.LeaderFrederick, "Frederick (Long)", IsMusic: true),
 
-        new(19, SoundNames.LeaderLincolnShort, "Lincoln (Short)", IsMusic: true, EndlessLoop: false),
-        new(20, SoundNames.LeaderMontezumaShort, "Montezuma (Short)", IsMusic: true, EndlessLoop: false),
-        new(21, SoundNames.LeaderRamessesShort, "Ramesses (Short)", IsMusic: true, EndlessLoop: false),
-        new(22, SoundNames.LeaderShakaShort, "Shaka Zulu (Short)", IsMusic: true, EndlessLoop: false),
-        new(23, SoundNames.LeaderNapoleonShort, "Napoleon (Short)", IsMusic: true, EndlessLoop: false),
-        new(24, SoundNames.LeaderCaesarShort, "Caesar (Short)", IsMusic: true, EndlessLoop: false),
-        new(25, SoundNames.LeaderStalinShort, "Stalin (Short)", IsMusic: true, EndlessLoop: false),
-        new(26, SoundNames.LeaderAlexanderShort, "Alexander the Great (Short)", IsMusic: true, EndlessLoop: false),
-        new(27, SoundNames.LeaderElizabethShort, "Elizabeth (Short)", IsMusic: true, EndlessLoop: false),
-        new(28, SoundNames.LeaderHammurabiShort, "Hammurabi (Short)", IsMusic: true, EndlessLoop: false),
-        new(29, SoundNames.LeaderMaoShort, "Mao (Short)", IsMusic: true, EndlessLoop: false),
-        new(30, SoundNames.LeaderGenghisShort, "Genghis Khan (Short)", IsMusic: true, EndlessLoop: false),
-        new(31, SoundNames.LeaderGandhiShort, "Gandhi (Short)", IsMusic: true, EndlessLoop: false),
-        new(32, SoundNames.LeaderFrederickShort, "Frederick (Short)", IsMusic: true, EndlessLoop: false),
+        new(19, SoundNames.LeaderLincolnShort, "Lincoln (Short)", IsMusic: true),
+        new(20, SoundNames.LeaderMontezumaShort, "Montezuma (Short)", IsMusic: true),
+        new(21, SoundNames.LeaderRamessesShort, "Ramesses (Short)", IsMusic: true),
+        new(22, SoundNames.LeaderShakaShort, "Shaka Zulu (Short)", IsMusic: true),
+        new(23, SoundNames.LeaderNapoleonShort, "Napoleon (Short)", IsMusic: true),
+        new(24, SoundNames.LeaderCaesarShort, "Caesar (Short)", IsMusic: true),
+        new(25, SoundNames.LeaderStalinShort, "Stalin (Short)", IsMusic: true),
+        new(26, SoundNames.LeaderAlexanderShort, "Alexander the Great (Short)", IsMusic: true),
+        new(27, SoundNames.LeaderElizabethShort, "Elizabeth (Short)", IsMusic: true),
+        new(28, SoundNames.LeaderHammurabiShort, "Hammurabi (Short)", IsMusic: true),
+        new(29, SoundNames.LeaderMaoShort, "Mao (Short)", IsMusic: true),
+        new(30, SoundNames.LeaderGenghisShort, "Genghis Khan (Short)", IsMusic: true),
+        new(31, SoundNames.LeaderGandhiShort, "Gandhi (Short)", IsMusic: true),
+        new(32, SoundNames.LeaderFrederickShort, "Frederick (Short)", IsMusic: true),
 
-        new(33, SoundNames.EventAudience, "Foreign Leader Audience Sting", IsMusic: true, EndlessLoop: false),
-        new(34, SoundNames.MusicWin, "Win Music", IsMusic: true, EndlessLoop: false),
-        new(35, SoundNames.MusicLose, "Lose Music", IsMusic: true, EndlessLoop: false),
-        new(36, SoundNames.EventAlarm, "Alarm - Barbarian Theme", IsMusic: true, EndlessLoop: false),
+        new(33, SoundNames.EventAudience, "Foreign Leader Audience Sting", IsMusic: true),
+        new(34, SoundNames.MusicWin, "Win Music", IsMusic: true),
+        new(35, SoundNames.MusicLose, "Lose Music", IsMusic: true),
+        new(36, SoundNames.EventAlarm, "Alarm - Barbarian Theme", IsMusic: true),
 
         // The only call site is the error message beep. The same tune may well be the original's
         // "unit arrived" cue, which CivOne has no trigger for yet.
-        new(37, SoundNames.UiBeep, "Beep", IsMusic: false, EndlessLoop: false),
+        new(37, SoundNames.UiBeep, "Beep", IsMusic: false),
 
-        new(38, SoundNames.CombatWinWeak, "Combat Win (Weak Unit)", IsMusic: false, EndlessLoop: false),
-        new(39, SoundNames.CombatLossWeak, "Combat Loss (Weak Unit)", IsMusic: false, EndlessLoop: false),
-        new(40, SoundNames.CombatWinStrong, "Combat Win (Strong Unit)", IsMusic: false, EndlessLoop: false),
-        new(41, SoundNames.CombatLossStrong, "Combat Loss (Strong Unit)", IsMusic: false, EndlessLoop: false),
+        new(38, SoundNames.CombatWinWeak, "Combat Win (Weak Unit)", IsMusic: false),
+        new(39, SoundNames.CombatLossWeak, "Combat Loss (Weak Unit)", IsMusic: false),
+        new(40, SoundNames.CombatWinStrong, "Combat Win (Strong Unit)", IsMusic: false),
+        new(41, SoundNames.CombatLossStrong, "Combat Loss (Strong Unit)", IsMusic: false),
 
-        new(42, SoundNames.EventNuclearBlast, "Nuclear Blast", IsMusic: false, EndlessLoop: false),
-        new(43, SoundNames.CombatAirStrike, "Air Strike", IsMusic: false, EndlessLoop: false),
-        new(44, SoundNames.EventCityViewOpened, "City View Opened", IsMusic: false, EndlessLoop: false)
+        new(42, SoundNames.EventNuclearBlast, "Nuclear Blast", IsMusic: false),
+        new(43, SoundNames.CombatAirStrike, "Air Strike", IsMusic: false),
+        new(44, SoundNames.EventCityViewOpened, "City View Opened", IsMusic: false)
     ];
 
     /// <summary>
@@ -155,11 +155,6 @@ internal static class CvlTuneCatalog
     /// <param name="tuneId">The tune number to check.</param>
     /// <returns><c>true</c> when the tune is classified as music.</returns>
     public static bool IsNamedTune(int tuneId) => Find(tuneId)?.IsMusic ?? false;
-
-    /// <summary>Gets whether the tune repeats indefinitely in the original.</summary>
-    /// <param name="tuneId">The tune number to check.</param>
-    /// <returns><c>true</c> for the title and evolution music.</returns>
-    public static bool IsEndlessLoop(int tuneId) => Find(tuneId)?.EndlessLoop ?? false;
 
     /// <summary>Every tune number the host may ask a driver for.</summary>
     public static IEnumerable<int> PlayableTuneIds

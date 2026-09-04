@@ -89,20 +89,5 @@ namespace CivOne.UnitTests.Sound.Cvl
                 [SoundNames.MusicTitle, SoundNames.MusicEvolution, SoundNames.MusicWin, SoundNames.MusicLose],
                 CvlTuneCatalog.WarmUpOrder.Take(4));
         }
-
-        /// <summary>
-        /// Only the title and evolution music repeat; everything else has to end on its own.
-        /// </summary>
-        [Fact]
-        public void OnlyTheTitleAndEvolutionMusicLoop()
-        {
-            Assert.True(CvlTuneCatalog.IsEndlessLoop(3));
-            Assert.True(CvlTuneCatalog.IsEndlessLoop(4));
-
-            foreach (CvlTuneDefinition tune in CvlTuneCatalog.Tunes.Where(t => t.TuneId is not (3 or 4)))
-            {
-                Assert.False(tune.EndlessLoop, $"Tune {tune.TuneId} should not loop.");
-            }
-        }
     }
 }

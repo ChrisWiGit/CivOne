@@ -33,7 +33,6 @@ namespace CivOne.UnitTests.Sound.Cvl.Ibm
             var music = tunes.Single(t => t.TuneId == FakeIsoundModule.TuneMusicA);
             Assert.Equal("Title Music", music.Title);
             Assert.Equal(TuneScoreKind.Music, music.Kind);
-            Assert.True(music.EndlessLoop);
             Assert.Equal(3, music.Steps.Count);
             Assert.Equal(54, music.TotalTicks);
             Assert.Equal(SoundPackIndex.CurrentSchemaVersion, music.SchemaVersion);

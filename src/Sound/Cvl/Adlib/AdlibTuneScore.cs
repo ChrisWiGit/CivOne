@@ -23,9 +23,6 @@ internal sealed class AdlibTuneScore
     /// <summary>Gets or sets how the driver realizes this tune.</summary>
     public TuneScoreKind Kind { get; set; }
 
-    /// <summary>Gets or sets whether the tune repeats instead of ending after its last event.</summary>
-    public bool EndlessLoop { get; set; }
-
     /// <summary>
     /// Gets or sets a note about anything in the handler that could not be reproduced, or <c>null</c>.
     /// </summary>

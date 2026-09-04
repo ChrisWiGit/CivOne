@@ -53,7 +53,6 @@ internal sealed class AsoundCvlConverter : CvlSoundConverterBase
                 Name = CvlTuneCatalog.ResolveName(tune.TuneId),
                 Title = tune.Title,
                 Kind = tune.Kind,
-                EndlessLoop = tune.EndlessLoop,
                 StepCount = tune.EventCount,
                 TotalTicks = tune.TotalTicks,
                 ArrangementCount = tune.Arrangements.Count,

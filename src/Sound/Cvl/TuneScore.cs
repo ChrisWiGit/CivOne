@@ -34,11 +34,6 @@ internal sealed class TuneScore
     public TuneScoreKind Kind { get; set; }
 
     /// <summary>
-    /// Gets or sets whether the tune loops indefinitely instead of ending after its last step.
-    /// </summary>
-    public bool EndlessLoop { get; set; }
-
-    /// <summary>
     /// Data-segment offset of the sequence in the source file (kept only for traceability).
     /// </summary>
     public int SourceOffset { get; set; }

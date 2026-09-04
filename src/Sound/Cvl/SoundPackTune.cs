@@ -21,9 +21,6 @@ internal sealed class SoundPackTune
     /// <summary>Gets how the driver realizes this tune.</summary>
     public TuneScoreKind Kind { get; init; }
 
-    /// <summary>Gets whether the tune is meant to repeat instead of ending.</summary>
-    public bool EndlessLoop { get; init; }
-
     /// <summary>Gets the number of notes or events, for the index only.</summary>
     public int StepCount { get; init; }
 

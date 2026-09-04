@@ -8,5 +8,4 @@ namespace CivOne.Sound.Cvl;
 /// <param name="Name">Name from <see cref="SoundNames"/> that plays this tune.</param>
 /// <param name="Title">English display title, shown in the sound test.</param>
 /// <param name="IsMusic">Whether this is a music piece rather than a short sound effect.</param>
-/// <param name="EndlessLoop">Whether the tune repeats instead of ending.</param>
-internal sealed record CvlTuneDefinition(int TuneId, string Name, string Title, bool IsMusic, bool EndlessLoop);
+internal sealed record CvlTuneDefinition(int TuneId, string Name, string Title, bool IsMusic);

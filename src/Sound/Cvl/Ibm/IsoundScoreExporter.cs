@@ -52,7 +52,6 @@ internal static class IsoundScoreExporter
                 TuneId = tuneId,
                 Title = CvlTuneCatalog.ResolveTitle(tuneId),
                 Kind = info.Kind,
-                EndlessLoop = CvlTuneCatalog.IsEndlessLoop(tuneId),
                 SourceOffset = info.DataOffset,
                 Steps = info.Steps
             });
