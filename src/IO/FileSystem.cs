@@ -68,9 +68,9 @@ namespace CivOne.IO
 		}
 
 		/// <summary>
-		/// Wandelt die CVL-Soundtreiber des Originalspiels einmalig in eigene Notendaten um.
-		/// Sie landen als *.sound.json je Tune unter sounds/&lt;pack&gt;/; die CVL-Dateien selbst
-		/// werden nicht ins Profil kopiert und danach nicht mehr gebraucht.
+		/// Converts the original game's CVL sound drivers once into note data.
+		/// The output is stored as *.sound.json per tune under sounds/&lt;pack&gt;/.
+		/// The CVL files themselves are not copied into the profile and are not needed afterwards.
 		/// </summary>
 		public static bool ConvertSoundDrivers(string folder)
 		{

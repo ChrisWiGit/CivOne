@@ -27,9 +27,20 @@ internal sealed class WaveFileDurationDelegate
         duration = TimeSpan.Zero;
 
         Span<byte> header = stackalloc byte[HeaderSize];
-        using (FileStream stream = File.OpenRead(path))
+        try
         {
-            if (stream.Read(header) < HeaderSize) return false;
+            using (FileStream stream = File.OpenRead(path))
+            {
+                if (stream.Read(header) < HeaderSize) return false;
+            }
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
         }
 
         short channels = BinaryPrimitives.ReadInt16LittleEndian(header[ChannelsOffset..]);

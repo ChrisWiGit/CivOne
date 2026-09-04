@@ -333,8 +333,7 @@ namespace CivOne.Screens.Reports
 		{
 			if (Settings.Sound == GameOption.Off) return;
 
-			_startedSound = true;
-			_ = SoundPlaybackStrategyProvider.Current.PlaySound(SoundNames.MusicWin);
+			_startedSound = SoundPlaybackStrategyProvider.Current.PlaySound(SoundNames.MusicWin);
 		}
 
 		/// <summary>

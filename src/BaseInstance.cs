@@ -35,13 +35,13 @@ namespace CivOne
 		protected static ILogger Logger => new RuntimeLogger();
 
 		protected internal static void Log(string text, params object[] parameters) => Runtime.Log(text, parameters);
-		protected static void PlaySound(string? filename)
+		protected static void PlaySound(string? soundName)
 		{
-			if (string.IsNullOrEmpty(filename)) return;
+			if (string.IsNullOrEmpty(soundName)) return;
 			if (!Game.Started || !Game.Sound) return;
 			if (Settings.Sound == GameOption.Off) return;
 
-			_ = SoundPlaybackStrategyProvider.Current.PlaySound(filename);
+			_ = SoundPlaybackStrategyProvider.Current.PlaySound(soundName);
 		}
 
 		protected bool GFX256 => Settings.GraphicsMode == GraphicsMode.Graphics256;

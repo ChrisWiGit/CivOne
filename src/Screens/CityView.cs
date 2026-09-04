@@ -201,8 +201,10 @@ namespace CivOne.Screens
 		/// <param name="soundName">Name of the sound to play.</param>
 		private void PlayScreenSound(string soundName)
 		{
-			_startedSound = true;
-			PlaySound(soundName);
+			if (!Game.Started || !Game.Sound) return;
+			if (Settings.Sound == GameOption.Off) return;
+
+			_startedSound = SoundPlaybackStrategyProvider.Current.PlaySound(soundName);
 		}
 
 		/// <summary>
