@@ -44,8 +44,10 @@ namespace CivOne.UserInterface
 			if (Selected == null) return;
 
 			// Using a menu entry commits to whatever it leads to, so any sound still playing from
-			// the screen being left behind must not carry on underneath it.
-			SoundPlaybackStrategyProvider.Current.Abort();
+			// the screen being left behind must not carry on underneath it. Going through the
+			// provider rather than through its Current strategy keeps this to stopping sound: a
+			// menu click must not be what sets sound playback up in the first place.
+			SoundPlaybackStrategyProvider.Abort();
 
 			Selected(this, _args);
 		}

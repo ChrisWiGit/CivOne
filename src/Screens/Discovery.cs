@@ -70,7 +70,7 @@ namespace CivOne.Screens
 
 		protected override void Destroy()
 		{
-			SoundPlaybackStrategyProvider.Current.Abort();
+			SoundPlaybackStrategyProvider.Abort();
 			base.Destroy();
 		}
 		

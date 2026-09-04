@@ -408,7 +408,7 @@ namespace CivOne
 			}
 			if (Settings.Sound == GameOption.Off)
 			{
-				SoundPlaybackStrategyProvider.Current.Abort();
+				SoundPlaybackStrategyProvider.Abort();
 			}
 
 			ShowNotification(Settings.Sound == GameOption.Off ? "Sound off" : "Sound on");

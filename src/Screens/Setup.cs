@@ -552,7 +552,7 @@ namespace CivOne.Screens
 
 		private void StopTestSoundAndReturn(object sender, MenuItemEventArgs<int> args)
 		{
-			SoundPlaybackStrategyProvider.Current.Abort();
+			SoundPlaybackStrategyProvider.Abort();
 			ClearPlayingTestTune();
 			_soundTestMessage = Translate("Test sound stopped.");
 			Log(_soundTestMessage);
@@ -564,7 +564,7 @@ namespace CivOne.Screens
 		{
 			if (IsPlayingTestTune(packId, tune))
 			{
-				SoundPlaybackStrategyProvider.Current.Abort();
+				SoundPlaybackStrategyProvider.Abort();
 				ClearPlayingTestTune();
 				_soundTestMessage = TranslateFormatted("Test tune stopped: {0}", tune.Title);
 				Log(_soundTestMessage);
@@ -573,7 +573,7 @@ namespace CivOne.Screens
 				return;
 			}
 
-			SoundPlaybackStrategyProvider.Current.Abort();
+			SoundPlaybackStrategyProvider.Abort();
 
 			// A pack tune is started directly so the test plays that pack even when the game is set
 			// to something else; everything the pack does not carry goes the normal way, which is
@@ -739,7 +739,7 @@ namespace CivOne.Screens
 			Settings.SoundPack = packId ?? string.Empty;
 			if (Settings.Sound == GameOption.Off)
 			{
-				SoundPlaybackStrategyProvider.Current.Abort();
+				SoundPlaybackStrategyProvider.Abort();
 			}
 
 			// Also covers picking the pack that was already selected, which changes no setting and

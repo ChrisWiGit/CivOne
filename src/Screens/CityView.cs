@@ -219,7 +219,7 @@ namespace CivOne.Screens
 			if (_startedSound)
 			{
 				_startedSound = false;
-				SoundPlaybackStrategyProvider.Current.Abort();
+				SoundPlaybackStrategyProvider.Abort();
 			}
 
 			base.Destroy();

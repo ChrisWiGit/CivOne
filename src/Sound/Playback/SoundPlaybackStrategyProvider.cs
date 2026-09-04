@@ -43,6 +43,34 @@ internal static class SoundPlaybackStrategyProvider
 		}
 	}
 
+	/// <summary>
+	/// Stops what is playing and drops a sound that has not started yet.
+	/// </summary>
+	/// <remarks>
+	/// Use this instead of <c>Current.Abort()</c> whenever the only goal is silence. Reading
+	/// <see cref="Current"/> puts a strategy in place when there is none yet, which resolves the
+	/// setting, builds the playback service - and therefore needs a registered runtime - and starts
+	/// rendering the pack in the background. None of that belongs in a call that is meant to silence
+	/// sound. Nothing can be playing while no strategy has been handed out, so there is nothing to
+	/// stop in that case.
+	/// </remarks>
+	public static void Abort()
+	{
+		if (_activeStrategy != null)
+		{
+			_activeStrategy.Abort();
+			return;
+		}
+
+		// A tune started through PlayTune goes past the strategies, so the service can be busy even
+		// though none has been handed out yet. It only exists once something has used it, so this
+		// still creates nothing.
+		if (_soundPackPlaybackService == null) return;
+
+		_soundPackPlaybackService.CancelPending();
+		RuntimeHandler.Runtime.StopSound();
+	}
+
 	public static bool PlayTune(string packId, SoundPackIndexEntry entry)
 	{
 		return SoundPackPlaybackService.TryPlayTune(packId, entry);

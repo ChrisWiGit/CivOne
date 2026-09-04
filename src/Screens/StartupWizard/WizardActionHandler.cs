@@ -346,7 +346,7 @@ namespace CivOne.Screens.StartupWizard
 			string soundPackId = state.SoundPackId;
 			bool isWave = string.Equals(soundPackId, SoundPlaybackStrategyConstants.WaveSoundPack, StringComparison.OrdinalIgnoreCase);
 
-			SoundPlaybackStrategyProvider.Current.Abort();
+			SoundPlaybackStrategyProvider.Abort();
 
 			if (isWave)
 			{
@@ -380,7 +380,7 @@ namespace CivOne.Screens.StartupWizard
 				return;
 			}
 
-			SoundPlaybackStrategyProvider.Current.Abort();
+			SoundPlaybackStrategyProvider.Abort();
 			state.IsTestSoundPlaying = false;
 		}
 

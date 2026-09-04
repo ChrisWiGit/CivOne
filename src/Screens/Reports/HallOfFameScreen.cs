@@ -348,7 +348,7 @@ namespace CivOne.Screens.Reports
 			if (_startedSound)
 			{
 				_startedSound = false;
-				SoundPlaybackStrategyProvider.Current.Abort();
+				SoundPlaybackStrategyProvider.Abort();
 			}
 
 			base.Destroy();
