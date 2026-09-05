@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using CivOne.Enums;
+using CivOne.Sound.Playback;
 
 namespace CivOne.Screens.StartupWizard
 {
@@ -21,8 +22,10 @@ namespace CivOne.Screens.StartupWizard
 	internal sealed class WizardState(string? selectedLanguagePostfix)
 	{
 		public const int GamePatchesPageIndex = 99;
+		public const int SoundPackPageIndex = 98;
 		private const int LastPageIndex = 6;
 		private int _gamePatchesReturnPageIndex = -1;
+		private int _soundPackReturnPageIndex = -1;
 
 		/// <summary>
 		/// Gets the zero-based index of the currently active wizard page.
@@ -84,6 +87,21 @@ namespace CivOne.Screens.StartupWizard
 		/// Refreshed together with <see cref="SoundFilesAvailable"/>.
 		/// </remarks>
 		public string[] MissingSoundFiles { get; set; } = [];
+
+		/// <summary>
+		/// Gets or sets the selected sound source: empty for auto, a sound pack identifier,
+		/// or one of <see cref="SoundPlaybackStrategyConstants.WaveSoundPack"/> /
+		/// <see cref="SoundPlaybackStrategyConstants.NoSoundPack"/>.
+		/// </summary>
+		/// <remarks>
+		/// Initialised from <see cref="Settings.Instance"/> and persisted back when changed.
+		/// </remarks>
+		public string SoundPackId { get; set; } = SoundPlaybackStrategyProvider.SelectedPack;
+
+		/// <summary>
+		/// Gets or sets whether the quick sound-pack test tune is currently playing.
+		/// </summary>
+		public bool IsTestSoundPlaying { get; set; }
 
 		/// <summary>
 		/// Gets or sets whether the in-game debug menu is enabled.
@@ -200,6 +218,31 @@ namespace CivOne.Screens.StartupWizard
 
 			PageIndex = _gamePatchesReturnPageIndex;
 			_gamePatchesReturnPageIndex = -1;
+			return true;
+		}
+
+		/// <summary>
+		/// Opens the temporary sound-pack selection page and remembers the previous page index.
+		/// </summary>
+		public void OpenSoundPackPage()
+		{
+			_soundPackReturnPageIndex = PageIndex;
+			SoundPackId = SoundPlaybackStrategyProvider.SelectedPack;
+			PageIndex = SoundPackPageIndex;
+		}
+
+		/// <summary>
+		/// Returns from the temporary sound-pack selection page to the page that opened it.
+		/// </summary>
+		public bool CloseSoundPackPage()
+		{
+			if (_soundPackReturnPageIndex < 0)
+			{
+				return false;
+			}
+
+			PageIndex = _soundPackReturnPageIndex;
+			_soundPackReturnPageIndex = -1;
 			return true;
 		}
 	}

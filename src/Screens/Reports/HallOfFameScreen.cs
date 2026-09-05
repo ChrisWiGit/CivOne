@@ -14,6 +14,8 @@ using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Services;
 using CivOne.Services.HallOfFame;
+using CivOne.Sound;
+using CivOne.Sound.Playback;
 
 namespace CivOne.Screens.Reports
 {
@@ -35,7 +37,7 @@ namespace CivOne.Screens.Reports
 				log: LogInfo);
 			IReadOnlyList<HallOfFameEntry> entries = persistService.ViewEntries(GetStorageDirectory(), LogInfo);
 
-			return new HallOfFameScreen(entries, displayDataService, commandService, allowClear: false);
+			return new HallOfFameScreen(entries, displayDataService, commandService, allowClear: false, initialInputDelayMs: 0);
 		}
 
 		public static HallOfFameScreen AddScore()
@@ -93,7 +95,15 @@ namespace CivOne.Screens.Reports
 		private const int LayoutHeight = 200;
 
 		private const int MaxRows = 5;
-		private const int InitialInputDelayMs = 1200;
+
+		/// <summary>
+		/// Time in milliseconds during which input is ignored after the screen opened.
+		/// </summary>
+		/// <remarks>
+		/// Used when the screen appears on its own at the end of a game, so a key press meant for the
+		/// previous screen does not close it right away.
+		/// </remarks>
+		public const int DefaultInitialInputDelayMs = 1200;
 
 		private const byte HeaderFontId = 4;
 		private const byte HeaderColor = 5;
@@ -126,7 +136,10 @@ namespace CivOne.Screens.Reports
 		private IReadOnlyList<HallOfFameDisplayRow> _rows;
 
 		private bool _update = true;
-		private readonly long _ignoreInputUntil = Environment.TickCount64 + InitialInputDelayMs;
+
+		/// <summary>Whether this screen started the win music, and therefore has to end it again.</summary>
+		private bool _startedSound;
+		private readonly long _ignoreInputUntil;
 
 		private int OffsetX => Math.Max(0, (Width - LayoutWidth) / 2);
 		private int OffsetY => Math.Max(0, (Height - LayoutHeight) / 2);
@@ -280,18 +293,65 @@ namespace CivOne.Screens.Reports
 			return (Width - FooterButtonWidth - BorderTileSize - 1, Height - FooterButtonHeight - BorderTileSize - 1);
 		}
 
-		public HallOfFameScreen(IReadOnlyList<HallOfFameEntry> entries, IHallOfFameDisplayDataService displayDataService, IHallOfFameCommandService commandService, bool allowClear = true) : this(entries, displayDataService, commandService, MouseCursor.Pointer, allowClear)
+		/// <summary>
+		/// Creates the screen for the given entries.
+		/// </summary>
+		/// <param name="entries">The Hall of Fame entries to display.</param>
+		/// <param name="displayDataService">Service that turns entries into display rows.</param>
+		/// <param name="commandService">Service used to clear the Hall of Fame.</param>
+		/// <param name="allowClear">Whether the screen offers the clear action.</param>
+		/// <param name="initialInputDelayMs">
+		/// Time in milliseconds during which input is ignored after the screen opened.
+		/// Pass <c>0</c> when the user opened the screen deliberately, so the first key press closes it.
+		/// </param>
+		public HallOfFameScreen(IReadOnlyList<HallOfFameEntry> entries, IHallOfFameDisplayDataService displayDataService, IHallOfFameCommandService commandService, bool allowClear = true, int initialInputDelayMs = DefaultInitialInputDelayMs) : this(entries, displayDataService, commandService, MouseCursor.Pointer, allowClear, initialInputDelayMs)
 		{
 		}
 
-		private HallOfFameScreen(IReadOnlyList<HallOfFameEntry> entries, IHallOfFameDisplayDataService displayDataService, IHallOfFameCommandService commandService, MouseCursor cursor, bool allowClear) : base(cursor)
+		private HallOfFameScreen(IReadOnlyList<HallOfFameEntry> entries, IHallOfFameDisplayDataService displayDataService, IHallOfFameCommandService commandService, MouseCursor cursor, bool allowClear, int initialInputDelayMs) : base(cursor)
 		{
 			_displayDataService = displayDataService ?? throw new ArgumentNullException(nameof(displayDataService));
 			_commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
 			_allowClear = allowClear;
+			_ignoreInputUntil = Environment.TickCount64 + Math.Max(0, initialInputDelayMs);
 			_rows = _displayDataService.BuildRows(entries ?? [], MaxRows);
 			Palette = Common.DefaultPalette;
 			Refresh();
+
+			PlayHallOfFameMusic();
+		}
+
+		/// <summary>
+		/// Plays the win music the original uses for this screen.
+		/// </summary>
+		/// <remarks>
+		/// The screen is also reachable from the main menu, where no game is running yet, so
+		/// <see cref="BaseInstance.PlaySound"/> would swallow the sound. The sound setting is checked
+		/// here instead, which is the only part of that gate that still applies.
+		/// </remarks>
+		private void PlayHallOfFameMusic()
+		{
+			if (Settings.Sound == GameOption.Off) return;
+
+			_startedSound = SoundPlaybackStrategyProvider.Current.PlaySound(SoundNames.MusicWin);
+		}
+
+		/// <summary>
+		/// Ends the screen, and with it the music it started.
+		/// </summary>
+		/// <remarks>
+		/// The win music runs far longer than a look at the Hall of Fame, and would otherwise keep
+		/// playing over the menu or the game behind it.
+		/// </remarks>
+		protected override void Destroy()
+		{
+			if (_startedSound)
+			{
+				_startedSound = false;
+				SoundPlaybackStrategyProvider.Abort();
+			}
+
+			base.Destroy();
 		}
 	}
 }

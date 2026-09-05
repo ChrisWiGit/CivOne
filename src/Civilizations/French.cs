@@ -10,12 +10,13 @@
 using CivOne.Enums;
 using CivOne.Leaders;
 using CivOne.Services;
+using CivOne.Sound;
 
 namespace CivOne.Civilizations
 {
 	internal class French : BaseCivilization<Napoleon>
 	{
-		public French() : base(Civilization.French, TranslationServiceFactory.GetCurrent().Translate("French"), TranslationServiceFactory.GetCurrent().Translate("French"), "napo")
+		public French() : base(Civilization.French, TranslationServiceFactory.GetCurrent().Translate("French"), TranslationServiceFactory.GetCurrent().Translate("French"), SoundNames.LeaderNapoleon)
 		{
 			StartX = 33;
 			StartY = 16;

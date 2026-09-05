@@ -16,6 +16,8 @@ using CivOne.Events;
 using CivOne.Governments;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
+using CivOne.Sound;
+using CivOne.Sound.Playback;
 using CivOne.Wonders;
 
 using UniversityBuilding = CivOne.Buildings.University;
@@ -41,6 +43,9 @@ namespace CivOne.Screens
 		private readonly bool _captured;
 		private readonly bool _disorder;
 		private readonly bool _weLovePresidentDay;
+
+		/// <summary>Whether this screen asked for a sound, and therefore has to end it again.</summary>
+		private bool _startedSound;
 		private readonly byte[,]? _noiseMap;
 		
 		private int _noiseCounter = NOISE_COUNT + 15;
@@ -188,6 +193,36 @@ namespace CivOne.Screens
 				_update = false;
 			}
 			return true;
+		}
+
+		/// <summary>
+		/// Starts a sound and remembers that this screen owns it.
+		/// </summary>
+		/// <param name="soundName">Name of the sound to play.</param>
+		private void PlayScreenSound(string soundName)
+		{
+			if (!Game.Started || !Game.Sound) return;
+			if (Settings.Sound == GameOption.Off) return;
+
+			_startedSound = SoundPlaybackStrategyProvider.Current.PlaySound(soundName);
+		}
+
+		/// <summary>
+		/// Ends the screen, and with it the sound it started.
+		/// </summary>
+		/// <remarks>
+		/// The win music of a celebration or a founding runs far longer than the screen does, and
+		/// would otherwise keep playing underneath whatever comes next.
+		/// </remarks>
+		protected override void Destroy()
+		{
+			if (_startedSound)
+			{
+				_startedSound = false;
+				SoundPlaybackStrategyProvider.Abort();
+			}
+
+			base.Destroy();
 		}
 
 		protected override void Resize(int width, int height)
@@ -916,9 +951,18 @@ namespace CivOne.Screens
 			return new CityView(city, weLovePresidentDay: true);
 		}
 		
-		public static CityView FoundCityWithAnimation(City city)
+		/// <summary>
+		/// Creates the animated screen shown when a city is founded.
+		/// </summary>
+		/// <param name="city">The city that was founded.</param>
+		/// <param name="playFoundingMusic">
+		/// Whether this founding is the one that establishes the civilization, which the original
+		/// marks with its win music.
+		/// </param>
+		/// <returns>The screen.</returns>
+		public static CityView FoundCityWithAnimation(City city, bool playFoundingMusic = false)
 		{
-			return new CityView(city, showFoundedScreen: true);
+			return new CityView(city, showFoundedScreen: true, playFoundingMusic: playFoundingMusic);
 		}
 
 		public static CityView FoundCity(City city)
@@ -926,7 +970,7 @@ namespace CivOne.Screens
 			return new CityView(city);
 		}
 
-		public CityView(City city, string[]? message = null, bool showFoundedScreen = false, bool firstView = false, IProduction? production = null, bool captured = false, bool disorder = false, bool weLovePresidentDay = false)
+		public CityView(City city, string[]? message = null, bool showFoundedScreen = false, bool firstView = false, IProduction? production = null, bool captured = false, bool disorder = false, bool weLovePresidentDay = false, bool playFoundingMusic = false)
 		{
 			_dialogText = TextSettings.ShadowText(15, 5);
 			_dialogText.FontId = 5;
@@ -941,7 +985,11 @@ namespace CivOne.Screens
 			Palette = _background.Palette;
 			_overlay = new Picture(_background);
 
-			if (showFoundedScreen) return;
+			if (showFoundedScreen)
+			{
+				if (playFoundingMusic) PlayScreenSound(SoundNames.MusicWin);
+				return;
+			}
 
 			DrawBuildings();
 			RenderBase();
@@ -1081,6 +1129,17 @@ namespace CivOne.Screens
 				_fadeStep = 0.0f;
 				FadeColours();
 				return;
+			}
+
+			// The celebration gets the original's win music, a city view opened plainly its short
+			// flourish. Disorder stays quiet here: the alarm for it is played from City.Update.
+			if (weLovePresidentDay)
+			{
+				PlayScreenSound(SoundNames.MusicWin);
+			}
+			else if (!disorder)
+			{
+				PlayScreenSound(SoundNames.EventCityViewOpened);
 			}
 
 			int i = 0;

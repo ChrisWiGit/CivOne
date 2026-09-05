@@ -24,6 +24,8 @@ using CivOne.Screens.Reports;
 using CivOne.Services;
 using CivOne.Services.Maps;
 using CivOne.Services.Random;
+using CivOne.Sound;
+using CivOne.Sound.Playback;
 using CivOne.Tasks;
 using CivOne.UserInterface;
 
@@ -70,6 +72,7 @@ namespace CivOne.Screens
 		private IScreen? _nextScreen;
 
 		private readonly MenuBarHotkeyDelegate _hotkeyDelegate = new();
+		private readonly WorldGenerationMusicDelegate _generationMusic = new();
 		private Dictionary<char, Action<object, EventArgs>>? _shortKeyMapping;
 		private Action<object, EventArgs>? _shortCutAction;
 		private int _mouseX = -1;
@@ -313,7 +316,9 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 		public bool SkipIntro()
 		{
 			if (_introSkipped || _noiseCounter < NOISE_COUNT) return false;
-			
+
+			// The title theme keeps playing underneath the credits menu; it is only stopped once
+			// the player actually leaves this screen (e.g. StartNewGame, LoadSavedGame).
 			_showIntroLine = false;
 			_introLeft = -320;
 			_logoSwipe = 320;
@@ -399,13 +404,13 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 			foreach (IMenu menu in Menus)
 				this.AddLayer(menu);
 			CloseMenus();
-			if (!Runtime.Settings.ShowIntro)
+			if (Runtime.Settings.ShowIntro)
 			{
-				_nextScreen = new NewGame();
+				_nextScreen = new Intro();
 			}
 			else
 			{
-				_nextScreen = new Intro();
+				_nextScreen = new NewGame();
 			}
 		}
 		
@@ -414,6 +419,7 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 			Log("Main Menu: Start a New Game");
 			Map.UseDefaultMapSize();
 			Map.Generate();
+			_generationMusic.Start();
 			StartIntro();
 		}
 		
@@ -596,12 +602,8 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 
 			if (Settings.Sound != GameOption.Off)
 			{
-				var opening = Extensions.GetSoundFile("OPENING");
 				// In this stage using Game.PlaySound() is not possible, as the Game instance is not yet created.
-				if (opening != null)
-				{
-					Runtime.PlaySound(opening);
-				}
+				SoundPlaybackStrategyProvider.Current.PlaySound(SoundNames.MusicTitle);
 			}
 
 			if (!Runtime.Settings.ShowCredits) SkipIntro();

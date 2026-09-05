@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CivOne.Screens.Dialogs;
+using CivOne.Sound.Cvl;
+using CivOne.Sound.Playback;
 
 namespace CivOne.IO
 {
@@ -60,28 +62,34 @@ namespace CivOne.IO
 				return false;
 			}
 			Log("- Done, all copied");
+
+			ConvertSoundDrivers(folder);
 			return true;
 		}
 
-		public static bool SoundFilesExist(params string[] files)
+		/// <summary>
+		/// Converts the original game's CVL sound drivers once into note data.
+		/// The output is stored as *.sound.json per tune under sounds/&lt;pack&gt;/.
+		/// The CVL files themselves are not copied into the profile and are not needed afterwards.
+		/// </summary>
+		public static bool ConvertSoundDrivers(string folder)
 		{
-			Log("Checking sound files...");
-			if (files.Length == 0) files = SOUND_FILES;
-			if (!Directory.Exists(Settings.Instance.SoundsDirectory))
-			{
-				Log("Target sound directory does not exist: {0}", Settings.Instance.SoundsDirectory);
-				return false;
-			}
-			HashSet<string> existingFiles = EnumerateFileNames(Settings.Instance.SoundsDirectory);
-			foreach (string filename in files)
-			{
-				if (existingFiles.Contains(filename)) continue;
+			Log("Converting CVL sound drivers from {0}...", folder);
 
-				Log("- File not found: {0}", filename);
-				return false;
+			CvlConversionReport report = new CvlSoundConversionService().ConvertFolder(folder, Settings.Instance.SoundsDirectory);
+			foreach (string message in report.Messages)
+			{
+				Log("- {0}", message);
 			}
-			Log("- Done, all files exist");
-			return true;
+
+			if (!report.AnyConverted) Log("- No sound driver converted");
+
+			// The converted note data still has to be turned into audio. Starting that here means it
+			// runs while the player is still working through the setup, instead of when the first
+			// tune is due.
+			if (report.AnyConverted) SoundPlaybackStrategyProvider.WarmUp();
+
+			return report.AnyConverted;
 		}
 
 		public static bool CopySoundFiles(string folder)

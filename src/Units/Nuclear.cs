@@ -11,6 +11,7 @@ using System;
 using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Enums;
+using CivOne.Sound;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Wonders;
@@ -57,7 +58,7 @@ namespace CivOne.Units
 			Common.GamePlay?.CenterOnPoint(moveTarget.X, moveTarget.Y);
 			Show nuke = CreateNukeAnimation(moveTarget);
 
-			PlaySound(moveTarget.City != null ? "airnuke" : "s_nuke");
+			PlaySound(moveTarget.City != null ? SoundNames.CombatAirStrike : SoundNames.EventNuclearBlast);
 			nuke.Done += (s, a) => DestroyUnitsInNuclearBlast(relX, relY);
 
 			GameTask.Enqueue(nuke);

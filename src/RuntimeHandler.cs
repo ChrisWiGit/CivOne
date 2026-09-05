@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -27,6 +28,7 @@ using CivOne.Screens.StartupWizard;
 using CivOne.Screens.Reports;
 using CivOne.Graphics.Sprites;
 using CivOne.Services;
+using CivOne.Sound.Playback;
 using CivOne.Tasks;
 using CivOne.Tiles;
 
@@ -113,6 +115,11 @@ namespace CivOne
 			_tickWatch.Restart();
 		}
 		private uint _gameTick;
+		private string? _notificationText;
+		private uint _notificationUntilTick;
+		private Picture? _notificationLayer;
+		private string? _notificationLayerText;
+		private Size _notificationLayerSize;
 		private readonly IMcpService _mcpService;
 		private bool _disposed;
 
@@ -120,16 +127,19 @@ namespace CivOne
 		{
 			if (!GameTask.Update() && (!GameTask.Fast && (_gameTick % 4) > 0)) return false;
 
+			// A screen that was added or closed changes the drawn layers even when no remaining
+			// screen redraws itself, so the frame has to be drawn again in that case.
+			bool update = Common.ConsumeScreenStackChanged();
+
 			IScreen[] currentScreens = Common.Screens;
 			for (int i = currentScreens.Length - 1; i >= 0; i--)
 			{
 				if (Common.HasAttribute<ModalAttribute>(currentScreens[i]))
 				{
-					return currentScreens[i].Update(_gameTick / 4);
+					return currentScreens[i].Update(_gameTick / 4) || update;
 				}
 			}
-			
-			bool update = false;
+
 			for (int i = currentScreens.Length - 1; i >= 0; i--)
 			{
 				IScreen screen = currentScreens[i];
@@ -173,12 +183,21 @@ namespace CivOne
 		{
 			Runtime.SetWindowTitle(Settings.WindowTitle);
 			_mcpService.Start();
+
+			// Render the selected sound pack while the startup screens are still going, so the
+			// first tune does not have to wait for it.
+			SoundPlaybackStrategyProvider.WarmUp();
+
 			GameTask.Enqueue(Show.Screens(StartupScreens));
 		}
 
 		private void OnUpdate(object? _, UpdateEventArgs args)
 		{
 			_mcpService.Process();
+
+			// Sound pack tunes are rendered off the game thread. This starts one whose render has
+			// finished since the last frame.
+			SoundPlaybackStrategyProvider.Process();
 
 			// The tick budget bounds how much work a single frame may do. Without it, one slow screen
 			// update lets real time run ahead, which queues up further updates in the same frame, which
@@ -244,6 +263,8 @@ namespace CivOne
 				Runtime.Layers = [.. Common.Screens.Select(x => x.Bitmap)];
 			}
 
+			AddNotificationLayer();
+
 			if (_currentCursor != Common.MouseCursor || _cursorType != Settings.Instance.CursorType)
 			{
 				_currentCursor = Common.MouseCursor;
@@ -265,6 +286,45 @@ namespace CivOne
 
 		}
 
+		private void AddNotificationLayer()
+		{
+			if (string.IsNullOrEmpty(_notificationText) || _gameTick >= _notificationUntilTick || Runtime.Layers == null)
+			{
+				ClearNotificationLayer();
+				return;
+			}
+
+			Size layerSize = new(CanvasWidth, CanvasHeight);
+			if (_notificationLayer == null || _notificationLayerSize != layerSize || _notificationLayerText != _notificationText)
+			{
+				ClearNotificationLayer();
+				_notificationLayer = CreateNotificationLayer(_notificationText, layerSize);
+				_notificationLayerText = _notificationText;
+				_notificationLayerSize = layerSize;
+			}
+
+			Runtime.Layers = [.. Runtime.Layers, _notificationLayer.Bitmap];
+		}
+
+		private Picture CreateNotificationLayer(string text, Size layerSize)
+		{
+			Picture overlay = new(layerSize.Width, layerSize.Height);
+			Size textSize = Resources.Instance.GetTextSize(1, text);
+			int width = Math.Min(layerSize.Width, textSize.Width + 12);
+			int left = Math.Max(0, (layerSize.Width - width) / 2);
+			overlay.FillRectangle(left, 0, width, Math.Min(layerSize.Height, textSize.Height + 6), 4);
+			overlay.DrawText(text, 1, 15, layerSize.Width / 2, 3, TextAlign.Center);
+			return overlay;
+		}
+
+		private void ClearNotificationLayer()
+		{
+			_notificationLayer?.Dispose();
+			_notificationLayer = null;
+			_notificationLayerText = null;
+			_notificationLayerSize = Size.Empty;
+		}
+
 		private void OnKeyboardUp(object? _, KeyboardEventArgs args)
 		{
 			Common.CapsLockActive = args.CapsLock;
@@ -275,6 +335,11 @@ namespace CivOne
 		{
 			Common.CapsLockActive = args.CapsLock;
 			Common.ShiftKeyHeld = args.Shift;
+			if (TryHandleSoundToggleHotkey(args))
+			{
+				return;
+			}
+
 			if (_quickSaveLoadHotkeyService.TryHandle(args))
 			{
 				return;
@@ -329,6 +394,31 @@ namespace CivOne
 			}
 
 			TopScreen?.KeyDown(args);
+		}
+
+		private bool TryHandleSoundToggleHotkey(KeyboardEventArgs args)
+		{
+			if (args.Control || args.Shift || !args.Alt || args.Key != Key.Character || char.ToUpperInvariant(args.KeyChar) != 'V') return false;
+
+			Settings.Sound = Settings.Sound == GameOption.Off ? GameOption.On : GameOption.Off;
+			
+			if (Game.Started)
+			{
+				Game.Instance.Sound = Settings.Sound == GameOption.On;
+			}
+			if (Settings.Sound == GameOption.Off)
+			{
+				SoundPlaybackStrategyProvider.Abort();
+			}
+
+			ShowNotification(Settings.Sound == GameOption.Off ? "Sound off" : "Sound on");
+			return true;
+		}
+
+		private void ShowNotification(string text)
+		{
+			_notificationText = text;
+			_notificationUntilTick = _gameTick + 180;
 		}
 
 		private void OnMouseUp(object? _, ScreenEventArgs args)
@@ -586,6 +676,7 @@ namespace CivOne
 
 			if (disposing)
 			{
+				ClearNotificationLayer();
 				_mcpService.StopService();
 				_mcpService.Dispose();
 			}

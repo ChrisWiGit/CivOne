@@ -10,12 +10,16 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
 using CivOne.Services;
+using CivOne.Sound;
+using CivOne.Sound.Cvl;
+using CivOne.Sound.Playback;
 using CivOne.Services.Translation;
 using CivOne.Tasks;
 using CivOne.UserInterface;
@@ -32,6 +36,19 @@ namespace CivOne.Screens
 	internal class Setup : BaseScreen
 	{
 		private const int MenuFont = 6;
+		private const int MaxMenuItems = 19;
+
+		/// <summary>
+		/// Menu lines the sound test keeps free on every page for its status message: a blank
+		/// separator and the message itself.
+		/// </summary>
+		private const int SoundTestStatusLines = 2;
+		private const string NoSoundPack = "__none__";
+		private const string WaveSoundPack = "__wave__";
+		private string? _soundTestMessage;
+		private string? _playingTestPackId;
+		private string? _playingTestSoundName;
+		private readonly SoundTitleTranslationDelegate _soundTitles = new();
 
 		private (string Label, int Width, int Height)[] ExpandSizeOptions() =>
 		[
@@ -445,10 +462,319 @@ namespace CivOne.Screens
 			MenuItem.Create(Translate("Back"))
 		);
 
-		private void SoundMenu() => CreateMenu(Translate("In-game sound"), GotoMenu(SettingsMenu, 9),
-			MenuItem.Create(Translate("Browse for files...")).OnSelect(BrowseForSoundFiles).SetEnabled(!FileSystem.SoundFilesExist()).SetEnabled(!Game.Started),
-			MenuItem.Create(Translate("Back"))
+		private void SoundMenu() => CreateMenu(Translate("In-game sound"),
+			MenuItem.Create(Translate("Browse for Wave files..."))
+				.WithDescription(Translate("Copy original .WAV sound effects into your profile."))
+				.OnSelect(BrowseForSoundFiles).SetEnabled(!FileSystem.HasAnySoundFiles()).SetEnabled(!Game.Started),
+			MenuItem.Create(TranslateFormatted("Sound pack: {0}", CurrentSoundPackText()))
+				.WithDescription(Translate("Choose a converted CVL sound pack (e.g. PC Speaker)."))
+				.OnSelect(GotoMenu(SoundPackMenu)),
+			MenuItem.Create(Translate("Tests tunes..."))
+				.WithDescription(Translate("Play tunes from the selected sound pack."))
+				.OnSelect(GotoMenu(TestTunesMenu)),
+			CreateSoundTestStatusItem(),
+			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(SettingsMenu, 9))
 		);
+
+		private void TestTunesMenu(int page = 0) => TestTunesMenu(page, 0);
+
+		private void TestTunesMenu(int page, int activeItem)
+		{
+			List<MenuItem<int>> menuItems =
+			[
+				MenuItem.Create(Translate("Back")).OnSelect(StopTestSoundAndReturn)
+			];
+
+			string? packId = CurrentTestSoundPackId();
+			IReadOnlyList<SoundTestEntry> entries = CollectTestEntries(packId);
+
+			if (IsNoSoundPackSelected())
+			{
+				menuItems.Add(MenuItem.Create(Translate("Sound is switched off.")).Disable());
+			}
+			else if (entries.Count == 0)
+			{
+				menuItems.Add(MenuItem.Create(Translate("No tunes found.")).Disable());
+			}
+			else
+			{
+				int playingItem = AddPagedTuneItems(menuItems, packId, entries, page);
+				if (activeItem < 0 && playingItem >= 0)
+				{
+					activeItem = playingItem;
+				}
+			}
+
+			AddSoundTestStatus(menuItems);
+
+			CreateMenu(Translate("Test tunes"), activeItem, [.. menuItems]);
+		}
+
+		private int AddPagedTuneItems(List<MenuItem<int>> menuItems, string? packId, IReadOnlyList<SoundTestEntry> tunes, int page)
+		{
+			int playingItem = -1;
+			bool hasPreviousPage = page > 0;
+			int navigationCount = hasPreviousPage ? 1 : 0;
+			int tuneSlots = MaxMenuItems - 1 - navigationCount - SoundTestStatusLines;
+			int firstTune = hasPreviousPage ? page * (tuneSlots - 1) + 1 : 0;
+			bool hasNextPage = tunes.Count - firstTune > tuneSlots;
+
+			if (hasNextPage)
+			{
+				tuneSlots--;
+			}
+
+			if (hasPreviousPage)
+			{
+				menuItems.Add(MenuItem.Create(Translate("Previous page")).OnSelect(GotoMenu(() => TestTunesMenu(page - 1))));
+			}
+
+			foreach (SoundTestEntry tune in tunes.Skip(firstTune).Take(tuneSlots))
+			{
+				int selectedItem = menuItems.Count;
+				if (IsPlayingTestTune(packId, tune))
+				{
+					playingItem = selectedItem;
+				}
+
+				menuItems.Add(MenuItem.Create(tune.Title)
+					.OnSelect((s, a) => TestTune(packId, tune, page, selectedItem))
+					.SetActive(() => IsPlayingTestTune(packId, tune)));
+			}
+
+			if (hasNextPage)
+			{
+				menuItems.Add(MenuItem.Create(Translate("Next page")).OnSelect(GotoMenu(() => TestTunesMenu(page + 1))));
+			}
+
+			return playingItem;
+		}
+
+		private void StopTestSoundAndReturn(object sender, MenuItemEventArgs<int> args)
+		{
+			SoundPlaybackStrategyProvider.Abort();
+			ClearPlayingTestTune();
+			_soundTestMessage = Translate("Test sound stopped.");
+			Log(_soundTestMessage);
+			CloseMenus();
+			SoundMenu();
+		}
+
+		private void TestTune(string? packId, SoundTestEntry tune, int page, int selectedItem)
+		{
+			if (IsPlayingTestTune(packId, tune))
+			{
+				SoundPlaybackStrategyProvider.Abort();
+				ClearPlayingTestTune();
+				_soundTestMessage = TranslateFormatted("Test tune stopped: {0}", tune.Title);
+				Log(_soundTestMessage);
+				CloseMenus();
+				TestTunesMenu(page, selectedItem);
+				return;
+			}
+
+			SoundPlaybackStrategyProvider.Abort();
+
+			// A pack tune is started directly so the test plays that pack even when the game is set
+			// to something else; everything the pack does not carry goes the normal way, which is
+			// what makes a plain collection of wave files testable at all.
+			bool played = tune.PackEntry == null || packId == null
+				? SoundPlaybackStrategyProvider.Current.PlaySound(tune.Name)
+				: SoundPlaybackStrategyProvider.PlayTune(packId, tune.PackEntry);
+
+			if (played)
+			{
+				_playingTestPackId = packId ?? WaveSoundPack;
+				_playingTestSoundName = tune.Name;
+			}
+			else
+			{
+				ClearPlayingTestTune();
+			}
+
+			_soundTestMessage = played
+				? TranslateFormatted("Test tune started: {0}", tune.Title)
+				: TranslateFormatted("Test tune could not be played: {0}", tune.Title);
+			Log(_soundTestMessage);
+			CloseMenus();
+			TestTunesMenu(page, selectedItem);
+		}
+
+		private bool IsPlayingTestTune(string? packId, SoundTestEntry tune)
+		{
+			return string.Equals(_playingTestSoundName, tune.Name, StringComparison.OrdinalIgnoreCase)
+				&& string.Equals(_playingTestPackId, packId ?? WaveSoundPack, StringComparison.OrdinalIgnoreCase);
+		}
+
+		private void ClearPlayingTestTune()
+		{
+			_playingTestPackId = null;
+			_playingTestSoundName = null;
+		}
+
+		/// <summary>
+		/// Lists what the sound test can play right now.
+		/// </summary>
+		/// <remarks>
+		/// A converted pack is described by its own index, so its tunes are taken from there,
+		/// including the ones we have no name for. Wave files have no index; there the list is
+		/// whichever sounds the profile happens to hold a file for.
+		/// </remarks>
+		/// <param name="packId">Id of the pack to test, or <c>null</c> for wave files.</param>
+		/// <returns>The entries, in the order they should be offered.</returns>
+		private IReadOnlyList<SoundTestEntry> CollectTestEntries(string? packId)
+		{
+			if (IsNoSoundPackSelected()) return [];
+
+			if (packId != null)
+			{
+				SoundPackIndex? index = LoadSoundPackIndex(packId);
+				if (index == null) return [];
+
+				return [.. index.Tunes.Select(tune => new SoundTestEntry(
+					tune.Name, _soundTitles.Translate(tune.Name, tune.Title), tune))];
+			}
+
+			return [.. new WaveSoundFileDelegate().Available().Select(wave => new SoundTestEntry(
+				wave.Name,
+				_soundTitles.Translate(wave.Name, CvlTuneCatalog.Find(wave.Name)?.Title ?? wave.Name),
+				null))];
+		}
+
+		private static string? CurrentTestSoundPackId()
+		{
+			if (IsNoSoundPackSelected() || IsWaveSoundPackSelected()) return null;
+
+			return SoundPlaybackStrategyProvider.SelectedPack;
+		}
+
+		private SoundPackIndex? LoadSoundPackIndex(string packId)
+		{
+			string indexPath = Path.Combine(Settings.SoundsDirectory, packId, SoundPackIndex.FileName);
+			if (!File.Exists(indexPath)) return null;
+
+			try
+			{
+				return SoundPackIndexJson.Load(indexPath);
+			}
+			catch (InvalidOperationException ex)
+			{
+				Log("Could not load sound pack index '{0}': {1}", indexPath, ex.Message);
+				return null;
+			}
+		}
+
+		private MenuItem<int> CreateSoundTestStatusItem()
+		{
+			return string.IsNullOrEmpty(_soundTestMessage)
+				? MenuItem.CreateSeparator()
+				: MenuItem.Create(_soundTestMessage).Disable();
+		}
+
+		/// <summary>
+		/// Appends the sound test status line, separated from the entries above it.
+		/// </summary>
+		/// <remarks>
+		/// The status always belongs to the page the user is looking at, so the paged tune list
+		/// reserves <see cref="SoundTestStatusLines"/> slots for it on every page. Without that
+		/// reservation a full page pushed the message onto a later page, where it stayed unseen
+		/// until the user scrolled there.
+		/// </remarks>
+		/// <param name="menuItems">Items of the menu being built.</param>
+		private void AddSoundTestStatus(List<MenuItem<int>> menuItems)
+		{
+			menuItems.Add(MenuItem.CreateSeparator());
+			menuItems.Add(CreateSoundTestStatusItem());
+		}
+
+		private string CurrentSoundPackText()
+			=> SoundPackSelectionText(SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory));
+
+		private static bool IsNoSoundPackSelected()
+		{
+			return string.Equals(SoundPlaybackStrategyProvider.SelectedPack, NoSoundPack, StringComparison.OrdinalIgnoreCase);
+		}
+
+		private static bool IsWaveSoundPackSelected()
+		{
+			return string.Equals(SoundPlaybackStrategyProvider.SelectedPack, WaveSoundPack, StringComparison.OrdinalIgnoreCase);
+		}
+
+		private static bool IsSoundPackActive(SoundPackSummary pack)
+		{
+			return string.Equals(SoundPlaybackStrategyProvider.SelectedPack, pack.PackId, StringComparison.OrdinalIgnoreCase);
+		}
+
+		private void SoundPackMenu()
+		{
+			IReadOnlyList<SoundPackSummary> packs = SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory);
+			List<MenuItem<int>> menuItems =
+			[
+				MenuItem.Create(Translate("Wave files"))
+					.WithDescription(Translate("Use original .WAV sound effects from your profile."))
+					.OnSelect((s, a) => SelectSoundPack(WaveSoundPack)).SetActive(IsWaveSoundPackSelected),
+				MenuItem.Create(Translate("None"))
+					.WithDescription(Translate("Do not use an external sound format."))
+					.OnSelect((s, a) => SelectSoundPack(NoSoundPack)).SetActive(IsNoSoundPackSelected)
+			];
+
+			if (packs.Count == 0)
+			{
+				menuItems.Add(MenuItem.Create(Translate("No sound packs found.")).Disable());
+				menuItems.Add(MenuItem.Create(Translate("Copy the original game data to convert one.")).Disable());
+			}
+			else
+			{
+				menuItems.AddRange(packs.Select(pack => MenuItem.Create(Translate(pack.DisplayName))
+					.OnSelect((s, a) => SelectSoundPack(pack.PackId))
+					.SetActive(() => IsSoundPackActive(pack))));
+			}
+
+			menuItems.Add(MenuItem.Create(Translate("Back")));
+			CreateMenu(Translate("Sound pack"), GotoMenu(SoundMenu), [.. menuItems]);
+		}
+
+		private void SelectSoundPack(string packId)
+		{
+			Settings.SoundPack = packId ?? string.Empty;
+			if (Settings.Sound == GameOption.Off)
+			{
+				SoundPlaybackStrategyProvider.Abort();
+			}
+
+			// Also covers picking the pack that was already selected, which changes no setting and
+			// would therefore not be noticed anywhere else.
+			SoundPlaybackStrategyProvider.WarmUp();
+
+			NotifySoundPackSelection(SoundPackSelectionText(SoundPackCatalog.GetAvailablePacks(Settings.SoundsDirectory)));
+
+			SoundMenu();
+		}
+
+		private string SoundPackSelectionText(IReadOnlyList<SoundPackSummary> packs)
+		{
+			if (IsNoSoundPackSelected()) return Translate("None");
+			if (IsWaveSoundPackSelected()) return Translate("Wave files");
+
+			string selected = SoundPlaybackStrategyProvider.SelectedPack;
+			foreach (SoundPackSummary pack in packs)
+			{
+				if (string.Equals(pack.PackId, selected, StringComparison.OrdinalIgnoreCase)) {
+					return Translate(pack.DisplayName);
+				}
+			}
+
+			// A pack that was selected and has since been removed; showing its id beats showing
+			// something that is not what will play.
+			return selected;
+		}
+
+		private void NotifySoundPackSelection(string packName)
+		{
+			if (!Game.Started) return;
+
+			GameTask.Enqueue(Message.General(TranslateFormatted("Sound pack switched to {0}.", packName)));
+		}
 
 		private int ActiveBehaviorPatchCount()
 			=> new[]

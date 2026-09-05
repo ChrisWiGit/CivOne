@@ -17,6 +17,9 @@
 	"editor.autoClosingQuotes": "never",
 	// Controls whether the editor should automatically surround selections when typing quotes or brackets.
 	"editor.autoSurround": "never",
+	"chat.tools.terminal.autoApprove": {
+		"dotnet test": true
+	},
 	"chat.mcp.serverSampling": {
 		"CivOne-Chris/.vscode/mcp.json: civone": {
 			"allowedModels": [

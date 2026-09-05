@@ -11,6 +11,7 @@ using CivOne.Advances;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Governments;
+using CivOne.Sound;
 
 using Gov = CivOne.Governments;
 
@@ -100,7 +101,9 @@ namespace CivOne.Screens
 				palette.Merge(portrait.Palette, 64, 80);
 				Palette = palette;
 			}
-			
+
+			PlaySound(SoundNames.EventAudience);
+
 			Render();
 		}
 	}

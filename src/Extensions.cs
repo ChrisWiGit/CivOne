@@ -35,13 +35,6 @@ namespace CivOne
 		private static string T(this string input) => TranslationServiceFactory.GetCurrent().Translate(input);
 		
 
-		public static string? GetSoundFile(this string input)
-		{
-			return Directory.GetFiles(Settings.SoundsDirectory).
-				FirstOrDefault(
-					x => Path.GetFileName(x).Equals($"{input}.wav", StringComparison.OrdinalIgnoreCase));
-		}
-
 		public static byte[] Clear(this byte[] byteArray, byte value = 0)
 		{
 			for (int i = byteArray.GetUpperBound(0); i >= 0; i--)

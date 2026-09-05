@@ -21,8 +21,9 @@ namespace CivOne.Persistence.Model
 	using CivOne.Persistence.Resolver;
 	using CivOne.Persistence.Factories;
 
-	public class GameStateDtoMapperTest
+	public sealed class GameStateDtoMapperTest : IDisposable
 	{
+		private readonly MockRuntime _runtime;
 		private readonly GameStateDtoMapper _testee;
 		private readonly List<MockedIPlayer> _players;
 		private readonly IPlayerGame _gameInstance;
@@ -30,6 +31,12 @@ namespace CivOne.Persistence.Model
 
 		public GameStateDtoMapperTest()
 		{
+			// Mapping a DTO back into a game builds real cities, and a city builds a unit that loads
+			// its icon through Resources, which needs a runtime. Without one of its own this test
+			// only passed when some other test class happened to register one first, which depends
+			// on the order the test classes run in.
+			_runtime = new MockRuntime(new RuntimeSettings());
+
 			var civsInGame = MockedICivilization.Mock(3);
 			CivilizationDto.AllLeaderClassNames = [.. civsInGame.Select(c => c.Leader.GetType().Name).Distinct()];
 
@@ -536,5 +543,14 @@ namespace CivOne.Persistence.Model
 		{
 			public IEnumerable<string> GetAllCityNames() => [];
 		}
+
+		/// <summary>
+		/// Releases the runtime this test registered.
+		/// </summary>
+		/// <remarks>
+		/// The registration itself is left in place on purpose: clearing it would take the runtime
+		/// away from any later test class that does not bring its own.
+		/// </remarks>
+		public void Dispose() => _runtime.Dispose();
 	}
 }

@@ -10,12 +10,13 @@
 using CivOne.Enums;
 using CivOne.Leaders;
 using CivOne.Services;
+using CivOne.Sound;
 
 namespace CivOne.Civilizations
 {
 	internal class Egyptian : BaseCivilization<Ramesses>
 	{
-		public Egyptian() : base(Civilization.Egyptians, TranslationServiceFactory.GetCurrent().Translate("Egyptian"), TranslationServiceFactory.GetCurrent().Translate("Egyptians"), "rams")
+		public Egyptian() : base(Civilization.Egyptians, TranslationServiceFactory.GetCurrent().Translate("Egyptian"), TranslationServiceFactory.GetCurrent().Translate("Egyptians"), SoundNames.LeaderRamesses)
 		{
 			StartX = 41;
 			StartY = 24;

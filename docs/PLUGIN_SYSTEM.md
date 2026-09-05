@@ -48,6 +48,25 @@ The UI can also read `MenuModification` classes.
 
 These are used to change menu item text and shortcuts for matching menu ids.
 
+## Sounds
+
+Sounds are addressed by name, never by number. The names the game itself uses are the constants in
+`SoundNames`; they describe the situation a sound belongs to, such as `combat_win_strong`.
+
+A plugin may pass any string to `PlaySound`. A name nothing knows is not an error, it is simply
+silent. With **Wave files** selected as the sound source, a plugin that ships `my_sound.wav` into the
+profile's `sounds/` folder can play it with `PlaySound("my_sound")` without registering anything.
+
+Only the selected source plays. A plugin sound is not reachable while a converted sound pack is
+selected, because that pack does not carry it and nothing falls back to the wave files; a redirect
+is the way around that.
+
+Replacing a sound the plugin does not own works by redirecting its name rather than by overwriting a
+file. `ISoundAliasRegistry` holds those redirects and is applied in front of whatever plays the
+sound, so a redirect may also send a tune of a converted sound pack to a plain wave file. The
+registry is not reachable from a plugin assembly yet - exposing it is the remaining piece of this
+feature.
+
 ## What Plugins Can Modify Today
 
 The public API currently supports these modification base classes:

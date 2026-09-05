@@ -12,6 +12,7 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Screens.PalaceAssets;
+using CivOne.Sound;
 
 namespace CivOne.Screens
 {
@@ -103,7 +104,7 @@ namespace CivOne.Screens
 			Palette = _background.Palette;
 			this.AddLayer(_background);
 
-			PlaySound("win");
+			PlaySound(SoundNames.MusicWin);
 
 			_textLines =
 			[

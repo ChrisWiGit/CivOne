@@ -19,6 +19,7 @@ using CivOne.Governments;
 using CivOne.Persistence.Game;
 using CivOne.Screens.Services;
 using CivOne.Services.SpaceShip;
+using CivOne.Sound;
 using CivOne.src;
 using CivOne.Tasks;
 using CivOne.Tiles;
@@ -1243,6 +1244,7 @@ namespace CivOne
 					// TODO fire-eggs not showing loses side-effects
 					if (CityOwnerPlayer.IsHuman) // && !Game.Animations)
 					{
+						PlaySound(SoundNames.EventAlarm);
 						Show disorderCity = Show.DisorderCity(this);
 						GameTask.Insert(disorderCity);
 					}
@@ -1278,6 +1280,7 @@ namespace CivOne
 				else
 				{
 					// we love the king day
+					// The celebration screen plays and stops its own music, see CityView.
 					if (Human == CityOwnerPlayerIndex && Settings.Animations != GameOption.Off)
 						GameTask.Insert(Show.WeLovePresidentDayCity(this));
 				}
@@ -1290,6 +1293,7 @@ namespace CivOne
 				Size--;
 				if (Human == CityOwnerPlayerIndex)
 				{
+					PlaySound(SoundNames.EventAlarm);
 					GameTask.Enqueue(Message.Newspaper(this, TranslateFormattedArray("Food storage exhausted\nin {0}!\nFamine feared.", Name)));
 				}
 				if (Size == 0) return;

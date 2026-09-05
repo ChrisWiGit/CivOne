@@ -10,12 +10,13 @@
 using CivOne.Enums;
 using CivOne.Leaders;
 using CivOne.Services;
+using CivOne.Sound;
 
 namespace CivOne.Civilizations
 {
 	internal class English : BaseCivilization<Elizabeth>
 	{
-		public English() : base(Civilization.English, TranslationServiceFactory.GetCurrent().Translate("English"), TranslationServiceFactory.GetCurrent().Translate("English"), "eliz")
+		public English() : base(Civilization.English, TranslationServiceFactory.GetCurrent().Translate("English"), TranslationServiceFactory.GetCurrent().Translate("English"), SoundNames.LeaderElizabeth)
 		{
 			StartX = 31;
 			StartY = 14;

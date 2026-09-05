@@ -31,6 +31,7 @@ using CivOne.Services.GlobalWarming;
 using CivOne.Services.Palace;
 using CivOne.Services.Random;
 using CivOne.Services.SpaceShip;
+using CivOne.Sound;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -488,7 +489,7 @@ namespace CivOne
 
 			if (!_players.Any(x => Game.PlayerNumber(x) != 0 && x != Human && !x.HandleExtinction()))
 			{
-				PlaySound("wintune");
+				PlaySound(SoundNames.MusicWin);
 
 				GameTask conquest;
 				GameTask.Enqueue(Message.Newspaper(null, TranslateArray("Your civilization\nhas conquered\nthe entire planet!")));
@@ -559,7 +560,7 @@ namespace CivOne
 
 				if (player == HumanPlayer)
 				{
-					PlaySound("wintune");
+					PlaySound(SoundNames.MusicWin);
 
 					GameTask.Enqueue(Message.Newspaper(null, TranslateArray("Your civilization\nhas reached\nAlpha Centauri!")));
 					_ = EndGameServiceFactory.CreateForHuman().HandleAlphaCentauriAsync();

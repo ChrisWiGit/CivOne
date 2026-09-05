@@ -11,6 +11,7 @@ using CivOne.Buildings;
 using CivOne.Enums;
 using CivOne.Services.Pathfinding;
 using CivOne.Services.Random;
+using CivOne.Sound;
 using CivOne.Tasks;
 using CivOne.Tiles;
 using CivOne.Units;
@@ -76,6 +77,11 @@ namespace CivOne
 						City nearestCity = Game.GetCities().Where(x => x.CityOwnerPlayerIndex != 0).OrderBy(x => Common.DistanceToTile(x.X, x.Y, unit.X, unit.Y)).ThenBy(x => x.CityOwnerPlayer == Human ? 0 : 1).First();
 						if (nearestCity.CityOwnerPlayer == Human && Human.Visible(unit.Tile))
 						{
+							// TODO: This only covers a barbarian raiding party landing near a human
+							// city. There is no general "a barbarian unit just became visible to the
+							// human" detection (e.g. land-spawned barbarians, or ones the human simply
+							// walks up to), so those cases stay silent for now.
+							PlaySound(SoundNames.EventAlarm);
 							GameTask.Insert(Message.Advisor(Advisor.Defense, false,
 								TranslateFormattedArray("Barbarian raiding party\nlands near {0}!\nCitizens are alarmed.", nearestCity.Name)));
 						}

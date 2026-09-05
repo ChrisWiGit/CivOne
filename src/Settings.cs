@@ -52,6 +52,7 @@ namespace CivOne
 		public const int AutoExpandMaxHeight = 720;
 
 		// Set default settings
+		private const string NoSoundPack = global::CivOne.Sound.Playback.SoundPlaybackStrategyConstants.NoSoundPack;
 		private string _windowTitle = "CivOne";
 		private GraphicsMode _graphicsMode = GraphicsMode.Graphics256;
 		private bool _fullScreen;
@@ -79,6 +80,7 @@ namespace CivOne
 		private MapBitmapScalerType _bitmapScalerMode = MapBitmapScalerType.PaletteAwareWeighted;
 		private StartPositionAlgorithmType _startPositionAlgorithm = StartPositionAlgorithmType.Legacy;
 		private string _languagePostfix = string.Empty;
+		private string _soundPack = string.Empty;
 		private SimulateInternationalFont _simulateInternationalFont = SimulateInternationalFont.Auto;
 		private bool _useUncheckedCastSanitizer;
 		private GlobalWarmingFeatureFlag _globalWarmingFeatureFlags = GlobalWarmingFeatureFlag.None;
@@ -721,6 +723,25 @@ namespace CivOne
 			}
 		}
 
+		/// <summary>
+		/// Id of the chosen sound source: a converted pack (see sounds/&lt;packId&gt;/index.json),
+		/// <c>__wave__</c> for the profile's wave files, or <c>__none__</c> for silence.
+		///
+		/// Empty means nothing has been chosen yet. <c>SoundPackSelectionDelegate</c> turns that into
+		/// a real choice the first time anything asks, so nothing else has to deal with the empty
+		/// case.
+		/// </summary>
+		public string SoundPack
+		{
+			get => _soundPack;
+			set
+			{
+				_soundPack = value ?? string.Empty;
+				SetSetting("SoundPack", _soundPack);
+				Sound = string.Equals(_soundPack, NoSoundPack, StringComparison.OrdinalIgnoreCase) ? GameOption.Off : GameOption.On;
+			}
+		}
+
 		internal SimulateInternationalFont SimulateInternationalFont
 		{
 			get => _simulateInternationalFont;
@@ -850,6 +871,7 @@ namespace CivOne
 			GetSetting("MapBitmapScalerMode", ref _bitmapScalerMode);
 			GetSetting("StartPositionAlgorithm", ref _startPositionAlgorithm);
 			GetSetting("LanguagePostfix", ref _languagePostfix);
+			GetSetting("SoundPack", ref _soundPack);
 			GetSetting("SimulateInternationalFont", ref _simulateInternationalFont);
 			GetSetting("UseUncheckedCastSanitizer", ref _useUncheckedCastSanitizer);
 			GetSetting("CursorType", ref _cursorType);
