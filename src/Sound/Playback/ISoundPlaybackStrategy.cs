@@ -13,7 +13,19 @@ internal interface ISoundPlaybackStrategy
 	/// </summary>
 	/// <param name="soundName"></param>
 	/// <returns>True if the sound was successfully played, false otherwise.</returns>
+	/// <remarks>
+	/// Callers use the result to remember that they started the sound and have to stop it again when
+	/// they are done, which is why a source that plays nothing at all still reports success: there is
+	/// no failure to handle, and <see cref="Abort"/> works either way. It stops whatever is playing
+	/// and does nothing when that is nothing, so an owner of silence costs no more than a call.
+	/// </remarks>
 	bool PlaySound(string soundName);
+
+	/// <summary>
+	/// Stops the currently playing sound, if any.
+	/// This method is idempotent; calling it multiple times has the same effect as calling it once.
+	/// If no sound is currently playing, this method does nothing.
+	/// </summary>
 	void Abort();
 
 	/// <summary>

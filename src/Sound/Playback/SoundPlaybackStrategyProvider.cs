@@ -30,7 +30,9 @@ internal static class SoundPlaybackStrategyProvider
 		get
 		{
 			string soundPack = SelectedPack;
-			if (_activeStrategy != null && string.Equals(_activeSoundPack, soundPack, StringComparison.Ordinal)) return _activeStrategy;
+			// Case-insensitive, like everything else that reads this setting: a pack id that only
+			// differs in casing is the same source, so it must not throw the strategy away.
+			if (_activeStrategy != null && string.Equals(_activeSoundPack, soundPack, StringComparison.OrdinalIgnoreCase)) return _activeStrategy;
 
 			_activeSoundPack = soundPack;
 			_activeStrategy = SoundPlaybackStrategyFactory.Create(soundPack, SoundPackPlaybackService, Aliases);

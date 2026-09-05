@@ -31,7 +31,10 @@ internal sealed class WaveFileDurationDelegate
         {
             using (FileStream stream = File.OpenRead(path))
             {
-                if (stream.Read(header) < HeaderSize) return false;
+                // A single Read may return less than asked for even away from the end of the file,
+                // which would make a sound file look truncated. ReadExactly keeps reading, and
+                // signals a real truncation with an EndOfStreamException - an IOException.
+                stream.ReadExactly(header);
             }
         }
         catch (IOException)
