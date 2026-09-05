@@ -11,13 +11,6 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
-* Fix: The game no longer freezes the first time a piece of sound pack music is played.
-  * Preparing a tune used to happen while the game waited for it, which could stop everything for several seconds on the first play of a long piece.
-  * The preparation now happens in the background and the music starts as soon as it is ready, so the game keeps running and reacting to you throughout.
-  * Preparing a sound pack now starts as soon as the game is launched, while the title and credits screens are still running, so the work is usually done before the first tune is due and every tune starts instantly.
-  * The same happens right after the original sound data has been converted, when you open the sound pack page in the startup wizard, and whenever you pick a pack in the settings.
-  * It uses the spare processor cores, so it does not slow the game down while it runs.
-  * A pack whose prepared music has been deleted, or that was not converted yet the last time the game looked, is prepared again instead of staying silent.
 * Feature: The AdLib / Sound Blaster music of the original game can now be played.
   * Copying the original DOS game data converts `ASOUND.CVL` into an `AdLib / Sound Blaster` sound pack, next to the `PC Speaker` one. Pick it in the setup menu under `Shift+F1 → Settings → In-game sound → Sound pack`.
   * This is the FM music the game played on an AdLib card or a Sound Blaster: the title theme, the evolution sequence, all fourteen leader themes, the win and lose music, and the sound effects.
