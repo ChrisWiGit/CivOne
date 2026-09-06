@@ -200,14 +200,15 @@ namespace CivOne.Screens
 				return;
 			}
 
-			int rightX = CoordinateOffsetX + 318;
 			int lineHeight = Resources.GetFontHeight(DescriptionFontId);
-			// Keep one-line and two-line hints anchored at the same bottom area to avoid touching menu rows.
-			int stackedLinesAbove = Math.Max(0, Hints.Length - 2);
-			int y = CoordinateOffsetY + 190 - (stackedLinesAbove * lineHeight);
+			
+			// Position hints at the bottom of the screen, centered horizontally
+			int centerX = Width / 2;
+			int y = Height - (Hints.Length * lineHeight);
+			
 			foreach (string line in Hints)
 			{
-				this.DrawText(line, DescriptionFontId, DescriptionTextColour, rightX, y, TextAlign.Right);
+				this.DrawText(line, DescriptionFontId, DescriptionTextColour, centerX, y, TextAlign.Center);
 				y += lineHeight;
 			}
 		}
