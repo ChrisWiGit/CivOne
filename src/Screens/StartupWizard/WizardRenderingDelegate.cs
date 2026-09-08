@@ -39,6 +39,11 @@ namespace CivOne.Screens.StartupWizard
 		private const byte ColourLink = 9;
 		private const byte ColourStatus = 14;
 		private const byte ColourNumber = 9;
+		private const byte ColourDialogText = 15;
+		private const byte ColourDialogTitle = 14;
+		private const byte ColourDialogMessageBackground = 1;
+		private const byte ColourDialogWarningBackground = 6;
+		private const byte ColourDialogErrorBackground = 4;
 		private const int HeaderRows = 11;
 		private const int HeaderFrameWidth = 80;
 
@@ -172,6 +177,108 @@ namespace CivOne.Screens.StartupWizard
 		{
 			CharPut(context.StatusMessage, 2, context.Rows - 1, ColourStatus, context);
 		}
+	}
+
+	/// <summary>
+	/// Draws a modal message over the current page while leaving the page visible behind it.
+	/// </summary>
+	/// <param name="title">Dialog title.</param>
+	/// <param name="message">Dialog text, optionally separated into lines with newlines.</param>
+	/// <param name="backgroundColour">Palette colour used for the dialog background.</param>
+	/// <param name="context">Current wizard rendering context.</param>
+	public void DrawMessageDialog(string title, string message, byte backgroundColour, WizardRenderingContext context)
+	{
+		string[] lines = WrapDialogMessage(message, 58);
+		int dialogWidth = Math.Min(context.Cols - 4, 64);
+		int dialogHeight = Math.Min(context.Rows - 4, lines.Length + 6);
+		int left = Math.Max(1, (context.Cols - dialogWidth) / 2);
+		int top = Math.Max(1, (context.Rows - dialogHeight) / 2);
+		int glyphWidth = (int)(ModernDos8X16.GlyphWidth * context.Scale);
+		int glyphHeight = (int)(ModernDos8X16.GlyphHeight * context.Scale);
+
+		_screen.Bitmap.FillRectangle(
+			context.Box.X + left * glyphWidth,
+			context.Box.Y + top * glyphHeight,
+			dialogWidth * glyphWidth,
+			dialogHeight * glyphHeight,
+			backgroundColour);
+
+		DrawDoubleFrame(left, top, dialogWidth, dialogHeight, context);
+		BoxPutMiddle(title, top + 1, ColourDialogTitle, context, left, dialogWidth);
+		for (int index = 0; index < lines.Length && index + top + 3 < top + dialogHeight - 2; index++)
+		{
+			BoxPutMiddle(lines[index], top + 3 + index, ColourDialogText, context, left, dialogWidth);
+		}
+
+		int buttonRow = top + dialogHeight - 2;
+		string button = $"[ {Translate("OK")} ]";
+		BoxPutMiddle(button, buttonRow, ColourDialogTitle, context, left, dialogWidth);
+		context.MessageBox = new Rectangle(
+			context.Box.X + (left + (dialogWidth - button.Length) / 2) * glyphWidth,
+			context.Box.Y + buttonRow * glyphHeight,
+			button.Length * glyphWidth,
+			glyphHeight);
+	}
+
+	/// <summary>
+	/// Draws a blue modal message over the current page.
+	/// </summary>
+	/// <param name="title">Dialog title.</param>
+	/// <param name="message">Dialog text.</param>
+	/// <param name="context">Current wizard rendering context.</param>
+	public void DrawMessageDialog(string title, string message, WizardRenderingContext context)
+		=> DrawMessageDialog(title, message, ColourDialogMessageBackground, context);
+
+	/// <summary>
+	/// Draws an orange modal warning over the current page.
+	/// </summary>
+	/// <param name="message">Warning text.</param>
+	/// <param name="context">Current wizard rendering context.</param>
+	public void DrawWarningDialog(string message, WizardRenderingContext context)
+		=> DrawMessageDialog(Translate("Warning"), message, ColourDialogWarningBackground, context);
+
+	/// <summary>
+	/// Draws a red modal error over the current page.
+	/// </summary>
+	/// <param name="message">Error text.</param>
+	/// <param name="context">Current wizard rendering context.</param>
+	public void DrawErrorDialog(string message, WizardRenderingContext context)
+		=> DrawMessageDialog(Translate("Error"), message, ColourDialogErrorBackground, context);
+
+	private void DrawDoubleFrame(int left, int top, int width, int height, WizardRenderingContext context)
+	{
+		string horizontal = new(KnownCp437Chars.BoxDoubleHorizontal, Math.Max(0, width - 2));
+		CharPut($"{KnownCp437Chars.BoxDoubleTopLeft}{horizontal}{KnownCp437Chars.BoxDoubleTopRight}", left, top, ColourBorder, context);
+		CharPut($"{KnownCp437Chars.BoxDoubleBottomLeft}{horizontal}{KnownCp437Chars.BoxDoubleBottomRight}", left, top + height - 1, ColourBorder, context);
+		for (int row = top + 1; row < top + height - 1; row++)
+		{
+			CharPut(KnownCp437Chars.BoxDoubleVertical.ToString(), left, row, ColourBorder, context);
+			CharPut(KnownCp437Chars.BoxDoubleVertical.ToString(), left + width - 1, row, ColourBorder, context);
+		}
+	}
+
+	private void BoxPutMiddle(string text, int row, byte colour, WizardRenderingContext context, int left, int width)
+	{
+		int col = left + Math.Max(1, (width - text.Length) / 2);
+		BoxPut(text, col, row, colour, context);
+	}
+
+	private static string[] WrapDialogMessage(string message, int width)
+	{
+		List<string> lines = [];
+		foreach (string sourceLine in message.Split('\n'))
+		{
+			string line = sourceLine.Trim();
+			while (line.Length > width)
+			{
+				int split = line.LastIndexOf(' ', width);
+				if (split <= 0) split = width;
+				lines.Add(line[..split].Trim());
+				line = line[split..].Trim();
+			}
+			lines.Add(line);
+		}
+		return [.. lines];
 	}
 
 	/// <summary>

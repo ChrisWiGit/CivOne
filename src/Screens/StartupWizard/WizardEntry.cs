@@ -148,7 +148,8 @@ namespace CivOne.Screens.StartupWizard
 		/// <summary>
 		/// Completes the wizard, saves all settings and starts the game.
 		/// </summary>
-		Finish
+		Finish,
+
 	}
 
 	/// <summary>

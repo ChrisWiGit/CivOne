@@ -65,6 +65,8 @@ namespace CivOne.Screens.StartupWizard
 		/// re-rendering the entire page. Set by mouse moves that only require marker updates.
 		/// </summary>
 		private bool _markerOnlyRefresh;
+		private string? _dialogMessage;
+		private WizardDialogKind _dialogKind;
 
 		/// <inheritdoc />
 		public override bool UseFullWindowCanvas => true;
@@ -168,6 +170,33 @@ namespace CivOne.Screens.StartupWizard
 		/// </summary>
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
+			if (_dialogMessage != null)
+			{
+				if (args.Key == Key.Enter)
+				{
+					CloseWarningDialog();
+				}
+				return true;
+			}
+
+			if (args[KeyModifier.Shift, Key.F1])
+			{
+				ShowTestDialog(WizardDialogKind.Message);
+				return true;
+			}
+
+			if (args[KeyModifier.Shift, Key.F2])
+			{
+				ShowTestDialog(WizardDialogKind.Warning);
+				return true;
+			}
+
+			if (args[KeyModifier.Shift, Key.F3])
+			{
+				ShowTestDialog(WizardDialogKind.Error);
+				return true;
+			}
+
 			if (args[Key.Escape])
 			{
 				// The wizard has no visible fullscreen/exit entry, so allow ESC to toggle fullscreen.
@@ -249,6 +278,15 @@ namespace CivOne.Screens.StartupWizard
 		/// </summary>
 		public override bool MouseDown(ScreenEventArgs args)
 		{
+			if (_dialogMessage != null)
+			{
+				if (args.Buttons == MouseButton.Left && _renderingContext.MessageBox.Contains(args.X, args.Y))
+				{
+					CloseWarningDialog();
+				}
+				return true;
+			}
+
 			if (args.Buttons != MouseButton.Left)
 			{
 				return false;
@@ -422,6 +460,15 @@ namespace CivOne.Screens.StartupWizard
 
 		private void ApplyActionResult(WizardActionResult actionResult)
 		{
+			if (!string.IsNullOrWhiteSpace(actionResult.WarningMessage))
+			{
+				_dialogMessage = actionResult.WarningMessage;
+				_dialogKind = WizardDialogKind.Warning;
+				_markerOnlyRefresh = false;
+				Refresh();
+				return;
+			}
+
 			if (actionResult.ShouldClose)
 			{
 				Destroy();
@@ -464,9 +511,46 @@ namespace CivOne.Screens.StartupWizard
 			_renderingContext.StatusMessage = _state.StatusMessage;
 
 			_renderingDelegate.Render(_state, page, _renderingContext);
+			_renderingContext.MessageBox = Rectangle.Empty;
+			if (_dialogMessage != null)
+			{
+				switch (_dialogKind)
+				{
+					case WizardDialogKind.Message:
+						_renderingDelegate.DrawMessageDialog(Translate("Message"), _dialogMessage, _renderingContext);
+						break;
+					case WizardDialogKind.Error:
+						_renderingDelegate.DrawErrorDialog(_dialogMessage, _renderingContext);
+						break;
+					default:
+						_renderingDelegate.DrawWarningDialog(_dialogMessage, _renderingContext);
+						break;
+				}
+			}
 
 			// Marker is intentionally not drawn here; HasUpdate draws it after snapshotting
 			// the marker-free page so cursor moves can restore the page from the snapshot.
+		}
+
+		private void CloseWarningDialog()
+		{
+			_dialogMessage = null;
+			_renderingContext.MessageBox = Rectangle.Empty;
+			_markerOnlyRefresh = false;
+			Refresh();
+		}
+
+		private void ShowTestDialog(WizardDialogKind kind)
+		{
+			_dialogKind = kind;
+			_dialogMessage = kind switch
+			{
+				WizardDialogKind.Message => Translate("This is a test message dialog."),
+				WizardDialogKind.Error => Translate("This is a test error dialog."),
+				_ => Translate("This is a test warning dialog.")
+			};
+			_markerOnlyRefresh = false;
+			Refresh();
 		}
 
 		private void ResetEntryScrollOffsetIfPageChanged()

@@ -28,6 +28,7 @@ namespace CivOne.Screens.StartupWizard
 		public int EntryScrollOffset { get; set; }
 		public int ContentEndRow { get; set; }
 		public string StatusMessage { get; set; } = string.Empty;
+		public Rectangle MessageBox { get; set; }
 		public List<(int Number, Rectangle Area)> EntryHitAreas { get; } = [];
 		public List<(string Url, Rectangle Area)> LinkAreas { get; } = [];
 		public List<Rectangle> GlyphAreas { get; } = [];
