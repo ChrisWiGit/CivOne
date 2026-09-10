@@ -11,6 +11,10 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Added civtext-hashgen to generate reference hashes for original Civilization text files.
+  * These hashes are used as a safety check so the game can detect whether the source text files look like the expected English originals.
+  * This helps ensure the translation engine works from a reliable base text and does not produce broken or partial translations from unexpected input files.
+  * If the source files do not match, the player gets a warning before starting the game.
 * Feature: The AdLib / Sound Blaster music of the original game can now be played.
   * Copying the original DOS game data converts `ASOUND.CVL` into an `AdLib / Sound Blaster` sound pack, next to the `PC Speaker` one. Pick it in the setup menu under `Shift+F1 → Settings → In-game sound → Sound pack`.
   * This is the FM music the game played on an AdLib card or a Sound Blaster: the title theme, the evolution sequence, all fourteen leader themes, the win and lose music, and the sound effects.

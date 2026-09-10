@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -183,14 +174,14 @@ namespace CivOne.Screens.StartupWizard
 	/// Draws a modal message over the current page while leaving the page visible behind it.
 	/// </summary>
 	/// <param name="title">Dialog title.</param>
-	/// <param name="message">Dialog text, optionally separated into lines with newlines.</param>
+	/// <param name="lines">Dialog text lines.</param>
 	/// <param name="backgroundColour">Palette colour used for the dialog background.</param>
 	/// <param name="context">Current wizard rendering context.</param>
-	public void DrawMessageDialog(string title, string message, byte backgroundColour, WizardRenderingContext context)
+	public void DrawMessageDialog(string title, string[] lines, byte backgroundColour, WizardRenderingContext context)
 	{
-		string[] lines = WrapDialogMessage(message, 58);
+		string[] wrappedLines = WrapDialogLines(lines, 58);
 		int dialogWidth = Math.Min(context.Cols - 4, 64);
-		int dialogHeight = Math.Min(context.Rows - 4, lines.Length + 6);
+		int dialogHeight = Math.Min(context.Rows - 4, wrappedLines.Length + 6);
 		int left = Math.Max(1, (context.Cols - dialogWidth) / 2);
 		int top = Math.Max(1, (context.Rows - dialogHeight) / 2);
 		int glyphWidth = (int)(ModernDos8X16.GlyphWidth * context.Scale);
@@ -205,9 +196,9 @@ namespace CivOne.Screens.StartupWizard
 
 		DrawDoubleFrame(left, top, dialogWidth, dialogHeight, context);
 		BoxPutMiddle(title, top + 1, ColourDialogTitle, context, left, dialogWidth);
-		for (int index = 0; index < lines.Length && index + top + 3 < top + dialogHeight - 2; index++)
+		for (int index = 0; index < wrappedLines.Length && index + top + 3 < top + dialogHeight - 2; index++)
 		{
-			BoxPutMiddle(lines[index], top + 3 + index, ColourDialogText, context, left, dialogWidth);
+			BoxPutMiddle(wrappedLines[index], top + 3 + index, ColourDialogText, context, left, dialogWidth);
 		}
 
 		int buttonRow = top + dialogHeight - 2;
@@ -221,6 +212,16 @@ namespace CivOne.Screens.StartupWizard
 	}
 
 	/// <summary>
+	/// Draws a modal message over the current page while leaving the page visible behind it.
+	/// </summary>
+	/// <param name="title">Dialog title.</param>
+	/// <param name="message">Dialog text, optionally separated into lines with newlines.</param>
+	/// <param name="backgroundColour">Palette colour used for the dialog background.</param>
+	/// <param name="context">Current wizard rendering context.</param>
+	public void DrawMessageDialog(string title, string message, byte backgroundColour, WizardRenderingContext context)
+		=> DrawMessageDialog(title, message.Split('\n'), backgroundColour, context);
+
+	/// <summary>
 	/// Draws a blue modal message over the current page.
 	/// </summary>
 	/// <param name="title">Dialog title.</param>
@@ -228,6 +229,14 @@ namespace CivOne.Screens.StartupWizard
 	/// <param name="context">Current wizard rendering context.</param>
 	public void DrawMessageDialog(string title, string message, WizardRenderingContext context)
 		=> DrawMessageDialog(title, message, ColourDialogMessageBackground, context);
+
+	/// <summary>
+	/// Draws an orange modal warning over the current page.
+	/// </summary>
+	/// <param name="lines">Warning text lines.</param>
+	/// <param name="context">Current wizard rendering context.</param>
+	public void DrawWarningDialog(string[] lines, WizardRenderingContext context)
+		=> DrawMessageDialog(Translate("Warning"), lines, ColourDialogWarningBackground, context);
 
 	/// <summary>
 	/// Draws an orange modal warning over the current page.
@@ -265,8 +274,13 @@ namespace CivOne.Screens.StartupWizard
 
 	private static string[] WrapDialogMessage(string message, int width)
 	{
+		return WrapDialogLines(message.Split('\n'), width);
+	}
+
+	private static string[] WrapDialogLines(string[] sourceLines, int width)
+	{
 		List<string> lines = [];
-		foreach (string sourceLine in message.Split('\n'))
+		foreach (string sourceLine in sourceLines)
 		{
 			string line = sourceLine.Trim();
 			while (line.Length > width)

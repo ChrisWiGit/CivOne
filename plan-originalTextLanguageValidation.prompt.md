@@ -1,0 +1,48 @@
+## Plan: Originaltext-Sprache Prüfen
+
+Die Original-Civilization-Dateien werden im Wizard kopiert und später über `TextFileLoader` als Fallback geladen. Die relevanten Textdateien (`BLURB0.TXT` bis `BLURB4.TXT`, `ERROR.TXT`, `HELP.TXT`, `KING.TXT`, `PRODUCE.TXT`) sind Bestandteil der `FileSystem.DATA_FILES`-Liste. Die geprüften Dateien aus `/home/christian/projekte/civ_orig` enthalten erkennbare englische Marker und englische Sätze; zugleich besitzen einzelne Dateien binäre bzw. DOS-formatierte Präfixbereiche. Deshalb sind erste Zeile, UTF-8-Decoding und Dateigröße keine verlässliche Sprachprüfung.
+
+**Steps**
+1. Eine kleine, injizierbare Validierungsabstraktion als `IOriginalTextLanguageValidationService` mit einer konkreten `OriginalTextLanguageValidationService`-Implementierung definieren. Das ist ein Service, kein Delegate: Die Prüfung ist eine eigenständige fachliche Fähigkeit mit Ergebnisobjekt, mehreren Regeln und eigener Testbarkeit; ein Delegate wäre hier nur für austauschbare Einzelaktionen oder Callbacks passend. Der Service prüft nur den kopierten Original-Fallback, nicht aktive Übersetzungsdateien.
+2. Pro relevanter Datei mehrere kurze, nicht zusammenhängende Prüfsegmente definieren, zum Beispiel drei bis fünf Marker-/Zeilenpositionen je Datei. Im Quelltext werden ausschließlich kryptografische Hashwerte der normalisierten Segmente und deren strukturelle Auswahl gespeichert, keine längeren urheberrechtlich geschützten Satzteile. Die Normalisierung berücksichtigt Zeilenumbrüche, `^`-Umbruchmarker, Leerraum und DOS-/UTF-8-Darstellung soweit möglich.
+3. Die englische Referenz als versionierbare Allowlist pro Datei hinterlegen. Für jedes Segment wird separat gezählt, ob der Hash übereinstimmt. Eine einzelne Abweichung darf toleriert werden, damit kleine Patches, Zeilenänderungen oder abweichende Builds nicht sofort warnen. Eine Datei gilt als nicht verifiziert, wenn mindestens zwei ihrer Prüfsegmente abweichen oder weniger als die konfigurierte Mindestzahl von Segmenten gelesen werden kann. Die konkrete Regel soll als Konfiguration ausdrücken, dass mindestens drei von fünf Segmenten je Datei übereinstimmen müssen; bei nur drei definierten Segmenten müssen mindestens zwei übereinstimmen.
+4. Aus den Einzelresultaten ein Ergebnisobjekt mit `IsVerified`, geprüfter Dateiliste und `FilesWithMismatches` einschließlich Datei-, Treffer- und Abweichungsanzahl erzeugen. Die Gesamtprüfung ist bereits dann nicht verifiziert, wenn mindestens eine erforderliche Datei die per-Datei-Regel verletzt. Dadurch bleibt die Warnung präzise, statt nur „zu viele Hashes“ ohne Ursache zu melden. Fehlende Dateien werden weiterhin vom bestehenden Kopier-/Existenzcheck behandelt und nicht als Sprachabweichung verschleiert.
+5. Die Prüfung nach `FileSystem.CopyDataFiles` und vor `Resources.ClearInstance()` im Wizard ausführen. Den Service über den Primary Constructor von `WizardActionHandler` injizieren, analog zu den vorhandenen Interface-Abhängigkeiten. Bei unbekannter Sprache die Dateien behalten, aber eine lokalisierte, klare Warnung im Wizard anzeigen und ins Log schreiben; der Benutzer kann fortfahren. Die Warnung nennt die betroffenen Dateien und komprimierte Werte wie `ERROR.TXT (2/5 Treffer), KING.TXT (1/5 Treffer)`, nicht die geprüften Originaltexte.
+6. Die Meldung so formulieren, dass sie die Auswirkung erklärt: Die eingelesenen Originaltexte sind nicht als englische Basis verifiziert; deutsche Übersetzungen und Teile der Oberfläche können deshalb fehlen, unpassend zugeordnet oder nicht korrekt angezeigt werden. Die Statusmeldung soll wegen der begrenzten Breite nur eine kurze Zusammenfassung zeigen; die vollständige betroffene Dateiliste gehört zusätzlich ins Log oder in einen geeigneten ausführlicheren Wizard-Status.
+7. Tests ergänzen: alle englischen Segmente werden akzeptiert; eine einzelne Abweichung je Datei bleibt toleriert; zwei Abweichungen markieren genau diese Datei; mehrere nicht verifizierte Dateien erscheinen vollständig im Ergebnis; unvollständige/uneindeutige Eingabe erzeugt eine Warnung; bestehende Übersetzungsdateien bleiben von der Prüfung unberührt; der Wizard setzt Erfolg bzw. Warnstatus korrekt. Die Service-Tests verwenden nur selbst erfundene Testsegmente und Hashwerte.
+8. Dokumentation bzw. Entwicklerhinweis ergänzen, dass die Fingerprints versionsabhängig sind und bei einer bewusst unterstützten englischen Originalversion aktualisiert werden müssen, ohne Originaltext in das Repository zu kopieren. Die Hashdefinitionen sollen pro Datei und Segment einen stabilen strukturellen Bezeichner tragen, damit später weitere englische Releases als zusätzliche Allowlist-Version ergänzt werden können.
+
+**Relevant files**
+- `/home/christian/projekte/CivOne_2/src/IO/Text/TextFileLoader.cs` — bestehender Fallback-Pfad; dort keine Prüfung auf lokalisierten Dateien anwenden.
+- `/home/christian/projekte/CivOne_2/src/IO/Text/TextFile.cs` — bekannte Textdateien und Markerstruktur; als Parser-/Segmentierungsreferenz verwenden.
+- `/home/christian/projekte/CivOne_2/src/IO/FileSystem.cs` — `DATA_FILES`, `CopyDataFiles`, `DataFilesExist` und vorhandene case-insensitive Dateisuche; die Datei bleibt für Kopieren und Existenzprüfung zuständig, aber die Sprachlogik gehört in den separaten Service.
+- `/home/christian/projekte/CivOne_2/src/IO/Text/IOriginalTextLanguageValidationService.cs` — neues Interface für die fachliche Prüfung und das Ergebnisobjekt bzw. die Ergebnisverträge.
+- `/home/christian/projekte/CivOne_2/src/IO/Text/OriginalTextLanguageValidationService.cs` — neue zustandslose Implementierung für Dateiauswahl, Normalisierung, Hashvergleich und per-Datei-Toleranzregel.
+- `/home/christian/projekte/CivOne_2/src/Screens/StartupWizard/WizardActionHandler.cs` — `CopyDataFilesInBackgroundAsync`; Service injizieren und Warnstatus nach erfolgreichem Kopieren, aber vor Ressourcen-Reset setzen.
+- `/home/christian/projekte/CivOne_2/src/Screens/StartupWizard/WizardPageBuilder.cs` — nur falls die Warnung einen eigenen sichtbaren Wizard-Zustand statt einer Statusmeldung benötigt.
+- `/home/christian/projekte/CivOne_2/xunit/src/FileSystemTests.cs` — Dateikopie und Existenzprüfung; nur ergänzen, wenn die Kopplung zwischen Kopierresultat und Validierungsaufruf dort getestet wird.
+- `/home/christian/projekte/CivOne_2/xunit/src/OriginalTextLanguageValidationServiceTests.cs` — neue fokussierte Service-Tests mit temporären Dateien, selbst erfundenen Segmenten und mehreren Abweichungsfällen.
+- `/home/christian/projekte/CivOne_2/xunit/src/TextFileLocalizationTests.cs` — sicherstellen, dass lokalisierte deutsche Loaderdaten unverändert funktionieren.
+- `/home/christian/projekte/CivOne_2/translation/*.txt` — neue Wizard-Meldungen ergänzen, insbesondere Deutsch und englischen Schlüsseltext.
+
+**Verification**
+1. Relevante xUnit-Tests für `FileSystemTests` und `TextFileLocalizationTests` ausführen.
+2. Linux-Debug-Build mit `dotnet build runtime/sdl/CivOne.SDL.csproj -c DebugLinux -p:RunAnalyzersDuringBuild=false` ausführen.
+3. Manuell den Wizard mit `/home/christian/projekte/civ_orig` testen: erwartete englische Basis wird ohne Warnung akzeptiert.
+4. Mit einer temporären Kopie, in der ein repräsentatives Textsegment verändert oder durch deutsche Inhalte ersetzt wird, prüfen: eine einzelne Abweichung bleibt toleriert; ab zwei Abweichungen in derselben Datei bleibt die Kopie erfolgreich, die Warnung nennt genau diese Datei, und Ressourcen werden dennoch neu geladen.
+5. Mit fehlender Textdatei prüfen, dass weiterhin der bestehende Kopier-/Existenzfehler statt einer Sprachwarnung greift.
+
+**Decisions**
+- UX: Warnung und Fortfahren, kein hartes Blockieren.
+- Erkennung: Englisch gegen nicht verifiziert, keine automatische Unterscheidung vieler Sprachen.
+- Architektur: Interface plus zustandsloser Service; kein Delegate, weil die Fähigkeit ein mehrteiliges Prüfergebnis und eine stabile fachliche Regel kapselt.
+- Erkennung: mehrere kurze Hashsegmente pro Datei; Einzelabweichungen werden toleriert, eine Datei wird erst bei mindestens zwei Abweichungen beziehungsweise zu wenigen lesbaren Segmenten gemeldet.
+- Warnung: Ergebnis enthält die betroffenen Dateien sowie Treffer-/Abweichungszahlen, damit der Benutzer die fehlerhafte oder anderssprachige Datei erkennen kann.
+- Datenschutz/Copyright: keine längeren Originalzitate oder vollständigen Originaldateien im Code; nur Hashwerte und strukturelle Marker.
+- Die Warnung gilt nur für den Original-Fallback. Vorhandene deutsche Übersetzungsdateien werden nicht anhand englischer Fingerprints geprüft.
+- Ein unbekannter Fingerprint wird als nicht verifiziert behandelt, damit modifizierte oder andere legale Spielversionen nicht fälschlich als definitiv fehlerhaft behauptet werden.
+
+**Further Considerations**
+1. Die genaue Fingerprint-Auswahl sollte beim Implementieren gegen die konkrete `/home/christian/projekte/civ_orig`-Version erzeugt und anschließend als versionsgebundene Test-/Konfigurationsdaten dokumentiert werden. Die Hashwerte dürfen dabei nur aus den Originaldateien berechnet, nicht als Originaltext rekonstruiert oder in Logs ausgegeben werden.
+2. Vor der Implementierung festlegen, ob die Warnung bereits bei einer einzelnen nicht verifizierten Datei erscheint oder ob zusätzlich eine globale Mindestanzahl betroffener Dateien nötig ist. Die Empfehlung ist: pro Datei mindestens zwei Abweichungen als Schwelle, danach sofort warnen; so wird auch ein einzelnes falschsprachiges `KING.TXT` sichtbar.
+3. Falls künftig mehrere bekannte englische Releases unterstützt werden sollen, die Allowlist als mehrere Versionseinträge modellieren statt einzelne Hashwerte zu überschreiben.

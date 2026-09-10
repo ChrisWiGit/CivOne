@@ -665,3 +665,14 @@ runtime therefore takes down every later test in the same run.
 | CA1814 | Prefer jagged arrays over multidimensional | Not really useful and used a lot in the project. |
 | CA1307 | Specify StringComparison for clarity | Unit tests often intentionally use default string comparison behavior. Tests will fail if it changes. |
 | CA1002 | Do not expose generic lists | Unit tests often intentionally use generic lists for simplicity. |
+
+## Original Text Language Fingerprints
+
+The original text fallback validation is intentionally based on SHA-256 fingerprints of short, normalized segments.
+No longer text excerpts from original game data are stored in source code.
+
+The allowlist is version-bound.
+When a new English original release should be accepted, update the fingerprint definitions in [src/IO/Text/OriginalTextLanguageValidationDefaultDefinitions.cs](src/IO/Text/OriginalTextLanguageValidationDefaultDefinitions.cs) by recalculating hashes from the supported source files.
+
+Keep segment identifiers stable where possible.
+Stable identifiers make it easier to add additional known-good allowlist variants later without replacing historical entries.
