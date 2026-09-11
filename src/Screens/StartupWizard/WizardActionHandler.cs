@@ -255,7 +255,7 @@ namespace CivOne.Screens.StartupWizard
 					return;
 				}
 
-				OriginalTextLanguageValidationResult languageValidationResult = _originalTextLanguageValidationService.Validate(Settings.Instance.DataDirectory);
+				OriginalTextLanguageValidationResult languageValidationResult = _originalTextLanguageValidationService.Validate(_storageDirectory);
 				string warningSummary = FormatValidationSummary(languageValidationResult.FilesWithMismatches, maxFileCount: int.MaxValue);
 				string[] warningLines =
 				[

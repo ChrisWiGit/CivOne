@@ -174,6 +174,8 @@ namespace CivOne.Screens.StartupWizard
 				return true;
 			}
 
+#if DEBUG
+			// Debug-only test dialogs for message, warning, and error. These are not part of the normal wizard flow.
 			if (args[KeyModifier.Shift, Key.F1])
 			{
 				ShowTestDialog(WizardDialogKind.Message);
@@ -191,6 +193,7 @@ namespace CivOne.Screens.StartupWizard
 				ShowTestDialog(WizardDialogKind.Error);
 				return true;
 			}
+#endif			
 
 			if (args[Key.Escape])
 			{
