@@ -32,6 +32,23 @@ The behaviour is controlled by the **Simulate International Font** setting (**Sh
 | `InternationalSimulatedFontSet` | `src/Graphics/InternationalSimulatedFontSet.cs` |
 | `FontSetFactory`                | `src/Graphics/FontSetFactory.cs`                |
 
+## Original Fallback Text Language Mix
+
+The original text fallback now reads classic DOS-style bytes in a way that preserves Western European letters (for example German umlauts) when the source files are not UTF-8.
+
+This removes the previous issue where those letters could become unreadable or blank during fallback rendering.
+
+If the imported original text files are not recognized as English, the startup wizard shows a warning.
+
+The warning does not mean fallback text is broken.
+
+It means language consistency can differ in `Original language` mode:
+
+* Text loaded from imported original `.TXT` files follows the language of those original files.
+* CivOne texts that do not come from those original files (for example project-owned UI strings) continue to follow CivOne language selection.
+
+So a mixed-language experience is expected when non-English originals are used together with `Original language` mode.
+
 ## Number of Civilizations
 
 The game supports up to `Game.MaxPlayers` (32) total players (player 0 is always the Barbarians), so up to 30 civilizations can be controlled by the AI in a single game. This limit is bounded by two things: the `ITile.Visited` bitmask, a `uint` (32 bits, one bit per player), and the player colour tables behind `Common.PlayerColourLight`/`PlayerColourDark` (32 entries).

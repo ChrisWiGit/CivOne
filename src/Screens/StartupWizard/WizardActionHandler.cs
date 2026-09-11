@@ -260,12 +260,12 @@ namespace CivOne.Screens.StartupWizard
 				string[] warningLines =
 				[
 					T("One or more original text files were not recognized as English."),
-					T("If you use the translation feature in the game, texts in the game may be translated only in parts and may have missing characters (e.g. umlauts and French accents).")
+					T("If you choose Original language, some texts may stay in the imported original language while other texts stay in CivOne language.")
 				];
 				if (!languageValidationResult.IsVerified)
 				{
 					string filesForLog = string.Join(", ", languageValidationResult.FilesWithMismatches.Select(result => result.FileName));
-					_log($"The following files were not recognized to contain English text: {warningSummary}. Affected files: {filesForLog}. If you use the translation feature in the game, texts in the game may be translated only in parts and may have missing characters (e.g. umlauts and French accents).");
+					_log($"The following files were not recognized to contain English text: {warningSummary}. Affected files: {filesForLog}. If Original language is used, some texts may stay in the imported original language while other texts stay in CivOne language.");
 				}
 
 				_dispatchToMainThread(() =>
