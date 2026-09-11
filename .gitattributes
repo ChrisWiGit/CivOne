@@ -8,6 +8,9 @@
 *.csproj   text merge=union
 *.bat      text eol=crlf
 *.sh   	   text eol=lf
+*.ps1      text eol=lf
+civtext-hashgen.sh text eol=lf
+civtext-hashgen.ps1 text eol=lf
 
 *.png      binary
 *.jpg      binary

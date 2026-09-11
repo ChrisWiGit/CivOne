@@ -39,10 +39,10 @@ namespace CivOne.IO.Text
 
 			if (localizedPath == null)
 			{
-				return ReadArray(defaultPath);
+				return ReadArray(defaultPath, isOriginalFallback: true);
 			}
 
-			string[] localizedRawLines = ReadArray(localizedPath);
+			string[] localizedRawLines = ReadArray(localizedPath, isOriginalFallback: false);
 			bool hasEndMarker = HasEndMarker(localizedRawLines);
 			string[] localizedLines = hasEndMarker ? StripEndMarker(localizedRawLines) : localizedRawLines;
 
@@ -51,7 +51,7 @@ namespace CivOne.IO.Text
 				return localizedLines;
 			}
 
-			string[] defaultLines = ReadArray(defaultPath);
+			string[] defaultLines = ReadArray(defaultPath, isOriginalFallback: true);
 
 			if (defaultLines.Length == 0)
 			{
@@ -70,7 +70,7 @@ namespace CivOne.IO.Text
 		/// <returns>
 		/// Cleaned file lines, or an empty array when the file is missing.
 		/// </returns>
-		private static string[] ReadArray(string path)
+		private static string[] ReadArray(string path, bool isOriginalFallback)
 		{
 			if (!File.Exists(path))
 			{
@@ -78,9 +78,103 @@ namespace CivOne.IO.Text
 				return [];
 			}
 
-			return [.. File
-				.ReadLines(path, Encoding.UTF8)
-			.Where(line => !IsCommentLine(line))];
+			if (!isOriginalFallback)
+			{
+				return [.. File
+					.ReadLines(path, Encoding.UTF8)
+				.Where(line => !IsCommentLine(line))];
+			}
+
+			byte[] bytes = File.ReadAllBytes(path);
+			string? decodedText = DecodeOriginalFallbackText(path, bytes);
+			return [.. SplitLines(decodedText ?? string.Empty).Where(line => !IsCommentLine(line))];
+		}
+
+		private static string? DecodeOriginalFallbackText(string path, byte[] bytes)
+		{
+			if (TryDecodeStrictUtf8(bytes, out string? utf8Text))
+			{
+				return utf8Text;
+			}
+
+			Encoding? cp437 = TryGetCodePageEncoding(437);
+			if (cp437 != null)
+			{
+				RuntimeHandler.Runtime.Log($"Decoding original fallback text as CP437: {path}");
+				return cp437.GetString(bytes);
+			}
+
+			RuntimeHandler.Runtime.Log($"CP437 unavailable, decoding original fallback text with built-in DOS-Western fallback: {path}");
+			return DecodeAsDosWesternFallback(bytes);
+		}
+
+		private static bool TryDecodeStrictUtf8(byte[] bytes, out string? decoded)
+		{
+			decoded = null;
+			try
+			{
+				decoded = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true).GetString(bytes);
+				return true;
+			}
+			catch (DecoderFallbackException)
+			{
+				return false;
+			}
+		}
+
+		private static Encoding? TryGetCodePageEncoding(int codePage)
+		{
+			try
+			{
+				return Encoding.GetEncoding(codePage);
+			}
+			catch (Exception exception) when (exception is ArgumentException or NotSupportedException)
+			{
+				return null;
+			}
+		}
+
+		private static string DecodeAsDosWesternFallback(byte[] bytes)
+		{
+			char[] output = new char[bytes.Length];
+			for (int i = 0; i < bytes.Length; i++)
+			{
+				output[i] = bytes[i] switch
+				{
+					0x80 => '\u00C7',
+					0x81 => '\u00FC',
+					0x82 => '\u00E9',
+					0x83 => '\u00E2',
+					0x84 => '\u00E4',
+					0x85 => '\u00E0',
+					0x87 => '\u00E7',
+					0x88 => '\u00EA',
+					0x89 => '\u00EB',
+					0x8A => '\u00E8',
+					0x8B => '\u00EF',
+					0x8C => '\u00EE',
+					0x8D => '\u00EC',
+					0x8E => '\u00C4',
+					0x93 => '\u00F4',
+					0x94 => '\u00F6',
+					0x95 => '\u00F2',
+					0x96 => '\u00FB',
+					0x99 => '\u00D6',
+					0x9A => '\u00DC',
+					0xE1 => '\u00DF',
+					_ => (char)bytes[i]
+				};
+			}
+
+			return new string(output);
+		}
+
+		private static string[] SplitLines(string text)
+		{
+			string normalized = text
+				.Replace("\r\n", "\n", StringComparison.Ordinal)
+				.Replace('\r', '\n');
+			return normalized.Split('\n');
 		}
 
 		/// <summary>

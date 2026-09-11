@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,9 +6,9 @@ using System.Threading.Tasks;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.IO;
+using CivOne.IO.Text;
 using CivOne.Services;
 using CivOne.Services.Browser;
-using CivOne.Services.Translation;
 using CivOne.Sound;
 using CivOne.Sound.Cvl;
 using CivOne.Sound.Playback;
@@ -27,21 +18,31 @@ namespace CivOne.Screens.StartupWizard
 	internal sealed class WizardActionHandler(
 		Func<ITranslationService> translationServiceAccessor,
 		IBrowserService browserService,
+		IOriginalTextLanguageValidationService originalTextLanguageValidationService,
 		string storageDirectory,
 		Func<string, string?> browseFolder,
 		Action<string> log,
 		Action showSetupScreen,
 		Action<Action> dispatchToMainThread,
-		Action requestRefresh) : IWizardActionHandler
+		Action requestRefresh,
+		Action<string[]>? showWarningDialog = null,
+		Func<string, bool>? copyDataFiles = null,
+		Func<bool>? dataFilesExist = null,
+		Func<Task>? copyDelayAsync = null) : IWizardActionHandler
 	{
 		private readonly Func<ITranslationService> _translationServiceAccessor = translationServiceAccessor ?? throw new ArgumentNullException(nameof(translationServiceAccessor));
 		private readonly IBrowserService _browserService = browserService ?? throw new ArgumentNullException(nameof(browserService));
+		private readonly IOriginalTextLanguageValidationService _originalTextLanguageValidationService = originalTextLanguageValidationService ?? throw new ArgumentNullException(nameof(originalTextLanguageValidationService));
 		private readonly string _storageDirectory = storageDirectory ?? string.Empty;
 		private readonly Func<string, string?> _browseFolder = browseFolder ?? throw new ArgumentNullException(nameof(browseFolder));
 		private readonly Action<string> _log = log ?? (_ => { });
 		private readonly Action _showSetupScreen = showSetupScreen ?? (() => { });
 		private readonly Action<Action> _dispatchToMainThread = dispatchToMainThread ?? throw new ArgumentNullException(nameof(dispatchToMainThread));
 		private readonly Action _requestRefresh = requestRefresh ?? (() => { });
+		private readonly Action<string[]> _showWarningDialog = showWarningDialog ?? (_ => { });
+		private readonly Func<string, bool> _copyDataFiles = copyDataFiles ?? FileSystem.CopyDataFiles;
+		private readonly Func<bool> _dataFilesExist = dataFilesExist ?? (() => FileSystem.DataFilesExist());
+		private readonly Func<Task> _copyDelayAsync = copyDelayAsync ?? (() => Task.Delay(TimeSpan.FromSeconds(1)));
 
 		public WizardActionResult Execute(WizardEntry entry, WizardState engine)
 		{
@@ -242,9 +243,9 @@ namespace CivOne.Screens.StartupWizard
 			try
 			{
 				// Show output even if copying is done in an instant.
-				await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+				await _copyDelayAsync().ConfigureAwait(false);
 
-				if (!FileSystem.CopyDataFiles(path) || !FileSystem.DataFilesExist())
+				if (!_copyDataFiles(path) || !_dataFilesExist())
 				{
 					_dispatchToMainThread(() =>
 					{
@@ -254,14 +255,31 @@ namespace CivOne.Screens.StartupWizard
 					return;
 				}
 
+				OriginalTextLanguageValidationResult languageValidationResult = _originalTextLanguageValidationService.Validate(_storageDirectory);
+				string warningSummary = FormatValidationSummary(languageValidationResult.FilesWithMismatches, maxFileCount: int.MaxValue);
+				string[] warningLines =
+				[
+					T("One or more original text files were not recognized as English."),
+					T("If you choose Original language, some texts may stay in the imported original language while other texts stay in CivOne language.")
+				];
+				if (!languageValidationResult.IsVerified)
+				{
+					string filesForLog = string.Join(", ", languageValidationResult.FilesWithMismatches.Select(result => result.FileName));
+					_log($"The following files were not recognized to contain English text: {warningSummary}. Affected files: {filesForLog}. If Original language is used, some texts may stay in the imported original language while other texts stay in CivOne language.");
+				}
+
 				_dispatchToMainThread(() =>
 				{
 					Resources.ClearInstance();
 					engine.StatusMessage = copySucceededMessage;
+					if (!languageValidationResult.IsVerified)
+					{
+						_showWarningDialog(warningLines);
+					}
 					_requestRefresh();
 				});
 			}
-			catch (IOException exception)
+			catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException)
 			{
 				_log($"Copying data files failed for '{path}': {exception.Message}");
 				_dispatchToMainThread(() =>
@@ -478,6 +496,27 @@ namespace CivOne.Screens.StartupWizard
 			return remainingCount > 0
 				? $"{shownFiles} (+{remainingCount})"
 				: shownFiles;
+		}
+
+		private static string FormatValidationSummary(IReadOnlyList<OriginalTextLanguageValidationFileResult> fileResults, int maxFileCount)
+		{
+			if (fileResults.Count == 0)
+			{
+				return string.Empty;
+			}
+
+			int shownCount = Math.Min(maxFileCount, fileResults.Count);
+			string shown = string.Join(", ", fileResults
+				.Take(shownCount)
+				.Select(result => $"{result.FileName} ({result.MatchedSegments}/{result.TotalSegments})"));
+
+			int remainingCount = fileResults.Count - shownCount;
+			if (remainingCount > 0)
+			{
+				return $"{shown} (+{remainingCount})";
+			}
+
+			return shown;
 		}
 
 		private void ApplyAspectRatio(string? value, WizardState state)

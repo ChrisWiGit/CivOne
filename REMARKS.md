@@ -32,6 +32,23 @@ The behaviour is controlled by the **Simulate International Font** setting (**Sh
 | `InternationalSimulatedFontSet` | `src/Graphics/InternationalSimulatedFontSet.cs` |
 | `FontSetFactory`                | `src/Graphics/FontSetFactory.cs`                |
 
+## Original Fallback Text Language Mix
+
+The original text fallback now reads classic DOS-style bytes in a way that preserves Western European letters (for example German umlauts) when the source files are not UTF-8.
+
+This removes the previous issue where those letters could become unreadable or blank during fallback rendering.
+
+If the imported original text files are not recognized as English, the startup wizard shows a warning.
+
+The warning does not mean fallback text is broken.
+
+It means language consistency can differ in `Original language` mode:
+
+* Text loaded from imported original `.TXT` files follows the language of those original files.
+* CivOne texts that do not come from those original files (for example project-owned UI strings) continue to follow CivOne language selection.
+
+So a mixed-language experience is expected when non-English originals are used together with `Original language` mode.
+
 ## Number of Civilizations
 
 The game supports up to `Game.MaxPlayers` (32) total players (player 0 is always the Barbarians), so up to 30 civilizations can be controlled by the AI in a single game. This limit is bounded by two things: the `ITile.Visited` bitmask, a `uint` (32 bits, one bit per player), and the player colour tables behind `Common.PlayerColourLight`/`PlayerColourDark` (32 entries).
@@ -665,3 +682,14 @@ runtime therefore takes down every later test in the same run.
 | CA1814 | Prefer jagged arrays over multidimensional | Not really useful and used a lot in the project. |
 | CA1307 | Specify StringComparison for clarity | Unit tests often intentionally use default string comparison behavior. Tests will fail if it changes. |
 | CA1002 | Do not expose generic lists | Unit tests often intentionally use generic lists for simplicity. |
+
+## Original Text Language Fingerprints
+
+The original text fallback validation is intentionally based on SHA-256 fingerprints of short, normalized segments.
+No longer text excerpts from original game data are stored in source code.
+
+The allowlist is version-bound.
+When a new English original release should be accepted, update the fingerprint definitions in [src/IO/Text/OriginalTextLanguageValidationDefaultDefinitions.cs](src/IO/Text/OriginalTextLanguageValidationDefaultDefinitions.cs) by recalculating hashes from the supported source files.
+
+Keep segment identifiers stable where possible.
+Stable identifiers make it easier to add additional known-good allowlist variants later without replacing historical entries.

@@ -1,12 +1,3 @@
-// CivOne
-//
-// To the extent possible under law, the person who associated CC0 with
-// CivOne has waived all copyright and related or neighboring rights
-// to CivOne.
-//
-// You should have received a copy of the CC0 legalcode along with this
-// work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 using System;
 using System.Collections.Concurrent;
 using System.Drawing;
@@ -14,6 +5,7 @@ using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.IO;
+using CivOne.IO.Text;
 using CivOne.Screens.StartupWizard.DosFont;
 using CivOne.Services;
 using CivOne.Services.Browser;
@@ -65,6 +57,9 @@ namespace CivOne.Screens.StartupWizard
 		/// re-rendering the entire page. Set by mouse moves that only require marker updates.
 		/// </summary>
 		private bool _markerOnlyRefresh;
+		private string? _dialogMessage;
+		private string[]? _dialogLines;
+		private WizardDialogKind _dialogKind;
 
 		/// <inheritdoc />
 		public override bool UseFullWindowCanvas => true;
@@ -87,6 +82,7 @@ namespace CivOne.Screens.StartupWizard
 			_actionHandler = new WizardActionHandler(
 				translationServiceAccessor: TranslationServiceFactory.GetCurrent,
 				browserService: BrowserServiceFactory.Instance,
+				originalTextLanguageValidationService: OriginalTextLanguageValidationServiceFactory.Create(),
 				storageDirectory: Runtime.StorageDirectory,
 				browseFolder: caption => Runtime.BrowseFolder(caption),
 				log: message => Log(message),
@@ -97,7 +93,8 @@ namespace CivOne.Screens.StartupWizard
 					ScreenServiceFactory.CreateCommandService().AddScreen(setup);
 				},
 				dispatchToMainThread: _pendingMainThreadActions.Enqueue,
-				requestRefresh: Refresh);
+				requestRefresh: Refresh,
+				showWarningDialog: lines => ApplyActionResult(new WizardActionResult(ShouldRefresh: true, WarningLines: lines)));
 			_renderingDelegate = new WizardRenderingDelegate(this, Translate);
 			_mouseMarkerDelegate = new WizardMouseMarkerDelegate(this);
 			_renderingContext = new WizardRenderingContext();
@@ -168,6 +165,36 @@ namespace CivOne.Screens.StartupWizard
 		/// </summary>
 		public override bool KeyDown(KeyboardEventArgs args)
 		{
+			if (IsDialogOpen())
+			{
+				if (args.Key is Key.Enter or Key.Escape or Key.Space)
+				{
+					CloseWarningDialog();
+				}
+				return true;
+			}
+
+#if DEBUG
+			// Debug-only test dialogs for message, warning, and error. These are not part of the normal wizard flow.
+			if (args[KeyModifier.Shift, Key.F1])
+			{
+				ShowTestDialog(WizardDialogKind.Message);
+				return true;
+			}
+
+			if (args[KeyModifier.Shift, Key.F2])
+			{
+				ShowTestDialog(WizardDialogKind.Warning);
+				return true;
+			}
+
+			if (args[KeyModifier.Shift, Key.F3])
+			{
+				ShowTestDialog(WizardDialogKind.Error);
+				return true;
+			}
+#endif			
+
 			if (args[Key.Escape])
 			{
 				// The wizard has no visible fullscreen/exit entry, so allow ESC to toggle fullscreen.
@@ -249,6 +276,15 @@ namespace CivOne.Screens.StartupWizard
 		/// </summary>
 		public override bool MouseDown(ScreenEventArgs args)
 		{
+			if (IsDialogOpen())
+			{
+				if (args.Buttons == MouseButton.Left && _renderingContext.MessageBox.Contains(args.X, args.Y))
+				{
+					CloseWarningDialog();
+				}
+				return true;
+			}
+
 			if (args.Buttons != MouseButton.Left)
 			{
 				return false;
@@ -422,6 +458,26 @@ namespace CivOne.Screens.StartupWizard
 
 		private void ApplyActionResult(WizardActionResult actionResult)
 		{
+			if (actionResult.WarningLines != null && actionResult.WarningLines.Length > 0)
+			{
+				_dialogLines = actionResult.WarningLines;
+				_dialogMessage = null;
+				_dialogKind = WizardDialogKind.Warning;
+				_markerOnlyRefresh = false;
+				Refresh();
+				return;
+			}
+
+			if (!string.IsNullOrWhiteSpace(actionResult.WarningMessage))
+			{
+				_dialogLines = null;
+				_dialogMessage = actionResult.WarningMessage;
+				_dialogKind = WizardDialogKind.Warning;
+				_markerOnlyRefresh = false;
+				Refresh();
+				return;
+			}
+
 			if (actionResult.ShouldClose)
 			{
 				Destroy();
@@ -464,10 +520,61 @@ namespace CivOne.Screens.StartupWizard
 			_renderingContext.StatusMessage = _state.StatusMessage;
 
 			_renderingDelegate.Render(_state, page, _renderingContext);
+			_renderingContext.MessageBox = Rectangle.Empty;
+			string dialogMessage = _dialogMessage ?? string.Empty;
+			if (_dialogMessage != null || (_dialogLines != null && _dialogLines.Length > 0))
+			{
+				switch (_dialogKind)
+				{
+					case WizardDialogKind.Message:
+						_renderingDelegate.DrawMessageDialog(Translate("Message"), dialogMessage, _renderingContext);
+						break;
+					case WizardDialogKind.Error:
+						_renderingDelegate.DrawErrorDialog(dialogMessage, _renderingContext);
+						break;
+					default:
+						if (_dialogLines != null && _dialogLines.Length > 0)
+						{
+							_renderingDelegate.DrawWarningDialog(_dialogLines, _renderingContext);
+						}
+						else
+						{
+							_renderingDelegate.DrawWarningDialog(dialogMessage, _renderingContext);
+						}
+						break;
+				}
+			}
 
 			// Marker is intentionally not drawn here; HasUpdate draws it after snapshotting
 			// the marker-free page so cursor moves can restore the page from the snapshot.
 		}
+
+		private void CloseWarningDialog()
+		{
+			_dialogLines = null;
+			_dialogMessage = null;
+			_renderingContext.MessageBox = Rectangle.Empty;
+			_markerOnlyRefresh = false;
+			Refresh();
+		}
+
+		private void ShowTestDialog(WizardDialogKind kind)
+		{
+			_dialogLines = null;
+			_dialogKind = kind;
+			_dialogMessage = kind switch
+			{
+				WizardDialogKind.Message => Translate("This is a test message dialog."),
+				WizardDialogKind.Error => Translate("This is a test error dialog."),
+				_ => Translate("This is a test warning dialog.")
+			};
+			_markerOnlyRefresh = false;
+			Refresh();
+		}
+
+		private bool IsDialogOpen()
+			=> !string.IsNullOrWhiteSpace(_dialogMessage)
+				|| (_dialogLines != null && _dialogLines.Length > 0);
 
 		private void ResetEntryScrollOffsetIfPageChanged()
 		{
