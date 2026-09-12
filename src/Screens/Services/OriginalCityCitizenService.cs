@@ -244,10 +244,12 @@ namespace CivOne.Screens.Services
 
 			if (CityBuildings.HasBuilding<Temple>())
 			{
-				// The temple is gated on an advance the way the cathedral is gated on Religion, only with two
-				// steps instead of one: Mysticism makes it worth two, Ceremonial Burial alone one, and without
-				// either the building has no effect at all. That matters for captured cities, whose temples
-				// stay idle until the new owner knows the advance.
+				// The temple is gated the way the cathedral is, only with two steps instead of one: Mysticism
+				// makes it worth two, Ceremonial Burial alone one, and without either it has no effect.
+				// All three branches are reachable. Ceremonial Burial is the temple's build prerequisite, so
+				// the empty branch belongs to a captured city, whose temple stays idle until its new owner
+				// researches the advance. Mysticism requires Ceremonial Burial, so "Mysticism without
+				// Ceremonial Burial" is the one combination that cannot occur.
 				bool hasMysticism = City.PlayerIntf.HasAdvance<Mysticism>();
 
 				if (hasMysticism)
@@ -394,9 +396,13 @@ namespace CivOne.Screens.Services
 		/// <summary>
 		/// Gets how much unhappiness a cathedral takes away.
 		///
-		/// The cathedral works only once the owner knows Religion. Michelangelo’s Chapel raises the effect
-		/// for every city of its owner, wherever those cities stand: the chapel is not bound to a continent,
-		/// only J.S. Bach’s Cathedral is.
+		/// The whole block sits behind a check on the advance Religion. Religion is also what allows a
+		/// cathedral to be built, so the check decides one case only, and it is a real one: a captured city
+		/// brings the building without bringing the advance. Such a cathedral is idle until its new owner
+		/// researches Religion, and then it works retroactively.
+		///
+		/// Michelangelo’s Chapel raises the effect for every city of its owner, wherever those cities stand:
+		/// the chapel is not bound to a continent, only J.S. Bach’s Cathedral is.
 		/// </summary>
 		/// <returns>The unhappiness the cathedral removes, or 0 when there is none.</returns>
 		internal override int CathedralDelta()

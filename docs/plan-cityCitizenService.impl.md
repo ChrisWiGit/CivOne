@@ -175,7 +175,8 @@ branch and its own PR. It is listed here so the remaining debt stays visible, no
 is turned on.
 
 - [x] E1 Q1 settled — from the decompilation after all, not from a DOSBox run (§6). No experiment needed.
-- [ ] E2 Play test the corrected model. Manual work, written out in §13. The blocks in §13.3 in order:
+- [ ] E2 Play test the corrected model. Manual work. The working sheet to tick off while playing is
+  [playtest-cityHappiness.md](playtest-cityHappiness.md); §13 holds the longer version. The blocks in §13.3:
   - [ ] E2.1 Empire penalty (§13.3 A) — it must arrive city by city, not everywhere at once.
   - [ ] E2.2 Pending unhappiness (§13.3 B) — compare a colosseum against the table in §6.
   - [ ] E2.3 Cathedral (§13.3 C) — nothing without Religion, global with Michelangelo. The two changes a
@@ -442,9 +443,14 @@ Corrections this forces on CivOne:
 - **Cathedral: the inversion claimed here was never real.** An earlier revision of this plan said CivOne had the
   `−4` base and the `−6` with Michelangelo the wrong way round. It does not; `CathedralDelta` was always right
   about the two numbers. The genuine defects are the two below. Noted so the claim does not come back.
-- **Cathedral is missing its advance gate and over-restricts Michelangelo.** The whole block is gated on the
-  advance **Religion** in the original, which CivOne does not check, and Michelangelo is global for its owner
-  while CivOne restricts it to the city's continent.
+- **Cathedral over-restricts Michelangelo.** The chapel is global for its owner, while CivOne restricts it to
+  the city's continent. That check is removed; only J.S. Bach is continent-bound.
+- **Cathedral is missing its advance gate.** The whole block sits behind a check on **Religion**, which CivOne
+  does not have. The gate was briefly removed from this plan on the argument that Religion is the cathedral's
+  own build prerequisite and the check could therefore never fire. That argument is wrong, and the case it
+  misses is the one that matters: **a captured city brings the building without the advance**. Such a
+  cathedral is idle until its new owner researches Religion, and then it works retroactively. The same holds
+  for the temple, one step further down — see the table in §1.
 - **Temple and Oracle needed correcting after all.** An earlier revision of this plan claimed CivOne's doubling
   (`<<= 1`) produced the same numbers as the original's addition. It does not, because CivOne has **no advance
   gate**: its temple is worth one even to an owner who knows neither Ceremonial Burial nor Mysticism, where the
@@ -452,6 +458,18 @@ Corrections this forces on CivOne:
   additive, gated, with the oracle following the temple's Mysticism step but not its Ceremonial Burial gate.
   Practically this shows up on **captured cities**, whose temples stay idle until the new owner knows the
   advance, and Mysticism raises every temple the owner has at once.
+
+  The three happiness buildings are gated differently, and the difference is easy to get wrong:
+
+  | building | gate | what a captured copy does for an owner without the advance |
+  |---|---|---|
+  | Colosseum | none | works at once |
+  | Temple | two steps: Mysticism → 2, else Ceremonial Burial → 1, else 0 | nothing, until Ceremonial Burial is researched |
+  | Cathedral | one step: Religion | nothing, until Religion is researched |
+
+  Mysticism requires Ceremonial Burial and advances are never lost, so "Mysticism without Ceremonial Burial"
+  is the one combination that cannot occur in a game. All three temple branches are otherwise reachable.
+
 - **Wonder ownership follows the city.** Capturing a city transfers its wonder's effect to the captor. And
   obsolescence is checked against **all** civilizations 1–7: a wonder goes obsolete as soon as *any* player has
   the obsoleting advance, not only its owner. Verify CivOne's `HasWonderEffect` / `WonderObsolete` against both
@@ -966,12 +984,16 @@ belong to the follow-up branch, after the manual play test (§7 *Time-box*).
   at the end of the computation. Its default has the bit set, so the normal path is the one implemented; there
   is simply no equivalent switch here. Treat this as debug-only legacy behavior, never as part of the citizen
   model.
-3. **Temple/Oracle keep CivOne's doubling form.** The original is additive; the two produce identical numbers
-   for every combination, so the code is left alone with a comment.
+3. **~~Temple/Oracle keep CivOne's doubling form.~~** Withdrawn — the two do *not* produce identical numbers,
+   because CivOne had no advance gate at all. See §1; the block was rewritten in the additive form.
 4. **The two unidentified martial-law slots are not ported.** The documented three-unit martial law is
    implemented.
 5. **Difficulty 5 (Deity) does not exist in the original** and repeats the emperor row for the empire-size
    term (H6). Its own difficulty still counts in the `Size + Difficulty − 6` part.
+6. **~~Build prerequisites are not re-checked as effect gates.~~** Withdrawn. The gates are ported, both of
+   them. Recorded here because the mistake is easy to repeat: an advance check that guards a building whose
+   own prerequisite is that advance looks redundant, and is not. The case it decides is the **captured city**,
+   which owns the building without the advance, and which starts working once the advance is researched.
 
 ---
 

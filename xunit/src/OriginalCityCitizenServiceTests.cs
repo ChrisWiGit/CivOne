@@ -411,9 +411,13 @@ namespace CivOne.UnitTests
 
         [Theory]
         // ceremonial burial, mysticism, oracle, expected unhappy out of the four the city starts with
-        [InlineData(false, false, false, 4)]   // without an advance the temple does nothing at all
+        //
+        // The rows with Mysticism but without Ceremonial Burial cannot occur in a game, because Mysticism
+        // requires Ceremonial Burial and advances are never lost. They are kept as a guard on the code path:
+        // the Mysticism step must not quietly depend on the branch below it.
+        [InlineData(false, false, false, 4)]   // no advance: the captured city, the temple does nothing
         [InlineData(true, false, false, 3)]    // Ceremonial Burial makes it worth one
-        [InlineData(false, true, false, 2)]    // Mysticism makes it worth two, Ceremonial Burial is not needed
+        [InlineData(false, true, false, 2)]    // Mysticism makes it worth two on its own
         [InlineData(true, true, false, 2)]     // and it does not stack with Ceremonial Burial
         [InlineData(false, false, true, 3)]    // the oracle needs a temple, not an advance
         [InlineData(true, false, true, 2)]     // one for the temple, one for the oracle
@@ -446,8 +450,10 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void ColosseumMakesThreeCitizensContent()
+        public void ColosseumMakesThreeCitizensContentWithoutNeedingAnAdvance()
         {
+            // The colosseum is the one happiness building without a gate: no advance is granted here, and a
+            // captured colosseum works for its new owner straight away.
             _city.WithBuilding<Colosseum>();
 
             Assert.Equal(1, Testee().GetCitizenTypes().unhappy);
@@ -697,6 +703,7 @@ namespace CivOne.UnitTests
         }
 
         [Theory]
+        // The case without Religion is the captured city: it owns the building but not the advance.
         [InlineData(false, false, 0)]   // without Religion the cathedral does nothing
         [InlineData(true, false, 4)]    // with Religion it makes four citizens content
         [InlineData(true, true, 6)]     // Michelangelo raises it, wherever the chapel stands
