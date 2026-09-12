@@ -16,8 +16,8 @@ namespace CivOne.UnitTests
     /// Tests for the corrected happiness model.
     ///
     /// The cases are grouped the way the implementation plan groups them: the base term and the empire size
-    /// penalty, the pending unhappiness in both refill readings, the stage order, the single modifiers, and
-    /// the two entry points of the service.
+    /// penalty, the pending unhappiness, the stage order, the single modifiers, and the two entry points of
+    /// the service.
     /// </summary>
     public class OriginalCityCitizenServiceTests : TestsBase
     {
@@ -48,9 +48,7 @@ namespace CivOne.UnitTests
         private OriginalCityCitizenService Create(PendingUnhappinessRefill refill, int? luxuryRate = null)
             => new(_city, _city, _game, _specialists, _map, refill, luxuryRate);
 
-        private OriginalCityCitizenService Halving() => Create(new HalvingPendingUnhappinessDelegate().Refill);
-
-        private OriginalCityCitizenService FullDrain() => Create(new FullDrainPendingUnhappinessDelegate().Refill);
+        private OriginalCityCitizenService Testee() => Create(new EqualisingPendingUnhappinessDelegate().Refill);
 
         private void WithEmpire(int cityCount, int cityIndex = 0)
         {
@@ -85,7 +83,7 @@ namespace CivOne.UnitTests
             _game.Difficulty = difficulty;
             WithGovernment(government);
 
-            Assert.Equal(expected, Halving().EmpireSizeBase());
+            Assert.Equal(expected, Testee().EmpireSizeBase());
         }
 
         [Fact]
@@ -94,7 +92,7 @@ namespace CivOne.UnitTests
             _game.Difficulty = 4;
             ((MockedPlayer)_city.MockPlayer!).withGovernment(new CivOne.Governments.Communism());
 
-            Assert.Equal(9, Halving().EmpireSizeBase());
+            Assert.Equal(9, Testee().EmpireSizeBase());
         }
 
         [Theory]
@@ -109,7 +107,7 @@ namespace CivOne.UnitTests
             _city.Size = 10;
             _game.Difficulty = difficulty;
 
-            Assert.Equal(expected, Halving().BaseUnhappy());
+            Assert.Equal(expected, Testee().BaseUnhappy());
         }
 
         [Theory]
@@ -123,7 +121,7 @@ namespace CivOne.UnitTests
             WithEmpire(cityCount);
 
             // Neither the difficulty nor the empire size reaches a computer player.
-            Assert.Equal(7, Halving().BaseUnhappy());
+            Assert.Equal(7, Testee().BaseUnhappy());
         }
 
         [Theory]
@@ -138,7 +136,7 @@ namespace CivOne.UnitTests
             for (int slot = 0; slot < sizeBase; slot++)
             {
                 WithEmpire(sizeBase, slot);
-                Assert.Equal(0, Halving().EmpireSizePenalty());
+                Assert.Equal(0, Testee().EmpireSizePenalty());
             }
         }
 
@@ -157,7 +155,7 @@ namespace CivOne.UnitTests
             for (int slot = 0; slot < sizeBase; slot++)
             {
                 WithEmpire(sizeBase + 1, slot);
-                if (Halving().EmpireSizePenalty() > 0)
+                if (Testee().EmpireSizePenalty() > 0)
                 {
                     penalised++;
                     penalisedSlot = slot;
@@ -183,7 +181,7 @@ namespace CivOne.UnitTests
             for (int slot = 0; slot < SizeBase; slot++)
             {
                 WithEmpire(cityCount, slot);
-                if (Halving().EmpireSizePenalty() > 0)
+                if (Testee().EmpireSizePenalty() > 0)
                 {
                     penalised++;
                 }
@@ -201,7 +199,7 @@ namespace CivOne.UnitTests
             // Base 14 under a despotism, 45 cities, slot 0: the penalty is 2.
             WithEmpire(45);
 
-            OriginalCityCitizenService testee = Halving();
+            OriginalCityCitizenService testee = Testee();
 
             Assert.Equal(2, testee.EmpireSizePenalty());
 
@@ -220,7 +218,7 @@ namespace CivOne.UnitTests
             // Base 14 under a despotism, 98 cities, slot 0: the penalty is 6.
             WithEmpire(98);
 
-            OriginalCityCitizenService testee = Halving();
+            OriginalCityCitizenService testee = Testee();
 
             Assert.Equal(6, testee.EmpireSizePenalty());
             Assert.Equal(1, testee.BaseUnhappy());
@@ -231,10 +229,10 @@ namespace CivOne.UnitTests
         public void DeityUsesTheEmperorEmpireSize()
         {
             _game.Difficulty = 4;
-            int emperor = Halving().EmpireSizeBase();
+            int emperor = Testee().EmpireSizeBase();
 
             _game.Difficulty = 5;
-            int deity = Halving().EmpireSizeBase();
+            int deity = Testee().EmpireSizeBase();
 
             Assert.Equal(6, emperor);
             Assert.Equal(emperor, deity);
@@ -258,18 +256,17 @@ namespace CivOne.UnitTests
         {
             WithPendingUnhappiness();
 
-            Assert.Equal(8, Halving().BaseUnhappy());
-            Assert.Equal(4, Halving().GetCitizenTypes().unhappy + Halving().GetCitizenTypes().redShirt);
-            Assert.Equal(4, FullDrain().GetCitizenTypes().unhappy + FullDrain().GetCitizenTypes().redShirt);
+            Assert.Equal(8, Testee().BaseUnhappy());
+            Assert.Equal(4, Testee().GetCitizenTypes().unhappy + Testee().GetCitizenTypes().redShirt);
         }
 
         [Fact]
-        public void HalvingGivesBackPartOfAnImprovement()
+        public void AnImprovementIsPartlyAbsorbedByThePendingUnhappiness()
         {
             WithPendingUnhappiness();
             _city.WithBuilding<Colosseum>();
 
-            CitizenTypes ct = Halving().GetCitizenTypes();
+            CitizenTypes ct = Testee().GetCitizenTypes();
 
             // The colosseum makes three citizens content, two of them turn unhappy again.
             Assert.Equal(3, ct.unhappy + ct.redShirt);
@@ -277,28 +274,16 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void FullDrainGivesBackAllOfAnImprovement()
-        {
-            WithPendingUnhappiness();
-            _city.WithBuilding<Colosseum>();
-
-            CitizenTypes ct = FullDrain().GetCitizenTypes();
-
-            // The colosseum is absorbed completely while anything is still pending.
-            Assert.Equal(4, ct.unhappy + ct.redShirt);
-        }
-
-        [Theory]
-        [InlineData(true, 2)]    // halving
-        [InlineData(false, 4)]   // full drain
-        public void ShakespeareIsNotAbsoluteWhileUnhappinessIsPending(bool halving, int expectedUnhappy)
+        public void ShakespeareIsNotAbsoluteWhileUnhappinessIsPending()
         {
             WithPendingUnhappiness();
             _city.WithWonder<ShakespearesTheatre>();
 
-            CitizenTypes ct = halving ? Halving().GetCitizenTypes() : FullDrain().GetCitizenTypes();
+            CitizenTypes ct = Testee().GetCitizenTypes();
 
-            Assert.Equal(expectedUnhappy, ct.unhappy + ct.redShirt);
+            // Shakespeare removes all four visible unhappy citizens, then the pending four are balanced
+            // against the empty visible side, which brings two of them back.
+            Assert.Equal(2, ct.unhappy + ct.redShirt);
         }
 
         [Fact]
@@ -306,7 +291,7 @@ namespace CivOne.UnitTests
         {
             _city.WithWonder<ShakespearesTheatre>();
 
-            CitizenTypes ct = Halving().GetCitizenTypes();
+            CitizenTypes ct = Testee().GetCitizenTypes();
 
             Assert.Equal(0, ct.unhappy + ct.redShirt);
             Assert.Equal(6, ct.content);
@@ -328,7 +313,7 @@ namespace CivOne.UnitTests
                 new MockedUnit(6, 6).WithHome(_city)
             ];
 
-            Assert.Equal(0, Halving().GetCitizenTypes().unhappy);
+            Assert.Equal(0, Testee().GetCitizenTypes().unhappy);
         }
 
         [Fact]
@@ -348,7 +333,7 @@ namespace CivOne.UnitTests
             // two away again in stage 5.
             _game.OnGetUnits = (_, _) => [new MockedUnit(5, 5).WithHome(_city)];
 
-            Assert.Equal(0, Halving().GetCitizenTypes().unhappy);
+            Assert.Equal(0, Testee().GetCitizenTypes().unhappy);
         }
 
         // ── The stage order ───────────────────────────────────────────────────────────────────────────
@@ -364,7 +349,7 @@ namespace CivOne.UnitTests
 
             // Three unhappy citizens meet four points of building effect. The spare point belongs to stage
             // three and must not pay for the war weariness of stage four.
-            CitizenTypes ct = Halving().GetCitizenTypes();
+            CitizenTypes ct = Testee().GetCitizenTypes();
 
             Assert.Equal(1, ct.unhappy + ct.redShirt);
         }
@@ -376,7 +361,7 @@ namespace CivOne.UnitTests
         {
             ((MockedPlayer)_city.MockPlayer!).WithWonderEffect<HangingGardens>();
 
-            CitizenTypes ct = Halving().GetCitizenTypes();
+            CitizenTypes ct = Testee().GetCitizenTypes();
 
             Assert.Equal(1, ct.happy);
             Assert.Equal(4, ct.unhappy);
@@ -387,7 +372,7 @@ namespace CivOne.UnitTests
         {
             ((MockedPlayer)_city.MockPlayer!).WithWonderEffect<CureForCancer>();
 
-            Assert.Equal(1, Halving().GetCitizenTypes().happy);
+            Assert.Equal(1, Testee().GetCitizenTypes().happy);
         }
 
         [Fact]
@@ -397,7 +382,7 @@ namespace CivOne.UnitTests
                 .WithWonderEffect<HangingGardens>()
                 .WithWonderEffect<CureForCancer>();
 
-            Assert.Equal(2, Halving().GetCitizenTypes().happy);
+            Assert.Equal(2, Testee().GetCitizenTypes().happy);
         }
 
         [Fact]
@@ -409,7 +394,7 @@ namespace CivOne.UnitTests
             wonderCity.ContinentId = _city.ContinentId;
             _map.ReturnContinentCitiesValues(wonderCity);
 
-            Assert.Equal(2, Halving().GetCitizenTypes().unhappy);
+            Assert.Equal(2, Testee().GetCitizenTypes().unhappy);
         }
 
         [Fact]
@@ -421,7 +406,7 @@ namespace CivOne.UnitTests
             wonderCity.ContinentId = _city.ContinentId + 1;
             _map.ReturnContinentCitiesValues(wonderCity);
 
-            Assert.Equal(4, Halving().GetCitizenTypes().unhappy);
+            Assert.Equal(4, Testee().GetCitizenTypes().unhappy);
         }
 
         [Theory]
@@ -446,7 +431,7 @@ namespace CivOne.UnitTests
             player.WithWonderEffect<Oracle>(hasOracle);
             _city.WithBuilding<Temple>();
 
-            Assert.Equal(expectedUnhappy, Halving().GetCitizenTypes().unhappy);
+            Assert.Equal(expectedUnhappy, Testee().GetCitizenTypes().unhappy);
         }
 
         [Fact]
@@ -457,7 +442,7 @@ namespace CivOne.UnitTests
             player.WithWonderEffect<Oracle>();
 
             // No temple in this city, so the oracle has nothing to attach to.
-            Assert.Equal(4, Halving().GetCitizenTypes().unhappy);
+            Assert.Equal(4, Testee().GetCitizenTypes().unhappy);
         }
 
         [Fact]
@@ -465,7 +450,7 @@ namespace CivOne.UnitTests
         {
             _city.WithBuilding<Colosseum>();
 
-            Assert.Equal(1, Halving().GetCitizenTypes().unhappy);
+            Assert.Equal(1, Testee().GetCitizenTypes().unhappy);
         }
 
         [Theory]
@@ -485,7 +470,7 @@ namespace CivOne.UnitTests
             // The city stands at 0,0, so a unit at 5,5 is away from home.
             _game.OnGetUnits = (_, _) => [new MockedUnit(5, 5).WithHome(_city)];
 
-            Assert.Equal(expectedUnhappy, Halving().GetCitizenTypes().unhappy);
+            Assert.Equal(expectedUnhappy, Testee().GetCitizenTypes().unhappy);
         }
 
         [Theory]
@@ -502,7 +487,7 @@ namespace CivOne.UnitTests
                 .WithHome(_city)
                 .WithCategory(unitClass)];
 
-            Assert.Equal(expectedUnhappy, Halving().GetCitizenTypes().unhappy);
+            Assert.Equal(expectedUnhappy, Testee().GetCitizenTypes().unhappy);
         }
 
         [Fact]
@@ -522,7 +507,7 @@ namespace CivOne.UnitTests
             _city.LuxuryCorruption = 0;
             _game.OnGetUnits = (_, _) => [new MockedUnit(5, 5).WithHome(_city)];
 
-            CitizenTypes citizens = Create(new HalvingPendingUnhappinessDelegate().Refill, luxuryRate: 2)
+            CitizenTypes citizens = Create(new EqualisingPendingUnhappinessDelegate().Refill, luxuryRate: 2)
                 .GetCitizenTypes();
 
             Assert.Equal(2, citizens.happy);
@@ -550,7 +535,7 @@ namespace CivOne.UnitTests
             _city.WithBuilding<MarketPlace>();
             _specialists.AddRange(Enumerable.Repeat(Citizen.Entertainer, 6));
 
-            CitizenTypes ct = Create(new HalvingPendingUnhappinessDelegate().Refill, luxuryRate: 0)
+            CitizenTypes ct = Create(new EqualisingPendingUnhappinessDelegate().Refill, luxuryRate: 0)
                 .GetCitizenTypes();
 
             Assert.Equal(4, ct.happy);
@@ -587,7 +572,7 @@ namespace CivOne.UnitTests
             _city.WithBuilding<Cathedral>();
             WithBachsCathedralOnTheSameContinent();
 
-            CitizenTypes ct = Halving().GetCitizenTypes();
+            CitizenTypes ct = Testee().GetCitizenTypes();
 
             Assert.Equal(2, ct.unhappy);
             Assert.Equal(8, ct.content);
@@ -608,7 +593,7 @@ namespace CivOne.UnitTests
             _city.WithBuilding<Colosseum>();
             _city.WithBuilding<Cathedral>();
 
-            CitizenTypes ct = Halving().GetCitizenTypes();
+            CitizenTypes ct = Testee().GetCitizenTypes();
 
             Assert.Equal(0, ct.unhappy);
             Assert.Equal(10, ct.content);
@@ -624,7 +609,7 @@ namespace CivOne.UnitTests
             _city.WithWonder<ShakespearesTheatre>();
             WithBachsCathedralOnTheSameContinent();
 
-            CitizenTypes ct = Halving().GetCitizenTypes();
+            CitizenTypes ct = Testee().GetCitizenTypes();
 
             Assert.Equal(0, ct.unhappy);
             Assert.Equal(10, ct.content);
@@ -643,7 +628,7 @@ namespace CivOne.UnitTests
                 .WithWonderEffect<HangingGardens>()
                 .WithWonderEffect<CureForCancer>();
 
-            CitizenTypes ct = Halving().GetCitizenTypes();
+            CitizenTypes ct = Testee().GetCitizenTypes();
 
             Assert.Equal(2, ct.happy);
             Assert.Equal(3, ct.content);
@@ -676,7 +661,7 @@ namespace CivOne.UnitTests
 
                             int seats = Math.Max(size - specialists, 0);
 
-                            foreach (CitizenTypes stage in Halving().EnumerateCitizens())
+                            foreach (CitizenTypes stage in Testee().EnumerateCitizens())
                             {
                                 Assert.True(stage.Valid(),
                                     $"negative count at size {size}, difficulty {difficulty}, "
@@ -708,7 +693,7 @@ namespace CivOne.UnitTests
             _game.OnGetUnits = (_, _) => [new MockedUnit(5, 5).WithHome(_city)];
 
             // 8 + 0 - 6 gives two unhappy citizens, two units at home make both content.
-            Assert.Equal(0, Halving().GetCitizenTypes().unhappy);
+            Assert.Equal(0, Testee().GetCitizenTypes().unhappy);
         }
 
         [Theory]
@@ -728,7 +713,7 @@ namespace CivOne.UnitTests
             // The chapel stands on another continent than the city, which must not matter.
             _city.ContinentId = 1;
 
-            Assert.Equal(expectedDelta, Halving().CathedralDelta());
+            Assert.Equal(expectedDelta, Testee().CathedralDelta());
         }
 
         [Fact]
@@ -741,7 +726,7 @@ namespace CivOne.UnitTests
             _city.WithBuilding<Bank>();
 
             // (5 x 16 + 5) / 10 = 8, plus 2 entertainers x 2 = 12, market place 18, bank 27.
-            Assert.Equal(27, Create(new HalvingPendingUnhappinessDelegate().Refill, luxuryRate: 5).Luxuries());
+            Assert.Equal(27, Create(new EqualisingPendingUnhappinessDelegate().Refill, luxuryRate: 5).Luxuries());
         }
 
         [Fact]
@@ -751,7 +736,7 @@ namespace CivOne.UnitTests
             _city.LuxuryCorruption = 0;
 
             // The full rate on six trade would round up to seven without the upper bound.
-            Assert.Equal(6, Create(new HalvingPendingUnhappinessDelegate().Refill, luxuryRate: 10).Luxuries());
+            Assert.Equal(6, Create(new EqualisingPendingUnhappinessDelegate().Refill, luxuryRate: 10).Luxuries());
         }
 
         [Fact]
@@ -760,8 +745,8 @@ namespace CivOne.UnitTests
             _city.TradeTotalGross = 20;
             _city.LuxuryCorruption = 0;
 
-            Assert.Equal(20, Create(new HalvingPendingUnhappinessDelegate().Refill, luxuryRate: 10).Luxuries());
-            Assert.Equal(0, Create(new HalvingPendingUnhappinessDelegate().Refill, luxuryRate: 0).Luxuries());
+            Assert.Equal(20, Create(new EqualisingPendingUnhappinessDelegate().Refill, luxuryRate: 10).Luxuries());
+            Assert.Equal(0, Create(new EqualisingPendingUnhappinessDelegate().Refill, luxuryRate: 0).Luxuries());
         }
 
         [Fact]
@@ -771,7 +756,7 @@ namespace CivOne.UnitTests
             _city.LuxuryCorruption = 0;
 
             // The mocked player keeps the default of five tenths tax and five tenths science.
-            Assert.Equal(0, Halving().LuxuryRate);
+            Assert.Equal(0, Testee().LuxuryRate);
         }
 
         // ── The two entry points ──────────────────────────────────────────────────────────────────────
@@ -782,7 +767,7 @@ namespace CivOne.UnitTests
             WithPendingUnhappiness();
             _city.WithBuilding<Colosseum>();
 
-            OriginalCityCitizenService testee = Halving();
+            OriginalCityCitizenService testee = Testee();
 
             CitizenTypes first = testee.GetCitizenTypes();
             CitizenTypes second = testee.GetCitizenTypes();
@@ -807,7 +792,7 @@ namespace CivOne.UnitTests
             WithPendingUnhappiness();
             _city.WithBuilding<Colosseum>();
 
-            foreach (CitizenTypes stage in Halving().EnumerateCitizens())
+            foreach (CitizenTypes stage in Testee().EnumerateCitizens())
             {
                 Assert.Equal(4, stage.Sum());
                 Assert.True(stage.Valid());
@@ -839,7 +824,7 @@ namespace CivOne.UnitTests
             for (int slot = 0; slot < sizeBase; slot++)
             {
                 WithEmpire(cityCount, slot);
-                if (Halving().EmpireSizePenalty() > 0)
+                if (Testee().EmpireSizePenalty() > 0)
                 {
                     slots.Add(slot);
                 }
@@ -855,7 +840,7 @@ namespace CivOne.UnitTests
             _game.OnGetPlayer = _ => new MockedPlayer().withCitiesCount(7);
             _game.OnGetCityIndex = _ => -1;
 
-            Assert.Equal(0, Halving().EmpireSizePenalty());
+            Assert.Equal(0, Testee().EmpireSizePenalty());
         }
     }
 }

@@ -67,7 +67,7 @@ namespace CivOne.UnitTests
                 (IGameCitizenDependency)Game.Instance,
                 [.. city.Specialists],
                 Map.Instance,
-                new HalvingPendingUnhappinessDelegate().Refill);
+                new EqualisingPendingUnhappinessDelegate().Refill);
 
             return [.. service.EnumerateCitizens()];
         }

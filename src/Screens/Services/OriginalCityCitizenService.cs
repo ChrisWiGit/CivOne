@@ -452,7 +452,7 @@ namespace CivOne.Screens.Services
 
 			int pending = _pendingUnhappiness;
 
-			_refill(ref unhappy, ref pending, City.Size);
+			_refill(ref unhappy, ref pending);
 
 			happy = Math.Clamp(happy, 0, City.Size);
 			unhappy = Math.Clamp(unhappy, 0, City.Size);
