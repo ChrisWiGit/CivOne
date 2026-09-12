@@ -7,6 +7,37 @@ follow-up analyses are used here **only as a source of facts about the original 
 references point into a separate decompilation repository and do not apply to CivOne. Every CivOne-side statement
 below was verified against the current working tree.
 
+## Startplan (Kurz)
+
+Ziel: Original-Score-Logik sauber in CivOne abbilden und alle Verbraucher konsistent machen.
+
+1. Phase 1 abschließen: Happiness-Modell aus dem separaten Plan aktiv schalten.
+2. Phase 2 umsetzen: Score-Service auf Originalformel umstellen (inkl. 40%-Luxury-Referenz, Peace-Year-Gate, Spaceship-Term, Conquest-Regel).
+3. Phase 3 umsetzen: Palace-Trigger korrigieren (n = UpgradeCount + 1, Difficulty-Faktor, kein Spaceship-Gate).
+4. Phase 4 umsetzen: Score als abgeleiteten Live-Wert nutzen, altes gespeichertes Score-Feld entfernen, SVE/YAML-Verhalten finalisieren.
+5. Tests und manuelle Checks abschließen: Service-, Trigger-, Delegate-, Mapper-, SaveDataAdapter-Tests plus UI-Abgleich (F9/TopLeader/HallOfFame).
+
+## TODO Fortschritt
+
+- [ ] Phase 1: Happiness-Korrektur aktiv (Voraussetzung für Score-Start)
+- [ ] Phase 2.1: CivilizationScoreService-Formel auf Original umgestellt
+- [ ] Phase 2.2: Spaceship-Erfolgsrate als gemeinsam nutzbare Service-Funktion extrahiert
+- [ ] Phase 2.3: WorldConquestPredicate (latched + derived) eingebaut
+- [ ] Phase 2.4: Peace-Bonus nur bei Year > 0
+- [ ] Phase 2.5: Wonder-Capture/Destroy-Verhalten einmal verifiziert
+- [ ] Phase 3.1: Palace-Threshold korrigiert (n + Difficulty)
+- [ ] Phase 3.2: End-of-game/Spaceship-Block aus Trigger entfernt
+- [ ] Phase 4.1: CivilizationScore als Live-Getter umgesetzt
+- [ ] Phase 4.2: _civilizationScore + Restorable-Member + FromDto-Write entfernt
+- [ ] Phase 4.3: SVE CivilizationScore[8] Lesen/Schreiben im Adapter ergänzt
+- [ ] Phase 4.4: SVE-Collapse-Regel umgesetzt (Human-Score in Slot 0, Rest 0)
+- [ ] Tests: CivilizationScoreServiceTests
+- [ ] Tests: HumanCivScorePalaceTriggerTests
+- [ ] Tests: WorldConquestDelegateTests
+- [ ] Tests: PlayerDtoMapperTest angepasst
+- [ ] Tests: SaveDataAdapterTests für Score-Block + Collapse
+- [ ] Manueller Check: F9, TopLeader, HallOfFame zeigen identische Werte
+
 ## Goal
 
 Replace CivOne's invented scoring formula with the original's, fix the two systems that consume the score
@@ -399,7 +430,7 @@ The happiness model carries its own deviation list — see [plan-cityCitizenServ
 | Q3 | ~~Is the world-conquest condition tracked, or derived at score time?~~ **Decided: ship both, switchable** (D7, §10). The two agree when the condition first becomes true and diverge only if a civilization appears afterwards — reachable in CivOne through the editor, not in the original. Latched is the default. | — |
 | Q4 | ~~SVE slot mapping.~~ **Decided: SVE mirrors the original, YAML is free** (D8, §11). SVE writes the human player's score into slot 0 and zeroes the rest; YAML may carry per-player scores and collapses to that layout on SVE export. Cheap, because the original treats the whole block as volatile scratch. | — |
 
-The happiness model carries its own open points — the reservoir refill reading, the luxury chain overlap and
+The happiness model carries its own open points — the pending unhappiness refill reading, the luxury chain overlap and
 wonder ownership — in [plan-cityCitizenService.impl.md](plan-cityCitizenService.impl.md) §11.
 
 ## 10. World-conquest condition, both forms (D7)
@@ -463,7 +494,7 @@ treats as scratch.
 ## 12. Happiness model — see the separate plan
 
 How the corrected `CityCitizenService` lands (parallel subclass, factory switch, the `virtual` commit, the
-reservoir traps and the time-boxed cleanup) is documented in
+pending-unhappiness traps and the time-boxed cleanup) is documented in
 [plan-cityCitizenService.impl.md](plan-cityCitizenService.impl.md) §7. Nothing in it is score-specific.
 
 ## 13. Test plan (summary)

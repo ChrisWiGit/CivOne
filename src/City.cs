@@ -488,6 +488,51 @@ namespace CivOne
 		}
 
 		/// <summary>
+		/// Trade of the city before corruption, including the trade from trade routes.
+		/// </summary>
+		public int TradeTotalGross => ResourceTiles.Sum(t => TradeValue(t)) + TradingCitiesSumValue;
+
+		/// <summary>
+		/// Corruption used by the happiness model when it turns trade into luxuries.
+		///
+		/// Three rules separate this from <see cref="Corruption"/>, which stays the corruption of the
+		/// economy: a democracy is free of it, a courthouse halves it, and owning the palace does not lower
+		/// it. The palace exception matters, because letting it through would make the capital produce
+		/// luxuries no other city can reach.
+		/// </summary>
+		public int LuxuryCorruption
+		{
+			get
+			{
+				IGovernment government = CityOwnerPlayer.Government;
+				if (government is Governments.Democracy)
+				{
+					return 0;
+				}
+
+				int distance;
+				if (government is Governments.Communism)
+				{
+					distance = 10;
+				}
+				else
+				{
+					City? capital = CityOwnerPlayer.GetCapital();
+					distance = capital == null ? 32 : Common.DistanceToTile(X, Y, capital.X, capital.Y);
+				}
+
+				int corruption = TradeTotalGross * distance * 3 / (government.Id * 20 + 80);
+
+				if (HasBuilding<Courthouse>())
+				{
+					corruption /= 2;
+				}
+
+				return corruption;
+			}
+		}
+
+		/// <summary>
 		/// Luxury count for the city, taking trade, buildings and entertainers
 		/// into account.
 		/// </summary>

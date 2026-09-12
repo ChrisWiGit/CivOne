@@ -1,5 +1,12 @@
 # Plan: City Happiness — Original Model
 
+## Instructions
+
+* .claude\csharp.instructions.md
+* .claude\CLAUDE.md
+
+## Summary
+
 Implementation plan for `CityCitizenService` and the types around it.
 
 This document is **self-contained**. It was split out of
@@ -11,11 +18,212 @@ Facts about the original DOS game come from a separate decompilation repository.
 that repository are deliberately **not** reproduced here; they do not apply to CivOne. Every CivOne-side
 statement was verified against the current working tree.
 
+## Progress checklist
+
+Tick as you go. Steps map to §9 *Steps*; the commit letters map to §9 *Delivery*.
+
+### Phase A — preparation (commit a)
+
+- [x] A1 Run `CityCitizenServiceImplTests` and `CityHappy` and record the green baseline (§9 step 0a).
+- [x] A2 Make `CalculateCityStats`, `Stage1`–`Stage5`, `ApplyEmperorEffects`, `ApplyDemocracyEffects` `virtual` — behaviour-neutral, no test touched (§9 step 0b).
+- [x] A3 Add `GetCityIndex(ICityBasic)` to `IGameCitizenDependency`, backed by the `Game._cities` position, not persisted (§8).
+- [x] A4 Add the settings `OriginalHappinessModel` (default **off**) and `PendingUnhappinessMode` (default **halving**) (§6, §7).
+
+### Phase B — the parallel subclass (commit b)
+
+Implementation notes from the branch:
+
+- The pending unhappiness is reset in `Stage1`, not in the two entry points. Both `GetCitizenTypes()` and
+  `EnumerateCitizens()` begin there, so one reset covers the trap from §7 by construction.
+- Red shirts are painted in the last normalisation only. Painting them earlier would charge the extra cost
+  of a red shirt once per stage, on top of the pending unhappiness that already models the same thing. Recorded as an
+  addition to deviation 1 in §10.
+- `Normalise` works on counters and writes the result back into the citizen array, in the order happy,
+  content, unhappy, which is the order the base class produces as well. The citizens standing for the
+  parked unhappiness are the last ones, so luxuries reach the ordinary unhappy citizens first.
+- The human/AI split of §5 is implemented, via `IsHumanPlayer` on the new `IGameCityQuery` interface.
+
+- [x] B1 Create `OriginalCityCitizenService : CityCitizenService`; factory `ICityCitizenService.Create` selects it by setting, still off (§7).
+- [x] B2 `base` and `E` from government, city count and city index; lower clamp **after** `E`; human/AI split optional (§9 steps 1, 5-optional).
+- [x] B3 Replace `ApplyEmperorEffects` with `E` in the subclass — not both (§9 step 2).
+- [x] B4 Pending unhappiness as a private field on the subclass, driving the red shirts; reset it at the top of `GetCitizenTypes()` **and** `EnumerateCitizens()` (§4, §7 traps).
+- [x] B5 The two refill delegates, `HalvingPendingUnhappinessDelegate` and `FullDrainPendingUnhappinessDelegate`, chosen in the factory (§6).
+- [x] B6 `Normalise` at all five stage boundaries: `Stage1` rewritten in full, `Stage2`–`Stage5` as `base.StageN(...)` + `Normalise(...)` (§9 step 4).
+
+
+### Zwischenstand
+
+
+### Phase C — corrections that stand on their own (commit c)
+
+Implementation notes from the branch:
+
+- **The corrections land in the subclass, not in the base class.** Step 5 and step 7 read as if they change
+  `CityCitizenService` itself, but three of the six tests listed in §9 step 0 pin exactly the behaviour they
+  change, and those tests must stay green until the cleanup. So `CathedralDelta` and `ApplyDemocracyEffects`
+  are overridden in `OriginalCityCitizenService`. The base class is untouched, and the corrections reach the
+  game together with the rest of the model when the switch flips.
+- The luxury chain needed two new members on `ICityBasic`, because the interface carried no trade at all:
+  `TradeTotalGross` (trade including trade routes, before any corruption) and `LuxuryCorruption`. See Q2.
+- Stage 2 no longer reads `City.Luxuries`. The original sets the happy count from the luxuries outright and
+  lets the normalisation push the unhappy count down to make room, so the override sets the count rather
+  than upgrading citizens one at a time.
+- The Cathedral entry in the building list of the city screen is still added by the base class even when
+  Religion is missing. Only the effect is gated. That is display state, not part of the model.
+
+- [x] C1 `CathedralDelta`: −4 base / −6 with Michelangelo, drop the continent check, gate the block on the advance Religion (§9 step 5).
+- [x] C2 Answer Q2, then extend the luxury chain: corruption, `+5` inside the numerator, raw-trade clamp, entertainers before Marketplace and Bank (§9 step 6).
+- [x] C3 Women's Suffrage term in war weariness; make the martial-law-XOR-weariness split in stage 4 explicit (§9 step 7).
+- [x] C4 Answer Q3: wonder effect follows a captured city, obsolescence checked against all civilizations (§9 step 8).
+- [x] C5 Luxury rate as a parameter, defaulting to the player's real rate (§9 step 9, H7).
+
+### Phase D — tests (§12)
+
+Two suites carry this: `OriginalCityCitizenServiceTests` for the model itself, against mocks, and
+`OriginalCityHappy` as the integration sibling of `CityHappy.cs`, against a real game.
+
+Writing D2 surfaced a defect in the refill of Phase B and it is fixed: the refill had no upper bound, so the
+full drain reading emptied the pending unhappiness into a count that the clamp right behind it threw away
+again. That made the full drain **weaker** than the halving, the opposite of what §6 describes. Both
+delegates now take the highest unhappy count the city can show and stop there.
+
+- [x] D1 `OriginalCityCitizenServiceTests` — base term per difficulty and government, `E = 0` agreement zone, boundary per row, staggering, clamp ordering.
+- [x] D2 Pending unhappiness tests in **both** refill variants, including Shakespeare's Theatre.
+- [x] D3 Stage-order test: an overshooting modifier loses its surplus at its own `N`.
+- [x] D4 Modifier tests: Cathedral, Michelangelo across continents, luxury chain, Women's Suffrage, each wonder in isolation, the luxury-rate parameter.
+- [x] D5 The pending-unhappiness-reset test: `GetCitizenTypes()` followed by `EnumerateCitizens()` on one instance.
+- [x] D6 `GetCityIndex` stability test pinning index → penalised city.
+- [x] D7 Corrected-model sibling of `CityHappy.cs`, eleven cases re-derived by hand.
+
+Added on top of the list the plan started with:
+
+- [x] D8 Regression test that Women's Suffrage never raises war weariness (required by §9 step 7).
+- [x] D9 Cathedral with and without Religion and with and without Michelangelo, across continents (§9 step 5).
+- [x] D10 The luxury chain order and the luxury rate parameter (§9 steps 6 and 9).
+- [x] D11 The refill never pushes the unhappy count past what the city can show.
+
+**Phase D is where this piece of work ends.** With D7 ticked, the branch is complete and shippable: the
+corrected model exists, is covered by tests, and is switched off. Stop there.
+
+### Phase E — flip and cleanup (deferred, **not part of this work**)
+
+Phase E waits for a long manual play-test phase in the game and is therefore carried out later, in its own
+branch and its own PR. It is listed here so the remaining debt stays visible, not as work to start now. See
+§7 *Time-box*. The play test itself is written out in **§13 Manueller Testplan**, including where the switch
+is turned on.
+
+- [ ] E1 DOSBox experiment settles Q1; set the refill default accordingly.
+- [ ] E2 Play test the corrected model.
+- [ ] E3 Flip `OriginalHappinessModel` to **on**.
+- [ ] E4 Cleanup: fold the subclass into `CityCitizenService`, delete both settings, delete the six superseded tests from §9 step 0, re-derive `CityHappy.cs`.
+
+### Zwischenstand
+
+Stand nach Phase A bis D. Alle vier sind fertig und grün. Offen ist nur noch die zurückgestellte Phase E.
+
+**Was entstanden ist**
+
+| Bereich | Datei |
+|---|---|
+| Basisklasse geöffnet | [CityCitizenService.cs](../src/Screens/Services/CityCitizenService.cs) |
+| Neues Modell | [OriginalCityCitizenService.cs](../src/Screens/Services/OriginalCityCitizenService.cs) |
+| Refill-Delegates | [HalvingPendingUnhappinessDelegate.cs](../src/Screens/Services/HalvingPendingUnhappinessDelegate.cs), [FullDrainPendingUnhappinessDelegate.cs](../src/Screens/Services/FullDrainPendingUnhappinessDelegate.cs) |
+| Auswahl | [ICityCitizenService.cs](../src/Screens/Services/ICityCitizenService.cs) |
+| Einstellungen | [Settings.cs](../src/Settings.cs) |
+| Stadt-Slot und Menschspieler | [IGame.cs](../src/IGame.cs), [Game.cs](../src/Game.cs) |
+| Handel und Korruption für Luxus | [ICityBasic.cs](../src/ICityBasic.cs), [City.cs](../src/City.cs) |
+| Tests am Modell | [OriginalCityCitizenServiceTests.cs](../xunit/src/OriginalCityCitizenServiceTests.cs) |
+| Integrationstests | [OriginalCityHappy.cs](../xunit/src/OriginalCityHappy.cs) |
+
+Die acht Member sind virtuell, dazu kamen geschützte Zugriffe auf Stadt, Spielstand und Spezialisten. Das ist
+rein additiv, kein bestehender Test wurde angefasst.
+
+**Drei Umsetzungsentscheidungen, die vom Plan abweichen**
+
+- Der Reset der ausstehenden Unzufriedenheit sitzt in `Stage1` statt in beiden Einstiegspunkten. Beide starten dort, also deckt ein
+  Reset die Falle aus Kapitel 7 strukturell ab.
+- Rote Hemden werden nur in der letzten Normalisierung gemalt. Früher gemalt würden sie ihren doppelten
+  Aufwand pro Stufe zusätzlich zur ausstehenden Unzufriedenheit kosten, also dieselbe Strafe zweimal.
+- Der Mensch-KI-Unterschied aus Kapitel 5 ist drin, über `IsHumanPlayer` auf der neuen Abfrageschnittstelle.
+  Er war als optional markiert, war aber genauso billig wie der Stadt-Index.
+- Die Korrekturen aus Phase C liegen in der Unterklasse, nicht in der Basisklasse. Drei der sechs Tests aus
+  Kapitel 9 Schritt 0 halten genau das Verhalten fest, das diese Korrekturen ändern. Lägen sie in der
+  Basisklasse, wären diese Tests sofort rot, und genau das soll die Unterklasse verhindern.
+- Die Luxuskette braucht zwei neue Mitglieder auf `ICityBasic`, weil die Schnittstelle bisher gar keinen
+  Handel kannte. `TradeTotalGross` ist der Handel vor jeder Korruption, `LuxuryCorruption` die Korruption
+  nach den Regeln des Originals, also ohne Palast und mit halber Wirkung durch das Gerichtsgebäude.
+- Stufe 2 liest `City.Luxuries` nicht mehr. Das Original setzt die Zahl der zufriedenen Bürger direkt aus dem
+  Luxus und lässt die Normalisierung die unzufriedenen verdrängen. Genau so beendet Luxus einen Aufstand.
+- Deity erbt die Emperor-Zeile. Für den Empire-Term wird die Schwierigkeit auf vier begrenzt, siehe Q4.
+
+**Was Phase C inhaltlich ändert**
+
+- Kathedrale: minus vier als Grundwert, minus sechs mit Michelangelo, die Kontinentprüfung entfällt, und der
+  ganze Block hängt an der Technologie Religion.
+- Kriegsmüdigkeit: ein Punkt pro Einheit außer Haus, zwei in der Demokratie, minus einen durch das
+  Frauenwahlrecht. Das Wunder kann Unzufriedenheit nie erhöhen.
+- Stufe 4 wählt jetzt sichtbar entweder Kriegsrecht oder Kriegsmüdigkeit, nie beides.
+- Luxuskette in der Reihenfolge des Originals, mit der Fünf im Zähler, der Deckelung auf den rohen Handel und
+  den Entertainern vor Marktplatz und Bank.
+- Luxussatz als Parameter an `ICityCitizenService.Create`, standardmäßig der Satz des Spielers.
+- Deity nutzt für die Empire-Strafe dieselbe Basis wie Emperor. Der Teil `Size + Schwierigkeit − 6` behält
+  die echte Schwierigkeit, Deity hat dort also weiterhin einen zufriedenen Bürger weniger.
+
+**Was Phase D gefunden hat**
+
+Beim Schreiben der Tests zur ausstehenden Unzufriedenheit kam ein Fehler aus Phase B ans Licht. Der Rückfluss
+hatte keine Obergrenze. Die Full-Drain-Lesart schob deshalb alles Ausstehende sofort in die sichtbare Zahl,
+und die Deckelung direkt dahinter warf es wieder weg. Damit war Full Drain schwächer als Halving, also genau
+das Gegenteil dessen, was Kapitel 6 beschreibt. Beide Delegates bekommen jetzt die höchste Zahl, die die
+Stadt zeigen kann, und hören dort auf.
+
+Zwei der elf Integrationsfälle fallen im neuen Modell anders aus als im alten. Beide Male ist der Grund
+derselbe. Das Original setzt die Zahl der zufriedenen Bürger direkt aus dem Luxus und kürzt dann zufrieden
+und unzufrieden gemeinsam, bis beide in die verfügbaren Plätze passen. Das alte Modell stuft stattdessen
+einzelne Bürger nacheinander hoch.
+
+**Antworten auf die offenen Punkte**
+
+- Q2: CivOne hat eine eigene Luxuskette, die an jedem wichtigen Punkt abweicht. Entertainer zählen dort drei
+  Luxus statt zwei und werden nach Marktplatz und Bank addiert statt davor. Der Luxusanteil wird aus dem
+  Rest nach Steuern gebildet statt aus Handel minus Korruption. Und der Handel hat die Korruption der
+  Wirtschaft schon abgezogen, die der Palast auf null setzt. Das neue Modell nutzt diese Kette deshalb gar
+  nicht, sondern rechnet in Stufe 2 selbst. Doppelt angewendet wird nichts, und der Palast kann nicht
+  durchschlagen.
+- Q3: Passt bereits. Der Wunderbesitz hängt an den Städten des Spielers, wandert also bei einer Eroberung
+  mit. Die Veralterung prüft alle Zivilisationen, nicht nur den Besitzer. Keine Codeänderung nötig.
+- Q4: Entschieden. Deity wird nicht extrapoliert, sondern verhält sich beim Empire-Term wie Emperor. Sonst
+  begänne die Strafe unter Despotismus schon bei fünf Städten, härter als alles, was das Original erzeugen
+  kann.
+
+**Tests**
+
+Voller Build ohne Warnungen, der komplette Testlauf mit 1242 Tests grün.
+
+Zwei Suiten tragen Phase D. `OriginalCityCitizenServiceTests` prüft das Modell gegen Mocks: Basisterm nach
+Schwierigkeit und Regierungsform, die Zone ohne Strafe, die zuerst bestrafte Stadt pro Zeile, die Staffelung
+über die Stadtplätze, die Reihenfolge von Strafe und Deckelung, beide Refill-Lesarten mit Shakespeare, die
+Stufenreihenfolge, jeden Modifikator einzeln und beide Einstiegspunkte auf derselben Instanz.
+`OriginalCityHappy` ist das Gegenstück zu `CityHappy.cs` mit den elf von Hand nachgerechneten Fällen gegen
+ein echtes Spiel.
+
+Die Tests in `SoundPackRenderQueueTests` sind zeitabhängig und fallen mal aus, auch ohne diese Änderungen.
+Im letzten vollen Lauf waren sie grün.
+
+Damit ist dieser Arbeitsschritt abgeschlossen. Der Schalter bleibt aus, der Zweig ändert also kein
+Spielverhalten. Alle offenen Punkte aus Kapitel 11 sind beantwortet, bis auf Q1, den nur ein Versuch in
+DOSBox klären kann. Q1 blockiert nichts, weil beide Lesarten ausgeliefert werden.
+
+Als Nächstes kommt die manuelle Testphase im Spiel, danach Phase E in einem eigenen Zweig. Die Anleitung
+dafür steht in Kapitel 13, samt der Stelle, an der der Schalter eingeschaltet wird.
+
+---
+
 ## Goal
 
 Replace CivOne's invented city-happiness base term with the original's, correct the modifiers that are wrong,
-and add the two mechanisms CivOne is missing entirely (per-stage normalisation and the unhappy overflow
-reservoir).
+and add the two mechanisms CivOne is missing entirely (per-stage normalisation and the unhappy surplus that
+stays pending).
 
 ## Decisions taken
 
@@ -23,10 +231,10 @@ reservoir).
 |---|---|
 | H1 | **Port the original's base term.** CivOne's `6 − Difficulty` content limit plus `ApplyEmperorEffects` is replaced by the original's government- and empire-size-dependent formula. |
 | H2 | **One model, not a scoring-only variant.** Every consumer of `GetCitizenTypes()` sees the corrected model. |
-| H3 | **Red shirts stay** as CivOne's representation of the original's overflow reservoir — driven by the reservoir, not by the frozen 37-city literal. |
-| H4 | **The reservoir refill ships in both readings, switchable** — halving and full drain — decided later by play testing. See §6. |
-| H5 | **This lands as a parallel subclass** behind a factory switch, with its own test class; the existing model and its tests stay untouched until the switch flips. Time-boxed. See §7. |
-| H6 | **Difficulty 5 (Deity) is CivOne's own**, and the formula is extrapolated to it. Marked as a balance decision, not fidelity. See §2. |
+| H3 | **Red shirts stay** as CivOne's representation of the original's pending unhappiness — driven by the pending unhappiness, not by the frozen 37-city literal. |
+| H4 | **The pending unhappiness refill ships in both readings, switchable** — halving and full drain — decided later by play testing. See §6. |
+| H5 | **This lands as a parallel subclass** behind a factory switch, with its own test class; the existing model and its tests stay untouched until the switch flips. The switch stays **off** in this branch — flipping it and folding the subclass back in is deferred to a follow-up branch after the manual play test. See §7. |
+| H6 | **Difficulty 5 (Deity) is CivOne's own**, and it shares the emperor row rather than extrapolating the formula. Decided, see §2. |
 | H7 | **The luxury rate becomes a parameter** rather than being read from the player. Needed by the score's 40 % reference; harmless everywhere else. |
 
 ---
@@ -101,7 +309,8 @@ unhappy += w × AttackCapableUnitsAwayFromTheirHomeCity
 Women's Suffrage removes the base point entirely and Democracy adds a second — so Democracy *with* Women's
 Suffrage is as weary as Republic *without* it. CivOne's `ApplyDemocracyEffects`
 ([:348-365](../src/Screens/Services/CityCitizenService.cs#L348-L365)) uses `1` for Republic and `2` for Democracy
-with no Women's Suffrage term; add it.
+with no Women's Suffrage term; add it. Some remake code in the wild inverts this and makes Women's Suffrage add
+unhappiness; that is a hard bug and must not be ported.
 
 ### Martial law detail
 
@@ -114,7 +323,7 @@ zero); the two extra slots are not ported — recorded as deviation 4.
 Five normalisation calls (`N`), with exactly this between them:
 
 ```
-1.  base term  (human: E formula / AI: Size − 3),  overflow → reservoir
+1.  base term  (human: E formula / AI: Size − 3),  overflow → pending
     ── N ──
 2.  happy = lux / 2
     ── N ──
@@ -131,9 +340,9 @@ Stage 4: martial law and war weariness are an `if/else` on government in the ori
 ([Stage4:196-205](../src/Screens/Services/CityCitizenService.cs#L196-L205)); their internal guards happen to make
 them mutually exclusive today, but make the exclusivity explicit.
 
-Stage 5: **Shakespeare runs before the last `N`**, so the reservoir refill can partially undo its `unhappy = 0`.
+Stage 5: **Shakespeare runs before the last `N`**, so the pending unhappiness refill can partially undo its `unhappy = 0`.
 In a large empire Shakespeare is therefore not absolute — which is why Q1 affects Shakespeare, not just the
-reservoir in general.
+pending unhappiness in general.
 
 ---
 
@@ -166,7 +375,7 @@ crosses the threshold at a time, staggered by `cityId`.
 | 2 Prince | 10 / 15 / 20 | 11 / 16 / 21 | 20 / 30 / 40 |
 | 3 King | 8 / 12 / 16 | 9 / 13 / 17 | 16 / 24 / 32 |
 | 4 Emperor | 6 / 9 / 12 | 7 / 10 / 13 | 12 / 18 / 24 |
-| 5 Deity *(CivOne only)* | 4 / 6 / 8 | 5 / 7 / 9 | 8 / 12 / 16 |
+| 5 Deity *(CivOne only)* | 6 / 9 / 12 | 7 / 10 / 13 | 12 / 18 / 24 |
 
 (`GovernmentType / 2 + 2`: Anarchy/Despotism → 2, Monarchy/Communism → 3, Republic/Democracy → 4.)
 
@@ -174,10 +383,16 @@ crosses the threshold at a time, staggered by `cityId`.
 ported fact.
 
 **Difficulty 5 (Deity) is CivOne's own addition** (H6), switchable via `Settings.DeityEnabled`
-([Game.cs:189-190](../src/Game.cs#L189-L190)); `MaxDifficulty` is 5 only when it is on. Its row is an
-**extrapolation** — `(7 − D)` simply continues to `2`, giving `base = 4 / 6 / 8` and an empire-size penalty from
-5 cities under Despotism. That is steeper than anything the original can produce; flag it as a balance decision
-to review in play, not as fidelity.
+([Game.cs:189-190](../src/Game.cs#L189-L190)); `MaxDifficulty` is 5 only when it is on. **Deity repeats the
+emperor row**: the difficulty is clamped to 4 before `base` is computed, so deity starts the empire-size
+penalty at the same city count as emperor.
+
+The alternative was to continue `(7 − D)` down to `2`, giving `base = 4 / 6 / 8` and a penalty from 5 cities
+under Despotism. That is steeper than anything the original can produce, and it would make deity unplayable
+for reasons the original never intended. The clamp lives in `OriginalCityCitizenService.MaxPenaltyDifficulty`.
+
+Note this affects **only** the empire-size term. The `Size + Difficulty − 6` part keeps the real difficulty,
+so deity still grants one content citizen less than emperor, exactly as CivOne has always done.
 
 Everything here must therefore work for `Difficulty ∈ [0, MaxDifficulty]`, read from settings — never
 hard-coded to 4 or 5. `CalculateCityStats` already gets this right with its "do not use `_game.MaxDifficulty`
@@ -218,12 +433,12 @@ The original does not compute `happy` and `unhappy` in one pass. It calls a norm
 
 ```
 N(specialists):
-    while (reservoir >= 0 && unhappy < reservoir):     // reservoir flows back
-        reservoir--;  unhappy++
+    while (pending >= 0 && unhappy < pending):     // pending unhappiness flows back
+        pending--;  unhappy++
     happy   = clamp(happy,   0, Size)
     unhappy = clamp(unhappy, 0, Size)
     while (happy + unhappy > clamp(Size − specialists, 0, 99)):
-        if reservoir > 0: reservoir--
+        if pending > 0: pending--
         else:             happy = clamp(happy − 1, 0, Size)
         unhappy = clamp(unhappy − 1, 0, Size)
 ```
@@ -241,27 +456,27 @@ Two consequences the implementation must honour:
 
 CivOne's `CitizenTypes` bookkeeping already re-counts after every stage
 ([Stage1–Stage5](../src/Screens/Services/CityCitizenService.cs#L148-L216)) and its `DebugService.Assert(ct.Sum()
-== _city.Size)` invariants enforce the ceiling structurally. What is missing is the reservoir flow-back and the
+== _city.Size)` invariants enforce the ceiling structurally. What is missing is the flow-back of the pending unhappiness and the
 lower clamp ordering around `E`.
 
 ---
 
-## 4. The unhappy overflow reservoir (H3, H4)
+## 4. The unhappy pending unhappiness (H3, H4)
 
 When `unhappy` exceeds the city size, the original does not discard the surplus. It parks the excess in a side
-variable, sets `unhappy = Size`, and the normalisation routine **refills from that reservoir** whenever a
+variable, sets `unhappy = Size`, and the normalisation routine **refills from that store** whenever a
 modifier later reduces `unhappy`. So a heavily over-unhappy city needs more Temple/Colosseum/luxury capacity
 than its visible unhappy count suggests before anything improves.
 
 There is no distinct very-unhappy *citizen type* in the original — its screens know three categories plus
 specialists. But the semantics CivOne's red shirts express, "costs more to pacify", is a genuine mechanism,
-implemented as a reservoir rather than as a type. **CivOne's red shirts are a legitimate representation of a
+implemented as a pending count rather than as a type. **CivOne's red shirts are a legitimate representation of a
 real mechanism**, not an invention, and stay (H3).
 
 CivOne's red-shirt machinery is `WearRedShirt` plus the special cases in `UpgradeCitizens`
 ([:530-540](../src/Screens/Services/CityCitizenService.cs#L530-L540)) and `UnhappyToContent`
 ([:610-621](../src/Screens/Services/CityCitizenService.cs#L610-L621)). Rule: the *count* comes from the original
-(`E` plus the reservoir), the *representation* stays CivOne's — red shirts are now driven by `unhappy` exceeding
+(`E` plus the pending unhappiness), the *representation* stays CivOne's — red shirts are now driven by `unhappy` exceeding
 `Size` instead of by the frozen 37-city literal.
 
 ---
@@ -288,30 +503,30 @@ cities alone. Treat it as optional and drop it from the PR without hesitation if
 
 ---
 
-## 6. Two readings of the reservoir refill, switchable (H4)
+## 6. Two readings of the pending unhappiness refill, switchable (H4)
 
-The refill loop's termination condition `unhappy < reservoir` makes the flow-back stop halfway — it ends as soon
-as `unhappy` has caught up with what is left in the reservoir, so roughly half of a modifier's improvement is
-immediately undone. The alternative reading is a **full drain**, where improvements do nothing at all until the
-reservoir is empty. A swapped compare operand in the decompilation would produce exactly that difference, and
+The refill loop's termination condition `unhappy < pending` makes the flow-back stop halfway — it ends as soon
+as `unhappy` has caught up with what is still pending, so roughly half of a modifier's improvement is
+immediately undone. The alternative reading is a **full drain**, where improvements do nothing at all until
+nothing is pending any more. A swapped compare operand in the decompilation would produce exactly that difference, and
 the decompilation repository holds no raw disassembly to settle it.
 
 So ship both, select by setting, default to what the decompilation literally says (halving). Per `CLAUDE.md`'s
 delegate chapter this is interchangeable behaviour:
 
 ```csharp
-public delegate void ReservoirRefill(ref int unhappy, ref int reservoir);
+public delegate void PendingUnhappinessRefill(ref int unhappy, ref int pending);
 
-internal sealed class HalvingReservoirRefillDelegate { ... }   // while (reservoir >= 0 && unhappy < reservoir)
-internal sealed class FullDrainReservoirRefillDelegate { ... } // drain until reservoir is empty
+internal sealed class HalvingPendingUnhappinessDelegate { ... }   // while (pending >= 0 && unhappy < pending)
+internal sealed class FullDrainPendingUnhappinessDelegate { ... } // drain until nothing is pending
 ```
 
-The subclass takes the delegate; the setting (`ReservoirRefillMode`) selects it in the factory, never inside the
+The subclass takes the delegate; the setting (`PendingUnhappinessMode`) selects it in the factory, never inside the
 class. Because the refill runs inside all five normalisation calls, **both variants must be exercised by the
 test suite**, including Shakespeare's Theatre (§1, stage 5).
 
-**Settle it later by experiment in DOSBox** (Q1): Emperor, empire well above `base`, a city with a large
-reservoir, then build a Colosseum. Full drain → `unhappy` does not move until the reservoir is exhausted.
+**Settle it later by experiment in DOSBox** (Q1): Emperor, empire well above `base`, a city with much pending
+unhappiness, then build a Colosseum. Full drain → `unhappy` does not move until nothing is pending any more.
 Halving → `unhappy` drops immediately by about half the effect.
 
 ---
@@ -345,7 +560,7 @@ behaviour-neutral: separate commit, no test touched, easy to review.
 ### Why all five stages, and what the override actually looks like
 
 The root of it is a model mismatch, not the inheritance. The original works on **two counters** — `happy` and
-`unhappy` as plain ints, plus the reservoir. CivOne works on a **citizen array**: `ct.Citizens[]` is the truth
+`unhappy` as plain ints, plus the pending unhappiness. CivOne works on a **citizen array**: `ct.Citizens[]` is the truth
 and the counts are *derived* from it by `CountCitizenTypes` at the end of every stage
 ([:158](../src/Screens/Services/CityCitizenService.cs#L158), [:179](../src/Screens/Services/CityCitizenService.cs#L179), …).
 
@@ -355,7 +570,7 @@ difference back into the array** by up- or downgrading citizens.
 **Half of it is free.** The normalisation's second loop — the ceiling `happy + unhappy ≤ Size − specialists` —
 is already structurally guaranteed here: the array has exactly `Size` entries and
 `DebugService.Assert(ct.Sum() == _city.Size)` follows every stage. You cannot have more citizens than seats.
-What remains is only the reservoir flow-back (the first loop) and the lower clamp around `E` — considerably
+What remains is only the flow-back of the pending unhappiness (the first loop) and the lower clamp around `E` — considerably
 less than §3's pseudocode suggests.
 
 **`Stage1` must be rewritten in full**, without calling `base`:
@@ -372,7 +587,7 @@ protected int Stage1(ref CitizenTypes ct)
 ```
 
 Two reasons: `ApplyEmperorEffects` is wired into the body, and `CalculateCityStats` returns a `(int, int)` tuple
-with no room for the reservoir surplus. Per `CLAUDE.md`'s side-effect rule, note that the return value
+with no room for the pending unhappiness. Per `CLAUDE.md`'s side-effect rule, note that the return value
 `initialContent` flows through `Stage4` into `ApplyDemocracyEffects`
 ([:199](../src/Screens/Services/CityCitizenService.cs#L199)) — it must survive the rewrite even though the
 computation above it changes.
@@ -383,7 +598,7 @@ computation above it changes.
 protected override CitizenTypes Stage3(CitizenTypes ct)
 {
     ct = base.Stage3(ct);   // building effects + CountCitizenTypes, unchanged
-    return Normalise(ct);   // reservoir flow-back + lower clamp
+    return Normalise(ct);   // flow-back of the pending unhappiness + lower clamp
 }
 ```
 
@@ -392,12 +607,12 @@ Four times the same line. That is where the inheritance pays for itself.
 ### Two traps
 
 **`CitizenTypes` is a struct** — visible from `public readonly bool Valid()`. That is why `Stage2`–`Stage5`
-return `ct` instead of mutating it, and it means the reservoir cannot live inside the struct without changing a
+return `ct` instead of mutating it, and it means the pending unhappiness cannot live inside the struct without changing a
 public type that ten consumers use. It belongs in a private field on the subclass.
 
 **That field needs an explicit reset.** The service is short-lived — `ICityCitizenService.Create` builds one per
 city evaluation — but `GetCitizenTypes()` and `EnumerateCitizens()` can both run on the same instance. Without a
-reset at the top of both, the second call inherits the first call's reservoir. This is the kind of defect tests
+reset at the top of both, the second call inherits the pending unhappiness of the first one. This is the kind of defect tests
 miss, because a test usually exercises only one of the two entry points; add one that calls both in sequence.
 
 ### The switch
@@ -407,20 +622,29 @@ miss, because a test usually exercises only one of the two entry points; add one
 factory rather than inside either class. Add one setting (`OriginalHappinessModel`), defaulting to **off** while
 the subclass is being built and flipped to **on** once the play test passes.
 
-### Time-box — this is a transitional state
+### Time-box — this is a transitional state, and where the current work stops
 
 Two parallel happiness models violate H2 ("one model"). That is acceptable while the new one is being validated
-and **not** acceptable afterwards. The work is not finished when the switch flips; it is finished when the old
-one is gone:
+and **not** acceptable afterwards. The full sequence is:
 
 1. `OriginalCityCitizenService` lands with the setting off. Old tests green, new tests green.
-2. Play test decides H4 (reservoir refill) and confirms the model.
+2. Play test decides H4 (pending unhappiness refill) and confirms the model.
 3. Setting flips to on; the default path is the corrected model.
 4. **Cleanup commit:** fold the subclass into `CityCitizenService`, delete the setting, delete the superseded
    tests listed in §9 step 0, and re-derive `CityHappy.cs` against the corrected model. One model again.
 
-Step 4 is part of this work, not a follow-up someone might get to. If it is skipped, the repository owns two
-happiness models indefinitely — the outcome H2 exists to prevent.
+**The current work delivers step 1 and stops there.** Steps 2–4 depend on a long manual play-test phase in the
+game, which cannot be compressed into this branch; they are deferred to a later, separate branch and PR.
+
+What that means in practice:
+
+- The branch ships with `OriginalHappinessModel` **off**. No behaviour changes, so nothing is at risk while the
+  play test runs.
+- The two models coexist for as long as the play test takes. That is a known, accepted debt, not an oversight —
+  H2 is satisfied in step 4, not in this branch.
+- The deferred work must stay visible: keep Phase E in this document, and do not close the plan or delete the
+  setting until step 4 has run. If steps 2–4 are dropped rather than deferred, the repository owns two
+  happiness models indefinitely — the outcome H2 exists to prevent.
 
 ---
 
@@ -431,12 +655,14 @@ The staggering term `cityId % base` needs the original's **numeric city slot**, 
 `Game._cities`, which is already what the SVE writer treats as the slot
 ([Game.LoadSave.cs:94](../src/Game.LoadSave.cs#L94)).
 
-**Compute the index from the array, do not store it.** CivOne has a map editor, so cities can be created and
-removed at arbitrary positions and any persisted index would go stale. A derived index is always consistent with
-the list it came from, and matches the original, where the slot was likewise just an array position.
+**Add one additional city index per city evaluation, sourced from the array, and do not persist it.** CivOne has
+a map editor, so cities can be created and removed at arbitrary positions and any persisted index would go stale.
+A derived runtime index is always consistent with the list it came from, and matches the original, where the slot
+was likewise just an array position.
 
 - Add a city-index lookup to `IGameCitizenDependency` (e.g. `int GetCityIndex(ICityBasic city)`), backed by
-  `Game._cities.IndexOf(...)`. The service reads it once per `GetCitizenTypes()` call.
+  `Game._cities.IndexOf(...)`. This is the additional per-city index needed by the model; the service reads it
+  once per `GetCitizenTypes()` call.
 - `Game` already builds per-call city lookups ([Game.cs:241](../src/Game.cs#L241)); if the linear scan shows up
   in profiling, cache a `Guid → index` map invalidated on city add/remove, not on every access.
 - Consequence to accept: adding or deleting a city in the editor renumbers the ones after it, so *which* cities
@@ -466,8 +692,10 @@ the list it came from, and matches the original, where the slot was likewise jus
 Its own branch, its own PR, its own merge, titled for what it is — "city happiness aligned with the original" —
 not as preparation for anything. Because of H5 the PR changes no behaviour on its own.
 
-Natural commit boundaries: (a) the `virtual` commit, (b) the subclass with steps 1–4, (c) the independent
-corrections in steps 5–7, (d) the factory switch, (e) the cleanup.
+Natural commit boundaries for **this** branch: (a) the `virtual` commit, (b) the subclass with steps 1–4,
+(c) the corrections in steps 5–9, which land as overrides in the subclass rather than in the base class, so
+the six tests of §9 step 0 keep passing. The factory switch and the cleanup are the deferred Phase E and
+belong to the follow-up branch, after the manual play test (§7 *Time-box*).
 
 ### Steps
 
@@ -494,27 +722,30 @@ corrections in steps 5–7, (d) the factory switch, (e) the cleanup.
    | `ApplyBuildingEffectsTestsCathedrals` (`:715`) | same, at the caller |
    | `ApplyDemocracyEffectsTests` (`:925`) | no Women's Suffrage term |
 
-1. Extend `CalculateCityStats` with `Government`, `CityCount` and the city index to compute `base` and `E`.
+1. Extend `CalculateCityStats` with `Government`, `CityCount` and the additional runtime city index to compute
+  `base` and `E`.
    Government and city count are already reachable (`_city.PlayerIntf.Government`,
    `_game.GetPlayer(...).Cities.Length` — `ApplyEmperorEffects` uses the latter today); the index comes from the
    lookup in §8. The existing `contentLimit` expression is already correct and stays. Apply the lower clamp
    **after** adding `E` (§3). Gate the whole term on `isHuman`; AI cities get `Size − 3` — *optional, §5*.
 2. Replace `ApplyEmperorEffects` with `E`. Do not keep both.
-3. Add the overflow reservoir (§4): surplus beyond `Size` is parked and refilled as modifiers reduce `unhappy`.
+3. Add the pending unhappiness (§4): surplus beyond `Size` is parked and refilled as modifiers reduce `unhappy`.
    Drive the red-shirt representation from it instead of from `MinRedShirtCityCount`. The refill goes in as
    **two switchable delegates** (H4, §6), default halving — no need to wait for the DOSBox result.
 4. Add `Normalise` at the five stage boundaries — `Stage1` rewritten in full, `Stage2`–`Stage5` as
-   `base.StageN(...)` plus `Normalise(...)`. Only the reservoir flow-back and the lower clamp need implementing;
+   `base.StageN(...)` plus `Normalise(...)`. Only the flow-back of the pending unhappiness and the lower clamp need implementing;
    the ceiling is already structural. See §7 for the details and the two traps.
 5. Fix `CathedralDelta` ([:449-467](../src/Screens/Services/CityCitizenService.cs#L449-L467)) on two counts:
    **−4 base, −6 with Michelangelo** (currently inverted), and **drop the continent check** — Michelangelo is
    global for its owner. Gate the whole Cathedral block on the advance Religion.
 6. Extend the luxury computation to the full original form (§1): corruption (Democracy → 0, Courthouse halves,
-   Palace does not), `+5` inside the numerator, clamp upper bound on **raw** trade, `Entertainers × 2`, then
+  Palace does not), `+5` inside the numerator, clamp upper bound on **raw** trade, `Entertainers × 2`, then
    `+50 %` each for Marketplace and Bank — in that order. Check against CivOne's existing `City.Luxuries` /
-   `EntertainerLuxuries` before adding anything (Q2).
+  `EntertainerLuxuries` before adding anything (Q2). Explicit guard: no Palace-based corruption reduction may
+  flow into the happiness/luxury branch.
 7. Add the Women's Suffrage term to war weariness in `ApplyDemocracyEffects`, and make stage 4's
-   martial-law-XOR-weariness split explicit.
+  martial-law-XOR-weariness split explicit. Implement the exact formula from §1 and add a regression test that
+  Women's Suffrage never increases war weariness.
 8. Verify CivOne's wonder ownership and obsolescence against the original's rules (Q3): effect follows the city
    on capture, and a wonder is obsolete as soon as *any* civilization has the obsoleting advance.
 9. Parameterise the luxury rate (H7): the rate flows in from the caller, defaulting to the player's real rate.
@@ -525,17 +756,19 @@ corrections in steps 5–7, (d) the factory switch, (e) the cleanup.
 
 ## 10. Known deviations from the original
 
-1. **Red shirts as a citizen type.** The original has the *mechanism* (overflow reservoir) but not the *type* —
+1. **Red shirts as a citizen type.** The original has the *mechanism* (pending unhappiness) but not the *type* —
    its screens know three citizen categories plus specialists. CivOne keeps its fourth sprite as the
    representation. The frozen `13 / 25 / 37 / step 12` thresholds are *not* kept.
 2. **`DebugFlags & 0x2` is not reproduced.** When that bit is cleared the original zeroes `happy` and `unhappy`
-   at the end of the computation. Its default has the bit set, so the normal path is the one implemented; there
-   is simply no equivalent switch here.
+  at the end of the computation. Its default has the bit set, so the normal path is the one implemented; there
+  is simply no equivalent switch here. Treat this as debug-only legacy behavior, never as part of the citizen
+  model.
 3. **Temple/Oracle keep CivOne's doubling form.** The original is additive; the two produce identical numbers
    for every combination, so the code is left alone with a comment.
 4. **The two unidentified martial-law slots are not ported.** The documented three-unit martial law is
    implemented.
-5. **Difficulty 5 (Deity) does not exist in the original** and is served by extrapolating the formula (H6).
+5. **Difficulty 5 (Deity) does not exist in the original** and repeats the emperor row for the empire-size
+   term (H6). Its own difficulty still counts in the `Size + Difficulty − 6` part.
 
 ---
 
@@ -543,10 +776,10 @@ corrections in steps 5–7, (d) the factory switch, (e) the cleanup.
 
 | # | Point | Blocks |
 |---|---|---|
-| Q1 | **Reservoir refill: halving or full drain?** Not decidable from the decompilation. Shipped as a switch (H4, §6), default halving, so it blocks nothing. Settle by DOSBox experiment: Emperor, empire well above `base`, large reservoir, build a Colosseum — full drain → `unhappy` does not move until the reservoir is exhausted; halving → it drops immediately by about half the effect. Affects Shakespeare as well. | nothing; decides a default |
-| Q2 | Does CivOne's existing `City.Luxuries` / `EntertainerLuxuries` already implement parts of the full luxury chain (corruption, `+5` rounding, Marketplace/Bank, entertainer doubling)? Establish before step 6 so nothing is applied twice. | step 6 |
-| Q3 | Does CivOne's wonder list travel with a captured city and disappear with a destroyed one, and does `WonderObsolete` check *all* civilizations rather than only the owner? | step 8 |
-| Q4 | Deity (difficulty 5) extrapolates to `base = 4` under Despotism — an empire-size penalty from 5 cities, steeper than anything the original produces. Confirm in play or pick a floor. | nothing; balance review |
+| Q1 | **Pending unhappiness refill: halving or full drain?** Not decidable from the decompilation. Shipped as a switch (H4, §6), default halving, so it blocks nothing. Settle by DOSBox experiment: Emperor, empire well above `base`, much pending unhappiness, build a Colosseum — full drain → `unhappy` does not move until nothing is pending any more; halving → it drops immediately by about half the effect. Affects Shakespeare as well. | nothing; decides a default |
+| Q2 | **Answered.** CivOne has its own chain in `CityEconomyServiceImpl`, and it differs on every point that matters: entertainers count **three** luxuries each and are added **after** Marketplace and Bank rather than before, the luxury share is taken from the post-tax remainder instead of the original's `(rate × (trade − corruption) + 5) / 10`, and `City.RawTradeTotal` has the **economy's** corruption already subtracted — which the Palace zeroes. The corrected model therefore does not reuse `City.Luxuries` at all: stage 2 is overridden and computes the chain from the two new members `TradeTotalGross` and `LuxuryCorruption`. Nothing is applied twice, and the Palace cannot leak in, because `LuxuryCorruption` never consults it. | done |
+| Q3 | **Answered, no change needed.** `Player.HasWonder<T>()` is defined as *any of the player's cities has it*, so the effect follows a captured city and disappears with a destroyed one, exactly as in the original. `Game.WonderObsolete(wonder)` tests `_players.Any(x => x.HasAdvance(...))`, so a wonder goes obsolete as soon as **any** civilization has the obsoleting advance, not only its owner. Both match. | done |
+| Q4 | **Answered.** Deity does not extrapolate. The difficulty is clamped to 4 for the empire-size term, so deity behaves like emperor there, and no empire is punished harder than the original could punish it. | done |
 
 ---
 
@@ -554,18 +787,172 @@ corrections in steps 5–7, (d) the factory switch, (e) the cleanup.
 
 - `CityCitizenServiceImplTests` / `CityHappy` — **unchanged and green throughout** (H5). Superseded tests are
   deleted only in the cleanup step (§7).
-- `OriginalCityCitizenServiceTests` (new) — the base term per difficulty (0–4, plus Deity when enabled) **and
+- `OriginalCityCitizenServiceTests` (new) — the base term per difficulty (0–4, plus Deity sharing the emperor row) **and
   government**; human vs. AI base; the `E = 0` agreement zone from §2's table; the first-penalised-city boundary
   per row; `cityId % base` staggering; **the clamp ordering** (a size-1 city on difficulty 0 in a large empire —
-  the case that separates the two orderings); the reservoir, in **both** refill variants (H4); the stage order
+  the case that separates the two orderings); the pending unhappiness, in **both** refill variants (H4); the stage order
   (a modifier that overshoots loses the surplus at its own `N`, not later); Cathedral with/without Michelangelo
   and without Religion; Michelangelo across continents; the luxury chain including Marketplace/Bank and
   entertainer multiplication; war weariness with and without Women's Suffrage; each remaining modifier in
   isolation; the luxury-rate parameter; and **`GetCitizenTypes()` followed by `EnumerateCitizens()` on the same
-  instance** — the reservoir-reset trap from §7.
+  instance** — the pending-unhappiness-reset trap from §7.
 - A corrected-model sibling of `CityHappy.cs` (new) — the eleven entertainer/temple integration cases
   **re-derived by hand** against the new formula, not adjusted until green. These are what catch a mistake in
   the luxury chain.
 - `GetCityIndex` — stable for an unchanged list; the staggering test pins the mapping index → penalised city
   explicitly, so a future change to the index source fails loudly.
 - Manual: city screens, disorder and celebration behave sensibly; the six consumers in §9 still render.
+
+
+---
+
+## 13. Manueller Testplan (deutsch)
+
+Dieses Kapitel ist die Anleitung für die Spielphase vor Phase E. Es ist bewusst auf Deutsch, weil es eine
+Arbeitsanweisung ist und kein Teil der Codedokumentation.
+
+Ziel der Phase sind drei Dinge. Erstens bestätigen, dass sich das korrigierte Modell im echten Spiel
+vernünftig anfühlt. Zweitens Q1 entscheiden, also welche der beiden Rückfluss-Lesarten stimmt. Drittens
+prüfen, ob die zehn Stellen, die `GetCitizenTypes()` benutzen, weiterhin sinnvoll aussehen.
+
+### 13.1 Den Schalter einschalten
+
+Es gibt bewusst keinen Menüpunkt dafür. Der Schalter steht in der Profildatei, damit er nicht versehentlich
+im Spiel umgelegt wird.
+
+Die Datei heißt `default.profile` und liegt im Speicherordner von CivOne:
+
+| System | Pfad |
+|---|---|
+| Windows | `%LOCALAPPDATA%\CivOne\default.profile` |
+| Linux und macOS | `~/.local/share/CivOne/default.profile` |
+
+Die Datei ist XML. Innerhalb von `<CivOneProfile>` werden zwei Einträge gesetzt oder ergänzt:
+
+```xml
+<CivOneProfile>
+  <OriginalHappinessModel>1</OriginalHappinessModel>
+  <PendingUnhappinessMode>0</PendingUnhappinessMode>
+</CivOneProfile>
+```
+
+- `OriginalHappinessModel`: `1` schaltet das korrigierte Modell ein, `0` oder fehlend lässt das alte Modell
+  laufen. Voreinstellung ist aus.
+- `PendingUnhappinessMode`: `0` ist Halving, `1` ist Full Drain. Voreinstellung ist `0`.
+
+Wichtig: Das Spiel liest die Einstellungen beim Start. Nach jeder Änderung an der Datei muss CivOne neu
+gestartet werden. Am besten die Datei vorher sichern, damit der Ausgangszustand jederzeit zurückkommt.
+
+Kontrolle, dass der Schalter wirkt: eine Stadt der Größe vier mit zwei Entertainern auf König-Stufe unter
+Despotismus. Das alte Modell zeigt zwei zufriedene Bürger, das neue einen zufriedenen und einen
+genügsamen. Siehe `OriginalCityHappy.ACityOfFourWithTwoEntertainers`.
+
+### 13.2 Vorbereitung
+
+- Ein Spielstand kurz vor einer Ausdehnung, mindestens acht Städte, damit die Empire-Strafe überhaupt
+  greifen kann.
+- Ein zweiter Spielstand mit einer sehr großen Zivilisation, mindestens zwanzig Städte.
+- Beide Spielstände jeweils einmal mit altem und einmal mit neuem Modell öffnen, ohne einen Zug zu machen,
+  und die Stadtübersicht vergleichen.
+- Notieren, was auffällt. Eine einfache Tabelle mit Stadt, Größe, Regierung, Städtezahl, zufrieden,
+  genügsam, unzufrieden reicht.
+
+### 13.3 Was zu prüfen ist
+
+**A. Die Empire-Strafe**
+
+1. Mit wenigen Städten darf sich nichts ändern. Unterhalb der Basis ist das neue Modell identisch zum alten.
+   Basis ist `(Regierung / 2 + 2) × (7 − Schwierigkeit)`, unter Despotismus auf Kaiser also sechs.
+2. Eine Stadt über der Basis gründen. Genau eine Stadt soll unzufriedener werden, nicht alle.
+3. Weiter ausdehnen. Pro zusätzlicher Stadt kommt eine weitere betroffene Stadt dazu, bis bei der doppelten
+   Basis alle betroffen sind.
+4. Regierungswechsel von Despotismus zu Monarchie und weiter zur Republik. Die Basis wächst dabei um die
+   Hälfte und dann um ein Drittel, die Strafe muss spürbar nachlassen.
+
+**B. Die ausstehende Unzufriedenheit, also Q1**
+
+Das ist der wichtigste Punkt der Phase, weil er eine Entscheidung erzwingt.
+
+1. Eine große Zivilisation auf Kaiser, deutlich über der Basis, dazu eine Stadt mit viel ausstehender
+   Unzufriedenheit. Erkennbar an roten Hemden in der Stadtansicht.
+2. In dieser Stadt ein Kolosseum bauen.
+3. Beobachten, was mit der Zahl der unzufriedenen Bürger passiert:
+   - Fällt sie sofort um etwa die Hälfte der Wirkung, ist Halving richtig.
+   - Bewegt sie sich gar nicht, bis die roten Hemden verschwunden sind, ist Full Drain richtig.
+4. Dasselbe mit dem Shakespeare-Theater. Im neuen Modell ist es in einem großen Reich nicht absolut, weil der
+   Rückfluss nach der Wunderstufe noch einmal greift.
+5. Den Versuch mit beiden Werten von `PendingUnhappinessMode` wiederholen und vergleichen, welche der beiden
+   Varianten dem Original in DOSBox entspricht.
+
+Ergebnis in Q1 in Kapitel 11 eintragen und die Voreinstellung entsprechend setzen.
+
+**C. Die Kathedrale**
+
+1. Ohne die Technologie Religion darf eine Kathedrale nichts bewirken. Das ist neu und fällt auf.
+2. Mit Religion macht sie vier Bürger genügsam.
+3. Mit Michelangelo sechs, und zwar in jeder Stadt des Besitzers, auch auf anderen Kontinenten. Das ist die
+   zweite auffällige Änderung.
+
+**D. Kriegsmüdigkeit**
+
+1. Als Republik eine Einheit außerhalb der Stadt stationieren. Ein Bürger wird unzufrieden.
+2. Als Demokratie dasselbe. Zwei Bürger werden unzufrieden.
+3. Frauenwahlrecht bauen. In der Republik verschwindet die Wirkung ganz, in der Demokratie halbiert sie sich.
+   Sie darf sich unter keinen Umständen verschlimmern.
+4. Unter Despotismus und Monarchie prüfen, dass stattdessen das Kriegsrecht greift und nie beides zugleich.
+
+**E. Luxus**
+
+1. Steuer- und Forschungsregler so stellen, dass Luxus entsteht, und die Zahl der zufriedenen Bürger
+   beobachten.
+2. Marktplatz und Bank bauen. Beide erhöhen den Luxus um die Hälfte, und sie wirken auch auf den Luxus der
+   Entertainer, weil diese vorher addiert werden.
+3. Entertainer zählen jetzt zwei Luxus statt drei. In kleinen Städten fällt das auf.
+4. Ein Gerichtsgebäude halbiert die Korruption im Luxuspfad, ein Palast nicht. Die Hauptstadt darf hier
+   keinen Sondervorteil haben.
+
+**F. Deity**
+
+Deity nutzt für die Empire-Strafe dieselbe Basis wie Kaiser. Prüfen, dass sich eine große Zivilisation auf
+Deity nicht härter anfühlt als auf Kaiser, abgesehen von dem einen zufriedenen Bürger weniger, den Deity
+schon immer gekostet hat.
+
+**G. Die zehn Verbraucher**
+
+Für jede dieser Stellen einmal hinsehen, ob die Anzeige stimmig bleibt:
+
+- Stadtansicht mit den fünf Stufen der Zufriedenheit.
+- Aufstand und Feier, also ob eine Stadt in den richtigen Momenten kippt.
+- Stadtwachstum.
+- Zivilisationsbericht F9.
+- Handelsbericht.
+- Beste Städte.
+- Kosten für den Aufstand durch einen Diplomaten.
+- Die Bürgersymbole in der Stadtansicht.
+
+**H. Speichern und Laden**
+
+1. Spielstand speichern und wieder laden. Die Zufriedenheit muss danach identisch sein.
+2. Der Stadtplatz wird nicht gespeichert, sondern aus der Städteliste abgeleitet. Nach dem Laden muss
+   dieselbe Stadt bestraft sein wie vorher.
+
+**I. Karteneditor**
+
+Eine Stadt in der Mitte der Liste löschen. Die Städte danach rücken auf, also kann sich verschieben, welche
+Stadt die Empire-Strafe zuerst trägt. Das ist beabsichtigt, siehe Kapitel 8. Prüfen, dass nichts abstürzt und
+die Gesamtzahl der unzufriedenen Bürger plausibel bleibt.
+
+### 13.4 Abbruchkriterien
+
+Die Phase gilt als gescheitert und der Schalter bleibt aus, wenn eines davon eintritt:
+
+- Eine Stadt zeigt mehr oder weniger Bürger als ihre Größe.
+- Eine Stadt bleibt dauerhaft im Aufstand, obwohl genug Luxus und Gebäude vorhanden sind.
+- Die Empire-Strafe trifft alle Städte gleichzeitig statt gestaffelt.
+- Deity fühlt sich härter an als Kaiser.
+
+### 13.5 Was danach passiert
+
+Mit einem guten Ergebnis geht es weiter mit Phase E, in einem eigenen Zweig: Q1 eintragen, Voreinstellung
+setzen, Schalter auf ein, danach die Unterklasse in `CityCitizenService` zurückfalten und die sechs
+überholten Tests aus Kapitel 9 Schritt 0 löschen.
