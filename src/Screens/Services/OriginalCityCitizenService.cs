@@ -189,16 +189,23 @@ namespace CivOne.Screens.Services
 
 			int unhappyCount = Math.Max(BaseUnhappy(), 0);
 
+			// Only what does not fit into the city itself is parked. The seats the specialists take up are
+			// not part of that test: the original parks the empire size penalty that exceeds the city size,
+			// and lets the normalisation squeeze the rest into the seats afterwards. Parking against the
+			// seats instead would leave a surplus behind that shields the happy citizens from the very first
+			// normalisation, which raises the happy count of every crowded city by one.
+			_pendingUnhappiness = Math.Max(unhappyCount - City.Size, 0);
+
 			int initialUnhappy = Math.Min(workersAvailable, unhappyCount);
 			int initialContent = Math.Max(0, workersAvailable - unhappyCount);
-
-			_pendingUnhappiness = unhappyCount - initialUnhappy;
 
 			ct = StageBasic(ct, initialContent, initialUnhappy);
 
 			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
 
-			ct = Normalise(ct, markPending: false);
+			// The raw count goes into the normalisation, not the one the citizen array could hold, so the
+			// squeeze into the seats happens there and spends the parked unhappiness in the right order.
+			ct = Normalise(ct, ct.happy, unhappyCount, markPending: false);
 			return initialContent;
 		}
 
@@ -222,47 +229,156 @@ namespace CivOne.Screens.Services
 		}
 
 		/// <summary>
+		/// Applies the buildings of stage 3: the colosseum, the cathedral and the temple with the oracle.
+		///
+		/// Shakespeare’s Theatre and J.S. Bach’s Cathedral are deliberately missing here. The original applies
+		/// them among the wonders in stage 5, after martial law and war weariness, so they are handled by
+		/// <see cref="ApplyWonderEffects"/> instead. The base class applies all five in this stage and lets
+		/// Shakespeare skip the rest, which this override does not do: in the original every building still
+		/// takes effect, Shakespeare simply leaves nothing for them to convert two stages later.
+		/// </summary>
+		/// <param name="ct">The citizen types to change.</param>
+		protected internal override void ApplyBuildingEffects(CitizenTypes ct)
+		{
+			int unhappyToContent = 0;
+
+			if (CityBuildings.HasBuilding<Temple>())
+			{
+				// The temple is gated on an advance the way the cathedral is gated on Religion, only with two
+				// steps instead of one: Mysticism makes it worth two, Ceremonial Burial alone one, and without
+				// either the building has no effect at all. That matters for captured cities, whose temples
+				// stay idle until the new owner knows the advance.
+				bool hasMysticism = City.PlayerIntf.HasAdvance<Mysticism>();
+
+				if (hasMysticism)
+				{
+					unhappyToContent += 2;
+				}
+				else if (City.PlayerIntf.HasAdvance<CeremonialBurial>())
+				{
+					unhappyToContent += 1;
+				}
+
+				// The oracle sits inside the temple block, so it needs a temple but no advance of its own.
+				// It follows the temple's Mysticism step without inheriting the Ceremonial Burial gate.
+				if (City.PlayerIntf.HasWonderEffect<Oracle>())
+				{
+					unhappyToContent += hasMysticism ? 2 : 1;
+					ct.Wonders.Add(new Oracle());
+				}
+
+				ct.Buildings.Add(new Temple());
+			}
+
+			if (CityBuildings.HasBuilding<Colosseum>())
+			{
+				unhappyToContent += 3;
+				ct.Buildings.Add(new Colosseum());
+			}
+
+			int cathedralDelta = CathedralDelta();
+			if (cathedralDelta > 0)
+			{
+				ct.Wonders.Add(new MichelangelosChapel());
+			}
+			unhappyToContent += cathedralDelta;
+
+			if (CityBuildings.HasBuilding<Cathedral>())
+			{
+				ct.Buildings.Add(new Cathedral());
+			}
+
+			UnhappyToContent(ct.Citizens, unhappyToContent);
+		}
+
+		/// <summary>
+		/// Applies the wonders of stage 5, in the order the original uses: the Hanging Gardens and the Cure
+		/// For Cancer make a citizen happy each, then Shakespeare’s Theatre clears the unhappiness of its own
+		/// city, then J.S. Bach’s Cathedral takes two more away across the continent.
+		///
+		/// Placing Shakespeare here rather than with the buildings matters: stage 4 sits in between, so in the
+		/// original the theatre wipes out the war weariness of its city, while applying it two stages earlier
+		/// would let the weariness make citizens unhappy again afterwards.
+		/// </summary>
+		/// <param name="ct">The citizen types to change.</param>
+		protected internal override void ApplyWonderEffects(CitizenTypes ct)
+		{
+			base.ApplyWonderEffects(ct);
+
+			(_, _, int unhappy, int redShirt) = CountCitizenTypes(ct.Citizens);
+
+			if (CityBuildings.HasWonder<ShakespearesTheatre>() &&
+				!GameState.WonderObsolete<ShakespearesTheatre>())
+			{
+				// All unhappy become content, but only in this city.
+				UnhappyToContent(ct.Citizens, unhappy + redShirt);
+
+				ct.Wonders.Add(new ShakespearesTheatre());
+			}
+
+			if (HasBachsCathedral())
+			{
+				UnhappyToContent(ct.Citizens, BachsCathedralUnhappyToContent);
+				ct.Wonders.Add(new JSBachsCathedral());
+			}
+		}
+
+		/// <summary>
+		/// How much unhappiness J.S. Bach's Cathedral takes away from every city of its owner that stands on
+		/// the same continent as the city holding it.
+		/// </summary>
+		private const int BachsCathedralUnhappyToContent = 2;
+
+		/// <summary>
 		/// Applies martial law or war weariness, never both.
 		/// The original picks one by government: everything below a republic keeps order with troops, while
 		/// a republic and a democracy grow weary of the troops that are away instead.
 		/// </summary>
 		/// <param name="ct">The citizen types of the previous stage.</param>
-		/// <param name="initialContent">The content count stage 1 started with.</param>
+		/// <param name="initialContent">
+		/// The content count stage 1 started with.
+		/// Martial law does not need it, and war weariness is uncapped in the original, so this stage ignores it.
+		/// </param>
 		/// <returns>The citizen types after the stage.</returns>
 		protected internal override CitizenTypes Stage4(CitizenTypes ct, int initialContent)
 		{
-			if (City.PlayerIntf.RepublicDemocratic)
-			{
-				ApplyDemocracyEffects(ct, initialContent);
-			}
-			else
+			if (!City.PlayerIntf.RepublicDemocratic)
 			{
 				ApplyMartialLaw(ct);
+				(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
+
+				return Normalise(ct, markPending: false);
 			}
+
+			// War weariness raises a counter in the original rather than downgrading single citizens, and it
+			// has no upper bound of its own. The normalisation behind it is what limits the result, exactly as
+			// in stage 2. Going through DowngradeCitizens here would cap the effect at the citizens that happen
+			// to be downgradable, which the original does not do.
+			int weariness = WarWeariness(ct);
 
 			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
 
-			return Normalise(ct, markPending: false);
+			return Normalise(ct, ct.happy, ct.unhappy + ct.redShirt + weariness, markPending: false);
 		}
 
 		/// <summary>
-		/// Makes the citizens weary of the troops that are away from home.
+		/// Counts how weary the citizens are of the troops that are away from home.
 		///
 		/// A republic loses one citizen per unit abroad and a democracy two. Women’s Suffrage removes one of
 		/// those points, so a democracy that has it is as weary as a republic without it, and a republic that
 		/// has it is not weary at all. The wonder never adds unhappiness.
+		///
+		/// A unit counts when it can attack, is supported by this city, and is either an air unit or standing
+		/// somewhere other than the city itself. Air units count even while they sit at home; ships and land
+		/// units do not. Settlers, diplomats, caravans and transports have no attack value and never count.
 		/// </summary>
-		/// <param name="ct">The citizen types to change.</param>
-		/// <param name="initialContent">The content count stage 1 started with, the cap for the effect.</param>
-		protected internal override void ApplyDemocracyEffects(CitizenTypes ct, int initialContent)
+		/// <param name="ct">The citizen types, whose unit list is filled for the city screen.</param>
+		/// <returns>The unhappiness the troops abroad cause, before normalisation.</returns>
+		private int WarWeariness(CitizenTypes ct)
 		{
-			if (!City.PlayerIntf.RepublicDemocratic)
-			{
-				return;
-			}
-
 			IUnit[] unitsAway = [.. GameState.GetUnits()
-				.Where(u => u.IsHome(City) && u.Attack > 0 && new Point(u.X, u.Y) != City.Location)];
+				.Where(u => u.IsHome(City) && u.Attack > 0
+					&& (u.UnitCategory == UnitClass.Air || new Point(u.X, u.Y) != City.Location))];
 
 			ct.MarshallLawUnits.AddRange(unitsAway);
 
@@ -272,9 +388,7 @@ namespace CivOne.Screens.Services
 				unhappyPerUnit++;
 			}
 
-			int totalUnhappiness = Math.Min(initialContent, unitsAway.Length * unhappyPerUnit);
-
-			DowngradeCitizens(ct.Citizens, totalUnhappiness);
+			return unitsAway.Length * unhappyPerUnit;
 		}
 
 		/// <summary>

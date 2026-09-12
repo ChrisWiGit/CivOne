@@ -25,9 +25,12 @@ Tick as you go. Steps map to §9 *Steps*; the commit letters map to §9 *Deliver
 ### Phase A — preparation (commit a)
 
 - [x] A1 Run `CityCitizenServiceImplTests` and `CityHappy` and record the green baseline (§9 step 0a).
-- [x] A2 Make `CalculateCityStats`, `Stage1`–`Stage5`, `ApplyEmperorEffects`, `ApplyDemocracyEffects` `virtual` — behaviour-neutral, no test touched (§9 step 0b).
+- [x] A2 Make `CalculateCityStats`, `Stage1`–`Stage5`, `ApplyEmperorEffects`, `ApplyDemocracyEffects` `virtual` — behaviour-neutral, no test touched (§9 step 0b). Later extended by `ApplyBuildingEffects` and `ApplyWonderEffects` for C7.
 - [x] A3 Add `GetCityIndex(ICityBasic)` to `IGameCitizenDependency`, backed by the `Game._cities` position, not persisted (§8).
 - [x] A4 Add the settings `OriginalHappinessModel` (default **off**) and `PendingUnhappinessMode` (default **halving**) (§6, §7).
+- [x] A5 Add both settings to the Patches menu in `Setup.cs`, so the play test of Phase E can toggle them in
+  game instead of hand-editing `default.profile`. Switching mid-game is safe: happiness is recomputed on every
+  access and never persisted.
 
 ### Phase B — the parallel subclass (commit b)
 
@@ -76,6 +79,39 @@ Implementation notes from the branch:
 - [x] C3 Women's Suffrage term in war weariness; make the martial-law-XOR-weariness split in stage 4 explicit (§9 step 7).
 - [x] C4 Answer Q3: wonder effect follows a captured city, obsolescence checked against all civilizations (§9 step 8).
 - [x] C5 Luxury rate as a parameter, defaulting to the player's real rate (§9 step 9, H7).
+- [x] C6 War weariness corrected after a second pass over the original (§1 *War weariness*): air units count while
+  at home, ships and land units do not; the effect is uncapped and raises the unhappy counter instead of
+  downgrading citizens through `DowngradeCitizens`. `ApplyDemocracyEffects` is replaced in the subclass by a
+  counting `WarWeariness`, and `Stage4` hands the result to `Normalise`, mirroring stage 2.
+- [x] C7 Shakespeare's Theatre and J.S. Bach's Cathedral moved from stage 3 to stage 5, where the original has
+  them (§1 *Stage order*). Both sat in `ApplyBuildingEffects`, so they ran **before** martial law and war
+  weariness instead of after. Consequences: the theatre now wipes out the weariness of its city as the original
+  does, and both effects are rolled back by one refill instead of three. `ApplyBuildingEffects` and
+  `ApplyWonderEffects` are overridden in the subclass; the base class only gained `virtual`.
+  The base class's early `return` after Shakespeare — which skipped temple, colosseum and cathedral entirely —
+  is **not** reproduced: in the original every building still takes effect, Shakespeare simply leaves nothing
+  for them to convert two stages later.
+- [x] C8 `OriginalCityEconomyService : CityEconomyServiceImpl` for the specialist order in the luxury and tax
+  chain. The original adds entertainers and taxmen **before** the marketplace and the bank raise the result;
+  `CityEconomyServiceImpl` adds them afterwards, so a specialist stays a flat two points. The subclass is
+  selected by the **same** `OriginalHappinessModel` setting, so the city screen and the reports cannot
+  disagree. `CityEconomyServiceImpl` was unsealed and the two methods made `virtual`; its own tests are
+  untouched. Note this is a second hierarchy — the switch now spans two class pairs, which the cleanup in §7
+  has to fold back as well.
+- [x] C9 Parked unhappiness was measured against the **seats** (size minus specialists) instead of against the
+  **city size**. A city whose base unhappiness fit into the city but not into its seats parked the difference,
+  and that surplus then shielded the happy citizens from the very first normalisation — every crowded city
+  showed one happy citizen too many. Found by loading a real save and comparing stage by stage against the
+  decompilation. `Stage1` now parks only `max(BaseUnhappy - Size, 0)` and hands the **raw** count to
+  `Normalise`, so the squeeze into the seats happens there.
+- [x] C10 `OriginalCityEconomyService` double-counted the marketplace on entertainers: CivOne's
+  `City.EntertainerLuxuries` is `Entertainers * 3`, the marketplace bonus already folded into the constant, and
+  C8 raised that by another fifty percent. Fixed with a `EntertainerLuxuryPoints` seam on the base class; the
+  original service returns the unraised `Entertainers * 2` and scales it itself.
+- [x] C11 Temple advance gate. CivOne's temple works without Ceremonial Burial and doubles with Mysticism; the
+  original gives `2` with Mysticism, `1` with Ceremonial Burial and `0` without either, adding the oracle on top
+  rather than doubling. Same class of defect as the cathedral's missing Religion gate in C1, found the same way
+  — by writing a combination test and checking its expectation against the decompilation.
 
 ### Phase D — tests (§12)
 
@@ -101,6 +137,30 @@ Added on top of the list the plan started with:
 - [x] D9 Cathedral with and without Religion and with and without Michelangelo, across continents (§9 step 5).
 - [x] D10 The luxury chain order and the luxury rate parameter (§9 steps 6 and 9).
 - [x] D11 The refill never pushes the unhappy count past what the city can show.
+- [x] D12 War weariness: only air units are weary while at home (air / sea / land), and the effect raises the
+  unhappy count rather than downgrading happy citizens. Both fail on the pre-C6 code.
+- [x] D13 Stage placement: Shakespeare's Theatre wipes out the war weariness, and J.S. Bach's Cathedral is
+  applied after it as well. Both fail on the pre-C7 code.
+- [x] D14 `OriginalCityEconomyServiceTests` — entertainers and taxmen raised by marketplace and bank, both
+  services agree without specialists, and the shipped order is pinned a second time so a change to the base
+  shows up as a difference rather than silently.
+- [x] D15 Regression for C9: the Samarkand constellation from a real save — size 18, Warlord, despotism,
+  marketplace, six entertainers — yields four happy, one content, seven unhappy. The pre-C9 code gives five
+  happy. Verified against the decompilation's own walk-through of the normalisation.
+- [x] D16 Regression for C10: entertainer points enter the chain unraised, so a marketplace cannot be counted
+  twice.
+- [x] D17 Modifiers **in combination**, so the consolidation of Phase F cannot change a total unnoticed: the
+  three stage-3 buildings together, the cathedral with J.S. Bach's Cathedral across their stages, Shakespeare
+  leaving nothing for Bach, and the happiness wonders beside a colosseum.
+- [x] D18 `EveryConstellationKeepsTheCitizenInvariants` — 4140 constellations, invariants on all five stages.
+  Catches crashes and impossible counts in edge cases; it does **not** catch a value that is merely wrong,
+  see F2.
+- [x] D19 Regression for C11: the temple across all four advance combinations, the oracle with and without each
+  of them, and the oracle without a temple. Two of the eight rows fail on the pre-C11 code.
+- [x] D20 `OriginalCityHappy` builds its temples together with Ceremonial Burial, the advance a real game
+  requires to build one at all (`Temple.RequiredTech`). Three of its cases had constructed a state that cannot
+  occur in play — a temple owned by a civilization without the advance — and C11 exposed it. The idle-temple
+  case that *can* occur, a captured city, is covered by the unit tests instead.
 
 **Phase D is where this piece of work ends.** With D7 ticked, the branch is complete and shippable: the
 corrected model exists, is covered by tests, and is switched off. Stop there.
@@ -115,7 +175,74 @@ is turned on.
 - [ ] E1 DOSBox experiment settles Q1; set the refill default accordingly.
 - [ ] E2 Play test the corrected model.
 - [ ] E3 Flip `OriginalHappinessModel` to **on**.
-- [ ] E4 Cleanup: fold the subclass into `CityCitizenService`, delete both settings, delete the six superseded tests from §9 step 0, re-derive `CityHappy.cs`.
+- [ ] E4 Cleanup — see **Phase F**.
+
+### Phase F — consolidation (deferred, follows E3)
+
+Folding two class pairs back into one is the step where a silent regression is most likely: the tests that
+guarded the old behaviour are being deleted at the same moment the new behaviour becomes the only one. The list
+below exists so that deletion is a decision per test, not a sweep.
+
+#### F1 — What happens to each of the 35 tests in `CityCitizenServiceImplTests`
+
+The criterion is whether the subclass **overrode** the member, not whether the test is old.
+
+**Keep unchanged (~20).** They cover members the subclass inherits untouched, so they keep their value after the
+fold-in: `UpgradeCitizen(s)`, `UnhappyToContent`, `ContentToHappy`, `DowngradeCitizen(s)`, `CitizenByIndex`,
+`AdaptCitizens`, `InitCitizens`, `InitSpecialists`, `CountCitizenTypes`, `CreateCitizenTypes`, `StageBasic`,
+`WearRedShirt`, `ApplyMartialLaw`, `HasBachsCathedral`, `IsHappy`, `IsUnhappy`.
+
+**Delete — the replacement already exists.** Check the replacement is green *before* deleting, not after:
+
+| deleted | replaced by |
+|---|---|
+| `ApplyEmperorEffectsTests`, `NumberOfRedShirtsTests` | `EmpireSize*`, `WhatDoesNotFitIntoTheCityStaysPending` |
+| `CathedralDeltaTest`, `ApplyBuildingEffectsTestsCathedrals` | `CathedralNeedsReligionAndIsRaisedByMichelangelo` |
+| `ApplyBuildingEffectsTestsWithTemple` | `TempleAndOracle` |
+| `ApplyBuildingEffectsTestsColosseum` | `ColosseumMakesThreeCitizensContent` |
+| `ApplyBuildingEffectsTestsWithShakespearesTheatre` | `ShakespeareIsAbsolute…`, `ShakespeareIsNotAbsolute…`, `ShakespeareWipesOutTheWarWeariness` |
+| `ApplyWonderEffectsTests`, `ApplyWonderEffectsNoWondersEffectsTests` | `HangingGardens…`, `CureForCancer…`, `TheTwoHappinessWondersAddUp` |
+| `ApplyDemocracyEffectsTests` | `WomensSuffrageNeverAddsWarWeariness`, `OnlyAirUnitsAreWearyWhileAtHome`, `WarWearinessRaisesTheUnhappyCount…` |
+| `CityHappy.cs` (11 cases) | `OriginalCityHappy.cs` (12 cases) |
+
+**Delete without replacement (1).** `CalculateCityStatsAllCases` — the corrected `Stage1` never calls
+`CalculateCityStats`, so the method itself goes with the fold-in. Its coverage lives on in
+`BaseUnhappyGrowsWithDifficulty` and the `EmpireSize*` tests. Its three `difficulty 5` rows were testing a level
+the original does not have at all (§2).
+
+#### F2 — What protects the fold-in
+
+Deleting the old tests removes the only thing that currently notices an accidental behaviour change. Three
+things take over, and all three must be green before and after every commit of this phase:
+
+- **The combination tests.** Single modifiers are pinned individually, but the consolidation moves effects
+  between classes and stages, and a combination that is only ever tested one effect at a time can change its
+  total unnoticed. Covered: temple with the oracle, the three stage-3 buildings together, the cathedral with
+  J.S. Bach's Cathedral *across* their stages, Shakespeare leaving nothing for Bach, the happiness wonders
+  beside a colosseum, marketplace with bank.
+- **The invariant sweep** `EveryConstellationKeepsTheCitizenInvariants` — 4140 constellations (3 governments ×
+  6 difficulties × sizes 1–20 × every specialist count), asserting on every one of the five stages that the
+  citizen count matches the city size, that no count is negative, and that happy plus unhappy never exceeds the
+  seats. It needs no hand-computed expectations, which is why it can be this wide.
+- **`OriginalCityHappy.cs`** as the end-to-end reference against a real game.
+
+Be clear about what this does **not** catch: the sweep checks invariants, not values. C9 — the parked
+unhappiness measured against the seats — produced entirely plausible, invariant-respecting numbers that were
+merely one too high. Nothing in this suite would have found it. Only an external reference did: a real save,
+compared stage by stage against the decompilation. If Phase F changes anything about the stage boundaries or the
+parking, repeat that comparison rather than trusting green tests.
+
+#### F3 — Steps
+
+- [ ] F3.1 Fold `OriginalCityCitizenService` into `CityCitizenService`, one overridden member at a time, running
+      the suite between each.
+- [ ] F3.2 Fold `OriginalCityEconomyService` into `CityEconomyServiceImpl`; re-seal the class and drop the
+      `virtual` markers that A2 and C7 added and nothing needs any more.
+- [ ] F3.3 Delete `OriginalHappinessModel` and `PendingUnhappinessMode`, their two Patches menu entries and the
+      two factory branches.
+- [ ] F3.4 Work the F1 table: delete the superseded tests, keep the rest, rename the `Original*` suites to the
+      plain names.
+- [ ] F3.5 Re-run the save-file comparison from C9 one last time against the consolidated code.
 
 ### Zwischenstand
 
@@ -273,8 +400,8 @@ Two details of the luxury chain that are easy to get wrong: the `+5` sits **insi
 |---|---|---|
 | Colosseum | `unhappy −= 3` | the building alone, no advance |
 | Cathedral | `−6` with Michelangelo, else `−4` | outer gate: the advance **Religion** |
-| Temple | `−2` with Mysticism, else `−1` with Ceremonial Burial, else `0` | `else if`, **not** additive |
-| Oracle | a further `−2` with Mysticism, else `−1` | inside the Temple block, owner has the wonder |
+| Temple | `−2` with Mysticism, else `−1` with Ceremonial Burial, else `0` | `else if`, **not** additive; without either advance the building is inert |
+| Oracle | a further `−2` with Mysticism, else `−1` | inside the Temple block: needs a temple, no advance of its own, and does **not** inherit the Ceremonial Burial gate |
 | Hanging Gardens | `happy++` | owner has the wonder |
 | Cure For Cancer | `happy++` | owner has the wonder |
 | Shakespeare's Theatre | `unhappy = 0` | the wonder's city **is** this city — no owner check |
@@ -288,10 +415,13 @@ Corrections this forces on CivOne:
   that check is removed. Only J.S. Bach is continent-bound, and CivOne already has that right.
 - **Cathedral is inverted today.** The original is `−4` base and `−6` with Michelangelo; CivOne has it the other
   way round. And the whole Cathedral block is gated on the advance **Religion**, which CivOne does not check.
-- **Temple/Oracle stay as they are.** The original is additive where CivOne doubles (`<<= 1`), but the numbers
-  coincide: Mysticism gives `−2 −2 = −4` against CivOne's `−2 × 2 = −4`, Ceremonial Burial `−1 −1 = −2` against
-  `−1 × 2 = −2`. No change needed — add a comment saying the forms differ but the results do not, so nobody
-  "fixes" it later.
+- **Temple and Oracle needed correcting after all.** An earlier revision of this plan claimed CivOne's doubling
+  (`<<= 1`) produced the same numbers as the original's addition. It does not, because CivOne has **no advance
+  gate**: its temple is worth one even to an owner who knows neither Ceremonial Burial nor Mysticism, where the
+  original's is worth nothing. The doubling then compounds the error. Rewritten as the original has it —
+  additive, gated, with the oracle following the temple's Mysticism step but not its Ceremonial Burial gate.
+  Practically this shows up on **captured cities**, whose temples stay idle until the new owner knows the
+  advance, and Mysticism raises every temple the owner has at once.
 - **Wonder ownership follows the city.** Capturing a city transfers its wonder's effect to the captor. And
   obsolescence is checked against **all** civilizations 1–7: a wonder goes obsolete as soon as *any* player has
   the obsoleting advance, not only its owner. Verify CivOne's `HasWonderEffect` / `WonderObsolete` against both
@@ -302,15 +432,32 @@ Corrections this forces on CivOne:
 ### War weariness
 
 ```
-w        = (WomensSuffrage ? 0 : 1) + (Government == Democracy ? 1 : 0)
-unhappy += w × AttackCapableUnitsAwayFromTheirHomeCity
+w        = max(1 + (Government == Democracy ? 1 : 0) − (WomensSuffrage ? 1 : 0), 0)
+unhappy += w × UnitsCountedAsAway          // uncapped — the normalisation behind it is the only limit
+
+UnitsCountedAsAway = units with Attack > 0, supported by this city,
+                     that are air units OR not standing on the city tile
 ```
 
 Women's Suffrage removes the base point entirely and Democracy adds a second — so Democracy *with* Women's
-Suffrage is as weary as Republic *without* it. CivOne's `ApplyDemocracyEffects`
-([:348-365](../src/Screens/Services/CityCitizenService.cs#L348-L365)) uses `1` for Republic and `2` for Democracy
-with no Women's Suffrage term; add it. Some remake code in the wild inverts this and makes Women's Suffrage add
-unhappiness; that is a hard bug and must not be ported.
+Suffrage is as weary as Republic *without* it. The floor at `0` can never be reached with these terms, so
+`(WomensSuffrage ? 0 : 1) + (Democracy ? 1 : 0)` is an equivalent formulation. Some remake code in the wild
+inverts this and makes Women's Suffrage add unhappiness; that is a hard bug and must not be ported.
+
+Three details that are easy to get wrong, all confirmed against the original:
+
+- **Air units count even while they stand at home.** The rule is "is an air unit", not "is a ship" — the
+  original's terrain class is 0 land, 1 air, 2 sea, and exactly Fighter, Bomber and Nuclear carry the 1. A
+  battleship in its home port causes **no** weariness; a fighter on the same tile does. CivOne's `UnitClass.Air`
+  covers exactly those three (`BaseUnitAir`), so the predicate maps one to one.
+- **There is no upper bound.** Martial law is capped at three units *and* limited to the unhappy citizens that
+  already exist; war weariness is neither. It raises a counter and lets the normalisation clamp the result —
+  the same counter-versus-array distinction as stage 2 (§7). Going through `DowngradeCitizens` would silently
+  cap the effect at the citizens that happen to be downgradable and would spend points turning happy citizens
+  content instead of making citizens unhappy.
+- **Attack value zero never counts**, which excludes settlers, diplomats, caravans and the transport.
+
+The same predicate drives the original's city-screen display, so the icons and the count always agree.
 
 ### Martial law detail
 
@@ -610,6 +757,12 @@ Four times the same line. That is where the inheritance pays for itself.
 return `ct` instead of mutating it, and it means the pending unhappiness cannot live inside the struct without changing a
 public type that ten consumers use. It belongs in a private field on the subclass.
 
+**Park against the city size, not against the seats.** The surplus the original parks is what exceeds the
+**city**; the seats (size minus specialists) are the concern of the normalisation that follows, not of the
+parking test. Getting this wrong does not look like an error — the counts stay plausible — but a non-zero
+surplus makes the normalisation spend the surplus instead of a happy citizen, so every crowded city reports one
+happy citizen too many. It cost a save-file comparison to find. See C9.
+
 **That field needs an explicit reset.** The service is short-lived — `ICityCitizenService.Create` builds one per
 city evaluation — but `GetCitizenTypes()` and `EnumerateCitizens()` can both run on the same instance. Without a
 reset at the top of both, the second call inherits the pending unhappiness of the first one. This is the kind of defect tests
@@ -799,6 +952,7 @@ belong to the follow-up branch, after the manual play test (§7 *Time-box*).
 - A corrected-model sibling of `CityHappy.cs` (new) — the eleven entertainer/temple integration cases
   **re-derived by hand** against the new formula, not adjusted until green. These are what catch a mistake in
   the luxury chain.
+- Combination tests and the invariant sweep — see the Phase F checklist; they are what protects the fold-in.
 - `GetCityIndex` — stable for an unchanged list; the staggering test pins the mapping index → penalised city
   explicitly, so a future change to the index source fails loudly.
 - Manual: city screens, disorder and celebration behave sensibly; the six consumers in §9 still render.

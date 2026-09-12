@@ -795,6 +795,9 @@ namespace CivOne.Screens
 		private string StartPositionAlgorithmText()
 			=> Settings.StartPositionAlgorithm == Settings.StartPositionAlgorithmType.AreaBased ? Translate("Area-based") : Translate("Legacy");
 
+		private string PendingUnhappinessModeText()
+			=> Settings.PendingUnhappinessMode == Settings.PendingUnhappinessRefillType.FullDrain ? Translate("Full drain") : Translate("Halving");
+
 		private void PatchesMenu(int activeItem = 0) => CreateMenu(Translate("Patches"), activeItem,
 			MenuItem.Create(TranslateFormatted("Reveal world: {0}", Settings.RevealWorld.YesNo()))
 				.WithDescription(
@@ -868,6 +871,16 @@ namespace CivOne.Screens
 					Translate("Choose where barbarians come from in new games."),
 					Translate("Running games keep their own value."))
 				.OnSelect(GotoMenu(BarbarianActivityMenu)),
+			MenuItem.Create(TranslateFormatted("Original city happiness: {0}", Settings.OriginalHappinessModel.YesNo()))
+				.WithDescription(
+					Translate("Use the city happiness model of the original game."),
+					Translate("Changes unhappiness, disorder and the city screen."))
+				.OnSelect(GotoMenu(OriginalHappinessModelMenu)),
+			MenuItem.Create(TranslateFormatted("Pending unhappiness: {0}", PendingUnhappinessModeText()))
+				.WithDescription(
+					Translate("How parked unhappiness returns after a city improves."),
+					Translate("Only used with the original happiness model."))
+				.OnSelect(GotoMenu(PendingUnhappinessModeMenu)),
 			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(MainMenu, 1))
 		);
 
@@ -981,6 +994,28 @@ namespace CivOne.Screens
 			MenuItem.Create(true.YesNo())
 				.WithDescription(Translate("Show Deity in difficulty selection."))
 				.OnSelect((s, a) => Settings.DeityEnabled = true).SetActive(() => Settings.DeityEnabled),
+			MenuItem.Create(Translate("Back"))
+		);
+
+		private void OriginalHappinessModelMenu() => CreateMenu(Translate("Original city happiness"), GotoMenu(PatchesMenu, 16),
+			MenuItem.Create(TranslateFormatted("{0} (default)", false.YesNo()))
+				.WithDescription(Translate("Keep the happiness model CivOne shipped with."))
+				.OnSelect((s, a) => Settings.OriginalHappinessModel = false).SetActive(() => !Settings.OriginalHappinessModel),
+			MenuItem.Create(true.YesNo())
+				.WithDescription(Translate("Use the happiness model of the original game."))
+				.OnSelect((s, a) => Settings.OriginalHappinessModel = true).SetActive(() => Settings.OriginalHappinessModel),
+			MenuItem.Create(Translate("Back"))
+		);
+
+		private void PendingUnhappinessModeMenu() => CreateMenu(Translate("Pending unhappiness"), GotoMenu(PatchesMenu, 17),
+			MenuItem.Create(TranslateFormatted("{0} (default)", Translate("Halving")))
+				.WithDescription(Translate("A city improvement takes back about half of the parked unhappiness."))
+				.OnSelect((s, a) => Settings.PendingUnhappinessMode = Settings.PendingUnhappinessRefillType.Halving)
+				.SetActive(() => Settings.PendingUnhappinessMode == Settings.PendingUnhappinessRefillType.Halving),
+			MenuItem.Create(Translate("Full drain"))
+				.WithDescription(Translate("Improvements do nothing until the parked unhappiness is used up."))
+				.OnSelect((s, a) => Settings.PendingUnhappinessMode = Settings.PendingUnhappinessRefillType.FullDrain)
+				.SetActive(() => Settings.PendingUnhappinessMode == Settings.PendingUnhappinessRefillType.FullDrain),
 			MenuItem.Create(Translate("Back"))
 		);
 

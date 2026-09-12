@@ -312,6 +312,45 @@ namespace CivOne.UnitTests
             Assert.Equal(6, ct.content);
         }
 
+        [Fact]
+        public void ShakespeareWipesOutTheWarWeariness()
+        {
+            _game.Difficulty = 0;
+            WithGovernment(typeof(CivOne.Governments.Democracy));
+            _city.WithWonder<ShakespearesTheatre>();
+
+            // Two units abroad under a democracy are four points of war weariness in stage 4.
+            // The theatre runs in stage 5, after them, so the city ends up with nobody unhappy.
+            // Applying it with the buildings in stage 3 would let the weariness undo it.
+            _game.OnGetUnits = (_, _) =>
+            [
+                new MockedUnit(5, 5).WithHome(_city),
+                new MockedUnit(6, 6).WithHome(_city)
+            ];
+
+            Assert.Equal(0, Halving().GetCitizenTypes().unhappy);
+        }
+
+        [Fact]
+        public void BachsCathedralRunsAfterTheWarWeariness()
+        {
+            _game.Difficulty = 0;
+            WithGovernment(typeof(CivOne.Governments.Democracy));
+            _city.ContinentId = 1;
+            _map.ReturnContinentCitiesValues(new MockedCity
+            {
+                ContinentId = 1,
+                CityOwnerPlayerIndex = _city.CityOwnerPlayerIndex
+            }.WithWonder<JSBachsCathedral>());
+
+            // Size 6 on difficulty 0 has no unhappy citizens of its own.
+            // One unit abroad under a democracy adds two in stage 4, and the cathedral takes exactly those
+            // two away again in stage 5.
+            _game.OnGetUnits = (_, _) => [new MockedUnit(5, 5).WithHome(_city)];
+
+            Assert.Equal(0, Halving().GetCitizenTypes().unhappy);
+        }
+
         // ── The stage order ───────────────────────────────────────────────────────────────────────────
 
         [Fact]
@@ -386,18 +425,39 @@ namespace CivOne.UnitTests
         }
 
         [Theory]
-        [InlineData(false, false, 3)]   // the temple alone
-        [InlineData(true, false, 2)]    // Mysticism doubles it
-        [InlineData(false, true, 2)]    // the Oracle doubles it
-        [InlineData(true, true, 0)]     // both together
-        public void TempleAndOracle(bool hasMysticism, bool hasOracle, int expectedUnhappy)
+        // ceremonial burial, mysticism, oracle, expected unhappy out of the four the city starts with
+        [InlineData(false, false, false, 4)]   // without an advance the temple does nothing at all
+        [InlineData(true, false, false, 3)]    // Ceremonial Burial makes it worth one
+        [InlineData(false, true, false, 2)]    // Mysticism makes it worth two, Ceremonial Burial is not needed
+        [InlineData(true, true, false, 2)]     // and it does not stack with Ceremonial Burial
+        [InlineData(false, false, true, 3)]    // the oracle needs a temple, not an advance
+        [InlineData(true, false, true, 2)]     // one for the temple, one for the oracle
+        [InlineData(false, true, true, 0)]     // two for each once Mysticism is known
+        [InlineData(true, true, true, 0)]
+        public void TempleAndOracle(
+            bool hasCeremonialBurial,
+            bool hasMysticism,
+            bool hasOracle,
+            int expectedUnhappy)
         {
             MockedPlayer player = (MockedPlayer)_city.MockPlayer!;
+            player.withAdvance<CeremonialBurial>(hasCeremonialBurial);
             player.withAdvance<Mysticism>(hasMysticism);
             player.WithWonderEffect<Oracle>(hasOracle);
             _city.WithBuilding<Temple>();
 
             Assert.Equal(expectedUnhappy, Halving().GetCitizenTypes().unhappy);
+        }
+
+        [Fact]
+        public void TheOracleNeedsATempleToWork()
+        {
+            MockedPlayer player = (MockedPlayer)_city.MockPlayer!;
+            player.withAdvance<Mysticism>();
+            player.WithWonderEffect<Oracle>();
+
+            // No temple in this city, so the oracle has nothing to attach to.
+            Assert.Equal(4, Halving().GetCitizenTypes().unhappy);
         }
 
         [Fact]
@@ -426,6 +486,215 @@ namespace CivOne.UnitTests
             _game.OnGetUnits = (_, _) => [new MockedUnit(5, 5).WithHome(_city)];
 
             Assert.Equal(expectedUnhappy, Halving().GetCitizenTypes().unhappy);
+        }
+
+        [Theory]
+        [InlineData(UnitClass.Air, 1)]      // an air unit is weary even at home
+        [InlineData(UnitClass.Water, 0)]    // a ship in its home port is not
+        [InlineData(UnitClass.Land, 0)]     // nor is a land unit standing in the city
+        public void OnlyAirUnitsAreWearyWhileAtHome(UnitClass unitClass, int expectedUnhappy)
+        {
+            _game.Difficulty = 0;
+            WithGovernment(typeof(Republic));
+
+            // The unit stands on the city tile itself, so only the air class makes it count as away.
+            _game.OnGetUnits = (_, _) => [new MockedUnit(_city.Location.X, _city.Location.Y)
+                .WithHome(_city)
+                .WithCategory(unitClass)];
+
+            Assert.Equal(expectedUnhappy, Halving().GetCitizenTypes().unhappy);
+        }
+
+        [Fact]
+        public void WarWearinessRaisesTheUnhappyCountAndDoesNotDowngradeHappyCitizens()
+        {
+            _game.Difficulty = 0;
+            WithGovernment(typeof(Republic));
+
+            // Size 4 on difficulty 0 has four content citizens; the luxuries then make two of them happy.
+            // One unit abroad under a republic is one point of weariness.
+            //
+            // The original adds that point to the unhappy counter, so the city ends up with one unhappy
+            // citizen. Spending the point on downgrading the leading citizen instead would turn a happy one
+            // back into a content one and leave nobody unhappy, which is what this test guards against.
+            _city.Size = 4;
+            _city.TradeTotalGross = 20;
+            _city.LuxuryCorruption = 0;
+            _game.OnGetUnits = (_, _) => [new MockedUnit(5, 5).WithHome(_city)];
+
+            CitizenTypes citizens = Create(new HalvingPendingUnhappinessDelegate().Refill, luxuryRate: 2)
+                .GetCitizenTypes();
+
+            Assert.Equal(2, citizens.happy);
+            Assert.Equal(1, citizens.unhappy);
+        }
+
+        [Fact]
+        public void OnlyTheSurplusBeyondTheCitySizeIsParked()
+        {
+            // Regression: the parked unhappiness used to be measured against the seats
+            // (size minus specialists) rather than against the city size. A city whose base unhappiness fit
+            // into the city but not into its seats then parked the difference, and that surplus shielded the
+            // happy citizens from the very first normalisation — every crowded city showed one happy citizen
+            // too many.
+            //
+            // Taken from a real save: size 18, Warlord, despotism, a marketplace and six entertainers.
+            // Base unhappiness is 18 + 1 - 6 = 13, which fits into the city of 18 but not into the 12 seats,
+            // so nothing may be parked. The luxuries give 6 x 2 = 12, raised to 18 by the marketplace, so
+            // nine raw happy citizens meet twelve unhappy ones against twelve seats. The normalisation lowers
+            // both together until the sum is 11, which leaves four happy and seven unhappy.
+            _game.Difficulty = 1;
+            WithGovernment(typeof(Despotism));
+            _city.Size = 18;
+            _city.Entertainers = 6;
+            _city.WithBuilding<MarketPlace>();
+            _specialists.AddRange(Enumerable.Repeat(Citizen.Entertainer, 6));
+
+            CitizenTypes ct = Create(new HalvingPendingUnhappinessDelegate().Refill, luxuryRate: 0)
+                .GetCitizenTypes();
+
+            Assert.Equal(4, ct.happy);
+            Assert.Equal(1, ct.content);
+            Assert.Equal(7, ct.unhappy);
+            Assert.Equal(0, ct.redShirt);
+        }
+
+        // ── Modifiers in combination ───────────────────────────────────────────────────────────────────
+        //
+        // The single modifiers are pinned above. These cases pin what they do *together*, because the
+        // consolidation of Phase F moves them between classes and stages. A combination that is only ever
+        // tested one effect at a time can silently change its total without any test noticing.
+
+        private MockedCity WithBachsCathedralOnTheSameContinent()
+        {
+            MockedCity wonderCity = new MockedCity() { CityOwnerPlayerIndex = _city.CityOwnerPlayerIndex };
+            wonderCity.ReturnHasWonderValues(false);
+            wonderCity.WithWonder<JSBachsCathedral>();
+            wonderCity.ContinentId = _city.ContinentId;
+            _map.ReturnContinentCitiesValues(wonderCity);
+            return wonderCity;
+        }
+
+        [Fact]
+        public void TheCathedralAndBachsCathedralAddUpAcrossTheirStages()
+        {
+            // The cathedral works in stage 3 and J.S. Bach's Cathedral in stage 5, with a normalisation
+            // between them. Their totals still add up: eight unhappy citizens lose four to the cathedral and
+            // two more to the wonder.
+            _city.Size = 10;
+            _game.Difficulty = 4;
+            ((MockedPlayer)_city.MockPlayer!).withAdvance<Religion>();
+            _city.WithBuilding<Cathedral>();
+            WithBachsCathedralOnTheSameContinent();
+
+            CitizenTypes ct = Halving().GetCitizenTypes();
+
+            Assert.Equal(2, ct.unhappy);
+            Assert.Equal(8, ct.content);
+            Assert.Equal(0, ct.happy);
+        }
+
+        [Fact]
+        public void TheBuildingsOfStageThreeAddUp()
+        {
+            // Temple, colosseum and cathedral are summed into one conversion inside stage 3.
+            // 10 + 4 - 6 = 8 unhappy, minus 1 temple, minus 3 colosseum, minus 4 cathedral, leaves none.
+            _city.Size = 10;
+            _game.Difficulty = 4;
+            ((MockedPlayer)_city.MockPlayer!)
+                .withAdvance<Religion>()
+                .withAdvance<CeremonialBurial>();
+            _city.WithBuilding<Temple>();
+            _city.WithBuilding<Colosseum>();
+            _city.WithBuilding<Cathedral>();
+
+            CitizenTypes ct = Halving().GetCitizenTypes();
+
+            Assert.Equal(0, ct.unhappy);
+            Assert.Equal(10, ct.content);
+        }
+
+        [Fact]
+        public void ShakespeareLeavesNothingForBachsCathedral()
+        {
+            // Both run in stage 5, the theatre first. It clears the unhappiness of its own city, so the
+            // wonder that follows finds nothing to convert and the result is the same as the theatre alone.
+            _city.Size = 10;
+            _game.Difficulty = 4;
+            _city.WithWonder<ShakespearesTheatre>();
+            WithBachsCathedralOnTheSameContinent();
+
+            CitizenTypes ct = Halving().GetCitizenTypes();
+
+            Assert.Equal(0, ct.unhappy);
+            Assert.Equal(10, ct.content);
+        }
+
+        [Fact]
+        public void TheHappinessWondersAndTheBuildingsDoNotGetInEachOthersWay()
+        {
+            // The colosseum converts unhappy citizens in stage 3, the two wonders raise content ones to happy
+            // in stage 5. 10 + 4 - 6 = 8 unhappy, minus 3 leaves 5, and two of the five content citizens
+            // become happy.
+            _city.Size = 10;
+            _game.Difficulty = 4;
+            _city.WithBuilding<Colosseum>();
+            ((MockedPlayer)_city.MockPlayer!)
+                .WithWonderEffect<HangingGardens>()
+                .WithWonderEffect<CureForCancer>();
+
+            CitizenTypes ct = Halving().GetCitizenTypes();
+
+            Assert.Equal(2, ct.happy);
+            Assert.Equal(3, ct.content);
+            Assert.Equal(5, ct.unhappy);
+        }
+
+        // ── The invariants, across the whole parameter space ───────────────────────────────────────────
+
+        [Fact]
+        public void EveryConstellationKeepsTheCitizenInvariants()
+        {
+            Type[] governments = [typeof(Despotism), typeof(CivOne.Governments.Monarchy), typeof(Republic)];
+            int checkedCases = 0;
+
+            foreach (Type government in governments)
+            {
+                foreach (int difficulty in Enumerable.Range(0, 6))
+                {
+                    foreach (int size in Enumerable.Range(1, 20))
+                    {
+                        foreach (int specialists in Enumerable.Range(0, size + 1))
+                        {
+                            BeforeEach();
+                            WithGovernment(government);
+                            _game.Difficulty = difficulty;
+                            _city.Size = (byte)size;
+                            _city.Entertainers = specialists;
+                            _specialists.AddRange(Enumerable.Repeat(Citizen.Entertainer, specialists));
+                            WithEmpire(40);
+
+                            int seats = Math.Max(size - specialists, 0);
+
+                            foreach (CitizenTypes stage in Halving().EnumerateCitizens())
+                            {
+                                Assert.True(stage.Valid(),
+                                    $"negative count at size {size}, difficulty {difficulty}, "
+                                    + $"{specialists} specialists, {government.Name}");
+                                Assert.Equal(size, stage.Sum());
+                                Assert.True(stage.happy + stage.unhappy + stage.redShirt <= seats,
+                                    $"more citizens than seats at size {size}, difficulty {difficulty}, "
+                                    + $"{specialists} specialists, {government.Name}");
+                            }
+
+                            checkedCases++;
+                        }
+                    }
+                }
+            }
+
+            // 3 governments x 6 difficulties x sum over sizes 1..20 of (size + 1) specialist counts.
+            Assert.Equal(3 * 6 * 230, checkedCases);
         }
 
         [Fact]

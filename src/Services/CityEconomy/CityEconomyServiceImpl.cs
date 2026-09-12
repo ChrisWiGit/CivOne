@@ -10,11 +10,26 @@ namespace CivOne
 	/// Service implementation for calculating city economy breakdowns.
 	/// Tight coupling to City because this service is an internal implementation detail of City and relies on City internals for its calculations. 
 	/// </summary>
-	internal sealed class CityEconomyServiceImpl(City city, IGame game) : ICityEconomyService
+	internal class CityEconomyServiceImpl(City city, IGame game) : ICityEconomyService
 	{
 		// Testing skipped because this method is an orchestration of pure calculations that are individually tested in CityEconomyServiceImplTests.
 		private readonly City _city = city;
 		private readonly IGame _game = game;
+
+		/// <summary>
+		/// Gets the city this service calculates for.
+		/// </summary>
+		protected City City => _city;
+
+		/// <summary>
+		/// Gets the luxury points the entertainers contribute.
+		///
+		/// CivOne bakes the marketplace bonus into the constant — three points per entertainer is two points
+		/// raised by fifty percent — and therefore grants it whether the city has a marketplace or not.
+		/// A service that raises the specialists with the buildings itself must override this and return the
+		/// unraised value, or the bonus is applied twice.
+		/// </summary>
+		protected virtual int EntertainerLuxuryPoints => _city.EntertainerLuxuries;
 
 		public CityEconomyBreakdown CalculateBreakdown()
 		{
@@ -29,7 +44,7 @@ namespace CivOne
 				tradeLuxuries,
 				_city.HasBuilding<MarketPlace>(),
 				_city.HasBuilding<Bank>(),
-				_city.EntertainerLuxuries);
+				EntertainerLuxuryPoints);
 
 			short totalTaxes = CalculateTaxes(
 				tradeTaxes,
@@ -82,7 +97,7 @@ namespace CivOne
 			return (short)Math.Max(0, totalTrade - tradeLuxuries - tradeTaxes);
 		}
 
-		public short CalculateLuxuries(short tradeLuxuries, bool hasMarketPlace, bool hasBank, int entertainerLuxuries)
+		public virtual short CalculateLuxuries(short tradeLuxuries, bool hasMarketPlace, bool hasBank, int entertainerLuxuries)
 		{
 			short luxuries = tradeLuxuries;
 			if (hasMarketPlace) luxuries += (short)Math.Floor(luxuries * 0.5);
@@ -91,7 +106,7 @@ namespace CivOne
 			return luxuries;
 		}
 
-		public short CalculateTaxes(short tradeTaxes, bool hasMarketPlace, bool hasBank, int taxmen)
+		public virtual short CalculateTaxes(short tradeTaxes, bool hasMarketPlace, bool hasBank, int taxmen)
 		{
 			int taxes = tradeTaxes;
 			if (hasMarketPlace) taxes += (int)Math.Floor(taxes * 0.5);
