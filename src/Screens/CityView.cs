@@ -33,6 +33,9 @@ namespace CivOne.Screens
 
 		private const int MIN_HOUSES = 2;
 
+		/// <summary>Gap in pixels between the feet of the animated figures and the bottom of the city view.</summary>
+		private const int ANIMATION_BOTTOM_MARGIN = 5;
+
 		private readonly TextSettings _dialogText;
 
 		private readonly City _city;
@@ -54,6 +57,40 @@ namespace CivOne.Screens
 
 		private readonly Picture _overlay;
 		private readonly Picture[]? _invadersOrRevolters;
+
+		/// <summary>Horizontal start offsets of the four civil disorder groups, as in the original game.</summary>
+		private static readonly int[] CrowdOffsetsX = [ -96, -36, 0, -56 ];
+
+		/// <summary>Vertical offsets of the four groups, which staggers them in depth.</summary>
+		private static readonly int[] CrowdOffsetsY = [ -6, -4, -2, 0 ];
+
+		/// <summary>Baseline the vertical group offsets are measured from.</summary>
+		private const int CROWD_BASE_Y = 132;
+
+		/// <summary>Pixels the crowd moves per animation frame.</summary>
+		private const int CROWD_STEP = 3;
+
+		/// <summary>Number of animation frames a crowd walk lasts before the screen closes itself.</summary>
+		private const int CROWD_FRAMES = 156;
+
+		/// <summary>Leftmost position of the walk, one figure width off screen.</summary>
+		private const int CROWD_START_X = -48;
+
+		/// <summary>Animation frame counter of the walking crowd.</summary>
+		private int _crowdFrame;
+
+		/// <summary>Per-figure animation and position offsets, so the citizens do not march in lockstep.</summary>
+		/// <remarks>
+		/// Deliberate deviation from the original Civilization: there every figure of the crowd shares
+		/// one walk frame and an exactly even spacing, which makes the rioting and celebrating citizens
+		/// look like a drilled formation.
+		/// Here each civilian figure gets a random phase and a small random horizontal offset, so the
+		/// crowd moves out of step.
+		/// Only the civilian crowds (civil disorder, celebration) are staggered.
+		/// The invaders of a captured city are soldiers and keep the original's lockstep on purpose.
+		/// </remarks>
+		private int[]? _walkPhase;
+		private int[]? _walkOffsetX;
 
 		private bool _update = true;
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
@@ -87,6 +124,114 @@ namespace CivOne.Screens
 			this.SetPalette(palette);
 		}
 		
+		/// <summary>
+		/// Creates the per-figure offsets that break up the lockstep of a walking crowd.
+		/// </summary>
+		/// <remarks>
+		/// Intentional difference from the original game, see <see cref="_walkPhase"/>.
+		/// The original gives group <c>k</c> the fixed phase <c>k * 3</c>, which still looks drilled.
+		/// </remarks>
+		/// <param name="figureCount">Number of figures in the crowd.</param>
+		private void CreateWalkOffsets(int figureCount)
+		{
+			_walkPhase = new int[figureCount];
+			_walkOffsetX = new int[figureCount];
+			for (int i = 0; i < figureCount; i++)
+			{
+				_walkPhase[i] = RandomService.NextInt(10);
+				_walkOffsetX[i] = RandomService.NextInt(-6, 7);
+			}
+		}
+
+		/// <summary>
+		/// Returns the animation frame for one figure, shifted by its own phase offset.
+		/// </summary>
+		/// <param name="index">Index of the figure in the crowd.</param>
+		/// <returns>Frame index in the range 0-9.</returns>
+		private int WalkFrame(int index)
+		{
+			int phase = (_walkPhase != null && index < _walkPhase.Length) ? _walkPhase[index] : index * 3;
+			return (((_crowdFrame + phase) % 10) + 10) % 10;
+		}
+
+		/// <summary>
+		/// Returns the horizontal jitter of one figure, so the crowd is not evenly spaced.
+		/// </summary>
+		/// <param name="index">Index of the figure in the crowd.</param>
+		/// <returns>Offset in pixels.</returns>
+		private int WalkOffsetX(int index) => (_walkOffsetX != null && index < _walkOffsetX.Length) ? _walkOffsetX[index] : 0;
+
+		/// <summary>
+		/// Draws the four walking groups of a civil disorder or a celebration and advances the animation.
+		/// </summary>
+		/// <remarks>
+		/// The original walks the crowd from x = -48 to x = 420 in steps of 3 pixels, which takes 156
+		/// frames, and then ends the screen by itself.
+		/// A celebration walks the same path in the opposite direction and spreads the groups by 1.5.
+		/// </remarks>
+		/// <param name="movingLeft">Whether the crowd walks to the left, as a celebration does.</param>
+		/// <param name="spreadHalves">Group spacing in halves, 2 for a disorder and 3 for a celebration.</param>
+		/// <returns>Always <c>true</c>, the screen has been redrawn.</returns>
+		private bool DrawCrowd(bool movingLeft, int spreadHalves)
+		{
+			if (_crowdFrame >= CROWD_FRAMES)
+			{
+				SkipAction();
+				return true;
+			}
+
+			RenderBase();
+
+			int walk = CROWD_START_X + (CROWD_STEP * _crowdFrame);
+			if (movingLeft)
+			{
+				walk = CROWD_START_X + (CROWD_STEP * (CROWD_FRAMES - 1 - _crowdFrame));
+			}
+
+			for (int i = 0; i < CrowdOffsetsX.Length; i++)
+			{
+				if (_invadersOrRevolters == null) continue;
+
+				int x = ((spreadHalves * CrowdOffsetsX[i]) / 2) + walk + WalkOffsetX(i);
+				int y = CROWD_BASE_Y + CrowdOffsetsY[i];
+				// Citizens walk out of step, an intentional difference from the original game.
+				AddClippedLayer(_invadersOrRevolters[WalkFrame(i)], x, y);
+			}
+
+			_crowdFrame++;
+			return true;
+		}
+
+		/// <summary>
+		/// Draws an animated figure on top of the city view, clipped to the 320x200 city view area.
+		/// </summary>
+		/// <remarks>
+		/// The marching figures of a civil disorder or a celebration walk in from outside the city
+		/// view. On a window larger than 320x200 the area around the view is visible, so a figure
+		/// drawn without clipping would keep marching across the black border instead of vanishing
+		/// at the edge of the view.
+		/// </remarks>
+		/// <param name="sprite">The animation frame to draw.</param>
+		/// <param name="x">Horizontal position inside the city view.</param>
+		/// <param name="y">Vertical position inside the city view.</param>
+		private void AddClippedLayer(Picture sprite, int x, int y)
+		{
+			int left = Math.Max(0, -x);
+			int top = Math.Max(0, -y);
+			int width = Math.Min(sprite.Width - left, 320 - Math.Max(0, x));
+			int height = Math.Min(sprite.Height - top, 200 - Math.Max(0, y));
+			if (width <= 0 || height <= 0) return;
+
+			if (left == 0 && top == 0 && width == sprite.Width && height == sprite.Height)
+			{
+				this.AddLayer(sprite, x + OffsetX, y + OffsetY);
+				return;
+			}
+
+			using Picture part = sprite[left, top, width, height];
+			this.AddLayer(part, x + left + OffsetX, y + top + OffsetY);
+		}
+
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (gameTick % 4 == 0)
@@ -95,13 +240,18 @@ namespace CivOne.Screens
 				_update = true;
 			}
 
-			if (_captured || _disorder)
+			if (_disorder)
+			{
+				return DrawCrowd(movingLeft: false, spreadHalves: 2);
+			}
+
+			if (_captured)
 			{
 				RenderBase();
 				int frame = _x % 30 / 3;
 				if (frame < 0)
 				{
-					Log($"Warning: Invaders/Revolters frame is negative: {frame} for x={_x} and player={_city.CityOwnerPlayerIndex}");
+					Log($"Warning: Invaders frame is negative: {frame} for x={_x} and player={_city.CityOwnerPlayerIndex}");
 					frame = 0;
 				}
 				for (int i = 7; i >= 0; i--)
@@ -110,7 +260,8 @@ namespace CivOne.Screens
 					if (xx + 78 <= 0) continue;
 					if (_invadersOrRevolters != null)
 					{
-						this.AddLayer(_invadersOrRevolters[frame], xx + OffsetX, _y + OffsetY);
+						// The invaders of a captured city are soldiers and keep the original's lockstep.
+						AddClippedLayer(_invadersOrRevolters[frame], xx, _y);
 					}
 				}
 				_x++;
@@ -119,27 +270,7 @@ namespace CivOne.Screens
 			
 			if (_weLovePresidentDay)
 			{
-				RenderBase();
-				int frame = (_x + 600) % 30 / 3;
-				if (frame < 0)
-				{
-					Log($"Warning: We love the president day frame is negative: {frame} for x={_x} and player={_city.CityOwnerPlayerIndex}");
-					//CW: Reset to first frame and set _x to right side of screen as in construction of class.
-					frame = 0; // =(240 + 600) % 30 / 3;
-					_x = 240;
-				}
-				for (int i = 0; i <= 7; i++)
-					{
-						int xx = _x + 65 + (48 * i);
-						//if (xx <= 0) continue;
-						if (_invadersOrRevolters != null)
-						{
-							this.AddLayer(_invadersOrRevolters[frame], xx + OffsetX, _y + OffsetY);
-						}
-					}
-				_x--;
-
-				return true;
+				return DrawCrowd(movingLeft: true, spreadHalves: 3);
 			}
 
 			if (_noiseMap != null)
@@ -1014,8 +1145,8 @@ namespace CivOne.Screens
 					yy = 1;
 					ww = 78;
 					hh = 65;
-					_y = 133;
 				}
+				_y = 200 - ANIMATION_BOTTOM_MARGIN - hh;
 
 				_invadersOrRevolters = new Picture[10];
 				for (int ii = 0; ii < 10; ii++)
@@ -1035,7 +1166,7 @@ namespace CivOne.Screens
 			{
 				Picture revolters;
 				int xx = 1, yy = 1, ww, hh;
-				if (Game.CurrentPlayer.HasAdvance<Conscription>())
+				if (Game.CurrentPlayer.HasAdvance<Advances.University>())
 				{
 					ww = 78;
 					hh = 63;
@@ -1054,7 +1185,7 @@ namespace CivOne.Screens
 					int frameY = (ii - frameX) / 4;
 					_invadersOrRevolters[ii] = revolters[xx + (frameX * (ww + 1)), yy + (frameY * (hh + 1)), ww, hh];
 				}
-				_x = 0;
+				CreateWalkOffsets(CrowdOffsetsX.Length);
 				string[] lines = TranslateFormattedArray("Civil disorder in\n{0}! Mayor\nflees in panic.", city.Name);
 				drawMessage(lines);
 			}
@@ -1064,9 +1195,8 @@ namespace CivOne.Screens
 			{
 				int xx = 1, yy = 1, ww = 78, hh = 65;
 
-				var resourceName = Game.CurrentPlayer.HasAdvance<Conscription>() ? "LOVE2" : "LOVE1";
+				var resourceName = Game.CurrentPlayer.HasAdvance<Industrialization>() ? "LOVE2" : "LOVE1";
 				Picture marchers = Resources[resourceName];
-
 				_invadersOrRevolters = new Picture[10];
 				for (int ii = 0; ii < 10; ii++)
 				{
@@ -1074,7 +1204,7 @@ namespace CivOne.Screens
 					int frameY = (ii - frameX) / 4;
 					_invadersOrRevolters[ii] = marchers[xx + (frameX * (ww + 1)), yy + (frameY * (hh + 1)), ww, hh];
 				}
-				_x = 240;
+				CreateWalkOffsets(CrowdOffsetsX.Length);
 
 				string leaderTitle = Translate("President");
 				if (Game.CurrentPlayer.Government is Governments.Monarchy)
@@ -1117,7 +1247,10 @@ namespace CivOne.Screens
 				return;
 			}
 
-			if (captured) return;
+			// While the disorder animation plays, RenderBase() redraws _background on every frame and
+			// layers the (mostly transparent) revolter sprite on top - the static population row would
+			// still show through the gaps around the animated figure, so skip drawing it here.
+			if (captured || _disorder) return;
 
 			_background.DrawText(_city.Name, 5, 5, 161, 3, TextAlign.Center)
 				.DrawText(_city.Name, 5, 15, 160, 2, TextAlign.Center)
@@ -1148,11 +1281,29 @@ namespace CivOne.Screens
 			bool modern = Human.HasAdvance<Industrialization>();
 			foreach (Citizen citizen in _city.GetCitizens())
 			{
-				if (group != (group = Common.CitizenGroup(citizen)) && group > 0) offsetX += 8;
+				// POP.PIC only has 9 slots; civil disorder citizens reuse the Unhappy slot, which is
+				// already painted red in the original artwork. The original draws no difference between
+				// ordinary and parked unhappiness here, so both share the sprite.
+				Citizen spriteSource = citizen switch
+				{
+					Citizen.RedShirtMale => Citizen.UnhappyMale,
+					Citizen.RedShirtFemale => Citizen.UnhappyFemale,
+					_ => citizen,
+				};
 
-				int sx = ((int)citizen * 35) + 1, sy = modern ? 1 : 52;
+				int previousGroup = group;
+				group = Common.CitizenGroup(spriteSource);
+				if (previousGroup >= 0 && group != previousGroup)
+				{
+					// The original leaves no gap between the happy and the content block, 8 pixels before
+					// the unhappy block and 12 before the specialists.
+					if (group == 2) offsetX += 8;
+					else if (group == 3) offsetX += 12;
+				}
+
+				int sx = ((int)spriteSource * 35) + 1, sy = modern ? 1 : 52;
 				int sw = 34, sh = modern ? 50 : 52;
-				int dx = (int)citizen + offsetX + (11 * i++), dy = 140;
+				int dx = offsetX + (11 * i++), dy = 140;
 				_background.AddLayer(Resources["POP"][sx, sy, sw, sh], dx, dy);
 			}
 

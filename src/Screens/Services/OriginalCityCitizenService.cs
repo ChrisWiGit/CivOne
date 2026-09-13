@@ -514,11 +514,12 @@ namespace CivOne.Screens.Services
 				index++;
 			}
 
-			// The citizens standing for the parked unhappiness are the last ones, so luxuries and buildings
-			// reach the ordinary unhappy citizens first.
+			// The original recolours the first red shirts of the unhappy block, so they stand at its left
+			// edge. The order is display only: every stage rebuilds this array from the counts, and the
+			// refill works on the counts alone.
 			for (int i = 0; i < unhappy; i++)
 			{
-				Citizen type = i >= unhappy - redShirts ? Citizen.RedShirtMale : Citizen.UnhappyMale;
+				Citizen type = i < redShirts ? Citizen.RedShirtMale : Citizen.UnhappyMale;
 				ct.Citizens[index] = CitizenByIndex(index, type);
 				index++;
 			}
