@@ -79,11 +79,8 @@ namespace CivOne.Screens.Services
 				return new CityCitizenService(city, city, dependency, specialists, map);
 			}
 
-			PendingUnhappinessRefill refill = Settings.Instance.PendingUnhappinessMode == Settings.PendingUnhappinessRefillType.FullDrain
-				? new FullDrainPendingUnhappinessDelegate().Refill
-				: new HalvingPendingUnhappinessDelegate().Refill;
-
-			return new OriginalCityCitizenService(city, city, dependency, specialists, map, refill, luxuryRate);
+			return new OriginalCityCitizenService(city, city, dependency, specialists, map,
+				new EqualisingPendingUnhappinessDelegate().Refill, luxuryRate);
 		}
 	}
 

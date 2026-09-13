@@ -69,7 +69,6 @@ namespace CivOne
 		private bool _terrainEditorMenu;
 		private bool _deityEnabled;
 		private bool _originalHappinessModel;
-		private PendingUnhappinessRefillType _pendingUnhappinessMode = PendingUnhappinessRefillType.Halving;
 		private BarbarianActivity _barbarianActivity = BarbarianActivity.VillagesAndRaids;
 		private bool _arrowHelper;
 		private bool _pathFinding;
@@ -490,25 +489,6 @@ namespace CivOne
 		}
 
 		/// <summary>
-		/// Describes how the unhappiness that does not fit into a city flows back once a modifier reduces
-		/// the visible unhappiness again.
-		/// </summary>
-		internal enum PendingUnhappinessRefillType
-		{
-			/// <summary>
-			/// The flow back stops once the visible unhappiness has caught up with what is left over.
-			/// About half of an improvement survives.
-			/// </summary>
-			Halving = 0,
-
-			/// <summary>
-			/// The flow back continues until nothing is left over.
-			/// An improvement has no visible effect before that point.
-			/// </summary>
-			FullDrain = 1
-		}
-
-		/// <summary>
 		/// Gets or sets whether cities use the city happiness model of the original game.
 		/// While this is off, the model CivOne shipped with is used and nothing changes.
 		/// </summary>
@@ -519,21 +499,6 @@ namespace CivOne
 			{
 				_originalHappinessModel = value;
 				SetSetting("OriginalHappinessModel", _originalHappinessModel ? "1" : "0");
-				Common.ReloadSettings = true;
-			}
-		}
-
-		/// <summary>
-		/// Gets or sets which reading of the original's overflow refill the happiness model uses.
-		/// Only relevant while <see cref="OriginalHappinessModel"/> is on.
-		/// </summary>
-		internal PendingUnhappinessRefillType PendingUnhappinessMode
-		{
-			get => _pendingUnhappinessMode;
-			set
-			{
-				_pendingUnhappinessMode = value;
-				SetSetting("PendingUnhappinessMode", ((int)_pendingUnhappinessMode).ToString(CultureInfo.InvariantCulture));
 				Common.ReloadSettings = true;
 			}
 		}
@@ -905,7 +870,6 @@ namespace CivOne
 			GetSetting("TerrainEditorMenu", ref _terrainEditorMenu);
 			GetSetting("DeityEnabled", ref _deityEnabled);
 			GetSetting("OriginalHappinessModel", ref _originalHappinessModel);
-			GetSetting("PendingUnhappinessMode", ref _pendingUnhappinessMode);
 			int barbarianActivity = (int)_barbarianActivity;
 			if (GetSetting("BarbarianActivity", ref barbarianActivity, (int)BarbarianActivity.None, (int)BarbarianActivity.VillagesAndRaids))
 			{

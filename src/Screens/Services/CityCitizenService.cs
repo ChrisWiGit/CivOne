@@ -345,7 +345,7 @@ namespace CivOne.Screens.Services
 			};
 		}
 
-		protected internal void ApplyWonderEffects(CitizenTypes ct)
+		protected internal virtual void ApplyWonderEffects(CitizenTypes ct)
 		{
 			int happy = 0;
 			if (_city.PlayerIntf.HasWonderEffect<HangingGardens>() && !_game.WonderObsolete<HangingGardens>())
@@ -406,7 +406,7 @@ namespace CivOne.Screens.Services
 			UnhappyToContent(ct.Citizens, unhappyToContent);
 		}
 
-		protected internal void ApplyBuildingEffects(CitizenTypes ct)
+		protected internal virtual void ApplyBuildingEffects(CitizenTypes ct)
 		{
 			if (_cityBuildings.HasWonder<ShakespearesTheatre>() &&
 				!_game.WonderObsolete<ShakespearesTheatre>())

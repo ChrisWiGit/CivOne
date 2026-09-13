@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using CivOne.Advances;
 using CivOne.Buildings;
-using CivOne.Enums;
 using CivOne.Governments;
 using CivOne.Screens.Services;
 using CivOne.Tiles;
@@ -45,6 +45,18 @@ namespace CivOne.UnitTests
             return city;
         }
 
+        /// <summary>
+        /// Adds a temple to the city, together with the advance that a real game would have required to build
+        /// it. Ceremonial Burial is the temple's prerequisite, so a city that owns one always has an owner who
+        /// knows it — except for captured cities, which the unit tests cover separately.
+        /// </summary>
+        /// <param name="city">The city to build the temple in.</param>
+        private static void AddTempleAndItsAdvance(City city)
+        {
+            city.CityOwnerPlayer.AddAdvance(new CeremonialBurial(), setOrigin: false);
+            city.AddBuilding(Reflect.GetBuildings().First(b => b is Temple));
+        }
+
         private static List<CitizenTypes> Stages(City city)
         {
             city.UpdateSpecialists();
@@ -55,7 +67,7 @@ namespace CivOne.UnitTests
                 (IGameCitizenDependency)Game.Instance,
                 [.. city.Specialists],
                 Map.Instance,
-                new HalvingPendingUnhappinessDelegate().Refill);
+                new EqualisingPendingUnhappinessDelegate().Refill);
 
             return [.. service.EnumerateCitizens()];
         }
@@ -228,7 +240,7 @@ namespace CivOne.UnitTests
         public void ACityOfFourWithATemple()
         {
             City city = AddCity(4);
-            city.AddBuilding(Reflect.GetBuildings().First(b => b is Temple));
+            AddTempleAndItsAdvance(city);
 
             List<CitizenTypes> stages = Stages(city);
 
@@ -256,7 +268,7 @@ namespace CivOne.UnitTests
             MakeOneEntertainer(city);
             MakeOneEntertainer(city);
             MakeOneEntertainer(city);
-            city.AddBuilding(Reflect.GetBuildings().First(b => b is Temple));
+            AddTempleAndItsAdvance(city);
 
             List<CitizenTypes> stages = Stages(city);
 
@@ -279,7 +291,7 @@ namespace CivOne.UnitTests
         {
             City city = AddCity(5);
             MakeOneEntertainer(city);
-            city.AddBuilding(Reflect.GetBuildings().First(b => b is Temple));
+            AddTempleAndItsAdvance(city);
 
             List<CitizenTypes> stages = Stages(city);
 
