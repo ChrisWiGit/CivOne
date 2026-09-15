@@ -836,8 +836,11 @@ namespace CivOne.Screens
 			}
 
 			int stage = (int)Math.Floor((double)(Game.GetPlayer(_city.CityOwnerPlayerIndex)!.Advances.Length - 9) / 2);
-			for (int xx = 0; xx < 18; xx++)
+			// Painter's algorithm: draw row by row from the back (high yy) to the front (low yy).
+			// Iterating column-major instead would let a tile from a further-back row overdraw
+			// an already drawn tile that stands in front of it, which made roads cover buildings.
 			for (int yy = 10; yy >= 0; yy--)
+			for (int xx = 0; xx < 18; xx++)
 			{
 				int dx = 0 + (16 * xx) + (yy * 8);
 				int dy = 106 - (yy * 8);
