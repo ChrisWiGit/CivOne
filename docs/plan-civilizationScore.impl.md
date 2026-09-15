@@ -405,9 +405,7 @@ Documented deliberately, not hidden:
    genuine bug we do not reproduce.
 3. **The 40 % luxury reference is computed without mutating game state** (§3). The original leaves trade and
    growth side effects behind until the next end of turn; we do not.
-4. **The barbarian-slot scratch write is not reproduced** (§2). The original writes its result to
-   `Players[0].Score`, the barbarian slot; CivOne writes each player's score to that player's own slot. See D8 / §11
-   for the save-compatibility consequence.
+4. **The runtime barbarian-slot scratch write is not reproduced** (§2). CivOne computes each player's score live for runtime and YAML consumers; SVE export separately mirrors the original by writing the human score to slot 0 and zeroing the remaining slots (D8 / §11).
 5. **Two original bugs are not reproduced.** `SpaceshipFlags & 0x100` tests the barbarian slot instead of the
    human player's (off by eight), making the palace block and `SCORING COMPLETED` unreachable — we implement the
    reachable behaviour, i.e. neither (§5). And the spaceship success rate is always written into the human
