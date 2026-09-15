@@ -931,6 +931,8 @@ namespace CivOne
 									
 				foreach (IBuilding building in Reflect.GetBuildings().Where(b => CityOwnerPlayer.ProductionAvailable(b) && !_buildings.Any(x => x.Id == b.Id)))
 					{
+						// CW: Palace is already yielded above when it is not built yet.
+						if (building is Palace) continue;
 						if (HasBuilding<Palace>() && building is Courthouse) continue;
 						yield return building;
 					}
