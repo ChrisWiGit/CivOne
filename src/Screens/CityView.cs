@@ -887,6 +887,11 @@ namespace CivOne.Screens
 		{
 			CityViewMap[,] cityMap = GetCityMap;
 
+			// The house graphics are picked at draw time. Using the global game RNG here would both
+			// change the city's look on every redraw and consume game randomness, so this uses a
+			// separate generator seeded from the city name, like the layout above.
+			Random houseRandom = new(GetRandomSeedFromName(_city.Name));
+
 			if (_city.Wonders.Any(b => b is Pyramids))
 			{
 				DrawWonder<Pyramids>();
@@ -935,20 +940,20 @@ namespace CivOne.Screens
 						int centerDistance = Math.Max(Math.Abs(9 - xx), yy);
 						if (stage >= 20)
 						{
-							if (_city.Size > 8 && RandomService.NextInt((_city.Size - 7) * 2) > centerDistance)
+							if (_city.Size > 8 && houseRandom.Next((_city.Size - 7) * 2) > centerDistance)
 							{
-								if (RandomService.NextInt(10) > 5)
+								if (houseRandom.Next(10) > 5)
 								{
-									building = Resources["CITYPIX1"][1 + (32 * 8), (RandomService.NextInt(10) > 5) ? 1 : 33, 31, 31];
+									building = Resources["CITYPIX1"][1 + (32 * 8), (houseRandom.Next(10) > 5) ? 1 : 33, 31, 31];
 								}
 								else
 								{
-									building = Resources["CITYPIX1"][1 + (32 * 9), (RandomService.NextInt(10) > 5) ? 1 : 33, 31, 31];
+									building = Resources["CITYPIX1"][1 + (32 * 9), (houseRandom.Next(10) > 5) ? 1 : 33, 31, 31];
 								}
 							}
 							else
 							{
-								if (RandomService.NextInt(10) > 5)
+								if (houseRandom.Next(10) > 5)
 								{
 									building = Resources["CITYPIX1"][1 + (32 * 6), 33, 31, 31];
 								}
@@ -960,9 +965,9 @@ namespace CivOne.Screens
 						}
 						else if (stage >= 16)
 						{
-							if (RandomService.NextInt(stage - 16) > centerDistance)
+							if (houseRandom.Next(stage - 16) > centerDistance)
 							{
-								if (RandomService.NextInt(10) > 5)
+								if (houseRandom.Next(10) > 5)
 								{
 									building = Resources["CITYPIX1"][1 + (32 * 6), 1, 31, 31];
 								}
@@ -973,7 +978,7 @@ namespace CivOne.Screens
 							}
 							else
 							{
-								if (RandomService.NextInt(10) > 5)
+								if (houseRandom.Next(10) > 5)
 								{
 									building = Resources["CITYPIX1"][1 + (32 * 4), 33, 31, 31];
 								}
@@ -985,9 +990,9 @@ namespace CivOne.Screens
 						}
 						else if (stage >= 7)
 						{
-							if (RandomService.NextInt(stage - 7) > centerDistance)
+							if (houseRandom.Next(stage - 7) > centerDistance)
 							{
-								if (RandomService.NextInt(10) > 5)
+								if (houseRandom.Next(10) > 5)
 								{
 									building = Resources["CITYPIX1"][1 + (32 * 4), 1, 31, 31];
 								}
@@ -998,7 +1003,7 @@ namespace CivOne.Screens
 							}
 							else
 							{
-								if (RandomService.NextInt(10) > 5)
+								if (houseRandom.Next(10) > 5)
 								{
 									building = Resources["CITYPIX1"][1 + (32 * 2), 33, 31, 31];
 								}
@@ -1010,11 +1015,11 @@ namespace CivOne.Screens
 						}
 						else if (stage >= 1)
 						{
-							if (RandomService.NextInt(stage) > centerDistance)
+							if (houseRandom.Next(stage) > centerDistance)
 							{
-								if (RandomService.NextInt(10) > 5)
+								if (houseRandom.Next(10) > 5)
 								{
-									if (RandomService.NextInt((stage - 5) * 4) > centerDistance)
+									if (houseRandom.Next((stage - 5) * 4) > centerDistance)
 									{
 										building = Resources["CITYPIX1"][1 + (32 * 2), 33, 31, 31];
 									}
@@ -1025,7 +1030,7 @@ namespace CivOne.Screens
 								}
 								else
 								{
-									if (RandomService.NextInt((stage - 5) * 4) > centerDistance)
+									if (houseRandom.Next((stage - 5) * 4) > centerDistance)
 									{
 										building = Resources["CITYPIX1"][1 + (32 * 3), 33, 31, 31];
 									}
@@ -1042,7 +1047,7 @@ namespace CivOne.Screens
 						}
 						else
 						{
-							if (RandomService.NextInt(-3 - stage) > centerDistance)
+							if (houseRandom.Next(-3 - stage) > centerDistance)
 							{
 								building = Resources["CITYPIX1"][1 + (32 * _houseType), 33, 31, 31];
 							}
