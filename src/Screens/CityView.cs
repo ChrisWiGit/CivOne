@@ -134,12 +134,16 @@ namespace CivOne.Screens
 		/// <param name="figureCount">Number of figures in the crowd.</param>
 		private void CreateWalkOffsets(int figureCount)
 		{
+			// Do not use the global gameplay RNG here: opening a disorder or celebration
+			// screen would advance the sequence used by later game logic.
+			Random localRandom = new(GetRandomSeedFromName(_city.Name));
+
 			_walkPhase = new int[figureCount];
 			_walkOffsetX = new int[figureCount];
 			for (int i = 0; i < figureCount; i++)
 			{
-				_walkPhase[i] = RandomService.NextInt(10);
-				_walkOffsetX[i] = RandomService.NextInt(-6, 7);
+				_walkPhase[i] = localRandom.Next(10);
+				_walkOffsetX[i] = localRandom.Next(-6, 7);
 			}
 		}
 
