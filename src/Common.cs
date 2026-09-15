@@ -407,6 +407,8 @@ namespace CivOne
 				Citizen.ContentFemale => 1,
 				Citizen.UnhappyMale => 2,
 				Citizen.UnhappyFemale => 2,
+				Citizen.RedShirtMale => 2,
+				Citizen.RedShirtFemale => 2,
 				Citizen.Taxman => 3,
 				Citizen.Scientist => 3,
 				Citizen.Entertainer => 3,

@@ -711,14 +711,18 @@ namespace CivOne.UnitTests
             Assert.Equal(expectedContent + 1, content);
         }
 
-        [Fact]
-        public void ApplyBuildingEffectsTestsCathedrals()
+        [Theory]
+        // The cathedral delta is the same in both cases, only the chapel entry of the list differs.
+        [InlineData(false)]
+        [InlineData(true)]
+        public void ApplyBuildingEffectsTestsCathedrals(bool hasChapel)
         {
             mockedCity.Size = 5;
             mockedCity.ReturnHasWonderValues(false);
             mockedCity.WithBuilding<Cathedral>();
             testee.BachsCathedral = true;
             testee.CathedralDeltaValue = 2;
+            testee.MichelangelosChapelEffect = hasChapel;
 
             var ct = new CitizenTypes
             {
@@ -733,9 +737,9 @@ namespace CivOne.UnitTests
             Assert.Single(ct.Buildings);
             Assert.IsType<Cathedral>(ct.Buildings[0]);
 
-            Assert.Equal(2, ct.Wonders.Count);
+            Assert.Equal(hasChapel ? 2 : 1, ct.Wonders.Count);
             Assert.IsType<JSBachsCathedral>(ct.Wonders[0]);
-            Assert.IsType<MichelangelosChapel>(ct.Wonders[1]);
+            Assert.Equal(hasChapel, ct.Wonders.Any(wonder => wonder is MichelangelosChapel));
 
             var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
             Assert.Equal(0, happy);

@@ -72,6 +72,10 @@ namespace CivOne.UnitTests
 
 		public int EntertainerLuxuries { get; set; }
 
+		public int TradeTotalGross { get; set; }
+
+		public int LuxuryCorruption { get; set; }
+
 		public byte CityOwnerPlayerIndex { get; set; }
 
 		public string Name { get; set; }

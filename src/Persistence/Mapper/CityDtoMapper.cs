@@ -178,6 +178,8 @@ namespace CivOne.Persistence.Model
             public byte Size { get; set; }
             public short Luxuries { get; set; }
             public int EntertainerLuxuries { get; set; }
+            public int TradeTotalGross { get; set; }
+            public int LuxuryCorruption { get; set; }
             public byte CityOwnerPlayerIndex { get; set; }
             public string Name { get; set; } = string.Empty;
             public ITile[] ResourceTiles { get; set; } = [];

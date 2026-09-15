@@ -11,6 +11,7 @@ I did not browse all issues on github at first, so I did not recognize that some
 
 ## History
 
+* Feature: Added red shirt unhappy citizens.
 * Fix: Original imported text files now preserve Western European special letters from classic DOS data, so German umlauts and similar characters are no longer lost when those files are used as fallback text.
   * If imported original text files are not recognized as English, the startup wizard warning now explains the real effect: in `Original language` mode, some texts can stay in the imported original language while other texts stay in CivOne language.
 * Feature: Added civtext-hashgen to generate reference hashes for original Civilization text files.

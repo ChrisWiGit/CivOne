@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
@@ -14,7 +14,7 @@ namespace CivOne.Screens.Services
 	public interface IGameCitizenDependency :
 		IGameUnitsQuery,
 		IGameWonderQuery, IGamePlayerQuery,
-		IGameTurnQuery, IGameSettings
+		IGameTurnQuery, IGameSettings, IGameCityQuery
 	{
 	}
 
@@ -32,6 +32,27 @@ namespace CivOne.Screens.Services
 		readonly IGameCitizenDependency _game = game;
 		readonly List<Citizen> _specialists = specialists;
 		readonly IMap _map = map;
+
+		/// <summary>
+		/// Gets the city the citizens are calculated for.
+		/// </summary>
+		protected ICityBasic City => _city;
+
+		/// <summary>
+		/// Gets the buildings and wonders of <see cref="City"/>.
+		/// </summary>
+		protected ICityBuildings CityBuildings => _cityBuildings;
+
+		/// <summary>
+		/// Gets the game state the calculation depends on.
+		/// </summary>
+		protected IGameCitizenDependency GameState => _game;
+
+		/// <summary>
+		/// Gets the specialists of <see cref="City"/>.
+		/// These occupy the last entries of the citizen array and are never changed by the calculation.
+		/// </summary>
+		protected int SpecialistCount => _specialists.Count;
 
 
 		public IEnumerable<CitizenTypes> EnumerateCitizens()
@@ -145,7 +166,7 @@ namespace CivOne.Screens.Services
 			return ct;
 		}
 
-		protected int Stage1(ref CitizenTypes ct)
+		protected internal virtual int Stage1(ref CitizenTypes ct)
 		{
 			(int initialUnhappyCount, int initialContent) =
 							CalculateCityStats(ct);
@@ -162,7 +183,7 @@ namespace CivOne.Screens.Services
 			return initialContent;
 		}
 
-		protected CitizenTypes Stage2(CitizenTypes ct)
+		protected internal virtual CitizenTypes Stage2(CitizenTypes ct)
 		{
 			int lux = _city.Luxuries;
 			lux -= _city.EntertainerLuxuries;
@@ -183,7 +204,7 @@ namespace CivOne.Screens.Services
 			return ct;
 		}
 
-		protected CitizenTypes Stage3(CitizenTypes ct)
+		protected internal virtual CitizenTypes Stage3(CitizenTypes ct)
 		{
 			ApplyBuildingEffects(ct);
 			(ct.happy, ct.content, ct.unhappy, ct.redShirt) = CountCitizenTypes(ct.Citizens);
@@ -193,7 +214,7 @@ namespace CivOne.Screens.Services
 			return ct;
 		}
 
-		protected CitizenTypes Stage4(CitizenTypes ct, int initialContent)
+		protected internal virtual CitizenTypes Stage4(CitizenTypes ct, int initialContent)
 		{
 			ApplyMartialLaw(ct);
 			ApplyDemocracyEffects(ct, initialContent);
@@ -204,7 +225,7 @@ namespace CivOne.Screens.Services
 			return ct;
 		}
 
-		protected CitizenTypes Stage5(CitizenTypes ct)
+		protected internal virtual CitizenTypes Stage5(CitizenTypes ct)
 		{
 			ApplyWonderEffects(ct);
 
@@ -215,7 +236,7 @@ namespace CivOne.Screens.Services
 			return ct;
 		}
 
-		protected internal (int initialUnhappyCount, int initialContent)
+		protected internal virtual (int initialUnhappyCount, int initialContent)
 			CalculateCityStats(CitizenTypes ct)
 		{
 			// max difficulty = 4|5, easiest = 0
@@ -262,7 +283,7 @@ namespace CivOne.Screens.Services
 		// Two luxury items can change one from red (very unhappy) to light blue (happy).
 		// The bad part is that it’s twice as hard to make them content.
 		// A cathedral only makes two of them content.
-		protected internal void ApplyEmperorEffects(CitizenTypes ct)
+		protected internal virtual void ApplyEmperorEffects(CitizenTypes ct)
 		{
 			if (_game.Difficulty < 4)
 			{
@@ -324,7 +345,7 @@ namespace CivOne.Screens.Services
 			};
 		}
 
-		protected internal void ApplyWonderEffects(CitizenTypes ct)
+		protected internal virtual void ApplyWonderEffects(CitizenTypes ct)
 		{
 			int happy = 0;
 			if (_city.PlayerIntf.HasWonderEffect<HangingGardens>() && !_game.WonderObsolete<HangingGardens>())
@@ -345,7 +366,7 @@ namespace CivOne.Screens.Services
 			ContentToHappy(ct.Citizens, contentToHappy);
 		}
 
-		protected internal void ApplyDemocracyEffects(CitizenTypes ct, int initialContent)
+		protected internal virtual void ApplyDemocracyEffects(CitizenTypes ct, int initialContent)
 		{
 			if (!_city.PlayerIntf.RepublicDemocratic)
 			{
@@ -385,7 +406,7 @@ namespace CivOne.Screens.Services
 			UnhappyToContent(ct.Citizens, unhappyToContent);
 		}
 
-		protected internal void ApplyBuildingEffects(CitizenTypes ct)
+		protected internal virtual void ApplyBuildingEffects(CitizenTypes ct)
 		{
 			if (_cityBuildings.HasWonder<ShakespearesTheatre>() &&
 				!_game.WonderObsolete<ShakespearesTheatre>())
@@ -427,7 +448,7 @@ namespace CivOne.Screens.Services
 			}
 
 			int cathedralDelta = CathedralDelta();
-			if (cathedralDelta > 0)
+			if (cathedralDelta > 0 && HasMichelangelosChapelEffect())
 			{
 				ct.Wonders.Add(new MichelangelosChapel());
 			}
@@ -454,16 +475,28 @@ namespace CivOne.Screens.Services
 
 			// CW: Michelangelo's Chapel gives +6 happiness if on same continent as city with wonder, else +4
 			// https://civilization.fandom.com/wiki/Michelangelo%27s_Chapel_(Civ1)
-			bool isObsolete = _game.WonderObsolete<MichelangelosChapel>();
-			bool hasChapelOnSameContinent = !isObsolete &&
-							_city.PlayerIntf
-								.CitiesInterface.Any(c => c.HasWonder<MichelangelosChapel>()
-					&& c.ContinentId == _city.ContinentId);
-			int chapelBonus = !isObsolete && hasChapelOnSameContinent ? 6 : 4;
+			int chapelBonus = HasMichelangelosChapelEffect() ? 6 : 4;
 
 			unhappyDelta += chapelBonus;
 
 			return unhappyDelta;
+		}
+
+		/// <summary>
+		/// Tells whether Michelangelo's Chapel currently helps this city.
+		/// The chapel must not be obsolete and must stand in a city of the same owner on this continent.
+		/// </summary>
+		/// <returns><c>true</c> when the chapel raises this city's cathedral effect.</returns>
+		internal virtual bool HasMichelangelosChapelEffect()
+		{
+			if (_game.WonderObsolete<MichelangelosChapel>())
+			{
+				return false;
+			}
+
+			return _city.PlayerIntf
+					.CitiesInterface
+					.Any(c => c.HasWonder<MichelangelosChapel>() && c.ContinentId == _city.ContinentId);
 		}
 
 		protected virtual internal bool HasBachsCathedral()

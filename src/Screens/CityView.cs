@@ -33,6 +33,9 @@ namespace CivOne.Screens
 
 		private const int MIN_HOUSES = 2;
 
+		/// <summary>Gap in pixels between the feet of the animated figures and the bottom of the city view.</summary>
+		private const int ANIMATION_BOTTOM_MARGIN = 5;
+
 		private readonly TextSettings _dialogText;
 
 		private readonly City _city;
@@ -54,6 +57,40 @@ namespace CivOne.Screens
 
 		private readonly Picture _overlay;
 		private readonly Picture[]? _invadersOrRevolters;
+
+		/// <summary>Horizontal start offsets of the four civil disorder groups, as in the original game.</summary>
+		private static readonly int[] CrowdOffsetsX = [ -96, -36, 0, -56 ];
+
+		/// <summary>Vertical offsets of the four groups, which staggers them in depth.</summary>
+		private static readonly int[] CrowdOffsetsY = [ -6, -4, -2, 0 ];
+
+		/// <summary>Baseline the vertical group offsets are measured from.</summary>
+		private const int CROWD_BASE_Y = 132;
+
+		/// <summary>Pixels the crowd moves per animation frame.</summary>
+		private const int CROWD_STEP = 3;
+
+		/// <summary>Number of animation frames a crowd walk lasts before the screen closes itself.</summary>
+		private const int CROWD_FRAMES = 156;
+
+		/// <summary>Leftmost position of the walk, one figure width off screen.</summary>
+		private const int CROWD_START_X = -48;
+
+		/// <summary>Animation frame counter of the walking crowd.</summary>
+		private int _crowdFrame;
+
+		/// <summary>Per-figure animation and position offsets, so the citizens do not march in lockstep.</summary>
+		/// <remarks>
+		/// Deliberate deviation from the original Civilization: there every figure of the crowd shares
+		/// one walk frame and an exactly even spacing, which makes the rioting and celebrating citizens
+		/// look like a drilled formation.
+		/// Here each civilian figure gets a random phase and a small random horizontal offset, so the
+		/// crowd moves out of step.
+		/// Only the civilian crowds (civil disorder, celebration) are staggered.
+		/// The invaders of a captured city are soldiers and keep the original's lockstep on purpose.
+		/// </remarks>
+		private int[]? _walkPhase;
+		private int[]? _walkOffsetX;
 
 		private bool _update = true;
 		private int OffsetX => Math.Max(0, (Width - 320) / 2);
@@ -87,6 +124,118 @@ namespace CivOne.Screens
 			this.SetPalette(palette);
 		}
 		
+		/// <summary>
+		/// Creates the per-figure offsets that break up the lockstep of a walking crowd.
+		/// </summary>
+		/// <remarks>
+		/// Intentional difference from the original game, see <see cref="_walkPhase"/>.
+		/// The original gives group <c>k</c> the fixed phase <c>k * 3</c>, which still looks drilled.
+		/// </remarks>
+		/// <param name="figureCount">Number of figures in the crowd.</param>
+		private void CreateWalkOffsets(int figureCount)
+		{
+			// Do not use the global gameplay RNG here: opening a disorder or celebration
+			// screen would advance the sequence used by later game logic.
+			Random localRandom = new(GetRandomSeedFromName(_city.Name));
+
+			_walkPhase = new int[figureCount];
+			_walkOffsetX = new int[figureCount];
+			for (int i = 0; i < figureCount; i++)
+			{
+				_walkPhase[i] = localRandom.Next(10);
+				_walkOffsetX[i] = localRandom.Next(-6, 7);
+			}
+		}
+
+		/// <summary>
+		/// Returns the animation frame for one figure, shifted by its own phase offset.
+		/// </summary>
+		/// <param name="index">Index of the figure in the crowd.</param>
+		/// <returns>Frame index in the range 0-9.</returns>
+		private int WalkFrame(int index)
+		{
+			int phase = (_walkPhase != null && index < _walkPhase.Length) ? _walkPhase[index] : index * 3;
+			return (((_crowdFrame + phase) % 10) + 10) % 10;
+		}
+
+		/// <summary>
+		/// Returns the horizontal jitter of one figure, so the crowd is not evenly spaced.
+		/// </summary>
+		/// <param name="index">Index of the figure in the crowd.</param>
+		/// <returns>Offset in pixels.</returns>
+		private int WalkOffsetX(int index) => (_walkOffsetX != null && index < _walkOffsetX.Length) ? _walkOffsetX[index] : 0;
+
+		/// <summary>
+		/// Draws the four walking groups of a civil disorder or a celebration and advances the animation.
+		/// </summary>
+		/// <remarks>
+		/// The original walks the crowd from x = -48 to x = 420 in steps of 3 pixels, which takes 156
+		/// frames, and then ends the screen by itself.
+		/// A celebration walks the same path in the opposite direction and spreads the groups by 1.5.
+		/// </remarks>
+		/// <param name="movingLeft">Whether the crowd walks to the left, as a celebration does.</param>
+		/// <param name="spreadHalves">Group spacing in halves, 2 for a disorder and 3 for a celebration.</param>
+		/// <returns>Always <c>true</c>, the screen has been redrawn.</returns>
+		private bool DrawCrowd(bool movingLeft, int spreadHalves)
+		{
+			if (_crowdFrame >= CROWD_FRAMES)
+			{
+				SkipAction();
+				return true;
+			}
+
+			RenderBase();
+
+			int walk = CROWD_START_X + (CROWD_STEP * _crowdFrame);
+			if (movingLeft)
+			{
+				walk = CROWD_START_X + (CROWD_STEP * (CROWD_FRAMES - 1 - _crowdFrame));
+			}
+
+			for (int i = 0; i < CrowdOffsetsX.Length; i++)
+			{
+				if (_invadersOrRevolters == null) continue;
+
+				int x = ((spreadHalves * CrowdOffsetsX[i]) / 2) + walk + WalkOffsetX(i);
+				int y = CROWD_BASE_Y + CrowdOffsetsY[i];
+				// Citizens walk out of step, an intentional difference from the original game.
+				AddClippedLayer(_invadersOrRevolters[WalkFrame(i)], x, y);
+			}
+
+			_crowdFrame++;
+			return true;
+		}
+
+		/// <summary>
+		/// Draws an animated figure on top of the city view, clipped to the 320x200 city view area.
+		/// </summary>
+		/// <remarks>
+		/// The marching figures of a civil disorder or a celebration walk in from outside the city
+		/// view. On a window larger than 320x200 the area around the view is visible, so a figure
+		/// drawn without clipping would keep marching across the black border instead of vanishing
+		/// at the edge of the view.
+		/// </remarks>
+		/// <param name="sprite">The animation frame to draw.</param>
+		/// <param name="x">Horizontal position inside the city view.</param>
+		/// <param name="y">Vertical position inside the city view.</param>
+		private void AddClippedLayer(Picture sprite, int x, int y)
+		{
+			int left = Math.Max(0, -x);
+			int top = Math.Max(0, -y);
+			int width = Math.Min(sprite.Width - left, 320 - Math.Max(0, x));
+			int height = Math.Min(sprite.Height - top, 200 - Math.Max(0, y));
+			if (width <= 0 || height <= 0) return;
+
+			if (left == 0 && top == 0 && width == sprite.Width && height == sprite.Height)
+			{
+				this.AddLayer(sprite, x + OffsetX, y + OffsetY);
+				return;
+			}
+
+			using Picture part = sprite[left, top, width, height];
+			this.AddLayer(part, x + left + OffsetX, y + top + OffsetY);
+		}
+
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (gameTick % 4 == 0)
@@ -95,13 +244,18 @@ namespace CivOne.Screens
 				_update = true;
 			}
 
-			if (_captured || _disorder)
+			if (_disorder)
+			{
+				return DrawCrowd(movingLeft: false, spreadHalves: 2);
+			}
+
+			if (_captured)
 			{
 				RenderBase();
 				int frame = _x % 30 / 3;
 				if (frame < 0)
 				{
-					Log($"Warning: Invaders/Revolters frame is negative: {frame} for x={_x} and player={_city.CityOwnerPlayerIndex}");
+					Log($"Warning: Invaders frame is negative: {frame} for x={_x} and player={_city.CityOwnerPlayerIndex}");
 					frame = 0;
 				}
 				for (int i = 7; i >= 0; i--)
@@ -110,7 +264,8 @@ namespace CivOne.Screens
 					if (xx + 78 <= 0) continue;
 					if (_invadersOrRevolters != null)
 					{
-						this.AddLayer(_invadersOrRevolters[frame], xx + OffsetX, _y + OffsetY);
+						// The invaders of a captured city are soldiers and keep the original's lockstep.
+						AddClippedLayer(_invadersOrRevolters[frame], xx, _y);
 					}
 				}
 				_x++;
@@ -119,27 +274,7 @@ namespace CivOne.Screens
 			
 			if (_weLovePresidentDay)
 			{
-				RenderBase();
-				int frame = (_x + 600) % 30 / 3;
-				if (frame < 0)
-				{
-					Log($"Warning: We love the president day frame is negative: {frame} for x={_x} and player={_city.CityOwnerPlayerIndex}");
-					//CW: Reset to first frame and set _x to right side of screen as in construction of class.
-					frame = 0; // =(240 + 600) % 30 / 3;
-					_x = 240;
-				}
-				for (int i = 0; i <= 7; i++)
-					{
-						int xx = _x + 65 + (48 * i);
-						//if (xx <= 0) continue;
-						if (_invadersOrRevolters != null)
-						{
-							this.AddLayer(_invadersOrRevolters[frame], xx + OffsetX, _y + OffsetY);
-						}
-					}
-				_x--;
-
-				return true;
+				return DrawCrowd(movingLeft: true, spreadHalves: 3);
 			}
 
 			if (_noiseMap != null)
@@ -261,8 +396,7 @@ namespace CivOne.Screens
 
 			if (typeof(T) == typeof(Pyramids))
 			{
-				picture.AddLayer(Resources["WONDERS2"][131, 54, 187, 29], 133, 0);
-				picture.AddLayer(Resources["WONDERS2"][318, 54, 1, 29], 0, 0);
+				picture.AddLayer(Resources["WONDERS2"][131, 54, 188, 29], 133, 0);
 			}
 			if (typeof(T) == typeof(Colossus))
 			{
@@ -274,7 +408,7 @@ namespace CivOne.Screens
 			}
 			if (typeof(T) == typeof(HooverDam))
 			{
-				picture.AddLayer(Resources["WONDERS2"][1, 14, 147, 20], 1, 9);
+				picture.AddLayer(Resources["WONDERS2"][1, 14, 147, 20], 0, 8);
 			}
 			if (typeof(T) == typeof(Lighthouse))
 			{
@@ -291,6 +425,58 @@ namespace CivOne.Screens
 			if (typeof(T) == typeof(DarwinsVoyage))
 			{
 				picture.AddLayer(Resources["WONDERS"][40, 69, 62, 47], x, y);
+			}
+			if (typeof(T) == typeof(GreatLibrary))
+			{
+				picture.AddLayer(Resources["WONDERS"][61, 117, 41, 56], x, y);
+			}
+			if (typeof(T) == typeof(MagellansExpedition))
+			{
+				picture.AddLayer(Resources["WONDERS"][268, 53, 51, 62], x, y);
+			}
+			if (typeof(T) == typeof(MichelangelosChapel))
+			{
+				picture.AddLayer(Resources["WONDERS"][9, 117, 51, 56], x, y);
+			}
+			if (typeof(T) == typeof(CopernicusObservatory))
+			{
+				picture.AddLayer(Resources["WONDERS"][126, 1, 57, 53], x, y);
+			}
+			if (typeof(T) == typeof(ShakespearesTheatre))
+			{
+				picture.AddLayer(Resources["WONDERS"][276, 1, 43, 51], x, y);
+			}
+			if (typeof(T) == typeof(IsaacNewtonsCollege))
+			{
+				picture.AddLayer(Resources["WONDERS"][103, 139, 55, 60], x, y);
+			}
+			if (typeof(T) == typeof(JSBachsCathedral))
+			{
+				picture.AddLayer(Resources["WONDERS"][184, 1, 41, 69], x, y);
+			}
+			if (typeof(T) == typeof(WomensSuffrage))
+			{
+				picture.AddLayer(Resources["WONDERS"][253, 1, 22, 47], x, y);
+			}
+			if (typeof(T) == typeof(ManhattanProject))
+			{
+				picture.AddLayer(Resources["WONDERS"][226, 1, 26, 47], x, y);
+			}
+			if (typeof(T) == typeof(UnitedNations))
+			{
+				picture.AddLayer(Resources["WONDERS"][103, 79, 60, 59], x, y);
+			}
+			if (typeof(T) == typeof(ApolloProgram))
+			{
+				picture.AddLayer(Resources["WONDERS"][270, 116, 49, 83], x, y);
+			}
+			if (typeof(T) == typeof(SETIProgram))
+			{
+				picture.AddLayer(Resources["WONDERS"][63, 1, 62, 54], x, y);
+			}
+			if (typeof(T) == typeof(CureForCancer))
+			{
+				picture.AddLayer(Resources["WONDERS"][240, 60, 27, 55], x, y);
 			}
 		}
 
@@ -491,7 +677,7 @@ namespace CivOne.Screens
 					CloseSingleRoadGaps(cityMap);
 
 				
-				foreach (Type type in new Type[] { typeof(Barracks), typeof(Granary), typeof(Temple), typeof(MarketPlace), typeof(Library), typeof(Courthouse), typeof(Bank), typeof(Cathedral), typeof(UniversityBuilding), typeof(Colosseum), typeof(Factory), typeof(MfgPlant), typeof(SdiDefense), typeof(RecyclingCenter), typeof(NuclearPlant), typeof(Lighthouse), typeof(HangingGardens), typeof(Oracle), typeof(DarwinsVoyage) })
+				foreach (Type type in new Type[] { typeof(Barracks), typeof(Granary), typeof(Temple), typeof(MarketPlace), typeof(Library), typeof(Courthouse), typeof(Bank), typeof(Cathedral), typeof(UniversityBuilding), typeof(Colosseum), typeof(Factory), typeof(MfgPlant), typeof(SdiDefense), typeof(RecyclingCenter), typeof(NuclearPlant), typeof(Lighthouse), typeof(HangingGardens), typeof(Oracle), typeof(DarwinsVoyage), typeof(GreatLibrary), typeof(MagellansExpedition), typeof(MichelangelosChapel), typeof(CopernicusObservatory), typeof(ShakespearesTheatre), typeof(IsaacNewtonsCollege), typeof(JSBachsCathedral), typeof(WomensSuffrage), typeof(ManhattanProject), typeof(UnitedNations), typeof(ApolloProgram), typeof(SETIProgram), typeof(CureForCancer) })
 				{
 					if (_city.HasBuilding(type) || _city.HasWonder(type))
 					{
@@ -514,37 +700,70 @@ namespace CivOne.Screens
 						else if (type == typeof(RecyclingCenter)) id = CityViewMap.RecyclingCenter;
 						else if (type == typeof(NuclearPlant)) id = CityViewMap.NuclearPlant;
 						else if (type == typeof(Lighthouse)) id = CityViewMap.Lighthouse;
-						else if (type == typeof(HangingGardens)) { id = CityViewMap.HangingGardens; sizeX = 3; sizeY = 3; }
-						else if (type == typeof(Oracle)) { id = CityViewMap.Oracle; sizeX = 3; sizeY = 3; }
-						else if (type == typeof(DarwinsVoyage)) { id = CityViewMap.DarwinsVoyage; sizeX = 3; sizeY = 3; }
+						else if (type == typeof(HangingGardens)) { id = CityViewMap.HangingGardens; }
+						else if (type == typeof(Oracle)) { id = CityViewMap.Oracle; }
+						else if (type == typeof(DarwinsVoyage)) { id = CityViewMap.DarwinsVoyage; }
+						else if (type == typeof(GreatLibrary)) { id = CityViewMap.GreatLibrary; }
+						else if (type == typeof(MagellansExpedition)) { id = CityViewMap.MagellansExpedition; }
+						else if (type == typeof(MichelangelosChapel)) { id = CityViewMap.MichelangelosChapel; }
+						else if (type == typeof(CopernicusObservatory)) { id = CityViewMap.CopernicusObservatory; }
+						else if (type == typeof(ShakespearesTheatre)) { id = CityViewMap.ShakespearesTheatre; }
+						else if (type == typeof(IsaacNewtonsCollege)) { id = CityViewMap.IsaacNewtonsCollege; }
+						else if (type == typeof(JSBachsCathedral)) { id = CityViewMap.JSBachsCathedral; }
+						else if (type == typeof(WomensSuffrage)) { id = CityViewMap.WomensSuffrage; }
+						else if (type == typeof(ManhattanProject)) { id = CityViewMap.ManhattanProject; }
+						else if (type == typeof(UnitedNations)) { id = CityViewMap.UnitedNations; }
+						else if (type == typeof(ApolloProgram)) { id = CityViewMap.ApolloProgram; }
+						else if (type == typeof(SETIProgram)) { id = CityViewMap.SETIProgram; }
+						else if (type == typeof(CureForCancer)) { id = CityViewMap.CureForCancer; }
 						else continue;
 
-						for (int i = 0; i < 1000; i++)
-						{
-							int xx = localRandom.Next(15) + 1;
-							int yy = localRandom.Next(10);
-							if (xx == 6 || xx == 11 || yy == 2 || yy == 6) continue;
-							if (xx == 5 || xx == 10 || yy == 1 || yy == 5) continue;
-							if (xx + sizeX > cityMap.GetLength(0) || yy + sizeY > cityMap.GetLength(1)) continue;
-							if ((int)cityMap[xx, yy] > 3) continue;
-							bool invalid = false;
-							for (int oy = 0; oy < sizeY; oy++)
-							for (int ox = 0; ox < sizeX; ox++)
-							{
-								if ((int)cityMap[xx + ox, yy + oy] <= 3) continue;
-								invalid = true;
-								break; 
-							}
-							if (invalid) continue;
+						// The original reserves the same footprint for every wonder, regardless of
+						// sprite size: the cells (gx - 1 .. gx + 3, gy - 1 .. gy + 1) around the anchor.
+						// Buildings keep their 2x2 block.
+						bool isWonder = typeof(IWonder).IsAssignableFrom(type);
 
-							cityMap[xx, yy] = id;
-							for (int oy = 0; oy < sizeY; oy++)
-							for (int ox = 0; ox < sizeX; ox++)
+						// A city holding many wonders runs out of 5x3 blocks on this 18x11 grid, and the
+						// wonders late in the list (Apollo Program, SETI Program, Cure for Cancer) would
+						// never be placed and therefore never drawn. Shrink the reserved area instead of
+						// dropping the wonder.
+						(int X0, int X1, int Y0, int Y1)[] footprints = isWonder
+							? [ (-1, 3, -1, 1), (0, 2, 0, 1), (0, 1, 0, 0) ]
+							: [ (0, sizeX - 1, 0, sizeY - 1) ];
+
+						foreach ((int offX0, int offX1, int offY0, int offY1) in footprints)
+						{
+							bool placed = false;
+							for (int i = 0; i < 1000; i++)
 							{
-								if (ox == 0 && oy == 0) continue;
-								cityMap[xx + ox, yy + oy] = CityViewMap.Occupied;
+								int xx = localRandom.Next(15) + 1;
+								int yy = localRandom.Next(10);
+								if (xx == 6 || xx == 11 || yy == 2 || yy == 6) continue;
+								if (xx == 5 || xx == 10 || yy == 1 || yy == 5) continue;
+								if (xx + offX0 < 0 || xx + offX1 >= cityMap.GetLength(0)) continue;
+								if (yy + offY0 < 0 || yy + offY1 >= cityMap.GetLength(1)) continue;
+								if ((int)cityMap[xx, yy] > 3) continue;
+								bool invalid = false;
+								for (int oy = offY0; oy <= offY1; oy++)
+								for (int ox = offX0; ox <= offX1; ox++)
+								{
+									if ((int)cityMap[xx + ox, yy + oy] <= 3) continue;
+									invalid = true;
+									break; 
+								}
+								if (invalid) continue;
+
+								cityMap[xx, yy] = id;
+								for (int oy = offY0; oy <= offY1; oy++)
+								for (int ox = offX0; ox <= offX1; ox++)
+								{
+									if (ox == 0 && oy == 0) continue;
+									cityMap[xx + ox, yy + oy] = CityViewMap.Occupied;
+								}
+								placed = true;
+								break;
 							}
-							break;
+							if (placed) break;
 						}
 					}
 				}
@@ -668,6 +887,11 @@ namespace CivOne.Screens
 		{
 			CityViewMap[,] cityMap = GetCityMap;
 
+			// The house graphics are picked at draw time. Using the global game RNG here would both
+			// change the city's look on every redraw and consume game randomness, so this uses a
+			// separate generator seeded from the city name, like the layout above.
+			Random houseRandom = new(GetRandomSeedFromName(_city.Name));
+
 			if (_city.Wonders.Any(b => b is Pyramids))
 			{
 				DrawWonder<Pyramids>();
@@ -680,17 +904,17 @@ namespace CivOne.Screens
 				if (_production is not Colossus)
 					DrawWonder<Colossus>(_overlay);
 			}
-			if (_city.Wonders.Any(b => b is GreatWall))
-			{
-				DrawWonder<GreatWall>();
-				if (_production is not GreatWall)
-					DrawWonder<GreatWall>(_overlay);
-			}
 			if (_city.Wonders.Any(b => b is HooverDam))
 			{
 				DrawWonder<HooverDam>();
 				if (_production is not HooverDam)
 					DrawWonder<HooverDam>(_overlay);
+			}
+			if (_city.Wonders.Any(b => b is GreatWall))
+			{
+				DrawWonder<GreatWall>();
+				if (_production is not GreatWall)
+					DrawWonder<GreatWall>(_overlay);
 			}
 
 			if (_city.Buildings.Any(b => b is Aqueduct))
@@ -701,8 +925,11 @@ namespace CivOne.Screens
 			}
 
 			int stage = (int)Math.Floor((double)(Game.GetPlayer(_city.CityOwnerPlayerIndex)!.Advances.Length - 9) / 2);
-			for (int xx = 0; xx < 18; xx++)
+			// Painter's algorithm: draw row by row from the back (high yy) to the front (low yy).
+			// Iterating column-major instead would let a tile from a further-back row overdraw
+			// an already drawn tile that stands in front of it, which made roads cover buildings.
 			for (int yy = 10; yy >= 0; yy--)
+			for (int xx = 0; xx < 18; xx++)
 			{
 				int dx = 0 + (16 * xx) + (yy * 8);
 				int dy = 106 - (yy * 8);
@@ -713,20 +940,20 @@ namespace CivOne.Screens
 						int centerDistance = Math.Max(Math.Abs(9 - xx), yy);
 						if (stage >= 20)
 						{
-							if (_city.Size > 8 && RandomService.NextInt((_city.Size - 7) * 2) > centerDistance)
+							if (_city.Size > 8 && houseRandom.Next((_city.Size - 7) * 2) > centerDistance)
 							{
-								if (RandomService.NextInt(10) > 5)
+								if (houseRandom.Next(10) > 5)
 								{
-									building = Resources["CITYPIX1"][1 + (32 * 8), (RandomService.NextInt(10) > 5) ? 1 : 33, 31, 31];
+									building = Resources["CITYPIX1"][1 + (32 * 8), (houseRandom.Next(10) > 5) ? 1 : 33, 31, 31];
 								}
 								else
 								{
-									building = Resources["CITYPIX1"][1 + (32 * 9), (RandomService.NextInt(10) > 5) ? 1 : 33, 31, 31];
+									building = Resources["CITYPIX1"][1 + (32 * 9), (houseRandom.Next(10) > 5) ? 1 : 33, 31, 31];
 								}
 							}
 							else
 							{
-								if (RandomService.NextInt(10) > 5)
+								if (houseRandom.Next(10) > 5)
 								{
 									building = Resources["CITYPIX1"][1 + (32 * 6), 33, 31, 31];
 								}
@@ -738,9 +965,9 @@ namespace CivOne.Screens
 						}
 						else if (stage >= 16)
 						{
-							if (RandomService.NextInt(stage - 16) > centerDistance)
+							if (houseRandom.Next(stage - 16) > centerDistance)
 							{
-								if (RandomService.NextInt(10) > 5)
+								if (houseRandom.Next(10) > 5)
 								{
 									building = Resources["CITYPIX1"][1 + (32 * 6), 1, 31, 31];
 								}
@@ -751,7 +978,7 @@ namespace CivOne.Screens
 							}
 							else
 							{
-								if (RandomService.NextInt(10) > 5)
+								if (houseRandom.Next(10) > 5)
 								{
 									building = Resources["CITYPIX1"][1 + (32 * 4), 33, 31, 31];
 								}
@@ -763,9 +990,9 @@ namespace CivOne.Screens
 						}
 						else if (stage >= 7)
 						{
-							if (RandomService.NextInt(stage - 7) > centerDistance)
+							if (houseRandom.Next(stage - 7) > centerDistance)
 							{
-								if (RandomService.NextInt(10) > 5)
+								if (houseRandom.Next(10) > 5)
 								{
 									building = Resources["CITYPIX1"][1 + (32 * 4), 1, 31, 31];
 								}
@@ -776,7 +1003,7 @@ namespace CivOne.Screens
 							}
 							else
 							{
-								if (RandomService.NextInt(10) > 5)
+								if (houseRandom.Next(10) > 5)
 								{
 									building = Resources["CITYPIX1"][1 + (32 * 2), 33, 31, 31];
 								}
@@ -788,11 +1015,11 @@ namespace CivOne.Screens
 						}
 						else if (stage >= 1)
 						{
-							if (RandomService.NextInt(stage) > centerDistance)
+							if (houseRandom.Next(stage) > centerDistance)
 							{
-								if (RandomService.NextInt(10) > 5)
+								if (houseRandom.Next(10) > 5)
 								{
-									if (RandomService.NextInt((stage - 5) * 4) > centerDistance)
+									if (houseRandom.Next((stage - 5) * 4) > centerDistance)
 									{
 										building = Resources["CITYPIX1"][1 + (32 * 2), 33, 31, 31];
 									}
@@ -803,7 +1030,7 @@ namespace CivOne.Screens
 								}
 								else
 								{
-									if (RandomService.NextInt((stage - 5) * 4) > centerDistance)
+									if (houseRandom.Next((stage - 5) * 4) > centerDistance)
 									{
 										building = Resources["CITYPIX1"][1 + (32 * 3), 33, 31, 31];
 									}
@@ -820,7 +1047,7 @@ namespace CivOne.Screens
 						}
 						else
 						{
-							if (RandomService.NextInt(-3 - stage) > centerDistance)
+							if (houseRandom.Next(-3 - stage) > centerDistance)
 							{
 								building = Resources["CITYPIX1"][1 + (32 * _houseType), 33, 31, 31];
 							}
@@ -909,6 +1136,45 @@ namespace CivOne.Screens
 						continue;
 					case CityViewMap.DarwinsVoyage:
 						DrawWonderOverlay<DarwinsVoyage>(dx, dy, -16);
+						continue;
+					case CityViewMap.GreatLibrary:
+						DrawWonderOverlay<GreatLibrary>(dx, dy, -25);
+						continue;
+					case CityViewMap.MagellansExpedition:
+						DrawWonderOverlay<MagellansExpedition>(dx, dy, -31);
+						continue;
+					case CityViewMap.MichelangelosChapel:
+						DrawWonderOverlay<MichelangelosChapel>(dx, dy, -25);
+						continue;
+					case CityViewMap.CopernicusObservatory:
+						DrawWonderOverlay<CopernicusObservatory>(dx, dy, -22);
+						continue;
+					case CityViewMap.ShakespearesTheatre:
+						DrawWonderOverlay<ShakespearesTheatre>(dx, dy, -20);
+						continue;
+					case CityViewMap.IsaacNewtonsCollege:
+						DrawWonderOverlay<IsaacNewtonsCollege>(dx, dy, -29);
+						continue;
+					case CityViewMap.JSBachsCathedral:
+						DrawWonderOverlay<JSBachsCathedral>(dx, dy, -38);
+						continue;
+					case CityViewMap.WomensSuffrage:
+						DrawWonderOverlay<WomensSuffrage>(dx, dy, -16);
+						continue;
+					case CityViewMap.ManhattanProject:
+						DrawWonderOverlay<ManhattanProject>(dx, dy, -16);
+						continue;
+					case CityViewMap.UnitedNations:
+						DrawWonderOverlay<UnitedNations>(dx, dy, -28);
+						continue;
+					case CityViewMap.ApolloProgram:
+						DrawWonderOverlay<ApolloProgram>(dx, dy, -52);
+						continue;
+					case CityViewMap.SETIProgram:
+						DrawWonderOverlay<SETIProgram>(dx, dy, -23);
+						continue;
+					case CityViewMap.CureForCancer:
+						DrawWonderOverlay<CureForCancer>(dx, dy, -24);
 						continue;
 					default: continue;
 				}
@@ -1014,8 +1280,8 @@ namespace CivOne.Screens
 					yy = 1;
 					ww = 78;
 					hh = 65;
-					_y = 133;
 				}
+				_y = 200 - ANIMATION_BOTTOM_MARGIN - hh;
 
 				_invadersOrRevolters = new Picture[10];
 				for (int ii = 0; ii < 10; ii++)
@@ -1035,7 +1301,7 @@ namespace CivOne.Screens
 			{
 				Picture revolters;
 				int xx = 1, yy = 1, ww, hh;
-				if (Game.CurrentPlayer.HasAdvance<Conscription>())
+				if (Game.CurrentPlayer.HasAdvance<Advances.University>())
 				{
 					ww = 78;
 					hh = 63;
@@ -1054,7 +1320,7 @@ namespace CivOne.Screens
 					int frameY = (ii - frameX) / 4;
 					_invadersOrRevolters[ii] = revolters[xx + (frameX * (ww + 1)), yy + (frameY * (hh + 1)), ww, hh];
 				}
-				_x = 0;
+				CreateWalkOffsets(CrowdOffsetsX.Length);
 				string[] lines = TranslateFormattedArray("Civil disorder in\n{0}! Mayor\nflees in panic.", city.Name);
 				drawMessage(lines);
 			}
@@ -1064,9 +1330,8 @@ namespace CivOne.Screens
 			{
 				int xx = 1, yy = 1, ww = 78, hh = 65;
 
-				var resourceName = Game.CurrentPlayer.HasAdvance<Conscription>() ? "LOVE2" : "LOVE1";
+				var resourceName = Game.CurrentPlayer.HasAdvance<Industrialization>() ? "LOVE2" : "LOVE1";
 				Picture marchers = Resources[resourceName];
-
 				_invadersOrRevolters = new Picture[10];
 				for (int ii = 0; ii < 10; ii++)
 				{
@@ -1074,7 +1339,7 @@ namespace CivOne.Screens
 					int frameY = (ii - frameX) / 4;
 					_invadersOrRevolters[ii] = marchers[xx + (frameX * (ww + 1)), yy + (frameY * (hh + 1)), ww, hh];
 				}
-				_x = 240;
+				CreateWalkOffsets(CrowdOffsetsX.Length);
 
 				string leaderTitle = Translate("President");
 				if (Game.CurrentPlayer.Government is Governments.Monarchy)
@@ -1117,7 +1382,10 @@ namespace CivOne.Screens
 				return;
 			}
 
-			if (captured) return;
+			// While the disorder animation plays, RenderBase() redraws _background on every frame and
+			// layers the (mostly transparent) revolter sprite on top - the static population row would
+			// still show through the gaps around the animated figure, so skip drawing it here.
+			if (captured || _disorder) return;
 
 			_background.DrawText(_city.Name, 5, 5, 161, 3, TextAlign.Center)
 				.DrawText(_city.Name, 5, 15, 160, 2, TextAlign.Center)
@@ -1148,11 +1416,29 @@ namespace CivOne.Screens
 			bool modern = Human.HasAdvance<Industrialization>();
 			foreach (Citizen citizen in _city.GetCitizens())
 			{
-				if (group != (group = Common.CitizenGroup(citizen)) && group > 0) offsetX += 8;
+				// POP.PIC only has 9 slots; civil disorder citizens reuse the Unhappy slot, which is
+				// already painted red in the original artwork. The original draws no difference between
+				// ordinary and parked unhappiness here, so both share the sprite.
+				Citizen spriteSource = citizen switch
+				{
+					Citizen.RedShirtMale => Citizen.UnhappyMale,
+					Citizen.RedShirtFemale => Citizen.UnhappyFemale,
+					_ => citizen,
+				};
 
-				int sx = ((int)citizen * 35) + 1, sy = modern ? 1 : 52;
+				int previousGroup = group;
+				group = Common.CitizenGroup(spriteSource);
+				if (previousGroup >= 0 && group != previousGroup)
+				{
+					// The original leaves no gap between the happy and the content block, 8 pixels before
+					// the unhappy block and 12 before the specialists.
+					if (group == 2) offsetX += 8;
+					else if (group == 3) offsetX += 12;
+				}
+
+				int sx = ((int)spriteSource * 35) + 1, sy = modern ? 1 : 52;
 				int sw = 34, sh = modern ? 50 : 52;
-				int dx = (int)citizen + offsetX + (11 * i++), dy = 140;
+				int dx = offsetX + (11 * i++), dy = 140;
 				_background.AddLayer(Resources["POP"][sx, sy, sw, sh], dx, dy);
 			}
 

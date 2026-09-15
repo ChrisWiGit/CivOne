@@ -868,6 +868,11 @@ namespace CivOne.Screens
 					Translate("Choose where barbarians come from in new games."),
 					Translate("Running games keep their own value."))
 				.OnSelect(GotoMenu(BarbarianActivityMenu)),
+			MenuItem.Create(TranslateFormatted("Original city happiness: {0}", Settings.OriginalHappinessModel.YesNo()))
+				.WithDescription(
+					Translate("Use the city happiness model of the original game."),
+					Translate("Changes unhappiness, disorder and the city screen."))
+				.OnSelect(GotoMenu(OriginalHappinessModelMenu)),
 			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(MainMenu, 1))
 		);
 
@@ -981,6 +986,16 @@ namespace CivOne.Screens
 			MenuItem.Create(true.YesNo())
 				.WithDescription(Translate("Show Deity in difficulty selection."))
 				.OnSelect((s, a) => Settings.DeityEnabled = true).SetActive(() => Settings.DeityEnabled),
+			MenuItem.Create(Translate("Back"))
+		);
+
+		private void OriginalHappinessModelMenu() => CreateMenu(Translate("Original city happiness"), GotoMenu(PatchesMenu, 16),
+			MenuItem.Create(TranslateFormatted("{0} (default)", false.YesNo()))
+				.WithDescription(Translate("Keep the happiness model CivOne shipped with."))
+				.OnSelect((s, a) => Settings.OriginalHappinessModel = false).SetActive(() => !Settings.OriginalHappinessModel),
+			MenuItem.Create(true.YesNo())
+				.WithDescription(Translate("Use the happiness model of the original game."))
+				.OnSelect((s, a) => Settings.OriginalHappinessModel = true).SetActive(() => Settings.OriginalHappinessModel),
 			MenuItem.Create(Translate("Back"))
 		);
 
