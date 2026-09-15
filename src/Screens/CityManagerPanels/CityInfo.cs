@@ -57,7 +57,7 @@ namespace CivOne.Screens.CityManagerPanels
 			}
 		}
 
-        private void DrawHappyRow(Picture output, int yy, int happy, int content, int unhappy, int ent, int sci, int tax)
+        private void DrawHappyRow(Picture output, int yy, int happy, int content, int unhappy, int redShirt, int ent, int sci, int tax)
         {
 			// Reduce gaps between citizens for big cities
 			// Icons on right side need may overlap citizen icons if city is big.
@@ -72,6 +72,8 @@ namespace CivOne.Screens.CityManagerPanels
                 output.AddLayer(Icons.Citizen((x % 2 == 0) ? Citizen.ContentMale : Citizen.ContentFemale), startX + (leftStartPackedForBigCities * deltaX++), yy);
             for (int x = 0; x < unhappy; x++)
                 output.AddLayer(Icons.Citizen((x % 2 == 0) ? Citizen.UnhappyMale : Citizen.UnhappyFemale), startX + (leftStartPackedForBigCities * deltaX++), yy);
+            for (int x = 0; x < redShirt; x++)
+                output.AddLayer(Icons.Citizen((x % 2 == 0) ? Citizen.RedShirtMale : Citizen.RedShirtFemale), startX + (leftStartPackedForBigCities * deltaX++), yy);
             for (int x = 0; x < ent; x++)
                 output.AddLayer(Icons.Citizen(Citizen.Entertainer), startX + (leftStartPackedForBigCities * deltaX++), yy);
             for (int x = 0; x < sci; x++)
@@ -83,7 +85,7 @@ namespace CivOne.Screens.CityManagerPanels
 
         private void DrawHappyRow(Picture output, int yy, CitizenTypes group)
         {
-            DrawHappyRow(output, yy, group.happy,group.content,group.unhappy, group.elvis, group.einstein, group.taxman);
+            DrawHappyRow(output, yy, group.happy, group.content, group.unhappy, group.redShirt, group.elvis, group.einstein, group.taxman);
         }
 
         private Picture HappyFrame
