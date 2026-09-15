@@ -122,11 +122,15 @@ $pythonCode | & $PythonExe -
 
 if (Test-Path $generatedOutput -PathType Container) {
     if (-not [System.IO.Path]::GetFullPath($generatedOutput).Equals([System.IO.Path]::GetFullPath($destinationOutput), [System.StringComparison]::OrdinalIgnoreCase)) {
-        New-Item -ItemType Directory -Path $resolvedOutputRoot -Force | Out-Null
+        # Stage outside $generatedOutput first: when TargetPath is the repo root,
+        # $destinationOutput is nested inside $generatedOutput and a direct move would fail.
+        $stageOutput = Join-Path $resolvedTarget (".graphify-out.stage." + [System.Guid]::NewGuid().ToString("N"))
+        Move-Item -Path $generatedOutput -Destination $stageOutput
         if (Test-Path $destinationOutput -PathType Container) {
             Remove-Item -Path $destinationOutput -Recurse -Force
         }
-        Move-Item -Path $generatedOutput -Destination $destinationOutput
+        New-Item -ItemType Directory -Path (Split-Path -Parent $destinationOutput) -Force | Out-Null
+        Move-Item -Path $stageOutput -Destination $destinationOutput
     }
 }
 
