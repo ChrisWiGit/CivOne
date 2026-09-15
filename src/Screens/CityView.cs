@@ -396,8 +396,7 @@ namespace CivOne.Screens
 
 			if (typeof(T) == typeof(Pyramids))
 			{
-				picture.AddLayer(Resources["WONDERS2"][131, 54, 187, 29], 133, 0);
-				picture.AddLayer(Resources["WONDERS2"][318, 54, 1, 29], 0, 0);
+				picture.AddLayer(Resources["WONDERS2"][131, 54, 188, 29], 133, 0);
 			}
 			if (typeof(T) == typeof(Colossus))
 			{
@@ -409,7 +408,7 @@ namespace CivOne.Screens
 			}
 			if (typeof(T) == typeof(HooverDam))
 			{
-				picture.AddLayer(Resources["WONDERS2"][1, 14, 147, 20], 1, 9);
+				picture.AddLayer(Resources["WONDERS2"][1, 14, 147, 20], 0, 8);
 			}
 			if (typeof(T) == typeof(Lighthouse))
 			{
@@ -426,6 +425,58 @@ namespace CivOne.Screens
 			if (typeof(T) == typeof(DarwinsVoyage))
 			{
 				picture.AddLayer(Resources["WONDERS"][40, 69, 62, 47], x, y);
+			}
+			if (typeof(T) == typeof(GreatLibrary))
+			{
+				picture.AddLayer(Resources["WONDERS"][61, 117, 41, 56], x, y);
+			}
+			if (typeof(T) == typeof(MagellansExpedition))
+			{
+				picture.AddLayer(Resources["WONDERS"][268, 53, 51, 62], x, y);
+			}
+			if (typeof(T) == typeof(MichelangelosChapel))
+			{
+				picture.AddLayer(Resources["WONDERS"][9, 117, 51, 56], x, y);
+			}
+			if (typeof(T) == typeof(CopernicusObservatory))
+			{
+				picture.AddLayer(Resources["WONDERS"][126, 1, 57, 53], x, y);
+			}
+			if (typeof(T) == typeof(ShakespearesTheatre))
+			{
+				picture.AddLayer(Resources["WONDERS"][276, 1, 43, 51], x, y);
+			}
+			if (typeof(T) == typeof(IsaacNewtonsCollege))
+			{
+				picture.AddLayer(Resources["WONDERS"][103, 139, 55, 60], x, y);
+			}
+			if (typeof(T) == typeof(JSBachsCathedral))
+			{
+				picture.AddLayer(Resources["WONDERS"][184, 1, 41, 69], x, y);
+			}
+			if (typeof(T) == typeof(WomensSuffrage))
+			{
+				picture.AddLayer(Resources["WONDERS"][253, 1, 22, 47], x, y);
+			}
+			if (typeof(T) == typeof(ManhattanProject))
+			{
+				picture.AddLayer(Resources["WONDERS"][226, 1, 26, 47], x, y);
+			}
+			if (typeof(T) == typeof(UnitedNations))
+			{
+				picture.AddLayer(Resources["WONDERS"][103, 79, 60, 59], x, y);
+			}
+			if (typeof(T) == typeof(ApolloProgram))
+			{
+				picture.AddLayer(Resources["WONDERS"][270, 116, 49, 83], x, y);
+			}
+			if (typeof(T) == typeof(SETIProgram))
+			{
+				picture.AddLayer(Resources["WONDERS"][63, 1, 62, 54], x, y);
+			}
+			if (typeof(T) == typeof(CureForCancer))
+			{
+				picture.AddLayer(Resources["WONDERS"][240, 60, 27, 55], x, y);
 			}
 		}
 
@@ -626,7 +677,7 @@ namespace CivOne.Screens
 					CloseSingleRoadGaps(cityMap);
 
 				
-				foreach (Type type in new Type[] { typeof(Barracks), typeof(Granary), typeof(Temple), typeof(MarketPlace), typeof(Library), typeof(Courthouse), typeof(Bank), typeof(Cathedral), typeof(UniversityBuilding), typeof(Colosseum), typeof(Factory), typeof(MfgPlant), typeof(SdiDefense), typeof(RecyclingCenter), typeof(NuclearPlant), typeof(Lighthouse), typeof(HangingGardens), typeof(Oracle), typeof(DarwinsVoyage) })
+				foreach (Type type in new Type[] { typeof(Barracks), typeof(Granary), typeof(Temple), typeof(MarketPlace), typeof(Library), typeof(Courthouse), typeof(Bank), typeof(Cathedral), typeof(UniversityBuilding), typeof(Colosseum), typeof(Factory), typeof(MfgPlant), typeof(SdiDefense), typeof(RecyclingCenter), typeof(NuclearPlant), typeof(Lighthouse), typeof(HangingGardens), typeof(Oracle), typeof(DarwinsVoyage), typeof(GreatLibrary), typeof(MagellansExpedition), typeof(MichelangelosChapel), typeof(CopernicusObservatory), typeof(ShakespearesTheatre), typeof(IsaacNewtonsCollege), typeof(JSBachsCathedral), typeof(WomensSuffrage), typeof(ManhattanProject), typeof(UnitedNations), typeof(ApolloProgram), typeof(SETIProgram), typeof(CureForCancer) })
 				{
 					if (_city.HasBuilding(type) || _city.HasWonder(type))
 					{
@@ -649,37 +700,70 @@ namespace CivOne.Screens
 						else if (type == typeof(RecyclingCenter)) id = CityViewMap.RecyclingCenter;
 						else if (type == typeof(NuclearPlant)) id = CityViewMap.NuclearPlant;
 						else if (type == typeof(Lighthouse)) id = CityViewMap.Lighthouse;
-						else if (type == typeof(HangingGardens)) { id = CityViewMap.HangingGardens; sizeX = 3; sizeY = 3; }
-						else if (type == typeof(Oracle)) { id = CityViewMap.Oracle; sizeX = 3; sizeY = 3; }
-						else if (type == typeof(DarwinsVoyage)) { id = CityViewMap.DarwinsVoyage; sizeX = 3; sizeY = 3; }
+						else if (type == typeof(HangingGardens)) { id = CityViewMap.HangingGardens; }
+						else if (type == typeof(Oracle)) { id = CityViewMap.Oracle; }
+						else if (type == typeof(DarwinsVoyage)) { id = CityViewMap.DarwinsVoyage; }
+						else if (type == typeof(GreatLibrary)) { id = CityViewMap.GreatLibrary; }
+						else if (type == typeof(MagellansExpedition)) { id = CityViewMap.MagellansExpedition; }
+						else if (type == typeof(MichelangelosChapel)) { id = CityViewMap.MichelangelosChapel; }
+						else if (type == typeof(CopernicusObservatory)) { id = CityViewMap.CopernicusObservatory; }
+						else if (type == typeof(ShakespearesTheatre)) { id = CityViewMap.ShakespearesTheatre; }
+						else if (type == typeof(IsaacNewtonsCollege)) { id = CityViewMap.IsaacNewtonsCollege; }
+						else if (type == typeof(JSBachsCathedral)) { id = CityViewMap.JSBachsCathedral; }
+						else if (type == typeof(WomensSuffrage)) { id = CityViewMap.WomensSuffrage; }
+						else if (type == typeof(ManhattanProject)) { id = CityViewMap.ManhattanProject; }
+						else if (type == typeof(UnitedNations)) { id = CityViewMap.UnitedNations; }
+						else if (type == typeof(ApolloProgram)) { id = CityViewMap.ApolloProgram; }
+						else if (type == typeof(SETIProgram)) { id = CityViewMap.SETIProgram; }
+						else if (type == typeof(CureForCancer)) { id = CityViewMap.CureForCancer; }
 						else continue;
 
-						for (int i = 0; i < 1000; i++)
-						{
-							int xx = localRandom.Next(15) + 1;
-							int yy = localRandom.Next(10);
-							if (xx == 6 || xx == 11 || yy == 2 || yy == 6) continue;
-							if (xx == 5 || xx == 10 || yy == 1 || yy == 5) continue;
-							if (xx + sizeX > cityMap.GetLength(0) || yy + sizeY > cityMap.GetLength(1)) continue;
-							if ((int)cityMap[xx, yy] > 3) continue;
-							bool invalid = false;
-							for (int oy = 0; oy < sizeY; oy++)
-							for (int ox = 0; ox < sizeX; ox++)
-							{
-								if ((int)cityMap[xx + ox, yy + oy] <= 3) continue;
-								invalid = true;
-								break; 
-							}
-							if (invalid) continue;
+						// The original reserves the same footprint for every wonder, regardless of
+						// sprite size: the cells (gx - 1 .. gx + 3, gy - 1 .. gy + 1) around the anchor.
+						// Buildings keep their 2x2 block.
+						bool isWonder = typeof(IWonder).IsAssignableFrom(type);
 
-							cityMap[xx, yy] = id;
-							for (int oy = 0; oy < sizeY; oy++)
-							for (int ox = 0; ox < sizeX; ox++)
+						// A city holding many wonders runs out of 5x3 blocks on this 18x11 grid, and the
+						// wonders late in the list (Apollo Program, SETI Program, Cure for Cancer) would
+						// never be placed and therefore never drawn. Shrink the reserved area instead of
+						// dropping the wonder.
+						(int X0, int X1, int Y0, int Y1)[] footprints = isWonder
+							? [ (-1, 3, -1, 1), (0, 2, 0, 1), (0, 1, 0, 0) ]
+							: [ (0, sizeX - 1, 0, sizeY - 1) ];
+
+						foreach ((int offX0, int offX1, int offY0, int offY1) in footprints)
+						{
+							bool placed = false;
+							for (int i = 0; i < 1000; i++)
 							{
-								if (ox == 0 && oy == 0) continue;
-								cityMap[xx + ox, yy + oy] = CityViewMap.Occupied;
+								int xx = localRandom.Next(15) + 1;
+								int yy = localRandom.Next(10);
+								if (xx == 6 || xx == 11 || yy == 2 || yy == 6) continue;
+								if (xx == 5 || xx == 10 || yy == 1 || yy == 5) continue;
+								if (xx + offX0 < 0 || xx + offX1 >= cityMap.GetLength(0)) continue;
+								if (yy + offY0 < 0 || yy + offY1 >= cityMap.GetLength(1)) continue;
+								if ((int)cityMap[xx, yy] > 3) continue;
+								bool invalid = false;
+								for (int oy = offY0; oy <= offY1; oy++)
+								for (int ox = offX0; ox <= offX1; ox++)
+								{
+									if ((int)cityMap[xx + ox, yy + oy] <= 3) continue;
+									invalid = true;
+									break; 
+								}
+								if (invalid) continue;
+
+								cityMap[xx, yy] = id;
+								for (int oy = offY0; oy <= offY1; oy++)
+								for (int ox = offX0; ox <= offX1; ox++)
+								{
+									if (ox == 0 && oy == 0) continue;
+									cityMap[xx + ox, yy + oy] = CityViewMap.Occupied;
+								}
+								placed = true;
+								break;
 							}
-							break;
+							if (placed) break;
 						}
 					}
 				}
@@ -815,17 +899,17 @@ namespace CivOne.Screens
 				if (_production is not Colossus)
 					DrawWonder<Colossus>(_overlay);
 			}
-			if (_city.Wonders.Any(b => b is GreatWall))
-			{
-				DrawWonder<GreatWall>();
-				if (_production is not GreatWall)
-					DrawWonder<GreatWall>(_overlay);
-			}
 			if (_city.Wonders.Any(b => b is HooverDam))
 			{
 				DrawWonder<HooverDam>();
 				if (_production is not HooverDam)
 					DrawWonder<HooverDam>(_overlay);
+			}
+			if (_city.Wonders.Any(b => b is GreatWall))
+			{
+				DrawWonder<GreatWall>();
+				if (_production is not GreatWall)
+					DrawWonder<GreatWall>(_overlay);
 			}
 
 			if (_city.Buildings.Any(b => b is Aqueduct))
@@ -1047,6 +1131,45 @@ namespace CivOne.Screens
 						continue;
 					case CityViewMap.DarwinsVoyage:
 						DrawWonderOverlay<DarwinsVoyage>(dx, dy, -16);
+						continue;
+					case CityViewMap.GreatLibrary:
+						DrawWonderOverlay<GreatLibrary>(dx, dy, -25);
+						continue;
+					case CityViewMap.MagellansExpedition:
+						DrawWonderOverlay<MagellansExpedition>(dx, dy, -31);
+						continue;
+					case CityViewMap.MichelangelosChapel:
+						DrawWonderOverlay<MichelangelosChapel>(dx, dy, -25);
+						continue;
+					case CityViewMap.CopernicusObservatory:
+						DrawWonderOverlay<CopernicusObservatory>(dx, dy, -22);
+						continue;
+					case CityViewMap.ShakespearesTheatre:
+						DrawWonderOverlay<ShakespearesTheatre>(dx, dy, -20);
+						continue;
+					case CityViewMap.IsaacNewtonsCollege:
+						DrawWonderOverlay<IsaacNewtonsCollege>(dx, dy, -29);
+						continue;
+					case CityViewMap.JSBachsCathedral:
+						DrawWonderOverlay<JSBachsCathedral>(dx, dy, -38);
+						continue;
+					case CityViewMap.WomensSuffrage:
+						DrawWonderOverlay<WomensSuffrage>(dx, dy, -16);
+						continue;
+					case CityViewMap.ManhattanProject:
+						DrawWonderOverlay<ManhattanProject>(dx, dy, -16);
+						continue;
+					case CityViewMap.UnitedNations:
+						DrawWonderOverlay<UnitedNations>(dx, dy, -28);
+						continue;
+					case CityViewMap.ApolloProgram:
+						DrawWonderOverlay<ApolloProgram>(dx, dy, -52);
+						continue;
+					case CityViewMap.SETIProgram:
+						DrawWonderOverlay<SETIProgram>(dx, dy, -23);
+						continue;
+					case CityViewMap.CureForCancer:
+						DrawWonderOverlay<CureForCancer>(dx, dy, -24);
 						continue;
 					default: continue;
 				}
