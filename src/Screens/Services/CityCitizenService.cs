@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
@@ -448,7 +448,7 @@ namespace CivOne.Screens.Services
 			}
 
 			int cathedralDelta = CathedralDelta();
-			if (cathedralDelta > 0)
+			if (cathedralDelta > 0 && HasMichelangelosChapelEffect())
 			{
 				ct.Wonders.Add(new MichelangelosChapel());
 			}
@@ -475,16 +475,28 @@ namespace CivOne.Screens.Services
 
 			// CW: Michelangelo's Chapel gives +6 happiness if on same continent as city with wonder, else +4
 			// https://civilization.fandom.com/wiki/Michelangelo%27s_Chapel_(Civ1)
-			bool isObsolete = _game.WonderObsolete<MichelangelosChapel>();
-			bool hasChapelOnSameContinent = !isObsolete &&
-							_city.PlayerIntf
-								.CitiesInterface.Any(c => c.HasWonder<MichelangelosChapel>()
-					&& c.ContinentId == _city.ContinentId);
-			int chapelBonus = !isObsolete && hasChapelOnSameContinent ? 6 : 4;
+			int chapelBonus = HasMichelangelosChapelEffect() ? 6 : 4;
 
 			unhappyDelta += chapelBonus;
 
 			return unhappyDelta;
+		}
+
+		/// <summary>
+		/// Tells whether Michelangelo's Chapel currently helps this city.
+		/// The chapel must not be obsolete and must stand in a city of the same owner on this continent.
+		/// </summary>
+		/// <returns><c>true</c> when the chapel raises this city's cathedral effect.</returns>
+		internal virtual bool HasMichelangelosChapelEffect()
+		{
+			if (_game.WonderObsolete<MichelangelosChapel>())
+			{
+				return false;
+			}
+
+			return _city.PlayerIntf
+					.CitiesInterface
+					.Any(c => c.HasWonder<MichelangelosChapel>() && c.ContinentId == _city.ContinentId);
 		}
 
 		protected virtual internal bool HasBachsCathedral()

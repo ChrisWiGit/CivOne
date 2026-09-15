@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using CivOne.src;
@@ -721,6 +721,23 @@ namespace CivOne.UnitTests
             _city.ContinentId = 1;
 
             Assert.Equal(expectedDelta, Testee().CathedralDelta());
+        }
+
+        [Theory]
+        // The cathedral works in both cases, only the chapel entry of the stage details may differ.
+        [InlineData(false)]
+        [InlineData(true)]
+        public void TheChapelIsListedOnlyWhenItsOwnerHasIt(bool hasChapel)
+        {
+            MockedPlayer player = (MockedPlayer)_city.MockPlayer!;
+            player.withAdvance<Religion>(true);
+            player.WithWonderEffect<MichelangelosChapel>(hasChapel);
+            _city.WithBuilding<Cathedral>();
+
+            CitizenTypes ct = Testee().GetCitizenTypes();
+
+            Assert.Equal(hasChapel, ct.Wonders.Any(wonder => wonder is MichelangelosChapel));
+            Assert.Contains(ct.Buildings, building => building is Cathedral);
         }
 
         [Fact]

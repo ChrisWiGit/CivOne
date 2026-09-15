@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -279,7 +279,7 @@ namespace CivOne.Screens.Services
 			}
 
 			int cathedralDelta = CathedralDelta();
-			if (cathedralDelta > 0)
+			if (cathedralDelta > 0 && HasMichelangelosChapelEffect())
 			{
 				ct.Wonders.Add(new MichelangelosChapel());
 			}
@@ -417,8 +417,15 @@ namespace CivOne.Screens.Services
 				return 0;
 			}
 
-			return City.PlayerIntf.HasWonderEffect<MichelangelosChapel>() ? 6 : 4;
+			return HasMichelangelosChapelEffect() ? 6 : 4;
 		}
+
+		/// <summary>
+		/// Tells whether Michelangelo's Chapel helps this city.
+		/// The chapel is not bound to a continent, so owning its effect is enough.
+		/// </summary>
+		/// <returns><c>true</c> when the owner has the chapel's effect.</returns>
+		internal override bool HasMichelangelosChapelEffect() => City.PlayerIntf.HasWonderEffect<MichelangelosChapel>();
 
 		/// <inheritdoc/>
 		protected internal override CitizenTypes Stage5(CitizenTypes ct)
