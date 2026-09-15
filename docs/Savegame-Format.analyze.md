@@ -1,19 +1,30 @@
 # Civilization I – Savegame-Format (`CIVIL*.SVE`)
 
-Analyse des Speicherformats, abgeleitet **aus dem portierten Originalcode dieses Repos**
-und gegengeprüft gegen die Vorab-Forschung
-`CivOne_2/docs/SaveGame/memory_map_SVE_EN.txt`.
+Analyse des Speicherformats, abgeleitet **aus dem portierten Originalcode des
+OpenCiv1-Projekts** ([rajko-horvat/OpenCiv1](https://github.com/rajko-horvat/OpenCiv1),
+Rewrite der DOS-Fassung 475.05) und gegengeprüft gegen die Vorab-Forschung in diesem Repo:
+[docs/SaveGame/memory_map_SVE_EN.txt](SaveGame/memory_map_SVE_EN.txt).
 
-Primärquellen im Repo:
+**Zu den Quellenlinks:** Alle `src/CivGame/...`- und `src/GPU/...`-Links unten zeigen nach
+OpenCiv1, **nicht** in dieses Repo, und sind auf den Stand
+[`a25ae37`](https://github.com/rajko-horvat/OpenCiv1/tree/a25ae37333f98616070d844158caa812bb8f9401)
+festgenagelt. Die Analyse entstand an einer lokalen Arbeitskopie dieses Stands, in der
+`City.cs`, `CityWorker.cs`, `Overlay_20.cs`, `Segment_1403.cs`, `Segment_1866.cs`,
+`Segment_1ade.cs`, `Segment_25fb.cs` und `Segment_2aea.cs` verändert waren — in diesen
+Dateien können die Zeilennummern um einige Zeilen abweichen, und Bezeichner wie
+`City.FortifiedUnits` (dort noch `City.Unknown`) sind lokale Umbenennungen. Die
+Funktionsnamen (`F11_0000_083b_LoadGameData` usw.) sind stabil und der zuverlässigere Anker.
+
+Primärquellen (OpenCiv1):
 
 | Was | Wo |
 |---|---|
-| Lesereihenfolge (maßgeblich) | [GameLoadAndSave.cs:747](../../src/CivGame/Game/GameLoadAndSave.cs#L747) `F11_0000_083b_LoadGameData` |
-| Schreibreihenfolge (spiegelbildlich) | [GameLoadAndSave.cs:1347](../../src/CivGame/Game/GameLoadAndSave.cs#L1347) `F11_0000_08f6_SaveGameData` |
-| Stadt-Record | [City.cs](../../src/CivGame/CivState/City.cs) `City.FromStream` |
-| Einheiten-Record | [Unit.cs](../../src/CivGame/CivState/Unit.cs) `Unit.FromStream` |
-| Einheiten-Definition | [UnitDefinition.cs](../../src/CivGame/CivState/Definitions/UnitDefinition.cs) |
-| Feldgrößen / Array-Längen | [CivState.cs](../../src/CivGame/CivState/CivState.cs), [Player.cs](../../src/CivGame/CivState/Player.cs) |
+| Lesereihenfolge (maßgeblich) | [GameLoadAndSave.cs:747](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/GameLoadAndSave.cs#L747) `F11_0000_083b_LoadGameData` |
+| Schreibreihenfolge (spiegelbildlich) | [GameLoadAndSave.cs:1347](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/GameLoadAndSave.cs#L1347) `F11_0000_08f6_SaveGameData` |
+| Stadt-Record | [City.cs](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/CivState/City.cs) `City.FromStream` |
+| Einheiten-Record | [Unit.cs](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/CivState/Unit.cs) `Unit.FromStream` |
+| Einheiten-Definition | [UnitDefinition.cs](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/CivState/Definitions/UnitDefinition.cs) |
+| Feldgrößen / Array-Längen | [CivState.cs](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/CivState/CivState.cs), [Player.cs](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/CivState/Player.cs) |
 
 ---
 
@@ -27,7 +38,7 @@ Ein Spielstand besteht **immer aus zwei Dateien** mit gleichem Basisnamen:
 | `CIVIL<n>.MAP` | die Weltkarte als PIC-Bild (RLE + LZW komprimiert) |
 
 `<n>` ist die Slot-Ziffer `0`–`9`; der Dateiname wird in
-[GameLoadAndSave.cs:152](../../src/CivGame/Game/GameLoadAndSave.cs#L152) zusammengesetzt
+[GameLoadAndSave.cs:152](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/GameLoadAndSave.cs#L152) zusammengesetzt
 (Basisname + Ziffer + Extension `SVE`).
 
 Eigenschaften der `.SVE`:
@@ -230,10 +241,10 @@ Drei verschiedene Varianten kommen vor — beim Neuschreiben eines Parsers wicht
 Die Weltkarte steckt **nicht** in der `.SVE`. Gespeichert wird sie als PIC-Bild
 über den internen Grafikpuffer „Screen 2":
 
-* [GameLoadAndSave.cs:762](../../src/CivGame/Game/GameLoadAndSave.cs#L762) — laden
-* [GameLoadAndSave.cs:1360](../../src/CivGame/Game/GameLoadAndSave.cs#L1360) — speichern (`savePalette = false`)
+* [GameLoadAndSave.cs:762](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/GameLoadAndSave.cs#L762) — laden
+* [GameLoadAndSave.cs:1360](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/GameLoadAndSave.cs#L1360) — speichern (`savePalette = false`)
 
-Format (siehe `GBitmap.SaveToPIC` in [GBitmap.cs:492](../../src/GPU/GBitmap.cs#L492)):
+Format (siehe `GBitmap.SaveToPIC` in [GBitmap.cs:492](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/GPU/GBitmap.cs#L492)):
 
 | Feld | Größe | Wert |
 |---|---:|---|
@@ -247,8 +258,8 @@ Der Puffer ist 320 × 200 Byte groß und wird als **Ebenen-Raster von 80 × 50 F
 genutzt — die Weltkarte ist 80 × 50 Felder, passend zu `map_visibility[80][50]` in der
 `.SVE`. Im Code nachweisbare Ebenen-Basispunkte sind `(0,0)`, `(+80,0)`, `(+160,0)`,
 `(0,+50)`, `(0,+100)` und `(0,+150)` (z. B.
-[Segment_2aea.cs:1839-1879](../../src/CivGame/Game/Segment_2aea.cs#L1839-L1879),
-[Segment_2aea.cs:751](../../src/CivGame/Game/Segment_2aea.cs#L751)).
+[Segment_2aea.cs:1839-1879](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_2aea.cs#L1839-L1879),
+[Segment_2aea.cs:751](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_2aea.cs#L751)).
 Zwei Ebenen sind inzwischen eindeutig identifiziert:
 
 | Ebene | Zugriff | Inhalt |
@@ -281,7 +292,7 @@ Zwei Stellen weichen nur in der **Beschreibung**, nicht in den Bytes ab:
 2. **Wunder-Indizierung (Off-by-one).** Der Code liest `WonderCityID[22]` ab `0x8672`,
    die Referenzkarte beginnt `wonder0` erst bei `0x8674`. Auflösung: `WonderEnum`
    ist **1-basiert** (`None = 0`, `Pyramids = 1` … `CureForCancer = 21`, siehe
-   [WonderEnum.cs](../../src/CivGame/CivState/Definitions/WonderEnum.cs)).
+   [WonderEnum.cs](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/CivState/Definitions/WonderEnum.cs)).
    Slot `[0]` ist der ungenutzte `None`-Eintrag und belegt genau die 2 Byte bei `0x8672`.
    **`wonderN` der Referenzkarte entspricht also `WonderEnum` N+1.**
 
@@ -315,14 +326,14 @@ Index = gx * 13 + gy        gx = 0..19   (20 Spalten, 20*4 = 80)
 ```
 
 Die Schleifengrenzen `0x14` (20) und `0xD` (13) stehen explizit im Code
-([GameInitAndIntro.cs:2058](../../src/CivGame/Game/GameInitAndIntro.cs#L2058),
-[GameInitAndIntro.cs:2331](../../src/CivGame/Game/GameInitAndIntro.cs#L2331)).
+([GameInitAndIntro.cs:2058](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/GameInitAndIntro.cs#L2058),
+[GameInitAndIntro.cs:2331](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/GameInitAndIntro.cs#L2331)).
 Die letzte Rasterzeile ragt rechnerisch über den Kartenrand hinaus (52 statt 50).
 
 **Umrechnung Raster → Karte:** der Repräsentant einer Rasterzelle ist
 `mapX = gx*4 + 1`, `mapY = gy*4 + 1`
-([GameInitAndIntro.cs:2063-2072](../../src/CivGame/Game/GameInitAndIntro.cs#L2063-L2072),
-Rückrichtung in [UnitGoTo.cs:687-688](../../src/CivGame/Game/UnitGoTo.cs#L687-L688)).
+([GameInitAndIntro.cs:2063-2072](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/GameInitAndIntro.cs#L2063-L2072),
+Rückrichtung in [UnitGoTo.cs:687-688](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/UnitGoTo.cs#L687-L688)).
 Liegt dieses Feld im Ozean (Terraintyp 10), probiert der Erzeuger nacheinander
 `(x+1, y)`, `(x, y+1)` und `(x+1, y+1)`; findet sich kein Landfeld, bleibt die
 Zelle komplett auf 0.
@@ -344,14 +355,14 @@ ist die Nachbarzelle in Richtung *d* über Land erreichbar".
 | 7 | `0x80` | NW | 8 | −1, −1 |
 
 Die Richtungsindizes entsprechen `MoveOffsets[1..8]` in
-[CivGameGlobals.cs:16](../../src/CivGame/CivGameGlobals.cs#L16).
+[CivGameGlobals.cs:16](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/CivGameGlobals.cs#L16).
 Der Erzeuger iteriert nur über die Richtungen **1–4** (N, NE, E, SE) und setzt
 pro gefundener Verbindung **zwei** Bits:
 
 * in der Ausgangszelle Bit `d − 1`
-  ([GameInitAndIntro.cs:2274](../../src/CivGame/Game/GameInitAndIntro.cs#L2274)),
+  ([GameInitAndIntro.cs:2274](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/GameInitAndIntro.cs#L2274)),
 * in der Zielzelle das Gegenrichtungs-Bit `(d + 3) & 7`
-  ([GameInitAndIntro.cs:2322](../../src/CivGame/Game/GameInitAndIntro.cs#L2322)).
+  ([GameInitAndIntro.cs:2322](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/GameInitAndIntro.cs#L2322)).
 
 Die Matrix ist damit **symmetrisch** — ein ungerichteter Graph.
 Einzige Ausnahme ist der Ostrand, siehe 7.7.
@@ -359,7 +370,7 @@ Einzige Ausnahme ist der Ostrand, siehe 7.7.
 ### 7.3 Wie die Kanten entstehen
 
 Erzeuger: `F7_0000_1188()` in
-[GameInitAndIntro.cs:1987](../../src/CivGame/Game/GameInitAndIntro.cs#L1987).
+[GameInitAndIntro.cs:1987](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/GameInitAndIntro.cs#L1987).
 Pro Zellenpaar (Zelle, Nachbar in Richtung 1–4):
 
 1. Beide Zellen brauchen ein Land-Ankerfeld (siehe 7.1), sonst keine Kante.
@@ -367,7 +378,7 @@ Pro Zellenpaar (Zelle, Nachbar in Richtung 1–4):
    die Kontinent-ID aus der `.MAP`-Ebene `(x, y+50)` (`F0_2aea_1942`).
 3. Dann läuft eine echte Pfadsuche `F0_2e31_111c(x1, y1, x2, y2, 0, 20)`.
    Das Ergebnis muss `!= -1` **und `< 20`** sein
-   ([GameInitAndIntro.cs:2245-2259](../../src/CivGame/Game/GameInitAndIntro.cs#L2245-L2259)).
+   ([GameInitAndIntro.cs:2245-2259](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/GameInitAndIntro.cs#L2245-L2259)).
 
 Punkt 3 ist der Grund, warum der Block überhaupt gespeichert werden muss: er
 kodiert nicht bloß „gleicher Kontinent", sondern „in höchstens 20 Schritten
@@ -376,14 +387,14 @@ erkennbar sind.
 
 ### 7.4 Wie er benutzt wird
 
-In [UnitGoTo.cs](../../src/CivGame/Game/UnitGoTo.cs) plant der GoTo-Befehl zuerst
+In [UnitGoTo.cs](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/UnitGoTo.cs) plant der GoTo-Befehl zuerst
 auf dem Grobraster und erst danach feldgenau:
 
 * `LandPathfinding[gx*13 + gy] != 0` = „diese Zelle gehört zum Wegenetz"
-  ([UnitGoTo.cs:889](../../src/CivGame/Game/UnitGoTo.cs#L889),
-  [UnitGoTo.cs:963](../../src/CivGame/Game/UnitGoTo.cs#L963)).
+  ([UnitGoTo.cs:889](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/UnitGoTo.cs#L889),
+  [UnitGoTo.cs:963](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/UnitGoTo.cs#L963)).
 * Die einzelnen Bits steuern, welche Nachbarzelle als nächster Grobschritt in
-  Frage kommt ([UnitGoTo.cs:666-682](../../src/CivGame/Game/UnitGoTo.cs#L666-L682)).
+  Frage kommt ([UnitGoTo.cs:666-682](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/UnitGoTo.cs#L666-L682)).
 * Die gefundene Grobzelle wird mit `<< 2` bzw. `* 4 + 1` in Kartenkoordinaten
   zurückgerechnet.
 
@@ -392,25 +403,25 @@ auf dem Grobraster und erst danach feldgenau:
 Es gibt eine **zweite, strukturell identische 260-Byte-Tabelle** für Seeeinheiten
 bei `DS:0x7f38` (im Port noch nicht als Feld herausgezogen). Sie wird von
 `F7_0000_1440()` erzeugt
-([GameInitAndIntro.cs:2349](../../src/CivGame/Game/GameInitAndIntro.cs#L2349),
+([GameInitAndIntro.cs:2349](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/GameInitAndIntro.cs#L2349),
 beginnend mit `memset(0x7f38, 0, 0x104)` = 260 Byte) und ist das exakte Spiegelbild:
 dort gilt ein Ankerfeld nur dann, wenn es **Ozean** ist (Terraintyp 10).
 
 Welche der beiden Tabellen gelesen wird, entscheidet
 `UnitDefinition.TerrainCategory` (`0` = Land, `1` = Luft, `2` = See) —
-siehe [UnitGoTo.cs:657](../../src/CivGame/Game/UnitGoTo.cs#L657).
+siehe [UnitGoTo.cs:657](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/UnitGoTo.cs#L657).
 
 **Der Seegraph steht nicht im Spielstand.** Beim Laden wird nur er neu berechnet
-([GameLoadAndSave.cs:266](../../src/CivGame/Game/GameLoadAndSave.cs#L266) ruft
+([GameLoadAndSave.cs:266](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/GameLoadAndSave.cs#L266) ruft
 `F7_0000_1440(0)`), der Landgraph dagegen ausschließlich aus der `.SVE` übernommen.
 Beim Start eines neuen Spiels laufen beide Erzeuger
-([GameInitAndIntro.cs:1656-1658](../../src/CivGame/Game/GameInitAndIntro.cs#L1656-L1658)).
+([GameInitAndIntro.cs:1656-1658](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/GameInitAndIntro.cs#L1656-L1658)).
 
 Der Seegraph bekommt zusätzlich eine **Ost-West-Umlauf-Korrektur**, die der
 Landgraph nicht hat: Spalte `gx = 0` erhält `|= 0xE0` (SW, W, NW), Spalte `gx = 19`
 erhält `|= 0x0E` (NE, E, SE); anschließend werden die vier Polecken-Diagonalen
 wieder gelöscht
-([GameInitAndIntro.cs:2766-2779](../../src/CivGame/Game/GameInitAndIntro.cs#L2766-L2779)).
+([GameInitAndIntro.cs:2766-2779](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/GameInitAndIntro.cs#L2766-L2779)).
 Das ist zugleich eine unabhängige Bestätigung der Bitzuordnung aus 7.2:
 am Westrand werden genau die drei nach Westen zeigenden Bits gesetzt.
 
@@ -446,10 +457,10 @@ bis auf genau 8 Bits. Diese 8 liegen **alle in Spalte `gx = 19`** und sind
 ```
 
 Das ist kein Lesefehler, sondern eine Eigenheit des Erzeugers: in
-[GameInitAndIntro.cs:2274](../../src/CivGame/Game/GameInitAndIntro.cs#L2274)
+[GameInitAndIntro.cs:2274](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/GameInitAndIntro.cs#L2274)
 wird **erst das Bit der Ausgangszelle gesetzt** und **danach** geprüft, ob die
 Zielzelle überhaupt im Raster liegt
-([GameInitAndIntro.cs:2290-2305](../../src/CivGame/Game/GameInitAndIntro.cs#L2290-L2305),
+([GameInitAndIntro.cs:2290-2305](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/GameInitAndIntro.cs#L2290-L2305),
 Schranken `0 ≤ gx < 20`, `0 ≤ gy < 13`). Liegt sie außerhalb, wird das
 Gegenrichtungs-Bit nie gesetzt — das ausgehende Bit bleibt aber stehen.
 
@@ -499,7 +510,7 @@ Die Bits zerfallen in zwei Gruppen:
   Kontakt, Verträge, Bündnis und Aggression sind beidseitige Zustände.
   Die Helfer `F0_2517_0a30_SetDiplomacyFlags(i, j, maske)` und
   `F0_2517_0aa1_ClearDiplomacyFlags(i, j, maske)`
-  ([Segment_2517.cs](../../src/CivGame/Game/Segment_2517.cs)) schreiben grundsätzlich
+  ([Segment_2517.cs](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_2517.cs)) schreiben grundsätzlich
   `[i][j]` **und** `[j][i]`.
 * **Asymmetrisch** (Haltung einer Seite): Bits 3, 6, 7, 8, 9.
   Vendetta, Botschaft und Vertragsbruch gehören jeweils nur einer Partei.
@@ -515,12 +526,12 @@ Das Replay-Ereignis ist zugleich der Beweis für die Polarität von Bit 1:
 **Bit 1 löschen erzeugt die Kriegserklärung**, Bit 1 setzen den Friedensschluss.
 (Die Ereignis-IDs stehen im Replay-Strom als High-Nibble; der Abspielcode
 schaltet auf `ID − 1`, deshalb landet ID 2 in `case 1` mit dem Text
-„declare war on" — siehe [GameReplay.cs:235](../../src/CivGame/Game/GameReplay.cs#L235).)
+„declare war on" — siehe [GameReplay.cs:235](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/GameReplay.cs#L235).)
 
 ### 8.2 Der 16-Zug-Tick: Kriege laufen aus
 
 Alle 16 Züge (`TurnCount & 0xF == 0`) läuft in
-[Segment_2517.cs:119-221](../../src/CivGame/Game/Segment_2517.cs#L119-L221) über jedes
+[Segment_2517.cs:119-221](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_2517.cs#L119-L221) über jedes
 Paar:
 
 1. Ist Bit 4 gesetzt (frischer Kontakt), wird nur Bit 4 gelöscht — sonst nichts.
@@ -537,7 +548,7 @@ Civ 1 kennt keinen separaten Kriegs-Zustand, sondern nur „kennt sich, ohne Ver
 ### 8.3 Anzeige-Semantik
 
 Die Statusanzeige in
-[Overlay_13.cs:228-265](../../src/CivGame/Game/Overlay_13.cs#L228-L265) leitet ihre
+[Overlay_13.cs:228-265](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Overlay_13.cs#L228-L265) leitet ihre
 Labels direkt aus den Bits ab und bestätigt die Zuordnung:
 
 | Test | Label |
@@ -551,39 +562,39 @@ Labels direkt aus den Bits ab und bestätigt die Zuordnung:
 ### 8.4 Belege für die Einzelbits
 
 * **Bit 0 + Bit 4** — beim Erstkontakt setzt
-  [Segment_2517.cs:791-800](../../src/CivGame/Game/Segment_2517.cs#L791-L800)
+  [Segment_2517.cs:791-800](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_2517.cs#L791-L800)
   beidseitig `|= 0x11`.
 * **Bit 2** — wird nie eigenständig gelöscht, sondern immer zusammen mit Bit 1
   (`Clear(...,2)` maskiert zusätzlich `~0x4`): ein Bündnis ohne Vertrag gibt es nicht.
 * **Bit 3** — `|= 9` (Kontakt + Vendetta) beim Entstehen einer neuen Civ
-  ([Overlay_15.cs:304-313](../../src/CivGame/Game/Overlay_15.cs#L304-L313)),
+  ([Overlay_15.cs:304-313](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Overlay_15.cs#L304-L313)),
   `|= 0x88` nach einem Flächenangriff
-  ([Segment_29f3.cs:1454](../../src/CivGame/Game/Segment_29f3.cs#L1454)).
+  ([Segment_29f3.cs:1454](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_29f3.cs#L1454)).
   > **Portierungsfehler an dieser Stelle:** In
-  > [Overlay_15.cs:313](../../src/CivGame/Game/Overlay_15.cs#L313) steht
+  > [Overlay_15.cs:313](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Overlay_15.cs#L313) steht
   > `Players[playerID].Diplomacy[j] |= 9`, obwohl die darüber berechneten Register
   > (`DI = j << 4`, `BX = playerID << 1`) die Gegenrichtung adressieren:
   > korrekt wäre `Players[j].Diplomacy[playerID] |= 9`. Das Original setzt hier
   > beide Richtungen (wie in `Segment_2517` bei `|= 0x11`), der Port schreibt
   > zweimal dieselbe Zelle.
 * **Bit 5** — beidseitig gesetzt im Kampf-Handler
-  ([Segment_29f3.cs:783-792](../../src/CivGame/Game/Segment_29f3.cs#L783-L792)),
+  ([Segment_29f3.cs:783-792](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_29f3.cs#L783-L792)),
   direkt neben `PeaceTurnCount = 0`; Barbaren (Civ 0) sind davon ausgenommen.
 * **Bit 6** — gesetzt durch die Diplomaten-Aktion „Botschaft errichten"
-  ([Overlay_22.cs:173](../../src/CivGame/Game/Overlay_22.cs#L173)). Der zweite
-  Setzer in [Segment_1ade.cs:3162-3175](../../src/CivGame/Game/Segment_1ade.cs#L3162-L3175)
+  ([Overlay_22.cs:173](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Overlay_22.cs#L173)). Der zweite
+  Setzer in [Segment_1ade.cs:3162-3175](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_1ade.cs#L3162-L3175)
   ist der Botschafteraustausch — im Port ist direkt vermerkt, dass diese Regel im
   Original **nie greift** (die Bedingung kann nie wahr werden).
 * **Bit 7** — im gesamten Code gibt es genau **sechs** Fundstellen, drei schreibende
   und drei lesende; siehe 8.4.1.
 * **Bit 8 → Bit 9** — die KI setzt Bit 8 gegenüber dem Menschen, wenn sie trotz
   Vertrag mehr als eine Stadt hat und einen Bruch vorbereitet
-  ([Segment_1238.cs:1465-1468](../../src/CivGame/Game/Segment_1238.cs#L1465-L1468)),
+  ([Segment_1238.cs:1465-1468](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_1238.cs#L1465-L1468)),
   bzw. nach einer angekündigten Kriegserklärung
-  ([MeetWithKing.cs:1914](../../src/CivGame/Game/MeetWithKing.cs#L1914)).
+  ([MeetWithKing.cs:1914](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/MeetWithKing.cs#L1914)).
   Im Tick wird daraus mit 1/3 Wahrscheinlichkeit der vollzogene Bruch:
   `&= ~0x102` (Bit 8 und Friedensvertrag weg), `|= 0x200`
-  ([Segment_2517.cs:107-117](../../src/CivGame/Game/Segment_2517.cs#L107-L117)).
+  ([Segment_2517.cs:107-117](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_2517.cs#L107-L117)).
 
 #### 8.4.1 Bit 7 (`0x0080`) im Detail
 
@@ -591,14 +602,14 @@ Alle sechs Fundstellen sind nuklear motiviert — drei schreibende, drei lesende
 
 | Stelle | Art | Was passiert |
 |---|---|---|
-| [MeetWithKing.cs:285-295](../../src/CivGame/Game/MeetWithKing.cs#L285-L295) | setzt | Audienz beim KI-Herrscher: besitzt die KI Nuklearwaffen (`ActiveUnits[25]`, Einheitentyp 25 = *Nuclear*), wird `0x80` gegenüber dem Menschen gesetzt. |
-| [MeetWithKing.cs:430-461](../../src/CivGame/Game/MeetWithKing.cs#L430-L461) | **liest und setzt** | Tributforderung — die Schlüsselstelle, siehe unten. |
-| [Segment_29f3.cs:1454](../../src/CivGame/Game/Segment_29f3.cs#L1454) | setzt | **Atomschlag.** Der Handler gibt bei geschützten Städten „SDI protects …" aus ([Zeile 1407](../../src/CivGame/Game/Segment_29f3.cs#L1407)); für jede Civ, die Einheiten verliert, bekommt die Zeile des Angreifers `\|= 0x88` — Vendetta **und** Bit 7. |
-| [Segment_25fb.cs:1734](../../src/CivGame/Game/Segment_25fb.cs#L1734) | liest | Stadtverteidigung: für jedes der 8 Nachbarfelder wird der Besitzer der dort stehenden Einheit ermittelt (`F0_2aea_14e0`); gilt `(dip & 0x82) == 0x80`, zählt er als Bedrohung. |
-| [Segment_25fb.cs:1859](../../src/CivGame/Game/Segment_25fb.cs#L1859) | liest | Dieselbe Prüfung in der übergeordneten Bedrohungsbewertung, danach Vergleich mit der Stadtgröße. |
+| [MeetWithKing.cs:285-295](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/MeetWithKing.cs#L285-L295) | setzt | Audienz beim KI-Herrscher: besitzt die KI Nuklearwaffen (`ActiveUnits[25]`, Einheitentyp 25 = *Nuclear*), wird `0x80` gegenüber dem Menschen gesetzt. |
+| [MeetWithKing.cs:430-461](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/MeetWithKing.cs#L430-L461) | **liest und setzt** | Tributforderung — die Schlüsselstelle, siehe unten. |
+| [Segment_29f3.cs:1454](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_29f3.cs#L1454) | setzt | **Atomschlag.** Der Handler gibt bei geschützten Städten „SDI protects …" aus ([Zeile 1407](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_29f3.cs#L1407)); für jede Civ, die Einheiten verliert, bekommt die Zeile des Angreifers `\|= 0x88` — Vendetta **und** Bit 7. |
+| [Segment_25fb.cs:1734](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_25fb.cs#L1734) | liest | Stadtverteidigung: für jedes der 8 Nachbarfelder wird der Besitzer der dort stehenden Einheit ermittelt (`F0_2aea_14e0`); gilt `(dip & 0x82) == 0x80`, zählt er als Bedrohung. |
+| [Segment_25fb.cs:1859](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_25fb.cs#L1859) | liest | Dieselbe Prüfung in der übergeordneten Bedrohungsbewertung, danach Vergleich mit der Stadtgröße. |
 | — | — | **Nirgends wird das Bit gelöscht.** Es gibt kein `&= ~0x80` im gesamten Code. |
 
-**Die Tributforderung** ([MeetWithKing.cs:425-461](../../src/CivGame/Game/MeetWithKing.cs#L425-L461))
+**Die Tributforderung** ([MeetWithKing.cs:425-461](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/MeetWithKing.cs#L425-L461))
 erklärt, wozu das Bit überhaupt existiert:
 
 1. Die geforderte Summe wird aus Schwierigkeitsgrad und Rangwert berechnet und auf
@@ -614,7 +625,7 @@ wird auf das Zahlbare heruntergerechnet.** Jede weitere Forderung derselben KI d
 die Zahlungsfähigkeit des Menschen überschreiten.
 
 Ergänzend prüft die Routine kurz davor
-([MeetWithKing.cs:266-269](../../src/CivGame/Game/MeetWithKing.cs#L266-L269)), ob der
+([MeetWithKing.cs:266-269](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/MeetWithKing.cs#L266-L269)), ob der
 **Mensch** selbst Nuklearwaffen besitzt; dann entfällt die Eskalation ganz —
 gegenseitige Abschreckung.
 
@@ -669,9 +680,9 @@ Die Werte sind **keine eigene Aufzählung**, sondern identisch mit
 | 5 | **Transport** — per Schiff auf einen anderen Kontinent ausweichen | `T` / `Transport` |
 
 3 und 4 werden nie zugewiesen. Die Klartextnamen stammen aus den
-Debug-Anzeigen: [Overlay_13.cs:141-163](../../src/CivGame/Game/Overlay_13.cs#L141-L163)
+Debug-Anzeigen: [Overlay_13.cs:141-163](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Overlay_13.cs#L141-L163)
 (`Settle`/`Attack`/`Defend`/`Transport`) und
-[Overlay_10.cs:347-381](../../src/CivGame/Game/Overlay_10.cs#L347-L381)
+[Overlay_10.cs:347-381](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Overlay_10.cs#L347-L381)
 (Kurzform `S`/`A`/`D`/`T`). Beide Anzeigen blenden einen Kontinent aus, wenn
 `continent_attack == 0` — das ist auch der Test für „diese Civ ist auf dem Kontinent
 überhaupt präsent".
@@ -679,7 +690,7 @@ Debug-Anzeigen: [Overlay_13.cs:141-163](../../src/CivGame/Game/Overlay_13.cs#L14
 ### 9.2 Wie der Wert zustande kommt
 
 Die Neubewertung läuft in `F0_25fb_0004`
-([Segment_25fb.cs:640-815](../../src/CivGame/Game/Segment_25fb.cs#L640-L815)),
+([Segment_25fb.cs:640-815](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_25fb.cs#L640-L815)),
 pro Civ über alle 16 Kontinent-Slots, in dieser Reihenfolge — spätere Regeln
 überschreiben frühere:
 
@@ -700,7 +711,7 @@ pro Civ über alle 16 Kontinent-Slots, in dieser Reihenfolge — spätere Regeln
    *ausschließlich* Vertragspartner ansässig, wird `Attack` gesetzt — ein leerer oder
    feindlich besetzter Kontinent ist ein Invasionsziel.
    Die letzte Bedingung steckt in einer 2-Bit-Zusammenfassung über alle dort
-   präsenten Fremd-Civs ([Segment_25fb.cs:604-623](../../src/CivGame/Game/Segment_25fb.cs#L604-L623)):
+   präsenten Fremd-Civs ([Segment_25fb.cs:604-623](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_25fb.cs#L604-L623)):
    Bit 0 = „mindestens eine mit Friedensvertrag", Bit 1 = „mindestens eine ohne".
    Nur beim Wert genau 1 — alle Anwesenden sind Vertragspartner — unterbleibt die
    Invasionsplanung.
@@ -713,7 +724,7 @@ auf — die Neuplanung der Einheiten auf diesem Kontinent.
 
 Der Wert ist deshalb mit `UnitDefinition.UnitCategory` identisch, weil er direkt
 gegen die Kategorie der gerade gebauten Einheit verglichen wird
-([CityWorker.cs:1325-1331](../../src/CivGame/Game/CityWorker.cs#L1325-L1331)):
+([CityWorker.cs:1325-1331](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/CityWorker.cs#L1325-L1331)):
 
 ```csharp
 if ((strategie == 1 || strategie == 2 || strategie == 5) && ...
@@ -729,7 +740,7 @@ Kontinents passt, darf sie bis zu 1/64 der Staatskasse in den Kauf stecken.
 die Lage des jeweiligen Kontinents ausrichtet.
 
 > **Verdacht auf Portierungsfehler:** In
-> [CityWorker.cs:1325](../../src/CivGame/Game/CityWorker.cs#L1325) sind die beiden
+> [CityWorker.cs:1325](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/CityWorker.cs#L1325) sind die beiden
 > Indizes vertauscht — dort steht
 > `Players[kontinentID & 7].Continents[civ].Strategy`, während jede andere Stelle
 > `Players[civ].Continents[kontinentID].Strategy` verwendet. Das `& 7` ist laut
@@ -775,9 +786,9 @@ Platzierungspunkte aus dem Historikerbericht**.
 Gemeint ist der periodische Bildschirm
 „*&lt;Historiker&gt; completes his epic history: 'The &lt;Adjektiv&gt; Civilizations in the
 World'*" — `F12_0000_09e2` in
-[WorldMap.cs:938-1250](../../src/CivGame/Game/WorldMap.cs#L938-L1250).
+[WorldMap.cs:938-1250](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/WorldMap.cs#L938-L1250).
 
-Er wird von [Segment_1238.cs:501-510](../../src/CivGame/Game/Segment_1238.cs#L501-L510)
+Er wird von [Segment_1238.cs:501-510](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_1238.cs#L501-L510)
 ausgelöst, sobald `TurnCount >= next_anthology_turn` (`0x8BC0`); danach wird
 neu terminiert:
 
@@ -786,8 +797,8 @@ Spielstart:  next_anthology_turn = 80 + rnd(50)          // also 80..129
 danach:      next_anthology_turn = TurnCount + 20 + rnd(40)
 ```
 
-Der Startwert 80 steht in [CivState.cs:21](../../src/CivGame/CivState/CivState.cs#L21),
-der Zuschlag in [StartGameMenu.cs:330-332](../../src/CivGame/Game/StartGameMenu.cs#L330-L332).
+Der Startwert 80 steht in [CivState.cs:21](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/CivState/CivState.cs#L21),
+der Zuschlag in [StartGameMenu.cs:330-332](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/StartGameMenu.cs#L330-L332).
 Der erste Bericht kommt also frühestens in Zug 80.
 
 Beim Aufruf würfelt der Bildschirm eine Zahl 0–4 aus, die **gleichzeitig das
@@ -805,7 +816,7 @@ Titel-Adjektiv und das Ranglisten-Kriterium** bestimmt:
 
 Anschließend werden die aktiven Civs nach diesem Schlüssel absteigend ausgegeben,
 und jede bekommt Punkte nach ihrem Platz
-([WorldMap.cs:1207-1209](../../src/CivGame/Game/WorldMap.cs#L1207-L1209)):
+([WorldMap.cs:1207-1209](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/WorldMap.cs#L1207-L1209)):
 
 ```
 cumulative_epic_ranking[civ] += 7 - platz      // platz 0 = bester
@@ -816,7 +827,7 @@ Der Erstplatzierte erhält also +7, der Achtplatzierte +0.
 ### 10.3 Slot 0 ist ein Zähler, kein Civ-Wert
 
 Zum Abschluss jedes Berichts läuft
-[WorldMap.cs:1232](../../src/CivGame/Game/WorldMap.cs#L1232):
+[WorldMap.cs:1232](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/WorldMap.cs#L1232):
 
 ```csharp
 Players[0].CumulativeEpicRanking++;
@@ -831,7 +842,7 @@ sich die Durchschnittsplatzierung einer Civ rekonstruieren:
 ```
 
 Initialisiert wird das Feld beim Spielstart mit 0
-([StartGameMenu.cs:646](../../src/CivGame/Game/StartGameMenu.cs#L646)); es wird
+([StartGameMenu.cs:646](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/StartGameMenu.cs#L646)); es wird
 danach **nie zurückgesetzt oder verringert** — der Wert wächst monoton.
 
 > **Für Editoren:** `cumulative_epic_ranking[0]` mitzupflegen ist Pflicht, wenn man
@@ -876,7 +887,7 @@ mit Zug 79 unmittelbar davor.
   aber noch nicht vollständig kartiert: Jeder Eintrag beginnt mit zwei Bytes
   **big endian**, `Ereignis-ID` in den oberen 4 Bit und `Zug` in den unteren 12 Bit,
   danach folgen 1–2 Nutzbytes (siehe `F0_1866_250e_AddReplayData` in
-  [Segment_1866.cs](../../src/CivGame/Game/Segment_1866.cs)). Bekannte IDs: 1 = Stadt
+  [Segment_1866.cs](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_1866.cs)). Bekannte IDs: 1 = Stadt
   gegründet/zerstört, 2 = Kriegserklärung, 3 = Friedensschluss. `replay_length`
   (`0x7670`) zählt die belegten Bytes; der Abspieler schaltet auf `ID − 1`.
   Die übrigen IDs (4–13) sind noch nicht zugeordnet.
@@ -965,8 +976,8 @@ Dabei aufgefallene Fallstricke für eigene Parser:
    Also immer erst am NUL abschneiden **und dann** `rstrip()`.
 3. **Ein Stadt-Slot gilt genau dann als belegt, wenn `ActualSize != 0`.**
    So testet auch der Originalcode
-   ([Segment_2459.cs:210](../../src/CivGame/Game/Segment_2459.cs#L210),
-   [Segment_2459.cs:414](../../src/CivGame/Game/Segment_2459.cs#L414)).
+   ([Segment_2459.cs:210](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_2459.cs#L210),
+   [Segment_2459.cs:414](https://github.com/rajko-horvat/OpenCiv1/blob/a25ae37333f98616070d844158caa812bb8f9401/src/CivGame/Game/Segment_2459.cs#L414)).
    `PlayerID` ist bei unbenutzten Slots **nicht** −1, sondern enthält Müll aus
    früheren Spielen — ungenutzte Slots werden nie genullt.
 4. **`city_names[256]` ist der globale Namens-Pool**, kein Pro-Stadt-Feld:

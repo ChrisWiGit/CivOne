@@ -1,7 +1,8 @@
 # Savegame Format Review — Analysis vs. CivOne Implementation
 
-Comparison of [`docs/Savegame-Format.analyze.md`](Savegame-Format.analyze.md) (decoded from the
-ported original DOS code) against this repository's `.SVE`/`.MAP` handling, cross-checked against
+Comparison of [`docs/Savegame-Format.analyze.md`](Savegame-Format.analyze.md) — decoded from the
+[OpenCiv1](https://github.com/rajko-horvat/OpenCiv1) port of the original DOS code — against this
+repository's `.SVE`/`.MAP` handling, cross-checked against
 [`docs/SaveGame/memory_map_SVE_EN.txt`](SaveGame/memory_map_SVE_EN.txt).
 
 Sources inspected in this repo:
