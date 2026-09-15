@@ -96,9 +96,14 @@ GRAPHIFY_ENTRY_POINTS="$ENTRY_POINTS" \
 "$PYTHON_EXE" -c 'from pathlib import Path; import os; import graphify.ai as ai; ai.Summarizer.is_available=lambda self: False; from graphify.watch import _rebuild_code; target=Path(os.environ["GRAPHIFY_TARGET"]); gran=os.environ.get("GRAPHIFY_GRANULARITY","low"); entries=[x for x in os.environ.get("GRAPHIFY_ENTRY_POINTS","app,main,index,root,server,router").split(",") if x]; ok=_rebuild_code(target, granularity=gran, entry_points=entries); raise SystemExit(0 if ok else 1)'
 
 if [ -d "$SOURCE_OUTPUT" ] && [ "$SOURCE_OUTPUT" != "$DEST_OUTPUT" ]; then
-  mkdir -p "$(dirname "$DEST_OUTPUT")"
+  # Stage outside SOURCE_OUTPUT first: when TARGET_PATH is the script root,
+  # DEST_OUTPUT is nested inside SOURCE_OUTPUT and a direct mv would fail.
+  STAGE_OUTPUT="$TARGET_ABS/.graphify-out.stage.$$"
+  rm -rf "$STAGE_OUTPUT"
+  mv "$SOURCE_OUTPUT" "$STAGE_OUTPUT"
   rm -rf "$DEST_OUTPUT"
-  mv "$SOURCE_OUTPUT" "$DEST_OUTPUT"
+  mkdir -p "$(dirname "$DEST_OUTPUT")"
+  mv "$STAGE_OUTPUT" "$DEST_OUTPUT"
 fi
 
 GRAPHIFY_OUTPUT_DIR="$DEST_OUTPUT" \
