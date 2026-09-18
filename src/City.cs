@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -1291,7 +1291,7 @@ namespace CivOne
 					// TODO fire-eggs not showing loses side-effects
 					if (CityOwnerPlayer.IsHuman) // && !Game.Animations)
 					{
-						PlaySound(SoundNames.EventAlarm);
+						// The alarm is started by the city view itself, so closing the screen stops it.
 						Show disorderCity = Show.DisorderCity(this);
 						GameTask.Insert(disorderCity);
 					}

@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -1382,6 +1382,13 @@ namespace CivOne.Screens
 				return;
 			}
 
+			// The alarm belongs to this screen so that Destroy() can stop it when the city view is
+			// closed; otherwise it would keep playing underneath whatever comes next.
+			if (_disorder)
+			{
+				PlayScreenSound(SoundNames.EventAlarm);
+			}
+
 			// While the disorder animation plays, RenderBase() redraws _background on every frame and
 			// layers the (mostly transparent) revolter sprite on top - the static population row would
 			// still show through the gaps around the animated figure, so skip drawing it here.
@@ -1400,7 +1407,7 @@ namespace CivOne.Screens
 			}
 
 			// The celebration gets the original's win music, a city view opened plainly its short
-			// flourish. Disorder stays quiet here: the alarm for it is played from City.Update.
+			// flourish. Disorder already started its alarm above.
 			if (weLovePresidentDay)
 			{
 				PlayScreenSound(SoundNames.MusicWin);
