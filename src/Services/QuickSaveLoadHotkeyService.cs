@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -6,6 +6,7 @@ using System.Linq;
 using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Screens;
+using CivOne.Sound;
 using CivOne.Tasks;
 
 namespace CivOne.Services
@@ -21,6 +22,7 @@ namespace CivOne.Services
 		private readonly Func<bool> _canQuickSave;
 		private readonly Action<string> _showUserErrorAction;
 		private readonly Action<IReadOnlyList<int>, Action<int>> _showQuickLoadMenuAction;
+		private readonly TitleMusicDelegate _titleMusic = new();
 
 		// Too many parameter.
 		#pragma warning disable S107 
@@ -181,6 +183,9 @@ namespace CivOne.Services
 					_log("Fast load failed for slot F{0}: loader returned false ({1})", [slot, filePath]);
 					return;
 				}
+
+				// A fast load from the credits screen leaves its title music running otherwise.
+				_titleMusic.Stop();
 
 				_rebuildGamePlayAction();
 				_log("Fast load completed: slot F{0} <- {1}", [slot, filePath]);
