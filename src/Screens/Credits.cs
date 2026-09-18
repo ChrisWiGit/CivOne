@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -73,6 +73,7 @@ namespace CivOne.Screens
 
 		private readonly MenuBarHotkeyDelegate _hotkeyDelegate = new();
 		private readonly WorldGenerationMusicDelegate _generationMusic = new();
+		private readonly TitleMusicDelegate _titleMusic = new();
 		private Dictionary<char, Action<object, EventArgs>>? _shortKeyMapping;
 		private Action<object, EventArgs>? _shortCutAction;
 		private int _mouseX = -1;
@@ -447,6 +448,7 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 						TranslateFormattedArray("Could not load save game from --load-cos.\nFile: {0}", savegameName)));
 					return;
 				}
+				_titleMusic.Stop();
 				Common.DestroyScreen(Common.Screens.FirstOrDefault(s => s is GamePlay, null));
 				Common.AddScreen(new GamePlay());
 				return;
@@ -598,11 +600,8 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 
 			Palette = _pictures[2].Palette;
 
-			if (Settings.Sound != GameOption.Off)
-			{
-				// In this stage using Game.PlaySound() is not possible, as the Game instance is not yet created.
-				SoundPlaybackStrategyProvider.Current.PlaySound(SoundNames.MusicTitle);
-			}
+			// In this stage using Game.PlaySound() is not possible, as the Game instance is not yet created.
+			_titleMusic.Start();
 
 			if (!Runtime.Settings.ShowCredits) SkipIntro();
 			
