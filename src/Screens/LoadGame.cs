@@ -214,10 +214,10 @@ namespace CivOne.Screens
 			// fire-eggs fix for issue #34: when cancel out of this, go back to 
 			// credits screen, _always_ skipping the intro, and not animating 
 			// the logo.
-			var blah = new Credits();
-			blah.SkipIntro();
-			blah.SkipLogo();
-			Common.AddScreen(blah);
+			var credits = new Credits(playTitleMusic: false);
+			credits.SkipIntro();
+			credits.SkipLogo();
+			Common.AddScreen(credits);
 			Destroy();
 		}
 

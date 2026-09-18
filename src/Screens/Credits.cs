@@ -440,7 +440,7 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 				if (!Game.LoadYamlGame(Runtime.Settings.LoadCosFile))
 				{
 					Log("Failed to load YAML game");
-					Common.AddScreen(new Credits());
+					Common.AddScreen(new Credits(playTitleMusic: false));
 
 					var savegameName = Path.GetFileName(Runtime.Settings.LoadCosFile);
 					GameTask.Enqueue(Message.Error(
@@ -558,7 +558,26 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 			}
 		}
 
-		public Credits()
+		/// <summary>
+		/// Creates the main menu screen with its title music.
+		/// </summary>
+		/// <remarks>
+		/// Kept as a real parameterless constructor: <see cref="Tasks.Show.Screen(System.Type)"/>
+		/// creates screens through <c>Activator.CreateInstance</c>, which does not accept a
+		/// constructor whose only parameter is optional.
+		/// </remarks>
+		public Credits() : this(true)
+		{
+		}
+
+		/// <summary>
+		/// Creates the main menu screen.
+		/// </summary>
+		/// <param name="playTitleMusic">
+		/// <c>false</c> when the screen is only shown again after a submenu was left, so the title
+		/// music that is already running is neither restarted nor layered on top of itself.
+		/// </param>
+		public Credits(bool playTitleMusic = true)
 		{
 			Runtime.SetWindowTitle($"{Settings.WindowTitle} (press SHIFT+F1 to enter Setup)");
 
@@ -601,7 +620,10 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 			Palette = _pictures[2].Palette;
 
 			// In this stage using Game.PlaySound() is not possible, as the Game instance is not yet created.
-			_titleMusic.Start();
+			if (playTitleMusic)
+			{
+				_titleMusic.Start();
+			}
 
 			if (!Runtime.Settings.ShowCredits) SkipIntro();
 			

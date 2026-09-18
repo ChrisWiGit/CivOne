@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -343,7 +343,7 @@ namespace CivOne.Screens
 
 		private void BackToCredits()
 		{
-			var credits = new Credits();
+			var credits = new Credits(playTitleMusic: false);
 			credits.SkipIntro();
 			credits.SkipLogo();
 			Common.AddScreen(credits);
