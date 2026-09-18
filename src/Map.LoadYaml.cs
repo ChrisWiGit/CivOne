@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using CivOne.Tiles;
+using System.Diagnostics;
 
 namespace CivOne
 {
@@ -36,6 +37,15 @@ namespace CivOne
 		/// </summary>
 		internal void FinalizeYamlLoad()
 		{
+			Stopwatch continentTimer = Stopwatch.StartNew();
+			CalculateContinentSize();
+			continentTimer.Stop();
+			Log("Map: YAML continent calculation duration {0} ms ({1:0.000} s) for {2}x{3}",
+				continentTimer.ElapsedMilliseconds,
+				continentTimer.Elapsed.TotalSeconds,
+				WIDTH,
+				HEIGHT);
+
 			SetReady(true);
 			Log("Map: Ready (loaded from YAML)");
 		}
