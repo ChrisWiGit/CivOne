@@ -252,6 +252,43 @@ Use `copy-translations.ps1` or `copy-translations.sh` to copy final language fil
 For the full translation workflow and naming rules, see [civtranslate/README.md](civtranslate/README.md).
 For merge helper details, see [civtranslate-mergekeys/README.md](civtranslate-mergekeys/README.md).
 
+### Graphify code graph workflow
+
+Graphify builds a structural knowledge graph of the code base.
+Use it to navigate dependencies, communities, and hot spots before refactors or larger feature work.
+It is useful for both human exploration and AI-assisted code understanding.
+
+Primary outputs are written to `graphify-out/<scope>`.
+For VS Code Graphify viewer compatibility, `src` runs also mirror report files to `graphify-out`.
+
+Run with PowerShell:
+
+```powershell
+.\graphify-fast.ps1 -Scope src
+.\graphify-fast.ps1 -Scope api
+.\graphify-fast.ps1 -Scope both
+.\graphify-fast.ps1 -Scope combined
+```
+
+Run with Bash:
+
+```sh
+./graphify-fast.sh src
+./graphify-fast.sh api
+./graphify-fast.sh both
+./graphify-fast.sh combined
+```
+
+Scope meanings:
+
+* `src` analyzes only `src`.
+* `api` analyzes only `api`.
+* `both` runs separate analyses for `src` and `api`.
+* `combined` analyzes the whole repository in one graph.
+
+Use `both` for day-to-day focused analysis.
+Use `combined` for cross-project architecture views.
+
 Examples:
 
 ```powershell

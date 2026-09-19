@@ -1,5 +1,9 @@
+# Usage: See README.md section "Graphify code graph workflow" for scope details and examples.
+# Quick start: .\graphify-fast.ps1 -Scope src | -Scope api | -Scope both | -Scope combined
 param(
-    [string]$TargetPath = (Join-Path $PSScriptRoot "src"),
+    [string]$TargetPath = "",
+    [ValidateSet("src", "api", "both", "combined")]
+    [string]$Scope = "src",
     [string]$PythonExe = "",
     [string]$OutputRoot = (Join-Path $PSScriptRoot "graphify-out"),
     [string]$Granularity = "low",
@@ -66,38 +70,43 @@ if (-not (Test-Path $PythonExe -PathType Leaf)) {
     }
 }
 
-if (-not (Test-Path $TargetPath -PathType Container)) {
-    Write-Error "Target folder not found: $TargetPath"
-}
-
-$resolvedTarget = (Resolve-Path $TargetPath).Path
 $resolvedRepoRoot = (Resolve-Path $PSScriptRoot).Path
 $resolvedOutputRoot = [System.IO.Path]::GetFullPath($OutputRoot)
 
-$repoRootWithSlash = if ($resolvedRepoRoot.EndsWith([System.IO.Path]::DirectorySeparatorChar)) { $resolvedRepoRoot } else { "$resolvedRepoRoot\" }
-$targetWithSlash = if ($resolvedTarget.EndsWith([System.IO.Path]::DirectorySeparatorChar)) { $resolvedTarget } else { "$resolvedTarget\" }
-$repoUri = [Uri]$repoRootWithSlash
-$targetUri = [Uri]$targetWithSlash
-$relativeTarget = [Uri]::UnescapeDataString($repoUri.MakeRelativeUri($targetUri).ToString()).TrimEnd('/')
+function Invoke-GraphifyTarget {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$CurrentTargetPath
+    )
 
-if (($relativeTarget.Length -eq 0) -or $relativeTarget.StartsWith("..")) {
-    $relativeTarget = [System.IO.Path]::GetFileName($resolvedTarget)
-}
+    if (-not (Test-Path $CurrentTargetPath -PathType Container)) {
+        Write-Error "Target folder not found: $CurrentTargetPath"
+    }
 
-if ([string]::IsNullOrWhiteSpace($relativeTarget)) {
-    $relativeTarget = "root"
-}
+    $resolvedTarget = (Resolve-Path $CurrentTargetPath).Path
+    $repoRootWithSlash = if ($resolvedRepoRoot.EndsWith([System.IO.Path]::DirectorySeparatorChar)) { $resolvedRepoRoot } else { "$resolvedRepoRoot\" }
+    $targetWithSlash = if ($resolvedTarget.EndsWith([System.IO.Path]::DirectorySeparatorChar)) { $resolvedTarget } else { "$resolvedTarget\" }
+    $repoUri = [Uri]$repoRootWithSlash
+    $targetUri = [Uri]$targetWithSlash
+    $relativeTarget = [Uri]::UnescapeDataString($repoUri.MakeRelativeUri($targetUri).ToString()).TrimEnd('/')
 
-$relativeTarget = $relativeTarget.Replace('/', '\\')
-$destinationOutput = Join-Path $resolvedOutputRoot $relativeTarget
-$generatedOutput = Join-Path $resolvedTarget "graphify-out"
-$compatOutput = Join-Path $resolvedTarget "graphify-out"
+    if (($relativeTarget.Length -eq 0) -or $relativeTarget.StartsWith("..")) {
+        $relativeTarget = [System.IO.Path]::GetFileName($resolvedTarget)
+    }
 
-$env:GRAPHIFY_TARGET = $resolvedTarget
-$env:GRAPHIFY_GRANULARITY = $Granularity
-$env:GRAPHIFY_ENTRY_POINTS = ($EntryPoints -join ",")
+    if ([string]::IsNullOrWhiteSpace($relativeTarget)) {
+        $relativeTarget = "root"
+    }
 
-$pythonCode = @'
+    $relativeTarget = $relativeTarget.Replace('/', '\\')
+    $destinationOutput = Join-Path $resolvedOutputRoot $relativeTarget
+    $generatedOutput = Join-Path $resolvedTarget "graphify-out"
+
+    $env:GRAPHIFY_TARGET = $resolvedTarget
+    $env:GRAPHIFY_GRANULARITY = $Granularity
+    $env:GRAPHIFY_ENTRY_POINTS = ($EntryPoints -join ",")
+
+    $pythonCode = @'
 from pathlib import Path
 import os
 import graphify.ai as ai
@@ -118,34 +127,31 @@ ok = _rebuild_code(target, granularity=gran, entry_points=entries)
 raise SystemExit(0 if ok else 1)
 '@
 
-$pythonCode | & $PythonExe -
+    $pythonCode | & $PythonExe -
 
-if (Test-Path $generatedOutput -PathType Container) {
-    if (-not [System.IO.Path]::GetFullPath($generatedOutput).Equals([System.IO.Path]::GetFullPath($destinationOutput), [System.StringComparison]::OrdinalIgnoreCase)) {
-        # Stage outside $generatedOutput first: when TargetPath is the repo root,
-        # $destinationOutput is nested inside $generatedOutput and a direct move would fail.
-        $stageOutput = Join-Path $resolvedTarget (".graphify-out.stage." + [System.Guid]::NewGuid().ToString("N"))
-        Move-Item -Path $generatedOutput -Destination $stageOutput
-        if (Test-Path $destinationOutput -PathType Container) {
-            Remove-Item -Path $destinationOutput -Recurse -Force
+    if (Test-Path $generatedOutput -PathType Container) {
+        if (-not [System.IO.Path]::GetFullPath($generatedOutput).Equals([System.IO.Path]::GetFullPath($destinationOutput), [System.StringComparison]::OrdinalIgnoreCase)) {
+            # Stage outside $generatedOutput first: when TargetPath is the repo root,
+            # $destinationOutput is nested inside $generatedOutput and a direct move would fail.
+            $stageOutput = Join-Path $resolvedTarget (".graphify-out.stage." + [System.Guid]::NewGuid().ToString("N"))
+            Move-Item -Path $generatedOutput -Destination $stageOutput
+            if (Test-Path $destinationOutput -PathType Container) {
+                Remove-Item -Path $destinationOutput -Recurse -Force
+            }
+            New-Item -ItemType Directory -Path (Split-Path -Parent $destinationOutput) -Force | Out-Null
+            Move-Item -Path $stageOutput -Destination $destinationOutput
         }
-        New-Item -ItemType Directory -Path (Split-Path -Parent $destinationOutput) -Force | Out-Null
-        Move-Item -Path $stageOutput -Destination $destinationOutput
     }
-}
 
-$env:GRAPHIFY_OUTPUT_DIR = $destinationOutput
-$env:GRAPHIFY_COMPAT_DIR = $compatOutput
-$compatPythonCode = @'
+    $env:GRAPHIFY_OUTPUT_DIR = $destinationOutput
+    $compatPythonCode = @'
 from pathlib import Path
 import json
-import shutil
 import os
 
 from graphify.export import to_html
 
 output_dir = Path(os.environ["GRAPHIFY_OUTPUT_DIR"])
-compat_dir = Path(os.environ["GRAPHIFY_COMPAT_DIR"])
 html_path = output_dir / "graph.html"
 json_path = output_dir / "graph.json"
 
@@ -209,13 +215,36 @@ if not html_path.exists():
     created = build_sample_html()
     if created:
         print("Generated compatibility graph.html from sampled graph.json")
-
-compat_dir.mkdir(parents=True, exist_ok=True)
-if html_path.exists():
-    shutil.copy2(html_path, compat_dir / "graph.html")
-    print(f"Plugin compatibility report: {compat_dir / 'graph.html'}")
 '@
 
-$compatPythonCode | & $PythonExe -
+    $compatPythonCode | & $PythonExe -
 
-Write-Host "Graphify output: $destinationOutput"
+    if (
+        $relativeTarget.Equals("src", [System.StringComparison]::OrdinalIgnoreCase) -or
+        $relativeTarget.Equals("root", [System.StringComparison]::OrdinalIgnoreCase)
+    ) {
+        New-Item -ItemType Directory -Path $resolvedOutputRoot -Force | Out-Null
+        Get-ChildItem -Path $destinationOutput -File -ErrorAction SilentlyContinue | ForEach-Object {
+            Copy-Item -Path $_.FullName -Destination (Join-Path $resolvedOutputRoot $_.Name) -Force
+        }
+    }
+
+    Write-Host "Graphify output: $destinationOutput"
+}
+
+$targetPaths = @()
+if (-not [string]::IsNullOrWhiteSpace($TargetPath)) {
+    $targetPaths = @($TargetPath)
+}
+else {
+    switch ($Scope) {
+        "src" { $targetPaths = @((Join-Path $PSScriptRoot "src")) }
+        "api" { $targetPaths = @((Join-Path $PSScriptRoot "api")) }
+        "both" { $targetPaths = @((Join-Path $PSScriptRoot "src"), (Join-Path $PSScriptRoot "api")) }
+        "combined" { $targetPaths = @($PSScriptRoot) }
+    }
+}
+
+foreach ($currentTarget in $targetPaths) {
+    Invoke-GraphifyTarget -CurrentTargetPath $currentTarget
+}
