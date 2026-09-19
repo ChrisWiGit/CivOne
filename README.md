@@ -2,14 +2,23 @@
 use sh or cmd blocks for commands.
 Do not use en-dash or em-dash, use simple sentences only.
  -->
-# CivOne# (Civ One Sharp or just CivOne)
+# CivOneX (Civ One neXt or just CivOneEx)
 
 ## Introduction
 
-A civilization game clone of Civilization (1991) written in C#.
-It was originally developed several years ago by other authors, and then abandoned.
-This project is a continuation of that work, with the goal of completing the game and making it fully playable, but with some tweaks and improvements that
-make it more enjoyable for modern players.
+CivOneX: A civilization game remake & reimagination of Civilization (1991) but written in C#.
+CivOne was originally developed several years ago by other authors, and then abandoned.
+This project is a continuation of that work, with the goal of completing the game and making it fully playable, but with some tweaks and improvements that make it more enjoyable for modern players.
+
+The new name CivOneX is a play on words, as it can be read as "Civ One neXt" or "CivOneEx", which emphasizes the idea of taking the original game to the next level.
+
+## License
+
+The original CivOne project was released under the CC0 license, which means that it is in the public domain and can be used, modified, and distributed freely without any restrictions. All these files contains a header with the CC0 license text, which is a legal statement that confirms that the files are in the public domain and can be used without any restrictions.
+
+However, the CivOneX project is released under the MIT license, which is a permissive open-source license that allows users to use, modify, and distribute the software freely, but with some conditions. The MIT license requires that the original copyright notice and permission notice be included in all copies or substantial portions of the software. This means that if you use or distribute CivOneX, you must include the original copyright notice and permission notice in your code or documentation.
+
+The new files do not contain the MIT license text as a header, but the license text is included in the LICENSE file in the root of the repository.
 
 ## Original Sources
 
@@ -22,6 +31,53 @@ Many issues have been fixed and features have been added since the original code
 ## Contact
 
 You can reach out to the project maintainers via [Discord](https://discord.gg/kfaFcTnCX)
+
+## Using LLMs
+
+Large language models (LLMs) are used as tools during development of this project.
+They help with writing code, tests, and documentation.
+
+Every part of the project is planned by humans.
+The architecture is designed by humans.
+All generated code is reviewed by humans.
+All changes are tested before they are accepted.
+Nothing enters the project without human approval.
+
+### Why use LLMs at all?
+
+The author of CivOneX has programmed for over 30 years and has followed the craft since the 1990s.
+The slowest part of the work was always writing the code itself: thinking through the logic and the connections between parts, and learning the quirks of each language.
+Writing code feels like the most productive part of the job, so large areas of many codebases were never really planned.
+Work started right away just to get something done, tests were rare or missing, and refactoring happened only now and then.
+Features kept being bolted on, and the technical debt kept growing.
+
+For the author, the fun is not in writing code.
+It is in everything else that software development involves: design, architecture, quality, and keeping the project understandable.
+Reading code is nobody's favourite task, and writing code is the highlight for many developers, but for the author it is the most tedious part.
+Handing the typing work to LLMs is therefore a natural step, because it frees time for the parts that matter more.
+
+**Software engineering is about designing and building systems—not just writing code.**
+
+CivOneX is meant as an example of how this can work in practice, when the focus stays on quality, tests, and documentation.
+
+### Writing code
+
+"Any fool can write code that a computer can understand. Good programmers write code that humans can understand."
+
+― Martin Fowler
+
+This is the hard part.
+When humans write code, consistency and quality change from day to day, from file to file.
+LLMs can write code in a consistent style that spans the entire codebase.
+They can also write tests and documentation in a consistent style.
+
+To achieve this, the project provides instructions in the form of Markdown files that serve as context for the LLMs.
+Clean Code and other quality standards are described in the instructions, and LLMs are instructed to follow these standards.
+Low coupling is achieved through dependency injection and interfaces, and separation of concerns through delegates or services with small interfaces.
+Short method lengths and clear naming of entities and variables are also described in detail.
+
+**CivOneX extensively uses instructions, skills, and other guidelines to steer the LLMs.**
+However, not all instructions are made publicly available for reasons of copyright and licensing.
 
 ## Forum
 
@@ -101,7 +157,7 @@ A file is named after the **situation** it plays in, plus `.wav`: `music_title.w
 You do not need a file for every sound. A sound without one is simply silent, and everything else
 keeps working.
 
-**Music**
+##### Music
 
 | File name | Plays when | Older name also accepted |
 | --------- | ---------- | ------------------------ |
@@ -112,7 +168,7 @@ keeps working.
 
 > The evolution music is not available for PC Speaker.
 
-**Leader themes**
+##### Leader themes
 
 Played when a game starts and when your civilization discovers an advance.
 
@@ -137,7 +193,7 @@ Each theme also has a short jingle, named by appending `_short`: `leader_lincoln
 `leader_gandhi_short.wav`, and so on for all fourteen. These play on a wonder being completed, a
 city being captured and similar single events. The original game shipped no wave file for them.
 
-**Events and interface**
+##### Events and interface
 
 | File name | Plays when | Older name also accepted |
 | --------- | ---------- | ------------------------ |
@@ -147,7 +203,7 @@ city being captured and similar single events. The original game shipped no wave
 | `event_nuclear_blast.wav` | A nuclear device goes off outside a city. | `s_nuke.wav` |
 | `ui_beep.wav` | An error message appears. | `s_beep.wav` |
 
-**Combat**
+##### Combat
 
 | File name | Plays when | Older name also accepted |
 | --------- | ---------- | ------------------------ |
