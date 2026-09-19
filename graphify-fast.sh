@@ -185,6 +185,45 @@ if not html_path.exists():
     print("Generated compatibility graph.html from sampled graph.json")
 PY
 
+  GRAPHIFY_SANITIZE_DIR="$dest_output" \
+  GRAPHIFY_SANITIZE_REPO_ROOT="$SCRIPT_DIR" \
+  "$PYTHON_EXE" - <<'PY'
+from pathlib import Path
+import os
+
+output_dir = Path(os.environ["GRAPHIFY_SANITIZE_DIR"])
+repo_root = Path(os.environ["GRAPHIFY_SANITIZE_REPO_ROOT"]).resolve()
+
+repo_win = str(repo_root)
+repo_posix = repo_win.replace("\\", "/")
+repo_win_escaped = repo_win.replace("\\", "\\\\")
+
+replacements = [
+  (f"file:///{repo_posix}/", ""),
+  (f"file:///{repo_posix}", "."),
+  (repo_posix + "/", ""),
+  (repo_posix, "."),
+  (repo_win + "\\", ""),
+  (repo_win, "."),
+  (repo_win_escaped + "\\\\", ""),
+  (repo_win_escaped, "."),
+]
+
+for path in output_dir.rglob("*"):
+  if not path.is_file():
+    continue
+  if path.suffix.lower() not in {".md", ".txt", ".json", ".html"}:
+    continue
+
+  text = path.read_text(encoding="utf-8", errors="ignore")
+  new_text = text
+  for old, new in replacements:
+    new_text = new_text.replace(old, new)
+
+  if new_text != text:
+    path.write_text(new_text, encoding="utf-8")
+PY
+
   if [ "$rel_target" = "src" ] || [ "$rel_target" = "root" ]; then
     mkdir -p "$OUTPUT_BASE"
     find "$dest_output" -maxdepth 1 -type f -exec cp -f {} "$OUTPUT_BASE" \;

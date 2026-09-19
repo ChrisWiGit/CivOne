@@ -219,6 +219,48 @@ if not html_path.exists():
 
     $compatPythonCode | & $PythonExe -
 
+    $env:GRAPHIFY_SANITIZE_DIR = $destinationOutput
+    $env:GRAPHIFY_SANITIZE_REPO_ROOT = $resolvedRepoRoot
+    $sanitizePythonCode = @'
+from pathlib import Path
+import os
+
+output_dir = Path(os.environ["GRAPHIFY_SANITIZE_DIR"])
+repo_root = Path(os.environ["GRAPHIFY_SANITIZE_REPO_ROOT"]).resolve()
+
+repo_win = str(repo_root)
+repo_posix = repo_win.replace("\\", "/")
+repo_win_escaped = repo_win.replace("\\", "\\\\")
+
+replacements = [
+    (f"file:///{repo_posix}/", ""),
+    (f"file:///{repo_posix}", "."),
+    (repo_posix + "/", ""),
+    (repo_posix, "."),
+    (repo_win + "\\", ""),
+    (repo_win, "."),
+    (repo_win_escaped + "\\\\", ""),
+    (repo_win_escaped, "."),
+]
+
+for path in output_dir.rglob("*"):
+    if not path.is_file():
+        continue
+
+    if path.suffix.lower() not in {".md", ".txt", ".json", ".html"}:
+        continue
+
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    new_text = text
+    for old, new in replacements:
+        new_text = new_text.replace(old, new)
+
+    if new_text != text:
+        path.write_text(new_text, encoding="utf-8")
+'@
+
+    $sanitizePythonCode | & $PythonExe -
+
     if (
         $relativeTarget.Equals("src", [System.StringComparison]::OrdinalIgnoreCase) -or
         $relativeTarget.Equals("root", [System.StringComparison]::OrdinalIgnoreCase)
