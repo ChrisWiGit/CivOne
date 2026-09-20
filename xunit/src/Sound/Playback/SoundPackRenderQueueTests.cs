@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -27,6 +28,7 @@ namespace CivOne.UnitTests.Sound.Playback
 
         private readonly ITestOutputHelper _output;
         private readonly string _root;
+        private readonly List<SoundPackRenderQueue> _queues = [];
 
         public SoundPackRenderQueueTests(ITestOutputHelper output)
         {
@@ -36,7 +38,26 @@ namespace CivOne.UnitTests.Sound.Playback
 
         public void Dispose()
         {
+            // A test may return while the warm-up is still rendering into the temp folder - it only
+            // waits for the one tune it asked about. Deleting the folder under a running render
+            // fails with "the process cannot access the file", so wait for the queues to go idle.
+            foreach (SoundPackRenderQueue queue in _queues)
+            {
+                queue.WhenIdleAsync().GetAwaiter().GetResult();
+            }
+
             if (Directory.Exists(_root)) Directory.Delete(_root, true);
+        }
+
+        /// <summary>
+        /// Creates a queue whose background work is waited for before the temp folder is removed.
+        /// </summary>
+        /// <returns>The queue to test with.</returns>
+        private SoundPackRenderQueue NewQueue()
+        {
+            var queue = new SoundPackRenderQueue();
+            _queues.Add(queue);
+            return queue;
         }
 
         /// <summary>
@@ -72,7 +93,7 @@ namespace CivOne.UnitTests.Sound.Playback
             if (packFolder == null) return;
 
             string file = Index(packFolder).Tunes.Single(t => t.Name == SoundNames.LeaderGandhi).File!;
-            var queueUnderTest = new SoundPackRenderQueue();
+            var queueUnderTest = NewQueue();
 
             Assert.Null(queueUnderTest.TryGetCached(packFolder, file, 0));
 
@@ -94,7 +115,7 @@ namespace CivOne.UnitTests.Sound.Playback
             if (packFolder == null) return;
 
             string file = Index(packFolder).Tunes.Single(t => t.Name == SoundNames.LeaderGandhi).File!;
-            var queueUnderTest = new SoundPackRenderQueue();
+            var queueUnderTest = NewQueue();
 
             Task<string?> first = queueUnderTest.Request(packFolder, file, 0);
             Task<string?> second = queueUnderTest.Request(packFolder, file, 0);
@@ -117,7 +138,7 @@ namespace CivOne.UnitTests.Sound.Playback
             SoundPackIndexEntry entry = Index(packFolder).Tunes.Single(t => t.Name == SoundNames.LeaderLincoln);
             Assert.True(entry.ArrangementCount > 1, "This tune was expected to offer several arrangements.");
 
-            var queueUnderTest = new SoundPackRenderQueue();
+            var queueUnderTest = NewQueue();
 
             string? first = await queueUnderTest.Request(packFolder, entry.File!, 0).ConfigureAwait(true);
             string? second = await queueUnderTest.Request(packFolder, entry.File!, 1).ConfigureAwait(true);
@@ -146,7 +167,7 @@ namespace CivOne.UnitTests.Sound.Playback
             SoundPackIndex index = Index(packFolder);
             string[] files = [.. index.Tunes.Where(t => t.File != null).Select(t => t.File!)];
 
-            var queueUnderTest = new SoundPackRenderQueue();
+            var queueUnderTest = NewQueue();
             queueUnderTest.WarmPack(packFolder);
 
             // The warm-up runs in the background, so wait for its results rather than for the call.
@@ -171,7 +192,7 @@ namespace CivOne.UnitTests.Sound.Playback
             string? packFolder = ConvertPack();
             if (packFolder == null) return;
 
-            var queueUnderTest = new SoundPackRenderQueue();
+            var queueUnderTest = NewQueue();
 
             queueUnderTest.WarmPack(packFolder);
             queueUnderTest.WarmPack(packFolder);
@@ -188,7 +209,7 @@ namespace CivOne.UnitTests.Sound.Playback
         [Fact]
         public void WarmingUpAFolderWithoutAPackDoesNothing()
         {
-            var queueUnderTest = new SoundPackRenderQueue();
+            var queueUnderTest = NewQueue();
 
             queueUnderTest.WarmPack(Path.Combine(_root, "does-not-exist"));
             queueUnderTest.WarmPack(string.Empty);
@@ -211,7 +232,7 @@ namespace CivOne.UnitTests.Sound.Playback
         public void APackThatAppearsLaterIsStillWarmedUp()
         {
             string packFolder = Path.Combine(_root, AsoundCvlConverter.Id);
-            var queueUnderTest = new SoundPackRenderQueue();
+            var queueUnderTest = NewQueue();
 
             // First attempt: nothing to find, because the sound data is not converted yet.
             queueUnderTest.WarmPack(packFolder);
@@ -243,7 +264,7 @@ namespace CivOne.UnitTests.Sound.Playback
             if (packFolder == null) return;
 
             string file = Index(packFolder).Tunes.Single(t => t.Name == SoundNames.LeaderGandhi).File!;
-            var queueUnderTest = new SoundPackRenderQueue();
+            var queueUnderTest = NewQueue();
 
             string? first = await queueUnderTest.Request(packFolder, file, 0).ConfigureAwait(true);
             Assert.NotNull(first);
@@ -293,7 +314,7 @@ namespace CivOne.UnitTests.Sound.Playback
                 File.Copy(file, Path.Combine(secondFolder, Path.GetFileName(file)));
             }
 
-            var queueUnderTest = new SoundPackRenderQueue();
+            var queueUnderTest = NewQueue();
             queueUnderTest.WarmPack(packFolder);
             queueUnderTest.WarmPack(secondFolder);
 
