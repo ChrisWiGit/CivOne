@@ -53,7 +53,7 @@ internal static class IsoundScoreExporter
                 Title = CvlTuneCatalog.ResolveTitle(tuneId),
                 Kind = info.Kind,
                 SourceOffset = info.DataOffset,
-                Steps = info.Steps
+                Arrangements = [.. info.Arrangements.Select(steps => new TuneArrangement { Steps = steps })]
             });
         }
 

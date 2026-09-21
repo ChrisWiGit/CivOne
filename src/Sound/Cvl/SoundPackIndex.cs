@@ -18,7 +18,7 @@ internal sealed class SoundPackIndex
     /// build - whose <see cref="SoundPackIndexEntry.Name"/>s or titles would otherwise silently
     /// stay stale - is skipped instead of being read as something it is not.
     /// </summary>
-    public const int CurrentSchemaVersion = 4;
+    public const int CurrentSchemaVersion = 5;
 
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
     public required string PackId { get; set; }

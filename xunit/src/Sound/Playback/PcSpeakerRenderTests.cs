@@ -121,10 +121,16 @@ namespace CivOne.UnitTests.Sound.Playback
                 TuneId = 3,
                 Title = "Test",
                 Kind = TuneScoreKind.Music,
-                Steps =
+                Arrangements =
                 [
-                    new TuneStep { Duration = 6, Divisor = 0 },
-                    new TuneStep { Duration = 6, Divisor = 2712, NoiseMask = 1 }
+                    new TuneArrangement
+                    {
+                        Steps =
+                        [
+                            new TuneStep { Duration = 6, Divisor = 0 },
+                            new TuneStep { Duration = 6, Divisor = 2712, NoiseMask = 1 }
+                        ]
+                    }
                 ]
             };
 
@@ -173,9 +179,12 @@ namespace CivOne.UnitTests.Sound.Playback
                 TuneId = 3,
                 Title = "Test",
                 Kind = TuneScoreKind.Music,
-                Steps =
+                Arrangements =
                 [
-                    new TuneStep { Duration = 30, Divisor = 7448, NoiseMask = 1, Effect = effect }
+                    new TuneArrangement
+                    {
+                        Steps = [new TuneStep { Duration = 30, Divisor = 7448, NoiseMask = 1, Effect = effect }]
+                    }
                 ]
             };
 

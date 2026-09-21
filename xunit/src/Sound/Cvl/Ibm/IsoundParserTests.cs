@@ -161,6 +161,30 @@ namespace CivOne.UnitTests.Sound.Cvl.Ibm
             Assert.Equal(0x07D0, info.Steps[2].Divisor);
         }
 
+        /// <summary>
+        /// A handler that indexes a table of four sequences must yield all four, not none.
+        /// </summary>
+        /// <param name="tuneId">
+        /// The tune to parse - once for the plain lookup, once for the one a near call precedes.
+        /// </param>
+        [Theory]
+        [InlineData(FakeIsoundModule.TuneArrangements)]
+        [InlineData(FakeIsoundModule.TuneArrangementsAfterCall)]
+        public void ParseTuneReadsEveryArrangementOfATable(int tuneId)
+        {
+            var info = CreateFakeParser().ParseTune(tuneId);
+
+            Assert.Equal(TuneScoreKind.Music, info.Kind);
+            Assert.Null(info.Diagnostic);
+            Assert.Equal(4, info.Arrangements.Count);
+
+            // The fake module gives each arrangement its own duration, in table order.
+            Assert.Equal([11, 12, 13, 14], [.. info.Arrangements.Select(steps => steps[0].Duration)]);
+
+            // Steps is the first arrangement, which is what an ordinary tune has.
+            Assert.Equal(11, info.Steps[0].Duration);
+        }
+
         [Fact]
         public void ParseTuneUnsupportedWhenHandlerIsNotASequence()
         {

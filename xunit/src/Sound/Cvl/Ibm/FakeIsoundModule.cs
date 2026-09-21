@@ -33,6 +33,9 @@ namespace CivOne.UnitTests.Sound.Cvl.Ibm
         public const int MusicHandlerB = 0x0168;
         public const int EffectHandler = 0x0170;
         public const int UnsupportedHandler = 0x0178;
+        public const int ArrangementHandler = 0x0190;
+        public const int ArrangementCallHandler = 0x01B0;
+        public const int ArrangementTable = 0x03A0;
         public const int SilentHandler = 0x02F0;
         public const int EffectParamTable = 0x0300;
         public const int MusicPlayer = 0x0320;
@@ -46,11 +49,16 @@ namespace CivOne.UnitTests.Sound.Cvl.Ibm
         public const int MusicDataB = 0x0010;
         public const int EffectData = 0x0020;
 
+        /// <summary>Data offsets of the four arrangements, in table order.</summary>
+        public static int[] ArrangementData => [0x0040, 0x0048, 0x0050, 0x0058];
+
         public const int TuneMusicA = 3;
         public const int TuneSilent = 4;
         public const int TuneMusicB = 5;
         public const int TuneEffect = 6;
         public const int TuneUnsupported = 7;
+        public const int TuneArrangements = 8;
+        public const int TuneArrangementsAfterCall = 9;
 
         /// <summary>Effect parameters for codes 0x65..0x6F, as looked up by the music player.</summary>
         public static readonly ushort[] EffectParams =
@@ -167,6 +175,8 @@ namespace CivOne.UnitTests.Sound.Cvl.Ibm
             SetDispatch(file, TuneMusicB, MusicHandlerB);
             SetDispatch(file, TuneEffect, EffectHandler);
             SetDispatch(file, TuneUnsupported, UnsupportedHandler);
+            SetDispatch(file, TuneArrangements, ArrangementHandler);
+            SetDispatch(file, TuneArrangementsAfterCall, ArrangementCallHandler);
         }
 
         private static void BuildHandlers(byte[] file)
@@ -179,6 +189,46 @@ namespace CivOne.UnitTests.Sound.Cvl.Ibm
             WriteCode(file, UnsupportedHandler,
                 0x8D, 0x1E, Low(MusicDataA), High(MusicDataA),
                 0x89, 0x1E, 0x5D, 0x00);
+
+            WriteArrangementHandler(file, ArrangementHandler, withLeadingCall: false);
+            WriteArrangementHandler(file, ArrangementCallHandler, withLeadingCall: true);
+
+            for (int i = 0; i < ArrangementData.Length; i++)
+            {
+                WriteWord(file, ImageStart + ArrangementTable + i * 2, ArrangementData[i]);
+            }
+        }
+
+        /// <summary>
+        /// Writes a handler that picks one of four sequences from a table instead of pointing at a
+        /// single one, the way the original varies a tune between playbacks.
+        /// </summary>
+        /// <param name="file">The module being built.</param>
+        /// <param name="handler">Code offset to write the handler to.</param>
+        /// <param name="withLeadingCall">
+        /// <c>true</c> to precede the lookup with a near call, as the original does where it
+        /// advances its counter first.
+        /// </param>
+        private static void WriteArrangementHandler(byte[] file, int handler, bool withLeadingCall)
+        {
+            int lookup = handler;
+
+            if (withLeadingCall)
+            {
+                // E8 <rel16> = call near; the target itself does not matter to the parser.
+                int callRelative = (InitSound - (handler + 3)) & 0xFFFF;
+                WriteCode(file, handler, 0xE8, Low(callRelative), High(callRelative));
+                lookup += 3;
+            }
+
+            // mov bx,[0x55] ; and bx,6 ; mov bx,cs:[bx+ArrangementTable] ; jmp MusicPlayer
+            int relative = (MusicPlayer - (lookup + 15)) & 0xFFFF;
+
+            WriteCode(file, lookup,
+                0x8B, 0x1E, 0x55, 0x00,
+                0x83, 0xE3, 0x06,
+                0x2E, 0x8B, 0x9F, Low(ArrangementTable), High(ArrangementTable),
+                0xE9, Low(relative), High(relative));
         }
 
         private static void BuildData(byte[] file)
@@ -193,6 +243,14 @@ namespace CivOne.UnitTests.Sound.Cvl.Ibm
             WriteData(file, MusicDataB,
                 0x65, 10, 0xF8, 0x30,   // tone, 10 ticks, divisor 12536
                 0x00, 0x00);
+
+            // The four arrangements differ only in their duration, so a test can tell them apart.
+            for (int i = 0; i < ArrangementData.Length; i++)
+            {
+                WriteData(file, ArrangementData[i],
+                    0x7E, 11 + i, 0xA8, 0x20,
+                    0x00, 0x00);
+            }
 
             // Effect: 10-byte records; a mask of 0 shortens the record to 6 bytes (silence).
             WriteData(file, EffectData,

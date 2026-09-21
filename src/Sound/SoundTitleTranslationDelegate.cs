@@ -69,9 +69,9 @@ internal sealed class SoundTitleTranslationDelegate
             SoundNames.LeaderGandhiShort => Translation.Translate("Gandhi (Short)"),
             SoundNames.LeaderFrederickShort => Translation.Translate("Frederick (Short)"),
 
-            SoundNames.EventAudience => Translation.Translate("Foreign Leader Audience Sting"),
+            SoundNames.EventUltimatum => Translation.Translate("Foreign Leader Ultimatum"),
             SoundNames.EventAlarm => Translation.Translate("Alarm - Barbarian Theme"),
-            SoundNames.EventCityViewOpened => Translation.Translate("City View Opened"),
+            SoundNames.EventBuildingComplete => Translation.Translate("Building Completed"),
             SoundNames.EventNuclearBlast => Translation.Translate("Nuclear Blast"),
             SoundNames.UiBeep => Translation.Translate("Beep"),
 

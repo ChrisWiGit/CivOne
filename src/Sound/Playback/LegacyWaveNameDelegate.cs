@@ -66,9 +66,9 @@ internal sealed class LegacyWaveNameDelegate
         [SoundNames.LeaderGandhiShort] = ["gand_short"],
         [SoundNames.LeaderFrederickShort] = ["fred_short"],
 
-        [SoundNames.EventAudience] = ["audience"],
+        [SoundNames.EventUltimatum] = ["audience"],
         [SoundNames.EventAlarm] = ["alarm"],
-        [SoundNames.EventCityViewOpened] = ["cityview"],
+        [SoundNames.EventBuildingComplete] = ["cityview"],
         [SoundNames.EventNuclearBlast] = ["s_nuke"],
         [SoundNames.UiBeep] = ["s_beep"],
 
