@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
@@ -402,6 +403,17 @@ namespace CivOne
 			_debounceService.Cancel(GameDebounceKeys.WindowSize);
 		}
 
+		private void WindowClosing(object? _, CancelEventArgs args)
+		{
+			if (!RuntimeHandler.RequestQuitConfirmationOnWindowClose())
+			{
+				return;
+			}
+
+			args.Cancel = true;
+			_hasUpdate = true;
+		}
+
 		private void Draw(object? _, EventArgs __)
 		{
 			bool isFpsOverlayEnabled = RuntimeHandler.CurrentFpsCorner != FpsCorner.Off;
@@ -667,6 +679,7 @@ namespace CivOne
 				OnWindowResize -= WindowResize;
 				OnWindowMove -= WindowMoved;
 				OnWindowStateChanged -= WindowStateChanged;
+				OnClosing -= WindowClosing;
 				OnKeyDown -= KeyDown;
 				OnKeyUp -= KeyUp;
 				OnMouseMove -= MouseMove;
@@ -710,6 +723,7 @@ namespace CivOne
 			OnWindowResize += WindowResize;
 			OnWindowMove += WindowMoved;
 			OnWindowStateChanged += WindowStateChanged;
+			OnClosing += WindowClosing;
 			OnKeyDown += KeyDown;
 			OnKeyUp += KeyUp;
 			OnMouseMove += MouseMove;

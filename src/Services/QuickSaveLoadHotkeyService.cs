@@ -56,6 +56,12 @@ namespace CivOne.Services
 
 		public bool TryHandle(KeyboardEventArgs args)
 		{
+			// Keep the desktop-standard close shortcut free.
+			if (args.Modifier == KeyModifier.Alt && args.Key == Key.F4)
+			{
+				return false;
+			}
+
 			if (args.Modifier == KeyModifier.Alt && args.Key == Key.F11)
 			{
 				OpenQuickLoadMenu();

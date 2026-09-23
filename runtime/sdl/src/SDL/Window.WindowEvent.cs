@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.ComponentModel;
 
 namespace CivOne
 {
@@ -45,6 +46,7 @@ namespace CivOne
 			protected event EventHandler? OnWindowStateChanged;
 
 			public event EventHandler? OnClose;
+			public event EventHandler<CancelEventArgs>? OnClosing;
 
 			private bool _fullscreen;
 			protected bool Fullscreen
@@ -60,6 +62,13 @@ namespace CivOne
 
 			private void Close()
 			{
+				CancelEventArgs closeArgs = new();
+				OnClosing?.Invoke(this, closeArgs);
+				if (closeArgs.Cancel)
+				{
+					return;
+				}
+
 				OnClose?.Invoke(this, EventArgs.Empty);
 				_running = false;
 			}

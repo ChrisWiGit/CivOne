@@ -24,6 +24,7 @@ using CivOne.Graphics.ImageFormats;
 using CivOne.Mcp;
 using CivOne.Mcp.Contracts;
 using CivOne.Screens;
+using CivOne.Screens.Dialogs;
 using CivOne.Screens.StartupWizard;
 using CivOne.Screens.Reports;
 using CivOne.Graphics.Sprites;
@@ -122,6 +123,39 @@ namespace CivOne
 		private Size _notificationLayerSize;
 		private readonly IMcpService _mcpService;
 		private bool _disposed;
+
+		internal static bool RequestQuitConfirmationOnWindowClose()
+			=> _instance?.TryRequestQuitConfirmationOnWindowClose() ?? false;
+
+		private bool TryRequestQuitConfirmationOnWindowClose()
+		{
+			if (Common.GamePlay == null && !Common.HasScreenType<Credits>())
+			{
+				return false;
+			}
+
+			if (!Common.HasScreenType<ConfirmQuit>())
+			{
+				// Match the colour mapping used by the Credits screen, if it is present, 
+				// so the dialog looks consistent with the underlying screen.
+				Func<byte, byte>? colourIndexMap = Common.HasScreenType<Credits>()
+					? CreditsConfirmQuitColourIndexMap
+					: null;
+				Common.AddScreen(new ConfirmQuit(Common.TopScreen?.Palette, colourIndexMap));
+			}
+
+			return true;
+		}
+
+		private static byte CreditsConfirmQuitColourIndexMap(byte colourIndex)
+		{
+			return colourIndex switch
+			{
+				15 => 11,
+				3 => 8,
+				_ => colourIndex
+			};
+		}
 
 		private bool Update()
 		{
