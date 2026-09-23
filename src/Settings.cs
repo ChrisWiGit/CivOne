@@ -321,10 +321,10 @@ namespace CivOne
 			}
 		}
 		
-		internal bool DebugMenu
+		public bool DebugMenu
 		{
 			get => _debugMenu;
-			set
+			internal set
 			{
 				_debugMenu = value;
 				SetSetting("DebugMenu", _debugMenu ? "1" : "0");

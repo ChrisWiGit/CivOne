@@ -18,8 +18,12 @@ namespace CivOne.Persistence.Model
 	public class CityDtoMapper(
         ProductionDtoMapper productionMapper,
 		ICityDefinitionResolver cityDefinitionResolver,
-		IValueSanitizer valueSanitizer) : IDtoMapper<CityDto, ICityMapper>
+        IValueSanitizer valueSanitizer,
+        IPlayerGame? playerGame = null,
+		CityDebugSnapshotWrapper? cityDebugSnapshotDelegate = null) : IDtoMapper<CityDto, ICityMapper>
     {
+		private readonly CityDebugSnapshotWrapper _cityDebugSnapshotDelegate = cityDebugSnapshotDelegate ?? new(playerGame);
+
         public ICityMapper FromDto(CityDto dto)
         {
             ArgumentNullException.ThrowIfNull(dto);
@@ -100,7 +104,7 @@ namespace CivOne.Persistence.Model
 
                 if (dx < 0 || dx >= 5 || dy < 0 || dy >= 5)
                 {
-                    throw new System.ArgumentException($"Tile at ({tile.X}, {tile.Y}) is out of bounds for city resource tiles");
+                    throw new ArgumentException($"Tile at ({tile.X}, {tile.Y}) is out of bounds for city resource tiles");
                 }
 
                 map[dx, dy] = true;
@@ -137,6 +141,7 @@ namespace CivOne.Persistence.Model
                 Status = MapStatusFlags(domain),
                 WasInDisorder = domain.WasInDisorder,
                 VisibleSizes = [.. domain.VisibleSizes],
+                DebugSnapshot = _cityDebugSnapshotDelegate.Create(domain),
 
                 TradingCities = [.. domain.TradingCities
                     .Select(c => c.Id)],
