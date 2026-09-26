@@ -19,6 +19,7 @@ using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.IO;
 using CivOne.Screens.NewGamePanels;
+using CivOne.Sound;
 using CivOne.Tasks;
 using CivOne.Units;
 using CivOne.UserInterface;
@@ -33,6 +34,7 @@ namespace CivOne.Screens
 		private readonly NewGameCompetitionMenuDelegate _competitionMenu;
 		private readonly NewGameBarbarianMenuDelegate _barbarianMenu;
 		private readonly NewGameTribeMenuDelegate _tribeMenu;
+		private readonly WorldGenerationMusicDelegate _generationMusic = new();
 
 		private ICivilization[] _tribesAvailable = [];
 		private readonly string[] _menuItemsDifficulty;
@@ -151,7 +153,11 @@ namespace CivOne.Screens
 
 		private void BackToCredits()
 		{
-			var credits = new Credits(playTitleMusic: false);
+			// Evolution music may still be running underneath NewGame (e.g. when the intro was
+			// skipped), and no title music is ever started while NewGame is active. Stop the
+			// former and let Credits restart the latter instead of assuming it is already playing.
+			_generationMusic.Stop();
+			var credits = new Credits(playTitleMusic: true);
 			credits.SkipIntro();
 			credits.SkipLogo();
 			Common.AddScreen(credits);

@@ -20,7 +20,7 @@ namespace CivOne.Persistence.Model
 		[Doc("Whether the city owner is the human player.")]
 		public bool IsHumanOwner { get; set; }
 
-		[Doc("City index in owner city list at snapshot time.")]
+		[Doc("City's numeric city slot index in the original game's global city list at snapshot time.")]
 		public int CityIndex { get; set; }
 
 		[Doc("Luxuries rate of the owner player.")]
