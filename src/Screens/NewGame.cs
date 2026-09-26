@@ -153,11 +153,9 @@ namespace CivOne.Screens
 
 		private void BackToCredits()
 		{
-			// Evolution music may still be running underneath NewGame (e.g. when the intro was
-			// skipped), and no title music is ever started while NewGame is active. Stop the
-			// former and let Credits restart the latter instead of assuming it is already playing.
 			_generationMusic.Stop();
-			var credits = new Credits(playTitleMusic: true);
+			// don't play the intro music if intro is skipped.
+			var credits = new Credits(playTitleMusic: false);
 			credits.SkipIntro();
 			credits.SkipLogo();
 			Common.AddScreen(credits);

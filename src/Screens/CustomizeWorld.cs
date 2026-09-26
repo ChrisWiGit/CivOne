@@ -99,8 +99,12 @@ namespace CivOne.Screens
 		{
 			CloseMenus();
 			_mapSizeInputDialog = null;
+			// don't play the intro music if intro is skipped.
+			var credits = new Credits(playTitleMusic: false);
+			credits.SkipIntro();
+			credits.SkipLogo();
+			Common.AddScreen(credits);
 			Destroy();
-			Common.AddScreen(new Credits(playTitleMusic: false));
 		}
 		
 		private void SetLandMass(object sender, MenuItemEventArgs<int> args)
