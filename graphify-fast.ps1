@@ -90,12 +90,11 @@ function Invoke-GraphifyTarget {
     $targetUri = [Uri]$targetWithSlash
     $relativeTarget = [Uri]::UnescapeDataString($repoUri.MakeRelativeUri($targetUri).ToString()).TrimEnd('/')
 
-    if (($relativeTarget.Length -eq 0) -or $relativeTarget.StartsWith("..")) {
-        $relativeTarget = [System.IO.Path]::GetFileName($resolvedTarget)
-    }
-
-    if ([string]::IsNullOrWhiteSpace($relativeTarget)) {
+    if ($relativeTarget.Length -eq 0) {
         $relativeTarget = "root"
+    }
+    elseif ($relativeTarget.StartsWith("..")) {
+        $relativeTarget = [System.IO.Path]::GetFileName($resolvedTarget)
     }
 
     $relativeTarget = $relativeTarget.Replace('/', '\\')
