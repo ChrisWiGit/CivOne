@@ -41,7 +41,7 @@ namespace CivOne.Persistence.Model
 			int? empireSizePenalty = null;
 
 			bool isHumanOwner = IsHumanOwner(_playerGame, city);
-			int cityIndex = ResolveCityIndex(city);
+			int cityIndex = ResolveCityIndex(_playerGame, city);
 			int cityCount = ResolveCityCount(city);
 
 			if (Settings.Instance.OriginalHappinessModel && gameStarted)
@@ -104,8 +104,13 @@ namespace CivOne.Persistence.Model
 			return city.PlayerIntf.CitiesInterface.Length;
 		}
 
-		private static int ResolveCityIndex(City city)
+		private static int ResolveCityIndex(IPlayerGame? playerGame, City city)
 		{
+			if (playerGame is IGameCityQuery gameState)
+			{
+				return Math.Max(gameState.GetCityIndex(city), 0);
+			}
+
 			if (city.PlayerIntf is Player owner)
 			{
 				int index = Array.FindIndex(owner.Cities, c => c.Id == city.Id);

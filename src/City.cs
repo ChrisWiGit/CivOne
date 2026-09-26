@@ -1039,13 +1039,16 @@ namespace CivOne
 		/// In the same way, the properties IsInDisorder, ContentCitizens, UnhappyCitizens, HappyCitizens
 		/// also have been removed. Use the returned structure of GetCitizenTypes() instead.
 		/// </summary>
+		/// <param name="luxuryRate">
+		/// Optional fixed luxury rate, in tenths, used by callers that need score-stable citizen results.
+		/// </param>
 		/// <returns></returns>
-		internal CitizenTypes GetCitizenTypes()
+		internal CitizenTypes GetCitizenTypes(int? luxuryRate = null)
 		{
 			UpdateSpecialists();
 
 			var service = ICityCitizenService.Create(this,
-				Game.Instance, _specialists, Map.Instance);
+				Game.Instance, _specialists, Map.Instance, luxuryRate);
 			return service.GetCitizenTypes();
 		}
 		internal IEnumerable<Citizen> GetCitizens()

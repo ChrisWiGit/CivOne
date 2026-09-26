@@ -137,7 +137,7 @@ namespace CivOne.Screens.Reports
 			int fontHeight = Resources.GetFontHeight(0);
 			string tribeName = Human.TribeName;
 			int wonderCount = 0;
-			CitizenTypes[] citizens = cities.Select(c => c.GetCitizenTypes()).ToArray();
+			CitizenTypes[] citizens = [.. cities.Select(c => c.GetCitizenTypes(CivilizationScoreService.ScoringLuxuryRate))];
 
 			int cityCount = cities.Length;
 			int populationScore = Human.Population;
