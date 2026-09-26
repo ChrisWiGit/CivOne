@@ -70,10 +70,10 @@ namespace CivOne.Screens.CityManagerPanels
                 output.AddLayer(Icons.Citizen((x % 2 == 0) ? Citizen.HappyMale : Citizen.HappyFemale), startX + (leftStartPackedForBigCities * deltaX++), yy);
             for (int x = 0; x < content; x++)
                 output.AddLayer(Icons.Citizen((x % 2 == 0) ? Citizen.ContentMale : Citizen.ContentFemale), startX + (leftStartPackedForBigCities * deltaX++), yy);
-            for (int x = 0; x < unhappy; x++)
-                output.AddLayer(Icons.Citizen((x % 2 == 0) ? Citizen.UnhappyMale : Citizen.UnhappyFemale), startX + (leftStartPackedForBigCities * deltaX++), yy);
             for (int x = 0; x < redShirt; x++)
                 output.AddLayer(Icons.Citizen((x % 2 == 0) ? Citizen.RedShirtMale : Citizen.RedShirtFemale), startX + (leftStartPackedForBigCities * deltaX++), yy);
+			for (int x = 0; x < unhappy; x++)
+				output.AddLayer(Icons.Citizen((x % 2 == 0) ? Citizen.UnhappyMale : Citizen.UnhappyFemale), startX + (leftStartPackedForBigCities * deltaX++), yy);
             for (int x = 0; x < ent; x++)
                 output.AddLayer(Icons.Citizen(Citizen.Entertainer), startX + (leftStartPackedForBigCities * deltaX++), yy);
             for (int x = 0; x < sci; x++)

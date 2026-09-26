@@ -250,8 +250,9 @@ namespace CivOne.Screens.CityManagerPanels
 				int firstBuilding = FirstBuildingIndex;
 				if (firstBuilding == -1) return true;
 
+				_page = firstBuilding / MAX_BUILDINGS;
 				_cityManager.SetActiveScreen(this);
-				_selectedBuilding = firstBuilding + (_page * MAX_BUILDINGS);
+				_selectedBuilding = firstBuilding;
 
 				return true;
 			}
