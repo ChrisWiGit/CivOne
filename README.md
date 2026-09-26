@@ -14,11 +14,21 @@ The new name CivOneX is a play on words, as it can be read as "Civ One neXt" or 
 
 ## License
 
-The original CivOne project was released under the CC0 license, which means that it is in the public domain and can be used, modified, and distributed freely without any restrictions. All these files contains a header with the CC0 license text, which is a legal statement that confirms that the files are in the public domain and can be used without any restrictions.
+This repository is dual-licensed by file origin. Which license applies to a given file is
+recorded in `.cc0-baseline.csv`, the manifest in the repository root:
 
-However, the CivOneX project is released under the MIT license, which is a permissive open-source license that allows users to use, modify, and distribute the software freely, but with some conditions. The MIT license requires that the original copyright notice and permission notice be included in all copies or substantial portions of the software. This means that if you use or distribute CivOneX, you must include the original copyright notice and permission notice in your code or documentation.
+- **Files listed in the manifest** come from the original CivOne project and are licensed
+  under **CC0 1.0 Universal**, meaning they are in the public domain and can be used,
+  modified, and distributed without restriction. They stay under CC0 even after being
+  modified here.
+- **All other files** were added by CivOneX and are licensed under the **MIT License**, a
+  permissive license that requires the copyright notice and permission notice to be
+  preserved in copies or substantial portions of the software.
 
-The new files do not contain the MIT license text as a header, but the license text is included in the LICENSE file in the root of the repository.
+The manifest also stores the SHA-256 hash of each file's unmodified upstream content, so
+its origin can be verified. Most CC0 files still carry the historical CC0 header comment,
+but the manifest -- not the header -- decides the license. MIT files carry no header; the
+full text of both licenses is in `LICENSE.md`.
 
 ## Original Sources
 
