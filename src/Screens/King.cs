@@ -34,13 +34,17 @@ namespace CivOne.Screens
 	/// <item>
 	/// The long anthem of that civilization (tune 5-18) once the throne room is drawn. This one
 	/// could be added here, but it runs far longer than this screen does, which only lives until
-	/// the next key or click; it would need the same owned-sound handling that CityView has.
+	/// the next key or click, so the screen would have to own the sound and stop it on closing.
+	/// <see cref="Sound.Engine.ISoundHandle"/> makes that straightforward now: start it with
+	/// <see cref="Sound.Engine.SoundLoop.WhenMarked"/> and stop the handle when the screen goes.
 	/// </item>
 	/// <item>
 	/// The ultimatum sting (tune 33, <see cref="SoundNames.EventUltimatum"/>) over the already open
 	/// throne room, whenever the foreign leader turns hostile: tribute or technology demanded, a
-	/// provocation, a rejection, units ordered out, mobilisation. CivOne's diplomacy has none of
-	/// these exchanges, so the sting has no trigger at all and its tune stays unused.
+	/// provocation, a rejection, units ordered out, mobilisation. Only the trigger is missing now:
+	/// CivOne's diplomacy has none of these exchanges. The tune itself is converted for both sound
+	/// devices, and <see cref="Sound.MusicStingDelegate"/> plays it over running music the way the
+	/// original did, freezing the anthem for its length instead of cutting it off.
 	/// </item>
 	/// </list>
 	/// </remarks>

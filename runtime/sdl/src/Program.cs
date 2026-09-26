@@ -15,6 +15,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using CivOne.Enums;
 using CivOne.Services;
+using CivOne.Sound.Engine;
 
 namespace CivOne
 {
@@ -267,10 +268,30 @@ Try 'civone-sdl --help' for more information.
 			IUtcClock clock = new SystemUtcClock();
 			IDebounceService debounceService = DebounceServiceFactory.Create(message => runtime.Log(message), clock);
 
+			// The device itself is opened on first use, not here: SDL's audio is only up once the
+			// window has initialised it.
+			SoundSystemProvider.RegisterDevice(() => CreateAudioDevice(runtime));
+
 			using GameWindow window = new(runtime, (bool)(settings["software-render"] ?? false), debounceService);
 			runtime.Log("Game started");
 			window.Run();
 			runtime.Log("Game stopped");
+
+			SoundSystemProvider.Shutdown();
+			SoundSystemProvider.RegisterDevice(null);
+		}
+
+		/// <summary>
+		/// Opens the audio output the sound system plays through.
+		/// </summary>
+		/// <param name="runtime">Runtime the device writes its log messages to.</param>
+		/// <returns>The device. Whether it can actually be opened is decided on first use.</returns>
+		private static SDL.AudioDevice CreateAudioDevice(Runtime runtime)
+		{
+			var device = new SDL.AudioDevice();
+			device.OnLog += message => runtime.Log(message);
+
+			return device;
 		}
 
 		private static bool ApplyLanguageParameter(RuntimeSettings settings, string? languagePostfix)

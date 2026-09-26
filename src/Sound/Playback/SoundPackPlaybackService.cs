@@ -127,6 +127,44 @@ internal sealed class SoundPackPlaybackService
 		return true;
 	}
 
+	/// <summary>
+	/// Finds the rendered wave file of a tune, so a caller can play it through the sound system
+	/// rather than through the runtime.
+	/// </summary>
+	/// <remarks>
+	/// Never renders on the calling thread. When the file is not there yet the render is started and
+	/// <c>false</c> is returned, so the caller can try again a moment later.
+	/// </remarks>
+	/// <param name="soundName">Name the game logic uses, e.g. <see cref="SoundNames.MusicTitle"/>.</param>
+	/// <param name="packId">Id of the pack to look in.</param>
+	/// <param name="arrangement">Which arrangement is wanted.</param>
+	/// <param name="file">Path of the wave file, when one is ready.</param>
+	/// <param name="rendering">
+	/// <c>true</c> when the tune exists but its render has just been queued (or was queued earlier)
+	/// and has not finished yet, so a caller should try again shortly rather than treat this as a
+	/// failure.
+	/// </param>
+	/// <returns><c>true</c> when the file is ready to be played.</returns>
+	public bool TryGetWaveFile(string soundName, string packId, int arrangement, out string? file, out bool rendering)
+	{
+		file = null;
+		rendering = false;
+
+		if (!TryLoadIndex(packId, out SoundPackIndex? index)) return false;
+		if (!index.TryGetByName(soundName, out SoundPackIndexEntry? entry)) return false;
+		if (string.IsNullOrEmpty(entry.File)) return false;
+
+		string packFolder = Path.Combine(Settings.Instance.SoundsDirectory, packId);
+		_queue.WarmPack(packFolder);
+
+		file = _queue.TryGetCached(packFolder, entry.File, arrangement);
+		if (file != null) return true;
+
+		_ = _queue.Request(packFolder, entry.File, arrangement);
+		rendering = true;
+		return false;
+	}
+
 	private static bool TryLoadIndex(string packId, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out SoundPackIndex? index)
 	{
 		string packFolder = Path.Combine(Settings.Instance.SoundsDirectory, packId);

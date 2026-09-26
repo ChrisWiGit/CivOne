@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using CivOne.Sound.Cvl;
 using CivOne.Sound.Cvl.Adlib;
+using CivOne.Sound.Dsp;
 using CivOne.Sound.Opl;
 
 namespace CivOne.Sound.Playback.Adlib;
@@ -69,14 +70,33 @@ internal sealed class AdlibTuneRenderer : ITuneRenderer
         if (tune.Arrangements.Count == 0) return null;
         int chosen = arrangement < 0 || arrangement >= tune.Arrangements.Count ? 0 : arrangement;
 
-        float[] samples = RenderArrangement(index, bank, tune.Arrangements[chosen]);
+        (float[] samples, int? loopEnd) = RenderArrangement(index, bank, tune.Arrangements[chosen]);
         if (samples.Length == 0) return null;
 
         new LowPassFilterDelegate(CutoffHz, Opl2Chip.NativeSampleRate, FilterStages).Apply(samples);
 
+        float[] resampled = _resampler.Resample(samples, Opl2Chip.NativeSampleRate, OutputSampleRate);
+
         return new RenderedTune(
-            _resampler.Resample(samples, Opl2Chip.NativeSampleRate, OutputSampleRate),
-            OutputSampleRate);
+            resampled,
+            OutputSampleRate,
+            ToOutputSample(loopEnd, samples.Length, resampled.Length));
+    }
+
+    /// <summary>
+    /// Moves a loop point from the chip's own rate to the rate of the file that is written.
+    /// </summary>
+    /// <param name="loopEnd">The loop point in chip samples, or <c>null</c> when there is none.</param>
+    /// <param name="sourceLength">How many chip samples were rendered.</param>
+    /// <param name="targetLength">How many samples the resampled audio has.</param>
+    /// <returns>The loop point in output samples, or <c>null</c>.</returns>
+    private static int? ToOutputSample(int? loopEnd, int sourceLength, int targetLength)
+    {
+        if (loopEnd == null || sourceLength <= 0) return null;
+
+        long scaled = (long)loopEnd.Value * targetLength / sourceLength;
+
+        return (int)Math.Clamp(scaled, 0, targetLength);
     }
 
     /// <summary>
@@ -95,8 +115,8 @@ internal sealed class AdlibTuneRenderer : ITuneRenderer
     /// <summary>
     /// Runs the driver and the chip in lockstep, one block of chip samples per driver tick.
     /// </summary>
-    private static float[] RenderArrangement(SoundPackIndex index, AdlibSoundBank bank,
-        AdlibArrangement arrangement)
+    private static (float[] samples, int? loopEndSample) RenderArrangement(SoundPackIndex index,
+        AdlibSoundBank bank, AdlibArrangement arrangement)
     {
         var chip = new Opl2Chip();
         var player = new AdlibTunePlayer(bank, chip, index.WorkerTickDivider);
@@ -111,6 +131,7 @@ internal sealed class AdlibTuneRenderer : ITuneRenderer
 
         double carry = 0d;
         int tail = 0;
+        int? loopEndSample = null;
 
         for (int tick = 0; tick < maxTicks; tick++)
         {
@@ -124,12 +145,18 @@ internal sealed class AdlibTuneRenderer : ITuneRenderer
             chip.Render(span);
             samples.AddRange(span);
 
+            // The first voice to rewind marks where a loop has to turn around. Everything rendered
+            // after this is that voice repeating itself while the longer ones finish. The rewind is
+            // noticed after the block it happened in, so the point can be up to one driver tick
+            // late - far below the cross fade that is laid over the turnaround.
+            loopEndSample ??= player.AnyVoiceRestarted ? samples.Count : null;
+
             if (playing) continue;
 
             // Keep going for a moment so releases are not cut off, then stop once the chip is quiet.
             if (++tail >= tailTicks || !chip.IsActive) break;
         }
 
-        return [.. samples];
+        return ([.. samples], loopEndSample);
     }
 }

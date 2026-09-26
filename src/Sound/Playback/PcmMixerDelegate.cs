@@ -1,5 +1,5 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
+using CivOne.Sound.Dsp;
 
 namespace CivOne.Sound.Playback;
 
@@ -16,11 +16,9 @@ namespace CivOne.Sound.Playback;
 /// </remarks>
 internal sealed class PcmMixerDelegate
 {
-    /// <summary>Level above which the limiter starts to compress instead of passing through.</summary>
-    private const float Knee = 0.70f;
-
-    private const float Headroom = 1f - Knee;
     private const short FullScale = short.MaxValue;
+
+    private readonly SoftLimiterDelegate _limiter = new();
 
     /// <summary>
     /// Applies gain and limiting and converts to 16-bit samples.
@@ -28,7 +26,6 @@ internal sealed class PcmMixerDelegate
     /// <param name="samples">The samples to convert.</param>
     /// <param name="gain">Gain to apply before limiting.</param>
     /// <returns>The converted samples.</returns>
-    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This class is a delegate, not a static utility.")]
     public short[] ToPcm16(float[] samples, float gain)
     {
         ArgumentNullException.ThrowIfNull(samples);
@@ -37,25 +34,10 @@ internal sealed class PcmMixerDelegate
 
         for (int index = 0; index < samples.Length; index++)
         {
-            float value = Limit(samples[index] * gain);
+            float value = _limiter.Limit(samples[index] * gain);
             result[index] = (short)Math.Round(value * FullScale);
         }
 
         return result;
-    }
-
-    /// <summary>
-    /// Passes quiet samples through untouched and eases loud ones towards full scale, so a busy
-    /// passage gets quieter rather than square.
-    /// </summary>
-    private static float Limit(float value)
-    {
-        float magnitude = Math.Abs(value);
-        if (magnitude <= Knee) return value;
-
-        float excess = (magnitude - Knee) / Headroom;
-        float limited = Knee + (Headroom * MathF.Tanh(excess));
-
-        return value < 0f ? -limited : limited;
     }
 }

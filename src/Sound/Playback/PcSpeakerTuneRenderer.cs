@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using CivOne.Sound.Cvl;
+using CivOne.Sound.Dsp;
 
 namespace CivOne.Sound.Playback;
 

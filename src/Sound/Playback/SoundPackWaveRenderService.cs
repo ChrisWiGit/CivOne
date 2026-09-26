@@ -32,7 +32,7 @@ internal sealed class SoundPackWaveRenderService
     /// Bumped whenever a change here would make an already cached file sound wrong. Old files are
     /// then simply not found again and get rendered anew.
     /// </summary>
-    private const int RendererVersion = 4;
+    private const int RendererVersion = 5;
 
     private readonly TuneRendererFactory _renderers;
     private readonly WaveFileWriter _writer = new();
@@ -73,7 +73,7 @@ internal sealed class SoundPackWaveRenderService
             if (rendered == null) return null;
 
             _writer.Write(targetPath, _mixer.ToPcm16(rendered.Value.Samples, _renderers.Gain(index.Device)),
-                rendered.Value.SampleRate);
+                rendered.Value.SampleRate, rendered.Value.LoopEndSample);
 
             return targetPath;
         }

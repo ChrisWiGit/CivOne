@@ -1,4 +1,4 @@
-<!-- Please use a single sentence each line.
+﻿<!-- Please use a single sentence each line.
 use sh or cmd blocks for commands.
 Do not use en-dash or em-dash, use simple sentences only.
  -->
@@ -197,11 +197,15 @@ city being captured and similar single events. The original game shipped no wave
 
 | File name | Plays when | Older name also accepted |
 | --------- | ---------- | ------------------------ |
-| `event_audience.wav` | An audience with a foreign leader begins. | `audience.wav` |
+| `event_ultimatum.wav` | A foreign leader turns hostile during an audience - tribute or technology demanded, a provocation, a rejection, units ordered out, mobilisation. | `audience.wav` |
 | `event_alarm.wav` | Famine, civil disorder, a government is overthrown - and as the barbarians' theme. | `alarm.wav` |
-| `event_city_view_opened.wav` | The city view is opened. | `cityview.wav` |
+| `event_building_complete.wav` | A building is finished and the city view opens to show it. | `cityview.wav` |
 | `event_nuclear_blast.wav` | A nuclear device goes off outside a city. | `s_nuke.wav` |
 | `ui_beep.wav` | An error message appears. | `s_beep.wav` |
+
+> The ultimatum sting has no trigger in the game yet: diplomacy does not have the hostile
+> exchanges the original played it for. A file for it is converted and can be listened to in
+> the sound test, but it will not come up in a game until that trigger exists.
 
 ##### Combat
 

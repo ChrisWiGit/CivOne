@@ -18,6 +18,10 @@ internal sealed class WaveFileWriter
     private const short PcmFormat = 1;
     private const int HeaderSize = 36;
     private const int FormatChunkSize = 16;
+    private const int ChunkHeaderSize = 8;
+
+    /// <summary>Size of a <c>smpl</c> chunk that carries exactly one loop.</summary>
+    private const int SamplerChunkSize = 36 + 24;
 
     /// <summary>
     /// Writes samples to a wave file, creating the folder if needed.
@@ -25,8 +29,17 @@ internal sealed class WaveFileWriter
     /// <param name="path">Where to write.</param>
     /// <param name="samples">The samples to write.</param>
     /// <param name="sampleRate">Rate of the samples, in Hz.</param>
+    /// <param name="loopEndSample">
+    /// Where a looping tune turns around, written as a <c>smpl</c> chunk, or <c>null</c> for a tune
+    /// that does not loop.
+    /// </param>
+    /// <remarks>
+    /// The loop point is stored in the file rather than beside it so that it travels with the
+    /// rendered audio. It cannot live in the pack index: the index is written while the pack is
+    /// converted, long before anything is rendered, and it is different for every arrangement.
+    /// </remarks>
     [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This class is a writer used as an instance, not a static utility.")]
-    public void Write(string path, short[] samples, int sampleRate)
+    public void Write(string path, short[] samples, int sampleRate, int? loopEndSample = null)
     {
         ArgumentNullException.ThrowIfNull(samples);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sampleRate);
@@ -35,12 +48,14 @@ internal sealed class WaveFileWriter
         if (!string.IsNullOrEmpty(folder)) Directory.CreateDirectory(folder);
 
         int dataSize = samples.Length * BytesPerSample;
+        bool writeLoop = loopEndSample is > 0 && loopEndSample <= samples.Length;
+        int loopChunkSize = writeLoop ? ChunkHeaderSize + SamplerChunkSize : 0;
 
         using var stream = File.Create(path);
         using var writer = new BinaryWriter(stream, Encoding.ASCII);
 
         writer.Write(Encoding.ASCII.GetBytes("RIFF"));
-        writer.Write(HeaderSize + dataSize);
+        writer.Write(HeaderSize + dataSize + loopChunkSize);
         writer.Write(Encoding.ASCII.GetBytes("WAVE"));
         writer.Write(Encoding.ASCII.GetBytes("fmt "));
         writer.Write(FormatChunkSize);
@@ -57,5 +72,43 @@ internal sealed class WaveFileWriter
         {
             writer.Write(sample);
         }
+
+        if (writeLoop) WriteSamplerChunk(writer, sampleRate, loopEndSample!.Value);
+    }
+
+    /// <summary>
+    /// Writes the <c>smpl</c> chunk that carries the loop point.
+    /// </summary>
+    /// <param name="writer">Writer positioned at the end of the file.</param>
+    /// <param name="sampleRate">Rate of the samples, in Hz.</param>
+    /// <param name="loopEndSample">Sample the loop turns around at.</param>
+    /// <remarks>
+    /// Only one loop is written, running from the start of the file, which is all a tune needs.
+    /// Everything the chunk says about the sampler itself is left at zero; readers that care about
+    /// loops only look at the loop list.
+    /// </remarks>
+    private static void WriteSamplerChunk(BinaryWriter writer, int sampleRate, int loopEndSample)
+    {
+        const int NanosecondsPerSecond = 1_000_000_000;
+
+        writer.Write(Encoding.ASCII.GetBytes("smpl"));
+        writer.Write(SamplerChunkSize);
+
+        writer.Write(0);                                    // manufacturer
+        writer.Write(0);                                    // product
+        writer.Write(NanosecondsPerSecond / sampleRate);    // sample period, in nanoseconds
+        writer.Write(60);                                   // MIDI unity note
+        writer.Write(0);                                    // MIDI pitch fraction
+        writer.Write(0);                                    // SMPTE format
+        writer.Write(0);                                    // SMPTE offset
+        writer.Write(1);                                    // number of loops
+        writer.Write(0);                                    // sampler data
+
+        writer.Write(0);                                    // loop identifier
+        writer.Write(0);                                    // loop type: forward
+        writer.Write(0);                                    // loop start
+        writer.Write(loopEndSample);                        // loop end
+        writer.Write(0);                                    // fraction
+        writer.Write(0);                                    // play count: endless
     }
 }

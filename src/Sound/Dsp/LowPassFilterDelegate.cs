@@ -1,6 +1,6 @@
 using System;
 
-namespace CivOne.Sound.Playback;
+namespace CivOne.Sound.Dsp;
 
 
 

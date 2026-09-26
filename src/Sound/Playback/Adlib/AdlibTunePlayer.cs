@@ -107,6 +107,28 @@ internal sealed class AdlibTunePlayer
     }
 
     /// <summary>
+    /// Gets whether any voice has already rewound to the start of its own sequence.
+    /// </summary>
+    /// <remarks>
+    /// The voices of a tune are not the same length and each rewinds on its own, so this turns true
+    /// long before <see cref="PassCompleted"/> does. That moment is where a rendered file has to
+    /// turn around: everything after it is one voice repeating its beginning while the others are
+    /// still finishing, which is exactly what must not be played twice when the file loops.
+    /// </remarks>
+    public bool AnyVoiceRestarted
+    {
+        get
+        {
+            foreach (AdlibVoiceState voice in _voices)
+            {
+                if (voice.Restarts > 0) return true;
+            }
+
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Resets the chip and starts an arrangement.
     /// </summary>
     /// <param name="arrangement">The arrangement to play.</param>

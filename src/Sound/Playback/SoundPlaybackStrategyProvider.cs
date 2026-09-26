@@ -46,6 +46,21 @@ internal static class SoundPlaybackStrategyProvider
 	}
 
 	/// <summary>
+	/// Finds the rendered wave file of a tune in a pack.
+	/// </summary>
+	/// <param name="soundName">Name the game logic uses.</param>
+	/// <param name="packId">Id of the pack to look in.</param>
+	/// <param name="arrangement">Which arrangement is wanted.</param>
+	/// <param name="file">Path of the wave file, when one is ready.</param>
+	/// <param name="rendering">
+	/// <c>true</c> when the tune exists but is still being rendered, so the caller should try again
+	/// shortly rather than treat this as a failure.
+	/// </param>
+	/// <returns><c>true</c> when the file is ready to be played.</returns>
+	public static bool TryGetWaveFile(string soundName, string packId, int arrangement, out string? file, out bool rendering)
+		=> SoundPackPlaybackService.TryGetWaveFile(soundName, packId, arrangement, out file, out rendering);
+
+	/// <summary>
 	/// Stops what is playing and drops a sound that has not started yet.
 	/// </summary>
 	/// <remarks>
