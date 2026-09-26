@@ -21,6 +21,20 @@ namespace CivOne
 		byte Size { get; }
 		short Luxuries { get; }
 		public int EntertainerLuxuries { get; }
+
+		/// <summary>
+		/// Gets the trade of the city before any corruption is taken off, including the trade routes.
+		/// The happiness model needs the untouched value, because it uses the trade with and without
+		/// corruption in the same formula.
+		/// </summary>
+		int TradeTotalGross { get; }
+
+		/// <summary>
+		/// Gets the corruption the happiness model takes off the trade before turning it into luxuries.
+		/// This deliberately differs from the corruption of the economy: a democracy has none, a courthouse
+		/// halves it, and the palace does not lower it.
+		/// </summary>
+		int LuxuryCorruption { get; }
 		byte CityOwnerPlayerIndex { get; set; }
 		string Name { get; }
 

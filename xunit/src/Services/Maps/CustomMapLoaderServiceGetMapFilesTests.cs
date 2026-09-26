@@ -119,6 +119,7 @@ namespace CivOne.Services.Maps
 			public string PluginsDirectory => throw new NotImplementedException();
 			public string SoundsDirectory => throw new NotImplementedException();
 			public bool RevealWorld => throw new NotImplementedException();
+			public bool DebugMenu => throw new NotImplementedException();
 		}
 	}
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CivOne.Enums;
 using CivOne.Tiles;
 using CivOne.Units;
 using System;
@@ -22,6 +23,18 @@ namespace CivOne.UnitTests
         public MockedUnit WithHome(ICityBasic city)
         {
             _city = city;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the terrain class of the unit.
+        /// War weariness treats air units as away from home even while they stand in their own city.
+        /// </summary>
+        /// <param name="unitClass">The class to use.</param>
+        /// <returns>The same instance, so calls can be chained.</returns>
+        public MockedUnit WithCategory(UnitClass unitClass)
+        {
+            UnitCategory = unitClass;
             return this;
         }
 

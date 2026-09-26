@@ -41,7 +41,12 @@ namespace CivOne.Persistence.Factories
 			var unitMapper = new UnitDtoMapper(new NotSupportedUnitFactory(), _sanitizer);
 			var mapMapper = new MapDtoMapper(new NotSupportedMapFactory(), new DefaultTileDtoMapper(new NotSupportedTileFactory()));
 			var globalWarmingMapper = new GlobalWarmingDtoMapper(_sanitizer);
-			var cityMapper = new CityDtoMapper(new ProductionDtoMapper(_reflect), new CityDefinitionResolver(), _sanitizer);
+			var cityMapper = new CityDtoMapper(
+				new ProductionDtoMapper(_reflect),
+				new CityDefinitionResolver(),
+				_sanitizer,
+				gameInstance,
+				new CityDebugSnapshotWrapper(gameInstance, Settings.Instance));
 			var playerMapper = new PlayerDtoMapper(
 				gameInstance,
 				new GamePlayerOwnerResolver(gameInstance),

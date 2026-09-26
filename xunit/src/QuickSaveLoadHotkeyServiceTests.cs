@@ -106,6 +106,27 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
+		public void TryHandleAltF4IsNotHandled()
+		{
+			int loadCalls = 0;
+			var service = CreateService(
+				canQuickSave: () => true,
+				save: _ => { },
+				load: _ =>
+				{
+					loadCalls++;
+					return true;
+				},
+				rebuild: () => { },
+				onError: _ => { });
+
+			bool handled = service.TryHandle(new KeyboardEventArgs(Key.F4, KeyModifier.Alt));
+
+			Assert.False(handled);
+			Assert.Equal(0, loadCalls);
+		}
+
+		[Fact]
 		public void TryHandleAltF11OpensQuickLoadMenuWithExistingSlots()
 		{
 			Directory.CreateDirectory(_fastSavesDirectory);

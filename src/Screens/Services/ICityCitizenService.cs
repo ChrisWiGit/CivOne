@@ -52,7 +52,20 @@ namespace CivOne.Screens.Services
 		Citizen[] GetCitizens();
 
 		[SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "The list is intended for internal use and is not exposed as a public API.")]
-		static ICityCitizenService Create(City city, IGame game, List<Citizen> specialists, Map map)
+		/// <summary>
+		/// Creates the citizen service for one city.
+		/// </summary>
+		/// <param name="city">The city to calculate.</param>
+		/// <param name="game">The running game.</param>
+		/// <param name="specialists">The specialists of the city.</param>
+		/// <param name="map">The map.</param>
+		/// <param name="luxuryRate">
+		/// The share of trade that becomes luxuries, in tenths, for callers that need a fixed rate rather
+		/// than the one the player has set. The civilization score uses this to compare cities at one rate.
+		/// Only the corrected happiness model reads it; the model CivOne shipped with ignores it.
+		/// </param>
+		/// <returns>The service for the city.</returns>
+		static ICityCitizenService Create(City city, IGame game, List<Citizen> specialists, Map map, int? luxuryRate = null)
 		{
 			ArgumentNullException.ThrowIfNull(game);
 
@@ -61,7 +74,13 @@ namespace CivOne.Screens.Services
 				throw new ArgumentException("The provided game does not implement IGameCitizenDependency.", nameof(game));
 			}
 
-			return new CityCitizenService(city, city, dependency, specialists, map);
+			if (!Settings.Instance.OriginalHappinessModel)
+			{
+				return new CityCitizenService(city, city, dependency, specialists, map);
+			}
+
+			return new OriginalCityCitizenService(city, city, dependency, specialists, map,
+				new EqualisingPendingUnhappinessDelegate().Refill, luxuryRate);
 		}
 	}
 

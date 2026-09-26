@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -100,7 +100,7 @@ namespace CivOne.Screens
 			CloseMenus();
 			_mapSizeInputDialog = null;
 			Destroy();
-			Common.AddScreen(new Credits());
+			Common.AddScreen(new Credits(playTitleMusic: false));
 		}
 		
 		private void SetLandMass(object sender, MenuItemEventArgs<int> args)

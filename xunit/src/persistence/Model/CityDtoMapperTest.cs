@@ -240,7 +240,8 @@ namespace CivOne.Persistence.Model
 				[nameof(CityDto.Status)] = () => Assert.Equal(expected.Status.OrderBy(x => x), actual.Status.OrderBy(x => x)),
 				[nameof(CityDto.WasInDisorder)] = () => Assert.Equal(expected.WasInDisorder, actual.WasInDisorder),
 				[nameof(CityDto.TradingCities)] = () => Assert.Empty(actual.TradingCities),
-				[nameof(CityDto.ContinentId)] = () => Assert.Equal(expected.ContinentId, actual.ContinentId)
+				[nameof(CityDto.ContinentId)] = () => Assert.Equal(expected.ContinentId, actual.ContinentId),
+				[nameof(CityDto.DebugSnapshot)] = () => Assert.Equal(expected.DebugSnapshot, actual.DebugSnapshot)
 			};
 
 		private static HashSet<string> GetWritablePropertyNames<T>() => typeof(T).GetProperties()

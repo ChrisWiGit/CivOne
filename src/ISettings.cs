@@ -87,5 +87,10 @@ namespace CivOne
 		/// Gets a value indicating whether the entire world map is revealed.
 		/// </summary>
 		bool RevealWorld { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether debug mode is enabled.
+		/// </summary>
+		bool DebugMenu { get; }
 	}
 }
