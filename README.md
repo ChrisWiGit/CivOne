@@ -594,6 +594,8 @@ This screen allows to change additional modification options for the game.
 | FPS display | Show performance counters in a screen corner (Off, Top Left, Top Right, Bottom Left, Bottom Right). See [FPS overlay](#fps-overlay) below for the meaning of all values. |
 | Game behavior menu | Open the behavior submenu to change gameplay-related toggles and cheats. |
 | AutoSave format | Choose whether autosaves prefer legacy `SVE` output with automatic `COS` fallback or always write `COS`. |
+| AutoSave on quit | Save the running game when the game is closed. The existing autosave (`autosave.cos`) is overwritten. Default is `Yes`. |
+| Confirm quit | Ask for confirmation before a running game is closed. Default is `Yes`. |
 | Save cast behavior | Select whether save/load casts use checked conversion or the legacy unchecked mode. |
 | (Gbm) Use smart PathFinding for "goto" | Enable smart pathfinding for unit movement. |
 | (Gbm) Use smart pathfinding for computer players | Enable smart pathfinding for computer controlled units only. Disable to use legacy AI movement behavior. |
@@ -704,6 +706,8 @@ These options affect the gameplay mechanics and rules and can also be changed in
 | ------ | ----------- |
 | Instant Advice | Configure whether the game shows instant advice prompts to the player. |
 | AutoSave | Enable or disable automatic saving during play. |
+| AutoSave on Quit | Save the running game when the game is closed, overwriting the existing autosave. Also available in the settings screen under **Patches**. Default is on. |
+| Confirm Quit | Ask for confirmation before a running game is closed (window close button or `Alt+F4`). Also available in the settings screen under **Patches**. Default is on. |
 | End of Turn | Configure end-of-turn behavior (e.g. immediate end or prompts). |
 | Animations | Toggle in-game animations (on/off) to improve performance or visuals. |
 | Sound | Toggle sound effects and music for the game. |

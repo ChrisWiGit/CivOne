@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -61,6 +61,18 @@ namespace CivOne.Screens
 			Update();
 		}
 
+		private void MenuAutoSaveOnQuit(object? _, EventArgs __)
+		{
+			Settings.Instance.AutoSaveOnQuit = !Settings.Instance.AutoSaveOnQuit;
+			Update();
+		}
+
+		private void MenuConfirmExit(object? _, EventArgs __)
+		{
+			Settings.Instance.ConfirmExit = !Settings.Instance.ConfirmExit;
+			Update();
+		}
+
 		private void MenuEndOfTurn(object? _, EventArgs __)
 		{
 			Game.EndOfTurn = !Game.EndOfTurn;
@@ -92,7 +104,7 @@ namespace CivOne.Screens
 			}
 
 			int menuBoxWidth = 103;
-			int menuBoxHeight = 88;
+			int menuBoxHeight = 104;
 
 			Picture menuGfx = new(menuBoxWidth, menuBoxHeight);
 			menuGfx
@@ -136,6 +148,8 @@ namespace CivOne.Screens
 
 			menu.Items.Add($"{(Game.InstantAdvice ? '^' : ' ')}{Translate("Instant Advice")}").OnSelect(MenuInstantAdvice);
 			menu.Items.Add($"{(Game.AutoSave ? '^' : ' ')}{Translate("AutoSave")}").SetEnabled(Common.AllowSaveGame).OnSelect(MenuAutoSave);
+			menu.Items.Add($"{(Settings.Instance.AutoSaveOnQuit ? '^' : ' ')}{Translate("AutoSave on Quit")}").SetEnabled(Common.AllowSaveGame).OnSelect(MenuAutoSaveOnQuit);
+			menu.Items.Add($"{(Settings.Instance.ConfirmExit ? '^' : ' ')}{Translate("Confirm Quit")}").OnSelect(MenuConfirmExit);
 			menu.Items.Add($"{(Game.EndOfTurn ? '^' : ' ')}{Translate("End of Turn")}").OnSelect(MenuEndOfTurn);
 			menu.Items.Add($"{(Game.Animations ? '^' : ' ')}{Translate("Animations")}").OnSelect(MenuAnimations);
 			menu.Items.Add($"{(Game.Sound ? '^' : ' ')}{Translate("Sound")}").OnSelect(MenuSound);
@@ -153,7 +167,7 @@ namespace CivOne.Screens
 			Palette = defaultPalette;
 
 			this.AddLayer(ScreenServiceFactory.CreateQueryService().LastScreen!, 0, 0)
-				.FillRectangle(24, 16, 105, 90, 5);
+				.FillRectangle(24, 16, 105, 106, 5);
 		}
 	}
 }

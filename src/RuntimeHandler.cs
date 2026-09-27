@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -122,6 +122,9 @@ namespace CivOne
 		private string? _notificationLayerText;
 		private Size _notificationLayerSize;
 		private readonly IMcpService _mcpService;
+		private readonly IQuitAutoSaveServiceFactory? _quitAutoSaveServiceFactory;
+		private IQuitAutoSaveServiceFactory QuitAutoSaveServiceFactory
+			=> _quitAutoSaveServiceFactory ?? new QuitAutoSaveServiceFactory();
 		private bool _disposed;
 
 		internal static bool RequestQuitConfirmationOnWindowClose()
@@ -129,32 +132,26 @@ namespace CivOne
 
 		private bool TryRequestQuitConfirmationOnWindowClose()
 		{
-			if (Common.GamePlay == null && !Common.HasScreenType<Credits>())
+			// The credits screen quits immediately, without asking for confirmation.
+			if (Common.GamePlay == null)
 			{
 				return false;
 			}
 
-			if (!Common.HasScreenType<ConfirmQuit>())
+			if (!Settings.Instance.ConfirmExit)
 			{
-				// Match the colour mapping used by the Credits screen, if it is present, 
-				// so the dialog looks consistent with the underlying screen.
-				Func<byte, byte>? colourIndexMap = Common.HasScreenType<Credits>()
-					? CreditsConfirmQuitColourIndexMap
-					: null;
-				Common.AddScreen(new ConfirmQuit(Common.TopScreen?.Palette, colourIndexMap));
+				return false;
 			}
 
-			return true;
-		}
-
-		private static byte CreditsConfirmQuitColourIndexMap(byte colourIndex)
-		{
-			return colourIndex switch
+			// The confirmation was already asked for, so a second close request quits without asking again.
+			if (Common.HasScreenType<ConfirmQuit>())
 			{
-				15 => 11,
-				3 => 8,
-				_ => colourIndex
-			};
+				return false;
+			}
+
+			Common.AddScreen(new ConfirmQuit(Common.TopScreen?.Palette));
+
+			return true;
 		}
 
 		private bool Update()
@@ -649,8 +646,13 @@ namespace CivOne
             _instance = null;
         }
 
-		private RuntimeHandler(IRuntime runtime, IQuickSaveLoadHotkeyService quickSaveLoadHotkeyService, bool concurrent = true)
+		private RuntimeHandler(
+			IRuntime runtime,
+			IQuickSaveLoadHotkeyService quickSaveLoadHotkeyService,
+			bool concurrent = true,
+			IQuitAutoSaveServiceFactory? quitAutoSaveServiceFactory = null)
 		{
+			_quitAutoSaveServiceFactory = quitAutoSaveServiceFactory;
 			Runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
 			_mcpService = McpServiceFactory.Create(runtime);
 			_quickSaveLoadHotkeyService = quickSaveLoadHotkeyService ?? throw new ArgumentNullException(nameof(quickSaveLoadHotkeyService));
@@ -692,8 +694,15 @@ namespace CivOne
 
 		public static void Shutdown()
 		{
+			_instance?.SaveGameOnQuit();
 			_instance?.Dispose();
 		}
+
+		/// <summary>
+		/// Writes the quit autosave, if a game with a loaded map is running.
+		/// </summary>
+		private void SaveGameOnQuit()
+			=> QuitAutoSaveServiceFactory.Create(Runtime, Settings.Instance).TrySaveOnQuit();
 
 		public void Dispose()
 		{
