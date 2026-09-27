@@ -13,7 +13,10 @@ namespace CivOne.Services
 	/// </remarks>
 	public sealed class QuitAutoSaveService : IQuitAutoSaveService
 	{
-		private const string QuitSaveFileName = "autosave.cos";
+		/// <summary>
+		/// File name of the autosave written when the game quits.
+		/// </summary>
+		public const string AutoSaveFileName = "autosave.cos";
 
 		private readonly Func<Game?> _gameProvider;
 		private readonly ISaveGamePathProvider _pathProvider;
@@ -60,7 +63,7 @@ namespace CivOne.Services
 
 			try
 			{
-				string filePath = Path.Combine(_pathProvider.EnsureAutoSaveDirectory(), QuitSaveFileName);
+				string filePath = Path.Combine(_pathProvider.EnsureAutoSaveDirectory(), AutoSaveFileName);
 				_saveGameServiceFactory.Create(game).SaveCos(filePath);
 				Log("Autosave on quit written to {0}", filePath);
 				return filePath;

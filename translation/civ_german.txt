@@ -1,4 +1,4 @@
-# CivOne German translation
+﻿# CivOne German translation
 # License CC-BY-SA-4.0 : https://creativecommons.org/licenses/by-sa/4.0/
 # This file contains the German translation
 # Generated from the original English text file using translate-interactive.ps1
@@ -398,6 +398,7 @@ WHICH STYLE SHALL WE USE?=Welchen Stil sollen wir verwenden?
 CIVILIZATION POWERGRAPH=CIVILIZATION Machtgraph
 NO FAST SAVEGAMES AVAILABLE. USE CTRL+F1-F10 TO SAVE.=Es sind keine Schnellspeicherstände verfügbar. Verwenden Sie Strg+F1-F10 zum Speichern.
 QUICK LOAD SLOTS=Schnellladeplätze
+INVALID SAVEGAME=Ungültiger Spielstand
 POPULATION: {0} HAPPY:{1}% CONTENT:{2}% UNHAPPY:{3}%=Bevölkerung: {0} Zufrieden: {1} % Zufrieden: {2} % Unzufrieden: {3} %
 ATTITUDE SURVEY=EINSTELLUNGSUMFRAGE
 {0} OF THE {1}={0} von {1}
