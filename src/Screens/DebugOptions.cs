@@ -617,7 +617,7 @@ namespace CivOne.Screens
 			];
 
 			string[] labels = [.. _menuEntries.Select(e => e.Text)];
-			_gridMenu = new GridMenuDelegate(labels, GridMenuDelegate.SelectionMode.Select, fontId: 0, enableHotkeys: true);
+			_gridMenu = new GridMenuDelegate(labels, GridMenuDelegate.SelectionMode.Select, fontId: 1, enableHotkeys: true);
 			_gridMenu.ItemSelected += index => _menuEntries[index].Handler();
 			_gridMenu.Cancelled += (_, _) => Destroy();
 
