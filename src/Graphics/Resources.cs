@@ -25,7 +25,7 @@ using CivOne.Tiles;
 namespace CivOne.Graphics
 {
 	[SuppressMessage("Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces", Justification = "Resources is the main class for accessing game resources, and it is appropriate to have the same name as the namespace.")]
-	public class Resources : IResourceFileBitmapProvider, IResourceFontHeightProvider
+	public class Resources : IResourceFileBitmapProvider, IResourceFontHeightProvider, IResourceTextSizeProvider
 	{
 		private static Settings Settings => Settings.Instance;
 

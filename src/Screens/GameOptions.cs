@@ -12,6 +12,7 @@ using System.Linq;
 using CivOne.Enums;
 using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
+using CivOne.Screens.Options;
 using CivOne.Services.Screen;
 using CivOne.UserInterface;
 
@@ -96,6 +97,53 @@ namespace CivOne.Screens
 			Refresh();
 		}
 
+		private const int MenuFontId = 0;
+		private const int MenuIndent = 2;
+		private const int MenuBoxLeft = 25;
+		private const int MenuBoxTop = 17;
+		private const int TitleLeft = 4;
+		private const int TitleTop = 4;
+		private const byte TitleColourValue = 15;
+		private const byte BorderColour = 5;
+
+		/// <summary>
+		/// Extra pixel added to each side of the black border, to compensate rounding errors while resizing.
+		/// </summary>
+		private const int BorderTolerance = 2;
+
+		private readonly GameOptionsMenuLayoutDelegate _layoutDelegate = new();
+		private GameOptionsMenuEntry[] _entries = [];
+
+		/// <summary>
+		/// Builds all menu entries.
+		/// Add a new option by adding a single entry here; the menu size follows automatically.
+		/// </summary>
+		private GameOptionsMenuEntry[] BuildEntries() =>
+		[
+			new(Option(Game.InstantAdvice, Translate("Instant Advice")), MenuInstantAdvice),
+			new(Option(Game.AutoSave, Translate("AutoSave")), MenuAutoSave, Common.AllowSaveGame),
+			new(Option(Settings.Instance.AutoSaveOnQuit, Translate("AutoSave on Quit")), MenuAutoSaveOnQuit, Common.AllowSaveGame),
+			new(Option(Settings.Instance.ConfirmExit, Translate("Confirm Quit")), MenuConfirmExit),
+			new(Option(Game.EndOfTurn, Translate("End of Turn")), MenuEndOfTurn),
+			new(Option(Game.Animations, Translate("Animations")), MenuAnimations),
+			new(Option(Game.Sound, Translate("Sound")), MenuSound),
+			new(Option(Game.EnemyMoves, Translate("Enemy Moves")), MenuEnemyMoves),
+			new(Option(Game.CivilopediaText, Translate("Civilopedia Text")), MenuCivilopediaText),
+			new(Option(Game.Palace, Translate("Palace")), MenuPalace),
+			new(Option(false, Translate("Change language...")), MenuChangeLanguage)
+		];
+
+		/// <summary>
+		/// Prefixes a menu text with the check mark of a toggled option, or with a space when it is off.
+		/// </summary>
+		private static string Option(bool active, string text) => $"{(active ? '^' : ' ')}{text}";
+
+		private GameOptionsMenuLayout RefreshLayout()
+		{
+			_entries = BuildEntries();
+			return _layoutDelegate.Calculate(MenuFontId, MenuIndent, Translate("Options:"), [.. _entries.Select(entry => entry.Text)]);
+		}
+
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (!RefreshNeeded())
@@ -103,27 +151,33 @@ namespace CivOne.Screens
 				return false;
 			}
 
-			int menuBoxWidth = 103;
-			int menuBoxHeight = 104;
+			GameOptionsMenuLayout layout = RefreshLayout();
 
-			Picture menuGfx = new(menuBoxWidth, menuBoxHeight);
+			Picture menuGfx = new(layout.MenuBoxWidth, layout.MenuBoxHeight);
 			menuGfx
 				.Tile(Pattern.PanelGrey)
 				.DrawRectangle3D()
-				.DrawText(Translate("Options:"), 0, 15, 4, 4);
+				.DrawText(Translate("Options:"), MenuFontId, TitleColourValue, TitleLeft, TitleTop);
 
-			IBitmap menuBackground = menuGfx[2, 11, menuBoxWidth, menuBoxHeight]
+			IBitmap menuBackground = menuGfx[layout.MenuOffsetX, layout.MenuOffsetY, layout.MenuWidth, _entries.Length * layout.FontHeight]
 				.ColourReplace((7, 11), (22, 3));
 
-			this.FillRectangle(24, 16, menuBoxWidth + 2, menuBoxHeight + 2, colour: 5); // produces black border, +2 because of round errors when resizing
-			this.AddLayer(menuGfx, 25, 17);
+			DrawBorder(layout);
+			this.AddLayer(menuGfx, MenuBoxLeft, MenuBoxTop);
 
-			CreateMenu(menuBackground);
+			CreateMenu(menuBackground, layout);
 
 			return true;
 		}
 
-		private void CreateMenu(IBitmap menuBackground)
+		private void DrawBorder(GameOptionsMenuLayout layout) => this.FillRectangle(
+			MenuBoxLeft - 1,
+			MenuBoxTop - 1,
+			layout.MenuBoxWidth + BorderTolerance,
+			layout.MenuBoxHeight + BorderTolerance,
+			colour: BorderColour);
+
+		private void CreateMenu(IBitmap menuBackground, GameOptionsMenuLayout layout)
 		{
 			Menu? menu = GetMenu<Menu>();
 			if (menu != null)
@@ -134,29 +188,22 @@ namespace CivOne.Screens
 			}
 			menu = new Menu(Palette, menuBackground)
 			{
-				X = 27,
-				Y = 28,
-				MenuWidth = 99,
+				X = MenuBoxLeft + layout.MenuOffsetX,
+				Y = MenuBoxTop + layout.MenuOffsetY,
+				MenuWidth = layout.MenuWidth,
 				ActiveColour = 11,
 				TextColour = 5,
 				DisabledColour = 3,
-				FontId = 0,
-				Indent = 2
+				FontId = MenuFontId,
+				Indent = MenuIndent
 			};
 			menu.MissClick += MenuCancel;
 			menu.Cancel += MenuCancel;
 
-			menu.Items.Add($"{(Game.InstantAdvice ? '^' : ' ')}{Translate("Instant Advice")}").OnSelect(MenuInstantAdvice);
-			menu.Items.Add($"{(Game.AutoSave ? '^' : ' ')}{Translate("AutoSave")}").SetEnabled(Common.AllowSaveGame).OnSelect(MenuAutoSave);
-			menu.Items.Add($"{(Settings.Instance.AutoSaveOnQuit ? '^' : ' ')}{Translate("AutoSave on Quit")}").SetEnabled(Common.AllowSaveGame).OnSelect(MenuAutoSaveOnQuit);
-			menu.Items.Add($"{(Settings.Instance.ConfirmExit ? '^' : ' ')}{Translate("Confirm Quit")}").OnSelect(MenuConfirmExit);
-			menu.Items.Add($"{(Game.EndOfTurn ? '^' : ' ')}{Translate("End of Turn")}").OnSelect(MenuEndOfTurn);
-			menu.Items.Add($"{(Game.Animations ? '^' : ' ')}{Translate("Animations")}").OnSelect(MenuAnimations);
-			menu.Items.Add($"{(Game.Sound ? '^' : ' ')}{Translate("Sound")}").OnSelect(MenuSound);
-			menu.Items.Add($"{(Game.EnemyMoves ? '^' : ' ')}{Translate("Enemy Moves")}").OnSelect(MenuEnemyMoves);
-			menu.Items.Add($"{(Game.CivilopediaText ? '^' : ' ')}{Translate("Civilopedia Text")}").OnSelect(MenuCivilopediaText);
-			menu.Items.Add($"{(Game.Palace ? '^' : ' ')}{Translate("Palace")}").OnSelect(MenuPalace);
-			menu.Items.Add($" {Translate("Change language...")}").OnSelect(MenuChangeLanguage);
+			foreach (GameOptionsMenuEntry entry in _entries)
+			{
+				menu.Items.Add(entry.Text).SetEnabled(entry.Enabled).OnSelect(entry.OnSelect);
+			}
 
 			AddMenu(menu);
 		}
@@ -166,8 +213,8 @@ namespace CivOne.Screens
 			using var defaultPalette = Common.DefaultPalette;
 			Palette = defaultPalette;
 
-			this.AddLayer(ScreenServiceFactory.CreateQueryService().LastScreen!, 0, 0)
-				.FillRectangle(24, 16, 105, 106, 5);
+			this.AddLayer(ScreenServiceFactory.CreateQueryService().LastScreen!, 0, 0);
+			DrawBorder(RefreshLayout());
 		}
 	}
 }
