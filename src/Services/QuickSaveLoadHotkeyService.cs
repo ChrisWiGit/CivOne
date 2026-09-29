@@ -70,7 +70,7 @@ namespace CivOne.Services
 		/// </remarks>
 		private string ResolveAutoSaveFilePath()
 		{
-			ISaveGamePathProvider pathProvider = new SaveGamePathProvider(_runtime, Settings.Instance);
+			SaveGamePathProvider pathProvider = new(_runtime, Settings.Instance);
 			return Path.Combine(pathProvider.EnsureAutoSaveDirectory(), QuitAutoSaveService.AutoSaveFileName);
 		}
 

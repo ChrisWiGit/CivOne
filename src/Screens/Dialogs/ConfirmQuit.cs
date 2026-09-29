@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -8,12 +8,17 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Collections.Generic;
 using CivOne.Graphics;
+using CivOne.Services;
 
 namespace CivOne.Screens.Dialogs
 {
 	internal class ConfirmQuit : BaseDialog
 	{
+		private const int DialogFontId = 0;
+
+		private readonly ConfirmQuitLayout _layout;
 		private readonly Func<byte, byte> _mapColour;
 		private readonly bool _useSolidDialogBackground;
 		private readonly byte _dialogTextColour;
@@ -55,18 +60,17 @@ namespace CivOne.Screens.Dialogs
 
 		protected override IMenu? CreateManagedMenu()
 		{
-			Menu menu = new Menu(Palette, SelectionMapped(3, 20, 100, 16))
+			Menu menu = new Menu(Palette, SelectionMapped(_layout.MenuOffsetX, _layout.MenuTop, _layout.MenuWidth, _layout.MenuHeight))
 			{
-				X = 103,
-				Y = 100,
+				X = _layout.DialogLeft + _layout.MenuOffsetX,
+				Y = _layout.DialogTop + _layout.MenuTop,
 				CenterTo320Coordinates = true,
-				MenuWidth = 100,
+				MenuWidth = _layout.MenuWidth,
 				ActiveColour = _menuActiveColour,
 				TextColour = _menuTextColour,
-				FontId = 0
+				FontId = DialogFontId
 			};
-			string[] choices = [Translate("Keep Playing"), Translate("Yes, Quit")];
-			foreach (string choice in choices)
+			foreach (string choice in _layout.MenuItems)
 			{
 				menu.Items.Add(choice);
 			}
@@ -90,8 +94,32 @@ namespace CivOne.Screens.Dialogs
 		/// Use this for screens like Credits, where dialog indices should map to the host menu color scheme.
 		/// When omitted, dialog colors are used unchanged.
 		/// </param>
-		public ConfirmQuit(Palette? sourcePalette = null, Func<byte, byte>? colourIndexMap = null) : base(100, 80, 104, 39, sourcePalette)
+		public ConfirmQuit(Palette? sourcePalette = null, Func<byte, byte>? colourIndexMap = null) : this(CreateLayout(), sourcePalette, colourIndexMap)
 		{
+		}
+
+		/// <summary>
+		/// Measures the translated dialog texts and derives the dialog size from them.
+		/// </summary>
+		/// <returns>The dialog metrics for the current language.</returns>
+		private static ConfirmQuitLayout CreateLayout()
+		{
+			ITranslationService translationService = TranslationServiceFactory.GetCurrent();
+			IReadOnlyList<string> questionLines = translationService.TranslateArray("Are you sure you\nwant to Quit?");
+			IReadOnlyList<string> menuItems =
+			[
+				translationService.Translate("Keep Playing"),
+				translationService.Translate("Yes, Quit")
+			];
+
+			ConfirmQuitLayoutDelegate layoutDelegate = new();
+			return layoutDelegate.Calculate(DialogFontId, questionLines, menuItems);
+		}
+
+		private ConfirmQuit(ConfirmQuitLayout layout, Palette? sourcePalette, Func<byte, byte>? colourIndexMap)
+			: base(layout.DialogLeft, layout.DialogTop, layout.Width, layout.Height, sourcePalette)
+		{
+			_layout = layout;
 			_mapColour = colourIndexMap ?? (colourIndex => colourIndex);
 			_useSolidDialogBackground = colourIndexMap != null;
 			_dialogTextColour = MapColour(15);
@@ -106,8 +134,10 @@ namespace CivOne.Screens.Dialogs
 				DialogBox.ColourReplace((7, _dialogBackgroundColour), (22, _dialogBackgroundColour));
 			}
 
-			DialogBox.DrawText(Translate("Are you sure you"), 0, _dialogTextColour, 5, 5);
-			DialogBox.DrawText(Translate("want to Quit?"), 0, _dialogTextColour, 5, 13);
+			for (int i = 0; i < _layout.QuestionLines.Count; i++)
+			{
+				DialogBox.DrawText(_layout.QuestionLines[i], DialogFontId, _dialogTextColour, _layout.TextIndent, _layout.TextTop + (i * _layout.FontHeight));
+			}
 		}
 	}
 }
