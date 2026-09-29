@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -14,17 +14,16 @@ using CivOne.Graphics;
 using CivOne.Screens.Debug;
 using CivOne.Screens.Reports;
 using CivOne.Services.EndGame;
-using CivOne.Graphics.Sprites;
 using CivOne.Tasks;
 using CivOne.Units;
 using CivOne.Events;
 using System.Collections.Generic;
-using CivOne.Services.SpaceShip;
 using CivOne.Screens.Dialogs;
 using CivOne.Advances;
 using CivOne.Buildings;
 using CivOne.Civilizations;
 using CivOne.Services;
+using CivOne.Services.Fonts;
 using CivOne.Services.Screen;
 
 namespace CivOne.Screens
@@ -168,6 +167,12 @@ namespace CivOne.Screens
 		private void MenuPaletteViewer(object? _, EventArgs args)
 		{
 			GameTask.Enqueue(Show.Screen<PaletteViewerScreen>());
+			Destroy();
+		}
+
+		private void MenuFontViewer(object? _, EventArgs args)
+		{
+			GameTask.Enqueue(Show.Screen(new FontViewerScreen(FontInspectionServiceFactory.CreateDefault())));
 			Destroy();
 		}
 
@@ -608,6 +613,7 @@ namespace CivOne.Screens
 				new(Translate("Instant Conquest"), () => InstantConquest(null, EventArgs.Empty)),
 				new(Translate("Instant Global Warming"), () => InstantGlobalWarming(null, EventArgs.Empty)),
 				new(Translate("Palette Viewer"), () => MenuPaletteViewer(null, EventArgs.Empty)),
+				new(Translate("Font Viewer"), () => MenuFontViewer(null, EventArgs.Empty)),
 				new(Translate("Show Player Slots"), () => MenuShowPlayerSlots(null, EventArgs.Empty)),
 				new(Translate("Settings"), () => ShowSettings(null, EventArgs.Empty)),
 				new(Translate("End Game: Conquest"),  () => EndGameConquest(null, EventArgs.Empty)),

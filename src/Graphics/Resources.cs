@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -124,6 +124,12 @@ namespace CivOne.Graphics
 			}
 		}
 		
+		/// <summary>
+		/// Gets the fonts loaded from <c>FONTS.CV</c>, in file order.
+		/// The list is empty when no font file was found.
+		/// </summary>
+		public IReadOnlyList<IFont> Fonts => _fonts;
+
 		public bool ValidCharacter(int fontId, char c)
 		{
 			byte asciiChar = (byte)c;
