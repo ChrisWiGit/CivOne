@@ -19,7 +19,7 @@ namespace CivOne.UnitTests
     /// penalty, the pending unhappiness, the stage order, the single modifiers, and the two entry points of
     /// the service.
     /// </summary>
-    public class OriginalCityCitizenServiceTests : TestsBase
+    public class CityCitizenServiceTests : TestsBase
     {
         private MockedGame _game = null!;
         private MockedCity _city = null!;
@@ -45,10 +45,10 @@ namespace CivOne.UnitTests
             _game.OnGetUnits = (_, _) => [];
         }
 
-        private OriginalCityCitizenService Create(PendingUnhappinessRefill refill, int? luxuryRate = null)
+        private CityCitizenService Create(PendingUnhappinessRefill refill, int? luxuryRate = null)
             => new(_city, _city, _game, _specialists, _map, refill, luxuryRate);
 
-        private OriginalCityCitizenService Testee() => Create(new EqualisingPendingUnhappinessDelegate().Refill);
+        private CityCitizenService Testee() => Create(new EqualisingPendingUnhappinessDelegate().Refill);
 
         private void WithEmpire(int cityCount, int cityIndex = 0)
         {
@@ -199,7 +199,7 @@ namespace CivOne.UnitTests
             // Base 14 under a despotism, 45 cities, slot 0: the penalty is 2.
             WithEmpire(45);
 
-            OriginalCityCitizenService testee = Testee();
+            CityCitizenService testee = Testee();
 
             Assert.Equal(2, testee.EmpireSizePenalty());
 
@@ -218,7 +218,7 @@ namespace CivOne.UnitTests
             // Base 14 under a despotism, 98 cities, slot 0: the penalty is 6.
             WithEmpire(98);
 
-            OriginalCityCitizenService testee = Testee();
+            CityCitizenService testee = Testee();
 
             Assert.Equal(6, testee.EmpireSizePenalty());
             Assert.Equal(1, testee.BaseUnhappy());
@@ -791,7 +791,7 @@ namespace CivOne.UnitTests
             WithPendingUnhappiness();
             _city.WithBuilding<Colosseum>();
 
-            OriginalCityCitizenService testee = Testee();
+            CityCitizenService testee = Testee();
 
             CitizenTypes first = testee.GetCitizenTypes();
             CitizenTypes second = testee.GetCitizenTypes();

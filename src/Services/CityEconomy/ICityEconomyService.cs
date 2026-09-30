@@ -26,15 +26,10 @@ namespace CivOne
 
 		/// <summary>
 		/// Creates the economy service for a city.
-		/// The same setting that selects the original city happiness model also selects the original order of
-		/// the luxury and tax calculation, so the city screen and the reports can never disagree.
 		/// </summary>
 		/// <param name="city">The city to calculate for.</param>
 		/// <param name="game">The game the city belongs to.</param>
 		/// <returns>The economy service to use.</returns>
-		static ICityEconomyService Create(City city, IGame game) =>
-			Settings.Instance.OriginalHappinessModel
-				? new OriginalCityEconomyService(city, game)
-				: new CityEconomyServiceImpl(city, game);
+		static ICityEconomyService Create(City city, IGame game) => new CityEconomyServiceImpl(city, game);
 	}
 }

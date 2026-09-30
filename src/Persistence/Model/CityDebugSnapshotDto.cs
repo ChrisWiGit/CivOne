@@ -8,9 +8,6 @@ namespace CivOne.Persistence.Model
 	/// </summary>
 	public class CityDebugSnapshotDto
 	{
-		[Doc("Whether Original city happiness model is enabled when the save is written.")]
-		public bool OriginalHappinessModelEnabled { get; set; }
-
 		[Doc("Difficulty level used for the snapshot.")]
 		public int Difficulty { get; set; }
 
@@ -62,13 +59,13 @@ namespace CivOne.Persistence.Model
 		[Doc("Home units currently outside the city tile.")]
 		public int HomeUnitsOutside { get; set; }
 
-		[Doc("Raw BaseUnhappy value from OriginalCityCitizenService, if available.")]
+		[Doc("Raw BaseUnhappy value from CityCitizenService, if available.")]
 		public int? BaseUnhappyRaw { get; set; }
 
-		[Doc("EmpireSizeBase value from OriginalCityCitizenService, if available.")]
+		[Doc("EmpireSizeBase value from CityCitizenService, if available.")]
 		public int? EmpireSizeBase { get; set; }
 
-		[Doc("EmpireSizePenalty value from OriginalCityCitizenService, if available.")]
+		[Doc("EmpireSizePenalty value from CityCitizenService, if available.")]
 		public int? EmpireSizePenalty { get; set; }
 	}
 }

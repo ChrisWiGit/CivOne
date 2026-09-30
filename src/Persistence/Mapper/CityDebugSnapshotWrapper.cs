@@ -44,7 +44,7 @@ namespace CivOne.Persistence.Model
 			int cityIndex = ResolveCityIndex(_playerGame, city);
 			int cityCount = ResolveCityCount(city);
 
-			if (Settings.Instance.OriginalHappinessModel && gameStarted)
+			if (gameStarted)
 			{
 				empireSizeBase = ComputeEmpireSizeBase(difficulty, city.PlayerIntf.Government.Id);
 				empireSizePenalty = isHumanOwner ? ComputeEmpireSizePenalty(cityIndex, cityCount, empireSizeBase.Value) : 0;
@@ -55,7 +55,6 @@ namespace CivOne.Persistence.Model
 
 			return new CityDebugSnapshotDto
 			{
-				OriginalHappinessModelEnabled = Settings.Instance.OriginalHappinessModel,
 				Difficulty = difficulty,
 				GovernmentId = city.PlayerIntf.Government.Id,
 				IsHumanOwner = isHumanOwner,
@@ -131,7 +130,7 @@ namespace CivOne.Persistence.Model
 
 		private static int ComputeEmpireSizeBase(int difficulty, int governmentId)
 		{
-			int clampedDifficulty = Math.Clamp(difficulty, 0, 4);
+			int clampedDifficulty = Math.Clamp(difficulty, 0, Screens.Services.CityCitizenService.MaxPenaltyDifficulty);
 			return Math.Max(((governmentId / 2) + 2) * (7 - clampedDifficulty), 0);
 		}
 

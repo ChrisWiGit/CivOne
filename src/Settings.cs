@@ -68,7 +68,6 @@ namespace CivOne
 		private bool _debugMenu;
 		private bool _terrainEditorMenu;
 		private bool _deityEnabled;
-		private bool _originalHappinessModel;
 		private BarbarianActivity _barbarianActivity = BarbarianActivity.VillagesAndRaids;
 		private bool _arrowHelper;
 		private bool _pathFinding;
@@ -518,21 +517,6 @@ namespace CivOne
 			AreaBased = 1
 		}
 
-		/// <summary>
-		/// Gets or sets whether cities use the city happiness model of the original game.
-		/// While this is off, the model CivOne shipped with is used and nothing changes.
-		/// </summary>
-		internal bool OriginalHappinessModel
-		{
-			get => _originalHappinessModel;
-			set
-			{
-				_originalHappinessModel = value;
-				SetSetting("OriginalHappinessModel", _originalHappinessModel ? "1" : "0");
-				Common.ReloadSettings = true;
-			}
-		}
-
 		internal StartPositionAlgorithmType StartPositionAlgorithm
 		{
 			get => _startPositionAlgorithm;
@@ -919,7 +903,6 @@ namespace CivOne
 			GetSetting("DebugMenu", ref _debugMenu);
 			GetSetting("TerrainEditorMenu", ref _terrainEditorMenu);
 			GetSetting("DeityEnabled", ref _deityEnabled);
-			GetSetting("OriginalHappinessModel", ref _originalHappinessModel);
 			int barbarianActivity = (int)_barbarianActivity;
 			if (GetSetting("BarbarianActivity", ref barbarianActivity, (int)BarbarianActivity.None, (int)BarbarianActivity.VillagesAndRaids))
 			{

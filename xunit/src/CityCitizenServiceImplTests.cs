@@ -88,16 +88,21 @@ namespace CivOne.UnitTests
                 [new MockedUnit().WithHome(mockedCity)]);
 
             mockedCity.ReturnHasWonderValues(false);
-            mockedCity.ReturnHasBuildingValues(true, false); // Temple to test building effects
+            // No market place, no bank (both queried by Luxuries() in stage 2), then a temple and no colosseum.
+            mockedCity.ReturnHasBuildingValues(false, false, true, false);
             mockedIGame.OnWonderObsoleteByType = (type) => false;
+            mockedIGame.OnGetPlayer = (_) => new MockedPlayer().withCitiesCount(1);
 
 
             var actual = testee.GetCitizenTypes();
 
+            // Same five-stage walk as EnumerateCitizensTests: the luxury happy citizen is taken back by the
+            // seat normalisation in stage 2, the temple has no effect without Mysticism or Ceremonial Burial,
+            // and Hanging Gardens turns one content citizen happy again in stage 5.
             AssertCitizenTypes(actual,
-                expectedHappy: 2,
+                expectedHappy: 1,
                 expectedContent: 1,
-                expectedUnhappy: 9,
+                expectedUnhappy: 10,
                 expectedRedShirt: 0,
                 expectedElvis: 1,
                 expectedEinstein: 1,
@@ -129,8 +134,10 @@ namespace CivOne.UnitTests
                 .WithHome(mockedCity)]);
 
             mockedCity.ReturnHasWonderValues(false, true); //hanging gardens
-            mockedCity.ReturnHasBuildingValues(true, false); // Temple to test building effects
+            // No market place, no bank (both queried by Luxuries() in stage 2), then a temple and no colosseum.
+            mockedCity.ReturnHasBuildingValues(false, false, true, false);
             mockedIGame.OnWonderObsoleteByType = (type) => false;
+            mockedIGame.OnGetPlayer = (_) => new MockedPlayer().withCitiesCount(1);
 
 
             var enumeration = testee.EnumerateCitizens().GetEnumerator();
@@ -154,13 +161,14 @@ namespace CivOne.UnitTests
             Assert.True(enumeration.MoveNext());
             var stage2 = enumeration.Current;
 
-            // 7 luxuries: 
-            // 1 unhappy to content to happy ( +2 + 2)
-            // 1 unhappy to content (+2)
+            // Luxuries() sets happy from the entertainer alone (trade is 0 in this mock), which overshoots
+            // the seats by one together with the 12 unhappy citizens; the normalisation takes the overshoot
+            // back from happy rather than from unhappy, so the luxury turns one unhappy into content instead
+            // of into happy.
             AssertCitizenTypes(stage2,
-                expectedHappy: 1,
+                expectedHappy: 0,
                 expectedContent: 1,
-                expectedUnhappy: citySize - specialists - 2,
+                expectedUnhappy: 11,
                 expectedRedShirt: 0,
                 expectedElvis: 1,
                 expectedEinstein: 1,
@@ -169,11 +177,12 @@ namespace CivOne.UnitTests
             Assert.True(enumeration.MoveNext());
             var stage3 = enumeration.Current;
 
-            // 1 unhappy to content from temple
+            // The temple has no effect without Mysticism or Ceremonial Burial, which this player has
+            // neither of, so the building stage leaves the counts from stage 2 unchanged.
             AssertCitizenTypes(stage3,
-                expectedHappy: 1,
-                expectedContent: 2,
-                expectedUnhappy: citySize - specialists - 3,
+                expectedHappy: 0,
+                expectedContent: 1,
+                expectedUnhappy: 11,
                 expectedRedShirt: 0,
                 expectedElvis: 1,
                 expectedEinstein: 1,
@@ -188,9 +197,9 @@ namespace CivOne.UnitTests
 
             // an unhappy to content from unit present
             AssertCitizenTypes(stage4,
-                expectedHappy: 1,
-                expectedContent: 3,
-                expectedUnhappy: citySize - specialists - 4,
+                expectedHappy: 0,
+                expectedContent: 2,
+                expectedUnhappy: 10,
                 expectedRedShirt: 0,
                 expectedElvis: 1,
                 expectedEinstein: 1,
@@ -201,9 +210,9 @@ namespace CivOne.UnitTests
 
             // 1 content to happy from wonder hanging gardens
             AssertCitizenTypes(stage5,
-                expectedHappy: 2,
-                expectedContent: 2,
-                expectedUnhappy: citySize - specialists - 4,
+                expectedHappy: 1,
+                expectedContent: 1,
+                expectedUnhappy: 10,
                 expectedRedShirt: 0,
                 expectedElvis: 1,
                 expectedEinstein: 1,
@@ -257,28 +266,6 @@ namespace CivOne.UnitTests
         }
 
         [Fact]
-        public void DowngradeCitizenTests()
-        {
-            Assert.Equal(Citizen.ContentMale, testee.DowngradeCitizen(Citizen.HappyMale));
-            Assert.Equal(Citizen.ContentFemale, testee.DowngradeCitizen(Citizen.HappyFemale));
-            Assert.Equal(Citizen.UnhappyMale, testee.DowngradeCitizen(Citizen.ContentMale));
-            Assert.Equal(Citizen.UnhappyFemale, testee.DowngradeCitizen(Citizen.ContentFemale));
-            Assert.Equal(Citizen.RedShirtMale, testee.DowngradeCitizen(Citizen.RedShirtMale));
-            Assert.Equal(Citizen.RedShirtFemale, testee.DowngradeCitizen(Citizen.RedShirtFemale));
-        }
-
-        [Fact]
-        public void UpgradeCitizenTests()
-        {
-            Assert.Equal(Citizen.ContentMale, testee.UpgradeCitizen(Citizen.UnhappyMale));
-            Assert.Equal(Citizen.ContentFemale, testee.UpgradeCitizen(Citizen.UnhappyFemale));
-            Assert.Equal(Citizen.HappyMale, testee.UpgradeCitizen(Citizen.ContentMale));
-            Assert.Equal(Citizen.HappyFemale, testee.UpgradeCitizen(Citizen.ContentFemale));
-            Assert.Equal(Citizen.UnhappyFemale, testee.UpgradeCitizen(Citizen.RedShirtMale));
-            Assert.Equal(Citizen.UnhappyMale, testee.UpgradeCitizen(Citizen.RedShirtFemale));
-        }
-
-        [Fact]
         public void CitizenByIndexTests()
         {
             // even index   
@@ -291,43 +278,6 @@ namespace CivOne.UnitTests
             Assert.Equal(Citizen.Entertainer, testee.CitizenByIndex(6, Citizen.Entertainer));
             Assert.Equal(Citizen.RedShirtFemale, testee.CitizenByIndex(7, Citizen.RedShirtMale));
             Assert.Equal(Citizen.RedShirtMale, testee.CitizenByIndex(8, Citizen.RedShirtFemale));
-        }
-
-        [Fact]
-        public void WearRedShirtTests()
-        {
-            var target = new Citizen[4];
-            testee.WearRedShirt(target, 3);
-            target[3] = Citizen.ContentMale;
-
-            Assert.Equal(Citizen.RedShirtMale, target[0]);
-            Assert.Equal(Citizen.RedShirtFemale, target[1]);
-            Assert.Equal(Citizen.RedShirtMale, target[2]);
-            Assert.NotEqual(Citizen.RedShirtFemale, target[3]);
-        }
-
-        [Fact]
-        public void DowngradeCitizensTests()
-        {
-            var target = new Citizen[7];
-            target[0] = Citizen.HappyMale;
-            target[1] = Citizen.HappyFemale;
-            target[2] = Citizen.ContentMale;
-            target[3] = Citizen.ContentFemale;
-            target[4] = Citizen.RedShirtMale;
-            target[5] = Citizen.HappyFemale;
-            target[6] = Citizen.HappyFemale;
-
-            testee.DowngradeCitizens(target, 5);
-
-            Assert.Equal(Citizen.ContentMale, target[0]);
-            Assert.Equal(Citizen.ContentFemale, target[1]);
-            Assert.Equal(Citizen.UnhappyMale, target[2]);
-            Assert.Equal(Citizen.UnhappyFemale, target[3]);
-            Assert.Equal(Citizen.RedShirtMale, target[4]);
-            Assert.Equal(Citizen.ContentFemale, target[5]);
-            // count exceeded, so no change
-            Assert.Equal(Citizen.HappyFemale, target[6]);
         }
 
         [Fact]
@@ -464,63 +414,6 @@ namespace CivOne.UnitTests
             }
         }
 
-        [Theory]
-        [InlineData(0, 2, 2)] // no upgrades
-        [InlineData(1, 2, 2)] // not enough for redshirt
-        [InlineData(2, 3, 2)] // 1st. redshirt to content
-        [InlineData(3, 2, 3)] // 1st. content to happy
-        [InlineData(6, 2, 4)] // 2nd. redshirt to content to happy
-        [InlineData(8, 2, 5)] // 1st.unhappy to happy (takes 2 upgrades)
-        [InlineData(10, 2, 6)] // 2nd.unhappy to happy (takes 2 upgrades)
-        [InlineData(12, 0, 8)] // 2x content to happy
-        [InlineData(14, 0, 8)] // no more upgrades
-        public void UpgradeCitizensTests(
-            int upgradeCount,
-            int expectedContentCount,
-            int expectedHappyCount)
-        {
-            mockedSpecialists!.Clear();
-            var target = new Citizen[8];
-
-            target[0] = Citizen.RedShirtMale;
-            target[1] = Citizen.RedShirtFemale;
-            target[2] = Citizen.UnhappyMale;
-            target[3] = Citizen.UnhappyFemale;
-            target[4] = Citizen.ContentMale;
-            target[5] = Citizen.ContentFemale;
-            target[6] = Citizen.HappyMale;
-            target[7] = Citizen.HappyFemale;
-
-            testee.UpgradeCitizens(target, upgradeCount);
-
-            int actualContentCount = target.Count(c => c == Citizen.ContentMale | c == Citizen.ContentFemale);
-            Assert.Equal(expectedContentCount, actualContentCount);
-
-            int actualHappyCount = target.Count(c => c == Citizen.HappyMale | c == Citizen.HappyFemale);
-            Assert.Equal(expectedHappyCount, actualHappyCount);
-        }
-
-        [Fact]
-        public void UpgradeCitizensCallsDoNotStopAtHappyTests()
-		{
-            var target = new Citizen[3];
-
-            target[0] = Citizen.UnhappyMale;
-            target[1] = Citizen.UnhappyFemale;
-            target[2] = Citizen.UnhappyMale;
-
-            testee.UpgradeCitizens(target, 1);
-            testee.UpgradeCitizens(target, 1);
-            testee.UpgradeCitizens(target, 1);
-            testee.UpgradeCitizens(target, 1);
-            testee.UpgradeCitizens(target, 1);
-
-            Assert.Equal(Citizen.HappyMale, target[0]);
-            Assert.Equal(Citizen.HappyFemale, target[1]);
-            Assert.Equal(Citizen.ContentMale, target[2]);
-			
-		}
-
         [Fact]
         public void CountCitizenTypesTests()
         {
@@ -608,176 +501,6 @@ namespace CivOne.UnitTests
             Assert.Equal(isCathedralPresent, testee.HasBachsCathedral());
         }
 
-        [Theory]
-        [InlineData(false, false, true, 0)]
-        [InlineData(true, true, false, 4)]
-        [InlineData(true, false, false, 4)]
-        [InlineData(true, false, true, 6)]
-        public void CathedralDeltaTest(
-            bool hasCathedral,
-            bool obsoleteMichelangelosChapel,
-            bool hasMichelangelosChapel,
-            int expectedDelta
-        )
-        {
-            mockedIGame.OnWonderObsoleteByType =
-                (type) => obsoleteMichelangelosChapel;
-
-            mockedCity.ReturnHasBuildingValues(
-                hasCathedral);
-
-            var player = new MockedPlayer();
-            player
-                .withCitiesInterface([
-                    new MockedCity()
-                    .ReturnHasWonderValues(
-                            hasMichelangelosChapel)
-                    .WithContinentId(mockedCity.ContinentId),
-                    new MockedCity()
-                    .ReturnHasWonderValues(
-                            true)
-                    .WithContinentId(mockedCity.ContinentId+1)
-                ]);
-            mockedCity.MockPlayer = player;
-
-            mockedIGame.OnGetPlayer = (owner) =>
-            {
-                return player;
-            };
-
-            Assert.Equal(expectedDelta, testee.CathedralDelta());
-        }
-
-        [Fact]
-        public void ApplyBuildingEffectsTestsWithShakespearesTheatre()
-        {
-            mockedCity.ReturnHasWonderValues(true);
-            mockedIGame.OnWonderObsoleteByType = (type) => false;
-
-            var ct = new CitizenTypes
-            {
-                Citizens = new Citizen[5],
-                Wonders = []
-            };
-            testee.InitCitizens(ct.Citizens, 5, 0);
-
-            testee.ApplyBuildingEffects(ct);
-
-            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
-
-            Assert.Equal(0, unhappy);
-            Assert.Equal(5, content);
-
-            Assert.Single(ct.Wonders);
-            Assert.IsType<ShakespearesTheatre>(ct.Wonders[0]);
-        }
-
-        [Theory]
-        [InlineData(false, false, 1)]
-        [InlineData(true, false, 2)]
-        [InlineData(true, true, 4)]
-        public void ApplyBuildingEffectsTestsWithTemple(
-            bool hasMysticism,
-            bool hasOracle,
-            int expectedContent)
-        {
-            mockedCity.Size = 5;
-            mockedCity.ReturnHasWonderValues(false);
-            mockedCity.ReturnHasBuildingValues(true, false); // Temple
-
-            mockedCity.MockPlayer = new MockedPlayer()
-                .withAdvance<Mysticism>(hasMysticism)
-                .WithWonderEffect<Oracle>(hasOracle);
-
-            var ct = new CitizenTypes
-            {
-                Citizens = new Citizen[5],
-                Buildings = [],
-                Wonders = []
-            };
-
-            testee.InitCitizens(ct.Citizens, 1, 4); // 1 content, 4 unhappy
-
-            testee.ApplyBuildingEffects(ct);
-
-            Assert.Single(ct.Buildings);
-            Assert.IsType<Temple>(ct.Buildings[0]);
-
-            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
-
-            Assert.Equal(0, happy);
-            Assert.Equal(0, redShirt);
-            Assert.Equal(mockedCity.Size - content, unhappy);
-            Assert.Equal(expectedContent + 1, content);
-        }
-
-        [Theory]
-        // The cathedral delta is the same in both cases, only the chapel entry of the list differs.
-        [InlineData(false)]
-        [InlineData(true)]
-        public void ApplyBuildingEffectsTestsCathedrals(bool hasChapel)
-        {
-            mockedCity.Size = 5;
-            mockedCity.ReturnHasWonderValues(false);
-            mockedCity.WithBuilding<Cathedral>();
-            testee.BachsCathedral = true;
-            testee.CathedralDeltaValue = 2;
-            testee.MichelangelosChapelEffect = hasChapel;
-
-            var ct = new CitizenTypes
-            {
-                Citizens = new Citizen[5],
-                Buildings = [],
-                Wonders = []
-            };
-            testee.InitCitizens(ct.Citizens, 1, 4); // 1 content, 4 unhappy
-
-            testee.ApplyBuildingEffects(ct);
-
-            Assert.Single(ct.Buildings);
-            Assert.IsType<Cathedral>(ct.Buildings[0]);
-
-            Assert.Equal(hasChapel ? 2 : 1, ct.Wonders.Count);
-            Assert.IsType<JSBachsCathedral>(ct.Wonders[0]);
-            Assert.Equal(hasChapel, ct.Wonders.Any(wonder => wonder is MichelangelosChapel));
-
-            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
-            Assert.Equal(0, happy);
-            Assert.Equal(0, redShirt);
-            Assert.Equal(0, unhappy);
-            Assert.Equal(1 + 4, content); // 1 initial + Bach (2) + Cathedral delta (2)
-        }
-
-        [Fact]
-        public void ApplyBuildingEffectsTestsColosseum()
-        {
-            mockedCity.Size = 5;
-            mockedCity.ReturnHasWonderValues(false);
-            mockedCity.ReturnHasBuildingValues(false, true, false); // Colosseum
-            testee.BachsCathedral = false;
-            testee.CathedralDeltaValue = 0;
-
-            var ct = new CitizenTypes
-            {
-                Citizens = new Citizen[5],
-                Buildings = [],
-                Wonders = []
-            };
-            testee.InitCitizens(ct.Citizens, 1, 4);
-
-            testee.ApplyBuildingEffects(ct);
-
-            Assert.Single(ct.Buildings);
-            Assert.IsType<Colosseum>(ct.Buildings[0]);
-
-            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
-
-            Assert.Equal(0, happy);
-            Assert.Equal(0, redShirt);
-            Assert.Equal(1, unhappy);
-            Assert.Equal(4, content); // 1 initial + 3 from Colosseum
-        }
-
         [Fact]
         public void ApplyBuildingEffectsTestsNoEffects()
         {
@@ -805,38 +528,6 @@ namespace CivOne.UnitTests
             Assert.Equal(0, redShirt);
             Assert.Equal(4, unhappy);
             Assert.Equal(1, content); // no change
-        }
-
-        [Fact]
-        public void ApplyWonderEffectsTests()
-        {
-            mockedCity.Size = 5;
-            mockedCity.MockPlayer = new MockedPlayer()
-                .WithWonderEffect<HangingGardens>(true)
-                .WithWonderEffect<CureForCancer>(true);
-
-            mockedIGame.OnWonderObsoleteByType = (type) => false;
-
-            var ct = new CitizenTypes
-            {
-                Citizens = new Citizen[5],
-                Wonders = [],
-                content = 2,
-                unhappy = 3
-            };
-            testee.InitCitizens(ct.Citizens, 2, 3); // 2 content, 3 unhappy
-
-            testee.ApplyWonderEffects(ct);
-
-            Assert.Equal(2, ct.Wonders.Count);
-            Assert.IsType<HangingGardens>(ct.Wonders[0]);
-            Assert.IsType<CureForCancer>(ct.Wonders[1]);
-
-            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
-
-            Assert.Equal(2, happy); // 2 from wonders
-            Assert.Equal(0, content);
-            Assert.Equal(3, unhappy);
         }
 
         [Fact]
@@ -915,59 +606,6 @@ namespace CivOne.UnitTests
             Assert.Equal(expectedUnhappy, unhappy);
         }
 
-        [Theory]
-        [InlineData(typeof(Anarchy), 0, 0)] // not democratic
-        [InlineData(typeof(Republic), 0, 0)] // no units not in city
-        [InlineData(typeof(CivOne.Governments.Democracy), 0, 0)] // no units not in city
-        [InlineData(typeof(Anarchy), 1, 0)] // not democratic
-        [InlineData(typeof(Republic), 1, 1)] // 1 unit
-        [InlineData(typeof(Republic), 2, 2)] // 2 units
-        [InlineData(typeof(CivOne.Governments.Democracy), 1, 2)] // 2 units
-        [InlineData(typeof(CivOne.Governments.Democracy), 2, 4)] // 2 units
-        [InlineData(typeof(CivOne.Governments.Democracy), 3, 5)] // 3 units with max city size 5
-
-        public void ApplyDemocracyEffectsTests(
-            Type government,
-            int unitsNotInCityCount,
-            int expectedUnhappy
-        )
-        {
-            mockedCity.Size = 5;
-            var player = new MockedPlayer().WithGovernmentType(government);
-            mockedCity.MockPlayer = player;
-            mockedIGame.OnGetPlayer = (playerId) =>
-            {
-                return player;
-            };
-            mockedIGame.OnGetUnits = (_, __) =>
-            {
-                var units = new List<IUnit>();
-                for (int i = 0; i < unitsNotInCityCount; i++)
-                {
-                    var unit = new MockedUnit()
-                    .WithHome(mockedCity);
-
-                    units.Add(unit);
-                }
-                return [.. units];
-            };
-
-            var ct = new CitizenTypes
-            {
-                Citizens = new Citizen[mockedCity.Size],
-                MarshallLawUnits = []
-            };
-            int initialContent = mockedCity.Size;
-
-            testee.InitCitizens(ct.Citizens, initialContent, 0);
-
-            testee.ApplyDemocracyEffects(ct, initialContent);
-
-            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
-
-            Assert.Equal(expectedUnhappy, unhappy);
-        }
-
         [Fact]
         public void CreateCitizenTypesTests()
         {
@@ -988,119 +626,6 @@ namespace CivOne.UnitTests
             Assert.Empty(actual.Wonders);
             Assert.NotNull(actual.MarshallLawUnits);
             Assert.Empty(actual.MarshallLawUnits);
-        }
-
-        [Theory]
-        [InlineData(35, 0)]
-        [InlineData(36, 0)]
-        [InlineData(37, 1)]
-        [InlineData(48, 2)]
-        [InlineData(61, 3)]
-        [InlineData(62, 3)]
-        public void NumberOfRedShirtsTests(int totalCities, int expectedRedShirts)
-        {
-            int result = testee.NumberOfRedShirts(totalCities);
-            Assert.Equal(expectedRedShirts, result);
-        }
-
-        [Theory]
-        [InlineData(3, 10, 5, 5, 0)] // difficulty too low
-        [InlineData(4, 10, 5, 5, 0)] // total cities too low < 12
-        [InlineData(4, 12, 5, 5, 0)] // total cities at limit = 12 
-        [InlineData(4, 13, 5, 1, 0)] // total cities just above limit > 13
-        [InlineData(4, 24, 5, 1, 0)] // total cities at limit = 24
-        [InlineData(4, 25, 5, 0, 0)] // total cities just above limit > 24
-        [InlineData(4, 36, 5, 0, 0)] // total cities well above limit > 24
-        [InlineData(5, 37, 5, 0, 1)] // first redshirt at 37 cities > 36
-        [InlineData(5, 36 + 12 + 1, 5, 0, 2)] // second redshirt at 48 cities >= 48
-        [InlineData(5, 36 + 12 + 12 + 1, 5, 0, 3)] // third redshirt at 61 cities
-        [InlineData(5, 36 + 12 + 12 + 12 + 1, 5, 0, 4)] // fourth redshirt at 73 cities
-        public void ApplyEmperorEffectsTests(
-            int gameDifficulty,
-            int totalCities,
-            int citySize,
-            int expectedBornContent,
-            int expectedReadShirts
-        )
-        {
-            // Also tests:
-            //  NumberOfRedShirts(totalCities)
-            mockedIGame.OnGetPlayer = (playerId) =>
-            {
-                return new MockedPlayer().withCitiesCount(totalCities);
-            };
-            mockedIGame.Difficulty = gameDifficulty;
-            mockedCity.Size = (byte)citySize;
-
-            CitizenTypes ct = new()
-            {
-                Citizens = new Citizen[citySize]
-            };
-            testee.InitCitizens(ct.Citizens, citySize, 0);
-            testee.ApplyEmperorEffects(ct);
-
-            var (happy, content, unhappy, redShirt) = testee.CountCitizenTypes(ct.Citizens);
-
-            Assert.Equal(expectedBornContent, content);
-            Assert.Equal(expectedReadShirts, redShirt);
-        }
-
-        [Theory]
-        //
-        // difficulty, size, specialists, expectedContent, expectedUnhappy
-        //
-        [InlineData(0, 10, 0, 6, 4)]  //standard count of unhappy citizens
-        [InlineData(1, 10, 0, 5, 5)]  // for different difficulties
-        [InlineData(2, 10, 0, 4, 6)]
-        [InlineData(3, 10, 0, 3, 7)]
-        [InlineData(4, 10, 0, 2, 8)]
-        [InlineData(5, 10, 0, 1, 9)]
-        [InlineData(5, 10, 1, 0, 9)] // last content citizen becomes specialist
-
-        [InlineData(0, 10, -1, 5, 4)]  //standard count of unhappy citizens
-        [InlineData(0, 10, -2, 4, 4)]
-        [InlineData(0, 10, -3, 3, 4)]
-        [InlineData(0, 10, -4, 2, 4)]
-        [InlineData(0, 10, -5, 1, 4)]
-        [InlineData(0, 10, -6, 0, 4)]
-        [InlineData(0, 10, -7, 0, 3)] // specialist start reducing unhappy citizens
-        [InlineData(0, 10, -8, 0, 2)]
-        [InlineData(0, 10, -9, 0, 1)]
-        [InlineData(0, 10, -10, 0, 0)]
-
-        [InlineData(0, 5, 0, 5, 0)]  // maximum Content at lowest Difficulty
-        [InlineData(0, 5, 3, 2, 0)]  // only 1 Worker, high ContentLimit
-        [InlineData(2, 3, 0, 3, 0)]  // contentLimit<workersAvailable
-        [InlineData(4, 3, 3, 0, 0)]  // all Specialists -> no Workers, everything 0
-        [InlineData(3, 5, 1, 2, 2)]  // medium Difficulty, mixed Case
-        [InlineData(5, 4, 3, 0, 1)]  // negative contentLimit -> content=0
-        public void CalculateCityStatsAllCases(
-            byte difficulty,
-            byte citySize,
-            int specialists,
-            int expectedContent,
-            int expectedUnhappy)
-        {
-            // Arrange
-            mockedIGame.Difficulty = difficulty;
-            mockedCity.Size = citySize;
-
-            var ct = new CitizenTypes
-            {
-                Citizens = new Citizen[citySize],
-                elvis = specialists < 0 ? -specialists : specialists >= 1 ? 1 : 0,
-                einstein = specialists >= 2 ? 1 : 0,
-                taxman = specialists >= 3 ? 1 : 0
-            };
-
-            Assert.InRange(specialists, -10, 3);
-
-            // Act
-            var (initialUnhappyCount, initialContent) = testee.CalculateCityStats(ct);
-
-            // Assert
-            Assert.Equal(expectedContent, initialContent);
-            Assert.Equal(expectedUnhappy, initialUnhappyCount);
         }
 
         [Fact]
