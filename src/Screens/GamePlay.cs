@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -158,6 +158,8 @@ namespace CivOne.Screens
 				_gameMenu.Items.Add(null);
 			}
 			_gameMenu.Items.Add(Translate("Retire")).OnSelect((s, a) => GameTask.Enqueue(Show.Screen<ConfirmRetire>()));
+			// Deliberate: the menu command always confirms, as in the original game.
+			// The "Confirm quit" setting only applies to closing the window, which the original did not have.
 			_gameMenu.Items.Add(Translate("QUIT to DOS")).OnSelect((s, a) => GameTask.Enqueue(Show.Screen<ConfirmQuit>()));
 			
 			_menuX = 16;

@@ -140,6 +140,7 @@ namespace CivOne
 
 			if (!Settings.Instance.ConfirmExit)
 			{
+				// This check does not apply to the main menu exit dialog, since it is a deliberate choice to quit the game.
 				return false;
 			}
 
