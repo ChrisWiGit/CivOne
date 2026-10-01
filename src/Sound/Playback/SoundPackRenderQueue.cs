@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -86,6 +87,51 @@ internal sealed class SoundPackRenderQueue : ISoundPackRenderQueue
                 .Unwrap();
         }
     }
+
+    /// <summary>
+    /// Waits until every warm-up and render started so far has ended.
+    /// </summary>
+    /// <remarks>
+    /// The background work writes into the pack's cache folder, so anything that removes that
+    /// folder - shutting a profile down, a test cleaning up its temp folder - has to wait for it
+    /// first. Work that failed counts as ended.
+    /// Only work that has already been started is waited for: a caller that keeps handing the
+    /// queue new packs or tunes keeps this waiting, so stop feeding the queue before calling it.
+    /// </remarks>
+    /// <returns>A task that completes once no started work is left running.</returns>
+    internal async Task WhenIdleAsync()
+    {
+        while (true)
+        {
+            Task chain = CurrentWarmUpChain();
+            Task[] started = [chain, .. StartedRenders()];
+
+            // Whether this round found anything still running. A round that found everything
+            // finished is what ends the wait, so each further round needs real work to wait for.
+            bool wasIdle = Array.TrueForAll(started, task => task.IsCompleted);
+
+            // Await through a continuation: a failed render must not turn a wait into a throw.
+            await Task.WhenAll(started)
+                .ContinueWith(static _ => { }, CancellationToken.None,
+                    TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default)
+                .ConfigureAwait(false);
+
+            // A warm-up finishing may have started renders that were not in the list above, so
+            // look again and only stop once a whole round found nothing left to wait for.
+            if (wasIdle && ReferenceEquals(CurrentWarmUpChain(), chain)) return;
+        }
+    }
+
+    private Task CurrentWarmUpChain()
+    {
+        lock (_warmUpLock)
+        {
+            return _warmUpChain;
+        }
+    }
+
+    private Task[] StartedRenders()
+        => [.. _renders.Values.Where(render => render.IsValueCreated).Select(render => (Task)render.Value)];
 
     /// <summary>
     /// Drops a remembered render whose wave file is no longer on disk, so the next request renders

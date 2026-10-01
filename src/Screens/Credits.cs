@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -73,6 +73,7 @@ namespace CivOne.Screens
 
 		private readonly MenuBarHotkeyDelegate _hotkeyDelegate = new();
 		private readonly WorldGenerationMusicDelegate _generationMusic = new();
+		private readonly TitleMusicDelegate _titleMusic = new();
 		private Dictionary<char, Action<object, EventArgs>>? _shortKeyMapping;
 		private Action<object, EventArgs>? _shortCutAction;
 		private int _mouseX = -1;
@@ -439,7 +440,7 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 				if (!Game.LoadYamlGame(Runtime.Settings.LoadCosFile))
 				{
 					Log("Failed to load YAML game");
-					Common.AddScreen(new Credits());
+					Common.AddScreen(new Credits(playTitleMusic: false));
 
 					var savegameName = Path.GetFileName(Runtime.Settings.LoadCosFile);
 					GameTask.Enqueue(Message.Error(
@@ -447,6 +448,7 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 						TranslateFormattedArray("Could not load save game from --load-cos.\nFile: {0}", savegameName)));
 					return;
 				}
+				_titleMusic.Stop();
 				Common.DestroyScreen(Common.Screens.FirstOrDefault(s => s is GamePlay, null));
 				Common.AddScreen(new GamePlay());
 				return;
@@ -556,7 +558,26 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 			}
 		}
 
-		public Credits()
+		/// <summary>
+		/// Creates the main menu screen with its title music.
+		/// </summary>
+		/// <remarks>
+		/// Kept as a real parameterless constructor: <see cref="Tasks.Show.Screen(System.Type)"/>
+		/// creates screens through <c>Activator.CreateInstance</c>, which does not accept a
+		/// constructor whose only parameter is optional.
+		/// </remarks>
+		public Credits() : this(true)
+		{
+		}
+
+		/// <summary>
+		/// Creates the main menu screen.
+		/// </summary>
+		/// <param name="playTitleMusic">
+		/// <c>false</c> when the screen is only shown again after a submenu was left, so the title
+		/// music that is already running is neither restarted nor layered on top of itself.
+		/// </param>
+		public Credits(bool playTitleMusic = true)
 		{
 			Runtime.SetWindowTitle($"{Settings.WindowTitle} (press SHIFT+F1 to enter Setup)");
 
@@ -598,10 +619,10 @@ if (_noiseCounter == 0 && HasMenu && !Common.HasScreenType<Menu>())
 
 			Palette = _pictures[2].Palette;
 
-			if (Settings.Sound != GameOption.Off)
+			// In this stage using Game.PlaySound() is not possible, as the Game instance is not yet created.
+			if (playTitleMusic)
 			{
-				// In this stage using Game.PlaySound() is not possible, as the Game instance is not yet created.
-				SoundPlaybackStrategyProvider.Current.PlaySound(SoundNames.MusicTitle);
+				_titleMusic.Start();
 			}
 
 			if (!Runtime.Settings.ShowCredits) SkipIntro();

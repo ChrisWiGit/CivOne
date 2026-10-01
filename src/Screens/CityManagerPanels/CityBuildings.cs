@@ -226,7 +226,9 @@ namespace CivOne.Screens.CityManagerPanels
 		{
 			if (args.KeyChar == 'S')
 			{
-				if (_improvements.Length == 0) return true;
+				// CW: Only buildings can be sold. Without a sellable building the sell mode must not be
+				// activated, otherwise the panel grabs the input focus with no selection and cannot be left.
+				if (BuildingsCount == 0) return true;
 
 				Refresh();
 
@@ -245,8 +247,12 @@ namespace CivOne.Screens.CityManagerPanels
 					return true;
 				}
 
+				int firstBuilding = FirstBuildingIndex;
+				if (firstBuilding == -1) return true;
+
+				_page = firstBuilding / MAX_BUILDINGS;
 				_cityManager.SetActiveScreen(this);
-				_selectedBuilding = FirstBuildingIndex + (_page * MAX_BUILDINGS);
+				_selectedBuilding = firstBuilding;
 
 				return true;
 			}

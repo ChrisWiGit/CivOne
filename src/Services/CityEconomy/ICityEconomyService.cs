@@ -24,7 +24,12 @@ namespace CivOne
 	{
 		CityEconomyBreakdown CalculateBreakdown();
 
-		static ICityEconomyService Create(City city, IGame game) =>
-			new CityEconomyServiceImpl(city, game);
+		/// <summary>
+		/// Creates the economy service for a city.
+		/// </summary>
+		/// <param name="city">The city to calculate for.</param>
+		/// <param name="game">The game the city belongs to.</param>
+		/// <returns>The economy service to use.</returns>
+		static ICityEconomyService Create(City city, IGame game) => new CityEconomyServiceImpl(city, game);
 	}
 }

@@ -23,6 +23,8 @@ namespace CivOne.Screens
 				Citizen.ContentFemale => 1,
 				Citizen.UnhappyMale => 2,
 				Citizen.UnhappyFemale => 2,
+				Citizen.RedShirtMale => 2,
+				Citizen.RedShirtFemale => 2,
 				Citizen.Taxman => 3,
 				Citizen.Scientist => 3,
 				Citizen.Entertainer => 3,
@@ -43,7 +45,9 @@ namespace CivOne.Screens
 			{
 				xx += CitizenOffset;
 
-				if ((int)citizens[citizensIndex] >= 6)
+				Citizen citizenType = citizens[citizensIndex];
+				bool isSpecialist = citizenType is Citizen.Taxman or Citizen.Scientist or Citizen.Entertainer;
+				if (isSpecialist)
 				{
 					specialistIndex++;
 				}

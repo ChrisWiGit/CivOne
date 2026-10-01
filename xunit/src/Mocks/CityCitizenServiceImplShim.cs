@@ -1,4 +1,4 @@
-using CivOne.Enums;
+﻿using CivOne.Enums;
 using CivOne.Screens.Services;
 using System.Collections.Generic;
 
@@ -34,6 +34,16 @@ namespace CivOne.UnitTests
                 return CathedralDeltaValue.Value;
             }
             return base.CathedralDelta();
+        }
+
+		public bool? MichelangelosChapelEffect { get; set; }
+		internal override bool HasMichelangelosChapelEffect()
+        {
+            if (MichelangelosChapelEffect.HasValue)
+            {
+                return MichelangelosChapelEffect.Value;
+            }
+            return base.HasMichelangelosChapelEffect();
         }
     }
 }

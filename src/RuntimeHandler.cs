@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -24,6 +24,7 @@ using CivOne.Graphics.ImageFormats;
 using CivOne.Mcp;
 using CivOne.Mcp.Contracts;
 using CivOne.Screens;
+using CivOne.Screens.Dialogs;
 using CivOne.Screens.StartupWizard;
 using CivOne.Screens.Reports;
 using CivOne.Graphics.Sprites;
@@ -121,7 +122,38 @@ namespace CivOne
 		private string? _notificationLayerText;
 		private Size _notificationLayerSize;
 		private readonly IMcpService _mcpService;
+		private readonly IQuitAutoSaveServiceFactory? _quitAutoSaveServiceFactory;
+		private IQuitAutoSaveServiceFactory QuitAutoSaveServiceFactory
+			=> _quitAutoSaveServiceFactory ?? new QuitAutoSaveServiceFactory();
 		private bool _disposed;
+
+		internal static bool RequestQuitConfirmationOnWindowClose()
+			=> _instance?.TryRequestQuitConfirmationOnWindowClose() ?? false;
+
+		private bool TryRequestQuitConfirmationOnWindowClose()
+		{
+			// The credits screen quits immediately, without asking for confirmation.
+			if (Common.GamePlay == null)
+			{
+				return false;
+			}
+
+			if (!Settings.Instance.ConfirmExit)
+			{
+				// This check does not apply to the main menu exit dialog, since it is a deliberate choice to quit the game.
+				return false;
+			}
+
+			// The confirmation was already asked for, so a second close request quits without asking again.
+			if (Common.HasScreenType<ConfirmQuit>())
+			{
+				return false;
+			}
+
+			Common.AddScreen(new ConfirmQuit(Common.TopScreen?.Palette));
+
+			return true;
+		}
 
 		private bool Update()
 		{
@@ -615,8 +647,13 @@ namespace CivOne
             _instance = null;
         }
 
-		private RuntimeHandler(IRuntime runtime, IQuickSaveLoadHotkeyService quickSaveLoadHotkeyService, bool concurrent = true)
+		private RuntimeHandler(
+			IRuntime runtime,
+			IQuickSaveLoadHotkeyService quickSaveLoadHotkeyService,
+			bool concurrent = true,
+			IQuitAutoSaveServiceFactory? quitAutoSaveServiceFactory = null)
 		{
+			_quitAutoSaveServiceFactory = quitAutoSaveServiceFactory;
 			Runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
 			_mcpService = McpServiceFactory.Create(runtime);
 			_quickSaveLoadHotkeyService = quickSaveLoadHotkeyService ?? throw new ArgumentNullException(nameof(quickSaveLoadHotkeyService));
@@ -658,8 +695,15 @@ namespace CivOne
 
 		public static void Shutdown()
 		{
+			_instance?.SaveGameOnQuit();
 			_instance?.Dispose();
 		}
+
+		/// <summary>
+		/// Writes the quit autosave, if a game with a loaded map is running.
+		/// </summary>
+		private void SaveGameOnQuit()
+			=> QuitAutoSaveServiceFactory.Create(Runtime, Settings.Instance).TrySaveOnQuit();
 
 		public void Dispose()
 		{

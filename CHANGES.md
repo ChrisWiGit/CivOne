@@ -5,12 +5,23 @@ If you want to add a change, do not add technical details, but describe the chan
 -->
 # Changes
 
-## Comment
-
-I did not browse all issues on github at first, so I did not recognize that some of my fixes have an issue.
-
 ## History
 
+* **License**: New files are licensed under MIT, and the original files (even when changed) are still under CC0-1.0. See [License](LICENSE.md) for details.
+* Feature: Font Viewer screen.
+  * The Font Viewer screen shows all fonts in the game and lets you select a font to view its characters.
+  * The Font Viewer screen can be opened from the debug menu by selecting "Font Viewer".
+  * There are multiple options to change the font, zoom level, input characters, and copy the font to the clipboard.
+* Feature: The game now autosaves on exit. This can be disabled in the setup menu under "Patches → Auto save on exit".
+* Feature: Ask for confirmation when quitting the game. This can be disabled in the setup menu under "Patches → Confirm quit".
+* Feature: Added red shirt unhappy citizens.
+* Dev-Feature: Use graphify to generate project graphs. Use the `graphify-fast` scripts to generate these graphs. These can be used, for example, with LLM tooling.
+* Fix: Fixed drawing of buildings and wonders on the city screen.
+* Feature: The game now supports all original Civilization wonders on the city view screen.
+* Feature: Major overhaul of the citizen happiness calculation to match the original game.
+  * Adds additional city information to the YAML (COS) save format for debugging and testing (only available when the debug menu is enabled).
+* Feature: Sound conversion now supports playback transitions between tracks. This is used on the leader screen, where the leader theme is playing and the leader mood turns unhappy. In this case, the current music is paused, the sting is played, and the previous music is resumed afterwards.
+  * Also applied sound playback to all possible screens.
 * Fix: Original imported text files now preserve Western European special letters from classic DOS data, so German umlauts and similar characters are no longer lost when those files are used as fallback text.
   * If imported original text files are not recognized as English, the startup wizard warning now explains the real effect: in `Original language` mode, some texts can stay in the imported original language while other texts stay in CivOne language.
 * Feature: Added civtext-hashgen to generate reference hashes for original Civilization text files.

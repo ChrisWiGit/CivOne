@@ -965,6 +965,22 @@ namespace CivOne
 		public ReadOnlyCollection<ICity> CitiesInterface { get { 
 			return _cities.Cast<ICity>().ToList().AsReadOnly(); } }
 
+		/// <summary>
+		/// Gets the position of the given city in the city list.
+		/// The position is the equivalent of the original game's numeric city slot and is derived on every
+		/// call, so it always matches the list it came from.
+		/// </summary>
+		/// <param name="city">The city to look up.</param>
+		/// <returns>The zero based position, or -1 when the city is not part of this game.</returns>
+		public int GetCityIndex(ICityBasic city) => _cities.FindIndex(c => ReferenceEquals(c, city));
+
+		/// <summary>
+		/// Tells whether the given player is the human player of this game.
+		/// </summary>
+		/// <param name="playerIndex">The player to check.</param>
+		/// <returns><c>true</c> when the player is the human player.</returns>
+		public bool IsHumanPlayer(byte playerIndex) => playerIndex == HumanPlayerId;
+
 		public IWonder[] BuiltWonders => [.. _cities.SelectMany(c => c.Wonders)];
 
 		public bool WonderBuilt<T>() where T : IWonder => BuiltWonders.Any(w => w is T);

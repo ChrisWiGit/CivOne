@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -868,7 +868,36 @@ namespace CivOne.Screens
 					Translate("Choose where barbarians come from in new games."),
 					Translate("Running games keep their own value."))
 				.OnSelect(GotoMenu(BarbarianActivityMenu)),
+			MenuItem.Create(TranslateFormatted("AutoSave on quit: {0}", Settings.AutoSaveOnQuit.YesNo()))
+				.WithDescription(
+					Translate("Save the running game when the game is closed."),
+					Translate("Overwrites the existing autosave."))
+				.OnSelect(GotoMenu(AutoSaveOnQuitMenu)),
+			MenuItem.Create(TranslateFormatted("Confirm quit: {0}", Settings.ConfirmExit.YesNo()))
+				.WithDescription(
+					Translate("Ask before a running game is closed."))
+				.OnSelect(GotoMenu(ConfirmExitMenu)),
 			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(MainMenu, 1))
+		);
+
+		private void AutoSaveOnQuitMenu() => CreateMenu(Translate("AutoSave on quit"), GotoMenu(PatchesMenu, 16),
+			MenuItem.Create(false.YesNo())
+				.WithDescription(Translate("Do not save the game when it is closed."))
+				.OnSelect((s, a) => Settings.AutoSaveOnQuit = false).SetActive(() => !Settings.AutoSaveOnQuit),
+			MenuItem.Create(TranslateFormatted("{0} (default)", true.YesNo()))
+				.WithDescription(Translate("Save the running game when it is closed."))
+				.OnSelect((s, a) => Settings.AutoSaveOnQuit = true).SetActive(() => Settings.AutoSaveOnQuit),
+			MenuItem.Create(Translate("Back"))
+		);
+
+		private void ConfirmExitMenu() => CreateMenu(Translate("Confirm quit"), GotoMenu(PatchesMenu, 17),
+			MenuItem.Create(false.YesNo())
+				.WithDescription(Translate("Close a running game without asking."))
+				.OnSelect((s, a) => Settings.ConfirmExit = false).SetActive(() => !Settings.ConfirmExit),
+			MenuItem.Create(TranslateFormatted("{0} (default)", true.YesNo()))
+				.WithDescription(Translate("Ask before a running game is closed."))
+				.OnSelect((s, a) => Settings.ConfirmExit = true).SetActive(() => Settings.ConfirmExit),
+			MenuItem.Create(Translate("Back"))
 		);
 
 		private MenuItem<int> BarbarianActivityMenuItem(BarbarianActivity activity, params string[] description)

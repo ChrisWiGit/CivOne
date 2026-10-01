@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -11,6 +11,7 @@ using CivOne.Enums;
 using CivOne.Events;
 using CivOne.Graphics;
 using CivOne.Services;
+using CivOne.Sound;
 using CivOne.UserInterface;
 using System;
 using System.Linq;
@@ -27,6 +28,8 @@ namespace CivOne.Screens
 
 		private MouseCursor _cursor = MouseCursor.None;
 		public override MouseCursor Cursor => _cursor;
+
+		private readonly TitleMusicDelegate _titleMusic = new();
 
 		private char _driveLetter = 'C';
 		private bool _update = true;
@@ -89,6 +92,9 @@ namespace CivOne.Screens
 				return false;
 			}
 
+			// The title music of the main menu would otherwise keep playing under the loaded game.
+			_titleMusic.Stop();
+
 			// Allows in-game loading of a game (destroy old gameplay)
 			Common.DestroyScreen(Common.Screens.FirstOrDefault(s => s is GamePlay, null));
 			Common.AddScreen(new GamePlay());
@@ -146,6 +152,9 @@ namespace CivOne.Screens
 				BackToCredits();
 				return;
 			}
+
+			// The title music of the main menu would otherwise keep playing under the loaded game.
+			_titleMusic.Stop();
 
 			// Allows in-game loading of a game (destroy old gameplay)
 			Common.DestroyScreen(Common.Screens.FirstOrDefault(s => s is GamePlay, null));
@@ -205,10 +214,10 @@ namespace CivOne.Screens
 			// fire-eggs fix for issue #34: when cancel out of this, go back to 
 			// credits screen, _always_ skipping the intro, and not animating 
 			// the logo.
-			var blah = new Credits();
-			blah.SkipIntro();
-			blah.SkipLogo();
-			Common.AddScreen(blah);
+			var credits = new Credits(playTitleMusic: false);
+			credits.SkipIntro();
+			credits.SkipLogo();
+			Common.AddScreen(credits);
 			Destroy();
 		}
 

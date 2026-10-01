@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -488,6 +488,51 @@ namespace CivOne
 		}
 
 		/// <summary>
+		/// Trade of the city before corruption, including the trade from trade routes.
+		/// </summary>
+		public int TradeTotalGross => ResourceTiles.Sum(t => TradeValue(t)) + TradingCitiesSumValue;
+
+		/// <summary>
+		/// Corruption used by the happiness model when it turns trade into luxuries.
+		///
+		/// Three rules separate this from <see cref="Corruption"/>, which stays the corruption of the
+		/// economy: a democracy is free of it, a courthouse halves it, and owning the palace does not lower
+		/// it. The palace exception matters, because letting it through would make the capital produce
+		/// luxuries no other city can reach.
+		/// </summary>
+		public int LuxuryCorruption
+		{
+			get
+			{
+				IGovernment government = CityOwnerPlayer.Government;
+				if (government is Governments.Democracy)
+				{
+					return 0;
+				}
+
+				int distance;
+				if (government is Governments.Communism)
+				{
+					distance = 10;
+				}
+				else
+				{
+					City? capital = CityOwnerPlayer.GetCapital();
+					distance = capital == null ? 32 : Common.DistanceToTile(X, Y, capital.X, capital.Y);
+				}
+
+				int corruption = TradeTotalGross * distance * 3 / (government.Id * 20 + 80);
+
+				if (HasBuilding<Courthouse>())
+				{
+					corruption /= 2;
+				}
+
+				return corruption;
+			}
+		}
+
+		/// <summary>
 		/// Luxury count for the city, taking trade, buildings and entertainers
 		/// into account.
 		/// </summary>
@@ -886,6 +931,8 @@ namespace CivOne
 									
 				foreach (IBuilding building in Reflect.GetBuildings().Where(b => CityOwnerPlayer.ProductionAvailable(b) && !_buildings.Any(x => x.Id == b.Id)))
 					{
+						// CW: Palace is already yielded above when it is not built yet.
+						if (building is Palace) continue;
 						if (HasBuilding<Palace>() && building is Courthouse) continue;
 						yield return building;
 					}
@@ -992,13 +1039,16 @@ namespace CivOne
 		/// In the same way, the properties IsInDisorder, ContentCitizens, UnhappyCitizens, HappyCitizens
 		/// also have been removed. Use the returned structure of GetCitizenTypes() instead.
 		/// </summary>
+		/// <param name="luxuryRate">
+		/// Optional fixed luxury rate, in tenths, used by callers that need score-stable citizen results.
+		/// </param>
 		/// <returns></returns>
-		internal CitizenTypes GetCitizenTypes()
+		internal CitizenTypes GetCitizenTypes(int? luxuryRate = null)
 		{
 			UpdateSpecialists();
 
 			var service = ICityCitizenService.Create(this,
-				Game.Instance, _specialists, Map.Instance);
+				Game.Instance, _specialists, Map.Instance, luxuryRate);
 			return service.GetCitizenTypes();
 		}
 		internal IEnumerable<Citizen> GetCitizens()
@@ -1244,7 +1294,7 @@ namespace CivOne
 					// TODO fire-eggs not showing loses side-effects
 					if (CityOwnerPlayer.IsHuman) // && !Game.Animations)
 					{
-						PlaySound(SoundNames.EventAlarm);
+						// The alarm is started by the city view itself, so closing the screen stops it.
 						Show disorderCity = Show.DisorderCity(this);
 						GameTask.Insert(disorderCity);
 					}

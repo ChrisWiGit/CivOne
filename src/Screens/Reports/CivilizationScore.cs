@@ -67,13 +67,15 @@ namespace CivOne.Screens.Reports
 			return true;
 		}
 
-		private static void DrawHappyRow(Picture output, int yy, int happy, int content, int unhappy, int ent, int sci, int tax)
+		private static void DrawHappyRow(Picture output, int yy, int happy, int content, int unhappy, int redShirt, int ent, int sci, int tax)
 		{
 			int dex = 0;
 			for (int x = 0; x < happy; x++)
 				output.AddLayer(Icons.Citizen((x % 2 == 0) ? Citizen.HappyMale : Citizen.HappyFemale), 7 + (8 * dex++), yy);
 			for (int x = 0; x < content; x++)
 				output.AddLayer(Icons.Citizen((x % 2 == 0) ? Citizen.ContentMale : Citizen.ContentFemale), 7 + (8 * dex++), yy);
+			for (int x = 0; x < redShirt; x++)
+				output.AddLayer(Icons.Citizen((x % 2 == 0) ? Citizen.RedShirtMale : Citizen.RedShirtFemale), 7 + (8 * dex++), yy);
 			for (int x = 0; x < unhappy; x++)
 				output.AddLayer(Icons.Citizen((x % 2 == 0) ? Citizen.UnhappyMale : Citizen.UnhappyFemale), 7 + (8 * dex++), yy);
 			for (int x = 0; x < ent; x++)
@@ -86,7 +88,7 @@ namespace CivOne.Screens.Reports
 
 		private static void DrawHappyRow(Picture output, int yy, CitizenTypes group)
 		{
-			DrawHappyRow(output, yy, group.happy, group.content, group.unhappy, group.elvis, group.einstein, group.taxman);
+			DrawHappyRow(output, yy, group.happy, group.content, group.unhappy, group.redShirt, group.elvis, group.einstein, group.taxman);
 		}
 
 		private int DrawCityCitizens(Citizen[] citizens, int startX, int maxX, int startY, ref int currentX)
@@ -135,7 +137,7 @@ namespace CivOne.Screens.Reports
 			int fontHeight = Resources.GetFontHeight(0);
 			string tribeName = Human.TribeName;
 			int wonderCount = 0;
-			CitizenTypes[] citizens = cities.Select(c => c.GetCitizenTypes()).ToArray();
+			CitizenTypes[] citizens = [.. cities.Select(c => c.GetCitizenTypes(CivilizationScoreService.ScoringLuxuryRate))];
 
 			int cityCount = cities.Length;
 			int populationScore = Human.Population;
