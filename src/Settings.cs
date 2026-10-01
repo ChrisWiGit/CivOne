@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -68,7 +68,6 @@ namespace CivOne
 		private bool _debugMenu;
 		private bool _terrainEditorMenu;
 		private bool _deityEnabled;
-		private bool _originalHappinessModel;
 		private BarbarianActivity _barbarianActivity = BarbarianActivity.VillagesAndRaids;
 		private bool _arrowHelper;
 		private bool _pathFinding;
@@ -77,6 +76,8 @@ namespace CivOne
 		private bool _canalCity;
 		private bool _removeObsoleteBuildings = true;
 		private bool _preferSveSaveFormat = true;
+		private bool _autoSaveOnQuit = true;
+		private bool _confirmExit = true;
 		private LzwCodecType _lzwCodecMode = LzwCodecType.Original;
 		private MapBitmapScalerType _bitmapScalerMode = MapBitmapScalerType.PaletteAwareWeighted;
 		private StartPositionAlgorithmType _startPositionAlgorithm = StartPositionAlgorithmType.Legacy;
@@ -321,10 +322,10 @@ namespace CivOne
 			}
 		}
 		
-		internal bool DebugMenu
+		public bool DebugMenu
 		{
 			get => _debugMenu;
-			set
+			internal set
 			{
 				_debugMenu = value;
 				SetSetting("DebugMenu", _debugMenu ? "1" : "0");
@@ -447,6 +448,34 @@ namespace CivOne
 			}
 		}
 
+		/// <summary>
+		/// Saves the running game automatically when the game is closed.
+		/// </summary>
+		public bool AutoSaveOnQuit
+		{
+			get => _autoSaveOnQuit;
+			set
+			{
+				_autoSaveOnQuit = value;
+				SetSetting("AutoSaveOnQuit", _autoSaveOnQuit ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
+		/// <summary>
+		/// Asks for confirmation before the running game is closed.
+		/// </summary>
+		public bool ConfirmExit
+		{
+			get => _confirmExit;
+			set
+			{
+				_confirmExit = value;
+				SetSetting("ConfirmExit", _confirmExit ? "1" : "0");
+				Common.ReloadSettings = true;
+			}
+		}
+
 		internal enum LzwCodecType
 		{
 			Original = 0,
@@ -486,21 +515,6 @@ namespace CivOne
 		{
 			Legacy = 0,
 			AreaBased = 1
-		}
-
-		/// <summary>
-		/// Gets or sets whether cities use the city happiness model of the original game.
-		/// While this is off, the model CivOne shipped with is used and nothing changes.
-		/// </summary>
-		internal bool OriginalHappinessModel
-		{
-			get => _originalHappinessModel;
-			set
-			{
-				_originalHappinessModel = value;
-				SetSetting("OriginalHappinessModel", _originalHappinessModel ? "1" : "0");
-				Common.ReloadSettings = true;
-			}
 		}
 
 		internal StartPositionAlgorithmType StartPositionAlgorithm
@@ -788,6 +802,26 @@ namespace CivOne
 		private void GetSetting(string settingName, ref string output) => output = GetSetting(settingName) ?? output;
 
 		private void GetSetting(string settingName, ref bool output) => output = GetSetting(settingName) == "1";
+
+		/// <summary>
+		/// Reads a stored flag and keeps the current value when the profile has no entry for it.
+		/// </summary>
+		/// <param name="settingName">Name of the stored setting.</param>
+		/// <param name="output">Value to update, left untouched when the setting is missing.</param>
+		/// <remarks>
+		/// Needed for flags that default to <c>true</c>.
+		/// The plain bool overload turns a missing entry into <c>false</c>.
+		/// </remarks>
+		private void GetBoolSetting(string settingName, ref bool output)
+		{
+			string? value = GetSetting(settingName);
+			if (string.IsNullOrEmpty(value))
+			{
+				return;
+			}
+
+			output = value == "1";
+		}
 		
 		private bool GetSetting(string settingName, ref int output, int minValue = int.MinValue, int maxValue = int.MaxValue)
 		{
@@ -869,7 +903,6 @@ namespace CivOne
 			GetSetting("DebugMenu", ref _debugMenu);
 			GetSetting("TerrainEditorMenu", ref _terrainEditorMenu);
 			GetSetting("DeityEnabled", ref _deityEnabled);
-			GetSetting("OriginalHappinessModel", ref _originalHappinessModel);
 			int barbarianActivity = (int)_barbarianActivity;
 			if (GetSetting("BarbarianActivity", ref barbarianActivity, (int)BarbarianActivity.None, (int)BarbarianActivity.VillagesAndRaids))
 			{
@@ -884,6 +917,8 @@ namespace CivOne
 			GetSetting("CanalCity", ref _canalCity);
 			GetSetting("RemoveObsoleteBuildings", ref _removeObsoleteBuildings);
 			GetSetting("PreferSveSaveFormat", ref _preferSveSaveFormat);
+			GetBoolSetting("AutoSaveOnQuit", ref _autoSaveOnQuit);
+			GetBoolSetting("ConfirmExit", ref _confirmExit);
 			GetSetting("LzwCodecMode", ref _lzwCodecMode);
 			GetSetting("MapBitmapScalerMode", ref _bitmapScalerMode);
 			GetSetting("StartPositionAlgorithm", ref _startPositionAlgorithm);

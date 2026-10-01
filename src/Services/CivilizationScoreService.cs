@@ -17,6 +17,8 @@ namespace CivOne.Services
 
 	internal sealed class CivilizationScoreService : ICivilizationScoreService
 	{
+		internal const int ScoringLuxuryRate = 0;
+
 		private const int HappyCitizenScoreWeight = 2;
 		private const int CityScoreWeight = 3;
 		private const int AdvanceScoreWeight = 10;
@@ -48,7 +50,7 @@ namespace CivOne.Services
 			int wonderCount = player.Cities.Sum(city => city.Wonders.Length);
 			int wonderScore = wonderCount * WonderScoreWeight;
 			int citizenScore = player.Cities
-				.Select(city => city.GetCitizenTypes())
+				.Select(city => city.GetCitizenTypes(ScoringLuxuryRate))
 				.Sum(CityScore);
 
 			return citizenScore + cityScore + populationScore + advanceScore + wonderScore + goldScore;

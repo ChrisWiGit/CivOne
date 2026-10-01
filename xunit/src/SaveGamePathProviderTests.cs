@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using CivOne.Enums;
@@ -153,6 +153,12 @@ namespace CivOne.UnitTests
 			public string SoundsDirectory => throw new NotImplementedException();
 
 			public bool RevealWorld => throw new NotImplementedException();
+
+			public bool DebugMenu => throw new NotImplementedException();
+
+			public bool AutoSaveOnQuit => true;
+
+			public bool ConfirmExit => true;
 		}
 
 		private sealed class FakeRuntime : IRuntime

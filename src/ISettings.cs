@@ -1,4 +1,4 @@
-namespace CivOne
+﻿namespace CivOne
 {
 	public interface ISettings
 	{
@@ -87,5 +87,20 @@ namespace CivOne
 		/// Gets a value indicating whether the entire world map is revealed.
 		/// </summary>
 		bool RevealWorld { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether debug mode is enabled.
+		/// </summary>
+		bool DebugMenu { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether the running game is saved automatically when the game is closed.
+		/// </summary>
+		bool AutoSaveOnQuit { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether closing a running game asks for confirmation first.
+		/// </summary>
+		bool ConfirmExit { get; }
 	}
 }

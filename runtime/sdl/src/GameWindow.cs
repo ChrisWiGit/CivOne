@@ -1,4 +1,4 @@
-// CivOne
+﻿// CivOne
 //
 // To the extent possible under law, the person who associated CC0 with
 // CivOne has waived all copyright and related or neighboring rights
@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
@@ -21,6 +22,7 @@ namespace CivOne
 	{
 		private readonly Runtime _runtime;
 		private readonly IDebounceService _debounceService;
+		private readonly WindowCloseHotkeyDelegate _closeHotkey = new();
 
 		private static string GetMcpTitleSuffix(Runtime runtime)
 		{
@@ -402,6 +404,17 @@ namespace CivOne
 			_debounceService.Cancel(GameDebounceKeys.WindowSize);
 		}
 
+		private void WindowClosing(object? _, CancelEventArgs args)
+		{
+			if (!RuntimeHandler.RequestQuitConfirmationOnWindowClose())
+			{
+				return;
+			}
+
+			args.Cancel = true;
+			_hasUpdate = true;
+		}
+
 		private void Draw(object? _, EventArgs __)
 		{
 			bool isFpsOverlayEnabled = RuntimeHandler.CurrentFpsCorner != FpsCorner.Off;
@@ -541,6 +554,9 @@ namespace CivOne
 		private void KeyDown(object? _, KeyboardEventArgs args)
 		{
 			if (args.Key == Key.None) return;
+			// SDL raises its own window close event for Alt+F4. Forwarding the key press as well would
+			// immediately cancel the quit confirmation dialog that the close event opens.
+			if (_closeHotkey.IsCloseShortcut(args)) return;
 			if (args.Modifier == KeyModifier.Alt && args.Key == Key.Enter)
 			{
 				Fullscreen = !Fullscreen;
@@ -667,6 +683,7 @@ namespace CivOne
 				OnWindowResize -= WindowResize;
 				OnWindowMove -= WindowMoved;
 				OnWindowStateChanged -= WindowStateChanged;
+				OnClosing -= WindowClosing;
 				OnKeyDown -= KeyDown;
 				OnKeyUp -= KeyUp;
 				OnMouseMove -= MouseMove;
@@ -710,6 +727,7 @@ namespace CivOne
 			OnWindowResize += WindowResize;
 			OnWindowMove += WindowMoved;
 			OnWindowStateChanged += WindowStateChanged;
+			OnClosing += WindowClosing;
 			OnKeyDown += KeyDown;
 			OnKeyUp += KeyUp;
 			OnMouseMove += MouseMove;

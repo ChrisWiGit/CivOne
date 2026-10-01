@@ -202,7 +202,7 @@ ever indexes 0–15.
    (`item1..7.level`, `deco1..3.level`, `item1..7.style`, plus six unknown shorts). The
    unknowns should be resolvable from the original code.
 6. **The 36 "unused" bytes per civ in the spaceship block.** Likely part counts or build
-   progress; needed for `SPACESHIP_FULL_IMPLEMENTATION_PLAN.md`.
+   progress;
 7. **`ocean_size` indexing.** Continent and ocean ids share the numbering space of the
    `.MAP` layer at `y+50`. How is an ocean id mapped onto 0–15?
 8. **Occupancy test for unit slots.** Documented for cities (`ActualSize != 0`), not for

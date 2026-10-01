@@ -22,7 +22,13 @@ namespace CivOne.Services
 		private readonly Func<bool> _canQuickSave;
 		private readonly Action<string> _showUserErrorAction;
 		private readonly Action<IReadOnlyList<int>, Action<int>> _showQuickLoadMenuAction;
+		private readonly Func<string> _autoSaveFilePathResolver;
 		private readonly TitleMusicDelegate _titleMusic = new();
+
+		/// <summary>
+		/// Pseudo slot number of the autosave, which has no function key of its own.
+		/// </summary>
+		internal const int AutoSaveSlot = 0;
 
 		// Too many parameter.
 		#pragma warning disable S107 
@@ -36,7 +42,8 @@ namespace CivOne.Services
 			Action? rebuildGamePlayAction = null,
 			Func<bool>? canQuickSave = null,
 			Action<string>? showUserErrorAction = null,
-			Action<IReadOnlyList<int>, Action<int>>? showQuickLoadMenuAction = null)
+			Action<IReadOnlyList<int>, Action<int>>? showQuickLoadMenuAction = null,
+			Func<string>? autoSaveFilePathResolver = null)
 		{
 			yamlSaveGameServiceFactory ??= new YamlSaveGameServiceFactory();
 			_runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
@@ -52,10 +59,29 @@ namespace CivOne.Services
 			_canQuickSave = canQuickSave ?? (() => Game.Started && Game.Instance != null);
 			_showUserErrorAction = showUserErrorAction ?? ShowError;
 			_showQuickLoadMenuAction = showQuickLoadMenuAction ?? ShowQuickLoadMenu;
+			_autoSaveFilePathResolver = autoSaveFilePathResolver ?? ResolveAutoSaveFilePath;
+		}
+
+		/// <summary>
+		/// Resolves the path of the autosave written when the game quits.
+		/// </summary>
+		/// <remarks>
+		/// Resolved on demand so constructing the service never touches the settings singleton.
+		/// </remarks>
+		private string ResolveAutoSaveFilePath()
+		{
+			SaveGamePathProvider pathProvider = new(_runtime, Settings.Instance);
+			return Path.Combine(pathProvider.EnsureAutoSaveDirectory(), QuitAutoSaveService.AutoSaveFileName);
 		}
 
 		public bool TryHandle(KeyboardEventArgs args)
 		{
+			// Keep the desktop-standard close shortcut free.
+			if (args.Modifier == KeyModifier.Alt && args.Key == Key.F4)
+			{
+				return false;
+			}
+
 			if (args.Modifier == KeyModifier.Alt && args.Key == Key.F11)
 			{
 				OpenQuickLoadMenu();
@@ -107,6 +133,11 @@ namespace CivOne.Services
 
 		private string GetSlotFilePath(int slot, bool ensureDirectory = true)
 		{
+			if (slot == AutoSaveSlot)
+			{
+				return _autoSaveFilePathResolver();
+			}
+
 			if (ensureDirectory)
 			{
 				Directory.CreateDirectory(GetFastSavesDirectory());
@@ -117,6 +148,10 @@ namespace CivOne.Services
 		private List<int> GetExistingSlots()
 		{
 			List<int> slots = [];
+			if (TryGetExistingAutoSavePath(out _))
+			{
+				slots.Add(AutoSaveSlot);
+			}
 			for (int slot = 1; slot <= 10; slot++)
 			{
 				if (File.Exists(GetSlotFilePath(slot, ensureDirectory: false)))
@@ -126,6 +161,57 @@ namespace CivOne.Services
 			}
 			return slots;
 		}
+
+		/// <summary>
+		/// Returns whether an autosave exists, along with its path.
+		/// </summary>
+		/// <param name="filePath">The autosave path, or <c>null</c> when it could not be resolved.</param>
+		/// <returns><c>true</c> when the autosave file exists.</returns>
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "A failing autosave lookup must only hide the autosave entry, never break the quick load menu.")]
+		private bool TryGetExistingAutoSavePath([NotNullWhen(true)] out string? filePath)
+		{
+			try
+			{
+				filePath = _autoSaveFilePathResolver();
+				return File.Exists(filePath);
+			}
+			catch (Exception ex)
+			{
+				_log("Autosave lookup failed: {0}", [ex]);
+				filePath = null;
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// Returns the file of an existing quick load slot.
+		/// </summary>
+		/// <param name="slot">The slot number, or <see cref="AutoSaveSlot"/> for the autosave.</param>
+		/// <param name="filePath">The existing file, or <c>null</c> when the slot is empty.</param>
+		/// <returns><c>true</c> when the slot file exists.</returns>
+		private bool TryGetExistingSlotPath(int slot, [NotNullWhen(true)] out string? filePath)
+		{
+			if (slot == AutoSaveSlot)
+			{
+				return TryGetExistingAutoSavePath(out filePath);
+			}
+
+			filePath = GetSlotFilePath(slot, ensureDirectory: false);
+			if (File.Exists(filePath))
+			{
+				return true;
+			}
+
+			filePath = null;
+			return false;
+		}
+
+		/// <summary>
+		/// Returns the log label of a slot, such as <c>F3</c> or <c>autosave</c>.
+		/// </summary>
+		/// <param name="slot">The slot number, or <see cref="AutoSaveSlot"/> for the autosave.</param>
+		/// <returns>The label used in log messages.</returns>
+		private static string GetSlotLabel(int slot) => slot == AutoSaveSlot ? "autosave" : $"F{slot}";
 
 		private void OpenQuickLoadMenu()
 		{
@@ -139,12 +225,17 @@ namespace CivOne.Services
 			ArgumentNullException.ThrowIfNull(slots);
 			ArgumentNullException.ThrowIfNull(onSelect);
 
-			Common.AddScreen(new QuickLoadSlotsDialog(slots, onSelect));
+			Common.AddScreen(new QuickLoadSlotsDialog(slots, onSelect, slot => GetSlotFilePath(slot, ensureDirectory: false)));
 		}
 
 		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to save a fast save slot does not crash the application, and that any exceptions are logged appropriately.")]
 		private void TryQuickSave(int slot)
 		{
+			if (slot == AutoSaveSlot)
+			{
+				return;
+			}
+
 			if (!_canQuickSave())
 			{
 				_showUserErrorAction(_translation.Translate("Fast save is not available right now."));
@@ -167,11 +258,10 @@ namespace CivOne.Services
 		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catching all exceptions is necessary to ensure that failure to load a fast save slot does not crash the application, and that any exceptions are logged appropriately.")]
 		private void TryQuickLoad(int slot)
 		{
-			var filePath = GetSlotFilePath(slot, ensureDirectory: false);
-			if (!File.Exists(filePath))
+			if (!TryGetExistingSlotPath(slot, out string? filePath))
 			{
 				_showUserErrorAction(_translation.Translate("Fast save slot is empty."));
-				_log("Fast load failed for slot F{0}: file does not exist ({1})", [slot, filePath]);
+				_log("Fast load failed for slot {0}: file does not exist", [GetSlotLabel(slot)]);
 				return;
 			}
 
@@ -180,7 +270,7 @@ namespace CivOne.Services
 				if (!_loadCosAction(filePath))
 				{
 					_showUserErrorAction(_translation.Translate("Could not load fast save slot."));
-					_log("Fast load failed for slot F{0}: loader returned false ({1})", [slot, filePath]);
+					_log("Fast load failed for slot {0}: loader returned false ({1})", [GetSlotLabel(slot), filePath]);
 					return;
 				}
 
@@ -188,12 +278,12 @@ namespace CivOne.Services
 				_titleMusic.Stop();
 
 				_rebuildGamePlayAction();
-				_log("Fast load completed: slot F{0} <- {1}", [slot, filePath]);
+				_log("Fast load completed: slot {0} <- {1}", [GetSlotLabel(slot), filePath]);
 			}
 			catch (Exception ex)
 			{
 				_showUserErrorAction(_translation.Translate("Could not load fast save slot."));
-				_log("Fast load failed for slot F{0} ({1}): {2}", [slot, filePath, ex]);
+				_log("Fast load failed for slot {0} ({1}): {2}", [GetSlotLabel(slot), filePath, ex]);
 			}
 		}
 		// ANTI-REFACTORING NOTICE:

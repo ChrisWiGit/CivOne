@@ -14,11 +14,21 @@ The new name CivOneX is a play on words, as it can be read as "Civ One neXt" or 
 
 ## License
 
-The original CivOne project was released under the CC0 license, which means that it is in the public domain and can be used, modified, and distributed freely without any restrictions. All these files contains a header with the CC0 license text, which is a legal statement that confirms that the files are in the public domain and can be used without any restrictions.
+This repository is dual-licensed by file origin. Which license applies to a given file is
+recorded in `.cc0-baseline.csv`, the manifest in the repository root:
 
-However, the CivOneX project is released under the MIT license, which is a permissive open-source license that allows users to use, modify, and distribute the software freely, but with some conditions. The MIT license requires that the original copyright notice and permission notice be included in all copies or substantial portions of the software. This means that if you use or distribute CivOneX, you must include the original copyright notice and permission notice in your code or documentation.
+- **Files listed in the manifest** come from the original CivOne project and are licensed
+  under **CC0 1.0 Universal**, meaning they are in the public domain and can be used,
+  modified, and distributed without restriction. They stay under CC0 even after being
+  modified here.
+- **All other files** were added by CivOneX and are licensed under the **MIT License**, a
+  permissive license that requires the copyright notice and permission notice to be
+  preserved in copies or substantial portions of the software.
 
-The new files do not contain the MIT license text as a header, but the license text is included in the LICENSE file in the root of the repository.
+The manifest also stores the SHA-256 hash of each file's unmodified upstream content, so
+its origin can be verified. Most CC0 files still carry the historical CC0 header comment,
+but the manifest -- not the header -- decides the license. MIT files carry no header; the
+full text of both licenses is in `LICENSE.md`.
 
 ## Original Sources
 
@@ -588,6 +598,8 @@ This screen allows to change additional modification options for the game.
 | FPS display | Show performance counters in a screen corner (Off, Top Left, Top Right, Bottom Left, Bottom Right). See [FPS overlay](#fps-overlay) below for the meaning of all values. |
 | Game behavior menu | Open the behavior submenu to change gameplay-related toggles and cheats. |
 | AutoSave format | Choose whether autosaves prefer legacy `SVE` output with automatic `COS` fallback or always write `COS`. |
+| AutoSave on quit | Save the running game when the game is closed. The existing autosave (`autosave.cos`) is overwritten. Default is `Yes`. |
+| Confirm quit | Ask for confirmation before a running game is closed. Default is `Yes`. |
 | Save cast behavior | Select whether save/load casts use checked conversion or the legacy unchecked mode. |
 | (Gbm) Use smart PathFinding for "goto" | Enable smart pathfinding for unit movement. |
 | (Gbm) Use smart pathfinding for computer players | Enable smart pathfinding for computer controlled units only. Disable to use legacy AI movement behavior. |
@@ -698,6 +710,8 @@ These options affect the gameplay mechanics and rules and can also be changed in
 | ------ | ----------- |
 | Instant Advice | Configure whether the game shows instant advice prompts to the player. |
 | AutoSave | Enable or disable automatic saving during play. |
+| AutoSave on Quit | Save the running game when the game is closed, overwriting the existing autosave. Also available in the settings screen under **Patches**. Default is on. |
+| Confirm Quit | Ask for confirmation before a running game is closed (window close button or `Alt+F4`). Also available in the settings screen under **Patches**. Default is on. |
 | End of Turn | Configure end-of-turn behavior (e.g. immediate end or prompts). |
 | Animations | Toggle in-game animations (on/off) to improve performance or visuals. |
 | Sound | Toggle sound effects and music for the game. |

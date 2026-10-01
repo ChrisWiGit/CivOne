@@ -62,7 +62,7 @@ namespace CivOne.Screens.Services
 		/// <param name="luxuryRate">
 		/// The share of trade that becomes luxuries, in tenths, for callers that need a fixed rate rather
 		/// than the one the player has set. The civilization score uses this to compare cities at one rate.
-		/// Only the corrected happiness model reads it; the model CivOne shipped with ignores it.
+		/// Without a value the rate the tax and science sliders leave over is used.
 		/// </param>
 		/// <returns>The service for the city.</returns>
 		static ICityCitizenService Create(City city, IGame game, List<Citizen> specialists, Map map, int? luxuryRate = null)
@@ -74,13 +74,7 @@ namespace CivOne.Screens.Services
 				throw new ArgumentException("The provided game does not implement IGameCitizenDependency.", nameof(game));
 			}
 
-			if (!Settings.Instance.OriginalHappinessModel)
-			{
-				return new CityCitizenService(city, city, dependency, specialists, map);
-			}
-
-			return new OriginalCityCitizenService(city, city, dependency, specialists, map,
-				new EqualisingPendingUnhappinessDelegate().Refill, luxuryRate);
+			return new CityCitizenService(city, city, dependency, specialists, map, luxuryRate: luxuryRate);
 		}
 	}
 

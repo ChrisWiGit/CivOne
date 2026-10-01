@@ -88,10 +88,17 @@ namespace CivOne.Screens.Dialogs
 			return true;
 		}
 
-		private Picture Initialize(int left, int top, int width, int height)
+		private Picture Initialize(int left, int top, int width, int height, Palette? sourcePalette)
 		{
-			using var defaultPalette = Common.DefaultPalette;
-			Palette = defaultPalette;
+			if (sourcePalette == null)
+			{
+				using Palette defaultPalette = Common.DefaultPalette;
+				Palette = defaultPalette;
+			}
+			else
+			{
+				Palette = sourcePalette;
+			}
 
 			// We expand the size to add space for the black border
 			left -= 1;
@@ -107,7 +114,20 @@ namespace CivOne.Screens.Dialogs
 			return dialogBox;
 		}
 
-		public BaseDialog(int left, int top, int marginWidth, int marginHeight, string[] message) : base(MouseCursor.Pointer)
+		/// <summary>
+		/// Creates a dialog that sizes itself from text content plus margins.
+		/// </summary>
+		/// <param name="left">Left position in the 320x200 dialog coordinate space.</param>
+		/// <param name="top">Top position in the 320x200 dialog coordinate space.</param>
+		/// <param name="marginWidth">Extra horizontal padding added around text content.</param>
+		/// <param name="marginHeight">Extra vertical padding added around text content.</param>
+		/// <param name="message">Text lines used to determine the dialog content size.</param>
+		/// <param name="sourcePalette">
+		/// Optional palette source for the dialog.
+		/// When provided, the dialog uses this palette family instead of <see cref="Common.DefaultPalette"/>.
+		/// This is useful for overlays on screens with custom palettes so colors remain visually consistent.
+		/// </param>
+		public BaseDialog(int left, int top, int marginWidth, int marginHeight, string[] message, Palette? sourcePalette = null) : base(MouseCursor.Pointer)
 		{
 			_left = left;
 			_top = top;
@@ -115,15 +135,27 @@ namespace CivOne.Screens.Dialogs
 			for (int i = 0; i < message.Length; i++)
 				TextLines[i] = Resources.GetText(message[i], 0, 15);
 
-			DialogBox = Initialize(left, top, TextWidth + marginWidth, TextHeight + marginHeight);
+			DialogBox = Initialize(left, top, TextWidth + marginWidth, TextHeight + marginHeight, sourcePalette);
 		}
 
-		public BaseDialog(int left, int top, int width, int height) : base(MouseCursor.Pointer)
+		/// <summary>
+		/// Creates a dialog with an explicit fixed size.
+		/// </summary>
+		/// <param name="left">Left position in the 320x200 dialog coordinate space.</param>
+		/// <param name="top">Top position in the 320x200 dialog coordinate space.</param>
+		/// <param name="width">Dialog width before border expansion.</param>
+		/// <param name="height">Dialog height before border expansion.</param>
+		/// <param name="sourcePalette">
+		/// Optional palette source for the dialog.
+		/// When provided, the dialog uses this palette family instead of <see cref="Common.DefaultPalette"/>.
+		/// This is useful for overlays on screens with custom palettes so colors remain visually consistent.
+		/// </param>
+		public BaseDialog(int left, int top, int width, int height, Palette? sourcePalette = null) : base(MouseCursor.Pointer)
 		{
 			_left = left;
 			_top = top;
 
-			DialogBox = Initialize(left, top, width, height);
+			DialogBox = Initialize(left, top, width, height, sourcePalette);
 		}
 	}
 }

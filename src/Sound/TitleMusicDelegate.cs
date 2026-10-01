@@ -49,5 +49,14 @@ internal sealed class TitleMusicDelegate
 	/// <summary>
 	/// Stops the music, so it does not run on underneath the game that follows.
 	/// </summary>
-	public void Stop() => Strategy.Abort();
+	public void Stop()
+	{
+		if (_strategy is not null)
+		{
+			_strategy.Abort();
+			return;
+		}
+
+		SoundPlaybackStrategyProvider.Abort();
+	}
 }
