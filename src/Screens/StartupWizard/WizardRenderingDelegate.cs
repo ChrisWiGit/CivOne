@@ -37,6 +37,9 @@ namespace CivOne.Screens.StartupWizard
 		private const byte ColourDialogErrorBackground = 4;
 		private const int HeaderRows = 11;
 		private const int HeaderFrameWidth = 80;
+		private const int HeaderIconMargin = 4;
+
+		private readonly WizardHeaderIconDelegate _headerIcon = new();
 
 
 		/// <summary>
@@ -62,6 +65,7 @@ namespace CivOne.Screens.StartupWizard
 			int left = 0;
 			int inner = Math.Max(0, frameWidth - 2);
 			DrawBlueBackground(context, frameWidth, left);
+			DrawHeaderIcon(context, frameWidth, left);
 
 			CharPut(KnownCp437Chars.BoxDoubleTopLeft + new string(KnownCp437Chars.BoxDoubleHorizontal, inner) + KnownCp437Chars.BoxDoubleTopRight, left, 0, ColourBorder, context);
 			CharPut(KnownCp437Chars.BoxDoubleBottomLeft + new string(KnownCp437Chars.BoxDoubleHorizontal, inner) + KnownCp437Chars.BoxDoubleBottomRight, left, HeaderRows - 1, ColourBorder, context);
@@ -98,13 +102,47 @@ namespace CivOne.Screens.StartupWizard
 				ColourHeaderBackground);
 		}
 
+		private void DrawHeaderIcon(WizardRenderingContext context, int frameWidth, int left)
+		{
+			(int Width, int Height)? iconSize = _headerIcon.GetSize();
+			if (iconSize == null)
+			{
+				return;
+			}
+
+			int glyphW = (int)(ModernDos8X16.GlyphWidth * context.Scale);
+			int glyphH = (int)(ModernDos8X16.GlyphHeight * context.Scale);
+			if (glyphW <= 0 || glyphH <= 0)
+			{
+				return;
+			}
+
+			int headerInnerWidthPx = Math.Max(1, (frameWidth - 2) * glyphW);
+			int headerInnerHeightPx = Math.Max(1, (HeaderRows - 2) * glyphH);
+			int maxIconWidth = Math.Max(1, Math.Min(headerInnerWidthPx / 6, glyphW * 6));
+			int maxIconHeight = Math.Max(1, Math.Min(headerInnerHeightPx - (HeaderIconMargin * 2), glyphH * 3));
+			double scale = Math.Min((double)maxIconWidth / iconSize.Value.Width, (double)maxIconHeight / iconSize.Value.Height);
+			if (scale <= 0)
+			{
+				return;
+			}
+
+			int drawWidth = Math.Max(1, (int)Math.Round(iconSize.Value.Width * scale));
+			int drawHeight = Math.Max(1, (int)Math.Round(iconSize.Value.Height * scale));
+			int boxRightPx = context.Box.X + ((left + frameWidth - 1) * glyphW);
+			int drawX = boxRightPx - HeaderIconMargin - drawWidth;
+			int drawY = context.Box.Y + glyphH + HeaderIconMargin;
+
+			_headerIcon.Draw(_screen.Bitmap, drawX, drawY, drawWidth, drawHeight, ColourHeaderBackground);
+		}
+
 		/// <summary>
 		/// Draws box content: version, title, links, and branding.
 		/// </summary>
 		private void DrawBoxContent(WizardRenderingContext context)
 		{
 			string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "?";
-			string title = $"CIVONE (OSS) - Version {version}";
+			string title = $"CIVONEX (OSS) - Version {version}";
 			string subtitle = Translate("From those open source guys at LEISURE TIME.");
 			BoxPutMiddle(title, 1, ColourTitle, context);
 			BoxPutMiddle(subtitle, 3, ColourText, context);
@@ -272,11 +310,6 @@ namespace CivOne.Screens.StartupWizard
 		BoxPut(text, col, row, colour, context);
 	}
 
-	private static string[] WrapDialogMessage(string message, int width)
-	{
-		return WrapDialogLines(message.Split('\n'), width);
-	}
-
 	private static string[] WrapDialogLines(string[] sourceLines, int width)
 	{
 		List<string> lines = [];
@@ -334,7 +367,7 @@ namespace CivOne.Screens.StartupWizard
 			int fixedVisibleCount = Math.Min(fixedEntries.Count, maxVisibleEntries);
 			int scrollableVisibleCount = Math.Min(scrollableEntries.Count, Math.Max(0, maxVisibleEntries - fixedVisibleCount));
 			int totalVisibleCount = fixedVisibleCount + scrollableVisibleCount;
-			int scrollOffset = GetClampedScrollOffset(page, scrollableEntries, scrollableVisibleCount, context);
+			int scrollOffset = GetClampedScrollOffset(scrollableEntries, scrollableVisibleCount, context);
 			bool canScrollUp = scrollOffset > 0;
 			bool canScrollDown = scrollOffset + scrollableVisibleCount < scrollableEntries.Count;
 			bool needsScrolling = scrollableEntries.Count > scrollableVisibleCount;
@@ -417,7 +450,7 @@ namespace CivOne.Screens.StartupWizard
 			}
 		}
 
-		private static int GetClampedScrollOffset(WizardPage page, IReadOnlyList<WizardEntry> scrollableEntries, int scrollableVisibleCount, WizardRenderingContext context)
+		private static int GetClampedScrollOffset(IReadOnlyList<WizardEntry> scrollableEntries, int scrollableVisibleCount, WizardRenderingContext context)
 		{
 			if (scrollableVisibleCount <= 0)
 			{
@@ -448,22 +481,6 @@ namespace CivOne.Screens.StartupWizard
 			}
 
 			return (char)('A' + letterIndex);
-		}
-
-		private static char? GetAutoActivationHotkey(int entryNumber)
-		{
-			if (entryNumber >= 1 && entryNumber <= 9)
-			{
-				return (char)('0' + entryNumber);
-			}
-
-			int letterIndex = entryNumber - 10;
-			if (letterIndex < 0 || letterIndex >= 26)
-			{
-				return null;
-			}
-
-			return (char)('a' + letterIndex);
 		}
 
 		/// <summary>

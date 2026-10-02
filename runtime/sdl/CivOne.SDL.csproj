@@ -53,6 +53,9 @@
 		<DefineConstants Condition="$(Configuration.EndsWith('Linux'))">$(DefineConstants);LINUX</DefineConstants>
 		<DefineConstants Condition="$(Configuration.EndsWith('MacOS'))">$(DefineConstants);MACOS</DefineConstants>
 	</PropertyGroup>
+	<PropertyGroup Condition="$(Configuration.EndsWith('Windows'))">
+		<ApplicationIcon>..\..\resources\windows\CivOne.ico</ApplicationIcon>
+	</PropertyGroup>
 	<ItemGroup>
 		<ProjectReference Include="../../CivOne.csproj" />
 	</ItemGroup>

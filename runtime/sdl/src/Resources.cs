@@ -25,7 +25,7 @@ namespace CivOne
 
 		private static Stream HelpTextTxt => GetInternalResource("HelpText.txt");
 
-		private static Stream WindowIcon => GetInternalResource("WindowIcon.gif");
+		private static Stream WindowIcon => GetInternalResource("WindowIcon.png");
 
 		private static string? GetResourceString(Stream resource)
 		{
@@ -41,11 +41,7 @@ namespace CivOne
 		public static IBitmap? GetWindowIcon()
 		{
 			using Stream resourceStream = WindowIcon;
-			using MemoryStream ms = new MemoryStream();
-			resourceStream.CopyTo(ms);
-			using GifFile gifFile = new(ms.ToArray());
-			
-			return gifFile.GetNewBitmap();
+			return ImageDecoderServiceFactory.Decoder.DecodeBitmap(resourceStream);
 		}
 		
 		public static string HelpText => GetResourceString(HelpTextTxt) ?? string.Empty;
