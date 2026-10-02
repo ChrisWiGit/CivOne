@@ -75,9 +75,20 @@ internal static class TuneScoreJson
 
         if (string.IsNullOrWhiteSpace(tune.Title)) throw new InvalidOperationException($"{source}: title is missing.");
 
-        // Silent and Unsupported may be empty – but an actual sequence must not be.
-        if (tune.Kind is TuneScoreKind.Music or TuneScoreKind.Effect && tune.Steps.Count == 0)
-            throw new InvalidOperationException($"{source}: tune {tune.TuneId} is marked as {tune.Kind} but has no steps.");
+        // Silent and Unsupported may be empty - but an actual sequence must not be. Every
+        // arrangement is checked, not just the first: a later one can be picked for playback, and
+        // an empty one would leave the renderer with nothing to play.
+        if (tune.Kind is TuneScoreKind.Music or TuneScoreKind.Effect)
+        {
+            if (tune.Arrangements.Count == 0)
+                throw new InvalidOperationException($"{source}: tune {tune.TuneId} is marked as {tune.Kind} but has no steps: it has no arrangements at all.");
+
+            for (int index = 0; index < tune.Arrangements.Count; index++)
+            {
+                if (tune.Arrangements[index].Steps.Count == 0)
+                    throw new InvalidOperationException($"{source}: tune {tune.TuneId} is marked as {tune.Kind} but arrangement {index} has no steps.");
+            }
+        }
 
         foreach (var step in tune.Arrangements.SelectMany(arrangement => arrangement.Steps))
         {

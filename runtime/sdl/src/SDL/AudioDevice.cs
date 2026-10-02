@@ -56,13 +56,14 @@ namespace CivOne
 			public int SampleRate { get; private set; } = sampleRate;
 
 			/// <inheritdoc />
-			public void Start(AudioRenderCallback render)
+			public bool Start(AudioRenderCallback render)
 			{
 				ArgumentNullException.ThrowIfNull(render);
 
 				lock (_lock)
 				{
-					if (_disposed || _deviceId != 0) return;
+					if (_disposed) return false;
+					if (_deviceId != 0) return true;
 
 					_render = render;
 
@@ -86,13 +87,14 @@ namespace CivOne
 						_callback = null;
 						_render = null;
 						OnLog?.Invoke($"Could not open the audio device: {GetSdlErrorMessage()}");
-						return;
+						return false;
 					}
 
 					SampleRate = obtained.Frequency > 0 ? obtained.Frequency : SampleRate;
 					_buffer = new float[Math.Max(obtained.Samples, bufferSamples) * Channels];
 
 					SDL_PauseAudioDevice(_deviceId, 0);
+					return true;
 				}
 			}
 

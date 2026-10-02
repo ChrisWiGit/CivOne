@@ -17,17 +17,21 @@ namespace CivOne.Sound.Engine;
 internal sealed class MixerVoice
 {
 	/// <summary>Sample data. Shared with other voices and never modified.</summary>
-	public required float[] Samples { get; init; }
+	/// <remarks>
+	/// Settable rather than init-only so the mixer can hand a spent voice back out as the tail of a
+	/// loop turnaround. Only the mixer does that, and only on a voice it has already removed.
+	/// </remarks>
+	public required float[] Samples { get; set; }
 
 	/// <summary>The handle the game thread holds, or <c>null</c> for a voice nobody can reach.</summary>
 	/// <remarks>
 	/// The fading tail left behind by a loop turnaround has no handle: it is an echo of another
 	/// voice and ends on its own.
 	/// </remarks>
-	public SoundHandle? Handle { get; init; }
+	public SoundHandle? Handle { get; set; }
 
 	/// <summary>Which bus the voice plays on.</summary>
-	public SoundBus Bus { get; init; }
+	public SoundBus Bus { get; set; }
 
 	/// <summary>Read position in samples. Frozen while <see cref="Paused"/>.</summary>
 	public int Position { get; set; }

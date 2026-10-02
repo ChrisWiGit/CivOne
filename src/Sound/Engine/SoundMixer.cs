@@ -27,13 +27,36 @@ namespace CivOne.Sound.Engine;
 /// </remarks>
 internal sealed class SoundMixer
 {
+	/// <summary>How many voices the mixer is prepared for without growing its list.</summary>
+	private const int VoiceCapacity = 32;
+
+	/// <summary>How many spent voices are kept for reuse as loop tails.</summary>
+	private const int TailPoolSize = 8;
+
 	private readonly ConcurrentQueue<MixerCommand> _commands = new();
 	private readonly ConcurrentQueue<SoundHandle> _ended = new();
-	private readonly List<MixerVoice> _voices = [];
+	private readonly List<MixerVoice> _voices = new(VoiceCapacity);
+	private readonly Stack<MixerVoice> _tailPool = new(TailPoolSize);
 	private readonly float[] _busVolume = [.. Enumerable.Repeat(1f, Enum.GetValues<SoundBus>().Length)];
 	private readonly SoftLimiterDelegate _limiter = new();
 
 	private int _nextHandleId;
+
+	/// <summary>
+	/// Creates the mixer and the voices its loop turnarounds reuse.
+	/// </summary>
+	/// <remarks>
+	/// Everything the audio thread needs is made here, on the game thread. A turnaround happens
+	/// inside the callback, which must not allocate, so the tail it leaves behind is taken from this
+	/// pool rather than created on the spot.
+	/// </remarks>
+	public SoundMixer()
+	{
+		for (int index = 0; index < TailPoolSize; index++)
+		{
+			_tailPool.Push(new MixerVoice { Samples = [] });
+		}
+	}
 
 	/// <summary>
 	/// Queues a command for the next pass.
@@ -239,23 +262,35 @@ internal sealed class SoundMixer
 
 		int crossFade = Math.Min(voice.LoopCrossFade, voice.Samples.Length - voice.LoopEnd);
 
-		if (crossFade > 0)
+		if (crossFade > 0 && _tailPool.Count > 0)
 		{
-			var tail = new MixerVoice
-			{
-				Samples = voice.Samples,
-				Handle = null,
-				Bus = voice.Bus,
-				Position = voice.Position,
-				Loop = false,
-				Volume = voice.Volume,
-				Gain = voice.Gain,
-				TargetGain = voice.Gain,
-				StartDelay = bufferIndex + 1
-			};
+			MixerVoice tail = _tailPool.Pop();
+
+			tail.Samples = voice.Samples;
+			tail.Handle = null;
+			tail.Bus = voice.Bus;
+			tail.Position = voice.Position;
+			tail.Loop = false;
+			tail.LoopStart = 0;
+			tail.LoopEnd = 0;
+			tail.LoopCrossFade = 0;
+			tail.Volume = voice.Volume;
+			tail.Gain = voice.Gain;
+			tail.TargetGain = voice.Gain;
+			tail.GainStep = 0f;
+			tail.FadeAction = VoiceFadeAction.None;
+			tail.Paused = false;
+			tail.Finished = false;
+			tail.StartDelay = bufferIndex + 1;
 
 			tail.FadeTo(0f, crossFade, VoiceFadeAction.Stop);
 			_voices.Add(tail);
+		}
+		else if (crossFade > 0)
+		{
+			// Every tail is in use. The turnaround is still made, only without the overlap: a hard
+			// turnaround is a far smaller fault than allocating on the audio thread would be.
+			crossFade = 0;
 		}
 
 		voice.Position = voice.LoopStart;
@@ -276,10 +311,29 @@ internal sealed class SoundMixer
 
 			_voices.RemoveAt(index);
 
-			if (voice.Handle == null) continue;
+			if (voice.Handle == null)
+			{
+				ReturnTail(voice);
+				continue;
+			}
 
 			voice.Handle.SetEnded();
 			_ended.Enqueue(voice.Handle);
 		}
+	}
+
+	/// <summary>
+	/// Takes a spent tail back for the next turnaround.
+	/// </summary>
+	/// <param name="voice">The voice that has just been removed.</param>
+	/// <remarks>
+	/// The sample data is let go here rather than kept alive by a voice nobody plays any more.
+	/// </remarks>
+	private void ReturnTail(MixerVoice voice)
+	{
+		if (_tailPool.Count >= TailPoolSize) return;
+
+		voice.Samples = [];
+		_tailPool.Push(voice);
 	}
 }

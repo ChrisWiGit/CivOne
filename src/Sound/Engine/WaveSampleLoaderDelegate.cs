@@ -79,7 +79,8 @@ internal sealed class WaveSampleLoaderDelegate
 			int size = BinaryPrimitives.ReadInt32LittleEndian(bytes[(offset + 4)..]);
 			int body = offset + ChunkHeaderSize;
 
-			if (size < 0 || body + size > bytes.Length) break;
+			// Compared without adding, so a malformed size cannot overflow past the guard.
+			if (size < 0 || size > bytes.Length - body) break;
 
 			if (Matches(id, "fmt ") && size >= 16)
 			{
@@ -126,6 +127,10 @@ internal sealed class WaveSampleLoaderDelegate
 	/// <remarks>
 	/// The chunk begins with nine words of information about the sampler itself, then the number of
 	/// loops, then the loops. Only the first loop is used, and only its start and end.
+	/// <para>
+	/// RIFF counts the loop end as the last sample that is still played, while the mixer turns
+	/// around <em>at</em> its loop end, so the stored value is moved on by one here.
+	/// </para>
 	/// </remarks>
 	private static void ReadLoopPoint(ReadOnlySpan<byte> body, ref int? loopStart, ref int? loopEnd)
 	{
@@ -140,10 +145,10 @@ internal sealed class WaveSampleLoaderDelegate
 		int start = BinaryPrimitives.ReadInt32LittleEndian(body[LoopStartOffset..]);
 		int end = BinaryPrimitives.ReadInt32LittleEndian(body[LoopEndOffset..]);
 
-		if (start < 0 || end <= start) return;
+		if (start < 0 || end <= start || end == int.MaxValue) return;
 
 		loopStart = start;
-		loopEnd = end;
+		loopEnd = end + 1;
 	}
 
 	private static bool Matches(ReadOnlySpan<byte> bytes, string id)

@@ -65,7 +65,17 @@ internal static class SoundSystemProvider
 			IAudioDevice? device = _deviceFactory();
 			if (device == null) return null;
 
-			_current = new SoundSystem(device);
+			var system = new SoundSystem(device);
+
+			// A device that would not open is of no use to anyone: it is let go here rather than
+			// handed out, so nothing queues audio that is never heard.
+			if (!system.IsRunning)
+			{
+				system.Dispose();
+				return null;
+			}
+
+			_current = system;
 			return _current;
 		}
 	}
