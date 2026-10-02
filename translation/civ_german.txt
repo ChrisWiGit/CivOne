@@ -1630,3 +1630,4 @@ BACKSPACE DELETE   ESC CLOSE=Rücktaste löschen   ESC schließen
 NO FONTS LOADED FROM FONTS.CV.=Keine Schriftarten aus FONTS.CV geladen.
 FONT VIEWER - FONTS.CV FONT {0} OF {1}=Schritenbetrachter - FONTS.CV Schriftart {0} von {1}
 HEIGHT {0} PX   CODES {1}-{2}   INTERNATIONAL {3}=Höhe {0} px   Codes {1}-{2}   International {3}
+MORE SETTINGS CAN ALSO BE ACCESSED BY SHIFT+F1 AT START.=Weitere Einstellungen können auch durch UMSCHALT+F1 beim Start aufgerufen werden.
