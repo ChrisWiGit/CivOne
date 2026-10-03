@@ -129,8 +129,8 @@ If you do not have the original game files, you can use a free package of graphi
 
 The data files will be copied to
 
-* on Linux/macOS: `~/CivOne/data`
-* on Windows: `C:\Users\<YourUsername>\AppData\Local\CivOne\data` (also `%LOCALAPPDATA%\CivOne\data`)
+* on Linux/macOS: `~/CivOneX/data`
+* on Windows: `C:\Users\<YourUsername>\AppData\Local\CivOneX\data` (also `%LOCALAPPDATA%\CivOneX\data`)
 
 ### Sound
 
@@ -152,8 +152,8 @@ Pick one under **Settings → In-game sound → Sound pack**, or in the startup 
 
 Wave files go directly into
 
-* on Linux/macOS: `~/CivOne/sounds`
-* on Windows: `C:\Users\<YourUsername>\AppData\Local\CivOne\sounds` (also `%LOCALAPPDATA%\CivOne\sounds`)
+* on Linux/macOS: `~/CivOneX/sounds`
+* on Windows: `C:\Users\<YourUsername>\AppData\Local\CivOneX\sounds` (also `%LOCALAPPDATA%\CivOneX\sounds`)
 
 Subfolders belong to converted packs; your own files go into the folder itself. A file has to be a
 RIFF/WAVE file SDL can load - uncompressed PCM is the safe choice.
@@ -376,18 +376,37 @@ You can select the language in the setup menu with `Shift + F1`.
 Open `Game Options`, then select `Language`.
 Choose `Identity (default)` to use original keys, or choose one of the available `civ_<postfix>.txt` language files.
 
-Language files must be placed in your CivOne profile translation folder.
-On Windows this is `%LOCALAPPDATA%\CivOne\translations`.
-On Linux and macOS this is `~/.local/share/CivOne/translations`.
+Language files must be placed in your CivOneX profile translation folder.
+On Windows this is `%LOCALAPPDATA%\CivOneX\translations`.
+On Linux and macOS this is `~/.local/share/CivOneX/translations`.
 
-The CivOne profile root is the parent folder of those files.
-On Windows this is `%LOCALAPPDATA%\CivOne`.
-On Linux and macOS this is `~/.local/share/CivOne`.
+The CivOneX profile root is the parent folder of those files.
+On Windows this is `%LOCALAPPDATA%\CivOneX`.
+On Linux and macOS this is `~/.local/share/CivOneX`.
 
 Other common folders are:
 
-* Windows: `%LOCALAPPDATA%\CivOne\data`, `%LOCALAPPDATA%\CivOne\saves`, `%LOCALAPPDATA%\CivOne\sounds`
-* Linux and macOS: `~/.local/share/CivOne/data`, `~/.local/share/CivOne/saves`, `~/.local/share/CivOne/sounds`
+* Windows: `%LOCALAPPDATA%\CivOneX\data`, `%LOCALAPPDATA%\CivOneX\saves`, `%LOCALAPPDATA%\CivOneX\sounds`
+* Linux and macOS: `~/.local/share/CivOneX/data`, `~/.local/share/CivOneX/saves`, `~/.local/share/CivOneX/sounds`
+
+#### Profile folder of older versions
+
+The game was renamed from CivOne to CivOneX, and the profile folder carries the name of the game.
+Versions released as CivOne stored everything in a folder named `CivOne` next to the one listed above.
+Those files are not read any more, so an existing installation starts with empty settings, no saved games and no data files.
+
+To keep them, rename the old folder before starting the game:
+
+```sh
+mv ~/.local/share/CivOne ~/.local/share/CivOneX
+```
+
+```cmd
+move "%LOCALAPPDATA%\CivOne" "%LOCALAPPDATA%\CivOneX"
+```
+
+Renaming is enough; nothing inside the folder has to be changed.
+If both folders exist, the game uses `CivOneX` and leaves the old one untouched, so it can also be merged by hand.
 
 To create or update language files, run the CLI scanner from repository root and copy the output file to your profile translation folder with a `civ_<postfix>.txt` name.
 
@@ -433,7 +452,7 @@ On success, the response includes both the new `fileName` and a newly generated 
 
 To load a saved game immediately when starting the program, you can use the `--load-slot` option followed by a drive letter and a slot number.
 The drive letter should be between 'a' and 'z', and the slot number should be between 0 and 15 (inclusive).
-These correspond to the saved game files that are stored in the `SaveGames` directory (`~/CivOne/saves/c`)
+These correspond to the saved game files that are stored in the `SaveGames` directory (`~/CivOneX/saves/c`)
 
 If you want to load the saved game from drive 'c' and slot 0, you would use:
 
@@ -445,8 +464,8 @@ If you omit the slot number, a loading screen will be shown, allowing you to sel
 
 You can find your saves in the following locations:
 
-* on Linux/macOS: `~/CivOne/saves/`
-* on Windows: `C:\Users\<YourUsername>\AppData\Local\CivOne\saves\` (also `%LOCALAPPDATA%\CivOne\saves\`)
+* on Linux/macOS: `~/CivOneX/saves/`
+* on Windows: `C:\Users\<YourUsername>\AppData\Local\CivOneX\saves\` (also `%LOCALAPPDATA%\CivOneX\saves\`)
 
 ### Loading a savegame from a file (new file format - YAML)
 
@@ -462,7 +481,7 @@ civone --load-cos ./SaveGames/c/auto-save.cos
 On Windows you can also use:
 
 ```cmd
-CivOne.SDL.exe --load-cos "C:\\Users\\<YourUsername>\\AppData\\Local\\CivOne\\saves\\c\\auto-save.cos"
+CivOne.SDL.exe --load-cos "C:\\Users\\<YourUsername>\\AppData\\Local\\CivOneX\\saves\\c\\auto-save.cos"
 ```
 
 ### Quick save and quick load hotkeys
@@ -477,8 +496,8 @@ You can use fast in-game hotkeys for ten quick save slots.
 
 Quick slot files are stored in the `saves` subfolder of the profile storage directory.
 
-* Windows: `%LOCALAPPDATA%\CivOne\saves`.
-* Linux/macOS: `~/CivOne/saves`.
+* Windows: `%LOCALAPPDATA%\CivOneX\saves`.
+* Linux/macOS: `~/CivOneX/saves`.
 
 File names are:
 

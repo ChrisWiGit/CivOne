@@ -260,12 +260,12 @@ namespace CivOne.Screens.StartupWizard
 				string[] warningLines =
 				[
 					T("One or more original text files were not recognized as English."),
-					T("If you choose Original language, some texts may stay in the imported original language while other texts stay in CivOne language.")
+					T("If you choose Original language, some texts may stay in the imported original language while other texts stay in CivOneX language.")
 				];
 				if (!languageValidationResult.IsVerified)
 				{
 					string filesForLog = string.Join(", ", languageValidationResult.FilesWithMismatches.Select(result => result.FileName));
-					_log($"The following files were not recognized to contain English text: {warningSummary}. Affected files: {filesForLog}. If Original language is used, some texts may stay in the imported original language while other texts stay in CivOne language.");
+					_log($"The following files were not recognized to contain English text: {warningSummary}. Affected files: {filesForLog}. If Original language is used, some texts may stay in the imported original language while other texts stay in CivOneX language.");
 				}
 
 				_dispatchToMainThread(() =>
@@ -442,7 +442,7 @@ namespace CivOne.Screens.StartupWizard
 
 			if (RuntimeHandler.Runtime.TryOpenUrl(_storageDirectory, out string? errorMessage))
 			{
-				state.StatusMessage = T("Opened CivOne profile folder.");
+				state.StatusMessage = T("Opened CivOneX profile folder.");
 				return;
 			}
 

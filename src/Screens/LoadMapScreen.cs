@@ -281,7 +281,7 @@ namespace CivOne.Screens
 		{
 			// Built from a translated description plus literal patterns so a translation can
 			// never break the glob part of the filter.
-			string filter = $"{Translate("CivOne Map")} (*.comap, *.map)|*.comap;*.map";
+			string filter = $"{Translate("CivOneX Map")} (*.comap, *.map)|*.comap;*.map";
 
 			string? filePath = Runtime.FileChooser(
 				false,

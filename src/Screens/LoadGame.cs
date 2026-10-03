@@ -132,7 +132,7 @@ namespace CivOne.Screens
 				false,
 				Translate("Load Game..."),
 				BuildDialogInitialFileName(),
-				Translate("CivOne Save Game (*.cos)|*.cos")
+				Translate("CivOneX Save Game (*.cos)|*.cos")
 			);
 			if (string.IsNullOrEmpty(cosFile))
 			{

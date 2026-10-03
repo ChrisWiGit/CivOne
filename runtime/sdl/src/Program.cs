@@ -91,7 +91,7 @@ Try 'civone-sdl --help' for more information.
 							{
 								case Platform.Windows:
 									Console.Write("Creating desktop icon... ");
-									Console.WriteLine(Native.CreateDesktopIcon("CivOne", "An open source implementation of Sid Meier's Civilization") ? "done" : "failed");
+									Console.WriteLine(Native.CreateDesktopIcon(ProductInfo.Name, "An open source implementation of Sid Meier's Civilization") ? "done" : "failed");
 									break;
 								default:
 									Console.WriteLine($"Creating a desktop icon is not implemented on {Native.Platform.Name()}.");
@@ -306,7 +306,7 @@ Try 'civone-sdl --help' for more information.
 			}
 			else
 			{
-				string storageDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CivOne");
+				string storageDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ProductInfo.Name);
 				if (!TranslationServiceFactory.TryUseLanguage(storageDirectory, languagePostfix, out string? error, message => Console.WriteLine(message)))
 				{
 					Console.WriteLine($"Could not activate translation language '{languagePostfix}': {error ?? "unknown error"}");

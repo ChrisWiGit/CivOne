@@ -86,7 +86,7 @@ namespace CivOne.Screens
 			/// <returns>The filter string passed to <see cref="IRuntime.FileChooser"/>.</returns>
 			private string BuildFileChooserFilter(bool includeLegacyMap)
 			{
-				string comapFilter = $"{Translate("CivOne Map")} (*.comap)|*.comap";
+				string comapFilter = $"{Translate("CivOneX Map")} (*.comap)|*.comap";
 				if (!includeLegacyMap)
 				{
 					return comapFilter;

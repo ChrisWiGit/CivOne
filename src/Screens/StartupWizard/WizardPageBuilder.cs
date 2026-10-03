@@ -81,7 +81,7 @@ namespace CivOne.Screens.StartupWizard
 				Title = T("Startup Wizard"),
 				Lines =
 				[
-					T("Welcome to CivOne."),
+					T("Welcome to CivOneX."),
 					T("This screen appears because startup setup still needs attention."),
 					T("Use number keys or click with the mouse to choose entries."),
 					T("Links in the header can also be clicked.")
@@ -492,7 +492,7 @@ namespace CivOne.Screens.StartupWizard
 				[
 					new WizardEntry { Number = 1, Text = debugMenuEntryText, Action = WizardEntryAction.ToggleDebugMenu },
 					new WizardEntry { Number = 2, Text = TF("Terrain editor menu: {0}", state.TerrainEditorMenuEnabled.YesNo()), Action = WizardEntryAction.ToggleTerrainEditorMenu },
-					new WizardEntry { Number = 3, Text = T("Open CivOne Profile folder..."), Action = WizardEntryAction.OpenProfileFolder },
+					new WizardEntry { Number = 3, Text = T("Open CivOneX Profile folder..."), Action = WizardEntryAction.OpenProfileFolder },
 					new WizardEntry { Number = 4, Text = T("Show more settings"), Action = WizardEntryAction.OpenSetupScreen },
 					new WizardEntry { Number = 5, Text = T("Configure game patches"), Action = WizardEntryAction.OpenGamePatchesScreen },
 					new WizardEntry { Number = 6, Text = ContinueText(), Action = WizardEntryAction.Continue, Hotkey = HotkeyContinue },

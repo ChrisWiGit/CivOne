@@ -53,7 +53,7 @@ namespace CivOne
 
 		// Set default settings
 		private const string NoSoundPack = global::CivOne.Sound.Playback.SoundPlaybackStrategyConstants.NoSoundPack;
-		private string _windowTitle = "CivOne";
+		private string _windowTitle = ProductInfo.Name;
 		private GraphicsMode _graphicsMode = GraphicsMode.Graphics256;
 		private bool _fullScreen;
 		private int _windowWidth = -1, _windowHeight = -1;
@@ -97,8 +97,8 @@ namespace CivOne
 		/// Gets the CivOne storage root. This is the root folder where all CivOne data is stored
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX</c>
+		/// Linux and macOS: <c>~/.local/share/CivOneX</c>
 		/// </remarks>
 		public string StorageDirectory => Runtime.StorageDirectory;
 
@@ -106,8 +106,8 @@ namespace CivOne
 		/// Gets the directory used for captured screenshots and recordings.
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\capture</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/capture</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\capture</c>
+		/// Linux and macOS: <c>~/.local/share/CivOneX/capture</c>
 		/// </remarks>
 		public string CaptureDirectory => Path.Combine(StorageDirectory, "capture");
 
@@ -115,8 +115,8 @@ namespace CivOne
 		/// Gets the directory that contains the game data files.
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\data</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/data</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\data</c>
+		/// Linux and macOS: <c>~/.local/share/CivOneX/data</c>
 		/// </remarks>
 		public string DataDirectory => Path.Combine(StorageDirectory, "data");
 
@@ -124,8 +124,8 @@ namespace CivOne
 		/// Gets the directory used for plugins.
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\plugins</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/plugins</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\plugins</c>
+		/// Linux and macOS: <c>~/.local/share/CivOneX/plugins</c>
 		/// </remarks>
 		public string PluginsDirectory => Path.Combine(StorageDirectory, "plugins");
 
@@ -133,8 +133,8 @@ namespace CivOne
 		/// Gets the directory used for savegames.
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\saves</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/saves</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\saves</c>
+		/// Linux and macOS: <c>~/.local/share/CivOneX/saves</c>
 		/// </remarks>
 		public string SavesDirectory => Path.Combine(StorageDirectory, "saves");
 
@@ -142,8 +142,8 @@ namespace CivOne
 		/// Gets the directory used for classic .cos savegames.
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\saves\cos</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/saves/cos</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\saves\cos</c>
+		/// Linux and macOS: <c>~/.local/share/CivOneX/saves/cos</c>
 		/// </remarks>
 		public string CosSavesDirectory => Path.Combine(StorageDirectory, "saves", "cos");
 
@@ -157,8 +157,8 @@ namespace CivOne
 		/// Gets the directory used for sound assets.
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\sounds</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/sounds</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\sounds</c>
+		/// Linux and macOS: <c>~/.local/share/CivOneX/sounds</c>
 		/// </remarks>
 		public string SoundsDirectory => Path.Combine(StorageDirectory, "sounds");
 
@@ -862,6 +862,7 @@ namespace CivOne
 
 			// Read settings
 			GetSetting("WindowTitle", ref _windowTitle);
+			_windowTitle = new WindowTitleDelegate().Resolve(_windowTitle);
 			GetSetting("GraphicsMode", ref _graphicsMode);
 			GetSetting("FullScreen", ref _fullScreen);
 			GetSetting("SideBar", ref _rightSideBar);

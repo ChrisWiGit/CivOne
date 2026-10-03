@@ -15,6 +15,7 @@ using CivOne.Graphics;
 
 namespace CivOne.Screens
 {
+	[ScreenResizeable]
 	internal class WindowTitle : BaseScreen
 	{
 		private readonly Input _input;

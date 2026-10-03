@@ -6,8 +6,8 @@
 		/// Gets the CivOne storage root. This is the root folder where all CivOne data is stored
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX</c>
+		/// Linux and macOS: <c>~/.local/share/CivOneX</c>
 		/// </remarks>
 		string StorageDirectory { get; }
 
@@ -15,8 +15,8 @@
 		/// Gets the directory used for captured screenshots and recordings.
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\capture</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/capture</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\capture</c>
+		/// Linux and macOS: <c>~/.local/share/CivOneX/capture</c>
 		/// </remarks>
 		string CaptureDirectory { get; }
 
@@ -24,8 +24,8 @@
 		/// Gets the directory that contains the game data files.
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\data</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/data</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\data</c>
+		/// Linux and macOS: <c>~/.local/share/CivOneX/data</c>
 		/// </remarks>
 		string DataDirectory { get; }
 
@@ -33,8 +33,8 @@
 		/// Gets the directory used for plugins.
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\plugins</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/plugins</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\plugins</c>
+		/// Linux and macOS: <c>~/.local/share/CivOneX/plugins</c>
 		/// </remarks>
 		string PluginsDirectory { get; }
 
@@ -42,8 +42,8 @@
 		/// Gets the directory used for savegames.
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\saves</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/saves</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\saves</c>
+		/// Linux and macOS: <c>~/.local/share/CivOneX/saves</c>
 		/// </remarks>
 		string SavesDirectory { get; }
 
@@ -51,8 +51,8 @@
 		/// Gets the directory used for classic .cos savegames.
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\saves\cos</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/saves/cos</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\saves\cos</c>
+		/// Linux and macOS: <c>~/.local/share/CivOneX/saves/cos</c>
 		/// </remarks>
 		string CosSavesDirectory { get; }
 
@@ -60,8 +60,8 @@
 		/// Gets the directory used for custom map files (<c>*.comap</c>, <c>*.map</c>).
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\maps</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/maps</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\maps</c>
+		/// Linux and macOS: <c>~/.local/share/CivOneX/maps</c>
 		/// </remarks>
 		string MapsDirectory { get; }
 
@@ -69,8 +69,8 @@
 		/// Gets the directory used for exported map images.
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\pictures</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/pictures</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\pictures</c>
+		/// Linux and macOS: <c>~/.local/share/CivOneX/pictures</c>
 		/// </remarks>
 		string PicturesDirectory { get; }
 
@@ -78,8 +78,8 @@
 		/// Gets the directory used for sound assets.
 		/// </summary>
 		/// <remarks>
-		/// Windows: <c>%LOCALAPPDATA%\CivOne\sounds</c>
-		/// Linux and macOS: <c>~/.local/share/CivOne/sounds</c>
+		/// Windows: <c>%LOCALAPPDATA%\CivOneX\sounds</c>
+		/// Linux and macOS: <c>~/.local/share/CivOneX/sounds</c>
 		/// </remarks>
 		string SoundsDirectory { get; }
 

@@ -23,7 +23,7 @@ namespace CivOne.UnitTests
         public event EventHandler<ScreenEventArgs> MouseWheel { add { } remove { } }
         public Platform CurrentPlatform { get; } = Platform.Unknown;
 
-        public string StorageDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CivOne");
+        public string StorageDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ProductInfo.Name);
 
         public string? GetSetting(string key)
         {

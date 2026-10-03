@@ -296,12 +296,12 @@ Hall of Fame data is persisted in:
 
 For the SDL runtime on Windows, `Runtime.StorageDirectory` is:
 
-* `%LOCALAPPDATA%/CivOne`
+* `%LOCALAPPDATA%/CivOneX`
 
 So the effective file path is usually:
 
-On Windows this is `%LOCALAPPDATA%\CivOne\HallOfFame.yaml`.
-On Linux and macOS this is `~/.local/share/CivOne/HallOfFame.yaml`.
+On Windows this is `%LOCALAPPDATA%\CivOneX\HallOfFame.yaml`.
+On Linux and macOS this is `~/.local/share/CivOneX/HallOfFame.yaml`.
 
 ### When is it read or written?
 

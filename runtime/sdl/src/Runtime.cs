@@ -164,7 +164,7 @@ namespace CivOne
         }
 
 		Platform IRuntime.CurrentPlatform => Platform.Windows;
-		string IRuntime.StorageDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CivOne");
+		string IRuntime.StorageDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ProductInfo.Name);
 		string? IRuntime.GetSetting(string key) => Profile.GetSetting(key);
 		void IRuntime.SetSetting(string key, string value) => Profile.SetSetting(key, value);
 		void IRuntime.SetCurrentCursor(MouseCursor? cursor) => CurrentCursor = cursor;

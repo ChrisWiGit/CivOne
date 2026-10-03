@@ -702,7 +702,7 @@ namespace CivOne
 			base.Dispose(disposing);
 		}
 
-		public GameWindow(Runtime runtime, bool softwareRender, IDebounceService debounceService) : base(ApplyMcpTitleState(runtime, "CivOneX"), InitialWidth, InitialHeight, Settings.FullScreen, softwareRender)
+		public GameWindow(Runtime runtime, bool softwareRender, IDebounceService debounceService) : base(ApplyMcpTitleState(runtime, ProductInfo.Name), InitialWidth, InitialHeight, Settings.FullScreen, softwareRender)
 		{
 			_runtime = runtime;
 			_debounceService = debounceService ?? throw new ArgumentNullException(nameof(debounceService));
