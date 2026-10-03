@@ -49,6 +49,16 @@ namespace CivOne.UnitTests.Sound.Cvl.Adlib
         public const int UnsupportedHandler = 0x02E8;
         public const int NoisyHandler = 0x0300;
 
+        /// <summary>
+        /// Table of stream pointers, placed in front of its handler the way the real one is.
+        /// </summary>
+        public const int StreamTable = 0x0340;
+
+        public const int StreamTableHandler = 0x0360;
+
+        /// <summary>How many entries <see cref="StreamTable"/> holds.</summary>
+        public const int StreamTableEntries = 5;
+
         // Data offsets.
         public const int PlainVoiceA = 0x0000;
         public const int PlainVoiceB = 0x0020;
@@ -71,6 +81,12 @@ namespace CivOne.UnitTests.Sound.Cvl.Adlib
         public const int TuneSilent = 7;
         public const int TuneUnsupported = 8;
         public const int TuneNoise = 9;
+
+        /// <summary>
+        /// A tune whose handler ducks the running voices first and then takes its stream from a
+        /// table, the shape the ultimatum sting uses. Deliberately not four entries.
+        /// </summary>
+        public const int TuneStreamTable = 10;
 
         public const int DefaultPan = 0x40;
 
@@ -247,6 +263,7 @@ namespace CivOne.UnitTests.Sound.Cvl.Adlib
             WriteCodeWord(file, DispatchTable + (TuneSilent * 2), SilentHandler);
             WriteCodeWord(file, DispatchTable + (TuneUnsupported * 2), UnsupportedHandler);
             WriteCodeWord(file, DispatchTable + (TuneNoise * 2), NoisyHandler);
+            WriteCodeWord(file, DispatchTable + (TuneStreamTable * 2), StreamTableHandler);
         }
 
         private static void BuildHandlers(byte[] file)
@@ -283,6 +300,53 @@ namespace CivOne.UnitTests.Sound.Cvl.Adlib
             noisy = WriteCode(file, noisy, 0x8B, 0xD9, 0x83, 0xC3, 0x05, 0x88, 0x07);
             WriteCode(file, noisy, 0xE9, 0, 0);
             WriteCodeWord(file, noisy + 1, (Thunk(0) - (noisy + 3)) & 0xFFFF);
+
+            BuildStreamTableHandler(file);
+        }
+
+        /// <summary>
+        /// Writes the handler that picks a stream from a table and tail calls one voice with it.
+        /// </summary>
+        /// <remarks>
+        /// Mirrors the shape of the ultimatum sting: a block the parser cannot read comes first -
+        /// there the original silences eight voices - then the counter is advanced and wrapped, and
+        /// the chosen stream goes straight into the last voice thunk. There is no
+        /// <c>lea cx,[stream]</c> anywhere, which is why the ordinary walk cannot see it.
+        /// </remarks>
+        private static void BuildStreamTableHandler(byte[] file)
+        {
+            // No entry may be zero: the parser reads a null pointer as the end of the table, which
+            // rules out PlainVoiceA at data offset 0.
+            int[] streams =
+                [PlainVoiceB, OpcodeVoice, ArrangementVoice, ArrangementVoice + 0x10, ArrangementVoice + 0x20];
+
+            for (int index = 0; index < StreamTableEntries; index++)
+            {
+                WriteCodeWord(file, StreamTable + (index * 2), streams[index]);
+            }
+
+            const int Counter = 0x73F5;
+            int offset = StreamTableHandler;
+
+            // A0 <var16> / A2 <var16> = mov al,[voice] / mov [save],al - stands in for the ducking
+            // block the real handler runs before it gets to the table.
+            WriteCode(file, offset, 0xA0, Low(0x741C), High(0x741C), 0xA2, Low(0x73ED), High(0x73ED));
+            offset += 6;
+
+            WriteCode(file, offset,
+                0xFF, 0x06, Low(Counter), High(Counter),                    // inc word [counter]
+                0x8B, 0x1E, Low(Counter), High(Counter),                    // mov bx,[counter]
+                0x83, 0xFB, StreamTableEntries - 1,                         // cmp bx,n
+                0x76, 0x06,                                                 // jbe +6
+                0x33, 0xDB,                                                 // xor bx,bx
+                0x89, 0x1E, Low(Counter), High(Counter),                    // mov [counter],bx
+                0xD1, 0xE3,                                                 // shl bx,1
+                0x2E, 0x8B, 0x8F, Low(StreamTable), High(StreamTable));     // mov cx,cs:[bx+tbl]
+            offset += 26;
+
+            // E9 <rel16> = jmp into the last voice thunk.
+            file[ImageStart + offset] = 0xE9;
+            WriteCodeWord(file, offset + 1, (Thunk(VoiceCount - 1) - (offset + 3)) & 0xFFFF);
         }
 
         /// <summary>

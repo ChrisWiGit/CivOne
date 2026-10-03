@@ -39,6 +39,29 @@ namespace CivOne.UnitTests.Sound.Cvl.Adlib
             return parser;
         }
 
+        /// <summary>
+        /// Tune 33 is the ultimatum sting. Its handler silences the running voices first and then
+        /// takes its stream from a seven entry table, a shape the parser only learned later.
+        /// </summary>
+        [Fact]
+        public void UltimatumStingIsConvertedWithSevenArrangements()
+        {
+            AsoundParser? parser = TryCreateParser();
+            if (parser == null) return;
+
+            AsoundTuneInfo tune = parser.ParseTune(33);
+            _output.WriteLine($"tune 33: kind={tune.Kind} handler=0x{tune.HandlerOffset:X4} "
+                              + $"arrangements={tune.Arrangements.Count} {tune.Diagnostic}");
+
+            Assert.Equal(TuneScoreKind.Music, tune.Kind);
+            Assert.Equal(7, tune.Arrangements.Count);
+            Assert.All(tune.Arrangements, voices => Assert.Single(voices));
+
+            // Every arrangement plays on the same voice, and each has a stream of its own.
+            Assert.Single(tune.Arrangements.Select(voices => voices[0].Channel).Distinct());
+            Assert.Equal(7, tune.Arrangements.Select(voices => voices[0].DataOffset).Distinct().Count());
+        }
+
         [Fact]
         public void LayoutIsDerivedFromTheModule()
         {

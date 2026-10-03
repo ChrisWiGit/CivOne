@@ -1406,15 +1406,23 @@ namespace CivOne.Screens
 				return;
 			}
 
-			// The celebration gets the original's win music, a city view opened plainly its short
-			// flourish. Disorder already started its alarm above.
+			// The celebration gets the original's win music, a completed building its short flourish.
+			// Disorder already started its alarm above, and a plainly opened city view stays silent -
+			// the original only plays this flourish on the showcase pass.
+			//
+			// Deliberate deviation: the original plays the flourish for a completed wonder too, after
+			// the civilization's short anthem that ImprovementBuilt starts, separated by the first
+			// render pass and a timer. We have a single sound channel and no way to queue a sound
+			// behind a running one - a wave file carries no duration here, see
+			// WaveSoundPlaybackStrategy.TryGetDuration - so the flourish would cut the anthem off
+			// within the same frame. Until playback can chain sounds, the anthem wins for wonders.
 			if (weLovePresidentDay)
 			{
 				PlayScreenSound(SoundNames.MusicWin);
 			}
-			else if (!disorder)
+			else if (production is IBuilding && !disorder)
 			{
-				PlayScreenSound(SoundNames.EventCityViewOpened);
+				PlayScreenSound(SoundNames.EventBuildingComplete);
 			}
 
 			int i = 0;

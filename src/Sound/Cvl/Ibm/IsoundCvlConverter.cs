@@ -44,6 +44,7 @@ internal sealed class IsoundCvlConverter : CvlSoundConverterBase
                 Kind = tune.Kind,
                 StepCount = tune.Steps.Count,
                 TotalTicks = tune.TotalTicks,
+                ArrangementCount = tune.Arrangements.Count == 0 ? 1 : tune.Arrangements.Count,
 
                 // Deliberately silent tunes get no file but still appear in the index, so the game
                 // logic can tell "intentionally silent" apart from "not present".

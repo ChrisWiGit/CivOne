@@ -150,6 +150,37 @@ namespace CivOne.UnitTests.Sound.Cvl.Adlib
             }
         }
 
+        /// <summary>
+        /// The second table form: the handler runs code the parser cannot read, then picks a stream
+        /// from a table and hands it to one voice. The number of entries comes from the handler's own
+        /// wrap bound, so it is not tied to the four every other table-driven tune has.
+        /// </summary>
+        [Fact]
+        public void StreamTableHandlerYieldsOneArrangementPerEntry()
+        {
+            AsoundTuneInfo info = Parser().ParseTune(FakeAsoundModule.TuneStreamTable);
+
+            // Music rather than Effect only because tune 10 happens to be a named tune in the
+            // catalog. What matters here is that it is no longer dropped as Unsupported.
+            Assert.Equal(TuneScoreKind.Music, info.Kind);
+            Assert.Equal(FakeAsoundModule.StreamTableEntries, info.Arrangements.Count);
+            Assert.All(info.Arrangements, arrangement => Assert.Single(arrangement));
+
+            // Every entry plays on the last voice, the one the handler tail calls.
+            Assert.All(info.Arrangements,
+                arrangement => Assert.Equal(FakeAsoundModule.VoiceCount - 1, arrangement[0].Channel));
+
+            int[] expected =
+                [FakeAsoundModule.PlainVoiceB,
+                 FakeAsoundModule.OpcodeVoice,
+                 FakeAsoundModule.ArrangementVoice,
+                 FakeAsoundModule.ArrangementVoice + 0x10,
+                 FakeAsoundModule.ArrangementVoice + 0x20];
+
+            Assert.Equal<IEnumerable<int>>(expected,
+                [.. info.Arrangements.Select(arrangement => arrangement[0].DataOffset)]);
+        }
+
         [Fact]
         public void ReturningHandlerIsSilentAndControlFunctionIsUnsupported()
         {

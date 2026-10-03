@@ -54,6 +54,20 @@ namespace CivOne.UnitTests.Sound.Playback
             return (chip, player, done);
         }
 
+        /// <summary>
+        /// The renderer needs to know when the first voice rewinds, because that is where a looping
+        /// file has to turn around - not at the end of the audio, which already repeats a beginning.
+        /// </summary>
+        [Fact]
+        public void AnyVoiceRestartedTurnsTrueOnceAVoiceRewinds()
+        {
+            (RecordingOplChip _, AdlibTunePlayer looping, int _) = Play(FakeAsoundModule.TuneOpcodes, 4000);
+            Assert.True(looping.AnyVoiceRestarted);
+
+            (RecordingOplChip _, AdlibTunePlayer ending, int _) = Play(FakeAsoundModule.TunePlain, 4000);
+            Assert.False(ending.AnyVoiceRestarted);
+        }
+
         [Fact]
         public void StartingResetsTheChipAndEnablesWaveformSelect()
         {

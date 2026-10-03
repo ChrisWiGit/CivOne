@@ -18,7 +18,7 @@ namespace CivOne.Sound.Cvl;
 /// <para>
 /// None of the names or titles below are read from the modules. The modules contain numbers and
 /// note data, no strings at all. Every entry here comes from analysing where the game calls a tune
-/// from; see <c>docs/CVL-ASOUND-AdLib.md</c> for how certain each one is.
+/// from; see <c>docs/cvl.analyze.md</c> for how certain each one is.
 /// </para>
 /// </remarks>
 internal static class CvlTuneCatalog
@@ -58,7 +58,10 @@ internal static class CvlTuneCatalog
         new(31, SoundNames.LeaderGandhiShort, "Gandhi (Short)", IsMusic: true),
         new(32, SoundNames.LeaderFrederickShort, "Frederick (Short)", IsMusic: true),
 
-        new(33, SoundNames.EventAudience, "Foreign Leader Audience Sting", IsMusic: true),
+        // Not the audience itself - the long leader themes cover that. 33 is the sting over an
+        // already open audience when the foreign leader turns hostile (tribute or technology
+        // demanded, provocation, rejection, units ordered out, mobilisation).
+        new(33, SoundNames.EventUltimatum, "Foreign Leader Ultimatum", IsMusic: true),
         new(34, SoundNames.MusicWin, "Win Music", IsMusic: true),
         new(35, SoundNames.MusicLose, "Lose Music", IsMusic: true),
         new(36, SoundNames.EventAlarm, "Alarm - Barbarian Theme", IsMusic: true),
@@ -74,7 +77,7 @@ internal static class CvlTuneCatalog
 
         new(42, SoundNames.EventNuclearBlast, "Nuclear Blast", IsMusic: false),
         new(43, SoundNames.CombatAirStrike, "Air Strike", IsMusic: false),
-        new(44, SoundNames.EventCityViewOpened, "City View Opened", IsMusic: false)
+        new(44, SoundNames.EventBuildingComplete, "Building Completed", IsMusic: false)
     ];
 
     /// <summary>
@@ -149,8 +152,8 @@ internal static class CvlTuneCatalog
 
     /// <summary>
     /// Gets whether the tune number is a music piece (title, evolution, leader themes long and
-    /// short, win, lose, the foreign-audience sting and the barbarian/alarm theme) rather than a
-    /// short sound effect.
+    /// short, win, lose, the ultimatum sting and the barbarian/alarm theme) rather than a short
+    /// sound effect.
     /// </summary>
     /// <param name="tuneId">The tune number to check.</param>
     /// <returns><c>true</c> when the tune is classified as music.</returns>

@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace CivOne.Sound.Playback;
+namespace CivOne.Sound.Dsp;
 
 
 

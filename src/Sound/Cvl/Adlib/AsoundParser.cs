@@ -33,6 +33,9 @@ internal sealed class AsoundParser
     private const int OperatorFieldCount = 14;
     private const int ArrangementCount = 4;
 
+    /// <summary>Most entries a stream table is believed to hold, used when no bound is found.</summary>
+    private const int MaxStreamTableEntries = 16;
+
     private readonly CvlImage _image;
     private readonly AdlibBytecodeDecoderDelegate _decoder = new();
     private readonly Dictionary<int, int> _voiceByThunk;
@@ -152,6 +155,17 @@ internal sealed class AsoundParser
         if (opcode is 0xC3 or 0xCB)
         {
             return new AsoundTuneInfo { TuneId = tuneId, Kind = TuneScoreKind.Silent, HandlerOffset = handler };
+        }
+
+        if (TryReadStreamTable(handler, out List<List<AsoundVoiceRef>> tabled))
+        {
+            return new AsoundTuneInfo
+            {
+                TuneId = tuneId,
+                Kind = CvlTuneCatalog.IsNamedTune(tuneId) ? TuneScoreKind.Music : TuneScoreKind.Effect,
+                HandlerOffset = handler,
+                Arrangements = tabled
+            };
         }
 
         var arrangements = new List<List<AsoundVoiceRef>>();
@@ -287,6 +301,117 @@ internal sealed class AsoundParser
         Vibrato = DataByte(start + 12) != 0,
         FrequencyModulation = DataByte(start + 13) != 0
     };
+
+    /// <summary>
+    /// Reads the second arrangement form, where the handler picks a stream from a table and tail
+    /// calls one voice thunk with it.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The first form indexes a table of <em>handlers</em> and jumps to one of them
+    /// (<c>2E FF A7</c>). This one indexes a table of <em>streams</em> and hands the chosen pointer
+    /// straight to a voice, which is why <see cref="WalkHandler"/> cannot see it: there is no
+    /// <c>lea cx,[stream]</c> anywhere.
+    /// </para>
+    /// <code>
+    ///   ... whatever the handler does first ...
+    ///   FF 06 &lt;var16&gt;    inc word [counter]
+    ///   8B 1E &lt;var16&gt;    mov bx,[counter]
+    ///   83 FB &lt;n&gt;        cmp bx,n             ; n + 1 entries
+    ///   76 06            jbe +6
+    ///   33 DB            xor bx,bx            ; wrap
+    ///   89 1E &lt;var16&gt;    mov [counter],bx
+    ///   D1 E3            shl bx,1
+    ///   2E 8B 8F &lt;tbl&gt;   mov cx,cs:[bx+tbl]   ; tbl holds the data-segment pointers
+    ///   E9 &lt;rel16&gt;       jmp &lt;voice thunk&gt;
+    /// </code>
+    /// <para>
+    /// Only the last two instructions are matched. What comes before differs from tune to tune -
+    /// the ultimatum sting silences eight voices there first - and walking it would need a real x86
+    /// decoder. The number of entries is taken from the <c>cmp bx,n</c> bound, because this form is
+    /// not limited to the four arrangements every other table-driven tune has.
+    /// </para>
+    /// </remarks>
+    /// <param name="handler">Code offset of the handler.</param>
+    /// <param name="arrangements">One arrangement per table entry, each playing a single voice.</param>
+    /// <returns><c>true</c> when the handler has this shape.</returns>
+    private bool TryReadStreamTable(int handler, out List<List<AsoundVoiceRef>> arrangements)
+    {
+        arrangements = [];
+
+        for (int offset = handler; offset < handler + MaxHandlerBytes; offset++)
+        {
+            // 2E 8B 8F <tbl16> = mov cx,cs:[bx+tbl]
+            if (!_image.CodeMatches(offset, 0x2E, 0x8B, 0x8F)) continue;
+            if (!_image.TryCodeWord(offset + 3, out ushort table)) continue;
+
+            // E9 <rel16> = jmp <voice thunk>. A byte sequence that reads as the table lookup but is
+            // not followed by the tail call is not this form - keep looking rather than giving up on
+            // the whole handler.
+            if (!_image.CodeMatches(offset + 5, 0xE9)) continue;
+            if (!_image.TryCodeWord(offset + 6, out ushort relative)) continue;
+
+            int target = (offset + 8 + (short)relative) & 0xFFFF;
+            if (!_voiceByThunk.TryGetValue(target, out int voice)) continue;
+
+            foreach (int stream in StreamTableEntries(handler, table, offset))
+            {
+                arrangements.Add([new AsoundVoiceRef(voice, stream)]);
+            }
+
+            return arrangements.Count > 0;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Reads the stream pointers of a table.
+    /// </summary>
+    /// <param name="handler">Code offset of the handler, which the table ends in front of.</param>
+    /// <param name="table">Code offset of the table.</param>
+    /// <param name="lookup">Code offset of the instruction that reads the table.</param>
+    /// <returns>The data-segment offset of each stream.</returns>
+    private IEnumerable<int> StreamTableEntries(int handler, int table, int lookup)
+    {
+        int count = ArrangementBound(handler, lookup);
+
+        for (int index = 0; index < count; index++)
+        {
+            int entry = table + index * 2;
+
+            // The table sits in front of its own handler, so running into it means the bound was
+            // wrong and there is nothing left to read.
+            if (entry >= handler) yield break;
+            if (!_image.TryCodeWord(entry, out ushort pointer) || pointer == 0) yield break;
+
+            yield return pointer;
+        }
+    }
+
+    /// <summary>
+    /// Reads how many entries the table has from the bound the handler wraps its counter at.
+    /// </summary>
+    /// <param name="handler">Code offset of the handler.</param>
+    /// <param name="lookup">Code offset of the instruction that reads the table.</param>
+    /// <returns>
+    /// The number of entries, or <see cref="MaxStreamTableEntries"/> when no bound was found - the
+    /// table's own end then decides, since it stops where the handler begins.
+    /// </returns>
+    private int ArrangementBound(int handler, int lookup)
+    {
+        for (int offset = handler; offset < lookup; offset++)
+        {
+            // 83 FB <n> = cmp bx,n. The counter wraps above n, so the table has n + 1 entries.
+            if (!_image.CodeMatches(offset, 0x83, 0xFB)) continue;
+            if (!_image.TryCodeByte(offset + 2, out byte bound)) continue;
+            if (bound == 0 || bound >= MaxStreamTableEntries) continue;
+
+            return bound + 1;
+        }
+
+        return MaxStreamTableEntries;
+    }
 
     /// <summary>
     /// Yields the handlers to walk: the four entries of an arrangement table, or the handler itself.

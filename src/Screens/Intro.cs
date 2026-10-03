@@ -529,6 +529,17 @@ namespace CivOne.Screens
 		/// <see cref="DEFAULT_DURATION_SECONDS"/> have passed when that length is not known -
 		/// regardless of how many lines the loaded text (or its translation) has.
 		/// </summary>
+		/// <remarks>
+		/// This is a deliberate decision, not a workaround for missing looping support: the world
+		/// generation is tied strictly to the length of the evolution music, and the closing screen -
+		/// its last sentence, and with it the last word - is meant to land on the end of the tune.
+		/// <para>
+		/// The evolution music therefore does not loop, and must not be made to loop once the sound
+		/// system gains that ability. Looping it would decouple the text from the music and take the
+		/// ending away. If the tune is ever replaced by a longer or shorter one, the text paces
+		/// itself to the new length on its own; nothing here needs changing.
+		/// </para>
+		/// </remarks>
 		private (int totalSteps, int pacedSteps, int targetTicks) CalculatePacing()
 		{
 			(int totalSteps, int pictureChanges) = CountAdvanceSteps(_introText);

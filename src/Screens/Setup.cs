@@ -19,6 +19,7 @@ using CivOne.IO;
 using CivOne.Services;
 using CivOne.Sound;
 using CivOne.Sound.Cvl;
+using CivOne.Sound.Engine;
 using CivOne.Sound.Playback;
 using CivOne.Services.Translation;
 using CivOne.Tasks;
@@ -48,6 +49,18 @@ namespace CivOne.Screens
 		private string? _soundTestMessage;
 		private string? _playingTestPackId;
 		private string? _playingTestSoundName;
+
+		private readonly MusicStingDelegate _sting = new();
+		private readonly SequentialArrangementPickerDelegate _arrangementPicker = new();
+
+		/// <summary>How long a test tune fades out when it is stopped, so the cut is not a click.</summary>
+		private static readonly TimeSpan TestFadeOut = TimeSpan.FromMilliseconds(120);
+
+		/// <summary>What the sound system is playing for the tune test, if anything.</summary>
+		private ISoundHandle? _testTune;
+
+		/// <summary>The sting playing over the test tune, if any.</summary>
+		private ISoundHandle? _testSting;
 		private readonly SoundTitleTranslationDelegate _soundTitles = new();
 
 		private (string Label, int Width, int Height)[] ExpandSizeOptions() =>
@@ -547,12 +560,21 @@ namespace CivOne.Screens
 				menuItems.Add(MenuItem.Create(Translate("Next page")).OnSelect(GotoMenu(() => TestTunesMenu(page + 1))));
 			}
 
+			// Only worth offering while something is running that the sting can duck.
+			if (packId != null && _testTune != null && _testTune.IsPlaying)
+			{
+				int selectedItem = menuItems.Count;
+				menuItems.Add(MenuItem.Create(Translate("Play ultimatum sting over it"))
+					.OnSelect((s, a) => PlayStingOverTestTune(packId, page, selectedItem)));
+			}
+
 			return playingItem;
 		}
 
 		private void StopTestSoundAndReturn(object sender, MenuItemEventArgs<int> args)
 		{
 			SoundPlaybackStrategyProvider.Abort();
+			StopTestTune();
 			ClearPlayingTestTune();
 			_soundTestMessage = Translate("Test sound stopped.");
 			Log(_soundTestMessage);
@@ -565,6 +587,7 @@ namespace CivOne.Screens
 			if (IsPlayingTestTune(packId, tune))
 			{
 				SoundPlaybackStrategyProvider.Abort();
+				StopTestTune();
 				ClearPlayingTestTune();
 				_soundTestMessage = TranslateFormatted("Test tune stopped: {0}", tune.Title);
 				Log(_soundTestMessage);
@@ -574,13 +597,16 @@ namespace CivOne.Screens
 			}
 
 			SoundPlaybackStrategyProvider.Abort();
+			StopTestTune();
 
-			// A pack tune is started directly so the test plays that pack even when the game is set
-			// to something else; everything the pack does not carry goes the normal way, which is
-			// what makes a plain collection of wave files testable at all.
-			bool played = tune.PackEntry == null || packId == null
-				? SoundPlaybackStrategyProvider.Current.PlaySound(tune.Name)
-				: SoundPlaybackStrategyProvider.PlayTune(packId, tune.PackEntry);
+			// A pack tune goes through the sound system: only there can it loop and be ducked by the
+			// sting. A plain collection of wave files has no rendered file to hand over, so it keeps
+			// the ordinary path - which also keeps that path covered by the sound test.
+			int arrangement = 0;
+			bool rendering = false;
+			bool played = packId != null && tune.PackEntry != null
+				? TryPlayTuneThroughSoundSystem(packId, tune, out arrangement, out rendering)
+				: SoundPlaybackStrategyProvider.Current.PlaySound(tune.Name);
 
 			if (played)
 			{
@@ -593,11 +619,133 @@ namespace CivOne.Screens
 			}
 
 			_soundTestMessage = played
-				? TranslateFormatted("Test tune started: {0}", tune.Title)
-				: TranslateFormatted("Test tune could not be played: {0}", tune.Title);
+				? DescribeTestTuneStarted(tune, arrangement)
+				: rendering
+					? TranslateFormatted("Still rendering: {0}. Try again in a moment.", tune.Title)
+					: TranslateFormatted("Test tune could not be played: {0}", tune.Title);
 			Log(_soundTestMessage);
 			CloseMenus();
 			TestTunesMenu(page, selectedItem);
+		}
+
+		/// <summary>
+		/// Describes which tune, and which of its arrangements, just started playing.
+		/// </summary>
+		/// <param name="tune">The tune that was started.</param>
+		/// <param name="arrangement">The arrangement index that was picked.</param>
+		/// <returns>The translated status message.</returns>
+		private string DescribeTestTuneStarted(SoundTestEntry tune, int arrangement)
+		{
+			if (tune.PackEntry == null || tune.PackEntry.ArrangementCount <= 1)
+			{
+				return TranslateFormatted("Test tune started: {0}", tune.Title);
+			}
+
+			return TranslateFormatted("Test tune started: {0} (arrangement {1})", tune.Title, arrangement + 1);
+		}
+
+		/// <summary>
+		/// Starts a pack tune through the sound system.
+		/// </summary>
+		/// <remarks>
+		/// A tune repeats only when its rendered file carries a loop point. The renderer writes one
+		/// exactly when a voice rewound while it was rendering, which is the evidence that the
+		/// original driver looped the tune - so the three long leader themes that end instead of
+		/// looping play once, as they should.
+		/// </remarks>
+		/// <param name="packId">Id of the pack the tune belongs to.</param>
+		/// <param name="tune">The tune to play.</param>
+		/// <param name="arrangement">The arrangement that was picked to play.</param>
+		/// <param name="rendering">
+		/// <c>true</c> when the tune is still being rendered rather than truly unplayable.
+		/// </param>
+		/// <returns><c>true</c> when it was started.</returns>
+		private bool TryPlayTuneThroughSoundSystem(string packId, SoundTestEntry tune, out int arrangement, out bool rendering)
+		{
+			arrangement = _arrangementPicker.Pick(tune.Name, tune.PackEntry?.ArrangementCount ?? 1);
+			if (!SoundPlaybackStrategyProvider.TryGetWaveFile(tune.Name, packId, arrangement, out string? file, out rendering)
+				|| file == null)
+			{
+				// Not an error: the render has just been queued and the next attempt will find it.
+				return false;
+			}
+
+			_testTune = SoundSystemProvider.Play(new SoundRequest(
+				file,
+				SoundBus.Music,
+				Loop: SoundLoop.WhenMarked,
+				FadeIn: TimeSpan.FromMilliseconds(200),
+				LoopCrossFade: TimeSpan.FromMilliseconds(300)));
+
+			bool started = _testTune != null;
+			if (started)
+			{
+				_arrangementPicker.Advance(tune.Name, tune.PackEntry?.ArrangementCount ?? 1);
+			}
+
+			return started;
+		}
+
+		/// <summary>
+		/// Drops the ultimatum sting over whatever the tune test is playing.
+		/// </summary>
+		/// <remarks>
+		/// This is the acceptance test for the sound system, and it can be fired as often as wanted
+		/// and at any point of a tune: if the music comes back on the note it stopped on, pausing
+		/// works; if it comes back further along, something silenced it instead of freezing it.
+		/// <para>
+		/// The game has no trigger for the sting yet - diplomacy has none of the hostile exchanges
+		/// the original played it for - so this is also the only way to hear it at all.
+		/// </para>
+		/// </remarks>
+		/// <param name="packId">Id of the pack to take the sting from.</param>
+		/// <param name="page">Page of the tune list to return to.</param>
+		/// <param name="selectedItem">Menu item to keep selected.</param>
+		private void PlayStingOverTestTune(string packId, int page, int selectedItem)
+		{
+			bool ready = SoundPlaybackStrategyProvider.TryGetWaveFile(SoundNames.EventUltimatum, packId, 0,
+				out string? stingFile, out bool _);
+
+			ISoundHandle? sting = ready && stingFile != null ? _sting.Play(_testTune, stingFile) : null;
+			if (sting != null) _testSting = sting;
+
+			_soundTestMessage = sting != null
+				? Translate("Ultimatum sting played.")
+				: Translate("Still rendering, or this pack has no ultimatum sting. Try again.");
+
+			Log(_soundTestMessage);
+			CloseMenus();
+			TestTunesMenu(page, selectedItem);
+		}
+
+		/// <summary>
+		/// Stops what the tune test started, and only that.
+		/// </summary>
+		/// <remarks>
+		/// Deliberately stops the two handles this screen owns rather than silencing the whole sound
+		/// system: a screen must not reach past what it started itself.
+		/// </remarks>
+		private void StopTestTune()
+		{
+			_testSting?.Stop();
+			_testSting = null;
+
+			_testTune?.Stop(TestFadeOut);
+			_testTune = null;
+		}
+
+		/// <summary>
+		/// Stops the test sounds when the screen goes away.
+		/// </summary>
+		/// <remarks>
+		/// Without this a test tune keeps looping after the screen is closed: it plays through the
+		/// sound system, which outlives the screen, and a tune with a loop point never ends on its
+		/// own.
+		/// </remarks>
+		protected override void Destroy()
+		{
+			StopTestTune();
+			base.Destroy();
 		}
 
 		private bool IsPlayingTestTune(string? packId, SoundTestEntry tune)

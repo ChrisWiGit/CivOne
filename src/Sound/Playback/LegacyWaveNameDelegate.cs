@@ -26,6 +26,11 @@ namespace CivOne.Sound.Playback;
 /// distinction. <c>cannon</c> has no counterpart at all and is not offered; a plugin alias can
 /// still reach it.
 /// </para>
+/// <para>
+/// Two names an earlier CivOne used itself are listed here as well: <c>event_audience</c> and
+/// <c>event_city_view_opened</c>, which are now called after the situation rather than after the
+/// screen. A collection that was named after the older documentation keeps working.
+/// </para>
 /// </remarks>
 internal sealed class LegacyWaveNameDelegate
 {
@@ -66,9 +71,9 @@ internal sealed class LegacyWaveNameDelegate
         [SoundNames.LeaderGandhiShort] = ["gand_short"],
         [SoundNames.LeaderFrederickShort] = ["fred_short"],
 
-        [SoundNames.EventAudience] = ["audience"],
+        [SoundNames.EventUltimatum] = ["event_audience", "audience"],
         [SoundNames.EventAlarm] = ["alarm"],
-        [SoundNames.EventCityViewOpened] = ["cityview"],
+        [SoundNames.EventBuildingComplete] = ["event_city_view_opened", "cityview"],
         [SoundNames.EventNuclearBlast] = ["s_nuke"],
         [SoundNames.UiBeep] = ["s_beep"],
 

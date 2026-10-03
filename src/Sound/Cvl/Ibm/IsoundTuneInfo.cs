@@ -15,7 +15,14 @@ internal sealed class IsoundTuneInfo
     /// <summary>Code offset of the player routine the handler jumps to, or -1.</summary>
     public int PlayerOffset { get; init; } = -1;
 
-    public List<TuneStep> Steps { get; init; } = [];
+    /// <summary>
+    /// The interchangeable arrangements of the tune, in the order the driver's table holds them.
+    /// One entry for an ordinary tune, four for one the driver varies between playbacks.
+    /// </summary>
+    public List<List<TuneStep>> Arrangements { get; init; } = [];
+
+    /// <summary>The steps of the first arrangement, which is what an ordinary tune has.</summary>
+    public List<TuneStep> Steps => Arrangements.Count == 0 ? [] : Arrangements[0];
 
     /// <summary>Reason why the handler could not be interpreted as a sequence, if any.</summary>
     public string? Diagnostic { get; init; }

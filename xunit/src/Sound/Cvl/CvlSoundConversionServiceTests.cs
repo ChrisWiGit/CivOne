@@ -74,10 +74,14 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.True(Directory.Exists(packFolder));
 
             var files = Directory.GetFiles(packFolder, "*.sound.json").Select(Path.GetFileName).OrderBy(x => x).ToArray();
-            Assert.Equal(3, files.Length);
+            Assert.Equal(5, files.Length);
             Assert.Contains($"{SoundNames.MusicTitle}.sound.json", files);
             Assert.Contains($"{SoundNames.LeaderLincoln}.sound.json", files);
             Assert.Contains($"{SoundNames.LeaderMontezuma}.sound.json", files);
+
+            // The fake module's two tunes that pick between four arrangements, on tune ids 8 and 9.
+            Assert.Contains($"{SoundNames.LeaderShaka}.sound.json", files);
+            Assert.Contains($"{SoundNames.LeaderNapoleon}.sound.json", files);
 
             // The evolution music is silent on this driver and gets no file.
             Assert.DoesNotContain($"{SoundNames.MusicEvolution}.sound.json", files);
@@ -249,10 +253,20 @@ namespace CivOne.UnitTests.Sound.Cvl
             Assert.True(index.TryGetByName(SoundNames.MusicLose, out _));
             Assert.True(index.TryGetByName(SoundNames.LeaderAlexander, out _));
 
-            // The audience sting and the alarm have no data on the PC speaker driver.
-            Assert.Equal(
-                [SoundNames.EventAudience, SoundNames.EventAlarm],
-                index.UnavailableSoundNames);
+            // The ultimatum sting and the alarm exist four times over in the driver, behind an
+            // arrangement table rather than a plain pointer. Both must come through all the same.
+            Assert.Empty(index.UnavailableSoundNames);
+
+            foreach (string name in new[] { SoundNames.EventUltimatum, SoundNames.EventAlarm })
+            {
+                Assert.True(index.TryGetByName(name, out SoundPackIndexEntry? entry));
+                Assert.Equal(4, entry!.ArrangementCount);
+
+                var tune = TuneScoreJson.Load(Path.Combine(packFolder, entry.File
+                    ?? throw new InvalidOperationException($"{name} should have a file.")));
+                Assert.Equal(4, tune.Arrangements.Count);
+                Assert.All(tune.Arrangements, arrangement => Assert.NotEmpty(arrangement.Steps));
+            }
 
             string winFile = index.Tunes.Single(t => t.Name == SoundNames.MusicWin).File
                 ?? throw new InvalidOperationException("Win Music should have a file.");

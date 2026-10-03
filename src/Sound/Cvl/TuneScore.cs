@@ -39,9 +39,19 @@ internal sealed class TuneScore
     public int SourceOffset { get; set; }
 
     /// <summary>
-    /// Gets or sets the ordered list of tones and rests that make up the tune.
+    /// Gets or sets the interchangeable arrangements of the tune.
     /// </summary>
-    public List<TuneStep> Steps { get; set; } = [];
+    /// <remarks>
+    /// Most tunes have exactly one. A few exist four times over in the driver, which picks between
+    /// them by a counter so the tune varies from one playback to the next.
+    /// </remarks>
+    public List<TuneArrangement> Arrangements { get; set; } = [];
+
+    /// <summary>
+    /// Gets the steps of the first arrangement, which is the whole tune wherever there is only one.
+    /// </summary>
+    [JsonIgnore]
+    public List<TuneStep> Steps => Arrangements.Count == 0 ? [] : Arrangements[0].Steps;
 
     /// <summary>
     /// Gets the total duration of the tune in worker ticks, i.e. the sum of all <see cref="Steps"/> durations.

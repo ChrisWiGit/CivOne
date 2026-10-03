@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CivOne.Sound.Cvl.Ibm;
 
@@ -11,6 +12,11 @@ namespace CivOne.Sound.Cvl.Ibm;
 ///   Export[1] (PlayTuneFn):  cmp bx,MaxTuneId ; shl bx,1 ; call word ptr cs:[bx+DispatchTable]
 ///
 ///   Handler:                 8D 1E &lt;ptr16&gt;   lea bx,[ptr]   ; ptr is DATA-SEGMENT-relative
+///                            E9 &lt;rel16&gt;      jmp &lt;Player&gt;
+///
+///   Handler, arrangements:   8B 1E &lt;var16&gt;   mov bx,[var]   ; a few tunes exist four times over
+///                            83 E3 06        and bx,6       ; and the driver picks between them
+///                            2E 8B 9F &lt;tbl&gt;  mov bx,cs:[bx+tbl]
 ///                            E9 &lt;rel16&gt;      jmp &lt;Player&gt;
 ///
 ///   Music record (4 bytes):  +0 byte timbre/priority
@@ -31,6 +37,13 @@ namespace CivOne.Sound.Cvl.Ibm;
 internal sealed class IsoundParser
 {
     private const int MaxStepsPerTune = 8192;
+
+    /// <summary>How many arrangements an arrangement table holds.</summary>
+    private const int ArrangementCount = 4;
+
+    /// <summary>Mask the driver applies to the counter: four entries of two bytes each.</summary>
+    private const int ArrangementMask = 0x06;
+
     private const int PlayerScanLength = 192;
     private const int MaxHandlerCandidates = 256;
 
@@ -126,17 +139,19 @@ internal sealed class IsoundParser
             };
         }
 
-        if (!TryReadHandlerJump(handler, out int dataOffset, out int player))
+        if (!TryReadHandlerData(handler, out List<int> dataOffsets, out int player))
         {
             return new IsoundTuneInfo
             {
                 TuneId = tuneId,
                 Kind = TuneScoreKind.Unsupported,
                 HandlerOffset = handler,
-                Diagnostic = $"Handler 0x{handler:X4} is not a 'lea bx,[ptr] / jmp player' sequence "
-                             + "(likely a control function like Stop or status query)."
+                Diagnostic = $"Handler 0x{handler:X4} is neither a 'lea bx,[ptr] / jmp player' sequence "
+                             + "nor an arrangement table (likely a control function like Stop or status query)."
             };
         }
+
+        int dataOffset = dataOffsets[0];
 
         if (player == Layout.MusicPlayer)
         {
@@ -147,7 +162,7 @@ internal sealed class IsoundParser
                 HandlerOffset = handler,
                 DataOffset = dataOffset,
                 PlayerOffset = player,
-                Steps = ReadMusicSteps(dataOffset)
+                Arrangements = [.. dataOffsets.Select(ReadMusicSteps)]
             };
         }
 
@@ -160,7 +175,7 @@ internal sealed class IsoundParser
                 HandlerOffset = handler,
                 DataOffset = dataOffset,
                 PlayerOffset = player,
-                Steps = ReadEffectSteps(dataOffset)
+                Arrangements = [.. dataOffsets.Select(ReadEffectSteps)]
             };
         }
 
@@ -183,6 +198,89 @@ internal sealed class IsoundParser
 
         int index = timbreCode - Layout.FirstTimbreCode;
         return _image.TryCodeWord(Layout.EffectParamTable + index * 2, out ushort value) ? value : 0;
+    }
+
+    /// <summary>
+    /// Reads the sequence pointers a handler plays, and the player routine it hands them to.
+    /// </summary>
+    /// <param name="handler">Code offset of the handler.</param>
+    /// <param name="dataOffsets">
+    /// The data-segment offsets of the sequences, in the order the driver's table holds them. One
+    /// entry for an ordinary tune, several for a tune that exists in interchangeable arrangements.
+    /// </param>
+    /// <param name="player">Code offset of the player routine the handler jumps to.</param>
+    /// <returns><c>true</c> when the handler is a tune rather than a control function.</returns>
+    private bool TryReadHandlerData(int handler, out List<int> dataOffsets, out int player)
+    {
+        if (TryReadHandlerJump(handler, out int dataOffset, out player))
+        {
+            dataOffsets = [dataOffset];
+            return true;
+        }
+
+        return TryReadArrangementTable(handler, out dataOffsets, out player);
+    }
+
+    /// <summary>
+    /// Reads the arrangement form of a handler.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Some tunes exist several times over. Instead of pointing at one sequence, their handler
+    /// indexes a table of four and jumps to the same player with whichever it picked, so the tune
+    /// varies from one playback to the next:
+    /// </para>
+    /// <code>
+    ///   [E8 &lt;rel16&gt;]     call &lt;counter&gt;       ; only where the driver advances a counter first
+    ///   8B 1E &lt;var16&gt;    mov bx,[var]
+    ///   83 E3 06         and bx,6             ; four entries of two bytes
+    ///   2E 8B 9F &lt;tbl&gt;   mov bx,cs:[bx+tbl]   ; tbl holds the data-segment pointers
+    ///   E9 &lt;rel16&gt;       jmp &lt;Player&gt;
+    /// </code>
+    /// </remarks>
+    /// <param name="handler">Code offset of the handler.</param>
+    /// <param name="dataOffsets">The data-segment offsets of the arrangements.</param>
+    /// <param name="player">Code offset of the player routine the handler jumps to.</param>
+    /// <returns><c>true</c> when the handler has this shape.</returns>
+    private bool TryReadArrangementTable(int handler, out List<int> dataOffsets, out int player)
+    {
+        dataOffsets = [];
+        player = -1;
+
+        // The optional call comes first, so try the handler itself before the byte after the call.
+        foreach (int start in CandidateStarts(handler))
+        {
+            if (!_image.CodeMatches(start, 0x8B, 0x1E, -1, -1, 0x83, 0xE3, ArrangementMask, 0x2E, 0x8B, 0x9F)) continue;
+            if (!_image.TryCodeWord(start + 10, out ushort table)) continue;
+            if (!_image.CodeMatches(start + 12, 0xE9)) continue;
+            if (!_image.TryCodeWord(start + 13, out ushort relative)) continue;
+
+            for (int index = 0; index < ArrangementCount; index++)
+            {
+                if (!_image.TryCodeWord(table + index * 2, out ushort pointer) || pointer == 0) break;
+                dataOffsets.Add(pointer);
+            }
+
+            if (dataOffsets.Count == 0) continue;
+
+            player = (start + 15 + (short)relative) & 0xFFFF;
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Yields where the table lookup can start: at the handler, and after a leading near call.
+    /// </summary>
+    /// <param name="handler">Code offset of the handler.</param>
+    /// <returns>The offsets to try, in order.</returns>
+    private IEnumerable<int> CandidateStarts(int handler)
+    {
+        yield return handler;
+
+        // E8 <rel16> = call near
+        if (_image.CodeMatches(handler, 0xE8)) yield return handler + 3;
     }
 
     private bool TryReadHandlerJump(int handler, out int dataOffset, out int player)

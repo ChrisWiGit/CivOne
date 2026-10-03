@@ -128,8 +128,11 @@ public static class SoundNames
     /// <summary>Short jingle of the Germans' leader theme.</summary>
     public const string LeaderFrederickShort = LeaderFrederick + ShortSuffix;
 
-    /// <summary>Sting for an audience with a foreign leader.</summary>
-    public const string EventAudience = "event_audience";
+    /// <summary>
+    /// Sting played over an open audience when a foreign leader turns hostile - a demand for
+    /// tribute or technology, a provocation, a rejection, or a mobilisation.
+    /// </summary>
+    public const string EventUltimatum = "event_ultimatum";
 
     /// <summary>
     /// Sting for famine, civil disorder, a government overthrown or a nuclear accident. Doubles as
@@ -137,8 +140,8 @@ public static class SoundNames
     /// </summary>
     public const string EventAlarm = "event_alarm";
 
-    /// <summary>Short flourish on opening the city view.</summary>
-    public const string EventCityViewOpened = "event_city_view_opened";
+    /// <summary>Short flourish shown with a city that has just completed a building or wonder.</summary>
+    public const string EventBuildingComplete = "event_building_complete";
 
     /// <summary>A nuclear device going off outside a city.</summary>
     public const string EventNuclearBlast = "event_nuclear_blast";

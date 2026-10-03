@@ -29,6 +29,7 @@ using CivOne.Screens.StartupWizard;
 using CivOne.Screens.Reports;
 using CivOne.Graphics.Sprites;
 using CivOne.Services;
+using CivOne.Sound.Engine;
 using CivOne.Sound.Playback;
 using CivOne.Tasks;
 using CivOne.Tiles;
@@ -230,6 +231,10 @@ namespace CivOne
 			// Sound pack tunes are rendered off the game thread. This starts one whose render has
 			// finished since the last frame.
 			SoundPlaybackStrategyProvider.Process();
+
+			// The new sound system raises the events of sounds that have ended here: the mixer runs
+			// on the audio thread, where game code must not run.
+			SoundSystemProvider.Process();
 
 			// The tick budget bounds how much work a single frame may do. Without it, one slow screen
 			// update lets real time run ahead, which queues up further updates in the same frame, which
@@ -441,6 +446,7 @@ namespace CivOne
 			if (Settings.Sound == GameOption.Off)
 			{
 				SoundPlaybackStrategyProvider.Abort();
+				SoundSystemProvider.Abort();
 			}
 
 			ShowNotification(Settings.Sound == GameOption.Off ? "Sound off" : "Sound on");

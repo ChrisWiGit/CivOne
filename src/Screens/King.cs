@@ -17,6 +17,37 @@ using Gov = CivOne.Governments;
 
 namespace CivOne.Screens
 {
+	/// <summary>
+	/// The throne room of a foreign leader, shown for an audience.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// This screen plays no sound. The original's audience has three of them, and CivOne can serve
+	/// none of them correctly yet:
+	/// </para>
+	/// <list type="bullet">
+	/// <item>
+	/// The short anthem of the visiting leader's civilization (tune 19-32) while the question
+	/// "Will you receive him?" is on screen. CivOne has no such prompt - the audience opens
+	/// unasked - so there is nothing to play it against.
+	/// </item>
+	/// <item>
+	/// The long anthem of that civilization (tune 5-18) once the throne room is drawn. This one
+	/// could be added here, but it runs far longer than this screen does, which only lives until
+	/// the next key or click, so the screen would have to own the sound and stop it on closing.
+	/// <see cref="Sound.Engine.ISoundHandle"/> makes that straightforward now: start it with
+	/// <see cref="Sound.Engine.SoundLoop.WhenMarked"/> and stop the handle when the screen goes.
+	/// </item>
+	/// <item>
+	/// The ultimatum sting (tune 33, <see cref="SoundNames.EventUltimatum"/>) over the already open
+	/// throne room, whenever the foreign leader turns hostile: tribute or technology demanded, a
+	/// provocation, a rejection, units ordered out, mobilisation. Only the trigger is missing now:
+	/// CivOne's diplomacy has none of these exchanges. The tune itself is converted for both sound
+	/// devices, and <see cref="Sound.MusicStingDelegate"/> plays it over running music the way the
+	/// original did, freezing the anthem for its length instead of cutting it off.
+	/// </item>
+	/// </list>
+	/// </remarks>
 	[ScreenResizeable]
 	internal class King : BaseScreen
 	{
@@ -101,8 +132,6 @@ namespace CivOne.Screens
 				palette.Merge(portrait.Palette, 64, 80);
 				Palette = palette;
 			}
-
-			PlaySound(SoundNames.EventAudience);
 
 			Render();
 		}

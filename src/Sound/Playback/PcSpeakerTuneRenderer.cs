@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using CivOne.Sound.Cvl;
+using CivOne.Sound.Dsp;
 
 namespace CivOne.Sound.Playback;
 
@@ -71,9 +72,15 @@ internal sealed class PcSpeakerTuneRenderer : ITuneRenderer
         if (!File.Exists(scorePath)) return null;
 
         TuneScore tune = TuneScoreJson.Load(scorePath);
-        if (tune.Steps.Count == 0) return null;
+        if (tune.Arrangements.Count == 0) return null;
 
-        float[] samples = RenderSteps(index, tune);
+        // An arrangement the pack does not have falls back to the first, which every tune has.
+        int chosen = arrangement < 0 || arrangement >= tune.Arrangements.Count ? 0 : arrangement;
+
+        List<TuneStep> steps = tune.Arrangements[chosen].Steps;
+        if (steps.Count == 0) return null;
+
+        float[] samples = RenderSteps(index, steps);
         if (samples.Length == 0) return null;
 
         new LowPassFilterDelegate(CutoffHz, InternalSampleRate, FilterStages).Apply(samples);
@@ -87,7 +94,7 @@ internal sealed class PcSpeakerTuneRenderer : ITuneRenderer
     /// Walks the tune one worker tick at a time, keeping a running phase so the waveform stays
     /// continuous when the pitch changes inside a note.
     /// </summary>
-    private static float[] RenderSteps(SoundPackIndex index, TuneScore tune)
+    private static float[] RenderSteps(SoundPackIndex index, List<TuneStep> steps)
     {
         int fastTicksPerWorkerTick = Math.Max(1, index.WorkerTickDivider);
         double samplesPerFastTick = InternalSampleRate / (double)Math.Max(1, index.FastTickHz);
@@ -98,7 +105,7 @@ internal sealed class PcSpeakerTuneRenderer : ITuneRenderer
         double phase = 0d;
         double carry = 0d;
 
-        foreach (TuneStep step in tune.Steps)
+        foreach (TuneStep step in steps)
         {
             var pitch = new SpeakerPitchDelegate(step);
 

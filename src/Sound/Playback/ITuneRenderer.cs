@@ -9,7 +9,16 @@ namespace CivOne.Sound.Playback;
 /// </summary>
 /// <param name="Samples">Mono samples. One operator or one square wave at full level reaches 1.</param>
 /// <param name="SampleRate">Rate the samples were produced at, in Hz.</param>
-internal readonly record struct RenderedTune(float[] Samples, int SampleRate);
+/// <param name="LoopEndSample">
+/// Where a looping tune has to turn around, or <c>null</c> when it does not loop.
+/// <para>
+/// This is not the end of the audio. A tune's voices are not the same length and each rewinds on
+/// its own, so a render only stops once the last of them has rewound - by which time the shorter
+/// voices are already repeating their beginning. Turning around at the end of the file would play
+/// that beginning twice, so the turnaround belongs at the moment the first voice rewound.
+/// </para>
+/// </param>
+internal readonly record struct RenderedTune(float[] Samples, int SampleRate, int? LoopEndSample = null);
 
 /// <summary>
 /// Turns one tune of a sound pack into audio.
