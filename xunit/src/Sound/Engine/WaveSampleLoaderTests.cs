@@ -68,11 +68,15 @@ namespace CivOne.UnitTests.Sound.Engine
         /// <remarks>
         /// This is where the loop point of a converted tune is meant to live, so that it travels
         /// with the rendered file instead of having to be looked up somewhere else.
+        /// <para>
+        /// RIFF stores the last sample that is still played, the mixer turns around at the sample
+        /// after it, so a stored 39 has to come back as 40.
+        /// </para>
         /// </remarks>
         [Fact]
         public void ReadsTheLoopPointFromASamplerChunk()
         {
-            byte[] bytes = BuildWaveWithLoop(sampleCount: 64, loopStart: 8, loopEnd: 40);
+            byte[] bytes = BuildWaveWithLoop(sampleCount: 64, loopStart: 8, loopEnd: 39);
 
             Assert.True(_loader.TryParse(bytes, out LoadedWave wave));
 

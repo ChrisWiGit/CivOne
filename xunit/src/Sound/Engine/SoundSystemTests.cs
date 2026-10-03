@@ -153,8 +153,9 @@ namespace CivOne.UnitTests.Sound.Engine
 
             float[] output = device.Pull(160);
 
-            // Neither a silent gap while they swap nor a level that runs away.
-            Assert.All(output, sample => Assert.InRange(sample, 0f, 1f));
+            // Two constant signals of the same level, faded against each other, keep that level:
+            // neither a silent gap while they swap nor a level that runs away.
+            Assert.All(output, sample => Assert.InRange(sample, 0.49f, 0.51f));
             Assert.True(second.IsPlaying);
         }
 

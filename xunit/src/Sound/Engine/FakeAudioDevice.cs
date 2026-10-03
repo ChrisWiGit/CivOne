@@ -24,8 +24,17 @@ namespace CivOne.UnitTests.Sound.Engine
         /// <summary>Gets whether <see cref="Dispose"/> has been called.</summary>
         public bool Disposed { get; private set; }
 
+        /// <summary>Gets or sets whether <see cref="Start"/> reports success.</summary>
+        public bool CanStart { get; set; } = true;
+
         /// <inheritdoc />
-        public void Start(AudioRenderCallback render) => _render = render;
+        public bool Start(AudioRenderCallback render)
+        {
+            if (!CanStart) return false;
+
+            _render = render;
+            return true;
+        }
 
         /// <inheritdoc />
         public void Stop()

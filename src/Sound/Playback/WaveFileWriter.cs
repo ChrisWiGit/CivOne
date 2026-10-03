@@ -86,6 +86,11 @@ internal sealed class WaveFileWriter
     /// Only one loop is written, running from the start of the file, which is all a tune needs.
     /// Everything the chunk says about the sampler itself is left at zero; readers that care about
     /// loops only look at the loop list.
+    /// <para>
+    /// RIFF counts the loop end as the last sample that is still played, while the engine turns
+    /// around <em>at</em> its loop end, so one is taken off here. A player that knows nothing about
+    /// CivOne then loops at the same place the game does.
+    /// </para>
     /// </remarks>
     private static void WriteSamplerChunk(BinaryWriter writer, int sampleRate, int loopEndSample)
     {
@@ -107,7 +112,7 @@ internal sealed class WaveFileWriter
         writer.Write(0);                                    // loop identifier
         writer.Write(0);                                    // loop type: forward
         writer.Write(0);                                    // loop start
-        writer.Write(loopEndSample);                        // loop end
+        writer.Write(loopEndSample - 1);                    // loop end, inclusive
         writer.Write(0);                                    // fraction
         writer.Write(0);                                    // play count: endless
     }

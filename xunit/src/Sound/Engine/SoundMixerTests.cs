@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using CivOne.Sound.Engine;
 using Xunit;
@@ -186,6 +187,60 @@ namespace CivOne.UnitTests.Sound.Engine
             float[] output = Pull(mixer, 20);
 
             Assert.All(output, sample => Assert.Equal(0f, sample));
+        }
+
+        /// <summary>
+        /// A cross fade longer than the loop itself must not eat the loop away.
+        /// </summary>
+        /// <remarks>
+        /// The head would otherwise still be fading in when it reached the next turnaround: it
+        /// would never reach full volume, and every wrap would leave another tail behind until
+        /// there were none left to leave.
+        /// </remarks>
+        [Fact]
+        public void ACrossFadeLongerThanTheLoopIsCutDownToIt()
+        {
+            float[] samples = [.. Enumerable.Repeat(0.5f, 40)];
+
+            (SoundMixer mixer, SoundHandle handle) = Start(samples, voice =>
+            {
+                voice.Loop = true;
+                voice.LoopStart = 0;
+                voice.LoopEnd = 10;
+                voice.LoopCrossFade = 1000;
+            });
+
+            // Far more turnarounds than there are tails to hand out.
+            float[] output = Pull(mixer, 400);
+
+            Assert.True(handle.IsPlaying);
+            Assert.Contains(output, sample => sample > 0.45f);
+            Assert.All(output, sample => Assert.InRange(sample, 0f, 1f));
+        }
+
+        /// <summary>
+        /// The mixer takes only as many voices as it was built for.
+        /// </summary>
+        /// <remarks>
+        /// Its list is never allowed to grow, because growing it would allocate on the audio
+        /// thread. A voice that finds no room ends straight away rather than being left pending,
+        /// so nothing on the game thread waits for a sound that was never started.
+        /// </remarks>
+        [Fact]
+        public void AVoiceThatFindsNoRoomEndsInsteadOfBeingLeftPending()
+        {
+            var mixer = new SoundMixer();
+            var handles = new List<SoundHandle>();
+
+            for (int index = 0; index < 64; index++)
+            {
+                handles.Add(AddVoice(mixer, Ramp(1000), SoundBus.Effect));
+            }
+
+            Pull(mixer, 10);
+
+            Assert.Contains(handles, handle => !handle.IsPlaying);
+            Assert.All(handles.Take(32), handle => Assert.True(handle.IsPlaying));
         }
 
         private static float[] Ramp(int length)

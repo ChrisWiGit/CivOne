@@ -23,18 +23,29 @@ internal sealed class SoundSystem : ISoundSystem
 	/// Creates the sound system and starts its device.
 	/// </summary>
 	/// <param name="device">The output device.</param>
+	/// <remarks>
+	/// A device that could not be opened leaves <see cref="IsRunning"/> at <c>false</c>. The system
+	/// is then useless and the caller has to let it go rather than keep it: everything queued on it
+	/// would wait for a callback that never comes.
+	/// </remarks>
 	public SoundSystem(IAudioDevice device)
 	{
 		ArgumentNullException.ThrowIfNull(device);
 
 		_device = device;
 		_mixer = new SoundMixer();
-		_device.Start(_mixer.Render);
+		IsRunning = _device.Start(_mixer.Render);
 	}
+
+	/// <summary>
+	/// Gets whether the output was opened and is asking for samples.
+	/// </summary>
+	public bool IsRunning { get; }
 
 	/// <inheritdoc />
 	public ISoundHandle? Play(SoundRequest request)
 	{
+		if (!IsRunning) return null;
 		if (string.IsNullOrEmpty(request.FilePath)) return null;
 		if (!_loader.TryLoad(request.FilePath, out LoadedWave wave)) return null;
 

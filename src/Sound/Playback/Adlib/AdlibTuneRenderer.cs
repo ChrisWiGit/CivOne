@@ -137,6 +137,12 @@ internal sealed class AdlibTuneRenderer : ITuneRenderer
         {
             bool playing = player.Tick() && !player.PassCompleted;
 
+            // The first voice to rewind marks where a loop has to turn around. Everything rendered
+            // after this is that voice repeating itself while the longer ones finish. The rewind
+            // happens inside the tick, before any of the block below it is rendered, so the point
+            // is the sample count as it stands here.
+            loopEndSample ??= player.AnyVoiceRestarted ? samples.Count : null;
+
             carry += samplesPerTick;
             int count = (int)carry;
             carry -= count;
@@ -144,12 +150,6 @@ internal sealed class AdlibTuneRenderer : ITuneRenderer
             Span<float> span = block.AsSpan(0, count);
             chip.Render(span);
             samples.AddRange(span);
-
-            // The first voice to rewind marks where a loop has to turn around. Everything rendered
-            // after this is that voice repeating itself while the longer ones finish. The rewind is
-            // noticed after the block it happened in, so the point can be up to one driver tick
-            // late - far below the cross fade that is laid over the turnaround.
-            loopEndSample ??= player.AnyVoiceRestarted ? samples.Count : null;
 
             if (playing) continue;
 
