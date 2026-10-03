@@ -62,7 +62,9 @@ namespace CivOne.Graphics.ImageFormats
 				}
 
 				int length = ReadInt32(data, offset);
-				if (length < 0 || offset + 12 + length > data.Length)
+				// Compared against the remaining bytes, because offset + 12 + length would overflow
+				// for a declared length close to int.MaxValue.
+				if (length < 0 || length > data.Length - offset - 12)
 				{
 					throw new InvalidDataException("A chunk declares a length that does not fit into the file.");
 				}
@@ -73,8 +75,17 @@ namespace CivOne.Graphics.ImageFormats
 
 				if (type.SequenceEqual("IHDR"u8))
 				{
+					if (headerRead)
+					{
+						throw new InvalidDataException("The file contains more than one IHDR chunk.");
+					}
 					header = ReadHeader(content);
 					headerRead = true;
+				}
+				else if (!headerRead)
+				{
+					// Every other chunk is read against the header, so IHDR has to come first.
+					throw new InvalidDataException("The file does not start with an IHDR chunk.");
 				}
 				else if (type.SequenceEqual("PLTE"u8))
 				{
@@ -82,6 +93,12 @@ namespace CivOne.Graphics.ImageFormats
 				}
 				else if (type.SequenceEqual("tRNS"u8))
 				{
+					// For colour types 0 and 2 the chunk names a single transparent sample value
+					// instead of per-entry alpha, which this decoder does not evaluate.
+					if (header.ColourType != 3)
+					{
+						throw new NotSupportedException("Transparency is only supported for indexed PNG files.");
+					}
 					alpha = content.ToArray();
 				}
 				else if (type.SequenceEqual("IDAT"u8))
@@ -97,6 +114,12 @@ namespace CivOne.Graphics.ImageFormats
 					}
 					endRead = true;
 					break;
+				}
+				else if ((type[0] & 0x20) == 0)
+				{
+					// A lower case first letter marks an ancillary chunk, which may be skipped. Any
+					// other critical chunk changes how the image has to be read, so it cannot be.
+					throw new NotSupportedException("The file contains an unsupported critical chunk.");
 				}
 
 				offset += 12 + length;
@@ -198,23 +221,28 @@ namespace CivOne.Graphics.ImageFormats
 			using MemoryStream input = new(compressed);
 			using ZLibStream zlib = new(input, CompressionMode.Decompress);
 
-			byte[] output = new byte[expectedLength];
-			int total = 0;
-			while (total < expectedLength)
+			// The buffer grows with the data that actually arrives instead of being allocated from the
+			// announced image size, so a small file that declares huge dimensions cannot force a
+			// gigabyte allocation before the first byte is read.
+			using MemoryStream output = new();
+			byte[] buffer = new byte[16 * 1024];
+			long total = 0;
+			int read;
+			while ((read = zlib.Read(buffer, 0, buffer.Length)) > 0)
 			{
-				int read = zlib.Read(output, total, expectedLength - total);
-				if (read == 0)
-				{
-					throw new InvalidDataException("The image data is shorter than the image size requires.");
-				}
 				total += read;
+				if (total > expectedLength)
+				{
+					throw new InvalidDataException("The image data is longer than the image size allows.");
+				}
+				output.Write(buffer, 0, read);
 			}
-			if (zlib.ReadByte() != -1)
+			if (total < expectedLength)
 			{
-				throw new InvalidDataException("The image data is longer than the image size allows.");
+				throw new InvalidDataException("The image data is shorter than the image size requires.");
 			}
 
-			return output;
+			return output.ToArray();
 		}
 
 		/// <summary>

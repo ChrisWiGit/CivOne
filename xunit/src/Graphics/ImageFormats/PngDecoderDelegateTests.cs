@@ -237,6 +237,93 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 		}
 
 		[Fact]
+		public void DecodeRejectsChunkLengthThatOverflows()
+		{
+			byte[] file = BuildIndexedPng(2, 1, 8, [0, 1], 0);
+			// A length of int.MaxValue would wrap a naive "offset + 12 + length" bounds check.
+			WriteInt32(file, Signature.Length, int.MaxValue);
+
+			PngDecoderDelegate testee = new();
+
+			Assert.Throws<InvalidDataException>(() => testee.Decode(file));
+		}
+
+		[Fact]
+		public void DecodeRejectsUnsupportedCriticalChunk()
+		{
+			byte[] file = BuildIndexedPng(2, 1, 8, [0, 1], 0, extraChunk: "CrIT");
+
+			PngDecoderDelegate testee = new();
+
+			Assert.Throws<NotSupportedException>(() => testee.Decode(file));
+		}
+
+		[Fact]
+		public void DecodeSkipsAncillaryChunk()
+		{
+			byte[] file = BuildIndexedPng(2, 1, 8, [0, 1], 0, extraChunk: "gAMA");
+
+			PngDecoderDelegate testee = new();
+			DecodedImage result = testee.Decode(file);
+
+			Assert.Equal<byte[]>([0, 1], result.Indices.ToArray());
+		}
+
+		[Fact]
+		public void DecodeRejectsFileWithoutLeadingHeaderChunk()
+		{
+			byte[] file = BuildIndexedPng(2, 1, 8, [0, 1], 0, writeHeader: false);
+
+			PngDecoderDelegate testee = new();
+
+			Assert.Throws<InvalidDataException>(() => testee.Decode(file));
+		}
+
+		[Fact]
+		public void DecodeRejectsHugeImageWithTinyImageData()
+		{
+			// The header announces 900 million pixels while the data holds 64 bytes. Decoding must
+			// fail on the data, not try to allocate the announced size first.
+			byte[] header = new byte[13];
+			WriteInt32(header, 0, 30000);
+			WriteInt32(header, 4, 30000);
+			header[8] = 8;
+			header[9] = 3;
+
+			using MemoryStream compressed = new();
+			using (ZLibStream zlib = new(compressed, CompressionLevel.Fastest, leaveOpen: true))
+			{
+				zlib.Write(new byte[64], 0, 64);
+			}
+
+			using MemoryStream file = new();
+			file.Write(Signature);
+			WriteChunk(file, "IHDR", header);
+			WriteChunk(file, "PLTE", new byte[256 * 3]);
+			WriteChunk(file, "IDAT", compressed.ToArray());
+			WriteChunk(file, "IEND", []);
+
+			PngDecoderDelegate testee = new();
+
+			Assert.Throws<InvalidDataException>(() => testee.Decode(file.ToArray()));
+		}
+
+		[Fact]
+		public void DecodeReadsFileWrittenWithShortPalette()
+		{
+			// PngWriter pads the palette, so even an index above the given colours stays readable.
+			byte[,] pixels = new byte[2, 1];
+			pixels[0, 0] = 1; pixels[1, 0] = 9;
+			Colour[] palette = [new Colour(0, 0, 0), new Colour(10, 20, 30)];
+
+			PngDecoderDelegate testee = new();
+			DecodedImage result = testee.Decode(WriteIndexedPng(pixels, palette));
+
+			Assert.Equal<byte[]>([1, 9], result.Indices.ToArray());
+			Assert.Equal(palette[1], result.SourcePalette[1]);
+		}
+
+		[Fact]
 		public void DecodeRejectsInterlacedFile()
 		{
 			byte[] file = BuildIndexedPng(2, 1, 8, [0, 1], 0, null, interlace: 1);
@@ -260,7 +347,7 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 		/// Builds an indexed PNG file with a chosen bit depth, scanline filter and interlace flag,
 		/// which <see cref="PngWriter"/> cannot produce because it always writes 8 bit, filter 0.
 		/// </summary>
-		private static byte[] BuildIndexedPng(int width, int height, byte bitDepth, byte[] indices, byte filter, byte[]? transparency = null, byte interlace = 0, bool writeEnd = true, int rawPadding = 0, int paletteEntries = 256, int paletteTrim = 0)
+		private static byte[] BuildIndexedPng(int width, int height, byte bitDepth, byte[] indices, byte filter, byte[]? transparency = null, byte interlace = 0, bool writeEnd = true, bool writeHeader = true, string? extraChunk = null, int rawPadding = 0, int paletteEntries = 256, int paletteTrim = 0)
 		{
 			byte[] header = new byte[13];
 			WriteInt32(header, 0, width);
@@ -309,7 +396,14 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 
 			using MemoryStream file = new();
 			file.Write(Signature);
-			WriteChunk(file, "IHDR", header);
+			if (writeHeader)
+			{
+				WriteChunk(file, "IHDR", header);
+			}
+			if (extraChunk != null)
+			{
+				WriteChunk(file, extraChunk, [1, 2, 3, 4]);
+			}
 			WriteChunk(file, "PLTE", palette);
 			if (transparency != null)
 			{

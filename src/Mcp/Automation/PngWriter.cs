@@ -16,6 +16,9 @@ namespace CivOne.Mcp.Automation
 
 		public static byte[] Write(Bytemap bitmap, Colour[] palette)
 		{
+			ArgumentNullException.ThrowIfNull(bitmap);
+			ArgumentNullException.ThrowIfNull(palette);
+
 			using MemoryStream ms = new MemoryStream();
 			ms.Write(Signature);
 			WriteChunk(ms, "IHDR", BuildIHDR(bitmap.Width, bitmap.Height));
@@ -36,15 +39,23 @@ namespace CivOne.Mcp.Automation
 			return data;
 		}
 
+		/// <summary>
+		/// Writes a full 256 entry palette, padded with black.
+		/// <br/>
+		/// A pixel may only refer to an entry the PLTE chunk contains, so a short palette would
+		/// produce a file that strict readers reject. The padding costs a few hundred bytes and keeps
+		/// every possible index valid.
+		/// </summary>
 		private static byte[] BuildPLTE(Colour[] palette)
 		{
-			int count = Math.Min(palette?.Length ?? 0, 256);
-			byte[] data = new byte[count * 3];
+			const int entries = 256;
+			int count = Math.Min(palette.Length, entries);
+			byte[] data = new byte[entries * 3];
 			for (int i = 0; i < count; i++)
 			{
-				data[i * 3 + 0] = palette![i].R;
-				data[i * 3 + 1] = palette![i].G;
-				data[i * 3 + 2] = palette![i].B;
+				data[i * 3 + 0] = palette[i].R;
+				data[i * 3 + 1] = palette[i].G;
+				data[i * 3 + 2] = palette[i].B;
 			}
 			return data;
 		}
