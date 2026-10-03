@@ -99,6 +99,7 @@ namespace CivOne.Graphics.ImageFormats
 					{
 						throw new InvalidDataException("The file contains a duplicate or late PLTE chunk.");
 					}
+					VerifyPalette(content, header);
 					palette = content.ToArray();
 					paletteRead = true;
 				}
@@ -169,6 +170,30 @@ namespace CivOne.Graphics.ImageFormats
 			return header.ColourType == 3
 				? BuildIndexedImage(header, scanlines, palette, alpha)
 				: BuildTrueColourImage(header, scanlines);
+		}
+
+		/// <summary>
+		/// Checks that a PLTE chunk is allowed and well formed for the image it belongs to.
+		/// </summary>
+		/// <param name="content">The chunk contents.</param>
+		/// <param name="header">The image header.</param>
+		/// <exception cref="InvalidDataException">The chunk does not belong to this image, or is broken.</exception>
+		private static void VerifyPalette(ReadOnlySpan<byte> content, PngHeader header)
+		{
+			// A greyscale image has no colours to look up, so it must not carry a palette at all.
+			if (header.ColourType is 0 or 4)
+			{
+				throw new InvalidDataException("A greyscale PNG file must not contain a PLTE chunk.");
+			}
+
+			// An index is read with the bit depth of the image, so a 1, 2 or 4 bit indexed file cannot
+			// address more than 2, 4 or 16 colours. For a true-colour file the chunk is only a
+			// suggested palette and the format limits it to 256 entries.
+			int maximumEntries = header.ColourType == 3 ? 1 << header.BitDepth : 256;
+			if (content.Length == 0 || content.Length % 3 != 0 || content.Length > maximumEntries * 3)
+			{
+				throw new InvalidDataException("The PLTE chunk contains no colour triples, incomplete ones, or more than the image can address.");
+			}
 		}
 
 		private void VerifyCrc(ReadOnlySpan<byte> typeAndContent, uint expected)
@@ -354,14 +379,6 @@ namespace CivOne.Graphics.ImageFormats
 			{
 				throw new InvalidDataException("An indexed PNG file must contain a PLTE chunk.");
 			}
-			// A palette index is read with the bit depth of the image, so a 1, 2 or 4 bit file cannot
-			// address more than 2, 4 or 16 colours.
-			int maximumEntries = 1 << header.BitDepth;
-			if (palette.Length == 0 || palette.Length % 3 != 0 || palette.Length > maximumEntries * 3)
-			{
-				throw new InvalidDataException("The PLTE chunk contains no colour triples, incomplete ones, or more than the bit depth can address.");
-			}
-
 			int entries = palette.Length / 3;
 			Colour[] colours = new Colour[entries];
 			for (int i = 0; i < entries; i++)

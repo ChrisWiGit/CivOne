@@ -151,7 +151,8 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 		{
 			byte[,] pixels = new byte[2, 1];
 			byte[] file = WriteIndexedPng(pixels, CreatePalette());
-			// The last byte of the IHDR checksum sits right before the PLTE chunk.
+			// Byte 29 is the first of the four IHDR checksum bytes (8 signature + 4 length + 4 type
+			// + 13 content).
 			file[29] ^= 0xFF;
 
 			PngDecoderDelegate testee = new();
