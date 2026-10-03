@@ -27,7 +27,13 @@ namespace CivOne.Sound.Engine;
 /// </remarks>
 internal sealed class SoundMixer
 {
-	/// <summary>How many voices the mixer is prepared for without growing its list.</summary>
+	/// <summary>
+	/// How many voices play at once, loop tails included.
+	/// </summary>
+	/// <remarks>
+	/// A hard limit, not a hint: the list is created at this size and nothing is ever added beyond
+	/// it, so it never has to grow - which it could only do by allocating on the audio thread.
+	/// </remarks>
 	private const int VoiceCapacity = 32;
 
 	/// <summary>How many spent voices are kept for reuse as loop tails.</summary>
@@ -103,7 +109,7 @@ internal sealed class SoundMixer
 			switch (command.Kind)
 			{
 				case MixerCommandKind.Add when command.Voice != null:
-					_voices.Add(command.Voice);
+					AddVoice(command.Voice);
 					break;
 
 				case MixerCommandKind.Pause:
@@ -134,6 +140,32 @@ internal sealed class SoundMixer
 					break;
 			}
 		}
+	}
+
+	/// <summary>
+	/// Takes a new voice in, as long as there is room for it.
+	/// </summary>
+	/// <param name="voice">The voice to play.</param>
+	/// <remarks>
+	/// The list never grows past <see cref="VoiceCapacity"/>, which is what keeps this method from
+	/// allocating on the audio thread. A game that is already playing that many sounds at once
+	/// cannot be heard to be missing one more, and the handle is ended straight away so nothing on
+	/// the game thread waits for a sound that was never started.
+	/// </remarks>
+	private void AddVoice(MixerVoice voice)
+	{
+		if (_voices.Count < VoiceCapacity)
+		{
+			_voices.Add(voice);
+			return;
+		}
+
+		voice.Finished = true;
+
+		if (voice.Handle == null) return;
+
+		voice.Handle.SetEnded();
+		_ended.Enqueue(voice.Handle);
 	}
 
 	/// <summary>
@@ -260,9 +292,14 @@ internal sealed class SoundMixer
 			return;
 		}
 
-		int crossFade = Math.Min(voice.LoopCrossFade, voice.Samples.Length - voice.LoopEnd);
+		// The overlap cannot be longer than what is left after the turnaround, and it cannot be
+		// longer than the loop itself: a head that is still fading in when it reaches the next
+		// turnaround would never reach full volume and would leave a tail behind on every wrap.
+		int crossFade = Math.Min(
+			voice.LoopCrossFade,
+			Math.Min(voice.Samples.Length - voice.LoopEnd, voice.LoopEnd - voice.LoopStart));
 
-		if (crossFade > 0 && _tailPool.Count > 0)
+		if (crossFade > 0 && _tailPool.Count > 0 && _voices.Count < VoiceCapacity)
 		{
 			MixerVoice tail = _tailPool.Pop();
 
@@ -288,8 +325,9 @@ internal sealed class SoundMixer
 		}
 		else if (crossFade > 0)
 		{
-			// Every tail is in use. The turnaround is still made, only without the overlap: a hard
-			// turnaround is a far smaller fault than allocating on the audio thread would be.
+			// Every tail is in use, or the mixer is full. The turnaround is still made, only
+			// without the overlap: a hard turnaround is a far smaller fault than allocating on the
+			// audio thread would be.
 			crossFade = 0;
 		}
 
