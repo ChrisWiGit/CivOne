@@ -20,7 +20,11 @@ namespace CivOne.Screens.StartupWizard
 	/// turns the soft edges of the icon into real antialiasing against the header instead of a hard
 	/// cut-out.
 	/// </summary>
-	internal sealed class WizardHeaderIconDelegate
+	/// <param name="decoder">
+	/// The decoder that reads the embedded icon.
+	/// Left out, it is created on first use.
+	/// </param>
+	internal sealed class WizardHeaderIconDelegate(IImageDecoderService? decoder = null)
 	{
 		/// <summary>
 		/// Logical name of the embedded icon, as declared in <c>CivOne.csproj</c>.
@@ -33,6 +37,13 @@ namespace CivOne.Screens.StartupWizard
 		private const int MinimumOpacity = 8;
 
 		private readonly PaletteMapperDelegate _mapper = new();
+
+		private IImageDecoderService? _decoder = decoder;
+
+		/// <summary>
+		/// The image decoder, resolved only when the icon is actually read.
+		/// </summary>
+		private IImageDecoderService Decoder => _decoder ??= ImageDecoderServiceFactory.Create();
 
 		private DecodedImage? _source;
 		private bool _sourceLoaded;
@@ -227,7 +238,7 @@ namespace CivOne.Screens.StartupWizard
 				return null;
 			}
 
-			_source = ImageDecoderServiceFactory.Decoder.Decode(resource);
+			_source = Decoder.Decode(resource);
 			return _source;
 		}
 	}

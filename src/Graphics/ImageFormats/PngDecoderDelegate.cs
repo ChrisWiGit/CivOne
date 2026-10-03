@@ -354,9 +354,12 @@ namespace CivOne.Graphics.ImageFormats
 			{
 				throw new InvalidDataException("An indexed PNG file must contain a PLTE chunk.");
 			}
-			if (palette.Length == 0 || palette.Length % 3 != 0 || palette.Length > 256 * 3)
+			// A palette index is read with the bit depth of the image, so a 1, 2 or 4 bit file cannot
+			// address more than 2, 4 or 16 colours.
+			int maximumEntries = 1 << header.BitDepth;
+			if (palette.Length == 0 || palette.Length % 3 != 0 || palette.Length > maximumEntries * 3)
 			{
-				throw new InvalidDataException("The PLTE chunk does not contain between 1 and 256 colour triples.");
+				throw new InvalidDataException("The PLTE chunk contains no colour triples, incomplete ones, or more than the bit depth can address.");
 			}
 
 			int entries = palette.Length / 3;
@@ -368,7 +371,9 @@ namespace CivOne.Graphics.ImageFormats
 				colours[i] = new Colour(opacity, palette[i * 3], palette[(i * 3) + 1], palette[(i * 3) + 2]);
 			}
 
-			int stride = ((header.Width * header.BitDepth) + 7) / 8;
+			// The same overflow safe calculation the scanlines were unfiltered with; colour type 3 has
+			// one channel, so the packed row length matches.
+			int stride = ScanlineStride(header);
 			byte[] indices = new byte[header.Width * header.Height];
 			int perByte = 8 / header.BitDepth;
 			int mask = (1 << header.BitDepth) - 1;

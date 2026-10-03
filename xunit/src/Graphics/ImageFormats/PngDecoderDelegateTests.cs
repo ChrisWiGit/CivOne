@@ -227,6 +227,17 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 		}
 
 		[Fact]
+		public void DecodeRejectsPaletteLargerThanTheBitDepthAllows()
+		{
+			// Four bits address 16 colours, so a palette of 32 cannot belong to this image.
+			byte[] file = BuildIndexedPng(2, 1, 4, [0, 1], 0, paletteEntries: 32);
+
+			PngDecoderDelegate testee = new();
+
+			Assert.Throws<InvalidDataException>(() => testee.Decode(file));
+		}
+
+		[Fact]
 		public void DecodeRejectsPaletteWithIncompleteColour()
 		{
 			byte[] file = BuildIndexedPng(2, 1, 8, [0, 1], 0, paletteTrim: 1);
@@ -477,7 +488,7 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 		/// Builds an indexed PNG file with a chosen bit depth, scanline filter and interlace flag,
 		/// which <see cref="PngWriter"/> cannot produce because it always writes 8 bit, filter 0.
 		/// </summary>
-		private static byte[] BuildIndexedPng(int width, int height, byte bitDepth, byte[] indices, byte filter, byte[]? transparency = null, byte interlace = 0, bool writeEnd = true, bool writeHeader = true, string? extraChunk = null, int rawPadding = 0, int paletteEntries = 256, int paletteTrim = 0, bool duplicatePalette = false, bool paletteAfterData = false, bool splitImageData = false, bool transparencyBeforePalette = false)
+		private static byte[] BuildIndexedPng(int width, int height, byte bitDepth, byte[] indices, byte filter, byte[]? transparency = null, byte interlace = 0, bool writeEnd = true, bool writeHeader = true, string? extraChunk = null, int rawPadding = 0, int paletteEntries = 0, int paletteTrim = 0, bool duplicatePalette = false, bool paletteAfterData = false, bool splitImageData = false, bool transparencyBeforePalette = false)
 		{
 			byte[] header = new byte[13];
 			WriteInt32(header, 0, width);
@@ -485,6 +496,12 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 			header[8] = bitDepth;
 			header[9] = 3;
 			header[12] = interlace;
+
+			// A palette may hold at most 2^bitDepth colours, so the default follows the bit depth.
+			if (paletteEntries == 0)
+			{
+				paletteEntries = bitDepth >= 8 ? 256 : 1 << bitDepth;
+			}
 
 			byte[] palette = new byte[(paletteEntries * 3) - paletteTrim];
 			for (int i = 0; i < paletteEntries; i++)

@@ -1,15 +1,14 @@
 namespace CivOne.Graphics.ImageFormats
 {
 	/// <summary>
-	/// Provides the image decoder for callers that cannot take it through constructor injection yet.
+	/// Creates the image decoder for callers that have no injected one.
 	/// </summary>
 	internal static class ImageDecoderServiceFactory
 	{
-		private static IImageDecoderService? _decoder;
-
 		/// <summary>
-		/// Gets the shared image decoder, created on first use.
+		/// Creates an image decoder.
 		/// </summary>
-		public static IImageDecoderService Decoder => _decoder ??= new ImageDecoderService();
+		/// <returns>A new decoder service.</returns>
+		public static IImageDecoderService Create() => new ImageDecoderService();
 	}
 }

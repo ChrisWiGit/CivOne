@@ -41,7 +41,7 @@ namespace CivOne
 		public static IBitmap? GetWindowIcon()
 		{
 			using Stream resourceStream = WindowIcon;
-			return ImageDecoderServiceFactory.Decoder.DecodeBitmap(resourceStream);
+			return ImageDecoderServiceFactory.Create().DecodeBitmap(resourceStream);
 		}
 		
 		public static string HelpText => GetResourceString(HelpTextTxt) ?? string.Empty;

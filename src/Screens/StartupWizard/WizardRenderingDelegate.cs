@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using CivOne.Graphics;
+using CivOne.Graphics.ImageFormats;
 using CivOne.IO;
 using CivOne.Screens.StartupWizard.DosFont;
 
@@ -13,9 +14,16 @@ namespace CivOne.Screens.StartupWizard
 	/// Encapsulates all DOS-style rendering logic for the wizard.
 	/// Handles drawing text, boxes, menu entries, header, and link areas.
 	/// </summary>
+	/// <param name="screen">The screen that is drawn onto.</param>
+	/// <param name="translate">Translates a text into the selected language.</param>
+	/// <param name="imageDecoder">
+	/// The decoder that reads the header icon.
+	/// Left out, the icon delegate creates one on first use.
+	/// </param>
 	internal sealed class WizardRenderingDelegate(
 		BaseScreen screen,
-		Func<string, string> translate)
+		Func<string, string> translate,
+		IImageDecoderService? imageDecoder = null)
 	{
 		private readonly BaseScreen _screen = screen ?? throw new ArgumentNullException(nameof(screen));
 		private readonly Func<string, string> Translate = translate ?? throw new ArgumentNullException(nameof(translate));
@@ -39,7 +47,7 @@ namespace CivOne.Screens.StartupWizard
 		private const int HeaderFrameWidth = 80;
 		private const int HeaderIconMargin = 4;
 
-		private readonly WizardHeaderIconDelegate _headerIcon = new();
+		private readonly WizardHeaderIconDelegate _headerIcon = new(imageDecoder);
 
 
 		/// <summary>
