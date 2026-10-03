@@ -49,6 +49,10 @@ namespace CivOne.Graphics.ImageFormats
 			PngHeader header = default;
 			bool headerRead = false;
 			bool endRead = false;
+			bool paletteRead = false;
+			bool alphaRead = false;
+			bool dataStarted = false;
+			bool dataEnded = false;
 			byte[]? palette = null;
 			byte[]? alpha = null;
 			using MemoryStream imageData = new();
@@ -89,7 +93,14 @@ namespace CivOne.Graphics.ImageFormats
 				}
 				else if (type.SequenceEqual("PLTE"u8))
 				{
+					// A file carries at most one palette, and it has to be known before the image data
+					// that refers to it.
+					if (paletteRead || dataStarted)
+					{
+						throw new InvalidDataException("The file contains a duplicate or late PLTE chunk.");
+					}
 					palette = content.ToArray();
+					paletteRead = true;
 				}
 				else if (type.SequenceEqual("tRNS"u8))
 				{
@@ -99,11 +110,23 @@ namespace CivOne.Graphics.ImageFormats
 					{
 						throw new NotSupportedException("Transparency is only supported for indexed PNG files.");
 					}
+					if (alphaRead || dataStarted)
+					{
+						throw new InvalidDataException("The file contains a duplicate or late tRNS chunk.");
+					}
 					alpha = content.ToArray();
+					alphaRead = true;
 				}
 				else if (type.SequenceEqual("IDAT"u8))
 				{
+					// The IDAT chunks hold one single compressed stream, so they have to follow each
+					// other without another chunk in between.
+					if (dataEnded)
+					{
+						throw new InvalidDataException("The IDAT chunks of the file are not consecutive.");
+					}
 					imageData.Write(content);
+					dataStarted = true;
 				}
 				else if (type.SequenceEqual("IEND"u8))
 				{
@@ -122,6 +145,7 @@ namespace CivOne.Graphics.ImageFormats
 					throw new NotSupportedException("The file contains an unsupported critical chunk.");
 				}
 
+				dataEnded |= dataStarted && !type.SequenceEqual("IDAT"u8);
 				offset += 12 + length;
 			}
 

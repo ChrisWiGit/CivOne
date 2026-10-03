@@ -324,6 +324,98 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 		}
 
 		[Fact]
+		public void DecodeReadsRgbaImage()
+		{
+			// Two pixels, the second one half transparent, so a swapped channel or alpha position
+			// cannot pass unnoticed.
+			byte[] samples = [10, 20, 30, 255, 40, 50, 60, 128];
+
+			PngDecoderDelegate testee = new();
+			DecodedImage result = testee.Decode(BuildTrueColourPng(2, 1, 6, samples));
+
+			Assert.False(result.IsIndexed);
+			Assert.Equal(new Colour(255, 10, 20, 30), result.Pixels[0]);
+			Assert.Equal(new Colour(128, 40, 50, 60), result.Pixels[1]);
+		}
+
+		[Fact]
+		public void DecodeReadsRgbImage()
+		{
+			byte[] samples = [10, 20, 30, 40, 50, 60];
+
+			PngDecoderDelegate testee = new();
+			DecodedImage result = testee.Decode(BuildTrueColourPng(2, 1, 2, samples));
+
+			Assert.Equal(new Colour(255, 10, 20, 30), result.Pixels[0]);
+			Assert.Equal(new Colour(255, 40, 50, 60), result.Pixels[1]);
+		}
+
+		[Fact]
+		public void DecodeReadsGreyscaleImageWithAlpha()
+		{
+			// Colour type 4 stores the grey sample first and its alpha second.
+			byte[] samples = [70, 255, 90, 64];
+
+			PngDecoderDelegate testee = new();
+			DecodedImage result = testee.Decode(BuildTrueColourPng(2, 1, 4, samples));
+
+			Assert.Equal(new Colour(255, 70, 70, 70), result.Pixels[0]);
+			Assert.Equal(new Colour(64, 90, 90, 90), result.Pixels[1]);
+		}
+
+		[Fact]
+		public void DecodeReadsGreyscaleImage()
+		{
+			byte[] samples = [70, 90];
+
+			PngDecoderDelegate testee = new();
+			DecodedImage result = testee.Decode(BuildTrueColourPng(2, 1, 0, samples));
+
+			Assert.Equal(new Colour(255, 70, 70, 70), result.Pixels[0]);
+			Assert.Equal(new Colour(255, 90, 90, 90), result.Pixels[1]);
+		}
+
+		[Fact]
+		public void DecodeRejectsTransparencyChunkOutsideIndexedFile()
+		{
+			byte[] file = BuildTrueColourPng(2, 1, 2, [10, 20, 30, 40, 50, 60], transparency: [0, 10]);
+
+			PngDecoderDelegate testee = new();
+
+			Assert.Throws<NotSupportedException>(() => testee.Decode(file));
+		}
+
+		[Fact]
+		public void DecodeRejectsDuplicatePaletteChunk()
+		{
+			byte[] file = BuildIndexedPng(2, 1, 8, [0, 1], 0, duplicatePalette: true);
+
+			PngDecoderDelegate testee = new();
+
+			Assert.Throws<InvalidDataException>(() => testee.Decode(file));
+		}
+
+		[Fact]
+		public void DecodeRejectsPaletteAfterImageData()
+		{
+			byte[] file = BuildIndexedPng(2, 1, 8, [0, 1], 0, paletteAfterData: true);
+
+			PngDecoderDelegate testee = new();
+
+			Assert.Throws<InvalidDataException>(() => testee.Decode(file));
+		}
+
+		[Fact]
+		public void DecodeRejectsNonConsecutiveImageData()
+		{
+			byte[] file = BuildIndexedPng(2, 1, 8, [0, 1], 0, splitImageData: true);
+
+			PngDecoderDelegate testee = new();
+
+			Assert.Throws<InvalidDataException>(() => testee.Decode(file));
+		}
+
+		[Fact]
 		public void DecodeRejectsInterlacedFile()
 		{
 			byte[] file = BuildIndexedPng(2, 1, 8, [0, 1], 0, null, interlace: 1);
@@ -347,7 +439,7 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 		/// Builds an indexed PNG file with a chosen bit depth, scanline filter and interlace flag,
 		/// which <see cref="PngWriter"/> cannot produce because it always writes 8 bit, filter 0.
 		/// </summary>
-		private static byte[] BuildIndexedPng(int width, int height, byte bitDepth, byte[] indices, byte filter, byte[]? transparency = null, byte interlace = 0, bool writeEnd = true, bool writeHeader = true, string? extraChunk = null, int rawPadding = 0, int paletteEntries = 256, int paletteTrim = 0)
+		private static byte[] BuildIndexedPng(int width, int height, byte bitDepth, byte[] indices, byte filter, byte[]? transparency = null, byte interlace = 0, bool writeEnd = true, bool writeHeader = true, string? extraChunk = null, int rawPadding = 0, int paletteEntries = 256, int paletteTrim = 0, bool duplicatePalette = false, bool paletteAfterData = false, bool splitImageData = false)
 		{
 			byte[] header = new byte[13];
 			WriteInt32(header, 0, width);
@@ -404,16 +496,76 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 			{
 				WriteChunk(file, extraChunk, [1, 2, 3, 4]);
 			}
-			WriteChunk(file, "PLTE", palette);
+			if (!paletteAfterData)
+			{
+				WriteChunk(file, "PLTE", palette);
+			}
+			if (duplicatePalette)
+			{
+				WriteChunk(file, "PLTE", palette);
+			}
+			if (transparency != null)
+			{
+				WriteChunk(file, "tRNS", transparency);
+			}
+			byte[] imageData = compressed.ToArray();
+			if (splitImageData)
+			{
+				// An ancillary chunk between two IDAT chunks breaks the single compressed stream.
+				WriteChunk(file, "IDAT", imageData[..1]);
+				WriteChunk(file, "gAMA", [0, 0, 0, 1]);
+				WriteChunk(file, "IDAT", imageData[1..]);
+			}
+			else
+			{
+				WriteChunk(file, "IDAT", imageData);
+			}
+			if (paletteAfterData)
+			{
+				WriteChunk(file, "PLTE", palette);
+			}
+			if (writeEnd)
+			{
+				WriteChunk(file, "IEND", []);
+			}
+			return file.ToArray();
+		}
+
+		/// <summary>
+		/// Builds a true-colour or greyscale PNG file with filter 0 from raw samples, which
+		/// <see cref="PngWriter"/> cannot produce because it only writes indexed files.
+		/// </summary>
+		private static byte[] BuildTrueColourPng(int width, int height, byte colourType, byte[] samples, byte[]? transparency = null)
+		{
+			byte[] header = new byte[13];
+			WriteInt32(header, 0, width);
+			WriteInt32(header, 4, height);
+			header[8] = 8;
+			header[9] = colourType;
+
+			int channels = colourType switch { 0 => 1, 2 => 3, 4 => 2, _ => 4 };
+			int stride = width * channels;
+			byte[] raw = new byte[height * (stride + 1)];
+			for (int y = 0; y < height; y++)
+			{
+				Array.Copy(samples, y * stride, raw, (y * (stride + 1)) + 1, stride);
+			}
+
+			using MemoryStream compressed = new();
+			using (ZLibStream zlib = new(compressed, CompressionLevel.Fastest, leaveOpen: true))
+			{
+				zlib.Write(raw, 0, raw.Length);
+			}
+
+			using MemoryStream file = new();
+			file.Write(Signature);
+			WriteChunk(file, "IHDR", header);
 			if (transparency != null)
 			{
 				WriteChunk(file, "tRNS", transparency);
 			}
 			WriteChunk(file, "IDAT", compressed.ToArray());
-			if (writeEnd)
-			{
-				WriteChunk(file, "IEND", []);
-			}
+			WriteChunk(file, "IEND", []);
 			return file.ToArray();
 		}
 
