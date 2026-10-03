@@ -171,6 +171,72 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 		}
 
 		[Fact]
+		public void DecodeRejectsFileWithoutEndChunk()
+		{
+			byte[] file = BuildIndexedPng(2, 1, 8, [0, 1], 0, writeEnd: false);
+
+			PngDecoderDelegate testee = new();
+
+			Assert.Throws<InvalidDataException>(() => testee.Decode(file));
+		}
+
+		[Fact]
+		public void DecodeRejectsNonEmptyEndChunk()
+		{
+			byte[] file = BuildIndexedPng(2, 1, 8, [0, 1], 0, writeEnd: false);
+			using MemoryStream stream = new();
+			stream.Write(file);
+			WriteChunk(stream, "IEND", [0]);
+
+			PngDecoderDelegate testee = new();
+
+			Assert.Throws<InvalidDataException>(() => testee.Decode(stream.ToArray()));
+		}
+
+		[Fact]
+		public void DecodeRejectsTrailingBytesAfterEndChunk()
+		{
+			byte[] file = BuildIndexedPng(2, 1, 8, [0, 1], 0);
+			byte[] padded = [.. file, 0, 0, 0, 0];
+
+			PngDecoderDelegate testee = new();
+
+			Assert.Throws<InvalidDataException>(() => testee.Decode(padded));
+		}
+
+		[Fact]
+		public void DecodeRejectsImageDataLongerThanTheImage()
+		{
+			// The header announces a 2x1 image, the compressed data holds four scanlines.
+			byte[] file = BuildIndexedPng(2, 1, 8, [0, 1], 0, rawPadding: 3 * 3);
+
+			PngDecoderDelegate testee = new();
+
+			Assert.Throws<InvalidDataException>(() => testee.Decode(file));
+		}
+
+		[Fact]
+		public void DecodeRejectsPixelOutsideThePalette()
+		{
+			// Index 5 cannot be resolved against a palette of three colours.
+			byte[] file = BuildIndexedPng(2, 1, 8, [0, 5], 0, paletteEntries: 3);
+
+			PngDecoderDelegate testee = new();
+
+			Assert.Throws<InvalidDataException>(() => testee.Decode(file));
+		}
+
+		[Fact]
+		public void DecodeRejectsPaletteWithIncompleteColour()
+		{
+			byte[] file = BuildIndexedPng(2, 1, 8, [0, 1], 0, paletteTrim: 1);
+
+			PngDecoderDelegate testee = new();
+
+			Assert.Throws<InvalidDataException>(() => testee.Decode(file));
+		}
+
+		[Fact]
 		public void DecodeRejectsInterlacedFile()
 		{
 			byte[] file = BuildIndexedPng(2, 1, 8, [0, 1], 0, null, interlace: 1);
@@ -194,7 +260,7 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 		/// Builds an indexed PNG file with a chosen bit depth, scanline filter and interlace flag,
 		/// which <see cref="PngWriter"/> cannot produce because it always writes 8 bit, filter 0.
 		/// </summary>
-		private static byte[] BuildIndexedPng(int width, int height, byte bitDepth, byte[] indices, byte filter, byte[]? transparency = null, byte interlace = 0)
+		private static byte[] BuildIndexedPng(int width, int height, byte bitDepth, byte[] indices, byte filter, byte[]? transparency = null, byte interlace = 0, bool writeEnd = true, int rawPadding = 0, int paletteEntries = 256, int paletteTrim = 0)
 		{
 			byte[] header = new byte[13];
 			WriteInt32(header, 0, width);
@@ -203,14 +269,14 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 			header[9] = 3;
 			header[12] = interlace;
 
-			byte[] palette = new byte[256 * 3];
-			for (int i = 0; i < 256; i++)
+			byte[] palette = new byte[(paletteEntries * 3) - paletteTrim];
+			for (int i = 0; i < paletteEntries; i++)
 			{
 				palette[i * 3] = (byte)i;
 			}
 
 			int stride = ((width * bitDepth) + 7) / 8;
-			byte[] raw = new byte[height * (stride + 1)];
+			byte[] raw = new byte[(height * (stride + 1)) + rawPadding];
 			for (int y = 0; y < height; y++)
 			{
 				int row = y * (stride + 1);
@@ -250,7 +316,10 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 				WriteChunk(file, "tRNS", transparency);
 			}
 			WriteChunk(file, "IDAT", compressed.ToArray());
-			WriteChunk(file, "IEND", []);
+			if (writeEnd)
+			{
+				WriteChunk(file, "IEND", []);
+			}
 			return file.ToArray();
 		}
 

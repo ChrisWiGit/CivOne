@@ -48,6 +48,7 @@ namespace CivOne.Graphics.ImageFormats
 
 			PngHeader header = default;
 			bool headerRead = false;
+			bool endRead = false;
 			byte[]? palette = null;
 			byte[]? alpha = null;
 			using MemoryStream imageData = new();
@@ -89,6 +90,12 @@ namespace CivOne.Graphics.ImageFormats
 				}
 				else if (type.SequenceEqual("IEND"u8))
 				{
+					// IEND is empty by definition and closes the file, so nothing may follow it.
+					if (length != 0 || offset + 12 != data.Length)
+					{
+						throw new InvalidDataException("The IEND chunk is not an empty chunk at the end of the file.");
+					}
+					endRead = true;
 					break;
 				}
 
@@ -99,8 +106,13 @@ namespace CivOne.Graphics.ImageFormats
 			{
 				throw new InvalidDataException("The file contains no IHDR chunk.");
 			}
+			if (!endRead)
+			{
+				throw new InvalidDataException("The file contains no IEND chunk, it is truncated.");
+			}
 
-			byte[] scanlines = Unfilter(Inflate(imageData.ToArray()), header);
+			int stride = ScanlineStride(header);
+			byte[] scanlines = Unfilter(Inflate(imageData.ToArray(), (stride + 1) * header.Height), header);
 			return header.ColourType == 3
 				? BuildIndexedImage(header, scanlines, palette, alpha)
 				: BuildTrueColourImage(header, scanlines);
@@ -167,7 +179,16 @@ namespace CivOne.Graphics.ImageFormats
 			return header;
 		}
 
-		private static byte[] Inflate(byte[] compressed)
+		/// <summary>
+		/// Decompresses the concatenated IDAT contents.
+		/// <br/>
+		/// The output is limited to the size the header announces, so a file that claims to be small
+		/// but expands to gigabytes cannot exhaust memory.
+		/// </summary>
+		/// <param name="compressed">The raw zlib stream from the IDAT chunks.</param>
+		/// <param name="expectedLength">The number of bytes the image size requires.</param>
+		/// <returns>The decompressed scanlines, including their filter bytes.</returns>
+		private static byte[] Inflate(byte[] compressed, int expectedLength)
 		{
 			if (compressed.Length == 0)
 			{
@@ -176,9 +197,40 @@ namespace CivOne.Graphics.ImageFormats
 
 			using MemoryStream input = new(compressed);
 			using ZLibStream zlib = new(input, CompressionMode.Decompress);
-			using MemoryStream output = new();
-			zlib.CopyTo(output);
-			return output.ToArray();
+
+			byte[] output = new byte[expectedLength];
+			int total = 0;
+			while (total < expectedLength)
+			{
+				int read = zlib.Read(output, total, expectedLength - total);
+				if (read == 0)
+				{
+					throw new InvalidDataException("The image data is shorter than the image size requires.");
+				}
+				total += read;
+			}
+			if (zlib.ReadByte() != -1)
+			{
+				throw new InvalidDataException("The image data is longer than the image size allows.");
+			}
+
+			return output;
+		}
+
+		/// <summary>
+		/// Returns the number of bytes one filtered scanline occupies, without its filter byte.
+		/// </summary>
+		/// <param name="header">The image header.</param>
+		/// <returns>The scanline length in bytes.</returns>
+		/// <exception cref="InvalidDataException">The announced image size does not fit into memory.</exception>
+		private static int ScanlineStride(PngHeader header)
+		{
+			long stride = (((long)header.Width * header.Channels * header.BitDepth) + 7) / 8;
+			if ((stride + 1) * header.Height > int.MaxValue || (long)header.Width * header.Height > int.MaxValue)
+			{
+				throw new InvalidDataException("The image is too large to decode.");
+			}
+			return (int)stride;
 		}
 
 		/// <summary>
@@ -186,7 +238,7 @@ namespace CivOne.Graphics.ImageFormats
 		/// </summary>
 		private static byte[] Unfilter(byte[] raw, PngHeader header)
 		{
-			int stride = ((header.Width * header.Channels * header.BitDepth) + 7) / 8;
+			int stride = ScanlineStride(header);
 			int step = Math.Max(1, header.Channels * header.BitDepth / 8);
 			if (raw.Length < header.Height * (stride + 1))
 			{
@@ -244,6 +296,10 @@ namespace CivOne.Graphics.ImageFormats
 			{
 				throw new InvalidDataException("An indexed PNG file must contain a PLTE chunk.");
 			}
+			if (palette.Length == 0 || palette.Length % 3 != 0 || palette.Length > 256 * 3)
+			{
+				throw new InvalidDataException("The PLTE chunk does not contain between 1 and 256 colour triples.");
+			}
 
 			int entries = palette.Length / 3;
 			Colour[] colours = new Colour[entries];
@@ -265,15 +321,23 @@ namespace CivOne.Graphics.ImageFormats
 				int target = y * header.Width;
 				for (int x = 0; x < header.Width; x++)
 				{
+					byte index;
 					if (header.BitDepth == 8)
 					{
-						indices[target + x] = scanlines[row + x];
-						continue;
+						index = scanlines[row + x];
+					}
+					else
+					{
+						// Sub-byte depths pack several pixels into one byte, most significant bits first.
+						int shift = 8 - (header.BitDepth * ((x % perByte) + 1));
+						index = (byte)((scanlines[row + (x / perByte)] >> shift) & mask);
 					}
 
-					// Sub-byte depths pack several pixels into one byte, most significant bits first.
-					int shift = 8 - (header.BitDepth * ((x % perByte) + 1));
-					indices[target + x] = (byte)((scanlines[row + (x / perByte)] >> shift) & mask);
+					if (index >= entries)
+					{
+						throw new InvalidDataException("A pixel refers to a palette entry that the PLTE chunk does not contain.");
+					}
+					indices[target + x] = index;
 				}
 			}
 
