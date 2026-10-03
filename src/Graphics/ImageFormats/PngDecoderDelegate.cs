@@ -110,9 +110,15 @@ namespace CivOne.Graphics.ImageFormats
 					{
 						throw new NotSupportedException("Transparency is only supported for indexed PNG files.");
 					}
-					if (alphaRead || dataStarted)
+					// For an indexed image the chunk holds one alpha value per palette entry, so it
+					// belongs between PLTE and the image data.
+					if (alphaRead || dataStarted || palette == null)
 					{
-						throw new InvalidDataException("The file contains a duplicate or late tRNS chunk.");
+						throw new InvalidDataException("The file contains a duplicate tRNS chunk, or a tRNS chunk outside of PLTE and IDAT.");
+					}
+					if (content.Length == 0 || content.Length > palette.Length / 3)
+					{
+						throw new InvalidDataException("The tRNS chunk contains more alpha values than the palette has entries.");
 					}
 					alpha = content.ToArray();
 					alphaRead = true;

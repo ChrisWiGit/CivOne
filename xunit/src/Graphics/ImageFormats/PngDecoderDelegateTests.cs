@@ -336,6 +336,9 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 			Assert.False(result.IsIndexed);
 			Assert.Equal(new Colour(255, 10, 20, 30), result.Pixels[0]);
 			Assert.Equal(new Colour(128, 40, 50, 60), result.Pixels[1]);
+			// Colour.Equals compares the colour channels only, so alpha needs its own assertion.
+			Assert.Equal(255, result.Pixels[0].A);
+			Assert.Equal(128, result.Pixels[1].A);
 		}
 
 		[Fact]
@@ -348,6 +351,7 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 
 			Assert.Equal(new Colour(255, 10, 20, 30), result.Pixels[0]);
 			Assert.Equal(new Colour(255, 40, 50, 60), result.Pixels[1]);
+			Assert.Equal(255, result.Pixels[1].A);
 		}
 
 		[Fact]
@@ -361,6 +365,8 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 
 			Assert.Equal(new Colour(255, 70, 70, 70), result.Pixels[0]);
 			Assert.Equal(new Colour(64, 90, 90, 90), result.Pixels[1]);
+			Assert.Equal(255, result.Pixels[0].A);
+			Assert.Equal(64, result.Pixels[1].A);
 		}
 
 		[Fact]
@@ -373,6 +379,7 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 
 			Assert.Equal(new Colour(255, 70, 70, 70), result.Pixels[0]);
 			Assert.Equal(new Colour(255, 90, 90, 90), result.Pixels[1]);
+			Assert.Equal(255, result.Pixels[1].A);
 		}
 
 		[Fact]
@@ -383,6 +390,37 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 			PngDecoderDelegate testee = new();
 
 			Assert.Throws<NotSupportedException>(() => testee.Decode(file));
+		}
+
+		[Fact]
+		public void DecodeRejectsTransparencyChunkBeforePalette()
+		{
+			byte[] file = BuildIndexedPng(4, 1, 8, [0, 1, 2, 3], 0, [0, 128], transparencyBeforePalette: true);
+
+			PngDecoderDelegate testee = new();
+
+			Assert.Throws<InvalidDataException>(() => testee.Decode(file));
+		}
+
+		[Fact]
+		public void DecodeRejectsEmptyTransparencyChunk()
+		{
+			byte[] file = BuildIndexedPng(4, 1, 8, [0, 1, 2, 3], 0, []);
+
+			PngDecoderDelegate testee = new();
+
+			Assert.Throws<InvalidDataException>(() => testee.Decode(file));
+		}
+
+		[Fact]
+		public void DecodeRejectsTransparencyChunkLongerThanThePalette()
+		{
+			// Four alpha values cannot belong to a palette of three colours.
+			byte[] file = BuildIndexedPng(2, 1, 8, [0, 1], 0, [0, 1, 2, 3], paletteEntries: 3);
+
+			PngDecoderDelegate testee = new();
+
+			Assert.Throws<InvalidDataException>(() => testee.Decode(file));
 		}
 
 		[Fact]
@@ -439,7 +477,7 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 		/// Builds an indexed PNG file with a chosen bit depth, scanline filter and interlace flag,
 		/// which <see cref="PngWriter"/> cannot produce because it always writes 8 bit, filter 0.
 		/// </summary>
-		private static byte[] BuildIndexedPng(int width, int height, byte bitDepth, byte[] indices, byte filter, byte[]? transparency = null, byte interlace = 0, bool writeEnd = true, bool writeHeader = true, string? extraChunk = null, int rawPadding = 0, int paletteEntries = 256, int paletteTrim = 0, bool duplicatePalette = false, bool paletteAfterData = false, bool splitImageData = false)
+		private static byte[] BuildIndexedPng(int width, int height, byte bitDepth, byte[] indices, byte filter, byte[]? transparency = null, byte interlace = 0, bool writeEnd = true, bool writeHeader = true, string? extraChunk = null, int rawPadding = 0, int paletteEntries = 256, int paletteTrim = 0, bool duplicatePalette = false, bool paletteAfterData = false, bool splitImageData = false, bool transparencyBeforePalette = false)
 		{
 			byte[] header = new byte[13];
 			WriteInt32(header, 0, width);
@@ -496,6 +534,10 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 			{
 				WriteChunk(file, extraChunk, [1, 2, 3, 4]);
 			}
+			if (transparency != null && transparencyBeforePalette)
+			{
+				WriteChunk(file, "tRNS", transparency);
+			}
 			if (!paletteAfterData)
 			{
 				WriteChunk(file, "PLTE", palette);
@@ -504,7 +546,7 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 			{
 				WriteChunk(file, "PLTE", palette);
 			}
-			if (transparency != null)
+			if (transparency != null && !transparencyBeforePalette)
 			{
 				WriteChunk(file, "tRNS", transparency);
 			}
