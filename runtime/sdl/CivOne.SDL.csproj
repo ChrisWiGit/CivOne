@@ -53,6 +53,11 @@
 		<DefineConstants Condition="$(Configuration.EndsWith('Linux'))">$(DefineConstants);LINUX</DefineConstants>
 		<DefineConstants Condition="$(Configuration.EndsWith('MacOS'))">$(DefineConstants);MACOS</DefineConstants>
 	</PropertyGroup>
+	<!-- The release workflow publishes with "-c Release -r win-x64", so the configuration alone does
+	     not identify a Windows build and the runtime identifier has to be taken into account. -->
+	<PropertyGroup Condition="$(Configuration.EndsWith('Windows')) Or $(RuntimeIdentifier.StartsWith('win'))">
+		<ApplicationIcon>..\..\resources\windows\CivOne.ico</ApplicationIcon>
+	</PropertyGroup>
 	<ItemGroup>
 		<ProjectReference Include="../../CivOne.csproj" />
 	</ItemGroup>

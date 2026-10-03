@@ -486,8 +486,7 @@ namespace CivOne.Screens.StartupWizard
 				Lines =
 				[
 					T("Enable debugging, then press F12 in game to open debug menu."),
-					T("Open full settings screen for more options, then return here."),
-					T("Settings screen can also accessed by Shift+F1 at start or from debug menu.")
+					T("More settings can also be accessed by Shift+F1 at start.")
 				],
 				Entries =
 				[

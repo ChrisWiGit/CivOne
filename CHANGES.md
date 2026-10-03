@@ -7,6 +7,10 @@ If you want to add a change, do not add technical details, but describe the chan
 
 ## History
 
+* Rename to CivOneX.
+  * The new name CivOneX is a play on words, as it can be read as "Civ One neXt" or "CivOneEx", which emphasizes the idea of taking the original game to the next level.
+* New icon for the game's window.
+  * Implemented a PNG reader to allow the use of PNG images for the game's window icon and potential later use.
 * **License**: New files are licensed under MIT, and the original files (even when changed) are still under CC0-1.0. See [License](LICENSE.md) for details.
 * Feature: Font Viewer screen.
   * The Font Viewer screen shows all fonts in the game and lets you select a font to view its characters.
