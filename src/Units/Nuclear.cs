@@ -32,8 +32,24 @@ namespace CivOne.Units
 			base.SkipTurn();
 		}
 
+		/// <summary>
+		/// Resolves a nuclear strike on the target tile.
+		///
+		/// Deliberate deviation from the original game: the strike breaks the peace streak here.
+		/// In the original the peace counter is only reset inside the combat routine, and a nuclear strike
+		/// never runs through it, so wiping out a city there leaves the peace bonus of up to 100 score points
+		/// untouched. That looks like an oversight rather than a design decision, so CivOne treats a nuclear
+		/// strike as the hostile action it is.
+		/// See docs/plan-civilizationScore.impl.md, deviation 9 in chapter "Known deviations from the original".
+		/// </summary>
+		/// <param name="moveTarget">The tile the missile is aimed at.</param>
+		/// <param name="relX">The relative x offset of the move that triggered the strike.</param>
+		/// <param name="relY">The relative y offset of the move that triggered the strike.</param>
+		/// <param name="movement">The movement that triggered the strike, if any.</param>
+		/// <returns>The result of the confrontation handling.</returns>
 		internal override bool HandleConfront(ITile moveTarget, int relX, int relY, MoveUnit? movement)
 		{
+			// Not reproduced from the original: see the remark above.
 			RegisterHostileAction();
 			HandleNuclear(moveTarget, relX, relY);
 
