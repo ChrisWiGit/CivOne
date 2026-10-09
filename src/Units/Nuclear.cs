@@ -38,7 +38,7 @@ namespace CivOne.Units
 		/// Deliberate deviation from the original game: the strike breaks the peace streak here.
 		/// In the original the peace counter is only reset inside the combat routine, and a nuclear strike
 		/// never runs through it, so wiping out a city there leaves the peace bonus of up to 100 score points
-		/// untouched. That looks like an oversight rather than a design decision, so CivOne treats a nuclear
+		/// untouched. That looks like an oversight rather than a design decision, so CivOneX treats a nuclear
 		/// strike as the hostile action it is.
 		/// See docs/plan-civilizationScore.impl.md, deviation 9 in chapter "Known deviations from the original".
 		/// </summary>

@@ -69,15 +69,28 @@ namespace CivOne.Screens
 			return false;
 		}
 
-		public WindowTitle()
+		private void DrawDialog()
 		{
-			Palette = Common.Screens.Last().OriginalColours;
-
 			this.FillRectangle(64, 78, 225, 25, 5)
 				.FillRectangle(65, 79, 223, 23, 15)
 				.DrawText(Translate("Set window title..."), 0, 5, 66, 80)
 				.FillRectangle(66, 88, 221, 14, 5)
 				.FillRectangle(67, 89, 219, 12, 15);
+		}
+
+		private void WindowTitle_Resize(object? sender, ResizeEventArgs args)
+		{
+			// BaseScreen.Resize replaces the bitmap with an empty one, so the dialog has to be drawn again.
+			DrawDialog();
+		}
+
+		public WindowTitle()
+		{
+			OnResize += WindowTitle_Resize;
+
+			Palette = Common.Screens.Last().OriginalColours;
+
+			DrawDialog();
 
 			_input = new Input(Palette, Settings.WindowTitle, 0, 5, 11, 68, 90, 133, 10, 32);
 			_input.Accept += Input_Accept;
