@@ -98,7 +98,8 @@ namespace CivOne
 		/// </summary>
 		/// <remarks>
 		/// Windows: <c>%LOCALAPPDATA%\CivOneX</c>
-		/// Linux and macOS: <c>~/.local/share/CivOneX</c>
+		/// Linux: <c>~/.local/share/CivOneX</c>
+		/// macOS: <c>~/Library/Application Support/CivOneX</c>
 		/// </remarks>
 		public string StorageDirectory => Runtime.StorageDirectory;
 
@@ -107,7 +108,8 @@ namespace CivOne
 		/// </summary>
 		/// <remarks>
 		/// Windows: <c>%LOCALAPPDATA%\CivOneX\capture</c>
-		/// Linux and macOS: <c>~/.local/share/CivOneX/capture</c>
+		/// Linux: <c>~/.local/share/CivOneX/capture</c>
+		/// macOS: <c>~/Library/Application Support/CivOneX/capture</c>
 		/// </remarks>
 		public string CaptureDirectory => Path.Combine(StorageDirectory, "capture");
 
@@ -116,7 +118,8 @@ namespace CivOne
 		/// </summary>
 		/// <remarks>
 		/// Windows: <c>%LOCALAPPDATA%\CivOneX\data</c>
-		/// Linux and macOS: <c>~/.local/share/CivOneX/data</c>
+		/// Linux: <c>~/.local/share/CivOneX/data</c>
+		/// macOS: <c>~/Library/Application Support/CivOneX/data</c>
 		/// </remarks>
 		public string DataDirectory => Path.Combine(StorageDirectory, "data");
 
@@ -125,7 +128,8 @@ namespace CivOne
 		/// </summary>
 		/// <remarks>
 		/// Windows: <c>%LOCALAPPDATA%\CivOneX\plugins</c>
-		/// Linux and macOS: <c>~/.local/share/CivOneX/plugins</c>
+		/// Linux: <c>~/.local/share/CivOneX/plugins</c>
+		/// macOS: <c>~/Library/Application Support/CivOneX/plugins</c>
 		/// </remarks>
 		public string PluginsDirectory => Path.Combine(StorageDirectory, "plugins");
 
@@ -134,7 +138,8 @@ namespace CivOne
 		/// </summary>
 		/// <remarks>
 		/// Windows: <c>%LOCALAPPDATA%\CivOneX\saves</c>
-		/// Linux and macOS: <c>~/.local/share/CivOneX/saves</c>
+		/// Linux: <c>~/.local/share/CivOneX/saves</c>
+		/// macOS: <c>~/Library/Application Support/CivOneX/saves</c>
 		/// </remarks>
 		public string SavesDirectory => Path.Combine(StorageDirectory, "saves");
 
@@ -143,7 +148,8 @@ namespace CivOne
 		/// </summary>
 		/// <remarks>
 		/// Windows: <c>%LOCALAPPDATA%\CivOneX\saves\cos</c>
-		/// Linux and macOS: <c>~/.local/share/CivOneX/saves/cos</c>
+		/// Linux: <c>~/.local/share/CivOneX/saves/cos</c>
+		/// macOS: <c>~/Library/Application Support/CivOneX/saves/cos</c>
 		/// </remarks>
 		public string CosSavesDirectory => Path.Combine(StorageDirectory, "saves", "cos");
 
@@ -158,7 +164,8 @@ namespace CivOne
 		/// </summary>
 		/// <remarks>
 		/// Windows: <c>%LOCALAPPDATA%\CivOneX\sounds</c>
-		/// Linux and macOS: <c>~/.local/share/CivOneX/sounds</c>
+		/// Linux: <c>~/.local/share/CivOneX/sounds</c>
+		/// macOS: <c>~/Library/Application Support/CivOneX/sounds</c>
 		/// </remarks>
 		public string SoundsDirectory => Path.Combine(StorageDirectory, "sounds");
 
