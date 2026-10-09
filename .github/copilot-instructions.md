@@ -63,6 +63,19 @@ index++; // skip 1-byte bits header
 
 Whenever a diff deletes a line that contains any of `index++`, `++index`, `i++` (in subscripts), `ref `, `out `, `Read…(`, `Write…(`, `Dispose(`, `+=`, `-=`, treat it as suspicious and re-verify behaviour before accepting.
 
+## Branding: CivOneX vs. CivOne
+
+The product was renamed from CivOne to **CivOneX**. Both names are correct, each in its own place:
+
+* **CivOneX** is the product name. Use it in player-facing text, documentation, comments and log messages.
+  In code, take it from `ProductInfo.Name` instead of a string literal where possible.
+* **CivOne** stays correct for namespaces (`CivOne.*`), assembly, project and executable names (`CivOne.SDL`),
+  the CC0 license headers, `ProductInfo.LegacyName`, the profile folder of older versions, and references to
+  the original upstream projects.
+* The upper-case form `CIVONEX` is intended in DOS-style headers (for example the startup wizard).
+
+Do not report findings that only swap one name for the other in these places.
+
 ## Documentation
 
 * Always write documentation in English.
