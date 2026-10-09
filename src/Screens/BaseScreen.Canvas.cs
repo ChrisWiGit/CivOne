@@ -64,6 +64,24 @@ namespace CivOne.Screens
 			}
 		}
 		public Palette OriginalColours => _originalColours ?? throw new InvalidOperationException("OriginalColours is not initialized.");
+		/// <summary>
+		/// Replaces the active palette and <see cref="OriginalColours"/> with copies of <paramref name="palette"/>.
+		/// <br/>
+		/// The <see cref="Palette"/> setter keeps the original colours of its first assignment.
+		/// Use this method instead when the palette source itself changed, for example after a graphics
+		/// mode change.
+		/// The previous palettes are not disposed, because another screen may still hold a reference to
+		/// them; their finalizers release the unmanaged buffers.
+		/// </summary>
+		/// <param name="palette">The new palette.</param>
+		internal void ReplacePalette(Palette palette)
+		{
+			ArgumentNullException.ThrowIfNull(palette);
+
+			_palette = palette.Copy();
+			_originalColours = palette.Copy();
+		}
+
 		public void SetOriginalColours() => _originalColours?.Merge(_palette ?? throw new InvalidOperationException("Palette is not initialized."));
 
 		protected void DrawPanel(int x, int y, int width, int height, bool border = true)

@@ -37,6 +37,7 @@ namespace CivOne.Screens
 		private readonly GameMap _gameMap;
 		private readonly ITranslationService _translationService;
 		private readonly GamePlayTerrainEditorDelegate _terrainEditorDelegate;
+		private readonly ResourceGenerationDelegate _resourceGeneration = new();
 
 		private bool Busy => Game.MovingUnit != null || Human != Game.CurrentPlayer || GameTask.Any();
 		
@@ -268,6 +269,11 @@ namespace CivOne.Screens
 			if (!Game.Started)
 			{
 				return false;
+			}
+
+			if (_resourceGeneration.HasChanged())
+			{
+				ReloadGraphics();
 			}
 
 			if (Common.TopScreen is GamePlay && !GameTask.Any())
@@ -685,6 +691,22 @@ namespace CivOne.Screens
 			HasUpdate(0);
 		}
 
+		/// <summary>
+		/// Switches this screen and its panels to the palette of the reloaded resources and redraws
+		/// them, for example after the graphics mode was changed in the setup screen.
+		/// </summary>
+		private void ReloadGraphics()
+		{
+			using Picture tileSheet = Resources["SP257"];
+			ReplacePalette(tileSheet.Palette);
+			_menuBar.ReplacePalette(tileSheet.Palette);
+			_sideBar.ReplacePalette(tileSheet.Palette);
+			_gameMap.ReplacePalette(tileSheet.Palette);
+
+			_gameMap.ForceRefresh();
+			Resize(null, new ResizeEventArgs(Width, Height));
+		}
+
 		private void CenterMapOnActiveHumanPlayerAsset()
 		{
 			if (_gameMap.MapViewEnabled)
@@ -728,6 +750,8 @@ namespace CivOne.Screens
 			OnResize += Resize;
 			
 			Palette = Resources["SP257"].Palette;
+			// Records the resource generation the palette above was taken from.
+			_resourceGeneration.HasChanged();
 			
 			_rightSideBar = Settings.RightSideBar;
 

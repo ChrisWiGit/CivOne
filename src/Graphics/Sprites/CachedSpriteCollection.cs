@@ -45,6 +45,7 @@ namespace CivOne.Graphics.Sprites
 		}
 
 		private readonly Func<T, Bytemap> GetSprite = getSprite;
+		private readonly ResourceGenerationDelegate _resourceGeneration = new();
 
 		private readonly Dictionary<T, ISprite> _sprites = [];
 
@@ -60,6 +61,14 @@ namespace CivOne.Graphics.Sprites
 		{
 			get
 			{
+				if (_resourceGeneration.HasChanged())
+				{
+					// The resources were reloaded (for example after a graphics mode change), so the
+					// cached sprites show the old graphics. They are dropped but not disposed: they may
+					// wrap shared fallback bitmaps or still be referenced by a layer of the current frame.
+					// Their finalizers release the unmanaged buffers.
+					_sprites.Clear();
+				}
 				if (!_sprites.TryGetValue(index, out ISprite? value))
 				{
 					value = new Sprite(GetSprite(index));

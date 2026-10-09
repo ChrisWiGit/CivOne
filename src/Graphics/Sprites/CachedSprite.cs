@@ -15,6 +15,7 @@ namespace CivOne.Graphics.Sprites
 	internal class CachedSprite(Func<Bytemap?> getSprite) : BaseInstance, ISprite, ICached, IDisposable
 	{
 		private readonly Func<Bytemap?> GetSprite = getSprite;
+		private readonly ResourceGenerationDelegate _resourceGeneration = new();
 
 		private Bytemap? _bitmap;
 		private bool _disposed;
@@ -30,6 +31,14 @@ namespace CivOne.Graphics.Sprites
 			get
 			{
 				ObjectDisposedException.ThrowIf(_disposed, this);
+				if (_resourceGeneration.HasChanged())
+				{
+					// The resources were reloaded (for example after a graphics mode change), so the
+					// cached bitmap shows the old graphics. It is dropped but not disposed: it may be a
+					// shared fallback bitmap or still be referenced by a layer of the current frame.
+					// Its finalizer releases the unmanaged buffer.
+					_bitmap = null;
+				}
 				return _bitmap ??= GetSprite();
 			}
 		}
