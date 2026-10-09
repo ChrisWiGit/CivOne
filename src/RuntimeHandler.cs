@@ -279,7 +279,7 @@ namespace CivOne
 			{
 				try
 				{
-					Runtime.Palette = topScreen.Palette.Copy();
+					Runtime.Palette = new PaletteExpansionDelegate().Expand(topScreen.Palette.Copy());
 				}
 				catch (ObjectDisposedException)
 				{

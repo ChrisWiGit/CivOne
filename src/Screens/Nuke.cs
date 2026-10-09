@@ -92,9 +92,14 @@ namespace CivOne.Screens
 			
 			using (Palette palette = Common.DefaultPalette)
 			{
-				for (int i = 192; i < 256; i++)
+				// In 16-colour mode both palettes have only 16 entries, so skip the merge.
+				Palette nukePalette = Resources["NUKE1"].Palette;
+				if (palette.Length >= 256 && nukePalette.Length >= 256)
 				{
-					palette[i] = Resources["NUKE1"].Palette[i];
+					for (int i = 192; i < 256; i++)
+					{
+						palette[i] = nukePalette[i];
+					}
 				}
 				Palette = palette;
 			}

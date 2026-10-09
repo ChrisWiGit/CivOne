@@ -571,7 +571,15 @@ namespace CivOne.Screens
 			_data = _service.GetScreenData();
 
 			SpaceShipPalette = _resources["DOCKER"].Palette.Copy();
-			SpaceShipPalette[StartFieldBackgroundColorIndex] = new Colour(0, 0, 48);
+			// DOCKER has no real 16-colour picture, so Resources[] normally always hands back its
+			// 256-colour palette regardless of GraphicsMode. If DOCKER.PIC cannot be found at all
+			// (missing data files, or --free), the placeholder picture PicFile synthesizes instead
+			// reports a 16-colour version as available too, and Resources[] then picks that 16-entry
+			// palette whenever GraphicsMode isn't 256. Skip the write rather than index past it.
+			if (SpaceShipPalette.Length > StartFieldBackgroundColorIndex)
+			{
+				SpaceShipPalette[StartFieldBackgroundColorIndex] = new Colour(0, 0, 48);
+			}
 			_paletteAnimation = new SpaceShipPaletteAnimationDelegate(SpaceShipPalette);
 
 			Palette = SpaceShipPalette;
