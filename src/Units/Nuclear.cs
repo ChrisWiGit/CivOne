@@ -74,7 +74,7 @@ namespace CivOne.Units
 			Common.GamePlay?.CenterOnPoint(moveTarget.X, moveTarget.Y);
 			Show nuke = CreateNukeAnimation(moveTarget);
 
-			PlaySound(moveTarget.City != null ? SoundNames.CombatAirStrike : SoundNames.EventNuclearBlast);
+			PlaySound(SoundNames.EventNuclearBlast);
 			nuke.Done += (s, a) => DestroyUnitsInNuclearBlast(relX, relY);
 
 			GameTask.Enqueue(nuke);
