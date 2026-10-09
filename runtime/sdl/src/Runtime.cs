@@ -164,7 +164,10 @@ namespace CivOne
         }
 
 		Platform IRuntime.CurrentPlatform => Platform.Windows;
-		string IRuntime.StorageDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ProductInfo.Name);
+		// Deliberately ProductInfo.LegacyName, not ProductInfo.Name: this identifies the on-disk
+		// location of an existing installation's saves, settings and cached data files. Renaming
+		// the game must not orphan that data in a folder nobody looks at anymore.
+		string IRuntime.StorageDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ProductInfo.LegacyName);
 		string? IRuntime.GetSetting(string key) => Profile.GetSetting(key);
 		void IRuntime.SetSetting(string key, string value) => Profile.SetSetting(key, value);
 		void IRuntime.SetCurrentCursor(MouseCursor? cursor) => CurrentCursor = cursor;
