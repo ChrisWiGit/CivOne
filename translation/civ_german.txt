@@ -1247,6 +1247,7 @@ SYNCHRONIZE RENDERING TO THE DISPLAY REFRESH RATE.=Rendering mit der Bildwiederh
 RESTART THE GAME AFTER CHANGING THIS SETTING.=Spiel nach Änderung dieser Einstellung neu starten.
 VSYNC=VSync
 REQUIRES A RESTART TO TAKE EFFECT.=Erfordert einen Neustart, um wirksam zu werden.
+CHOOSE BETWEEN 256 AND 16 COLOURS.=Zwischen 256 und 16 Farben wählen.
 RENDER WITHOUT DISPLAY SYNCHRONIZATION.=Rendering ohne Synchronisation mit der Anzeige.
 FROM THOSE OPEN SOURCE GUYS AT LEISURE TIME.=Von diesen Open-Source-Leuten in ihrer Freizeit.
 ORIGIN:=Ursprung: 

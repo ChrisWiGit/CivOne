@@ -336,7 +336,11 @@ namespace CivOne.Screens
 
 		private void SettingsMenu(int activeItem = 0) => CreateMenu("Settings", activeItem,
 			MenuItem.Create(TranslateFormatted("Window Title: {0}", Settings.WindowTitle)).OnSelect(GotoScreen<WindowTitle>(ChangeWindowTitle)),
-			MenuItem.Create(TranslateFormatted("Graphics Mode: {0}", Settings.GraphicsMode.ToText())).OnSelect(GotoMenu(GraphicsModeMenu)),
+			MenuItem.Create(TranslateFormatted("Graphics Mode: {0}", Settings.ConfiguredGraphicsMode.ToText()))
+				.WithDescription(
+					Translate("Choose between 256 and 16 colours."),
+					Translate("Restart the game after changing this setting."))
+				.OnSelect(GotoMenu(GraphicsModeMenu)),
 			MenuItem.Create(TranslateFormatted("Simulate intl font: {0}", Settings.SimulateInternationalFont.ToText()))
 				.WithDescription(
 					Translate("Override international font simulation behavior."),
@@ -361,8 +365,12 @@ namespace CivOne.Screens
 		);
 
 		private void GraphicsModeMenu() => CreateMenu("Graphics Mode", GotoMenu(SettingsMenu, 1),
-			MenuItem.Create(TranslateFormatted("{0} (default)", Graphics256.ToText())).OnSelect((s, a) => Settings.GraphicsMode = Graphics256).SetActive(() => Settings.GraphicsMode == Graphics256),
-			MenuItem.Create(Graphics16.ToText()).OnSelect((s, a) => Settings.GraphicsMode = Graphics16).SetActive(() => Settings.GraphicsMode == Graphics16),
+			MenuItem.Create(TranslateFormatted("{0} (default)", Graphics256.ToText()))
+				.WithDescription(Translate("Requires a restart to take effect."))
+				.OnSelect((s, a) => Settings.ConfiguredGraphicsMode = Graphics256).SetActive(() => Settings.ConfiguredGraphicsMode == Graphics256),
+			MenuItem.Create(Graphics16.ToText())
+				.WithDescription(Translate("Requires a restart to take effect."))
+				.OnSelect((s, a) => Settings.ConfiguredGraphicsMode = Graphics16).SetActive(() => Settings.ConfiguredGraphicsMode == Graphics16),
 			MenuItem.Create(Translate("Back"))
 		);
 

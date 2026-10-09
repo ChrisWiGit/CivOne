@@ -129,7 +129,8 @@ If you do not have the original game files, you can use a free package of graphi
 
 The data files will be copied to
 
-* on Linux/macOS: `~/CivOneX/data`
+* on Linux: `~/.local/share/CivOneX/data`
+* on macOS: `~/Library/Application Support/CivOneX/data`
 * on Windows: `C:\Users\<YourUsername>\AppData\Local\CivOneX\data` (also `%LOCALAPPDATA%\CivOneX\data`)
 
 ### Sound
@@ -152,7 +153,8 @@ Pick one under **Settings → In-game sound → Sound pack**, or in the startup 
 
 Wave files go directly into
 
-* on Linux/macOS: `~/CivOneX/sounds`
+* on Linux: `~/.local/share/CivOneX/sounds`
+* on macOS: `~/Library/Application Support/CivOneX/sounds`
 * on Windows: `C:\Users\<YourUsername>\AppData\Local\CivOneX\sounds` (also `%LOCALAPPDATA%\CivOneX\sounds`)
 
 Subfolders belong to converted packs; your own files go into the folder itself. A file has to be a
@@ -378,16 +380,17 @@ Choose `Identity (default)` to use original keys, or choose one of the available
 
 Language files must be placed in your CivOneX profile translation folder.
 On Windows this is `%LOCALAPPDATA%\CivOneX\translations`.
-On Linux and macOS this is `~/.local/share/CivOneX/translations`.
+On Linux this is `~/.local/share/CivOneX/translations`, on macOS `~/Library/Application Support/CivOneX/translations`.
 
 The CivOneX profile root is the parent folder of those files.
 On Windows this is `%LOCALAPPDATA%\CivOneX`.
-On Linux and macOS this is `~/.local/share/CivOneX`.
+On Linux this is `~/.local/share/CivOneX`, on macOS `~/Library/Application Support/CivOneX`.
 
 Other common folders are:
 
 * Windows: `%LOCALAPPDATA%\CivOneX\data`, `%LOCALAPPDATA%\CivOneX\saves`, `%LOCALAPPDATA%\CivOneX\sounds`
-* Linux and macOS: `~/.local/share/CivOneX/data`, `~/.local/share/CivOneX/saves`, `~/.local/share/CivOneX/sounds`
+* Linux: `~/.local/share/CivOneX/data`, `~/.local/share/CivOneX/saves`, `~/.local/share/CivOneX/sounds`
+* macOS: `~/Library/Application Support/CivOneX/data`, `~/Library/Application Support/CivOneX/saves`, `~/Library/Application Support/CivOneX/sounds`
 
 #### Profile folder of older versions
 
@@ -398,7 +401,10 @@ Those files are not read any more, so an existing installation starts with empty
 To keep them, rename the old folder before starting the game:
 
 ```sh
+# Linux
 mv ~/.local/share/CivOne ~/.local/share/CivOneX
+# macOS
+mv ~/Library/Application\ Support/CivOne ~/Library/Application\ Support/CivOneX
 ```
 
 ```cmd
@@ -452,7 +458,7 @@ On success, the response includes both the new `fileName` and a newly generated 
 
 To load a saved game immediately when starting the program, you can use the `--load-slot` option followed by a drive letter and a slot number.
 The drive letter should be between 'a' and 'z', and the slot number should be between 0 and 15 (inclusive).
-These correspond to the saved game files that are stored in the `SaveGames` directory (`~/CivOneX/saves/c`)
+These correspond to the saved game files that are stored in the `SaveGames` directory (`~/.local/share/CivOneX/saves/c` on Linux)
 
 If you want to load the saved game from drive 'c' and slot 0, you would use:
 
@@ -464,7 +470,8 @@ If you omit the slot number, a loading screen will be shown, allowing you to sel
 
 You can find your saves in the following locations:
 
-* on Linux/macOS: `~/CivOneX/saves/`
+* on Linux: `~/.local/share/CivOneX/saves/`
+* on macOS: `~/Library/Application Support/CivOneX/saves/`
 * on Windows: `C:\Users\<YourUsername>\AppData\Local\CivOneX\saves\` (also `%LOCALAPPDATA%\CivOneX\saves\`)
 
 ### Loading a savegame from a file (new file format - YAML)
@@ -497,7 +504,8 @@ You can use fast in-game hotkeys for ten quick save slots.
 Quick slot files are stored in the `saves` subfolder of the profile storage directory.
 
 * Windows: `%LOCALAPPDATA%\CivOneX\saves`.
-* Linux/macOS: `~/CivOneX/saves`.
+* Linux: `~/.local/share/CivOneX/saves`.
+* macOS: `~/Library/Application Support/CivOneX/saves`.
 
 File names are:
 
@@ -593,7 +601,7 @@ These settings affect the overall game behavior and used graphics/sound options.
 | Option | Description |
 | ------ | ----------- |
 | Window Title | Set the window title text shown by the game window. |
-| Graphics Mode | Choose the graphics rendering mode (e.g. 256-colour or 16-colour). |
+| Graphics Mode | Choose the graphics rendering mode (256-colour or 16-colour). Changing this setting requires a restart; until then the game keeps the mode it was started with. |
 | Aspect Ratio | Select how the game handles aspect ratio (Auto, Fixed, Scaled, ScaledFixed, Expand). |
 | Full Screen | Toggle fullscreen mode on or off (`Alt+Enter`). |
 | VSync | Synchronize rendering to the display refresh rate. This is enabled by default. It helps prevent the GPU from running at full load. Changing this setting requires a restart. |

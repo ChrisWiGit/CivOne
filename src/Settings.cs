@@ -55,6 +55,7 @@ namespace CivOne
 		private const string NoSoundPack = global::CivOne.Sound.Playback.SoundPlaybackStrategyConstants.NoSoundPack;
 		private string _windowTitle = ProductInfo.Name;
 		private GraphicsMode _graphicsMode = GraphicsMode.Graphics256;
+		private GraphicsMode _configuredGraphicsMode = GraphicsMode.Graphics256;
 		private bool _fullScreen;
 		private int _windowWidth = -1, _windowHeight = -1;
 		private Point _windowPosition = new Point(-1, -1);
@@ -180,17 +181,31 @@ namespace CivOne
 			}
 		}
 		
-		internal GraphicsMode GraphicsMode
+		/// <summary>
+		/// Gets the graphics mode the game renders with during this session.
+		/// <br/>
+		/// The value is read once at startup and does not change while the program runs, because many
+		/// bitmaps derived from the game resources are cached for the whole session.
+		/// Use <see cref="ConfiguredGraphicsMode"/> to change the mode for the next start.
+		/// See docs/plan-assetCache.prompt.md.
+		/// </summary>
+		internal GraphicsMode GraphicsMode => _graphicsMode;
+
+		/// <summary>
+		/// Gets or sets the graphics mode that is saved in the settings.
+		/// <br/>
+		/// A new value only takes effect after the game was restarted; until then
+		/// <see cref="GraphicsMode"/> keeps the mode the session started with.
+		/// </summary>
+		internal GraphicsMode ConfiguredGraphicsMode
 		{
-			get => _graphicsMode;
+			get => _configuredGraphicsMode;
 			set
 			{
-				_graphicsMode = value;
-				string saveValue = _graphicsMode == GraphicsMode.Graphics256 ? "1" : "2";
+				_configuredGraphicsMode = value;
+				string saveValue = _configuredGraphicsMode == GraphicsMode.Graphics256 ? "1" : "2";
 				SetSetting("GraphicsMode", saveValue);
 				Common.ReloadSettings = true;
-				
-				Resources.ClearInstance();
 			}
 		}
 		
@@ -871,6 +886,7 @@ namespace CivOne
 			GetSetting("WindowTitle", ref _windowTitle);
 			_windowTitle = new WindowTitleDelegate().Resolve(_windowTitle);
 			GetSetting("GraphicsMode", ref _graphicsMode);
+			_configuredGraphicsMode = _graphicsMode;
 			GetSetting("FullScreen", ref _fullScreen);
 			GetSetting("SideBar", ref _rightSideBar);
 			GetSetting("Scale", ref _scale, 1, 8);
