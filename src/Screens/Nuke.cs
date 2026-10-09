@@ -90,10 +90,13 @@ namespace CivOne.Screens
 			_dx = x - 14;
 			_dy = y - 14;
 			
+			// Resources[] hands out an owned copy, so it is read once and disposed after the palette
+			// and the sprites have been copied out of it.
+			using Picture nukePicture = Resources["NUKE1"];
 			using (Palette palette = Common.DefaultPalette)
 			{
 				// In 16-colour mode both palettes have only 16 entries, so skip the merge.
-				Palette nukePalette = Resources["NUKE1"].Palette;
+				Palette nukePalette = nukePicture.Palette;
 				if (palette.Length >= 256 && nukePalette.Length >= 256)
 				{
 					for (int i = 192; i < 256; i++)
@@ -110,7 +113,7 @@ namespace CivOne.Screens
 			for (int yy = 0; yy < 4; yy++)
 			for (int xx = 0; xx < 7; xx++)
 			{
-				_sprites[(yy * 7) + xx] = Resources["NUKE1"][1 + (45 * xx), 1 + (45 * yy), 44, 44];
+				_sprites[(yy * 7) + xx] = nukePicture[1 + (45 * xx), 1 + (45 * yy), 44, 44];
 			}
 		}
 

@@ -97,10 +97,10 @@ namespace CivOne.Screens
 			}
 
 			Palette palette = _enemies[_enemy].Leader.GetPortrait().Palette;
-			// The leader's portrait palette only covers indices 64-143 when it has a full
-			// 256-colour layout (16-colour mode returns a 16-entry palette), so skip the merge
-			// instead of indexing past its end.
-			if (palette.Length < 144) return;
+			// Both palettes only cover indices 64-143 when they have a full 256-colour layout
+			// (16-colour mode returns 16-entry palettes), so skip the merge instead of indexing past
+			// the end of either one.
+			if (Palette.Length < 144 || palette.Length < 144) return;
 			for (int i = 64; i < 144; i++)
 			{
 				Palette[i] = palette[i];
