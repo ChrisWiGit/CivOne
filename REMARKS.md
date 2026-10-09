@@ -301,7 +301,8 @@ For the SDL runtime on Windows, `Runtime.StorageDirectory` is:
 So the effective file path is usually:
 
 On Windows this is `%LOCALAPPDATA%\CivOneX\HallOfFame.yaml`.
-On Linux and macOS this is `~/.local/share/CivOneX/HallOfFame.yaml`.
+On Linux this is `~/.local/share/CivOneX/HallOfFame.yaml`.
+On macOS this is `~/Library/Application Support/CivOneX/HallOfFame.yaml`.
 
 ### When is it read or written?
 

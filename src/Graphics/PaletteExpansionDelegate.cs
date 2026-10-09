@@ -33,7 +33,8 @@ namespace CivOne.Graphics
 			Palette expanded = new(length);
 			for (int i = 0; i < length; i++)
 			{
-				expanded[i] = palette[i % palette.Length];
+				// An empty source has no colour to repeat, so it expands to opaque black.
+				expanded[i] = palette.Length == 0 ? Colour.Black : palette[i % palette.Length];
 			}
 			return expanded;
 		}
