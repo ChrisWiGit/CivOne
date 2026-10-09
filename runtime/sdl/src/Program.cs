@@ -306,9 +306,7 @@ Try 'civone-sdl --help' for more information.
 			}
 			else
 			{
-				// See Runtime.StorageDirectory: LegacyName on purpose, to stay pointed at an
-				// existing installation's data directory across a product rename.
-				string storageDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ProductInfo.LegacyName);
+				string storageDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ProductInfo.Name);
 				if (!TranslationServiceFactory.TryUseLanguage(storageDirectory, languagePostfix, out string? error, message => Console.WriteLine(message)))
 				{
 					Console.WriteLine($"Could not activate translation language '{languagePostfix}': {error ?? "unknown error"}");

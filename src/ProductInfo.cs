@@ -1,11 +1,11 @@
 namespace CivOne
 {
 	/// <summary>
-	/// The name the game shows to the player.
+	/// The name of the game.
 	/// <br/>
-	/// Everything the player reads as the name of the game takes it from here, so a later rename is a
-	/// single change. Paths, file extensions and the assembly names are deliberately not covered:
-	/// they identify stored data of existing installations and have to stay as they are.
+	/// Everything the player reads as the name of the game, and the name of the storage directory,
+	/// take it from here, so a later rename is a single change.
+	/// File extensions and the assembly names are deliberately not covered.
 	/// </summary>
 	internal static class ProductInfo
 	{
