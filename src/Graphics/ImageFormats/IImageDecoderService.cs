@@ -6,9 +6,9 @@ namespace CivOne.Graphics.ImageFormats
 	/// <summary>
 	/// Decodes image files into something the engine can draw.
 	/// <br/>
-	/// Image data reaches the game from two directions: as a file on disk, and as a stream out of a
-	/// resource embedded in an assembly or packed into an archive. Both are first-class here, so a
-	/// caller that loads images never has to know how to decode one.
+	/// Image data reaches the game as raw bytes or as a stream, for example a file opened by the
+	/// caller, or a resource embedded in an assembly or packed into an archive.
+	/// A caller that loads images never has to know how to decode one.
 	/// </summary>
 	internal interface IImageDecoderService
 	{
@@ -33,13 +33,6 @@ namespace CivOne.Graphics.ImageFormats
 		/// <param name="stream">The stream to read the image from.</param>
 		/// <returns>The decoded image.</returns>
 		DecodedImage Decode(Stream stream);
-
-		/// <summary>
-		/// Decodes an image file from disk.
-		/// </summary>
-		/// <param name="filePath">The path of the file to read.</param>
-		/// <returns>The decoded image.</returns>
-		DecodedImage DecodeFile(string filePath);
 
 		/// <summary>
 		/// Decodes a stream straight into an engine bitmap.

@@ -12,10 +12,8 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 	/// Verifies that <see cref="ImageDecoderService"/> reads images from every supported source and
 	/// that <see cref="DecodedImageToBitmapDelegate"/> converts them into engine bitmaps.
 	/// </summary>
-	public sealed class ImageDecoderServiceTests : IDisposable
+	public sealed class ImageDecoderServiceTests
 	{
-		private readonly string _temporaryDirectory = Path.Combine(Path.GetTempPath(), $"civone-png-{Guid.NewGuid():N}");
-
 		private static byte[] CreatePngFile()
 		{
 			Colour[] palette = new Colour[256];
@@ -48,19 +46,6 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 			using MemoryStream stream = new(CreatePngFile());
 
 			DecodedImage result = testee.Decode(stream);
-
-			Assert.Equal([1, 2, 2, 1], result.Indices.ToArray());
-		}
-
-		[Fact]
-		public void DecodeFileReadsFromDisk()
-		{
-			Directory.CreateDirectory(_temporaryDirectory);
-			string path = Path.Combine(_temporaryDirectory, "image.png");
-			File.WriteAllBytes(path, CreatePngFile());
-			ImageDecoderService testee = new();
-
-			DecodedImage result = testee.DecodeFile(path);
 
 			Assert.Equal([1, 2, 2, 1], result.Indices.ToArray());
 		}
@@ -141,15 +126,6 @@ namespace CivOne.UnitTests.Graphics.ImageFormats
 
 			Assert.Equal(new Colour(4, 5, 6), result.Palette[1]);
 			Assert.Equal(Colour.Black, result.Palette[255]);
-		}
-
-		public void Dispose()
-		{
-			if (Directory.Exists(_temporaryDirectory))
-			{
-				Directory.Delete(_temporaryDirectory, true);
-			}
-			GC.SuppressFinalize(this);
 		}
 	}
 }

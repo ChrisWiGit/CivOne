@@ -37,8 +37,6 @@ namespace CivOne.UnitTests.Screens.StartupWizard
 				return image;
 			}
 
-			public DecodedImage DecodeFile(string filePath) => Decode(Stream.Null);
-
 			public IBitmap DecodeBitmap(Stream stream) => throw new NotSupportedException();
 
 			public IBitmap DecodeBitmap(Stream stream, Palette targetPalette) => throw new NotSupportedException();

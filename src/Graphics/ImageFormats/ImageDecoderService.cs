@@ -41,14 +41,6 @@ namespace CivOne.Graphics.ImageFormats
 		}
 
 		/// <inheritdoc/>
-		public DecodedImage DecodeFile(string filePath)
-		{
-			ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
-
-			return Decode(File.ReadAllBytes(filePath));
-		}
-
-		/// <inheritdoc/>
 		public IBitmap DecodeBitmap(Stream stream) => _toBitmap.ToBitmap(Decode(stream));
 
 		/// <inheritdoc/>
