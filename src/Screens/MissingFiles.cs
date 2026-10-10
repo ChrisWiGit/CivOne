@@ -121,7 +121,7 @@ namespace CivOne.Screens
 		
 		public MissingFiles()
 		{
-			var _text = TranslateArray("One or more data files are missing from the\ndata folder. CivOne works best with the\noriginal Civilization for DOS data files.\n \nWhat do you want to do?");
+			var _text = TranslateArray("One or more data files are missing from the\ndata folder. CivOneX works best with the\noriginal Civilization for DOS data files.\n \nWhat do you want to do?");
 
 			Palette = Common.GetPalette256;
 			this.Clear(8)

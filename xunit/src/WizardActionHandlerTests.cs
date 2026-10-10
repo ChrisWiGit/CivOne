@@ -78,7 +78,7 @@ namespace CivOne.UnitTests
 				Assert.NotNull(warningDialogLines);
 				Assert.Equal(2, warningDialogLines.Length);
 				Assert.Equal("One or more original text files were not recognized as English.", warningDialogLines[0]);
-				Assert.Equal("If you choose Original language, some texts may stay in the imported original language while other texts stay in CivOne language.", warningDialogLines[1]);
+				Assert.Equal("If you choose Original language, some texts may stay in the imported original language while other texts stay in CivOneX language.", warningDialogLines[1]);
 			}
 			finally
 			{

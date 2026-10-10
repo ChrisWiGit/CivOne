@@ -106,7 +106,7 @@ namespace CivOne.Screens
 				true,
 				Translate("Save Game As..."),
 				BuildDialogInitialFileName(SaveFileName, extension),
-				Translate("CivOne Save Game (*.cos)|*.cos")
+				Translate("CivOneX Save Game (*.cos)|*.cos")
 			);
 			if (string.IsNullOrEmpty(selectedFile))
 			{

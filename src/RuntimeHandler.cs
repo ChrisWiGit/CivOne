@@ -279,7 +279,14 @@ namespace CivOne
 			{
 				try
 				{
-					Runtime.Palette = topScreen.Palette.Copy();
+					Palette copy = topScreen.Palette.Copy();
+					Palette palette = new PaletteExpansionDelegate().Expand(copy);
+					if (!ReferenceEquals(palette, copy))
+					{
+						// Expand returned a new palette, so the short copy is no longer needed.
+						copy.Dispose();
+					}
+					Runtime.Palette = palette;
 				}
 				catch (ObjectDisposedException)
 				{

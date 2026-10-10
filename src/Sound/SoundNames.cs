@@ -143,7 +143,7 @@ public static class SoundNames
     /// <summary>Short flourish shown with a city that has just completed a building or wonder.</summary>
     public const string EventBuildingComplete = "event_building_complete";
 
-    /// <summary>A nuclear device going off outside a city.</summary>
+    /// <summary>A nuclear device going off.</summary>
     public const string EventNuclearBlast = "event_nuclear_blast";
 
     /// <summary>Short beep accompanying an error message.</summary>
@@ -161,6 +161,6 @@ public static class SoundNames
     /// <summary>Combat the human lost, decided by a strong unit.</summary>
     public const string CombatLossStrong = "combat_loss_strong";
 
-    /// <summary>An air-delivered strike: a winning bomber, or a nuclear device hitting a city.</summary>
+    /// <summary>An air-delivered strike by a winning bomber.</summary>
     public const string CombatAirStrike = "combat_air_strike";
 }

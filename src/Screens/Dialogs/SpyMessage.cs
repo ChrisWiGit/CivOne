@@ -32,9 +32,13 @@ namespace CivOne.Screens.Dialogs
             IBitmap spyPortrait = Icons.Spy;
 
 			Palette palette = Common.DefaultPalette;
-			for (int i = 144; i < 256; i++)
+			// In 16-colour mode both palettes have only 16 entries, so skip the merge.
+			if (palette.Length >= 256 && spyPortrait.Palette.Length >= 256)
 			{
-				palette[i] = spyPortrait.Palette[i];
+				for (int i = 144; i < 256; i++)
+				{
+					palette[i] = spyPortrait.Palette[i];
+				}
 			}
 			this.SetPalette(palette);
 			

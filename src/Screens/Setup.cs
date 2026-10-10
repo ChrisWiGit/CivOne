@@ -135,12 +135,17 @@ namespace CivOne.Screens
 
 		private bool _update = true;
 
+		// True while a child screen opened via GotoScreen (e.g. WindowTitle) is on top of Setup.
+		// HasMenu is legitimately false during that window, so HasUpdate must not reopen the main
+		// menu underneath the child screen just because a resize set _update.
+		private bool _awaitingChildScreen;
+
 		protected override bool HasUpdate(uint gameTick)
 		{
 			if (!_update) return false;
 			_update = false;
 
-			if (!HasMenu)
+			if (!HasMenu && !_awaitingChildScreen)
 			{
 				MainMenu();
 			}
@@ -162,7 +167,7 @@ namespace CivOne.Screens
 
 		private void BrowseForPlugins(object sender, MenuItemEventArgs<int> args)
 		{
-			string? path = Runtime.BrowseFolder(Translate("Location of CivOne plugin(s)"));
+			string? path = Runtime.BrowseFolder(Translate("Location of CivOneX plugin(s)"));
 			if (path == null)
 			{
 				// User pressed cancel
@@ -261,8 +266,13 @@ namespace CivOne.Screens
 		private MenuItemEventAction<int> GotoScreen<T>(Action doneAction) where T : IScreen, new() => (s, a) =>
 		{
 			CloseMenus();
+			_awaitingChildScreen = true;
 			T screen = new T();
-			screen.Closed += (sender, args) => doneAction();
+			screen.Closed += (sender, args) =>
+			{
+				_awaitingChildScreen = false;
+				doneAction();
+			};
 			Common.AddScreen(screen);
 		};
 
@@ -290,8 +300,8 @@ namespace CivOne.Screens
 					.WithDescription(TranslateArray("Browse for and install optional third-party plugins.\nThis feature is not really implemented.")).SetEnabled(!Game.Started),
 				MenuItem.Create(Translate("Game Options")).OnSelect(GotoMenu(GameOptionsMenu))
 					.WithDescription(Translate("Configure game rules and difficulty settings.")),
-				MenuItem.Create(Translate("Open CivOne Profile folder...")).OnSelect(OpenProfileFolder)
-					.WithDescription(TranslateArray("Open the folder where CivOne\nstores profiles, save games, and settings.")),
+				MenuItem.Create(Translate("Open CivOneX Profile folder...")).OnSelect(OpenProfileFolder)
+					.WithDescription(TranslateArray("Open the folder where CivOneX\nstores profiles, save games, and settings.")),
 				MenuItem.Create(GetReturnTargetString()).OnSelect(CloseScreen())
 			];
 
@@ -300,7 +310,7 @@ namespace CivOne.Screens
 				items.Add(MenuItem.Create(Translate("Quit")).OnSelect(CloseScreen(Runtime.Quit)));
 			}
 
-			CreateMenu(Translate("CivOne Setup"), activeItem, [.. items]);
+			CreateMenu(Translate("CivOneX Setup"), activeItem, [.. items]);
 		}
 
 		private string GetReturnTargetString()
@@ -326,7 +336,11 @@ namespace CivOne.Screens
 
 		private void SettingsMenu(int activeItem = 0) => CreateMenu("Settings", activeItem,
 			MenuItem.Create(TranslateFormatted("Window Title: {0}", Settings.WindowTitle)).OnSelect(GotoScreen<WindowTitle>(ChangeWindowTitle)),
-			MenuItem.Create(TranslateFormatted("Graphics Mode: {0}", Settings.GraphicsMode.ToText())).OnSelect(GotoMenu(GraphicsModeMenu)),
+			MenuItem.Create(TranslateFormatted("Graphics Mode: {0}", Settings.ConfiguredGraphicsMode.ToText()))
+				.WithDescription(
+					Translate("Choose between 256 and 16 colours."),
+					Translate("Restart the game after changing this setting."))
+				.OnSelect(GotoMenu(GraphicsModeMenu)),
 			MenuItem.Create(TranslateFormatted("Simulate intl font: {0}", Settings.SimulateInternationalFont.ToText()))
 				.WithDescription(
 					Translate("Override international font simulation behavior."),
@@ -351,8 +365,12 @@ namespace CivOne.Screens
 		);
 
 		private void GraphicsModeMenu() => CreateMenu("Graphics Mode", GotoMenu(SettingsMenu, 1),
-			MenuItem.Create(TranslateFormatted("{0} (default)", Graphics256.ToText())).OnSelect((s, a) => Settings.GraphicsMode = Graphics256).SetActive(() => Settings.GraphicsMode == Graphics256),
-			MenuItem.Create(Graphics16.ToText()).OnSelect((s, a) => Settings.GraphicsMode = Graphics16).SetActive(() => Settings.GraphicsMode == Graphics16),
+			MenuItem.Create(TranslateFormatted("{0} (default)", Graphics256.ToText()))
+				.WithDescription(Translate("Requires a restart to take effect."))
+				.OnSelect((s, a) => Settings.ConfiguredGraphicsMode = Graphics256).SetActive(() => Settings.ConfiguredGraphicsMode == Graphics256),
+			MenuItem.Create(Graphics16.ToText())
+				.WithDescription(Translate("Requires a restart to take effect."))
+				.OnSelect((s, a) => Settings.ConfiguredGraphicsMode = Graphics16).SetActive(() => Settings.ConfiguredGraphicsMode == Graphics16),
 			MenuItem.Create(Translate("Back"))
 		);
 
@@ -1133,7 +1151,7 @@ namespace CivOne.Screens
 				.WithDescription(Translate("Use original cursor assets from game files."))
 				.OnSelect((s, a) => Settings.CursorType = Default).SetActive(() => Settings.CursorType == Default && FileSystem.DataFilesExist(FileSystem.MouseCursorFiles)).SetEnabled(FileSystem.DataFilesExist(FileSystem.MouseCursorFiles)),
 			MenuItem.Create(Builtin.ToText())
-				.WithDescription(Translate("Use built-in CivOne cursor graphics."))
+				.WithDescription(Translate("Use built-in CivOneX cursor graphics."))
 				.OnSelect((s, a) => Settings.CursorType = Builtin).SetActive(() => Settings.CursorType == Builtin || (Settings.CursorType == Default && !FileSystem.DataFilesExist(FileSystem.MouseCursorFiles))),
 			MenuItem.Create(Native.ToText())
 				.WithDescription(Translate("Use operating system native mouse cursor."))
@@ -1246,8 +1264,8 @@ namespace CivOne.Screens
 					Translate("Prefer SVE save files."),
 					Translate("Fallback to COS when SVE cannot be used."))
 				.OnSelect((s, a) => Settings.PreferSveSaveFormat = true).SetActive(() => Settings.PreferSveSaveFormat),
-			MenuItem.Create(Translate("CivOne Save (COS)"))
-				.WithDescription(Translate("Always write CivOne COS save files."))
+			MenuItem.Create(Translate("CivOneX Save (COS)"))
+				.WithDescription(Translate("Always write CivOneX COS save files."))
 				.OnSelect((s, a) => Settings.PreferSveSaveFormat = false).SetActive(() => !Settings.PreferSveSaveFormat),
 			MenuItem.Create(Translate("Back"))
 		);

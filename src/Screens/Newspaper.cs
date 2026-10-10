@@ -61,9 +61,16 @@ namespace CivOne.Screens
 				governmentPortraits[i] = Icons.GovernmentPortrait(Human.Government, Enum.Parse<Advisor>(i.ToString(CultureInfo.InvariantCulture)), _modernGovernment);
 			}
 
+			// In 16-colour mode both palettes have only 16 entries, so skip the merge.
+			Palette portraitPalette = governmentPortraits[0].Palette;
+			if (palette.Length < 256 || portraitPalette.Length < 256)
+			{
+				return governmentPortraits;
+			}
+
 			for (int i = 144; i < 256; i++)
 			{
-				palette[i] = governmentPortraits[0].Palette[i];
+				palette[i] = portraitPalette[i];
 			}
 
 			return governmentPortraits;
