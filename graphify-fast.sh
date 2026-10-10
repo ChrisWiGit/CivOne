@@ -13,12 +13,14 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 VENV="$SCRIPT_DIR/.venv"
 USE_AI="${GRAPHIFY_AI:-0}"
 AI_BACKEND="${GRAPHIFY_AI_BACKEND:-claude-cli}"
-TARGET="$SCRIPT_DIR"
+TARGETS=("$SCRIPT_DIR")
 for arg in "$@"; do
   case "$arg" in
     --ai) USE_AI=1 ;;
     --no-ai) USE_AI=0 ;;
-    *) TARGET="$arg" ;;
+    both) TARGETS=("$SCRIPT_DIR/src" "$SCRIPT_DIR/api") ;;
+    combined) TARGETS=("$SCRIPT_DIR") ;;
+    *) TARGETS=("$arg") ;;
   esac
 done
 
@@ -51,19 +53,22 @@ ensure_claude_cli() {
   export PATH="$(dirname "$bundled"):$PATH"
 }
 
-TARGET_NAME="$(basename "$(cd "$TARGET" && pwd -P)")"
-if [ "$TARGET_NAME" = "$(basename "$SCRIPT_DIR")" ]; then
-  TARGET_NAME="root"
-fi
-export GRAPHIFY_OUT="${GRAPHIFY_OUT:-$SCRIPT_DIR/graphify-out/$TARGET_NAME}"
-mkdir -p "$GRAPHIFY_OUT"
-
 GRAPHIFY="$(find_graphify)"
-"$GRAPHIFY" update "$TARGET"
-
-if [ "$USE_AI" = "1" ]; then
-  if [ "$AI_BACKEND" = "claude-cli" ]; then
-    ensure_claude_cli
+GRAPHIFY_OUT_OVERRIDE="${GRAPHIFY_OUT:-}"
+for TARGET in "${TARGETS[@]}"; do
+  TARGET_NAME="$(basename "$(cd "$TARGET" && pwd -P)")"
+  if [ "$TARGET_NAME" = "$(basename "$SCRIPT_DIR")" ]; then
+    TARGET_NAME="root"
   fi
-  "$GRAPHIFY" label "$TARGET" --backend="$AI_BACKEND"
-fi
+  export GRAPHIFY_OUT="${GRAPHIFY_OUT_OVERRIDE:-$SCRIPT_DIR/graphify-out/$TARGET_NAME}"
+  mkdir -p "$GRAPHIFY_OUT"
+
+  "$GRAPHIFY" update "$TARGET"
+
+  if [ "$USE_AI" = "1" ]; then
+    if [ "$AI_BACKEND" = "claude-cli" ]; then
+      ensure_claude_cli
+    fi
+    "$GRAPHIFY" label "$TARGET" --backend="$AI_BACKEND"
+  fi
+done

@@ -405,7 +405,8 @@ Read only the top of the matching `GRAPH_REPORT.md` (summary, hubs, god nodes), 
 To find code for a topic, grep the report for a keyword, then query the graph:
 
 ```sh
-.venv/bin/graphify query "how does city production work" --graph graphify-out/src/graph.json
+GRAPHIFY="$(command -v graphify || printf '%s\n' .venv/bin/graphify)"
+"$GRAPHIFY" query "how does city production work" --graph graphify-out/src/graph.json
 ```
 
 `graph.json` is not committed. Generate it locally first.
