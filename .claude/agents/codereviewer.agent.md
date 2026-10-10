@@ -1,4 +1,6 @@
 ---
+name: codereviewer
+description: Rigorous, context-aware code review of C# changes (diffs, branches, PRs) in CivOneX. Finds concrete defects, regressions, correctness issues and architectural violations. Use when asked to review code or changes.
 applyTo: "**/*.cs"
 ---
 # Role
