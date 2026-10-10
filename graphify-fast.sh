@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Builds the graphify code graph without AI (tree-sitter only).
 # Usage: ./graphify-fast.sh [--ai] [path]     (default path: repository root)
-# Output always goes to <repository root>/graphify-out/, where the agent instructions expect it
-# (override with GRAPHIFY_OUT).
+# Output goes to <repository root>/graphify-out/<name of path>/ (e.g. graphify-out/src, graphify-out/api),
+# so runs for different paths do not overwrite each other (override with GRAPHIFY_OUT).
 # --ai (or GRAPHIFY_AI=1) also names the graph communities through the Claude Code CLI,
 # which uses the claude.ai subscription instead of an API key.
 # Optional: GRAPHIFY_AI_BACKEND (claude, openai, gemini, ollama, ...), GRAPHIFY_CLAUDE_CLI_MODEL (sonnet, haiku).
@@ -14,8 +14,6 @@ VENV="$SCRIPT_DIR/.venv"
 USE_AI="${GRAPHIFY_AI:-0}"
 AI_BACKEND="${GRAPHIFY_AI_BACKEND:-claude-cli}"
 TARGET="$SCRIPT_DIR"
-export GRAPHIFY_OUT="${GRAPHIFY_OUT:-$SCRIPT_DIR/graphify-out}"
-
 for arg in "$@"; do
   case "$arg" in
     --ai) USE_AI=1 ;;
@@ -52,6 +50,13 @@ ensure_claude_cli() {
 
   export PATH="$(dirname "$bundled"):$PATH"
 }
+
+TARGET_NAME="$(basename "$(cd "$TARGET" && pwd -P)")"
+if [ "$TARGET_NAME" = "$(basename "$SCRIPT_DIR")" ]; then
+  TARGET_NAME="root"
+fi
+export GRAPHIFY_OUT="${GRAPHIFY_OUT:-$SCRIPT_DIR/graphify-out/$TARGET_NAME}"
+mkdir -p "$GRAPHIFY_OUT"
 
 GRAPHIFY="$(find_graphify)"
 "$GRAPHIFY" update "$TARGET"

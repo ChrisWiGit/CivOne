@@ -1,6 +1,25 @@
 
 # Instructions
 
+## Graphify
+
+Code graphs live in two separate folders:
+
+* `graphify-out/src/` - game and engine code (`GRAPH_REPORT.md`, `graph.json`).
+* `graphify-out/api/` - public API (`GRAPH_REPORT.md`, `graph.json`).
+
+Read only the top of the matching `GRAPH_REPORT.md` (summary, hubs, god nodes), not the whole file (about 67 KB).
+To find code for a topic, grep the report for a keyword, then query the graph:
+
+```sh
+.venv/bin/graphify query "how does city production work" --graph graphify-out/src/graph.json
+```
+
+`graph.json` is not committed. Generate it locally first.
+Regenerate with `./graphify-fast.sh --ai src` and `./graphify-fast.sh --ai api`.
+Only `GRAPH_REPORT.md` is committed; see `.gitignore`.
+The graph is only a map. Read the source files before drawing conclusions.
+
 ## Response Style
 
 * Use Caveman Compression whenever possible.
