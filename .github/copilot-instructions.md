@@ -396,3 +396,20 @@ When searching for files or text, use these alternatives instead:
   - `find . -type d`
 
 Do not use `rg` in commands, scripts, or examples unless explicitly confirmed to be installed.
+
+## Graphify
+
+Code graphs live in `graphify-out/src/` (game and engine code) and `graphify-out/api/` (public API).
+
+Read only the top of the matching `GRAPH_REPORT.md` (summary, hubs, god nodes), not the whole file (about 67 KB).
+To find code for a topic, grep the report for a keyword, then query the graph:
+
+```sh
+GRAPHIFY="$(command -v graphify || printf '%s\n' .venv/bin/graphify)"
+"$GRAPHIFY" query "how does city production work" --graph graphify-out/src/graph.json
+```
+
+`graph.json` is not committed. Generate it locally first.
+Regenerate with `./graphify-fast.sh --ai src` and `./graphify-fast.sh --ai api`.
+Only `GRAPH_REPORT.md` is committed; see `.gitignore`.
+The graph is only a map. Read the source files before drawing conclusions.
