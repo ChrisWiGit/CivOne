@@ -24,5 +24,11 @@ namespace CivOne.Services.EndGame
 				gameService: GameServiceFactory.CreateDefault(),
 				winner: Human);
 		}
+
+		/// <summary>
+		/// Creates the factory for the screens of the end-game sequences.
+		/// </summary>
+		/// <returns>A new <see cref="IEndGameScreenFactory"/> creating the real game screens.</returns>
+		public static IEndGameScreenFactory CreateScreenFactory() => new EndGameScreenFactory();
 	}
 }

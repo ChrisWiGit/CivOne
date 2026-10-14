@@ -9,25 +9,31 @@ namespace CivOne.Services.EndGame
 	{
 		/// <summary>
 		/// Handles the end-game sequence for a conquest victory.
-		/// Shows VictoryScreen, CivilizationScore, TopLeaderScreen, HallOfFame, then returns to credits.
+		/// Shows VictoryScreen, PowerGraph, CivilizationScore, TopLeaderScreen, HallOfFame, then returns to credits.
 		/// </summary>
 		Task HandleConquestAsync();
 
 		/// <summary>
 		/// Handles the end-game sequence for a defeat.
-		/// Shows DefeatScreen, CivilizationScore, TopLeaderScreen, HallOfFame, then returns to credits.
+		/// Shows DefeatScreen, then returns to credits; a defeat has no score, as in the original.
 		/// </summary>
 		Task HandleDefeatAsync();
 
 		/// <summary>
 		/// Handles the end-game sequence for an Alpha Centauri victory.
-		/// Shows SpaceVictory, CivilizationScore, TopLeaderScreen, HallOfFame, then returns to credits.
+		/// Shows SpaceVictory, PowerGraph, CivilizationScore, TopLeaderScreen, HallOfFame, then returns to credits.
 		/// </summary>
 		Task HandleAlphaCentauriAsync();
 
 		/// <summary>
+		/// Handles the end-game sequence when a rival's spaceship reaches Alpha Centauri.
+		/// Shows PowerGraph, CivilizationScore, TopLeaderScreen, HallOfFame, then returns to credits.
+		/// </summary>
+		Task HandleRivalSpaceArrivalAsync();
+
+		/// <summary>
 		/// Handles the end-game sequence for a player retirement.
-		/// Shows CivilizationScore, then HallOfFame, then returns to credits (no TopLeaderScreen).
+		/// Shows PowerGraph, CivilizationScore, TopLeaderScreen, HallOfFame, then returns to credits.
 		/// </summary>
 		Task HandleRetireAsync();
 	}

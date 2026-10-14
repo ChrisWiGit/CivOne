@@ -113,6 +113,7 @@ namespace CivOne
 		private short[] GetResearchProgress() => GetArray<short>(nameof(SaveData.ResearchProgress), 8);
 
 		private ushort[] GetTaxRate() => GetArray<ushort>(nameof(SaveData.TaxRate), 8);
+		private ushort[] GetCivilizationScore() => GetArray<ushort>(nameof(SaveData.CivilizationScore), 8);
 
 		private ushort[] GetScienceRate() => GetArray<ushort>(nameof(SaveData.ScienceRate), 8);
 

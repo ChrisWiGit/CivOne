@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CivOne.Services;
@@ -21,65 +22,93 @@ namespace CivOne.Screens.Reports
 		internal readonly record struct LeaderOrderResult(int RatingPercent, int SelectedLeaderIndex, string SelectedLeaderName, IReadOnlyList<string> OrderedLeaderNames);
 
 		/// <summary>
-		/// Determines the ordered list of historical leaders and maps a civilization rating
-		/// percentage to the corresponding leader.
+		/// Holds the Famous Persons of the original game and maps a civilization rating to one of them.
 		/// </summary>
 		/// <remarks>
-		/// Use <see cref="Calculate(int)"/> to obtain a <see cref="LeaderOrderResult"/> for a rating percent.
+		/// For the person at ascending position <c>i</c> (1-based), the original selects it when <c>(i * i) / 3 &lt; rating</c>
+		/// and keeps the highest match.
+		/// A rating of 0 or less selects nobody, and the original shows no window then.
+		/// See <c>docs/plan-civilizationScore.impl.md</c>, §15.1.
 		/// </remarks>
 		internal sealed class LeaderOrderDelegate(ITranslationService? translationService = null)
 	{
 		private readonly ITranslationService _translationService = translationService ?? TranslationServiceFactory.CreateDefault();
 
-		public LeaderOrderResult Calculate(int ratingPercent)
+		/// <summary>
+		/// Selects the Famous Person a rating exceeds.
+		/// </summary>
+		/// <param name="ratingPercent">The civilization rating.</param>
+		/// <returns>The selected person, or <c>null</c> if the rating exceeds nobody.</returns>
+		public LeaderOrderResult? Calculate(int ratingPercent)
 		{
 			IReadOnlyList<LeaderOrderEntry> orderedEntries = GetLeaderOrder();
-			int selectedLeaderIndex = GetSelectedLeaderIndex(ratingPercent, orderedEntries);
-			string selectedLeaderName = orderedEntries[selectedLeaderIndex].Name;
-			IReadOnlyList<string> orderedLeaderNames = [.. orderedEntries.Select(entry => entry.Name)];
-
-			return new LeaderOrderResult(ratingPercent, selectedLeaderIndex, selectedLeaderName, orderedLeaderNames);
-		}
-
-		public IReadOnlyList<LeaderOrderEntry> GetLeaderOrder()
-		{
-			return
-			[
-				// source: https://civilization.fandom.com/wiki/Hall_of_Fame_(Civ1)
-				new LeaderOrderEntry(_translationService.Translate("Solomon the Wise"), 137),
-				new LeaderOrderEntry(_translationService.Translate("Emperor Augustus"), 129),
-				new LeaderOrderEntry(_translationService.Translate("King Charlemagne"), 111),
-				new LeaderOrderEntry(_translationService.Translate("Thomas Jefferson"), 100),
-				new LeaderOrderEntry(_translationService.Translate("Shogun Tokugawa"), 88),
-				new LeaderOrderEntry(_translationService.Translate("Franklin Delano Roosevelt"), 82),
-				new LeaderOrderEntry(_translationService.Translate("Sulayman the Magnificent"), 66),
-				new LeaderOrderEntry(_translationService.Translate("Winston Churchill"), 59),
-				new LeaderOrderEntry(_translationService.Translate("Cleopatra"), 49),
-				new LeaderOrderEntry(_translationService.Translate("Charles De Gaulle"), 41),
-				new LeaderOrderEntry(_translationService.Translate("Vladimir Lenin"), 36),
-				new LeaderOrderEntry(_translationService.Translate("Otto von Bismarck"), 23),
-				new LeaderOrderEntry(_translationService.Translate("Eric the Red"), 14),
-				new LeaderOrderEntry(_translationService.Translate("Kaiser Wilhelm"), 13),
-				new LeaderOrderEntry(_translationService.Translate("Louis the XVI"), 10),
-				new LeaderOrderEntry(_translationService.Translate("Neville Chamberlain"), 6),
-				new LeaderOrderEntry(_translationService.Translate("Ferdinand Marcos"), 4),
-				new LeaderOrderEntry(_translationService.Translate("Emperor Nero"), 2),
-				new LeaderOrderEntry(_translationService.Translate("Dan Quayle"), 1)
-			];
-		}
-
-		private static int GetSelectedLeaderIndex(int ratingPercent, IReadOnlyList<LeaderOrderEntry> orderedEntries)
-		{
 			for (int i = 0; i < orderedEntries.Count; i++)
 			{
 				if (ratingPercent >= orderedEntries[i].RatingThreshold)
 				{
-					return i;
+					return CreateResult(ratingPercent, i, orderedEntries);
 				}
 			}
 
-			// Fallback to the last leader (Dan Quayle) if the rating percent is below all thresholds.
-			return orderedEntries.Count - 1;
+			return null;
+		}
+
+		/// <summary>
+		/// Selects a Famous Person by its ascending position, for the original's fallback when the score is 0.
+		/// </summary>
+		/// <param name="ascendingIndex">0 for the lowest person (Dan Quayle); values above 19 are capped.</param>
+		/// <param name="ratingPercent">The rating to carry in the result.</param>
+		/// <returns>The selected person, or <c>null</c> if <paramref name="ascendingIndex"/> is negative.</returns>
+		public LeaderOrderResult? SelectByRank(int ascendingIndex, int ratingPercent)
+		{
+			if (ascendingIndex < 0)
+			{
+				return null;
+			}
+
+			IReadOnlyList<LeaderOrderEntry> orderedEntries = GetLeaderOrder();
+			int capped = Math.Min(ascendingIndex, orderedEntries.Count - 1);
+			return CreateResult(ratingPercent, orderedEntries.Count - 1 - capped, orderedEntries);
+		}
+
+		/// <summary>
+		/// Gets the Famous Persons, highest first, each with the lowest rating that selects it.
+		/// </summary>
+		/// <returns>20 entries, from Solomon the Wise down to Dan Quayle.</returns>
+		public IReadOnlyList<LeaderOrderEntry> GetLeaderOrder()
+		{
+			string[] ascending =
+			[
+				_translationService.Translate("Dan Quayle"),
+				_translationService.Translate("Emperor Nero"),
+				_translationService.Translate("Ferdinand Marcos"),
+				_translationService.Translate("Neville Chamberlain"),
+				_translationService.Translate("Louis the XVI"),
+				_translationService.Translate("Kaiser Wilhelm"),
+				_translationService.Translate("Eric the Red"),
+				_translationService.Translate("Otto von Bismarck"),
+				_translationService.Translate("Simon Bolivar"),
+				_translationService.Translate("Vladimir Lenin"),
+				_translationService.Translate("Charles De Gaulle"),
+				_translationService.Translate("Cleopatra"),
+				_translationService.Translate("Winston Churchill"),
+				_translationService.Translate("Suleyman the Magnificent"),
+				_translationService.Translate("Franklin Roosevelt"),
+				_translationService.Translate("Shogun Tokugawa"),
+				_translationService.Translate("Thomas Jefferson"),
+				_translationService.Translate("King Charlemagne"),
+				_translationService.Translate("Emperor Augustus"),
+				_translationService.Translate("Solomon the Wise"),
+			];
+
+			// (i * i) / 3 < rating  <=>  rating >= (i * i) / 3 + 1, with i the 1-based ascending position.
+			return [.. ascending.Select((name, index) => new LeaderOrderEntry(name, ((index + 1) * (index + 1) / 3) + 1)).Reverse()];
+		}
+
+		private static LeaderOrderResult CreateResult(int ratingPercent, int selectedIndex, IReadOnlyList<LeaderOrderEntry> orderedEntries)
+		{
+			IReadOnlyList<string> orderedLeaderNames = [.. orderedEntries.Select(entry => entry.Name)];
+			return new LeaderOrderResult(ratingPercent, selectedIndex, orderedEntries[selectedIndex].Name, orderedLeaderNames);
 		}
 	}
 }

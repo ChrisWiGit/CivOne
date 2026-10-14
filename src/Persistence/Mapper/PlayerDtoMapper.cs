@@ -84,7 +84,6 @@ namespace CivOne.Persistence.Model
 			player.UnitsDestroyedBy = BuildUnitsDestroyedByArray(dto.UnitsDestroyedBy);
 			player.EpicRanking = _valueSanitizer.ClampToUInt16(dto.EpicRanking, nameof(PlayerDtoMapper), nameof(PlayerDto.EpicRanking));
 			player.MilitaryPower = _valueSanitizer.ClampToUInt16(dto.MilitaryPower, nameof(PlayerDtoMapper), nameof(PlayerDto.MilitaryPower));
-			player.CivilizationScore = _valueSanitizer.ClampToUInt16(dto.CivilizationScore, nameof(PlayerDtoMapper), nameof(PlayerDto.CivilizationScore));
 			player.Government = _governmentResolver.ResolveById(dto.Government);
 
 			// Spaceship state

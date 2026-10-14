@@ -27,6 +27,34 @@ namespace CivOne.UnitTests.Persistence
 		}
 
 		[Fact]
+		public void CivilizationScoreRoundtripsAtOffset1864()
+		{
+			// Arrange
+			using var _testee = new SaveDataAdapter();
+			ushort[] expected = [101, 202, 303, 404, 505, 606, 707, 808];
+
+			// Act
+			_testee.CivilizationScore = expected;
+			byte[] bytes = _testee.GetBytes();
+			using var actualAdapter = SaveDataAdapter.Load(bytes);
+
+			// Assert
+			Assert.Equal(expected, actualAdapter.CivilizationScore);
+			for (int slot = 0; slot < expected.Length; slot++)
+			{
+				Assert.Equal(expected[slot], BitConverter.ToUInt16(bytes, 1864 + (slot * 2)));
+			}
+		}
+
+		[Fact]
+		public void CivilizationScoreCollapseWritesHumanScoreToSlotZeroAndCitySumsToTheRest()
+		{
+			ushort[] actual = new CivOne.Services.Score.SveCivilizationScoreDelegate().Collapse(1234, [99, 10, -5, 40_000, 7]);
+
+			Assert.Equal([1234, 10, 0, 32_767, 7, 0, 0, 0], actual);
+		}
+
+		[Fact]
 		public void CitiesSetterPreservesVisibleSizeInBinarySaveData()
 		{
 			// Arrange

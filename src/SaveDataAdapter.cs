@@ -195,6 +195,16 @@ namespace CivOne
 			set => SetTaxRate(value);
 		}
 
+		/// <summary>
+		/// Gets or sets the score block, 8 slots at offset 1864.
+		/// The original uses it as scratch space; CivOneX writes the human score to slot 0 on save and never reads it back.
+		/// </summary>
+		public ushort[] CivilizationScore
+		{
+			get => GetCivilizationScore();
+			set => SetCivilizationScore(value);
+		}
+
 		public ushort[] ScienceRate
 		{
 			get => GetScienceRate();

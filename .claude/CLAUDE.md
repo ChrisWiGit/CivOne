@@ -108,6 +108,15 @@ Do not report findings that only swap one name for the other in these places.
 * Avoid jargon unless necessary.
 * Briefly explain technical terms when used.
 
+### No reverse-engineering references in code
+
+Code comments and XML documentation must not point to reverse-engineered sources of the original game.
+Do not write function or variable names (`F0_1238_14a3_DrawMiniPalace`, `Var_70e2`), segment or overlay files
+with line numbers (`GameEngine.cs:440-462`, `Overlay_20.cs`, `Segment_1238.cs`), memory addresses (`0x1238:0x1569`)
+or the `OCO` (OpenCivOne) abbreviation.
+Describe the behavior itself instead (formula, order, quirks), e.g. "like the original game".
+Such references belong in `docs/` analysis notes only.
+
 * Use dependency injection only.
 * Never instantiate services manually with `new`.
 * Avoid Service Locator.
@@ -215,6 +224,34 @@ If the concrete class implementing the new interface (e.g. `Map : IMapEditor`) h
 * Prefer a service when behavior represents a reusable domain capability.
 * If a full service is overkill, prefer a dedicated delegate class instead of a helper/static class. See [Delegate chapter](#delegate-pattern).
 * Keep behavior behind clear abstractions and keep calling classes focused on orchestration.
+
+### Avoid Over-Splitting
+
+The rules above are tools, not a quota. Splitting too far is a code smell as well:
+every extra type, interface and factory costs a file, a hop when reading, and a place to keep in sync.
+
+Create a new type (service, delegate, interface, factory, adapter) only if **at least one** of these holds:
+
+* It has more than one caller.
+* It holds non-trivial logic: a real algorithm, state, or several branches. A one-line formula is not.
+* A test needs it in isolation, e.g. as a fake or because the logic cannot be tested through its caller.
+* It keeps new behavior out of a CC0 file (see [Licensing](#licensing-cc0-vs-mit)).
+
+Otherwise use a private method in the class that needs it. A `private static` method inside a class is fine;
+the code smell is a *class* that only holds static helpers.
+
+Further limits:
+
+* **Interfaces** only where a second implementation or a test fake actually exists.
+  Do not add an interface "just in case".
+* **Factories**: add a method to an existing, related factory instead of a new factory with a single method.
+  A factory is not needed for a type that only one other class creates.
+* **No extra layers.** Do not wrap an adapter in another adapter or source object
+  (e.g. an `IXxxSource` whose only job is to create two other adapters).
+  Build the adapters where they are used.
+* **No settings for edge cases.** Do not make a behavior switchable (setting, enum, menu entry, delegate type)
+  unless the user asks for it. Implement the original game's behavior.
+* Merge services that are always used together and share the same dependencies into one.
 
 ### Code Style
 
@@ -386,6 +423,8 @@ Apply when:
 * callbacks, handlers, commands, or strategies are needed
 * new behavior would otherwise be added to a CC0 file (see [Licensing](#licensing-cc0-vs-mit))
 * the user explicitly requests delegate-based refactoring
+
+Do not apply when the behavior is a few lines used in one place; see [Avoid Over-Splitting](#avoid-over-splitting).
 
 ### Rules
 

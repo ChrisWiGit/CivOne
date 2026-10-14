@@ -351,9 +351,14 @@ namespace CivOne.Units
 			return HandleConfront(moveTarget, relX, relY, Movement);
 		}
 
-		internal virtual void RegisterHostileAction()
+		/// <summary>
+		/// Reports an attack on <paramref name="target"/> to the peace counter.
+		/// </summary>
+		/// <param name="target">The attacked tile; its units, or else its city, name the defender.</param>
+		internal virtual void RegisterHostileAction(ITile target)
 		{
-			Game.RegisterHostileAction();
+			int defender = target.Units.Length > 0 ? target.Units[0].Owner : target.City?.CityOwnerPlayerIndex ?? -1;
+			Game.RegisterHostileAction(Owner, defender);
 		}
 
 		/// <summary>
@@ -382,7 +387,7 @@ namespace CivOne.Units
 		/// </remarks>
 		internal virtual bool HandleConfront(ITile moveTarget, int relX, int relY, MoveUnit? movement)
 		{
-			RegisterHostileAction();
+			RegisterHostileAction(moveTarget);
 			if (IsCapturingEnemyCity(moveTarget))
 			{
 				if (!TryHandleCityCapture(moveTarget))

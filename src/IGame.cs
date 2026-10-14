@@ -8,7 +8,7 @@ namespace CivOne
 	public interface IGame :
 		IGameUnitsCommand, IGameUnitsQuery,
 		IGameWonderQuery, IGamePlayerQuery,
-		IGameTurnQuery, IGameSettings, IGameBarbarianSettings
+		IGameTurnQuery, IGameSettings, IGameBarbarianSettings, IGamePeaceQuery
 	{
 	}
 
@@ -21,6 +21,17 @@ namespace CivOne
 		/// Gets the barbarian sources active in this game.
 		/// </summary>
 		BarbarianActivity BarbarianActivity { get; }
+	}
+
+	/// <summary>
+	/// Reads the global peace counter of the running game.
+	/// </summary>
+	public interface IGamePeaceQuery
+	{
+		/// <summary>
+		/// Gets the number of consecutive peaceful turns.
+		/// </summary>
+		ushort PeaceTurns { get; }
 	}
 
 	public interface IGameTurnQuery

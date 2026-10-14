@@ -84,5 +84,11 @@ namespace CivOne.Services.SpaceShip
 		public bool CanLaunch() => _launchRules.CanLaunch(_player);
 
 		public SpaceShipScreenData GetScreenData() => _screenDataFactory.Create(_player, CanLaunch());
+
+		public int SuccessRate()
+		{
+			bool complete = _player.SpaceShipLaunchYear != 0 || CanLaunch();
+			return _screenDataFactory.Create(_player, complete).SuccessProbabilityPercent;
+		}
 	}
 }

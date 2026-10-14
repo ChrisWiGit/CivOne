@@ -7,6 +7,11 @@ If you want to add a change, do not add technical details, but describe the chan
 
 ## History
 
+* Feature: The civilization score now follows the original game's formula and is always up to date.
+  * The score screen (F9) uses the original layout.
+  * Top Leader, Hall of Fame, palace upgrades and the historian all use the same score.
+  * AI civilizations get mini palaces in the historian screen, based on their score.
+  * The end-game screens appear in the same order as in the original game.
 * Fix: Reset peace counter to 0 when a nuclear strike occurs.
   * This differs from the original game, where the peace counter is only reset during combat and not by nuclear strikes.
 * Rename to CivOneX.

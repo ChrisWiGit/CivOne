@@ -16,8 +16,6 @@ namespace CivOne
 
 		ushort IGameSnapshotSource.AnthologyTurn => _anthologyTurn;
 
-		ushort IGameSnapshotSource.PeaceTurns => _peaceTurns;
-
 		public ushort PlayerFutureTech => HumanPlayer?.FutureTechCount ?? _playerFutureTech;
 
 		bool IGameSnapshotSource.DisableBuddyCivilizationRespawn => DisableBuddyCivilizationRespawn;

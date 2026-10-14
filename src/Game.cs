@@ -29,7 +29,9 @@ using CivOne.Services;
 using CivOne.Services.EndGame;
 using CivOne.Services.GlobalWarming;
 using CivOne.Services.Palace;
+using CivOne.Services.Peace;
 using CivOne.Services.Random;
+using CivOne.Services.Score;
 using CivOne.Services.SpaceShip;
 using CivOne.Sound;
 using CivOne.Tasks;
@@ -61,10 +63,11 @@ namespace CivOne
 		private int _activeUnit;
 
 		private ushort _anthologyTurn;
-		private ushort _peaceTurns;
 		private ushort _playerFutureTech;
 		private bool _disableBuddyCivilizationRespawn;
-		private bool _hostileActionOccurred;
+		private IPeaceTurnService? _peaceTurnService;
+		private readonly WorldConquestDelegate _worldConquest = new();
+		private ISpaceShipArrivalService? _spaceShipArrivalService;
 		private bool _loadedFromYamlSaveSource;
 		private (short X, short Y) _pendingMapPositionRestore = (-1, -1);
 
@@ -307,9 +310,29 @@ namespace CivOne
 			}
 		}
 
-		internal void RegisterHostileAction()
+		private IPeaceTurnService PeaceTurnService => _peaceTurnService ??= CivilizationScoreServiceFactory.CreatePeaceTurnService();
+
+		private ISpaceShipArrivalService SpaceShipArrivalService => _spaceShipArrivalService ??= SpaceShipServiceFactoryProvider.CreateArrivalService();
+
+		/// <summary>
+		/// Checks whether the human player has eliminated every other civilization, for the world-conquest score bonus.
+		/// </summary>
+		/// <returns><c>true</c> once only the human player and the barbarians remain.</returns>
+		internal bool IsWorldConquered() => _worldConquest.IsConquered(_players.Select(player => new PlayerConquestParticipant(player)));
+
+		/// <summary>
+		/// Gets the number of consecutive peaceful turns, read by the civilization score.
+		/// </summary>
+		public ushort PeaceTurns => PeaceTurnService.PeaceTurns;
+
+		/// <summary>
+		/// Records a hostile action that breaks the peace streak at the next turn wrap.
+		/// </summary>
+		/// <param name="attackerPlayer">Slot index of the attacking civilization.</param>
+		/// <param name="defenderPlayer">Slot index of the defending civilization, or <c>-1</c> if there is none.</param>
+		internal void RegisterHostileAction(int attackerPlayer, int defenderPlayer)
 		{
-			_hostileActionOccurred = true;
+			PeaceTurnService.RegisterCombat(attackerPlayer, defenderPlayer);
 		}
 
 		private void PlayerDestroyed(object? sender, EventArgs args)
@@ -427,13 +450,16 @@ namespace CivOne
 		internal readonly IPalaceUpgradeService _palaceUpgradeService;
 		internal readonly ICivilizationRankingTriggerService _civilizationRankingTriggerService;
 
-		private readonly struct PlayerGameStateAdapter(Player player) : IPlayerGameState
+		private readonly struct PlayerGameStateAdapter(Player player, int difficulty, bool palaceOption) : IPlayerGameState
 		{
 			private readonly Player _player = player;
 
 			public int CivilizationScore => ((Persistence.Game.IPlayer)_player).CivilizationScore;
 			public IPalaceData Palace => _player.Palace;
 			public bool IsHuman => _player.IsHuman;
+			public int Difficulty => difficulty;
+			public bool PalaceOptionEnabled => palaceOption;
+			public bool HasPalaceCity => _player.Cities.Any(city => city.HasBuilding<Buildings.Palace>());
 		}
 
 		/// <summary>
@@ -451,11 +477,15 @@ namespace CivOne
 				player.HandleExtinction();
 			}
 
+			bool turnWrapped = false;
 			if (++_currentPlayer >= _players.Length)
 			{
+				turnWrapped = true;
 				_currentPlayer = 0;
 				GameTurn++;
-				AdvancePeaceTurns();
+				PeaceTurnService.AdvanceTurn(Common.TurnToYear(GameTurn));
+				// Evaluated every turn so the latched variant notices the moment the last rival is gone.
+				_ = IsWorldConquered();
 				if (AutoSave)
 				{
 					var sveCompatibility = GetSveSaveCompatibility();
@@ -508,20 +538,11 @@ namespace CivOne
 				HandleGlobalWarming();
 			}
 
-			// Palace upgrade trigger check for all players (trigger evaluation is player-independent)
-			if (_palaceUpgradeService != null)
+			// As in the original, the palace upgrade is checked once per turn, for the human player only.
+			if (turnWrapped && _palaceUpgradeService != null && HumanPlayer != null
+				&& _palaceUpgradeService.ShouldShowPalaceUpgrade(new PlayerGameStateAdapter(HumanPlayer, Difficulty, Palace)))
 			{
-				foreach (Player player in _players.Where(x => x.Civilization is not Barbarian))
-				{
-					if (_palaceUpgradeService.ShouldShowPalaceUpgrade(new PlayerGameStateAdapter(player)))
-					{
-						// Enqueue show-palace action only for human player (AI palace upgrades handled separately in future)
-						if (player.IsHuman)
-						{
-							GameTask.Enqueue(Show.BuildPalace());
-						}
-					}
-				}
+				GameTask.Enqueue(Show.BuildPalace());
 			}
 
 			foreach (IUnit unit in _units.Where(u => u.Owner == _currentPlayer))
@@ -550,10 +571,7 @@ namespace CivOne
 			int currentYear = Common.TurnToYear(GameTurn);
 			foreach (Player player in _players.Where(x => x.Civilization is not Barbarian && x.SpaceShipLaunchYear != 0))
 			{
-				ISpaceShipService shipService = SpaceShipServiceFactoryProvider.GetInstance().Create(player);
-				SpaceShipScreenData screenData = shipService.GetScreenData();
-				int arrivalYear = player.SpaceShipLaunchYear + (int)Math.Ceiling(screenData.FlightTimeYears);
-				if (currentYear < arrivalYear)
+				if (!SpaceShipArrivalService.HasArrived(player, currentYear))
 				{
 					continue;
 				}
@@ -568,7 +586,7 @@ namespace CivOne
 				else
 				{
 					GameTask.Enqueue(Message.Newspaper(null, TranslateFormattedArray("{0} space ship\nhas reached\nAlpha Centauri!", player.TribeName)));
-					_ = EndGameServiceFactory.CreateForHuman().HandleDefeatAsync();
+					_ = EndGameServiceFactory.CreateForHuman().HandleRivalSpaceArrivalAsync();
 				}
 
 				return false;
@@ -588,21 +606,6 @@ namespace CivOne
 			_globalWarmingService.RefreshPollutionState();
 
 			GameTask.Enqueue(Message.Newspaper(null, TranslateArray("Global temperature\nrises! Icecaps melt.\nSevere Drought.")));
-		}
-
-		private void AdvancePeaceTurns()
-		{
-			if (_hostileActionOccurred)
-			{
-				_peaceTurns = 0;
-				_hostileActionOccurred = false;
-				return;
-			}
-
-			if (_peaceTurns < ushort.MaxValue)
-			{
-				_peaceTurns++;
-			}
 		}
 
 		private void SaveCosAutoSave()

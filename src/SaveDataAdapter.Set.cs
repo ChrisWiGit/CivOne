@@ -120,6 +120,7 @@ namespace CivOne
 		}
 
 		private void SetTaxRate(ushort[] values) => SetArray(nameof(SaveData.TaxRate), values);
+		private void SetCivilizationScore(ushort[] values) => SetArray(nameof(SaveData.CivilizationScore), values);
 
 		private void SetScienceRate(ushort[] values) => SetArray(nameof(SaveData.ScienceRate), values);
 

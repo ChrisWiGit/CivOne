@@ -228,12 +228,6 @@ namespace CivOne
 			set => _militaryPower = value;
 		}
 
-		ushort IPlayerRestorable.CivilizationScore
-		{
-			get => _civilizationScore;
-			set => _civilizationScore = value;
-		}
-
 		IGovernment IPlayerRestorable.Government
 		{
 			get => _government;

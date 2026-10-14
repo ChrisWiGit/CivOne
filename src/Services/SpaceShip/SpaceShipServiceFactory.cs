@@ -14,7 +14,7 @@ namespace CivOne.Services.SpaceShip
 		private readonly ISpaceShipLaunchRules _launchRules = launchRules ?? throw new ArgumentNullException(nameof(launchRules));
 		private readonly ISpaceShipScreenDataFactory _screenDataFactory = screenDataFactory ?? throw new ArgumentNullException(nameof(screenDataFactory));
 
-		public ISpaceShipService Create(Player player)
+		public ISpaceShipService Create(IPlayerSpaceRace player)
 		{
 			ArgumentNullException.ThrowIfNull(player);
 			return new SpaceShipService(player, _placementRules, _launchRules, _screenDataFactory);
@@ -50,5 +50,11 @@ namespace CivOne.Services.SpaceShip
 
 			return _debugInstance;
 		}
+
+		/// <summary>
+		/// Creates the service that decides when a launched spaceship arrives and how likely it succeeds.
+		/// </summary>
+		/// <returns>A new <see cref="ISpaceShipArrivalService"/> using the production spaceship rules.</returns>
+		public static ISpaceShipArrivalService CreateArrivalService() => new SpaceShipArrivalService();
 	}
 }

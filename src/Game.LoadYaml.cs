@@ -149,7 +149,7 @@ namespace CivOne
 		private void InitializeGameState(GameState state)
 		{
 			_anthologyTurn = state.AnthologyTurn;
-			_peaceTurns = state.PeaceTurns;
+			PeaceTurnService.Restore(state.PeaceTurns);
 			_playerFutureTech = HumanPlayer?.FutureTechCount ?? state.PlayerFutureTech;
 			DisableBuddyCivilizationRespawn = state.DisableBuddyCivilizationRespawn;
 			// Savegames written before this setting existed carry no value, so the global one applies.

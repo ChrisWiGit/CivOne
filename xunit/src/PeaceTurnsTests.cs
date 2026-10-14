@@ -20,7 +20,7 @@ namespace CivOne.src
 			// Arrange
 			var game = Game.Instance;
 			SetPeaceTurns(game, 3);
-			var expected = (ushort)4;
+			var expected = Common.TurnToYear((ushort)(game.GameTurn + 1)) > 0 ? (ushort)4 : (ushort)3;
 
 			// Act
 			AdvanceToNextTurn(game);
@@ -36,8 +36,9 @@ namespace CivOne.src
 			// Arrange
 			var game = Game.Instance;
 			SetPeaceTurns(game, 5);
-			game.RegisterHostileAction();
-			var expected = (ushort)0;
+			game.RegisterHostileAction(1, 2);
+			// Reset and increment share the turn wrap, so the next turn already reads 1 in AD years.
+			var expected = Common.TurnToYear((ushort)(game.GameTurn + 1)) > 0 ? (ushort)1 : (ushort)0;
 
 			// Act
 			AdvanceToNextTurn(game);
@@ -59,9 +60,11 @@ namespace CivOne.src
 
 		private static void SetPeaceTurns(Game game, ushort value)
 		{
-			var field = typeof(Game).GetField("_peaceTurns", BindingFlags.Instance | BindingFlags.NonPublic);
-			Assert.NotNull(field);
-			field!.SetValue(game, value);
+			var property = typeof(Game).GetProperty("PeaceTurnService", BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(property);
+			var service = property!.GetValue(game) as CivOne.Services.Peace.IPeaceTurnService;
+			Assert.NotNull(service);
+			service!.Restore(value);
 		}
 	}
 }
