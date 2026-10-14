@@ -60,7 +60,7 @@ namespace CivOne.UnitTests
 		}
 
 		[Fact]
-		public void AddEntryWhenMoreThanFiveEntriesKeepsTopFiveByScore()
+		public void AddEntryWhenMoreThanFiveEntriesKeepsTopFiveByRating()
 		{
 			Assert.NotNull(_testee); // to satisfy nullable reference type analysis
 
@@ -78,7 +78,40 @@ namespace CivOne.UnitTests
 			Assert.Equal(50, actual[0].Score);
 			Assert.Equal(10, actual[^1].Score);
 			Assert.DoesNotContain(actual, entry => entry.Score == 0);
-			Assert.True(actual.SequenceEqual(actual.OrderByDescending(entry => entry.Score)));
+			Assert.True(actual.SequenceEqual(actual.OrderByDescending(entry => entry.RatingPercent)));
+		}
+
+		[Fact]
+		public void AddEntryWhenRatingOnlyEqualsLowestKeptEntryIsNotAdded()
+		{
+			Assert.NotNull(_testee); // to satisfy nullable reference type analysis
+
+			// Arrange
+			for (int i = 1; i <= 5; i++)
+			{
+				_testee.AddEntry(_storageDirectory, CreateEntry($"Leader {i}", i * 10));
+			}
+
+			// Act: same rating as the lowest kept entry, but a higher score.
+			var actual = _testee.AddEntry(_storageDirectory, CreateEntry("Tie", score: 999, ratingPercent: 10));
+
+			// Assert
+			Assert.DoesNotContain(actual, entry => entry.LeaderName == "Tie");
+		}
+
+		[Fact]
+		public void AddEntryWhenRatingHigherButScoreLowerIsRankedByRating()
+		{
+			Assert.NotNull(_testee); // to satisfy nullable reference type analysis
+
+			// Arrange
+			_testee.AddEntry(_storageDirectory, CreateEntry("High score", score: 500, ratingPercent: 20));
+
+			// Act: a higher difficulty gives a better rating for a lower score.
+			var actual = _testee.AddEntry(_storageDirectory, CreateEntry("High rating", score: 100, ratingPercent: 40));
+
+			// Assert
+			Assert.Equal("High rating", actual[0].LeaderName);
 		}
 
 		[Fact]
@@ -108,7 +141,7 @@ namespace CivOne.UnitTests
 			}
 		}
 
-		private static HallOfFameEntry CreateEntry(string leaderName, int score)
+		private static HallOfFameEntry CreateEntry(string leaderName, int score, int? ratingPercent = null)
 		{
 			return new HallOfFameEntry(
 				LeaderName: leaderName,
@@ -118,7 +151,7 @@ namespace CivOne.UnitTests
 				Population: 1234,
 				Score: score,
 				RatingRankLabel: "Warlord",
-				RatingPercent: 20,
+				RatingPercent: ratingPercent ?? score,
 				CreatedAtUtc: DateTimeOffset.UtcNow.AddMinutes(score));
 		}
 	}

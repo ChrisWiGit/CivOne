@@ -60,12 +60,16 @@ namespace CivOne.Services.HallOfFame
 			return [];
 		}
 
+		/// <summary>
+		/// Sorts by rating like the original game. On equal ratings the older entry stays ahead,
+		/// so a new entry only gets in when its rating is strictly greater than one of the kept entries.
+		/// </summary>
 		private static IReadOnlyList<HallOfFameEntry> Normalize(IReadOnlyList<HallOfFameEntry> entries)
 		{
 			return [.. entries
 				.Where(entry => entry != null)
-				.OrderByDescending(entry => entry.Score)
-				.ThenByDescending(entry => entry.CreatedAtUtc)
+				.OrderByDescending(entry => entry.RatingPercent)
+				.ThenBy(entry => entry.CreatedAtUtc)
 				.Take(MaxEntries)];
 		}
 
