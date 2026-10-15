@@ -509,6 +509,12 @@ namespace CivOne.Units
 				return;
 			}
 
+			if (capturedCity.HasBuilding<Palace>())
+			{
+				// Like the original, losing the capital loses the spaceship program.
+				Game.LoseSpaceShip(previousOwner);
+			}
+
 			RemovePalaceFromCapturedCity(capturedCity);
 			ResetCapturedCityProduction(capturedCity);
 			DisbandCapturedCityUnits(capturedCity);

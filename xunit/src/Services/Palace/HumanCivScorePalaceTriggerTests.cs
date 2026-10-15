@@ -39,6 +39,12 @@ namespace CivOne.UnitTests.Services.Palace
 		}
 
 		[Fact]
+		public void ScoringCompletedDoesNotTrigger()
+		{
+			Assert.False(_trigger.ShouldTrigger(new FakeState { Score = 1_000, ScoringCompleted = true }));
+		}
+
+		[Fact]
 		public void NoPalaceCityDoesNotTrigger()
 		{
 			Assert.False(_trigger.ShouldTrigger(new FakeState { Score = 1_000, HasPalaceCity = false }));
@@ -69,6 +75,7 @@ namespace CivOne.UnitTests.Services.Palace
 			public bool IsHuman { get; init; } = true;
 			public int Difficulty { get; init; } = 3;
 			public bool PalaceOptionEnabled { get; init; } = true;
+			public bool ScoringCompleted { get; init; }
 			public bool HasPalaceCity { get; init; } = true;
 		}
 

@@ -1,16 +1,16 @@
 using System;
+using CivOne.Enums;
 
 namespace CivOne.Services.SpaceShip
 {
 	/// <summary>
-	/// Default <see cref="ISpaceShipArrivalService"/>: a ship arrives in <c>LaunchYear + Ceiling(FlightTimeYears)</c>.
+	/// Default <see cref="ISpaceShipArrivalService"/>: like the original game, the arrival year is stored at launch
+	/// as <c>LaunchYear + flightTenths / 10</c>, cut to whole years, and the ship arrives in the turn that reaches or
+	/// steps over that year.
 	/// </summary>
 	/// <remarks>
-	/// The original game stores a truncated arrival year at launch and advances the calendar in 1-year steps
-	/// between 1750 and 1850 while a ship is in flight, so it tests <c>ETA == Year</c>.
-	/// CivOneX derives the arrival year and keeps 2-year steps, so an equality test could be skipped over.
-	/// <see cref="ArrivedThisTurn"/> therefore checks that the arrival year falls into the span of the turn.
-	/// See <c>docs/plan-civilizationScore.impl.md</c>, deviation 7 in §8, and <c>docs/plan-calendar.impl.md</c>.
+	/// The calendar advances by 1 year between 1750 and 1850 while a ship is in flight, so the arrival year is always
+	/// visited. See <c>docs/plan-calendar.impl.md</c>.
 	/// </remarks>
 	/// <param name="spaceShipServiceFactory">Creates the per-player spaceship service; <c>null</c> uses the production factory.</param>
 	/// <param name="calendarService">Converts turns to years; <c>null</c> uses the current calendar.</param>
@@ -18,6 +18,8 @@ namespace CivOne.Services.SpaceShip
 		ISpaceShipServiceFactory? spaceShipServiceFactory = null,
 		IGameCalendarService? calendarService = null) : ISpaceShipArrivalService
 	{
+		private const short NoArrival = -1;
+
 		private readonly ISpaceShipServiceFactory? _spaceShipServiceFactory = spaceShipServiceFactory;
 		private readonly IGameCalendarService? _calendarService = calendarService;
 
@@ -30,13 +32,68 @@ namespace CivOne.Services.SpaceShip
 		{
 			ArgumentNullException.ThrowIfNull(player);
 
-			if (player.SpaceShipLaunchYear == 0)
+			if (!IsInFlight(player))
 			{
 				return null;
 			}
 
+			return player.SpaceShipEtaYear;
+		}
+
+		/// <inheritdoc />
+		public void Launch(IPlayerSpaceRace player, int year)
+		{
+			ArgumentNullException.ThrowIfNull(player);
+
 			SpaceShipScreenData screenData = SpaceShipServiceFactory.Create(player).GetScreenData();
-			return player.SpaceShipLaunchYear + (int)Math.Ceiling(screenData.FlightTimeYears);
+			int flightTenths = (int)Math.Round(screenData.FlightTimeYears * 10);
+
+			player.SpaceShipLaunchYear = (short)year;
+			player.SpaceShipEtaYear = (short)(year + (flightTenths / 10));
+		}
+
+		/// <inheritdoc />
+		public void CancelLaunch(IPlayerSpaceRace player)
+		{
+			ArgumentNullException.ThrowIfNull(player);
+
+			player.SpaceShipLaunchYear = 0;
+			player.SpaceShipEtaYear = NoArrival;
+		}
+
+		/// <inheritdoc />
+		public SpaceShipLoss LoseShip(IPlayerSpaceRace player)
+		{
+			ArgumentNullException.ThrowIfNull(player);
+
+			SpaceShipLoss loss = SpaceShipLoss.None;
+			if (IsInFlight(player))
+			{
+				loss = SpaceShipLoss.ReturnsToEarth;
+			}
+			else if (HasParts(player))
+			{
+				loss = SpaceShipLoss.ConstructionCancelled;
+			}
+
+			SpaceShipComponentType[,]? grid = player.SpaceShipGrid;
+			if (grid != null)
+			{
+				player.SpaceShipGrid = new SpaceShipComponentType[grid.GetLength(0), grid.GetLength(1)];
+			}
+
+			player.SpaceShipPopulation = 0;
+			CancelLaunch(player);
+			return loss;
+		}
+
+		/// <inheritdoc />
+		public bool IsInFlight(IPlayerSpaceRace player)
+		{
+			ArgumentNullException.ThrowIfNull(player);
+
+			// -1 means no arrival year; a BC arrival year is negative but valid.
+			return player.SpaceShipLaunchYear != 0 && player.SpaceShipEtaYear != NoArrival;
 		}
 
 		/// <inheritdoc />
@@ -55,9 +112,32 @@ namespace CivOne.Services.SpaceShip
 				return false;
 			}
 
+			// Deviation from the original, which tests ETA == Year: a ship also arrives when the turn steps over its
+			// arrival year. With 1-year steps (1750-1850 during a flight, and from 1850) both tests are the same; the
+			// original simply never had a ship in flight during larger steps. A ship launched earlier, e.g. through
+			// the debug menu, would otherwise never arrive.
 			int year = CalendarService.TurnToYear(turn);
 			int previousYear = turn == 0 ? int.MinValue : CalendarService.TurnToYear((ushort)(turn - 1));
 			return previousYear < arrivalYear.Value && arrivalYear.Value <= year;
+		}
+
+		private static bool HasParts(IPlayerSpaceRace player)
+		{
+			SpaceShipComponentType[,]? grid = player.SpaceShipGrid;
+			if (grid == null)
+			{
+				return false;
+			}
+
+			foreach (SpaceShipComponentType part in grid)
+			{
+				if (part != SpaceShipComponentType.Empty)
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		/// <inheritdoc />

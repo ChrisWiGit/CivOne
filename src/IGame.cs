@@ -8,7 +8,7 @@ namespace CivOne
 	public interface IGame :
 		IGameUnitsCommand, IGameUnitsQuery,
 		IGameWonderQuery, IGamePlayerQuery,
-		IGameTurnQuery, IGameSettings, IGameBarbarianSettings, IGamePeaceQuery
+		IGameTurnQuery, IGameSettings, IGameBarbarianSettings, IGamePeaceQuery, IGameSoundOption
 	{
 	}
 
@@ -32,6 +32,17 @@ namespace CivOne
 		/// Gets the number of consecutive peaceful turns.
 		/// </summary>
 		ushort PeaceTurns { get; }
+	}
+
+	/// <summary>
+	/// Reads the in-game sound option of the running game.
+	/// </summary>
+	public interface IGameSoundOption
+	{
+		/// <summary>
+		/// Gets whether sound is switched on in the game options.
+		/// </summary>
+		bool Sound { get; }
 	}
 
 	public interface IGameTurnQuery

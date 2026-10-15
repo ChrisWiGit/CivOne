@@ -81,6 +81,7 @@ namespace CivOne
 		internal SpaceShipComponentType[,] SpaceShipGrid { get; set; } = new SpaceShipComponentType[SpaceShipSlotBlueprintFactoryProvider.CanonicalGridWidth, SpaceShipSlotBlueprintFactoryProvider.CanonicalGridHeight];
 		internal ushort SpaceShipPopulation { get; set; }
 		internal short SpaceShipLaunchYear { get; set; }
+		internal short SpaceShipEtaYear { get; set; } = -1;
 		
 		public bool AnarchyDespotism => Game.Started && (Government is Anarchy || Government is Despotism);
 
@@ -192,7 +193,7 @@ namespace CivOne
 		{
 			get
 			{
-				short cost = (short)((Game.Difficulty + 3) * 2 * (_advances.Count + 1) * (Common.TurnToYear(Game.GameTurn) > 0 ? 2 : 1));
+				short cost = (short)((Game.Difficulty + 3) * 2 * (_advances.Count + 1) * (GameCalendarServiceFactory.Current.TurnToYear(Game.GameTurn) > 0 ? 2 : 1));
 				if (cost < 12)
 					return 12;
 				return cost;
@@ -249,6 +250,12 @@ namespace CivOne
 		{
 			get => SpaceShipLaunchYear;
 			set => SpaceShipLaunchYear = value;
+		}
+
+		short IPlayerSpaceRace.SpaceShipEtaYear
+		{
+			get => SpaceShipEtaYear;
+			set => SpaceShipEtaYear = value;
 		}
 
 		bool IPlayerSpaceRace.HasSpaceFlightAdvance() => HasAdvance<SpaceFlight>();

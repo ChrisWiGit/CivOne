@@ -35,6 +35,12 @@ namespace CivOne.Services.SpaceShip
 		SpaceShipComponentType[,] SpaceShipGrid { get; set; }
 		ushort SpaceShipPopulation { get; set; }
 		short SpaceShipLaunchYear { get; set; }
+
+		/// <summary>
+		/// Gets or sets the year in which the launched spaceship arrives; <c>-1</c> if no ship is in flight.
+		/// </summary>
+		short SpaceShipEtaYear { get; set; }
+
 		bool HasSpaceFlightAdvance();
 		bool HasPlasticsAdvance();
 		bool HasRoboticsAdvance();

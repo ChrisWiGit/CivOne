@@ -60,6 +60,7 @@ namespace CivOne.Persistence.Game
 		SpaceShipComponentType[,] SpaceShipGrid { get; set; }
 		ushort SpaceShipPopulation { get; set; }
 		short SpaceShipLaunchYear { get; set; }
+		short SpaceShipEtaYear { get; set; }
 		new List<ICity> Cities { get; set; }
 	}
 }

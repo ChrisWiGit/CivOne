@@ -138,6 +138,7 @@ namespace CivOne
 			gameData.OpponentCount = CVS.CheckedUInt16(_players.Length - 2, nameof(Game), "Save.OpponentCount");
 			gameData.PeaceTurns = PeaceTurns;
 			gameData.PlayerFutureTech = HumanPlayer?.FutureTechCount ?? _playerFutureTech;
+			StoreSpaceRace(gameData);
 			gameData.ReplayData = [.. _replayData];
 			GlobalWarmingServiceFactory.CreateGlobalWarmingStoreService(_globalWarmingService, _valueSanitizer).Store(gameData);
 			File.WriteAllBytes(sveFile, gameData.GetBytes());
@@ -206,6 +207,7 @@ namespace CivOne
 		
 			_anthologyTurn = gameData.NextAnthologyTurn;
 			PeaceTurnService.Restore(gameData.PeaceTurns);
+			RestoreSpaceRace(gameData);
 			_playerFutureTech = gameData.PlayerFutureTech;
 			HumanPlayer.FutureTechCount = _playerFutureTech;
 

@@ -278,7 +278,7 @@ namespace CivOne.Screens
 
 		private void EndGameAlphaCentauri(object? _, EventArgs args)
 		{
-			_ = EndGameServiceFactory.CreateForHuman().HandleAlphaCentauriAsync();
+			GameTask.Enqueue(Game.CreateSpaceArrivalEndTask(Human));
 			Destroy();
 		}
 

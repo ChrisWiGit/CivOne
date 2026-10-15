@@ -38,12 +38,16 @@ namespace CivOne.Services
 		private const int MaxIntervalYears = 500;
 
 		private readonly IRandomService _randomService;
+		private readonly IGameCalendarService? _calendarService;
 		private int? _nextRankingYear;
 
-		public CivilizationRankingTriggerService(IRandomService? randomService = null)
+		public CivilizationRankingTriggerService(IRandomService? randomService = null, IGameCalendarService? calendarService = null)
 		{
 			_randomService = randomService ?? RandomServiceFactory.Create();
+			_calendarService = calendarService;
 		}
+
+		private IGameCalendarService CalendarService => _calendarService ?? GameCalendarServiceFactory.Current;
 
 		public bool ShouldShowRanking(Player player, Game game)
 		{
@@ -55,7 +59,7 @@ namespace CivOne.Services
 				return false;
 			}
 
-			int currentYear = Common.TurnToYear(game.GameTurn);
+			int currentYear = CalendarService.TurnToYear(game.GameTurn);
 			if (!_nextRankingYear.HasValue)
 			{
 				_nextRankingYear = currentYear + GetIntervalYears();

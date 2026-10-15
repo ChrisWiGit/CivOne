@@ -11,6 +11,8 @@ namespace CivOne.Screens.Reports
 	/// Citizen icons advance 8 px and wrap after x 292 to x 16 or 20 (alternating by row); icons below y 160 are cut.
 	/// Wonders sit in two columns, 152 px apart, rows <c>clamp(lineHeight + 2, 8, 99)</c> apart; wonders below y 180 are cut.
 	/// When the total line would land at y 186 or lower, the line height shrinks by one and the layout starts over.
+	/// Like the original, it may shrink down to 0, which stacks every citizen icon row on the first one;
+	/// the total line then always fits, because the wonder rows stay at least 8 px apart.
 	/// The original's starting line height is a data segment value that is not known; 8 is assumed,
 	/// matching the 8-px citizen icons.
 	/// </remarks>
@@ -51,7 +53,7 @@ namespace CivOne.Screens.Reports
 			{
 				layout = Calculate(citizenIconCount, wonderCount, hasSpaceShipLine, hasOtherTermsLine, lineHeight--);
 			}
-			while (layout.TotalY >= TotalMaxY && lineHeight > 0);
+			while (layout.TotalY >= TotalMaxY && lineHeight >= 0);
 
 			return layout;
 		}

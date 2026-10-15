@@ -69,7 +69,7 @@ namespace CivOne.Screens
                         return;
                     }
 
-                    string turn = Common.YearString(ReadUShort(br, 0));
+                    string turn = GameCalendarServiceFactory.Current.FormatYear(ReadUShort(br, 0));
                     ushort humanPlayer = ReadUShort(br, 2);
                     ushort difficultyLevel = ReadUShort(br, 10);
                     string leaderName = ReadStrings(br, 16, 112, 14)[humanPlayer];

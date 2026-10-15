@@ -99,6 +99,13 @@ namespace CivOne.Screens.Reports
 		private void Render()
 		{
 			this.Clear(3);
+			if (Game.ScoringCompleted)
+			{
+				// Like the original, the score is no longer evaluated once the final score was recorded.
+				this.DrawText(Translate("SCORING COMPLETED"), 0, 15, OffsetX + 160, OffsetY + 100, TextAlign.Center);
+				return;
+			}
+
 			DrawReportHeader();
 
 			City[] cities = Human.Cities;

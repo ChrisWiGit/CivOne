@@ -24,6 +24,7 @@ namespace CivOne.Screens
 		public required ISpaceShipSlotBlueprint SlotBlueprint { get; init; }
 		public required ISpaceShipResourceService Resources { get; init; }
 		public required IGameCalendarService CalendarService { get; init; }
+		public required ISpaceShipArrivalService ArrivalService { get; init; }
 		public required IRandomService RandomService { get; init; }
 	}
 

@@ -254,6 +254,7 @@ namespace CivOne.UnitTests.Services.SpaceShip
 			public ushort SpaceShipPopulation { get; set; }
 
 			public short SpaceShipLaunchYear { get; set; }
+			public short SpaceShipEtaYear { get; set; } = -1;
 
 			public bool HasSpaceFlightAdvance() => false;
 

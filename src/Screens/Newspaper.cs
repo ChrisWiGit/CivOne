@@ -16,6 +16,7 @@ using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.src;
 using System.Globalization;
+using CivOne.Services;
 using CivOne.Services.Random;
 
 namespace CivOne.Screens
@@ -195,7 +196,7 @@ namespace CivOne.Screens
 			var randomNewletter = random.NextInt('A', 'O');
 			_newsflash = GetGameText($"KING/NEWS{(char)randomNewletter}")[0];
 			_shout = random.Hit(50) ? Translate("FLASH") : Translate("EXTRA!");
-			_date = TranslateFormatted("January 1, {0}", Common.YearString(Game.GameTurn));
+			_date = TranslateFormatted("January 1, {0}", GameCalendarServiceFactory.Current.FormatYear(Game.GameTurn));
 			_name = city == null ? Human.GetCapitalName() : city.Name;
 
 			switch (random.NextInt(3))

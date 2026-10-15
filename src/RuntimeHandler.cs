@@ -444,6 +444,13 @@ namespace CivOne
 		{
 			if (args.Control || args.Shift || !args.Alt || args.Key != Key.Character || char.ToUpperInvariant(args.KeyChar) != 'V') return false;
 
+			// Without a sound source there is nothing to switch on, so leave the setting alone.
+			if (string.Equals(SoundPlaybackStrategyProvider.SelectedPack, SoundPlaybackStrategyConstants.NoSoundPack, StringComparison.OrdinalIgnoreCase))
+			{
+				ShowNotification("No sound source selected");
+				return true;
+			}
+
 			Settings.Sound = Settings.Sound == GameOption.Off ? GameOption.On : GameOption.Off;
 			
 			if (Game.Started)

@@ -25,5 +25,8 @@ namespace CivOne.Persistence.Model
 
 		[Doc("The game year the spaceship was launched. 0 = not launched. Clamped to [-32768, 32767] (short) during load.")]
 		public long LaunchYear { get; set; }
+
+		[Doc("The year in which the launched spaceship arrives at Alpha Centauri, stored at launch. -1 = no ship in flight. Missing in older savegames, which then default to -1. Clamped to [-32768, 32767] (short) during load.")]
+		public long EtaYear { get; set; } = -1;
 	}
 }

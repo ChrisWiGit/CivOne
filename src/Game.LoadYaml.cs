@@ -13,6 +13,7 @@ using CivOne.Services.Palace;
 using CivOne.Services.Random;
 using CivOne.Services.StartPositions;
 using CivOne.Services;
+using CivOne.Services.Calendar;
 using CivOne.Units;
 using CivOne.Tasks;
 using System.Diagnostics.CodeAnalysis;
@@ -55,6 +56,10 @@ namespace CivOne
 			// instead of defaulting it here, so constructing a Game doesn't force that initialization.
 			_mapEditor = mapEditor;
 			_startPositionService = startPositionService;
+
+			// Every game starts with its own calendar history; all calendar services without an own state read it.
+			_calendarState = new CalendarState();
+			GameCalendarServiceFactory.UseState(_calendarState);
 
 			// Initialize collections and other fields to default values. 
 			// This only remedies the warning about uninitialized non-nullable fields.
@@ -150,6 +155,9 @@ namespace CivOne
 		{
 			_anthologyTurn = state.AnthologyTurn;
 			PeaceTurnService.Restore(state.PeaceTurns);
+			_calendarState.Restore(state.AcceleratedTurns ?? []);
+			ScoringCompleted = state.ScoringCompleted;
+			WarnAboutShipsWithoutArrivalYear();
 			_playerFutureTech = HumanPlayer?.FutureTechCount ?? state.PlayerFutureTech;
 			DisableBuddyCivilizationRespawn = state.DisableBuddyCivilizationRespawn;
 			// Savegames written before this setting existed carry no value, so the global one applies.

@@ -1,5 +1,8 @@
-using CivOne.Persistence.Game;
+using System;
+using CivOne.Graphics;
+using CivOne.IO.Text;
 using CivOne.Screens;
+using CivOne.Screens.Dialogs;
 using CivOne.Screens.Reports;
 
 namespace CivOne.Services.EndGame
@@ -16,7 +19,9 @@ namespace CivOne.Services.EndGame
 		public IScreen Defeat() => new DefeatScreen();
 
 		/// <inheritdoc />
-		public IScreen SpaceVictory(IPlayer winner) => new SpaceVictory(winner);
+		public IScreen SpaceVictory(SpaceVictoryText text, PalaceData? rivalBackground, Action? onLanding, TimeSpan? flightDuration) => rivalBackground == null
+			? new SpaceVictory(text, Resources.Instance["SPACEST"], ownsLandingBackground: false, humanArrival: true, onLanding, flightDuration)
+			: new SpaceVictory(text, PalaceView.CreatePicture(palaceData: rivalBackground), ownsLandingBackground: true, humanArrival: false, onLanding, flightDuration);
 
 		/// <inheritdoc />
 		public IScreen PowerGraph() => new Screens.PowerGraph();
@@ -32,5 +37,11 @@ namespace CivOne.Services.EndGame
 
 		/// <inheritdoc />
 		public IScreen Credits() => new Screens.Credits();
+
+		public IScreen Newspaper(string[] lines) => new Newspaper(null, lines);
+
+		public IScreen Conquest() => new Screens.Conquest();
+
+		public IKeepPlayingDialog KeepPlaying() => KeepPlayingDialog.FromGameText(TextFileFactory.Get().GetGameText("KING/FAME"));
 	}
 }

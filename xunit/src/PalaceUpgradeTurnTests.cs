@@ -41,6 +41,21 @@ namespace CivOne.src
 			Assert.Equal(0, CountPalaceBuilderTasks());
 		}
 
+		[Fact]
+		public void FullTurnAfterScoringCompletedEnqueuesNoPalaceBuilder()
+		{
+			// Arrange
+			Game game = Game.Instance;
+			PrepareHumanAboveThreshold(game);
+			game.ScoringCompleted = true;
+
+			// Act
+			AdvanceOneFullTurn(game);
+
+			// Assert
+			Assert.Equal(0, CountPalaceBuilderTasks());
+		}
+
 		private void PrepareHumanAboveThreshold(Game game)
 		{
 			game.SetCurrentPlayerForTesting(game.PlayerNumber(playa));

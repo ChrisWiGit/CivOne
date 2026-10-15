@@ -31,6 +31,11 @@ namespace CivOne.Services.Palace
 		bool PalaceOptionEnabled { get; }
 
 		/// <summary>
+		/// Gets whether the final score was recorded and the player kept playing; the palace is then no longer upgraded.
+		/// </summary>
+		bool ScoringCompleted { get; }
+
+		/// <summary>
 		/// Gets whether the player owns a city with a palace.
 		/// </summary>
 		bool HasPalaceCity { get; }

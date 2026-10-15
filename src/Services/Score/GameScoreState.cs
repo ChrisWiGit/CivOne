@@ -1,4 +1,5 @@
 using System;
+using CivOne.Services.GlobalWarming;
 
 namespace CivOne.Services.Score
 {
@@ -24,7 +25,19 @@ namespace CivOne.Services.Score
 		}
 
 		/// <inheritdoc />
-		public int PollutedSquaresCount => _game.GlobalWarmingService?.PollutedSquaresCount ?? 0;
+		/// <remarks>
+		/// The warming service caches the count once per turn, but city pollution, nuclear attacks and settlers
+		/// change it during the turn. The original game keeps the count current, so it is recounted here.
+		/// </remarks>
+		public int PollutedSquaresCount
+		{
+			get
+			{
+				IGlobalWarmingService? globalWarmingService = _game.GlobalWarmingService;
+				globalWarmingService?.RefreshPollutionState();
+				return globalWarmingService?.PollutedSquaresCount ?? 0;
+			}
+		}
 
 		/// <inheritdoc />
 		public int PeaceTurns => _game.PeaceTurns;

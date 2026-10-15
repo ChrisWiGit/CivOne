@@ -2,6 +2,7 @@ namespace CivOne.src
 {
 	using System.Linq;
 	using System.Reflection;
+	using CivOne.Services;
 	using Xunit;
 
 	public class PeaceTurnsTests : TestsBase
@@ -20,7 +21,7 @@ namespace CivOne.src
 			// Arrange
 			var game = Game.Instance;
 			SetPeaceTurns(game, 3);
-			var expected = Common.TurnToYear((ushort)(game.GameTurn + 1)) > 0 ? (ushort)4 : (ushort)3;
+			var expected = GameCalendarServiceFactory.Current.TurnToYear((ushort)(game.GameTurn + 1)) > 0 ? (ushort)4 : (ushort)3;
 
 			// Act
 			AdvanceToNextTurn(game);
@@ -38,7 +39,7 @@ namespace CivOne.src
 			SetPeaceTurns(game, 5);
 			game.RegisterHostileAction(1, 2);
 			// Reset and increment share the turn wrap, so the next turn already reads 1 in AD years.
-			var expected = Common.TurnToYear((ushort)(game.GameTurn + 1)) > 0 ? (ushort)1 : (ushort)0;
+			var expected = GameCalendarServiceFactory.Current.TurnToYear((ushort)(game.GameTurn + 1)) > 0 ? (ushort)1 : (ushort)0;
 
 			// Act
 			AdvanceToNextTurn(game);

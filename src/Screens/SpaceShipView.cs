@@ -22,6 +22,7 @@ namespace CivOne.Screens
 	{
 		private readonly ISpaceShipResourceService _resources;
 		private readonly IGameCalendarService _calendarService;
+		private readonly ISpaceShipArrivalService _arrivalService;
 
 		private readonly Player _player;
 		private readonly bool _debug;
@@ -39,7 +40,8 @@ namespace CivOne.Screens
 		private bool _update = true;
 
 		private readonly StarfieldDelegate _starfield;
-		private readonly SpaceShipPaletteAnimationDelegate _paletteAnimation;
+		private readonly PaletteCycleDelegate _paletteAnimation;
+		private uint? _paletteStartTick;
 
 		private const byte StartFieldBackgroundColorIndex = 96;
 
@@ -119,7 +121,7 @@ namespace CivOne.Screens
 
 			int[] parallaxOffsets = HasLaunched ? _starfield.GetParallaxOffsets(gameTick, StarfieldWidth) : StarfieldDelegate.ZeroOffsets;
 			bool needsScroll = _starfield.HasParallaxMoved(parallaxOffsets);
-			bool paletteChanged = _paletteAnimation.Update(gameTick);
+			bool paletteChanged = _paletteAnimation.Update(gameTick - (_paletteStartTick ??= gameTick));
 
 			if (!_update && !RefreshNeeded() && !needsScroll && !paletteChanged)
 			{
@@ -183,7 +185,7 @@ namespace CivOne.Screens
 			if (HasLaunched)
 			{
 				int launchYear = _player.SpaceShipLaunchYear;
-				int arrivalYear = launchYear + (int)Math.Ceiling(_data.FlightTimeYears);
+				int arrivalYear = _arrivalService.ArrivalYear(_player) ?? launchYear;
 
 				DrawLocalizedText("Launched:", 0, textColour, ox + 236, oy + 148, TextAlign.Left)
 				.DrawText(FormatYearLabel(launchYear), 0, textColour, ox + 236, oy + 156, TextAlign.Left);
@@ -350,7 +352,7 @@ namespace CivOne.Screens
 			{
 				if (HasLaunched)
 				{
-					_player.SpaceShipLaunchYear = 0;
+					_arrivalService.CancelLaunch(_player);
 					_debugLaunch = false;
 				}
 				else
@@ -358,7 +360,7 @@ namespace CivOne.Screens
 					_debugLaunch = true;
 					if (_player.SpaceShipLaunchYear == 0)
 					{
-						_player.SpaceShipLaunchYear = (short)_calendarService.TurnToYear(Game.GameTurn);
+						_arrivalService.Launch(_player, _calendarService.TurnToYear(Game.GameTurn));
 					}
 				}
 
@@ -435,7 +437,9 @@ namespace CivOne.Screens
 				return false;
 			}
 
-			GameTask.Enqueue(Show.Screen(new SpaceVictory(_player)));
+			// Close the spaceship view first, otherwise it stays on top of the space-victory screen.
+			Destroy();
+			GameTask.Enqueue(Game.CreateSpaceArrivalEndTask(_player));
 			return true;
 		}
 
@@ -501,7 +505,7 @@ namespace CivOne.Screens
 					return true;
 				}
 
-				_player.SpaceShipLaunchYear = (short)_calendarService.TurnToYear(Game.GameTurn);
+				_arrivalService.Launch(_player, _calendarService.TurnToYear(Game.GameTurn));
 				RefreshData();
 				GameTask.Enqueue(Message.Newspaper(null, TranslateFormattedArray("{0} space ship\nlaunches for\nAlpha Centauri!", _player.TribeName)));
 				return true;
@@ -562,6 +566,7 @@ namespace CivOne.Screens
 			_slotBlueprint = services.SlotBlueprint;
 			_resources = services.Resources;
 			_calendarService = services.CalendarService;
+			_arrivalService = services.ArrivalService;
 
 			_standardService = services.SpaceShipServiceFactory.Create(_player);
 			_debugService = services.DebugSpaceShipServiceFactory.Create(_player);
@@ -583,7 +588,7 @@ namespace CivOne.Screens
 				dockerPalette.Dispose();
 			}
 			SpaceShipPalette[StartFieldBackgroundColorIndex] = new Colour(0, 0, 48);
-			_paletteAnimation = new SpaceShipPaletteAnimationDelegate(SpaceShipPalette);
+			_paletteAnimation = new PaletteCycleDelegate(SpaceShipPalette, PaletteCycleDelegate.SpaceShipCycles);
 
 			Palette = SpaceShipPalette;
 

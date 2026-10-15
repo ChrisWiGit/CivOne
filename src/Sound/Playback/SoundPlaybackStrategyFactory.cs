@@ -38,6 +38,15 @@ internal static class SoundPlaybackStrategyFactory
 		return aliases == null ? strategy : new AliasSoundPlaybackStrategy(strategy, aliases);
 	}
 
+	/// <summary>
+	/// Creates the strategy the game plays its sounds through.
+	/// </summary>
+	/// <returns>
+	/// A strategy that plays from the source the sound setting selects,
+	/// but only while a game is running and sound is switched on.
+	/// </returns>
+	public static ISoundPlaybackStrategy CreateGated() => new SettingsGatedSoundPlaybackStrategy();
+
 	private static ISoundPlaybackStrategy CreateSource(string soundPack, SoundPackPlaybackService soundPackPlaybackService)
 	{
 		// An empty id means nothing has been chosen. Staying silent is the honest answer; the

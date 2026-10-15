@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using CivOne.Enums;
+using CivOne.Services;
 using CivOne.Services.Random;
 
 namespace CivOne.Units.TribalHuts
@@ -13,6 +14,7 @@ namespace CivOne.Units.TribalHuts
 		private readonly Player player;
 		private readonly ILogger logger;
 		private readonly IRandomService random;
+		private readonly IGameCalendarService? calendarService;
 
 		private readonly Action[] events;
 
@@ -22,7 +24,8 @@ namespace CivOne.Units.TribalHuts
 			IUnit currentUnit,
 			IGame gameInstance,
 			ILogger logger,
-			IRandomService random)
+			IRandomService random,
+			IGameCalendarService? calendarService = null)
 
 		{
 			this.player = player;
@@ -31,6 +34,7 @@ namespace CivOne.Units.TribalHuts
 			this.gameInstance = gameInstance;
 			this.logger = logger;
 			this.random = random;
+			this.calendarService = calendarService;
 
 			events =
 			[
@@ -41,6 +45,8 @@ namespace CivOne.Units.TribalHuts
 			];
 		}
 
+
+		private IGameCalendarService CalendarService => calendarService ?? GameCalendarServiceFactory.Current;
 
 		public void ExecuteRandomTribalHutEvent()
 		{
@@ -108,7 +114,7 @@ namespace CivOne.Units.TribalHuts
 		private void AncientScrollsEvent()
 		{
 			bool isFirstRound = gameInstance.GameTurn == 0;
-			bool isLateGame = Common.TurnToYear(gameInstance.GameTurn) >= 1000;
+			bool isLateGame = CalendarService.TurnToYear(gameInstance.GameTurn) >= 1000;
 
 			if (isFirstRound || isLateGame)
 			{

@@ -284,6 +284,12 @@ namespace CivOne
 			set => SpaceShipLaunchYear = value;
 		}
 
+		short IPlayerRestorable.SpaceShipEtaYear
+		{
+			get => SpaceShipEtaYear;
+			set => SpaceShipEtaYear = value;
+		}
+
 		List<ICity> IPlayerRestorable.Cities
 		{
 			get => RestoredCities;

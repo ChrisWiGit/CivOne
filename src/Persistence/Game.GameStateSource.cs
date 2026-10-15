@@ -16,6 +16,10 @@ namespace CivOne
 
 		ushort IGameSnapshotSource.AnthologyTurn => _anthologyTurn;
 
+		IReadOnlyCollection<ushort> IGameSnapshotSource.AcceleratedTurns => _calendarState.AcceleratedTurns;
+
+		bool IGameSnapshotSource.ScoringCompleted => ScoringCompleted;
+
 		public ushort PlayerFutureTech => HumanPlayer?.FutureTechCount ?? _playerFutureTech;
 
 		bool IGameSnapshotSource.DisableBuddyCivilizationRespawn => DisableBuddyCivilizationRespawn;

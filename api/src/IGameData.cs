@@ -46,6 +46,13 @@ namespace CivOne
 		ushort WarmingIndicator { get; set; }
 		ushort PeaceTurns { get; set; }
 		ushort PlayerFutureTech { get; set; }
+		short GameYear { get; set; }
+		ushort SpaceshipFlags { get; set; }
+		short SpaceshipSuccessRateHuman { get; set; }
+		short SpaceshipSuccessRateAi { get; set; }
+		short[] SpaceshipEtaYear { get; set; }
+		short[] SpaceShipLaunchYear { get; set; }
+		ushort[] SpaceShipPopulation { get; set; }
 
 		bool ValidData { get; }
 		byte[] GetBytes();

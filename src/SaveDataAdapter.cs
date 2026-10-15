@@ -15,6 +15,7 @@ using CivOne.Enums;
 using CivOne.IO;
 using CivOne.Persistence.Factories;
 using CivOne.Persistence.Model;
+using CivOne.Services;
 using CivOne.Units;
 
 namespace CivOne
@@ -73,7 +74,7 @@ namespace CivOne
 			set
 			{
 				_saveData.GameTurn = value;
-				_saveData.GameYear = CVS.CheckedInt16(Common.TurnToYear(value), nameof(SaveDataAdapter), "GameYear");
+				_saveData.GameYear = CVS.CheckedInt16(GameCalendarServiceFactory.Current.TurnToYear(value), nameof(SaveDataAdapter), "GameYear");
 			}
 		}
 
@@ -329,6 +330,48 @@ namespace CivOne
 		{
 			get => _saveData.PeaceTurns;
 			set => _saveData.PeaceTurns = value;
+		}
+
+		public short GameYear
+		{
+			get => _saveData.GameYear;
+			set => _saveData.GameYear = value;
+		}
+
+		public ushort SpaceshipFlags
+		{
+			get => _saveData.SpaceshipFlags;
+			set => _saveData.SpaceshipFlags = value;
+		}
+
+		public short SpaceshipSuccessRateHuman
+		{
+			get => _saveData.SpaceshipSuccessRateHuman;
+			set => _saveData.SpaceshipSuccessRateHuman = value;
+		}
+
+		public short SpaceshipSuccessRateAi
+		{
+			get => _saveData.SpaceshipSuccessRateAi;
+			set => _saveData.SpaceshipSuccessRateAi = value;
+		}
+
+		public short[] SpaceshipEtaYear
+		{
+			get => GetArray<short>(nameof(SaveData.SpaceshipEtaYear), 8);
+			set => SetArray(nameof(SaveData.SpaceshipEtaYear), value);
+		}
+
+		public short[] SpaceShipLaunchYear
+		{
+			get => GetArray<short>(nameof(SaveData.SpaceShipLaunchYear), 8);
+			set => SetArray(nameof(SaveData.SpaceShipLaunchYear), value);
+		}
+
+		public ushort[] SpaceShipPopulation
+		{
+			get => GetArray<ushort>(nameof(SaveData.SpaceShipPopulation), 8);
+			set => SetArray(nameof(SaveData.SpaceShipPopulation), value);
 		}
 
 		public ushort PlayerFutureTech

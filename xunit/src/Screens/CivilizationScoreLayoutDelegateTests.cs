@@ -65,5 +65,14 @@ namespace CivOne.UnitTests.Screens
 
 			Assert.True(layout.TotalY < 186);
 		}
+
+		[Fact]
+		public void HugeEmpireShrinksLineHeightToZeroSoTheTotalStillFits()
+		{
+			CivilizationScoreLayout layout = _layout.Calculate(1000, 21, true, true);
+
+			Assert.True(layout.TotalY < 186);
+			Assert.All(layout.CitizenIcons, icon => Assert.Equal(26, icon.Y));
+		}
 	}
 }

@@ -5,7 +5,8 @@ namespace CivOne.Services.Palace
 	/// </summary>
 	/// <remarks>
 	/// The original checks this once per turn, only with the game option "Palace" on and only while the human player
-	/// owns a palace city. The caller runs the check once per turn; this trigger tests the remaining conditions.
+	/// owns a palace city, and no longer after the final score was recorded ("scoring completed").
+	/// The caller runs the check once per turn; this trigger tests the remaining conditions.
 	/// See <c>docs/plan-civilizationScore.impl.md</c>, §5.
 	/// </remarks>
 	internal sealed class HumanCivScorePalaceTrigger : IPalaceUpgradeTrigger
@@ -17,7 +18,7 @@ namespace CivOne.Services.Palace
 				return false;
 			}
 
-			if (!player.IsHuman || !player.PalaceOptionEnabled || !player.HasPalaceCity)
+			if (!player.IsHuman || !player.PalaceOptionEnabled || !player.HasPalaceCity || player.ScoringCompleted)
 			{
 				return false;
 			}
