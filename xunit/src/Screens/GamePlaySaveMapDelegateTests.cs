@@ -224,6 +224,7 @@ namespace CivOne.Screens
 			public bool DebugMenu => throw new NotImplementedException();
 			public bool AutoSaveOnQuit => true;
 			public bool ConfirmExit => true;
+			public CivOne.Enums.HistorianAiPalace HistorianAiPalace => CivOne.Enums.HistorianAiPalace.Generated;
 		}
 
 		private sealed class FakeRuntime : IRuntime

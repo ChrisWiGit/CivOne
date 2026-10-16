@@ -9,7 +9,7 @@ namespace CivOne.UnitTests.Services.Palace
 		private readonly HumanCivScorePalaceTrigger _trigger = new();
 
 		[Theory]
-		// n = upgrades + 1; threshold = (7 - D) * n * (n + 1) / 2 / 2 + 1
+		// n = build counter + 1; threshold = (7 - D) * n * (n + 1) / 2 / 2 + 1
 		[InlineData(0, 0, 4)]
 		[InlineData(0, 3, 3)]
 		[InlineData(0, 5, 2)]
@@ -51,9 +51,16 @@ namespace CivOne.UnitTests.Services.Palace
 		}
 
 		[Fact]
-		public void FullyUpgradedPalaceDoesNotTrigger()
+		public void CompletePalaceStillTriggersLikeTheOriginal()
 		{
-			Assert.False(_trigger.ShouldTrigger(new FakeState { Score = 30_000, CanUpgrade = false }));
+			Assert.True(_trigger.ShouldTrigger(new FakeState { Score = 30_000, Upgrades = 37, CanUpgrade = false }));
+		}
+
+		[Fact]
+		public void ThresholdUsesTheBuildCounterNotTheBuiltLevels()
+		{
+			// Build counter 2 needs 13 at difficulty 3; the built levels (0) would need only 3.
+			Assert.False(_trigger.ShouldTrigger(new FakeState { Score = 12, Upgrades = 2, BuiltLevels = 0 }));
 		}
 
 		[Fact]
@@ -67,11 +74,12 @@ namespace CivOne.UnitTests.Services.Palace
 		{
 			public int Score { get; init; }
 			public int Upgrades { get; init; }
+			public int BuiltLevels { get; init; } = -1;
 			public bool CanUpgrade { get; init; } = true;
 			public bool NoPalace { get; init; }
 
 			public int CivilizationScore => Score;
-			public IPalaceData Palace => NoPalace ? null! : new FakePalace(Upgrades, CanUpgrade);
+			public IPalaceData Palace => NoPalace ? null! : new FakePalace(BuiltLevels < 0 ? Upgrades : BuiltLevels, Upgrades, CanUpgrade);
 			public bool IsHuman { get; init; } = true;
 			public int Difficulty { get; init; } = 3;
 			public bool PalaceOptionEnabled { get; init; } = true;
@@ -79,7 +87,7 @@ namespace CivOne.UnitTests.Services.Palace
 			public bool HasPalaceCity { get; init; } = true;
 		}
 
-		private sealed class FakePalace(int upgradeCount, bool canUpgrade) : IPalaceData
+		private sealed class FakePalace(int upgradeCount, int buildCount, bool canUpgrade) : IPalaceData
 		{
 			public int PalaceLeft => 0;
 			public int PalaceRight => 0;
@@ -87,6 +95,7 @@ namespace CivOne.UnitTests.Services.Palace
 			public byte GetPalaceLevel(int index) => 0;
 			public byte GetGardenLevel(int index) => 0;
 			public int UpgradeCount => upgradeCount;
+			public int BuildCount => buildCount;
 			public bool CanUpgrade => canUpgrade;
 			public bool IsSlotUnlocked(int index) => false;
 		}

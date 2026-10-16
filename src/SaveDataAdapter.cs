@@ -374,6 +374,24 @@ namespace CivOne
 			set => SetArray(nameof(SaveData.SpaceShipPopulation), value);
 		}
 
+		/// <summary>
+		/// Gets or sets the human player's palace block at offset 37256: 12 levels, then 12 styles.
+		/// </summary>
+		public short[] Palace
+		{
+			get => GetArray<short>(nameof(SaveData.Palace), 24);
+			set => SetArray(nameof(SaveData.Palace), value);
+		}
+
+		/// <summary>
+		/// Gets or sets the human player's palace build counter at offset 37816.
+		/// </summary>
+		public ushort PalaceBuildCount
+		{
+			get => _saveData.PalaceLevel;
+			set => _saveData.PalaceLevel = value;
+		}
+
 		public ushort PlayerFutureTech
 		{
 			get => _saveData.PlayerFutureTech;

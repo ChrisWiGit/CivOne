@@ -58,6 +58,27 @@ namespace CivOne.Persistence.Model
 		}
 
 		[Fact]
+		public void BuildCountRoundTrips()
+		{
+			_palaceData.SetBuildCount(41);
+
+			PalaceData actual = _testee.FromDto(_testee.ToDto(_palaceData));
+
+			Assert.Equal(41, actual.BuildCount);
+		}
+
+		[Fact]
+		public void MissingBuildCountFallsBackToTheBuiltLevels()
+		{
+			PalaceDto dto = _testee.ToDto(_palaceData);
+			dto.BuildCount = null;
+
+			PalaceData actual = _testee.FromDto(dto);
+
+			Assert.Equal(_palaceData.UpgradeCount, actual.BuildCount);
+		}
+
+		[Fact]
 		public void TestToDto()
 		{
 			var dto = _testee.ToDto(_palaceData);
@@ -95,7 +116,8 @@ namespace CivOne.Persistence.Model
 				[nameof(PalaceDto.RightTower)] = () => AssertPalaceSectionEqual(expected.RightTower, actual.RightTower),
 				[nameof(PalaceDto.GardenLeftLevel)] = () => Assert.Equal(expected.GardenLeftLevel, actual.GardenLeftLevel),
 				[nameof(PalaceDto.GardenCenterLevel)] = () => Assert.Equal(expected.GardenCenterLevel, actual.GardenCenterLevel),
-				[nameof(PalaceDto.GardenRightLevel)] = () => Assert.Equal(expected.GardenRightLevel, actual.GardenRightLevel)
+				[nameof(PalaceDto.GardenRightLevel)] = () => Assert.Equal(expected.GardenRightLevel, actual.GardenRightLevel),
+				[nameof(PalaceDto.BuildCount)] = () => Assert.Equal(expected.BuildCount, actual.BuildCount)
 			};
 
 		private static void AssertPalaceSectionEqual(PalaceSectionDto expected, PalaceSectionDto actual)

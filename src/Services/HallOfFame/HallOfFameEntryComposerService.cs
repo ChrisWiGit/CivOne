@@ -26,7 +26,7 @@ namespace CivOne.Services.HallOfFame
 			int totalScore = _civilizationScoreService.TotalScore(Game.Instance.HumanPlayer);
 			int difficulty = Game.Instance.Difficulty;
 			int ratingPercent = _civilizationRatingService.Rating(totalScore, difficulty);
-			LeaderOrderResult? leaderOrderResult = _civilizationRatingService.FamousPerson(totalScore, difficulty, Game.Instance.HumanPlayer.Palace.UpgradeCount);
+			LeaderOrderResult? leaderOrderResult = _civilizationRatingService.FamousPerson(totalScore, difficulty, Game.Instance.HumanPlayer.Palace.BuildCount);
 
 			return new HallOfFameEntry(
 				LeaderName: Game.Instance.HumanPlayer.LeaderName,

@@ -1,5 +1,6 @@
 using System.Linq;
 using CivOne.Enums;
+using CivOne.Screens.PalaceAssets;
 using CivOne.Services.Historian;
 using Xunit;
 
@@ -10,7 +11,7 @@ namespace CivOne.UnitTests.Services.Historian
 		// Reference values from a simulation of the DOS routine with 16-bit semantics.
 		private static readonly int[] NoForcedWrites = [0, 0, 0, 2, 2, 2, 1, 1, -1];
 		private static readonly int[] WithForcedWrites = [3, 3, 4, 3, 3, 3, 4, 3, 4];
-		private static readonly byte[] SectionsOneToSeven = [1, 1, 3, 3, 3, 2, 2];
+		private static readonly int[] ScreenshotVisibleSlots = [3, 4];
 
 		private readonly MiniPalaceGeneratorDelegate _generator = new();
 
@@ -47,35 +48,53 @@ namespace CivOne.UnitTests.Services.Historian
 		}
 
 		[Fact]
-		public void PalaceUsesOriginalSectionsOneToSevenAndPlayerStyle()
+		public void LayoutKeepsAllNineOriginalLevelsAndPlayerStyle()
 		{
-			PalaceData palace = _generator.Generate(1, 10, 1234);
+			MiniPalaceLayout palace = _generator.Generate(1, 10, 1234);
 
-			byte[] levels = [.. Enumerable.Range(0, 7).Select(palace.GetPalaceLevel)];
-			Assert.Equal(SectionsOneToSeven, levels);
-			Assert.Equal(PalaceStyle.Classical, palace.GetPalaceStyle(2));
-			Assert.Equal(PalaceStyle.Classical, palace.GetPalaceStyle(0));
+			int[] levels = [.. Enumerable.Range(0, MiniPalaceLayout.SlotCount).Select(palace.Level)];
+			Assert.Equal(NoForcedWrites, levels);
+			Assert.Equal(PalaceStyle.Classical, palace.Style(0));
+			Assert.Equal(PalaceStyle.Classical, palace.Style(8));
 		}
 
 		[Fact]
-		public void SmallestPalaceShowsTheBaseSections()
+		public void SmallestPalaceShowsNothing()
 		{
-			PalaceData palace = _generator.Generate(1, 0, 1234);
+			MiniPalaceLayout palace = _generator.Generate(1, 0, 1234);
 
-			Assert.True(palace.GetPalaceLevel(2) > 0);
-			Assert.True(palace.GetPalaceLevel(3) > 0);
-			Assert.True(palace.GetPalaceLevel(4) > 0);
+			Assert.False(palace.HasVisibleSlot);
 		}
 
 		[Fact]
 		public void ForcedLevelsAreCappedAtFour()
 		{
-			PalaceData palace = _generator.Generate(2, 33, 1234);
+			MiniPalaceLayout palace = _generator.Generate(2, 33, 1234);
 
-			for (int i = 0; i < 7; i++)
+			for (int i = 0; i < MiniPalaceLayout.SlotCount; i++)
 			{
-				Assert.InRange(palace.GetPalaceLevel(i), (byte)0, (byte)4);
+				Assert.InRange(palace.Level(i), -1, 4);
 			}
+		}
+
+		// Original game screenshot: Romans (slot 1) with a city sum of 48 and random seed 18314 show only the
+		// classical slots 3 and 4 at level 1. See docs/plan-palace.impl.md, Historian.
+		[Fact]
+		public void MatchesOriginalGameScreenshot()
+		{
+			int buildCount = new HistorianPalaceService().PalaceLevel(48);
+
+			MiniPalaceLayout palace = _generator.Generate(1, buildCount, 18314);
+
+			Assert.Equal(3, buildCount);
+			int[] visible = [.. Enumerable.Range(0, MiniPalaceLayout.SlotCount).Where(palace.IsVisible)];
+			Assert.Equal(ScreenshotVisibleSlots, visible);
+			Assert.Equal(1, palace.Level(3));
+			Assert.Equal(1, palace.Level(4));
+			Assert.Equal(PalaceStyle.Classical, palace.Style(3));
+			Assert.Equal(0, palace.Level(2)); // base section: not drawn, but not missing
+			Assert.Equal(PreviewPalacePart.WallLeft, palace.PartAt(3));
+			Assert.Equal(PreviewPalacePart.Center, palace.PartAt(4));
 		}
 	}
 }

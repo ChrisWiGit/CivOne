@@ -114,6 +114,12 @@ namespace CivOne.Screens.Reports
 				return true;
 			}
 
+			if (_debugMode && args[Key.F3])
+			{
+				CycleAiPalaceMode();
+				return true;
+			}
+
 			Destroy();
 			return true;
 		}
@@ -150,6 +156,19 @@ namespace CivOne.Screens.Reports
 			Refresh();
 		}
 
+		/// <summary>
+		/// Switches the Historian AI palace setting to its next value.
+		/// This changes the saved setting, the same one as in Setup.
+		/// </summary>
+		private void CycleAiPalaceMode()
+		{
+			HistorianAiPalace[] modes = Enum.GetValues<HistorianAiPalace>();
+			int index = Array.IndexOf(modes, Settings.HistorianAiPalace);
+			Settings.HistorianAiPalace = modes[(index + 1) % modes.Length];
+			_update = true;
+			Refresh();
+		}
+
 		private void DrawScreen()
 		{
 			int offsetX = Math.Max(0, (Width - 320) / 2);
@@ -163,6 +182,7 @@ namespace CivOne.Screens.Reports
 
 			if (_debugMode)
 			{
+				screen.DrawText(TranslateFormatted("F3: AI palaces: {0}", Settings.HistorianAiPalace.ToText()), 1, 15, offsetX + 6, offsetY + 185);
 				screen.DrawText(Translate("F1: Cycle Category   F2: Toggle All/Known Civilizations"), 1, 15, offsetX + 6, offsetY + 192);
 			}
 
@@ -185,9 +205,9 @@ namespace CivOne.Screens.Reports
 			const int rowHeight = 14;
 			int rowX = offsetX + 8;
 
-			IBitmap palacePreview = _palaceRenderer.RenderPalace(rankingRow.PalaceData);
+			IBitmap palacePreview = _palaceRenderer.RenderPalace(rankingRow.Palace);
 			int palaceWidth = palacePreview.Width();
-			int palaceHeight = _palaceRenderer.GetMaxPalaceHeight(rankingRow.PalaceData) - 2;
+			int palaceHeight = _palaceRenderer.GetMaxPalaceHeight(rankingRow.Palace) - 2;
 
 			bool hasPalace = palaceWidth > 1 || palaceHeight > 1;
 			int dockedTopOverlap = hasPalace ? Math.Max(0, palaceHeight) : 0;

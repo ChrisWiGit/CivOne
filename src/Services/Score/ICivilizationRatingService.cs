@@ -20,7 +20,7 @@ namespace CivOne.Services.Score
 		/// </summary>
 		/// <param name="score">The civilization score.</param>
 		/// <param name="difficulty">The game difficulty, 0 for Chief.</param>
-		/// <param name="palaceUpgradeCount">The number of palace upgrades, used when <paramref name="score"/> is 0.</param>
+		/// <param name="palaceUpgradeCount">The palace build counter (<see cref="IPalaceData.BuildCount"/>), used when <paramref name="score"/> is 0.</param>
 		/// <returns>The selected person, or <c>null</c> if no window is shown.</returns>
 		LeaderOrderResult? FamousPerson(int score, int difficulty, int palaceUpgradeCount);
 	}

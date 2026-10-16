@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using CivOne.Enums;
+using CivOne.Screens.PalaceAssets;
 
 namespace CivOne.Services.Historian
 {
@@ -15,12 +17,10 @@ namespace CivOne.Services.Historian
 	/// (<c>7 - s</c> left, <c>9 - s</c> right) is an original quirk and kept, so the result stays identical.
 	/// </para>
 	/// <para>
-	/// Deliberate deviation: CivOneX palaces have 7 sections, which are the original sections 1..7.
-	/// The generator still runs on 9 sections, because 0 and 8 influence the others, but those two edge pieces
-	/// are not shown.
-	/// The original counts levels from -1 (no section) and 0 (base built) to 3; CivOneX counts from 0 (empty) to 4.
-	/// Each level is therefore shifted by one. Shifted levels above 4 (only reachable through the forced writes) are capped at 4.
-	/// See <c>docs/plan-civilizationScore.impl.md</c>, Phase 5.
+	/// The levels are returned unchanged on the original's scale: -1 is no section, 0 a base section that is not
+	/// drawn, 1 and up are drawn. Levels above 4, only reachable through the forced writes, are capped at 4.
+	/// All 9 sections are kept; the mini palace has a slot for each.
+	/// See <c>docs/plan-palace.impl.md</c>, 5b.1.
 	/// </para>
 	/// </remarks>
 	internal sealed class MiniPalaceGeneratorDelegate
@@ -34,20 +34,14 @@ namespace CivOne.Services.Historian
 		/// <param name="playerIndex">The player slot, 0..7.</param>
 		/// <param name="buildCount">The build count from <see cref="IHistorianPalaceService.PalaceLevel"/>.</param>
 		/// <param name="randomSeed">The game's random seed (the map's terrain master word).</param>
-		/// <returns>A palace with the generated sections; gardens stay empty.</returns>
-		public PalaceData Generate(int playerIndex, int buildCount, int randomSeed)
+		/// <returns>The mini palace; every slot has the player's style.</returns>
+		public MiniPalaceLayout Generate(int playerIndex, int buildCount, int randomSeed)
 		{
 			int[] levels = GenerateOriginalLevels(playerIndex, buildCount, randomSeed);
-			byte style = (byte)((PalaceStyle)((playerIndex % 3) + 1));
+			PalaceStyle style = (PalaceStyle)((playerIndex % 3) + 1);
+			PalaceStyle[] styles = [.. Enumerable.Repeat(style, MiniPalaceLayout.SlotCount)];
 
-			PalaceData palace = new();
-			for (int k = 0; k < 7; k++)
-			{
-				byte level = (byte)Math.Clamp(levels[k + 1] + 1, 0, 4);
-				palace.SetPalace(k, style, level);
-			}
-
-			return palace;
+			return new(levels, styles);
 		}
 
 		/// <summary>

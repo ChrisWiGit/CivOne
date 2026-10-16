@@ -54,6 +54,16 @@ namespace CivOne
 		short[] SpaceShipLaunchYear { get; set; }
 		ushort[] SpaceShipPopulation { get; set; }
 
+		/// <summary>
+		/// Gets or sets the human player's palace as 24 values: 12 levels (sections 0..8, gardens 9..11), then 12 styles.
+		/// </summary>
+		short[] Palace { get; set; }
+
+		/// <summary>
+		/// Gets or sets the human player's palace build counter.
+		/// </summary>
+		ushort PalaceBuildCount { get; set; }
+
 		bool ValidData { get; }
 		byte[] GetBytes();
 		bool ValidMapSize(int width, int height);

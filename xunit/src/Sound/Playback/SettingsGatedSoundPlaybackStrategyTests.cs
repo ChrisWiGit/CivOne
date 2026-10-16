@@ -82,6 +82,7 @@ namespace CivOne.UnitTests.Sound.Playback
 			public bool DebugMenu => throw new NotImplementedException();
 			public bool AutoSaveOnQuit => throw new NotImplementedException();
 			public bool ConfirmExit => throw new NotImplementedException();
+			public CivOne.Enums.HistorianAiPalace HistorianAiPalace => throw new NotImplementedException();
 		}
 
 		private sealed class RecordingStrategy : ISoundPlaybackStrategy

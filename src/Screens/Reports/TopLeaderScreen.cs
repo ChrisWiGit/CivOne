@@ -64,7 +64,7 @@ namespace CivOne.Screens.Reports
 			}
 
 			int totalScore = _civilizationScoreService.TotalScore(Human);
-			return CivilizationRatingService.FamousPerson(totalScore, Game.Difficulty, Human.Palace.UpgradeCount);
+			return CivilizationRatingService.FamousPerson(totalScore, Game.Difficulty, Human.Palace.BuildCount);
 		}
 
 		private void DrawMessageBox(int ox, int oy, LeaderOrderResult leaderOrderResult)

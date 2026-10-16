@@ -932,8 +932,10 @@ namespace CivOne.Screens
 				Settings.AutoSettlers,
 				Settings.RiverFastMovement,
 				Settings.CanalCity,
-				Settings.GlobalWarmingFeatureFlags != Settings.GlobalWarmingFeatureFlag.None
+				Settings.GlobalWarmingFeatureFlags != Settings.GlobalWarmingFeatureFlag.None,
+				Settings.HistorianAiPalace != HistorianAiPalace.Generated
 			}.Count(static enabled => enabled);
+
 
 		private string LzwCodecModeText()
 			=> Settings.LzwCodecMode == Settings.LzwCodecType.Corrected ? Translate("Corrected") : Translate("Original");
@@ -1241,6 +1243,25 @@ namespace CivOne.Screens
 			Description.Create(Translate("Return to the game behavior menu."))
 		);
 
+		private MenuItem<int> HistorianAiPalaceMenuItem(HistorianAiPalace mode, string label, params string[] description)
+			=> MenuItem.Create(label)
+				.WithDescription(description)
+				.OnSelect((s, a) => Settings.HistorianAiPalace = mode)
+				.SetActive(() => Settings.HistorianAiPalace == mode);
+
+		private void HistorianAiPalaceMenu() => CreateMenu(Translate("Historian AI palaces"), GotoMenu(BehaviorMenu, 7),
+			HistorianAiPalaceMenuItem(HistorianAiPalace.Generated, TranslateFormatted("{0} (default)", HistorianAiPalace.Generated.ToText()),
+				Translate("Generate the palace from the size of the cities,"),
+				Translate("like the original game.")),
+			HistorianAiPalaceMenuItem(HistorianAiPalace.BuiltOrGenerated, HistorianAiPalace.BuiltOrGenerated.ToText(),
+				Translate("Show the palace the computer player built."),
+				Translate("Generate one while nothing is built.")),
+			HistorianAiPalaceMenuItem(HistorianAiPalace.BuiltOnly, HistorianAiPalace.BuiltOnly.ToText(),
+				Translate("Show only the palace the computer player built.")),
+			MenuItem.Create(Translate("Back")),
+			Description.Create(Translate("Return to the game behavior menu."))
+		);
+
 		private void SaveFormatMenu() => CreateMenu(Translate("AutoSave format"), GotoMenu(PatchesMenu, 8),
 			MenuItem.Create(Translate("SVE with COS fallback (default)"))
 				.WithDescription(
@@ -1354,6 +1375,10 @@ namespace CivOne.Screens
 				.WithDescription(
 					Translate("Enable extra global warming gameplay effects."))
 				.OnSelect(GotoMenu(ExtendedGlobalWarmingMenu)),
+			MenuItem.Create(TranslateFormatted("Historian AI palaces: {0}", Settings.HistorianAiPalace.ToText()))
+				.WithDescription(
+					Translate("Choose which palace the Historian shows for computer players."))
+				.OnSelect(GotoMenu(HistorianAiPalaceMenu)),
 			MenuItem.Create(Translate("Back")).OnSelect(GotoMenu(PatchesMenu, 7))
 		);
 

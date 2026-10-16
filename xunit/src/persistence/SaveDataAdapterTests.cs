@@ -47,6 +47,26 @@ namespace CivOne.UnitTests.Persistence
 		}
 
 		[Fact]
+		public void PalaceRoundtripsAtOffset37256AndBuildCountAt37816()
+		{
+			using var testee = new SaveDataAdapter();
+			short[] expected = [.. Enumerable.Range(0, 24).Select(i => (short)(i - 1))];
+
+			testee.Palace = expected;
+			testee.PalaceBuildCount = 41;
+			byte[] bytes = testee.GetBytes();
+			using var actualAdapter = SaveDataAdapter.Load(bytes);
+
+			Assert.Equal(expected, actualAdapter.Palace);
+			Assert.Equal(41, actualAdapter.PalaceBuildCount);
+			for (int i = 0; i < expected.Length; i++)
+			{
+				Assert.Equal(expected[i], BitConverter.ToInt16(bytes, 37256 + (i * 2)));
+			}
+			Assert.Equal(41, BitConverter.ToUInt16(bytes, 37816));
+		}
+
+		[Fact]
 		public void CivilizationScoreCollapseWritesHumanScoreToSlotZeroAndCitySumsToTheRest()
 		{
 			ushort[] actual = new CivOne.Services.Score.SveCivilizationScoreDelegate().Collapse(1234, [99, 10, -5, 40_000, 7]);
