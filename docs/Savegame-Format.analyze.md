@@ -28,6 +28,10 @@ Primärquellen (OpenCiv1):
 
 ---
 
+> **Hinweis:** Dieses Dokument beschreibt die Variante mit 37.856 Byte. Es gibt weitere Varianten
+> (z. B. 37.912 Byte mit 36-Byte-Einheitentabelle, deutsche `CIV.EXE`), siehe
+> [plan-sveVariants.impl.md](plan-sveVariants.impl.md).
+
 ## 1. Überblick
 
 Ein Spielstand besteht **immer aus zwei Dateien** mit gleichem Basisnamen:

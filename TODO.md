@@ -64,6 +64,16 @@ them when they are done.
    - Plans: `docs/plan-calendar.impl.md` (K1, Phase 5), `docs/plan-endOfGameContinue.impl.md` (Phase 4).
 2. Verify the rebuild of the calendar history from an SVE file (`SveCalendarDelegate`): only the current year is
    exact; check that past years in the power graph and replay look plausible.
+3. Support SVE files with 37912 bytes (found 2026-10-16).
+   - The German `CIV.EXE` writes saves with 37912 bytes. CivOneX only accepts 37856 bytes
+     (`src/Screens/SaveGameFile.cs:66`), because `SaveData` is a fixed struct with fixed offsets.
+   - Cause found: the 28 unit type records (@8968) are 36 bytes instead of 34 (name field 14 bytes wide).
+     Everything after the table is shifted by +56 (28 × 2); everything before is unchanged.
+   - There are several SVE variants (game version/language). Keep them in the table in
+     `docs/plan-sveVariants.impl.md` and add a row for every new sample.
+   - To do: detect the variant by size, convert to the base layout when loading (log the variant), decide whether
+     SVE export writes the loaded variant. Plan: `docs/plan-sveVariants.impl.md`.
+   - Samples: `temp/palacetests/` (gitignored), e.g. `CIVIL0.SVE`.
 
 ### Keep Playing and End of Game
 

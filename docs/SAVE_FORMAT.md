@@ -42,6 +42,33 @@ The following top-level keys are expected to mirror `IGameData`.
 | `nextAnthologyTurn` | `ushort` | Next anthology turn. |
 | `opponentCount` | `ushort` | Number of opponents. |
 | `replayData` | `ReplayData[]` | Replay entries. |
+| `palace` | `short[24]` | Human player's palace at offset 37256: 12 levels (sections 0..8, gardens 9..11), then 12 styles. See below. |
+| `palaceBuildCount` | `ushort` | Human player's palace build counter at offset 37816. |
+
+## Palace block
+
+Only the human player's palace is stored, as in the original game.
+
+* Levels: `-1` = section not built, `0` = base section, `1..4` = upgrade level. Gardens use `0..3`.
+* Sections 0 and 8 are always `-1` for the human player. The base sections 3..5 start at `0`.
+* Styles: `0` = medieval, `1` = classical, `2` = islamic.
+* CivOneX palace section `k` is SVE section `k + 1`. An unbuilt outer section (CivOneX level `0`) is written as `-1`.
+* `palaceBuildCount` counts every earned upgrade and keeps counting after the palace is complete.
+* Code: `src/Services/Palace/SvePalaceDelegate.cs`, `src/Game.SvePalace.cs`.
+
+## Original SVE variants
+
+The original game's `CIVIL*.SVE` files come in more than one size, depending on game version or language.
+This document describes the generic binary representation, not the original layout.
+The original layout is in [Savegame-Format.analyze.md](Savegame-Format.analyze.md).
+
+| Size | Variant | Support |
+| --- | --- | --- |
+| 37856 | base layout (English), unit type name field 12 bytes | yes |
+| 37912 | German `CIV.EXE`: name field 14 bytes (records 36 bytes), later fields +56 | no, planned |
+| 37856 + 28 × n | other languages (assumed): name field 12 + n bytes | not seen yet |
+
+Details, evidence and plan: [plan-sveVariants.impl.md](plan-sveVariants.impl.md).
 
 ## Game options order
 

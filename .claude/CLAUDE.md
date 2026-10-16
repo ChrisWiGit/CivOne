@@ -498,6 +498,22 @@ Then manually move entries into language-specific files such as:
 civ_german.txt
 ```
 
+## Shell Environment
+
+The available shells differ between machines: some have PowerShell and Git Bash, some only PowerShell,
+some only bash/sh (Linux, macOS). Commands written for the wrong shell fail on the first try.
+
+* Before the first shell command in a session, check which shells exist,
+  e.g. a cheap probe like `echo $PSVersionTable.PSVersion` (PowerShell) or `echo $BASH_VERSION` (bash).
+  Check once per session, not before every command.
+* Pick the shell that fits the command, then use its syntax consistently:
+  * Windows with Git Bash: prefer bash for POSIX-style commands (`grep`, `find`, `tail`, pipes, heredocs).
+  * Windows with PowerShell only: use PowerShell syntax (`Select-Object -Last 15`, `$env:VAR`, `;` instead of `&&` in 5.1).
+  * Linux/macOS: use bash/sh; `pwsh` only if it is installed.
+* Never mix syntaxes in one command (e.g. `2>/dev/null` in PowerShell, `$env:X` in bash).
+* If a command fails because of the shell (unknown command, parser error), switch to the other shell
+  instead of retrying the same command.
+
 ## rg
 
 The `rg` (ripgrep) command is not available in this environment.

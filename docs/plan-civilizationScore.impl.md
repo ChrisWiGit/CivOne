@@ -58,14 +58,14 @@ Ziel: Original-Score-Logik sauber in CivOne abbilden und alle Verbraucher konsis
 - [X] Phase 4.3: SVE CivilizationScore[8] Lesen/Schreiben im Adapter ergänzt
 - [X] Phase 4.4: SVE-Collapse-Regel umgesetzt (Human-Score in Slot 0, Rest 0) -> `SveCivilizationScoreDelegate`; Live-Getter in `Player` (0 außerhalb eines laufenden Spiels, wie `IPlayer.Cities`); kein Lesen beim Laden
 - [X] Phase 4.5: Persistenz des Latched-Conquest-Flags geklärt -> Laufzeit-only, kein DTO-Feld (§14.7)
-- [X] Phase 5: `IHistorianPalaceService` + `IHistorianPalaceLevelService` — Mensch echter Palast, KI generiert aus Reichssumme (Q7 = A), SVE-Slots 1..7 befüllen -> `src/Services/Historian/`; Generator `MiniPalaceGeneratorDelegate` mit DOS-16-Bit-Semantik (Low-Byte `% 9`, Zwangsschreiben nach 999 Versuchen; civ-porter-Analyse, rajko `Segment_1238.cs:1758-2000`), gegen Referenzsimulation getestet. Abweichung: Originalsektionen 0 und 8 haben in CivOneX keinen Platz und entfallen; Level-Skala um 1 verschoben (Original -1..3 → CivOneX 0..4), Werte > 4 aus Zwangsschreiben auf 4 gekappt. Seed = `Map.TerrainMasterWord`
+- [X] Phase 5: `IHistorianPalaceService` + `IHistorianPalaceLevelService` — Mensch echter Palast, KI generiert aus Reichssumme (Q7 = A), SVE-Slots 1..7 befüllen -> `src/Services/Historian/`; Generator `MiniPalaceGeneratorDelegate` mit DOS-16-Bit-Semantik (Low-Byte `% 9`, Zwangsschreiben nach 999 Versuchen; civ-porter-Analyse, rajko `Segment_1238.cs:1758-2000`), gegen Referenzsimulation getestet. Seed = `Map.TerrainMasterWord`. **Korrigiert 2026-10-16** ([plan-palace.impl.md](plan-palace.impl.md), 5b.1): Der Generator liefert jetzt alle 9 Slots auf der Original-Skala (kein „+1“, Level 0 unsichtbar), der Mini-Palast hat 9 Slots
 - [X] Architektur: neue Services nach §16 (Interface, Konstruktor-Injection mit Factory-Fallback, keine statische Logik) -> Hinweis: `Player` bekommt den Score-Service nur als lazy Feld (kein Konstruktorparameter, zu viele Erzeugungsstellen); `Game` hält Peace-Service, Conquest-Prädikat und Arrival-Service lazy
-- [ ] Phase 5b: Palast auf 9 Sektionen wie im Original (siehe Phase 5b unten): civ-porter-Analyse der Anordnung der 9 Bitmaps, dann `PalaceData`, `PalaceView`, Mini-Palast-Renderer, `PalaceDto` und SVE-Mapping anpassen; Generator liefert dann alle 9 Sektionen
-- [ ] Phase 5c: KI-Paläste in YAML speichern (siehe Phase 5c unten): `PlayerDto.Palace` existiert schon für alle Spieler, KI-Palast ist heute aber leer und wird nie gelesen
+- [X] Phase 5b: eigener Plan [plan-palace.impl.md](plan-palace.impl.md). Befund: Der echte Palast hat auch im Original 7 Sektionen, 9 Slots gibt es nur im Mini-Palast. Mini-Palast, Generator, SVE-Palast und Bauzähler umgesetzt 2026-10-16; der originalgetreue Palast-Bildschirm (5b.4) ist dort ein eigener offener Schritt
+- [X] Phase 5c: siehe [plan-palace.impl.md](plan-palace.impl.md). Das Original speichert keine KI-Paläste; kein Snapshot. Setting `HistorianAiPalace` (Generated / BuiltOrGenerated / BuiltOnly) umgesetzt 2026-10-16
 - [X] Kalender: eigener Plan [plan-calendar.impl.md](plan-calendar.impl.md) (Q8) -> umgesetzt 2026-10-15
 - [X] Weiterspielen nach Raumschiff-Ankunft + Spielende per Jahr: eigener Plan [plan-endOfGameContinue.impl.md](plan-endOfGameContinue.impl.md) -> umgesetzt 2026-10-15
 - [X] Phase 6: F9-Screen (`CivilizationScore.cs`) auf Original-Layout, ohne eigene Formel, siehe §15.8 -> Positionen in `CivilizationScoreLayoutDelegate` (+ Tests), Screen zeichnet nur `CivilizationScoreBreakdown`; Score-Balken bei y 192. Annahme: Start-Zeilenhöhe 8 (Originalwert liegt im Datensegment, unbekannt). Icons in CivOneX-Reihenfolge (`Citizens`), Rothemden eingeschlossen
-- [X] Phase 7: Endspiel-Ablauf wie im Original (`EndGameService`), siehe §8.15 -> Reihenfolge in `EndGameService` (Bildschirme über `IEndGameScreenFactory`, Tests `EndGameServiceTests`); neu `HandleRivalSpaceArrivalAsync`. Offen: Replay-Bildschirm (fehlt in CivOneX) und „Weiterspielen?“ nach Raumschiff-Ankunft (braucht Rückkehr zum Spielbildschirm; heute endet das Spiel immer) → geplant in `plan-endOfGameContinue.impl.md` — als Abweichung in der XML-Doc von `EndGameService`
+- [X] Phase 7: Endspiel-Ablauf wie im Original (`EndGameService`), siehe §8.15 -> Reihenfolge in `EndGameService` (Bildschirme über `IEndGameScreenFactory`, Tests `EndGameServiceTests`); neu `HandleRivalSpaceArrivalAsync`. „Weiterspielen?“ nach Raumschiff-Ankunft ist seit 2026-10-15 umgesetzt (`plan-endOfGameContinue.impl.md`). Offen nur noch: Replay-Bildschirm (fehlt in CivOneX) → [plan-replayHistory.prompt.md](plan-replayHistory.prompt.md), als Abweichung in der XML-Doc von `EndGameService`
 - [X] Doku: toter Verweis auf `plan-cityCitizenService.impl.md` aufgelöst, siehe §14.1
 - [X] Tests: CivilizationScoreServiceTests (+ `SpaceShipArrivalServiceTests`)
 - [X] Tests: HumanCivScorePalaceTriggerTests
@@ -640,7 +640,10 @@ public interface IHistorianPalaceLevelService
 
 No per-turn hook is needed.
 
-### Phase 5b — Palace with 9 sections as in the original (open, noted 2026-10-11)
+### Phase 5b — Palace with 9 sections as in the original (moved, 2026-10-16)
+
+> **Moved to [plan-palace.impl.md](plan-palace.impl.md).** The premise below is wrong: the real palace has 7 sections
+> in the original too; only the mini palace has 9 slots. Kept for history.
 
 The original palace has **9 sections** (0..8); CivOneX has **7** (`PalaceData`, `PalaceDto` with `LeftTower` …
 `RightTower`, `PalaceView`). The Historian generator therefore drops original sections 0 and 8 (Phase 5).
@@ -671,7 +674,9 @@ Next steps:
 6. Upgrade threshold (`PalaceData.UpgradeCount`, max 37) and `CanUpgrade` change with 9 sections; check §5 and the
    palace trigger.
 
-### Phase 5c — Persist AI palaces in YAML (open, noted 2026-10-11)
+### Phase 5c — Persist AI palaces in YAML (moved, 2026-10-16)
+
+> **Moved to [plan-palace.impl.md](plan-palace.impl.md).** Decided: no snapshot; a setting chooses the AI palace.
 
 `PlayerDtoMapper` already writes `PlayerDto.Palace` for **every** player and reads it back. For AI players this is
 always an empty `PalaceData`, because AIs never build, and `HistorianPalaceService.PalaceFor` ignores it and
@@ -793,7 +798,7 @@ The happiness model's own deviations are documented in the code of `CityCitizenS
 |---|---|---|
 | Q1 | ~~Gate flag `0x80` semantics.~~ **Resolved, corrected 2026-10-10**, see §5: it is the game option "Palace" (`BuildPalace`), toggled in the options menu — not "never cleared". The trigger must test `Game.Palace`. `0x100` **corrected 2026-10-14**: it is the "scoring completed" latch, set after the end-game flow — not dead code. Moved to [plan-endOfGameContinue.impl.md](plan-endOfGameContinue.impl.md). | — |
 | Q2 | ~~Keep `_civilizationScore` and `IPlayerRestorable.CivilizationScore` as a loaded-value inbox?~~ **Decided: remove them.** Nothing reads the field once the getter is derived, and both save formats ignore it on load (§11). Phase 4 deletes the field, the `IPlayerRestorable` member, and the `FromDto` write. | — |
-| Q3 | ~~Is the world-conquest condition tracked, or derived at score time?~~ **Decided: ship both, switchable** (D7, §10). The two agree when the condition first becomes true and diverge only if a civilization appears afterwards — reachable in CivOne through the editor, not in the original. Latched is the default. | — |
+| Q3 | ~~Is the world-conquest condition tracked, or derived at score time?~~ **Decided: latched only** (D7, revised 2026-10-14, §10). The two forms agree when the condition first becomes true and diverge only if a civilization appears afterwards — reachable in CivOne through the editor, not in the original. The derived form and its setting were removed. | — |
 | Q4 | ~~SVE slot mapping.~~ **Decided: SVE mirrors the original, YAML is free** (D8, §11). SVE writes the human player's score into slot 0 and zeroes the rest; YAML may carry per-player scores and collapses to that layout on SVE export. Cheap, because the original treats the whole block as volatile scratch. | — |
 
 | Q5 | Is the interactive block at `CityWorker.cs:2561` reachable while the score routine measures? Gated only by `PlayerID == HumanPlayerID` in the rajko translation, with no visible `flag` test (§3). **Not blocking** — CivOne reproduces the rate, not the simulation, so no reachability answer changes our code. Reopen only if we ever decide to emulate the original's side effects. | — |
@@ -804,12 +809,16 @@ The happiness model's own deviations are documented in the code of `CityCitizenS
 
 | Q8 | ~~Adopt 1-year calendar steps in 1750–1850 while a spaceship is in flight, and a truncated ETA?~~ **Decided 2026-10-10: yes, in its own plan** (D12, [plan-calendar.impl.md](plan-calendar.impl.md)). The score gate "arrival detected this turn" works with both calendars. | — |
 
-| Q9 | `CityWorker.cs:3406` (OCO) as the accumulation site lies on the real turn path (`flag == 0`) by control flow only, not proven. Matters only if Q7 = A. | Phase 5 (A) |
+| Q9 | `CityWorker.cs:3406` (OCO) as the accumulation site lies on the real turn path (`flag == 0`) by control flow only, not proven. Matters only if Q7 = A. **Resolved 2026-10-16:** confirmed in the original game — the Historian shows the AI palace from the per-turn sum (screenshot, see [plan-palace.impl.md](plan-palace.impl.md)). In the first turn after loading, players before the human keep score 0. | — |
 
 The happiness model carries its own open points — the pending unhappiness refill reading, the luxury chain overlap and
 wonder ownership — with the Phase 1 code (§14.2).
 
 ## 10. World-conquest condition, both forms (D7)
+
+> **Superseded 2026-10-14:** only the latched form ships (`WorldConquestDelegate`). The derived delegate,
+> `WorldConquestPredicate`, `WorldConquestMode` and the menu entry were removed. The analysis below is kept for
+> reference; the "As built" paragraph and the test list describe the removed two-variant state.
 
 The original latches a flag when the active-civilization mask equals `(1 << HumanPlayerID) | 1` — the human plus
 barbarians, i.e. every other civilization destroyed. Deriving the same condition from the player list at score
@@ -986,18 +995,10 @@ Jahren ist eine UI-Eigenschaft und nicht Teil dieses Plans.
 
 ### Empfohlene Reihenfolge für die Fortsetzung
 
-1. 14.1 ist erledigt; 14.4, 14.7 und 14.8 sind entschieden.
-2. Phase 2.2 — `CalculateSuccessProbability` aus
-   [SpaceShipScreenDataFactory.cs:49](../src/Services/SpaceShip/SpaceShipScreenDataFactory.cs#L49) in den
-   Spaceship-Service heben. Kleinster isolierter Schritt und Voraussetzung für die Formel.
-3. Phase 2.3 — `WorldConquestPredicate` mit beiden Delegates und ihren Tests; unabhängig vom Rest.
-4. Phase 2.6 (`PeaceTurns`-Accessor), dann Phase 2.7/2.8 — die drei Korrekturen aus 14.4, zusammen mit
-   `PeaceTurnsTests`.
-5. Phase 2.0/2.1/2.4 — die Formel selbst, gegen eine schmale Input-Schnittstelle statt `TotalScore(Player)`,
-   danach die drei Consumer aus §6 nachziehen.
-6. Phase 2.10–2.13 (Peace-Off-by-one, Unhappy-Term, Conquest-Bonus, Rating) — §15.
-7. Phase 3 (inkl. 14.6, Palace-Option, einmal pro Runde), dann Phase 4 in der dort beschriebenen Reihenfolge.
-8. Phase 6 (F9-Screen) und Phase 5 (Historian). Kalender parallel nach eigenem Plan.
+Phasen 1–7, Kalender und Weiterspielen sind umgesetzt (Stand 2026-10-16). Rest:
+
+1. Palast-Bildschirm originalgetreu (5b.4 in [plan-palace.impl.md](plan-palace.impl.md)).
+2. Manueller Check: F9, TopLeader und HallOfFame zeigen im Spiel identische Werte.
 
 ## 15. OpenCivOne check (2026-10-10)
 
