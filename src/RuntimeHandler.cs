@@ -8,6 +8,7 @@
 // work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -260,6 +261,13 @@ namespace CivOne
 				args.HasUpdate = true;
 
 			}
+
+			// The notification is drawn on top of the screens, so a screen that does not redraw
+			// itself would neither show it nor remove it after it timed out.
+			if (NotificationNeedsRedraw)
+			{
+				args.HasUpdate = true;
+			}
 		}
 
 		private void OnDraw(object? _, EventArgs args)
@@ -331,9 +339,16 @@ namespace CivOne
 
 		}
 
+		[MemberNotNullWhen(true, nameof(_notificationText))]
+		private bool IsNotificationVisible => !string.IsNullOrEmpty(_notificationText) && _gameTick < _notificationUntilTick;
+
+		private bool NotificationNeedsRedraw => IsNotificationVisible
+			? _notificationLayerText != _notificationText
+			: _notificationLayer != null;
+
 		private void AddNotificationLayer()
 		{
-			if (string.IsNullOrEmpty(_notificationText) || _gameTick >= _notificationUntilTick || Runtime.Layers == null)
+			if (!IsNotificationVisible || Runtime.Layers == null)
 			{
 				ClearNotificationLayer();
 				return;

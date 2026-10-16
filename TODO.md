@@ -53,6 +53,11 @@ them when they are done.
    - `SaveData.SpaceShipParts[1440]` (8 x 180 bytes) is neither read nor written; CivOneX keeps its own 12x12 grid.
    - A ship in flight survives an SVE round trip (launch year, arrival year, population, flags), its parts do not.
    - Needs the mapping between the original part slots and `SpaceShipComponentType` in the grid.
+   - Consequence: after loading an SVE, a ship in flight has an empty grid, so `SpaceShipService.SuccessRate()`
+     returns 0. The ship still arrives, but the spaceship score bonus is lost, and saving again writes rate 0.
+   - The stored rates `SpaceshipSuccessRateHuman`/`SpaceshipSuccessRateAi` are written but never read back.
+     Do not use them as a stopgap; translating the parts fixes the rate, the score and the spaceship screen.
+   - Code: `src/Services/SpaceShip/SveSpaceRaceDelegate.cs`, `src/Game.SveSpaceRace.cs`.
 
 ### SVE (on hold, waiting for a decision)
 

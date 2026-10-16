@@ -49,12 +49,12 @@ namespace CivOne.Screens
 
 		private void OpenSoundPackPicker()
 		{
-			CloseMenus();
+			// Close the options first: a rebuilt options menu would cover the picker and take its input.
+			Destroy();
 			if (!_soundPackPicker.TryOpen())
 			{
 				GameTask.Insert(Message.General(Translate("No sound packs found.")));
 			}
-			Refresh();
 		}
 
 		private void MenuEnemyMoves(object? _, EventArgs __)

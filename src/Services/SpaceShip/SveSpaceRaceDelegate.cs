@@ -13,6 +13,8 @@ namespace CivOne.Services.SpaceShip
 	/// bit <c>0x100</c>, is the "scoring completed" latch set after the end of the game.
 	/// Each player's arrival year is stored next to it (<c>-1</c> = none), the launch year and the population in
 	/// separate arrays. The spaceship parts are not translated; CivOneX keeps them in its own grid format.
+	/// Known gap: a loaded ship in flight therefore has an empty grid and a success rate of 0, which costs its
+	/// score bonus. See <c>TODO.md</c>, chapter "Spaceship".
 	/// See <c>docs/plan-calendar.impl.md</c>, Phase 5.
 	/// </remarks>
 	/// <param name="arrivalService">Decides which ships are in flight and their success rate.</param>

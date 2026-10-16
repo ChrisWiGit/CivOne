@@ -72,7 +72,6 @@ namespace CivOne.Screens
 		private readonly IReadOnlyList<string> _flightLines;
 		private readonly IReadOnlyList<string> _landingLines;
 		private readonly Action? _onLanding;
-		private readonly bool _ownsLandingBackground;
 		private readonly bool _fadeBeforeLanding;
 		private readonly double _screenTicksPerFrame;
 
@@ -380,11 +379,7 @@ namespace CivOne.Screens
 
 				_landingPalette.Dispose();
 				_flightPicture.Dispose();
-
-				if (_ownsLandingBackground)
-				{
-					_landingBackground.Dispose();
-				}
+				_landingBackground.Dispose();
 			}
 
 			base.Dispose(disposing);
@@ -394,8 +389,10 @@ namespace CivOne.Screens
 		/// Creates the space-victory screen.
 		/// </summary>
 		/// <param name="text">The flight and landing lines.</param>
-		/// <param name="landingBackground">The picture after the landing: the space station or the human player's palace.</param>
-		/// <param name="ownsLandingBackground"><c>true</c> if the screen disposes <paramref name="landingBackground"/>; <c>false</c> for a cached resource.</param>
+		/// <param name="landingBackground">
+		/// The picture after the landing: the space station or the human player's palace.
+		/// The screen takes ownership and disposes it.
+		/// </param>
 		/// <param name="humanArrival">
 		/// <c>true</c> for the human player's ship: the flight fades to black and the space station picture runs its
 		/// palette animation.
@@ -405,7 +402,7 @@ namespace CivOne.Screens
 		/// Length of the music played during the flight; the landing is timed to its end.
 		/// <c>null</c> takes about the length of the win music.
 		/// </param>
-		public SpaceVictory(SpaceVictoryText text, Picture landingBackground, bool ownsLandingBackground, bool humanArrival, Action? onLanding = null, TimeSpan? flightDuration = null)
+		public SpaceVictory(SpaceVictoryText text, Picture landingBackground, bool humanArrival, Action? onLanding = null, TimeSpan? flightDuration = null)
 		{
 			ArgumentNullException.ThrowIfNull(text);
 
@@ -413,7 +410,6 @@ namespace CivOne.Screens
 			_landingLines = text.LandingLines;
 			_landingBackground = landingBackground ?? throw new ArgumentNullException(nameof(landingBackground));
 			_onLanding = onLanding;
-			_ownsLandingBackground = ownsLandingBackground;
 			_landingPalette = landingBackground.Palette.Copy();
 			_paletteCycle = humanArrival ? new PaletteCycleDelegate(_landingPalette, PaletteCycleDelegate.SpaceStationCycles) : null;
 			_fadeBeforeLanding = humanArrival;
