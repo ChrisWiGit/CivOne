@@ -89,3 +89,15 @@ them when they are done.
    - CivOneX counts a civilization as alive while it has cities or settlers without a home city
      (`Player.HandleExtinction`, `src/Player.cs`).
    - Original: only the number of cities counts.
+
+### Tests and Original Game Data
+
+1. Unit tests run without the original game files on CI, but locally with them.
+   - Locally, `MockRuntime` uses `~/.local/share/CivOneX/data` (`KING.TXT`, `*.PIC`, ...); on CI this folder is
+     empty. A test can pass locally and fail only on CI.
+   - Example: `GameEndTurnTests.RetirementWarningYearDoesNotEndTheGame` failed on CI because
+     `Newspaper` read `GetGameText("KING/NEWSx")[0]` and `GetGameText` returns an empty array without `KING.TXT`
+     (fixed with `FirstOrDefault()` in `src/Screens/Newspaper.cs`).
+   - Reproduce CI locally: `XDG_DATA_HOME=<empty folder> dotnet test xunit/CivOne.UnitTests.csproj ...`.
+   - Open: check other code paths that expect original data (text, pictures, sounds) and decide whether tests
+     should always run without the local data folder.
