@@ -65,6 +65,7 @@ namespace CivOne
 		private MouseCursor _currentCursor = MouseCursor.None;
 		private CursorType _cursorType = CursorType.Native;
 		private readonly IQuickSaveLoadHotkeyService _quickSaveLoadHotkeyService;
+		private readonly SoundPackPickerDelegate _soundPackPicker = new();
 
 		internal int CanvasWidth => IsFullWindowCanvasRequested
 			? Math.Max(Settings.MinWidth, Runtime.CanvasWidth)
@@ -442,12 +443,18 @@ namespace CivOne
 
 		private bool TryHandleSoundToggleHotkey(KeyboardEventArgs args)
 		{
-			if (args.Control || args.Shift || !args.Alt || args.Key != Key.Character || char.ToUpperInvariant(args.KeyChar) != 'V') return false;
+			if (args.Control || !args.Alt || args.Key != Key.Character || char.ToUpperInvariant(args.KeyChar) != 'V') return false;
 
-			// Without a sound source there is nothing to switch on, so leave the setting alone.
+			if (args.Shift)
+			{
+				OpenSoundPackPicker(noSoundPack: false);
+				return true;
+			}
+
+			// Without a sound pack there is nothing to switch on, so offer to pick one instead.
 			if (string.Equals(SoundPlaybackStrategyProvider.SelectedPack, SoundPlaybackStrategyConstants.NoSoundPack, StringComparison.OrdinalIgnoreCase))
 			{
-				ShowNotification("No sound source selected");
+				OpenSoundPackPicker(noSoundPack: true);
 				return true;
 			}
 
@@ -465,6 +472,24 @@ namespace CivOne
 
 			ShowNotification(Settings.Sound == GameOption.Off ? "Sound off" : "Sound on");
 			return true;
+		}
+
+		private void OpenSoundPackPicker(bool noSoundPack)
+		{
+			ITranslationService translation = TranslationServiceFactory.GetCurrent();
+
+			if (!_soundPackPicker.CanOpenOver(TopScreen))
+			{
+				ShowNotification(noSoundPack
+					? translation.Translate("No sound pack selected. Choose one in Setup.")
+					: translation.Translate("Change the sound pack in Setup."));
+				return;
+			}
+
+			if (!_soundPackPicker.TryOpen())
+			{
+				ShowNotification(translation.Translate("No sound packs found."));
+			}
 		}
 
 		private void ShowNotification(string text)

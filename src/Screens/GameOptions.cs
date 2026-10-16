@@ -14,6 +14,8 @@ using CivOne.Graphics;
 using CivOne.Graphics.Sprites;
 using CivOne.Screens.Options;
 using CivOne.Services.Screen;
+using CivOne.Sound.Playback;
+using CivOne.Tasks;
 using CivOne.UserInterface;
 
 namespace CivOne.Screens
@@ -34,8 +36,25 @@ namespace CivOne.Screens
 
 		private void MenuSound(object? _, EventArgs __)
 		{
+			// Without a sound pack, switching sound on would play nothing, so let the player pick one.
+			if (string.Equals(SoundPlaybackStrategyProvider.SelectedPack, SoundPlaybackStrategyConstants.NoSoundPack, StringComparison.OrdinalIgnoreCase))
+			{
+				OpenSoundPackPicker();
+				return;
+			}
+
 			Game.Sound = !Game.Sound;
 			Update();
+		}
+
+		private void OpenSoundPackPicker()
+		{
+			CloseMenus();
+			if (!_soundPackPicker.TryOpen())
+			{
+				GameTask.Insert(Message.General(Translate("No sound packs found.")));
+			}
+			Refresh();
 		}
 
 		private void MenuEnemyMoves(object? _, EventArgs __)
@@ -112,6 +131,7 @@ namespace CivOne.Screens
 		private const int BorderTolerance = 2;
 
 		private readonly GameOptionsMenuLayoutDelegate _layoutDelegate = new();
+		private readonly SoundPackPickerDelegate _soundPackPicker = new();
 		private GameOptionsMenuEntry[] _entries = [];
 
 		/// <summary>

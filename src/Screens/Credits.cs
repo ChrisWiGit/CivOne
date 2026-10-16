@@ -58,6 +58,12 @@ namespace CivOne.Screens
         private int _noiseCounter = NOISE_COUNT;
 		
 		private bool _allowEnterSetup = true;
+
+		/// <summary>
+		/// Gets whether the intro is over and the main menu is shown.
+		/// </summary>
+		internal bool IsMainMenuShown => HasMenu;
+
 		private bool _done;
 		private bool _forceRedraw;
 		private bool _showIntroLine;

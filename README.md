@@ -149,6 +149,28 @@ The choices are:
 
 Pick one under **Settings → In-game sound → Sound pack**, or in the startup wizard.
 
+#### Switching sound on and off
+
+Press `Alt+V` at any time to switch sound on or off.
+A short notice at the top of the screen shows the new state.
+The **Sound** entry of the in-game options (**Game → Options**) does the same for the running game.
+
+Sound needs a sound pack.
+If **None** is selected, switching sound on opens a small **Sound pack:** popup instead:
+
+* It lists **Wave files** (only if the sounds folder holds playable wave files) and every converted sound pack.
+  **None** is not listed.
+* Picking an entry selects that sound pack and switches sound on.
+  A message confirms the new sound pack.
+* `Esc` closes the popup and changes nothing.
+
+Press `Shift+Alt+V` to open the same popup at any time, also when a sound pack is already selected.
+This is the quickest way to switch between sound packs.
+
+The popup opens only on the game map (when no dialog or animation is running) and in the main menu of the title screen.
+Anywhere else, `Alt+V` shows `No sound pack selected. Choose one in Setup.` and `Shift+Alt+V` shows `Change the sound pack in Setup.`
+If there is neither a converted sound pack nor a wave file, no popup opens and `No sound packs found.` is shown.
+
 #### Sounds directory
 
 Wave files go directly into
@@ -421,6 +443,34 @@ Example:
 ```sh
 dotnet run --project ./civtranslate/civtranslate.csproj -- ./src --output ./translation/civ_german.txt
 ```
+
+### Keyboard shortcuts
+
+Overview of the keyboard shortcuts CivOneX adds to the original game.
+Follow the links for details.
+
+| Hotkey | Where | Action |
+| ------ | ----- | ------ |
+| `Alt+V` | Everywhere | Switch sound on or off. See [Switching sound on and off](#switching-sound-on-and-off). |
+| `Shift+Alt+V` | Game map, main menu | Open the sound pack popup. |
+| `Alt+Enter` | Everywhere | Toggle fullscreen mode. |
+| `Alt+F4` | Everywhere | Quit the game. Asks first if **Confirm Quit** is on. |
+| `Shift+F1` | Title screen, startup wizard | Open the settings screen. See [Settings screen](#settings-screen-civone-setup). |
+| `Ctrl+F5` | Everywhere | Save a screenshot of the screen as a GIF file. |
+| `Ctrl+F6` | In game | Save an image of the whole world map as a GIF file. |
+| `Ctrl+F1` to `Ctrl+F10` | In game | Quick save to slot 1 to 10. See [Quick save and quick load hotkeys](#quick-save-and-quick-load-hotkeys). |
+| `Alt+F1` to `Alt+F10` | In game, title and end screens | Quick load slot 1 to 10. |
+| `Alt+F11` | In game, title and end screens | Open the quick load slot menu. |
+| `F1` to `F12` | In game | Open the report screens, like the original game. |
+| `Alt+<letter>` | In game | Open a menu of the top menu bar. See [Game menu hotkeys](#game-menu-hotkeys). |
+| `Tab` | In game | Toggle map pan mode. See [Map panning and camera control](#map-panning-and-camera-control). |
+| `c` | In game | Center the map on the selected unit or city. |
+| `Ctrl+1` to `Ctrl+9` | In game | Save the current map position to slot 1 to 9. See [Map position hotkeys in gameplay](#map-position-hotkeys-in-gameplay). |
+| `Alt+1` to `Alt+9` | In game | Jump to saved map position slot 1 to 9. |
+| `Alt+0` | In game | Open the list of saved map positions. |
+| `Ctrl+PageUp` / `Ctrl+PageDown` | In game | Zoom the map in or out. `Ctrl+Wheel` works as well. See [Map zoom and bitmap filtering](#map-zoom-and-bitmap-filtering). |
+
+The terrain editor has its own shortcuts; see [Main terrain editor hotkeys](#main-terrain-editor-hotkeys).
 
 ### Game menu hotkeys
 
@@ -741,7 +791,7 @@ These options affect the gameplay mechanics and rules and can also be changed in
 | Confirm Quit | Ask for confirmation before a running game is closed (window close button or `Alt+F4`). Also available in the settings screen under **Patches**. Default is on. |
 | End of Turn | Configure end-of-turn behavior (e.g. immediate end or prompts). |
 | Animations | Toggle in-game animations (on/off) to improve performance or visuals. |
-| Sound | Toggle sound effects and music for the game. |
+| Sound | Toggle sound effects and music for the game. If no sound pack is selected, a popup lets you pick one first (see [Switching sound on and off](#switching-sound-on-and-off)). |
 | Enemy Moves | Show or hide enemy move animations while processing turns. |
 | Civilopedia Text | Select Civilopedia text display mode (affects in-game encyclopedia text). |
 | Palace | Toggle palace-related behaviour or display options in cities. |
