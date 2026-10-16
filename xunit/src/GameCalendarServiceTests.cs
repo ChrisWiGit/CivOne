@@ -64,6 +64,16 @@ namespace CivOne.UnitTests
 		}
 
 		[Theory]
+		[InlineData(-4000, "4000 BC")]
+		[InlineData(1, "1 AD")]
+		[InlineData(1813, "1813 AD")]
+		public void FormatCalendarYearShowsTheYearItself(int year, string expected)
+		{
+			// 1813 belongs to no turn without recorded 1-year steps; a stored arrival year still shows as itself.
+			Assert.Equal(expected, _testee.FormatCalendarYear(year));
+		}
+
+		[Theory]
 		[InlineData(0, "BC")]
 		[InlineData(199, "BC")]
 		[InlineData(200, "AD")]

@@ -86,12 +86,6 @@ namespace CivOne.Screens
 
 		private byte PlayerColor => Common.PlayerColourDark(Game.PlayerNumber(_player));
 
-		private string FormatYearLabel(int year)
-		{
-			ushort turn = _calendarService.YearToTurn(year);
-			return _calendarService.FormatYear(turn);
-		}
-
 		private void RefreshData()
 		{
 			_data = _service.GetScreenData();
@@ -188,9 +182,9 @@ namespace CivOne.Screens
 				int arrivalYear = _arrivalService.ArrivalYear(_player) ?? launchYear;
 
 				DrawLocalizedText("Launched:", 0, textColour, ox + 236, oy + 148, TextAlign.Left)
-				.DrawText(FormatYearLabel(launchYear), 0, textColour, ox + 236, oy + 156, TextAlign.Left);
+				.DrawText(_calendarService.FormatCalendarYear(launchYear), 0, textColour, ox + 236, oy + 156, TextAlign.Left);
 				DrawLocalizedText("Est. Arrival:", 0, textColour, ox + 236, oy + 166, TextAlign.Left)
-				.DrawText(FormatYearLabel(arrivalYear), 0, textColour, ox + 236, oy + 174, TextAlign.Left);
+				.DrawText(_calendarService.FormatCalendarYear(arrivalYear), 0, textColour, ox + 236, oy + 174, TextAlign.Left);
 
 			}
 			else

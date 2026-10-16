@@ -28,6 +28,14 @@ namespace CivOne.Services
 		string FormatYear(ushort turn, bool zeroAd = false);
 
 		/// <summary>
+		/// Formats a calendar year, e.g. "4000 BC" or "1813 AD".
+		/// Use it for stored years, such as a spaceship's arrival year: a year in the future may not belong to any turn yet.
+		/// </summary>
+		/// <param name="year">The year; negative values are BC.</param>
+		/// <returns>The formatted year.</returns>
+		string FormatCalendarYear(int year);
+
+		/// <summary>
 		/// Gets the era label ("BC" or "AD") of a game turn.
 		/// </summary>
 		/// <param name="turn">The game turn.</param>
